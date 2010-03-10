@@ -1636,7 +1636,7 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
   //
   //
   const Float_t kLaserCut=0.0005;
-  const Int_t   kMaxPeriod=3600*24*30*3; // 3 month max
+  const Int_t   kMaxPeriod=3600*24*30*12; // one year max
   const Int_t   kMinPoints=20;
   //
   TObjArray *array =AliTPCcalibDB::Instance()->GetTimeVdriftSplineRun(run);
@@ -1679,6 +1679,10 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
     nused++;
   }
   if (nused<kMinPoints &&deltaT<kMaxPeriod) return  AliTPCcalibDButil::GetTriggerOffsetTPC(run, timeStamp, deltaT*2,deltaTLaser);
+  if (nused<kMinPoints) {
+    printf("AliFatal: No time offset calibration available\n");
+    return 0;
+  }
   Double_t median = TMath::Median(nused,tdelta);
   Double_t mean  = TMath::Mean(nused,tdelta);
   delete tdelta;
