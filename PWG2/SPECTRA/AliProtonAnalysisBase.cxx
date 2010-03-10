@@ -153,7 +153,7 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
   Double_t gP = 0.0, gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t eta = 0.0;
 
-  if((fProtonAnalysisMode == kTPC) || (fProtonAnalysisMode == kHybrid)) {
+  if((fProtonAnalysisMode == kTPC) || (fProtonAnalysisMode == kHybrid) || (fProtonAnalysisMode == kFullHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
       gP = 0.0; gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0; eta = -10.0;
@@ -401,7 +401,8 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
   Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
   Double_t dca3D = 0.0;
-  
+  Float_t dcaXY = 0.0, dcaZ = 0.0;
+
   if((fProtonAnalysisMode == kTPC)||(fProtonAnalysisMode == kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
     if(!tpcTrack) {
@@ -417,6 +418,26 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
       tpcTrack->PropagateToDCA(vertex,
 			       esd->GetMagneticField(),
 			       100.,dca,cov);
+    }
+  }//standalone TPC or hybrid TPC approaches
+  if(fProtonAnalysisMode == kFullHybrid) {
+    AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
+    AliExternalTrackParam cParam;
+    if(!tpcTrack) {
+      gPt = 0.0; gPx = 0.0; gPy = 0.0; gPz = 0.0;
+      dca[0] = -100.; dca[1] = -100.; dca3D = -100.;
+      cov[0] = -100.; cov[1] = -100.; cov[2] = -100.;
+    }
+    else {
+      gPt = tpcTrack->Pt();
+      gPx = tpcTrack->Px();
+      gPy = tpcTrack->Py();
+      gPz = tpcTrack->Pz();
+      track->RelateToVertex(vertex,
+			    esd->GetMagneticField(),
+			    100.,&cParam);
+      track->GetImpactParameters(dcaXY,dcaZ);
+      dca[0] = dcaXY; dca[1] = dcaZ;
     }
   }//standalone TPC or hybrid TPC approaches
   else {
@@ -505,7 +526,7 @@ Float_t AliProtonAnalysisBase::GetSigmaToVertex(AliESDtrack* esdTrack) const {
   Float_t b[2];
   Float_t bRes[2];
   Float_t bCov[3];
-  if((fProtonAnalysisMode == kTPC)&&(fProtonAnalysisMode != kHybrid))
+  if((fProtonAnalysisMode == kTPC)&&(fProtonAnalysisMode != kHybrid)&&(fProtonAnalysisMode != kFullHybrid))
     esdTrack->GetImpactParametersTPC(b,bCov);
   else
     esdTrack->GetImpactParameters(b,bCov);
@@ -556,7 +577,7 @@ const AliESDVertex* AliProtonAnalysisBase::GetVertex(AliESDEvent* esd,
   // Second argument decides which vertex is used (this selects
   // also the quality criteria that are applied)
   const AliESDVertex* vertex = 0;
-  if(mode == kHybrid)
+  if((mode == kHybrid)||(mode == kFullHybrid))
     vertex = esd->GetPrimaryVertexSPD();
   else if(mode == kTPC){
     Double_t kBz = esd->GetMagneticField();
@@ -698,6 +719,7 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
   listOfCuts = "Analysis mode: ";
   if(fProtonAnalysisMode == kTPC) listOfCuts += "TPC standalone"; 
   if(fProtonAnalysisMode == kHybrid) listOfCuts += "Hybrid TPC"; 
+  if(fProtonAnalysisMode == kFullHybrid) listOfCuts += "Full Hybrid TPC"; 
   if(fProtonAnalysisMode == kGlobal) listOfCuts += "Global tracking"; 
   l.DrawLatex(0.1,0.74,listOfCuts.Data());
   listOfCuts = "Trigger mode: "; 
@@ -887,7 +909,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
  
   //Bayesian approach for the PID
   if(fProtonPIDMode == kBayesian) {
-    if((fProtonAnalysisMode == kTPC)||(fProtonAnalysisMode == kHybrid)) {
+    if((fProtonAnalysisMode == kTPC)||(fProtonAnalysisMode == kHybrid)||(fProtonAnalysisMode == kFullHybrid)) {
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
       if(tpcTrack) {
 	gPt = tpcTrack->Pt();

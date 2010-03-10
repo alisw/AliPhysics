@@ -3490,7 +3490,8 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	
 	if (mcLabel != TMath::Abs(label)) continue;
 	if(mcLabel != label) continue;
-	
+	if(label > stack->GetNtrack()) continue;
+
 	TParticle *particle = stack->Particle(label);
 	if(!particle) continue;
 	Int_t pdgcode = particle->GetPdgCode();
@@ -3596,7 +3597,8 @@ void AliProtonQAAnalysis::RunReconstructionEfficiencyAnalysis(AliMCEvent *const 
 	
 	if (mcLabel != TMath::Abs(label)) continue;
 	if(mcLabel != label) continue;
-	
+	if(label > stack->GetNtrack()) continue;
+		
 	TParticle *particle = stack->Particle(label);
 	if(!particle) continue;
 	Int_t pdgcode = particle->GetPdgCode();
@@ -3725,7 +3727,8 @@ void AliProtonQAAnalysis::RunPIDEfficiencyAnalysis(AliStack *const stack,
     if(IsLabelUsed(labelArray,label)) continue;
     labelArray.AddAt(label,labelCounter);
     labelCounter += 1;
-		
+    if(label > stack->GetNtrack()) continue;
+
     TParticle *particle = stack->Particle(label);
     if(!particle) continue;
     Int_t pdgcode = particle->GetPdgCode();
@@ -3792,6 +3795,7 @@ void AliProtonQAAnalysis::RunCutEfficiencyAnalysis(AliStack *const stack,
     if(IsLabelUsed(labelArray,label)) continue;
     labelArray.AddAt(label,labelCounter);
     labelCounter += 1;
+    if(label > stack->GetNtrack()) continue;
 
     TParticle *particle = stack->Particle(label);
     if(!particle) continue;
@@ -3952,7 +3956,8 @@ void AliProtonQAAnalysis::RunEfficiencyAnalysis(AliStack *const stack,
     if(IsLabelUsed(labelArray,label)) continue;
     labelArray.AddAt(label,labelCounter);
     labelCounter += 1;
-    
+    if(label > stack->GetNtrack()) continue;
+
     TParticle *particle = stack->Particle(label);
     if(!particle) continue;
     Int_t pdgcode = particle->GetPdgCode();
@@ -4316,7 +4321,8 @@ void AliProtonQAAnalysis::RunQAAnalysis(AliStack *stack,
     if(IsLabelUsed(labelArray,label)) continue;
     labelArray.AddAt(label,labelCounter);
     labelCounter += 1;
-    
+    if(label > stack->GetNtrack()) continue;
+
     TParticle *particle = stack->Particle(label);
     if(!particle) continue;
     if(TMath::Abs(particle->Eta()) > 1.0) continue;//acceptance

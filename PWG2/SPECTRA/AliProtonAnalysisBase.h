@@ -29,7 +29,7 @@ class AliESDVertex;
 class AliProtonAnalysisBase : public TObject {
  public:
   enum TriggerMode { kMB1 = 0, kMB2, kSPDFASTOR };
-  enum AnalysisMode { kInvalid = -1, kTPC = 0, kHybrid, kGlobal };
+  enum AnalysisMode { kInvalid = -1, kTPC = 0, kHybrid, kFullHybrid, kGlobal };
   enum PIDMode { kBayesian = 0, kRatio, kSigma};
 
   AliProtonAnalysisBase();
