@@ -45,8 +45,7 @@ void commonConfig(Bool_t setRootGeometry = kFALSE)
 
   // Set Root geometry file
   if ( setRootGeometry ) {
-    gAlice->SetRootGeometry();
-    gAlice->SetGeometryFromFile("geometry.root");
+    AliSimulation::Instance()->SetGeometryFile("geometry.root");
   }
 
   AliRunLoader* rl 
