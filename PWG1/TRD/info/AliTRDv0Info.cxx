@@ -551,20 +551,26 @@ Bool_t AliTRDv0Info::GetV0PID(Int_t ipart, AliTRDtrackInfo *track)
 	    continue;
 	  if(!(fQuality == 1))//... it fulfills our quality criteria
 	    continue;
-	  if(!(fDCA < fUpDCA[iDecay]))//... distance of closest approach between daughters is reasonably small
+	  if((fDCA > fUpDCA[iDecay]))//... distance of closest approach between daughters is reasonably small
 	    continue;
-	  if(!(fPointingAngle < fUpPointingAngle[iDecay]))//... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
+	  if((fPointingAngle > fUpPointingAngle[iDecay]))//... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
 	    continue;				  
-	  if(!(fRadius > fDownRadius[iDecay]))//... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
+	  if((fRadius < fDownRadius[iDecay]))//... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
 	    continue;
-	  if(!(fOpenAngle < fUpOpenAngle[iDecay]))//... opening angle is close enough to zero (for conversions)
+	  if((fRadius > fUpRadius[iDecay]))//...or smaller than a maximum value (for K0s)
 	    continue;
-	  if(!(TMath::Abs(fPsiPair) < fUpPsiPair[iDecay]))//... Psi-pair angle is close enough to zero(for conversions)
+	  if((fOpenAngle > fUpOpenAngle[iDecay]))//... opening angle is close enough to zero (for conversions)
+	    continue;
+	  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay]))//... Psi-pair angle is close enough to zero(for conversions)
 	    continue;
 
 	  //specific cut criteria :
 	  if(ipart == AliPID::kProton)
-	    {//for proton sample: separate treatment of Lamba and Anti-Lambda decays:
+	    {
+	      if((fInvMass[kK0s] < fUpInvMass[kK0s][iPSlot]) && (fInvMass[kK0s] > fDownInvMass[kK0s]))
+		continue;//explicit exclusion of K0s decays
+
+	      //for proton sample: separate treatment of Lamba and Anti-Lambda decays:
 	      //for Anti-Lambda:
 	      //Combined PID likelihoods high enough for pi+ and anti-proton ; invariant mass calculated postulating these two particle species...
 	      if((fComPID[kNeg][AliPID::kProton] > fDownComPIDneg[AliPID::kProton]) && (fComPID[kPos][AliPID::kPion] > fDownComPIDposPart[AliPID::kPion]))
@@ -590,18 +596,25 @@ Bool_t AliTRDv0Info::GetV0PID(Int_t ipart, AliTRDtrackInfo *track)
 		    }
 		}
 	    }
+
 	  //Invariant mass cut for K0s and photons, assuming two pions/two electrons as daughters:
 	  if((fInvMass[iDecay] > fUpInvMass[iDecay][iPSlot]) || (fInvMass[iDecay] < fDownInvMass[iDecay]))
 	    continue;
 	  //for K0s decays: equal TPC PID likelihood criteria for both daughters ; invariant mass calculated postulating two pions
 	  if(ipart == AliPID::kPion)
 	    {
+	      if((fInvMass[kLambda] < fUpInvMass[kLambda][iPSlot]) && (fInvMass[kLambda] > fDownInvMass[kLambda]))
+		continue;//explicit exclusion of Lambda decays
+	      if((fInvMass[kAntiLambda] < fUpInvMass[kAntiLambda][iPSlot]) && (fInvMass[kAntiLambda] > fDownInvMass[kAntiLambda]))
+		continue;//explicit exclusion of Anti-Lambda decays
+
 	      if((fDetPID[kNeg][kTPC][ipart] > fDownTPCPIDneg[ipart]) && (fDetPID[kPos][kTPC][ipart] > fDownTPCPIDpos[ipart]))
 		{
 		  pid = 1;						  
 		}
 	    }
 	  //for photon conversions: equal combined PID likelihood criteria for both daughters ; invariant mass calculated postulating two electrons
+	  //No Lambda/K0s exclusion is provided, since these contributions hardly ever interfere with gamma invariant mass!
 	  if(ipart == AliPID::kElectron)
 	    {
 	      if(fMomentum > 1.75)
