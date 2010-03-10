@@ -20,11 +20,11 @@
 #pragma link C++ class AliAnalysisTaskCreateMixedDimuons+;
 #pragma link C++ class AliAnalysisTaskMuonAODCreation+;
 #pragma link C++ class AliAnalysisTaskMuonDistributions+;
+#pragma link C++ class AliMuonInfoStoreRD+;
+#pragma link C++ class AliDimuInfoStoreRD+;
+#pragma link C++ class AliMuonInfoStoreMC+;
+#pragma link C++ class AliDimuInfoStoreMC+;
 #pragma link C++ class AliMuonsHFHeader+;
-#pragma link C++ class AliMCMuonTrack+;
-#pragma link C++ class AliMCMuonPair+;
-#pragma link C++ class AliAODMuonTrack+;
-#pragma link C++ class AliAODMuonPair+;
 #pragma link C++ class AliAnalysisTaskSEMuonsHF+;
 #pragma link C++ class AliAnalysisTaskDimuonCFContainerBuilder+;
 #endif
