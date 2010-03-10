@@ -293,14 +293,22 @@ const AliDetectorRecoParam *AliRecoParam::GetDetRecoParam(Int_t iDet) const
     if (fEventSpecie & (1 << iBit)) {
       if (fDetRecoParamsIndex[iBit][iDet] >= 0)
 	return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[iBit][iDet]);
-      else
+      else if (fDetRecoParamsIndex[0][iDet] >= 0)
 	return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[0][iDet]);
+      else {
+	AliError(Form("no RecoParam set for detector %d", iDet));
+	return NULL;
+      }
     }
   }
 
   // Default one
   AliError(Form("Invalid event specie: %d!",fEventSpecie));
-  return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[0][iDet]);
+  if (fDetRecoParamsIndex[0][iDet] >= 0)
+    return (AliDetectorRecoParam *)fDetRecoParams[iDet]->At(fDetRecoParamsIndex[0][iDet]);
+
+  AliError(Form("no RecoParam set for detector %d", iDet));
+  return NULL;
 }
 
 void  AliRecoParam::AddDetRecoParam(Int_t iDet, AliDetectorRecoParam* param)
