@@ -311,20 +311,12 @@ UInt_t AliEMCALPreprocessor::ExtractPedestals(Int_t sourceFXS)
   UInt_t result=0;
   //
   //  Read pedestal file from file exchange server
-  //  Keep original entry from OCDB in case no new pedestals are available
+  //  Only store if new pedestal info is available
   //
-  AliCaloCalibPedestal *calibPed=0;
-  AliCDBEntry* entry = GetFromOCDB("Calib", "Pedestals");
-  if (entry) calibPed = (AliCaloCalibPedestal*)entry->GetObject();
-  if ( calibPed==NULL ) {
-    Log("AliEMCALPreprocessor: No previous EMCAL pedestal entry available.\n");
-    calibPed = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
-  }
+  AliCaloCalibPedestal *calibPed = new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
   
   TList* list = GetFileSources(sourceFXS,"pedestals");
   if (list && list->GetEntries()>0) {
-    
-    calibPed->Reset(); // let's make a fresh start before possibly adding stuff below
     
     //  loop through all files from LDCs
 
@@ -387,25 +379,13 @@ UInt_t AliEMCALPreprocessor::ExtractSignal(Int_t sourceFXS)
   UInt_t result=0;
   //
   //  Read signal file from file exchange server
-  //  Keep original entry from OCDB in case no new signal are available
+  //  Only store if new signal info is available
   //
-  AliCaloCalibSignal *calibSig=0;
-  AliCDBEntry* entry = GetFromOCDB("Calib", "LED");
-  if (entry) calibSig = (AliCaloCalibSignal*)entry->GetObject();
-  if ( calibSig==NULL ) {
-    Log("AliEMCALPreprocessor: No previous EMCAL signal entry available.\n");
-    calibSig = new AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); 
-  }
+  AliCaloCalibSignal *calibSig = new AliCaloCalibSignal(AliCaloCalibSignal::kEmCal); 
   
   TList* list = GetFileSources(sourceFXS,"signal");
   if (list && list->GetEntries()>0) {
 
-    /* DS: 17 June 2008 - commented out this reset to avoid crash in shuttle.
-           Not sure why it occurs, in standalone tests a Reset() seemed to work OK..
-    
-    calibSig->Reset(); // let's make a fresh start before possibly adding stuff below
-    */
-    
     //  loop through all files from LDCs
     
     int changes = 0;
