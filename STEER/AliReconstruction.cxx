@@ -277,7 +277,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fhltesd(NULL),
   fesdf(NULL),
   ffile(NULL),
+  ffileF(NULL),
   ftree(NULL),
+  ftreeF(NULL),
   fhlttree(NULL),
   ftVertexer(NULL),
   fIsNewRunLoader(kFALSE),
@@ -379,7 +381,9 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fhltesd(NULL),
   fesdf(NULL),
   ffile(NULL),
+  ffileF(NULL),
   ftree(NULL),
+  ftreeF(NULL),
   fhlttree(NULL),
   ftVertexer(NULL),
   fIsNewRunLoader(rec.fIsNewRunLoader),
@@ -525,7 +529,9 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fhltesd  = NULL;
   fesdf    = NULL;
   ffile    = NULL;
+  ffileF   = NULL;
   ftree    = NULL;
+  ftreeF   = NULL;
   fhlttree = NULL;
   ftVertexer = NULL;
   fIsNewRunLoader = rec.fIsNewRunLoader;
@@ -1501,19 +1507,12 @@ void AliReconstruction::SlaveBegin(TTree*)
 
   fesd->WriteToTree(ftree);
   if (fWriteESDfriend) {
-    // careful:
-    // Since we add the branch manually we must 
-    // book and add it after WriteToTree
-    // otherwise it is created twice,
-    // once via writetotree and once here.
-    // The case for AliESDfriend is now 
-    // caught also in AlIESDEvent::WriteToTree but 
-    // be careful when changing the name (AliESDfriend is not 
-    // a TNamed so we had to hardwire it)
-    fesdf = new AliESDfriend();
-    TBranch *br=ftree->Branch("ESDfriend.","AliESDfriend", &fesdf);
-    br->SetFile("AliESDfriends.root");
+    ffileF = TFile::Open("AliESDfriends.root", "RECREATE");
+    ftreeF = new TTree("esdTree", "Tree with ESD Friend objects");
+    fesdf  = new AliESDfriend();
+    TBranch *br=ftreeF->Branch("ESDfriend.","AliESDfriend", &fesdf);
     fesd->AddObject(fesdf);
+    ffile->cd();
   }
   ftree->GetUserInfo()->Add(fesd);
 
@@ -1955,16 +1954,16 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     pHLTSrc->Copy(*pHLTTgt);
   }
 
-    if (fWriteESDfriend) {
-      //      fesdf->~AliESDfriend();
-      //  new (fesdf) AliESDfriend(); // Reset...
+    if (fWriteESDfriend) 
       fesd->GetESDfriend(fesdf);
-    }
+
     ftree->Fill();
+    if (fWriteESDfriend) ftreeF->Fill();
 
     // Auto-save the ESD tree in case of prompt reco @P2
     if (fRawReader && fRawReader->UseAutoSaveESD()) {
       ftree->AutoSave("SaveSelf");
+      if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
       TFile *friendfile = (TFile *)(gROOT->GetListOfFiles()->FindObject("AliESDfriends.root"));
       if (friendfile) friendfile->Save();
     }
@@ -2056,11 +2055,14 @@ void AliReconstruction::SlaveTerminate()
 
   ffile->cd();
 
-  if (fWriteESDfriend)
-    ftree->SetBranchStatus("ESDfriend*",0);
   // we want to have only one tree version number
   ftree->Write(ftree->GetName(),TObject::kOverwrite);
   fhlttree->Write(fhlttree->GetName(),TObject::kOverwrite);
+
+  if (fWriteESDfriend) {
+    ffileF->cd();
+    ftreeF->Write(ftreeF->GetName(),TObject::kOverwrite);
+  }
 
 // Finish with Plane Efficiency evaluation: before of CleanUp !!!
   if (fRunPlaneEff && !FinishPlaneEff()) {

@@ -302,7 +302,9 @@ private:
   AliESDEvent*         fhltesd;     //! Pointer to the HLT ESD event object
   AliESDfriend*        fesdf;       //! Pointer to the ESD friend object
   TFile*               ffile;       //! Pointer to the ESD file
+  TFile*               ffileF;      //! Pointer to the ESD friend file
   TTree*               ftree;       //! Pointer to the ESD tree
+  TTree*               ftreeF;      //! Pointer to the ESD friend tree
   TTree*               fhlttree;    //! Pointer to the HLT ESD tree
   AliVertexerTracks*   ftVertexer;  //! Pointer to the vertexer based on ESD tracks
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
