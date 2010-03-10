@@ -9,10 +9,10 @@ cd $ALICE_ROOT/test/vmctest/gun
 ./rungen.sh
    --> will generate primary events in an external file
 
-2. simulation
+2. simulation & reconstruction
 
-./runsim.sh
-   --> will run simulation with both G3 and G4;
+./runtest.sh
+   --> will run simulation & reconstruction with both G3 and G4;
        if you want to re-process with one MC only, you can just
        edit the lines with
        RUNG3=1
