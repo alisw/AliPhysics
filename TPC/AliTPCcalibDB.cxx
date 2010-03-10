@@ -444,7 +444,7 @@ void AliTPCcalibDB::Update(){
     //entry->SetOwner(kTRUE);
     fCTPTimeParams=dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliError("TPC - Missing calibration entry")
   }  
   //
   if (!fTransform) {
