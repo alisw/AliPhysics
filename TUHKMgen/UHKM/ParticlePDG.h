@@ -1,3 +1,5 @@
+#ifndef PARTICLEPDG_H
+#define PARTICLEPDG_H
 /*
   Copyright   : The FASTMC and SPHMC Collaboration
   Author      : Ionut Cristian Arsene 
@@ -10,8 +12,6 @@
   SHARE (Computer Physics Communications 167 229 (2005)) collaborations.
 */
 
-#ifndef PARTICLE_PDG
-#define PARTICLE_PDG
 
 #include "Rtypes.h"
 
@@ -24,11 +24,11 @@ const Int_t kMaxDecayChannels = 100;
 class ParticlePDG {
  public:
   ParticlePDG();
-  ParticlePDG(Char_t* name, Int_t pdg, Double_t mass, Double_t width);
+  ParticlePDG(const Char_t * const name, Int_t pdg, Double_t mass, Double_t width);
   ~ParticlePDG();
   
   void AddChannel(DecayChannel* channel);
-  void SetName(Char_t* name) {
+  void SetName(const Char_t * const name) {
     for(Int_t i=0; i<9; i++)
       if(*(name+i) != '\0') fName[i] = *(name+i);
       else break;
@@ -47,31 +47,31 @@ class ParticlePDG {
   void SetCharmAQNumber(Double_t value) {fAntiCharmQuarkNumber = value;}
   void SetStable(Bool_t value) {fStable = value;}
   
-  Char_t* GetName() {return fName;}
-  Int_t GetPDG() {return fPDG;}
-  Double_t GetMass() {return fMass;}
-  Double_t GetWidth() {return fWidth;}
-  Int_t GetNDecayChannels() {return fNDecayChannels;}
-  Double_t GetSpin() {return fSpin;}
-  Double_t GetIsospin() {return fIsospin;}
-  Double_t GetIsospinZ() {return fIsospinZ;}
-  Double_t GetLightQNumber() {return fLightQuarkNumber;}
-  Double_t GetLightAQNumber() {return fAntiLightQuarkNumber;}
-  Double_t GetStrangeQNumber() {return fStrangeQuarkNumber;}
-  Double_t GetStrangeAQNumber() {return fAntiStrangeQuarkNumber;}
-  Double_t GetCharmQNumber() {return fCharmQuarkNumber;}
-  Double_t GetCharmAQNumber() {return fAntiCharmQuarkNumber;}
-  Double_t GetBaryonNumber() {return (fLightQuarkNumber     + fStrangeQuarkNumber     + fCharmQuarkNumber -  
+  const Char_t* GetName() const {return fName;}
+  Int_t GetPDG() const {return fPDG;}
+  Double_t GetMass() const {return fMass;}
+  Double_t GetWidth() const {return fWidth;}
+  Int_t GetNDecayChannels() const {return fNDecayChannels;}
+  Double_t GetSpin() const {return fSpin;}
+  Double_t GetIsospin() const {return fIsospin;}
+  Double_t GetIsospinZ() const {return fIsospinZ;}
+  Double_t GetLightQNumber() const {return fLightQuarkNumber;}
+  Double_t GetLightAQNumber() const {return fAntiLightQuarkNumber;}
+  Double_t GetStrangeQNumber() const {return fStrangeQuarkNumber;}
+  Double_t GetStrangeAQNumber() const {return fAntiStrangeQuarkNumber;}
+  Double_t GetCharmQNumber() const {return fCharmQuarkNumber;}
+  Double_t GetCharmAQNumber() const {return fAntiCharmQuarkNumber;}
+  Double_t GetBaryonNumber() const {return (fLightQuarkNumber     + fStrangeQuarkNumber     + fCharmQuarkNumber -  
                                       fAntiLightQuarkNumber - fAntiStrangeQuarkNumber - fAntiCharmQuarkNumber)/3.;}
-  Double_t GetStrangeness() {return (fAntiStrangeQuarkNumber - fStrangeQuarkNumber);}
-  Double_t GetCharmness() {return (fCharmQuarkNumber - fAntiCharmQuarkNumber);}
-  Double_t GetElectricCharge() {return fIsospinZ + (GetBaryonNumber()+GetStrangeness()+GetCharmness())/2.;}
-  Bool_t GetStableStatus() {
+  Double_t GetStrangeness() const {return (fAntiStrangeQuarkNumber - fStrangeQuarkNumber);}
+  Double_t GetCharmness() const {return (fCharmQuarkNumber - fAntiCharmQuarkNumber);}
+  Double_t GetElectricCharge() const {return fIsospinZ + (GetBaryonNumber()+GetStrangeness()+GetCharmness())/2.;}
+  Bool_t GetStableStatus() const {
     return fStable;
   }  
 
   Double_t GetFullBranching();
-  DecayChannel* GetDecayChannel(Int_t i) {
+  DecayChannel* GetDecayChannel(Int_t i) const {
     if(0<=i && i<fNDecayChannels) 
       return fDecayChannels[i];
     else

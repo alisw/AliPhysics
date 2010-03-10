@@ -38,7 +38,7 @@ ParticlePDG::ParticlePDG() :
     fDecayChannels[i] = new DecayChannel();
 }
 
-ParticlePDG::ParticlePDG(Char_t *name, Int_t pdg, Double_t mass, Double_t width) :
+ParticlePDG::ParticlePDG(const Char_t * const name, Int_t pdg, Double_t mass, Double_t width) :
   fPDG(pdg),
   fMass(mass),
   fWidth(width),
