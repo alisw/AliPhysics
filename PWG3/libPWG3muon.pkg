@@ -16,12 +16,12 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliAnalysisTaskCreateMixedDimuons.cxx \
 		 muon/AliAnalysisTaskMuonAODCreation.cxx \
 		 muon/AliAnalysisTaskMuonDistributions.cxx \
-		 muon/AliMuonsHFHeader.cxx \
-		 muon/AliMCMuonTrack.cxx \
-		 muon/AliMCMuonPair.cxx \
-		 muon/AliAODMuonTrack.cxx \
-		 muon/AliAODMuonPair.cxx \
-		 muon/AliAnalysisTaskSEMuonsHF.cxx \
+                 muon/AliMuonInfoStoreRD.cxx \
+                 muon/AliDimuInfoStoreRD.cxx \
+                 muon/AliMuonInfoStoreMC.cxx \
+                 muon/AliDimuInfoStoreMC.cxx \
+                 muon/AliMuonsHFHeader.cxx \
+                 muon/AliAnalysisTaskSEMuonsHF.cxx \
 		 muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx
 
 
