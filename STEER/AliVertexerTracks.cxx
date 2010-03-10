@@ -67,6 +67,7 @@ fMaxd0z0(0.5),
 fMinDetFitter(100.),
 fMaxTgl(1000.),
 fITSrefit(kTRUE),
+fITSpureSA(kFALSE),
 fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
@@ -101,6 +102,7 @@ fMaxd0z0(0.5),
 fMinDetFitter(100.),
 fMaxTgl(1000.),
 fITSrefit(kTRUE),
+fITSpureSA(kFALSE),
 fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
@@ -176,8 +178,10 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
     }
     if(skipThis) continue;
 
-    // skip pure ITS SA tracks
-    if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+    // skip pure ITS SA tracks (default)
+    if(!fITSpureSA && (track->GetStatus()&AliESDtrack::kITSpureSA)) continue;
+    // or use only pure ITS SA tracks
+    if(fITSpureSA && !(track->GetStatus()&AliESDtrack::kITSpureSA)) continue;
 
     // kITSrefit
     if(fMode==0 && fITSrefit && !(track->GetStatus()&AliESDtrack::kITSrefit)) continue;

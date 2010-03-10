@@ -86,6 +86,7 @@ class AliVertexerTracks : public TObject {
   void  SetDCAcutIter0(Double_t maxdca) { fDCAcutIter0=maxdca; return; }
   void  SetFinderAlgorithm(Int_t opt=1) { fAlgo=opt; return; }
   void  SetITSrefitRequired() { fITSrefit=kTRUE; return; }
+  void  SetITSpureSA() { fITSpureSA=kTRUE; return; }
   Bool_t GetITSrefitRequired() const { return fITSrefit; }
   void  SetITSrefitNotRequired() { fITSrefit=kFALSE; return; }
   void  SetFiducialRZ(Double_t r=3,Double_t z=30) { fFiducialR=r; fFiducialZ=z; return; }
@@ -159,6 +160,8 @@ class AliVertexerTracks : public TObject {
   Double_t  fMaxTgl;          // maximum tgl of tracks
   Bool_t    fITSrefit;        // if kTRUE (default), use only kITSrefit tracks
                               // if kFALSE, use all tracks (also TPC only)
+  Bool_t    fITSpureSA;       // if kFALSE (default) skip ITSpureSA tracks
+                              // if kTRUE use only those
   Double_t  fFiducialR;       // radius of fiducial cylinder for tracks 
   Double_t  fFiducialZ;       // length of fiducial cylinder for tracks
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
@@ -182,7 +185,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,12) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,14) // 3D Vertexing with tracks 
 };
 
 #endif
