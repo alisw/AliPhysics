@@ -1508,9 +1508,9 @@ void AliReconstruction::SlaveBegin(TTree*)
   fesd->WriteToTree(ftree);
   if (fWriteESDfriend) {
     ffileF = TFile::Open("AliESDfriends.root", "RECREATE");
-    ftreeF = new TTree("esdTree", "Tree with ESD Friend objects");
+    ftreeF = new TTree("esdFriendTree", "Tree with ESD Friend objects");
     fesdf  = new AliESDfriend();
-    TBranch *br=ftreeF->Branch("ESDfriend.","AliESDfriend", &fesdf);
+    ftreeF->Branch("ESDfriend.","AliESDfriend", &fesdf);
     fesd->AddObject(fesdf);
     ffile->cd();
   }

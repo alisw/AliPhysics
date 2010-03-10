@@ -100,7 +100,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
       esdTreeFName = (theTree->GetCurrentFile())->GetName();
       esdFriendTreeFName = esdTreeFName;
       esdFriendTreeFName.ReplaceAll("AliESDs.root", "AliESDfriends.root");
-      theTree->AddFriend("esdTree", esdFriendTreeFName.Data());
+      theTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
     }
 
     if (!fEvent) fEvent = new AliESDEvent();

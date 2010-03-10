@@ -45,9 +45,8 @@ class AliAnalysisTaskFilter : public AliAnalysisTask
 	// Getters
 	virtual Int_t         DebugLevel()  {return fDebug;     }
 	virtual AliVEvent*    InputEvent()  {return fInputEvent;}
-	virtual AliESDEvent*  ESDEvent()    {return fOutputESD; }
 	virtual AliESDfriend* ESDfriend()   {return fOutputESDfriend; }
-	virtual TTree*        OutputTree()  {return fTreeE;     }
+	virtual TTree*        OutputTree()  {return fTreeEF;     }
 	virtual Long64_t      Entry()       {return fEntry;     }
 	virtual const char*   CurrentFileName();
 
@@ -59,11 +58,10 @@ class AliAnalysisTaskFilter : public AliAnalysisTask
 	Int_t                 fEntry;           //  Current entry in the chain
 	AliVEvent*            fInputEvent;      //! VEvent Input
 	AliInputEventHandler* fInputHandler;    //! Input Handler
-	AliESDEvent*          fOutputESD;       //! ESD out 
 	AliESDfriend*         fOutputESDfriend; //! ESD friend out 
-	TTree*                fTreeE;           //  ESD output Tree
+	TTree*                fTreeEF;          //  ESD friend output Tree
 	
-	ClassDef(AliAnalysisTaskFilter, 1); // Analysis task for filtering friends
+	ClassDef(AliAnalysisTaskFilter, 2); // Analysis task for filtering friends
 };
 
 #endif

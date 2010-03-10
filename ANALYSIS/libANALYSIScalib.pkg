@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = 	AliAnalysisTaskCopyESD.cxx \
+SRCS = 	\
 	AliAnalysisTaskFilter.cxx \
 	AliAnalysisTaskFilterFriend.cxx \
 	AliAnalysisTaskFilterFriendSecond.cxx \

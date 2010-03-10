@@ -39,12 +39,10 @@ ClassImp(AliESDHandler)
 //______________________________________________________________________________
 AliESDHandler::AliESDHandler() :
 	AliVEventHandler(),
-	fESDEvent(NULL),
 	fesdf(NULL),
-	fTreeE(NULL),
-	fFileE(NULL),
+	fTreeEF(NULL),
 	fFileEF(NULL),
-	fFileName("")
+	fFileName("AliESDfriends_v2.root")
 {
 	// default constructor
 }
@@ -52,12 +50,10 @@ AliESDHandler::AliESDHandler() :
 //______________________________________________________________________________
 AliESDHandler::AliESDHandler(const char* name, const char* title):
 	AliVEventHandler(name, title),
-	fESDEvent(NULL),
 	fesdf(NULL),
-	fTreeE(NULL),
-	fFileE(NULL),
+	fTreeEF(NULL),
 	fFileEF(NULL),
-	fFileName("")
+	fFileName("AliESDfriends_v2.root")
 {
 
 	// constructor with name and title
@@ -68,19 +64,13 @@ AliESDHandler::AliESDHandler(const char* name, const char* title):
 AliESDHandler::~AliESDHandler() 
 {
 	// Destructor.
-	delete fESDEvent;
 	delete fesdf;
-	if(fFileE){
-		// is already handled in TerminateIO
-		fFileE->Close();
-		delete fFileE;
-	}
 	if(fFileEF){
 		// is already handled in TerminateIO
 		fFileEF->Close();
 		delete fFileEF;
 	}
-	delete fTreeE;
+	delete fTreeEF;
 }
 
 //______________________________________________________________________________
@@ -94,18 +84,26 @@ Bool_t AliESDHandler::Init(Option_t* opt)
 	TString option(opt);
 	option.ToLower();
 	TDirectory *owd = gDirectory;
+
+	fesdf = new AliESDfriend();
+
+	// Open the file with friends
 	if (option.Contains("proof")) {
 		// proof
 		// Merging via files. Need to access analysis manager via interpreter.
 		gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(\"%s\", \"RECREATE\");", fFileName.Data()));
 		gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer()->SetFile((TFile*)0x%lx);", gFile));
-		fFileE = gFile;
+		fFileEF = gFile;
 	} else {
 		// local and grid
-		fFileE = new TFile(fFileName.Data(), "RECREATE");
+		fFileEF = new TFile(fFileName.Data(), "RECREATE");
 	}
-	CreateTree(1);
-	CreateFriends(1);
+
+	// Create the friends tree
+	fFileEF->cd();
+	fTreeEF = new TTree("esdFriendTree", "Tree with ESD friends");
+      	fTreeEF->Branch("ESDfriend.","AliESDfriend", &fesdf);
+
 	owd->cd();
 	
 	return kTRUE;
@@ -122,7 +120,6 @@ Bool_t AliESDHandler::FinishEvent()
 	FillTree();
 	
 	// resetting
-	fESDEvent->Reset();
 	fesdf->~AliESDfriend();
 	new(fesdf) AliESDfriend();  
 	return kTRUE;
@@ -135,7 +132,6 @@ Bool_t AliESDHandler::Terminate()
 	// Terminate 
 	//
 
-	AddESDtoTreeUserInfo();
 	return kTRUE;
 }
 
@@ -146,41 +142,15 @@ Bool_t AliESDHandler::TerminateIO()
 	// Terminate IO
 	//
 
-	if (fFileE) {
-		fFileE->cd();
-		fTreeE->Write();
-		fFileE->Close();
-		delete fFileE;
-		fFileE = 0;
+	if (fFileEF) {
+		fFileEF->cd();
+		fTreeEF->Write();
+		fFileEF->Close();
+		delete fFileEF;
+		fFileEF = 0;
 	}
 
 	return kTRUE;
-}
-
-
-//______________________________________________________________________________
-void AliESDHandler::CreateTree(Int_t /*flag*/)
-{
-	//
-	// Creates the ESD Tree
-	// 
-
-	fTreeE = new TTree("esdTree", "AliESD tree");
-	// Create the ESDevent object
-	if(!fESDEvent){
-		fESDEvent = new AliESDEvent();
-		fESDEvent->CreateStdContent();
-	}
-	fESDEvent->WriteToTree(fTreeE);
-}
-//______________________________________________________________________________
-void AliESDHandler::CreateFriends(Int_t /*flag*/)
-{
-	fesdf = new AliESDfriend();
-
-      	TBranch *br=fTreeE->Branch("ESDfriend.","AliESDfriend", &fesdf);
-	br->SetFile("AliESDfriends_v1.root");
-	fESDEvent->AddObject(fesdf);
 }
 
 //______________________________________________________________________________
@@ -192,19 +162,7 @@ void AliESDHandler::FillTree()
 
 	AliDebug(2,Form("number of friend tracks = %d\n",fesdf->GetNumberOfTracks()));
 
-	fFileE->cd();
-	fTreeE->Fill();
+	fFileEF->cd();
+	fTreeEF->Fill();
 }
-
-//______________________________________________________________________________
-void AliESDHandler::AddESDtoTreeUserInfo()
-{
-	//
-	// Add aod event to tree user info
-	//
-
-	fTreeE->GetUserInfo()->Add(fESDEvent);
-}
-
-
 

@@ -110,11 +110,9 @@ void AliAnalysisTaskFilterFriendSecond::UserExec(Option_t */*option*/)
 		return;
 	} 
 	// attach ESDfriend
-	AliESDEvent* esdEventOutput = (AliESDEvent*)ESDEvent();
 	
 	AliESDfriend* esdFriendOutput = (AliESDfriend*)ESDfriend();  
 	AliInfo(Form("Number of ESD tracks in input = %d ",fESDInput->GetNumberOfTracks()));
-	AliInfo(Form("Number of ESD tracks in output = %d ",esdEventOutput->GetNumberOfTracks()));
 	AliInfo(Form("Number of tracks in input friends = %d ",fESDfriendInput->GetNumberOfTracks()));
 	AliInfo(Form("Number of tracks in output friendsNew before filtering = %d ",esdFriendOutput->GetNumberOfTracks()));
 	
@@ -124,7 +122,6 @@ void AliAnalysisTaskFilterFriendSecond::UserExec(Option_t */*option*/)
 		if (i%3 == 0){
 			// keep friend
 			AliInfo(Form("Keeping %d-th track",i));
-			esdEventOutput->GetTrack(i);
 			AliESDfriendTrack* tOld = (AliESDfriendTrack*)fESDfriendInput->GetTrack(i);
 			AliDebug(2,Form("1P of the %d-th track = %f",i,tOld->Get1P()));
 			AddFriendTrackAt(tOld,i);

@@ -35,26 +35,20 @@ class AliESDHandler : public AliVEventHandler {
 	virtual Bool_t Terminate();
 	virtual Bool_t TerminateIO();
 	
-	AliESDEvent* GetESD()  {return fESDEvent;}
 	AliESDfriend* GetESDfriend()  {return fesdf;}
-	virtual TTree* GetTree() const {return fTreeE;}
-	void CreateTree(Int_t flag);
-	void CreateFriends(Int_t flag);
+	virtual TTree* GetTree() const {return fTreeEF;}
 	void FillTree();
-	void AddESDtoTreeUserInfo();
 	void SetInputTree(TTree* /*tree*/) {;}
  private:
 
 	AliESDHandler(const AliESDHandler&);             // Not implemented
 	AliESDHandler& operator=(const AliESDHandler&);  // Not implemented
 	
-	AliESDEvent* fESDEvent; //! Pointer to the ESD event
 	AliESDfriend* fesdf;    //! Pointer to the ESD friend
-	TTree* fTreeE;          //! tree for ESD persistency
-	TFile* fFileE;          //! Output file
+	TTree* fTreeEF;         //! Output tree for friends
 	TFile* fFileEF;         //! Output file for friends
-	TString fFileName;      //  Output file name
+	TString fFileName;      //!  Output file name for friends
 	
-    ClassDef(AliESDHandler, 1)
+    ClassDef(AliESDHandler, 2)
 };
 #endif

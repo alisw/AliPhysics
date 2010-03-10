@@ -48,9 +48,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter():
 	fEntry(0),
 	fInputEvent(0x0),
 	fInputHandler(0x0),
-	fOutputESD(0x0),
 	fOutputESDfriend(0x0),
-	fTreeE(0x0)
+	fTreeEF(0x0)
 {
 	//
 	// Default constructor
@@ -65,9 +64,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const char* name):
 	fEntry(0),
 	fInputEvent(0x0),
 	fInputHandler(0x0),
-	fOutputESD(0x0),
 	fOutputESDfriend(0x0),
-	fTreeE(0x0)
+	fTreeEF(0x0)
 {
 	//
 	// Default constructor
@@ -85,9 +83,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const AliAnalysisTaskFilter& obj):
 	fEntry(0),
 	fInputEvent(0x0),
 	fInputHandler(0x0),
-	fOutputESD(0x0),
 	fOutputESDfriend(0x0),
-	fTreeE(0x0)
+	fTreeEF(0x0)
 {
 	//
 	// Copy constructor
@@ -97,9 +94,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const AliAnalysisTaskFilter& obj):
 	fEntry        = obj.fEntry;
 	fInputEvent   = obj.fInputEvent;
 	fInputHandler = obj.fInputHandler;
-	fOutputESD    = obj.fOutputESD;
 	fOutputESDfriend = obj.fOutputESDfriend;
-	fTreeE        = obj.fTreeE;    
+	fTreeEF        = obj.fTreeEF;    
 }
 
 
@@ -116,9 +112,8 @@ AliAnalysisTaskFilter& AliAnalysisTaskFilter::operator=(const AliAnalysisTaskFil
 	fEntry        = other.fEntry;
 	fInputEvent   = other.fInputEvent;
 	fInputHandler = other.fInputHandler;
-	fOutputESD    = other.fOutputESD;
 	fOutputESDfriend = other.fOutputESDfriend;
-	fTreeE        = other.fTreeE;    
+	fTreeEF        = other.fTreeEF;    
 	return *this;
 }
 
@@ -155,9 +150,7 @@ void AliAnalysisTaskFilter::CreateOutputObjects()
 	AliESDHandler* handler = (AliESDHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     
 	if (handler) {
-		fOutputESD   = handler->GetESD();
-		fTreeE = handler->GetTree();
-		fOutputESD->GetStdContent();
+		fTreeEF = handler->GetTree();
 	}
 	else {
 		AliWarning("No AOD Event Handler connected.") ; 
@@ -191,10 +184,15 @@ void AliAnalysisTaskFilter::Exec(Option_t* option)
 		fOutputESDfriend   = handler->GetESDfriend();
 		UserExec(option);
 	}
+	else {
+	  // Set null pointer
+	  fOutputESDfriend = 0x0;
+
+	}
 
 	// Added protection in case the derived task is not an AOD producer.
 	AliAnalysisDataSlot *out0 = GetOutputSlot(0);
-	if (out0 && out0->IsConnected()) PostData(0, fTreeE);    
+	if (out0 && out0->IsConnected()) PostData(0, fTreeEF);    
 }
 
 //______________________________________________________________________
