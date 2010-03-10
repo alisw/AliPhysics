@@ -29,6 +29,7 @@
 #include <TClonesArray.h>
 #include <TObjArray.h>
 #include <TPDGCode.h>
+#include <TMCProcess.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
@@ -491,23 +492,28 @@ Bool_t AliStack::KeepPhysics(const TParticle* part)
     // by physics analysis. Decision is put here.
     //
     Bool_t keep = kFALSE;
+
+    Int_t parent = part->GetFirstMother();
+    if (parent >= 0 && parent <= fHgwmk) {
+      TParticle* father = GetParticleMapEntry(parent);
     //
     // Keep first-generation daughter from primaries with heavy flavor 
     //
-    Int_t parent = part->GetFirstMother();
-    if (parent >= 0 && parent <= fHgwmk) {
-	TParticle* father = GetParticleMapEntry(parent);
 	Int_t kf = father->GetPdgCode();
 	kf = TMath::Abs(kf);
 	Int_t kfl = kf;
 	// meson ?
 	if  (kfl > 10) kfl/=100;
 	// baryon
-	if (kfl > 10) kfl/=10;
-	if (kfl > 10) kfl/=10;
+	if (kfl > 10)  kfl/=10;
+	if (kfl > 10)  kfl/=10;
 	if (kfl >= 4) {
 	    keep = kTRUE;
 	}
+	//
+	// e+e- from pair production of primary gammas
+	//
+	if ((part->GetUniqueID()) == kPPair) keep = kTRUE;
     }
     return keep;
 }
