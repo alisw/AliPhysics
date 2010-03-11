@@ -290,7 +290,7 @@ Int_t AliEveHOMERManager::ConnectEVEtoHOMER( TString detector ) {
 
 
 //##################################################################################
-Int_t AliEveHOMERManager::ReConnectHOMER( TString detector ){
+Int_t AliEveHOMERManager::ReConnectHOMER( TString /*detector*/ ){
   // see header file for class documentation
   
   Int_t iResult = 0;
