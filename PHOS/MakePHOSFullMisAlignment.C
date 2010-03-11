@@ -124,8 +124,8 @@ void MakePHOSFullMisAlignment()
     }
     
     AliCDBMetaData md;
-    md.SetResponsible("Timur Pocheptsov");
-    md.SetComment("Alignment objects for PHOS module 2; survey in May 2008");
+    md.SetResponsible("Yuri Kharlov");
+    md.SetComment("Alignment objects for PHOS modules 2,3,4; survey in August 2009");
     md.SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("PHOS/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(&alobj, id, &md);
