@@ -236,14 +236,19 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
 	AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);                    
         fESDtrack = fESDevent->GetTrack(i);
 	if(!fESDtrack || !seed) continue; 
-	
-	HLTDebug("AliHLTTPCCalibTimeComponent mismatch of track id between seed and ESD track: %i, %i\n", fESDtrack->GetID(), seed->GetLabel());
-	
-	if(fESDtrack->GetID() != seed->GetLabel()) continue;	      	
 
-        fCal->RefitTrack(fESDtrack, seed, GetBz()); // update AliESDtrack and AliTPCseed info, acccording to Marian's request
-	     
-        AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
+	if(fESDtrack->GetID() != seed->GetLabel()) { 
+	   HLTWarning("Mismatch of track id between seed and ESD track: %i, %i\n", fESDtrack->GetID(), seed->GetLabel());
+	   continue;	      	
+	}
+        
+	//printf("kelly time calib dedx before update: %f, P: %f\n", seed->CookdEdx(0.02,0.6), seed->P());
+        
+	fCal->RefitTrack(fESDtrack, seed, GetBz()); // update AliESDtrack and AliTPCseed info, acccording to Marian's request
+	
+	//printf("kelly time calib dedx after update: %f\n", seed->CookdEdx(0.02,0.6)); 
+        
+	AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
 	fESDtrack->AddCalibObject(seedCopy);  // add the AliTPCseed as a friend track to the AliESDtrack (to be accessed in TPC/AliTPCcalibTime.cxx)              
 	
 	//fESDfriendTrack = const_cast<AliESDfriendTrack*>(fESDtrack->GetFriendTrack());        
