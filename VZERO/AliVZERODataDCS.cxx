@@ -202,6 +202,14 @@ void AliVZERODataDCS::Init(){
 		fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/WidthResolution",iCIU);
 	}
 
+	// HPTDC parameters
+	for(int iCIU = 0; iCIU<8 ; iCIU++){
+	  fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/MatchWindow",iCIU);
+	  fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/SearchWindow",iCIU);
+	  fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/TriggerCountOffset",iCIU);
+	  fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/RollOver",iCIU);
+	}
+
   if(iAlias!=kNAliases) 
   	      AliError(Form("Number of DCS Aliases defined not correct"));
 

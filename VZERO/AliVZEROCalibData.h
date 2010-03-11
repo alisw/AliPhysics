@@ -54,6 +54,15 @@ class AliVZEROCalibData: public TNamed {
 
   Float_t* GetWidthResolution() const {return (Float_t*) fWidthResolution;};
   Float_t  GetWidthResolution(Int_t board ) const  {return ((board>=0 && board<kNCIUBoards)?fWidthResolution[board]:0);};
+
+  const UInt_t*  GetMatchWindow() const { return fMatchWindow; }
+  UInt_t   GetMatchWindow(Int_t board) const { return ((board>=0 && board<kNCIUBoards)?fMatchWindow[board]:0); }
+  const UInt_t*  GetSearchWindow() const { return fSearchWindow; }
+  UInt_t   GetSearchWindow(Int_t board) const { return ((board>=0 && board<kNCIUBoards)?fSearchWindow[board]:0); }
+  const UInt_t*  GetTriggerCountOffset() const { return fTriggerCountOffset; }
+  UInt_t   GetTriggerCountOffset(Int_t board) const { return ((board>=0 && board<kNCIUBoards)?fTriggerCountOffset[board]:0); }
+  const UInt_t*  GetRollOver() const { return fRollOver; }
+  UInt_t   GetRollOver(Int_t board) const { return ((board>=0 && board<kNCIUBoards)?fRollOver[board]:0); }
     
   void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
   void     SetPedestal(const Float_t* Pedestal);
@@ -83,6 +92,15 @@ class AliVZEROCalibData: public TNamed {
   void     SetWidthResolution(UShort_t *resols);
   void     SetWidthResolution(UShort_t resol, Int_t board);
 
+  void     SetMatchWindow(UInt_t *windows);
+  void     SetMatchWindow(UInt_t window, Int_t board);
+  void     SetSearchWindow(UInt_t *windows);
+  void     SetSearchWindow(UInt_t window, Int_t board);
+  void     SetTriggerCountOffset(UInt_t *offsets);
+  void     SetTriggerCountOffset(UInt_t offset, Int_t board);
+  void     SetRollOver(UInt_t *offsets);
+  void     SetRollOver(UInt_t offset, Int_t board);
+
   Float_t  GetMIPperADC(Int_t channel) const;
 
  protected:
@@ -100,7 +118,12 @@ class AliVZEROCalibData: public TNamed {
   Float_t  fTimeResolution[kNCIUBoards]; // Time Resolution of the TDC (ns / channel)
   Float_t  fWidthResolution[kNCIUBoards]; // Time Width Resolution of the TDC (ns / channel)
 
-  ClassDef(AliVZEROCalibData,4)    // VZERO Calibration data
+  UInt_t   fMatchWindow[kNCIUBoards]; // HPTDC matching window (25ns units)
+  UInt_t   fSearchWindow[kNCIUBoards];// HPTDC search window (25ns units)
+  UInt_t   fTriggerCountOffset[kNCIUBoards]; // HPTDC trigger count offset (25ns units)
+  UInt_t   fRollOver[kNCIUBoards]; // HPTDC roll-over (25ns units)
+
+  ClassDef(AliVZEROCalibData,5)    // VZERO Calibration data
 };
 
 #endif

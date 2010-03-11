@@ -54,6 +54,10 @@ AliVZEROCalibData::AliVZEROCalibData()
     for(int i=0; i<kNCIUBoards ;i++) {
 	fTimeResolution[i]  = 25./256.;     // Default time resolution
 	fWidthResolution[i] = 25./64.;     // Default time width resolution
+	fMatchWindow[i] = 4;
+	fSearchWindow[i] = 16;
+	fTriggerCountOffset[i] = 3247;
+	fRollOver[i] = 3563;
     }
 
 }
@@ -89,6 +93,10 @@ AliVZEROCalibData::AliVZEROCalibData(const char* name)
    for(int i=0; i<kNCIUBoards ;i++) {
        fTimeResolution[i]  = 25./256.;    // Default time resolution in ns / channel
        fWidthResolution[i] = 25./64.;     // Default time width resolution in ns / channel
+       fMatchWindow[i] = 4;
+       fSearchWindow[i] = 16;
+       fTriggerCountOffset[i] = 3247;
+       fRollOver[i] = 3563;
    }
 
 }
@@ -120,6 +128,10 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
   for(int i=0; i<kNCIUBoards ;i++) {
       fTimeResolution[i]  = calibda.GetTimeResolution(i);
       fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+      fMatchWindow[i] = calibda.GetMatchWindow(i);
+      fSearchWindow[i] = calibda.GetSearchWindow(i);
+      fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
+      fRollOver[i] = calibda.GetRollOver(i);
   }
   
 }
@@ -149,6 +161,10 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
   for(int i=0; i<kNCIUBoards ;i++) {
       fTimeResolution[i]  = calibda.GetTimeResolution(i);
       fWidthResolution[i] = calibda.GetWidthResolution(i);	  
+      fMatchWindow[i] = calibda.GetMatchWindow(i);
+      fSearchWindow[i] = calibda.GetSearchWindow(i);
+      fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
+      fRollOver[i] = calibda.GetRollOver(i);
   }
    
   return *this;
@@ -194,6 +210,10 @@ void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 		
 	if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard);
 	else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard);
+	else if(name.Contains("MatchWindow")) SetMatchWindow((UInt_t) val,iBoard);
+	else if(name.Contains("SearchWindow")) SetSearchWindow((UInt_t) val,iBoard);
+	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
+	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
 }
 
@@ -402,3 +422,90 @@ void AliVZEROCalibData::SetWidthResolution(UShort_t resol, Int_t board)
 	}else AliError(Form("Board %d is not valid",board));
 }
 
+//________________________________________________________________
+void AliVZEROCalibData::SetMatchWindow(UInt_t *windows)
+{
+  // Set Match window of the HPTDC
+  // The units are 25ns
+  if(windows)  for(Int_t b=0; b<kNCIUBoards; b++) SetMatchWindow(windows[b],b);
+  else AliError("Match windows not defined.");
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetMatchWindow(UInt_t window, Int_t board)
+{
+  // Set Match window of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fMatchWindow[board] = window;
+    AliInfo(Form("Match window of board %d set to %d",board,fMatchWindow[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetSearchWindow(UInt_t *windows)
+{
+  // Set Search window of the HPTDC
+  // The units are 25ns
+  if(windows)  for(Int_t b=0; b<kNCIUBoards; b++) SetSearchWindow(windows[b],b);
+  else AliError("Search windows not defined.");
+}
+
+//________________________________________________________________
+void  AliVZEROCalibData::SetSearchWindow(UInt_t window, Int_t board)
+{
+  // Set Search window of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fSearchWindow[board] = window;
+    AliInfo(Form("Search window of board %d set to %d",board,fSearchWindow[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetTriggerCountOffset(UInt_t *offsets)
+{
+  // Set trigger-count offset of the HPTDC
+  // The units are 25ns
+  if(offsets)  for(Int_t b=0; b<kNCIUBoards; b++) SetTriggerCountOffset(offsets[b],b);
+  else AliError("Trigger count offsets not defined.");
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetTriggerCountOffset(UInt_t offset, Int_t board)
+{
+  // Set trigger-count offsets of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fTriggerCountOffset[board] = offset;
+    AliInfo(Form("Trigger-count offset of board %d set to %d",board,fTriggerCountOffset[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetRollOver(UInt_t *offsets)
+{
+  // Set Roll-over of the HPTDC
+  // The units are 25ns
+  if(offsets)  for(Int_t b=0; b<kNCIUBoards; b++) SetRollOver(offsets[b],b);
+  else AliError("Roll-over offsets not defined.");
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetRollOver(UInt_t offset, Int_t board)
+{
+  // Set Roll-over of the HPTDC
+  // The units are 25ns
+  if((board>=0) && (board<kNCIUBoards)){
+    fRollOver[board] = offset;
+    AliInfo(Form("Roll-over offset of board %d set to %d",board,fRollOver[board]));
+  }
+  else
+    AliError(Form("Board %d is not valid",board));
+}
