@@ -17,6 +17,7 @@ AliAnalysisTaskSE(),
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE), 
+  fBFCorrelation("BFCorrelation",kFALSE), 
   fParams(0)
 {
   // Default constructor
@@ -29,6 +30,7 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
   fDensity("Density",kFALSE),
   fBackground("BackgroundCorrected",kFALSE),
   fDndeta("dNdeta",kFALSE), 
+  fBFCorrelation("BFCorrelation",kFALSE), 
   fParams(0)
 {
   SetParams(AliFMDAnaParameters::Instance());
@@ -63,12 +65,14 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
 
   fDndeta.SetInputList(bgcorlist); 
   fDndeta.SetOutputList(fListOfHistos); 
+  fBFCorrelation.SetInputList(bgcorlist); 
+  fBFCorrelation.SetOutputList(fListOfHistos); 
   
   fSharing.CreateOutputObjects();
   fDensity.CreateOutputObjects();
   fBackground.CreateOutputObjects();
   fDndeta.CreateOutputObjects();
-  
+  fBFCorrelation.CreateOutputObjects();
   
   
 }
@@ -87,7 +91,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   
   
   AliESDEvent* fESD = (AliESDEvent*)InputEvent();
-  
+  //std::cout<<fESD->GetBeamEnergy()<<"   "<<fESD->GetBeamType()<<"    "<<fESD->GetCurrentL3()<<std::endl;
   fSharing.SetInputESD(fESD);
   
   fSharing.Exec("");
@@ -96,7 +100,7 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
     if(fDensity.GetEventStatus()) {
       fBackground.Exec("");  
       fDndeta.Exec("");
-      
+      fBFCorrelation.Exec("");
     }
     else return;
   }
@@ -118,10 +122,11 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
   fSharing.SetOutputList(outputList);
   fBackground.SetHitList(outputList);
   fDndeta.SetOutputList(outputList); 
+  fBFCorrelation.SetOutputList(outputList); 
   fSharing.Terminate("");
   fBackground.Terminate("");
   fDndeta.Terminate("");
-  
+  fBFCorrelation.Terminate("");
   
   // TFile file("fmd_ana_histos_tmp.root","RECREATE");
   //  fListOfHistos->Write();
@@ -139,7 +144,8 @@ void AliFMDAnalysisTaskSE::Print(Option_t* option) const
     fSharing.Print(option);     
     fDensity.Print(option);     
     fBackground.Print(option);  
-    fDndeta.Print(option);      
+    fDndeta.Print(option); 
+    fBFCorrelation.Print(option); 
   }
   if (opt.Contains("p") && fParams) 
     fParams->Print(option);      

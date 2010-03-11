@@ -6,6 +6,7 @@
 #include "AliFMDAnalysisTaskDensity.h"
 #include "AliFMDAnalysisTaskBackgroundCorrection.h"
 #include "AliFMDAnalysisTaskDndeta.h"
+#include "AliFMDAnalysisTaskBFCorrelation.h"
 class AliFMDAnaParameters;
 
 /** @defgroup FMD_ana Analysis tasks 
@@ -24,6 +25,7 @@ class AliFMDAnaParameters;
  * - AliFMDAnalysisTaskDensity
  * - AliFMDAnalysisTaskBackgroundCorrection
  * - AliFMDAnalysisTaskDndeta
+ * - AliFMDAnalysisTaskBFCorrelation
  */
 
 class AliFMDAnalysisTaskSE : public AliAnalysisTaskSE
@@ -39,6 +41,7 @@ public:				//
       fDensity(o.fDensity),
       fBackground(o.fBackground),
       fDndeta(o.fDndeta),   
+      fBFCorrelation(o.fBFCorrelation), 
       fParams(o.fParams)
   {}
   AliFMDAnalysisTaskSE& operator=(const AliFMDAnalysisTaskSE&) { return *this; }
@@ -51,12 +54,13 @@ public:				//
   void         Print(Option_t* option="") const;
 private:
   
-  TList*                                 fListOfHistos; // Output list
-  AliFMDAnalysisTaskSharing              fSharing;      // Sharing task
-  AliFMDAnalysisTaskDensity              fDensity;      // Density task
-  AliFMDAnalysisTaskBackgroundCorrection fBackground;   // Background task
-  AliFMDAnalysisTaskDndeta               fDndeta;       // dN/deta task
-  AliFMDAnaParameters*                   fParams;       // Analysis parameters
+  TList*                                 fListOfHistos;  // Output list
+  AliFMDAnalysisTaskSharing              fSharing;       // Sharing task
+  AliFMDAnalysisTaskDensity              fDensity;       // Density task
+  AliFMDAnalysisTaskBackgroundCorrection fBackground;    // Background task
+  AliFMDAnalysisTaskDndeta               fDndeta;        // dN/deta task
+  AliFMDAnalysisTaskBFCorrelation        fBFCorrelation; // BF correlation task
+  AliFMDAnaParameters*                   fParams;        // Analysis parameters
 
   
   ClassDef(AliFMDAnalysisTaskSE, 1);

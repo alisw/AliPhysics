@@ -41,7 +41,7 @@
 #pragma link C++ class AliFMDAnalysisTaskCollector+;
 #pragma link C++ class AliFMDAnalysisTaskGenerateCorrection+;
 #pragma link C++ class AliFMDDndeta+;
-
+#pragma link C++ class AliFMDAnalysisTaskBFCorrelation+;
 
 #else
 # error Not for compilation 
