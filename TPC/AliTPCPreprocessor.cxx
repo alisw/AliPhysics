@@ -556,14 +556,8 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   UInt_t result=0;
   TMap *map = fHighVoltage->ExtractDCS(dcsAliasMap);
   if (map) {
-    fHighVoltage->MakeSplineFit(map, kTRUE);   // keep both spline fits and original maps
-    Double_t fitFraction = 1.0*fHighVoltage->NumFits()/fHighVoltage->NumSensors(); 
-    if (fitFraction > kFitFraction ) {
-      AliInfo(Form("High voltage recordings extracted, fits performed.\n"));
-    } else { 
-      Log ("Too few high voltage recordings fitted. \n");
-      result = 9;
-    }
+    fHighVoltage->ClearFit();
+    fHighVoltage->SetGraph(map);
   } else {
     Log("No high voltage recordings extracted. \n");
     result=9;
