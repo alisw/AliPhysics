@@ -357,8 +357,6 @@ Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon ) {
   g3DView->AddScene(gEve->GetGlobalScene());
   g3DView->AddScene(gEve->GetEventScene());
 
- 
-
 
   pack = pack->NewSlot()->MakePack();
   pack->SetShowTitleBar(kFALSE);

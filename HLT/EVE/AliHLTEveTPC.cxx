@@ -140,8 +140,12 @@ TEvePointSetArray * AliHLTEveTPC::CreatePointSetArray(){
 void AliHLTEveTPC::UpdateElements() {
   //See header file for documentation
 
-  if(fCanvas) fCanvas->Update();
   if(fEveClusters) fEveClusters->ResetBBox();
+
+  if (fHistQMax || fHistQMaxOverCharge || fHistCharge )
+    DrawHistograms();
+ 
+  if(fCanvas) fCanvas->Update();
  
   // if(fEveColClusters){
   //  for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
@@ -167,13 +171,9 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
   //See header file for documentation
 
 
-  if (!fCanvas) {
-    fCanvas = CreateCanvas("TPC QA", "TPC QA");
-    fCanvas->Divide(2, 2);
-    fHistCharge = new TH1F("ClusterCharge","ClusterCharge",100,0,500);
-    fHistQMax = new TH1F("QMax","QMax",50,0,250);
-    fHistQMaxOverCharge = new TH1F("QMaxOverCharge","QMaxOverCharge",50,0,1);
-  }
+  if(!fHistCharge) fHistCharge = new TH1F("ClusterCharge","ClusterCharge",100,0,500);
+  if(!fHistQMax) fHistQMax = new TH1F("QMax","QMax",50,0,250);
+  if(!fHistQMaxOverCharge) fHistQMaxOverCharge = new TH1F("QMaxOverCharge","QMaxOverCharge",50,0,1);
 
 
   Int_t   slice = block->GetSubDetector();
@@ -191,20 +191,13 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
       if (contCol)
 	contCol->Fill(cos*sp->fX - sin*sp->fY, sin*sp->fX + cos*sp->fY, sp->fZ, sp->fCharge);
 
+
       fHistCharge->Fill(sp->fCharge);
       fHistQMax->Fill(sp->fQMax);
       fHistQMaxOverCharge->Fill(((Float_t)sp->fQMax)/((Float_t)sp->fCharge));
     }
   }
 
-  Int_t icd = 1;
-  fCanvas->cd(icd++);
-  fHistCharge->Draw();
-  fCanvas->cd(icd++);
-  fHistQMax->Draw();
-  fCanvas->cd(icd++);
-  fHistQMaxOverCharge->Draw();
-  fCanvas->cd();
 
   cont->ElementChanged();
   contCol->ElementChanged();
@@ -214,4 +207,21 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
 
 }
 
+void AliHLTEveTPC::DrawHistograms() {
+  //See header file for documentation
+  if (!fCanvas) {
+    fCanvas = CreateCanvas("TPC QA", "TPC QA");
+    fCanvas->Divide(2, 2);
+  }
+  
+  Int_t icd = 1;
+  fCanvas->cd(icd++);
+  fHistCharge->Draw();
+  fCanvas->cd(icd++);
+  fHistQMax->Draw();
+  fCanvas->cd(icd++);
+  fHistQMaxOverCharge->Draw();
+  fCanvas->cd();
+  
 
+}

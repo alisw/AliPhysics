@@ -44,8 +44,11 @@ private:
   /** Create point set array for colour coded clusters */
   TEvePointSetArray * CreatePointSetArray();
 
-  /** Proces clusters block */
+  /** Process clusters block */
   Int_t ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet * cont, TEvePointSetArray * contCol );
+
+  /** Draw the TPC histograms */
+  void DrawHistograms();
 
   TEvePointSet * fEveClusters;          //Clusters pointset
   TEvePointSetArray * fEveColClusters;  //Color coded clusters pointset

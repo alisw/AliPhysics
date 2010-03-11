@@ -205,12 +205,12 @@ Int_t AliEveHOMERManager::CreateEveSourcesList() {
 
   //  fStateHasChanged = kTRUE;
   
-  HLTInfo(Form("iResult XXX %d", iResult));
+  HLTDebug(Form("iResult XXX %d", iResult));
   if ( iResult )
     return iResult;
 
 
-  HLTInfo(Form("iResult %d", iResult));
+  HLTDebug(Form("iResult %d", iResult));
   if (fSrcList) {
     HLTInfo(Form("delete source list", iResult));
     DestroyElements();
@@ -229,10 +229,13 @@ Int_t AliEveHOMERManager::CreateEveSourcesList() {
     
     AddElement(fSrcList);
   }
-
-  HLTInfo(Form("createbytype", iResult));
+  
+  //HLTInfo(Form("createbytype", iResult));
   fSrcList->CreateByDet();
-  HLTInfo(Form("did it", iResult));    
+  
+  HLTDebug(Form("Done createing source list %d", iResult));    
+  
+  
   
   return iResult;
 }
@@ -352,10 +355,7 @@ Int_t AliEveHOMERManager::NextHOMEREvent() {
   TIter anext(GetAsyncBlockList());
 
   while ( (block = (AliHLTHOMERBlockDesc*)anext()) ) {
-    HLTInfo("Process block");
     ProcessBlock(block);
-    HLTInfo("Processed block");
-    
   }
   
   UpdateDisplay();
@@ -380,7 +380,6 @@ void  AliEveHOMERManager::UpdateDisplay() {
 
 
   // -- Set EventID in Window Title  
-
   TString winTitle("Eve Main Window -- Event ID : ");
   winTitle += Form("0x%016X ", GetEventID() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);

@@ -76,7 +76,7 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   else if ( !block->GetDataType().CompareTo("ROOTHIST") ) {      
     if( !fCanvas ) { 
       fCanvas = CreateCanvas("Primary Vertex", "Primary Vertex");
-      fCanvas->Divide(2, 2);
+      fCanvas->Divide(3, 2);
     }
     ProcessHistograms( block , fCanvas);
   }
@@ -94,7 +94,6 @@ void AliHLTEveHLT::UpdateElements() {
 void AliHLTEveHLT::ResetElements(){
     //See header file for documentation
   if(fTrackList) fTrackList->DestroyElements();
-
   fHistoCount = 0;
 
 }

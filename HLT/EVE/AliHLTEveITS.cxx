@@ -52,7 +52,10 @@ void AliHLTEveITS::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
  
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
-    if(!fCanvas)  fCanvas = CreateCanvas(Form("%s QA",fName.Data()), Form("%s QA", fName.Data()));
+    if(!fCanvas) {  
+      fCanvas = CreateCanvas(Form("%s QA",fName.Data()), Form("%s QA", fName.Data()));
+      fCanvas->Divide(3, 2);
+    }
     AddHistogramsToCanvas( block , fCanvas, fHistoCount);
   } 
 
@@ -64,7 +67,6 @@ void AliHLTEveITS::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     ProcessClusters(block, fPointSet);
   }
 }
-
 
 
 void AliHLTEveITS::UpdateElements() {
