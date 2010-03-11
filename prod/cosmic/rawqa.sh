@@ -12,7 +12,6 @@
 
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
-export YEAR=10
 # ---------------------------------------
 kill -9 `ps | grep aliroot | awk '{print $1}'`
 
@@ -33,9 +32,8 @@ VERSION=1.0
 TITLE="Standalone QA checking of Grid rawdata chunks. v$VERSION"
 
 # Retrieve the list of chunks from AliEn.......
-export BASEDIR="/alice/data/20"$YEAR/LHC${YEAR}*
-PATTERN="$RUNNUM/raw/${YEAR}*${RUNNUM}*.root"
-#aliensh -c "gbbox find $BASEDIR $PATTERN" | head --lines=-1 > collection.tmp
+export BASEDIR="/alice/data/20*"
+PATTERN="$RUNNUM/raw/*${RUNNUM}*.root"
 aliensh -c "gbbox find $BASEDIR $PATTERN" > collection.tmp
 
 [ `ls -al collection.tmp | awk '{print $5}'` -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
@@ -66,6 +64,7 @@ PROGRAM=aliroot #`cat $tempfile`
 for filename in $CHUNKS; do
      CHUNK=`basename $filename | cut -d "." -f 1,2`
      BEG=`expr index "$CHUNK" .`
+     echo !!!!!!!!!!!!! $BEG
      BEG=`expr $BEG - 4`
      SUBCHUNK=${CHUNK:$BEG}
      echo "Running QA for chunk $filename. Outputs will be stored in "$RUNNUM"/"$CHUNK".   $SUBCHUNK"
