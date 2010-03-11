@@ -53,7 +53,7 @@ class AliMuonInfoStoreMC : public AliMuonInfoStoreRD {
   Double_t Weight()              const { return fWeight; }
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
-  static const Int_t NSources()      { return fgkNSources;             }
+  const static Int_t NSources()      { return fgkNSources;             }
 
  private:
 

@@ -30,7 +30,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
   Int_t DimuSource() const { return fSource; }
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
-  static const Int_t NSources()      { return fgkNSources;             }
+  const static Int_t NSources()      { return fgkNSources;             }
 
 
  private:

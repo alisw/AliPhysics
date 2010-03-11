@@ -44,7 +44,7 @@ class AliMuonInfoStoreRD : public TObject {
   Bool_t MuonSelection();
 
   static const char* StdBranchName()                  { return fgkStdBranchName.Data(); }
-  static const void SelectionCust(Double_t cuts[10])  { for (Int_t i=10; i--;) cuts[i]=fgCuts[i]; }
+  static void SelectionCust(Double_t cuts[10])  { for (Int_t i=10; i--;) cuts[i]=fgCuts[i]; }
   static void SetSelectionCuts(Double_t cuts[10]) { for (Int_t i=10; i--;) fgCuts[i]=cuts[i]; }
 
  private:
