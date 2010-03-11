@@ -37,7 +37,7 @@ ClassImp(AliAnalysisTaskProtons)
 AliAnalysisTaskProtons::AliAnalysisTaskProtons()
   : AliAnalysisTask(), fESD(0), fAOD(0), fMC(0),
     fListAnalysis(0), fListQA(0), fHistEventStats(0), 
-    fProtonAnalysis(0), fCutCanvas(0) {
+  fProtonAnalysis(0) {//, fCutCanvas(0) {
   //Dummy constructor
   
 }
@@ -46,7 +46,7 @@ AliAnalysisTaskProtons::AliAnalysisTaskProtons()
 AliAnalysisTaskProtons::AliAnalysisTaskProtons(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fAOD(0), fMC(0),
     fListAnalysis(0), fListQA(0), fHistEventStats(0), 
-    fProtonAnalysis(0), fCutCanvas(0) {
+  fProtonAnalysis(0) {//, fCutCanvas(0) {
   // Constructor
   
   // Define input and output slots here
@@ -122,7 +122,7 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   fListQA->Add(fProtonAnalysis->GetQAList());
   fListQA->Add(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertexQAList());
 
-  fCutCanvas = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetListOfCuts();
+  //fCutCanvas = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetListOfCuts();
 }
 
 //________________________________________________________________________
@@ -238,7 +238,7 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
   // Post output data.
   PostData(0, fListAnalysis);
   PostData(1, fListQA);
-  PostData(2, fCutCanvas);
+  //PostData(2, fCutCanvas);
 }      
 
 //________________________________________________________________________
