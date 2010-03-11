@@ -7,14 +7,25 @@
  * Usage: aliroot -b -q print-ESD-HLTdecision.C
  * </pre>
  *
+ * The input file can be a file on Grid like e.g.
+ * "alien:///alice/data/2009/LHC09d/000104321/ESDs/pass5/09000104321018.30/AliESDs.root"
+ * In that case you need a valid token in order to connect to the Grid.
+ * Use 'alien-token-init' from your alien installation.
+ *
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_programs
  */
-void print_ESD_HLTdecision(const char* esdFileName="AliESDs.root",
+int print_ESD_HLTdecision(const char* esdFileName="AliESDs.root",
 			   int minEvent=0, int maxEvent=-1)
 {
+
+  TString strfile=esdFileName;
+  if (strfile.Contains("://") && !strfile.Contains("local://")) {
+    TGrid::Connect("alien");
+  }
+
   TFile* esdFile=NULL;
-  if (esdFileName && esdFileName[0]!=0) esdFile=new TFile(esdFileName);
+  if (esdFileName && esdFileName[0]!=0) esdFile=TFile::Open(esdFileName);
   if (!esdFileName || esdFileName[0]==0 || esdFile->IsZombie()) {
     if (esdFileName && esdFileName[0]!=0)
       cerr << "can not open esd file " << esdFileName << endl;
@@ -74,4 +85,5 @@ void print_ESD_HLTdecision(const char* esdFileName="AliESDs.root",
     if (decision) decision->Print();
     else cout << "   no HLT decision found" << endl;
   }
+  return 0;
 }

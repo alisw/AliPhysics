@@ -11,6 +11,11 @@
  * For help: aliroot -b -q print-RAW-HLTdecision.C
  * </pre>
  *
+ * The input file can be a file on Grid like e.g.
+ * "alien:///alice/data/2009/LHC09d/000104321/raw/09000104321018.30.root"
+ * In that case you need a valid token in order to connect to the Grid.
+ * Use 'alien-token-init' from your alien installation.
+ *
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_programs
  */
@@ -19,6 +24,11 @@ void print_RAW_HLTdecision(const char* rawFileName,
 {
   AliHLTLogging log;
   log.SetGlobalLoggingLevel(0x7c);
+
+  TString strfile=rawFileName;
+  if (strfile.Contains("://") && !strfile.Contains("local://")) {
+    TGrid::Connect("alien");
+  }
 
   AliRawReader* rawReader=NULL;
   if (rawFileName && rawFileName[0]!=0) rawReader=AliRawReader::Create(rawFileName);
