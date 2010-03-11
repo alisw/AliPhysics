@@ -76,7 +76,7 @@ class AliMuonsHFHeader : public TNamed {
   void FillHistosDimuMC(TList *list, AliDimuInfoStoreMC* const dimuStoreMC);
 
   static const char* StdBranchName()    { return fgkStdBranchName.Data(); }
-  static const Bool_t IsEventSelected() { return fgIsEventSelected; }
+  const static Bool_t IsEventSelected() { return fgIsEventSelected; }
   static void SetAnaMode(Int_t anaMode=0)        { fgAnaMode=anaMode; }
   static void SetIsMC(Int_t isMC=kFALSE)         { fgIsMC   =isMC;    }
   static void SetSelectionCuts(Double_t cuts[3]) { for (Int_t i=3; i--;) fgCuts[i]=cuts[i]; }
