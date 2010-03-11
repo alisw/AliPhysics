@@ -12,8 +12,8 @@
 
 # SET THE FOLLOWING PARAMETERS IF NEEDED: 
 # ---------------------------------------
-YEAR=09
 DIALOG=`which dialog`
+PROGRAM=`which aliroot`
 # ---------------------------------------
 
 kill -9 `ps | grep aliroot | awk '{print $1}'`
@@ -33,8 +33,8 @@ VERSION=1.0
 TITLE="Standalone reconstruction of Grid rawdata chunks. v$VERSION"
 
 # Retrieve the list of chunks from AliEn.......
-export BASEDIR="/alice/data/20"$YEAR/LHC${YEAR}*
-PATTERN="$RUNNUM/raw/${YEAR}*${RUNNUM}*.root"
+export BASEDIR="/alice/data/20*"
+PATTERN="$RUNNUM/raw/*${RUNNUM}*.root"
 gbbox find $BASEDIR $PATTERN | head -n 500 > collection.tmp
 
 [ $(wc -l collection.tmp) -eq 0 ] && { echo "No chunks found for the given run"; exit 1; }
