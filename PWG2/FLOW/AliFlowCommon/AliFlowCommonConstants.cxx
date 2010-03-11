@@ -12,14 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/*
-$Log$
-*/ 
-
-#include <TNamed.h> 
-#include <TMath.h>
-#include "AliFlowCommonConstants.h" 
 // AliFlowCommonConstants:
 //
 // Constants for the common histograms in the flow analysis
@@ -29,6 +21,13 @@ $Log$
 //
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 // mod: Mikolaj Krzewicki, Nikhef (mikolaj.krzewicki@cern.ch)
+
+/*
+$Log$
+*/ 
+
+#include <TMath.h>
+#include "AliFlowCommonConstants.h" 
 
 ClassImp(AliFlowCommonConstants)
 
