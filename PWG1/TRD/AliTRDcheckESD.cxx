@@ -61,7 +61,7 @@ ClassImp(AliTRDcheckESD)
 
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
-const UChar_t AliTRDcheckESD::fgkNgraph[kNrefs] ={
+const UChar_t AliTRDcheckESD::fgkNgraph[AliTRDcheckESD::kNrefs] ={
 0, 4, 2, 10};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
