@@ -92,7 +92,7 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   //Histograms container
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
-  fOutputContainer->SetOwner();
+  fOutputContainer->SetOwner(kTRUE);
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - End\n");
  
   PostData(1,fOutputContainer);

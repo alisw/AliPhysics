@@ -662,8 +662,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   // Also fill some QA histograms
   //
 
-  TObjArray *cl = new TObjArray();
-
   Double_t bfield = 0.;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
 
@@ -672,7 +670,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     printf("This class not yet implemented for PHOS\n");
     abort();
   }
-  cl = GetAODEMCAL();
+  
+  TObjArray *cl = GetAODEMCAL();
   
   ////////////////////////////////////////////////
   //Start from tracks and get associated clusters 

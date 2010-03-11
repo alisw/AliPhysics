@@ -237,8 +237,11 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   }
   //Each event needs an empty branch
   Int_t nAODBranches = fAODBranchList->GetEntries();
-  for(Int_t iaod = 0; iaod < nAODBranches; iaod++)
-		fAODBranchList->At(iaod)->Clear();
+  for(Int_t iaod = 0; iaod < nAODBranches; iaod++){
+	  //fAODBranchList->At(iaod)->Clear();
+	  TClonesArray *tca = dynamic_cast<TClonesArray*> (fAODBranchList->At(iaod));
+	  if(tca) tca->Delete();
+  }
 
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);

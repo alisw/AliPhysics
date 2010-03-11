@@ -47,8 +47,9 @@ public:
   virtual void ConnectAODEMCALCells();
   virtual void ConnectInputOutputAODBranches();
   
-  virtual TList * GetCreateOutputObjects() { return (new TList) ;}
-  
+  virtual TList * GetCreateOutputObjects()      { return (new TList) ;}
+  //virtual TList * GetAnalysisOutputContainer()  { return fAnaOutContainer ;} 
+	
   virtual void AddToHistogramsName(TString add) { fAddToHistogramsName = add; }  
   virtual TString GetAddedHistogramsStringToName() {return fAddToHistogramsName ;}
   
@@ -232,6 +233,8 @@ public:
   AliMCAnalysisUtils       * fMCUtils; // MonteCarlo Analysis utils 
   AliNeutralMesonSelection * fNMS;     // Neutral Meson Selection
   
+  //TList * fAnaOutContainer;	// Temporal histogram output container, contents to be added to the main container passed to the main analysis frame
+
   //Histograms binning and range    
   Int_t   fHistoPtBins   ;  // Number of bins in pt axis
   Float_t fHistoPtMax    ;  // Maximum value of pt histogram range

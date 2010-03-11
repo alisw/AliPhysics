@@ -206,7 +206,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   }
   
   //Get List with tracks or clusters  
-  TObjArray * partList = new TObjArray();
+  TObjArray * partList = 0x0;
   if(fDetector == "CTS") partList = GetAODCTS();
   else if(fDetector == "EMCAL") partList = GetAODEMCAL();
   else if(fDetector == "PHOS") partList = GetAODPHOS();

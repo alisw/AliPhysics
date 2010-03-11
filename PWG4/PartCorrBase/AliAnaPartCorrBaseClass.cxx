@@ -50,6 +50,7 @@ ClassImp(AliAnaPartCorrBaseClass)
     fAODObjArrayName(""), fAddToHistogramsName(""),
     fAODCaloCells(0x0),//fAODCaloClusters(0x0),  
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
+	//fAnaOutContainer(0x0),
     fHistoPtBins(0),   fHistoPtMax(0.),   fHistoPtMin(0.),
     fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
     fHistoEtaBins(0),  fHistoEtaMax(0.),  fHistoEtaMin(0.),
@@ -57,13 +58,7 @@ ClassImp(AliAnaPartCorrBaseClass)
 	fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.)
 {
   //Default Ctor
-  
-  fReader  = new AliCaloTrackReader();
-  fCaloPID = new AliCaloPID();
-  fFidCut  = new AliFiducialCut();
-  fIC      = new AliIsolationCut();
-  fMCUtils = new AliMCAnalysisUtils();
-  
+    
   //Initialize parameters
   InitParameters();
 }
@@ -82,6 +77,7 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   //fAODCaloClusters(new TClonesArray(*abc.fAODCaloClusters)),
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
   fCaloPID(abc.fCaloPID), fFidCut(abc.fFidCut), fIC(abc.fIC),fMCUtils(abc.fMCUtils), fNMS(abc.fNMS),
+  //fAnaOutContainer(abc.fAnaOutContainer),
   fHistoPtBins(abc.fHistoPtBins),     fHistoPtMax(abc.fHistoPtMax),     fHistoPtMin(abc.fHistoPtMin),
   fHistoPhiBins(abc.fHistoPhiBins),   fHistoPhiMax(abc.fHistoPhiMax),   fHistoPhiMin(abc.fHistoPhiMin),
   fHistoEtaBins(abc.fHistoEtaBins),   fHistoEtaMax(abc.fHistoEtaMax),   fHistoEtaMin(abc.fHistoEtaMin),
@@ -117,7 +113,9 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   fIC      = abc.fIC;
   fMCUtils = abc.fMCUtils;
   fNMS     = abc.fNMS;
-  
+	
+  //fAnaOutContainer     = abc.fAnaOutContainer;
+	
   fInputAODBranch      = new TClonesArray(*abc.fInputAODBranch) ;
   fInputAODName        = abc.fInputAODName;
   fOutputAODBranch     = new TClonesArray(*abc.fOutputAODBranch) ;
@@ -160,6 +158,11 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
     delete fAODCaloCells ;
   }
   
+//  if(fAnaOutContainer){
+//	fAnaOutContainer->Clear() ; 
+//	delete fAnaOutContainer ;
+//  }
+		
   if(fReader)  delete fReader ;
   if(fCaloPID) delete fCaloPID ;
   if(fFidCut)  delete fFidCut ;
@@ -471,16 +474,21 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fMinPt = 0.1  ; //Min pt in particle analysis
   fMaxPt = 300. ; //Max pt in particle analysis
 
-  fCaloPID = new AliCaloPID ;  
-  fFidCut = new AliFiducialCut;
-  fIC = new AliIsolationCut;
-  fNMS = new AliNeutralMesonSelection;
-  fNewAOD = kFALSE ;
-  fOutputAODName = "PartCorr";
-  fOutputAODClassName = "AliAODPWG4Particle";
-  fInputAODName = "PartCorr";
+  fReader  = new AliCaloTrackReader();
+  fCaloPID = new AliCaloPID();
+  fFidCut  = new AliFiducialCut();
+  fIC      = new AliIsolationCut();
+  fMCUtils = new AliMCAnalysisUtils();	
+  fNMS     = new AliNeutralMesonSelection;
+  
+  //fAnaOutContainer = new TList();
+	
+  fNewAOD              = kFALSE ;
+  fOutputAODName       = "PartCorr";
+  fOutputAODClassName  = "AliAODPWG4Particle";
+  fInputAODName        = "PartCorr";
   fAddToHistogramsName = "";
-  fAODObjArrayName="Ref";
+  fAODObjArrayName     = "Ref";
 	  
   //Histogram settings
   fHistoPtBins    = 240 ;

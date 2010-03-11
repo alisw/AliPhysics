@@ -54,19 +54,18 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   TString fInputAODGammaName;    //Input AOD gamma name
   TList ** fEventsList;          //event list for mixing 
 
+  Int_t fNVtxZBin;               //Number of vertex z cut
+  Int_t fNCentBin;               //Number of centrality cut
+  Int_t fNRpBin;                 //Number of reaction plane cut
+  Int_t fNBadChDistBin;          //Number of bad channel dist cut
+  Int_t fNpid;                   //Number of PID cut
+  Int_t fNmaxMixEv;              //buffer size events to be mixed
+
   Double_t *fVtxZCut;            //[fNVtxZBin] vtertx z cut
   Double_t *fCent;               //[fNCentBin] centrality cut
   Double_t *fRp;                 //[fNRpBin] reaction plane cut
   Int_t *fBadChDist;             //[fNBadChDistBin] bad channel dist
 
-  Int_t fNVtxZBin;               //Number of vertex z cut
-  Int_t fNCentBin;               //Number of centrality cut
-  Int_t fNRpBin;                 //Number of reaction plane cut
- 
-  Int_t fNBadChDistBin;          //Number of bad channel dist cut
-  Int_t fNpid;                   //Number of PID cut
-
-  Int_t fNmaxMixEv;              //buffer size events to be mixed
   Double_t fPi0Mass;             //nominal pi0 mass
   Double_t fPi0MassWindow;       //pi0 mass windows
   Double_t fPi0OverOmegaPtCut;   //pi0 Pt over omega pt cut

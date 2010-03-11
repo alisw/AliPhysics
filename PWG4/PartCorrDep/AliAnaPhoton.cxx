@@ -165,7 +165,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   // store them in outputContainer
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("PhotonHistos") ; 
-  
+  outputContainer->SetOwner(kFALSE);
+	
   Int_t nptbins  = GetHistoPtBins();
   Int_t nphibins = GetHistoPhiBins();
   Int_t netabins = GetHistoEtaBins();
@@ -434,7 +435,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 {
   //Do analysis and fill aods
   //Search for photons in fCalorimeter 
-  TObjArray * pl = new TObjArray(); 
+  TObjArray * pl = 0x0; 
   
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 
@@ -617,6 +618,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
   }//loop
   
+  delete [] indexConverted;
+	
   if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD()  End fill AODs \n");  
   
 }

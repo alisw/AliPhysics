@@ -1862,6 +1862,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s clusters %d\n", imod, fCalorimeter.Data(), nClustersInModule[imod]); 
 		fhNClustersMod[imod]->Fill(nClustersInModule[imod]);
 	}
+	delete [] nClustersInModule;
 	
 	//----------------------------------------------------------
 	// CALOCELLS
@@ -2038,7 +2039,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s cells %d\n", imod, fCalorimeter.Data(), nCellsInModule[imod]); 
 		fhNCellsMod[imod]->Fill(nCellsInModule[imod]) ;
 	}
-
+	delete [] nCellsInModule;
+	
 	if(GetDebug() > 0)
 		printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - End \n");
 }
@@ -2521,11 +2523,11 @@ void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
 		if(fCalorimeter == "EMCAL"){ 
 			((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSClusters(caloClustersPHOS);
-			caloClustersEMCAL = refArray;
+			caloClustersEMCAL = new TRefArray(*refArray);
 		}
 		else if(fCalorimeter == "PHOS") { 
 			((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALClusters (caloClustersEMCAL);
-			caloClustersEMCAL = refArray;
+			caloClustersPHOS = new TRefArray(*refArray);
 		}
 		
 		//Fill histograms with clusters
@@ -2606,6 +2608,9 @@ void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
 				   cellsPHOS->GetNumberOfCells(),caloClustersPHOS->GetEntriesFast(),sumCellEnergyPHOS,sumClusterEnergyPHOS);
 		}
 	}//AOD	
+	
+	delete caloClustersEMCAL;
+	delete caloClustersPHOS;
 	
 }
 
