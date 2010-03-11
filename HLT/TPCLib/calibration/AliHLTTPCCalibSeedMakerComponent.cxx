@@ -207,7 +207,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	 
 	  AliRieman rieman(element->GetNumberOfPoints());
 	  rieman.Reset();    
-          AliTPCseed *seed = 0x0;
+          //AliTPCseed *seed = 0x0;
           Double_t param[5]; for(Int_t i=0; i<5;  i++) param[i] = 0.;
           Double_t cov[15];  for(Int_t i=0; i<15; i++) cov[i]   = 0.;
           Double_t xmin  = 1000.;
@@ -291,7 +291,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	  
 	  
 	  offClusterArray->Clear();	
-          HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
+          //HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", seed, xmin, alpha, param[0], cov[0]);
 	  nTracks++;
 
       }// end of vector track loop           
