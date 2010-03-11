@@ -157,7 +157,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     anaphoton1->SwitchOnFiducialCut();
     anaphoton1->SetFiducialCut(fidCut1stYear);
   }
-  anaphoton1->SwitchOnTrackMatchRejection();
+  //anaphoton1->SwitchOnTrackMatchRejection();
   if(!data.Contains("delta")) anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   else                        anaphoton1->SetInputAODName (Form("PhotonsForIM%s",calorimeter.Data()));
   //Set Histograms bins and ranges
@@ -481,16 +481,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->SetReader(reader);//pointer to reader
   //if(!data.Contains("delta")) maker->AddAnalysis(qa,0);
   maker->AddAnalysis(anaphoton1,0);
-//  maker->AddAnalysis(anapi0,1);
-//  maker->AddAnalysis(anaphoton2,2);
-//  maker->AddAnalysis(anaisol,3);
-//  maker->AddAnalysis(anacorrjet,4);
-//  maker->AddAnalysis(anacorrhadron,5);
-//  maker->AddAnalysis(anacorrisohadron,6);
-//  maker->AddAnalysis(anapi0ebe,7);
-//  maker->AddAnalysis(anaisolpi0,8);
-//  maker->AddAnalysis(anacorrhadronpi0,9);
-//  maker->AddAnalysis(anacorrhadronisopi0,10);
+  maker->AddAnalysis(anapi0,1);
+  maker->AddAnalysis(anaphoton2,2);
+  maker->AddAnalysis(anaisol,3);
+  maker->AddAnalysis(anacorrjet,4);
+  maker->AddAnalysis(anacorrhadron,5);
+  maker->AddAnalysis(anacorrisohadron,6);
+  maker->AddAnalysis(anapi0ebe,7);
+  maker->AddAnalysis(anaisolpi0,8);
+  maker->AddAnalysis(anacorrhadronpi0,9);
+  maker->AddAnalysis(anacorrhadronisopi0,10);
 //  maker->AddAnalysis(anaomegaToPi0Gamma,11);   
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
