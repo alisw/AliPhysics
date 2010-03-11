@@ -38,9 +38,12 @@ AliAnalysisTaskProtons *AddTaskProtons(Bool_t kAnalyzeMC = kFALSE,
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWG2BaryonRatioAnalysis";
-  AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("protonhist", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *cout_proton = mgr->CreateContainer("outputList", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *cout_proton_QA = mgr->CreateContainer("outputQAList", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+
   mgr->ConnectInput(taskproton, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskproton, 0, cout_proton);
+  mgr->ConnectOutput(taskproton, 1, cout_proton_QA);
   
   // Return task pointer at the end
   return taskproton;

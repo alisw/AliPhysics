@@ -5,7 +5,7 @@ AliProtonAnalysis *GetProtonAnalysisObject(const char* analysisLevel = "ESD",
 					   const char* pidMode = "Bayesian",
 					   Bool_t kUseOnlineTrigger = kFALSE,
 					   Bool_t kUseOfflineTrigger = kFALSE) {
-  gROOT->LoadMacro("configProtonAnalysisBaseObject.C");  
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/configProtonAnalysisBaseObject.C");  
   //Function to setup the AliProtonAnalysis object and return it
   AliProtonAnalysisBase *baseAnalysis = GetProtonAnalysisBaseObject(analysisLevel,kAnalyzeMC,esdAnalysisType,pidMode,kUseOnlineTrigger,kUseOfflineTrigger);
 

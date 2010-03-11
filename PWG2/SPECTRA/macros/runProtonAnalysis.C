@@ -135,16 +135,16 @@ void runLocal(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+  /*AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());
+                                                            outputFilename.Data());*/
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
-  mgr->ConnectOutput(taskProtons,2,coutput3);
+  //mgr->ConnectOutput(taskProtons,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -247,16 +247,16 @@ void runInteractive(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+  /*AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());
+                                                            outputFilename.Data());*/
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
-  mgr->ConnectOutput(taskProtons,2,coutput3);
+  //mgr->ConnectOutput(taskProtons,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
@@ -349,16 +349,16 @@ void runBatch(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+  /*AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());
+                                                            outputFilename.Data());*/
   
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
-  mgr->ConnectOutput(taskProtons,2,coutput3);
+  //mgr->ConnectOutput(taskProtons,2,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("grid",chain);
@@ -442,16 +442,16 @@ void runProof(const char* mode = "ESD",
                                                             TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
                                                             outputFilename.Data());
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
+  /*AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("cutCanvas",
                                                             TCanvas::Class(),
 							    AliAnalysisManager::kOutputContainer,
-                                                            outputFilename.Data());
+                                                            outputFilename.Data());*/
 
   //____________________________________________//
   mgr->ConnectInput(taskProtons,0,cinput1);
   mgr->ConnectOutput(taskProtons,0,coutput1);
   mgr->ConnectOutput(taskProtons,1,coutput2);
-  mgr->ConnectOutput(taskProtons,3,coutput3);
+  //mgr->ConnectOutput(taskProtons,3,coutput3);
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
 
