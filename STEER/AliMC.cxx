@@ -144,6 +144,7 @@ void  AliMC::ConstructGeometry()
 	return;
       }
     }
+    gMC->SetRootGeometry();
   }else{
     // Create modules, materials, geometry
     if (!gGeoManager) new TGeoManager("ALICE", "ALICE geometry");
