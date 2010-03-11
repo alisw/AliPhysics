@@ -596,7 +596,7 @@ AliRecoParam::EventSpecie_t AliQAManager::GetEventSpecieFromESD()
       AliESDEvent * esd    = new AliESDEvent() ;
       esd->ReadFromTree(esdTree) ;
       esdTree->GetEntry(0) ; 
-      runtype = AliRecoParam::ConvertIndex(esd->GetEventType()) ; 
+      runtype = AliRecoParam::Convert(esd->GetEventType()) ; 
     }
   } else {
     AliError("AliESDs.root not found") ; 
