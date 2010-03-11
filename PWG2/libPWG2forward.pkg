@@ -14,7 +14,8 @@ SRCS		=  FORWARD/analysis/AliFMDAnaParameters.cxx	\
 		   FORWARD/analysis/AliFMDAnalysisTaskDndeta.cxx         \
 		   FORWARD/analysis/AliFMDAnalysisTaskSE.cxx       \
 		   FORWARD/analysis/AliFMDAnalysisTaskGenerateCorrection.cxx \
-		   FORWARD/analysis/AliFMDDndeta.cxx
+		   FORWARD/analysis/AliFMDDndeta.cxx           \
+                   FORWARD/analysis/AliFMDAnalysisTaskBFCorrelation.cxx
 
 
 HDRS		=  $(SRCS:.cxx=.h) 
