@@ -127,21 +127,21 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
     {
       Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
       Float_t maxf = TMath::MaxElement(   bunchvector.at(index).GetLength(),  fReversed );
-      
+      short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
+      short timebinOffset = maxampindex - (bunchvector.at( index ).GetLength()-1); 
+	     
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
 	{
 	  //	  cout << __FILE__ << __LINE__ <<":, maxamp = " << maxamp << ", ped = "<< ped  << ",. maxf = "<< maxf << ", maxampindex = "<< maxampindex  << endl;
-	  return  AliCaloFitResults( maxamp, ped,  -1, maxf,   maxampindex, -1, -1 );
+	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit );
  	}
       
       int first;
       int last;
       
       if ( maxf > fAmpCut )
-	{
-	  
-
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxampindex -  bunchvector.at(index).GetStartBin(), &first, &last);
+	{	  
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev, &first, &last);
 	  int nsamples =  last - first;
 	  if( ( nsamples  )  >= fNsampleCut )
 	    {
@@ -150,8 +150,6 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      int pfindex = n - fNsampleCut; 
 	      pfindex = pfindex > SAMPLERANGE ? SAMPLERANGE : pfindex;
 
-	      short timebinOffset = maxampindex - (bunchvector.at( index ).GetLength()-1); 
-	     
 	      int dt =  maxampindex - startbin -2; 
 
 	      //    cout << __FILE__ << __LINE__ <<"\t The coarse estimated t0 is " << ScanCoarse( &fReversed[dt] , n ) << endl;
@@ -222,17 +220,23 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      
 	      //      tof = tof/fAmpA[tmpindex];
 
-  
-	      return AliCaloFitResults( maxamp, ped , -1, fAmpA[tmpindex], tof, -2, -3 ); 
+	      
+	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kDummy, fAmpA[tmpindex], tof, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
+					AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );  
 	    }
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped , -5, maxf, -6, -7, -8 ); 
+	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
+					AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
+	}
+      else 
+	{
+	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit);
 	}
     }
    //  cout << __FILE__ << __LINE__ <<  "WARNING, returning amp = -1 "  <<  endl;
-  return  AliCaloFitResults(-1, -1);
+  return  AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid);
 }
 
 
@@ -271,7 +275,7 @@ AliCaloRawAnalyzerPeakFinder::LoadVectors()
 	    {
 	      for(int m = 0; m < n ; m++ )
 		{
-		  cout << __FILE__ << __LINE__ << "i="<<i <<"\tj=" <<j << "\tm=" << m << endl;
+		  // cout << __FILE__ << __LINE__ << "i="<<i <<"\tj=" <<j << "\tm=" << m << endl;
  
 		  fscanf(fp, "%lf\t", &fPFAmpVectors[i][j][m] );
 		  //		  fPFAmpVectorsCoarse[i][j][m] = 1;

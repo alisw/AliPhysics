@@ -27,7 +27,7 @@
 #include "AliCaloFastAltroFitv0.h"
 #include "AliCaloFitResults.h"
 #include "AliCaloBunchInfo.h"
-
+#include "TMath.h"
 #include <iostream>
 
 using namespace std;
@@ -64,22 +64,16 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
   if( index >= 0)
     {
       Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
-      int first;
-      int last;
+      int first = 0;
+      int last = 0;
+      Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-
-      double maxf =  maxamp - ped;
 
       if ( maxf > fAmpCut )
 	{
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
 	  int nsamples =  last - first + 1;
-
-	  //amp  = dAmp;
-	  //	  time = dTime * GetRawFormatTimeBinWidth();
-
-	  //	  int length =  bunchvector.at(index).GetLength(); 
 
 	  if( ( nsamples  )  >= fNsampleCut )  
 	    {
@@ -89,15 +83,6 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 		{
 		  ordered[i] = fReversed[first + i];
 		}
-	      /*
-	      cout << __FILE__ << __LINE__ << "!!!!!!! USING these samples" << endl; 
-	      for(int i=0; i < nsamples ; i++ )
-		{
-		  ordered[i] = fReversed[first + nsamples -i -1];
-		  cout << ordered[i] << "\t" ;
-		}
-	      cout << __FILE__ << __LINE__ << "!!!!!!! Done printing" << endl; 
-	      */
 
 	      Double_t eSignal = 1; // nominal 1 ADC error
 	      Double_t dAmp = maxf; 
@@ -110,11 +95,20 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	      AliCaloFastAltroFitv0::FastFit(fXAxis, ordered , nsamples,
 					     eSignal, dTau, dAmp, eAmp, dTime, eTime, chi2);
 	   
-	      return AliCaloFitResults(maxamp, ped, -1,  dAmp, dTime+timebinOffset,  chi2,  -3 );
+	      return AliCaloFitResults(maxamp, ped, AliCaloFitResults::kDummy,  dAmp, dTime+timebinOffset,  chi2,  AliCaloFitResults::kDummy,
+				       AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+	    } // samplecut
+	  else 
+	    {
+	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
+					AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
-
+	} // ampcut
+      else 
+	{
+	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit);
 	}
-    }    
-  
-  return AliCaloFitResults(9999 , 9999 , 9999,  9999, 9999, 9999, 9999 );
+    } // bunch index    
+
+  return AliCaloFitResults(AliCaloFitResults::kInvalid , AliCaloFitResults::kInvalid);
 }

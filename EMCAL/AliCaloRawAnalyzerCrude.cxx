@@ -48,7 +48,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
   // Evaluation of signal parameters
   if( bunchvector.size()  <=  0 )
     {
-      return AliCaloFitResults(9999, 9999, 9999, 9999 , 9999, 9999, 9999 );
+      return AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid , AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid );
     }
 
   Int_t amp = 0;
@@ -72,7 +72,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 
   //:EvaluatePedestal(const UShort_t * const data, const int length )
   //  double ped = EvaluatePedestal(sig, length) ;
-  return  AliCaloFitResults(amp, ped, 9999, amp - ped, tof, 9999, 9999 );
+  return  AliCaloFitResults(amp, ped, AliCaloFitResults::kNoFit, amp - ped, tof, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit );
   
 } //end Crude
 

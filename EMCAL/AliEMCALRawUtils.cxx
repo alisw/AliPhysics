@@ -332,6 +332,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   reader->Select("EMCAL",0,43); // 43 = AliEMCALGeoParams::fgkLastAltroDDL
 
   // fRawAnalyzer setup
+  fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done
   fRawAnalyzer->SetAmpCut(fNoiseThreshold);
   fRawAnalyzer->SetFitArrayCut(fNoiseThreshold);
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
@@ -409,11 +410,14 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	
 	if (ampEstimate > fNoiseThreshold) { // something worth looking at
 	  
-	  time = timeEstimate; 
+	  time = timeEstimate; // maxrev in AliCaloRawAnalyzer speak; comes with an offset w.r.t. real timebin
+	  Int_t timebinOffset = bunchlist.at(bunchIndex).GetStartBin() - (bunchlist.at(bunchIndex).GetLength()-1); 
+
 	  amp = ampEstimate; 
 	  
 	  if ( nsamples > 1 ) { // possibly something to fit
 	    FitRaw(first, last, amp, time);
+	    time += timebinOffset;
 	  }
 	  
 	  if ( amp>0 && time>0 ) { // brief sanity check of fit results
@@ -558,7 +562,7 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       TGraph *gSig =  new TGraph( nsamples); 
       for (int i=0; i<nsamples; i++) {
 	Int_t timebin = firstTimeBin + i;    
-	gSig->SetPoint(timebin, timebin, fRawAnalyzer->GetReversed(timebin)); 
+	gSig->SetPoint(i, timebin, fRawAnalyzer->GetReversed(timebin)); 
       }
 
       TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);

@@ -44,7 +44,9 @@ ClassImp( AliCaloRawAnalyzerLMS )
 AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer("Chi Square Fit", "LMS"),
 						 fkEulerSquared(7.389056098930650227),
 						 fSig(0),
-						 fTf1(0)
+						 fTf1(0),
+						 fTau(2.35),
+						 fFixTau(kTRUE)
 {
   //comment
   for(int i=0; i < MAXSAMPLES; i++)
@@ -52,9 +54,15 @@ AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer("Chi Square 
       fXaxis[i] = i;
     }
   
-  fTf1 = new TF1( "myformula", "[0]*((x - [1])/2.35)^2*exp(-2*(x -[1])/2.35)",  0, 30 ); 
-  //  fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^[3]*exp(-[3]*(x -[1])/[2])",  0, 30 ); 
-
+  fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
+  if (fFixTau) {
+    fTf1->FixParameter(2, fTau);
+  }
+  else {
+    fTf1->ReleaseParameter(2); // allow par. to vary
+    fTf1->SetParameter(2, fTau);
+  }
+ 
 }
 
 
@@ -79,29 +87,31 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
       int first;
       int last;
       Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
+      short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
+      short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
 
       if ( maxf > fAmpCut )
 	{
-	  short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
-	  short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
 	  int nsamples =  last - first + 1;
 	  
-	  if( ( nsamples  )  > fNsampleCut )
+	  if( ( nsamples  )  >= fNsampleCut )
 	    {
 	      
 	      TGraph *graph =  new TGraph(  nsamples, fXaxis,  &fReversed[first] );
 	      fTf1->SetParameter(0, maxf*fkEulerSquared );
 	      fTf1->SetParameter(1, 0.2);
-	      //	      fTf1->SetParameter(2,  2);
-	      //	      fTf1->SetParameter(2,  3); 
-	    
-	      //     return   AliCaloFitResults( -1 , -1 , -1, -1, -1, -1 , -1); 
+
+	      if (fFixTau) {
+		fTf1->FixParameter(2, fTau);
+	      }
+	      else {
+		fTf1->ReleaseParameter(2); // allow par. to vary
+		fTf1->SetParameter(2, fTau);
+	      }
 
 	      Short_t tmpStatus =  graph->Fit(fTf1, "Q0RW");
 	     
-	      //       return   AliCaloFitResults( -1 , -1 , -1, -1, -1, -1 , -1); 
- 
 	      if( fVerbose == true )
 		{
 		  AliCaloRawAnalyzer::PrintBunch( bunchvector.at(index) ); 
@@ -110,31 +120,28 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	      
 	        delete graph;
 		return AliCaloFitResults( maxamp, ped ,    tmpStatus,  
-					 fTf1->GetParameter(0)/fkEulerSquared, 
-					 fTf1->GetParameter(1) + timebinOffset,  
-					 fTf1->GetChisquare(), 
-					 fTf1->GetNDF());
-		
-		
+					  fTf1->GetParameter(0)/fkEulerSquared, 
+					  fTf1->GetParameter(1) + timebinOffset,  
+					  fTf1->GetChisquare(), 
+					  fTf1->GetNDF(),
+					  AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
+				
 		//     delete graph;
 	
 	    }
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped, -1, maxf, -1, -1, -1 );
+	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
+					AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
 	}
       else
 	{
-	  return AliCaloFitResults( maxamp , ped, -1, maxf, -1, -1, -1 );
+	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit);
 	}       
     }
-  else
-    {
-      return AliCaloFitResults( -99, -99 );
-    }
 
-  return AliCaloFitResults( -99, -99 );
+  return AliCaloFitResults( AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid );
   
 }
 
@@ -151,3 +158,4 @@ AliCaloRawAnalyzerLMS::PrintFitResult(const TF1 *f) const
   //  cout << __FILE__ << __LINE__ << "STATUS = " << f->GetStatus()  << ",.. !!!!" << endl << endl;
   cout << endl << endl;
 }
+

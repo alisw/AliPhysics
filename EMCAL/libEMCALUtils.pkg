@@ -10,6 +10,7 @@ AliCaloNeuralFit.cxx \
 AliCaloRawAnalyzer.cxx \
 AliCaloBunchInfo.cxx \
 AliCaloFitResults.cxx \
+AliCaloFitSubarray.cxx \
 AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \
 AliCaloRawAnalyzerPeakFinder.cxx \

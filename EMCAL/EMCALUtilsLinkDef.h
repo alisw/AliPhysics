@@ -13,6 +13,7 @@
 #pragma link C++ class AliCaloRawAnalyzer+;
 #pragma link C++ class AliCaloBunchInfo+;
 #pragma link C++ class AliCaloFitResults+;
+#pragma link C++ class AliCaloFitSubarray+;
 #pragma link C++ class AliCaloRawAnalyzerCrude+;
 #pragma link C++ class AliCaloRawAnalyzerNN+;
 #pragma link C++ class AliCaloRawAnalyzerLMS+;

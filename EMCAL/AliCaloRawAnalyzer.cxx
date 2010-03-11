@@ -40,6 +40,7 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
 										   fFitArrayCut(5),
 										   fAmpCut(4),
 										   fNsampleCut(5),
+										   fNsamplePed(3),
 										   fIsZerosupressed( false ),
 										   fVerbose( false )
 {
@@ -106,13 +107,22 @@ AliCaloRawAnalyzer::SelectSubarray( const Double_t *fData, const int length, con
       tmpfirst -- ;
     }
   
-  while(( tmplast ) <  length   && ( fData [tmplast] >  fFitArrayCut ))
+  while(( tmplast ) <  (length-1)   && ( fData [tmplast] >  fFitArrayCut ))
     {
       tmplast ++;
     }
-  
+
+
   *first = tmpfirst +1;
   *last =  tmplast -1;
+
+  int nsamples = *last - *first + 1;
+  if (nsamples < fNsampleCut) {
+    // keep edge bins (below threshold) also, for low # of samples case    
+    *first = tmpfirst;
+    *last =  tmplast; 
+  }
+
 }
 
 
@@ -145,16 +155,14 @@ AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * const data, const int /*le
 
   if( fIsZerosupressed == false ) 
     {
-      for(int i=0; i < 5; i++ )
+      for(int i=0; i < fNsamplePed; i++ )
 	{
 	  tmp += data[i];
 	}
-    }
+   }
 
-  //  cout << __FILE__ << __LINE__ << "XXXXXXXXXXX returning " <<   tmp/5 << endl;
-
-  return  tmp/5;
-}
+  return  tmp/fNsamplePed;
+ }
 
 
 short  
@@ -269,9 +277,10 @@ AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, 
 
 
 int
-AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last)
+AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, Float_t & maxf, short & maxamp, short & maxrev, Float_t & ped, int & first, int & last)
 { // method to do the selection of what should possibly be fitted
   int nsamples  = 0;
+  short maxampindex = 0;
   index = SelectBunch( bunchvector,  &maxampindex,  &maxamp ); // select the bunch with the highest amplitude unless any time constraints is set
 
   
@@ -284,12 +293,12 @@ AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunc
       if ( maxf > fAmpCut ) // possibly significant signal
 	{
 	  // select array around max to possibly be used in fit
-	  maxampindex -= bunchvector.at(index).GetStartBin(); // PTH - why isn't this index also reversed for call below?
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxampindex , &first, &last);
+	  maxrev = maxampindex - bunchvector.at(index).GetStartBin(); 
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
 
 	  // sanity check: maximum should not be in first or last bin
 	  // if we should do a fit
-	  if (first!=maxampindex && last!=maxampindex) {
+	  if (first!=maxrev && last!=maxrev) {
 	    // calculate how many samples we have 
 	    nsamples =  last - first + 1;	  
 	  }

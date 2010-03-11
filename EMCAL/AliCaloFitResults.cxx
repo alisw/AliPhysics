@@ -28,34 +28,55 @@
 // The signal was fitted sucessfully. fStatus might have a different meaning If other 
 // procedures than  A different meaning Fitting is applied 
 AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped, 
-				       const Short_t fitstatus, const Float_t  amp,  
-				       const Float_t t0,  const Float_t chi,  
-				       const Int_t ndf, Int_t minSig ) : fMaxSig(maxSig),
-									       fPed(ped), 
-									       fStatus(fitstatus),
-									       fAmpSig(amp),
-									       fT0(t0),
-									       fChi2Sig(chi),
-									       fNdfSig(ndf),
-									       fMinSig(minSig) 
+				     const Short_t fitstatus, const Float_t  amp,  
+				     const Float_t t0,  const Float_t chi,  
+				     const Int_t ndf, Int_t minSig,
+				     const AliCaloFitSubarray fitSubarray) : 
+  fMaxSig(maxSig),
+  fPed(ped), 
+  fStatus(fitstatus),
+  fAmpSig(amp),
+  fT0(t0),
+  fChi2Sig(chi),
+  fNdfSig(ndf),
+  fMinSig(minSig),
+  fFitSubarray(fitSubarray) 
 {
- 
- 
+}
+
+
+AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Float_t ped, 
+				     const Short_t fitstatus, const Float_t  amp,  
+				     const Float_t t0,  const Float_t chi,  
+				     const Int_t ndf, Int_t minSig ) : 
+  fMaxSig(maxSig),
+  fPed(ped), 
+  fStatus(fitstatus),
+  fAmpSig(amp),
+  fT0(t0),
+  fChi2Sig(chi),
+  fNdfSig(ndf),
+  fMinSig(minSig),
+  fFitSubarray(kDummy)  
+{
+
 }
 
 
 
 
-AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Int_t minSig) : fMaxSig(maxSig),
-										       fPed(-98),
-										       fStatus( -1 ),
-										       fAmpSig( -1 ), 
-										       fT0(-99),  
-										       fChi2Sig( -1 ),
-										       fNdfSig( -1),
-										       fMinSig (minSig)
+AliCaloFitResults::AliCaloFitResults(const Int_t maxSig, const Int_t minSig) : 
+  fMaxSig(maxSig),
+  fPed(kNoFit),
+  fStatus( kNoFit ),
+  fAmpSig( kNoFit ), 
+  fT0(kNoFit),  
+  fChi2Sig( kNoFit ),
+  fNdfSig( kNoFit),
+  fMinSig (minSig),
+  fFitSubarray(kNoFit)  
 {
-  
+
 }
 
 

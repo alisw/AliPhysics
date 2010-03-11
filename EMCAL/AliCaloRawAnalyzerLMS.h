@@ -37,6 +37,12 @@ class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
   virtual AliCaloFitResults  Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
   void PrintFitResult(const TF1 *f) const;
   
+  // shaper tau value, in time-bins, and flag for keeping tau fixed
+  Float_t GetTau() const { return fTau;};
+  void SetTau(Float_t f) { fTau = f; }; 
+  Bool_t GetFixTau() const { return fFixTau; }; 
+  void SetFixTau(Bool_t b) { fFixTau = b; }; 
+
  private:
   AliCaloRawAnalyzerLMS(const AliCaloRawAnalyzerLMS & );
   AliCaloRawAnalyzerLMS  & operator = (const AliCaloRawAnalyzerLMS  &);
@@ -46,7 +52,10 @@ class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
   TGraph *fSig;  // Signale holding the data to be fitted.
   TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
 
-  ClassDef(AliCaloRawAnalyzerLMS, 1)
+  Float_t fTau; // shaper tau, in time bins
+  Bool_t fFixTau; // flag if tau should be fix
+
+  ClassDef(AliCaloRawAnalyzerLMS, 2)
 
 };
 

@@ -22,12 +22,16 @@
 
 #include "Rtypes.h"
 
+#include "AliCaloFitSubarray.h"
+
 // Container class to hold results from fitting 
 // as well as other methods for
 // raw data signals extraction
 class  AliCaloFitResults
 {
  public:
+  enum kReturnCode {kDummy=-1, kCrude=-9, kNoFit=-99, kInvalid=-9999};// possible return values
+
   explicit AliCaloFitResults( const Int_t maxSig, 
 			      const Float_t ped, 
 			      const Short_t fitStatus, 
@@ -35,7 +39,17 @@ class  AliCaloFitResults
 			      const Float_t t0,
 			      const Float_t chi, 
 			      const Int_t ndf, 
-			      const Int_t minSig = -99); 
+			      const Int_t minSig, 
+			      const AliCaloFitSubarray fitSubarray); 
+
+  explicit AliCaloFitResults( const Int_t maxSig, 
+			      const Float_t ped, 
+			      const Short_t fitStatus, 
+			      const Float_t  amp, 
+			      const Float_t t0,
+			      const Float_t chi, 
+			      const Int_t ndf, 
+			      const Int_t minSig = kDummy); 
 
   explicit AliCaloFitResults( const Int_t maxSig, const Int_t minSig );
   //AliCaloFitResults( const Int_t maxSig, const Int_t minSig );
@@ -50,6 +64,7 @@ class  AliCaloFitResults
   Float_t   GetTof() const {  return fT0; }; 
   Float_t   GetChisSquare() const { return fChi2Sig;};
   Int_t  GetNdf() const { return fNdfSig; };
+  AliCaloFitSubarray  GetFitSubarray() const { return fFitSubarray; };
   
  private:
   AliCaloFitResults();
@@ -61,6 +76,7 @@ class  AliCaloFitResults
   Float_t    fChi2Sig;  //Chi Square of fit 
   Int_t   fNdfSig;   //Number of degrees of freedom of fit
   Int_t   fMinSig;   //Pedestal 
+  AliCaloFitSubarray fFitSubarray; // info on time-bin array used for the fitting
 };
 
 #endif
