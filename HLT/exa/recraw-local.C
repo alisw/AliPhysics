@@ -56,7 +56,6 @@ void recraw_local(const char *filename,
 
   // Reconstruction settings
   AliReconstruction rec;
-  rec.SetSpecificStorage("HLT/Calib/RecoParam", "local://$ALICE_ROOT/OCDB");
 
   if (minEvent>=0 || maxEvent>minEvent) {
     if (minEvent<0) minEvent=0;
