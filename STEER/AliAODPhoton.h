@@ -47,9 +47,12 @@ class AliAODPhoton : public AliVParticle {
     virtual void     Print(Option_t* /*option*/) const;
     
 // Dummy  
-    virtual Short_t Charge()      const { return 0;}
-    virtual const Double_t* PID() const { return NULL;}
-    virtual Int_t   GetLabel()    const { return -1;}
+    virtual Short_t Charge()        const { return 0;}
+    virtual const   Double_t* PID() const { return NULL;}
+    virtual Int_t   GetLabel()      const { return -1;}
+  // Dummy
+    virtual Int_t    PdgCode()      const {return 0;}
+
 //
     
     

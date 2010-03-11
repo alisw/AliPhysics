@@ -133,6 +133,8 @@ public:
   const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
   void SetNormDCAPrim(Float_t nd0, Float_t nd1){fNormDCAPrim[0] = nd0; fNormDCAPrim[1]=nd1;}
   const Double_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
+    // Dummy
+  Int_t    PdgCode() const {return 0;}
 
 protected:
   AliExternalTrackParam fParamN;  // external parameters of negative particle

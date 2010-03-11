@@ -180,7 +180,11 @@ public:
   Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta()));}
   Double_t Y() const { return (Pz()/E() != 1.) ? TMath::ATanH(Pz()/E()) : FLT_MAX; }
   Short_t  Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
+
+
+  // Dummy
   const Double_t *PID() const { return (Double_t*)0x0; }
+  Int_t    PdgCode() const {return 0;}
   
   /// Set the corresponding MC track number
   void  SetLabel(Int_t label) {fLabel = label;}

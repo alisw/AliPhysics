@@ -81,6 +81,9 @@ class AliAODJet : public AliVParticle {
     virtual Short_t Charge()      const { return 0;}
     virtual const Double_t* PID() const { return NULL;}
     virtual Int_t   GetLabel()    const { return -1;}
+  // Dummy
+    virtual Int_t    PdgCode()    const {return 0;}
+
 //
 
     // first only one bit for EMCAL and TRD, leave space for more

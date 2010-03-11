@@ -258,7 +258,9 @@ class AliAODTrack : public AliVTrack {
   void     SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void     SetType(AODTrk_t ttype) { fType=ttype; }
 
-
+  // Dummy
+  Int_t    PdgCode() const {return 0;}
+  
  private :
 
   // Momentum & position

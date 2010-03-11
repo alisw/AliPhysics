@@ -169,6 +169,7 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t M() const 
     {printf("Dummy function"); return (Double_t)-999.;}
   Int_t GetLabel() const {return -1;}
+  Int_t PdgCode()  const {return  0;}
  protected:
 
   Int_t    MatchToMC(Int_t pdgabs,TClonesArray *mcArray,Int_t dgLabels[10],Int_t ndg,Int_t ndgCk=0,Int_t *pdgDg=0) const;

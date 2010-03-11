@@ -105,6 +105,8 @@ class AliAODPWG4Particle : public AliVParticle {
   
   Bool_t IsPIDOK(const Int_t ipid, const Int_t pdgwanted) const;
   Double_t GetPairMass(AliAODPWG4Particle * p)const{ return (*(p->fMomentum)+*fMomentum).M(); }
+  // Dummy
+  Int_t    PdgCode() const {return 0;}
   
  private:
   TLorentzVector* fMomentum;  // Photon 4-momentum vector

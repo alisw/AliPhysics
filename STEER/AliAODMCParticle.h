@@ -73,7 +73,8 @@ class AliAODMCParticle: public AliVParticle {
     virtual Int_t GetMother() const {return fMother;}
     virtual void Print(const Option_t *opt = "") const;
     virtual Int_t GetPdgCode() const { return fPdgCode;}
-
+    virtual Int_t PdgCode()    const { return GetPdgCode();}
+    
     enum { kPrimary = 1<<0, kPhysicalPrim = 1<<1 };
     void SetFlag(UInt_t flag){fFlag = flag;}
     UInt_t GetFlag() const {return fFlag;}

@@ -82,15 +82,17 @@ public:
   Double_t MaxChi2Match();
   // PID
   virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
+  
   //
   Int_t GetLabel() const {return -1;}
-
   // Additional getters and setters
   AliAODTrack* GetMu(Int_t imu=0) const {return (imu==0||imu==1)&&(fMu[imu]!=0) ? (AliAODTrack*)fMu[imu].GetObject() : 0; } // Get a pointer to a muon
   AliAODTrack* Mu(Int_t imu=0) const {return (imu==0||imu==1)&&(fMu[imu]!=0) ? (AliAODTrack*)fMu[imu].GetObject() : 0; } // Get a pointer to a muon
 
   void SetMu(Int_t imu=0, AliAODTrack *mu=0);
   void SetMuons(AliAODTrack *mu0=0, AliAODTrack *mu1=0);
+  // Dummy
+  virtual Int_t PdgCode() const {return 0;}
 
 private:
   Int_t CheckPointers() const;

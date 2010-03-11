@@ -34,7 +34,7 @@ public:
   virtual Double_t Py() const = 0;
   virtual Double_t Pz() const = 0;
   virtual Double_t Pt() const = 0;
-  virtual Double_t P() const = 0;
+  virtual Double_t P()  const = 0;
   virtual Bool_t   PxPyPz(Double_t p[3]) const = 0;
 
   virtual Double_t Xv() const = 0;
@@ -42,20 +42,21 @@ public:
   virtual Double_t Zv() const = 0;
   virtual Bool_t   XvYvZv(Double_t x[3]) const = 0;  
 
-  virtual Double_t OneOverPt() const = 0;
-  virtual Double_t Phi() const = 0;
-  virtual Double_t Theta() const = 0;
+  virtual Double_t OneOverPt()  const = 0;
+  virtual Double_t Phi()        const = 0;
+  virtual Double_t Theta()      const = 0;
 
 
-  virtual Double_t E() const = 0;
-  virtual Double_t M() const = 0;
+  virtual Double_t E()          const = 0;
+  virtual Double_t M()          const = 0;
   
-  virtual Double_t Eta() const = 0;
-  virtual Double_t Y() const = 0;
+  virtual Double_t Eta()        const = 0;
+  virtual Double_t Y()          const = 0;
   
-  virtual Short_t Charge() const = 0;
-  virtual Int_t   GetLabel() const = 0;
+  virtual Short_t Charge()      const = 0;
+  virtual Int_t   GetLabel()    const = 0;
   // PID
+  virtual Int_t   PdgCode()     const = 0;       
   virtual const Double_t *PID() const = 0; // return PID object (to be defined, still)
 
 

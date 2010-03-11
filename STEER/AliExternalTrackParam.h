@@ -205,6 +205,8 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t b);
   Int_t GetIndex(Int_t i, Int_t j) const;
   Int_t GetLabel() const {return -1;} 
+  Int_t PdgCode()  const {return 0;}
+
   //
   // visualization (M. Ivanov)
   //
