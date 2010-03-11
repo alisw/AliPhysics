@@ -1,11 +1,12 @@
 void MakePHOSFullMisAlignment()
 {
-  // Create misalignment object for PHOS module 2 
-  // from the survey measurements on P2 in May 2008.
+  // Create misalignment object for PHOS module 2,3,3
+  // from the survey measurements on P2 in August 2009.
   // To store alignment in OCDB, define the evnironment variables:
   // TOCDB=kTRUE
   // STORAGE="local://$ALICE_ROOT/OCDB"
   // Author: Timur Pocheptsov, 19.06.2008
+  // Modified: Yuri Kharlov, 11.03.2010
 
   const char * macroName = "MakePHOS2Alignment";
   
@@ -14,46 +15,6 @@ void MakePHOSFullMisAlignment()
     Error(macroName, "Cannot obtain AliPHOSGeometry singleton.\n");
     return;
   }
-
-  //Activate CDB storage and load geometry from CDB
-  //I need valid gGeoManager to create local transformations.
-  
-  //[Part of code, taken from ITS version of MakexxxFullMisalignment.
-  //This code was required only for local delta transformations.
-  //Now, transformations are global, so no gGeoManager and geometry are required.
-  /*
-  AliCDBManager * cdb = AliCDBManager::Instance();
-  if (!cdb->IsDefaultStorageSet())
-    cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdb->SetRun(0);
-
-  if (TString(gSystem->Getenv("TOCDB")) == TString("kTRUE")) {
-    const TString storageENV(gSystem->Getenv("STORAGE"));
-    if (!storageENV.BeginsWith("local://") && !storageENV.BeginsWith("alien://")) {
-      Error(macroName, "STORAGE variable set to %s is not valid.\n", storageENV.Data());
-      return;
-    }
-    
-    AliCDBStorage * storage = cdb->GetStorage(storageENV.Data());
-    if (!storage) {
-      Error(macroName, "Unable to open storage %s.\n", storageENV.Data());
-      return;
-    }
-    
-    AliCDBPath path("GRP","Geometry","Data");
-    AliCDBEntry * entry = storage->Get(path.GetPath(), cdb->GetRun());
-    if (!entry) {
-      Error(macroName,"Could not get the specified CDB entry!");
-      return;  
-    }
-    
-    entry->SetOwner(0);
-    AliGeomManager::SetGeometry((TGeoManager*) entry->GetObject());
-  }else{
-    AliGeomManager::LoadGeometry("geometry.root"); //load geom from default CDB storage
-  }  
-  */  
-  //end of code taken from ITS version of MakexxxFullMisalignment]
 
   AliPHOSEMCAGeometry * emca = phosGeom->GetEMCAGeometry();
   TClonesArray alobj("AliAlignObjParams", 16);// + phosGeom->GetNModules() * emca->GetNStripX() *
@@ -80,20 +41,27 @@ void MakePHOSFullMisAlignment()
 		       "probably, I wan't be able to find survey file");
   }
     
-  surveyFileName += "PHOS/data/phos_mod3_survey_2008.txt";
+  surveyFileName += "PHOS/data/Survey_1053236_PHOS.txt";
 
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module1", volid, 0., 0., 0., 0., 0., 0., kTRUE);
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module2", volid, 2., 0., 0., 0., 0., 0., kTRUE);
-  //
   AliSurveyObj survey;
   survey.FillFromLocalFile(surveyFileName.Data());
-  TGeoHMatrix module3Delta;
+  TGeoHMatrix module3Delta, module2Delta, module1Delta;
   AliPHOSModuleMisalignment delta(*phosGeom);
-  delta.DeltaTransformation(2, survey.GetData(), "T2_10000", "T2_10027", "T2_24000", 
+
+  delta.DeltaTransformation(0, survey.GetData(), "410000", "410027", "424000", 
+        		    &module1Delta);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module1", volid, module1Delta, kTRUE);
+
+  delta.DeltaTransformation(1, survey.GetData(), "310000", "310027", "324000", 
+        		    &module2Delta);
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module2", volid, module2Delta, kTRUE);
+
+  delta.DeltaTransformation(2, survey.GetData(), "210000", "210027", "224000", 
         		    &module3Delta);
   new(alobj[i++]) AliAlignObjParams("PHOS/Module3", volid, module3Delta, kTRUE);
-  //
-  new(alobj[i++]) AliAlignObjParams("PHOS/Module4", volid, 0.,  0., 0., 0., 0., 0., kTRUE);
+
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module4", volid, 0., 0., 0., 0., 0., 0., kTRUE);
+
   new(alobj[i++]) AliAlignObjParams("PHOS/Module5", volid, 0., 0., 0., 0., 0., 0., kTRUE);
 
   const Double_t dx = 0., dy = 0., dz = 0. ;
