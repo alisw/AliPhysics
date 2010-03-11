@@ -58,11 +58,23 @@ class AliFlowEventSimpleMakerOnTheFly {
   void SetTemperatureOfRP(Double_t temperatureRP) {this->fTemperatureOfRP = temperatureRP;}
   Double_t GetTemperatureOfRP() const {return this->fTemperatureOfRP;} 
   
-  void SetPtDependentHarmonics(Bool_t const pdh) {this->fPtDependentHarmonics = pdh;};
-  Bool_t GetPtDependentHarmonics() const {return this->fPtDependentHarmonics;};
+  void SetPtDependentHarmonicV1(Bool_t const pdhV1) {this->fPtDependentHarmonicV1 = pdhV1;};
+  Bool_t GetPtDependentHarmonicV1() const {return this->fPtDependentHarmonicV1;};
   
-  void SetEtaDependentHarmonics(Bool_t const edh) {this->fEtaDependentHarmonics = edh;};
-  Bool_t GetEtaDependentHarmonics() const {return this->fEtaDependentHarmonics;};
+  void SetEtaDependentHarmonicV1(Bool_t const edhV1) {this->fEtaDependentHarmonicV1 = edhV1;};
+  Bool_t GetEtaDependentHarmonicV1() const {return this->fEtaDependentHarmonicV1;};
+  
+  void SetPtDependentHarmonicV2(Bool_t const pdhV2) {this->fPtDependentHarmonicV2 = pdhV2;};
+  Bool_t GetPtDependentHarmonicV2() const {return this->fPtDependentHarmonicV2;};
+  
+  void SetEtaDependentHarmonicV2(Bool_t const edhV2) {this->fEtaDependentHarmonicV2 = edhV2;};
+  Bool_t GetEtaDependentHarmonicV2() const {return this->fEtaDependentHarmonicV2;};
+  
+  void SetPtDependentHarmonicV4(Bool_t const pdhV4) {this->fPtDependentHarmonicV4 = pdhV4;};
+  Bool_t GetPtDependentHarmonicV4() const {return this->fPtDependentHarmonicV4;};
+  
+  void SetEtaDependentHarmonicV4(Bool_t const edhV4) {this->fEtaDependentHarmonicV4 = edhV4;};
+  Bool_t GetEtaDependentHarmonicV4() const {return this->fEtaDependentHarmonicV4;};
   
   // constant harmonics:  
   void SetV1RP(Double_t dV1RP) {this->fV1RP = dV1RP;}
@@ -92,15 +104,17 @@ class AliFlowEventSimpleMakerOnTheFly {
   void SetV4SpreadRP(Double_t dV4SpreadRP) {this->fV4SpreadRP = dV4SpreadRP;}
   Double_t GetV4SpreadRP() const {return this->fV4SpreadRP;} 
   
-  // (pt,eta) dependent harmonics:
-  void SetV2RPMax(Double_t dV2RPMax) {this->fV2vsPtEtaMax = dV2RPMax;}
-  Double_t GetV2RPMax() const {return this->fV2vsPtEtaMax;} 
+  void SetV1vsPtEtaMax(Double_t dV1vsPtEtaMax) {this->fV1vsPtEtaMax = dV1vsPtEtaMax;}
+  Double_t GetV1vsPtEtaMax() const {return this->fV1vsPtEtaMax;} 
+  
+  void SetV1PtCutOff(Double_t dV1PtCutOff) {this->fV1PtCutOff = dV1PtCutOff;}
+  Double_t GetV1PtCutOff() const {return this->fV1PtCutOff;} 
   
   void SetV2vsPtEtaMax(Double_t dV2vsPtEtaMax) {this->fV2vsPtEtaMax = dV2vsPtEtaMax;}
   Double_t GetV2vsPtEtaMax() const {return this->fV2vsPtEtaMax;} 
   
-  void SetPtCutOff(Double_t dPtCutOff) {this->fPtCutOff = dPtCutOff;}
-  Double_t GetPtCutOff() const {return this->fPtCutOff;} 
+  void SetV2PtCutOff(Double_t dV2PtCutOff) {this->fV2PtCutOff = dV2PtCutOff;}
+  Double_t GetV2PtCutOff() const {return this->fV2PtCutOff;} 
   
   void SetV2vsEtaSpread(Double_t dV2vsEtaSpread) {this->fV2vsEtaSpread = dV2vsEtaSpread;}
   Double_t GetV2vsEtaSpread() const {return this->fV2vsEtaSpread;} 
@@ -155,8 +169,13 @@ class AliFlowEventSimpleMakerOnTheFly {
   Int_t     fMinMultOfRP;            // minimal multiplicity of RPs (if sampled uniformly)
   Int_t     fMaxMultOfRP;            // maximum multiplicity of RPs (if sampled uniformly)
   Double_t  fTemperatureOfRP;        // "temperature" of RPs in GeV/c (increase this parameter to get more high pt RPs) 
-  Bool_t    fPtDependentHarmonics;   // harmonic V2 is a function of pt     
-  Bool_t    fEtaDependentHarmonics;  // harmonic V2 is a function of eta     
+  Bool_t    fPtDependentHarmonicV1;  // harmonic V1 is a function of pt     
+  Bool_t    fEtaDependentHarmonicV1; // harmonic V1 is a function of eta     
+  Bool_t    fPtDependentHarmonicV2;  // harmonic V2 is a function of pt     
+  Bool_t    fEtaDependentHarmonicV2; // harmonic V2 is a function of eta     
+  Bool_t    fPtDependentHarmonicV4;  // harmonic V4 is a function of pt     
+  Bool_t    fEtaDependentHarmonicV4; // harmonic V4 is a function of eta     
+  
   // constant harmonics: 
   Double_t  fV1RP;                   // directed flow of RPs
   Double_t  fV1SpreadRP;             // directed flow spread of RPs
@@ -172,9 +191,12 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   Double_t  fV4RP;                   // harmonic V4 of RPs
   Double_t  fV4SpreadRP;             // harmonic V4's spread of RPs
-  // (pt,eta) dependent harmonics:
+  // (pt,eta) dependent harmonic V1:
+  Double_t  fV1vsPtEtaMax;           // max value of (pt,eta) dependent V1
+  Double_t  fV1PtCutOff;             // V1(pt) is linear up to pt = dV1PtCutOff and for pt > dV1PtCutOff it is constant, V1(pt) = dV1vsPtEtaMax
+  // (pt,eta) dependent harmonic V2:
   Double_t  fV2vsPtEtaMax;           // max value of (pt,eta) dependent V2
-  Double_t  fPtCutOff;               // V2(pt) is linear up to pt = dPtCutOff and for pt > dPtCutOff it is constant, V2(pt) = dV2vsPtEtaMax:
+  Double_t  fV2PtCutOff;               // V2(pt) is linear up to pt = dV2PtCutOff and for pt > dV2PtCutOff it is constant, V2(pt) = dV2vsPtEtaMax
   Double_t  fV2vsEtaSpread;          // V2(eta) is Gaussian centered at midrapidity (eta=0) with spread = dV2vsEtaSpread
   // non-uniform acceptance:
   Double_t  fPhiMin1;                // first non-uniform sector starts at azimuth fPhiMin1
