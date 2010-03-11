@@ -446,7 +446,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 {
   //Search for pi0 in fCalorimeter with shower shape analysis 
   
-  TObjArray * pl = new TObjArray; 
+  TObjArray * pl = 0x0; 
   
   //Get vertex for photon momentum calculation
   Double_t vertex[]  = {0,0,0} ; //vertex 

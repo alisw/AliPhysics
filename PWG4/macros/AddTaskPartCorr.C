@@ -38,7 +38,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
    AliCaloTrackReader * reader = 0x0;
    if(data.Contains("AOD")) reader = new AliCaloTrackAODReader();
    else if(data=="ESD") reader = new AliCaloTrackESDReader();
-   else if(data=="MC" && dataType == "ESD") reader = new AliCaloTrackMCReader();
+   else if(data=="MC" && inputDataType == "ESD") reader = new AliCaloTrackMCReader();
    reader->SetDebug(-1);//10 for lots of messages
    reader->SwitchOnCTS();
    //reader->SetDeltaAODFileName("");
@@ -157,7 +157,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
     anaphoton1->SwitchOnFiducialCut();
     anaphoton1->SetFiducialCut(fidCut1stYear);
   }
-	
+  anaphoton1->SwitchOnTrackMatchRejection();
   if(!data.Contains("delta")) anaphoton1->SetOutputAODName(Form("PhotonsForIM%s",calorimeter.Data()));
   else                        anaphoton1->SetInputAODName (Form("PhotonsForIM%s",calorimeter.Data()));
   //Set Histograms bins and ranges
@@ -463,9 +463,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaomegaToPi0Gamma->SetNVtxZ(2);
   anaomegaToPi0Gamma->SetNBadChDist(3);
   anaomegaToPi0Gamma->SetNEventsMixed(4);
-  if(calorimeter.Data()=="PHOS")
+  if(calorimeter=="PHOS")
            anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
-  else if(calorimeter.Data()=="EMCAL")
+  else if(calorimeter=="EMCAL")
            anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
   anaomegaToPi0Gamma->SetHistoPtRangeAndNBins(0, 20, 200) ;
   anaomegaToPi0Gamma->SetHistoMassRangeAndNBins(0, 1, 200) ;
@@ -481,17 +481,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->SetReader(reader);//pointer to reader
   //if(!data.Contains("delta")) maker->AddAnalysis(qa,0);
   maker->AddAnalysis(anaphoton1,0);
-  maker->AddAnalysis(anapi0,1);
-  maker->AddAnalysis(anaphoton2,2);
-  maker->AddAnalysis(anaisol,3);
-  maker->AddAnalysis(anacorrjet,4);
-  maker->AddAnalysis(anacorrhadron,5);
-  maker->AddAnalysis(anacorrisohadron,6);
-  maker->AddAnalysis(anapi0ebe,7);
-  maker->AddAnalysis(anaisolpi0,8);
-  maker->AddAnalysis(anacorrhadronpi0,9);
-  maker->AddAnalysis(anacorrhadronisopi0,10);
-  maker->AddAnalysis(anaomegaToPi0Gamma,11);   
+//  maker->AddAnalysis(anapi0,1);
+//  maker->AddAnalysis(anaphoton2,2);
+//  maker->AddAnalysis(anaisol,3);
+//  maker->AddAnalysis(anacorrjet,4);
+//  maker->AddAnalysis(anacorrhadron,5);
+//  maker->AddAnalysis(anacorrisohadron,6);
+//  maker->AddAnalysis(anapi0ebe,7);
+//  maker->AddAnalysis(anaisolpi0,8);
+//  maker->AddAnalysis(anacorrhadronpi0,9);
+//  maker->AddAnalysis(anacorrhadronisopi0,10);
+//  maker->AddAnalysis(anaomegaToPi0Gamma,11);   
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;

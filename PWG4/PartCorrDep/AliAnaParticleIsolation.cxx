@@ -695,7 +695,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   Int_t n = 0, nfrac = 0;
   Bool_t isolated = kFALSE ; 
   Float_t coneptsum = 0 ;
-  TObjArray * pl = new TObjArray(); 
+  TObjArray * pl = 0x0; ; 
   
   //Select the calorimeter for candidate isolation with neutral particles
   if(fCalorimeter == "PHOS")
