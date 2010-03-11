@@ -122,7 +122,7 @@ Int_t AliHLTMCEvent::FillMCEvent( AliStack *stack, AliHeader *header ) {
 	HLTError("Error filling jets" );
     }
     else {
-      HLTError("Error reading gen header" );
+      HLTError("Error reading PythiaHeader" );
       iResult = -2;
     }
   }
@@ -299,13 +299,17 @@ Int_t AliHLTMCEvent::FillMCJets( AliGenPythiaEventHeader* header ) {
 
   Int_t iResult = 0;
 
-  // -- Create jet array
-  if ( header && header->NTriggerJets() > 0 )
-    fGenJets = new TClonesArray("AliAODJet", header->NTriggerJets());
-  else {
-    HLTError( "Error creating trigger array" );
+  // -- Check if Header is present
+  if ( !header ) {
+    HLTError( "Error no PythiaHeader present" );
     iResult = -EINPROGRESS;
   }
+
+  // -- Create jet array  
+  if ( header->NTriggerJets() > 0 )
+    fGenJets = new TClonesArray("AliAODJet", header->NTriggerJets());
+  else 
+    return iResult;
 
   // -- Loop over jets in header and fill local array
   for (Int_t iterJet = 0; iterJet < header->NTriggerJets() && !iResult; iterJet++) {
