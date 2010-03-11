@@ -1,5 +1,5 @@
 Int_t AddPWG3MuonTrain(Int_t iESDAnalysis=1,
-                       Int_t iAODAnalyis=0,
+                       Int_t iAODAnalysis=0,
                        Int_t addMuonDistributions=0,
 		       Int_t addSingleMuonAnalysis=0,
 		       Int_t addMuonHFAnalysis=0,
