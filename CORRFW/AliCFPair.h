@@ -73,7 +73,7 @@ class AliCFPair : public AliVParticle {
   virtual void       SetMassHypothesis(Double_t massNeg, Double_t massPos) {fMassNeg=massNeg;fMassPos=massPos;}
   // PID
   virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
-
+  virtual Int_t PdgCode() {return 0;}
 
  private:
   Bool_t fIsV0;            // true if V0 passed to the constructor

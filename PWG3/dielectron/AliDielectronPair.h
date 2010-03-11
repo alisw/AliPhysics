@@ -85,7 +85,8 @@ public:
   // daughter references
   AliVParticle* GetFirstDaughter()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
   AliVParticle* GetSecondDaughter()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
-
+  // Dummy
+  Int_t PdgCode() const {return 0;}
   
 private:
   Double_t fOpeningAngle; // opening angle of the pair
