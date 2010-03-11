@@ -13,6 +13,12 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
+// AliFlowAnalysisWithLYZEventPlane:
+//
+// Class to do flow analysis with the event plane from the LYZ method
+//
+// author: N. van der Kolk (kolk@nikhef.nl)
+
 /*
 $Log$
 */ 
@@ -20,13 +26,12 @@ $Log$
 //#define AliFlowAnalysisWithLYZEventPlane_cxx
  
 #include "Riostream.h"  //needed as include
-#include "TComplex.h"   //needed as include
+#include "TMath.h"   //needed as include
 #include "TProfile.h"   //needed as include
-
-class TH1F;
-class TFile;
-class TList;
-class TVector2;
+#include "TH1F.h"
+#include "TFile.h"
+#include "TList.h"
+#include "TVector2.h"
 
 #include "AliFlowLYZConstants.h"    //needed as include
 #include "AliFlowCommonConstants.h" //needed as include
@@ -36,14 +41,7 @@ class TVector2;
 #include "AliFlowCommonHistResults.h"
 #include "AliFlowLYZEventPlane.h"
 #include "AliFlowAnalysisWithLYZEventPlane.h"
-
-class AliFlowVector;
-
-// AliFlowAnalysisWithLYZEventPlane:
-//
-// Class to do flow analysis with the event plane from the LYZ method
-//
-// author: N. van der Kolk (kolk@nikhef.nl)
+#include "AliFlowVector.h"
 
 
 ClassImp(AliFlowAnalysisWithLYZEventPlane)
@@ -244,11 +242,11 @@ void AliFlowAnalysisWithLYZEventPlane::Make(AliFlowEventSimple* anEvent, AliFlow
 
     //get the Q vector from the FlowEvent
     AliFlowVector vQ = anEvent->GetQ(); 
-    if (vQ.X()== 0. && vQ.Y()== 0. ) { cout<<"Q vector is NULL!"<<endl; }
+    //if (vQ.X()== 0. && vQ.Y()== 0. ) { cout<<"Q vector is NULL!"<<endl; } //coding violation
     //Weight with the multiplicity
     Double_t dQX = 0.;
     Double_t dQY = 0.;
-    if (vQ.GetMult()!=0.) {
+    if (TMath::AreEqualAbs(vQ.GetMult(),0.0,1e-10)) {
       dQX = vQ.X()/vQ.GetMult();
       dQY = vQ.Y()/vQ.GetMult();
     } else {cerr<<"vQ.GetMult() is zero!"<<endl; }
@@ -392,7 +390,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   Double_t  dV = 0; 
   for (Int_t theta=0;theta<iNtheta;theta++)	{
     Double_t dR0 = fFirstr0theta->GetBinContent(theta+1); 
-    if (dR0!=0.) { dVtheta = dJ01/dR0 ;}
+    if (TMath::AreEqualAbs(dR0,0.0,1e-10)) { dVtheta = dJ01/dR0 ;}
     dV += dVtheta;
   }
   dV /= iNtheta;
@@ -455,7 +453,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     Double_t dErrdifcomb = 0.;  //set error to zero
     Double_t dErr2difcomb = 0.; //set error to zero
     //calculate error
-    if (dNprime!=0.) { 
+    if (TMath::AreEqualAbs(dNprime,0.0,1e-10)) { 
       for (Int_t theta=0;theta<iNtheta;theta++) {
 	Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi(); 
 	Double_t dApluscomb = TMath::Exp((dJ01*dJ01)/(2*dChi*dChi)*
@@ -469,7 +467,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
       } //loop over theta
     } 
       
-    if (dErr2difcomb!=0.) {
+    if (TMath::AreEqualAbs(dErr2difcomb, 0.0, 1e-10)) {
       dErr2difcomb /= iNtheta;
       dErrdifcomb = TMath::Sqrt(dErr2difcomb);
     }
@@ -554,7 +552,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
  
   } //loop over bins b
 
-  if (dSum != 0.) {
+  if (TMath::AreEqualAbs(dSum, 0.0, 1e-10)) {
     dVRP /= dSum; //the pt distribution should be normalised
     dErrV /= (dSum*dSum);
     dErrV = TMath::Sqrt(dErrV);

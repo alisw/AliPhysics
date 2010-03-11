@@ -22,22 +22,22 @@ class AliFlowCommonConstants: public TNamed {
   virtual ~AliFlowCommonConstants();
   static AliFlowCommonConstants* GetMaster();
 
-  Int_t GetNbinsMult() { return fNbinsMult; }
-  Int_t GetNbinsPt()   { return fNbinsPt; }
-  Int_t GetNbinsPhi()  { return fNbinsPhi; }
-  Int_t GetNbinsEta()  { return fNbinsEta; }
-  Int_t GetNbinsQ()    { return fNbinsQ; }
+  Int_t GetNbinsMult() const { return fNbinsMult; }
+  Int_t GetNbinsPt()   const { return fNbinsPt; }
+  Int_t GetNbinsPhi()  const { return fNbinsPhi; }
+  Int_t GetNbinsEta()  const { return fNbinsEta; }
+  Int_t GetNbinsQ()    const { return fNbinsQ; }
    
-  Double_t GetMultMin() { return fMultMin; }
-  Double_t GetMultMax() { return fMultMax; }
-  Double_t GetPtMin()   { return fPtMin; }
-  Double_t GetPtMax()   { return fPtMax; }
-  Double_t GetPhiMin()  { return fPhiMin; }
-  Double_t GetPhiMax()  { return fPhiMax; }
-  Double_t GetEtaMin()  { return fEtaMin; }
-  Double_t GetEtaMax()  { return fEtaMax; }
-  Double_t GetQMin()    { return fQMin; }
-  Double_t GetQMax()    { return fQMax; }
+  Double_t GetMultMin() const { return fMultMin; }
+  Double_t GetMultMax() const { return fMultMax; }
+  Double_t GetPtMin()   const { return fPtMin; }
+  Double_t GetPtMax()   const { return fPtMax; }
+  Double_t GetPhiMin()  const { return fPhiMin; }
+  Double_t GetPhiMax()  const { return fPhiMax; }
+  Double_t GetEtaMin()  const { return fEtaMin; }
+  Double_t GetEtaMax()  const { return fEtaMax; }
+  Double_t GetQMin()    const { return fQMin; }
+  Double_t GetQMax()    const { return fQMax; }
   
   void SetNbinsMult( Int_t i ) { fNbinsMult = i; }
   void SetNbinsPt( Int_t i )   { fNbinsPt = i; }
@@ -61,27 +61,27 @@ class AliFlowCommonConstants: public TNamed {
   AliFlowCommonConstants(const AliFlowCommonConstants& a);
   
   //histogram sizes
-  Int_t  fNbinsMult; //
-  Int_t  fNbinsPt;   //
-  Int_t  fNbinsPhi;  //
-  Int_t  fNbinsEta;  //
-  Int_t  fNbinsQ;    //
+  Int_t  fNbinsMult; // histogram size
+  Int_t  fNbinsPt;   // histogram size
+  Int_t  fNbinsPhi;  // histogram size
+  Int_t  fNbinsEta;  // histogram size
+  Int_t  fNbinsQ;    // histogram size
  
   // Histograms limits
-  Double_t  fMultMin;  //          
-  Double_t  fMultMax;  //
-  Double_t  fPtMin;    //
-  Double_t  fPtMax;    //
-  Double_t  fPhiMin;	 //  
-  Double_t  fPhiMax;   //
-  Double_t  fEtaMin;	 //  
-  Double_t  fEtaMax;	 //    
-  Double_t  fQMin;	   //  
-  Double_t  fQMax;     //
+  Double_t  fMultMin;  // histogram limit 
+  Double_t  fMultMax;  // histogram limit
+  Double_t  fPtMin;    // histogram limit
+  Double_t  fPtMax;    // histogram limit
+  Double_t  fPhiMin;	 // histogram limit
+  Double_t  fPhiMax;   // histogram limit
+  Double_t  fEtaMin;	 // histogram limit
+  Double_t  fEtaMax;	 // histogram limit
+  Double_t  fQMin;	   // histogram limit
+  Double_t  fQMax;     // histogram limit
  
-  static AliFlowCommonConstants* fgPMasterConfig;
+  static AliFlowCommonConstants* fgPMasterConfig; //master object
   
-  ClassDef(AliFlowCommonConstants,1)  // macro for rootcint
+  ClassDef(AliFlowCommonConstants,1) //ClassDef
 };
 
 #endif
