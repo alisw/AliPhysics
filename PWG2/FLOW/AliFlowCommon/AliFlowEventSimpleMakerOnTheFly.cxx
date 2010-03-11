@@ -45,8 +45,12 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMinMultOfRP(0),
   fMaxMultOfRP(0),  
   fTemperatureOfRP(0.),  
-  fPtDependentHarmonics(kFALSE),
-  fEtaDependentHarmonics(kFALSE),
+  fPtDependentHarmonicV1(kFALSE),
+  fEtaDependentHarmonicV1(kFALSE),
+  fPtDependentHarmonicV2(kFALSE),
+  fEtaDependentHarmonicV2(kFALSE),
+  fPtDependentHarmonicV4(kFALSE),
+  fEtaDependentHarmonicV4(kFALSE),
   fV1RP(0.), 
   fV1SpreadRP(0.), 
   fConstantV2IsSampledFromGauss(kFALSE),
@@ -56,8 +60,10 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fMaxV2RP(0.),
   fV4RP(0.), 
   fV4SpreadRP(0.), 
+  fV1vsPtEtaMax(0.),
+  fV1PtCutOff(0.),
   fV2vsPtEtaMax(0.),
-  fPtCutOff(0.),
+  fV2PtCutOff(0.),
   fV2vsEtaSpread(0.),
   fPhiMin1(0.),              
   fPhiMax1(0.),             
@@ -156,12 +162,15 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   fPhiDistribution->SetParameter(2,dMCReactionPlaneAngle);
   
   // sampling the V1:
-  Double_t dNewV1RP=fV1RP;
-  if(fV1SpreadRP>0.0) {dNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
-  fPhiDistribution->SetParameter(0,dNewV1RP);
+  if(!(fPtDependentHarmonicV1 || fEtaDependentHarmonicV1))
+  {
+   Double_t dNewV1RP=fV1RP;
+   if(fV1SpreadRP>0.0) {dNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
+   fPhiDistribution->SetParameter(0,dNewV1RP);
+  }
   
   // sampling the V2:
-  if(!(fPtDependentHarmonics || fEtaDependentHarmonics)) 
+  if(!(fPtDependentHarmonicV2 || fEtaDependentHarmonicV2)) 
   {
    Double_t dNewV2RP = fV2RP;
    if(fConstantV2IsSampledFromGauss) 
@@ -180,12 +189,15 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
 	      dNewV2RP = fMinV2RP;
 	      fPhiDistribution->SetParameter(1,dNewV2RP);          
         }
-  } // end of if(!(bPtDependentHarmonics || bEtaDependentHarmonics))
+  } // end of if(!(bPtDependentHarmonicV2 || bEtaDependentHarmonicV2))
   
   // sampling the V4:
-  Double_t dNewV4RP = fV4RP;
-  if(fV4SpreadRP>0.0) dNewV4RP = fMyTRandom3->Gaus(fV4RP,fV4SpreadRP);
-  fPhiDistribution->SetParameter(3,dNewV4RP);
+  if(!(fPtDependentHarmonicV4 || fEtaDependentHarmonicV4))
+  {
+   Double_t dNewV4RP = fV4RP;
+   if(fV4SpreadRP>0.0) dNewV4RP = fMyTRandom3->Gaus(fV4RP,fV4SpreadRP);
+   fPhiDistribution->SetParameter(3,dNewV4RP);
+  }
   
   // eta:
   Double_t dEtaMin = -1.; // to be improved 
@@ -203,7 +215,9 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   Double_t dPtSplittedTrack = 0.; 
   Double_t dEtaSplittedTrack = 0.; 
   
+  Double_t dTmpV1 = 0.;
   Double_t dTmpV2 = 0.;
+  Double_t dTmpV4 = 0.;
   Bool_t bUniformAcceptance = kTRUE;
   Double_t Pi = TMath::Pi();
 
@@ -216,34 +230,67 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
    // sample the pt and eta for original track: 
    dPtOriginalTrack = fPtSpectra->GetRandom();
    dEtaOriginalTrack = fMyTRandom3->Uniform(dEtaMin,dEtaMax); 
-   // generate flow harmonic which will determine the azimuthal distribution (to be improved - optimized):   
-   if(fPtDependentHarmonics || fEtaDependentHarmonics) 
+   // generate flow harmonics which will determine the azimuthal distribution (to be improved - optimized):
+   // V2:   
+   if(fPtDependentHarmonicV2 || fEtaDependentHarmonicV2) 
    {
-    if(fEtaDependentHarmonics)
+    if(fEtaDependentHarmonicV2)
     {
      if(fV2vsEtaSpread>0.)
      { 
       dTmpV2 = TMath::Exp(-pow(dEtaOriginalTrack/fV2vsEtaSpread,2.));
      }
-     if(!fPtDependentHarmonics)
+     if(!fPtDependentHarmonicV2)
      {
       dTmpV2*=fV2vsPtEtaMax;
      } 
-    } // end of if(fEtaDependentHarmonics)
-    if(fPtDependentHarmonics)
+    } // end of if(fEtaDependentHarmonicV2)
+    if(fPtDependentHarmonicV2)
     {
-     if(!fEtaDependentHarmonics)
+     if(!fEtaDependentHarmonicV2)
      {
-      if(dPtOriginalTrack >= fPtCutOff) {dTmpV2 = fV2vsPtEtaMax;} 
-      else {dTmpV2 = fV2vsPtEtaMax*(dPtOriginalTrack/fPtCutOff);} 
+      if(dPtOriginalTrack >= fV2PtCutOff) {dTmpV2 = fV2vsPtEtaMax;} 
+      else {dTmpV2 = fV2vsPtEtaMax*(dPtOriginalTrack/fV2PtCutOff);} 
      } else
        {
-        if(dPtOriginalTrack >= fPtCutOff) {dTmpV2 *= fV2vsPtEtaMax;} 
-        else {dTmpV2 *= fV2vsPtEtaMax*(dPtOriginalTrack/fPtCutOff);}         
+        if(dPtOriginalTrack >= fV2PtCutOff) {dTmpV2 *= fV2vsPtEtaMax;} 
+        else {dTmpV2 *= fV2vsPtEtaMax*(dPtOriginalTrack/fV2PtCutOff);}         
        }
-    } // end of if(fPtDependentHarmonics)
+    } // end of if(fPtDependentHarmonicV2)
     // flow harmonic is determined and plugged in as a parameter in the predefined azimuthal distribution:
     fPhiDistribution->SetParameter(1,dTmpV2);         
+   }
+   // V1:   
+   if(fPtDependentHarmonicV1 || fEtaDependentHarmonicV1) 
+   {
+    if(fEtaDependentHarmonicV1)
+    {
+     dTmpV1 = -1.*dEtaOriginalTrack;
+     if(!fPtDependentHarmonicV1)
+     {
+      dTmpV1*=fV1vsPtEtaMax;
+     } 
+    } // end of if(fEtaDependentHarmonicV1)
+    if(fPtDependentHarmonicV1)
+    {
+     if(!fEtaDependentHarmonicV1)
+     {
+      if(dPtOriginalTrack >= fV1PtCutOff) {dTmpV1 = fV1vsPtEtaMax;} 
+      else {dTmpV1 = fV1vsPtEtaMax*(dPtOriginalTrack/fV1PtCutOff);} 
+     } else
+       {
+        if(dPtOriginalTrack >= fV1PtCutOff) {dTmpV1 *= fV1vsPtEtaMax;} 
+        else {dTmpV1 *= fV1vsPtEtaMax*(dPtOriginalTrack/fV1PtCutOff);}         
+       }
+    } // end of if(fPtDependentHarmonicV1)
+    // flow harmonic is determined and plugged in as a parameter in the predefined azimuthal distribution:
+    fPhiDistribution->SetParameter(0,dTmpV1);         
+   }
+   // V4:
+   if(fPtDependentHarmonicV4 || fEtaDependentHarmonicV4) 
+   {
+    dTmpV4 = pow(dTmpV2,2.);
+    fPhiDistribution->SetParameter(3,dTmpV4);
    }
    // sample the phi angle for original track: 
    dPhiOriginalTrack = fPhiDistribution->GetRandom();
@@ -440,7 +487,9 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   pEvent->SetMCReactionPlaneAngle(dMCReactionPlaneAngle);
   
   Int_t cycle = 0;
-  if(fPtDependentHarmonics || fEtaDependentHarmonics)
+  if(fPtDependentHarmonicV1 || fEtaDependentHarmonicV1 ||
+     fPtDependentHarmonicV2 || fEtaDependentHarmonicV2 ||
+     fPtDependentHarmonicV4 || fEtaDependentHarmonicV4)
   { 
    cycle = 10;
   } else

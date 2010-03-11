@@ -59,7 +59,6 @@ Int_t pidPOI = -1; // to be improved (supported eventually)
 // 2.) If you want to use phi weights for GFC, QC and FQD
 Bool_t bSameSeed = kFALSE;  
 
-
 //===NONFLOW=============================================
 // number of times to use each track (to simulate nonflow)
 Int_t iLoops = 1; 
@@ -85,11 +84,16 @@ Double_t nonflowSectorMin = 0.0; // detector's sector in which tracks will be sp
 Double_t nonflowSectorMax = 360.0; // detector's sector in which tracks will be splitted ends at this angle (in degrees)                        
 
 //===FLOW HARMONICS===============================================================
-// harmonics V1, V2, V4... are constants or functions of pt and eta:                    
-Bool_t bPtDependentHarmonics = kFALSE; 
-Bool_t bEtaDependentHarmonics = kFALSE; 
-// 1.) if you use constant harmonics (bPtDependentHarmonics = kFALSE, bEtaDependentHarmonics = kFALSE)
-//    you can additionally select if V2 will be sampled e-b-e from Gaussian or uniform distribution:  
+// harmonics V1, V2, V4... are constants or functions of pt and eta:         
+Bool_t bPtDependentHarmonicV1 = kFALSE; 
+Bool_t bEtaDependentHarmonicV1 = kFALSE;            
+Bool_t bPtDependentHarmonicV2 = kFALSE; 
+Bool_t bEtaDependentHarmonicV2 = kFALSE; 
+Bool_t bPtDependentHarmonicV4 = kFALSE; 
+Bool_t bEtaDependentHarmonicV4 = kFALSE; 
+// 1.) if you use constant harmonics (bPtDependentHarmonic* = kFALSE, bEtaDependentHarmonic* = kFALSE)
+//     you can additionally select if V2 will be sampled e-b-e from Gaussian or from uniform distribution
+//     (constant harmonics V1 and V4 will be always sampled from Gaussian):  
 Bool_t bConstantV2IsSampledFromGauss = kTRUE;
  //  1a.) if kTRUE = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
  //                  mean = dV2RP and spread = dV2SpreadRP (analogously for V1 and V4).
@@ -107,13 +111,19 @@ Bool_t bConstantV2IsSampledFromGauss = kTRUE;
  // V4:
  Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed) 
  Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
-
-// 2.) if you use (pt,eta) dependent harmonics (bPtDependentHarmonics = kTRUE or bEtaDependentHarmonics = kTRUE): 
-//  2a.) V2(pt) is linear up to pt = dPtCutOff and for pt > dPtCutOff it is constant, V2(pt) = dV2vsPtEtaMax:
+// 2.) if you use (pt,eta) dependent harmonic V1 (bPtDependentHarmonicV1 = kTRUE or bEtaDependentHarmonicV1 = kTRUE): 
+//  2a.) V1(pt) is linear up to pt = dV1PtCutOff and for pt > dV1PtCutOff it is constant, V1(pt) = dV1vsPtEtaMax:
+//  2b.) V1(eta) is determined from formula V1(eta) = -eta
+ Double_t dV1vsPtEtaMax = 0.10; // maximum value of V1(pt,eta) (for pt >= dV1PtCutOff and at eta = 0)
+ Double_t dV1PtCutOff = 2.0; // up to this pt value V1(pt) is growing linearly versus pt
+// 3.) if you use (pt,eta) dependent harmonic V2 (bPtDependentHarmonicV2 = kTRUE or bEtaDependentHarmonicV2 = kTRUE): 
+//  2a.) V2(pt) is linear up to pt = dV2PtCutOff and for pt > dV2PtCutOff it is constant, V2(pt) = dV2vsPtEtaMax:
 //  2b.) V2(eta) is Gaussian centered at midrapidity (eta=0) with V2(0) = dV2vsPtEtaMax and spread = dV2vsEtaSpread:
- Double_t dV2vsPtEtaMax = 0.20; // maximum value of V2(pt,eta) (for pt >= dPtCutOff and at eta = 0)
- Double_t dPtCutOff = 2.0; // up to this pt value V(pt) is growing linearly versus pt
+ Double_t dV2vsPtEtaMax = 0.20; // maximum value of V2(pt,eta) (for pt >= dV2PtCutOff and at eta = 0)
+ Double_t dV2PtCutOff = 2.0; // up to this pt value V2(pt) is growing linearly versus pt
  Double_t dV2vsEtaSpread = 0.75; // V2(eta) is Gaussian centered at midrapidity (eta=0) with spread = dV2vsEtaSpread
+// 4.) if you use (pt,eta) dependent harmonic V4 (bPtDependentHarmonicV4 = kTRUE or bEtaDependentHarmonicV4 = kTRUE):
+//     V4(pt,eta) is determined as V4(pt,eta) = pow(V2(pt,eta),2.) 
 
 //===MULTIPLICITY===============================================================
 // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
@@ -164,38 +174,9 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR};
                                           
 int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
 {
+ CheckUserSettings();
  TStopwatch timer;
  timer.Start();
- 
- if (LYZ1SUM && LYZ2SUM)  {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1.  "<<endl; exit(); }
- if (LYZ1PROD && LYZ2PROD)  {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1.  "<<endl; exit(); }
- if (LYZ2SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
- if (LYZ1SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-
- if(!uniformAcceptance && phimin1 > phimax1)
- {
-  cout<<"WARNING: you must have phimin1 < phimax1 !!!!"<<endl;
-  break;
- }
-
- if (!uniformAcceptance && !((phimin2 == 0.) && (phimax2 == 0.) && (p2 == 0.)) && (phimin2 < phimax1 || phimin2 > phimax2))
- {
-  cout<<"WARNING: you must have phimin2 > phimax1 and phimin2 < phimax2 !!!!"<<endl;
-  break;
- }
- 
- if((phimin1 < 0 || phimin1 > 360) || (phimax1 < 0 || phimax1 > 360) || 
-    (phimin2 < 0 || phimin2 > 360) || (phimax2 < 0 || phimax2 > 360) )
- {
-  cout<<"WARNING: you must take azimuthal angles from interval [0,360] !!!!"<<endl;
-  break;
- }
- 
- if((p1 < 0 || p1 > 1) || (p2 < 0 || p2 > 1))
- {
-  cout<<"WARNING: you must take p1 and p2 from interval [0,1] !!!!"<<endl;
-  break;
- }
  
  cout<<endl;
  cout<<endl;
@@ -269,7 +250,7 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  // MCEP = monte carlo event plane
  if (MCEP) {
    AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
-   // mcep->SetHarmonic(2); // default is v2
+   //mcep->SetHarmonic(2); // default is v2
    mcep->Init();
  }
 
@@ -442,20 +423,27 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    }
   
  eventMakerOnTheFly->SetTemperatureOfRP(dTemperatureOfRP);
- eventMakerOnTheFly->SetPtDependentHarmonics(bPtDependentHarmonics);
- eventMakerOnTheFly->SetEtaDependentHarmonics(bEtaDependentHarmonics);
- 
- // V1 and V4:
- if(!(bPtDependentHarmonics || bEtaDependentHarmonics))
+ eventMakerOnTheFly->SetPtDependentHarmonicV1(bPtDependentHarmonicV1);
+ eventMakerOnTheFly->SetEtaDependentHarmonicV1(bEtaDependentHarmonicV1);
+ eventMakerOnTheFly->SetPtDependentHarmonicV2(bPtDependentHarmonicV2);
+ eventMakerOnTheFly->SetEtaDependentHarmonicV2(bEtaDependentHarmonicV2);
+ eventMakerOnTheFly->SetPtDependentHarmonicV4(bPtDependentHarmonicV4);
+ eventMakerOnTheFly->SetEtaDependentHarmonicV4(bEtaDependentHarmonicV4);
+ // V1:
+ if(!(bPtDependentHarmonicV1 || bEtaDependentHarmonicV1))
  {
   eventMakerOnTheFly->SetV1RP(dV1RP);
   eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
-  eventMakerOnTheFly->SetV4RP(dV4RP);
-  eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
- }
- 
- // harmonic V2:
- if(!(bPtDependentHarmonics || bEtaDependentHarmonics)) // constant V2
+ } else // (pt,eta) dependent V1
+   {
+    eventMakerOnTheFly->SetV1vsPtEtaMax(dV1vsPtEtaMax);
+    if(bPtDependentHarmonicV1)
+    {
+     eventMakerOnTheFly->SetV1PtCutOff(dV1PtCutOff);  
+    }
+   }
+ // V2:
+ if(!(bPtDependentHarmonicV2 || bEtaDependentHarmonicV2)) // constant V2
  { 
   eventMakerOnTheFly->SetConstantV2IsSampledFromGauss(bConstantV2IsSampledFromGauss);
   if(bConstantV2IsSampledFromGauss) // Gauss
@@ -470,15 +458,21 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  } else // (pt,eta) dependent V2
    {
     eventMakerOnTheFly->SetV2vsPtEtaMax(dV2vsPtEtaMax);
-    if(bPtDependentHarmonics)
+    if(bPtDependentHarmonicV2)
     {
-     eventMakerOnTheFly->SetPtCutOff(dPtCutOff);  
+     eventMakerOnTheFly->SetV2PtCutOff(dV2PtCutOff);  
     }
-    if(bEtaDependentHarmonics)
+    if(bEtaDependentHarmonicV2)
     {
      eventMakerOnTheFly->SetV2vsEtaSpread(dV2vsEtaSpread);      
     }
-   }
+   }  
+ // V4:
+ if(!(bPtDependentHarmonicV4 || bEtaDependentHarmonicV4))
+ {
+  eventMakerOnTheFly->SetV4RP(dV4RP);
+  eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
+ } 
  
  // non-uniform acceptance:
  if(!uniformAcceptance)
@@ -632,6 +626,70 @@ void SetupPar(char* pararchivename)
   gSystem->ChangeDirectory(ocwd.Data());
   printf("Current dir: %s\n", ocwd.Data());
 }
+
+void CheckUserSettings()
+{
+ // Check if user settings make sense before taking off:
+  
+ if (LYZ1SUM && LYZ2SUM)  {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1.  "<<endl; exit(); }
+ if (LYZ1PROD && LYZ2PROD)  {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1.  "<<endl; exit(); }
+ if (LYZ2SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+ if (LYZ1SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+
+ if(!uniformAcceptance && phimin1 > phimax1)
+ {
+  cout<<"WARNING: you must have phimin1 < phimax1 !!!!"<<endl;
+  break;
+ }
+
+ if (!uniformAcceptance && !((phimin2 == 0.) && (phimax2 == 0.) && (p2 == 0.)) && (phimin2 < phimax1 || phimin2 > phimax2))
+ {
+  cout<<"WARNING: you must have phimin2 > phimax1 and phimin2 < phimax2 !!!!"<<endl;
+  break;
+ }
+ 
+ if((phimin1 < 0 || phimin1 > 360) || (phimax1 < 0 || phimax1 > 360) || 
+    (phimin2 < 0 || phimin2 > 360) || (phimax2 < 0 || phimax2 > 360) )
+ {
+  cout<<"WARNING: you must take azimuthal angles from interval [0,360] !!!!"<<endl;
+  break;
+ }
+ 
+ if((p1 < 0 || p1 > 1) || (p2 < 0 || p2 > 1))
+ {
+  cout<<"WARNING: you must take p1 and p2 from interval [0,1] !!!!"<<endl;
+  break;
+ }
+ 
+ if(bPtDependentHarmonicV4 && !bPtDependentHarmonicV2))
+ {
+  cout<<"WARNING: V4(pt,eta) is determined as pow(V2(pt,eta),2.) !!!!"<<endl;
+  cout<<"         You must also set bPtDependentHarmonicV2 = kTRUE in the macro."<<endl;
+  exit(0);
+ }
+   
+ if(bEtaDependentHarmonicV4 && !bEtaDependentHarmonicV2))
+ {
+  cout<<"WARNING: V4(pt,eta) is determined as pow(V2(pt,eta),2.) !!!!"<<endl;
+  cout<<"         You must also set bEtaDependentHarmonicV2 = kTRUE in the macro."<<endl;
+  exit(0); 
+ }
+  
+ if(bPtDependentHarmonicV4 && (bEtaDependentHarmonicV4 != bEtaDependentHarmonicV2))
+ {
+  cout<<"WARNING: V4(pt,eta) is determined as pow(V2(pt,eta),2.) !!!!"<<endl;
+  cout<<"         You must also have bEtaDependentHarmonicV2 = bEtaDependentHarmonicV4 in the macro."<<endl;
+  exit(0); 
+ }
+ 
+ if(bEtaDependentHarmonicV4 && (bPtDependentHarmonicV4 != bPtDependentHarmonicV2))
+ {
+  cout<<"WARNING: V4(pt,eta) is determined as pow(V2(pt,eta),2.) !!!!"<<endl;
+  cout<<"         You must also have bPtDependentHarmonicV2 = bPtDependentHarmonicV4 in the macro."<<endl;
+  exit(0); 
+ }
+ 
+} // end of void CheckUserSettings()
 
 void LoadLibraries(const anaModes mode) {
   
