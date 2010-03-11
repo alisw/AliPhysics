@@ -39,6 +39,7 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDCalibraVector.cxx \
       AliTRDCalibraVdriftLinearFit.cxx \
       AliTRDCalibPadStatus.cxx \
+      AliTRDCalibChamberStatus.cxx \
       AliTRDEntriesInfo.cxx \
       AliTRDPhInfo.cxx \
       AliTRDPrfInfo.cxx \
