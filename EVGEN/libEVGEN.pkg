@@ -20,7 +20,8 @@ SRCS          = AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx \
 		AliGenMUONCocktail.cxx AliGenMUONCocktailpp.cxx AliGenHBTosl.cxx \
 		AliGenReaderEMD.cxx AliDecayerPolarized.cxx AliGenCorrHF.cxx AliGenCosmicsParam.cxx \
 		AliGenKrypton.cxx AliGenThermalPhotons.cxx AliGenPromptPhotons.cxx\
-		AliGenPileup.cxx AliGenFunction.cxx AliGenTHnSparse.cxx
+		AliGenPileup.cxx AliGenFunction.cxx AliGenTHnSparse.cxx\
+		AliOmegaDalitz.cxx
 
 
 # Headerfiles for this particular package (Path respect to own directory)
