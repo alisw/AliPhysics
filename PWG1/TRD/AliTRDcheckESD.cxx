@@ -332,10 +332,13 @@ void AliTRDcheckESD::UserExec(Option_t *){
       if(kBarrel && (status & AliESDtrack::kTRDpid)) h->Fill(ptTRD, kTRDpid);
       if(kBarrel && (status & AliESDtrack::kTRDrefit)) h->Fill(ptTRD, kTRDref);
     }
-    if(HasMC() && kBarrel && (status & AliESDtrack::kTRDout)) {
+    if(HasMC() && 
+      kBarrel && kPhysPrim &&
+      TMath::Abs(eta0) < 0.9 &&
+      (status & AliESDtrack::kTRDrefit)) {
       TH3 *h3 = (TH3S*)fHistos->At(kPtRes);
       Int_t sgn = mcParticle->Charge()>0?1:-1;
-      h3->Fill(pt0, 1.e2*pt/pt0-1.e2, sgn*Pdg2Idx(TMath::Abs(mcParticle->PdgCode())));
+      h3->Fill(pt0, 1.e2*(pt/pt0-1.), sgn*Pdg2Idx(TMath::Abs(mcParticle->PdgCode())));
     }
     if(ip){
       h = (TH2I*)fHistos->At(kTRDmom);
