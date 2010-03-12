@@ -26,6 +26,7 @@
 
 class TObjArray;
 class TSeqCollection;
+class AliCFEffGrid;
 class TH1;
 
 class AliCFContainer;
@@ -34,7 +35,11 @@ class AliDielectronCFdraw : public TNamed {
 public:
   AliDielectronCFdraw();
   AliDielectronCFdraw(const char* name, const char* title);
-
+  AliDielectronCFdraw(AliCFContainer *cont);
+  AliDielectronCFdraw(const char* filename);
+  
+  virtual ~AliDielectronCFdraw() {;}
+  
   void SetCFContainer(AliCFContainer * const container) {fCfContainer=container;}
   void SetCFContainers(const TSeqCollection *arr);
 
@@ -49,18 +54,30 @@ public:
   void UnsetRangeUser(const char* varname, const char* slices="");
 
 //   virtual void Draw(const Option_t* /*option*/ = "") {;}
+  //Draw Projections
   void Draw(const Option_t* varnames, const char* opt="", const char* slices="");
   void Draw(Int_t var, const char* opt="", const char* slices="");
   void Draw(Int_t var0, Int_t var1, const char* opt="", const char* slices="");
   void Draw(Int_t var0, Int_t var1, Int_t var2, const char* opt="", const char* slices="");
-  void Draw(const TObjArray *arr, const char* opt="");
-  
-  TObjArray* CollectHistos(Int_t dim, Int_t *vars, const char* slices);
+
+  TObjArray* CollectHistosProj(Int_t dim, Int_t *vars, const char* slices);
   TH1* Project(Int_t ndim, Int_t *vars, Int_t slice);
+
+  //Draw efficiencies
+  void DrawEfficiency(const char* varnames, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
+  void DrawEfficiency(Int_t var, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
+  void DrawEfficiency(Int_t var0, Int_t var1, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
+  void DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
   
+  TObjArray* CollectHistosEff(Int_t dim, Int_t *vars, const char* nominators, Int_t denominator);
+  TH1* ProjectEff(Int_t ndim, Int_t *vars);
+  
+  
+  void Draw(const TObjArray *arr, const char* opt="");
 private:
   AliCFContainer *fCfContainer;                     // CF container
-
+  AliCFEffGrid   *fEffGrid;                         // Efficiency calculation
+  
   AliDielectronCFdraw(const AliDielectronCFdraw &c);
   AliDielectronCFdraw &operator=(const AliDielectronCFdraw &c);
   

@@ -71,33 +71,37 @@ public:
   virtual Double_t Y()  const  { return TLorentzVector(Px(),Py(),Pz(),E()).Rapidity();}
   
   virtual Short_t Charge() const    { return fPair.GetQ();}
-  virtual Int_t   GetLabel() const  { return -1; }  //TODO: check
+  virtual Int_t   GetLabel() const  { return fLabel;      }
   // PID
   virtual const Double_t *PID() const { return 0;} //TODO: check
-
+  // Dummy
+  Int_t PdgCode() const {return 0;}
+  
   Double_t OpeningAngle() const { return fOpeningAngle; }
 
   UChar_t GetType() const { return fType; }
   void SetType(Char_t type) { fType=type; }
+
+  void SetLabel(Int_t label) {fLabel=label;}
   // internal KF particle
   const AliKFParticle& GetKFParticle() const { return fPair; }
 
   // daughter references
   AliVParticle* GetFirstDaughter()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
   AliVParticle* GetSecondDaughter()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
-  // Dummy
-  Int_t PdgCode() const {return 0;}
+
   
 private:
   Double_t fOpeningAngle; // opening angle of the pair
-  Char_t  fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
-
+  Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
+  Int_t    fLabel;        // MC label
+  
   AliKFParticle fPair;   // KF particle internally used for pair calculation
 
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
   
-  ClassDef(AliDielectronPair,1)
+  ClassDef(AliDielectronPair,2)
 };
 
 #endif

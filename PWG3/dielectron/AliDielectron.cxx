@@ -191,7 +191,6 @@ void AliDielectron::ProcessMC()
   //loop over all MC data and Fill the CF container if it exist
   if (!fCfManagerPair) return;
   fCfManagerPair->SetPdgMother(fPdgMother);
-  
   AliDielectronMC *dieMC=AliDielectronMC::Instance();
   for (Int_t ipart=0; ipart<dieMC->GetNMCTracks();++ipart){
     //TODO: MC truth cut properly!!!
@@ -290,6 +289,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
       candidate->SetTracks(static_cast<AliVTrack*>(fTracks[arr1].UncheckedAt(itrack1)), 11,
                            static_cast<AliVTrack*>(fTracks[arr2].UncheckedAt(itrack2)), 11);
       candidate->SetType(pairIndex);
+      candidate->SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 
       //pair cuts
       UInt_t cutMask=fPairFilter.IsSelected(candidate);

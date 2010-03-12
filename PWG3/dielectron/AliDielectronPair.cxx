@@ -28,6 +28,7 @@ ClassImp(AliDielectronPair)
 AliDielectronPair::AliDielectronPair() :
   fOpeningAngle(-1),
   fType(-1),
+  fLabel(-1),
   fPair(),
   fRefD1(),
   fRefD2()
@@ -43,6 +44,7 @@ AliDielectronPair::AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
                                      AliVTrack * const particle2, Int_t pid2, Char_t type) :
   fOpeningAngle(-1),
   fType(type),
+  fLabel(-1),
   fPair(),
   fRefD1(),
   fRefD2()
@@ -77,8 +79,13 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
   fPair.AddDaughter(kf1);
   fPair.AddDaughter(kf2);
   
-  fRefD1 = particle1;
-  fRefD2 = particle2;
+  if (particle1->Pt()>particle2->Pt()){
+    fRefD1 = particle1;
+    fRefD2 = particle2;
+  } else {
+    fRefD1 = particle2;
+    fRefD2 = particle1;
+  }
 
   fOpeningAngle=kf1.GetAngle(kf2);
 }

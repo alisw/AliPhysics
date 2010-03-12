@@ -158,8 +158,8 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
   if (fStepForNoCutsMCmotherPid) ++fNSteps;
   if (fStepForAfterAllCuts) fNSteps+=2;
   
-  if (fStepsForEachCut&&fNCuts>1)        fNSteps+=(2*fNCuts);     //one step for each cut + MC truth
-  if (fStepsForCutsIncreasing&&fNCuts>2) fNSteps+=(2*(fNCuts-2)); //one step for the increasing cuts + MC truth
+  if (fStepsForEachCut&&fNCuts>1)        fNSteps+=(2*fNCuts);     //one step for each cut + Signal (MC)
+  if (fStepsForCutsIncreasing&&fNCuts>2) fNSteps+=(2*(fNCuts-2)); //one step for the increasing cuts + Signal (MC)
                                                       // e.g. cut2&cut3, cut2&cut3&cut4
   fNSteps+=(2*fNStepMasks);                            // cuts for the additional cut masks
   // create the container
@@ -224,7 +224,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
 
   //before cuts (MC truth)
   if (fStepForNoCutsMCmotherPid){
-    fCfContainer->SetStepTitle(step++,"No cuts (MC mother)");
+    fCfContainer->SetStepTitle(step++,"No cuts (Signal)");
   }
   
   //After All cuts
@@ -232,7 +232,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
   if (fStepForAfterAllCuts){
     cutName="All Cuts"; //TODO: User GetTitle???
     fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
-    cutName+=" (MC truth)";
+    cutName+=" (Signal)";
     fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut with MC truth
   }
 
@@ -241,7 +241,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
     for (Int_t iCut=0; iCut<fNCuts;++iCut) {
       cutName=filter.GetCuts()->At(iCut)->GetName(); //TODO: User GetTitle???
       fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
-      cutName+=" (MC mother)";
+      cutName+=" (Signal)";
       fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut with MC truth
     }
   }
@@ -253,7 +253,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
       cutName+="&";
       cutName+=filter.GetCuts()->At(iCut)->GetName();
       fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
-      cutName+=" (MC mother)";
+      cutName+=" (Signal)";
       fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut with MC truth
     }
   }
@@ -273,7 +273,7 @@ void AliDielectronCF::InitialiseContainer(const AliAnalysisFilter& filter)
       }
     }
     fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut
-    cutName+=" (MC mother)";
+    cutName+=" (Signal)";
     fCfContainer->SetStepTitle(step++, cutName.Data()); //Step for the cut with MC truth
   }
 
@@ -394,7 +394,7 @@ void AliDielectronCF::FillMC(const TObject *particle)
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::Fill(particle,valuesPair);
   
-  //TODO: temporary solution, set manually the pair type to 1: mixed e+-
+  //TODO: temporary solution, set manually the pair type to 1: unlikesign SE
   valuesPair[AliDielectronVarManager::kPairType]=1;
   
   for (Int_t iVar=0; iVar<fNVars; ++iVar){
@@ -407,9 +407,14 @@ void AliDielectronCF::FillMC(const TObject *particle)
     AliVParticle *d2=0x0;
     AliDielectronMC::Instance()->GetDaughters(particle,d1,d2);
     Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
-    AliDielectronVarManager::Fill(d1,valuesLeg1);
     Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
-    AliDielectronVarManager::Fill(d2,valuesLeg2);
+    if (d1->Pt()>d2->Pt()){
+      AliDielectronVarManager::Fill(d1,valuesLeg1);
+      AliDielectronVarManager::Fill(d2,valuesLeg2);
+    } else {
+      AliDielectronVarManager::Fill(d2,valuesLeg1);
+      AliDielectronVarManager::Fill(d1,valuesLeg2);
+    }
     
     for (Int_t iVar=0; iVar<fNVarsLeg; ++iVar){
       Int_t var=fVariablesLeg[iVar];
