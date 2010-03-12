@@ -38,6 +38,36 @@
 // To print statistics after processing use:
 //   fPhysicsSelection->Print();
 //
+// To seleect the BX ids corresponding to real bunches crossings p2 use:
+//   fPhysicsSelection->SetUseBXNumbers();
+// you cannot process runs with different filling schemes if you require this option.
+//
+// To compute the Background automatically using the control triggers
+// use: 
+//   fPhysicsSelection->SetComputeBG();
+// this will show the value of the Beam Gas, accidentals and good
+// events as additional rows in the statistic tables, but it will NOT
+// subtract the background automatically.
+// This option will only work for runs taken with the CINT1
+// suite. This options enables automatically also the usage of BX
+// numbers. You can only process one run at a time if you require this
+// options, because it uses the bunch intensity estimated run by run.
+// 
+// The BG will usually be more important in the so-called "bin 0": the
+// class can also compute the statistics table for events in this
+// bin. Since the definition of bin 0 may in general change from
+// analysis to analysis, the user needs to provide a callback
+// implementing the definition of bin zero. The callback should be
+// implemented as a method in the analysis task and should override
+// the IsEventInBinZero method of AliAnalysisTaskSE, and should thus
+// have the the following prototype:
+//   Bool_t IsEventInBinZero(); 
+// It should return true if the event is in the bin 0 and it is set by
+// passing to the physics selection the NAME of the task where the
+// callback is implemented: 
+//   fPhysicsSelection->SetBin0Callback("MyTask").
+//
+//
 // Usually the class selects the trigger scheme by itself depending on the run number.
 // Nevertheless, you can do that manually by calling AddCollisionTriggerClass() and AddBGTriggerClass()
 // Example:
@@ -54,7 +84,8 @@
 // to be present:
 //   AddBGTriggerClass("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL");
 //
-//   Origin: Jan Fiete Grosse-Oetringhaus, CERN
+//   Origin: Jan Fiete Grosse-Oetringhaus, CERN 
+//           Michele Floris, CERN
 //-------------------------------------------------------------------------
 
 #include <Riostream.h>
@@ -71,6 +102,8 @@
 #include <AliLog.h>
 
 #include <AliESDEvent.h>
+#include <AliAnalysisTaskSE.h>
+#include "AliAnalysisManager.h"
 
 ClassImp(AliPhysicsSelection)
 
@@ -82,16 +115,25 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fBGTrigClasses(),
   fTriggerAnalysis(),
   fBackgroundIdentification(0),
-  fHistStatistics(0),
   fHistBunchCrossing(0),
   fSkipTriggerClassSelection(0),
-  fUsingCustomClasses(0)
+  fUsingCustomClasses(0),
+  fSkipV0(0),
+  fBIFactorA(1),
+  fBIFactorC(1),
+  fRatioBEEE(2),
+  fComputeBG(0),
+  fUseBXNumbers(0),
+  fFillingScheme(""),
+  fBin0CallBack("")
 {
   // constructor
   
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
+  fHistStatistics[0] = 0;
+  fHistStatistics[1] = 0;
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
@@ -99,15 +141,20 @@ AliPhysicsSelection::AliPhysicsSelection() :
 AliPhysicsSelection::~AliPhysicsSelection()
 {
   // destructor
-  
+
   fCollTrigClasses.Delete();
   fBGTrigClasses.Delete();
   fTriggerAnalysis.Delete();
 
-  if (fHistStatistics)
+  if (fHistStatistics[0])
   {
-    delete fHistStatistics;
-    fHistStatistics = 0;
+    delete fHistStatistics[0];
+    fHistStatistics[0] = 0;
+  }
+  if (fHistStatistics[1])
+  {
+    delete fHistStatistics[1];
+    fHistStatistics[1] = 0;
   }
   
   if (fHistBunchCrossing)
@@ -115,6 +162,7 @@ AliPhysicsSelection::~AliPhysicsSelection()
     delete fHistBunchCrossing;
     fHistBunchCrossing = 0;
   }
+
 }
 
 Bool_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const
@@ -227,92 +275,146 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
     {
       triggerAnalysis->FillHistograms(aEsd);
   
-      fHistStatistics->Fill(1, i);
+      Bool_t isBin0 = kFALSE;
+      if (fBin0CallBack != "") {
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr) {
+	  AliError("Cannot get the analysis manager");
+	}  
+	else {
+	  isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
+	}
+      }
+
       
       // hardware trigger (should only remove events for MC)
       // replay CINT1B hardware trigger
       // TODO this has to depend on the actual hardware trigger (and that depends on the run...)
       Int_t fastORHW = triggerAnalysis->SPDFiredChips(aEsd, 1); // SPD number of chips from trigger bits (!)
-      Bool_t v0AOnline = (triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);
-      Bool_t v0COnline = (triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);
-      
-      if (fastORHW == 0 && !v0AOnline && !v0COnline)
-      {
-        AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
-        continue;
-      }
-      
-      fHistStatistics->Fill(2, i);
-    
+      Bool_t v0A       = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0A);
+      Bool_t v0C       = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0C);
+      Bool_t v0AHW     = fSkipV0 ? 0 :(triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+      Bool_t v0CHW     = fSkipV0 ? 0 :(triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
       // offline trigger
-      AliTriggerAnalysis::V0Decision v0ADecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kASide, kFALSE);
-      AliTriggerAnalysis::V0Decision v0CDecision = triggerAnalysis->V0Trigger(aEsd, AliTriggerAnalysis::kCSide, kFALSE);
-      
-      Bool_t v0AOffline = (v0ADecision == AliTriggerAnalysis::kV0BB);
-      Bool_t v0COffline = (v0CDecision == AliTriggerAnalysis::kV0BB);
-        
       Int_t fastOROffline = triggerAnalysis->SPDFiredChips(aEsd, 0); // SPD number of chips from clusters (!)
-      Bool_t v0ABG = (v0ADecision == AliTriggerAnalysis::kV0BG);
-      Bool_t v0CBG = (v0CDecision == AliTriggerAnalysis::kV0BG);
+      Bool_t v0ABG = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0ABG);
+      Bool_t v0CBG = fSkipV0 ? 0 :triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kV0CBG);
       Bool_t v0BG = v0ABG || v0CBG;
+
+      // fmd
+      Bool_t fmdA =  triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kFMDA);
+      Bool_t fmdC =  triggerAnalysis->IsOfflineTriggerFired(aEsd, AliTriggerAnalysis::kFMDC);
+      Bool_t fmd  = fmdA || fmdC;
     
-      if (fastOROffline > 0)
-        fHistStatistics->Fill(3, i);
-      if (fastOROffline > 1)
-        fHistStatistics->Fill(4, i);
-        
-      if (v0AOffline)
-        fHistStatistics->Fill(5, i);
-      if (v0COffline)
-        fHistStatistics->Fill(6, i);
-      if (v0ABG)
-        fHistStatistics->Fill(7, i);
-      if (v0CBG)
-        fHistStatistics->Fill(8, i);
-        
-      if (v0ADecision == AliTriggerAnalysis::kV0Fake)
-        fHistStatistics->Fill(9, i);
-      if (v0CDecision == AliTriggerAnalysis::kV0Fake)
-        fHistStatistics->Fill(10, i);
+      // SSD
+      Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
+
+      // Some "macros"
+      Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
+      Bool_t mb1prime = (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C) ) && (!v0BG);
+
+      // Background rejection
+      Bool_t bgID = ! fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd));
+
+      Int_t ntrig = fastOROffline; // any 2 hits
+      if(v0A)              ntrig += 1;
+      if(v0C)              ntrig += 1; //v0C alone is enough
+      if(fmd)              ntrig += 1;
+      if(ssdClusters>1)    ntrig += 1;
+
+
+      Bool_t hwTrig = fastORHW > 0 || v0AHW || v0CHW;
+
+      // fill statistics and return decision
+      const Int_t nHistStat = 2;
+      for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
+	if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
       
-      if (fastOROffline > 1 && !v0BG)
-        fHistStatistics->Fill(11, i);
+	fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
+
+
+
+	// We fill the rest only if hw trigger is ok
+	if (!hwTrig)
+	  {
+	    AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
+	    continue;
+	  } else {       
+	  fHistStatistics[iHistStat]->Fill(kStatHWTrig, i);
+	}
+      
+
+	// v0 BG stats
+	if (v0ABG)
+	  fHistStatistics[iHistStat]->Fill(kStatV0ABG, i);
+	if (v0CBG)
+	  fHistStatistics[iHistStat]->Fill(kStatV0CBG, i);
+
+	// We fill the rest only if mb1 && ! v0BG
+	if (mb1)
+	  fHistStatistics[iHistStat]->Fill(kStatMB1, i);
+	else continue;
+
+	if (mb1prime)
+	  fHistStatistics[iHistStat]->Fill(kStatMB1Prime, i);
+
+	if (fmd)
+	  fHistStatistics[iHistStat]->Fill(kStatFMD, i);
+
+	if(ssdClusters>1)
+	  fHistStatistics[iHistStat]->Fill(kStatSSD1, i);
+
+	if(ntrig >= 2 && !v0BG) 
+	  fHistStatistics[iHistStat]->Fill(kStatAny2Hits, i);
+
+	if (fastOROffline > 0)
+	  fHistStatistics[iHistStat]->Fill(kStatFO1, i);
+	if (fastOROffline > 1)
+	  fHistStatistics[iHistStat]->Fill(kStatFO2, i);
         
-      if ((fastOROffline > 0 || v0AOffline || v0COffline) && !v0BG)
-        fHistStatistics->Fill(12, i);
-    
-      if (fastOROffline > 0 && (v0AOffline || v0COffline) && !v0BG)
-        fHistStatistics->Fill(13, i);
-  
-      if (v0AOffline && v0COffline && !v0BG)
-        fHistStatistics->Fill(14, i);
-      
-      if (fastOROffline > 1 || (fastOROffline > 0 && (v0AOffline || v0COffline)) || (v0AOffline && v0COffline))
-      {
-        if (!v0BG)
-        {
-          fHistStatistics->Fill(15, i);
-      
-          if (fBackgroundIdentification && !fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd)))
-          {
-            AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
-            fHistStatistics->Fill(16, i);
-          }
-          else
-          {
-            AliDebug(AliLog::kDebug, "Accepted event for histograms");
+	if (v0A)
+	  fHistStatistics[iHistStat]->Fill(kStatV0A, i);
+	if (v0C)
+	  fHistStatistics[iHistStat]->Fill(kStatV0C, i);
+        
+	//       if (fastOROffline > 1 && !v0BG)
+	//         fHistStatistics[iHistStat]->Fill(kStatFO2NoBG, i);
             
-            fHistStatistics->Fill(17, i);
-            fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i);
-            if (i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection)
-              accept = kTRUE;
-          }
-        }
-        else
-          AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
+	if (fastOROffline > 0 && (v0A || v0C) && !v0BG)
+	  fHistStatistics[iHistStat]->Fill(kStatFO1AndV0, i);
+  
+	if (v0A && v0C && !v0BG && !bgID)
+	  fHistStatistics[iHistStat]->Fill(kStatV0, i);
+
+
+	if ( mb1 )
+	
+	  {
+	    if (!v0BG || fSkipV0)
+	      {
+		if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
+      
+		if (fBackgroundIdentification && bgID)
+		  {
+		    AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
+		    fHistStatistics[iHistStat]->Fill(kStatBG, i);
+		  }
+		else
+		  {
+		    AliDebug(AliLog::kDebug, "Accepted event for histograms");
+            
+		    fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
+		    if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+		    if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
+		      accept = kTRUE; // only set for "all" (should not really matter)
+		  }
+	      }
+	    else
+	      AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
+	  }
+	else
+	  AliDebug(AliLog::kDebug, "Rejecting event because trigger condition is not fulfilled");
       }
-      else
-        AliDebug(AliLog::kDebug, "Rejecting event because trigger condition is not fulfilled");
     }
   }
  
@@ -322,7 +424,7 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   return accept;
 }
 
-Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber)
+Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber) const
 {
   // returns the current trigger scheme (classes that are accepted/rejected)
   
@@ -343,8 +445,115 @@ Int_t AliPhysicsSelection::GetTriggerScheme(UInt_t runNumber)
   // default: CINT1 suite
   return 1;
 }  
+
+const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
+
+  if(fMC) return "MC";
+
+  if      (runNumber >= 104065 && runNumber <= 104160) {
+    return "4x4a";
+  } 
+  else if (runNumber >= 104315 && runNumber <= 104321) {
+    return "4x4a*";
+  }
+  else if (runNumber >= 104792 && runNumber <= 104803) {
+    return "4x4b";
+  }
+  else if (runNumber >= 104824 && runNumber <= 104892) {
+    return "4x4c";
+  }
+  else if (runNumber == 105143 || runNumber == 105160) {
+    return "16x16a";
+  }
+  else if (runNumber >= 105256 && runNumber <= 105268) {
+    return "4x4c";
+  }
+  else {
+    AliError(Form("Unknown filling scheme (run %d)", runNumber));
+  }
+
+  return "Unknown";
+}
+
+Int_t AliPhysicsSelection::GetRatioBBBE(Int_t runNumber) {
+
+
+  if(fMC) return 1;
+
+  if (runNumber == 105143 || runNumber == 105160) {
+    return 8;
+  }
+  else if (fComputeBG &&
+	   !(runNumber >= 105256 && runNumber <= 105268) &&
+	   !(runNumber >= 104065 && runNumber <= 104160) &&
+	   !(runNumber >= 104315 && runNumber <= 104321) &&
+	   !(runNumber >= 104792 && runNumber <= 104803) &&
+	   !(runNumber >= 104824 && runNumber <= 104892)
+	   ){     
+
+    AliError(Form("Unknown run %d, assuming ratio BE/EE = 2",runNumber));
+
+  }
+
+  return 2;
+}
+
+
+const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigger)  {
+
+  if (!fUseBXNumbers || fMC) return "";
+
+  if      (runNumber >= 104065 && runNumber <= 104160) {
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2128 #3019";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #346 #3465";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #1680";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  } 
+  else if (runNumber >= 104315 && runNumber <= 104321) {
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2000 #2891";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #218 #3337";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1106 #1552";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  }
+  else if (runNumber >= 104792 && runNumber <= 104803) {
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #2228 #3119";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2554 #446";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1334 #769";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  }
+  else if (runNumber >= 104824 && runNumber <= 104892) {
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #3119 #769";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2554 #446";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1334 #2228";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  }
+  else if (runNumber == 105143 || runNumber == 105160) {
+    fRatioBEEE = 8;
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #1337 #1418 #2228 #2309 #3119 #3200 #446 #527";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #1580  #1742  #1904  #2066  #2630  #2792  #2954  #3362";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return "  #845  #1007  #1169   #1577 #3359 #3521 #119  #281 ";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  }
+  else if (runNumber >= 105256 && runNumber <= 105268) {
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #3019 #669";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2454 #346";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #2128";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  }
+  else {
+    AliError(Form("Unknown run %d, using all BXs!",runNumber));
+  }
+
+  return "";
+}
     
-Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
+Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
 {
   // initializes the object for the given run
   // TODO having the run number here and parameters hardcoded is clearly temporary, a way needs to be found to have a CDB-like configuration also for analysis
@@ -352,11 +561,33 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
+  if(!fBin0CallBack) 
+    AliError("Bin0 Callback not set: will not fill the statistics for the bin 0");
+
+  if (fMC) {
+    // ovverride BX and bg options in case of MC
+    fComputeBG    = kFALSE;
+    fUseBXNumbers = kFALSE;
+  }
+
   Int_t triggerScheme = GetTriggerScheme(runNumber);
-  
   if (!fUsingCustomClasses && fCurrentRun != -1 && triggerScheme != GetTriggerScheme(fCurrentRun))
     AliFatal("Processing several runs with different trigger schemes is not supported");
   
+  if(fComputeBG && fCurrentRun != -1 && fCurrentRun != runNumber) 
+    AliFatal("Cannot process several runs because BG computation is requested");
+
+  if(fComputeBG && !fUseBXNumbers) 
+    AliFatal("Cannot compute BG id BX numbers are not used");
+  
+  if(fUseBXNumbers && fFillingScheme != "" && fFillingScheme != GetFillingScheme(runNumber))
+    AliFatal("Cannot process runs with different filling scheme if usage of BX numbers is requested");
+
+  fRatioBEEE          = GetRatioBBBE(runNumber);
+  fFillingScheme      = GetFillingScheme(runNumber);
+
+  if(fComputeBG) SetBIFactors(runNumber);
+
   AliInfo(Form("Initializing for run %d", runNumber));
   
   // initialize first time?
@@ -372,10 +603,17 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
         break;
         
       case 1:
-        fCollTrigClasses.Add(new TObjString("+CINT1B-ABCE-NOPF-ALL"));
-        fBGTrigClasses.Add(new TObjString("+CINT1A-ABCE-NOPF-ALL"));
-        fBGTrigClasses.Add(new TObjString("+CINT1C-ABCE-NOPF-ALL"));
-        fBGTrigClasses.Add(new TObjString("+CINT1-E-NOPF-ALL"));
+	{ // need a new scope to avoid cross-initialization errors
+	  TObjString * cint1b = new TObjString(Form("%s%s","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL")));
+	  TObjString * cint1a = new TObjString(Form("%s%s","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL")));
+	  TObjString * cint1c = new TObjString(Form("%s%s","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL")));
+	  TObjString * cint1e = new TObjString(Form("%s%s","+CINT1-E-NOPF-ALL",      GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))    );
+	  //
+	  fCollTrigClasses.Add(cint1b);
+	  fBGTrigClasses.Add(cint1a);
+	  fBGTrigClasses.Add(cint1c);
+	  fBGTrigClasses.Add(cint1e);
+	}
         break;
         
       case 2:
@@ -400,48 +638,34 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
       fTriggerAnalysis.Add(triggerAnalysis);
     }
       
-    if (fHistStatistics)
-      delete fHistStatistics;
+    // TODO: shall I really delete this?
+    if (fHistStatistics[0])
+      delete fHistStatistics[0];
+    if (fHistStatistics[1])
+      delete fHistStatistics[1];
   
-    fHistStatistics = new TH2F("fHistStatistics", "fHistStatistics;;", 17, 0.5, 17.5, count, -0.5, -0.5 + count);
-      
-    Int_t n = 1;
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Trigger class");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Hardware trigger");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A Fake");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0C Fake");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 2 &!V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 1 | V0A | V0C) & !V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "FO >= 1 & (V0A | V0C) & !V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "V0A & V0C & !V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A & V0C)) & !V0 BG");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Background identification");
-    fHistStatistics->GetXaxis()->SetBinLabel(n++, "Accepted");
+    fHistStatistics[kStatIdxBin0] = BookHistStatistics("_Bin0");
+    fHistStatistics[kStatIdxAll]  = BookHistStatistics("");
     
     if (fHistBunchCrossing)
       delete fHistBunchCrossing;
   
     fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
       
-    n = 1;
+    Int_t n = 1;
     for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
     {
-      fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
       fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
       n++;
     }
     for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
     {
-      fHistStatistics->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
       fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
       n++;
     }
+
+    
+
   }
     
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
@@ -470,6 +694,67 @@ Bool_t AliPhysicsSelection::Initialize(UInt_t runNumber)
   return kTRUE;
 }
 
+TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
+
+    // add 6 rows to count for the estimate of good, accidentals and
+    // BG and the ratio of BG and accidentals to total +ratio goot to
+    // first col + 2 for error on good.
+
+  Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
+#ifdef VERBOSE_STAT
+  Int_t extrarows = fComputeBG ? 8 : 0;
+#else
+  Int_t extrarows = fComputeBG ? 3 : 0;
+#endif
+  TH2F * h = new TH2F(Form("fHistStatistics%s",tag), Form("fHistStatistics - %s ;;",tag), kStatAccepted, 0.5, kStatAccepted+0.5, count+extrarows, -0.5, -0.5 + count+extrarows);
+
+  h->GetXaxis()->SetBinLabel(kStatTriggerClass,  "Trigger class");
+  h->GetXaxis()->SetBinLabel(kStatHWTrig,	 "Hardware trigger");
+  h->GetXaxis()->SetBinLabel(kStatFO1,	         "FO >= 1");
+  h->GetXaxis()->SetBinLabel(kStatFO2,	         "FO >= 2");
+  h->GetXaxis()->SetBinLabel(kStatV0A,	         "V0A");
+  h->GetXaxis()->SetBinLabel(kStatV0C,	         "V0C");
+  h->GetXaxis()->SetBinLabel(kStatFMD,	         "FMD");
+  h->GetXaxis()->SetBinLabel(kStatSSD1,	         "SSD >= 2");
+  h->GetXaxis()->SetBinLabel(kStatV0ABG,	 "V0A BG");
+  h->GetXaxis()->SetBinLabel(kStatV0CBG,	 "V0C BG");
+  h->GetXaxis()->SetBinLabel(kStatMB1,	         "(FO >= 1 | V0A | V0C) & !V0 BG");
+  h->GetXaxis()->SetBinLabel(kStatMB1Prime,      "(FO >= 2 | (FO >= 1 & (V0A | V0C)) | (V0A &v0C) ) & !V0 BG");
+  h->GetXaxis()->SetBinLabel(kStatFO1AndV0,	 "FO >= 1 & (V0A | V0C) & !V0 BG");
+  h->GetXaxis()->SetBinLabel(kStatV0,	         "V0A & V0C & !V0 BG & !BG ID");
+  h->GetXaxis()->SetBinLabel(kStatOffline,	 "Offline Trigger");
+  h->GetXaxis()->SetBinLabel(kStatAny2Hits,	 "2 Hits & !V0 BG");
+  h->GetXaxis()->SetBinLabel(kStatBG,	         "Background identification");
+  h->GetXaxis()->SetBinLabel(kStatAccepted,      "Accepted");
+
+  Int_t n = 1;
+  for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
+    {
+      h->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
+      n++;
+    }
+  for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++)
+    {
+      h->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
+      n++;
+    }
+
+  if(fComputeBG) {
+    h->GetYaxis()->SetBinLabel(n++, "BG (A+C)");
+    h->GetYaxis()->SetBinLabel(n++, "ACC");
+#ifdef VERBOSE_STAT
+    h->GetYaxis()->SetBinLabel(n++, "BG (A+C) %  (rel. to CINT1B)");
+    h->GetYaxis()->SetBinLabel(n++, "ACC % (rel. to CINT1B)");
+    h->GetYaxis()->SetBinLabel(n++, "ERR GOOD %");
+    h->GetYaxis()->SetBinLabel(n++, "GOOD % (rel. to 1st col)");
+    h->GetYaxis()->SetBinLabel(n++, "ERR GOOD");
+#endif
+    h->GetYaxis()->SetBinLabel(n++, "GOOD");
+  }
+
+  return h;
+}
+
 void AliPhysicsSelection::Print(Option_t* /* option */) const
 {
   // print the configuration
@@ -496,12 +781,12 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     triggerAnalysis->PrintTriggerClasses();
   }
   
-  if (fHistStatistics && fCollTrigClasses.GetEntries() > 0)
+  if (fHistStatistics[kStatIdxAll] && fCollTrigClasses.GetEntries() > 0)
   {
     Printf("\nSelection statistics for first collision trigger (%s):", ((TObjString*) fCollTrigClasses.First())->String().Data());
     
-    Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics->GetBinContent(1, 1));
-    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics->GetBinContent(fHistStatistics->GetXaxis()->FindBin("Accepted"), 1));
+    Printf("Total events with correct trigger class: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(1, 1));
+    Printf("Selected collision candidates: %d", (Int_t) fHistStatistics[kStatIdxAll]->GetBinContent(fHistStatistics[kStatIdxAll]->GetXaxis()->FindBin("Accepted"), 1));
   }
   
   if (fHistBunchCrossing)
@@ -537,6 +822,11 @@ void AliPhysicsSelection::Print(Option_t* /* option */) const
     Printf("WARNING: Using custom trigger classes!");
   if (fSkipTriggerClassSelection) 
     Printf("WARNING: Skipping trigger class selection!");
+  if (fSkipV0) 
+    Printf("WARNING: Ignoring V0 information in selection");
+  if(!fBin0CallBack) 
+    Printf("WARNING: Callback not set: will not fill the statistics for the bin 0");
+
 }
 
 Long64_t AliPhysicsSelection::Merge(TCollection* list)
@@ -566,23 +856,27 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
       continue;
       
     collections[0].Add(&(entry->fTriggerAnalysis));
-    if (entry->fHistStatistics)
-      collections[1].Add(entry->fHistStatistics);
+    if (entry->fHistStatistics[0])
+      collections[1].Add(entry->fHistStatistics[0]);
+    if (entry->fHistStatistics[1])
+      collections[2].Add(entry->fHistStatistics[1]);
     if (entry->fHistBunchCrossing)
-      collections[2].Add(entry->fHistBunchCrossing);
+      collections[3].Add(entry->fHistBunchCrossing);
     if (entry->fBackgroundIdentification)
-      collections[3].Add(entry->fBackgroundIdentification);
+      collections[4].Add(entry->fBackgroundIdentification);
 
     count++;
   }
 
   fTriggerAnalysis.Merge(&collections[0]);
-  if (fHistStatistics)
-    fHistStatistics->Merge(&collections[1]);
+  if (fHistStatistics[0])
+    fHistStatistics[0]->Merge(&collections[1]);
+  if (fHistStatistics[1])
+    fHistStatistics[1]->Merge(&collections[2]);
   if (fHistBunchCrossing)
-    fHistBunchCrossing->Merge(&collections[2]);
+    fHistBunchCrossing->Merge(&collections[3]);
   if (fBackgroundIdentification)
-    fBackgroundIdentification->Merge(&collections[3]);
+    fBackgroundIdentification->Merge(&collections[4]);
   
   delete iter;
 
@@ -593,7 +887,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 {
   // write histograms to current directory
   
-  if (!fHistStatistics)
+  if (!fHistStatistics[0] || !fHistStatistics[1])
     return;
     
   if (folder)
@@ -602,7 +896,73 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
     gDirectory->cd(folder);
   }
   
-  fHistStatistics->Write();
+
+  // Fill the last rows of fHistStatistics before saving
+  if (fComputeBG) {
+    Int_t triggerScheme = GetTriggerScheme(UInt_t(fCurrentRun));
+    if(triggerScheme != 1){
+      AliWarning("BG estimate only supported for trigger scheme \"1\" (CINT1 suite)");
+    } else {
+      Int_t nHistStat = 2;
+      // TODO: get number of rows in a more flexible way
+      // 1. loop over all cols
+
+      for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
+    
+	Int_t ncol = fHistStatistics[iHistStat]->GetNbinsX();
+	Float_t good1 = 0;
+	for(Int_t icol = 1; icol <= ncol; icol++) {
+	  Int_t cint1B = (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,1);	
+	  Int_t cint1A = (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,2);	
+	  Int_t cint1C = (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,3);	
+	  Int_t cint1E = (Int_t) fHistStatistics[iHistStat]->GetBinContent(icol,4);      
+      
+	  if (cint1B>0) {
+	    Int_t acc  = fRatioBEEE*cint1E; 
+	    //      Int_t bg   = cint1A + cint1C - 2*acc;
+	    Float_t bg   = fBIFactorA*(cint1A-acc) + fBIFactorC*(cint1C-acc) ;
+	    Float_t good = Float_t(cint1B) - bg - acc;
+	    if (icol ==1) good1 = good;
+	    //      Float_t errGood     = TMath::Sqrt(2*(cint1A+cint1C+cint1E));// Error on the number of goods assuming only bg fluctuates
+	    //      DeltaG^2 = B + FA^2 A + FC^2 C + Ratio^2 (FA+FC-1)^2 E.
+	    Float_t errGood     = TMath::Sqrt( cint1B + 
+					       fBIFactorA*fBIFactorA*cint1A +
+					       fBIFactorC*fBIFactorC*cint1C +
+					       fRatioBEEE * fRatioBEEE * 
+					       (fBIFactorA + fBIFactorC - 1)*(fBIFactorA + fBIFactorC - 1)*cint1E);
+	    Float_t errBG = TMath::Sqrt(fBIFactorA*fBIFactorA*cint1A+
+					fBIFactorC*fBIFactorC*cint1C+
+					fRatioBEEE*fRatioBEEE*(fBIFactorA+fBIFactorC)*(fBIFactorA+fBIFactorC)*cint1E);
+	
+	
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowBG,bg);	
+	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowBG,errBG);	
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAcc,acc);	
+	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowAcc,TMath::Sqrt(fRatioBEEE*fRatioBEEE*cint1E));	
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowGood,good);    
+	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowGood,errGood);    
+
+#ifdef VERBOSE_STAT
+	    Float_t accFrac   = Float_t(acc) / cint1B  *100;
+	    Float_t bgFrac    = Float_t(bg)  / cint1B  *100;
+	    Float_t goodFrac  = Float_t(good)  / good1 *100;
+	    Float_t errGoodFrac = errGood/good1 * 100;
+	    Float_t errFracBG = bg > 0 ? TMath::Sqrt(errBG/bg + 1/TMath::Sqrt(cint1B))*bgFrac : 0;
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowBGFrac,bgFrac);	
+	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowBGFrac,errFracBG);	
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAccFrac,accFrac);    
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAccFrac,errGoodFrac);    
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowGoodFrac,goodFrac);    
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowErrGood,errGood);    
+#endif
+	  }
+	}
+      }
+    }  
+  }
+
+  fHistStatistics[0]->Write();
+  fHistStatistics[1]->Write();
   fHistBunchCrossing->Write();
   
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
@@ -634,4 +994,127 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
   
   if (folder)
     gDirectory->cd("..");
+}
+
+void AliPhysicsSelection::SetBIFactors(Int_t run) {
+
+  switch(run) {
+  case 104155:
+    fBIFactorA = 0.961912722908;
+    fBIFactorC = 1.04992336081;
+    break;
+  case 104157:
+    fBIFactorA = 0.947312854998;
+    fBIFactorC = 1.01599706417;
+    break;
+  case 104159:
+    fBIFactorA = 0.93659320151;
+    fBIFactorC = 0.98580804207;
+    break;
+  case 104160:
+    fBIFactorA = 0.929664189926;
+    fBIFactorC = 0.963467679851;
+    break;
+  case 104315:
+    fBIFactorA = 1.08939104979;
+    fBIFactorC = 0.931113921925;
+    break;
+  case 104316:
+    fBIFactorA = 1.08351880974;
+    fBIFactorC = 0.916068345845;
+    break;
+  case 104320:
+    fBIFactorA = 1.07669281245;
+    fBIFactorC = 0.876818744763;
+    break;
+  case 104321:
+    fBIFactorA = 1.00971079602;
+    fBIFactorC = 0.773781299076;
+    break;
+  case 104792:
+    fBIFactorA = 0.787215863962;
+    fBIFactorC = 0.778253173071;
+    break;
+  case 104793:
+    fBIFactorA = 0.692211363661;
+    fBIFactorC = 0.733152456667;
+    break;
+  case 104799:
+    fBIFactorA = 1.04027825161;
+    fBIFactorC = 1.00530825942;
+    break;
+  case 104800:
+    fBIFactorA = 1.05309910671;
+    fBIFactorC = 1.00376801855;
+    break;
+  case 104801:
+    fBIFactorA = 1.0531231922;
+    fBIFactorC = 0.992439666758;
+    break;
+  case 104802:
+    fBIFactorA = 1.04191478134;
+    fBIFactorC = 0.979368585208;
+    break;
+  case 104803:
+    fBIFactorA = 1.03121314094;
+    fBIFactorC = 0.973379962609;
+    break;
+  case 104824:
+    fBIFactorA = 0.969945926722;
+    fBIFactorC = 0.39549745806;
+    break;
+  case 104825:
+    fBIFactorA = 0.968627213937;
+    fBIFactorC = 0.310100412205;
+    break;
+  case 104841:
+    fBIFactorA = 0.991601393212;
+    fBIFactorC = 0.83762204722;
+    break;
+  case 104845:
+    fBIFactorA = 0.98040863886;
+    fBIFactorC = 0.694824205793;
+    break;
+  case 104867:
+    fBIFactorA = 1.10646173412;
+    fBIFactorC = 0.841407246916;
+    break;
+  case 104876:
+    fBIFactorA = 1.12063452421;
+    fBIFactorC = 0.78726542895;
+    break;
+  case 104890:
+    fBIFactorA = 1.02346137453;
+    fBIFactorC = 1.03355663595;
+    break;
+  case 104892:
+    fBIFactorA = 1.05406025913;
+    fBIFactorC = 1.00029166135;
+    break;
+  case 105143:
+    fBIFactorA = 0.947343384349;
+    fBIFactorC = 0.972637444408;
+    break;
+  case 105160:
+    fBIFactorA = 0.908854622177;
+    fBIFactorC = 0.958851103977;
+    break; 
+  case 105256:
+    fBIFactorA = 0.810076150206;
+    fBIFactorC = 0.884663561883;
+    break;
+  case 105257:
+    fBIFactorA = 0.80974912303;
+    fBIFactorC = 0.878859123479;
+    break;
+  case 105268:
+    fBIFactorA = 0.809052110679;
+    fBIFactorC = 0.87233890989;
+    break;
+  default:
+    fBIFactorA = 1;
+    fBIFactorC = 1;
+  }
+
+
 }

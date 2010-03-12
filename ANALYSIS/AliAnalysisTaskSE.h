@@ -57,6 +57,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual const char*   CurrentFileName();
     virtual Bool_t        IsStandardAOD() const;
     virtual TList*        GetQAHistos()   const {return fHistosQA;}
+    virtual Bool_t        IsEventInBinZero() { return kFALSE;}
+
   protected:
     Int_t                 fDebug;           //  Debug flag
     // IO

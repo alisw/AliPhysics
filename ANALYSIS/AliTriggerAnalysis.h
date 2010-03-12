@@ -53,7 +53,7 @@ class AliTriggerAnalysis : public TObject
     V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const;
     Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
-    
+    Int_t SSDClusters(const AliESDEvent* aEsd);
     static const char* GetTriggerName(Trigger trigger);
     
     void FillHistograms(const AliESDEvent* aEsd);

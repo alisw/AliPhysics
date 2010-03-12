@@ -550,6 +550,15 @@ void AliTriggerAnalysis::FillTriggerClasses(const AliESDEvent* aEsd)
   // TODO add first and last orbit number here
 }
 
+Int_t AliTriggerAnalysis::SSDClusters(const AliESDEvent* aEsd)
+{
+  // returns the number of clusters in the SSD
+  const AliMultiplicity* mult = aEsd->GetMultiplicity();
+  Int_t clusters = mult->GetNumberOfITSClusters(4)+mult->GetNumberOfITSClusters(5);
+  return clusters;
+}
+
+
 Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists)
 {
   // returns the number of fired chips in the SPD
@@ -914,12 +923,12 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
 
     // merge fTriggerClasses
     TIterator* iter2 = entry->fTriggerClasses->MakeIterator();
-    TObjString* obje = 0;
-    while ((obje = dynamic_cast<TObjString*> (iter2->Next())))
+    TObjString* obj = 0;
+    while ((obj = dynamic_cast<TObjString*> (iter2->Next())))
     {
-      TParameter<Long64_t>* param2 = dynamic_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obje));
+      TParameter<Long64_t>* param2 = dynamic_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obj));
       
-      TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obje));
+      TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj));
       if (param1)
       {
         param1->SetVal(param1->GetVal() + param2->GetVal());
@@ -927,7 +936,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
       else
       {
         param1 = dynamic_cast<TParameter<Long64_t>*> (param2->Clone());
-        fTriggerClasses->Add(new TObjString(obje->String()), param1);
+        fTriggerClasses->Add(new TObjString(obj->String()), param1);
       }
     }
     
