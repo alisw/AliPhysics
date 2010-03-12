@@ -477,6 +477,21 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
   fRegs[kDMDELA]  =   SimpleReg_t("DMDELA",      0xD002, 4,      0x8        );
   fRegs[kDMDELS]  =   SimpleReg_t("DMDELS",      0xD003, 4,      0x8        );
 
+  // DMEM allocation
+  // to save space only allocated in groups of normally
+  // equal settings
+  fDmem[fgkDmemAddrDeflCorr - fgkDmemStartAddress]      = new UInt_t[5*6*8*16];
+  fDmem[fgkDmemAddrNdrift - fgkDmemStartAddress]        = new UInt_t[18*5*6];
+  for (Int_t iAddr = fgkDmemAddrDeflCutStart; iAddr <= fgkDmemAddrDeflCutEnd; iAddr++) {
+    fDmem[iAddr - fgkDmemStartAddress]        = new UInt_t[5*6*8*16];
+  }
+  for (Int_t iAddr = fgkDmemAddrLUTStart; iAddr <= fgkDmemAddrLUTEnd; iAddr++) {
+    fDmem[iAddr - fgkDmemStartAddress]        = new UInt_t;
+  }
+  for (Int_t iAddr = fgkDmemAddrTrackletStart; iAddr <= fgkDmemAddrTrackletEnd; iAddr++) {
+    fDmem[iAddr - fgkDmemStartAddress]        = new UInt_t[18*5*6*8*16];
+  }
+
   InitRegs();
 }
 
@@ -491,6 +506,22 @@ AliTRDtrapConfig* AliTRDtrapConfig::Instance()
   }
 
   return fgInstance;
+}
+
+
+AliTRDtrapConfig::~AliTRDtrapConfig()
+{
+  delete [] fDmem[fgkDmemAddrDeflCorr - fgkDmemStartAddress];
+  delete [] fDmem[fgkDmemAddrNdrift - fgkDmemStartAddress];
+  for (Int_t iAddr = fgkDmemAddrDeflCutStart; iAddr <= fgkDmemAddrDeflCutEnd; iAddr++) {
+    delete [] fDmem[iAddr - fgkDmemStartAddress];
+  }
+  for (Int_t iAddr = fgkDmemAddrLUTStart; iAddr <= fgkDmemAddrLUTEnd; iAddr++) {
+    delete fDmem[iAddr - fgkDmemStartAddress];
+  }
+  for (Int_t iAddr = fgkDmemAddrTrackletStart; iAddr <= fgkDmemAddrTrackletEnd; iAddr++) {
+    delete [] fDmem[iAddr - fgkDmemStartAddress];
+  }
 }
 
 
@@ -613,7 +644,8 @@ Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t
 {
   // set the value for the given TRAP register of an individual MCM 
 
-   //std::cout << "-- reg: 0x" << std::hex << fRegs[reg].addr << std::dec << ", data " << value << ", det " << det << ", rob " << rob << ", mcm " << mcm << std::endl;
+  //std::cout << "-- reg: 0x" << std::hex << fRegs[reg].addr << 
+  //std::dec << ", data " << value << ", det " << det << ", rob " << rob << ", mcm " << mcm << std::endl;
 
    if( (det >= 0 && det < AliTRDgeometry::Ndet()) && 
        (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
@@ -668,29 +700,33 @@ Int_t AliTRDtrapConfig::Peek(Int_t addr, Int_t /* det */, Int_t /* rob */, Int_t
 }
 
 
-Bool_t AliTRDtrapConfig::Poke(Int_t addr, Int_t value, Int_t /* det */, Int_t /* rob */, Int_t /* mcm */)
+Bool_t AliTRDtrapConfig::Poke(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm)
 {
   // writing to given address
   // not to be used yet
 
   if ( (addr >= fgkDmemStartAddress) && 
        (addr < (fgkDmemStartAddress + fgkDmemWords)) ) {
-    printf("DMEM 0x%08x : %i\n", addr, value);
+    AliDebug(2, Form("DMEM 0x%08x : %i", addr, value));
+    SetDmem(addr, value, det, rob, mcm);
     return kTRUE;
   }
   else {
     TrapReg_t mcmReg = GetRegByAddress(addr);
     if ( mcmReg >= 0 && mcmReg < kLastReg) {
-      printf("Register: %s : %i\n", GetRegName(mcmReg), value);
+      AliDebug(2, Form("Register: %s : %i\n", GetRegName(mcmReg), value));
+      SetTrapReg(mcmReg, value, det, rob, mcm);
       return kTRUE;
     }
   }
+  
+  //AliError(Form("Unknown address 0x%08x!", addr));
 
   return kFALSE;
 }
 
 
-Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value)
+Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value)
 {
   // Set the content of the given DMEM address 
 
@@ -699,48 +735,151 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value)
     return kFALSE;
   }
 
-  for (Int_t iDet = 0; iDet < 540; iDet++) {
-    for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
-      for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
-        fDmem[iDet*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + iROB*fgkMaxMcm + iMCM]
-          [addr - fgkDmemStartAddress] = value;
+  if (addr == fgkDmemAddrDeflCorr) {
+    for (Int_t iDet = 0; iDet < 540; iDet++) {
+      for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
+	for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
+	  fDmem[addr - fgkDmemStartAddress][(iDet % 30)*8*16 + iROB*16 + iMCM] = value;
+	}
       }
     }
   }
-  return kTRUE;
-}
-
-
-Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value, Int_t det)
-{
-  // Set the content of the given DMEM address 
-
-  for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
-    for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
-      fDmem[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + iROB*fgkMaxMcm + iMCM]
-        [addr - fgkDmemStartAddress] = value;
+  else if (addr == fgkDmemAddrNdrift) {
+    for (Int_t iDet = 0; iDet < 540; iDet++) {
+      fDmem[addr - fgkDmemStartAddress][iDet] = value;
     }
   }
+  else if (addr >= fgkDmemAddrDeflCutStart && addr <= fgkDmemAddrDeflCutEnd) {
+    for (Int_t iDet = 0; iDet < 540; iDet++) {
+      for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
+	for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
+	  fDmem[addr - fgkDmemStartAddress][(iDet % 30)*8*16 + iROB*16 + iMCM] = value;
+	}
+      }
+    }
+  }
+  else if (addr >= fgkDmemAddrLUTStart && addr <= fgkDmemAddrLUTEnd) {
+    fDmem[addr - fgkDmemStartAddress][0] = value;
+  }
+  else if (addr >= fgkDmemAddrTrackletStart && addr <= fgkDmemAddrTrackletEnd) {
+    for (Int_t iDet = 0; iDet < 540; iDet++) {
+      for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
+	for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
+	  fDmem[addr - fgkDmemStartAddress][iDet*8*16 + iROB*16 + iMCM] = value;
+	}
+      }
+    }
+  }
+  else {
+    AliError(Form("Address 0x%04x not allocated in DMEM", addr));
+    return kFALSE;
+  }
+
   return kTRUE;
 }
 
 
-Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm)
+Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det)
 {
   // Set the content of the given DMEM address 
 
-  fDmem[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm]
-    [addr - fgkDmemStartAddress] = value;
+  if ( (addr >> 14) != 0x3) {
+    AliError(Form("No DMEM address: 0x%08x", addr));
+    return kFALSE;
+  }
+
+  if (addr == fgkDmemAddrDeflCorr) {
+    for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
+      for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
+	fDmem[addr - fgkDmemStartAddress][(det % 30)*8*16 + iROB*16 + iMCM] = value;
+      }
+    }
+  }
+  else if (addr == fgkDmemAddrNdrift) {
+    fDmem[addr - fgkDmemStartAddress][det] = value;
+  }
+  else if (addr >= fgkDmemAddrDeflCutStart && addr <= fgkDmemAddrDeflCutEnd) {
+    for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
+      for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
+	fDmem[addr - fgkDmemStartAddress][(det % 30)*8*16 + iROB*16 + iMCM] = value;
+      }
+    }
+  }
+  else if (addr >= fgkDmemAddrLUTStart && addr <= fgkDmemAddrLUTEnd) {
+    fDmem[addr - fgkDmemStartAddress][0] = value;
+  }
+  else if (addr >= fgkDmemAddrTrackletStart && addr <= fgkDmemAddrTrackletEnd) {
+    for (Int_t iROB = 0; iROB < AliTRDfeeParam::GetNrobC1(); iROB++) {
+      for (Int_t iMCM = 0; iMCM < fgkMaxMcm; iMCM++) {
+	fDmem[addr - fgkDmemStartAddress][det*8*16 + iROB*16 + iMCM] = value;
+      }
+    }
+  }
+  else {
+    AliError(Form("Address 0x%04x not allocated in DMEM", addr));
+    return kFALSE;
+  }
+
   return kTRUE;
 }
 
 
-Int_t AliTRDtrapConfig::GetDmem(Int_t addr, Int_t det, Int_t rob, Int_t mcm)
+Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm)
 {
   // Set the content of the given DMEM address 
 
-  return fDmem[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm]
-    [addr - fgkDmemStartAddress];
+  if ( (addr >> 14) != 0x3) {
+    AliError(Form("Not a DMEM address: 0x%08x", addr));
+    return kFALSE;
+  }
+
+  if (addr == fgkDmemAddrDeflCorr) {
+    fDmem[addr - fgkDmemStartAddress][(det % 30)*8*16 + rob*16 + mcm] = value;
+  }
+  else if (addr == fgkDmemAddrNdrift) {
+    fDmem[addr - fgkDmemStartAddress][det] = value;
+  }
+  else if (addr >= fgkDmemAddrDeflCutStart && addr <= fgkDmemAddrDeflCutEnd) {
+    fDmem[addr - fgkDmemStartAddress][(det % 30)*8*16 + rob*16 + mcm] = value;
+  }
+  else if (addr >= fgkDmemAddrLUTStart && addr <= fgkDmemAddrLUTEnd) {
+    fDmem[addr - fgkDmemStartAddress][0] = value;
+  }
+  else if (addr >= fgkDmemAddrTrackletStart && addr <= fgkDmemAddrTrackletEnd) {
+    fDmem[addr - fgkDmemStartAddress][det*8*16 + rob*16 + mcm] = value;
+  }
+  else {
+    AliError(Form("Address 0x%04x not allocated in DMEM", addr));
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+
+UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm)
+{
+  // Get the content of the given DMEM address 
+
+  if (addr == fgkDmemAddrDeflCorr) {
+    return fDmem[addr - fgkDmemStartAddress][(det % 30)*8*16 + rob*16 + mcm];
+  }
+  else if (addr == fgkDmemAddrNdrift) {
+    return fDmem[addr - fgkDmemStartAddress][det];
+  }
+  else if (addr >= fgkDmemAddrDeflCutStart && addr <= fgkDmemAddrDeflCutEnd) {
+    return fDmem[addr - fgkDmemStartAddress][(det % 30)*8*16 + rob*16 + mcm];
+  }
+  else if (addr >= fgkDmemAddrLUTStart && addr <= fgkDmemAddrLUTEnd) {
+    return fDmem[addr - fgkDmemStartAddress][0];
+  }
+  else if (addr >= fgkDmemAddrTrackletStart && addr <= fgkDmemAddrTrackletEnd) {
+    return fDmem[addr - fgkDmemStartAddress][det*8*16 + rob*16 + mcm];
+  }
+  else {
+    AliError(Form("Address 0x%04x not allocated in DMEM", addr));
+    return 0;
+  }
 }
 
 
@@ -867,12 +1006,16 @@ Bool_t  AliTRDtrapConfig::LoadConfig(Int_t det, TString filename)
 }
 
 
-Bool_t AliTRDtrapConfig::ReadPackedConfig(UInt_t *data, Int_t size) 
+Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size) 
 {
   // Read the packed configuration from the passed memory block
   //
   // To be used to retrieve the TRAP configuration from the 
   // configuration as sent in the raw data. 
+
+  AliDebug(1, "Reading packed configuration");
+
+  Int_t det = hc/2;
 
   Int_t idx = 0;
   Int_t err = 0;
@@ -881,122 +1024,131 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(UInt_t *data, Int_t size)
   UShort_t caddr;
   UInt_t dat, msk, header, dataHi;
   
-  while (idx < size) {
+  while (idx < size && *data != 0x00000000) {
     
-    header = *data;
-    data++;
-    idx++;
-    
-    AliDebug(5, Form("read: 0x%08x", header));
-    
-    if (header & 0x01) // single data                                                                                                                                                                         
-    {
-      dat   = (header >>  2) & 0xFFFF;       // 16 bit data                                                                                                                                                    
-      caddr = (header >> 18) & 0x3FFF;    // 14 bit address                                                                                                                                                 
-      
-      if (caddr != 0x1FFF)  // temp!!! because the end marker was wrong                                                                                                                                     
-      {
-        if (header & 0x02) // check if > 16 bits                                                                                                                                                              
-        {
-          dataHi = *data;
-          AliDebug(5, Form("read: 0x%08x", dataHi));
-          data++;
-          idx++;
-          err += ((dataHi ^ (dat | 1)) & 0xFFFF) != 0;
-          dat = (dataHi & 0xFFFF0000) | dat;
-        }
-        AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), dat));
-        if ( ! Poke(caddr, dat, 0, 0, 0) )
-          AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-        if (idx > size)
-        {
-          AliDebug(5, Form("(single-write): no more data, missing end marker\n"));
-          return -err;
-        }
-      }
-      else
-      {
-        AliDebug(5, Form("(single-write): address 0x%04x => old endmarker?\n", caddr));
-        return err;
-      }
-    }
-    
-    else               // block of data                                                                                                                                                                       
-    {
-      step   =  (header >>  1) & 0x0003;
-      bwidth = ((header >>  3) & 0x001F) + 1;
-      nwords =  (header >>  8) & 0x00FF;
-      caddr  =  (header >> 16) & 0xFFFF;
-      exitFlag = (step == 0) || (step == 3) || (nwords == 0);
-      
-      if (exitFlag) 
-        return err;
-      
-      switch (bwidth)
-      {
-          case    15:
-          case    10:
-          case     7:
-          case     6:
-          case     5:
-          {
-            msk = (1 << bwidth) - 1;
-            bitcnt = 0;
-            while (nwords > 0)
-            {
-              nwords--;
-              bitcnt -= bwidth;
-              if (bitcnt < 0)
-              {
-                header = *data;
-                AliDebug(5, Form("read 0x%08x", header));
-                data++;
-                idx++;
-                err += (header & 1);
-                header = header >> 1;
-                bitcnt = 31 - bwidth;
-              }
-              AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), header & msk));
-              if ( ! Poke(caddr, header & msk, 0, 0, 0) )
-                AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-              
-              caddr += step;
-              header = header >> bwidth;
-              if (idx >= size)
-              {
-                AliDebug(5, Form("(block-write): no end marker! %d words read\n", idx));
-                return -err;
-              }
-            }
-            break;
-          } // end case 5-15                                         
-          case 31:
-          {
-            while (nwords > 0)
-            {
-              header = *data;
-              AliDebug(5, Form("read 0x%08x", header));
-              data++;
-              idx++;
-              nwords--;
-              err += (header & 1);
+    Int_t rob = (*data >> 28) & 0x7;
+    Int_t mcm = (*data >> 24) & 0xf;
 
-              AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x", caddr, GetRegName(GetRegByAddress(caddr)), header >> 1));
-              if ( ! Poke(caddr, header >> 1, 0, 0, 0) )
-                AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-              
-              caddr += step;
-              if (idx >= size)
-              {
-                AliDebug(5, Form("no end marker! %d words read", idx));
-                return -err;
-              }
-            }
-            break;
-          }
-          default: return err;
-      } // end switch                                                                                                                                                                                       
-    } // end block case                                                                                                                                                                                       
+    AliDebug(1, Form("Config of det. %3i MCM %i:%02i (0x%08x)", det, rob, mcm, *data));
+    data++;
+    
+    while (idx < size && *data != 0x00000000) {
+      
+      header = *data;
+      data++;
+      idx++;
+      
+      AliDebug(5, Form("read: 0x%08x", header));
+      
+      if (header & 0x01) // single data                                                                                                                                                                         
+	{
+	  dat   = (header >>  2) & 0xFFFF;       // 16 bit data                                                                                                                                                    
+	  caddr = (header >> 18) & 0x3FFF;    // 14 bit address                                                                                                                                                 
+	  
+	  if (caddr != 0x1FFF)  // temp!!! because the end marker was wrong                                                                                                                                     
+	    {
+	      if (header & 0x02) // check if > 16 bits                                                                                                                                                              
+		{
+		  dataHi = *data;
+		  AliDebug(5, Form("read: 0x%08x", dataHi));
+		  data++;
+		  idx++;
+		  err += ((dataHi ^ (dat | 1)) & 0xFFFF) != 0;
+		  dat = (dataHi & 0xFFFF0000) | dat;
+		}
+	      AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), dat));
+	      if ( ! Poke(caddr, dat, det, rob, mcm) )
+		AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
+	      if (idx > size)
+		{
+		  AliDebug(5, Form("(single-write): no more data, missing end marker\n"));
+		  return -err;
+		}
+	    }
+	  else
+	    {
+	      AliDebug(5, Form("(single-write): address 0x%04x => old endmarker?\n", caddr));
+	      return err;
+	    }
+	}
+      
+      else               // block of data                                                                                                                                                                       
+	{
+	  step   =  (header >>  1) & 0x0003;
+	  bwidth = ((header >>  3) & 0x001F) + 1;
+	  nwords =  (header >>  8) & 0x00FF;
+	  caddr  =  (header >> 16) & 0xFFFF;
+	  exitFlag = (step == 0) || (step == 3) || (nwords == 0);
+	  
+	  if (exitFlag) 
+	    break;
+	  
+	  switch (bwidth)
+	    {
+	    case    15:
+	    case    10:
+	    case     7:
+	    case     6:
+	    case     5:
+	      {
+		msk = (1 << bwidth) - 1;
+		bitcnt = 0;
+		while (nwords > 0)
+		  {
+		    nwords--;
+		    bitcnt -= bwidth;
+		    if (bitcnt < 0)
+		      {
+			header = *data;
+			AliDebug(5, Form("read 0x%08x", header));
+			data++;
+			idx++;
+			err += (header & 1);
+			header = header >> 1;
+			bitcnt = 31 - bwidth;
+		      }
+		    AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), header & msk));
+		    if ( ! Poke(caddr, header & msk, det, rob, mcm) )
+		      AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
+		    
+		    caddr += step;
+		    header = header >> bwidth;
+		    if (idx >= size)
+		      {
+			AliDebug(5, Form("(block-write): no end marker! %d words read\n", idx));
+			return -err;
+		      }
+		  }
+		break;
+	      } // end case 5-15                                         
+	    case 31:
+	      {
+		while (nwords > 0)
+		  {
+		    header = *data;
+		    AliDebug(5, Form("read 0x%08x", header));
+		    data++;
+		    idx++;
+		    nwords--;
+		    err += (header & 1);
+		    
+		    AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x", caddr, GetRegName(GetRegByAddress(caddr)), header >> 1));
+		    if ( ! Poke(caddr, header >> 1, det, rob, mcm) )
+		      AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
+		    
+		    caddr += step;
+		    if (idx >= size)
+		      {
+			AliDebug(5, Form("no end marker! %d words read", idx));
+			return -err;
+		      }
+		  }
+		break;
+	      }
+	    default: return err;
+	    } // end switch                                                                                                                                                                                       
+	} // end block case                                                                                                                                                                                       
+    }
   } // end while                                                                                                                                                                                                
   AliDebug(5, Form("no end marker! %d words read", idx));
   return -err; // only if the max length of the block reached!                       
@@ -1232,5 +1384,3 @@ AliTRDtrapConfig::TrapReg_t AliTRDtrapConfig::GetRegByAddress(Int_t address) con
 
   return mcmReg;
 }
-
-

@@ -15,6 +15,8 @@
 class AliTRDtrapConfig : public TObject
 {
  public:
+  ~AliTRDtrapConfig(); 
+
   static AliTRDtrapConfig* Instance();
 
   enum TrapReg_t { kSML0, 
@@ -452,10 +454,10 @@ class AliTRDtrapConfig : public TObject
 		  kDMDELS,      
 		  kLastReg };   // enum of all TRAP registers, to be used for access to them
 
-  const char* GetRegName(TrapReg_t reg)       const { return fRegs[reg].fName.Data(); }
-  UShort_t    GetRegAddress(TrapReg_t reg)    const { return fRegs[reg].fAddr; }
-  UShort_t    GetRegNBits(TrapReg_t reg)      const { return fRegs[reg].fNbits; }
-  UInt_t      GetRegResetValue(TrapReg_t reg) const { return fRegs[reg].fResetValue; }
+  const char* GetRegName(TrapReg_t reg)       const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fName.Data() : ""; }
+  UShort_t    GetRegAddress(TrapReg_t reg)    const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fAddr : 0; }
+  UShort_t    GetRegNBits(TrapReg_t reg)      const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fNbits : 0; }
+  UInt_t      GetRegResetValue(TrapReg_t reg) const { return reg >= 0 && reg < kLastReg ? fRegs[reg].fResetValue : 0; }
 
   TrapReg_t          GetRegByAddress(Int_t address) const;
 
@@ -474,19 +476,41 @@ class AliTRDtrapConfig : public TObject
   void ResetRegs();
 
   // DMEM 
-  Bool_t SetDmem(Int_t addr, Int_t value);
-  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det);
-  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm);
+  Bool_t SetDmem(Int_t addr, UInt_t value);
+  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det);
+  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm);
+  Bool_t SetDmem(Int_t addr, Int_t value) { return SetDmem(addr, (UInt_t) value); }
+  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det) { return SetDmem(addr, (UInt_t) value, det); }
+  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm) { return SetDmem(addr, (UInt_t) value, det, rob, mcm); }
 
-  Int_t GetDmem(Int_t addr, Int_t det, Int_t rob, Int_t mcm);
+  Int_t  GetDmem(Int_t addr, Int_t det, Int_t rob, Int_t mcm) { return GetDmemSigned(addr, det, rob, mcm); } 
+  Int_t  GetDmemSigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) { return (Int_t) GetDmemUnsigned(addr, det, rob, mcm); } 
+  UInt_t GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm);
 
   // configuration handling
   Bool_t LoadConfig();
   Bool_t LoadConfig(Int_t det, TString filename);
 
-  Bool_t ReadPackedConfig(UInt_t *data, Int_t size);
+  Bool_t ReadPackedConfig(Int_t det, UInt_t *data, Int_t size);
 
   Int_t  ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t rocType);
+
+  // DMEM addresses
+  static const Int_t fgkDmemAddrLUTcor0       = 0xC02A;
+  static const Int_t fgkDmemAddrLUTcor1       = 0xC028;
+  static const Int_t fgkDmemAddrLUTnbins      = 0xC029;
+					      
+  static const Int_t fgkDmemAddrLUTStart      = 0xC100; // LUT start address
+  static const Int_t fgkDmemAddrLUTEnd        = 0xC3FF; // maximum possible end address for the LUT table
+  static const Int_t fgkDmemAddrLUTLength     = 0xC02B; // address where real size of the LUT table is stored
+					      
+  static const Int_t fgkDmemAddrTrackletStart = 0xC0E0; // Storage area for tracklets, start address
+  static const Int_t fgkDmemAddrTrackletEnd   = 0xC0E3; // Storage area for tracklets, end address
+
+  static const Int_t fgkDmemAddrDeflCorr      = 0xc022; // DMEM address of deflection correction
+  static const Int_t fgkDmemAddrNdrift        = 0xc025; // DMEM address of Ndrift
+  static const Int_t fgkDmemAddrDeflCutStart  = 0xc030; // DMEM start address of deflection cut 
+  static const Int_t fgkDmemAddrDeflCutEnd    = 0xc055; // DMEM end address of deflection cut
 
  protected:
   static AliTRDtrapConfig *fgInstance;  // pointer to instance (singleton)
@@ -530,8 +554,8 @@ class AliTRDtrapConfig : public TObject
   // DMEM
   static const Int_t fgkDmemStartAddress; // = 0xc000;  // start address in TRAP GIO
   static const Int_t fgkDmemWords = 0x400;          // number of words in DMEM
-  UInt_t fDmem[540*8*18][fgkDmemWords]; // DMEM storage
-  Bool_t fDmemValid[540*8*18][fgkDmemWords]; // DMEM valid flag storage
+  UInt_t* fDmem[fgkDmemWords]; // DMEM storage
+  //  Bool_t* fDmemValid[fgkDmemWords]; // DMEM valid flag storage
 
   AliTRDtrapConfig(); // private constructor due to singleton implementation
 
