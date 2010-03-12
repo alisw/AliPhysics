@@ -127,7 +127,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // Initialize IO
   //
   // Create the AODevent object
-  Bool_t createStdAOD = fIsStandard || fFillAODRun;
+  Bool_t createStdAOD = fIsStandard || fFillAOD;
   if(!fAODEvent && createStdAOD){
     fAODEvent = new AliAODEvent();
     if (fIsStandard) fAODEvent->CreateStdContent();
@@ -392,11 +392,12 @@ void AliAODHandler::StoreMCParticles(){
 Bool_t AliAODHandler::FinishEvent()
 {
   // Fill data structures
-  if(fFillAOD && fFillAODRun){
+  if(fFillAOD && fFillAODRun && fAODEvent){
       fAODEvent->MakeEntriesReferencable();
       // StoreMCParticles();
       FillTree();
-      
+  }
+  if (fFillAODRun) {      
       if (fExtensions) {
 	  TIter next(fExtensions);
 	  AliAODExtension *ext;
