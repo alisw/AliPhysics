@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -24,22 +23,21 @@
 
 // --- ROOT system ---
 #include "TH1.h"
-#include <TCanvas.h>
 #include <TH1D.h>
 #include <TH2.h>
-#include <TF1.h>
-
-
-
 // --- AliRoot header files ---
+#include "AliITSQADataMakerRec.h"
 #include "AliITSQASDDChecker.h"
 #include "AliLog.h"
 #include "AliCDBEntry.h"
-#include "AliQAManager.h"
-#include "AliQACheckerBase.h"
-#include "TSystem.h"
+#include "AliCDBManager.h"
+//#include "AliQAManager.h"
+//#include "AliQACheckerBase.h"
+//#include "TSystem.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSgeomTGeo.h"
+//#include "AliITSQAChecker.h"
+
 
 ClassImp(AliITSQASDDChecker)
 //__________________________________________________________________
@@ -53,6 +51,8 @@ AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qa
 
 AliITSQASDDChecker::~AliITSQASDDChecker() 
 {
+
+  //destructor
   if(fStepBitSDD) 
     {
       delete[] fStepBitSDD ;
@@ -76,8 +76,9 @@ AliITSQASDDChecker::~AliITSQASDDChecker()
 } // dtor
 
 //__________________________________________________________________
-Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * /*recoparam*/) 
-{  
+Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * list, const AliDetectorRecoParam * /*recoparam*/) 
+{
+  //check histograms of the different lists  
   AliInfo(Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset) );
 
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
@@ -115,7 +116,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
     case AliQAv1::kRAW:
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index)));
       
-      if (list->GetEntries() == 0.){ //check if the list is empty
+      if (list->GetEntries() == 0){ //check if the list is empty
 	//printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
 	test=test+fHighSDDValue[AliQAv1::kFATAL];
 	break;
@@ -146,7 +147,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	      else{
 		hmodule=hdata;
 		entries= hdata->GetEntries();
-		if(entries==0){
+		if(AliITSQADataMakerRec::AreEqual(entries,0.)){
 		  AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
 		  //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
 		  test=test+fStepBitSDD[AliQAv1::kFATAL];
@@ -158,8 +159,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 		  Double_t content=0;
 		  for(Int_t i=1;i<=modmax;i++){
 		    content=hdata->GetBinContent(i);
-		    if(content==0.){empty++;}
-		    else if(content!=0.){filled++;}
+		    if(AliITSQADataMakerRec::AreEqual(content,0.)){empty++;}
+		    else if((AliITSQADataMakerRec::AreEqual(content,0.)==kFALSE)){filled++;}
 		  }//end for
 		  AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
 		}//end else pattern entries !=0
@@ -176,7 +177,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 		  AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
 		  //printf("test = %f \t value %f\n",test,fStepBitSDD[AliQAv1::kFATAL]);
 		  test=test+fStepBitSDD[AliQAv1::kFATAL];
-		  if(entries==0){ 
+		  if(AliITSQADataMakerRec::AreEqual(entries,0.)){ 
 		    //return test; 
 		    //break;
 		  }
@@ -196,8 +197,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 		  Double_t ladcontent=0;
 		  for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
 		    ladcontent=hproj->GetBinContent(i);
-		    if(ladcontent==0){emptyladders[layer1]++;}
-		    else if(ladcontent!=0){filledladders[layer1]++;} 
+		    if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)){emptyladders[layer1]++;}
+		    else {filledladders[layer1]++;} 
 		  }//end for
 		  AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
 		  delete hproj;
@@ -209,7 +210,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	    }//end if layer 3
 	  }//end if hdata	
 	}//end while
-	if(entries==0.&&entries2[0]==0.&&entries2[1]==0.) break;
+	if(AliITSQADataMakerRec::AreEqual(entries,0.)&&AliITSQADataMakerRec::AreEqual(entries2[0],0.)&&AliITSQADataMakerRec::AreEqual(entries2[1],0.)) break;
 	else{
 	  if(hmodule||(hlayer[0]&&hlayer[1])){
 	    Int_t excluded=0;
@@ -232,13 +233,13 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 		for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
 		if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram has been created 
 		contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
-		if(content!=0.||contentlayer[lay-3]!=0.)
+		if(AliITSQADataMakerRec::AreEqual(content,0.)==kFALSE||AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.)==kFALSE)
 		  {
 		    filledmodules[lay-3]++;
 		    AliWarning(Form("The module %d (layer %i, ladder %i det %i ) excluded from the acquisition, took data \n ",module,lay,lad,det));
 		    exactive++;
 		  }
-		else if(content==0.&&contentlayer[lay-3]==0.)emptymodules[lay-3]++;
+		else if(AliITSQADataMakerRec::AreEqual(content,0.)&&AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.))emptymodules[lay-3]++;
 		//AliInfo(Form("The module %d (layer %i, ladder %i det %i ) is bad, content %f content layer %f  filled modules position %d ",module,lay,lad,det,contentlayer[lay-3],content,lay-3) );
 	      }//end if bad
 	      else
@@ -247,8 +248,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 		  active++;
 		  //printf("lay: %i\t det %i \t lad %i \n",lay,det,lad );
 		  contentgood=hlayer[lay-3]->GetBinContent(det,lad);
-		  if(contentgood==0.){emptymodules[lay-3]++;}
-		  else if(contentgood!=0.){filledmodules[lay-3]++;}
+		  if(AliITSQADataMakerRec::AreEqual(contentgood,0.)){emptymodules[lay-3]++;}
+		  else {filledmodules[lay-3]++;}
 		}
 	      
 	      //delete cal;
@@ -293,7 +294,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
       //TH1*hdata=NULL;
       if(list->GetUniqueID()==40){
-	if (list->GetEntries() == 0.){ //check if the list is empty
+	if (list->GetEntries() == 0){ //check if the list is empty
 	  //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
 	  test=fHighSDDValue[AliQAv1::kFATAL];
 	  
@@ -304,7 +305,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 	
 	  while( hdata = dynamic_cast<TH1* >(next()) ){
 	    if (hdata){
-	      if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
+	      if(AliITSQADataMakerRec::AreEqual(hdata->GetEntries(),0.))test=test+fStepBitSDD[AliQAv1::kFATAL];
 	      else
 		{
 		  TString hname=hdata->GetName();
@@ -381,7 +382,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
       if(uid==60)
 	{
 	  //digits
-	  if (list->GetEntries() == 0.){ //check if the list is empty
+	  if (list->GetEntries() == 0){ //check if the list is empty
 	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
 	    test=fHighSDDValue[AliQAv1::kFATAL];
 	    
@@ -426,7 +427,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
       else if(uid==50)
 	{
 	  //hits
-	  if (list->GetEntries() == 0.){ //check if the list is empty
+	  if (list->GetEntries() == 0){ //check if the list is empty
 	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
 	    test=fHighSDDValue[AliQAv1::kFATAL];
 	    
@@ -467,7 +468,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
       else if(uid==70)
 	{
 	  //sdigits
-	  if (list->GetEntries() == 0.){ //check if the list is empty
+	  if (list->GetEntries() == 0){ //check if the list is empty
 	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
 	    test=fHighSDDValue[AliQAv1::kFATAL];
 	    
@@ -519,14 +520,15 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, c
 //__________________________________________________________________
 void AliITSQASDDChecker::SetTaskOffset(Int_t taskoffset)
 {
+  //set the number of the histograms already present in the list before the SDD histograms
   fSubDetOffset = taskoffset;
 }
 
 
 //__________________________________________________________________
-void AliITSQASDDChecker::SetStepBit(Double_t *steprange)
+void AliITSQASDDChecker::SetStepBit(const Double_t *steprange)
 {
-
+  //set the values of the step bit for each QA bit range calculated in the AliITSQAChecker class
   fStepBitSDD = new Double_t[AliQAv1::kNBIT];
   for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
     {
@@ -535,9 +537,9 @@ void AliITSQASDDChecker::SetStepBit(Double_t *steprange)
 }
 
 //__________________________________________________________________
-void  AliITSQASDDChecker::SetSDDLimits(Float_t *lowvalue, Float_t * highvalue)
+void  AliITSQASDDChecker::SetSDDLimits(const Float_t *lowvalue, const Float_t * highvalue)
 {
-
+  //set the low and high values in for each QA bit range calculated in the AliITSQAChecker class
   fLowSDDValue = new Float_t[AliQAv1::kNBIT];
   fHighSDDValue= new Float_t[AliQAv1::kNBIT];
 
