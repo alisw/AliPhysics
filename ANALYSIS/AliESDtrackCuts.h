@@ -73,7 +73,9 @@ public:
   void SetRequireTPCStandAlone(Bool_t b=kFALSE)  {fCutRequireTPCStandAlone=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
   void SetRequireITSStandAlone(Bool_t b)         {fCutRequireITSStandAlone = b;}
-  void SetAcceptKinkDaughters(Bool_t b=kTRUE)   {fCutAcceptKinkDaughters=b;}
+  void SetAcceptKinkDaughters(Bool_t b=kTRUE)    {fCutAcceptKinkDaughters=b;}
+  void SetAcceptSharedTPCClusters(Bool_t b=kTRUE){fCutAcceptSharedTPCClusters=b;}
+  void SetMaxFractionSharedTPCClusters(Float_t max=1e10) {fCutMaxFractionSharedTPCClusters=max;}
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
   void SetMaxRel1PtUncertainty(Float_t max=1e10)      {fCutMaxRel1PtUncertainty=max;}
@@ -99,6 +101,8 @@ public:
   Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
   Bool_t  GetRequireITSStandAlone()  const   { return fCutRequireITSStandAlone; }
   Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
+  Bool_t  GetAcceptSharedTPCClusters()        const   {return fCutAcceptSharedTPCClusters;}
+  Float_t GetMaxFractionSharedTPCClusters()   const   {return fCutMaxFractionSharedTPCClusters;}
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMaxRel1PtUncertainty()  const   { return fCutMaxRel1PtUncertainty;}
@@ -147,7 +151,7 @@ protected:
   void Init(); // sets everything to 0
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
   
-  enum { kNCuts = 33 }; 
+  enum { kNCuts = 35 }; 
 
   //######################################################
   // esd track quality cuts
@@ -170,6 +174,8 @@ protected:
   Float_t fCutMaxRel1PtUncertainty;   // max relative uncertainty of 1/pt
 
   Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
+  Bool_t  fCutAcceptSharedTPCClusters;// accepting shared clusters in TPC?
+  Float_t fCutMaxFractionSharedTPCClusters; //Maximum fraction of shared clusters in TPC
   Bool_t  fCutRequireTPCRefit;        // require TPC refit
   Bool_t  fCutRequireTPCStandAlone;   // require TPC standalone tracks
   Bool_t  fCutRequireITSRefit;        // require ITS refit

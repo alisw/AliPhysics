@@ -81,6 +81,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMaxC55(0),
   fCutMaxRel1PtUncertainty(0),
   fCutAcceptKinkDaughters(0),
+  fCutAcceptSharedTPCClusters(0),
+  fCutMaxFractionSharedTPCClusters(0),
   fCutRequireTPCRefit(0),
   fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
@@ -163,6 +165,8 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMaxC55(0),
   fCutMaxRel1PtUncertainty(0),
   fCutAcceptKinkDaughters(0),
+  fCutAcceptSharedTPCClusters(0),
+  fCutMaxFractionSharedTPCClusters(0),
   fCutRequireTPCRefit(0),
   fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
@@ -286,6 +290,8 @@ void AliESDtrackCuts::Init()
   fCutMaxRel1PtUncertainty = 0;
 
   fCutAcceptKinkDaughters = 0;
+  fCutAcceptSharedTPCClusters = 0;
+  fCutMaxFractionSharedTPCClusters = 0;
   fCutRequireTPCRefit = 0;
   fCutRequireTPCStandAlone = 0;
   fCutRequireITSRefit = 0;
@@ -392,6 +398,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutMaxRel1PtUncertainty = fCutMaxRel1PtUncertainty;
 
   target.fCutAcceptKinkDaughters = fCutAcceptKinkDaughters;
+  target.fCutAcceptSharedTPCClusters = fCutAcceptSharedTPCClusters;
+  target.fCutMaxFractionSharedTPCClusters = fCutMaxFractionSharedTPCClusters;
   target.fCutRequireTPCRefit = fCutRequireTPCRefit;
   target.fCutRequireTPCStandAlone = fCutRequireTPCStandAlone;
   target.fCutRequireITSRefit = fCutRequireITSRefit;
@@ -669,6 +677,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
 
+  Int_t nClustersTPCShared = esdTrack->GetTPCnclsS();
+  Float_t fracClustersTPCShared = -1.;
+
   Float_t chi2PerClusterITS = -1;
   Float_t chi2PerClusterTPC = -1;
   if (nClustersITS!=0)
@@ -679,6 +690,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     } else {
       chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
     }
+    fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
   }
 
   Double_t extCov[15];
@@ -801,15 +813,20 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], esdTrack->HasPointOnITSLayer(i*2), esdTrack->HasPointOnITSLayer(i*2+1));
   
   if (fCutRequireITSStandAlone && ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)))
-    cuts[31]=kTRUE;
+    cuts[31] = kTRUE;
   
   if (relUncertainty1Pt > fCutMaxRel1PtUncertainty)
-     cuts[32]=kTRUE;
-  
+     cuts[32] = kTRUE;
+
+  if (!fCutAcceptSharedTPCClusters && nClustersTPCShared!=0)
+    cuts[33] = kTRUE;
+
+  if (fracClustersTPCShared > fCutMaxFractionSharedTPCClusters)
+    cuts[34] = kTRUE;  
+
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
-
 
 
   //########################################################################
