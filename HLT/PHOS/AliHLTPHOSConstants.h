@@ -13,8 +13,7 @@
 #ifndef ALIHLTPHOSCONSTANTS_H
 #define ALIHLTPHOSCONSTANTS_H
 
-#include "Rtypes.h"
-#include "AliHLTCaloConstants.h"
+class AliHLTCaloConstants;
 
 class AliHLTPHOSConstants : public AliHLTCaloConstants
 {
@@ -83,46 +82,46 @@ public:
 private:
 
   /** Constant members */
-  const Int_t fkMAXHOSTS;
-  const Int_t fkDEFAULTEVENTPORT;
-  const Int_t fkMAXBINVALUE;
-  const Int_t fkHIGHGAIN;
-  const Int_t fkLOWGAIN;
+  const Int_t fkMAXHOSTS;                  //Constant
+  const Int_t fkDEFAULTEVENTPORT;          //Constant
+  const Int_t fkMAXBINVALUE;          //Constant
+  const Int_t fkHIGHGAIN;          //Constant
+  const Int_t fkLOWGAIN;          //Constant
 
   const Int_t fkALTROMAXSAMPLES; /**<The maximum number of samples of the ALTRO*/
-  const Int_t fkALTROMAXPRESAMPLES; 
+  const Int_t fkALTROMAXPRESAMPLES;           //Constant
 
   const Int_t fkNZROWSRCU; /**<Number of rows per module*/ 
-  const Int_t fkNXCOLUMNSRCU;
+  const Int_t fkNXCOLUMNSRCU;          //Constant
   const Int_t fkNZROWSMOD;  /**<Number of rows per module*/ 
   const Int_t fkNXCOLUMNSMOD;  /**<Number of columns per module*/ 
   const Int_t fkNGAINS;  /**<Number of gains per ALTRO channel*/
-  const Int_t fkNDATATYPES;
+  const Int_t fkNDATATYPES;          //Constant
 
-  const Int_t fkPFMAXPATHLENGTH;
+  const Int_t fkPFMAXPATHLENGTH;          //Constant
 
-  const Int_t fkPFDEFAULTNSAMPLES;
-  const Int_t fkPFDEFAULTSTARTINDEX;
+  const Int_t fkPFDEFAULTNSAMPLES;          //Constant
+  const Int_t fkPFDEFAULTSTARTINDEX;          //Constant
 
   const Double_t fkDEFAULTTAU; /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
   const Int_t fkDEFAULTFS; /**<Assume that the signal is samples with 10 MHZ samle rate*/
 
-  const Int_t fkMODULE0;
-  const Int_t fkMODULE1;
-  const Int_t fkMODULE2;
-  const Int_t fkMODULE3;
-  const Int_t fkMODULE4;
+  const Int_t fkMODULE0;          //Constant
+  const Int_t fkMODULE1;          //Constant
+  const Int_t fkMODULE2;          //Constant
+  const Int_t fkMODULE3;          //Constant
+  const Int_t fkMODULE4;          //Constant
+         
+  const Int_t fkCSPSPERFEE; //Constant
+  const Int_t fkRCU0; //Constant
+  const Int_t fkRCU1; //Constant
+  const Int_t fkRCU2; //Constant
+  const Int_t fkRCU3; //Constant
 
-  const Int_t fkCSPSPERFEE;
-  const Int_t fkRCU0;
-  const Int_t fkRCU1;
-  const Int_t fkRCU2;
-  const Int_t fkRCU3;
-
-  const Int_t fkZ0;
-  const Int_t fkZ1;
-  const Int_t fkX0;
-  const Int_t fkX1;
+  const Int_t fkZ0; //Constant
+  const Int_t fkZ1; //Constant
+  const Int_t fkX0; //Constant
+  const Int_t fkX1; //Constant
 
   const Int_t fkNMODULES;   /**<Number of modules of the PHOS detector*/
   const Int_t fkNRCUS;   /**<Number of RCUs per Module*/
@@ -131,13 +130,13 @@ private:
   const Int_t fkNRCUSPERTOTAL; /**<Total number of RCUs for PHOS*/
   const Int_t fkNFEECS;  /**<Number of Frontend cards per branch*/
   const Int_t fkNALTROS;  /**<Number of ALTROs per frontend card*/
-  const Int_t fkNALTROCHANNELS;
-  const Int_t fkNBRANCHES;
+  const Int_t fkNALTROCHANNELS;  //Constant
+  const Int_t fkNBRANCHES; //Constant
 
-  const Float_t fkCELLSTEP;
-  const Int_t fkNRCUSPERSECTOR;
+  const Float_t fkCELLSTEP;  //Constant
+  const Int_t fkNRCUSPERSECTOR;  //Constant
   
-  const Int_t fkDDLOFFSET;
+  const Int_t fkDDLOFFSET;  //Constant
 
 
   ClassDef(AliHLTPHOSConstants, 1);

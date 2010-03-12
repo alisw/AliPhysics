@@ -22,8 +22,8 @@
 /// @brief  Class containing constants for PHOS
 ///         loaded libraries
 
-#include "AliHLTPHOSConstants.h"
 #include "AliHLTCaloConstants.h"
+#include "AliHLTPHOSConstants.h"
 
 ClassImp(AliHLTPHOSConstants);
 
