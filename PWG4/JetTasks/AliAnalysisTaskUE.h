@@ -19,7 +19,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
   {
   public:
     AliAnalysisTaskUE(const char* name="AliAnalysisTaskUE");
-    virtual           ~AliAnalysisTaskUE() {;}
+    virtual           ~AliAnalysisTaskUE()  {if( fListOfHistos ) delete fListOfHistos;}
     
     // Implementation of interace methods
     virtual     Bool_t Notify();
@@ -92,7 +92,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Bool_t      fDeltaAOD;        //  Read jets from delta AOD 
     TString     fDeltaAODBranch;  //  Jet branch name from delta AOD
     TString     fAODBranch;       //  Jet branch name from standard AOD
-    TClonesArray*  fArrayJets;       //  Array of Jets from delta AOD
+    TClonesArray*  fArrayJets;       //!  Array of Jets from delta AOD
 
     AliAODEvent*  fAOD;             //! AOD Event 
     AliAODEvent*  fAODjets;         //! AOD Event for reconstructed on the fly (see ConnectInputData()

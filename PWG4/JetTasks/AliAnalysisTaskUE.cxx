@@ -256,7 +256,9 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
 
   // OpenFile(0);
   CreateHistos();
-  //  fListOfHistos->SetOwner(kTRUE);  
+
+  fListOfHistos->SetOwner(kTRUE);
+  PostData(0, fListOfHistos);
 
 }
 
@@ -1064,13 +1066,12 @@ TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
         tracks.Remove( track1 );
       }
     }
-    
     tracks.Compress();
     nTracks = tracks.GetEntries();
     //   4- Continue until all particles are in a jet.
     itrack.Reset();
   } // end while nTracks
-  
+
   // Convert to AODjets....
   Int_t njets = jets->GetEntriesFast();
   TObjArray* aodjets = new TObjArray(njets);
@@ -1086,6 +1087,9 @@ TObjArray*  AliAnalysisTaskUE::FindChargedParticleJets()
 
     aodjets->AddLast( new AliAODJet(px, py, pz, en) );
   }
+  jets->Delete();
+  delete jets;
+
   // Order jets according to their pT .
   QSortTracks( *aodjets, 0, aodjets->GetEntriesFast() );
   
