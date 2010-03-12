@@ -153,7 +153,6 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const AliTPCRecoParam * recoParam = AliTPCReconstructor::GetRecoParam();
   Int_t reject=0;
   AliExternalTrackParam param(t);
-  Double_t oldX=param.GetX(),  oldY=param.GetY(),  oldZ=param.GetZ();
 
   const AliExternalTrackParam  *tpcout=(t.GetFriendTrack())? ((AliESDfriendTrack*)(t.GetFriendTrack()))->GetTPCOut():0;
   const AliExternalTrackParam  *tpcin = t.GetInnerParam();
@@ -164,12 +163,13 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
   if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
   if (param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
+  param.Rotate(tpc->GetAlpha());
+  Double_t oldX=param.GetX(),  oldY=param.GetY(),  oldZ=param.GetZ();
   if (!isOK ){
     param=*tpc;
     isOK=kTRUE;
     reject=1;
   }
-  param.Rotate(tpc->GetAlpha());
   isOK=AliTracker::PropagateTrackToBxByBz(&param,tpc->GetX(),t.GetMass(),2.,kFALSE);
   if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
   if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
