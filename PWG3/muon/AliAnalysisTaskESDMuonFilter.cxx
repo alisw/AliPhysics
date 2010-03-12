@@ -137,6 +137,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Bool_t MuonsExist = kFALSE;
   Bool_t DimuonsExist = kFALSE;
   Int_t nMuons=0;
+  Int_t nDimuons=0;
   Int_t jDimuons=0;
   Int_t nMuonTrack[10];
   
@@ -209,6 +210,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
 	for(int j=i+1;j<nMuons;j++){
           Int_t index1 = nMuonTrack[j];
           aodDimuon = new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(index0),tracks.At(index1));
+	  nDimuons++;
           if (fDebug > 1){
             AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jDimuons-1);
             printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
@@ -225,6 +227,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   header->SetRefMultiplicity(jTracks); 
   header->SetRefMultiplicityPos(nPosTracks);
   header->SetRefMultiplicityNeg(nNegTracks);
+  header->SetNumberOfMuons(nMuons);
+  header->SetNumberOfDimuons(nDimuons);
   
   // From Andrei
   if(fEnableMuonAOD && MuonsExist){
