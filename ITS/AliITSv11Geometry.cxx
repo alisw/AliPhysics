@@ -66,6 +66,71 @@ const Double_t AliITSv11Geometry::fgkKeV     = 1.0e-6; // GeV default
 const Double_t AliITSv11Geometry::fgkMeV     = 1.0e-3; // GeV default
 const Double_t AliITSv11Geometry::fgkGeV     = 1.0;    // GeV default
 //______________________________________________________________________
+void AliITSv11Geometry::IntersectLines(Double_t m, Double_t x0, Double_t y0,
+				       Double_t n, Double_t x1, Double_t y1,
+				       Double_t &xi, Double_t &yi)const{
+    // Given the two lines, one passing by (x0,y0) with slope m and
+    // the other passing by (x1,y1) with slope n, returns the coordinates
+    // of the intersecting point (xi,yi)
+    // Inputs:
+    //    Double_t   m     The slope of the first line
+    //    Double_t  x0,y0  The x and y coord. of the first point
+    //    Double_t   n     The slope of the second line
+    //    Double_t  x1,y1  The x and y coord. of the second point
+    // Outputs:
+    //    The coordinates xi and yi of the intersection point
+    // Return:
+    //    none.
+    // Created:      14 Dec 2009  Mario Sitta
+
+    if (TMath::Abs(m-n) < 0.000001) {
+      AliError(Form("Lines are parallel: m = %f n = %f\n"));
+      return;
+    }
+
+    xi = (y1 - n*x1 - y0 + m*x0)/(m - n);
+    yi = y0 + m*(xi - x0);
+
+    return;
+}
+//______________________________________________________________________
+Bool_t AliITSv11Geometry::IntersectCircle(Double_t m, Double_t x0, Double_t y0,
+					  Double_t rr, Double_t xc, Double_t yc,
+					  Double_t &xi1, Double_t &yi1,
+					  Double_t &xi2, Double_t &yi2){
+    // Given a lines  passing by (x0,y0) with slope m and a circle with
+    // radius rr and center (xc,yc), returns the coordinates of the
+    // intersecting points (xi1,yi1) and (xi2,yi2) (xi1 > xi2)
+    // Inputs:
+    //    Double_t   m     The slope of the line
+    //    Double_t  x0,y0  The x and y coord. of the point
+    //    Double_t   rr     The radius of the circle
+    //    Double_t  xc,yc  The x and y coord. of the center of circle
+    // Outputs:
+    //    The coordinates xi and yi of the intersection points
+    // Return:
+    //    kFALSE if the line does not intercept the circle, otherwise kTRUE
+    // Created:      18 Dec 2009  Mario Sitta
+
+    Double_t p = m*x0 - y0;
+    Double_t q = m*m + 1;
+
+    p = p-m*xc+yc;
+
+    Double_t delta = m*m*p*p - q*(p*p - rr*rr);
+
+    if (delta < 0)
+      return kFALSE;
+    else {
+      Double_t root = TMath::Sqrt(delta);
+      xi1 = (m*p + root)/q + xc;
+      xi2 = (m*p - root)/q + xc;
+      yi1 = m*(xi1 - x0) + y0;
+      yi2 = m*(xi2 - x0) + y0;
+      return kTRUE;
+    }
+}
+//______________________________________________________________________
 Double_t AliITSv11Geometry::Yfrom2Points(Double_t x0,Double_t y0,
                                          Double_t x1,Double_t y1,
                                          Double_t x)const{

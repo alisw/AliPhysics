@@ -41,6 +41,15 @@ class AliITSv11Geometry : public TObject {
     Double_t CosD(Double_t deg)const{return TMath::Cos(deg*TMath::DegToRad());}
     // Tangent function
     Double_t TanD(Double_t deg)const{return TMath::Tan(deg*TMath::DegToRad());}
+    // Determine the intersection of two lines
+    void IntersectLines(Double_t m, Double_t x0, Double_t y0,
+			Double_t n, Double_t x1, Double_t y1,
+			Double_t &xi, Double_t &yi)const;
+    // Determine the intersection of a line and a circle
+    static Bool_t IntersectCircle(Double_t m, Double_t x0, Double_t y0,
+			   Double_t rr, Double_t xc, Double_t yc,
+				  Double_t &xi1, Double_t &yi1,
+			   Double_t &xi2, Double_t &yi2);
     // Given the line, defined by the two points (x0,y0) and (x1,y1) and the
     // point x, return the value of y.
     Double_t Yfrom2Points(Double_t x0,Double_t y0,

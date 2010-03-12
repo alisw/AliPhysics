@@ -1020,6 +1020,7 @@ void AliITSv11Hybrid::CreateGeometry() {
   if (AliITSInitGeometry::ServicesAreTGeoNative()) {
     fSDDgeom->SDDCables(vITS);
     fSSDgeom->SSDCables(vITS);
+    fSupgeom->ServicesCableSupport(vITS);
   }
 }
 
@@ -4614,6 +4615,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   //  gMC->Gspos("ICC4", 1, "ITSV", 0., 0., ztpc+dgh[2], 0, "ONLY");  
   gMC->Gspos("ICC4", 1, "ITSV", 0., 0., -(ztpc+dgh[2]), idrotm[199], "ONLY");  
   
+  if (! AliITSInitGeometry::ServicesAreTGeoNative()) {
+
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - UPPER PART
 
@@ -4939,7 +4942,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gsvolu("IHK2", "TUBS", idtmed[264], dgh, 5);  
   gMC->Gspos("IHK2", 1, "ITSV", 0., 0., -(-ztpc-dgh[2]), idrotm[199], "ONLY");      
   
-//  }
+  }
 
 
   // --- DEFINE RAILS BETWEEN THE ITS AND THE TPC
@@ -5417,6 +5420,12 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t woptfib[2] = {  1.,      2.    };
     Float_t doptfib    = 2.55;
 
+    // Tetrafluorethylene-Perfluorpropylene (FEP) - 08 Mar 10
+    Float_t aFEP[2] = { 12.0107, 18.9984};
+    Float_t zFEP[2] = {  6.    ,  9.    };
+    Float_t wFEP[2] = {  1.    ,  2.    };
+    Float_t dFEP    = 2.15;
+
     AliMaterial(1,"SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(1,"SI$",1,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
@@ -5755,6 +5764,58 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(98,"SDD OPTICFIB$",aoptfib,zoptfib,doptfib,-2,woptfib);
     AliMedium(98,"SDD OPTICFIB$",98,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(95,"SSD FEP$",aFEP,zFEP,dFEP,-2,wFEP);
+    AliMedium(95,"SSD FEP$",95,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    // Mean material for low-voltage cables on SPD trays Side A
+    // (Copper + PolyEthylene (C2-H4)) (D.Elia for cable number and
+    // cross-section area, M.Sitta for elemental computation) - 26 Feb 10
+    wW[0] = 0.323024;//H
+    wW[2] = 0.515464;//Cu
+    wW[1] = 0.161512;//C
+    wW[3] = 0.000000;//O
+    wW[4] = 0.000000;//S
+    wW[5] = 0.000000;//F
+    wW[6] = 0.000000;//Sn
+    wW[7] = 0.000000;//Pb
+    wW[8] = 0.000000;//Cr
+    wW[9] = 0.000000;//Si
+    wW[10] = 0.000000;//Ni
+    wW[11] = 0.000000;//Ca
+
+    den = 5.078866;
+    AliMixture(60,"SPD_LOWCABLES$",aA,zZ,den,+3,wW);
+    AliMedium(60,"SPD_LOWCABLES$",60,0,ifield,fieldm,tmaxfd,stemax,
+	      deemax,epsil,stmin);
+
+    // PolyUrethane [C25-H42-N2-O6] - 07 Mar 10
+    zZ[2] =  7.0; aA[2] =  14.0067; // Nitrogen - From Root TGeoElementTable
+
+    wW[0] = 0.090724;//H
+    wW[2] = 0.060035;//N
+    wW[1] = 0.643513;//C
+    wW[3] = 0.205728;//O
+    wW[4] = 0.000000;//S
+    wW[5] = 0.000000;//F
+    wW[6] = 0.000000;//Sn
+    wW[7] = 0.000000;//Pb
+    wW[8] = 0.000000;//Cr
+    wW[9] = 0.000000;//Si
+    wW[10] = 0.000000;//Ni
+    wW[11] = 0.000000;//Ca
+
+    den = 1.158910;
+    AliMixture(67,"POLYURETHANE$",aA,zZ,den,+4,wW);
+    AliMedium(67,"POLYURETHANE$",67,0,ifield,fieldm,tmaxfd,stemax,
+	      deemax,epsil,stmin);
+
+
+    // Anticorodal: Aliminum alloy for tray ring support on Side A
+    den = 2.710301;
+    AliMaterial(93,"ANTICORODAL$",0.26982E+02,0.13000E+02,den,0.89000E+01,0.99900E+03);
+    AliMedium(93,"ANTICORODAL$",93,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+    
 }
 
 //______________________________________________________________________

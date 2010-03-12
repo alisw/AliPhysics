@@ -3092,9 +3092,9 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 
     //Double_t angle[10] = {18., 54., 90., 126., 162., -18., -54., -90., -126., -162.};
     // angleNm for cone modules (cables), angleNc for cooling tubes
-    Double_t angle1m[10] = {18., 54., 90., 129., 165., 201.0, 237.0, 273.0, 309.0, 345.0};
+    Double_t angle1m[10] = {23., 53., 90., 127., 157., 203.0, 233.0, 270.0, 307.0, 337.0};
     Double_t angle2m[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
-    Double_t angle1c[10] = {18., 54., 90., 124., 165., 201.0, 237.0, 273.0, 304.0, 345.0};
+    Double_t angle1c[10] = {23., 53., 90., 124., 157., 203.0, 233.0, 270.0, 304.0, 337.0};
     Double_t angle2c[10] = {18., 44., 90., 126., 162., 198.0, 223.0, 270.0, 309.0, 342.0};
 
     // First add the cables
