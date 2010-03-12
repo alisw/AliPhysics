@@ -840,8 +840,9 @@ void AliAnalysisManager::Terminate()
          if (!gROOT->IsBatch()) {
             tree->SetAlias("event", "id0");
             tree->SetAlias("memUSED", "mi.fMemUsed");
+            tree->SetAlias("memVIRT", "pi.fMemVirtual");
             new TCanvas("SysInfo","SysInfo",10,10,800,600);
-            tree->Draw("memUSED:event","","", 1234567890, 0);
+            tree->Draw("memVIRT:event","","", 1234567890, 0);
          }   
          tree->Write();
          f.Close();
