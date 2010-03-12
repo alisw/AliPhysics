@@ -6,8 +6,8 @@ DA type: MON
 number of events needed: 200
 input files: Mod0RCU0.data Mod0RCU1.data Mod0RCU2.data Mod0RCU3.data Mod1RCU0.data Mod1RCU1.data Mod1RCU2.data Mod1RCU3.data Mod2RCU0.data Mod2RCU1.data Mod2RCU2.data Mod2RCU3.data Mod3RCU0.data Mod3RCU1.data Mod3RCU2.data Mod3RCU3.data Mod4RCU0.data Mod4RCU1.data Mod4RCU2.data Mod4RCU3.data
 Output files: PHOS_PED.root
+Trigger types used: 
 */
-
 
 #include "event.h"
 #include "monitor.h"
@@ -29,6 +29,8 @@ extern "C" {
 #include <TH2F.h>
 #include <TString.h>
 #include "AliRawReader.h"
+#include "AliRawReaderDate.h"
+#include "AliCaloAltroMapping.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliLog.h"
 
@@ -257,144 +259,57 @@ int main(int argc, char **argv)
     eventT=event->eventType;
     
     if (eventT==PHYSICS_EVENT) {
-
+      
       reader = new AliRawReaderDate((void*)event);
       stream =  new AliCaloRawStreamV3(reader,"PHOS",mapping);
 
-      while (reader->NextEvent()) {
-	runNum = reader->GetRunNumber();
-	while (stream->NextDDL()) {
-	  while (stream->NextChannel()) {
-	    module   = stream->GetModule();
-	    cellX    = stream->GetCellX();
-	    cellZ    = stream->GetCellZ();
-	    caloFlag = stream->GetCaloFlag();
-	    if (caloFlag!=0 && caloFlag!=1) continue;
+      runNum = reader->GetRunNumber();
+      while (stream->NextDDL()) {
+	while (stream->NextChannel()) {
+	  module   = stream->GetModule();
+	  cellX    = stream->GetCellX();
+	  cellZ    = stream->GetCellZ();
+	  caloFlag = stream->GetCaloFlag();
+	  if (caloFlag!=0 && caloFlag!=1) continue;
 
-	    hHWaddr->Fill(stream->GetDDLNumber(),stream->GetHWAddress());
-	    hModule->Fill(module);
-	    if (!hPed[module][caloFlag][cellX][cellZ]) {
-	      TString name  = baseNamePed;
-	      TString title = baseTitlePed;
-	      name +="_g"; name +=caloFlag;
-	      name +="_m"; name +=module;
-	      name +="_x"; name +=cellX;
-	      name +="_z"; name +=cellZ;
-
-	      title +=module; title +=",";
-	      title +=cellX; title +=",";
-	      title +=cellZ; title +="), ";
-	      title +=sgain[caloFlag];
-	      
-	      Int_t nx,xmin,xmax;
-	      if (caloFlag==0 || caloFlag==1) {
-		nx=100;
-		xmin=0.;
-		xmax=100.;
-	      }
-	      else {
-		nx=1000;
-		xmin=0.;
-		xmax=1000.;
-	      }
-	      hPed[module][caloFlag][cellX][cellZ] = new TH1F(name,title,100,0.,100.);
-	      hPed[module][caloFlag][cellX][cellZ]->Sumw2();
-	      hPed[module][caloFlag][cellX][cellZ]->SetMarkerStyle(20);
-	      hPed[module][caloFlag][cellX][cellZ]->SetOption("eph");
-	    }
-
-	    Int_t nBunches = 0;
-	    while (stream->NextBunch()) {
-	      nBunches++;
-	      const UShort_t *sig = stream->GetSignals();
-	      Int_t sigLength = stream->GetBunchLength();
-	      for (Int_t i = 0; i < sigLength; i++) {
-		hPed[module][caloFlag][cellX][cellZ]->Fill(sig[i]);
-	      }
-	    }
-	    hNBunches->Fill(nBunches);
-	  } // end of NextChannel()
-
-	} // end of NextDDL()
-      } // end of nextEvent()
-      
-      // Fill 2-dim histograms for mean, rms and n pedestals
-      
-      for (Int_t mod=2; mod<=4; mod++) {
-	for (Int_t caloFlag=0; caloFlag<2; caloFlag++) {
-	  for (Int_t cellX=0; cellX<cellXMax; cellX++) {
-	    for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
-	      if (hPed[mod][caloFlag][cellX][cellZ] != 0) {
-		if      (caloFlag == 0) {
-		  if (mod==2) {
-		    hPedLoMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedLoRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedLoMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedLoRMSm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedLoNumm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
-		  }
-		  else if (mod==3) {
-		    hPedLoMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedLoRMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedLoMeanm3 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedLoRMSm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedLoNumm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
-		  }
-		  else if (mod==4) {
-		    hPedLoMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedLoRMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedLoMeanm4 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedLoRMSm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedLoNumm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
-		  }
-		}
-		else if (caloFlag == 1) {
-		  if (mod==2) {
-		    hPedHiMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedHiRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		    hPedHiMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedHiRMSm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedHiNumm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
-		  }
-		  if (mod==3) {
-		    hPedHiMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedHiRMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		    hPedHiMeanm3 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedHiRMSm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedHiNumm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
-		  }
-		  if (mod==4) {
-		    hPedHiMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedHiRMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedHiMeanm4 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedHiRMSm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
-		    hPedHiNumm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
-		  }
-		}
-		else if (caloFlag == 2) {
-		  if (mod==2) {
-		    hPedTRUMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedTRURMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		  }
-		  if (mod==3) {
-		    hPedTRUMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedTRURMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		  }
-		  if (mod==4) {
-		    hPedTRUMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		    hPedTRURMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		  }
-		}
-	      }
+	  hHWaddr->Fill(stream->GetDDLNumber(),stream->GetHWAddress());
+	  hModule->Fill(module);
+	  if (!hPed[module][caloFlag][cellX][cellZ]) {
+	    TString name  = baseNamePed;
+	    TString title = baseTitlePed;
+	    name +="_g"; name +=caloFlag;
+	    name +="_m"; name +=module;
+	    name +="_x"; name +=cellX;
+	    name +="_z"; name +=cellZ;
+	    
+	    title +=module; title +=",";
+	    title +=cellX; title +=",";
+	    title +=cellZ; title +="), ";
+	    title +=sgain[caloFlag];
+	    
+	    hPed[module][caloFlag][cellX][cellZ] = new TH1F(name,title,100,0.,100.);
+	    hPed[module][caloFlag][cellX][cellZ]->Sumw2();
+	    hPed[module][caloFlag][cellX][cellZ]->SetMarkerStyle(20);
+	    hPed[module][caloFlag][cellX][cellZ]->SetOption("eph");
+	  }
+	    
+	  Int_t nBunches = 0;
+	  while (stream->NextBunch()) {
+	    nBunches++;
+	    const UShort_t *sig = stream->GetSignals();
+	    Int_t sigLength = stream->GetBunchLength();
+	    for (Int_t i = 0; i < sigLength; i++) {
+	      hPed[module][caloFlag][cellX][cellZ]->Fill(sig[i]);
 	    }
 	  }
-	}
-      }
+	  hNBunches->Fill(nBunches);
+	} // end of NextChannel()
+      } // end of NextDDL()
       
-      delete rawReader;     
+      delete reader;     
       delete stream;
       nevents_physics++;
-    } // end of if (eventT==PHYSICS_EVENT)
+    } // end of if(eventT==PHYSICS_EVENT)
     
     nevents_total++;
     
@@ -410,6 +325,79 @@ int main(int argc, char **argv)
   } // end of inf. loop over events
   
   for(Int_t i = 0; i < 20; i++) delete mapping[i];
+
+  // Fill 2-dim histograms for mean, rms and n pedestals
+  
+  for (Int_t mod=2; mod<=4; mod++) {
+    for (Int_t caloFlag=0; caloFlag<2; caloFlag++) {
+      for (Int_t cellX=0; cellX<cellXMax; cellX++) {
+	for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
+	  if (hPed[mod][caloFlag][cellX][cellZ] != 0) {
+	    if      (caloFlag == 0) {
+	      if (mod==2) {
+		hPedLoMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMSm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoNumm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	      else if (mod==3) {
+		hPedLoMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoMeanm3 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMSm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoNumm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	      else if (mod==4) {
+		hPedLoMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoMeanm4 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMSm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedLoNumm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	    }
+	    else if (caloFlag == 1) {
+	      if (mod==2) {
+		hPedHiMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedHiMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMSm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedHiNumm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	      if (mod==3) {
+		hPedHiMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedHiMeanm3 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMSm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedHiNumm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	      if (mod==4) {
+		hPedHiMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedHiMeanm4 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMSm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS());
+		hPedHiNumm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries());
+	      }
+	    }
+	    else if (caloFlag == 2) {
+	      if (mod==2) {
+		hPedTRUMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      }
+	      if (mod==3) {
+		hPedTRUMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      }
+	      if (mod==4) {
+		hPedTRUMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
   
   // Write existing histograms to a root file
   
