@@ -491,6 +491,21 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
 }
 
 
+//______________________________________________________________________________
+Int_t AliAODEvent::GetNumberOfMuonTracks() const
+{
+  // get number of muon tracks
+  Int_t nMuonTracks=0;
+  AliAODTrack *track = 0;
+  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+    if ((track = GetTrack(iTrack))->IsMuonTrack()) {
+       nMuonTracks++;
+    }
+  }
+  
+  return nMuonTracks;
+}
+
 void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 {
   // Connects aod event to tree

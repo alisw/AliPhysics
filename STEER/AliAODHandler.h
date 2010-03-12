@@ -52,7 +52,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsJetsBranchReplication()         {fNeedsJetsBranchReplication         = kTRUE;}
     virtual void         SetNeedsFMDClustersBranchReplication()  {fNeedsFMDClustersBranchReplication  = kTRUE;}
     virtual void         SetNeedsCaloClustersBranchReplication() {fNeedsCaloClustersBranchReplication = kTRUE;}
-    virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsCaloClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsMCParticlesBranchReplication  = kTRUE;}
     virtual void         SetNeedsDimuonsBranchReplication()      {fNeedsDimuonsBranchReplication      = kTRUE;}
     virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
     //

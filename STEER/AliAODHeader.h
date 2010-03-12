@@ -40,7 +40,9 @@ class AliAODHeader : public AliVHeader {
 	       ULong64_t fTriggerMask,
 	       UChar_t   fTriggerCluster,
 	       UInt_t    fEventType,
-	       const Char_t *title="");
+	       const Char_t *title="",
+	       Int_t nMuons=0,
+	       Int_t nDimuons=0);
   
   virtual ~AliAODHeader();
   AliAODHeader(const AliAODHeader& evt); 
@@ -66,6 +68,8 @@ class AliAODHeader : public AliVHeader {
   Int_t     GetRefMultiplicity()    const { return fRefMult; }
   Int_t     GetRefMultiplicityPos() const { return fRefMultPos; }
   Int_t     GetRefMultiplicityNeg() const { return fRefMultNeg; }
+  Int_t     GetNumberOfMuons()      const { return fNMuons; }
+  Int_t     GetNumberOfDimuons()    const { return fNDimuons; }
 
   Double_t  GetQTheta(UInt_t i) const;
   UInt_t    GetNQTheta() const { return (UInt_t)fNQTheta; }
@@ -99,6 +103,8 @@ class AliAODHeader : public AliVHeader {
   void SetRefMultiplicity(Int_t refMult)       { fRefMult = refMult; }
   void SetRefMultiplicityPos(Int_t refMultPos) { fRefMultPos = refMultPos; }
   void SetRefMultiplicityNeg(Int_t refMultNeg) { fRefMultNeg = refMultNeg; }
+  void SetNumberOfMuons(Int_t nMuons) { fNMuons = nMuons; }
+  void SetNumberOfDimuons(Int_t nDimuons) { fNDimuons = nDimuons; }
   
   void SetQTheta(Double_t *QTheta, UInt_t size = 5);  
   void RemoveQTheta();
@@ -144,6 +150,8 @@ class AliAODHeader : public AliVHeader {
   Int_t       fRefMult;             // reference multiplicity
   Int_t       fRefMultPos;          // reference multiplicity of positive particles
   Int_t       fRefMultNeg;          // reference multiplicity of negative particles
+  Int_t       fNMuons;              // number of muons in the forward spectrometer
+  Int_t       fNDimuons;            // number of dimuons in the forward spectrometer
   UInt_t      fEventType;           // Type of Event
   UInt_t      fOrbitNumber;         // Orbit Number
   UInt_t      fPeriodNumber;        // Period Number
@@ -154,7 +162,7 @@ class AliAODHeader : public AliVHeader {
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix];   //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliAODHeader,9);
+  ClassDef(AliAODHeader,10);
 };
 
 #endif

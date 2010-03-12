@@ -113,6 +113,7 @@ class AliAODEvent : public AliVEvent {
   Int_t         AddTrack(const AliAODTrack* trk)
     {new((*fTracks)[fTracks->GetEntriesFast()]) AliAODTrack(*trk); return fTracks->GetEntriesFast()-1;}
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;
+  Int_t         GetNumberOfMuonTracks() const;
 
   // -- Vertex
   TClonesArray *GetVertices()            const { return fVertices; }

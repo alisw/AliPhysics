@@ -48,7 +48,9 @@ AliAODHeader::AliAODHeader() :
   fOrbitNumber(0),
   fPeriodNumber(0),
   fBunchCrossNumber(0),
-  fTriggerCluster(0)
+  fTriggerCluster(0),
+  fNMuons(0),
+  fNDimuons(0)
 {
   // default constructor
 
@@ -87,7 +89,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(0)
+  fTriggerCluster(0),
+  fNMuons(0),
+  fNDimuons(0)
 {
   // constructor
 
@@ -120,7 +124,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
  			   ULong64_t trigMask,
 			   UChar_t trigClus,
 			   UInt_t evttype,
-			   const Char_t *title) :
+			   const Char_t *title,
+			   Int_t nMuons,
+			   Int_t nDimuons) :
   AliVHeader(),
   fMagneticField(magField),
   fMuonMagFieldScale(muonMagFieldScale),
@@ -141,7 +147,10 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(trigClus)
+  fTriggerCluster(trigClus),
+  fNMuons(nMuons),
+  fNDimuons(nDimuons)
+
 {
   // constructor
 
@@ -185,7 +194,10 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fOrbitNumber(hdr.fOrbitNumber),
   fPeriodNumber(hdr.fPeriodNumber),
   fBunchCrossNumber(hdr.fBunchCrossNumber),
-  fTriggerCluster(hdr.fTriggerCluster)
+  fTriggerCluster(hdr.fTriggerCluster),
+  fNMuons(hdr.fNMuons),
+  fNDimuons(hdr.fNDimuons)
+
 {
   // Copy constructor.
   
@@ -239,6 +251,9 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fPeriodNumber     = hdr.fPeriodNumber;
     fBunchCrossNumber = hdr.fBunchCrossNumber;
     fTriggerCluster   = hdr.fTriggerCluster;
+    fNMuons           = hdr.fNMuons;
+    fNDimuons         = hdr.fNDimuons;
+
 
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);
@@ -332,6 +347,8 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("ref. Multiplicity       : %d\n", fRefMult);
   printf("ref. Multiplicity (pos) : %d\n", fRefMultPos);
   printf("ref. Multiplicity (neg) : %d\n", fRefMultNeg);
+  printf("number of muons         : %d\n", fNMuons);
+  printf("number of dimuons       : %d\n", fNDimuons);
 
   if (fQTheta) {
     for (UInt_t i = 0; i<(UInt_t)fNQTheta; i++) {
