@@ -41,7 +41,6 @@
 
 #pragma link C++ class  AliTRDCalibraFillHisto+;
 
-#pragma link C++ class  AliTRDCalPID+;
 #pragma link C++ class  AliTRDCalPIDLQ+;
 #pragma link C++ class  AliTRDCalPIDNN+;
 

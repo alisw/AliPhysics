@@ -51,6 +51,7 @@
 #pragma link C++ class  AliTRDCalChamberStatus+;
 #pragma link C++ class  AliTRDCalPadStatus+;
 #pragma link C++ class  AliTRDCalSingleChamberStatus+;
+#pragma link C++ class  AliTRDCalPID+;
 
 #pragma link C++ class  AliTRDalignment+;
 

@@ -34,6 +34,7 @@ SRCS= AliTRDarraySignal.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
       Cal/AliTRDCalSingleChamberStatus.cxx \
+      Cal/AliTRDCalPID.cxx \
       AliTRDCalibraFit.cxx \
       AliTRDCalibraMode.cxx \
       AliTRDCalibraVector.cxx \

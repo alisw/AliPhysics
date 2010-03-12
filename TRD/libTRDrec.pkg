@@ -22,7 +22,6 @@ SRCS= AliTRDcluster.cxx \
       AliTRDqaBlackEvents.cxx \
       AliTRDqaBuildReference.cxx \
       AliTRDCalibraFillHisto.cxx \
-      Cal/AliTRDCalPID.cxx \
       Cal/AliTRDCalPIDLQ.cxx \
       Cal/AliTRDCalPIDNN.cxx \
       AliTRDqaRecPoints.cxx
