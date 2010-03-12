@@ -15,7 +15,7 @@ backupdir=`pwd`/
 mkdirhier $workdir
 cd $workdir
 source guiEnv.sh
-source halloWorld.sh
+source $ALICE_ROOT/TPC/scripts/halloWorld.sh
 #
 aliroot -q -b $SCRIPTDIR/ConfigOCDB.C  $ALICE_ROOT/TPC/CalibMacros/CalibEnv.C+\(\"$runList\",$startRun,$endRun\)
 echo End of job:
