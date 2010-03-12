@@ -223,7 +223,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
   OpenFile(1);
   if(!fHistList)fHistList = new TList();
-
+  fHistList->SetOwner(kTRUE);
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -556,8 +556,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       nGenJets = iCount;
     }
     else{
-      if(fDebug>0)Printf("%s:%d Generated jet branch %s not found",(char*)__FILE__,__LINE__,fBranchGen.Data());
-      if(fDebug>1)fAOD->Print();
+      if(fDebug>1)Printf("%s:%d Generated jet branch %s not found",(char*)__FILE__,__LINE__,fBranchGen.Data());
+      if(fDebug>2)fAOD->Print();
     }
   }
 
@@ -944,6 +944,9 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   //  fFakeElectrons = new THnSparseF("fakeEkectrons", "Output for Fake Electrons", kNvar + 1, thnDim);
   // for(Int_t idim = 0; idim < kNvar; idim++)
   //  fFakeElectrons->SetBinEdges(idim, binEdges[idim]);
+  for(Int_t ivar = 0; ivar < kNvar; ivar++)
+    delete [] binEdges[ivar];
+
 }
 
 void AliAnalysisTaskJetSpectrum2::Terminate(Option_t */*option*/)
