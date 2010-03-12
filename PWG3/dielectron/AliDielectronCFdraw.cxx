@@ -34,6 +34,7 @@
 #include <TObjArray.h>
 #include <TKey.h>
 #include <TList.h>
+#include <TClass.h>
 #include <TObject.h>
 #include <TFile.h>
 #include <TString.h>
@@ -44,6 +45,8 @@
 #include <TH3.h>
 #include <TPad.h>
 #include <TCanvas.h>
+#include <TLegend.h>
+#include <AliCFEffGrid.h>
 
 #include <AliLog.h>
 
@@ -53,7 +56,8 @@ ClassImp(AliDielectronCFdraw)
 
 AliDielectronCFdraw::AliDielectronCFdraw() :
   TNamed(),
-  fCfContainer(0x0)
+  fCfContainer(0x0),
+  fEffGrid(0x0)
 {
   //
   // Ctor
@@ -63,12 +67,37 @@ AliDielectronCFdraw::AliDielectronCFdraw() :
 //________________________________________________________________
 AliDielectronCFdraw::AliDielectronCFdraw(const char*name, const char* title) :
   TNamed(name,title),
-  fCfContainer(0x0)
+  fCfContainer(0x0),
+  fEffGrid(0x0)
 {
   //
   // Named Ctor
   //
   
+}
+
+//________________________________________________________________
+AliDielectronCFdraw::AliDielectronCFdraw(AliCFContainer *cont) :
+  TNamed(cont->GetName(), cont->GetTitle()),
+  fCfContainer(cont),
+  fEffGrid(new AliCFEffGrid("eff","eff",*cont))
+{
+  //
+  // directly set the CF container
+  //
+
+}
+
+//________________________________________________________________
+AliDielectronCFdraw::AliDielectronCFdraw(const char* filename) :
+  TNamed(),
+  fCfContainer(0x0),
+  fEffGrid(0x0)
+{
+  //
+  // get CF container(s) from file 'filename'
+  //
+  SetCFContainers(filename);
 }
 
 //________________________________________________________________
@@ -104,6 +133,8 @@ void AliDielectronCFdraw::SetCFContainers(const TSeqCollection *arr)
       ++istep;
     }
   }
+  if (fEffGrid) delete fEffGrid;
+  fEffGrid=new AliCFEffGrid("eff","eff",*fCfContainer);
 }
 
 //________________________________________________________________
@@ -119,10 +150,16 @@ void AliDielectronCFdraw::SetCFContainers(const char* filename)
   if (entries==0) return;
   
   TKey *k=(TKey*)l->At(0);
-  TSeqCollection *arr=dynamic_cast<TSeqCollection*>(k->ReadObj());
-  if (!arr) return;
-  
-  SetCFContainers(arr);
+  if (!k) return;
+  TObject *o=k->ReadObj();
+  if (o->IsA()->InheritsFrom(TSeqCollection::Class())){
+    TSeqCollection *arr=static_cast<TSeqCollection*>(o);
+    SetCFContainers(arr);
+  } else if (o->IsA()==AliCFContainer::Class()){
+    fCfContainer=static_cast<AliCFContainer*>(o);
+    if (fEffGrid) delete fEffGrid;
+    fEffGrid=new AliCFEffGrid("eff","eff",*fCfContainer);
+  }
 }
 
 //________________________________________________________________
@@ -213,10 +250,10 @@ void AliDielectronCFdraw::Draw(const Option_t* varnames, const char* slices, con
     Draw(ivar[0],slices,opt);
     break;
   case 2:
-    Draw(ivar[0],ivar[1],slices,opt);
+    Draw(ivar[1],ivar[0],slices,opt);
     break;
   case 3:
-    Draw(ivar[0],ivar[1],ivar[2],slices,opt);
+    Draw(ivar[2],ivar[1],ivar[0],slices,opt);
     break;
   }
   delete arrVars;
@@ -236,7 +273,7 @@ void AliDielectronCFdraw::Draw(Int_t var, const char* opt, const char* slices)
 
   const Int_t ndim=1;
   Int_t vars[ndim]={var};
-  TObjArray *arr=CollectHistos(ndim,vars,slices);
+  TObjArray *arr=CollectHistosProj(ndim,vars,slices);
   Draw(arr,opt);
   delete arr; 
 }
@@ -249,7 +286,7 @@ void AliDielectronCFdraw::Draw(Int_t var0, Int_t var1, const char* opt, const ch
   //
   const Int_t ndim=2;
   Int_t vars[ndim]={var0,var1};
-  TObjArray *arr=CollectHistos(ndim,vars,slices);
+  TObjArray *arr=CollectHistosProj(ndim,vars,slices);
   Draw(arr,opt);
   delete arr;
 }
@@ -262,39 +299,13 @@ void AliDielectronCFdraw::Draw(Int_t var0, Int_t var1, Int_t var2, const char* o
   //
   const Int_t ndim=3;
   Int_t vars[ndim]={var0,var1,var2};
-  TObjArray *arr=CollectHistos(ndim,vars,slices);
+  TObjArray *arr=CollectHistosProj(ndim,vars,slices);
   Draw(arr,opt);
   delete arr;
 }
 
 //________________________________________________________________
-void AliDielectronCFdraw::Draw(const TObjArray *arr, const char* opt)
-{
-  //
-  // draw all objects in arr
-  //
-  TString optStr(opt);
-  optStr.ToLower();
-  Bool_t drawSame=optStr.Contains("same");
-  optStr.ReplaceAll("same","");
-  if (!gPad) new TCanvas;
-  TCanvas *c=gPad->GetCanvas();
-  c->Clear();
-  if (!drawSame){
-    //optimised division
-    Int_t nPads = arr->GetEntries();
-    Int_t nCols = (Int_t)TMath::Ceil( TMath::Sqrt(nPads) );
-    Int_t nRows = (Int_t)TMath::Ceil( (Double_t)nPads/(Double_t)nCols );
-    c->Divide(nCols,nRows);
-    for (Int_t i=0; i<nPads; ++i){
-      c->cd(i+1);
-      arr->UncheckedAt(i)->Draw(optStr.Data());
-    }
-  }
-}
-
-//________________________________________________________________
-TObjArray* AliDielectronCFdraw::CollectHistos(Int_t dim, Int_t *vars, const char* slices)
+TObjArray* AliDielectronCFdraw::CollectHistosProj(Int_t dim, Int_t *vars, const char* slices)
 {
   //
   // Collect histos with 'dim'ension of the 'slices' separated by one of "':;'"
@@ -306,7 +317,9 @@ TObjArray* AliDielectronCFdraw::CollectHistos(Int_t dim, Int_t *vars, const char
     // all slices in case of 0 entries
     arrHists=new TObjArray(fCfContainer->GetNStep());
     for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
-      arrHists->Add(Project(dim,vars,istep));
+      TH1 *hproj=Project(dim,vars,istep);
+      hproj->SetName(fCfContainer->GetStepTitle(istep));
+      arrHists->Add(hproj);
     }
   } else {
     arrHists=new TObjArray(arr->GetEntriesFast());
@@ -314,7 +327,9 @@ TObjArray* AliDielectronCFdraw::CollectHistos(Int_t dim, Int_t *vars, const char
     TObjString *ostr=0x0;
     while ( (ostr=static_cast<TObjString*>(next())) ) {
       Int_t istep=ostr->GetString().Atoi();
-      arrHists->Add(Project(dim,vars,istep));
+      TH1 *hproj=Project(dim,vars,istep);
+      hproj->SetName(fCfContainer->GetStepTitle(istep));
+      arrHists->Add(hproj);
     }
   }
   delete arr;
@@ -342,3 +357,201 @@ TH1* AliDielectronCFdraw::Project(Int_t ndim, Int_t *vars, Int_t slice)
   return 0x0;
 }
 
+//________________________________________________________________
+void AliDielectronCFdraw::DrawEfficiency(const char* varnames, const char* nominators, Int_t denominator, const char* opt)
+{
+  //
+  // plot efficiencies for variables. Variable may be up to 3 dim, separated by a ':'
+  // you may have several nominators, sparated by one of ',:;'
+  //
+  
+  TObjArray *arrVars=TString(varnames).Tokenize(":");
+  Int_t entries=arrVars->GetEntriesFast();
+  if (entries<1||entries>3){
+    AliError("Wrong number of variables, supported are 1 - 3 dimensions");
+    delete arrVars;
+    return;
+  }
+  
+  TIter next(arrVars);
+  TObjString *ostr=0x0;
+  Int_t ivar[3]={-1,-1,-1};
+  for (Int_t i=0; i<entries; ++i){
+    ostr=static_cast<TObjString*>(next());
+    if (ostr->GetString().IsDigit()){
+      ivar[i]=ostr->GetString().Atoi();
+    } else {
+      ivar[i]=fCfContainer->GetVar(ostr->GetName());
+    }
+  }
+  
+  switch (entries){
+  case 1:
+    DrawEfficiency(ivar[0],nominators, denominator,opt);
+    break;
+  case 2:
+    DrawEfficiency(ivar[1],ivar[0], nominators, denominator,opt);
+    break;
+  case 3:
+    DrawEfficiency(ivar[2],ivar[1],ivar[0],nominators, denominator,opt);
+    break;
+  }
+  delete arrVars;
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::DrawEfficiency(Int_t var, const char* nominators, Int_t denominator, const char* opt)
+{
+  //
+  // Draw Efficiencies for all nominators
+  // nominators may be divided by and of ,;:
+  //
+  // if opt contains 'same' all histograms are drawn in the same pad
+  // otherwise the pad will be divided in sub pads and the histograms
+  // are drawn in each sub pad
+  //
+  
+  const Int_t ndim=1;
+  Int_t vars[ndim]={var};
+  TObjArray *arr=CollectHistosEff(ndim,vars,nominators,denominator);
+  Draw(arr,opt);
+  delete arr;
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, const char* nominators, Int_t denominator, const char* opt)
+{
+  //
+  // Draw 2D case
+  //
+  const Int_t ndim=2;
+  Int_t vars[ndim]={var0,var1};
+  TObjArray *arr=CollectHistosEff(ndim,vars,nominators,denominator);
+  Draw(arr,opt);
+  delete arr;
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* nominators, Int_t denominator, const char* opt)
+{
+  //
+  // Draw 3D case
+  //
+  const Int_t ndim=3;
+  Int_t vars[ndim]={var0,var1,var2};
+  TObjArray *arr=CollectHistosEff(ndim,vars,nominators,denominator);
+  Draw(arr,opt);
+  delete arr;
+}
+
+//________________________________________________________________
+TObjArray* AliDielectronCFdraw::CollectHistosEff(Int_t dim, Int_t *vars, const char* nominators, Int_t denominator)
+{
+  //
+  // Collect histos with 'dim'ension of the 'slices' separated by one of "':;'"
+  // in a TObjArray and return it
+  //
+  TObjArray *arr=TString(nominators).Tokenize(",:;");
+  TObjArray *arrHists=0x0;
+  if (arr->GetEntriesFast()==0){
+    // all slices in case of 0 entries
+    arrHists=new TObjArray(fCfContainer->GetNStep());
+    for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
+      fEffGrid->CalculateEfficiency(istep,denominator);
+      TH1 *hproj=ProjectEff(dim,vars);
+      Float_t eff=fEffGrid->GetAverage();
+      hproj->SetName(Form("%s (%f)",fCfContainer->GetStepTitle(istep),eff));
+      arrHists->Add(hproj);
+    }
+  } else {
+    arrHists=new TObjArray(arr->GetEntriesFast());
+    TIter next(arr);
+    TObjString *ostr=0x0;
+    while ( (ostr=static_cast<TObjString*>(next())) ) {
+      Int_t istep=ostr->GetString().Atoi();
+      fEffGrid->CalculateEfficiency(istep,denominator);
+      TH1 *hproj=ProjectEff(dim,vars);
+      Float_t eff=fEffGrid->GetAverage();
+      hproj->SetName(Form("%s (%f)",fCfContainer->GetStepTitle(istep),eff));
+      arrHists->Add(hproj);
+    }
+  }
+  delete arr;
+  
+  return arrHists;
+}
+
+//________________________________________________________________
+TH1* AliDielectronCFdraw::ProjectEff(Int_t ndim, Int_t *vars)
+{
+  //
+  // Do an nim projection
+  //
+  switch (ndim){
+  case 1:
+    return fEffGrid->Project(vars[0]);
+    break;
+  case 2:
+    return fEffGrid->Project(vars[0],vars[1]);
+    break;
+  case 3:
+    return fEffGrid->Project(vars[0],vars[1],vars[2]);
+    break;
+  }
+  return 0x0;
+}
+
+//________________________________________________________________
+void AliDielectronCFdraw::Draw(const TObjArray *arr, const char* opt)
+{
+  //
+  // draw all objects in arr
+  //
+  TString optStr(opt);
+  optStr.ToLower();
+  Bool_t drawSame=optStr.Contains("same");
+  Bool_t optLeg=optStr.Contains("leg");
+  optStr.ReplaceAll("same","");
+  
+  if (!gPad) new TCanvas;
+  
+  Int_t nPads = arr->GetEntriesFast();
+  if (nPads==0) return;
+  
+  if (nPads==1){
+    arr->UncheckedAt(0)->Draw(optStr.Data());
+    return;
+  }
+  
+  TCanvas *c=gPad->GetCanvas();
+  c->Clear();
+  
+  
+  if (!drawSame){
+    //optimised division
+    Int_t nCols = (Int_t)TMath::Ceil( TMath::Sqrt(nPads) );
+    Int_t nRows = (Int_t)TMath::Ceil( (Double_t)nPads/(Double_t)nCols );
+    c->Divide(nCols,nRows);
+    for (Int_t i=0; i<nPads; ++i){
+      c->cd(i+1);
+      arr->UncheckedAt(i)->Draw(optStr.Data());
+    }
+  } else {
+    TLegend *leg=0;
+    if (optLeg) leg=new TLegend(.8,.3,.99,.9);
+    for (Int_t i=0; i<nPads; ++i){
+      if (i==1) optStr+="same";
+      TH1 *hist=static_cast<TH1*>(arr->UncheckedAt(i));
+      hist->SetLineColor(i+1);
+      hist->SetMarkerColor(i+1);
+      hist->Draw(optStr.Data());
+      if (leg) leg->AddEntry(hist,hist->GetName(),"lp");
+    }
+    if (leg){
+      leg->SetFillColor(10);
+      leg->SetY1(.9-nPads*.05);
+      leg->Draw();
+    }
+  }
+  
+}

@@ -51,9 +51,12 @@ public:
   Bool_t ConnectMCEvent();
   Bool_t UpdateStack();
 
-  Bool_t IsMotherPdg(const TObject* particle, Int_t pdgMother);
+  Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
+  
+  Int_t GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother);
+  Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   AliVParticle* GetMCTrackFromMCEvent(AliVParticle *track);   // return MC track directly from MC event
   AliVParticle* GetMCTrackFromMCEvent(Int_t _itrk);           // return MC track directly from MC event
@@ -78,20 +81,26 @@ private:
   Bool_t IsMCMotherToEEesd(const AliMCParticle *particle, Int_t pdgMother);
   Bool_t IsMCMotherToEEaod(const AliAODMCParticle *particle, Int_t pdgMother);
 
-  Bool_t IsMotherPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
-  Bool_t IsMotherPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
+  Int_t GetLabelMotherWithPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
+  Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   ClassDef(AliDielectronMC, 0)
 };
 
-inline Bool_t AliDielectronMC::IsMotherPdg(const TObject* particle, Int_t pdgMother)
+//
+// inline functions
+//
+inline Bool_t AliDielectronMC::IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother)
 {
-  //
-  //
-  //
-  if (particle->IsA()!=AliDielectronPair::Class()) return kFALSE;
-  const AliDielectronPair *pair=static_cast<const AliDielectronPair*>(particle);
   return IsMotherPdg(pair->GetFirstDaughter(),pair->GetSecondDaughter(),pdgMother);
+}
+//___________________________________________________________
+inline Bool_t AliDielectronMC::IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother){
+  return GetLabelMotherWithPdg(particle1,particle2,pdgMother)>=0;
+}
+//___________________________________________________________
+inline Int_t AliDielectronMC::GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother){
+  return GetLabelMotherWithPdg(pair->GetFirstDaughter(),pair->GetSecondDaughter(),pdgMother);
 }
 
 #endif 

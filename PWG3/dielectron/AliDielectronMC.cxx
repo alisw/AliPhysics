@@ -363,65 +363,69 @@ Bool_t AliDielectronMC::IsMCMotherToEEaod(const AliAODMCParticle *particle, Int_
 }
 
 //____________________________________________________________
-Bool_t AliDielectronMC::IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother)
+Int_t AliDielectronMC::GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother)
 {
   //
   // test if mother of particle 1 and 2 has pdgCode pdgMother and is the same;
   //
-  if (!fMCEvent) return kFALSE;
+  if (!fMCEvent) return -1;
   
-  if (fAnaType==kESD) return IsMotherPdgESD(particle1, particle2, pdgMother);
-  else if (fAnaType==kAOD) return IsMotherPdgAOD(particle1, particle2, pdgMother);
+  if (fAnaType==kESD) return GetLabelMotherWithPdgESD(particle1, particle2, pdgMother);
+  else if (fAnaType==kAOD) return GetLabelMotherWithPdgAOD(particle1, particle2, pdgMother);
   
-  return kFALSE;
+  return -1;
 }
 
 //____________________________________________________________
-Bool_t AliDielectronMC::IsMotherPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother)
+Int_t AliDielectronMC::GetLabelMotherWithPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother)
 {
   //
-  // test if mother of particle 1 and 2 has pdgCode pdgMother and is the same;
+  // test if mother of particle 1 and 2 has pdgCode +-11 (electron),
+  //    have the same mother and the mother had pdg code pdgMother
   // ESD case
   //
   
   AliMCParticle *mcPart1=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(particle1->GetLabel()));
   AliMCParticle *mcPart2=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(particle2->GetLabel()));
   
-  if (!mcPart1||!mcPart2) return kFALSE;
+  if (!mcPart1||!mcPart2) return -1;
   
   Int_t lblMother1=mcPart1->GetMother();
   Int_t lblMother2=mcPart2->GetMother();
   
   AliMCParticle *mcMother1=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(lblMother1));
-  if (!mcMother1) return kFALSE;
-  if (lblMother1!=lblMother2) return kFALSE;
-  if (mcMother1->PdgCode()!=pdgMother) return kFALSE;
+  if (!mcMother1) return -1;
+  if (lblMother1!=lblMother2) return -1;
+  if (TMath::Abs(mcPart1->PdgCode())!=11) return -1;
+  if (mcMother1->PdgCode()!=pdgMother) return -1;
   
-  return kTRUE;
+  return lblMother1;
 }
 
 //____________________________________________________________
-Bool_t AliDielectronMC::IsMotherPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother)
+Int_t AliDielectronMC::GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother)
 {
   //
-  // test if mother of particle 1 and 2 has pdgCode pdgMother and is the same;
+  // test if mother of particle 1 and 2 has pdgCode +-11 (electron),
+  //    have the same mother and the mother had pdg code pdgMother
   // AOD case
   //
   AliAODMCParticle *mcPart1=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(particle1->GetLabel()));
   AliAODMCParticle *mcPart2=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(particle2->GetLabel()));
   
-  if (!mcPart1||!mcPart2) return kFALSE;
+  if (!mcPart1||!mcPart2) return -1;
   
   Int_t lblMother1=mcPart1->GetMother();
   Int_t lblMother2=mcPart2->GetMother();
   
   AliAODMCParticle *mcMother1=static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(lblMother1));
   
-  if (!mcMother1) return kFALSE;
-  if (lblMother1!=lblMother2) return kFALSE;
-  if (mcMother1->GetPdgCode()!=pdgMother) return kFALSE;
+  if (!mcMother1) return -1;
+  if (lblMother1!=lblMother2) return -1;
+  if (TMath::Abs(mcPart1->GetPdgCode())!=11) return -1;
+  if (mcMother1->GetPdgCode()!=pdgMother) return -1;
   
-  return kTRUE;
+  return lblMother1;
 }
 
 //____________________________________________________________

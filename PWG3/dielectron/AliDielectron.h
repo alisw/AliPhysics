@@ -45,8 +45,6 @@ public:
   
   void Process(AliVEvent *ev1, AliVEvent *ev2=0);
 
-  void  FillHistograms(const AliVEvent *ev);
-  
   const AliAnalysisFilter& GetEventFilter() const { return fEventFilter; }
   const AliAnalysisFilter& GetTrackFilter() const { return fTrackFilter; }
   const AliAnalysisFilter& GetPairFilter()  const { return fPairFilter;  }
@@ -112,6 +110,8 @@ private:
   static const char* fgkPairClassNames[10];   //Names for pair arrays
 
   void ProcessMC();
+  
+  void  FillHistograms(const AliVEvent *ev);
   
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);

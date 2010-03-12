@@ -54,9 +54,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "ImpactParZ",
   "TrackLength",
   "PdgCode",
-  "P from InnerParam",
-  "TPC signal",
-  "TPC nSigma Electrons",
+  "P_InnerParam",
+  "TPC_signal",
+  "TPC_nSigma_Electrons",
   //
   "Chi2NDF",
   "DecayLength",

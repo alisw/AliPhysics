@@ -35,7 +35,8 @@ public:
   virtual ~AliDielectronVarCuts();
   //TODO: make copy constructor and assignment operator public
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max);
-
+  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t value);
+  
   // setters
   void    SetCutOnMCtruth(Bool_t mc=kTRUE) { fCutOnMCtruth=mc; }
   void    SetCutType(CutType type)         { fCutType=type;    }
@@ -86,6 +87,14 @@ private:
 //
 //Inline functions
 //
+inline void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t value)
+{
+  //
+  // Set cut in a small delta around value
+  //
+  const Double_t kDelta=1e-20;
+  AddCut(type,value-kDelta,value+kDelta);
+}
 
 #endif
 
