@@ -1,3 +1,27 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Decoding data from the TRD raw stream                                 //
+//  and translation into ADC values                                       //
+//                                                                        //
+//  Author: J. Klein (jochen.klein@cern.ch)                               //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TClonesArray.h"
 #include "TTree.h"
 
@@ -234,6 +258,8 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
 
 Bool_t AliTRDrawStream::NextDDL()
 {
+  // continue reading with the next equipment
+
   if (!fRawReader)
     return kFALSE;
 
@@ -279,6 +305,10 @@ Bool_t AliTRDrawStream::NextDDL()
 
 Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */)
 {
+  // read the data for the next chamber
+  // in case you only want to read the data of a single chamber
+  // to read all data ReadEvent(...) is recommended
+
   fDigitsManager = digMgr; 
   fDigitsParam   = 0x0;
 
@@ -336,7 +366,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
 	   ((fCurrStackMask & (1 << fCurrSlot) == 0) || 
 	    (fCurrLinkMask[fCurrSlot] & (1 << fCurrLink)) == 0));
 
-  return fCurrHC / 2;
+  return (fCurrSm * 30 + fCurrStack * 6 + fCurrLayer);
 }
 
 
@@ -346,7 +376,7 @@ Int_t AliTRDrawStream::ReadSmHeader()
   // and store the information in the corresponding variables
 
   if (fPayloadCurr - fPayloadStart >= fPayloadSize - 1) {
-    AliError(EquipmentError(kUnknown, "SM Header aborted"));
+    AliError(EquipmentError(kUnknown, "SM Header incomplete"));
     return -1;
   }
 
@@ -475,7 +505,7 @@ Int_t AliTRDrawStream::ReadLinkData()
 	
 	// feeding TRAP config
 	AliTRDtrapConfig *trapcfg = AliTRDtrapConfig::Instance();
-	//	trapcfg->ReadPackedConfig(fCurrHC, startPos, fPayloadCurr - startPos);
+	trapcfg->ReadPackedConfig(fCurrHC, startPos, fPayloadCurr - startPos);
       }
       else {
 	Int_t tpmode = fCurrMajor & 0x7;
@@ -554,7 +584,7 @@ Int_t AliTRDrawStream::ReadHcHeader()
   fCurrSide       = (*fPayloadCurr >> 2) & 0x1;
   fCurrCheck      = (*fPayloadCurr) & 0x3;
 
-  if (fCurrSm != (fCurrEquipmentId - 1024) || 
+  if (fCurrSm != (((Int_t) fCurrEquipmentId) - 1024) || 
       fCurrStack != fCurrSlot || 
       fCurrLayer != fCurrLink / 2 || 
       fCurrSide != fCurrLink % 2) {
@@ -693,10 +723,10 @@ Int_t AliTRDrawStream::ReadZSData()
   UInt_t *start = fPayloadCurr;
   
   Int_t mcmcount = 0;
-  Int_t mcmcount_exp = fCurrStack == 2 ? 48 : 64;
+  Int_t mcmcountExp = fCurrStack == 2 ? 48 : 64;
   Int_t channelcount = 0;
-  Int_t channelcount_exp = 0;
-  Int_t channelcount_max = 0;
+  Int_t channelcountExp = 0;
+  Int_t channelcountMax = 0;
   Int_t timebins;
   Int_t currentTimebin = 0;
   Int_t adcwc = 0;
@@ -755,38 +785,38 @@ Int_t AliTRDrawStream::ReadZSData()
     
     // ----- analysing the ADC mask -----
     channelcount = 0;
-    channelcount_exp = GetNActiveChannelsFromMask(*fPayloadCurr);
-    channelcount_max = GetNActiveChannels(*fPayloadCurr);
+    channelcountExp = GetNActiveChannelsFromMask(*fPayloadCurr);
+    channelcountMax = GetNActiveChannels(*fPayloadCurr);
     Int_t channelmask = GetActiveChannels(*fPayloadCurr);
     Int_t channelno = -1;
     fPayloadCurr++; 
 
-    if (channelcount_exp != channelcount_max) {
-      if (channelcount_exp > channelcount_max) {
-	Int_t temp = channelcount_exp;
-	channelcount_exp = channelcount_max;
-	channelcount_max = temp;
+    if (channelcountExp != channelcountMax) {
+      if (channelcountExp > channelcountMax) {
+	Int_t temp = channelcountExp;
+	channelcountExp = channelcountMax;
+	channelcountMax = temp;
       }
-      while (channelcount_exp < channelcount_max && channelcount_exp < 21 && 
-	     fPayloadCurr - fPayloadStart < fPayloadSize - 10 * channelcount_exp - 1) {
+      while (channelcountExp < channelcountMax && channelcountExp < 21 && 
+	     fPayloadCurr - fPayloadStart < fPayloadSize - 10 * channelcountExp - 1) {
 	AliError(MCMError(kAdcMaskInconsistent,
 			  Form("Possible MCM-H: 0x%08x, possible ADC-mask: 0x%08x", 
-			       *(fPayloadCurr + 10 * channelcount_exp), 
-			       *(fPayloadCurr + 10 * channelcount_exp + 1) ) ));
-	if (!CouldBeMCMhdr( *(fPayloadCurr + 10 * channelcount_exp)) && !CouldBeADCmask( *(fPayloadCurr + 10 * channelcount_exp + 1))) 
-	  channelcount_exp++;
+			       *(fPayloadCurr + 10 * channelcountExp), 
+			       *(fPayloadCurr + 10 * channelcountExp + 1) ) ));
+	if (!CouldBeMCMhdr( *(fPayloadCurr + 10 * channelcountExp)) && !CouldBeADCmask( *(fPayloadCurr + 10 * channelcountExp + 1))) 
+	  channelcountExp++;
 	else {
 	  break;
 	}
       }
       AliError(MCMError(kAdcMaskInconsistent,
 			Form("Inconsistency in no. of active channels: Counter: %i, Mask: %i, chosen: %i!", 
-			     GetNActiveChannels(fPayloadCurr[-1]), GetNActiveChannelsFromMask(fPayloadCurr[-1]), channelcount_exp) ));
+			     GetNActiveChannels(fPayloadCurr[-1]), GetNActiveChannelsFromMask(fPayloadCurr[-1]), channelcountExp) ));
     }
-    AliDebug(2, Form("expecting %i active channels, timebins: %i", channelcount_exp, fCurrNtimebins));
+    AliDebug(2, Form("expecting %i active channels, timebins: %i", channelcountExp, fCurrNtimebins));
     
     // ----- reading marked ADC channels -----
-    while (channelcount < channelcount_exp && *(fPayloadCurr) != fgkDataEndmarker) {
+    while (channelcount < channelcountExp && *(fPayloadCurr) != fgkDataEndmarker) {
       if (channelno < 21)
 	channelno++;
       while (channelno < 21 && (channelmask & 1 << channelno) == 0)
@@ -849,7 +879,7 @@ Int_t AliTRDrawStream::ReadZSData()
       channelcount++;
     }
     
-    if (channelcount != channelcount_exp)
+    if (channelcount != channelcountExp)
       AliError(MCMError(kAdcChannelsMiss));
     
     mcmcount++;
@@ -857,10 +887,10 @@ Int_t AliTRDrawStream::ReadZSData()
   }
 
   // check for missing MCMs (if header suppression is inactive)
-  if (fCurrMajor & 0x1 == 0 && mcmcount != mcmcount_exp) {
+  if (fCurrMajor & 0x1 == 0 && mcmcount != mcmcountExp) {
     AliError(LinkError(kMissMcmHeaders,
 		       Form("No. of MCM headers %i not as expected: %i", 
-			    mcmcount, mcmcount_exp) ));
+			    mcmcount, mcmcountExp) ));
   }
 
   return (fPayloadCurr - start);
@@ -873,9 +903,9 @@ Int_t AliTRDrawStream::ReadNonZSData()
   UInt_t *start = fPayloadCurr;
   
   Int_t mcmcount = 0;
-  Int_t mcmcount_exp = fCurrStack == 2 ? 48 : 64;
+  Int_t mcmcountExp = fCurrStack == 2 ? 48 : 64;
   Int_t channelcount = 0;
-  Int_t channelcount_exp = 0;
+  Int_t channelcountExp = 0;
   Int_t timebins;
   Int_t currentTimebin = 0;
   Int_t adcwc = 0;
@@ -926,7 +956,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
     }
     
     channelcount = 0;
-    channelcount_exp = 21;
+    channelcountExp = 21;
     int channelno = -1;
 
     Int_t adccoloff = AdcColOffset(*fPayloadCurr);
@@ -936,7 +966,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
     fPayloadCurr++;
 
     // ----- reading marked ADC channels -----
-    while (channelcount < channelcount_exp && 
+    while (channelcount < channelcountExp && 
 	   *(fPayloadCurr) != fgkDataEndmarker) {
       if (channelno < 21)
 	channelno++;
@@ -992,24 +1022,26 @@ Int_t AliTRDrawStream::ReadNonZSData()
       channelcount++;
     }
 
-    if (channelcount != channelcount_exp)
+    if (channelcount != channelcountExp)
       AliError(MCMError(kAdcChannelsMiss));
     mcmcount++;
     // continue with next MCM
   }
 
   // check for missing MCMs (if header suppression is inactive)
-  if (mcmcount != mcmcount_exp) {
+  if (mcmcount != mcmcountExp) {
     AliError(LinkError(kMissMcmHeaders,
-		       Form("%i not as expected: %i", mcmcount, mcmcount_exp) ));
+		       Form("%i not as expected: %i", mcmcount, mcmcountExp) ));
   }
 
   return (fPayloadCurr - start);
 }
 
 
-Int_t AliTRDrawStream::GetNActiveChannelsFromMask(UInt_t adcmask) 
+Int_t AliTRDrawStream::GetNActiveChannelsFromMask(UInt_t adcmask) const
 {
+  // return number of active bits in the ADC mask
+
   adcmask = GetActiveChannels(adcmask);
   adcmask = adcmask - ((adcmask >> 1) & 0x55555555);
   adcmask = (adcmask & 0x33333333) + ((adcmask >> 2) & 0x33333333);
@@ -1019,6 +1051,9 @@ Int_t AliTRDrawStream::GetNActiveChannelsFromMask(UInt_t adcmask)
 
 TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg)
 { 
+  // register error according to error code on equipment level 
+  // and return the corresponding error message
+
   fLastError.fSector = fCurrEquipmentId - 1024;
   fLastError.fStack  = -1;
   fLastError.fLink   = -1;
@@ -1034,6 +1069,9 @@ TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg)
 
 TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg)
 { 
+  // register error according to error code on stack level 
+  // and return the corresponding error message
+
   fLastError.fSector = fCurrEquipmentId - 1024;
   fLastError.fStack  = fCurrSlot;
   fLastError.fLink   = -1;
@@ -1049,6 +1087,9 @@ TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg)
 
 TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg)
 { 
+  // register error according to error code on link level 
+  // and return the corresponding error message
+
   fLastError.fSector = fCurrEquipmentId - 1024;
   fLastError.fStack  = fCurrSlot;
   fLastError.fLink   = fCurrLink;
@@ -1064,6 +1105,9 @@ TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg)
 
 TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg)
 { 
+  // register error according to error code on ROB level 
+  // and return the corresponding error message
+
   fLastError.fSector = fCurrEquipmentId - 1024;
   fLastError.fStack  = fCurrSlot;
   fLastError.fLink   = fCurrLink;
@@ -1079,6 +1123,9 @@ TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg)
 
 TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg)
 { 
+  // register error according to error code on MCM level 
+  // and return the corresponding error message
+
   fLastError.fSector = fCurrEquipmentId - 1024;
   fLastError.fStack  = fCurrSlot;
   fLastError.fLink   = fCurrLink;
@@ -1093,6 +1140,8 @@ TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg)
 
 const char* AliTRDrawStream::GetErrorMessage(ErrorCode_t errCode)
 { 
+  // return the error message for the given error code
+
   if (errCode > 0 && errCode < kLastErrorCode) 
     return fgErrorMessages[errCode];
   else 
