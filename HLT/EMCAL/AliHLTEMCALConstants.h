@@ -22,8 +22,7 @@
 #ifndef ALIHLTEMCALCONSTANTS_H
 #define ALIHLTEMCALCONSTANTS_H
 
-#include "Rtypes.h"
-#include "AliHLTCaloConstants.h"
+class AliHLTCaloConstants;
 
 
 class AliHLTEMCALConstants : public AliHLTCaloConstants

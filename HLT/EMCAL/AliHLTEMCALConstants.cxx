@@ -21,6 +21,8 @@
 /// @date   2009-11-12
 /// @brief  Class containing constants for EMCAL and EMCAL
 ///         loaded libraries
+
+#include "AliHLTCaloConstants.h"
 #include "AliHLTEMCALConstants.h"
 
 ClassImp(AliHLTEMCALConstants);
