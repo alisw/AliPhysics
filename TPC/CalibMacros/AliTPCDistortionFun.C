@@ -1,19 +1,33 @@
 /*
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-  .L $ALICE_ROOT/TPC/AliTPCDistortions.cxx+
-  .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortionFun.C+
+  Simple compiled macro for declaration of static distortion function
+  on top of the AliTPCDistortion class.
+  Why:
+  1. Use static function in the fitting procedure
+  2. Usage in TFormual, TF1, Tf2 ... for visualization.
+  3. Usage in  tree->Draw() for visualization
+  4. Simple visualization of fit residuals in multidemension - using tree Draw functionality
 
+
+  
+  Usage:
+  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
+  .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortions.cxx+
+  .L $ALICE_ROOT/TPC/CalibMacros/AliTPCDistortionFun.C+
+ 
+  Example:
   //
-  // integrated distortion
+  // Draw integrated distortion in local x
   //
   TF2 fdistIFCXvZX("fdistIFCXvZX","GetIFCDistortion(y,0,x,0)",-250,250,80,250);
   fdistIFCXvZX.GetXaxis()->SetTitle("Z (cm)");
   fdistIFCXvZX.GetYaxis()->SetTitle("local X (cm)");  
   fdistIFCXvZX->Draw("colz");
   //
-  // local distortion angle mrad
+  // Draw local distortion angle dx/dz  in mrad
   //
-  TF2 fangleIFCXvZX("fangleIFCXvZX","1000*(GetIFCDistortion(y,0,x,0)-GetIFCDistortion(y,0,x-1,0))*sign(x)",-250,250,85,245);
+  TF2 fangleIFCXvZX("fangleIFCXvZX","1000*(GetIFCDistortion(y,0,x,0)-GetIFCDistortion(y,0,x-1,0))*sign(x)",-250,250,85,120);
+  fangleIFCXvZX.SetNpx(200);
+  fangleIFCXvZX.SetNpy(200);
   fangleIFCXvZX.GetXaxis()->SetTitle("Z (cm)");
   fangleIFCXvZX.GetYaxis()->SetTitle("local X (cm)");  
   fangleIFCXvZX->Draw("colz");
