@@ -62,17 +62,17 @@ class  AliCaloRawAnalyzerComparison
   TH1D *fTofResAbsolute[NANALYZERS]; //differntial tof resolution 
   
 
-  vector <AliCaloRawAnalyzer*> fRawAnalyzers;
-  AliCaloRawAnalyzer *fReferenceAnalyzer;
+  vector <AliCaloRawAnalyzer*> fRawAnalyzers; // raw analyzers
+  AliCaloRawAnalyzer *fReferenceAnalyzer; // reference analyzer
   
-  int fMod;
-  int fMonCol1;
-  int fMonRow1;
-  int fMonCol2;
-  int fMonRow2;
+  int fMod; // SuperModule index
+  int fMonCol1; // column index, for tower 1
+  int fMonRow1; // row index, for tower 1
+  int fMonCol2; // column index, for tower 2
+  int fMonRow2; // row index, for tower 1
 
-  AliCaloFitResults fMon1[NANALYZERS];
-  AliCaloFitResults fMon2[NANALYZERS];
+  AliCaloFitResults fMon1[NANALYZERS]; // results for tower 1
+  AliCaloFitResults fMon2[NANALYZERS]; // results for tower 2
 
 };
 

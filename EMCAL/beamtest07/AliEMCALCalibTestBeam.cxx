@@ -94,7 +94,7 @@ AliEMCALCalibTestBeam::~AliEMCALCalibTestBeam()
 
 //________________________________________________________________
 void  AliEMCALCalibTestBeam::Reset() 
-{
+{ // clear variables
   ResetRunInfo();
   ResetTempInfo();
   return;
@@ -159,23 +159,23 @@ void  AliEMCALCalibTestBeam::Print() const
 }
 //________________________________________________________________ 
 double AliEMCALCalibTestBeam::GetLengthOfRunInHours() const
-{
+{ // run length in hours
   return (fTimeStop - fTimeStart)*fkSecToHour;
 }
 //________________________________________________________________ 
 double AliEMCALCalibTestBeam::GetRangeOfTempMeasureInHours() const
-{
+{ // interval with temperature measurements
   return (fMaxTime - fMinTime)*fkSecToHour;
 }
 //________________________________________________________________ 
 double AliEMCALCalibTestBeam::GetRangeOfTempMeasureInDegrees() const
-{
+{ // range of temperatures
   return (fMaxTemp - fMinTemp);
 }
 
 //________________________________________________________________
 void AliEMCALCalibTestBeam::Init(const int runno)
-{
+{ // init/clear info
   Reset(); // start fresh
 
   // collect the needed information
@@ -195,7 +195,7 @@ void AliEMCALCalibTestBeam::Init(const int runno)
 
 //________________________________________________________________
 double AliEMCALCalibTestBeam::GetCorrection(int secSinceRunStart) const
-{
+{ // calculate correction
   double temperature = GetTemperature(secSinceRunStart);
   return GetCorrection(temperature);
 }
@@ -220,7 +220,7 @@ double AliEMCALCalibTestBeam::GetCorrection(double temperature) const
 //________________________________________________________________
 void AliEMCALCalibTestBeam::GetRunTime(const int runno, 
 				       const char *filename)
-{
+{ // get run info
   TFile *fR = new TFile(filename); 
   if (!fR) {
     printf("file %s could not be found. Perhaps you don't have afs working?\n",filename);
@@ -273,7 +273,7 @@ void AliEMCALCalibTestBeam::GetRunTime(const int runno,
 
 //________________________________________________________________
 void AliEMCALCalibTestBeam::GetTemperatureInfo(const char* filename)
-{
+{ // get temperature info
   fTempGraph->Clear();
 
   TFile *fT = new TFile(filename);
@@ -341,7 +341,7 @@ void AliEMCALCalibTestBeam::GetTemperatureInfo(const char* filename)
 //________________________________________________________________
 void AliEMCALCalibTestBeam::GetEMCALLogbookInfo(const int runno, 		
 						const char *filename)
-{
+{ // get logbook info
   Int_t Run,DAQEvt,CCUSB,Counter,XPos,YPos,Momentum;
   char TriggerAndComment[1000];
 

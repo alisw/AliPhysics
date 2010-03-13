@@ -55,16 +55,16 @@ class AliEMCALCalibTestBeam {
   void GetEMCALLogbookInfo(const int runno, 		
 			   const char *filename="/afs/cern.ch/user/d/dsilverm/www/testbeam07/calib/EMCAL_Logbook_SPS_and_PS.csv");
   //
-  TGraph *fTempGraph; //
-  TSpline3 *fTempSpline; //
+  TGraph *fTempGraph; // graph of temperature values
+  TSpline3 *fTempSpline; // spline of  temperature values
   //
-  int fTimeStart;
-  int fTimeStop;
-  int fNEvents;
-  double fMinTemp;
-  double fMaxTemp;
-  int fMinTime;
-  int fMaxTime;
+  int fTimeStart; // start time
+  int fTimeStop; // stop time
+  int fNEvents; // number of events
+  double fMinTemp; // minimum time
+  double fMaxTemp; // maximum time
+  int fMinTime; // minimum time
+  int fMaxTime; // maximum time
   //
   ClassDef(AliEMCALCalibTestBeam,1)    // EMCAL Calibration data
 };

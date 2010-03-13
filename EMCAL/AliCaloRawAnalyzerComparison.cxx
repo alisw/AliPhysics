@@ -37,7 +37,7 @@ AliCaloRawAnalyzerComparison::AliCaloRawAnalyzerComparison() : fMod(0),
 							       fMonRow1(15),
 							       fMonCol2(1),
 							       fMonRow2(16)
-{
+{ // ctor
   fReferenceAnalyzer = new  AliCaloRawAnalyzerLMS();
 
   AliCaloRawAnalyzerCrude *crude = new AliCaloRawAnalyzerCrude();
@@ -59,12 +59,12 @@ AliCaloRawAnalyzerComparison::AliCaloRawAnalyzerComparison() : fMod(0),
   fRawAnalyzers.push_back( (AliCaloRawAnalyzer*)neuralnet);
   
   fRawAnalyzers.push_back( (AliCaloRawAnalyzer*)peakfinder);
-  IntiHistograms( fRawAnalyzers, fReferenceAnalyzer );
+  InitHistograms( fRawAnalyzers, fReferenceAnalyzer );
 }
 
 
 AliCaloRawAnalyzerComparison::~AliCaloRawAnalyzerComparison()
-{
+{ // dtor
 
 }
  
@@ -72,7 +72,7 @@ AliCaloRawAnalyzerComparison::~AliCaloRawAnalyzerComparison()
 void 
 AliCaloRawAnalyzerComparison::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  
 					const UInt_t altrocfg2, const int event, const int col, const int row )
-{
+{ // evaluate methods
   //  cout << __FILE__ << __LINE__ << endl;
 
   AliCaloFitResults ref = fReferenceAnalyzer->Evaluate( bunchvector, altrocfg1, altrocfg2 );
@@ -115,7 +115,7 @@ AliCaloRawAnalyzerComparison::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 
 void 
 AliCaloRawAnalyzerComparison::EventChanged()
-{
+{ // new event
   for(int i=0; i < fRawAnalyzers.size(); i++ )
     {
       /*
@@ -140,7 +140,7 @@ AliCaloRawAnalyzerComparison::EventChanged()
 
 void 
 AliCaloRawAnalyzerComparison::WriteHistograms()
-{
+{ // write histograms 
   TFile *f = new TFile("comparison2.root", "recreate");
   
   /*
@@ -179,8 +179,8 @@ AliCaloRawAnalyzerComparison::WriteHistograms()
 
 
 void
-AliCaloRawAnalyzerComparison::IntiHistograms( vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref )
-{
+AliCaloRawAnalyzerComparison::InitHistograms( vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref )
+{ // init histograms 
   char tmpname[256];
  
   /* 
