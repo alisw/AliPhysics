@@ -43,13 +43,15 @@ class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
   Bool_t GetFixTau() const { return fFixTau; }; 
   void SetFixTau(Bool_t b) { fFixTau = b; }; 
 
+  // extra interfaces
+  TF1 * GetFit() const { return fTf1; };
+
  private:
   AliCaloRawAnalyzerLMS(const AliCaloRawAnalyzerLMS & );
   AliCaloRawAnalyzerLMS  & operator = (const AliCaloRawAnalyzerLMS  &);
  
   double fXaxis[MAXSAMPLES]; //Axis if time bins, ( used by TGraph )
   const double fkEulerSquared; //e^2 = 7.389056098930650227
-  TGraph *fSig;  // Signale holding the data to be fitted.
   TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
 
   Float_t fTau; // shaper tau, in time bins

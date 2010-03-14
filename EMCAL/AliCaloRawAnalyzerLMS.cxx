@@ -43,7 +43,6 @@ ClassImp( AliCaloRawAnalyzerLMS )
 
 AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer("Chi Square Fit", "LMS"),
 						 fkEulerSquared(7.389056098930650227),
-						 fSig(0),
 						 fTf1(0),
 						 fTau(2.35),
 						 fFixTau(kTRUE)
