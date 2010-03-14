@@ -124,9 +124,9 @@ int AliHLTTRDTrackHistoComponent::DoInit(int argc, const char** argv)
 
   fTracksArray = new TClonesArray("AliTRDtrackV1");
 
-  fClPerTrkl = new TH1F("fClPerTrkl","Clusters per Tracklet", AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb - 0.5);
-  fTrklPerTrk = new TH1F("fTrklPerTrk","Tracklets per Track", 7, -0.5, 6.5);
-  fEvSize = new TH1F("evSize", "Tracks size per event per ddl in kbyte", 512, 0, 512);
+  fClPerTrkl = new TH1F("TrdClPerTrkl","Clusters per Tracklet", AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb - 0.5);
+  fTrklPerTrk = new TH1F("TrdTrklPerTrk","Tracklets per Track", 7, -0.5, 6.5);
+  fEvSize = new TH1F("TrdTrEvSize", "Tracks size per event per ddl in kbyte", 512, 0, 512);
   
   return 0;
 }

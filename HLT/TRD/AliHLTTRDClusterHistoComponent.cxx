@@ -132,7 +132,7 @@ int AliHLTTRDClusterHistoComponent::DoInit(int argc, const char** argv)
   fClsAmpDist = new TH1F("trdClsAmpDist", "mean amplitude", 200, 0, 1000);
   fSClsDist = new TH1F("sclsdist", "Super cluster spectrum", 200, 0, 8000);
   fNScls = new TH1F("nscls", "No. of Kr clusters per event", 540, 0, 540);
-  fEvSize = new TH1F("evSize", "Clusters size per event per ddl in kbyte", 512, 0, 512);
+  fEvSize = new TH1F("TrdClEvSize", "Clusters size per event per ddl in kbyte", 512, 0, 512);
 
   for(int i=0; i<540; i++) {
     fClsAmpDriftDet[i] = new TH1F(Form("trdClsDriftDet_%d",i), "", 200, -0.5, 199.5);
