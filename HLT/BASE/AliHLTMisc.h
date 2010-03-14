@@ -32,7 +32,7 @@ class AliHLTMisc : public TObject {
   ~AliHLTMisc();
 
   template<class T>
-  static T* LoadInstance(const T* dummy, const char* classname, const char* library);
+  static T* LoadInstance(const T* dummy, const char* classname, const char* library=NULL);
 
   static AliHLTMisc& Instance();
 
@@ -109,7 +109,7 @@ T* AliHLTMisc::LoadInstance(const T* /*t*/, const char* classname, const char* l
   ROOT::NewFunc_t pNewFunc=NULL;
   do {
     pCl=TClass::GetClass(classname);
-  } while (!pCl && (iLibResult=gSystem->Load(library))==0);
+  } while (!pCl && library!=NULL && (iLibResult=gSystem->Load(library))==0);
   if (iLibResult>=0) {
     if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
       void* p=(*pNewFunc)(NULL);
@@ -122,7 +122,7 @@ T* AliHLTMisc::LoadInstance(const T* /*t*/, const char* classname, const char* l
 	log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not create instance of type %s from class descriptor", classname);
       }
     } else {
-      log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not find class descriptor %s", classname);
+      log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not find TClass descriptor %s", classname);
     }
   } else {
     log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not load %s library in order to find class descriptor %s", library, classname);
