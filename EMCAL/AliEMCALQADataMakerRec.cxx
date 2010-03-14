@@ -51,33 +51,76 @@ Change all existing histograms as experts
 #include "AliRawReader.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliEMCALGeoParams.h"
+#include "AliRawEventHeaderBase.h"
+
+#include "AliCaloBunchInfo.h"
+#include "AliCaloFitResults.h"
+#include "AliCaloRawAnalyzerFastFit.h"
+#include "AliCaloRawAnalyzerNN.h"
+#include "AliCaloRawAnalyzerLMS.h"
+#include "AliCaloRawAnalyzerPeakFinder.h"
+#include "AliCaloRawAnalyzerCrude.h"
 
 ClassImp(AliEMCALQADataMakerRec)
            
 //____________________________________________________________________________ 
-  AliEMCALQADataMakerRec::AliEMCALQADataMakerRec() : 
-    AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
-    fSuperModules(4), // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
-    fFirstPedestalSample(0),
-    fLastPedestalSample(15),
-    fMinSignalHG(0),
-    fMaxSignalHG(AliEMCALGeoParams::fgkSampleMax)
-   {
+AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) : 
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
+  fFittingAlgorithm(0),
+  fRawAnalyzer(0),
+  fRawAnalyzerTRU(0),
+  fSuperModules(4), // FIXME!!! number of SuperModules; 4 for 2009; update default to 12 for later runs..
+  fFirstPedestalSample(0),
+  fLastPedestalSample(3),
+  fFirstPedestalSampleTRU(0),
+  fLastPedestalSampleTRU(3),
+  fMinSignalLG(0),
+  fMaxSignalLG(AliEMCALGeoParams::fgkSampleMax),
+  fMinSignalHG(0),
+  fMaxSignalHG(AliEMCALGeoParams::fgkSampleMax),
+  fMinSignalTRU(0),
+  fMaxSignalTRU(AliEMCALGeoParams::fgkSampleMax),
+  fMinSignalLGLEDMon(0),
+  fMaxSignalLGLEDMon(AliEMCALGeoParams::fgkSampleMax),
+  fMinSignalHGLEDMon(0),
+  fMaxSignalHGLEDMon(AliEMCALGeoParams::fgkSampleMax)
+{
   // ctor
+  SetFittingAlgorithm(fitAlgo);
+  fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
+  fRawAnalyzerTRU->SetFixTau(kTRUE); 
+  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 }
 
 //____________________________________________________________________________ 
 AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) :
   AliQADataMakerRec(), 
+  fFittingAlgorithm(0),
+  fRawAnalyzer(0),
+  fRawAnalyzerTRU(0),
   fSuperModules(qadm.GetSuperModules()), 
   fFirstPedestalSample(qadm.GetFirstPedestalSample()), 
   fLastPedestalSample(qadm.GetLastPedestalSample()),  
+  fFirstPedestalSampleTRU(qadm.GetFirstPedestalSampleTRU()), 
+  fLastPedestalSampleTRU(qadm.GetLastPedestalSampleTRU()),  
+  fMinSignalLG(qadm.GetMinSignalLG()),
+  fMaxSignalLG(qadm.GetMaxSignalLG()),
   fMinSignalHG(qadm.GetMinSignalHG()),
-  fMaxSignalHG(qadm.GetMaxSignalHG())
+  fMaxSignalHG(qadm.GetMaxSignalHG()),
+  fMinSignalTRU(qadm.GetMinSignalTRU()),
+  fMaxSignalTRU(qadm.GetMaxSignalTRU()),
+  fMinSignalLGLEDMon(qadm.GetMinSignalLGLEDMon()),
+  fMaxSignalLGLEDMon(qadm.GetMaxSignalLGLEDMon()),
+  fMinSignalHGLEDMon(qadm.GetMinSignalHGLEDMon()),
+  fMaxSignalHGLEDMon(qadm.GetMaxSignalHGLEDMon())
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
+  SetFittingAlgorithm(qadm.GetFittingAlgorithm());
+  fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
+  fRawAnalyzerTRU->SetFixTau(kTRUE); 
+  fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 }
 
 //__________________________________________________________________
@@ -212,14 +255,6 @@ void AliEMCALQADataMakerRec::InitRaws()
   TProfile * h9 = new TProfile("hHighEmcalRawPed", "High Gain EMC: Pedestal vs towerId;Tower Id;Pedestal [ADC counts]",
 			       nTot, -0.5, nTot-0.5) ;
   Add2RawsList(h9, kPedHG, expert, image, !saveCorr) ;
-
-  // pedestal rms (standard dev = sqrt of variance estimator for pedestal) (bins are towers)
-  TProfile * h10 = new TProfile("hLowEmcalRawPedRMS", "Low Gain EMC: Pedestal RMS vs towerId;Tower Id;Width [ADC counts]", 
-				nTot, -0.5, nTot-0.5) ;
-  Add2RawsList(h10, kPedRMSLG, expert, image, !saveCorr) ;
-  TProfile * h11 = new TProfile("hHighEmcalRawPedRMS", "High Gain EMC: Pedestal RMS vs towerId;Tower Id;Width [ADC counts]",
-				nTot, -0.5, nTot-0.5) ;
-  Add2RawsList(h11, kPedRMSHG, expert, image, !saveCorr) ;
 	
  //number of events per tower, for shifter fast check  	
   TH1I * h12 = new TH1I("hTowerHG", "High Gains on the Tower;Tower", nTot,0, nTot) ;
@@ -256,11 +291,6 @@ void AliEMCALQADataMakerRec::InitRaws()
   TProfile * hT4 = new TProfile("hTRUEmcalRawPed", "TRU EMC: Pedestal vs 2x2Id;2x2 Id;Pedestal [ADC counts]", 
 				nTot2x2, -0.5, nTot2x2-0.5) ;
   Add2RawsList(hT4, kPedTRU, expert, image, !saveCorr) ;
-
-  // pedestal rms (standard dev = sqrt of variance estimator for pedestal) (bins are TRU channels)
-  TProfile * hT5 = new TProfile("hTRUEmcalRawPedRMS", "TRU EMC: Pedestal RMS vs 2x2Id;2x2 Id;Width [ADC counts]", 
-				nTot2x2, -0.5, nTot2x2-0.5) ;
-  Add2RawsList(hT5, kPedRMSTRU, expert, image, !saveCorr) ;
 
   // and also LED Mon..
   // LEDMon has both high and low gain channels, just as regular FEE/towers
@@ -306,14 +336,6 @@ void AliEMCALQADataMakerRec::InitRaws()
 			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
   Add2RawsList(hL9, kPedHGLEDMon, expert, image, !saveCorr) ;
 
-  // pedestal rms (standard dev = sqrt of variance estimator for pedestal) (bins are strips)
-  TProfile * hL10 = new TProfile("hLowLEDMonEmcalRawPedRMS", "LowLEDMon Gain EMC: Pedestal RMS vs stripId;Strip Id;Width [ADC counts]", 
-				nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
-  Add2RawsList(hL10, kPedRMSLGLEDMon, expert, image, !saveCorr) ;
-  TProfile * hL11 = new TProfile("hHighLEDMonEmcalRawPedRMS", "HighLEDMon Gain EMC: Pedestal RMS vs stripId;Strip Id;Width [ADC counts]",
-				nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
-  Add2RawsList(hL11, kPedRMSHGLEDMon, expert, image, !saveCorr) ;
-  
 }
 
 //____________________________________________________________________________
@@ -346,33 +368,22 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
 
-  //Raw histogram filling not yet implemented
-  //
-  //Need to figure out how to get the info we want without having to
-  //actually run Raw2Digits twice.
-  //I suspect what we actually want is a raw digits method, not a true
-  //emcal raw data method, but this doesn't seem to be allowed in
-  //AliQADataMakerRec.h
-
-  // For now, to avoid redoing the expensive signal fits we just
-  // look at max vs min of the signal spextra, a la online usage in
-  // AliCaloCalibPedestal
-
+  // setup
   rawReader->Reset() ;
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
   rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL's 
 
-  // setup
+  AliRecoParam::EventSpecie_t saveSpecie = fEventSpecie ; 
+  if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
+    SetEventSpecie(AliRecoParam::kCalib) ;
+  }
+  
+  fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
+
   int nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
   int nRows = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
   int nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
   int n2x2PerSM = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
-
-  int sampleMin = 0; 
-  int sampleMax = AliEMCALGeoParams::fgkSampleMax; // 0x3ff = 1023 = 10-bit range
-
-  // for the pedestal calculation
-  Bool_t selectPedestalSamples = kTRUE;
 
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
   int nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules] = {0};
@@ -381,157 +392,157 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   int nTotalSMLGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
   int nTotalSMHGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
 
-  // indices for the reading
-  int iSM = 0;
-  int sample = 0;
-  int time = 0;
-  // counters, on sample level
-  int i = 0; // the sample number in current event.
-  int maxTime = 0;
-  int startBin = 0;
-
-  // calc. quantities
-  double meanPed = 0, squaredMean = 0, rmsPed = 0;
-
   // start loop over input stream  
+  int iSM = 0;
   while (in.NextDDL()) {
-    int iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
-    while (in.NextChannel()) {
+    iSM = in.GetModule(); // SuperModule
+    if (iSM>=0 && iSM<fSuperModules) { // valid module reading
 
-      // counters
-      int max = sampleMin, min = sampleMax; // min and max sample values
-      int nsamples = 0;
+      int iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
 
-      // for the pedestal calculation
-      int sampleSum = 0; // sum of samples
-      int squaredSampleSum = 0; // sum of samples squared
-      int nSum = 0; // number of samples in sum
-      
-      while (in.NextBunch()) {
-	const UShort_t *sig = in.GetSignals();
-	startBin = in.GetStartTimeBin();
-	nsamples += in.GetBunchLength();
-	for (i = 0; i < in.GetBunchLength(); i++) {
-	  sample = sig[i];
-	  time = startBin--;
+      while (in.NextChannel()) {
 
-	  // check if it's a min or max value
-	  if (sample < min) min = sample;
-	  if (sample > max) {
-	    max = sample;
-	    maxTime = time;
-	  }
-
-	  // should we add it for the pedestal calculation?
-	  if ( (fFirstPedestalSample<=time && time<=fLastPedestalSample) || // sample time in range
-	       !selectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
-	    sampleSum += sample;
-	    squaredSampleSum += sample*sample;
-	    nSum++;
-	  }
-	  
-	} // loop over samples in bunch
-      } // loop over bunches
-    
-      if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
-
-      // calculate pedesstal estimate: mean of possibly selected samples
-      if (nSum > 0) {
-	meanPed = sampleSum / (1.0 * nSum);
-	squaredMean = squaredSampleSum / (1.0 * nSum);
-	// The variance (rms squared) is equal to the mean of the squares minus the square of the mean..
-	rmsPed = sqrt(squaredMean - meanPed*meanPed); 
-      }
-      else {
-	meanPed = 0;
-	squaredMean = 0;
-	rmsPed  = 0;
-      }
-
-      // it should be enough to check the SuperModule info for each DDL really, but let's keep it here for now
-      iSM = in.GetModule(); //The modules are numbered starting from 0
-
-      if (iSM>=0 && iSM<fSuperModules) { // valid module reading, can go on with filling
-
-	if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
-	  int towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
+	int nsamples = 0;
+	vector<AliCaloBunchInfo> bunchlist; 
+	while (in.NextBunch()) {
+	  nsamples += in.GetBunchLength();
+	  bunchlist.push_back( AliCaloBunchInfo(in.GetStartTimeBin(), in.GetBunchLength(), in.GetSignals() ) );
+	} 
 	
+	if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
+	  Float_t time = 0; 
+	  Float_t amp = 0; 
+	  // indices for pedestal calc.
+	  int firstPedSample = 0;
+	  int lastPedSample = 0;
 
-	  if ( in.IsLowGain() ) { 
-	    //fill the low gain histograms, and counters
-	    nTotalSMLG[iSM]++; // one more channel found
-	    GetRawsData(kSigLG)->Fill(towerId, max - min);
-	    GetRawsData(kTimeLG)->Fill(towerId, maxTime);
-		GetRawsData(kTowerLG)->Fill(towerId);
-	    if (nSum>0) { // only fill pedestal info in case it could be calculated
-	      GetRawsData(kPedLG)->Fill(towerId, meanPed);
-	      GetRawsData(kPedRMSLG)->Fill(towerId, rmsPed);
-	    }
-	  } // gain==0
-	  else if ( in.IsHighGain() ) {       	
-	    //fill the high gain ones
-	    nTotalSMHG[iSM]++; // one more channel found
-	    int signal = max - min;
-	    // only fill the max-min signal info and maxTime, if the
-	    // signal was in the selected range 
-	    if ( (signal > fMinSignalHG) && (signal < fMaxSignalHG) ) { 
-	      GetRawsData(kSigHG)->Fill(towerId, signal);
-	      GetRawsData(kTimeHG)->Fill(towerId, maxTime);
-		  GetRawsData(kTowerHG)->Fill(towerId);
-	    } // signal
-	    if (nSum>0) { // only fill pedestal info in case it could be calculated
-	      GetRawsData(kPedHG)->Fill(towerId, meanPed);
-	      GetRawsData(kPedRMSHG)->Fill(towerId, rmsPed);
+	  if (! in.IsTRUData() ) { // high gain, low gain, LED Mon data - all have the same shaper/sampling 
+	    AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
+	    amp = fitResults.GetAmp();
+	    time = fitResults.GetTof();	
+	    firstPedSample = fFirstPedestalSample;
+	    lastPedSample = fLastPedestalSample;
+	  }
+	  else { // TRU data is special, needs its own analyzer
+	    AliCaloFitResults fitResults = fRawAnalyzerTRU->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
+	    amp = fitResults.GetAmp();
+	    time = fitResults.GetTof();	
+	    firstPedSample = fFirstPedestalSampleTRU;
+	    lastPedSample = fLastPedestalSampleTRU;
+	  }
+  
+	  // pedestal samples
+	  int nPed = 0;
+	  UShort_t *pedSamples = 0;
+	
+	  // select earliest bunch 
+	  unsigned int bunchIndex = 0;
+	  unsigned int startBin = bunchlist.at(0).GetStartBin();
+	  if (bunchlist.size() > 0) {
+	    for(unsigned int ui=1; ui < bunchlist.size(); ui++ ) {
+	      if (startBin > bunchlist.at(ui).GetStartBin() ) {
+		startBin = bunchlist.at(ui).GetStartBin();
+		bunchIndex = ui;
+	      }
 	    }
 	  }
-	} // low or high gain
-	// TRU
-	else if ( in.IsTRUData() ) {
-	  // for TRU data, the mapping class holds the TRU internal 2x2 number (0..95) in the Column var..
-	  int iTRU = iRCU; //TRU0 is from RCU0, TRU1 from RCU1
-	  if (iRCU>0 && in.GetBranch()>0) iTRU=2; // TRU2 is from branch B on RCU1
-	  int TRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
-	    + in.GetColumn();
 
-	  //fill the low gain histograms, and counters
-	  nTotalSMTRU[iSM]++; // one more channel found
-	  GetRawsData(kSigTRU)->Fill(TRU2x2Id, max - min);
-	  GetRawsData(kTimeTRU)->Fill(TRU2x2Id, maxTime);
-	  if (nSum>0) { // only fill pedestal info in case it could be calculated
-	    GetRawsData(kPedTRU)->Fill(TRU2x2Id, meanPed);
-	    GetRawsData(kPedRMSTRU)->Fill(TRU2x2Id, rmsPed);
-	  }
-	}
-	// LED Mon
-	else if ( in.IsLEDMonData() ) {
-	  // for LED Mon data, the mapping class holds the gain info in the Row variable
-	  // and the Strip number in the Column..
-	  int gain = in.GetRow(); 
-	  int stripId = iSM*nStripsPerSM + in.GetColumn();
+	  // check bunch for entries in the pedestal sample range
+	  int bunchLength = bunchlist.at(bunchIndex).GetLength(); 
+	  const UShort_t *sig = bunchlist.at(bunchIndex).GetData();
+	  int timebin = 0;
+	  for (int i = 0; i<bunchLength; i++) {
+	    timebin = startBin--;
+	    if ( firstPedSample<=timebin && timebin<=lastPedSample ) {
+	      pedSamples[nPed] = sig[i];
+	      nPed++;
+	    }	    
+	  } // i
+
+	  // fill histograms
+	  if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
+	    int towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
 	  
-	  if ( gain == 0 ) { 
-	    //fill the low gain histograms, and counters
-	    nTotalSMLGLEDMon[iSM]++; // one more channel found
-	    GetRawsData(kSigLGLEDMon)->Fill(stripId, max - min);
-	    GetRawsData(kTimeLGLEDMon)->Fill(stripId, maxTime);
-	    if (nSum>0) { // only fill pedestal info in case it could be calculated
-	      GetRawsData(kPedLGLEDMon)->Fill(stripId, meanPed);
-	      GetRawsData(kPedRMSLGLEDMon)->Fill(stripId, rmsPed);
-	    }
-	  } // gain==0
-	  else if ( gain == 1 ) {       	
-	    //fill the high gain ones
-	    nTotalSMHGLEDMon[iSM]++; // one more channel found
-	    GetRawsData(kSigHGLEDMon)->Fill(stripId, max - min);
-	    GetRawsData(kTimeHGLEDMon)->Fill(stripId, maxTime);
-	    if (nSum>0) { // only fill pedestal info in case it could be calculated
-	      GetRawsData(kPedHGLEDMon)->Fill(stripId, meanPed);
-	      GetRawsData(kPedRMSHGLEDMon)->Fill(stripId, rmsPed);
-	    }
+	    if ( in.IsLowGain() ) { 
+	      nTotalSMLG[iSM]++; 
+	      GetRawsData(kTowerLG)->Fill(towerId);
+	      if ( (amp > fMinSignalLG) && (amp < fMaxSignalLG) ) { 
+		GetRawsData(kSigLG)->Fill(towerId, amp);
+		GetRawsData(kTimeLG)->Fill(towerId, time);
+	      }
+	      if (nPed > 0) {
+		for (int i=0; i<nPed; i++) {
+		  GetRawsData(kPedLG)->Fill(towerId, pedSamples[i]);
+		}
+	      }
+	    } // gain==0
+	    else if ( in.IsHighGain() ) {       	
+	      nTotalSMHG[iSM]++; 
+	      GetRawsData(kTowerHG)->Fill(towerId);
+	      if ( (amp > fMinSignalHG) && (amp < fMaxSignalHG) ) { 
+		GetRawsData(kSigHG)->Fill(towerId, amp);
+		GetRawsData(kTimeHG)->Fill(towerId, time);
+	      } 
+	      if (nPed > 0) {
+		for (int i=0; i<nPed; i++) {
+		  GetRawsData(kPedHG)->Fill(towerId, pedSamples[i]);
+		}
+	      }
+	    } // gain==1
 	  } // low or high gain
-	} // LEDMon
+	  // TRU
+	  else if ( in.IsTRUData() && in.GetColumn()<AliEMCALGeoParams::fgkEMCAL2x2PerTRU) {
+	    // for TRU data, the mapping class holds the TRU internal 2x2 number (0..95) in the Column var..
+	    int iTRU = iRCU; //TRU0 is from RCU0, TRU1 from RCU1
+	    if (iRCU>0 && in.GetBranch()>0) iTRU=2; // TRU2 is from branch B on RCU1
+	    int iTRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
+	      + in.GetColumn();
+	    
+	    nTotalSMTRU[iSM]++; 
+	    if ( (amp > fMinSignalTRU) && (amp < fMaxSignalTRU) ) { 
+	      GetRawsData(kSigTRU)->Fill(iTRU2x2Id, amp);
+	      GetRawsData(kTimeTRU)->Fill(iTRU2x2Id, time);
+	    }
+	    if (nPed > 0) {
+	      for (int i=0; i<nPed; i++) {
+		GetRawsData(kPedTRU)->Fill(iTRU2x2Id, pedSamples[i]);
+	      }
+	    }
+	  }
+	  // LED Mon
+	  else if ( in.IsLEDMonData() ) {
+	    // for LED Mon data, the mapping class holds the gain info in the Row variable
+	    // and the Strip number in the Column..
+	    int gain = in.GetRow(); 
+	    int stripId = iSM*nStripsPerSM + in.GetColumn();
+	  
+	    if ( gain == 0 ) { 
+	      nTotalSMLGLEDMon[iSM]++; 
+	      if ( (amp > fMinSignalLGLEDMon) && (amp < fMaxSignalLGLEDMon) ) { 
+		GetRawsData(kSigLGLEDMon)->Fill(stripId, amp);
+		GetRawsData(kTimeLGLEDMon)->Fill(stripId, time);
+	      }
+	      if (nPed > 0) {
+		for (int i=0; i<nPed; i++) {
+		  GetRawsData(kPedLGLEDMon)->Fill(stripId, pedSamples[i]);
+		}
+	      }
+	    } // gain==0
+	    else if ( gain == 1 ) {       	
+	      nTotalSMHGLEDMon[iSM]++; 
+	      if ( (amp > fMinSignalHGLEDMon) && (amp < fMaxSignalHGLEDMon) ) { 
+		GetRawsData(kSigHGLEDMon)->Fill(stripId, amp);
+		GetRawsData(kTimeHGLEDMon)->Fill(stripId, time);
+	      }
+	      if (nPed > 0) {
+		for (int i=0; i<nPed; i++) {
+		  GetRawsData(kPedHGLEDMon)->Fill(stripId, pedSamples[i]);
+		}
+	      }
+	    } // low or high gain
+	  } // LEDMon
 
-      } // SM index OK
+	} // SM index OK
 
       } // nsamples>0 check, some data found for this channel; not only trailer/header
     }// end while over channel 
@@ -556,12 +567,14 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     GetRawsData(kNsmodLGLEDMon)->Fill(iSM, nTotalSMLGLEDMon[iSM]); 
     GetRawsData(kNsmodHGLEDMon)->Fill(iSM, nTotalSMHGLEDMon[iSM]); 
   }
+  
   GetRawsData(kNtotLG)->Fill(nTotalLG);
   GetRawsData(kNtotHG)->Fill(nTotalHG);
   GetRawsData(kNtotTRU)->Fill(nTotalTRU);
   GetRawsData(kNtotLGLEDMon)->Fill(nTotalLGLEDMon);
   GetRawsData(kNtotHGLEDMon)->Fill(nTotalHGLEDMon);
-
+  
+  SetEventSpecie(saveSpecie) ; 
   // just in case the next rawreader consumer forgets to reset; let's do it here again..
   rawReader->Reset() ;
 
@@ -633,5 +646,46 @@ void AliEMCALQADataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
   
+}
+
+//____________________________________________________________________________ 
+void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)              
+{
+  //Set fitting algorithm and initialize it if this same algorithm was not set before.
+  //printf("**** Set Algorithm , number %d ****\n",fitAlgo);
+  
+  if(fitAlgo == fFittingAlgorithm && fRawAnalyzer) {
+    //Do nothing, this same algorithm already set before.
+    //printf("**** Algorithm already set before, number %d, %s ****\n",fitAlgo, fRawAnalyzer->GetName());
+    return;
+  }
+  //Initialize the requested algorithm
+  if(fitAlgo != fFittingAlgorithm || !fRawAnalyzer) {
+    //printf("**** Init Algorithm , number %d ****\n",fitAlgo);
+		
+    fFittingAlgorithm = fitAlgo; 
+    if (fRawAnalyzer) delete fRawAnalyzer;  // delete prev. analyzer if existed.
+		
+    if (fitAlgo == kFastFit) {
+      fRawAnalyzer = new AliCaloRawAnalyzerFastFit();
+    }
+    else if (fitAlgo == kNeuralNet) {
+      fRawAnalyzer = new AliCaloRawAnalyzerNN();
+    }
+    else if (fitAlgo == kLMS) {
+      fRawAnalyzer = new AliCaloRawAnalyzerLMS();
+    }
+    else if (fitAlgo == kPeakFinder) {
+      fRawAnalyzer = new AliCaloRawAnalyzerPeakFinder();
+    }
+    else if (fitAlgo == kCrude) {
+      fRawAnalyzer = new AliCaloRawAnalyzerCrude();
+    }
+    else {
+      AliWarning("EMCAL QA invalid fit algorithm choice") ; 
+    }
+
+  }
+  return;
 }
 

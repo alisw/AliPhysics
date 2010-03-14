@@ -21,6 +21,8 @@ class TObjArray ;
 
 // --- AliRoot header files ---
 #include "AliQADataMakerRec.h"
+class AliCaloRawAnalyzer;
+class AliCaloRawAnalyzerLMS;
 
 class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
@@ -31,16 +33,14 @@ public:
     kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
     kSigLG,kSigHG,kNtotLG,kNtotHG,kTowerHG,kTowerLG,
     kPedLG,kPedHG,
-    kPedRMSLG,kPedRMSHG,
     // then TRU info
     kNsmodTRU,kTimeTRU,
     kSigTRU,kNtotTRU,
-    kPedTRU,kPedRMSTRU,
+    kPedTRU,
     // and also LED Mon info
     kNsmodLGLEDMon,kNsmodHGLEDMon,kTimeLGLEDMon,kTimeHGLEDMon,
     kSigLGLEDMon,kSigHGLEDMon,kNtotLGLEDMon,kNtotHGLEDMon,
-    kPedLGLEDMon,kPedHGLEDMon,
-    kPedRMSLGLEDMon,kPedRMSHGLEDMon
+    kPedLGLEDMon,kPedHGLEDMon
   } ;
 
   //Histograms for RecPoints  control
@@ -51,10 +51,17 @@ public:
                  
 
 public:
-  AliEMCALQADataMakerRec() ;          // ctor
+  enum fitAlgorithm {kFastFit=1, kNeuralNet = 2, kLMS = 4, kPeakFinder = 5, kCrude = 6};
+  AliEMCALQADataMakerRec(fitAlgorithm fitAlgo = kNeuralNet) ;          // ctor
+ 
   AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qadm) ;   
   AliEMCALQADataMakerRec& operator = (const AliEMCALQADataMakerRec& qadm) ;
   virtual ~AliEMCALQADataMakerRec() {;} // dtor
+
+  Int_t GetFittingAlgorithm() const {return fFittingAlgorithm; }
+  void SetFittingAlgorithm(Int_t val);
+  AliCaloRawAnalyzer *GetRawAnalyzer() const { return fRawAnalyzer;}
+  AliCaloRawAnalyzerLMS *GetRawAnalyzerTRU() const { return fRawAnalyzerTRU;}
 
   void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
   int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
@@ -64,12 +71,36 @@ public:
   int GetFirstPedestalSample() const {return fFirstPedestalSample;}; // first sample 
   void SetLastPedestalSample(int i) {fLastPedestalSample = i;}; // last sample 
   int GetLastPedestalSample() const {return fLastPedestalSample;}; // last sample 
-  // for selection of interesting signal (max-min) range for High Gain channels
-  // (useful for MIP/cosmic studies) 
-  void SetMinSignalHG(int i) {fMinSignalHG = i;}; // minimum signal
-  int GetMinSignalHG() const {return fMinSignalHG;}; // minimum signal
-  void SetMaxSignalHG(int i) {fMaxSignalHG = i;}; // maximum signal
-  int GetMaxSignalHG() const {return fMaxSignalHG;}; // maximum signal
+  void SetFirstPedestalSampleTRU(int i) {fFirstPedestalSampleTRU = i;}; // first sample, TRU 
+  int GetFirstPedestalSampleTRU() const {return fFirstPedestalSampleTRU;}; // first sample, TRU 
+  void SetLastPedestalSampleTRU(int i) {fLastPedestalSampleTRU = i;}; // last sample, TRU 
+  int GetLastPedestalSampleTRU() const {return fLastPedestalSampleTRU;}; // last sample, TRU 
+  
+  // for selection of interesting signal (max-min) range 
+  // Low Gain channels
+  void SetMinSignalLG(int i) {fMinSignalLG = i;}; 
+  int GetMinSignalLG() const {return fMinSignalLG;}; 
+  void SetMaxSignalLG(int i) {fMaxSignalLG = i;}; 
+  int GetMaxSignalLG() const {return fMaxSignalLG;}; 
+  // High Gain channels
+  void SetMinSignalHG(int i) {fMinSignalHG = i;}; 
+  int GetMinSignalHG() const {return fMinSignalHG;}; 
+  void SetMaxSignalHG(int i) {fMaxSignalHG = i;}; 
+  int GetMaxSignalHG() const {return fMaxSignalHG;}; 
+  // TRU channels
+  void SetMinSignalTRU(int i) {fMinSignalTRU = i;}; 
+  int GetMinSignalTRU() const {return fMinSignalTRU;}; 
+  void SetMaxSignalTRU(int i) {fMaxSignalTRU = i;}; 
+  int GetMaxSignalTRU() const {return fMaxSignalTRU;}; 
+  // LEDMon channels
+  void SetMinSignalLGLEDMon(int i) {fMinSignalLGLEDMon = i;}; 
+  int GetMinSignalLGLEDMon() const {return fMinSignalLGLEDMon;}; 
+  void SetMaxSignalLGLEDMon(int i) {fMaxSignalLGLEDMon = i;}; 
+  int GetMaxSignalLGLEDMon() const {return fMaxSignalLGLEDMon;}; 
+  void SetMinSignalHGLEDMon(int i) {fMinSignalHGLEDMon = i;}; 
+  int GetMinSignalHGLEDMon() const {return fMinSignalHGLEDMon;}; 
+  void SetMaxSignalHGLEDMon(int i) {fMaxSignalHGLEDMon = i;}; 
+  int GetMaxSignalHGLEDMon() const {return fMaxSignalHGLEDMon;}; 
 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   InitESDs() ; 
@@ -84,13 +115,29 @@ public:
   virtual void   StartOfDetectorCycle() ; 
 
 private:
+
+  Int_t fFittingAlgorithm;             // select the fitting algorithm
+  AliCaloRawAnalyzer *fRawAnalyzer;    // for signal fitting
+  AliCaloRawAnalyzerLMS *fRawAnalyzerTRU;    // for signal fitting, for TRU
+
   int fSuperModules; //The number of SuperModules activated
-  int fFirstPedestalSample; // first sample for pedestal calculation
-  int fLastPedestalSample; // last sample for pedestal calculation
+  int fFirstPedestalSample; // first sample for pedestal calculation, in bunch
+  int fLastPedestalSample; // last sample for pedestal calculation, in bunch
+  int fFirstPedestalSampleTRU; // first sample for pedestal calculation, in bunch
+  int fLastPedestalSampleTRU; // last sample for pedestal calculation, in bunch
+  int fMinSignalLG; // minimum signal, for Low Gain channels
+  int fMaxSignalLG; // maximum signal, for Low Gain channels
   int fMinSignalHG; // minimum signal, for High Gain channels
   int fMaxSignalHG; // maximum signal, for High Gain channels
+  int fMinSignalTRU; // minimum signal, for TRU channels
+  int fMaxSignalTRU; // maximum signal, for TRU channels
+  int fMinSignalLGLEDMon; // minimum signal, for LEDMon channels, low gain
+  int fMaxSignalLGLEDMon; // maximum signal, for LEDMon channels, low gain
+  int fMinSignalHGLEDMon; // minimum signal, for LEDMon channels, high gain
+  int fMaxSignalHGLEDMon; // maximum signal, for LEDMon channels, high gain
 
-  ClassDef(AliEMCALQADataMakerRec,4)  // description 
+
+  ClassDef(AliEMCALQADataMakerRec,5)  // description 
 
 };
 
