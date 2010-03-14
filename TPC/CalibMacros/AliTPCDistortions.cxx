@@ -111,11 +111,8 @@ AliTPCDistortions* AliTPCDistortions::Instance()
 }
 
 
-
-
-
 AliTPCDistortions::AliTPCDistortions()
-  :fOmegaTau(0.),fT1(1.),fT2(1.),fC0(0.),fC1(1.),fC2(1.),
+  :fOmegaTau(0.),fT1(1.),fT2(1.),fC0(1.),fC1(0.),fC2(0.),
    fBField(0),fXTwist(0.),fYTwist(0.),fIFCShift(0.),fDeltaVGGA(0.),fDeltaVGGC(0.),
    fJLow(0),fKLow(0)
 { 
