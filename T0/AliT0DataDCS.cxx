@@ -30,13 +30,6 @@ Preliminary test version (T.Malkiewicz)
 
 #include <TTimeStamp.h>
 #include <TObjString.h>
-#include <TH2F.h>
-#include <TProfile.h>
-#include <TGraph.h>
-#include <TDatime.h>
-#include <TStyle.h>
-#include <TCanvas.h>
-#include <iostream>
 
 // AliT0DataDCS class
 // declaring DCS aliases for T0
@@ -64,6 +57,8 @@ AliT0DataDCS::AliT0DataDCS():
 	fMPDmode(0),
 	fIsProcessed(kFALSE)
 {
+  // default constructor
+  //
   for(Int_t i=0;i<kScalers;i++) 
   {
     fScalerMean[i]=0;
@@ -111,6 +106,8 @@ AliT0DataDCS::AliT0DataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t 
 	fMPDmode(0),
 	fIsProcessed(kFALSE)
 {
+  // constructor
+
   for(Int_t i=0;i<kScalers;i++)
   {
     fScalerMean[i]=0;
@@ -245,67 +242,69 @@ AliT0DataDCS::~AliT0DataDCS()
 //---------------------------------------------------------------
 Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 {
- 	        UInt_t t0_scaler[kScalers];
-		UInt_t t0_scaler_sec[kScalers];
+  //process DCS data
+
+ 	        UInt_t t0Scaler[kScalers];
+		UInt_t t0ScalerSec[kScalers];
 		Int_t aliasEntr[kNAliases];
-		Float_t t0_a_hv_imon[kHV];
-		Float_t t0_a_hv_vmon[kHV];
-		Float_t t0_a_lv_imon[kLV];
-                Float_t t0_a_lv_vmon[kLV];
-                Float_t t0_c_hv_imon[kHV];
-                Float_t t0_c_hv_vmon[kHV];
-                Float_t t0_c_lv_imon[kLV];
-                Float_t t0_c_lv_vmon[kLV];
-		Float_t t0_a_cfd_thre[kCFD];
-                Float_t t0_a_cfd_walk[kCFD];
-                Float_t t0_c_cfd_thre[kCFD];
-                Float_t t0_c_cfd_walk[kCFD];
-                Float_t t0_ac_trm[kTRM];
-                Float_t t0_ac_drm[kDRM];
-		Float_t t0_atten=0.;
-		Int_t t0_MPDcentA=0;
-	        Int_t t0_MPDcentC=0;
-	        Int_t t0_MPDsemiCentA=0;
-	        Int_t t0_MPDsemiCentC=0;
-        	Int_t t0_TVDCtop=0;
-	        Int_t t0_TVDCbottom=0;  		
-		Int_t t0_MPDmode=0;
+		Float_t t0AhvImon[kHV];
+		Float_t t0AHVvmon[kHV];
+		Float_t t0AlvImon[kLV];
+                Float_t t0AlvVmon[kLV];
+                Float_t t0ChvImon[kHV];
+                Float_t t0ChvVmon[kHV];
+                Float_t t0ClvImon[kLV];
+                Float_t t0ClvVmon[kLV];
+		Float_t t0AcfdThre[kCFD];
+                Float_t t0AcfdWalk[kCFD];
+                Float_t t0CcfdThre[kCFD];
+                Float_t t0CcfdWalk[kCFD];
+                Float_t t0ACtrm[kTRM];
+                Float_t t0ACdrm[kDRM];
+		Float_t t0atten=0.;
+		Int_t t0MPDcentA=0;
+	        Int_t t0MPDcentC=0;
+	        Int_t t0MPDsemiCentA=0;
+	        Int_t t0MPDsemiCentC=0;
+        	Int_t t0TVDCtop=0;
+	        Int_t t0TVDCbottom=0;  		
+		Int_t t0MPDmode=0;
 	
 		TObjArray *aliasArr;
         	for(Int_t k=0; k<kScalers; k++)
 		{
-		   t0_scaler[k]=0;
-                   t0_scaler_sec[k]=0;
+		   t0Scaler[k]=0;
+                   t0ScalerSec[k]=0;
 		}
 
 		for(Int_t k=0; k<kHV; k++)
                 {
-                   t0_a_hv_imon[k]=0.;
-                   t0_a_hv_vmon[k]=0.;
-		   t0_c_hv_imon[k]=0.;
-                   t0_c_hv_vmon[k]=0.;
+                   t0AhvImon[k]=0.;
+                   t0AHVvmon[k]=0.;
+		   t0ChvImon[k]=0.;
+                   t0ChvVmon[k]=0.;
                 }
 		for(Int_t k=0; k<kLV; k++)
                 {
-                   t0_a_lv_imon[k]=0.;
-                   t0_a_lv_vmon[k]=0.;
-                   t0_c_lv_imon[k]=0.;
-                   t0_c_lv_vmon[k]=0.;
+                   t0AlvImon[k]=0.;
+                   t0AlvVmon[k]=0.;
+                   t0ClvImon[k]=0.;
+                   t0ClvVmon[k]=0.;
                 }
 		for(Int_t k=0; k<kCFD; k++)
                 {
-                   t0_a_cfd_thre[k]=0.;
-                   t0_a_cfd_walk[k]=0.;
- 		   t0_c_cfd_thre[k]=0.;
-                   t0_c_cfd_walk[k]=0.;
+                   t0AcfdThre[k]=0.;
+                   t0AcfdWalk[k]=0.;
+ 		   t0CcfdThre[k]=0.;
+                   t0CcfdWalk[k]=0.;
                 }
 		for(Int_t k=0; k<kTRM; k++)
                 {
-                   t0_ac_trm[k]=0.;
+                   t0ACtrm[k]=0.;
 		}
 		for(Int_t k=0; k<kDRM; k++)
                 {
-                   t0_ac_drm[k]=0.;
+                   t0ACdrm[k]=0.;
                 }
 
             // here starts the main loop
@@ -314,8 +313,8 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		  aliasEntr[j]=0;
 		  for (Int_t k=0;k<32;k++) 
 		  {
-		    t0_scaler[k]=0;
-		    t0_scaler_sec[k]=0;	
+		    t0Scaler[k]=0;
+		    t0ScalerSec[k]=0;	
 		    
       		  }
 		  aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
@@ -338,9 +337,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		    for(Int_t l=0; l<aliasEntr[j]; l++)
 		    {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-		      t0_scaler[j]+= (UInt_t)  aValue->GetFloat(); 
+		      t0Scaler[j]+= (UInt_t)  aValue->GetFloat(); 
 	            }
-		    fScalerMean[j] = ((UInt_t) t0_scaler[j])/((UInt_t) aliasEntr[j]);
+		    fScalerMean[j] = ((UInt_t) t0Scaler[j])/((UInt_t) aliasEntr[j]);
 		  }
 		  else if (j < 2*kScalers)
 		  {
@@ -348,9 +347,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
    	            for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_scaler_sec[j-kScalers]+= (UInt_t)  aValue->GetFloat();  
+                      t0ScalerSec[j-kScalers]+= (UInt_t)  aValue->GetFloat();  
                     }
-		    fScalerSecMean[j-kScalers] = ((UInt_t) t0_scaler_sec[j-kScalers])/((UInt_t) aliasEntr[j]);
+		    fScalerSecMean[j-kScalers] = ((UInt_t) t0ScalerSec[j-kScalers])/((UInt_t) aliasEntr[j]);
 		  }
 		  else if (j < 2*kScalers+kHV)
                   {
@@ -358,9 +357,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_a_hv_imon[j-2*kScalers]+= aValue->GetFloat();
+                      t0AhvImon[j-2*kScalers]+= aValue->GetFloat();
                     }
-                    fHViA[j-2*kScalers] = t0_a_hv_imon[j-2*kScalers] / aliasEntr[j];
+                    fHViA[j-2*kScalers] = t0AhvImon[j-2*kScalers] / aliasEntr[j];
                   }
 		  else if (j < 2*kScalers+2*kHV)
                   {
@@ -368,9 +367,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_a_hv_vmon[j-(2*kScalers+kHV)]+= aValue->GetFloat();
+                      t0AHVvmon[j-(2*kScalers+kHV)]+= aValue->GetFloat();
                     }
-                    fHVvA[j-(2*kScalers+kHV)] = t0_a_hv_vmon[j-(2*kScalers+kHV)] / aliasEntr[j];
+                    fHVvA[j-(2*kScalers+kHV)] = t0AHVvmon[j-(2*kScalers+kHV)] / aliasEntr[j];
                   }
 		  else if (j < 2*kScalers+2*kHV+kLV)
                   {
@@ -378,9 +377,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_a_lv_imon[j-(2*kScalers+2*kHV)]+= aValue->GetFloat();
+                      t0AlvImon[j-(2*kScalers+2*kHV)]+= aValue->GetFloat();
                     }
-                    fLViA[j-(2*kScalers+2*kHV)] = t0_a_lv_imon[j-(2*kScalers+2*kHV)] / aliasEntr[j];
+                    fLViA[j-(2*kScalers+2*kHV)] = t0AlvImon[j-(2*kScalers+2*kHV)] / aliasEntr[j];
                   }
 		  else if (j < 2*kScalers+2*kHV+2*kLV)
                   {
@@ -388,9 +387,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_a_lv_vmon[j-(2*kScalers+2*kHV+kLV)]+= aValue->GetFloat();
+                      t0AlvVmon[j-(2*kScalers+2*kHV+kLV)]+= aValue->GetFloat();
                     }
-                    fLVvA[j-(2*kScalers+2*kHV+kLV)] = t0_a_lv_vmon[j-(2*kScalers+2*kHV+kLV)] / aliasEntr[j];
+                    fLVvA[j-(2*kScalers+2*kHV+kLV)] = t0AlvVmon[j-(2*kScalers+2*kHV+kLV)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+3*kHV+2*kLV)
                   {
@@ -398,9 +397,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_c_hv_imon[j-(2*kScalers+2*kHV+2*kLV)]+= aValue->GetFloat();
+                      t0ChvImon[j-(2*kScalers+2*kHV+2*kLV)]+= aValue->GetFloat();
                     }
-                    fHViC[j-(2*kScalers+2*kHV+2*kLV)] = t0_c_hv_imon[j-(2*kScalers+2*kHV+2*kLV)] / aliasEntr[j];
+                    fHViC[j-(2*kScalers+2*kHV+2*kLV)] = t0ChvImon[j-(2*kScalers+2*kHV+2*kLV)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+2*kLV)
                   {
@@ -408,9 +407,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_c_hv_vmon[j-(2*kScalers+3*kHV+2*kLV)]+= aValue->GetFloat();
+                      t0ChvVmon[j-(2*kScalers+3*kHV+2*kLV)]+= aValue->GetFloat();
                     }
-                    fHVvC[j-(2*kScalers+3*kHV+2*kLV)] = t0_c_hv_vmon[j-(2*kScalers+3*kHV+2*kLV)] / aliasEntr[j];
+                    fHVvC[j-(2*kScalers+3*kHV+2*kLV)] = t0ChvVmon[j-(2*kScalers+3*kHV+2*kLV)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+3*kLV)
                   {
@@ -418,9 +417,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_c_lv_imon[j-(2*kScalers+4*kHV+2*kLV)]+= aValue->GetFloat();
+                      t0ClvImon[j-(2*kScalers+4*kHV+2*kLV)]+= aValue->GetFloat();
                     }
-                    fLViC[j-(2*kScalers+4*kHV+2*kLV)] = t0_c_lv_imon[j-(2*kScalers+4*kHV+2*kLV)] / aliasEntr[j];
+                    fLViC[j-(2*kScalers+4*kHV+2*kLV)] = t0ClvImon[j-(2*kScalers+4*kHV+2*kLV)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+4*kLV)
                   {
@@ -428,9 +427,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_c_lv_vmon[j-(2*kScalers+4*kHV+3*kLV)]+= aValue->GetFloat();
+                      t0ClvVmon[j-(2*kScalers+4*kHV+3*kLV)]+= aValue->GetFloat();
                     }
-                    fLVvC[j-(2*kScalers+4*kHV+3*kLV)] = t0_c_lv_vmon[j-(2*kScalers+4*kHV+3*kLV)] / aliasEntr[j];
+                    fLVvC[j-(2*kScalers+4*kHV+3*kLV)] = t0ClvVmon[j-(2*kScalers+4*kHV+3*kLV)] / aliasEntr[j];
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+kCFD)
                   {
@@ -438,9 +437,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_a_cfd_thre[j-(2*kScalers+4*kHV+4*kLV)]+= aValue->GetFloat();
+                      t0AcfdThre[j-(2*kScalers+4*kHV+4*kLV)]+= aValue->GetFloat();
                     }
-                    fCFDtA[j-(2*kScalers+4*kHV+4*kLV)] = t0_a_cfd_thre[j-(2*kScalers+4*kHV+4*kLV)] / aliasEntr[j];
+                    fCFDtA[j-(2*kScalers+4*kHV+4*kLV)] = t0AcfdThre[j-(2*kScalers+4*kHV+4*kLV)] / aliasEntr[j];
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+2*kCFD)
                   {
@@ -448,9 +447,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_a_cfd_walk[j-(2*kScalers+4*kHV+4*kLV+kCFD)]+= aValue->GetFloat();
+                      t0AcfdWalk[j-(2*kScalers+4*kHV+4*kLV+kCFD)]+= aValue->GetFloat();
                     }
-                    fCFDwA[j-(2*kScalers+4*kHV+4*kLV+kCFD)] = t0_a_cfd_walk[j-(2*kScalers+4*kHV+4*kLV+kCFD)] / aliasEntr[j];
+                    fCFDwA[j-(2*kScalers+4*kHV+4*kLV+kCFD)] = t0AcfdWalk[j-(2*kScalers+4*kHV+4*kLV+kCFD)] / aliasEntr[j];
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+3*kCFD)
                   {
@@ -458,9 +457,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_c_cfd_thre[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)]+= aValue->GetFloat();
+                      t0CcfdThre[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)]+= aValue->GetFloat();
                     }
-                    fCFDtC[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)] = t0_c_cfd_thre[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)] / aliasEntr[j];
+                    fCFDtC[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)] = t0CcfdThre[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD)
                   {
@@ -468,9 +467,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_c_cfd_walk[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)]+= aValue->GetFloat();
+                      t0CcfdWalk[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)]+= aValue->GetFloat();
                     }
-                    fCFDwC[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)] = t0_c_cfd_walk[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)] / aliasEntr[j];
+                    fCFDwC[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)] = t0CcfdWalk[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)
                   {
@@ -478,9 +477,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_ac_trm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)]+= aValue->GetFloat();
+                      t0ACtrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)]+= aValue->GetFloat();
                     }
-                    fTRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)] = t0_ac_trm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)] / aliasEntr[j];
+                    fTRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)] = t0ACtrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM)
                   {
@@ -488,9 +487,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_ac_drm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)]+= aValue->GetFloat();
+                      t0ACdrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)]+= aValue->GetFloat();
                     }
-                    fDRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] = t0_ac_drm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] / aliasEntr[j];
+                    fDRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] = t0ACdrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] / aliasEntr[j];
                   }
                   else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+kAtten)
                   {
@@ -498,9 +497,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		    for(Int_t l=0; l<aliasEntr[j]; l++)
 		    {		
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_atten += aValue->GetFloat();  
+                      t0atten += aValue->GetFloat();  
                     }
-                    fAtten = t0_atten /((Float_t) aliasEntr[j]);
+                    fAtten = t0atten /((Float_t) aliasEntr[j]);
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+2*kAtten)
                   {
@@ -508,9 +507,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_MPDcentA +=  aValue->GetFloat();
+                      t0MPDcentA +=  aValue->GetFloat();
                     }
-                    fMPDcentA = t0_MPDcentA /((Float_t) aliasEntr[j]);
+                    fMPDcentA = t0MPDcentA /((Float_t) aliasEntr[j]);
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
                   {
@@ -518,9 +517,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_MPDcentC += (Int_t) aValue->GetFloat();
+                      t0MPDcentC += (Int_t) aValue->GetFloat();
                     }
-                    fMPDcentC = ((Int_t) t0_MPDcentC) /((Int_t) aliasEntr[j]);
+                    fMPDcentC = ((Int_t) t0MPDcentC) /((Int_t) aliasEntr[j]);
                   }
                   else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+4*kAtten)
                   {
@@ -528,9 +527,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_MPDsemiCentA += (Int_t) aValue->GetFloat();
+                      t0MPDsemiCentA += (Int_t) aValue->GetFloat();
                     }
-                    fMPDsemiCentA =  ((Int_t) t0_MPDsemiCentA) /((Int_t) aliasEntr[j]);
+                    fMPDsemiCentA =  ((Int_t) t0MPDsemiCentA) /((Int_t) aliasEntr[j]);
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+5*kAtten)
                   {
@@ -538,9 +537,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_MPDsemiCentC += (Int_t) aValue->GetFloat();
+                      t0MPDsemiCentC += (Int_t) aValue->GetFloat();
                     }
-                    fMPDsemiCentC =  ((Int_t) t0_MPDsemiCentC)/ ((Int_t) aliasEntr[j]);
+                    fMPDsemiCentC =  ((Int_t) t0MPDsemiCentC)/ ((Int_t) aliasEntr[j]);
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+6*kAtten)
                   {
@@ -548,9 +547,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_TVDCtop += (Int_t)  aValue->GetFloat();
+                      t0TVDCtop += (Int_t)  aValue->GetFloat();
                     }
-                    fTVDCtop =  ((Int_t) t0_TVDCtop)/((Int_t) aliasEntr[j]);
+                    fTVDCtop =  ((Int_t) t0TVDCtop)/((Int_t) aliasEntr[j]);
                   }
   		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+7*kAtten)
                   {
@@ -558,9 +557,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_TVDCbottom += (Int_t) aValue->GetFloat();
+                      t0TVDCbottom += (Int_t) aValue->GetFloat();
                     }
-                    fTVDCbottom = ((Int_t) t0_TVDCbottom) /((Int_t) aliasEntr[j]);
+                    fTVDCbottom = ((Int_t) t0TVDCbottom) /((Int_t) aliasEntr[j]);
                   }
 		  else
                   {
@@ -568,9 +567,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0_MPDmode += (Int_t) aValue->GetFloat();
+                      t0MPDmode += (Int_t) aValue->GetFloat();
                     }
-                    fMPDmode = ((Int_t) t0_MPDmode)/((Int_t) aliasEntr[j]);
+                    fMPDmode = ((Int_t) t0MPDmode)/((Int_t) aliasEntr[j]);
 		  }
 		}
 	fIsProcessed=kTRUE;
@@ -578,139 +577,142 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 }
 
 //---------------------------------------------------------------
-void AliT0DataDCS::Init(){
-	TString sindex;
-	for(int i=0;i<kNAliases;i++)
-	{	
-		if (i<kScalers)
-		{
-		  fAliasNames[i] = "t00_ac_scaler_";
-		  sindex.Form("%02d",i);
-	          fAliasNames[i] += sindex;
-		}
-		else if (i < 2*kScalers)
-		{
-		  fAliasNames[i] = "t00_ac_scaler_sec_";
-                  sindex.Form("%02d",i-kScalers);
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+kHV)
-                {
-                  fAliasNames[i] = "t00_a_hv_imon_";
-                  sindex.Form("%02d",i-2*kScalers);
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+2*kHV)
-                {
-                  fAliasNames[i] = "t00_a_hv_vmon_";
-                  sindex.Form("%02d",i-(2*kScalers+kHV));
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+2*kHV+kLV)
-                {
-                  fAliasNames[i] = "t00_a_lv_imon_";
-                  sindex.Form("%01d",i-(2*kScalers+2*kHV));
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+2*kHV+2*kLV)
-                {
-                  fAliasNames[i] = "t00_a_lv_vmon_";
-                  sindex.Form("%01d",i-(2*kScalers+2*kHV+kLV));
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+3*kHV+2*kLV)
-                {
-                  fAliasNames[i] = "t00_c_hv_imon_";
-                  sindex.Form("%02d",i-(2*kScalers+2*kHV+2*kLV));
-                  fAliasNames[i] += sindex;
-                }
-                else if (i < 2*kScalers+4*kHV+2*kLV)
-                {
-                  fAliasNames[i] = "t00_c_hv_vmon_";
-                  sindex.Form("%02d",i-(2*kScalers+3*kHV+2*kLV));
-                  fAliasNames[i] += sindex;
-                }
-                else if (i < 2*kScalers+4*kHV+3*kLV)
-                {
-                  fAliasNames[i] = "t00_c_lv_imon_";
-                  sindex.Form("%01d",i-(2*kScalers+4*kHV+2*kLV));
-                  fAliasNames[i] += sindex;
-                }
-                else if (i < 2*kScalers+4*kHV+4*kLV)
-                {
-                  fAliasNames[i] = "t00_c_lv_vmon_";
-                  sindex.Form("%01d",i-(2*kScalers+4*kHV+3*kLV));
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+4*kHV+4*kLV+kCFD)
-                {
-                  fAliasNames[i] = "t00_a_cfd_thre_";
-                  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV));
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+4*kHV+4*kLV+2*kCFD)
-                {
-                  fAliasNames[i] = "t00_a_cfd_walk_";
-                  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+kCFD));
-                  fAliasNames[i] += sindex;
-                }
-		  else if (i < 2*kScalers+4*kHV+4*kLV+3*kCFD)
-                {
-                  fAliasNames[i] = "t00_c_cfd_thre_";
+void AliT0DataDCS::Init()
+{
+  // initialize all DP aliases
+
+  TString sindex;
+  for(int i=0;i<kNAliases;i++)
+    {	
+      if (i<kScalers)
+	{
+	  fAliasNames[i] = "t00_ac_scaler_";
+	  sindex.Form("%02d",i);
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers)
+	{
+	  fAliasNames[i] = "t00_ac_scaler_sec_";
+	  sindex.Form("%02d",i-kScalers);
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+kHV)
+	{
+	  fAliasNames[i] = "t00_a_hv_imon_";
+	  sindex.Form("%02d",i-2*kScalers);
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+2*kHV)
+	{
+	  fAliasNames[i] = "t00_a_hv_vmon_";
+	  sindex.Form("%02d",i-(2*kScalers+kHV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+2*kHV+kLV)
+	{
+	  fAliasNames[i] = "t00_a_lv_imon_";
+	  sindex.Form("%01d",i-(2*kScalers+2*kHV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+2*kHV+2*kLV)
+	{
+	  fAliasNames[i] = "t00_a_lv_vmon_";
+	  sindex.Form("%01d",i-(2*kScalers+2*kHV+kLV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+3*kHV+2*kLV)
+	{
+	  fAliasNames[i] = "t00_c_hv_imon_";
+	  sindex.Form("%02d",i-(2*kScalers+2*kHV+2*kLV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+2*kLV)
+	{
+	  fAliasNames[i] = "t00_c_hv_vmon_";
+	  sindex.Form("%02d",i-(2*kScalers+3*kHV+2*kLV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+3*kLV)
+	{
+	  fAliasNames[i] = "t00_c_lv_imon_";
+	  sindex.Form("%01d",i-(2*kScalers+4*kHV+2*kLV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV)
+	{
+	  fAliasNames[i] = "t00_c_lv_vmon_";
+	  sindex.Form("%01d",i-(2*kScalers+4*kHV+3*kLV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+kCFD)
+	{
+	  fAliasNames[i] = "t00_a_cfd_thre_";
+	  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+2*kCFD)
+	{
+	  fAliasNames[i] = "t00_a_cfd_walk_";
+	  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+kCFD));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+3*kCFD)
+	{
+	  fAliasNames[i] = "t00_c_cfd_thre_";
                   sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+2*kCFD));
                   fAliasNames[i] += sindex;
-                }
-                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD)
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD)
                 {
                   fAliasNames[i] = "t00_c_cfd_walk_";
                   sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+3*kCFD));
                   fAliasNames[i] += sindex;
                 }
-		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)
-                {
-                  fAliasNames[i] = "t00_ac_trm_";
-                  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+4*kCFD));
-                  fAliasNames[i] += sindex;
-                }
-		 else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM)
-                {
-                  fAliasNames[i] = "t00_ac_drm_";
-                  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM));
-                  fAliasNames[i] += sindex;
-                }
-		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+kAtten)
-		{
-                  fAliasNames[i] = "t00_ac_atten";
-                }
-                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+2*kAtten)
-                {
-                  fAliasNames[i] = "t00_a_mpd_cent";
-                }
-		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
-                {
-                  fAliasNames[i] = "t00_c_mpd_cent";
-                }
-		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+4*kAtten)
-                {
-                  fAliasNames[i] = "t00_a_mpd_scent";
-                }
-                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+5*kAtten)
-                {
-                  fAliasNames[i] = "t00_c_mpd_scent";
-                }
-		else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+6*kAtten)
-                {
-                  fAliasNames[i] = "t00_ac_tvdc_top";
-                }
-                else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+7*kAtten)
-                {
-                  fAliasNames[i] = "t00_ac_tvdc_bottom";
-                }
-		else
-		{
-                  fAliasNames[i] = "t00_ac_mpd_mode";
-                }
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)
+	{
+	  fAliasNames[i] = "t00_ac_trm_";
+	  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+4*kCFD));
+	  fAliasNames[i] += sindex;
 	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM)
+	{
+	  fAliasNames[i] = "t00_ac_drm_";
+	  sindex.Form("%02d",i-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM));
+	  fAliasNames[i] += sindex;
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+kAtten)
+	{
+	  fAliasNames[i] = "t00_ac_atten";
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+2*kAtten)
+	{
+	  fAliasNames[i] = "t00_a_mpd_cent";
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
+	{
+	  fAliasNames[i] = "t00_c_mpd_cent";
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+4*kAtten)
+	{
+	  fAliasNames[i] = "t00_a_mpd_scent";
+                }
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+5*kAtten)
+	{
+	  fAliasNames[i] = "t00_c_mpd_scent";
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+6*kAtten)
+	{
+	  fAliasNames[i] = "t00_ac_tvdc_top";
+	}
+      else if (i < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+7*kAtten)
+	{
+	  fAliasNames[i] = "t00_ac_tvdc_bottom";
+	}
+      else
+	{
+	  fAliasNames[i] = "t00_ac_mpd_mode";
+	}
+    }
 
 }
 
@@ -728,6 +730,7 @@ void AliT0DataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 //---------------------------------------------------------------
 void  AliT0DataDCS::PrintfArray(const char *label,  const Float_t *array, Int_t numElements) const
 {
+  //print all elements of array
   printf("%s: \n",label);
   for(Int_t i=0;i<numElements;i++){
     printf("  %.2f", array[i]);
@@ -738,6 +741,8 @@ void  AliT0DataDCS::PrintfArray(const char *label,  const Float_t *array, Int_t 
 
 void AliT0DataDCS::PrintT0Data() const
 {
+  //print DP values
+
   printf("AliT0DataDCS::Print()\n");
   printf("RUN:                %d\n", fRun);           
   printf("START TIME:         %d\n", fStartTime);  

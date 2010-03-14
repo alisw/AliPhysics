@@ -1,12 +1,14 @@
-#ifndef AliT0DataDCS_H
-#define AliT0DataDCS_H
+#ifndef ALIT0DATADCS_H
+#define ALIT0DATADCS_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 #include <TMap.h>
-#include <TClonesArray.h>
-#include <TGraph.h>
+//#include <TClonesArray.h>
+//#include <TGraph.h>
+#include <TObject.h>
+class TString;
 
 // AliT0DataDCS class
 // fetching T0 data points from DCS, calculating mean values for the run
@@ -71,6 +73,7 @@ public:
 	const char* GetAliasName(Int_t pos) const {return pos<kNAliases ? fAliasNames[pos].Data() : 0;}
 
         void PrintT0Data() const;
+
 private:
 	void Init();
 	void Introduce(UInt_t numAlias, const TObjArray* aliasArr)const;
