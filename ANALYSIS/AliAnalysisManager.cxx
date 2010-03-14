@@ -31,6 +31,8 @@
 #include <TClass.h>
 #include <TFile.h>
 #include <TKey.h>
+#include <TMath.h>
+#include <TH1.h>
 #include <TMethodCall.h>
 #include <TChain.h>
 #include <TSystem.h>
@@ -182,9 +184,6 @@ AliAnalysisManager::~AliAnalysisManager()
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
 // Read one entry of the tree or a whole branch.
-   static Int_t itot = 0;
-   if (fDebug > 1) printf("MGR: Processing event #%d (entry %lld)\n", itot, entry);
-   itot++;
    fCurrentEntry = entry;
    return fTree ? fTree->GetTree()->GetEntry(entry, getall) : 0;
 }
@@ -327,9 +326,13 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
+   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   Int_t itask = 0;
    while ((task=(AliAnalysisTask*)next())) {
       curdir = gDirectory;
       task->CreateOutputObjects();
+      if (getsysInfo) AliSysInfo::AddStamp(Form("%s_CREATEOUTOBJ",task->ClassName()), 0, itask, 0);
+      itask++;
       if (curdir) curdir->cd();
    }
    if (fDebug > 0) printf("<-AliAnalysisManager::SlaveBegin()\n");
@@ -726,14 +729,19 @@ void AliAnalysisManager::Terminate()
    AliAnalysisDataContainer *output;
    TIter next(fTasks);
    TStopwatch timer;
+   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    // Call Terminate() for tasks
+   Int_t itask = 0;
    while (!IsSkipTerminate() && (task=(AliAnalysisTask*)next())) {
       // Save all the canvases produced by the Terminate
       TString pictname = Form("%s_%s", task->GetName(), task->ClassName());
       task->Terminate();
+      if (getsysInfo) 
+         AliSysInfo::AddStamp(Form("%s_TERMINATE",task->ClassName()),0, itask, 2);
+      itask++;   
       if (TObject::TestBit(kSaveCanvases)) {
          if (!gROOT->IsBatch()) {
-            Warning("Terminate", "Waiting 5 sec for %s::Terminate() to finish drawing", task->ClassName());
+            if (fDebug>0) printf("Waiting 5 sec for %s::Terminate() to finish drawing ...", task->ClassName());
             timer.Start();
             while (timer.CpuTime()<5) {
                timer.Continue();
@@ -828,22 +836,91 @@ void AliAnalysisManager::Terminate()
       if (opwd) opwd->cd();
    }   
 
-   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    if (getsysInfo) {
       TDirectory *cdir = gDirectory;
       TFile f("syswatch.root", "RECREATE");
+      TH1 *hist;
+      TString cut;
       if (!f.IsZombie()) {
          TTree *tree = AliSysInfo::MakeTree("syswatch.log");
+         tree->SetName("syswatch");
          tree->SetMarkerStyle(kCircle);
          tree->SetMarkerColor(kBlue);
          tree->SetMarkerSize(0.5);
          if (!gROOT->IsBatch()) {
             tree->SetAlias("event", "id0");
-            tree->SetAlias("memUSED", "mi.fMemUsed");
-            tree->SetAlias("memVIRT", "pi.fMemVirtual");
-            new TCanvas("SysInfo","SysInfo",10,10,800,600);
-            tree->Draw("memVIRT:event","","", 1234567890, 0);
+            tree->SetAlias("task",  "id1");
+            tree->SetAlias("stage", "id2");
+            // Already defined aliases
+            // tree->SetAlias("deltaT","stampSec-stampOldSec");
+            // tree->SetAlias("T","stampSec-first");
+            // tree->SetAlias("deltaVM","(pI.fMemVirtual-pIOld.fMemVirtual)");
+            // tree->SetAlias("VM","pI.fMemVirtual");
+            TCanvas *canvas = new TCanvas("SysInfo","SysInfo",10,10,1200,800);
+            Int_t npads = 1 /*COO plot for all tasks*/ +
+                          fTopTasks->GetEntries() /*Exec plot per task*/ +
+                          1 /*Terminate plot for all tasks*/ +
+                          1; /*vm plot*/
+                          
+            Int_t iopt = (Int_t)TMath::Sqrt((Double_t)npads);
+            if (npads<iopt*(iopt+1))
+               canvas->Divide(iopt, iopt+1, 0.01, 0.01);
+            else
+               canvas->Divide(iopt+1, iopt+1, 0.01, 0.01);
+            Int_t ipad = 1;
+            // draw the plot of deltaVM for Exec for each task
+            for (Int_t itask=0; itask<fTopTasks->GetEntriesFast(); itask++) {
+               task = (AliAnalysisTask*)fTopTasks->At(itask);
+               canvas->cd(ipad++);
+               cut = Form("task==%d && stage==1", itask);
+               tree->Draw("deltaVM:event",cut,"", 1234567890, 0);
+               hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");            
+               if (hist) {
+                  hist->SetTitle(Form("%s: Exec dVM[kB]/event", task->GetName()));
+                  hist->GetYaxis()->SetTitle("deltaVM [kB]");
+               }   
+            }
+            // Draw the plot of deltaVM for CreateOutputObjects for all tasks
+            canvas->cd(ipad++);
+            tree->SetMarkerStyle(kFullTriangleUp);
+            tree->SetMarkerColor(kRed);
+            tree->SetMarkerSize(0.8);
+            cut = "task>=0 && task<1000 && stage==0";
+            tree->Draw("deltaVM:sname",cut,"", 1234567890, 0);
+            hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");            
+            if (hist) {
+               hist->SetTitle("Memory in CreateOutputObjects()");
+               hist->GetYaxis()->SetTitle("deltaVM [kB]");
+               hist->GetXaxis()->SetTitle("task");
+            }   
+            // draw the plot of deltaVM for Terminate for all tasks
+            canvas->cd(ipad++);
+            tree->SetMarkerStyle(kOpenSquare);
+            tree->SetMarkerColor(kMagenta);
+            cut = "task>=0 && task<1000 && stage==2";
+            tree->Draw("deltaVM:sname",cut,"", 1234567890, 0);
+            hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
+            if (hist) {
+               hist->SetTitle("Memory in Terminate()");
+               hist->GetYaxis()->SetTitle("deltaVM [kB]");
+               hist->GetXaxis()->SetTitle("task");
+            }   
+            // Full VM profile
+            canvas->cd(ipad++);
+            tree->SetMarkerStyle(kFullCircle);
+            tree->SetMarkerColor(kGreen);
+            cut = Form("task==%d && stage==1",fTopTasks->GetEntriesFast()-1);            
+            tree->Draw("VM:event",cut,"", 1234567890, 0);
+            hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
+            if (hist) {
+               hist->SetTitle("Virtual memory");
+               hist->GetYaxis()->SetTitle("VM [kB]");
+            }
+            canvas->Modified();   
          }   
+         tree->SetMarkerStyle(kCircle);
+         tree->SetMarkerColor(kBlue);
+         tree->SetMarkerSize(0.5);
          tree->Write();
          f.Close();
          delete tree;
@@ -858,6 +935,82 @@ void AliAnalysisManager::Terminate()
    }      
    if (fDebug > 0) printf("<-AliAnalysisManager::Terminate()\n");
 }
+//______________________________________________________________________________
+void AliAnalysisManager::ProfileTask(Int_t itop, const char *option) const
+{
+// Profiles the task having the itop index in the list of top (first level) tasks.
+   AliAnalysisTask *task = (AliAnalysisTask*)fTopTasks->At(itop);
+   if (!task) {
+      Error("ProfileTask", "There are only %d top tasks in the manager", fTopTasks->GetEntries());
+      return;
+   }
+   ProfileTask(task->GetName(), option);
+}      
+
+//______________________________________________________________________________
+void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) const
+{
+// Profile a managed task after the execution of the analysis in case NSysInfo
+// was used.
+   if (gSystem->AccessPathName("syswatch.root")) {
+      Error("ProfileTask", "No file syswatch.root found in the current directory");
+      return;
+   }
+   if (gROOT->IsBatch()) return;
+   AliAnalysisTask *task = (AliAnalysisTask*)fTopTasks->FindObject(name);
+   if (!task) {
+      Error("ProfileTask", "No top task named %s known by the manager.", name);
+      return;
+   }
+   Int_t itop = fTopTasks->IndexOf(task);
+   Int_t itask = fTasks->IndexOf(task);
+   // Create canvas with 2 pads: first draw COO + Terminate, second Exec
+   TDirectory *cdir = gDirectory;
+   TFile f("syswatch.root");
+   TTree *tree = (TTree*)f.Get("syswatch");
+   if (!tree) {
+      Error("ProfileTask", "No tree named <syswatch> found in file syswatch.root");
+      return;
+   }   
+   if (fDebug > 0) printf("=== Profiling task %s (class %s)\n", name, task->ClassName());
+   TCanvas *canvas = new TCanvas(Form("profile_%d",itop),Form("Profile of task %s (class %s)",name,task->ClassName()),10,10,800,600);
+   canvas->Divide(2, 2, 0.01, 0.01);
+   Int_t ipad = 1;
+   TString cut;
+   TH1 *hist;
+   // VM profile for COO and Terminate methods
+   canvas->cd(ipad++);
+   cut = Form("task==%d && (stage==0 || stage==2)",itask);
+   tree->Draw("deltaVM:sname",cut,"", 1234567890, 0);
+   hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
+   if (hist) {
+      hist->SetTitle("Alocated VM[kB] for COO and Terminate");
+      hist->GetYaxis()->SetTitle("deltaVM [kB]");
+      hist->GetXaxis()->SetTitle("method");
+   }   
+   // CPU profile per event
+   canvas->cd(ipad++);
+   cut = Form("task==%d && stage==1",itop);
+   tree->Draw("deltaT:event",cut,"", 1234567890, 0);
+   hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
+   if (hist) {
+      hist->SetTitle("Execution time per event");
+      hist->GetYaxis()->SetTitle("CPU/event [s]");
+   }   
+   // VM profile for Exec
+   canvas->cd(ipad++);
+   cut = Form("task==%d && stage==1",itop);
+   tree->Draw("deltaVM:event",cut,"", 1234567890, 0);
+   hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
+   if (hist) {
+      hist->SetTitle("Alocated VM[kB] per event");
+      hist->GetYaxis()->SetTitle("deltaVM [kB]");
+   }   
+   canvas->Modified();
+   delete tree;
+   f.Close();
+   if (cdir) cdir->cd();
+}     
 
 //______________________________________________________________________________
 void AliAnalysisManager::AddTask(AliAnalysisTask *task)
@@ -1156,6 +1309,8 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
       ttype = "TChain";
    }   
 
+   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   if (getsysInfo) AliSysInfo::AddStamp("Start", 0);
    // Initialize locally all tasks (happens for all modes)
    TIter next(fTasks);
    AliAnalysisTask *task;
@@ -1163,6 +1318,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
       while ((task=(AliAnalysisTask*)next())) {
          task->LocalInit();
       }
+      if (getsysInfo) AliSysInfo::AddStamp("LocalInit_all", 0);
    }   
    
    switch (fMode) {
@@ -1170,10 +1326,13 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
          if (!tree) {
             TIter nextT(fTasks);
             // Call CreateOutputObjects for all tasks
+            Int_t itask = 0;
             while ((task=(AliAnalysisTask*)nextT())) {
                TDirectory *curdir = gDirectory;
                task->CreateOutputObjects();
+               if (getsysInfo) AliSysInfo::AddStamp(Form("%s_CREATEOUTOBJ",task->ClassName()), 0, itask, 0);
                if (curdir) curdir->cd();
+               itask++;
             }   
             if (IsExternalLoop()) {
                Info("StartAnalysis", "Initialization done. Event loop is controlled externally.\
@@ -1433,8 +1592,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
    static Long64_t ncalls = 0;
+   if (fDebug > 0) printf("MGR: Processing event #%lld\n", ncalls);
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
-   if (getsysInfo && ncalls==0) AliSysInfo::AddStamp("Start", (Int_t)ncalls);
+   if (getsysInfo && ((ncalls%fNSysInfo)==0)) AliSysInfo::AddStamp("Exec_start", (Int_t)ncalls);
    ncalls++;
    if (!fInitOK) {
      Error("ExecAnalysis", "Analysis manager was not initialized !");
@@ -1460,16 +1620,21 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
       if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
       if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
+      if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
+         AliSysInfo::AddStamp("Handlers_BeginEvent",(Int_t)ncalls, 1000, 0);
 //
 //    Execute the tasks
 //      TIter next1(cont->GetConsumers());
       TIter next1(fTopTasks);
+      Int_t itask = 0;
       while ((task=(AliAnalysisTask*)next1())) {
          if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
-         }   
-	 
+         }   	 
          task->ExecuteTask(option);
+         if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
+            AliSysInfo::AddStamp(task->ClassName(),(Int_t)ncalls, itask, 1);
+         itask++;   
       }
 //
 //    Call FinishEvent() for optional output and MC services 
@@ -1478,7 +1643,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
       // Gather system information if requested
       if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-         AliSysInfo::AddStamp(Form("Event#%lld",ncalls),(Int_t)ncalls);
+         AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1000, 1);
       return;
    }   
    // The event loop is not controlled by TSelector   
@@ -1487,6 +1652,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(-1);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(-1);
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(-1);
+   if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
+      AliSysInfo::AddStamp("Handlers_BeginEvent",(Int_t)ncalls, 1000, 0);
    TIter next2(fTopTasks);
    while ((task=(AliAnalysisTask*)next2())) {
       task->SetActive(kTRUE);
@@ -1500,6 +1667,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
    if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
    if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
+   if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
+      AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1000, 1);
 }
 
 //______________________________________________________________________________
