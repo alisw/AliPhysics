@@ -2,6 +2,7 @@
 # $Id$
 
 CLASS_HDRS:=  	AliHLTQADataMakerSim.h \
+		AliHLTQADataMakerBase.h \
 		AliHLTQADataMakerRec.h \
 		AliHLTQAChecker.h
 
