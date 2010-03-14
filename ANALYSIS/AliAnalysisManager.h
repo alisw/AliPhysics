@@ -34,9 +34,10 @@ class AliAnalysisManager : public TNamed {
 public:
 
 enum EAliAnalysisContType {
-   kExchangeContainer  = 0,
-   kInputContainer   = 1,
-   kOutputContainer  = 2
+   kExchangeContainer  = 0,   // use to exchange data between tasks
+   kInputContainer     = 1,   // use for the task private input data
+   kOutputContainer    = 2,   // use for the task private output data
+   kParamContainer     = 3    // use for storing task private parameters/cuts per analysis session
 };   
 
 enum EAliAnalysisExecMode {
@@ -176,6 +177,7 @@ private:
    TObjArray              *fContainers;          // List of all containers
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
+   TObjArray              *fParamCont;           //! List of containers with results
    AliAnalysisDataContainer *fCommonInput;       // Common input container
    AliAnalysisDataContainer *fCommonOutput;      // Common output container
    AliAnalysisSelector    *fSelector;            //! Current selector
@@ -184,6 +186,6 @@ private:
 
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,5)  // Analysis manager class
+   ClassDef(AliAnalysisManager,6)  // Analysis manager class
 };   
 #endif

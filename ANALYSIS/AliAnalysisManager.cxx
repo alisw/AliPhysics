@@ -75,6 +75,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fContainers(NULL),
                     fInputs(NULL),
                     fOutputs(NULL),
+                    fParamCont(NULL),
                     fCommonInput(NULL),
                     fCommonOutput(NULL),
                     fSelector(NULL),
@@ -90,6 +91,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
    fContainers = new TObjArray();
    fInputs     = new TObjArray();
    fOutputs    = new TObjArray();
+   fParamCont  = new TObjArray();
    SetEventLoop(kTRUE);
    TObject::SetObjectStat(kFALSE);
 }
@@ -114,6 +116,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fContainers(NULL),
                     fInputs(NULL),
                     fOutputs(NULL),
+                    fParamCont(NULL),
                     fCommonInput(NULL),
                     fCommonOutput(NULL),
                     fSelector(NULL),
@@ -127,6 +130,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
    fContainers = new TObjArray(*other.fContainers);
    fInputs     = new TObjArray(*other.fInputs);
    fOutputs    = new TObjArray(*other.fOutputs);
+   fParamCont  = new TObjArray(*other.fParamCont);
    fgCommonFileName  = "AnalysisResults.root";
    fgAnalysisManager = this;
    TObject::SetObjectStat(kFALSE);
@@ -154,6 +158,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fContainers = new TObjArray(*other.fContainers);
       fInputs     = new TObjArray(*other.fInputs);
       fOutputs    = new TObjArray(*other.fOutputs);
+      fParamCont  = new TObjArray(*other.fParamCont);
       fCommonInput = NULL;
       fCommonOutput = NULL;
       fSelector   = NULL;
@@ -175,6 +180,7 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fContainers) {fContainers->Delete(); delete fContainers;}
    if (fInputs) delete fInputs;
    if (fOutputs) delete fOutputs;
+   if (fParamCont) delete fParamCont;
    if (fGridHandler) delete fGridHandler;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
    TObject::SetObjectStat(kTRUE);
@@ -763,7 +769,12 @@ void AliAnalysisManager::Terminate()
    if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
    if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
    if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
-   TIter next1(fOutputs);
+   TObjArray *allOutputs = new TObjArray();
+   Int_t icont;
+   for (icont=0; icont<fOutputs->GetEntriesFast(); icont++) allOutputs->Add(fOutputs->At(icont));
+   if (!IsSkipTerminate())
+      for (icont=0; icont<fParamCont->GetEntriesFast(); icont++) allOutputs->Add(fParamCont->At(icont));
+   TIter next1(allOutputs);
    TString handlerFile = "";
    if (fOutputEventHandler) {
       handlerFile = fOutputEventHandler->GetOutputFileName();
@@ -783,11 +794,13 @@ void AliAnalysisManager::Terminate()
       TFile *file = output->GetFile();
       if (!file) file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (!file) {
-	      printf("Terminate : handlerFile = %s, filename = %s\n",handlerFile.Data(),filename);
 	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) open_option = "UPDATE";
          if (!gSystem->AccessPathName(filename)) open_option = "UPDATE";
+	      if (fDebug>0) printf("Opening file: %s  option=%s\n",filename, open_option.Data());
          file = new TFile(filename, open_option);
-      }
+      } else {
+         if (fDebug>0) printf("File already opened: %s\n", filename);
+      }   
       if (file->IsZombie()) {
          Error("Terminate", "Cannot open output file %s", filename);
          continue;
@@ -800,7 +813,7 @@ void AliAnalysisManager::Terminate()
          if (!file->GetDirectory(dir)) file->mkdir(dir);
          file->cd(dir);
       }  
-      if (fDebug > 1) printf("   writing output data %s to file %s:%s\n", output->GetData()->GetName(), file->GetName(), output->GetFolderName());
+      if (fDebug > 0) printf("...writing container %s to file %s:%s\n", output->GetName(), file->GetName(), output->GetFolderName());
       if (output->GetData()->InheritsFrom(TCollection::Class())) {
       // If data is a collection, we set the name of the collection 
       // as the one of the container and we save as a single key.
@@ -835,6 +848,7 @@ void AliAnalysisManager::Terminate()
       }   
       if (opwd) opwd->cd();
    }   
+   delete allOutputs;
 
    if (getsysInfo) {
       TDirectory *cdir = gDirectory;
@@ -1054,6 +1068,13 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
          break;
       case kOutputContainer:
          fOutputs->Add(cont);
+         if (filename && strlen(filename)) {
+            cont->SetFileName(filename);
+            cont->SetDataOwned(kFALSE);  // data owned by the file
+         }   
+         break;
+      case kParamContainer:
+         fParamCont->Add(cont);
          if (filename && strlen(filename)) {
             cont->SetFileName(filename);
             cont->SetDataOwned(kFALSE);  // data owned by the file
