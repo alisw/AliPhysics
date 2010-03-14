@@ -3,6 +3,8 @@
 
 CLASS_HDRS:=  	AliHLTQADataMakerSim.h \
 		AliHLTQADataMakerBase.h \
+		AliHLTQADataMakerRec.h \
+		AliHLTQAAgent.h \
 		AliHLTTPCQADataMaker.h \
 		AliHLTQAChecker.h
 
