@@ -216,6 +216,12 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   virtual int RegisterComponents(AliHLTComponentHandler* pHandler) const;
 
   /**
+   * Define QA plugins
+   * @return blank separated list of class names
+   */
+  virtual const char* GetQAPlugins() const;
+
+  /**
    * IDs for output handlers.
    * The agent can provide output handlers in order to treat the output
    * data coming from the HLTOUT nodes.

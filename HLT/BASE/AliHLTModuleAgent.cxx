@@ -49,6 +49,12 @@ AliHLTModuleAgent::AliHLTModuleAgent(const char* id)
   Register(this);
 }
 
+const char* AliHLTModuleAgent::GetQAPlugins() const
+{
+  // default implementation, childs can overload
+  return "";
+}
+
 const AliHLTModuleAgent::AliHLTOUTHandlerDesc AliHLTModuleAgent::fgkVoidHandlerDesc;
 
 AliHLTModuleAgent::~AliHLTModuleAgent()
