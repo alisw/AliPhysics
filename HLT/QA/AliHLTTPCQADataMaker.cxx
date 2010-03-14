@@ -17,12 +17,12 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTQADataMakerRec.cxx
+/** @file   AliHLTTPCQADataMaker.cxx
     @author Zhongbao Yin, Matthias Richter
     @date   2009-05-14
     @brief  Container for the HLT offline QA
 */
-#include "AliHLTQADataMakerRec.h"
+#include "AliHLTTPCQADataMaker.h"
 #include "AliESDEvent.h"
 #include <iostream>
 
@@ -34,9 +34,10 @@
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTQADataMakerRec)
+ClassImp(AliHLTTPCQADataMaker)
 
-AliHLTQADataMakerRec::AliHLTQADataMakerRec()
+AliHLTTPCQADataMaker::AliHLTTPCQADataMaker()
+  : AliHLTQADataMakerBase()
 {
   // see header file for class documentation
   // or
@@ -45,55 +46,17 @@ AliHLTQADataMakerRec::AliHLTQADataMakerRec()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTQADataMakerRec::~AliHLTQADataMakerRec()
+AliHLTTPCQADataMaker::~AliHLTTPCQADataMaker()
 {
   // see header file for class documentation
 }
 
-void AliHLTQADataMakerRec::Exec(AliQAv1::TASKINDEX_t task, TObject * data) 
-{ 
-  // special handling for esds
-  if ( task == AliQAv1::kESDS ) {
-    AliESDEvent * esd = NULL;
-    AliESDEvent * hltesd = NULL;
-    if (data->IsA() == AliESDEvent::Class()) {
-      // silently skip this. Currently HLT QA is still called as
-      // part of AliQAManager::RunOneEvent with the esd
-      return;
-    }
-    if (data->InheritsFrom("TObjArray")) {
-      TObjArray* array=dynamic_cast<TObjArray*>(data);
-      if (array && array->GetEntriesFast()>0) {
-	esd = dynamic_cast<AliESDEvent *>(array->At(0)) ;
-      }
-      if (array && array->GetEntriesFast()>1) {
-	hltesd = dynamic_cast<AliESDEvent *>(array->At(1)) ;
-      }
-    } else {
-      esd = static_cast<AliESDEvent *>(data) ; 
-    }
-
-    if (esd && strcmp(esd->ClassName(), "AliESDEvent") == 0) {
-      if (hltesd) {
-	MakeESDs(esd, hltesd);
-      } else {
-	AliError(Form("HLT ESD missing or wrong class type (%p), skipping HLT QA task kESDs", hltesd));
-      }
-    } else {
-      AliError(Form("ESD missing or wrong class type (%p), skipping HLT QA task kESDSs", esd));
-    }
-  } else {
-    // forward for all other types
-    AliQADataMakerRec::Exec(task, data);
-  }
-}
-
-void AliHLTQADataMakerRec::StartOfDetectorCycle()
+void AliHLTTPCQADataMaker::StartOfDetectorCycle()
 {
   // see header file for class documentation
 }
 
-void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** /*list*/)
+void AliHLTTPCQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** /*list*/)
 {
   // see header file for class documentation
   
@@ -112,13 +75,13 @@ void AliHLTQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** 
 
 }
 
-void AliHLTQADataMakerRec::MakeRaws(AliRawReader * rawReader)
+void AliHLTTPCQADataMaker::MakeRaws(AliRawReader * rawReader)
 {
   // see header file for class documentation
   if (!rawReader) return;
 }
 
-void AliHLTQADataMakerRec::InitESDs(){
+void AliHLTTPCQADataMaker::InitESDs(){
   
   //create ESDs histograms in ESDs subdir
   const Bool_t expert   = kTRUE ; 
@@ -300,19 +263,7 @@ TH1F * histNClsPerTrkHLTFired
 
 }
 
-void AliHLTQADataMakerRec::MakeESDs(AliESDEvent * esd)
-{
-  // see header file for class documentation
-  
-  // as an extension in the QA interface also the hlt esd can be sent
-  // in order to preserve backward compatibility, a new function has been
-  // introduced.
-  //
-  // NOTE: This function is not the place for HLT QA
-  if (!esd) return;
-}
-
-void AliHLTQADataMakerRec::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
+void AliHLTTPCQADataMaker::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
 {
   // HLT QA on ESDs
   if (!esd || !hltesd) {
@@ -321,7 +272,7 @@ void AliHLTQADataMakerRec::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
   }
 
   // make QA data from ESDs
- 
+
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   const Int_t nHLTesdTracks = hltesd->GetNumberOfTracks();
   GetESDsData(kMultiplicity)->Fill(nESDTracks, nHLTesdTracks);
@@ -381,5 +332,5 @@ void AliHLTQADataMakerRec::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
 
     
   }
-  
+
 }

@@ -1,21 +1,25 @@
 //-*- Mode: C++ -*-
 // $Id$
 
-#ifndef ALIHLTQADATAMAKERREC_H
-#define ALIHLTQADATAMAKERREC_H
+#ifndef ALIHLTTPCQADATAMAKER_H
+#define ALIHLTTPCQADATAMAKER_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTQADataMakerRec.h
+/** @file   AliHLTTPCQADataMaker.h
     @author Zhongbao Yin, Matthias Richter
     @date   2009-05-14
     @brief  Container for the HLT offline QA
 */
 
-#include "AliQADataMakerRec.h"
+#include "AliHLTQADataMakerBase.h"
 
-class AliHLTQADataMakerRec: public AliQADataMakerRec {
+/**
+ * @class AliHLTTPCQADataMaker
+ * Steering class for HLT QA for reconstruction
+ */
+class AliHLTTPCQADataMaker: public AliHLTQADataMakerBase {
 
 public:
 
@@ -31,24 +35,22 @@ public:
 		    kEtaHLT, kEtaOffline,
 		    kEtaHLTFired, kEtaOfflineFired};  
   
-  AliHLTQADataMakerRec();
-  virtual ~AliHLTQADataMakerRec();
+  AliHLTTPCQADataMaker();
+  virtual ~AliHLTTPCQADataMaker();
 
 private:
   /** copy constructor prohibited */
-  AliHLTQADataMakerRec(const AliHLTQADataMakerRec&);   
+  AliHLTTPCQADataMaker(const AliHLTTPCQADataMaker&);   
   /** assignment operator prohibited */
-  AliHLTQADataMakerRec& operator = (const AliHLTQADataMakerRec&);
+  AliHLTTPCQADataMaker& operator = (const AliHLTTPCQADataMaker&);
 
-  virtual void Exec(AliQAv1::TASKINDEX_t task, TObject * data);
   virtual void StartOfDetectorCycle();
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** list);
   virtual void MakeRaws(AliRawReader * rawReader);
   virtual void InitESDs();
-  virtual void MakeESDs(AliESDEvent * esd);
   virtual void MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd);
 
-  ClassDef(AliHLTQADataMakerRec,0)  // HLT Quality Assurance Data Maker for reconstruction
+  ClassDef(AliHLTTPCQADataMaker,0)  // HLT Quality Assurance Data Maker for reconstruction
 };
 
-#endif // ALIHLTQADATAMAKERREC_H
+#endif // ALIHLTTPCQADATAMAKER_H
