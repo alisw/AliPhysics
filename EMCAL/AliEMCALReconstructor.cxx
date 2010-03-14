@@ -510,7 +510,7 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 	//Store EMCAL matrixes in ESD Header
 	
 	//Check, if matrixes was already stored
-	for(Int_t sm = 0 ; sm < 12; sm++){
+	for(Int_t sm = 0 ; sm < fGeom->GetNumberOfSuperModules(); sm++){
 		if(esd->GetEMCALMatrix(sm)!=0)
 			return ;
 	}
@@ -523,13 +523,18 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
 	//Note, that owner of copied marixes will be header
 	char path[255] ;
 	TGeoHMatrix * m = 0x0;
-	for(Int_t sm = 0; sm < 12; sm++){
+	for(Int_t sm = 0; sm < fGeom->GetNumberOfSuperModules(); sm++){
 		sprintf(path,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
 		if(sm >= 10) sprintf(path,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
 		
 		if (gGeoManager->CheckPath(path)){
+			gGeoManager->cd(path);
 			m = gGeoManager->GetCurrentMatrix() ;
+//			printf("================================================= \n");
+//			printf("AliEMCALReconstructor::FixMisalMatrixes(), sm %d, \n",sm);
+//			m->Print("");
 			esd->SetEMCALMatrix(new TGeoHMatrix(*m),sm) ;
+//			printf("================================================= \n");
 		}
 		else{
 			esd->SetEMCALMatrix(NULL,sm) ;
