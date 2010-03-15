@@ -47,7 +47,6 @@ class AliTRDrawData : public TObject {
   static void SetRawFormatVersion(Int_t iver){ fgRawFormatVersion=iver; };
   static void SetSuppressionLevel(Int_t ilevel){ fgDataSuppressionLevel=ilevel; };
   Bool_t WriteTracklets(Int_t det);
-  Bool_t OpenOutput();
 
   enum FORMATTYPE
     {

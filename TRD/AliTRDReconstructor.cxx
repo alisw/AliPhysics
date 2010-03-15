@@ -154,7 +154,6 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   AliTRDrawData rawData;
   rawReader->Reset();
   rawReader->Select("TRD");
-  rawData.OpenOutput();
   AliTRDrawStreamBase::SetRawStreamVersion(GetRecoParam()->GetRawStreamVersion()->Data());
   AliTRDdigitsManager *manager = rawData.Raw2Digits(rawReader);
   manager->MakeBranch(digitsTree);
@@ -186,7 +185,6 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   fClusterizer->ResetRecPoints();
 
   fClusterizer->OpenOutput(clusterTree);
-  fClusterizer->OpenTrackletOutput();
   fClusterizer->SetUseLabels(kFALSE);
   fClusterizer->Raw2ClustersChamber(rawReader);
   

@@ -372,46 +372,6 @@ Bool_t AliTRDclusterizer::OpenOutput(TTree *const clusterTree)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizer::OpenTrackletOutput()
-{
-  //
-  // Tracklet writing
-  //
-
-  if (fReconstructor->IsWritingTracklets()){
-    TString evfoldname = AliConfig::GetDefaultEventFolderName();
-    fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
-
-    if (!fRunLoader) {
-      fRunLoader = AliRunLoader::Open("galice.root");
-    }
-    if (!fRunLoader) {
-      AliError(Form("Can not open session for file galice.root."));
-      return kFALSE;
-    }
-
-    UInt_t **leaves = new UInt_t *[2];
-    AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
-    if (!dl) {
-      AliError("Could not get the tracklets data loader!");
-      dl = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
-      fRunLoader->GetLoader("TRDLoader")->AddDataLoader(dl);
-    }
-    fTrackletTree = dl->Tree();
-    if (!fTrackletTree)
-      {
-       dl->MakeTree();
-       fTrackletTree = dl->Tree();
-      }
-    TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
-    if (!trkbranch)
-      fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
-  }
-
-  return kTRUE;
-}
-
-//_____________________________________________________________________________
 Bool_t AliTRDclusterizer::OpenInput(Int_t nEvent)
 {
   //
@@ -511,8 +471,8 @@ Bool_t AliTRDclusterizer::WriteTracklets(Int_t det)
     }
   }
 
-  AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
-  dl->WriteData("OVERWRITE");
+//  AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets"); //jkl: wrong here
+//  dl->WriteData("OVERWRITE"); //jkl: wrong here
   //dl->Unload();
   delete [] leaves;
 
@@ -650,6 +610,18 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 
   fDigitsManager->SetUseDictionaries(TestBit(kLabels));
 
+  // ----- preparing tracklet output -----
+  if (fReconstructor->IsWritingTracklets()) {
+    AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+    if (!trklLoader) {
+      AliError("Could not get the tracklets data loader, adding it now!");
+      trklLoader = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
+      AliRunLoader::Instance()->GetLoader("TRDLoader")->AddDataLoader(trklLoader);
+    }
+    if (!trklLoader->Tree())
+      AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->MakeTree();
+  }
+
   // tracklet container for raw tracklet writing
   if (!fTrackletContainer && ( fReconstructor->IsWritingTracklets() || fReconstructor->IsProcessingTracklets() )) {
     // maximum tracklets for one HC
@@ -657,6 +629,8 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     fTrackletContainer = new UInt_t *[2];
     fTrackletContainer[0] = new UInt_t[kTrackletChmb]; 
     fTrackletContainer[1] = new UInt_t[kTrackletChmb]; 
+    memset(fTrackletContainer[0], 0, kTrackletChmb*sizeof(UInt_t)); //jkl
+    memset(fTrackletContainer[1], 0, kTrackletChmb*sizeof(UInt_t)); //jkl
   }
 
   if(!fRawStream)
@@ -684,6 +658,13 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
     if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
   
+  if (fReconstructor->IsWritingTracklets()) {
+    if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
+      trklLoader->WriteData("OVERWRITE");
+      trklLoader->Unload();
+    }
+  }
+
   if (fTrackletContainer){
     delete [] fTrackletContainer[0];
     delete [] fTrackletContainer[1];

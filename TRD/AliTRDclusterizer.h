@@ -77,7 +77,6 @@ class AliTRDclusterizer : public TNamed
   Bool_t   OpenInput(Int_t nEvent = 0);
   Bool_t   OpenOutput();
   Bool_t   OpenOutput(TTree *const clusterTree);
-  Bool_t   OpenTrackletOutput();
 
   Bool_t   ReadDigits();
   Bool_t   ReadDigits(AliRawReader *rawReader);
