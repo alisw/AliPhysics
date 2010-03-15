@@ -22,6 +22,7 @@
  
 #include <TROOT.h>
 #include <TRandom.h>
+#include <TString.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
 #include <TChain.h>

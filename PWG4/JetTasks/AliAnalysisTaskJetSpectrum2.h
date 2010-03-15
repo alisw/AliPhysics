@@ -25,7 +25,7 @@ class TChain;
 class TH2F;
 class TH3F;
 class TProfile;
-
+class TSTring;
 
 
 class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
