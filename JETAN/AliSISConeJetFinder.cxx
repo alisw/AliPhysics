@@ -122,12 +122,14 @@ void AliSISConeJetFinder::FindJets()
 	if(lvArray == 0)
 	  {
 	    cout << "Could not get the momentum array" << endl;
+	    delete plugin;
 	    return;
 	  }
 	
 	if(nIn == 0)// nIn = Number of particles in the event
 	  {
 	    if (debug) cout << "entries = 0 ; Event empty !!!" << endl ;
+	    delete plugin;
 	    return;
 	  }
 	
@@ -150,9 +152,9 @@ void AliSISConeJetFinder::FindJets()
       }
     else {
       TClonesArray* fUnit = fReader->GetUnitArray();
-      if(fUnit == 0) { cout << "Could not get the momentum array" << endl; return; }
+      if(fUnit == 0) { cout << "Could not get the momentum array" << endl; 	    delete plugin; return; }
       Int_t         nIn = fUnit->GetEntries();
-      if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ; return; }
+      if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ;  	    delete plugin; return; }
         // Information extracted from fUnitArray
       // load input vectors and calculate total energy in array
       Float_t pt,eta,phi,theta,px,py,pz,en;
@@ -319,6 +321,9 @@ void AliSISConeJetFinder::FindJets()
       AddJet(aodjet);
     }
   }
+
+  delete plugin;
+
 }
  
 //____________________________________________________________________________

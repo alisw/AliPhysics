@@ -5,13 +5,17 @@
  * See cxx source for full Copyright notice                               */
  
 #include "AliAnalysisTaskSE.h"
+
+
 class AliJetFinder;
 class AliESDEvent;
-class TTree;
-class TChain;
 class AliAODEvent;
 class AliJetHistos;
 class AliAODExtension;
+class TTree;
+class TChain;
+class TString;
+
 
 
 class AliAnalysisTaskJets : public AliAnalysisTaskSE

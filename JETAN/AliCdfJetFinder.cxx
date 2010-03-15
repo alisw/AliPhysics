@@ -78,6 +78,7 @@ AliCdfJetFinder::AliCdfJetFinder():
 //______________________________________________________________________________
 AliCdfJetFinder::~AliCdfJetFinder()
   {
+    Clean();
   // destructor
   }
 
@@ -357,20 +358,27 @@ if (fAODwrite)
 
 InitData();
 
-if (!fNPart) { if (fDebug) {cout << "entries = 0 ; Event empty !!!" << endl ;} return; } // if event empty then exit
+ if (!fNPart) { 
+  if (fDebug) {
+    cout << "entries = 0 ; Event empty !!!" << endl ;
+  }
+  // no need to call clean, InitData does not 
+  // create pointers if npart == 0
+  return; 
+ } // if event empty then exit
 
-FindCones();
-
-ComputeConesWeight();
-
-if (fAODwrite) { 
-  if(fDebug)cout << "Writing AOD" << endl ; 
-  WriteJets();
+ FindCones();
+ 
+ ComputeConesWeight();
+ 
+ if (fAODwrite) { 
+   if(fDebug)cout << "Writing AOD" << endl ; 
+   WriteJets();
  }
-
-if (fAnalyseJets) AnalizeJets();
-
-Clean();
+ 
+ if (fAnalyseJets) AnalizeJets();
+ 
+ Clean();
 
 }
 
@@ -594,6 +602,7 @@ for(  Int_t jetnr = 0 ; jetnr < fNJets ; jetnr++ )
     }
   // tracks REFs written in AOD
   AddJet(jet);
+
   }
 //jets vector parsed and written to AOD
 }
@@ -889,10 +898,20 @@ for(  Int_t part = 0 ; part < fNPart ; part++ )
 void AliCdfJetFinder::Clean()
 {
 // CLEANING SECTION
-  delete [] fVectParticle;
-  delete [] fVectJet;
-  delete [] fPtArray;
-  delete [] fIdxArray;
+  for (  Int_t i = 0 ; i < fNPart ; i++ ){
+    delete fVectParticle[i];
+    fVectParticle[i] = 0;
+  }
+  delete [] fVectParticle;fVectParticle = 0;
+
+  for (  Int_t i = 0 ; i < fNJets ; i++ ){
+    delete fVectJet[i];
+    fVectJet[i] = 0;
+  } 
+  delete [] fVectJet;fVectJet = 0;
+
+  delete [] fPtArray;fPtArray = 0;
+  delete [] fIdxArray;fIdxArray = 0;
 
   Reset();
 }
