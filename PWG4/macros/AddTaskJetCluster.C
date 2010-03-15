@@ -52,8 +52,13 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    typeRec.ToUpper();
    // Create the task and configure it.
    //===========================================================================
+
+
+   char *cRadius = "";
+   if(radius>0)cRadius = Form("%02d",(int)((radius+0.01)*10.));
+
    
-   AliAnalysisTaskJetCluster* pwg4spec = new  AliAnalysisTaskJetCluster(Form("Jet Spectrum %s %s",bRec,bGen));
+   AliAnalysisTaskJetCluster* pwg4spec = new  AliAnalysisTaskJetCluster(Form("JetCluster_%s_%s",jf,cRadius));
       
    // or a config file
    // pwg4spec->SetAnalysisType(AliAnalysisTaskJetCluster::kAnaMC);
@@ -94,9 +99,6 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    else if (typeGen.Contains("AOD")) {
      pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetCluster::kTrackAOD);
    }
-
-   char *cRadius = "";
-   if(radius>0)cRadius = Form("%02d",(int)((radius+0.01)*10.));
 
 
 
