@@ -1,5 +1,5 @@
-#ifndef ALIEMCALTrigger_H
-#define ALIEMCALTrigger_H
+#ifndef ALIEMCALTRIGGER_H
+#define ALIEMCALTRIGGER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -79,12 +79,12 @@ class AliEMCALTrigger : public AliTriggerDetector {
   Int_t    Get2x2SuperModule()   const { return f2x2SM ; }
   Int_t    GetnxnSuperModule()   const { return fnxnSM ; }
 
-  Int_t *  GetADCValuesLowGainMax2x2Sum()  { return fADCValuesLow2x2; }
-  Int_t *  GetADCValuesHighGainMax2x2Sum() { return fADCValuesHigh2x2; }
-  Int_t *  GetADCValuesLowGainMaxnxnSum()  { return fADCValuesLownxn; }
-  Int_t *  GetADCValuesHighGainMaxnxnSum() { return fADCValuesHighnxn; }
+  Int_t *  GetADCValuesLowGainMax2x2Sum()  const { return fADCValuesLow2x2; }
+  Int_t *  GetADCValuesHighGainMax2x2Sum() const { return fADCValuesHigh2x2; }
+  Int_t *  GetADCValuesLowGainMaxnxnSum()  const { return fADCValuesLownxn; }
+  Int_t *  GetADCValuesHighGainMaxnxnSum() const { return fADCValuesHighnxn; }
 
-  Float_t  GetL0Threshold() const            { return fL0Threshold ; } 
+  Float_t  GetL0Threshold()              const { return fL0Threshold ; } 
   Float_t  GetL1GammaLowPtThreshold()    const { return fL1GammaLowPtThreshold ; }
   Float_t  GetL1GammaMediumPtThreshold() const { return fL1GammaMediumPtThreshold ; }
   Float_t  GetL1GammaHighPtThreshold()   const { return fL1GammaHighPtThreshold ; }
@@ -106,9 +106,9 @@ class AliEMCALTrigger : public AliTriggerDetector {
   TH2F*     GetJetMatrixE()             const { return fJetMatrixE;}
   Double_t  GetEmcalSumAmp()            const;
   
-  Int_t     GetNJetThreshold()  const {return fNJetThreshold;}
-  Double_t* GetL1JetThresholds() {return  fL1JetThreshold;}
-  TMatrixD  GetAmpJetMax() const {return fAmpJetMax;}
+  Int_t     GetNJetThreshold()   const {return fNJetThreshold;}
+  Double_t* GetL1JetThresholds() const {return fL1JetThreshold;}
+  TMatrixD  GetAmpJetMax()       const {return fAmpJetMax;}
 
   void PrintJetMatrix() const;                  // *MENU*
   void PrintAmpTruMatrix(Int_t ind) const;      // *MENU*
@@ -152,7 +152,7 @@ class AliEMCALTrigger : public AliTriggerDetector {
   // Name of Jet trigger(s)
   Char_t* GetNameOfJetTrigger(const Int_t i) {return Form("%s_Th_%2.2i",fgNameOfJetTriggers.Data(),i);}
   static TString GetNameOfJetTriggers() {return fgNameOfJetTriggers;}
-  static TString fgNameOfJetTriggers;
+  static TString fgNameOfJetTriggers; //Name of jet triggers
   // Estimation on EMCal energy from VZERO multiplicity
   // 0.0153 is coefficient from adc to energy
   // Dec 4, 2007
@@ -170,9 +170,9 @@ class AliEMCALTrigger : public AliTriggerDetector {
   const Int_t supermod, TMatrixD &ampmax2, TMatrixD &ampmaxn) ; 
   
   void SetTriggers(const TClonesArray * amptrus,const Int_t iSM, const TMatrixD &ampmax2, const TMatrixD &ampmaxn) ;
-  void GetTriggerInfo(TArrayF &triggerPosition, TArrayF &triggerAmplitudes); 
+  void GetTriggerInfo(TArrayF &triggerPosition, TArrayF &triggerAmplitudes) const; 
   // Jet staff
-  void FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD* jetMat, AliEMCALGeometry *g); 
+  void FillJetMatrixFromSMs(TClonesArray *ampmatrixsmod, TMatrixD * const jetMat, AliEMCALGeometry * const g); 
   // no timing information here
   void MakeSlidingPatch(const TMatrixD &jm, const Int_t nPatchSize, TMatrixD &ampJetMax);
 
@@ -207,12 +207,13 @@ class AliEMCALTrigger : public AliTriggerDetector {
                              //  1 means a patch around max amplitude of 2x2 of 4x4 and around         
                              //  max ampl patch of 4x4 of 8x8 
     
-  Float_t f2x2AmpOutOfPatch;      //  Amplitude in isolation cone minus maximum amplitude of the reference patch
-  Float_t fnxnAmpOutOfPatch; 
+  Float_t f2x2AmpOutOfPatch;      //  Amplitude in isolation cone minus maximum amplitude of the reference 2x2 patch
+  Float_t fnxnAmpOutOfPatch;      //  Amplitude in isolation cone minus maximum amplitude of the reference nxn patch
   Float_t f2x2AmpOutOfPatchThres; //  Threshold to select a trigger as isolated on f2x2AmpOutOfPatch value
-  Float_t fnxnAmpOutOfPatchThres; 
-  Float_t fIs2x2Isol;             //  Patch is isolated if f2x2AmpOutOfPatchThres threshold is passed
-  Float_t fIsnxnIsol ; 
+  Float_t fnxnAmpOutOfPatchThres; //  Threshold to select a trigger as isolated on fnxnAmpOutOfPatch value
+  Float_t fIs2x2Isol;             //  2x2 Patch is isolated if f2x2AmpOutOfPatchThres threshold is passed
+  Float_t fIsnxnIsol ;            //  nxn Patch is isolated if fnxnAmpOutOfPatchThres threshold is passed
+
 
   Bool_t  fSimulation ;           // Flag to do the trigger during simulation or reconstruction
   Bool_t  fIsolateInSuperModule;  // Flag to isolate trigger patch in SuperModule or in TRU acceptance
@@ -222,8 +223,8 @@ class AliEMCALTrigger : public AliTriggerDetector {
   TClonesArray *fTimeRtrus;       //! Array of recent times  (unused now)
   TClonesArray *fAmpSMods;        //! Array of amplides of SM  matrixes
   // Information for EMCAL ESD
-  TArrayF fTriggerPosition;    // 
-  TArrayF fTriggerAmplitudes;  //
+  TArrayF fTriggerPosition;       // Triggered patch position
+  TArrayF fTriggerAmplitudes;     // Triggered patch amplitude
   // Jet staf
   Int_t     fNJetPatchPhi;       // size of jet pathch in phi(row)   direction  (nJetPatchPhi*4 module) 
   Int_t     fNJetPatchEta;       // size of jet pathch in eta(column) direction (nJetPatchEta*4 module)
@@ -240,5 +241,5 @@ class AliEMCALTrigger : public AliTriggerDetector {
 } ;
     
     
-#endif //ALIEMCALTrigger_H
+#endif //ALIEMCALTRIGGER_H
     

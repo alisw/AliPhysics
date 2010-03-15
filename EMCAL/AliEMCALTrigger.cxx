@@ -177,6 +177,9 @@ AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig)
 
 //____________________________________________________________________________
 AliEMCALTrigger::~AliEMCALTrigger() {
+	
+  //dtor
+	
   if(GetTimeKey()) {
     delete [] fADCValuesHighnxn; 
     delete [] fADCValuesLownxn;
@@ -867,8 +870,9 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
 //____________________________________________________________________________
 void AliEMCALTrigger::Trigger() 
 {
-  TH1::AddDirectory(0);
   //Main Method to select triggers.
+  TH1::AddDirectory(0);
+
   AliRunLoader *runLoader = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = 0;
   if(runLoader) {
@@ -965,7 +969,7 @@ void AliEMCALTrigger::Trigger()
 }
 
 //____________________________________________________________________________
-void AliEMCALTrigger::GetTriggerInfo(TArrayF &triggerPosition, TArrayF &triggerAmplitudes)
+void AliEMCALTrigger::GetTriggerInfo(TArrayF &triggerPosition, TArrayF &triggerAmplitudes) const
 {
   // Template - should be defined; Nov 5, 2007
   triggerPosition[0]   = 0.; 
@@ -1110,6 +1114,7 @@ void AliEMCALTrigger::PrintJetMatrix() const
 //____________________________________________________________________________
 void AliEMCALTrigger::PrintAmpTruMatrix(Int_t ind) const
 {
+ // Print matrix with TRU patches
   TMatrixD * tru = dynamic_cast<TMatrixD *>(fAmpTrus->At(ind));
   if(tru == 0) return;
   AliInfo(Form("\n ####  Amp TRU matrix(%i) : (%i,%i) ##### \n ", 
@@ -1120,7 +1125,8 @@ void AliEMCALTrigger::PrintAmpTruMatrix(Int_t ind) const
 //____________________________________________________________________________
 void AliEMCALTrigger::PrintAmpSmMatrix(Int_t ind) const
 {
-  TMatrixD * sm = dynamic_cast<TMatrixD *>(fAmpSMods->At(ind));
+	// Print matrix with SM amplitudes
+	TMatrixD * sm = dynamic_cast<TMatrixD *>(fAmpSMods->At(ind));
   if(sm == 0) return;
   AliInfo(Form("\n ####  Amp SM matrix(%i) : (%i,%i) ##### \n ", 
 	 ind, sm->GetNrows(), sm->GetNcols()));
@@ -1130,6 +1136,7 @@ void AliEMCALTrigger::PrintAmpSmMatrix(Int_t ind) const
 //____________________________________________________________________________
 void AliEMCALTrigger::PrintMatrix(const TMatrixD &mat) const
 {
+  //Print matrix object
   for(Int_t col=0; col<mat.GetNcols(); col++) AliInfo(Form(" %3i ", col));
   AliInfo(Form("\n -- \n"));
   for(Int_t row=0; row<mat.GetNrows(); row++) {
@@ -1144,6 +1151,7 @@ void AliEMCALTrigger::PrintMatrix(const TMatrixD &mat) const
 //____________________________________________________________________________
 Bool_t AliEMCALTrigger::CheckConsistentOfMatrixes(const Int_t pri)
 {
+  // Check consitency of matrices
   Double_t sumSM = 0.0, smCur=0.0;
   Double_t sumTru=0.0,  sumTruInSM = 0.0, truSum=0.0;
   //  Bool_t key = kTRUE;
@@ -1172,15 +1180,16 @@ Bool_t AliEMCALTrigger::CheckConsistentOfMatrixes(const Int_t pri)
     }
   }
   Double_t sumJetMat = fAmpJetMatrix->Sum();
-  if(pri || sumSM != sumTru || sumSM !=  sumJetMat) 
+	if(pri || TMath::Abs(sumSM-sumTru)>0.0001 || TMath::Abs(sumSM-sumJetMat) > 0.0001) 
    AliDebug(1,Form(" sumSM %f : sumTru %f : sumJetMat %f \n", sumSM, sumTru, sumJetMat)); 
-  if(sumSM != sumTru || sumSM !=  sumJetMat) return kFALSE; 
+	if(TMath::Abs(sumSM - sumTru)>0.0001 || TMath::Abs(sumSM-sumJetMat) > 0.0001) return kFALSE; 
   else                                       return kTRUE; 
 }
 
 //____________________________________________________________________________
 void AliEMCALTrigger::Browse(TBrowser* b)
 {
+  //Browse.
   if(&fInputs)      b->Add(&fInputs);
   if(fAmpTrus)      b->Add(fAmpTrus);
   if(fTimeRtrus)    b->Add(fTimeRtrus);
