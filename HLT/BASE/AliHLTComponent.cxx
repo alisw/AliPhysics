@@ -412,6 +412,7 @@ int AliHLTComponent::SetComponentDescription(const char* desc)
 	HLTWarning("unknown component description %s", argument.Data());
       }
     }
+    delete pTokens;
   }
   
   return iResult;

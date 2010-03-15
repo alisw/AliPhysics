@@ -138,6 +138,7 @@ AliHLTSystem::~AliHLTSystem()
     fpComponentHandler->Destroy();
   }
   fpComponentHandler=NULL;
+  delete fStopwatches;
 
   // note: fpHLTOUTTask and fpControlTask are deleted by
   // CleanTaskList
