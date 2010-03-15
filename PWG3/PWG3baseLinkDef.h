@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliQuarkoniaAcceptance+; 
 #pragma link C++ class AliQuarkoniaEfficiency+; 
+#pragma link C++ class AliPtMothFromPtDaugh+; 
 
 #endif
 
