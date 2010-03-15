@@ -226,8 +226,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    AliAnalysisManager *mgr  = new AliAnalysisManager("PWG4Train", "pwg4 mini train");
    if (kCommonOutputFileName.Length()>0)mgr->SetCommonFileName(kCommonOutputFileName.Data());
    if (kProofSaveToAlien) mgr->SetSpecialOutputLocation(kProofOutdir);
+   mgr->SetNSysInfo(0);
    if (!strcmp(plugin_mode, "test")) mgr->SetNSysInfo(1);
    if (kUseSysInfo)mgr->SetNSysInfo(kUseSysInfo);
+   
+
    // Load analysis specific libraries
    if (!LoadAnalysisLibraries(smode)) {
       ::Error("AnalysisTrain", "Could not load analysis libraries");
@@ -246,7 +249,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
       if (kUseESDTags) esdHandler->SetReadTags();
       mgr->SetInputEventHandler(esdHandler);       
-      if(iPWG4PtQATPC)esdHandler->SetActiveBranches("ESDfriend");
+      //      if(iPWG4PtQATPC&& !kTrainName.Contains("pass5"))esdHandler->SetActiveBranches("ESDfriend");
    }
 
    // Monte Carlo handler
@@ -535,6 +538,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      }
      AliLog::SetGlobalLogLevel(AliLog::kError);
      StartAnalysis(smode, chain);
+     if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
+       for(int i = 0;i < mgr->GetTopTasks()->GetEntries();i++){
+	 mgr->ProfileTask(i);
+       }
+     }
      if (!strcmp(plugin_mode, "offline")&&smode=="GRID"){
        // Offline mode path files
        //	PatchJDL();
