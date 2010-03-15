@@ -60,7 +60,6 @@ AliHLTTPCCalibSeedMakerComponent::AliHLTTPCCalibSeedMakerComponent()
     :    
     fTPCGeomParam(0)
    ,fSeedArray(0)
-   ,fOffClusterArray(0)
 {
   // see header file for class documentation
   // or
@@ -122,11 +121,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*
   fTPCGeomParam = AliTPCcalibDB::Instance()->GetParameters();
   if(!fTPCGeomParam) HLTError("TPC Parameters are not loaded.");
   
-  fSeedArray = new TClonesArray("AliTPCseed");
-   
-  fOffClusterArray = new TObjArray();
-  //fOffClusterArray->SetOwner(kTRUE);
-  
+  fSeedArray = new TClonesArray("AliTPCseed");  
   return 0;
 
 } // end DoInit()
@@ -136,8 +131,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoDeinit() {
   
   if(fTPCGeomParam)     delete fTPCGeomParam;     fTPCGeomParam    = NULL;          
   if(fSeedArray)        delete fSeedArray; 	  fSeedArray       = NULL;	      
-  if(fOffClusterArray)  delete fOffClusterArray;  fOffClusterArray = NULL;	      
-
+  
   return 0;
 }
 
@@ -220,15 +214,12 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
     	  Double_t angle = fTPCGeomParam->GetInnerAngle();
     	   
 	  const UInt_t *hitnum = element->GetPoints(); // store the clusters on each track in an array and loop over them
-  
-//           for(Int_t i=0; i<fOffClusterArray->GetEntriesFast(); i++){      
-//               if(fOffClusterArray->At(i) != NULL) fOffClusterArray->At(i)->Delete();      
-//           }       
-          fOffClusterArray->Clear();  
-
-	  for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
 	  
-            
+	  AliTPCclusterMI* offClusterArray[element->GetNumberOfPoints()];	  
+	  for(UInt_t k=0; k<element->GetNumberOfPoints(); k++) offClusterArray[k] = 0x0;
+
+          for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
+	                
 	      // the id of the cluster contains information about the slice and partition it belongs to
 	      // as well as its index (pos)          
      	                  
@@ -262,34 +253,34 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
  	      // convert the HLT clusters to AliTPCclusterMI    	                   
 	      AliHLTTPCOfflineCluster pConv; 
 	      AliTPCclusterMI *offClus = pConv.ConvertHLTToOffline((fClustersArray[sliceTrack][patchTrack])[pos]);
-	      offClus->SetDetector(sector);
-	      fOffClusterArray->Add(offClus);       	      
-	      	      
+	      offClus->SetDetector(sector);     
+	      offClusterArray[i] = offClus;
+	      	      	      
 	      rieman.AddPoint( offClus->GetX(), offClus->GetY(), offClus->GetZ(),TMath::Sqrt(offClus->GetSigmaY2()),TMath::Sqrt(offClus->GetSigmaZ2()) );	      
 	      alpha = 0.5*angle+angle*(sector%18); //sector rotation angle
               
-              // HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);  
+              //HLTInfo("detector: %d, row: %d, xrow[row]: %f", sector, offClus->GetRow(), xrow[offClus->GetRow()]);  
 	     
     	      usedSpacePoints++;
-      } // end of cluster loop
+          } // end of cluster loop
 
           // creation of AliTPCseed by means of a Riemann fit
           rieman.Update();
           rieman.GetExternalParameters(xmin,param,cov);  
 	  
-	  new((*fSeedArray)[nTracks]) AliTPCseed(xmin,alpha,param,cov,0);
-	  
+	  new((*fSeedArray)[nTracks]) AliTPCseed(xmin,alpha,param,cov,0);	  
 	  dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->SetLabel(element->GetID());
-	  	   
-	  // set up of the cluster pointers inside the seed
-          for( Int_t j=0; j<usedSpacePoints; j++){	      	       
-	       AliTPCclusterMI *cl = dynamic_cast<AliTPCclusterMI*>(fOffClusterArray->At(j));
-	       if(cl) dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->SetClusterPointer(cl->GetRow(), cl);
+	  //dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->fClusterOwner = kTRUE;
+	  
+	  // set the cluster pointers for the seed          
+          for( UInt_t j=0; j<element->GetNumberOfPoints(); j++){	      	       
+	       dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->SetClusterPointer(offClusterArray[j]->GetRow(), offClusterArray[j]);	      
 	  }
-
+          
+	  //printf("kelly seed number of clusters %i\n", dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->GetNumberOfClusters()); // not set properly, always 1
 	  //printf("kelly seed calib dedx: %f, P: %f\n", dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->CookdEdx(0.02,0.6), dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks))->P());
 	      	   
-	  HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f", dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks)), xmin, alpha, param[0], cov[0]);
+	  HLTDebug("External track parameters: seed: 0x%08x, xmin: %f, alpha: %f, param[0]: %f, cov[0]: %f\n", dynamic_cast<AliTPCseed*>(fSeedArray->At(nTracks)), xmin, alpha, param[0], cov[0]);
 	  nTracks++;
 
       }// end of vector track loop           

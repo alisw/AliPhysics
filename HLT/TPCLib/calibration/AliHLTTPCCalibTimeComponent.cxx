@@ -224,14 +224,12 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
     fESDevent->GetStdContent();
     
     //fESDevent->SetTimeStamp(1256910155);
-    //fESDevent->SetRunNumber(0);
-    //fESDevent->SetRunNumber(84714);
               
     HLTDebug("# Seeds: %i\n", fSeedArray->GetEntriesFast()); // access of the info from the previous loop over the AliTPCseed array
     
     fCal->UpdateEventInfo(fESDevent);  
         
-    for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){  // loop over TObjArray    
+    for(Int_t i=0; i<fSeedArray->GetEntriesFast(); i++){  // loop over TClonesArray    
         
 	AliTPCseed *seed = (AliTPCseed*)fSeedArray->UncheckedAt(i);                    
         fESDtrack = fESDevent->GetTrack(i);
@@ -241,7 +239,7 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
 	   HLTWarning("Mismatch of track id between seed and ESD track: %i, %i\n", fESDtrack->GetID(), seed->GetLabel());
 	   continue;	      	
 	}
-        
+	
 	//printf("kelly time calib dedx before update: %f, P: %f\n", seed->CookdEdx(0.02,0.6), seed->P());
         
 	fCal->RefitTrack(fESDtrack, seed, GetBz()); // update AliESDtrack and AliTPCseed info, acccording to Marian's request

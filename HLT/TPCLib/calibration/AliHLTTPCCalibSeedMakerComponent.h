@@ -19,7 +19,6 @@
 //forward declarations
 class AliHLTTPCSpacePointData;
 class AliTPCParam;
-class TObjArray;
 class TClonesArray;
 
 /**
@@ -77,10 +76,9 @@ class AliHLTTPCCalibSeedMakerComponent : public AliHLTProcessor {
       
       AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
       UInt_t                   fNSpacePoints[36][6];  //! transient
-      TClonesArray *fSeedArray;
-      TObjArray    *fOffClusterArray;
-                      
-      ClassDef(AliHLTTPCCalibSeedMakerComponent, 3)
+      TClonesArray            *fSeedArray; // array of AliTPCseed objects
+                            
+      ClassDef(AliHLTTPCCalibSeedMakerComponent, 4)
     };
 
 #endif
