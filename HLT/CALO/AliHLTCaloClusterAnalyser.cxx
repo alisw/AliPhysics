@@ -211,6 +211,22 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       totSize += sizeof(AliHLTCaloClusterDataStruct);
       
       caloClusterPtr = fCaloClusterDataPtr;
+      caloClusterPtr->fChi2 = 0;
+      caloClusterPtr->fClusterType = kUndef;
+      caloClusterPtr->fDispersion = 0;
+      caloClusterPtr->fDistanceToBadChannel = 0;
+      caloClusterPtr->fDistToBadChannel = 0;
+      caloClusterPtr->fEmcCpvDistance = 0;
+      caloClusterPtr->fEnergy = 0;
+      caloClusterPtr->fFitQuality = 0;
+      caloClusterPtr->fID = 0;
+      caloClusterPtr->fM02 = 0;
+      caloClusterPtr->fM20 = 0;
+      caloClusterPtr->fNCells = 0;
+      caloClusterPtr->fNExMax = 0;
+      caloClusterPtr->fTOF = 0;
+      caloClusterPtr->fTrackDx = 0;
+      caloClusterPtr->fTrackDz = 0;
      
       AliHLTCaloRecPointDataStruct *recPointPtr = fRecPointArray[i];
       
@@ -249,7 +265,6 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
  	   digitPtr = &(fDigitDataArray[*digitIndexPtr]);
-	   id++;
 	   fGeometry->GetCellAbsId(recPointPtr->fModule, digitPtr->fX, digitPtr->fZ, id);
  	   
 	  cellPtr->fCellsAbsId= id;
@@ -257,7 +272,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	  //printf("Cell ID pointer: %x\n", cellIDPtr);
  	 //printf("Cell Amp Pointer: %x\n", cellAmpFracPtr);
 	 //printf("Cell pos: x = %d, z = %d\n", digitPtr->fX, digitPtr->fZ);
-	 //printf("Cell ID: %d, pointer: %x\n", *cellIDPtr, cellIDPtr);
+//	 printf("Cell ID: %d\n", cellPtr->fCellsAbsId);
  	 //printf("Cell Amp: %f, pointer: %x\n", *cellAmpFracPtr, cellAmpFracPtr);
 	  cellPtr++;
 	  digitIndexPtr++;
@@ -267,7 +282,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       totSize += tmpSize;
 
       caloClusterPtr->fEnergy = recPointPtr->fAmp;
-
+      
       HLTDebug("Cluster global position: x = %f, y = %f, z = %f, energy: %f, number of cells: %d, cluster pointer: %x", globalCoord.fX, globalCoord.fY, globalCoord.fZ, caloClusterPtr->fEnergy, caloClusterPtr->fNCells,  caloClusterPtr);
 
       if(fDoClusterFit)
