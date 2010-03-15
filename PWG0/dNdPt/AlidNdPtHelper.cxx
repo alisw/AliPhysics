@@ -77,6 +77,15 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtE
     if (debug)
       Printf("AlidNdPtHelper::GetVertex: Returning SPD vertex");
   }
+  else if (analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || analysisMode == kTPCITSHybridTrackSPDvtx || analysisMode == kTPCITSHybridTrackSPDvtxDCArPt)
+  {
+    vertex = aEsd->GetPrimaryVertexTracks();
+    if(!vertex) return NULL;
+    if(vertex->GetNContributors()<1) {
+      // SPD vertex
+      vertex = aEsd->GetPrimaryVertexSPD();
+    }
+  }
   else if (analysisMode == kTPC)
   {
     if(bRedoTPC) {
@@ -161,7 +170,7 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtE
 }
 
 //____________________________________________________________________
-Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug)
+Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, const AliESDVertex* vertexSPD, AnalysisMode analysisMode, Bool_t debug)
 {
   // Checks if a vertex meets the needed quality criteria
   if(!vertex) return kFALSE;
@@ -169,7 +178,9 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
 
   Float_t requiredZResolution = -1;
   if (analysisMode == kSPD || analysisMode == kTPCITS || 
-      analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate || analysisMode == kTPCITSHybrid)
+      analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate || analysisMode == kTPCITSHybrid ||
+      analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || analysisMode == kTPCITSHybridTrackSPDvtx || analysisMode == kTPCITSHybridTrackSPDvtxDCArPt
+     )
   {
     requiredZResolution = 1000;
   }
@@ -184,10 +195,13 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
       Printf("AlidNdPtHelper::TestVertex: Resolution too poor %f (required: %f", zRes, requiredZResolution);
     return kFALSE;
   }
- 
-  if (vertex->IsFromVertexerZ())
+
+  // always check for SPD vertex
+  if(!vertexSPD) return kFALSE;
+  if(!vertexSPD->GetStatus()) return kFALSE;
+  if (vertexSPD->IsFromVertexerZ())
   {
-    if (vertex->GetDispersion() > 0.02) 
+    if (vertexSPD->GetDispersion() > 0.02) 
     {
       if (debug)
         Printf("AliPWG0Helper::TestVertex: Delta Phi too large in Vertexer Z: %f (required: %f", vertex->GetDispersion(), 0.02);
@@ -208,6 +222,24 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, AnalysisMode an
   */
 
   return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t AlidNdPtHelper::IsGoodImpPar(AliESDtrack *const track)
+{
+//
+// check whether particle has good DCAr(Pt) impact
+// parameter. Only for TPC+ITS tracks (7*sigma cut)
+// Origin: Andrea Dainese
+//
+
+Float_t d0z0[2],covd0z0[3];
+track->GetImpactParameters(d0z0,covd0z0);
+Float_t sigma= 0.0050+0.0060/TMath::Power(track->Pt(),0.9);
+Float_t d0max = 7.*sigma;
+if(TMath::Abs(d0z0[0]) < d0max) return kTRUE;
+
+return kFALSE;
 }
 
 //____________________________________________________________________
@@ -305,7 +337,11 @@ void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tr
     case kTPCITS : str += "Global tracking"; break;
     case kTPCSPDvtx : str += "TPC tracking + SPD event vertex"; break;
     case kTPCSPDvtxUpdate : str += "TPC tracks updated with SPD event vertex point"; break;
+    case kTPCTrackSPDvtx : str += "TPC tracking + Tracks event vertex or SPD event vertex"; break;
+    case kTPCTrackSPDvtxUpdate : str += "TPC tracks updated with Track or SPD event vertex point"; break;
     case kTPCITSHybrid : str += "TPC tracking + ITS refit + >1 SPD cluster"; break;
+    case kTPCITSHybridTrackSPDvtx : str += "TPC tracking + ITS refit + >1 SPD cluster + Tracks event vertex or SPD event vertex"; break;
+    case kTPCITSHybridTrackSPDvtxDCArPt : str += "TPC tracking + ITS refit + >1 SPD cluster + Tracks event vertex or SPD event vertex + DCAr(pt)"; break;
     case kMCRec : str += "TPC tracking + Replace rec. with MC values"; break;
   }
   str += " and trigger ";
@@ -485,9 +521,22 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
       track = AlidNdPtHelper::GetTPCOnlyTrackSPDvtx(esdEvent,iTrack,kFALSE);
       if(!track) continue;
     }
+    else if (analysisMode == AlidNdPtHelper::kTPCTrackSPDvtx || analysisMode == AlidNdPtHelper::kTPCTrackSPDvtxUpdate)
+    {
+      //
+      // track must be deleted by the user 
+      // esd track parameters are replaced by TPCinner
+      //
+      track = AlidNdPtHelper::GetTPCOnlyTrackTrackSPDvtx(esdEvent,iTrack,kFALSE);
+      if(!track) continue;
+    }
     else if( analysisMode == AlidNdPtHelper::kTPCITSHybrid )
     {
       track = AlidNdPtHelper::GetTrackSPDvtx(esdEvent,iTrack,kFALSE);
+    }
+    else if( analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt)
+    {
+      track = AlidNdPtHelper::GetTrackTrackSPDvtx(esdEvent,iTrack,kFALSE);
     }
     else 
     {
@@ -497,8 +546,9 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
     if(!track) continue;
 
     if(track->Charge()==0) { 
-      if(analysisMode == AlidNdPtHelper::kTPC || analysisMode == AlidNdPtHelper::kTPCSPDvtx || 
-         analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate) 
+      if(analysisMode == AlidNdPtHelper::kTPC || 
+         analysisMode == AlidNdPtHelper::kTPCSPDvtx || analysisMode == AlidNdPtHelper::kTPCTrackSPDvtx  ||
+         analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate || analysisMode == AlidNdPtHelper::kTPCTrackSPDvtxUpdate) 
       {
         delete track; continue; 
       } else {
@@ -509,8 +559,9 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
     allTracks->Add(track);
   }
 
-  if(analysisMode == AlidNdPtHelper::kTPC || analysisMode == AlidNdPtHelper::kTPCSPDvtx || 
-     analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate) {
+  if(analysisMode == AlidNdPtHelper::kTPC || 
+     analysisMode == AlidNdPtHelper::kTPCSPDvtx || analysisMode == AlidNdPtHelper::kTPCTrackSPDvtx || 
+     analysisMode == AlidNdPtHelper::kTPCSPDvtxUpdate || analysisMode == AlidNdPtHelper::kTPCTrackSPDvtxUpdate) {
      
      allTracks->SetOwner(kTRUE);
   }
@@ -575,6 +626,65 @@ return tpcTrack;
 } 
 
 //_____________________________________________________________________________
+AliESDtrack *AlidNdPtHelper::GetTPCOnlyTrackTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+{
+//
+// Create ESD tracks from TPCinner parameters.
+// Propagte to DCA to Track or SPD vertex.
+// Update using SPD vertex point (parameter)
+//
+// It is user responsibility to delete these tracks
+//
+  if (!esdEvent) return NULL;
+  const AliESDVertex *vertex = esdEvent->GetPrimaryVertexTracks();
+  if(vertex->GetNContributors()<1) {
+    // SPD vertex
+    vertex = esdEvent->GetPrimaryVertexSPD();
+  }
+  if(!vertex) return NULL;
+ 
+  // 
+  AliESDtrack* track = esdEvent->GetTrack(iTrack);
+  if (!track)
+    return NULL;
+
+  Bool_t isOK = kFALSE;
+  Double_t x[3]; track->GetXYZ(x);
+  Double_t b[3]; AliTracker::GetBxByBz(x,b);
+
+  // create new ESD track
+  AliESDtrack *tpcTrack = new AliESDtrack();
+ 
+  // relate TPC-only tracks (TPCinner) to SPD vertex
+  AliExternalTrackParam cParam;
+  if(bUpdate) {  
+    isOK = track->RelateToVertexTPCBxByBz(vertex,b,kVeryBig,&cParam);
+    track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+
+    // reject fake tracks
+    if(track->Pt() > 10000.)  {
+      ::Error("Exclude no physical tracks","pt>10000. GeV");
+      delete tpcTrack; 
+      return NULL;
+    }
+  }
+  else {
+    isOK = track->RelateToVertexTPCBxByBz(vertex, b, kVeryBig);
+  }
+
+  // only true if we have a tpc track
+  if (!track->FillTPCOnlyTrack(*tpcTrack))
+  {
+    delete tpcTrack;
+    return NULL;
+  }
+  
+  if(!isOK) return NULL;
+
+return tpcTrack;
+} 
+
+//_____________________________________________________________________________
 AliESDtrack *AlidNdPtHelper::GetTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
 {
 //
@@ -608,6 +718,52 @@ AliESDtrack *AlidNdPtHelper::GetTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack,
   }
   else {
     isOK = track->RelateToVertexBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig);
+  }
+ 
+  if(!isOK) return NULL;
+
+return track;
+} 
+
+//_____________________________________________________________________________
+AliESDtrack *AlidNdPtHelper::GetTrackTrackSPDvtx(AliESDEvent* esdEvent, Int_t iTrack, Bool_t bUpdate)
+{
+//
+// Propagte track to DCA to Track or SPD vertex.
+// Update using SPD vertex point (parameter)
+//
+  if (!esdEvent) return NULL;
+
+  const AliESDVertex *vertex = esdEvent->GetPrimaryVertexTracks();
+  if(vertex->GetNContributors()<1) {
+    // SPD vertex
+    vertex = esdEvent->GetPrimaryVertexSPD();
+  }
+  if(!vertex) return NULL;
+
+  // 
+  AliESDtrack* track = esdEvent->GetTrack(iTrack);
+  if (!track)
+    return NULL;
+
+  Bool_t isOK = kFALSE;
+  Double_t x[3]; track->GetXYZ(x);
+  Double_t b[3]; AliTracker::GetBxByBz(x,b);
+
+  // relate tracks to SPD vertex
+  AliExternalTrackParam cParam;
+  if(bUpdate) {  
+    isOK = track->RelateToVertexBxByBz(vertex,b,kVeryBig,&cParam);
+    track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
+
+    // reject fake tracks
+    if(track->Pt() > 10000.)  {
+      ::Error("Exclude no physical tracks","pt>10000. GeV");
+      return NULL;
+    }
+  }
+  else {
+    isOK = track->RelateToVertexBxByBz(vertex, b, kVeryBig);
   }
  
   if(!isOK) return NULL;
@@ -759,8 +915,35 @@ return mult;
 }
 
 
+//_____________________________________________________________________________
+Double_t AlidNdPtHelper::GetStrangenessCorrFactor(const Double_t pt)
+{
+// data driven correction factor for secondaries
+// underestimated secondaries with strangeness in Pythia (A. Dainese)
 
+//
+// pt=0.17; fact=1
+// pt=0.4; fact=1.07
+// pt=0.6; fact=1.25
+// pt>=1.2; fact=1.5
+//
 
+if (pt <= 0.17) return 1.0;
+if (pt <= 0.4) return GetLinearInterpolationValue(0.17,1.0,0.4,1.07, pt);
+if (pt <= 0.6) return GetLinearInterpolationValue(0.4,1.07,0.6,1.25, pt);
+if (pt <= 1.2) return GetLinearInterpolationValue(0.6,1.25,1.2,1.5,  pt);
+return 1.5;
+
+}
+
+//___________________________________________________________________________
+Double_t AlidNdPtHelper::GetLinearInterpolationValue(Double_t const x1, Double_t const y1, Double_t const x2, Double_t const y2, const Double_t pt)
+{
+//
+// linear interpolation
+//
+  return ((y2-y1)/(x2-x1))*pt+(y2-(((y2-y1)/(x2-x1))*x2)); 
+}
 
 //_____________________________________________________________________________
 Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts)

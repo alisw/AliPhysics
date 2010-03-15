@@ -24,15 +24,16 @@ void LoadMyLibs() {
   CheckLoadLibrary("libTENDER");
   CheckLoadLibrary("libTPCbase");
   CheckLoadLibrary("libTPCsim");
-  CheckLoadLibrary("libTRDbase");
   CheckLoadLibrary("libTPCrec");
-  CheckLoadLibrary("libTRDrec");
+  //CheckLoadLibrary("libTRDbase");
+  //CheckLoadLibrary("libTRDcalib");
+  //CheckLoadLibrary("libTRDrec");
   CheckLoadLibrary("libITSbase");
   CheckLoadLibrary("libITSrec");
   CheckLoadLibrary("libPWG0base");
   CheckLoadLibrary("libPWG0dep");
   CheckLoadLibrary("libPWG0selectors");
-  CheckLoadLibrary("libPWG1");
+  //CheckLoadLibrary("libPWG1");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

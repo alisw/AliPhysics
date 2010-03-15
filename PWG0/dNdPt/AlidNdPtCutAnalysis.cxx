@@ -203,10 +203,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       AliDebug(AliLog::kError, "cannot get trigSel");
       return;
     }
-
     if(IsUseMCInfo()) { 
-      //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
-      //isEventTriggered = triggerAnalysis->IsTriggerFired(esdEvent, GetTrigger());
       trigSel->SetAnalyzeMC();
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
@@ -220,7 +217,6 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
   TArrayF vtxMC(3);
-  //AlidNdPtHelper::MCProcessType evtType = AlidNdPtHelper::kInvalidProcess;
   AliPWG0Helper::MCProcessType evtType = AliPWG0Helper::kInvalidProcess;
 
   if(IsUseMCInfo())
@@ -266,7 +262,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
   Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
   const AliESDVertex* vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
-  Bool_t isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, GetAnalysisMode(), kFALSE);
+  Bool_t isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, esdEvent->GetPrimaryVertexSPD(), GetAnalysisMode(), kFALSE);
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex;
 
   TObjArray *allChargedTracks=0;
@@ -330,10 +326,10 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       // if TPC-ITS hybrid tracking (kTPCITSHybrid)
       // replace track parameters with TPC-ony track parameters
       //
-      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybrid ) 
+      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybrid || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
       {
         // Relate TPC-only tracks to SPD vertex
-        isOK = track->RelateToVertexTPCBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig);
+        isOK = track->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
         if(!isOK) continue;
 
 	// replace esd track parameters with TPCinner
@@ -345,13 +341,13 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       } 
 
       //
-      if (GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate) 
+      if (GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate) 
       {
         //
         // update track parameters
 	//
         AliExternalTrackParam cParam;
-        isOK = track->RelateToVertexTPCBxByBz(esdEvent->GetPrimaryVertexSPD(), b, kVeryBig, &cParam);
+        isOK = track->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig, &cParam);
 	if(!isOK) continue;
 
 	track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
