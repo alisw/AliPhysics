@@ -39,7 +39,7 @@ class AliHeader;
 class AlidNdPtHelper : public TObject
 {
   public:
-    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kTPCITSHybrid, kMCRec };
+    enum AnalysisMode { kInvalid = -1, kSPD = 0, kTPC, kTPCITS, kTPCSPDvtx, kTPCSPDvtxUpdate, kTPCTrackSPDvtx, kTPCTrackSPDvtxUpdate, kTPCITSHybrid, kTPCITSHybridTrackSPDvtx, kTPCITSHybridTrackSPDvtxDCArPt, kMCRec };
     enum ParticleMode { kAllPart = 0, kMCPion, kMCKaon, kMCProton, kPlus, kMinus, kCosmic, kBackgroundTrack };
 
     enum OutputObject { kInvalidObject = -1, kCutAnalysis = 0, kAnalysis, kCorrection, kSystematics };
@@ -51,10 +51,11 @@ class AlidNdPtHelper : public TObject
 
     static const AliESDVertex* GetTPCVertexZ(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, Float_t fraction=0.8, Int_t ntracksMin=2);
 
-    static Bool_t TestRecVertex(const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
+    static Bool_t TestRecVertex(const AliESDVertex* vertex, const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryParticle(AliStack *const stack, Int_t idx, ParticleMode particleMode);
     static Bool_t IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *const track2);
+    static Bool_t IsGoodImpPar(AliESDtrack *const track);
     static Int_t ConvertPdgToPid(TParticle *const particle);
 
     static TObjArray *GetAllChargedTracks(AliESDEvent *const esdEvent, AnalysisMode analysisMode);
@@ -70,7 +71,9 @@ class AlidNdPtHelper : public TObject
     static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
 
     static AliESDtrack* GetTPCOnlyTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTPCOnlyTrackTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
     static AliESDtrack* GetTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
+    static AliESDtrack* GetTrackTrackSPDvtx(AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);
 
     static void PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger);
     static void PrintMCInfo(AliStack *const pStack, Int_t label);
@@ -88,6 +91,9 @@ class AlidNdPtHelper : public TObject
     static THnSparse* GenerateContCorrMatrix(THnSparse *const hist1, THnSparse *const hist2, char *const name);
     static TH2* GenerateContCorrMatrix(TH2 *const hist1, TH2 *const hist2, char *const name);
     static TH1* GenerateContCorrMatrix(TH1 *const hist1, TH1 *const hist2, char *const name);
+
+    static Double_t GetStrangenessCorrFactor(const Double_t pt);
+    static Double_t GetLinearInterpolationValue(const Double_t x1, const Double_t y1, const Double_t x2, const Double_t y2, const Double_t pt);
 
     ClassDef(AlidNdPtHelper, 0);
 

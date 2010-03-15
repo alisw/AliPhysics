@@ -97,9 +97,6 @@ public :
   THnSparseF *GetMCTriggerPrimTrackTrueMultHist2() const {return fMCTriggerPrimTrackTrueMultHist2;}; 
   THnSparseF *GetMCEventPrimTrackTrueMultHist2() const {return fMCEventPrimTrackTrueMultHist2;}; 
 
-
-
-
   THnSparseF *GetMCAllPrimTrackMeanPtMult1() const {return fMCAllPrimTrackMeanPtMult1;}; 
   THnSparseF *GetMCNDEventAllPrimTrackMeanPtMult1() const {return fMCNDEventAllPrimTrackMeanPtMult1;}; 
   THnSparseF *GetMCNSDEventAllPrimTrackMeanPtMult1() const {return fMCNSDEventAllPrimTrackMeanPtMult1;}; 
@@ -134,6 +131,8 @@ public :
   void SetZvEmptyEventsNorm(TH1D *const matrix=0) {fZvEmptyEventsNorm = matrix;}
   TH1D *GetZvEmptyEventsNorm() const {return fZvEmptyEventsNorm;}
 
+  void SetLHCBin0Background(TH1D *const matrix=0) {fLHCBin0Background = matrix;}
+  TH1D *GetLHCBin0Background() const {return fLHCBin0Background;}
   // 
   void SetCorrEventMatrix(THnSparseF *const matrix=0) {fCorrEventMatrix = matrix;}
   THnSparseF *GetCorrEventMatrix() const {return fCorrEventMatrix;}
@@ -310,6 +309,9 @@ private:
   // histograms needed for empty events corrections
   TH1D *fZvNorm; //-> normalised reconstructed zv distribution
   TH1D *fZvEmptyEventsNorm; //-> trigger/trigger+vertex empty event correction
+
+  // LHC background correction in 0-bin
+  TH1D *fLHCBin0Background; //-> good / accepted in the 0-bin
 
   // trigger bias corrections
   THnSparseF *fCorrTriggerMBtoInelEventMatrix; //-> mcVz:mcPt:mcEta (fTriggerEventMatrix / fGenEventMatrix)

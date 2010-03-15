@@ -54,6 +54,11 @@ public :
   void SetHistogramsOn(const Bool_t histOn=kTRUE) {fHistogramsOn = histOn;}
   Bool_t IsHistogramsOn() const {return fHistogramsOn;}
 
+  // Define 0-multiplicity bin for LHC
+  // background calculation
+  static Bool_t IsBinZeroSPDvtx(const AliESDEvent* esdEvent);
+  static Bool_t IsBinZeroTrackSPDvtx(const AliESDEvent* esdEvent);
+    
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 

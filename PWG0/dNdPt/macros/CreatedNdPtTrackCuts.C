@@ -1089,6 +1089,30 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "Global tracking: TPC refit + ITS refit + >3 ITS clusters + >=1 SPD cluster";
   }
 
+  // TPC-tracks + SPD point + ITS refit + DCAr(pt)
+  if (cutMode == 70) 
+  {
+    Int_t    minclsTPC=70;
+    Double_t maxchi2perTPCcl=4.;
+    //Double_t maxEtaInAcc=0.8;
+    Double_t maxdcaxyITSTPC=1.e9;
+    Double_t maxdcazITSTPC=1.e9;
+
+    esdTrackCuts->SetMaxDCAToVertexXY(maxdcaxyITSTPC);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    esdTrackCuts->SetRequireTPCStandAlone(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetMinNClustersTPC(minclsTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    //esdTrackCuts->SetEtaRange(-maxEtaInAcc,maxEtaInAcc);
+
+    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt)";
+  }
+
   // cuts for data without field
   if (!fieldOn)
   {
