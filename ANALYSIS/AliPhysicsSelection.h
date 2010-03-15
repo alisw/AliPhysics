@@ -40,6 +40,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
 
 
 public:
+  typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
 
   AliPhysicsSelection();
   virtual ~AliPhysicsSelection();
@@ -76,6 +77,7 @@ public:
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
   void SetComputeBG   (Bool_t flag = kTRUE) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
   void SetBin0Callback( const char * cb) {fBin0CallBack = cb;} 
+  void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
 
 protected:
   Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
@@ -112,8 +114,9 @@ protected:
   TString fFillingScheme;             // stores the filling scheme of the current run.
 
   TString fBin0CallBack; // callback used to determine if an event is in the bin0 (name of the task where the callback is implemented);
+  Bin0Callback_t fBin0CallBackPointer; //! don't stream this. TO BE REMOVED SOON
 
-  ClassDef(AliPhysicsSelection, 5)
+  ClassDef(AliPhysicsSelection, 6)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);

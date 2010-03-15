@@ -125,7 +125,8 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fComputeBG(0),
   fUseBXNumbers(0),
   fFillingScheme(""),
-  fBin0CallBack("")
+  fBin0CallBack(""),
+  fBin0CallBackPointer(0)
 {
   // constructor
   
@@ -284,7 +285,11 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	else {
 	  isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
 	}
+      } else if (fBin0CallBackPointer) {
+	  isBin0 = (*fBin0CallBackPointer)(aEsd);
+	
       }
+      
 
       
       // hardware trigger (should only remove events for MC)
