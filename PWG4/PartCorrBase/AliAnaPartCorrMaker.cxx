@@ -63,7 +63,7 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & g) :
 TObject(),
 fOutputContainer(g. fOutputContainer), fAnalysisContainer(g.fAnalysisContainer), 
 fMakeHisto(g.fMakeHisto), fMakeAOD(fMakeAOD), fAnaDebug(g. fAnaDebug),
-fReader(g.fReader), fAODBranchList(g.fAODBranchList)
+fReader(new AliCaloTrackReader(*g.fReader)), fAODBranchList(g.fAODBranchList)
 {
   // cpy ctor
 	
@@ -77,14 +77,14 @@ AliAnaPartCorrMaker & AliAnaPartCorrMaker::operator = (const AliAnaPartCorrMaker
   if(this == &source)return *this;
   ((TObject *)this)->operator=(source);
   
-  fOutputContainer    = source.fOutputContainer ;
-  fAnalysisContainer  = source.fAnalysisContainer ;
+  delete fOutputContainer;   fOutputContainer    = source.fOutputContainer ;
+  delete fAnalysisContainer; fAnalysisContainer  = source.fAnalysisContainer ;
   fAnaDebug           = source.fAnaDebug;
   fMakeHisto          = source.fMakeHisto;
   fMakeAOD            = source.fMakeAOD;
   
-  fReader             = source.fReader ;
-  fAODBranchList      = source.fAODBranchList;
+  delete fReader ;        fReader             = new AliCaloTrackReader(*source.fReader) ;
+  delete fAODBranchList; fAODBranchList      = source.fAODBranchList;
 	
   return *this;
   
