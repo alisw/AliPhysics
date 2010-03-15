@@ -27,20 +27,23 @@ class AliMCAnalysisUtils : public TObject {
 public: 
 	
 	AliMCAnalysisUtils() ; // ctor
-	AliMCAnalysisUtils(const AliMCAnalysisUtils & g) ; // cpy ctor
-	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & g) ;//cpy assignment
+	AliMCAnalysisUtils(const AliMCAnalysisUtils & mcu) ; // cpy ctor
 	virtual ~AliMCAnalysisUtils() ;//virtual dtor
 
-       //"Mostly" photon parent types on line 1,
-       //                                                  
-       //then "mostly" electron parent types on line 2, (e.g. electrons can
-       //come from pi0 decay)                              
-       //then charged particles on line 3,                                                                                    
-       //followed by other and unknown on line 4                                                                              
-       enum mcTypes {kMCPhoton, kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCConversion,
-		     kMCElectron, kMCEFromCFromB, kMCEFromC, kMCEFromB, kMCZDecay, kMCWDecay,
-		     kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton,
-		     kMCOther, kMCUnknown};
+private:
+	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & ) {;}//cpy assignment
+
+public:
+	//"Mostly" photon parent types on line 1,
+	//                                                  
+	//then "mostly" electron parent types on line 2, (e.g. electrons can
+	//come from pi0 decay)                              
+	//then charged particles on line 3,                                                                                    
+	//followed by other and unknown on line 4                                                                              
+	enum mcTypes {kMCPhoton, kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCConversion,
+			kMCElectron, kMCEFromCFromB, kMCEFromC, kMCEFromB, kMCZDecay, kMCWDecay,
+			kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton,
+			kMCOther, kMCUnknown};
 	
 	//Check only the label of the most significant particle
 	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;

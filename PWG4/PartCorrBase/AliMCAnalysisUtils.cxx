@@ -51,25 +51,25 @@
 //____________________________________________________________________________
 AliMCAnalysisUtils::AliMCAnalysisUtils(const AliMCAnalysisUtils & mcutils) :   
   TObject(mcutils), fCurrentEvent(mcutils.fCurrentEvent), fDebug(mcutils.fDebug),
-  fJetsList(mcutils.fJetsList), fMCGenerator(mcutils.fMCGenerator)
+  fJetsList(new TList), fMCGenerator(mcutils.fMCGenerator)
 {
   // cpy ctor
   
 }
 
 //_________________________________________________________________________
-AliMCAnalysisUtils & AliMCAnalysisUtils::operator = (const AliMCAnalysisUtils & mcutils)
-{
-  // assignment operator
-  
-  if(&mcutils == this) return *this;
-  fCurrentEvent = mcutils.fCurrentEvent ;
-  fDebug        = mcutils.fDebug;
-  fJetsList     = mcutils.fJetsList;
-  fMCGenerator  = mcutils.fMCGenerator;
-  
-  return *this; 
-}
+//AliMCAnalysisUtils & AliMCAnalysisUtils::operator = (const AliMCAnalysisUtils & mcutils)
+//{
+//  // assignment operator
+//  
+//  if(&mcutils == this) return *this;
+//  fCurrentEvent = mcutils.fCurrentEvent ;
+//  fDebug        = mcutils.fDebug;
+//  fJetsList     = mcutils.fJetsList;
+//  fMCGenerator  = mcutils.fMCGenerator;
+//  
+//  return *this; 
+//}
 
 //____________________________________________________________________________
 AliMCAnalysisUtils::~AliMCAnalysisUtils() 
