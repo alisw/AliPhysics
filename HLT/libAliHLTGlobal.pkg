@@ -5,6 +5,7 @@ CLASS_HDRS:=	AliHLTGlobalEsdConverterComponent.h \
 		AliHLTGlobalTrackMergerComponent.h \
 		AliHLTGlobalTrackMerger.h \
 		AliHLTGlobalAgent.h \
+		AliHLTGlobalDCSPublisherComponent.h \
 		AliHLTGlobalVertexerComponent.h \
 		AliHLTGlobalTrackMatcher.h \
 		AliHLTGlobalTrackMatcherComponent.h \
