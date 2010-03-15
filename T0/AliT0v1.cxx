@@ -352,7 +352,7 @@ void AliT0v1::CreateGeometry()
    gMC->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
    
    z=pinstart[2]-psupport7[2];
-   gMC->Gspos("0SU8",1,"0SU6",0,0,z,0,"ONLY"); //Al kolechko
+   //  gMC->Gspos("0SU8",1,"0SU6",0,0,z,0,"ONLY"); //Al kolechko
    
    
    Float_t par[3];
