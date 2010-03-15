@@ -201,13 +201,13 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
 
   //--------------- output over TObjArray of AliTPCseed objects (output of TPCSeedMaker) -------------------//
   
-  // A previous component in the chain (TPCSeedMaker) has processed the TPC clusters and tracks and created a TObjArray of AliTPCseed objects
+  // A previous component in the chain (TPCSeedMaker) has processed the TPC clusters and tracks and created a TClonesArray of AliTPCseed objects
   // In this loop the iterator accesses this array stored in memory, in order to use it in the next loop over the AliESDevent of the HLT
   
   for(iter = (TObject*)GetFirstInputObject(kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC); iter != NULL; iter = (TObject*)GetNextInputObject()){  
               
       if(GetDataType(iter) != (kAliHLTDataTypeTObjArray | kAliHLTDataOriginTPC)) continue;      
-      fSeedArray = dynamic_cast<TObjArray*>(iter);      
+      fSeedArray = dynamic_cast<TClonesArray*>(iter);      
    }
 
  
@@ -240,11 +240,11 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
 	   continue;	      	
 	}
 	
-	//printf("kelly time calib dedx before update: %f, P: %f\n", seed->CookdEdx(0.02,0.6), seed->P());
+	//printf("kelly time dedx before update: %f, Pt: %f\n", seed->CookdEdx(0.02,0.6), seed->GetSignedPt());
         
 	fCal->RefitTrack(fESDtrack, seed, GetBz()); // update AliESDtrack and AliTPCseed info, acccording to Marian's request
 	
-	//printf("kelly time calib dedx after update: %f\n", seed->CookdEdx(0.02,0.6)); 
+	//printf("kelly time dedx after update: %f, Pt: %f\n", seed->CookdEdx(0.02,0.6), seed->GetSignedPt()); 
         
 	AliTPCseed *seedCopy = new AliTPCseed(*seed, kTRUE); 
 	fESDtrack->AddCalibObject(seedCopy);  // add the AliTPCseed as a friend track to the AliESDtrack (to be accessed in TPC/AliTPCcalibTime.cxx)              
