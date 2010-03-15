@@ -8,7 +8,7 @@ Bool_t doQAsym        = 1;   // output ok
 Bool_t doVZERO        = 1;   // output ok but there is a 2nd file
 Bool_t doVertex       = 1;   // output ok
 Bool_t doSPD          = 1;   // output ok, needs RP   
-Bool_t doFMD          = 0;   // output ok
+Bool_t doFMD          = 1;   // output ok
 Bool_t doTPC          = 1;   // output ok
 Bool_t doEventStat    = 1;   // output ok
 Bool_t doSDD          = 1;   // outout ok needs RP
@@ -21,16 +21,16 @@ Bool_t doMUONEff      = 0;   // MUON efficiency  NEEDS geometry
 Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth 
 
 
-TString     train_name         = "QA003_PASS4";
-TString     job_tag            = "QA003: PWG1 QA train";
+TString     train_name         = "testQA003_PASS4";
+TString     job_tag            = "testQA003: PWG1 QA train";
 TString     root_version       = "v5-26-00b";
-TString     aliroot_version    = "v4-19-04-AN";
+TString     aliroot_version    = "v4-19-06-AN";
 TString     grid_datadir       = "/alice/data/2009/LHC09d";
 TString     data_pattern       = "*ESDs/pass4/*ESDs.root";
-//TString     alien_outdir       = "";
-TString     alien_outdir       = "/alice/data/2009/LHC09d/analysis/QA001_PASS4";
+TString     alien_outdir       = "";
+//TString     alien_outdir       = "/alice/data/2009/LHC09d/analysis/QA001_PASS4";
 
-Bool_t useProductionMode       = kTRUE;
+Bool_t useProductionMode       = kFALSE;
 
 void PilotAnalysis(const char *plugin_mode = "full")
 {
@@ -74,7 +74,7 @@ void PilotAnalysis(const char *plugin_mode = "full")
   esdHandler->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdHandler);
 
-  mgr->SetDebugLevel(3);
+  mgr->SetDebugLevel(0);
   mgr->SetSaveCanvases(kTRUE);
   
   // AnalysisTasks
@@ -202,12 +202,9 @@ void AddAnalysisTasks()
   //
 
   if (doEventStat) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-      AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
-      physSel->AddBackgroundIdentification(new AliBackgroundSelection());
       mgr->RegisterExtraFile("event_stat.root");
-
   }
    
 
@@ -305,7 +302,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    plugin->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include  -I$ALICE_ROOT/ITS");
    plugin->SetAnalysisSource("AliAnalysisTaskSPD.cxx AliAnalysisTaskSDDRP.cxx");
-   plugin->SetAdditionalLibs("libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so libPWG2.so libPWG2forward.so AliAnalysisTaskSPD.h AliAnalysisTaskSPD.cxx AliAnalysisTaskSDDRP.h AliAnalysisTaskSDDRP.cxx");
+  //
+   plugin->SetAdditionalLibs("libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so libPWG2.so \
+                              libPWG2forward.so AliAnalysisTaskSPD.h AliAnalysisTaskSPD.cxx AliAnalysisTaskSDDRP.h \
+                              AliAnalysisTaskSDDRP.cxx libEMCALUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
+                              libPWG3base.so libPWG3muon.so libPWG3muondep.so");
      
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
