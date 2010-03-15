@@ -47,11 +47,12 @@ class AliESDInputHandler : public AliInputEventHandler {
     // Friends&Co
     AliESDfriend        *GetESDfriend()    const {return fFriend;}
     AliESDpid           *GetESDpid()       const {return fESDpid;}
-    void                 SetESDpid(AliESDpid* pid) {fESDpid = pid;}
+    void                 SetESDpid(AliESDpid* pid)     {fESDpid = pid;}
+    void                 SetReadFriends(Bool_t flag)   {fReadFriends = flag;}
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
-	    
+    
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  
@@ -69,11 +70,12 @@ class AliESDInputHandler : public AliInputEventHandler {
     // ESD Tag Cut Summary
     TMap           *fTagCutSumm;   //! Tag cut summary map
     // ESD Tags (optional)
-    Bool_t          fUseTags;    //  Flag to use tags
-    TChain         *fChainT;     //! File with event tags
-    TTree          *fTreeT;      //! Tree of tags
-    AliRunTag      *fRunTag;     //! Pointer to the run tag
-    ClassDef(AliESDInputHandler, 4);
+    Bool_t          fUseTags;      //  Flag to use tags
+    TChain         *fChainT;       //! File with event tags
+    TTree          *fTreeT;        //! Tree of tags
+    AliRunTag      *fRunTag;       //! Pointer to the run tag
+    Bool_t          fReadFriends;  //  Flag for friends reading 
+    ClassDef(AliESDInputHandler, 5);
 };
 
 #endif

@@ -59,7 +59,8 @@ AliESDInputHandler::AliESDInputHandler() :
   fUseTags(kFALSE),
   fChainT(0),
   fTreeT(0),
-  fRunTag(0)
+  fRunTag(0),
+  fReadFriends(1)
 {
   // default constructor
 }
@@ -74,7 +75,7 @@ AliESDInputHandler::~AliESDInputHandler()
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fFriend(0x0), fESDpid(0x0), fAnalysisType(0),
-    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0)
+    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fReadFriends(1)
 {
     // Constructor
 }
@@ -92,7 +93,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     SwitchOffBranches();
     SwitchOnBranches();
     
-    if (!fTree->FindBranch("ESDfriend.")) {
+    if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
       // Try to add ESDfriend. branch as friend
       TString esdTreeFName, esdFriendTreeFName;    
       TTree* theTree = fTree->GetTree();
