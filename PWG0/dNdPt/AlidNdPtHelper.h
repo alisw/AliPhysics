@@ -51,7 +51,7 @@ class AlidNdPtHelper : public TObject
 
     static const AliESDVertex* GetTPCVertexZ(AliESDEvent* const aEsd, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, AliESDtrackCuts *const trackCuts, Float_t fraction=0.8, Int_t ntracksMin=2);
 
-    static Bool_t TestRecVertex(const AliESDVertex* vertex, const AliESDVertex* vertex, AnalysisMode analysisMode, Bool_t debug = kFALSE);
+    static Bool_t TestRecVertex(const AliESDVertex* vertex, const AliESDVertex* vertexSPD, AnalysisMode analysisMode, Bool_t debug = kFALSE);
 
     static Bool_t IsPrimaryParticle(AliStack *const stack, Int_t idx, ParticleMode particleMode);
     static Bool_t IsCosmicTrack(AliESDtrack *const track1, AliESDtrack *const track2);
