@@ -30,7 +30,7 @@ public:
   virtual void SetModel(TObject* obj);
 
   // Declare callback/slot methods
-  //void ConnectToHLT();
+  void ConnectToHLT();
   void NextEvent();
   void EventLoop();
 
@@ -42,7 +42,7 @@ protected:
 
   AliEveHOMERManager  *fM; // Model object.
   
-  //  TGTextButton     *fButtonConnect; // Button to connect to HOMER.
+  TGTextButton     *fButtonConnect; // Button to connect to HOMER.
   TGTextButton     *fButtonWriteToFile; // Button to write block list to file
   TGTextButton     *fButtonNextEvent; // Button to call next Even
   TGTextButton     *fButtonNavigateBack; // Button to navigate back

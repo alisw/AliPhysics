@@ -32,6 +32,7 @@ AliEveHOMERManagerEditor::AliEveHOMERManagerEditor(const TGWindow *p, Int_t widt
   
 TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
+  fButtonConnect(NULL),
   fButtonWriteToFile(0),
   fButtonNextEvent(0),
   fButtonNavigateBack(0),
@@ -40,7 +41,6 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonEventLoopText(0),
 //  fBoxEventLoopSpeed(0),
   fButtonEventLoop(0),
-  
  fEventLoopStarted(kFALSE) 
 {
   
@@ -51,9 +51,9 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   // AddFrame(fXYZZ, new TGLayoutHints(...));
   // fXYZZ->Connect("SignalName()", "AliEveHOMERManagerEditor", this, "DoXYZZ()");
 
-//   fButtonConnect = new TGTextButton(this, "  Connect to HLT  ");
-//   AddFrame(fButtonConnect); //, new TGLayoutHints(...));
-//   fButtonConnect->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "ConnectToHLT()");
+  fButtonConnect = new TGTextButton(this, " Reconnect ");
+  AddFrame(fButtonConnect); //, new TGLayoutHints(...));
+  fButtonConnect->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "ConnectToHLT()");
 
   fButtonWriteToFile = new TGTextButton(this, " Write to file  ");
   AddFrame(fButtonWriteToFile); //, new TGLayoutHints(...));
@@ -102,11 +102,10 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj) {
 
 /******************************************************************************/
 
-// void AliEveHOMERManagerEditor::ConnectToHLT() {
-//   // Connects to HOMER sources -> to HLT.
-  
-//   fM->ConnectEVEtoHOMER();
-// }
+void AliEveHOMERManagerEditor::ConnectToHLT() {
+   // Connects to HOMER sources -> to HLT.
+  fM->ReConnectHOMER();
+}
 
 void AliEveHOMERManagerEditor::NextEvent() {
   // call next event from AliEveHOMERManger
