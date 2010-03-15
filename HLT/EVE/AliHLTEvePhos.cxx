@@ -60,7 +60,7 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
   for(int im = 0; im < fNModules; im++) {
     
     TEveRGBAPalette* pal = new TEveRGBAPalette(0,512);
-    pal->SetLimits(-0.01, 0.5);
+    pal->SetLimits(0, 1);
     fBoxSet[im].SetTitle(Form("Clusters Module %d", im));
     fBoxSet[im].SetName(Form("Clusters Module %d", im));
     fBoxSet[im].SetPalette(pal);
