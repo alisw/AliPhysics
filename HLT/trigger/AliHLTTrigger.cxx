@@ -136,6 +136,8 @@ int AliHLTTrigger::TriggerEvent(
   // Sets a custom trigger decision for the current event.
   // See header file for more details.
   
+  if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
+  
   AliHLTReadoutList readoutlist = result->ReadoutList();
   // mask the readout list according to the CTP trigger
   // if the classes have been initialized (mask non-zero)
@@ -147,7 +149,6 @@ int AliHLTTrigger::TriggerEvent(
     result->ReadoutList(readoutlist); // override the readout list with the masked one.
   }
   
-  if (fTriggerEventResult != 0) return fTriggerEventResult;  // Do not do anything if a previous call failed.
   fTriggerEventResult = PushBack(result, type, spec);
   if (fTriggerEventResult == 0) {
     fTriggerEventResult = PushBack(readoutlist.Buffer(), readoutlist.BufferSize(), kAliHLTDataTypeReadoutList);
