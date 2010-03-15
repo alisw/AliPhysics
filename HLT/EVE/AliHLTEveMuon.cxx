@@ -54,7 +54,7 @@ AliHLTEveMuon::~AliHLTEveMuon()
 void AliHLTEveMuon::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
     if ( (block->GetDataType().CompareTo("RECHITS") == 0) || (block->GetDataType().CompareTo("TRIGRECS") == 0) ) {
-    if(fClusters) {
+      if(!fClusters) {
       fClusters = CreateClusters();
       fEventManager->GetEveManager()->AddElement(fClusters);
     }
@@ -121,6 +121,8 @@ void AliHLTEveMuon::ProcessClusters(AliHLTHOMERBlockDesc * block, TEvePointSet *
   Int_t * buffer ;
   
   buffer = (Int_t *)block->GetData();
+  //cout<<"block size : "<<size<<", buffer : "<<buffer<<", DataType : "<<block->GetDataType()<<endl;
+
   if(block->GetDataType().CompareTo("RECHITS") == 0){
     
     AliHLTMUONRecHitsBlockReader trackblock((char*)buffer, size);
