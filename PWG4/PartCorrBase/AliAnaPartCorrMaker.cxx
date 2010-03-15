@@ -59,36 +59,36 @@ fReader(0x0), fAODBranchList(new TList )
 }
 
 //____________________________________________________________________________
-AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & g) :   
+AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) :   
 TObject(),
-fOutputContainer(g. fOutputContainer), fAnalysisContainer(g.fAnalysisContainer), 
-fMakeHisto(g.fMakeHisto), fMakeAOD(fMakeAOD), fAnaDebug(g. fAnaDebug),
-fReader(new AliCaloTrackReader(*g.fReader)), fAODBranchList(g.fAODBranchList)
+fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
+fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fAnaDebug(maker.fAnaDebug),
+fReader(new AliCaloTrackReader(*maker.fReader)), fAODBranchList(new TList())
 {
   // cpy ctor
 	
 }
 
 //_________________________________________________________________________
-AliAnaPartCorrMaker & AliAnaPartCorrMaker::operator = (const AliAnaPartCorrMaker & source)
-{
-  // assignment operator
-  
-  if(this == &source)return *this;
-  ((TObject *)this)->operator=(source);
-  
-  delete fOutputContainer;   fOutputContainer    = source.fOutputContainer ;
-  delete fAnalysisContainer; fAnalysisContainer  = source.fAnalysisContainer ;
-  fAnaDebug           = source.fAnaDebug;
-  fMakeHisto          = source.fMakeHisto;
-  fMakeAOD            = source.fMakeAOD;
-  
-  delete fReader ;        fReader             = new AliCaloTrackReader(*source.fReader) ;
-  delete fAODBranchList; fAODBranchList      = source.fAODBranchList;
-	
-  return *this;
-  
-}
+//AliAnaPartCorrMaker & AliAnaPartCorrMaker::operator = (const AliAnaPartCorrMaker & source)
+//{
+//  // assignment operator
+//  
+//  if(this == &source)return *this;
+//  ((TObject *)this)->operator=(source);
+//  
+//  delete fOutputContainer;   fOutputContainer    = source.fOutputContainer ;
+//  delete fAnalysisContainer; fAnalysisContainer  = source.fAnalysisContainer ;
+//  fAnaDebug           = source.fAnaDebug;
+//  fMakeHisto          = source.fMakeHisto;
+//  fMakeAOD            = source.fMakeAOD;
+//  
+//  delete fReader ;        fReader             = new AliCaloTrackReader(*source.fReader) ;
+//  delete fAODBranchList; fAODBranchList      = source.fAODBranchList;
+//	
+//  return *this;
+//  
+//}
 
 //____________________________________________________________________________
 AliAnaPartCorrMaker::~AliAnaPartCorrMaker() 

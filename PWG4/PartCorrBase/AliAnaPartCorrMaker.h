@@ -27,10 +27,14 @@ class AliAnaPartCorrMaker : public TObject {
  public: 
   
   AliAnaPartCorrMaker() ; // default ctor
-  AliAnaPartCorrMaker(const AliAnaPartCorrMaker & g) ; // cpy ctor
-  AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & g) ;//cpy assignment
+  AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) ; // cpy ctor
   virtual ~AliAnaPartCorrMaker() ; //virtual dtor
-  
+
+ private:
+  AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & ) {;}//cpy assignment
+
+ public:
+	
   //Setter and getters
   TList * GetAODBranchList() ;
   TList * GetOutputContainer() ;
