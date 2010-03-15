@@ -500,11 +500,12 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	pythiaGenHeader->TriggerJet(ip,p);
 	pythiaGenJets[iCount].SetPxPyPzE(p[0],p[1],p[2],p[3]);
 	
+	/*
 	if(fLimitGenJetEta){
 	  if(pythiaGenJets[iCount].Eta()>fJetHeaderRec->GetJetEtaMax()||
 	     pythiaGenJets[iCount].Eta()<fJetHeaderRec->GetJetEtaMin())continue;
 	}
-	
+	*/
 
 	if(fBranchGen.Length()==0){
 	  // if we have MC particles and we do not read from the aod branch
@@ -546,10 +547,12 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	if(iCount>=kMaxJets)continue;
 	AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodGenJets->At(ig));
 	if(!tmp)continue;
+	/*
 	if(fLimitGenJetEta){
 	  if(tmp->Eta()>fJetHeaderRec->GetJetEtaMax()||
 	     tmp->Eta()<fJetHeaderRec->GetJetEtaMin())continue;
 	}
+	*/
 	genJets[iCount] = *tmp;
 	iCount++;
       }
@@ -1011,7 +1014,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
   }
   else if (type == kTrackAODMCCharged || type == kTrackAODMCAll || type == kTrackAODMCChargedAcceptance) {
     AliAODEvent *aod = 0;
-    if(fUseAODMCInput)dynamic_cast<AliAODEvent*>(InputEvent());
+    if(fUseAODMCInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
     else aod = AODEvent();
     if(!aod)return iCount;
     TClonesArray *tca = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
