@@ -28,7 +28,8 @@ class AliMultiDimVector :  public TNamed{
  public:
   AliMultiDimVector();
   AliMultiDimVector(const AliMultiDimVector &mv);
-  AliMultiDimVector(const char *name, const char *title, const Int_t nptbins, Float_t* ptlimits, const Int_t npars, Int_t *nofcells, Float_t *loosecuts, Float_t *tightcuts, TString *axisTitles);
+  AliMultiDimVector(const char *name, const char *title, const Int_t nptbins, 
+		    const Float_t* ptlimits, const Int_t npars, const Int_t *nofcells, const Float_t *loosecuts, const Float_t *tightcuts, const TString *axisTitles);
   virtual ~AliMultiDimVector(){};
 
   ULong64_t GetNTotCells()            const {return fNTotCells;}
@@ -48,7 +49,7 @@ class AliMultiDimVector :  public TNamed{
     else return fMaxLimits[iVar]-(Float_t)iCell*GetCutStep(iVar);
   }
   Float_t   GetElement(ULong64_t globadd) const {return fVett[globadd];}
-  Float_t   GetElement(Int_t *ind, Int_t ptbin) const {
+  Float_t   GetElement(const Int_t *ind, Int_t ptbin) const {
     ULong64_t elem=GetGlobalAddressFromIndices(ind,ptbin);
     return fVett[elem];
   }
@@ -63,17 +64,17 @@ class AliMultiDimVector :  public TNamed{
   }
 
   Bool_t    GetIndicesFromGlobalAddress(ULong64_t globadd, Int_t *ind, Int_t &ptbin) const;
-  ULong64_t GetGlobalAddressFromIndices(Int_t *ind, Int_t ptbin) const;
-  Bool_t    GetIndicesFromValues(Float_t *values, Int_t *ind) const;
-  ULong64_t GetGlobalAddressFromValues(Float_t *values, Int_t ptbin) const;
+  ULong64_t GetGlobalAddressFromIndices(const Int_t *ind, Int_t ptbin) const;
+  Bool_t    GetIndicesFromValues(const Float_t *values, Int_t *ind) const;
+  ULong64_t GetGlobalAddressFromValues(const Float_t *values, Int_t ptbin) const;
   Bool_t    GetCutValuesFromGlobalAddress(ULong64_t globadd, Float_t *cuts, Int_t &ptbin) const;
   
-  ULong64_t* GetGlobalAddressesAboveCuts(Float_t *values, Float_t pt, Int_t& nVals) const{
+  ULong64_t* GetGlobalAddressesAboveCuts(const Float_t *values, Float_t pt, Int_t& nVals) const{
     Int_t theBin=GetPtBin(pt);
     if(theBin>=0) return GetGlobalAddressesAboveCuts(values,theBin,nVals);
     else return 0x0;
   }
-  ULong64_t* GetGlobalAddressesAboveCuts(Float_t *values, Int_t ptbin, Int_t& nVals) const;
+  ULong64_t* GetGlobalAddressesAboveCuts(const Float_t *values, Int_t ptbin, Int_t& nVals) const;
 
   void SetElement(ULong64_t globadd,Float_t val) {fVett[globadd]=val;}
   void SetElement(Int_t *ind, Int_t ptbin, Float_t val){
@@ -95,21 +96,21 @@ class AliMultiDimVector :  public TNamed{
     for(ULong64_t i=0; i<fNTotCells; i++) fVett[i]=0.;
   }
   void MultiplyBy(Float_t factor);
-  void Multiply(AliMultiDimVector* mv,Float_t factor);
-  void Multiply(AliMultiDimVector* mv1, AliMultiDimVector* mv2);
-  void Add(AliMultiDimVector* mv);
-  void Sum(AliMultiDimVector* mv1, AliMultiDimVector* mv2);
-  void LinearComb(AliMultiDimVector* mv1, Float_t norm1, AliMultiDimVector* mv2, Float_t norm2);
-  void DivideBy(AliMultiDimVector* mv);
-  void Divide(AliMultiDimVector* mv1, AliMultiDimVector* mv2);
+  void Multiply(const AliMultiDimVector* mv,Float_t factor);
+  void Multiply(const AliMultiDimVector* mv1, const AliMultiDimVector* mv2);
+  void Add(const AliMultiDimVector* mv);
+  void Sum(const AliMultiDimVector* mv1, const AliMultiDimVector* mv2);
+  void LinearComb(const AliMultiDimVector* mv1, Float_t norm1, const AliMultiDimVector* mv2, Float_t norm2);
+  void DivideBy(const AliMultiDimVector* mv);
+  void Divide(const AliMultiDimVector* mv1, const AliMultiDimVector* mv2);
   void Sqrt();
-  void Sqrt(AliMultiDimVector* mv);
+  void Sqrt(const AliMultiDimVector* mv);
   
   void FindMaximum(Float_t& max_value, Int_t *ind, Int_t ptbin); 
 
-  TH2F*  Project(Int_t firstVar, Int_t secondVar, Int_t* fixedVars, Int_t ptbin, Float_t norm=1.);
+  TH2F*  Project(Int_t firstVar, Int_t secondVar, const Int_t* fixedVars, Int_t ptbin, Float_t norm=1.);
 
-  void SuppressZeroBKGEffect(AliMultiDimVector* BKG);
+  void SuppressZeroBKGEffect(const AliMultiDimVector* BKG);
   AliMultiDimVector* ShrinkPtBins(Int_t firstBin, Int_t lastBin);
   void PrintStatus();
 
