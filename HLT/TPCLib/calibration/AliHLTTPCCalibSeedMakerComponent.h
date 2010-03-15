@@ -78,9 +78,9 @@ class AliHLTTPCCalibSeedMakerComponent : public AliHLTProcessor {
       AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
       UInt_t                   fNSpacePoints[36][6];  //! transient
       TClonesArray *fSeedArray;
-      //TObjArray *fSeedArray;
+      TObjArray    *fOffClusterArray;
                       
-      ClassDef(AliHLTTPCCalibSeedMakerComponent, 2)
+      ClassDef(AliHLTTPCCalibSeedMakerComponent, 3)
     };
 
 #endif
