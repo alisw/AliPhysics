@@ -43,7 +43,7 @@ fIsIntegrated(0)
   // default constructor
 }
 //___________________________________________________________________________
-AliMultiDimVector::AliMultiDimVector(const char *name,const char *title, const Int_t nptbins, Float_t* ptlimits, const Int_t npars,  Int_t *nofcells, Float_t *loosecuts, Float_t *tightcuts, TString *axisTitles):TNamed(name,title),
+AliMultiDimVector::AliMultiDimVector(const char *name,const char *title, const Int_t nptbins, const Float_t* ptlimits, const Int_t npars,  const Int_t *nofcells,const Float_t *loosecuts, const Float_t *tightcuts, const TString *axisTitles):TNamed(name,title),
 fNVariables(npars),
 fNPtBins(nptbins),
 fVett(0),
@@ -137,7 +137,7 @@ Bool_t AliMultiDimVector::GetCutValuesFromGlobalAddress(ULong64_t globadd, Float
   return kTRUE;
 }
 //______________________________________________________________________
-ULong64_t AliMultiDimVector::GetGlobalAddressFromIndices(Int_t *ind, Int_t ptbin) const {
+ULong64_t AliMultiDimVector::GetGlobalAddressFromIndices(const Int_t *ind, Int_t ptbin) const {
   // Returns the global index of the cell in the matrix
   Int_t prod=1;
   ULong64_t elem=0;
@@ -162,7 +162,7 @@ ULong64_t AliMultiDimVector::GetGlobalAddressFromIndices(Int_t *ind, Int_t ptbin
   return elem;
 }
 //______________________________________________________________________
-Bool_t AliMultiDimVector::GetIndicesFromValues(Float_t *values, Int_t *ind) const {
+Bool_t AliMultiDimVector::GetIndicesFromValues(const Float_t *values, Int_t *ind) const {
   // Fills the array of matrix indices strating from variable values
   for(Int_t i=0;i<fNVariables;i++){
     if(fGreaterThan[i]){ 
@@ -178,7 +178,7 @@ Bool_t AliMultiDimVector::GetIndicesFromValues(Float_t *values, Int_t *ind) cons
   return kTRUE;
 }
 //______________________________________________________________________
-ULong64_t AliMultiDimVector::GetGlobalAddressFromValues(Float_t *values, Int_t ptbin) const {
+ULong64_t AliMultiDimVector::GetGlobalAddressFromValues(const Float_t *values, Int_t ptbin) const {
   // Returns the global index of the cell in the matrix
    Int_t ind[fgkMaxNVariables];
    Bool_t retcode=GetIndicesFromValues(values,ind);
@@ -192,93 +192,93 @@ ULong64_t AliMultiDimVector::GetGlobalAddressFromValues(Float_t *values, Int_t p
 void AliMultiDimVector::MultiplyBy(Float_t factor){
   // multiply the AliMultiDimVector by a constant factor
   for(ULong64_t i=0;i<fNTotCells;i++){
-    if(fVett.At(i)!=-1)
+    if(fVett.At(i)>0.)
       fVett.AddAt(fVett.At(i)*factor,i);
     else fVett.AddAt(-1,i);
   }
   
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::Multiply(AliMultiDimVector* mv,Float_t factor){
+void AliMultiDimVector::Multiply(const AliMultiDimVector* mv,Float_t factor){
   //  Sets AliMultiDimVector=mv*constant factor
   for(ULong64_t i=0;i<fNTotCells;i++){
-    if(mv->GetElement(i)!=-1)
+    if(mv->GetElement(i)>0.)
       fVett.AddAt(mv->GetElement(i)*factor,i);
     else fVett.AddAt(-1,i); 
   }
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::Multiply(AliMultiDimVector* mv1,AliMultiDimVector* mv2){
+void AliMultiDimVector::Multiply(const AliMultiDimVector* mv1, const AliMultiDimVector* mv2){
   //  Sets AliMultiDimVector=mv1*mv2
   for(ULong64_t i=0;i<fNTotCells;i++){
-    if(mv1->GetElement(i)!=-1 && mv2->GetElement(i)!=-1)
+    if(mv1->GetElement(i)>0. && mv2->GetElement(i)>0.)
       fVett.AddAt(mv1->GetElement(i)*mv2->GetElement(i),i);
     else fVett.AddAt(-1,i); 
   }
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::Add(AliMultiDimVector* mv){
+void AliMultiDimVector::Add(const AliMultiDimVector* mv){
   // Sums contents of mv to AliMultiDimVector
   if (mv->GetNTotCells()!=fNTotCells){ 
     AliError("Different dimension of the vectors!!");
   }else{
     for(ULong64_t i=0;i<fNTotCells;i++) 
-      if(mv->GetElement(i)!=-1 && fVett.At(i)!=-1)
+      if(mv->GetElement(i)>0. && fVett.At(i)>0.)
 	fVett.AddAt(fVett.At(i)+mv->GetElement(i),i);
       else fVett.AddAt(-1,i); 
   }
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::Sum(AliMultiDimVector* mv1,AliMultiDimVector* mv2){
+void AliMultiDimVector::Sum(const AliMultiDimVector* mv1, const AliMultiDimVector* mv2){
   // Sets AliMultiDimVector=mv1+mv2
   if (fNTotCells!=mv1->GetNTotCells()&&mv1->GetNTotCells()!=mv2->GetNTotCells()) {
     AliError("Different dimension of the vectors!!");
   }
   else{
     for(ULong64_t i=0;i<mv1->GetNTotCells();i++) {
-      if(mv1->GetElement(i)!=-1 && mv2->GetElement(i)!=-1)
+      if(mv1->GetElement(i)>0. && mv2->GetElement(i)>0.)
 	fVett.AddAt(mv1->GetElement(i)+mv2->GetElement(i),i); 
       else fVett.AddAt(-1,i); 
     }
   }
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::LinearComb(AliMultiDimVector* mv1, Float_t norm1, AliMultiDimVector* mv2, Float_t norm2){
+void AliMultiDimVector::LinearComb(const AliMultiDimVector* mv1, Float_t norm1, const AliMultiDimVector* mv2, Float_t norm2){
   // Sets AliMultiDimVector=n1*mv1+n2*mv2
   if (fNTotCells!=mv1->GetNTotCells()&&mv1->GetNTotCells()!=mv2->GetNTotCells()) {
     AliError("Different dimension of the vectors!!");
   }
   else{
     for(ULong64_t i=0;i<mv1->GetNTotCells();i++) {
-      if(mv1->GetElement(i)!=-1 && mv2->GetElement(i)!=-1)
+      if(mv1->GetElement(i)>0. && mv2->GetElement(i)>0.)
 	fVett.AddAt(norm1*mv1->GetElement(i)+norm2*mv2->GetElement(i),i); 
       else fVett.AddAt(-1,i); 
     }
   }
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::DivideBy(AliMultiDimVector* mv){
+void AliMultiDimVector::DivideBy(const AliMultiDimVector* mv){
   // Divide AliMulivector by mv
   if (mv->GetNTotCells()!=fNTotCells) {
     AliError("Different dimension of the vectors!!");
   }
   else{
     for(ULong64_t i=0;i<fNTotCells;i++) 
-      if(mv->GetElement(i)!=0 &&mv->GetElement(i)!=-1 && fVett.At(i)!=-1)
+      if(mv->GetElement(i)!=0 &&mv->GetElement(i)>0. && fVett.At(i)>0.)
 	fVett.AddAt(fVett.At(i)/mv->GetElement(i),i);
       else fVett.AddAt(-1,i);
   }
 
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::Divide(AliMultiDimVector* mv1,AliMultiDimVector* mv2){
+void AliMultiDimVector::Divide(const AliMultiDimVector* mv1, const AliMultiDimVector* mv2){
   // Sets AliMultiDimVector=mv1/mv2
   if (fNTotCells!=mv1->GetNTotCells()&&mv1->GetNTotCells()!=mv2->GetNTotCells()) {
     AliError("Different dimension of the vectors!!");
   }
   else{
     for(ULong64_t i=0;i<mv1->GetNTotCells();i++) 
-      if(mv2->GetElement(i)!=0&& mv2->GetElement(i)!=-1&& mv1->GetElement(i)!=-1)
+      if(mv2->GetElement(i)!=0&& mv2->GetElement(i)>0.&& mv1->GetElement(i)>0.)
 	{
 	  fVett.AddAt(mv1->GetElement(i)/mv2->GetElement(i),i);
 	}
@@ -296,7 +296,7 @@ void AliMultiDimVector::Sqrt(){
   }
 }
 //_____________________________________________________________________________
-void AliMultiDimVector::Sqrt(AliMultiDimVector* mv){
+void AliMultiDimVector::Sqrt(const AliMultiDimVector* mv){
   // Sets AliMultiDimVector=sqrt(mv)
   for(ULong64_t i=0;i<fNTotCells;i++) 
     if(mv->GetElement(i)>=0) fVett.AddAt(TMath::Sqrt(mv->GetElement(i)),i);
@@ -321,7 +321,7 @@ void AliMultiDimVector::FindMaximum(Float_t& maxValue, Int_t *ind , Int_t ptbin)
 }
 
 //_____________________________________________________________________________
-TH2F*  AliMultiDimVector::Project(Int_t firstVar, Int_t secondVar, Int_t* fixedVars, Int_t ptbin, Float_t norm){
+TH2F*  AliMultiDimVector::Project(Int_t firstVar, Int_t secondVar, const Int_t* fixedVars, Int_t ptbin, Float_t norm){
   // Project the AliMultiDimVector on a 2D histogram
 
   TString hisName=Form("hproj%s%dv%d",GetName(),secondVar,firstVar);
@@ -379,7 +379,7 @@ void AliMultiDimVector::Integrate(){
   for(ULong64_t i=0;i<fNTotCells;i++) fVett[i]= integral[i];
   fIsIntegrated=kTRUE;
 }//_____________________________________________________________________________ 
-ULong64_t* AliMultiDimVector::GetGlobalAddressesAboveCuts(Float_t *values, Int_t ptbin, Int_t& nVals) const{
+ULong64_t* AliMultiDimVector::GetGlobalAddressesAboveCuts(const Float_t *values, Int_t ptbin, Int_t& nVals) const{
   // fills an array with global addresses of cells passing the cuts
 
   Int_t ind[fgkMaxNVariables];
@@ -510,10 +510,10 @@ void AliMultiDimVector::FillAndIntegrate(Float_t* values, Int_t ptbin){
 
 }
 //_____________________________________________________________________________ 
-void AliMultiDimVector::SuppressZeroBKGEffect(AliMultiDimVector* mvBKG){
+void AliMultiDimVector::SuppressZeroBKGEffect(const AliMultiDimVector* mvBKG){
   // Sets to zero elements for which mvBKG=0
   for(ULong64_t i=0;i<fNTotCells;i++)
-    if(mvBKG->GetElement(i)==0) fVett.AddAt(0,i);
+    if(mvBKG->GetElement(i)<0.00000001) fVett.AddAt(0,i);
 }
 //_____________________________________________________________________________ 
 AliMultiDimVector* AliMultiDimVector:: ShrinkPtBins(Int_t firstBin, Int_t lastBin){
