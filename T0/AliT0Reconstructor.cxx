@@ -235,6 +235,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t c = 29.9792458; // cm/ns
   Double32_t vertex = 9999999;
   Int_t onlineMean=0;
+  // Float_t meanVertex = fParam->GetMeanVertex();
+  Float_t meanVertex = 0;
 
   for (Int_t i0=0; i0<105; i0++)
     {
@@ -245,8 +247,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
-  // Float_t meanVertex = fParam->GetMeanVertex();
-  Float_t meanVertex = 0;
    
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
@@ -361,10 +361,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        AliDebug(10,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
         if(besttimeA <999999 && besttimeC < 999999 ){
-	 timeDiff = ( besttimeA - besttimeC) *0.001 * channelWidth;
+	 timeDiff = ( besttimeA - besttimeC) *0.001 * channelWidth + latencyL1A - latencyL1C;
 	 timeclock = 0.001*channelWidth * Float_t( besttimeA+besttimeC)/2. - latencyHPTDC + latencyL1;  
 	 meanTime = (besttimeA+besttimeC-2.*Float_t(ref))/2.;
-	 vertex =  meanVertex -  c*(timeDiff)/2. + vertexshift; //+ (fdZonA - fdZonC)/2; 
+	 vertex =  meanVertex - c*(timeDiff)/2. ; //+ (fdZonA - fdZonC)/2; 
 	}
       }  //if phys event       
       AliDebug(5,Form("  timeDiff %f #channel,  meanTime %f #channel, TOFmean%f  vertex %f cm meanVertex %f online mean %i \n",timeDiff, meanTime,timeclock, vertex,meanVertex, onlineMean));
@@ -418,7 +418,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
     ncont = vertex->GetNContributors();
     // cout<<" spdver "<<spdver<<" ncont "<<ncont<<endl;
-    if(ncont>3 ) {
+    if(ncont>1 ) {
       //     hVertexSPD->Fill(spdver);
       shift = currentVertex/c;
       //	  cout<<" vertex shif "<<shift<<" vertex "<<spdver<<" IsFromVertexer3D  "<<fverSPD->IsFromVertexer3D()<<endl;
