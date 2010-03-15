@@ -28,6 +28,7 @@
 #pragma link C++ class AliHLTModuleAgent+;
 #pragma link C++ class AliHLTModulePreprocessor+;
 #pragma link C++ class AliHLTShuttleInterface+;
+#pragma link C++ class AliHLTDimServer+;
 #pragma link C++ class AliHLTHOMERLibManager+;
 #pragma link C++ class AliHLTHOMERManager+;
 #pragma link C++ class AliHLTHOMERProxyHandler+;

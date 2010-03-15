@@ -27,6 +27,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTModuleAgent.h \
 		AliHLTModulePreprocessor.h \
 		AliHLTShuttleInterface.h \
+		AliHLTDimServer.h \
 		AliHLTHOMERLibManager.h \
 		AliHLTHOMERManager.h \
 		AliHLTHOMERProxyHandler.h \
