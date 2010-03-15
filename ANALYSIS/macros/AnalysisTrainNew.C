@@ -559,7 +559,8 @@ void AddAnalysisTasks()
       Int_t addMuonDistributions = 1;
       Int_t addSingleMuonAnalysis = 1;
       Int_t addMuonHFAnalysis = 1;
-      Int_t ntaskmuon = AddPWG3MuonTrain(isESDAnalysis,isAODAnalysis,addMuonDistributions,addSingleMuonAnalysis,addMuonHFAnalysis);
+      Int_t addDimuonCFContainer = 1;   // Dimuons container
+      Int_t ntaskmuon = AddPWG3MuonTrain(isESDAnalysis,isAODAnalysis,addMuonDistributions,addSingleMuonAnalysis,addMuonHFAnalysis, addDimuonCFContainer);
       printf("Added %d muon tasks\n", ntaskmuon);
    }   
       
@@ -593,6 +594,9 @@ void AddAnalysisTasks()
       if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
       AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL", kFALSE, isSimulation);
       if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
+      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+      AliAnalysisTaskParticleCorrelation *taskpartcorrqa = AddTaskCalorimeterQA("ESD",kFALSE,kFALSE);
+      if (!taskpartcorrqa) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run for this train conditions - EXCLUDED");
       mgr->RegisterExtraFile("deltaAODPartCorr.root");
    }   
 
