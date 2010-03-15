@@ -367,7 +367,6 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
-
   // setup
   rawReader->Reset() ;
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
@@ -395,12 +394,12 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // start loop over input stream  
   int iSM = 0;
   while (in.NextDDL()) {
-    iSM = in.GetModule(); // SuperModule
-    if (iSM>=0 && iSM<fSuperModules) { // valid module reading
+    int iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
 
-      int iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
-
-      while (in.NextChannel()) {
+    while (in.NextChannel()) {
+      iSM = in.GetModule(); // SuperModule
+      //printf("iSM %d DDL %d", iSM, in.GetDDLNumber()); 
+      if (iSM>=0 && iSM<fSuperModules) { // valid module reading
 
 	int nsamples = 0;
 	vector<AliCaloBunchInfo> bunchlist; 
@@ -433,7 +432,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
 	  // pedestal samples
 	  int nPed = 0;
-	  UShort_t *pedSamples = 0;
+	  vector<int> pedSamples; 
 	
 	  // select earliest bunch 
 	  unsigned int bunchIndex = 0;
@@ -454,10 +453,11 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  for (int i = 0; i<bunchLength; i++) {
 	    timebin = startBin--;
 	    if ( firstPedSample<=timebin && timebin<=lastPedSample ) {
-	      pedSamples[nPed] = sig[i];
+	      pedSamples.push_back( sig[i] );
 	      nPed++;
 	    }	    
 	  } // i
+	  //	  printf("nPed %d\n", nPed);
 
 	  // fill histograms
 	  if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
@@ -559,8 +559,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     nTotalLG += nTotalSMLG[iSM]; 
     nTotalHG += nTotalSMHG[iSM]; 
     nTotalTRU += nTotalSMTRU[iSM]; 
-    nTotalLG += nTotalSMLGLEDMon[iSM]; 
-    nTotalHG += nTotalSMHGLEDMon[iSM]; 
+    nTotalLGLEDMon += nTotalSMLGLEDMon[iSM]; 
+    nTotalHGLEDMon += nTotalSMHGLEDMon[iSM]; 
     GetRawsData(kNsmodLG)->Fill(iSM, nTotalSMLG[iSM]); 
     GetRawsData(kNsmodHG)->Fill(iSM, nTotalSMHG[iSM]); 
     GetRawsData(kNsmodTRU)->Fill(iSM, nTotalSMTRU[iSM]); 
