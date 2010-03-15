@@ -93,22 +93,6 @@ public:
   /** Destructor */ 
   virtual ~AliHLTEMCALDigitMakerComponent();
 
-  /** Copy constructor */  
-  AliHLTEMCALDigitMakerComponent(const AliHLTEMCALDigitMakerComponent &) : 
-    AliHLTCaloProcessor(),
-    fDigitMakerPtr(0),
-    fDigitContainerPtr(0)
-  {
-    //Copy constructor not implemented
-  }
-  
-  /** Assignment */
-  AliHLTEMCALDigitMakerComponent & operator = (const AliHLTEMCALDigitMakerComponent)
-  {
-    //Assignment
-    return *this; 
-  }
-
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 
@@ -143,6 +127,12 @@ protected:
   virtual int DoDeinit(){return 0;}
   
 private:
+
+   /** Copy constructor, prohibited */  
+  AliHLTEMCALDigitMakerComponent(const AliHLTEMCALDigitMakerComponent &);
+   
+  /** Assignment operator, prohibited */
+  AliHLTEMCALDigitMakerComponent & operator = (const AliHLTEMCALDigitMakerComponent);
 
   /** Pointer to the digit maker itself */
   AliHLTCaloDigitMaker *fDigitMakerPtr;                    //! transient
