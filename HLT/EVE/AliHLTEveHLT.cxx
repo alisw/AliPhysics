@@ -44,9 +44,19 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fTrueField(kFALSE),
   fUseIpOnFailedITS(kFALSE),
   fUseRkStepper(kFALSE),
-  fTrackList(NULL)
+  fTrackList(NULL),
+  fTrCanvas(NULL),
+  fHistPt(NULL), 
+  fHistP(NULL), 
+  fHistEta(NULL),
+  fHistTheta(NULL),
+  fHistPhi(NULL),
+  fHistnClusters(NULL),
+  fHistMult(NULL)
 {
   // Constructor.
+  CreateHistograms();
+
 }
 
 AliHLTEveHLT::~AliHLTEveHLT()
@@ -57,6 +67,23 @@ AliHLTEveHLT::~AliHLTEveHLT()
   fTrackList = NULL;
 }
 
+void AliHLTEveHLT::CreateHistograms(){
+  //See header file for documentation
+  fHistPt        = new TH1F("fHistPt",       "transverse momentum",    100, 0, 10); // KK   
+  fHistP         = new TH1F("fHistP",        "signed momentum",        100,-7,  7);	   
+  fHistEta       = new TH1F("fHistEta",      "pseudorapidity",         100,-2,  2);	   
+  fHistTheta     = new TH1F("fHistTheta",    "polar angle",            180, 0,180);   
+  fHistPhi	 = new TH1F("fHistPhi",      "azimuthal angle",        180, 0,360);   
+  fHistnClusters = new TH1F("fHistnClusters","TPC clusters per track", 160, 0,160);
+  fHistMult      = new TH1F("fHistMult",     "event track multiplicity",50, 0, 50);    
+  
+  fHistPt   ->SetXTitle("p_{t} (GeV/c)");   // KK
+  fHistP    ->SetXTitle("P*charge (GeV/c)");
+  fHistEta  ->SetXTitle("#eta");
+  fHistTheta->SetXTitle("#theta (degrees)");
+  fHistPhi  ->SetXTitle("#phi (degrees)");
+
+}
 
 void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
@@ -87,8 +114,8 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 void AliHLTEveHLT::UpdateElements() {
   //See header file for documentation
   if(fCanvas) fCanvas->Update();
+  DrawHistograms();
   if(fTrackList) fTrackList->ElementChanged();
-
 }
 
 void AliHLTEveHLT::ResetElements(){
@@ -151,33 +178,50 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
   for (Int_t iter = 0; iter < esd->GetNumberOfTracks(); ++iter) {
     AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esd->GetTrack(iter), cont));
     cont->AddElement(track);
-    
-//     gTPCPt->Fill(esd->GetTrack(iter)->GetSignedPt()); // KK
-//     gTPCEta->Fill(esd->GetTrack(iter)->GetSnp());
-//     gTPCPsi->Fill(esd->GetTrack(iter)->GetTgl());
-//     gTPCnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
+   
+    fHistPt->Fill(esd->GetTrack(iter)->Pt());   // KK
+    fHistP->Fill(esd->GetTrack(iter)->P()*esd->GetTrack(iter)->Charge());
+    fHistEta->Fill(esd->GetTrack(iter)->Eta());
+    fHistTheta->Fill(esd->GetTrack(iter)->Theta()*TMath::RadToDeg());
+    fHistPhi->Fill(esd->GetTrack(iter)->Phi()*TMath::RadToDeg());
+    fHistnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
   }
   
-//   gTPCMult->Fill(esd->GetNumberOfTracks()); // KK
+  fHistMult->Fill(esd->GetNumberOfTracks()); // KK
   
-//   Int_t icd = 0;
-//   gTPCClustCanvas->Clear();
-//   gTPCClustCanvas->Divide(2, 2);
-//   gTPCClustCanvas->cd(icd++);
-//   gTPCPt->Draw();
-//   gTPCClustCanvas->cd(icd++);
-//   gTPCEta->Draw();
-//   gTPCClustCanvas->cd(icd++);
-//   gTPCPsi->Draw();
-//   gTPCClustCanvas->cd(icd++);
-//   gTPCnClusters->Draw();
-//   gTPCClustCanvas->cd(icd++);
-//   gTPCMult->Draw();
-//   gTPCClustCanvas->Update();
-
   
   cont->SetTitle(Form("N=%d", esd->GetNumberOfTracks()) );
   cont->MakeTracks();
+
+}
+
+
+void AliHLTEveHLT::DrawHistograms(){
+  //See header file for documentation
+
+  if (!fTrCanvas) {
+    fTrCanvas = CreateCanvas("TPC Tr QA", "TPC Track QA");
+    fTrCanvas->Divide(4, 2);
+  }
+
+  Int_t icd = 1;
+  fTrCanvas->cd(icd++);
+  fHistPt->Draw();
+  fTrCanvas->cd(icd++);
+  fHistP->Draw();
+  fTrCanvas->cd(icd++);
+  fHistEta->Draw();
+  fTrCanvas->cd(icd++);
+  fHistTheta->Draw();
+  fTrCanvas->cd(icd++);
+  fHistPhi->Draw();
+  fTrCanvas->cd(icd++);
+  fHistnClusters->Draw();
+  fTrCanvas->cd(icd++);
+  fHistMult->Draw();
+  fTrCanvas->cd();
+
+  fTrCanvas->Update();
 
 }
 

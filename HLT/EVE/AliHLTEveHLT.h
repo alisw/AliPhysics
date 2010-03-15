@@ -18,8 +18,7 @@ class TEveTrackList;
 class TEveTrackPropagator;
 class TString;
 class AliExternalTrackParam;
-
-
+class TH1F;
 
 class AliHLTEveHLT : public AliHLTEveBase {
 
@@ -71,12 +70,28 @@ private:
   //Process histogram block
   void ProcessHistograms(AliHLTHOMERBlockDesc * block, TCanvas * canvas);
 
+  //Create tpc qa histograms
+  void CreateHistograms();
+
+  //Draw tpc qa histograms
+  void DrawHistograms();
+
+
   Bool_t fTrueField;        //Use true field?
   Bool_t fUseIpOnFailedITS; // Use IP as origin if ITS refit fails?
   Bool_t fUseRkStepper;    // Use Runge Kutta for something something?
 
   TEveTrackList * fTrackList;  //Eve tracklist 
 
+  TCanvas * fTrCanvas;  //Canvas for track qa histos
+
+  TH1F * fHistPt;      //Pt histo 
+  TH1F * fHistP;       //p histo
+  TH1F * fHistEta;     //Eta histo
+  TH1F * fHistTheta;   //Theta histo
+  TH1F * fHistPhi;     //Phi histo
+  TH1F * fHistnClusters;//nClusters histo
+  TH1F * fHistMult;    //Mult histo
 
   ClassDef(AliHLTEveHLT, 0);
 };

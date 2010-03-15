@@ -210,7 +210,7 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
 void AliHLTEveTPC::DrawHistograms() {
   //See header file for documentation
   if (!fCanvas) {
-    fCanvas = CreateCanvas("TPC QA", "TPC QA");
+    fCanvas = CreateCanvas("TPC Cl QA", "TPC Cluster QA");
     fCanvas->Divide(2, 2);
   }
   
