@@ -31,12 +31,14 @@ ClassImp(AliHLTGlobalTriggerDecision)
 
 
 AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision() :
-AliHLTTriggerDecision(0, "HLTGlobalTrigger"),
+  AliHLTTriggerDecision(0, "HLTGlobalTrigger"),
   fContributingTriggers(AliHLTTriggerDecision::Class()),
   fInputObjects(),
   fCounters()
 {
   // Default constructor.
+  
+  fInputObjects.SetOwner(kTRUE);
 }
 
 
@@ -167,6 +169,7 @@ AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision(const AliHLTGlobalTrigg
   fCounters()
 {
   // copy constructor
+  fInputObjects.SetOwner(kTRUE);
   *this=src;
 }
 
