@@ -75,8 +75,11 @@ public:
   /** Set the retry count for source list loop */
   void SetRetryCount(Int_t count, Int_t sleeptime) { fRetryCount = count; fRetrySleeptime = sleeptime; }
   
-  /** Get next event and process it */
+  /** Get next event from the readers */
   Int_t NextHOMEREvent();
+
+  /** Process the event data */
+  Int_t ProcessEvent();
 
   /** Set flag for event loop */
   void SetEventLoopStarted (Bool_t started) {fEventLoopStarted = started;}

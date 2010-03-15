@@ -313,8 +313,6 @@ Int_t AliEveHOMERManager::NextHOMEREvent() {
   Int_t iResult = 0;
 
   
-  //Loop over blocks
-  AliHLTHOMERBlockDesc * block = NULL;
  
   if ( NextEvent() ) {
     
@@ -322,11 +320,22 @@ Int_t AliEveHOMERManager::NextHOMEREvent() {
     iResult = ReConnectHOMER();
     return NextHOMEREvent();
   }
-  
  
+  return ProcessEvent();
+ 
+}
+
+
+//______________________________________________________________________________________________
+Int_t AliEveHOMERManager::ProcessEvent() {
+
   //We have a new event, reset display items (need to check if there really is anything interesting in event before resetting. ie not just histos)
   ResetDisplay();
-  
+ 
+
+  AliHLTHOMERBlockDesc * block = NULL;
+
+
   //Process the SYNCED block list
   if ( GetBlockList() == NULL) {
     printf ("onlineDisplay:   No regular BlockList ... \n");
@@ -343,7 +352,6 @@ Int_t AliEveHOMERManager::NextHOMEREvent() {
    
     
     TIter next(GetBlockList());
-   
     while ((block = (AliHLTHOMERBlockDesc*)next())) {
       ProcessBlock(block);
      

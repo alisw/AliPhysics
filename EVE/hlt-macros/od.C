@@ -837,10 +837,6 @@ Int_t processTRDCalibHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
  return iResult;
 }
 //****************************************************************************
-
-
-
-
 void writeToFile(){
 
   TList * bList = gHomerManager->GetBlockList();
@@ -854,8 +850,8 @@ void writeToFile(){
   if(bList){
     TFile * afile = TFile::Open(Form("Event_0x%016X_Async.root", gHomerManager->GetEventID()), "RECREATE"); 
     bList->Write("blockList", TObject::kSingleKey);
-  }afile->Close();
-    
+    afile->Close();
+  }
 }
 
 

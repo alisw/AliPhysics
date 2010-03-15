@@ -109,13 +109,11 @@ void AliEveHOMERManagerEditor::SetModel(TObject* obj) {
 // }
 
 void AliEveHOMERManagerEditor::NextEvent() {
-  // call next event from macro
+  // call next event from AliEveHOMERManger
   fM->NextHOMEREvent();
 }
 
 void AliEveHOMERManagerEditor::WriteBlockListToFile() {
-  
-  
   gROOT->ProcessLineFast("writeToFile();");
 
 }
@@ -127,7 +125,8 @@ void AliEveHOMERManagerEditor::NavigateFwd() {
     if ( fM->NavigateEventBufferFwd() == -1 )
       return;
 
-    gROOT->ProcessLineFast("processEvent();");
+    fM->ProcessEvent();
+    //    gROOT->ProcessLineFast("processEvent();");
   }
   return;
 }
@@ -138,8 +137,9 @@ void AliEveHOMERManagerEditor::NavigateBack() {
   if ( !fEventLoopStarted ) {
     if ( fM->NavigateEventBufferBack() == -1 )
       return;
-
-    gROOT->ProcessLineFast("processEvent();");
+    
+    fM->ProcessEvent();
+    //gROOT->ProcessLineFast("processEvent();");
   }
   return;
 }
