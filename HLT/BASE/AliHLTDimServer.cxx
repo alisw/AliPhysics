@@ -135,6 +135,12 @@ TObjArray* AliHLTDimServer::CreateServiceGroup(enum AliHLTDimServer::AliHLTDimSe
   return pServices;
 }
 
+int AliHLTDimServer::UpdateServices()
+{
+  /// Update all services via the Dim channel
+  return 0;
+}
+
 AliHLTDimServer::AliHLTDimInterface* AliHLTDimServer::Interface()
 {
   if (!fgpInterface) {
