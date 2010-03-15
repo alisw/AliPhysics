@@ -76,7 +76,8 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   fAddToHistogramsName(abc.fAddToHistogramsName),
   //fAODCaloClusters(new TClonesArray(*abc.fAODCaloClusters)),
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
-  fCaloPID(abc.fCaloPID), fFidCut(abc.fFidCut), fIC(abc.fIC),fMCUtils(abc.fMCUtils), fNMS(abc.fNMS),
+  fCaloPID(new AliCaloPID(*abc.fCaloPID)), fFidCut(new AliFiducialCut(*abc.fFidCut)), fIC(new AliIsolationCut(*abc.fIC)),
+  fMCUtils(new AliMCAnalysisUtils(*abc.fMCUtils)), fNMS(new AliNeutralMesonSelection(*abc.fNMS)),
   //fAnaOutContainer(abc.fAnaOutContainer),
   fHistoPtBins(abc.fHistoPtBins),     fHistoPtMax(abc.fHistoPtMax),     fHistoPtMin(abc.fHistoPtMin),
   fHistoPhiBins(abc.fHistoPhiBins),   fHistoPhiMax(abc.fHistoPhiMax),   fHistoPhiMin(abc.fHistoPhiMin),
@@ -85,7 +86,7 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   fHistoAsymBins(abc.fHistoAsymBins), fHistoAsymMax(abc.fHistoAsymMax), fHistoAsymMin(abc.fHistoAsymMin)
 {
   // cpy ctor
-  
+
 }
 
 //_________________________________________________________________________
@@ -103,22 +104,23 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   fCheckFidCut        = abc.fCheckFidCut ; 
 	
   fReader             = abc.fReader ;
-  //fAODCaloClusters   = new TClonesArray(*abc.fAODCaloClusters) ;
-  fAODCaloCells      = new AliAODCaloCells(*abc.fAODCaloCells) ;
+  //delete fAODCaloClusters; fAODCaloClusters   = new TClonesArray(*abc.fAODCaloClusters) ;
+  delete fAODCaloCells ; fAODCaloCells      = new AliAODCaloCells(*abc.fAODCaloCells) ;
   
   fMinPt   = abc.fMinPt;
   fMaxPt   = abc.fMaxPt;
-  fCaloPID = abc.fCaloPID;  
-  fFidCut  = abc.fFidCut;
-  fIC      = abc.fIC;
-  fMCUtils = abc.fMCUtils;
-  fNMS     = abc.fNMS;
+	
+  delete fCaloPID; fCaloPID = new AliCaloPID        (*abc.fCaloPID);
+  delete fFidCut;  fFidCut  = new AliFiducialCut    (*abc.fFidCut);
+  delete fMCUtils; fMCUtils = new AliMCAnalysisUtils(*abc.fMCUtils);
+  delete fIC;      fIC      = new AliIsolationCut   (*abc.fIC);
+  delete fNMS;     fNMS     = new AliNeutralMesonSelection(*abc.fNMS);
 	
   //fAnaOutContainer     = abc.fAnaOutContainer;
 	
-  fInputAODBranch      = new TClonesArray(*abc.fInputAODBranch) ;
+  delete fInputAODBranch;  fInputAODBranch      = new TClonesArray(*abc.fInputAODBranch) ;
   fInputAODName        = abc.fInputAODName;
-  fOutputAODBranch     = new TClonesArray(*abc.fOutputAODBranch) ;
+  delete fOutputAODBranch; fOutputAODBranch     = new TClonesArray(*abc.fOutputAODBranch) ;
   fNewAOD              = abc.fNewAOD ; 
   fOutputAODName       = abc.fOutputAODName; 
   fOutputAODClassName  = abc.fOutputAODClassName;

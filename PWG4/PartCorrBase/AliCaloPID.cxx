@@ -119,11 +119,12 @@ fPHOSElectronWeight(pid.fPHOSElectronWeight),
 fPHOSChargeWeight(pid.fPHOSChargeWeight),
 fPHOSNeutralWeight(pid.fPHOSNeutralWeight),
 fPHOSWeightFormula(pid.fPHOSWeightFormula), 
-fPHOSPhotonWeightFormula(pid.fPHOSPhotonWeightFormula), 
-fPHOSPi0WeightFormula(pid.fPHOSPi0WeightFormula), 
+fPHOSPhotonWeightFormula(new TFormula(*pid.fPHOSPhotonWeightFormula)), 
+fPHOSPi0WeightFormula   (new TFormula(*pid.fPHOSPi0WeightFormula)), 
 fDispCut(pid.fDispCut),fTOFCut(pid.fTOFCut),
 fDebug(pid.fDebug), fRecalculateBayesian(pid.fRecalculateBayesian),
-fParticleFlux(pid.fParticleFlux), fEMCALPIDUtils(pid.fEMCALPIDUtils)
+fParticleFlux(pid.fParticleFlux), 
+fEMCALPIDUtils(new AliEMCALPIDUtils(*pid.fEMCALPIDUtils))
 {
   // cpy ctor
 	
@@ -136,21 +137,21 @@ AliCaloPID & AliCaloPID::operator = (const AliCaloPID & pid)
   
   if(&pid == this) return *this;
   
-  fEMCALPhotonWeight = pid. fEMCALPhotonWeight ;
-  fEMCALPi0Weight = pid.fEMCALPi0Weight ;
+  fEMCALPhotonWeight   = pid. fEMCALPhotonWeight ;
+  fEMCALPi0Weight      = pid.fEMCALPi0Weight ;
   fEMCALElectronWeight = pid.fEMCALElectronWeight; 
-  fEMCALChargeWeight = pid.fEMCALChargeWeight;
-  fEMCALNeutralWeight = pid.fEMCALNeutralWeight;
+  fEMCALChargeWeight   = pid.fEMCALChargeWeight;
+  fEMCALNeutralWeight  = pid.fEMCALNeutralWeight;
   
-  fPHOSPhotonWeight = pid.fPHOSPhotonWeight ;
-  fPHOSPi0Weight = pid.fPHOSPi0Weight ;
-  fPHOSElectronWeight = pid.fPHOSElectronWeight; 
-  fPHOSChargeWeight = pid.fPHOSChargeWeight;
-  fPHOSNeutralWeight = pid.fPHOSNeutralWeight;
+  fPHOSPhotonWeight    = pid.fPHOSPhotonWeight ;
+  fPHOSPi0Weight       = pid.fPHOSPi0Weight ;
+  fPHOSElectronWeight  = pid.fPHOSElectronWeight; 
+  fPHOSChargeWeight    = pid.fPHOSChargeWeight;
+  fPHOSNeutralWeight   = pid.fPHOSNeutralWeight;
   
-  fPHOSWeightFormula       = pid.fPHOSWeightFormula; 
-  fPHOSPhotonWeightFormula = pid.fPHOSPhotonWeightFormula; 
-  fPHOSPi0WeightFormula    = pid.fPHOSPi0WeightFormula;
+  fPHOSWeightFormula   = pid.fPHOSWeightFormula; 
+  delete fPHOSPhotonWeightFormula;  fPHOSPhotonWeightFormula = new TFormula(*pid.fPHOSPhotonWeightFormula); 
+  delete fPHOSPi0WeightFormula;     fPHOSPi0WeightFormula    = new TFormula(*pid.fPHOSPi0WeightFormula);
   
   fDispCut  = pid.fDispCut;
   fTOFCut   = pid.fTOFCut;
@@ -158,7 +159,8 @@ AliCaloPID & AliCaloPID::operator = (const AliCaloPID & pid)
   
   fRecalculateBayesian = pid.fRecalculateBayesian;
   fParticleFlux        = pid.fParticleFlux;
-  fEMCALPIDUtils       = pid.fEMCALPIDUtils;
+	
+  delete fEMCALPIDUtils; fEMCALPIDUtils       = new AliEMCALPIDUtils(*pid.fEMCALPIDUtils);
 		
   return *this;
   
@@ -168,9 +170,9 @@ AliCaloPID & AliCaloPID::operator = (const AliCaloPID & pid)
 AliCaloPID::~AliCaloPID() {
   //Dtor
   
-  if(fPHOSPhotonWeightFormula) delete  fPHOSPhotonWeightFormula ;
-  if(fPHOSPi0WeightFormula) delete  fPHOSPi0WeightFormula ;
-  if(fEMCALPIDUtils) delete fEMCALPIDUtils ;
+  if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula ;
+  if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula ;
+  if(fEMCALPIDUtils)           delete fEMCALPIDUtils ;
 }
 
 
