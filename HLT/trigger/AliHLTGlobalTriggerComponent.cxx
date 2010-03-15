@@ -421,7 +421,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     if (eventType==gkAliEventTypeEndOfRun) PrintStatistics(fTrigger, kHLTLogImportant, 0);
     if (fDataEventsOnly)
     {
-      IgnoreEvent();
+      IgnoreEvent();  // dont generate any trigger decision.
       return 0;
     }
   }
@@ -463,19 +463,61 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
       (triggerResult == true) ? description.Data() : GetDescription()
     );
 
-  // mask the readout list according to the CTP trigger
-  // if the classes have been initialized (mask non-zero)
-  if (pCTPData && pCTPData->Mask()) {
-    AliHLTEventDDL eventDDL=pCTPData->ReadoutList(*GetTriggerData());
-    AliHLTReadoutList ctpreadout(eventDDL);
-    ctpreadout.Enable(AliHLTReadoutList::kHLT);
-    AliHLTReadoutList maskedList=decision.ReadoutList();
-    maskedList.AndEq(ctpreadout);
-    decision.ReadoutList(maskedList);
-  }
-
   decision.SetCounters(fTrigger->GetCounters(), GetEventCount()+1);
   if (fTrigger->CallFailed()) return -EPROTO;
+  
+  TClonesArray shortInfo(TNamed::Class(), GetNumberOfInputBlocks());
+  
+  // Add the input objects used to make the global decision.
+  obj = GetFirstInputObject();
+  while (obj != NULL)
+  {
+    const AliHLTTriggerDecision* intrig = dynamic_cast<const AliHLTTriggerDecision*>(obj);
+    
+    if (TestBit(kForwardInput)) Forward(obj);
+    
+    if (TestBit(kIncludeInput))
+    {
+      if (intrig != NULL)
+      {
+         decision.AddTriggerInput(*intrig);
+      }
+      else
+      {
+        // The const_cast should be safe in this case because the list of inputObjects
+        // will be added to the global decision with AddInputObjectRef, which only
+        // modifies the kCanDelete bit and nothing else.
+        // This is necessary since GetFirstInputObject only returns const objects.
+        decision.AddInputObjectRef( const_cast<TObject*>(obj) );
+      }
+    }
+    
+    if (TestBit(kIncludeShort))
+    {
+      int entries = shortInfo.GetEntriesFast();
+      try
+      {
+        new (shortInfo[entries]) TNamed(obj->GetName(), obj->GetTitle());
+      }
+      catch (const std::bad_alloc&)
+      {
+        HLTError("Could not allocate more memory for the short list of input objects.");
+        return -ENOMEM;
+      }
+      if (intrig != NULL)
+      {
+        shortInfo[entries]->SetBit(BIT(16)); // indicate that this is a trigger decision
+        shortInfo[entries]->SetBit(BIT(15), intrig->Result());
+      }
+    }
+
+    obj = GetNextInputObject();
+  }
+  if (TestBit(kIncludeShort)) decision.AddInputObjectRef(&shortInfo);
+  
+  // The const_cast should be safe in this case because AddInputObjectRef just
+  // modifies the kCanDelete bit and nothing else.
+  if (!TestBit(kSkipCTP) && CTPData()) decision.AddInputObjectRef(const_cast<AliHLTCTPData*>(CTPData()));
   
   static UInt_t lastTime=0;
   TDatime time;
@@ -483,66 +525,6 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
     lastTime=time.Get();
     PrintStatistics(fTrigger, kHLTLogImportant);
   }
-  
-  // Add the input objects used to the global decision.
-  TClonesArray* pShortInfo=NULL;
-  if (TestBit(kIncludeShort)) {
-    try
-    {
-      pShortInfo=new TClonesArray(TNamed::Class(), GetNumberOfInputBlocks());
-    }
-    catch (const std::bad_alloc&)
-    {
-      HLTError("Could not allocate memory for a short list of input objects.");
-      delete pShortInfo;
-      return -ENOMEM;
-    }
-  }
-  obj = GetFirstInputObject();
-  while (obj != NULL)
-  {
-    if (TestBit(kForwardInput)) {
-      Forward(obj);
-    }
-    if (TestBit(kIncludeInput)) {
-    if (obj->IsA() == AliHLTTriggerDecision::Class())
-    {
-      decision.AddTriggerInput( *static_cast<const AliHLTTriggerDecision*>(obj) );
-    }
-    else
-    {
-      decision.AddInputObject(obj);
-    }
-    }
-
-    if (TestBit(kIncludeShort)) {
-      int entries=pShortInfo->GetEntriesFast();
-      try
-      {
-        new ((*pShortInfo)[entries]) TNamed(obj->GetName(), obj->GetTitle());
-      }
-      catch (const std::bad_alloc&)
-      {
-        HLTError("Could not allocate more memory for the short list of input objects.");
-        delete pShortInfo;
-        return -ENOMEM;
-      }
-      if (obj->IsA() == AliHLTTriggerDecision::Class()) {
-	(*pShortInfo)[entries]->SetBit(BIT(16)); // indicate that this is a trigger decision
-	(*pShortInfo)[entries]->SetBit(BIT(15), ((AliHLTTriggerDecision*)obj)->Result());
-      }
-    }
-
-    obj = GetNextInputObject();
-  }
-  if (pShortInfo) {
-    decision.AddInputObject(pShortInfo);
-    pShortInfo->Delete();
-    delete pShortInfo;
-    pShortInfo=NULL;
-  }
-
-  if (!TestBit(kSkipCTP) && CTPData()) decision.AddInputObject(CTPData());
 
   // add readout filter to event done data
   CreateEventDoneReadoutFilter(decision.TriggerDomain(), 3);
@@ -721,6 +703,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   
   code << "#if !defined(__CINT__) || defined(__MAKECINT__)" << endl;
   code << "#include <cstring>" << endl;
+  code << "#include \"TClass.h\"" << endl;
   code << "#include \"TString.h\"" << endl;
   code << "#include \"TClonesArray.h\"" << endl;
   code << "#include \"AliHLTLogging.h\"" << endl;
@@ -854,6 +837,28 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     code << "      }" << endl;
   }
   code << "    }" << endl;
+  // The following is an optimisation where symbols without any assignment operators
+  // are treated as constant and only initialised in FillFromMenu rather than reseting
+  // them in the NewEvent method.
+  // Note: we putting this initialisation into the constructor can lead to seg faults
+  // under CINT interpretation. Thus we must put it into the FillFromMenu method instead.
+  for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
+  {
+    AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
+    if (TString(symbol->AssignExpression()) != "") continue;
+    if (strcmp(symbol->ObjectClass(), "AliHLTTriggerDecision") == 0) continue;
+    // CINT has problems with the implicit equals operator for complex types, so if
+    // the type has an equals operater we need to write the operator call explicitly.
+    TClass* clas = TClass::GetClass(symbol->Type());
+    if (clas != NULL and clas->GetMethodAny("operator=") != NULL)
+    {
+      code << "    " << symbol->Name() << ".operator = (" << symbol->DefaultValue() << ");" << endl;
+    }
+    else
+    {
+      code << "    " << symbol->Name() << " = " << symbol->DefaultValue() << ";" << endl;
+    }
+  }
   if (fDebugMode)
   {
     code << "    HLTDebug(Form(\"Finished filling domain entries from trigger menu symbols.\"));" << endl;
@@ -873,8 +878,12 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   for (Int_t i = 0; i < symbols.GetEntriesFast(); i++)
   {
     AliHLTTriggerMenuSymbol* symbol = static_cast<AliHLTTriggerMenuSymbol*>( symbols.UncheckedAt(i) );
+    // The following is an optimisation. If the symbol does not have an assignment expression
+    // then it is effectively a constant symbol and can be initialised earlier and only once.
+    // In this case we initialise it in the FillFromMenu method instead.
+    if (TString(symbol->AssignExpression()) == "") continue;
     // CINT has problems with the implicit equals operator for complex types, so if
-    // the type has a equals operater we need to write the operator call explicitly.
+    // the type has an equals operater we need to write the operator call explicitly.
     TClass* clas = TClass::GetClass(symbol->Type());
     if (clas != NULL and clas->GetMethodAny("operator=") != NULL)
     {
@@ -957,7 +966,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     // 30 Oct 2009 - CINT sometimes evaluates the dynamic_cast incorrectly.
     // Have to use the TClass system for extra protection.
     code << "    const " << symbol->ObjectClass() << "* " << symbol->Name() << "_object_ = NULL;" << endl;
-    code << "    if (_object_->IsA() == " << symbol->ObjectClass() << "::Class()) " << symbol->Name()
+    code << "    if (_object_->IsA()->GetBaseClass(\"" << symbol->ObjectClass() << "\") != NULL) " << symbol->Name()
          << "_object_ = dynamic_cast<const " << symbol->ObjectClass()
          << "*>(_object_);" << endl;
     code << "    if (" << symbol->Name() << "_object_ != NULL && ";
@@ -1662,8 +1671,14 @@ int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger,
     if (!pDecision) return -ENOENT;
 
     bool result=false;
-    if (trigData) result=pCTPData->EvaluateCTPTriggerClass(name, *trigData);
-    else result=pCTPData->EvaluateCTPTriggerClass(name);
+    // 13 March 2010 - Optimisation:
+    // Dont use the EvaluateCTPTriggerClass method, which uses slow TFormula objects.
+    AliHLTUInt64_t triggers = 0;
+    if (trigData) triggers = pCTPData->ActiveTriggers(*trigData);
+    else triggers = pCTPData->Triggers();
+    result = (triggers&((AliHLTUInt64_t)0x1<<i)) ? true : false;
+    //if (trigData) result=pCTPData->EvaluateCTPTriggerClass(name, *trigData);
+    //else result=pCTPData->EvaluateCTPTriggerClass(name);
     pDecision->Result(result);
     pDecision->TriggerDomain().Clear();
     if (trigData) pDecision->TriggerDomain().Add(pCTPData->ReadoutList(*trigData));

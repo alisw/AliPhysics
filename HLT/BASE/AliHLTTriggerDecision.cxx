@@ -189,3 +189,12 @@ AliHLTTriggerDecision& AliHLTTriggerDecision::operator = (const AliHLTTriggerDec
   fTriggerDomain = obj.fTriggerDomain;
   return *this;
 }
+
+
+void AliHLTTriggerDecision::Clear(Option_t* option)
+{
+  // Clears the trigger domain and resets the decision result.
+  
+  Result(false);
+  fTriggerDomain.Clear(option);
+}

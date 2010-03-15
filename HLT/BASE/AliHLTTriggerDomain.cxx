@@ -907,7 +907,8 @@ AliHLTTriggerDomain::operator AliHLTReadoutList () const
     for (Int_t i = 0; i < AliHLTDAQ::NumberOfDdls(deti); i++)
     {
       Int_t ddlId = AliHLTDAQ::DdlID(deti, i);
-      if (Contains(AliHLTDomainEntry(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti), ddlId)))
+      AliHLTComponentDataType type = AliHLTComponentDataTypeInitializer(kAliHLTDAQRDOUTDataTypeID, AliHLTDAQ::OnlineName(deti));
+      if (Contains(AliHLTDomainEntry(type, ddlId)))
       {
         result.EnableDDLBit(ddlId);
       }

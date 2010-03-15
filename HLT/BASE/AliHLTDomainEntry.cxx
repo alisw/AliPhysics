@@ -241,13 +241,13 @@ bool AliHLTDomainEntry::SubsetOf(const AliHLTDomainEntry& rhs) const
 
   if (*this != rhs) return false;
   bool thisTypeIsAny = strncmp(&fType.fID[0], kAliHLTAnyDataTypeID, kAliHLTComponentDataTypefIDsize) == 0;
-  bool thisOriginIsAny = strncmp(&fType.fOrigin[0], kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize) == 0;
-  bool thisSpecIsAny = not fUseSpec;
   bool rhsTypeIsAny = strncmp(&rhs.fType.fID[0], kAliHLTAnyDataTypeID, kAliHLTComponentDataTypefIDsize) == 0;
-  bool rhsOriginIsAny = strncmp(&rhs.fType.fOrigin[0], kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize) == 0;
-  bool rhsSpecIsAny = not rhs.fUseSpec;
   if (thisTypeIsAny and not rhsTypeIsAny) return false;
+  bool thisOriginIsAny = strncmp(&fType.fOrigin[0], kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize) == 0;
+  bool rhsOriginIsAny = strncmp(&rhs.fType.fOrigin[0], kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize) == 0;
   if (thisOriginIsAny and not rhsOriginIsAny) return false;
+  bool thisSpecIsAny = not fUseSpec;
+  bool rhsSpecIsAny = not rhs.fUseSpec;
   if (thisSpecIsAny and not rhsSpecIsAny) return false;
   return true;
 }

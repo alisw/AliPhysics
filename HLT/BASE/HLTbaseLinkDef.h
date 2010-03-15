@@ -47,7 +47,7 @@
 #pragma link C++ class AliHLTEventStatistics+;
 #pragma link C++ class AliHLTBlockDataCollection+;
 #pragma link C++ class AliHLTTriggerDecision+;
-#pragma link C++ class AliHLTGlobalTriggerDecision+;
+#pragma link C++ class AliHLTGlobalTriggerDecision-;  // '-' option since the class uses a custom streamer.
 #pragma link C++ class AliHLTReadoutList+;
 #pragma link C++ class AliHLTTriggerDomain+;
 #pragma link C++ class AliHLTDomainEntry+;

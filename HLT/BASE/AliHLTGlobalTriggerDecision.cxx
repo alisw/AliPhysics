@@ -26,19 +26,22 @@
 #include "Riostream.h"
 #include "TClass.h"
 #include "AliHLTMisc.h"
+#include <cassert>
 
 ClassImp(AliHLTGlobalTriggerDecision)
 
 
 AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision() :
-  AliHLTTriggerDecision(0, "HLTGlobalTrigger"),
+AliHLTTriggerDecision(0, "HLTGlobalTrigger"),
   fContributingTriggers(AliHLTTriggerDecision::Class()),
   fInputObjects(),
   fCounters()
 {
   // Default constructor.
   
-  fInputObjects.SetOwner(kTRUE);
+  // We set the ownership to false since the objects are deleted manually by this
+  // class in DeleteInputObjects().
+  fInputObjects.SetOwner(kFALSE);
 }
 
 
@@ -53,13 +56,17 @@ AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision(
   // Constructor specifying multiple information fields.
   
   Result(result);
-  fInputObjects.SetOwner(kTRUE);
+  // We set the ownership to false since the objects are deleted manually by this
+  // class in DeleteInputObjects().
+  fInputObjects.SetOwner(kFALSE);
 }
 
 
 AliHLTGlobalTriggerDecision::~AliHLTGlobalTriggerDecision()
 {
   // Default destructor.
+  
+  DeleteInputObjects();
 }
 
 
@@ -80,7 +87,8 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     cout << "#################### Input trigger decisions ####################" << endl;
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
-      if (TriggerInput(i)) TriggerInput(i)->Print(option);
+      assert(TriggerInput(i) != NULL);
+      TriggerInput(i)->Print(option);
     }
     if (NumberOfTriggerInputs() == 0)
     {
@@ -107,7 +115,8 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
       cout << "-------------------- Input trigger decision " << i << " --------------------" << endl;
-      if (TriggerInput(i)) TriggerInput(i)->Print(option);
+      assert(TriggerInput(i) != NULL);
+      TriggerInput(i)->Print(option);
     }
     if (NumberOfTriggerInputs() == 0)
     {
@@ -117,7 +126,8 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     for (Int_t i = 0; i < NumberOfInputObjects(); i++)
     {
       cout << "------------------------ Input object " << i << " ------------------------" << endl;
-      if (InputObject(i)) InputObject(i)->Print(option);
+      assert(InputObject(i) != NULL);
+      InputObject(i)->Print(option);
     }
     if (NumberOfInputObjects() == 0)
     {
@@ -168,43 +178,70 @@ AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision(const AliHLTGlobalTrigg
   fInputObjects(),
   fCounters()
 {
-  // copy constructor
-  fInputObjects.SetOwner(kTRUE);
+  // Copy constructor performs a deep copy.
+  
+  // We set the ownership to false since the objects are deleted manually by this
+  // class in DeleteInputObjects().
+  fInputObjects.SetOwner(kFALSE);
+  
   *this=src;
 }
 
 AliHLTGlobalTriggerDecision& AliHLTGlobalTriggerDecision::operator=(const AliHLTGlobalTriggerDecision& src)
 {
-  // assignment operator
+  // assignment operator performs a deep copy.
 
   fContributingTriggers.Delete();
   for (int triggerInput=0; triggerInput<src.NumberOfTriggerInputs(); triggerInput++) {
     const AliHLTTriggerDecision* pTriggerObject=src.TriggerInput(triggerInput);
-    if (pTriggerObject) {
-      // the AddTriggerInput function uses the copy constructor and
-      // makes a new object from the reference
-      AddTriggerInput(*pTriggerObject);
-    } else {
-      //Error("failed to get trigger input #%d", triggerInput);
-    }
+    assert(pTriggerObject != NULL);
+    // the AddTriggerInput function uses the copy constructor and
+    // makes a new object from the reference
+    AddTriggerInput(*pTriggerObject);
   }
 
-  fInputObjects.Delete();
+  DeleteInputObjects();
   for (int inputObject=0; inputObject<src.NumberOfTriggerInputs(); inputObject++) {
     const TObject* pInputObject=src.InputObject(inputObject);
-    if (pInputObject) {
-      // the AddInputObject function uses Clone() and
-      // makes a new object from the reference
-      AddInputObject(pInputObject);
-    } else {
-      //Error("failed to get trigger input #%d", inputObject);
-    }
+    assert(pInputObject != NULL);
+    // the AddInputObject function uses Clone() and
+    // makes a new object from the reference
+    AddInputObject(pInputObject);
   }
   
   SetCounters(src.Counters());
 
   return *this;
 }
+
+
+void AliHLTGlobalTriggerDecision::AddInputObject(const TObject* object)
+{
+  // Adds an object to the list of input objects considered in the global trigger.
+  
+  if (object == NULL) return;
+  TObject* obj = object->Clone();
+  obj->SetBit(kCanDelete);
+  fInputObjects.Add(obj);
+}
+
+
+void AliHLTGlobalTriggerDecision::AddInputObjectRef(TObject* object, bool own)
+{
+  // Adds an object to the list of input objects considered in the global trigger.
+  
+  if (object == NULL) return;
+  if (own)
+  {
+    object->SetBit(kCanDelete);
+  }
+  else
+  {
+    object->ResetBit(kCanDelete);
+  }
+  fInputObjects.Add(object);
+}
+
 
 void AliHLTGlobalTriggerDecision::SetCounters(const TArrayL64& counters, Long64_t eventCount)
 {
@@ -216,4 +253,52 @@ void AliHLTGlobalTriggerDecision::SetCounters(const TArrayL64& counters, Long64_
     fCounters.Set(size+1);
     fCounters[size]=eventCount;
   }
+}
+
+
+void AliHLTGlobalTriggerDecision::Clear(Option_t* option)
+{
+  // Clears the trigger domain and resets the decision result.
+  
+  AliHLTTriggerDecision::Clear(option);
+  fContributingTriggers.Clear(option);
+  DeleteInputObjects();
+  fCounters.Set(0);
+}
+
+
+void AliHLTGlobalTriggerDecision::DeleteInputObjects()
+{
+  // Deletes the objects marked with kCanDelete in fInputObjects and clears the array.
+  
+  for (Int_t i = 0; i < NumberOfInputObjects(); i++)
+  {
+    TObject* obj = fInputObjects.UncheckedAt(i);
+    assert(obj != NULL);
+    if (obj->TestBit(kCanDelete)) delete obj;
+  }
+  fInputObjects.Clear();
+}
+
+
+void AliHLTGlobalTriggerDecision::Streamer(TBuffer &b)
+{
+   // Stream an object of class AliHLTGlobalTriggerDecision.
+
+   if (b.IsReading())
+   {
+     b.ReadClassBuffer(AliHLTGlobalTriggerDecision::Class(), this);
+     // We must mark all the objects that were read into fInputObjects as owned.
+     // Otherwise we will have a memory leak in DeleteInputObjects.
+     for (Int_t i = 0; i < fInputObjects.GetEntriesFast(); i++)
+     {
+       TObject* obj = fInputObjects.UncheckedAt(i);
+       assert(obj != NULL);
+       obj->SetBit(kCanDelete);
+     }
+   }
+   else
+   {
+     b.WriteClassBuffer(AliHLTGlobalTriggerDecision::Class(), this);
+   }
 }

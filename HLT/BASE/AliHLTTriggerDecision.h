@@ -165,6 +165,13 @@ class AliHLTTriggerDecision : public TObject
    */
   AliHLTTriggerDecision& operator = (const AliHLTTriggerDecision& obj);
   
+  /**
+   * This method clears the trigger domain and sets the decision result to false.
+   * \param  option  This is passed onto the trigger domain clear method.
+   * The method is inherited from TObject.
+   */
+  virtual void Clear(Option_t* option = "");
+  
  private:
   
   TString fName; /// The name of the trigger decision. Should be the name of the trigger component that generated it.

@@ -82,14 +82,14 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   virtual ~AliHLTGlobalTriggerDecision();
 
   /**
-   * Copy constructor
+   * Copy constructor performs a deep copy.
    */
-  AliHLTGlobalTriggerDecision(const AliHLTGlobalTriggerDecision& src);  
+  AliHLTGlobalTriggerDecision(const AliHLTGlobalTriggerDecision& src);
 
   /**
-   * Assignment operator
+   * Assignment operator performs a deep copy.
    */
-  AliHLTGlobalTriggerDecision& operator=(const AliHLTGlobalTriggerDecision& src);  
+  AliHLTGlobalTriggerDecision& operator=(const AliHLTGlobalTriggerDecision& src);
 
   /**
    * Inherited from TObject, this prints the contents of the trigger decision.
@@ -153,15 +153,26 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
   const TObjArray& InputObjects() const { return fInputObjects; }
   
   /**
-   * Adds a input object to the list of input objects that were considered when
+   * Adds an input object to the list of input objects that were considered when
    * making this global trigger decision.
    * \param object  The input object to add.
    * \note  A copy of the object is made with TObject::Clone() and added.
    */
-  void AddInputObject(const TObject* object)
-  {
-    fInputObjects.Add(object->Clone());
-  }
+  void AddInputObject(const TObject* object);
+  
+  /**
+   * Adds an input object to the list of input objects that were considered when
+   * making this global trigger decision.
+   * \param object  The input object to add.
+   * \param own  If true then the global trigger decision takes ownership of the
+   *   object and will delete it when destroyed. The caller must not delete the
+   *   object after this method call. The default is false (ownership is not taken).
+   * \note Unlike AddInputObject, the object pointer is added directly without creating
+   *   a deep copy of the object. This means that the added object can only be deleted
+   *   after this global trigger object is no longer using the object, unless <i>own</i>
+   *   is true. If <i>own</i> is true then the object must not be deleted by the caller.
+   */
+  void AddInputObjectRef(TObject* object, bool own = false);
   
   /**
    * Sets the counter array.
@@ -196,7 +207,21 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    */
   const TArrayL64& Counters() const { return fCounters; }
   
+  /**
+   * This method removes clears the trigger domain, sets the decision result to false
+   * and clears the input object arrays and counters.
+   * \param  option  This is passed onto the internal array clear methods.
+   * The method is inherited from TObject.
+   */
+  virtual void Clear(Option_t* option = "");
+  
  private:
+  
+  /**
+   * Deletes all the input objects in fInputObjects that are marked with kCanDelete
+   * and empties the whole array.
+   */
+  void DeleteInputObjects();
   
   TClonesArray fContributingTriggers;  /// The list of contributing trigger decisions from all AliHLTTrigger components that were considered.
   TObjArray fInputObjects;  /// The list of other input objects.
