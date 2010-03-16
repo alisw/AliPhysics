@@ -233,6 +233,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       AliHLTCaloGlobalCoordinate globalCoord;
       fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);
 
+      caloClusterPtr->fModule = recPointPtr->fModule;
       caloClusterPtr->fGlobalPos[0] =  globalCoord.fX;
       caloClusterPtr->fGlobalPos[1] =  globalCoord.fY;
       caloClusterPtr->fGlobalPos[2] =  globalCoord.fZ;
