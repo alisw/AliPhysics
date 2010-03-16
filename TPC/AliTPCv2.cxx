@@ -171,6 +171,8 @@ void AliTPCv2::CreateGeometry()
   TGeoMedium *m2 = gGeoManager->GetMedium("TPC_CO2");
   TGeoVolume *v2 = new TGeoVolume("TPC_OI",tpco,m2);
   //
+  TGeoRotation *segrot;//segment rotations
+  //
   // outer containment vessel
   //
   TGeoPcon *tocv = new TGeoPcon(0.,360.,6);  // containment vessel
@@ -187,10 +189,11 @@ void AliTPCv2::CreateGeometry()
   TGeoMedium *m3 = gGeoManager->GetMedium("TPC_Al");
   TGeoVolume *v3 = new TGeoVolume("TPC_OCV",tocv,m3); 
   //
-  TGeoTube *to1 = new TGeoTube(274.8174,277.995,252.1); //epoxy
-  TGeoTube *to2 = new TGeoTube(274.8274,277.985,252.1); //tedlar
-  TGeoTube *to3 = new TGeoTube(274.8312,277.9812,252.1);//prepreg2
-  TGeoTube *to4 = new TGeoTube(274.9062,277.9062,252.1);//nomex
+  TGeoTubeSeg *to1 = new TGeoTubeSeg(274.8174,277.995,252.1,0.,59.9); //epoxy
+  TGeoTubeSeg *to2 = new TGeoTubeSeg(274.8274,277.985,252.1,0.,59.9); //tedlar
+  TGeoTubeSeg *to3 = new TGeoTubeSeg(274.8312,277.9812,252.1,0.,59.9);//prepreg2
+  TGeoTubeSeg *to4 = new TGeoTubeSeg(274.9062,277.9062,252.1,0.,59.9);//nomex
+  TGeoTubeSeg *tog5 = new TGeoTubeSeg(274.8174,277.995,252.1,59.9,60.);//epoxy
   //
   TGeoMedium *sm1 = gGeoManager->GetMedium("TPC_Epoxy");
   TGeoMedium *sm2 = gGeoManager->GetMedium("TPC_Tedlar");
@@ -201,7 +204,8 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *tov2 = new TGeoVolume("TPC_OCV2",to2,sm2);
   TGeoVolume *tov3 = new TGeoVolume("TPC_OCV3",to3,sm3);
   TGeoVolume *tov4 = new TGeoVolume("TPC_OCV4",to4,sm4);
- //-------------------------------------------------------
+  TGeoVolume *togv5 = new TGeoVolume("TPC_OCVG5",tog5,sm1);
+  //-------------------------------------------------------
   //  Tpc Outer Field Cage
   //  daughters - composite (sandwich)
   //-------------------------------------------------------
@@ -219,23 +223,59 @@ void AliTPCv2::CreateGeometry()
   //
   TGeoVolume *v4 = new TGeoVolume("TPC_TOFC",tofc,m3); 
   //sandwich
-  TGeoTube *tf1 = new TGeoTube(258.0,260.0676,252.1); //tedlar
-  TGeoTube *tf2 = new TGeoTube(258.0038,260.0638,252.1); //prepreg3
-  TGeoTube *tf3 = new TGeoTube(258.0338,260.0338,252.1);//nomex
+  TGeoTubeSeg *tf1 = new TGeoTubeSeg(258.0,260.0676,252.1,0.,59.9); //tedlar
+  TGeoTubeSeg *tf2 = new TGeoTubeSeg(258.0038,260.0638,252.1,0.,59.9); //prepreg3
+  TGeoTubeSeg *tf3 = new TGeoTubeSeg(258.0338,260.0338,252.1,0.,59.9);//nomex
+  TGeoTubeSeg *tfg4 = new TGeoTubeSeg(258.0,260.0676,252.1,59.9,60.); //epoxy glue
   //
   TGeoMedium *sm5 = gGeoManager->GetMedium("TPC_Prepreg3");
   //
   TGeoVolume *tf1v = new TGeoVolume("TPC_OFC1",tf1,sm2);
   TGeoVolume *tf2v = new TGeoVolume("TPC_OFC2",tf2,sm5);
   TGeoVolume *tf3v = new TGeoVolume("TPC_OFC3",tf3,sm4);
+  TGeoVolume *tfg4v = new TGeoVolume("TPC_OFCG4",tfg4,sm1);
   //
   // outer part - positioning
   //
-  tov1->AddNode(tov2,1); tov2->AddNode(tov3,1); tov3->AddNode(tov4,1);
+  tov1->AddNode(tov2,1); tov2->AddNode(tov3,1); tov3->AddNode(tov4,1);//ocv
   //
-  tf1v->AddNode(tf2v,1); tf2v->AddNode(tf3v,1);
+  tf1v->AddNode(tf2v,1); tf2v->AddNode(tf3v,1);//ofc
   //
-  v3->AddNode(tov1,1,new TGeoTranslation(0.,0.,-1.5)); v4->AddNode(tf1v,1);
+  TGeoVolumeAssembly *t200 = new TGeoVolumeAssembly("TPC_OCVSEG");
+  TGeoVolumeAssembly *t300 = new TGeoVolumeAssembly("TPC_OFCSEG");
+  //
+  // assembly OCV and OFC
+  //
+  // 1st - no rotation
+  t200->AddNode(tov1,1); t200->AddNode(togv5,1);
+  t300->AddNode(tf1v,1); t300->AddNode(tfg4v,1);
+  // 2nd - rotation 60 deg
+  segrot = new TGeoRotation();
+  segrot->RotateZ(60.);
+  t200->AddNode(tov1,2,segrot); t200->AddNode(togv5,2,segrot);
+  t300->AddNode(tf1v,2,segrot); t300->AddNode(tfg4v,2,segrot);
+  // 3rd rotation 120 deg
+  segrot = new TGeoRotation();
+  segrot->RotateZ(120.);
+  t200->AddNode(tov1,3,segrot); t200->AddNode(togv5,3,segrot);
+  t300->AddNode(tf1v,3,segrot); t300->AddNode(tfg4v,3,segrot);
+  //4th rotation 180 deg
+  segrot = new TGeoRotation();
+  segrot->RotateZ(180.);
+  t200->AddNode(tov1,4,segrot); t200->AddNode(togv5,4,segrot);
+  t300->AddNode(tf1v,4,segrot); t300->AddNode(tfg4v,4,segrot);
+  //5th rotation 240 deg
+  segrot = new TGeoRotation();
+  segrot->RotateZ(240.);
+  t200->AddNode(tov1,5,segrot); t200->AddNode(togv5,5,segrot);
+  t300->AddNode(tf1v,5,segrot); t300->AddNode(tfg4v,5,segrot);
+  //6th rotation 300 deg
+  segrot = new TGeoRotation();
+  segrot->RotateZ(300.);
+  t200->AddNode(tov1,6,segrot); t200->AddNode(togv5,6,segrot);
+  t300->AddNode(tf1v,6,segrot); t300->AddNode(tfg4v,6,segrot);
+  //
+  v3->AddNode(t200,1,new TGeoTranslation(0.,0.,-1.5)); v4->AddNode(t300,1);
   //
   v2->AddNode(v3,1); v2->AddNode(v4,1); 
   //
@@ -375,10 +415,6 @@ void AliTPCv2::CreateGeometry()
   tv10->AddNode(tv11,1); tv11->AddNode(tv12,1);
   //
   TGeoVolumeAssembly *tv100 = new TGeoVolumeAssembly("TPC_IFC"); // ifc itself - 3 segments
-  //
-  //
-  //
-  TGeoRotation *segrot;
 
   //
   // first segment - no rotation
@@ -523,17 +559,23 @@ void AliTPCv2::CreateGeometry()
   //
   // central membrane - 2 rings and a mylar membrane - assembly
   //
-  TGeoTube *ih = new TGeoTube(80.1,84.1,0.2);
-  TGeoTube *oh = new TGeoTube(250.25,256.75,0.2);
-  TGeoTube *mem = new TGeoTube(84.1,250.25,0.01);
+  TGeoTube *ih = new TGeoTube(81.9,84.1,0.2);
+  TGeoTube *oh = new TGeoTube(250.,256.5,0.2);
+  TGeoTube *mem = new TGeoTube(84.1,250.,0.01);
+
+  //
+  TGeoMedium *m4 = gGeoManager->GetMedium("TPC_G10");
+  //
   TGeoVolume *ihv = new TGeoVolume("TPC_IHVH",ih,m3);
   TGeoVolume *ohv = new TGeoVolume("TPC_OHVH",oh,m3);
+  
   TGeoVolume *memv = new TGeoVolume("TPC_HV",mem,sm7);
   //
   TGeoVolumeAssembly *cm = new TGeoVolumeAssembly("TPC_HVMEM");
   cm->AddNode(ihv,1);
   cm->AddNode(ohv,1);
   cm->AddNode(memv,1);
+ 
   v9->AddNode(cm,1);
   //
   // end caps - they are make as an assembly of single segments
@@ -630,7 +672,6 @@ void AliTPCv2::CreateGeometry()
    // pad plane and wire fixations
    //
    TGeoTrd1 *pp = new TGeoTrd1(14.5974,23.3521,0.3,24.825); //pad+iso
-   TGeoMedium *m4 = gGeoManager->GetMedium("TPC_G10");
    TGeoVolume *ppv = new TGeoVolume("TPC_IRPP",pp,m4);
    TGeoPara *f1 = new TGeoPara(.6,.5,24.825,0.,-10.,0.);
    TGeoVolume *f1v = new TGeoVolume("TPC_IRF1",f1,m4);
@@ -1273,6 +1314,12 @@ ctr1->RegisterYourself();
  TGeoRotation *rotpos[2]; 
  //
  TGeoRotation *rotrod1[2]; 
+ TGeoTubeSeg *irh = new TGeoTubeSeg(78.825,79.25,1.5,358.5,1.5);
+ TGeoTubeSeg *orh = new TGeoTubeSeg(256.5,257.95,1.5,359.5,0.5);
+ TGeoTubeSeg *ohh = new TGeoTubeSeg(256.5,257.95,1.5,9.5,10.5);
+  TGeoVolume *irhv = new TGeoVolume("TPC_IRHH",irh,m4);
+  TGeoVolume *orhv = new TGeoVolume("TPC_ORHH",orh,m4);
+  TGeoVolume *ohhv = new TGeoVolume("TPC_OHVHH",ohh,m4);
   
  //v9 - drift gas
 
@@ -1280,11 +1327,17 @@ ctr1->RegisterYourself();
     Double_t angle,x,y;
     Double_t z,r; 
     angle=TMath::DegToRad()*20.*(Double_t)i;
+    TGeoRotation *roth = new TGeoRotation(); //rotation for rod holders
+    roth->RotateZ(angle);
     //inner rods
     r=81.5;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
     z = 126.;
+    //
+    v9->AddNode(irhv,i+1,roth);
+    v9->AddNode(orhv,i+1,roth);
+    v9->AddNode(ohhv,i+1,roth);
     //
     if(i==11){//resistor rod inner
        rotrod.RotateZ(-90.+angle);
