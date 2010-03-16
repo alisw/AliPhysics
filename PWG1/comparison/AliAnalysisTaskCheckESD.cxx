@@ -275,7 +275,7 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
   TObjArray selV0s;
   TObjArray selCascades;
   for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {//Check this loop again
-    AliMCParticle* track = mcEvent->GetTrack(iTracks);
+    AliMCParticle* track = (AliMCParticle*)mcEvent->GetTrack(iTracks);
     TParticle* particle = track->Particle();
     if (!particle) continue;
     if (particle->Pt() < 0.001) continue;
@@ -334,7 +334,7 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
     // select tracks of selected particles
     Int_t label = TMath::Abs(track->GetLabel());
     if (label > mcEvent->GetNumberOfTracks()) continue;     // background
-    AliMCParticle* mctrack = mcEvent->GetTrack(label);
+    AliMCParticle* mctrack = (AliMCParticle*)mcEvent->GetTrack(label);
     TParticle* particle = mctrack->Particle();
     if (!selParticles.Contains(particle)) continue;
     if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) continue;
@@ -415,17 +415,17 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
     
     Int_t negLabel = TMath::Abs(esd->GetTrack(v0->GetNindex())->GetLabel());
     if (negLabel > mcEvent->GetNumberOfTracks()) continue;     // background
-    AliMCParticle* track = mcEvent->GetTrack(negLabel);
+    AliMCParticle* track = (AliMCParticle*)mcEvent->GetTrack(negLabel);
     TParticle* particle = track->Particle();
     Int_t negMother = particle->GetMother(0);
     if (negMother < 0) continue;
     Int_t posLabel = TMath::Abs(esd->GetTrack(v0->GetPindex())->GetLabel());
     if (posLabel > mcEvent->GetNumberOfTracks()) continue;     // background
-    track = mcEvent->GetTrack(posLabel);
+    track = (AliMCParticle*)mcEvent->GetTrack(posLabel);
     particle = track->Particle();
     Int_t posMother = particle->GetMother(0);
     if (negMother != posMother) continue;
-    track = mcEvent->GetTrack(negMother);
+    track = (AliMCParticle*)mcEvent->GetTrack(negMother);
     particle = track->Particle();
     if (!selV0s.Contains(particle)) continue;
     selV0s.Remove(particle);
@@ -443,27 +443,27 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
     
     Int_t negLabel = TMath::Abs(esd->GetTrack(cascade->GetNindex())->GetLabel());
     if (negLabel > mcEvent->GetNumberOfTracks()) continue;     // background
-    AliMCParticle* track = mcEvent->GetTrack(negLabel);
+    AliMCParticle* track = (AliMCParticle*)mcEvent->GetTrack(negLabel);
     TParticle* particle = track->Particle();
     Int_t negMother = particle->GetMother(0);
     if (negMother < 0) continue;
     Int_t posLabel = TMath::Abs(esd->GetTrack(cascade->GetPindex())->GetLabel());
     if (posLabel > mcEvent->GetNumberOfTracks()) continue;     // background
-    track = mcEvent->GetTrack(posLabel);
+    track = (AliMCParticle*)mcEvent->GetTrack(posLabel);
     particle = track->Particle();
     Int_t posMother = particle->GetMother(0);
     if (negMother != posMother) continue;
-    track = mcEvent->GetTrack(negMother);
+    track = (AliMCParticle*)mcEvent->GetTrack(negMother);
     particle = track->Particle();
     Int_t v0Mother = particle->GetMother(0);
     if (v0Mother < 0) continue;
     Int_t bacLabel = TMath::Abs(esd->GetTrack(cascade->GetBindex())->GetLabel());
     if (bacLabel > mcEvent->GetNumberOfTracks()) continue;     // background
-    track = mcEvent->GetTrack(bacLabel);
+    track = (AliMCParticle*)mcEvent->GetTrack(bacLabel);
     particle = track->Particle();
     Int_t bacMother = particle->GetMother(0);
     if (v0Mother != bacMother) continue;
-    track = mcEvent->GetTrack(v0Mother);
+    track = (AliMCParticle*)mcEvent->GetTrack(v0Mother);
     particle = track->Particle();
     if (!selCascades.Contains(particle)) continue;
     selCascades.Remove(particle);

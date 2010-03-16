@@ -139,7 +139,7 @@ void AliITSComparisonTask::UserExec(Option_t *)
     
   // Loop over all MC tracks and select "good" tracks
   for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
-    AliMCParticle* track = mcEvent->GetTrack(iTracks);
+    AliMCParticle* track = (AliMCParticle*)mcEvent->GetTrack(iTracks);
     if (!track) {
       Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
       continue;
