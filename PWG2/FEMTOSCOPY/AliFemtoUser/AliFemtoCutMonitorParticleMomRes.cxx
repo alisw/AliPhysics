@@ -136,17 +136,17 @@ void AliFemtoCutMonitorParticleMomRes::Fill(const AliFemtoTrack* aTrack)
 		    tInf->GetTrueMomentum()->y() - aTrack->P().y(),
 		    tInf->GetTrueMomentum()->z() - aTrack->P().z());
     
-    fMomResXvsP->Fill(aTrack->P().mag(),
+    fMomResXvsP->Fill(aTrack->P().Mag(),
 		      tInf->GetTrueMomentum()->x() - aTrack->P().x());
-    fMomResYvsP->Fill(aTrack->P().mag(),
+    fMomResYvsP->Fill(aTrack->P().Mag(),
 		      tInf->GetTrueMomentum()->y() - aTrack->P().y());
-    fMomResZvsP->Fill(aTrack->P().mag(),
+    fMomResZvsP->Fill(aTrack->P().Mag(),
 		      tInf->GetTrueMomentum()->z() - aTrack->P().z());
-    fImpactXY->Fill(aTrack->P().mag(),
+    fImpactXY->Fill(aTrack->P().Mag(),
 		    aTrack->ImpactD());
-    fImpactZ->Fill(aTrack->P().mag(),
+    fImpactZ->Fill(aTrack->P().Mag(),
 		   aTrack->ImpactZ());
-    fSigma->Fill(aTrack->P().mag(),
+    fSigma->Fill(aTrack->P().Mag(),
 		 aTrack->SigmaToVertex());
   }
 }

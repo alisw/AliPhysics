@@ -679,6 +679,9 @@ void AliFemtoCorrFctnDirectYlm::Write()
 TList* AliFemtoCorrFctnDirectYlm::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
+  if ((!fcovnum) || (!fcovden))
+    PackCovariances();
+
   TList *tOutputList = new TList();
 
   for (int ilm=0; ilm<fMaxJM; ilm++) {
@@ -846,23 +849,26 @@ void AliFemtoCorrFctnDirectYlm::PackCovariances()
   char bufname[200];
   sprintf(bufname, "CovNum%s", fnumsreal[0]->GetName()+10);
 
-  if (fcovnum) delete fcovnum;
-  fcovnum = new TH3D(bufname,bufname, 
-		    fnumsreal[0]->GetNbinsX(), fnumsreal[0]->GetXaxis()->GetXmin(), fnumsreal[0]->GetXaxis()->GetXmax(),
-		    GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5,
-		    GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5);
+  //  if (fcovnum) delete fcovnum;
+  if (!fcovnum) 
+    fcovnum = new TH3D(bufname,bufname, 
+		       fnumsreal[0]->GetNbinsX(), fnumsreal[0]->GetXaxis()->GetXmin(), fnumsreal[0]->GetXaxis()->GetXmax(),
+		       GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5,
+		       GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5);
   
   for (int ibin=1; ibin<=fcovnum->GetNbinsX(); ibin++)
     for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++)
       for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++)
 	fcovnum->SetBinContent(ibin, ilmz+1, ilmp+1, fcovmnum[GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)]);
 
-  if (fcovden) delete fcovden;
   sprintf(bufname, "CovDen%s", fnumsreal[0]->GetName()+10);
-  fcovden  = new TH3D(bufname,bufname, 
-		     fdensreal[0]->GetNbinsX(), fdensreal[0]->GetXaxis()->GetXmin(), fdensreal[0]->GetXaxis()->GetXmax(),
-		     GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5,
-		     GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5);
+
+  //  if (fcovden) delete fcovden;
+  if (!fcovden)
+    fcovden  = new TH3D(bufname,bufname, 
+			fdensreal[0]->GetNbinsX(), fdensreal[0]->GetXaxis()->GetXmin(), fdensreal[0]->GetXaxis()->GetXmax(),
+			GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5,
+			GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5);
 		     
   for (int ibin=1; ibin<=fcovden->GetNbinsX(); ibin++)
     for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++)

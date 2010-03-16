@@ -54,8 +54,8 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
     if ((infg1) && (infg2)) {
       // assume the emission point is in [cm] and try to judge if
       // both particles are primary
-      Double_t dist1 = infg1->GetGlobalEmissionPoint()->perp();
-      Double_t dist2 = infg2->GetGlobalEmissionPoint()->perp();
+      Double_t dist1 = infg1->GetGlobalEmissionPoint()->Perp();
+      Double_t dist2 = infg2->GetGlobalEmissionPoint()->Perp();
 
       if ((dist1 > 0.05) && (dist2 > 0.05)) {
 	// At least one particle is non primary
@@ -87,8 +87,8 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tPz = inf1->GetTrueMomentum()->z() + inf2->GetTrueMomentum()->z();
   Double_t tM1 = inf1->GetMass();
   Double_t tM2 = inf2->GetMass();
-  Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->mag2());
-  Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->mag2());
+  Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->Mag2());
+  Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->Mag2());
   Double_t tEs = tE1 + tE2;
 
   Double_t tPt = sqrt(tPx*tPx + tPy*tPy);

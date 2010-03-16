@@ -106,7 +106,7 @@ void AliFemtoCutMonitorParticleEtCorr::Fill(const AliFemtoTrack* aTrack)
   //  float tRapidity = 0.5*::log((tEnergy+aTrack->P().z())/(tEnergy-aTrack->P().z()));
   float tPt = ::sqrt((aTrack->P().x())*(aTrack->P().x())+(aTrack->P().y())*(aTrack->P().y()));
   //  float tEta = -TMath::Log(TMath::Tan(aTrack->P().theta()/2.0));
-  float tPhi = aTrack->P().phi();
+  float tPhi = aTrack->P().Phi();
   Double_t tPiTwo = TMath::Pi()*2;
 
   while (tPhi > tPiTwo) tPhi -= tPiTwo;

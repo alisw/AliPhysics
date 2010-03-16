@@ -246,7 +246,7 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}
     }
-  float tEnergy = ::sqrt(track->P().mag2()+fMass*fMass);
+  float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
   float tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
@@ -309,11 +309,11 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
     }
 
   if (fMostProbable) {
-    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().mag());
+    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
     tMost[1] = 0.0;
-    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().mag());
-    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().mag());
-    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().mag());
+    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
+    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
+    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
     int imost=0;
     float ipidmax = 0.0;
     for (int ip=0; ip<5; ip++)
