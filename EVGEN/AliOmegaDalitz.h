@@ -35,11 +35,16 @@ class AliOmegaDalitz : public AliDecayer
     virtual Float_t GetLifetime(Int_t /*kf*/)                 {return -1;}
     virtual void    ReadDecayTable()                          {;}
     virtual TH1F*   LeptonPairMassHisto()                     {return  fLPMass;}
-	    
+    //
+    virtual void    Decay(TClonesArray* array);
+    virtual const   TLorentzVector* Products() const {return fProducts;}
+    virtual void    Copy(TObject&) const;
  private:
     virtual void    Rot(Double_t pin[3], Double_t pout[3],
 			Double_t costheta, Double_t sintheta,
 			Double_t cosphi, Double_t sinphi);
+    AliOmegaDalitz(const AliOmegaDalitz &dalitz);
+    AliOmegaDalitz & operator=(const AliOmegaDalitz & rhs);
     
  protected:
     TH1F*           fLPMass;       // Histogram for lepton pair mass

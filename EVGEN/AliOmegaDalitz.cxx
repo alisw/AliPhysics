@@ -102,8 +102,6 @@ void AliOmegaDalitz::Init()
 	/ (TMath::Power(TMath::Power(0.6519,2)-TMath::Power(mLL, 2), 2) 
 	   + TMath::Power(0.04198, 2)*TMath::Power(0.6519, 2));
     weight = krollWada * formFactor;   
-    printf(" %5d %13.3f \n", ibin, weight);
-    
     fLPMass->AddBinContent(ibin, weight);
   }
 }
@@ -237,3 +235,60 @@ Rot(Double_t pin[3], Double_t pout[3], Double_t costheta, Double_t sintheta,
   return;
 }
 
+void AliOmegaDalitz::Decay(TClonesArray* array)
+{
+  //
+  // Replace all omega dalitz decays with the correct matrix element decays
+  //
+  printf("-->Correcting Dalitz \n");
+  Int_t nt = array->GetEntriesFast();
+  TParticle* dp[3];
+  for (Int_t i = 0; i < nt; i++) {
+    TParticle* part = (TParticle*) (array->At(i));
+    if (part->GetPdgCode() != 223)                     continue;
+    
+    Int_t fd = part->GetFirstDaughter() - 1;
+    Int_t ld = part->GetLastDaughter()  - 1;
+
+    if (fd < 0)                                        continue;
+    if ((ld - fd) != 2)                                continue;
+
+    for (Int_t j = 0; j < 3; j++) dp[j] = (TParticle*) (array->At(fd+j));
+    if ((dp[0]->GetPdgCode() != kPi0) ||
+	(TMath::Abs(dp[1]->GetPdgCode()) != kElectron)) continue;
+    TLorentzVector omega(part->Px(), part->Py(), part->Pz(), part->Energy());
+    Decay(223, &omega);
+    for (Int_t j = 0; j < 3; j++) dp[j]->SetMomentum(fProducts[2-j]);
+    printf("original %13.3f %13.3f %13.3f %13.3f \n", 
+	   part->Px(), part->Py(), part->Pz(), part->Energy());
+    printf("new       %13.3f %13.3f %13.3f %13.3f \n", 
+	   dp[0]->Px()+dp[1]->Px()+dp[2]->Px(), 
+	   dp[0]->Py()+dp[1]->Py()+dp[2]->Py(), 
+	   dp[0]->Pz()+dp[1]->Pz()+dp[2]->Pz(), 
+	   dp[0]->Energy()+dp[1]->Energy()+dp[2]->Energy());
+
+
+  }
+}
+AliOmegaDalitz& AliOmegaDalitz::operator=(const  AliOmegaDalitz& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+
+void AliOmegaDalitz::Copy(TObject&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+
+AliOmegaDalitz::AliOmegaDalitz(const AliOmegaDalitz &dalitz)
+  : AliDecayer(),
+    fLPMass(0)
+{
+  // Copy constructor
+  dalitz.Copy(*this);
+}
