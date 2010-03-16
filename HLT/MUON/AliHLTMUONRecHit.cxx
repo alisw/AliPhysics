@@ -81,7 +81,10 @@ Int_t AliHLTMUONRecHit::Chamber(bool warn) const
 /// \param warn  Indicates if any warning should be printed in case of problems.
 /// \returns The chamber number of this hit in the range [1..14] or -1 if not known.
 
-	if (fDetElemId != -1) return AliMpDEManager::GetChamberId(fDetElemId, warn);
+	//FIXME: 16 March 2010 AliMpDEManager::GetChamberId is not behaving as the
+	// documentation indicates anymore and now causes a segfault.
+	//if (fDetElemId != -1) return AliMpDEManager::GetChamberId(fDetElemId, warn);
+	if (fDetElemId != -1) return fDetElemId/100;
 	
 	if (warn)
 	{

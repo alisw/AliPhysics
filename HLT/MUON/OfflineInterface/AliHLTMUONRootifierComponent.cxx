@@ -31,6 +31,7 @@
 #include "AliHLTMUONRecHit.h"
 #include "AliHLTMUONTriggerRecord.h"
 #include "AliHLTMUONMansoTrack.h"
+#include "AliHLTMUONTrack.h"
 #include "AliHLTMUONDecision.h"
 #include "AliMUONTriggerDDLDecoderEventHandler.h"
 #include "TClonesArray.h"
@@ -620,10 +621,33 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		}
 	}
 	
-	std::map<AliHLTInt32_t, AliHLTMUONMansoTrack*> trackMap;
-	
 	// Now we can look for tracks to add. We needed the ROOT trigger records
 	// and reco hits created before we can create track objects.
+	
+	std::map<AliHLTInt32_t, AliHLTMUONTrack*> trackMap;
+	
+	for (block = GetFirstInputBlock(AliHLTMUONConstants::TracksBlockDataType());
+	     block != NULL;
+	     block = GetNextInputBlock()
+	    )
+	{
+		specification |= block->fSpecification;
+		AliHLTMUONTracksBlockReader inblock(block->fPtr, block->fSize);
+		if (not BlockStructureOk(inblock))
+		{
+			if (DumpDataOnError()) DumpEvent(evtData, trigData);
+			continue;
+		}
+		
+		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
+		{
+			const AliHLTMUONTrackStruct& t = inblock[n];
+			trackMap[t.fId] = AddTrack(event, t);
+		}
+	}
+
+	std::map<AliHLTInt32_t, AliHLTMUONMansoTrack*> mansoTrackMap;
+	
 	for (block = GetFirstInputBlock(AliHLTMUONConstants::MansoTracksBlockDataType());
 	     block != NULL;
 	     block = GetNextInputBlock()
@@ -640,7 +664,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{
 			const AliHLTMUONMansoTrackStruct& t = inblock[n];
-			trackMap[t.fId] = AddTrack(event, t);
+			mansoTrackMap[t.fId] = AddTrack(event, t);
 		}
 	}
 	
@@ -661,7 +685,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 		for (AliHLTUInt32_t n = 0; n < inblock.Nentries(); n++)
 		{
 			const AliHLTMUONMansoCandidateStruct& tc = inblock[n];
-			AliHLTMUONMansoTrack* mtrack = trackMap[tc.fTrack.fId];
+			AliHLTMUONMansoTrack* mtrack = mansoTrackMap[tc.fTrack.fId];
 			if (mtrack == NULL)
 			{
 				// If we got here then we could not find the corresponding Manso
@@ -708,20 +732,9 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			bool highPt, lowPt;
 			AliHLTMUONUtils::UnpackTrackDecisionBits(t.fTriggerBits, highPt, lowPt);
 			
-			// Try find the corresponding track in the 'event'.
-			const AliHLTMUONMansoTrack* track = NULL;
-			for (Int_t k = 0; k < event.Array().GetEntriesFast(); k++)
-			{
-				if (event.Array()[k]->IsA() != AliHLTMUONMansoTrack::Class())
-					continue;
-				const AliHLTMUONMansoTrack* tk =
-					static_cast<const AliHLTMUONMansoTrack*>(event.Array()[k]);
-				if (tk->Id() == t.fTrackId)
-				{
-					track = tk;
-					break;
-				}
-			}
+			// Try find the corresponding track.
+			const TObject* track = trackMap[t.fTrackId];
+			if (track == NULL) track = mansoTrackMap[t.fTrackId];
 			
 			// If the track was not found then create a dummy one.
 			if (track == NULL)
@@ -784,19 +797,11 @@ int AliHLTMUONRootifierComponent::DoEvent(
 					highPtCount, lowPtCount
 				);
 			
-			// Try find the corresponding tracks in the 'event'.
-			const AliHLTMUONMansoTrack* trackA = NULL;
-			const AliHLTMUONMansoTrack* trackB = NULL;
-			for (Int_t k = 0; k < event.Array().GetEntriesFast(); k++)
-			{
-				if (event.Array()[k]->IsA() != AliHLTMUONMansoTrack::Class())
-					continue;
-				const AliHLTMUONMansoTrack* tk =
-					static_cast<const AliHLTMUONMansoTrack*>(event.Array()[k]);
-				if (tk->Id() == t.fTrackAId) trackA = tk;
-				if (tk->Id() == t.fTrackBId) trackB = tk;
-				if (trackA != NULL and trackB != NULL) break;
-			}
+			// Try find the corresponding tracks.
+			const TObject* trackA = trackMap[t.fTrackAId];
+			if (trackA == NULL) trackA = mansoTrackMap[t.fTrackAId];
+			const TObject* trackB = trackMap[t.fTrackBId];
+			if (trackB == NULL) trackB = mansoTrackMap[t.fTrackBId];
 			
 			// If either of the tracks was not found then create a dummy one.
 			if (trackA == NULL)
@@ -940,6 +945,74 @@ AliHLTMUONMansoTrack* AliHLTMUONRootifierComponent::AddTrack(
 	AliHLTMUONMansoTrack* tr = new AliHLTMUONMansoTrack(
 			track.fId, sign, track.fPx, track.fPy, track.fPz, track.fChi2,
 			trigrec, hit7, hit8, hit9, hit10
+		);
+	event.Add(tr);
+	return tr;
+}
+
+
+AliHLTMUONTrack* AliHLTMUONRootifierComponent::AddTrack(
+		AliHLTMUONEvent& event, const AliHLTMUONTrackStruct& track
+	)
+{
+	// Converts the track structure and adds it to the event object.
+	
+	AliHLTMUONParticleSign sign;
+	bool hitset[16];
+	AliHLTMUONUtils::UnpackTrackFlags(
+			track.fFlags, sign, hitset
+		);
+	
+	// Try find the trigger record in 'event'.
+	const AliHLTMUONTriggerRecord* trigrec = NULL;
+	for (Int_t k = 0; k < event.Array().GetEntriesFast(); k++)
+	{
+		if (event.Array()[k]->IsA() != AliHLTMUONTriggerRecord::Class())
+			continue;
+		const AliHLTMUONTriggerRecord* tk =
+			static_cast<const AliHLTMUONTriggerRecord*>(event.Array()[k]);
+		if (tk->Id() == track.fTrigRec)
+		{
+			trigrec = tk;
+			break;
+		}
+	}
+	
+	// Now try find the hits in 'event'.
+	// If they cannot be found then create new ones.
+	const AliHLTMUONRecHit* hits[16];
+	for (int i = 0; i < 16; ++i) hits[i] = NULL;
+	for (Int_t k = 0; k < event.Array().GetEntriesFast(); k++)
+	{
+		if (event.Array()[k]->IsA() != AliHLTMUONRecHit::Class())
+			continue;
+		const AliHLTMUONRecHit* h =
+			static_cast<const AliHLTMUONRecHit*>(event.Array()[k]);
+		for (int i = 0; i < 16; ++i)
+		{
+			if (hitset[i] and h->X() == track.fHit[i].fX and h->Y() == track.fHit[i].fY
+			    and h->Z() == track.fHit[i].fZ)
+			{
+				hits[i] = h;
+			}
+		}
+	}
+	AliHLTMUONRecHit* newhit;
+	for (int i = 0; i < 16; ++i)
+	{
+		if (hitset[i] and hits[i] == NULL)
+		{
+			newhit = new AliHLTMUONRecHit(track.fHit[i].fX, track.fHit[i].fY, track.fHit[i].fZ);
+			event.Add(newhit);
+			hits[i] = newhit;
+		}
+	}
+
+	AliHLTMUONTrack* tr = new AliHLTMUONTrack(
+			track.fId, sign, track.fPx, track.fPy, track.fPz,
+			track.fInverseBendingMomentum, track.fThetaX, track.fThetaY,
+			track.fX, track.fY, track.fZ, track.fChi2,
+			trigrec, hits
 		);
 	event.Add(tr);
 	return tr;

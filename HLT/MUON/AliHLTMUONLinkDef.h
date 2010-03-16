@@ -53,6 +53,7 @@
 #pragma link C++ class AliHLTMUONRecHit+;
 #pragma link C++ class AliHLTMUONRecHit::AliChannel+;
 #pragma link C++ class AliHLTMUONTriggerRecord+;
+#pragma link C++ class AliHLTMUONTrack+;
 #pragma link C++ class AliHLTMUONMansoTrack+;
 #pragma link C++ class AliHLTMUONDecision+;
 #pragma link C++ class AliHLTMUONDecision::AliTrackDecision+;

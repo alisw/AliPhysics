@@ -27,6 +27,7 @@
 ///
 
 #include "AliHLTMUONDecision.h"
+#include "AliHLTMUONTrack.h"
 #include "AliHLTMUONMansoTrack.h"
 #include "AliLog.h"
 #include <cstring>
@@ -102,7 +103,7 @@ AliHLTMUONDecision::AliHLTMUONDecision(
 
 void AliHLTMUONDecision::AddDecision(
 		Float_t pt, Bool_t passedLowCut, Bool_t passedHighCut,
-		const AliHLTMUONMansoTrack* track
+		const TObject* track
 	)
 {
 /// Add a single track decision to the dHLT trigger.
@@ -131,8 +132,7 @@ void AliHLTMUONDecision::AddDecision(
 		Float_t mass, Bool_t passedLowCut,
 		Bool_t passedHighCut, Bool_t unlike,
 		UChar_t lowPtCount, UChar_t highPtCount,
-		const AliHLTMUONMansoTrack* trackA,
-		const AliHLTMUONMansoTrack* trackB
+		const TObject* trackA, const TObject* trackB
 	)
 {
 /// Add a track pair decision to the dHLT trigger.
@@ -210,13 +210,17 @@ void AliHLTMUONDecision::Print(Option_t* option) const
 			const AliTrackDecision* decision = SingleTrackDecision(i);
 			if (decision == NULL) continue;
 			
-			if (decision->Track() == NULL)
+			if (decision->MansoTrack() != NULL)
 			{
-				cout << setw(10) << "-";
+				cout << setw(10) << decision->MansoTrack()->Id();
+			}
+			else if (decision->FullTrack() != NULL)
+			{
+				cout << setw(10) << decision->FullTrack()->Id();
 			}
 			else
 			{
-				cout << setw(10) << decision->Track()->Id();
+				cout << setw(10) << "-";
 			}
 			
 			cout	<< setw(12) << decision->Pt()
@@ -238,22 +242,30 @@ void AliHLTMUONDecision::Print(Option_t* option) const
 			const AliPairDecision* decision = TrackPairDecision(j);
 			if (decision == NULL) continue;
 			
-			if (decision->TrackA() == NULL)
+			if (decision->MansoTrackA() != NULL)
 			{
-				cout << setw(10) << "-";
+				cout << setw(10) << decision->MansoTrackA()->Id();
+			}
+			else if (decision->FullTrackA() != NULL)
+			{
+				cout << setw(10) << decision->FullTrackA()->Id();
 			}
 			else
 			{
-				cout << setw(10) << decision->TrackA()->Id();
+				cout << setw(10) << "-";
 			}
 			
-			if (decision->TrackB() == NULL)
+			if (decision->MansoTrackB() == NULL)
 			{
-				cout << setw(10) << "-";
+				cout << setw(10) << decision->MansoTrackB()->Id();
+			}
+			else if (decision->FullTrackB() == NULL)
+			{
+				cout << setw(10) << decision->FullTrackB()->Id();
 			}
 			else
 			{
-				cout << setw(10) << decision->TrackB()->Id();
+				cout << setw(10) << "-";
 			}
 			
 			cout	<< setw(6) << (decision->LikeSign() ? "yes" : "no")
@@ -418,6 +430,26 @@ std::ostream& operator << (
 }
 
 
+const AliHLTMUONMansoTrack* AliHLTMUONDecision::AliTrackDecision::MansoTrack() const
+{
+/// Returns the associated track as a Manso track object and NULL if the track
+/// object is missing or not a Manso track object.
+
+	if (fTrack == NULL) return NULL;
+	return dynamic_cast<const AliHLTMUONMansoTrack*>(fTrack);
+}
+
+
+const AliHLTMUONTrack* AliHLTMUONDecision::AliTrackDecision::FullTrack() const
+{
+/// Returns the associated track as a full track object and NULL if the track
+/// object is missing or not a full track object.
+
+	if (fTrack == NULL) return NULL;
+	return dynamic_cast<const AliHLTMUONTrack*>(fTrack);
+}
+
+
 void AliHLTMUONDecision::AliTrackDecision::Print(Option_t* option) const
 {
 /// Prints the trigger decision to standard output (screen).
@@ -436,7 +468,10 @@ void AliHLTMUONDecision::AliTrackDecision::Print(Option_t* option) const
 	}
 	else if (strcmp(option, "detail") == 0)
 	{
-		cout << "Trigger decision for track: " << fTrack->Id() << endl;
+		Int_t id = -1;
+		if (MansoTrack() != NULL) id = MansoTrack()->Id();
+		else if (FullTrack() != NULL) id = FullTrack()->Id();
+		cout << "Trigger decision for track: " << id << endl;
 		cout << "pT = " << fPt << " GeV/c" << endl;
 		cout << "pT cut | passed" << endl;
 		cout << "-------+--------" << endl;
@@ -445,7 +480,10 @@ void AliHLTMUONDecision::AliTrackDecision::Print(Option_t* option) const
 	}
 	else if (strcmp(option, "all") == 0)
 	{
-		cout << "Trigger decision for track: " << fTrack->Id() << endl;
+		Int_t id = -1;
+		if (MansoTrack() != NULL) id = MansoTrack()->Id();
+		else if (FullTrack() != NULL) id = FullTrack()->Id();
+		cout << "Trigger decision for track: " << id << endl;
 		cout << "pT = " << fPt << " GeV/c" << endl;
 		cout << "pT cut | passed" << endl;
 		cout << "-------+--------" << endl;
@@ -512,6 +550,46 @@ std::ostream& operator << (
 }
 
 
+const AliHLTMUONMansoTrack* AliHLTMUONDecision::AliPairDecision::MansoTrackA() const
+{
+/// Returns the first associated track as a Manso track object and NULL if the
+/// track object is missing or not a Manso track object.
+
+	if (fTrackA == NULL) return NULL;
+	return dynamic_cast<const AliHLTMUONMansoTrack*>(fTrackA);
+}
+
+
+const AliHLTMUONTrack* AliHLTMUONDecision::AliPairDecision::FullTrackA() const
+{
+/// Returns the first associated track as a full track object and NULL if the
+/// track object is missing or not a full track object.
+
+	if (fTrackA == NULL) return NULL;
+	return dynamic_cast<const AliHLTMUONTrack*>(fTrackA);
+}
+
+
+const AliHLTMUONMansoTrack* AliHLTMUONDecision::AliPairDecision::MansoTrackB() const
+{
+/// Returns the second associated track as a Manso track object and NULL if the
+/// track object is missing or not a Manso track object.
+
+	if (fTrackB == NULL) return NULL;
+	return dynamic_cast<const AliHLTMUONMansoTrack*>(fTrackB);
+}
+
+
+const AliHLTMUONTrack* AliHLTMUONDecision::AliPairDecision::FullTrackB() const
+{
+/// Returns the second associated track as a full track object and NULL if the
+/// track object is missing or not a full track object.
+
+	if (fTrackB == NULL) return NULL;
+	return dynamic_cast<const AliHLTMUONTrack*>(fTrackB);
+}
+
+
 void AliHLTMUONDecision::AliPairDecision::Print(Option_t* option) const
 {
 /// Prints the trigger decision to standard output (screen).
@@ -530,8 +608,14 @@ void AliHLTMUONDecision::AliPairDecision::Print(Option_t* option) const
 	}
 	else if (strcmp(option, "detail") == 0)
 	{
-		cout	<< "Trigger decision for track pair: {" << fTrackA->Id()
-			<< ", " << fTrackB->Id() << "}" << endl;
+		Int_t id1 = -1;
+		if (MansoTrackA() != NULL) id1 = MansoTrackA()->Id();
+		else if (FullTrackA() != NULL) id1 = FullTrackA()->Id();
+		Int_t id2 = -1;
+		if (MansoTrackB() != NULL) id2 = MansoTrackB()->Id();
+		else if (FullTrackB() != NULL) id2 = FullTrackB()->Id();
+		cout	<< "Trigger decision for track pair: {" << id1
+			<< ", " << id2 << "}" << endl;
 		cout << "Invariant mass = " << fMass << " GeV/c^2" << endl;
 		cout << "mass cut | passed" << endl;
 		cout << "---------+--------" << endl;
@@ -543,8 +627,14 @@ void AliHLTMUONDecision::AliPairDecision::Print(Option_t* option) const
 	}
 	else if (strcmp(option, "all") == 0)
 	{
-		cout	<< "Trigger decision for track pair: {" << fTrackA->Id()
-			<< ", " << fTrackB->Id() << "}" << endl;
+		Int_t id1 = -1;
+		if (MansoTrackA() != NULL) id1 = MansoTrackA()->Id();
+		else if (FullTrackA() != NULL) id1 = FullTrackA()->Id();
+		Int_t id2 = -1;
+		if (MansoTrackB() != NULL) id2 = MansoTrackB()->Id();
+		else if (FullTrackB() != NULL) id2 = FullTrackB()->Id();
+		cout	<< "Trigger decision for track pair: {" << id1
+			<< ", " << id2 << "}" << endl;
 		cout << "Invariant mass = " << fMass << " GeV/c^2" << endl;
 		cout << "mass cut | passed" << endl;
 		cout << "---------+--------" << endl;

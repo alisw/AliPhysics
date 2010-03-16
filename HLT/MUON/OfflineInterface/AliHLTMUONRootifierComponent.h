@@ -17,6 +17,7 @@
 
 class AliHLTMUONEvent;
 class AliHLTMUONMansoTrack;
+class AliHLTMUONTrack;
 extern "C" struct AliHLTMUONMansoTrackStruct;
 
 /**
@@ -104,6 +105,14 @@ private:
 	 * \param track  The track structure to convert and add to the event.
 	 */
 	AliHLTMUONMansoTrack* AddTrack(AliHLTMUONEvent& event, const AliHLTMUONMansoTrackStruct& track);
+	
+	/**
+	 * This method creates a AliHLTMUONTrack object from the given track structure
+	 * and adds it to the dHLT event object.
+	 * \param event  The dHLT event object.
+	 * \param track  The track structure to convert and add to the event.
+	 */
+	AliHLTMUONTrack* AddTrack(AliHLTMUONEvent& event, const AliHLTMUONTrackStruct& track);
 	
 	bool fWarnForUnexpecedBlock;  /// Flag indicating if we should log a warning if we got a block of an unexpected type.
 

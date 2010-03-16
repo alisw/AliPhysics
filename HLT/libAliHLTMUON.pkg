@@ -24,6 +24,7 @@ CLASS_HDRS := 	AliHLTMUONUtils.h \
 		AliHLTMUONProcessor.h \
 		AliHLTMUONRecHit.h \
 		AliHLTMUONTriggerRecord.h \
+		AliHLTMUONTrack.h \
 		AliHLTMUONMansoTrack.h \
 		AliHLTMUONDecision.h \
 		AliHLTMUONEvent.h

@@ -16,6 +16,7 @@
 #include "TObject.h"
 #include "TClonesArray.h"
 
+class AliHLTMUONTrack;
 class AliHLTMUONMansoTrack;
 
 /**
@@ -62,7 +63,7 @@ public:
 				Float_t pt = -1,
 				Bool_t passedLowCut = kFALSE,
 				Bool_t passedHighCut = kFALSE,
-				const AliHLTMUONMansoTrack* track = NULL
+				const TObject* track = NULL
 			) :
 			TObject(), fTrack(track), fPt(pt),
 			fPassedLowCut(passedLowCut), fPassedHighCut(passedHighCut)
@@ -97,7 +98,19 @@ public:
 		/**
 		 * Returns the track associated with the trigger decision or NULL if none found.
 		 */
-		const AliHLTMUONMansoTrack* Track() const { return fTrack; }
+		const TObject* Track() const { return fTrack; }
+		
+		/**
+		 * Returns the track associated with the trigger decision as a Manso track object.
+		 * NULL is returned if no track is found or the track object is not a Manso track.
+		 */
+		const AliHLTMUONMansoTrack* MansoTrack() const;
+		
+		/**
+		 * Returns the track associated with the trigger decision as a full track object.
+		 * NULL is returned if no track is found or the track object is not a full track.
+		 */
+		const AliHLTMUONTrack* FullTrack() const;
 		
 		/**
 		 * Returns the calculated pT value used for the trigger decision.
@@ -136,12 +149,12 @@ public:
 	
 	private:
 		
-		const AliHLTMUONMansoTrack* fTrack; ///< Track associated with this decision.
+		const TObject* fTrack; ///< Track associated with this decision.
 		Float_t fPt; ///< Calculated pT value used for decision (GeV/c).
 		Bool_t fPassedLowCut; ///< Indicates if the track passed the low pT cut.
 		Bool_t fPassedHighCut; ///< Indicates if the track passed the high pT cut.
 		
-		ClassDef(AliHLTMUONDecision::AliTrackDecision, 3); // A single track dHLT trigger decision object.
+		ClassDef(AliHLTMUONDecision::AliTrackDecision, 4); // A single track dHLT trigger decision object.
 	};
 	
 	/**
@@ -173,8 +186,8 @@ public:
 				Float_t mass = -1, Bool_t passedLowCut = kFALSE,
 				Bool_t passedHighCut = kFALSE, Bool_t unlike = kFALSE,
 				UChar_t lowPtCount = 0, UChar_t highPtCount = 0,
-				const AliHLTMUONMansoTrack* trackA = NULL,
-				const AliHLTMUONMansoTrack* trackB = NULL
+				const TObject* trackA = NULL,
+				const TObject* trackB = NULL
 			) :
 			TObject(), fTrackA(trackA), fTrackB(trackB), fMass(mass),
 			fPassedLowCut(passedLowCut), fPassedHighCut(passedHighCut),
@@ -212,13 +225,37 @@ public:
 		 * Returns the first track associated with the track pair trigger decision
 		 * or NULL if none found.
 		 */
-		const AliHLTMUONMansoTrack* TrackA() const { return fTrackA; }
+		const TObject* TrackA() const { return fTrackA; }
+		
+		/**
+		 * Returns the first track associated with the pair decision as a Manso track object.
+		 * NULL is returned if no track is found or the track object is not a Manso track.
+		 */
+		const AliHLTMUONMansoTrack* MansoTrackA() const;
+		
+		/**
+		 * Returns the first track associated with the pair decision as a full track object.
+		 * NULL is returned if no track is found or the track object is not a full track.
+		 */
+		const AliHLTMUONTrack* FullTrackA() const;
 		
 		/**
 		 * Returns the second track associated with the track pair trigger decision
 		 * or NULL if none found.
 		 */
-		const AliHLTMUONMansoTrack* TrackB() const { return fTrackB; }
+		const TObject* TrackB() const { return fTrackB; }
+		
+		/**
+		 * Returns the second track associated with the pair decision as a Manso track object.
+		 * NULL is returned if no track is found or the track object is not a Manso track.
+		 */
+		const AliHLTMUONMansoTrack* MansoTrackB() const;
+		
+		/**
+		 * Returns the second track associated with the pair decision as a full track object.
+		 * NULL is returned if no track is found or the track object is not a full track.
+		 */
+		const AliHLTMUONTrack* FullTrackB() const;
 		
 		/**
 		 * Returns the calculated invariant mass value used for the trigger decision.
@@ -289,8 +326,8 @@ public:
 	
 	private:
 		
-		const AliHLTMUONMansoTrack* fTrackA; ///< The first track associated with this pair decision.
-		const AliHLTMUONMansoTrack* fTrackB; ///< The second track associated with this pair decision.
+		const TObject* fTrackA; ///< The first track associated with this pair decision.
+		const TObject* fTrackB; ///< The second track associated with this pair decision.
 		Float_t fMass;  ///< The invariant mass used for the trigger decision. (GeV/c^2)
 		Bool_t fPassedLowCut; ///< Indicates if the track passed the low mass cut.
 		Bool_t fPassedHighCut; ///< Indicates if the track passed the high mass cut.
@@ -298,7 +335,7 @@ public:
 		UChar_t fLowPtCount; ///< The number of tracks in the pair that passed the low pT cut.
 		UChar_t fHighPtCount; ///< The number of tracks in the pair that passed the high pT cut.
 		
-		ClassDef(AliHLTMUONDecision::AliPairDecision, 3); // A track pair dHLT trigger decision object.
+		ClassDef(AliHLTMUONDecision::AliPairDecision, 4); // A track pair dHLT trigger decision object.
 	};
 
 	/**
@@ -418,7 +455,7 @@ public:
 	/// Add a single track decision to the dHLT trigger.
 	void AddDecision(
 			Float_t pt, Bool_t passedLowCut, Bool_t passedHighCut,
-			const AliHLTMUONMansoTrack* track
+			const TObject* track
 		);
 	
 	/// Add a track pair decision to the dHLT trigger.
@@ -429,8 +466,7 @@ public:
 			Float_t mass, Bool_t passedLowCut,
 			Bool_t passedHighCut, Bool_t unlike,
 			UChar_t lowPtCount, UChar_t highPtCount,
-			const AliHLTMUONMansoTrack* trackA,
-			const AliHLTMUONMansoTrack* trackB
+			const TObject* trackA, const TObject* trackB
 		);
 	
 	/**
@@ -496,7 +532,7 @@ private:
 	TClonesArray fTrackDecisions;  ///< Array of single track decision objects.
 	TClonesArray fPairDecisions;  ///< Array of track pair decision objects.
 
-	ClassDef(AliHLTMUONDecision, 3); // Decision object containing data converted from raw internal dHLT data structures.
+	ClassDef(AliHLTMUONDecision, 4); // Decision object containing data converted from raw internal dHLT data structures.
 };
 
 #endif // ALIHLTMUONDECISION_H
