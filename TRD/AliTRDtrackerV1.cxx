@@ -2984,15 +2984,15 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const tracklet)
     return NULL;
   }
 
-  Double_t dx(3.5);
-  Double_t x(tracklet[idx].GetX() - dx);
+  Double_t dx(5.);
+  Double_t x(tracklet[idx].GetX0() - dx);
   // Build track parameters
   Double_t params[] = {
     tracklet[idx].GetYref(0) - dx*tracklet[idx].GetYref(1) // y
    ,tracklet[idx].GetZref(0) - dx*tracklet[idx].GetZref(1) // z
    ,TMath::Sin(TMath::ATan(tracklet[idx].GetYref(1)))      // snp
    ,tracklet[idx].GetZref(1) / TMath::Sqrt(1. + tracklet[idx].GetYref(1) * tracklet[idx].GetYref(1))   // tgl
-   ,tracklet[idx].GetC(1)                                   // curvature -> 1/pt
+   ,tracklet[idx].GetC(fkReconstructor->IsHLT()?1:0)                                   // curvature -> 1/pt
   };
   Int_t sector(fGeom->GetSector(tracklet[idx].GetDetector()));
 
