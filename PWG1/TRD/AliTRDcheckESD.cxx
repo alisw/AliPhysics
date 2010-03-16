@@ -202,14 +202,19 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     hF->GetXaxis()->SetTitleOffset(1.2);
     hF->GetYaxis()->CenterTitle();
     hF->Draw("p");
-    for(Int_t ig(0); ig<fgkNgraph[kPtRes]; ig++){
-      if(!(g = (TGraphErrors*)arr->At(ig))) continue;//return kFALSE;
-      if(!g->GetN()) continue;
-      g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
-      //PutTrendValue(name[id], g->GetMean(2));
-      //PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
+    {
+      Int_t nPlots(0);
+      for(Int_t ig(0); ig<fgkNgraph[kPtRes]; ig++){
+        if(!(g = (TGraphErrors*)arr->At(ig))) continue;//return kFALSE;
+        if(!g->GetN()) continue;
+        nPlots++;
+        g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
+        //PutTrendValue(name[id], g->GetMean(2));
+        //PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
+      }
+      if(nPlots) leg->Draw();
     }
-    leg->Draw();gPad->SetLogx();
+    gPad->SetLogx();
     break;
   }
   return kTRUE;

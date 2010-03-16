@@ -73,7 +73,7 @@ Bool_t mc(kFALSE), friends(kFALSE);
 
 void processTRD(TNamed* task);
 void processESD(TNamed* task);
-void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFALSE)
+void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "", Bool_t kGRID=kFALSE)
 {
   if(kGRID){
     if(!gSystem->Getenv("GSHELL_ROOT")){
@@ -107,6 +107,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
     if(!TSTBIT(fSteerTask, itask)) continue;
     new(ctask) TClass(fgkTRDtaskClassName[itask]);
     task = (AliAnalysisTask*)ctask->New();
+    task->SetName(Form("%s%s", task->GetName(), cid));
     if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task);
     else processESD(task);
   }
@@ -119,9 +120,10 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Bool_t kGRID=kFAL
 void processTRD(TNamed *otask)
 {
   printf("processTRD %s %s\n", otask->GetName(), otask->GetTitle());
-
+  Int_t debug(0);
   AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
-  task->SetDebugLevel(0);
+  task->SetDebugLevel(debug);
+  AliLog::SetClassDebugLevel(otask->IsA()->GetName(), debug);
   task->SetMCdata(mc);
   task->SetFriends(friends);
 
