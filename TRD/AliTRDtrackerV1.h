@@ -183,20 +183,22 @@ protected:
   Bool_t         GetTrackPoint(Int_t index, AliTrackPoint &p) const;	
   Float_t        GetR4Layer(Int_t ly) const { return fR[ly];}
   Int_t          MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * const sseed, const Int_t * const ipar);
-  AliTRDtrackV1* MakeTrack(AliTRDseedV1 * const seeds, Double_t *params);
+  AliTRDtrackV1* MakeTrack(AliTRDseedV1 * const tracklet);
   AliTRDtrackV1* SetTrack(const AliTRDtrackV1 * const track);
   AliTRDseedV1*  SetTracklet(const AliTRDseedV1 * const tracklet);
+  void           UnsetTrackletsTrack(const AliTRDtrackV1 * const track);
 
 private:
   AliTRDtrackerV1(const AliTRDtrackerV1 &tracker);
   AliTRDtrackerV1 &operator=(const AliTRDtrackerV1 &tracker);
   Double_t       CookLikelihood(AliTRDseedV1 *cseed, Int_t planes[4]);
-  Double_t       CalculateTrackLikelihood(const AliTRDseedV1 *const tracklets, Double_t *chi2);
-  Int_t          	ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet);
+  Double_t       CalculateTrackLikelihood(Double_t *chi2);
+  Bool_t         ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRDseedV1 *tracklet, Double_t &chi2);
   static Float_t	CalculateReferenceX(const AliTRDseedV1 *const tracklets);
   void        ResetSeedTB();
   Float_t     GetChi2Y(const AliTRDseedV1 *const tracklets) const;
   Float_t     GetChi2Z(const AliTRDseedV1 *const tracklets) const;
+  Float_t     GetChi2Phi(const AliTRDseedV1 *const tracklets) const;
 
 private:
   const AliTRDReconstructor *fkReconstructor;           // reconstructor manager

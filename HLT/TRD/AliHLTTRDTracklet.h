@@ -44,7 +44,7 @@ class AliHLTTRDTracklet
   Float_t        fX0;                    //  X0 position
   Float_t        fYfit[2];               //  Y fit position +derivation
   Float_t        fZfit[2];               //  Z fit position
-  Float_t        fC;                     //  Curvature
+  Float_t        fC[2];                  //  Curvature Rieman[0] Vertex[1]
   Float_t        fChi2;                  //  Global chi2
   Float_t        fProb[AliPID::kSPECIES];// PID probabilities
 

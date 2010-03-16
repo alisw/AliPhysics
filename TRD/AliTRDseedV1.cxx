@@ -83,7 +83,6 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   ,fZ(0.)
   ,fS2Y(0.)
   ,fS2Z(0.)
-  ,fC(0.)
   ,fChi2(0.)
 {
   //
@@ -101,6 +100,8 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   fLabels[0]=-1; fLabels[1]=-1; // most freq MC labels
   fLabels[2]=0;  // number of different labels for tracklet
   memset(fRefCov, 0, 7*sizeof(Double_t));
+  // stand alone curvature
+  fC[0] = 0.; fC[1] = 0.; 
   // covariance matrix [diagonal]
   // default sy = 200um and sz = 2.3 cm 
   fCov[0] = 4.e-4; fCov[1] = 0.; fCov[2] = 5.3; 
@@ -130,7 +131,6 @@ AliTRDseedV1::AliTRDseedV1(const AliTRDseedV1 &ref)
   ,fZ(0.)
   ,fS2Y(0.)
   ,fS2Z(0.)
-  ,fC(0.)
   ,fChi2(0.)
 {
   //
@@ -208,7 +208,6 @@ void AliTRDseedV1::Copy(TObject &ref) const
   target.fZ             = fZ;
   target.fS2Y           = fS2Y;
   target.fS2Z           = fS2Z;
-  target.fC             = fC;
   target.fChi2          = fChi2;
   
   memcpy(target.fIndexes, fIndexes, kNclusters*sizeof(Int_t));
@@ -222,6 +221,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   memcpy(target.fProb, fProb, AliPID::kSPECIES*sizeof(Float_t)); 
   memcpy(target.fLabels, fLabels, 3*sizeof(Int_t)); 
   memcpy(target.fRefCov, fRefCov, 7*sizeof(Double_t)); 
+  target.fC[0] = fC[0]; target.fC[1] = fC[1];
   memcpy(target.fCov, fCov, 3*sizeof(Double_t)); 
   
   TObject::Copy(ref);
@@ -271,7 +271,8 @@ void AliTRDseedV1::Reset(Option_t *opt)
   fPt=0.;
   fdX=0.;fX0=0.; fX=0.; fY=0.; fZ=0.;
   fS2Y=0.; fS2Z=0.;
-  fC=0.; fChi2 = 0.;
+  fC[0]=0.; fC[1]=0.; 
+  fChi2 = 0.;
 
   memset(fPad, 0, 3*sizeof(Float_t));
   fYref[0] = 0.; fYref[1] = 0.; 
@@ -1706,6 +1707,7 @@ void AliTRDseedV1::Print(Option_t *o) const
   AliInfo(Form("Fit | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | ----- |", x, GetY(), TMath::Sqrt(cov[0]), GetZ(), TMath::Sqrt(cov[2]), fYfit[1]));
   AliInfo(Form("Ref | %7.2f | %7.2f+-%7.2f | %7.2f+-%7.2f| %5.2f | %5.2f |", x, fYref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[0]), fZref[0]-fX*fYref[1], TMath::Sqrt(fRefCov[2]), fYref[1], fZref[1]))
   AliInfo(Form("P / Pt [GeV/c] = %f / %f", GetMomentum(), fPt));
+  if(IsStandAlone()) AliInfo(Form("C Rieman / Vertex [1/cm] = %f / %f", fC[0], fC[1]));
   AliInfo(Form("dEdx [a.u.]    = %f / %f / %f / %f / %f/ %f / %f / %f", fdEdx[0], fdEdx[1], fdEdx[2], fdEdx[3], fdEdx[4], fdEdx[5], fdEdx[6], fdEdx[7]));
   AliInfo(Form("PID            = %5.3f / %5.3f / %5.3f / %5.3f / %5.3f", fProb[0], fProb[1], fProb[2], fProb[3], fProb[4]));
 

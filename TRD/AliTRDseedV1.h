@@ -103,7 +103,7 @@ public:
   Bool_t    IsUsable(Int_t i) const  { return fClusters[i] && !fClusters[i]->IsUsed();}
   Bool_t    IsStandAlone() const     { return TestBit(kStandAlone);}
 
-  Float_t   GetC() const             { return fC; }
+  Float_t   GetC(Int_t typ=0) const    { return fC[typ]; }
   Float_t   GetChi2() const          { return fChi2; }
   inline Float_t   GetChi2Z() const;
   inline Float_t   GetChi2Y() const;
@@ -167,7 +167,7 @@ public:
   inline void ResetClusterIter(Bool_t forward = kTRUE);
   void      Reset(Option_t *opt="");
 
-  void      SetC(Float_t c)          { fC = c;}
+  void      SetC(Float_t c, Int_t typ=0) { fC[typ] = c;}
   void      SetChi2(Float_t chi2)    { fChi2 = chi2;}
   inline void SetCovRef(const Double_t *cov);
   void      SetErrorMsg(Int_t err)   { fErrorMsg = err;}
@@ -230,7 +230,7 @@ private:
   Float_t          fZ;                      // z position of the tracklet
   Float_t          fS2Y;                    // estimated resolution in the r-phi direction 
   Float_t          fS2Z;                    // estimated resolution in the z direction 
-  Float_t          fC;                      // Curvature
+  Float_t          fC[2];                   // Curvature for standalone [0] rieman [1] vertex constrained 
   Float_t          fChi2;                   // Global chi2  
   Float_t          fdEdx[kNslices];         // dE/dx measurements for tracklet
   Float_t          fProb[AliPID::kSPECIES]; // PID probabilities
@@ -292,7 +292,7 @@ inline void AliTRDseedV1::Init(const AliRieman *rieman)
     fRefCov[0] = rieman->GetErrY(fX0);
     fRefCov[2] = rieman->GetErrZ(fX0);
   }
-  fC       = rieman->GetC(); 
+  fC[0]    = rieman->GetC(); 
   fChi2    = rieman->GetChi2();
 }
 
