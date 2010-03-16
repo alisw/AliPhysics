@@ -44,13 +44,13 @@ AliAODHeader::AliAODHeader() :
   fRefMult(-999),
   fRefMultPos(-999),
   fRefMultNeg(-999),
+  fNMuons(0),
+  fNDimuons(0),
   fEventType(0),
   fOrbitNumber(0),
   fPeriodNumber(0),
   fBunchCrossNumber(0),
-  fTriggerCluster(0),
-  fNMuons(0),
-  fNDimuons(0)
+  fTriggerCluster(0)
 {
   // default constructor
 
@@ -85,13 +85,13 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fRefMult(-999),
   fRefMultPos(-999),
   fRefMultNeg(-999),
+  fNMuons(0),
+  fNDimuons(0),
   fEventType(0),
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(0),
-  fNMuons(0),
-  fNDimuons(0)
+  fTriggerCluster(0)
 {
   // constructor
 
@@ -143,13 +143,13 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fRefMult(refMult),
   fRefMultPos(refMultPos),
   fRefMultNeg(refMultNeg),
+  fNMuons(nMuons),
+  fNDimuons(nDimuons),
   fEventType(evttype),
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
-  fTriggerCluster(trigClus),
-  fNMuons(nMuons),
-  fNDimuons(nDimuons)
+  fTriggerCluster(trigClus)
 
 {
   // constructor
@@ -190,13 +190,13 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fRefMult(hdr.fRefMult), 
   fRefMultPos(hdr.fRefMultPos), 
   fRefMultNeg(hdr.fRefMultNeg),
+  fNMuons(hdr.fNMuons),
+  fNDimuons(hdr.fNDimuons),
   fEventType(hdr.fEventType),
   fOrbitNumber(hdr.fOrbitNumber),
   fPeriodNumber(hdr.fPeriodNumber),
   fBunchCrossNumber(hdr.fBunchCrossNumber),
-  fTriggerCluster(hdr.fTriggerCluster),
-  fNMuons(hdr.fNMuons),
-  fNDimuons(hdr.fNDimuons)
+  fTriggerCluster(hdr.fTriggerCluster)
 
 {
   // Copy constructor.
