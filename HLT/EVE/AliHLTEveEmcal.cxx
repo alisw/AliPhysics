@@ -83,21 +83,14 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
 }
 
 void AliHLTEveEmcal::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
-  
-
-  cout << "x " << pos[1] << "   ";
-  cout << "z " << pos[2] << "   ";
-  cout << "y " << pos[0] << endl;
+  //See header file for documentation
 
   fBoxSet[module].AddBox(15, pos[1], pos[2], energy*20, 6.1, 6.1);
   fBoxSet[module].DigitValue(static_cast<Int_t>(energy));
 }
 
 void AliHLTEveEmcal::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy) {
-
-  cout << endl << endl << module  << endl << endl;
-
-
+  //See header file for documentation
   Int_t absid = fGeoUtils->GetAbsCellIdFromCellIndexes(module, fX, fZ);
   Double_t posX, posY, posZ;
   if(fGeoUtils->RelPosCellInSModule(absid, posX, posY, posZ)) {
@@ -106,6 +99,6 @@ void AliHLTEveEmcal::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t e
     fBoxSet[module].AddBox(15, posY, posZ, energy*5, 6.1, 6.1);
     fBoxSet[module].DigitValue(static_cast<Int_t>(energy));
   } else  {
-    cout <<"fail"<<endl;
+    cout <<"AliHLTEveEmcal::AddClusters:  fail"<<endl;
   }
 }

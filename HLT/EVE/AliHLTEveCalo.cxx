@@ -75,9 +75,10 @@ void AliHLTEveCalo::ProcessBlock(AliHLTHOMERBlockDesc * block) {
       //cout <<"Skipping calo clusters"<<endl;
       ProcessClusters( block );
     }
-    else if ( block->GetDataType().CompareTo("DIGITTYP") == 0 )
-      ProcessDigits( block);
-    
+    else if ( block->GetDataType().CompareTo("DIGITTYP") == 0 ) {
+      //ProcessDigits( block);
+      //
+    }
     else if ( block->GetDataType().CompareTo("CHANNELT") == 0 ) 
       ProcessClusters( block );
   }
@@ -128,10 +129,8 @@ void AliHLTEveCalo::ProcessClusters(AliHLTHOMERBlockDesc* block) {
 
   AliHLTCaloClusterDataStruct * ds;
 
-
-  
   while( (ds = clusterReader->NextCluster()) ){
-    //    AddClusters(ds->fGlobalPos, ds->fModule, ds->fEnergy);
+     AddClusters(ds->fGlobalPos, ds->fModule, ds->fEnergy);
   }
 
   AliHLTCaloDigitDataStruct *dg = clusterReader->GetDigits();

@@ -92,7 +92,7 @@ void AliHLTEvePhos::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t en
 
 void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   //See header file for documentation
-  fBoxSet[module].AddBox(pos[0], pos[1], pos[2], 2.2, energy*200, 2.2);
-  fBoxSet[module].DigitValue(static_cast<Int_t>(energy));
+  fBoxSet[4-module].AddBox(pos[0], pos[1], pos[2], 2.2, energy*200, 2.2);
+  fBoxSet[4-module].DigitValue(static_cast<Int_t>(energy));
 }
 
