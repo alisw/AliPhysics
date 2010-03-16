@@ -303,6 +303,9 @@ struct AliHLTCaloClusterDataStruct
   /** the matced tracks */
   Int_t fTracksMatched[10];           //COMMENT TODO: remove hardcoded 10
 
+  /** The module */
+  Int_t fModule; //COMMENT
+
   /** Struct containing cell ID and amplitude fraction for the cells */
   AliHLTCaloCellDataStruct fCaloCells;   //COMMENT
   
