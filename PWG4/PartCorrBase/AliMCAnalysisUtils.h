@@ -31,7 +31,7 @@ public:
 	virtual ~AliMCAnalysisUtils() ;//virtual dtor
 
 private:
-	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & ) {;}//cpy assignment
+	AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & ) ;//cpy assignment
 
 public:
 	//"Mostly" photon parent types on line 1,
