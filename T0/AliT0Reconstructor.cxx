@@ -226,7 +226,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t latencyL1A = GetRecoParam()->GetLatencyL1A();
   Float_t latencyL1C = GetRecoParam()->GetLatencyL1C();
   Float_t latencyHPTDC = GetRecoParam()->GetLatencyHPTDC();
-  Float_t vertexshift = GetRecoParam()->GetVertexShift();
   AliDebug(10,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",latencyL1,latencyL1A,latencyL1C, latencyHPTDC));
   Int_t allData[110][5];
   
