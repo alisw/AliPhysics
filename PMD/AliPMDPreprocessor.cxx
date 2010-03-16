@@ -12,14 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//-----------------------------------------------------//
-//                                                     //
-//  Source File : AliPMDPreprocessor.cxx               //
-//                                                     //
-//                                                     //
-//-----------------------------------------------------//
 
-// --- ROOT system
+/*********************************************
+ 
+ *   PMD Preproccessor Source Code      *
+    
+    
+     0 --> Run Successesfully
+     1 --> No pmd Alias is available
+ 
+**********************************************/
+ 
+
 #include <TFile.h>
 #include <TTimeStamp.h>
 #include <TObjString.h>
@@ -34,369 +38,508 @@
 #include "AliPMDPedestal.h"
 #include "AliPMDPreprocessor.h"
 
-
 ClassImp(AliPMDPreprocessor)
-  
-//______________________________________________________________________________________________
+
 AliPMDPreprocessor::AliPMDPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("PMD", shuttle)
 {
-  // constructor
   AddRunType("PHYSICS");
   AddRunType("PEDESTAL");
 }
 
-//______________________________________________________________________________________________
+//________________________________________________________ 
 AliPMDPreprocessor::~AliPMDPreprocessor()
 {
-  // destructor
+  
 }
 
-//______________________________________________________________________________________________
-void AliPMDPreprocessor::Initialize(Int_t run, UInt_t startTime,
-	UInt_t endTime)
+//________________________________________________________ 
+void AliPMDPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
-  // Creates AliPMDDataDAQ object
-
   AliPreprocessor::Initialize(run, startTime, endTime);
   
-  AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
+  AliInfo(Form("\nRun       : %d \nStart Time: %s \nEnd Time  : %s", run,
 	       TTimeStamp(startTime).AsString(),
 	       TTimeStamp(endTime).AsString()));
-
+  
   fRun = run;
   fStartTime = startTime;
-  fEndTime = endTime;
+  fEndTime   = endTime;
 
 }
 
-//-----------------------------------------
+//________________________________________________________ 
 Bool_t AliPMDPreprocessor::ProcessDAQ()
 {
-  TString RunType = GetRunType();
-  Log(Form("RunType %s",RunType.Data()));
-  if (RunType !="PHYSICS" || RunType != "PEDESTAL") {
-    return kFALSE;
-  }
-
+  TString sRunType = GetRunType();
+  Log(Form("RunType %s",sRunType.Data()));
+  if (sRunType !="PHYSICS" || sRunType != "PEDESTAL") 
+    {
+      return kFALSE;
+    }
   return kTRUE;
 }
 
-
-//_____________________________________________________________________
-UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
+//________________________________________________________ 
+Bool_t AliPMDPreprocessor::StorePmdPED()
 {
   
-  if(!pdaqAliasMap) return 1;
+  AliPMDPedestal *pedestal = new AliPMDPedestal();
+  TList* gfsPmdPed = GetFileSources(kDAQ, "PMD_PED.root");
+  
+  if(!gfsPmdPed) 
+    {
+      Log(Form("PMDPED: No Shuttle List for PMD PED "));
+      return kFALSE;
+    }
+  else
+    {
+      AliInfo("PMDPED: Here's the list of sources for PMD_PED.root");
+      gfsPmdPed->Print();
+      
+      TIter iter(gfsPmdPed);
+      TObjString* srcPed;
+      TString nameOfFile;
+      UInt_t resultPmdPed = 0;
+      
+      while((srcPed = dynamic_cast<TObjString*> (iter.Next())))
+	{
+	  nameOfFile = GetFile(kDAQ, "PMD_PED.root", srcPed->GetName());
+	  if(nameOfFile.Length() == 0) 
+	    {
+	      Log(Form("PMDPED: Error retrieving file from source %s failed!", srcPed->GetName()));
+	      delete gfsPmdPed;
+	      return kFALSE;
+	    }
+	  
+	  Log(Form("PMDPED: File with id PMD_PED.root got from %s", srcPed->GetName()));
+	  
+	  Int_t det, sm, row, col;
+	  Float_t mean, rms;
+	  
+	  TFile *opnFile= new TFile(nameOfFile.Data());
+	  if(!opnFile || !opnFile->IsOpen()) 
+	    {
+	      Log(Form("PMDPED: Error opening file with Id PMD_PED.root from source %s!", srcPed->GetName()));
+	      return kFALSE;
+	    } 
+	  
+	  TTree *tree = dynamic_cast<TTree *> (opnFile->Get("ped"));
+	  if (!tree) 
+	    {
+	      Log("PMDPED: Could not find object \"ped\" in PED file!");
+	       return kFALSE;
+	    }
+	  
+	  tree->SetBranchAddress("det",  &det);
+	  tree->SetBranchAddress("sm",   &sm);
+	  tree->SetBranchAddress("row",  &row);
+	  tree->SetBranchAddress("col",  &col);
+	  tree->SetBranchAddress("mean", &mean);
+	  tree->SetBranchAddress("rms",  &rms);
+	  
+	  Int_t nEntries = (Int_t) tree->GetEntries();
+	  for(Int_t i = 0; i < nEntries; i++)
+	    {
+	      tree->GetEntry(i);
+	      pedestal->SetPedMeanRms(det,sm,row,col,mean,rms);
+	    }
+	  opnFile->Close();
+	  delete opnFile;
+	}
+      
+      AliCDBMetaData mdPED;
+      mdPED.SetBeamPeriod(0);
+      mdPED.SetResponsible("Satyajit Jena");
+      mdPED.SetComment("PMDPED: PMD preprocessor");
+      
+      resultPmdPed = Store("Calib","Ped", pedestal, &mdPED,0,kTRUE);
+      delete pedestal;
+      if(resultPmdPed==0)
+	{
+	  Log("PMDPED: Error storing");                        
+	  return kFALSE;
+	}
+      else
+	{
+	  return kTRUE;
+	}
+
+    } 
+ 
+}
+
+//________________________________________________________
+Bool_t AliPMDPreprocessor::StorePmdGAIN()
+{
+TList* gfsPmdGain = GetFileSources(kDAQ, "PMDGAINS.root");
+
+if(!gfsPmdGain)
+    {
+      Log(Form("PMDGAIN: No sources found for PMDGAINS.root!"));
+      return kFALSE;
+    }    
+  else
+    {
+      AliInfo("PMDGAIN: Here's the list of sources for PMDGAINS.root");
+      gfsPmdGain->Print();
+      
+      TIter iter(gfsPmdGain);
+      TObjString* source;
+      TString nameOfFile;
+      UInt_t result = 0;
+ 
+      while((source = dynamic_cast<TObjString*> (iter.Next())))
+	{
+	  nameOfFile = GetFile(kDAQ, "PMDGAINS.root", source->GetName());
+	  if(nameOfFile.Length() == 0) 
+	    {
+	      Log(Form("PMDGAIN: Error retrieving file from source %s failed!", source->GetName()));
+	      delete gfsPmdGain;
+	      return kFALSE;
+	    }
+	  
+	  Log(Form("PMDGAIN: File with id PMDGAINS.root got from %s", source->GetName()));
+	  
+	  Int_t det, sm, row, col;
+	  Float_t gain;
+	  
+	  TFile *opnFile = new TFile(nameOfFile.Data());
+	  if (!opnFile || !opnFile->IsOpen()) 
+	    {
+	      Log(Form("PMDGAIN: Error opening file with Id PMDGAINS.root from source %s!", source->GetName()));
+	      return kFALSE;
+	    }
+	  
+	  TTree *tree = dynamic_cast<TTree *> (opnFile->Get("ic"));
+	  if (!tree) 
+	    {
+	      Log("PMDGAIN: Could not find object \"ic\" in DAQ file!");
+	      return kFALSE;
+	    }
+	  
+	  tree->SetBranchAddress("det",  &det);
+	  tree->SetBranchAddress("sm",   &sm);
+	  tree->SetBranchAddress("row",  &row);
+	  tree->SetBranchAddress("col",  &col);
+	  tree->SetBranchAddress("gain", &gain);
+	  
+	  Int_t nEntries = (Int_t) tree->GetEntries();
+	  AliPMDCalibData *calibda = new AliPMDCalibData();
+	  
+	  for(Int_t i = 0; i < nEntries; i++)
+	    {
+	      tree->GetEntry(i);
+	      calibda->SetGainFact(det,sm,row,col,gain);
+	    }
+	  opnFile->Close();
+	  delete opnFile;
+	  
+	  AliCDBMetaData mdGAIN;
+	  mdGAIN.SetBeamPeriod(0);
+	  mdGAIN.SetResponsible("Satyajit Jena");
+	  mdGAIN.SetComment("PMDGAIN: PMD GAIN Data");
+	  result = Store("Calib","Gain", calibda, &mdGAIN);
+	  delete calibda;
+	}
+      
+      if (result==0)
+	{
+	  Log("PMDGAIN: Error storing");                        
+	  return kFALSE;
+	}
+      else
+	{
+	  return kTRUE;
+	}
+      
+    }
+}
+
+
+//___________________________________________________
+Bool_t AliPMDPreprocessor::StorePmdHOT()
+{
+  
+  AliPMDHotData *hotda = new AliPMDHotData();
+  TList* fsPmdHot = GetFileSources(kDAQ, "PMD_HOT.root");
+  
+  if(!fsPmdHot) 
+    {
+      Log(Form("PMDHOT: No sources found for PMD_HOT.root!"));
+      return kFALSE;
+    }
+  else
+    {
+      AliInfo("PMDHOT: Here's the list of sources for PMD_HOT.root");
+      fsPmdHot->Print();
+      
+      TIter iter(fsPmdHot);
+      TObjString* source;
+      UInt_t hotresult = 0;
+      TString nameOfFile;
+
+      while((source = dynamic_cast<TObjString*> (iter.Next())))
+	{
+	  nameOfFile = GetFile(kDAQ, "PMD_HOT.root", source->GetName());
+	  if(nameOfFile.Length() == 0) 
+	    {
+	      Log(Form("PMDHOT: Error retrieving file from source %s failed!", source->GetName()));
+	      delete fsPmdHot;
+	      return kFALSE;
+	    }
+	  
+	  Log(Form("PMDHOT: File with id PMD_HOT.root got from %s", source->GetName()));
+	  
+	  Int_t det, sm, row, col;
+	  Float_t flag;
+	  
+	  TFile *opnFile = new TFile(nameOfFile.Data());
+	  if(!opnFile || !opnFile->IsOpen()) 
+	    {
+	      Log(Form("PMDHOT: Error opening file with Id PMD_HOT.root from source %s!", source->GetName()));
+	      return kFALSE;
+	    } 
+
+	  TTree *tree = dynamic_cast<TTree *> (opnFile->Get("hot"));
+	  if (!tree) 
+	    {
+	      Log("PMDHOT: Could not find object \"hot\" in DAQ file!");
+	      return kFALSE;
+	    }
+	  
+	  tree->SetBranchAddress("det",  &det);
+	  tree->SetBranchAddress("sm",   &sm);
+	  tree->SetBranchAddress("row",  &row);
+	  tree->SetBranchAddress("col",  &col);
+	  tree->SetBranchAddress("flag", &flag);
+	  
+	  Int_t nEntries = (Int_t) tree->GetEntries();
+	  for(Int_t j = 0; j < nEntries; j++)
+	    {
+	      tree->GetEntry(j);
+	      hotda->SetHotChannel(det,sm,row,col,flag);
+	    }
+	  opnFile->Close();
+	  delete opnFile;
+	}
+      
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible("Satyajit Jena");
+      metaData.SetComment("PMDHOT: PMD preprocessor");
+      hotresult = Store("Calib","Hot", hotda, &metaData);
+      delete hotda;
+      if(hotresult==0)
+	{
+	  Log("PMDHOT: Error storing");                        
+	  return kFALSE;
+	}
+      else
+	{
+	  return kTRUE;
+	}
+      
+    }
+}
+
+//________________________________________________________
+Bool_t AliPMDPreprocessor::StorePmdMEAN()
+{
+  AliPMDMeanSm *smmeanda = new AliPMDMeanSm();
+  TList* gfsPmdMean = GetFileSources(kDAQ, "PMD_MEAN_SM.root");
+  
+  if(!gfsPmdMean) 
+    {
+      Log(Form("PMDMEAN: No sources found for PMD_MEAN_SM.root!"));
+      return kFALSE;
+    }
+  else
+    {
+      AliInfo("PMDMEAN: Here's the list of sources for PMD_MEAN_SM.root");
+      gfsPmdMean->Print();
+      
+      TIter iter(gfsPmdMean);
+      TObjString* sourc;
+      UInt_t storeMeanData = 0;
+      TString filenam;
+      
+      while((sourc=dynamic_cast<TObjString*> (iter.Next())))
+	{
+	  filenam = GetFile(kDAQ, "PMD_MEAN_SM.root", sourc->GetName());
+	  if(filenam.Length() == 0) 
+	    {
+	      Log(Form("PMDMEAN: Error retrieving file from source %s failed!", sourc->GetName()));
+	      delete gfsPmdMean;
+	      return kFALSE;
+	    }
+	  
+	  Log(Form("PMDMEAN: File with id PMD_MEAN_SM.root got from %s", sourc->GetName()));
+	  
+	  Int_t det, sm ;
+	  Float_t smmean;
+	  
+	  TFile *opnFile = new TFile(filenam.Data());
+	  if(!opnFile || !opnFile->IsOpen()) 
+	    {
+	      Log(Form("PMDMEAN: Error opening file with Id PMD_MEAN_SM.root from source %s!", sourc->GetName()));
+	      return kFALSE;
+	    }
+	  
+	  TTree *tree = dynamic_cast<TTree *> (opnFile->Get("mean"));
+	  if (!tree) 
+	    {
+	      Log("PMDMEAN: Could not find object \"hot\" in DAQ file!");
+	      return kFALSE;
+	    }
+	  
+	  tree->SetBranchAddress("det",  &det);
+	  tree->SetBranchAddress("sm",   &sm);
+	  tree->SetBranchAddress("smmean", &smmean);
+	  
+	  Int_t nEntries = (Int_t) tree->GetEntries();
+	  for(Int_t j = 0; j < nEntries; j++)
+	    {
+	      tree->GetEntry(j);
+	      smmeanda->SetMeanSm(det,sm,smmean);
+	    }
+	  opnFile->Close();
+	  delete opnFile;
+	}
+      
+      AliCDBMetaData mdMEAN;
+      mdMEAN.SetBeamPeriod(0);
+      mdMEAN.SetResponsible("Satyajit Jena");
+      mdMEAN.SetComment("PMDMEAN: PMD preprocessor");
+      
+      storeMeanData = Store("Calib","SMMEAN", smmeanda, &mdMEAN);
+      delete smmeanda;
+
+      if(storeMeanData==0)
+	{
+	  Log("PMDMEAN: Error storing");                        
+	  return kFALSE;
+	}
+      else
+	{
+	  return kTRUE;
+	}
+    }
+  
+}
+
+//_____________________________________________________________
+Bool_t AliPMDPreprocessor::StorePmdDCS(TMap *sDaqAM)
+{
+	
+  AliCDBMetaData mdDCS;
+  mdDCS.SetResponsible("Satyajit Jena");
+  mdDCS.SetComment("DCS data for PMD");
+
+  Bool_t resStore = kFALSE;
+  resStore = StoreReferenceData("DCS","Data",sDaqAM,&mdDCS);
+
+  if(resStore == 0)
+    {
+      Log("PMDDP: Error storing");                        
+      return kFALSE;
+    }
+  else
+    {
+      return kTRUE;
+    }
+
+}
+
+//_____________________________________________________________________
+
+UInt_t AliPMDPreprocessor::Process(TMap* pmdDaqAliasMap)
+{
+  
+  if(!pmdDaqAliasMap)
+    {
+      return 1;
+    }
+  
   TString runType = GetRunType();
-  if(runType == "PEDESTAL"){
-    AliPMDPedestal *pedestal = new AliPMDPedestal();
-    
-    TList* filesources = GetFileSources(kDAQ, "PMD_PED.root");
-    
-    if(!filesources) {
-      Log(Form("No sources found for PMD_PED.root!"));
-      return 1;
-    }
-    
-    AliInfo("Here's the list of sources for PMD_PED.root");
-    filesources->Print();
-    
-    TIter iter(filesources);
-    TObjString* source;
-    UInt_t result = 0;
-    TString filename;
-    while((source=dynamic_cast<TObjString*> (iter.Next()))){
-      filename = GetFile(kDAQ, "PMD_PED.root", source->GetName());
-      if(filename.Length() == 0) {
-	Log(Form("Error retrieving file from source %s failed!", source->GetName()));
-	delete filesources;
-	return 1;
-      }
-      
-      Log(Form("File with id PMD_PED.root got from %s", source->GetName()));
-      
-      Int_t det, sm, row, col;
-      Float_t mean, rms;
-      
-      TFile *f= new TFile(filename.Data());
-      if(!f || !f->IsOpen()) 
-	{
-	  Log(Form("Error opening file with Id PMD_PED.root from source %s!", source->GetName()));
-	  return 1;
-	} 
-      TTree *tree = dynamic_cast<TTree *> (f->Get("ped"));
-      if (!tree) 
-	{
-	  Log("Could not find object \"ped\" in PED file!");
-	  return 1;
-	}
-	    
-      tree->SetBranchAddress("det",  &det);
-      tree->SetBranchAddress("sm",   &sm);
-      tree->SetBranchAddress("row",  &row);
-      tree->SetBranchAddress("col",  &col);
-      tree->SetBranchAddress("mean", &mean);
-      tree->SetBranchAddress("rms",  &rms);
-      
-      Int_t nEntries = (Int_t) tree->GetEntries();
-      for(Int_t i = 0; i < nEntries; i++)
-	{
-	  tree->GetEntry(i);
-	  pedestal->SetPedMeanRms(det,sm,row,col,mean,rms);
-	}
-      f->Close();
-      delete f;
-    }
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetComment("test PMD preprocessor");
-    
-    result = Store("Calib","Ped", pedestal, &metaData,0,kTRUE);
-    delete pedestal;
-    if(result==0)
-      {
-	Log("Error storing");                        
-	return 1;
-      }
-    else
-      {
-	return 0;
-      }
-    
-  }else if (runType == "PHYSICS"){
-    
-    AliPMDCalibData *calibda = new AliPMDCalibData();
-    
-    TList* filesources = GetFileSources(kDAQ, "PMDGAINS.root");
-    
-    if(!filesources) {
-      Log(Form("No sources found for PMDGAINS.root!"));
-      return 1;
-    }
-    
-    AliInfo("Here's the list of sources for PMDGAINS.root");
-    filesources->Print();
-    
-    TIter iter(filesources);
-    TObjString* source;
-    UInt_t result = 0;
-    TString filename;
-    while((source=dynamic_cast<TObjString*> (iter.Next()))){
-      filename = GetFile(kDAQ, "PMDGAINS.root", source->GetName());
-      if(filename.Length() == 0) {
-	Log(Form("Error retrieving file from source %s failed!", source->GetName()));
-	delete filesources;
-	return 1;
-      }
-      
-      Log(Form("File with id PMDGAINS.root got from %s", source->GetName()));
-      
-      Int_t det, sm, row, col;
-      Float_t gain;
 
-      TFile *f1= new TFile(filename.Data());
-      if(!f1 || !f1->IsOpen()) 
+  if(runType == "PEDESTAL")
+    {
+ 
+      Log(Form("------------------ PMD Pedestal --------------"));
+      Bool_t pmdPed = StorePmdPED();
+      if(!pmdPed)
 	{
-	  Log(Form("Error opening file with Id PMDGAINS.root from source %s!", source->GetName()));
-	  return 1;
-	} 
-      TTree *tree = dynamic_cast<TTree *> (f1->Get("ic"));
-      if (!tree) 
-	{
-	  Log("Could not find object \"ic\" in DAQ file!");
+	  Log(Form("ERROR:  Couldn't write PMD pedestal file"));
 	  return 1;
 	}
-      
-      tree->SetBranchAddress("det",  &det);
-      tree->SetBranchAddress("sm",   &sm);
-      tree->SetBranchAddress("row",  &row);
-      tree->SetBranchAddress("col",  &col);
-      tree->SetBranchAddress("gain", &gain);
-      
-
-      
-      Int_t nEntries = (Int_t) tree->GetEntries();
-      for(Int_t i = 0; i < nEntries; i++)
+      else
 	{
-	  tree->GetEntry(i);
-	  
-	  //if(DET>1 || SM>23 || ROW>95 || COL>95) {
-	  //  printf("Error! gain[%d,%d,%d,%d] = %f\n",
-	  //   DET,SM,ROW,COL,GAIN);
-	  //  continue;
-	  //}
-	  
-	  calibda->SetGainFact(det,sm,row,col,gain);
+	  Log(Form("Storing of PMD Pedestal File is Successful"));
+	  return 0;
 	}
-      f1->Close();
-      delete f1;
-    }
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetComment("test PMD preprocessor");
-    result = Store("Calib","Gain", calibda, &metaData);
-    delete calibda;
-    if(result==0)
+    } 
+  
+  else if (runType == "PHYSICS")
       {
-	Log("Error storing");                        
-	return 1;
-      }
-    //------------------For Storing HOT Data-------------------------//
-    AliPMDHotData *hotda = new AliPMDHotData();
-    TList* filesource = GetFileSources(kDAQ, "PMD_HOT.root");
+	Log(Form("------------------- PMD GAIN----------------"));	
+	Bool_t pmdGAIN = StorePmdGAIN();
+	if (!pmdGAIN)
+	  {
+	    Log(Form("ERROR:  Couldn't write PMD GAIN file"));
+	   
+	  }
+	else
+	  {
+	    Log(Form("Storing of PMD GAIN File is Successful"));
+	   
+	  }
 	
-    if(!filesource) {
-      Log(Form("No sources found for PMD_HOT.root!"));
-      return 1;
-    }
-    
-    AliInfo("Here's the list of sources for PMD_HOT.root");
-    filesource->Print();
-    
-    TIter iter2(filesource);
-    TObjString* sources;
-    UInt_t hotresult = 0;
-    TString filenames;
-    while((sources=dynamic_cast<TObjString*> (iter2.Next()))){
-      filenames = GetFile(kDAQ, "PMD_HOT.root", sources->GetName());
-      if(filenames.Length() == 0) {
-	Log(Form("Error retrieving file from source %s failed!", sources->GetName()));
-	delete filesource;
-	return 1;
-      }
-      
-      Log(Form("File with id PMD_HOT.root got from %s", sources->GetName()));
-      
-      Int_t det, sm, row, col;
-      Float_t flag;
-      
-      TFile *f2= new TFile(filenames.Data());
-      if(!f2 || !f2->IsOpen()) 
-	{
-	  Log(Form("Error opening file with Id PMD_HOT.root from source %s!", sources->GetName()));
-	  return 1;
-	} 
-      TTree *tree1 = dynamic_cast<TTree *> (f2->Get("hot"));
-      if (!tree1) 
-	{
-	  Log("Could not find object \"hot\" in DAQ file!");
-	  return 1;
-	}
-      
-      tree1->SetBranchAddress("det",  &det);
-      tree1->SetBranchAddress("sm",   &sm);
-      tree1->SetBranchAddress("row",  &row);
-      tree1->SetBranchAddress("col",  &col);
-      tree1->SetBranchAddress("flag", &flag);
-      
-      
-      
-      Int_t nEntries = (Int_t) tree1->GetEntries();
-      for(Int_t j = 0; j < nEntries; j++)
-	{
-	  tree1->GetEntry(j);
-	  
-	  //if(det>1 || sm>23 || row>95 || col>95) {
-	  // printf("Error! gain[%d,%d,%d,%d] = %f\n",
-	  // det,sm,row,col,flag);
-	  //continue;
-	  //}
-	  
-	  hotda->SetHotChannel(det,sm,row,col,flag);
-	}
-      f2->Close();
-      delete f2;
-    }
-    hotresult = Store("Calib","Hot", hotda, &metaData);
-    delete hotda;
-    if(hotresult==0)
-      {
-	Log("Error storing");                        
-	return 1;
-      }
-    //-------------------------------------------------------------------  
-//-----------------------------------for storing SM MEAN--------------//
+	Log(Form("------------------- PMD HOT ----------------"));
+	Bool_t pmdHOT = StorePmdHOT();
+	if (!pmdHOT)
+	  {
+	    Log(Form("ERROR:  Couldn't write PMD HOT file"));
+	   
+	  }
+	else
+	  {
+	    Log(Form("Storing of PMD HOT File is Successful"));
+	   
+	  }
 	
-    //------------------For Storing HOT Data-------------------------//
-    AliPMDMeanSm *smmeanda = new AliPMDMeanSm();
-    TList* filesourc = GetFileSources(kDAQ, "PMD_MEAN_SM.root");
+	Log(Form("------------------- SM MEAN ----------------"));
+	Bool_t pmdMEAN = StorePmdMEAN();
+	if (!pmdMEAN)
+	  {
+	    Log(Form("ERROR:  Couldn't write PMD SM MEAN file"));
+	   
+	  }
+	else
+	  {
+	    Log(Form("Storing of PMD SM MEAN File is Successful"));
+	   
+	  }
 	
-    if(!filesourc) {
-      Log(Form("No sources found for PMD_MEAN_SM.root!"));
-      return 1;
-    }
-    
-    AliInfo("Here's the list of sources for PMD_MEAN_SM.root");
-    filesourc->Print();
-    
-    TIter iter3(filesourc);
-    TObjString* sourc;
-    UInt_t meanresult = 0;
-    TString filenam;
-    while((sourc=dynamic_cast<TObjString*> (iter3.Next()))){
-      filenam = GetFile(kDAQ, "PMD_MEAN_SM.root", sourc->GetName());
-      if(filenam.Length() == 0) {
-	Log(Form("Error retrieving file from source %s failed!", sourc->GetName()));
-	delete filesourc;
-	return 1;
-      }
-      
-      Log(Form("File with id PMD_MEAN_SM.root got from %s", sourc->GetName()));
-      
-      Int_t det, sm ;
-      Float_t smmean;
-      
-      TFile *f3= new TFile(filenam.Data());
-      if(!f3 || !f3->IsOpen()) 
-	{
-	  Log(Form("Error opening file with Id PMD_MEAN_SM.root from source %s!", sourc->GetName()));
+	Log(Form("------------------- DCS DP -----------------"));
+	Bool_t pmdDCS = StorePmdDCS(pmdDaqAliasMap);
+	if (!pmdDCS)
+	  {
+	    Log(Form("ERROR:  Couldn't write PMD DCS DP file"));
+	   
+	  }
+	else
+	  {
+	    Log(Form("Storing of PMD DCS dp is Successul"));
+	   
+	  }
+	
+	if (pmdGAIN || pmdHOT || pmdMEAN || pmdDCS) 
+	  return 0;
+	else 
 	  return 1;
-	} 
-      TTree *tree2 = dynamic_cast<TTree *> (f3->Get("mean"));
-      if (!tree2) 
-	{
-	  Log("Could not find object \"hot\" in DAQ file!");
-	  return 1;
-	}
-      
-      tree2->SetBranchAddress("det",  &det);
-      tree2->SetBranchAddress("sm",   &sm);
-      tree2->SetBranchAddress("smmean", &smmean);
-      
-      Int_t nEntries = (Int_t) tree2->GetEntries();
-      for(Int_t j = 0; j < nEntries; j++)
-	{
-	  tree2->GetEntry(j);
-	  smmeanda->SetMeanSm(det,sm,smmean);
-	}
-      f3->Close();
-      delete f3;
-    }
-    meanresult = Store("Calib","SMMEAN", smmeanda, &metaData);
-    delete smmeanda;
-    if(meanresult==0)
-      {
-	Log("Error storing");                        
-	return 1;
+	
       }
-    // -------------Store DCS data for reference------------//
-    AliCDBMetaData metadata;
-    metadata.SetComment("DCS data for PMD");
-    Bool_t resStore = kFALSE;
-    resStore = StoreReferenceData("DCS","Data",pdaqAliasMap,&metadata);
-    if(resStore==0)
-      {
-	Log("Error storing");                        
-	return 1;
-      }
-    else
-      {
-	return 0;
-      }
-    
-  }
-    
   return 2;
 }
 
