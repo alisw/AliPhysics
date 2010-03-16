@@ -124,7 +124,7 @@ void AliOmegaDalitz::Decay(Int_t /*idpart*/, TLorentzVector* pparent)
   // electron
   lmass = (TDatabasePDG::Instance()->GetParticle(kElectron))->Mass();
   // omega
-  pmass = (TDatabasePDG::Instance()->GetParticle(223))      ->Mass();
+  pmass = pparent->M();
   // pi0
   omass = (TDatabasePDG::Instance()->GetParticle(kPi0))     ->Mass();
 
