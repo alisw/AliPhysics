@@ -233,6 +233,10 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 
 	// go to the path; if directory does not exist, create it
 	for(int i=0;i<3;i++){
+	        //TString cmd("find -d ");
+		//cmd += Form("%s ",dirName);
+		//cmd += 
+		//gGrid->Command(cmd.Data());
  		dirName+=Form("%s/",id.GetPathLevel(i).Data());
 		dirExist=gGrid->Cd(dirName,0);
 		if (!dirExist) {
@@ -419,11 +423,20 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 		MakeQueryFilter(selectedId.GetFirstRun(), selectedId.GetLastRun(), 0, filter);
 
 		TString pattern = Form("%s/Run*", selectedId.GetPath().Data());
-		if(selectedId.GetVersion() >= 0) pattern += Form("_v%d*",selectedId.GetVersion());
+		TString optionQuery = "-y";
+		if(selectedId.GetVersion() >= 0) {
+			pattern += Form("_v%d*",selectedId.GetVersion());
+			optionQuery = "";
+		}
+
 		pattern += ".root";
 		AliDebug(2,Form("pattern: %s", pattern.Data()));
 
-		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "");
+		if (optionQuery == "-y"){
+			AliInfo("Only latest version will be returned");
+		}
+
+		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, optionQuery.Data());
 		if (res) {
 			AliCDBId validFileId;
 			for(int i=0; i<res->GetEntries(); i++){
@@ -563,7 +576,14 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
 		TString pattern = Form("%s/Run*.root", queryId.GetPath().Data());
 		AliDebug(2,Form("pattern: %s", pattern.Data()));
 
-		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "");
+		TString optionQuery("-y");
+		if(queryId.GetVersion() >= 0) optionQuery = "";
+
+		if (optionQuery == "-y"){
+			AliInfo("Only latest version will be returned");
+		}
+
+		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, optionQuery.Data());
 
 		AliCDBId validFileId;
 		for(int i=0; i<res->GetEntries(); i++){
@@ -717,19 +737,26 @@ Bool_t AliCDBGrid::AddTag(TString& folderToTag, const char* tagname){
 Bool_t AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
 // tag stored object in CDB table using object Id's parameters
 
+
+        TString dirname(filename);
+	Int_t dirNumber = gGrid->Mkdir(dirname.Remove(dirname.Last('/')),"-d");
+	
 	TString addTagValue1 = Form("addTagValue %s CDB ", filename.Data());
 	TString addTagValue2 = Form("first_run=%d last_run=%d version=%d ",
 					id->GetFirstRun(),
 					id->GetLastRun(),
 					id->GetVersion());
-	TString addTagValue3 = Form("path_level_0=\"%s\" path_level_1=\"%s\" path_level_2=\"%s\"",
+	TString addTagValue3 = Form("path_level_0=\"%s\" path_level_1=\"%s\" path_level_2=\"%s\" ",
 					id->GetPathLevel(0).Data(),
 					id->GetPathLevel(1).Data(),
 					id->GetPathLevel(2).Data());
-	TString addTagValue = Form("%s%s%s",
+	//TString addTagValue4 = Form("version_path=\"%s\" dir_number=%d",Form("%d_%s",id->GetVersion(),filename.Data()),dirNumber); 
+	TString addTagValue4 = Form("version_path=\"%09d%s\" dir_number=%d",id->GetVersion(),filename.Data(),dirNumber); 
+	TString addTagValue = Form("%s%s%s%s",
 					addTagValue1.Data(),
 					addTagValue2.Data(),
-					addTagValue3.Data());
+					addTagValue3.Data(),
+					addTagValue4.Data());
 
 	Bool_t result = kFALSE;
 	AliDebug(2, Form("Tagging file. Tag command: %s", addTagValue.Data()));
@@ -859,11 +886,21 @@ void AliCDBGrid::QueryValidFiles()
 	MakeQueryFilter(fRun, fRun, fMetaDataFilter, filter);
 
 	TString pattern = Form("%s/Run*", fPathFilter.GetPath().Data());
-	if(fVersion >= 0) pattern += Form("_v%d*", fVersion);
+	TString optionQuery = "-y";
+	if(fVersion >= 0) {
+		pattern += Form("_v%d*", fVersion);
+		optionQuery = "";
+	}
 	pattern += ".root";
 	AliDebug(2,Form("pattern: %s", pattern.Data()));
 
-	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "");
+	AliInfo(Form("fDBFolder = %s, pattern = %s, filter = %s",fDBFolder.Data(), pattern.Data(), filter.Data()));
+
+	if (optionQuery == "-y"){
+		AliInfo("Only latest version will be returned");
+	} 
+
+	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, optionQuery.Data());  
 
 	if (!res) {
 		AliError("Grid query failed");
@@ -944,8 +981,8 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 		return -1;
 	}
 	AliCDBId query(path, run, run, -1, -1);
-	AliCDBId* dataId = 0;
 
+	AliCDBId* dataId = 0;
 	// look for file matching query requests (path, runRange, version)
 	if(run == fRun && fPathFilter.Comprises(aCDBPath) && fVersion < 0){
 		// look into list of valid files previously loaded with AliCDBStorage::FillValidFileIds()
@@ -971,22 +1008,42 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 	TString pattern = Form("%s/Run*.root", path);
 	AliDebug(2,Form("pattern: %s", pattern.Data()));
 
-	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "");
+	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "-y");
 	AliCDBId validFileId;
-	for(int i=0; i<res->GetEntries(); i++){
-		TString filename = res->GetKey(i, "lfn");
-		if(filename == "") continue;
-		if(FilenameToId(filename, validFileId))
+	if (res->GetEntries()>1){
+		AliWarning("Number of found entries >1, even if option -y was used");
+		for(int i=0; i<res->GetEntries(); i++){
+			TString filename = res->GetKey(i, "lfn");
+			if(filename == "") continue;
+			if(FilenameToId(filename, validFileId))
 				validFileIds.AddLast(validFileId.Clone());
+		}
+		dataId = GetId(validFileIds, query);
+		if (!dataId) return -1;
+		
+		Int_t version = dataId->GetVersion();
+		delete dataId;
+		return version;
 	}
+	else if (res->GetEntries()==1){
+		TString filename = res->GetKey(0, "lfn");
+		if(filename == "") {
+			AliError("The only entry found has filename empty");
+			return -1;
+		}
+		if(FilenameToId(filename, validFileId)) return validFileId.GetVersion();
+		else{
+			AliError("Impossible to get FileId from filename");
+			return -1;
+		}
+	}
+	else {
+		AliError("No entries found");
+		return -1;
+	}
+
 	delete res;
 
-	dataId = GetId(validFileIds, query);
-	if (!dataId) return -1;
-
-	Int_t version = dataId->GetVersion();
-	delete dataId;
-	return version;
 
 }
 

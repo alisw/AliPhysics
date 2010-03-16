@@ -452,7 +452,6 @@ void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
 	if(md) fMetaDataFilter = dynamic_cast<AliCDBMetaData*> (md->Clone());
 
 	QueryValidFiles();
-	AliCDBId queryId(pathFilter,run,run,version);
 
 	AliInfo(Form("%d valid files found!", fValidFileIds.GetEntriesFast()));
 
