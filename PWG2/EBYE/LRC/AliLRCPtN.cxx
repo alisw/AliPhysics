@@ -27,6 +27,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliLRCPtN.h"
+#include "TFile.h"
 
 ClassImp(AliLRCPtN) 
 

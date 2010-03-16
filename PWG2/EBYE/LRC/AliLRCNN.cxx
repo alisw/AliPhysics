@@ -21,6 +21,7 @@
 /* $Id$ */
 
 #include "AliLRCNN.h"
+#include "TFile.h"
 
 ClassImp(AliLRCNN) 
 
