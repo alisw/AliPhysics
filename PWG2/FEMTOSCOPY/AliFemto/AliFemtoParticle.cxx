@@ -182,7 +182,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack* const hbtTrack,const dou
   fTrack = new AliFemtoTrack(*hbtTrack);
   AliFemtoThreeVector temp = hbtTrack->P();
   fFourMomentum.SetVect(temp);
-  double ener = ::sqrt(temp.mag2()+mass*mass);
+  double ener = ::sqrt(temp.Mag2()+mass*mass);
   fFourMomentum.SetE(ener);
 //  fMap[0] = hbtTrack->TopologyMap(0);
  // fMap[1] = hbtTrack->TopologyMap(1);
@@ -245,7 +245,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& m
   // I know there is a better way to do this...
   AliFemtoThreeVector temp = hbtV0->MomV0();
   fFourMomentum.SetVect(temp);
-  double ener = ::sqrt(temp.mag2()+mass*mass);
+  double ener = ::sqrt(temp.Mag2()+mass*mass);
   fFourMomentum.SetE(ener);
   // Calculating TpcEntrancePoint for Positive V0 daugther
   fPrimaryVertex = hbtV0->PrimaryVertex();
@@ -309,7 +309,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const doubl
   // I know there is a better way to do this...
   AliFemtoThreeVector temp = hbtKink->Parent().P();
   fFourMomentum.SetVect(temp);
-  double ener = ::sqrt(temp.mag2()+mass*mass);
+  double ener = ::sqrt(temp.Mag2()+mass*mass);
   fFourMomentum.SetE(ener);
 }
 
@@ -340,7 +340,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& 
   //fMap[1]= 0;
   AliFemtoThreeVector temp;// = hbtXi->mMofXi;
   fFourMomentum.SetVect(temp);
-  double ener = ::sqrt(temp.mag2()+mass*mass);
+  double ener = ::sqrt(temp.Mag2()+mass*mass);
   fFourMomentum.SetE(ener);
   fHiddenInfo = 0;
 }

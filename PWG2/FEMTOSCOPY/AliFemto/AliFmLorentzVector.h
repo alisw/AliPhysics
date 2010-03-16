@@ -285,22 +285,22 @@ template<class T>
 T AliFmLorentzVector<T>::t() const {return mX4;}
 
 template<class T>
-T AliFmLorentzVector<T>::perp() const {return mThreeVector.perp();}
+T AliFmLorentzVector<T>::perp() const {return mThreeVector.Perp();}
 
 template<class T>
-T AliFmLorentzVector<T>::perp2() const {return mThreeVector.perp2();}
+T AliFmLorentzVector<T>::perp2() const {return mThreeVector.Perp2();}
 
 template<class T>
-T AliFmLorentzVector<T>::pseudoRapidity() const {return mThreeVector.pseudoRapidity();}
+T AliFmLorentzVector<T>::pseudoRapidity() const {return mThreeVector.PseudoRapidity();}
 
 template<class T>
-T AliFmLorentzVector<T>::phi() const {return mThreeVector.phi();}
+T AliFmLorentzVector<T>::phi() const {return mThreeVector.Phi();}
 
 template<class T>
-T AliFmLorentzVector<T>::theta() const {return mThreeVector.theta();}
+T AliFmLorentzVector<T>::theta() const {return mThreeVector.Theta();}
 
 template<class T>
-T AliFmLorentzVector<T>::cosTheta() const {return mThreeVector.cosTheta();}
+T AliFmLorentzVector<T>::cosTheta() const {return mThreeVector.CosTheta();}
 
 template<class T>
 T AliFmLorentzVector<T>::operator() (size_t i) const

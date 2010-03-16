@@ -23,6 +23,7 @@ ClassImp(AliFemtoBPLCMS3DCorrFctn)
 //____________________________
 AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi)
   :
+  AliFemtoCorrFctn(),
   fIDNumHisto(0),
   fIDDenHisto(0),
   fIDRatHisto(0),
@@ -39,7 +40,6 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   fRout2(0),
   fRside2(0),
   fRlong2(0),
-  fPairCut(0), 
   fQinvNormLo(0),
   fQinvNormHi(0),
   fNumRealsNorm(0),
@@ -53,8 +53,6 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   fNumRealsNorm = 0;
   fNumMixedNorm = 0;
   //  fCorrection = 0;  // pointer to Coulomb Correction object
-
-  fPairCut = 0; // added Sept2000 - CorrFctn-specific PairCut
 
   //  fSmearPair = 0; // no resolution correction unless user sets SmearPair
 
@@ -138,7 +136,7 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 }
 
 AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn) :
-  AliFemtoCorrFctn(),
+  AliFemtoCorrFctn(aCorrFctn),
   fIDNumHisto(0),
   fIDDenHisto(0),
   fIDRatHisto(0),
@@ -155,7 +153,6 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFct
   fRout2(0),
   fRside2(0),
   fRlong2(0),
-  fPairCut(0), 
   fQinvNormLo(0),
   fQinvNormHi(0),
   fNumRealsNorm(0),
@@ -179,7 +176,6 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFct
   fRout2 = aCorrFctn.fRout2;
   fRside2 = aCorrFctn.fRside2;
   fRlong2 = aCorrFctn.fRlong2;
-  fPairCut = aCorrFctn.fPairCut; 
   fQinvNormLo = aCorrFctn.fQinvNormLo;
   fQinvNormHi = aCorrFctn.fQinvNormHi;
   fNumRealsNorm = aCorrFctn.fNumRealsNorm;
@@ -238,7 +234,6 @@ AliFemtoBPLCMS3DCorrFctn& AliFemtoBPLCMS3DCorrFctn::operator=(const AliFemtoBPLC
   fRout2 = aCorrFctn.fRout2;
   fRside2 = aCorrFctn.fRside2;
   fRlong2 = aCorrFctn.fRlong2;
-  fPairCut = aCorrFctn.fPairCut; 
   fQinvNormLo = aCorrFctn.fQinvNormLo;
   fQinvNormHi = aCorrFctn.fQinvNormHi;
   fNumRealsNorm = aCorrFctn.fNumRealsNorm;

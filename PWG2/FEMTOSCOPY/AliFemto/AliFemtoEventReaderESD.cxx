@@ -321,7 +321,7 @@ AliFemtoEvent* AliFemtoEventReaderESD::ReturnHbtEvent()
       trackCopy->SetP(v);//setting momentum
       trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
       const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
-      if (ktP.mag() == 0) {
+      if (ktP.Mag() == 0) {
 	delete trackCopy;
 	continue;
       }

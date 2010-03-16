@@ -303,12 +303,12 @@ inline float AliFemtoV0::DedxNeg() const {return fDedxNeg;}
 inline float AliFemtoV0::NumdedxNeg() const {return fNufDedxNeg;} //Gael 04Fev2002
 inline float AliFemtoV0::ErrdedxNeg() const {return fErrDedxNeg;} //Gael 04Fev2002
 inline float AliFemtoV0::LendedxNeg() const {return fLenDedxNeg;} //Gael 04Fev2002
-inline float AliFemtoV0::PseudoRapNeg() const {return fMomNeg.pseudoRapidity();} //Gael 04Fev2002
+inline float AliFemtoV0::PseudoRapNeg() const {return fMomNeg.PseudoRapidity();} //Gael 04Fev2002
 inline float AliFemtoV0::DedxPos() const {return fDedxPos;}
 inline float AliFemtoV0::NumdedxPos() const {return fNufDedxPos;} //Gael 04Fev2002
 inline float AliFemtoV0::ErrdedxPos() const {return fErrDedxPos;} //Gael 04Fev2002
 inline float AliFemtoV0::LendedxPos() const {return fLenDedxPos;} //Gael 04Fev2002
-inline float AliFemtoV0::PseudoRapPos() const {return fMomPos.pseudoRapidity();} //Gael 04Fev2002
+inline float AliFemtoV0::PseudoRapPos() const {return fMomPos.PseudoRapidity();} //Gael 04Fev2002
 
 
 inline unsigned long   AliFemtoV0::TrackTopologyMapPos(unsigned int word) const { return fTrackTopologyMapPos[word]; }

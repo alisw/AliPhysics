@@ -376,7 +376,7 @@ double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
       if ((*iter)->TPCchi2()/(*iter)->TPCncls() > 60.0) continue;
       if ((*iter)->ImpactD() > 6.0) continue;
       if ((*iter)->ImpactZ() > 6.0) continue;
-      if (fabs((*iter)->P().pseudoRapidity()) > 0.9) continue;
+      if (fabs((*iter)->P().PseudoRapidity()) > 0.9) continue;
       
       tNormTrackCount++;
     }

@@ -386,7 +386,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
 	const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
 	// Check the sanity of the tracks - reject zero momentum tracks
-	if (ktP.mag() == 0) {
+	if (ktP.Mag() == 0) {
 	  delete trackCopy;
 	  continue;
 	}
@@ -507,7 +507,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
 	const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
 	// Check the sanity of the tracks - reject zero momentum tracks
-	if (ktP.mag() == 0) {
+	if (ktP.Mag() == 0) {
 	  delete trackCopy;
 	  continue;
 	}

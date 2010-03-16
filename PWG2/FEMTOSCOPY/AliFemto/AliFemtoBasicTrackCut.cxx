@@ -63,7 +63,7 @@ bool AliFemtoBasicTrackCut::Pass(const AliFemtoTrack* track){
     goodPID = (goodPID&&(track->Charge() == fCharge));
   }
   if (goodPID){
-    float tEnergy = ::sqrt(track->P().mag2()+fMass*fMass);
+    float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
     float tRapidity = 0.5*::log((tEnergy+track->P().z())/
 			    (tEnergy-track->P().z()));
 

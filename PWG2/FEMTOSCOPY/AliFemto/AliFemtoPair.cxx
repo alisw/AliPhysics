@@ -311,7 +311,7 @@ void AliFemtoPair::QYKPCMS(double& qP, double& qT, double& q0) const
     { l = l2-l1 ; } ;
   // fill momentum differences into return variables
   qP = l.z() ;
-  qT = l.vect().perp() ;
+  qT = l.vect().Perp() ;
   q0 = l.e() ;
 }
 //___________________________________
@@ -346,7 +346,7 @@ void AliFemtoPair::QYKPLCMS(double& qP, double& qT, double& q0) const
     { l = l2boosted-l1boosted ;} ;
   // fill momentum differences into return variables
   qP = l.z() ;
-  qT = l.vect().perp() ;
+  qT = l.vect().Perp() ;
   q0 = l.e() ;
 }
 //___________________________________
@@ -372,7 +372,7 @@ void AliFemtoPair::QYKPPF(double& qP, double& qT, double& q0) const
     { l = l2boosted-l1boosted ;} ;
   // fill momentum differences into return variables
   qP = l.z();
-  qT = l.vect().perp();
+  qT = l.vect().Perp();
   q0 = l.e();
 }
 //_________________
@@ -597,13 +597,13 @@ double AliFemtoPair::Quality2() const {
 double AliFemtoPair::NominalTpcExitSeparation() const {
   // separation at exit from STAR TPC
   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->Track()->NominalTpcExitPoint();
-  return (diff.mag());
+  return (diff.Mag());
 }
 
 double AliFemtoPair::NominalTpcEntranceSeparation() const {
   // separation at entrance to STAR TPC
   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->Track()->NominalTpcEntrancePoint();
-  return (diff.mag());
+  return (diff.Mag());
 }
 
 // double AliFemtoPair::NominalTpcAverageSeparation() const {
@@ -623,7 +623,7 @@ double AliFemtoPair::NominalTpcEntranceSeparation() const {
 //     //  for (int ipt=0; ipt<11; ipt++){
 //     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
 //     ipt++;
-//     tAveSep += diff.mag();
+//     tAveSep += diff.Mag();
 //   }
 //   tAveSep = tAveSep/(ipt+1.);
 //   return (tAveSep);}
@@ -632,11 +632,11 @@ double AliFemtoPair::NominalTpcEntranceSeparation() const {
 
 double AliFemtoPair::OpeningAngle() const {
   // opening angle
- return 57.296* fTrack1->FourMomentum().vect().angle( fTrack2->FourMomentum().vect() );
+ return 57.296* fTrack1->FourMomentum().vect().Angle( fTrack2->FourMomentum().vect() );
 //   AliFemtoThreeVector p1 = fTrack1->FourMomentum().vect();
 //   AliFemtoThreeVector p2 = fTrack2->FourMomentum().vect();
 //   return 57.296*(p1.phi()-p2.phi());
-//   //double dAngInv = 57.296*acos((p1.dot(p2))/(p1.mag()*p2.mag()));
+//   //double dAngInv = 57.296*acos((p1.dot(p2))/(p1.Mag()*p2.Mag()));
 //   //return (dAngInv);
 }
 //_________________
@@ -659,7 +659,7 @@ double AliFemtoPair::KStarFlipped() const {
   AliFmLorentzVectorD tK(tGamma*tP1.e() - tP1.vect()*tGammaBeta,
 		      tP1.vect() + (tGamma-1.)*tLongMom - tP1.e()*tGammaBeta);
 //VP  tP1.vect() *= -1.; // unflip it
-  return tK.vect().mag();
+  return tK.vect().Mag();
 }
 
 //double AliFemtoPair::CVK() const{
@@ -672,7 +672,7 @@ double AliFemtoPair::KStarFlipped() const {
 //		      (tGammaBeta*tGammaBeta))*tGammaBeta;
 //AliFmLorentzVectorD tK(tGamma*tP1.e() - tP1.vect()*tGammaBeta,
 //	      tP1.vect() + (tGamma-1.)*tLongMom - tP1.e()*tGammaBeta);
-//return (tK.vect())*tGammaBeta/tK.vect().magnitude()/tGammaBeta.magnitude();
+//return (tK.vect())*tGammaBeta/tK.vect().Magnitude()/tGammaBeta.Magnitude();
 //}
 
 double AliFemtoPair::CVKFlipped() const{
@@ -949,14 +949,14 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // //_______1st part is a track 2nd is a V0 considering Pos daughter
   
 //   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->TpcV0PosExitPoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcEntranceSeparationTrackV0Pos() const {
 // //________________V0 daughters exit/entrance/average separation calc.
 // //_______1st part is a track 2nd is a V0 considering Pos daughter
 //   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcAverageSeparationTrackV0Pos() const {
@@ -976,7 +976,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	 ){
 //     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
 //     ipt++;
-//     tAveSep += diff.mag();
+//     tAveSep += diff.Mag();
 //   }
 //   tAveSep = tAveSep/(ipt+1.);
 //   return (tAveSep);}
@@ -985,13 +985,13 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // double AliFemtoPair::TpcExitSeparationTrackV0Neg() const {
 // //_______1st part is a track 2nd is a V0 considering Neg daughter
 //   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->TpcV0NegExitPoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcEntranceSeparationTrackV0Neg() const {
 // //_______1st part is a track 2nd is a V0 considering Neg daughter
 //   AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcAverageSeparationTrackV0Neg() const {
@@ -1010,7 +1010,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	 ){
 //     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
 //     ipt++;
-//     tAveSep += diff.mag();
+//     tAveSep += diff.Mag();
 //   }
 //   tAveSep = tAveSep/(ipt+1.);
 //   return (tAveSep);}
@@ -1020,13 +1020,13 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // double AliFemtoPair::TpcExitSeparationV0PosV0Pos() const {
 // //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
 //   AliFemtoThreeVector diff = fTrack1->TpcV0PosExitPoint() - fTrack2->TpcV0PosExitPoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcEntranceSeparationV0PosV0Pos() const {
 // //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
 //   AliFemtoThreeVector diff = fTrack1->TpcV0PosEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 // double AliFemtoPair::TpcAverageSeparationV0PosV0Pos() const {
 // //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Pos daughter
@@ -1044,7 +1044,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	){
 //       diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
 //       ipt++;
-//       tAveSep += diff.mag();
+//       tAveSep += diff.Mag();
 //     }
 //     tAveSep = tAveSep/(ipt+1);
 //     return (tAveSep);}
@@ -1054,13 +1054,13 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // double AliFemtoPair::TpcExitSeparationV0PosV0Neg() const {
 // //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
 //   AliFemtoThreeVector diff = fTrack1->TpcV0PosExitPoint() - fTrack2->TpcV0NegExitPoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcEntranceSeparationV0PosV0Neg() const {
 // //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
 //   AliFemtoThreeVector diff = fTrack1->TpcV0PosEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 // double AliFemtoPair::TpcAverageSeparationV0PosV0Neg() const {
 // //_______1st part is a V0 considering Pos daughter 2nd is a V0 considering Neg daughter
@@ -1078,7 +1078,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	 ){
 //     diff = fTrack1->fNominalPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
 //     ipt++;
-//     tAveSep += diff.mag();
+//     tAveSep += diff.Mag();
 //   }
 //   tAveSep = tAveSep/(ipt+1.);
 //   return (tAveSep);}
@@ -1088,14 +1088,14 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
 // // this is to check the upper case
 //   AliFemtoThreeVector diff = fTrack1->TpcV0NegExitPoint() - fTrack2->TpcV0PosExitPoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcEntranceSeparationV0NegV0Pos() const {
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
 // // this is to check the upper case
 //   AliFemtoThreeVector diff = fTrack1->TpcV0NegEntrancePoint() - fTrack2->TpcV0PosEntrancePoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 // double AliFemtoPair::TpcAverageSeparationV0NegV0Pos() const {
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Pos daughter
@@ -1114,7 +1114,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	    ){
 //        diff = fTrack1->fTpcV0NegPosSample[ipt] - fTrack2->fNominalPosSample[ipt];
 //        ipt++;
-//        tAveSep += diff.mag();
+//        tAveSep += diff.Mag();
 //      }
 //      tAveSep = tAveSep/(ipt+1);
 //      return (tAveSep);}
@@ -1123,13 +1123,13 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // double AliFemtoPair::TpcExitSeparationV0NegV0Neg() const {
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
 //   AliFemtoThreeVector diff = fTrack1->TpcV0NegExitPoint() - fTrack2->TpcV0NegExitPoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 
 // double AliFemtoPair::TpcEntranceSeparationV0NegV0Neg() const {
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
 //   AliFemtoThreeVector diff = fTrack1->TpcV0NegEntrancePoint() - fTrack2->TpcV0NegEntrancePoint();
-//   return (diff.mag());
+//   return (diff.Mag());
 // }
 // double AliFemtoPair::TpcAverageSeparationV0NegV0Neg() const {
 // //_______1st part is a V0 considering Neg daughter 2nd is a V0 considering Neg daughter
@@ -1147,7 +1147,7 @@ void AliFemtoPair::CalcNonIdPar() const{ // fortran like function! faster?
 // 	    ){
 //        diff = fTrack1->fTpcV0NegPosSample[ipt] - fTrack2->fTpcV0NegPosSample[ipt];
 //        ipt++;
-//        tAveSep += diff.mag();
+//        tAveSep += diff.Mag();
 //      }
 //      tAveSep = tAveSep/(ipt+1);
 //      return (tAveSep);}

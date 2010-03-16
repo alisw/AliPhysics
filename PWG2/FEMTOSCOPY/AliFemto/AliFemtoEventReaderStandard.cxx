@@ -54,7 +54,8 @@ AliFemtoEventReaderStandard::AliFemtoEventReaderStandard():
   fInputType(kUnknown),
   fUsePhysicsSel(kFALSE),
   fSelect(0),
-  fTrackCuts(0x0)
+  fTrackCuts(0x0),
+  fUseTPCOnly(kFALSE)
 {
   //constructor with 0 parameters , look at default settings 
 }
@@ -73,7 +74,8 @@ AliFemtoEventReaderStandard::AliFemtoEventReaderStandard(const AliFemtoEventRead
   fInputType(kUnknown),
   fUsePhysicsSel(kFALSE),
   fSelect(0),
-  fTrackCuts(0x0)
+  fTrackCuts(0x0),
+  fUseTPCOnly(kFALSE)
 {
   // Copy constructor
   fCurEvent = aReader.fCurEvent;
@@ -85,6 +87,7 @@ AliFemtoEventReaderStandard::AliFemtoEventReaderStandard(const AliFemtoEventRead
   fUsePhysicsSel = aReader.fUsePhysicsSel;
   if (fUsePhysicsSel) fSelect = new AliPhysicsSelection();
   fTrackCuts = new AliESDtrackCuts(*(aReader.fTrackCuts));
+  fUseTPCOnly = aReader.fUseTPCOnly;
 }
 //__________________
 AliFemtoEventReaderStandard::~AliFemtoEventReaderStandard()
@@ -115,6 +118,8 @@ AliFemtoEventReaderStandard& AliFemtoEventReaderStandard::operator=(const AliFem
   if (fUsePhysicsSel) fSelect = new AliPhysicsSelection();
   if (fTrackCuts) delete fTrackCuts;
   fTrackCuts = new AliESDtrackCuts(*(aReader.fTrackCuts));
+  fUseTPCOnly = aReader.fUseTPCOnly;
+
   return *this;
 }
 //__________________
@@ -168,6 +173,8 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     hbtEvent->SetZDCParticipants(fESDEvent->GetZDCParticipants());
     hbtEvent->SetTriggerMask(fESDEvent->GetTriggerMask());
     hbtEvent->SetTriggerCluster(fESDEvent->GetTriggerCluster());
+
+    printf("Got event type %i\n", fESDEvent->GetEventType());
 
     //Vertex
     double fVCov[6];
@@ -325,9 +332,18 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
 
       if ((fInputType == kESD) || (fInputType == kESDKine)) {
+	
+	AliESDtrack *esdtrack = 0x0;
+	if (fUseTPCOnly) {
+	  AliESDtrack *mcp = fESDEvent->GetTrack(i);
+	  esdtrack = AliESDtrackCuts::GetTPCOnlyTrack(fESDEvent, mcp->GetID());
+	  //	  printf("Got %p for track %i | ", esdtrack, mcp->GetID());
+	}
+	else {
+	  esdtrack = fESDEvent->GetTrack(i);//getting next track
+	}
 
-	AliESDtrack *esdtrack=fESDEvent->GetTrack(i);//getting next track
-	if (fTrackCuts->AcceptTrack(esdtrack)) {
+	if (esdtrack && (fTrackCuts->AcceptTrack(esdtrack))) {
 
 	  trackCopy->SetCharge((short)esdtrack->GetSign());
 
@@ -393,10 +409,14 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	  // 	    delete param;
 	  // 	  }
 	  // 	  else {
-	  tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	  if (fUseTPCOnly)
+	    tGoodMomentum=esdtrack->GetPxPyPz(pxyz);
+	  else
+	    tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	  //	  printf("Got good momentum %i\n", tGoodMomentum);
 
 	  AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	  if (v.mag() < 0.0001) {
+	  if (v.Mag() < 0.0001) {
 	    
 	    delete trackCopy;
 	    continue;
@@ -545,6 +565,9 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	}
 	else 
 	  tGoodMomentum = false;
+	
+	if (fUseTPCOnly)
+	  if (esdtrack) delete esdtrack;
       }
 
       if ((fInputType == kAOD) || (fInputType == kAODKine)) {
@@ -662,12 +685,12 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
 	aodtrack->PxPyPz(pxyz);//reading noconstarined momentum
 	const AliFmThreeVectorD ktP(pxyz[0],pxyz[1],pxyz[2]);
 	// Check the sanity of the tracks - reject zero momentum tracks
-	if (ktP.mag() == 0) {
+	if (ktP.Mag() == 0) {
 	  delete trackCopy;
 	  continue;
 	}
 	
-	
+
       }
       
 	
@@ -739,6 +762,12 @@ void AliFemtoEventReaderStandard::SetESDTrackCuts(AliESDtrackCuts *esdcuts)
 {
   // Set external ESD track cuts
   fTrackCuts = esdcuts;
+}
+
+void AliFemtoEventReaderStandard::SetUseTPCOnly(const bool usetpconly)
+{
+  // Set flag to use TPC only tracks
+  fUseTPCOnly = usetpconly;
 }
 
 void AliFemtoEventReaderStandard::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack, 

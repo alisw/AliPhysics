@@ -387,7 +387,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	}
 	
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.mag() < 0.0001) {
+	if (v.Mag() < 0.0001) {
 	  //	cout << "Found 0 momentum ???? " <<endl;
 	  delete trackCopy;
 	  continue;
@@ -437,7 +437,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
 	
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.mag() < 0.0001) {
+	if (v.Mag() < 0.0001) {
 	  //	cout << "Found 0 momentum ???? " <<endl;
 	  delete trackCopy;
 	  continue;
