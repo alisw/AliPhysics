@@ -49,6 +49,7 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDpid           *GetESDpid()       const {return fESDpid;}
     void                 SetESDpid(AliESDpid* pid)     {fESDpid = pid;}
     void                 SetReadFriends(Bool_t flag)   {fReadFriends = flag;}
+    void                 SetFriendFileName(const char *fname)  {fFriendFileName = fname;}
     // Tag analysis
     void SetReadTags() {fUseTags = kTRUE;}
     AliRunTag           *GetRunTag() const {return fRunTag;}
@@ -58,24 +59,28 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  
  protected:
     // ESD event
-    AliESDEvent    *fEvent;        //! Pointer to the event
-    AliESDfriend   *fFriend;       //! Pointer to the esd friend
-    AliESDpid      *fESDpid;       //! Pointer to PID information
-    Option_t       *fAnalysisType; //! local, proof, grid
-    Int_t           fNEvents;      //! Number of events in the current tree
+    AliESDEvent    *fEvent;         //! Pointer to the event
+    AliESDfriend   *fFriend;        //! Pointer to the esd friend
+    AliESDpid      *fESDpid;        //! Pointer to PID information
+    Option_t       *fAnalysisType;  //! local, proof, grid
+    Int_t           fNEvents;       //! Number of events in the current tree
     // HLT event
-    AliESDEvent    *fHLTEvent;     //! Pointer to the HLT Event (if present)
-    TTree          *fHLTTree;      //! Pointer to the HLT Event (if present)
-    Bool_t          fUseHLT;       //  Flag to access HLT Events
+    AliESDEvent    *fHLTEvent;      //! Pointer to the HLT Event (if present)
+    TTree          *fHLTTree;       //! Pointer to the HLT Event (if present)
+    Bool_t          fUseHLT;        //  Flag to access HLT Events
     // ESD Tag Cut Summary
-    TMap           *fTagCutSumm;   //! Tag cut summary map
+    TMap           *fTagCutSumm;    //! Tag cut summary map
     // ESD Tags (optional)
-    Bool_t          fUseTags;      //  Flag to use tags
-    TChain         *fChainT;       //! File with event tags
-    TTree          *fTreeT;        //! Tree of tags
-    AliRunTag      *fRunTag;       //! Pointer to the run tag
-    Bool_t          fReadFriends;  //  Flag for friends reading 
-    ClassDef(AliESDInputHandler, 5);
+    Bool_t          fUseTags;       //  Flag to use tags
+    TChain         *fChainT;        //! File with event tags
+    TTree          *fTreeT;         //! Tree of tags
+    AliRunTag      *fRunTag;        //! Pointer to the run tag
+    // Friends
+    Bool_t          fReadFriends;   //  Flag for friends reading 
+    TString         fFriendFileName;//  Name of the file containing the frien tree (branch)
+    
+
+    ClassDef(AliESDInputHandler, 6);
 };
 
 #endif

@@ -60,7 +60,8 @@ AliESDInputHandler::AliESDInputHandler() :
   fChainT(0),
   fTreeT(0),
   fRunTag(0),
-  fReadFriends(1)
+  fReadFriends(1),
+  fFriendFileName("AliESDfriends.root")
 {
   // default constructor
 }
@@ -75,7 +76,7 @@ AliESDInputHandler::~AliESDInputHandler()
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fFriend(0x0), fESDpid(0x0), fAnalysisType(0),
-    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fReadFriends(1)
+    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fReadFriends(1), fFriendFileName("AliESDfriends.root")
 {
     // Constructor
 }
@@ -100,7 +101,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
       if (!theTree) theTree = tree;
       esdTreeFName = (theTree->GetCurrentFile())->GetName();
       esdFriendTreeFName = esdTreeFName;
-      esdFriendTreeFName.ReplaceAll("AliESDs.root", "AliESDfriends.root");
+      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
       theTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
     }
 
