@@ -1,5 +1,5 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
@@ -10,24 +10,24 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 //////////////////////////////////////////////////////////////////////
 ///Author : Indranil Das, SINP, INDIA
-///         
+///
 ///Email :  indra.das@saha.ac.in || indra.ehep@gmail.com
 ///
 /// This class is created to peform the a full track reconstroction
-/// for online HLT for Dimuon Detector. It is based on the method of 
+/// for online HLT for Dimuon Detector. It is based on the method of
 /// straight line tracking for slat detectors and cellular automation
 /// mehtods for finding the tracks in the quadrant detectos. The track
 /// segments of the front and back side of the spectromrter is either
-/// compared using KalmanChi2 method (a slightly modified version of 
+/// compared using KalmanChi2 method (a slightly modified version of
 /// AliMUONTrackReconstructorK) or alternated method of simple 
 /// extrapolation of tracks through dipole magnet. Finally the Track is
-/// passed through Absorber to take the MCS effect and Branson Effect 
+/// passed through Absorber to take the MCS effect and Branson Effect
 /// into account for correction of track parameters.
 /////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +93,7 @@ class AliHLTMUONFullTracker;
 const Float_t AliHLTMUONFullTracker::fgkTrackDetCoordinate[3] = {
   155.179+20.0,  166.234+20.0, 
   (AliMUONConstants::DefaultChamberZ(4)+ AliMUONConstants::DefaultChamberZ(5))/2.0
-}; 
+};
 
 const Double_t AliHLTMUONFullTracker::fgkAbsoedge[4] = {92.0, 317.0,443.0,499.0};
 const Double_t AliHLTMUONFullTracker::fgkRadLen[3] = {13.875635, 11.273801, 1.765947};
@@ -527,7 +527,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 
   size = (AliHLTUInt32_t(fNofbackTrackSeg)<size) ? AliHLTUInt32_t(fNofbackTrackSeg) : size;
 
-  Bool_t hitset[16];  
+  Bool_t hitset[16];
   for( Int_t ibackTrackSeg=0;ibackTrackSeg<int(size);ibackTrackSeg++){
 
     if(fNofConnectedfrontTrackSeg[ibackTrackSeg]>0){
@@ -540,7 +540,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 #ifdef PRINT_OUTPUT
       printf("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
 	     size,ibackTrackSeg,Int_t(TMath::Sign(1.,fTrackParam[ibackTrackSeg].GetInverseBendingMomentum())),
-	     TMath::Sqrt(fTrackParam[ibackTrackSeg].Px()*fTrackParam[ibackTrackSeg].Px() + 
+	     TMath::Sqrt(fTrackParam[ibackTrackSeg].Px()*fTrackParam[ibackTrackSeg].Px() +
 			 fTrackParam[ibackTrackSeg].Py()*fTrackParam[ibackTrackSeg].Py()),
 	     fTrackParam[ibackTrackSeg].Px(),fTrackParam[ibackTrackSeg].Py(),
 	     fTrackParam[ibackTrackSeg].Pz());
@@ -552,8 +552,8 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
       track->fTrigRec = fBackTrackSeg[ibackTrackSeg].fTrigRec;
       track->fPx = fTrackParam[ibackTrackSeg].Px();
       track->fPy = fTrackParam[ibackTrackSeg].Py();
-      track->fPz = fTrackParam[ibackTrackSeg].Pz();  
-    
+      track->fPz = fTrackParam[ibackTrackSeg].Pz();
+      
       track->fChi2 = 0;
       
       track->fInverseBendingMomentum = fTrackParam[ibackTrackSeg].GetInverseBendingMomentum();
@@ -568,7 +568,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
       for( Int_t ipoint=15;ipoint>=0;ipoint--){
 	track->fHit[ipoint] = AliHLTMUONConstants::NilRecHitStruct();
 	hitset[ipoint] = false;
-	if(ipoint >= 6 and ipoint <= 9 and fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]!=-1 ){ 
+	if(ipoint >= 6 and ipoint <= 9 and fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]!=-1 ){
 	    track->fHit[ipoint] = *(fChPoint[ipoint][fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]]);
 	    hitset[ipoint] = true;
 	}else if(ipoint <= 3 and fFrontTrackSeg[fBackToFront[ibackTrackSeg][0]].fIndex[ipoint]!=-1 ){
@@ -585,14 +585,14 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
     }else{
       
       
-      if(not TMath::Finite(fHalfTrack[ibackTrackSeg].fPx) 
-	 || not TMath::Finite(fHalfTrack[ibackTrackSeg].fPy) 
-	 || not TMath::Finite(fHalfTrack[ibackTrackSeg].fPz)) continue; 
+      if(not TMath::Finite(fHalfTrack[ibackTrackSeg].fPx)
+	 || not TMath::Finite(fHalfTrack[ibackTrackSeg].fPy)
+	 || not TMath::Finite(fHalfTrack[ibackTrackSeg].fPz)) continue;
       
 #ifdef PRINT_OUTPUT
       printf("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
-	     size,ibackTrackSeg,Int_t(TMath::Sign(1.,fHalfTrack[ibackTrackSeg].GetInverseBendingMomentum())),
-	     TMath::Sqrt(fHalfTrack[ibackTrackSeg].fPx*fHalfTrack[ibackTrackSeg].fPx + 
+	     size,ibackTrackSeg,Int_t(TMath::Sign(1.,fTrackParam[ibackTrackSeg].GetInverseBendingMomentum())),
+	     TMath::Sqrt(fHalfTrack[ibackTrackSeg].fPx*fHalfTrack[ibackTrackSeg].fPx +
 			 fHalfTrack[ibackTrackSeg].fPy*fHalfTrack[ibackTrackSeg].fPy),
 	     fHalfTrack[ibackTrackSeg].fPx,fHalfTrack[ibackTrackSeg].fPy,
 	     fHalfTrack[ibackTrackSeg].fPz);
@@ -604,7 +604,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
       track->fTrigRec = fBackTrackSeg[ibackTrackSeg].fTrigRec;
       track->fPx = fHalfTrack[ibackTrackSeg].fPx;
       track->fPy = fHalfTrack[ibackTrackSeg].fPy;
-      track->fPz = fHalfTrack[ibackTrackSeg].fPz;  
+      track->fPz = fHalfTrack[ibackTrackSeg].fPz;
       
       track->fChi2 = 0;
       

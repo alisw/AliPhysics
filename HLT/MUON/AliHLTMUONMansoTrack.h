@@ -139,7 +139,7 @@ public:
 	const AliHLTMUONTriggerRecord* TriggerRecord() const { return fTrigRec; }
 
 	/**
-	 * Returns tje hit found on the specified tracking chamber.
+	 * Returns the hit found on the specified tracking chamber.
 	 * If NULL is returned then no hit was found or set.
 	 * @param chamber  Specifies the chamber for which to return the hit.
 	 *                 Valid values are in the range [7..10].
