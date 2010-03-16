@@ -30,7 +30,8 @@ SRCS = AliVParticle.cxx \
        AliTimeStamp.cxx AliTriggerScalers.cxx AliTriggerScalersRecord.cxx \
        AliExternalTrackParam.cxx AliQA.cxx \
        AliITSPidParams.cxx \
-       AliITSPIDResponse.cxx AliTPCPIDResponse.cxx AliTOFPIDResponse.cxx
+       AliITSPIDResponse.cxx AliTPCPIDResponse.cxx AliTOFPIDResponse.cxx \
+       AliTRDPIDResponse.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
