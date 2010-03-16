@@ -31,7 +31,7 @@ class AliAnaPartCorrMaker : public TObject {
   virtual ~AliAnaPartCorrMaker() ; //virtual dtor
 
  private:
-  AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & ) {;}//cpy assignment
+  AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & ) ;//cpy assignment
 
  public:
 	
