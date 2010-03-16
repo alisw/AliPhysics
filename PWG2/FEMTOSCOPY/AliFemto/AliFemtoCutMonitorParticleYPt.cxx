@@ -149,11 +149,11 @@ AliFemtoString AliFemtoCutMonitorParticleYPt::Report(){
 void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
-  float tEnergy = ::sqrt(aTrack->P().mag2()+fMass*fMass);
+  float tEnergy = ::sqrt(aTrack->P().Mag2()+fMass*fMass);
   float tRapidity = 0.5*::log((tEnergy+aTrack->P().z())/(tEnergy-aTrack->P().z()));
   float tPt = ::sqrt((aTrack->P().x())*(aTrack->P().x())+(aTrack->P().y())*(aTrack->P().y()));
-  float tEta = -TMath::Log(TMath::Tan(aTrack->P().theta()/2.0));
-  float tPhi = aTrack->P().phi();
+  float tEta = -TMath::Log(TMath::Tan(aTrack->P().Theta()/2.0));
+  float tPhi = aTrack->P().Phi();
   float chi2w;
   float dcar = aTrack->ImpactD();
   float dcaz = aTrack->ImpactZ();

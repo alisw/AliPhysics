@@ -135,11 +135,11 @@ void AliFemtoCutMonitorParticleVertPos::Fill(const AliFemtoTrack* aTrack)
   // Fill in the monitor histograms with the values from the current track
   AliFemtoModelGlobalHiddenInfo *hinfo = dynamic_cast<AliFemtoModelGlobalHiddenInfo *>(aTrack->GetHiddenInfo());
   if (hinfo) {
-    float tEta = -TMath::Log(TMath::Tan(hinfo->GetTrueMomentum()->theta()/2.0));
+    float tEta = -TMath::Log(TMath::Tan(hinfo->GetTrueMomentum()->Theta()/2.0));
 
     fVertPos->Fill(hinfo->GetGlobalEmissionPoint()->x(), hinfo->GetGlobalEmissionPoint()->y());
     fEtaZ->Fill(hinfo->GetGlobalEmissionPoint()->z(), tEta);
-    fRadPos->Fill(hinfo->GetGlobalEmissionPoint()->perp());
+    fRadPos->Fill(hinfo->GetGlobalEmissionPoint()->Perp());
   }
   
   AliFemtoModelHiddenInfo *hminfo = dynamic_cast<AliFemtoModelHiddenInfo *>(aTrack->GetHiddenInfo());

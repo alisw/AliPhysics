@@ -228,18 +228,19 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   int realnofTracks=0;//number of track which we use ina analysis
 
   Int_t *motherids;
-  motherids = new Int_t[fStack->GetNtrack()];
-  for (int ip=0; ip<fStack->GetNtrack(); ip++) motherids[ip] = 0;
+  if (fStack) {
+    motherids = new Int_t[fStack->GetNtrack()];
+    for (int ip=0; ip<fStack->GetNtrack(); ip++) motherids[ip] = 0;
 
-  // Read in mother ids
-  TParticle *motherpart;
-  for (int ip=0; ip<fStack->GetNtrack(); ip++) {
-    motherpart = fStack->Particle(ip);
-    if (motherpart->GetDaughter(0) > 0)
-      motherids[motherpart->GetDaughter(0)] = ip;
-    if (motherpart->GetDaughter(1) > 0)
-      motherids[motherpart->GetDaughter(1)] = ip;
-
+    // Read in mother ids
+    TParticle *motherpart;
+    for (int ip=0; ip<fStack->GetNtrack(); ip++) {
+      motherpart = fStack->Particle(ip);
+      if (motherpart->GetDaughter(0) > 0)
+	motherids[motherpart->GetDaughter(0)] = ip;
+      if (motherpart->GetDaughter(1) > 0)
+	motherids[motherpart->GetDaughter(1)] = ip;
+      
 //     if (motherpart->GetPdgCode() == 211) {
 //       cout << "Mother " << ip << " has daughters " 
 // 	   << motherpart->GetDaughter(0) << " " 
@@ -250,6 +251,11 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 // 	   << endl;
       
 //     }
+    }
+  }
+  else {
+    printf ("No Stack ???\n");
+    return 0;
   }
 
   for (int i=0;i<nofTracks;i++)
@@ -300,7 +306,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	}
 
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.mag() < 0.0001) {
+	if (v.Mag() < 0.0001) {
 	  //	  cout << "Found 0 momentum ???? " << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;
@@ -341,7 +347,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	}
 
 	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.mag() < 0.0001) {
+	if (v.Mag() < 0.0001) {
 	  //	  cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
 	  delete trackCopy;
 	  continue;

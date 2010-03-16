@@ -23,7 +23,7 @@ int TpcLocalTransform(AliFmThreeVectorD& aPoint, int& aSector, int& aRow,
 
   static double tPi = TMath::Pi();
   // --- find sector number
-  aPhi = aPoint.phi();
+  aPhi = aPoint.Phi();
   if(aPhi<0.) aPhi+=(2*tPi);
   aPhi += tPi/12.;
   if(aPhi>2*tPi) aPhi-=2*tPi;

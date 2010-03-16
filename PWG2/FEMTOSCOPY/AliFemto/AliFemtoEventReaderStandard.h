@@ -48,7 +48,9 @@ class AliFemtoEventReaderStandard : public AliFemtoEventReader
   void SetInputType(AliFemtoInputType aInput);
   void SetGenEventHeader(AliGenEventHeader *aGenHeader);
   void SetUsePhysicsSelection(const bool usephysics);
+
   void SetESDTrackCuts(AliESDtrackCuts *esdcuts);
+  void SetUseTPCOnly(const bool usetpconly);
 
  protected:
 
@@ -68,8 +70,9 @@ class AliFemtoEventReaderStandard : public AliFemtoEventReader
 
   bool                 fUsePhysicsSel; // if true the physics selection class will be used
   AliPhysicsSelection *fSelect;        // Class to select only physics events
+
   AliESDtrackCuts     *fTrackCuts;     // Link to external ESD track cut
-  
+  bool                 fUseTPCOnly;    // if true the TPC only parameters will be used
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderStandard, 1)

@@ -27,7 +27,7 @@ AliFmPhysicalHelix::AliFmPhysicalHelix(const AliFmThreeVector<double>& p,
     SetPhase((M_PI/4)*(1-2.*fH));
   else
     SetPhase(atan2(p.y(),p.x())-fH*M_PI/2);
-  SetDipAngle(atan2(p.z(),p.perp()));
+  SetDipAngle(atan2(p.z(),p.Perp()));
   fOrigin = o;
   
 #ifndef ST_NO_NAMESPACES
@@ -35,7 +35,7 @@ AliFmPhysicalHelix::AliFmPhysicalHelix(const AliFmThreeVector<double>& p,
     using namespace units;
 #endif
     SetCurvature(fabs((c_light*nanosecond/meter*q*B/tesla)/
-		      (abs(p.mag())/GeV*fCosDipAngle)/meter));   
+		      (abs(p.Mag())/GeV*fCosDipAngle)/meter));   
 #ifndef ST_NO_NAMESPACES
   }
 #endif
@@ -74,7 +74,7 @@ AliFmThreeVector<double> AliFmPhysicalHelix::MomentumAt(double S, double B) cons
     double yc = this->YCenter();
     double rx = (Y(S)-yc)/(fOrigin.y()-yc);
     double ry = (X(S)-xc)/(fOrigin.x()-xc);
-    return (this->Momentum(B)).pseudoProduct(rx,ry,1.0);
+    return (this->Momentum(B)).PseudoProduct(rx,ry,1.0);
 }
 
 int AliFmPhysicalHelix::Charge(double B) const
@@ -104,7 +104,7 @@ double AliFmPhysicalHelix::GeometricSignedDistance(double x, double y)
     
     double cross = tDCAVec.x()*momVec.y() - tDCAVec.y()*momVec.x();
     double theSign = (cross>=0) ? 1. : -1.;
-    return theSign*tDCAVec.perp();
+    return theSign*tDCAVec.Perp();
 }
 
 double AliFmPhysicalHelix::CurvatureSignedDistance(double x, double y) 

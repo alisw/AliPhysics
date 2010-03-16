@@ -55,8 +55,8 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tPz = inf1->GetTrueMomentum()->z() + inf2->GetTrueMomentum()->z();
   Double_t tM1 = inf1->GetMass();
   Double_t tM2 = inf2->GetMass();
-  Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->mag2());
-  Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->mag2());
+  Double_t tE1 = sqrt(tM1*tM1 + inf1->GetTrueMomentum()->Mag2());
+  Double_t tE2 = sqrt(tM2*tM2 + inf2->GetTrueMomentum()->Mag2());
   Double_t tEs = tE1 + tE2;
 
   Double_t tPt = sqrt(tPx*tPx + tPy*tPy);

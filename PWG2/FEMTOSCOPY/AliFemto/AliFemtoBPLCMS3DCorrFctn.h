@@ -47,7 +47,6 @@ public:
 
   //  void SetCoulombCorrection(AliFemtoCoulomb* Correction);
 
-  void SetSpecificPairCut(AliFemtoPairCut* aCut);
   void SetUseRPSelection(unsigned short aRPSel);
 
   //  void SetSmearPair(AliFemtoSmearPair*);
@@ -82,8 +81,6 @@ private:
   double fRside2;           // Rside for smearing correction
   double fRlong2;           // Rlong for smearing correction
 
-  AliFemtoPairCut* fPairCut;    //! this is a PairCut specific to THIS CorrFctn, not the Analysis
-
   // upper and lower bounds of Qinv region where to do normalization
   float fQinvNormLo;        // Lower bound of Qinv normalization range
   float fQinvNormHi;        // Upper bound of Qinv normalization range
@@ -112,7 +109,6 @@ inline  void AliFemtoBPLCMS3DCorrFctn::SetNormRangeHi(float qHi){fQinvNormHi = q
 inline  float AliFemtoBPLCMS3DCorrFctn::GetNormRangeLo() const{return fQinvNormLo;}
 inline  float AliFemtoBPLCMS3DCorrFctn::GetNormRangeHi() const{return fQinvNormHi;}
 //inline  void AliFemtoBPLCMS3DCorrFctn::SetCoulombCorrection(AliFemtoCoulomb* Correction){fCorrection = Correction;}
-inline  void AliFemtoBPLCMS3DCorrFctn::SetSpecificPairCut(AliFemtoPairCut* pc){fPairCut=pc;}
 //inline  void AliFemtoBPLCMS3DCorrFctn::SetSmearPair(AliFemtoSmearPair* sp){fSmearPair = sp;}
 
 inline  void AliFemtoBPLCMS3DCorrFctn::SetRout(double r){fRout2 = r*r;}

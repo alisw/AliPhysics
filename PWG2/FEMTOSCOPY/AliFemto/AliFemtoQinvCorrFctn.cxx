@@ -17,7 +17,8 @@ ClassImp(AliFemtoQinvCorrFctn)
 AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   fNumerator(0),
   fDenominator(0),
-  fRatio(0)
+  fRatio(0),
+  fkTMonitor(0)
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
@@ -34,6 +35,9 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
   char tTitRat[100] = "Rat";
   strcat(tTitRat,title);
   fRatio = new TH1D(tTitRat,title,nbins,QinvLo,QinvHi);
+  char tTitkT[100] = "kTDep";
+  strcat(tTitkT,title);
+  fkTMonitor = new TH1D(tTitkT,title,200,0.0,2.0);
   // this next bit is unfortunately needed so that we can have many histos of same "title"
   // it is neccessary if we typedef TH1D to TH1d (which we do)
   //fNumerator->SetDirectory(0);
@@ -44,7 +48,7 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
   fNumerator->Sumw2();
   fDenominator->Sumw2();
   fRatio->Sumw2();
-
+  fkTMonitor->Sumw2();
 }
 
 //____________________________
@@ -52,12 +56,14 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(const AliFemtoQinvCorrFctn& aCorrFctn
   AliFemtoCorrFctn(),
   fNumerator(0),
   fDenominator(0),
-  fRatio(0)
+  fRatio(0),
+  fkTMonitor(0)
 {
   // copy constructor
   fNumerator = new TH1D(*aCorrFctn.fNumerator);
   fDenominator = new TH1D(*aCorrFctn.fDenominator);
   fRatio = new TH1D(*aCorrFctn.fRatio);
+  fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
 }
 //____________________________
 AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
@@ -65,6 +71,7 @@ AliFemtoQinvCorrFctn::~AliFemtoQinvCorrFctn(){
   delete fNumerator;
   delete fDenominator;
   delete fRatio;
+  delete fkTMonitor;
 }
 //_________________________
 AliFemtoQinvCorrFctn& AliFemtoQinvCorrFctn::operator=(const AliFemtoQinvCorrFctn& aCorrFctn)
@@ -79,6 +86,8 @@ AliFemtoQinvCorrFctn& AliFemtoQinvCorrFctn::operator=(const AliFemtoQinvCorrFctn
   fDenominator = new TH1D(*aCorrFctn.fDenominator);
   if (fRatio) delete fRatio;
   fRatio = new TH1D(*aCorrFctn.fRatio);
+  if (fkTMonitor) delete fkTMonitor;
+  fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
 
   return *this;
 }
@@ -119,6 +128,7 @@ void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
   
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   fNumerator->Fill(tQinv);
+  fkTMonitor->Fill(pair->KT());
   //  cout << "AliFemtoQinvCorrFctn::AddRealPair : " << pair->qInv() << " " << tQinv <<
   //" " << pair->track1().FourMomentum() << " " << pair->track2().FourMomentum() << endl;
 }
@@ -137,6 +147,7 @@ void AliFemtoQinvCorrFctn::Write(){
   // Write out neccessary objects
   fNumerator->Write(); 
   fDenominator->Write();  
+  fkTMonitor->Write();
 }
 //______________________________
 TList* AliFemtoQinvCorrFctn::GetOutputList()
@@ -146,6 +157,7 @@ TList* AliFemtoQinvCorrFctn::GetOutputList()
 
   tOutputList->Add(fNumerator); 
   tOutputList->Add(fDenominator);  
+  tOutputList->Add(fkTMonitor);
 
   return tOutputList;
 }

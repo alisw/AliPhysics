@@ -74,6 +74,7 @@ private:
   TH1D* fNumerator;          // numerator - real pairs
   TH1D* fDenominator;        // denominator - mixed pairs
   TH1D* fRatio;              // ratio - correlation function
+  TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
 
 #ifdef __ROOT__
   ClassDef(AliFemtoQinvCorrFctn, 1)
