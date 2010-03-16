@@ -281,10 +281,10 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhi::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  double phi1 = pair->Track1()->Track()->P().phi();
-  double phi2 = pair->Track2()->Track()->P().phi();
-  double eta1 = pair->Track1()->Track()->P().pseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().pseudoRapidity();
+  double phi1 = pair->Track1()->Track()->P().Phi();
+  double phi2 = pair->Track2()->Track()->P().Phi();
+  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
+  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
   double dphi = phi1 - phi2;
   while (dphi<-TMath::Pi()/2) dphi+=TMath::Pi()*2;
@@ -326,10 +326,10 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  double phi1 = pair->Track1()->Track()->P().phi();
-  double phi2 = pair->Track2()->Track()->P().phi();
-  double eta1 = pair->Track1()->Track()->P().pseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().pseudoRapidity();
+  double phi1 = pair->Track1()->Track()->P().Phi();
+  double phi2 = pair->Track2()->Track()->P().Phi();
+  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
+  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
   double dphi = phi1 - phi2;
   while (dphi<-TMath::Pi()/2) dphi+=TMath::Pi()*2;
