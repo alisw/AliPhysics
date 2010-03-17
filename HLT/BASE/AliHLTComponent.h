@@ -7,13 +7,13 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTComponent.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Base class declaration for HLT components. 
-    @note   The class is both used in Online (PubSub) and Offline (AliRoot)
-            context
-*/
+//  @file   AliHLTComponent.h
+//  @author Matthias Richter, Timm Steinbeck
+//  @date   
+//  @brief  Base class declaration for HLT components. 
+//  @note   The class is both used in Online (PubSub) and Offline (AliRoot)
+//          context
+
 
 /**
  * @defgroup alihlt_component Component handling of the HLT module
@@ -744,7 +744,7 @@ class AliHLTComponent : public AliHLTLogging {
      *            be started<br>
      *            0 if it controls the same stopwatch
      */
-    int Hold(TStopwatch* pSucc);
+    int Hold(const TStopwatch* pSucc);
 
     /**
      * Resume the previous guard.
@@ -755,7 +755,7 @@ class AliHLTComponent : public AliHLTLogging {
      *            be stopped<br>
      *            0 if it controls the same stopwatch
      */
-    int Resume(TStopwatch* pSucc);
+    int Resume(const TStopwatch* pSucc);
 
     /** the stopwatch controlled by this guard */
     TStopwatch* fpStopwatch;                                                //!transient
@@ -936,7 +936,7 @@ class AliHLTComponent : public AliHLTLogging {
    * framework. Function pointers are transferred via the @ref
    * AliHLTAnalysisEnvironment structure.
    */
-  int GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd );
+  int GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd ) const;
 
   /**
    * Allocate an EventDoneData structure for the current event .
@@ -962,7 +962,7 @@ class AliHLTComponent : public AliHLTLogging {
    * Get the pointer to the event done data available/built so far for the current event via
    * @ref ReserveEventDoneData and @ref PushEventDoneData
    */
-  AliHLTComponentEventDoneData* GetCurrentEventDoneData()
+  AliHLTComponentEventDoneData* GetCurrentEventDoneData() const
     {
     return fEventDoneData;
     }
@@ -1432,7 +1432,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param pTgt    optional pointer to get the event type
    * @return true if the current event is a real data event
    */
-  bool IsDataEvent(AliHLTUInt32_t* pTgt=NULL);
+  bool IsDataEvent(AliHLTUInt32_t* pTgt=NULL) const;
 
   /**
    * Set a bit to 1 in a readout list ( = AliHLTEventDDL )

@@ -17,10 +17,13 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTComponent.cxx
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Base class implementation for HLT components. */
+//  @file   AliHLTComponent.cxx
+//  @author Matthias Richter, Timm Steinbeck
+//  @date   
+//  @brief  Base class implementation for HLT components. */
+//  @note   The class is both used in Online (PubSub) and Offline (AliRoot)
+//          context
+
 
 #if __GNUC__>= 3
 using namespace std;
@@ -684,7 +687,7 @@ int AliHLTComponent::MakeOutputDataBlockList( const AliHLTComponentBlockDataList
 
 }
 
-int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd ) 
+int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventDoneData** edd ) const
 {
   // see header file for function documentation
   if (fEnvironment.fGetEventDoneDataFunc)
@@ -721,6 +724,7 @@ int AliHLTComponent::ReserveEventDoneData( unsigned long size )
 
 int AliHLTComponent::PushEventDoneData( AliHLTUInt32_t eddDataWord )
 {
+  // see header file for function documentation
   if (!fEventDoneData)
     return -ENOMEM;
   if (fEventDoneData->fDataSize+sizeof(AliHLTUInt32_t)>fEventDoneDataSize)
@@ -732,7 +736,8 @@ int AliHLTComponent::PushEventDoneData( AliHLTUInt32_t eddDataWord )
 
 void AliHLTComponent::ReleaseEventDoneData()
 {
-  if (fEventDoneData)
+   // see header file for function documentation
+ if (fEventDoneData)
     delete [] reinterpret_cast<AliHLTUInt8_t*>( fEventDoneData );
   fEventDoneData = NULL;
   fEventDoneDataSize = 0;
@@ -755,7 +760,7 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
 	HLTWarning("component %s indicates multiple output data types but GetOutputDataTypes returns %d", GetComponentID(), count);
       }
     }
-    ((AliHLTComponent*)pConsumer)->GetInputDataTypes(itypes);
+    pConsumer->GetInputDataTypes(itypes);
     AliHLTComponentDataTypeList::iterator otype=otypes.begin();
     for (;otype!=otypes.end();otype++) {
       //PrintDataTypeContent((*otype), "publisher \'%s\'");
@@ -2093,14 +2098,14 @@ AliHLTComponent::AliHLTStopwatchGuard::~AliHLTStopwatchGuard()
   fgpCurrent=fpPrec;
 }
 
-int AliHLTComponent::AliHLTStopwatchGuard::Hold(TStopwatch* pSucc)
+int AliHLTComponent::AliHLTStopwatchGuard::Hold(const TStopwatch* pSucc)
 {
   // see header file for function documentation
   if (fpStopwatch!=NULL && fpStopwatch!=pSucc) fpStopwatch->Stop();
   return fpStopwatch!=pSucc?1:0;
 }
 
-int AliHLTComponent::AliHLTStopwatchGuard::Resume(TStopwatch* pSucc)
+int AliHLTComponent::AliHLTStopwatchGuard::Resume(const TStopwatch* pSucc)
 {
   // see header file for function documentation
   if (fpStopwatch!=NULL && fpStopwatch!=pSucc) fpStopwatch->Start(kFALSE);
@@ -2192,7 +2197,7 @@ AliHLTUInt16_t    AliHLTComponent::GetBunchCrossNumber() const
   return GetEventId()&0xfff;
 }
 
-bool AliHLTComponent::IsDataEvent(AliHLTUInt32_t* pTgt)
+bool AliHLTComponent::IsDataEvent(AliHLTUInt32_t* pTgt) const
 {
   // see header file for function documentation
   if (pTgt) *pTgt=fEventType;
