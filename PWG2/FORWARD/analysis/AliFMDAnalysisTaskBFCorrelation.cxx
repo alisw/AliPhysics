@@ -61,7 +61,7 @@ AliFMDAnalysisTaskBFCorrelation::AliFMDAnalysisTaskBFCorrelation(const char* nam
 //_____________________________________________________________________
 void AliFMDAnalysisTaskBFCorrelation::CreateOutputObjects()
 {
-  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
   if(!fOutputList) {
     fOutputList = new TList();
