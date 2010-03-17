@@ -244,6 +244,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
   else {
 
     // The processing of the DCS input data is forwarded to AliTOFDataDCS
+    if (0) { // AdC
     resultDCSMap = fHVLVmaps->ProcessData(*dcsAliasMap);
     if (!resultDCSMap) {
       Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
@@ -329,6 +330,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
       */
 
     }
+    } // AdC
   }
 
 
@@ -352,8 +354,10 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Roberto Preghenella");
-  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.HV.and.LV data.");
-  AliInfo("Storing Status data from current run. Collected RO.and.HV.and.LV infos @ EOR");
+  //metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.HV.and.LV data."); // AdC
+  //AliInfo("Storing Status data from current run. Collected RO.and.HV.and.LV infos @ EOR"); // AdC
+  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.LV data.");
+  AliInfo("Storing Status data from current run. Collected RO.and.LV infos @ SOR");
   // store FEE data
   if (!Store("Calib", "Status", fStatus, &metaData, 0, kTRUE)) {
     // failed
