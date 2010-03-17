@@ -22,6 +22,7 @@
 #include "AliHLTHOMERBlockDesc.h"
 #include "TCanvas.h"
 #include "TEveBoxSet.h"
+#include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 #include "TVector3.h"
 #include "AliEveHOMERManager.h"
@@ -34,14 +35,19 @@
 ClassImp(AliHLTEvePhos)
 
 AliHLTEvePhos::AliHLTEvePhos() : 
-AliHLTEveCalo(5, "PHOS")
+AliHLTEveCalo(5, "PHOS"),
+fGeoUtils(NULL)
 {
   // Constructor.
+  fGeoUtils = new AliPHOSGeoUtils("PHOS", "noCPV");
 }
 
 AliHLTEvePhos::~AliHLTEvePhos()
 {
   //Destructor
+  if(fGeoUtils)
+    delete fGeoUtils;
+  fGeoUtils = NULL;
 }
 
 
@@ -60,7 +66,7 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
   for(int im = 0; im < fNModules; im++) {
     
     TEveRGBAPalette* pal = new TEveRGBAPalette(0,512);
-    pal->SetLimits(0, 1);
+    pal->SetLimits(-1, 6);
     fBoxSet[im].SetTitle(Form("Clusters Module %d", im));
     fBoxSet[im].SetName(Form("Clusters Module %d", im));
     fBoxSet[im].SetPalette(pal);
@@ -85,14 +91,25 @@ void AliHLTEvePhos::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t en
   //See header file for documentation
   Float_t x = (fX - 32)* 2.2;
   Float_t z = (fZ - 28) * 2.2;
-  fBoxSet[4-module].AddBox(x, 0, z, 2.2, energy*2000, 2.2);
+  fBoxSet[4-module].AddBox(x, 0, z, 2.2, energy*20, 2.2);
   fBoxSet[4-module].DigitValue(static_cast<Int_t>(energy));
 }
 
 
 void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
-  //See header file for documentation
-  fBoxSet[4-module].AddBox(pos[0], pos[1], pos[2], 2.2, energy*200, 2.2);
+
+  
+
+  TVector3 localVector;
+  TVector3 globalVector(pos);
+
+  cout << "mod"  << module << endl;
+
+  fGeoUtils->Global2Local(localVector, globalVector, 5-module);
+  
+
+ //See header file for documentation
+  fBoxSet[4-module].AddBox(localVector.X(), -70, localVector.Z(), 2.2, -energy*20, 2.2);
   fBoxSet[4-module].DigitValue(static_cast<Int_t>(energy));
 }
 

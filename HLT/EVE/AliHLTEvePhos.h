@@ -11,6 +11,7 @@
 
 #include "AliHLTEveCalo.h"
 class TEveElementList;
+class AliPHOSGeoUtils;
 
 class AliHLTEvePhos : public AliHLTEveCalo {
 
@@ -37,6 +38,8 @@ private:
 
   /** inherited from AliHLTEveCalo */
   void AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy);
+
+  AliPHOSGeoUtils * fGeoUtils;  //PHOS geometry
 
   ClassDef(AliHLTEvePhos, 0);
 };
