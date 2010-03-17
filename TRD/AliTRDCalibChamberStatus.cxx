@@ -459,10 +459,10 @@ void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCS *calDCS) /*FOLD00*/
     //---------//
     //  Debug  //
     if(fDebugLevel > 0) {
-      if( (fCalChamberStatus->GetStatus(det) <= 1) && (stateA!=3 && stateA!=9) || 
-	  (fCalChamberStatus->GetStatus(det) <= 1) && (stateB!=3 && stateB!=9) || 
-	  (fCalChamberStatus->GetStatus(det) >= 2) && (stateA==3 || stateA==9) || 
-	  (fCalChamberStatus->GetStatus(det) >= 2) && (stateB==3 || stateB==9)  )
+      if( ((fCalChamberStatus->GetStatus(det) <= 1) && (stateA!=3 && stateA!=9)) || 
+	  ((fCalChamberStatus->GetStatus(det) <= 1) && (stateB!=3 && stateB!=9)) || 
+	  ((fCalChamberStatus->GetStatus(det) >= 2) && (stateA==3 || stateA==9)) || 
+	  ((fCalChamberStatus->GetStatus(det) >= 2) && (stateB==3 || stateB==9))  )
 	{
 	  //printf(" Different half chamber status in DCS and DATA!!\n");
 	  Double_t val[4] = {sm,lay,stac,1};
@@ -534,5 +534,4 @@ void AliTRDCalibChamberStatus::DumpToFile(const Char_t *filename, const Char_t *
 
     if ( backup ) backup->cd();
 }
-
 
