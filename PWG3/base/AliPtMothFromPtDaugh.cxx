@@ -97,9 +97,9 @@ AliPtMothFromPtDaugh::AliPtMothFromPtDaugh(const AliPtMothFromPtDaugh& extractio
   
    if(extraction.fWij){
      fWij = new Double_t*[2*(fHistoPtMothers->GetNbinsX())]; 
-     for(int i=0;i<2*(fHistoPtMothers->GetNbinsX());i++) *(fWij+i)=new Double_t[fHistoPtDaughter->GetNbinsX()];
-        for(int i=0;i<2*(fHistoPtMothers->GetNbinsX());i++){
-          for(int j=0;j<fHistoPtDaughter->GetNbinsX();j++){
+     for(Int_t i=0;i<2*(fHistoPtMothers->GetNbinsX());i++) *(fWij+i)=new Double_t[fHistoPtDaughter->GetNbinsX()];
+        for(Int_t i=0;i<2*(fHistoPtMothers->GetNbinsX());i++){
+          for(Int_t j=0;j<fHistoPtDaughter->GetNbinsX();j++){
              fWij[i][j]=extraction.fWij[i][j];
              } 
            } 
@@ -107,14 +107,14 @@ AliPtMothFromPtDaugh::AliPtMothFromPtDaugh(const AliPtMothFromPtDaugh& extractio
    
    if(extraction.fFi){
      fFi=new Double_t[2*(fHistoPtMothers->GetNbinsX())];
-     for(int i=0;i<2*(fHistoPtMothers->GetNbinsX());i++) fFi[i]=extraction.fFi[i];
+     for(Int_t i=0;i<2*(fHistoPtMothers->GetNbinsX());i++) fFi[i]=extraction.fFi[i];
      }
   
    if(extraction.fWijMin){ 
      fWijMin = new Double_t*[2*(fHistoPtMinMothers->GetNbinsX())];
-     for(int i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++) *(fWijMin+i)=new Double_t[fHistoPtDaughter->GetNbinsX()];
-        for(int i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++){
-          for(int j=0;j<fHistoPtDaughter->GetNbinsX();j++){
+     for(Int_t i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++) *(fWijMin+i)=new Double_t[fHistoPtDaughter->GetNbinsX()];
+        for(Int_t i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++){
+          for(Int_t j=0;j<fHistoPtDaughter->GetNbinsX();j++){
              fWijMin[i][j]=extraction.fWijMin[i][j];
              }
            }
@@ -122,7 +122,7 @@ AliPtMothFromPtDaugh::AliPtMothFromPtDaugh(const AliPtMothFromPtDaugh& extractio
 
    if(extraction.fFiMin){
      fFiMin=new Double_t[2*(fHistoPtMinMothers->GetNbinsX())];
-     for(int i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++) fFiMin[i]=extraction.fFiMin[i];
+     for(Int_t i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++) fFiMin[i]=extraction.fFiMin[i];
      }
 
    if(extraction.fDecayKine) fDecayKine = (TNtuple*)extraction.fDecayKine->CloneTree(); 
@@ -185,12 +185,12 @@ Bool_t AliPtMothFromPtDaugh::CreateWeights()
 
    //Create pointers for weights to reconstruct daughter and mothers pT-spectra 
    fWij=new Double_t*[2*nbinsM];
-   for(int i=0;i<2*nbinsM;i++) 
+   for(Int_t i=0;i<2*nbinsM;i++) 
       {*(fWij+i)=new Double_t[nbinsD];}   
    fFi=new Double_t[2*nbinsM];   
     
    fWijMin=new Double_t*[2*nbinsM_min];
-   for(int i=0;i<2*nbinsM_min;i++) 
+   for(Int_t i=0;i<2*nbinsM_min;i++) 
       {*(fWijMin+i)=new Double_t[nbinsD];}
    fFiMin=new Double_t[2*nbinsM_min];
    AliInfo(Form("Pt-mothers distribution: pt_min = %f  pt_max=%f  n_bins=%d \n",
@@ -247,7 +247,7 @@ Double_t* AliPtMothFromPtDaugh::SetBinsSize(Double_t ptmin, Double_t ptmax,Int_t
    Double_t ptmin1=TMath::Power(ptmin,alpha);
    Double_t ptmax1=TMath::Power(ptmax,alpha);
    Double_t size=(ptmax1-ptmin1)/nbins;
-   for(int i=0;i<nbins+1;i++) *(edgebin+i)=TMath::Power((ptmin1+i*size),(Double_t)1/alpha);
+   for(Int_t i=0;i<nbins+1;i++) *(edgebin+i)=TMath::Power((ptmin1+i*size),(Double_t)1/alpha);
    return edgebin;
   }
 
@@ -601,7 +601,7 @@ Double_t AliPtMothFromPtDaugh::GetStatErrFmin(Int_t i) const
 //______________________________________________________________________________________
 Bool_t AliPtMothFromPtDaugh::ReadKinematics(const char *pathFileName)
   {
-   /* Read the kinematic to create the Ntupla and store it in the file DecayKine.root:
+      /*Read the kinematic to create the Ntupla and store it in the file DecayKine.root:
       if it is already created read it from the file DecayKine.root. Input: path of the
       file galice.root. 
       TNtupla contains:  pdg of Mothers  
@@ -615,7 +615,7 @@ Bool_t AliPtMothFromPtDaugh::ReadKinematics(const char *pathFileName)
                           py      " 
                           pz      "
                         rapidity  "
-                         eta      "                                                  */ 
+                         eta      "        					*/                                           
     if(fReadKine)   
      {
       TFile *f = new TFile("DecayKine.root","READ");
@@ -692,7 +692,7 @@ Bool_t AliPtMothFromPtDaugh::IsMothers(Int_t pdgCode)
   {
    //return kTRUE if pdgCode is in the list of pdg codes of mothers
    Int_t dim = fMothers->GetSize();
-   for(int i=0;i<dim;i++) { if(pdgCode==fMothers->GetAt(i)) return kTRUE; }
+   for(Int_t i=0;i<dim;i++) { if(pdgCode==fMothers->GetAt(i)) return kTRUE; }
    return kFALSE;
   }
 
@@ -704,7 +704,7 @@ Bool_t AliPtMothFromPtDaugh::IsSelectedDaugh(const TParticle *part, Int_t &label
    TParticle *daugh;
    Int_t nDg=part->GetNDaughters();
    if(nDg<=0) {AliWarning("I have no daugh!\n"); return kFALSE;}
-   for(int i=part->GetFirstDaughter();i<part->GetLastDaughter()+1;i++)
+   for(Int_t i=part->GetFirstDaughter();i<part->GetLastDaughter()+1;i++)
      {
       daugh=stack->Particle(i);
       if(TMath::Abs(daugh->GetPdgCode())==fDaughter) {
@@ -733,7 +733,7 @@ Int_t AliPtMothFromPtDaugh::GiveBinIndex(Double_t Ptpart,const TH1F *ptHist)
    // bin 0 is the underflow - nbins+1 is the overflow  
    Int_t nbins=ptHist->GetNbinsX();
    Int_t index=0;
-   for(int i=1;i<nbins+2;i++)
+   for(Int_t i=1;i<nbins+2;i++)
      {
       if(Ptpart<(ptHist->GetBinLowEdge(i)))
       {
@@ -770,7 +770,7 @@ Bool_t AliPtMothFromPtDaugh::EvaluateWij()
    Int_t nbinsM_min=fHistoPtMinMothers->GetNbinsX()+2;
    Float_t pdgM, pdgD, pxM,pyM,pzM,yM,pxD,pyD,pzD,yD,etaM,etaD,cutVarM,cutVarD;
    Double_t* entries=new Double_t[nbinsD];
-   for(int i=0;i<nbinsD;i++) {entries[i]=0.;}
+   for(Int_t ii=0;ii<nbinsD;ii++) {entries[ii]=0.;}
    Int_t i,j,iMin;
    if(!fDecayKine) {AliWarning("TNtupla is not defined!\n"); return kFALSE;}
    fDecayKine->SetBranchAddress("pdgM",&pdgM);
@@ -789,14 +789,14 @@ Bool_t AliPtMothFromPtDaugh::EvaluateWij()
    // Initialize correction factors for pT and pTmin if those exist
    if(!fWij) {AliWarning("Correction factors Wij have not been created!\n"); return kFALSE;}
    if(!fWijMin) {AliWarning("Correction factors Wij_min have not been created!\n"); return kFALSE;}
-   for(int i=0;i<(2*nbinsM);i++){
-     for(int j=0;j<nbinsD;j++){
-        fWij[i][j]=0;
+   for(Int_t ii=0;ii<(2*nbinsM);ii++){
+     for(Int_t jj=0;jj<nbinsD;jj++){
+        fWij[ii][jj]=0;
         }
       }
-   for(int i=0;i<(2*nbinsM_min);i++){
-     for(int j=0;j<nbinsD;j++){
-       fWijMin[i][j]=0;
+   for(Int_t ii=0;ii<(2*nbinsM_min);ii++){
+     for(Int_t jj=0;jj<nbinsD;jj++){
+       fWijMin[ii][jj]=0;
       }
     }
    Int_t nentries = (Int_t)fDecayKine->GetEntries();
@@ -817,37 +817,37 @@ Bool_t AliPtMothFromPtDaugh::EvaluateWij()
        if(!CutDaugh(cutVarD,ptD)) { fNcurrent++; nb = (Int_t)fDecayKine->GetEvent(fNcurrent); continue;}
          if(cutVarM>fyMothMin && cutVarM<fyMothMax){
          fWij[i][j]+=1.;
-         for(int k=0;k<iMin+1;k++) {fWijMin[k][j]+=1.;}
+         for(Int_t k=0;k<iMin+1;k++) {fWijMin[k][j]+=1.;}
           }
          entries[j]++;
          }
     fNcurrent++;
     nb = (Int_t)fDecayKine->GetEvent(fNcurrent);
    }
-  for(int j=0;j<nbinsD;j++){
-      for(int i=0;i<nbinsM;i++){
-         if(entries[j]!=0){
-           fWij[i][j]=fWij[i][j]/entries[j];
+  for(Int_t jj=0;jj<nbinsD;jj++){
+      for(Int_t ii=0;ii<nbinsM;ii++){
+         if(entries[jj]!=0){
+           fWij[ii][jj]=fWij[ii][jj]/entries[jj];
            // evaluate statistical errors on fWij
-           fWij[i+nbinsM][j]=(TMath::Sqrt(fWij[i][j]*(1-(fWij[i][j]/entries[j]))))/entries[j];
+           fWij[ii+nbinsM][jj]=(TMath::Sqrt(fWij[ii][jj]*(1-(fWij[ii][jj]/entries[jj]))))/entries[jj];
            }
          else{
            // if there are no entries in the bin-j of daughter distribution 
            // set factor = -1 and error = 999
-           *(*(fWij+i)+j)=-1;
-           *(*(fWij+nbinsM+i)+j)=999;
+           fWij[ii][jj]=-1;
+           fWij[ii+nbinsM][jj]=999;
            }
          }
-      for(int i=0;i<nbinsM_min;i++){
-         if(entries[j]!=0){
-            fWijMin[i][j]=fWijMin[i][j]/entries[j];
+      for(Int_t ii=0;ii<nbinsM_min;ii++){
+         if(entries[jj]!=0){
+            fWijMin[ii][jj]=fWijMin[ii][jj]/entries[jj];
             //evaluate statistical errors on fWijMin
-            fWijMin[i+nbinsM_min][j] = (TMath::Sqrt(fWijMin[i][j]*(1-(fWijMin[i][j]/entries[j]))))/entries[j]; 
+            fWijMin[ii+nbinsM_min][jj] = (TMath::Sqrt(fWijMin[ii][jj]*(1-(fWijMin[ii][jj]/entries[jj]))))/entries[jj]; 
             }
              else{
             //if there are no entries set correction factor = -1 and error = -999
-            fWijMin[i][j]=-1;
-            fWijMin[i+nbinsM_min][j]=999;
+            fWijMin[ii][jj]=-1;
+            fWijMin[ii+nbinsM_min][jj]=999;
            }
         }
     }
@@ -872,15 +872,15 @@ Bool_t AliPtMothFromPtDaugh::EvaluateFi()
    if(!fFi) {AliWarning("Correction factors Fi have not been created!\n"); return kFALSE;}
    if(!fFiMin) {AliWarning("Correction factors Fi_min have not been created!\n"); return kFALSE;}
    //initialize the correction factor for pT and pTmin
-   for(int i=0;i<nbinsM;i++){
-       fFi[i]=0.; //for correction factors
-       fFi[i+nbinsM]=0.; //for statistical error on correction factors
-       entries[i]=0.;
+   for(Int_t ii=0;ii<nbinsM;ii++){
+       fFi[ii]=0.; //for correction factors
+       fFi[ii+nbinsM]=0.; //for statistical error on correction factors
+       entries[ii]=0.;
       }
-   for(int i=0;i<nbinsM_min;i++){
-       entries1[i]=0.;
-       fFiMin[i]=0.; //for correction factors
-       fFiMin[i+nbinsM_min]=0.; //for statistical error on correction factors       
+   for(Int_t ii=0;ii<nbinsM_min;ii++){
+       entries1[ii]=0.;
+       fFiMin[ii]=0.; //for correction factors
+       fFiMin[ii+nbinsM_min]=0.; //for statistical error on correction factors       
       }
    Float_t pdgM, pdgD, pxM,pyM,pzM,yM,pxD,pyD,pzD,yD,etaM,etaD,cutVarD,cutVarM;
    Int_t i,iMin;
@@ -917,31 +917,31 @@ Bool_t AliPtMothFromPtDaugh::EvaluateFi()
         if(cutVarM<fyMothMin || cutVarM>fyMothMax){ 
         fNcurrent++; nb = (Int_t)fDecayKine->GetEvent(fNcurrent); continue;}
      entries[i]++;
-     for(int k=0; k<iMin+1;k++) {entries1[k]+=1;}
+     for(Int_t k=0; k<iMin+1;k++) {entries1[k]+=1;}
      if(!CutDaugh(cutVarD,ptD)) {fNcurrent++; nb = (Int_t)fDecayKine->GetEvent(fNcurrent); continue;}
      fFi[i]+=1.;
-     for(int k=0; k<iMin+1;k++) {fFiMin[k]+=1.;}
+     for(Int_t k=0; k<iMin+1;k++) {fFiMin[k]+=1.;}
      }
     fNcurrent++;
     nb = (Int_t) fDecayKine->GetEvent(fNcurrent);
     }
     
-  for(int i=0;i<nbinsM;i++){
-       if(entries[i]!=0){
-         fFi[i]/=entries[i];
-         fFi[i+nbinsM]=(TMath::Sqrt(fFi[i]*(1-(fFi[i]/entries[i]))))/entries[i];
+  for(Int_t ii=0;ii<nbinsM;ii++){
+       if(entries[ii]!=0){
+         fFi[ii]/=entries[ii];
+         fFi[ii+nbinsM]=(TMath::Sqrt(fFi[ii]*(1-(fFi[ii]/entries[ii]))))/entries[ii];
         }
       else{
-       	 fFi[i]=-1;
-	 fFi[i+nbinsM]=999;
+       	 fFi[ii]=-1;
+	 fFi[ii+nbinsM]=999;
 	}
       }
-  for(int i=0;i<nbinsM_min;i++){
-     if(entries1[i]!=0){
-	fFiMin[i]/=entries1[i];
-	fFiMin[i+nbinsM_min]=(TMath::Sqrt(fFiMin[i]*(1-(fFiMin[i]/entries1[i]))))/entries1[i];
+  for(Int_t ii=0;ii<nbinsM_min;ii++){
+     if(entries1[ii]!=0){
+	fFiMin[ii]/=entries1[ii];
+	fFiMin[ii+nbinsM_min]=(TMath::Sqrt(fFiMin[ii]*(1-(fFiMin[ii]/entries1[ii]))))/entries1[ii];
        }
-      else {fFiMin[i]=-1; fFiMin[i+nbinsM_min]=999;}
+      else {fFiMin[ii]=-1; fFiMin[ii+nbinsM_min]=999;}
      }
    delete entries;
    delete entries1;
@@ -963,13 +963,13 @@ Bool_t AliPtMothFromPtDaugh::EvaluatePtMothRaw(TH1F *histoPt, TH1F *histoPtMin)
    Double_t lowedge=0.;
    Double_t wfill=0.;
    Double_t wMinfill=0.;
-   for(int j=0;j<nbinsD;j++){
-     for(int i=0;i<nbinsM;i++){
+   for(Int_t j=0;j<nbinsD;j++){
+     for(Int_t i=0;i<nbinsM;i++){
          lowedge=fHistoPtMothers->GetBinCenter(i);
          if(fWij[i][j]>=0) wfill=fWij[i][j]*(fHistoPtDaughter->GetBinContent(j));
          histoPt->Fill(lowedge,wfill);
          }
-     for(int i=0;i<nbinsM_min;i++){
+     for(Int_t i=0;i<nbinsM_min;i++){
          lowedge=fHistoPtMinMothers->GetBinLowEdge(i);
          if(fWijMin[i][j]>=0) wMinfill=fWijMin[i][j]*(fHistoPtDaughter->GetBinContent(j));
          histoPtMin->Fill(lowedge,wMinfill);
@@ -993,11 +993,11 @@ Bool_t AliPtMothFromPtDaugh::EvaluateErrPt(Double_t *erStat)
    Int_t nbinsD=fHistoPtDaughter->GetNbinsX()+2;
    Double_t m=0;
    Double_t  sigmaX, sigmaWij, sigmaFi;
-   for(int i=0;i<nbinsM;i++){
+   for(Int_t i=0;i<nbinsM;i++){
        sigmaX=0.;
        sigmaWij=0.;
        sigmaFi=0;
-       for(int j=0;j<nbinsD;j++){
+       for(Int_t j=0;j<nbinsD;j++){
           if(fWij[i][j]>=0){
           sigmaX+=(((fWij[i][j])*(fWij[i][j]))*((fHistoPtDaughter->GetBinError(j))*(fHistoPtDaughter->GetBinError(j))));
           sigmaWij+=((fHistoPtDaughter->GetBinContent(j))*(fHistoPtDaughter->GetBinContent(j)))*(fWij[i+nbinsM][j]*fWij[i+nbinsM][j]);
@@ -1029,11 +1029,11 @@ Bool_t AliPtMothFromPtDaugh::EvaluateErrPtMin(Double_t *erStat)
    Double_t sigmaMinX;
    Double_t sigmaMinWij;
    Double_t sigmaMinFi;
-      for(int i=0;i<nbinsM_min;i++){
+      for(Int_t i=0;i<nbinsM_min;i++){
         sigmaMinX=0.;
         sigmaMinWij=0.;
         sigmaMinFi=0.;
-           for(int j=0;j<nbinsD;j++){
+           for(Int_t j=0;j<nbinsD;j++){
             if(fWijMin[i][j]>=0){
             sigmaMinX+=(((fWijMin[i][j])*(fWijMin[i][j]))*((fHistoPtDaughter->GetBinError(j))*(fHistoPtDaughter->GetBinError(j))));
             sigmaMinWij+=((fHistoPtDaughter->GetBinContent(j))*(fHistoPtDaughter->GetBinContent(j)))*(fWijMin[i+nbinsM_min][j]*fWijMin[i+nbinsM_min][j]);
@@ -1076,7 +1076,7 @@ Bool_t AliPtMothFromPtDaugh::EvaluatePtMoth()
    Double_t lowedge=0;
    Double_t fwfill;
    Double_t fMinfill;
-   for(int i=0;i<nbinsM;i++){
+   for(Int_t i=0;i<nbinsM;i++){
       fwfill=0.;
       lowedge=fHistoPtMothers->GetBinCenter(i);
        if(fFi[i]>0){
@@ -1085,7 +1085,7 @@ Bool_t AliPtMothFromPtDaugh::EvaluatePtMoth()
         fHistoPtMothers->SetBinError(i,erPtStat[i]);
        }
       }
-   for(int i=0;i<nbinsM_min;i++){
+   for(Int_t i=0;i<nbinsM_min;i++){
       fMinfill=0.;
       lowedge=fHistoPtMinMothers->GetBinCenter(i);
       if(fFiMin[i]>0){
