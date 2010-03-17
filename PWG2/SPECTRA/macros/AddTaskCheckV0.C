@@ -1,4 +1,5 @@
-AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems=0  /*0 = pp, 1 = AA*/)
+AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems  =0,  /*0 = pp, 1 = AA*/
+				       Bool_t  lDelegateSelection =1)  /*1 to AliPhysicsSelection */
 {
 // Creates, configures and attaches to the train a V0 check task.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -21,6 +22,12 @@ AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems=0  /*0 = pp, 1 
 	AliAnalysisTaskCheckV0 *taskcheckv0 = new AliAnalysisTaskCheckV0("TaskCheckV0");
    taskcheckv0->SetCollidingSystems(lCollidingSystems);
    taskcheckv0->SetAnalysisType(type);
+   taskcheckv0->SetUsePhysicsSelection(lDelegateSelection); // Delegate event selection or not
+   taskcheckv0->SetMaxPrimaryVtxPosZ(10.);                  // select |primvtx_z|<10
+   taskcheckv0->SetMaxV0Rapidity(0.75);                     // select |y|<0.75
+   taskcheckv0->SetMinV0Pt(0.2);                            // select pt>0.2
+   taskcheckv0->SetMaxV0Pt(3.5);                            // select pt<3.5
+   taskcheckv0->SetMinDaughterTpcClusters(80);              // select TPC clusters>80
    mgr->AddTask(taskcheckv0);
 
    // Create ONLY the output containers for the data produced by the task.
