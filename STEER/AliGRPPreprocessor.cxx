@@ -627,7 +627,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
 					TObjString* beamModeString = beamMode->GetStringArray(0);
 					if (beamModeArray->GetEntries()>1){
-						timeBeamMode = beamMode->GetTimeStamp();
+						AliDCSArray* beamMode1 = (AliDCSArray*)beamModeArray->At(1);
+						timeBeamMode = beamMode1->GetTimeStamp();
 						AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
 					}
 					AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
@@ -649,7 +650,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 					AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
 					TObjString* machineModeString = machineMode->GetStringArray(0);
 					if (machineModeArray->GetEntries()>1){
-						timeMachineMode = machineMode->GetTimeStamp();
+						AliDCSArray* machineMode1 = (AliDCSArray*)machineModeArray->At(1);
+						timeMachineMode = machineMode1->GetTimeStamp();
 						AliWarning(Form("The Machine Mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
 					}
 					AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
