@@ -8,20 +8,20 @@
 ////
 ////
 
-#include "TObject.h"
-#include "TObjArray.h"
-#include "TLinearFitter.h"
-#include "AliTPCcalibBase.h"
-#include "TH1.h"
-
-class AliExternalTrackParam;
-class AliExternalComparison;
-class AliTPCseed;
-class TGraphErrors;
-class TTree;
-class THnSparse;
-class AliTPCPointCorrection;
 class TFile;
+class TGraphErrors;
+class TH1;
+class THnSparse;
+#include <TLinearFitter.h>
+#include <TMatrixDfwd.h>
+class TObjArray;
+class TTree;
+
+#include "AliTPCcalibBase.h"
+class AliExternalComparison;
+class AliExternalTrackParam;
+class AliTPCPointCorrection;
+class AliTPCseed;
 
 class AliTPCcalibAlign:public AliTPCcalibBase {
 public:
@@ -39,7 +39,7 @@ public:
   virtual void Process(AliTPCseed */*track*/){ return ;}
   virtual void Analyze();
   virtual void Terminate();  
-  virtual Long64_t Merge(TCollection* list);
+  virtual Long64_t Merge(TCollection* const list);
   void ExportTrackPoints(AliESDEvent *event);
   //
   //
@@ -61,7 +61,7 @@ public:
 			Int_t s1,Int_t s2);
   
   void UpdateAlignSector(const AliTPCseed * seed,Int_t isec); 
-  inline Int_t GetIndex(Int_t s1,Int_t s2){return 72*s1+s2;}
+  Int_t GetIndex(Int_t s1,Int_t s2) const {return 72*s1+s2;}
   //
   inline const TMatrixD     * GetTransformation(Int_t s1,Int_t s2, Int_t fitType);
   //
@@ -73,9 +73,9 @@ public:
   Bool_t GetTransformation9(Int_t s1,Int_t s2,TMatrixD &a);
   Bool_t GetTransformation6(Int_t s1,Int_t s2,TMatrixD &a);
   Int_t  AcceptTracklet(const AliExternalTrackParam &tp1,
-			const AliExternalTrackParam &tp2);
+			const AliExternalTrackParam &tp2) const;
   Int_t  AcceptTracklet(const Double_t *t1,
-			const Double_t *t2);
+			const Double_t *t2) const;
 
   void ProcessDiff(const AliExternalTrackParam &t1,
 		   const AliExternalTrackParam &t2,
@@ -87,15 +87,15 @@ public:
 //   Bool_t GetTransformationCovar9(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
 //   Bool_t GetTransformationCovar6(Int_t s1,Int_t s2,TMatrixD &a, Bool_t norm=kFALSE);
   void Add(AliTPCcalibAlign * align);
-  Int_t *GetPoints() {return fPoints;}
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  const Int_t *GetPoints() const {return fPoints;}
+  void     Process(AliESDtrack *const track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   TLinearFitter* GetOrMakeFitter12(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter9(Int_t s1,Int_t s2);
   TLinearFitter* GetOrMakeFitter6(Int_t s1,Int_t s2);
   void Process12(const Double_t *t1, const Double_t *t2,
-		 TLinearFitter *fitter);
-  void Process9(Double_t *t1, Double_t *t2, TLinearFitter *fitter);
-  void Process6(Double_t *t1, Double_t *t2, TLinearFitter *fitter);
+		 TLinearFitter *fitter) const;
+  void Process9(const Double_t *const t1, const Double_t *const t2, TLinearFitter *fitter) const;
+  void Process6(const Double_t *const t1, const Double_t *const t2, TLinearFitter *fitter) const;
   void ProcessTree(TTree * tree, AliExternalComparison *comp=0);
   void GlobalAlign6(Int_t minPoints, Float_t sysError, Int_t niter);
   //
@@ -107,7 +107,7 @@ public:
   Double_t Correct(Int_t type, Int_t value, Int_t s1, Int_t s2, Double_t x, Double_t y, Double_t z, Double_t phi,Double_t theta); 
   static Double_t SCorrect(Int_t type, Int_t value, Int_t s1, Int_t s2, Double_t x, Double_t y, Double_t z, Double_t phi,Double_t theta){return Instance()->Correct(type,value,s1,s2,x,y,z,phi,theta);}
   static AliTPCcalibAlign* Instance();
-  void SetInstance(AliTPCcalibAlign*param){fgInstance = param;}
+  void SetInstance(AliTPCcalibAlign* const param){fgInstance = param;}
   static void Constrain1Pt(AliExternalTrackParam &t1, const AliExternalTrackParam &t2, Bool_t noField);
   void SetNoField(Bool_t noField){ fNoField=noField;}
 
@@ -115,7 +115,7 @@ public:
   // Kalman fileter for sectors
   //
   void MakeSectorKalman();
-  void UpdateSectorKalman(Int_t sector, Int_t quadrant0, Int_t quadrant1,  TMatrixD *p0, TMatrixD *c0, TMatrixD *p1, TMatrixD *c1);
+  void UpdateSectorKalman(Int_t sector, Int_t quadrant0, Int_t quadrant1,  TMatrixD *const p0, TMatrixD *const c0, TMatrixD *const p1, TMatrixD *const c1);
   void UpdateSectorKalman(TMatrixD &par0, TMatrixD &cov0, TMatrixD &para1, TMatrixD &cov1);
   Double_t GetCorrectionSector(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t lz); 
   static Double_t SGetCorrectionSector(Int_t coord, Int_t sector, Double_t lx, Double_t ly, Double_t lz); 
@@ -139,8 +139,8 @@ public:
 		 const Double_t *t2,
 		 Int_t s1,Int_t s2);
 
+protected:
   THnSparse *fClusterDelta[6];  //clusters residuals
-
 
   TObjArray fDphiHistArray;    // array of residual histograms  phi      -kPhi
   TObjArray fDthetaHistArray;  // array of residual histograms  theta    -kTheta

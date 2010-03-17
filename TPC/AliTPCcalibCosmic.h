@@ -5,16 +5,12 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliTPCcalibBase.h"
-#include "AliTPCCalPad.h"
-#include "TH2F.h"
+class TH2F;
 class TH1F;
 class TList;
 class AliESDEvent;
 class AliESDtrack;
 class THnSparse;
-
-#include "TTreeStream.h"
-
 
 class AliTPCcalibCosmic:public AliTPCcalibBase {
 public:
@@ -23,7 +19,7 @@ public:
   virtual ~AliTPCcalibCosmic();
   
   virtual void      Process(AliESDEvent *event);
-  virtual Long64_t  Merge(TCollection *li);
+  virtual Long64_t  Merge(TCollection *const li);
   virtual void      Analyze();
   void              Add(const AliTPCcalibCosmic* cosmic);
   //
@@ -38,8 +34,8 @@ public:
 
   void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
   //
-  void FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined);
-  void MaterialBudgetDump(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined, AliExternalTrackParam *param1Combined);
+  void FillHistoPerformance(const AliExternalTrackParam *par0, const AliExternalTrackParam *par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, const AliExternalTrackParam *param0Combined);
+  void MaterialBudgetDump(AliExternalTrackParam *const par0, AliExternalTrackParam *const par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *const seed0,  AliTPCseed *const seed1, AliExternalTrackParam *const param0Combined, AliExternalTrackParam *const param1Combined);
 
 
   //
@@ -52,12 +48,13 @@ public:
   //
   Double_t          GetMIPvalue()const {return fMIPvalue;};
   //
-  static void       BinLogX(TH1 * h);   // method for correct histogram binning
-  static void       BinLogX(THnSparse * h, Int_t axisDim);   // method for correct histogram binning
+  static void       BinLogX(TH1 *const h);   // method for correct histogram binning
+  static void       BinLogX(THnSparse *const h, Int_t axisDim);   // method for correct histogram binning
 
-  void     Process(AliESDtrack *track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);};
-  void     Process(AliTPCseed *track)  {return AliTPCcalibBase::Process(track);}
-  
+  void     Process(AliESDtrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *const track)  {return AliTPCcalibBase::Process(track);}
+
+protected:  
   //
   // Performance histograms
   //

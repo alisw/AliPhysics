@@ -133,11 +133,10 @@
 #include "TFile.h"
 #include "TProfile.h"
 #include "TCanvas.h"
-#include "TLegend.h"
 
 
 #include "TTreeStream.h"
-#include <iostream>
+#include "Riostream.h"
 #include <sstream>
 using namespace std;
 
@@ -454,8 +453,8 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
   ExportTrackPoints(event);  // export track points for external calibration 
   const Int_t kMaxTracks =6;
   const Int_t kminCl = 40;
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) return;
+  AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!eESDfriend) return;
   Int_t ntracks=event->GetNumberOfTracks(); 
   Float_t dca0[2];
   Float_t dca1[2];
@@ -469,7 +468,7 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0;
     //
-    friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(i0);;
+    friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
@@ -505,11 +504,11 @@ void AliTPCcalibAlign::Process(AliESDEvent *event) {
       TObject *calibObject=0;
       AliTPCseed *seed0 = 0,*seed1=0;
       //
-      friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(i0);;
+      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i0);;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
-      friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(i1);;
+      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(i1);;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
@@ -599,8 +598,8 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
   // Export track points for alignment - calibration
   // export space points for pairs of tracks if possible
   //
-  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
-  if (!ESDfriend) return;
+  AliESDfriend *eESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!eESDfriend) return;
   Int_t ntracks=event->GetNumberOfTracks();
   Int_t kMaxTracks=4;   // maximal number of tracks for cosmic pairs
   Int_t kMinVertexTracks=5;   // maximal number of tracks for vertex mesurement
@@ -664,12 +663,12 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
     TObject *calibObject=0;
     AliTPCseed *seed0 = 0,*seed1=0;
     //
-    friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(index0);;
+    friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(index0);;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
       if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (index1>0){
-      friendTrack = (AliESDfriendTrack *)ESDfriend->GetTrack(index1);;
+      friendTrack = (AliESDfriendTrack *)eESDfriend->GetTrack(index1);;
       for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
 	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
       }
@@ -1062,7 +1061,8 @@ void AliTPCcalibAlign::ProcessTree(TTree * chainTracklet, AliExternalComparison 
 
 
 Int_t AliTPCcalibAlign::AcceptTracklet(const AliExternalTrackParam &p1,
-				       const AliExternalTrackParam &p2){
+				       const AliExternalTrackParam &p2) const
+{
 
   //
   // Accept pair of tracklets?
@@ -1117,7 +1117,8 @@ Int_t AliTPCcalibAlign::AcceptTracklet(const AliExternalTrackParam &p1,
 }
 
 
-Int_t  AliTPCcalibAlign::AcceptTracklet(const Double_t *t1, const Double_t *t2){
+Int_t  AliTPCcalibAlign::AcceptTracklet(const Double_t *t1, const Double_t *t2) const
+{
   //
   // accept tracklet  - 
   //  dist cut + 6 sigma cut 
@@ -1232,7 +1233,8 @@ void  AliTPCcalibAlign::ProcessDiff(const AliExternalTrackParam &t1,
 
 void AliTPCcalibAlign::Process12(const Double_t *t1,
 				 const Double_t *t2,
-				 TLinearFitter *fitter) {
+				 TLinearFitter *fitter) const
+{
   // x2    =  a00*x1 + a01*y1 + a02*z1 + a03
   // y2    =  a10*x1 + a11*y1 + a12*z1 + a13
   // z2    =  a20*x1 + a21*y1 + a22*z1 + a23
@@ -1310,9 +1312,10 @@ void AliTPCcalibAlign::Process12(const Double_t *t1,
   fitter->AddPoint(p,value,sdzdx);
 }
 
-void AliTPCcalibAlign::Process9(Double_t *t1,
-				Double_t *t2,
-				TLinearFitter *fitter) {
+void AliTPCcalibAlign::Process9(const Double_t * const t1,
+				const Double_t * const t2,
+				TLinearFitter *fitter) const
+{
   // x2    =  a00*x1 + a01*y1 + a02*z1 + a03
   // y2    =  a10*x1 + a11*y1 + a12*z1 + a13
   // z2    =  a20*x1 + a21*y1 + a22*z1 + a23
@@ -1324,8 +1327,8 @@ void AliTPCcalibAlign::Process9(Double_t *t1,
   //                     a20  a21  a21 a23     p[4]   p[5]  1      p[8] 
 
 
-  Double_t &x1=t1[0], &y1=t1[1], &z1=t1[3], &dydx1=t1[2], &dzdx1=t1[4];
-  Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[3], &dydx2=t2[2], &dzdx2=t2[4];
+  const Double_t &x1=t1[0], &y1=t1[1], &z1=t1[3], &dydx1=t1[2], &dzdx1=t1[4];
+  const Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[3], &dydx2=t2[2], &dzdx2=t2[4];
   //
   Double_t sy       = TMath::Sqrt(t1[6]*t1[6]+t2[6]*t2[6]);
   Double_t sdydx    = TMath::Sqrt(t1[7]*t1[7]+t2[7]*t2[7]);
@@ -1389,9 +1392,10 @@ void AliTPCcalibAlign::Process9(Double_t *t1,
   fitter->AddPoint(p,value,sdzdx);
 }
 
-void AliTPCcalibAlign::Process6(Double_t *t1,
-				Double_t *t2,
-				TLinearFitter *fitter) {
+void AliTPCcalibAlign::Process6(const Double_t *const t1,
+				const Double_t *const t2,
+				TLinearFitter *fitter) const
+{
   // x2    =  1  *x1 +-a01*y1 + 0      +a03
   // y2    =  a01*x1 + 1  *y1 + 0      +a13
   // z2    =  a20*x1 + a21*y1 + 1  *z1 +a23
@@ -1402,8 +1406,8 @@ void AliTPCcalibAlign::Process6(Double_t *t1,
   //                     a10  a11  a12 a13 ==> p[0]   1     0     p[4]
   //                     a20  a21  a21 a23     p[1]   p[2]  1     p[5] 
 
-  Double_t &x1=t1[0], &y1=t1[1], &z1=t1[3], &dydx1=t1[2], &dzdx1=t1[4];
-  Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[3], &dydx2=t2[2], &dzdx2=t2[4];
+  const Double_t &x1=t1[0], &y1=t1[1], &z1=t1[3], &dydx1=t1[2], &dzdx1=t1[4];
+  const Double_t /*&x2=t2[0],*/ &y2=t2[1], &z2=t2[3], &dydx2=t2[2], &dzdx2=t2[4];
 
   //
   Double_t sy       = TMath::Sqrt(t1[6]*t1[6]+t2[6]*t2[6]);
@@ -1993,7 +1997,7 @@ void  AliTPCcalibAlign::MakeTree(const char *fname, Int_t minPoints){
 
 
 //_____________________________________________________________________
-Long64_t AliTPCcalibAlign::Merge(TCollection* list) {
+Long64_t AliTPCcalibAlign::Merge(TCollection* const list) {
   //
   // merge function 
   //
@@ -2869,7 +2873,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   }
 }
 
-void AliTPCcalibAlign::UpdateSectorKalman(Int_t sector, Int_t quadrant0, Int_t quadrant1,  TMatrixD *p0, TMatrixD *c0, TMatrixD *p1, TMatrixD *c1 ){
+void AliTPCcalibAlign::UpdateSectorKalman(Int_t sector, Int_t quadrant0, Int_t quadrant1,  TMatrixD *const p0, TMatrixD *const c0, TMatrixD *const p1, TMatrixD *const c1 ){
   //
   //
   // tracks are refitted at sector middle

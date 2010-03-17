@@ -86,7 +86,7 @@
 #include "AliTPCcalibCosmic.h"
 #include "TTreeStream.h"
 #include "AliTPCTracklet.h"
-#include "AliESDcosmic.h"
+//#include "AliESDcosmic.h"
 
 
 ClassImp(AliTPCcalibCosmic)
@@ -355,7 +355,7 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
 }
 
 
-void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam */*inner1*/, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined ){
+void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, const AliExternalTrackParam *par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam */*inner1*/, AliTPCseed *seed0,  AliTPCseed *seed1, const AliExternalTrackParam *param0Combined ){
   //
   // par0,par1       - parameter of tracks at DCA 0
   // inner0,inner1   - parameter of tracks at the TPC entrance
@@ -455,7 +455,7 @@ void AliTPCcalibCosmic::FillHistoPerformance(AliExternalTrackParam *par0, AliExt
   
 }
 
-void AliTPCcalibCosmic::MaterialBudgetDump(AliExternalTrackParam *par0, AliExternalTrackParam *par1, AliExternalTrackParam *inner0, AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, AliExternalTrackParam *param0Combined, AliExternalTrackParam *param1Combined){
+void AliTPCcalibCosmic::MaterialBudgetDump(AliExternalTrackParam *const par0, AliExternalTrackParam *const par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *const seed0,  AliTPCseed *const seed1, AliExternalTrackParam *const param0Combined, AliExternalTrackParam *const param1Combined){
   //
   // matrial budget AOD dump
   //
@@ -787,7 +787,7 @@ void  AliTPCcalibCosmic::FillAcordeHist(AliESDtrack *upperTrack) {
 
 
 
-Long64_t AliTPCcalibCosmic::Merge(TCollection *li) {
+Long64_t AliTPCcalibCosmic::Merge(TCollection *const li) {
 
   TIterator* iter = li->MakeIterator();
   AliTPCcalibCosmic* cal = 0;
@@ -850,11 +850,11 @@ Double_t AliTPCcalibCosmic::CalculateMIPvalue(TH1F * hist) {
   funcDoubleGaus->SetParameters(hist->GetEntries()*0.75,hist->GetMean()/1.3,hist->GetMean()*0.10,
 				hist->GetEntries()*0.25,hist->GetMean()*1.3,hist->GetMean()*0.10);
   hist->Fit(funcDoubleGaus);
-  Double_t MIPvalue = TMath::Min(funcDoubleGaus->GetParameter(1),funcDoubleGaus->GetParameter(4));
+  Double_t aMIPvalue = TMath::Min(funcDoubleGaus->GetParameter(1),funcDoubleGaus->GetParameter(4));
 
   delete funcDoubleGaus;
 
-  return MIPvalue;
+  return aMIPvalue;
 
 }
 
@@ -870,7 +870,7 @@ void AliTPCcalibCosmic::CalculateBetheParams(TH2F */*hist*/, Double_t * /*initia
 }
 
 
-void AliTPCcalibCosmic::BinLogX(THnSparse *h, Int_t axisDim) {
+void AliTPCcalibCosmic::BinLogX(THnSparse *const h, Int_t axisDim) {
 
   // Method for the correct logarithmic binning of histograms
 
@@ -879,21 +879,21 @@ void AliTPCcalibCosmic::BinLogX(THnSparse *h, Int_t axisDim) {
 
   Double_t from = axis->GetXmin();
   Double_t to = axis->GetXmax();
-  Double_t *new_bins = new Double_t[bins + 1];
+  Double_t *newBins = new Double_t[bins + 1];
 
-  new_bins[0] = from;
+  newBins[0] = from;
   Double_t factor = pow(to/from, 1./bins);
 
   for (int i = 1; i <= bins; i++) {
-   new_bins[i] = factor * new_bins[i-1];
+   newBins[i] = factor * newBins[i-1];
   }
-  axis->Set(bins, new_bins);
-  delete new_bins;
+  axis->Set(bins, newBins);
+  delete newBins;
 
 }
 
 
-void AliTPCcalibCosmic::BinLogX(TH1 *h) {
+void AliTPCcalibCosmic::BinLogX(TH1 *const h) {
 
   // Method for the correct logarithmic binning of histograms
 
@@ -902,16 +902,16 @@ void AliTPCcalibCosmic::BinLogX(TH1 *h) {
 
   Double_t from = axis->GetXmin();
   Double_t to = axis->GetXmax();
-  Double_t *new_bins = new Double_t[bins + 1];
+  Double_t *newBins = new Double_t[bins + 1];
    
-  new_bins[0] = from;
+  newBins[0] = from;
   Double_t factor = pow(to/from, 1./bins);
   
   for (int i = 1; i <= bins; i++) {
-   new_bins[i] = factor * new_bins[i-1];
+   newBins[i] = factor * newBins[i-1];
   }
-  axis->Set(bins, new_bins);
-  delete new_bins;
+  axis->Set(bins, newBins);
+  delete newBins;
   
 }
 
