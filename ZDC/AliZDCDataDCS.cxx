@@ -136,8 +136,7 @@ Bool_t AliZDCDataDCS::ProcessData(TMap& aliasMap)
       
       aliasArr = (TObjArray*) (aliasMap.GetValue(fAliasNames[j].Data()));
       if(!aliasArr){
-   	AliWarning(Form("Alias %s not found!", fAliasNames[j].Data()));
-   	//printf(" AliZDCDataDCS: Alias %s not found!\n", fAliasNames[j].Data());
+   	AliWarning(Form("Alias %s: data not found!", fAliasNames[j].Data()));
 	continue;
       }
 
