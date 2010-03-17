@@ -22,12 +22,6 @@
     @brief  Handling of Data Buffers for HLT components.
 */
 
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -848,7 +842,6 @@ AliHLTDataBuffer::AliHLTRawBuffer::AliHLTRawBuffer(AliHLTUInt32_t size, AliHLTUI
 
 AliHLTDataBuffer::AliHLTRawBuffer::~AliHLTRawBuffer()
 {
-  // see header file for class documentation
   if (fExternalPtr==NULL && fPtr) {
     free(fPtr);
   }
@@ -857,40 +850,40 @@ AliHLTDataBuffer::AliHLTRawBuffer::~AliHLTRawBuffer()
   fTotalSize=0;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator==(const void* ptr) const
+int AliHLTDataBuffer::AliHLTRawBuffer::operator==(void* ptr) const
 {
   // see header file for function documentation
-  return fPtr == static_cast<const AliHLTUInt8_t*>(ptr);
+  return fPtr == static_cast<AliHLTUInt8_t*>(ptr);
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator<(const void* ptr) const
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<(void* ptr) const
 {
   // see header file for function documentation
-  int iResult=fPtr < static_cast<const AliHLTUInt8_t*>(ptr);
+  int iResult=fPtr < static_cast<AliHLTUInt8_t*>(ptr);
   //printf("%p: %p <= %p (%d)\n", this, fPtr, ptr, iResult);
   return iResult;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(const void* ptr) const
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(void* ptr) const
 {
   // see header file for function documentation
-  int iResult=fPtr <= static_cast<const AliHLTUInt8_t*>(ptr);
+  int iResult=fPtr <= static_cast<AliHLTUInt8_t*>(ptr);
   //printf("%p: %p <= %p (%d)\n", this, fPtr, ptr, iResult);
   return iResult;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator>(const void* ptr) const
+int AliHLTDataBuffer::AliHLTRawBuffer::operator>(void* ptr) const
 {
   // see header file for function documentation
-  int iResult=fPtr+fSize > static_cast<const AliHLTUInt8_t*>(ptr);
+  int iResult=fPtr+fSize > static_cast<AliHLTUInt8_t*>(ptr);
   //printf("%p: %p + %d > %p (%d)\n", this, fPtr, fSize, ptr, iResult);
   return iResult;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator-(const void* ptr) const
+int AliHLTDataBuffer::AliHLTRawBuffer::operator-(void* ptr) const
 {
   // see header file for function documentation
-  return static_cast<int>(static_cast<const AliHLTUInt8_t*>(ptr)-fPtr);
+  return static_cast<int>(static_cast<AliHLTUInt8_t*>(ptr)-fPtr);
 }
 
 int AliHLTDataBuffer::AliHLTRawBuffer::operator<(const AliHLTRawBuffer& op) const
@@ -1191,7 +1184,7 @@ int AliHLTDataBuffer::AliHLTRawPage::Free(AliHLTRawBuffer* pBuffer)
   return 1;
 }
 
-int AliHLTDataBuffer::AliHLTRawPage::SetSize(const AliHLTDataBuffer::AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size)
+int AliHLTDataBuffer::AliHLTRawPage::SetSize(AliHLTDataBuffer::AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size)
 {
   /// set the size of a raw buffer and release the remaining part
   int iResult=0;
@@ -1218,7 +1211,7 @@ int AliHLTDataBuffer::AliHLTRawPage::SetSize(const AliHLTDataBuffer::AliHLTRawBu
   return 1;
 }
 
-bool AliHLTDataBuffer::AliHLTRawPage::HasBuffer(const AliHLTDataBuffer::AliHLTRawBuffer* pBuffer)
+bool AliHLTDataBuffer::AliHLTRawPage::HasBuffer(AliHLTDataBuffer::AliHLTRawBuffer* pBuffer)
 {
   /// check if the buffer is in this page
   for (AliHLTRawBufferPList::iterator iter=fUsedBuffers.begin();
@@ -1349,7 +1342,7 @@ int AliHLTDataBuffer::AliHLTRawPage::GlobalClean()
   return 0;
 }
 
-AliHLTDataBuffer::AliHLTRawPage* AliHLTDataBuffer::AliHLTRawPage::NextPage(const AliHLTDataBuffer::AliHLTRawPage* prev)
+AliHLTDataBuffer::AliHLTRawPage* AliHLTDataBuffer::AliHLTRawPage::NextPage(AliHLTDataBuffer::AliHLTRawPage* prev)
 {
   // get next global page
   vector<AliHLTDataBuffer::AliHLTRawPage*>::iterator page=fgGlobalPages.begin();

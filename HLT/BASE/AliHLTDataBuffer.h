@@ -1,11 +1,9 @@
-//-*- Mode: C++ -*-
-// $Id$
+// @(#) $Id$
 
 #ifndef ALIHLTDATABUFFER_H
 #define ALIHLTDATABUFFER_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
-//* ALICE Experiment at CERN, All rights reserved.                         *
-//* See cxx source for full Copyright notice                               *
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 /** @file   AliHLTDataBuffer.h
     @author Matthias Richter
@@ -245,6 +243,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @brief  Descriptor of a data segment within the buffer.
    */
   class AliHLTDataSegment {
+    friend class AliHLTDataBuffer;
+    friend class AliHLTConsumerDescriptor;
   public:
     AliHLTDataSegment()
       :
@@ -269,7 +269,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTDataSegment(void* ptr, AliHLTUInt32_t offset, AliHLTUInt32_t size) 
       :
       fDataType(kAliHLTVoidDataType),
-      fPtr(reinterpret_cast<AliHLTUInt8_t*>(ptr)),
+      fPtr((AliHLTUInt8_t*)ptr),
       fSegmentOffset(offset),
       fSegmentSize(size),
       fSpecification(0)
@@ -279,7 +279,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTDataSegment(void* ptr, AliHLTUInt32_t offset, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliHLTUInt32_t spec)
       :
       fDataType(dt),
-      fPtr(reinterpret_cast<AliHLTUInt8_t*>(ptr)),
+      fPtr((AliHLTUInt8_t*)ptr),
       fSegmentOffset(offset),
       fSegmentSize(size),
       fSpecification(spec)
@@ -307,8 +307,6 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTUInt32_t fSegmentSize;                                   // see above
     /** data specification */
     AliHLTUInt32_t fSpecification;                                 // see above
-
-    friend class AliHLTDataBuffer; // TODO: implement some getters/setters
   };
 
   class AliHLTRawBuffer;
@@ -337,16 +335,16 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /** adjust global page size */
     static void SetGlobalPageSize(AliHLTUInt32_t size) {fgGlobalPageSize=size;}
     /** find next page after prev, or first page */
-    static AliHLTRawPage* NextPage(const AliHLTRawPage* prev=NULL);
+    static AliHLTRawPage* NextPage(AliHLTRawPage* prev=NULL);
 
     /** alloc a buffer of specified size */
     AliHLTRawBuffer* Alloc(AliHLTUInt32_t size);
     /** free a buffer and merge consecutive free buffers */
     int Free(AliHLTRawBuffer* pBuffer);
     /** set the size of a raw buffer and release the remaining part */
-    int SetSize(const AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size);
+    int SetSize(AliHLTRawBuffer* pBuffer, AliHLTUInt32_t size);
     /// check if the buffer is in this page
-    bool HasBuffer(const AliHLTRawBuffer* pBuffer);
+    bool HasBuffer(AliHLTRawBuffer* pBuffer);
 
     AliHLTUInt32_t Size() const {return fSize;}
     AliHLTUInt32_t Capacity() const;
@@ -460,15 +458,15 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
      */
     void Print(const char* option);
 
-    int operator==(const void* ptr) const;
-    int operator==(const AliHLTUInt8_t* ptr) const {return fPtr==ptr;}
-    int operator<(const void* ptr) const;
-    int operator<=(const void* ptr) const;
-    int operator>(const void* ptr) const;
-    int operator-(const void* ptr) const;
-    int operator<(const AliHLTRawBuffer& op) const;
-    int operator<=(const AliHLTRawBuffer& op) const;
-    int operator>(const AliHLTRawBuffer& op) const;
+    int operator==(void*) const;
+    int operator==(AliHLTUInt8_t* ptr) const {return fPtr==ptr;}
+    int operator<(void*) const;
+    int operator<=(void*) const;
+    int operator>(void*) const;
+    int operator-(void*) const;
+    int operator<(const AliHLTRawBuffer&) const;
+    int operator<=(const AliHLTRawBuffer&) const;
+    int operator>(const AliHLTRawBuffer&) const;
 
     operator void*() const {return fPtr;}
     operator AliHLTUInt8_t*() const {return fPtr;}
