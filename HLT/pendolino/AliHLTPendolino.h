@@ -295,14 +295,14 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * 				more PredictionProcessors, but if switching on failed 
 		 * 				for one, this one is not counted.)
 		 */
-		virtual UInt_t setToPredictMaking(); 
+		virtual UInt_t SetToPredictMaking(); 
 
 		/**
 		 * Function to get the number of registered PredictionProcessors
 		 *
 		 * @return number of registered PredictionProcessors
 		 */
-		Int_t getNumberOfPredictProc();
+		Int_t GetNumberOfPredictProc();
 
 		/**
 		 * Function to check if given PredtionProc allows for processing DCS
@@ -340,7 +340,7 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 *
 		 * @return 0 on success, else an error code is returned.
 		 */
-		virtual Int_t prepareDCSValues(TString detector, TMap* DCSValues);
+		virtual Int_t PrepareDCSValues(TString detector, TMap* DCSValues);
 
 		/**
 		 * Function to retrieve dummy data for testing the Pendolino from a
@@ -358,7 +358,7 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 * 			PredictionProcessor). NOTE: can be NULL, if no corresponding
 		 * 			PredictionProcessor is registered.
 		 */
-		virtual TMap* emulateDCSMap(TString detector, TString aliasName = "");
+		virtual TMap* EmulateDCSMap(TString detector, TString aliasName = "");
    
 		/**
  		 * Function to add a entry request to the Taxi lists.
@@ -369,7 +369,7 @@ class AliHLTPendolino : public AliShuttleInterface {
  		 * @return true, when successful included or entry already existing in 
  		 * 				list; else false.
  		 */
-		virtual Bool_t includeAliCDBEntryInList(const TString& entryPath); 
+		virtual Bool_t IncludeAliCDBEntryInList(const TString& entryPath); 
 
 		/**
 		 * Function to get the start time of the DCS Archive DB request; in HLT
@@ -493,12 +493,12 @@ class AliHLTPendolino : public AliShuttleInterface {
 		/**
 		 * Stores the start time of the DCS Archive DB request
 		 */
-		UInt_t fStartTime;
+                UInt_t fStartTime; //!
 
 		/**
 		 * Stores the end time of the DCS Archive DB request
 		 */
-		UInt_t fEndTime;
+                UInt_t fEndTime; //!
 		
 		ClassDef(AliHLTPendolino, 6);
 
@@ -515,7 +515,7 @@ inline Int_t AliHLTPendolino::GetRunNumber() {
 	return fRunNumber;
 }
 
-inline Int_t AliHLTPendolino::getNumberOfPredictProc() {
+inline Int_t AliHLTPendolino::GetNumberOfPredictProc() {
 	// getter for number of registered PredictionProcessors
 	return fPredictionProcessorMap.GetSize();
 }

@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTPendolino.cxx
-    @author Sebastian Bablok
-    @date   
-    @brief  
-*/
+//  @file   AliHLTPendolino.cxx
+//  @author Sebastian Bablok
+//  @date   
+//  @brief  
+//  @note
 
 #include "AliHLTPendolino.h"
 
@@ -373,7 +373,7 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 }
 
 
-Bool_t AliHLTPendolino::includeAliCDBEntryInList(const TString& entryPath) {
+Bool_t AliHLTPendolino::IncludeAliCDBEntryInList(const TString& entryPath) {
 	// includes entry in Taxi list (objects to be fetched from OCDB)
 	Bool_t bRet = kFALSE;
 	ifstream infile;
@@ -534,7 +534,7 @@ void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 }
 
 
-UInt_t AliHLTPendolino::setToPredictMaking() {
+UInt_t AliHLTPendolino::SetToPredictMaking() {
 	// switches prdiction making on in all registered PredictioProcessors
 	UInt_t retVal = 0;
 
@@ -633,7 +633,7 @@ Int_t AliHLTPendolino::setToPredictMaking(TString detector) {
 }
 
 
-Int_t AliHLTPendolino::prepareDCSValues(TString detector, TMap* DCSValues) {
+Int_t AliHLTPendolino::PrepareDCSValues(TString detector, TMap* DCSValues) {
 	// function to prepare retrieved DCS values
 	Int_t retVal = 0;
 	AliHLTPredictionProcessorInterface* aPredict = 0;
@@ -677,7 +677,7 @@ Int_t AliHLTPendolino::prepareDCSValues(TString detector, TMap* DCSValues) {
 	return retVal;	
 }
 
-TMap* AliHLTPendolino::emulateDCSMap(TString detector, TString aliasName) {
+TMap* AliHLTPendolino::EmulateDCSMap(TString detector, TString aliasName) {
 	// function to generate test data of given PredictionProcessor
 	TMap* result = NULL;
 	AliHLTPredictionProcessorInterface* aPredict = 0;

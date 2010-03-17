@@ -48,7 +48,7 @@ Int_t AliHLTPredictionProcessorInterface::GetRunNumber() {
 Bool_t AliHLTPredictionProcessorInterface::includeAliCDBEntryInList(
             const TString& entryPath) {
 
-    return fpPend->includeAliCDBEntryInList(entryPath);
+    return fpPend->IncludeAliCDBEntryInList(entryPath);
 }
 
 
