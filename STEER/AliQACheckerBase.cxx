@@ -405,7 +405,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       fImage[esIndex]->Clear() ; 
       Int_t nx = TMath::Nint(TMath::Sqrt(nImages));
       Int_t ny = nx  ; 
-      while ( nx*ny <= nImages) 
+      if (nx < TMath::Sqrt(nImages))
         ny++ ; 
       
       fImage[esIndex]->Divide(nx, ny) ; 
