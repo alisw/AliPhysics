@@ -18,14 +18,12 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCMemHandler.cxx
-    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
-            Matthias Richter
-    @date   
-    @brief  input interface base class for the TPC tracking code before
-            migration to the HLT component framework
-*/
-
+//  @file   AliHLTTPCMemHandler.cxx
+//  @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+//          Matthias Richter
+//  @date   
+//  @brief  input interface base class for the TPC tracking code before
+//          migration to the HLT component framework
 
 #include <cassert>
 #include "AliHLTTPCRootTypes.h"
@@ -36,6 +34,7 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCMemHandler.h"
+#include "TMath.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -110,7 +109,7 @@ void AliHLTTPCMemHandler::ResetROI()
     }
 }
 
-void AliHLTTPCMemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
+void AliHLTTPCMemHandler::SetROI(const Float_t *eta,Int_t */*slice*/)
 {
   // Init the Look-up table for the Region of Interest mode.
   //   Here you can specify a certain etaregion, - all data
@@ -121,7 +120,7 @@ void AliHLTTPCMemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
   //   slice[1] = maximum slice
 
 
-  if(eta[1]==0)
+  if(TMath::Abs(eta[1])<.00001)
     {
       LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::SetROI","Eta Values")
 	<<"Bad ROI parameters."<<ENDLOG;
@@ -148,7 +147,7 @@ void AliHLTTPCMemHandler::SetROI(Float_t *eta,Int_t */*slice*/)
       
       fEtaMinTimeBin[i] = (Int_t)xyz[2];
       
-      if(eta[0]==0)
+      if(TMath::Abs(eta[0])<.00001)
 	fEtaMaxTimeBin[i] = 445;
       else
 	{
@@ -588,7 +587,7 @@ UShort_t AliHLTTPCMemHandler::Read(UInt_t *comp, UInt_t & index, UInt_t & subind
   return value;
 }
 
-UShort_t AliHLTTPCMemHandler::Test(UInt_t *comp, 
+UShort_t AliHLTTPCMemHandler::Test(const UInt_t *comp, 
 			       UInt_t index, UInt_t  subindex) const
 {
   //supi dupi test
@@ -1226,7 +1225,7 @@ Int_t  AliHLTTPCMemHandler::ComparePoints(UInt_t /*row*/,UShort_t pad,UShort_t t
   return 1;
 }
 
-Int_t AliHLTTPCMemHandler::CompareDigits(AliHLTTPCRandomDigitData *a,AliHLTTPCRandomDigitData *b) const
+Int_t AliHLTTPCMemHandler::CompareDigits(const AliHLTTPCRandomDigitData *a,const AliHLTTPCRandomDigitData *b) const
 {
   //compare two digits
   if(a->fPad==b->fPad && a->fTime == b->fTime) return 0;

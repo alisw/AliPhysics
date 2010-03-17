@@ -1,18 +1,17 @@
 // @(#) $Id$
 // Original: AliHLTMemHandler.h,v 1.30 2004/10/06 08:51:20 cvetan 
-#ifndef ALIHLTTPC_MEMHANDLER_H
-#define ALIHLTTPC_MEMHANDLER_H
+#ifndef ALIHLTTPCMEMHANDLER_H
+#define ALIHLTTPCMEMHANDLER_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCMemHandler.h
-    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
-            Matthias Richter
-    @date   
-    @brief  input interface base class for the TPC tracking code before
-            migration to the HLT component framework
-*/
+//  @file   AliHLTTPCMemHandler.h
+//  @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+//          Matthias Richter
+//  @date   
+//  @brief  input interface base class for the TPC tracking code before
+//          migration to the HLT component framework
 
 class AliHLTTPCDigitData;
 class AliHLTTPCSpacePointData;
@@ -24,7 +23,7 @@ class AliHLTTPCRandomDigitData;
 
 class AliRunLoader;
 class AliRawEvent;
-#include "AliTPCRawStream.h"
+class AliTPCRawStream;
 
 /**
  * @class AliHLTTPCMemHandler
@@ -112,7 +111,7 @@ class AliHLTTPCMemHandler {
   void Generate(Int_t row);
   void SetNGenerate(Int_t number){(number>fNRandom)?fNGenerate=fNRandom:fNGenerate = number;}
 
-  void SetROI(Float_t *eta,Int_t *slice);
+  void SetROI(const Float_t *eta,Int_t *slice);
   void ResetROI();
 
   ////////////////////////////////////////////////////////////////////////////////////
@@ -181,8 +180,8 @@ class AliHLTTPCMemHandler {
   Byte_t *Allocate(UInt_t size);
   Byte_t *Allocate();  // allocate size of Binary Input File
   Byte_t *Allocate(AliHLTTPCTrackArray *array);
-  Byte_t *GetDataPointer(UInt_t &size) {size = fSize; return fPt;}
-  FILE *GetFilePointer() {return fInBinary;}
+  Byte_t *GetDataPointer(UInt_t &size) const {size = fSize; return fPt;}
+  FILE *GetFilePointer() const {return fInBinary;}
   void   Free();
   
   //Getters:
@@ -281,12 +280,12 @@ class AliHLTTPCMemHandler {
 
   void Write(UInt_t *comp, UInt_t & index, UInt_t & subindex, UShort_t value) const;
   UShort_t Read(UInt_t *comp, UInt_t & index, UInt_t & subindex) const;
-  UShort_t Test(UInt_t *comp, UInt_t index, UInt_t subindex) const; 
+  UShort_t Test(const UInt_t *comp, UInt_t index, UInt_t subindex) const; 
   
   void DigitizePoint(Int_t row,Int_t pad, Int_t time,Int_t charge);
   void QSort(AliHLTTPCRandomDigitData **a, Int_t first, Int_t last);
   Int_t ComparePoints(UInt_t row,UShort_t pad,UShort_t time) const ;
-  Int_t CompareDigits(AliHLTTPCRandomDigitData *a,AliHLTTPCRandomDigitData *b) const;
+  Int_t CompareDigits(const AliHLTTPCRandomDigitData *a, const AliHLTTPCRandomDigitData *b) const;
   void AddData(AliHLTTPCDigitData *data,UInt_t & ndata,
                       UInt_t row,UShort_t pad,UShort_t time,UShort_t charge) const;
   void AddRandom(AliHLTTPCDigitData *data,UInt_t & ndata);
