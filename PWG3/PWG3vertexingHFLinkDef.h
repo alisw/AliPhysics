@@ -23,6 +23,7 @@
 #pragma link C++ class AliCFTaskForDStarAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEDStar+;
 #pragma link C++ class AliAnalysisTaskSEDStarJets+;
+#pragma link C++ class AliAnalysisTaskSEDStarSpectra+;
 #pragma link C++ class AliMultiDimVector+;
 #pragma link C++ class AliSignificanceCalculator+;
 #pragma link C++ class AliHFMassFitter+;
