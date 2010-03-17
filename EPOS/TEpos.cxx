@@ -251,25 +251,25 @@ void TEpos::GenerateInputFile() {
 	file.close();
 }
 
-Float_t TEpos::GetBimevt() { return cevt.bimevt; }
-Float_t TEpos::GetPhievt() { return cevt.phievt; }
-Int_t TEpos::GetKolevt() { return cevt.kolevt; }
-Int_t TEpos::GetKoievt() { return cevt.koievt; }
-Float_t TEpos::GetPmxevt() { return cevt.pmxevt; }
-Float_t TEpos::GetEgyevt() { return cevt.egyevt; }
-Int_t TEpos::GetNpjevt() { return cevt.npjevt; }
-Int_t TEpos::GetNtgevt() { return cevt.ntgevt; }
-Int_t TEpos::GetNpnevt() { return cevt.npnevt; }
-Int_t TEpos::GetNppevt() { return cevt.nppevt; }
-Int_t TEpos::GetNtnevt() { return cevt.ntnevt; }
-Int_t TEpos::GetNtpevt() { return cevt.ntpevt; }
-Int_t TEpos::GetJpnevt() { return cevt.jpnevt; }
-Int_t TEpos::GetJppevt() { return cevt.jppevt; }
-Int_t TEpos::GetJtnevt() { return cevt.jtnevt; }
-Int_t TEpos::GetJtpevt() { return cevt.jtpevt; }
-Float_t TEpos::GetXbjevt() { return cevt.xbjevt; }
-Float_t TEpos::GetQsqevt() { return cevt.qsqevt; }
-Int_t TEpos::GetNglevt() { return cevt.nglevt; }
-Float_t TEpos::GetZppevt() { return cevt.zppevt; }
-Float_t TEpos::GetZptevt() { return cevt.zptevt; }
+Float_t TEpos::GetBimevt() const { return cevt.bimevt; }
+Float_t TEpos::GetPhievt() const { return cevt.phievt; }
+Int_t TEpos::GetKolevt() const { return cevt.kolevt; }
+Int_t TEpos::GetKoievt() const { return cevt.koievt; }
+Float_t TEpos::GetPmxevt() const { return cevt.pmxevt; }
+Float_t TEpos::GetEgyevt() const { return cevt.egyevt; }
+Int_t TEpos::GetNpjevt() const { return cevt.npjevt; }
+Int_t TEpos::GetNtgevt() const { return cevt.ntgevt; }
+Int_t TEpos::GetNpnevt() const { return cevt.npnevt; }
+Int_t TEpos::GetNppevt() const { return cevt.nppevt; }
+Int_t TEpos::GetNtnevt() const { return cevt.ntnevt; }
+Int_t TEpos::GetNtpevt() const { return cevt.ntpevt; }
+Int_t TEpos::GetJpnevt() const { return cevt.jpnevt; }
+Int_t TEpos::GetJppevt() const { return cevt.jppevt; }
+Int_t TEpos::GetJtnevt() const { return cevt.jtnevt; }
+Int_t TEpos::GetJtpevt() const { return cevt.jtpevt; }
+Float_t TEpos::GetXbjevt() const { return cevt.xbjevt; }
+Float_t TEpos::GetQsqevt() const { return cevt.qsqevt; }
+Int_t TEpos::GetNglevt() const { return cevt.nglevt; }
+Float_t TEpos::GetZppevt() const { return cevt.zppevt; }
+Float_t TEpos::GetZptevt() const { return cevt.zptevt; }
 

@@ -46,27 +46,27 @@ public:
 
    //Geters for event header
 
-   Float_t GetBimevt(); //   bimevt ........ absolute value of impact parameter
-   Float_t GetPhievt(); //   phievt ........ angle of impact parameter
-   Int_t GetKolevt();   //   kolevt ........ number of collisions
-   Int_t GetKoievt();   //   koievt ........ number of inelastic collisions
-   Float_t GetPmxevt(); //   pmxevt ........ reference momentum
-   Float_t GetEgyevt(); //   egyevt ........ pp cm energy (hadron) or string energy (lepton)
-   Int_t GetNpjevt();   //   npjevt ........ number of primary projectile participants
-   Int_t GetNtgevt();   //   ntgevt ........ number of primary target participants
-   Int_t GetNpnevt();   //   npnevt ........ number of primary projectile neutron spectators
-   Int_t GetNppevt();   //   nppevt ........ number of primary projectile proton spectators
-   Int_t GetNtnevt();   //   ntnevt ........ number of primary target neutron spectators
-   Int_t GetNtpevt();   //   ntpevt ........ number of primary target proton spectators
-   Int_t GetJpnevt();   //   jpnevt ........ number of absolute projectile neutron spectators
-   Int_t GetJppevt();   //   jppevt ........ number of absolute projectile proton spectators
-   Int_t GetJtnevt();   //   jtnevt ........ number of absolute target neutron spectators
-   Int_t GetJtpevt();   //   jtpevt ........ number of absolute target proton spectators
-   Float_t GetXbjevt(); //   xbjevt ........ bjorken x for dis
-   Float_t GetQsqevt(); //   qsqevt ........ q**2 for dis
-   Int_t GetNglevt();   //   nglevt ........ number of collisions acc to  Glauber
-   Float_t GetZppevt(); //   zppevt ........ average Z-parton-proj
-   Float_t GetZptevt(); //   zptevt ........ average Z-parton-targ
+   Float_t GetBimevt() const; //   bimevt ........ absolute value of impact parameter
+   Float_t GetPhievt() const; //   phievt ........ angle of impact parameter
+   Int_t GetKolevt() const;   //   kolevt ........ number of collisions
+   Int_t GetKoievt() const;   //   koievt ........ number of inelastic collisions
+   Float_t GetPmxevt() const; //   pmxevt ........ reference momentum
+   Float_t GetEgyevt() const; //   egyevt ........ pp cm energy (hadron) or string energy (lepton)
+   Int_t GetNpjevt() const;   //   npjevt ........ number of primary projectile participants
+   Int_t GetNtgevt() const;   //   ntgevt ........ number of primary target participants
+   Int_t GetNpnevt() const;   //   npnevt ........ number of primary projectile neutron spectators
+   Int_t GetNppevt() const;   //   nppevt ........ number of primary projectile proton spectators
+   Int_t GetNtnevt() const;   //   ntnevt ........ number of primary target neutron spectators
+   Int_t GetNtpevt() const;   //   ntpevt ........ number of primary target proton spectators
+   Int_t GetJpnevt() const;   //   jpnevt ........ number of absolute projectile neutron spectators
+   Int_t GetJppevt() const;   //   jppevt ........ number of absolute projectile proton spectators
+   Int_t GetJtnevt() const;   //   jtnevt ........ number of absolute target neutron spectators
+   Int_t GetJtpevt() const;   //   jtpevt ........ number of absolute target proton spectators
+   Float_t GetXbjevt() const; //   xbjevt ........ bjorken x for dis
+   Float_t GetQsqevt() const; //   qsqevt ........ q**2 for dis
+   Int_t GetNglevt() const;   //   nglevt ........ number of collisions acc to  Glauber
+   Float_t GetZppevt() const; //   zppevt ........ average Z-parton-proj
+   Float_t GetZptevt() const; //   zptevt ........ average Z-parton-targ
 
    //Parameters for the generator:
    void SetLaproj(Int_t laproj) { fLaproj = laproj; }
@@ -84,7 +84,7 @@ public:
    void SetSplitting(Bool_t splitting) { fSplitting = splitting; }
 
    void AddNoDecay(Int_t nodecay);
-   void AddExtraInputLine(const char *);
+   void AddExtraInputLine(const char *line);
 
    Int_t GetLaproj() const { return fLaproj; }
    Int_t GetMaproj() const { return fMaproj; }
