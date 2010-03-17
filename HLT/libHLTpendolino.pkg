@@ -1,18 +1,18 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-CLASS_HDRS:=  	AliHLTPredictionProcessorInterface.h \
-		AliHLTPendolino.h \
-		AliHLTPendolinoLoggerOStream.h \
-		AliHLTPredictionProcessorDummy.h \
-		AliHLTPendolinoLogger.h \
-		AliHLTPendolinoLoggerDump.h \
-		HLT/AliHLTPredicProcTempMonitor.h \
-		HLT/AliHLTPredictionProcessorHLT.h \
-		MUON/AliHLTPredictionProcessorMCH.h \
-		MUON/AliHLTPredictionProcessorMTR.h \
-		TPC/AliHLTDCSArray.h \
-		TPC/AliHLTPredictionProcessorTPC.h
+CLASS_HDRS:=  	AliHLTPendolino.h \
+		PredictionProcessor/AliHLTPredictionProcessorInterface.h \
+		PredictionProcessor/AliHLTPendolinoLoggerOStream.h \
+		PredictionProcessor/AliHLTPredictionProcessorDummy.h \
+		PredictionProcessor/AliHLTPendolinoLogger.h \
+		PredictionProcessor/AliHLTPendolinoLoggerDump.h \
+		PredictionProcessor/HLT/AliHLTPredicProcTempMonitor.h \
+		PredictionProcessor/HLT/AliHLTPredictionProcessorHLT.h \
+		PredictionProcessor/MUON/AliHLTPredictionProcessorMCH.h \
+		PredictionProcessor/MUON/AliHLTPredictionProcessorMTR.h \
+		PredictionProcessor/TPC/AliHLTDCSArray.h \
+		PredictionProcessor/TPC/AliHLTPredictionProcessorTPC.h
 
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
@@ -20,7 +20,17 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-EINCLUDE := HLT/pendolino HLT/pendolino/HLT HLT/pendolino/MUON HLT/pendolino/TPC HLT/BASE STEER TPC MUON
+EINCLUDE := 	HLT/pendolino \
+		HLT/pendolino/PendolinoHelper \
+		HLT/pendolino/DCSClient \
+		HLT/pendolino/PredictionProcessor \
+		HLT/pendolino/PredictionProcessor/HLT \
+		HLT/pendolino/PredictionProcessor/MUON \
+		HLT/pendolino/PredictionProcessor/TPC \
+		HLT/BASE \
+		STEER \
+		TPC \
+		MUON
 
 LIBRARY_DEP := -lHLTbase -lCDB
 
