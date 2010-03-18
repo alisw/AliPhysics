@@ -1,18 +1,18 @@
-/*
- *###################################################################
- *#        EPOS 1.67     K. WERNER, T. PIEROG, S. PORTEBOEUF.       #
- *#                      Contact: werner@subatech.in2p3.fr          #
- *###################################################################
- *
- * TEpos.cxx
- * 
- * Wraper class for interfacing EPOS model, derived from ROOT's TGenerator.
- * It generates temporary input file for the model, providing user with
- * ability to add his/hers own lines to the input.
- * Output is read directly from common blocks.
- *
- *      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
- */
+//
+//###################################################################
+//#        EPOS 1.67     K. WERNER, T. PIEROG, S. PORTEBOEUF.       #
+//#                      Contact: werner@subatech.in2p3.fr          #
+//###################################################################
+//
+// TEpos.cxx
+// 
+// Wraper class for interfacing EPOS model, derived from ROOT's TGenerator.
+// It generates temporary input file for the model, providing user with
+// ability to add his/hers own lines to the input.
+// Output is read directly from common blocks.
+//
+//      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
+//
 
 
 #include <TClonesArray.h>
@@ -76,6 +76,7 @@ TEpos::~TEpos() {
 }
 
 TEpos& TEpos::operator=(const TEpos&) {
+  //operator=
 	if (!fIdConverter) {
 		fIdConverter = new AliGenEposIsajetToPdgConverter();
 	}
@@ -83,6 +84,7 @@ TEpos& TEpos::operator=(const TEpos&) {
 }
 
 void TEpos::Initialize() {
+  // Generates input file and prepares EPOS to read from it.
 	Int_t nopeno = 0;
 	GenerateInputFile();
 	aaset(0);
@@ -115,6 +117,7 @@ void TEpos::GenerateEvent() {
 }
 
 Int_t TEpos::ImportParticles(TClonesArray *particles, Option_t *) {
+  //Fills provided ClonesArray with generated particles
 	particles->Clear();
 	if (!cevt.nevt) return 0;
 	Int_t numpart = cptl.nptl;
@@ -141,6 +144,7 @@ Int_t TEpos::ImportParticles(TClonesArray *particles, Option_t *) {
 }
 
 TObjArray*  TEpos::ImportParticles(Option_t *) {
+  //Creates new particle array
 	fParticles->Clear();
 	if (!cevt.nevt) return NULL;
 	Int_t numpart = cptl.nptl;
@@ -176,6 +180,7 @@ void TEpos::AddExtraInputLine(const char *line) {
 }
 
 void TEpos::GenerateInputFile() {
+  // Generate input file in EPOS format
 	ofstream file(GetInputFileName(), ios_base::out | ios_base::trunc);
 	char epo[256];
 	char *epoEnv = getenv("EPO");

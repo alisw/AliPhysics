@@ -1,18 +1,18 @@
-/*
- *###################################################################
- *#        EPOS 1.67     K. WERNER, T. PIEROG, S. PORTEBOEUF.       #
- *#                      Contact: werner@subatech.in2p3.fr          #
- *###################################################################
- *
- * TEpos.h
- * 
- * Wraper class for interfacing EPOS model, derived from ROOT's TGenerator.
- * It generates temporary input file for the model, providing user with
- * ability to add his/hers own lines to the input.
- * Output is read directly from common blocks.
- *
- *      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
- */
+//
+//###################################################################
+//#        EPOS 1.67     K. WERNER, T. PIEROG, S. PORTEBOEUF.       #
+//#                      Contact: werner@subatech.in2p3.fr          #
+//###################################################################
+//
+// TEpos.h
+// 
+// Wraper class for interfacing EPOS model, derived from ROOT's TGenerator.
+// It generates temporary input file for the model, providing user with
+// ability to add his/hers own lines to the input.
+// Output is read directly from common blocks.
+//
+//      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
+//
 
 
 #ifndef TEPOS_H

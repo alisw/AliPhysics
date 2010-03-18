@@ -1,20 +1,19 @@
-/*
- * AliGenEposIsajetToPdgConverter.cxx
- *
- *  Helper class used by TEpos to insert EPOS internal objects and higher
- *  resonances to PDG database.
- *  Quark clusters has has unaltered code, unknown objects have code of
- *  form 6xxxxxxxx, and higher resonances have codes from Particle Physics
- *  Review '96
- *
- *  Created on: Aug 03, 2009
- *      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
- */
+//
+// AliGenEposIsajetToPdgConverter.cxx
+//
+//  Helper class used by TEpos to insert EPOS internal objects and higher
+//  resonances to PDG database.
+//  Quark clusters has has unaltered code, unknown objects have code of
+//  form 6xxxxxxxx, and higher resonances have codes from Particle Physics
+//  Review '96
+//
+//  Created on: Aug 03, 2009
+//      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
+//
 
 
 #include "TDatabasePDG.h"
 #include "AliGenEposIsajetToPdgConverter.h"
-#include "stdio.h"
 
 ClassImp(AliGenEposIsajetToPdgConverter)
 
@@ -24,8 +23,9 @@ AliGenEposIsajetToPdgConverter::AliGenEposIsajetToPdgConverter() {
 
 AliGenEposIsajetToPdgConverter::~AliGenEposIsajetToPdgConverter() { }
 
-Int_t AliGenEposIsajetToPdgConverter::ConvertIsajetToPdg(Int_t isajet) {
-	if (!sfParticlesAdded) {
+Int_t AliGenEposIsajetToPdgConverter::ConvertIsajetToPdg(Int_t isajet) const{
+  // Perform code conversion, init PDG if first time called
+	if (!fgParticlesAdded) {
 		AddHigherResonances();
 	}	
 	TDatabasePDG *pdgDb = TDatabasePDG::Instance();
@@ -45,19 +45,21 @@ Int_t AliGenEposIsajetToPdgConverter::ConvertIsajetToPdg(Int_t isajet) {
 	}
 	
 	if (pdg == 0) {
-		printf("TEpos: Warning, unknown particle, ISAJET: %d\n",isajet);
+		Printf("TEpos: Warning, unknown particle, ISAJET: %d\n",isajet);
 	}
 	return pdg;
 }
 
-void AliGenEposIsajetToPdgConverter::AddQuarkCluster(Int_t clusterCode) {
+void AliGenEposIsajetToPdgConverter::AddQuarkCluster(Int_t clusterCode) const {
+  // Add EPOS internal object to the PDG db
 	TDatabasePDG *pdgDb = TDatabasePDG::Instance();
 	if(!pdgDb->GetParticle(clusterCode)) {
 		pdgDb->AddParticle("Quark cluster", "Quark cluster", 0.0, kFALSE, 0, 0, "EPOS Quark cluster", clusterCode);
 	}
 }
 
-Int_t AliGenEposIsajetToPdgConverter::AddUnknownObject(Int_t code) {
+Int_t AliGenEposIsajetToPdgConverter::AddUnknownObject(Int_t code) const {
+  // Add EPOS internal object to the PDG db
 	Int_t newCode = 600000000 + code;
 	TDatabasePDG *pdgDb = TDatabasePDG::Instance();
 	if(!pdgDb->GetParticle(newCode)) {
@@ -66,7 +68,8 @@ Int_t AliGenEposIsajetToPdgConverter::AddUnknownObject(Int_t code) {
 	return newCode;
 }
 
-Int_t AliGenEposIsajetToPdgConverter::ExtendedMapping(Int_t isajet) {
+Int_t AliGenEposIsajetToPdgConverter::ExtendedMapping(Int_t isajet) const {
+  // Mappings for some internal EPOS objects and resonaces
 	Int_t sign = isajet < 0 ? -1 : 1;
 	isajet*=sign;
 	Int_t retVal = 0;
@@ -116,12 +119,13 @@ Int_t AliGenEposIsajetToPdgConverter::ExtendedMapping(Int_t isajet) {
 	return sign*retVal;
 }
 
-Bool_t AliGenEposIsajetToPdgConverter::sfParticlesAdded = kFALSE;
+Bool_t AliGenEposIsajetToPdgConverter::fgParticlesAdded = kFALSE;
 
 void AliGenEposIsajetToPdgConverter::AddHigherResonances() {
-	if(sfParticlesAdded)
+  // Adds higher resonances known by EPOS but not to the PDG
+	if(fgParticlesAdded)
 		return;
-	sfParticlesAdded=kTRUE;
+	fgParticlesAdded=kTRUE;
 	TDatabasePDG *fPdgDb = TDatabasePDG::Instance();
 	//| 332 | F0(975)     |
 	fPdgDb->AddAntiParticle("F0_bar", -10221);

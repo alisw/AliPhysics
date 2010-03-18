@@ -1,17 +1,18 @@
-/*
- * AliGenEpos.cpp
- *
- *  ALICE event generator based on EPOS model from Klaus Werner
- *
- *  Created on: Feb 28, 2009
- *      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
- */
+//
+// AliGenEpos.cpp
+//
+//  ALICE event generator based on EPOS model from Klaus Werner
+//
+//  Created on: Feb 28, 2009
+//      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
+//
 
-#ifndef ALIGENEPOS_H_
-#define ALIGENEPOS_H_
+#ifndef ALI_GEN_EPOS_H
+#define ALI_GEN_EPOS_H
 
 #include "AliGenMC.h"
 #include "TEpos.h"
+
 
 class AliGenEpos: public AliGenMC {
 public:
@@ -26,13 +27,13 @@ public:
 	void SetReactionPlaneAngleRange(Float_t phimin, Float_t phimax) { fPhiMin = phimin; fPhiMax = phimax; }
 	void AddNoDecay(Int_t nodecay) { GetTEpos()->AddNoDecay(nodecay); }
 	void AddExtraInputLine(const char *line) { GetTEpos()->AddExtraInputLine(line); }
-	Float_t GetPhiMin() { return fPhiMin; }
-	Float_t GetPhiMax() { return fPhiMax; }
-	Float_t GetBmin() { return fBmin; }
-	Float_t GetBMax() { return fBmax; }
+	Float_t GetPhiMin() const { return fPhiMin; }
+	Float_t GetPhiMax() const { return fPhiMax; }
+	Float_t GetBmin() const { return fBmin; }
+	Float_t GetBMax() const { return fBmax; }
 
 	void FilterModelOutput(Bool_t value) {fFilterModelOutput = value;}
-	Bool_t IsModelOutputFiltered() { return fFilterModelOutput; }
+	Bool_t IsModelOutputFiltered() const { return fFilterModelOutput; }
 protected:
 	virtual TEpos* GetTEpos() { return (TEpos *)fMCEvGen; }
 
@@ -48,4 +49,4 @@ private:
 	ClassDef(AliGenEpos,1)
 };
 
-#endif /* ALIGENEPOS_H_ */
+#endif /* ALI_GEN_EPOS_H */

@@ -1,15 +1,15 @@
-/*
- *###################################################################
- *#        EPOS 1.67     K. WERNER, T. PIEROG, S. PORTEBOEUF.       #
- *#                      Contact: werner@subatech.in2p3.fr          #
- *###################################################################
- *
- * eposproc.h
- * 
- * Definitions of EPOS subroutines used in the interface.
- *
- *      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
- */
+//
+//###################################################################
+//#        EPOS 1.67     K. WERNER, T. PIEROG, S. PORTEBOEUF.       #
+//#                      Contact: werner@subatech.in2p3.fr          #
+//###################################################################
+//
+// eposproc.h
+// 
+// Definitions of EPOS subroutines used in the interface.
+//
+//      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
+//
 
 
 #ifndef ROOT_Eposproc

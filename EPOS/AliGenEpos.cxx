@@ -1,11 +1,11 @@
-/*
- * AliGenEpos.cxx
- *
- *  ALICE event generator based on EPOS model from Klaus Werner
- *
- *  Created on: Feb 28, 2009
- *      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
- */
+//
+// AliGenEpos.cxx
+//
+//  ALICE event generator based on EPOS model from Klaus Werner
+//
+//  Created on: Feb 28, 2009
+//      Author: Piotr Ostrowski, postrow@if.pw.edu.pl
+//
 
 #include "AliGenEpos.h"
 #include "TEpos.h"
@@ -36,6 +36,7 @@ AliGenEpos::AliGenEpos(Int_t npart) : AliGenMC(npart),
 }
 
 void AliGenEpos::Init() {
+  // Sets up TEpos
 	AliGenMC::Init();
 	TEpos *epos = GetTEpos();
 	epos->SetLaproj(this->fZProjectile);
@@ -52,6 +53,7 @@ void AliGenEpos::Init() {
 }
 
 void AliGenEpos::Generate() {
+  // Does actual generation and output conversion
 	  Float_t polar[3]   =   {0,0,0};
 	  Float_t origin0[3]  =   {0,0,0};
 	  Float_t origin[3]   =   {0,0,0};
