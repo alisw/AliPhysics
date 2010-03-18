@@ -935,8 +935,10 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
       {
         //trigSel->SetBin0Callback(&IsBinZeroTrackSPDvtx);
+        trigSel->SetBin0CallbackViaPointer(&IsBinZeroTrackSPDvtx);
       } else {
         //trigSel->SetBin0Callback(&IsBinZeroSPDvtx);
+        trigSel->SetBin0CallbackViaPointer(&IsBinZeroSPDvtx);
       }
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
     }
