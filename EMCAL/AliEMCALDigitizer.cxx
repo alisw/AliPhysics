@@ -657,7 +657,12 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
 		geom->GetCellPhiEtaIndexInSModule(   iSupMod, nModule, nIphi, nIeta, iphi, ieta); 
 		
 		// identify to which TRU this FEE digit belong
-		Int_t itru = (iSupMod < 11) ? iphim / 4 + 3 * iSupMod : 31;
+		//Int_t itru = (iSupMod < 11) ? iphim / 4 + 3 * iSupMod : 31;
+		Int_t itru = -1;
+		if (iSupMod < 11)
+			itru = (iSupMod % 2) ? (2 - int(iphim / 4)) + 3 * iSupMod : iphim / 4 + 3 * iSupMod;
+		else 
+			itru = 31;
 		
 		//---------
 		//
