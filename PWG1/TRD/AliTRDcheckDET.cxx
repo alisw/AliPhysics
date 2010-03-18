@@ -652,7 +652,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   
   Int_t nclusters = 0;
   AliTRDseedV1 *tracklet = NULL;
-  AliExternalTrackParam *par = fkTrack->GetTrackHigh() ? fkTrack->GetTrackHigh() : fkTrack->GetTrackLow();
+  AliExternalTrackParam *par = fkTrack->GetTrackOut() ? fkTrack->GetTrackOut() : fkTrack->GetTrackIn();
   Double_t momentumRec = par->P();
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
@@ -719,7 +719,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     if(!(hBarrel = dynamic_cast<TH2F *>(fContainer->At(kNtrackletsBAR)))){
       AliWarning("Method: Barrel.  Histogram not processed!");
     } else {
-      AliExternalTrackParam *par = fkTrack->GetTrackHigh() ? fkTrack->GetTrackHigh() : fkTrack->GetTrackLow();
+      AliExternalTrackParam *par = fkTrack->GetTrackOut() ? fkTrack->GetTrackOut() : fkTrack->GetTrackIn();
       if(!par){
        AliError("Outer track params missing");
       } else {
