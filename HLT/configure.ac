@@ -933,7 +933,15 @@ else
                                          [have_alitrdrecoparam_r34995=yes],
       				         [AC_DEFINE(HAVE_NOT_ALITRDRECOPARAM_r34995)])
       AC_MSG_RESULT([$have_alitrdrecoparam_r34995])       
-      
+
+      have_alitrdseedv1_r39693=no
+      AC_MSG_CHECKING([checking for AliTRDseedV1 r39693])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDseedV1.h>], 
+                                         [AliTRDseedV1 seed;
+      				          seed.SetC(0.0, 1)]);],
+                                         [have_alitrdseedv1_r39693=yes],
+      				         [AC_DEFINE(HAVE_NOT_ALITRD_SEEDV1_r39693)])
+      AC_MSG_RESULT([$have_alitrdseedv1_r39693])
     fi
 
     AC_LANG_POP(C++)
