@@ -114,7 +114,7 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 void AliHLTEveHLT::UpdateElements() {
   //See header file for documentation
   if(fCanvas) fCanvas->Update();
-  if(fTrCanvas) DrawHistograms();
+  DrawHistograms();
   if(fTrackList) fTrackList->ElementChanged();
 }
 
