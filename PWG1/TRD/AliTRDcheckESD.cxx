@@ -339,11 +339,13 @@ void AliTRDcheckESD::UserExec(Option_t *){
     }
     if(HasMC() && 
       kBarrel && kPhysPrim &&
-      TMath::Abs(eta0) < 0.9 &&
-      (status & AliESDtrack::kTRDrefit)) {
+      TMath::Abs(eta0) < 0.9) {
       TH3 *h3 = (TH3S*)fHistos->At(kPtRes);
-      Int_t sgn = mcParticle->Charge()>0?1:-1;
-      h3->Fill(pt0, 1.e2*(pt/pt0-1.), sgn*Pdg2Idx(TMath::Abs(mcParticle->PdgCode())));
+      Int_t sgn = mcParticle->Charge()<0?0:1;
+      Int_t offset = (status & AliESDtrack::kTRDrefit) ? 0 : 10; 
+
+      h3->Fill(pt0, 1.e2*(pt/pt0-1.), 
+        offset + 2*Pdg2Idx(TMath::Abs(mcParticle->PdgCode())) + sgn);
     }
     if(ip){
       h = (TH2I*)fHistos->At(kTRDmom);
@@ -400,17 +402,20 @@ TObjArray* AliTRDcheckESD::Histos()
   if(!HasMC()) return fHistos;
 
   // pt resolution
-  const Int_t kNdpt(100), kNspec(2*AliPID::kSPECIES+1);
-  Float_t DPt(-3.), Spec(-AliPID::kSPECIES-0.5);
+  const Int_t kNdpt(100), kNspec(4*AliPID::kSPECIES);
+  Float_t DPt(-3.), Spec(-0.5);
   Float_t binsDPt[kNdpt+1], binsSpec[kNspec+1];
   for(Int_t i=0; i<kNdpt+1; i++,DPt+=6.e-2) binsDPt[i]=DPt;
   for(Int_t i=0; i<kNspec+1; i++,Spec+=1.) binsSpec[i]=Spec;
   if(!(h = (TH3S*)gROOT->FindObject("hPtRes"))){
     h = new TH3S("hPtRes", "P_{t} resolution @ DCA;p_{t}^{MC} [GeV/c];#Delta p_{t}/p_{t}^{MC} [%];SPECIES", kNpt, binsPt, kNdpt, binsDPt, kNspec, binsSpec);
     TAxis *az(h->GetZaxis());
+    az->SetLabelOffset(0.015);
     for(Int_t i(0); i<AliPID::kSPECIES; i++){
-      az->SetBinLabel(5-i, AliPID::ParticleLatexName(i));
-      az->SetBinLabel(7+i, AliPID::ParticleLatexName(i));
+      az->SetBinLabel(2*i+1, Form("%s^{-}", AliPID::ParticleLatexName(i)));
+      az->SetBinLabel(2*i+2, Form("%s^{+}", AliPID::ParticleLatexName(i)));
+      az->SetBinLabel(10+2*i+1, Form("%s^{-}", AliPID::ParticleLatexName(i)));
+      az->SetBinLabel(10+2*i+2, Form("%s^{+}", AliPID::ParticleLatexName(i)));
     }
   } else h->Reset();
   fHistos->AddAt(h, kPtRes);
@@ -576,13 +581,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
 Int_t AliTRDcheckESD::Pdg2Idx(Int_t pdg)
 {
   switch(pdg){
-  case kElectron: return AliPID::kElectron+1;  
-  case kMuonMinus: return AliPID::kMuon+1;  
-  case kPiPlus: return AliPID::kPion+1;  
-  case kKPlus: return AliPID::kKaon+1;
-  case kProton: return AliPID::kProton+1;
+  case kElectron: return AliPID::kElectron;  
+  case kMuonMinus: return AliPID::kMuon;  
+  case kPiPlus: return AliPID::kPion;  
+  case kKPlus: return AliPID::kKaon;
+  case kProton: return AliPID::kProton;
   } 
-  return 0;
+  return -1;
 }
 
 //____________________________________________________________________

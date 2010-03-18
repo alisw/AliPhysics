@@ -361,16 +361,17 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   }
   ULong_t status = fkESD ? fkESD->GetStatus():0;
 
-  Int_t sec(-1);
+  Int_t sec(-1), det(-1);
   Double_t covR[7], cov[3];
-  Float_t pt, x0, y0, z0, dy, dz, dydx, dzdx;
+  Float_t pt, x0, y0, z0, dy[3], dz[3], dydx, dzdx;
   AliTRDseedV1 *fTracklet(NULL);  
   for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
     if(!(fTracklet = fkTrack->GetTracklet(ily))) continue;
     if(!fTracklet->IsOK()) continue;
     x0 = fTracklet->GetX0();
     pt = fTracklet->GetPt();
-    sec = AliTRDgeometry::GetSector(fTracklet->GetDetector());
+    det = fTracklet->GetDetector();
+    sec = AliTRDgeometry::GetSector(det);
 
     // retrive the track angle with the chamber
     y0   = fTracklet->GetYref(0);
@@ -378,7 +379,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     dydx = fTracklet->GetYref(1);
     dzdx = fTracklet->GetZref(1);
     fTracklet->GetCovRef(covR);
-    Float_t tilt(fTracklet->GetTilt());
+    Double_t tilt(fTracklet->GetTilt())
+            ,t2(tilt*tilt)
+            ,corr(1./(1. + t2))
+            ,cost(TMath::Sign(TMath::Sqrt(corr), tilt));
     AliTRDcluster *c = NULL;
     fTracklet->ResetClusterIter(kFALSE);
     while((c = fTracklet->PrevCluster())){
@@ -388,32 +392,50 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       Float_t dx = x0 - xc; 
       Float_t yt = y0 - dx*dydx;
       Float_t zt = z0 - dx*dzdx; 
-      // calculate residuals using tilt correction
-      //yc -= tilt*(zc-zt); 
-//       dy = yt - yc + tilt*(zc-zt);
-//       printf("%d TC[%f] ", c->GetLocalTimeBin(), dy);
+      dy[0] = yc-yt; dz[0]= zc-zt;
 
-      // calculate residuals using correct covariance matrix
+      // calculate residuals using tilt rotation
+      dy[1] = cost*(dy[0] - dz[0]*tilt);
+      dz[1] = cost*(dz[0] + dy[0]*tilt);
+      if(pt>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sec);
+      if(DebugLevel()>=1){
+        (*DebugStream()) << "ClusterRes"
+          <<"dy="  << dy[1]
+          <<"dz="  << dz[1]
+          <<"tilt="<< tilt
+          << "\n";
+      }
+
+      // calculate covariance 
       cov[0] = c->GetSigmaY2();
       cov[1] = c->GetSigmaYZ();
       cov[2] = c->GetSigmaZ2();
       // do rotation
       Double_t sy2(cov[0]), sz2(cov[2]);
-      Double_t t2 = tilt*tilt;
-      Double_t correction = 1./(1. + t2);
-      cov[0] = (sy2+t2*sz2)*correction;
-      cov[1] = tilt*(sz2 - sy2)*correction;
-      cov[2] = (t2*sy2+sz2)*correction;
-      // do inversion
-      Double_t r00=cov[0]+covR[0], r01=cov[1]+covR[1], r11=cov[2]+covR[2];
-      Double_t det=r00*r11 - r01*r01;
-      Double_t tmp=r00; r00=r11/det; r11=tmp/det;
-      dy = (yc - yt)*TMath::Sqrt(r00);
-      dz = (zc - zt)*TMath::Sqrt(r11);
-      //printf("CC[%f %f]\n", dy, dz);
+      cov[0] = (sy2+t2*sz2)*corr;
+      cov[1] = tilt*(sz2 - sy2)*corr;
+      cov[2] = (t2*sy2+sz2)*corr;
+      // do sum
+      cov[0]+=covR[0]; cov[1]+=covR[1]; cov[2]+=covR[2];
+      // do sqrt
+      Double_t sqr[3]; AliTRDseedV1::GetCovSqrt(cov, sqr);
+      dy[2] = sqr[0]*dy[1] + sqr[1]*dz[1];
+      dz[2] = sqr[1]*dy[1] + sqr[2]*dz[1];
+      if(DebugLevel()>=1){
+        (*DebugStream()) << "ClusterPull"
+          <<"dy="  << dy[2]
+          <<"dz="  << dz[2]
+          <<"c0="  << cov[0]
+          <<"c1="  << cov[1]
+          <<"c2="  << cov[2]
+          <<"d0="  << sqr[0]
+          <<"d1="  << sqr[1]
+          <<"d2="  << sqr[2]
+          <<"tilt="<< tilt
+          << "\n";
+      }
 
-      if(pt>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy, sec);
-      ((TH2I*)arr->At(1))->Fill(dydx, dy/TMath::Sqrt(cov[0] /*+ sx2*/ + sy2));
+      ((TH2I*)arr->At(1))->Fill(dydx, dy[2]);
   
       if(DebugLevel()>=2){
         // Get z-position with respect to anode wire
@@ -429,7 +451,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         clInfo->SetCluster(c);
         Float_t covF[] = {cov[0], cov[1], cov[2]};
         clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covF);
-        clInfo->SetResolution(dy);
+        clInfo->SetResolution(dy[1]);
         clInfo->SetAnisochronity(d);
         clInfo->SetDriftLength(dx);
         clInfo->SetTilt(tilt);
@@ -466,18 +488,40 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     return NULL;
   }
 
+  Int_t sec(-1), det(-1);
   Double_t cov[3], covR[7]/*, sqr[3], inv[3]*/;
-  Float_t pt, x, dx, dy, dz;
-  AliTRDseedV1 *fTracklet = NULL;  
+  Double_t pt, x, dx, dy[2], dz[2];
+  AliTRDseedV1 *fTracklet(NULL);  
   for(Int_t il=AliTRDgeometry::kNlayer; il--;){
     if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
     if(!fTracklet->IsOK()) continue;
-    x    = fTracklet->GetX();
-    dx   = fTracklet->GetX0() - x;
-    pt = fTracklet->GetPt();
-    // compute dy^2 and dz^2
-    dy   = fTracklet->GetYref(0)-dx*fTracklet->GetYref(1) - fTracklet->GetY();
-    dz   = fTracklet->GetZref(0)-dx*fTracklet->GetZref(1) - fTracklet->GetZ();
+    det = fTracklet->GetDetector();
+    sec = AliTRDgeometry::GetSector(det);
+    x   = fTracklet->GetX();
+    dx  = fTracklet->GetX0() - x;
+    pt  = fTracklet->GetPt();
+    // compute dy and dz
+    dy[0]= fTracklet->GetYref(0)-dx*fTracklet->GetYref(1) - fTracklet->GetY();
+    dz[0]= fTracklet->GetZref(0)-dx*fTracklet->GetZref(1) - fTracklet->GetZ();
+    Double_t tilt(fTracklet->GetTilt())
+            ,t2(tilt*tilt)
+            ,corr(1./(1. + t2))
+            ,cost(TMath::Sign(TMath::Sqrt(corr), tilt));
+
+    // calculate residuals using tilt rotation
+    dy[1]= cost*(dy[0] - dz[0]*tilt);
+    dz[1]= cost*(dz[0] + dy[0]*tilt);
+    ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sec);
+    if(fTracklet->IsRowCross()) ((TH2I*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1]);
+    if(DebugLevel()>=1){
+      (*DebugStream()) << "TrkltRes"
+        <<"dy="  << dy[1]
+        <<"dz="  << dz[1]
+        <<"tilt=" << tilt
+        << "\n";
+    }
+
+
     // compute covariance matrix
     fTracklet->GetCovAt(x, cov);
     fTracklet->GetCovRef(covR);
@@ -491,12 +535,10 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     Double_t z = sqr[1]*dy+sqr[2]*dz;
     ((TH3*)h)->Fill(y, z, fTracklet->GetYref(1));*/
 
-    ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy, pt);
-    ((TH2I*)arr->At(1))->Fill(fTracklet->GetYref(1), dy/TMath::Sqrt(cov[0]));
+    ((TH2I*)arr->At(1))->Fill(fTracklet->GetYref(1), dy[0]/TMath::Sqrt(cov[0]));
+    if(fTracklet->IsRowCross()) ((TH2I*)arr->At(3))->Fill(fTracklet->GetZref(1), dz[0]/TMath::Sqrt(cov[2]));
+
     ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), TMath::ATan((fTracklet->GetYref(1)-fTracklet->GetYfit(1))/(1-fTracklet->GetYref(1)*fTracklet->GetYfit(1))));
-    if(!fTracklet->IsRowCross()) continue;
-    ((TH2I*)arr->At(2))->Fill(fTracklet->GetZref(1), dz);
-    ((TH2I*)arr->At(3))->Fill(fTracklet->GetZref(1), dz/TMath::Sqrt(cov[2]));
   }
 
 
