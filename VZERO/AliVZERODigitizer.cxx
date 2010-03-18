@@ -31,6 +31,7 @@
 #include <TGeoPhysicalNode.h>
 #include <AliGeomManager.h>
 #include <TRandom.h>
+#include <TF1.h>
 
 // --- AliRoot header files ---
 #include "AliVZEROConst.h"
@@ -60,7 +61,8 @@ ClassImp(AliVZERODigitizer)
                     fNdigits(0),
                     fDigits(0),
                     fCollisionMode(0),
-                    fBeamEnergy(0.)
+                    fBeamEnergy(0.),
+                    fSignalShape(NULL)
    
 {
   // default constructor
@@ -73,6 +75,9 @@ ClassImp(AliVZERODigitizer)
 //    fPMGain = TMath::Power((fPMVoltage / 112.5) ,7.04277); 
    
 //   fCalibData = GetCalibData();
+
+  fSignalShape = new TF1("VZEROSignalShape",this,&AliVZERODigitizer::SignalShape,0,200,6,"AliVZERODigitizer","SignalShape");
+  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
 }
 
 //____________________________________________________________________________ 
@@ -85,7 +90,8 @@ ClassImp(AliVZERODigitizer)
 		     fNdigits(0),
                      fDigits(0),
 		     fCollisionMode(0),
-                     fBeamEnergy(0.)
+                     fBeamEnergy(0.),
+		     fSignalShape(NULL)
 		                        
 {
   // constructor
@@ -98,6 +104,9 @@ ClassImp(AliVZERODigitizer)
 //   fPMGain = TMath::Power( (fPMVoltage / 112.5) ,7.04277 );
   
 //  fCalibData = GetCalibData();
+ 
+  fSignalShape = new TF1("VZEROSignalShape",this,&AliVZERODigitizer::SignalShape,0,200,6,"AliVZERODigitizer","SignalShape");
+  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
   
 }
            
@@ -110,6 +119,11 @@ ClassImp(AliVZERODigitizer)
     fDigits->Delete();
     delete fDigits;
     fDigits=0; 
+  }
+
+  if (fSignalShape) {
+    delete fSignalShape;
+    fSignalShape = NULL;
   }
 }
 
@@ -438,4 +452,15 @@ Int_t AliVZERODigitizer::GetPMNumber(Int_t cell) const
   return pmNumber[cell];	
 }
 
-
+double AliVZERODigitizer::SignalShape(double *x, double *par)
+{
+  Double_t xx = x[0];
+  if (xx <= par[0]) return 0;
+  Double_t a = 1./TMath::Power((xx-par[0])/par[1],1./par[2]);
+  if (xx <= par[3]) return a;
+  Double_t b = 1./TMath::Power((xx-par[3])/par[4],1./par[5]);
+  //  Double_t f = TMath::Min(a,b);
+  Double_t f = a*b/(a+b);
+  AliDebug(100,Form("x=%f func=%f",xx,f));
+  return f;
+}

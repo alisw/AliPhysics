@@ -16,6 +16,7 @@
 #include "AliDigitizer.h"
 
 class TClonesArray;
+class TF1;
 class AliRunDigitizer;
 class AliCDBManager;
 class AliCDBStorage;
@@ -41,6 +42,9 @@ class AliVZERODigitizer: public AliDigitizer {
    AliVZEROCalibData *GetCalibData() const;
    Int_t GetPMNumber(Int_t cell) const;
 
+   TF1*   GetSignalShape() const { return fSignalShape; }
+   double SignalShape(double *x, double *par);
+
  protected:
  
    AliVZEROCalibData *fCalibData;  //! calibration data
@@ -60,8 +64,10 @@ class AliVZERODigitizer: public AliDigitizer {
    
    Int_t    fCollisionMode;          // =0->p-p, =1->A-A
    Float_t  fBeamEnergy;	     // beam energy
+
+   TF1*     fSignalShape;            // function which describes the PMT signal shape
    
-   ClassDef(AliVZERODigitizer,2)     // digitizer for VZERO
+   ClassDef(AliVZERODigitizer,3)     // digitizer for VZERO
 
 };
 
