@@ -42,14 +42,14 @@
 
 enum FillType_t {real, mixed};
 enum PoolType_t {triggs, assocs};
-enum BinType_t  {centr, zvert}; 
+enum BinType_t  {centr, zvert, trigg, assoc}; 
 enum PartType_t {unknown, hadron, proton, kaon, pion, photon, electron, jet, 
 		 dihadron, diphoton, dielectron, dijet};
 
 const UInt_t kMAXNUMCORREL = 1;     // Maximum no of correlations
 const UInt_t kMAXVERTBIN   = 10;    // Maximum no of vertex bins
-const UInt_t kMAXCENTBIN   = 2;     // Maximum no of centrality bins
+const UInt_t kMAXCENTBIN   = 3;     // Maximum no of centrality bins
 const UInt_t kMAXTRIGBIN   = 10;    // Maximum no of trigger bins
-const UInt_t kMAXASSOBIN   = 20;    // Maximum no of associated bins
+const UInt_t kMAXASSOBIN   = 10;    // Maximum no of associated bins
 
 #endif

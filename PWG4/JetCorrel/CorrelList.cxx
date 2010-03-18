@@ -57,7 +57,7 @@ CorrelListIter_t::CorrelListIter_t(const CorrelListIter_t& rhs) : fCurr(rhs.fCur
 CorrelListIter_t::~CorrelListIter_t(){
 }
 
-void CorrelListIter_t::Check(){
+void CorrelListIter_t::Check() const {
   // performs bounds check
   if(HasEnded()){
     std::cerr<<"CorrelListIter_t::Check() - ERROR: attempt to access null iterator!"<<std::endl; 
@@ -137,12 +137,12 @@ void CorrelList_t::Reset(){
   fHead = NULL;
 }
 
-void CorrelList_t::ShowHead(){
+void CorrelList_t::ShowHead() const {
   // top printout
   std::cout<<" CorrelList_t("<<this<<") head="<<fHead<<" size="<<Size()<<" filled="<<Filled()<<" evt="<<EvtID()<<" part="<<PartID()<<" pool="<<PoolID()<<std::endl;
 }
 
-void CorrelList_t::Show(){
+void CorrelList_t::Show() const {
   // full printout
   ShowHead();
   CorrelListIter_t iter = Head();

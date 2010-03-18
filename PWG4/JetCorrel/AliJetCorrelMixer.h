@@ -1,5 +1,5 @@
-#ifndef __ALIJETCORRELMIXER_H__
-#define __ALIJETCORRELMIXER_H__
+#ifndef ALIJETCORRELMIXER_H
+#define ALIJETCORRELMIXER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -24,22 +24,22 @@ class AliJetCorrelMixer : public TObject {
   
   // pool manipulation:
   void FillPool(CorrelList_t *partList, UInt_t pIdx, UInt_t vBin, UInt_t cBin);
-  UInt_t PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin);
+  UInt_t PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin) const;
   void CleanPool(PoolType_t pType);
   // mixing methods:  
   void Mix(UInt_t vBin, UInt_t cBin, UInt_t it, UInt_t ia, UInt_t ic);
   // print methods:
-  void ShowPool(PoolType_t pType, UInt_t vBin, UInt_t cBin);
-  void ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, UInt_t cBin);
+  void ShowPool(PoolType_t pType, UInt_t vBin, UInt_t cBin) const;
+  void ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, UInt_t cBin) const;
   
  private:
   AliJetCorrelSelector* fSelector;       // user selection object
   AliJetCorrelMaker* fMaker;             // correlation maker object
   AliJetCorrelWriter* fWriter;           // output writer object
-  CorrelList_t *TriggEvnt, *AssocEvnt;   // particle lists
-  CorrelListIter_t AssocIter, TriggIter; // particle list iterators
+  CorrelList_t *fTriggEvnt, *fAssocEvnt;   //! particle lists
+  CorrelListIter_t fAssocIter, fTriggIter; //! particle list iterators
   UInt_t fNumCentBins, fNumVertBins, fPoolDepth, fNumCorrel, fNumTriggs, fNumAssocs; // counters
-  TList* fPool[2][kMAXNUMCORREL][kMAXVERTBIN][kMAXCENTBIN]; // the particle pools used for mixing
+  TList* fPool[2][kMAXNUMCORREL][kMAXVERTBIN][kMAXCENTBIN]; //! the particle pools used for mixing
   
   // disable (make private) copy constructor and assignment operator:
   AliJetCorrelMixer(const AliJetCorrelMixer&);

@@ -45,7 +45,7 @@ CorrelParticle_t* CorrelParticle_t::Copy(){
   return copy;
 }
 
-void CorrelParticle_t::Show(){
+void CorrelParticle_t::Show() const {
   // printout method
   std::cout<<" Particle pT="<<Pt()<<" phi="<<Phi()<<" eta="<<Eta()<<" m="<<M()<<" id="<<ID()<<std::endl;
 }

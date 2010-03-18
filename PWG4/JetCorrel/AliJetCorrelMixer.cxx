@@ -30,8 +30,8 @@ ClassImp(AliJetCorrelMixer)
 
 AliJetCorrelMixer::AliJetCorrelMixer() :
   fSelector(NULL), fMaker(NULL), fWriter(NULL),
-  TriggEvnt(new CorrelList_t), AssocEvnt(new CorrelList_t),
-  AssocIter(NULL), TriggIter(NULL),
+  fTriggEvnt(new CorrelList_t), fAssocEvnt(new CorrelList_t),
+  fAssocIter(NULL), fTriggIter(NULL),
   fNumCentBins(0), fNumVertBins(0), fPoolDepth(0), fNumCorrel(0), fNumTriggs(0), fNumAssocs(0){
   // constructor
 }
@@ -40,8 +40,8 @@ AliJetCorrelMixer::~AliJetCorrelMixer(){
   // destructor
   CleanPool(triggs);
   CleanPool(assocs);
-  if(TriggEvnt) delete TriggEvnt;
-  if(AssocEvnt) delete AssocEvnt;
+  if(fTriggEvnt) delete fTriggEvnt;
+  if(fAssocEvnt) delete fAssocEvnt;
 }
 
 void AliJetCorrelMixer::Init(AliJetCorrelSelector * const s, AliJetCorrelMaker * const m, AliJetCorrelWriter * const w){
@@ -78,27 +78,27 @@ void AliJetCorrelMixer::FillPool(CorrelList_t *partList, UInt_t pIdx, UInt_t vBi
   fPool[pType][pIdx][vBin][cBin]->AddLast(partList->DeepCopy());
 }
 
-void AliJetCorrelMixer::Mix(UInt_t vBin, UInt_t cBin, UInt_t it, UInt_t ia, UInt_t ic){
+void AliJetCorrelMixer::Mix(UInt_t vBin, UInt_t cBin, UInt_t it, UInt_t ia, UInt_t ic) {
   // rolling buffer mixing method
   TListIter* iterAssocPool=(TListIter*)fPool[assocs][ia][vBin][cBin]->MakeIterator();
   while(fPool[triggs][it][vBin][cBin]->GetSize()>0){ // evaluate here due to popping
-    TriggEvnt = (CorrelList_t*)fPool[triggs][it][vBin][cBin]->First();
-    TriggIter = TriggEvnt->Head();
+    fTriggEvnt = (CorrelList_t*)fPool[triggs][it][vBin][cBin]->First();
+    fTriggIter = fTriggEvnt->Head();
     
-    while((AssocEvnt=(CorrelList_t*)iterAssocPool->Next())){
-      AssocIter = AssocEvnt->Head();
+    while((fAssocEvnt=(CorrelList_t*)iterAssocPool->Next())){
+      fAssocIter = fAssocEvnt->Head();
       
-      if(TriggEvnt->EvtID()==AssocEvnt->EvtID()) continue; // don't mix same event!
+      if(fTriggEvnt->EvtID()==fAssocEvnt->EvtID()) continue; // don't mix same event!
       
-      while(!TriggIter.HasEnded()){
-	while(!AssocIter.HasEnded()){
-	  fWriter->FillCorrelations(mixed,ic,cBin,vBin,TriggIter.Data(),AssocIter.Data()); // trigg first!
-	  AssocIter.Move();
+      while(!fTriggIter.HasEnded()){
+	while(!fAssocIter.HasEnded()){
+	  fWriter->FillCorrelations(mixed,ic,cBin,vBin,fTriggIter.Data(),fAssocIter.Data()); // trigg first!
+	  fAssocIter.Move();
 	} // loop over associated particles
-	AssocIter = AssocEvnt->Head(); // reset associated particle iterator to list head
-	TriggIter.Move();
+	fAssocIter = fAssocEvnt->Head(); // reset associated particle iterator to list head
+	fTriggIter.Move();
       } // loop over trigger particles
-      TriggIter = TriggEvnt->Head(); // reset trigger particle iterator to list head
+      fTriggIter = fTriggEvnt->Head(); // reset trigger particle iterator to list head
     } // loop over associated pool
     fPool[triggs][it][vBin][cBin]->RemoveFirst();
   } // if trigger pool is not empty
@@ -116,7 +116,7 @@ void AliJetCorrelMixer::CleanPool(PoolType_t pType){
   }
 }
 
-UInt_t AliJetCorrelMixer::PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin){
+UInt_t AliJetCorrelMixer::PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin) const {
   // computes (static) pool size
   UInt_t totalPoolSize=0;
   UInt_t partSize = sizeof(CorrelParticle_t);
@@ -131,7 +131,7 @@ UInt_t AliJetCorrelMixer::PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin){
   return totalPoolSize/1024;
 }
 
-void AliJetCorrelMixer::ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, UInt_t cBin){
+void AliJetCorrelMixer::ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, UInt_t cBin) const {
   // pool printout method
   UInt_t totalPoolSize=0;
   TListIter* iter=(TListIter*)fPool[pType][pIdx][vBin][cBin]->MakeIterator();
@@ -143,7 +143,7 @@ void AliJetCorrelMixer::ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, 
   std::cout<<vBin<<"]["<<cBin<<"]: nevt="<<fPool[pType][pIdx][vBin][cBin]->GetSize()<<" npart="<<totalPoolSize<<std::endl;
 }
 
-void AliJetCorrelMixer::ShowPool(PoolType_t pType, UInt_t vBin, UInt_t cBin){
+void AliJetCorrelMixer::ShowPool(PoolType_t pType, UInt_t vBin, UInt_t cBin) const {
   // all pools printout
   CorrelList_t* tempList; TListIter* iter;
   UInt_t size = 0;

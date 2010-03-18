@@ -1,5 +1,5 @@
-#ifndef __ALIANALYSISTASKJETCORREL_H__
-#define __ALIANALYSISTASKJETCORREL_H__
+#ifndef ALIANALYSISTASKJETCORREL_H
+#define ALIANALYSISTASKJETCORREL_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -31,7 +31,7 @@ class AliAnalysisTaskJetCorrel : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *option);
   
  private:
-  AliESDEvent *jcESD;
+  AliESDEvent *fjcESD;
   TList *fOutputContainer;                           // Histogram container
   AliJetCorrelSelector *fSelector;                   // User selection object
   UInt_t fNumCorrel, fNumTrigg, fNumAssoc, fNumEvts; // counters
@@ -41,7 +41,8 @@ class AliAnalysisTaskJetCorrel : public AliAnalysisTaskSE {
   AliJetCorrelMixer *fMixer;                         // Event mixing object
   CorrelList_t *fTriggList, *fAssocList;             // Trigger&Associated particle lists
   
-  void CrossCorrelate(CorrelList_t * const TriggList,CorrelList_t * const AssocList, UInt_t cBin, UInt_t vBin, UInt_t iCor);
+  void CrossCorrelate(CorrelList_t * const TriggList, CorrelList_t * const AssocList,
+		      UInt_t cBin, UInt_t vBin, UInt_t iCor);
   
   // disable (make private) copy constructor and assignment operator:
   AliAnalysisTaskJetCorrel(const AliAnalysisTaskJetCorrel&);

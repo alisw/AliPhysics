@@ -129,7 +129,7 @@ Bool_t AliJetCorrelMaker::Init(UInt_t s, UInt_t * const v){
   return kTRUE;
 }
 
-Bool_t AliJetCorrelMaker::Check(){
+Bool_t AliJetCorrelMaker::Check() const {
   // performs initialization sanity checks
   if(fNumTrigg<1 || fNumAssoc<1) return kFALSE;
   if(fNumTrigg>fNumCorrel || fNumAssoc>fNumCorrel) return kFALSE;
@@ -182,7 +182,7 @@ Bool_t AliJetCorrelMaker::RecoTrigger() const {
   return kFALSE;
 }
 
-void AliJetCorrelMaker::Show(){
+void AliJetCorrelMaker::Show() const {
   // print out whole correlation setup
   std::cout<<"Number of Correlations:"<<fNumCorrel
 	   <<" Triggers:"<<fNumTrigg<<" Associated:"<<fNumAssoc<<std::endl;

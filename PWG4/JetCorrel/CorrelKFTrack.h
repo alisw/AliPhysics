@@ -1,5 +1,5 @@
-#ifndef __CORRELKFTRACK_H__
-#define __CORRELKFTRACK_H__
+#ifndef CORRELKFTRACK_H
+#define CORRELKFTRACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -26,7 +26,7 @@ class CorrelKFTrack_t : public CorrelParticle_t {
   Double_t* Param() const {return fParam;}
   Double_t* Covar() const {return fCovar;}
   
-  virtual void Show();
+  virtual void Show() const;
   
  private:
   Double_t* fParam; // Param[6] = {X, Y, Z, Px, Py, Pz} - position and momentum

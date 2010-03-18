@@ -1,5 +1,5 @@
-#ifndef __CORRELTRACK_H__
-#define __CORRELTRACK_H__
+#ifndef CORRELTRACK_H
+#define CORRELTRACK_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -23,10 +23,10 @@ class CorrelTrack_t : public CorrelParticle_t {
   Float_t X() const {return fTPCx;}
   Float_t Y() const {return fTPCy;}
   Float_t Z() const {return fTPCz;}
-  Float_t Dist(CorrelTrack_t * const trk);
+  Float_t Dist(CorrelTrack_t * const trk) const;
   
   void SetTPCEntry(Float_t x, Float_t y, Float_t z) {fTPCx=x; fTPCy=y; fTPCz=z;}
-  virtual void Show();
+  virtual void Show() const;
   
  private:
   Float_t fTPCx;   // x-coord TPC entrance

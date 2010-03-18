@@ -24,7 +24,7 @@
 using namespace std;
 
 CorrelRecoParent_t::CorrelRecoParent_t() :
-  CorrelParticle_t(), fAssym(-999.), fOpenAng(-999.), jcESD(NULL){
+  CorrelParticle_t(), fAssym(-999.), fOpenAng(-999.), fjcESD(NULL){
   // default constructor
 }
 
@@ -36,7 +36,7 @@ CorrelRecoParent_t& CorrelRecoParent_t::operator=(const CorrelRecoParent_t& rhs)
   fID      = rhs.ID();
   fAssym   = rhs.Assym();
   fOpenAng = rhs.OpenAng();
-  jcESD     = rhs.Evt();
+  fjcESD     = rhs.Evt();
   return *this;
 }
 
@@ -50,7 +50,7 @@ CorrelRecoParent_t* CorrelRecoParent_t::Copy(){
   copy->fID      = this->ID();
   copy->fAssym   = this->Assym();
   copy->fOpenAng = this->OpenAng();
-  copy->jcESD     = this->Evt();
+  copy->fjcESD     = this->Evt();
   return copy;
 }
 
@@ -64,16 +64,16 @@ Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p
   
   if(fID==dielectron && kUseAliKF){
     // code for parent reconstruction based on AliKFParticle:
-    if(!jcESD)
+    if(!fjcESD)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - undefined event"<<std::endl; exit(-1);}
     CorrelKFTrack_t* e1 = dynamic_cast<CorrelKFTrack_t*>(p1);
     CorrelKFTrack_t* e2 = dynamic_cast<CorrelKFTrack_t*>(p2);
     if(!e1 || !e2)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - failed particle casting"<<std::endl; exit(-1);}
 
-    AliKFVertex primVtx(*(jcESD->GetPrimaryVertex()));
+    AliKFVertex primVtx(*(fjcESD->GetPrimaryVertex()));
     if(primVtx.GetNContributors()<=0) return kFALSE;
-    AliKFParticle::SetField(jcESD->GetMagneticField());
+    AliKFParticle::SetField(fjcESD->GetMagneticField());
     AliKFParticle* pKF1 = new AliKFParticle; AliKFParticle* pKF2 = new AliKFParticle;
     if(e1->Param()==NULL || e1->Covar()==NULL || e2->Param()==NULL || e2->Covar()==NULL)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - null parameter pointer"<<std::endl; exit(-1);}      
@@ -141,7 +141,7 @@ Bool_t CorrelRecoParent_t::NotInMass(PartType_t pID, Float_t mass){
   return kTRUE;
 }
 
-void CorrelRecoParent_t::Show(){
+void CorrelRecoParent_t::Show() const {
   // printout method
   std::cout<<" RecoParent pT="<<Pt()<<" phi="<<Phi()<<" eta="<<Eta()<<" m="<<M()<<" id="<<ID()
 	   <<" assym="<<Assym()<<" open="<<OpenAng()<<std::endl;

@@ -1,5 +1,5 @@
-#ifndef __ALIJETCORRELSELECTOR_H__
-#define __ALIJETCORRELSELECTOR_H__
+#ifndef ALIJETCORRELSELECTOR_H
+#define ALIJETCORRELSELECTOR_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -22,30 +22,26 @@ class AliJetCorrelSelector : public TObject {
   ~AliJetCorrelSelector();
   
   // Selection getters:
-  UInt_t PoolDepth() {return fPoolDepth;}
-  UInt_t NoOfCorrel() {return fNumCorrel;}
-  UInt_t* CorrelTypes() {return fCorrelType;}
-  UInt_t NoOfBins(BinType_t cType) {return fNumBins[cType]-1;}  
-  Float_t BinBorder(BinType_t cType, UInt_t ii);
-  Int_t GetBin(BinType_t cType, Float_t val);
-  Float_t MinAssocPt() {return minAssocPt;}
-  Float_t MaxAssocPt() {return maxAssocPt;}
-  UInt_t  NumAssocPt();
-  Float_t MinTriggPt() {return minTriggPt;}
-  Float_t MaxTriggPt() {return maxTriggPt;}
-  UInt_t  NumTriggPt();
-  Bool_t GenQA()       {return fGenQA;}
-  Bool_t UseAliKF()    {return fUseAliKF;}
-  UInt_t DPhiNumBins() {return fDPhiNumBins;}
-  UInt_t DEtaNumBins() {return fDEtaNumBins;}
-  void Show();
+  UInt_t PoolDepth() const {return fPoolDepth;}
+  UInt_t NoOfCorrel() const {return fNumCorrel;}
+  UInt_t* CorrelTypes() const {return fCorrelType;}
+  UInt_t NoOfBins(BinType_t cType) const {return fNumBins[cType]-1;}  
+  Float_t BinBorder(BinType_t cType, UInt_t ii) const;
+  Float_t MinLowBin(BinType_t cType) const {return fBinning[cType][0];}
+  Float_t MaxHighBin(BinType_t cType) const {return fBinning[cType][fNumBins[cType]-1];}
+  Int_t GetBin(BinType_t cType, Float_t val) const;
+  Bool_t GenQA() const       {return fGenQA;}
+  Bool_t UseAliKF() const    {return fUseAliKF;}
+  UInt_t DPhiNumBins() const {return fDPhiNumBins;}
+  UInt_t DEtaNumBins() const {return fDEtaNumBins;}
+  void Show() const;
   // Selection Setters:
   void SetPoolDepth(UInt_t v)      {fPoolDepth=v;}
   void SetCorrelTypes(UInt_t s,  UInt_t * const v);
   void SetBinningCentr(UInt_t s, Float_t * const v);
   void SetBinningZvert(UInt_t s, Float_t * const v);
-  void SetBinningTrigg(Float_t min, Float_t max, Float_t bw);
-  void SetBinningAssoc(Float_t min, Float_t max, Float_t bw);
+  void SetBinningTrigg(UInt_t s, Float_t * const v);
+  void SetBinningAssoc(UInt_t s, Float_t * const v);
   void SetTriggers(UInt_t s, TString * const v);
   void SetITSRefit(Bool_t v)    {fITSRefit=v;}
   void SetTPCRefit(Bool_t v)    {fTPCRefit=v;}
@@ -61,29 +57,25 @@ class AliJetCorrelSelector : public TObject {
   void SetQA(Bool_t v) {fGenQA=v;}
   void SetDPhiNumBins(UInt_t v) {fDPhiNumBins=v;}
   void SetDEtaNumBins(UInt_t v) {fDEtaNumBins=v;}
-  void SetTrkProximityCut(Float_t v) {trkMinProx=v;}
+  void SetTrkProximityCut(Float_t v) {fTrkMinProx=v;}
   void SetUseAliKF(Bool_t v)    {fUseAliKF=v;}
   // Cutting methods:
-  Int_t AssocBin(Float_t pT);
-  Int_t TriggBin(Float_t pT);
-  Bool_t SelectedEvtTrigger(AliESDEvent * const jcESD);
-  Bool_t CloseTrackPair(Float_t dist);
-  Bool_t LowQualityTrack(AliESDtrack* t);  
-  Bool_t PassPID(AliESDtrack* t, PartType_t pType);
-  Float_t GetSigmaToVertex(AliESDtrack* trk);
-  void GetPID(AliESDtrack* trk, Stat_t& fpid, Stat_t& fweight);
+  Bool_t SelectedEvtTrigger(AliESDEvent * const jcESD) const;
+  Bool_t CloseTrackPair(Float_t dist) const;
+  Bool_t LowQualityTrack(AliESDtrack* t) const;
+  Bool_t PassPID(AliESDtrack* t, PartType_t pType) const;
+  Float_t GetSigmaToVertex(AliESDtrack* trk) const;
+  void GetPID(AliESDtrack* trk, Stat_t& fpid, Stat_t& fweight) const;
   
  private: 
   // Generic Selections:
   Bool_t fGenQA;                 // generate QA histos
   UInt_t fDPhiNumBins, fDEtaNumBins; // number of bins in DeltaPhi, DeltaEta histos
-  UInt_t fNumCorrel, nEvtTriggs, fPoolDepth; // number of correlations, event triggers, pool depth
-  UInt_t *fCorrelType;           // array of correlation types
-  TString *fEvtTriggs;           // array of event triggers
-  UInt_t fNumBins[2];            // number of bins: centr, zvert
-  Float_t* fBinning[2];          // bin margins: centr, zvert
-  Float_t minTriggPt, maxTriggPt, bwTriggPt; // trigg Pt binning
-  Float_t minAssocPt, maxAssocPt, bwAssocPt; // assoc Pt binning
+  UInt_t fNumCorrel, fNumEvtTriggs, fPoolDepth; // number of correlations, event triggers, pool depth
+  UInt_t* fCorrelType;           //! array of correlation types
+  TString* fEvtTriggs;           //! array of event triggers
+  UInt_t fNumBins[4];            // number of bins: centr, zvert, trigg, assoc
+  Float_t* fBinning[4];          //! bin margins: centr, zvert, trigg, assoc
   // Track Selections:
   Bool_t fITSRefit, fTPCRefit, fTRDRefit, fRejectKinkChild; // on/off cuts
   Float_t fMaxEta;                   // single-particle eta cut
@@ -91,14 +83,14 @@ class AliJetCorrelSelector : public TObject {
   Float_t fMaxTrkVtx;                // track-primary vertex cut (value)
   Float_t fMaxITSChi2, fMaxTPCChi2;  // ITS/TPC Chi2/cluster cut
   UInt_t fMinNClusITS, fMinNClusTPC; // ITS/TPC number of clusters cut
-  Float_t trkMinProx;                // two-track proximity cut (dist at TPC entrance)
+  Float_t fTrkMinProx;                // two-track proximity cut (dist at TPC entrance)
   Bool_t fUseAliKF;                  // use AliKF or TLorentzVector for parent reconstruction
   
   // disable (make private) copy constructor, and assignment operator:
   AliJetCorrelSelector(const AliJetCorrelSelector&);
   AliJetCorrelSelector& operator=(const AliJetCorrelSelector&);
   
-  ClassDef(AliJetCorrelSelector, 1);
+  ClassDef(AliJetCorrelSelector, 1); //AliJetCorrelSelector
 };
 
 #endif 

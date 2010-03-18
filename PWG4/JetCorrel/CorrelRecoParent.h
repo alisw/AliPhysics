@@ -1,5 +1,5 @@
-#ifndef __CORRELRECOPARENT_H__
-#define __CORRELRECOPARENT_H__
+#ifndef CORRELRECOPARENT_H
+#define CORRELRECOPARENT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -21,16 +21,16 @@ class CorrelRecoParent_t : public CorrelParticle_t {
   
   Float_t Assym()   const {return fAssym;}
   Float_t OpenAng() const {return fOpenAng;}
-  AliESDEvent* Evt()  const {return jcESD;}
+  AliESDEvent* Evt()  const {return fjcESD;}
   Bool_t Reconstruct(CorrelParticle_t* p1, CorrelParticle_t* p2, Bool_t kUseAliKF);
-  void SetEvent(AliESDEvent * const v) {jcESD=v;}
+  void SetEvent(AliESDEvent * const v) {fjcESD=v;}
   
-  virtual void Show();
+  virtual void Show() const;
   
  private:
   Float_t fAssym;   // children energy assymetry
   Float_t fOpenAng; // children opening angle
-  AliESDEvent* jcESD;  // input event (ESD or AOD)
+  AliESDEvent* fjcESD;  // input event (ESD or AOD)
   
   // disable (make private) the copy constructor
   CorrelRecoParent_t(const CorrelRecoParent_t &p);
