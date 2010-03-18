@@ -78,7 +78,10 @@ void AliHLTTRDTracklet::CopyDataMembers(const AliTRDseedV1* const inTracklet)
     fYfit[i]   = inTracklet->fYfit[i];
     fZfit[i]   = inTracklet->fZfit[i];
   }
-  fC[0] = inTracklet->fC[0];fC[1] = inTracklet->fC[1];
+  fC[0] = inTracklet->GetC();
+#ifndef HAVE_NOT_ALITRD_SEEDV1_r39693
+  fC[1] = inTracklet->GetC(1);
+#endif //HAVE_NOT_ALITRD_SEEDV1_r39693
   for (Int_t i=0; i < 3; i++){
     fPad[i] = inTracklet->fPad[i];
     // fCov[i] = inTracklet->fCov[i];
@@ -124,8 +127,10 @@ void AliHLTTRDTracklet::ExportTRDTracklet(AliTRDseedV1* const outTracklet) const
   outTracklet->fX0     = fX0;
   outTracklet->fS2Y    = fS2Y;
   outTracklet->fPt     = fPt;
-  outTracklet->fC[0]   = fC[0];
-  outTracklet->fC[1]   = fC[1];
+  outTracklet->SetC(fC[0]);
+#ifndef HAVE_NOT_ALITRD_SEEDV1_r39693
+  outTracklet->SetC(fC[1], 1);
+#endif //HAVE_NOT_ALITRD_SEEDV1_r39693
   outTracklet->fChi2   = fChi2;
   // outTracklet->fExB    = fExB;
   // outTracklet->fVD     = fVD;
