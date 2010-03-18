@@ -28,7 +28,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetCorrel)
 
 AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel() : 
-  AliAnalysisTaskSE("JetCorrelTask"), jcESD(NULL), fOutputContainer(new TList),
+  AliAnalysisTaskSE("JetCorrelTask"), fjcESD(NULL), fOutputContainer(new TList),
   fSelector(new AliJetCorrelSelector), fNumCorrel(0), fNumTrigg(0), fNumAssoc(0), fNumEvts(0),
   fMaker(new AliJetCorrelMaker), fWriter(new AliJetCorrelWriter), fReader(new AliJetCorrelReader),
   fMixer(new AliJetCorrelMixer), fTriggList(NULL), fAssocList(NULL) {
@@ -36,7 +36,7 @@ AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel() :
 }
 
 AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel(AliJetCorrelSelector *s) : 
-  AliAnalysisTaskSE("JetCorrelTask"), jcESD(NULL), fOutputContainer(new TList),
+  AliAnalysisTaskSE("JetCorrelTask"), fjcESD(NULL), fOutputContainer(new TList),
   fSelector(s), fNumCorrel(0), fNumTrigg(0), fNumAssoc(0), fNumEvts(0),
   fMaker(new AliJetCorrelMaker), fWriter(new AliJetCorrelWriter), fReader(new AliJetCorrelReader),
   fMixer(new AliJetCorrelMixer), fTriggList(NULL), fAssocList(NULL) {
@@ -77,8 +77,8 @@ void AliAnalysisTaskJetCorrel::ConnectInputData(Option_t *) {
   if(tree){
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if(esdH){
-      jcESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
-      if(!jcESD) {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no event"<<std::endl; exit(-1);}
+      fjcESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+      if(!fjcESD) {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no event"<<std::endl; exit(-1);}
     } else {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no ESD Input"<<std::endl; exit(-1);}
   } else {std::cerr<<"AliAnalysisTaskJetCorrel::ConnectInputData - ERROR: no input tree"<<std::endl; exit(-1);}
 }
@@ -94,13 +94,13 @@ void AliAnalysisTaskJetCorrel::CreateOutputObjects(){
 
 void AliAnalysisTaskJetCorrel::Exec(Option_t */*option*/){
   // get the event and pass it to the data reader object
-  //jcESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if(!jcESD)
+  //fjcESD = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!fjcESD)
     {std::cerr<<"AliAnalysisTaskJetCorrel::Exec() - ERROR: Cannot get event "<<fNumEvts<<std::endl; exit(-1);}
-  fReader->SetEvent(jcESD);
+  fReader->SetEvent(fjcESD);
 
   // get global event pars and apply global cuts
-  if(!fSelector->SelectedEvtTrigger(jcESD)) return;
+  if(!fSelector->SelectedEvtTrigger(fjcESD)) return;
   Float_t cent = fReader->GetMultiplicity(); // use multiplicity in p-p
   Float_t zvtx = fReader->GetVertex();
   Int_t cBin = fSelector->GetBin(centr,cent);

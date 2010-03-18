@@ -1,5 +1,5 @@
-#ifndef __ALIJETCORRELMAKER_H__
-#define __ALIJETCORRELMAKER_H__
+#ifndef ALIJETCORRELMAKER_H
+#define ALIJETCORRELMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -18,8 +18,8 @@ class AliJetCorrelMaker : public TObject {
   ~AliJetCorrelMaker();
   
   Bool_t Init(UInt_t s, UInt_t * const v);
-  Bool_t Check();
-  void Show();
+  Bool_t Check() const;
+  void Show()const;
   
   UInt_t NoOfCorrel() const {return fNumCorrel;}
   UInt_t NoOfTrigg()  const {return fNumTrigg;}
@@ -34,10 +34,12 @@ class AliJetCorrelMaker : public TObject {
   
  private: 
   UInt_t fNumCorrel, fNumTrigg, fNumAssoc; // counters
-  UInt_t *fCorrelType;                  // array of correlation types
-  TString *fCorrelStr;                  // array of correlation string descriptors
-  PartType_t *fTriggType, *fAssocType;  // arrays of trigger&associated particle types
-  UInt_t *fIdxTrigg, *fIdxAssoc;        // arrays with trigger&associated indices
+  UInt_t* fCorrelType;     //! array of correlation types
+  TString* fCorrelStr;     //! array of correlation string descriptors
+  PartType_t* fTriggType;  //! array of trigger particle types
+  PartType_t* fAssocType;  //! array of associated particle types
+  UInt_t* fIdxTrigg;       //! array with trigger indices
+  UInt_t* fIdxAssoc;       //! array with associated indices
   
   // disable (make private) copy constructor, and assignment operator:
   AliJetCorrelMaker(const AliJetCorrelMaker&);

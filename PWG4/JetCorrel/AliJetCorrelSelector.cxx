@@ -27,14 +27,15 @@ using namespace std;
 ClassImp(AliJetCorrelSelector)
 
 AliJetCorrelSelector::AliJetCorrelSelector() : 
-  fGenQA(kFALSE), fDPhiNumBins(0), fDEtaNumBins(0), fNumCorrel(0), nEvtTriggs(0),
-  fPoolDepth(0), fCorrelType(NULL), fEvtTriggs(NULL), minTriggPt(0), maxTriggPt(0), bwTriggPt(0),
-  minAssocPt(0), maxAssocPt(0), bwAssocPt(0), fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE),
+  fGenQA(kFALSE), fDPhiNumBins(0), fDEtaNumBins(0), fNumCorrel(0), fNumEvtTriggs(0), fPoolDepth(0), 
+  fCorrelType(NULL), fEvtTriggs(NULL), fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE),
   fRejectKinkChild(kFALSE), fMaxEta(0), fMaxNsigmaVtx(0), fMaxTrkVtx(0), fMaxITSChi2(0), fMaxTPCChi2(0),
-  fMinNClusITS(0), fMinNClusTPC(0), trkMinProx(0), fUseAliKF(kFALSE) {
+  fMinNClusITS(0), fMinNClusTPC(0), fTrkMinProx(0), fUseAliKF(kFALSE) {
   // (default) constructor
   fNumBins[centr] = 0; fBinning[centr] = NULL;
   fNumBins[zvert] = 0; fBinning[zvert] = NULL;
+  fNumBins[trigg] = 0; fBinning[trigg] = NULL;
+  fNumBins[assoc] = 0; fBinning[assoc] = NULL;
 }
 
 AliJetCorrelSelector::~AliJetCorrelSelector(){
@@ -42,11 +43,15 @@ AliJetCorrelSelector::~AliJetCorrelSelector(){
   if(fCorrelType) delete [] fCorrelType;
   fNumCorrel = 0;
   if(fEvtTriggs) delete [] fEvtTriggs;
-  nEvtTriggs = 0;
+  fNumEvtTriggs = 0;
   if(fBinning[centr]) delete [] fBinning[centr];
   fNumBins[centr] = 0;
   if(fBinning[zvert]) delete [] fBinning[zvert];
   fNumBins[zvert] = 0;
+  if(fBinning[trigg]) delete [] fBinning[trigg];
+  fNumBins[trigg] = 0;
+  if(fBinning[assoc]) delete [] fBinning[assoc];
+  fNumBins[assoc] = 0;
 }
 
 void AliJetCorrelSelector::SetCorrelTypes(UInt_t s, UInt_t * const v){
@@ -68,9 +73,9 @@ void AliJetCorrelSelector::SetTriggers(UInt_t s, TString * const v){
   // fills the array of event triggers
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetTriggers - empty array"<<std::endl; exit(-1);}
   if(s>9){std::cerr<<"AliJetCorrelSelector: event trigger array too big!"<<std::endl; exit(-1);}
-  nEvtTriggs = s;
-  fEvtTriggs = new TString[nEvtTriggs];
-  for(UInt_t k=0; k<nEvtTriggs; k++){
+  fNumEvtTriggs = s;
+  fEvtTriggs = new TString[fNumEvtTriggs];
+  for(UInt_t k=0; k<fNumEvtTriggs; k++){
     if(!v[k].IsAscii()){
       std::cerr<<"AliJetCorrelSelector::SetTriggers - read error? val["<<k<<"]="<<v[k]<<std::endl;
       exit(-1);
@@ -110,27 +115,43 @@ void AliJetCorrelSelector::SetBinningZvert(UInt_t s, Float_t * const v){
   }
 }
 
-void AliJetCorrelSelector::SetBinningTrigg(Float_t min, Float_t max, Float_t bw){
-  // sets trigger Pt binning
-  minTriggPt = min;
-  maxTriggPt = max;
-  bwTriggPt  = bw;
+void AliJetCorrelSelector::SetBinningTrigg(UInt_t s, Float_t * const v){
+  // fills array of trigger bins
+  if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningTrigg - empty array"<<std::endl; exit(-1);}
+  if(s>kMAXTRIGBIN){std::cerr<<"AliJetCorrelSelector: trigger array too big!"<<std::endl; exit(-1);}
+  fNumBins[trigg] = s;
+  fBinning[trigg] = new Float_t[fNumBins[trigg]]; 
+  for(UInt_t k=0; k<fNumBins[trigg]; k++){
+    if(TMath::Abs(v[k])>999.){
+      std::cerr<<"AliJetCorrelSelector::SetBinningTrigg - read error? val["<<k<<"]="<<v[k]<<std::endl;
+      exit(-1);
+    }
+    else fBinning[trigg][k] = v[k];
+  }
 }
 
-void AliJetCorrelSelector::SetBinningAssoc(Float_t min, Float_t max, Float_t bw){
-  // sets associated Pt binning
-  minAssocPt = min;
-  maxAssocPt = max;
-  bwAssocPt  = bw;
+void AliJetCorrelSelector::SetBinningAssoc(UInt_t s, Float_t * const v){
+  // fills array of associated bins
+  if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningAssoc - empty array"<<std::endl; exit(-1);}
+  if(s>kMAXTRIGBIN){std::cerr<<"AliJetCorrelSelector: associated array too big!"<<std::endl; exit(-1);}
+  fNumBins[assoc] = s;
+  fBinning[assoc] = new Float_t[fNumBins[assoc]]; 
+  for(UInt_t k=0; k<fNumBins[assoc]; k++){
+    if(TMath::Abs(v[k])>999.){
+      std::cerr<<"AliJetCorrelSelector::SetBinningAssoc - read error? val["<<k<<"]="<<v[k]<<std::endl;
+      exit(-1);
+    }
+    else fBinning[assoc][k] = v[k];
+  }
 }
 
-Float_t AliJetCorrelSelector::BinBorder(BinType_t cType, UInt_t k){
+Float_t AliJetCorrelSelector::BinBorder(BinType_t cType, UInt_t k) const {
   // returns bin margins
   if(k<=NoOfBins(cType)) return fBinning[cType][k];
   else {std::cerr<<"BinBorder Error: bin of type "<<cType<<" outside range "<<k<<std::endl; exit(0);}
 }
 
-Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val){
+Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val) const {
   // returns bin number
   Int_t iBin=-1; UInt_t nBins=NoOfBins(cType);
   for(UInt_t i=0; i<nBins; i++)
@@ -138,76 +159,54 @@ Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val){
   return iBin;
 }
 
-UInt_t AliJetCorrelSelector::NumAssocPt(){
-  UInt_t nBins = UInt_t((maxAssocPt-minAssocPt)/bwAssocPt);
-  if(nBins>=kMAXASSOBIN)
-    {std::cerr<<"AliJetCorrelSelector::NumAssocPt - Error: outside range"<<std::endl; exit(0);}
-  return nBins;
-}
-
-Int_t AliJetCorrelSelector::AssocBin(Float_t pT){
-  if(pT>=maxAssocPt) return -1;
-  return TMath::FloorNint((pT-minAssocPt)/bwAssocPt);
-}
-
-UInt_t AliJetCorrelSelector::NumTriggPt() {
-  UInt_t nBins = UInt_t((maxTriggPt-minTriggPt)/bwTriggPt);
-  if(nBins>=kMAXTRIGBIN)
-    {std::cerr<<"AliJetCorrelSelector::NumTrigPt - Error: outside range"<<std::endl; exit(0);}
-  return nBins;
-}
-
-Int_t AliJetCorrelSelector::TriggBin(Float_t pT){
-  if(pT>=maxTriggPt) return -1;
-  return TMath::FloorNint((pT-minTriggPt)/bwTriggPt);
-}
-
-void AliJetCorrelSelector::Show(){
+void AliJetCorrelSelector::Show() const {
   // print out all user selections
   std::cout<<"Generic selections: "<<std::endl<<" GenQA="<<fGenQA<<" UseAliKF="<<fUseAliKF
 	   <<" nDPhiBins="<<fDPhiNumBins<<" nDEtaBins="<<fDEtaNumBins<<" PoolDepth="<<fPoolDepth;
   std::cout<<std::endl<<" Correlation Types: ";
   for(UInt_t k=0; k<fNumCorrel; k++) std::cout<<fCorrelType[k]<<" ";
   std::cout<<std::endl<<" Event Triggers: ";
-  for(UInt_t k=0; k<nEvtTriggs; k++) std::cout<<fEvtTriggs[k]<<" ";
+  for(UInt_t k=0; k<fNumEvtTriggs; k++) std::cout<<fEvtTriggs[k]<<" ";
   std::cout<<std::endl<<" Centrality/Multiplicity binning: ";
   for(UInt_t k=0; k<fNumBins[centr]; k++) std::cout<<fBinning[centr][k]<<" ";
   std::cout<<std::endl<<" Vertex binning: ";
   for(UInt_t k=0; k<fNumBins[zvert]; k++) std::cout<<fBinning[zvert][k]<<" ";
-  std::cout<<std::endl<<" Trigg binning:"<<minTriggPt<<"->"<<maxTriggPt<<"/"<<bwTriggPt;
-  std::cout<<std::endl<<" Assoc binning:"<<minAssocPt<<"->"<<maxAssocPt<<"/"<<bwAssocPt;
+  std::cout<<std::endl<<" Trigger binning: ";
+  for(UInt_t k=0; k<fNumBins[trigg]; k++) std::cout<<fBinning[trigg][k]<<" ";
+  std::cout<<std::endl<<" Associated binning: ";
+  for(UInt_t k=0; k<fNumBins[assoc]; k++) std::cout<<fBinning[assoc][k]<<" ";
   std::cout<<std::endl<<"Track selections: "<<std::endl
 	   <<" MaxEta="<<fMaxEta<<" MaxTrkVtx="<<fMaxTrkVtx<<" MaxNsigmaVtx="<<fMaxNsigmaVtx<<std::endl
 	   <<" MaxITSChi2="<<fMaxITSChi2<<" MaxTPCChi2="<<fMaxTPCChi2<<std::endl
 	   <<" MinNClusITS="<<fMinNClusITS<<" MinNClusTPC="<<fMinNClusTPC<<std::endl
 	   <<" ITSRefit="<<fITSRefit<<" TPCRefit="<<fTPCRefit<<" TRDRefit="<<fTRDRefit<<std::endl
-	   <<" RejectKinkChild="<<fRejectKinkChild<<" minTrackPairTPCDist="<<trkMinProx<<std::endl;
+	   <<" RejectKinkChild="<<fRejectKinkChild<<" minTrackPairTPCDist="<<fTrkMinProx<<std::endl;
 }
 
 //////////////////////////////////////////////////////////
 // Cutting Methods
 /////////////////////////////////////////////////////////
 
-Bool_t AliJetCorrelSelector::SelectedEvtTrigger(AliESDEvent * const jcESD){
+Bool_t AliJetCorrelSelector::SelectedEvtTrigger(AliESDEvent * const jcESD) const {
   // matches the event trigger classes with the user trigger classes
   if(jcESD->InheritsFrom("AliESDEvent")){
     const AliESDEvent *esd = (AliESDEvent*)jcESD;
     TString trigClass = esd->GetFiredTriggerClasses();
-    if(nEvtTriggs==1 && fEvtTriggs[0].Contains("ALL")) return kTRUE;
-    for(UInt_t k=0; k<nEvtTriggs; k++)
+    if(fNumEvtTriggs==1 && fEvtTriggs[0].Contains("ALL")) return kTRUE;
+    for(UInt_t k=0; k<fNumEvtTriggs; k++)
       if(trigClass.Contains(fEvtTriggs[k])) return kTRUE;
     return kFALSE;
   } else {std::cerr<<"AliJetCorrelSelector::SelectedEvtTrigger ERROR: not an ESD event!"<<std::endl; exit(0);}
 }
 
-Bool_t AliJetCorrelSelector::CloseTrackPair(Float_t dist){
+Bool_t AliJetCorrelSelector::CloseTrackPair(Float_t dist) const {
   // applies two-track cut (dist at TPC entrance); it is possible that single-track cuts,
   // like fraction of shared TPC clusters, will avoid inclusion of split tracks...
-  if(dist>trkMinProx) return kFALSE;
+  if(dist>fTrkMinProx) return kFALSE;
   return kTRUE;
 }
 
-Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track){
+Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track) const {
   // selects low quality tracks
   if(track->Eta()>fMaxEta) return kTRUE;
   UInt_t status = track->GetStatus();
@@ -237,7 +236,7 @@ Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track){
   return kFALSE;
 }
 
-Bool_t AliJetCorrelSelector::PassPID(AliESDtrack* track, PartType_t PartType){
+Bool_t AliJetCorrelSelector::PassPID(AliESDtrack* track, PartType_t PartType) const {
   // checks if a track has the required ID
   Bool_t hasReqPID = kFALSE;
   Stat_t fPid;
@@ -273,7 +272,7 @@ Bool_t AliJetCorrelSelector::PassPID(AliESDtrack* track, PartType_t PartType){
   return hasReqPID;
 }
 
-Float_t AliJetCorrelSelector::GetSigmaToVertex(AliESDtrack* track){
+Float_t AliJetCorrelSelector::GetSigmaToVertex(AliESDtrack* track) const {
   // Calculates the number of sigma to the vertex; from ANALYSIS/AliESDtrackCuts
   Float_t b[2], bRes[2], bCov[3];
   track->GetImpactParameters(b,bCov);
@@ -289,7 +288,7 @@ Float_t AliJetCorrelSelector::GetSigmaToVertex(AliESDtrack* track){
   return nSigma;
 }
 
-void AliJetCorrelSelector::GetPID(AliESDtrack* track, Stat_t& fpid, Stat_t& fweight){
+void AliJetCorrelSelector::GetPID(AliESDtrack* track, Stat_t& fpid, Stat_t& fweight) const {
   // Finds most probable particle: 0=Electron, 1=Muon, 2=Pion, 3=Kaon, 4=Proton
   fpid = -1;
   fweight = -1;

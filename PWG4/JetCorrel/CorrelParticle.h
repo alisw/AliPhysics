@@ -1,5 +1,5 @@
-#ifndef __CORRELPARTICLE_H__
-#define __CORRELPARTICLE_H__
+#ifndef CORRELPARTICLE_H
+#define CORRELPARTICLE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -45,7 +45,7 @@ class CorrelParticle_t {
   virtual Float_t Et()    const {return TMath::Sqrt(Pt()*Pt()+fMass*fMass);}
   virtual Float_t Y()     const {return 0.5*TMath::Log((E()+Pz())/(E()-Pz()));}
   
-  virtual void Show();
+  virtual void Show() const;
   
  protected:
   Float_t fPt;    // pt; store charge as its sign

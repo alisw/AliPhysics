@@ -51,13 +51,13 @@ CorrelTrack_t* CorrelTrack_t::Copy(){
   return copy;
 }
 
-Float_t CorrelTrack_t::Dist(CorrelTrack_t * const that) {
+Float_t CorrelTrack_t::Dist(CorrelTrack_t * const that) const {
   return TMath::Sqrt((this->X()-that->X())*(this->X()-that->X()) +
 		     (this->Y()-that->Y())*(this->Y()-that->Y()) +
 		     (this->Z()-that->Z())*(this->Z()-that->Z()));
 }
 
-void CorrelTrack_t::Show(){
+void CorrelTrack_t::Show() const {
   std::cout<<" Track pT="<<Pt()<<" phi="<<Phi()<<" eta="<<Eta()<<" m="<<M()<<" id="<<ID()
 	   <<" x="<<X()<<" y="<<Y()<<" z="<<Z()<<std::endl;
 }

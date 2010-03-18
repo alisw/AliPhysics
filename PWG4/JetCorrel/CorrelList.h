@@ -1,5 +1,5 @@
-#ifndef __CORRELLIST_H__
-#define __CORRELLIST_H__
+#ifndef CORRELLIST_H
+#define CORRELLIST_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 /* $Id:  $ */
@@ -29,8 +29,8 @@ class CorrelListNode_t {
   CorrelListNode_t* GetNext() const {return fNext;}
     
  private:
-    CorrelParticle_t* fPart;
-    CorrelListNode_t* fNext;      
+  CorrelParticle_t* fPart; // pointer to contained particle
+  CorrelListNode_t* fNext; // pointer to next node
 };
 
 class CorrelListIter_t {
@@ -42,10 +42,10 @@ class CorrelListIter_t {
   const CorrelListIter_t& operator=(const CorrelListIter_t& rhs);
     
   Bool_t HasEnded() const {return (fCurr==NULL);}
-  void Check();
+  void Check() const;
   void Move() {Check(); fCurr=fCurr->GetNext();}
-  CorrelListNode_t* Node() {Check(); return fCurr;}
-  CorrelParticle_t* Data() {Check(); return fCurr->GetData();}
+  CorrelListNode_t* Node() const {Check(); return fCurr;}
+  CorrelParticle_t* Data() const {Check(); return fCurr->GetData();}
   
  private:
   CorrelListNode_t* fCurr; // iterator "current node"
@@ -68,8 +68,8 @@ class CorrelList_t : public TObject {
   void SetFilled(Bool_t f) {fFilled=f;}
   void Label(PartType_t p, PoolType_t l, UInt_t e) {fPartID=p; fPoolID=l; fEvtID=e;}
   CorrelListIter_t Head() const {return CorrelListIter_t(fHead);}
-  void ShowHead();
-  void Show();
+  void ShowHead() const;
+  void Show() const;
   
  private:
   UInt_t fSize;             // list size
@@ -80,6 +80,8 @@ class CorrelList_t : public TObject {
   CorrelListNode_t* fHead;  // list head
   
   CorrelList_t(const CorrelList_t& rhs);        // forbid copy constructor
+  
+  ClassDef(CorrelList_t, 1); //CorrelList_t
 };
 
 #endif

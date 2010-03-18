@@ -11,9 +11,9 @@ AliJetCorrelSelector* ConfigJetCorrel(){
   UInt_t poolDepth = 10;
   UInt_t correlTypes[] = {0};  // 0=dihadron, 1=pi0-hadron, 2=photon-hadron
   Float_t centrBins[] = {1,300};
-  Float_t zVertBins[] = {-10,-7,-5,5,7,10};
-  Float_t bwTriggPt = 1;   Float_t minTriggPt = 2;   Float_t maxTriggPt = 10;
-  Float_t bwAssocPt = 0.5; Float_t minAssocPt = 0.5; Float_t maxAssocPt = 4;
+  Float_t zVertBins[] = {-10,-7,-5,-3,3,5,7,10};
+  Float_t triggBins[] = {2,3,4,5,6,10};
+  Float_t assocBins[] = {0.5,1.5,10};
   //TString sTrigg[] = {"ALL"}; // selects events where one of the strings is matched; "ALL"=no cut
   TString sTrigg[] = {"CINT1B-"};
   // set track selections:
@@ -43,8 +43,8 @@ AliJetCorrelSelector* ConfigJetCorrel(){
   selector->SetCorrelTypes(sizeof(correlTypes)/sizeof(UInt_t),correlTypes);
   selector->SetBinningCentr(sizeof(centrBins)/sizeof(Float_t),centrBins);
   selector->SetBinningZvert(sizeof(zVertBins)/sizeof(Float_t),zVertBins);
-  selector->SetBinningTrigg(minTriggPt,maxTriggPt,bwTriggPt);
-  selector->SetBinningAssoc(minAssocPt,maxAssocPt,bwAssocPt);
+  selector->SetBinningTrigg(sizeof(triggBins)/sizeof(Float_t),triggBins);
+  selector->SetBinningAssoc(sizeof(assocBins)/sizeof(Float_t),assocBins);
   selector->SetTriggers(sizeof(sTrigg)/sizeof(TString),sTrigg);
   selector->SetITSRefit(itsRefit);
   selector->SetTPCRefit(tpcRefit);

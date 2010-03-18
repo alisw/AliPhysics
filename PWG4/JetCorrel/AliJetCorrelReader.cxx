@@ -14,8 +14,10 @@
  **************************************************************************/
 /* $Id: $ */
 
-//______________________________________________________________________________________
-// Class for input (ESD or AOD) reading and filling of Trigger&Associated particle lists
+//__________________________________________________________________________
+// Class for input (ESD or AOD) reading.
+// At the moment only ESD input is really implemented, AOD to be added later.
+// Its products are the Trigger&Associated particle lists
 //-- Author: Paul Constantin
 
 #include "AliJetCorrelReader.h"
@@ -25,7 +27,7 @@ using namespace std;
 ClassImp(AliJetCorrelReader)
 
 AliJetCorrelReader::AliJetCorrelReader() :
-  jcESD(NULL), fSelector(NULL), fWriter(NULL){
+  fjcESD(NULL), fSelector(NULL), fWriter(NULL){
   // constructor
 }
 
@@ -39,30 +41,30 @@ void AliJetCorrelReader::Init(AliJetCorrelSelector * const s, AliJetCorrelWriter
   fWriter = w;
 }
 
-Float_t AliJetCorrelReader::GetMultiplicity(){
+Float_t AliJetCorrelReader::GetMultiplicity() const {
   // event multiplicity
-  if(!jcESD){
-    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : jcESD not set!"<<std::endl; 
+  if(!fjcESD){
+    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : fjcESD not set!"<<std::endl; 
     exit(-1);
   }
-  // return jcESD->GetNumberOfTracks(); // ESD no of global tracks
-  const AliMultiplicity* m = jcESD->GetMultiplicity(); // SPD no of tracklets
+  // return fjcESD->GetNumberOfTracks(); // ESD no of global tracks
+  const AliMultiplicity* m = fjcESD->GetMultiplicity(); // SPD no of tracklets
   return m->GetNumberOfTracklets();
 }
 
-Float_t AliJetCorrelReader::GetVertex(){
+Float_t AliJetCorrelReader::GetVertex() const {
   // event vertex
-  if(!jcESD){
-    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : jcESD not set!"<<std::endl; 
+  if(!fjcESD){
+    std::cerr<<"AliJetCorrelReader::GetVertex() - ERROR : fjcESD not set!"<<std::endl; 
     exit(-1);
   }
-  return jcESD->GetPrimaryVertex()->GetZ();
+  return fjcESD->GetPrimaryVertex()->GetZ();
 }
 
-Bool_t AliJetCorrelReader::VtxOutPipe(){
+Bool_t AliJetCorrelReader::VtxOutPipe() const {
   // returns true if vertex R >= beam pipe
-  Float_t xVtx2 = jcESD->GetPrimaryVertex()->GetX()*jcESD->GetPrimaryVertex()->GetX();
-  Float_t yVtx2 = jcESD->GetPrimaryVertex()->GetY()*jcESD->GetPrimaryVertex()->GetY();
+  Float_t xVtx2 = fjcESD->GetPrimaryVertex()->GetX()*fjcESD->GetPrimaryVertex()->GetX();
+  Float_t yVtx2 = fjcESD->GetPrimaryVertex()->GetY()*fjcESD->GetPrimaryVertex()->GetY();
   if(TMath::Sqrt(xVtx2+yVtx2)>3) return kTRUE;
   return kFALSE;
 }
@@ -126,13 +128,13 @@ void AliJetCorrelReader::FillESDTrackLists(CorrelList_t *list1, CorrelList_t *li
   // fills trigg&assoc lists simultaneously with ESD tracks
   PartType_t partType = list1->PartID(); // by definition the two lists store same particle
 
-  UInt_t nTracks = jcESD->GetNumberOfTracks() ;
+  UInt_t nTracks = fjcESD->GetNumberOfTracks() ;
   if(nTracks<1) return;
   for(register UInt_t i=0; i<nTracks; i++){
-    AliESDtrack *track = (AliESDtrack*)jcESD->GetTrack(i);
+    AliESDtrack *track = (AliESDtrack*)fjcESD->GetTrack(i);
 
     Float_t pT = track->Pt();
-    if(pT<fSelector->MinAssocPt()) continue;
+    if(pT<fSelector->MinLowBin(assoc)) continue;
     if(fSelector->GenQA()) fWriter->FillTrackQA(track,0);
     if(fSelector->LowQualityTrack(track)) continue;
     if(!fSelector->PassPID(track,partType)) continue;
@@ -151,10 +153,10 @@ void AliJetCorrelReader::FillESDTrackLists(CorrelList_t *list1, CorrelList_t *li
     hadr->SetMass(track->GetMass());
     hadr->SetID(partType);
 
-    if(list1->PoolID()==assocs && fSelector->AssocBin(pT)>=0) list1->Push(hadr->Copy());
-    if(list1->PoolID()==triggs && fSelector->TriggBin(pT)>=0) list1->Push(hadr->Copy());
-    if(list2->PoolID()==assocs && fSelector->AssocBin(pT)>=0) list2->Push(hadr->Copy());
-    if(list2->PoolID()==triggs && fSelector->TriggBin(pT)>=0) list2->Push(hadr->Copy());
+    if(list1->PoolID()==assocs && fSelector->GetBin(assoc,pT)>=0) list1->Push(hadr->Copy());
+    if(list1->PoolID()==triggs && fSelector->GetBin(trigg,pT)>=0) list1->Push(hadr->Copy());
+    if(list2->PoolID()==assocs && fSelector->GetBin(assoc,pT)>=0) list2->Push(hadr->Copy());
+    if(list2->PoolID()==triggs && fSelector->GetBin(trigg,pT)>=0) list2->Push(hadr->Copy());
     delete hadr;
   } // ESD track loop
 }
@@ -164,13 +166,13 @@ void AliJetCorrelReader::FillESDTrackList(CorrelList_t *list){
   // (2) electrons to be used in dielectron reconstruction. Assoc pT cuts apply then...
   PartType_t partType = list->PartID();
 
-  UInt_t nTracks = jcESD->GetNumberOfTracks();
+  UInt_t nTracks = fjcESD->GetNumberOfTracks();
   if(nTracks<1) return;
   for(register UInt_t i=0; i<nTracks; i++){
-    AliESDtrack *track = (AliESDtrack*)jcESD->GetTrack(i);
+    AliESDtrack *track = (AliESDtrack*)fjcESD->GetTrack(i);
 
     Float_t pT = track->Pt();
-    if(pT<fSelector->MinAssocPt()) continue; 
+    if(pT<fSelector->MinLowBin(assoc)) continue; 
     if(fSelector->GenQA()) fWriter->FillTrackQA(track,0);
     if(fSelector->LowQualityTrack(track)) continue;
     if(fSelector->GenQA()) fWriter->FillTrackQA(track,1);
@@ -240,10 +242,10 @@ void AliJetCorrelReader::FillParentList(CorrelList_t *ParentList, CorrelList_t *
     while(!iterChild2.HasEnded()){
       CorrelParticle_t *child2 = iterChild2.Data(); iterChild2.Move();
       CorrelRecoParent_t *parent = new CorrelRecoParent_t;
-      parent->SetEvent(jcESD);
+      parent->SetEvent(fjcESD);
       Bool_t goodParent = parent->Reconstruct(child1, child2, fSelector->UseAliKF());
-      Bool_t inPtRange = (ParentList->PoolID()==assocs && fSelector->AssocBin(parent->Pt())>=0) ||
-	(ParentList->PoolID()==triggs && fSelector->TriggBin(parent->Pt())>=0);
+      Bool_t inPtRange = (ParentList->PoolID()==assocs && fSelector->GetBin(assoc,parent->Pt())>=0) ||
+	(ParentList->PoolID()==triggs && fSelector->GetBin(trigg,parent->Pt())>=0);
       if(goodParent && inPtRange) ParentList->Push(parent);
     } // 2nd particle loop
   } // 1st particle loop
