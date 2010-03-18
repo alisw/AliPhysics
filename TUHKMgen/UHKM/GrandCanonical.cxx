@@ -18,6 +18,12 @@
 #ifndef UKUTILITY_INCLUDED
 #include "UKUtility.h"
 #endif
+#ifndef PARTICLE_PDG
+#include "ParticlePDG.h"
+#endif
+#ifndef DATABASEPDG_H
+#include "DatabasePDG.h"
+#endif
 
 GrandCanonical::GrandCanonical():
   fTemperature(-1111),
@@ -72,7 +78,7 @@ void GrandCanonical::NMax(Int_t value) {
     fInitialized = kTRUE;
 }
 
-Double_t GrandCanonical::ParticleEnergyDensity(ParticlePDG* particle) {
+Double_t GrandCanonical::ParticleEnergyDensity(ParticlePDG *const particle) {
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::ParticleEnergyDensity", "GrandCanonical object not fully initialized!!");
@@ -97,7 +103,7 @@ Double_t GrandCanonical::ParticleEnergyDensity(ParticlePDG* particle) {
   return preFactor * postFactor;
 }
 
-Double_t GrandCanonical::ParticleNumberDensity(ParticlePDG* particle) {
+Double_t GrandCanonical::ParticleNumberDensity(ParticlePDG *const particle) {
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::ParticleNumberDensity", "GrandCanonical object not fully initialized!!");
@@ -121,7 +127,7 @@ Double_t GrandCanonical::ParticleNumberDensity(ParticlePDG* particle) {
 }
 
 
-Double_t GrandCanonical::EnergyDensity(DatabasePDG* database) {
+Double_t GrandCanonical::EnergyDensity(DatabasePDG *const database) {
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::EnergyDensity", "GrandCanonical object not fully initialized!!");
@@ -136,7 +142,7 @@ Double_t GrandCanonical::EnergyDensity(DatabasePDG* database) {
   return meanEnergyDensity;
 }
 
-Double_t GrandCanonical::BaryonDensity(DatabasePDG* database) {
+Double_t GrandCanonical::BaryonDensity(DatabasePDG *const database) {
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::BaryonDensity", "GrandCanonical object not fully initialized!!");
@@ -150,7 +156,7 @@ Double_t GrandCanonical::BaryonDensity(DatabasePDG* database) {
   return meanBaryonDensity;
 }
 
-Double_t GrandCanonical::StrangeDensity(DatabasePDG* database) {
+Double_t GrandCanonical::StrangeDensity(DatabasePDG *const database) {
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::StrangeDensity", "GrandCanonical object not fully initialized!!");
@@ -165,7 +171,7 @@ Double_t GrandCanonical::StrangeDensity(DatabasePDG* database) {
   return meanStrangeDensity;
 }
 
-Double_t GrandCanonical::ElectroDensity(DatabasePDG* database) {
+Double_t GrandCanonical::ElectroDensity(DatabasePDG *const database) {
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::ElectroDensity", "GrandCanonical object not fully initialized!!");

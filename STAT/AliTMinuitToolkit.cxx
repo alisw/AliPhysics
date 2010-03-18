@@ -1,19 +1,34 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-#include "AliTMinuitToolkit.h"
-#include <TNamed.h>
-#include <TVirtualFitter.h>
-#include <TH1F.h>
-#include <TH2F.h>
+/* $Id$ */
+
+#include <TCanvas.h>
 #include <TF1.h>
 #include <TFormula.h>
-#include <TVector.h>
-#include <TMatrix.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <TMath.h>
-#include <TString.h>
-#include <TROOT.h>
-#include <TCanvas.h>
+#include <TMatrix.h>
 #include <TRandom.h>
+#include <TString.h>
+#include <TVector.h>
+#include <TVectorD.h>
+#include <TVirtualFitter.h>
 
+#include "AliTMinuitToolkit.h"
 
 //--------------------------------------------------------------------------------------
 //
@@ -176,7 +191,7 @@ AliTMinuitToolkit::~AliTMinuitToolkit(){
   delete fChi2;
 }
 
-void AliTMinuitToolkit::FitHistogram(TH1F * his) {
+void AliTMinuitToolkit::FitHistogram(TH1F *const his) {
  //
  // Fit a one dimensional histogram
  //
@@ -194,7 +209,7 @@ void AliTMinuitToolkit::FitHistogram(TH1F * his) {
 }
 
 
-void AliTMinuitToolkit::FitHistogram(TH2F * his) {
+void AliTMinuitToolkit::FitHistogram(TH2F *const his) {
  //
  // Fit a curve to a two dimensional histogram
  //
@@ -219,7 +234,7 @@ void AliTMinuitToolkit::FitHistogram(TH2F * his) {
 }
 
 
-void AliTMinuitToolkit::SetWeightFunction(Char_t * name, Float_t param1, Float_t param2) {
+void AliTMinuitToolkit::SetWeightFunction(const Char_t *name, Float_t param1, Float_t param2) {
  //
  // Set the weight function which must be defined on the interval [0,1].
  //
@@ -416,8 +431,8 @@ void AliTMinuitToolkit::Test() {
  
  // 2. example fit without robust option
  AliTMinuitToolkit * tool = new AliTMinuitToolkit();
- TFormula *FormExp = new TFormula("formExp", "[0]*TMath::Exp(-[1]*x)");
- tool->SetFitFunction(FormExp);
+ TFormula *aFormExp = new TFormula("formExp", "[0]*TMath::Exp(-[1]*x)");
+ tool->SetFitFunction(aFormExp);
  TVectorD *vec1 = new TVectorD(2); // Set initial values
  (*vec1)(0) = 1800;
  (*vec1)(1) = 1;
