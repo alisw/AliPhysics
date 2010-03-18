@@ -23,6 +23,7 @@
 
 #include "AliDCSSensorArray.h"
 #include "AliLog.h"
+#include <TMath.h>
 
 ClassImp(AliDCSSensorArray)
 
@@ -451,7 +452,7 @@ void AliDCSSensorArray::RemoveGraphDuplicates(Double_t tolerance){
         for (Int_t i=npoints-1;i>0;i--) {
 	   graph->GetPoint(i,x,y);
 	   graph->GetPoint(i-1,x0,y0);
-	   if ( fabs(y-y0) < fabs(tolerance*y0) ) graph->RemovePoint(i);
+	   if ( TMath::Abs(y-y0) < TMath::Abs(tolerance*y0) ) graph->RemovePoint(i);
 	 }
       }
     }
