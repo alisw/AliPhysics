@@ -95,9 +95,9 @@ public:
   AliTRDseedV1*  GetTracklet(Int_t plane) const {return plane >=0 && plane <kNplane ? fTracklet[plane] : NULL;}
   Int_t          GetTrackletIndex(Int_t plane) const          { return (plane>=0 && plane<kNplane) ? fTrackletIndex[plane] : -1;}
   AliExternalTrackParam*
-                 GetTrackLow() const  { return fTrackLow;} 
+                 GetTrackIn() const  { return fTrackLow;} 
   AliExternalTrackParam*
-                 GetTrackHigh() const  { return fTrackHigh;} 
+                 GetTrackOut() const  { return fTrackHigh;} 
   const Int_t* GetTrackletIndexes() const { return &fTrackletIndex[0];}
   
   Bool_t         IsEqual(const TObject *inTrack) const;
@@ -126,8 +126,8 @@ public:
   inline void    SetStatus(UChar_t stat, Int_t ly=-1);
   void           SetStopped(Bool_t stop) {SetBit(kStopped, stop);}
   void           SetTracklet(AliTRDseedV1 *const trklt,  Int_t index);
-  void           SetTrackLow();
-  void           SetTrackHigh(const AliExternalTrackParam *op=NULL);
+  void           SetTrackIn();
+  void           SetTrackOut(const AliExternalTrackParam *op=NULL);
   inline void    SetReconstructor(const AliTRDReconstructor *rec);
   inline Float_t StatusForTOF();
   void           UnsetTracklet(Int_t plane);

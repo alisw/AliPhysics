@@ -342,7 +342,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     track.SetKink(Bool_t(seed->GetKinkIndex(0)));
     expectedClr = FollowBackProlongation(track);
     // check if track entered the TRD fiducial volume
-    if(track.GetTrackLow()){ 
+    if(track.GetTrackIn()){ 
       seed->UpdateTrackParams(&track, AliESDtrack::kTRDin);
       nTRDseeds++;
     }
@@ -503,21 +503,21 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     Bool_t kUPDATE = kFALSE;
     Double_t xTPC = 250.0;
     if(FollowProlongation(track)){	
-      // Prolongate to TPC
-      if (PropagateToX(track, xTPC, fgkMaxStep)) { //  -with update
-        seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
-        found++;
-        kUPDATE = kTRUE;
-      }
-
       // Update the friend track
       if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0 && fkRecoParam->IsOverPtThreshold(track.Pt())){ 
         TObject *o = NULL; Int_t ic = 0;
         AliTRDtrackV1 *calibTrack = NULL; 
         while((o = seed->GetCalibObject(ic++))){
           if(!(calibTrack = dynamic_cast<AliTRDtrackV1*>(o))) continue;
-          calibTrack->SetTrackHigh(track.GetTrackHigh());
+          calibTrack->SetTrackOut(&track);
         }
+      }
+
+      // Prolongate to TPC
+      if (PropagateToX(track, xTPC, fgkMaxStep)) { //  -with update
+        seed->UpdateTrackParams(&track, AliESDtrack::kTRDrefit);
+        found++;
+        kUPDATE = kTRUE;
       }
     }
     
@@ -560,7 +560,6 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
   // Debug level 2
   //
   
-  Bool_t kStoreIn = kTRUE;
   Int_t    nClustersExpected = 0;
   for (Int_t iplane = kNPlanes; iplane--;) {
     Int_t   index(-1);
@@ -608,10 +607,6 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
       // Propagate and update		
       t.PropagateTo(x, xx0, xrho);
       if (!AdjustSector(&t)) break;
-    }
-    if(kStoreIn){
-      t.SetTrackHigh(); 
-      kStoreIn = kFALSE;
     }
 
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
@@ -838,7 +833,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     }
     // mark track as entering the FIDUCIAL volume of TRD
     if(kStoreIn){
-      t.SetTrackLow(); 
+      t.SetTrackIn(); 
       kStoreIn = kFALSE;
     }
 
@@ -937,7 +932,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       break;
     }
     if(kPropagateIn){
-      t.SetTrackLow(); 
+      t.SetTrackIn(); 
       kPropagateIn = kFALSE;
     }
     Double_t cov[3]; ptrTracklet->GetCovAt(x, cov);

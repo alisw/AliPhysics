@@ -144,6 +144,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   AliAnalysisManager *mgr = new AliAnalysisManager("TRD Reconstruction Performance & Calibration");
   AliVEventHandler *esdH = 0x0, *mcH = 0x0;
   mgr->SetInputEventHandler(esdH = new AliESDInputHandler);
+  //esdH->SetActiveBranches("ESDfriend");
   if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
 

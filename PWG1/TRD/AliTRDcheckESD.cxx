@@ -376,10 +376,10 @@ TObjArray* AliTRDcheckESD::Histos()
   fHistos->AddAt(h, kNCl); fNRefFigures++;
 
   // status bits histogram
-  const Int_t kNpt(10), kNbits(5);
-  Float_t Pt(0.1), Bits(.5);
+  const Int_t kNpt(30), kNbits(5);
+  Float_t Pt(0.2), Bits(.5);
   Float_t binsPt[kNpt+1], binsBits[kNbits+1];
-  for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.015)-1.)) binsPt[i]=Pt;
+  for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.001)-1.)) binsPt[i]=Pt;
   for(Int_t i=0; i<kNbits+1; i++,Bits+=1.) binsBits[i]=Bits;
   if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
     h = new TH2I("hTRDstat", "TRD status bits;p_{t} @ TRD [GeV/c];status;entries", kNpt, binsPt, kNbits, binsBits);

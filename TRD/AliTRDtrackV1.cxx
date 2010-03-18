@@ -801,14 +801,14 @@ void AliTRDtrackV1::SetTracklet(AliTRDseedV1 *const trklt, Int_t index)
 }
 
 //_______________________________________________________________
-void AliTRDtrackV1::SetTrackLow()
+void AliTRDtrackV1::SetTrackIn()
 {
   const AliExternalTrackParam *op = dynamic_cast<const AliExternalTrackParam*>(this);
   fTrackLow = fTrackLow ? new(fTrackLow) AliExternalTrackParam(*op) : new AliExternalTrackParam(*op);
 }
 
 //_______________________________________________________________
-void AliTRDtrackV1::SetTrackHigh(const AliExternalTrackParam *op)
+void AliTRDtrackV1::SetTrackOut(const AliExternalTrackParam *op)
 {
   if(!op) op = dynamic_cast<const AliExternalTrackParam*>(this);
   fTrackHigh = fTrackHigh ? new(fTrackHigh) AliExternalTrackParam(*op) : new AliExternalTrackParam(*op);

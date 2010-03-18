@@ -28,6 +28,7 @@
 #include <TObjArray.h>
 #include <TProfile.h>
 #include <TPad.h>
+#include <TLegend.h>
 #include "TTreeStream.h"
 
 #include "AliPID.h"
@@ -88,10 +89,10 @@ void  AliTRDefficiency::UserCreateOutputObjects()
   TH1 *h = NULL;
   fContainer = new TObjArray();
   for(Int_t is=0; is<AliPID::kSPECIES; is++){
-    fContainer->Add(h = new TProfile(Form("h%s", AliTRDCalPID::GetPartSymb(is)), "", nbins, xbins));
+    fContainer->Add(h = new TProfile(Form("h%s", AliTRDCalPID::GetPartSymb(is)), AliPID::ParticleShortName(is), nbins, xbins));
     h->SetLineColor(AliTRDCalPID::GetPartColor(is));
     h->SetMarkerColor(AliTRDCalPID::GetPartColor(is));
-    h->SetMarkerStyle(7);
+    h->SetMarkerStyle(24);
   }
   fContainer->Add(h = new TProfile("h", "", nbins, xbins));
   h->SetMarkerStyle(7);
@@ -276,34 +277,49 @@ Bool_t AliTRDefficiency::GetRefFigure(Int_t ifig)
   }
   gPad->SetLogx();
 
-  Bool_t bFIRST = kTRUE;
-  TProfile *h = NULL;
+  TLegend *leg(NULL);
+  Bool_t bFIRST(kTRUE);
+  TProfile *h(NULL);
   switch(ifig){
   case 0:
     h = (TProfile*)fContainer->At(AliPID::kSPECIES);
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       h->Add((TProfile*)fContainer->At(is));
     }
+    h->SetMarkerStyle(24);
     h->SetMarkerColor(kBlack);
     h->SetLineColor(kBlack);
     h->SetTitle("TRD Efficiency integrated");
-    h->GetXaxis()->SetTitle("p [GeV/c]");
+    h->SetXTitle("p [GeV/c]");
     h->GetXaxis()->SetMoreLogLabels();
-    h->GetYaxis()->SetTitle("Efficiency");
+    h->SetYTitle("Efficiency");
+    h->GetYaxis()->CenterTitle();
     h->Draw("e1");
     break;
   case 1:
     bFIRST = kTRUE;
     for(Int_t is=0; is<AliPID::kSPECIES; is++){
       if(!(h = (TProfile*)fContainer->At(is))) continue;
+      h->SetMarkerStyle(24);
       if(bFIRST){
         h->Draw("e1");
-        h->GetXaxis()->SetTitle("p [GeV/c]");
+        h->SetXTitle("p [GeV/c]");
         h->GetXaxis()->SetMoreLogLabels();
-        h->GetYaxis()->SetTitle("Efficiency");
-      } else h->Draw("same e1");
+        h->SetYTitle("Efficiency");
+        h->GetYaxis()->CenterTitle();
+        h->GetYaxis()->SetRangeUser(0.8, 1.05);
+        leg=new TLegend(.7, .2, .98, .6);
+        leg->SetHeader("Species");
+        leg->SetBorderSize(0);
+        leg->SetFillStyle(0);
+        leg->AddEntry(h, h->GetTitle(), "pl");
+      } else {
+        leg->AddEntry(h, h->GetTitle(), "pl");
+        h->Draw("same e1");
+      }
       bFIRST = kFALSE;
     }
+    leg->Draw();
     break;
   }
   return kTRUE;
