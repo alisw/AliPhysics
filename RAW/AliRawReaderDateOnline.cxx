@@ -77,7 +77,7 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
 
-  const Char_t* table[]  = {"ALL", "yes", "*", "*",
+  const Char_t* table[]  = {"ALL", "few", "*", "*",
                             "EOR", "yes","*", "*",
                             NULL, NULL, NULL, NULL};
   monitorDeclareTableExtended(const_cast<char**>(table));

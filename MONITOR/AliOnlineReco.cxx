@@ -18,6 +18,8 @@
 #include <TGListBox.h>
 #include <TGButton.h>
 
+#include <TInterpreter.h>
+
 #include <unistd.h>
 #include <signal.h>
 
@@ -150,6 +152,14 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
     }
     else
     {
+      gCINTMutex = 0;
+
+      struct sigaction sac;
+      sac.sa_handler = 0;
+      sigemptyset(&sac.sa_mask);
+      sac.sa_flags = 0;
+      sigaction(SIGCHLD, &sac, 0);
+
       int s;
       if (fTestMode)
       {

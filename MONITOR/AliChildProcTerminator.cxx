@@ -45,6 +45,8 @@ void AliChildProcTerminator::sig_handler(int /*sig*/)
 
 void AliChildProcTerminator::ChildProcTerm(Int_t pid, Int_t status)
 {
+  if (pid < 0) return;
+
    Long_t args[2];
    args[0] = (Long_t) pid;
    args[1] = (Long_t) status;

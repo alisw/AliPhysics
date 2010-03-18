@@ -13,12 +13,6 @@ Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
 void alieve_online_init()
 {
-  if (gROOT->LoadMacro("MultiView.C++") != 0)
-  {
-    gEnv->SetValue("Root.Stacktrace", "no");
-    Fatal("alieve_online.C", "Failed loading MultiView.C in compiled mode.");
-  }
-
   TEveUtil::AssertMacro("VizDB_scan.C");
 
   TEveBrowser *browser = gEve->GetBrowser();
@@ -27,10 +21,10 @@ void alieve_online_init()
   // Gentle-geom loading changes gGeoManager.
   TEveGeoManagerHolder mgrRestore;
 
-  gMultiView = new MultiView;
+  AliEveMultiView *multiView = new AliEveMultiView;
 
   TEveUtil::LoadMacro("geom_gentle.C");
-  gMultiView->InitGeomGentle(geom_gentle(),
+  multiView->InitGeomGentle(geom_gentle(),
                              geom_gentle_rphi(), 
                              geom_gentle_rhoz());
 
@@ -115,7 +109,7 @@ void alieve_online_init()
 
   gEve->FullRedraw3D(kTRUE);
 
-  TGLViewer *glv = gMultiView->f3DView->GetGLViewer();
+  TGLViewer *glv = multiView->Get3DView()->GetGLViewer();
   glv->CurrentCamera().RotateRad(-0.4, 1);
   glv->DoDraw();
 }
@@ -133,15 +127,17 @@ void alieve_online_on_new_event()
 
   TEveElement* top = gEve->GetCurrentEvent();
 
-  gMultiView->DestroyEventRPhi();
-  if (gCenterProjectionsAtPrimaryVertex)
-    gMultiView->SetCenterRPhi(x[0], x[1], x[2]);
-  gMultiView->ImportEventRPhi(top);
+  AliEveMultiView *multiView = AliEveMultiView::Instance();
 
-  gMultiView->DestroyEventRhoZ();
+  multiView->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
-    gMultiView->SetCenterRhoZ(x[0], x[1], x[2]);
-  gMultiView->ImportEventRhoZ(top);
+    multiView->SetCenterRPhi(x[0], x[1], x[2]);
+  multiView->ImportEventRPhi(top);
+
+  multiView->DestroyEventRhoZ();
+  if (gCenterProjectionsAtPrimaryVertex)
+    multiView->SetCenterRhoZ(x[0], x[1], x[2]);
+  multiView->ImportEventRhoZ(top);
 
   // Register image to amore.
   const TString pichost("aldaqacrs3");
