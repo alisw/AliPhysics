@@ -27,6 +27,7 @@
 
 // --- AliRoot header files ---
 #include "AliITSQASPDChecker.h"
+#include "AliITSQADataMakerRec.h"
 #include "AliLog.h"
 
 ClassImp(AliITSQASPDChecker)
@@ -41,15 +42,20 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 
 
 //__________________________________________________________________
-Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * list, const AliDetectorRecoParam * /*recoParam*/)
+Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * /*recoParam*/)
 {
-  AliDebug(2, Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
+//
+// General methods for SPD Cheks to be used in RAWS and REC ALITASK_t
+//
 
-  AliInfo(Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
+  AliDebug(2, Form("AliITSQASPDChecker called with offset: %d\n", fSubDetOffset));
 
   Double_t test = 0.0;
   Int_t count = 0;
-
+  // Checks for ALITASK_t AliQAv1::kRAW
+  if(index == AliQAv1::kRAW) {
+  return CheckRawData(list);
+  } else {
   if (list->GetEntries() == 0) {
     test = 1.; // nothing to check
   }
@@ -92,7 +98,7 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
            AliDebug(2, Form("%s: Events = %d  mean = %f  rms = %f",
                         hdata->GetName(),(Int_t)hdata->GetEntries(),hdata->GetMean(),hdata->GetRMS()));}
 
-        // else AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv));
+       // else AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv));
         count++;
         test += rv;
       }
@@ -102,31 +108,91 @@ Double_t AliITSQASPDChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray * lis
     }
 
     if (count != 0) {
-      if (test==0) {
+      if (AliITSQADataMakerRec::AreEqual(test,0)) {
         AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
-        test = 0.5;  //upper limit value to set kWARNING flag for a task
+        test = fHighSPDValue[AliQAv1::kWARNING];  //upper limit value to set kWARNING flag for a task
       }
       else {
         test /= count;
       }
     }
   }
-
+}
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test));
   return test ;
 
+}
+//__________________________________________________________________
+Double_t AliITSQASPDChecker::CheckRawData(const TObjArray * list) {
+//
+// Checks on the raw data histograms [ preliminary version ]
+// The output of this method is the fraction of SPD histograms which are processed by the checker. 
+// The methods returns fHighSPDValue[AliQAv1::kFATAL] in case of data format errors or MEB errors
+// 
+// A. Mastroserio
+
+Double_t test =0;
+
+// basic checks on input data
+if(!list) {
+ AliError("NO histogram list for RAWS");
+ return test;
+ }
+
+ if(list->GetEntries() == 0) {
+ AliWarning("No histograms in RAW list \n");
+ return test;
+ }
+
+// loop over the raw data histograms
+TIter next(list);
+TH1 * hdata;
+Double_t totalHistos = 0;
+Double_t goodHistos = 0; // number of histograms which passed the checks
+Double_t response =0;
+Bool_t fatalProblem = kFALSE;
+
+while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+if (hdata) {
+        TString histName = hdata->GetName();
+        if(!histName.Contains("SPD")) continue;
+        totalHistos++;
+        // data format error
+        if(histName.Contains("SPDErrorsAll")){
+        if(hdata->Integral(0,hdata->GetNbinsX())>0){
+           response = fHighSPDValue[AliQAv1::kFATAL];
+	   fatalProblem=kTRUE;
+           break;
+         }
+        }
+        // MEB error
+        if(histName.Contains("MEB")){
+          if(hdata->GetEntries()>0){
+	   AliWarning("************* MEB ERROR!!!! ****************\n");
+           response = fHighSPDValue[AliQAv1::kFATAL];
+	   fatalProblem=kTRUE;
+           break;
+          }
+         }
+        goodHistos++;
+        }
+}
+    if(!fatalProblem) response = goodHistos/totalHistos;
+   // printf("n histos %f - good ones %f ----> ratio %f , fatal response %i\n",totalHistos,goodHistos,goodHistos/totalHistos,(Int_t)fatalProblem);
+    return response;
 }
 
 //__________________________________________________________________
 void AliITSQASPDChecker::SetTaskOffset(Int_t TaskOffset)
 {
+// Offset for SPD within ITS QA
   fSubDetOffset = TaskOffset;
 }
 
 //__________________________________________________________________
-void AliITSQASPDChecker::SetStepBit(Double_t *steprange)
+void AliITSQASPDChecker::SetStepBit(const Double_t *steprange) 
 {
-
+// Step bit for SPD within ITS QA
   fStepBitSPD = new Double_t[AliQAv1::kNBIT];
   for(Int_t bit=0;bit<AliQAv1::kNBIT;bit++)
     {
@@ -136,9 +202,9 @@ void AliITSQASPDChecker::SetStepBit(Double_t *steprange)
 
 
 //__________________________________________________________________
-void  AliITSQASPDChecker::SetSPDLimits(Float_t *lowvalue, Float_t * highvalue)
+void  AliITSQASPDChecker::SetSPDLimits(const Float_t *lowvalue, const Float_t * highvalue)
 {
-
+// SPD limints for QA bit within general ITS QA
   fLowSPDValue = new Float_t[AliQAv1::kNBIT];
   fHighSPDValue= new Float_t[AliQAv1::kNBIT];
 
@@ -149,3 +215,4 @@ void  AliITSQASPDChecker::SetSPDLimits(Float_t *lowvalue, Float_t * highvalue)
     }
 
 }
+

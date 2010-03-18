@@ -1,5 +1,5 @@
-#ifndef AliITSQASPDDataMakerRec_H
-#define AliITSQASPDDataMakerRec_H
+#ifndef ALIITSQASPDDATAMAKERREC_H
+#define ALIITSQASPDDATAMAKERREC_H
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -38,12 +38,12 @@ public:
   virtual void  StartOfDetectorCycle();
   virtual void  EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
   virtual ~AliITSQASPDDataMakerRec();   // dtor
-  Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0) const;
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
-  Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
+  Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task) const;
   virtual void ResetDetector(AliQAv1::TASKINDEX_t){;};
 
-  enum {kAmoreFoOffset = 8, kAmoreErrorsOffset=21};
+  enum {kAmoreFoOffset=66, kAmoreErrorsOffset=21};
 
 private: 
 
@@ -68,3 +68,5 @@ private:
 };
 
 #endif
+
+

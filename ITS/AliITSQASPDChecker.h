@@ -13,39 +13,32 @@
 //  P. Cerello - apr 2008
 //
 
-
-// --- ROOT system ---
-class TFile ; 
-class TH2F ;  
-
-// --- AliRoot header files ---
 #include "AliQAv1.h"
-#include "AliQACheckerBase.h"
-#include "AliITSQAChecker.h"
-class AliITSLoader ; 
 
 class AliITSQASPDChecker: public TObject {
 
 public:
-  AliITSQASPDChecker():fSubDetOffset(0),fStepBitSPD(NULL),fLowSPDValue(NULL),fHighSPDValue(NULL) {;}          // ctor
+  AliITSQASPDChecker():fSubDetOffset(0),fStepBitSPD(NULL),fLowSPDValue(NULL),fHighSPDValue(NULL) {;} 
   AliITSQASPDChecker& operator = (const AliITSQASPDChecker& qac) ; //operator =
   virtual ~AliITSQASPDChecker() {if(fStepBitSPD) delete[] fStepBitSPD ;if(fLowSPDValue)delete[]fLowSPDValue;if(fHighSPDValue) delete[]fHighSPDValue;} // dtor
   virtual Double_t Check(AliQAv1::ALITASK_t index, TObjArray * list, const AliDetectorRecoParam * recoParam);
+  Double_t CheckRawData(const TObjArray *list);
   void SetTaskOffset(Int_t TaskOffset);
 
-  void SetStepBit(Double_t *steprange);
-  Double_t *GetStepBit(){return fStepBitSPD;};
-  void SetSPDLimits(Float_t *lowvalue, Float_t * highvalue);
+  void SetStepBit(const Double_t *steprange);
+  Double_t *GetStepBit() const {return fStepBitSPD;};
+  void SetSPDLimits(const Float_t *lowvalue, const Float_t * highvalue);
 private:
   
   AliITSQASPDChecker(const AliITSQASPDChecker& qac):TObject(),fSubDetOffset(qac.fSubDetOffset),fStepBitSPD(qac.fStepBitSPD),fLowSPDValue(qac.fLowSPDValue),fHighSPDValue(qac.fHighSPDValue){;}  // cpy ctor   
-  Int_t fSubDetOffset;            // checking operation starting point
-  Double_t *fStepBitSPD;
-  Float_t *fLowSPDValue;
-  Float_t *fHighSPDValue;
+  Int_t fSubDetOffset;           // checking operation starting point
+  Double_t *fStepBitSPD;         // parameter interface for ITS final QA
+  Float_t *fLowSPDValue;         // lower limits for QA bit settings
+  Float_t *fHighSPDValue;        // lower limits for QA bit settings
 
   ClassDef(AliITSQASPDChecker,2)  // description 
 
 };
 
 #endif // AliITSQASPDChecker_H
+
