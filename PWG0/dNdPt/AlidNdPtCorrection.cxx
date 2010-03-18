@@ -1908,6 +1908,12 @@ void AlidNdPtCorrection::Analyse()
   printf("minEta %f, maxEta %f \n",minEta, maxEta);
 
   //
+  // LHC backgraund in all and 0-bins
+  //
+  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+  trigSel->SaveHistograms("physics_selection");
+
+  //
   // cosmics background histo
   //
   h2D = fCosmicsHisto->Projection(0,1);
