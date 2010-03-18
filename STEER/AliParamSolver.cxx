@@ -102,12 +102,14 @@ Bool_t AliParamSolver::SolveGlobals(Bool_t obtainCov)
 //______________________________________________________________________________________
 Bool_t AliParamSolver::SolveLocals()
 {
+  const double kTiny = 1e-16;
   if (TestBit(kBitLocSol)) return kTRUE;
   if (!TestBit(kBitGloSol)) {
     AliError("Cannot solve for Locals before SolveGlobals is called");
     return kFALSE;
   }
   for (int i=fNPoints;i--;) {
+    if (TMath::Abs(fMatGamma[i])<kTiny) {fSolLoc[i] = 0; continue;}
     double beta = fRHSLoc[i];
     double *mtG = fMatG + i*fNGlobal;  // G_i
     for (int j=fNGlobal;j--;) beta -= mtG[j]*fSolGlo[j];
@@ -197,8 +199,9 @@ void AliParamSolver::AddEquation(const Double_t* dGl,const Double_t *dLc,const D
     for (int j=i+1;j--;) {
       //      const double *cDgj = fCovDGl+j*3;  // cov * dR/dGl_j
       const double *dGlj = dGl+j*3;        // derivatives of XYZ vs i-th global param
-      matC(i,j) += dGlj[kX]*cDgi[kX] + dGlj[kY]*cDgi[kY] + dGlj[kZ]*cDgi[kZ]  // C_ij = dR/dGi * cov * dR/dGj
-	- mtG[i]*mtG[j]/gamma;                                                //        - [G gamma^-1 T(G) ]_ij      
+      double add = dGlj[kX]*cDgi[kX] + dGlj[kY]*cDgi[kY] + dGlj[kZ]*cDgi[kZ];  // C_ij = dR/dGi * cov * dR/dGj
+      if (TMath::Abs(gamma)>kTiny) add -= mtG[i]*mtG[j]/gamma;                 //        - [G gamma^-1 T(G) ]_ij      
+      matC(i,j) += add;       
     }
   }
   //
