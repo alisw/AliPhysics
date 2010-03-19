@@ -255,7 +255,7 @@ double AliFemtoPair::KT() const
 {
   // transverse momentum
   double  tmp = 
-    (fTrack1->FourMomentum() + fTrack2->FourMomentum()).perp();
+    (fTrack1->FourMomentum() + fTrack2->FourMomentum()).Perp();
   tmp *= .5;
 
   return (tmp);
