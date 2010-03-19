@@ -23,6 +23,7 @@
 #include "AliHLTCaloDigitContainerDataStruct.h"
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloRecoParamHandler.h"
 #include "TString.h"
 
 /** @file   AliHLTCaloClusterizerComponent.cxx
@@ -42,6 +43,7 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
   AliHLTCaloConstantsHandler(det),
   fDataOrigin('\0'),
   fAnalyserPtr(0),
+  fRecoParamsPtr(0),
   fDigitsPointerArray(0), 
   fOutputDigitsArray(0),
   fClusterizerPtr(0),
@@ -255,7 +257,13 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
 {
   //See headerfile for documentation
 
-  
+  if(fRecoParamsPtr)
+  {
+     if(!fRecoParamsPtr->GetParametersFromCDB())
+     {
+	 fAnalyserPtr->SetRecoParamHandler(fRecoParamsPtr);
+     }
+  }
   //
 
   //  const char *path = "HLT/ConfigPHOS/ClusterizerComponent";

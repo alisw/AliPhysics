@@ -40,6 +40,7 @@
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloProcessor.h"
 
+class AliHLTCaloRecoParamHandler;
 class AliHLTCaloDigitDataStruct;
 class AliHLTCaloDigitContainerDataStruct;
 class AliHLTCaloClusterizer;
@@ -159,6 +160,9 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
 
     /** Pointer to the cluster analyser */
     AliHLTCaloClusterAnalyser *fAnalyserPtr;                         //! transient
+    
+    /** Pointer to reconstruction parameters handler */
+    AliHLTCaloRecoParamHandler *fRecoParamsPtr; //! transient
     
   private:
 

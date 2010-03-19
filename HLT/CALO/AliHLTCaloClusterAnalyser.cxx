@@ -39,7 +39,7 @@
 #include "TVector3.h"
 #include "TH1F.h"
 #include "TFile.h"
-#include "AliHLTCaloClusterizer.h"
+#include "AliHLTCaloRecoParamHandler.h"
 
 ClassImp(AliHLTCaloClusterAnalyser);
 
@@ -57,7 +57,8 @@ AliHLTCaloClusterAnalyser::AliHLTCaloClusterAnalyser() :
   fDoPID(false),
   fHaveDistanceToBadChannel(false),
   fGeometry(0),
-  fClusterType(AliESDCaloCluster::kPHOSCluster)
+  fClusterType(AliESDCaloCluster::kPHOSCluster),
+  fRecoParamsPtr(0)
 {
   //See header file for documentation
 }
@@ -114,10 +115,10 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
        x = 0; 
        z = 0;
 
-       /*Float_t maxAmp = 0;
+/*       Float_t maxAmp = 0;
        Int_t maxX = 0;
-       Int_t maxZ = 0;
-      */for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
+       Int_t maxZ = 0;*/
+      for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
 	{
 
 	  digit = &(fDigitDataArray[*digitIndexPtr]);
@@ -134,8 +135,8 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 /*	      if(digit->fEnergy > maxAmp)
 	      {
 		 maxAmp = digit->fEnergy;
-		 maxX = digit->fX + 0.5;
-		 maxZ = digit->fZ + 0.5;
+		 maxX = digit->fX;// + 0.5;
+		 maxZ = digit->fZ;// + 0.5;
 	      }*/
 	    }
 	  digitIndexPtr++;
@@ -183,6 +184,10 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 {
   //See header file for documentation
 
+   if(fRecoParamsPtr)
+   {
+      fLogWeight = fRecoParamsPtr->GetLogWeight();
+   }
    
   fNRecPoints = nRecPoints;
 
@@ -258,6 +263,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	 HLTError("Out of buffer, available size is: %d, total size used: %d, extra size needed: %d", availableSize, totSize, tmpSize);
 	 return -ENOBUFS;
       }
+      
       Int_t *digitIndexPtr = &(recPointPtr->fDigits);
       Int_t id = 0;
 
@@ -282,7 +288,14 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 
       totSize += tmpSize;
 
-      caloClusterPtr->fEnergy = recPointPtr->fAmp;
+      if(fRecoParamsPtr)
+      {
+	 caloClusterPtr->fEnergy = fRecoParamsPtr->GetCorrectedEnergy(recPointPtr->fAmp);
+      }
+      else
+      {
+	 caloClusterPtr->fEnergy = recPointPtr->fAmp;
+      }
       
       HLTDebug("Cluster global position: x = %f, y = %f, z = %f, energy: %f, number of cells: %d, cluster pointer: %x", globalCoord.fX, globalCoord.fY, globalCoord.fZ, caloClusterPtr->fEnergy, caloClusterPtr->fNCells,  caloClusterPtr);
 

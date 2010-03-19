@@ -21,7 +21,12 @@
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
+#include "AliPHOSEmcBadChannelsMap.h"
+#include "AliPHOSEmcCalibData.h"
 #include "TFile.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
+#include "AliCDBManager.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -44,8 +49,13 @@ AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   AliHLTPHOSProcessor(),
+  AliHLTCaloConstantsHandler("PHOS"),
   fDigitMakerPtr(0),
-  fDigitContainerPtr(0)
+  fDigitContainerPtr(0),
+  fBadChannelMap(0),
+  fCalibData(0),
+  fBCMInitialised(true),
+  fGainsInitialised(true)
 {
   //see header file for documentation
 }
@@ -125,13 +135,66 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
+      
       iter = blocks+ndx;
       
       if(iter->fDataType != AliHLTPHOSDefinitions::fgkChannelDataType)
 	{
-	  HLTDebug("Data block is not of type fgkChannelDataType");
+//	  HLTDebug("Data block is not of type fgkChannelDataType");
 	  continue;
 	}
+   /*if(!fBCMInitialised)
+      {
+	 AliHLTPHOSMapper mapper;
+	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 {
+	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	    {
+	       fDigitMakerPtr->SetBadChannel(x, z, fBadChannelMap[module][x][z]);
+	    }
+	 }
+ 	 for(Int_t mod = 0; mod < fCaloConstants->GetNMODULES(); mod++)
+	 {
+	    for(Int_t x = 0; x < fCaloConstants->GetNZROWSMOD(); x++)
+	    {
+	       delete [] fBadChannelMap[mod][x];
+	       fBadChannelMap[mod][x] = 0;
+	    }
+	    delete [] fBadChannelMap[mod];
+	    fBadChannelMap[mod] = 0;
+	 }
+	 fBadChannelMap = 0;
+	 fBCMInitialised = true;
+      }
+   */ 
+      if(!fBCMInitialised)
+      {
+	 AliHLTPHOSMapper mapper;
+	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 {
+	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	    {
+	       fDigitMakerPtr->SetBadChannel(x, z, fBadChannelMap->IsBadChannel(5-module, z+1, x+1));
+	    }
+	 }
+	 //delete fBadChannelMap;
+	 fBCMInitialised = true;
+      }
+      if(!fGainsInitialised)
+      {
+	 AliHLTPHOSMapper mapper;
+	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 {
+	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	    {
+		fDigitMakerPtr->SetGain(x, z, fCalibData->GetHighLowRatioEmc(module, z+1, x+1), fCalibData->GetADCchannelEmc(module, z+1, x+1));
+	    }
+	 }
+	 fGainsInitialised = true;
+      }
 
       specification |= iter->fSpecification;
       tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
@@ -139,7 +202,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTCaloDigitDataStruct)));
       if(ret == -1) 
 	{
-	  HLTError("Trying to write over buffer size");
+//	  HLTError("Trying to write over buffer size");
 	  return -ENOBUFS;
 	}
       digitCount += ret; 
@@ -147,7 +210,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   
   mysize += digitCount*sizeof(AliHLTCaloDigitDataStruct);
 
-  HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
+  //HLTDebug("# of digits: %d, used memory size: %d, available size: %d", digitCount, mysize, size);
 
   if(mysize > 0) 
     {
@@ -166,7 +229,6 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 
   return 0;
 }
-
 
 int
 AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
@@ -190,10 +252,85 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 	}
     }
  
+ if(GetBCMFromCDB()) return -1;
+ if(GetGainsFromCDB()) return -1;
+  
   //fDigitMakerPtr->SetDigitThreshold(2);
 
   return 0;
 }
+
+
+int AliHLTPHOSDigitMakerComponent::GetBCMFromCDB()
+{
+   fBCMInitialised = false;
+   
+//   HLTInfo("Getting bad channel map...");
+
+  AliCDBPath path("PHOS","Calib","EmcBadChannels");
+  if(path.GetPath())
+    {
+      //      HLTInfo("configure from entry %s", path.GetPath());
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+/*      if (pEntry) 
+	{
+	    fBadChannelMap = new Bool_t**[fCaloConstants->GetNMODULES()];
+	    AliPHOSEmcBadChannelsMap * badMap = (AliPHOSEmcBadChannelsMap*)pEntry->GetObject();
+	    for(Int_t mod = 0; mod < fCaloConstants->GetNMODULES(); mod++)
+	    {
+	       fBadChannelMap[mod] = new Bool_t*[fCaloConstants->GetNXCOLUMNSMOD()];
+	       for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	       {
+		  fBadChannelMap[mod][x] = new Bool_t[fCaloConstants->GetNZROWSMOD()];
+		  for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+		  {
+		     fBadChannelMap[mod][x][z] = badMap->IsBadChannel(5 - mod, z+1, x+1);
+		     if(badMap->IsBadChannel(5-mod, z+1, x+1)) printf("Module: %d, channel x: %d, z: %d is: %d\n", mod, x, z, badMap->IsBadChannel(5-mod, z+1, x+1));
+		  }
+	       }
+	    }
+	}*/
+	if (pEntry) 
+	{
+	    fBadChannelMap = (AliPHOSEmcBadChannelsMap*)pEntry->GetObject();
+	}
+      else
+	{
+//	    HLTError("can not fetch object \"%s\" from CDB", path);
+	    return -1;
+	}
+    }
+   if(!fBadChannelMap) return -1;
+   return 0;
+}
+
+int AliHLTPHOSDigitMakerComponent::GetGainsFromCDB()
+{
+   fGainsInitialised = false;
+   
+//   HLTInfo("Getting bad channel map...");
+
+  AliCDBPath path("PHOS","Calib","EmcGainPedestals");
+  if(path.GetPath())
+    {
+      //      HLTInfo("configure from entry %s", path.GetPath());*/
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+      if (pEntry) 
+	{
+	    fCalibData = (AliPHOSEmcCalibData*)pEntry->GetObject();
+	}
+      else	
+	{
+//	    HLTError("can not fetch object \"%s\" from CDB", path);
+	    return -1;
+	}
+    }
+    
+    if(!fCalibData) return -1;
+   return 0;
+   
+}
+
 
 AliHLTComponent*
 AliHLTPHOSDigitMakerComponent::Spawn()

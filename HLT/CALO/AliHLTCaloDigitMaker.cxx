@@ -65,7 +65,7 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   fHighGainFactors = new Float_t*[fCaloConstants->GetNXCOLUMNSMOD()];
   fLowGainFactors = new Float_t*[fCaloConstants->GetNXCOLUMNSMOD()];
   
-  fBadChannelMask = new Float_t**[fCaloConstants->GetNXCOLUMNSMOD()];
+  fBadChannelMask = new Bool_t**[fCaloConstants->GetNXCOLUMNSMOD()];
   
   fChannelBook= new AliHLTCaloDigitDataStruct**[fCaloConstants->GetNXCOLUMNSMOD()];
   
@@ -74,7 +74,7 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
       fHighGainFactors[x] = new Float_t[fCaloConstants->GetNZROWSMOD()];
       fLowGainFactors[x] = new Float_t[fCaloConstants->GetNZROWSMOD()];
 
-      fBadChannelMask[x] = new Float_t*[fCaloConstants->GetNZROWSMOD()];
+      fBadChannelMask[x] = new Bool_t*[fCaloConstants->GetNZROWSMOD()];
 
       fChannelBook[x] = new AliHLTCaloDigitDataStruct*[fCaloConstants->GetNZROWSMOD()];
 
@@ -84,9 +84,9 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
 	  fHighGainFactors[x][z] = 0.005;
 	  fLowGainFactors[x][z] = 0.08;
 	 
-	  fBadChannelMask[x][z] = new Float_t[fCaloConstants->GetNGAINS()];
-	  fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = 1;
-	  fBadChannelMask[x][z][fCaloConstants->GetLOWGAIN()] = 1; 
+	  fBadChannelMask[x][z] = new Bool_t[fCaloConstants->GetNGAINS()];
+	  fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = false;
+	  fBadChannelMask[x][z][fCaloConstants->GetLOWGAIN()] = false; 
 	  
 	  fChannelBook[x][z] = 0;
 	  
@@ -187,19 +187,19 @@ AliHLTCaloDigitMaker::SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannel
 	{
 	  if(badChannelHGHist->GetBinContent(x, z) < qCut && badChannelHGHist->GetBinContent(x, z) > 0)
 	    {
-	      fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = 1;
+	      fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = true;
 	    }
 	  else
 	    {
-	      fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = 0;
+	      fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = false;
 	    }
 	  if(badChannelLGHist->GetBinContent(x, z) < qCut && badChannelLGHist->GetBinContent(x, z) > 0)
 	    {
-	      fBadChannelMask[x][z][fCaloConstants->GetLOWGAIN()] = 0;
+	      fBadChannelMask[x][z][fCaloConstants->GetLOWGAIN()] = false;
 	    }
 	  else
 	    {
-	      fBadChannelMask[x][z][fCaloConstants->GetLOWGAIN()] = 0;
+	      fBadChannelMask[x][z][fCaloConstants->GetLOWGAIN()] = false;
 	    }
 	}
     }
@@ -259,7 +259,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
-            //printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
+    //        printf("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy); 
     }
   fDigitStructPtr->fTime = channelData->fTime * 0.0000001; //TODO
   fDigitStructPtr->fCrazyness = channelData->fCrazyness;
@@ -271,6 +271,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 
 bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, AliHLTCaloChannelDataStruct *channel) 
 {
+   if(fBadChannelMask[channelCoordinates.fX][channelCoordinates.fZ][0] == true) return false;
   AliHLTCaloDigitDataStruct *tmpDigit = fChannelBook[channelCoordinates.fX][channelCoordinates.fZ];
   //printf("UseDigit: Got digit, x: %d, z: %d, gain: %d, amp: %f\n", channelCoordinates.fX, channelCoordinates.fZ, channelCoordinates.fGain, channel->fEnergy);
   if(tmpDigit)
@@ -296,4 +297,21 @@ bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, Al
 	}
     }
   return true;
+}
+
+void AliHLTCaloDigitMaker::SetBadChannel(Int_t x, Int_t z, Bool_t bad)
+{
+   // See header file for class documentation
+   
+   fBadChannelMask[x][z][0] = bad;
+   fBadChannelMask[x][z][1] = bad;
+}
+
+void AliHLTCaloDigitMaker::SetGain(Int_t x, Int_t z, Float_t ratio, Float_t gain)
+{
+   // See header file for class documentation
+   
+   fHighGainFactors[x][z] = gain;
+   fLowGainFactors[x][z] = gain * ratio;
+   
 }

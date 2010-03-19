@@ -105,6 +105,23 @@ public:
    */
   void SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut);
 
+   /** 
+   * Set the status of channel 
+   * @param x is x
+   * @param z is z
+   * @param bad if it's bad
+   */
+   void SetBadChannel(Int_t x, Int_t z, Bool_t bad = true);
+   
+   /** 
+   * Set the ADC to energy (GeV) gain 
+   * @param x is x
+   * @param z is z
+   * @param ratio - High/Low ratio
+   * @param gain is the gain
+   */
+   void SetGain(Int_t x, Int_t z, Float_t ratio, Float_t gain);
+   
   /** Reset the channel book */
   void Reset();
 
@@ -150,7 +167,7 @@ private:
   Float_t **fLowGainFactors;                                     //!transient
 
   /** Bad channel mask */
-  Float_t ***fBadChannelMask;                                    //! transient
+  Bool_t ***fBadChannelMask;                                    //! transient
 
   /** Channel book keeping variable */
   AliHLTCaloDigitDataStruct ***fChannelBook;                     //! transient

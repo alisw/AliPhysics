@@ -45,6 +45,7 @@ class AliHLTCaloDigitDataStruct;
 class AliHLTCaloClusterHeaderStruct;
 class AliHLTCaloClusterDataStruct;
 class AliHLTCaloGeometry;
+class AliHLTCaloRecoParamHandler;
 
 class TH1F; //DEBUG
 
@@ -173,6 +174,12 @@ public:
   */
   void SetClusterType(Char_t clusterType) { fClusterType = clusterType; }
   
+  /** 
+  * Set the reconstruction parameters handler 
+  */
+  void SetRecoParamHandler(AliHLTCaloRecoParamHandler *recoParams) { fRecoParamsPtr = recoParams; }
+  
+  
 private:
   
   /** Used for calculation of center of gravity */
@@ -210,6 +217,9 @@ private:
 
   /** The cluster type */
   Char_t fClusterType;                   //COMMENT
+  
+  /** Handler to get the hold of reconstruction parameters */
+  AliHLTCaloRecoParamHandler *fRecoParamsPtr; //COMMENT
  
  /** Copy constructor  not implemented */
  AliHLTCaloClusterAnalyser ( const AliHLTCaloClusterAnalyser &); // not implemented

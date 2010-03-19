@@ -31,11 +31,13 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSProcessor.h"
+#include "AliHLTCaloConstantsHandler.h"
 
 
 class AliHLTCaloDigitMaker;
 class AliHLTCaloDigitContainerDataStruct;
-
+class AliPHOSEmcBadChannelsMap;
+class AliPHOSEmcCalibData;
 /**
  * @class AliHLTPHOSDigitMakerComponent
  * 
@@ -83,7 +85,7 @@ class AliHLTCaloDigitContainerDataStruct;
  * @ingroup alihlt_phos
  */ 
 
-class AliHLTPHOSDigitMakerComponent : public AliHLTPHOSProcessor
+class AliHLTPHOSDigitMakerComponent : public AliHLTPHOSProcessor, public AliHLTCaloConstantsHandler
 {
 public:
 
@@ -92,23 +94,7 @@ public:
 
   /** Destructor */ 
   virtual ~AliHLTPHOSDigitMakerComponent();
-
-  /** Copy constructor */  
-  AliHLTPHOSDigitMakerComponent(const AliHLTPHOSDigitMakerComponent &) : 
-    AliHLTPHOSProcessor(),
-    fDigitMakerPtr(0),
-    fDigitContainerPtr(0)
-  {
-    //Copy constructor not implemented
-  }
   
-  /** Assignment */
-  AliHLTPHOSDigitMakerComponent & operator = (const AliHLTPHOSDigitMakerComponent)
-  {
-    //Assignment
-    return *this; 
-  }
-
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
 
@@ -138,14 +124,44 @@ protected:
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
+
+  /** Get bad channel map from CDB */
+  virtual int GetBCMFromCDB();
+  
+  /** Get the ADC <-> Energy (GeV) gain factors */
+  virtual int GetGainsFromCDB();
+  
   
 private:
-
+   
+   /** Copy constructor, prohibited */  
+  AliHLTPHOSDigitMakerComponent(const AliHLTPHOSDigitMakerComponent &); 
+  
+  /** Assignment operator, prohibited */
+  AliHLTPHOSDigitMakerComponent & operator = (const AliHLTPHOSDigitMakerComponent);
+  
   /** Pointer to the digit maker itself */
   AliHLTCaloDigitMaker *fDigitMakerPtr;                    //! transient
 
   /** The output of the component, digits in a container */
   AliHLTCaloDigitContainerDataStruct *fDigitContainerPtr;  //! transient
+  
+  /** Bad channel map */
+  AliPHOSEmcBadChannelsMap *fBadChannelMap; //! transient
+   
+//  /** Temporary holder for bad channel map */
+  //Bool_t ***fBadChannelMap; //! transient
+
+  /** Calibration data */
+  AliPHOSEmcCalibData *fCalibData; //! transient
+   
+
+  /** Is the bad map initialised? */
+  Bool_t fBCMInitialised; //! transient
+
+   /** Are the gains initialised? */
+  Bool_t fGainsInitialised; //! transient
+  
 
 };
 #endif
