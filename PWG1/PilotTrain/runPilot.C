@@ -96,7 +96,6 @@ void runPilot() {
   if (doSPD) {
       gROOT->LoadMacro("AddTaskSPDQA.C");
       AliAnalysisTaskSE* task4 = AddTaskSPDQA();
-      task4->SelectCollisionCandidates();
   }
 
   //
