@@ -97,6 +97,8 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
 	}
       esdCluster.SetCellsAbsId(idArrayPtr);
       esdCluster.SetCellsAmplitudeFraction(ampFracArrayPtr);
+      esdCluster.SetTrackDistance(caloClusterStructPtr->fTrackDx, caloClusterStructPtr->fTrackDz);
+
    
       delete [] idArrayPtr;
       delete [] ampFracArrayPtr;
