@@ -109,16 +109,13 @@ void LoadLibraries()
   gSystem->Load("libPWG2.so");
   gSystem->Load("libPWG2forward.so");
 
-  if (doSPD) {   
-    TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSPD.cxx"), "AliAnalysisTaskSPD.cxx");
-    TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSPD.h"), "AliAnalysisTaskSPD.h");
-    gROOT->LoadMacro("AliAnalysisTaskSPD.cxx++g");
-  }
-  if (doSDD) {  
+  if (doSDD) {
     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSDDRP.cxx"), "AliAnalysisTaskSDDRP.cxx");
     TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSDDRP.h"), "AliAnalysisTaskSDDRP.h");
 //    gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
   }
+  
+
   if (doCALO) {
      gSystem->Load("libEMCALUtils");
      gSystem->Load("libPWG4PartCorrBase");
@@ -177,7 +174,6 @@ void AddAnalysisTasks()
   if (doSPD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSE* taskspdqa = AddTaskSPDQA();
-    taskspdqa->SelectCollisionCandidates();
   }  
   //
   // SDD (F. Prino)
