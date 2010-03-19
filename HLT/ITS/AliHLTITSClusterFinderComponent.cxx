@@ -458,6 +458,11 @@ int AliHLTITSClusterFinderComponent::DoEvent
       
       // -- Set equipment ID to the raw reader
       
+      if(!fRawReader){
+	HLTWarning("The fRawReader pointer is NULL");
+	continue;
+      }
+
       if(!fRawReader->AddBuffer((UChar_t*) iter->fPtr, iter->fSize, id)){
 	HLTWarning("Could not add buffer");
       }
