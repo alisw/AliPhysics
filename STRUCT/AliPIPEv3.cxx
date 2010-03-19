@@ -86,6 +86,7 @@ void AliPIPEv3::CreateGeometry()
     const TGeoMedium* kMedAir     =  gGeoManager->GetMedium("PIPE_AIR");
     const TGeoMedium* kMedAirHigh =  gGeoManager->GetMedium("PIPE_AIR_HIGH");
     const TGeoMedium* kMedVac     =  gGeoManager->GetMedium("PIPE_VACUUM");    
+    const TGeoMedium* kMedVacM    =  gGeoManager->GetMedium("PIPE_VACUUMM");    
     const TGeoMedium* kMedInsu    =  gGeoManager->GetMedium("PIPE_INS_C0");    
     const TGeoMedium* kMedSteel   =  gGeoManager->GetMedium("PIPE_INOX");        
     const TGeoMedium* kMedBe      =  gGeoManager->GetMedium("PIPE_BE");       
@@ -843,8 +844,8 @@ void AliPIPEv3::CreateGeometry()
 						new TGeoTube(25., 100., kRB24CuTubeL/2.), kMedAirHigh);
     voRB24CuTubeA->SetVisibility(0);
     // Simplified DN 100 Flange
-     TGeoVolume* voRB24CuTubeF = new TGeoVolume("voRB24CuTubeF", 
-					       new TGeoTube(kRB24CuTubeRo, kRB24CuTubeFRo, kRB24CuTubeFL/2.), kMedSteel);
+    TGeoVolume* voRB24CuTubeF  = new TGeoVolume("voRB24CuTubeF",
+                                                new TGeoTube(kRB24CuTubeRo, kRB24CuTubeFRo, kRB24CuTubeFL/2.), kMedSteel);
 
 // Warm Module Type VMACA
 // LHCVMACA_0002
@@ -1641,18 +1642,20 @@ void AliPIPEv3::CreateGeometry()
 //   RB24/2
 //     
 // Copper Tube RB24/2
+//
+// This is the part inside the compensator magnet
     const Float_t  kRB242CuTubeL  = 330.0;
     
     TGeoVolume* voRB242CuTubeM = new TGeoVolume("voRB242CuTubeM", 
-						new TGeoTube(0., kRB24CuTubeRo, kRB242CuTubeL/2.), kMedVac);
-    voRB24CuTubeM->SetVisibility(0);
+						new TGeoTube(0., kRB24CuTubeRo, kRB242CuTubeL/2.), kMedVacM);
+    voRB242CuTubeM->SetVisibility(0);
     TGeoVolume* voRB242CuTube = new TGeoVolume("voRB242CuTube", 
 					       new TGeoTube(kRB24CuTubeRi, kRB24CuTubeRo, kRB242CuTubeL/2.), kMedCu);
     voRB242CuTubeM->AddNode(voRB242CuTube, 1, gGeoIdentity);
     
 
     TGeoVolumeAssembly* voRB242 = new TGeoVolumeAssembly("RB242");
-    voRB242->AddNode(voRB242CuTube, 1, gGeoIdentity);
+    voRB242->AddNode(voRB242CuTubeM, 1, gGeoIdentity);
     z = - kRB242CuTubeL/2 + kRB24CuTubeFL/2.;
     voRB242->AddNode(voRB24CuTubeF, 3, new TGeoTranslation(0., 0., z));
     z = + kRB242CuTubeL/2 - kRB24CuTubeFL/2.;
@@ -1676,11 +1679,11 @@ void AliPIPEv3::CreateGeometry()
     TGeoVolumeAssembly* voRB243  = new TGeoVolumeAssembly("RB243");
     TGeoVolumeAssembly* voRB243A = new TGeoVolumeAssembly("RB243A");
     
-    voRB243A->AddNode(voRB243CuTube, 1, gGeoIdentity);
+    voRB243A->AddNode(voRB243CuTubeM, 1, gGeoIdentity);
     z = - kRB243CuTubeL/2 + kRB24CuTubeFL/2.;
     voRB243A->AddNode(voRB24CuTubeF, 5, new TGeoTranslation(0., 0., z));
     z = + kRB243CuTubeL/2 - kRB24CuTubeFL/2.;
-    voRB243A->AddNode(voRB24CuTubeF,    6, new TGeoTranslation(0., 0., z));
+    voRB243A->AddNode(voRB24CuTubeF, 6, new TGeoTranslation(0., 0., z));
     z = + kRB243CuTubeL/2;
     voRB243A->AddNode(voRB24B1BellowM,  2, new TGeoTranslation(0., 0., z));    
 
@@ -2766,7 +2769,8 @@ void AliPIPEv3::CreateMaterials()
   AliMixture(35, "AIR_HIGH$ ", aAir, zAir, dAir, 4, wAir);
   //
   //     Vacuum 
-  AliMixture(16, "VACUUM$ ", aAir, zAir, dAir1, 4, wAir);
+  AliMixture(16, "VACUUM$ " , aAir, zAir, dAir1, 4, wAir);
+  AliMixture(17, "VACUUMM$ ", aAir, zAir, dAir1, 4, wAir);
   //
   //     stainless Steel 
   AliMixture(19, "STAINLESS STEEL$", asteel, zsteel, 7.88, 4, wsteel);
@@ -2822,7 +2826,8 @@ void AliPIPEv3::CreateMaterials()
   AliMedium(35, "AIR_HIGH",35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Vacuum 
-  AliMedium(16, "VACUUM", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16, "VACUUM",  16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(17, "VACUUMM", 17, 0, isxfld, sxmgmx, 0.1, stemax, deemax, epsil, stmin);
   //
   //    Steel 
   AliMedium(19, "INOX",   19, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
