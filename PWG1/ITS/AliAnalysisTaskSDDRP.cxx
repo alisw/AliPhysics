@@ -240,6 +240,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 
   AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   TTree* tR = hand->GetTreeR("ITS");
+  if (!tR) return;
   TClonesArray *ITSrec= new TClonesArray("AliITSRecPoint");
   TBranch *branch =tR->GetBranch("ITSRecPoints");
   branch->SetAddress(&ITSrec);
