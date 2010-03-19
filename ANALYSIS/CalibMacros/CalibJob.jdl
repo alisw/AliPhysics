@@ -1,0 +1,43 @@
+Executable="/alice/cern.ch/user/z/zampolli/bin/runPassX.sh";
+
+Packages={"VO_ALICE@AliRoot::v4-19-07-AN","VO_ALICE@ROOT::v5-26-00b-1","VO_ALICE@APISCONFIG::V1.1x"};
+Jobtag =
+           {
+              "test Calibration Train"
+           };
+
+GUIDFILE="guid.txt";
+TTL = "160000";
+Price = 1;
+
+Requirements = ( other.CE == "ALICE::CERN::LCG" );
+
+Validationcommand ="/alice/cern.ch/user/z/zampolli/CalibTrain/validation.sh";
+
+Split="file";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+
+SplitArguments = {"/alice/data/2009/LHC09d/$1/raw/#alienfilename#"};
+Workdirectorysize={"6000MB"};
+
+InputFile={"LF:/alice/cern.ch/user/z/zampolli/CalibTrain/rec.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/ConfigCalibTrain.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/runCalibTrain.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/AddTaskAddObject.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/AddTaskFilterFriend.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/AddTaskFilterFriendSecond.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/AddTaskTPCCalib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/tag.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/LoadLibraries.C",
+           "LF:/alice/cern.ch/user/z/zampolli/CalibTrain/tag.C"
+};
+InputDataCollection="LF:/alice/data/2009/LHC09d/$1/collection,nodownload";
+
+OutputDir="/alice/cern.ch/user/z/zampolli/CalibTrain/output/$1/#alienfilename/.root//#";
+
+OutputArchive={"log_archive:*.log@disk=1",
+              "root_archive.zip:galice.root,AliESDs.root,AliESDfriends.root,AliESDs_v1.root,AliESDfriends_v1.root,Merged.QA.Data*.root,*.ESD.tag.root,@disk=1"};
+
