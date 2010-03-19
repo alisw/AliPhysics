@@ -20,8 +20,16 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t  
 
    // Create and configure the task
         AliAnalysisTaskCheckPerformanceCascade *taskCheckPerfCascade = new AliAnalysisTaskCheckPerformanceCascade("TaskCheckPerfCascade");
-   taskCheckPerfCascade->SetCollidingSystems(lCollidingSystems);
-   taskCheckPerfCascade->SetAnalysisType(type);
+   taskCheckPerfCascade->SetCollidingSystems            (lCollidingSystems);
+   taskCheckPerfCascade->SetAnalysisType                (type);
+   
+   taskCheckPerfCascade-> SetRelaunchV0CascVertexers    (0);     //NOTE
+   taskCheckPerfCascade-> SetQualityCutZprimVtxPos      (kTRUE);
+   taskCheckPerfCascade-> SetQualityCutNoTPConlyPrimVtx (kTRUE);
+   taskCheckPerfCascade-> SetQualityCutTPCrefit         (kTRUE);
+   taskCheckPerfCascade-> SetQualityCut80TPCcls         (kTRUE);
+        // taskCheckPerfCascade-> SetExtraSelections            (0);
+   
    
    mgr->AddTask(taskCheckPerfCascade);
 
@@ -41,17 +49,18 @@ AliAnalysisTaskCheckPerformanceCascade *AddTaskCheckPerformanceCascade(Short_t  
                 lCommonFileName += "-";
                 lCommonFileName += lMasterJobSessionFlag.Data();
         }
-                lCommonFileName += ".root"; 
+                lCommonFileName += ".root";
+
         mgr->SetCommonFileName( lCommonFileName.Data() );
    }
    */
-   
+
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWG2CheckPerformanceCascade";
    if (lCollidingSystems) outputFileName += "_AA_";
-   else outputFileName += "_PP_";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "MC_";
-   if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+   //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
    Printf("AddTaskCheckPerfCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );
    

@@ -26,7 +26,7 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
  
   AliAnalysisTaskCheckPerformanceCascade();
   AliAnalysisTaskCheckPerformanceCascade(const char *name );
-  virtual ~AliAnalysisTaskCheckPerformanceCascade() {}
+  virtual ~AliAnalysisTaskCheckPerformanceCascade();
   
   //virtual void   ConnectInputData(Option_t *);
   virtual void   UserCreateOutputObjects();
@@ -38,12 +38,36 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
   void SetCollidingSystems (Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
   void SetAnalysisType     (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   
+  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers       =  rerunV0CascVertexers;   }
+  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos      =  qualityCutZprimVtxPos;     }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx =  qualityCutNoTPConlyPrimVtx;}
+  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit         =  qualityCutTPCrefit;        }
+  void SetQualityCut80TPCcls         (Bool_t qualityCut80TPCcls         = kTRUE) { fkQualityCut80TPCcls         =  qualityCut80TPCcls;        }
+  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections            =  extraSelections;           }
+
  private:
+        // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
+        // your data member object is created on the worker nodes and streaming is not needed.
+        // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
+
         Int_t           fDebugCascade;          // Denug Flag for this task devoted to cascade
         TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
         Short_t         fCollidingSystems;      // 0 = pp collisions or 1 = AA collisions
 
         AliESDpid       *fESDpid;        // Tool data member to manage the TPC Bethe-Bloch info
+        //TPaveText       *fPaveTextBookKeeping;          // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
+
+        Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
+        Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
+        Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
+        Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
+        Bool_t          fkQualityCut80TPCcls;           // Boolean : kTRUE = ask for 80 TPC clusters for each daughter track
+        Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
+        
+        Double_t        fAlephParameters[5];            // Array to store the 5 param values for the TPC Bethe-Bloch parametrisation
+        Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
+        Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
+
 	
  	TList	*fListHistCascade;		//! List of Cascade histograms
 		// - Histos 
@@ -210,12 +234,13 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 	AliCFContainer  *fCFContCascadePIDAsOmegaMinus;   //! for Omega-: Container to store any 3D histos with the different PID flavours
 	AliCFContainer  *fCFContCascadePIDAsOmegaPlus;    //! for Omega+: Container to store any 3D histos with the different PID flavours
 	
-	
+	// - Towards the optimisation of topological selections/ systematics (on associated candidates)
+	AliCFContainer  *fCFContAsCascadeCuts;            //! Container meant to store all the relevant distributions corresponding to the cut variables
 	
   AliAnalysisTaskCheckPerformanceCascade(const AliAnalysisTaskCheckPerformanceCascade&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascade& operator=(const AliAnalysisTaskCheckPerformanceCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 3);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 4);
 };
 
 #endif
