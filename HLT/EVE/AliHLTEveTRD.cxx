@@ -72,8 +72,11 @@ void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
    
   } else if ( ! block->GetDataType().CompareTo("ROOTHIST") ) {
   
-    if(!fCanvas) fCanvas = CreateCanvas("TRD QA", "TRD QA");
-    fCanvas->Divide(3, 2);
+    if(!fCanvas) {
+      fCanvas = CreateCanvas("TRD QA", "TRD QA");
+      fCanvas->Divide(3, 2);
+    }
+
     AddHistogramsToCanvas(block, fCanvas, fHistoCount);
 		   
   }
@@ -84,6 +87,7 @@ void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 void AliHLTEveTRD::AddHistogramsToCanvas(AliHLTHOMERBlockDesc* block, TCanvas * canvas, Int_t &cdCount ) {
   //See header file for documentation
   if ( ! block->GetClassName().CompareTo("TH1F")) {
+    cout<<"TH1F"<<endl;
     TH1F* histo = reinterpret_cast<TH1F*>(block->GetTObject());
     ++cdCount;
   
@@ -154,6 +158,7 @@ void AliHLTEveTRD::ResetElements(){
     }
   }
 
+  fHistoCount = 0;
 }
 
 Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet * cont, TEvePointSetArray * contCol ){
