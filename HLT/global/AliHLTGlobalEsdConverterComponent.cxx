@@ -172,6 +172,27 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
   TString argument="";
   int bMissingParam=0;
 
+  // default list of skiped ESD objects
+  TString skipObjects=
+    // "AliESDRun,"
+    // "AliESDHeader,"
+    "AliESDZDC,"
+    "AliESDFMD,"
+    // "AliESDVZERO,"
+    // "AliESDTZERO,"
+    // "TPCVertex,"
+    // "SPDVertex,"
+    // "PrimaryVertex,"
+    // "AliMultiplicity,"
+    // "PHOSTrigger,"
+    // "EMCALTrigger,"
+    // "SPDPileupVertices,"
+    // "TrkPileupVertices,"
+    "Cascades,"
+    "Kinks,"
+    "AliRawDataErrorLogs,"
+    "AliESDACORDE";
+
   iResult=Reconfigure(NULL, NULL);
   TString allArgs = "";
   for ( int i = 0; i < argc; i++ ) {
@@ -195,10 +216,14 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
       } else if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-	fSolenoidBz=((TObjString*)pTokens->At(i))->GetString().Atof();
+	HLTWarning("argument '-solenoidBz' is deprecated, solenoid field initiaized from CDB settings");
 	continue;
+      } else if (argument.Contains("-skipobject=")) {
+	argument.ReplaceAll("-skipobject=", "");
+	skipObjects=argument;
       } else {
 	HLTError("unknown argument %s", argument.Data());
+	iResult=-EINVAL;
 	break;
       }
     }
@@ -214,6 +239,45 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
     fESD = new AliESDEvent;
     if (fESD) {
       fESD->CreateStdContent();
+
+      // remove some of the objects which are not needed
+      if (fESD->GetList() && !skipObjects.IsNull()) {
+	pTokens=skipObjects.Tokenize(",");
+	if (pTokens) {
+	  const char* id=NULL;
+	  TIter next(pTokens);
+	  TObject* pObject=NULL;
+	  while ((pObject=next())!=NULL) {
+	    id=((TObjString*)pObject)->GetString().Data();
+	    if (fESD->GetList()->FindObject(id)) {
+	      HLTDebug("removing object %s", id);
+	      fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	    } else {
+	      HLTWarning("failed to remove object '%s' from ESD", id);
+	    }
+	  }
+	  // id="AliESDRun";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliESDHeader";        if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliESDZDC";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliESDFMD";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliESDVZERO";         if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliESDTZERO";         if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="TPCVertex";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="SPDVertex";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="PrimaryVertex";       if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliMultiplicity";     if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="PHOSTrigger";         if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="EMCALTrigger";        if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="SPDPileupVertices";   if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="TrkPileupVertices";   if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="Cascades";            if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="Kinks";               if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliRawDataErrorLogs"; if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  // id="AliESDACORDE";        if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	  fESD->GetStdContent();
+	  delete pTokens;
+	}
+      }
     } else {
       iResult=-ENOMEM;
     }

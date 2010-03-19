@@ -6,11 +6,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTGlobalEsdConverterComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  Global ESD converter component.
-*/
+//  @file   AliHLTGlobalEsdConverterComponent.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  Global ESD converter component.
+//  @note
 
 #include "AliHLTProcessor.h"
 #include "AliHLTComponentBenchmark.h"
@@ -34,6 +34,10 @@ struct AliHLTTracksData;
  *      this has been made the default behavior in Sep 2008.
  * \li -tree                                                            <br>
  *      write ESD directly to TTree and to output (::kAliHLTDataTypeESDTree)
+ * \li -skipobject=name1,name2,...                                   <br>
+ *      comma separated list of ESD object names to be skipped, default is
+ *      AliESDZDC,AliESDFMD,Cascades,Kinks,AliRawDataErrorLogs,AliESDACORDE
+ *      leave blank to disable the option
  *
  * @ingroup alihlt_tpc_components
  */
