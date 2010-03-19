@@ -52,7 +52,11 @@ class AliGenDPMjet : public AliGenMC
 
     virtual void    SetGenImpPar(Float_t bValue) {fGenImpPar=bValue;}
     virtual Float_t GetGenImpPar() {return fGenImpPar;}
-    
+    virtual void    SetTriggerChargedMultiplicity(Int_t multiplicity, 
+						  Float_t etamax = 0, Float_t ptmin = -1.) 
+    {fTriggerMultiplicity = multiplicity; fTriggerMultiplicityEta = etamax; 
+      fTriggerMultiplicityPtMin = ptmin;}
+
     AliGenDPMjet &  operator=(const AliGenDPMjet & rhs);
     void     AddHeader(AliGenEventHeader* header);
 
@@ -78,7 +82,11 @@ class AliGenDPMjet : public AliGenMC
     Int_t         fDecayAll;       // Flag to switch on long-lived particle decays
     Float_t	  fGenImpPar;	   // GeneratedImpactParameter
     DpmProcess_t  fProcess;        // Process type
-    
+    // Multiplicity Trigger
+    Int_t         fTriggerMultiplicity;      // Triggered multiplicity
+    Float_t       fTriggerMultiplicityEta;   // Triggered multiplicity eta cut
+    Float_t       fTriggerMultiplicityPtMin; // Triggered multiplicity min pt
+
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();

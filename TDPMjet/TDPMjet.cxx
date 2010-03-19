@@ -173,9 +173,6 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	entot += DTEVT1.phkk[i][3]; // PHKK[i][3] <-> PHKK(4,i)
      } 
   }
-  printf("\n TDPMjet: DPMJET stack contains %d particles", numpart);
-  // printf("\n TDPMjet: Final not decayed particles: %d",    numStabpart);
-  //printf("\n TDPMjet: Total energy: %f GeV          \n",   entot);
   Int_t nump = 0;
   
   if(!strcmp(option,"") || !strcmp(option,"Final")){
