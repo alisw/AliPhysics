@@ -153,7 +153,7 @@ class AliTPCcalibDB : public TObject
   //
   //
   
-  AliTPCCalPad* MakeDeadMap(const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root");
+  AliTPCCalPad* MakeDeadMap(Double_t notInMap=1, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root" );
   AliGRPObject * MakeGRPObjectFromMap(TMap *map);
   AliCTPTimeParams* GetCTPTimeParams() const {return fCTPTimeParams;}
   //Create a tree suited for diplaying with the AliTPCCalibViewerGUI

@@ -1825,11 +1825,14 @@ Double_t AliTPCcalibDB::GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t 
   return -result/250.; //normalized before
 }
 
-AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(const char* nameMappingFile) {
+AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMappingFile) {
 //
 //   Read list of active DDLs from OCDB entry
 //   Generate and return AliTPCCalPad containing 1 for all pads in active DDLs,
 //   0 for all pads in non-active DDLs. 
+//   For DDLs with missing status information (no DCS input point to Shuttle),
+//     the value of the AliTPCCalPad entry is determined by the parameter
+//     notInMap (default value 1)
 //
   char chinfo[1000];
    
@@ -1882,7 +1885,11 @@ AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(const char* nameMappingFile) {
            Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC (IROC or OROC)
 //              Int_t globalrow = mapping.GetGlobalPadRow(patch, hwadd);  // row in full sector (IROC plus OROC)
            Int_t pad       = mapping->GetPad(patch, hwadd);
-           active=TString(arrDDL[i]).Atof();
+           if (!TString(arrDDL[i]).IsDigit()) {
+	      active = notInMap;
+           } else { 
+              active=TString(arrDDL[i]).Atof();
+	   }
            calRoc->SetValue(row,pad,active);
          } // end channel for loop
         } // end altro for loop
