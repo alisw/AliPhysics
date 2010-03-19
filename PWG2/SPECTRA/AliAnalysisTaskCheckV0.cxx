@@ -105,6 +105,7 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
   // Distinguish Track and V0 Multiplicity !
 
   fListHist = new TList();
+  fListHist->SetOwner();
  
   if (!fHistPrimaryVertexPosX) {
     fHistPrimaryVertexPosX = new TH1F("fHistPrimaryVertexPosX", "Primary vertex position in x;Position in x (cm);Events;",100,-1,1);
@@ -281,7 +282,8 @@ void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
     fHistArmenterosPodolanskiOn    = new TH2F("fHistArmenterosPodolanskiOn","Armenteros-Podolanski Onthefly phase space;#alpha;p_{t} arm",200,-1.0,1.0,150,0,0.3);
     fListHist->Add(fHistArmenterosPodolanskiOn);
   }
-
+  // Post output data.
+  PostData(1, fListHist);
 }
 
 //________________________________________________________________________
@@ -547,7 +549,7 @@ void AliAnalysisTaskCheckV0::Terminate(Option_t *)
   cRetrievedList = (TList*)GetOutputData(1);
 
   if(!cRetrievedList){
-    AliWarning("ERROR - AliAnalysisTaskPerformanceStrange: output data container list not available\n"); return;
+    AliWarning("ERROR - AliAnalysisTaskCheckV0: output data container list not available\n"); return;
   }
 
   // Implement a decent style
