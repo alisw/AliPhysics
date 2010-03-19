@@ -175,8 +175,8 @@ public:
 #endif
 
 protected:
-    AliFemtoThreeVector<T> mThreeVector;
-    T	             mX4;
+    AliFemtoThreeVector<T> mThreeVector; // The three-vector component
+    T	             mX4;                // The fourth component
 #ifdef __ROOT__
   ClassDef(AliFemtoLorentzVector,3)
 #endif
