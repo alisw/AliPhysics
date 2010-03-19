@@ -299,6 +299,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
+    fDebug = 10;
+    printf("Task is active %5d\n", IsActive());
+    
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
 //
     AliAODHandler* handler = (AliAODHandler*) 
@@ -388,10 +391,38 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	    
 	    if ((handler->NeedsDimuonsBranchReplication() || merging) && (fgAODDimuons))
 	    {
-		TClonesArray* dimuons = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetDimuons();
-		new (fgAODDimuons) TClonesArray(*dimuons);
+	        fgAODDimuons->Clear();
+		TClonesArray& dimuons = *fgAODDimuons;
+		TClonesArray& tracksnew = *fgAODTracks;
+		
+                Int_t nMuonTrack[10]; 
+                for(Int_t imuon = 0; imuon < 10; imuon++) nMuonTrack[imuon] = 0;
+                Int_t nMuons=0;
+		for(Int_t ii=0; ii < fgAODTracks->GetEntries(); ii++){
+		    AliAODTrack *track = (AliAODTrack*) fgAODTracks->At(ii);
+		    if(track->IsMuonTrack()) {
+			nMuonTrack[nMuons]= ii;
+			nMuons++;
+		    }  
+		}
+                Int_t jDimuons=0;
+		if(nMuons >= 2){
+		    for(Int_t i = 0; i < nMuons; i++){
+			Int_t index0 = nMuonTrack[i];
+			for(Int_t j = i+1; j < nMuons; j++){
+			    Int_t index1 = nMuonTrack[j];
+			    AliAODTrack *t0 = (AliAODTrack*) fgAODTracks->At(index0);
+			    AliAODTrack *t1 = (AliAODTrack*) fgAODTracks->At(index1);
+			    tracksnew.At(index0)->ResetBit(kIsReferenced);
+			    tracksnew.At(index0)->SetUniqueID(0); 
+			    tracksnew.At(index1)->ResetBit(kIsReferenced);
+			    tracksnew.At(index1)->SetUniqueID(0);
+			    new(dimuons[jDimuons++]) AliAODDimuon(tracksnew.At(index0),tracksnew.At(index1));
+			}
+		    }    
+		}
 	    }
-
+	    
 	    // Additional merging if needed
 	    if (merging) {
 		// mcParticles
@@ -412,7 +443,6 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		for (Int_t i = 0; i < ntr; i++) {
 		    AliAODTrack*    track = (AliAODTrack*) tracks->At(i);
 		    AliAODTrack* newtrack = new((*fgAODTracks)[nc++]) AliAODTrack(*track);
-
 		    newtrack->SetLabel(newtrack->GetLabel() + nc0);
 		}
 

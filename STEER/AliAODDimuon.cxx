@@ -56,8 +56,7 @@ AliAODDimuon::AliAODDimuon(TObject *mu0, TObject *mu1):
   fP(0),fMProton(0.93827231)
 {
   // Creates a dimuon pair from two tracks
-  
-  //printf("Creating dimuon from %p %p\n",mu0,mu1);
+
   fMu[0]=mu0;
   fMu[1]=mu1;
 }
@@ -72,19 +71,11 @@ AliAODDimuon::~AliAODDimuon()
 
 //______________________________________________________________________________
 void AliAODDimuon::BookP(){
-  // Fills the dimuon momentum if not filled yet
-  static UInt_t unID[2]={0,0};
-  if(!fP){
+  //
+  // build the TLorentz vector
+  //
     fP=new TLorentzVector(Px(),Py(),Pz(),E());
-    unID[0]=fMu[0].GetUniqueID();
-    unID[1]=fMu[1].GetUniqueID();
-  }
-  // For efficiency reasons
-  if((unID[0]!=fMu[0].GetUniqueID())||(unID[1]!=fMu[1].GetUniqueID())){
     fP->SetPxPyPzE(Px(),Py(),Pz(),E());
-    unID[0]=fMu[0].GetUniqueID();
-    unID[1]=fMu[1].GetUniqueID();
-  }
 }
 
 //______________________________________________________________________________
