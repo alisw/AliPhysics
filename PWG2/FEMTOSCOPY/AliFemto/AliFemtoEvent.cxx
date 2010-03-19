@@ -312,6 +312,7 @@ void AliFemtoEvent::SetZDCParticipants(const unsigned int& aZDCParticipants){fZD
 
 void AliFemtoEvent::SetNumberOfTracks(const unsigned short& tracks){fNumberOfTracks = tracks;}
 void AliFemtoEvent::SetNormalizedMult(const int& i){fNormalizedMult = i;}
+void AliFemtoEvent::SetSPDMult(const int& i){fSPDMult = i;}
 
 void AliFemtoEvent::SetPrimVertPos(const AliFemtoThreeVector& vp){fPrimVertPos = vp;}
 void AliFemtoEvent::SetPrimVertCov(const double* v){
@@ -363,6 +364,11 @@ float AliFemtoEvent::ReactionPlaneAngle() const { return fReactionPlaneAngle; }
 double AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
 {
   return NumberOfTracks()/2;
+}
+
+double AliFemtoEvent::SPDMultiplicity() const
+{
+  return fSPDMult;
 }
 
 double AliFemtoEvent::UncorrectedNumberOfPrimaries() const

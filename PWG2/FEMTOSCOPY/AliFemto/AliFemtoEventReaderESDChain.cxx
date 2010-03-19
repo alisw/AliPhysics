@@ -13,6 +13,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
+#include "AliMultiplicity.h"
 
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
@@ -281,6 +282,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
 	
+  hbtEvent->SetSPDMult(fEvent->GetMultiplicity()->GetNumberOfTracklets());
+
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
