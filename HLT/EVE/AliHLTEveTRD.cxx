@@ -59,8 +59,6 @@ AliHLTEveTRD::~AliHLTEveTRD()
 void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
 
-  cout <<"TRD Clusters"<<endl;
-
   if ( ! block->GetDataType().CompareTo("CLUSTERS") ) {
     
     if(!fEveColClusters){
@@ -68,7 +66,7 @@ void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
       fEventManager->GetEveManager()->AddElement(fEveColClusters);
     } 
     
-    ProcessClusters(block, fEveClusters, fEveColClusters);
+    ProcessClusters(block, fEveColClusters);
    
   } else if ( ! block->GetDataType().CompareTo("ROOTHIST") ) {
   
@@ -87,7 +85,6 @@ void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
 void AliHLTEveTRD::AddHistogramsToCanvas(AliHLTHOMERBlockDesc* block, TCanvas * canvas, Int_t &cdCount ) {
   //See header file for documentation
   if ( ! block->GetClassName().CompareTo("TH1F")) {
-    cout<<"TH1F"<<endl;
     TH1F* histo = reinterpret_cast<TH1F*>(block->GetTObject());
     ++cdCount;
   
@@ -161,10 +158,8 @@ void AliHLTEveTRD::ResetElements(){
   fHistoCount = 0;
 }
 
-Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet * cont, TEvePointSetArray * contCol ){
+Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSetArray * contCol ){
   //See header file for documentation
-  
-  cout <<"processclusters"<<endl;
 
   Int_t iResult = 0;
 

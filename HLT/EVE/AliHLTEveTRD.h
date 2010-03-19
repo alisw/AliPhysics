@@ -45,7 +45,7 @@ private:
   TEvePointSetArray * CreatePointSetArray();
 
   /** Proces clusters block */
-  Int_t ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet * cont, TEvePointSetArray * contCol );
+  Int_t ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSetArray * contCol );
 
   /** Inherited from AliHLTEveBase */
   void AddHistogramsToCanvas(AliHLTHOMERBlockDesc* block, TCanvas * canvas, Int_t &cdCount );
