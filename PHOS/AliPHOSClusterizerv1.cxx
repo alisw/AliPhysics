@@ -1049,6 +1049,7 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
   if(!fgCalibData->GetNumOfEmcBadChannels()) return;
 
   Int_t badIds[8000];
+  memset(badIds,0,8000*sizeof(Int_t));
   fgCalibData->EmcBadChannelIds(badIds);
 
   AliPHOSEmcRecPoint* rp;
