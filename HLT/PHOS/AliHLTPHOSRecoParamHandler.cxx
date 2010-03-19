@@ -16,7 +16,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliPHOSRecoParam.h"
-#include "AliPHOSPIDv1.h"
+//#include "AliPHOSPIDv1.h" WHY?
 #include "TObjArray.h"
 
 AliHLTPHOSRecoParamHandler::AliHLTPHOSRecoParamHandler() :
@@ -26,7 +26,7 @@ fPHOSPidPtr(0)
 {
    // See header file for class documentation
    
-   fPHOSPidPtr = new AliPHOSPIDv1();
+  //   fPHOSPidPtr = new AliPHOSPIDv1(); //WHY?
    
 }
 
@@ -75,6 +75,7 @@ Int_t AliHLTPHOSRecoParamHandler::GetParametersFromCDB()
 Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
 {
    // See header file for class documentation
-   return fPHOSPidPtr->GetCalibratedEnergy(e);
+  //   return fPHOSPidPtr->GetCalibratedEnergy(e); //WHY?
+   return e;
 }
 
