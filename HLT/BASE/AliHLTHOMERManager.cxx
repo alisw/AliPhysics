@@ -584,7 +584,6 @@ void AliHLTHOMERManager::CreateReadoutList( const char** sourceHostnames, UShort
 //##################################################################################
 void AliHLTHOMERManager::AddBlockListToBuffer() {
   // see header file for class documentation
-
   // -- Check if event is already in buffer
   ULong_t eventID = static_cast<ULong64_t>(fCurrentReader->GetEventID());  
   
@@ -596,9 +595,10 @@ void AliHLTHOMERManager::AddBlockListToBuffer() {
   // -- Check if event should be selected on basis of trigger string
   if( fTriggerString.CompareTo("ALL") ){
     if ( !CheckTriggerDecision() ) {
-      HLTInfo(Form("Event 0x%016LX (%Lu) is not triggered by %s.", 
-		   eventID, eventID, fTriggerString.Data()));
+      HLTInfo("Event not triggered");
       return;
+    } else {
+      HLTInfo("Event triggered");
     }
   }
   else {
