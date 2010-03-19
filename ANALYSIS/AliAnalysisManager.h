@@ -72,7 +72,7 @@ enum EAliAnalysisFlags {
    static TFile       *OpenFile(AliAnalysisDataContainer *cont, const char *option, Bool_t ignoreProof=kFALSE);
    void                PackOutput(TList *target);
    void                RegisterExtraFile(const char *fname);
-   Long64_t            StartAnalysis(const char *type="local", TTree *tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
+   Long64_t            StartAnalysis(const char *type="local", TTree * const tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
    Long64_t            StartAnalysis(const char *type, const char *dataset, Long64_t nentries=1234567890, Long64_t firstentry=0);
    virtual void        SlaveBegin(TTree *tree);
    virtual void        Terminate();
@@ -85,20 +85,20 @@ enum EAliAnalysisFlags {
    void                GetAnalysisTypeString(TString &type) const;                    
    static const char  *GetCommonFileName()        {return fgCommonFileName.Data();}
    AliAnalysisDataContainer *
-                       GetCommonInputContainer()  {return fCommonInput;}
+                       GetCommonInputContainer() const  {return fCommonInput;}
    AliAnalysisDataContainer *
-                       GetCommonOutputContainer() {return fCommonOutput;}
+                       GetCommonOutputContainer() const {return fCommonOutput;}
    TObjArray          *GetContainers() const      {return fContainers;}
    Long64_t            GetCurrentEntry() const    {return fCurrentEntry;}
    UInt_t              GetDebugLevel() const      {return fDebug;}
    TString             GetExtraFiles() const      {return fExtraFiles;}
-   AliVEventPool*      GetEventPool()             {return fEventPool;}
-   Bool_t              GetFileFromWrapper(const char *filename, TList *source);
+   AliVEventPool*      GetEventPool()  const      {return fEventPool;}
+   Bool_t              GetFileFromWrapper(const char *filename, const TList *source);
    AliAnalysisGrid*    GetGridHandler()           {return fGridHandler;}
    TObjArray          *GetInputs() const          {return fInputs;}
-   AliVEventHandler*   GetInputEventHandler()     {return fInputEventHandler;}
-   AliVEventHandler*   GetMCtruthEventHandler()   {return fMCtruthEventHandler;}
-   AliVEventHandler*   GetOutputEventHandler()    {return fOutputEventHandler;}
+   AliVEventHandler*   GetInputEventHandler() const   {return fInputEventHandler;}
+   AliVEventHandler*   GetMCtruthEventHandler() const {return fMCtruthEventHandler;}
+   AliVEventHandler*   GetOutputEventHandler() const  {return fOutputEventHandler;}
    TObjArray          *GetOutputs() const         {return fOutputs;}
    TObjArray          *GetTasks() const           {return fTasks;}
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
@@ -112,13 +112,13 @@ enum EAliAnalysisFlags {
    void                SetDebugLevel(UInt_t level)                {fDebug = level;}
    void                SetDisableBranches(Bool_t disable=kTRUE)   {TObject::SetBit(kDisableBranches,disable);}
    void                SetExternalLoop(Bool_t flag)               {TObject::SetBit(kExternalLoop,flag);}
-   void                SetEventPool(AliVEventPool* epool)         {fEventPool = epool;}
-   void                SetGridHandler(AliAnalysisGrid *handler)   {fGridHandler = handler;}
-   void                SetInputEventHandler(AliVEventHandler*  handler);
-   void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
+   void                SetEventPool(AliVEventPool* const epool)   {fEventPool = epool;}
+   void                SetGridHandler(AliAnalysisGrid * const handler) {fGridHandler = handler;}
+   void                SetInputEventHandler(AliVEventHandler* const handler);
+   void                SetMCtruthEventHandler(AliVEventHandler* const handler) {fMCtruthEventHandler = handler;}
    void                SetNSysInfo(Long64_t nevents)              {fNSysInfo = nevents;}
-   void                SetOutputEventHandler(AliVEventHandler*  handler);
-   void                SetSelector(AliAnalysisSelector *sel)      {fSelector = sel;}
+   void                SetOutputEventHandler(AliVEventHandler* const handler);
+   void                SetSelector(AliAnalysisSelector * const sel)      {fSelector = sel;}
    void                SetSaveCanvases(Bool_t flag=kTRUE)         {TObject::SetBit(kSaveCanvases,flag);}
    void                SetSkipTerminate(Bool_t flag)              {TObject::SetBit(kSkipTerminate,flag);}
    void                SetSpecialOutputLocation(const char *loc)  {fSpecialOutputLocation = loc;}
@@ -148,11 +148,10 @@ enum EAliAnalysisFlags {
    Bool_t               IsSkipTerminate() const {return TObject::TestBit(kSkipTerminate);}
    void                 ResetAnalysis();
    void                 ExecAnalysis(Option_t *option="");
-   void                 FinishAnalysis();
    void                 PrintStatus(Option_t *option="all") const;
    void                 ProfileTask(const char *name, const char *option="VM") const;
    void                 ProfileTask(Int_t itop, const char *option="VM") const;
-   static void          ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE);
+   static void          ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch * const watch=0, Bool_t last=kFALSE, Bool_t refresh=kFALSE);
    Bool_t               ValidateOutputFiles() const;
 
 protected:

@@ -30,7 +30,7 @@
 #include <TError.h>
 #include <TClass.h>
 #include <TFile.h>
-#include <TKey.h>
+//#include <TKey.h>
 #include <TMath.h>
 #include <TH1.h>
 #include <TMethodCall.h>
@@ -236,7 +236,7 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
       if(!tree->GetTree()) {
          Long64_t readEntry = tree->LoadTree(0);
          if (readEntry == -2) {
-            Error("Init", "Input tree has no entry. Aborting");
+            Error("Init", "Input tree has no entry. Exiting");
             return kFALSE;
          }
       }   
@@ -422,7 +422,7 @@ void AliAnalysisManager::PackOutput(TList *target)
   // stage in PROOF case for each slave.
    if (fDebug > 0) printf("->AliAnalysisManager::PackOutput()\n");
    if (!target) {
-      Error("PackOutput", "No target. Aborting.");
+      Error("PackOutput", "No target. Exiting.");
       return;
    }
    if (fInputEventHandler)   fInputEventHandler  ->Terminate();
@@ -467,9 +467,9 @@ void AliAnalysisManager::PackOutput(TList *target)
                TDirectory *opwd = gDirectory;
                // File resident outputs. 
                // Check first if the file exists.
-               TString open_option = "RECREATE";
-               if (!gSystem->AccessPathName(output->GetFileName())) open_option = "UPDATE";
-               TFile *file = AliAnalysisManager::OpenFile(output, open_option, kTRUE);
+               TString openoption = "RECREATE";
+               if (!gSystem->AccessPathName(output->GetFileName())) openoption = "UPDATE";
+               TFile *file = AliAnalysisManager::OpenFile(output, openoption, kTRUE);
                // Clear file list to release object ownership to user.
                file->Clear();
                // Save data to file, then close.
@@ -693,7 +693,7 @@ void AliAnalysisManager::UnpackOutput(TList *source)
   // Called by AliAnalysisSelector::Terminate only on the client.
    if (fDebug > 0) printf("->AliAnalysisManager::UnpackOutput()\n");
    if (!source) {
-      Error("UnpackOutput", "No target. Aborting.");
+      Error("UnpackOutput", "No target. Exiting.");
       return;
    }
    if (fDebug > 1) printf("   Source list contains %d containers\n", source->GetSize());
@@ -786,7 +786,7 @@ void AliAnalysisManager::Terminate()
         if (output->IsSpecialOutput() || output->IsRegisterDataset()) continue;
       }  
       const char *filename = output->GetFileName();
-      TString open_option = "RECREATE";
+      TString openoption = "RECREATE";
       if (!(strcmp(filename, "default"))) continue;
       if (!strlen(filename)) continue;
       if (!output->GetData()) continue;
@@ -794,10 +794,10 @@ void AliAnalysisManager::Terminate()
       TFile *file = output->GetFile();
       if (!file) file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (!file) {
-	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) open_option = "UPDATE";
-         if (!gSystem->AccessPathName(filename)) open_option = "UPDATE";
-	      if (fDebug>0) printf("Opening file: %s  option=%s\n",filename, open_option.Data());
-         file = new TFile(filename, open_option);
+	      //if (handlerFile == filename && !gSystem->AccessPathName(filename)) openoption = "UPDATE";
+         if (!gSystem->AccessPathName(filename)) openoption = "UPDATE";
+	      if (fDebug>0) printf("Opening file: %s  option=%s\n",filename, openoption.Data());
+         file = new TFile(filename, openoption);
       } else {
          if (fDebug>0) printf("File already opened: %s\n", filename);
       }   
@@ -1261,7 +1261,7 @@ void AliAnalysisManager::ResetAnalysis()
 }
 
 //______________________________________________________________________________
-Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t nentries, Long64_t firstentry)
+Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
 // MIX. Process nentries starting from firstentry
@@ -1371,7 +1371,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
          break;
       case kProofAnalysis:
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
-            Error("StartAnalysis", "No PROOF!!! Aborting.");
+            Error("StartAnalysis", "No PROOF!!! Exiting.");
             return -1;
          }   
          sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
@@ -1381,7 +1381,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64
             cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON CHAIN " << chain->GetName() << endl;
             retv = chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
-            Error("StartAnalysis", "No chain!!! Aborting.");
+            Error("StartAnalysis", "No chain!!! Exiting.");
             return -1;
          }      
          break;
@@ -1444,7 +1444,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    }
    
    if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
-      Error("StartAnalysis", "No PROOF!!! Aborting.");
+      Error("StartAnalysis", "No PROOF!!! Exiting.");
       return -1;
    }   
    sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
@@ -1516,7 +1516,7 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
   TString filename = cont->GetFileName();
   if (cont == fCommonOutput) {
      if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
-     else Fatal("OpenProofFile","No output container. Aborting.");
+     else Fatal("OpenProofFile","No output container. Exiting.");
   }   
   TFile *f = NULL;
   if (fMode!=kProofAnalysis || !fSelector) {
@@ -1568,11 +1568,11 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
       Fatal("OpenProofFile", "File %s already opened, but not in UPDATE mode!", cont->GetFileName());
   } else {
     if (cont->IsRegisterDataset()) {
-      TString dset_name = filename;
-      dset_name.ReplaceAll(".root", cont->GetTitle());
-      dset_name.ReplaceAll(":","_");
-      if (fDebug>1) printf("Booking dataset: %s\n", dset_name.Data());
-      line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\", \"DROV\", \"%s\");", filename.Data(), dset_name.Data());
+      TString dsetName = filename;
+      dsetName.ReplaceAll(".root", cont->GetTitle());
+      dsetName.ReplaceAll(":","_");
+      if (fDebug>1) printf("Booking dataset: %s\n", dsetName.Data());
+      line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\", \"DROV\", \"%s\");", filename.Data(), dsetName.Data());
     } else {
       if (fDebug>1) printf("Booking TProofOutputFile: %s to be merged\n", filename.Data());
       line = Form("TProofOutputFile *pf = new TProofOutputFile(\"%s\");", filename.Data());
@@ -1693,13 +1693,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::FinishAnalysis()
-{
-// Finish analysis.
-}
-
-//______________________________________________________________________________
-void AliAnalysisManager::SetInputEventHandler(AliVEventHandler*  handler)
+void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 {
 // Set the input event handler and create a container for it.
    fInputEventHandler   = handler;
@@ -1708,7 +1702,7 @@ void AliAnalysisManager::SetInputEventHandler(AliVEventHandler*  handler)
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler*  handler)
+void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler* const handler)
 {
 // Set the input event handler and create a container for it.
    fOutputEventHandler   = handler;
@@ -1729,34 +1723,34 @@ void AliAnalysisManager::RegisterExtraFile(const char *fname)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, TList *source)
+Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, const TList *source)
 {
 // Copy a file from the location specified ina the wrapper with the same name from the source list.
-   char full_path[512];
-   char ch_url[512];
+   char fullPath[512];
+   char chUrl[512];
    TObject *pof =  source->FindObject(filename);
    if (!pof || !pof->InheritsFrom("TProofOutputFile")) {
       Error("GetFileFromWrapper", "TProofOutputFile object not found in output list for file %s", filename);
       return kFALSE;
    }
-   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", full_path, pof));
-   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", ch_url));
-   TString clientUrl(ch_url);
-   TString full_path_str(full_path);
+   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", ((TProofOutputFile*)0x%lx)->GetOutputFileName();)", fullPath, pof));
+   gROOT->ProcessLine(Form("sprintf((char*)0x%lx, \"%%s\", gProof->GetUrl();)", chUrl));
+   TString clientUrl(chUrl);
+   TString fullPath_str(fullPath);
    if (clientUrl.Contains("localhost")){
-      TObjArray* array = full_path_str.Tokenize ( "//" );
+      TObjArray* array = fullPath_str.Tokenize ( "//" );
       TObjString *strobj = ( TObjString *)array->At(1);
       TObjArray* arrayPort = strobj->GetString().Tokenize ( ":" );
       TObjString *strobjPort = ( TObjString *) arrayPort->At(1);
-      full_path_str.ReplaceAll(strobj->GetString().Data(),"localhost:PORT");
-      full_path_str.ReplaceAll(":PORT",Form(":%s",strobjPort->GetString().Data()));
-      if (fDebug > 1) Info("GetFileFromWrapper","Using tunnel from %s to %s",full_path_str.Data(),filename);
+      fullPath_str.ReplaceAll(strobj->GetString().Data(),"localhost:PORT");
+      fullPath_str.ReplaceAll(":PORT",Form(":%s",strobjPort->GetString().Data()));
+      if (fDebug > 1) Info("GetFileFromWrapper","Using tunnel from %s to %s",fullPath_str.Data(),filename);
       delete arrayPort;
       delete array;
    }
    if (fDebug > 1) 
-      Info("GetFileFromWrapper","Copying file %s from PROOF scratch space", full_path_str.Data());
-   Bool_t gotit = TFile::Cp(full_path_str.Data(), filename); 
+      Info("GetFileFromWrapper","Copying file %s from PROOF scratch space", fullPath_str.Data());
+   Bool_t gotit = TFile::Cp(fullPath_str.Data(), filename); 
    if (!gotit)
       Error("GetFileFromWrapper", "Could not get file %s from proof scratch space", filename);
    return gotit;
@@ -1820,7 +1814,7 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
 }   
 
 //______________________________________________________________________________
-void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch *watch, Bool_t last, Bool_t refresh)
+void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch * const watch, Bool_t last, Bool_t refresh)
 {
 // Implements a nice text mode progress bar.
    static Long64_t icount = 0;
