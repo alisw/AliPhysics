@@ -411,8 +411,6 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 			Int_t index0 = nMuonTrack[i];
 			for(Int_t j = i+1; j < nMuons; j++){
 			    Int_t index1 = nMuonTrack[j];
-			    AliAODTrack *t0 = (AliAODTrack*) fgAODTracks->At(index0);
-			    AliAODTrack *t1 = (AliAODTrack*) fgAODTracks->At(index1);
 			    tracksnew.At(index0)->ResetBit(kIsReferenced);
 			    tracksnew.At(index0)->SetUniqueID(0); 
 			    tracksnew.At(index1)->ResetBit(kIsReferenced);
