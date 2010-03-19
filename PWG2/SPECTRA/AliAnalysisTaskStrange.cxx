@@ -101,6 +101,7 @@ void AliAnalysisTaskStrange::UserCreateOutputObjects()
   // Called once
 
   fListHist = new TList();
+  fListHist->SetOwner();
 
   // Primary Vertex:
   fHistPrimaryVertexPosX       = new TH1F("h1PrimaryVertexPosX", "Primary Vertex Position X;Primary Vertex Position X (cm);Events",100,-0.5,0.5);
@@ -232,6 +233,9 @@ void AliAnalysisTaskStrange::UserCreateOutputObjects()
   //ArmenterosPodolanski:
   fHistArmenterosPodolanskiOn    = new TH2F("h2ArmenterosPodolanskiOn","Armenteros-Podolanski Onthefly phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
   fListHist->Add(fHistArmenterosPodolanskiOn);
+
+  // Post output data.
+  PostData(1, fListHist);
 }
 
 //________________________________________________________________________
