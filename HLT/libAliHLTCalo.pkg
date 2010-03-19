@@ -23,7 +23,8 @@ AliHLTCaloClusterAnalyser.h \
 AliHLTCaloRcuProcessor.h \
 AliHLTCaloConstants.h \
 AliHLTCaloProcessor.h \
-AliHLTCaloGeometry.h
+AliHLTCaloGeometry.h \
+AliHLTCaloRecoParamHandler.h
 
 ## all source files of this module
 ## all source files corresponding to the class headers
