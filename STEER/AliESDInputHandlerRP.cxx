@@ -98,14 +98,18 @@ Bool_t AliESDInputHandlerRP::Init(Option_t* opt)
 	} else {
 	    file = TFile::Open(Form("%s#%s.RecPoints.root", fPathName->Data(), det->GetName()));
 	}
-	if (!file) AliFatal(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
+	if (!file) {
+	  AliError(Form("AliESDInputHandlerRP: %s.RecPoints.root not found in %s ! \n", det->GetName(), fPathName->Data()));
+	  return kFALSE;
+	}
 	fRFiles->Add(file);
     }
 
     if (file) {
 	fEventsPerFile = file->GetNkeys() - file->GetNProcessIDs();
     } else {
-	AliFatal(Form("AliESDInputHandlerRP: No file with RecPoints found in %s ! \n", fPathName->Data()));
+	AliError(Form("AliESDInputHandlerRP: No file with RecPoints found in %s ! \n", fPathName->Data()));
+	return kFALSE;
     }
     
 
@@ -145,6 +149,7 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     // Load the event number iev
     //
     // Calculate the file number
+  if (fEventsPerFile<=0) return kFALSE;
     Int_t inew  = iev / fEventsPerFile;
     if (inew != fFileNumber) {
 	fFileNumber = inew;
@@ -279,7 +284,7 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     ResetIO();
     InitIO("");
     // Some clean-up
-    members->Delete();
+    if (members) members->Delete();
 
     return kTRUE;
 }
