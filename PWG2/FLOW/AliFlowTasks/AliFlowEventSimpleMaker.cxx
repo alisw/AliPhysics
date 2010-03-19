@@ -12,8 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id */
-
 /////////////////////////////////////////////////////////////////////////
 // AliFlowEventSimpleMaker:
 //
@@ -23,20 +21,18 @@
 // author: N. van der Kolk (kolk@nikhef.nl)
 /////////////////////////////////////////////////////////////////////////
 
-
 #include "Riostream.h"
+#include "TTree.h"
+#include "TParticle.h"
 #include "AliFlowEventSimpleMaker.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
-#include "TTree.h"
-#include "TParticle.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
-#include "AliLog.h"
 #include "AliCFManager.h"
 #include "AliFlowTrackSimpleCuts.h"
 
@@ -66,7 +62,7 @@ AliFlowEventSimpleMaker::~AliFlowEventSimpleMaker()
 }
 
 //-----------------------------------------------------------------------   
-AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager)
+AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks( AliMCEvent* anInput, const AliCFManager* intCFManager, const AliCFManager* diffCFManager)
 {
   //Fills the event from the MC kinematic information
   
@@ -132,8 +128,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
         
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
       if ( (++fCount % 100) == 0) {
-	if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
-	else cout<<" MC Reaction Plane Angle = unknown "<< endl;
+	cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;
+	//
 	cout<<" iGoodTracks = "<<iGoodTracks<<endl;
 	cout<<" # of RP selected tracks = "<<iSelParticlesRP<<endl;
 	cout<<" # of POI selected tracks = "<<iSelParticlesPOI<<endl;  
@@ -155,7 +151,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput, Ali
 
 //-----------------------------------------------------------------------   
 
-AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, AliCFManager* intCFManager, AliCFManager* diffCFManager)
+AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, const AliCFManager* intCFManager, const AliCFManager* diffCFManager)
 {
   //Fills the event from the ESD
   
@@ -195,7 +191,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
 	AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
 	pTrack->SetPt(pParticle->Pt() );
 	pTrack->SetEta(pParticle->Eta() );
-	if (fEllipticFlowValue!=0.) 
+	if (fEllipticFlowValue>0.) 
 	  { pTrack->SetPhi(pParticle->Phi()-fEllipticFlowValue*TMath::Sin(2*(pParticle->Phi()-fMCReactionPlaneAngle))); cout<<"Added flow to particle"<<endl; }
 	else { pTrack->SetPhi(pParticle->Phi() ); }	
 
@@ -255,7 +251,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, Al
 }
 
 //-----------------------------------------------------------------------   
-AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  AliCFManager* intCFManager, AliCFManager* diffCFManager)
+AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  const AliCFManager* intCFManager, const AliCFManager* diffCFManager)
 {
   //Fills the event from the AOD
   
@@ -337,7 +333,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  A
 }
 
 //-----------------------------------------------------------------------   
-AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, AliCFManager* intCFManager, AliCFManager* diffCFManager, Int_t anOption)
+AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, const AliMCEvent* anInputMc, const AliCFManager* intCFManager, const AliCFManager* diffCFManager, Int_t anOption)
 {
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
 
@@ -459,7 +455,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, A
 
 //local methods
 //-----------------------------------------------------------------------   
-AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrackSimpleCuts* rpCuts, AliFlowTrackSimpleCuts* poiCuts)
+AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, const AliFlowTrackSimpleCuts* rpCuts, const AliFlowTrackSimpleCuts* poiCuts)
 {
   //fills the event from a TTree of kinematic.root files
   
@@ -767,7 +763,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
 }
 
 //-----------------------------------------------------------------------   
-AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, Int_t anOption)
+AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, const AliMCEvent* anInputMc, Int_t anOption)
 {
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
 

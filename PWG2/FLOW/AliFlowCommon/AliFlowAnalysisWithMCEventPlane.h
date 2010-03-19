@@ -1,15 +1,16 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+// Description: Maker to analyze Flow from the generated MC reaction plane.
+//              This class is used to get the real value of the flow 
+//              to compare the other methods to when analysing simulated events.
 
 /* $Id$ */
-
 
 #ifndef ALIFLOWANALYSISWITHMCEVENTPLANE_H
 #define ALIFLOWANALYSISWITHMCEVENTPLANE_H
 
-#include "TVector2.h"          //called explicitly
-#include "AliFlowVector.h"
-#include "TString.h"
+class TVector2;
+class TString;
 
 class AliFlowTrackSimple;
 class AliFlowEventSimple;
@@ -26,10 +27,6 @@ class TList;
 class TComplex;
 class Riostream;
 
-
-// Description: Maker to analyze Flow from the generated MC reaction plane.
-//              This class is used to get the real value of the flow 
-//              to compare the other methods to when analysing simulated events.
 
  
 class AliFlowAnalysisWithMCEventPlane {
@@ -56,46 +53,46 @@ class AliFlowAnalysisWithMCEventPlane {
    // Output 
    TList*    GetHistList() const          { return this->fHistList ; }  
    AliFlowCommonHist* GetCommonHists() const  { return this->fCommonHists; }
-   void      SetCommonHists(AliFlowCommonHist* aCommonHist)  
+   void      SetCommonHists(AliFlowCommonHist* const aCommonHist)  
      { this->fCommonHists = aCommonHist; }
    AliFlowCommonHistResults*  GetCommonHistsRes() const { return this->fCommonHistsRes; }
-   void      SetCommonHistsRes(AliFlowCommonHistResults* aCommonHistResult) 
+   void      SetCommonHistsRes( AliFlowCommonHistResults* const aCommonHistResult ) 
      { this->fCommonHistsRes = aCommonHistResult; }
    
    //histograms
-   TH1F*     GetHistRP()                  {return this->fHistRP; } 
-   void      SetHistRP(TH1F* aHistRP)     {this->fHistRP = aHistRP; }
+   TH1F*     GetHistRP() const            {return this->fHistRP; } 
+   void      SetHistRP(TH1F* const  aHistRP)     {this->fHistRP = aHistRP; }
    
-   TProfile* GetHistProIntFlow()          {return this->fHistProIntFlow; } 
-   void      SetHistProIntFlow(TProfile* aHistProIntFlow) 
+   TProfile* GetHistProIntFlow() const    {return this->fHistProIntFlow; } 
+   void      SetHistProIntFlow(TProfile* const aHistProIntFlow) 
      {this->fHistProIntFlow = aHistProIntFlow; }
      
-   TProfile2D* GetHistProDiffFlowPtEtaRP()     {return this->fHistProDiffFlowPtEtaRP; } 
-   void      SetHistProDiffFlowPtEtaRP(TProfile2D* aHistProDiffFlowPtEtaRP) 
+   TProfile2D* GetHistProDiffFlowPtEtaRP() const    {return this->fHistProDiffFlowPtEtaRP; } 
+   void      SetHistProDiffFlowPtEtaRP(TProfile2D* const aHistProDiffFlowPtEtaRP) 
      {this->fHistProDiffFlowPtEtaRP = aHistProDiffFlowPtEtaRP; }   
    
-   TProfile* GetHistProDiffFlowPtRP()     {return this->fHistProDiffFlowPtRP; } 
-   void      SetHistProDiffFlowPtRP(TProfile* aHistProDiffFlowPtRP) 
+   TProfile* GetHistProDiffFlowPtRP() const    {return this->fHistProDiffFlowPtRP; } 
+   void      SetHistProDiffFlowPtRP(TProfile* const aHistProDiffFlowPtRP) 
      {this->fHistProDiffFlowPtRP = aHistProDiffFlowPtRP; } 
    
-   TProfile* GetHistProDiffFlowEtaRP()    {return this->fHistProDiffFlowEtaRP; } 
-   void      SetHistProDiffFlowEtaRP(TProfile* aHistProDiffFlowEtaRP) 
+   TProfile* GetHistProDiffFlowEtaRP() const   {return this->fHistProDiffFlowEtaRP; } 
+   void      SetHistProDiffFlowEtaRP(TProfile* const aHistProDiffFlowEtaRP) 
      {this->fHistProDiffFlowEtaRP = aHistProDiffFlowEtaRP; } 
      
-   TProfile2D* GetHistProDiffFlowPtEtaPOI()     {return this->fHistProDiffFlowPtEtaPOI; } 
-   void      SetHistProDiffFlowPtEtaPOI(TProfile2D* aHistProDiffFlowPtEtaPOI) 
+   TProfile2D* GetHistProDiffFlowPtEtaPOI()const     {return this->fHistProDiffFlowPtEtaPOI; } 
+   void      SetHistProDiffFlowPtEtaPOI(TProfile2D* const aHistProDiffFlowPtEtaPOI) 
      {this->fHistProDiffFlowPtEtaPOI = aHistProDiffFlowPtEtaPOI; }   
    
-   TProfile* GetHistProDiffFlowPtPOI()    {return this->fHistProDiffFlowPtPOI; } 
-   void      SetHistProDiffFlowPtPOI(TProfile* aHistProDiffFlowPtPOI) 
+   TProfile* GetHistProDiffFlowPtPOI()const    {return this->fHistProDiffFlowPtPOI; } 
+   void      SetHistProDiffFlowPtPOI(TProfile* const aHistProDiffFlowPtPOI) 
      {this->fHistProDiffFlowPtPOI = aHistProDiffFlowPtPOI; } 
    
-   TProfile* GetHistProDiffFlowEtaPOI()   {return this->fHistProDiffFlowEtaPOI; } 
-   void      SetHistProDiffFlowEtaPOI(TProfile* aHistProDiffFlowEtaPOI) 
+   TProfile* GetHistProDiffFlowEtaPOI()const   {return this->fHistProDiffFlowEtaPOI; } 
+   void      SetHistProDiffFlowEtaPOI(TProfile* const aHistProDiffFlowEtaPOI) 
      {this->fHistProDiffFlowEtaPOI = aHistProDiffFlowEtaPOI; } 
      
-   TH1D* GetHistSpreadOfFlow()   {return this->fHistSpreadOfFlow; } 
-   void      SetHistSpreadOfFlow(TH1D* aHistSpreadOfFlow) 
+   TH1D* GetHistSpreadOfFlow()const   {return this->fHistSpreadOfFlow; } 
+   void      SetHistSpreadOfFlow(TH1D* const aHistSpreadOfFlow) 
      {this->fHistSpreadOfFlow = aHistSpreadOfFlow; }    
    
    // harmonic:
@@ -118,8 +115,8 @@ class AliFlowAnalysisWithMCEventPlane {
 
    TList*       fHistList;          //list to hold all output histograms  
     
-   AliFlowCommonHist* fCommonHists;              //
-   AliFlowCommonHistResults* fCommonHistsRes;    //
+   AliFlowCommonHist* fCommonHists;              // hist
+   AliFlowCommonHistResults* fCommonHistsRes;    // hist
    
    TH1F*        fHistRP;                  // reaction plane
    TProfile*    fHistProIntFlow;          // profile used to calculate the integrated flow of RP particles

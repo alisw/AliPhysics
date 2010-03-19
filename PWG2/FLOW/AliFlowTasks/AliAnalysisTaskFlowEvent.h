@@ -11,15 +11,12 @@
 #ifndef AliAnalysisTaskFlowEvent_H
 #define AliAnalysisTaskFlowEvent_H
 
-//class AliESDEvent;
-//class AliAODEvent;
 class AliCFManager;
 class AliFlowEventSimpleMaker;
 class TList;
 class TRandom3;
-
-#include "TString.h"
-#include "AliAnalysisTaskSE.h"
+class AliAnalysisTaskSE;
+class TString;
 
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:

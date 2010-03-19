@@ -12,19 +12,23 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
+// AliFlowAnalysisWithMCEventPlane:
+// Description: Maker to analyze Flow from the generated MC reaction plane.
+//              This class is used to get the real value of the flow 
+//              to compare the other methods to when analysing simulated events
+// author: N. van der Kolk (kolk@nikhef.nl)
 
 #define AliFlowAnalysisWithMCEventPlane_cxx
  
-#include "Riostream.h"  //needed as include
-#include "TFile.h"      //needed as include
-#include "TProfile.h"   //needed as include
-#include "TProfile2D.h"   
-#include "TComplex.h"   //needed as include
+#include "Riostream.h"
+#include "TFile.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
 #include "TList.h"
+#include "TH1F.h"
+#include "TMath.h"
 
-class TH1F;
-
-#include "AliFlowCommonConstants.h"    //needed as include
+#include "AliFlowCommonConstants.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowCommonHist.h"
@@ -32,12 +36,6 @@ class TH1F;
 #include "AliFlowAnalysisWithMCEventPlane.h"
 
 class AliFlowVector;
-
-// AliFlowAnalysisWithMCEventPlane:
-// Description: Maker to analyze Flow from the generated MC reaction plane.
-//              This class is used to get the real value of the flow 
-//              to compare the other methods to when analysing simulated events
-// author: N. van der Kolk (kolk@nikhef.nl)
 
 ClassImp(AliFlowAnalysisWithMCEventPlane)
 
@@ -374,7 +372,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
 	dErrVRP += dYieldPtRP*dYieldPtRP*dErrvPtRP*dErrvPtRP;
       }
   }
-  if (dSumRP != 0. ) {
+  if (TMath::AreEqualAbs(dSumRP, 0.0, 1e-10) ) {
     dVRP /= dSumRP;  //because pt distribution should be normalised
     dErrVRP /= (dSumRP*dSumRP);
     dErrVRP = TMath::Sqrt(dErrVRP); 
@@ -420,7 +418,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
       }
     }//end of for(Int_t b=0;b<iNbinsPt;b++)  
   } else { cout<<"fHistProFlow is NULL"<<endl; }
-  if (dSumPOI != 0. ) {
+  if ( TMath::AreEqualAbs(dSumPOI, 0.0, 1e-10) ) {
     dVPOI /= dSumPOI;  //because pt distribution should be normalised
     dErrVPOI /= (dSumPOI*dSumPOI);
     dErrVPOI = TMath::Sqrt(dErrVPOI); 

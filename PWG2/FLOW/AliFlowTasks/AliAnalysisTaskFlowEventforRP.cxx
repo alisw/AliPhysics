@@ -35,7 +35,7 @@
 #include "TTimeStamp.h"
 
 // ALICE Analysis Framework
-class AliAnalysisTaskSE;
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 
 // ESD interface
@@ -60,6 +60,7 @@ class AliAnalysisTaskSE;
 #include "AliGenGeVSimEventHeader.h"
 
 // Interface to make the Flow Event Simple used in the flow analysis methods
+#include "AliFlowEventSimple.h"
 #include "AliFlowEventSimpleMaker.h"
 #include "AliFlowVector.h"
 #include "AliAnalysisTaskFlowEventforRP.h"
