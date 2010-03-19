@@ -203,10 +203,16 @@ void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 	// Set given parameter
 	
 	Int_t iBoard = -1;
+	Int_t iChannel = -1;
 
 	TSeqCollection* nameSplit = name.Tokenize("/");
 	TObjString * boardName = (TObjString *)nameSplit->At(2);
 	sscanf(boardName->String().Data(),"CIU%d",&iBoard);
+
+	TString paramName = ((TObjString *)nameSplit->At(3))->String();
+	Char_t channel[2] ; channel[1] = '\0';
+	channel[0] = paramName[paramName.Sizeof()-2];
+	sscanf(channel,"%d",&iChannel);
 		
 	if(name.Contains("TimeResolution")) SetTimeResolution((UShort_t) val,iBoard);
 	else if(name.Contains("WidthResolution")) SetWidthResolution((UShort_t) val,iBoard);
@@ -214,6 +220,7 @@ void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("SearchWindow")) SetSearchWindow((UInt_t) val,iBoard);
 	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
 	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
+	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,8*iBoard+(iChannel-1));
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
 }
 
@@ -271,6 +278,17 @@ void AliVZEROCalibData::SetGain(const Float_t* Gain)
 {
   if(Gain) for(int t=0; t<128; t++) fGain[t] = Gain[t];
   else for(int t=0; t<128; t++) fGain[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetTimeOffset(Float_t val, Int_t channel)
+{
+  if((channel>=0) && (channel<64)){
+    fTimeOffset[channel]=val;
+    AliInfo(Form("Time offset for channel &d set to %f",channel,fTimeOffset[channel]));
+  }
+  else
+    AliError(Form("Channel %d is not valid",channel));
 }
 
 //________________________________________________________________

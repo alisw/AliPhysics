@@ -20,7 +20,7 @@ class TH1F;
 
 class AliVZERODataDCS : public TObject {
 public:
-  enum {kNAliases=112,kNGraphs=64,kNHvChannel=64,kNLvChannel=16,kNCIUBoards = 8};
+  enum {kNAliases=176,kNGraphs=64,kNHvChannel=64,kNLvChannel=16,kNCIUBoards = 8};
   enum {kHvMin=0, kHvMax=3000};
   
   AliVZERODataDCS();

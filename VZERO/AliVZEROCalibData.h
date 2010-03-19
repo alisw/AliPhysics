@@ -81,7 +81,7 @@ class AliVZEROCalibData: public TNamed {
    
   void 	   SetGain(Float_t val, Int_t channel) {fGain[channel]=val;}
   void 	   SetGain(const Float_t* Gain);  
-  void     SetTimeOffset(Float_t val, Int_t channel) {fTimeOffset[channel]=val;}
+  void     SetTimeOffset(Float_t val, Int_t channel);
   void     SetTimeOffset(const Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(const Float_t* TimeGain);
