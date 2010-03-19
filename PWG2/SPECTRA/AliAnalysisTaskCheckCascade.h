@@ -13,7 +13,7 @@
 //              3. Supply an AliCFContainer meant to define the optimised topological selections
 //              4. Rough azimuthal correlation study (Eta, Phi)
 //            Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//            Modified :           A.Maire Jan2010, antonin.maire@ires.in2p3.fr
+//            Modified :           A.Maire Mar2010, antonin.maire@ires.in2p3.fr
 //-----------------------------------------------------------------
 
 class TList;
@@ -37,7 +37,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskCheckCascade();
   AliAnalysisTaskCheckCascade(const char *name);
-  virtual ~AliAnalysisTaskCheckCascade() {}
+  virtual ~AliAnalysisTaskCheckCascade();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -50,30 +50,59 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   
   virtual void   Terminate(Option_t *);
   
-  void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
-  void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
-  
-  
+  void SetCollidingSystems           (Short_t collidingSystems          = 0    ) { fCollidingSystems = collidingSystems;}
+  void SetAnalysisType               (const char* analysisType          = "ESD") { fAnalysisType     = analysisType;}
+  void SetRelaunchV0CascVertexers    (Bool_t rerunV0CascVertexers       = 0    ) { fkRerunV0CascVertexers       =  rerunV0CascVertexers;   }
+  void SetQualityCutZprimVtxPos      (Bool_t qualityCutZprimVtxPos      = kTRUE) { fkQualityCutZprimVtxPos      =  qualityCutZprimVtxPos;     }
+  void SetQualityCutNoTPConlyPrimVtx (Bool_t qualityCutNoTPConlyPrimVtx = kTRUE) { fkQualityCutNoTPConlyPrimVtx =  qualityCutNoTPConlyPrimVtx;}
+  void SetQualityCutTPCrefit         (Bool_t qualityCutTPCrefit         = kTRUE) { fkQualityCutTPCrefit         =  qualityCutTPCrefit;        }
+  void SetQualityCut80TPCcls         (Bool_t qualityCut80TPCcls         = kTRUE) { fkQualityCut80TPCcls         =  qualityCut80TPCcls;        }
+  void SetExtraSelections            (Bool_t extraSelections            = 0    ) { fkExtraSelections            =  extraSelections;           }
+
+
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
 
 
-        TString         fAnalysisType;         // "ESD" or "AOD" analysis type	
-        Short_t         fCollidingSystems;     // 0 = pp collisions or 1 = AA collisions
+        TString         fAnalysisType;                  // "ESD" or "AOD" analysis type	
+        Short_t         fCollidingSystems;              // 0 = pp collisions or 1 = AA collisions
 
-        AliESDpid       *fESDpid;               // Tool data member to manage the TPC Bethe-Bloch info
+        AliESDpid       *fESDpid;                       // Tool data member to manage the TPC Bethe-Bloch info
+        //TPaveText       *fPaveTextBookKeeping;          // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
 
+        Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
+        Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
+        Bool_t          fkQualityCutNoTPConlyPrimVtx;   // Boolean : kTRUE = prim vtx should be SPD or Tracking vertex
+        Bool_t          fkQualityCutTPCrefit;           // Boolean : kTRUE = ask for TPCrefit for the 3 daughter tracks
+        Bool_t          fkQualityCut80TPCcls;           // Boolean : kTRUE = ask for 80 TPC clusters for each daughter track
+        Bool_t          fkExtraSelections;              // Boolean : kTRUE = apply tighter selections, before starting the analysis
+        
+        Double_t        fAlephParameters[5];            // Array to store the 5 param values for the TPC Bethe-Bloch parametrisation
+        Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
+        Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 
 
              TList      *fListHistCascade;              //! List of Cascade histograms
+        
+        // - General histos (filled before the trigger selection)
+        TH1F    *fHistCascadeMultiplicityBeforeTrigSel; //! Cascade multiplicity distribution
+         
+        // - General histos (filled for any triggered event)
+        TH1F    *fHistCascadeMultiplicityForTrigEvt;              //! Cascade multiplicity distribution
+        TH1F    *fHistTrackMultiplicityForTrigEvt;                //! Track multiplicity distribution (without any cut = include ITS stand-alone + global tracks)
+        TH1F    *fHistTPCrefitTrackMultiplicityForTrigEvt;        //! Track multiplicity distribution for tracks with TPCrefit
+        
 
-        // - General histos (filled for any event)
-        TH1F	*fHistTrackMultiplicity;                //! Track multiplicity distribution (without any cut = include ITS stand-alone + global tracks)
-        TH1F	*fHistTPCrefitTrackMultiplicity;        //! Track multiplicity distribution for tracks with TPCrefit
-        TH1F	*fHistCascadeMultiplicity;              //! Cascade multiplicity distribution
-
+        // - General histos (filled for events selected in this analysis (|z(prim. vtx)| < 10 cm + prim vtx = SPD or Tracking) )
+        TH1F    *fHistCascadeMultiplicityForSelEvt;     //! Cascade multiplicity distribution
+        TH1F    *fHistPosBestPrimaryVtxXForSelEvt;      //! (best) primary vertex position distribution in x 
+        TH1F    *fHistPosBestPrimaryVtxYForSelEvt;      //! (best) primary vertex position distribution in y
+        TH1F    *fHistPosBestPrimaryVtxZForSelEvt;      //! (best) primary vertex position distribution in z
+        
+        
+        
 
         // - Characteristics for event with >1 cascade : Track Multiplicity, TPC clusters + Prim. vertex positions
         TH1F	*fHistTPCrefitTrackMultiplicityForCascadeEvt;   //! TPCrefit Track multiplicity distribution for event with >1 cascade candidate (NB: after quality sel. within the task)
@@ -84,16 +113,16 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 
         TH1F    *fHistVtxStatus;                        //! Is there a tracking vertex in the cascade event ?
 
-                // Vtx coming from the full tracking
-        TH1F    *fHistPosTrkgPrimaryVtxX;               //! primary vertex position distribution in x 
-        TH1F    *fHistPosTrkgPrimaryVtxY;               //! primary vertex position distribution in y
-        TH1F    *fHistPosTrkgPrimaryVtxZ;               //! primary vertex position distribution in z
+                // Vtx coming from the full tracking, for events containing at least a cascade
+        TH1F    *fHistPosTrkgPrimaryVtxXForCascadeEvt;  //! primary vertex position distribution in x 
+        TH1F    *fHistPosTrkgPrimaryVtxYForCascadeEvt;  //! primary vertex position distribution in y
+        TH1F    *fHistPosTrkgPrimaryVtxZForCascadeEvt;  //! primary vertex position distribution in z
         TH1F    *fHistTrkgPrimaryVtxRadius;             //! primary vertex (3D) radius distribution 
 
-                // Best primary Vtx available for the event
-        TH1F    *fHistPosBestPrimaryVtxX;               //! (best) primary vertex position distribution in x 
-        TH1F    *fHistPosBestPrimaryVtxY;               //! (best) primary vertex position distribution in y
-        TH1F    *fHistPosBestPrimaryVtxZ;               //! (best) primary vertex position distribution in z
+                // Best primary Vtx available, for events containing at least a cascade
+        TH1F    *fHistPosBestPrimaryVtxXForCascadeEvt;  //! (best) primary vertex position distribution in x 
+        TH1F    *fHistPosBestPrimaryVtxYForCascadeEvt;  //! (best) primary vertex position distribution in y
+        TH1F    *fHistPosBestPrimaryVtxZForCascadeEvt;  //! (best) primary vertex position distribution in z
         TH1F    *fHistBestPrimaryVtxRadius;             //! (best) primary vertex radius distribution 
 
                 // Correlation Best Vtx / Full Tracking Vtx
@@ -192,8 +221,8 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 	
 	
 	
-	// PART 3 : Towards the optimisation of topological selections
-	AliCFContainer  *fCFContCascadeCuts;		//! Container meant to store all the relevant distributions corresponding to the cut variables
+	// PART 3 : Towards the optimisation of topological selections / systematics
+	AliCFContainer  *fCFContCascadeCuts;            //! Container meant to store all the relevant distributions corresponding to the cut variables
 	
 	
 	// PART 4 :  Azimuthal correlation study
@@ -206,7 +235,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 10);
+  ClassDef(AliAnalysisTaskCheckCascade, 11);
 };
 
 #endif

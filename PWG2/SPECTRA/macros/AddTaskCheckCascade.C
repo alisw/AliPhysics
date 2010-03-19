@@ -20,8 +20,16 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t       lCollidingSystems
 
    // Create and configure the task
 	AliAnalysisTaskCheckCascade *taskcheckcascade = new AliAnalysisTaskCheckCascade("TaskCheckCascade");
-   taskcheckcascade->SetCollidingSystems(lCollidingSystems);
-   taskcheckcascade->SetAnalysisType(type);
+   taskcheckcascade-> SetCollidingSystems           (lCollidingSystems);
+   taskcheckcascade-> SetAnalysisType               (type);
+   
+   taskcheckcascade-> SetRelaunchV0CascVertexers    (0);     //NOTE
+   taskcheckcascade-> SetQualityCutZprimVtxPos      (kTRUE);
+   taskcheckcascade-> SetQualityCutNoTPConlyPrimVtx (kTRUE);
+   taskcheckcascade-> SetQualityCutTPCrefit         (kTRUE);
+   taskcheckcascade-> SetQualityCut80TPCcls         (kTRUE);
+        // taskcheckcascade-> SetExtraSelections            (0);
+   
    
    mgr->AddTask(taskcheckcascade);
 
@@ -48,11 +56,12 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t       lCollidingSystems
    */
    
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
+   
    outputFileName += ":PWG2CheckCascade";
    if (lCollidingSystems) outputFileName += "_AA_";
-   else outputFileName += "_PP_";
-   if (mgr->GetMCtruthEventHandler()) outputFileName += "MC_";
-   if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
+   else outputFileName += "_PP";
+   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
+   //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
    Printf("AddTaskCheckCascade - Set OutputFileName : \n %s\n", outputFileName.Data() );
 
@@ -61,8 +70,15 @@ AliAnalysisTaskCheckCascade *AddTaskCheckCascade(Short_t       lCollidingSystems
 							     AliAnalysisManager::kOutputContainer,
 							     outputFileName );
    
+//    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cPaveTextBookKeeping",
+// 							     TPaveText::Class(),
+// 							     AliAnalysisManager::kOutputContainer,
+// 							     outputFileName );
+   
+   
    mgr->ConnectInput( taskcheckcascade, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskcheckcascade, 1, coutput1);
+   //mgr->ConnectOutput(taskcheckcascade, 2, coutput2);
    
    return taskcheckcascade;
 }   
