@@ -20,7 +20,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   info->SetMCdata(mgr->GetMCtruthEventHandler());
 
   // settings for collisions
-  info->SetCollision(kFALSE);
+  info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
     info->SetTrigger(
       "CINT1B-ABCE-NOPF-ALL"
