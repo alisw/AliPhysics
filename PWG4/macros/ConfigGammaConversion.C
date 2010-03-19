@@ -40,7 +40,7 @@ Double_t kGCmaxRCut   = 180.;
 Double_t kGCetaCut    = 1.2;
 Double_t kGCptCut     = 0.02;
 Double_t kGCmaxZCut     = 240.;
-Double_t kGCchi2CutConversion   = 30.;
+Double_t kGCchi2CutConversion   = 50.;
 Double_t kGCchi2CutMeson   = 50.;
 
 Double_t kGCLineCutZRSlope = tan(2*atan(exp(-kGCetaCut)));
@@ -78,7 +78,7 @@ Double_t kGCminOpeningAngleGhostCut = 0.01;
 
 /** -------------------------------- Phi/R Mapping ---------------------------------------*/
 Int_t kGCnPhiIndex = 8;
-Int_t kGCnRIndex   = 7;
+Int_t kGCnRIndex   = 12;
 
 Double_t kGCminRadius   = 0.;
 Double_t kGCmaxRadius   = 200.;
@@ -106,11 +106,15 @@ Bool_t kGCplotMCEEnergy  = kTRUE;
 Bool_t kGCplotMCEPt      = kTRUE;
 Bool_t kGCplotMCEEta     = kTRUE;
 Bool_t kGCplotMCEPhi     = kTRUE;
+Bool_t kGCplotMCENTPCClusters = kTRUE;
+Bool_t kGCplotMCENITSClusters = kTRUE;
 
 Bool_t kGCplotMCPEnergy  = kTRUE;
 Bool_t kGCplotMCPPt      = kTRUE;
 Bool_t kGCplotMCPEta     = kTRUE;
 Bool_t kGCplotMCPPhi     = kTRUE;
+Bool_t kGCplotMCPNTPCClusters = kTRUE;
+Bool_t kGCplotMCPNITSClusters = kTRUE;
 
 Bool_t kGCplotMCallGammaEnergy = kTRUE;
 Bool_t kGCplotMCallGammaPt     = kTRUE;
@@ -220,11 +224,15 @@ Bool_t kGCplotESDEEnergy = kTRUE;
 Bool_t kGCplotESDEPt     = kTRUE;
 Bool_t kGCplotESDEEta    = kTRUE;
 Bool_t kGCplotESDEPhi    = kTRUE;
+Bool_t kGCplotESDENTPCClusters = kTRUE;
+Bool_t kGCplotESDENITSClusters = kTRUE;
 
 Bool_t kGCplotESDPEnergy = kTRUE;
 Bool_t kGCplotESDPPt     = kTRUE;
 Bool_t kGCplotESDPEta    = kTRUE;
 Bool_t kGCplotESDPPhi    = kTRUE;
+Bool_t kGCplotESDPNTPCClusters = kTRUE;
+Bool_t kGCplotESDPNITSClusters = kTRUE;
 
 Bool_t kGCplotESDConvGammaEnergy = kTRUE;
 Bool_t kGCplotESDConvGammaPt     = kTRUE;
@@ -358,8 +366,10 @@ Bool_t kGCplotESDCutdedxSigmaElectronLine=kTRUE;
 Bool_t kGCplotESDCutdedxSigmaPionLine=kTRUE;
 Bool_t kGCplotESDCutR             = kTRUE;
 Bool_t kGCplotESDCutLine          = kTRUE;
+Bool_t kGCplotESDCutZ             = kTRUE;
 Bool_t kGCplotESDGoodV0s          = kTRUE;
-Bool_t kGCplotESDAllV0s          = kTRUE;
+Bool_t kGCplotESDAllV0s           = kTRUE;
+Bool_t kGCplotESDAllV0sCurrentFinder = kTRUE;
 Bool_t kGCplotESDCutNDF           = kTRUE;
 Bool_t kGCplotESDCutChi2          = kTRUE;
 Bool_t kGCplotESDCutEta           = kTRUE;
@@ -499,6 +509,18 @@ Int_t kGCnXBinsPhi = 72;
 Double_t kGCfirstXBinPhi = -TMath::Pi();
 Double_t kGClastXBinPhi = TMath::Pi();
 
+//nTPCCluster-plots
+Int_t kGCnXBinsNTPCClusters = 200;
+Double_t kGCfirstXBinNTPCClusters = 0;
+Double_t kGClastXBinNTPCClusters = 200;
+
+//nITSCluster-plots
+Int_t kGCnXBinsNITSClusters = 6;
+Double_t kGCfirstXBinNITSClusters = 0;
+Double_t kGClastXBinNITSClusters = 6;
+
+
+
 //Mapping-plots
 Int_t kGCnXBinsMapping = 400;
 Double_t kGCfirstXBinMapping = -100.;
@@ -578,7 +600,7 @@ Double_t kGClastXBinGammaWidth = 1.;
 //GammaChi2-plots
 Int_t kGCnXBinsGammaChi2 = 100;
 Double_t kGCfirstXBinGammaChi2 = 0;
-Double_t kGClastXBinGammaChi2 = 100.;
+Double_t kGClastXBinGammaChi2 = 200.;
 
 //GammaNDF-plots
 Int_t kGCnXBinsGammaNDF = 10;
@@ -932,7 +954,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
     UInt_t imass = 2;	
 		
     //how many selection steps 
-    UInt_t nstep = 17;
+    UInt_t nstep = 18;
     const Int_t nvar = 3;
     const Int_t nbin0 = kGCnXBinsPt; 
     const Int_t nbin1 = kGCnXBinsEta;
@@ -1142,6 +1164,11 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments,AliAnaly
 	
   gammaconversion->SetMinOpeningAngleGhostCut(kGCminOpeningAngleGhostCut);
 	
+  Double_t lowPtMapping=0.4;
+  Double_t highPtMapping=1.5;
+  gammaconversion->SetLowPtMapping(lowPtMapping);
+  gammaconversion->SetHighPtMapping(highPtMapping);
+
   // define the width constraint used by KF particle.
   Double_t gammaWidth = 0.01;
   Double_t pi0Width   = 0.01;
@@ -1386,11 +1413,15 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotMCEPt == kTRUE){ histograms->AddHistogram("MC_E_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotMCEEta == kTRUE){ histograms->AddHistogram("MC_E_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
     if(kGCplotMCEPhi == kTRUE){ histograms->AddHistogram("MC_E_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
+    if(kGCplotMCENTPCClusters == kTRUE){ histograms->AddHistogram("MC_E_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
+    if(kGCplotMCENITSClusters == kTRUE){ histograms->AddHistogram("MC_E_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
 		
     if(kGCplotMCPEnergy == kTRUE){ histograms->AddHistogram("MC_P_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotMCPPt == kTRUE){ histograms->AddHistogram("MC_P_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotMCPEta == kTRUE){ histograms->AddHistogram("MC_P_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
     if(kGCplotMCPPhi == kTRUE){ histograms->AddHistogram("MC_P_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
+    if(kGCplotMCPNTPCClusters == kTRUE){ histograms->AddHistogram("MC_P_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
+    if(kGCplotMCPNITSClusters == kTRUE){ histograms->AddHistogram("MC_P_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
 		
     if(kGCplotMCallGammaEnergy == kTRUE){ histograms->AddHistogram("MC_allGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotMCallGammaPt == kTRUE){ histograms->AddHistogram("MC_allGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
@@ -1495,11 +1526,15 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDEPt == kTRUE){ histograms->AddHistogram("ESD_E_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotESDEEta == kTRUE){ histograms->AddHistogram("ESD_E_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
     if(kGCplotESDEPhi == kTRUE){ histograms->AddHistogram("ESD_E_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
+    if(kGCplotESDENTPCClusters == kTRUE){ histograms->AddHistogram("ESD_E_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
+    if(kGCplotESDENITSClusters == kTRUE){ histograms->AddHistogram("ESD_E_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
 		
     if(kGCplotESDPEnergy == kTRUE){ histograms->AddHistogram("ESD_P_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDPPt == kTRUE){ histograms->AddHistogram("ESD_P_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotESDPEta == kTRUE){ histograms->AddHistogram("ESD_P_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
     if(kGCplotESDPPhi == kTRUE){ histograms->AddHistogram("ESD_P_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
+    if(kGCplotESDPNTPCClusters == kTRUE){ histograms->AddHistogram("ESD_P_nTPCClusters" ,"" , kGCnXBinsNTPCClusters, kGCfirstXBinNTPCClusters, kGClastXBinNTPCClusters, "", "");}
+    if(kGCplotESDPNITSClusters == kTRUE){ histograms->AddHistogram("ESD_P_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNTPCClusters, kGClastXBinNITSClusters, "", "");}
 		
     if(kGCplotESDConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDConvGammaPt == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
@@ -1666,9 +1701,9 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotResolutionESDR == kTRUE){histograms->AddHistogram("Resolution_ESD_R" ,"" , kGCnXBinsResR, kGCfirstXBinResR, kGClastXBinResR,"","");}
     if(kGCplotResolutionESDZ == kTRUE){histograms->AddHistogram("Resolution_ESD_Z" ,"" , kGCnXBinsResZ, kGCfirstXBinResZ, kGClastXBinResZ,"","");}
 		
-    if(kGCplotESDNumberOfV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfV0s","Number of v0s",100, 0, 100,"","");}
-    if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",100, 0, 100,"","");}
-    if(kGCplotESDNumberOfContributorsVtx == kTRUE){histograms->AddHistogram("ESD_NumberOfContributorsVtx","Number of contributors to vertex",100, 0, 100,"","");}
+    if(kGCplotESDNumberOfV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfV0s","Number of v0s",100, -0.5, 99.5,"","");}
+    if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",100, -0.5, 99.5,"","");}
+    if(kGCplotESDNumberOfContributorsVtx == kTRUE){histograms->AddHistogram("ESD_NumberOfContributorsVtx","Number of contributors to vertex",100, -0.5, 99.5,"","");}
     if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracks","Number of Good ESD tracks",100, -0.5, 99.5,"","");}
 		
     //  debug histograms
@@ -1688,8 +1723,10 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDCutEta == kTRUE){histograms->AddHistogram("ESD_CutEta_InvMass" ,"Above #eta max" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutPt == kTRUE){histograms->AddHistogram("ESD_CutPt_InvMass" ,"Below p_{t} min" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutLine == kTRUE){histograms->AddHistogram("ESD_CutLine_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutZ == kTRUE){histograms->AddHistogram("ESD_CutZ_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDGoodV0s == kTRUE){histograms->AddHistogram("ESD_GoodV0s_InvMass" ,"Good V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDAllV0s == kTRUE){histograms->AddHistogram("ESD_AllV0s_InvMass" ,"All V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDAllV0s == kTRUE){histograms->AddHistogram("ESD_AllV0sCurrentFinder_InvMass" ,"All V0s Current Finder" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
 
     if(kGCplotESDTrueConvGammaTrackLength == kTRUE){histograms->AddHistogram("ESD_TrueConvGamma_TrackLength","Track length of TrueConvGamma",kGCnXBinsTrackLength,kGCfirstXBinTrackLength,kGClastXBinTrackLength,"","");}
     if(kGCplotESDTrueConvGammaTrackLengthVSInvMass == kTRUE){histograms->AddHistogram("ESD_TrueConvGamma_TrackLengthVSInvMass","Track length of TrueConvGamma vs Inv mass",kGCnXBinsTrackLength,kGCfirstXBinTrackLength,kGClastXBinTrackLength,kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,"","");}
@@ -1698,24 +1735,26 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotPi0Spectra == kTRUE){
       histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Mother_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_Mother_InvMass_1212","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_Mother_InvMass_0912","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_Mother_InvMass_0909","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt1212" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+      histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt0912" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+      histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt0909" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 
-      if(kGCdoNeutralMesonV0MCCheck == kTRUE){
-	histograms->AddHistogram("ESD_Mother_InvMass_1212","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
-	histograms->AddHistogram("ESD_Mother_InvMass_0912","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
-	histograms->AddHistogram("ESD_Mother_InvMass_0909","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      //      if(kGCdoNeutralMesonV0MCCheck == kTRUE){
+	histograms->AddHistogram("ESD_TruePi0_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_1212","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_0912","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_0909","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_OpeningAngle_1212" ,"" , kGCnXBinsOpeningAngle, kGCfirstXBinOpeningAngle, kGClastXBinOpeningAngle, "", "");
 	histograms->AddHistogram("ESD_TruePi0_OpeningAngle_0912" ,"" , kGCnXBinsOpeningAngle, kGCfirstXBinOpeningAngle, kGClastXBinOpeningAngle, "", "");
 	histograms->AddHistogram("ESD_TruePi0_OpeningAngle_0909" ,"" , kGCnXBinsOpeningAngle, kGCfirstXBinOpeningAngle, kGClastXBinOpeningAngle, "", "");
+	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt1212" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt0912" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 	histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt0909" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-	histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt1212" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-	histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt0912" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-	histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt0909" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-      }
+	//}
 
       histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt_Fiducial" ,"Invariant Mass vs Pt |eta|<0.9" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Mother_InvMass_Fiducial","Invariant mass |eta|<0.9",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");

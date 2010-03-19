@@ -353,8 +353,18 @@ Bool_t AliV0Reader::NextV0(){
       containerInput[1] = GetMotherCandidateEta();
       containerInput[2] = GetMotherCandidateMass();
     }
-    
-   
+    /*
+    if(fDoCF){
+      containerInput[0] = GetMotherCandidatePt();
+      containerInput[1] = GetMotherCandidateEta();
+      containerInput[2] = GetMotherCandidateMass();
+      
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepLikeSign);		// for CF	
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
+    }
+    */
+
     //checks if on the fly mode is set
     if ( !CheckV0FinderStatus(fCurrentV0IndexNumber) ){
       if(fHistograms != NULL){
@@ -365,6 +375,120 @@ Bool_t AliV0Reader::NextV0(){
     }
     if(fDoCF){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepGetOnFly);		// for CF	
+    }
+
+    if(fHistograms != NULL){
+      fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_InvMass",GetMotherCandidateMass());
+    }
+    
+    if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){             // avoid like sign
+      //  iResult=kFALSE;
+      if(fHistograms != NULL ){
+	fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
+	// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	//	fUpdateV0AlreadyCalled = kTRUE;
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepLikeSign);		// for CF	
+    }
+ 	
+	
+    if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kTPCrefit) || 
+	!(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTPCrefit) ){
+      //  if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kITSrefit) || 
+      //      !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kITSrefit) ){
+      //  iResult=kFALSE;
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutRefit_InvMass",GetMotherCandidateMass());
+	// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	//fUpdateV0AlreadyCalled = kTRUE;
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
+    }
+ 	
+
+
+    if( fCurrentNegativeESDTrack->GetKinkIndex(0) > 0 || 
+	fCurrentPositiveESDTrack->GetKinkIndex(0) > 0) {			
+      //iResult=kFALSE;
+      if(fHistograms != NULL ){
+	fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
+	// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	//fUpdateV0AlreadyCalled = kTRUE;
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
+    }
+ 	
+
+    if(fDodEdxSigmaCut == kTRUE){
+      if( fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	  fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
+	  fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	  fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
+	//iResult=kFALSE;
+	if(fHistograms != NULL ){
+	  fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
+	  // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	  // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	  //fUpdateV0AlreadyCalled = kTRUE;
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdx_electronselection);               // for CF
+      }
+
+      if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
+	if(fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	  //	  iResult=kFALSE;
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+      
+      if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
+	if(fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	  //	  iResult=kFALSE;
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdx_pionrejection);               // for CF
+      }
+
     }
     
     //checks if we have a prim vertex
@@ -510,6 +634,12 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	
   fCurrentNegativeESDTrack = fESDEvent->GetTrack(fCurrentV0->GetNindex());
   fCurrentPositiveESDTrack = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+
+  if(fCurrentPositiveESDTrack->GetSign() == -1 && fCurrentNegativeESDTrack->GetSign() == 1){  // switch wrong signed tracks
+    fCurrentNegativeESDTrack = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+    fCurrentPositiveESDTrack = fESDEvent->GetTrack(fCurrentV0->GetNindex());
+    switchTracks = kTRUE;
+  }
 	
   if(fCurrentNegativeKFParticle != NULL){
     delete fCurrentNegativeKFParticle;
@@ -548,8 +678,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
   }
 	
   fCurrentMotherKFCandidate->GetMass(fMotherCandidateKFMass,fMotherCandidateKFWidth);
-	
-	
+		
   if(fNegativeTrackLorentzVector != NULL){
     delete fNegativeTrackLorentzVector;
   }
@@ -596,16 +725,16 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	
 
   // for CF
-  Double_t containerInput[3];
-  if(fDoCF){
-    containerInput[0] = GetMotherCandidatePt();
-    containerInput[1] = GetMotherCandidateEta();
-    containerInput[2] = GetMotherCandidateMass();
+//   Double_t containerInput[3];
+//   if(fDoCF){
+//     containerInput[0] = GetMotherCandidatePt();
+//     containerInput[1] = GetMotherCandidateEta();
+//     containerInput[2] = GetMotherCandidateMass();
     
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepLikeSign);		// for CF	
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
-    fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
-  }
+//     fCFManager->GetParticleContainer()->Fill(containerInput,kStepLikeSign);		// for CF	
+//     fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCRefit);		// for CF	
+//     fCFManager->GetParticleContainer()->Fill(containerInput,kStepKinks);		// for CF	
+//   }
   
 
   if(fUseOwnXYZCalculation == kFALSE){
@@ -620,10 +749,10 @@ Bool_t AliV0Reader::UpdateV0Information(){
     fCurrentYValue = convpos[1];
     fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
   }
-
+  /*
   if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){             // avoid like sign
     iResult=kFALSE;
-    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
+    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE && doFillHistos == kTRUE){
       fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
       // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
       // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
@@ -631,18 +760,12 @@ Bool_t AliV0Reader::UpdateV0Information(){
     }
   }
 	
-  if(fCurrentPositiveESDTrack->GetSign() == -1 && fCurrentNegativeESDTrack->GetSign() == 1){  // switch wrong signed tracks
-    fCurrentNegativeESDTrack = fESDEvent->GetTrack(fCurrentV0->GetPindex());
-    fCurrentPositiveESDTrack = fESDEvent->GetTrack(fCurrentV0->GetNindex());
-    switchTracks = kTRUE;
-  }
-	
   if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kTPCrefit) || 
       !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTPCrefit) ){
     //  if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kITSrefit) || 
     //      !(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kITSrefit) ){
     iResult=kFALSE;
-    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
+    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE  && doFillHistos == kTRUE){
       fHistograms->FillHistogram("ESD_CutRefit_InvMass",GetMotherCandidateMass());
       // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
       // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
@@ -654,7 +777,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
       fCurrentPositiveESDTrack->GetKinkIndex(0) > 0) {			
 		
     iResult=kFALSE;
-    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
+    if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE && doFillHistos == kTRUE ){
       fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
       // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
       // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
@@ -669,7 +792,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
 	fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
       iResult=kFALSE;
-      if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
+      if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE  && doFillHistos == kTRUE){
 	fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
 	// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 	// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
@@ -681,7 +804,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	 fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
 	 fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	iResult=kFALSE;
-	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
+	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE  && doFillHistos == kTRUE){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
 	  // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 	  // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
@@ -695,7 +818,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
 	 fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
 	 fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	iResult=kFALSE;
-	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE){
+	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE && doFillHistos == kTRUE ){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
 	  // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 	  // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
@@ -704,7 +827,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
       }
     }
   }
-	
+  */
   fUpdateV0AlreadyCalled = kTRUE;
 
   return iResult;

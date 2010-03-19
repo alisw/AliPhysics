@@ -51,21 +51,22 @@ class AliV0Reader : public TObject {
   enum{
     kStepGenerated = 0,
     kStepReconstructable = 1, 
-    kStepLikeSign = 2,
-    kStepTPCRefit = 3,
-    kStepKinks = 4,
-    kStepdEdx = 5,
-    kStepGetOnFly = 6,
-    kStepNContributors = 7,
-    kStepTPCPID = 8,
-    kStepR = 9,
-    kStepLine = 10,
-    kStepZ = 11,
-    kStepNDF = 12,
-    kStepChi2 = 13,
-    kStepEta = 14,
-    kStepPt = 15,
-    kStepTrueGamma = 16
+    kStepGetOnFly = 2,
+    kStepLikeSign = 3,
+    kStepTPCRefit = 4,
+    kStepKinks = 5,
+    kStepdEdx_electronselection = 6,
+    kStepdEdx_pionrejection = 7,
+    kStepNContributors = 8,
+    kStepTPCPID = 9,
+    kStepR = 10,
+    kStepLine = 11,
+    kStepZ = 12,
+    kStepNDF = 13,
+    kStepChi2 = 14,
+    kStepEta = 15,
+    kStepPt = 16,
+    kStepTrueGamma = 17
   };
 	
   AliV0Reader();                                        //constructor
@@ -394,6 +395,26 @@ class AliV0Reader : public TObject {
    * Gets the dE/dx in the TPC of the positive track.
    */
   Double_t GetPositiveTrackTPCdEdx() const{return fCurrentPositiveESDTrack->GetTPCsignal();}
+
+  /*
+   * Gets the Number of the TPC clusters of the negative track.
+   */
+  Double_t GetNegativeTracknTPCClusters() const{return fCurrentNegativeESDTrack->GetNcls(1);}
+
+  /*
+   * Gets the Number of the TPC clusters of the positive track.
+   */
+  Double_t GetPositiveTracknTPCClusters() const{return fCurrentPositiveESDTrack->GetNcls(1);}
+	
+  /*
+   * Gets the Number of the ITS clusters of the negative track.
+   */
+  Double_t GetNegativeTracknITSClusters() const{return fCurrentNegativeESDTrack->GetNcls(0);}
+
+  /*
+   * Gets the Number of the ITS clusters of the positive track.
+   */
+  Double_t GetPositiveTracknITSClusters() const{return fCurrentPositiveESDTrack->GetNcls(0);}
 	
   /*
    * Update data which need to be updated every event.
