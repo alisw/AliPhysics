@@ -130,21 +130,22 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   enum{
     kStepGenerated = 0,
     kStepReconstructable = 1, 
-    kStepLikeSign = 2,
-    kStepTPCRefit = 3,
-    kStepKinks = 4,
-    kStepdEdx = 5,
-    kStepGetOnFly = 6,
-    kStepNContributors = 7,
-    kStepTPCPID = 8,
-    kStepR = 9,
-    kStepLine = 10,
-    kStepZ = 11,
-    kStepNDF = 12,
-    kStepChi2 = 13,
-    kStepEta = 14,
-    kStepPt = 15,
-    kStepTrueGamma = 16
+    kStepGetOnFly = 2,
+    kStepLikeSign = 3,
+    kStepTPCRefit = 4,
+    kStepKinks = 5,
+    kStepdEdx_electronselection = 6,
+    kStepdEdx_pionrejection = 7,
+    kStepNContributors = 8,
+    kStepTPCPID = 9,
+    kStepR = 10,
+    kStepLine = 11,
+    kStepZ = 12,
+    kStepNDF = 13,
+    kStepChi2 = 14,
+    kStepEta = 15,
+    kStepPt = 16,
+    kStepTrueGamma = 17
   };
   
   AliV0Reader* fV0Reader; // The V0 reader object 

@@ -369,14 +369,32 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
   fNZIndex = 6;
 
   //  fRBinLimits= new Double_t[8];   Kenneth: moved from pointer to fixed array
+  /*
   fRBinLimits[0]=0.;
-  fRBinLimits[1]=12.;
-  fRBinLimits[2]=22.;
+  fRBinLimits[1]=13.;   //changed from 12 to 13: A. Marin 01.03.10
+  fRBinLimits[2]=21.;   //changed from 22 to 21: A. Marin 01.03.10 
   fRBinLimits[3]=35.;
   fRBinLimits[4]=55.;
   fRBinLimits[5]=72.;
   fRBinLimits[6]=90.;
   fRBinLimits[7]=500.;
+  */
+
+  fRBinLimits[0]=0.;
+  fRBinLimits[1]=5.75;
+  fRBinLimits[2]=9.5;
+  fRBinLimits[3]=13.;
+  fRBinLimits[4]=21.;
+  fRBinLimits[5]=27.5;
+  fRBinLimits[6]=35.;
+  fRBinLimits[7]=42.;
+  fRBinLimits[8]=55.;
+  fRBinLimits[9]=72.;
+  fRBinLimits[10]=81.5;
+  fRBinLimits[11]=90.;
+  fRBinLimits[12]=500.;
+
+
 
   //  fZBinLimits= new Double_t[7]; Kenneth: moved from pointer to fixed array
   fZBinLimits[0]=0.;
@@ -404,6 +422,11 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
 //mapping
 void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t nRIndex,Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
   // see header file for documentation
+
+  Double_t tmptogetridofwarning = firstX + lastX + nYBins + firstY + lastY;
+  if(tmptogetridofwarning < 0){
+    cout<<"Less than zero"<<endl;
+  }
 	
   for(Int_t phi =0; phi<fNPhiIndex;phi++){
 		
@@ -428,7 +451,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
       TString titleMC="";
       titleMC.Form("Electron-Positron MC Mapping-Phi%02d-R%02d",phi,r);
 			
-      AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+      //AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
 			
       //ESD
       TString nameESD="";
@@ -436,7 +459,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
       TString titleESD="";
       titleESD.Form("Electron-Positron ESD Mapping-Phi%02d-R%02d",phi,r);
 			
-      AddHistogram(nameESD, titleESD, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+      //AddHistogram(nameESD, titleESD, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
     }
   }
 	
@@ -460,7 +483,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     TString titleMC="";
     titleMC.Form("Electron-Positron MC Mapping-Phi%02d",phi);
 		
-    AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+    //AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
 		
     //MC
     TString nameESD="";
@@ -468,7 +491,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     TString titleESD="";
     titleESD.Form("Electron-Positron ESD Mapping-Phi%02d",phi);
 		
-    AddHistogram(nameESD, titleESD, nXBins, firstX, lastX,nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+    // AddHistogram(nameESD, titleESD, nXBins, firstX, lastX,nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
   }
 	
 	
@@ -476,7 +499,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
 		
     // setting axis to "" changes below
     xAxisTitle="#phi";
-      yAxisTitle="counts";
+    yAxisTitle="counts";
     //Creating the axis titles
     //if(xAxisTitle.Length() == 0){
     //  xAxisTitle.Form("R %02d",r);
@@ -491,7 +514,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     TString titleMC="";
     titleMC.Form("Electron-Positron MC Mapping-R%02d",r);
 		
-    AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+    // AddHistogram(nameMC, titleMC, nXBins, firstX, lastX, nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
 		
     //ESD
     TString nameESD="";
@@ -499,7 +522,7 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     TString titleESD="";
     titleESD.Form("Electron-Positron ESD Mapping-R%02d",r);
 		
-    AddHistogram(nameESD, titleESD, nXBins, firstX, lastX,nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
+    //AddHistogram(nameESD, titleESD, nXBins, firstX, lastX,nYBins, firstY, lastY, xAxisTitle, yAxisTitle);
 		
     //Mapping Phi in R
     TString nameMCPhiInR="";
