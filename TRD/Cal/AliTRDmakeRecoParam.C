@@ -28,26 +28,27 @@ TObjArray* CreateRecoParamObject()
   AliTRDrecoParam *rec = 0x0;
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
   rec->SetAsDefault();
-  rec->SetNameTitle("Default", "TRD Default Reco Param");
-  // further settings for low flux reco param
-  // reco->SetThisAndThat()
-
-  recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
   rec->SetEventSpecie(AliRecoParam::kLowMult);
   rec->SetNameTitle("LOW", "TRD Low Flux Reco Param");
+  rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
+  // further settings for low flux reco param
+  // reco->SetThisAndThat()
 
   recos->AddLast(rec = AliTRDrecoParam::GetHighFluxParam());
   rec->SetEventSpecie(AliRecoParam::kHighMult);
   rec->SetNameTitle("HIGH", "TRD High Flux Reco Param");
+  rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
 
   recos->AddLast(rec = AliTRDrecoParam::GetCosmicTestParam());
   rec->SetEventSpecie(AliRecoParam::kCosmic);
   rec->SetNameTitle("COSMIC", "TRD Cosmic Reco Param");
+  rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
   rec->SetRawStreamVersion("FAST");
 
   recos->AddLast(rec = AliTRDrecoParam::GetCosmicTestParam());
   rec->SetEventSpecie(AliRecoParam::kCalib);
   rec->SetNameTitle("CALIBRATION", "TRD Calibration Reco Param");
+  rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
   rec->SetRawStreamVersion("FAST");
 
 //  recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
