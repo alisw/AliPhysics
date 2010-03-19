@@ -72,6 +72,9 @@
  * Initial Revision
  *
  **************************************************************************/
+/*//
+//// General class for a three-vector
+///*/
 #ifndef ST_THREE_VECTOR_HH
 #define ST_THREE_VECTOR_HH
 #ifdef __ROOT__
@@ -141,15 +144,15 @@ public:
     T   x()                        const;
     T   y()                        const;
     T   z()                        const;
-    T   theta()                    const;
-    T   cosTheta()                 const;
-    T   phi()                      const;
-    T   perp()                     const;
-    T   perp2()                    const;
-    T   magnitude()                const;
-    T   mag()                      const;
-    T   mag2()                     const;
-    T   pseudoRapidity()           const;
+    T   Theta()                    const;
+    T   CosTheta()                 const;
+    T   Phi()                      const;
+    T   Perp()                     const;
+    T   Perp2()                    const;
+    T   Magnitude()                const;
+    T   Mag()                      const;
+    T   Mag2()                     const;
+    T   PseudoRapidity()           const;
     T   operator() (size_t)        const;
     T   operator[] (size_t)        const;
 
@@ -169,13 +172,13 @@ public:
     AliFmThreeVector<T>  operator+ ();
     AliFmThreeVector<T>& operator*= (double);
     AliFmThreeVector<T>& operator/= (double);
-    AliFmThreeVector<T>  pseudoProduct(double,double,double) const;
+    AliFmThreeVector<T>  PseudoProduct(double,double,double) const;
  
 #ifndef ST_NO_MEMBER_TEMPLATES
-    template<class X> T                angle(const AliFmThreeVector<X>&) const;
-    template<class X> AliFmThreeVector<T> cross(const AliFmThreeVector<X>&) const;
-    template<class X> T                dot  (const AliFmThreeVector<X>&) const;
-    template<class X> AliFmThreeVector<T> pseudoProduct(const AliFmThreeVector<X>&) const;
+    template<class X> T                Angle(const AliFmThreeVector<X>&) const;
+    template<class X> AliFmThreeVector<T> Cross(const AliFmThreeVector<X>&) const;
+    template<class X> T                Dot  (const AliFmThreeVector<X>&) const;
+    template<class X> AliFmThreeVector<T> PseudoProduct(const AliFmThreeVector<X>&) const;
     
     template<class X> bool operator == (const AliFmThreeVector<X>& v) const;
     template<class X> bool operator != (const AliFmThreeVector<X>& v) const;
@@ -183,15 +186,15 @@ public:
     template<class X> AliFmThreeVector<T>& operator+= (const AliFmThreeVector<X>&);
     template<class X> AliFmThreeVector<T>& operator-= (const AliFmThreeVector<X>&);
 #else    
-    T                angle(const AliFmThreeVector<float>&) const;
-    AliFmThreeVector<T> cross(const AliFmThreeVector<float>&) const;
-    T                dot  (const AliFmThreeVector<float>&) const;
-    AliFmThreeVector<T> pseudoProduct(const AliFmThreeVector<float>&) const;
+    T                Angle(const AliFmThreeVector<float>&) const;
+    AliFmThreeVector<T> Cross(const AliFmThreeVector<float>&) const;
+    T                Dot  (const AliFmThreeVector<float>&) const;
+    AliFmThreeVector<T> PseudoProduct(const AliFmThreeVector<float>&) const;
     
-    T                angle(const AliFmThreeVector<double>&) const;
-    T                dot  (const AliFmThreeVector<double>&) const;
-    AliFmThreeVector<T> cross(const AliFmThreeVector<double>&) const;
-    AliFmThreeVector<T> pseudoProduct(const AliFmThreeVector<double>&) const;
+    T                Angle(const AliFmThreeVector<double>&) const;
+    T                Dot  (const AliFmThreeVector<double>&) const;
+    AliFmThreeVector<T> Cross(const AliFmThreeVector<double>&) const;
+    AliFmThreeVector<T> PseudoProduct(const AliFmThreeVector<double>&) const;
 
     bool operator == (const AliFmThreeVector<float>& v) const;
     bool operator != (const AliFmThreeVector<float>& v) const;
@@ -206,7 +209,7 @@ public:
   int             valid(double world = 1.e+5) const;
     int               bad(double world = 1.e+5) const;
 protected:
-    T    mX1, mX2, mX3;
+    T    mX1, mX2, mX3;  // Three vector components
 #ifdef __ROOT__
   ClassDef(AliFmThreeVector,3)
 #endif /* __ROOT__ */
@@ -234,8 +237,8 @@ inline void AliFmThreeVector<T>::SetZ(T z) {mX3 = z;}
 template<class T>
 void AliFmThreeVector<T>::SetPhi(T angle)
 {
-    double  r = magnitude();
-    double th = theta();
+    double  r = Magnitude();
+    double th = Theta();
     
     mX1 = r*sin(th)*cos(angle);
     mX2 = r*sin(th)*sin(angle);
@@ -244,8 +247,8 @@ void AliFmThreeVector<T>::SetPhi(T angle)
 template <class T>
 void AliFmThreeVector<T>::SetTheta(T angle)
 {
-    double r  = magnitude();
-    double ph = phi();
+    double r  = Magnitude();
+    double ph = Phi();
 
     mX1 = r*sin(angle)*cos(ph);
     mX2 = r*sin(angle)*sin(ph);
@@ -255,8 +258,8 @@ void AliFmThreeVector<T>::SetTheta(T angle)
 template <class T>
 void AliFmThreeVector<T>::SetMagnitude(T r)
 {
-    double th = theta();
-    double ph = phi();
+    double th = Theta();
+    double ph = Phi();
     
     mX1 = r*sin(th)*cos(ph);
     mX2 = r*sin(th)*sin(ph);
@@ -279,38 +282,38 @@ template<class T>
 inline T AliFmThreeVector<T>::z() const {return mX3;}
 
 template<class T>
-inline T AliFmThreeVector<T>::theta() const
+inline T AliFmThreeVector<T>::Theta() const
 {
-  return acos(cosTheta());
+  return acos(CosTheta());
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::cosTheta() const
+inline T AliFmThreeVector<T>::CosTheta() const
 {
-  return mX3/(mag()+1e-20);
+  return mX3/(Mag()+1e-20);
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::phi() const
+inline T AliFmThreeVector<T>::Phi() const
 {
     return atan2(mX2,mX1);
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::pseudoRapidity() const
+inline T AliFmThreeVector<T>::PseudoRapidity() const
 {
     //
     // change code to more optimal:
-    // double m = mag();
+    // double m = Mag();
     // return 0.5*::log( (m+z())/(m-z()) );
-    double tmp = tan(theta()/2.); if (tmp <=0.) return 1e20;
+    double tmp = tan(Theta()/2.); if (tmp <=0.) return 1e20;
     return -::log(tmp);
 }
 
 template<class T>
 inline AliFmThreeVector<T> AliFmThreeVector<T>::Unit() const
 {
-    double tmp = mag(); if (tmp<=0.) tmp = 1e-20;
+    double tmp = Mag(); if (tmp<=0.) tmp = 1e-20;
     return *this/tmp;
 }
 
@@ -369,31 +372,31 @@ void AliFmThreeVector<T>::RotateZ(T angle)
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::perp() const
+inline T AliFmThreeVector<T>::Perp() const
 {
     return ::sqrt(mX1*mX1+mX2*mX2);
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::perp2() const
+inline T AliFmThreeVector<T>::Perp2() const
 {
     return mX1*mX1+mX2*mX2;
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::magnitude() const
+inline T AliFmThreeVector<T>::Magnitude() const
 {
-    return mag();
+    return Mag();
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::mag() const
+inline T AliFmThreeVector<T>::Mag() const
 {
     return ::sqrt(mX1*mX1+mX2*mX2+mX3*mX3);
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::mag2() const
+inline T AliFmThreeVector<T>::Mag2() const
 {
     return mX1*mX1+mX2*mX2+mX3*mX3;
 }
@@ -462,7 +465,7 @@ inline AliFmThreeVector<T>& AliFmThreeVector<T>::operator/= (double c)
 
 template<class T>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::pseudoProduct(double x,double y,double z) const
+AliFmThreeVector<T>::PseudoProduct(double x,double y,double z) const
 {
     return AliFmThreeVector<T>(mX1*x,mX2*y,mX3*z);
 }
@@ -539,7 +542,7 @@ AliFmThreeVector<T>::operator-= (const AliFmThreeVector<X>& v)
 
 template<class T>
 template<class X>
-inline T AliFmThreeVector<T>::dot(const AliFmThreeVector<X>& v) const
+inline T AliFmThreeVector<T>::Dot(const AliFmThreeVector<X>& v) const
 {
     return mX1*v.x() + mX2*v.y() + mX3*v.z();
 }
@@ -547,7 +550,7 @@ inline T AliFmThreeVector<T>::dot(const AliFmThreeVector<X>& v) const
 template<class T>
 template<class X>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::cross(const AliFmThreeVector<X>& v) const
+AliFmThreeVector<T>::Cross(const AliFmThreeVector<X>& v) const
 {
     return AliFmThreeVector<T>(mX2*v.z() - mX3*v.y(),
 			    mX3*v.x() - mX1*v.z(),
@@ -556,19 +559,19 @@ AliFmThreeVector<T>::cross(const AliFmThreeVector<X>& v) const
 
 template<class T>
 template<class X>
-inline T AliFmThreeVector<T>::angle(const AliFmThreeVector<X>& vec) const
+inline T AliFmThreeVector<T>::Angle(const AliFmThreeVector<X>& vec) const
 {
-    double norm = this->mag2()*vec.mag2(); 
+    double norm = this->Mag2()*vec.Mag2(); 
     
-    return norm > 0 ? acos(this->dot(vec)/(::sqrt(norm))) : 0;
+    return norm > 0 ? acos(this->Dot(vec)/(::sqrt(norm))) : 0;
 }
 
 template<class T>
 template<class X>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::pseudoProduct(const AliFmThreeVector<X>& v) const
+AliFmThreeVector<T>::PseudoProduct(const AliFmThreeVector<X>& v) const
 {
-    return this->pseudoProduct(v.x(),v.y(),v.z());
+    return this->PseudoProduct(v.x(),v.y(),v.z());
 }
 
 #endif
@@ -675,20 +678,20 @@ AliFmThreeVector<T>::operator-= (const AliFmThreeVector<double>& v)
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::dot(const AliFmThreeVector<float>& v) const
+inline T AliFmThreeVector<T>::Dot(const AliFmThreeVector<float>& v) const
 {
     return mX1*v.x() + mX2*v.y() + mX3*v.z();
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::dot(const AliFmThreeVector<double>& v) const
+inline T AliFmThreeVector<T>::Dot(const AliFmThreeVector<double>& v) const
 {
     return mX1*v.x() + mX2*v.y() + mX3*v.z();
 }
 
 template<class T>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::cross(const AliFmThreeVector<float>& v) const
+AliFmThreeVector<T>::Cross(const AliFmThreeVector<float>& v) const
 {
     return AliFmThreeVector<T>(mX2*v.z() - mX3*v.y(),
 			    mX3*v.x() - mX1*v.z(),
@@ -697,7 +700,7 @@ AliFmThreeVector<T>::cross(const AliFmThreeVector<float>& v) const
 
 template<class T>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::cross(const AliFmThreeVector<double>& v) const
+AliFmThreeVector<T>::Cross(const AliFmThreeVector<double>& v) const
 {
     return AliFmThreeVector<T>(mX2*v.z() - mX3*v.y(),
 			    mX3*v.x() - mX1*v.z(),
@@ -705,31 +708,31 @@ AliFmThreeVector<T>::cross(const AliFmThreeVector<double>& v) const
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::angle(const AliFmThreeVector<float>& v) const
+inline T AliFmThreeVector<T>::Angle(const AliFmThreeVector<float>& v) const
 {
-    double tmp = mag()*v.mag(); if (tmp <=0) tmp = 1e-20;
-    return acos(this->dot(v)/tmp);
+    double tmp = Mag()*v.Mag(); if (tmp <=0) tmp = 1e-20;
+    return acos(this->Dot(v)/tmp);
 }
 
 template<class T>
-inline T AliFmThreeVector<T>::angle(const AliFmThreeVector<double>& v) const
+inline T AliFmThreeVector<T>::Angle(const AliFmThreeVector<double>& v) const
 {
-    double tmp = mag()*v.mag(); if (tmp <=0) tmp = 1e-20;
-    return acos(this->dot(v)/tmp);
-}
-
-template<class T>
-inline AliFmThreeVector<T>
-AliFmThreeVector<T>::pseudoProduct(const AliFmThreeVector<float>& v) const
-{
-    return this->pseudoProduct(v.x(),v.y(),v.z());
+    double tmp = Mag()*v.Mag(); if (tmp <=0) tmp = 1e-20;
+    return acos(this->Dot(v)/tmp);
 }
 
 template<class T>
 inline AliFmThreeVector<T>
-AliFmThreeVector<T>::pseudoProduct(const AliFmThreeVector<double>& v) const
+AliFmThreeVector<T>::PseudoProduct(const AliFmThreeVector<float>& v) const
 {
-    return this->pseudoProduct(v.x(),v.y(),v.z());
+    return this->PseudoProduct(v.x(),v.y(),v.z());
+}
+
+template<class T>
+inline AliFmThreeVector<T>
+AliFmThreeVector<T>::PseudoProduct(const AliFmThreeVector<double>& v) const
+{
+    return this->PseudoProduct(v.x(),v.y(),v.z());
 }
 #endif  // ST_NO_MEMBER_TEMPLATES
 template<class T>
@@ -787,13 +790,13 @@ template<> ostream&  operator<<(ostream& os,const AliFmThreeVector<float>& v);
 //        Non-member functions
 //
 template<class T>
-inline T abs(const AliFmThreeVector<T>& v) {return v.mag();}
+inline T abs(const AliFmThreeVector<T>& v) {return v.Mag();}
 
 template<class T, class X>
 inline AliFmThreeVector<T>
 cross_product(const AliFmThreeVector<T>& v1, const AliFmThreeVector<X>& v2)
 {
-    return v1.cross(v2);
+    return v1.Cross(v2);
 }
 
 
@@ -817,7 +820,7 @@ operator- (const AliFmThreeVector<T>& v1, const AliFmThreeVector<X>& v2)
 template<class T, class X>
 inline T operator* (const AliFmThreeVector<T>& v1, const AliFmThreeVector<X>& v2)
 {
-    return AliFmThreeVector<T>(v1).dot(v2);
+    return AliFmThreeVector<T>(v1).Dot(v2);
 }
 
 template<class T>

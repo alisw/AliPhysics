@@ -64,6 +64,9 @@
  * Initial Revision
  *
  **************************************************************************/
+/*//
+//// General class for a Lorentz four-vector
+///*/
 #ifndef ST_LORENTZ_VECTOR_HH
 #define ST_LORENTZ_VECTOR_HH
 
@@ -126,21 +129,21 @@ public:
     void SetVect(const AliFmThreeVector<double>&);
 #endif   
 
-    T perp()               const;
-    T perp2()              const;
-    T pseudoRapidity()     const;
-    T phi()                const;
-    T theta()              const;
-    T cosTheta()           const;
+    T Perp()               const;
+    T Perp2()              const;
+    T PseudoRapidity()     const;
+    T Phi()                const;
+    T Theta()              const;
+    T CosTheta()           const;
     
-    T plus()               const;
-    T minus()              const;
+    T Plus()               const;
+    T Minus()              const;
     
     T m()                  const; 
     T m2()                 const; 
     T mt()                 const;
     T mt2()                const;
-    T rapidity()           const;
+    T Rapidity()           const;
     
 #ifndef ST_NO_MEMBER_TEMPLATES
     template<class X> AliFmLorentzVector<T> boost(const AliFmLorentzVector<X>&) const;
@@ -172,8 +175,8 @@ public:
 #endif
 
 protected:
-    AliFmThreeVector<T> mThreeVector;
-    T	             mX4;
+    AliFmThreeVector<T> mThreeVector; // The spatial three-vector
+    T	             mX4;             // The fourth components
 #ifdef __ROOT__
   ClassDef(AliFmLorentzVector,3)
 #endif
@@ -202,10 +205,10 @@ T AliFmLorentzVector<T>::m2() const
 }
 
 template<class T>
-T AliFmLorentzVector<T>::plus() const { return (e() + pz()); }
+T AliFmLorentzVector<T>::Plus() const { return (e() + pz()); }
 
 template<class T>
-T AliFmLorentzVector<T>::minus() const { return (e() - pz()); }
+T AliFmLorentzVector<T>::Minus() const { return (e() - pz()); }
 
 template<class T>
 T AliFmLorentzVector<T>::m() const
@@ -220,7 +223,7 @@ T AliFmLorentzVector<T>::m() const
 template<class T>
 T AliFmLorentzVector<T>::mt2() const
 {
-    return this->perp2() + m2();
+    return this->Perp2() + m2();
 }
 
 template<class T>
@@ -285,22 +288,22 @@ template<class T>
 T AliFmLorentzVector<T>::t() const {return mX4;}
 
 template<class T>
-T AliFmLorentzVector<T>::perp() const {return mThreeVector.Perp();}
+T AliFmLorentzVector<T>::Perp() const {return mThreeVector.Perp();}
 
 template<class T>
-T AliFmLorentzVector<T>::perp2() const {return mThreeVector.Perp2();}
+T AliFmLorentzVector<T>::Perp2() const {return mThreeVector.Perp2();}
 
 template<class T>
-T AliFmLorentzVector<T>::pseudoRapidity() const {return mThreeVector.PseudoRapidity();}
+T AliFmLorentzVector<T>::PseudoRapidity() const {return mThreeVector.PseudoRapidity();}
 
 template<class T>
-T AliFmLorentzVector<T>::phi() const {return mThreeVector.Phi();}
+T AliFmLorentzVector<T>::Phi() const {return mThreeVector.Phi();}
 
 template<class T>
-T AliFmLorentzVector<T>::theta() const {return mThreeVector.Theta();}
+T AliFmLorentzVector<T>::Theta() const {return mThreeVector.Theta();}
 
 template<class T>
-T AliFmLorentzVector<T>::cosTheta() const {return mThreeVector.CosTheta();}
+T AliFmLorentzVector<T>::CosTheta() const {return mThreeVector.CosTheta();}
 
 template<class T>
 T AliFmLorentzVector<T>::operator() (size_t i) const
@@ -371,7 +374,7 @@ T& AliFmLorentzVector<T>::operator[] (size_t i)
 }
 
 template<class T>
-T AliFmLorentzVector<T>::rapidity() const
+T AliFmLorentzVector<T>::Rapidity() const
 {
     return 0.5*::log((mX4+mThreeVector.z())/(mX4-mThreeVector.z())+1e-20);
 }

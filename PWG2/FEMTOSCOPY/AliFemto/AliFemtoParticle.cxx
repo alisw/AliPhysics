@@ -433,7 +433,7 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
 void AliFemtoParticle::CalculatePurity(){
   // Calculate additional parameterized purity
 
-  double tPt = fFourMomentum.perp();
+  double tPt = fFourMomentum.Perp();
   // pi -
   fPurity[0] = fgPrimPimPar0*(1.-exp((tPt-fgPrimPimPar1)/fgPrimPimPar2));
   fPurity[0] *= fTrack->PidProbPion();
