@@ -951,7 +951,7 @@ Bool_t AliHLTHOMERManager::CheckTriggerDecision() {
 
   if ( !fCurrentReader || !IsConnected() ) {
     HLTError(Form("Not connected yet."));
-    return NULL;
+    return kFALSE;
   }
 
   AliHLTHOMERBlockDesc blockDesc;
