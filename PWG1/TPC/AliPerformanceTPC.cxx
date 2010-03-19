@@ -311,7 +311,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   }
 
   // trigger
-  if(!bUseMC) {
+  if(!bUseMC &&GetTriggerClass()) {
     Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) return; 
   }

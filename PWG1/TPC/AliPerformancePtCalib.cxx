@@ -349,9 +349,10 @@ void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliES
       return;
    }
 
-    Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
-    if(!isEventTriggered) return;
-
+   if (GetTriggerClass()){
+     Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+     if(!isEventTriggered) return;
+   }
    
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
   
