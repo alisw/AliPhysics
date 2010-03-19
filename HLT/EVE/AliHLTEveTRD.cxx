@@ -137,7 +137,7 @@ TEvePointSetArray * AliHLTEveTRD::CreatePointSetArray(){
 void AliHLTEveTRD::UpdateElements() {
   //See header file for documentation
   if(fCanvas) fCanvas->Update();
-  if(fEveClusters) fEveClusters->ResetBBox();
+  // if(fEveClusters) fEveClusters->ResetBBox();
 
   for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
     fEveColClusters->GetBin(ib)->ResetBBox();
@@ -147,7 +147,7 @@ void AliHLTEveTRD::UpdateElements() {
 
 void AliHLTEveTRD::ResetElements(){
   //See header file for documentation
-  if(fEveClusters) fEveClusters->Reset();
+  // if(fEveClusters) fEveClusters->Reset();
  
   if(fEveColClusters){
     for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
