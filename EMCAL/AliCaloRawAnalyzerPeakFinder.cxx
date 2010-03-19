@@ -133,7 +133,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
 	{
 	  //	  cout << __FILE__ << __LINE__ <<":, maxamp = " << maxamp << ", ped = "<< ped  << ",. maxf = "<< maxf << ", maxampindex = "<< maxampindex  << endl;
-	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit );
+	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
  	}
       
       int first;
@@ -221,18 +221,17 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      //      tof = tof/fAmpA[tmpindex];
 
 	      
-	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kDummy, fAmpA[tmpindex], tof, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
+	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, fAmpA[tmpindex], tof, timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
 					AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );  
 	    }
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
-					AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kCrude, maxf, timebinOffset); 
 	    }
 	}
       else 
 	{
-	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit);
+	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
 	}
     }
    //  cout << __FILE__ << __LINE__ <<  "WARNING, returning amp = -1 "  <<  endl;

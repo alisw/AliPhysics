@@ -192,6 +192,33 @@ AliCaloRawAnalyzer::Max( const AliCaloBunchInfo *const bunch , int *const maxind
 }
 
 
+bool  
+AliCaloRawAnalyzer::CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch ) const
+{
+  // a bunch is considered invalid if the maximum is in the first or last time-bin
+  short tmpmax = -1;
+  int tmpindex = -1;
+  const UShort_t *sig = bunch->GetData();
+
+  for(int i=0; i < bunch->GetLength(); i++ )
+    {
+      if( sig[i] > tmpmax )
+	{
+	  tmpmax   =  sig[i];
+	  tmpindex =  i; 
+	}
+    }
+  
+  bool bunchOK = true;
+  if (tmpindex == 0 || tmpindex == (bunch->GetLength()-1) )
+    {
+      bunchOK = false;
+    }
+  
+  return  bunchOK;
+}
+
+
 int 
 AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,short *const maxampbin, short *const maxamplitude ) const
 {
@@ -216,10 +243,13 @@ AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,sho
 	}
     }
  
-  
-  //  *maxampbin     = indx;
-  //  *maxamplitude  = max;
- 
+  if (bunchindex >= 0) {
+    bool bunchOK = CheckBunchEdgesForMax( &bunchvector.at(bunchindex) );
+    if (! bunchOK) { 
+      bunchindex = -1; 
+    }
+  }
+
   return  bunchindex;
 }
 
@@ -272,7 +302,7 @@ AliCaloFitResults
 AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
 { // method to do the selection of what should possibly be fitted
   // not implemented for base class
-  return AliCaloFitResults( 0, 0, 0, 0, 0, 0, 0 );
+  return AliCaloFitResults( 0, 0 );
 }
 
 

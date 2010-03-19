@@ -62,7 +62,7 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
   // The eveluation of  Peak position and amplitude using the Neural Network
   if( bunchvector.size()  <=  0 )
     {
-      return AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid , AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid );
+      return AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid);
     } 
  
   short maxampindex;
@@ -90,8 +90,7 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
     {
       if (  ( maxrev   - first) < 2  &&  (last -   maxrev ) < 2)
 	{
-	  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
-				    AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
 	}
       else
 	{
@@ -105,13 +104,12 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 	  double amp = (maxamp - ped)*fNeuralNet->Value( 0,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]);
 	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + timebinOffset ) ;
 
-	  return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kDummy, amp , tof, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
+	  return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, amp , tof, timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
 				    AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 
 	}
     }
-  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
-			    AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
+  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
 }
 
 

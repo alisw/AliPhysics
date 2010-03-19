@@ -69,7 +69,6 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
       Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-
       if ( maxf > fAmpCut )
 	{
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
@@ -87,26 +86,27 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	      Double_t eSignal = 1; // nominal 1 ADC error
 	      Double_t dAmp = maxf; 
 	      Double_t eAmp = 0;
-	      Double_t dTime = 0;
+	      Double_t dTime0 = 0;
 	      Double_t eTime = 0;
 	      Double_t chi2 = 0;
 	      Double_t dTau = 2.35; // time-bin units
 	      
 	      AliCaloFastAltroFitv0::FastFit(fXAxis, ordered , nsamples,
-					     eSignal, dTau, dAmp, eAmp, dTime, eTime, chi2);
+					     eSignal, dTau, dAmp, eAmp, dTime0, eTime, chi2);
 	   
-	      return AliCaloFitResults(maxamp, ped, AliCaloFitResults::kDummy,  dAmp, dTime+timebinOffset,  chi2,  AliCaloFitResults::kDummy,
+	      Double_t dTimeMax = dTime0 + timebinOffset - (maxrev - first) // abs. t0
+		+ dTau; // +tau, makes sum tmax
+	      return AliCaloFitResults(maxamp, ped, AliCaloFitResults::kFitPar,  dAmp, dTimeMax, timebinOffset, chi2,  AliCaloFitResults::kDummy,
 				       AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	    } // samplecut
 	  else 
 	    {
-	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
-					AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
 	    }
 	} // ampcut
       else 
 	{
-	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit);
+	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
 	}
     } // bunch index    
 

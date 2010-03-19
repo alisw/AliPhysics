@@ -29,6 +29,7 @@
 #include "AliCaloFitResults.h"
 #include "AliLog.h"
 #include "TMath.h"
+#include <stdexcept>
 #include <iostream>
 #include "TF1.h"
 #include "TGraph.h"
@@ -87,8 +88,8 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
       int last;
       Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
+      // timebinOffset is timebin value at maximum (maxrev)
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-
       if ( maxf > fAmpCut )
 	{
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
@@ -96,10 +97,13 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	  
 	  if( ( nsamples  )  >= fNsampleCut )
 	    {
-	      
+	      Float_t tmax = (maxrev - first); // local tmax estimate
 	      TGraph *graph =  new TGraph(  nsamples, fXaxis,  &fReversed[first] );
 	      fTf1->SetParameter(0, maxf*fkEulerSquared );
-	      fTf1->SetParameter(1, 0.2);
+	      fTf1->SetParameter(1, tmax - fTau); 
+	      // set rather loose parameter limits
+	      fTf1->SetParLimits(0, 0.5*maxf*fkEulerSquared, 2*maxf*fkEulerSquared );
+	      fTf1->SetParLimits(1, tmax - fTau - 4, tmax - fTau + 4); 
 
 	      if (fFixTau) {
 		fTf1->FixParameter(2, fTau);
@@ -109,18 +113,29 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 		fTf1->SetParameter(2, fTau);
 	      }
 
-	      Short_t tmpStatus =  graph->Fit(fTf1, "Q0RW");
-	     
+	      Short_t tmpStatus = 0;
+	      try {
+		tmpStatus =  graph->Fit(fTf1, "Q0RW");
+	      }
+	      catch (const std::exception & e) {
+		AliError( Form("TGraph Fit exception %s", e.what()) ); 
+		return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, timebinOffset); 
+	      }
+
 	      if( fVerbose == true )
 		{
 		  AliCaloRawAnalyzer::PrintBunch( bunchvector.at(index) ); 
 		  PrintFitResult( fTf1 ) ;
 		}  
+	      // global tmax
+	      tmax = fTf1->GetParameter(1) + timebinOffset - (maxrev - first) // abs. t0
+		+ fTf1->GetParameter(2); // +tau, makes sum tmax
 	      
 	        delete graph;
-		return AliCaloFitResults( maxamp, ped ,    tmpStatus,  
+		return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar,
 					  fTf1->GetParameter(0)/fkEulerSquared, 
-					  fTf1->GetParameter(1) + timebinOffset,  
+					  tmax,
+					  timebinOffset,  
 					  fTf1->GetChisquare(), 
 					  fTf1->GetNDF(),
 					  AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
@@ -130,13 +145,12 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	    }
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit,
-					AliCaloFitResults::kNoFit, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
 	    }
 	}
       else
 	{
-	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kNoFit, maxf, maxrev+timebinOffset, AliCaloFitResults::kNoFit, AliCaloFitResults::kNoFit);
+	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
 	}       
     }
 

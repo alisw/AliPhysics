@@ -27,6 +27,7 @@
 //*-- Author: Marco van Leeuwen (LBL)
 
 #include "AliEMCALRawUtils.h"
+#include <stdexcept>
   
 #include "TF1.h"
 #include "TGraph.h"
@@ -376,27 +377,33 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       } // loop over bunches
 
    
-    if ( caloFlag < 2 ){ // ALTRO
+      if ( caloFlag < 2 ){ // ALTRO
 		
-	  Float_t time = 0; 
-	  Float_t amp = 0; 
+	Float_t time = 0; 
+	Float_t amp = 0; 
+	short timeEstimate = 0;
+	Float_t ampEstimate = 0;
+	Bool_t fitDone = kFALSE;
 		
       if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
 	// all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
 	AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
 
 	amp = fitResults.GetAmp();
-	time = fitResults.GetTof();
+	time = fitResults.GetTime();
+	timeEstimate = fitResults.GetMaxTimebin();
+	ampEstimate = fitResults.GetMaxSig();
+	if (fitResults.GetStatus() == AliCaloFitResults::kFitPar) {
+	  fitDone = kTRUE;
+	} 
       }
       else { // for the other methods we for now use the functionality of 
 	// AliCaloRawAnalyzer as well, to select samples and prepare for fits, 
 	// if it looks like there is something to fit
 
 	// parameters init.
-	Float_t ampEstimate  = 0;
+	Float_t pedEstimate  = 0;
 	short maxADC = 0;
-	short timeEstimate = 0;
-	Float_t pedEstimate = 0;
 	Int_t first = 0;
 	Int_t last = 0;
 	Int_t bunchIndex = 0;
@@ -412,35 +419,35 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	  
 	  time = timeEstimate; // maxrev in AliCaloRawAnalyzer speak; comes with an offset w.r.t. real timebin
 	  Int_t timebinOffset = bunchlist.at(bunchIndex).GetStartBin() - (bunchlist.at(bunchIndex).GetLength()-1); 
-
 	  amp = ampEstimate; 
 	  
 	  if ( nsamples > 1 ) { // possibly something to fit
-	    FitRaw(first, last, amp, time);
+	    FitRaw(first, last, amp, time, fitDone);
 	    time += timebinOffset;
+	    timeEstimate += timebinOffset;
 	  }
 	  
-	  if ( amp>0 && time>0 ) { // brief sanity check of fit results
-	    
-	    // check fit results: should be consistent with initial estimates
-	    // more magic numbers, but very loose cuts, for now..
-	    // We have checked that amp and ampEstimate values are positive so division for assymmetry
-	    // calculation should be OK/safe
-	    Float_t ampAsymm = (amp - ampEstimate)/(amp + ampEstimate);
-	    if ( (TMath::Abs(ampAsymm) > 0.1) ) {
-	      AliDebug(2,Form("Fit results amp %f time %f not consistent with expectations ped %f max-ped %f time %d",
-			      amp, time, pedEstimate, ampEstimate, timeEstimate));
-	      
-	      // what should do we do then? skip this channel or assign the simple estimate? 
-	      // for now just overwrite the fit results with the simple estimate
-	      amp = ampEstimate;
-	      time = timeEstimate; 
-	    } // asymm check
-	  } // amp & time check
 	} // ampEstimate check
       } // method selection
+
+      if ( fitDone ) { // brief sanity check of fit results	    
+	Float_t ampAsymm = (amp - ampEstimate)/(amp + ampEstimate);
+	Float_t timeDiff = time - timeEstimate;
+	if ( (TMath::Abs(ampAsymm) > 0.1) || (TMath::Abs(timeDiff) > 2) ) {
+	  // AliDebug(2,Form("Fit results amp %f time %f not consistent with expectations amp %f time %d", amp, time, ampEstimate, timeEstimate));
+	  
+	  // for now just overwrite the fit results with the simple/initial estimate
+	  amp = ampEstimate;
+	  time = timeEstimate; 
+	  fitDone = kFALSE;
+	} 
+      } // fitDone
     
       if (amp > fNoiseThreshold  && amp<fgkRawSignalOverflow) { // something to be stored
+	if ( ! fitDone) { // smear ADC with +- 0.5 uniform (avoid discrete effects)
+	  amp += (0.5 - gRandom->Rndm()); // Rndm generates a number in ]0,1]
+	}
+
 	Int_t id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
 	lowGain = in.IsLowGain();
 
@@ -544,13 +551,14 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 }
 
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time) const 
+void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Bool_t & fitDone) const 
 { // Fits the raw signal time distribution
   
   //--------------------------------------------------
   //Do the fit, different fitting algorithms available
   //--------------------------------------------------
   int nsamples = lastTimeBin - firstTimeBin + 1;
+  fitDone = kFALSE;
 
   switch(fFittingAlgorithm) {
   case kStandard:
@@ -573,17 +581,26 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       signalF->FixParameter(4, 0); // pedestal should be subtracted when we get here 
       signalF->SetParameter(1, time);
       signalF->SetParameter(0, amp);
-				
-      gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
-				
-      // assign fit results
-      amp = signalF->GetParameter(0); 
-      time = signalF->GetParameter(1);
+      // set rather loose parameter limits
+      signalF->SetParLimits(0, 0.5*amp, 2*amp );
+      signalF->SetParLimits(1, time - 4, time + 4); 
 
+      try {			
+	gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
+	// assign fit results
+	amp = signalF->GetParameter(0); 
+	time = signalF->GetParameter(1);
+
+	// cross-check with ParabolaFit to see if the results make sense
+	FitParabola(gSig, amp); // amp is possibly updated
+	fitDone = kTRUE;
+      }
+      catch (const std::exception & e) {
+	AliError( Form("TGraph Fit exception %s", e.what()) ); 
+	// stay with default amp and time in case of exception, i.e. no special action required
+	fitDone = kFALSE;
+      }
       delete signalF;
-
-      // cross-check with ParabolaFit to see if the results make sense
-      FitParabola(gSig, amp); // amp is possibly updated
 
       //printf("Std   : Amp %f, time %g\n",amp, time);
       delete gSig; // delete TGraph
@@ -620,6 +637,7 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       Double_t amplog = signalFLog->GetParameter(0); //Not Amp, but Log of Amp
       amp = TMath::Exp(amplog);
       time = signalFLog->GetParameter(1);
+      fitDone = kTRUE;
 
       delete signalFLog;
       //printf("LogFit: Amp %f, time %g\n",amp, time);

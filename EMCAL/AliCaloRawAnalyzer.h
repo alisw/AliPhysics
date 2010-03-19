@@ -82,6 +82,7 @@ class  AliCaloRawAnalyzer : public TObject
  protected:
   short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
   UShort_t Max(const UShort_t *data, const int length ) const;
+  bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;
   bool IsInTimeRange( const int maxindex ) const;
   Float_t  ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t altrocfg1,  const UInt_t altrocfg2, double *outarray ) const;
   int  SelectBunch( const vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude ) const;
