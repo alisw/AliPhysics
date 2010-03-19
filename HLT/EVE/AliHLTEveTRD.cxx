@@ -59,6 +59,8 @@ AliHLTEveTRD::~AliHLTEveTRD()
 void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
 
+  cout <<"TRD Clusters"<<endl;
+
   if ( ! block->GetDataType().CompareTo("CLUSTERS") ) {
     
     if(!fEveColClusters){
@@ -136,9 +138,9 @@ void AliHLTEveTRD::UpdateElements() {
   if(fCanvas) fCanvas->Update();
   if(fEveClusters) fEveClusters->ResetBBox();
 
-  //   for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
-  //     fEveColClusters->GetBin(ib)->ResetBBox();
-  //   }
+  for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
+    fEveColClusters->GetBin(ib)->ResetBBox();
+  }
 
 }
 
@@ -157,6 +159,8 @@ void AliHLTEveTRD::ResetElements(){
 Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet * cont, TEvePointSetArray * contCol ){
   //See header file for documentation
   
+  cout <<"processclusters"<<endl;
+
   Int_t iResult = 0;
 
   Int_t sm = block->GetSubDetector();
@@ -179,9 +183,9 @@ Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
 		   sin*trdCluster->GetX() + cos*trdCluster->GetY(), 
 		   trdCluster->GetZ(),
 		   trdCluster->GetQ() );    
-     
-    cont->SetNextPoint(cos*trdCluster->GetX() - sin*trdCluster->GetY(), 
-    		       sin*trdCluster->GetX() + cos*trdCluster->GetY(), trdCluster->GetZ());
+    
+    //cont->SetNextPoint(cos*trdCluster->GetX() - sin*trdCluster->GetY(), 
+    //	       sin*trdCluster->GetX() + cos*trdCluster->GetY(), trdCluster->GetZ());
   }
   
   return iResult;
