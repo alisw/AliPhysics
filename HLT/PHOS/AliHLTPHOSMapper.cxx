@@ -220,9 +220,9 @@ AliHLTPHOSMapper::GetChannelID(AliHLTUInt32_t specification, Int_t hwAddress)
   //     fHw2geomapPtr[hwAddress].fZRow, 
   //  	   fHw2geomapPtr[hwAddress].fGain);
 
-  //  HLTError("HW add: %d -> x: %d, z: %d, gain: %d", hwAddress, fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset,
-  //	   fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset,
-  //	   fHw2geomapPtr[hwAddress].fGain);
+/*    HLTError("HW add: %d -> x: %d, z: %d, gain: %d", hwAddress, fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset,
+  	   fHw2geomapPtr[hwAddress].fZRow + fSpecificationMapPtr[index].fRcuZOffset,
+  	   fHw2geomapPtr[hwAddress].fGain);*/
   //  HLTError("RCU X offset: %d", fSpecificationMapPtr[index].fRcuXOffset);
   //  HLTError("RCU Z offset: %d", fSpecificationMapPtr[index].fRcuZOffset);
   return ((fHw2geomapPtr[hwAddress].fXCol + fSpecificationMapPtr[index].fRcuXOffset) |

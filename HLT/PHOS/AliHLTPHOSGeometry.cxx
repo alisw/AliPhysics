@@ -47,7 +47,7 @@ void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& re
    Float_t z = recPoint.fZ;
 
    ConvertRecPointCoordinates(x, z);
-
+   
    TVector3 coord;
    fGeoUtils->Local2Global(fCaloConstants->GetNMODULES() - recPoint.fModule, x, z, coord);
    
@@ -60,9 +60,8 @@ void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& re
 void AliHLTPHOSGeometry::ConvertRecPointCoordinates(Float_t &x, Float_t &z) const
 {
    // See header file for class documentation
-
-   x = (x - fCaloConstants->GetNXCOLUMNSMOD()/2)*fCaloConstants->GetCELLSTEP();
-   z = (z - fCaloConstants->GetNZROWSMOD()/2)*fCaloConstants->GetCELLSTEP();
+   x = (x - (float)(fCaloConstants->GetNXCOLUMNSMOD())/2)*fCaloConstants->GetCELLSTEP();
+   z = (z - ((float)(fCaloConstants->GetNZROWSMOD()))/2)*fCaloConstants->GetCELLSTEP();
 }
 
 int AliHLTPHOSGeometry::GetGeometryFromCDB()
