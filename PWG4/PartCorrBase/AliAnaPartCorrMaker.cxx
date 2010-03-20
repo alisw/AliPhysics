@@ -28,7 +28,7 @@
 // --- ROOT system ---
 #include "TClonesArray.h"
 #include "TList.h"
-#include "TH1.h"
+#include "TH1I.h"
 //#include "Riostream.h"
 //#include <TObjectTable.h>
 
@@ -46,7 +46,8 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker() :
 TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(0), fMakeAOD(0), fAnaDebug(0), 
-fReader(0x0), fAODBranchList(new TList )
+fReader(0x0), fAODBranchList(new TList ), 
+fhNEvents(0x0)
 {
   //Default Ctor
   if(fAnaDebug > 1 ) printf("*** Analysis Maker  Constructor *** \n");
@@ -63,7 +64,8 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) :
 TObject(),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
 fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fAnaDebug(maker.fAnaDebug),
-fReader(new AliCaloTrackReader(*maker.fReader)), fAODBranchList(new TList())
+fReader(new AliCaloTrackReader(*maker.fReader)), fAODBranchList(new TList()), 
+fhNEvents(maker.fhNEvents)
 {
   // cpy ctor
 	
@@ -165,6 +167,10 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
     }// Analysis with histograms as output on
   }//Loop on analysis defined
   
+	
+  fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
+  fOutputContainer->Add(fhNEvents);
+	
   return fOutputContainer;
 
 }
@@ -265,7 +271,9 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
     if(fMakeHisto) ana->MakeAnalysisFillHistograms()  ;
     
   }
-  
+	
+  fhNEvents->Fill(0); //Event analyzed
+	
   fReader->ResetLists();
   
   //printf(">>>>>>>>>> AFTER >>>>>>>>>>>\n");
