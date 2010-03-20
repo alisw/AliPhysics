@@ -285,7 +285,7 @@ void AliVZEROCalibData::SetTimeOffset(Float_t val, Int_t channel)
 {
   if((channel>=0) && (channel<64)){
     fTimeOffset[channel]=val;
-    AliInfo(Form("Time offset for channel &d set to %f",channel,fTimeOffset[channel]));
+    AliInfo(Form("Time offset for channel %d set to %f",channel,fTimeOffset[channel]));
   }
   else
     AliError(Form("Channel %d is not valid",channel));
