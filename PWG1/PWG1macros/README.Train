@@ -2,7 +2,7 @@ Macros and scripts to run PWG1 train in $ALICE_ROOT/PWG1/PWG1macros
 
 runPWG1Train.C  - Steerring macro
                 - Load configuration for all tasks Add<PWG1>*.C
-                - macro does not configure tasks 0 defualt arguments has to be provided
+                - macro does not configure tasks - default arguments has to be provided
                 - run Analysis
 
 Add<PWG1>*.C    - Macros to configure user tasks
@@ -43,7 +43,7 @@ makeSummary.sh       - Make summary information
 getCertificateAll.sh - Pseudo code for train administrator
                      - 1. Submit jobs for all user macros Add*.C
                      - 2. Wait
+                     - 4. Make summary log files
                      - Not implemented part
-                     - 3. Copy certified Add*.C to certified directory
-                     - 4. Make summary plots
+                     - 3. Copy certified Add*.C to certified directory	
                      - 5. Write e-amil  
