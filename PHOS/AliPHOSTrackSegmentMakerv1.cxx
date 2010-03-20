@@ -256,11 +256,11 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
 //  Float_t delta = 1 ;  // Width of the rows in sorting of RecPoints (in cm)
 //                       // if you change this value, change it as well in xxxRecPoint::Compare()
 
+  trackindex = -1;
+  dx         = 999.;
+  dz         = 999.;
+
   if(!cpvClu) {
-    
-    trackindex = -1;
-    dx=999.;
-    dz=999.;
     
     if(!emcClu) {
       return;
