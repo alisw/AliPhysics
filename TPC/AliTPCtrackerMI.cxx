@@ -133,8 +133,6 @@
 #include "AliTPCtrackerMI.h"
 #include "TStopwatch.h"
 #include "AliTPCReconstructor.h"
-#include "AliPID.h"
-#include "TTreeStream.h"
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "TRandom.h"
@@ -982,7 +980,7 @@ Double_t AliTPCtrackerMI::F1(Double_t x1,Double_t y1,
   y2 -=y1;
   //  
   Double_t det = x3*y2-x2*y3;
-  if (det==0) {
+  if (TMath::AreEqualRel(det,0,1e-16)){
     return 100;
   }
   //
@@ -1008,7 +1006,7 @@ Double_t AliTPCtrackerMI::F2(Double_t x1,Double_t y1,
   y2 -=y1;
   //  
   Double_t det = x3*y2-x2*y3;
-  if (det==0) {
+  if (TMath::AreEqualRel(det,0,1e-16)) {
     return 100;
   }
   //
@@ -1077,7 +1075,7 @@ Double_t AliTPCtrackerMI::F3n(Double_t x1,Double_t y1,
   return angle2;
 }
 
-Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z)
+Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const
 {//-----------------------------------------------------------------
   // This function find proloncation of a track to a reference plane x=x2.
   //-----------------------------------------------------------------
@@ -1112,7 +1110,7 @@ Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5
   return kTRUE;  
 }
 
-Int_t  AliTPCtrackerMI::LoadClusters (TTree *tree)
+Int_t  AliTPCtrackerMI::LoadClusters (TTree *const tree)
 {
   //
   //
@@ -2751,7 +2749,7 @@ void AliTPCtrackerMI::DeleteSeeds()
   fSeeds =0;
 }
 
-void AliTPCtrackerMI::ReadSeeds(AliESDEvent *event, Int_t direction)
+void AliTPCtrackerMI::ReadSeeds(AliESDEvent *const event, Int_t direction)
 {
   //
   //read seeds from the event
@@ -3689,7 +3687,7 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 }
 
 
-AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1, Float_t r2)
+AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *const track, Float_t r0, Float_t r1, Float_t r2)
 {
   //
   //
@@ -5333,7 +5331,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   timer.Print();
 }
 
-void  AliTPCtrackerMI::FindV0s(const TObjArray * array, AliESDEvent *esd)
+void  AliTPCtrackerMI::FindV0s(const TObjArray * array, AliESDEvent *const esd)
 {
   //
   //  find V0s
@@ -5691,7 +5689,7 @@ void  AliTPCtrackerMI::FindV0s(const TObjArray * array, AliESDEvent *esd)
   timer.Print();
 }
 
-Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &knk)
+Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &knk)
 {
   //
   // refit kink towards to the vertex
@@ -5833,7 +5831,7 @@ void AliTPCtrackerMI::UpdateKinkQualityD(AliTPCseed * seed){
 }
 
 
-Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &knk)
+Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &knk)
 {
   //
   // check kink point for given track
@@ -6084,7 +6082,7 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
   return 0;
 }
 
-Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *esd)
+Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *const esd)
 {
   //
   if (fSeeds) DeleteSeeds();
@@ -6541,7 +6539,7 @@ void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *&arr2) const
 
 
 
-void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rlast)
+void  AliTPCtrackerMI::ParallelTracking(TObjArray *const arr, Int_t rfirst, Int_t rlast)
 {
   //
   // try to track in parralel
@@ -6592,7 +6590,7 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rla
   }    
 }
 
-void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray * arr,Float_t fac) const
+void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray *const arr,Float_t fac) const
 {
   //
   //
@@ -6628,7 +6626,7 @@ void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray * arr,Float_t fac) co
 
 
 }
-void AliTPCtrackerMI::PrepareForProlongation(TObjArray * arr, Float_t fac) const
+void AliTPCtrackerMI::PrepareForProlongation(TObjArray *const arr, Float_t fac) const
 {
   //
   //
@@ -6647,7 +6645,7 @@ void AliTPCtrackerMI::PrepareForProlongation(TObjArray * arr, Float_t fac) const
 
 }
 
-Int_t AliTPCtrackerMI::PropagateBack(TObjArray * arr)
+Int_t AliTPCtrackerMI::PropagateBack(TObjArray *const arr)
 {
   //
   // make back propagation
@@ -6678,7 +6676,7 @@ Int_t AliTPCtrackerMI::PropagateBack(TObjArray * arr)
 }
 
 
-Int_t AliTPCtrackerMI::PropagateForward2(TObjArray * arr)
+Int_t AliTPCtrackerMI::PropagateForward2(TObjArray *const arr)
 {
   //
   // make forward propagation
@@ -6726,7 +6724,7 @@ Int_t AliTPCtrackerMI::PropagateForward()
 
 
 
-Int_t AliTPCtrackerMI::PropagateBack(AliTPCseed * pt, Int_t row0, Int_t row1)
+Int_t AliTPCtrackerMI::PropagateBack(AliTPCseed *const pt, Int_t row0, Int_t row1)
 {
   //
   // make back propagation, in between row0 and row1
@@ -6885,7 +6883,7 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
 
 
 //__________________________________________________________________________
-Int_t AliTPCtrackerMI::CookLabel(AliTPCseed *t, Float_t wrong,Int_t first, Int_t last) const {
+Int_t AliTPCtrackerMI::CookLabel(AliTPCseed *const t, Float_t wrong,Int_t first, Int_t last) const {
   //--------------------------------------------------------------------
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------

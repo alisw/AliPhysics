@@ -13,10 +13,8 @@
 //   Origin: 
 //-------------------------------------------------------
 
-#include <TError.h>
 #include "AliTracker.h"
 #include "AliTPCreco.h"
-#include "AliPID.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCtrackerSector.h"
 
@@ -40,9 +38,9 @@ public:
   virtual ~AliTPCtrackerMI();
   //
   void SetIteration(Int_t iteration){fIteration = iteration;}
-  virtual Int_t Clusters2Tracks (AliESDEvent *esd);
+  virtual Int_t Clusters2Tracks (AliESDEvent *const esd);
   virtual Int_t RefitInward (AliESDEvent *esd);
-  virtual Int_t LoadClusters (TTree * tree);
+  virtual Int_t LoadClusters (TTree * const tree);
   virtual Int_t LoadClusters (const TObjArray * arr); // another input
   virtual Int_t LoadClusters (const TClonesArray * arr); // another input
   Int_t  LoadClusters();
@@ -61,11 +59,11 @@ public:
   void FindSplitted(TObjArray * array, AliESDEvent * esd, Int_t iter);       
   void FindMultiMC(const TObjArray * array, AliESDEvent * esd, Int_t iter);     
   //
-  void FindV0s(const TObjArray * array, AliESDEvent * esd);
+  void FindV0s(const TObjArray * array, AliESDEvent *const esd);
   void UpdateKinkQualityM(AliTPCseed * seed);
   void UpdateKinkQualityD(AliTPCseed * seed);
-  Int_t CheckKinkPoint(AliTPCseed*seed, AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink);
-  Int_t RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink);
+  Int_t CheckKinkPoint(AliTPCseed*seed, AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &kink);
+  Int_t RefitKink(AliTPCseed &mother, AliTPCseed &daughter, const AliESDkink &kink);
    Int_t ReadSeeds(const TFile *in);
    TObjArray * GetSeeds() const {return fSeeds;}
    //   
@@ -73,7 +71,7 @@ public:
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
    Int_t Clusters2Tracks();
    virtual void  CookLabel(AliKalmanTrack *tk,Float_t wrong) const; 
-   virtual Int_t   CookLabel(AliTPCseed *t,Float_t wrong, Int_t first,Int_t last ) const; 
+   virtual Int_t   CookLabel(AliTPCseed *const t,Float_t wrong, Int_t first,Int_t last ) const; 
    
    void RotateToLocal(AliTPCseed *seed);
    
@@ -85,11 +83,11 @@ public:
    Int_t UpdateClusters(AliTPCseed& t,  Int_t nr);
    Int_t FollowToNextCluster( AliTPCseed& t, Int_t nr);
 
-   Int_t PropagateBack(TObjArray * arr);
+   Int_t PropagateBack(TObjArray *const arr);
    Int_t PropagateBack(AliESDEvent * event);
-   Int_t PropagateBack(AliTPCseed *pt, Int_t row0, Int_t row1);   
+   Int_t PropagateBack(AliTPCseed *const pt, Int_t row0, Int_t row1);   
    Int_t PropagateForward();
-   Int_t PropagateForward2(TObjArray * arr);
+   Int_t PropagateForward2(TObjArray *const arr);
 
    void SortTracks(TObjArray * arr, Int_t mode) const;
   
@@ -104,7 +102,7 @@ public:
    Double_t F3(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2) const; 
    Double_t F3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
                 Double_t c) const; 
-   Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z);
+   Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
 
  public:
 
@@ -136,7 +134,7 @@ private:
 
     void GetShape(AliTPCseed * seed, Int_t row);
  
-   void ReadSeeds(AliESDEvent *event, Int_t direction);  //read seeds from the event
+   void ReadSeeds(AliESDEvent *const event, Int_t direction);  //read seeds from the event
 
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
@@ -144,7 +142,7 @@ private:
    void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE);
   
 
-   AliTPCseed *MakeSeed(AliTPCseed *t, Float_t r0, Float_t r1, Float_t r2); //reseed
+   AliTPCseed *MakeSeed(AliTPCseed *const track, Float_t r0, Float_t r1, Float_t r2); //reseed
    AliTPCseed *ReSeed(const AliTPCseed *t, Float_t r0, Float_t r1, Float_t r2); //reseed
    AliTPCseed *ReSeed(AliTPCseed *t, Int_t r0, Bool_t forward); //reseed
 
@@ -156,14 +154,14 @@ private:
    void UnsignClusters();
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
 
-   void ParallelTracking(TObjArray * arr, Int_t rfirst, Int_t rlast);
+   void ParallelTracking(TObjArray *const arr, Int_t rfirst, Int_t rlast);
    void Tracking(TObjArray * arr);
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
    TObjArray * Tracking();
    TObjArray * TrackingSpecial();
    void SumTracks(TObjArray *arr1,TObjArray *&arr2) const;
-   void PrepareForBackProlongation(TObjArray * arr, Float_t fac) const;
-   void PrepareForProlongation(TObjArray * arr, Float_t fac) const;
+   void PrepareForBackProlongation(TObjArray *const arr, Float_t fac) const;
+   void PrepareForProlongation(TObjArray *const arr, Float_t fac) const;
 
    Int_t UpdateTrack(AliTPCseed *t, Int_t accept); //update trackinfo
 
