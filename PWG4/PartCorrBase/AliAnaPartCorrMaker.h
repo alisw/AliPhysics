@@ -18,6 +18,7 @@ class TList;
 class TClonesArray;
 #include<TObject.h>
 class TString;
+class TH1I;
 
 // --- Analysis system ---
 class AliCaloTrackReader ;
@@ -82,7 +83,9 @@ class AliAnaPartCorrMaker : public TObject {
   AliCaloTrackReader *  fReader ;   // Pointer to reader 
   TList * fAODBranchList ;          //! List with AOD branches created and needed in analysis
 
-  ClassDef(AliAnaPartCorrMaker,2)
+  TH1I *fhNEvents;            //! Number of events counter histogram
+	
+  ClassDef(AliAnaPartCorrMaker,3)
 } ;
  
 
