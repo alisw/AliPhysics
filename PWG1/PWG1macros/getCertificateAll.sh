@@ -27,11 +27,8 @@ done
 #
 # 3. Wait
 #
+echo name/C:time/C > summaryTime.txt
+for a in `ls */summary.log` ; do echo $a `cat $a | grep SysInfoTime` >>summaryTime.txt ; done
 
-
-workdir=`pwd`
-for amacro in `ls  Add*.C`; do
-    cd $workdir/test$amacro
-    $ALICE_ROOT/PWG1/PWG1macros/makeSummary.sh >sumary.log
-    cd $workdir
-done
+echo name/C: time/C > sumaryMem.txt
+for a in `ls */summary.log` ; do echo $a `cat $a | grep SysInfoMem` >>summaryMem.txt ; done
