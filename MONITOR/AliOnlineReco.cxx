@@ -37,6 +37,8 @@ AliOnlineReco::AliOnlineReco() :
   fRun2PidMap(),
   fTestMode(kFALSE)
 {
+  // Constructor.
+
   // GUI components.
   fRunList = new TGListBox(this);
   AddFrame(fRunList, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
@@ -94,21 +96,29 @@ AliOnlineReco::AliOnlineReco() :
 
 AliOnlineReco::~AliOnlineReco()
 {
+  // Destructor.
+
   delete fAutoRunTimer;
 }
 
 Int_t AliOnlineReco::GetLastRun() const
 {
+  // Returns the last started run.
+
   return fRun2PidMap.empty() ? 0 : fRun2PidMap.rbegin()->first;
 }
 
 Bool_t AliOnlineReco::GetAutoRunMode() const
 {
+  // Return state of auto-run flag.
+
   return fAutoRun->IsOn();
 }
 
 void AliOnlineReco::SetAutoRunMode(Bool_t ar)
 {
+  // Set auto-run flag.
+
   if (ar == fAutoRun->IsOn())
     return;
 
@@ -121,6 +131,9 @@ void AliOnlineReco::SetAutoRunMode(Bool_t ar)
 
 AliOnlineReco::mIntInt_i AliOnlineReco::FindMapEntryByPid(Int_t pid)
 {
+  // Find run-to-pid map iterator by pid.
+  // Requires iteration over map.
+
   for (mIntInt_i i = fRun2PidMap.begin(); i != fRun2PidMap.end(); ++i)
   {
     if (i->second == pid)
@@ -132,6 +145,8 @@ AliOnlineReco::mIntInt_i AliOnlineReco::FindMapEntryByPid(Int_t pid)
 
 void AliOnlineReco::StartAliEve(mIntInt_i& mi)
 {
+  // Start alieve to process run given my the run-pid entry.
+
   Int_t run = mi->first;
 
   if (mi->second == 0)
@@ -222,6 +237,8 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
 
 void AliOnlineReco::KillPid(Int_t pid)
 {
+  // Terminate process given by pid.
+
   // Send terminate signal to process ...
 
   if (fTestMode)
@@ -253,12 +270,16 @@ void AliOnlineReco::StartAutoRunTimer(Int_t run)
 
 void AliOnlineReco::StopAutoRunTimer()
 {
+  // Stop auto-run timer.
+
   fAutoRunTimer->TurnOff();
   fAutoRunScheduled = 0;
 }
 
 void AliOnlineReco::AutoRunTimerTimeout()
 {
+  // Slot called on auto-timer timeout.
+
   Int_t run = fAutoRunScheduled;
 
   StopAutoRunTimer();
@@ -283,6 +304,8 @@ void AliOnlineReco::AutoRunTimerTimeout()
 
 void AliOnlineReco::StartOfRun(Int_t run)
 {
+  // Slot called from DIM handler on start of run.
+
   mIntInt_i i = fRun2PidMap.find(run);
   if (i == fRun2PidMap.end())
   {
@@ -303,6 +326,8 @@ void AliOnlineReco::StartOfRun(Int_t run)
 
 void AliOnlineReco::EndOfRun(Int_t run)
 {
+  // Slot called from DIM handler on stop of run.
+
   mIntInt_i i = fRun2PidMap.find(run);
   if (i != fRun2PidMap.end())
   {
@@ -333,6 +358,8 @@ void AliOnlineReco::EndOfRun(Int_t run)
 
 void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
 {
+  // Slot called on termination of child process.
+
   printf("child process termination pid=%d, status=%d...\n", pid, status);
 
   mIntInt_i i = FindMapEntryByPid(pid);
@@ -373,6 +400,8 @@ void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
 
 void AliOnlineReco::DoAutoRun()
 {
+  // Slot called from auto-run check-box.
+
   Bool_t autoRun = fAutoRun->IsOn();
 
   if (autoRun)
@@ -383,6 +412,8 @@ void AliOnlineReco::DoAutoRun()
 
 void AliOnlineReco::DoStart()
 {
+  // Slot called from Start button.
+
   Int_t run = fRunList->GetSelected();
   mIntInt_i i = fRun2PidMap.find(run);
 
@@ -397,6 +428,8 @@ void AliOnlineReco::DoStart()
 
 void AliOnlineReco::DoStop()
 {
+  // Slot called from Stop button.
+
   Int_t run = fRunList->GetSelected();
   mIntInt_i i = fRun2PidMap.find(run);
 
@@ -419,15 +452,21 @@ void AliOnlineReco::DoStop()
 
 void AliOnlineReco::DoExit()
 {
+  // Slot called from Exit button.
+
   gSystem->ExitLoop();
 }
 
 void AliOnlineReco::CloseWindow()
 {
+  // Virtual method called when window-manager close-window button is pressed.
+
   gSystem->ExitLoop();
 }
 
-Int_t AliOnlineReco::RetrieveGRP(UInt_t run, TString &gdc) {
+Int_t AliOnlineReco::RetrieveGRP(UInt_t run, TString &gdc)
+{
+  // Retrieve GRP entry for given run from aldaqdb.
 
   Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(run, "aldaqdb", 0, "LOGBOOK", "logbook", "alice",
 							    Form("local://%s",gSystem->pwd()),
