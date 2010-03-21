@@ -146,22 +146,31 @@ AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDD
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 {
-
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("Start of SDD Cycle with event specie %s for task %s\n",AliRecoParam::GetEventSpecieName(fAliITSQADataMakerRec->GetEventSpecie()),AliQAv1::GetTaskName(fAliITSQADataMakerRec->GetTaskIndexSelected()).Data()));
   if(!fCalibration) {CreateTheCalibration();}
 
-  //Detector specific actions at start of cycle
-  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SDD Cycle\n");
-  if(fAliITSQADataMakerRec->GetRawsData(0)!=NULL){
-    fAliITSQADataMakerRec->GetRawsData(3+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
-    fAliITSQADataMakerRec->GetRawsData(4+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
-    fAliITSQADataMakerRec->GetRawsData(5+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
-  }
+  if(fAliITSQADataMakerRec->GetEventSpecie()==0) return;//not the kDefault EventSpecie
+    //Detector specific actions at start of cycle
+    if(fAliITSQADataMakerRec->GetTaskIndexSelected()==AliQAv1::kRAWS){
+      AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of SDD Cycle\n");
+      if(fAliITSQADataMakerRec->ListExists(AliQAv1::kRAWS)==kFALSE)return;
 
-  if(fAliITSQADataMakerRec->GetRecPointsData(0)!=NULL){
-    fAliITSQADataMakerRec->GetRecPointsData(9+  fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
-    fAliITSQADataMakerRec->GetRecPointsData(10+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
-    fAliITSQADataMakerRec->GetRecPointsData(11+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
-  }
+	AliDebug(AliQAv1::GetQADebugLevel(),Form("Reset of Raw Data normalized histograms with eventspecie %s ",AliRecoParam::GetEventSpecieName(fAliITSQADataMakerRec->GetEventSpecie())));
+
+	fAliITSQADataMakerRec->GetRawsData(3+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+	fAliITSQADataMakerRec->GetRawsData(4+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+	fAliITSQADataMakerRec->GetRawsData(5+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+      
+    }
+    if(fAliITSQADataMakerRec->GetTaskIndexSelected()==AliQAv1::kRECPOINTS){
+      if(fAliITSQADataMakerRec->ListExists(AliQAv1::kRECPOINTS)==kFALSE)return;
+
+	AliDebug(AliQAv1::GetQADebugLevel(),Form("Reset of RecPoints normalized histograms with eventspecie %s ",AliRecoParam::GetEventSpecieName(fAliITSQADataMakerRec->GetEventSpecie())));
+
+	fAliITSQADataMakerRec->GetRecPointsData(9+  fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+	fAliITSQADataMakerRec->GetRecPointsData(10+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+	fAliITSQADataMakerRec->GetRecPointsData(11+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+      }
 }
 
 //____________________________________________________________________________ 
@@ -659,7 +668,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
     sprintf(hisnam,"SDDdrifttime_Layer%d",iLay+3);
     TH1F *h17 = new TH1F(hisnam,hisnam,90/nOnline5,-0.5,4499.5);//position number 17 (L3) and position number 18 (L4)
     h17->SetBit(TH1::kCanRebin);
-    h17->GetXaxis()->SetTitle("drift time[#mus]");
+    h17->GetXaxis()->SetTitle("drift time[ns]");
     h17->GetXaxis()->CenterTitle();
     h17->GetYaxis()->SetTitle("Entries");
     rv = fAliITSQADataMakerRec->Add2RecPointsList(h17,iLay+17+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);// NON expert  image

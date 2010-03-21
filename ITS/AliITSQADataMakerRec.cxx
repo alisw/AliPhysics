@@ -39,6 +39,7 @@
 #include "AliQAv1.h"
 #include "AliQAChecker.h"
 #include "AliITSQAChecker.h"
+#include "AliQAManager.h"
 #include "AliITSRecPoint.h"
 #include "AliITSRecPointContainer.h"
 #include "AliRawReader.h"
@@ -58,6 +59,7 @@ fSubDetector(subDet),
 fLDC(ldc),
 fRunNumber(0),
 fEventNumber(0),
+  fSelectedTaskIndex(AliQAv1::kNULLTASKINDEX),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
@@ -99,6 +101,7 @@ fSubDetector(qadm.fSubDetector),
 fLDC(qadm.fLDC),
 fRunNumber(qadm.fRunNumber),
 fEventNumber(qadm.fEventNumber),
+fSelectedTaskIndex(qadm.fSelectedTaskIndex),
 fSPDDataMaker(NULL),
 fSDDDataMaker(NULL),
 fSSDDataMaker(NULL)
@@ -128,6 +131,14 @@ void AliITSQADataMakerRec::StartOfDetectorCycle()
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->StartOfDetectorCycle();
 }
 
+//____________________________________________________________________________
+void AliITSQADataMakerRec::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle) 
+{ 
+  // Start a cycle of QA data acquistion
+  fSelectedTaskIndex=task;
+  AliQADataMakerRec::StartOfCycle(task,run,sameCycle);
+}
+
 //____________________________________________________________________________ 
 void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
@@ -139,11 +150,10 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	if(AliQAv1::Instance()->IsEventSpecieSet(specie)){
 	  Int_t idnumber=list[specie]->GetUniqueID();
 	  //printf("specie %s \t id number == %d\n",AliRecoParam::GetEventSpecieName(specie),idnumber);
-	  if(idnumber==40||idnumber==0)
-	    {
+	  if(idnumber==40||idnumber==0){
 	      //AliInfo(Form("No check for %s\n",AliQAv1::GetTaskName(task).Data() ))
-		continue;
-	    } //skip kDigitsR and not filled TobjArray specie
+	    continue;
+	  } //skip kDigitsR and not filled TobjArray specie
 	  else{
 	    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list[specie])\n"); 
 	    if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[/*GetEventSpecie()*/specie]);
@@ -176,14 +186,14 @@ void AliITSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerRec::EndOfDetectorCycle(const char * /*fgDataName*/)
-{
+//void AliITSQADataMakerRec::EndOfDetectorCycle(const char * /*fgDataName*/)
+//{
   //eventually used for different  AliQAChecker::Instance()->Run
-}
+//}
 
 //____________________________________________________________________________ 
-void AliITSQADataMakerRec::InitRaws()
-{  
+void AliITSQADataMakerRec::InitRaws() {
+  // Initialization of RAW data histograms  
 
   //if(fRawsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries()) return;
 	
@@ -761,6 +771,10 @@ void AliITSQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
 	} else if ( task == AliQAv1::kESDS ) {
 		list = fESDsQAList ; 
 	}
+  else{
+    AliWarning("The selected task is not a REC task\n");
+    return;
+  }
     //list was not initialized, skip
   if (!list) 
     return ; 
@@ -795,4 +809,18 @@ AliITSDDLModuleMapSDD *AliITSQADataMakerRec::GetDDLSDDModuleMap()
   else {
     return NULL;
   }
+}
+
+//____________________________________________________________________
+
+Bool_t AliITSQADataMakerRec::ListExists(AliQAv1::TASKINDEX_t task) const
+{
+  //Check the existence of a list for a given task
+  Bool_t havethelist=kFALSE;
+  if( ( task == AliQAv1::kRAWS && fRawsQAList ) ||
+      ( task == AliQAv1::kRECPOINTS && fRecPointsQAList ) ||
+      ( task == AliQAv1::kDIGITSR && fDigitsQAList ) ||
+      ( task == AliQAv1::kESDS && fESDsQAList ) ) havethelist=kTRUE;
+  return havethelist;
+
 }

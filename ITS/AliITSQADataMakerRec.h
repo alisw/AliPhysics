@@ -19,9 +19,11 @@
 //  A. Dainese Jun 2008 
 
 #include "AliQADataMakerRec.h"
+
 #include "AliDetectorRecoParam.h"
 #include "AliReconstructor.h"
 #include "AliITSDDLModuleMapSDD.h"
+#include "AliQAManager.h"
 
 class AliITSQASPDDataMakerRec;
 class AliITSQASDDDataMakerRec;
@@ -43,8 +45,10 @@ public:
   AliITSQADataMakerRec& operator = (const AliITSQADataMakerRec& qac);
   virtual Int_t GetEventSpecie() const { return AliRecoParam::AConvert(fEventSpecie); }
   virtual void StartOfDetectorCycle();
+  virtual void StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const Bool_t sameCycle = kFALSE) ;
+  virtual void StartOfCycle(Int_t run){AliQADataMakerRec::StartOfCycle(run);}
   virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
-  virtual void EndOfDetectorCycle(const char *fgDataName);
+  //  virtual void EndOfDetectorCycle(const char *fgDataName);
   virtual void InitRaws();
   virtual void InitDigits();
   virtual void InitRecPoints();
@@ -55,6 +59,8 @@ public:
   virtual void MakeRecPoints(TTree *clustersTree);
   virtual void MakeESDs(AliESDEvent *esd);
   virtual void FillRecPoint(AliITSRecPoint rcp);
+  virtual Bool_t ListExists(AliQAv1::TASKINDEX_t task) const;
+  AliQAv1::TASKINDEX_t GetTaskIndexSelected() const {return fSelectedTaskIndex;}
 
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
 
@@ -78,13 +84,14 @@ private:
   Short_t fSubDetector;                    // subDetector: 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
   Short_t fLDC;				   // number of LDC: 0 (one LDC for the whole subdetector)
   Int_t fRunNumber;                        //run number
-  Int_t fEventNumber;                        //Event number (online mode)
+  Int_t fEventNumber;                      //Event number (online mode)
+  AliQAv1::TASKINDEX_t fSelectedTaskIndex; //Current TaskIndex
 
   AliITSQASPDDataMakerRec *fSPDDataMaker;  // SPD Data Maker 
   AliITSQASDDDataMakerRec *fSDDDataMaker;  // SDD Data Maker 
   AliITSQASSDDataMakerRec *fSSDDataMaker;  // SSD Data Maker 
 
-  ClassDef(AliITSQADataMakerRec,7)         // description 
+  ClassDef(AliITSQADataMakerRec,8)         // description 
 
 };
 
