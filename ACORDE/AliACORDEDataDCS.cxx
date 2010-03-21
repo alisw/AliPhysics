@@ -1,3 +1,18 @@
+/****************************************************
+	
+  AliACORDEDataDCS class
+  create to make a pointer to the
+  ACORDE data DCS points
+
+  Author: Pedro Gonzalez (CIEMAT, Madrid)
+  ACORDE-DCS creator: Mario Ivan Martinez Hdez
+			<mim@fcfm.buap.mx>
+
+  Last update: Fix of coding violations
+  Mario Rodriguez C. (FCFM-BUAP)
+  <mrodrigu@mail.cern.ch>
+
+*****************************************************/
 #include "AliACORDEDataDCS.h"
 
 #include "AliCDBMetaData.h"
@@ -39,6 +54,9 @@ AliACORDEDataDCS::AliACORDEDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime)
         fFunc(0),
 	fIsProcessed(kFALSE)
 {
+// Init of class AliACORDEDataDCS
+// Gettin the TimeStamp an put it on a string
+
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
 	TTimeStamp(startTime).AsString(),
 	TTimeStamp(endTime).AsString()));
@@ -66,6 +84,8 @@ fGraphs("TGraph",kNGraphs),
 fFunc(0),
 fIsProcessed(kFALSE)
 {
+// Setting the initial values
+// fRUn, Start of Run, End of Run, IsProcessed
 
 	fRun=data.fRun;
 	fStartTime=data.fStartTime;
@@ -102,7 +122,9 @@ AliACORDEDataDCS& AliACORDEDataDCS:: operator=(const AliACORDEDataDCS & data) {
  
 }
 //---------------------------------------------------------------
-void AliACORDEDataDCS::ProcessData(TMap& aliasMap){
+void AliACORDEDataDCS::ProcessData(TMap& aliasMap)
+{
+// Process of the data from the aliases DCS-data points
 
 	if(!(fHv[0])) Init();
 
@@ -163,7 +185,10 @@ void AliACORDEDataDCS::ProcessData(TMap& aliasMap){
 }
 
 //---------------------------------------------------------------
-void AliACORDEDataDCS::Init(){
+void AliACORDEDataDCS::Init()
+{
+// Init of AliACORDEDatDCS procedure
+// Loop over the aliases
 
 	TH1::AddDirectory(kFALSE);
 
@@ -197,6 +222,7 @@ void AliACORDEDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)
 //---------------------------------------------------------------
 void AliACORDEDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_t *y)
 {
+// Create the plots for the ACORDE DCS 
 
 	TGraph *gr = new(fGraphs[fGraphs.GetEntriesFast()]) TGraph(dim, x, y);
 
