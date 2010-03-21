@@ -57,34 +57,39 @@ AliUnicorHN::AliUnicorHN(Char_t *nam, Int_t ndim, TAxis **ax)
   printf("   %d-dimensional histogram %s with %d bins created\n",fNdim,nam,GetNbinsX());
 }
 //=============================================================================
-AliUnicorHN::AliUnicorHN(Char_t *filnam, Char_t *nam) 
-  : TH1D(*((TH1D*) TFile::Open(filnam,"read")->GetDirectory(nam)->Get("histo"))), 
-    fNdim(0) 
+AliUnicorHN::AliUnicorHN(Char_t *filnam, Char_t *nam) : 
+  TH1D(*(TFile::Open(filnam,"read")?
+	 TFile::Open(filnam,"read")->GetDirectory(nam)?
+	 (TH1D*) TFile::Open(filnam,"read")->GetDirectory(nam)->Get("histo"):new TH1D():new TH1D()
+	 )), 
+  fNdim(0) 
 {
   // Constructor for reading from file.
 
   TFile *f = TFile::Open(filnam,"read");
-  f->cd(nam);
-  TAxis *ax[fgkMaxNdim];
-  for (fNdim=0; fNdim<fgkMaxNdim; fNdim++) {
-    ax[fNdim] = (TAxis *) gDirectory->Get(Form("axis%d",fNdim));
-    if (ax[fNdim]) ax[fNdim]->Copy(fAxis[fNdim]); 
-    else break;
-  }
-  f->Close();
+  if (f) if (f->cd(nam)) {
+    TAxis *ax[fgkMaxNdim];
+    for (fNdim=0; fNdim<fgkMaxNdim; fNdim++) {
+      ax[fNdim] = (TAxis *) gDirectory->Get(Form("axis%d",fNdim));
+      if (ax[fNdim]) ax[fNdim]->Copy(fAxis[fNdim]); 
+      else break;
+    }
+    f->Close();
 
-  fMbins[fNdim-1] = 1;
-  for (int i=0; i<fNdim; i++) fNbins[i] = fAxis[i].GetNbins();
-  for (int i=fNdim-1; i>0; i--) fMbins[i-1] = fMbins[i]*fNbins[i];
+    fMbins[fNdim-1] = 1;
+    for (int i=0; i<fNdim; i++) fNbins[i] = fAxis[i].GetNbins();
+    for (int i=fNdim-1; i>0; i--) fMbins[i-1] = fMbins[i]*fNbins[i];
+    
+    if (GetNbinsX()!=Albins(fNdim,ax)) {
+      printf("number of bins of histo %d differs from product of nbins of axes %d\n",
+	     GetNbinsX(),Albins(fNdim,ax));
+      printf("bombing\n");
+      exit(-1);
+    }
 
-  if (GetNbinsX()!=Albins(fNdim,ax)) {
-    printf("number of bins of histo %d differs from product of nbins of axes %d\n",
-	   GetNbinsX(),Albins(fNdim,ax));
-    printf("bombing\n");
-    exit(-1);
+    printf("%d-dimensional histogram %s with %d bins read from file %s\n",
+	   fNdim,nam,GetNbinsX(),filnam);
   }
-  printf("%d-dimensional histogram %s with %d bins read from file %s\n",
-	 fNdim,nam,GetNbinsX(),filnam);
 }
 //=============================================================================
 Int_t AliUnicorHN::Albins(Int_t n, TAxis **ax) 
@@ -188,11 +193,11 @@ AliUnicorHN *AliUnicorHN::ProjectAlong(char *nam, Int_t dim, Int_t first, Int_t 
 {
   // Reduce dimension dim by summing up its bins between first and last. 
   // Use root convention: bin=1 is the first bin, bin=nbins is the last. 
+  // last=0 means till the last bin
   // Return the resulting fNdim-1 dimensional histogram. 
 
   if (dim<0 || dim>fNdim-1) return 0;
-  if (first<0) first = 1;
-  if (last<0) last = fNbins[dim];
+  if (last<=0) last = fNbins[dim];
 
   // create new (reduced) histogram
 
@@ -270,6 +275,7 @@ TH1D *AliUnicorHN::ProjectOn(char *nam, Int_t dim, const Int_t * const first, co
 
   TH1D *his;
   char *name = strlen(nam)? nam : Form("%s_proj%d",GetName(),dim);
+  //  if (gDirectory->Get(name)) gDirectory->Get(name)->Delete(); // for some reason leads to troubles
   if (fAxis[dim].IsVariableBinSize()) 
     his = new TH1D(name,name,fNbins[dim],fAxis[dim].GetXbins()->GetArray());
   else 

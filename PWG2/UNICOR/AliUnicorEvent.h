@@ -25,14 +25,15 @@ class AliUnicorEvent : public TObject {
   // interface part
 
   virtual void        AttachTree(TTree *tr) = 0;
-  virtual Double_t    Etamin() const = 0;     // experiment's acceptance
+  virtual Double_t    Etamin() const = 0;         // experiment's acceptance
   virtual Double_t    Etamax() const = 0;
   virtual Bool_t      Good() const = 0;  
-  virtual Double_t    Centrality() const = 0; // centrality (0,1); 0 is most central
+  virtual Double_t    Centrality() const = 0;     // centrality (0,1); 0 is most central
   virtual void        RP(Double_t &qx, Double_t &qy) const = 0;
   virtual Double_t    RPphi() const = 0;
-  virtual Double_t    Zver() const = 0;       // z-vertex (-1,1)
-  virtual Int_t       NParticles() const = 0;
+  virtual Double_t    Zver() const = 0;           // z-vertex (-1,1)
+  virtual Int_t       NParticles() const = 0;     // number of tracks
+  virtual Int_t       NGoodParticles() const = 0; // number of good particles
 
   virtual Bool_t      ParticleGood(Int_t i, Int_t pidi) const = 0;
   virtual Double_t    ParticleP(Int_t i) const = 0;

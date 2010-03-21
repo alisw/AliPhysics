@@ -51,6 +51,7 @@ void AliAnalysisTaskUnicor::UserCreateOutputObjects()
   fOutputList->Add(new AliUnicorAnalSingle("pip",fEv0->Etamin(),fEv0->Etamax(), 211));
   fOutputList->Add(new AliUnicorAnalCorrel("cnn",fEv0->Etamin(),fEv0->Etamax(),-211,-211));
   fOutputList->Add(new AliUnicorAnalCorrel("cpp",fEv0->Etamin(),fEv0->Etamax(), 211, 211));
+  fOutputList->Add(new AliUnicorAnalCorrel("cnp",fEv0->Etamin(),fEv0->Etamax(),-211, 211));
   fOutputList->Add(new AliUnicorAnalPtfluc("ptf",0,0));
   fOutputList->Add(new AliUnicorAnalHighpt("hpt",fEv0->Etamin(),fEv0->Etamax(),0,0));
 }
@@ -69,8 +70,10 @@ void AliAnalysisTaskUnicor::UserExec(Option_t */*option*/)
   ((AliUnicorAnalCorrel *) fOutputList->At(4))->Process(2,fEv0,fEv0,TMath::DegToRad()*180);
   ((AliUnicorAnalCorrel *) fOutputList->At(5))->Process(0,fEv0,fEv0,0);
   ((AliUnicorAnalCorrel *) fOutputList->At(5))->Process(2,fEv0,fEv0,TMath::DegToRad()*180);
-  ((AliUnicorAnalPtfluc *) fOutputList->At(6))->Process(0,fEv0,fEv0);
-  ((AliUnicorAnalHighpt *) fOutputList->At(7))->Process(fEv0,fEv0);
+  ((AliUnicorAnalCorrel *) fOutputList->At(6))->Process(0,fEv0,fEv0,0);
+  ((AliUnicorAnalCorrel *) fOutputList->At(6))->Process(2,fEv0,fEv0,TMath::DegToRad()*180);
+  ((AliUnicorAnalPtfluc *) fOutputList->At(7))->Process(0,fEv0,fEv0);
+  ((AliUnicorAnalHighpt *) fOutputList->At(8))->Process(fEv0,fEv0);
   PostData(1, fOutputList);
 } 
 //=============================================================================

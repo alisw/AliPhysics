@@ -47,7 +47,10 @@ AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema
 
   // correlation function
 
-  double ptbins[]={0,0.1,0.2,0.3,0.4,0.5,0.7,1.0};
+  //int npt = 7; double ptbins[]={0,0.1,0.2,0.3,0.4,0.5,0.7,1.0};
+  //int npt = 6; double ptbins[]={0,0.1,0.25,0.35,0.55,1.0,2.0}; // like Adam, except last bin split
+  int npt = 7; double ptbins[]={0,0.1,0.25,0.40,0.55,0.7,1.0,2.0}; // like Adam in Mar-2010, + first+last
+
   double qbins[100];
   for (int i=0;i<20;i++) qbins[i]=i*0.005;
   for (int i=0;i<45;i++) qbins[20+i]=0.1+i*0.02;
@@ -55,23 +58,32 @@ AliUnicorAnalCorrel::AliUnicorAnalCorrel(Char_t *nam, Double_t emi, Double_t ema
   TAxis *ax[8];
   ax[0] = new TAxis(3,-0.5,2.5);ax[0]->SetTitle("trumixrot");
   ax[1] = new TAxis(5,0,1.0);   ax[1]->SetTitle("centrality");
-  ax[2] = new TAxis(3,emi,ema); ax[2]->SetTitle("pair y");
-  //ax[3] = new TAxis(8,-pi,pi);  ax[3]->SetTitle("pair phi"); // wrt event plane
-  ax[3] = new TAxis(1,-pi,pi);  ax[3]->SetTitle("pair phi"); // wrt event plane
-  ax[4] = new TAxis(7,ptbins);  ax[4]->SetTitle("(pair pt)/2 (GeV)");
+  ax[2] = new TAxis(3,emi,ema); ax[2]->SetTitle("y");          // pair y
+  //  ax[3] = new TAxis(8,-pi,pi);  ax[3]->SetTitle("phi");      // wrt event plane
+  ax[3] = new TAxis(1,-pi,pi);  ax[3]->SetTitle("phi");        // wrt event plane
+  ax[4] = new TAxis(npt,ptbins);ax[4]->SetTitle("kt (GeV/c)"); // pair pt/2
   ax[5] = new TAxis(8,0,pi);    ax[5]->SetTitle("q-theta");
   ax[6] = new TAxis(16,-pi,pi); ax[6]->SetTitle("q-phi");
   //ax[7] = new TAxis(64,qbins);  ax[7]->SetTitle("q (GeV/c)");
-  ax[7] = new TAxis(100,0,2.0); ax[7]->SetTitle("q (GeV/c)");
+  ax[7] = new TAxis(150,0,3.0); ax[7]->SetTitle("q (GeV/c)");
   AliUnicorHN *pair = new AliUnicorHN("pair",8,ax);
   for (int i=0; i<8; i++) delete ax[i];
   fHistos.Add(pair);
+
+  // correlation function bin monitor (needed to get <kt> etc.)
+
+  ax[0] = new TAxis(5,0,1);      ax[0]->SetTitle("centrality");
+  ax[1] = new TAxis(30,emi,ema); ax[1]->SetTitle("y");           // pair y
+  ax[2] = new TAxis(100,0,2);    ax[2]->SetTitle("kt (GeV/c)");  // pair pt/2
+  AliUnicorHN *bimo = new AliUnicorHN("bimo",3,ax);
+  for (int i=0; i<3; i++) delete ax[i];
+  fHistos.Add(bimo);
 
   // two-track resolution monitoring histogram
 
   ax[0] = new TAxis(3,-0.5,2.5);    ax[0]->SetTitle("trumixrot");
   ax[1] = new TAxis(2,-0.5,1.5);    ax[1]->SetTitle("cut applied");
-  ax[2] = new TAxis(7,ptbins);      ax[2]->SetTitle("(pair pt)/2 (GeV)");
+  ax[2] = new TAxis(npt,ptbins);    ax[2]->SetTitle("(pair pt)/2 (GeV)");
   ax[3] = new TAxis(80,-0.02,0.02); ax[3]->SetTitle("dtheta");
   ax[4] = new TAxis(80,-0.04,0.04); ax[4]->SetTitle("dphi");
   AliUnicorHN *twot = new AliUnicorHN("twot",5,ax);
@@ -92,7 +104,8 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
 
   static TRandom2 ran;
   AliUnicorHN *pair = (AliUnicorHN*) fHistos.At(0);
-  AliUnicorHN *twot = (AliUnicorHN*) fHistos.At(1);
+  AliUnicorHN *bimo = (AliUnicorHN*) fHistos.At(1);
+  AliUnicorHN *twot = (AliUnicorHN*) fHistos.At(2);
 
   // mixing-and-rotating-proof centrality and reaction plane angle
   // (but not rotation-proof for rotation angles much different from 0 and 180)
@@ -122,10 +135,11 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
       twot->Fill((double) tmr, 1.0, fPa.Pt()/2.0, fPa.DTheta(), fPa.DPhi(),1.0);
       fPa.CalcLAB();
       fPa.CalcPairCM();
+      //fPa.CalcLcmsCM();
       if (fPa.QCM()==0) return; // should not be too frequent
       double phi = TVector2::Phi_mpi_pi(fPa.Phi()-rpphi);
       double weigth = 1.0;
-      //if (tmr==0) weigth = 1.0+0.3*exp(-fPa.QCM()*fPa.QCM()*1*1/0.197/0.197); 
+      //      if (tmr==0) weigth = 1.0+0.5*exp(-fPa.QCM()*fPa.QCM()*1*1/0.197/0.197); 
       pair->Fill((double) tmr,           // 0 for tru, 1 for mix, 2 for rot
 		 cent,                   // centrality
 		 fPa.Rapidity(),         // pair rapidity
@@ -135,6 +149,9 @@ void AliUnicorAnalCorrel::Process(Int_t tmr, const AliUnicorEvent * const ev0, c
 		 fPa.QCMPhiOut(),        // azimuthal angle of Q w.r.t. out
 		 fPa.QCM(),              // |p2-p1| in c.m.s.
 		 weigth);                // weigth
+      if (tmr) continue;
+      if (fPa.QCM()>0.2) continue;
+      bimo->Fill(cent, fPa.Rapidity(), fPa.Pt()/2.0, 1.0);
     }
   }
 }

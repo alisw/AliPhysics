@@ -38,7 +38,7 @@ class AliUnicorHN : public TH1D {
   Int_t Write(const char *, Int_t, Int_t) const {return Write();} 
 
   // project along (integrate over) one axis
-  AliUnicorHN  *ProjectAlong(char *nam, Int_t dim, Int_t first=-1, Int_t last=-1);
+  AliUnicorHN  *ProjectAlong(char *nam, Int_t dim, Int_t first=0, Int_t last=0);
   // project on 1-dim histogram
   TH1D *ProjectOn(char *nam, Int_t dim, const Int_t * const first=0, const Int_t * const last=0) const;
   // project on 1-dim histogram
