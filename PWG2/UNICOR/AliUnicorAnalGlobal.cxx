@@ -40,13 +40,17 @@ AliUnicorAnalGlobal::AliUnicorAnalGlobal(Char_t *nam) : AliUnicorAnal(nam)
   mult->SetXTitle("multiplicity");
   TH1D *cent = new TH1D("cent","cent",100,0,1);
   cent->SetXTitle("centrality");
-  TH2D *dire = new TH2D("dire","dire",100,-40,40,100,-40,40);
+  TH2D *cemu = new TH2D("cemu","cemu",100,0,1,5000,-0.5,4999.5);
+  cemu->SetXTitle("centrality");
+  cemu->SetYTitle("Nch");
+  TH2D *dire = new TH2D("dire","dire",160,-40,40,160,-40,40);
   dire->SetXTitle("Qx (GeV)");
   dire->SetYTitle("Qy (GeV)");
   TH1D *zver = new TH1D("zver","zver",120,-1.2,1.2);
   zver->SetXTitle("normalized z-vertex");
   fHistos.Add(mult);
   fHistos.Add(cent);
+  fHistos.Add(cemu);
   fHistos.Add(dire);
   fHistos.Add(zver);
   gROOT->cd();
@@ -58,11 +62,13 @@ void AliUnicorAnalGlobal::Process(AliUnicorEvent *ev) const
 
   TH1D *mult = (TH1D*) fHistos.At(0);
   TH1D *cent = (TH1D*) fHistos.At(1);
-  TH2D *dire = (TH2D*) fHistos.At(2);
-  TH1D *zver = (TH1D*) fHistos.At(3);
+  TH2D *cemu = (TH2D*) fHistos.At(2);
+  TH2D *dire = (TH2D*) fHistos.At(3);
+  TH1D *zver = (TH1D*) fHistos.At(4);
 
-  mult->Fill(ev->NParticles(),1.0);
+  mult->Fill(ev->NGoodParticles(),1.0);
   cent->Fill(ev->Centrality(),1.0);
+  cemu->Fill(ev->Centrality(),ev->NGoodParticles());
   Double_t qx,qy;
   ev->RP(qx,qy);
   dire->Fill(qx,qy,1.0);
