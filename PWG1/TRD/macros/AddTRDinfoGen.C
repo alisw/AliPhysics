@@ -12,17 +12,17 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
 {
   Int_t map = ParseOptions(trd);
   if(!(TSTBIT(map, kInfoGen))) return;
-  
+  Bool_t mc(mgr->GetMCtruthEventHandler()?kTRUE:kFALSE);
   //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);
   mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
   info->SetDebugLevel(0);
-  info->SetMCdata(mgr->GetMCtruthEventHandler());
+  info->SetMCdata(mc);
 
   // settings for collisions
-  info->SetCollision(/*kFALSE*/);
+  info->SetCollision(kFALSE);
   if(info->IsCollision()){
-    info->SetTrigger(
+    if(mc) info->SetTrigger(
       "CINT1B-ABCE-NOPF-ALL"
       " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
     );
