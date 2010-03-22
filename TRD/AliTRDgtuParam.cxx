@@ -64,6 +64,7 @@ AliTRDgtuParam::AliTRDgtuParam() :
   fVertexSize(20.0),
   fCurrTrackletMask(0),
   fRefLayers(0x0),
+  fMagField(0.5),
   fGeo(0x0)
 {
   // default ctor
@@ -396,22 +397,14 @@ Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2)
   return ( (l1 >= 0) && (l2 >= 0) );
 }
 
-Float_t AliTRDgtuParam::GetRadius(Int_t a, Float_t b, Float_t x1, Float_t x2) const
+Float_t AliTRDgtuParam::GetPt(Int_t a, Float_t /* b */, Float_t x1, Float_t x2) const
 {
-  // get the radius for the track
-  Float_t d = (1 + b * b /2 ) * (x2 - x1);
-  Float_t c1 = x1 * x2 / 2;
-//  Float_t c2 = (x1 + x2) / (x1 * x2);
-//  printf("c1: %f\n", c1);
+  // returns 0.3 * B * 1/a (1/128 GeV/c)
+  // a : offset, b : slope (not used)
+
+  Float_t c1 = x1 * x2 / 2. / 10000.; // conversion cm to m
   Float_t r = 0;
   if ( (a >> 1) != 0)
-    r = (375. / 10000.) * c1 * 256 / (a >> 1);
-  return r;
-
-  Float_t y1 = a + b*x1;
-  Float_t y2 = a + b*x2;
-  Float_t alpha = TMath::Abs( TMath::ATan(y2/x2) - TMath::ATan(y1/x1) );
-  d = TMath::Sqrt( TMath::Power(x2-x1, 2) + TMath::Power(y2-y1, 2) );
-  r = d / 2. / TMath::Sin(alpha);
+    r = (0.3 * fMagField / 2. / (fgkBinWidthY/100.)) * (((Int_t) c1) << 8) / (a >> 1); //??? why shift of a?
   return r;
 }

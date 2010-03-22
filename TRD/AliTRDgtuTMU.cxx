@@ -753,7 +753,7 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
   AliDebug(10,Form("Sum: a = %5i, b = %9.2f, c = %9.2f\n", a, b, c));
   track->SetFitParams(a, b, c);
 
-  Float_t r = fGtuParam->GetRadius(a, b, x1, x2);
+  Float_t r = fGtuParam->GetPt(a, b, x1, x2);
   Int_t pt = (Int_t) (2 * r);
   if (pt >= 0) 
       pt += 32;

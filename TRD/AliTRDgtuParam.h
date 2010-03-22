@@ -53,7 +53,7 @@ class AliTRDgtuParam : public TObject {
   Int_t GetRefLayer(Int_t refLayerIdx) const;
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
   Bool_t GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2); // const
-  Float_t GetRadius(Int_t a, Float_t b, Float_t x1, Float_t x2) const;
+  Float_t GetPt(Int_t a, Float_t b, Float_t x1, Float_t x2) const;
 
   Bool_t IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
 
@@ -69,6 +69,10 @@ class AliTRDgtuParam : public TObject {
   Float_t GetBki(Int_t k, Int_t i);
   Float_t GetCki(Int_t k, Int_t i);
 //  Float_t GetD(Int_t k) const;
+
+  // B-field
+  void SetMagField(Float_t field) { fMagField = field; }
+  Float_t GetMagField() const { return fMagField; }
 
  protected:
   static const Int_t fgkNZChannels = 3; // No. of z-channels
@@ -99,6 +103,8 @@ class AliTRDgtuParam : public TObject {
   Float_t fCki[6]; // coefficients used for the fit, calculated for the current tracklet mask
 
   Int_t *fRefLayers;		//[fgkNRefLayers] reference layers for track finding
+
+  Float_t fMagField;            // magnetic field in T
 
   AliTRDgeometry *fGeo;		//! pointer to the TRD geometry
 
