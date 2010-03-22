@@ -1038,9 +1038,6 @@ Bool_t AliReconstruction::InitGRP() {
     }
   }
 
-  // Additional check if ITS is on
-  fRunVertexFinder = fRunLocalReconstruction && IsSelected("ITS",fRunLocalReconstruction);
-
   AliInfo("===================================================================================");
   AliInfo(Form("Running local reconstruction for detectors: %s",fRunLocalReconstruction.Data()));
   AliInfo(Form("Running tracking for detectors: %s",fRunTracking.Data()));
@@ -3491,7 +3488,7 @@ Bool_t AliReconstruction::GetEventInfo()
   Int_t nclasses = classesArray.GetEntriesFast();
   for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
     AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
-    if (trclass) {
+    if (trclass && trclass->GetMask()>0) {
       Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
       fesd->SetTriggerClass(trclass->GetName(),trindex);
       if (fRawReader) fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
@@ -3510,7 +3507,7 @@ Bool_t AliReconstruction::GetEventInfo()
   Int_t ninputs = inputsArray.GetEntriesFast();
   for( Int_t iinput=0; iinput < ninputs; iinput++ ) {
     AliTriggerInput* trginput = (AliTriggerInput*)inputsArray.At(iinput);
-    if (trginput) {
+    if (trginput && trginput->GetMask()>0) {
       Int_t inputIndex = (Int_t)TMath::Nint(TMath::Log2(trginput->GetMask()));
       AliESDHeader* headeresd = fesd->GetHeader();
       Int_t trglevel = (Int_t)trginput->GetLevel();
