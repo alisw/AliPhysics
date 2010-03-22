@@ -326,8 +326,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
 	     
-	   //	   frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-	   frecpoints->SetTime(ipmt,Double32_t(timeCFD[ipmt]));
+	   frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
+	   // frecpoints->SetTime(ipmt,Double32_t(timeCFD[ipmt]));
 	   frecpoints->SetAmpLED(ipmt, Double32_t( qtMip)); //for cosmic &pp beam 
 	   frecpoints->SetAmp(ipmt, Double32_t(ampMip));
 	     
