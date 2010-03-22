@@ -37,7 +37,9 @@
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliStack.h"
+
+#include "AliHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 //-----------------------------------------------------------------------------
 /// The sdigitizer performs the transformation from hits (energy deposits by
@@ -134,14 +136,24 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     runLoader->GetEvent(iEvent);
   
     // for pile up studies
-    runLoader->LoadKinematics();
-    AliStack* stack = runLoader->Stack();
-    Int_t nparticles = (Int_t) stack->GetNtrack();
-    float T0=10;    // time of the triggered event 
-    // loop to find the time of the triggered event (this may change)
-    for (Int_t iparticle=0; iparticle<nparticles; ++iparticle) {
-      float t = stack->Particle(iparticle)->T();
-      if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;
+    float T0=10;
+    AliHeader* header = runLoader->GetHeader();   
+    AliGenCocktailEventHeader* cocktailHeader =
+      dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
+    if (cocktailHeader) {
+      AliGenCocktailEventHeader* genEventHeader = (AliGenCocktailEventHeader*) (header->GenEventHeader());
+      TList* headers = genEventHeader->GetHeaders();
+      TIter nextH(headers);
+      AliGenEventHeader *entry; 
+      while((entry = (AliGenEventHeader*)nextH())) {
+	float t = entry->InteractionTime();	
+	if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;      
+      }
+    } else {
+      AliGenEventHeader* evtHeader = 
+	(AliGenEventHeader*)(header->GenEventHeader());
+      float t = evtHeader->InteractionTime();		
+      if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;           
     }
 
     loader->MakeSDigitsContainer();
