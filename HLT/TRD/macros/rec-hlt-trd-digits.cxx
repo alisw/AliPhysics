@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
 int rec_hlt_trd_digits(const TString input){
 
-  // Use custom arguments for components? i.e.: not reading OCDB arguments
+  // Use custom arguments for components?
   Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?

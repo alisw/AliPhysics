@@ -70,7 +70,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   // If not use these SMs:
   Int_t TRDmodules[18] = {0,1,7,8,9,10,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
-  // Use custom arguments for components? i.e.: not reading OCDB arguments
+  // Use custom arguments for components?
   Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?
@@ -159,7 +159,8 @@ int rec_hlt_trd(const TString filename, TString outPath)
       arg = "";
       if(customArgs || disableHLTflag){
 	arg = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
-	arg += "";
+	if(customArgs)
+	  arg += "";
 	if(disableHLTflag)
 	  arg += " -HLTflag no";
       }
@@ -174,7 +175,8 @@ int rec_hlt_trd(const TString filename, TString outPath)
       arg="";
       if(customArgs || disableHLTflag){
 	arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
-	arg += "";   
+	if(customArgs)
+	  arg += "";
 	if(disableHLTflag)
 	  arg += " -HLTflag no";
       }
@@ -187,7 +189,8 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
       // Offline Tracker (for debug purposes only)
       arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
-      arg += " -highLevelOutput yes -emulateHLToutput no";
+      if(customArgs)
+	arg += " -highLevelOutput yes -emulateHLToutput no";
       if(disableHLTflag)
 	arg+=" -HLTflag no";
 
@@ -216,7 +219,6 @@ int rec_hlt_trd(const TString filename, TString outPath)
   // root file writer (with esd friends) (you may use tr or trOff here)
   AliHLTConfiguration writerOffConf("TRD-OffEsdFile", "TRDEsdWriter", afterTr.Data(), "-concatenate-events -concatenate-blocks");
 
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Init CDBManager and trigger
@@ -225,7 +227,8 @@ int rec_hlt_trd(const TString filename, TString outPath)
   Int_t run = 0;
   if(bRealData){
     man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB");
-    //man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB");
+    //man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB"); 
+    //man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB");
     run = ExtractRunNumber(filename);
   }else{
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
@@ -233,7 +236,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
     //rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   }
   man->SetRun(run);
-  
+
   if(bCosmics){
     // no magnetic field
     AliExternalTrackParam::SetMostProbablePt(8.);
@@ -253,7 +256,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
       AliTriggerCluster * trg_clust = (AliTriggerCluster *)trg_class->GetCluster();
       
       printf("ioj[%d]\n", iobj); trg_class->Print(0x0);
-      
+
       // cosmic run 2009                                                                                                                                                                                       
       // if(TString(trg_class->GetName()).Contains("TRD")){                                                                                                                                                    
       //        triggerconfs.push_back(trg_class->GetMask());                                                                                                                                                  
@@ -261,7 +264,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
       // pp run 2009                                                                                                                                                                                           
       if(TString(trg_class->GetName()).Contains("CINT1B-ABCE-NOPF-ALL")){
-	triggerconfs.push_back(trg_class->GetMask());
+        triggerconfs.push_back(trg_class->GetMask());
       }
 
     }
@@ -291,7 +294,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   rec.SetRunTracking(":");
   rec.SetLoadAlignFromCDB(0);
   rec.SetFillESD("");
-  rec.SetRunQA("HLT:ESD");  //does not make sense but there is a bug in AliReconstructor, which we circumvent like that
+  rec.SetRunQA(":");
   rec.SetRunGlobalQA(kFALSE);
   rec.SetFillTriggerESD(kFALSE);
 
