@@ -263,21 +263,17 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   else{
     AliZDCChMap *chMap = (AliZDCChMap*) cdbEntry->GetObject();
     for(Int_t i=0; i<kNch; i++){
-      if(  (adcMap[i][1] == chMap->GetADCModule(i)) 
-        && (adcMap[i][2] == chMap->GetADCChannel(i)) 
-	&& (adcMap[i][4] == chMap->GetDetector(i)) 
-	&& (adcMap[i][5] == chMap->GetSector(i))){
-	 adcMapUpdated = kFALSE;
-      }
-      else adcMapUpdated = kTRUE;
+      if(  (adcMap[i][1] != chMap->GetADCModule(i)) 
+        || (adcMap[i][2] != chMap->GetADCChannel(i)) 
+	|| (adcMap[i][4] != chMap->GetDetector(i)) 
+	|| (adcMap[i][5] != chMap->GetSector(i))) 
+	 adcMapUpdated = kTRUE;
     }
     for(Int_t i=0; i<kNScch; i++){
-      if(  (scMap[i][2] == chMap->GetScChannel(i)) 
-	&& (scMap[i][4] == chMap->GetScDetector(i)) 
-	&& (scMap[i][5] == chMap->GetScSector(i))){
-	 scMapUpdated = kFALSE;
-      }
-      else scMapUpdated = kTRUE;
+      if(  (scMap[i][2] != chMap->GetScChannel(i)) 
+	|| (scMap[i][4] != chMap->GetScDetector(i)) 
+	|| (scMap[i][5] != chMap->GetScSector(i)))
+	 scMapUpdated = kTRUE;
     }
   }
   if(adcMapUpdated || scMapUpdated) updateOCDB = kTRUE;
