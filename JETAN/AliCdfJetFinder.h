@@ -56,24 +56,24 @@ class AliCdfJetFinder : public AliJetFinder
     Bool_t fAODtracksWrite ;   // write jet tracks to AOD
     Bool_t fAnalyseJets;       // analyse jets
 	
-    TRefArray *fRefArr ;       // pointer to references array of tracks from AOD
+    TRefArray *fRefArr ;       //! pointer to references array of tracks from AOD
 
-    Int_t         fNJets;     // counter of number of jets
-    Int_t         fNPart;     // number of particles in event
+    Int_t         fNJets;     //! counter of number of jets
+    Int_t         fNPart;     //! number of particles in event
 
     Double_t      fRadius ;   // radius of jet 
 
     Int_t fMinJetParticles;   // leading jet must contain AT LEAST fMinJetParticles
     Double_t fJetPtCut;       // leading jet must have AT LEAST fJetPtCut
 
-    varContainer **fVectParticle; // container for Particles
-    varContainer **fVectJet;      // container for Jets
+    varContainer **fVectParticle; //! container for Particles
+    varContainer **fVectJet;      //! container for Jets
 
-    Double_t *fPtArray;  // momentum array
-    Int_t    *fIdxArray;  // index array of sorted pts
+    Double_t *fPtArray;  //! momentum array
+    Int_t    *fIdxArray;  //! index array of sorted pts
 
 
-    ClassDef(AliCdfJetFinder,1)
+    ClassDef(AliCdfJetFinder,2)
    };
 #endif
 
