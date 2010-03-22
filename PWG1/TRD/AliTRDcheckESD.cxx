@@ -62,7 +62,7 @@ ClassImp(AliTRDcheckESD)
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 const UChar_t AliTRDcheckESD::fgkNgraph[AliTRDcheckESD::kNrefs] ={
-0, 4, 2, 10};
+0, 4, 2, 20};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
 //____________________________________________________________________
@@ -142,6 +142,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
   TH1 *hF(NULL);
   if((hF=(TH1S*)gROOT->FindObject("hFcheckESD"))) delete hF;
   TLegend *leg(NULL);
+  TList *l(NULL); TVirtualPad *pad(NULL);
   TGraphErrors *g(NULL);TGraphAsymmErrors *ga(NULL);
   TObjArray *arr(NULL);
   switch(ifig){
@@ -189,23 +190,38 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     break;
   case kPtRes: // Pt resolution @ vertex
     if(!(arr = (TObjArray*)fResults->At(kPtRes))) return kFALSE;
-    gPad->SetMargin(0.1, 0.22, 0.1, 0.023);
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    pad = ((TVirtualPad*)l->At(0)); pad->cd(); pad->SetLogx();
+    pad->SetMargin(0.1, 0.022, 0.1, 0.023);
+    hF = new TH1S("hFcheckESD", "ITS+TPC+TRD;p_{t} [GeV/c];#Delta p_{t} / p_{t} [%]", 10, 0.2, 10.);
+    hF->SetMaximum(10.);hF->SetMinimum(-3.);
+    hF->GetXaxis()->SetMoreLogLabels();
+    hF->GetXaxis()->SetTitleOffset(1.2);
+    hF->GetYaxis()->CenterTitle();
+    hF->Draw("p");
+    for(Int_t ig(0); ig<fgkNgraph[kPtRes]/2; ig++){
+      if(!(g = (TGraphErrors*)arr->At(ig))) continue;
+      if(!g->GetN()) continue;
+      g->Draw("pl");
+      //PutTrendValue(name[id], g->GetMean(2));
+      //PutTrendValue(Form("%sRMS", name[id]), g->GetRMS(2));
+    }
+    pad = ((TVirtualPad*)l->At(1)); pad->cd(); pad->SetLogx();
+    pad->SetMargin(0.1, 0.22, 0.1, 0.023);
+    hF = (TH1*)hF->Clone("hFcheckESD1");
+    hF->SetTitle("ITS+TPC");
+    hF->SetMaximum(10.);hF->SetMinimum(-3.);
+    hF->Draw("p");
     leg = new TLegend(.78, .1, .99, .98);
     leg->SetHeader("P_{t} @ DCA");
     leg->SetBorderSize(1); leg->SetFillColor(0);
     leg->SetTextAlign(22);
     leg->SetTextFont(12);
     leg->SetTextSize(0.03813559);
-    hF = new TH1S("hFcheckESD", ";p_{t} [GeV/c];#Delta p_{t} / p_{t} [%]", 10, 0.2, 10.);
-    hF->SetMaximum(10.);hF->SetMinimum(-3.);
-    hF->GetXaxis()->SetMoreLogLabels();
-    hF->GetXaxis()->SetTitleOffset(1.2);
-    hF->GetYaxis()->CenterTitle();
-    hF->Draw("p");
     {
       Int_t nPlots(0);
-      for(Int_t ig(0); ig<fgkNgraph[kPtRes]; ig++){
-        if(!(g = (TGraphErrors*)arr->At(ig))) continue;//return kFALSE;
+      for(Int_t ig(fgkNgraph[kPtRes]/2); ig<fgkNgraph[kPtRes]; ig++){
+        if(!(g = (TGraphErrors*)arr->At(ig))) continue;
         if(!g->GetN()) continue;
         nPlots++;
         g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
@@ -214,7 +230,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
       }
       if(nPlots) leg->Draw();
     }
-    gPad->SetLogx();
+
     break;
   }
   return kTRUE;
@@ -488,17 +504,30 @@ void AliTRDcheckESD::Terminate(Option_t *)
         }
         break;
       case kPtRes:
-        for(Int_t im(fgkNgraph[iref]/2), ig(im), idx(0); ig--; idx+=ig){
-         arr->AddAt(g = new TGraphErrors(), ig);
+        for(Int_t idx(0); idx<AliPID::kSPECIES; idx++){
+          Int_t ig(2*idx);
+          arr->AddAt(g = new TGraphErrors(), ig);
           g->SetLineColor(kRed-idx); 
           g->SetMarkerColor(kRed-idx); 
-          g->SetMarkerStyle(20+ig); 
-          g->SetNameTitle(Form("s%d", ig), Form("res %s", AliPID::ParticleLatexName(ig)));
-          arr->AddAt(g = new TGraphErrors(), im+ig);
+          g->SetMarkerStyle(20+idx); 
+          g->SetNameTitle(Form("s%d", ig), Form("res %s", AliPID::ParticleLatexName(idx)));
+          arr->AddAt(g = new TGraphErrors(), ig+1);
           g->SetLineColor(kBlue-idx); 
           g->SetMarkerColor(kBlue-idx); 
-          g->SetMarkerStyle(20+ig); 
-          g->SetNameTitle(Form("m%d", ig), Form("sys %s", AliPID::ParticleLatexName(ig)));
+          g->SetMarkerStyle(20+idx); 
+          g->SetNameTitle(Form("m%d", ig+1), Form("sys %s", AliPID::ParticleLatexName(idx)));
+
+          ig+=10;
+          arr->AddAt(g = new TGraphErrors(), ig);
+          g->SetLineColor(kRed-idx); 
+          g->SetMarkerColor(kRed-idx); 
+          g->SetMarkerStyle(20+idx); 
+          g->SetNameTitle(Form("s%d", ig), Form("sigma %s", AliPID::ParticleLatexName(idx)));
+          arr->AddAt(g = new TGraphErrors(), ig+1);
+          g->SetLineColor(kBlue-idx); 
+          g->SetMarkerColor(kBlue-idx); 
+          g->SetMarkerStyle(20+idx); 
+          g->SetNameTitle(Form("m%d", ig+1), Form("mean %s", AliPID::ParticleLatexName(idx)));
         }
         break;
       default:
@@ -567,12 +596,17 @@ void AliTRDcheckESD::Terminate(Option_t *)
   arr = (TObjArray*)fResults->At(kPtRes);
   TAxis *az(h3->GetZaxis());
   for(Int_t i(0); i<AliPID::kSPECIES; i++){
-    az->SetRange(5-i, 5-i); 
-    gg[1] = (TGraphErrors*)arr->At(4-i);
-    gg[0] = (TGraphErrors*)arr->At(9-i);
+    Int_t idx(2*i);
+    az->SetRange(idx+1, idx+2); 
+    gg[1] = (TGraphErrors*)arr->At(idx);
+    gg[0] = (TGraphErrors*)arr->At(idx+1);
     Process2D((TH2*)h3->Project3D("yx"), gg);
-    //az->SetRange(7+i, 7+i);
-    //Process2D((TH2*)h3->Project3D("yx"), gg);
+
+    idx+=10;
+    az->SetRange(idx+1, idx+2); 
+    gg[1] = (TGraphErrors*)arr->At(idx);
+    gg[0] = (TGraphErrors*)arr->At(idx+1);
+    Process2D((TH2*)h3->Project3D("yx"), gg);
   }
   fNRefFigures++;
 }
