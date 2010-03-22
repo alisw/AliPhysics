@@ -1,3 +1,7 @@
+///////////////////////////////////////////////////////////////////////////////
+//22.03.2010 -  Iouri.Belikov@cern.ch
+///////////////////////////////////////////////////////////////////////////////
+
 AliAnalysisTaskGlobalQA *AddTaskGlobalQA()
 {
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -14,8 +18,8 @@ AliAnalysisTaskGlobalQA *AddTaskGlobalQA()
 //===========================================================================
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    outputFileName += ":PWG1GlobalQA";
-   if (lCollidingSystems) outputFileName += "_AA";
-   else outputFileName += "_PP";
+   //if (lCollidingSystems) outputFileName += "_AA";
+   //else outputFileName += "_PP";
    if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
 
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("GlobalQA",
