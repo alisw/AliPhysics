@@ -28,6 +28,9 @@ void alieve_online_init()
                              geom_gentle_rphi(), 
                              geom_gentle_rhoz());
 
+  TEveUtil::LoadMacro("geom_gentle_trd.C");
+  multiView->InitGeomGentleTrd(geom_gentle_trd());
+
   // See visscan_init.C for how to add TRD / MUON geometry.
 
   //============================================================================
