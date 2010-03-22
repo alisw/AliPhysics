@@ -1,3 +1,8 @@
+//
+// Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
+//                 PHOS  Yuri.Kharlov@cern.ch
+//
+
 AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
