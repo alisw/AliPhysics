@@ -213,13 +213,13 @@ void AliGenMUONCocktailpp::CreateCocktail()
 // Cross sections corrected with the BR in mu+mu-
 // (only in case of use of AliDecayerPolarized)
 
-    if(fJpsiPol  != 0)	{sigmajpsi      = fSigmaJPsi*0.0593;}
-    if(fChic1Pol != 0)	{sigmachic1     = fSigmaChic1*0.;} // tb consistent
-    if(fChic2Pol != 0)	{sigmachic2     = fSigmaChic2*0.;} // tb consistent 
-    if(fPsiPPol  != 0)	{sigmapsiP      = fSigmaPsiP*0.0075;}
-    if(fUpsPol   != 0)	{sigmaupsilon   = fSigmaUpsilon*0.0248;}
-    if(fUpsPPol  != 0)	{sigmaupsilonP  = fSigmaUpsilonP*0.0193;}
-    if(fUpsPPPol != 0)	{sigmaupsilonPP = fSigmaUpsilonPP*0.0218;}
+    if(TMath::Abs(fJpsiPol)  > 1.e-30)	{sigmajpsi      = fSigmaJPsi*0.0593;}
+    if(TMath::Abs(fChic1Pol) > 1.e-30)	{sigmachic1     = fSigmaChic1*0.;} // tb consistent
+    if(TMath::Abs(fChic2Pol) > 1.e-30)	{sigmachic2     = fSigmaChic2*0.;} // tb consistent 
+    if(TMath::Abs(fPsiPPol)  > 1.e-30)	{sigmapsiP      = fSigmaPsiP*0.0075;}
+    if(TMath::Abs(fUpsPol)   > 1.e-30)	{sigmaupsilon   = fSigmaUpsilon*0.0248;}
+    if(TMath::Abs(fUpsPPol)  > 1.e-30)	{sigmaupsilonP  = fSigmaUpsilonP*0.0193;}
+    if(TMath::Abs(fUpsPPPol) > 1.e-30)	{sigmaupsilonPP = fSigmaUpsilonPP*0.0218;}
 
 // MinBias NN cross section @ pp 14 TeV -PR  Vol II p:473
     Double_t sigmaReaction = fSigmaReaction;
@@ -256,20 +256,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genjpsi->SetPhiRange(phiMin, phiMax);
     genjpsi->Init(); // generation in selected kinematic range
 
-    TVirtualMCDecayer *Jpsidec = 0;
-    if(fJpsiPol != 0){
+    TVirtualMCDecayer *jpsiDec = 0;
+    if(TMath::Abs(fJpsiPol) > 1.e-30){
     AliInfo(Form("******Setting polarized decayer for J/psi"));
     if(fPolFrame==0) {
-         Jpsidec = new AliDecayerPolarized(fJpsiPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+         jpsiDec = new AliDecayerPolarized(fJpsiPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
 	 AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fJpsiPol));
 	   }
     if(fPolFrame==1) {
-         Jpsidec = new AliDecayerPolarized(fJpsiPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+         jpsiDec = new AliDecayerPolarized(fJpsiPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
          AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fJpsiPol));
 	   }
-    Jpsidec->SetForceDecay(kAll);
-    Jpsidec->Init();
-    genjpsi->SetDecayer(Jpsidec);
+    jpsiDec->SetForceDecay(kAll);
+    jpsiDec->Init();
+    genjpsi->SetDecayer(jpsiDec);
     }
 
     AddGenerator(genjpsi, "Jpsi", ratiojpsi); // Adding Generator
@@ -302,20 +302,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genchic1->SetPhiRange(phiMin, phiMax);
     genchic1->Init(); // generation in selected kinematic range
 
-    TVirtualMCDecayer *Chic1dec = 0;
+    TVirtualMCDecayer *chic1Dec = 0;
     if(fChic1Pol != 0){
     AliInfo(Form("******Setting polarized decayer for Chic1"));
     if(fPolFrame==0) {
-         Chic1dec = new AliDecayerPolarized(fChic1Pol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+         chic1Dec = new AliDecayerPolarized(fChic1Pol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
 	 AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fChic1Pol));
 	   }
     if(fPolFrame==1) {
-         Chic1dec = new AliDecayerPolarized(fChic1Pol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+         chic1Dec = new AliDecayerPolarized(fChic1Pol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
          AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fChic1Pol));
 	   }
-    Chic1dec->SetForceDecay(kAll);
-    Chic1dec->Init();
-    genchic1->SetDecayer(Chic1dec);
+    chic1Dec->SetForceDecay(kAll);
+    chic1Dec->Init();
+    genchic1->SetDecayer(chic1Dec);
     }
 
     AddGenerator(genchic1, "Chic1", ratiochic1); // Adding Generator
@@ -347,20 +347,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genchic2->SetPhiRange(phiMin, phiMax);
     genchic2->Init(); // generation in selected kinematic range
 
-    TVirtualMCDecayer *Chic2dec = 0;
+    TVirtualMCDecayer *chic2Dec = 0;
     if(fChic2Pol != 0){
     AliInfo(Form("******Setting polarized decayer for Chic2"));
     if(fPolFrame==0) {
-         Chic2dec = new AliDecayerPolarized(fChic2Pol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+         chic2Dec = new AliDecayerPolarized(fChic2Pol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
 	 AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fChic2Pol));
 	   }
     if(fPolFrame==1) {
-         Chic2dec = new AliDecayerPolarized(fChic2Pol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+         chic2Dec = new AliDecayerPolarized(fChic2Pol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
          AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fChic2Pol));
 	   }
-    Chic2dec->SetForceDecay(kAll);
-    Chic2dec->Init();
-    genchic2->SetDecayer(Chic2dec);
+    chic2Dec->SetForceDecay(kAll);
+    chic2Dec->Init();
+    genchic2->SetDecayer(chic2Dec);
     }
 
     AddGenerator(genchic2, "Chic2", ratiochic2); // Adding Generator
@@ -392,20 +392,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genpsiP->SetPhiRange(phiMin, phiMax);
     genpsiP->Init(); // generation in selected kinematic range
 
-     TVirtualMCDecayer *PsiPdec = 0;
-     if(fPsiPPol != 0){
+     TVirtualMCDecayer *psipDec = 0;
+     if(TMath::Abs(fPsiPPol) > 1.e-30){
       AliInfo(Form("******Setting polarized decayer for psi'"));
       if(fPolFrame==0) {
-        PsiPdec = new AliDecayerPolarized(fPsiPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+        psipDec = new AliDecayerPolarized(fPsiPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fPsiPPol));
 	  }
       if(fPolFrame==1) {
-        PsiPdec = new AliDecayerPolarized(fPsiPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+        psipDec = new AliDecayerPolarized(fPsiPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fPsiPPol));
 	  }
-      PsiPdec->SetForceDecay(kAll);
-      PsiPdec->Init();
-      genpsiP->SetDecayer(PsiPdec);
+      psipDec->SetForceDecay(kAll);
+      psipDec->Init();
+      genpsiP->SetDecayer(psipDec);
      }
 
     AddGenerator(genpsiP, "PsiP", ratiopsiP); // Adding Generator
@@ -436,20 +436,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genupsilon->SetPhiRange(phiMin, phiMax);
     genupsilon->Init(); // generation in selected kinematical range
      
-     TVirtualMCDecayer *Upsdec = 0;
-     if(fUpsPol != 0){
+     TVirtualMCDecayer *upsDec = 0;
+     if(TMath::Abs(fUpsPol) > 1.e-30){
       AliInfo(Form("******Setting polarized decayer for Upsilon"));
       if(fPolFrame==0) {
-        Upsdec = new AliDecayerPolarized(fUpsPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+        upsDec = new AliDecayerPolarized(fUpsPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fUpsPol));
 	  }
       if(fPolFrame==1) {
-        Upsdec = new AliDecayerPolarized(fUpsPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+        upsDec = new AliDecayerPolarized(fUpsPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fUpsPol));
 	  }
-      Upsdec->SetForceDecay(kAll);
-      Upsdec->Init();
-      genupsilon->SetDecayer(Upsdec);
+      upsDec->SetForceDecay(kAll);
+      upsDec->Init();
+      genupsilon->SetDecayer(upsDec);
      }
 
     AddGenerator(genupsilon,"Upsilon", ratioupsilon); // Adding Generator
@@ -480,20 +480,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genupsilonP->SetPhiRange(phiMin, phiMax);
     genupsilonP->Init(); // generation in selected kinematical range
 
-     TVirtualMCDecayer *UpsPdec = 0;
-     if(fUpsPPol != 0){
+     TVirtualMCDecayer *upspDec = 0;
+     if(TMath::Abs(fUpsPPol) > 1.e-30){
       AliInfo(Form("******Setting polarized decayer for Upsilon'"));
       if(fPolFrame==0) {
-        UpsPdec = new AliDecayerPolarized(fUpsPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+        upspDec = new AliDecayerPolarized(fUpsPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fUpsPPol));
 	  }
       if(fPolFrame==1) {
-        UpsPdec = new AliDecayerPolarized(fUpsPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+        upspDec = new AliDecayerPolarized(fUpsPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fUpsPPol));
 	  }
-      UpsPdec->SetForceDecay(kAll);
-      UpsPdec->Init();
-      genupsilonP->SetDecayer(UpsPdec);
+      upspDec->SetForceDecay(kAll);
+      upspDec->Init();
+      genupsilonP->SetDecayer(upspDec);
      }
     
     AddGenerator(genupsilonP,"UpsilonP", ratioupsilonP); // Adding Generator
@@ -526,20 +526,20 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genupsilonPP->SetPhiRange(phiMin, phiMax);
     genupsilonPP->Init(); // generation in selected kinematical range
 
-     TVirtualMCDecayer *UpsPPdec = 0;
+     TVirtualMCDecayer *upsppDec = 0;
      if(fUpsPPPol != 0){
       AliInfo(Form("******Setting polarized decayer for Upsilon''"));
       if(fPolFrame==0) {
-        UpsPPdec = new AliDecayerPolarized(fUpsPPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+        upsppDec = new AliDecayerPolarized(fUpsPPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fUpsPPPol));
 	  }
       if(fPolFrame==1) {
-        UpsPPdec = new AliDecayerPolarized(fUpsPPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+        upsppDec = new AliDecayerPolarized(fUpsPPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fUpsPPPol));
 	  }
-      UpsPPdec->SetForceDecay(kAll);
-      UpsPPdec->Init();
-      genupsilonPP->SetDecayer(UpsPPdec);
+      upsppDec->SetForceDecay(kAll);
+      upsppDec->Init();
+      genupsilonPP->SetDecayer(upsppDec);
      }
     
     AddGenerator(genupsilonPP,"UpsilonPP", ratioupsilonPP); // Adding Generator

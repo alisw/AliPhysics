@@ -3,6 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+
+//
+// Classe to create the coktail for physics with muons for pp at 14 TeV
+// The followoing sources: 
+// jpsi,psiP, upsilon, upsilonP, upsilonPP are added to Pythia
+// The free parameeters are :
+//      pp reaction cross-section
+//      production cross-sections in pp collisions
+
 #include "AliGenCocktail.h"
 #include "AliDecayer.h"
 
@@ -61,7 +70,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
  private:
     AliGenMUONCocktailpp(const AliGenMUONCocktailpp &cocktail); 
     AliGenMUONCocktailpp & operator=(const AliGenMUONCocktailpp &cocktail); 
-    AliDecayer* fDecayer;
+    AliDecayer* fDecayer;        // External decayer
     Decay_t fDecayModeResonance; //decay mode in which resonances are forced to decay, default: kAll
     Decay_t fDecayModePythia; //decay mode in which particles in Pythia are forced to decay, default: kAll
     Int_t   fMuonMultiplicity; // Muon multiplicity for the primordial trigger
