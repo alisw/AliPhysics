@@ -590,24 +590,13 @@ int AliHLTTRDClusterizerComponent::SetParams()
       return -EINVAL;
     }
 
-  // backward compatibility to AliTRDrecoParam < r34995
-# ifndef HAVE_NOT_ALITRDRECOPARAM_r34995
-#   define AliTRDRecoParamSetTailCancelation(b) fRecoParam->SetTailCancelation(b)
-#   define AliTRDRecoParamSetGAUS(b) fRecoParam->SetGAUS(b)
-#   define AliTRDRecoParamSetLUT(b) fRecoParam->SetLUT(b)
-# else
-#   define AliTRDRecoParamSetTailCancelation(b) fRecoParam->SetTailCancelation()
-#   define AliTRDRecoParamSetGAUS(b) fRecoParam->SetGAUS()
-#   define AliTRDRecoParamSetLUT(b) fRecoParam->SetLUT()
-# endif
-
   if(fTC){fRecoParam->SetTailCancelation(kTRUE); HLTDebug("Enableing Tail Cancelation"); }
   else{fRecoParam->SetTailCancelation(kFALSE); HLTDebug("Disableing Tail Cancelation"); }
 
   switch(fyPosMethod){
-  case 0: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kFALSE); break;
-  case 1: AliTRDRecoParamSetGAUS(kFALSE); AliTRDRecoParamSetLUT(kTRUE); break;
-  case 2: AliTRDRecoParamSetGAUS(kTRUE); AliTRDRecoParamSetLUT(kFALSE); break;
+  case 0: fRecoParam->SetGAUS(kFALSE); fRecoParam->SetLUT(kFALSE); break;
+  case 1: fRecoParam->SetGAUS(kFALSE); fRecoParam->SetLUT(kTRUE); break;
+  case 2: fRecoParam->SetGAUS(kTRUE); fRecoParam->SetLUT(kFALSE); break;
   }
 
   fRecoParam->SetStreamLevel(AliTRDrecoParam::kClusterizer, 0);
@@ -640,11 +629,20 @@ int AliHLTTRDClusterizerComponent::SetParams()
       HLTDebug("Data type expected is EXPERIMENT!");
     }
 
-  if (fHLTstreamer)
-    {
+#ifndef HAVE_NOT_ALITRD_RAWSTREAM_r39608
+  if(fHLTstreamer){
+    AliTRDrawStreamBase::SetRawStreamVersion("default");
+    HLTDebug("fast rawstreamer used");
+  }else{
+    AliTRDrawStreamBase::SetRawStreamVersion("FAST");
+    HLTDebug("old rawstreamer used");
+  }
+#else
+  if(fHLTstreamer){
       AliTRDrawStreamBase::SetRawStreamVersion("FAST");
       HLTDebug("fast rawstreamer used");  
     }
+#endif
 
   if(!fClusterizer){
     fClusterizer = new AliHLTTRDClusterizer("TRDCclusterizer", "TRDCclusterizer");  
