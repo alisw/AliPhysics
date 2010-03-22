@@ -214,10 +214,15 @@ void AliTRDinfoGen::UserExec(Option_t *){
         break; 
       }
     }
-    if(!kTRIGGERED) return;
-
+    if(!kTRIGGERED){ 
+      AliDebug(2, Form("Reject Ev[%4d] Trigger", fESDev->GetEventNumberInFile()));
+      return;
+    }
     // select only physical events
-    if(fESDev->GetEventType() != 7) return;
+    if(fESDev->GetEventType() != 7){ 
+      AliDebug(2, Form("Reject Ev[%4d] EvType[%d]", fESDev->GetEventNumberInFile(), fESDev->GetEventType()));
+      return;
+    }
   }
 
   // if the required trigger is a collision trigger then apply event vertex cut
@@ -226,7 +231,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(TMath::Abs(vertex->GetZv())<1.e-10 || 
        TMath::Abs(vertex->GetZv())>fgkEvVertexZ || 
        vertex->GetNContributors()<fgkEvVertexN) {
-      //PostData(0, fOutStorage);
+      AliDebug(2, Form("Reject Ev[%4d] Vertex Zv[%f] Nv[%d]", fESDev->GetEventNumberInFile(), TMath::Abs(vertex->GetZv()), vertex->GetNContributors()));
       return;
     }
   }
@@ -361,6 +366,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(esdFriendTrack){
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
+        printf("check [%d] %s\n", icalib, calObject->IsA()->GetName());
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
         if(!(track = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
         AliDebug(4, Form("TRD track OK"));
@@ -390,14 +396,29 @@ void AliTRDinfoGen::UserExec(Option_t *){
       if(!esdTrack->GetKinkIndex(0)){ // Barrel  Track Selection
         Bool_t selected(kTRUE);
         if(UseLocalTrkSelection()){
-          if(esdTrack->Pt() < fgkPt) selected = kFALSE;
-          if(TMath::Abs(esdTrack->Eta()) > fgkEta) selected = kFALSE;
-          if(esdTrack->GetTPCNcls() < fgkNclTPC) selected = kFALSE;
+          if(esdTrack->Pt() < fgkPt){ 
+            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Pt[%5.2f]", fESDev->GetEventNumberInFile(), itrk, esdTrack->Pt()));
+            selected = kFALSE;
+          }
+          if(TMath::Abs(esdTrack->Eta()) > fgkEta){
+            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Eta[%5.2f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(esdTrack->Eta())));
+            selected = kFALSE;
+          }
+          if(esdTrack->GetTPCNcls() < fgkNclTPC){ 
+            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] NclTPC[%d]", fESDev->GetEventNumberInFile(), itrk, esdTrack->GetTPCNcls()));
+            selected = kFALSE;
+          }
           Float_t par[2], cov[3];
           esdTrack->GetImpactParameters(par, cov);
           if(IsCollision()){ // cuts on DCA
-            if(TMath::Abs(par[0]) > fgkTrkDCAxy) selected = kFALSE;
-            if(TMath::Abs(par[1]) > fgkTrkDCAz) selected = kFALSE;
+            if(TMath::Abs(par[0]) > fgkTrkDCAxy){ 
+              AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAxy[%f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(par[0])));
+              selected = kFALSE;
+            }
+            if(TMath::Abs(par[1]) > fgkTrkDCAz){ 
+              AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAz[%f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(par[1])));
+              selected = kFALSE;
+            }
           }
         }
         if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) selected = kFALSE;

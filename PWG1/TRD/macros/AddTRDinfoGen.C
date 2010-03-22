@@ -20,9 +20,9 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   info->SetMCdata(mc);
 
   // settings for collisions
-  info->SetCollision(kFALSE);
+  info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
-    if(mc) info->SetTrigger(
+    if(!mc) info->SetTrigger(
       "CINT1B-ABCE-NOPF-ALL"
       " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
     );
