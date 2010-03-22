@@ -64,7 +64,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE
   fPi0SigmaP0(0.004508),fPi0SigmaP1(0.005497),fPi0SigmaP2(0.00000006),
   fZmax(0.),fZmin(0.),fPhimax(0.),fPhimin(0.),
   fOutputList(0x0),fEventList(0x0),
-  fhRecAll(0x0),fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
+  fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
   fhRecPhoton(0x0),fhRecOther(0x0),fhRecPhotPi0(0x0),fhRecPhotEta(0x0),
   fhRecPhotOmega(0x0),fhRecPhotEtapr(0x0),fhRecPhotConv(0x0),fhRecPhotHadron(0x0),
   fhRecPhotDirect(0x0),fhRecPhotOther(0x0),
@@ -75,7 +75,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE
   fhPartnerMCReg(0x0),fhPartnerMissedEmin(0x0),fhPartnerMissedConv(0x0),fhPartnerMissedGeo(0x0),
   fhTaggedAll(0x0),fhTaggedArea1(0x0),fhTaggedArea2(0x0),fhTaggedArea3(0x0),fhTaggedMult(0x0),
   fhTaggedMCTrue(0x0),fhMCMissedTagging(0x0),fhMCFakeTagged(0x0),
-  fhInvMassReal(0x0),fhInvMassMixed(0x0),fhMCMissedTaggingMass(0x0),
+  fhMCMissedTaggingMass(0x0),
   fhConversionRadius(0x0),fhInteractionRadius(0x0),fhEvents(0x0)
 {
   //Default constructor
@@ -91,7 +91,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fPi0SigmaP0(0.004508),fPi0SigmaP1(0.005497),fPi0SigmaP2(0.00000006),
   fZmax(0.),fZmin(0.),fPhimax(0.),fPhimin(0.),
   fOutputList(0x0),fEventList(0x0),
-  fhRecAll(0x0),fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
+  fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
   fhRecPhoton(0x0),fhRecOther(0x0),fhRecPhotPi0(0x0),fhRecPhotEta(0x0),
   fhRecPhotOmega(0x0),fhRecPhotEtapr(0x0),fhRecPhotConv(0x0),fhRecPhotHadron(0x0),
   fhRecPhotDirect(0x0),fhRecPhotOther(0x0),
@@ -102,7 +102,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fhPartnerMCReg(0x0),fhPartnerMissedEmin(0x0),fhPartnerMissedConv(0x0),fhPartnerMissedGeo(0x0),
   fhTaggedAll(0x0),fhTaggedArea1(0x0),fhTaggedArea2(0x0),fhTaggedArea3(0x0),fhTaggedMult(0x0),
   fhTaggedMCTrue(0x0),fhMCMissedTagging(0x0),fhMCFakeTagged(0x0),
-  fhInvMassReal(0x0),fhInvMassMixed(0x0),fhMCMissedTaggingMass(0x0),
+  fhMCMissedTaggingMass(0x0),
   fhConversionRadius(0x0),fhInteractionRadius(0x0),fhEvents(0x0)
 {
   // Constructor.
@@ -122,7 +122,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fPi0SigmaP0(ap.fPi0SigmaP0),fPi0SigmaP1(ap.fPi0SigmaP1),fPi0SigmaP2(ap.fPi0SigmaP2),
   fZmax(ap.fZmax),fZmin(ap.fZmin),fPhimax(ap.fPhimax),fPhimin(ap.fPhimin),
   fOutputList(0x0),fEventList(0x0),
-  fhRecAll(0x0),fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
+  fhRecAllArea1(0x0),fhRecAllArea2(0x0),fhRecAllArea3(0x0),
   fhRecPhoton(0x0),fhRecOther(0x0),fhRecPhotPi0(0x0),fhRecPhotEta(0x0),
   fhRecPhotOmega(0x0),fhRecPhotEtapr(0x0),fhRecPhotConv(0x0),fhRecPhotHadron(0x0),
   fhRecPhotDirect(0x0),fhRecPhotOther(0x0),
@@ -134,7 +134,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fhPartnerMissedGeo(0x0),
   fhTaggedAll(0x0),fhTaggedArea1(0x0),fhTaggedArea2(0x0),fhTaggedArea3(0x0),fhTaggedMult(0x0),
   fhTaggedMCTrue(0x0),fhMCMissedTagging(0x0),fhMCFakeTagged(0x0),
-  fhInvMassReal(0x0),fhInvMassMixed(0x0),fhMCMissedTaggingMass(0x0),
+  fhMCMissedTaggingMass(0x0),
   fhConversionRadius(0x0),fhInteractionRadius(0x0),fhEvents(0x0)
 {
   // cpy ctor
@@ -169,138 +169,6 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   //Load geometry
   //if file "geometry.root" exists, load it
   //otherwise use misaligned matrixes stored in ESD
-  TFile *geoFile = new TFile("geometry.root","read");
-  if(geoFile->IsZombie()){ //no file, load geo matrixes from ESD
-    AliInfo("Can not find file geometry.root, reading misalignment matrixes from ESD/AOD") ;
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
-    AliAODEvent * aod = 0x0 ;
-    if(!esd)
-      aod=dynamic_cast<AliAODEvent*>(InputEvent()) ;
-    if(!esd && !aod)
-      AliFatal("Can not read geometry even from ESD/AOD.") ;
-    if(fPHOS){//reading PHOS matrixes
-      fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
-      for(Int_t mod=0; mod<5; mod++){
-        if(esd){
-          const TGeoHMatrix* m=esd->GetPHOSMatrix(mod) ;
-          fPHOSgeom->SetMisalMatrix(m, mod) ;
-        }
-        else{
-          const TGeoHMatrix* m=aod->GetHeader()->GetPHOSMatrix(mod) ;
-          fPHOSgeom->SetMisalMatrix(m, mod) ;
-        }
-      }
-    }
-    else{ //EMCAL
-      fEMCALgeom = new AliEMCALGeoUtils("");
-      for(Int_t mod=0; mod < 12; mod++){ //<---Gustavo, could you check???
-        if(esd){
-          const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
-          fEMCALgeom->SetMisalMatrix(m, mod) ;
-        }
-        else{
-          const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
-          fEMCALgeom->SetMisalMatrix(m, mod) ;
-        }
-      }
-    }
-  }
-  else{
-    gGeoManager = (TGeoManager*)geoFile->Get("Geometry");
-    //Geometry will be misaligned from GeoManager
-    if(fPHOS){
-      fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
-    }
-    else{
-      fEMCALgeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
-    }
-  }
-
-
-  if(fPHOSgeom==NULL && fEMCALgeom==NULL){
-    AliError("Error loading Geometry\n");
-  }
-  else
-    AliInfo("Geometry loaded... OK\n");
-
-  //Evaluate active PHOS/EMCAL area
-  if(fZmax<=fZmin){ //not set yet
-    if(fPHOS){
-      //Check active modules in the current configuration
-      if(fPHOSgeom){
-        fZmax= 999. ;
-        fZmin=-999. ;
-        fPhimax=-999. ;
-        fPhimin= 999. ;
-        for(Int_t imod=1; imod<=5; imod++){
-          //Find exact coordinates of PHOS corners
-          Int_t relId[4]={imod,0,1,1} ;
-          Int_t absId ;
-          fPHOSgeom->RelToAbsNumbering(relId,absId) ;
-          TVector3 pos ;
-          fPHOSgeom->RelPosInAlice(absId,pos) ;
-          Double_t phi=pos.Phi() ;
-          while(phi<0.)phi+=TMath::TwoPi() ;
-          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-          fPhimin=TMath::Min(fPhimin,float(phi)) ;
-          fZmin=TMath::Max(fZmin,float(pos.Z())) ;
-          relId[2]=64 ;
-          relId[3]=56 ;
-          fPHOSgeom->RelToAbsNumbering(relId,absId) ;
-          fPHOSgeom->RelPosInAlice(absId,pos) ;
-          phi=pos.Phi() ;
-          while(phi<0.)phi+=TMath::TwoPi() ;
-          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-          fPhimax=TMath::Max(fPhimax,float(phi)) ;
-          fZmax=TMath::Min(fZmax,float(pos.Z())) ;
-        }
-      }
-      else{
-        //Use approximate range
-        fZmax= 2.25*56/2. ;
-        fZmin=-2.25*56/2. ;
-        fPhimax=220./180.*TMath::Pi() ;
-        fPhimin=320./180.*TMath::Pi() ;
-      }
-    }
-    else{ //Similar for EMCAL <--Gustavo, Could you please have a look?
-      if(fEMCALgeom){
-        fZmax= 999. ;
-        fZmin=-999. ;
-        fPhimax=-999. ;
-        fPhimin= 999. ;
-        for(Int_t imod=0; imod<12; imod++){
-
-          //Find exact coordinates of SM corners
-          Int_t absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 0, 0);
-          TVector3 pos ;
-          //Get the position of this tower.
-          fEMCALgeom->RelPosCellInSModule(absId,pos);
-          Double_t phi=pos.Phi() ;
-          while(phi<0.)phi+=TMath::TwoPi() ;
-          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-          fPhimin=TMath::Min(fPhimin,float(phi)) ;
-          fZmin=TMath::Max(fZmin,float(pos.Z())) ;
-          absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 24, 48); 
-          fEMCALgeom->RelPosCellInSModule(absId,pos);   
-          phi=pos.Phi() ;
-          while(phi<0.)phi+=TMath::TwoPi() ;
-          while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-          fPhimax=TMath::Max(fPhimax,float(phi)) ;
-          fZmax=TMath::Min(fZmax,float(pos.Z())) ;
-
-        }
-      }
-      else{
-        //Use approximate range
-        fZmax= 325. ;
-        fZmin=-325. ;
-        fPhimax=80./180.*TMath::Pi() ;
-        fPhimin=180./180.*TMath::Pi() ;
-      }
-    }
-  }
-
 
   // Create the outputs containers
 
@@ -315,7 +183,11 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
 
 
   //Reconstructed spectra
-    fhRecAll      = new TH1D("fhRecAll","Spectrum of all reconstructed particles", nPtBins, ptBins ) ;
+    fhRecAll[0]   = new TH1D("fhRecAll0","Spectrum of all reconstructed particles, no PID", nPtBins, ptBins ) ;
+    fhRecAll[1]   = new TH1D("fhRecAll1","Spectrum of all reconstructed particles, PID=1", nPtBins, ptBins ) ;
+    fhRecAll[2]   = new TH1D("fhRecAll2","Spectrum of all reconstructed particles, PID=2", nPtBins, ptBins ) ;
+    fhRecAll[3]   = new TH1D("fhRecAll3","Spectrum of all reconstructed particles, PID=3", nPtBins, ptBins ) ;
+
     fhRecAllArea1 = new TH1D("fhRecAllArea1","Spectrum of rec particles in Fid. Area 1", nPtBins, ptBins ) ;
     fhRecAllArea2 = new TH1D("fhRecAllArea2","Spectrum of rec particles in Fid. Area 2", nPtBins, ptBins ) ;
     fhRecAllArea3 = new TH1D("fhRecAllArea3","Spectrum of rec particles in Fid. Area 3", nPtBins, ptBins ) ;
@@ -375,12 +247,18 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fhMCFakeTagged    = new TH1D("fhMCFakeTagged","Spectrum of photons wrongly tagged according to MC", nPtBins, ptBins ) ;
 
     //Invariant mass distributions for fake corrections
-    const Int_t nmass=1000 ;
+    const Int_t nmass=500 ;
     Double_t masses[nmass+1] ;
-    for(Int_t i=0;i<=nmass;i++)masses[i]=0.001*i ;
-    fhInvMassReal = new TH2D("fhInvMassReal","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
-    fhInvMassMixed  = new TH2D("fhInvMassMixed","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
-    fhMCMissedTaggingMass= new TH2D("fhMCMissedTaggingMass","Inv mass of pairs missed tagging",nmass,masses,nPtBins, ptBins ) ;
+    for(Int_t i=0;i<=nmass;i++)masses[i]=0.002*i ;
+    fhInvMassReal[0] = new TH2D("hInvMassRealPID0","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassReal[1] = new TH2D("hInvMassRealPID1","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassReal[2] = new TH2D("hInvMassRealPID2","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassReal[3] = new TH2D("hInvMassRealPID3","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassMixed[0]  = new TH2D("hInvMassMixedPID0","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassMixed[1]  = new TH2D("hInvMassMixedPID1","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassMixed[2]  = new TH2D("hInvMassMixedPID2","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhInvMassMixed[3]  = new TH2D("hInvMassMixedPID3","Two-photon inv. mass vs first photon pt",nmass,masses,nPtBins, ptBins ) ;
+    fhMCMissedTaggingMass= new TH2D("hMCMissedTaggingMass","Inv mass of pairs missed tagging",nmass,masses,nPtBins, ptBins ) ;
 
     //Conversion and annihilation radius distributions
     fhConversionRadius  = new TH1D("fhConversionRadius","Radis of photon production (conversion)",100,0.,500.) ;
@@ -394,68 +272,77 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fEventList = new TList() ; 
   fOutputList->SetName(GetName()) ; 
 
-  fOutputList->AddAt(fhRecAll,                               0) ;
-  fOutputList->AddAt(fhRecAllArea1,                          1) ;
-  fOutputList->AddAt(fhRecAllArea2,                          2) ;
-  fOutputList->AddAt(fhRecAllArea3,                          3) ;
+  fOutputList->AddAt(fhRecAll[0],                            0) ;
+  fOutputList->AddAt(fhRecAll[1],                            1) ;
+  fOutputList->AddAt(fhRecAll[2],                            2) ;
+  fOutputList->AddAt(fhRecAll[3],                            3) ;
+  fOutputList->AddAt(fhRecAllArea1,                          4) ;
+  fOutputList->AddAt(fhRecAllArea2,                          5) ;
+  fOutputList->AddAt(fhRecAllArea3,                          6) ;
 
-  fOutputList->AddAt(fhRecPhoton,                            4) ;
-  fOutputList->AddAt(fhRecOther,                             5) ;
-  fOutputList->AddAt(fhRecPhotonPID[0],                      6) ;
-  fOutputList->AddAt(fhRecPhotonPID[1],                      7) ;
-  fOutputList->AddAt(fhRecPhotonPID[2],                      8) ;
-  fOutputList->AddAt(fhRecPhotonPID[3],                      9) ;
-  fOutputList->AddAt(fhRecOtherPID[0],                      10) ;
-  fOutputList->AddAt(fhRecOtherPID[1],                      11) ;
-  fOutputList->AddAt(fhRecOtherPID[2],                      12) ;
-  fOutputList->AddAt(fhRecOtherPID[3],                      13) ;
-  fOutputList->AddAt(fhRecPhotPi0,                          14) ;
-  fOutputList->AddAt(fhRecPhotEta,                          15) ;
-  fOutputList->AddAt(fhRecPhotOmega,                        16) ;
-  fOutputList->AddAt(fhRecPhotEtapr,                        17) ;
-  fOutputList->AddAt(fhRecPhotConv,                         18) ;
-  fOutputList->AddAt(fhRecPhotHadron,                       19) ;
-  fOutputList->AddAt(fhRecPhotDirect,                       20) ;
-  fOutputList->AddAt(fhRecPhotOther,                        21) ;
+  fOutputList->AddAt(fhRecPhoton,                            7) ;
+  fOutputList->AddAt(fhRecOther,                             8) ;
+  fOutputList->AddAt(fhRecPhotonPID[0],                      9) ;
+  fOutputList->AddAt(fhRecPhotonPID[1],                     10) ;
+  fOutputList->AddAt(fhRecPhotonPID[2],                     11) ;
+  fOutputList->AddAt(fhRecPhotonPID[3],                     12) ;
+  fOutputList->AddAt(fhRecOtherPID[0],                      13) ;
+  fOutputList->AddAt(fhRecOtherPID[1],                      14) ;
+  fOutputList->AddAt(fhRecOtherPID[2],                      15) ;
+  fOutputList->AddAt(fhRecOtherPID[3],                      16) ;
+  fOutputList->AddAt(fhRecPhotPi0,                          17) ;
+  fOutputList->AddAt(fhRecPhotEta,                          18) ;
+  fOutputList->AddAt(fhRecPhotOmega,                        19) ;
+  fOutputList->AddAt(fhRecPhotEtapr,                        20) ;
+  fOutputList->AddAt(fhRecPhotConv,                         21) ;
+  fOutputList->AddAt(fhRecPhotHadron,                       22) ;
+  fOutputList->AddAt(fhRecPhotDirect,                       23) ;
+  fOutputList->AddAt(fhRecPhotOther,                        24) ;
 
-  fOutputList->AddAt(fhDecWMCPartner,                       22) ;
-  fOutputList->AddAt(fhDecWMissedPartnerNotPhoton,          23) ;
-  fOutputList->AddAt(fhDecWMissedPartnerAll,                24) ;
-  fOutputList->AddAt(fhDecWMissedPartnerEmin,               25) ;
-  fOutputList->AddAt(fhDecWMissedPartnerConv,               26) ;
-  fOutputList->AddAt(fhDecWMissedPartnerStack,              27) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom0,              28) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom1,              29) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom2,              30) ;
-  fOutputList->AddAt(fhDecWMissedPartnerGeom3,              31) ;
+  fOutputList->AddAt(fhDecWMCPartner,                       25) ;
+  fOutputList->AddAt(fhDecWMissedPartnerNotPhoton,          26) ;
+  fOutputList->AddAt(fhDecWMissedPartnerAll,                27) ;
+  fOutputList->AddAt(fhDecWMissedPartnerEmin,               28) ;
+  fOutputList->AddAt(fhDecWMissedPartnerConv,               29) ;
+  fOutputList->AddAt(fhDecWMissedPartnerStack,              30) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom0,              31) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom1,              32) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom2,              33) ;
+  fOutputList->AddAt(fhDecWMissedPartnerGeom3,              34) ;
 
-  fOutputList->AddAt(fhPartnerMCReg,                        32) ;
-  fOutputList->AddAt(fhPartnerMissedEmin,                   33) ;
-  fOutputList->AddAt(fhPartnerMissedConv,                   34) ;
-  fOutputList->AddAt(fhPartnerMissedGeo,                    35) ;
+  fOutputList->AddAt(fhPartnerMCReg,                        35) ;
+  fOutputList->AddAt(fhPartnerMissedEmin,                   36) ;
+  fOutputList->AddAt(fhPartnerMissedConv,                   37) ;
+  fOutputList->AddAt(fhPartnerMissedGeo,                    38) ;
 
-  fOutputList->AddAt(fhTaggedAll,                           36) ;
-  fOutputList->AddAt(fhTaggedArea1,                         37) ;
-  fOutputList->AddAt(fhTaggedArea2,                         38) ;
-  fOutputList->AddAt(fhTaggedArea3,                         39) ;
-  fOutputList->AddAt(fhTaggedPID[0],                        40) ;
-  fOutputList->AddAt(fhTaggedPID[1],                        41) ;
-  fOutputList->AddAt(fhTaggedPID[2],                        42) ;
-  fOutputList->AddAt(fhTaggedPID[3],                        43) ;
-  fOutputList->AddAt(fhTaggedMult,                          44) ;
+  fOutputList->AddAt(fhTaggedAll,                           39) ;
+  fOutputList->AddAt(fhTaggedArea1,                         40) ;
+  fOutputList->AddAt(fhTaggedArea2,                         41) ;
+  fOutputList->AddAt(fhTaggedArea3,                         42) ;
+  fOutputList->AddAt(fhTaggedPID[0],                        43) ;
+  fOutputList->AddAt(fhTaggedPID[1],                        44) ;
+  fOutputList->AddAt(fhTaggedPID[2],                        45) ;
+  fOutputList->AddAt(fhTaggedPID[3],                        46) ;
+  fOutputList->AddAt(fhTaggedMult,                          47) ;
 
-  fOutputList->AddAt(fhTaggedMCTrue,                        45) ;
-  fOutputList->AddAt(fhMCMissedTagging,                     46) ;
-  fOutputList->AddAt(fhMCFakeTagged,                        47) ;
+  fOutputList->AddAt(fhTaggedMCTrue,                        48) ;
+  fOutputList->AddAt(fhMCMissedTagging,                     49) ;
+  fOutputList->AddAt(fhMCFakeTagged,                        50) ;
 
-  fOutputList->AddAt(fhInvMassReal,                         48) ;
-  fOutputList->AddAt(fhInvMassMixed,                        49) ;
-  fOutputList->AddAt(fhMCMissedTaggingMass,                 50) ;
+  fOutputList->AddAt(fhInvMassReal[0],                      51) ;
+  fOutputList->AddAt(fhInvMassReal[1],                      52) ;
+  fOutputList->AddAt(fhInvMassReal[2],                      53) ;
+  fOutputList->AddAt(fhInvMassReal[3],                      54) ;
+  fOutputList->AddAt(fhInvMassMixed[0],                     55) ;
+  fOutputList->AddAt(fhInvMassMixed[1],                     56) ;
+  fOutputList->AddAt(fhInvMassMixed[2],                     57) ;
+  fOutputList->AddAt(fhInvMassMixed[3],                     58) ;
+  fOutputList->AddAt(fhMCMissedTaggingMass,                 59) ;
 
-  fOutputList->AddAt(fhConversionRadius,                    51) ;
-  fOutputList->AddAt(fhInteractionRadius,                   52) ;
+  fOutputList->AddAt(fhConversionRadius,                    60) ;
+  fOutputList->AddAt(fhInteractionRadius,                   61) ;
 
-  fOutputList->AddAt(fhEvents,                              53) ;
+  fOutputList->AddAt(fhEvents,                              62) ;
 
 }
 
@@ -464,12 +351,21 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 {
   //Fill all histograms
 
-  fhEvents->Fill(0.);
+
+  // We prepared 4 PID histograms, choose which PID combinations to use
+  // see AliAODPWG4Particle for more choises
+  //    0=all,2=Disp,4=Ch,6=Ch+Disp
+  const Int_t pidMap[4]={0,2,4,6} ;
 
   // Processing of one event
   if(fDebug>1)
     AliInfo(Form("\n\n Processing event # %lld",  Entry())) ; 
   AliESDEvent* esd = (AliESDEvent*)InputEvent();
+
+
+  //read geometry if not read yet
+  if((fPHOS && fPHOSgeom==0) || (!fPHOS && fEMCALgeom==0))
+    InitGeometry() ;
 
   //MC stack init
   fStack=0x0 ;
@@ -481,6 +377,17 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
   if(!fStack && gDebug>1)
     AliInfo("No stack! \n");
+
+
+//  Here one can choose trigger. But according to framework it should be chosen 
+//  by external filters???
+//  TString trigClasses = esd->GetFiredTriggerClasses();
+//  if (!fStack && !trigClasses.Contains("CINT1B-ABCE-NOPF-ALL") ){
+//    Printf("Skip event with trigger class \"%s\"",trigClasses.Data());
+//    return;
+//  }
+
+  fhEvents->Fill(0.);
 
   //************************  PHOS/EMCAL *************************************
   TRefArray * caloClustersArr  = new TRefArray();  
@@ -527,7 +434,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetTOFBit(TestTOF(caloCluster->GetTOF(),caloCluster->E())) ;
     p->SetChargedBit(TestCharged(caloCluster->GetEmcCpvDistance(),caloCluster->E())) ;
 
-    fhRecAll->Fill( p->Pt() ) ; //All recontructed particles
+    for(Int_t iPID=0; iPID<4; iPID++){
+      if(p->IsPIDOK(pidMap[iPID],22))
+        fhRecAll[iPID]->Fill( p->Pt() ) ; //All recontructed particles
+    }
     Int_t iFidArea = p->GetFiducialArea(); 
     if(iFidArea>0){
       fhRecAllArea1->Fill(p->Pt() ) ; 
@@ -545,16 +455,18 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         printf("Pdgcode = %d\n",prim->GetPdgCode());
 
       if(prim->GetPdgCode()!=22){ //not photon
+//<--DP        p->SetPhoton(kFALSE);
         fhRecOther->Fill(p->Pt()); //not photons real spectra
         for(Int_t iPID=0; iPID<4; iPID++){
-          if(p->IsPIDOK(iPID,22))
+          if(p->IsPIDOK(pidMap[iPID],22))
             fhRecOtherPID[iPID]->Fill(p->Pt());
         }
       }
       else{ //Primary photon (as in MC)
+//<--DP        p->SetPhoton(kTRUE);
         fhRecPhoton->Fill(p->Pt()); //Reconstructed with primary photon
         for(Int_t iPID=0; iPID<4; iPID++){
-          if(p->IsPIDOK(iPID,22))
+          if(p->IsPIDOK(pidMap[iPID],22))
             fhRecPhotonPID[iPID]->Fill(p->Pt());
         }
         Int_t pi0i=prim->GetFirstMother();
@@ -571,6 +483,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
                 break ;
         case  11:
         case -11: //electron/positron conversion
+//<--DP                p->SetConverted(1);
                 fhRecPhotConv->Fill(p->Pt());  //Reconstructed with photon from conversion primary
                 fhConversionRadius->Fill(prim->R());
                 break ;
@@ -701,25 +614,29 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     printf("number of clusters: %d\n",inList);
 
   //Invariant Mass analysis
-  for(Int_t phosPhoton1 = 0 ; phosPhoton1 < inList-1 ; phosPhoton1++) {
+  for(Int_t phosPhoton1 = 0 ; phosPhoton1 < inList ; phosPhoton1++) {
     AliAODPWG4Particle * p1 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(phosPhoton1));        
-    for(Int_t phosPhoton2 = phosPhoton1 + 1 ; phosPhoton2 < inList ; phosPhoton2++) {
+    for(Int_t phosPhoton2 = 0 ; phosPhoton2 < inList ; phosPhoton2++) {
+      if(phosPhoton1==phosPhoton2)
+        continue ;
       AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(fCaloPhotonsArr->At(phosPhoton2));
 
       Double_t invMass = p1->GetPairMass(p2);
-      fhInvMassReal->Fill(invMass,p1->Pt());
-      fhInvMassReal->Fill(invMass,p2->Pt());
+      for(Int_t iPID=0; iPID<4; iPID++){
+        if(p1->IsPIDOK(pidMap[iPID],22))
+          fhInvMassReal[iPID]->Fill(invMass,p1->Pt());
+        if(p2->IsPIDOK(pidMap[iPID],22))
+          fhInvMassReal[iPID]->Fill(invMass,p2->Pt());
+      }
       if(fDebug>2)
           printf("Pair i=%d,j=%d, M=%f\n",phosPhoton1,phosPhoton2,invMass);
 
-      Bool_t makePi01=IsInPi0Band(invMass,p1->Pt());
-      Bool_t makePi02=IsInPi0Band(invMass,p2->Pt());
+      Bool_t makePi0=IsInPi0Band(invMass,p1->Pt());
 
-
-      if(makePi01 && p1->IsTagged()){//Multiple tagging
+      if(makePi0 && p1->IsTagged()){//Multiple tagging
         fhTaggedMult->Fill(p1->Pt());
       }  
-      if(makePi01 && !p1->IsTagged()){//Each photon should enter histogram once, even if tagged several times
+      if(makePi0 && !p1->IsTagged()){//Each photon should enter histogram once, even if tagged several times
         fhTaggedAll->Fill(p1->Pt());
         Int_t iFidArea = p1->GetFiducialArea(); 
         if(iFidArea>0){
@@ -733,26 +650,18 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         }
 
         for(Int_t iPID=0; iPID<4; iPID++){
-          if(p1->IsPIDOK(iPID,22))
+          if(p1->IsPIDOK(pidMap[iPID],22))
             fhTaggedPID[iPID]->Fill(p1->Pt());
         }
 
         p1->SetTagged(kTRUE) ;
       }  
-      if(makePi02 && p2->IsTagged()){//Multiple tagging
-        fhTaggedMult->Fill(p2->Pt());
-      }  
-      if(makePi02 && !p2->IsTagged()){//How should be account for multiply tagged photons?
-        fhTaggedAll->Fill(p2->Pt());
-        p2->SetTagged(kTRUE) ;
-      }
       
-      //Now get use MC information
       //First chesk if this is true pi0 pair
       if(IsSamePi0(p1,p2)){ //Correctly tagged - from the same pi0
 //        p1->SetTrueTagged(1);
 //        p2->SetTrueTagged(1);
-        if(makePi01)//Correctly tagged photons
+        if(makePi0)//Correctly tagged photons
           fhTaggedMCTrue->Fill(p1->Pt());
         else{ //Decay pair missed tagging      
           fhMCMissedTagging->Fill(p1->Pt());
@@ -763,23 +672,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
           //Tagged not a photon
           //Just wrong inv.mass          
         }  
-        if(makePi02)
-          fhTaggedMCTrue->Fill(p2->Pt());
-        else{      
-          fhMCMissedTagging->Fill(p2->Pt());
-          fhMCMissedTaggingMass->Fill(invMass,p2->Pt()) ;
-          //Clussify why missed tagging (todo)
-          //Converted
-          //Partner not a photon
-          //Tagged not a photon
-          //Just wrong inv.mass          
-        }  
       }
       else{//Fake tagged - not from the same pi0
-        if(makePi01)//Fake pair
+        if(makePi0)//Fake pair
           fhMCFakeTagged->Fill(p1->Pt());
-        if(makePi02)
-          fhMCFakeTagged->Fill(p2->Pt());
       }
     }
   }
@@ -793,8 +689,12 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       for(Int_t j=0; j < nPhotons2 ; j++){
         AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(event2->At(j)) ;
         Double_t invMass = p1->GetPairMass(p2);
-        fhInvMassMixed->Fill(invMass,p1->Pt());
-        fhInvMassMixed->Fill(invMass,p2->Pt());
+        for(Int_t iPID=0; iPID<4; iPID++){
+          if(p1->IsPIDOK(pidMap[iPID],22))
+            fhInvMassMixed[iPID]->Fill(invMass,p1->Pt());
+          if(p2->IsPIDOK(pidMap[iPID],22))
+            fhInvMassMixed[iPID]->Fill(invMass,p2->Pt());
+        }
       }
     }
   }
@@ -836,7 +736,10 @@ void AliAnalysisTaskTaggedPhotons::Terminate(Option_t *)
     sprintf(outname,"Tagging_EMCAL.root") ;
   TFile *outfile = new TFile (outname,"recreate");
 
-fhRecAll->Write();
+fhRecAll[0]->Write();
+fhRecAll[1]->Write();
+fhRecAll[2]->Write();
+fhRecAll[3]->Write();
 fhRecAllArea1->Write();
 fhRecAllArea2->Write();
 fhRecAllArea3->Write();
@@ -885,12 +788,67 @@ fhTaggedMult->Write();
 fhTaggedMCTrue->Write();
 fhMCMissedTagging->Write();
 fhMCFakeTagged->Write();
-fhInvMassReal->Write();
-fhInvMassMixed->Write();
+fhInvMassReal[0]->Write();
+fhInvMassReal[1]->Write();
+fhInvMassReal[2]->Write();
+fhInvMassReal[3]->Write();
+fhInvMassMixed[0]->Write();
+fhInvMassMixed[1]->Write();
+fhInvMassMixed[2]->Write();
+fhInvMassMixed[3]->Write();
 fhMCMissedTaggingMass->Write();
 fhConversionRadius->Write();
 fhInteractionRadius->Write();
 fhEvents->Write();
+
+/*
+  fhAllPhotons->Write() ;
+  fhNotPhotons->Write() ;
+  fhAllPhotonsPrimary->Write() ;
+  fhNotPhotonsPrimary->Write() ;
+  fhfakeNotPhotons->Write() ;
+
+  fhTaggedPhotons->Write();
+  fhfakeTaggedPhotons->Write();
+  fhDecayNotTaggedPhotons->Write();
+  fhstrangeNotTaggedPhotons->Write();
+  fhstrangeNotTaggedPhotonsPair->Write();
+  fhstrangeNotTaggedPhotonsRegCut->Write();
+  fhstrangeNotTaggedPhotonsPairRegCut->Write();
+
+  fhPi0DecayPhotonsPrimary->Write();
+  fhEtaDecayPhotonsPrimary->Write();
+  fhOmegaDecayPhotonsPrimary->Write();
+  fhEtaSDecayPhotonsPrimary->Write();
+  fhOtherDecayPhotonsPrimary->Write();
+  fhDecayPhotonsPrimary->Write();
+  fhConvertedPhotonsPrimary->Write();
+  fhConvertedPhotonsPrimaryHadronsDecays->Write();
+  fhCoordsConvertion->Write();
+  fhCoordsConvertion2->Write();
+
+  fhPHOSInvariantMassReal->Write();
+  fhPHOSInvariantMassMixed->Write();
+
+  fhPHOSPi0->Write();
+
+  fhPi0DecayPhotonsGeomfake->Write();
+  fhPi0DecayPhotonsTaggedPrimary->Write();
+  fhPi0DecayPhotonsTaggedPrimaryPair->Write();
+  fhPi0DecayPhotonsTaggedPrimaryRegCut->Write();
+  fhPi0DecayPhotonsTaggedPrimaryPairRegCut->Write();
+
+  fhPi0DecayPhotonsBigDecay->Write();
+  fhPi0DecayPhotonsPConv->Write();
+  fhPi0DecayPhotonsPGeo->Write();
+  fhPi0DecayPhotonsPReg->Write();
+
+  fhfakeTaggedPhotonsConv->Write();
+  fhfakeTaggedPhotonsPID->Write();
+
+  fhTrackRefCoords->Write();
+  fhEvents->Write();
+*/
 
 outfile->Close();
 
@@ -934,6 +892,8 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
   Double_t z=pos[2] ;
   while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
   while(phi<0.)phi+=TMath::TwoPi() ;
+printf("FiducialArea: phi=%f, z=%f \n",phi,z) ;
+printf("   fZmax=%f, fZmin=%f, fPhimax=%f, fPhimin=%f \n",fZmax,fZmin,fPhimax,fPhimin) ;
   if(fPHOS){
     //From active PHOS area remove bands in 10 cm
     const Double_t kphi=TMath::ATan(10./460.) ; //angular band width
@@ -941,6 +901,8 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
     Double_t dzMin=TMath::Ceil((z-fZmin)/10.) ;
     Double_t dphiMax=TMath::Ceil((fPhimax-phi)/kphi);
     Double_t dphiMin=TMath::Ceil((phi-fPhimin)/kphi);
+printf("In PHOS \n") ;
+printf("    dzMax=%f, dzMin=%f, dphiMax=%f, dphiMin=%f ret=%d\n",dzMax,dzMin,dphiMax,dphiMin,(Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin))) ;
     return (Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin)); 
   }
   else{//EMCAL
@@ -954,15 +916,28 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
   }
 }
 //______________________________________________________________________________
-Bool_t  AliAnalysisTaskTaggedPhotons::TestDisp(Double_t l0, Double_t l1, Double_t e)const{
+Bool_t  AliAnalysisTaskTaggedPhotons::TestDisp(Double_t l0, Double_t l1, Double_t /*e*/)const{
   //test if dispersion corresponds to those of photon
   if(fPHOS){
-    Double_t l0mean=1.38736+0.490405*TMath::Exp(-e*0.286170) ;
-    Double_t l1mean=1.09786-0.323469*TMath::Exp(-e*0.918719) ;
-    Double_t l0sigma=0.159905+0.829831/e-0.158067/e/e ;
-    Double_t l1sigma=0.133170+0.404387/e-0.0426302/e/e ;
-    Double_t c =-0.382233 ; 
-    return ((l0-l0mean)*(l0-l0mean)/l0sigma/l0sigma + (l1-l1mean)*(l1-l1mean)/l1sigma/l1sigma+c*(l0-l0mean)*(l1-l1mean)/l0sigma/l1sigma)<1. ;
+//    Double_t l0mean=1.38736+0.490405*TMath::Exp(-e*0.286170) ;
+//    Double_t l1mean=1.09786-0.323469*TMath::Exp(-e*0.918719) ;
+//    Double_t l0sigma=0.159905+0.829831/e-0.158067/e/e ;
+//    Double_t l1sigma=0.133170+0.404387/e-0.0426302/e/e ;
+//    Double_t c =-0.382233 ; 
+//    return ((l0-l0mean)*(l0-l0mean)/l0sigma/l0sigma + (l1-l1mean)*(l1-l1mean)/l1sigma/l1sigma+c*(l0-l0mean)*(l1-l1mean)/l0sigma/l1sigma)<1. ;
+
+if(l1>= 0   && l0>= 0   && l1 < 0.1 && l0 < 0.1) return kFALSE;
+if(l1>= 0   && l0 > 0.5 && l1 < 0.1 && l0 < 1.5) return kTRUE;
+if(l1>= 0   && l0 > 2.0 && l1 < 0.1 && l0 < 2.7) return kFALSE;
+if(l1>= 0   && l0 > 2.7 && l1 < 0.1 && l0 < 4.0) return kFALSE;
+if(l1 > 0.1 && l1 < 0.7 && l0 > 0.7 && l0 < 2.1) return kTRUE;
+if(l1 > 0.1 && l1 < 0.3 && l0 > 3.0 && l0 < 5.0) return kFALSE;
+if(l1 > 0.3 && l1 < 0.7 && l0 > 2.5 && l0 < 4.0) return kFALSE;
+if(l1 > 0.7 && l1 < 1.3 && l0 > 1.0 && l0 < 1.6) return kTRUE;
+if(l1 > 0.7 && l1 < 1.3 && l0 > 1.6 && l0 < 3.5) return kTRUE; 
+if(l1 > 1.3 && l1 < 3.5 && l0 > 1.3 && l0 < 3.5) return kTRUE; 
+   return kFALSE ;
+
   }
   else{ //EMCAL: not ready yet
    return kTRUE ;
@@ -970,4 +945,110 @@ Bool_t  AliAnalysisTaskTaggedPhotons::TestDisp(Double_t l0, Double_t l1, Double_
   }
 
 }
+//______________________________________________________________________________^M
+Bool_t  AliAnalysisTaskTaggedPhotons::TestCharged(Double_t dr,Double_t /*en*/)const{
 
+  if(dr<15.) return kFALSE ;
+  return kTRUE ;
+
+}
+//______________________________________________________________________________^M
+void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
+  //Read rotation matrixes from ESD
+
+printf("Init geometry \n") ;
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
+  AliAODEvent * aod = 0x0 ;
+  if(!esd)
+    aod=dynamic_cast<AliAODEvent*>(InputEvent()) ;
+  if(!esd && !aod)
+    AliFatal("Can not read geometry matrixes from ESD/AOD: NO ESD") ;
+  if(fPHOS){//reading PHOS matrixes
+    fPHOSgeom = new AliPHOSGeoUtils("IHEP","");
+    Bool_t activeMod[5]={0} ;
+    for(Int_t mod=0; mod<5; mod++){
+      if(esd){
+        const TGeoHMatrix* m=esd->GetPHOSMatrix(mod) ;
+        fPHOSgeom->SetMisalMatrix(m, mod) ;
+        if(m!=0)
+         activeMod[mod]=kTRUE ;
+      }
+      else{
+        const TGeoHMatrix* m=aod->GetHeader()->GetPHOSMatrix(mod) ;
+        fPHOSgeom->SetMisalMatrix(m, mod) ;
+        if(m!=0)
+         activeMod[mod]=kTRUE ;
+      }
+    }
+
+    if(fZmax>fZmin) //already  set manually
+      return ;
+    fZmax= 999. ;
+    fZmin=-999. ;
+    fPhimax=-999. ;
+    fPhimin= 999. ;
+    for(Int_t imod=1; imod<=5; imod++){
+      if(!activeMod[imod-1])
+ 	continue ;
+    //Find exact coordinates of PHOS corners
+      Int_t relId[4]={imod,0,1,1} ;
+      Float_t x,z ;
+      fPHOSgeom->RelPosInModule(relId,x,z) ;
+      TVector3 pos ;
+      fPHOSgeom->Local2Global(imod,x,z,pos) ;
+      Double_t phi=pos.Phi() ;
+      while(phi<0.)phi+=TMath::TwoPi() ;
+      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+      fPhimin=TMath::Min(fPhimin,float(phi)) ;
+      fZmin=TMath::Max(fZmin,float(pos.Z())) ;
+      relId[2]=64 ;
+      relId[3]=56 ;
+      fPHOSgeom->RelPosInModule(relId,x,z) ;
+      fPHOSgeom->Local2Global(imod,x,z,pos) ;
+      phi=pos.Phi() ;
+      while(phi<0.)phi+=TMath::TwoPi() ;
+      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+      fPhimax=TMath::Max(fPhimax,float(phi)) ;
+      fZmax=TMath::Min(fZmax,float(pos.Z())) ;
+    }
+  }
+  else{ //EMCAL
+    fEMCALgeom = new AliEMCALGeoUtils("");
+    for(Int_t mod=0; mod < 12; mod++){ //<---Gustavo, could you check???
+      if(esd){
+        const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
+        fEMCALgeom->SetMisalMatrix(m, mod) ;
+      }
+      else{
+        const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
+        fEMCALgeom->SetMisalMatrix(m, mod) ;
+      }
+    }
+    if(fZmax>fZmin) //already  set manually
+      return ;
+
+    fZmax= 999. ;
+    fZmin=-999. ;
+    fPhimax=-999. ;
+    fPhimin= 999. ;
+    for(Int_t imod=0; imod<12; imod++){
+    //Find exact coordinates of SM corners
+      Int_t absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 0, 0);
+      TVector3 pos ;
+      //Get the position of this tower.
+      fEMCALgeom->RelPosCellInSModule(absId,pos);
+      Double_t phi=pos.Phi() ;
+      while(phi<0.)phi+=TMath::TwoPi() ;
+      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+      fPhimin=TMath::Min(fPhimin,float(phi)) ;
+      fZmin=TMath::Max(fZmin,float(pos.Z())) ;
+      absId = fEMCALgeom->GetAbsCellIdFromCellIndexes(imod, 24, 48);
+      fEMCALgeom->RelPosCellInSModule(absId,pos);
+      phi=pos.Phi() ;
+      while(phi<0.)phi+=TMath::TwoPi() ;
+      while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
+      fPhimax=TMath::Max(fPhimax,float(phi)) ;
+      fZmax=TMath::Min(fZmax,float(pos.Z())) ;
+    }
+  }
+}
