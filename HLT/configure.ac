@@ -896,7 +896,7 @@ ALITRD_LIBS=
 CHECK_HLTMODULE([trd],
 		[], [],
 		[MLP XMLParser], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
-		[STAT TRDbase TRDrec TRDsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[STAT TRDbase TRDrec], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
@@ -916,24 +916,16 @@ else
     # changed to AliTRDReconstructor::SetClusters() according to revision 28069, Mon Aug 18 2008
     # changed to AliTRDCluster according to revision 30461, Thu Dec 18 2008
     # changed to AliTRDclusterizer::GetAddedClusters according to revision 31299, Wed Mar 4 2009
+    # changed to AliTRDclusterizer::GetNTimeBins according to revision 37102 Sun Nov 22 2009
     AC_MSG_CHECKING([for required functions in AliTRDclusterizer])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
                                        [AliTRDclusterizer c;
-				       c.GetAddedClusters()])],
+				       c.GetNTimeBins()])],
                                        [], 
-  				       [enable_trd="no...requires.AliRoot>v4-16-Release"])
+  				       [enable_trd="no...requires.AliRoot>v4-18-Release"])
     AC_MSG_RESULT([$enable_trd])       
 
     if test "x$enable_trd" = "xyes" ; then
-      have_alitrdrecoparam_r34995=no
-      AC_MSG_CHECKING([checking for AliTRDrecoParam r34995])
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrecoParam.h>], 
-                                         [AliTRDrecoParam param;
-      				          param.SetPIDNeuralNetwork(kFALSE)]);],
-                                         [have_alitrdrecoparam_r34995=yes],
-      				         [AC_DEFINE(HAVE_NOT_ALITRDRECOPARAM_r34995)])
-      AC_MSG_RESULT([$have_alitrdrecoparam_r34995])       
-
       have_alitrdseedv1_r39693=no
       AC_MSG_CHECKING([checking for AliTRDseedV1 r39693])
       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDseedV1.h>], 
@@ -942,6 +934,14 @@ else
                                          [have_alitrdseedv1_r39693=yes],
       				         [AC_DEFINE(HAVE_NOT_ALITRD_SEEDV1_r39693)])
       AC_MSG_RESULT([$have_alitrdseedv1_r39693])
+
+      have_alitrdrawstream_r39608=no
+      AC_MSG_CHECKING([checking for AliTRDrawStream r39608])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDrawStreamBase.h>], 
+                                         [AliTRDrawStreamBase::SetRawStreamVersion(AliTRDrawStreamBase::kTRDdefaultStream)]);],
+                                         [have_alitrdrawstream_r39608=yes],
+                                         [AC_DEFINE(HAVE_NOT_ALITRD_RAWSTREAM_r39608)])
+      AC_MSG_RESULT([$have_alitrdrawstream_r39608])
     fi
 
     AC_LANG_POP(C++)
