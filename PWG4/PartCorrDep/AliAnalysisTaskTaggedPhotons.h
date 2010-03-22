@@ -60,7 +60,8 @@ protected:
   Bool_t  IsInPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
   Bool_t  TestTOF(Double_t /*t*/,Double_t /*en*/)const{return kTRUE;} 
-  Bool_t  TestCharged(Double_t /*dr*/,Double_t /*en*/)const{return kTRUE;} 
+  Bool_t  TestCharged(Double_t dr,Double_t en)const ;
+  void    InitGeometry() ;  //read reotation matrixes from ESD/AOD
 
 private:
 
@@ -93,7 +94,7 @@ private:
 
   // Histograms
   //Reconstructed spectra
-  TH1D    * fhRecAll;                  // Spectrum of all reconstructed particles
+  TH1D    * fhRecAll[4];               // Spectrum of all reconstructed particles
   TH1D    * fhRecAllArea1;             // Spectrum of rec particles in Fid. Area 1
   TH1D    * fhRecAllArea2;             // Spectrum of rec particles in Fid. Area 2
   TH1D    * fhRecAllArea3;             // Spectrum of rec particles in Fid. Area 3
@@ -144,8 +145,8 @@ private:
   TH1D *  fhMCFakeTagged ;     //Spectrum of photons wrongly tagged according to MC
 
   //Invariant mass distributions for fake corrections
-  TH2D * fhInvMassReal ;    //Two-photon inv. mass vs first photon pt
-  TH2D * fhInvMassMixed ;   //Two-photon inv. mass vs first photon pt
+  TH2D * fhInvMassReal[4] ;    //Two-photon inv. mass vs first photon pt
+  TH2D * fhInvMassMixed[4] ;   //Two-photon inv. mass vs first photon pt
   TH2D * fhMCMissedTaggingMass ; //Inv mass of pairs missed tagging
   
   //Conversion and annihilation radius distributions
