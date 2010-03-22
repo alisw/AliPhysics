@@ -41,6 +41,8 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t NextChamber(AliTRDdigitsManager *digMgr, 
 		    UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */);
 
+  Bool_t ConnectTracklets(TTree *trklTree);
+
   // legacy code, to be removed
   Bool_t SetRawVersion(Int_t) { return kTRUE; }
   void SetSharedPadReadout(Bool_t) {}

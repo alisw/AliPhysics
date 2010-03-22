@@ -175,17 +175,7 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
   }
 
   // tracklet output
-  fTrackletTree = trackletTree;
-  if (fTrackletTree) {
-    if (!fTrackletTree->GetBranch("trkl")) {
-      fTrackletTree->Branch("hc", &fCurrHC, "hc/I");
-      fTrackletTree->Branch("trkl", &fTrackletArray);
-    } 
-    else {
-      fTrackletTree->SetBranchAddress("hc", &fCurrHC);
-      fTrackletTree->SetBranchAddress("trkl", &fTrackletArray);
-    }
-  }
+  ConnectTracklets(trackletTree);
 
   // some preparations
   fDigitsParam = 0x0;
@@ -217,13 +207,13 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
 
     // read stack index header
     for (Int_t iStack = 0; iStack < 5; iStack++) {
-      if (fCurrStackMask & (1 << iStack) != 0) 
+      if ((fCurrStackMask & (1 << iStack)) != 0) 
 	ReadStackIndexHeader(iStack);
     }
 
     for (Int_t iStack = 0; iStack < 5; iStack++) {
       fCurrSlot = iStack;
-      if (fCurrStackMask & (1 << fCurrSlot) == 0) 
+      if ((fCurrStackMask & (1 << fCurrSlot)) == 0) 
 	continue;
 
       AliDebug(2, Form("Stack %i, Link mask: 0x%02x", fCurrSlot, fCurrLinkMask[fCurrSlot]));
@@ -292,7 +282,7 @@ Bool_t AliTRDrawStream::NextDDL()
     
     // read stack index header
     for (Int_t iStack = 0; iStack < 5; iStack++) {
-      if (fCurrStackMask & (1 << iStack) != 0) {
+      if ((fCurrStackMask & (1 << iStack)) != 0) {
 	ReadStackIndexHeader(iStack);
       }
     }
@@ -313,10 +303,17 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
   fDigitsParam   = 0x0;
 
   // tracklet output preparation
-  fTrackletTree = 0x0;
-  //AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
-  //if (trklLoader) 
-  //  fTrackletTree = trklLoader->Tree();
+  TTree *trklTree = 0x0;
+  AliRunLoader *rl = AliRunLoader::Instance();
+  if (rl) {
+    AliDataLoader *trklLoader = rl->GetLoader("TRDLoader")->GetDataLoader("tracklets");
+    if (trklLoader) {
+      trklTree = trklLoader->Tree();
+    }
+  }
+
+  if (fTrackletTree != trklTree)
+    ConnectTracklets(trklTree);
 
   if (!fRawReader) {
     AliError("No raw reader available");
@@ -363,8 +360,8 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
       fCurrSlot++;
     }
   } while ((fCurrSlot < 5) && 
-	   ((fCurrStackMask & (1 << fCurrSlot) == 0) || 
-	    (fCurrLinkMask[fCurrSlot] & (1 << fCurrLink)) == 0));
+	   (((fCurrStackMask & (1 << fCurrSlot)) == 0) || 
+	    ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink))) == 0));
 
   return (fCurrSm * 30 + fCurrStack * 6 + fCurrLayer);
 }
@@ -408,7 +405,7 @@ Int_t AliTRDrawStream::ReadStackIndexHeader(Int_t stack)
   fCurrStackHeaderVersion[stack] = ((*fPayloadCurr) >> 12) & 0xf;
   fCurrLinkMask[stack]           = (*fPayloadCurr) & 0xfff;
 
-  if (fPayloadCurr - fPayloadStart >= fPayloadSize - fCurrStackHeaderSize[stack]) {
+  if (fPayloadCurr - fPayloadStart >= fPayloadSize - (Int_t) fCurrStackHeaderSize[stack]) {
     AliError(StackError(kStackHeaderInvalid, "Stack index header aborted"));
     return -1;
   }
@@ -887,7 +884,7 @@ Int_t AliTRDrawStream::ReadZSData()
   }
 
   // check for missing MCMs (if header suppression is inactive)
-  if (fCurrMajor & 0x1 == 0 && mcmcount != mcmcountExp) {
+  if (((fCurrMajor & 0x1) == 0) && (mcmcount != mcmcountExp)) {
     AliError(LinkError(kMissMcmHeaders,
 		       Form("No. of MCM headers %i not as expected: %i", 
 			    mcmcount, mcmcountExp) ));
@@ -1046,6 +1043,30 @@ Int_t AliTRDrawStream::GetNActiveChannelsFromMask(UInt_t adcmask) const
   adcmask = adcmask - ((adcmask >> 1) & 0x55555555);
   adcmask = (adcmask & 0x33333333) + ((adcmask >> 2) & 0x33333333);
   return (((adcmask + (adcmask >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+}
+
+
+Bool_t AliTRDrawStream::ConnectTracklets(TTree *trklTree) 
+{
+  fTrackletTree = trklTree;
+  if (!fTrackletTree) 
+    return kTRUE;
+
+  TString trackletBranch("trkl");
+
+  if (!fTrackletTree->GetBranch(trackletBranch.Data())) {
+    TTree *t = new TTree("test", "test");
+    //    t->SetDirectory(0x0);
+    t->Branch("branch", &fCurrSm);
+    fTrackletTree->AddFriend(t, "friend");
+    fTrackletTree->Branch("hc", &fCurrHC, "hc/I");
+    fTrackletTree->Branch("trkl", &fTrackletArray);
+  } 
+  else {
+    fTrackletTree->SetBranchAddress("hc", &fCurrHC);
+    fTrackletTree->SetBranchAddress("trkl", &fTrackletArray);
+  }
+  return kTRUE;
 }
 
 

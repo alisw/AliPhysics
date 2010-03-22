@@ -1096,7 +1096,7 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 	}
     }
 
-  if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
+  if (trklLoader) {
     trklLoader->WriteData("OVERWRITE");
     trklLoader->Unload();
   }
