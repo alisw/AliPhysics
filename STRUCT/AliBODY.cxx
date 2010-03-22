@@ -109,11 +109,11 @@ void AliBODY::CreateGeometry()
 
     dALIC[4]=-15000;
     dALIC[5]=0;
-    dALIC[6]=2000;
+    dALIC[6]=2500;
 
     dALIC[7]=15000;
     dALIC[8]=0;
-    dALIC[9]=2000;
+    dALIC[9]=2500;
     gMC->Gsvolu("ALIC","PGON",idtmed[1],dALIC,10);
   } else if ( gAlice->GetModule("ACORDE")) {
     //
