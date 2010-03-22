@@ -19,11 +19,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCClusterFinder.cxx
-    @author Kenneth Aamodt, Kalliopi Kanaki
-    @date   
-    @brief  Cluster Finder for the TPC
-*/
+//  @file   AliHLTTPCClusterFinder.cxx
+//  @author Kenneth Aamodt, Kalliopi Kanaki
+//  @date   
+//  @brief  Cluster Finder for the TPC
+//  @note 
 
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCRootTypes.h"
@@ -665,6 +665,7 @@ void AliHLTTPCClusterFinder::PrintClusters(){
 }
 
 void AliHLTTPCClusterFinder::FillMCClusterVector(vector<AliHLTTPCDigitData> digitData){
+  // see header file for class documentation
 
   for(UInt_t d=0;d<digitData.size();d++){
     Int_t nIDsInDigit = (digitData.at(d).fTrackID[0]>=0) + (digitData.at(d).fTrackID[1]>=0) + (digitData.at(d).fTrackID[2]>=0);
@@ -1203,7 +1204,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 // STILL TO FIX  ----------------------------------------------------------------------------
 
 #ifdef do_mc
-void AliHLTTPCClusterFinder::GetTrackID(Int_t pad,Int_t time,Int_t *trackID){
+void AliHLTTPCClusterFinder::GetTrackID(Int_t pad,Int_t time,Int_t *trackID) const {
   // see header file for class documentation
 
   //get mc id

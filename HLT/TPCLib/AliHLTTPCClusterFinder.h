@@ -1,17 +1,17 @@
 // @(#) $Id$
 // Original: AliHLTClustFinderNew.h,v 1.13 2004/06/18 10:55:26 loizides 
 
-#ifndef AliHLTTPC_CLUSTERFINDER
-#define AliHLTTPC_CLUSTERFINDER
+#ifndef ALIHLTTPCCLUSTERFINDER_H
+#define ALIHLTTPCCLUSTERFINDER_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCClusterFinder.h
-    @author Anders Vestbo, Constantin Loizides
-	    Kenneth Aamodt kenneth.aamodt@student.uib.no
-    @brief  Cluster Finder for the TPC
-*/
+//  @file   AliHLTTPCClusterFinder.h
+//  @author Anders Vestbo, Constantin Loizides
+// 	    Kenneth Aamodt kenneth.aamodt@student.uib.no
+//  @brief  HLT Cluster Finder for the TPC
+//  @note
 
 #include "AliHLTLogging.h"
 #include <vector>
@@ -124,14 +124,14 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   typedef struct AliClusterData AliClusterData; //!
 
   struct MCWeight{
-    Int_t fMCID;
-    Float_t fWeight;
+    Int_t fMCID; //!
+    Float_t fWeight; //!
     static Bool_t CompareWeights( const MCWeight &mc1,  const MCWeight &mc2 ){ return mc1.fWeight > mc2.fWeight; }
   };
   typedef struct MCWeight MCWeight;
 
   struct ClusterMCInfo{
-    MCWeight fClusterID[3];
+    MCWeight fClusterID[3]; //!
   };
   typedef struct ClusterMCInfo ClusterMCInfo;
 
@@ -176,7 +176,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t GetNumberOfClusters() const {return fNClusters;}
 
   /** Returns the Ocuppancy limit */
-  Float_t GetOccupancyLimit() {return fOccupancyLimit;}
+  Float_t GetOccupancyLimit() const {return fOccupancyLimit;}
   
   // setters
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
@@ -218,7 +218,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   void FillMCClusterVector(vector<AliHLTTPCDigitData> digitData);
 
-  vector<AliHLTTPCClusterFinder::MCWeight> GetClusterMCInfo(){return fClusterMCVector;}
+  vector<AliHLTTPCClusterFinder::MCWeight> GetClusterMCInfo() const {return fClusterMCVector;}
 
   Bool_t UpdateCalibDB();
 
@@ -294,7 +294,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Bool_t fReleaseMemory; //! flag to release the memory after each event
 
 #ifdef do_mc
-  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
+  void GetTrackID(Int_t pad,Int_t time,Int_t *trackID) const;
 #endif
   
   ClassDef(AliHLTTPCClusterFinder,11) //Fast cluster finder
