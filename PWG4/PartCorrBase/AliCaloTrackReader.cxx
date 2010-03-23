@@ -95,7 +95,7 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fCleanOutputStdAOD(g.fCleanOutputStdAOD), fDeltaAODFileName(g.fDeltaAODFileName),
   fFiredTriggerClassName(g.fFiredTriggerClassName),
   fEMCALGeoName(g.fEMCALGeoName),           fPHOSGeoName(g.fPHOSGeoName),
-  fEMCALGeo(g.fEMCALGeo),                   fPHOSGeo(g.fPHOSGeo),
+  fEMCALGeo(new AliEMCALGeoUtils(*g.fEMCALGeo)), fPHOSGeo(new AliPHOSGeoUtils(*g.fPHOSGeo)),
   fEMCALGeoMatrixSet(g.fEMCALGeoMatrixSet), fPHOSGeoMatrixSet(g.fPHOSGeoMatrixSet)
 {
   // cpy ctor
@@ -158,8 +158,8 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
 	
   fEMCALGeoName      = source.fEMCALGeoName ; 
   fPHOSGeoName       = source.fPHOSGeoName ; 
-  fEMCALGeo          = source.fEMCALGeo;  
-  fPHOSGeo           = source.fPHOSGeo;
+  fEMCALGeo          = new AliEMCALGeoUtils(*source.fEMCALGeo);  
+  fPHOSGeo           = new AliPHOSGeoUtils(*source.fPHOSGeo);
   fEMCALGeoMatrixSet = source.fEMCALGeoMatrixSet; 
   fPHOSGeoMatrixSet  = source.fPHOSGeoMatrixSet;
 
@@ -450,22 +450,22 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 
   //Select events only fired by a certain trigger configuration if it is provided
   if( fFiredTriggerClassName  !=""){
-	if(fDebug > 0) 
-		printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
-				GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
-	  if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
+    if(fDebug > 0) 
+      printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
+	     GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
+    if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
   }
-
+  
   if(fOutputEvent && (fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
-	  if (fFillCTS || fFillEMCAL || fFillPHOS) {
-		  printf("AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader, STOP\n");
+    if (fFillCTS || fFillEMCAL || fFillPHOS) {
+      printf("AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader, STOP\n");
 		  abort();
-	  }
+    }
   }
 
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {
-		if(!ComparePtHardAndJetPt()) return kFALSE ;
+    if(!ComparePtHardAndJetPt()) return kFALSE ;
   }
 
   //In case of mixing events with other AOD file	
@@ -488,57 +488,67 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
     
   }
 	
-  //Pass the calorimeters transformation matrix to the geometry if it was initialized
-  if (!gGeoManager) {
-	  if(fEMCALGeo){
-		  if(fDebug > 1) 
-			  printf(" AliCaloTrackReader::FillInputEvent() - Load EMCAL misalignment matrices. \n");
-		  if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
-			  for(Int_t mod=0; mod < 12; mod++){ 
-				  if(((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod)) {
-					  //printf("EMCAL: mod %d, matrix %p\n",mod, ((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod));
-					  fEMCALGeo->SetMisalMatrix(((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod),mod) ;
-					  fEMCALGeoMatrixSet = kTRUE;//At least one, so good
-				  }
-			  }// loop over super modules	
-		  }//ESD as input
-		  else {
-			  if(fDebug > 1)
-				  printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-		  }//AOD as input
-	  }//EMCAL geo
-	  
-	  if(fPHOSGeo){
-		  if(fDebug > 1) 
-			  printf(" AliCaloTrackReader::FillInputEvent() - Load PHOS misalignment matrices. \n");
-		  if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
-			  for(Int_t mod=0; mod < 5; mod++){ 
-				  if(((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod)) {
-					  //printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod));
-					  fPHOSGeo->SetMisalMatrix(((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod),mod) ;
-					  fPHOSGeoMatrixSet  = kTRUE; //At least one so good
+  //Geometry transformation matrices available for the calorimeters
+  if(gGeoManager) {// geoManager was set
+    fEMCALGeoMatrixSet = kTRUE;
+    fPHOSGeoMatrixSet  = kTRUE;
+  }
+  else{
+    fEMCALGeoMatrixSet = kFALSE;
+    fPHOSGeoMatrixSet  = kFALSE;
+  }
+  
+  //Init the calorimeters geometry
+  //do it event by event to avoid PHOS geometry mem leak
+  //InitEMCALGeometry();
 
-				  }
-			  }// loop over modules	
-		  }//ESD as input
-		  else {
-			  if(fDebug > 1) 
-				  printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-		  }//AOD as input
-	  }//PHOS geo	  
-  } // geoManager was not set
-	else {// geoManager was set
-		fEMCALGeoMatrixSet = kTRUE;
-		fPHOSGeoMatrixSet  = kTRUE;
+  //Get the EMCAL transformation geometry matrices from ESD 
+  if (!gGeoManager && fEMCALGeo) {
+    if(fDebug > 1) 
+      printf(" AliCaloTrackReader::FillInputEvent() - Load EMCAL misalignment matrices. \n");
+    if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
+      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
+	if(((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod)) {
+	  //printf("EMCAL: mod %d, matrix %p\n",mod, ((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod));
+	  fEMCALGeo->SetMisalMatrix(((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod),mod) ;
+	  fEMCALGeoMatrixSet = kTRUE;//At least one, so good
 	}
-
-	
+      }// loop over super modules	
+    }//ESD as input
+    else {
+      if(fDebug > 1)
+	printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
+	  }//AOD as input
+  }//EMCAL geo && no geoManager
+  
+  //Init the calorimeters geometry
+  //do it event by event to avoid PHOS geometry mem leak
+  InitPHOSGeometry();
+  //Get the PHOS transformation geometry matrices from ESD 
+  if (!gGeoManager && fPHOSGeo) {
+    if(fDebug > 1) 
+      printf(" AliCaloTrackReader::FillInputEvent() - Load PHOS misalignment matrices. \n");
+    if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
+      for(Int_t mod=0; mod < 5; mod++){ 
+	if(((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod)) {
+	  //printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod));
+	  fPHOSGeo->SetMisalMatrix(((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod),mod) ;
+	  fPHOSGeoMatrixSet  = kTRUE; //At least one so good
+	}
+      }// loop over modules	
+    }//ESD as input
+    else {
+      if(fDebug > 1) 
+	printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
+    }//AOD as input
+  }//PHOS geo	and  geoManager was not set
+  
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();
   if(fFillEMCALCells) FillInputEMCALCells();
   if(fFillPHOSCells)  FillInputPHOSCells();
-
+	
   return kTRUE ;
 }
 
@@ -556,4 +566,9 @@ void AliCaloTrackReader::ResetLists() {
     fOutputEvent->GetTracks()      ->Clear();
     fOutputEvent->GetCaloClusters()->Clear();
   }
+
+  //delete the geometry pointers event by event to avoir PHOS mem leak
+  //if(fEMCALGeo) {delete fEMCALGeo; fEMCALGeo = NULL;}
+  if(fPHOSGeo)  {delete fPHOSGeo;  fPHOSGeo  = NULL;}
+
 }

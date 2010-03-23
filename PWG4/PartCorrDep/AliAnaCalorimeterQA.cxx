@@ -344,12 +344,13 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	// store them in outputContainer
     
 	//If Geometry library loaded, do geometry selection during analysis.
-	if(fCalorimeter=="PHOS"){
-		if(!GetReader()->GetPHOSGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
-		GetReader()->InitPHOSGeometry();
-		
-	}
-	else if(fCalorimeter=="EMCAL"){
+//	if(fCalorimeter=="PHOS"){
+//		if(!GetReader()->GetPHOSGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
+//		GetReader()->InitPHOSGeometry();
+//		
+//	}
+//	else
+	if(fCalorimeter=="EMCAL"){
 		if(!GetReader()->GetEMCALGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
 		GetReader()->InitEMCALGeometry();
 	}
@@ -1285,7 +1286,7 @@ Int_t AliAnaCalorimeterQA::GetModuleNumber(AliESDCaloCluster * cluster)
 		else return -1;
 		
 		if ( absId >= 0) {
-			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
+			(GetReader()->GetPHOSGeometry())->AbsToRelNumbering(absId,relId);
 			if(GetDebug() > 2) 
 				printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - PHOS: Module %d\n",relId[0]-1);
 			return relId[0]-1;
