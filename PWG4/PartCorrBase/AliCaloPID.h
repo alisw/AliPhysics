@@ -47,9 +47,13 @@ class AliCaloPID : public TObject {
   AliCaloPID(const Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
   AliCaloPID(const TTask * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
   AliCaloPID(const AliCaloPID & g) ; // cpy ctor
-  AliCaloPID & operator = (const AliCaloPID & g) ;//cpy assignment
   virtual ~AliCaloPID() ;//virtual dtor
+
+private:
+  AliCaloPID & operator = (const AliCaloPID & g) ;//cpy assignment
   
+public:
+	
   enum PidType {
     kPhoton = 22,
     kPi0 = 111,

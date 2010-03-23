@@ -1013,8 +1013,8 @@ printf("Init geometry \n") ;
     }
   }
   else{ //EMCAL
-    fEMCALgeom = new AliEMCALGeoUtils("");
-    for(Int_t mod=0; mod < 12; mod++){ //<---Gustavo, could you check???
+    fEMCALgeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
+    for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ //<---Gustavo, could you check???
       if(esd){
         const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
         fEMCALgeom->SetMisalMatrix(m, mod) ;

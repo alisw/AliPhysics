@@ -65,8 +65,8 @@ protected:
 
 private:
 
-  AliPHOSGeoUtils *fPHOSgeom;    //PHOS geometry
-  AliEMCALGeoUtils *fEMCALgeom;  //EMCAL geometry
+  AliPHOSGeoUtils  *fPHOSgeom;   //!PHOS geometry
+  AliEMCALGeoUtils *fEMCALgeom;  //!EMCAL geometry
 
   AliStack        *fStack ;      //Pointer to MC stack
   Bool_t           fPHOS ;       //Choose Calorimeter: PHOS/EMCAL

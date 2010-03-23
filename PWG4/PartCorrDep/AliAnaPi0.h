@@ -24,14 +24,16 @@ class AliESDEvent ;
 
 class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
-  public: 
-  
+public:   
   AliAnaPi0() ; // default ctor
   AliAnaPi0(const char *name) ; // default ctor
   AliAnaPi0(const AliAnaPi0 & g) ; // cpy ctor
-  AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;//cpy assignment
   virtual ~AliAnaPi0() ;//virtual dtor
+
+private:
+  AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;//cpy assignment
   
+public:
   TList * GetCreateOutputObjects(); 
   
   void Print(const Option_t * opt) const;
