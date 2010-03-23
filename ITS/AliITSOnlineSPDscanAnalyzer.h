@@ -32,15 +32,16 @@ class AliITSOnlineSPDscanAnalyzer {
 
   Bool_t     IsChipPresent(UInt_t hs, UInt_t chipNr);
   Bool_t     IsOverWriteSet() const {return fOverWrite;}
-  void       SetCalibHandler(AliITSOnlineCalibrationSPDhandler *handler) {fHandler=handler;}
+  void       SetCalibHandler(AliITSOnlineCalibrationSPDhandler * const handler) {fHandler=handler;}
   void       SetParam(const Char_t *pname, const Char_t *pval);
   void       ReadParamsFromLocation(const Char_t *dirName);
 
   UInt_t     GetType() const {return fType;}
   UInt_t     GetDacId() const {return fDacId;}
-
+  
   Int_t      GetDelay(UInt_t hs, UInt_t chipNr);
   Int_t      GetMinTh(UInt_t hs, UInt_t chipNr);
+  Int_t      GetMeanTh(UInt_t hs, UInt_t chipNr);
   
   Int_t      GetNrNoisyUnima(UInt_t hs, UInt_t chipNr);
 
@@ -50,7 +51,7 @@ class AliITSOnlineSPDscanAnalyzer {
 
   Bool_t     ProcessNrTriggers();
 
-  AliITSOnlineSPDscan* GetOnlineScan() {return fScanObj;}
+  AliITSOnlineSPDscan* GetOnlineScan() const {return fScanObj;}
   UInt_t     GetRouterNr();
   Bool_t     GetHalfStavePresent(UInt_t hs);
 
@@ -60,15 +61,15 @@ class AliITSOnlineSPDscanAnalyzer {
   TH2F*      GetHitMapTot(UInt_t step);
   TH2F*      GetHitMapChip(UInt_t step, UInt_t hs, UInt_t chip);
 
-  Float_t    GetTPeff() {return fTPeff;}
-  TH1F*      GetTPeffHS() {return fTPeffHS;}
-  TH1F*      GetTPeffChip(UInt_t hs) {return fTPeffChip[hs];}
-  Float_t    GetDeadPixel() {return fDeadPixel;}
-  TH1F*      GetDeadPixelHS() {return fDeadPixelHS;}
-  TH1F*      GetDeadPixelChip(UInt_t hs) {return fDeadPixelChip[hs];}
-  Float_t    GetNoisyPixel() {return fNoisyPixel;}
-  TH1F*      GetNoisyPixelHS() {return fNoisyPixelHS;}
-  TH1F*      GetNoisyPixelChip(UInt_t hs) {return fNoisyPixelChip[hs];}
+  Float_t    GetTPeff() const {return fTPeff;}
+  TH1F*      GetTPeffHS() const {return fTPeffHS;}
+  TH1F*      GetTPeffChip(UInt_t hs) const {return fTPeffChip[hs];}
+  Float_t    GetDeadPixel() const {return fDeadPixel;}
+  TH1F*      GetDeadPixelHS() const {return fDeadPixelHS;}
+  TH1F*      GetDeadPixelChip(UInt_t hs) const {return fDeadPixelChip[hs];}
+  Float_t    GetNoisyPixel() const {return fNoisyPixel;}
+  TH1F*      GetNoisyPixelHS() const {return fNoisyPixelHS;}
+  TH1F*      GetNoisyPixelChip(UInt_t hs) const {return fNoisyPixelChip[hs];}
 
  private:
   UInt_t               fType;           // calib type
@@ -123,3 +124,5 @@ class AliITSOnlineSPDscanAnalyzer {
 };
 
 #endif
+
+

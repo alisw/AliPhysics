@@ -32,6 +32,7 @@
 #include "AliITSRawStreamSPD.h"
 #include <TStyle.h>
 #include <TMath.h>
+#include <TLine.h>
 #include <TF1.h>
 #include <TGraph.h>
 #include <TH2F.h>
@@ -47,6 +48,13 @@ Double_t itsSpdErrorf(Double_t *x, Double_t *par){
 //Double_t itsSpdErrorfOrig(Double_t *x, Double_t *par){
 //  return 0.5+0.5*TMath::Erf((x[0]-par[0])/par[1]/sqrt(2.));
 //}
+//_________________________________________________________________________
+Double_t itsSpdScurveForMeanTh(Double_t *x, Double_t *par){
+  if (par[2]<0) par[2]=0;
+  Double_t val = 1.- par[2]*(1.-TMath::Erf((x[0]-par[0])/par[1]/sqrt(2.)));
+//  Double_t val = par[2]+(0.12*256*32-par[2])*(0.5+0.5*TMath::Erf((x[0]-par[0])/par[1]/sqrt(2.)));
+  return val;
+}
 
 //_________________________________________________________________________
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler, Bool_t readFromGridFile) :
@@ -352,7 +360,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessUniformity() {
   //  UInt_t routerNr = fScanObj->GetRouterNr();
   UInt_t rowStart = fScanObj->GetRowStart();
   UInt_t rowEnd   = fScanObj->GetRowEnd();
-  UInt_t NrTriggers = fScanObj->GetTriggers(0)/(rowEnd-rowStart+1);
+  UInt_t nrTriggers = fScanObj->GetTriggers(0)/(rowEnd-rowStart+1);
 
   Float_t pixel100=0;
   Float_t zeri=0;
@@ -378,7 +386,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessUniformity() {
 	  for (UInt_t row=rowStart; row<=rowEnd; row++) {
 	    if (col!=1 && col!=9 && col!=17 && col!=25) { //exclude test columns!!!
 	    
-	      if (fScanObj->GetHits(0,hs,chipNr,col,row)==NrTriggers) {   
+	      if (fScanObj->GetHits(0,hs,chipNr,col,row)==nrTriggers) {   
 	      		pixel100++;
 	      		pixel100hs++;
 			pixel100chip++;
@@ -388,7 +396,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessUniformity() {
 	      		zerihs++;
 			zerichip++;
 	      }
-	      if (fScanObj->GetHits(0,hs,chipNr,col,row)>NrTriggers) {    
+	      if (fScanObj->GetHits(0,hs,chipNr,col,row)>nrTriggers) {    
 	      		pixelN++;
 	      		pixelNhs++;
 			pixelNchip++;
@@ -397,25 +405,25 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessUniformity() {
 	  }
 	}
       
-	Float_t TPeffChip=(pixel100chip/(28*(rowEnd-rowStart+1)))*100;
-	fTPeffChip[hs]->Fill(chipNr,TPeffChip);
+	Float_t tPeffChip=(pixel100chip/(28*(rowEnd-rowStart+1)))*100;
+	fTPeffChip[hs]->Fill(chipNr,tPeffChip);
 	
-	Float_t DeadPixelChip=(zerichip/(28*(rowEnd-rowStart+1)))*100;
-	fDeadPixelChip[hs]->Fill(chipNr,DeadPixelChip);
+	Float_t deadPixelChip=(zerichip/(28*(rowEnd-rowStart+1)))*100;
+	fDeadPixelChip[hs]->Fill(chipNr,deadPixelChip);
 	
-	Float_t NoisyPixelChip=(pixelNchip/(28*(rowEnd-rowStart+1)))*100;
-	fNoisyPixelChip[hs]->Fill(chipNr,NoisyPixelChip);
+	Float_t noisyPixelChip=(pixelNchip/(28*(rowEnd-rowStart+1)))*100;
+	fNoisyPixelChip[hs]->Fill(chipNr,noisyPixelChip);
       }
     }
     
-    Float_t TPeffHS=(pixel100hs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
-    fTPeffHS->Fill(hs,TPeffHS);
+    Float_t tPeffHS=(pixel100hs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
+    fTPeffHS->Fill(hs,tPeffHS);
     
-    Float_t DeadPixelHS=(zerihs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
-    fDeadPixelHS->Fill(hs,DeadPixelHS);
+    Float_t deadPixelHS=(zerihs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
+    fDeadPixelHS->Fill(hs,deadPixelHS);
     
-    Float_t NoisyPixelHS=(pixelNhs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
-    fNoisyPixelHS->Fill(hs,NoisyPixelHS);
+    Float_t noisyPixelHS=(pixelNhs/(28*numChipsActiveHS*(rowEnd-rowStart+1)))*100;
+    fNoisyPixelHS->Fill(hs,noisyPixelHS);
   }
   
   fTPeff=(pixel100/(28*numChipsActive*(rowEnd-rowStart+1)))*100;
@@ -746,6 +754,54 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
   }
 }
 //_________________________________________________________________________
+Int_t AliITSOnlineSPDscanAnalyzer::GetMeanTh(UInt_t hs, UInt_t chipNr) {
+  // calculates and returns the mean threshold
+  if (hs>=6 || chipNr>10) return -1;
+  if (fScanObj==NULL) {
+    Error("AliITSOnlineSPDscanAnalyzer::GetMeanTh","No data!");
+    return -1;
+  }
+  // should be type  kMEANTH  or  kDAC with id 39
+  if (fType!=kMEANTH && (fType!=kDAC || fDacId!=105)) {
+    Error("AliITSOnlineSPDscanAnalyzer::GetMeanTh","MeanTh only for scan type %d OR %d with dac_id 105.",kMEANTH,kDAC);
+    return -1;
+  }
+  if (fHitEventEfficiency[hs][chipNr]==NULL) {
+   printf("processing hit efficiency \n");
+    if (!ProcessHitEventEfficiency()) {
+      printf("...not processed!!\n");
+      return -1;
+    }
+  }
+  Double_t x,y;
+  fHitEventEfficiency[hs][chipNr]->GetPoint(fHitEventEfficiency[hs][chipNr]->GetN()-1,x,y);
+  UInt_t min = (UInt_t)x;
+  fHitEventEfficiency[hs][chipNr]->GetPoint(0,x,y);
+  UInt_t max = (UInt_t)x;
+
+  TString funcName = Form("Fit meanth func HS%d CHIP%d",hs,chipNr);
+  TF1 *minThFunc = new TF1(funcName.Data(),itsSpdScurveForMeanTh,min,max,3);
+  minThFunc->SetParameter(0,3000);
+  minThFunc->SetParameter(1,100);
+  minThFunc->SetParameter(2,0.4);
+  minThFunc->SetParName(0,"Mean");
+  minThFunc->SetParName(1,"Sigma");
+  minThFunc->SetParName(2,"Half");
+  minThFunc->SetLineWidth(1);
+ fHitEventEfficiency[hs][chipNr]->Fit(funcName,"Q","",min,max);
+
+  Double_t value = minThFunc->GetParameter(0);
+  TLine *ly = new TLine(min,0.5,value,0.5); ly->SetLineStyle(6);
+  ly->Draw("same");
+  TLine *lx = new TLine(value,0.,value,0.5);
+  lx->SetLineStyle(6);
+  lx->Draw("same");
+  delete minThFunc;
+
+  return (UInt_t)value;
+}
+
+//_________________________________________________________________________
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessMeanMultiplicity() {
   // process mean multiplicity data
   if (fScanObj==NULL) {
@@ -933,4 +989,5 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t 
 
   return returnHisto;
 }
+
 
