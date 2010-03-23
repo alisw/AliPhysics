@@ -203,39 +203,39 @@ void AliEveITSDigitsInfo::InitInternals()
     }
   }
 
-  if (fgDeadModSDD == 0)
-  {
-    AliCDBManager *cdb = AliCDBManager::Instance();
+  // if (fgDeadModSDD == 0)
+  // {
+  //   AliCDBManager *cdb = AliCDBManager::Instance();
 
-    AliCDBEntry *deadSDD = cdb->Get("ITS/Calib/SDDDead");
+  //   AliCDBEntry *deadSDD = cdb->Get("ITS/Calib/SDDDead");
 
-    if (!deadSDD)
-    {
-      AliWarning("SDD Calibration object retrieval failed!");
-    }
-    else
-    {
-      fgDeadModSDD = (TObjArray*)deadSDD->GetObject();
-      fgDeadModSDD->SetOwner(kTRUE);
-    }
-  }
+  //   if (!deadSDD)
+  //   {
+  //     AliWarning("SDD Calibration object retrieval failed!");
+  //   }
+  //   else
+  //   {
+  //     fgDeadModSDD = (TObjArray*)deadSDD->GetObject();
+  //     fgDeadModSDD->SetOwner(kTRUE);
+  //   }
+  // }
 
-  if (fgDeadModSSD == 0)
-  {
-    AliCDBManager *cdb = AliCDBManager::Instance();
+  // if (fgDeadModSSD == 0)
+  // {
+  //   AliCDBManager *cdb = AliCDBManager::Instance();
 
-    AliCDBEntry *deadSSD = cdb->Get("ITS/Calib/SSDDead");
+  //   AliCDBEntry *deadSSD = cdb->Get("ITS/Calib/SSDDead");
 
-    if (!deadSSD)
-    {
-      AliWarning("SSD Calibration object retrieval failed!");
-    }
-    else
-    {
-      fgDeadModSSD = (TObjArray*)deadSSD->GetObject();
-      fgDeadModSSD->SetOwner(kTRUE);
-    }
-  }
+  //   if (!deadSSD)
+  //   {
+  //     AliWarning("SSD Calibration object retrieval failed!");
+  //   }
+  //   else
+  //   {
+  //     fgDeadModSSD = (TObjArray*)deadSSD->GetObject();
+  //     fgDeadModSSD->SetOwner(kTRUE);
+  //   }
+  // }
 }
 
 /******************************************************************************/
