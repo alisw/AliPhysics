@@ -177,9 +177,9 @@ ClassImp(AliGRPPreprocessor)
 
 
   const char* AliGRPPreprocessor::fgkLHCDataPoints[AliGRPPreprocessor::fgknLHCDP] = {
-	  "lhcMon_LHCBeam.Energy",
-	  "lhcMon_LHCMachineMode.value",
-	  "lhcMon_LHCBeamMode.value",
+	  "LHC_Beam_Energy",
+	  "LHC_MachineMode",
+	  "LHC_BeamMode",
           "dip/acc/LHC/RunControl/BeamType/Beam1.payload",
           "dip/acc/LHC/RunControl/BeamType/Beam2.payload"
   };
@@ -616,51 +616,107 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			}	
 			Double_t timeBeamMode = 0;
 			Double_t timeMachineMode = 0;
+			Bool_t flagBeamMode = kFALSE;  //flag set true if at least one BeamMode measurement is found within DAQ_time_start and DAQ_time_end
+			Bool_t flagMachineMode = kFALSE;  //flag set true if at least one MachineMode measurement is found within DAQ_time_start and DAQ_time_end
 			// BeamMode
 			TObjArray* beamModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[2]);
-			if (beamModeArray){		
-				if (beamModeArray->GetEntries()==0){
-					AliInfo("No Beam Mode found, setting it to UNKNOWN");
+			Int_t nBeamMode = -1;
+			if (beamModeArray){	
+				nBeamMode = beamModeArray->GetEntries();	
+				if (nBeamMode==0){
+ 					AliInfo("Found zero entries for  the Beam Mode, setting it to UNKNOWN");
 					grpobj->SetLHCState("UNKNOWN");
 				}
 				else{
-					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
-					TObjString* beamModeString = beamMode->GetStringArray(0);
-					if (beamModeArray->GetEntries()>1){
-						AliDCSArray* beamMode1 = (AliDCSArray*)beamModeArray->At(1);
-						timeBeamMode = beamMode1->GetTimeStamp();
-						AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeBeamMode));
+					if (nBeamMode==1){
+						AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
+						if (beamMode->GetTimeStamp()>=timeStart && beamMode->GetTimeStamp()<=timeEnd){
+							TObjString* beamModeString = beamMode->GetStringArray(0);
+							AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
+							grpobj->SetLHCState(beamModeString->String());
+						}
+						else{
+							AliInfo("No Beam Mode found within DAQ_time_start and DAQ_time_end, setting it to UNKNOWN");
+							grpobj->SetLHCState("UNKNOWN");
+						}
 					}
-					AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
-					grpobj->SetLHCState(beamModeString->String());
+					else {
+						for (Int_t iBeamMode = 0; iBeamMode<nBeamMode; iBeamMode++){
+							AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(iBeamMode);
+							if (beamMode->GetTimeStamp()>=timeStart && beamMode->GetTimeStamp()<=timeEnd){
+								AliDCSArray* beamMode1 = (AliDCSArray*)beamModeArray->At(iBeamMode+1);
+								if (beamMode1->GetTimeStamp()>=timeStart && beamMode1->GetTimeStamp()<=timeEnd){
+									timeBeamMode = beamMode1->GetTimeStamp();
+									AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and keeping track of the time of the change to set MaxTimeLHCValidity afterward",timeBeamMode));
+								}
+								TObjString* beamModeString = beamMode->GetStringArray(0);
+								AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
+								grpobj->SetLHCState(beamModeString->String());
+								flagBeamMode = kTRUE;
+								break;
+							}
+						}
+						if (!flagBeamMode){
+							AliError("Found values for BeamMode, but none within DAQ_time_start and DAQ_time_end, setting BeamMode to UNKNOWN");
+							grpobj->SetLHCState("UNKONWN");
+						}
+					}
 				}
-				
 			}
 			else{
 				AliError("Beam mode array not found in LHC Data file!!!");
 			}
+
 			// MachineMode
 			TObjArray* machineModeArray = (TObjArray*)lhcMap->GetValue(fgkLHCDataPoints[1]);
+			Int_t nMachineMode = -1;
 			if (machineModeArray){
-				if (machineModeArray->GetEntries()==0){
+				nMachineMode = machineModeArray->GetEntries();
+				if (nMachineMode==0){
 					AliInfo("No Machine Mode found, setting it to UNKNOWN");
 					grpobj->SetMachineMode("UNKNOWN");
 				}
 				else{
-					AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
-					TObjString* machineModeString = machineMode->GetStringArray(0);
-					if (machineModeArray->GetEntries()>1){
-						AliDCSArray* machineMode1 = (AliDCSArray*)machineModeArray->At(1);
-						timeMachineMode = machineMode1->GetTimeStamp();
-						AliWarning(Form("The Machine Mode changed at timestamp %f! Setting it to the first value found and setting MaxTimeLHCValidity",timeMachineMode));
+					if (nMachineMode ==1) {
+						AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
+						if (machineMode->GetTimeStamp()>=timeStart && machineMode->GetTimeStamp()<=timeEnd){
+							TObjString* machineModeString = machineMode->GetStringArray(0);
+							AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
+							grpobj->SetMachineMode(machineModeString->String());
+						}
+						else{
+							AliInfo("No Machine Mode found within DAQ_time_start and DAQ_time_end, setting it to UNKNOWN");
+							grpobj->SetMachineMode("UNKNOWN");
+						}
 					}
-					AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
-					grpobj->SetMachineMode(machineModeString->String());
+					else {
+						for (Int_t iMachineMode = 0; iMachineMode<nMachineMode; iMachineMode++){
+							AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(iMachineMode);
+							if (machineMode->GetTimeStamp()>=timeStart && machineMode->GetTimeStamp()<=timeEnd){
+								AliDCSArray* machineMode1 = (AliDCSArray*)machineModeArray->At(iMachineMode+1);
+								if (machineMode1->GetTimeStamp()>=timeStart && machineMode1->GetTimeStamp()<=timeEnd){
+									timeMachineMode = machineMode1->GetTimeStamp();
+									AliWarning(Form("The machine mode changed at timestamp %f! Setting it to the first value found and keeping track of the time of the change to set MaxTimeLHCValidity afterwards",timeMachineMode));
+								}
+								TObjString* machineModeString = machineMode->GetStringArray(0);
+								AliInfo(Form("Machine mode = %s",(machineModeString->String()).Data()));
+								grpobj->SetMachineMode(machineModeString->String());
+								flagMachineMode = kTRUE;
+								break;
+							}
+						}
+						if (!flagMachineMode){
+							AliError("Found values for MachineMode, but none within DAQ_time_start and DAQ_time_end, setting MachineMode to UNKNOWN");
+							grpobj->SetMachineMode("UNKONWN");
+						}
+					}
 				}
 			}
 			else {
 				AliError("Machine mode array not found in LHC Data file!!!");
 			}	
+
+			// Setting minTimeLHCValidity
 			if (timeBeamMode!=0 || timeMachineMode!=0){
 				Double_t minTimeLHCValidity;
  				if (timeBeamMode == 0){
