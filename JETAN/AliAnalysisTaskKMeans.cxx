@@ -320,7 +320,7 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
       return;
   }
   //
-  Double_t* rk0 = new Double_t[10];
+  Double_t rk0[10];
 
   AliKMeansResult* res = 0;
 
