@@ -13,6 +13,7 @@
  **************************************************************************/
 
 #include "AliHLTEMCALRecoParamHandler.h"
+#include "AliEMCALRecParam.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 
@@ -21,50 +22,12 @@ AliHLTCaloRecoParamHandler("EMCAL")
 {
    // See header file for class documentation
    
-   fEMCALPidPtr = new AliEMCALPIDv1();
-   
 }
-
 
 AliHLTEMCALRecoParamHandler::~AliHLTEMCALRecoParamHandler()
 {
    // See header file for class documentation
-   if(fRecoParamPtr) delete fRecoParamPtr; fRecoParamPtr = 0;
    
-}
-
-Int_t AliHLTEMCALRecoParamHandler::GetParametersFromCDB()
-{
-   // See header file for documentation
-   AliCDBPath path("EMCAL","Calib","RecoParam");
-   if(path.GetPath())
-    {
-//      HLTInfo("configure from entry %s", path.GetPath());
-      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-      if (pEntry) 
-	{
-	  if(!fRecoParamPtr) 
-	    {
-	      delete fRecoParamPtr;
-	      fRecoParamPtr = 0;
-	    }
-	    TObjArray *paramArray = dynamic_cast<TObjArray*>(pEntry->GetObject());
-	    fRecoParamPtr = dynamic_cast<AliEMCALRecoParam*>(paramArray)->At(0);
-	    if(!fRecoParamPtr)
-	    {
-	       return -1;
-	    }
-	    fLogWeight = fRecoParamPtr->GetEMCLogWeight();
-	    fRecPointMemberThreshold = fRecoParamPtr->GetEMCMinE();
-	    fRecPointThreshold = fRecoParamPtr->GetEMCClusteringThreshold();
-	}
-      else
-	{
-//	    HLTError("can not fetch object \"%s\" from OCDB", path);
-	    return -1;
-	}
-    }
-    return 0;
 }
 
 Float_t AliHLTEMCALRecoParamHandler::GetCorrectedEnergy ( Float_t e )
@@ -73,3 +36,13 @@ Float_t AliHLTEMCALRecoParamHandler::GetCorrectedEnergy ( Float_t e )
    return e;
 }
 
+void AliHLTEMCALRecoParamHandler::FillParameters()
+{
+   //See header file for class documentation
+   if(fRecoParamPtr)
+   {
+      fLogWeight = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr)->GetW0(); 
+      fRecPointMemberThreshold = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr)->GetMinECut();
+      fRecPointThreshold = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr)->GetClusteringThreshold();
+   }
+}

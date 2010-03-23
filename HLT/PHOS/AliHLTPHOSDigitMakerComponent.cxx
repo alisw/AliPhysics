@@ -143,31 +143,6 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 //	  HLTDebug("Data block is not of type fgkChannelDataType");
 	  continue;
 	}
-   /*if(!fBCMInitialised)
-      {
-	 AliHLTPHOSMapper mapper;
-	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	 {
-	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
-	    {
-	       fDigitMakerPtr->SetBadChannel(x, z, fBadChannelMap[module][x][z]);
-	    }
-	 }
- 	 for(Int_t mod = 0; mod < fCaloConstants->GetNMODULES(); mod++)
-	 {
-	    for(Int_t x = 0; x < fCaloConstants->GetNZROWSMOD(); x++)
-	    {
-	       delete [] fBadChannelMap[mod][x];
-	       fBadChannelMap[mod][x] = 0;
-	    }
-	    delete [] fBadChannelMap[mod];
-	    fBadChannelMap[mod] = 0;
-	 }
-	 fBadChannelMap = 0;
-	 fBCMInitialised = true;
-      }
-   */ 
       if(!fBCMInitialised)
       {
 	 AliHLTPHOSMapper mapper;

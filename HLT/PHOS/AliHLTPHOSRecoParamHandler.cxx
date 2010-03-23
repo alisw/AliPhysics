@@ -21,55 +21,17 @@
 
 AliHLTPHOSRecoParamHandler::AliHLTPHOSRecoParamHandler() :
 AliHLTCaloRecoParamHandler("PHOS")
-,fRecoParamPtr(0),
-fPHOSPidPtr(0)
+,fPHOSPidPtr(0)
 {
    // See header file for class documentation
-   
-  //   fPHOSPidPtr = new AliPHOSPIDv1(); //WHY?
-   
-}
 
+   fPHOSPidPtr = new AliPHOSPIDv1();
+
+}
 
 AliHLTPHOSRecoParamHandler::~AliHLTPHOSRecoParamHandler()
 {
    // See header file for class documentation
-   if(fRecoParamPtr) delete fRecoParamPtr; fRecoParamPtr = 0;
-   
-}
-
-Int_t AliHLTPHOSRecoParamHandler::GetParametersFromCDB()
-{
-   // See header file for documentation
-   AliCDBPath path("PHOS","Calib","RecoParam");
-   if(path.GetPath())
-    {
-//      HLTInfo("configure from entry %s", path.GetPath());
-      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-      if (pEntry) 
-	{
-	  if(!fRecoParamPtr) 
-	    {
-	      delete fRecoParamPtr;
-	      fRecoParamPtr = 0;
-	    }
-	    TObjArray *paramArray = dynamic_cast<TObjArray*>(pEntry->GetObject());
-	    fRecoParamPtr = dynamic_cast<AliPHOSRecoParam*>(paramArray->At(0));
-	    if(!fRecoParamPtr)
-	    {
-	       return -1;
-	    }
-	    fLogWeight = fRecoParamPtr->GetEMCLogWeight();
-	    fRecPointMemberThreshold = fRecoParamPtr->GetEMCMinE();
-	    fRecPointThreshold = fRecoParamPtr->GetEMCClusteringThreshold();
-	}
-      else
-	{
-//	    HLTError("can not fetch object \"%s\" from OCDB", path);
-	    return -1;
-	}
-    }
-    return 0;
 }
 
 Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
@@ -77,5 +39,16 @@ Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
    // See header file for class documentation
   //   return fPHOSPidPtr->GetCalibratedEnergy(e); //WHY?
    return e;
+}
+
+void AliHLTPHOSRecoParamHandler::FillParameters()
+{
+   //See header file for class documentation
+   if(fRecoParamPtr)
+   {
+      fLogWeight = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCLogWeight();
+      fRecPointMemberThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCMinE();
+      fRecPointThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCClusteringThreshold();
+   }
 }
 

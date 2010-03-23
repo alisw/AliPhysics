@@ -34,7 +34,6 @@ struct  AliHLTCaloChannelRawDataStruct : public AliHLTCaloChannelDataStruct
   int nSamplesUsed;
   // UShort_t fDataPtr[ALTROMAXSAMPLES] = {0,};
   UShort_t fData;
-
 };
 
 #endif

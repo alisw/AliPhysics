@@ -125,7 +125,13 @@ protected:
   
 //  virtual int DoInit(int, const char**) {;}
   virtual int DoDeinit(){return 0;}
+
+  /** Get bad channel map from CDB */
+  virtual int GetBCMFromCDB();
   
+  /** Get the ADC <-> Energy (GeV) gain factors */
+  virtual int GetGainsFromCDB();
+
 private:
 
    /** Copy constructor, prohibited */  

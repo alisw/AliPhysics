@@ -17,9 +17,6 @@
 
 #include "AliHLTCaloRecoParamHandler.h"
 
-class AliEMCALRecoParam;
-class AliEMCALPIDv1;
-
 class AliHLTEMCALRecoParamHandler : public AliHLTCaloRecoParamHandler
   {
      public:
@@ -35,16 +32,12 @@ class AliHLTEMCALRecoParamHandler : public AliHLTCaloRecoParamHandler
 	 
 	 /** Get the energy corrected for non-linear effects etc. */
 	 virtual Float_t GetCorrectedEnergy(Float_t e);
-	 
-	 /** Get the log weight */
-	 Float_t GetLogWeight() { return fLogWeight; } 
-	 
-	 /** Get rec point threshold */
-	 Float_t GetRecPointThreshold() { return fRecPointThreshold; }
-	 
-	 /** Get rec point member threshold */
-	 Float_t GetRecPointMemberThreshold() { return fRecPointMemberThreshold; }
 
+     protected:
+	
+	/** Fill the parameters */
+	virtual void FillParameters();
+	 
      private:
 	
       /** Copy constructor, not implemented */

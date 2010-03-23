@@ -30,11 +30,13 @@ class AliHLTPHOSRecoParamHandler : public AliHLTCaloRecoParamHandler
 	 /** Destructor */
 	 virtual ~AliHLTPHOSRecoParamHandler();
 	 
-	 /** See base class for documentation */
-	 virtual Int_t GetParametersFromCDB();
-	 
 	 /** Get the energy corrected for non-linear effects etc. */
 	 virtual Float_t GetCorrectedEnergy(Float_t e);
+
+     protected:
+	
+	/** See base class for documentation */
+	virtual void FillParameters(); //COMMENT
 	 
      private:
 	
@@ -43,9 +45,6 @@ class AliHLTPHOSRecoParamHandler : public AliHLTCaloRecoParamHandler
     
 	/** Assignment operator, not implemented */
       AliHLTPHOSRecoParamHandler & operator = (const AliHLTPHOSRecoParamHandler &); //COMMENT
-
-      /** The reco param object */
-      AliPHOSRecoParam *fRecoParamPtr;   // COMMENT
       
       /** PHOS PID class */
       AliPHOSPIDv1 *fPHOSPidPtr; // COMMENT

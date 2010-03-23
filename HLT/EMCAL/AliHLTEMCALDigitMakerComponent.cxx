@@ -131,7 +131,7 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       
       if(iter->fDataType != AliHLTEMCALDefinitions::fgkChannelDataType)
 	{
-	  HLTError("Data block is not of type fgkChannelDataType");
+	  HLTDebug("Data block is not of type fgkChannelDataType");
 	  continue;
 	}
 
