@@ -108,8 +108,8 @@ void Config()
     // gAlice->SetGeometryFromCDB();
 
     // Set the trigger configuration
-    //    gAlice->SetTriggerDescriptor("Pb-Pb");
-    gAlice->SetTriggerDescriptor("ACORDE");
+    //    AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
+    AliSimulation::Instance()->SetTriggerConfig("ACORDE");
     cout<<"Trigger configuration is set to  ACORDE"<<endl;
 
     //

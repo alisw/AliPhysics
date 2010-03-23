@@ -64,7 +64,7 @@ void commonConfig(Bool_t setRootGeometry = kFALSE)
   // Trigger configuration
   //=======================================================================
 
-  gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+  AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
   cout << "Trigger configuration is set to  " << pprTrigConfName[strig] << endl;
 
   // ============================= 

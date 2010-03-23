@@ -50,7 +50,7 @@ void ConfigCommon1(Bool_t setRootGeometry = kTRUE)
   // Trigger configuration
   //=======================================================================
 
-  gAlice->SetTriggerDescriptor("Pb-Pb");
+  AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
   cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
 
   // ============================= 

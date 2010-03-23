@@ -134,7 +134,7 @@ void Config()
   // gAlice->SetGeometryFromCDB();
   
   // Set the trigger configuration: proton-proton
-  gAlice->SetTriggerDescriptor("p-p");
+  AliSimulation::Instance()->SetTriggerConfig("p-p");
 
   //
   //=======================================================================

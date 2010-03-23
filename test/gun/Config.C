@@ -94,7 +94,7 @@ void Config()
     gAlice->SetRunLoader(rl);
 
     // Set the trigger configuration
-    gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+    AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
     cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
 
     //

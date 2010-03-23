@@ -56,8 +56,6 @@ public:
    virtual  void  SDigits2Digits(const char *detector=0) {Tree2Tree("D",detector);}
    virtual  void  Digits2Reco(const char *detector=0)    {Tree2Tree("R",detector);}
    Bool_t         IsFolder() const {return kTRUE;}
-   const char*    GetTriggerDescriptor() const {return fTriggerDescriptor.Data();}
-   void           SetTriggerDescriptor(const char *name) {fTriggerDescriptor = name;}
    virtual  void  SetBaseFile(const char *filename="galice.root");
    //
    // End of MC Application
@@ -77,13 +75,12 @@ protected:
   TString        fConfigFunction;    //  Configuration file to be executed
   TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file
-  TString        fTriggerDescriptor; //  Trigger descriptor identifier
-  AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
+  AliRunLoader  *fRunLoader;         //! run getter - written as a separate object
 private:
   AliRun(const AliRun&); // Not implemented
   AliRun& operator = (const AliRun&); // Not implemented
 
-  ClassDef(AliRun,13)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,14)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;

@@ -166,7 +166,7 @@ AliSimulation::AliSimulation(const char* configFileName,
   fLoadAlObjsListOfDets("ALL"),
   fMakeSDigits("ALL"),
   fMakeDigits("ALL"),
-  fMakeTrigger(""),
+  fTriggerConfig(""),
   fMakeDigitsFromHits(""),
   fWriteRawData(""),
   fRawDataFileName(""),
@@ -708,7 +708,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   
   
   // digits -> trigger
-  if (!RunTrigger(fMakeTrigger,fMakeDigits)) {
+  if (!RunTrigger(fTriggerConfig,fMakeDigits)) {
     if (fStopOnError) return kFALSE;
   }
 
@@ -914,8 +914,8 @@ Bool_t AliSimulation::RunTrigger(const char* config, const char* detectors)
    TString trconfiguration = config;
 
    if (trconfiguration.IsNull()) {
-     if (strcmp(gAlice->GetTriggerDescriptor(),"")) {
-       trconfiguration = gAlice->GetTriggerDescriptor();
+     if(!fTriggerConfig.IsNull()) {
+       trconfiguration = fTriggerConfig;
      }
      else
        AliWarning("No trigger descriptor is specified. Loading the one that is in the CDB.");
@@ -1021,15 +1021,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
    AliSysInfo::AddStamp("RunSimulation_InitLoaders");
   //___________________________________________________________________________________________
   
-  // Get the trigger descriptor string
-  // Either from AliSimulation or from
-  // gAlice
-  if (fMakeTrigger.IsNull()) {
-    if (strcmp(gAlice->GetTriggerDescriptor(),""))
-      fMakeTrigger = gAlice->GetTriggerDescriptor();
-  }
-  else
-    gAlice->SetTriggerDescriptor(fMakeTrigger.Data());
   AliSysInfo::AddStamp("RunSimulation_TriggerDescriptor");
 
   // Set run number in CDBManager
@@ -2266,7 +2257,7 @@ void AliSimulation::WriteGRPEntry()
     }
   }
   // CTP
-  if (!fMakeTrigger.IsNull() || strcmp(gAlice->GetTriggerDescriptor(),""))
+  if (!fTriggerConfig.IsNull())
     detectorPattern |= (1 << AliDAQ::DetectorID("TRG"));
 
   // HLT

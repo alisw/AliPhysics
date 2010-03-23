@@ -46,7 +46,7 @@ void Config(char directory[100]="", char option[6]="trgAll")
   //=======================================================================
   // Set the trigger configuration - not needed here for MUON in
   // stand-alone mode
-  // gAlice->SetTriggerDescriptor("p-p");
+  // AliSimulation::Instance()->SetTriggerConfig("p-p");
   // cout<<"Trigger configuration is set to  p-p"<<endl;
 
   //=======================================================================

@@ -55,8 +55,6 @@ public:
   void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
   void           SetMakeDigits(const char* detectors)
                    {fMakeDigits = detectors;};
-  void           SetMakeTrigger(const char* descriptors)
-                   {fMakeTrigger = descriptors;};
   void           SetMakeDigitsFromHits(const char* detectors)
                    {fMakeDigitsFromHits = detectors;};
   void           SetWriteRawData(const char* detectors, 
@@ -66,6 +64,8 @@ public:
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
   void           SetWriteSelRawData(Bool_t sel = kTRUE)
                    {fWriteSelRawData = sel;}
+  void           SetTriggerConfig(TString conf) {fTriggerConfig=conf;}
+  const Char_t*  GetTriggerConfig() const {return fTriggerConfig.Data();}
   void           SetAlignObjArray(TObjArray *array)
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
@@ -153,7 +153,7 @@ private:
   TString        fLoadAlObjsListOfDets;   // Load alignment data from CDB for these detectors
   TString        fMakeSDigits;        // create sdigits for these detectors
   TString        fMakeDigits;         // create digits for these detectors
-  TString        fMakeTrigger;        // run trigger for these descriptors
+  TString        fTriggerConfig;      // run trigger for these descriptors
   TString        fMakeDigitsFromHits; // create digits from hits for these detectors
   TString        fWriteRawData;       // write raw data for these detectors
   TString        fRawDataFileName;    // file name for the raw data file

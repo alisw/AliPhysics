@@ -40,7 +40,7 @@ TString ParseConfig(char * option)
 	if (soption.Contains("system") || soption.Contains("fAliceBeamType")){
 		while (getline(in, line)) { 
 			sline = line ;		
-			if (sline.Contains("gAlice->SetTriggerDescriptor")) 
+			if (sline.Contains("AliSimulation::Instance()->SetTriggerConfig")) 
 				break ;
 		}
 		TString sarg1 = sline(sline.Index("[")+1, sline.Index("]") - sline.Index("[")-1) ; 

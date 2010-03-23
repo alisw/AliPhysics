@@ -145,12 +145,12 @@ void Config()
   
   // Set the trigger configuration
   if ((embedrun == kBackground) || (embedrun == kMerged)) {
-    gAlice->SetTriggerDescriptor("Pb-Pb");
+    AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
     cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
   }
   else {
     // Set the trigger configuration: proton-proton
-    gAlice->SetTriggerDescriptor("p-p");
+    AliSimulation::Instance()->SetTriggerConfig("p-p");
   }
 
   //

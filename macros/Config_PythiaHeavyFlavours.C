@@ -170,7 +170,7 @@ void Config()
   // gAlice->SetGeometryFromCDB();
 
   // Set the trigger configuration
-  gAlice->SetTriggerDescriptor(TrigConfName[trig]);
+  AliSimulation::Instance()->SetTriggerConfig(TrigConfName[trig]);
   cout<<"Trigger configuration is set to  "<<TrigConfName[trig]<<endl;
 
   //

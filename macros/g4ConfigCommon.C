@@ -43,7 +43,7 @@ void ConfigCommon(Bool_t setRootGeometry = kTRUE)
   }
 
   // Set the trigger configuration
-  gAlice->SetTriggerDescriptor("Pb-Pb");
+  AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
   cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
 
     // Set Random Number seed

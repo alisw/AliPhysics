@@ -45,7 +45,7 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   
   //=======================================================================
   // Set the trigger configuration
-  gAlice->SetTriggerDescriptor("p-p");
+  AliSimulation::Instance()->SetTriggerConfig("p-p");
   cout<<"Trigger configuration is set to  p-p"<<endl;
 
   //=======================================================================

@@ -113,7 +113,7 @@ void Config()
     // Uncomment if you want to load geometry from OCDB!   <<<<
 
     // Set the trigger configuration
-    gAlice->SetTriggerDescriptor("Pb-Pb");
+    AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
     cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
 
     //

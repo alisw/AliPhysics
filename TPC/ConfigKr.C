@@ -77,7 +77,7 @@ void Config()
     gAlice->SetRunLoader(rl);
 
     // Set the trigger configuration
-    gAlice->SetTriggerDescriptor("Pb-Pb");
+    AliSimulation::Instance()->SetTriggerConfig("Pb-Pb");
     cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
 
     //

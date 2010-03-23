@@ -73,7 +73,6 @@ AliRun::AliRun():
   fConfigFunction(""),
   fRandom(0),
   fBaseFileName(""),
-  fTriggerDescriptor(""),
   fRunLoader(0x0)
 {
   //
@@ -94,7 +93,6 @@ AliRun::AliRun(const char *name, const char *title):
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
   fBaseFileName(""),
-  fTriggerDescriptor(""),
   fRunLoader(0x0)
 {
   //
@@ -117,7 +115,6 @@ AliRun::AliRun(const char *name, const char *title):
   gROOT->GetListOfBrowsables()->Add(this,name);
   
 }
-
 
 //_______________________________________________________________________
 AliRun::~AliRun()
@@ -148,9 +145,7 @@ AliRun::~AliRun()
   
 }
 
-
 //_____________________________________________________________________________
-
 void AliRun::InitLoaders()
 {
   //creates list of getters
@@ -285,7 +280,6 @@ void AliRun::Hits2Digits(const char *selected)
 
 
 //_______________________________________________________________________
-
 void AliRun::Tree2Tree(Option_t *option, const char *selected)
 {
   //
@@ -373,8 +367,8 @@ void AliRun::Streamer(TBuffer &R__b)
     AliRun::Class()->WriteBuffer(R__b, this);
   }
 }
-//_______________________________________________________________________
 
+//_______________________________________________________________________
 void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 {
   AliRunLoader::Instance()->GetHeader()->SetGenEventHeader(header);
@@ -382,7 +376,6 @@ void AliRun::SetGenEventHeader(AliGenEventHeader* header)
 
 
 //_______________________________________________________________________
-
 Int_t AliRun::GetEvNumber() const
 { 
 //Returns number of current event  
@@ -394,8 +387,8 @@ Int_t AliRun::GetEvNumber() const
 
   return fRunLoader->GetEventNumber();
 }
-//_______________________________________________________________________
 
+//_______________________________________________________________________
 void AliRun::SetRunLoader(AliRunLoader* rloader)
 {
   //
@@ -445,6 +438,7 @@ void AliRun::SetRunLoader(AliRunLoader* rloader)
    }
 }
 
+//_______________________________________________________________________
 void AliRun::AddModule(AliModule* mod)
 {
   //
