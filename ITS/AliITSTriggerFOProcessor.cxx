@@ -55,7 +55,7 @@ AliITSTriggerFOProcessor& AliITSTriggerFOProcessor::operator=(const AliITSTrigge
   return *this;
 }
 //______________________________________________________________________
-void AliITSTriggerFOProcessor::SetTriggerConditions(AliITSTriggerConditions* ocdbCond) {
+void AliITSTriggerFOProcessor::SetTriggerConditions(AliITSTriggerConditions* const ocdbCond) {
   // Method to give pointer to the OCDB conditions entry
   fTriggerCond = ocdbCond;
 }
@@ -78,7 +78,7 @@ const Char_t* AliITSTriggerFOProcessor::GetOutputLabel(Short_t index) const {
   return fTriggerCond->GetAlgoLabelI(index);
 }
 //______________________________________________________________________
-void AliITSTriggerFOProcessor::PreprocessFOSignals(AliITSFOSignalsSPD* signals) {
+void AliITSTriggerFOProcessor::PreprocessFOSignals(AliITSFOSignalsSPD* const signals) {
   // Pre-process the fast-or signals to retrieve some data needed by most algorithms
   if (fTriggerCond==NULL) {
     Error("AliITSTriggerFOProcessor::PreprocessFOSignals","Trigger conditions entry not yet given.");
@@ -245,7 +245,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsOuterGTInnerPlusOffset(Short_t 
   return (fFOOuter >=  fFOInner + offset);
 }
 //______________________________________________________________________
-Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsCosmic(Short_t index, AliITSFOSignalsSPD* signals) {
+Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsCosmic(Short_t index, AliITSFOSignalsSPD* const signals) {
   // NB: For every event - Always call PreprocessFOSignals before calling this method
   // Process algorithm 'cosmic' (index is needed to get the correct parameters from the ocdb object)
   if (fTriggerCond==NULL) {

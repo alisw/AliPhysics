@@ -1,5 +1,5 @@
-#ifndef ALIITS_TRIGGERFOPROCESSOR_H
-#define ALIITS_TRIGGERFOPROCESSOR_H
+#ifndef ALIITSTRIGGERFOPROCESSOR_H
+#define ALIITSTRIGGERFOPROCESSOR_H
 
 /////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                          //
@@ -35,7 +35,7 @@ class AliITSTriggerFOProcessor {
   virtual ~AliITSTriggerFOProcessor();
   AliITSTriggerFOProcessor& operator=(const AliITSTriggerFOProcessor& handle);
 
-  virtual void          SetTriggerConditions(AliITSTriggerConditions* ocdbCond);
+  virtual void          SetTriggerConditions(AliITSTriggerConditions* const ocdbCond);
   virtual Bool_t        TriggerConditionsSet() {return fTriggerCond!=NULL;}
 
   virtual UInt_t        GetNumOutputs() const;
@@ -52,7 +52,7 @@ class AliITSTriggerFOProcessor {
   virtual Bool_t        ProcessFOSignalsTHRInnerAndTHROuter(Short_t index, AliITSFOSignalsSPD* /*signals*/);
   virtual Bool_t        ProcessFOSignalsInnerGTOuterPlusOffset(Short_t index, AliITSFOSignalsSPD* /*signals*/);
   virtual Bool_t        ProcessFOSignalsOuterGTInnerPlusOffset(Short_t index, AliITSFOSignalsSPD* /*signals*/);
-  virtual Bool_t        ProcessFOSignalsCosmic(Short_t index, AliITSFOSignalsSPD* /*signals*/);
+  virtual Bool_t        ProcessFOSignalsCosmic(Short_t index, AliITSFOSignalsSPD* const signals);
   
  protected:
   Int_t fFOInner;
