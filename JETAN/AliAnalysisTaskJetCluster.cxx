@@ -623,7 +623,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2JetsLeadingPhiEta->Fill(dPhi,dEta);
       fh2JetsLeadingPhiPt->Fill(dPhi,pt);
       fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
-    }  
+    }
+    delete recIter;
  }
  
 
