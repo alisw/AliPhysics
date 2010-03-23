@@ -16,7 +16,9 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliPHOSRecoParam.h"
-//#include "AliPHOSPIDv1.h" WHY?
+#include "TMatrixF.h"
+#include "TVector3.h"
+#include "AliPHOSPIDv1.h"
 #include "TObjArray.h"
 
 AliHLTPHOSRecoParamHandler::AliHLTPHOSRecoParamHandler() :
