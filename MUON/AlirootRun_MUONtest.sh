@@ -12,7 +12,10 @@ NEVENTS=100 # will simulate 100 events
 
 #RECOPTIONS="SAVEDIGITS NOFASTDECODERS" # reconstruction options with non-high performance decoders
 RECOPTIONS="SAVEDIGITS" # default reconstruction options
-SIMCONFIG="$ALICE_ROOT/MUON/Config.C" # default simulation configuration file
+MC=""    # G3 Simulation with old Config.C 
+#MC="g3"  # G3 Simulation (with new config macros)
+#MC="g4"  # G4 Simulation (with new config macros)
+SIMCONFIG="$ALICE_ROOT/MUON/"$MC"Config.C"   # default simulation configuration file
 OUTDIR=""
 CURDIR=`pwd`
 
@@ -53,7 +56,11 @@ do
 done
 
 if [ ! -n "$OUTDIR" ]; then
-  OUTDIR="$CURDIR/test_out.$NEVENTS"
+  if [ "$MC" = "" ]; then
+    OUTDIR=$CURDIR"/test_out."$NEVENTS
+  else  
+    OUTDIR=$CURDIR"/"$MC"_test_out."$NEVENTS
+  fi  
 fi
 
 # look if there are some leftover options
@@ -166,7 +173,18 @@ if [ "$SIMULATION" -eq 1 ]; then
     cp $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
     cp $OUTDIR/MUON*.root $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
   fi
-  
+
+  # save geometry file in a separate directory
+  if [ "$MC" = "g3" ]; then
+    rm -fr $ALICE_ROOT/MUON/geometry
+    mkdir $ALICE_ROOT/MUON/geometry
+    cp $OUTDIR/geometry.root $ALICE_ROOT/MUON/geometry
+  fi 
+
+  # copy input geometry file in a current directory
+  if [ "$MC" = "g4" ]; then
+    cp $ALICE_ROOT/MUON/geometry/geometry.root $OUTDIR
+  fi 
 fi
 
 ###############################################################################
