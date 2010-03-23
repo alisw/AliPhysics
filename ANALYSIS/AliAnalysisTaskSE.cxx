@@ -320,7 +320,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
   
 
 // Notify the change of run number
-    if (InputEvent()->GetRunNumber() != fCurrentRunNumber) {
+    if (InputEvent() && (InputEvent()->GetRunNumber() != fCurrentRunNumber)) {
 	fCurrentRunNumber = InputEvent()->GetRunNumber();
 	NotifyRun();
     }    
