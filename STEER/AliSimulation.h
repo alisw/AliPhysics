@@ -33,7 +33,7 @@ public:
 		const char* title = "generation, simulation and digitization");
   virtual ~AliSimulation();
 
-  static AliSimulation *Instance() {return fgInstance;}
+  static AliSimulation *Instance() {if(!fgInstance) fgInstance=new AliSimulation(); return fgInstance;}
 
   void           SetNumberOfEvents(Int_t nEvents);
   void           SetConfigFile(const char* fileName);
