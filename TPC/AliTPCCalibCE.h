@@ -12,6 +12,7 @@
 #include <TVectorT.h>
 #include "AliTPCCalibRawBase.h"
 class TH1S;
+#include "TObjArray.h"
 class TH2S;
 class TH1F;
 class TTreeSRedirector;

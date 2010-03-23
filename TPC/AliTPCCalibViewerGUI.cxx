@@ -32,6 +32,7 @@
 
 
 #include "AliTPCCalibViewerGUI.h"
+#include "AliTPCCalPad.h"
 #include <iostream>
 
 #include <TCanvas.h>
@@ -39,6 +40,7 @@
 #include <TVirtualPad.h>
 
 #include <TROOT.h>
+#include <TMath.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TVector.h>

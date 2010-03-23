@@ -240,7 +240,7 @@ void AliAODEvent::RemoveObject(TObject* obj)
 }
 
 //______________________________________________________________________________
-TObject *AliAODEvent::FindListObject(const char *objName)
+TObject *AliAODEvent::FindListObject(const char *objName) const
 {
   // Return the pointer to the object with the given name.
 

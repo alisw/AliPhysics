@@ -5,10 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliTPCcalibBase.h"
-#include "TH2F.h"
-#include "TF1.h"
-#include "TArrayD.h"
-#include "TObjArray.h"
+class TObjArray;
 
 class TH1F;
 class TH3F;
@@ -22,9 +19,6 @@ class TGraphErrors;
 class AliSplineFit;
 class AliESDfriendTrack;
 
-#include "TTreeStream.h"
-#include "TMap.h"
- 
 class AliTPCcalibTime:public AliTPCcalibBase {
 public:
   AliTPCcalibTime(); 
@@ -32,26 +26,26 @@ public:
   virtual ~AliTPCcalibTime();
   
   virtual void           Process(AliESDEvent *event);
-  virtual Long64_t       Merge(TCollection *li);
+  virtual Long64_t       Merge(TCollection *const li);
   virtual void           Analyze();
-  static Bool_t          IsLaser      (AliESDEvent *event);
-  static Bool_t          IsCosmics    (AliESDEvent *event);
-  static Bool_t          IsBeam       (AliESDEvent *event);
+  static Bool_t          IsLaser      (const AliESDEvent *const event);
+  static Bool_t          IsCosmics    (const AliESDEvent *const event);
+  static Bool_t          IsBeam       (const AliESDEvent *const event);
   void                   ProcessLaser (AliESDEvent *event);
-  void                   ProcessCosmic(AliESDEvent *event);
-  void                   ProcessBeam  (AliESDEvent *event);
+  void                   ProcessCosmic(const AliESDEvent *const event);
+  void                   ProcessBeam  (const AliESDEvent *const event);
   Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
-  Bool_t                 IsCross(AliESDtrack *tr0, AliESDtrack *tr1);
-  Bool_t                 IsSame (AliESDtrack *tr0, AliESDtrack *tr1);
-  void                   ProcessSame(AliESDtrack* track, AliESDfriendTrack *friendTrack,AliESDEvent *event);
-  void                   ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack, AliESDEvent *event,AliESDfriend *ESDfriend);
-  void                   ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *friendTrack);
-  void                   ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack);
+  Bool_t                 IsCross(AliESDtrack *const tr0, AliESDtrack *const tr1);
+  Bool_t                 IsSame (AliESDtrack *const tr0, AliESDtrack *const tr1);
+  void                   ProcessSame(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event);
+  void                   ProcessAlignITS(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const ESDfriend);
+  void                   ProcessAlignTRD(AliESDtrack* const track, AliESDfriendTrack *const friendTrack);
+  void                   ProcessAlignTOF(AliESDtrack* const track, AliESDfriendTrack *const friendTrack);
 
   THnSparse*    GetHistVdriftLaserA(Int_t index=1) const {return fHistVdriftLaserA[index];};
   THnSparse*    GetHistVdriftLaserC(Int_t index=1) const {return fHistVdriftLaserC[index];};
-  THnSparse*    GetHistoDrift(const char* name);
-  TObjArray*    GetHistoDrift();
+  THnSparse*    GetHistoDrift(const char* name) const;
+  TObjArray*    GetHistoDrift() const;
   TGraphErrors* GetGraphDrift(const char* name);
   TObjArray*    GetGraphDrift();
   AliSplineFit* GetFitDrift(const char* name);
@@ -60,9 +54,9 @@ public:
   
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
-  TObjArray* GetAlignITSTPC() {return fAlignITSTPC;}              // alignemnt array ITS TPC match
-  TObjArray* GetAlignTRDTPC() {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
-  TObjArray* GetAlignTOFTPC() {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
+  TObjArray* GetAlignITSTPC() const {return fAlignITSTPC;}              // alignemnt array ITS TPC match
+  TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
+  TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
 
 
 private:

@@ -36,33 +36,34 @@
 //
 // ROOT includes 
 //
-#include <iostream>
+
 #include <fstream>
-#include <TString.h>
-#include <TRandom.h>
-#include <TLegend.h>
-#include <TLine.h>
-#include <TCanvas.h>
-#include <TROOT.h>
-#include <TStyle.h>
+#include <iostream>
+
+#include <TFile.h>
+#include <TFriendElement.h>
+#include <TGraph.h>
+#include <TKey.h>
+#include <TPad.h>
+//#include <TCanvas.h>
 #include <TH1.h> 
 #include <TH1F.h>
-#include <THashTable.h>
+#include <TLegend.h>
+#include <TLine.h>
+#include <TMath.h>
 #include <TObjString.h>
-#include "TTreeStream.h"
-#include "TFile.h"
-#include "TKey.h"
-#include "TGraph.h"
-#include "TDirectory.h"
-#include "AliTPCCalibPulser.h"
-#include "AliTPCCalibPedestal.h"
-#include "AliTPCCalibCE.h"
-#include "TFriendElement.h"
-// #include "TObjArray.h"
-// #include "TObjString.h"
-// #include "TString.h"
-// #include "AliTPCCalPad.h"
+//#include <TROOT.h>
+#include <TRandom.h>
+#include <TString.h>
+#include <TStyle.h>
+#include <TTreeStream.h>
 
+#include "AliTPCCalibCE.h"
+#include "AliMathBase.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+#include "AliTPCCalibPedestal.h"
+#include "AliTPCCalibPulser.h"
 
 //
 // AliRoot includes
@@ -110,7 +111,7 @@ AliTPCCalibViewer::AliTPCCalibViewer(const AliTPCCalibViewer &c)
 }
 
 //_____________________________________________________________________________
-AliTPCCalibViewer::AliTPCCalibViewer(TTree* tree)
+AliTPCCalibViewer::AliTPCCalibViewer(TTree *const tree)
                   :TObject(),
                    fTree(0),
                    fFile(0),
@@ -211,7 +212,7 @@ void AliTPCCalibViewer::Delete(Option_t* option) {
 }
 
 
-const char* AliTPCCalibViewer::AddAbbreviations(char* c, Bool_t printDrawCommand){ 
+const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDrawCommand){ 
    // Replace all "<variable>" with "<variable><fAbbreviation>" (Adds forgotten "~")
    // but take care on the statistical information, like "CEQmean_Mean"
    // and also take care on correct given variables, like "CEQmean~"
@@ -1250,7 +1251,7 @@ Int_t AliTPCCalibViewer::GetBin(Float_t value, Int_t nbins, Double_t binLow, Dou
 }   
 
 
-Double_t AliTPCCalibViewer::GetLTM(Int_t n, Double_t *array, Double_t *sigma, Double_t fraction){
+Double_t AliTPCCalibViewer::GetLTM(Int_t n, const Double_t *const array, Double_t *const sigma, Double_t fraction){
    //
    //  returns the LTM and sigma
    //
@@ -1269,7 +1270,7 @@ Double_t AliTPCCalibViewer::GetLTM(Int_t n, Double_t *array, Double_t *sigma, Do
 }
 
 
-TH1F* AliTPCCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm) {
+TH1F* AliTPCCalibViewer::SigmaCut(TH1F *const histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm) {
    //
    // Creates a cumulative histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
    // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'histogram'
@@ -1325,7 +1326,7 @@ TH1F* AliTPCCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma, 
 }   
    
 
-TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm){
+TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm){
    //
    // Creates a histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
    // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'array', 'n' specifies the length of the array
@@ -1398,7 +1399,7 @@ TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Float_t *array, Float_t mean, Float_t
 }
 
 
-TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, Double_t *xbins, Double_t sigmaMax){
+TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, const Double_t *xbins, Double_t sigmaMax){
    // 
    // SigmaCut for variable binsize
    // NOT YET IMPLEMENTED !!!
@@ -1417,7 +1418,7 @@ TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Double_t *array, Double_t mean, Doubl
 }   
 
 
-TH1F* AliTPCCalibViewer::Integrate(TH1F *histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
+TH1F* AliTPCCalibViewer::Integrate(TH1F *const histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
    //
    // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
    // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
@@ -1466,7 +1467,7 @@ TH1F* AliTPCCalibViewer::Integrate(TH1F *histogram, Float_t mean, Float_t sigma,
 }   
 
 
-TH1F* AliTPCCalibViewer::Integrate(Int_t n, Float_t *array, Int_t nbins, Float_t binLow, Float_t binUp, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
+TH1F* AliTPCCalibViewer::Integrate(Int_t n, const Float_t *const array, Int_t nbins, Float_t binLow, Float_t binUp, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
    // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
    // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
    // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
@@ -1821,7 +1822,7 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
 }
 
 
-void AliTPCCalibViewer::MakeTreeWithObjects(const char * fileName, TObjArray * array, const char * mapFileName) {
+void AliTPCCalibViewer::MakeTreeWithObjects(const char *fileName, const TObjArray *const array, const char * mapFileName) {
   //
   // Write tree with all available information
   // im mapFileName is speciefied, the Map information are also written to the tree
@@ -1970,7 +1971,7 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char * fileName, TObjArray * a
 }
 
 
-void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
+void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad *const outlierPad, Float_t ltmFraction) {
   //
   // Write a tree with all available information
   // if mapFileName is speciefied, the Map information are also written to the tree

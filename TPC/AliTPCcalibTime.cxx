@@ -66,49 +66,36 @@ Comments to be written here:
 */
 
 #include "Riostream.h"
-#include "TChain.h"
-#include "TTree.h"
+#include "TDatabasePDG.h"
+#include "TGraphErrors.h"
 #include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
 #include "THnSparse.h"
 #include "TList.h"
 #include "TMath.h"
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TF1.h"
+#include "TTimeStamp.h"
+#include "TTree.h"
 #include "TVectorD.h"
-#include "TProfile.h"
-#include "TGraphErrors.h"
-#include "TCanvas.h"
-#include "AliTPCclusterMI.h"
-#include "AliTPCseed.h"
-#include "AliESDVertex.h"
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
-#include "AliESDInputHandler.h"
-#include "AliAnalysisManager.h"
+//#include "TChain.h"
+//#include "TFile.h"
 
-#include "AliTracker.h"
-#include "AliMagF.h"
+#include "AliDCSSensor.h"
+#include "AliDCSSensorArray.h"
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliESDVertex.h"
+#include "AliESDfriend.h"
+#include "AliLog.h"
+#include "AliRelAlignerKalman.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCParam.h"
-
-#include "AliLog.h"
-
-#include "AliTPCcalibTime.h"
-#include "AliRelAlignerKalman.h"
-
-#include "TTreeStream.h"
 #include "AliTPCTracklet.h"
-#include "TTimeStamp.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCcalibLaser.h"
-#include "AliDCSSensorArray.h"
-#include "AliDCSSensor.h"
-
-#include "TDatabasePDG.h"
+#include "AliTPCcalibTime.h"
+#include "AliTPCclusterMI.h"
+#include "AliTPCseed.h"
 #include "AliTrackPointArray.h"
+#include "AliTracker.h"
 
 ClassImp(AliTPCcalibTime)
 
@@ -316,20 +303,20 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   delete fAlignTOFTPC;
 }
 
-Bool_t AliTPCcalibTime::IsLaser(AliESDEvent */*event*/){
+Bool_t AliTPCcalibTime::IsLaser(const AliESDEvent *const /*event*/){
   //
   // Indicator is laser event not yet implemented  - to be done using trigger info or event specie
   //
   return kTRUE; //More accurate creteria to be added
 }
-Bool_t AliTPCcalibTime::IsCosmics(AliESDEvent */*event*/){
+Bool_t AliTPCcalibTime::IsCosmics(const AliESDEvent *const /*event*/){
   //
   // Indicator is cosmic event not yet implemented - to be done using trigger info or event specie
   //
 
   return kTRUE; //More accurate creteria to be added
 }
-Bool_t AliTPCcalibTime::IsBeam(AliESDEvent */*event*/){
+Bool_t AliTPCcalibTime::IsBeam(const AliESDEvent *const /*event*/){
   //
   // Indicator is physic event not yet implemented - to be done using trigger info or event specie
   //
@@ -518,7 +505,7 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
 //   curHist->Fill(vecDrift);
 }
 
-void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
+void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   //
   // process Cosmic event - track matching A side C side
   //
@@ -785,7 +772,7 @@ void AliTPCcalibTime::ProcessCosmic(AliESDEvent *event){
   if (GetDebugLevel()>20) printf("Trigger: %s\n",event->GetFiredTriggerClasses().Data());
 }
 
-void AliTPCcalibTime::ProcessBeam(AliESDEvent */*event*/){
+void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const /*event*/){
   //
   // Not special treatment yet - the same for cosmic and physic event
   //
@@ -798,7 +785,8 @@ void AliTPCcalibTime::Analyze(){
   //
 }
 
-THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name){
+THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name) const
+{
   //
   // Get histogram for given trigger mask
   //
@@ -818,7 +806,8 @@ THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name){
   return newHist;
 }
 
-TObjArray* AliTPCcalibTime::GetHistoDrift(){
+TObjArray* AliTPCcalibTime::GetHistoDrift() const
+{
   //
   // return array of histograms
   //
@@ -890,7 +879,7 @@ AliSplineFit* AliTPCcalibTime::GetFitDrift(const char* name){
 //  return arrayFitDrift;
 //}
 
-Long64_t AliTPCcalibTime::Merge(TCollection *li) {
+Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
   //
   // Object specific merging procedure
   //
@@ -1007,7 +996,7 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
 
   return kTRUE;  
 }
-Bool_t AliTPCcalibTime::IsCross(AliESDtrack *tr0, AliESDtrack *tr1){
+Bool_t AliTPCcalibTime::IsCross(AliESDtrack *const tr0, AliESDtrack *const tr1){
   //
   // check if the cosmic pair of tracks crossed A/C side
   // 
@@ -1017,7 +1006,7 @@ Bool_t AliTPCcalibTime::IsCross(AliESDtrack *tr0, AliESDtrack *tr1){
   return result;
 }
 
-Bool_t AliTPCcalibTime::IsSame(AliESDtrack *tr0, AliESDtrack *tr1){
+Bool_t AliTPCcalibTime::IsSame(AliESDtrack *const tr0, AliESDtrack *const tr1){
   // 
   // track crossing the CE
   // 0. minimal number of clusters 
@@ -1070,7 +1059,7 @@ Bool_t AliTPCcalibTime::IsSame(AliESDtrack *tr0, AliESDtrack *tr1){
 }
 
 
-void  AliTPCcalibTime::ProcessSame(AliESDtrack* track, AliESDfriendTrack *friendTrack,AliESDEvent *event){
+void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event){
   //
   // Process  TPC tracks crossing CE
   //
@@ -1213,7 +1202,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack* track, AliESDfriendTrack *friend
 
 }
 
-void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *friendTrack, AliESDEvent *event,AliESDfriend *esdFriend){
+void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const esdFriend){
   //
   // Process track - Update TPC-ITS alignment
   // Updates: 
@@ -1403,7 +1392,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack* track, AliESDfriendTrack *fr
 
 
 
-void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *friendTrack){
+void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTrack *const friendTrack){
   //
   // Process track - Update TPC-TRD alignment
   // Updates: 
@@ -1559,7 +1548,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack* track, AliESDfriendTrack *fr
 }
 
 
-void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack* track, AliESDfriendTrack *friendTrack){
+void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTrack *const friendTrack){
   //
   //
   // Process track - Update TPC-TOF alignment

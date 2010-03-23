@@ -61,7 +61,7 @@ class AliAODEvent : public AliVEvent {
 
   void          AddObject(TObject *obj);
   void          RemoveObject(TObject *obj);
-  TObject      *FindListObject(const char *objName) ;
+  TObject      *FindListObject(const char *objName) const;
   TList        *GetList()                const { return fAODObjects; }
 
   // -- Header

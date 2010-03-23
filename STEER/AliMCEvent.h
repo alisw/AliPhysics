@@ -44,7 +44,7 @@ public:
     //
     // Services
     virtual void AddObject(TObject* /*obj*/)               {;}
-    virtual TObject* FindListObject(const char */*name*/)  {return 0;}
+    virtual TObject* FindListObject(const char */*name*/)  const {return 0;}
     virtual TList* GetList() const                         {return 0;}
     virtual void CreateStdContent()                        {;} 
     virtual void GetStdContent()                           {;}

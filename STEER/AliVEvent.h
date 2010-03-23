@@ -30,7 +30,7 @@ public:
 
   // Services
   virtual void AddObject(TObject* obj) = 0;
-  virtual TObject* FindListObject(const char *name) = 0;
+  virtual TObject* FindListObject(const char *name) const = 0;
   virtual TList* GetList() const = 0;
 
   virtual void CreateStdContent() = 0;

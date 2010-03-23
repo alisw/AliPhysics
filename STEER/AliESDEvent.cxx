@@ -1190,7 +1190,7 @@ void AliESDEvent::CreateStdContent()
   GetStdContent();
 }
 
-TObject* AliESDEvent::FindListObject(const char *name){
+TObject* AliESDEvent::FindListObject(const char *name) const {
 //
 // Find object with name "name" in the list of branches
 //

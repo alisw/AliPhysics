@@ -11,23 +11,22 @@
 //  use Tree for visualization                   //
 ///////////////////////////////////////////////////
 
-#include <TObject.h>
-#include <TTree.h>
-#include <TFile.h>
-#include "AliTPCCalPad.h"
-#include "AliTPCCalROC.h"
-#include "TFriendElement.h"
-
-#include "AliMathBase.h"
+class TFile;
 class TLegend;
 class TGraph;
+#include <TTree.h>
+#include <TMatrixDfwd.h>
+
+class AliTPCCalPad;
+class AliTPCCalROC;
+class TFriendElement;
 
 
 class AliTPCCalibViewer : public TObject {
 public:
    AliTPCCalibViewer();
    AliTPCCalibViewer(const AliTPCCalibViewer &c);
-   AliTPCCalibViewer(TTree* tree);
+   AliTPCCalibViewer(TTree *const tree);
    AliTPCCalibViewer(const char* fileName, const char* treeName = "calPads");
    AliTPCCalibViewer &operator = (const AliTPCCalibViewer & param);
    virtual ~AliTPCCalibViewer();
@@ -35,14 +34,14 @@ public:
    
    TString& GetAbbreviation()  { return fAbbreviation;  }
    TString& GetAppendString()  { return fAppendString; }
-   void SetAbbreviation(char* abr) { fAbbreviation = abr; }
-   void SetAppendString(char* str) { fAppendString = str; }
+   void SetAbbreviation(const Char_t *abr) { fAbbreviation = abr; }
+   void SetAppendString(const Char_t *str) { fAppendString = str; }
    
    virtual void     Draw(Option_t* opt="") { fTree->Draw(opt); }
    virtual Long64_t Draw(const char* varexp, const TCut& selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
    virtual Long64_t Draw(const char* varexp, const char* selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
 
-   const char* AddAbbreviations(char* c, Bool_t printDrawCommand = kFALSE);
+   const char* AddAbbreviations(const Char_t *c, Bool_t printDrawCommand = kFALSE);
    Int_t EasyDraw(const char* drawCommand, const char* sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
    Int_t EasyDraw(const char* drawCommand, Int_t sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
    Int_t EasyDraw1D(const char* drawCommand, const char* sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
@@ -67,8 +66,8 @@ public:
    TObjArray* GetListOfVariables(Bool_t printList = kFALSE);
    TObjArray* GetListOfNormalizationVariables(Bool_t printList = kFALSE) const;
    
-   static void MakeTreeWithObjects(const char * fileName, TObjArray * array, const char * mapFileName = 0);
-   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
+   static void MakeTreeWithObjects(const char * fileName, const TObjArray *const array, const char * mapFileName = 0);
+   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad *const outlierPad = 0, Float_t ltmFraction = 0.9);
    static void MakeTree(const char *outPutFileName, const Char_t *inputFileName, AliTPCCalPad *outlierPad = 0, Float_t ltmFraction = 0.9, const char *mapFileName = "$ALICE_ROOT/TPC/Calib/MapCalibrationObjects.root");
    static void CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
    
@@ -76,21 +75,21 @@ public:
    TFriendElement* AddFriend(const char* treename, const char* filename) {return fTree->AddFriend(treename, filename);};
    TFriendElement* AddFriend(TTree* tree, const char* alias, Bool_t warn=kFALSE) {return fTree->AddFriend(tree, alias, warn);};
    TFriendElement* AddFriend(const char* treename, TFile* file) {return fTree->AddFriend(treename, file);};
-   TTree * GetTree() { return fTree;}
+   TTree * GetTree() const { return fTree;}
 
    TString* Fit(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix);
 
   // 
   // Array tools
   // 
-  static Double_t GetLTM(Int_t n, Double_t *array, Double_t *sigma = 0, Double_t fraction = 0.9);
+  static Double_t GetLTM(Int_t n, const Double_t *const array, Double_t *const sigma = 0, Double_t fraction = 0.9);
   static Int_t GetBin(Float_t value, Int_t nbins, Double_t binLow, Double_t binUp);
-  static TH1F* SigmaCut(Int_t n, Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep = -1, Bool_t pm = kFALSE);
-  static TH1F* SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep = -1, Bool_t pm = kFALSE);
-  static TH1F* Integrate(TH1F *histogram, Float_t mean = 0, Float_t sigma = 0, Float_t sigmaMax = 0, Float_t sigmaStep = -1);
-  static TH1F* Integrate(Int_t n, Float_t *array, Int_t nbins, Float_t binLow, Float_t binUp, Float_t mean = 0, Float_t sigma = 0, Float_t sigmaMax = 0, Float_t sigmaStep = -1);
+  static TH1F* SigmaCut(Int_t n, const Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep = -1, Bool_t pm = kFALSE);
+  static TH1F* SigmaCut(TH1F *const histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep = -1, Bool_t pm = kFALSE);
+  static TH1F* Integrate(TH1F *const histogram, Float_t mean = 0, Float_t sigma = 0, Float_t sigmaMax = 0, Float_t sigmaStep = -1);
+  static TH1F* Integrate(Int_t n, const Float_t *const array, Int_t nbins, Float_t binLow, Float_t binUp, Float_t mean = 0, Float_t sigma = 0, Float_t sigmaMax = 0, Float_t sigmaStep = -1);
   
-  static TH1F* SigmaCut(Int_t n, Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, Double_t *xbins, Double_t sigmaMax);
+  static TH1F* SigmaCut(Int_t n, const Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, const Double_t *xbins, Double_t sigmaMax);
    
    
          
