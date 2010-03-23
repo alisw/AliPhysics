@@ -40,7 +40,7 @@ class AliMultiplicityCorrection : public TNamed {
     
     static AliMultiplicityCorrection* Open(const char* fileName, const char* folderName = "Multiplicity");
 
-    virtual Long64_t Merge(TCollection* list);
+    virtual Long64_t Merge(const TCollection* list);
 
     void FillMeasured(Float_t vtx, Int_t measured05, Int_t measured10, Int_t measured14);
     void FillGenerated(Float_t vtx, Bool_t triggered, Bool_t vertex, AliPWG0Helper::MCProcessType processType, Int_t generated05, Int_t generated10, Int_t generated14, Int_t generatedAll);
@@ -57,21 +57,21 @@ class AliMultiplicityCorrection : public TNamed {
     void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 1, Int_t nIterations = 100, TH1* initialConditions = 0, Bool_t determineError = kTRUE);
 
     static TH1* CalculateStdDev(TH1** results, Int_t max);
-    TH1* StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo = 0);
+    TH1* StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, const TH1* compareTo = 0);
 
     Int_t ApplyNBDFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType);
     void ApplyGaussianMethod(Int_t inputRange, Bool_t fullPhaseSpace);
 
     void ApplyLaszloMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType);
 
-    TH2F* GetMultiplicityESD(Int_t i) { return fMultiplicityESD[i]; }
-    TH2F* GetMultiplicityVtx(Int_t i) { return fMultiplicityVtx[i]; }
-    TH2F* GetMultiplicityMB(Int_t i) { return fMultiplicityMB[i]; }
-    TH2F* GetMultiplicityINEL(Int_t i) { return fMultiplicityINEL[i]; }
-    TH2F* GetMultiplicityNSD(Int_t i) { return fMultiplicityNSD[i]; }
-    TH2F* GetMultiplicityMC(Int_t i, EventType eventType);
-    TH3F* GetCorrelation(Int_t i) { return fCorrelation[i]; }
-    TH1F* GetMultiplicityESDCorrected(Int_t i) { return fMultiplicityESDCorrected[i]; }
+    TH2F* GetMultiplicityESD(Int_t i) const { return fMultiplicityESD[i]; }
+    TH2F* GetMultiplicityVtx(Int_t i) const { return fMultiplicityVtx[i]; }
+    TH2F* GetMultiplicityMB(Int_t i) const { return fMultiplicityMB[i]; }
+    TH2F* GetMultiplicityINEL(Int_t i) const { return fMultiplicityINEL[i]; }
+    TH2F* GetMultiplicityNSD(Int_t i) const { return fMultiplicityNSD[i]; }
+    TH2F* GetMultiplicityMC(Int_t i, EventType eventType) const;
+    TH3F* GetCorrelation(Int_t i) const { return fCorrelation[i]; }
+    TH1F* GetMultiplicityESDCorrected(Int_t i) const { return fMultiplicityESDCorrected[i]; }
 
     void SetMultiplicityESD(Int_t i, TH2F* hist)  { fMultiplicityESD[i]  = hist; }
     void SetMultiplicityVtx(Int_t i, TH2F* hist)  { fMultiplicityVtx[i]  = hist; }
@@ -82,7 +82,7 @@ class AliMultiplicityCorrection : public TNamed {
     void SetCorrelation(Int_t i, TH3F* hist) { fCorrelation[i] = hist; }
     void SetMultiplicityESDCorrected(Int_t i, TH1F* hist) { fMultiplicityESDCorrected[i] = hist; }
 
-    void SetGenMeasFromFunc(TF1* inputMC, Int_t id);
+    void SetGenMeasFromFunc(const TF1* inputMC, Int_t id);
     TH2F* CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap);
 
     void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0) const;
@@ -93,12 +93,12 @@ class AliMultiplicityCorrection : public TNamed {
     static void SetQualityRegions(Bool_t SPDStudy);
     Float_t GetQuality(Int_t region) const { return fQuality[region]; }
 
-    void FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y);
+    void FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y) const;
 
   protected:
     void SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType);
 
-    Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
+    Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], const TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
     
     TH1* fCurrentESD;         //! current input esd
     TH2* fCurrentCorrelation; //! current correlation

@@ -257,7 +257,7 @@ AliMultiplicityCorrection::~AliMultiplicityCorrection()
 }
 
 //____________________________________________________________________
-Long64_t AliMultiplicityCorrection::Merge(TCollection* list)
+Long64_t AliMultiplicityCorrection::Merge(const TCollection* list)
 {
   // Merge a list of AliMultiplicityCorrection objects with this (needed for
   // PROOF).
@@ -1211,7 +1211,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y)
+void AliMultiplicityCorrection::FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y) const
 {
 /*-------------------------------------------------------------------------
    This computes an in-place complex-to-complex FFT
@@ -1322,7 +1322,7 @@ void AliMultiplicityCorrection::GetComparisonResults(Float_t* mc, Int_t* mcLimit
 }
 
 //____________________________________________________________________
-TH2F* AliMultiplicityCorrection::GetMultiplicityMC(Int_t i, EventType eventType)
+TH2F* AliMultiplicityCorrection::GetMultiplicityMC(Int_t i, EventType eventType) const
 {
   //
   // returns the corresponding MC spectrum
@@ -1391,7 +1391,7 @@ TH1* AliMultiplicityCorrection::CalculateStdDev(TH1** results, Int_t max)
 }
 
 //____________________________________________________________________
-TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo)
+TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, const TH1* compareTo)
 {
   //
   // evaluates the uncertainty that arises from the non-infinite statistics in the response matrix
@@ -1731,7 +1731,7 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
 }
 
 //____________________________________________________________________
-Float_t AliMultiplicityCorrection::BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u)
+Float_t AliMultiplicityCorrection::BayesCovarianceDerivate(Float_t matrixM[251][251], const TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u)
 {
   //
   // helper function for the covariance matrix of the bayesian method
@@ -2023,7 +2023,7 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::SetGenMeasFromFunc(TF1* inputMC, Int_t id)
+void AliMultiplicityCorrection::SetGenMeasFromFunc(const TF1* inputMC, Int_t id)
 {
   // uses the given function to fill the input MC histogram and generates from that
   // the measured histogram by applying the response matrix
