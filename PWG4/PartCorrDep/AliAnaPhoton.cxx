@@ -471,8 +471,21 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
 	  
     //Get Momentum vector, 
-    if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
-	else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+    //if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+	//else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+	  
+	Float_t pos[3] ;
+	Float_t posv[3] ;
+	Float_t e = 0;
+	           
+	calo->GetPosition(pos);
+	posv[0] = pos[0]-vertex[0]; 
+	posv[1] = pos[1]-vertex[1]-10; 
+	posv[2] = pos[2]-vertex[2];
+	e = calo->E();
+	//                    clus->GetMomentum(mom,vertex);
+	Double_t rv = TMath::Sqrt(posv[0]*posv[0]+posv[1]*posv[1]+posv[2]*posv[2]   ) ; 
+	mom.SetPxPyPzE( e*posv[0]/rv,  e*posv[1]/rv,  e*posv[2]/rv,  e);
 	  
     //If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 

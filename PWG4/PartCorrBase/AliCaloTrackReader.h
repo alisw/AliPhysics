@@ -196,7 +196,7 @@ class AliCaloTrackReader : public TObject {
   TString          fCurrentFileName; // Current file name under analysis
   Int_t            fDataType ;   // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;       // Debugging level
-  AliFiducialCut * fFiducialCut; // Acceptance cuts
+  AliFiducialCut * fFiducialCut; //! Acceptance cuts
 	
   Bool_t           fComparePtHardAndJetPt;  // In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;   // Factor between ptHard and jet pT to reject/accept event.

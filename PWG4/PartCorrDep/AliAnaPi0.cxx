@@ -69,7 +69,7 @@ fhPrimOpeningAngle(0x0),fhPrimCosOpeningAngle(0x0)
 AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnaPartCorrBaseClass(ex),  
 fNCentrBin(ex.fNCentrBin),fNZvertBin(ex.fNZvertBin),fNrpBin(ex.fNrpBin),
 fNPID(ex.fNPID),fNmaxMixEv(ex.fNmaxMixEv),fZvtxCut(ex.fZvtxCut), fCalorimeter(ex.fCalorimeter),
-fNModules(ex.fNModules), fUseAngleCut(ex.fUseAngleCut), fEventsList(ex.fEventsList), //fhEtalon(ex.fhEtalon), 
+fNModules(ex.fNModules), fUseAngleCut(ex.fUseAngleCut), fEventsList(0x0), //fhEtalon(ex.fhEtalon), 
 fhReMod(ex.fhReMod), fhRe1(ex.fhRe1),fhMi1(ex.fhMi1),fhRe2(ex.fhRe2),fhMi2(ex.fhMi2),
 fhRe3(ex.fhRe3),fhMi3(ex.fhMi3),fhEvents(ex.fhEvents),
 fhRealOpeningAngle(ex.fhRealOpeningAngle),fhRealCosOpeningAngle(ex.fhRealCosOpeningAngle),
@@ -80,28 +80,28 @@ fhPrimOpeningAngle(ex.fhPrimOpeningAngle),fhPrimCosOpeningAngle(ex.fhPrimCosOpen
   // cpy ctor
   //Do not need it
 }
-
-//________________________________________________________________________________________________________________________________________________
-AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
-{
-  // assignment operator
-  
-  if(this == &ex)return *this;
-  ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
-  
-  fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
-  fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
-  fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  //fhEtalon = ex.fhEtalon  ; 
-  fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; fhReMod = ex.fhReMod; 
-  fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; fUseAngleCut = ex.fUseAngleCut;
-  fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
-  fhPrimAccY = ex.fhPrimAccY  ;  fhPrimPhi = ex.fhPrimPhi  ;  fhPrimAccPhi = ex.fhPrimAccPhi ;
-  fhRealOpeningAngle = ex.fhRealOpeningAngle; fhRealCosOpeningAngle = ex.fhRealCosOpeningAngle;
-  fhPrimOpeningAngle = ex.fhPrimOpeningAngle; fhPrimCosOpeningAngle = ex.fhPrimCosOpeningAngle;
-
-  return *this;
-  
-}
+//
+////________________________________________________________________________________________________________________________________________________
+//AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)
+//{
+//  // assignment operator
+//  
+//  if(this == &ex)return *this;
+//  ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
+//  
+//  fNCentrBin = ex.fNCentrBin  ; fNZvertBin = ex.fNZvertBin  ; fNrpBin = ex.fNrpBin  ; 
+//  fNPID = ex.fNPID  ; fNmaxMixEv = ex.fNmaxMixEv  ; fZvtxCut = ex.fZvtxCut  ;  fCalorimeter = ex.fCalorimeter  ;  
+//  fNModules = ex.fNModules; fEventsList = ex.fEventsList  ;  //fhEtalon = ex.fhEtalon  ; 
+//  fhRe1 = ex.fhRe1  ; fhMi1 = ex.fhMi1  ; fhRe2 = ex.fhRe2  ; fhMi2 = ex.fhMi2  ; fhReMod = ex.fhReMod; 
+//  fhRe3 = ex.fhRe3  ; fhMi3 = ex.fhMi3  ; fhEvents = ex.fhEvents  ; fUseAngleCut = ex.fUseAngleCut;
+//  fhPrimPt = ex.fhPrimPt  ;  fhPrimAccPt = ex.fhPrimAccPt  ;  fhPrimY = ex.fhPrimY  ;  
+//  fhPrimAccY = ex.fhPrimAccY  ;  fhPrimPhi = ex.fhPrimPhi  ;  fhPrimAccPhi = ex.fhPrimAccPhi ;
+//  fhRealOpeningAngle = ex.fhRealOpeningAngle; fhRealCosOpeningAngle = ex.fhRealCosOpeningAngle;
+//  fhPrimOpeningAngle = ex.fhPrimOpeningAngle; fhPrimCosOpeningAngle = ex.fhPrimCosOpeningAngle;
+//
+//  return *this;
+//  
+//}
 
 //________________________________________________________________________________________________________________________________________________
 AliAnaPi0::~AliAnaPi0() {

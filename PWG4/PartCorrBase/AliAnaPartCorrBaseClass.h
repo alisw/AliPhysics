@@ -227,11 +227,11 @@ public:
   AliAODCaloCells * fAODCaloCells ; //! selected PHOS/EMCAL CaloCells
   
   //Analysis helper classes access pointers
-  AliCaloPID               * fCaloPID; // PID calculation
-  AliFiducialCut           * fFidCut;  // Acceptance cuts
-  AliIsolationCut          * fIC;      // Isolation cut 
-  AliMCAnalysisUtils       * fMCUtils; // MonteCarlo Analysis utils 
-  AliNeutralMesonSelection * fNMS;     // Neutral Meson Selection
+  AliCaloPID               * fCaloPID; //! PID calculation
+  AliFiducialCut           * fFidCut;  //! Acceptance cuts
+  AliIsolationCut          * fIC;      //! Isolation cut 
+  AliMCAnalysisUtils       * fMCUtils; //! MonteCarlo Analysis utils 
+  AliNeutralMesonSelection * fNMS;     //! Neutral Meson Selection
   
   //TList * fAnaOutContainer;	// Temporal histogram output container, contents to be added to the main container passed to the main analysis frame
 

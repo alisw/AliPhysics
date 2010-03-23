@@ -1863,7 +1863,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		fhNClustersMod[imod]->Fill(nClustersInModule[imod]);
 	}
 	delete [] nClustersInModule;
-	
+	delete caloClusters;
+
 	//----------------------------------------------------------
 	// CALOCELLS
 	//----------------------------------------------------------
@@ -2510,22 +2511,24 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, Float_t *p
 				if(GetDebug() >= 0 && ((((AliESDtrack*)track)->GetStatus() & status) == status)) printf("ITS+TPC\n");
 			}//No out params
 	}//matched clusters with tracks
-	
+		
 }// Clusters
 	
 //__________________________________
 void AliAnaCalorimeterQA::CorrelateCalorimeters(TRefArray* refArray){
 	// Correlate information from PHOS and EMCAL
-	TRefArray * caloClustersEMCAL = new TRefArray;
-	TRefArray * caloClustersPHOS  = new TRefArray;
+	TRefArray * caloClustersEMCAL = 0;
+	TRefArray * caloClustersPHOS  = 0;
 	
 	// Get once the array of clusters per calorimeter, avoid an extra loop.
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
 		if(fCalorimeter == "EMCAL"){ 
+			caloClustersPHOS = new TRefArray();
 			((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSClusters(caloClustersPHOS);
 			caloClustersEMCAL = new TRefArray(*refArray);
 		}
 		else if(fCalorimeter == "PHOS") { 
+			caloClustersEMCAL = new TRefArray();
 			((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALClusters (caloClustersEMCAL);
 			caloClustersPHOS = new TRefArray(*refArray);
 		}
