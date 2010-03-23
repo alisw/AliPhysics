@@ -1,4 +1,4 @@
-void AddTaskVZEROQA(Int_t runNumber)
+AliAnalysisTaskSE* AddTaskVZEROQA(Int_t runNumber)
 {
   // Creates a QA task exploiting simple symmetries phi, eta +/-, charge ...
   
@@ -27,10 +27,13 @@ void AddTaskVZEROQA(Int_t runNumber)
    mgr->AddTask(task);
   
    AliAnalysisDataContainer *cout  = mgr->CreateContainer("QAVZEROHists",TList::Class(),
-							AliAnalysisManager::kOutputContainer, Form("run%d_VZEROQA.root",runNumber));
+							AliAnalysisManager::kOutputContainer, "VZERO.Performance.root");
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 1, cout);
+
+   return task;
+   
   
 }
 
