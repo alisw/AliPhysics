@@ -305,11 +305,10 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
   // tracklet output preparation
   TTree *trklTree = 0x0;
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl) {
-    AliDataLoader *trklLoader = rl->GetLoader("TRDLoader")->GetDataLoader("tracklets");
-    if (trklLoader) {
-      trklTree = trklLoader->Tree();
-    }
+  AliLoader* trdLoader = rl ? rl->GetLoader("TRDLoader") : NULL;
+  AliDataLoader *trklLoader = trdLoader ? trdLoader->GetDataLoader("tracklets") : NULL;
+  if (trklLoader) {
+    trklTree = trklLoader->Tree();
   }
 
   if (fTrackletTree != trklTree)
