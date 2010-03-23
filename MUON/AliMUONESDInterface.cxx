@@ -868,6 +868,13 @@ void AliMUONESDInterface::MUONToESD(const AliMUONTrack& track, AliESDMuonTrack& 
   SetParamAtFirstCluster(*trackParam, esdTrack);
   SetParamCov(*trackParam, esdTrack);
   
+  // set transverse position at the end of the absorber
+  AliMUONTrackParam trackParamAtAbsEnd(*trackParam);
+  AliMUONTrackExtrap::ExtrapToZ(&trackParamAtAbsEnd, AliMUONConstants::AbsZEnd());
+  Double_t xAbs = trackParamAtAbsEnd.GetNonBendingCoor();
+  Double_t yAbs = trackParamAtAbsEnd.GetBendingCoor();
+  esdTrack.SetRAtAbsorberEnd(TMath::Sqrt(xAbs*xAbs + yAbs*yAbs));
+  
   // set param at vertex
   AliMUONTrackParam trackParamAtVtx(*trackParam);
   AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0], vertex[1], vertex[2], 0., 0.);

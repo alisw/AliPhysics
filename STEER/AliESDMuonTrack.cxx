@@ -55,6 +55,7 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fZUncorrected(0),
   fBendingCoorUncorrected(0),
   fNonBendingCoorUncorrected(0),
+  fRAtAbsorberEnd(0),
   fChi2(0),
   fChi2MatchTrigger(0),
   fLocalTrigger(0),
@@ -101,6 +102,7 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& muonTrack):
   fZUncorrected(muonTrack.fZUncorrected),
   fBendingCoorUncorrected(muonTrack.fBendingCoorUncorrected),
   fNonBendingCoorUncorrected(muonTrack.fNonBendingCoorUncorrected),
+  fRAtAbsorberEnd(muonTrack.fRAtAbsorberEnd),
   fChi2(muonTrack.fChi2),
   fChi2MatchTrigger(muonTrack.fChi2MatchTrigger),
   fLocalTrigger(muonTrack.fLocalTrigger),
@@ -168,6 +170,8 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& muonTrack)
   fNonBendingCoorUncorrected         = muonTrack.fNonBendingCoorUncorrected;   
   
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = muonTrack.fCovariances[i];
+  
+  fRAtAbsorberEnd            = muonTrack.fRAtAbsorberEnd;
   
   fChi2                   = muonTrack.fChi2;             
   fNHit                   = muonTrack.fNHit; 
@@ -255,6 +259,7 @@ void AliESDMuonTrack::Reset()
   fZUncorrected = 0.;
   fBendingCoorUncorrected = 0.;
   fNonBendingCoorUncorrected = 0.;
+  fRAtAbsorberEnd = 0.;
   fChi2 = 0.;
   fChi2MatchTrigger = 0.;
   fLocalTrigger = 0;

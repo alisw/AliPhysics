@@ -187,6 +187,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     
     aodTrack->SetXYAtDCA(esdMuTrack->GetNonBendingCoorAtDCA(), esdMuTrack->GetBendingCoorAtDCA());
     aodTrack->SetPxPyPzAtDCA(esdMuTrack->PxAtDCA(), esdMuTrack->PyAtDCA(), esdMuTrack->PzAtDCA());
+    aodTrack->SetRAtAbsorberEnd(esdMuTrack->GetRAtAbsorberEnd());
     aodTrack->ConvertAliPIDtoAODPID();
     aodTrack->SetChi2perNDF(esdMuTrack->GetChi2() / (2.*esdMuTrack->GetNHit() - 5.));
     aodTrack->SetChi2MatchTrigger(esdMuTrack->GetChi2MatchTrigger());

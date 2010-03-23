@@ -89,6 +89,10 @@ public:
   void     SetCovariances(const TMatrixD& cov);
   void     GetCovarianceXYZPxPyPz(Double_t cov[21]) const;
   
+  // Get and Set methods for the transverse position r of the track at the end of the absorber
+  Double_t GetRAtAbsorberEnd() const { return fRAtAbsorberEnd; }
+  void     SetRAtAbsorberEnd(Double_t r) { fRAtAbsorberEnd = r; }
+  
   // Get and Set methods for global tracking info
   Double_t GetChi2(void) const {return fChi2;}
   void     SetChi2(Double_t Chi2) {fChi2 = Chi2;}
@@ -260,6 +264,8 @@ protected:
   /// [10]=<X,InvP_yz> [11]=<ThetaX,InvP_yz> [12]=<Y,InvP_yz> [13]=<ThetaY,InvP_yz> [14]=<InvP_yz,InvP_yz>  </pre>
   Double32_t fCovariances[15]; ///< \brief reduced covariance matrix of parameters AT FIRST CHAMBER
   
+  Double32_t fRAtAbsorberEnd; ///< transverse position r of the track at the end of the absorber
+  
   // global tracking info
   Double32_t fChi2;                ///< chi2 in the MUON track fit
   Double32_t fChi2MatchTrigger;    ///< chi2 of trigger/track matching
@@ -285,7 +291,7 @@ protected:
 
   AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
-  ClassDef(AliESDMuonTrack,12) // MUON ESD track class 
+  ClassDef(AliESDMuonTrack,13) // MUON ESD track class 
 };
 
 #endif 

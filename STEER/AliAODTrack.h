@@ -187,6 +187,8 @@ class AliAODTrack : public AliVTrack {
   Double_t PAtDCA() const { return TMath::Sqrt(PxAtDCA()*PxAtDCA() + PyAtDCA()*PyAtDCA() + PzAtDCA()*PzAtDCA()); }
   Bool_t   PxPyPzAtDCA(Double_t p[3]) const { p[0] = PxAtDCA(); p[1] = PyAtDCA(); p[2] = PzAtDCA(); return kTRUE; }
   
+  Double_t GetRAtAbsorberEnd() const { return fRAtAbsorberEnd; }
+  
   UChar_t  GetITSClusterMap() const       { return (UChar_t)(fITSMuonClusterMap&0xff); }
   UShort_t GetHitsPatternInTrigCh() const { return (UShort_t)((fITSMuonClusterMap&0xff00)>>8); }
   UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; }
@@ -229,6 +231,8 @@ class AliAODTrack : public AliVTrack {
   void SetXYAtDCA(Double_t x, Double_t y) {fPositionAtDCA[0] = x; fPositionAtDCA[1] = y;}
   void SetPxPyPzAtDCA(Double_t pX, Double_t pY, Double_t pZ) {fMomentumAtDCA[0] = pX; fMomentumAtDCA[1] = pY; fMomentumAtDCA[2] = pZ;}
   
+  void SetRAtAbsorberEnd(Double_t r) { fRAtAbsorberEnd = r; }
+  
   void SetCharge(Short_t q) { fCharge = q; }
   void SetChi2perNDF(Double_t chi2perNDF) { fChi2perNDF = chi2perNDF; }
 
@@ -270,6 +274,8 @@ class AliAODTrack : public AliVTrack {
   Double32_t    fMomentumAtDCA[3];  // momentum (px,py,pz) at DCA
   Double32_t    fPositionAtDCA[2];  // trasverse position (x,y) at DCA
   
+  Double32_t    fRAtAbsorberEnd;    // transverse position r at the end of the muon absorber
+  
   Double32_t    fChi2perNDF;        // chi2/NDF of momentum fit
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
   Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
@@ -293,7 +299,7 @@ class AliAODTrack : public AliVTrack {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack, 9);
+  ClassDef(AliAODTrack, 10);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

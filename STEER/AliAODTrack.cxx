@@ -29,6 +29,7 @@ ClassImp(AliAODTrack)
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack() : 
   AliVTrack(),
+  fRAtAbsorberEnd(0.),
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
   fFlags(0),
@@ -71,6 +72,7 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 UInt_t selectInfo,
 			 Float_t chi2perNDF) :
   AliVTrack(),
+  fRAtAbsorberEnd(0.),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fFlags(0),
@@ -117,6 +119,7 @@ AliAODTrack::AliAODTrack(Short_t id,
 			 UInt_t selectInfo,
 			 Float_t chi2perNDF) :
   AliVTrack(),
+  fRAtAbsorberEnd(0.),
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fFlags(0),
@@ -157,6 +160,7 @@ AliAODTrack::~AliAODTrack()
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   AliVTrack(trk),
+  fRAtAbsorberEnd(trk.fRAtAbsorberEnd),
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
   fFlags(trk.fFlags),
@@ -199,6 +203,8 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 
     SetXYAtDCA(trk.XAtDCA(), trk.YAtDCA());
     SetPxPyPzAtDCA(trk.PxAtDCA(), trk.PyAtDCA(), trk.PzAtDCA());
+    
+    fRAtAbsorberEnd = trk.fRAtAbsorberEnd;
     
     fChi2perNDF = trk.fChi2perNDF;
     fChi2MatchTrigger = trk.fChi2MatchTrigger;
