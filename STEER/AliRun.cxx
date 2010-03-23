@@ -71,7 +71,6 @@ AliRun::AliRun():
   fMCApp(0),
   fNdets(0),
   fConfigFunction(""),
-  fRandom(0),
   fBaseFileName(""),
   fRunLoader(0x0)
 {
@@ -91,7 +90,6 @@ AliRun::AliRun(const char *name, const char *title):
   fMCApp(new AliMC(GetName(),GetTitle())),
   fNdets(0),
   fConfigFunction("Config();"),
-  fRandom(new TRandom3()),
   fBaseFileName(""),
   fRunLoader(0x0)
 {
@@ -105,7 +103,7 @@ AliRun::AliRun(const char *name, const char *title):
   gAlice     = this;
 
   // Set random number generator
-  gRandom = fRandom;
+  gRandom = new TRandom3();
 
   if (gSystem->Getenv("CONFIG_SEED")) {
      gRandom->SetSeed(static_cast<UInt_t>(atoi(gSystem->Getenv("CONFIG_SEED"))));
@@ -361,8 +359,7 @@ void AliRun::Streamer(TBuffer &R__b)
     if (!gAlice) gAlice = this;
     AliRun::Class()->ReadBuffer(R__b, this);
     gROOT->GetListOfBrowsables()->Add(this,"Run");
-
-    gRandom = fRandom;
+    gRandom = new TRandom3();
   } else {
     AliRun::Class()->WriteBuffer(R__b, this);
   }

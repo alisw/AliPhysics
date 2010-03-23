@@ -73,14 +73,13 @@ protected:
   AliMC         *fMCApp;             //  Pointer to virtual MC Application
   Int_t          fNdets;             //  Number of detectors
   TString        fConfigFunction;    //  Configuration file to be executed
-  TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file
   AliRunLoader  *fRunLoader;         //! run getter - written as a separate object
 private:
   AliRun(const AliRun&); // Not implemented
   AliRun& operator = (const AliRun&); // Not implemented
 
-  ClassDef(AliRun,14)      //Supervisor class for all Alice detectors
+  ClassDef(AliRun,15)      //Supervisor class for all Alice detectors
 };
  
 R__EXTERN  AliRun *gAlice;
