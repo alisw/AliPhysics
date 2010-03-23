@@ -119,14 +119,14 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsLabel(const Char_t* label, AliI
   }
   
   if      (strcmp(label, "0SMB") == 0) return ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(index, signals);
-  else if (strcmp(label, "0SH1") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//ok
-  else if (strcmp(label, "0SH2") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//ok
-  else if (strcmp(label, "0SH3") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//ok
-  else if (strcmp(label, "0SH4") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);//
-  else if (strcmp(label, "0SPF") == 0) return ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(index, signals);//ok
-  else if (strcmp(label, "0SBK") == 0) return ProcessFOSignalsInnerGTOuterPlusOffset(index, signals);
-  else if (strcmp(label, "0SX1") == 0) return ProcessFOSignalsOuterGTInnerPlusOffset(index, signals);
-  else if (strcmp(label, "0SX2") == 0) return ProcessFOSignalsTHRTotal(index, signals);
+  else if (strcmp(label, "0SH1") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
+  else if (strcmp(label, "0SH2") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
+  else if (strcmp(label, "0SH3") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
+  else if (strcmp(label, "0SH4") == 0) return ProcessFOSignalsTHRInnerAndTHROuter(index, signals);
+  else if (strcmp(label, "0SPF") == 0) return ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(index, signals);
+  else if (strcmp(label, "0SX1") == 0) return ProcessFOSignalsInnerGTOuterPlusOffset(index, signals);
+  else if (strcmp(label, "0SX2") == 0) return ProcessFOSignalsOuterGTInnerPlusOffset(index, signals);
+  else if (strcmp(label, "0SBK") == 0) return ProcessFOSignalsTHRTotal(index, signals);
   else if (strcmp(label, "0SCO") == 0) return ProcessFOSignalsCosmic(index, signals);
 
   else {
@@ -197,8 +197,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsTHRTotal(Short_t index, AliITSF
   }
   
   // Get parameter values:
-  //Int_t thIO = fTriggerCond->GetAlgoParamValueIN(index, "total_threshold");
-  Int_t thIO = fTriggerCond->GetAlgoParamValueIN(index, "offset");
+  Int_t thIO = fTriggerCond->GetAlgoParamValueIN(index, "background_threshold_both");
   if (thIO<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsTHRTotal","Parameter 'total_threshold' not defined");
     return kFALSE;
@@ -217,7 +216,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsInnerGTOuterPlusOffset(Short_t 
   }
   
   // Get parameter values:
-  Int_t offset = fTriggerCond->GetAlgoParamValueIN(index, "total_threshold");
+  Int_t offset = fTriggerCond->GetAlgoParamValueIN(index, "background_offset_inner");
   if (offset<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsInnerGTOuterPlusOffset","Parameter 'offset' not defined");
     return kFALSE;
@@ -236,7 +235,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsOuterGTInnerPlusOffset(Short_t 
   }
   
   // Get parameter values:
-  Int_t offset = fTriggerCond->GetAlgoParamValueIN(index, "offset");
+  Int_t offset = fTriggerCond->GetAlgoParamValueIN(index, "background_offset_outer");
   if (offset<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsOuterGTInnerPlusOffset","Parameter 'offset' not defined");
     return kFALSE;
