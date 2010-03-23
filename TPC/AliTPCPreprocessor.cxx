@@ -40,6 +40,9 @@
 
 const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
+const Double_t kHighVoltageDifference = 1e-4; // don't record High Voltage points 
+                                             // differing by less than 1e-4 from
+					     // previous point.
 const TString kPedestalRunType = "PEDESTAL";  // pedestal run identifier
 const TString kPulserRunType = "PULSER";     // pulser run identifier
 const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
@@ -557,6 +560,8 @@ UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
   TMap *map = fHighVoltage->ExtractDCS(dcsAliasMap);
   if (map) {
     fHighVoltage->ClearFit();
+    fHighVoltage->RemoveGraphDuplicates(kHighVoltageDifference);
+               // don't keep new point if too similar to previous one
     fHighVoltage->SetGraph(map);
   } else {
     Log("No high voltage recordings extracted. \n");
@@ -1192,7 +1197,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
 
   Bool_t found; 
   TString arrDDL(kNumDDL);
-  arrDDL.Append('0',kNumDDL);
+  arrDDL.Append('x',kNumDDL);
   for ( Int_t iDDL = 0; iDDL<kNumDDL; iDDL++ ) {
     TString stringID = Form (kAmandaDDL.Data(),iDDL+kFirstDDL);
     TPair *pair = (TPair*)dcsMap->FindObject(stringID.Data());
@@ -1201,14 +1206,16 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
         TObjArray *valueSet=(TObjArray*)pair->Value();
         if ( valueSet) { 
 	  AliDCSValue *val = (AliDCSValue*)valueSet->At(0);
-	  if (val) found = val->GetBool();
+	  if (val) { 
+	      found = val->GetBool();
+	      if (found){
+               arrDDL[iDDL] = '1';
+              } else { 
+               arrDDL[iDDL] = '0';
+              }
+	  }    
 	}
     } 
-    if (found){
-      arrDDL[iDDL] = '1';
-    } else { 
-      arrDDL[iDDL] = '0';
-    }    
   }
   TObjString *ddlArray = new TObjString;
   ddlArray->SetString(arrDDL);
