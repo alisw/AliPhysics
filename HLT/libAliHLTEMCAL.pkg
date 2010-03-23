@@ -14,7 +14,9 @@ CLASS_HDRS:= \
 	AliHLTEMCALConstants.h \
 	AliHLTEMCALDigitMakerComponent.h \
 	AliHLTEMCALClusterizerComponent.h \
-	AliHLTEMCALGeometry.h
+	AliHLTEMCALGeometry.h \
+	AliHLTEMCALRecoParamHandler.h
+
 # library sources
 MODULE_SRCS= \
 	$(CLASS_HDRS:.h=.cxx)
