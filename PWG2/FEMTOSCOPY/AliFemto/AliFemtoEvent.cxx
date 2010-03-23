@@ -29,6 +29,7 @@ AliFemtoEvent::AliFemtoEvent():
   fRunNumber(0),
   fNumberOfTracks(0),
   fNormalizedMult(-1),
+  fSPDMult(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -69,6 +70,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fRunNumber(0),
   fNumberOfTracks(0),
   fNormalizedMult(-1),
+  fSPDMult(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -149,6 +151,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fRunNumber(0),
   fNumberOfTracks(0),
   fNormalizedMult(-1),
+  fSPDMult(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -392,3 +395,4 @@ double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
   return fNormalizedMult;
   //  return NumberOfTracks();
 }
+
