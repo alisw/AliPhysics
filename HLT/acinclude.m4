@@ -276,7 +276,9 @@ AC_ARG_ENABLE([$1],
      save_LIBS="$LIBS"
      CPPFLAGS="$save_CPPFLAGS [$3]"
 
-     AC_CHECK_HEADERS([$2], [], [enable_module="missheader"])
+     if test "x[$2]" != "x"; then
+        AC_CHECK_HEADERS([$2], [], [enable_module="missheader"])
+     fi
 
      dnl ==========================================================================
      dnl
