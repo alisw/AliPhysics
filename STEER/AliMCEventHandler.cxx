@@ -110,6 +110,7 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
 AliMCEventHandler::~AliMCEventHandler()
 { 
     // Destructor
+  delete fPathName;
     delete fMCEvent;
     delete fFileE;
     delete fFileK;
