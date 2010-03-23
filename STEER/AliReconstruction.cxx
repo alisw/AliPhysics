@@ -1869,8 +1869,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
 	 ftVertexer->SetCuts(cutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
-	 if(fDiamondProfile && grpRecoParam->GetVertexerTracksConstraintITS())
-	   ftVertexer->SetVtxStart(fDiamondProfile);
+	 if(fDiamondProfile && grpRecoParam->GetVertexerTracksConstraintITS()) { 
+	   if(fDiamondProfile->GetXRes()<kRadius) ftVertexer->SetVtxStart(fDiamondProfile); // apply constraint only if sigmax is smaller than the beam pipe radius 
+	 } 
        }
        AliESDVertex *pvtx=ftVertexer->FindPrimaryVertex(fesd);
        if (pvtx) {
@@ -1896,8 +1897,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 grpRecoParam->GetVertexerTracksCutsTPC(cutsVertexer);
 	 ftVertexer->SetCuts(cutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
-	 if(fDiamondProfileTPC && grpRecoParam->GetVertexerTracksConstraintTPC())
-	   ftVertexer->SetVtxStart(fDiamondProfileTPC);
+	 if(fDiamondProfileTPC && grpRecoParam->GetVertexerTracksConstraintTPC()) { 
+	   if(fDiamondProfileTPC->GetXRes()<kRadius) ftVertexer->SetVtxStart(fDiamondProfileTPC); // apply constraint only if sigmax is smaller than the beam pipe radius 
+	 } 
        }
        pvtx=ftVertexer->FindPrimaryVertex(&trkArray,selectedIdx);
        if (pvtx) {
