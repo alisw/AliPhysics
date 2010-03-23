@@ -84,7 +84,8 @@ int rec_hlt_trd_digits(const TString input){
   TString arg="";
   if(customArgs || disableHLTflag){
     arg = readCDBentry("HLT/ConfigTRD/ClusterizerComponent"); //output_percentage 100 -lowflux -experiment -tailcancellation -faststreamer -yPosMethod LUT
-    arg += " -highLevelOutput yes -emulateHLToutput no";
+    if(customArgs)
+      arg += " -highLevelOutput yes -emulateHLToutput no";
     if(disableHLTflag)
       arg += " -HLTflag no";
   }
@@ -94,7 +95,8 @@ int rec_hlt_trd_digits(const TString input){
   arg="";
   if(customArgs || disableHLTflag){
     arg = readCDBentry("HLT/ConfigTRD/TrackerV1Component"); //"output_percentage 100 -lowflux -NTimeBins 24";
-    arg += " -highLevelOutput yes -emulateHLToutput no";
+    if(customArgs)
+      arg += " -highLevelOutput yes -emulateHLToutput no";
     if(disableHLTflag)
       arg+=" -HLTflag no";
   }
