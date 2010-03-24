@@ -1,19 +1,29 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#include "AliEveTOFSector.h"
+
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+//
+// Class to visualize the TOF digit information
+// in TOF sector frame
+//
+// Author: A. De Caro (email: decaro@sa.infn.t)
+//
+
+#include <TGeoManager.h>
+#include <TClonesArray.h>
+#include <TTree.h>
+
+#include <TEveTrans.h>
 
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 
-#include <TEveTrans.h>
-#include <TEveManager.h>
-#include <TStyle.h>
+#include "AliEveTOFSector.h"
 
 Bool_t           AliEveTOFSector::fgStaticInitDone    = kFALSE;
 TEveFrameBox*    AliEveTOFSector::fgTOFsectorFrameBox = 0;
@@ -41,6 +51,8 @@ AliEveTOFSector::AliEveTOFSector(const Text_t* n, const Text_t* t) :
   //fRnrFrame  (kFALSE),
   fGeoManager(0)
 {
+
+  // default ctr
 
   fPlateFlag = new Bool_t[5];
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
@@ -73,6 +85,8 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   //fRnrFrame  (kFALSE),
   fGeoManager(localGeoManager)
 {
+
+  // ctr
 
   fPlateFlag = new Bool_t[5];
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
@@ -109,6 +123,8 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   fGeoManager(localGeoManager)
 {
 
+  // ctr
+
   fPlateFlag = new Bool_t[5];
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
@@ -138,6 +154,8 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
   fGeoManager(localGeoManager)
 {
 
+  // ctr
+
   fPlateFlag = new Bool_t[5];
   for (Int_t ii=0; ii<5; ii++) fPlateFlag[ii]=kTRUE;
 
@@ -148,6 +166,9 @@ AliEveTOFSector::AliEveTOFSector(TGeoManager *localGeoManager,
 
 AliEveTOFSector::~AliEveTOFSector()
 {
+
+  // dtr
+
   /*
   fGeoManager = 0x0;
   delete fGeoManager;
@@ -172,6 +193,10 @@ void AliEveTOFSector::SetDigitsInfo(AliEveTOFDigitsInfo* info)
 /* ************************************************************************ */
 void AliEveTOFSector::InitStatics()
 {
+  //
+  // To initialize statistic variables
+  //
+
   if (fgStaticInitDone) return;
 
   Float_t dx = 124.5;
@@ -196,6 +221,9 @@ void AliEveTOFSector::InitStatics()
 /* ************************************************************************ */
 void AliEveTOFSector::InitModule()
 {
+  //
+  // To initialize TOF sector frame variables
+  //
 
   fDx = fTOFgeometry->XPad()*fTOFgeometry->NpadX();
   //fDy = fTOFgeometry->XPad()*fTOFgeometry->NpadX();
@@ -217,6 +245,9 @@ void AliEveTOFSector::InitModule()
 /* ************************************************************************ */
 void AliEveTOFSector::LoadQuads()
 {
+  //
+  // Load TOF digit as illuminated pad
+  //
 
   //Int_t n_col = gStyle->GetNumberOfColors();
 
@@ -326,6 +357,10 @@ void AliEveTOFSector::LoadQuads()
 /* ************************************************************ */
 void AliEveTOFSector::SetTrans()
 {
+  //
+  // Set the translation matrix for TOF sector
+  //
+
   InitMainTrans();
   TEveTrans& t = RefMainTrans();
 
@@ -352,6 +387,10 @@ void AliEveTOFSector::SetTrans()
 
 void AliEveTOFSector::SetSectorID(Int_t id)
 {
+  //
+  // Set TOF sector ID to be visualized
+  //
+
   fSectorID = id;
   fSector   = id;
   if (fAutoTrans)
@@ -364,6 +403,9 @@ void AliEveTOFSector::SetSectorID(Int_t id)
 
 void AliEveTOFSector::SetPlate(Int_t nPlate, Bool_t r)
 {
+  //
+  // Set visualization flag to visualize TOF modules
+  //
 
   fPlateFlag[nPlate] = r;
 
@@ -374,6 +416,10 @@ void AliEveTOFSector::SetPlate(Int_t nPlate, Bool_t r)
 
 void AliEveTOFSector::SetThreshold(Short_t t)
 {
+  //
+  // Set visualization threshold
+  //
+
   fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
   // ClearColorArray();
 }
@@ -382,6 +428,10 @@ void AliEveTOFSector::SetThreshold(Short_t t)
 
 void AliEveTOFSector::SetMaxVal(Int_t mv)
 {
+  //
+  // Set visualization max value
+  //
+
   fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
   //ClearColorArray();
 }
@@ -390,7 +440,9 @@ void AliEveTOFSector::SetMaxVal(Int_t mv)
 
 void AliEveTOFSector::DigitSelected(Int_t idx)
 {
+  //
   // Override control-click from TEveQuadSet
+  //
 
   DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();

@@ -1,26 +1,30 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+#ifndef ALIEVETOFDIGITSINFO_H
+#define ALIEVETOFDIGITSINFO_H
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef AliEveTOFDigitsInfo_H
-#define AliEveTOFDigitsInfo_H
 
-#include <TEveVSD.h>
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+//
+// Class to map TOF digit/raw data information
+//
 
 #include <TObject.h>
-#include <TClonesArray.h>
-#include <TTree.h>
 
-#include <AliRawReader.h>
+#include <TEveUtil.h>
 
-#include <AliTOF.h>
-#include <AliTOFdigit.h>
-#include <AliTOFGeometry.h>
-#include <AliTOFDigitMap.h>
+class TClonesArray;
+class TTree;
+
+class AliRawReader;
+
+class AliTOFGeometry;
+class AliTOFDigitMap;
 
 class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
   {
@@ -30,7 +34,7 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
     AliEveTOFDigitsInfo();
     virtual ~AliEveTOFDigitsInfo();
     
-    void SetTree(TTree* tree);
+    void SetTree(TTree * const tree);
     void ReadRaw(AliRawReader* rawReader, Bool_t newDecoder=kTRUE);
     void LoadDigits();
 
@@ -56,10 +60,10 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
 
   private:
 
-    TTree*                fTree;
-    TTree*                fNewTree;
-    AliTOFGeometry*       fGeom;
-    AliTOFDigitMap*       fTOFdigitMap;
+    TTree*           fTree;        // pointer to TOF digit tree
+    TTree*           fNewTree;     // pointer to TOF digit tree
+    AliTOFGeometry*  fGeom;        // pointer to AliTOFGeometry class
+    AliTOFDigitMap*  fTOFdigitMap; // pointer to AliTOFDIgitMap class
 
     ClassDef(AliEveTOFDigitsInfo, 1);
 }; // endclass AliEveTOFDigitsInfo

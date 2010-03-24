@@ -1,11 +1,11 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 #include "AliEveTOFStripEditor.h"
 #include <EveDet/AliEveTOFStrip.h>
@@ -21,8 +21,11 @@
 #include <TGSlider.h>
 #include <TGDoubleSlider.h>
 
-//______________________________________________________________________________
-// AliEveTOFStripEditor
+//
+// AliEveTOFStripEditor class
+// Editor for AliEveTOFStrip class
+//
+// Author A. De Caro (email: decaro@sa.infn.it)
 //
 
 ClassImp(AliEveTOFStripEditor)
@@ -35,6 +38,8 @@ AliEveTOFStripEditor::AliEveTOFStripEditor(const TGWindow *p, Int_t width, Int_t
   fMaxVal    (0)
   // Initialize widget pointers to 0
 {
+  //ctr
+
   MakeTitle("AliEveTOFStrip");
 
   // Create widgets
@@ -68,6 +73,8 @@ AliEveTOFStripEditor::AliEveTOFStripEditor(const TGWindow *p, Int_t width, Int_t
 
 void AliEveTOFStripEditor::SetModel(TObject* obj)
 {
+  // Set object to monitor at visualization level
+
   fM = dynamic_cast<AliEveTOFStrip*>(obj);
 
   // Set values of widgets
@@ -82,6 +89,7 @@ void AliEveTOFStripEditor::DoThreshold()
   Update();
 }
 
+/******************************************************************************/
 void AliEveTOFStripEditor::DoMaxVal()
 {
   fM->SetMaxVal((Int_t) fMaxVal->GetValue());

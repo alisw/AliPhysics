@@ -1,5 +1,5 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+#ifndef ALIEVETOFSTRIPEDITOR_H
+#define ALIEVETOFSTRIPEDITOR_H
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
@@ -7,8 +7,12 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef AliEveTOFStripEditor_H
-#define AliEveTOFStripEditor_H
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+//
+// 
+//
 
 #include <TGedFrame.h>
 

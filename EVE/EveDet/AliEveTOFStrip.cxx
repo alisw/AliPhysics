@@ -1,20 +1,32 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#include "AliEveTOFStrip.h"
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+//
+// Class to visualize the TOF digit information
+// in TOF sector frame
+//
+// Author: A. De Caro (email: decaro@sa.infn.t)
+//
+
+#include <TStyle.h>
+
+#include <TGeoManager.h>
+#include <TClonesArray.h>
 
 #include <TEveManager.h>
+#include <TEveRGBAPalette.h>
+#include <TEveFrameBox.h>
 
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 
-#include <TStyle.h>
+#include "AliEveTOFStrip.h"
 
 Bool_t           AliEveTOFStrip::fgStaticInitDone   = kFALSE;
 TEveFrameBox*    AliEveTOFStrip::fgTOFstripFrameBox = 0;
@@ -34,6 +46,7 @@ AliEveTOFStrip::AliEveTOFStrip(const Text_t* n, const Text_t* t) :
   fDx(0), fDz(0),
   fGeoManager(0)
 {
+  // ctr
 
   //fGeoManager = AliEveEventManager::AssertGeometry();
   if (!fGeoManager) printf("ERROR: no TGeo\n");
@@ -51,6 +64,7 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
   fDx(0), fDz(0),
   fGeoManager(localGeoManager)
 {
+  // ctr
 
   //if (!fGeoManager) printf("ERROR: no TGeo\n");
 
@@ -70,6 +84,7 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
   fDx(0), fDz(0),
   fGeoManager(localGeoManager)
 {
+  // ctr
 
   InitModule();
 
@@ -78,6 +93,7 @@ AliEveTOFStrip::AliEveTOFStrip(TGeoManager *localGeoManager,
 
 AliEveTOFStrip::~AliEveTOFStrip()
 {
+  // dtr
 
   fGeoManager = 0x0;
   delete fGeoManager;
@@ -100,6 +116,10 @@ void AliEveTOFStrip::SetDigitsInfo(AliEveTOFDigitsInfo* info)
 /* ************************************************************************ */
 void AliEveTOFStrip::InitStatics()
 {
+  //
+  // To initialize statistic variables
+  //
+
   if (fgStaticInitDone) return;
 
   Float_t dx = 2.5*48;
@@ -123,6 +143,9 @@ void AliEveTOFStrip::InitStatics()
 /* ************************************************************************ */
 void AliEveTOFStrip::InitModule()
 {
+  //
+  // To initialize TOF strip frame variables
+  //
 
   fDx = fTOFgeometry->XPad()*fTOFgeometry->NpadX();
   fDz = fTOFgeometry->ZPad()*fTOFgeometry->NpadZ();
@@ -143,8 +166,9 @@ void AliEveTOFStrip::InitModule()
 /* ************************************************************************ */
 void AliEveTOFStrip::LoadQuads()
 {
-
-  //Int_t n_col = gStyle->GetNumberOfColors();
+  //
+  // Load TOF digit as illuminated pad
+  //
 
   Int_t iPadX = -1;
   Int_t iPadZ = -1;
@@ -194,6 +218,10 @@ void AliEveTOFStrip::LoadQuads()
 /* ************************************************************ */
 void AliEveTOFStrip::SetTrans()
 {
+  //
+  // Set the translation matrix for TOF sector
+  //
+
   //Int_t det[5] = {fSector, fPlate, fStrip, -1, -1};
   Char_t path[100];
   //fTOFgeometry->GetVolumePath(det,path);
@@ -206,6 +234,10 @@ void AliEveTOFStrip::SetTrans()
 /******************************************************************************/
 void AliEveTOFStrip::SetThreshold(Short_t t)
 {
+  //
+  // Set visualization threshold
+  //
+
   fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
   // ClearColorArray();
 }
@@ -214,6 +246,10 @@ void AliEveTOFStrip::SetThreshold(Short_t t)
 
 void AliEveTOFStrip::SetMaxVal(Int_t mv)
 {
+  //
+  // Set visualization max value
+  //
+
   fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
   //ClearColorArray();
 }
@@ -222,8 +258,11 @@ void AliEveTOFStrip::SetMaxVal(Int_t mv)
 
 void AliEveTOFStrip::DigitSelected(Int_t idx)
 {
-  // Override control-click from TEveQuadSet
+  //
+  // Printout infos for TOF digit number idx
+  //
 
+  // Override control-click from TEveQuadSet
   DigitBase_t* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
   AliTOFdigit* digs = dynamic_cast<AliTOFdigit*>(obj);

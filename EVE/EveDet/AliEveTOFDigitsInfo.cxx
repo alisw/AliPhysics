@@ -1,28 +1,35 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
 //
-// AliEveTOFDigitsInfo
+// Class to map TOF digit/raw data information
+//
+// Author: A. De Caro (email: decaro@sa.infn.it)
 //
 
-#include "fcntl.h"
+#include <TClonesArray.h>
+#include <TTree.h>
 
-#include <TEveTreeTools.h>
-
-#include "AliEveTOFDigitsInfo.h"
+//#include <TEveTreeTools.h>
 
 #include <AliDAQ.h>
+#include <AliLog.h>
+#include <AliRawReader.h>
 
 #include <AliTOFCableLengthMap.h>
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
 #include <AliTOFrawData.h>
 #include <AliTOFRawStream.h>
+#include <AliTOFDigitMap.h>
+
+#include "AliEveTOFDigitsInfo.h"
 
 //_________________________________________________________
 
@@ -40,6 +47,7 @@ ClassImp(AliEveTOFDigitsInfo)
 
 AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo() 
 {
+  //dtr
 
   delete fGeom;
   delete fTree;
@@ -49,8 +57,12 @@ AliEveTOFDigitsInfo:: ~AliEveTOFDigitsInfo()
 }
 /* ******************************************************* */
 
-void AliEveTOFDigitsInfo::SetTree(TTree* tree)
+void AliEveTOFDigitsInfo::SetTree(TTree * const tree)
 {
+  //
+  // Set fTree global variable
+  //
+
   static const TEveException kEH("AliEveTOFDigitsInfo::SetTree ");
   
   if(fGeom == 0) {
@@ -66,8 +78,10 @@ void AliEveTOFDigitsInfo::SetTree(TTree* tree)
 /* ******************************************************* */
 void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 {
+  //
   // Read raw-data. AliTOFdigit is used to
   // store raw-adata for all sub-detectors.
+  //
 
   AliTOFCableLengthMap *cableLength = new AliTOFCableLengthMap();
 
@@ -200,6 +214,9 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 /* ******************************************************* */
 void AliEveTOFDigitsInfo::LoadDigits()
 {
+  //
+  // Load TOF digits
+  //
 
   TClonesArray *digitsTOF = 0x0;
   AliTOFdigit *digs;
@@ -236,6 +253,10 @@ void AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 				    Int_t nStrip, Int_t nPadZ, Int_t nPadX,
 				    Int_t indexDigit[3])
 {
+  //
+  // Get TOF digit indices in the TOF volume
+  // (nSector, nPlate,nStrip,nPadZ,nPadX)
+  //
 
   Int_t vol[5] = {nSector,nPlate,nStrip,nPadX,nPadZ};
 
@@ -248,6 +269,10 @@ void AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 					     Int_t nStrip)
 {
+  //
+  // Get TOF digits in the TOF volume
+  // (nSector, nPlate,nStrip)
+  //
 
   Int_t newCounter = 0;
   Int_t nDigitsInVolume[3] = {-1, -1, -1};
@@ -305,6 +330,10 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector, Int_t nPlate,
 
 TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 {
+  //
+  // Get TOF digits in the TOF SM nSector
+  //
+
   const Int_t kND = AliTOFDigitMap::kMaxDigitsPerPad;
 
   Int_t newCounter = 0;
@@ -384,6 +413,9 @@ TClonesArray* AliEveTOFDigitsInfo::GetDigits(Int_t nSector)
 
 Int_t AliEveTOFDigitsInfo::GetTOFInfos() const
 {
+  //
+  // Return number of TOF digits
+  //
 
   return fTOFdigitMap->GetFilledCellNumber();
 
@@ -392,6 +424,10 @@ Int_t AliEveTOFDigitsInfo::GetTOFInfos() const
 /* ******************************************************* */
 Int_t AliEveTOFDigitsInfo::IsStripFilled(Int_t iSector, Int_t iPlate, Int_t iStrip)
 {
+  //
+  // Return number of TOF digits
+  // in volume (iSector,iPlate,iStrip)
+  //
 
   Int_t vol[5] = {iSector, iPlate, iStrip, -1, -1};
 

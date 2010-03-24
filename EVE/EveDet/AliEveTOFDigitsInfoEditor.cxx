@@ -1,23 +1,23 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
 
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
 #include "AliEveTOFDigitsInfoEditor.h"
-#include <EveDet/AliEveTOFDigitsInfo.h>
+#include <AliEveTOFDigitsInfo.h>
 
-#include <TVirtualPad.h>
-#include <TColor.h>
+//#include <TVirtualPad.h>
+//#include <TColor.h>
 
-#include <TGLabel.h>
-#include <TGButton.h>
-#include <TGNumberEntry.h>
-#include <TGColorSelect.h>
-#include <TGDoubleSlider.h>
+//#include <TGLabel.h>
+//#include <TGButton.h>
+//#include <TGNumberEntry.h>
+//#include <TGColorSelect.h>
+/#include <TGDoubleSlider.h>
 
 
 //______________________________________________________________________________
@@ -32,6 +32,8 @@ AliEveTOFDigitsInfoEditor::AliEveTOFDigitsInfoEditor(const TGWindow *p, Int_t wi
   fM(0)
   // Initialize widget pointers to 0
 {
+  // ctr
+
   MakeTitle("AliEveTOFDigitsInfo");
 
   // Create widgets
@@ -44,6 +46,8 @@ AliEveTOFDigitsInfoEditor::AliEveTOFDigitsInfoEditor(const TGWindow *p, Int_t wi
 
 void AliEveTOFDigitsInfoEditor::SetModel(TObject* obj)
 {
+  // Set object to monitor at visualization level
+
   fM = dynamic_cast<AliEveTOFDigitsInfo*>(obj);
 
   // Set values of widgets

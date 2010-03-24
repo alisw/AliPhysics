@@ -1,45 +1,28 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+#ifndef ALIEVETOFSTRIP_H
+#define ALIEVETOFSTRIP_H
 
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
-#ifndef AliEveTOFStrip_H
-#define AliEveTOFStrip_H
+
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
+
+//
+// Class to visualize the TOF digit information
+// in TOF strip frame
+//
 
 #include <TEveQuadSet.h>
-#include <TEveElement.h>
 
-#include <TEveRGBAPalette.h>
-#include <TEveFrameBox.h>
+class TClonesArray;
 
-#include <TGeoManager.h>
-#include <TClonesArray.h>
-
-#include <AliTOFGeometry.h>
-
+class AliTOFGeometry;
 
 class AliEveTOFStrip : public TEveQuadSet
 {
-protected:
-
-  AliTOFGeometry *fTOFgeometry;
-
-  TClonesArray   *fTOFarray;
-
-  Short_t fThreshold;
-  Int_t   fMaxVal;
-  Int_t   fSector;
-  Int_t   fPlate;
-  Int_t   fStrip;
-
-  Float_t fDx;
-  Float_t fDz;
-
-  TGeoManager *fGeoManager;
-
 public:
 
   virtual void InitModule();
@@ -72,6 +55,22 @@ private:
 
   AliEveTOFStrip(const AliEveTOFStrip&);            // Not implemented
   AliEveTOFStrip& operator=(const AliEveTOFStrip&); // Not implemented
+
+
+  AliTOFGeometry *fTOFgeometry; // pointer to TOF geometry
+
+  TClonesArray   *fTOFarray;    // pointer to TOF digits array
+
+  Short_t fThreshold; // threshold to cut on visualization
+  Int_t   fMaxVal;    // max value to cut on visualization
+  Int_t   fSector;    // TOF sector index
+  Int_t   fPlate;     // TOF module index
+  Int_t   fStrip;     // TOF strip index
+
+  Float_t fDx;    // x position of TOF digit (in TOF strip RF)
+  Float_t fDz;    // z position of TOF digit (in TOF strip RF)
+
+  TGeoManager *fGeoManager; // pointer to the ALICE geometry
 
   ClassDef(AliEveTOFStrip, 0); // Representation of a TOF strip.
 };

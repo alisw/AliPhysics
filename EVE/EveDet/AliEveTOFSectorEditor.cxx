@@ -1,11 +1,11 @@
-// $Id$
-// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
-
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
  * full copyright notice.                                                 *
  **************************************************************************/
+
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 #include "AliEveTOFSectorEditor.h"
 #include <EveDet/AliEveTOFSector.h>
@@ -37,6 +37,7 @@ AliEveTOFSectorEditor::AliEveTOFSectorEditor(const TGWindow *p, Int_t width, Int
   fPlate0(0), fPlate1(0), fPlate2(0), fPlate3(0), fPlate4(0),
   fThreshold (0), fMaxVal(0)
 {
+  //ctr
 
   fPlate = new TGCheckButton*[5];
   for (Int_t ii=0; ii<5; ii++) fPlate[ii] = new TGCheckButton;
@@ -130,6 +131,8 @@ AliEveTOFSectorEditor::AliEveTOFSectorEditor(const TGWindow *p, Int_t width, Int
 
 AliEveTOFSectorEditor::~AliEveTOFSectorEditor()
 {
+  //dtr
+
   delete [] fPlate;
 }
 
@@ -137,6 +140,8 @@ AliEveTOFSectorEditor::~AliEveTOFSectorEditor()
 
 void AliEveTOFSectorEditor::SetModel(TObject* obj)
 {
+  // Set object to monitor at visualization level
+
   fM = dynamic_cast<AliEveTOFSector*>(obj);
 
   fSectorID->SetValue(fM->GetSectorID());
