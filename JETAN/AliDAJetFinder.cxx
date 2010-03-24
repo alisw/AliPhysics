@@ -131,7 +131,7 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 	}
 	TRandom2 r;
 	r.SetSeed(0);
-	for (Int_t iIn=fNin; iIn<fNeff; iIn++){
+	for (iIn=fNin; iIn<fNeff; iIn++){
 		xEta[iIn]=r.Uniform(-1*etaEff,etaEff);
 		xPhi[iIn]=r.Uniform(0.,2*TMath::Pi());
 		(*vPx)(iIn)=r.Uniform(0.01,0.02);
