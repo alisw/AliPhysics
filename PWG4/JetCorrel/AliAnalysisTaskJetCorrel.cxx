@@ -28,7 +28,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetCorrel)
 
 AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel() : 
-  AliAnalysisTaskSE("JetCorrelTask"), fjcESD(NULL), fOutputContainer(new TList),
+  AliAnalysisTaskSE("JetCorrelTask"), fjcESD(NULL), fOutputContainer(NULL),
   fSelector(new AliJetCorrelSelector), fNumCorrel(0), fNumTrigg(0), fNumAssoc(0), fNumEvts(0),
   fMaker(new AliJetCorrelMaker), fWriter(new AliJetCorrelWriter), fReader(new AliJetCorrelReader),
   fMixer(new AliJetCorrelMixer), fTriggList(NULL), fAssocList(NULL) {
@@ -36,7 +36,7 @@ AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel() :
 }
 
 AliAnalysisTaskJetCorrel::AliAnalysisTaskJetCorrel(AliJetCorrelSelector *s) : 
-  AliAnalysisTaskSE("JetCorrelTask"), fjcESD(NULL), fOutputContainer(new TList),
+  AliAnalysisTaskSE("JetCorrelTask"), fjcESD(NULL), fOutputContainer(NULL),
   fSelector(s), fNumCorrel(0), fNumTrigg(0), fNumAssoc(0), fNumEvts(0),
   fMaker(new AliJetCorrelMaker), fWriter(new AliJetCorrelWriter), fReader(new AliJetCorrelReader),
   fMixer(new AliJetCorrelMixer), fTriggList(NULL), fAssocList(NULL) {
@@ -85,8 +85,11 @@ void AliAnalysisTaskJetCorrel::ConnectInputData(Option_t *) {
 
 void AliAnalysisTaskJetCorrel::CreateOutputObjects(){  
   // call writer object methods for histogram booking inside the output container list
-  //  OpenFile(0);
-  fOutputContainer->SetName("JetCorrelHistos");
+  // OpenFile(0);
+  if(!fOutputContainer) {
+    fOutputContainer = new TList();
+    fOutputContainer->SetName("JetCorrelHistos");
+  }
   fWriter->CreateGeneric(fOutputContainer);
   if(fSelector->GenQA()) fWriter->CreateQA(fOutputContainer);
   fWriter->CreateCorrelations(fOutputContainer);

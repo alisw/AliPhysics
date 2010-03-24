@@ -24,12 +24,10 @@ class AliJetCorrelMixer : public TObject {
   
   // pool manipulation:
   void FillPool(CorrelList_t *partList, UInt_t pIdx, UInt_t vBin, UInt_t cBin);
-  UInt_t PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin) const;
   void CleanPool(PoolType_t pType);
   // mixing methods:  
   void Mix(UInt_t vBin, UInt_t cBin, UInt_t it, UInt_t ia, UInt_t ic);
   // print methods:
-  void ShowPool(PoolType_t pType, UInt_t vBin, UInt_t cBin) const;
   void ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, UInt_t cBin) const;
   
  private:

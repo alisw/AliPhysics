@@ -102,6 +102,7 @@ void AliJetCorrelMixer::Mix(UInt_t vBin, UInt_t cBin, UInt_t it, UInt_t ia, UInt
     } // loop over associated pool
     fPool[triggs][it][vBin][cBin]->RemoveFirst();
   } // if trigger pool is not empty
+  delete iterAssocPool;
 }
 
 void AliJetCorrelMixer::CleanPool(PoolType_t pType){
@@ -116,41 +117,14 @@ void AliJetCorrelMixer::CleanPool(PoolType_t pType){
   }
 }
 
-UInt_t AliJetCorrelMixer::PoolSize(PoolType_t pType, UInt_t vBin, UInt_t cBin) const {
-  // computes (static) pool size
-  UInt_t totalPoolSize=0;
-  UInt_t partSize = sizeof(CorrelParticle_t);
-  UInt_t listOverhead = sizeof(CorrelListNode_t);
-  CorrelList_t* partList; TListIter* iter;
-  UInt_t fNum = fNumAssocs; if(pType==triggs) fNum = fNumTriggs;
-  for(UInt_t i=0; i<fNum; i++){
-    iter=(TListIter*)fPool[pType][i][vBin][cBin]->MakeIterator();
-    while((partList=(CorrelList_t*)iter->Next()))
-      totalPoolSize += partList->Size()*(partSize+listOverhead);
-  }
-  return totalPoolSize/1024;
-}
-
 void AliJetCorrelMixer::ShowSummary(PoolType_t pType, UInt_t pIdx, UInt_t vBin, UInt_t cBin) const {
   // pool printout method
   UInt_t totalPoolSize=0;
   TListIter* iter=(TListIter*)fPool[pType][pIdx][vBin][cBin]->MakeIterator();
   CorrelList_t* partList;
   while((partList=(CorrelList_t*)iter->Next())) totalPoolSize += partList->Size();
-
+  delete iter;
   if(pType==triggs) std::cout<<"TriggPool[";
   if(pType==assocs) std::cout<<"AssocPool[";
   std::cout<<vBin<<"]["<<cBin<<"]: nevt="<<fPool[pType][pIdx][vBin][cBin]->GetSize()<<" npart="<<totalPoolSize<<std::endl;
-}
-
-void AliJetCorrelMixer::ShowPool(PoolType_t pType, UInt_t vBin, UInt_t cBin) const {
-  // all pools printout
-  CorrelList_t* tempList; TListIter* iter;
-  UInt_t size = 0;
-  if(pType==triggs) size = fNumTriggs;
-  if(pType==assocs) size = fNumAssocs;
-  for(UInt_t k=0; k<size; k++){
-    iter=(TListIter*)fPool[pType][k][vBin][cBin]->MakeIterator();
-    while((tempList=(CorrelList_t*)iter->Next())) tempList->Show();
-  }
 }
