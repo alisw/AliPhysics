@@ -74,8 +74,8 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   TH1F*            fHCSize;        //! Cluster Size
   TH1F*            fHNCluster;     //! Number of clusters
   TH2F*            fHPtDensity;    //! Pt vs density
-  AliKMeansResult* fA[10];         //!
-  AliKMeansResult* fB[10];         //!
+  AliKMeansResult* fA[10];         //! Array of results
+  AliKMeansResult* fB[10];         //! Array of results
   AliESDtrackCuts* fCuts;             // List of cuts
   ClassDef(AliAnalysisTaskKMeans, 1); // A k-means clustering analysis
 };

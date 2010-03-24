@@ -97,6 +97,7 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans()
     ,fHNCluster(0)
     ,fHPtDensity(0)
     ,fCuts(0)
+
 {
   //
   // Constructor
@@ -139,6 +140,7 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name)
       ,fHNCluster(0)
       ,fHPtDensity(0)
       ,fCuts(0)
+
 {
   //
   // Constructor
@@ -176,6 +178,10 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const AliAnalysisTaskKMeans &res)
       ,fH1RespR(0)
       ,fH2Sigma(0)
       ,fH2SigmaR(0)
+      ,fHDensity(0)
+      ,fHCSize(0)  
+      ,fHNCluster(0)
+      ,fHPtDensity(0)
       ,fCuts(0)
 {
     // Dummy copy constructor
@@ -458,12 +464,12 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
     // Cluster Multiplicity
     if (rmax > 0.) {
       for (Int_t i = 0; i < 1; i++) {
-	Int_t im = (res->GetInd())[i];
+	im = (res->GetInd())[i];
 	fH1CEtaR->Fill(mEta[im]);
       }
       
       for (Int_t i = 0; i < 1; i++) {
-	Int_t im = (res->GetInd())[i];
+	  im = (res->GetInd())[i];
 	for (Int_t j = 0; j < ic; j++) {
 	  Double_t dphi = DeltaPhi(mPhi[im], phiR[j]);
 	  Double_t deta = mEta[im] - etaR[j];
