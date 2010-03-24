@@ -380,7 +380,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	Int_t okD0barWrongSign =0;
 
 	// optimized D* cuts from UU
-	Bool_t tCutDStar = SetUtrechtSelections(ptD0,fVHF);  
+	Bool_t tCutDStar = SetUtrechtSelections(ptD0);  
 	Bool_t tCutOk = kFALSE;
 	if(tCutDStar) tCutOk = theD0particle->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar);
 
@@ -391,7 +391,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	// search for D*
 	if(tCutOk){	
 	  // correct decay 
-          if(decayTag>0 ? (okD0bar = 0) : (okD0 = 0));
+          if(decayTag>0) okD0bar = 0; 
+	  if(decayTag<0) okD0 = 0;
 
 	  finvM = dstarD0pi->InvMassD0();
 
@@ -484,8 +485,9 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
         // wrong sign background
 	if(tCutOk){	
 	  // correct decay 
-          if(decayTag>0 ? ( okD0WrongSign = 0) : ( okD0barWrongSign = 0));
-
+          if(decayTag>0) okD0WrongSign = 0;
+	  if(decayTag<0) okD0barWrongSign = 0;
+	  
           //wrong D0 inv mass
           if(okD0WrongSign==1){
 	    finvM = theD0particle->InvMassD0();
@@ -875,7 +877,7 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(Double_t finvM, Double_t f
   
 }
 //_____________________________________________________________________________________________
-Bool_t AliAnalysisTaskSEDStarSpectra::SetUtrechtSelections(Double_t ptD0, AliAnalysisVertexingHF *fVHF){
+Bool_t AliAnalysisTaskSEDStarSpectra::SetUtrechtSelections(Double_t ptD0){
 
   //cuts[0] = inv. mass half width [GeV]
   //cuts[1] = dca [cm]
