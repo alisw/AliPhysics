@@ -21,12 +21,10 @@ AliAnalysisTaskJetCorrel *AddTaskJetCorrel(){
   mgr->AddTask(task);
 
   //create data containers
-  // AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer(); // OLD WAY!
   AliAnalysisDataContainer *cinput = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("cAUTO_INPUT");
   mgr->ConnectInput(task,0,cinput);
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("JetCorrelHistos", TList::Class(),
-			 AliAnalysisManager::kOutputContainer,"JetCorrelHistos.root");  
-  mgr->ConnectOutput(task,0,coutput);
+  AliAnalysisDataContainer *coutput_JetCorrel = mgr->CreateContainer("JetCorrelHistos", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:JetCorrel",AliAnalysisManager::GetCommonFileName()));  
+  mgr->ConnectOutput(task,0,coutput_JetCorrel);
   
   return task;
 }
