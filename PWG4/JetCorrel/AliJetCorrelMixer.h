@@ -39,7 +39,7 @@ class AliJetCorrelMixer : public TObject {
   CorrelList_t *fTriggEvnt, *fAssocEvnt;   //! particle lists
   CorrelListIter_t fAssocIter, fTriggIter; //! particle list iterators
   UInt_t fNumCentBins, fNumVertBins, fPoolDepth, fNumCorrel, fNumTriggs, fNumAssocs; // counters
-  TList* fPool[2][kMAXNUMCORREL][kMAXVERTBIN][kMAXCENTBIN]; //! the particle pools used for mixing
+  TList* fPool[2][AliJetCorrelSelector::kMaxCorrel][AliJetCorrelSelector::kMaxVert][AliJetCorrelSelector::kMaxCent]; //! the particle pools used for mixing
   
   // disable (make private) copy constructor and assignment operator:
   AliJetCorrelMixer(const AliJetCorrelMixer&);

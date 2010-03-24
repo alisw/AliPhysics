@@ -32,7 +32,6 @@ class AliJetCorrelWriter : public TObject {
 			CorrelParticle_t * const Trigger, CorrelParticle_t * const Associated);
   
   Float_t DeltaPhi(Float_t phi1, Float_t phi2);
-  void  ShowStats() const;
   
  private:
   AliJetCorrelSelector *fSelector;  // user selection object
@@ -40,19 +39,18 @@ class AliJetCorrelWriter : public TObject {
   TString fHname, fHtit;            // histos name&title
   Bool_t fRecoTrigg;                // is trigger reconstructed
   TRandom2 fRndm;                   // random number generator
-  UInt_t fNumReal[kMAXNUMCORREL][kMAXCENTBIN], fNumMix[kMAXNUMCORREL][kMAXCENTBIN]; // counters
   
   // Output Histograms
+  TNtuple *fNtuParent;                                       // reconstructed parent ntuple
   TH1F *fHBinsCentr, *fHBinsZVert, *fHBinsTrigg, *fHBinsAssoc, *fHCentr, *fHZVert;  // binning histos
   TH2F *fHTrkITSQA[2], *fHTrkTPCQA[2], *fHTrkVTXQA[2];       // track QA histos
-  TH3F *fHTrkProx[2][kMAXCENTBIN];                           // distance at TPC entrance between tracks
-  TH3F *fHTriggAcc[kMAXNUMCORREL];                           // trigg PhixEta acceptance
-  TH3F *fHAssocAcc[kMAXNUMCORREL];                           // assoc PhixEta acceptance
-  TNtuple *ntuParent;                                        // reconstructed parent ntuple
-  TH1F *fHTriggPt[kMAXNUMCORREL][kMAXCENTBIN];               // trigg Pt
-  TH1F *fHAssocPt[kMAXNUMCORREL][kMAXCENTBIN];               // assoc Pt
-  TH3F *fHReal[kMAXNUMCORREL][kMAXCENTBIN][kMAXVERTBIN][kMAXTRIGBIN][kMAXASSOBIN];  // real DPhixDEtaxPout
-  TH3F *fHMix[kMAXNUMCORREL][kMAXCENTBIN][kMAXVERTBIN][kMAXTRIGBIN][kMAXASSOBIN];   // mix  DPhixDEtaxPout
+  TH3F *fHTrkProx[2][AliJetCorrelSelector::kMaxCent];        // distance at TPC entrance between tracks
+  TH3F *fHTriggAcc[AliJetCorrelSelector::kMaxCorrel];        // trigg PhixEta acceptance
+  TH3F *fHAssocAcc[AliJetCorrelSelector::kMaxCorrel];        // assoc PhixEta acceptance
+  TH1F *fHTriggPt[AliJetCorrelSelector::kMaxCorrel][AliJetCorrelSelector::kMaxCent]; // trigg Pt
+  TH1F *fHAssocPt[AliJetCorrelSelector::kMaxCorrel][AliJetCorrelSelector::kMaxCent]; // assoc Pt
+  TH3F *fHReal[AliJetCorrelSelector::kMaxCorrel][AliJetCorrelSelector::kMaxCent][AliJetCorrelSelector::kMaxVert][AliJetCorrelSelector::kMaxTrig][AliJetCorrelSelector::kMaxAsso];  // real DPhixDEtaxPout
+  TH3F *fHMix[AliJetCorrelSelector::kMaxCorrel][AliJetCorrelSelector::kMaxCent][AliJetCorrelSelector::kMaxVert][AliJetCorrelSelector::kMaxTrig][AliJetCorrelSelector::kMaxAsso];   // mix  DPhixDEtaxPout
   
   // disable (make private) copy constructor and assignment operator:
   AliJetCorrelWriter(const AliJetCorrelWriter&);

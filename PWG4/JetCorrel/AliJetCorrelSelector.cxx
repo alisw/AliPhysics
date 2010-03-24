@@ -57,7 +57,7 @@ AliJetCorrelSelector::~AliJetCorrelSelector(){
 void AliJetCorrelSelector::SetCorrelTypes(UInt_t s, UInt_t * const v){
   // fills the array of correlation types
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetCorrelTypes - empty array"<<std::endl; exit(-1);}
-  if(s>kMAXNUMCORREL){std::cerr<<"AliJetCorrelSelector: correlation array too big!"<<std::endl; exit(-1);}
+  if(s>kMaxCorrel){std::cerr<<"AliJetCorrelSelector: correlation array too big!"<<std::endl; exit(-1);}
   fNumCorrel = s;
   fCorrelType = new UInt_t[fNumCorrel];
   for(UInt_t k=0; k<fNumCorrel; k++){
@@ -88,7 +88,7 @@ void AliJetCorrelSelector::SetTriggers(UInt_t s, TString * const v){
 void AliJetCorrelSelector::SetBinningCentr(UInt_t s, Float_t * const v){
   // fills array of centrality bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningCentr - empty array"<<std::endl; exit(-1);}
-  if(s>kMAXCENTBIN){std::cerr<<"AliJetCorrelSelector: centrality array too big!"<<std::endl; exit(-1);}
+  if(s>kMaxCent){std::cerr<<"AliJetCorrelSelector: centrality array too big!"<<std::endl; exit(-1);}
   fNumBins[centr] = s;
   fBinning[centr] = new Float_t[fNumBins[centr]]; 
   for(UInt_t k=0; k<fNumBins[centr]; k++){
@@ -103,7 +103,7 @@ void AliJetCorrelSelector::SetBinningCentr(UInt_t s, Float_t * const v){
 void AliJetCorrelSelector::SetBinningZvert(UInt_t s, Float_t * const v){
   // fills array of vertex bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningZvert - empty array"<<std::endl; exit(-1);}
-  if(s>kMAXVERTBIN){std::cerr<<"AliJetCorrelSelector: vertex array too big!"<<std::endl; exit(-1);}
+  if(s>kMaxVert){std::cerr<<"AliJetCorrelSelector: vertex array too big!"<<std::endl; exit(-1);}
   fNumBins[zvert] = s;
   fBinning[zvert] = new Float_t[fNumBins[zvert]]; 
   for(UInt_t k=0; k<fNumBins[zvert]; k++){
@@ -118,7 +118,7 @@ void AliJetCorrelSelector::SetBinningZvert(UInt_t s, Float_t * const v){
 void AliJetCorrelSelector::SetBinningTrigg(UInt_t s, Float_t * const v){
   // fills array of trigger bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningTrigg - empty array"<<std::endl; exit(-1);}
-  if(s>kMAXTRIGBIN){std::cerr<<"AliJetCorrelSelector: trigger array too big!"<<std::endl; exit(-1);}
+  if(s>kMaxTrig){std::cerr<<"AliJetCorrelSelector: trigger array too big!"<<std::endl; exit(-1);}
   fNumBins[trigg] = s;
   fBinning[trigg] = new Float_t[fNumBins[trigg]]; 
   for(UInt_t k=0; k<fNumBins[trigg]; k++){
@@ -133,7 +133,7 @@ void AliJetCorrelSelector::SetBinningTrigg(UInt_t s, Float_t * const v){
 void AliJetCorrelSelector::SetBinningAssoc(UInt_t s, Float_t * const v){
   // fills array of associated bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningAssoc - empty array"<<std::endl; exit(-1);}
-  if(s>kMAXTRIGBIN){std::cerr<<"AliJetCorrelSelector: associated array too big!"<<std::endl; exit(-1);}
+  if(s>kMaxAsso){std::cerr<<"AliJetCorrelSelector: associated array too big!"<<std::endl; exit(-1);}
   fNumBins[assoc] = s;
   fBinning[assoc] = new Float_t[fNumBins[assoc]]; 
   for(UInt_t k=0; k<fNumBins[assoc]; k++){

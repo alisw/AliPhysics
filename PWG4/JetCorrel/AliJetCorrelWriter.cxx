@@ -24,14 +24,27 @@
 using namespace std;
 
 ClassImp(AliJetCorrelWriter)
-
+  
 AliJetCorrelWriter::AliJetCorrelWriter() :
-  fSelector(NULL), fMaker(NULL), fHname(""), fHtit(""), fRecoTrigg(kFALSE), fRndm(6251093),
-  fHBinsCentr(NULL), fHBinsZVert(NULL), fHBinsTrigg(NULL), fHBinsAssoc(NULL),fHCentr(NULL), fHZVert(NULL), ntuParent(NULL) {
+  fSelector(NULL), fMaker(NULL), fHname(""), fHtit(""), fRecoTrigg(kFALSE), fRndm(6251093), fNtuParent(NULL),
+  fHBinsCentr(NULL), fHBinsZVert(NULL), fHBinsTrigg(NULL), fHBinsAssoc(NULL), fHCentr(NULL), fHZVert(NULL) {
   // constructor
-  for(UInt_t i=0; i<kMAXNUMCORREL; i++) 
-    for(UInt_t j=0; j<kMAXCENTBIN; j++) 
-      {fNumReal[i][j]=0; fNumMix[i][j]=0;}
+  for(UInt_t i=0; i<2; i++){
+    fHTrkITSQA[i] = NULL; fHTrkTPCQA[i] = NULL; fHTrkVTXQA[i] = NULL;
+    for(UInt_t ic=0; ic<AliJetCorrelSelector::kMaxCent; ic++)  fHTrkProx[i][ic] = NULL;
+  }
+  for(UInt_t ik=0; ik<AliJetCorrelSelector::kMaxCorrel; ik++){
+    fHTriggAcc[ik] = NULL; fHAssocAcc[ik] = NULL;
+    for(UInt_t ic=0; ic<AliJetCorrelSelector::kMaxCent; ic++){
+      fHTriggPt[ik][ic] = NULL; fHAssocPt[ik][ic] = NULL;
+      for(UInt_t iv=0; iv<AliJetCorrelSelector::kMaxVert; iv++)
+	for(UInt_t it=0; it<AliJetCorrelSelector::kMaxTrig; it++)
+	  for(UInt_t ia=0; ia<AliJetCorrelSelector::kMaxAsso; ia++){
+	    fHReal[ik][ic][iv][it][ia] = NULL;
+	    fHMix[ik][ic][iv][it][ia]  = NULL;
+	  }
+    }
+  }
 }
 
 AliJetCorrelWriter::~AliJetCorrelWriter(){
@@ -161,8 +174,8 @@ void AliJetCorrelWriter::CreateCorrelations(TList* histosContainer){
   UInt_t kDEtaNumBins = fSelector->DEtaNumBins();
   UInt_t nPoutBins = UInt_t(TMath::Ceil(2.2*maxAssoc/bwPout)); // since |p_out|<p_Ta
   if(fRecoTrigg) {  // if any correlation has reconstructed trigger, define ntuple; use id to differentiate
-    ntuParent = new TNtuple("ntuParent","Reconstructed Parent Ntuple","id:q:m:pT:phi:eta:assym:open");
-    histosContainer->AddLast(ntuParent);
+    fNtuParent = new TNtuple("fNtuParent","Reconstructed Parent Ntuple","id:q:m:pT:phi:eta:assym:open");
+    histosContainer->AddLast(fNtuParent);
   }
   for(UInt_t htc=0; htc<nTypeCorrel; htc++){ // loop over correlation types
     for(UInt_t hic=0; hic<nBinsCentr; hic++){ // centrality loop
@@ -256,7 +269,7 @@ void AliJetCorrelWriter::FillParentNtuple(CorrelList_t * const ParentList){
     parVar[5] = parent->Eta();
     parVar[6] = parent->Assym();
     parVar[7] = parent->OpenAng();
-    ntuParent->Fill(parVar);
+    fNtuParent->Fill(parVar);
     parIter.Move();
   }
 }
@@ -277,6 +290,7 @@ void AliJetCorrelWriter::FillCorrelations(FillType_t fTyp, UInt_t iCorr, UInt_t 
   //  Short_t qprod= Trigg->Q()*Assoc->Q();
 
   if(tBin<0 || aBin<0) return;  // one of them is not in the required pT range
+  if(pta>=ptt) return; // use only associated particles below the trigger
   if(fabs(ptt-pta)<1.e-6 && fabs(phit-phia)<1.e-6 && fabs(etat-etaa)<1.e-6) return; // don't auto-correlate
 
   // store track pair proximity
@@ -294,28 +308,10 @@ void AliJetCorrelWriter::FillCorrelations(FillType_t fTyp, UInt_t iCorr, UInt_t 
   Float_t dphi = DeltaPhi(phit,phia);
   Float_t deta = etat-etaa;
   Float_t pout = pta*TMath::Sin(dphi);
-  if(fTyp==real){
+  if(fTyp==real)
     fHReal[iCorr][cBin][vBin][tBin][aBin]->Fill(dphi,deta,pout);
-    fNumReal[iCorr][cBin]++;
-  } else {
+  else
     fHMix[iCorr][cBin][vBin][tBin][aBin]->Fill(dphi,deta,pout);
-    fNumMix[iCorr][cBin]++;
-  }
-}
-
-void AliJetCorrelWriter::ShowStats() const {
-  // stats printout method
-  UInt_t nTypeCorrel = fMaker->NoOfCorrel();
-  UInt_t nBinsCentr = fSelector->NoOfBins(centr);
-  for(UInt_t i=0; i<nTypeCorrel; i++){
-    std::cout<<"Correlation:"<<fMaker->Descriptor(i)<<std::endl;
-    for(UInt_t j=0; j<nBinsCentr; j++){
-      Float_t cb1 = fSelector->BinBorder(centr, j);
-      Float_t cb2 = fSelector->BinBorder(centr, j+1);
-      std::cout<<" Centrality:"<<cb1<<"-"<<cb2
-	       <<"\t Real Pairs="<<fNumReal[i][j]<<"\t Mixed Pairs="<<fNumMix[i][j]<<std::endl;
-    }
-  }
 }
 
 Float_t AliJetCorrelWriter::DeltaPhi(Float_t  phi1, Float_t phi2) {
