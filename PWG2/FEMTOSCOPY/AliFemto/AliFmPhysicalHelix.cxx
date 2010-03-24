@@ -34,7 +34,7 @@ AliFmPhysicalHelix::AliFmPhysicalHelix(const AliFmThreeVector<double>& p,
   {
     using namespace units;
 #endif
-    SetCurvature(fabs((c_light*nanosecond/meter*q*B/tesla)/
+    SetCurvature(fabs((kCLight*nanosecond/meter*q*B/tesla)/
 		      (abs(p.Mag())/GeV*fCosDipAngle)/meter));   
 #ifndef ST_NO_NAMESPACES
   }
@@ -56,7 +56,7 @@ AliFmThreeVector<double> AliFmPhysicalHelix::Momentum(double B) const
     {
 	    using namespace units;
 #endif
-	    double pt = GeV*fabs(c_light*nanosecond/meter*B/tesla)/(fabs(fCurvature)*meter);
+	    double pt = GeV*fabs(kCLight*nanosecond/meter*B/tesla)/(fabs(fCurvature)*meter);
 	    
 	    return (AliFmThreeVector<double>(pt*cos(fPhase+fH*M_PI/2),   // pos part pos field
 					  pt*sin(fPhase+fH*M_PI/2),
