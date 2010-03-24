@@ -924,8 +924,11 @@ Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bo
 //____________________________________________________________________
 AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack)
 {
-  // creates a TPC only track from the given esd track
-  // the track has to be deleted by the user
+  
+  // Utility function to 
+  // create a TPC only track from the given esd track
+  // 
+  // IMPORTANT: The track has to be deleted by the user
   //
   // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
   // there are only missing propagations here that are needed for old data
@@ -944,15 +947,6 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack)
     return 0;
 
   AliESDtrack *tpcTrack = new AliESDtrack();
-
-  // This should have been done during the reconstruction
-  // fixed by Juri in r26675
-  // but recalculate for older data CKB
-  Float_t p[2],cov[3];
-  track->GetImpactParametersTPC(p,cov);
-  if(p[0]==0&&p[1]==0)
-    track->RelateToVertexTPC(esd->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
-  // BKC
 
   // only true if we have a tpc track
   if (!track->FillTPCOnlyTrack(*tpcTrack))
