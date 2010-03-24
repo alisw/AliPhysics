@@ -66,6 +66,12 @@ class AliJetCorrelSelector : public TObject {
   Bool_t PassPID(AliESDtrack* t, PartType_t pType) const;
   Float_t GetSigmaToVertex(AliESDtrack* trk) const;
   void GetPID(AliESDtrack* trk, Stat_t& fpid, Stat_t& fweight) const;
+
+  enum {kMaxCorrel = 1};   // Maximum no of correlations
+  enum {kMaxVert = 10};    // Maximum no of vertex bins
+  enum {kMaxCent = 3};     // Maximum no of centrality bins
+  enum {kMaxTrig = 10};    // Maximum no of trigger bins
+  enum {kMaxAsso = 10};    // Maximum no of associated bins
   
  private: 
   // Generic Selections:

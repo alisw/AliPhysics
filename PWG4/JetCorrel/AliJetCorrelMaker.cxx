@@ -49,16 +49,6 @@ AliJetCorrelMaker::~AliJetCorrelMaker(){
 Bool_t AliJetCorrelMaker::Init(UInt_t s, UInt_t * const v){
   // Main method. Returns false on initialisation error
   fNumCorrel = s;
-  if(fNumCorrel<1){
-    std::cerr<<"AliJetCorrelMaker::Initialize - ERROR: non-pozitive fNumCorrel"
-	     <<fNumCorrel<<std::endl;
-    return kFALSE; 
-  }
-  if(fNumCorrel>kMAXNUMCORREL){
-    std::cerr<<"AliJetCorrelMaker::Initialize - ERROR: increase kMAXNUMCORREL above "
-	     <<fNumCorrel<<std::endl;
-    return kFALSE; 
-  }
   fCorrelType = new UInt_t[fNumCorrel];
   fCorrelStr  = new TString[fNumCorrel];
   fTriggType  = new PartType_t[fNumCorrel];
