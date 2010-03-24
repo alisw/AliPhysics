@@ -686,15 +686,15 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   //
   // calculate effective mass
   //
-  const Float_t kpmass[5] = {TDatabasePDG::Instance()->GetParticle(kElectron)->Mass(),
+  const Double_t kpmass[5] = {TDatabasePDG::Instance()->GetParticle(kElectron)->Mass(),
 			     TDatabasePDG::Instance()->GetParticle(kMuonMinus)->Mass(),
 			     TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass(),
 			     TDatabasePDG::Instance()->GetParticle(kKPlus)->Mass(),
 			     TDatabasePDG::Instance()->GetParticle(kProton)->Mass()};
   if (p1>4) return -1;
   if (p2>4) return -1;
-  Float_t mass1 = kpmass[p1]; 
-  Float_t mass2 = kpmass[p2];   
+  Double_t mass1 = kpmass[p1]; 
+  Double_t mass2 = kpmass[p2];   
   const Double_t *m1 = fPmom;
   const Double_t *m2 = fNmom;
   //
@@ -703,19 +703,20 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   //  m2 = fPP;
   //}
   //
-  Float_t e1    = TMath::Sqrt(mass1*mass1+
+  Double_t e1    = TMath::Sqrt(mass1*mass1+
                               m1[0]*m1[0]+
                               m1[1]*m1[1]+
                               m1[2]*m1[2]);
-  Float_t e2    = TMath::Sqrt(mass2*mass2+
+  Double_t e2    = TMath::Sqrt(mass2*mass2+
                               m2[0]*m2[0]+
                               m2[1]*m2[1]+
                               m2[2]*m2[2]);  
-  Float_t mass =  
+  Double_t mass =  
     (m2[0]+m1[0])*(m2[0]+m1[0])+
     (m2[1]+m1[1])*(m2[1]+m1[1])+
     (m2[2]+m1[2])*(m2[2]+m1[2]);
   
-  mass = TMath::Sqrt((e1+e2)*(e1+e2)-mass);
-  return mass;
+  mass = (e1+e2)*(e1+e2)-mass;
+  if (mass < 0.) mass = 0.;
+  return (TMath::Sqrt(mass));
 }
