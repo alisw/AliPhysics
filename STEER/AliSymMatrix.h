@@ -13,8 +13,6 @@
 /*                                                                                            */ 
 /**********************************************************************************************/
 
-#include <string.h>
-#include <TObject.h>
 #include <TVectorD.h>
 #include "AliMatrixSq.h"
 
@@ -46,14 +44,14 @@ class AliSymMatrix : public AliMatrixSq {
   //
   Double_t*     GetRow(Int_t r);
   //
-  void          Print(Option_t* option="")                       const;
+  void          Print(const Option_t* option="")                 const;
   void          AddRows(int nrows=1);
   void          SetSizeUsed(Int_t sz)                                  {fRowLwb = sz;}
   //
   void          Scale(Double_t coeff);
   void          MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
   void          MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const;
-  void          AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n);
+  void          AddToRow(Int_t r, Double_t *valc, Int_t *indc,Int_t n);
   //
   // ---------------------------------- Dummy methods of MatrixBase
   virtual       const Double_t   *GetMatrixArray  () const {return fElems;};
@@ -132,7 +130,7 @@ inline void AliSymMatrix::Scale(Double_t coeff)
 }
 
 //___________________________________________________________
-inline void AliSymMatrix::AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n)
+inline void AliSymMatrix::AddToRow(Int_t r, Double_t *valc, Int_t *indc,Int_t n)
 {
   for (int i=n;i--;) (*this)(indc[i],r) += valc[i];
 }

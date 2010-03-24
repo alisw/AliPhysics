@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <float.h>
+#include <string.h>
 //
 #include <TClass.h>
 #include <TMath.h>
@@ -32,6 +33,7 @@ Int_t         AliSymMatrix::fgCopyCnt = 0;
 AliSymMatrix::AliSymMatrix() 
 : fElems(0),fElemsAdd(0)
 {
+  // default constructor
   fSymmetric = kTRUE;
   fgCopyCnt++;
 }
@@ -40,7 +42,7 @@ AliSymMatrix::AliSymMatrix()
 AliSymMatrix::AliSymMatrix(Int_t size)
   : AliMatrixSq(),fElems(0),fElemsAdd(0)
 {
-  //
+  //constructor for matrix with defined size
   fNrows = 0;
   fNrowIndex = fNcols = fRowLwb = size;
   fElems     = new Double_t[fNcols*(fNcols+1)/2];
@@ -54,6 +56,7 @@ AliSymMatrix::AliSymMatrix(Int_t size)
 AliSymMatrix::AliSymMatrix(const AliSymMatrix &src) 
   : AliMatrixSq(src),fElems(0),fElemsAdd(0)
 {
+  // copy constructor
   fNrowIndex = fNcols = src.GetSize();
   fNrows = 0;
   fRowLwb = src.GetSizeUsed();
@@ -88,7 +91,7 @@ AliSymMatrix::~AliSymMatrix()
 //___________________________________________________________
 AliSymMatrix&  AliSymMatrix::operator=(const AliSymMatrix& src)
 {
-  //
+  // assignment operator
   if (this != &src) {
     TObject::operator=(src);
     if (GetSizeBooked()!=src.GetSizeBooked() && GetSizeAdded()!=src.GetSizeAdded()) {
@@ -131,7 +134,7 @@ AliSymMatrix&  AliSymMatrix::operator=(const AliSymMatrix& src)
 //___________________________________________________________
 AliSymMatrix& AliSymMatrix::operator+=(const AliSymMatrix& src)
 {
-  //
+  // add operator
   if (GetSizeUsed() != src.GetSizeUsed()) {
     AliError("Matrix sizes are different");
     return *this;
@@ -143,6 +146,7 @@ AliSymMatrix& AliSymMatrix::operator+=(const AliSymMatrix& src)
 //___________________________________________________________
 void AliSymMatrix::Clear(Option_t*)
 {
+  // clear dynamic part
   if (fElems) {delete[] fElems; fElems = 0;}
   //  
   if (fElemsAdd) {
@@ -166,6 +170,7 @@ Float_t AliSymMatrix::GetDensity() const
 //___________________________________________________________
 void AliSymMatrix::Print(Option_t* option) const
 {
+  // print itself
   printf("Symmetric Matrix: Size = %d (%d rows added dynamically), %d used\n",GetSize(),GetSizeAdded(),GetSizeUsed());
   TString opt = option; opt.ToLower();
   if (opt.IsNull()) return;
@@ -353,6 +358,7 @@ Bool_t AliSymMatrix::SolveChol(TVectorD &brhs, TVectorD &bsol,Bool_t invert)
 //___________________________________________________________
 void AliSymMatrix::AddRows(int nrows)
 {
+  // add empty rows
   if (nrows<1) return;
   Double_t **pnew = new Double_t*[nrows+fNrows];
   for (int ir=0;ir<fNrows;ir++) pnew[ir] = fElemsAdd[ir]; // copy old extra rows
@@ -420,6 +426,7 @@ void AliSymMatrix::AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n)
 //___________________________________________________________
 Double_t* AliSymMatrix::GetRow(Int_t r)
 {
+  // get pointer on the row
   if (r>=GetSize()) {
     int nn = GetSize();
     AddRows(r-GetSize()+1); 
