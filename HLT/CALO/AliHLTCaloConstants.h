@@ -77,8 +77,17 @@ public:
   virtual Int_t GetNALTROS() const = 0; 							
   virtual Int_t GetNALTROCHANNELS() const = 0; 						
   virtual Int_t GetNBRANCHES() const = 0; 						
-								
-  virtual Float_t GetCELLSTEP() const = 0; 					
+  virtual Float_t GetCELLSTEP() const = 0;
+  // EMCAL specific
+  virtual Float_t GetMAXCELLSTEPETA() const { return 0; };  //FR
+  virtual Float_t GetMINCELLSTEPETA() const  { return 0;  }//FR
+  virtual Float_t GetCELLSTEPPHI() const { return 0; }          //FR
+  virtual Float_t GetCELLHEIGHT() const { return 0; }       //FR
+  virtual Float_t GetCELLANGLE() const { return 0; }      //FR
+  virtual Float_t GetRADLENGTH() const { return 0; }       //FR
+  virtual Float_t GetCRITICENERGY() const { return 0; };        //FR
+  virtual Float_t GetCJ() const { return 0; }
+  // end
   virtual Int_t GetNRCUSPERSECTOR() const = 0; 						
   virtual Int_t GetDDLOFFSET() const = 0;
 

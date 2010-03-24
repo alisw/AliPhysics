@@ -52,7 +52,7 @@ AliHLTEMCALClusterizerComponent::AliHLTEMCALClusterizerComponent():
 
   //AliHLTEMCALGeometry *geom = new AliHLTEMCALGeometry;
   
-  fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry("EMCAL"));
+  fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry());
   
 }
 

@@ -84,7 +84,15 @@ public:
   Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS;} 
   Int_t GetNBRANCHES() const { return fkNBRANCHES;} 
 
-  Float_t GetCELLSTEP() const { return fkCELLSTEP; } 	
+  Float_t GetCELLSTEP() const { return fkCELLSTEP; }
+  Float_t GetMAXCELLSTEPETA() const { return fkMAXCELLSTEPETA; }  //FR
+  Float_t GetMINCELLSTEPETA() const { return fkMINCELLSTEPETA; }  //FR
+  Float_t GetCELLSTEPPHI() const { return fkCELLSTEPPHI; }        //FR
+  Float_t GetCELLHEIGHT() const { return fkCELLHEIGHT; }        //FR
+  Float_t GetCELLANGLE() const { return fkCELLANGLE; }        //FR
+  Float_t GetRADLENGTH() const { return fkRADLENGTH; }        //FR
+  Float_t GetCRITICENERGY() const { return fkCRITICENERGY; }        //FR
+  Float_t GetGJ() const { return fkCJ;} //FR
   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 					
   Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
 
@@ -145,6 +153,15 @@ private:
   const Int_t fkNBRANCHES; //Constant
    
   const Float_t fkCELLSTEP; //Constant
+  const Float_t fkMAXCELLSTEPETA;
+  const Float_t fkMINCELLSTEPETA;
+  const Float_t fkCELLSTEPPHI;
+  const Float_t fkCELLHEIGHT;
+  const Float_t fkCELLANGLE;
+  const Float_t fkRADLENGTH;
+  const Float_t fkCRITICENERGY;
+  const Float_t fkCJ;
+
   const Int_t fkNRCUSPERSECTOR; //Constant
   
   const Int_t fkDDLOFFSET;   //Constant

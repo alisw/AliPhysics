@@ -1,6 +1,5 @@
 #ifndef ALIHLTEMCALGEOMETRY_H
 #define ALIHLTEMCALGEOMETRY_H
-
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -17,29 +16,43 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-#include  "AliHLTCaloGeometry.h"
+#include "AliHLTCaloGeometry.h"
 #include "AliHLTEMCALSharedMemoryInterface.h" 
 #include "AliEMCALGeoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "TGeoManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+#include "AliHLTEMCALRecPointDataStruct.h"
 
-class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
+class AliEMCALGeoUtils;
+
+class  AliHLTEMCALGeometry : public AliHLTCaloGeometry, public AliHLTLogging
 {
  public:
-  AliHLTEMCALGeometry( TString det );
-  virtual ~AliHLTEMCALGeometry();
-  void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord );
-  void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
- 
+	AliHLTEMCALGeometry();
+	virtual ~AliHLTEMCALGeometry();
+	void GetGlobalCoordinates(AliHLTEMCALRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord );
+	void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
+	virtual void ConvertRecPointCoordinates(Double_t &x, Double_t &y, Double_t &z) const;
+	virtual Int_t InitialiseGeometry() {return 0; }
+
+protected:
+	int GetGeometryFromCDB();
 private:
-  	AliHLTEMCALGeometry();
+	//AliHLTEMCALGeometry();
+	void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &, AliHLTCaloGlobalCoordinate &) {}
+
 	AliHLTEMCALSharedMemoryInterface* fShmPtr;  
 	//AliEMCALGeometry *fGeo;
 	AliEMCALGeoUtils *fGeo;
-      AliHLTEMCALGeometry(const AliHLTEMCALGeometry & );
-      AliHLTEMCALGeometry & operator = (const AliHLTEMCALGeometry &);
-  
-};
+	/** The EMCAL geometry */
+	AliEMCALGeoUtils *fEMCALGeometry;                  //!transient
+	AliHLTEMCALGeometry(const AliHLTEMCALGeometry & );
+	AliHLTEMCALGeometry & operator = (const AliHLTEMCALGeometry &);
+	//	static TGeoManager *fgGeoManager;
 
+
+};
 #endif
