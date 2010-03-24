@@ -27,14 +27,15 @@ class AliOmegaDalitz : public AliDecayer
  public:
     AliOmegaDalitz();
     virtual void    Init();
-    virtual void    Decay(Int_t idpart, TLorentzVector* p);
+    virtual void    Decay(Int_t idlepton, TLorentzVector* p);
     virtual Int_t   ImportParticles(TClonesArray *particles);
     virtual void    SetForceDecay(Int_t)                      {;}
     virtual void    ForceDecay()                              {;}
     virtual Float_t GetPartialBranchingRatio(Int_t /*ipart*/) {return -1;}
     virtual Float_t GetLifetime(Int_t /*kf*/)                 {return -1;}
     virtual void    ReadDecayTable()                          {;}
-    virtual TH1F*   LeptonPairMassHisto()                     {return  fLPMass;}
+    virtual TH1F*   ElectronPairMassHisto()                   {return  fEPMass;}
+    virtual TH1F*   MuonPairMassHisto()                       {return  fMPMass;}
     //
     virtual void    Decay(TClonesArray* array);
     virtual const   TLorentzVector* Products() const {return fProducts;}
@@ -47,7 +48,8 @@ class AliOmegaDalitz : public AliDecayer
     AliOmegaDalitz & operator=(const AliOmegaDalitz & rhs);
     
  protected:
-    TH1F*           fLPMass;       // Histogram for lepton pair mass
+    TH1F*           fEPMass;       // Histogram for electron pair mass
+    TH1F*           fMPMass;       // Histogram for muon pair mass
     TLorentzVector  fProducts[3];  // Decay products
     ClassDef(AliOmegaDalitz, 1) // AliDecayer implementation for omega Dalitz
 };

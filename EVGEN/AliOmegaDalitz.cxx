@@ -48,7 +48,8 @@ ClassImp(AliOmegaDalitz)
 //
 AliOmegaDalitz::AliOmegaDalitz():
 	AliDecayer(),
-	fLPMass(0)
+        fEPMass(0),
+	fMPMass(0)
 {
     // Constructor
 }
@@ -56,58 +57,80 @@ AliOmegaDalitz::AliOmegaDalitz():
 void AliOmegaDalitz::Init()
 {
   // Initialisation
-  Int_t    ibin, nbins = 1000;
+  Int_t    idecay, ibin, nbins = 1000;
   Double_t min, max, binwidth;
-  Double_t pmass, lmass, omass;
+  Double_t pmass, lmass, omass, emass, mmass;
   Double_t epsilon, delta, mLL, q, kwHelp, krollWada, formFactor, weight;
 
   // Get the particle masses
   // electron
-  lmass = (TDatabasePDG::Instance()->GetParticle(kElectron))->Mass();
+  emass = (TDatabasePDG::Instance()->GetParticle(kElectron))->Mass();
+  // muon
+  mmass = (TDatabasePDG::Instance()->GetParticle(kMuonPlus))->Mass();
   // omega
   pmass = (TDatabasePDG::Instance()->GetParticle(223))      ->Mass();
   // pi0
   omass = (TDatabasePDG::Instance()->GetParticle(kPi0))     ->Mass();
 
-  min = 2.0 * lmass;
-  max = pmass - omass;
-  binwidth = (max - min) / (Double_t)nbins;
-  fLPMass = new TH1F("fLPMass", "Dalitz", nbins, min, max);
-
-  epsilon = (lmass / pmass) * (lmass / pmass);
-  delta   = (omass / pmass) * (omass / pmass);
-
-  for ( ibin = 1; ibin <= nbins; ibin++ )
+  for ( idecay = 1; idecay<=2; idecay++ )
   {
-    mLL = min + (Double_t)(ibin - 1) * binwidth + binwidth / 2.0;
-    q    = (mLL / pmass) * (mLL / pmass);
-    if ( q <= 4.0 * epsilon )
-    {
-	AliFatal("Error in calculating Dalitz mass histogram binning!");
-	fLPMass = 0;
-    }	
+    if ( idecay == 1 ) 
+      lmass = emass;
+    else
+      lmass = mmass;
 
-    kwHelp = (1.0 + q /  (1.0 - delta)) * (1.0 + q / (1.0 - delta))
-            - 4.0 * q / ((1.0 - delta) * (1.0 - delta));    
-    if ( kwHelp <= 0.0 )
+    min = 2.0 * lmass;
+    max = pmass - omass;
+    binwidth = (max - min) / (Double_t)nbins;
+    if ( idecay == 1 ) 
+      fEPMass = new TH1F("fEPMass", "Dalitz electron pair", nbins, min, max);
+    else
+      fMPMass = new TH1F("fMPMass", "Dalitz muon pair", nbins, min, max);
+
+    epsilon = (lmass / pmass) * (lmass / pmass);
+    delta   = (omass / pmass) * (omass / pmass);
+
+    for ( ibin = 1; ibin <= nbins; ibin++ )
     {
+      mLL = min + (Double_t)(ibin - 1) * binwidth + binwidth / 2.0;
+      q    = (mLL / pmass) * (mLL / pmass);
+      if ( q <= 4.0 * epsilon )
+      {
 	AliFatal("Error in calculating Dalitz mass histogram binning!");
-	fLPMass = 0;
-    }	
-    krollWada = (2.0 / mLL) * TMath::Exp(1.5 * TMath::Log(kwHelp))
-                            * TMath::Sqrt(1.0 - 4.0 * epsilon / q)   
-                            * (1.0 + 2.0 * epsilon / q);
-    formFactor = 
+	if ( idecay == 1 ) 
+	  fEPMass = 0;
+	else
+	  fMPMass = 0;
+      }	
+
+      kwHelp = (1.0 + q /  (1.0 - delta)) * (1.0 + q / (1.0 - delta))
+	      - 4.0 * q / ((1.0 - delta) * (1.0 - delta));    
+      if ( kwHelp <= 0.0 )
+      {
+	AliFatal("Error in calculating Dalitz mass histogram binning!");
+	if ( idecay == 1 ) 
+	  fEPMass = 0;
+	else
+	  fMPMass = 0;
+      }	
+      krollWada = (2.0 / mLL) * TMath::Exp(1.5 * TMath::Log(kwHelp))
+                              * TMath::Sqrt(1.0 - 4.0 * epsilon / q)   
+                              * (1.0 + 2.0 * epsilon / q);
+      formFactor = 
 	(TMath::Power(TMath::Power(0.6519,2),2)) 
 	/ (TMath::Power(TMath::Power(0.6519,2)-TMath::Power(mLL, 2), 2) 
 	   + TMath::Power(0.04198, 2)*TMath::Power(0.6519, 2));
-    weight = krollWada * formFactor;   
-    fLPMass->AddBinContent(ibin, weight);
+      weight = krollWada * formFactor;   
+      if ( idecay == 1 ) 
+	fEPMass->AddBinContent(ibin, weight);
+      else
+	fMPMass->AddBinContent(ibin, weight);
+    }
   }
 }
 
 
-void AliOmegaDalitz::Decay(Int_t /*idpart*/, TLorentzVector* pparent)
+void AliOmegaDalitz::Decay(Int_t idlepton, TLorentzVector* pparent)
 {
 //-----------------------------------------------------------------------------
 //
@@ -121,8 +144,8 @@ void AliOmegaDalitz::Decay(Int_t /*idpart*/, TLorentzVector* pparent)
   Double_t costheta, sintheta, cosphi, sinphi, phi;
   
   // Get the particle masses
-  // electron
-  lmass = (TDatabasePDG::Instance()->GetParticle(kElectron))->Mass();
+  // lepton
+  lmass = (TDatabasePDG::Instance()->GetParticle(idlepton))->Mass();
   // omega
   pmass = pparent->M();
   // pi0
@@ -131,8 +154,11 @@ void AliOmegaDalitz::Decay(Int_t /*idpart*/, TLorentzVector* pparent)
   // Sample the lepton pair mass from a histogram
   for( ;; ) 
   {
-      lpmass = fLPMass->GetRandom();
-      if ( pmass - omass > lpmass && lpmass / 2. > lmass ) break;
+    if ( idlepton == kElectron )
+      lpmass = fEPMass->GetRandom();
+    else
+      lpmass = fMPMass->GetRandom();
+    if ( pmass - omass > lpmass && lpmass / 2. > lmass ) break;
   }
   
   // lepton pair kinematics in virtual photon rest frame
@@ -204,14 +230,19 @@ void AliOmegaDalitz::Decay(Int_t /*idpart*/, TLorentzVector* pparent)
 Int_t AliOmegaDalitz::ImportParticles(TClonesArray *particles)
 {
     // Import TParticles in array particles
-    // e+ e- pi0
+    // l+ l- pi0
     
     TClonesArray &clonesParticles = *particles;
 
-    Int_t pdg   [3] = {kPi0, kElectron, -kElectron};
-    Int_t parent[3] = {-1, 0, 0};
-    Int_t d1    [3] = {1, -1, -1};
-    Int_t d2    [3] = {2, -1, -1};
+    Int_t pdg   [3] = {kElectron, -kElectron, kPi0};
+    if ( fProducts[1].M() > 0.001 ) 
+    {  
+      pdg[0] =  kMuonPlus;
+      pdg[1] = -kMuonPlus;
+    }
+    Int_t parent[3] = {0, 0, -1};
+    Int_t d1    [3] = {-1, -1, 1};
+    Int_t d2    [3] = {-1, -1, 2};
     for (Int_t i = 2; i > -1; i--) {
 	Double_t px = fProducts[i].Px();
 	Double_t py = fProducts[i].Py();
@@ -222,7 +253,6 @@ Int_t AliOmegaDalitz::ImportParticles(TClonesArray *particles)
     }
     return (3);
 }
-
 
 
 void AliOmegaDalitz::
@@ -255,9 +285,13 @@ void AliOmegaDalitz::Decay(TClonesArray* array)
 
     for (Int_t j = 0; j < 3; j++) dp[j] = (TParticle*) (array->At(fd+j));
     if ((dp[0]->GetPdgCode() != kPi0) ||
-	(TMath::Abs(dp[1]->GetPdgCode()) != kElectron)) continue;
+	((TMath::Abs(dp[1]->GetPdgCode()) != kElectron) &&
+	 (TMath::Abs(dp[1]->GetPdgCode()) != kMuonPlus))) continue;
     TLorentzVector omega(part->Px(), part->Py(), part->Pz(), part->Energy());
-    Decay(223, &omega);
+    if ( TMath::Abs(dp[1]->GetPdgCode()) == kElectron ) 
+      Decay(kElectron, &omega);
+    else
+      Decay(kMuonPlus, &omega);
     for (Int_t j = 0; j < 3; j++) dp[j]->SetMomentum(fProducts[2-j]);
     printf("original %13.3f %13.3f %13.3f %13.3f \n", 
 	   part->Px(), part->Py(), part->Pz(), part->Energy());
@@ -287,7 +321,8 @@ void AliOmegaDalitz::Copy(TObject&) const
 
 AliOmegaDalitz::AliOmegaDalitz(const AliOmegaDalitz &dalitz)
   : AliDecayer(),
-    fLPMass(0)
+    fEPMass(0),
+    fMPMass(0)
 {
   // Copy constructor
   dalitz.Copy(*this);
