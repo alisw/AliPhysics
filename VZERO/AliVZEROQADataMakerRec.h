@@ -55,7 +55,7 @@ protected:
   AliVZEROCalibData *fCalibData;        //! calibration data
    
 private:
-  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
   virtual void   InitESDs() ; 
   virtual void   InitDigits();  
   virtual void   MakeESDs(AliESDEvent * esd) ;
@@ -65,24 +65,24 @@ private:
   virtual void   StartOfDetectorCycle() ; 
   void AddTrendingEntry();
 
-  Int_t   fEvent;
-  Int_t   fEven[64];
-  Int_t   fOdd[64];
-  Float_t fADCmean[128];
-  size_t fNTotEvents;
-  size_t fNSubEvents;
-  size_t fTrendingUpdateEvent;
-  size_t fNTrendingUpdates;
-  size_t fTrendingUpdateTime;
-  UInt_t fCycleStartTime;
-  UInt_t fCycleStopTime;
-  Double_t fMonitorRate;
-  Double_t fChargePerRing[8];
-  Double_t fFlagPerRing[8];
-  Double_t fChargePerChannel[64];
-  Double_t fFlagPerChannel[64];
-  Double_t fMeanChargePerChannel[64];
-  Double_t fMeanFlagPerChannel[64];
+  Int_t   fEvent;                     // event index
+  Int_t   fEven[64];                  // even charge integrators
+  Int_t   fOdd[64];                   // odd charge intergators
+  Float_t fADCmean[128];              // mean adc per integrator
+  size_t fNTotEvents;                 // total number of events
+  size_t fNSubEvents;                 // number of events used in trending histos
+  size_t fTrendingUpdateEvent;        // event index of last update of the trending histos
+  size_t fNTrendingUpdates;           // number of updates in trending histos
+  size_t fTrendingUpdateTime;         // trending histos update time
+  UInt_t fCycleStartTime;             // timestamp of QA start-of-cycle
+  UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle
+  Double_t fMonitorRate;              // monitoring rate
+  Double_t fChargePerRing[8];         // charge per ring
+  Double_t fFlagPerRing[8];           // flag per ring
+  Double_t fChargePerChannel[64];     // charge per channel
+  Double_t fFlagPerChannel[64];       // flag per channel
+  Double_t fMeanChargePerChannel[64]; // mean charge per channel
+  Double_t fMeanFlagPerChannel[64];   // mean flag per channel
 
   ClassDef(AliVZEROQADataMakerRec,2)  // description 
 

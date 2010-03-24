@@ -517,8 +517,8 @@ void AliVZEROQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  char TDCname[100];
-  char ADCname[100];
+  char tDCname[100];
+  char aDCname[100];
   TH1I *fhDigTDC[64]; 
   TH1I *fhDigADC[64]; 
   char texte[100];
@@ -530,13 +530,13 @@ void AliVZEROQADataMakerRec::InitDigits()
   
   for (Int_t i=0; i<64; i++)
     {
-    sprintf(TDCname, "hDigitTDC%d", i);
+    sprintf(tDCname, "hDigitTDC%d", i);
     sprintf(texte,"Digit TDC in cell %d; TDC value;Entries",i);    
-    fhDigTDC[i] = new TH1I(TDCname,texte,300,0.,149.);
+    fhDigTDC[i] = new TH1I(tDCname,texte,300,0.,149.);
     
-    sprintf(ADCname,"hDigitADC%d",i);
+    sprintf(aDCname,"hDigitADC%d",i);
     sprintf(texte,"Digit ADC in cell %d;ADC value;Entries",i);
-    fhDigADC[i]= new TH1I(ADCname,texte,1024,0.,1023.);
+    fhDigADC[i]= new TH1I(aDCname,texte,1024,0.,1023.);
     
     Add2DigitsList(fhDigTDC[i],i+1, !expert, image);
     Add2DigitsList(fhDigADC[i],i+1+64, !expert, image);  
@@ -550,11 +550,11 @@ void AliVZEROQADataMakerRec::MakeDigits()
 
   GetDigitsData(0)->Fill(fDigitsArray->GetEntriesFast()) ; 
   TIter next(fDigitsArray) ; 
-  AliVZEROdigit *VZERODigit ; 
-  while ( (VZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {
-    Int_t   PMNumber  = VZERODigit->PMNumber();         
-    GetDigitsData(PMNumber +1)->Fill( VZERODigit->Time()) ;    // in 100 of picoseconds
-    GetDigitsData(PMNumber +1+64)->Fill( VZERODigit->ADC()) ;
+  AliVZEROdigit *aVZERODigit ; 
+  while ( (aVZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {
+    Int_t   aPMNumber  = aVZERODigit->PMNumber();         
+    GetDigitsData(aPMNumber +1)->Fill( aVZERODigit->Time()) ;    // in 100 of picoseconds
+    GetDigitsData(aPMNumber +1+64)->Fill( aVZERODigit->ADC()) ;
   }  
 }
 
