@@ -87,7 +87,7 @@
 
 ClassImp(AliTRDresolution)
 
-Float_t AliTRDresolution::fPtThreshold = 1.; // GeV/c
+Float_t AliTRDresolution::fgPtThreshold = 1.; // GeV/c
 UChar_t const AliTRDresolution::fgNproj[kNviews] = {
   2, 2, 5, 5, 5,
   2, 5, 11, 11, 11
@@ -104,18 +104,24 @@ Char_t const * AliTRDresolution::fgPerformanceName[kNviews] = {
     ,"TRDout2MC"
     ,"TRD2MC"
 };
+// Configure segmentation for y resolution/residuals
+// const Int_t AliTRDresolution::fgNresYsegm = 6; const Char_t *AliTRDresolution::fgkResYsegmName = "Layer";   // layer wise
+const Int_t AliTRDresolution::fgkNresYsegm = 18; const Char_t *AliTRDresolution::fgkResYsegmName = "Sector"; // sector wise
+// const Int_t AliTRDresolution::fgNresYsegm = 90; const Char_t *AliTRDresolution::fgkResYsegmName = "Stack";  // stack wise
+// const Int_t AliTRDresolution::fgNresYsegm = 540; const Char_t *AliTRDresolution::fgkResYsegmName = "Detector"; // detector wise
+
 UChar_t const AliTRDresolution::fgNcomp[kNprojs] = {
   1,  1, //2, 
-  AliTRDresolution::kNyresSlices, 1, //2, 
-  AliTRDresolution::kNyresSlices, 1, 1, 1, 1, //5, 
-  AliTRDresolution::kNyresSlices, 1, 1, 1, 1, //5,
-  AliTRDresolution::kNyresSlices, 1, 1, 1, 1, //5,
+  AliTRDresolution::fgkNresYsegm, 1, //2, 
+  AliTRDresolution::fgkNresYsegm, 1, 1, 1, 1, //5, 
+  AliTRDresolution::fgkNresYsegm, 1, 1, 1, 1, //5,
+  AliTRDresolution::fgkNresYsegm, 1, 1, 1, 1, //5,
 // MC
-  AliTRDresolution::kNyresSlices, 1,          //2, 
-  AliTRDresolution::kNyresSlices, 1, 1, 1, 1, //5, 
-  AliTRDresolution::kNyresSlices, 1, 1, 1, 1, 1, 1, 1, 11, 11, 11, //11
-  AliTRDresolution::kNyresSlices, 1, 1, 1, 1, 1, 1, 1, 11, 11, 11, //11
-  6*AliTRDresolution::kNyresSlices, 6, 6, 6, 6, 6, 6, 6, 6*11, 6*11, 6*11  //11
+  AliTRDresolution::fgkNresYsegm, 1,          //2, 
+  AliTRDresolution::fgkNresYsegm, 1, 1, 1, 1, //5, 
+  AliTRDresolution::fgkNresYsegm, 1, 1, 1, 1, 1, 1, 1, 11, 11, 11, //11
+  AliTRDresolution::fgkNresYsegm, 1, 1, 1, 1, 1, 1, 1, 11, 11, 11, //11
+  6*AliTRDresolution::fgkNresYsegm, 6, 6, 6, 6, 6, 6, 6, 6*11, 6*11, 6*11  //11
 };
 Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
   // Charge
@@ -398,7 +404,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       // calculate residuals using tilt rotation
       dy[1] = cost*(dy[0] - dz[0]*tilt);
       dz[1] = cost*(dz[0] + dy[0]*tilt);
-      if(pt>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sec);
+      if(pt>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sec);
 
       // calculate covariance 
       cov[0] = c->GetSigmaY2();
@@ -619,7 +625,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   dz[1] = cost*(dz[0] + dy[0]*tilt);
 
   TObjArray *arr = (TObjArray*)fContainer->At(kTrackIn);
-  if(1./PAR[4]>fPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sec);
+  if(1./PAR[4]>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sec);
   ((TH2I*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1]);
   ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), dphi);
 
@@ -681,7 +687,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   // fill histos
   arr = (TObjArray*)fContainer->At(kMCtrackIn);
   // y resolution/pulls
-  if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sec);
+  if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sec);
   ((TH2I*)arr->At(1))->Fill(dydx0, (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)));
   // z resolution/pulls
   ((TH2I*)arr->At(2))->Fill(dzdx0, PARMC[1]-PAR[1]);
@@ -792,7 +798,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   }
 
   TObjArray *arr = (TObjArray*)fContainer->At(kTrackOut);
-  if(1./PAR[4]>fPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), 1.e2*dy[1], sec); // scale to fit general residual range !!!
+  if(1./PAR[4]>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), 1.e2*dy[1], sec); // scale to fit general residual range !!!
   ((TH2I*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1]);
   ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), dphi);
 
@@ -852,7 +858,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   // fill histos
   arr = (TObjArray*)fContainer->At(kMCtrackOut);
   // y resolution/pulls
-  if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sec);
+  if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sec);
   ((TH2I*)arr->At(1))->Fill(dydx0, (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)));
   // z resolution/pulls
   ((TH2I*)arr->At(2))->Fill(dzdx0, PARMC[1]-PAR[1]);
@@ -986,7 +992,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     arr = (TObjArray*)((TObjArray*)fContainer->At(kMCtrack))->At(ily);
     // y resolution/pulls
-    if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
+    if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
   if(DebugLevel()>=1){
     (*DebugStream()) << "trackMCRes"
       << "dy=" << dy
@@ -1051,7 +1057,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       Float_t dphi  = (dydx - dydx0);
       dphi /= (1.- dydx*dydx0);
 
-      if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
+      if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
       if(tt.GetS2Y()>0.) ((TH2I*)arr->At(1))->Fill(dydx0, dy/TMath::Sqrt(tt.GetS2Y()));
       ((TH2I*)arr->At(4))->Fill(dydx0, TMath::ATan(dphi));
     } else {
@@ -1092,7 +1098,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       dz = cost*(z - zmc + tilt*(y-ymc));
       
       // Fill Histograms
-      if(q>20. && q<250. && pt0>fPtThreshold){ 
+      if(q>20. && q<250. && pt0>fgPtThreshold){ 
         ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
         ((TH2I*)arr->At(1))->Fill(dydx0, dy/TMath::Sqrt(c->GetSigmaY2()));
       }
@@ -1140,7 +1146,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     AliWarning("Please provide a canvas to draw results.");
     return kFALSE;
   }
-  Int_t selection[100], n(0); // 
+  Int_t selection[100], n(0), selStart(0); // 
   Int_t ly0(0), dly(5);
   //Int_t ly0(1), dly(2); // used for SA
   TList *l(NULL); TVirtualPad *pad(NULL); 
@@ -1160,11 +1166,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -100.; xy[2] = .3; xy[3] = 1000.;
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kCluster, 0, 1, n, selection)) break;
     pad=(TVirtualPad*)l->At(1); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kCluster, 0, 1, n, selection)) break;
     return kTRUE;
   case 2: // cluster2track residuals
@@ -1172,7 +1178,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -100.; xy[2] = .3; xy[3] = 1000.;
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kCluster, 0, 1, n, selection)) break;
     xy[0] = -.3; xy[1] = -0.5; xy[2] = .3; xy[3] = 2.5;
     pad=(TVirtualPad*)l->At(1); pad->cd();
@@ -1753,8 +1759,8 @@ Bool_t AliTRDresolution::PostProcess()
             gm->SetName(Form("m_%d%02d%02d", ig, ic, is));
             // this is important for labels in the legend 
             if(ic==0) {
-              gs->SetTitle(Form("Sector %02d", is%kNyresSlices));
-              gm->SetTitle(Form("Sector %02d", is%kNyresSlices));
+              gs->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm));
+              gm->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm));
             } else if(ic<=7) {
               gs->SetTitle(Form("Layer %d", is%AliTRDgeometry::kNlayer));
               gm->SetTitle(Form("Layer %d", is%AliTRDgeometry::kNlayer));
@@ -1932,7 +1938,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name)
   arr->SetName(name); arr->SetOwner();
   TH1 *h(NULL); char hname[100], htitle[300];
 
-  const Int_t kNro(kNyresSlices), kNphi(48), kNdy(60);
+  const Int_t kNro(fgkNresYsegm), kNphi(48), kNdy(60);
   Float_t Phi=-.48, Dy=-.15, RO=-0.5;
   Float_t binsPhi[kNphi+1], binsDy[kNdy+1], binsRO[kNro+1];
   for(Int_t i=0; i<kNphi+1; i++,Phi+=.02) binsPhi[i]=Phi;

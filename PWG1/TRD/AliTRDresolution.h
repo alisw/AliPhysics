@@ -46,7 +46,6 @@ public:
     ,kMCtrack    =  9 // TRD track monitor
     ,kNviews     = 10 // total number of resolution views
     ,kNprojs     = 70 // total number of projections for all views
-    ,kNyresSlices= 18 // number of y resolution slices
   };
   enum ETRDresolutionSteer {
     kVerbose  = 0
@@ -65,7 +64,7 @@ public:
   virtual ~AliTRDresolution();
   
   void    UserCreateOutputObjects();
-  static Float_t GetPtThreshold() {return fPtThreshold;}
+  static Float_t GetPtThreshold() {return fgPtThreshold;}
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
@@ -81,7 +80,7 @@ public:
   TH1*    PlotTrackOut(const AliTRDtrackV1 *t=NULL);
   TH1*    PlotMC(const AliTRDtrackV1 *t=NULL);
 
-  static void SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
+  static void SetPtThreshold(Float_t pt) {fgPtThreshold = pt;}
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
   void    SetVisual(Bool_t v = kTRUE) {v ? SETBIT(fStatus, kVisual) : CLRBIT(fStatus, kVisual);}
@@ -113,7 +112,9 @@ private:
   static UChar_t const fgNproj[kNviews]; // number of projections per task
   static UChar_t const fgNcomp[kNprojs]; // number of projections per task
   static Char_t const *fgAxTitle[kNprojs][4]; // Title for all ref histos
-  static Float_t      fPtThreshold;     //! pt threshold for some performance plots
+  static Float_t      fgPtThreshold;     //! pt threshold for some performance plots
+  static const Int_t  fgkNresYsegm;      //! number of segments for saving y resolution
+  static const Char_t *fgkResYsegmName;  //! name of segment for saving y resolution
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
   AliTRDgeometry      *fGeo;            //! TRD geometry
   TDatabasePDG        *fDBPDG;          //! PDG database
