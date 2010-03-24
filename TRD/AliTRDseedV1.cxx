@@ -1338,6 +1338,7 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
 
     // Recalculate cluster error based on tracking information
     c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?zt:-1., dydx);
+    c->SetSigmaZ2(fPad[0]*fPad[0]/12.); // for HLT
     sy[n]  = TMath::Sqrt(c->GetSigmaY2());
 
     yc[n]  = recoParam->UseGAUS() ? 
@@ -1353,7 +1354,10 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   }
 
   // to few clusters
-  if (n < kClmin) return kFALSE; 
+  if (n < kClmin){ 
+    SetErrorMsg(kFitFailed);
+    return kFALSE; 
+  }
 
   // fit XY
   if(!fitterY.Eval()){
@@ -1405,6 +1409,9 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
       qc[n]   = TMath::Abs(c->GetQ());
       xc[n]   = fX0 - c->GetX();
       zc[n]   = c->GetZ();
+      // Recalculate cluster error based on tracking information
+      c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?(z0 - xc[n]*dzdx):-1., dydx);
+      c->SetSigmaZ2(fPad[0]*fPad[0]/12.); // for HLT
       fitterZ.AddPoint(&xc[n], -qc[n], 1.);
       n--;m++;
     }

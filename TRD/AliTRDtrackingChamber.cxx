@@ -37,6 +37,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDCommonParam.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalROC.h"
 
@@ -47,6 +48,12 @@ AliTRDtrackingChamber::AliTRDtrackingChamber()
   :TObject()
   ,fDetector(-1)
   ,fX0(0.)
+  ,fExB(0.)
+  ,fVD(0.)
+  ,fT0(0.)
+  ,fS2PRF(0.)
+  ,fDiffL(0.)
+  ,fDiffT(0.)
 {}  
 
 //_______________________________________________________
@@ -56,13 +63,23 @@ void AliTRDtrackingChamber::Clear(const Option_t *opt)
 }
 
 //_______________________________________________________
-void AliTRDtrackingChamber::InsertCluster(AliTRDcluster *c, Int_t index)
+void AliTRDtrackingChamber::InsertCluster(AliTRDcluster *c, Int_t index, Bool_t hlt)
 {
+// Add cluster to TB container and recalculate error parameterization (for HLT)
+
   fTB[c->GetPadTime()].InsertCluster(c, index);
+  if(!hlt) return;
+
+  // Define approximate error parameterization for HLT clusters
+  // if needed the fix values of 
+  //  - drift length of 1.5 can be replaced with c->GetXloc()
+  //  - pad length can be cached from geometry in Init()
+  c->SetSigmaY2(fS2PRF, fDiffT, fExB, 1.5);
+  c->SetSigmaZ2(6.75);
 }
 
 //_______________________________________________________
-Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, const AliTRDCalDet *cal, Bool_t hlt)
+Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo)
 {
 // Init chamber and all time bins (AliTRDchamberTimeBin)
 // Calculates radial position of the chamber based on 
@@ -73,8 +90,8 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, const AliTRDCalDe
     return kFALSE;
   }
 
-  Int_t stack = geo->GetStack(fDetector);
-  Int_t layer = geo->GetLayer(fDetector);
+  Int_t stack = AliTRDgeometry::GetStack(fDetector);
+  Int_t layer = AliTRDgeometry::GetLayer(fDetector);
   AliTRDpadPlane *pp = geo->GetPadPlane(layer, stack);
   Double_t zl = pp->GetRow0ROC() - pp->GetRowEndROC();
   Double_t z0 = geo->GetRow0(layer, stack, 0) - zl;
@@ -90,25 +107,32 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, const AliTRDCalDe
   }	
   if(jtb<2) return kFALSE;
   
-  
   // ESTIMATE POSITION OF PAD PLANE FOR THIS CHAMBER
+  Int_t t0 = Int_t(fT0);
+  fTB[t0].SetT0();
   Double_t x0 = fTB[index[0]].GetX();
   Double_t x1 = fTB[index[1]].GetX();
   Double_t dx = (x0 - x1)/(index[1] - index[0]); 
-
-  Int_t t0 = (Int_t)cal->GetValue(fDetector);
-  if(!hlt){
-    Double_t mean = 0.0;
-    AliTRDCalROC *roc = AliTRDcalibDB::Instance()->GetT0ROC(fDetector);
-    for(Int_t k = 0; k<roc->GetNchannels(); k++) mean += roc->GetValue(k); 
-    mean /= roc->GetNchannels();
-    t0 = (Int_t)(cal->GetValue(fDetector) + mean);
-  }
-  fTB[t0].SetT0();
   fX0 = x0 + dx*(index[0] - t0);	
   return kTRUE;
 }
   
+
+//_______________________________________________________
+void AliTRDtrackingChamber::Init(Int_t det)
+{
+// Init detector number and Cache calibration parameters
+
+  fDetector = det;
+  AliTRDcalibDB *calib = AliTRDcalibDB::Instance();
+  fT0    = calib->GetT0Average(fDetector);
+  fVD    = calib->GetVdriftAverage(fDetector);
+  fS2PRF = calib->GetPRFROC(fDetector)->GetMean(); fS2PRF *= fS2PRF;
+  fExB   = AliTRDCommonParam::Instance()->GetOmegaTau(fVD);
+  AliTRDCommonParam::Instance()->GetDiffCoeff(fDiffL,
+  fDiffT, fVD);
+}
+
 //_______________________________________________________	
 Int_t AliTRDtrackingChamber::GetNClusters() const
 {

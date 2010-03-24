@@ -61,7 +61,7 @@ AliTRDtrackingSector::AliTRDtrackingSector(AliTRDgeometry *geo, Int_t gs)
 
     
 //_____________________________________________________________________________
-void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal)
+void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec)
 {		
 // 	Steer building of tracking chambers and build tracking sector.
 // 	Propagate radial position information (calibration/alignment aware) from chambers to sector level
@@ -74,7 +74,7 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec, const AliTRDCalD
       if(!(tb = (*tc)->GetTB(itb))) continue;
       tb->SetReconstructor(rec);
     }
-    (*tc)->Build(fGeom, cal, rec->IsHLT());
+    (*tc)->Build(fGeom);
   }
     
   Int_t nl;
@@ -129,7 +129,7 @@ AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t layer
   for(Int_t ic = ch+1; ic<AliTRDgeometry::kNdets; ic++) fIndex[ic] += fIndex[ic] >= 0 ? 1 : 0;
   
   AliTRDtrackingChamber *chmb = fChamber[Int_t(fIndex[ch])] = new AliTRDtrackingChamber();
-  chmb->SetDetector(AliTRDgeometry::GetDetector(layer, stack, fSector));
+  chmb->Init(AliTRDgeometry::GetDetector(layer, stack, fSector));
   return chmb;
 }
 

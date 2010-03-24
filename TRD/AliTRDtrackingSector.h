@@ -21,7 +21,6 @@
 #include "AliTRDgeometry.h"
 #endif
 
-class AliTRDCalDet;
 class AliTRDReconstructor;
 class AliTRDtrackingChamber;
 class AliTRDtrackingSector 
@@ -40,7 +39,7 @@ public:
   AliTRDtrackingChamber** GetStack(Int_t stack);
   Int_t    GetSector() const {return fSector;}	
 
-  void     Init(const AliTRDReconstructor *rec, const AliTRDCalDet *cal);
+  void     Init(const AliTRDReconstructor *rec);
   void     Print(Option_t *opt = NULL) const;
   
   void     SetGeometry(AliTRDgeometry *const geo) {fGeom = geo;}

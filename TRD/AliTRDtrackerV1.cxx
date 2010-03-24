@@ -1126,6 +1126,10 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
       if(!tracklets[ilr].IsUsable(itb)) continue;
       cl = tracklets[ilr].GetClusters(itb);
       if(!cl->IsInChamber()) continue;
+      if(cl->GetSigmaY2()<1.e-6 || cl->GetSigmaZ2()<1.e-6){
+        if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>1) printf("D-AliTRDtrackerV1::FitTiltedRiemanConstraint: Cluster error parameterization missing. This should appear only in HLT tests.");
+        continue;
+      }
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
@@ -1225,10 +1229,15 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
     for(Int_t itb = 0; itb < AliTRDseedV1::kNclusters; itb++){
       if(!(cl = tracklets[ipl].GetClusters(itb))) continue;
       if(!cl->IsInChamber()) continue;
-      //if (!tracklets[ipl].IsUsable(itb)) continue;
+      if (!tracklets[ipl].IsUsable(itb)) continue;
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
+      if(cl->GetSigmaY2()<1.e-6 || cl->GetSigmaZ2()<1.e-6){
+        if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>1) printf("D-AliTRDtrackerV1::FitTiltedRieman: Cluster error parameterization missing. This should appear only in HLT tests.");
+        tracklets[ipl].Print("a");
+        continue;
+      }
       dx = x - xref;
       // Transformation
       t = 1./(x*x + y*y);
@@ -1959,9 +1968,9 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
 {
 // Building tracking containers for clusters
 
-  Int_t nin =0, icl = fClusters->GetEntriesFast();
-  while (icl--) {
-    AliTRDcluster *c = (AliTRDcluster *) fClusters->UncheckedAt(icl);
+  Int_t nin(0), ncl(fClusters->GetEntriesFast());
+  while (ncl--) {
+    AliTRDcluster *c = (AliTRDcluster *) fClusters->UncheckedAt(ncl);
     if(c->IsInChamber()) nin++;
     if(fkReconstructor->IsHLT()) c->SetRPhiMethod(AliTRDcluster::kCOG);
     Int_t detector       = c->GetDetector();
@@ -1969,13 +1978,12 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
     Int_t stack          = fGeom->GetStack(detector);
     Int_t layer          = fGeom->GetLayer(detector);
     
-    fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, icl);
+    fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, ncl, fkReconstructor->IsHLT());
   }
 
-  const AliTRDCalDet *cal = AliTRDcalibDB::Instance()->GetT0Det();
   for(int isector =0; isector<AliTRDgeometry::kNsector; isector++){ 
     if(!fTrSec[isector].GetNChambers()) continue;
-    fTrSec[isector].Init(fkReconstructor, cal);
+    fTrSec[isector].Init(fkReconstructor);
   }
 
   return nin;
@@ -2223,7 +2231,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   // 8. Build ESD track and register it to the output list
   //
 
-  const AliTRDCalDet *cal = AliTRDcalibDB::Instance()->GetT0Det();
   AliTRDtrackingChamber *chamber = NULL;
   AliTRDtrackingChamber **ci = NULL;
   AliTRDseedV1 sseed[kMaxTracksStack*6]; // to be initialized
@@ -2444,7 +2451,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
     
     for(Int_t ip = 0; ip < kNPlanes; ip++){ 
       if(!(chamber = stack[ip])) continue;
-      chamber->Build(fGeom, cal);//Indices(fSieveSeeding);
+      chamber->Build(fGeom);//Indices(fSieveSeeding);
     }
 
     if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 10){ 
@@ -2781,6 +2788,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
             if(!cseed[jLayer].AttachClusters(chamber, kTRUE)) continue;
             cseed[jLayer].Fit();
           }
+          FitTiltedRiemanConstraint(&cseed[0], GetZ());
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
           if(ntracks == kMaxTracksStack) return ntracks;
