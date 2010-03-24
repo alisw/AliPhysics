@@ -17,7 +17,7 @@
 //#include <TGButton.h>
 //#include <TGNumberEntry.h>
 //#include <TGColorSelect.h>
-/#include <TGDoubleSlider.h>
+//#include <TGDoubleSlider.h>
 
 
 //______________________________________________________________________________
