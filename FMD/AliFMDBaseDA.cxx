@@ -95,7 +95,8 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fPulseLength(10),
   fRequiredEvents(0),
   fCurrentEvent(0)
- {
+{
+  //Constructor
    fSeenDetectors[0] = fSeenDetectors[1] = fSeenDetectors[2] = kFALSE;
   fDetectorArray.SetOwner();
   fConditionsFile.open("conditions.csv");
@@ -113,6 +114,7 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fRequiredEvents(baseDA.fRequiredEvents),
   fCurrentEvent(baseDA.fCurrentEvent)
 {
+  //Copy constructor
   fSeenDetectors[0] = baseDA.fSeenDetectors[0];
   fSeenDetectors[1] = baseDA.fSeenDetectors[1];
   fSeenDetectors[2] = baseDA.fSeenDetectors[2];
@@ -131,6 +133,7 @@ AliFMDBaseDA::~AliFMDBaseDA()
 //_____________________________________________________________________
 void AliFMDBaseDA::Run(AliRawReader* reader) 
 {
+  //Run the FMD DA
   TFile* diagFile = 0;
   if (fSaveHistograms)
     diagFile = TFile::Open(fDiagnosticsFilename.Data(),"RECREATE");
@@ -144,7 +147,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
   TClonesArray*    digitArray = new TClonesArray("AliFMDDigit",0);
   
-  Bool_t SOD_read = kFALSE;
+  Bool_t sodread = kFALSE;
   
   for(Int_t i=0;i<3;i++) {
     reader->NextEvent(); // Read Start-of-Run / Start-of-Files event
@@ -155,14 +158,14 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       
       WriteConditionsData(fmdReader);
       Init();
-      SOD_read = kTRUE;
+      sodread = kTRUE;
       break;
     }
   }
   
   InitContainer(diagFile);
   
-  if(!SOD_read) 
+  if(!sodread) 
     AliWarning("No SOD event detected!");
   
   int lastProgress = 0;
@@ -197,8 +200,8 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   for(UShort_t det=1;det<=3;det++) {
     if (!fSeenDetectors[det-1]) continue;
     std::cout << "FMD" << det << std::endl;
-    UShort_t FirstRing = (det == 1 ? 1 : 0);
-    for (UShort_t ir = FirstRing; ir < 2; ir++) {
+    UShort_t firstRing = (det == 1 ? 1 : 0);
+    for (UShort_t ir = firstRing; ir < 2; ir++) {
       Char_t   ring = (ir == 0 ? 'O' : 'I');
       UShort_t nsec = (ir == 0 ? 40  : 20);
       UShort_t nstr = (ir == 0 ? 256 : 512);
@@ -235,6 +238,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
 
 void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
 {
+  //Prepare container for diagnostics
   TObjArray* detArray;
   TObjArray* ringArray;
   TObjArray* sectorArray;
@@ -297,6 +301,7 @@ void AliFMDBaseDA::InitContainer(TDirectory* diagFile)
 //_____________________________________________________________________ 
 void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader) 
 {
+  //Write the conditions data to file
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fConditionsFile.write(Form("# %s \n",pars->GetConditionsShuttleID()),14);
   
@@ -366,7 +371,7 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   
 }
 //_____________________________________________________________________ 
-Int_t AliFMDBaseDA::GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) {
+Int_t AliFMDBaseDA::GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) const {
 
   UShort_t iring  =  (ring == 'I' ? 1 : 0);
   

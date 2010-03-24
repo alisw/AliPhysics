@@ -46,7 +46,7 @@ public:
   void Run(AliRawReader* fmdReader);
   void SetSaveDiagnostics(Bool_t save) {fSaveHistograms = save;}
   void SetRequiredEvents(Int_t nEvents) {fRequiredEvents = nEvents;}
-  Int_t GetRequiredEvents() {return fRequiredEvents ;}
+  Int_t GetRequiredEvents() const {return fRequiredEvents ;}
 protected:
   
   virtual void Init()  {};
@@ -57,17 +57,17 @@ protected:
   virtual void FinishEvent()  {};
   virtual void Terminate(TFile* ) {};
   
-  Int_t GetCurrentEvent() {return fCurrentEvent;}
+  Int_t GetCurrentEvent() const {return fCurrentEvent;}
   
-  static const UInt_t kBaseDDL = 3072;
+  static const UInt_t fgkBaseDDL = 3072;   // base FMD ddl
   //Char_t* fDiagnosticsFilename;
-  TString fDiagnosticsFilename;
-  std::ofstream fOutputFile;
-  std::ofstream fConditionsFile;
-  Bool_t fSaveHistograms;
-  TObjArray fDetectorArray;
+  TString fDiagnosticsFilename;            // name of diagnostics file
+  std::ofstream fOutputFile;               // output file
+  std::ofstream fConditionsFile;           // conditions file
+  Bool_t fSaveHistograms;                  // save hists or not
+  TObjArray fDetectorArray;                // array indiced by detector
 
-  Int_t GetHalfringIndex(UShort_t, Char_t, UShort_t);
+  Int_t GetHalfringIndex(UShort_t, Char_t, UShort_t) const;
   Int_t GetPulseSize(UShort_t det , 
 		     Char_t ring, 
 		     UShort_t board) {return fPulseSize.At(GetHalfringIndex(det,ring,board));}
@@ -85,17 +85,17 @@ protected:
   
 
   
-  TArrayS fPulseSize;
-  TArrayS fPulseLength;
+  TArrayS fPulseSize;                     // Pulse size for gain calib
+  TArrayS fPulseLength;                   // Pulse length for gain calib
 
-  Bool_t  fSeenDetectors[3];
+  Bool_t  fSeenDetectors[3];              // Detectors seen so far
 private:
  
   void WriteConditionsData(AliFMDRawReader* fmdReader);
   void SetCurrentEvent(Int_t currentEvent) {fCurrentEvent = currentEvent; }
   void InitContainer(TDirectory* dir);
-  Int_t fRequiredEvents;
-  Int_t fCurrentEvent;   
+  Int_t fRequiredEvents;            // number of events required for this calib
+  Int_t fCurrentEvent;              // the current event       
   
   
   
