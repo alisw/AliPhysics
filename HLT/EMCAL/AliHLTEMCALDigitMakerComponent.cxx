@@ -197,6 +197,25 @@ AliHLTEMCALDigitMakerComponent::DoInit(int argc, const char** argv )
   return 0;
 }
 
+int AliHLTEMCALDigitMakerComponent::GetBCMFromCDB()
+{
+   // See header file for class documentation
+
+
+
+
+   return 0;
+}
+
+int AliHLTEMCALDigitMakerComponent::GetGainsFromCDB()
+{
+   // See header file for class documentation
+   
+   return 0;
+}
+
+
+
 AliHLTComponent*
 AliHLTEMCALDigitMakerComponent::Spawn()
 {
