@@ -24,7 +24,7 @@ class AliITSCorrectSDDPoints : public TObject {
   Float_t GetCorrection(Int_t modId, Float_t zloc, Float_t xloc) const;
   Float_t GetCorrectedXloc(Int_t modId, Float_t zloc, Float_t xloc) const{
     Float_t dx=GetCorrection(modId,zloc,xloc);
-    return xloc-dx;
+    return xloc+dx;
   }
  private:
   AliITSCorrectSDDPoints(const AliITSCorrectSDDPoints& csdd);
