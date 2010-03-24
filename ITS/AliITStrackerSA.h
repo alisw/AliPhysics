@@ -121,8 +121,8 @@ class AliITStrackerSA : public AliITStrackerMI {
   Double_t *fLambdaWin; // lambda window sizes
   AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
-  TObjArray *fListOfTracks;   //! container for found tracks 
-  TObjArray *fListOfSATracks; //! container for found SA tracks 
+  TClonesArray *fListOfTracks;   //! container for found tracks 
+  TClonesArray *fListOfSATracks; //! container for found SA tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fInwardFlag;       // set to kTRUE for inward track finding
   Int_t fOuterStartLayer;     // Outward search for tracks with <6 points: outer layer to start from
@@ -133,7 +133,9 @@ class AliITStrackerSA : public AliITStrackerMI {
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerSA,9)
+  ClassDef(AliITStrackerSA,10)
 };
 
 #endif
+
+
