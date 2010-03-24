@@ -691,6 +691,7 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
 			     TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass(),
 			     TDatabasePDG::Instance()->GetParticle(kKPlus)->Mass(),
 			     TDatabasePDG::Instance()->GetParticle(kProton)->Mass()};
+  /*
   if (p1>4) return -1;
   if (p2>4) return -1;
   Double_t mass1 = kpmass[p1]; 
@@ -719,4 +720,12 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   mass = (e1+e2)*(e1+e2)-mass;
   if (mass < 0.) mass = 0.;
   return (TMath::Sqrt(mass));
+  */
+  if(p1>4 || p2>4) return -1;
+  Double_t e12   = kpmass[p1]*kpmass[p1]+fPmom[0]*fPmom[0]+fPmom[1]*fPmom[1]+fPmom[2]*fPmom[2];
+  Double_t e22   = kpmass[p2]*kpmass[p2]+fNmom[0]*fNmom[0]+fNmom[1]*fNmom[1]+fNmom[2]*fNmom[2];
+  Double_t cmass = TMath::Sqrt(TMath::Max(kpmass[p1]*kpmass[p1]+kpmass[p2]*kpmass[p2]
+					  +2.*(TMath::Sqrt(e12*e22)-fPmom[0]*fNmom[0]-fPmom[1]*fNmom[1]-fPmom[2]*fNmom[2]),0.));
+  return cmass;
+			       
 }
