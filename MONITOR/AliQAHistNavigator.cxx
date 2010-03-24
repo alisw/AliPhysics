@@ -12,15 +12,26 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 ////////////////////////////////////////////////////////////////////////////
 //
-//  support class for the QA histogram viewer
-//
+//  support classes for the QA histogram viewer
+//  
 //  origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
 //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <list>
+#include <string>
+#include <Riostream.h>
+#include <TSystem.h>
+#include <TH1.h>
+#include <TList.h>
+#include <TNamed.h>
+#include <TObjString.h>
+#include <TString.h>
+#include <TFile.h>
+#include <TPRegexp.h>
+#include <TKey.h>
 #include "AliQAHistNavigator.h"
 
 ClassImp(AliQAHistNavigator)
@@ -44,6 +55,7 @@ AliQAHistNavigator::AliQAHistNavigator(Int_t run):
     fExpertDirName("Expert"),
     fPEmptyList(new TList())
 {
+    //ctor
     fPEmptyList->AddLast(new AliQADirListItem(""));
     ReReadFiles();
 }
@@ -51,11 +63,13 @@ AliQAHistNavigator::AliQAHistNavigator(Int_t run):
 //_________________________________________________________________________
 AliQAHistNavigator::~AliQAHistNavigator()
 {
+    //dtor
 }
 
 //_________________________________________________________________________
 Bool_t AliQAHistNavigator::GetHistogram(TH1*& hist)
 {
+    //get histogram from file
     TString file = GetFileName();
     TString dir = GetDirName();
     TString histname = GetItemName();
@@ -78,6 +92,7 @@ Bool_t AliQAHistNavigator::GetHistogram(TH1*& hist)
 //_________________________________________________________________________
 Bool_t AliQAHistNavigator::Next()
 {
+    //move to the next histogram
     if (!fPCurrFile||!fPCurrDetector||!fPCurrLevel) return kFALSE;
     if (!(fPCurrItem=(AliQADirListItem*)GetItemList()->After(fPCurrItem)))
     {
@@ -127,6 +142,7 @@ Bool_t AliQAHistNavigator::Next()
 //_________________________________________________________________________
 Bool_t AliQAHistNavigator::Prev()
 {
+    //move to the previous histrogram
     if (!fPCurrLevel||!fPCurrDetector||!fPCurrFile) return kFALSE;
     if (!(fPCurrItem=(AliQADirListItem*)GetItemList()->Before(fPCurrItem)))
     {
@@ -373,7 +389,7 @@ TString AliQAHistNavigator::GetDirName()
 }
 
 //_________________________________________________________________________
-TString AliQAHistNavigator::GetPath(AliQADirListItem* item)
+TString AliQAHistNavigator::GetPath(AliQADirListItem* const item)
 {
     //Get the full path to teh directory containing item
     AliQADirList* d=item->GetParent();
@@ -402,8 +418,8 @@ Bool_t AliQAHistNavigator::GetListOfFiles()
     delete fPListOfFiles;
     fPListOfFiles = new AliQADirList();
 
-    TString CORRFileName;
-    TString QAResultFileName;
+    TString fileNameCORR;
+    TString fileNameQAResult;
 
     TString macdir(".");
     gSystem->ExpandPathName(macdir);
@@ -428,12 +444,12 @@ Bool_t AliQAHistNavigator::GetListOfFiles()
         {
             if (reCORR.Match(filename))
             {
-                CORRFileName = filename;
+                fileNameCORR = filename;
                 continue;
             }
             if (reQA.Match(filename))
             {
-                QAResultFileName = filename;
+                fileNameQAResult = filename;
                 continue;
             }
             if (reMerged.Match(filename))
@@ -447,8 +463,8 @@ Bool_t AliQAHistNavigator::GetListOfFiles()
                 names.push_back(filename);
             }
         }
-        if (!fPCORRFile) fPCORRFile = new TFile(CORRFileName,"READ");
-        if (!fPQAResultFile) fPQAResultFile = new TFile(QAResultFileName,"READ");
+        if (!fPCORRFile) fPCORRFile = new TFile(fileNameCORR,"READ");
+        if (!fPQAResultFile) fPQAResultFile = new TFile(fileNameQAResult,"READ");
         if (names.empty())
         {
             printf("GetListOfFiles: no files matching...\n");
@@ -492,11 +508,11 @@ Bool_t AliQAHistNavigator::CloneDirStructure()
 //_________________________________________________________________________
 Bool_t AliQAHistNavigator::Crawl(AliQADirList* dir)
 {
+    //scans the current directory and puts result in dir
+    //returns false if dir in file empty
     TString oldkeyname;
     TString keyname;
-    //scans the current directory and puts result in dir
     TString pwd = gDirectory->GetPath();
-    //returns false if dir in file empty
     TList* keys = gDirectory->GetListOfKeys();
     if (!keys) return kFALSE;
     if (keys->GetEntries()==0) return kFALSE;
@@ -565,6 +581,7 @@ Bool_t AliQAHistNavigator::ReReadFiles()
     return kTRUE;
 }
 
+//_________________________________________________________________________
 //_________________________________________________________________________
 ClassImp(AliQADirList)
 //_________________________________________________________________________

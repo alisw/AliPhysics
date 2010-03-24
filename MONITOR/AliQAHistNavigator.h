@@ -12,33 +12,21 @@
 #ifndef ALIQAHISTNAVIGATOR_H
 #define ALIQAHISTNAVIGATOR_H
 
-#include "TSystem.h"
-#include "Riostream.h"
-#include "TH1D.h"
-#include "TF1.h"
-#include "TList.h"
-#include "TObjString.h"
-#include "TString.h"
-#include "TFile.h"
-#include "TRegexp.h"
-#include "TPRegexp.h"
-#include "TKey.h"
-#include "TText.h"
-#include <list>
-#include <string>
+#include <TNamed.h>
+#include <TObjString.h>
 
-class AliQADirList;
-class AliQADirListItem;
-class AliQAHistNavigator;
+class TList;
+class TFile;
+class TString;
 
 class AliQADirList : public TNamed{
 public:
     AliQADirList();
     virtual ~AliQADirList();
-    TList* GetItems() {return fPItems;}
-    TList* GetDirs() {return fPDirs;}
-    AliQADirList* GetParent() {return fPParent;}
-    void SetParent(AliQADirList* l) {fPParent = l;}
+    TList* GetItems() const {return fPItems;}
+    TList* GetDirs() const {return fPDirs;}
+    AliQADirList* GetParent() const {return fPParent;}
+    void SetParent(AliQADirList* const l) {fPParent = l;}
     
 private:
     AliQADirList* fPParent;          //pointer to parent folder
@@ -50,12 +38,12 @@ private:
     ClassDef(AliQADirList,999)  //AliQADirListDir
 };
 
-class AliQADirListItem : public TObjString {
+class AliQADirListItem : public TObjString{
 public:
     AliQADirListItem(const char* s="");
     virtual ~AliQADirListItem();
     AliQADirList* GetParent() {return fPParent;}
-    void SetParent(AliQADirList* parent) {fPParent=parent;}
+    void SetParent(AliQADirList* const parent) {fPParent=parent;}
 
 private:
     AliQADirList* fPParent;
@@ -93,19 +81,19 @@ public:
     TString GetItemName();
     TString GetFileName();
     TString GetDirName();
-    TString GetPath(AliQADirListItem* item);
+    TString GetPath(AliQADirListItem* const item);
     
-    AliQADirList* GetFileList() {return fPListOfFiles;}
-    AliQADirList* GetDetectorList() {return fPCurrFile;}
-    AliQADirList* GetLevelList() {return fPCurrDetector;}
+    AliQADirList* GetFileList() const {return fPListOfFiles;}
+    AliQADirList* GetDetectorList() const {return fPCurrFile;}
+    AliQADirList* GetLevelList() const {return fPCurrDetector;}
     TList*    GetItemList(); 
-    AliQADirList* GetCurrListOfFiles() {return fPListOfFiles;}
-    AliQADirList* GetCurrFile() {return fPCurrFile;}
-    AliQADirList* GetCurrDetector() {return fPCurrDetector;}
-    AliQADirList* GetCurrLevel() {return fPCurrLevel;}
-    AliQADirListItem* GetCurrItem() {return fPCurrItem;}
+    AliQADirList* GetCurrListOfFiles() const {return fPListOfFiles;}
+    AliQADirList* GetCurrFile() const {return fPCurrFile;}
+    AliQADirList* GetCurrDetector() const {return fPCurrDetector;}
+    AliQADirList* GetCurrLevel() const {return fPCurrLevel;}
+    AliQADirListItem* GetCurrItem() const {return fPCurrItem;}
     
-    Bool_t InitOK() {return fInitOK;}
+    Bool_t InitOK() const {return fInitOK;}
     Bool_t ReReadFiles();
     void SetExpertMode(Bool_t mode);
 
@@ -138,7 +126,7 @@ private:
     Bool_t fInitOK;  //whether there is data to navigate
     Bool_t fExpertMode; //expert histogram mode
     TString fExpertDirName; //expert dir name
-    TList* fPEmptyList;
+    TList* fPEmptyList; //just an empty list
 
     AliQAHistNavigator(const AliQAHistNavigator&);            // Not implemented
     AliQAHistNavigator& operator=(const AliQAHistNavigator&); // Not implemented

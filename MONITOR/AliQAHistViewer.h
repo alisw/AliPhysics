@@ -1,10 +1,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
 ///////////////////////////////////////////////////////////////////////////////
 //
+//     QA histogram viewer
 //     (see AliQAHistNavigator.cxx for details)
-//
 //     Origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -12,21 +11,11 @@
 #ifndef ALIQAHISTVIEWER_H
 #define ALIQAHISTVIEWER_H
 
-#include <TApplication.h>
-#include <TGClient.h>
-#include <TGButton.h>
-#include <TGFrame.h>
-#include <TFrame.h>
-#include <TRootEmbeddedCanvas.h>
-#include <TGStatusBar.h>
-#include <TCanvas.h>
-#include <TF1.h>
-#include <TRandom.h>
-#include <TGraph.h>
-#include <TAxis.h>
-#include <TString.h>
-#include <TGComboBox.h>
-#include "AliQAHistNavigator.h"
+class TRootEmbeddedCanvas;
+class AliQAHistNavigator;
+class TGComboBox;
+class TGCheckButton;
+class TGWindow;
 
 class AliQAHistViewer : public TGMainFrame {
 

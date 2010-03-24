@@ -12,15 +12,29 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 ////////////////////////////////////////////////////////////////////////////
 //
 //  QA histogram viewer
+//  scans the current directory fro files with QA
+//  and plots them.
 //
 //  origin: Mikolaj Krzewicki, Nikhef, Mikolaj.Krzewicki@cern.ch
 //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TApplication.h>
+#include <TGButton.h>
+#include <TGFrame.h>
+#include <TFrame.h>
+#include <TRootEmbeddedCanvas.h>
+#include <TGStatusBar.h>
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TF1.h>
+#include <TString.h>
+#include <TGComboBox.h>
+#include <TList.h>
+#include "AliQAHistNavigator.h"
 #include "AliQAHistViewer.h"
 
 ClassImp(AliQAHistViewer)
@@ -28,6 +42,7 @@ ClassImp(AliQAHistViewer)
 //_________________________________________________________________________
 void AliQAHistViewer::DoDrawNext()
 {
+   //draw next histogram
    Int_t rows = 2;
    Int_t cols = 2;
    TString oldDirStr;
@@ -65,6 +80,7 @@ void AliQAHistViewer::DoDrawNext()
 //_________________________________________________________________________
 void AliQAHistViewer::DoDrawPrev()
 {
+   //draw previous histogram
    Int_t rows = 2;
    Int_t cols = 2;
    TString oldDirStr;
@@ -102,6 +118,7 @@ void AliQAHistViewer::DoDrawPrev()
 //_________________________________________________________________________
 void AliQAHistViewer::DoExit()
 {
+   //exit
    printf("Exit application...");
    gApplication->Terminate(0);
 }
@@ -195,6 +212,7 @@ AliQAHistViewer::~AliQAHistViewer()
 //_________________________________________________________________________
 void AliQAHistViewer::FillComboBoxWithListEntries( TGComboBox* box, const TList* list )
 {
+    //fill the combobox with list entries
     box->RemoveAll();
     Int_t i=0;
     TIter listiter(list);
@@ -209,6 +227,7 @@ void AliQAHistViewer::FillComboBoxWithListEntries( TGComboBox* box, const TList*
 //_________________________________________________________________________
 void AliQAHistViewer::UpdateAllPathComboBoxes()
 {
+    //make gui elements up to date
     if (!fQANavigator->InitOK()) return;
     FillComboBoxWithListEntries( fFileListBox, (TList*)fQANavigator->GetFileList()->GetDirs() );
     FillComboBoxWithListEntries( fDetectorListBox, (TList*)fQANavigator->GetDetectorList()->GetDirs() );
@@ -223,6 +242,7 @@ void AliQAHistViewer::UpdateAllPathComboBoxes()
 //_________________________________________________________________________
 void AliQAHistViewer::DoSetFile( Int_t s )
 {
+    //set file from user choice
     fQANavigator->SetFile(s);
     DoDrawNext();
 }
@@ -230,6 +250,7 @@ void AliQAHistViewer::DoSetFile( Int_t s )
 //_________________________________________________________________________
 void AliQAHistViewer::DoSetDetector( Int_t s )
 {
+    //set detector number from user choice
     fQANavigator->SetDetector(s);
     DoDrawNext();
 }
@@ -237,6 +258,7 @@ void AliQAHistViewer::DoSetDetector( Int_t s )
 //_________________________________________________________________________
 void AliQAHistViewer::DoSetLevel( Int_t s )
 {
+    //set QA level
     fQANavigator->SetLevel(s);
     DoDrawNext();
 }
@@ -244,6 +266,7 @@ void AliQAHistViewer::DoSetLevel( Int_t s )
 //_________________________________________________________________________
 void AliQAHistViewer::DoSetHistogram( Int_t s )
 {
+    //set histogram
     fQANavigator->SetItem(s);
     DoDrawNext();
 }
@@ -251,6 +274,7 @@ void AliQAHistViewer::DoSetHistogram( Int_t s )
 //_________________________________________________________________________
 void AliQAHistViewer::DoSetExpertMode(Bool_t mode)
 {
+    //set expert mode
     fQANavigator->SetExpertMode(mode);
     DoDrawNext();
 }
