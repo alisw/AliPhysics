@@ -366,7 +366,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(esdFriendTrack){
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
-        printf("check [%d] %s\n", icalib, calObject->IsA()->GetName());
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
         if(!(track = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
         AliDebug(4, Form("TRD track OK"));
