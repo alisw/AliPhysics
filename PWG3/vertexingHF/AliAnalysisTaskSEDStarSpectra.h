@@ -56,7 +56,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE {
   void     SideBandBackground(Double_t finvM, Double_t finvMDStar, Double_t pt, Int_t okD0, Int_t okD0bar);
   void     WrongSignForDStar(Double_t finvM, Double_t finvMDStar, Double_t pt, Int_t okD0, Int_t okD0bar);
   //cuts
-  Bool_t   SetUtrechtSelections(Double_t ptD0, AliAnalysisVertexingHF *fVHF);  
+  Bool_t   SetUtrechtSelections(Double_t ptD0);  
   Bool_t   SelectPID(AliAODTrack *track, Double_t nsig);
   // histos
   Bool_t   DefineHistoFroAnalysis(); 
