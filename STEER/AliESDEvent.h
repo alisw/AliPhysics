@@ -20,7 +20,6 @@
 #include <TTree.h>
 #include <TArrayF.h>
 
-class TList;
 
 #include "AliVEvent.h"
 // some includes for delegated methods
@@ -57,6 +56,10 @@ class AliESDcascade;
 class TRefArray;
 class AliESDACORDE;
 class AliESDHLTDecision;
+
+class TList;
+class TString;
+
 
 class AliESDEvent : public AliVEvent {
 public:
