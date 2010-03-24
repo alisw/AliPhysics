@@ -85,6 +85,14 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistClusterMapModuleITSMIokInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSMIbadInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSMInoclsInAcc; //! output hist
+  TH1F         *fHistZatSPDouter0ok; //! output hist
+  TH1F         *fHistZatSPDouter1ok; //! output hist
+  TH1F         *fHistZatSPDouter2ok; //! output hist
+  TH1F         *fHistZatSPDouter3ok; //! output hist
+  TH1F         *fHistZatSPDouter0notok; //! output hist
+  TH1F         *fHistZatSPDouter1notok; //! output hist
+  TH1F         *fHistZatSPDouter2notok; //! output hist
+  TH1F         *fHistZatSPDouter3notok; //! output hist
   TH1F         *fHistxlocSDDok; //! output hist
   TH1F         *fHistzlocSDDok; //! output hist
   TH2F         *fHistxlocVSmodSDDok; //! output hist
@@ -93,6 +101,8 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistPhiTPCInAcc; //! output hist
   TH1F         *fHistPtTPC; //! output hist
   TH1F         *fHistPtTPCInAcc; //! output hist
+  TH1F         *fHistPtTPCInAccMCtwoSPD; //! output hist
+  TH1F         *fHistPtTPCInAccMConeSPD; //! output hist
   TH2F         *fHistdEdxVSPtTPCInAcc; //! output hist
   TH2F         *fHistdEdxVSPtITSTPCsel; //! output hist
   TH2F         *fHistPtVSphiTPCInAcc; //! output hist
@@ -160,20 +170,39 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F     *fHistd0rphiITSMISPDInAccS500700; //! output hist
   TH1F     *fHistd0rphiITSMISPDInAccS10001500; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccP150200; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccP350450; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccP500700; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccP10001500; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccP25004000; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccP40008000; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP150200; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP500700; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP10001500; //! output hist
   TH2F     *fHistd0rphiVSphiITSMIoneSPDInAccP10001500; //! output hist
   TH2F     *fHistd0rphiVSetaITSMIoneSPDInAccP10001500; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS150200; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS350450; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS500700; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from22; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from211; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from310; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from321; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700from3122; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS10001500; //! output hist  
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS25004000; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS40008000; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS150200fromStrange; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS150200fromMat; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS350450fromStrange; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS350450fromMat; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700fromStrange; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS500700fromMat; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS10001500fromStrange; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS10001500fromMat; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS25004000fromStrange; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS25004000fromMat; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS40008000fromStrange; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccS40008000fromMat; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccS150200; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccS500700; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccS10001500; //! output hist
@@ -195,13 +224,13 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   AliAnalysisTaskITSTrackingCheck& operator=(const AliAnalysisTaskITSTrackingCheck&); // not implemented
   
 
-  Int_t NumberOfITSClustersMC(Int_t label) const;
+  Int_t NumberOfITSClustersMC(Int_t label,Int_t nModules=2198) const;
   Int_t NumberOfITSClusters(Int_t idet,Float_t &xloc) const;
   Double_t ParticleImpParMC(TParticle *part,AliESDVertex *vert,Double_t bzT) const;
   Bool_t SelectPt(Double_t pt);
   Int_t MakeITSflag(AliESDtrack *track) const;
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,8); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,9); // ITS tracks analysis
 };
 
 #endif
