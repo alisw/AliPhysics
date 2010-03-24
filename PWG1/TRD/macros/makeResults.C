@@ -1,5 +1,5 @@
 // Usage:
-//   makeResults.C("tasks", "file_list", kGRID)
+//   makeResults.C("tasks", "file_list", ""task_id, kGRID)
 //   tasks : "ALL" or one/more of the following separated by space:
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
@@ -13,6 +13,8 @@
 //     They should contain the full path. Here is an example:
 // /lustre/alice/local/TRDdata/SIM/P-Flat/TRUNK/RUN0/TRD.Performance.root
 // or for GRID alien:///alice/cern.ch/user/m/mfasel/MinBiasProd/results/ppMinBias80000/1/TRD.Performance.root
+//   task_id : identifier of task speciality as defined by the AddMacro.C. 
+//             (e.g. AddTRDresolution.C defines "" for barrel tracks, "K" for kink tracks and "SA" for stand alone tracks)
 //   kGRID : specify if files are comming from a GRID collection [default kFALSE]
 //
 // HOW TO BUILD THE FILE LIST
