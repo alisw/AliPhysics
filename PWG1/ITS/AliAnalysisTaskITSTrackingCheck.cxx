@@ -105,6 +105,14 @@ fHistClusterMapModuleITSSAnoclsInAcc(0),
 fHistClusterMapModuleITSMIokInAcc(0),
 fHistClusterMapModuleITSMIbadInAcc(0),
 fHistClusterMapModuleITSMInoclsInAcc(0),
+fHistZatSPDouter0ok(0),
+fHistZatSPDouter1ok(0),
+fHistZatSPDouter2ok(0),
+fHistZatSPDouter3ok(0),
+fHistZatSPDouter0notok(0),
+fHistZatSPDouter1notok(0),
+fHistZatSPDouter2notok(0),
+fHistZatSPDouter3notok(0),
 fHistxlocSDDok(0),
 fHistzlocSDDok(0),
 fHistxlocVSmodSDDok(0),
@@ -113,6 +121,8 @@ fHistzlocSDDall(0),
 fHistPhiTPCInAcc(0),
 fHistPtTPC(0),
 fHistPtTPCInAcc(0),
+fHistPtTPCInAccMCtwoSPD(0),
+fHistPtTPCInAccMConeSPD(0),
 fHistdEdxVSPtTPCInAcc(0),
 fHistdEdxVSPtITSTPCsel(0),
 fHistPtVSphiTPCInAcc(0),
@@ -180,20 +190,39 @@ fHistd0rphiITSMISPDInAccS150200(0),
 fHistd0rphiITSMISPDInAccS500700(0),
 fHistd0rphiITSMISPDInAccS10001500(0),
 fHistd0rphiITSMIoneSPDInAccP150200(0),
+fHistd0rphiITSMIoneSPDInAccP350450(0),
 fHistd0rphiITSMIoneSPDInAccP500700(0),
 fHistd0rphiITSMIoneSPDInAccP10001500(0),
+fHistd0rphiITSMIoneSPDInAccP25004000(0),
+fHistd0rphiITSMIoneSPDInAccP40008000(0),
 fHistd0zITSMIoneSPDInAccP150200(0),
 fHistd0zITSMIoneSPDInAccP500700(0),
 fHistd0zITSMIoneSPDInAccP10001500(0),
 fHistd0rphiVSphiITSMIoneSPDInAccP10001500(0),
 fHistd0rphiVSetaITSMIoneSPDInAccP10001500(0),
 fHistd0rphiITSMIoneSPDInAccS150200(0),
+fHistd0rphiITSMIoneSPDInAccS350450(0),
 fHistd0rphiITSMIoneSPDInAccS500700(0),
 fHistd0rphiITSMIoneSPDInAccS500700from22(0),
 fHistd0rphiITSMIoneSPDInAccS500700from211(0),
 fHistd0rphiITSMIoneSPDInAccS500700from310(0),
 fHistd0rphiITSMIoneSPDInAccS500700from321(0),
+fHistd0rphiITSMIoneSPDInAccS500700from3122(0),
 fHistd0rphiITSMIoneSPDInAccS10001500(0),
+fHistd0rphiITSMIoneSPDInAccS25004000(0),
+fHistd0rphiITSMIoneSPDInAccS40008000(0),
+fHistd0rphiITSMIoneSPDInAccS150200fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS150200fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS350450fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS350450fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS500700fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS500700fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS10001500fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS10001500fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS25004000fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS25004000fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS40008000fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS40008000fromMat(0),
 fHistd0zITSMIoneSPDInAccS150200(0),
 fHistd0zITSMIoneSPDInAccS500700(0),
 fHistd0zITSMIoneSPDInAccS10001500(0),
@@ -257,6 +286,14 @@ fHistClusterMapModuleITSSAnoclsInAcc(0),
 fHistClusterMapModuleITSMIokInAcc(0),
 fHistClusterMapModuleITSMIbadInAcc(0),
 fHistClusterMapModuleITSMInoclsInAcc(0),
+fHistZatSPDouter0ok(0),
+fHistZatSPDouter1ok(0),
+fHistZatSPDouter2ok(0),
+fHistZatSPDouter3ok(0),
+fHistZatSPDouter0notok(0),
+fHistZatSPDouter1notok(0),
+fHistZatSPDouter2notok(0),
+fHistZatSPDouter3notok(0),
 fHistxlocSDDok(0),
 fHistzlocSDDok(0),
 fHistxlocVSmodSDDok(0),
@@ -265,6 +302,8 @@ fHistzlocSDDall(0),
 fHistPhiTPCInAcc(0),
 fHistPtTPC(0),
 fHistPtTPCInAcc(0),
+fHistPtTPCInAccMCtwoSPD(0),
+fHistPtTPCInAccMConeSPD(0),
 fHistdEdxVSPtTPCInAcc(0),
 fHistdEdxVSPtITSTPCsel(0),
 fHistPtVSphiTPCInAcc(0),
@@ -332,20 +371,39 @@ fHistd0rphiITSMISPDInAccS150200(0),
 fHistd0rphiITSMISPDInAccS500700(0),
 fHistd0rphiITSMISPDInAccS10001500(0),
 fHistd0rphiITSMIoneSPDInAccP150200(0),
+fHistd0rphiITSMIoneSPDInAccP350450(0),
 fHistd0rphiITSMIoneSPDInAccP500700(0),
 fHistd0rphiITSMIoneSPDInAccP10001500(0),
+fHistd0rphiITSMIoneSPDInAccP25004000(0),
+fHistd0rphiITSMIoneSPDInAccP40008000(0),
 fHistd0zITSMIoneSPDInAccP150200(0),
 fHistd0zITSMIoneSPDInAccP500700(0),
 fHistd0zITSMIoneSPDInAccP10001500(0),
 fHistd0rphiVSphiITSMIoneSPDInAccP10001500(0),
 fHistd0rphiVSetaITSMIoneSPDInAccP10001500(0),
 fHistd0rphiITSMIoneSPDInAccS150200(0),
+fHistd0rphiITSMIoneSPDInAccS350450(0),
 fHistd0rphiITSMIoneSPDInAccS500700(0),
 fHistd0rphiITSMIoneSPDInAccS500700from22(0),
 fHistd0rphiITSMIoneSPDInAccS500700from211(0),
 fHistd0rphiITSMIoneSPDInAccS500700from310(0),
 fHistd0rphiITSMIoneSPDInAccS500700from321(0),
+fHistd0rphiITSMIoneSPDInAccS500700from3122(0),
 fHistd0rphiITSMIoneSPDInAccS10001500(0),
+fHistd0rphiITSMIoneSPDInAccS25004000(0),
+fHistd0rphiITSMIoneSPDInAccS40008000(0),
+fHistd0rphiITSMIoneSPDInAccS150200fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS150200fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS350450fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS350450fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS500700fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS500700fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS10001500fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS10001500fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS25004000fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS25004000fromMat(0),
+fHistd0rphiITSMIoneSPDInAccS40008000fromStrange(0),
+fHistd0rphiITSMIoneSPDInAccS40008000fromMat(0),
 fHistd0zITSMIoneSPDInAccS150200(0),
 fHistd0zITSMIoneSPDInAccS500700(0),
 fHistd0zITSMIoneSPDInAccS10001500(0),
@@ -381,8 +439,6 @@ AliAnalysisTaskITSTrackingCheck::~AliAnalysisTaskITSTrackingCheck()
     fOutput = 0;
   }
 }
-
-//________________________________________________________________________
 //________________________________________________________________________
 void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
 {
@@ -582,6 +638,40 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistClusterMapITSSAnocls->SetMinimum(0);
   fOutput->Add(fHistClusterMapITSSAnocls);
   
+  
+  fHistZatSPDouter0ok = new TH1F("fHistZatSPDouter0ok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter0ok->Sumw2();
+  fHistZatSPDouter0ok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter0ok);
+  fHistZatSPDouter1ok = new TH1F("fHistZatSPDouter1ok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter1ok->Sumw2();
+  fHistZatSPDouter1ok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter1ok);
+  fHistZatSPDouter2ok = new TH1F("fHistZatSPDouter2ok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter2ok->Sumw2();
+  fHistZatSPDouter2ok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter2ok);
+  fHistZatSPDouter3ok = new TH1F("fHistZatSPDouter3ok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter3ok->Sumw2();
+  fHistZatSPDouter3ok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter3ok);
+  fHistZatSPDouter0notok = new TH1F("fHistZatSPDouter0notok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter0notok->Sumw2();
+  fHistZatSPDouter0notok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter0notok);
+  fHistZatSPDouter1notok = new TH1F("fHistZatSPDouter1notok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter1notok->Sumw2();
+  fHistZatSPDouter1notok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter1notok);
+  fHistZatSPDouter2notok = new TH1F("fHistZatSPDouter2notok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter2notok->Sumw2();
+  fHistZatSPDouter2notok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter2notok);
+  fHistZatSPDouter3notok = new TH1F("fHistZatSPDouter3notok", "Track z at SPDouter radius; z [cm]; N tracks",3200,-16,16);
+  fHistZatSPDouter3notok->Sumw2();
+  fHistZatSPDouter3notok->SetMinimum(0);
+  fOutput->Add(fHistZatSPDouter3notok);
+  
   fHistxlocSDDok = new TH1F("fHistxlocSDDok", "SDD points; xloc [cm]; N tracks",75, -3.75, 3.75);
   fHistxlocSDDok->Sumw2();
   fHistxlocSDDok->SetMinimum(0);
@@ -661,6 +751,16 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtTPCInAcc->SetMinimum(0);
   fOutput->Add(fHistPtTPCInAcc);
   
+  fHistPtTPCInAccMCtwoSPD = new TH1F("fHistPtTPCInAccMCtwoSPD","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtTPCInAccMCtwoSPD->Sumw2();
+  fHistPtTPCInAccMCtwoSPD->SetMinimum(0);
+  fOutput->Add(fHistPtTPCInAccMCtwoSPD);
+  
+  fHistPtTPCInAccMConeSPD = new TH1F("fHistPtTPCInAccMConeSPD","pt distribution of TPC tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtTPCInAccMConeSPD->Sumw2();
+  fHistPtTPCInAccMConeSPD->SetMinimum(0);
+  fOutput->Add(fHistPtTPCInAccMConeSPD);
+  
   fHistdEdxVSPtTPCInAcc = new TH2F("fHistdEdxVSPtTPCInAcc","dE/dx distribution of TPC tracks; p_{t} [GeV/c]; TPC dE/dx",100,0,1,50,0,500);
   fOutput->Add(fHistdEdxVSPtTPCInAcc);
   
@@ -691,7 +791,7 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtTPCInAccWithPtTPCAtInnerWall->SetMinimum(0);
   fOutput->Add(fHistPtTPCInAccWithPtTPCAtInnerWall);
   
-  fHistDeltaPtTPC = new TH2F("fHistDeltaPtTPC","pt distribution of TPC tracks; p_{t} [GeV/c]; p_{t} TPC at vtx - p_{t} at inner wall [GeV/c]",10,0,1,50,-1,1);
+  fHistDeltaPtTPC = new TH2F("fHistDeltaPtTPC","pt distribution of TPC tracks; p_{t} [GeV/c]; p_{t} TPC at vtx - p_{t} at inner wall [GeV/c]",100,0,1,50,-0.2,0.2);
   fHistDeltaPtTPC->SetMinimum(0);
   fOutput->Add(fHistDeltaPtTPC);
   
@@ -950,6 +1050,11 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistd0rphiITSMIoneSPDInAccP150200->SetMinimum(0);
   fOutput->Add(fHistd0rphiITSMIoneSPDInAccP150200);
 
+  fHistd0rphiITSMIoneSPDInAccP350450 = new TH1F("fHistd0rphiITSMIoneSPDInAccP350450","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccP350450->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccP350450->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccP350450);
+
   fHistd0rphiITSMIoneSPDInAccP500700 = new TH1F("fHistd0rphiITSMIoneSPDInAccP500700","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
   fHistd0rphiITSMIoneSPDInAccP500700->Sumw2();
   fHistd0rphiITSMIoneSPDInAccP500700->SetMinimum(0);
@@ -959,6 +1064,16 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistd0rphiITSMIoneSPDInAccP10001500->Sumw2();
   fHistd0rphiITSMIoneSPDInAccP10001500->SetMinimum(0);
   fOutput->Add(fHistd0rphiITSMIoneSPDInAccP10001500);
+
+  fHistd0rphiITSMIoneSPDInAccP25004000 = new TH1F("fHistd0rphiITSMIoneSPDInAccP25004000","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccP25004000->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccP25004000->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccP25004000);
+
+  fHistd0rphiITSMIoneSPDInAccP40008000 = new TH1F("fHistd0rphiITSMIoneSPDInAccP40008000","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccP40008000->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccP40008000->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccP40008000);
 
   fHistd0zITSMIoneSPDInAccP150200 = new TH1F("fHistd0zITSMIoneSPDInAccP150200","Longitudinal imp. par. to VertexTracks for primaries; d_{0} z [cm]; N tracks",300,-1.5,1.5);
   fHistd0zITSMIoneSPDInAccP150200->Sumw2();
@@ -986,6 +1101,11 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistd0rphiITSMIoneSPDInAccS150200->SetMinimum(0);
   fOutput->Add(fHistd0rphiITSMIoneSPDInAccS150200);
 
+  fHistd0rphiITSMIoneSPDInAccS350450 = new TH1F("fHistd0rphiITSMIoneSPDInAccS350450","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS350450->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS350450->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS350450);
+
   fHistd0rphiITSMIoneSPDInAccS500700 = new TH1F("fHistd0rphiITSMIoneSPDInAccS500700","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
   fHistd0rphiITSMIoneSPDInAccS500700->Sumw2();
   fHistd0rphiITSMIoneSPDInAccS500700->SetMinimum(0);
@@ -1011,10 +1131,86 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistd0rphiITSMIoneSPDInAccS500700from321->SetMinimum(0);
   fOutput->Add(fHistd0rphiITSMIoneSPDInAccS500700from321);
 
+  fHistd0rphiITSMIoneSPDInAccS500700from3122 = new TH1F("fHistd0rphiITSMIoneSPDInAccS500700from3122","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS500700from3122->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS500700from3122->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS500700from3122);
+
   fHistd0rphiITSMIoneSPDInAccS10001500 = new TH1F("fHistd0rphiITSMIoneSPDInAccS10001500","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
   fHistd0rphiITSMIoneSPDInAccS10001500->Sumw2();
   fHistd0rphiITSMIoneSPDInAccS10001500->SetMinimum(0);
   fOutput->Add(fHistd0rphiITSMIoneSPDInAccS10001500);
+
+  fHistd0rphiITSMIoneSPDInAccS25004000 = new TH1F("fHistd0rphiITSMIoneSPDInAccS25004000","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS25004000->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS25004000->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS25004000);
+
+  fHistd0rphiITSMIoneSPDInAccS40008000 = new TH1F("fHistd0rphiITSMIoneSPDInAccS40008000","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS40008000->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS40008000->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS40008000);
+
+  fHistd0rphiITSMIoneSPDInAccS150200fromStrange = new TH1F("fHistd0rphiITSMIoneSPDInAccS150200fromStrange","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS150200fromStrange->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS150200fromStrange->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS150200fromStrange);
+
+  fHistd0rphiITSMIoneSPDInAccS150200fromMat = new TH1F("fHistd0rphiITSMIoneSPDInAccS150200fromMat","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS150200fromMat->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS150200fromMat->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS150200fromMat);
+
+  fHistd0rphiITSMIoneSPDInAccS350450fromStrange = new TH1F("fHistd0rphiITSMIoneSPDInAccS350450fromStrange","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS350450fromStrange->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS350450fromStrange->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS350450fromStrange);
+
+  fHistd0rphiITSMIoneSPDInAccS350450fromMat = new TH1F("fHistd0rphiITSMIoneSPDInAccS350450fromMat","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS350450fromMat->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS350450fromMat->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS350450fromMat);
+
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrange = new TH1F("fHistd0rphiITSMIoneSPDInAccS500700fromStrange","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrange->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrange->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS500700fromStrange);
+
+  fHistd0rphiITSMIoneSPDInAccS500700fromMat = new TH1F("fHistd0rphiITSMIoneSPDInAccS500700fromMat","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS500700fromMat->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS500700fromMat->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS500700fromMat);
+
+  fHistd0rphiITSMIoneSPDInAccS10001500fromStrange = new TH1F("fHistd0rphiITSMIoneSPDInAccS10001500fromStrange","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS10001500fromStrange->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS10001500fromStrange->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS10001500fromStrange);
+
+  fHistd0rphiITSMIoneSPDInAccS10001500fromMat = new TH1F("fHistd0rphiITSMIoneSPDInAccS10001500fromMat","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS10001500fromMat->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS10001500fromMat->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS10001500fromMat);
+
+  fHistd0rphiITSMIoneSPDInAccS25004000fromStrange = new TH1F("fHistd0rphiITSMIoneSPDInAccS25004000fromStrange","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS25004000fromStrange->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS25004000fromStrange->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS25004000fromStrange);
+
+  fHistd0rphiITSMIoneSPDInAccS25004000fromMat = new TH1F("fHistd0rphiITSMIoneSPDInAccS25004000fromMat","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS25004000fromMat->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS25004000fromMat->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS25004000fromMat);
+
+  fHistd0rphiITSMIoneSPDInAccS40008000fromStrange = new TH1F("fHistd0rphiITSMIoneSPDInAccS40008000fromStrange","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS40008000fromStrange->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS40008000fromStrange->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS40008000fromStrange);
+
+  fHistd0rphiITSMIoneSPDInAccS40008000fromMat = new TH1F("fHistd0rphiITSMIoneSPDInAccS40008000fromMat","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; N tracks",300,-1.5,1.5);
+  fHistd0rphiITSMIoneSPDInAccS40008000fromMat->Sumw2();
+  fHistd0rphiITSMIoneSPDInAccS40008000fromMat->SetMinimum(0);
+  fOutput->Add(fHistd0rphiITSMIoneSPDInAccS40008000fromMat);
+
   
   fHistd0zITSMIoneSPDInAccS150200 = new TH1F("fHistd0zITSMIoneSPDInAccS150200","Longitudinal imp. par. to VertexTracks for secondaries; d_{0} z [cm]; N tracks",300,-1.5,1.5);
   fHistd0zITSMIoneSPDInAccS150200->Sumw2();
@@ -1034,7 +1230,7 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
 
   // ntuples
   //
-  fNtupleESDTracks = new TNtuple("fNtupleESDTracks","tracks","pt:eta:phi:d0:z0:sigmad0:sigmaz0:ptMC:pdgMC:d0MC:d0MCv:z0MCv:sigmad0MCv:sigmaz0MCv:ITSflag:isPrimary:isTPCSel");  
+  fNtupleESDTracks = new TNtuple("fNtupleESDTracks","tracks","pt:eta:phi:d0:z0:sigmad0:sigmaz0:ptMC:pdgMC:pdgMCMoth:d0MC:d0MCv:z0MCv:sigmad0MCv:sigmaz0MCv:ITSflag:isPrimary:isTPCSel");  
   fOutput->Add(fNtupleESDTracks);
 
   fNtupleITSAlignExtra = new TNtuple("fNtupleITSAlignExtra","ITS alignment checks: extra clusters","layer:x:y:z:dxy:dz:xloc:zloc:npoints:pt");  
@@ -1135,13 +1331,18 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
   Int_t   mincontrSPDvtx=1;
   Double_t maxzSPDvtx=20.;
   Double_t maxrSPDvtx=1.;
+  Bool_t useTRKvtx=kTRUE;
+  Bool_t useSPDvtxifNotTRK=kTRUE;
+  Int_t   mincontrTRKvtx=1;
+  //Double_t maxzTRKvtx=20.;
+  //Double_t maxrTRKvtx=1.;
   //------- TPC track selection --------
   Int_t    minclsTPC=90;
   Double_t maxchi2perTPCcl=4.;
   Double_t minEtaInAcc=-0.8; // -0.8
   Double_t maxEtaInAcc=0.8; // 0.8
-  Double_t maxdcaxy=1e6;//2.4;
-  Double_t maxdcaz=1e6;//3.2;
+  Double_t maxdcaxy=1.e6;//2.4;
+  Double_t maxdcaz=1.e6;//3.2;
   AliESDtrackCuts* esdtrackCutsTPC = new AliESDtrackCuts("esdtrackCutsTPC");
   esdtrackCutsTPC->SetMaxDCAToVertexXY(maxdcaxy);
   esdtrackCutsTPC->SetMaxDCAToVertexZ(maxdcaz);
@@ -1206,6 +1407,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     return;
   }
 
+
   //
   // Tracks vertex
   const AliESDVertex *vertexESD = fESD->GetPrimaryVertexTracks();
@@ -1246,6 +1448,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     Bool_t isPrimary=kTRUE,isFromMat=kFALSE,isFromStrange=kFALSE;
     Double_t rProdVtx=0,zProdVtx=0;
     Int_t pdgTrk=0,pdgMoth=0;
+    Int_t nClsMCSPD=0;
   
     Int_t trkLabel = TMath::Abs(track->GetLabel());
     // check if it is primary
@@ -1260,8 +1463,9 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	TParticle* mm=stack->Particle(part->GetFirstMother());
 	if(mm) pdgMoth = TMath::Abs(mm->GetPdgCode());
       }
-      if(pdgMoth==310 || pdgMoth==321 || pdgMoth==3122) isFromStrange=kTRUE;
+      if(pdgMoth==310 || pdgMoth==321 || pdgMoth==3122 || pdgMoth==3312) isFromStrange=kTRUE;
       if(pdgMoth==211 || pdgMoth==22 || pdgMoth==2112 || pdgMoth==2212) isFromMat=kTRUE;
+      nClsMCSPD = NumberOfITSClustersMC(trkLabel,240);
     }
 
     Bool_t itsrefit=kFALSE,tpcrefit=kFALSE,itsfindable=kFALSE,itsfindableAcc=kFALSE;
@@ -1283,12 +1487,39 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     Bool_t skipTrack=kFALSE;
 
     for(Int_t layer=0; layer<6; layer++) {
+      if(layer==0 && !track->HasPointOnITSLayer(1)) continue;
+      if(layer==1 && !track->HasPointOnITSLayer(0)) continue;
       track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
       if(status<0) continue;
       if(layer>=2) idet+=240; // add n SPD modules
       if(layer>=4) idet+=260; // add n SDD modules
       if(status==4) outInZ=kTRUE;
+      
+      if(layer==1 && tpcrefit && itsrefit) {
+	Double_t xyz[3];
+	track->GetXYZAt(rSPDouter,fESD->GetMagneticField(),xyz);
+	if(status==1) {
+	  if(idet%4==0) fHistZatSPDouter0ok->Fill(xyz[2]);
+	  if(idet%4==1) fHistZatSPDouter1ok->Fill(xyz[2]);
+	  if(idet%4==2) fHistZatSPDouter2ok->Fill(xyz[2]);
+	  if(idet%4==3) fHistZatSPDouter3ok->Fill(xyz[2]);
+	}
+	if(status==2 || status==5) {
+	  if(idet%4==0) fHistZatSPDouter0notok->Fill(xyz[2]);
+	  if(idet%4==1) fHistZatSPDouter1notok->Fill(xyz[2]);
+	  if(idet%4==2) fHistZatSPDouter2notok->Fill(xyz[2]);
+	  if(idet%4==3) fHistZatSPDouter3notok->Fill(xyz[2]);
+	}
+      }
+      // kill SDD clusters in MC
+      if(fReadMC && (layer==2 || layer==3)) {
+	Double_t qITS[4]; track->GetITSdEdxSamples(qITS);
+	Double_t conv=3.34/5.43; 
+	if(layer==2 && status==1 && qITS[0]*conv < 30.) status=5;
+	if(layer==3 && status==1 && qITS[1]*conv < 30.) status=5;
+      }
       if(tpcrefit) {
+	if(trackTPC) if(!fESDtrackCutsTPC->AcceptTrack(trackTPC)) continue;
 	if(status==1) fHistClusterMapITSMIok->Fill(layer);
 	if(status==2) fHistClusterMapITSMIbad->Fill(layer);
 	if(status==3) fHistClusterMapITSMIskipped->Fill(layer);
@@ -1296,22 +1527,27 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	if(status==5) fHistClusterMapITSMInocls->Fill(layer);
 	if(status==6) fHistClusterMapITSMInorefit->Fill(layer);
 	if(status==1 && !outInZ) fHistClusterMapModuleITSMIokInAcc->Fill(idet);
-	if(status==2 && !outInZ) fHistClusterMapModuleITSMIbadInAcc->Fill(idet);
+	if((status==2 || status==7) && !outInZ) fHistClusterMapModuleITSMIbadInAcc->Fill(idet);
 	if(status==5 && !outInZ) fHistClusterMapModuleITSMInoclsInAcc->Fill(idet);
 	if(status==1 || status==2 || status==4) {
 	  fHistClusterMapITSMIokoutinzbad->Fill(layer);
 	  nclsokbadoutinzITS++;
 	}
-	if((layer==2 || layer==3) && status!=2 && status!=4 && TMath::Abs(zloc)<2) {
-	  Float_t xlocCls;
-	  Int_t nClsInMod = NumberOfITSClusters(idet,xlocCls);
+	/*if(idet>=80 && idet<120) {
+	  Double_t xyz[3];
+	  track->GetXYZAt(6.8,fESD->GetMagneticField(),xyz);
+	  printf("det %d status %d phi %f z %f zloc %f xloc %f\n",idet,status,TMath::ATan2(xyz[1],xyz[0]),xyz[2],zloc,xloc);
+	  }*/
+	if((layer==2 || layer==3) && status!=2 && status!=4) {
+	  //Float_t xlocCls;
+	  //Int_t nClsInMod = NumberOfITSClusters(idet,xlocCls);
 	  fHistxlocSDDall->Fill(xloc);
 	  fHistzlocSDDall->Fill(zloc);
-	  if(/*status==1*/ nClsInMod>0) {
+	  if(status==1  /*nClsInMod>0*/) {
 	    fHistxlocSDDok->Fill(xloc);
 	    fHistxlocVSmodSDDok->Fill(idet,xloc);
 	    fHistzlocSDDok->Fill(zloc);
-	  }else if(TMath::Abs(xloc)<1) printf("EVENT %d PHI %f LAYER %d\n",fESD->GetEventNumberInFile(),track->Phi(),layer);	
+	  } 	
 	}
       } else {
 	if(status==1) fHistClusterMapITSSAok->Fill(layer);
@@ -1322,7 +1558,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	if(status==6) fHistClusterMapITSSAnorefit->Fill(layer);
 	if(status==1 || status==2 || status==4) fHistClusterMapITSSAokoutinzbad->Fill(layer);
 	if(status==1 && !outInZ) {fHistClusterMapITSSAokInAcc->Fill(layer);fHistClusterMapModuleITSSAokInAcc->Fill(idet);}
-	if(status==2 && !outInZ) {fHistClusterMapITSSAbadInAcc->Fill(layer);fHistClusterMapModuleITSSAbadInAcc->Fill(idet);}
+	if((status==2 || status==7) && !outInZ) {fHistClusterMapITSSAbadInAcc->Fill(layer);fHistClusterMapModuleITSSAbadInAcc->Fill(idet);}
 	if(status==3 && !outInZ) fHistClusterMapITSSAskippedInAcc->Fill(layer);
 	if(status==4 && !outInZ) fHistClusterMapITSSAoutinzInAcc->Fill(layer);
 	if(status==5 && !outInZ) {fHistClusterMapITSSAnoclsInAcc->Fill(layer);fHistClusterMapModuleITSSAnoclsInAcc->Fill(idet);}
@@ -1337,7 +1573,80 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  if(!outInZ) fHistClusterMapITSSAInAcc->Fill(layer);
 	}
       }
-      //if(idet>=238 && idet<=239) skipTrack=kTRUE;
+      /*    
+      // SKIP SDD MODULES LOW EFF
+      if(
+	 idet==246 ||
+	 idet==247 ||
+	 idet==256 ||
+	 idet==261 ||
+	 idet==267 ||
+	 idet==333 ||
+	 idet==343 ||
+	 idet==346 ||
+	 idet==349 ||
+	 idet==376 ||
+	 idet==390 ||
+	 idet==392 ||
+	 idet==409 ||
+	 idet==411 ||
+	 idet==464 ||
+	 idet==468 ||
+	 idet==474 ||
+	 idet==469
+	 ) 
+	skipTrack=kTRUE;
+      */
+         /*
+      if(
+	 idet==245
+	 || idet==248
+	 || idet==253
+	 || idet==264
+	 || idet==276
+	 || idet==286
+	 || idet==287
+	 || idet==292
+	 || idet==295
+	 || idet==302
+	 || idet==305
+	 || idet==307
+	 || idet==315
+	 || idet==320
+	 || idet==330
+	 || idet==331
+	 || idet==341
+	 || idet==357
+	 || idet==368
+	 || idet==376
+	 || idet==377
+	 || idet==378
+	 || idet==379
+	 || idet==380
+	 || idet==381
+	 || idet==382
+	 || idet==383
+	 || idet==422
+	 || idet==444
+	 || idet==445
+	 || idet==450
+	 || idet==451
+	 || idet==452
+	 || idet==453
+	 || idet==455
+	 || idet==459
+	 || idet==469
+	 || idet==485
+	 || idet==493
+	 || idet==494
+	 || idet==495
+	 || idet==496
+	 || idet==497
+	 || idet==498
+	 || idet==499
+	 ) skipTrack=kTRUE;
+      // SKIP SDD MODULES LOW EFF
+      */
     }  
     if(skipTrack) continue;
 
@@ -1350,9 +1659,9 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	track->GetZAt(rSDDouter,fESD->GetMagneticField(),zAtSDDouter);
 	track->GetZAt(rSPDouter,fESD->GetMagneticField(),zAtSPDouter);
 	fHistPtTPC->Fill(track->Pt());  
-	if(TMath::Abs(zAtSSDouter)<100.*zSSDouter &&
-	   TMath::Abs(zAtSDDouter)<100.*zSDDouter &&
-	   TMath::Abs(zAtSPDouter)<100.*zSPDouter) {
+	if(TMath::Abs(zAtSSDouter)<1.*zSSDouter &&
+	   TMath::Abs(zAtSDDouter)<1.*zSDDouter &&
+	   TMath::Abs(zAtSPDouter)<1.*zSPDouter) {
 	  itsfindableAcc=kTRUE;
 	  fHistdEdxVSPtTPCInAcc->Fill(track->Pt(),track->GetTPCsignal());
 	  fHistPtTPCInAcc->Fill(track->Pt());
@@ -1364,7 +1673,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  track->GetInnerPxPyPz(pTPCinnerwall);
 	  Double_t ptTPCinnerwall=TMath::Sqrt(pTPCinnerwall[0]*pTPCinnerwall[0]+pTPCinnerwall[1]*pTPCinnerwall[1]);
 	  fHistPtTPCInAccWithPtTPCAtInnerWall->Fill(ptTPCinnerwall);
-	  fHistDeltaPtTPC->Fill(ptTPCinnerwall,ptTPCinnerwall-trackTPC->Pt());
+	  if(track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kTOFout)) fHistDeltaPtTPC->Fill(trackTPC->P(),track->P()-trackTPC->P());
 	  fHistPhiTPCInAcc->Fill(track->Phi());  
 	  if(isPrimary) {
 	    fHistPtTPCInAccP->Fill(track->Pt());
@@ -1374,7 +1683,22 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	    if(isFromMat) fHistPtTPCInAccSfromMat->Fill(track->Pt());
 	    if(isFromStrange) fHistPtTPCInAccSfromStrange->Fill(track->Pt());
 	  }  
+	  if(nClsMCSPD==2) fHistPtTPCInAccMCtwoSPD->Fill(track->Pt());
+	  if(nClsMCSPD>=1) fHistPtTPCInAccMConeSPD->Fill(track->Pt());
 	  //if(isPrimary) {fHistRProdVtxInAccP->Fill(rProdVtx);} else {fHistRProdVtxInAccS->Fill(rProdVtx);}
+	}
+      }
+    }
+
+
+    if(useTRKvtx) {
+      // we need the vertex to compute the impact parameters
+      if(!vertexESD) continue;
+      if(!(vertexESD->GetStatus()) || vertexESD->GetNContributors()<mincontrTRKvtx) {
+	if(useSPDvtxifNotTRK) {
+	  vertexESD = fESD->GetPrimaryVertexSPD();
+	} else {
+	  continue;
 	}
       }
     }
@@ -1440,14 +1764,15 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     if(tpcrefit && fUseITSSAforNtuples) continue; // only ITS-SA for ntuples
     if(!tpcrefit && !fUseITSSAforNtuples) continue; // only ITS-TPC for ntuples
 
-    // we need the vertex to compute the impact parameters
-    //if(!vertexESD) continue;
-    //if(!(vertexESD->GetStatus())) continue;
-    
     // impact parameter to VertexTracks
     Float_t d0z0[2],covd0z0[3];
     Double_t d0z0TPC[2],covd0z0TPC[3];
-    if(!track->RelateToVertex(spdv,fESD->GetMagneticField(),kVeryBig)) continue;
+    if(useTRKvtx) {
+      if(!track->RelateToVertex(vertexESD,fESD->GetMagneticField(),kVeryBig)) continue;
+    } else { 
+      //if(!track->RelateToVertex(vertexMC,fESD->GetMagneticField(),kVeryBig)) continue;
+      if(!track->RelateToVertex(spdv,fESD->GetMagneticField(),kVeryBig)) continue;
+    } 
     track->GetImpactParameters(d0z0,covd0z0);
     if(trackTPC) trackTPC->PropagateToDCA(spdv,fESD->GetMagneticField(),kVeryBig,d0z0TPC,covd0z0TPC);
     if(covd0z0[0]<0. || covd0z0[2]<0.) continue;
@@ -1469,13 +1794,14 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     
 
     // fill d0 histos
-    if((!fUseITSSAforNtuples&&itsfindableAcc) || fUseITSSAforNtuples) {
+    if(((!fUseITSSAforNtuples&&itsfindableAcc) || fUseITSSAforNtuples) /*&& track->Charge()>0*/) {
       if(track->Pt()>0.150 && track->Pt()<0.200) {
 	if(isPrimary) {
 	  fHistd0rphiTPCInAccP150200->Fill(d0z0TPC[0]);
 	  if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1) && itsrefit)
 	    fHistd0rphiITSMISPDInAccP150200->Fill(d0z0[0]);
 	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    //if(((track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) || (!track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) && itsrefit) {
 	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccP150200->Fill(d0z0[0]);
 	    if(TMath::Abs(d0z0[0])<maxdcaxyITSTPC) fHistd0zITSMIoneSPDInAccP150200->Fill(d0z0[1]);
 	  }
@@ -1484,9 +1810,28 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1) && itsrefit)
 	    fHistd0rphiITSMISPDInAccS150200->Fill(d0z0[0]);
 	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
-	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccS150200->Fill(d0z0[0]);
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) {
+	      fHistd0rphiITSMIoneSPDInAccS150200->Fill(d0z0[0]);
+	      if(isFromStrange) fHistd0rphiITSMIoneSPDInAccS150200fromStrange->Fill(d0z0[0]);
+	      if(isFromMat) fHistd0rphiITSMIoneSPDInAccS150200fromMat->Fill(d0z0[0]);
+	    }
 	    if(TMath::Abs(d0z0[0])<maxdcaxyITSTPC) fHistd0zITSMIoneSPDInAccS150200->Fill(d0z0[1]);
 	    if(TMath::Abs(d0z0[0])<0.1) fHistPDGMoth150200->Fill(pdgMoth);
+	  }
+	}
+      }
+      if(track->Pt()>0.350 && track->Pt()<0.450) {
+	if(isPrimary) {
+	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccP350450->Fill(d0z0[0]);
+	  }
+	} else {
+	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) {
+	      fHistd0rphiITSMIoneSPDInAccS350450->Fill(d0z0[0]);
+	      if(isFromStrange) fHistd0rphiITSMIoneSPDInAccS350450fromStrange->Fill(d0z0[0]);
+	      if(isFromMat) fHistd0rphiITSMIoneSPDInAccS350450fromMat->Fill(d0z0[0]);
+	    }
 	  }
 	}
       }
@@ -1507,13 +1852,18 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	    fHistPDGTrk->Fill(pdgTrk);
 	    fHistPDGMoth->Fill(pdgMoth);
 	    if(TMath::Abs(d0z0[0])<0.1) fHistPDGMoth500700->Fill(pdgMoth);
- 	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccS500700->Fill(d0z0[0]);
+ 	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) {
+	      fHistd0rphiITSMIoneSPDInAccS500700->Fill(d0z0[0]);
+	      if(isFromStrange) fHistd0rphiITSMIoneSPDInAccS500700fromStrange->Fill(d0z0[0]);
+	      if(isFromMat) fHistd0rphiITSMIoneSPDInAccS500700fromMat->Fill(d0z0[0]);
+	    }
  	    if(TMath::Abs(d0z0[0])<maxdcaxyITSTPC) fHistd0zITSMIoneSPDInAccS500700->Fill(d0z0[1]);
 	    if(pdgMoth==310) fHistd0rphiITSMIoneSPDInAccS500700from310->Fill(d0z0[0]);
 	    if(pdgMoth==321) fHistd0rphiITSMIoneSPDInAccS500700from321->Fill(d0z0[0]);
+	    if(pdgMoth==3122) fHistd0rphiITSMIoneSPDInAccS500700from3122->Fill(d0z0[0]);
 	    if(pdgMoth==211) fHistd0rphiITSMIoneSPDInAccS500700from211->Fill(d0z0[0]);
 	    if(pdgMoth==22) fHistd0rphiITSMIoneSPDInAccS500700from22->Fill(d0z0[0]);
-	    if(pdgMoth!=310 && pdgMoth!=321 && pdgMoth<3000) fHistRProdVtxInAccS->Fill(rProdVtx);
+	    if(pdgMoth==211 && TMath::Abs(d0z0[0])>0.5) fHistRProdVtxInAccS->Fill(rProdVtx);
 	  }
 	}
       }
@@ -1533,12 +1883,47 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	  if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1) && itsrefit)
 	    fHistd0rphiITSMISPDInAccS10001500->Fill(d0z0[0]);
 	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
-	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccS10001500->Fill(d0z0[0]);
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) {
+	      fHistd0rphiITSMIoneSPDInAccS10001500->Fill(d0z0[0]);
+	      if(isFromStrange) fHistd0rphiITSMIoneSPDInAccS10001500fromStrange->Fill(d0z0[0]);
+	      if(isFromMat) fHistd0rphiITSMIoneSPDInAccS10001500fromMat->Fill(d0z0[0]);
+	    }
 	    if(TMath::Abs(d0z0[0])<maxdcaxyITSTPC) fHistd0zITSMIoneSPDInAccS10001500->Fill(d0z0[1]);
 	    if(TMath::Abs(d0z0[0])<0.1) fHistPDGMoth10001500->Fill(pdgMoth);
 	  }
 	}
       }
+      if(track->Pt()>2.500 && track->Pt()<4.000) {
+	if(isPrimary) {
+	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccP25004000->Fill(d0z0[0]);
+	  }
+	} else {
+	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) {
+	      fHistd0rphiITSMIoneSPDInAccS25004000->Fill(d0z0[0]);
+	      if(isFromStrange) fHistd0rphiITSMIoneSPDInAccS25004000fromStrange->Fill(d0z0[0]);
+	      if(isFromMat) fHistd0rphiITSMIoneSPDInAccS25004000fromMat->Fill(d0z0[0]);
+	    }
+	  }
+	}
+      }
+      if(track->Pt()>4.000 && track->Pt()<8.000) {
+	if(isPrimary) {
+	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) fHistd0rphiITSMIoneSPDInAccP40008000->Fill(d0z0[0]);
+	  }
+	} else {
+	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
+	    if(TMath::Abs(d0z0[1])<maxdcazITSTPC) {
+	      fHistd0rphiITSMIoneSPDInAccS40008000->Fill(d0z0[0]);
+	      if(isFromStrange) fHistd0rphiITSMIoneSPDInAccS40008000fromStrange->Fill(d0z0[0]);
+	      if(isFromMat) fHistd0rphiITSMIoneSPDInAccS40008000fromMat->Fill(d0z0[0]);
+	    }
+	  }
+	}
+      }
+
     }
 
 
@@ -1564,7 +1949,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     // fill ntuple with track properties
     if(fFillNtuples && SelectPt(track->Pt())) {
-      Float_t fillArray[21]={track->Pt(),track->Eta(),track->Phi(),d0z0[0],d0z0[1],TMath::Sqrt(covd0z0[0]),TMath::Sqrt(covd0z0[2]),ptMC,pdgMC,d0MC,d0z0MCv[0],d0z0MCv[1],sigmad0MCv,TMath::Sqrt(covd0z0MCv[2]),(Float_t)iITSflag,isPrimaryFl,isTPCSelFl};
+      Float_t fillArray[22]={track->Pt(),track->Eta(),track->Phi(),d0z0[0],d0z0[1],TMath::Sqrt(covd0z0[0]),TMath::Sqrt(covd0z0[2]),ptMC,pdgMC,pdgMoth,d0MC,d0z0MCv[0],d0z0MCv[1],sigmad0MCv,TMath::Sqrt(covd0z0MCv[2]),(Float_t)iITSflag,isPrimaryFl,isTPCSelFl};
       fNtupleESDTracks->Fill(fillArray);
     }
 
@@ -1684,7 +2069,7 @@ void AliAnalysisTaskITSTrackingCheck::Terminate(Option_t *)
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClustersMC(Int_t label) const
+Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClustersMC(Int_t label,Int_t nModules) const
 {
   //
   // Return number of ITS clusters produced by MC particle with given label
@@ -1694,7 +2079,7 @@ Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClustersMC(Int_t label) const
   if(!esdHRP) return -1;
   TTree *cTree = (TTree*)esdHRP->GetTreeR("ITS");
   if(!cTree) return -1;
-  TClonesArray *clusters=0;   // new TClonesArray("AliITSRecPoint",10000);
+  TClonesArray *clusters=0;
   cTree->SetBranchAddress("ITSRecPoints",&clusters);
   if(!clusters) return -1;
 
@@ -1703,21 +2088,24 @@ Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClustersMC(Int_t label) const
   Int_t ncls[6]={0,0,0,0,0,0};
   Int_t nclstot=0;
 
-  for(i=0; i<2198; i++) {
+  for(i=0; i<nModules; i++) {
     cTree->GetEvent(i);
     n=clusters->GetEntriesFast();
     for (icl=0; icl<n; icl++) {
       c=(AliITSRecPoint*)clusters->UncheckedAt(icl);
       lay=c->GetLayer();
+      //printf("mod %d lay %d xloc %f zloc %f\n",i,lay,c->GetDetLocalX(),c->GetDetLocalZ());
       for(ilab=0;ilab<3;ilab++) {
         if(c->GetLabel(ilab)==label) ncls[lay]++;
       }
     }
   }
-  for(i=0;i<6;i++) { if(ncls[i]) nclstot++; }
+  for(i=0;i<6;i++) { 
+    //printf("%d\n",ncls[i]); 
+    if(ncls[i]) nclstot++; 
+  }
 
   return nclstot;
-    //return label*0;
 }
 //---------------------------------------------------------------------------
 Int_t AliAnalysisTaskITSTrackingCheck::NumberOfITSClusters(Int_t idet,Float_t &xloc) const
@@ -1809,7 +2197,7 @@ Int_t AliAnalysisTaskITSTrackingCheck::MakeITSflag(AliESDtrack *track) const {
   if(track->HasPointOnITSLayer(4)) iITSflag+=100;
   if(track->HasPointOnITSLayer(5)) iITSflag+=200;
   
-  if(iITSflag==333 && track->GetNcls(0)<6) 
+  if(iITSflag==333 && track->GetNcls(0)<6)
     printf(" ERROR %d   %d\n",track->GetNcls(0),track->GetLabel());
   
   // number of associated ITS clusters
