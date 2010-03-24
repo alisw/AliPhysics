@@ -40,7 +40,7 @@ AliVZEROCalibData::AliVZEROCalibData()
     for(int t=0; t<64; t++) {
         fMeanHV[t]      = 100.0;
         fWidthHV[t]     = 0.0; 
-	fTimeOffset[t]  = 0.0;
+	fTimeOffset[t]  = 5.0;
         fTimeGain[t]    = 1.0;
 	fDeadChannel[t]= kFALSE;
     }
@@ -79,7 +79,7 @@ AliVZEROCalibData::AliVZEROCalibData(const char* name)
    for(int t=0; t<64; t++) {
        fMeanHV[t]      = 100.0;
        fWidthHV[t]     = 0.0; 
-       fTimeOffset[t]  = 0.0;
+       fTimeOffset[t]  = 5.0;
        fTimeGain[t]    = 1.0;
        fDeadChannel[t]= kFALSE;
     }
@@ -295,7 +295,7 @@ void AliVZEROCalibData::SetTimeOffset(Float_t val, Int_t channel)
 void AliVZEROCalibData::SetTimeOffset(const Float_t* TimeOffset) 
 {
   if(TimeOffset) for(int t=0; t<64; t++) fTimeOffset[t] = TimeOffset[t];
-  else for(int t=0; t<64; t++) fTimeOffset[t] = 0.0;
+  else for(int t=0; t<64; t++) fTimeOffset[t] = 5.0;
 }
 
 //________________________________________________________________
