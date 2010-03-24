@@ -1305,7 +1305,7 @@ void AliMultiplicityCorrection::FFT(Int_t dir, Int_t m, Double_t *x, Double_t *y
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::GetComparisonResults(Float_t* mc, Int_t* mcLimit, Float_t* residuals, Float_t* ratioAverage) const
+void AliMultiplicityCorrection::GetComparisonResults(Float_t* const mc, Int_t* const mcLimit, Float_t* const residuals, Float_t* const ratioAverage) const
 {
   // Returns the chi2 between the MC and the unfolded ESD as well as between the ESD and the folded unfolded ESD
   // These values are computed during DrawComparison, thus this function picks up the
@@ -1340,7 +1340,7 @@ TH2F* AliMultiplicityCorrection::GetMultiplicityMC(Int_t i, EventType eventType)
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::SetMultiplicityMC(Int_t i, EventType eventType, TH2F* hist)
+void AliMultiplicityCorrection::SetMultiplicityMC(Int_t i, EventType eventType, TH2F* const hist)
 {
   //
   // returns the corresponding MC spectrum
