@@ -109,7 +109,6 @@ class AliGRPPreprocessor: public AliPreprocessor {
  private:
  
   static const Int_t   fgknDAQLbPar;            //! number of DAQ lb parameters for PHYSICS runs
-  static const Int_t   fgknDAQLbParReduced;     //! number of DAQ lb parameters for non PHYSICS runs
   static const Int_t   fgknDCSDP;               //! number of dcs dps
   static const char*   fgkDCSDataPoints[];      //! names of dcs dps
   static const char*   fgkDCSDataPointsHallProbes[];      //! names of dcs dps for Hall Probes
