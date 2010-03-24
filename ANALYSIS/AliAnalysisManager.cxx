@@ -883,7 +883,7 @@ void AliAnalysisManager::Terminate()
                canvas->Divide(iopt+1, iopt+1, 0.01, 0.01);
             Int_t ipad = 1;
             // draw the plot of deltaVM for Exec for each task
-            for (Int_t itask=0; itask<fTopTasks->GetEntriesFast(); itask++) {
+            for (itask=0; itask<fTopTasks->GetEntriesFast(); itask++) {
                task = (AliAnalysisTask*)fTopTasks->At(itask);
                canvas->cd(ipad++);
                cut = Form("task==%d && stage==1", itask);
