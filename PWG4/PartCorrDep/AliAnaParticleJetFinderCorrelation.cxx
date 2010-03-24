@@ -205,7 +205,7 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   
   Int_t njets = (GetReader()->GetOutputEvent())->GetNJets() ;	
   
-  AliAODJet * jet = new AliAODJet ;
+  AliAODJet * jet = 0 ;
   Int_t index = -1;
   for(Int_t ijet = 0; ijet < njets ; ijet++){
     jet = (GetReader()->GetOutputEvent())->GetJet(ijet) ;	  
