@@ -39,8 +39,7 @@ AliHLTPHOSRecoParamHandler::~AliHLTPHOSRecoParamHandler()
 Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
 {
    // See header file for class documentation
-  //   return fPHOSPidPtr->GetCalibratedEnergy(e); //WHY?
-   return e;
+   return fPHOSPidPtr->GetCalibratedEnergy(e); 
 }
 
 void AliHLTPHOSRecoParamHandler::FillParameters()
