@@ -1,13 +1,17 @@
-/*
- * AliGenEposEventHeader.h
- * 
- * Header for EPOS generated event.
- *
- *      Author: Piotr Ostrowski
- */
-
 #ifndef ALIGENEPOSEVENTHEADER_H_
 #define ALIGENEPOSEVENTHEADER_H_
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+// *
+// * 
+// * Header for EPOS generated event.
+// *
+// *      Author: Piotr Ostrowski
+// *
+
 
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
@@ -21,49 +25,50 @@ public:
 	AliGenEposEventHeader();
 	virtual ~AliGenEposEventHeader() {}
 
-	Float_t GetBimevt();
-	Float_t GetPhievt();
-	Int_t GetKolevt();
-	Int_t GetKoievt();
-	Float_t GetPmxevt();
-	Float_t GetEgyevt();
-	Int_t GetNpjevt();
-	Int_t GetNtgevt();
-	Int_t GetNpnevt();
-	Int_t GetNppevt();
-	Int_t GetNtnevt();
-	Int_t GetNtpevt();
-	Int_t GetJpnevt();
-	Int_t GetJppevt();
-	Int_t GetJtnevt();
-	Int_t GetJtpevt();
-	Float_t GetXbjevt();
-	Float_t GetQsqevt();
-	Int_t GetNglevt();
-	Float_t GetZppevt();
-	Float_t GetZptevt();
+Float_t GetBimevt() const { return fBimevt; }
+Float_t GetPhievt() const { return fPhievt; }
+Int_t GetKolevt()   const { return fKolevt; }
+Int_t GetKoievt()   const { return fKoievt; }
+Float_t GetPmxevt() const { return fPmxevt; }
+Float_t GetEgyevt() const { return fEgyevt; }
+Int_t GetNpjevt()   const { return fNpjevt; }
+Int_t GetNtgevt()   const { return fNtgevt; }
+Int_t GetNpnevt()   const { return fNpnevt; }
+Int_t GetNppevt()   const { return fNppevt; }
+Int_t GetNtnevt()   const { return fNtnevt; }
+Int_t GetNtpevt()   const { return fNtpevt; }
+Int_t GetJpnevt()   const { return fJpnevt; }
+Int_t GetJppevt()   const { return fJppevt; }
+Int_t GetJtnevt()   const { return fJtnevt; }
+Int_t GetJtpevt()   const { return fJtpevt; }
+Float_t GetXbjevt() const { return fXbjevt; }
+Float_t GetQsqevt() const { return fQsqevt; }
+Int_t GetNglevt()   const { return fNglevt; }
+Float_t GetZppevt() const { return fZppevt; }
+Float_t GetZptevt() const { return fZptevt; }
 
-	void SetBimevt(Float_t value);
-	void SetPhievt(Float_t value);
-	void SetKolevt(Int_t value);
-	void SetKoievt(Int_t value);
-	void SetPmxevt(Float_t value);
-	void SetEgyevt(Float_t value);
-	void SetNpjevt(Int_t value);
-	void SetNtgevt(Int_t value);
-	void SetNpnevt(Int_t value);
-	void SetNppevt(Int_t value);
-	void SetNtnevt(Int_t value);
-	void SetNtpevt(Int_t value);
-	void SetJpnevt(Int_t value);
-	void SetJppevt(Int_t value);
-	void SetJtnevt(Int_t value);
-	void SetJtpevt(Int_t value);
-	void SetXbjevt(Float_t value);
-	void SetQsqevt(Float_t value);
-	void SetNglevt(Int_t value);
-	void SetZppevt(Float_t value);
-	void SetZptevt(Float_t value);
+void SetBimevt(Float_t value) { fBimevt = value; }
+void SetPhievt(Float_t value) { fPhievt = value; }
+void SetKolevt(Int_t value)   { fKolevt = value; }
+void SetKoievt(Int_t value)   { fKoievt = value; }
+void SetPmxevt(Float_t value) { fPmxevt = value; }
+void SetEgyevt(Float_t value) { fEgyevt = value; }
+void SetNpjevt(Int_t value)   { fNpjevt = value; }
+void SetNtgevt(Int_t value)   { fNtgevt = value; }
+void SetNpnevt(Int_t value)   { fNpnevt = value; }
+void SetNppevt(Int_t value)   { fNppevt = value; }
+void SetNtnevt(Int_t value)   { fNtnevt = value; }
+void SetNtpevt(Int_t value)   { fNtpevt = value; }
+void SetJpnevt(Int_t value)   { fJpnevt = value; }
+void SetJppevt(Int_t value)   { fJppevt = value; }
+void SetJtnevt(Int_t value)   { fJtnevt = value; }
+void SetJtpevt(Int_t value)   { fJtpevt = value; }
+void SetXbjevt(Float_t value) { fXbjevt = value; }
+void SetQsqevt(Float_t value) { fQsqevt = value; }
+void SetNglevt(Int_t value)   { fNglevt = value; }
+void SetZppevt(Float_t value) { fZppevt = value; }
+void SetZptevt(Float_t value) { fZptevt = value; }
+
 
 protected:
 
