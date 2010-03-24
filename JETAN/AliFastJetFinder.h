@@ -45,7 +45,7 @@ class AliFastJetFinder : public AliJetFinder
 
   virtual void    FindJets(); 
   void    RunTest(const char* datafile); // a simple test
-  virtual void    WriteJHeaderToFile();
+  virtual void    WriteJHeaderToFile() const;
   Float_t EtaToTheta(Float_t arg);
   void    InitTask(TChain* tree);
   virtual Bool_t ProcessEvent();

@@ -384,7 +384,7 @@ void AliFastJetFinder::RunTest(const char* datafile)
 
 //____________________________________________________________________________
 
-void AliFastJetFinder::WriteJHeaderToFile()
+void AliFastJetFinder::WriteJHeaderToFile() const
 {
   fHeader->Write();
 }
