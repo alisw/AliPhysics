@@ -73,19 +73,19 @@ class AliMultiplicityCorrection : public TNamed {
     TH3F* GetCorrelation(Int_t i) const { return fCorrelation[i]; }
     TH1F* GetMultiplicityESDCorrected(Int_t i) const { return fMultiplicityESDCorrected[i]; }
 
-    void SetMultiplicityESD(Int_t i, TH2F* hist)  { fMultiplicityESD[i]  = hist; }
-    void SetMultiplicityVtx(Int_t i, TH2F* hist)  { fMultiplicityVtx[i]  = hist; }
-    void SetMultiplicityMB(Int_t i, TH2F* hist)   { fMultiplicityMB[i]   = hist; }
-    void SetMultiplicityINEL(Int_t i, TH2F* hist) { fMultiplicityINEL[i] = hist; }
-    void SetMultiplicityNSD(Int_t i, TH2F* hist) { fMultiplicityNSD[i] = hist; }
-    void SetMultiplicityMC(Int_t i, EventType eventType, TH2F* hist);
-    void SetCorrelation(Int_t i, TH3F* hist) { fCorrelation[i] = hist; }
-    void SetMultiplicityESDCorrected(Int_t i, TH1F* hist) { fMultiplicityESDCorrected[i] = hist; }
+    void SetMultiplicityESD(Int_t i, TH2F* const hist)  { fMultiplicityESD[i]  = hist; }
+    void SetMultiplicityVtx(Int_t i, TH2F* const hist)  { fMultiplicityVtx[i]  = hist; }
+    void SetMultiplicityMB(Int_t i, TH2F* const hist)   { fMultiplicityMB[i]   = hist; }
+    void SetMultiplicityINEL(Int_t i, TH2F* const hist) { fMultiplicityINEL[i] = hist; }
+    void SetMultiplicityNSD(Int_t i, TH2F* const hist) { fMultiplicityNSD[i] = hist; }
+    void SetMultiplicityMC(Int_t i, EventType eventType, TH2F* const hist);
+    void SetCorrelation(Int_t i, TH3F* const hist) { fCorrelation[i] = hist; }
+    void SetMultiplicityESDCorrected(Int_t i, TH1F* const hist) { fMultiplicityESDCorrected[i] = hist; }
 
     void SetGenMeasFromFunc(const TF1* inputMC, Int_t id);
     TH2F* CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap);
 
-    void GetComparisonResults(Float_t* mc = 0, Int_t* mcLimit = 0, Float_t* residuals = 0, Float_t* ratioAverage = 0) const;
+    void GetComparisonResults(Float_t* const mc = 0, Int_t* const mcLimit = 0, Float_t* const residuals = 0, Float_t* const ratioAverage = 0) const;
 
     TH1* GetEfficiency(Int_t inputRange, EventType eventType);
     TH1* GetTriggerEfficiency(Int_t inputRange);
