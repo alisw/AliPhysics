@@ -21,13 +21,21 @@
 // Author: C.Bianchin, chiara.bianchin@pd.infn.it
 /////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
+#include <TMath.h>
+#include <TNtuple.h>
+#include <TH1F.h>
+#include <TF1.h>
+#include <TList.h>
+#include <TFile.h>
 #include <TCanvas.h>
-#include <TMinuit.h>
 #include <TGraph.h>
 #include <TVirtualFitter.h>
-#include <TClonesArray.h>
+#include <TMinuit.h>
+
 
 #include "AliHFMassFitter.h"
+
 
 
 ClassImp(AliHFMassFitter)
@@ -62,7 +70,7 @@ AliHFMassFitter::AliHFMassFitter() :
 
 //___________________________________________________________________________
 
-AliHFMassFitter::AliHFMassFitter (TH1F *histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin,Int_t fittypeb,Int_t fittypes): 
+AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin,Int_t fittypeb,Int_t fittypes): 
  TNamed(),
  fhistoInvMass(0),
  fminMass(0),
@@ -140,6 +148,9 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
 //_________________________________________________________________________
 
 AliHFMassFitter::~AliHFMassFitter() {
+
+  //destructor
+
   cout<<"AliHFMassFitter destructor called"<<endl;
   if(fhistoInvMass) {
     cout<<"deleting histogram..."<<endl;
@@ -206,6 +217,9 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
 //__________________________________________________________________________
 
 void AliHFMassFitter::ComputeParSize() {
+
+  //compute the size of the parameter array and set the data member
+
   switch (ftypeOfFit4Bkg) {//npar backround func
   case 0:
     fParsSize = 2*3;
@@ -232,7 +246,7 @@ void AliHFMassFitter::ComputeParSize() {
 }
 
 //___________________________________________________________________________
-void AliHFMassFitter::SetHisto(TH1F *histoToFit){
+void AliHFMassFitter::SetHisto(const TH1F *histoToFit){
   //fhistoInvMass = (TH1F*)histoToFit->Clone();
   fhistoInvMass = new TH1F(*histoToFit);
   fhistoInvMass->SetDirectory(0);
@@ -242,6 +256,9 @@ void AliHFMassFitter::SetHisto(TH1F *histoToFit){
 //___________________________________________________________________________
 
   void AliHFMassFitter::SetType(Int_t fittypeb, Int_t fittypes) {
+
+    //set the type of fit to perform for signal and background
+
     ftypeOfFit4Bkg = fittypeb; 
     ftypeOfFit4Sgn = fittypes; 
     ComputeParSize();
@@ -252,6 +269,9 @@ void AliHFMassFitter::SetHisto(TH1F *histoToFit){
 //___________________________________________________________________________
 
 void AliHFMassFitter::Reset() {
+
+  //delete the histogram and reset the mean and sigma to default
+
   cout<<"Reset called: delete histogram, set mean value to 1.85 and sigma to 0.012"<<endl;
   fMass=1.85;
   fSigmaSgn=0.012;
@@ -269,7 +289,9 @@ void AliHFMassFitter::Reset() {
 //_________________________________________________________________________
 
 void AliHFMassFitter::InitNtuParam(char *ntuname) {
+
   // Create ntuple to keep fit parameters
+
   fntuParam=0;
   fntuParam=new TNtuple(ntuname,"Contains fit parameters","intbkg1:slope1:conc1:intGB:meanGB:sigmaGB:intbkg2:slope2:conc2:inttot:slope3:conc3:intsgn:meansgn:sigmasgn:intbkg1Err:slope1Err:conc1Err:intGBErr:meanGBErr:sigmaGBErr:intbkg2Err:slope2Err:conc2Err:inttotErr:slope3Err:conc3Err:intsgnErr:meansgnErr:sigmasgnErr");
   
@@ -576,6 +598,8 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
 //__________________________________________________________________________
 Bool_t AliHFMassFitter::SideBandsBounds(){
 
+  //determines the ranges of the side bands
+
   Double_t width=fhistoInvMass->GetBinWidth(8);
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
   Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
@@ -586,7 +610,7 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
     return kFALSE;
   } 
   
-  if((fminMass!=minHisto || fmaxMass!= maxHisto) && (fMass-4.*fSigmaSgn-fminMass) <= 0){
+  if((TMath::Abs(fminMass-minHisto) < 10e6 || TMath::Abs(fmaxMass - maxHisto) < 10e6) && (fMass-4.*fSigmaSgn-fminMass) < 10e6){
     Double_t coeff = (fMass-fminMass)/fSigmaSgn;
     
     fSideBandl=(Int_t)((fMass-0.5*coeff*fSigmaSgn-fminMass)/width);
@@ -619,6 +643,9 @@ Bool_t AliHFMassFitter::SideBandsBounds(){
 //__________________________________________________________________________
 
 void AliHFMassFitter::GetSideBandsBounds(Int_t &left, Int_t &right) const{
+  
+  // get the range of the side bands
+
   if (fSideBandl==0 && fSideBandr==0){
     cout<<"Use MassFitter method first"<<endl;
     return;
@@ -1013,7 +1040,10 @@ void  AliHFMassFitter::GetFitPars(Float_t *vector) const {
 
 
 //_________________________________________________________________________
-void AliHFMassFitter::IntS(Float_t *valuewitherror){
+void AliHFMassFitter::IntS(Float_t *valuewitherror) const {
+
+  //gives the integral of signal obtained from fit parameters
+
   Int_t index=fParsSize/2 - 3;
   valuewitherror[0]=fFitPars[index];
   index=fParsSize - 3;
@@ -1023,6 +1053,8 @@ void AliHFMassFitter::IntS(Float_t *valuewitherror){
 
 //_________________________________________________________________________
 void AliHFMassFitter::AddFunctionsToHisto(){
+
+  //Add the background function in the complete range to the list of functions attached to the histogram
 
   cout<<"AddFunctionsToHisto called"<<endl;
   TString bkgname = "funcbkg";
@@ -1124,7 +1156,10 @@ TH1F* AliHFMassFitter::GetHistoClone() const{
 }
 //_________________________________________________________________________
 
-void AliHFMassFitter::WriteHisto(TString path) {
+void AliHFMassFitter::WriteHisto(TString path) const {
+
+  //Write the histogram in the default file HFMassFitterOutput.root
+
   if (fcounter == 0) {
     cout<<"Use MassFitter method before WriteHisto"<<endl;
     return;
@@ -1178,6 +1213,8 @@ void AliHFMassFitter::WriteNtuple(TString path) const{
 
 void AliHFMassFitter::DrawFit() const{
 
+  //draws histogram together with fit functions with default nice colors
+
   TString cvtitle="fit of ";
   cvtitle+=fhistoInvMass->GetName();
   TString cvname="c";
@@ -1197,6 +1234,9 @@ void AliHFMassFitter::DrawFit() const{
 //_________________________________________________________________________
 
 void AliHFMassFitter::PrintParTitles() const{
+
+  //prints to screen the parameters names
+
   TF1 *f=fhistoInvMass->GetFunction("funcmass");
   if(!f) {
     cout<<"Fit function not found"<<endl;
