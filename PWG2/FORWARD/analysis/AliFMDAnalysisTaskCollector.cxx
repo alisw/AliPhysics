@@ -176,7 +176,7 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
     if(TMath::Abs(vertex[2]) > pars->GetVtxCutZ())
       physics = kFALSE;
   }
-  
+  std::cout<<"Bananer "<<vtxStatus<<"    "<<physics<<std::endl;
   AliESDFMD* fmd = esd->GetFMDData();
   if (!fmd) return;
   if(physics)
@@ -271,7 +271,7 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
   //1: Pb+Pb triple landau convolution fit
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  pars->Init(kTRUE,AliFMDAnaParameters::kBackgroundCorrection);
+  //pars->Init(kTRUE,AliFMDAnaParameters::kBackgroundCorrection);
   
   TFile fin(filename,"UPDATE");
   
@@ -328,15 +328,15 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
 }
 //____________________________________________________________________
 TF1* AliFMDAnalysisTaskCollector::FitEnergyDistribution(TH1F* hEnergy, Int_t speciesOption) {
-  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   TF1* fitFunc = 0;
   if(hEnergy->GetEntries() != 0) {
 	  
     hEnergy->GetXaxis()->SetRangeUser(0.2,hEnergy->GetXaxis()->GetXmax());
     
-    if(speciesOption == 0)
+    if(pars->GetCollisionSystem() == 0)
       fitFunc =  new TF1("FMDfitFunc","landau",hEnergy->GetBinCenter(hEnergy->GetMaximumBin())-0.2,3);
-    if(speciesOption == 1) {
+    if(pars->GetCollisionSystem() == 1) {
       fitFunc = new TF1("FMDfitFunc",TripleLandau,hEnergy->GetBinCenter(hEnergy->GetMaximumBin())-0.2,5,5);
       fitFunc->SetParNames("constant","MPV","sigma","2-Mip weight","3-Mip weight");
       fitFunc->SetParameters(10,0.8,0.1,0.05,0.01);

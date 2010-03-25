@@ -716,10 +716,10 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
   
-  if (!pythiaGenHeader) {
-    std::cout<<" no pythia header!"<<std::endl;
-    return; 
-  }
+  // if (!pythiaGenHeader) {
+    //  std::cout<<" no pythia header!"<<std::endl;
+  //   return; 
+  // }
 
 	
   //Int_t pythiaType = pythiaGenHeader->ProcessType();

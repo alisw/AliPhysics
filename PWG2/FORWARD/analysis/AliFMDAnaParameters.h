@@ -63,7 +63,7 @@ public:
   
   enum Trigger { kMB1 = 0, kMB2, kSPDFASTOR, kNOCTP, kEMPTY };
   
-  enum Energy { k900 , k10000, k14000 , k7000, k2400};
+  enum Energy { k900 , k10000, k14000 , k7000, k2400, k5500};
   
   enum MagField {k0G, k5G};
   
@@ -123,6 +123,7 @@ public:
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}
+  Species  GetCollisionSystem() const {return fSpecies;}
   void     PrintStatus() const;
   void     Print(Option_t* /* option */) const { PrintStatus(); }
   char*    GetDndetaAnalysisName() const {return "PWG2forwardDnDeta";}
@@ -137,6 +138,7 @@ public:
   void     SetLowSPDLimit(Float_t cut) {fSPDlowLimit = cut;}
   void     SetHighSPDLimit(Float_t cut) {fSPDhighLimit = cut;}
   void     SetCentralTriggerSelection(Bool_t selection) {fCentralSelection = selection;}
+  Bool_t   SharingEffPresent() {return fSharingObjectPresent;}
 protected:
   
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
@@ -162,7 +164,8 @@ protected:
       fRealData(o.fRealData),
       fSPDlowLimit(o.fSPDlowLimit),
       fSPDhighLimit(o.fSPDhighLimit),   
-      fCentralSelection(o.fCentralSelection)
+      fCentralSelection(o.fCentralSelection),
+      fSharingObjectPresent(o.fSharingObjectPresent)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -212,7 +215,7 @@ protected:
   Float_t  fSPDlowLimit ;             // low limit of SPD tracklets
   Float_t  fSPDhighLimit ;             // high limit of SPD tracklets
   Bool_t   fCentralSelection;         //if event selection is done centrally
-  
+  Bool_t   fSharingObjectPresent ;    //Do we have a sharing object ? 
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
 

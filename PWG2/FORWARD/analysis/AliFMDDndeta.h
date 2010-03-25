@@ -39,6 +39,8 @@ class AliFMDDndeta : public TObject
   
   enum Analysis {kHits, kHitsTrVtx, kMult, kMultTrVtx};
   
+  
+  
   void Init(const Char_t* filename);
   void Init(TList* list);
   void GenerateMult(Analysis what);
@@ -47,24 +49,24 @@ class AliFMDDndeta : public TObject
   void SetVtxCut1(Int_t vtxcut) {fVtxCut1 = vtxcut;}
   void SetVtxCut2(Int_t vtxcut) {fVtxCut2 = vtxcut;}
   void CreateSharingEfficiency(const Char_t* filename, Bool_t store = kFALSE);
-  TList* GetMultList() {return &fMultList;}
+  TList* GetMultList(Analysis what) {return fMultList[what];}
  private:
   void GenerateHits(Analysis what);
   void SetNames(Analysis what);
   const char* GetAnalysisName(Analysis what, UShort_t det, Char_t ring, Int_t vtxbin);
   const char* GetPrimName(Analysis what, UShort_t det, Char_t ring, Int_t vtxbin);
   void   RebinHistogram(TH1F* hist, Int_t rebin);
-  TList* fList;                          // A list of input histograms
-  TList  fMultList;                      // A list of mult histograms 
-  Int_t  fNbinsToCut;                    // The number of bins to cut
-  Int_t  fVtxCut1;                       // Vtx low
-  Int_t  fVtxCut2;                       // Vtx high
-  Bool_t fIsInit;                        // Are we init ? 
-  Bool_t fIsGenerated[4];                // Have we generated ?
+  TList*  fList;                         // A list of input histograms
+  TList*  fMultList[4];                  // A list of mult histograms 
+  Int_t   fNbinsToCut;                   // The number of bins to cut
+  Int_t   fVtxCut1;                      // Vtx low
+  Int_t   fVtxCut2;                      // Vtx high
+  Bool_t  fIsInit;                       // Are we init ? 
+  Bool_t  fIsGenerated[4];               // Have we generated ?
   TString fPrimEvents;                   // Number of prim events
   TString fEvents;                       // Number of events
   TString fPrimdNdeta;                   // the primary dNdeta from MC
-  
+  Char_t* fAnalysisNames[4];             // Names of analysis
   ClassDef(AliFMDDndeta,2);
 };
 

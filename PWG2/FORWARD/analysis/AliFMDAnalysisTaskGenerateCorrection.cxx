@@ -196,7 +196,9 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   if(isTriggered) hEventsSelectedTrigger->Fill(vertexBin);
     
   hEventsAll->Fill(vertexBin);
-    
+  
+  //  if(!vtxFound || !isTriggered) return;
+  
   for(Int_t i = 0 ;i<nTracks;i++) {
     particle = (AliMCParticle*) mcevent->GetTrack(i);
     

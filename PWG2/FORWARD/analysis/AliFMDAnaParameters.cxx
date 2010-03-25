@@ -87,7 +87,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fRealData(kFALSE),
   fSPDlowLimit(0),
   fSPDhighLimit(999999999),
-  fCentralSelection(kFALSE)
+  fCentralSelection(kFALSE),
+  fSharingObjectPresent(kTRUE)
 {
   // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
@@ -209,12 +210,19 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
 
 void AliFMDAnaParameters::InitSharingEff() {
   
+  fSharingObjectPresent = kTRUE;
   TFile* fin = TFile::Open(GetPath(fgkSharingEffID));
 			    
-  if (!fin) return;
+  if (!fin) {
+    fSharingObjectPresent = kFALSE;
+    return; 
+  }
   
   fSharingEfficiency = dynamic_cast<AliFMDAnaCalibSharingEfficiency*>(fin->Get(fgkSharingEffID));
-  if (!fSharingEfficiency) AliFatal("Invalid background object from CDB");
+  if (!fSharingEfficiency) {
+    fSharingObjectPresent = kFALSE;
+    return; 
+  }
   
 }
 //____________________________________________________________________
@@ -620,7 +628,7 @@ Bool_t AliFMDAnaParameters::GetVertex(const AliESDEvent* esd, Double_t* vertexXY
     
   //if(vertexXYZ[0] == 0 || vertexXYZ[1] == 0 )
   //  return kFALSE;
-  
+ 
   if(vertex->GetNContributors() <= 0)
     return kFALSE;
   
@@ -664,19 +672,20 @@ Bool_t AliFMDAnaParameters::IsEventTriggered(const AliESDEvent *esd) const {
   
   //REMOVE WHEN FINISHED PLAYING WITH TRIGGERS!
   //fPhysicsSelection->IsCollisionCandidate(esd);
-  
-  
+  if(!fRealData) {
+    fPhysicsSelection->SetAnalyzeMC(kTRUE);
+  }
   switch (fTrigger) {
   case kMB1: {
-    if(fRealData) {
+    // if(fRealData) {
       if( fPhysicsSelection->IsCollisionCandidate(esd))
 	return kTRUE;
-    }
-    else {
-      if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
-	return kTRUE;
+      //}
+      //else {
+      // if (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right)))
+      //	return kTRUE;
       break;
-    }
+      //}
   }
   case kMB2: { 
     if (triggerMask & spdFO && ((triggerMask & v0left) || (triggerMask & v0right)))
