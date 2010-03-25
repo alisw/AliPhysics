@@ -229,7 +229,7 @@ private:
 	TVector3 fVertexDCA; ///< The position for the distance of closest approach to the vertex in cm.
 	Float_t fChi2; ///< Chi squared of fit.
 	const AliHLTMUONTriggerRecord* fTrigRec;  ///< Corresponding trigger record.
-	const AliHLTMUONRecHit* fHit[16];   ///< Particle hits on tracking chambers 7 to 10.
+	const AliHLTMUONRecHit* fHit[16];   ///< Particle hits on tracking chambers.
 
 	ClassDef(AliHLTMUONTrack, 1); // Track object containing data converted from a dHLT internal track structure.
 };

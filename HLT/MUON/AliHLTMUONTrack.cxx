@@ -113,6 +113,13 @@ AliHLTMUONTrack::AliHLTMUONTrack(
 			fHit[i] = hits[i];
 		}
 	}
+	else
+	{
+		for (int i = 0; i < 16; ++i)
+		{
+			fHit[i] = NULL;
+		}
+	}
 }
 
 
@@ -314,16 +321,14 @@ bool AliHLTMUONTrack::operator == (const AliHLTMUONTrack& track) const
 /// \param track  The track object to compare to.
 /// \returns  true if 'this' object is identical to 'track' else false.
 
-                bool matched = true;
-  		for (int i = 0; i < 16; i++){
-		  if(fHit[i] != track.fHit[i])
-		    matched = false;
-		}
-
+	for (int i = 0; i < 16; i++)
+	{
+		if (fHit[i] != track.fHit[i]) return false;
+	}
+	
 	return	fId == track.fId and fSign == track.fSign
-		and fMomentum == track.fMomentum
-		and fChi2 == track.fChi2 and fTrigRec == track.fTrigRec
-	        and matched;
-		
+		and fInverseBendingMomentum == track.fInverseBendingMomentum
+		and fThetaX == track.fThetaX and fThetaY == track.fThetaY
+		and fMomentum == track.fMomentum and fVertexDCA == track.fVertexDCA
+		and fChi2 == track.fChi2 and fTrigRec == track.fTrigRec;
 }
-
