@@ -105,10 +105,10 @@ Char_t const * AliTRDresolution::fgPerformanceName[kNviews] = {
     ,"TRD2MC"
 };
 // Configure segmentation for y resolution/residuals
-// const Int_t AliTRDresolution::fgNresYsegm = 6; const Char_t *AliTRDresolution::fgkResYsegmName = "Layer";   // layer wise
+// const Int_t AliTRDresolution::fgkNresYsegm = 6; const Char_t *AliTRDresolution::fgkResYsegmName = "Layer";   // layer wise
 const Int_t AliTRDresolution::fgkNresYsegm = 18; const Char_t *AliTRDresolution::fgkResYsegmName = "Sector"; // sector wise
-// const Int_t AliTRDresolution::fgNresYsegm = 90; const Char_t *AliTRDresolution::fgkResYsegmName = "Stack";  // stack wise
-// const Int_t AliTRDresolution::fgNresYsegm = 540; const Char_t *AliTRDresolution::fgkResYsegmName = "Detector"; // detector wise
+// const Int_t AliTRDresolution::fgkNresYsegm = 90; const Char_t *AliTRDresolution::fgkResYsegmName = "Stack";  // stack wise
+// const Int_t AliTRDresolution::fgkNresYsegm = 540; const Char_t *AliTRDresolution::fgkResYsegmName = "Detector"; // detector wise
 
 UChar_t const AliTRDresolution::fgNcomp[kNprojs] = {
   1,  1, //2, 
@@ -1189,17 +1189,17 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = -.3; xy[1] = -50.; xy[2] = .3; xy[3] = 300.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection)) break;
     return kTRUE;
   case 4: // kTrack y
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = -.3; xy[1] = -50.; xy[2] = .3; xy[3] = 300.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection)) break;
     xy[0] = -.3; xy[1] = -0.5; xy[2] = .3; xy[3] = 2.5;
     ((TVirtualPad*)l->At(1))->cd();
@@ -1223,11 +1223,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -1500.; xy[2] = .3; xy[3] = 5000.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackIn, 0, 1, n, selection)) break;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackIn, 0, 1, n, selection)) break;
     return kTRUE;
   case 8: // kTrackIn y
@@ -1235,7 +1235,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -1500.; xy[2] = .3; xy[3] = 5000.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackIn, 0, 1, n, selection)) break;
     xy[0] = -.3; xy[1] = -0.5; xy[2] = .3; xy[3] = 2.5;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
@@ -1262,11 +1262,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -50.; xy[2] = .3; xy[3] = 150.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackOut, 0, 1, n, selection)) break;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackOut, 0, 1, n, selection)) break;
     return kTRUE;
   case 12: // kTrackOut y
@@ -1274,7 +1274,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -50.; xy[2] = .3; xy[3] = 150.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackOut, 0, 1, n, selection)) break;
     xy[0] = -.3; xy[1] = -0.5; xy[2] = .3; xy[3] = 2.5;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
@@ -1300,17 +1300,17 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3]=650.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCcluster, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCcluster, 0, 1, n, selection)) break;
     return kTRUE;
   case 16: // kMCcluster
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3]=650.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCcluster, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
     xy[0]=-.3; xy[1]=-0.5; xy[2]=.3; xy[3]=2.5;
@@ -1320,12 +1320,23 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =500.;
     ((TVirtualPad*)l->At(0))->cd();
-    if(!GetGraphArray(xy, kMCtracklet, 0)) break;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtracklet, 0, 1, n, selection)) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtracklet, 0, 1, n, selection)) break;
+    return kTRUE;
+  case 18: //kMCtracklet [y]
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =500.;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtracklet, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
     xy[0]=-.3; xy[1]=-0.5; xy[2]=.3; xy[3]=2.5;
     if(!GetGraph(xy, kMCtracklet, 1)) break;
     return kTRUE;
-  case 18: //kMCtracklet [z]
+  case 19: //kMCtracklet [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-100.; xy[2]=1.; xy[3] =2500.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1334,20 +1345,81 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtracklet, 3)) break;
     return kTRUE;
-  case 19: //kMCtracklet [phi]
+  case 20: //kMCtracklet [phi]
     xy[0]=-.3; xy[1]=-3.; xy[2]=.3; xy[3] =25.;
     if(!GetGraph(&xy[0], kMCtracklet, 4)) break;
     return kTRUE;
-  case 20: //kMCtrack [y]
+  case 21: //kMCtrack [y] ly [0]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    if(!GetGraphArray(xy, kMCtrack, 0)) break;
-    xy[0] = -.2; xy[1] = -0.5; xy[2] = .2; xy[3] = 3.5;
+    selStart=Int_t(fgkNresYsegm*0.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer1")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    if(!GetGraphArray(xy, kMCtrack, 1)) break;
+    selStart=Int_t(fgkNresYsegm*0.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer1")) break;
     return kTRUE;
-  case 21: //kMCtrack [z]
+  case 22: //kMCtrack [y] ly [1]
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=Int_t(fgkNresYsegm*1.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer2")) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=Int_t(fgkNresYsegm*1.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer2")) break;
+    return kTRUE;
+  case 23: //kMCtrack [y] ly [2]
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=Int_t(fgkNresYsegm*2.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer3")) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=Int_t(fgkNresYsegm*2.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer3")) break;
+    return kTRUE;
+  case 24: //kMCtrack [y] ly [3]
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=Int_t(fgkNresYsegm*3.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer4")) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=Int_t(fgkNresYsegm*3.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer4")) break;
+    return kTRUE;
+  case 25: //kMCtrack [y] ly [4]
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=Int_t(fgkNresYsegm*4.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer5")) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=Int_t(fgkNresYsegm*4.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer5")) break;
+    return kTRUE;
+  case 26: //kMCtrack [y] ly [5]
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=Int_t(fgkNresYsegm*5.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer6")) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=Int_t(fgkNresYsegm*5.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer6")) break;
+    return kTRUE;
+  case 27: //kMCtrack [y pulls] 
+    gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
+    xy[0] = -.2; xy[1] = -0.5; xy[2] = .2; xy[3] = 3.5;
+    ((TVirtualPad*)l->At(0))->cd();
+    selStart=0; for(n=0; n<3; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 1, 1, n, selection)) break;
+    ((TVirtualPad*)l->At(1))->cd();
+    selStart=3; for(n=0; n<6; n++) selection[n]=selStart+n;
+    if(!GetGraphArray(xy, kMCtrack, 1, 1, n, selection)) break;
+    return kTRUE;
+  case 28: //kMCtrack [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-1500.; xy[2]=1.; xy[3] =6000.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1356,7 +1428,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphArray(xy, kMCtrack, 3)) break;
     return kTRUE;
-  case 22: //kMCtrack [phi/snp]
+  case 29: //kMCtrack [phi/snp]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-0.5; xy[2]=.2; xy[3] =10.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1365,7 +1437,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphArray(xy, kMCtrack, 5)) break;
     return kTRUE;
-  case 23: //kMCtrack [theta/tgl]
+  case 30: //kMCtrack [theta/tgl]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-0.5; xy[2]=1.; xy[3] =5.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1374,7 +1446,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphArray(xy, kMCtrack, 7)) break;
     return kTRUE;
-  case 24: //kMCtrack [pt]
+  case 31: //kMCtrack [pt]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
@@ -1399,7 +1471,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!GetGraphArray(xy, kMCtrack, 8, kTRUE, n, selection, "#mu#pm")) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     return kTRUE;
-  case 25: //kMCtrack [pt]
+  case 32: //kMCtrack [pt]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
@@ -1426,7 +1498,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!GetGraphArray(xy, kMCtrack, 8, kTRUE, n, selection, "e#pm")) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     return kTRUE;
-  case 26: //kMCtrack [1/pt] pulls
+  case 33: //kMCtrack [1/pt] pulls
     xy[0] = 0.; xy[1] = -1.; xy[2] = 2.; xy[3] = 3.5;
     //xy[0] = 0.; xy[1] = -1.; xy[2] = 2.; xy[3] = 4.5; // SA
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
@@ -1449,7 +1521,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     }
     if(!GetGraphArray(xy, kMCtrack, 9, kTRUE, n, selection, "#mu#pm")) break;
     return kTRUE;
-  case 27: //kMCtrack [1/pt] pulls
+  case 34: //kMCtrack [1/pt] pulls
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
@@ -1473,7 +1545,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = 0.; xy[1] = -2.; xy[2] = 2.; xy[3] = 4.5;
     if(!GetGraphArray(xy, kMCtrack, 9, kTRUE, n, selection, "e#pm")) break;
     return kTRUE;
-  case 28: //kMCtrack [p]
+  case 35: //kMCtrack [p]
     xy[0] = 0.2; xy[1] = -.7; xy[2] = 7.; xy[3] = 4.;
     //xy[0] = 0.2; xy[1] = -1.5; xy[2] = 7.; xy[3] = 10.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
@@ -1498,7 +1570,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!GetGraphArray(xy, kMCtrack, 10, kTRUE, n, selection, "#mu#pm")) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     return kTRUE;
-  case 29: //kMCtrack [p]
+  case 36: //kMCtrack [p]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
@@ -1525,27 +1597,27 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     if(!GetGraphArray(xy, kMCtrack, 10, kTRUE, n, selection, "e#pm")) break;
     pad->Modified(); pad->Update(); pad->SetLogx();
     return kTRUE;
-  case 30: // kMCtrackIn [y]
+  case 37: // kMCtrackIn [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-1000.; xy[2]=.25; xy[3] =3000.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackIn, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(&xy[0], kMCtrackIn, 0, 1, n, selection)) break;
     return kTRUE;
-  case 31: // kMCtrackIn [y]
+  case 38: // kMCtrackIn [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-1000.; xy[2]=.25; xy[3] =3000.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackIn, 0, 1, n, selection)) break;
     xy[0] = -.25; xy[1] = -0.5; xy[2] = .25; xy[3] = 2.5;
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackIn, 1)) break;
     return kTRUE;
-  case 32: // kMCtrackIn [z]
+  case 39: // kMCtrackIn [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-500.; xy[2]=1.; xy[3] =800.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1554,7 +1626,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackIn, 3)) break;
     return kTRUE;
-  case 33: // kMCtrackIn [phi|snp]
+  case 40: // kMCtrackIn [phi|snp]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-0.5; xy[2]=.25; xy[3] =2.5;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1563,7 +1635,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackIn, 5)) break;
     return kTRUE;
-  case 34: // kMCtrackIn [theta|tgl]
+  case 41: // kMCtrackIn [theta|tgl]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-1.; xy[2]=1.; xy[3] =4.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1572,7 +1644,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackIn, 7)) break;
     return kTRUE;
-  case 35: // kMCtrackIn [pt]
+  case 42: // kMCtrackIn [pt]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = 0.2; xy[1] = -.8; xy[2] = 7.; xy[3] = 6.;
     //xy[0] = 0.2; xy[1] = -1.5; xy[2] = 7.; xy[3] = 10.; // SA
@@ -1585,7 +1657,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     n=0; selection[n++]=0; selection[n++]=4; selection[n++]=6; selection[n++]=10;
     if(!GetGraphArray(xy, kMCtrackIn, 8, 1, n, selection)) break;
     return kTRUE;
-  case 36: //kMCtrackIn [1/pt] pulls
+  case 43: //kMCtrackIn [1/pt] pulls
     xy[0] = 0.; xy[1] = -1.; xy[2] = 2.; xy[3] = 3.5;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
@@ -1597,7 +1669,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     n=0; selection[n++]=0; selection[n++]=4; selection[n++]=6; selection[n++]=10;
     if(!GetGraphArray(xy, kMCtrackIn, 9, 1, n, selection)) break;
     return kTRUE;
-  case 37: // kMCtrackIn [p]
+  case 44: // kMCtrackIn [p]
     xy[0] = 0.2; xy[1] = -.8; xy[2] = 7.; xy[3] = 6.;
     //xy[0] = 0.2; xy[1] = -1.5; xy[2] = 7.; xy[3] = 10.;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
@@ -1610,27 +1682,27 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     n=0; selection[n++]=0; selection[n++]=4; selection[n++]=6; selection[n++]=10;
     if(!GetGraphArray(xy, kMCtrackIn, 10, 1,  n, selection)) break;
     return kTRUE;
-  case 38: // kMCtrackOut [y]
+  case 45: // kMCtrackOut [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=0; selection[n++]=1; selection[n++]=2; selection[n++]=3;selection[n++]=4;selection[n++]=5;
+    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackOut, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    n=0; selection[n++]=6; selection[n++]=7; selection[n++]=8; selection[n++]=9;selection[n++]=10;selection[n++]=11;
+    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(&xy[0], kMCtrackOut, 0, 1, n, selection)) break;
     return kTRUE;
-  case 39: // kMCtrackOut [y]
+  case 46: // kMCtrackOut [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    n=0; selection[n++]=12; selection[n++]=13; selection[n++]=14; selection[n++]=15;selection[n++]=16;selection[n++]=17;
+    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackOut, 0, 1, n, selection)) break;
     xy[0] = -.25; xy[1] = -0.5; xy[2] = .25; xy[3] = 2.5;
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackOut, 1)) break;
     return kTRUE;
-  case 40: // kMCtrackOut [z]
+  case 47: // kMCtrackOut [z]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-500.; xy[2]=1.; xy[3] =1500.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1639,7 +1711,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackOut, 3)) break;
     return kTRUE;
-  case 41: // kMCtrackOut [phi|snp]
+  case 48: // kMCtrackOut [phi|snp]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-0.5; xy[2]=.25; xy[3] =2.5;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1648,7 +1720,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackOut, 5)) break;
     return kTRUE;
-  case 42: // kMCtrackOut [theta|tgl]
+  case 49: // kMCtrackOut [theta|tgl]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-1.; xy[1]=-1.; xy[2]=1.; xy[3] =4.;
     ((TVirtualPad*)l->At(0))->cd();
@@ -1657,7 +1729,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraph(&xy[0], kMCtrackOut, 7)) break;
     return kTRUE;
-  case 43: // kMCtrackOut [pt]
+  case 50: // kMCtrackOut [pt]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = 0.2; xy[1] = -.8; xy[2] = 7.; xy[3] = 6.;
     pad=(TVirtualPad*)l->At(0); pad->cd(); pad->SetLogx();
@@ -1669,7 +1741,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     n=0; selection[n++]=0; selection[n++]=4; selection[n++]=6; selection[n++]=10;
     if(!GetGraphArray(xy, kMCtrackOut, 8, 1, n, selection)) break;
     return kTRUE;
-  case 44: //kMCtrackOut [1/pt] pulls
+  case 51: //kMCtrackOut [1/pt] pulls
     xy[0] = 0.; xy[1] = -1.; xy[2] = 2.; xy[3] = 3.5;
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     pad = (TVirtualPad*)l->At(0); pad->cd();
@@ -1681,7 +1753,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     n=0; selection[n++]=0; selection[n++]=4; selection[n++]=6; selection[n++]=10;
     if(!GetGraphArray(xy, kMCtrackOut, 9, 1, n, selection)) break;
     return kTRUE;
-  case 45: // kMCtrackOut [p]
+  case 52: // kMCtrackOut [p]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0] = 0.2; xy[1] = -.8; xy[2] = 7.; xy[3] = 6.;
     pad = ((TVirtualPad*)l->At(0));pad->cd();pad->SetLogx();
@@ -1762,8 +1834,8 @@ Bool_t AliTRDresolution::PostProcess()
               gs->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm));
               gm->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm));
             } else if(ic<=7) {
-              gs->SetTitle(Form("Layer %d", is%AliTRDgeometry::kNlayer));
-              gm->SetTitle(Form("Layer %d", is%AliTRDgeometry::kNlayer));
+              gs->SetTitle(Form("Layer[%d]", is%AliTRDgeometry::kNlayer));
+              gm->SetTitle(Form("Layer[%d]", is%AliTRDgeometry::kNlayer));
             } else {
               gs->SetTitle(Form("%s @ ly[%d]", fgParticle[is0], il0));
               gm->SetTitle(Form("%s @ ly[%d]", fgParticle[is0], il0));
@@ -1843,7 +1915,7 @@ Bool_t AliTRDresolution::PostProcess()
   Process2D(kMCtracklet, 2, &fg, 1.e4); // z
   Process2D(kMCtracklet, 3, &fg, 1.);   // z pulls
   Process2D(kMCtracklet, 4, &fg, 1.e3); // phi
-  fNRefFigures = 20;
+  fNRefFigures = 21;
 
   // TRACK RESOLUTION/PULLS
   Process3Darray(kMCtrack, 0, &fg, 1.e4);   // y
@@ -1857,7 +1929,7 @@ Bool_t AliTRDresolution::PostProcess()
   Process3Darray(kMCtrack, 8, &fg, 1.e2);   // pt resolution
   Process3Darray(kMCtrack, 9, &fg);         // 1/pt pulls
   Process3Darray(kMCtrack, 10, &fg, 1.e2);  // p resolution
-  fNRefFigures = 30;
+  fNRefFigures+=16;
 
   // TRACK TRDin RESOLUTION/PULLS
   Process3D(kMCtrackIn, 0, &fg, 1.e4);// y resolution
@@ -1871,7 +1943,7 @@ Bool_t AliTRDresolution::PostProcess()
   Process3D(kMCtrackIn, 8, &fg, 1.e2);// pt resolution
   Process3D(kMCtrackIn, 9, &fg);      // 1/pt pulls
   Process3D(kMCtrackIn, 10, &fg, 1.e2);// p resolution
-  fNRefFigures = 38;
+  fNRefFigures+=8;
 
   // TRACK TRDout RESOLUTION/PULLS
   Process3D(kMCtrackOut, 0, &fg, 1.e4);// y resolution
@@ -1885,7 +1957,7 @@ Bool_t AliTRDresolution::PostProcess()
   Process3D(kMCtrackOut, 8, &fg, 1.e2);// pt resolution
   Process3D(kMCtrackOut, 9, &fg);      // 1/pt pulls
   Process3D(kMCtrackOut, 10, &fg, 1.e2);// p resolution
-  fNRefFigures = 46;
+  fNRefFigures+=8;
 
   return kTRUE;
 }

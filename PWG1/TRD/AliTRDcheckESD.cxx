@@ -62,7 +62,7 @@ ClassImp(AliTRDcheckESD)
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 const UChar_t AliTRDcheckESD::fgkNgraph[AliTRDcheckESD::kNrefs] ={
-0, 4, 2, 20};
+1, 4, 2, 20};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
 //____________________________________________________________________
@@ -147,7 +147,12 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
   TObjArray *arr(NULL);
   switch(ifig){
   case kNCl: // number of clusters/track
-    ((TH1I*)fResults->At(kNCl))->Draw("c");
+    if(!(arr = (TObjArray*)fResults->At(kNCl))) return kFALSE;
+    g=(TGraphErrors*)arr->At(0);
+    g->Draw("apc");
+    hF=g->GetHistogram();
+    hF->SetXTitle("no of clusters");
+    hF->SetYTitle("entries");
     break;
   case kTRDstat: // Efficiency
     if(!(arr = (TObjArray*)fResults->At(kTRDstat))) return kFALSE;
@@ -541,14 +546,24 @@ void AliTRDcheckESD::Terminate(Option_t *)
       }
     }
   }
+  TH1 *h1[2] = {NULL, NULL};
+  TH2I *h2(NULL);
+  TAxis *ax(NULL);
+
+  // No of clusters
+  if(!(h1[0] = (TH1I*)fHistos->At(kNCl))) return;
+  arr = (TObjArray*)fResults->At(kNCl);
+  TGraphErrors *ge=(TGraphErrors*)arr->At(0);
+  ax = h1[0]->GetXaxis();
+  for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+    ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+  }
   fNRefFigures = 1;
 
   // EFFICIENCY
   // geometrical efficiency
-  TH2I *h2(NULL);
   if(!(h2 = (TH2I*)fHistos->At(kTRDstat))) return;
   arr = (TObjArray*)fResults->At(kTRDstat);
-  TH1 *h1[2] = {NULL, NULL};
   h1[0] = h2->ProjectionX("checkESDx0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDin, kTRDin);
   Process(h1, (TGraphErrors*)arr->At(0));
@@ -572,7 +587,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
   if(!(h2 = dynamic_cast<TH2I*>(fHistos->At(kTRDmom)))) return;
   arr = (TObjArray*)fResults->At(kTRDmom);
   TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
-  TAxis *ax=h2->GetXaxis();
+  ax=h2->GetXaxis();
   const Int_t nq(4);
   const Double_t xq[nq] = {0.05, 0.2, 0.8, 0.95};
   Double_t yq[nq];
