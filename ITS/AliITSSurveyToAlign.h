@@ -50,19 +50,19 @@ public:
     Bool_t ApplyAlignObjSSDLadders();
 
 private:
-    Int_t   fRun;                         // the run number for the OCDB
-    Int_t   fSDDModuleRepNumber;
-    Int_t   fSDDModuleRepVersion;
-    Int_t   fSDDLadderRepNumber;
-    Int_t   fSDDLadderRepVersion;
-    Int_t   fSSDModuleRepNumber;
-    Int_t   fSSDModuleRepVersion;
-    Int_t   fSSDLadderRepNumber;
-    Int_t   fSSDLadderRepVersion;
+    Int_t   fRun;                  // the run number for the OCDB
+    Int_t   fSDDModuleRepNumber;   // SDD Module survey report number (EDMS)
+    Int_t   fSDDModuleRepVersion;  // SDD Module survey report version (det DB)
+    Int_t   fSDDLadderRepNumber;   // SDD Ladder survey report number (EDMS)
+    Int_t   fSDDLadderRepVersion;  // SDD Ladder survey report version (det DB)
+    Int_t   fSSDModuleRepNumber;   // SSD Module survey report number (EDMS)
+    Int_t   fSSDModuleRepVersion;  // SSD Module survey report version (det DB)
+    Int_t   fSSDLadderRepNumber;   // SSD Ladder survey report number (EDMS)
+    Int_t   fSSDLadderRepVersion;  // SSD Ladder survey report version (det DB)
 
-    Double_t fSDDmeP[6][6];   //measured positions of ref. marks for current module 
-    Double_t fSDDidP[6][3];      //ideal positions of ref. marks for current module
-    Bool_t     fSDDisMe[6];
+    Double_t fSDDmeP[6][6];    //measured positions of ref. marks for current module 
+    Double_t fSDDidP[6][3];    //ideal positions of ref. marks for current module
+    Bool_t     fSDDisMe[6];    //flag indicating if the positions of ref. mark is measured. 
 
     static const Double_t fgkLocR[6][3]; //id. pos. of ref. marks in RS of right oriented modules
     static const Double_t fgkLocL[6][3]; //id. pos. of ref. marks in RS of lefr oriented modules
@@ -76,22 +76,22 @@ private:
     
     // these are tmp vars. 
     //to be removed later
-    Int_t    fuidSDDm[260];      
-    TString  fsymnameSDDm[260];
-    Double_t fxSDDm[260];
-    Double_t fySDDm[260];
-    Double_t fzSDDm[260];
-    Double_t fpsiSDDm[260];
-    Double_t ftetSDDm[260];
-    Double_t fphiSDDm[260];
-    Int_t    fuidSDDl[36];
-    TString  fsymnameSDDl[36];
-    Double_t fxSDDl[36];
-    Double_t fySDDl[36];
-    Double_t fzSDDl[36];
-    Double_t fpsiSDDl[36];
-    Double_t ftetSDDl[36];
-    Double_t fphiSDDl[36];
+    Int_t    fuidSDDm[260];      //uid of SDD module
+    TString  fsymnameSDDm[260];  //symname of SDD module
+    Double_t fxSDDm[260];        //x-shift of SDD module
+    Double_t fySDDm[260];        //y-shift of SDD module
+    Double_t fzSDDm[260];        //z-shift of SDD module
+    Double_t fpsiSDDm[260];      //psi of SDD module
+    Double_t ftetSDDm[260];      //tet of SDD module
+    Double_t fphiSDDm[260];      //phi of SDD module
+    Int_t    fuidSDDl[36];       //uid of SDD ladder
+    TString  fsymnameSDDl[36];   //symname of SDD ladder
+    Double_t fxSDDl[36];         //x-shift of SDD ladder
+    Double_t fySDDl[36];         //y-shift of SDD ladder
+    Double_t fzSDDl[36];         //z-shift of SDD ladder
+    Double_t fpsiSDDl[36];       //psi of SDD ladder
+    Double_t ftetSDDl[36];       //phi of SDD ladder
+    Double_t fphiSDDl[36];       //phi of SDD ladder
     
     ClassDef(AliITSSurveyToAlign,0);
 };
