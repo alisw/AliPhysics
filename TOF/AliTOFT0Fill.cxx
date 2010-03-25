@@ -13,15 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- *
- *
- * this class defines the T0Fill object to be stored
- * in OCDB in order to apply T0Fill correction during 
- * reconstruction. 
- *
- *
- */
+// *
+// *
+// *
+// * this class defines the T0Fill object to be stored
+// * in OCDB in order to apply T0Fill correction during 
+// * reconstruction. 
+// *
+// *
+// *
 
 #include "AliTOFT0Fill.h"
 

@@ -13,16 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*************************************************************************
- *
- * AliTOFcalibHisto - class to handle TOF calibration histograms,
- *                    map histograms and more
- *
- *
- * autors:   Roberto Preghenella (R+)
- * concacts: preghenella@bo.infn.it
- *
- *************************************************************************/
+// *
+// *
+// * AliTOFcalibHisto - class to handle TOF calibration histograms,
+// *                    map histograms and more
+// *
+// *
+// * autors:   Roberto Preghenella (R+)
+// * concacts: preghenella@bo.infn.it
+// *
+// *
 
 #include "AliTOFcalibHisto.h"
 #include "AliLog.h"
@@ -354,7 +354,7 @@ AliTOFcalibHisto::~AliTOFcalibHisto()
 //__________________________________________________________________________
 
 void 
-AliTOFcalibHisto::LoadHisto(TFile* file, TH1D **histo, const Char_t *name) 
+AliTOFcalibHisto::LoadHisto(TFile * const file, TH1D **histo, const Char_t *name) 
 {
   /* load histo */
   *histo = (TH1D *)file->Get(name);

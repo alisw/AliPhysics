@@ -13,15 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- *
- *
- * this class defines the DeltaBCOffset object to be stored
- * in OCDB in order to apply DeltaBC correction during 
- * reconstruction. 
- *
- *
- */
+// *
+// *
+// *
+// * this class defines the DeltaBCOffset object to be stored
+// * in OCDB in order to apply DeltaBC correction during 
+// * reconstruction. 
+// *
+// *
+// *
 
 #include "AliTOFDeltaBCOffset.h"
 

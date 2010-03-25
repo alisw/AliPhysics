@@ -17,15 +17,15 @@
 class AliTOFDRMStatusHeader3
 {
  public:
-  UInt_t GetSlot() {return fSlotID;};
-  UInt_t GetL0BCID() {return fL0BCID;};
-  UInt_t GetRunTimeInfo() {return fRunTimeInfo;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetSlot() const {return fSlotID;};
+  UInt_t GetL0BCID() const {return fL0BCID;};
+  UInt_t GetRunTimeInfo() const {return fRunTimeInfo;};
+  UInt_t GetWordType() const {return fWordType;};
  private:
-  UInt_t fSlotID: 4;
-  UInt_t fL0BCID: 12;
-  UInt_t fRunTimeInfo: 12;
-  UInt_t fWordType: 4;
+  UInt_t fSlotID: 4; // slodID
+  UInt_t fL0BCID: 12; // L0BCID
+  UInt_t fRunTimeInfo: 12; // runtime info
+  UInt_t fWordType: 4; // word type
 };
 
 #endif

@@ -12,8 +12,9 @@
 ///////////////////////////////////////////////////////////////
 
 #include "TObject.h"
-#include "AliTOFHitData.h"
 #include "TClonesArray.h"
+
+class AliTOFHitData;
 
 class AliTOFHitDataBuffer : 
 public TObject
@@ -25,13 +26,7 @@ public TObject
   AliTOFHitDataBuffer(Int_t size); // overloaded constructor
   ~AliTOFHitDataBuffer();   // default destructor
   AliTOFHitDataBuffer(const AliTOFHitDataBuffer &source) : TObject(source), fBuffer(source.fBuffer) {}; // copy constructor 
-  AliTOFHitDataBuffer& operator=(const AliTOFHitDataBuffer & source) {
-    if (&source != this) {
-      TObject::operator=(source);
-      fBuffer = source.fBuffer;
-    }
-    return *this;
-  }; // operator =
+  AliTOFHitDataBuffer& operator=(const AliTOFHitDataBuffer & source); // operator =
 
   void Reset() {fBuffer.Clear();}; // reset
   Bool_t Add(AliTOFHitData &HitData); // add

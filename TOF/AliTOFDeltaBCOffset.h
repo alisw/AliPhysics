@@ -5,15 +5,15 @@
  * See cxx source for full Copyright notice                               */
 /* $Id$ */
 
-/*
- *
- *
- * this class defines the DeltaBCOffset object to be stored
- * in OCDB in order to apply DeltaBC correction during 
- * reconstruction. 
- *
- *
- */
+// *
+// *
+// *
+// * this class defines the DeltaBCOffset object to be stored
+// * in OCDB in order to apply DeltaBC correction during 
+// * reconstruction. 
+// *
+// *
+// *
 
 #include "TObject.h"
 

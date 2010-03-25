@@ -31,8 +31,8 @@ container for TOF raw data
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
 #include "AliTOFHitDataBuffer.h"
+#include "AliTOFHitData.h"
 
 ClassImp(AliTOFHitDataBuffer)
 
@@ -56,6 +56,17 @@ AliTOFHitDataBuffer::AliTOFHitDataBuffer(Int_t size) :
 
 AliTOFHitDataBuffer::~AliTOFHitDataBuffer()
 {
+}
+
+//-----------------------------------------------------------------------------
+
+AliTOFHitDataBuffer& AliTOFHitDataBuffer::operator=(const AliTOFHitDataBuffer & source) {
+  // operator =
+  if (&source != this) {
+    TObject::operator=(source);
+    fBuffer = source.fBuffer;
+  }
+  return *this;
 }
 
 //-----------------------------------------------------------------------------

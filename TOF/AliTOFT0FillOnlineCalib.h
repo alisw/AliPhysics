@@ -5,15 +5,15 @@
  * See cxx source for full Copyright notice                               */
 /* $Id$ */
 
-/*
- *
- *
- * this class defines the T0Fill online calibration object to be stored
- * in OCDB in order to obtain a corrected T0Fill from online algorithm
- * 
- *
- *
- */
+// *
+// *
+// *
+// * this class defines the T0Fill online calibration object to be stored
+// * in OCDB in order to obtain a corrected T0Fill from online algorithm
+// * 
+// *
+// *
+// *
 
 #include "TObject.h"
 
