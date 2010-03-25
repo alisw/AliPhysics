@@ -83,7 +83,6 @@ AliAnalysisTaskSPD& AliAnalysisTaskSPD::operator=(const AliAnalysisTaskSPD& c)
     fOutput = c.fOutput ;
     fRunNb = c.fRunNb;
     fOCDBLocation = c.fOCDBLocation;
-
   }
   return *this;
 }
@@ -160,47 +159,47 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   fOutput->AddLast(hFOFiredChip);
   //7
   TH1F *hFOgood = new TH1F("hFOgood"," FO-good (at least one cluster) ",1200,-0.5,1199.5);
-  hFOgood->SetXTitle("chipkey");
+  hFOgood->SetXTitle("chip key");
   fOutput->AddLast(hFOgood);
-
-  //8-11
-  TH1F *hFOgoodPerBC[4];
-  for(Int_t ibc =0; ibc<4; ibc++){
-    hFOgoodPerBC[ibc] = new TH1F(Form("hFOgoodPerBCmod4_%i",ibc),Form(" FO-good (at least one cluster) in BCmod4=%i",ibc),1200,-0.5,1199.5);
-    hFOgoodPerBC[ibc]->SetXTitle("chipkey");
-    fOutput->AddLast(hFOgoodPerBC[ibc]);
-  }
-  //12
+  //8
+  TH2F *hFOgoodPerBC = new TH2F("hFOgoodPerBCmod4"," FO-good signals in BCmod4 ",1200,-0.5,1199.5,4,-0.5,3.5);
+  hFOgoodPerBC->SetXTitle("chip key");
+  fOutput->AddLast(hFOgoodPerBC);
+  //9
+  TH2F *hFiredChipsPerBC = new TH2F("hFiredChipsPerBCmod4"," fired chips in BCmod4 ",1200,-0.5,1199.5,4,-0.5,3.5);
+  hFiredChipsPerBC->SetXTitle("chip key");
+  fOutput->AddLast(hFiredChipsPerBC);
+  //10
   TH1F *hFOnoisy = new TH1F("hFOnoisy","FO-noisy (no cluster)",1200,-0.5,1199.5);
-  hFOnoisy->SetXTitle("chipkey");
+  hFOnoisy->SetXTitle("chip key");
   fOutput->AddLast(hFOnoisy);
 
   //
   // Booking ESD related histograms
   //
 
-  // 13
+  // 11
   TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",80,0,80);
-  hTracklets->SetXTitle("# Traclets");
+  hTracklets->SetXTitle("# Tracklets");
   fOutput->AddLast(hTracklets);
-  //14
+  //12
   TH2F *hSPDphivsSPDeta= new TH2F("hSPDphivsSPDeta", "Tracklets - #varphi vs #eta",120,-3.,3,360,0.,2*TMath::Pi());
   hSPDphivsSPDeta->GetXaxis()->SetTitle("Pseudorapidity #eta");
   hSPDphivsSPDeta->GetYaxis()->SetTitle("#varphi [rad]");
   fOutput->AddLast(hSPDphivsSPDeta);
-  //15
+  //13
   TH1F *hSPDphiZpos= new TH1F("hSPDphiZpos", "Tracklets - #varphi (Z>0)",360,0.,2*TMath::Pi());
   hSPDphiZpos->SetXTitle("#varphi [rad]");
   fOutput->AddLast(hSPDphiZpos);
-  //16
+  //14
   TH1F *hSPDphiZneg= new TH1F("hSPDphiZneg", "Tracklets - #varphi (Z<0)",360,0.,2*TMath::Pi());
   hSPDphiZneg->SetXTitle("#varphi [rad]");
   fOutput->AddLast(hSPDphiZneg);
-  //17
+  //15
   TH1F *hVertexZ = new TH1F("hVertexZ","Vertex Z distribution",300,-15,15);
   hVertexZ->SetXTitle("Z Vertex [cm]");
   fOutput->AddLast(hVertexZ); 
-  // 18
+  //16
   TH1I *hEventsProcessed = new TH1I("hEventsProcessed","Number of processed events",1,0,1) ;
   fOutput->AddLast(hEventsProcessed);
 }
@@ -230,7 +229,7 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
     return;
   }
 
-  ((TH1I*)fOutput->At(18))->Fill(0);
+  ((TH1I*)fOutput->At(16))->Fill(0);
 
   // RecPoints info
 
@@ -304,17 +303,21 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
   const AliESDVertex *vertex = ESD->GetVertex();
   const AliMultiplicity *mult = ESD->GetMultiplicity();
  
-  ((TH1I*)fOutput->At(13))->Fill(mult->GetNumberOfTracklets());
-
+  ((TH1I*)fOutput->At(11))->Fill(mult->GetNumberOfTracklets());
+  UInt_t bc = (UInt_t)ESD->GetBunchCrossNumber();
   for(Int_t iChipKey=0; iChipKey < 1200; iChipKey++){
-    if(firedchips[iChipKey]) ((TH1F*)fOutput->At(5))->Fill(iChipKey);
+    if(firedchips[iChipKey]) {
+     ((TH1F*)fOutput->At(5))->Fill(iChipKey);
+     if(bc>0)((TH2F*)fOutput->At(9))->Fill(iChipKey,bc%4);
+      
+     }
     if(mult->TestFastOrFiredChips(iChipKey)) ((TH1F*)fOutput->At(6))->Fill(iChipKey);
     if(mult->TestFastOrFiredChips(iChipKey) && firedchips[iChipKey]) {
       ((TH1F*)fOutput->At(7))->Fill(iChipKey);
-      UInt_t bc = (UInt_t)ESD->GetBunchCrossNumber();
-      if(bc>0) ((TH1F*)fOutput->At(8+bc%4))->Fill(iChipKey);
+      if(bc>0) ((TH2F*)fOutput->At(8))->Fill(iChipKey,bc%4);
+     
     }
-    if(mult->TestFastOrFiredChips(iChipKey) && !firedchips[iChipKey]) ((TH1F*)fOutput->At(12))->Fill(iChipKey);
+    if(mult->TestFastOrFiredChips(iChipKey) && !firedchips[iChipKey]) ((TH1F*)fOutput->At(10))->Fill(iChipKey);
   }
   
   
@@ -322,20 +325,19 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
   if(vertex){
     vertex->GetXYZ(vtxPos);
  
-    ((TH1F*)fOutput->At(17))->Fill(vtxPos[2]);
+    ((TH1F*)fOutput->At(15))->Fill(vtxPos[2]);
  
     for(Int_t iTracklet =0; iTracklet < mult->GetNumberOfTracklets(); iTracklet++){
 
       Float_t phiTr= mult->GetPhi(iTracklet);
       Float_t etaTr =mult->GetEta(iTracklet);
 
-      ((TH2F*)fOutput->At(14))->Fill(etaTr,phiTr);
+      ((TH2F*)fOutput->At(12))->Fill(etaTr,phiTr);
 
       // Z pos or Z neg
       Float_t z = vtxPos[2] + 3.9 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- etaTr)));
-      if(z>0) ((TH1F*)fOutput->At(15))->Fill(phiTr);
-      else ((TH1F*)fOutput->At(16))->Fill(phiTr);
-
+      if(z>0) ((TH1F*)fOutput->At(13))->Fill(phiTr);
+      else ((TH1F*)fOutput->At(14))->Fill(phiTr);
       //if(vtxPos[2]>0 && etaTr>0)((TH1F*)fOutput->At(15))->Fill(phiTr); // z positive
       //if(vtxPos[2]<0 && etaTr<0)((TH1F*)fOutput->At(16))->Fill(phiTr); // z negative
      
