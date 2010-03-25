@@ -278,6 +278,11 @@ Bool_t AlidNdPtHelper::IsPrimaryParticle(AliStack* const stack, Int_t idx, Parti
     else return kFALSE;
   }
 
+  if(particleMode==kMCRest) {
+    if(prim && pdg!=kPiPlus && pdg!=kKPlus && pdg!=kProton) return kTRUE;
+    else return kFALSE;
+  }
+
 return prim;
 }
 

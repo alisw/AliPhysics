@@ -109,7 +109,8 @@ ClassImp(AlidNdPtCorrection)
   fContTrackMatrix(0),
   fContMultTrackMatrix(0),
   fCorrMatrixFileName(""),
-  fCosmicsHisto(0)
+  fCosmicsHisto(0),
+  fEventCount(0)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -186,7 +187,8 @@ AlidNdPtCorrection::AlidNdPtCorrection(Char_t* name, Char_t* title, TString corr
   fContTrackMatrix(0),
   fContMultTrackMatrix(0),
   fCorrMatrixFileName(corrMatrixFileName),
-  fCosmicsHisto(0)
+  fCosmicsHisto(0),
+  fEventCount(0)
 {
   // constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -259,6 +261,7 @@ AlidNdPtCorrection::~AlidNdPtCorrection() {
   if(fMCEventPrimTrackMeanPtTrueMult1) delete fMCEventPrimTrackMeanPtTrueMult1; fMCEventPrimTrackMeanPtTrueMult1=0;
 
   if(fCosmicsHisto) delete fCosmicsHisto; fCosmicsHisto=0;
+  if(fEventCount) delete fEventCount; fEventCount=0;
 
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
     if(fRecTrackHist1[i]) delete fRecTrackHist1[i]; fRecTrackHist1[i]=0;
@@ -850,6 +853,19 @@ void AlidNdPtCorrection::Init(){
   fCosmicsHisto->GetAxis(2)->SetTitle("pt (GV/c)");
   fCosmicsHisto->Sumw2();
 
+  //
+  Int_t binsEventCount[2]={2,2};
+  Double_t minEventCount[2]={0,0}; 
+  Double_t maxEventCount[2]={2,2}; 
+  fEventCount = new THnSparseF("fEventCount","trig vs trig+vertex",2,binsEventCount,minEventCount,maxEventCount);
+  fEventCount->GetAxis(0)->SetTitle("trig");
+  fEventCount->GetAxis(1)->SetTitle("trig+vert");
+  fEventCount->Sumw2();
+
+
+
+
+
   // init output folder
   fCorrectionFolder = CreateFolder("folderdNdPt","Correction dNdPt Folder");
 
@@ -868,6 +884,7 @@ void AlidNdPtCorrection::Init(){
       fEventMultCorrelationMatrix = (THnSparseF*)folder->FindObject("event_mult_correlation_matrix");
       if(!fEventMultCorrelationMatrix) {
          Printf("No %s matrix \n", "event_mult_correlation_matrix");
+	 return;
       }
 
       //
@@ -878,24 +895,28 @@ void AlidNdPtCorrection::Init(){
       fCorrTriggerMBtoNDEventMatrix = (THnSparseF*)folder->FindObject("zv_mult_trig_MBtoND_corr_matrix");
       if(!fCorrTriggerMBtoNDEventMatrix) {
          Printf("No %s matrix \n", "zv_mult_trig_MBtoND_corr_matrix");
+	 return;
       }
 
       // trigger bias correction (MBtoNSD)
       fCorrTriggerMBtoNSDEventMatrix = (THnSparseF*)folder->FindObject("zv_mult_trig_MBtoNSD_corr_matrix");
       if(!fCorrTriggerMBtoNSDEventMatrix) {
          Printf("No %s matrix \n", "zv_mult_trig_MBtoNSD_corr_matrix");
+	 return;
       }
 
       // trigger bias correction (MBtoInel)
       fCorrTriggerMBtoInelEventMatrix = (THnSparseF*)folder->FindObject("zv_mult_trig_MBtoInel_corr_matrix");
       if(!fCorrTriggerMBtoInelEventMatrix) {
          Printf("No %s matrix \n", "zv_mult_trig_MBtoInel_corr_matrix"); 
+	 return;
       }
      
       // vertex reconstruction efficiency correction
       fCorrEventMatrix = (THnSparseF*)folder->FindObject("zv_mult_event_corr_matrix");
       if(!fCorrEventMatrix) {
          Printf("No %s matrix \n", "zv_mult_event_corr_matrix");
+	 return;
       }
 
       //
@@ -904,16 +925,19 @@ void AlidNdPtCorrection::Init(){
       fZvNorm = (TH1D*)folder->FindObject("zv_distribution_norm");
       if(!fZvNorm) {
          Printf("No %s matrix \n", "fZvNorm");
+	 return;
       }
 
       fZvEmptyEventsNorm = (TH1D*)folder->FindObject("zv_empty_events_norm");
       if(!fZvEmptyEventsNorm) {
          Printf("No %s matrix \n", "fZvEmptyEventsNorm");
+	 return;
       }
 
       fLHCBin0Background = (TH1D*)folder->FindObject("hLHCBin0Background");
       if(!fLHCBin0Background) {
          Printf("No %s matrix \n", "fLHCBin0Background");
+	 return;
       }
 
       //
@@ -924,48 +948,56 @@ void AlidNdPtCorrection::Init(){
       fCorrTriggerMBtoNDTrackEventMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_track_trig_MBtoND_corr_matrix");
       if(!fCorrTriggerMBtoNDTrackEventMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_track_trig_MBtoND_corr_matrix");
+	 return;
       }
 
       // trigger bias correction (MBtoNSD)
       fCorrTriggerMBtoNSDTrackEventMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_track_trig_MBtoNSD_corr_matrix");
       if(!fCorrTriggerMBtoNSDTrackEventMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_track_trig_MBtoNSD_corr_matrix");
+	 return;
       }
 
       // trigger bias correction (MBtoInel) 
       fCorrTriggerMBtoInelTrackEventMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_track_trig_MBtoInel_corr_matrix");
       if(!fCorrTriggerMBtoInelTrackEventMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_track_trig_MBtoInel_corr_matrix");
+	 return;
       }
     
       // vertex reconstruction efficiency correction (zv,pt,eta)
       fCorrTrackEventMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_track_event_corr_matrix");
       if(!fCorrTrackEventMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_track_event_corr_matrix");
+	 return;
       }
 
       // track reconstruction efficiency correction (zv,pt,eta)
       fCorrTrackMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_track_corr_matrix");
       if(!fCorrTrackMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_track_corr_matrix");
+	 return;
       }
 
       // high pt track reconstruction efficiency correction (zv,pt,eta)
       fCorrHighPtTrackMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_highPt_track_corr_matrix");
       if(!fCorrHighPtTrackMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_highPt_track_corr_matrix");
+	 return;
       }
 
       // secondary tracks contamination correction (zv,pt,eta)
       fContTrackMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_track_cont_matrix");
       if(!fContTrackMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_track_cont_matrix");
+	 return;
       }
 
       // multiply reconstructed tracks correction
       fContMultTrackMatrix = (THnSparseF*)folder->FindObject("zv_pt_eta_mult_track_cont_matrix");
       if(!fContMultTrackMatrix) {
          Printf("No %s matrix \n", "zv_pt_eta_mult_track_cont_matrix");
+	 return;
       }
     }
   }
@@ -995,20 +1027,48 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *trigSel = NULL;
+  AliTriggerAnalysis *trigAna = NULL; // needed for andV0
   if(evtCuts->IsTriggerRequired())  
   {
-    AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+    //
+    trigSel = GetPhysicsTriggerSelection();
     if(!trigSel) {
       AliDebug(AliLog::kError, "cannot get trigSel");
       return;
     }
-
+    
     if(IsUseMCInfo()) { 
       trigSel->SetAnalyzeMC();
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+
+      trigAna = trigSel->GetTriggerAnalysis();
+      if(!trigAna) 
+        return;
+
+      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
+        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
     else {
+      //
+      // 0-multiplicity bin for LHC background correction
+      //
+      if(GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
+         GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
+      {
+        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
+      } else {
+        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
+      }
+
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+
+      trigAna = trigSel->GetTriggerAnalysis();
+      if(!trigAna) 
+        return;
+
+      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
+        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
   }
   
@@ -1111,20 +1171,9 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     return; 
   }
 
-
-  /*
-  //
-  // set 0-bin
-  //
-  if( GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || 
-      GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-      GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
-  {
-      if(AlidNdPtAnalysis::IsBinZeroTrackSPDvtx(esdEvent)) multMBTracks = 0;
-  } else {
-      if(AlidNdPtAnalysis::IsBinZeroSPDvtx(esdEvent)) multMBTracks = 0;
-  }
-  */
+  Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
+  Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
+  fEventCount->Fill(vEventCount);
 
   //
   // correct event and track histograms
@@ -1133,6 +1182,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   Int_t multRec=0, multRecTemp=0;
   Int_t *labelsRec=0;
   Bool_t isCosmic = kFALSE;
+
 
   if(isEventOK && isEventTriggered)
   {
@@ -1196,6 +1246,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       }  
     }
 
+    /*
     // check multiplicity
     const AliMultiplicity* mult = esdEvent->GetMultiplicity();
     Int_t trackletMult = 0;
@@ -1207,6 +1258,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     }
     // use tracklet multiplicity
     multRecTemp = trackletMult;
+    */
 
     //
     for(Int_t i=0; i<entries;++i) 
@@ -1341,7 +1393,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     Double_t vRecEventHist1[3] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv()};
     fRecEventHist1->Fill(vRecEventHist1);
 
-    // correlation track multiplicity vs tracklet multiplicity
+    // correlation track multiplicity vs MB track multiplicity
     Double_t vRecEventMultHist1[3] = {multRec, multMBTracks};
     fRecEventMultHist1->Fill(vRecEventMultHist1);
   }
@@ -1536,7 +1588,7 @@ void AlidNdPtCorrection::FillHistograms(AlidNdPtHelper::EventObject eventObj, Do
     Double_t corrToInelF0 = GetCorrFactZvMult(fCorrTriggerMBtoInelEventMatrix,zv,multMBTracks);
     Double_t corrToNDF0 = GetCorrFactZvMult(fCorrTriggerMBtoNDEventMatrix,zv,multMBTracks);
     Double_t corrToNSDF0 = GetCorrFactZvMult(fCorrTriggerMBtoNSDEventMatrix,zv,multMBTracks);
-    printf("factLHCBack %f, factZ %f, corrToInelF0 %f, corrToNDF0 %f, corrToNSDF0 %f \n",factLHCBack,factZ,corrToInelF0,corrToNDF0,corrToNSDF0);
+    //printf("factLHCBack %f, factZ %f, corrToInelF0 %f, corrToNDF0 %f, corrToNSDF0 %f \n",factLHCBack,factZ,corrToInelF0,corrToNDF0,corrToNSDF0);
 
     fCorrRecEventHist2[0]->Fill(vEventMatrix);
     fCorrRecEventHist2[1]->Fill(vEventMatrix,factLHCBack*factZ);
@@ -1776,11 +1828,18 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* const list)
 
   // collection of generated histograms
 
+  // physics selection
+  TList *collPhysSelection = new TList;
+
   Int_t count=0;
   while((obj = iter->Next()) != 0) {
     AlidNdPtCorrection* entry = dynamic_cast<AlidNdPtCorrection*>(obj);
     if (entry == 0) continue; 
   
+    collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
+
+    fEventCount->Add(entry->fEventCount);
+
     fMCEventHist1->Add(entry->fMCEventHist1);
     fRecEventHist1->Add(entry->fRecEventHist1);
     fRecEventMultHist1->Add(entry->fRecEventMultHist1);
@@ -1845,6 +1904,11 @@ Long64_t AlidNdPtCorrection::Merge(TCollection* const list)
 
   count++;
   }
+
+  //
+  AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
+  trigSelection->Merge(collPhysSelection);
+  if(collPhysSelection) delete collPhysSelection;
 
 return count;
 }

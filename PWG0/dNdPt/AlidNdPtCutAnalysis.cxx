@@ -40,6 +40,7 @@
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
 #include "AlidNdPtBackgroundCuts.h"
+#include "AlidNdPtAnalysis.h"
 #include "AliPhysicsSelection.h"
 
 #include "AliPWG0Helper.h"
@@ -196,19 +197,49 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *trigSel = NULL;
+  AliTriggerAnalysis *trigAna = NULL; // needed for andV0
+
   if(evtCuts->IsTriggerRequired())  
   {
-    AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+    //
+    trigSel = GetPhysicsTriggerSelection();
     if(!trigSel) {
       AliDebug(AliLog::kError, "cannot get trigSel");
       return;
     }
+    
     if(IsUseMCInfo()) { 
       trigSel->SetAnalyzeMC();
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+
+      trigAna = trigSel->GetTriggerAnalysis();
+      if(!trigAna) 
+        return;
+
+      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
+        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
     else {
+      //
+      // 0-multiplicity bin for LHC background correction
+      //
+      if(GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
+         GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
+      {
+        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
+      } else {
+        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
+      }
+
       isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+
+      trigAna = trigSel->GetTriggerAnalysis();
+      if(!trigAna) 
+        return;
+
+      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
+        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
   }
 

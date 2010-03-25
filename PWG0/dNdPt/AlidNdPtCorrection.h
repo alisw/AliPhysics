@@ -119,6 +119,7 @@ public :
   THnSparseF *GetCorrRecEventHist1(Int_t i) const {return fCorrRecEventHist1[i];}
   THnSparseF *GetCorrRecEventHist2(Int_t i) const {return fCorrRecEventHist2[i];}
 
+  THnSparseF *GetEventCount()   const {return fEventCount;}
 
   // correlation matrix
   void SetEventMultCorrelationMatrix(THnSparseF *const matrix=0) {fEventMultCorrelationMatrix = matrix;}
@@ -340,6 +341,8 @@ private:
   //  deta, dphi, pt1 for cosmics
   THnSparseF *fCosmicsHisto; //-> deta:dphi:pt
   
+  THnSparseF *fEventCount; //-> trig, trig + vertex
+
   AlidNdPtCorrection(const AlidNdPtCorrection&); // not implemented
   AlidNdPtCorrection& operator=(const AlidNdPtCorrection&); // not implemented
 
