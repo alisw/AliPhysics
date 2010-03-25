@@ -392,9 +392,12 @@ int AliHLTMUONRootifierComponent::DoEvent(
 					);
 				}
 				
+				// Add an new empty trigger record since none was found.
 				trigrec = new AliHLTMUONTriggerRecord(
 						0, 0, 0, 0, 0, sourceDDL
 					);
+				triggerMap[triginfo.fTrigRecId] = trigrec;
+				event.Add(trigrec);
 			}
 			else
 			{
@@ -742,6 +745,7 @@ int AliHLTMUONRootifierComponent::DoEvent(
 				AliHLTMUONMansoTrack* tr = new AliHLTMUONMansoTrack(t.fTrackId);
 				event.Add(tr);
 				track = tr;
+				mansoTrackMap[t.fTrackId] = tr;
 			}
 			
 			new (singlesDecisions[singlesDecisions.GetEntriesFast()])
@@ -809,12 +813,14 @@ int AliHLTMUONRootifierComponent::DoEvent(
 				AliHLTMUONMansoTrack* tr = new AliHLTMUONMansoTrack(t.fTrackAId);
 				event.Add(tr);
 				trackA = tr;
+				mansoTrackMap[t.fTrackAId] = tr;
 			}
 			if (trackB == NULL)
 			{
 				AliHLTMUONMansoTrack* tr = new AliHLTMUONMansoTrack(t.fTrackBId);
 				event.Add(tr);
 				trackB = tr;
+				mansoTrackMap[t.fTrackBId] = tr;
 			}
 			
 			new (pairsDecisions[pairsDecisions.GetEntriesFast()])

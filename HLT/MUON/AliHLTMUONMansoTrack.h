@@ -233,11 +233,11 @@ private:
 	Float_t fChi2; ///< Chi squared of fit.
 	const AliHLTMUONTriggerRecord* fTrigRec;  ///< Corresponding trigger record.
 	const AliHLTMUONRecHit* fHit[4];   ///< Particle hits on tracking chambers 7 to 10.
-	TVector3 fRoICentre[4];  ///< Region of Interest centre points.
-	Float_t fRoIRadius[4];   ///< Region of Interest radii.
 	
 	// The following is debugging information and may not be filled if the
 	// dHLT components were not set to produce this information.
+	TVector3 fRoICentre[4];  ///< Region of Interest centre points.
+	Float_t fRoIRadius[4];   ///< Region of Interest radii.
 	
 	// Parameters used in momentum estimation:
 	Float_t fZmiddle; ///< Particle momentum X component in GeV/c.

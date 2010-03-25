@@ -90,6 +90,9 @@ public:
 
 private:
 
+	/// Performs a deep copy of the event. Assumes this event is already cleared and empty.
+	void DeepCopy(const AliHLTMUONEvent& event);
+
 	AliHLTEventID_t fEventId;  ///< The event ID.
 	TObjArray fArray;          ///< Array of event objects.
 	

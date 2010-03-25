@@ -255,11 +255,11 @@ void AliHLTMUONDecision::Print(Option_t* option) const
 				cout << setw(10) << "-";
 			}
 			
-			if (decision->MansoTrackB() == NULL)
+			if (decision->MansoTrackB() != NULL)
 			{
 				cout << setw(10) << decision->MansoTrackB()->Id();
 			}
-			else if (decision->FullTrackB() == NULL)
+			else if (decision->FullTrackB() != NULL)
 			{
 				cout << setw(10) << decision->FullTrackB()->Id();
 			}
