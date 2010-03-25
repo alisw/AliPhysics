@@ -1,4 +1,4 @@
-Executable="/alice/cern.ch/user/z/zampolli/bin/runPassX.sh";
+Executable="/alice/cern.ch/user/z/zampolli/bin/runPass0.sh";
 
 Packages={"VO_ALICE@AliRoot::v4-19-07-AN","VO_ALICE@ROOT::v5-26-00b-1","VO_ALICE@APISCONFIG::V1.1x"};
 Jobtag =
@@ -25,7 +25,7 @@ Workdirectorysize={"6000MB"};
 
 InputFile={"LF:/alice/cern.ch/user/z/zampolli/Pass0/recPass0.C",
            "LF:/alice/cern.ch/user/z/zampolli/Pass0/ConfigCalibTrain.C",
-           "LF:/alice/cern.ch/user/z/zampolli/Pass0/runPass0.C",
+           "LF:/alice/cern.ch/user/z/zampolli/Pass0/runCalibTrain.C",
            "LF:/alice/cern.ch/user/z/zampolli/Pass0/AddTaskTPCCalib.C",
            "LF:/alice/cern.ch/user/z/zampolli/Pass0/LoadLibraries.C"
 };
