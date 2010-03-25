@@ -12,28 +12,26 @@
 /////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
-#include <Riostream.h>
-#include <TH1F.h>
-#include <TF1.h>
-#include <TMath.h>
-#include <TNtuple.h>
-#include <TFile.h>
 #include <TString.h>
-#include <TList.h>
 
+class TF1;
+class TNtuple;
+class TFile;
+class TList;
+class TH1F;
 
 class AliHFMassFitter : public TNamed {
 
  public:
   AliHFMassFitter();
-  AliHFMassFitter(TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin=1,Int_t fittypeb=0,Int_t fittypes=0);
+  AliHFMassFitter(const TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t rebin=1,Int_t fittypeb=0,Int_t fittypes=0);
   virtual ~AliHFMassFitter();
 
   AliHFMassFitter(const AliHFMassFitter &mfit);
   AliHFMassFitter& operator=(const AliHFMassFitter &mfit);
 
   //setters
-  void     SetHisto(TH1F *histoToFit);
+  void     SetHisto(const TH1F *histoToFit);
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue;}
   void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;}
   void     SetMaxRangeFit(Double_t maxvalue){fmaxMass=maxvalue;}
@@ -50,14 +48,14 @@ class AliHFMassFitter : public TNamed {
   Double_t GetMinRangeFit()const {return fminMass;}
   Double_t GetMaxRangeFit()const {return fmaxMass;}
   Int_t    GetBinN()       const {return fNbin;}
-  void     GetFitPars(Float_t*) const;
+  void     GetFitPars(Float_t* pars) const;
   void     GetTypeOfFit(Bool_t &background, Int_t &typeb) const {background = fWithBkg; typeb = ftypeOfFit4Bkg;}
   Int_t    GetReflectionSigmaFactor() const {return ffactor;} 
   Double_t GetMean() const {return fMass;}
   Double_t GetSigma()const {return fSigmaSgn;}
   Double_t GetChiSquare() const;
   Double_t GetReducedChiSquare() const;
-  void     GetSideBandsBounds(Int_t&, Int_t&) const;
+  void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
 
   void     PrintParTitles() const;
 
@@ -65,13 +63,13 @@ class AliHFMassFitter : public TNamed {
   void     FillNtuParam(); //Fill the TNtuple with the current parameters
   TNtuple* GetNtuParam() const {return fntuParam;} // return the TNtuple
   TNtuple* NtuParamOneShot(char *ntuname="ntupar"); // the three functions above all together
-  void     WriteHisto(TString path="./"); // write the histogram
+  void     WriteHisto(TString path="./") const; // write the histogram
   void     WriteNtuple(TString path="./") const; // write the TNtuple
   void     DrawFit() const;
   void     Reset();
 
-  void     IntS(Float_t *valuewitherror);    // integral of signal given my the fit with error
-  Double_t IntTot(){return fhistoInvMass->Integral("width");}  // return total integral of the histogram
+  void     IntS(Float_t *valuewitherror) const;    // integral of signal given my the fit with error
+  Double_t IntTot() const {return fhistoInvMass->Integral("width");}  // return total integral of the histogram
   void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; // signal in nsigma with error 
   void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; // signal in (min, max) with error 
   void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; // backgournd in nsigma with error 
@@ -79,9 +77,9 @@ class AliHFMassFitter : public TNamed {
   void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const; // significance in nsigma with error 
   void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const; // significance in (min, max) with error 
 
-  Double_t FitFunction4MassDistr (Double_t*, Double_t*);
-  Double_t FitFunction4Sgn (Double_t*, Double_t*);
-  Double_t FitFunction4Bkg (Double_t*, Double_t*);
+  Double_t FitFunction4MassDistr (Double_t* x, Double_t* par);
+  Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
+  Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Bool_t   MassFitter(Bool_t draw=kTRUE);
   void     RebinMass(Int_t binground=1);
   
