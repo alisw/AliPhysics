@@ -24,29 +24,27 @@
 //Author: Naomi van der Kolk (kolk@nikhef.nl)
 /////////////////////////////////////////////////////////////////////////////////////////
 
-#include "Riostream.h"                 //needed as include
-#include "TObject.h"                   //needed as include
-#include "AliFlowCommonConstants.h"    //needed as include
-#include "AliFlowLYZConstants.h"       //needed as include
-#include "AliFlowAnalysisWithLeeYangZeros.h"
-#include "AliFlowLYZHist1.h"           //needed as include
-#include "AliFlowLYZHist2.h"           //needed as include
-#include "AliFlowCommonHist.h"         //needed as include
-#include "AliFlowCommonHistResults.h"  //needed as include
-#include "AliFlowEventSimple.h"        //needed as include
-#include "AliFlowTrackSimple.h"        //needed as include
-
-class AliFlowVector;
-
-#include "TMath.h" //needed as include
-#include "TFile.h" //needed as include
+#include "Riostream.h"
+#include "TObject.h" 
+#include "TMath.h" 
+#include "TFile.h"
 #include "TList.h"
+#include "TVector2.h"
+#include "TH1F.h"
+#include "TComplex.h"
+#include "TProfile.h"
+#include "TDirectoryFile.h"
 
-class TComplex;
-class TProfile;
-class TH1F;
-class TH1D;
-
+#include "AliFlowCommonConstants.h"
+#include "AliFlowLYZConstants.h"
+#include "AliFlowAnalysisWithLeeYangZeros.h"
+#include "AliFlowLYZHist1.h"
+#include "AliFlowLYZHist2.h"
+#include "AliFlowCommonHist.h"
+#include "AliFlowCommonHistResults.h"
+#include "AliFlowEventSimple.h"
+#include "AliFlowTrackSimple.h"
+#include "AliFlowVector.h"
 
 ClassImp(AliFlowAnalysisWithLeeYangZeros)
 
@@ -655,7 +653,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	dR0 = fHist1[theta]->GetR0();
 		    	   	   
 	//calculate integrated flow
-	if (dR0!=0.) { dVtheta = dJ01/dR0; }
+	if (!TMath::AreEqualAbs(dR0, 0., 1e-100)) { dVtheta = dJ01/dR0; }
 	else { cout<<"r0 is not found! Leaving LYZ analysis."<<endl; return kFALSE; }
 
 	//for estimating systematic error resulting from d0
@@ -664,8 +662,8 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	else { dBinsize = (AliFlowLYZConstants::GetMaster()->GetMaxPROD())/(AliFlowLYZConstants::GetMaster()->GetNbins());}
 	Double_t dVplus = -1.;
 	Double_t dVmin  = -1.;
-	if (dR0+dBinsize!=0.) {dVplus = dJ01/(dR0+dBinsize);}
-	if (dR0-dBinsize!=0.) {dVmin = dJ01/(dR0-dBinsize);}
+	if (!TMath::AreEqualAbs(dR0+dBinsize, 0., 1e-100)) {dVplus = dJ01/(dR0+dBinsize);}
+	if (!TMath::AreEqualAbs(dR0-dBinsize, 0., 1e-100)) {dVmin = dJ01/(dR0-dBinsize);}
 	//convert V to v 
 	Double_t dvplus = -1.;
 	Double_t dvmin= -1.;
@@ -676,7 +674,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	  dvmin = dVmin; }
 	else {
 	  //for PRODUCT: v=V/M
-	  if (dMultRP!=0.){
+	  if (!TMath::AreEqualAbs(dMultRP, 0., 1e-100)){
 	    dv = dVtheta/dMultRP;
 	    dvplus = dVplus/dMultRP;
 	    dvmin = dVmin/dMultRP; }}
@@ -781,7 +779,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       }	else {
 	dR0 = fHistProR0theta->GetBinContent(theta+1); //histogram starts at bin 1
 	if (fDebug) cerr<<"dR0 = "<<dR0<<endl;
-	if (dR0!=0) dVtheta = dJ01/dR0;
+	if (!TMath::AreEqualAbs(dR0, 0., 1e-100)) dVtheta = dJ01/dR0;
 	dV += dVtheta; 
 	// BP Eq. 9  -> Vn^theta = j01/r0^theta
 	if (!fHistProReDenom && !fHistProImDenom) {
@@ -809,7 +807,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	      if (fDebug) cerr<<"WARNING: modulus of cNumerRP is zero in Finish()"<<endl;
 	      dReRatioRP = 0;
 	    }
-	    else if (cDenom.Rho()==0) {
+	    else if (TMath::AreEqualAbs(cDenom.Rho(), 0, 1e-100)) {
 	      if (fDebug) cerr<<"WARNING: modulus of cDenom is zero"<<endl;
 	      dReRatioRP = 0;
 	    }
@@ -889,7 +887,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     //calculate the average of fVtheta = fV
     dV /= iNtheta;
     if (!fUseSum) { if (dMultRP!=0.) { dV /=dMultRP; }} //scale by the multiplicity for PRODUCT
-    if (dV==0.) { cout<<"dV = 0! Leaving LYZ analysis."<<endl; return kFALSE; }
+    if (TMath::AreEqualAbs(dV, 0., 1e-100)) { cout<<"dV = 0! Leaving LYZ analysis."<<endl; return kFALSE; }
 
     //sigma2 and chi (for statistical error calculations)
     Double_t  dSigma2 = 0;
@@ -949,7 +947,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       Double_t dErrdifcomb = 0.;  //set error to zero
       Double_t dErr2difcomb = 0.; //set error to zero
       //calculate error
-      if (dNprime!=0.) { 
+      if (!TMath::AreEqualAbs(dNprime, 0., 1e-100)) { 
 	for (Int_t theta=0;theta<iNtheta;theta++) {
 	  Double_t dTheta = ((double)theta/iNtheta)*TMath::Pi(); 
 	  Double_t dApluscomb = TMath::Exp((dJ01*dJ01)/(2*dChi*dChi)*
@@ -963,7 +961,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	} //loop over theta
       } 
       
-      if (dErr2difcomb!=0.) {
+      if (!TMath::AreEqualAbs(dErr2difcomb, 0., 1e-100)) {
 	dErr2difcomb /= iNtheta;
 	dErrdifcomb = TMath::Sqrt(dErr2difcomb);
       }
@@ -1048,7 +1046,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       } else { cout<<"fHistPtRP is NULL"<<endl; }
     } //loop over bins b
 
-    if (dSum != 0.) {
+    if (!TMath::AreEqualAbs(dSum, 0., 1e-100)) {
       dVRP /= dSum; //the pt distribution should be normalised
       dErrV /= (dSum*dSum);
       dErrV = TMath::Sqrt(dErrV);
@@ -1148,7 +1146,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
   //weight by the multiplicity
   Double_t dQX = 0;
   Double_t dQY = 0;
-  if (vQ.GetMult() != 0) {
+  if (!TMath::AreEqualAbs(vQ.GetMult(), 0., 1e-100)) {
     dQX = vQ.X()/vQ.GetMult(); 
     dQY = vQ.Y()/vQ.GetMult();
   }
