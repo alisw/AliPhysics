@@ -75,8 +75,8 @@ AliHLTEMCALConstants::AliHLTEMCALConstants() :
   fkCELLSTEPPHI(6.04667), 	// FR: tower dimension along phi
   fkCELLHEIGHT(27.74),  	// FR: tower height
   fkCELLANGLE(1.50),  		// FR: tower tapeiring angle (DEG)
-  fkCRITICENERGY(8),
   fkRADLENGTH(1.23),
+  fkCRITICENERGY(8),
   fkCJ(0.5),
   fkNRCUSPERSECTOR(4),
   fkDDLOFFSET(4608)
