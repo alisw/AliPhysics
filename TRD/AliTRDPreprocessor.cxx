@@ -784,8 +784,8 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
     
     // gain
     TH2I *histogain = (TH2I *) filehlt->Get("CH2d");
-    histogain->SetDirectory(0);
     if (histogain) {
+      histogain->SetDirectory(0);
       // store the reference data
       if(!StoreReferenceData("HLTData","Gain",(TObject *) histogain,&metaData)){
 	Log("Error storing 2D histos for gain");
@@ -823,8 +823,8 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
     // vdrift
     fVdriftHLT = kFALSE;
     TProfile2D *histodriftvelocity = (TProfile2D *) filehlt->Get("PH2d");
-    histodriftvelocity->SetDirectory(0);
     if (histodriftvelocity) {
+      histodriftvelocity->SetDirectory(0);
       // store the reference data
       if(!StoreReferenceData("HLTData","VdriftT0",(TObject *) histodriftvelocity,&metaData)){
 	Log("Error storing 2D Profile for average pulse height (HLT)");
@@ -877,8 +877,8 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
     
     // prf
     TProfile2D *histoprf = (TProfile2D *) filehlt->Get("PRF2d");
-    histoprf->SetDirectory(0);
     if (histoprf) {
+      histoprf->SetDirectory(0);    
       // store reference data
       if(!StoreReferenceData("HLTData","PRF",(TObject *) histoprf,&metaData)){
 	Log("Error storing the 2D Profile for Pad Response Function");
@@ -1087,5 +1087,6 @@ UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
   Log("SUCCESS: Processing of the DCS config summary file DONE.");  
   return 0;
 }
+
 
 
