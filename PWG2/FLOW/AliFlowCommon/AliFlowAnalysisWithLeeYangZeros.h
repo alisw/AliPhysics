@@ -15,29 +15,21 @@
 // Author: Naomi van der Kolk (kolk@nikhef.nl)
 ////////////////////////////////////////////////////////////////////
 
-
-#include "AliFlowVector.h" //needed as include
-
-//class AliFlowTrackSimple;
+class TH1F;
+class TProfile;
+class TDirectoryFile;
+class TComplex;
+class TString;
+class TList;
+class TVector2;
+ 
+class AliFlowVector;
 class AliFlowEventSimple;
 class AliFlowLYZHist1; 
 class AliFlowLYZHist2;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 
-class TH1F;
-class TH1D;
-class TProfile;
-class TProfile2D;
-class TObjArray;
-class TFile;
-class TDirectoryFile;
-class TComplex;
-class TString;
-class TList;
-class Riostream;
-
- 
 class AliFlowAnalysisWithLeeYangZeros {
 
  public:
