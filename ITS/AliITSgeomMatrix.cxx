@@ -252,19 +252,20 @@ void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang)const{
     // Return:
     //   noting
     Double_t si,c=180./TMath::Pi();
+    const Double_t epsil=1.e-15;
 
     ang[1] = TMath::ATan2(fm[0][1],fm[0][0]);
-    if(TMath::Cos(ang[1])!=0.0) si = fm[0][0]/TMath::Cos(ang[1]);
+    if( !(TMath::AreEqualAbs(TMath::Cos(ang[1]),0.,epsil))) si = fm[0][0]/TMath::Cos(ang[1]);
     else si = fm[0][1]/TMath::Sin(ang[1]);
     ang[0] = TMath::ATan2(si,fm[0][2]);
 
     ang[3] = TMath::ATan2(fm[1][1],fm[1][0]);
-    if(TMath::Cos(ang[3])!=0.0) si = fm[1][0]/TMath::Cos(ang[3]);
+    if(!(TMath::AreEqualAbs(TMath::Cos(ang[3]),0.,epsil))) si = fm[1][0]/TMath::Cos(ang[3]);
     else si = fm[1][1]/TMath::Sin(ang[3]);
     ang[2] = TMath::ATan2(si,fm[1][2]);
 
     ang[5] = TMath::ATan2(fm[2][1],fm[2][0]);
-    if(TMath::Cos(ang[5])!=0.0) si = fm[2][0]/TMath::Cos(ang[5]);
+    if(!(TMath::AreEqualAbs(TMath::Cos(ang[5]),0.,epsil))) si = fm[2][0]/TMath::Cos(ang[5]);
     else si = fm[2][1]/TMath::Sin(ang[5]);
     ang[4] = TMath::ATan2(si,fm[2][2]);
 
@@ -284,39 +285,40 @@ void AliITSgeomMatrix::MatrixFromSixAngles(const Double_t *ang){
     //   noting
     Int_t    i,j;
     Double_t si,lr[9],c=TMath::Pi()/180.;
+    const Double_t epsil = 1.e-15;
 
     si    = TMath::Sin(c*ang[0]);
-    if(ang[0]== 90.0)                 si = +1.0;
-    if(ang[0]==270.0)                 si = -1.0;
-    if(ang[0]==  0.0||ang[0]==180.) si =  0.0;
+    if(TMath::AreEqualAbs(ang[0],90.,epsil)) si = +1.0;
+    if(TMath::AreEqualAbs(ang[0],270.,epsil)) si = -1.0;
+    if(TMath::AreEqualAbs(ang[0],0.,epsil) ||TMath::AreEqualAbs(ang[0],180.,epsil)) si =  0.0;
     lr[0] = si * TMath::Cos(c*ang[1]);
     lr[1] = si * TMath::Sin(c*ang[1]);
     lr[2] = TMath::Cos(c*ang[0]);
-    if(ang[0]== 90.0||ang[0]==270.) lr[2] =  0.0;
-    if(ang[0]== 0.0)                  lr[2] = +1.0;
-    if(ang[0]==180.0)                 lr[2] = -1.0;
+    if(TMath::AreEqualAbs(ang[0],90.,epsil)||TMath::AreEqualAbs(ang[0],270.,epsil)) lr[2] =  0.0;
+    if(TMath::AreEqualAbs(ang[0],0.,epsil))                  lr[2] = +1.0;
+    if(TMath::AreEqualAbs(ang[0],180.,epsil))                 lr[2] = -1.0;
 //
     si    =  TMath::Sin(c*ang[2]);
-    if(ang[2]== 90.0)                 si = +1.0; 
-    if(ang[2]==270.0)                 si = -1.0;
-    if(ang[2]==  0.0||ang[2]==180.) si =  0.0;
+    if(TMath::AreEqualAbs(ang[2],90.,epsil))                 si = +1.0; 
+    if(TMath::AreEqualAbs(ang[2],270.,epsil))                 si = -1.0;
+    if(TMath::AreEqualAbs(ang[2],0.,epsil) || TMath::AreEqualAbs(ang[2],180.,epsil)) si =  0.0;
     lr[3] = si * TMath::Cos(c*ang[3]);
     lr[4] = si * TMath::Sin(c*ang[3]);
     lr[5] = TMath::Cos(c*ang[2]);
-    if(ang[2]== 90.0||ang[2]==270.) lr[5] =  0.0;
-    if(ang[2]==  0.0)                 lr[5] = +1.0;
-    if(ang[2]==180.0)                 lr[5] = -1.0;
+    if(TMath::AreEqualAbs(ang[2],90.,epsil) || TMath::AreEqualAbs(ang[2],270.,epsil)) lr[5] =  0.0;
+    if(TMath::AreEqualAbs(ang[2],0.,epsil))                 lr[5] = +1.0;
+    if(TMath::AreEqualAbs(ang[2],180.,epsil))                 lr[5] = -1.0;
 //
     si    = TMath::Sin(c*ang[4]);
-    if(ang[4]== 90.0)                 si = +1.0;
-    if(ang[4]==270.0)                 si = -1.0;
-    if(ang[4]==  0.0||ang[4]==180.) si =  0.0;
+    if(TMath::AreEqualAbs(ang[4],90.,epsil))                 si = +1.0;
+    if(TMath::AreEqualAbs(ang[4],270.0,epsil))                 si = -1.0;
+    if(TMath::AreEqualAbs(ang[4],0.,epsil)|| TMath::AreEqualAbs(ang[4],180.,epsil)) si =  0.0;
     lr[6] = si * TMath::Cos(c*ang[5]);
     lr[7] = si * TMath::Sin(c*ang[5]);
     lr[8] = TMath::Cos(c*ang[4]);
-    if(ang[4]== 90.0||ang[4]==270.0) lr[8] =  0.0;
-    if(ang[4]==  0.0)                  lr[8] = +1.0;
-    if(ang[4]==180.0)                  lr[8] = -1.0;
+    if(TMath::AreEqualAbs(ang[4],90.0,epsil) ||TMath::AreEqualAbs(ang[4],270.,epsil)) lr[8] =  0.0;
+    if(TMath::AreEqualAbs(ang[4],0.,epsil))                  lr[8] = +1.0;
+    if(TMath::AreEqualAbs(ang[4],180.0,epsil))                  lr[8] = -1.0;
     // Normalize these elements and fill matrix fm.
     for(i=0;i<3;i++){// reuse si.
 	si = 0.0;
