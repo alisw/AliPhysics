@@ -187,34 +187,38 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       hMultTrVtx->Divide(hBg);//,"B");
 
       //sharing efficiency correction ?
+      if(pars->SharingEffPresent()) {
+	TH1F* hSharingEff = pars->GetSharingEfficiency(det,ringChar,vtxbin);
+	TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin);	
       
-      TH1F* hSharingEff = pars->GetSharingEfficiency(det,ringChar,vtxbin);
-      TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin);	
-      
-      for(Int_t nx=1; nx<hMult->GetNbinsX(); nx++) {
-	Float_t correction = hSharingEff->GetBinContent(nx);
-	Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
-	for(Int_t ny=1; ny<hMult->GetNbinsY(); ny++) {
+	for(Int_t nx=1; nx<hMult->GetNbinsX(); nx++) {
+	  Float_t correction = hSharingEff->GetBinContent(nx);
+	  Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
+	  for(Int_t ny=1; ny<hMult->GetNbinsY(); ny++) {
+	    
+	    if(correction != 0){
+	      hMult->SetBinContent(nx,ny,hMult->GetBinContent(nx,ny)/correction);
+	      Float_t error = TMath::Sqrt(TMath::Power(hMult->GetBinError(nx,ny),2) + TMath::Power(hMult->GetBinContent(nx,ny)*hSharingEff->GetBinError(nx),2)) / correction;
+	      hMult->SetBinError(nx,ny,error);
+	    }
+	    if(correctionTrVtx != 0){
+	      hMultTrVtx->SetBinContent(nx,ny,hMultTrVtx->GetBinContent(nx,ny)/correctionTrVtx);
+	      Float_t error = TMath::Sqrt(TMath::Power(hMultTrVtx->GetBinError(nx,ny),2) + TMath::Power(hMultTrVtx->GetBinContent(nx,ny)*hSharingEffTrVtx->GetBinError(nx),2)) / correctionTrVtx;
+	      hMultTrVtx->SetBinError(nx,ny,error);
+	    }
+	  }
 	  
-	  if(correction != 0){
-	    hMult->SetBinContent(nx,ny,hMult->GetBinContent(nx,ny)/correction);
-	    Float_t error = TMath::Sqrt(TMath::Power(hMult->GetBinError(nx,ny),2) + TMath::Power(hMult->GetBinContent(nx,ny)*hSharingEff->GetBinError(nx),2)) / correction;
-	    hMult->SetBinError(nx,ny,error);
-	  }
-	  if(correctionTrVtx != 0){
-	    hMultTrVtx->SetBinContent(nx,ny,hMultTrVtx->GetBinContent(nx,ny)/correctionTrVtx);
-	    Float_t error = TMath::Sqrt(TMath::Power(hMultTrVtx->GetBinError(nx,ny),2) + TMath::Power(hMultTrVtx->GetBinContent(nx,ny)*hSharingEffTrVtx->GetBinError(nx),2)) / correctionTrVtx;
-	    hMultTrVtx->SetBinError(nx,ny,error);
-	  }
 	}
-	
       }
+      if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
+	hMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
+      else
+	hMult->Scale(0);
       
-      hMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
-      
-      
+      }
     }
-  }
+    
+    
   if(fStandalone) {
     PostData(0, fOutputList); 
   }
@@ -234,8 +238,10 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
 	TH2F* hHits      = (TH2F*)fHitList->FindObject(Form("hits_FMD%d%c_vtxbin%d",det,ringChar,i));
 	TH1D* hHitsproj  = hHits->ProjectionX(Form("hits_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hHits->GetNbinsY());
 	TH1D* hHitsNoCuts = (TH1D*)hHitsproj->Clone(Form("hits_NoCuts_FMD%d%c_vtxbin%d_proj",det,ringChar,i));
-	
-	hHitsNoCuts->Scale(1/pars->GetEventSelectionEfficiency(i));
+	if(pars->GetEventSelectionEfficiency(i) > 0)
+	  hHitsNoCuts->Scale(1/pars->GetEventSelectionEfficiency(i));
+	else
+	  hHitsNoCuts->Scale(0);
 	fHitList->Add(hHitsproj);
 	fHitList->Add(hHitsNoCuts);
 	
