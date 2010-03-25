@@ -44,9 +44,13 @@ Class for handling the TOF DCS data in the Shuttle (C.Zampolli)
 
 */  
 
+// AliTOFDataDCS class
+// main aim to introduce the aliases for the TOF DCS
+// data points to be then
+// stored in the OCDB, and to process them. 
+// Process() method called by TOFPrepr
+
 #include "TString.h"
-//#include "TF1.h"
-//#include "TH1F.h"
 #include "TTimeStamp.h"
 #include "TMap.h"
 #include "TCanvas.h"
@@ -60,12 +64,6 @@ Class for handling the TOF DCS data in the Shuttle (C.Zampolli)
 class TH2;
 class AliCDBMetaData;
 class TDatime;
-
-// AliTOFDataDCS class
-// main aim to introduce the aliases for the TOF DCS
-// data points to be then
-// stored in the OCDB, and to process them. 
-// Process() method called by TOFPrepr
 
 ClassImp(AliTOFDataDCS)
 
@@ -131,7 +129,7 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
 
 {
 
-// copy constructor
+  // copy constructor
 
   for(int i=0;i<kNAliases;i++) {
     fAliasNames[i]=data.fAliasNames[i];
@@ -150,7 +148,7 @@ AliTOFDataDCS::AliTOFDataDCS(const AliTOFDataDCS & data):
 
 AliTOFDataDCS& AliTOFDataDCS:: operator=(const AliTOFDataDCS & data) { 
 
-// assignment operator
+  // assignment operator
 
   if (this == &data)
     return *this;
@@ -464,7 +462,7 @@ void AliTOFDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)const
 //---------------------------------------------------------------
 void AliTOFDataDCS::Draw(const Option_t* /*option*/)
 {
-// Draw all histos and graphs
+  // Draw all histos and graphs
 
   if(!fIsProcessed) return;
 

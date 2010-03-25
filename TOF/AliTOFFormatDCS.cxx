@@ -17,13 +17,13 @@
 $Log$
 */  
 
-#include "AliTOFFormatDCS.h"
-
 // AliTOFFormatDCS class
 // contining the format of a DCS calibration objects
 // consisting in 10 floats
 // (5 data points + 5 corresponding timestamps) 
 // and a short_integer
+
+#include "AliTOFFormatDCS.h"
 
 ClassImp(AliTOFFormatDCS)
 
@@ -58,11 +58,11 @@ AliTOFFormatDCS::AliTOFFormatDCS(const AliTOFFormatDCS & format):
 //---------------------------------------------------------------
 
 AliTOFFormatDCS& AliTOFFormatDCS:: operator=(const AliTOFFormatDCS & format) { 
+  // assignment operator
 
   if (this == &format)
     return *this;
 
-  // assignment operator
   TObject::operator=(format);
   for (Int_t i=0;i<3;i++){
     fFloats[i]=format.GetFloat(i);
@@ -78,6 +78,7 @@ AliTOFFormatDCS& AliTOFFormatDCS:: operator=(const AliTOFFormatDCS & format) {
 //---------------------------------------------------------------
 
 AliTOFFormatDCS::~AliTOFFormatDCS(){
+  // dtr
 
 }
 

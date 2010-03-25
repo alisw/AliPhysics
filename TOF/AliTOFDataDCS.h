@@ -1,25 +1,21 @@
-#ifndef AliTOFDataDCS_H
-#define AliTOFDataDCS_H
+#ifndef ALITOFDATADCS_H
+#define ALITOFDATADCS_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
-#include "TObject.h" 
-//#include "TString.h"
-
-class TMap;
-class TClonesArray;
-//class TH2F;
-//class TGraph;
-//class TF1;
-class TString;
-class AliTOFFormatDCS;
-
 // AliTOFDataDCS class
 // main aim is to process DCS data
 // in order to obtain the data to be stored in the OCDB
+
+#include "TObject.h" 
+
+class TMap;
+class TClonesArray;
+class TString;
+class AliTOFFormatDCS;
 
 class AliTOFDataDCS : public TObject {
 public:
