@@ -46,6 +46,7 @@ public:
 				{fComment = comment;};
 	const char* 	GetComment() const 
 				{return fComment.Data();};
+	void		AddDateToComment();
 
 	void 		SetProperty(const char* property, TObject* object);
 	TObject* 	GetProperty(const char* property) const;

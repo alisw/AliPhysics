@@ -25,6 +25,7 @@
 #include "AliLog.h"
 
 #include <TObjString.h>
+#include <TTimeStamp.h>
 
 ClassImp(AliCDBMetaData)
 
@@ -92,6 +93,22 @@ Bool_t AliCDBMetaData::RemoveProperty(const char* property) {
 	} else {
 		return kFALSE;
 	}
+}
+
+//_____________________________________________________________________________
+void AliCDBMetaData::AddDateToComment() {
+// add the date to the comment.
+// This method is supposed to be useful if called at the time when the object
+// is created, so that later it can more easily be tracked, in particular
+// when the date of the file can be lost or when one is interested in the
+// date of creation, irrespective of a later copy of it
+
+	TTimeStamp ts(time(0));
+	TString comment(GetComment());
+	comment += Form("\tDate of production: %s\n", ts.AsString());
+	comment.Remove(comment.Last('+'));
+	SetComment(comment);
+
 }
 
 //_____________________________________________________________________________
