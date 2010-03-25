@@ -346,7 +346,7 @@ private:
   AlidNdPtCorrection(const AlidNdPtCorrection&); // not implemented
   AlidNdPtCorrection& operator=(const AlidNdPtCorrection&); // not implemented
 
-  ClassDef(AlidNdPtCorrection,1);
+  ClassDef(AlidNdPtCorrection,2);
 };
 
 #endif
