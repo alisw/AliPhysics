@@ -223,7 +223,7 @@ sim_hlt_tpc(const char* options="CA")
   sim.SetMakeDigits("");
   sim.SetMakeSDigits("");
   sim.SetMakeDigitsFromHits("");
-  sim.SetMakeTrigger("");
+  //sim.SetMakeTrigger("");
   sim.SetRunQA(":");
 
   // the normal simulation sets the specific storage for the GRP entry
