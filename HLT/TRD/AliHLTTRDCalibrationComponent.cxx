@@ -445,20 +445,20 @@ Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventDat
   //fOutArray->Remove(fOutArray->FindObject("PH2d"));
   //fOutArray->Remove(fOutArray->FindObject("CH2d"));
 
-  //if(!(fOutArray->FindObject("CH2d"))) {
-  //  TH2I * ch2d = new TH2I("CH2d","Nz0Nrphi0",100,0.0,300.0,540,0,540);
-  //  fOutArray->Add(ch2d);
-  //}
+  if(!(fOutArray->FindObject("CH2d"))) {
+    TH2I * ch2d = new TH2I("CH2d","Nz0Nrphi0",100,0.0,300.0,540,0,540);
+    fOutArray->Add(ch2d);
+  }
 
-  //if(!(fOutArray->FindObject("PH2d"))) {
-  //  TProfile2D * ph2d = new TProfile2D("PH2d","Nz0Nrphi0",30,-0.05,2.95,540,0,540);
-  //  fOutArray->Add(ph2d);
-  //}
+  if(!(fOutArray->FindObject("PH2d"))) {
+    TProfile2D * ph2d = new TProfile2D("PH2d","Nz0Nrphi0",30,-0.05,2.95,540,0,540);
+    fOutArray->Add(ph2d);
+  }
 
-  //if(!(fOutArray->FindObject("PRF2d"))) {
-  //  TProfile2D * prf2d = new TProfile2D("PRF2d","Nz0Nrphi0Ngp3",60,-9.0,9.0,540,0,540);
-  //  fOutArray->Add(prf2d);
-  //}
+  if(!(fOutArray->FindObject("PRF2d"))) {
+    TProfile2D * prf2d = new TProfile2D("PRF2d","Nz0Nrphi0Ngp3",60,-9.0,9.0,540,0,540);
+    fOutArray->Add(prf2d);
+  }
 
   HLTDebug("Size of the fOutArray is %d\n",fOutArray->GetEntriesFast());
 
