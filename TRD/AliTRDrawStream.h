@@ -100,7 +100,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   // ADC mask decoding
   Int_t GetActiveChannels(UInt_t adcmask) const { return 0x1fffff & adcmask >> 4; }
-  Int_t GetNActiveChannelsFromMask(UInt_t adcmask) const; // { Int_t nch = 0; for (Int_t i = 0; i < 21; i++) if ((GetActiveChannels(adcmask) & 1 << i)) nch++; return nch; }
+  inline Int_t GetNActiveChannelsFromMask(UInt_t adcmask) const; // { Int_t nch = 0; for (Int_t i = 0; i < 21; i++) if ((GetActiveChannels(adcmask) & 1 << i)) nch++; return nch; }
   Int_t GetNActiveChannels(UInt_t adcmask) const { return (0x1f & ~(adcmask >> 25)); }
   Int_t CouldBeADCmask(UInt_t adcmask) const { return ((0xf & adcmask) == 0xc && (0x3 & adcmask >> 30) == 0x1); }
       
@@ -196,5 +196,15 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   ClassDef(AliTRDrawStream, 0);
 };
+
+Int_t AliTRDrawStream::GetNActiveChannelsFromMask(UInt_t adcmask) const
+{
+  // return number of active bits in the ADC mask
+
+  adcmask = GetActiveChannels(adcmask);
+  adcmask = adcmask - ((adcmask >> 1) & 0x55555555);
+  adcmask = (adcmask & 0x33333333) + ((adcmask >> 2) & 0x33333333);
+  return (((adcmask + (adcmask >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+}
 
 #endif

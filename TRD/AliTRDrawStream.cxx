@@ -1033,18 +1033,6 @@ Int_t AliTRDrawStream::ReadNonZSData()
   return (fPayloadCurr - start);
 }
 
-
-Int_t AliTRDrawStream::GetNActiveChannelsFromMask(UInt_t adcmask) const
-{
-  // return number of active bits in the ADC mask
-
-  adcmask = GetActiveChannels(adcmask);
-  adcmask = adcmask - ((adcmask >> 1) & 0x55555555);
-  adcmask = (adcmask & 0x33333333) + ((adcmask >> 2) & 0x33333333);
-  return (((adcmask + (adcmask >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
-}
-
-
 Bool_t AliTRDrawStream::ConnectTracklets(TTree *trklTree) 
 {
   fTrackletTree = trklTree;
