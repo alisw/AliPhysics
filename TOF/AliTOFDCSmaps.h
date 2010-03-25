@@ -27,6 +27,7 @@ class AliTOFDCSmaps : public TObject {
 
   Int_t GetTime() const { return fTime; };
   void SetTime(Int_t time) { fTime=time; };
+  Short_t * GetArray() { return fArray; };
   Short_t GetCellValue(Int_t index) const { return fArray[index]; };
   void SetCellValue(Int_t index, Short_t val) { fArray[index]=val; };
   void Update(AliTOFDCSmaps *object);

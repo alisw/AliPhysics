@@ -35,6 +35,7 @@
 #include "AliTOFChannelOnlineArray.h"
 #include "AliTOFChannelOnlineStatusArray.h"
 #include "AliTOFDataDCS.h"
+#include "AliTOFDCSmaps.h"
 #include "AliTOFLvHvDataPoints.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFPreprocessor.h"

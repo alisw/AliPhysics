@@ -21,6 +21,9 @@
 // container for HV&&LV maps //
 // as found during a run     //
 //                           //
+// Author: A. De Caro        //
+// Email: decaro@sa.innf.it  //
+//                           //
 ///////////////////////////////
 
 #include "AliTOFDCSmaps.h"
@@ -92,7 +95,8 @@ AliTOFDCSmaps::~AliTOFDCSmaps()
 void AliTOFDCSmaps::Update(AliTOFDCSmaps *object)
 {
   //
-  //
+  // Update aready exsisting AliTOFDCSmap
+  // with the value of the passed object
   //
 
   Short_t value = -1;
