@@ -23,7 +23,9 @@
 #include <TParticle.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile.h>
+#include <TProfile2D.h>
 #include <TTree.h>
 #include <TChain.h>
 #include <TMath.h>
@@ -87,6 +89,7 @@ AliAnalysisTaskTRDmon::AliAnalysisTaskTRDmon(const Char_t *name):
   fHph2d(0x0),
   fHncltrkl(0x0),
   fHntrkl(0x0),
+  fHntrklVsP(0x0),
   fHsm(0x0),
   fHetantr(0x0),
   fHphintr(0x0),
@@ -94,8 +97,34 @@ AliAnalysisTaskTRDmon::AliAnalysisTaskTRDmon(const Char_t *name):
   fHcldiff(0x0),
   fHxyA(0x0),
   fHxyC(0x0),
+  fHPropagXY(0x0),
+  fHPropagRZ(0x0),
   fHnFriendTracks(0x0),
-  fHnCalibObjects(0x0)
+  fHnCalibObjects(0x0),
+  fHTpcEtaPhiLocaln(0x0),
+  fHTrdEtaPhiLocaln(0x0),
+  fHTpcEtaPhiLocalp(0x0),
+  fHTrdEtaPhiLocalp(0x0),
+  fHTpcEtaPhiSagitan(0x0),
+  fHTrdEtaPhiSagitan(0x0),
+  fHTpcEtaPhiSagitap(0x0),
+  fHTrdEtaPhiSagitap(0x0),
+  fHTpcEtaPhiDeltan(0x0),
+  fHTrdEtaPhiDeltan(0x0),
+  fHTpcEtaPhiDeltap(0x0),
+  fHTrdEtaPhiDeltap(0x0),
+  fHTpcEtaPhin(0x0),
+  fHTrdEtaPhin(0x0),
+  fHTpcEtaPhip(0x0),
+  fHTrdEtaPhip(0x0),
+  fHTpcRef3Dpos(0x0),
+  fHTpcRef3Dneg(0x0),
+  fHTrdRef3Dpos(0x0),
+  fHTrdRef3Dneg(0x0),
+  fHTrdEtaPhiLocalNTracklets(0x0),
+  fHTrdEtaPhiSagitaNTracklets(0x0),
+  fHTrdEtaPhiDeltaNTracklets(0x0),
+  fHTrdEtaPhiNTracklets(0x0)
 {
   //
   // constructor
@@ -138,6 +167,7 @@ AliAnalysisTaskTRDmon::AliAnalysisTaskTRDmon(const AliAnalysisTaskTRDmon &task) 
   fHph2d(0x0),
   fHncltrkl(0x0),
   fHntrkl(0x0),
+  fHntrklVsP(0x0),
   fHsm(0x0),
   fHetantr(0x0),
   fHphintr(0x0),
@@ -145,8 +175,34 @@ AliAnalysisTaskTRDmon::AliAnalysisTaskTRDmon(const AliAnalysisTaskTRDmon &task) 
   fHcldiff(0x0),
   fHxyA(0x0),
   fHxyC(0x0),
+  fHPropagXY(0x0),
+  fHPropagRZ(0x0),
   fHnFriendTracks(0x0),
-  fHnCalibObjects(0x0)
+  fHnCalibObjects(0x0),
+  fHTpcEtaPhiLocaln(0x0),
+  fHTrdEtaPhiLocaln(0x0),
+  fHTpcEtaPhiLocalp(0x0),
+  fHTrdEtaPhiLocalp(0x0),
+  fHTpcEtaPhiSagitan(0x0),
+  fHTrdEtaPhiSagitan(0x0),
+  fHTpcEtaPhiSagitap(0x0),
+  fHTrdEtaPhiSagitap(0x0),
+  fHTpcEtaPhiDeltan(0x0),
+  fHTrdEtaPhiDeltan(0x0),
+  fHTpcEtaPhiDeltap(0x0),
+  fHTrdEtaPhiDeltap(0x0),
+  fHTpcEtaPhin(0x0),
+  fHTrdEtaPhin(0x0),
+  fHTpcEtaPhip(0x0),
+  fHTrdEtaPhip(0x0),
+  fHTpcRef3Dpos(0x0),
+  fHTpcRef3Dneg(0x0),
+  fHTrdRef3Dpos(0x0),
+  fHTrdRef3Dneg(0x0),
+  fHTrdEtaPhiLocalNTracklets(0x0),
+  fHTrdEtaPhiSagitaNTracklets(0x0),
+  fHTrdEtaPhiDeltaNTracklets(0x0),
+  fHTrdEtaPhiNTracklets(0x0)
 {
   //
   // copy constructor
@@ -230,6 +286,9 @@ void AliAnalysisTaskTRDmon::CreateOutputObjects(){
   fHph2d = new TH2F("fHph2d", "PH2d TRD", 30, 0, 30, 200, 0, 1000.);
   fHncltrkl = new TH1F("fHncltrkl", "Nclusters/tracklet", 50,0,50.);
   fHntrkl = new TH1F("fHntrkl", "Ntracklets", 7,-.5,6.5);
+  Double_t binsP[19] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.7, 2.0,
+			2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 9.0, 12.0};
+  fHntrklVsP = new TH2F("fHntrklVsP", "Ntracklets vs momentum", 18, binsP, 7, -0.5, 6.5);
   fHsm = new TH1F("fHsm", "SM dep", 18,-.5,17.5);
   fHetantr = new TH2F("fHetantr", "PH2d TRD", 50, -1, 1, 7, -.5, 6.5);
   fHphintr = new TH2F("fHphintr", "PH2d TRD", 157, 0,6.28, 7, -.5, 6.5);
@@ -237,45 +296,125 @@ void AliAnalysisTaskTRDmon::CreateOutputObjects(){
   fHcldiff = new TH1F("fHcldiff", "Cluster time diff", 30,0,30);
   fHxyA = new TH2F("fHxyA","x-y side A",800,-400,400,800,-400,400);
   fHxyC = new TH2F("fHxyC","x-y side C",800,-400,400,800,-400,400);
+  fHPropagXY = new TH2F("fHPropagXY","x-y propagated point to TRD",1000,-500,500,1000,-500,500);
+  fHPropagRZ = new TH2F("fHPropagRZ","r-z propagated point to TRD",700, -350., 350.,500,0.,500.);
   fHnFriendTracks = new TH1F("fHnFriendTracks", "NFriendTracks", 100, 0., 100.);
   fHnCalibObjects = new TH1F("fHnCalibObjects", "NCalibObjects", 100, 0., 100.);
+  fHTpcEtaPhiLocaln = new TH2F("fHTpcEtaPhiLocaln", "(#eta - #varphi_{local}) distribution of neg TPC tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhiLocaln = new TH2F("fHTrdEtaPhiLocaln", "(#eta - #varphi_{local}) distribution of neg TRD tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTpcEtaPhiLocalp = new TH2F("fHTpcEtaPhiLocalp", "(#eta - #varphi_{local}) distribution of pos TPC tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhiLocalp = new TH2F("fHTrdEtaPhiLocalp", "(#eta - #varphi_{local}) distribution of pos TRD tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTpcEtaPhiSagitan = new TH2F("fHTpcEtaPhiSagitan", "(#eta - #varphi_{det}) distribution of neg TPC tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhiSagitan = new TH2F("fHTrdEtaPhiSagitan", "(#eta - #varphi_{det}) distribution of neg TRD tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTpcEtaPhiSagitap = new TH2F("fHTpcEtaPhiSagitap", "(#eta - #varphi_{det}) distribution of pos TPC tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhiSagitap = new TH2F("fHTrdEtaPhiSagitap", "(#eta - #varphi_{det}) distribution of pos TRD tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTpcEtaPhiDeltan = new TH2F("fHTpcEtaPhiDeltan", "(#eta - #Delta#varphi) distribution of neg TPC tracks", 
+			  50, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
+  fHTrdEtaPhiDeltan = new TH2F("fHTrdEtaPhiDeltan", "(#eta - #Delta#varphi) distribution of neg TRD tracks", 
+			  50, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
+  fHTpcEtaPhiDeltap = new TH2F("fHTpcEtaPhiDeltap", "(#eta - #Delta#varphi) distribution of pos TPC tracks", 
+			  50, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
+  fHTrdEtaPhiDeltap = new TH2F("fHTrdEtaPhiDeltap", "(#eta - #Delta#varphi) distribution of pos TRD tracks", 
+			  50, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
+  fHTpcEtaPhin = new TH2F("fHTpcEtaPhin", "(#eta - #varphi) distribution of neg TPC tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhin = new TH2F("fHTrdEtaPhin", "(#eta - #varphi) distribution of neg TRD tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTpcEtaPhip = new TH2F("fHTpcEtaPhip", "(#eta - #varphi) distribution of pos TPC tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhip = new TH2F("fHTrdEtaPhip", "(#eta - #varphi) distribution of pos TRD tracks", 
+			  50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  Float_t etaBinLimits[51];
+  for(Int_t i=0; i<51; i++) etaBinLimits[i] = -1.0 + i*2.0/50.;
+  Float_t phiBinLimits[151];
+  for(Int_t i=0; i<151; i++) phiBinLimits[i] = -1.1*TMath::Pi() + i*2.2*TMath::Pi()/150.;
+  fHTpcRef3Dpos = new TH3F("fHTpcRef3Dpos", "TPC positive ref. tracks", 
+			   50, etaBinLimits, 150, phiBinLimits, 32, binLimits);
+  fHTpcRef3Dneg = new TH3F("fHTpcRef3Dneg", "TPC negative ref. tracks",
+			   50, etaBinLimits, 150, phiBinLimits, 32, binLimits);
+  fHTrdRef3Dpos = new TH3F("fHTrdRef3Dpos", "TRD positive tracks",
+			   50, etaBinLimits, 150, phiBinLimits, 32, binLimits);
+  fHTrdRef3Dneg = new TH3F("fHTrdRef3Dneg", "TRD negative tracks",
+			   50, etaBinLimits, 150, phiBinLimits, 32, binLimits);
+  fHTrdEtaPhiLocalNTracklets = new TProfile2D("fHTrdEtaPhiLocalNTracklets", "(#eta - #varphi_{local}) distribution of <ntracklets>", 
+					      50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhiSagitaNTracklets = new TProfile2D("fHTrdEtaPhiSagitaNTracklets", "(#eta - #varphi_{det}) distribution of <ntracklets>", 
+					      50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  fHTrdEtaPhiDeltaNTracklets = new TProfile2D("fHTrdEtaPhiDeltaNTracklets", "(#eta - #Delta#varphi) distribution of <ntracklets>", 
+					      50, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
+  fHTrdEtaPhiNTracklets = new TProfile2D("fHTrdEtaPhiNTracklets", "(#eta - #varphi) distribution of <ntracklets>", 
+					 50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
   
-  fOutStorage->AddAt(fHzvert1, 0);
-  fOutStorage->AddAt(fHzvert2, 1);
-  fOutStorage->AddAt(fHntracks, 2);
-  fOutStorage->AddAt(fHntracks2, 3);
-  fOutStorage->AddAt(fHntracks3, 4);
-  fOutStorage->AddAt(fHdca, 5);
-  fOutStorage->AddAt(fHdcaz, 6);
-  fOutStorage->AddAt(fHpt, 7);
-  fOutStorage->AddAt(fHpt2, 8);
-  fOutStorage->AddAt(fHpt3, 9);
-  fOutStorage->AddAt(fHpt3n, 10);
-  fOutStorage->AddAt(fHpt4, 11);
-  fOutStorage->AddAt(fHpt4n, 12);
-  fOutStorage->AddAt(fHtheta, 13);
-  fOutStorage->AddAt(fHphi, 14);
-  fOutStorage->AddAt(fHtpccl, 15);
-  fOutStorage->AddAt(fHtpccl2, 16);
-  fOutStorage->AddAt(fHdedxp, 17);
-  fOutStorage->AddAt(fHetaphi, 18);
-  fOutStorage->AddAt(fHetancl, 19);
-  fOutStorage->AddAt(fHphincl, 20);
-  fOutStorage->AddAt(fHtrdtr, 21);
-  fOutStorage->AddAt(fHtrdtr2, 22);
-  fOutStorage->AddAt(fHph, 23);
-  fOutStorage->AddAt(fHph2d, 24);
-  fOutStorage->AddAt(fHncltrkl, 25);
-  fOutStorage->AddAt(fHntrkl, 26);
-  fOutStorage->AddAt(fHetantr, 27);
-  fOutStorage->AddAt(fHphintr, 28);
-  fOutStorage->AddAt(fHcltime, 29);
-  fOutStorage->AddAt(fHcldiff, 30);
-  fOutStorage->AddAt(fHxyA, 31);
-  fOutStorage->AddAt(fHxyC, 32);
-  fOutStorage->AddAt(fHnFriendTracks, 33);
-  fOutStorage->AddAt(fHnCalibObjects, 34);
-  
+  fOutStorage->Add(fHzvert1);
+  fOutStorage->Add(fHzvert2);
+  fOutStorage->Add(fHntracks);
+  fOutStorage->Add(fHntracks2);
+  fOutStorage->Add(fHntracks3);
+  fOutStorage->Add(fHdca);
+  fOutStorage->Add(fHdcaz);
+  fOutStorage->Add(fHpt);
+  fOutStorage->Add(fHpt2);
+  fOutStorage->Add(fHpt3);
+  fOutStorage->Add(fHpt3n);
+  fOutStorage->Add(fHpt4);
+  fOutStorage->Add(fHpt4n);
+  fOutStorage->Add(fHtheta);
+  fOutStorage->Add(fHphi);
+  fOutStorage->Add(fHtpccl);
+  fOutStorage->Add(fHtpccl2);
+  fOutStorage->Add(fHdedxp);
+  fOutStorage->Add(fHetaphi);
+  fOutStorage->Add(fHetancl);
+  fOutStorage->Add(fHphincl);
+  fOutStorage->Add(fHtrdtr);
+  fOutStorage->Add(fHtrdtr2);
+  fOutStorage->Add(fHph);
+  fOutStorage->Add(fHph2d);
+  fOutStorage->Add(fHncltrkl);
+  fOutStorage->Add(fHntrkl);
+  fOutStorage->Add(fHntrklVsP);
+  fOutStorage->Add(fHetantr);
+  fOutStorage->Add(fHphintr);
+  fOutStorage->Add(fHcltime);
+  fOutStorage->Add(fHcldiff);
+  fOutStorage->Add(fHxyA);
+  fOutStorage->Add(fHxyC);
+  fOutStorage->Add(fHPropagXY);
+  fOutStorage->Add(fHPropagRZ);
+  fOutStorage->Add(fHnFriendTracks);
+  fOutStorage->Add(fHnCalibObjects);
+  fOutStorage->Add(fHTpcEtaPhiLocaln);
+  fOutStorage->Add(fHTpcEtaPhiLocalp);
+  fOutStorage->Add(fHTrdEtaPhiLocaln);
+  fOutStorage->Add(fHTrdEtaPhiLocalp);
+  fOutStorage->Add(fHTpcEtaPhiSagitan);
+  fOutStorage->Add(fHTpcEtaPhiSagitap);
+  fOutStorage->Add(fHTrdEtaPhiSagitan);
+  fOutStorage->Add(fHTrdEtaPhiSagitap);
+  fOutStorage->Add(fHTpcEtaPhiDeltan);
+  fOutStorage->Add(fHTpcEtaPhiDeltap);
+  fOutStorage->Add(fHTrdEtaPhiDeltan);
+  fOutStorage->Add(fHTrdEtaPhiDeltap);
+  fOutStorage->Add(fHTpcEtaPhin);
+  fOutStorage->Add(fHTpcEtaPhip);
+  fOutStorage->Add(fHTrdEtaPhin);
+  fOutStorage->Add(fHTrdEtaPhip);
+  fOutStorage->Add(fHTpcRef3Dpos);
+  fOutStorage->Add(fHTpcRef3Dneg);
+  fOutStorage->Add(fHTrdRef3Dpos);
+  fOutStorage->Add(fHTrdRef3Dneg);
+  fOutStorage->Add(fHTrdEtaPhiLocalNTracklets);
+  fOutStorage->Add(fHTrdEtaPhiSagitaNTracklets);
+  fOutStorage->Add(fHTrdEtaPhiDeltaNTracklets);
+  fOutStorage->Add(fHTrdEtaPhiNTracklets);
 }
 
 void AliAnalysisTaskTRDmon::Exec(Option_t *){
@@ -286,12 +425,12 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
 	  AliError("ESD Event missing");
 	  return;
   }
-  const Float_t kCutDCAxy = 40.;      // cm
-  //const Float_t kCutDCAxy = 3; //40.;      // cm
+  //  const Float_t kCutDCAxy = 40.;      // cm
+  const Float_t kCutDCAxy = 3; //40.;      // cm
   const Float_t kCutDCAz = 15.;      // cm
   const Int_t kNclTPCmin = 100;      // Nclusters TPC
   const Float_t kPmin = 0.2;      // min. pt
-
+  
   // event trigger cut
   if(fEventTriggerName.Data()[0]!='\0' && !fESD->IsTriggerClassFired(fEventTriggerName.Data())) {
     PostData(0, fOutStorage);
@@ -309,7 +448,7 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
   Float_t nvtxContr = evVertex->GetNContributors();
 
   // if the required trigger is a collision trigger then apply event vertex cut
-  if(fIsCollisionEvent && !(TMath::Abs(zvert1)<15. && TMath::Abs(zvert1)<1.0e-10 && nvtxContr>1)) {
+  if(fIsCollisionEvent && (TMath::Abs(zvert1)>15. || TMath::Abs(zvert1)<1.0e-10 || nvtxContr<=1)) {
     PostData(0, fOutStorage);
     return;
   }
@@ -318,7 +457,8 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
   
   fHzvert1->Fill(zvert1);
   fHzvert2->Fill(zvert2);
-  
+
+ 
   Int_t ntracks = fESD->GetNumberOfTracks();
   fHntracks->Fill((Float_t)ntracks);
   
@@ -371,9 +511,9 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
     
     // track points for x-y histograms
     fFriendTrack = fESDfriend->GetTrack(itrk); //this works
-    if(!fFriendTrack) continue;
-    nFriendTracks++;
-    const AliTrackPointArray *array = fFriendTrack->GetTrackPointArray();
+    Bool_t hasFriends = (fFriendTrack ? kTRUE : kFALSE);
+    if(hasFriends) nFriendTracks++;
+    const AliTrackPointArray *array = (hasFriends ? fFriendTrack->GetTrackPointArray() : 0);
     if (array) {
       Int_t npoints = array->GetNPoints();
       for (int ipoint=0; ipoint<npoints; ipoint++) {
@@ -386,18 +526,74 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
     
     if ( nTPCclus < kNclTPCmin ) continue; 
     
-    if (fTrack->Charge()>0) fHpt3->Fill(p);
-    if (fTrack->Charge()<0) fHpt3n->Fill(p);
+    //    Bool_t propagGood = fTrack->PropagateTo(298., fESD->GetMagneticField());
+    Double_t localCoord[3] = {0., 0., 0.};
+    Double_t localMom[3]   = {0., 0., 0.};
+    Bool_t localCoordGood = fTrack->GetXYZAt(298., fESD->GetMagneticField(), localCoord);
+    if(localCoordGood) {
+      fHPropagXY->Fill(localCoord[0], localCoord[1]);
+      fHPropagRZ->Fill(localCoord[2], TMath::Sqrt(localCoord[0]*localCoord[0]+localCoord[1]*localCoord[1]));
+    }
+    Bool_t localMomGood   = fTrack->GetPxPyPzAt(298., fESD->GetMagneticField(), localMom);
+    Double_t localPhi = (localMomGood ? TMath::ATan2(localMom[1], localMom[0]) : 0.0);
+    Double_t localSagitaPhi = (localCoordGood ? TMath::ATan2(localCoord[1], localCoord[0]) : 0.0);    
+    //    if(localPhi<0.) localPhi = TMath::Abs(localPhi)+TMath::Pi();   
+    //    if(localSagitaPhi<0.) localSagitaPhi = TMath::Abs(localSagitaPhi)+TMath::Pi();     
+
+    if (fTrack->Charge()>0) {
+      fHpt3->Fill(p);
+      if(localCoordGood && localMomGood) {
+	fHTpcEtaPhiLocalp->Fill(eta,localPhi);
+	fHTpcEtaPhiSagitap->Fill(eta,localSagitaPhi);
+	fHTpcEtaPhiDeltap->Fill(eta,localPhi-localSagitaPhi);
+	fHTpcRef3Dpos->Fill(eta, localSagitaPhi, p);
+      }
+      fHTpcEtaPhip->Fill(eta,phi-TMath::Pi());
+    }
+    if (fTrack->Charge()<0) {
+      fHpt3n->Fill(p);
+      if(localCoordGood && localMomGood) {
+	fHTpcEtaPhiLocaln->Fill(eta,localPhi);
+	fHTpcEtaPhiSagitan->Fill(eta,localSagitaPhi);
+	fHTpcEtaPhiDeltan->Fill(eta,localPhi-localSagitaPhi);
+	fHTpcRef3Dneg->Fill(eta, localSagitaPhi, p);
+      }
+      fHTpcEtaPhin->Fill(eta,phi-TMath::Pi());
+    }
     ntracksNcl++;
     fHetaphi->Fill(eta,phi);
     fHdedxp->Fill(p,dedxTPC);
     Int_t nTRDtrkl = fTrack->GetTRDntracklets();  
     
     if ( nTRDtrkl < 1 ) continue;
-    if (fTrack->Charge()>0) fHpt4->Fill(p);
-    if (fTrack->Charge()<0) fHpt4n->Fill(p);
+    if (fTrack->Charge()>0) {
+      fHpt4->Fill(p);
+      if(localCoordGood && localMomGood) {
+	fHTrdEtaPhiLocalp->Fill(eta,localPhi);
+	fHTrdEtaPhiSagitap->Fill(eta,localSagitaPhi);
+	fHTrdEtaPhiDeltap->Fill(eta,localPhi-localSagitaPhi);
+	fHTrdRef3Dpos->Fill(eta, localSagitaPhi, p);
+      }
+      fHTrdEtaPhip->Fill(eta,phi-TMath::Pi());
+    }
+    if (fTrack->Charge()<0) {
+      fHpt4n->Fill(p);
+      if(localCoordGood && localMomGood) {
+	fHTrdEtaPhiLocaln->Fill(eta,localPhi);
+	fHTrdEtaPhiSagitan->Fill(eta,localSagitaPhi);
+	fHTrdEtaPhiDeltan->Fill(eta,localPhi-localSagitaPhi);
+	fHTrdRef3Dneg->Fill(eta, localSagitaPhi, p);
+      }
+      fHTrdEtaPhin->Fill(eta,phi-TMath::Pi());
+    }
     fHetantr->Fill(eta,(Float_t)nTRDtrkl);	    
     fHphintr->Fill(phi,(Float_t)nTRDtrkl);	    
+    if(localCoordGood && localMomGood) {
+      fHTrdEtaPhiLocalNTracklets->Fill(eta, localPhi, (Float_t)nTRDtrkl);
+      fHTrdEtaPhiSagitaNTracklets->Fill(eta, localSagitaPhi, (Float_t)nTRDtrkl);
+      fHTrdEtaPhiDeltaNTracklets->Fill(eta, localPhi-localSagitaPhi, (Float_t)nTRDtrkl);
+    }
+    fHTrdEtaPhiNTracklets->Fill(eta, phi-TMath::Pi(), (Float_t)nTRDtrkl);
     fHtrdtr->Fill((Float_t)nTRDtrkl);
     if ( pt > 1 ) fHtrdtr2->Fill((Float_t)nTRDtrkl);
     fHtheta->Fill(theta);
@@ -407,7 +603,7 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
     TObject *o = 0x0;
     Int_t ical = 0; 
     fTRDtrack = 0x0;
-    while((o = fFriendTrack->GetCalibObject(ical++))){
+    while(hasFriends && (o = fFriendTrack->GetCalibObject(ical++))){
       //while((o = (const_cast<AliESDfriendTrack*>(fFriendTrack))->GetCalibObject(ical++))) { //...this is fishy...
       //printf("Object type: %s\n", o->IsA()->GetName());
       if(strcmp(o->IsA()->GetName(),"AliTRDtrackV1") != 0){
@@ -417,47 +613,51 @@ void AliAnalysisTaskTRDmon::Exec(Option_t *){
       break;
     }
     
-    if(!fTRDtrack) continue;
-    nCalibObjects++;
+    Bool_t hasTRDfriends = (fTRDtrack ? kTRUE : kFALSE);
+    //    if(!fTRDtrack) continue;
+    if(hasTRDfriends) nCalibObjects++;
     Int_t nTracklets = 0;
     Int_t tbinPrev=0;
     
-    Int_t ntls = fTRDtrack->GetNumberOfTracklets();
+    //    Int_t ntls = fTRDtrack->GetNumberOfTracklets();
+    Int_t ntls = fTrack->GetTRDntracklets();
     //Int_t ncls = track->GetNumberOfClusters(); //per track
-    for(Int_t itl = 0; itl < 6; itl++){ // TRD layers
-      AliTRDseedV1 * tracklet = fTRDtrack->GetTracklet(itl);
-      if(!tracklet || !tracklet->IsOK()) continue;
-      if(!tracklet) continue;
-      nTracklets++;
-      Int_t nclsTracklet = 0;
-      for(Int_t itb = 0; itb < AliTRDseedV1::kNtb; itb++){ // timebins
-	AliTRDcluster *c = tracklet->GetClusters(itb);
-	AliTRDcluster *c1 = tracklet->GetClusters(itb + AliTRDseedV1::kNtb);  // second pad row
-	//AliTRDcluster *c = tracklet->GetdQdl(itb);
-	if(!(c || c1)) continue;
-	AliTRDcluster *cptr = c ? c : c1;
-	Int_t tcal = cptr->GetLocalTimeBin();
-	fHcldiff->Fill((Float_t)(tcal-tbinPrev)); 
-	tbinPrev=tcal;
-	Int_t idet = cptr->GetDetector();
-	//If (itrk<100 && itb==0) cout << "...Detector  "<<idet<< endl;
-	Int_t sm = idet/30;
-	fHsm->Fill((Float_t)sm); 
-	idet -= sm * 30;
-	float sig = 0;
-	if(c) sig += TMath::Abs(c->GetQ()); //
-	if(c1) sig += TMath::Abs(c1->GetQ());
-	
-	fHph->Fill((Float_t)tcal, sig);  
-	fHph2d->Fill((Float_t)tcal, sig);  
-	fHcltime->Fill((Float_t)tcal); 
-	nclsTracklet++;
-      }
-      fHncltrkl->Fill(nclsTracklet);
-    } //tracklets
-      //fHntrkl->Fill((Float_t)nTracklets);
+    if(hasTRDfriends) {
+      for(Int_t itl = 0; itl < 6; itl++){ // TRD layers
+	AliTRDseedV1 * tracklet = fTRDtrack->GetTracklet(itl);
+	if(!tracklet || !tracklet->IsOK()) continue;
+	if(!tracklet) continue;
+	nTracklets++;
+	Int_t nclsTracklet = 0;
+	for(Int_t itb = 0; itb < AliTRDseedV1::kNtb; itb++){ // timebins
+	  AliTRDcluster *c = tracklet->GetClusters(itb);
+	  AliTRDcluster *c1 = tracklet->GetClusters(itb + AliTRDseedV1::kNtb);  // second pad row
+	  //AliTRDcluster *c = tracklet->GetdQdl(itb);
+	  if(!(c || c1)) continue;
+	  AliTRDcluster *cptr = c ? c : c1;
+	  Int_t tcal = cptr->GetLocalTimeBin();
+	  fHcldiff->Fill((Float_t)(tcal-tbinPrev)); 
+	  tbinPrev=tcal;
+	  Int_t idet = cptr->GetDetector();
+	  //If (itrk<100 && itb==0) cout << "...Detector  "<<idet<< endl;
+	  Int_t sm = idet/30;
+	  fHsm->Fill((Float_t)sm); 
+	  idet -= sm * 30;
+	  float sig = 0;
+	  if(c) sig += TMath::Abs(c->GetQ()); //
+	  if(c1) sig += TMath::Abs(c1->GetQ());
+	  
+	  fHph->Fill((Float_t)tcal, sig);  
+	  fHph2d->Fill((Float_t)tcal, sig);  
+	  fHcltime->Fill((Float_t)tcal); 
+	  nclsTracklet++;
+	}
+	fHncltrkl->Fill(nclsTracklet);
+      } //tracklets
+    } // end if(hasTRDfriends)
+    //fHntrkl->Fill((Float_t)nTracklets);
     fHntrkl->Fill((Float_t)ntls);
-    
+    fHntrklVsP->Fill(p,(Float_t)ntls);
   } //tracks
   
   fHntracks2->Fill((Float_t)ntracksDca);

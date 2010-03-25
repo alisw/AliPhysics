@@ -18,7 +18,9 @@ class AliMCEvent;
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
 class TProfile;
+class TProfile2D;
 
 class AliAnalysisTaskTRDmon : public AliAnalysisTask {
  public:
@@ -73,6 +75,7 @@ class AliAnalysisTaskTRDmon : public AliAnalysisTask {
     TH2F *fHph2d;                    //! PH 2d
     TH1F *fHncltrkl;                 //!
     TH1F *fHntrkl;                   //!
+    TH2F *fHntrklVsP;                //! Ntracklets vs P
     TH1F *fHsm;                      //!
     TH2F *fHetantr;                  //! Ntracklets-eta
     TH2F *fHphintr;                  //! Ntracklets-phi
@@ -80,8 +83,34 @@ class AliAnalysisTaskTRDmon : public AliAnalysisTask {
     TH1F *fHcldiff;                  //!
     TH2F *fHxyA;                     //! x-y side A (TPC)
     TH2F *fHxyC;                     //! x-y side C (TPC)
+    TH2F *fHPropagXY;                //! x-y of the point propagated to TRD entrance
+    TH2F *fHPropagRZ;                //! r-z of the point propagated to TRD entrance
     TH1F *fHnFriendTracks;           //!
     TH1F *fHnCalibObjects;           //!
+    TH2F *fHTpcEtaPhiLocaln;         //!  eta-phiLocal map of neg TPC tracks
+    TH2F *fHTrdEtaPhiLocaln;         //!  eta-phiLocal map of neg TRD tracks
+    TH2F *fHTpcEtaPhiLocalp;         //!  eta-phiLocal map of pos TPC tracks
+    TH2F *fHTrdEtaPhiLocalp;         //!  eta-phiLocal map of pos TRD tracks
+    TH2F *fHTpcEtaPhiSagitan;        //!  eta-phiSagita map of neg TPC tracks
+    TH2F *fHTrdEtaPhiSagitan;        //!  eta-phiSagita map of neg TRD tracks
+    TH2F *fHTpcEtaPhiSagitap;        //!  eta-phiSagita map of pos TPC tracks
+    TH2F *fHTrdEtaPhiSagitap;        //!  eta-phiSagita map of pos TRD tracks
+    TH2F *fHTpcEtaPhiDeltan;         //!  eta-phiDelta map of neg TPC tracks
+    TH2F *fHTrdEtaPhiDeltan;         //!  eta-phiDelta map of neg TRD tracks
+    TH2F *fHTpcEtaPhiDeltap;         //!  eta-phiDelta map of pos TPC tracks
+    TH2F *fHTrdEtaPhiDeltap;         //!  eta-phiDelta map of pos TRD tracks
+    TH2F *fHTpcEtaPhin;              //!  eta-phi map of neg TPC tracks
+    TH2F *fHTrdEtaPhin;              //!  eta-phi map of neg TRD tracks
+    TH2F *fHTpcEtaPhip;              //!  eta-phi map of pos TPC tracks
+    TH2F *fHTrdEtaPhip;              //!  eta-phi map of pos TRD tracks
+    TH3F *fHTpcRef3Dpos;             //!  eta-phiSagita-pt map of pos TPC tracks
+    TH3F *fHTpcRef3Dneg;             //!  eta-phiSagita-pt map of neg TPC tracks
+    TH3F *fHTrdRef3Dpos;             //!  eta-phiSagita-pt map of pos TRD tracks
+    TH3F *fHTrdRef3Dneg;             //!  eta-phiSagita-pt map of neg TRD tracks
+    TProfile2D *fHTrdEtaPhiLocalNTracklets;  //!  eta-phiLocal map of ntracklets from TRD tracks
+    TProfile2D *fHTrdEtaPhiSagitaNTracklets; //!  eta-phiSagita map of ntracklets from TRD tracks
+    TProfile2D *fHTrdEtaPhiDeltaNTracklets;  //!  eta-phiDelta map of ntracklets from TRD tracks
+    TProfile2D *fHTrdEtaPhiNTracklets;       //!  eta-phi map of ntracklets from TRD tracks
 
     ClassDef(AliAnalysisTaskTRDmon, 1)
 };
