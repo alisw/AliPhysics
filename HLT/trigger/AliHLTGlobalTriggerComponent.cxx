@@ -966,7 +966,7 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
     // 30 Oct 2009 - CINT sometimes evaluates the dynamic_cast incorrectly.
     // Have to use the TClass system for extra protection.
     code << "    const " << symbol->ObjectClass() << "* " << symbol->Name() << "_object_ = NULL;" << endl;
-    code << "    if (_object_->IsA()->GetBaseClass(\"" << symbol->ObjectClass() << "\") != NULL) " << symbol->Name()
+    code << "    if (_object_->InheritsFrom(" << symbol->ObjectClass() << "::Class())) " << symbol->Name()
          << "_object_ = dynamic_cast<const " << symbol->ObjectClass()
          << "*>(_object_);" << endl;
     code << "    if (" << symbol->Name() << "_object_ != NULL && ";

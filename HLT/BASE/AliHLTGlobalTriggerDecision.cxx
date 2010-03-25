@@ -26,9 +26,18 @@
 #include "Riostream.h"
 #include "TClass.h"
 #include "AliHLTMisc.h"
-#include <cassert>
+#include "AliHLTLogging.h"
 
 ClassImp(AliHLTGlobalTriggerDecision)
+
+
+namespace {
+const char* kgSplitModeMessage =
+  "The global decision object contains NULL pointers in the fInputObjects array."
+  " This means that it was written to a TTree branch with the split-mode > 0."
+  " This causes the custom streamer to be skipped and prevents the"
+  " fInputObjects array to be setup properly. In addition this can cause memory leaks.";
+};
 
 
 AliHLTGlobalTriggerDecision::AliHLTGlobalTriggerDecision() :
@@ -87,8 +96,15 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     cout << "#################### Input trigger decisions ####################" << endl;
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
-      assert(TriggerInput(i) != NULL);
-      TriggerInput(i)->Print(option);
+      if (TriggerInput(i) != NULL)
+      {
+        TriggerInput(i)->Print(option);
+      }
+      else
+      {
+        AliHLTLogging log;
+        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+      }
     }
     if (NumberOfTriggerInputs() == 0)
     {
@@ -115,8 +131,15 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     for (Int_t i = 0; i < NumberOfTriggerInputs(); i++)
     {
       cout << "-------------------- Input trigger decision " << i << " --------------------" << endl;
-      assert(TriggerInput(i) != NULL);
-      TriggerInput(i)->Print(option);
+      if (TriggerInput(i) != NULL)
+      {
+        TriggerInput(i)->Print(option);
+      }
+      else
+      {
+        AliHLTLogging log;
+        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+      }
     }
     if (NumberOfTriggerInputs() == 0)
     {
@@ -126,8 +149,15 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
     for (Int_t i = 0; i < NumberOfInputObjects(); i++)
     {
       cout << "------------------------ Input object " << i << " ------------------------" << endl;
-      assert(InputObject(i) != NULL);
-      InputObject(i)->Print(option);
+      if (InputObject(i) != NULL)
+      {
+        InputObject(i)->Print(option);
+      }
+      else
+      {
+        AliHLTLogging log;
+        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+      }
     }
     if (NumberOfInputObjects() == 0)
     {
@@ -194,19 +224,33 @@ AliHLTGlobalTriggerDecision& AliHLTGlobalTriggerDecision::operator=(const AliHLT
   fContributingTriggers.Delete();
   for (int triggerInput=0; triggerInput<src.NumberOfTriggerInputs(); triggerInput++) {
     const AliHLTTriggerDecision* pTriggerObject=src.TriggerInput(triggerInput);
-    assert(pTriggerObject != NULL);
-    // the AddTriggerInput function uses the copy constructor and
-    // makes a new object from the reference
-    AddTriggerInput(*pTriggerObject);
+    if (pTriggerObject != NULL)
+    {
+      // the AddTriggerInput function uses the copy constructor and
+      // makes a new object from the reference
+      AddTriggerInput(*pTriggerObject);
+    }
+    else
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+    }
   }
 
   DeleteInputObjects();
   for (int inputObject=0; inputObject<src.NumberOfTriggerInputs(); inputObject++) {
     const TObject* pInputObject=src.InputObject(inputObject);
-    assert(pInputObject != NULL);
-    // the AddInputObject function uses Clone() and
-    // makes a new object from the reference
-    AddInputObject(pInputObject);
+    if (pInputObject != NULL)
+    {
+      // the AddInputObject function uses Clone() and
+      // makes a new object from the reference
+      AddInputObject(pInputObject);
+    }
+    else
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+    }
   }
   
   SetCounters(src.Counters());
@@ -274,7 +318,12 @@ void AliHLTGlobalTriggerDecision::DeleteInputObjects()
   for (Int_t i = 0; i < NumberOfInputObjects(); i++)
   {
     TObject* obj = fInputObjects.UncheckedAt(i);
-    assert(obj != NULL);
+    if (obj == NULL)
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+      continue;
+    }
     if (obj->TestBit(kCanDelete)) delete obj;
   }
   fInputObjects.Clear();
@@ -290,12 +339,33 @@ void AliHLTGlobalTriggerDecision::Streamer(TBuffer &b)
      b.ReadClassBuffer(AliHLTGlobalTriggerDecision::Class(), this);
      // We must mark all the objects that were read into fInputObjects as owned.
      // Otherwise we will have a memory leak in DeleteInputObjects.
-     for (Int_t i = 0; i < fInputObjects.GetEntriesFast(); i++)
+     bool loggedWarning = false;
+     for (Int_t i = 0; i < fInputObjects.GetEntriesFast(); ++i)
      {
        TObject* obj = fInputObjects.UncheckedAt(i);
-       assert(obj != NULL);
-       obj->SetBit(kCanDelete);
+       // We must check if the object pointer is NULL. This could happen because the
+       // class dictionary has not been loaded, so the ReadClassBuffer streamer just
+       // silently skips the object but fills the fInputObjects array with a NULL pointer.
+       if (obj == NULL)
+       {
+         fInputObjects.RemoveAt(i);
+         if (not loggedWarning)
+         {
+           AliHLTLogging log;
+           log.LoggingVarargs(kHLTLogWarning, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__,
+             "The global trigger decision contains NULL pointers in the input object array."
+             " This is probably due to the fact that some class dictionaries have not been loaded."
+             " Will just remove the NULL pointer and continue."
+           );
+           loggedWarning = true;  // Prevent multiple warnings, one is enough.
+         }
+       }
+       else
+       {
+         obj->SetBit(kCanDelete);
+       }
      }
+     fInputObjects.Compress();
    }
    else
    {
