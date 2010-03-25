@@ -46,8 +46,8 @@ class AliTRDgeometry : public AliGeometry {
           void     CreateFrame(Int_t *idtmed);
           void     CreateServices(Int_t *idtmed);
 
-          Bool_t   CreateClusterMatrixArray();  
-  TGeoHMatrix     *GetClusterMatrix(Int_t det);
+  static  Bool_t   CreateClusterMatrixArray();  
+  static  TGeoHMatrix *GetClusterMatrix(Int_t det);
 
           void     SetSMstatus(Int_t sm, Char_t status)                  { fSMstatus[sm] = status;         }
 
@@ -58,15 +58,15 @@ class AliTRDgeometry : public AliGeometry {
           Int_t    GetStack(Double_t z, Int_t layer);
   static  Int_t    GetSector(Int_t det);
 
-          void     CreatePadPlaneArray();
-  AliTRDpadPlane  *CreatePadPlane(Int_t layer, Int_t stack);
-  AliTRDpadPlane  *GetPadPlane(Int_t layer, Int_t stack);
-  AliTRDpadPlane  *GetPadPlane(Int_t det)                                { return GetPadPlane(GetLayer(det)
+  static  void     CreatePadPlaneArray();
+  static  AliTRDpadPlane *CreatePadPlane(Int_t layer, Int_t stack);
+  static  AliTRDpadPlane *GetPadPlane(Int_t layer, Int_t stack);
+  static  AliTRDpadPlane *GetPadPlane(Int_t det)                                { return GetPadPlane(GetLayer(det)
                                                                                              ,GetStack(det)); }
-          Int_t    GetRowMax(Int_t layer, Int_t stack, Int_t /*sector*/);
-          Int_t    GetColMax(Int_t layer);
-          Double_t GetRow0(Int_t layer, Int_t stack, Int_t /*sector*/);
-          Double_t GetCol0(Int_t layer);
+  static  Int_t    GetRowMax(Int_t layer, Int_t stack, Int_t /*sector*/);
+  static  Int_t    GetColMax(Int_t layer);
+  static  Double_t GetRow0(Int_t layer, Int_t stack, Int_t /*sector*/);
+  static  Double_t GetCol0(Int_t layer);
 
   static  Float_t  GetTime0(Int_t layer)                                 { return fgkTime0[layer];        }
 
@@ -74,8 +74,8 @@ class AliTRDgeometry : public AliGeometry {
   static  Double_t GetXtrdEnd()                                          { return fgkXtrdEnd;             }
 
           Char_t   GetSMstatus(Int_t sm) const                           { return fSMstatus[sm];          }
-          Float_t  GetChamberWidth(Int_t layer) const                    { return fCwidth[layer]      ;   }
-          Float_t  GetChamberLength(Int_t layer, Int_t stack) const      { return fClength[layer][stack]; }
+  static  Float_t  GetChamberWidth(Int_t layer)                          { return fgkCwidth[layer]      ;   }
+  static  Float_t  GetChamberLength(Int_t layer, Int_t stack)            { return fgkClength[layer][stack]; }
 
   virtual void     GetGlobal(const AliRecPoint*, TVector3&, TMatrixF& ) const { }; 
   virtual void     GetGlobal(const AliRecPoint*, TVector3& ) const            { };
@@ -210,13 +210,13 @@ class AliTRDgeometry : public AliGeometry {
   static const Int_t    fgkRowmaxC0;                         //  Maximum number of Rows per C0 chamber
   static const Int_t    fgkRowmaxC1;                         //  Maximum number of Rows per C1 chamber
 
-  Float_t               fCwidth[kNlayer];                    //  Outer widths of the chambers
-  Float_t               fClength[kNlayer][kNstack];          //  Outer lengths of the chambers
+  static const Float_t  fgkCwidth[kNlayer];                  //  Outer widths of the chambers
+  static const Float_t  fgkClength[kNlayer][kNstack];        //  Outer lengths of the chambers
 
-  Float_t               fRotB11[kNsector];                   //  Matrix elements for the backward rotation
-  Float_t               fRotB12[kNsector];                   //  Matrix elements for the backward rotation
-  Float_t               fRotB21[kNsector];                   //  Matrix elements for the backward rotation
-  Float_t               fRotB22[kNsector];                   //  Matrix elements for the backward rotation
+  Float_t        fRotB11[kNsector];                          //  Matrix elements for the backward rotation
+  Float_t        fRotB12[kNsector];                          //  Matrix elements for the backward rotation
+  Float_t        fRotB21[kNsector];                          //  Matrix elements for the backward rotation
+  Float_t        fRotB22[kNsector];                          //  Matrix elements for the backward rotation
 
   static const Double_t fgkTime0Base;                        //  Base value for calculation of Time-position of pad 0
   static const Float_t  fgkTime0[kNlayer];                   //  Time-position of pad 0
@@ -224,8 +224,8 @@ class AliTRDgeometry : public AliGeometry {
   static const Double_t fgkXtrdBeg;                          //  X-coordinate in tracking system of begin of TRD mother volume
   static const Double_t fgkXtrdEnd;                          //  X-coordinate in tracking system of end of TRD mother volume
 
-  TObjArray            *fClusterMatrixArray;                 //! Transformation matrices loc. cluster to tracking cs
-  TObjArray            *fPadPlaneArray;                      //! Array of pad plane objects
+  static TObjArray     *fgClusterMatrixArray;                //! Transformation matrices loc. cluster to tracking cs
+  static TObjArray     *fgPadPlaneArray;                      //! Array of pad plane objects
 
   Char_t                fSMstatus[kNsector];                 //  Super module status byte
 

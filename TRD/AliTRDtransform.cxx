@@ -60,6 +60,26 @@ AliTRDtransform::AliTRDtransform()
   // AliTRDtransform default constructor
   //
 
+  fGeo               = new AliTRDgeometry();
+  if (!fGeo->CreateClusterMatrixArray()) {
+    AliError("Could not get transformation matrices\n");
+  }
+
+  fParam             = AliTRDCommonParam::Instance();
+  if (!fParam) {
+    AliError("Could not get common parameters\n");
+  }
+  fSamplingFrequency = fParam->GetSamplingFrequency();
+
+  fCalibration       = AliTRDcalibDB::Instance();
+  if (!fCalibration) {
+    AliError("Cannot find calibration object");
+  }
+
+  // Get the calibration objects for the global calibration
+  fkCalVdriftDet     = fCalibration->GetVdriftDet();
+  fkCalT0Det         = fCalibration->GetT0Det();
+
 }
 
 //_____________________________________________________________________________
