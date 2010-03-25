@@ -35,7 +35,6 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   // Input
   
   AliESDInputHandler* inpHandler = new AliESDInputHandler();
-  inpHandler->SetActiveBranches("ESDfriend*");
   mgr->SetInputEventHandler  (inpHandler);
   
   // Output

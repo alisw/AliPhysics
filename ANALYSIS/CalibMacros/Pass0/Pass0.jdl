@@ -1,0 +1,38 @@
+Executable="/alice/cern.ch/user/z/zampolli/bin/runPassX.sh";
+
+Packages={"VO_ALICE@AliRoot::v4-19-07-AN","VO_ALICE@ROOT::v5-26-00b-1","VO_ALICE@APISCONFIG::V1.1x"};
+Jobtag =
+           {
+              "test Calibration Train"
+           };
+
+GUIDFILE="guid.txt";
+TTL = "160000";
+Price = 1;
+
+Requirements = ( other.CE == "ALICE::CERN::LCG" );
+
+Validationcommand ="/alice/cern.ch/user/z/zampolli/Pass0/validation.sh";
+
+Split="file";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+
+SplitArguments = {"/alice/data/2009/LHC09d/$1/raw/#alienfilename#"};
+Workdirectorysize={"6000MB"};
+
+InputFile={"LF:/alice/cern.ch/user/z/zampolli/Pass0/recPass0.C",
+           "LF:/alice/cern.ch/user/z/zampolli/Pass0/ConfigCalibTrain.C",
+           "LF:/alice/cern.ch/user/z/zampolli/Pass0/runPass0.C",
+           "LF:/alice/cern.ch/user/z/zampolli/Pass0/AddTaskTPCCalib.C",
+           "LF:/alice/cern.ch/user/z/zampolli/Pass0/LoadLibraries.C"
+};
+InputDataCollection="LF:/alice/data/2009/LHC09d/$1/collection,nodownload";
+
+OutputDir="/alice/cern.ch/user/z/zampolli/Pass0/output/$1/#alienfilename/.root//#";
+
+OutputArchive={"log_archive:*.log@disk=1",
+              "root_archive.zip:galice.root,AliESDs.root, AliESDfriends.root,AliESDfriends_v1.root,@disk=1"};
+

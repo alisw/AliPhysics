@@ -38,13 +38,6 @@ void rec(const char *filename="raw.root")
   rec.SetInput(filename);
   rec.SetUseTrackingErrorsForAlignment("ITS");
 
-  // Magnetic field hack for L3 off, dipole on
-
-  AliMagF* fld = new AliMagF("map","map",0,-1, AliMagF::k5kG,AliMagF::kBeamTypepp, 450);
-  fld->SetBit(AliMagF::kOverrideGRP);
-  TGeoGlobalMagField::Instance()->SetField(fld);
-  TGeoGlobalMagField::Instance()->Lock();
-  printf(" ATTENTION: Using external field with WRONG CURRENTS COMBINATION\n");
 
   // Specially for ITS (https://savannah.cern.ch/bugs/?59368)
 
