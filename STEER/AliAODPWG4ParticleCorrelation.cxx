@@ -80,30 +80,30 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4Par
   AliAODPWG4Particle(part), fIsolated(part.fIsolated),
   fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
   fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet),   
-  fListOfObjArrays(part.fListOfObjArrays)
+  fListOfObjArrays()
 {
   // Copy constructor
 
 }
 
 //______________________________________________________________________________
-AliAODPWG4ParticleCorrelation& AliAODPWG4ParticleCorrelation::operator=(const AliAODPWG4ParticleCorrelation& part)
-{
-  // Assignment operator
-  if(this!=&part) {
-  
-    fIsolated = part.fIsolated;
-    fRefJet   = part.fRefJet ;
-    fLeadingDetector =part.fLeadingDetector;
-    fLeading  = part.fLeading;
-    fCorrJet  = part.fCorrJet ;
-    fCorrBkg  = part.fCorrBkg; 
-    fListOfObjArrays = fListOfObjArrays;
-
-  }
-  
-  return *this;
-}
+//AliAODPWG4ParticleCorrelation& AliAODPWG4ParticleCorrelation::operator=(const AliAODPWG4ParticleCorrelation& part)
+//{
+//  // Assignment operator
+//  if(this!=&part) {
+//  
+//    fIsolated = part.fIsolated;
+//    fRefJet   = part.fRefJet ;
+//    fLeadingDetector =part.fLeadingDetector;
+//    fLeading  = part.fLeading;
+//    fCorrJet  = part.fCorrJet ;
+//    fCorrBkg  = part.fCorrBkg; 
+//    fListOfObjArrays = fListOfObjArrays;
+//
+//  }
+//  
+//  return *this;
+//}
 
 //______________________________________________________________________________
 void AliAODPWG4ParticleCorrelation::Print(Option_t* /*option*/) const 

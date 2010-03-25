@@ -28,8 +28,10 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
   
   virtual ~AliAODPWG4ParticleCorrelation();
   AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& photon); 
+private:
   AliAODPWG4ParticleCorrelation& operator=(const AliAODPWG4ParticleCorrelation& photon);
   
+public:
   virtual TObjArray* GetObjArray(TString refname)  const { return   (TObjArray*) fListOfObjArrays->FindObject(refname); } 
   virtual TList*     GetObjArrayList()             const { return  fListOfObjArrays; } 
   virtual void       AddObjArray(TObjArray * refarray)  { fListOfObjArrays->Add(refarray); }
@@ -64,7 +66,7 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
   TRef           fRefJet;           // Reference to jet found with JETAN and correlated with particle
   TList   *      fListOfObjArrays ; // List with correlation reference arrays
   
-  ClassDef(AliAODPWG4ParticleCorrelation, 2);
+  ClassDef(AliAODPWG4ParticleCorrelation, 3);
 };
 
 
