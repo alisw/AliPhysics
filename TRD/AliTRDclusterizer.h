@@ -108,7 +108,7 @@ class AliTRDclusterizer : public TNamed
 
 protected:
 
-  void             DeConvExp (Float_t *const arr, const Int_t nTime, const Int_t nexp);
+  void             DeConvExp (Short_t *const arr, const Int_t nTime, const Int_t nexp);
   void             TailCancelation(const AliTRDrecoParam* const recoParam);
 
   Float_t  Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const;
@@ -146,8 +146,9 @@ protected:
 
   AliTRDarrayADC      *fDigits;               // Array holding the digits
   AliTRDSignalIndex   *fIndexes;              // Array holding the indexes to the digits
-  Float_t              fMaxThresh;            // Threshold value for the maximum
-  Float_t              fSigThresh;            // Threshold value for the digit signal
+  Short_t              fMaxThresh;            // Threshold value for the maximum
+  Short_t              fMaxThreshTest;        // Threshold value for the maximum to test agains
+  Short_t              fSigThresh;            // Threshold value for the digit signal
   Float_t              fMinMaxCutSigma;       // Threshold value for the maximum (cut noise)
   Float_t              fMinLeftRightCutSigma; // Threshold value for the sum pad (cut noise)
   Int_t                fLayer;                // Current layer of the detector

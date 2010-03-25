@@ -46,6 +46,7 @@ class AliTRDarrayADC: public TObject
   void    DeleteNegatives();
   void    Reset();
   void    ConditionalReset(AliTRDSignalIndex* idx);
+  inline  Short_t* GetDataAddress(Int_t nrow, Int_t ncol, Int_t ntime = 0) const;
   inline  Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   inline  void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
   static  void    CreateLut(); 
@@ -65,6 +66,18 @@ class AliTRDarrayADC: public TObject
     
 };
 
+//________________________________________________________________________________
+Short_t* AliTRDarrayADC::GetDataAddress(Int_t nrow, Int_t ncol, Int_t ntime) const
+{
+  //
+  // Get the address of the given pad
+  //
+
+  Int_t corrcolumn = fgLutPadNumbering[ncol];
+
+  return &fADC[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
+
+}
 //________________________________________________________________________________
 Short_t AliTRDarrayADC::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
 {

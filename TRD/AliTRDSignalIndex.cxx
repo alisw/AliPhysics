@@ -326,33 +326,24 @@ void AliTRDSignalIndex::ClearAll()
 }
 
 //_____________________________________________________________________________
-Bool_t  AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
+Bool_t  AliTRDSignalIndex::CheckSorting(Int_t &row, Int_t &col)
 {
   //
-  // Returns next used RC combination
+  // Check whether array was read to end or it was not sorted until now
   //
 
-  if(fSortedIndex[fPositionRC].rc>-1){
-    row = fCurrRow = fSortedIndex[fPositionRC].s.row;
-    col = fCurrCol = fSortedIndex[fPositionRC].s.col;
-    fPositionRC++;
-    return kTRUE;
-  }
-  else {
-    if(fSortedWasInit || fCountRC==1)
-      { //we already reached the end of the array
-        ResetCounters();
-	row = fCurrRow;
-	col = fCurrCol;
-	return kFALSE;
-      }
-    else
-      { //we have not created the sorted array up to now, let's do so
-	InitSortedIndex();
-	return NextRCIndex(row, col);
-      }
-  }
-
+  if(fSortedWasInit || fCountRC==1)
+    { //we already reached the end of the array
+      ResetCounters();
+      row = fCurrRow;
+      col = fCurrCol;
+      return kFALSE;
+    }
+  else
+    { //we have not sorted the array up to now, let's do so
+      InitSortedIndex();
+      return NextRCIndex(row, col);
+    }
 }
 
 //_____________________________________________________________________________

@@ -68,6 +68,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fDigits(NULL)
   ,fIndexes(NULL)
   ,fMaxThresh(0)
+  ,fMaxThreshTest(0)
   ,fSigThresh(0)
   ,fMinMaxCutSigma(0)
   ,fMinLeftRightCutSigma(0)
@@ -128,6 +129,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name, const Text_t *title, co
   ,fDigits(NULL)
   ,fIndexes(NULL)
   ,fMaxThresh(0)
+  ,fMaxThreshTest(0)
   ,fSigThresh(0)
   ,fMinMaxCutSigma(0)
   ,fMinLeftRightCutSigma(0)
@@ -183,6 +185,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fDigits(NULL)
   ,fIndexes(NULL)
   ,fMaxThresh(0)
+  ,fMaxThreshTest(0)
   ,fSigThresh(0)
   ,fMinMaxCutSigma(0)
   ,fMinLeftRightCutSigma(0)
@@ -287,6 +290,7 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fDigits      = NULL;
   ((AliTRDclusterizer &) c).fIndexes       = NULL;
   ((AliTRDclusterizer &) c).fMaxThresh     = 0;
+  ((AliTRDclusterizer &) c).fMaxThreshTest = 0;
   ((AliTRDclusterizer &) c).fSigThresh     = 0;
   ((AliTRDclusterizer &) c).fMinMaxCutSigma= 0;
   ((AliTRDclusterizer &) c).fMinLeftRightCutSigma = 0;
@@ -765,8 +769,9 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   const AliTRDrecoParam *const recoParam = fReconstructor->GetRecoParam();
 
-  fMaxThresh            = recoParam->GetClusMaxThresh();
-  fSigThresh            = recoParam->GetClusSigThresh();
+  fMaxThresh            = (Short_t)recoParam->GetClusMaxThresh();
+  fMaxThreshTest        = (Short_t)(fMaxThresh/2+fBaseline);
+  fSigThresh            = (Short_t)recoParam->GetClusSigThresh();
   fMinMaxCutSigma       = recoParam->GetMinMaxCutSigma();
   fMinLeftRightCutSigma = recoParam->GetMinLeftRightCutSigma();
 
@@ -854,7 +859,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   
   for(curr.time = 0; curr.time < fTimeTotal; curr.time++){
     while(fIndexes->NextRCIndex(curr.row, curr.col)){
-      if(IsMaximum(curr, curr.padStatus, &curr.signals[0])){
+      if(fDigits->GetData(curr.row, curr.col, curr.time) > fMaxThreshTest && IsMaximum(curr, curr.padStatus, &curr.signals[0])){
         if(last.row>-1){
           if(curr.time==last.time && curr.row==last.row && curr.col==last.col+2) FivePadCluster(last, curr);
           CreateCluster(last);
@@ -890,10 +895,10 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
 
   Float_t gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col,Max.row);
   Signals[1] = (Short_t)((fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) / gain + 0.5f);
-  if(Signals[1] < fMaxThresh) return kFALSE;
+  if(Signals[1] <= fMaxThresh) return kFALSE;
 
-  Float_t  noiseMiddleThresh = fMinMaxCutSigma*fCalNoiseDetValue*fCalNoiseROC->GetValue(Max.col, Max.row);
-  if (Signals[1] < noiseMiddleThresh) return kFALSE;
+  Short_t noiseMiddleThresh = (Short_t)(fMinMaxCutSigma*fCalNoiseDetValue*fCalNoiseROC->GetValue(Max.col, Max.row));
+  if (Signals[1] <= noiseMiddleThresh) return kFALSE;
 
   if (Max.col + 1 >= fColMax || Max.col < 1) return kFALSE;
 
@@ -910,13 +915,12 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
 
   if(!(status[0] | status[1] | status[2])) {//all pads are good
     if ((Signals[2] <= Signals[1]) && (Signals[0] <  Signals[1])) {
-      if ((Signals[2] >= fSigThresh) || (Signals[0] >= fSigThresh)) {
+      if ((Signals[2] > fSigThresh) || (Signals[0] > fSigThresh)) {
 	if(Signals[0]<0)Signals[0]=0;
 	if(Signals[2]<0)Signals[2]=0;
-        Float_t  noiseSumThresh = fMinLeftRightCutSigma
-          * fCalNoiseDetValue
-          * fCalNoiseROC->GetValue(Max.col, Max.row);
-        if ((Signals[2]+Signals[0]+Signals[1]) < noiseSumThresh) return kFALSE;
+        Short_t noiseSumThresh = (Short_t)(fMinLeftRightCutSigma * fCalNoiseDetValue
+					   * fCalNoiseROC->GetValue(Max.col, Max.row));
+        if ((Signals[2]+Signals[0]+Signals[1]) <= noiseSumThresh) return kFALSE;
         padStatus = 0;
         return kTRUE;
       }
@@ -924,18 +928,18 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   } else { // at least one of the pads is bad, and reject candidates with more than 1 problematic pad
     if(Signals[0]<0)Signals[0]=0;
     if(Signals[2]<0)Signals[2]=0;
-    if (status[2] && (!(status[0] || status[1])) && Signals[1] > Signals[0] && Signals[0] >= fSigThresh) { 
+    if (status[2] && (!(status[0] || status[1])) && Signals[1] > Signals[0] && Signals[0] > fSigThresh) { 
       Signals[2]=0;
       SetPadStatus(status[2], padStatus);
       return kTRUE;
     } 
-    else if (status[0] && (!(status[1] || status[2])) && Signals[1] >= Signals[2] && Signals[2] >= fSigThresh) {
+    else if (status[0] && (!(status[1] || status[2])) && Signals[1] >= Signals[2] && Signals[2] > fSigThresh) {
       Signals[0]=0;
       SetPadStatus(status[0], padStatus);
       return kTRUE;
     }
-    else if (status[1] && (!(status[0] || status[2])) && ((Signals[2] >= fSigThresh) || (Signals[0] >= fSigThresh))) {
-      Signals[1] = (Short_t)(fMaxThresh + 0.5f);
+    else if (status[1] && (!(status[0] || status[2])) && ((Signals[2] > fSigThresh) || (Signals[0] > fSigThresh))) {
+      Signals[1] = fMaxThresh;
       SetPadStatus(status[1], padStatus);
       return kTRUE;
     }
@@ -1235,8 +1239,6 @@ void AliTRDclusterizer::TailCancelation(const AliTRDrecoParam* const recoParam)
   Int_t iCol  = 0;
   Int_t iTime = 0;
 
-  Float_t *arr = new Float_t[fTimeTotal];  // temp array containing the ADC signals
-
   TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
   Bool_t debugStreaming = recoParam->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming();
   Int_t nexp = recoParam->GetTCnexp();
@@ -1245,38 +1247,25 @@ void AliTRDclusterizer::TailCancelation(const AliTRDrecoParam* const recoParam)
       // if corrupted then don't make the tail cancallation
       if (fCalPadStatusROC->GetStatus(iCol, iRow)) continue;
 
-      // Save data into the temporary processing array and substract the baseline,
-      // since DeConvExp does not expect a baseline
-      for (iTime = 0; iTime < fTimeTotal; iTime++) 
-	arr[iTime] = fDigits->GetData(iRow,iCol,iTime)-fBaseline;
-          
       if(debugStreaming){
-	for (iTime = 0; iTime < fTimeTotal; iTime++) 
-	  (*fDebugStream) << "TailCancellation"
-			  << "col="  << iCol
-			  << "row="  << iRow
-			  << "time=" << iTime
-			  << "arr=" << arr[iTime]
-			  << "\n";
+      	for (iTime = 0; iTime < fTimeTotal; iTime++) 
+      	  (*fDebugStream) << "TailCancellation"
+      			  << "col="  << iCol
+      			  << "row="  << iRow
+      			  << "\n";
       }
       
       // Apply the tail cancelation via the digital filter
-      DeConvExp(arr,fTimeTotal,nexp);
-
-      // Save tailcancalled data and add the baseline
-      for(iTime = 0; iTime < fTimeTotal; iTime++)
-	fDigits->SetData(iRow,iCol,iTime,(Short_t)(arr[iTime] + fBaseline + 0.5f));
+      DeConvExp(fDigits->GetDataAddress(iRow,iCol),fTimeTotal,nexp);
       
     } // while irow icol
-
-  delete [] arr;
 
   return;
 
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t nTime, const Int_t nexp) 
+void AliTRDclusterizer::DeConvExp(Short_t *const arr, const Int_t nTime, const Int_t nexp)
 {
   //
   // Tail cancellation by deconvolution for PASA v4 TRF
@@ -1328,8 +1317,8 @@ void AliTRDclusterizer::DeConvExp(Float_t *const arr, const Int_t nTime, const I
 
   for (i = 0; i < nTime; i++) {
 
-    result = (arr[i] - correction);    // No rescaling
-    arr[i] = result;
+    result = arr[i] - correction - fBaseline;    // No rescaling
+    arr[i] = (Short_t)(result + fBaseline + 0.5f);
 
     for (k = 0; k < nexp; k++) {
       reminder[k] = rates[k] * (reminder[k] + coefficients[k] * result);

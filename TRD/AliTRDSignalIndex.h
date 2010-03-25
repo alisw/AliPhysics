@@ -50,21 +50,15 @@ public:
   void     ResetArrays();
 
   // Store the index row-column as an interesting one
-  void     AddIndexRC(const Int_t row, const Int_t col){
-    Int_t num=row*fNcols+col;
-    if(fBoolIndex[num])return;
-    fBoolIndex[num]=kTRUE;
-    fSortedIndex[fCountRC].s.col=col;
-    fSortedIndex[fCountRC].s.row=row;
-    fCountRC++;
-  };
-
+  inline void AddIndexRC(const Int_t row, const Int_t col);
   // Get the next pad (row and column) and return kTRUE on success
-  Bool_t   NextRCIndex(Int_t &row, Int_t &col); 
+  inline Bool_t NextRCIndex(Int_t &row, Int_t &col); 
   // Get the next timebin of a pad (row and column) and return kTRUE on success
   Bool_t   NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin); 
   // Get the next active timebin and return kTRUE on success
   Bool_t   NextTbinIndex(Int_t &tbin); 
+
+  Bool_t CheckSorting(Int_t &row, Int_t &col);
 
   Int_t    GetCurrentRow() const  { return fCurrRow; }
   Int_t    GetCurrentCol() const  { return fCurrCol; }
@@ -123,6 +117,37 @@ public:
   ClassDef(AliTRDSignalIndex,2)  //  Data container for one TRD detector segment
 
 };
+
+void AliTRDSignalIndex::AddIndexRC(const Int_t row, const Int_t col)
+{
+  //
+  // Adds RC combination to array
+  //
+
+  const Int_t num=row*fNcols+col;
+  if(fBoolIndex[num])return;
+  fBoolIndex[num]=kTRUE;
+  fSortedIndex[fCountRC].s.col=col;
+  fSortedIndex[fCountRC].s.row=row;
+  fCountRC++;
+}
+
+Bool_t AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
+{
+  //
+  // Returns next used RC combination
+  //
+
+  if(fSortedIndex[fPositionRC].rc>-1){
+    row = fCurrRow = fSortedIndex[fPositionRC].s.row;
+    col = fCurrCol = fSortedIndex[fPositionRC].s.col;
+    fPositionRC++;
+    return kTRUE;
+  }
+  else
+    return CheckSorting(row, col);
+}
+
 #endif
 
 /*
