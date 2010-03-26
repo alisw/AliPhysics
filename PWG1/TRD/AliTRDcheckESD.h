@@ -28,8 +28,9 @@ class TGraphErrors;
 class AliTRDcheckESD : public AliAnalysisTaskSE {
 public:
   enum ETRDcheckESDstatus {
-     kMC   = BIT(0)  // use MC info
-    ,kLoad = BIT(1)  // container from file
+     kMC        = BIT(0)  // use MC info
+    ,kLoad      = BIT(1)  // container from file
+    ,kCollision = BIT(2)  // 
   };
   enum ETRDcheckESDhistos {
     kNCl  = 0    // number of clusters per track
@@ -52,10 +53,12 @@ public:
   
   void          UserCreateOutputObjects();
   Bool_t        GetRefFigure(Int_t ifig);
-  Int_t          GetNRefFigures() const  { return fNRefFigures; } 
+  Int_t         GetNRefFigures() const  { return fNRefFigures; } 
   void          UserExec(Option_t *);
 
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
+  Bool_t        IsCollision() const {return TESTBIT(fStatus, kCollision);}
+  void          SetCollision(Bool_t set=kTRUE) {set ? SETBIT(fStatus, kCollision) : CLRBIT(fStatus, kCollision);}
   Bool_t        IsLoad() const { return TESTBIT(fStatus, kLoad);}
   TObjArray*    Histos();
   Bool_t        Load(const Char_t *fn="TRD.Performance.root", const Char_t *name=NULL);
@@ -82,6 +85,15 @@ private:
   TObjArray        *fHistos;           //! QA histos
   TObjArray        *fResults;          // QA graphs
   static FILE      *fgFile;            //! trend file streamer
-  ClassDef(AliTRDcheckESD, 4)          // user oriented TRD analysis based on ESD-MC data
+  // Vertex selection
+  static const Float_t fgkEvVertexZ;// cm
+  static const Int_t   fgkEvVertexN;// cm
+  // Track selection
+  static const Float_t fgkTrkDCAxy; // cm
+  static const Float_t fgkTrkDCAz;  // cm
+  static const Int_t   fgkNclTPC;   // N clusters TPC
+  static const Float_t fgkPt;       // min. pt
+  static const Float_t fgkEta;      // eta range
+  ClassDef(AliTRDcheckESD, 5)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif
