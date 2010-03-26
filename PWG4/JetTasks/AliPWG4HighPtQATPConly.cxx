@@ -95,24 +95,24 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtITSouterminPtTPCvsPtAllRel1PtUncertainty(0),
   fPtITSouterminPtTPCvsPtAllChi2PerNClusTPC(0),
   fPtITSouterminPtTPCvsPtAllChi2PerNClusITS(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer0(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer1(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer2(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer3(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer4(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer5(0),
-  fPtITSouterminPtTPCvsPtAll_NoSPD(0),
-  fPtITSouterminPtTPCvsPtAll_NoSDD(0),
-  fPtITSouterminPtTPCvsPtAll_NoSSD(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer0(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer1(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer2(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer3(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer4(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer5(0),
+  fPtITSouterminPtTPCvsPtAllNoSPD(0),
+  fPtITSouterminPtTPCvsPtAllNoSDD(0),
+  fPtITSouterminPtTPCvsPtAllNoSSD(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD(0),
   fHistList(0),
   fPtAllTPC(0),
   fPtSelTPC(0),
@@ -134,7 +134,7 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtRel1PtUncertaintyChi2PerClusTPC(0),
   fPtNPointTPCSChi2PerClusTPC(0),
   fPtNPointTPCSRel1PtUncertainty(0),
-  fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel(0),
+  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel(0),
   fHistListITS(0),
   fPtCosmicCandidates(0),
   fDeltaPtCosmicCandidates(0),
@@ -183,24 +183,24 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtITSouterminPtTPCvsPtAllRel1PtUncertainty(0),
   fPtITSouterminPtTPCvsPtAllChi2PerNClusTPC(0),
   fPtITSouterminPtTPCvsPtAllChi2PerNClusITS(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer0(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer1(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer2(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer3(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer4(0),
-  fPtITSouterminPtTPCvsPtAll_ITSLayer5(0),
-  fPtITSouterminPtTPCvsPtAll_NoSPD(0),
-  fPtITSouterminPtTPCvsPtAll_NoSDD(0),
-  fPtITSouterminPtTPCvsPtAll_NoSSD(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD(0),
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer0(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer1(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer2(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer3(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer4(0),
+  fPtITSouterminPtTPCvsPtAllITSLayer5(0),
+  fPtITSouterminPtTPCvsPtAllNoSPD(0),
+  fPtITSouterminPtTPCvsPtAllNoSDD(0),
+  fPtITSouterminPtTPCvsPtAllNoSSD(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD(0),
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD(0),
   fHistList(0),
   fPtAllTPC(0),
   fPtSelTPC(0),
@@ -222,7 +222,7 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtRel1PtUncertaintyChi2PerClusTPC(0),
   fPtNPointTPCSChi2PerClusTPC(0),
   fPtNPointTPCSRel1PtUncertainty(0),
-  fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel(0),
+  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel(0),
   fHistListITS(0),
   fPtCosmicCandidates(0),
   fDeltaPtCosmicCandidates(0),
@@ -485,105 +485,105 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS);
 
   //As function of ITS layers
-  fPtITSouterminPtTPCvsPtAll_ITSLayer0 = new TH2F("fPtITSouterminPtTPCvsPtAll_ITSLayer0","PtAllminPtTPCvsPtAll_ITSLayer0",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_ITSLayer0->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_ITSLayer0->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_ITSLayer0);
+  fPtITSouterminPtTPCvsPtAllITSLayer0 = new TH2F("fPtITSouterminPtTPCvsPtAllITSLayer0","PtAllminPtTPCvsPtAllITSLayer0",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllITSLayer0->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllITSLayer0->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllITSLayer0);
 
-  fPtITSouterminPtTPCvsPtAll_ITSLayer1 = new TH2F("fPtITSouterminPtTPCvsPtAll_ITSLayer1","PtAllminPtTPCvsPtAll_ITSLayer1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_ITSLayer1->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_ITSLayer1->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_ITSLayer1);
+  fPtITSouterminPtTPCvsPtAllITSLayer1 = new TH2F("fPtITSouterminPtTPCvsPtAllITSLayer1","PtAllminPtTPCvsPtAllITSLayer1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllITSLayer1->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllITSLayer1->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllITSLayer1);
 
-  fPtITSouterminPtTPCvsPtAll_ITSLayer2 = new TH2F("fPtITSouterminPtTPCvsPtAll_ITSLayer2","PtAllminPtTPCvsPtAll_ITSLayer2",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_ITSLayer2->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_ITSLayer2->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_ITSLayer2);
+  fPtITSouterminPtTPCvsPtAllITSLayer2 = new TH2F("fPtITSouterminPtTPCvsPtAllITSLayer2","PtAllminPtTPCvsPtAllITSLayer2",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllITSLayer2->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllITSLayer2->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllITSLayer2);
 
-  fPtITSouterminPtTPCvsPtAll_ITSLayer3 = new TH2F("fPtITSouterminPtTPCvsPtAll_ITSLayer3","PtAllminPtTPCvsPtAll_ITSLayer3",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_ITSLayer3->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_ITSLayer3->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_ITSLayer3);
+  fPtITSouterminPtTPCvsPtAllITSLayer3 = new TH2F("fPtITSouterminPtTPCvsPtAllITSLayer3","PtAllminPtTPCvsPtAllITSLayer3",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllITSLayer3->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllITSLayer3->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllITSLayer3);
 
-  fPtITSouterminPtTPCvsPtAll_ITSLayer4 = new TH2F("fPtITSouterminPtTPCvsPtAll_ITSLayer4","PtAllminPtTPCvsPtAll_ITSLayer4",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_ITSLayer4->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_ITSLayer4->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_ITSLayer4);
+  fPtITSouterminPtTPCvsPtAllITSLayer4 = new TH2F("fPtITSouterminPtTPCvsPtAllITSLayer4","PtAllminPtTPCvsPtAllITSLayer4",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllITSLayer4->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllITSLayer4->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllITSLayer4);
 
-  fPtITSouterminPtTPCvsPtAll_ITSLayer5 = new TH2F("fPtITSouterminPtTPCvsPtAll_ITSLayer5","PtAllminPtTPCvsPtAll_ITSLayer5",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_ITSLayer5->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_ITSLayer5->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_ITSLayer5);
+  fPtITSouterminPtTPCvsPtAllITSLayer5 = new TH2F("fPtITSouterminPtTPCvsPtAllITSLayer5","PtAllminPtTPCvsPtAllITSLayer5",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllITSLayer5->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllITSLayer5->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllITSLayer5);
 
-  fPtITSouterminPtTPCvsPtAll_NoSPD = new TH2F("fPtITSouterminPtTPCvsPtAll_NoSPD","PtAllminPtTPCvsPtAll_NoSPD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_NoSPD->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_NoSPD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_NoSPD);
+  fPtITSouterminPtTPCvsPtAllNoSPD = new TH2F("fPtITSouterminPtTPCvsPtAllNoSPD","PtAllminPtTPCvsPtAllNoSPD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllNoSPD->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllNoSPD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllNoSPD);
 
-  fPtITSouterminPtTPCvsPtAll_NoSDD = new TH2F("fPtITSouterminPtTPCvsPtAll_NoSDD","PtAllminPtTPCvsPtAll_NoSDD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_NoSDD->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_NoSDD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_NoSDD);
+  fPtITSouterminPtTPCvsPtAllNoSDD = new TH2F("fPtITSouterminPtTPCvsPtAllNoSDD","PtAllminPtTPCvsPtAllNoSDD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllNoSDD->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllNoSDD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllNoSDD);
 
-  fPtITSouterminPtTPCvsPtAll_NoSSD = new TH2F("fPtITSouterminPtTPCvsPtAll_NoSSD","PtAllminPtTPCvsPtAll_NoSSD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSouterminPtTPCvsPtAll_NoSSD->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAll_NoSSD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAll_NoSSD);
+  fPtITSouterminPtTPCvsPtAllNoSSD = new TH2F("fPtITSouterminPtTPCvsPtAllNoSSD","PtAllminPtTPCvsPtAllNoSSD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtITSouterminPtTPCvsPtAllNoSSD->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllNoSSD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllNoSSD);
 
   //
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0","PtAllminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0->SetZTitle("#chi^{2}/NPointITS");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0","PtAllminPtTPCvsPtAllChi2PerNClusITSLayer0",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0->SetZTitle("#chi^{2}/NPointITS");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1","PtAllminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1->SetZTitle("#chi^{2}/NPointITS");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1","PtAllminPtTPCvsPtAllChi2PerNClusITSLayer1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1->SetZTitle("#chi^{2}/NPointITS");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2","PtAllminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2->SetZTitle("#chi^{2}/NPointITS");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2","PtAllminPtTPCvsPtAllChi2PerNClusITSLayer2",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2->SetZTitle("#chi^{2}/NPointITS");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3","PtAllminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3->SetZTitle("#chi^{2}/NPointITS");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3","PtAllminPtTPCvsPtAllChi2PerNClusITSLayer3",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3->SetZTitle("#chi^{2}/NPointITS");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4","PtAllminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4->SetZTitle("#chi^{2}/NPointITS");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4","PtAllminPtTPCvsPtAllChi2PerNClusITSLayer4",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4->SetZTitle("#chi^{2}/NPointITS");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5","PtAllminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5->SetZTitle("#chi^{2}/NPointITS");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5 = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5","PtAllminPtTPCvsPtAllChi2PerNClusITSLayer5",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5->SetZTitle("#chi^{2}/NPointITS");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD","PtAllminPtTPCvsPtAllChi2PerNClusITS_NoSPD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD->SetZTitle("#chi^{2}/(2*NPointITS-5)");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD","PtAllminPtTPCvsPtAllChi2PerNClusITSNoSPD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD->SetZTitle("#chi^{2}/(2*NPointITS-5)");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD","PtAllminPtTPCvsPtAllChi2PerNClusITS_NoSDD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD->SetZTitle("#chi^{2}/(2*NPointITS-5)");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD","PtAllminPtTPCvsPtAllChi2PerNClusITSNoSDD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD->SetZTitle("#chi^{2}/(2*NPointITS-5)");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD);
 
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD","PtAllminPtTPCvsPtAllChi2PerNClusITS_NoSSD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
-  fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD->SetZTitle("#chi^{2}/(2*NPointITS-5)");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD = new TH3F("fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD","PtAllminPtTPCvsPtAllChi2PerNClusITSNoSSD",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkChi2PerClusBins,fgkChi2PerClusMin,fgkChi2PerClusMax);
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD->SetXTitle("p_{t}^{Global}");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
+  fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD->SetZTitle("#chi^{2}/(2*NPointITS-5)");
+  fHistList->Add(fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD);
 
 
   //ITSrefit
@@ -679,11 +679,11 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtNPointTPCSRel1PtUncertainty->SetZTitle("Rel1PtUncertainty");
   fHistListITS->Add(fPtNPointTPCSRel1PtUncertainty);
 
-  fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel = new TH3F("fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel","PtITSminPtTPCvsPtITSRel1PtUncertainty",fgkNPtBins, fgkPtMin,fgkPtMax,30,0.,0.3,35,0.,3.5);
-  fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel->SetXTitle("p_{t}^{global}");
-  fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel->SetYTitle("Rel1PtUncertainty");
-  fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel->SetZTitle("#chi^{2}/(2*N_{clusters}^{TPC}-5)");
-  fHistListITS->Add(fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel);
+  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel = new TH3F("fPtRel1PtUncertaintyChi2PerClusTPCSharedSel","PtITSminPtTPCvsPtITSRel1PtUncertainty",fgkNPtBins, fgkPtMin,fgkPtMax,30,0.,0.3,35,0.,3.5);
+  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetXTitle("p_{t}^{global}");
+  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetYTitle("Rel1PtUncertainty");
+  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetZTitle("#chi^{2}/(2*N_{clusters}^{TPC}-5)");
+  fHistListITS->Add(fPtRel1PtUncertaintyChi2PerClusTPCSharedSel);
 
   fPtAllTPC = new TH1F("fPtAllTPC","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistListTPC->Add(fPtAllTPC);
@@ -891,41 +891,41 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 	fPtITSouterminPtTPCvsPtAllChi2PerNClusTPC->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerClusterTPC);
 	if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	if(track->HasPointOnITSLayer(0)) {
-	  fPtITSouterminPtTPCvsPtAll_ITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer0->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)) {
-	  fPtITSouterminPtTPCvsPtAll_ITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer1->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && track->HasPointOnITSLayer(2)) {
-	  fPtITSouterminPtTPCvsPtAll_ITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer2->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(2) && track->HasPointOnITSLayer(3)) {
-	  fPtITSouterminPtTPCvsPtAll_ITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer3->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(2) && !track->HasPointOnITSLayer(3) && track->HasPointOnITSLayer(4)) {
-	  fPtITSouterminPtTPCvsPtAll_ITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer4->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1) && !track->HasPointOnITSLayer(2) && !track->HasPointOnITSLayer(3) && !track->HasPointOnITSLayer(4) && track->HasPointOnITSLayer(5)) {
-	  fPtITSouterminPtTPCvsPtAll_ITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_ITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSLayer5->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 
 	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) {
-	  fPtITSouterminPtTPCvsPtAll_NoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllNoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSPD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(2) && !track->HasPointOnITSLayer(3)) {
-	  fPtITSouterminPtTPCvsPtAll_NoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllNoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSDD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
 	if(!track->HasPointOnITSLayer(4) && !track->HasPointOnITSLayer(5)) {
-	  fPtITSouterminPtTPCvsPtAll_NoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
-	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITS_NoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
+	  fPtITSouterminPtTPCvsPtAllNoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter));
+	  if(nPointITS>3) fPtITSouterminPtTPCvsPtAllChi2PerNClusITSNoSSD->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),chi2PerNPointITS);
 	}
       }
 
@@ -953,7 +953,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       fPtRel1PtUncertaintyChi2PerClusTPC->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
       fPtNPointTPCSChi2PerClusTPC->Fill(pt,track->GetTPCnclsS()/nClustersTPC,chi2PerClusterTPC);
       fPtNPointTPCSRel1PtUncertainty->Fill(pt,track->GetTPCnclsS()/nClustersTPC,relUncertainty1Pt);
-      if(track->GetTPCnclsS()/nClustersTPC>0.05) fPtRel1PtUncertaintyChi2PerClusTPC_SharedSel->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
+      if(track->GetTPCnclsS()/nClustersTPC>0.05) fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
     }//fTrackCutsITS loop
       
   }//ESD track loop
