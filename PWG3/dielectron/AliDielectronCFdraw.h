@@ -53,9 +53,9 @@ public:
   void UnsetRangeUser(Int_t ivar, const char* slices="");
   void UnsetRangeUser(const char* varname, const char* slices="");
 
-//   virtual void Draw(const Option_t* /*option*/ = "") {;}
+  virtual void Draw(const Option_t* varnames = "") { Draw(varnames,"");}
   //Draw Projections
-  void Draw(const Option_t* varnames, const char* opt="", const char* slices="");
+  void Draw(const Option_t* varnames, const char* opt, const char* slices="");
   void Draw(Int_t var, const char* opt="", const char* slices="");
   void Draw(Int_t var0, Int_t var1, const char* opt="", const char* slices="");
   void Draw(Int_t var0, Int_t var1, Int_t var2, const char* opt="", const char* slices="");
@@ -64,12 +64,12 @@ public:
   TH1* Project(Int_t ndim, Int_t *vars, Int_t slice);
 
   //Draw efficiencies
-  void DrawEfficiency(const char* varnames, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
-  void DrawEfficiency(Int_t var, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
-  void DrawEfficiency(Int_t var0, Int_t var1, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
-  void DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* nominators, Int_t denominator=0, const char* opt="sameleg");
+  void DrawEfficiency(const char* varnames, const char* nominators, Int_t denominator=0, const char* opt="sameleg2");
+  void DrawEfficiency(Int_t var, const char* nominators, Int_t denominator=0, const char* opt="sameleg", Int_t type=0);
+  void DrawEfficiency(Int_t var0, Int_t var1, const char* nominators, Int_t denominator=0, const char* opt="sameleg", Int_t type=0);
+  void DrawEfficiency(Int_t var0, Int_t var1, Int_t var2, const char* nominators, Int_t denominator=0, const char* opt="sameleg", Int_t type=0);
   
-  TObjArray* CollectHistosEff(Int_t dim, Int_t *vars, const char* nominators, Int_t denominator);
+  TObjArray* CollectHistosEff(Int_t dim, Int_t *vars, const char* nominators, Int_t denominator, Int_t type=0);
   TH1* ProjectEff(Int_t ndim, Int_t *vars);
   
   
