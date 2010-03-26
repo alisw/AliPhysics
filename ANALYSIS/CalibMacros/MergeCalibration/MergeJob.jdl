@@ -7,7 +7,7 @@ Jobtag =
            };
 
 GUIDFILE="guid.txt";
-TTL = "160000";
+TTL = "28000";
 Price = 1;
 
 Requirements = ( other.CE == "ALICE::CERN::LCG" );
