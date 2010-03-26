@@ -77,7 +77,7 @@ AliAODEvent::AliAODEvent() :
 AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AliVEvent(aod),
   fAODObjects(new TList()),
-  fAODFolder(new TFolder()),
+  fAODFolder(0),
   fConnected(kFALSE),
   fHeader(new AliAODHeader(*aod.fHeader)),
   fTracks(new TClonesArray(*aod.fTracks)),
@@ -219,6 +219,7 @@ AliAODEvent::~AliAODEvent()
     }
 
     delete fAODFolder;
+    fAODFolder = 0;
 }
 
 //______________________________________________________________________________
@@ -314,6 +315,7 @@ void AliAODEvent::SetStdNames()
 void AliAODEvent::CreateStdFolders()
 {
     // Create the standard folder structure
+  if(fAODFolder)delete fAODFolder;
     fAODFolder = gROOT->GetRootFolder()->AddFolder("AOD", "AOD");
     if(fAODObjects->GetEntries()==kAODListN){
 	for(int i = 0;i < fAODObjects->GetEntries();i++){
