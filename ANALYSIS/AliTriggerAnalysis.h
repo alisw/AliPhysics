@@ -16,8 +16,8 @@
 //-------------------------------------------------------------------------
 
 class AliESDEvent;
-class TH1;
-class TH2;
+class TH1F;
+class TH2F;
 class TCollection;
 class TMap;
 
@@ -60,7 +60,7 @@ class AliTriggerAnalysis : public TObject
     void FillTriggerClasses(const AliESDEvent* aEsd);
     
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
-    void SetSPDGFOEfficiency(TH1* hist) { fSPDGFOEfficiency = hist; }
+    void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
     void SetV0TimeOffset(Float_t offset) { fV0TimeOffset = offset; }
     void SetV0AdcThr(Float_t thr) { fV0AdcThr = thr; }
     void SetV0HwPars(Float_t thr, Float_t winLow, Float_t winHigh) { fV0HwAdcThr = thr; fV0HwWinLow = winLow; fV0HwWinHigh = winHigh; }
@@ -89,7 +89,7 @@ class AliTriggerAnalysis : public TObject
     Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
 
     Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
-    TH1* fSPDGFOEfficiency;         // SPD FASTOR efficiency - is applied in SPDFiredChips. Histogram contains efficiency as function of chip number (bin 1..400: first layer; 401..1200: second layer)
+    TH1F* fSPDGFOEfficiency;         // SPD FASTOR efficiency - is applied in SPDFiredChips. Histogram contains efficiency as function of chip number (bin 1..400: first layer; 401..1200: second layer)
     
     Float_t fV0TimeOffset;          // time offset applied to the times read from the V0 (in ns)
     Float_t fV0AdcThr;              // thresholds applied on V0 ADC data
@@ -100,15 +100,15 @@ class AliTriggerAnalysis : public TObject
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
     
-    TH2* fHistBitsSPD;        // offline trigger bits (calculated from clusters) vs hardware trigger bits
-    TH1* fHistFiredBitsSPD;   // fired hardware bits
-    TH1* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
-    TH1* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
-    TH1* fHistZDC;            // histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
-    TH1* fHistFMDA;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
-    TH1* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
-    TH1* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
-    TH1* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
+    TH2F* fHistBitsSPD;        // offline trigger bits (calculated from clusters) vs hardware trigger bits
+    TH1F* fHistFiredBitsSPD;   // fired hardware bits
+    TH1F* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
+    TH1F* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
+    TH1F* fHistZDC;            // histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
+    TH1F* fHistFMDA;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
+    TH1F* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
+    TH1F* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
+    TH1F* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
     
     TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
     

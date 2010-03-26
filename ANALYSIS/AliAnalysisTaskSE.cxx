@@ -299,8 +299,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
-    fDebug = 10;
-    printf("Task is active %5d\n", IsActive());
+    if ( fDebug >= 10)
+      printf("Task is active %5d\n", IsActive());
     
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
 //
