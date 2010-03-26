@@ -65,6 +65,14 @@ const UChar_t AliTRDcheckESD::fgkNgraph[AliTRDcheckESD::kNrefs] ={
 1, 4, 2, 20};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
+const Float_t AliTRDcheckESD::fgkEvVertexZ = 15.;
+const Int_t   AliTRDcheckESD::fgkEvVertexN = 1;
+const Float_t AliTRDcheckESD::fgkTrkDCAxy  = 40.;
+const Float_t AliTRDcheckESD::fgkTrkDCAz   = 15.;
+const Int_t   AliTRDcheckESD::fgkNclTPC    = 10;
+const Float_t AliTRDcheckESD::fgkPt        = 0.2;
+const Float_t AliTRDcheckESD::fgkEta       = 0.9;
+
 //____________________________________________________________________
 AliTRDcheckESD::AliTRDcheckESD():
   AliAnalysisTaskSE()
@@ -275,8 +283,42 @@ void AliTRDcheckESD::UserExec(Option_t *){
 
     // track status
     ULong_t status = esdTrack->GetStatus(); //PrintStatus(status);
-    if(!Bool_t(status & AliESDtrack::kTPCout)) continue;
-    if(esdTrack->GetKinkIndex(0) > 0) continue;
+
+    // track selection
+    Bool_t selected(kTRUE);
+    if(esdTrack->Pt() < fgkPt){ 
+      AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Pt[%5.2f]", fESD->GetEventNumberInFile(), itrk, esdTrack->Pt()));
+      selected = kFALSE;
+    }
+    if(TMath::Abs(esdTrack->Eta()) > fgkEta){
+      AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Eta[%5.2f]", fESD->GetEventNumberInFile(), itrk, TMath::Abs(esdTrack->Eta())));
+      selected = kFALSE;
+    }
+    if(!Bool_t(status & AliESDtrack::kTPCout)){
+      AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] !TPCout", fESD->GetEventNumberInFile(), itrk));
+      selected = kFALSE;
+    }
+    if(esdTrack->GetKinkIndex(0) > 0){
+      AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Kink", fESD->GetEventNumberInFile(), itrk));
+      selected = kFALSE;
+    }
+    if(esdTrack->GetTPCNcls() < fgkNclTPC){ 
+      AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] NclTPC[%d]", fESD->GetEventNumberInFile(), itrk, esdTrack->GetTPCNcls()));
+      selected = kFALSE;
+    }
+    Float_t par[2], cov[3];
+    esdTrack->GetImpactParameters(par, cov);
+    if(IsCollision()){ // cuts on DCA
+      if(TMath::Abs(par[0]) > fgkTrkDCAxy){ 
+        AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAxy[%f]", fESD->GetEventNumberInFile(), itrk, TMath::Abs(par[0])));
+        selected = kFALSE;
+      }
+      if(TMath::Abs(par[1]) > fgkTrkDCAz){ 
+        AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAz[%f]", fESD->GetEventNumberInFile(), itrk, TMath::Abs(par[1])));
+        selected = kFALSE;
+      }
+    }
+    if(!selected) continue;
 
     //Int_t nTPC(esdTrack->GetNcls(1));
     Int_t nTRD(esdTrack->GetNcls(2));
@@ -351,23 +393,19 @@ void AliTRDcheckESD::UserExec(Option_t *){
       h = (TH2I*)fHistos->At(kTRDstat);
       if(status & AliESDtrack::kTPCout) h->Fill(ptTRD, kTPCout);
       if(status & AliESDtrack::kTRDin) h->Fill(ptTRD, kTRDin);
-      if(kBarrel && (status & AliESDtrack::kTRDout)){ 
-        ((TH1*)fHistos->At(kNCl))->Fill(nTRD);
-        h->Fill(ptTRD, kTRDout);
-      }
+      if(kBarrel && (status & AliESDtrack::kTRDout)) h->Fill(ptTRD, kTRDout);
       if(kBarrel && (status & AliESDtrack::kTRDpid)) h->Fill(ptTRD, kTRDpid);
       if(kBarrel && (status & AliESDtrack::kTRDrefit)) h->Fill(ptTRD, kTRDref);
     }
-    if(HasMC() && 
-      kBarrel && kPhysPrim &&
-      TMath::Abs(eta0) < 0.9) {
+    Int_t idx(HasMC() ? Pdg2Idx(TMath::Abs(mcParticle->PdgCode())): 0)
+         ,sgn(esdTrack->Charge()<0?0:1);
+    if(kBarrel && kPhysPrim) {
       TH3 *h3 = (TH3S*)fHistos->At(kPtRes);
-      Int_t sgn = mcParticle->Charge()<0?0:1;
       Int_t offset = (status & AliESDtrack::kTRDrefit) ? 0 : 10; 
-
       h3->Fill(pt0, 1.e2*(pt/pt0-1.), 
-        offset + 2*Pdg2Idx(TMath::Abs(mcParticle->PdgCode())) + sgn);
+        offset + 2*idx + sgn);
     }
+    ((TH1*)fHistos->At(kNCl))->Fill(nTRD, 2*idx + sgn);
     if(ip){
       h = (TH2I*)fHistos->At(kTRDmom);
       Float_t pTRD(0.);
@@ -392,17 +430,26 @@ TObjArray* AliTRDcheckESD::Histos()
 
   TH1 *h = NULL;
 
-  // clusters per tracklet
-  if(!(h = (TH1I*)gROOT->FindObject("hNCl"))){
-    h = new TH1I("hNCl", "Clusters per TRD track;N_{cl}^{TRD};entries", 100, 0., 200.);
+  // clusters per track
+  const Int_t kNpt(30);
+  Float_t Pt(0.2);
+  Float_t binsPt[kNpt+1];
+  for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.001)-1.)) binsPt[i]=Pt;
+  if(!(h = (TH2S*)gROOT->FindObject("hNCl"))){
+    h = new TH2S("hNCl", "Clusters per TRD track;N_{cl}^{TRD};SPECIES;entries", 60, 0., 180., 10, -0.5, 9.5);
+    TAxis *ay(h->GetYaxis());
+    ay->SetLabelOffset(0.015);
+    for(Int_t i(0); i<AliPID::kSPECIES; i++){
+      ay->SetBinLabel(2*i+1, Form("%s^{-}", AliPID::ParticleLatexName(i)));
+      ay->SetBinLabel(2*i+2, Form("%s^{+}", AliPID::ParticleLatexName(i)));
+    }
   } else h->Reset();
   fHistos->AddAt(h, kNCl); fNRefFigures++;
 
   // status bits histogram
-  const Int_t kNpt(30), kNbits(5);
-  Float_t Pt(0.2), Bits(.5);
-  Float_t binsPt[kNpt+1], binsBits[kNbits+1];
-  for(Int_t i=0;i<kNpt+1; i++,Pt+=(TMath::Exp(i*i*.001)-1.)) binsPt[i]=Pt;
+  const Int_t kNbits(5);
+  Float_t Bits(.5);
+  Float_t binsBits[kNbits+1];
   for(Int_t i=0; i<kNbits+1; i++,Bits+=1.) binsBits[i]=Bits;
   if(!(h = (TH2I*)gROOT->FindObject("hTRDstat"))){
     h = new TH2I("hTRDstat", "TRD status bits;p_{t} @ TRD [GeV/c];status;entries", kNpt, binsPt, kNbits, binsBits);

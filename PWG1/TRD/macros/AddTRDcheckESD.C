@@ -11,6 +11,7 @@ void AddTRDcheckESD(AliAnalysisManager *mgr)
   AliTRDcheckESD *checkESD = new AliTRDcheckESD((char*)"checkESD");
   mgr->AddTask(checkESD);
   checkESD->SetMC(mgr->GetMCtruthEventHandler());
+  checkESD->SetCollision(/*kFALSE*/);
   checkESD->SetDebugLevel(0);
 
   mgr->ConnectInput(checkESD,  0, mgr->GetCommonInputContainer());  
