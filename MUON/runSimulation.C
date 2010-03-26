@@ -39,7 +39,7 @@ void runSimulation(int seed, int nevents, const char* config)
 
   AliSimulation MuonSim(config);
   MuonSim.SetSeed(seed);
-  MuonSim.SetMakeTrigger("MUON");
+  MuonSim.SetTriggerConfig("MUON");
   MuonSim.SetWriteRawData("MUON HLT","raw.root",kTRUE);
 
   MuonSim.SetMakeDigits("MUON");
