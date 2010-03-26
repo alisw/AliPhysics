@@ -68,7 +68,8 @@ Int_t       iPWG4JetTasks      = 0;      // all jet tasks flag for lib laoding
 Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
 Int_t       iPWG4JetSpectrum   = 0;      // jet spectrum analysis
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
-Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis
+Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
+Int_t       iPWG4TmpSourceFrag = 0;      // Bastian's Fragmentation function not in svn
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
@@ -188,6 +189,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use AliEn plugin  %d\n", (UInt_t)kPluginUse);
    printf(":: use PWG1 QA sym       %d\n", iPWG1QASym);
    printf(":: use PWG4 Source Sara  %d\n",iPWG4TmpSourceSara);
+   printf(":: use PWG4 Source BB    %d\n",iPWG4TmpSourceFrag);
    printf(":: use PWG4 Jet tasks    %d\n",iPWG4JetTasks);
    printf(":: use PWG4 Jet Services %d\n",iPWG4JetServices);     
    printf(":: use PWG4 Jet Spectrum %d\n",iPWG4JetSpectrum);
@@ -248,8 +250,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // ESD input handler
       AliESDInputHandler *esdHandler = new AliESDInputHandler();
       if (kUseESDTags) esdHandler->SetReadTags();
+      esdHandler->SetReadFriends(kFALSE);
       mgr->SetInputEventHandler(esdHandler);       
       //      if(iPWG4PtQATPC&& !kTrainName.Contains("pass5"))esdHandler->SetActiveBranches("ESDfriend");
+
    }
 
    // Monte Carlo handler
@@ -350,6 +354,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskEta.C");
      AliAnalysisTaskEta *taskEta = AddTaskEta();
      if (!taskEta) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskEta cannot run for this train conditions - EXCLUDED");
+   }
+
+   if(iPWG4TmpSourceFrag){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragFunc.C");
+     UInt_t selection = 1<<2;
+     AliAnalysisTaskFragFunc *taskFrag = AddTaskFragFunc(kHighPtFilterMask, kUseAODMC,iPhysicsSelection, selection);
+     if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragFunc cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4JetServices){
@@ -482,7 +493,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCorrel.C");
      AliAnalysisTaskJetCorrel *taskjetcorr = AddTaskJetCorrel();
-     if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJetCorrel  cannot run for this train conditions - EXCLUDED");
+     if (!taskjetcorr) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJetCorrel  cannot run for this train conditions - EXCLUDED");
    } 
 
    if(iPWG4Tagged){
@@ -537,7 +548,14 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 							     gridhandler->GetGridOutputDir(),kTrainName.Data()));
      }
      AliLog::SetGlobalLogLevel(AliLog::kError);
+     if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
+       TFile * fM = TFile::Open("manager_local.root","RECREATE");
+       mgr->Write();
+       fM->Close();
+     }
+
      StartAnalysis(smode, chain);
+       
      if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
        for(int i = 0;i < mgr->GetTopTasks()->GetEntries();i++){
 	 mgr->ProfileTask(i);
@@ -696,7 +714,7 @@ void CheckModuleFlags(const char *mode) {
 
      }
      if (!kUseTR) {
-       ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG4QATPC disabled if not reading track references");
+       if(iPWG4PtQAMC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG4QATPCMC disabled if not reading track references");
        iPWG4PtQAMC        = 0;
      }   
      if (iJETAN){
@@ -910,9 +928,14 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if (!LoadSource(Form("%s/prod/acrcaf/qa_pp/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
    if(iPWG4TmpSourceSara){
-     //  gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
+     if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
      if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
+   if(iPWG4TmpSourceFrag){
+     if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
+     if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskFragFunc.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+   }
+
    if (iPWG4PartCorrLibs) {   
       if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
           !LoadLibrary("PHOSUtils", mode, kTRUE) ||
@@ -1530,6 +1553,9 @@ Bool_t PatchAnalysisMacro(){
   if(kUseDebug){
     st.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
   }
+
+  index = st.Index("gSystem->AddIncludePath");
+  st.Insert(index,"// CKB ");
 
   ofstream out;
   out.open(Form("%s.C", kTrainName.Data()));
