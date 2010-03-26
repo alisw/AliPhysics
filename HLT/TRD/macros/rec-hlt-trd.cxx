@@ -1,6 +1,5 @@
 // This macro is used to simulate the HLT::TRD reconstruction
 // usage: aliroot rec-hlt-trd.cxx("/data/run/raw.root")    reconstruct local raw root file (you might add "alien://" to reconstruct remotely)
-//    or: aliroot rec-hlt-trd.cxx("/data/run/")            reconstruct local raw ddls *1
 //    or copy into folder and aliroot rec-hlt-trd.cxx      reconstruct raw.root in pwd
 //
 // (*1) here /data/run/ must contain subfolders rawX (be sure to have the last "/" !!)
@@ -64,7 +63,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   // look only in data containing TRD triggers?
   Bool_t useOnlyTRDtrigger=kFALSE;
 
-  // Is the TRD full? (this is only important if ddl files should be read)
+  // Is the TRD full?
   Bool_t fullTRD=kFALSE;
 
   // If not use these SMs:
@@ -229,11 +228,11 @@ int rec_hlt_trd(const TString filename, TString outPath)
     man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB");
     //man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB"); 
     //man->SetSpecificStorage("GRP/GRP/Data","alien://folder=/alice/data/2009/OCDB?cacheFold=/lustre/alice/local/alice/data/2009/OCDB");
+    man->SetSpecificStorage("HLT/*","local://$ALICE_ROOT/OCDB");
     run = ExtractRunNumber(filename);
   }else{
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB"); 
     man->SetSpecificStorage("GRP/GRP/Data", Form("local://%s",dataPath.Data()));
-    //rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   }
   man->SetRun(run);
 
