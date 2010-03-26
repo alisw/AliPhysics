@@ -119,7 +119,7 @@ AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const char* nam
     fHistList(0x0)
 {
   // Default constructor
-  DefineOutput(1,TList::Class());  
+  DefineOutput(1, TList::Class());  
 }
 
 /*
@@ -255,20 +255,20 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   // Get the proper MC Collision Geometry
   AliGenEventHeader* mcEH = mcE->GenEventHeader();
 
-  AliGenPythiaEventHeader *pyH = dynamic_cast<AliGenPythiaEventHeader*>(mcEH);
-  AliGenHijingEventHeader *hiH = 0;
-  AliCollisionGeometry *colG = 0;
+  AliGenPythiaEventHeader *pyH  = dynamic_cast<AliGenPythiaEventHeader*>(mcEH);
+  AliGenHijingEventHeader *hiH  = 0;
+  AliCollisionGeometry    *colG = 0;
   AliGenDPMjetEventHeader *dpmH = 0;
   // it can be only one save some casts
   // assuming PYTHIA and HIJING are the most likely ones...
   if(!pyH){
-    hiH = dynamic_cast<AliGenHijingEventHeader*>(mcEH);
-    if(!hiH){
-      colG = dynamic_cast<AliCollisionGeometry *>(mcEH);
-      if(!colG)dpmH = dynamic_cast<AliGenDPMjetEventHeader*>(mcEH);
-    }
+      hiH = dynamic_cast<AliGenHijingEventHeader*>(mcEH);
+      if(!hiH){
+	  dpmH = dynamic_cast<AliGenDPMjetEventHeader*>(mcEH);
+      }
   }
-
+  
+  if (hiH || dpmH) colG = dynamic_cast<AliCollisionGeometry*>(mcEH);
 
   // fetch the trials on a event by event basis, not from pyxsec.root otherwise 
   // we will get a problem when running on proof since Notify may be called 
