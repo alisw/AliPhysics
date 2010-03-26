@@ -114,7 +114,7 @@ class AliTriggerAnalysis : public TObject
     
     Bool_t fMC;              // flag if MC is analyzed
 
-    ClassDef(AliTriggerAnalysis, 8)
+    ClassDef(AliTriggerAnalysis, 9)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
