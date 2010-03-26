@@ -13,8 +13,8 @@
 #include "AliTriggerAnalysis.h"
 
 class TF1;
-class TH1F;
-class TH2F;
+class TH1;
+class TH2;
 class TParticle;
 class AliHeader;
 class AliGenEventHeader;
