@@ -2151,7 +2151,7 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiCDFscaledPP10;
 	} else if (sname == "CDF pp 8.8") {
 	    func=PtJpsiCDFscaledPP9;
-	} else if (sname == "CDF pp 7") {
+	} else if (sname == "CDF pp 7" || sname == "CDF pp 7 flat y") {
 	    func=PtJpsiCDFscaledPP7;
 	} else if (sname == "CDF pp 3.94") {
 	    func=PtJpsiCDFscaledPP4;
@@ -2161,7 +2161,7 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiCDFscaledPbP9;
 	} else if (sname == "CDF PbPb 3.94") {
 	    func=PtJpsiCDFscaledPbPb4;
-	} else if (sname == "Flat") {
+	} else if (sname == "Flat" || sname == "CDF pp 7 flat pt") {
 	    func=PtJpsiFlat;
 	} else {
 	    func=PtJpsi;
@@ -2314,7 +2314,7 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiCDFscaledPP10;
 	} else if (sname == "CDF pp 8.8") {
 	    func=YJpsiCDFscaledPP9;
-	} else if (sname == "CDF pp 7") {
+	} else if (sname == "CDF pp 7" || sname == "CDF pp 7 flat pt") {
 	    func=YJpsiCDFscaledPP7;
 	} else if (sname == "CDF pp 3.94") {
 	    func=YJpsiCDFscaledPP4;
@@ -2324,7 +2324,7 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiCDFscaledPbP9;
 	} else if (sname == "CDF PbPb 3.94") {
 	    func=YJpsiCDFscaledPbPb4;
-	} else if (sname == "Flat") {
+	} else if (sname == "Flat" || sname == "CDF pp 7 flat y") {
 	    func=YJpsiFlat;
 	} else {
 	    func=YJpsi;
