@@ -42,7 +42,7 @@
 // --- ROOT system ---
 #include <TMath.h>
 #include <TString.h>
-#include <TFormula.h>
+//#include <TFormula.h>
 
 //---- ANALYSIS system ----
 #include "AliCaloPID.h"
@@ -59,8 +59,8 @@ fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
 fEMCALNeutralWeight(0.),
 fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
 fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
-fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
-fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
+fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
+//fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(kLow), fEMCALPIDUtils(new AliEMCALPIDUtils)
 {
@@ -77,8 +77,8 @@ fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
 fEMCALNeutralWeight(0.),
 fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
 fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
-fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
-fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
+fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
+//fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
 fRecalculateBayesian(kTRUE), fParticleFlux(flux), fEMCALPIDUtils(new AliEMCALPIDUtils)
 {
@@ -95,8 +95,8 @@ fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
 fEMCALNeutralWeight(0.),
 fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
 fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
-fPHOSNeutralWeight(0.), fPHOSWeightFormula(0), 
-fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
+fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
+//fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
 fRecalculateBayesian(kTRUE), fParticleFlux(-1), fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid)
 {
@@ -118,9 +118,9 @@ fPHOSPi0Weight(pid.fPHOSPi0Weight),
 fPHOSElectronWeight(pid.fPHOSElectronWeight), 
 fPHOSChargeWeight(pid.fPHOSChargeWeight),
 fPHOSNeutralWeight(pid.fPHOSNeutralWeight),
-fPHOSWeightFormula(pid.fPHOSWeightFormula), 
-fPHOSPhotonWeightFormula(new TFormula(*pid.fPHOSPhotonWeightFormula)), 
-fPHOSPi0WeightFormula   (new TFormula(*pid.fPHOSPi0WeightFormula)), 
+//fPHOSWeightFormula(pid.fPHOSWeightFormula), 
+//fPHOSPhotonWeightFormula(new TFormula(*pid.fPHOSPhotonWeightFormula)), 
+//fPHOSPi0WeightFormula   (new TFormula(*pid.fPHOSPi0WeightFormula)), 
 fDispCut(pid.fDispCut),fTOFCut(pid.fTOFCut),
 fDebug(pid.fDebug), fRecalculateBayesian(pid.fRecalculateBayesian),
 fParticleFlux(pid.fParticleFlux), 
@@ -170,8 +170,8 @@ fEMCALPIDUtils(new AliEMCALPIDUtils(*pid.fEMCALPIDUtils))
 AliCaloPID::~AliCaloPID() {
   //Dtor
   
-  if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula ;
-  if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula ;
+//  if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula ;
+//  if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula ;
   if(fEMCALPIDUtils)           delete fEMCALPIDUtils ;
 }
 
@@ -194,13 +194,13 @@ void AliCaloPID::InitParameters()
   fPHOSNeutralWeight   = 0.5 ;
   
   //Formula to set the PID weight threshold for photon or pi0
-  fPHOSWeightFormula = kTRUE;
-  if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula;
-  if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula;
-  fPHOSPhotonWeightFormula = 
-    new TFormula("photonWeight","0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))");
-  fPHOSPi0WeightFormula = 
-    new TFormula("pi0Weight","0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))");
+  //fPHOSWeightFormula = kTRUE;
+  //if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula;
+  //if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula;
+  //fPHOSPhotonWeightFormula = 
+    //new TFormula("photonWeight","0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))");
+  //fPHOSPi0WeightFormula = 
+    //new TFormula("pi0Weight","0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))");
   
   fDispCut  = 1.5;
   fTOFCut   = 5.e-9;
@@ -234,10 +234,10 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
   Float_t wNe  =  fPHOSNeutralWeight ;
   
   
-  if(calo == "PHOS" && fPHOSWeightFormula){
-    wPh  = fPHOSPhotonWeightFormula->Eval(energy) ;
-    wPi0 = fPHOSPi0WeightFormula->Eval(energy);
-  }
+//  if(calo == "PHOS" && fPHOSWeightFormula){
+//    wPh  = fPHOSPhotonWeightFormula->Eval(energy) ;
+//    wPi0 = fPHOSPi0WeightFormula->Eval(energy);
+//  }
   
   if(calo == "EMCAL"){
     
@@ -371,12 +371,12 @@ TString  AliCaloPID::GetPIDParametersList()  {
   sprintf(onePar,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)\n",fPHOSNeutralWeight) ;
   parList+=onePar ;
   
-  if(fPHOSWeightFormula){
-	sprintf(onePar,"PHOS Photon Weight Formula: %s\n",(fPHOSPhotonWeightFormula->GetExpFormula("p")).Data()) ;
-    parList+=onePar;
-	sprintf(onePar,"PHOS Pi0    Weight Formula: %s\n",(fPHOSPi0WeightFormula->GetExpFormula("p")).Data()) ;
-	parList+=onePar;	  
-  }
+//  if(fPHOSWeightFormula){
+//	sprintf(onePar,"PHOS Photon Weight Formula: %s\n",(fPHOSPhotonWeightFormula->GetExpFormula("p")).Data()) ;
+//    parList+=onePar;
+//	sprintf(onePar,"PHOS Pi0    Weight Formula: %s\n",(fPHOSPi0WeightFormula->GetExpFormula("p")).Data()) ;
+//	parList+=onePar;	  
+//  }
   
   return parList; 
   
@@ -399,11 +399,11 @@ void AliCaloPID::Print(const Option_t * opt) const
 	 fEMCALPhotonWeight,  fEMCALPi0Weight, 
 	 fEMCALElectronWeight,  fEMCALChargeWeight,  fEMCALNeutralWeight) ; 
   
-  printf("PHOS Parametrized weight on?  =     %d\n",  fPHOSWeightFormula) ; 
-  if(fPHOSWeightFormula){
-    printf("Photon weight formula = %s\n", (fPHOSPhotonWeightFormula->GetExpFormula("p")).Data());
-    printf("Pi0    weight formula = %s\n", (fPHOSPhotonWeightFormula->GetExpFormula("p")).Data());
-  }
+//  printf("PHOS Parametrized weight on?  =     %d\n",  fPHOSWeightFormula) ; 
+//  if(fPHOSWeightFormula){
+//    printf("Photon weight formula = %s\n", (fPHOSPhotonWeightFormula->GetExpFormula("p")).Data());
+//    printf("Pi0    weight formula = %s\n", (fPHOSPhotonWeightFormula->GetExpFormula("p")).Data());
+//  }
   
   printf("TOF cut        = %e\n",fTOFCut);
   printf("Dispersion cut = %2.2f\n",fDispCut);

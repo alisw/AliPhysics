@@ -154,6 +154,7 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
     if(fMakeHisto){// Analysis with histograms as output on
       //Fill container with appropriate histograms			
       TList * templist =  ana -> GetCreateOutputObjects(); 
+	  templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       for(Int_t i = 0; i < templist->GetEntries(); i++){
 
 	//Add only  to the histogram name the name of the task
@@ -164,6 +165,7 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
 	//Add histogram to general container
 	fOutputContainer->Add(templist->At(i)) ;
       }
+		delete templist;
     }// Analysis with histograms as output on
   }//Loop on analysis defined
   

@@ -165,7 +165,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   // store them in outputContainer
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("PhotonHistos") ; 
-  outputContainer->SetOwner(kFALSE);
 	
   Int_t nptbins  = GetHistoPtBins();
   Int_t nphibins = GetHistoPhiBins();
