@@ -980,7 +980,7 @@ Double_t AliTPCtrackerMI::F1(Double_t x1,Double_t y1,
   y2 -=y1;
   //  
   Double_t det = x3*y2-x2*y3;
-  if (TMath::AreEqualRel(det,0,1e-16)){
+  if (TMath::Abs(det)<1e-16){
     return 100;
   }
   //
@@ -1006,7 +1006,7 @@ Double_t AliTPCtrackerMI::F2(Double_t x1,Double_t y1,
   y2 -=y1;
   //  
   Double_t det = x3*y2-x2*y3;
-  if (TMath::AreEqualRel(det,0,1e-16)) {
+  if (TMath::Abs(det)<1e-16)) {
     return 100;
   }
   //
