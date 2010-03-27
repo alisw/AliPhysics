@@ -136,7 +136,7 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     //Get track postion at radius of cluster
     Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1]);      
     if (! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
-      HLTWarning("Track reached detector but not cluster!!!!!!");
+      HLTInfo("Track reached detector but not cluster!!!!!!");
       continue;
     }
 

@@ -89,7 +89,7 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, 
   
   //BALLE TODO: remove hardcoded 9
   if (nMatches > 9) {                                                   //BALLE this on tooo
-    HLTError("The number of matching tracks (%d) exceeds the array size of %d", nMatches, 9);
+    HLTDebug("The number of matching tracks (%d) exceeds the array size of %d", nMatches, 9);
     return 0;
   }
 
