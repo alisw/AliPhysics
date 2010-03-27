@@ -215,6 +215,10 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t  IsUsedMaxDCA3D() const {return fMaxDCA3DFlag;}
   Double_t   GetMaxDCA3D() const {return fMaxDCA3D;}
 
+  void SetPtDependentDCAxy(Int_t nSigma, Double_t p0, 
+			   Double_t p1, Double_t p2);
+  Bool_t  IsUsedPtDependentDCAxy() const {return fPtDependentDcaXYFlag;}
+
   void    SetMaxDCA3DTPC(Double_t maxDCA3D) {
     fMaxDCA3DTPC = maxDCA3D;
     fMaxDCA3DTPCFlag = kTRUE;
@@ -326,6 +330,9 @@ class AliProtonAnalysisBase : public TObject {
   Bool_t fPointOnITSLayer3Flag, fPointOnITSLayer4Flag; //shows if this cut is used or not
   Bool_t fPointOnITSLayer5Flag, fPointOnITSLayer6Flag; //shows if this cut is used or not
   Bool_t fMinTPCdEdxPointsFlag; //shows if this cut is used or not
+  TF1  *fPtDependentDcaXY; //pt dependence dca cut (xy)
+  Bool_t fPtDependentDcaXYFlag; //shows if this cut is used or not
+  Int_t fNSigmaDCAXY; //n-sigma dca xy cut (pt dependent)
 
   //pid
   Bool_t fFunctionProbabilityFlag; //flag: kTRUE if functions used

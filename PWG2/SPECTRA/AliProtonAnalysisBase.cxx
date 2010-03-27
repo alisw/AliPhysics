@@ -72,6 +72,7 @@ AliProtonAnalysisBase::AliProtonAnalysisBase() :
   fPointOnITSLayer3Flag(0), fPointOnITSLayer4Flag(0),
   fPointOnITSLayer5Flag(0), fPointOnITSLayer6Flag(0),
   fMinTPCdEdxPointsFlag(kFALSE),
+  fPtDependentDcaXY(0), fPtDependentDcaXYFlag(kFALSE), fNSigmaDCAXY(0.0),
   fFunctionProbabilityFlag(kFALSE), 
   fNSigma(0), fNRatio(0),
   fElectronFunction(0), fMuonFunction(0),
@@ -394,6 +395,20 @@ Bool_t AliProtonAnalysisBase::IsAccepted(AliESDtrack* track) {
 }
 
 //____________________________________________________________________//
+void AliProtonAnalysisBase::SetPtDependentDCAxy(Int_t nSigma, 
+						Double_t p0, 
+						Double_t p1, 
+						Double_t p2) {
+  //Pt dependent dca cut in xy
+  fNSigmaDCAXY = nSigma;
+  fPtDependentDcaXY = new TF1("fPtDependentDcaXY","[0]+[1]/x^[2]",0.1,10.1);
+  fPtDependentDcaXY->SetParameter(0,p0); 
+  fPtDependentDcaXY->SetParameter(1,p1);
+  fPtDependentDcaXY->SetParameter(2,p2);
+  fPtDependentDcaXYFlag = kTRUE;
+}
+
+//____________________________________________________________________//
 Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
 					const AliESDVertex *vertex, 
 					AliESDtrack* track) {
@@ -515,6 +530,13 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
 	Printf("IsPrimary: Track rejected because it has a value of the constrained chi2 to the vertex of %lf (max. requested: %lf)",TMath::Log(track->GetConstrainedChi2()),fMaxConstrainChi2);
       return kFALSE;
       }
+  }
+  if(fPtDependentDcaXYFlag) {
+    if(TMath::Abs(dca[0]) > fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt)) {
+      if(fDebugMode)
+	Printf("IsPrimary: Track rejected because it has a value of the dca(xy) higher than the %d sigma pt dependent cut: %lf (max. requested: %lf)",TMath::Abs(dca[0]),fNSigmaDCAXY,fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt));
+      return kFALSE;
+    }
   }
 
   return kTRUE;
