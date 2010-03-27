@@ -31,7 +31,7 @@
 #include <TObject.h> 
 class TString ;
 class TLorentzVector ;
-class TFormula ;
+//class TFormula ;
 class TTask;
 
 //--- AliRoot system ---
@@ -92,10 +92,10 @@ public:
   Float_t  GetPHOSChargeWeight() const   {  return fPHOSChargeWeight  ; }
   Float_t  GetPHOSNeutralWeight() const   {  return fPHOSNeutralWeight  ; }
   
-  Bool_t  IsPHOSPIDWeightFormulaOn() const   {  return fPHOSWeightFormula  ; } 
-  TFormula * GetPHOSPhotonWeightFormula() const     {  return fPHOSPhotonWeightFormula  ; } 
-  TFormula * GetPHOSPi0WeightFormula() const    {  return fPHOSPi0WeightFormula  ; }
-  
+//  Bool_t  IsPHOSPIDWeightFormulaOn() const   {  return fPHOSWeightFormula  ; } 
+//  TFormula * GetPHOSPhotonWeightFormula() const     {  return fPHOSPhotonWeightFormula  ; } 
+//  TFormula * GetPHOSPi0WeightFormula() const    {  return fPHOSPi0WeightFormula  ; }
+//  
   //Weight setters
   void SetEMCALPhotonWeight(Float_t  w){  fEMCALPhotonWeight = w ; }
   void SetEMCALPi0Weight(Float_t  w){  fEMCALPi0Weight = w ; }
@@ -108,9 +108,9 @@ public:
   void SetPHOSChargeWeight(Float_t  w){  fPHOSChargeWeight = w ; }
   void SetPHOSNeutralWeight(Float_t  w){  fPHOSNeutralWeight = w ; }
   
-  void UsePHOSPIDWeightFormula(Bool_t par)  { fPHOSWeightFormula  = par; } 
-  void SetPHOSPhotonWeightFormula(TFormula * const photon)    {  fPHOSPhotonWeightFormula  = photon; } 
-  void SetPHOSPi0WeightFormula(TFormula * const pi0)   {  fPHOSPi0WeightFormula  = pi0; }
+//  void UsePHOSPIDWeightFormula(Bool_t par)  { fPHOSWeightFormula  = par; } 
+//  void SetPHOSPhotonWeightFormula(TFormula * const photon)    {  fPHOSPhotonWeightFormula  = photon; } 
+//  void SetPHOSPi0WeightFormula(TFormula * const pi0)   {  fPHOSPi0WeightFormula  = pi0; }
   
   //PID bits setters and getters
   void SetDispersionCut(Float_t dcut ) {fDispCut = dcut; }
@@ -141,9 +141,9 @@ public:
   Float_t      fPHOSChargeWeight; //Bayesian PID weight for charged hadrons in PHOS 
   Float_t      fPHOSNeutralWeight; //Bayesian PID weight for neutral hadrons in PHOS 
   
-  Bool_t  fPHOSWeightFormula ; //Use parametrized weight threshold, function of energy
-  TFormula * fPHOSPhotonWeightFormula ; //Formula for photon weight
-  TFormula * fPHOSPi0WeightFormula ; //Formula for pi0 weight
+//  Bool_t  fPHOSWeightFormula ; //Use parametrized weight threshold, function of energy
+//  TFormula * fPHOSPhotonWeightFormula ; //Formula for photon weight
+//  TFormula * fPHOSPi0WeightFormula ; //Formula for pi0 weight
   
   Float_t fDispCut;    //Cut on dispersion, used in PID evaluation
   Float_t fTOFCut;     //Cut on TOF, used in PID evaluation
