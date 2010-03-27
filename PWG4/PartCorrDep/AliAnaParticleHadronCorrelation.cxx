@@ -562,6 +562,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Track Refs  entries %d\n", iaod, reftracks->GetEntriesFast());
       if(reftracks->GetEntriesFast() > 0) MakeChargedCorrelation(particle, reftracks,kTRUE);
     }
+    
     //Make correlation with neutral pions
     if(GetOutputAODBranch() && GetOutputAODBranch()->GetEntriesFast() > 0){
       if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - Particle %d, In Cluster Refs entries %d\n",iaod, GetOutputAODBranch()->GetEntriesFast());      
@@ -672,16 +673,20 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
      }
      else{
 	   nrefs++;
-	   if(nrefs==1)reftracks    = new TObjArray;
+	   if(nrefs==1){
+		reftracks    = new TObjArray;
+	   }
        reftracks->Add(track);
      }//aod particle loop
    }// track loop
   
    //Fill AOD with reference tracks, if not filling histograms
-   if(!bFillHisto && reftracks->GetEntriesFast() > 0) {
+   if(!bFillHisto && reftracks) {
      reftracks->SetName(GetAODObjArrayName()+"Tracks");
      aodParticle->AddObjArray(reftracks);
    }
+	
+	//delete reftracks;
   
 }  
 
