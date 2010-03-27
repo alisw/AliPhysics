@@ -60,7 +60,8 @@ AliProtonAnalysisBase *GetProtonAnalysisBaseObject(const char* analysisLevel = "
       //baseAnalysis->SetMaxSigmaToVertex(3.0);
       //baseAnalysis->SetMaxDCAXY(0.2);
       //baseAnalysis->SetMaxDCAZ(0.7);
-      baseAnalysis->SetMaxDCA3D(0.2);
+      //baseAnalysis->SetMaxDCA3D(0.2);
+      baseAnalysis->SetPtDependentDCAxy(5,2.89575e+02,6.62161e+01,1.99085e+00);
       //baseAnalysis->SetPointOnITSLayer6();
       //baseAnalysis->SetPointOnITSLayer5();
       //baseAnalysis->SetPointOnITSLayer4();
