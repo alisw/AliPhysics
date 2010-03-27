@@ -26,8 +26,8 @@
 //    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
 //-------------------------------------------------------------------------
 
-#include "Riostream.h"
 #include "AliLRCAnalysis.h"
+#include "Riostream.h"
 #include "TFile.h"
 #include "AliLRCFit.h"
 #include "TProfile.h"
@@ -35,7 +35,7 @@
 #include "TH2D.h"
 #include "TPaveText.h"
 #include "TF1.h"
-//#include "math.h"
+#include "TMath.h"
 #include "TStyle.h"
 
 class gStyle;
@@ -47,11 +47,11 @@ ClassImp(AliLRCAnalysis)
  * AliLRCAnalysis class
  ******************************************************/
 
-AliLRCAnalysis::AliLRCAnalysis(): TObject(), fPrAbs(new TH1D()), fPrRel(new TH1D()), fPrf(new TH1D()), fPrb(new TH1D()), fileHist(new TFile()), fdptb(.0), fEntries(0), fSx((char*)" "), fSy((char*)" "), fxFitMin(.0), fxFitMax(.0), farel(.0), fbrel(.0), farelError(0.), fbrelError(0.), fXi2rel(.0), faabs(.0), fbabs(.0), faabsError(0.), fbabsError(0.), fXi2abs(.0){
+AliLRCAnalysis::AliLRCAnalysis(): fPrAbs(new TH1D()), fPrRel(new TH1D()), fPrf(new TH1D()), fPrb(new TH1D()), fileHist(new TFile()), fdptb(.0), fEntries(0), fSx((char*)" "), fSy((char*)" "), fxFitMin(.0), fxFitMax(.0), farel(.0), fbrel(.0), farelError(0.), fbrelError(0.), fXi2rel(.0), faabs(.0), fbabs(.0), faabsError(0.), fbabsError(0.), fXi2abs(.0){
 //Empty constructor
 }
 
-AliLRCAnalysis::AliLRCAnalysis(const AliLRCAnalysis& a): TObject(), fPrAbs(a.fPrAbs), fPrRel(a.fPrRel), fPrf(a.fPrf), fPrb(a.fPrb), fileHist(a.fileHist), fdptb(a.fdptb), fEntries(a.fEntries), fSx(a.fSx), fSy(a.fSy), fxFitMin(a.fxFitMin), fxFitMax(a.fxFitMax), farel(a.farel), fbrel(a.fbrel), farelError(a.farelError), fbrelError(a.fbrelError), fXi2rel(a.fXi2rel), faabs(a.faabs), fbabs(a.fbabs), faabsError(a.faabsError), fbabsError(a.fbabsError), fXi2abs(a.fXi2abs){
+AliLRCAnalysis::AliLRCAnalysis(const AliLRCAnalysis& a):fPrAbs(a.fPrAbs), fPrRel(a.fPrRel), fPrf(a.fPrf), fPrb(a.fPrb), fileHist(a.fileHist), fdptb(a.fdptb), fEntries(a.fEntries), fSx(a.fSx), fSy(a.fSy), fxFitMin(a.fxFitMin), fxFitMax(a.fxFitMax), farel(a.farel), fbrel(a.fbrel), farelError(a.farelError), fbrelError(a.fbrelError), fXi2rel(a.fXi2rel), faabs(a.faabs), fbabs(a.fbabs),  faabsError(a.faabsError), fbabsError(a.fbabsError), fXi2abs(a.fXi2abs){
 //Constructor
 }
 
@@ -71,9 +71,13 @@ AliLRCAnalysis& AliLRCAnalysis::operator= (const AliLRCAnalysis& a){
 		fxFitMax = a.fxFitMax;
  		farel = a.farel;
 		fbrel = a.fbrel;
+ 		farelError = a.farelError;
+ 		fbrelError = a.fbrelError;
 		fXi2rel = a.fXi2rel;
 		faabs = a.faabs;
 		fbabs = a.fbabs; 
+		faabsError = a.faabsError;
+		fbabsError = a.fbabsError;
 		fXi2abs = a.fXi2abs;
 	}
 	return *this;
@@ -155,8 +159,8 @@ void AliLRCAnalysis::CreateHist(char *name, char *nameAbs, char *nameRel, char *
     fSx = atitleF;
     fSy = atitleB;
     double mnf = fPrf->GetMean();
-    fxFitMin = mnf-2*sqrt(mnf);
-    fxFitMax = mnf+2*sqrt(mnf);
+    fxFitMin = mnf-2*TMath::Sqrt(mnf);
+    fxFitMax = mnf+2*TMath::Sqrt(mnf);
     //delete profX;
 
 }
@@ -164,7 +168,7 @@ void AliLRCAnalysis::CreateHist(char *name, char *nameAbs, char *nameRel, char *
 void AliLRCAnalysis::SetBinsRange(int binMin, int binMax){
 //Set the bin range
 	TH1D* h=fPrf;
-    double n=h->GetNbinsX();
+    Int_t n=h->GetNbinsX();
     fxFitMin = h->GetXaxis()->GetXmin();
     fxFitMax = h->GetXaxis()->GetXmax();
     double df = (fxFitMax-fxFitMin)/n;
@@ -280,13 +284,12 @@ void AliLRCAnalysis::Calculate(){
 }
 
 void AliLRCAnalysis::DrawAbs() {
-  //Draw abs var hist with ALL info
-  int * mas = new int[N_PL_FLAGS];
-  for ( int i = 0; i < N_PL_FLAGS; i++ )
-    mas[i] = 1;
-  DrawAbsPure( mas, 1 );
-  delete [] mas;
-  mas = NULL;
+//Draw abs var hist with ALL info
+	int * mas = new int [N_PL_FLAGS];
+	for ( int i = 0; i < N_PL_FLAGS; i++ )
+		mas[i] = 1;
+	DrawAbsPure( mas, 1 );
+	delete []mas;
 }
 
 void AliLRCAnalysis::DrawAbs( int * mas ) {
@@ -367,13 +370,12 @@ void AliLRCAnalysis::DrawAbsPure( const int * const mDrawArray, bool drawPaveLab
 }
 
 void AliLRCAnalysis::DrawRel() {
-  //Draw rel var hist with ALL info
-  int * mas = new int[N_PL_FLAGS];
-  for ( int i = 0; i < N_PL_FLAGS; i++ )
-    mas[i] = 1;
-  DrawRelPure( mas, 1 );
-  delete [] mas;
-  mas = NULL;
+//Draw rel var hist with ALL info
+	int * mas = new int [N_PL_FLAGS];
+	for ( int i = 0; i < N_PL_FLAGS; i++ )
+		mas[i] = 1;
+	DrawRelPure( mas, 1 );
+	delete []mas;
 }
 
 void AliLRCAnalysis::DrawRel( int * mas ) {
@@ -480,7 +482,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name){
 		fPrAbs->SetBinContent(i, profX->GetBinContent(i));
 		if(fPrf->GetBinContent(i)!=0)
 		{
-		   fPrAbs->SetBinError(i,sqrt(profX->GetBinContent(i)/fPrf->GetBinContent(i)));
+		   fPrAbs->SetBinError(i,TMath::Sqrt(profX->GetBinContent(i)/fPrf->GetBinContent(i)));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
 		fPrRel->SetBinError(i,fPrAbs->GetBinError(i)/fPrb->GetMean());	
@@ -498,7 +500,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TH2D*
 		if(fPrf->GetBinContent(i)!=0)
 		{
 			  pt = profX->GetBinContent(i);
-			  fPrAbs->SetBinError(i,ptd*sqrt(Integral(nb,i))/fPrf->GetBinContent(i));
+			  fPrAbs->SetBinError(i,ptd*TMath::Sqrt(Integral(nb,i))/fPrf->GetBinContent(i));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
 		fPrRel->SetBinError(i,fPrAbs->GetBinError(i)/fPrb->GetMean());	
@@ -517,7 +519,7 @@ void AliLRCAnalysis::SetErrors(TH2D* source, const char *name, double ptd, TProf
 		if(fPrf->GetBinContent(i)!=0)
 		{
 			  pt = profX->GetBinContent(i);
-			  fPrAbs->SetBinError(i,ptd*sqrt(nb->GetBinContent(i)/fPrf->GetBinContent(i)));
+			  fPrAbs->SetBinError(i,ptd*TMath::Sqrt(nb->GetBinContent(i)/fPrf->GetBinContent(i)));
 		}
 		fPrRel->SetBinContent(i, fPrAbs->GetBinContent(i)/fPrb->GetMean());
 		fPrRel->SetBinError(i,fPrAbs->GetBinError(i)/fPrb->GetMean());	
@@ -575,7 +577,7 @@ double AliLRCAnalysis::GetRoundValueErrorPrecision( double value, double error, 
 	
 	if ( noError )
 	{
-	  cout << "After rounding: " << error << endl;
+		cout << "After rounding: " << error << endl;
 		return error;
 	}
 	else

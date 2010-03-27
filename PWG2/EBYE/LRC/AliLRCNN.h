@@ -18,21 +18,11 @@
 //
 //    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
 //-------------------------------------------------------------------------
-#include "TProfile.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TPaveText.h"
-#include "TF1.h"
-#include "math.h"
-#include "TStyle.h"
 #include "AliLRCAnalysis.h"
-#include "TList.h"
 
-
-class TH1D;
-class TH2D;
-class TFile;
 class TList;
+class TH2D;
+class AliLRCAnalysis;
 
 class AliLRCNN : public AliLRCAnalysis{
     public:

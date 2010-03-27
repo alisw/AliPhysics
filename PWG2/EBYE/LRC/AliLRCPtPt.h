@@ -19,16 +19,10 @@
 //-------------------------------------------------------------------------
 
 #include "AliLRCAnalysis.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TFile.h"
-#include "TProfile.h"
-#include "TList.h"
-#include "math.h"
-#include <typeinfo>
 
-class TH2D;
+class TProfile;
 class TList;
+class TH2D;
 
 class AliLRCPtPt:public AliLRCAnalysis
 {

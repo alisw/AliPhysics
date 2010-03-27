@@ -18,18 +18,12 @@
 //
 //    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
 //-------------------------------------------------------------------------
+
 #include "AliLRCAnalysis.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TFile.h"
-#include "TProfile.h"
-#include "TList.h"
-#include "math.h"
-#include <typeinfo>
 
 class TProfile;
-class TH2D;
 class TList;
+class TH2D;
 
 
 class AliLRCPtN : public AliLRCAnalysis {

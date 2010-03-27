@@ -22,7 +22,10 @@
 /* $Id$ */
 
 #include "AliLRCFit.h"
+#include "TH1D.h"
+#include "TMath.h"
 
+class TH1D;
 
 ClassImp(AliLRCFit) 
 
@@ -31,7 +34,7 @@ AliLRCFit::AliLRCFit():fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), fSz(.0),
 //Empty constructor
 }
 
-AliLRCFit::AliLRCFit(TH1D* h):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), fSz(.0), fSfz(.0), fSf(.0), fSf2(.0), fhi2(.0), fw(.0), fz(.0), f(.0), fnum(.0), fdf(.0), fdelta(.0), fa(.0), fb(.0), fda(.0), fdb(.0), fda1(.0), fdb1(.0), fxmin(.0), fxmax(.0){
+AliLRCFit::AliLRCFit(TH1D * const h):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), fSz(.0), fSfz(.0), fSf(.0), fSf2(.0), fhi2(.0), fw(.0), fz(.0), f(.0), fnum(.0), fdf(.0), fdelta(.0), fa(.0), fb(.0), fda(.0), fdb(.0), fda1(.0), fdb1(.0), fxmin(.0), fxmax(.0){
     //Constructor make fit of 1d histogramm
     fxmin = h->GetXaxis()->GetXmin();
     fxmax = h->GetXaxis()->GetXmax();
@@ -43,7 +46,7 @@ AliLRCFit::AliLRCFit(TH1D* h):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), f
     for(int i=1; i<=fN; i++){
         f=i*fdf-fdf/2+fnum;
         fw = h->GetBinError(i);
-        if(fw!=0){
+        if(fw){
             fz = h->GetBinContent(i);
             fS1 = fS1 + 1/(fw*fw);
             fSz = fSz + fz/(fw*fw);
@@ -55,15 +58,15 @@ AliLRCFit::AliLRCFit(TH1D* h):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), f
     fdelta = fS1*fSf2 - fSf*fSf;
     fb = (fS1*fSfz - fSf*fSz)/fdelta;
     fa = ((fSf2-fSf)*fSz - (fSf-fS1)*fSfz)/fdelta;
-    fda = sqrt((fS1+fSf2-2*fSf)/fdelta);
-    fdb = sqrt(fS1/fdelta);
+    fda = TMath::Sqrt((fS1+fSf2-2*fSf)/fdelta);
+    fdb = TMath::Sqrt(fS1/fdelta);
     fdb1 = 0;
     fda1 = 0;
     f = h->GetXaxis()->GetXmin();
     for(int i=1; i<=fN; i++){
         f=i*fdf-fdf/2+fnum;
         fw = h->GetBinError(i);
-        if(fw!=0){
+        if(fw){
             fz = h->GetBinContent(i);
             fdb1 = fdb1 + ((fS1*f - fSf)*(fS1*f - fSf)/(fw*fw)) * ((fz-fa-fb*(f-1))*(fz-fa-fb*(f-1))/(fw*fw));
             fda1 = fda1 + (((fSf2-fSf)-(fSf-fS1)*f)*((fSf2-fSf)-(fSf-fS1)*f)/(fw*fw)) * ((fz-fa+fb-fb*f)*(fz-fa+fb-fb*f)/(fw*fw));
@@ -71,12 +74,12 @@ AliLRCFit::AliLRCFit(TH1D* h):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), f
             fTrueN++;
         }
     }
-    fdb1 = sqrt(fdb1/(fdelta*fdelta));
-    fda1 = sqrt(fda1/(fdelta*fdelta));
-    fhi2 = fhi2 / (fTrueN-2);
+    fdb1 = TMath::Sqrt(fdb1/(fdelta*fdelta));
+    fda1 = TMath::Sqrt(fda1/(fdelta*fdelta));
+    fhi2 = fTrueN > 2 ? fhi2 / (fTrueN-2) : -1;
 }
 
-AliLRCFit::AliLRCFit(TH1D *h, double xmin, double xmax):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), fSz(.0), fSfz(.0), fSf(.0), fSf2(.0), fhi2(.0), fw(.0), fz(.0), f(.0), fnum(.0), fdf(.0), fdelta(.0), fa(.0), fb(.0), fda(.0), fdb(.0), fda1(.0), fdb1(.0), fxmin(.0), fxmax(.0){
+AliLRCFit::AliLRCFit(TH1D * const h, double xmin, double xmax):fN (0), fTrueN(0), fNmin (0), fNmax(0), fS1(.0), fSz(.0), fSfz(.0), fSf(.0), fSf2(.0), fhi2(.0), fw(.0), fz(.0), f(.0), fnum(.0), fdf(.0), fdelta(.0), fa(.0), fb(.0), fda(.0), fdb(.0), fda1(.0), fdb1(.0), fxmin(.0), fxmax(.0){
      //Constructor make fit of 1d histogramm between xmin and xmax
     fxmin = xmin;
     fxmax = xmax;
@@ -88,7 +91,7 @@ AliLRCFit::AliLRCFit(TH1D *h, double xmin, double xmax):fN (0), fTrueN(0), fNmin
     for(int i=fNmin; i<=fNmax; i++){
         f=i*fdf-fdf/2+fnum;
         fw = h->GetBinError(i);
-        if(fw!=0){
+        if(fw){
             fz = h->GetBinContent(i);
             fS1 = fS1 + 1/(fw*fw);
             fSz = fSz + fz/(fw*fw);
@@ -100,14 +103,14 @@ AliLRCFit::AliLRCFit(TH1D *h, double xmin, double xmax):fN (0), fTrueN(0), fNmin
     fdelta = fS1*fSf2 - fSf*fSf;
     fb = (fS1*fSfz - fSf*fSz)/fdelta;
     fa = ((fSf2-fSf)*fSz - (fSf-fS1)*fSfz)/fdelta;
-    fda = sqrt((fS1+fSf2-2*fSf)/fdelta);
-    fdb = sqrt(fS1/fdelta);
+    fda = TMath::Sqrt((fS1+fSf2-2*fSf)/fdelta);
+    fdb = TMath::Sqrt(fS1/fdelta);
     fdb1 = 0;
     fda1 = 0;
     for(int i=fNmin; i<=fNmax; i++){
         f=i*fdf-fdf/2+fnum;
         fw = h->GetBinError(i);
-        if(fw!=0){
+        if(fw){
             fz = h->GetBinContent(i);
             fdb1 = fdb1 + ((fS1*f - fSf)*(fS1*f - fSf)/(fw*fw)) * ((fz-fa-fb*(f-1))*(fz-fa-fb*(f-1))/(fw*fw));
             fda1 = fda1 + (((fSf2-fSf)-(fSf-fS1)*f)*((fSf2-fSf)-(fSf-fS1)*f)/(fw*fw)) * ((fz-fa+fb-fb*f)*(fz-fa+fb-fb*f)/(fw*fw));
@@ -115,9 +118,9 @@ AliLRCFit::AliLRCFit(TH1D *h, double xmin, double xmax):fN (0), fTrueN(0), fNmin
             fTrueN++;
         }
     }
-    fdb1 = sqrt(fdb1/(fdelta*fdelta));
-    fda1 = sqrt(fda1/(fdelta*fdelta));
-    fhi2 = fhi2 / (fTrueN-2);
+    fdb1 = TMath::Sqrt(fdb1/(fdelta*fdelta));
+    fda1 = TMath::Sqrt(fda1/(fdelta*fdelta));
+    fhi2 = fTrueN > 2 ? fhi2 / (fTrueN-2) : -1;
 }
 
 AliLRCFit::~AliLRCFit() {

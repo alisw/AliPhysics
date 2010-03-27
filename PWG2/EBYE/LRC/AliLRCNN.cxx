@@ -23,6 +23,10 @@
 #include "AliLRCNN.h"
 #include "TFile.h"
 
+class TFile;
+class TH2D;
+class TList;
+
 ClassImp(AliLRCNN) 
 
 
@@ -55,7 +59,7 @@ AliLRCNN::AliLRCNN(char *fileHistname, char *histname, char *profname):AliLRCAna
     SetErrors(sourceHist, profname);
 }
 
-AliLRCNN::AliLRCNN(TList *LHist, char *histname, char *profname):AliLRCAnalysis() {
+AliLRCNN::AliLRCNN(TList *  const LHist, char *histname, char *profname):AliLRCAnalysis() {
 //Make NN from 2d histogramm from root file
     SetGraphics();
     TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);
@@ -80,7 +84,7 @@ void AliLRCNN::MakeHistogramm(char *fileHistname, char *histname, char *profname
     SetErrors(sourceHist, profname);
 }
 
-void AliLRCNN::MakeHistogramm(TList *LHist, char *histname, char *profname) {
+void AliLRCNN::MakeHistogramm(TList * const LHist, char *histname, char *profname) {
 //Make NN from 2d histogramm from root file
     SetGraphics();
     TH2D* sourceHist = (TH2D*) LHist->FindObject(histname);

@@ -1,13 +1,14 @@
-//-------------------------------------------------------------------------
-//    Description: 
-//    This class is included into LRC library for Long-Range Correlation analysis
-//    it is base class for NN, PtN, PtPt
-//    implements base methods for thees classes
-//    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
-//-------------------------------------------------------------------------
-
 #ifndef ALILRCANALYSIS_H
 #define ALILRCANALYSIS_H
+
+//-------------------------------------------------------------------------
+//   Description: 
+//   This class is included into LRC library for Long-Range Correlation analysis
+//   it is base class for NN, PtN, PtPt
+//   implements base methods for thees classes
+//   Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
+//-------------------------------------------------------------------------
+
 
 /*  See cxx source for full Copyright notice */
 
@@ -20,9 +21,9 @@
 //    Origin: Petr Naumenko, SPbSU-CERN, Petr.Naoumenko@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
-
 #define N_PL_FLAGS 10
+
+#include "TObject.h"
 
 class TFile;
 class AliLRCFit;
@@ -34,7 +35,7 @@ class TF1;
 class math;
 class TStyle;
 
-class AliLRCAnalysis : public TObject{
+class AliLRCAnalysis{
  public:
   void DrawAbs();
   void DrawAbs( int * mas );
@@ -83,7 +84,6 @@ class AliLRCAnalysis : public TObject{
   double HI2(TH1D * const h, double a, double b, double xmin, double xmax) const;
   double HI2(TH1D * const h, double a, double b) const;
   double Integral(TH2D* source, int nbin) const;
-
   //Creating profile from histogramm
   void CreateHist(char *name, char *nameAbs, char *nameRel, char *atitleF, char *atitleB,char *rtitleF, char *rtitleB,TH2D* sourceHist);
   void SetGraphics() const;
@@ -91,7 +91,8 @@ class AliLRCAnalysis : public TObject{
   void SetErrors(TH2D* source, const char *name, double ptd, TH2D* nb);
   void SetErrors(TH2D* source, const char *name, double ptd, TProfile* nb);
   
-  private:
+  
+ private:
   char*  fSx; 		// Title of x axis
   char*  fSy; 		// Title of y axis
   double fxFitMin; 	// FitMin minimum of fit baundary
@@ -107,7 +108,7 @@ class AliLRCAnalysis : public TObject{
   double fbabsError; 	// b absolut error
   double fXi2abs; 	// chi square absolut  
   
-  ClassDef(AliLRCAnalysis,0);                 // macro for rootcint
+  ClassDef(AliLRCAnalysis,0)                 // macro for rootcint
 };
 
 #endif
