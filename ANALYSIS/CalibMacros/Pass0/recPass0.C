@@ -2,7 +2,7 @@
 //   rec.C to be used for pass0
 //   
 
-void rec(const char *filename="raw.root",Int_t nevents=-1)
+void recPass0(const char *filename="raw.root",Int_t nevents=-1)
 {
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location

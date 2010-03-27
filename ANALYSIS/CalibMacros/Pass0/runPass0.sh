@@ -33,7 +33,7 @@ echo $PATH
 echo ">>>>>>>>> LD_LIBRARY_PATH is..."
 echo $LD_LIBRARY_PATH
 echo ">>>>>>>>> rec.C is..."
-cat rec.C
+cat recPass0.C
 echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runnum..."
