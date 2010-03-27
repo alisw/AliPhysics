@@ -130,7 +130,8 @@ void AliCaloFastAltroFitv0::FastFit(TH1F* h, Double_t sig, Double_t tau, Double_
 Double_t ped, Double_t tMax)
 {
   // Service method for convinience only
-  // h - hist with altro response  
+  // h - hist with altro response, could have empty bin
+  // and center of bin could be different from bin number  
   Reset();
 
   if(h==0) return;
@@ -140,12 +141,16 @@ Double_t ped, Double_t tMax)
   Int_t* t = new Int_t[nPoints];
   Int_t* y = new Int_t[nPoints];
 
+  Int_t nPositive=0;
   for(Int_t i=0; i<nPoints; i++) {
-    t[i] = i+1;
-    y[i] = Int_t(h->GetBinContent(i+1));
+    if(h->GetBinContent(i+1) > 0.0){ // Get only positive
+      y[nPositive] = Int_t(h->GetBinContent(i+1));
+      t[nPositive] = Int_t(h->GetBinCenter(i+1)+0.0001);
+      nPositive++;
+    }
   }
 
-  if(nPoints>=2) {
+  if(nPositive >= 2) {
     FastFit(t,y,nPoints, sig,tau,n,ped, tMax);
   }
   if(fChi2<=0.0) fNoFit++;
