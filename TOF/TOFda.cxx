@@ -15,6 +15,7 @@ Event types used: PHYSICS_EVENT
 */
 
 #define FILE_HITS "TOFdaHits.root"
+#define FILE_CALIB "TOFdaCalib.root"
 
 // DATE
 #include "event.h"
@@ -105,8 +106,9 @@ main(int argc, char **argv)
   Float_t noiseThreshold = 10. * meanChannelRate; /* noise threshold (hits/event) */
   Int_t minNoiseHits = 10; /* min number of channel hits to check noise */
   /* counters and flags */
-  Int_t nEvents, totHits;
+  Int_t nPhysicsEvents, nCalibEvents, totHits;
   Int_t nChHits[nChannels];
+  Bool_t inhibitCollection;
   Bool_t noiseFlag[nChannels];
   /* variables */
   Int_t nhits, ddl, slot, trm, chain, tdc, channel, index, timebin, totbin, deltaBC, l0l1latency, det[5], dummy;
@@ -117,11 +119,13 @@ main(int argc, char **argv)
    */
 
   /* init counters and flags */
-  nEvents = 0;
+  nPhysicsEvents = 0;
+  nCalibEvents = 0;
   totHits = 0;
+  inhibitCollection = kFALSE;
   for (Int_t ich = 0; ich < nChannels; ich++) {
     nChHits[ich] = 0;
-    noiseFlag[ich] = 0;
+    noiseFlag[ich] = kFALSE;
   }
 
   /* TOF raw data handling */
@@ -129,8 +133,8 @@ main(int argc, char **argv)
   AliTOFHitDataBuffer *pdb = NULL;
   AliTOFHitData *hit = NULL;
   
-  /* open output file */
-  TFile *fileOut = new TFile(FILE_HITS, "RECREATE"); 
+  /* open HITS output file */
+  TFile *fileOutHits = new TFile(FILE_HITS, "RECREATE"); 
   /* create hit field data structure */
   AliTOFHitField *hitField = new AliTOFHitField();
   /* create temporary tree */
@@ -139,6 +143,11 @@ main(int argc, char **argv)
   /* create output tree */
   TTree *outTree = new TTree("hitTree", "hit tree");
   outTree->Branch("hit", "AliTOFHitField", &hitField);
+
+  /* open CALIB output file */
+  TFile *fileOutCalib = new TFile(FILE_CALIB, "RECREATE"); 
+  /* create calib hit histo */
+  TH1F *hCalibHit = new TH1F("hCalibHit", "Calibration events;index;N_{hits}/N_{events}", nChannels, 0., nChannels);
 
   /*
    * ONLINE MONITOR
@@ -173,26 +182,29 @@ main(int argc, char **argv)
      * NOISE CHECK
      */
 
-    /* check number of events and check noise */
-    if (nEvents >= noiseCheckTrigger || totHits >= maxHits) {
-      noiseHitThreshold = noiseThreshold * nEvents;
-      printf("noise check triggered after %d events: threshold is %f hits\n", nEvents, noiseHitThreshold);
-      /* loop over all channels */
-      for (Int_t ich = 0; ich < nChannels; ich++) {
-	/* check */
-	if (nChHits[ich] < minNoiseHits || noiseFlag[ich] || nChHits[ich] < noiseHitThreshold) continue;
-	printf("channel %d tagged as noisy (%d hits): disabled\n", ich, nChHits[ich]);
-	noiseFlag[ich] = kTRUE;
-	totHits -= nChHits[ich];
-      } /* end of loop over all channels */
-      /* set new noise check trigger value */
-      noiseCheckTrigger *= 10;
-    } /* end of noise check */    
-
-    /* break loop when maximum number of hits exceeded */
-    if (totHits >= maxHits) {
-      printf("maximum number of hits exceeded (%d): stop hit collection\n", maxHits);
-      break;
+    /* check inhibit collection */
+    if (!inhibitCollection) {
+      /* check number of events and check noise */
+      if (nPhysicsEvents >= noiseCheckTrigger || totHits >= maxHits) {
+	noiseHitThreshold = noiseThreshold * nPhysicsEvents;
+	printf("noise check triggered after %d events: threshold is %f hits\n", nPhysicsEvents, noiseHitThreshold);
+	/* loop over all channels */
+	for (Int_t ich = 0; ich < nChannels; ich++) {
+	  /* check */
+	  if (nChHits[ich] < minNoiseHits || noiseFlag[ich] || nChHits[ich] < noiseHitThreshold) continue;
+	  printf("channel %d tagged as noisy (%d hits): disabled\n", ich, nChHits[ich]);
+	  noiseFlag[ich] = kTRUE;
+	  totHits -= nChHits[ich];
+	} /* end of loop over all channels */
+	/* set new noise check trigger value */
+	noiseCheckTrigger *= 10;
+      } /* end of noise check */    
+      
+      /* inhibit hit collection when maximum number of hits exceeded */
+      if (totHits >= maxHits) {
+	printf("maximum number of hits exceeded (%d): inhibit hit collection\n", maxHits);
+	inhibitCollection = kTRUE;
+      }
     }
     
     /*
@@ -212,9 +224,13 @@ main(int argc, char **argv)
     /* retry if got no event */
     if (event==NULL) continue;
     /* check event type */
-    if (event->eventType != PHYSICS_EVENT) continue;
-    /* increment number of events */
-    nEvents++;
+    if (event->eventType != PHYSICS_EVENT && event->eventType != CALIBRATION_EVENT) continue;
+    /* check inhibit collection */
+    if (event->eventType == PHYSICS_EVENT && inhibitCollection) continue;
+    /* increment number of physics events */
+    if (event->eventType == PHYSICS_EVENT) nPhysicsEvents++;
+    /* increment number of calib events */
+    if (event->eventType == CALIBRATION_EVENT) nCalibEvents++;
     
     /*
      * DECODE EVENT
@@ -261,24 +277,45 @@ main(int argc, char **argv)
 	    det[3] < 0 || det[3] > 1 ||
 	    det[4] < 0 || det[4] > 47) continue;
 	index = AliTOFGeometry::GetIndex(det);
-	/* check noise flag */
-	if (noiseFlag[index]) continue;
-	/* increment number of channel hits and total hits */
-	nChHits[index]++;
-	totHits++;
-	/* get signal info */
-	timebin = hit->GetTimeBin();
-	totbin = hit->GetTOTBin();
-	deltaBC = hit->GetDeltaBunchID();
-	l0l1latency = hit->GetL0L1Latency();
-	/* set hit field data */
-	hitField->SetIndex(index);
-	hitField->SetTimeBin(timebin);
-	hitField->SetTOTBin(totbin);
-	hitField->SetDeltaBC(deltaBC);
-	hitField->SetL0L1Latency(l0l1latency);
-	/* fill temp tree */
-	tempTree->Fill();
+
+	/* switch event type */
+	switch (event->eventType) {
+
+	  /*
+	   * PHYSICS EVENT
+	   */
+
+	case PHYSICS_EVENT:
+	  /* check noise flag */
+	  if (noiseFlag[index]) continue;
+	  /* increment number of channel hits and total hits */
+	  nChHits[index]++;
+	  totHits++;
+	  /* get signal info */
+	  timebin = hit->GetTimeBin();
+	  totbin = hit->GetTOTBin();
+	  deltaBC = hit->GetDeltaBunchID();
+	  l0l1latency = hit->GetL0L1Latency();
+	  /* set hit field data */
+	  hitField->SetIndex(index);
+	  hitField->SetTimeBin(timebin);
+	  hitField->SetTOTBin(totbin);
+	  hitField->SetDeltaBC(deltaBC);
+	  hitField->SetL0L1Latency(l0l1latency);
+	  /* fill temp tree */
+	  tempTree->Fill();
+	  break;
+
+	  /*
+	   * CALIBRATION EVENT
+	   */
+
+	case CALIBRATION_EVENT:
+	  /* fill calib hit histo */
+	  hCalibHit->Fill(index);
+	  break;
+	  
+	} /* end of switch event type */
       } /* end of loop over hits in buffer */
     } /* end of loop over DDLs */
     
@@ -288,8 +325,8 @@ main(int argc, char **argv)
   } /* end of loop over events */
 
   /* final noise check */
-  noiseHitThreshold = noiseThreshold * nEvents;
-  printf("final noise check after %d events: threshold is %f hits\n", nEvents, noiseHitThreshold);
+  noiseHitThreshold = noiseThreshold * nPhysicsEvents;
+  printf("final noise check after %d events: threshold is %f hits\n", nPhysicsEvents, noiseHitThreshold);
   /* loop over all channels */
   for (Int_t ich = 0; ich < nChannels; ich++) {
     /* check */
@@ -311,14 +348,25 @@ main(int argc, char **argv)
     outTree->Fill();
   } /* end of copy hits into output tree from temp tree */
   printf("output tree contains %d hits\n", (Int_t)outTree->GetEntries());
-  
-  /* write output tree on file */
-  fileOut->cd();
-  outTree->Write();
-  fileOut->Close();
 
+  /* write output tree on HITS file */
+  fileOutHits->cd();
+  outTree->Write();
+  fileOutHits->Close();
   /* export file to FXS */
   if (daqDA_FES_storeFile(FILE_HITS, "HITS"))
+    return -2;
+
+  /* scale calib hit histo by number of calib events */
+  hCalibHit->Sumw2();
+  hCalibHit->Scale(1. / nCalibEvents);
+  
+  /* write calib hit histo on CALIB file */
+  fileOutCalib->cd();
+  hCalibHit->Write();
+  fileOutCalib->Close();
+  /* export file to FXS */
+  if (daqDA_FES_storeFile(FILE_CALIB, "CALIB"))
     return -2;
 
   return 0;
