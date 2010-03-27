@@ -202,6 +202,7 @@ AliCFGridSparse* AliCFGridSparse::Project(Int_t nVars, const Int_t* vars, const 
   else AliInfo("Keeping same axis ranges");
 
   out->SetGrid(clone->Projection(nVars,vars));
+  delete [] bins;
   return out;
 }
 

@@ -100,7 +100,7 @@ class AliCFGridSparse : public AliCFFrame
   //virtual Double_t GetIntegral(const Double_t *varMin, const Double_t *varMax) const;
   virtual Long64_t Merge(TCollection* list);
 
-  virtual void     SetGrid(THnSparse* grid) {fData=grid;}
+  virtual void     SetGrid(THnSparse* grid) {if (fData) delete fData ; fData=grid;}
   THnSparse   *    GetGrid() const {return fData;}
 
   virtual Float_t GetOverFlows (Int_t var, Bool_t excl=kFALSE) const;

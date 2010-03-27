@@ -46,6 +46,8 @@ class AliCFContainer : public AliCFFrame
   virtual Int_t    * GetNBins()                                      const {return fGrid[0]->GetNBins();}
   virtual Float_t    GetBinCenter(Int_t ivar,Int_t ibin)             const {return fGrid[0]->GetBinCenter(ivar,ibin);}
   virtual Float_t    GetBinSize  (Int_t ivar,Int_t ibin)             const {return fGrid[0]->GetBinSize  (ivar,ibin);}
+  virtual Float_t    GetBinContent(const Int_t* coordinates, Int_t step) const {return fGrid[step]->GetGrid()->GetBinContent(coordinates);}
+  virtual Float_t    GetBinError  (const Int_t* coordinates, Int_t step) const {return fGrid[step]->GetGrid()->GetBinError  (coordinates);}
   virtual const Char_t* GetBinLabel (Int_t ivar,Int_t ibin)          const {return GetAxis(ivar,0)->GetBinLabel(ibin);}
 
   virtual void       Print(const Option_t*) const ;
@@ -98,7 +100,7 @@ class AliCFContainer : public AliCFFrame
 
   virtual void  SetRangeUser(Int_t ivar, Double_t varMin, Double_t varMax, Int_t istep) ;
   virtual void  SetRangeUser(Double_t* varMin, Double_t* varMax, Int_t istep) ;
-  virtual void  SetGrid(Int_t step, AliCFGridSparse* grid) {fGrid[step]=grid;}
+  virtual void  SetGrid(Int_t step, AliCFGridSparse* grid) {if (fGrid[step]) delete fGrid[step]; fGrid[step]=grid;}
   virtual AliCFGridSparse * GetGrid(Int_t istep) const {return fGrid[istep];};
 
   virtual void  Scale(Double_t factor) const;
@@ -155,10 +157,14 @@ inline void  AliCFContainer::Scale(Double_t factor) const {
 }
 
 inline void AliCFContainer::SetBinContent(Int_t* bin, Int_t step, Double_t value) {
+  // sets the content 'value' to the current container, at step 'step'
+  // 'bin' is the array of the bin coordinates
   GetGrid(step)->GetGrid()->SetBinContent(bin,value);
 }
 
 inline void AliCFContainer::SetBinError(Int_t* bin, Int_t step, Double_t value) {
+  // sets the error 'value' to the current container, at step 'step'
+  // 'bin' is the array of the bin coordinates
   GetGrid(step)->GetGrid()->SetBinError(bin,value);
 }
 
