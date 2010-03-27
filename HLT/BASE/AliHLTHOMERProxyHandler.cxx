@@ -174,8 +174,20 @@ Int_t AliHLTHOMERProxyHandler::RequestXmlRpcResponse() {
 		    fgkHOMERProxyNode[fRealm], proxyPort,
 		    fgkHOMERProxyNode[fRealm+kHOMERRealmsMax],proxyPort));
 
-      fRealm = -1;
-      return -1;
+      HLTWarning(Form("trying %s:%d now.",
+		      fgkHOMERProxyNode[kLoc],proxyPort));
+      socket = new TSocket(fgkHOMERProxyNode[kLoc], proxyPort);
+      if ( ! socket->IsValid() ) {
+        HLTError(Form("Failed to create socket to %s:%d , %s:%d and %s:%d.",
+		      fgkHOMERProxyNode[fRealm], proxyPort,
+		      fgkHOMERProxyNode[fRealm+kHOMERRealmsMax],proxyPort,
+		      fgkHOMERProxyNode[kLoc], proxyPort));
+        fRealm = -1;
+        return -1;
+      }
+      else {
+        fRealm = kLoc;
+      }
     }
     else
       fRealm = fRealm+kHOMERRealmsMax;
