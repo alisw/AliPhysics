@@ -142,8 +142,10 @@ void AliAnalysisTaskOmegaPi0PiPi::UserExec(Option_t* /* option */)
   
   const Int_t kNumberOfPhosClusters   = caloClustersArr->GetEntries() ;
   AliDebug(2,Form("CaloClusters: %d\n", kNumberOfPhosClusters));
-  if(kNumberOfPhosClusters<2) return;
-  
+  if(kNumberOfPhosClusters<2){
+    delete caloClustersArr;
+    return;
+  }  
   TLorentzVector pc1; //4-momentum of PHOS cluster 1
   TLorentzVector pc2; //4-momentum of PHOS cluster 2
   TLorentzVector pc12;
