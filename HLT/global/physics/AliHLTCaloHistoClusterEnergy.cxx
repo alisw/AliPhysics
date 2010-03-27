@@ -67,18 +67,20 @@ AliHLTCaloHistoClusterEnergy::~AliHLTCaloHistoClusterEnergy()
 
 Int_t AliHLTCaloHistoClusterEnergy::FillHistograms(Int_t nc, TRefArray * clusterArray) {
   //See header file for documentation
+
   for(int ic = 0; ic < nc; ic++) {
     AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(clusterArray->At(ic));
-    return FillClusterEnergyHistos(cluster);
+    FillClusterEnergyHistos(cluster);
   }
   return 0;
 }
+
 Int_t AliHLTCaloHistoClusterEnergy::FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec) {
   //See header file for documentation
   // HLTInfo("histo");
   for(int ic = 0; ic < nc; ic++) {
     AliHLTCaloClusterDataStruct * cluster = cVec.at(ic);
-    return FillClusterEnergyHistos(cluster);
+    FillClusterEnergyHistos(cluster);
   }
   return 0;
 }
@@ -86,7 +88,6 @@ Int_t AliHLTCaloHistoClusterEnergy::FillHistograms(Int_t nc, vector<AliHLTCaloCl
 template <class T>
 Int_t AliHLTCaloHistoClusterEnergy::FillClusterEnergyHistos(T* cluster) {
   fHistClusterEnergy->Fill(cluster->E());
-  fHistClusterEnergyVsNCells->Fill(cluster->GetNCells(), cluster->E());
-
+  fHistClusterEnergyVsNCells->Fill(cluster->E(), cluster->GetNCells());
   return 0;
 }

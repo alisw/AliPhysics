@@ -39,14 +39,25 @@
 #include "TLorentzVector.h"
 
 AliHLTCaloHistoInvMass::AliHLTCaloHistoInvMass(TString det) :
-  fHistTwoClusterInvMass(NULL)
+  fHistTwoClusterInvMass(NULL),
+  fHistTwoClusterInvMass2(NULL)
+ 
 {
   // See header file for documentation
-  fHistTwoClusterInvMass = new TH1F(Form("%s fHistTwoClusterInvMass", det.Data()), Form("%s Invariant mass of two clusters PHOS", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass = new TH1F(Form("%s fHistTwoClusterInvMass", det.Data()), Form("Invariant mass of two clusters in %s, E > 0.8 GeV", det.Data()), 200, 0, 1);
   fHistTwoClusterInvMass->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
-  fHistTwoClusterInvMass->GetYaxis()->SetTitle("Number of counts");
+  fHistTwoClusterInvMass->GetYaxis()->SetTitle("Counts");
   fHistTwoClusterInvMass->SetMarkerStyle(21);
   fHistArray->AddLast(fHistTwoClusterInvMass);
+
+
+  fHistTwoClusterInvMass2 = new TH1F(Form("%s fHistTwoClusterInvMass2", det.Data()), Form("Invariant mass of two clusters in %s E > 2.4 GeV", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass2->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
+  fHistTwoClusterInvMass2->GetYaxis()->SetTitle("Counts");
+  fHistTwoClusterInvMass2->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistTwoClusterInvMass2);
+
+
 }
 
 AliHLTCaloHistoInvMass::~AliHLTCaloHistoInvMass()
@@ -54,6 +65,13 @@ AliHLTCaloHistoInvMass::~AliHLTCaloHistoInvMass()
   if(fHistTwoClusterInvMass)
     delete fHistTwoClusterInvMass;
   fHistTwoClusterInvMass = NULL;
+
+
+  if(fHistTwoClusterInvMass2)
+    delete fHistTwoClusterInvMass2;
+  fHistTwoClusterInvMass2 = NULL;
+
+
 }
 
 
@@ -69,21 +87,10 @@ Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, vector<AliHLTCaloClusterD
     cEnergy[ic] = cluster->E();
   }
 
-  for(Int_t ipho = 0; ipho<(nc-1); ipho++) { 
-    for(Int_t jpho = ipho+1; jpho<nc; jpho++) { 
-      
-      // Calculate the theta angle between two photons
-      Double_t theta = (2* asin(0.5*TMath::Sqrt((cPos[ipho][0]-cPos[jpho][0])*(cPos[ipho][0]-cPos[jpho][0]) +(cPos[ipho][1]-cPos[jpho][1])*(cPos[ipho][1]-cPos[jpho][1]))/460));
-      
-      // Calculate the mass m of the pion candidate
-      Double_t m =(TMath::Sqrt(2 * cEnergy[ipho]* cEnergy[jpho]*(1-TMath::Cos(theta))));
-      
-      fHistTwoClusterInvMass->Fill(m);
-    }
-  }
-
-  return 0;
+  return FillInvariantMassHistograms(nc, cPos, cEnergy);
 }
+
+
 
 Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clusterArray) {
   //See header file for documentation
@@ -97,29 +104,89 @@ Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, TRefArray * clusterArray)
     cEnergy[ic] = cluster->E();
   }
 
+  return FillInvariantMassHistograms(nc, cPos, cEnergy);
+
+}
+
+
+Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(Int_t nc, Float_t cPos[][3], Float_t  cEnergy[]){ 
+
+  Int_t iResult = 0;
+
   for(Int_t ic = 0; ic<(nc-1); ic++) { 
+     
+    //BALLE hardcoded variable
+    if(cEnergy[ic] < 0.8)
+      continue;
 
     //Get momentum vector
     TVector3 iVec(cPos[ic]);
     iVec = iVec.Unit();
     iVec = cEnergy[ic] * iVec;
-
+    
     
     for(Int_t jc = ic+1; jc<nc; jc++) { 
+     
+    //BALLE hardcoded variable
+      if(cEnergy[jc] < 0.8)
+	continue;
 
+
+      
       //Get second momentum vector
       TVector3 jVec(cPos[jc]);
       jVec = jVec.Unit();
       jVec = cEnergy[jc] * jVec;
-
+      
       //Calculate inv mass
       Double_t m = TMath::Sqrt( 2 *(cEnergy[ic]* cEnergy[jc] - iVec.Dot(jVec) ) );
-
+      
       //Fill histogram
       fHistTwoClusterInvMass->Fill(m);
+      
+      //BALLE hardcoded variable
+      if( (cEnergy[ic] > 2.4) && (cEnergy[jc] > 2.4))
+	 fHistTwoClusterInvMass2->Fill(m);
+      
     }
   }
 
+  return iResult;
 
-  return 0;
 }
+
+// template <class T>
+// Int_t AliHLTCaloHistoInvMass::FillHistograms(Int_t nc, vector<T*> clusterVec ) {
+//   Float_t cPos[nc][3];
+//   Float_t cEnergy[nc];
+  
+//   for(int ic = 0; ic < nc; ic++) {
+//     T * cluster = cVec.at(ic);
+//     cluster->GetPosition(cPos[ic]);
+//     cEnergy[ic] = cluster->E();
+//   }
+  
+
+//   for(Int_t ic = 0; ic<(nc-1); ic++) { 
+
+//     //Get momentum vector
+//     TVector3 iVec(cPos[ic]);
+//     iVec = iVec.Unit();
+//     iVec = cEnergy[ic] * iVec;
+
+    
+//     for(Int_t jc = ic+1; jc<nc; jc++) { 
+
+//       //Get second momentum vector
+//       TVector3 jVec(cPos[jc]);
+//       jVec = jVec.Unit();
+//       jVec = cEnergy[jc] * jVec;
+
+//       //Calculate inv mass
+//       Double_t m = TMath::Sqrt( 2 *(cEnergy[ic]* cEnergy[jc] - iVec.Dot(jVec) ) );
+
+//       //Fill histogram
+//       fHistTwoClusterInvMass->Fill(m);
+//     }
+//   }
+// }

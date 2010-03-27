@@ -67,6 +67,9 @@ public:
   //** Loops of the calo clusters and fills histos
   Int_t FillHistograms(Int_t nc, TRefArray * clusterArray);
   Int_t FillHistograms(Int_t nc, vector<AliHLTCaloClusterDataStruct*> &cVec);
+  //  template <class T> Int_t FillHistograms(Int_t nc, vector<T*> clusterVec);
+
+
   //   template <class T>
   //   Int_t FillHistograms(Int_t nc, vector<T*> &cVec);
   
@@ -81,8 +84,12 @@ private:
   /** Assignment operator */
   AliHLTCaloHistoInvMass & operator= (const AliHLTCaloHistoInvMass &);
   
+  /** Calculate 2 cluster inv mass and fill histograms */
+  Int_t FillInvariantMassHistograms(Int_t nc, Float_t cPos[][3], Float_t cEnergy[]);
+
   /** Histogram of the 2 cluster invariant mass */
   TH1F *fHistTwoClusterInvMass;                 //!transient
+  TH1F *fHistTwoClusterInvMass2;                 //!transient
 
   ClassDef(AliHLTCaloHistoInvMass, 0);
 
