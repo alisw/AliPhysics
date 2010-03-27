@@ -40,6 +40,8 @@ AliHLTEveTRD::AliHLTEveTRD() :
   fNColorBins(15)
 {
   // Constructor.
+  fEveColClusters = CreatePointSetArray();
+  fEventManager->GetEveManager()->AddElement(fEveColClusters);
 
 }
 
@@ -139,10 +141,11 @@ void AliHLTEveTRD::UpdateElements() {
   if(fCanvas) fCanvas->Update();
   // if(fEveClusters) fEveClusters->ResetBBox();
 
-  for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
-    fEveColClusters->GetBin(ib)->ResetBBox();
+  if(fEveColClusters) {
+    for (Int_t ib = 0; ib <= fNColorBins + 1; ++ib) {
+      fEveColClusters->GetBin(ib)->ResetBBox();
+    }
   }
-
 }
 
 void AliHLTEveTRD::ResetElements(){
