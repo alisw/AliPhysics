@@ -40,9 +40,6 @@ AliHLTEveTRD::AliHLTEveTRD() :
   fNColorBins(15)
 {
   // Constructor.
-  fEveColClusters = CreatePointSetArray();
-  fEventManager->GetEveManager()->AddElement(fEveColClusters);
-
 }
 
 AliHLTEveTRD::~AliHLTEveTRD()
@@ -119,17 +116,28 @@ TEvePointSet * AliHLTEveTRD::CreatePointSet() {
 }
 
 TEvePointSetArray * AliHLTEveTRD::CreatePointSetArray(){
+
+  Int_t i = 0;
+
+  cout << i++ << endl;
   //See header file for documentation
   TEvePointSetArray * cc = new TEvePointSetArray("TRD Clusters Colorized");
+  cout << i++ << endl;
   cc->SetMainColor(kRed);
+  cout << i++ << endl;
   cc->SetMarkerStyle(4); // antialiased circle
+  cout << i++ << endl;
   cc->SetMarkerSize(0.4);
+  cout << i++ << endl;
   cc->InitBins("Cluster Charge", fNColorBins, 0., fNColorBins*100.);
+  cout << i++ << endl;
   
   const Int_t nCol = TColor::GetNumberOfColors();
+  cout << i++ << endl;
   for (Int_t ii = 0; ii < fNColorBins + 1; ++ii) {
     cc->GetBin(ii)->SetMainColor(TColor::GetColorPalette(ii * nCol / (fNColorBins+2)));
   }
+  cout << i++ << endl;
 
   return cc;
      
