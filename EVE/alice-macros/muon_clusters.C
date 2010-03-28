@@ -57,7 +57,12 @@ void muon_clusters()
   clusterStore->Clear();
   clusterStore->Connect(*ct,kFALSE);
   ct->GetEvent(0);
-  if (clusterStore->GetSize() == 0 && !gEve->GetKeepEmptyCont()) return;
+  rl->UnloadRecPoints("MUON");
+  
+  if (clusterStore->GetSize() == 0 && !gEve->GetKeepEmptyCont()) {
+    delete clusterStore;
+    return;
+  }
   
   // cluster container
   TEvePointSet* clusterList = new TEvePointSet(10000);

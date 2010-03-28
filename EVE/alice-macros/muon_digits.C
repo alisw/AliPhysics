@@ -106,7 +106,12 @@ void muon_digits()
   digitStore->Clear();
   digitStore->Connect(*dt,0);
   dt->GetEvent(0);
-  if (digitStore->GetSize() == 0 && !gEve->GetKeepEmptyCont()) return;
+  rl->UnloadDigits("MUON");
+  
+  if (digitStore->GetSize() == 0 && !gEve->GetKeepEmptyCont()) {
+    delete digitStore;
+    return;
+  }
   
   // container for graphic representation of digits
   TEveElementList* cont = new TEveElementList("MUON Digits");
