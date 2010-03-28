@@ -93,7 +93,11 @@ AliAnalysisTaskStrange::AliAnalysisTaskStrange(const char *name)
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class());
 }
-
+//________________________________________________________________________
+AliAnalysisTaskStrange::~AliAnalysisTaskStrange(){
+  // Destructor
+  if (fListHist) { delete fListHist; fListHist = 0x0; }
+}
 //________________________________________________________________________
 void AliAnalysisTaskStrange::UserCreateOutputObjects() 
 {

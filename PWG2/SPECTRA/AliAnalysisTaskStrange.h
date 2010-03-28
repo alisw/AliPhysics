@@ -24,7 +24,7 @@ class AliAnalysisTaskStrange : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskStrange();
   AliAnalysisTaskStrange(const char *name);
-  virtual ~AliAnalysisTaskStrange() {}
+ ~AliAnalysisTaskStrange();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
