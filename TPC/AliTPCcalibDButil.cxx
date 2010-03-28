@@ -2339,12 +2339,13 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
   //
   //
   AliTPCSensorTempArray *tempMapCE = (AliTPCSensorTempArray *)cearray->FindObject("TempMap");
-  AliDCSSensor * cavernPressureCE  = (AliDCSSensor *) cearray->FindObject("CavernPressure");
+  AliDCSSensor * cavernPressureCE  = (AliDCSSensor *) cearray->FindObject("CavernAtmosPressure");
   if ( tempMapCE && cavernPressureCE){
     //
-    Bool_t isOK = FilterTemperature(tempMapCE)>0.1;
-    FilterSensor(cavernPressureCE,960,1050,10, 5.);
-    if (cavernPressureCE->GetFit()==0) isOK=kFALSE;
+    //     Bool_t isOK = FilterTemperature(tempMapCE)>0.1;
+    //     FilterSensor(cavernPressureCE,960,1050,10, 5.);
+    //     if (cavernPressureCE->GetFit()==0) isOK=kFALSE;
+    Bool_t isOK=kTRUE;
     if (isOK)  {      
       // recalculate P/T correction map for time of the CE
       AliTPCCalibVdrift * driftCalib = new AliTPCCalibVdrift(tempMapCE,cavernPressureCE ,0);
