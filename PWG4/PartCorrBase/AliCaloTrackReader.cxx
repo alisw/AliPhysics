@@ -381,9 +381,16 @@ void AliCaloTrackReader::InitParameters()
   fFiredTriggerClassName      = "";
   fEMCALGeoName = "EMCAL_COMPLETE";
   fPHOSGeoName  = "PHOSgeo";
-  fEMCALGeoMatrixSet = kFALSE;
-  fPHOSGeoMatrixSet  = kFALSE;
-
+	
+  if(gGeoManager) {// geoManager was set
+	printf("Geometry manager available\n");
+	fEMCALGeoMatrixSet = kTRUE;	 
+	fPHOSGeoMatrixSet  = kTRUE;	 
+  }
+  else{
+	fEMCALGeoMatrixSet = kFALSE;
+	fPHOSGeoMatrixSet  = kFALSE;
+  }
 	
 }
 
@@ -487,9 +494,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
     }
     
   }
-	  
+	
   //Get the EMCAL transformation geometry matrices from ESD 
-  if (!gGeoManager && fEMCALGeo && !fEMCALGeoMatrixSet) {
+  if (!gGeoManager && fEMCALGeo) {//&& !fEMCALGeoMatrixSet) {
     if(fDebug > 1) 
       printf(" AliCaloTrackReader::FillInputEvent() - Load EMCAL misalignment matrices. \n");
     if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
@@ -525,7 +532,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 	printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
     }//AOD as input
   }//PHOS geo	and  geoManager was not set
-  
+	
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();
