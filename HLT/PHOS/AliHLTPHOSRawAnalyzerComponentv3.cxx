@@ -20,6 +20,7 @@
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSUtilities.h"
 #include "AliHLTPHOSMapper.h"
+#include "AliLog.h"
 
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :

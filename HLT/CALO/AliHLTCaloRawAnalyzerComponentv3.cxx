@@ -34,6 +34,7 @@
 #include "AliHLTCaloCrazynessDefinitions.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliHLTCaloCoordinate.h"
+#include "AliLog.h"
 
 //#include "AliCALOBunchInfo.h"
 //AliCALORawAnalyzer
@@ -132,6 +133,10 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 	{
 	   HLTWarning("fDoPushBadRawData and fDoPushRawData in conflict, using fDoPushRawData");
 	   fDoPushBadRawData = false;
+	}
+	if(!strcmp("-suppressalilogwarnings", argv[i]))
+	{
+	    AliLog::SetGlobalLogLevel(AliLog::kError);  //PHOS sometimes produces bad data -> Fill up the HLT logs...
 	}
     }
  
