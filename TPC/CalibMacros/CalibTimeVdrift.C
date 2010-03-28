@@ -1,53 +1,37 @@
-/* small macro to generate and update OCDB entries for a given run:
-
-// How to use it...
-//
-// 1. go to the directory with the "CalibObjectsTrain1.root" file and start your aliroot
-//
-// 2. copy and paste the following commands
-//
-gSystem->Load("libSTEER");
-gSystem->Load("libANALYSIS");
-gSystem->Load("libSTAT");
-gSystem->Load("libTPCcalib");
-gSystem->AddIncludePath("-I$ALICE_ROOT/STEER");
-gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-.L $ALICE_ROOT/TPC/CalibMacros/CalibTimeVdrift.C+
-
-//
-// 3. setup your OCDB output path e.g:
-//
-ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-//
-// 4. simple execution
-//
-CalibTimeVdriftGlobal("CalibObjectsTrain1.root", 100000, AliCDBRunRange::Infinity())
-//
-// 5. try to visualize new entry
-//
-Int_t run=1041600; //
-//.x ConfigOCDB.C(run);
-
-ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB")
-AliCDBManager::Instance()->SetSpecificStorage("TPC/Calib/TimeDrift",ocdbStorage.Data());
-
-AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run)
-TObjArray * arr = (TObjArray*)entry->GetObject();
-
-TObjArray *picArray = new TObjArray;
-MakeDefaultPlots(arr,picArray);
-
-//
-//  7. Tricky part - hopefully not neccessary
-//     change the default time 0
-//     BUG in OCDB - we can not change the SpecificStorage once we read given
-//                   entry
-
-   .x ConfigOCDB.C(
-
+/* 
+   Small macro to generate and update OCDB entries for a given run:
+   To be used together with pother macros to create OCDB entries
+   // How to use it...
+   //
+   // 1. go to the directory with the "CalibObjectsTrain1.root" file and start your aliroot
+   //
+   // 2. copy and paste the following commands
+   //
+   gSystem->Load("libSTEER");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libSTAT");
+   gSystem->Load("libTPCcalib");
+   gSystem->AddIncludePath("-I$ALICE_ROOT/STEER");
+   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
+   .L $ALICE_ROOT/TPC/CalibMacros/CalibTimeVdrift.C+
+   
+   //
+   // 3. setup your OCDB output path e.g:
+   //
+   ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+   //
+   // 4. simple execution
+   //
+   CalibTimeVdriftGlobal("CalibObjectsTrain1.root", 110000, AliCDBRunRange::Infinity())
+   //
+   // 5. try to visualize new entry
+   //   
+   TObjArray *picArray = new TObjArray;
+   MakeDefaultPlots(vdriftArray,picArray);
 */
 
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TMap.h"
 #include "TGraphErrors.h"
 #include "AliExternalTrackParam.h"
@@ -58,6 +42,9 @@ MakeDefaultPlots(arr,picArray);
 #include "THnSparse.h"
 #include "TLegend.h"
 #include "TPad.h"
+#include "TH2D.h"
+
+#include "AliESDfriend.h"
 
 
 #include "AliTPCcalibTime.h"
@@ -71,6 +58,8 @@ MakeDefaultPlots(arr,picArray);
 #include "AliTPCcalibDButil.h"
 #include "AliRelAlignerKalman.h"
 #include "AliTPCParamSR.h"
+#endif
+
 
 TString ocdbStorage="dummy";
 const Int_t    kMinEntries=100;     // minimal number of entries
@@ -79,23 +68,20 @@ Int_t startTime=0, endTime=0;
 TObjArray * vdriftArray = 0;
 AliTPCcalibTime * timeDrift=0;
 //
+// functions:
 //
-//
+void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root", Int_t ustartRun=0, Int_t uendRun=AliCDBRunRange::Infinity());
+void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun);
 void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift, Int_t minEntries);
 void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
 void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
-void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun);
-
+void SetDefaultGraphDrift(TGraph *graph, Int_t color, Int_t style);
 TGraphErrors* FilterGraphMedianAbs(TGraphErrors * graph, Float_t cut,Double_t &medianY);
 TGraphErrors* FilterGraphDrift(TGraphErrors * graph, Float_t errSigmaCut, Float_t medianCutAbs);
-
-
+TGraphErrors * MakeGraphFilter0(THnSparse *hisN, Int_t itime, Int_t ival, Int_t minEntries, Double_t offset=0);
 
 
 void GetRunRange(AliTPCcalibTime* timeDrift){
-  //
-  //
-  //
   //
   // find the fist and last run
   //
@@ -134,8 +120,10 @@ void GetRunRange(AliTPCcalibTime* timeDrift){
 
 
 
-void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root", Int_t ustartRun=0, Int_t uendRun=AliCDBRunRange::Infinity()){
-
+void CalibTimeVdriftGlobal(Char_t* file, Int_t ustartRun, Int_t uendRun){
+  //
+  //
+  //
   const Int_t    kMinEntries=500;     // minimal number of entries
   //
   // 1. Initialization and run range setting
@@ -168,12 +156,15 @@ void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root", Int_t ustartR
 }
 
 void UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun){
+  //
+  // Update OCDB 
+  //
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Marian Ivanov");
   metaData->SetBeamPeriod(1);
   metaData->SetAliRootVersion("05-25-01"); //root version
-  metaData->SetComment("Calibration of the time dependence of the drift velocity due to pressure and temperature changes");
+  metaData->SetComment("Calibration of the time dependence of the drift velocity");
   AliCDBId* id1=NULL;
   id1=new AliCDBId("TPC/Calib/TimeDrift", ustartRun, uendRun);
   AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
@@ -208,53 +199,6 @@ void UpdateDriftParam(AliTPCParam *param, TObjArray *arr, Int_t startRun){
 
 }
 
-void MakeQaPlot(Char_t* file="CalibObjects.root"){
-  TFile fcalib(file);
-  AliTPCcalibTime* timeDrift=(AliTPCcalibTime*)fcalib.Get("calibTime");
-  TCanvas* plotQa = new TCanvas("plotQa", "Relative drift velocity change QA", 1600, 600);
-  plotQa->Divide(5,2);
-  for(Int_t i=0; i<10; i++){
-    plotQa->cd(i+1);
-    timeDrift->GetCosmiMatchingHisto(i)->Draw();
-  }
-  plotQa->cd(0);
-  plotQa->SaveAs("relative_drift_velocity_change_qa.pdf");
-}
-
-void MakeHistPlot(Char_t* file="CalibObjects.root", Char_t* trigger="COSMICS_ALL"){
-  TFile fcalib(file);
-  AliTPCcalibTime* timeDrift=(AliTPCcalibTime*)fcalib.Get("calibTime");
-  THnSparse* addHist=timeDrift->GetHistoDrift(trigger);
-  TH2D* histo=addHist->Projection(2,0);
-
-  histo->SetTitle("Relative drift velocity change");
-  histo->GetXaxis()->SetTitle("time");
-  histo->GetXaxis()->SetTimeFormat();
-  histo->GetXaxis()->SetTimeDisplay(1);
-  histo->GetYaxis()->SetTitleOffset(1.3);
-  histo->GetYaxis()->SetTitle("relative drift velocity change");
-  histo->SetLineColor(1);
-  histo->SetMarkerColor(1);
-  TGraphErrors* graph=AliTPCcalibBase::FitSlices(addHist,2,0,400,100,0.05,0.95, kTRUE);
-  if(!graph) return;
-  graph->SetNameTitle(addHist->GetName(),"Relative drift velocity change");
-  graph->GetXaxis()->SetTitle("time");
-  graph->GetXaxis()->SetTimeFormat();
-  graph->GetXaxis()->SetTimeDisplay(1);
-  graph->GetYaxis()->SetTitleOffset(1.3);  
-  graph->GetYaxis()->SetTitle("relative drift velocity change");
-  graph->SetMaximum(0.003);
-  graph->SetMinimum(-0.003);
-  graph->SetLineColor(2);
-  graph->SetMarkerColor(2);
-  TCanvas* histo_fit = new TCanvas("histo_fit", "Relative drift velocity change histogram/fit", 800, 600);
-  histo->Draw();
-  graph->Draw("lp");
-  histo_fit->SaveAs("relative_drift_velocity_change_histo_fit.pdf");
-  histo_fit->SaveAs("relative_drift_velocity_change_histo_fit.png");
-}
-
-
 
 void PrintArray(TObjArray *array){
   //
@@ -262,63 +206,10 @@ void PrintArray(TObjArray *array){
   //
   Int_t entries = array->GetEntries();
   for (Int_t i=0; i<entries; i++){
-    printf("%s\n", array->At(i)->GetName());
+    printf("%d\t %s\n", i,  array->At(i)->GetName());
   }
 }
 
-
-TMultiGraph * MakeMultiGraph(TObjArray *array, const char  *mask, Int_t color, Int_t style){
-  //
-  // Make a multi graph with graphs selected
-  //
-  if (!array) return 0;
-  TMultiGraph *mgraph=new TMultiGraph("MultiGraph", "MultiGraph");
-  TObjArray * maskArray=0;
-  if (mask){
-    TString grmask(mask);
-    maskArray = grmask.Tokenize("*");
-  }
-  Double_t ymin=0,ymax=-1;
-  for (Int_t i=0; i<array->GetEntries();i++){
-    TGraphErrors *graph= (TGraphErrors*)array->At(i);
-    if (!graph) continue;
-    if (maskArray){
-      Bool_t isOK=kTRUE;
-      TString str(graph->GetName());
-      for (Int_t imask=0; imask<maskArray->GetEntries();imask++)
-	if (!str.Contains(maskArray->At(imask)->GetName())==0) isOK=kFALSE;
-      if (!isOK) continue;
-    }
-    if (ymax<ymin){
-      ymin=graph->GetMinimum();
-      ymax=graph->GetMaximum();
-    }
-    ymin = TMath::Min(ymin,graph->GetMinimum());
-    ymax = TMath::Max(ymax,graph->GetMaximum());
-  }
-  ymin=ymin-(ymax-ymin)*0.2;
-  ymax=ymax+(ymax-ymin)*0.5;
-  Bool_t first=kTRUE;
-  for (Int_t i=0; i<array->GetEntries();i++){
-    TGraphErrors *graph= (TGraphErrors*)array->At(i);
-    if (!graph) continue;
-    if (maskArray){
-      Bool_t isOK=kTRUE;
-      TString str(graph->GetName());
-      for (Int_t imask=0; imask<maskArray->GetEntries();imask++)
-	if (str.Contains(maskArray->At(imask)->GetName())==0) isOK=kFALSE;
-      if (!isOK) continue;
-    }
-    graph->SetMarkerColor(color);
-    graph->SetMarkerStyle(style);
-    graph->SetLineColor(color);
-    graph->SetMaximum(ymax);
-    graph->SetMinimum(ymin);
-    if (first)  {first=kFALSE;}
-    mgraph->Add(graph);
-  }
-  return mgraph;
-}
 
 
 TGraphErrors* FilterGraphDrift(TGraphErrors * graph, Float_t errSigmaCut, Float_t medianCutAbs){
@@ -522,128 +413,111 @@ void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
 
 
 
+
 void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
   //
-  // Add laser graphs
+  // add graphs for laser
   //
-  THnSparse* laserHist=NULL;
-  TGraphErrors* laserGraph=NULL;
-  TString laserName="";
-  laserHist=timeDrift->GetHistVdriftLaserA(1);
-  laserName=laserHist->ClassName();
-  laserName+="_MEAN_DRIFT_LASER_ALL_A";
-  laserName.ToUpper();
-  laserHist->SetName(laserName);
-  laserGraph=AliTPCcalibBase::FitSlices(laserHist,2,0,300,10,0.05,0.95, kTRUE);
-  //laserGraph=FilterGraphDrift(laserGraph, 5,0.04);
-  //
-  if(laserGraph && laserGraph->GetN()){
-    laserName=laserGraph->GetName();
-    laserName+="_MEAN_DRIFT_LASER_ALL_A";
-    laserName.ToUpper();
-    laserGraph->SetName(laserName);
-    vdriftArray->Add(laserGraph);
-  }
-
-  laserHist=NULL;
-  laserGraph=NULL;
-  laserName="";
-
-  laserHist=timeDrift->GetHistVdriftLaserC(1);
-  laserName=laserHist->ClassName();
-  laserName+="_MEAN_DRIFT_LASER_ALL_C";
-  laserName.ToUpper();
-  laserHist->SetName(laserName);
-  //vdriftArray->Add(laserHist);// really add the whole histogram ??
-  laserGraph=AliTPCcalibBase::FitSlices(laserHist,2,0,300,10,0.05,0.95, kTRUE);
-  //laserGraph = FilterGraphDrift(laserGraph, 5,0.04);
-  if(laserGraph && laserGraph->GetN()){
-    laserName=laserGraph->GetName();
-    laserName+="_MEAN_DRIFT_LASER_ALL_C";
-    laserName.ToUpper();
-    laserGraph->SetName(laserName);
-    vdriftArray->Add(laserGraph);
-  }
-
-  // 2.c) additional informaion from laser for A and C side : DELAY
-  laserHist=NULL;
-  laserGraph=NULL;
-  laserName="";
-  
-  laserHist=timeDrift->GetHistVdriftLaserA(0);
-  laserName=laserHist->ClassName();
-  laserName+="_MEAN_DELAY_LASER_ALL_A";
-  laserName.ToUpper();
-  laserHist->SetName(laserName);
-  laserGraph=AliTPCcalibBase::FitSlices(laserHist,2,0,100,10,0.05,0.95, kTRUE);
-  
-  if(laserGraph && laserGraph->GetN()){
-    laserName=laserGraph->GetName();
-    laserName+="_MEAN_DELAY_LASER_ALL_A";
-    laserName.ToUpper();
-    laserGraph->SetName(laserName);
-    vdriftArray->Add(laserGraph);
-  }
-
-  laserHist=NULL;
-  laserGraph=NULL;
-  laserName="";
-
-  laserHist=timeDrift->GetHistVdriftLaserC(0);
-  laserName=laserHist->ClassName();
-  laserName+="_MEAN_DELAY_LASER_ALL_C";
-  laserName.ToUpper();
-  laserHist->SetName(laserName);
-  //vdriftArray->Add(laserHist);// really add the whole histogram ??
-  laserGraph=AliTPCcalibBase::FitSlices(laserHist,2,0,100,10,0.05,0.95, kTRUE);
-  if(laserGraph && laserGraph->GetN()){
-    laserName=laserGraph->GetName();
-    laserName+="_MEAN_DELAY_LASER_ALL_C";
-    laserName.ToUpper();
-    laserGraph->SetName(laserName);
-    vdriftArray->Add(laserGraph);
-  }
-
-  // 2.d) additional informaion from laser for A and C side : GlobalY Gradient
-  laserHist=NULL;
-  laserGraph=NULL;
-  laserName="";
-
-  laserHist=timeDrift->GetHistVdriftLaserA(2);
-  laserName=laserHist->ClassName();
-  laserName+="_MEAN_GLOBALYGRADIENT_LASER_ALL_A";
-  laserName.ToUpper();
-  laserHist->SetName(laserName);
-  //vdriftArray->Add(laserHist);  // really add the whole histogram ??
-  laserGraph=AliTPCcalibBase::FitSlices(laserHist,2,0,100,10,0.05,0.95, kTRUE);
-  //laserGraph=FilterGraphDrift(laserGraph, 5,0.04);
-  if(laserGraph && laserGraph->GetN()){
-    laserName=laserGraph->GetName();
-    laserName+="_MEAN_GLOBALYGRADIENT_LASER_ALL_A";
-    laserName.ToUpper();
-    laserGraph->SetName(laserName);
-    vdriftArray->Add(laserGraph);
-  }
-
-  laserHist=NULL;
-  laserGraph=NULL;
-  laserName="";
-
-  laserHist=timeDrift->GetHistVdriftLaserC(2);
-  laserName=laserHist->ClassName();
-  laserName+="_MEAN_GLOBALYGRADIENT_LASER_ALL_C";
-  laserName.ToUpper();
-  laserHist->SetName(laserName);
-  laserGraph=AliTPCcalibBase::FitSlices(laserHist,2,0,100,10,0.05,0.95, kTRUE);
-  //laserGraph=FilterGraphDrift(laserGraph, 5,0.04);
-  if(laserGraph && laserGraph->GetN()){
-    laserName=laserGraph->GetName();
-    laserName+="_MEAN_GLOBALYGRADIENT_LASER_ALL_C";
-    laserName.ToUpper();
-    laserGraph->SetName(laserName);
-    vdriftArray->Add(laserGraph);
+  const Double_t delayL0L1 = 0.07;  //this is hack for 1/2 weeks
+  THnSparse *hisN=0;
+  TGraphErrors *grLaser[6]={0,0,0,0,0,0};
+  hisN = timeDrift->GetHistVdriftLaserA(0);
+  if (timeDrift->GetHistVdriftLaserA(0)){
+    grLaser[0]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserA(0),0,2,5,delayL0L1);
+    grLaser[0]->SetName("GRAPH_MEAN_DELAY_LASER_ALL_A");
+    vdriftArray->AddLast(grLaser[0]);
+  }    
+  if (timeDrift->GetHistVdriftLaserA(1)){
+    grLaser[1]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserA(1),0,2,5);
+    grLaser[1]->SetName("GRAPH_MEAN_DRIFT_LASER_ALL_A");
+    vdriftArray->AddLast(grLaser[1]);
+  }    
+  if (timeDrift->GetHistVdriftLaserA(2)){
+    grLaser[2]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserA(2),0,2,5);
+    grLaser[2]->SetName("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_A");
+    vdriftArray->AddLast(grLaser[2]);
+  }    
+  if (timeDrift->GetHistVdriftLaserC(0)){
+    grLaser[3]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserC(0),0,2,5,delayL0L1);
+    grLaser[3]->SetName("GRAPH_MEAN_DELAY_LASER_ALL_C");
+    vdriftArray->AddLast(grLaser[3]);
+  }    
+  if (timeDrift->GetHistVdriftLaserC(1)){
+    grLaser[4]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserC(1),0,2,5);
+    grLaser[4]->SetName("GRAPH_MEAN_DRIFT_LASER_ALL_C");
+    vdriftArray->AddLast(grLaser[4]);
+  }    
+  if (timeDrift->GetHistVdriftLaserC(2)){
+    grLaser[5]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserC(2),0,2,5);
+    grLaser[5]->SetName("GRAPH_MEAN_GLOBALYGRADIENT_LASER_ALL_C");    
+    vdriftArray->AddLast(grLaser[5]);
+  }    
+  for (Int_t i=0; i<6;i++){
+    if (grLaser[i]) {
+      SetDefaultGraphDrift(grLaser[i], 1,(i+20));
+      grLaser[i]->GetYaxis()->SetTitle("Laser Correction");
+    }
   }
 }
+ 
+ 
+TGraphErrors * MakeGraphFilter0(THnSparse *hisN, Int_t itime, Int_t ival, Int_t minEntries, Double_t offset){
+  //
+  // Make graph with mean values and rms
+  //
+  hisN->GetAxis(itime)->SetRange(0,100000000);
+  hisN->GetAxis(ival)->SetRange(0,100000000);
+  TH1 * hisT      = hisN->Projection(itime);
+  TH1 * hisV      = hisN->Projection(ival);
+  //
+  Int_t firstBinA = hisT->FindFirstBinAbove(2);
+  Int_t lastBinA  = hisT->FindLastBinAbove(2);    
+  Int_t firstBinV = hisV->FindFirstBinAbove(0);
+  Int_t lastBinV  = hisV->FindLastBinAbove(0);    
+  hisN->GetAxis(itime)->SetRange(firstBinA,lastBinA);
+  hisN->GetAxis(ival)->SetRange(firstBinV,lastBinV);
+  Int_t entries=0;
+  for (Int_t ibin=firstBinA; ibin<lastBinA; ibin++){
+    Double_t cont = hisT->GetBinContent(ibin);
+    if (cont<minEntries) continue;
+    entries++;
+  }
+  TVectorD vecTime(entries);
+  TVectorD vecMean0(entries);
+  TVectorD vecRMS0(entries);
+  TVectorD vecMean1(entries);
+  TVectorD vecRMS1(entries);
+  entries=0;
+  {for (Int_t ibin=firstBinA; ibin<lastBinA; ibin++){
+      Double_t cont = hisT->GetBinContent(ibin);
+      if (cont<minEntries) continue;
+      hisN->GetAxis(itime)->SetRange(ibin-1,ibin+1);
+      Double_t time = hisT->GetBinCenter(ibin);
+      TH1 * his = hisN->Projection(ival);
+      Double_t nentries0= his->GetBinContent(his->FindBin(0));
+      if (cont-nentries0<minEntries) continue;
+      //
+      his->SetBinContent(his->FindBin(0),0);
+      vecTime[entries]=time;
+      vecMean0[entries]=his->GetMean()+offset;
+      vecMean1[entries]=his->GetMeanError();
+      vecRMS0[entries] =his->GetRMS();
+      vecRMS1[entries] =his->GetRMSError();
+      delete his;  
+      entries++;
+    }}
+  delete hisT;
+  delete hisV;
+  TGraphErrors * graph =  new TGraphErrors(entries,vecTime.GetMatrixArray(), vecMean0.GetMatrixArray(),					   0, vecMean1.GetMatrixArray());
+  return graph;
+}
+
+
+
+
+
+
+
 
 void SetDefaultGraphDrift(TGraph *graph, Int_t color, Int_t style){
   //
@@ -817,42 +691,3 @@ TObjArray * SelectEntries(TObjArray* array, char * mask){
 }
 
 
-void Substract(TGraphErrors *refgr, TObjArray *arraySelect){
-  //
-  //
-  /*
-  TObjArray *arraySelect = SelectEntries(arr,"COSMIC");
-  TGraphErrors *refgr= (TGraphErrors*)arr->FindObject("ALIGN_ITSP_TPC_DRIFTVD");
-  Substract(refgr,arraySelect);
-  */
-  Float_t mx0=0.12, mx1=0.1, my0=0.15, my1=0.5;
-  {
-  for (Int_t igr=0; igr<arraySelect->GetEntries(); igr++){
-    TGraphErrors *gr = (TGraphErrors *)arraySelect->At(igr);
-    Int_t ngr = gr->GetN();
-     for (Int_t i=0; i<ngr;i++){
-      gr->GetY()[i]-=refgr->Eval(gr->GetX()[i]);
-      gr->GetY()[i]*=250/0.264;
-    }
-    gr->GetXaxis()->SetRangeUser(refgr->GetXaxis()->GetXmin(),refgr->GetXaxis()->GetXmax());
-    SetDefaultGraphDrift(gr,((igr)),20+igr);
-    gr->SetMaximum(8.);
-    gr->SetMinimum(4.);
-    gr->GetYaxis()->SetTitle("#Delta_{t}(Time Bin)");
-  }
-  //
-  TPad * pad = new TCanvas("Delays","Delays",1000,800);
-  SetPadStyle(pad,mx0,mx1,my0,my1);    
-  TLegend *legend = new TLegend(mx0+0.01,1-my1, 1-mx1, 1-0.01, "Time Offset");
-  {
-    arraySelect->At(0)->Draw("ap");
-    for (Int_t igr=0; igr<arraySelect->GetEntries(); igr++){
-      TGraphErrors *gr = (TGraphErrors *)arraySelect->At(igr);
-      if (gr->GetN()<5) continue;
-      if (gr) gr->Draw("p");
-      legend->AddEntry(gr,gr->GetName());
-    }
-  }
-  legend->Draw();
-  }
-}
