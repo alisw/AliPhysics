@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Aruments
 # 1   -  run list
 # 2   -  start run
@@ -13,6 +15,7 @@ echo endRun=$endRun
 workdir=${GUI_OUTDIR}/tmp/tmp${startRun}-${endRun}
 backupdir=`pwd`/
 mkdirhier $workdir
+cp $runList $workdir
 cd $workdir
 source guiEnv.sh
 source $ALICE_ROOT/TPC/scripts/halloWorld.sh
