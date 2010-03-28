@@ -173,12 +173,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   }
   
   //If Geometry library loaded, do geometry selection during analysis.
-//  if(fCalorimeter=="PHOS"){
-//    if(!GetReader()->GetPHOSGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
-//    GetReader()->InitPHOSGeometry();
-//    
-//  }
-//  else 
+  if(fCalorimeter=="PHOS"){
+    if(!GetReader()->GetPHOSGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
+    GetReader()->InitPHOSGeometry();
+    
+  }
+  else 
 	if(fCalorimeter=="EMCAL"){
 		if(!GetReader()->GetEMCALGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
 		GetReader()->InitEMCALGeometry();

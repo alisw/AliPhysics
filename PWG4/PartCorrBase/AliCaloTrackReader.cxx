@@ -487,23 +487,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
     }
     
   }
-	
-  //Geometry transformation matrices available for the calorimeters
-  if(gGeoManager) {// geoManager was set
-    fEMCALGeoMatrixSet = kTRUE;
-    fPHOSGeoMatrixSet  = kTRUE;
-  }
-  else{
-    fEMCALGeoMatrixSet = kFALSE;
-    fPHOSGeoMatrixSet  = kFALSE;
-  }
-  
-  //Init the calorimeters geometry
-  //do it event by event to avoid PHOS geometry mem leak
-  //InitEMCALGeometry();
-
+	  
   //Get the EMCAL transformation geometry matrices from ESD 
-  if (!gGeoManager && fEMCALGeo) {
+  if (!gGeoManager && fEMCALGeo && !fEMCALGeoMatrixSet) {
     if(fDebug > 1) 
       printf(" AliCaloTrackReader::FillInputEvent() - Load EMCAL misalignment matrices. \n");
     if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
@@ -521,11 +507,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 	  }//AOD as input
   }//EMCAL geo && no geoManager
   
-  //Init the calorimeters geometry
-  //do it event by event to avoid PHOS geometry mem leak
-  InitPHOSGeometry();
   //Get the PHOS transformation geometry matrices from ESD 
-  if (!gGeoManager && fPHOSGeo) {
+  if (!gGeoManager && fPHOSGeo && !fPHOSGeoMatrixSet) {
     if(fDebug > 1) 
       printf(" AliCaloTrackReader::FillInputEvent() - Load PHOS misalignment matrices. \n");
     if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
@@ -566,9 +549,5 @@ void AliCaloTrackReader::ResetLists() {
     fOutputEvent->GetTracks()      ->Clear();
     fOutputEvent->GetCaloClusters()->Clear();
   }
-
-  //delete the geometry pointers event by event to avoir PHOS mem leak
-  //if(fEMCALGeo) {delete fEMCALGeo; fEMCALGeo = NULL;}
-  if(fPHOSGeo)  {delete fPHOSGeo;  fPHOSGeo  = NULL;}
 
 }

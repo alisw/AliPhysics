@@ -74,16 +74,16 @@ class AliAnaPartCorrMaker : public TObject {
   
   //General Data members
   
-  TList * fOutputContainer ; // output histograms container
-  TList * fAnalysisContainer ; // List with analysis pointers
+  TList * fOutputContainer ;   //! output histograms container
+  TList * fAnalysisContainer ; //! List with analysis pointers
   Bool_t  fMakeHisto ; // If true makes final analysis with histograms as output
   Bool_t  fMakeAOD ; // If true makes analysis generating AODs
   Int_t   fAnaDebug; // Debugging info.
  
-  AliCaloTrackReader *  fReader ;   // Pointer to reader 
+  AliCaloTrackReader *  fReader ;   //! Pointer to reader 
   TList * fAODBranchList ;          //! List with AOD branches created and needed in analysis
 
-  TH1I *fhNEvents;            //! Number of events counter histogram
+  TH1I *fhNEvents;                  //! Number of events counter histogram
 	
   ClassDef(AliAnaPartCorrMaker,3)
 } ;

@@ -127,8 +127,9 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
   //particles not connected to reconstructed entities
 
   if(!stack) {
-    printf("AliMCAnalysisUtils::CheckOriginInStack() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
-    abort();
+    if (fDebug >=0) 
+		printf("AliMCAnalysisUtils::CheckOriginInStack() - Stack is not available, check analysis settings in configuration file, STOP!!\n");
+	return -1;
   }
 
   Int_t tag = 0;
@@ -380,8 +381,9 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
   // Play with the MCParticles in AOD if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInStack but different input.
   if(!mcparticles) {
-    printf("AliMCAnalysisUtils::CheckOriginInAOD() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
-    
+    if(fDebug >= 0)
+		printf("AliMCAnalysisUtils::CheckOriginInAOD() - AODMCParticles is not available, check analysis settings in configuration file!!\n");
+	return -1;
   }
 	
   Int_t tag = 0;

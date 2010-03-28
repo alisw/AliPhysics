@@ -344,12 +344,12 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	// store them in outputContainer
     
 	//If Geometry library loaded, do geometry selection during analysis.
-//	if(fCalorimeter=="PHOS"){
-//		if(!GetReader()->GetPHOSGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
-//		GetReader()->InitPHOSGeometry();
-//		
-//	}
-//	else
+	if(fCalorimeter=="PHOS"){
+		if(!GetReader()->GetPHOSGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
+		GetReader()->InitPHOSGeometry();
+		
+	}
+	else
 	if(fCalorimeter=="EMCAL"){
 		if(!GetReader()->GetEMCALGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
 		GetReader()->InitEMCALGeometry();
