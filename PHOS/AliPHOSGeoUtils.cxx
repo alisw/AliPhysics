@@ -149,6 +149,10 @@ AliPHOSGeoUtils::~AliPHOSGeoUtils(void)
   if(fMisalArray){
     delete fMisalArray; fMisalArray=0 ;
   }
+
+  delete [] fStripMatrix;
+  delete [] fEMCMatrix;
+  delete [] fCPVMatrix;
 }
 //____________________________________________________________________________
 Bool_t AliPHOSGeoUtils::AbsToRelNumbering(Int_t absId, Int_t * relid) const
@@ -623,7 +627,7 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
  
   fPHOSMatrix[mod]=m ;
 
-  //If modules does not exist, make sure all its matrixes are zero
+  //If module does not exist, make sure all its matrices are zero
   if(m==NULL){
     fEMCMatrix[mod]=NULL ;
     Int_t istrip=0 ;
@@ -636,7 +640,7 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
     return ;
   }
 
-  //Calculate maxtrixes for PTII
+  //Calculate maxtrices for PTII
   if(!fMisalArray)
     fMisalArray = new TClonesArray("TGeoHMatrix",1120+10) ;
   Int_t nr = fMisalArray->GetEntriesFast() ;
@@ -649,13 +653,13 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   Double_t locTII[3]={0.,0.,z} ; 
   Double_t globTII[3] ;
 
-  TGeoHMatrix * mTII = new((*fMisalArray)[nr])TGeoHMatrix() ;
+  if (fEMCMatrix[mod] == NULL)
+    fEMCMatrix[mod] = new((*fMisalArray)[nr])TGeoHMatrix() ;
   nr++ ;
-  mTII->SetRotation(rotEMC) ;
-  mTII->MultiplyLeft(fPHOSMatrix[mod]) ;
+  fEMCMatrix[mod]->SetRotation(rotEMC) ;
+  fEMCMatrix[mod]->MultiplyLeft(fPHOSMatrix[mod]) ;
   fPHOSMatrix[mod]->LocalToMaster(locTII,globTII) ;
-  mTII->SetTranslation(globTII) ;
-  fEMCMatrix[mod]=mTII ;
+  fEMCMatrix[mod]->SetTranslation(globTII) ;
  
   //Now calculate ideal matrixes for strip misalignment.
   //For the moment we can not store them in ESDHeader
@@ -669,10 +673,10 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
     for(Int_t icol = 0; icol < fGeometryEMCA->GetNStripZ(); icol ++){
       loc[2] = (2*icol + 1 - fGeometryEMCA->GetNStripZ()) * strip[2] ;
       fEMCMatrix[mod]->LocalToMaster(loc,glob) ;
-      TGeoHMatrix * mSTR = new((*fMisalArray)[nr])TGeoHMatrix(*(fEMCMatrix[mod])) ; //Use same rotation as PHOS module
+      if (fStripMatrix[mod][istrip] == NULL)
+	fStripMatrix[mod][istrip] = new((*fMisalArray)[nr])TGeoHMatrix(*(fEMCMatrix[mod])) ; //Use same rotation as PHOS module
       nr++ ;
-      mSTR->SetTranslation(glob) ;
-      fStripMatrix[mod][istrip]=mSTR ;
+      fStripMatrix[mod][istrip]->SetTranslation(glob) ;
       istrip++;
     }
   }
@@ -683,14 +687,14 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   Double_t locCPV[3]={0.,0.,- emcParams[3]} ;
   Double_t rot[9]={1.,0.,0.,0.,0.,1.,0.,-1.,0.} ;
 
-  TGeoHMatrix * mCPV = new((*fMisalArray)[nr])TGeoHMatrix() ;
+  if (fCPVMatrix[mod] == NULL)
+    fCPVMatrix[mod] = new((*fMisalArray)[nr])TGeoHMatrix() ;
   nr++ ;
-  mCPV->SetRotation(rot) ;
-  mCPV->MultiplyLeft(fPHOSMatrix[mod]) ;
-  mCPV->ReflectY(kFALSE) ;
+  fCPVMatrix[mod]->SetRotation(rot) ;
+  fCPVMatrix[mod]->MultiplyLeft(fPHOSMatrix[mod]) ;
+  fCPVMatrix[mod]->ReflectY(kFALSE) ;
   fPHOSMatrix[mod]->LocalToMaster(locCPV,globCPV) ;
-  mCPV->SetTranslation(globCPV) ;
-  fCPVMatrix[mod]=mCPV ;
+  fCPVMatrix[mod]->SetTranslation(globCPV) ;
 
 }
  
