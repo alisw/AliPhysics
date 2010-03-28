@@ -153,7 +153,7 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     if(fMakeHisto){// Analysis with histograms as output on
       //Fill container with appropriate histograms			
-      TList * templist =  ana -> GetCreateOutputObjects(); 
+      TList * templist =  ana ->GetCreateOutputObjects(); 
 	  templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       for(Int_t i = 0; i < templist->GetEntries(); i++){
 
@@ -206,8 +206,8 @@ void AliAnaPartCorrMaker::InitParameters()
   //Init data members
   
   fMakeHisto = kTRUE;
-  fMakeAOD = kTRUE; 
-  fAnaDebug = 0; // No debugging info displayed by default
+  fMakeAOD   = kTRUE; 
+  fAnaDebug  = 0; // No debugging info displayed by default
 	
 }
 
@@ -223,7 +223,16 @@ void AliAnaPartCorrMaker::Print(const Option_t * opt) const
   printf("Debug level                =     %d\n", fAnaDebug) ;
   printf("Produce Histo              =     %d\n", fMakeHisto) ;
   printf("Produce AOD                =     %d\n", fMakeAOD) ;
- 
+  printf("Number of analysis tasks   =     %d\n", fAnalysisContainer->GetEntries()) ;
+  if(!strcmp("all",opt)){
+	  printf("Print analysis Tasks settings :\n") ;
+	  for(Int_t iana = 0; iana<fAnalysisContainer->GetEntries(); iana++){
+		  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana))->Print("");
+	  }
+  
+	  printf("Print analysis Reader settings :\n") ;
+	  fReader->Print("");
+  }
 } 
 
 

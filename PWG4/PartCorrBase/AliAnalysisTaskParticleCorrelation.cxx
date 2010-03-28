@@ -27,7 +27,9 @@
 // --- Root ---
 #include <TROOT.h>
 #include <TInterpreter.h>
+#include <TClonesArray.h>
 //#include <Riostream.h>
+//#include <TObjectTable.h>
 
 // --- Analysis ---
 #include "AliAnalysisTaskParticleCorrelation.h"
@@ -71,6 +73,8 @@ AliAnalysisTaskParticleCorrelation::~AliAnalysisTaskParticleCorrelation()
     delete fOutputContainer ;
   }
 
+  if(fAna) delete fAna;
+	
 }
 
 //_____________________________________________________
@@ -80,7 +84,7 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - Begin\n");
   
   //Get list of aod arrays, add each aod array to analysis frame 
-  TClonesArray * array = 0;
+  TClonesArray *array = 0;
   TList * list = fAna->GetAODBranchList();
   TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
   for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++){
@@ -88,7 +92,7 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
 	if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
 	else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
   } 
-  
+	
   //Histograms container
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
@@ -149,15 +153,18 @@ void AliAnalysisTaskParticleCorrelation::UserExec(Option_t */*option*/)
     printf("AliAnalysisTaskParticleCorrelation::UserExec() - Wrong type of data\n");
     return ;
   }
-  
+
   fAna->GetReader()->SetInputOutputMCEvent(InputEvent(), AODEvent(), MCEvent());
 
   //Process event
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
   //printf("AliAnalysisTaskParticleCorrelation::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserExec() - End\n");
-  
+	
   PostData(1, fOutputContainer);
+	
+  //gObjectTable->Print();
+
   
 }
 
@@ -168,9 +175,8 @@ void AliAnalysisTaskParticleCorrelation::Terminate(Option_t */*option*/)
   // Do some plots
 
   // Get merged histograms from the output container
-  TList *outputList = (TList*)GetOutputData(1);
   // Propagate histagrams to maker
-  fAna->Terminate(outputList);
+  fAna->Terminate((TList*)GetOutputData(1));
 	
 }
 

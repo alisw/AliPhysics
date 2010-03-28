@@ -474,7 +474,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   if(kUseKinematics) anaomegaToPi0Gamma->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else anaomegaToPi0Gamma->SwitchOffDataMC() ;//Access MC stack and fill more histograms
   anaomegaToPi0Gamma->AddToHistogramsName(Form("AnaOmegaToPi0Gamma%s_",calorimeter.Data()));
-  anaomegaToPi0Gamma->Print("");
+ if(kPrintSettings)   anaomegaToPi0Gamma->Print("");
  
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
