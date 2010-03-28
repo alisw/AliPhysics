@@ -90,7 +90,7 @@ fhOmegaPriPt(ex.fhOmegaPriPt)
 AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi0Gamma & ex)
 {
  // assignment operator
-
+  
  if(this == &ex)return *this;
    ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
    fInputAODGamma = new TClonesArray(*ex.fInputAODGamma);
@@ -178,10 +178,10 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
   for(Int_t i=0;i<fNVtxZBin;i++) fVtxZCut[i]=10*(i+1);
 
   fCent=new Double_t[fNCentBin];
-  fCent[0]=0;
+  for(int i = 0;i<fNCentBin;i++)fCent[i]=0;
 
   fRp=new Double_t[fNRpBin];
-  fRp[0]=0;
+  for(int i = 0;i<fNRpBin;i++)fRp[i]=0;
 
   fBadChDist=new Int_t [fNBadChDistBin];
   for(Int_t j=0;j<fNBadChDistBin;j++)   fBadChDist[j] = j+2;
