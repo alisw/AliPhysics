@@ -187,6 +187,14 @@ namespace AliMUONQAIndices
     kNtrigStructErrorBins ///< Total number of bins for struct error summary
   };
     
+  // Bins for tracker readout errors
+  enum ETrackerReadoutErrors
+  {
+    kTrackerRawNofGlitchErrors = 0, ///< Bin for number of glitch errors
+    kTrackerRawNofTokenLostErrors = 1, ///< Bin for number of token lost errors
+    kTrackerRawNofParityErrors = 2, ///< Bin for number of parity errors
+    kTrackerRawNofPaddingErrors = 3 ///< Bin for number of padding errors
+  };
   
 }
 

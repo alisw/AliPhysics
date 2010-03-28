@@ -138,6 +138,21 @@ namespace {
     
     return 0;
   }
+  
+  //___________________________________________________________________________  
+  void SetPaveColor(TPaveText& text, AliMUONVQAChecker::ECheckCode code)
+  {
+    const Int_t INFOCOLOR(3);  // green = INFO
+    const Int_t WARNINGCOLOR(5); // yellow = WARNING
+    const Int_t ERRORCOLOR(6); // pink = ERROR
+    const Int_t FATALCOLOR(2); // red = FATAL
+    
+    if ( code == AliMUONVQAChecker::kInfo ) text.SetFillColor(INFOCOLOR);
+    else if ( code == AliMUONVQAChecker::kWarning ) text.SetFillColor(WARNINGCOLOR);
+    else if ( code ==  AliMUONVQAChecker::kFatal) text.SetFillColor(FATALCOLOR);
+    else text.SetFillColor(ERRORCOLOR);
+  }
+  
 }
 
 //__________________________________________________________________
@@ -255,15 +270,19 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
     TH1* hnevents = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNofRawEventSeen,AliRecoParam::ConvertIndex(specie));
 
     TH1* hddl = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerDDLOccupancy,AliRecoParam::ConvertIndex(specie));
+
+    TH1* hroe = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerReadoutErrors,AliRecoParam::ConvertIndex(specie));
+
+    TH1* hbuspatchtokenerrors = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchTokenLostErrors,AliRecoParam::ConvertIndex(specie));
     
-    if ( !hbp || !hnpads || !hnevents || !hddl ) 
+    if ( !hbp || !hnpads || !hnevents || !hddl || !hroe || ! hbuspatchtokenerrors ) 
     {
       continue;
     }
     
     Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
         
-    rv[specie] = BeautifyTrackerBusPatchOccupancy(*hddl,*hbp,hbpconfig,*hnpads,nevents,*recoParam);    
+    rv[specie] = BeautifyHistograms(*hddl,*hbp,*hroe,hbpconfig,*hnpads,*hbuspatchtokenerrors,nevents,*recoParam);    
   }
   
   return rv;
@@ -271,14 +290,16 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
 
 //____________________________________________________________________________ 
 AliMUONVQAChecker::ECheckCode
-AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hddl,
-                                                          TH1& hbp, 
-                                                          const TH1* hbuspatchconfig, 
-                                                          const TH1& hnpads, 
-                                                          Int_t nevents,
-                                                          const AliMUONRecoParam& recoParam)
+AliMUONTrackerQAChecker::BeautifyHistograms(TH1& hddl,
+                                            TH1& hbp, 
+                                            TH1& hroe,
+                                            const TH1* hbuspatchconfig, 
+                                            const TH1& hnpads, 
+                                            const TH1& hbuspatchtokenerrors,
+                                            Int_t nevents,
+                                            const AliMUONRecoParam& recoParam)
 {
-  /// Put labels, limits and so on on the TrackerBusPatchOccupancy histogram
+  /// Put labels, limits and so on on the TrackerBusPatchOccupancy and TrackerReadoutErrors histograms
   /// hbuspatchconfig and hbp must have the same bin definitions
   
   if ( hbuspatchconfig )
@@ -441,23 +462,9 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hddl,
   
   hbp.GetListOfFunctions()->Add(text);
   
-  if ( rv == AliMUONVQAChecker::kInfo ) 
-  {
-    text->SetFillColor(3); // green = INFO
-  }
-  else if ( rv == AliMUONVQAChecker::kWarning ) 
-  {
-    text->SetFillColor(5); // yellow = WARNING
-  }
-  else if ( rv ==  AliMUONVQAChecker::kFatal) 
-  {
-    text->SetFillColor(2); // red = FATAL
-  }
-  else 
-  {
-    text->SetFillColor(6); // pink = ERROR
-  }
   
+  SetPaveColor(*text,rv);
+
   /// Make as well a version for DDL occupancy, that'll be used by the shifter
   
   hddl.GetListOfFunctions()->Add(text->Clone());
@@ -487,6 +494,37 @@ AliMUONTrackerQAChecker::BeautifyTrackerBusPatchOccupancy(TH1& hddl,
   }
   hddl.SetLineWidth(3);
   hddl.SetStats(kFALSE);
+  
+  /// Finally make another pavetext for readout errors, in particular TokenLost ones !
+  
+  Double_t tokenLost = hroe.GetBinContent(hroe.FindBin(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors));
+  
+  AliInfo(Form("tokenLost=%e",tokenLost));
+  
+  if ( tokenLost > 0 )
+  {
+    TPaveText* errText = new TPaveText(0.30,0.50,0.9,0.9,"NDC");
+    
+    errText->AddText(Form("MCH RUN %d - %d events",AliCDBManager::Instance()->GetRun(),nevents));
+    errText->AddText("There are some token lost errors !");
+    errText->AddText("PLEASE CHECK THE BUSY TIME FOR MUON !");
+    errText->AddText("If above 5 ms please have the MUON expert");
+    errText->AddText("check the following bus patches :");
+    
+    for ( Int_t i = 1; i <= hbuspatchtokenerrors.GetNbinsX(); ++i ) 
+    {
+      if ( hbuspatchtokenerrors.GetBinContent(i) > 0 ) 
+      {
+        errText->AddText(Form("BP %4d",i));
+      }
+    }
+    
+    hroe.GetListOfFunctions()->Add(errText);
+
+    rv = AliMUONVQAChecker::kFatal;
+    
+    SetPaveColor(*errText,rv);
+  }
   
   return rv;
 }

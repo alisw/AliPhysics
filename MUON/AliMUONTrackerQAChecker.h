@@ -30,12 +30,14 @@ private:
   
   AliMUONVQAChecker::ECheckCode MarkHisto(TH1& histo, AliMUONVQAChecker::ECheckCode value) const;
   
-  AliMUONVQAChecker::ECheckCode BeautifyTrackerBusPatchOccupancy(TH1& hddl,
-                                                                 TH1& hbp, 
-                                                                 const TH1* hbuspatchconfig, 
-                                                                 const TH1& hnpads, 
-                                                                 Int_t nevents,
-                                                                 const AliMUONRecoParam& recoParam);
+  AliMUONVQAChecker::ECheckCode BeautifyHistograms(TH1& hddl,
+                                                   TH1& hbp, 
+                                                   TH1& hroe,
+                                                   const TH1* hbuspatchconfig, 
+                                                   const TH1& hnpads, 
+                                                   const TH1& hbuspatchtokenerrors,
+                                                   Int_t nevents,
+                                                   const AliMUONRecoParam& recoParam);
 
   ClassDef(AliMUONTrackerQAChecker,1)  // MUON quality assurance checker
 

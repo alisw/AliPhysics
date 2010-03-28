@@ -71,11 +71,6 @@
 ClassImp(AliMUONTrackerQADataMakerRec)
 /// \endcond
            
-Double_t AliMUONTrackerQADataMakerRec::fgkRawNofGlitchErrors(0.0);
-Double_t AliMUONTrackerQADataMakerRec::fgkRawNofTokenLostErrors(1.0);
-Double_t AliMUONTrackerQADataMakerRec::fgkRawNofParityErrors(2.0);
-Double_t AliMUONTrackerQADataMakerRec::fgkRawNofPaddingErrors(3.0);
-
 namespace
 {
   Double_t ProtectedSqrt(Double_t x)
@@ -497,15 +492,43 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
              
     if ( msg.Contains("token") )
     {
-      Int_t dsp(-1),ddl(-1),ecode(-1);
+      Int_t dsp(-1),iddl(-1),ecode(-1);
       
-      sscanf(msg.Data(),"Lost token error detected in DSP 0x%X of DDL %d and code %d.",
-             &dsp,&ddl,&ecode);
+      sscanf(msg.Data(),"Lost token error detected with address 0x%X of DDL %d and code %d.",
+             &dsp,&iddl,&ecode);
       Int_t localBP = ((dsp >> 16)- 4)*5 + 1;
-      Int_t buspatch = localBP + ddl*100;
-      htoken->Fill(buspatch,occurence);
-      hroe->Fill(fgkRawNofTokenLostErrors,occurence);
-      AliDebug(1,Form("DDL %d DSP %d busPatch %d",ddl,dsp,buspatch));
+      Int_t buspatch = localBP + iddl*100;
+      
+      // Let's try to get all the suspected bus patches (i.e. one full FRT, as currently
+      // we don't have more precise information to locate the faulty bus patch(es)).
+      
+      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(buspatch);
+      Int_t frt = bp->GetFrtId();
+      AliMpDDL* ddl = AliMpDDLStore::Instance()->GetDDL(bp->GetDdlId());
+      Int_t* b = new Int_t[ddl->GetMaxDsp()];
+      ddl->GetBusPerDsp(b);
+      Int_t nbus(0);
+      for ( Int_t i = 0; i < ddl->GetNofFrts() && !nbus; ++i ) 
+      {
+        if ( ddl->GetFrtId(i) == frt ) 
+        {
+          nbus = b[i];
+        }
+      }
+      if (nbus<=0) 
+      {
+        AliError("GOT NBUS<=0 ! THAT IS BAD ! CHECK !");
+        nbus=1;
+      }
+      
+      delete[] b;
+      
+      while (nbus) {
+        htoken->Fill(buspatch+nbus-1,occurence);
+        --nbus;
+      }
+      
+      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors,occurence);
     }
     
     if ( msg.Contains("Parity") )
@@ -513,12 +536,12 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
       Int_t buspatch;
       sscanf(msg.Data(),"Parity error in buspatch %d (0x%X).",&buspatch,&buspatch);
       hparity->Fill(buspatch,occurence);      
-      hroe->Fill(fgkRawNofParityErrors,occurence);
+      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofParityErrors,occurence);
     }
     
     if ( msg.Contains("Glitch") ) 
     {
-      hroe->Fill(fgkRawNofGlitchErrors,occurence);      
+      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofGlitchErrors,occurence);      
     }
     
     if ( msg.Contains("Padding") )
@@ -526,7 +549,7 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
       Int_t block, dsp, buspatch;      
       sscanf(msg.Data(),"Padding word error for iBlock %d, iDsp %d, iBus %d.",&block,&dsp,&buspatch);
       hpadding->Fill(buspatch,occurence);
-      hroe->Fill(fgkRawNofPaddingErrors,occurence);      
+      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofPaddingErrors,occurence);      
     }
   }
   
@@ -586,10 +609,10 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
   // The QA shifter will only see the summary plot below
   TAxis* a = h->GetXaxis();
   
-  a->SetBinLabel(h->FindBin(fgkRawNofGlitchErrors),"Glitch errors");
-  a->SetBinLabel(h->FindBin(fgkRawNofTokenLostErrors),"Token lost errors");
-  a->SetBinLabel(h->FindBin(fgkRawNofParityErrors),"Parity errors");
-  a->SetBinLabel(h->FindBin(fgkRawNofPaddingErrors),"Padding errors");
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofGlitchErrors),"Glitch errors");
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors),"Token lost errors");
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofParityErrors),"Parity errors");
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofPaddingErrors),"Padding errors");
 
   Add2RawsList(h,AliMUONQAIndices::kTrackerReadoutErrors,!expert,image,!saveCorr);
 

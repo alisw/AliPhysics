@@ -822,8 +822,8 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		case kMediumErrorDetail:
 			word = *reinterpret_cast<const UInt_t*>(location);
 			message = Form(
-				"Lost token error detected in DSP 0x%X of DDL %d and code %d.",
-				((word & 0xFFFF0000) >> 16),
+				"Lost token error detected with address 0x%X of DDL %d and code %d.",
+				((word & 0xFFFF0000)),
 				fRawStream->GetDDL(),
 				(word & 0xF)
 			);
@@ -833,11 +833,10 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 			word = *reinterpret_cast<const UInt_t*>(location);
 			message = Form(
 				"Lost token error detected with address 0x%X and code %d. %s",
-				((word & 0xFFFF0000) >> 16),
+				((word & 0xFFFF0000)),
 				(word & 0xF),
 				detail
 			);
-			message = Form("Lost token error detected. %s.", detail);
 			break;
 		}
 		logAsMajorError = false;

@@ -77,12 +77,8 @@ private:
   AliMUONLogger* fLogger; //!< (readout) error logger
   
   static Double_t fgkRawNofEvents; //!< x-position to fill kTrackerReadoutErrors with nof events
-  static Double_t fgkRawNofGlitchErrors; //!< x-position to fill kTrackerReadoutErrors with nof glitch errors
-  static Double_t fgkRawNofTokenLostErrors; //!< x-position to fill kTrackerReadoutErrors with nof token lost errors
-  static Double_t fgkRawNofParityErrors; //!< x-position to fill kTrackerReadoutErrors with nof parity errors
-  static Double_t fgkRawNofPaddingErrors; //!< x-position to fill kTrackerReadoutErrors with nof padding errors
   
-  ClassDef(AliMUONTrackerQADataMakerRec,2)  // MUON Quality assurance data maker
+  ClassDef(AliMUONTrackerQADataMakerRec,3)  // MUON Quality assurance data maker
 
 };
 #endif
