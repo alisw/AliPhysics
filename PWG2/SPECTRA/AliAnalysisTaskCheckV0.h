@@ -24,7 +24,7 @@ class AliAnalysisTaskCheckV0 : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskCheckV0();
   AliAnalysisTaskCheckV0(const char *name);
-  virtual ~AliAnalysisTaskCheckV0() {}
+ ~AliAnalysisTaskCheckV0();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);

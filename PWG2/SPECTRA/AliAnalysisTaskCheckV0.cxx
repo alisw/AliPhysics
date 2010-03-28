@@ -95,7 +95,11 @@ AliAnalysisTaskCheckV0::AliAnalysisTaskCheckV0(const char *name)
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class());
 }
-
+//________________________________________________________________________
+AliAnalysisTaskCheckV0::~AliAnalysisTaskCheckV0(){
+  // Destructor
+  if (fListHist) { delete fListHist; fListHist = 0x0; }
+}
 //________________________________________________________________________
 void AliAnalysisTaskCheckV0::UserCreateOutputObjects()
 {
