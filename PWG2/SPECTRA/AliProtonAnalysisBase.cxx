@@ -413,6 +413,7 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
 					const AliESDVertex *vertex, 
 					AliESDtrack* track) {
   // Checks if the track is a primary-like candidate
+  const Double_t kMicrometer2Centimeter = 0.0001;
   Double_t gPt = 0.0, gPx = 0.0, gPy = 0.0, gPz = 0.0;
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
   Double_t dca3D = 0.0;
@@ -532,7 +533,7 @@ Bool_t AliProtonAnalysisBase::IsPrimary(AliESDEvent *esd,
       }
   }
   if(fPtDependentDcaXYFlag) {
-    if(TMath::Abs(dca[0]) > fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt)) {
+    if(TMath::Abs(dca[0]) > kMicrometer2Centimeter*fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt)) {
       if(fDebugMode)
 	Printf("IsPrimary: Track rejected because it has a value of the dca(xy) higher than the %d sigma pt dependent cut: %lf (max. requested: %lf)",TMath::Abs(dca[0]),fNSigmaDCAXY,fNSigmaDCAXY*fPtDependentDcaXY->Eval(gPt));
       return kFALSE;
