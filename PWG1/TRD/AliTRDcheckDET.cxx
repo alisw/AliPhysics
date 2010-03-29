@@ -333,6 +333,7 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     MakePlotChi2();
     return kTRUE;
   case kFigPH:
+    gPad->SetMargin(0.125, 0.015, 0.1, 0.1);
     MakePlotPulseHeight();
     gPad->SetLogy(0);
     return kTRUE;
@@ -1262,22 +1263,25 @@ void AliTRDcheckDET::MakePlotnTrackletsVsP(){
   //
   TH1 *hLayer[6];
   TH2 *hBar = (TH2F *)fContainer->FindObject("hNtlsBAR");
-  TLegend *leg = new TLegend(0.13, 0.75, 0.39, 0.89);
-  leg->SetBorderSize(1);
-  leg->SetFillColor(0);
+  TLegend *leg = new TLegend(0.13, 0.75, 0.2, 0.9);
+  leg->SetBorderSize(0);
+  leg->SetHeader("Tracklet/Track");
+  leg->SetFillStyle(0);
   Color_t color[6] = {kBlue, kOrange, kBlack, kGreen, kCyan, kRed};
   Bool_t first = kTRUE;
   for(Int_t itl = 1; itl <= 6; itl++){
-    hLayer[itl-1] = hBar->ProjectionX(Form("ntl%d", itl), itl, itl);
-    hLayer[itl-1]->Scale(1./hLayer[itl-1]->Integral());
+    hLayer[itl-1]= hBar->ProjectionX(Form("ntl%d", itl), itl, itl);
+    hLayer[itl-1]->Scale(100./hLayer[itl-1]->Integral());
     hLayer[itl-1]->SetLineColor(color[itl-1]);
-    hLayer[itl-1]->GetYaxis()->SetRangeUser(0, 1);
+    hLayer[itl-1]->GetYaxis()->SetRangeUser(0., 60.);
+    hLayer[itl-1]->GetXaxis()->SetMoreLogLabels();
+    hLayer[itl-1]->SetYTitle("Prob. [%]");
     if(first){
-      hLayer[itl-1]->Draw("l");
+      hLayer[itl-1]->Draw("c");
       first=kFALSE;
     } else
-      hLayer[itl-1]->Draw("lsame");
-    leg->AddEntry(hLayer[itl-1], Form("%d tracklets", itl),"l");
+      hLayer[itl-1]->Draw("csame");
+    leg->AddEntry(hLayer[itl-1], Form("n = %d", itl),"l");
   }
   leg->Draw();
   gPad->Update();
