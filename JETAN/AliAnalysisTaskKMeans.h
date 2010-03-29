@@ -40,6 +40,7 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   virtual Double_t DeltaR(Double_t phi1, Double_t eta1, Double_t phi2, Double_t eta2);
   virtual void     SetK(Int_t k) {fK = k;} 
   virtual void     SetMinimumMultiplicity(Int_t k) {fNMin = k;} 
+  virtual void     SetEtaPhi(TH2F* h2) {fH2REtaPhi = h2;}
  private:
   // Others
   Int_t            fK;             // K                        
@@ -74,9 +75,12 @@ class AliAnalysisTaskKMeans : public AliAnalysisTaskSE {
   TH1F*            fHCSize;        //! Cluster Size
   TH1F*            fHNCluster;     //! Number of clusters
   TH2F*            fHPtDensity;    //! Pt vs density
+  TH1F*            fHDPhi;         //! Phi Correlation 
+  TH2F*            fH2EtaPhi;      //! eta phi 
+  TH2F*            fH2REtaPhi;     //  eta phi 
   AliKMeansResult* fA[10];         //! Array of results
   AliKMeansResult* fB[10];         //! Array of results
-  AliESDtrackCuts* fCuts;             // List of cuts
+  AliESDtrackCuts* fCuts;          // List of cuts
   ClassDef(AliAnalysisTaskKMeans, 1); // A k-means clustering analysis
 };
 
