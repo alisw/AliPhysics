@@ -22,7 +22,7 @@
    //
    // 4. simple execution
    //
-   CalibTimeVdriftGlobal("CalibObjectsTrain1.root", 110000, AliCDBRunRange::Infinity())
+   CalibTimeVdrift("CalibObjectsTrain1.root", 110000, AliCDBRunRange::Infinity())
    //
    // 5. try to visualize new entry
    //   
@@ -70,7 +70,7 @@ AliTPCcalibTime * timeDrift=0;
 //
 // functions:
 //
-void CalibTimeVdriftGlobal(Char_t* file="CalibObjectsTrain1.root", Int_t ustartRun=0, Int_t uendRun=AliCDBRunRange::Infinity());
+void CalibTimeVdrift(Char_t* file="CalibObjectsTrain1.root", Int_t ustartRun=0, Int_t uendRun=AliCDBRunRange::Infinity(),TString ocdbStorage="");
 void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun);
 void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift, Int_t minEntries);
 void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
@@ -120,11 +120,12 @@ void GetRunRange(AliTPCcalibTime* timeDrift){
 
 
 
-void CalibTimeVdriftGlobal(Char_t* file, Int_t ustartRun, Int_t uendRun){
+void CalibTimeVdrift(Char_t* file, Int_t ustartRun, Int_t uendRun, TString pocdbStorage){
   //
   //
   //
   const Int_t    kMinEntries=500;     // minimal number of entries
+  if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
   //
   // 1. Initialization and run range setting
   TFile fcalib(file);
@@ -148,8 +149,12 @@ void CalibTimeVdriftGlobal(Char_t* file, Int_t ustartRun, Int_t uendRun){
   AddHistoGraphs(vdriftArray,timeDrift,kMinEntries);
   AddLaserGraphs(vdriftArray,timeDrift);
   //
+  // 3. Append QA plots
   //
-  // 3. update of OCDB
+  MakeDefaultPlots(vdriftArray,vdriftArray);
+  //
+  //
+  // 4. update of OCDB
   //
   //
   UpdateOCDBDrift(ustartRun,uendRun);
@@ -418,7 +423,7 @@ void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
   //
   // add graphs for laser
   //
-  const Double_t delayL0L1 = 0.07;  //this is hack for 1/2 weeks
+  const Double_t delayL0L1 = 0.071;  //this is hack for 1/2 weeks
   THnSparse *hisN=0;
   TGraphErrors *grLaser[6]={0,0,0,0,0,0};
   hisN = timeDrift->GetHistVdriftLaserA(0);
@@ -661,33 +666,5 @@ void MakeDefaultPlots(TObjArray * arr, TObjArray *picArray){
   }
 }
 
-
-TObjArray * SelectEntries(TObjArray* array, char * mask){
-  //
-  //
-  //
-  TObjArray * arraySelect = new TObjArray;
-  TObjArray * maskArray=0;
-  if (mask){
-    TString grmask(mask);
-    maskArray = grmask.Tokenize("*");
-  }
-  for (Int_t i=0; i<array->GetEntries();i++){
-    TObject *graph= array->At(i);
-    if (!graph) continue;
-    if (maskArray){
-      Bool_t isOK=kTRUE;
-      TString str(graph->GetName());
-      for (Int_t imask=0; imask<maskArray->GetEntries();imask++)
-	if (str.Contains(maskArray->At(imask)->GetName())==0) isOK=kFALSE;
-      if (!isOK) continue;
-      if (isOK) {
-	printf("%s\n",graph->GetName());
-	arraySelect->AddLast(graph->Clone());
-      }
-    }
-  }
-  return arraySelect;
-}
 
 

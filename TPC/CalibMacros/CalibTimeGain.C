@@ -13,7 +13,7 @@ gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
 .L $ALICE_ROOT/TPC/CalibMacros/CalibTimeGain.C+
 
 //Make calibration
-CalibTimeGainGlobal("CalibObjectsTrain1.root",0,120000);
+CalibTimeGain("CalibObjectsTrain1.root",0,120000);
 TBrowser b;
 b.Add(gainArray);
 
@@ -52,7 +52,7 @@ Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGau
 
 
 
-void CalibTimeGainGlobal(Char_t* fileName="CalibObjectsTrain1.root", Int_t startRunNumber=0, Int_t endRunNumber=AliCDBRunRange::Infinity(),  TString  ocdbStorage=""){
+void CalibTimeGain(Char_t* fileName="CalibObjectsTrain1.root", Int_t startRunNumber=0, Int_t endRunNumber=AliCDBRunRange::Infinity(),  TString  ocdbStorage=""){
   //
   // Update OCDB gain
   //
