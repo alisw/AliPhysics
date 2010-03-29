@@ -1053,7 +1053,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h1->GetXaxis()->SetTitle("N^{cl}/tracklet");
         h1->GetYaxis()->SetTitle("Prob. [%]");
         h = (TH1F*)h1->DrawClone("c");
-        h->SetMaximum(55.);
+        h->SetMaximum(20.);
         h->GetXaxis()->SetRangeUser(0., 35.);
         kFIRST = kFALSE;
       } else h = (TH1F*)h1->DrawClone("samec");

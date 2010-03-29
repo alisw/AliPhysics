@@ -62,7 +62,7 @@ ClassImp(AliTRDcheckESD)
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 const UChar_t AliTRDcheckESD::fgkNgraph[AliTRDcheckESD::kNrefs] ={
-1, 4, 2, 20};
+6, 4, 2, 20};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
 const Float_t AliTRDcheckESD::fgkEvVertexZ = 15.;
@@ -144,6 +144,9 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
   if(!gPad){
     AliWarning("Please provide a canvas to draw results.");
     return kFALSE;
+  } else {
+    gPad->SetLogx(0);gPad->SetLogy(0);
+    gPad->SetMargin(0.125, 0.015, 0.1, 0.015);
   }
 
   const Char_t *title[20];
@@ -156,24 +159,36 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
   switch(ifig){
   case kNCl: // number of clusters/track
     if(!(arr = (TObjArray*)fResults->At(kNCl))) return kFALSE;
-    g=(TGraphErrors*)arr->At(0);
-    g->Draw("apc");
-    hF=g->GetHistogram();
-    hF->SetXTitle("no of clusters");
-    hF->SetYTitle("entries");
+
+    leg = new TLegend(.83, .7, .99, .96);
+    leg->SetHeader("Species");
+    leg->SetBorderSize(0); leg->SetFillStyle(0);
+    for(Int_t ig(0); ig<fgkNgraph[kNCl]; ig++){
+      if(!(g = (TGraphErrors*)arr->At(ig))) return kFALSE;
+      g->Draw(ig?"pc":"apc"); leg->AddEntry(g, g->GetTitle(), "pl");
+      if(ig) continue;
+      hF=g->GetHistogram();
+      hF->SetXTitle("no of clusters");
+      hF->SetYTitle("entries"); 
+      hF->GetYaxis()->CenterTitle(1);
+      hF->GetYaxis()->SetTitleOffset(1.2);
+      hF->SetMinimum(5);
+    }
+    leg->Draw(); gPad->SetLogy();
     break;
   case kTRDstat: // Efficiency
     if(!(arr = (TObjArray*)fResults->At(kTRDstat))) return kFALSE;
-    leg = new TLegend(.65, .7, .95, .99);
+    leg = new TLegend(.62, .77, .98, .98);
     leg->SetHeader("TRD Efficiency");
-    leg->SetBorderSize(1); leg->SetFillColor(0);
+    leg->SetBorderSize(0); leg->SetFillStyle(0);
     title[0] = "Geometrical (TRDin/TPCout)";
     title[1] = "Tracking (TRDout/TRDin)";
     title[2] = "PID (TRDpid/TRDin)";
     title[3] = "Refit (TRDrefit/TRDin)";
     hF = new TH1S("hFcheckESD", ";p [GeV/c];Efficiency", 10, 0.1, 10.);
-    hF->SetMaximum(1.3);
+    hF->SetMaximum(1.4);
     hF->GetXaxis()->SetMoreLogLabels();
+    hF->GetYaxis()->CenterTitle(1);
     hF->Draw("p");
     for(Int_t ig(0); ig<fgkNgraph[kTRDstat]; ig++){
       if(!(g = (TGraphErrors*)arr->At(ig))) return kFALSE;
@@ -547,6 +562,15 @@ void AliTRDcheckESD::Terminate(Option_t *)
       fResults->AddAt(arr = new TObjArray(fgkNgraph[iref]), iref);
       arr->SetName(name[iref]);  arr->SetOwner();
       switch(iref){
+      case kNCl:
+        for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
+          arr->AddAt(g = new TGraphErrors(), ig);
+          g->SetLineColor(ig+1); 
+          g->SetMarkerColor(ig+1); 
+          g->SetMarkerStyle(ig+20); 
+          g->SetNameTitle(Form("s%d", ig), ig? AliPID::ParticleLatexName(ig-1):"all");
+        }
+        break;
       case kTRDmom:
         for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
           arr->AddAt(g = new TGraphAsymmErrors(), ig);
@@ -598,12 +622,20 @@ void AliTRDcheckESD::Terminate(Option_t *)
   TAxis *ax(NULL);
 
   // No of clusters
-  if(!(h1[0] = (TH1I*)fHistos->At(kNCl))) return;
+  if(!(h2 = (TH2I*)fHistos->At(kNCl))) return;
+  ax = h2->GetXaxis();
   arr = (TObjArray*)fResults->At(kNCl);
+  h1[0] = h2->ProjectionX("Ncl_px");
   TGraphErrors *ge=(TGraphErrors*)arr->At(0);
-  ax = h1[0]->GetXaxis();
   for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
     ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+  }
+  for(Int_t is(1); is<=AliPID::kSPECIES; is++){
+    h1[0] = h2->ProjectionX("Ncl_px", 2*is-1, 2*is);
+    TGraphErrors *ge=(TGraphErrors*)arr->At(is);
+    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+      ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
+    }
   }
   fNRefFigures = 1;
 
