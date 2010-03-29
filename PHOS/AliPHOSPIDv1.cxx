@@ -132,7 +132,6 @@
 #include "TPrincipal.h"
 #include "TFile.h" 
 #include "TSystem.h"
-#include "TVector3.h"
 
 // --- AliRoot header files ---
 	      //#include "AliLog.h"
