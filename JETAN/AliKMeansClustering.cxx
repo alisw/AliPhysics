@@ -221,7 +221,7 @@ Int_t AliKMeansClustering::SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* 
       // Sigma
       for (i = 0; i < k; i++) {
 	sigma2[i] = 0.;
-	for (j = 1; j < n; j++) {
+	for (j = 0; j < n; j++) {
 	  sigma2[i] += r[j][i] * d(mx[i], my[i], x[j], y[j]);
 	} // Data
 	sigma2[i] /= rk[i];
@@ -354,7 +354,7 @@ Int_t AliKMeansClustering::SoftKMeans3(Int_t k, Int_t n, Double_t* x, Double_t* 
 	sigmax2[i] = 0.;
 	sigmay2[i] = 0.;
 
-	for (j = 1; j < n; j++) {
+	for (j = 0; j < n; j++) {
 	  Double_t dx = TMath::Abs(mx[i]-x[j]);
 	  if (dx > TMath::Pi()) dx = 2. * TMath::Pi() - dx;
 	  Double_t dy = TMath::Abs(my[i]-y[j]);
@@ -508,14 +508,16 @@ AliKMeansResult::~AliKMeansResult()
 
 void AliKMeansResult::Sort()
 {
-// Sort clusters
-    for (Int_t i = 0; i < fK; i++) {
-	if (fRk[i] > 1.) fRk[i] /= fSigma2[i];
-	else fRk[i] = 0.;
+  // Build target array and sort
+  // Sort clusters
+  for (Int_t i = 0; i < fK; i++) {
+    if (fRk[i] > 2.9) {
+      fTarget[i] = fRk[i] / fSigma2[i];
     }
+    else fTarget[i] = 0.;
+  }
     
-    TMath::Sort(fK, fRk, fInd);
-    
+  TMath::Sort(fK, fTarget, fInd);
 }
 
 void AliKMeansResult::Sort(Int_t n, Double_t* x, Double_t* y)
@@ -526,10 +528,11 @@ void AliKMeansResult::Sort(Int_t n, Double_t* x, Double_t* y)
       Int_t nc = 0;
       for (Int_t j = 0; j < n; j++)
 	{
-	  if (2. * AliKMeansClustering::d(fMx[i], fMy[i], x[j], y[j])  <  fSigma2[i]) nc++;
+	  if (2. * AliKMeansClustering::d(fMx[i], fMy[i], x[j], y[j])  <  2.28 * fSigma2[i]) nc++;
 	}
-      if (nc > 1) {
-	fTarget[i] = Double_t(nc) / fSigma2[i];
+
+      if (nc > 2) {
+	fTarget[i] = Double_t(nc) / (2.28 * fSigma2[i]);
       } else {
 	fTarget[i] = 0.;
       }
