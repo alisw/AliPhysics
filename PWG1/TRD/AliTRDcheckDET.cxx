@@ -32,6 +32,7 @@
 #include <TF1.h>
 #include <TGaxis.h>
 #include <TGraph.h>
+#include <TGraphErrors.h>
 #include <TLegend.h>
 #include <TLinearFitter.h>
 #include <TMath.h>
@@ -312,18 +313,18 @@ Bool_t AliTRDcheckDET::GetRefFigure(Int_t ifig){
     return kTRUE;
   case kFigTrackletStatus:
     if(!(arr = dynamic_cast<TObjArray*>(fContainer->At(kTrackletStatus)))) break;
-    leg = new TLegend(.68, .7, .98, .98);
-    leg->SetBorderSize(1);leg->SetFillColor(0);
+    leg = new TLegend(.68, .7, .97, .97);
+    leg->SetBorderSize(0);leg->SetFillStyle(0);
     leg->SetHeader("TRD layer");
-    for(Int_t ily=0; ily<AliTRDgeometry::kNlayer; ily++){
+    for(Int_t ily=AliTRDgeometry::kNlayer; ily--;){
       if(!(h=dynamic_cast<TH1F*>(arr->At(ily)))) continue;
       if(kFIRST){
-        h->Draw("c");
+        h->Draw("pl");
         h->GetXaxis()->SetRangeUser(0.5, -1);
         h->GetYaxis()->CenterTitle();
         kFIRST = kFALSE;
-      } else h->Draw("samec");
-      leg->AddEntry(h, Form("%d", ily), "l");
+      } else h->Draw("samepl");
+      leg->AddEntry(h, Form("ly = %d", ily), "l");
       PutTrendValue(Form("TrackletStatus%d", ily), h->Integral());
     }
     leg->Draw();
@@ -407,17 +408,16 @@ TObjArray *AliTRDcheckDET::Histos(){
   fContainer->AddAt(h, kNtrackletsSTA);
 
   // Binning for momentum dependent tracklet Plots
-  const Int_t kNPbins = 11;
-  Double_t binTracklets[AliTRDgeometry::kNlayer + 1];
-  for(Int_t il = 0; il <= AliTRDgeometry::kNlayer; il++) binTracklets[il] = 0.5 + il;
-  Double_t binMomentum[kNPbins + 1] = {0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.5, 2., 3., 4., 5., 10};
-
+  const Int_t kNp(14);
+  Float_t P=0.1;
+  Float_t binsP[kNp+1], binsTrklt[AliTRDgeometry::kNlayer+1];
+  for(Int_t i=0;i<kNp+1; i++,P=TMath::Exp(i*.15)-1.) binsP[i]=P;
+  for(Int_t il = 0; il <= AliTRDgeometry::kNlayer; il++) binsTrklt[il] = 0.5 + il;
   if(!(h = (TH1F *)gROOT->FindObject("htlsBAR"))){
     // Make tracklets for barrel tracks momentum dependent (if we do not exceed min and max values)
-    h = new TH2F("hNtlsBAR", "N_{tracklets} / track (Barrel)", kNPbins, binMomentum, AliTRDgeometry::kNlayer, binTracklets);
-    h->GetXaxis()->SetTitle("p / GeV/c");
-    h->GetYaxis()->SetTitle("N^{tracklet}");
-    h->GetZaxis()->SetTitle("freq. [%]");
+    h = new TH2F("hNtlsBAR", 
+    "N_{tracklets} / track;p [GeV/c];N^{tracklet};freq. [%]", 
+    kNp, binsP, AliTRDgeometry::kNlayer, binsTrklt);
   }
   fContainer->AddAt(h, kNtrackletsBAR);
 
@@ -719,23 +719,22 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
     // Full Barrel Track: Save momentum dependence
     if(!(hBarrel = dynamic_cast<TH2F *>(fContainer->At(kNtrackletsBAR)))){
       AliWarning("Method: Barrel.  Histogram not processed!");
-    } else {
-      AliExternalTrackParam *par = fkTrack->GetTrackOut() ? fkTrack->GetTrackOut() : fkTrack->GetTrackIn();
-      if(!par){
-       AliError("Outer track params missing");
-      } else {
-        p = par->P();
-      }
-      hBarrel->Fill(p, nTracklets);
+      return NULL;
     }
+    AliExternalTrackParam *par(fkTrack->GetTrackIn());
+    if(!par){
+      AliError("Input track params missing");
+      return NULL;
+    }
+    hBarrel->Fill(par->P(), nTracklets);
   } else {
     // Stand alone Track: momentum dependence not usefull
     method = 0;
     if(!(hSta = dynamic_cast<TH1F *>(fContainer->At(kNtrackletsSTA)))) {
       AliWarning("Method: StandAlone.  Histogram not processed!");
-    } else {
-      hSta->Fill(nTracklets);
+      return NULL;
     }
+    hSta->Fill(nTracklets);
   }
 
   if(DebugLevel() > 2){
@@ -1261,30 +1260,49 @@ void AliTRDcheckDET::MakePlotnTrackletsVsP(){
   //
   // Plot abundance of tracks with number of tracklets as function of momentum
   //
-  TH1 *hLayer[6];
+
+
+
+
+  Color_t color[AliTRDgeometry::kNlayer] = {kBlue, kOrange, kBlack, kGreen, kCyan, kRed};
+  TH1 *h(NULL); TGraphErrors *g[AliTRDgeometry::kNlayer];
+  for(Int_t itl(0); itl<AliTRDgeometry::kNlayer; itl++){
+    g[itl] = new TGraphErrors();
+    g[itl]->SetLineColor(color[itl]);
+    g[itl]->SetMarkerColor(color[itl]);
+    g[itl]->SetMarkerStyle(20 + itl);
+  }
+
   TH2 *hBar = (TH2F *)fContainer->FindObject("hNtlsBAR");
-  TLegend *leg = new TLegend(0.13, 0.75, 0.2, 0.9);
+  TAxis *ax(hBar->GetXaxis());
+  Int_t np(ax->GetNbins());
+  for(Int_t ipBin(1); ipBin<np; ipBin++){
+    h = hBar->ProjectionY("npBin", ipBin, ipBin);
+    h->Scale(100./h->Integral());
+    Float_t p(ax->GetBinCenter(ipBin)); 
+    Float_t dp(ax->GetBinWidth(ipBin)); 
+    for(Int_t itl(AliTRDgeometry::kNlayer); itl--;){
+      g[itl]->SetPoint(ipBin-1, p, h->GetBinContent(itl+1));
+      g[itl]->SetPointError(ipBin-1, dp/3.46, h->GetBinError(itl+1));
+    }
+  }
+
+  TLegend *leg = new TLegend(0.5, 0.75, 0.9, 0.9);
   leg->SetBorderSize(0);
   leg->SetHeader("Tracklet/Track");
   leg->SetFillStyle(0);
-  Color_t color[6] = {kBlue, kOrange, kBlack, kGreen, kCyan, kRed};
-  Bool_t first = kTRUE;
-  for(Int_t itl = 1; itl <= 6; itl++){
-    hLayer[itl-1]= hBar->ProjectionX(Form("ntl%d", itl), itl, itl);
-    hLayer[itl-1]->Scale(100./hLayer[itl-1]->Integral());
-    hLayer[itl-1]->SetLineColor(color[itl-1]);
-    hLayer[itl-1]->GetYaxis()->SetRangeUser(0., 60.);
-    hLayer[itl-1]->GetXaxis()->SetMoreLogLabels();
-    hLayer[itl-1]->SetYTitle("Prob. [%]");
-    if(first){
-      hLayer[itl-1]->Draw("c");
-      first=kFALSE;
-    } else
-      hLayer[itl-1]->Draw("csame");
-    leg->AddEntry(hLayer[itl-1], Form("n = %d", itl),"l");
+  h = hBar->ProjectionX("npxBin"); h->Reset();
+  h->GetYaxis()->SetRangeUser(0., 90.);
+  h->GetXaxis()->SetMoreLogLabels();
+  h->SetYTitle("Prob. [%]");
+  h->Draw("p");
+  for(Int_t itl(AliTRDgeometry::kNlayer); itl--;){
+    g[itl]->Draw("pc");
+    leg->AddEntry(g[itl], Form("n = %d", itl+1),"pl");
   }
+
   leg->Draw();
-  gPad->Update();
+  gPad->SetLogx();
 }
 
 //________________________________________________________
