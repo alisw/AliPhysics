@@ -68,6 +68,7 @@ void RunAnalysisITS() {
   } else {
     esdH = new AliESDInputHandler();
   }
+  esdH->SetActiveBranches("ESDfriend");
   if(readHLT) esdH->SetReadHLT();
   mgr->SetInputEventHandler(esdH);
   

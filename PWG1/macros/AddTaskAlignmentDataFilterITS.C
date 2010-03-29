@@ -34,17 +34,16 @@ AliAlignmentDataFilterITS *AddTaskAlignmentDataFilterITS()
 
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cInput = mgr->CreateContainer("cInput",TChain::Class(),AliAnalysisManager::kInputContainer);
 
-  AliAnalysisDataContainer *cOutput0= mgr->CreateContainer("cOutput0",TTree::Class(),AliAnalysisManager::kOutputContainer,"AliTrackPoints.root");
-  AliAnalysisDataContainer *cOutput1= mgr->CreateContainer("cOutput1",TList::Class(),AliAnalysisManager::kOutputContainer,"AliTrackPoints.root");
+  AliAnalysisDataContainer *cOutput1= mgr->CreateContainer("cOutput1",TTree::Class(),AliAnalysisManager::kOutputContainer,"AliTrackPoints.root");
+  AliAnalysisDataContainer *cOutput2= mgr->CreateContainer("cOutput2",TList::Class(),AliAnalysisManager::kOutputContainer,"AliTrackPoints.root");
 
 
   // Attach input
   mgr->ConnectInput(taskFilter,0,mgr->GetCommonInputContainer());
   // Attach output
-  mgr->ConnectOutput(taskFilter,0,cOutput0);
   mgr->ConnectOutput(taskFilter,1,cOutput1);
+  mgr->ConnectOutput(taskFilter,2,cOutput2);
   
   return taskFilter;
 }

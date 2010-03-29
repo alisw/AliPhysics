@@ -23,22 +23,20 @@ class AliTrackPointArray;
 #include <TString.h>
 #include "AliITSReconstructor.h"
 #include "AliITSRecoParam.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 
-class AliAlignmentDataFilterITS : public AliAnalysisTask
+class AliAlignmentDataFilterITS : public AliAnalysisTaskSE
 {
  public:
 
-  AliAlignmentDataFilterITS(const char *name="filterITS");
+  AliAlignmentDataFilterITS();
+  AliAlignmentDataFilterITS(const char *name);
   virtual ~AliAlignmentDataFilterITS();
 
 
   // Implementation of interface methods
-  virtual void ConnectInputData(Option_t *);
-  virtual void CreateOutputObjects();
-  virtual void Init();
-  virtual void LocalInit() {Init();}
-  virtual void Exec(Option_t *option);
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   void SetOnlySPDFO(Bool_t set=kTRUE) {fOnlySPDFO=set;}
   void SetGeometryFileName(TString name="geometry.root") {fGeometryFileName=name;}
@@ -63,7 +61,6 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
   TString fGeometryFileName; // where to find the geometry.root
   AliITSRecoParam *fITSRecoParam;  // keeps the settings for the filter
   AliESDEvent  *fESD;        // ESD object
-  AliESDfriend *fESDfriend;  // ESD friend object
   TList   *fListOfHistos;    //! list of histos: output slot 1
   TTree   *fspTree;          //! output tree with space points: output slot 0
   TH1F    *fHistNevents;     //! output histogram
@@ -78,7 +75,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTask
   TNtuple *fntExtra;         //! output QA ntuple  
   TNtuple *fntCosmicMatching;//! output QA ntuple  
 
-  ClassDef(AliAlignmentDataFilterITS,2); // AliAnalysisTask to extract ITS points for alignment
+  ClassDef(AliAlignmentDataFilterITS,3); // AliAnalysisTask to extract ITS points for alignment
 };
 
 #endif

@@ -45,7 +45,7 @@
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAlignmentDataFilterITS.h"
 
@@ -54,13 +54,36 @@ ClassImp(AliAlignmentDataFilterITS)
 
 
 //________________________________________________________________________
-AliAlignmentDataFilterITS::AliAlignmentDataFilterITS(const char *name):
-AliAnalysisTask(name,"task"),
+AliAlignmentDataFilterITS::AliAlignmentDataFilterITS():
+AliAnalysisTaskSE(),
 fOnlySPDFO(kFALSE),
 fGeometryFileName("geometry.root"),
 fITSRecoParam(0),
 fESD(0),
-fESDfriend(0),
+fListOfHistos(0),
+fspTree(0),
+fHistNevents(0),
+fHistNpoints(0),
+fHistPt(0),
+fHistLayer0(0),
+fHistLayer1(0),
+fHistLayer2(0),
+fHistLayer3(0),
+fHistLayer4(0),
+fHistLayer5(0),
+fntExtra(0),
+fntCosmicMatching(0)
+{
+  // Constructor
+}
+
+//________________________________________________________________________
+AliAlignmentDataFilterITS::AliAlignmentDataFilterITS(const char *name):
+AliAnalysisTaskSE(name),
+fOnlySPDFO(kFALSE),
+fGeometryFileName("geometry.root"),
+fITSRecoParam(0),
+fESD(0),
 fListOfHistos(0),
 fspTree(0),
 fHistNevents(0),
@@ -77,13 +100,12 @@ fntCosmicMatching(0)
 {
   // Constructor
 
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  // Output slot #0 writes into a TTree
-  DefineOutput(0,TTree::Class());  //My private output
-  // Output slot #1 writes into a TList
-  DefineOutput(1,TList::Class());  //My private output
+  // Define output slots here
+
+  // Output slot #1 writes into a TTree
+  DefineOutput(1,TTree::Class());  //My private output
+  // Output slot #2 writes into a TList
+  DefineOutput(2,TList::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -144,83 +166,9 @@ AliAlignmentDataFilterITS::~AliAlignmentDataFilterITS()
   }
 }  
 
-//________________________________________________________________________
-void AliAlignmentDataFilterITS::ConnectInputData(Option_t *) 
-{
-  // Connect ESD
-  // Called once
-
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if(!tree) {
-    printf("ERROR: Could not read chain from input slot 0\n");
-  } else {
-    // Get the OCDB path and the list of OCDB objects used for reco 
-    TMap *cdbMap = (TMap*)(tree->GetTree()->GetUserInfo())->FindObject("cdbMap");
-    TList *cdbList = (TList*)(tree->GetTree()->GetUserInfo())->FindObject("cdbList");
-
-    //cdbList->Print();
-    // write the list to the user info of the output tree
-    if(!fspTree) {
-      printf("ERROR: fspTree does not exist\n");
-    } else {
-      TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
-      cdbMapCopy->SetOwner(1);	 
-      cdbMapCopy->SetName("cdbMap");	 
-      TIter iter1(cdbMap->GetTable());	 
- 	 
-      TPair* pair = 0;	 
-      while((pair = dynamic_cast<TPair*> (iter1.Next()))){	 
-	TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
-	TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());	 
-	cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
-      }	 
-
-      TList *cdbListCopy = new TList();	 
-      cdbListCopy->SetOwner(1);	 
-      cdbListCopy->SetName("cdbList");	 
-      
-      TIter iter2(cdbList);	 
-      
-      TObjString* cdbEntry=0;
-      while((cdbEntry =(TObjString*)(iter2.Next()))) {
-	cdbListCopy->Add(new TObjString(*cdbEntry));
-      }	 
-      cdbListCopy->Print();
-
-
-      fspTree->GetUserInfo()->Add(cdbMapCopy);	 
-      fspTree->GetUserInfo()->Add(cdbListCopy);
-    }
-
-    // Disable all branches and enable only the needed ones
-    tree->SetBranchStatus("fTriggerMask", 1);
-    tree->SetBranchStatus("fSPDVertex*", 1);
-    tree->SetBranchStatus("ESDfriend*", 1);
-    tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-    tree->SetBranchStatus("fSPDMult*", 1);
-    
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-    if(!esdH) {
-      printf("ERROR: Could not get ESDInputHandler\n");
-    } else {
-      fESD = esdH->GetEvent();
-    }
-  }
-  
-  return;
-}
 
 //________________________________________________________________________
-void AliAlignmentDataFilterITS::Init()
-{
-  // Initialization
-
-  return;
-}
-
-//________________________________________________________________________
-void AliAlignmentDataFilterITS::CreateOutputObjects()
+void AliAlignmentDataFilterITS::UserCreateOutputObjects()
 {
   // Create the output container
   //
@@ -303,7 +251,7 @@ void AliAlignmentDataFilterITS::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
+void AliAlignmentDataFilterITS::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // write ITS AliTrackPoints for selected tracks to fspTree
@@ -322,17 +270,11 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
     }
   }
 
-
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD) {
     printf("AliAlignmentDataFilterITS::Exec(): no ESD \n");
     return;
   } 
-  if(!fESDfriend) {
-    printf("AliAlignmentDataFilterITS::Exec(): no ESDfriend \n");
-    return;
-  } 
-  // attach ESDfriend
-  fESD->SetESDfriend(fESDfriend);
 
   // Post the data for slot 0
   fHistNevents->Fill(0);
@@ -350,6 +292,53 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
     fspTree->GetUserInfo()->Add(bzList);
   }
 
+  // write OCDB info to spTree UserInfo
+  if(!((fspTree->GetUserInfo())->FindObject("cdbList"))) {
+    TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
+    if(!tree) {
+      printf("ERROR: Could not read chain from input slot 0\n");
+    } else {
+      // Get the OCDB path and the list of OCDB objects used for reco 
+      TMap *cdbMap = (TMap*)(tree->GetTree()->GetUserInfo())->FindObject("cdbMap");
+      TList *cdbList = (TList*)(tree->GetTree()->GetUserInfo())->FindObject("cdbList");
+      
+      //cdbList->Print();
+      // write the list to the user info of the output tree
+      if(!fspTree) {
+	printf("ERROR: fspTree does not exist\n");
+      } else {
+	TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
+	cdbMapCopy->SetOwner(1);	 
+	cdbMapCopy->SetName("cdbMap");	 
+	TIter iter1(cdbMap->GetTable());	 
+	
+	TPair* pair = 0;	 
+	while((pair = dynamic_cast<TPair*> (iter1.Next()))){	 
+	  TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
+	  TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());	 
+	  cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+	}	 
+	
+	TList *cdbListCopy = new TList();	 
+	cdbListCopy->SetOwner(1);	 
+	cdbListCopy->SetName("cdbList");	 
+	
+	TIter iter2(cdbList);	 
+	
+	TObjString* cdbEntry=0;
+	while((cdbEntry =(TObjString*)(iter2.Next()))) {
+	  cdbListCopy->Add(new TObjString(*cdbEntry));
+	}	 
+	cdbListCopy->Print();
+
+
+	fspTree->GetUserInfo()->Add(cdbMapCopy);	 
+	fspTree->GetUserInfo()->Add(cdbListCopy);
+      }
+    }
+  }
+
+
 
   // Process event as Cosmic or Collision
   //if(esd->GetEventType()== ???? ) {
@@ -360,7 +349,7 @@ void AliAlignmentDataFilterITS::Exec(Option_t */*option*/)
     FilterCollision(fESD);
   }
 
-  PostData(1,fListOfHistos);
+  PostData(2,fListOfHistos);
 
   return;
 }
@@ -386,7 +375,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
 
 
   runNumber = (Float_t)esd->GetRunNumber();
-  Int_t uid=10000+fESD->GetEventNumberInFile();
+  Int_t uid=10000+esd->GetEventNumberInFile();
 
   TTree* esdTree = dynamic_cast<TTree*> (GetInputData(0));
   // Get the list of OCDB objects used for reco 
@@ -403,7 +392,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   }	 
 
 
-  TString triggeredClass = fESD->GetFiredTriggerClasses(); 
+  TString triggeredClass = esd->GetFiredTriggerClasses(); 
   if(fOnlySPDFO && !triggeredClass.Contains("C0SCO-ABCE-NOPF-CENT")) return;
 
 
@@ -619,8 +608,8 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
 	fHistLayer5->Fill(TMath::ATan2(point.GetY(),point.GetX()),point.GetZ());
 	break;
       }
-      // Post the data for slot 0
-      if(jpt==1) PostData(1,fListOfHistos); // only if this is the first points
+      // Post the data for slot 2
+      if(jpt==1) PostData(2,fListOfHistos); // only if this is the first points
       if(!point.IsExtra() || 
 	 !(GetRecoParam()->GetAlignFilterFillQANtuples())) continue;
       nclsTrk[itrack]--;
@@ -665,7 +654,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
     curverr = 0.5*TMath::Sqrt(curverrArray[0]*curverrArray[0]+curverrArray[1]*curverrArray[1]);
     fspTree->Fill();
   }
-  PostData(0,fspTree);
+  PostData(1,fspTree);
 
   if(!(GetRecoParam()->GetAlignFilterFillQANtuples())) return; 
   // fill ntuple with track-to-track matching
@@ -737,7 +726,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
 
   runNumber = (Float_t)esd->GetRunNumber();
-  Int_t uid=20000+fESD->GetEventNumberInFile();
+  Int_t uid=20000+esd->GetEventNumberInFile();
 
   TTree* esdTree = dynamic_cast<TTree*> (GetInputData(0));
   // Get the list of OCDB objects used for reco 
@@ -820,7 +809,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
     fHistNpoints->Fill(jpt);
     fHistPt->Fill(pt);
-    PostData(1,fListOfHistos);
+    PostData(2,fListOfHistos);
 
     Float_t dzOverlap[2];
     Double_t globExtra[3],locExtra[3];
@@ -893,7 +882,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
  
   } // end of tracks loop
 
-  PostData(0,fspTree);
+  PostData(1,fspTree);
 
   return;
 }
