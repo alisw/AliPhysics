@@ -894,13 +894,13 @@ void AliAlignmentDataFilterITS::Terminate(Option_t */*option*/)
   //
   AliDebug(2,"AliITSAlignmentDataFiler: Terminate() \n");
 
-  fspTree = dynamic_cast<TTree*> (GetOutputData(0));
+  fspTree = dynamic_cast<TTree*> (GetOutputData(1));
   if (!fspTree) {     
     printf("ERROR: fspTree not available\n");
     return;
   }
 
-  fListOfHistos = dynamic_cast<TList*> (GetOutputData(1));
+  fListOfHistos = dynamic_cast<TList*> (GetOutputData(2));
   if (!fListOfHistos) {     
     printf("ERROR: fListOfHistos not available\n");
     return;
