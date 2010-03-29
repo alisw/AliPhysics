@@ -40,7 +40,7 @@ class TFormula;
 class TPrincipal ;
 class TROOT ;
 class TTree ;
-class TVector3 ;
+#include "TVector3.h"
 #include <TMatrixDfwd.h>
 
 // --- AliRoot header files ---
