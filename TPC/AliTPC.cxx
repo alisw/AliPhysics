@@ -304,7 +304,7 @@ void AliTPC::CreateMaterials()
   wmat[2]=0.128469474;
   wmat[3]=0.058395789;
  
-  density=0.00095;
+  density=0.000909674;
 
   AliMixture(12,"Ne-CO2-N-1",amat,zmat,density,4,wmat);
   AliMixture(13,"Ne-CO2-N-2",amat,zmat,density,4,wmat);
