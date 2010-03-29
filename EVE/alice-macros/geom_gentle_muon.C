@@ -19,7 +19,7 @@ void DrawDeep(TEveGeoShape *gsre) {
     if (!lvl->HasChildren()) {
       lvl->SetRnrSelf(kTRUE);
       lvl->SetMainColor(3);
-      lvl->SetMainTransparency(50);
+      lvl->SetMainTransparency(80);
     }
     DrawDeep(lvl);
   }
