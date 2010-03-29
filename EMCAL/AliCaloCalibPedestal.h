@@ -23,6 +23,7 @@
 //   \version $Revision$
 //   \date $Date$
 
+#include "TProfile.h"
 #include "TProfile2D.h"
 #include "TH2.h"
 #include "TObjArray.h"
@@ -63,20 +64,24 @@ class AliCaloCalibPedestal : public TObject {
   // Main profiles:
   TProfile2D * GetPedProfileLowGain(int i) const {return (TProfile2D*)fPedestalLowGain[i];};	// Return a pointer to the low-gain pedestal profile
   TProfile2D * GetPedProfileHighGain(int i) const {return (TProfile2D*)fPedestalHighGain[i];};	// Return a pointer to the high-gain pedestal profile
-  TProfile2D * GetPedRMSProfileLowGain(int i) const {return (TProfile2D*)fPedestalRMSLowGain[i];};	// Return a pointer to the low-gain rms profile 
-  TProfile2D * GetPedRMSProfileHighGain(int i) const {return (TProfile2D*)fPedestalRMSHighGain[i];};	// Return a pointer to the high-gain rms profile 
+  TProfile * GetPedLEDRefProfileLowGain(int i) const {return (TProfile*)fPedestalLEDRefLowGain[i];};	// Return a pointer to the low-gain LEDRef profile 
+  TProfile * GetPedLEDRefProfileHighGain(int i) const {return (TProfile*)fPedestalLEDRefHighGain[i];};	// Return a pointer to the high-gain LEDRef profile 
   TProfile2D * GetPeakProfileLowGain(int i) const {return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain peak-pedestal profile
   TProfile2D * GetPeakProfileHighGain(int i) const {return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain peak-pedestal profile
   
   // Differences to references:
   TProfile2D * GetPedProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainDiff[i];};	// Return a pointer to the low-gain pedestal profile difference
   TProfile2D * GetPedProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalHighGainDiff[i];};	// Return a pointer to the high-gain pedestal profile difference
+  TProfile * GetPedLEDRefProfileLowGainDiff(int i) {ValidateComparisonProfiles(); return (TProfile*)fPedestalLEDRefLowGainDiff[i];};	// Return a pointer to the low-gain LEDRef profile difference
+  TProfile * GetPedLEDRefProfileHighGainDiff(int i) {ValidateComparisonProfiles(); return (TProfile*)fPedestalLEDRefHighGainDiff[i];};	// Return a pointer to the high-gain LEDRef profile difference 
   TProfile2D * GetPeakProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainDiff[i];};	// Return a pointer to the low-gain peak-pedestal profile difference
   TProfile2D * GetPeakProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainDiff[i];};	// Return a pointer to the high-gain peak-pedestal profile difference
   
   // Ratio to references:
   TProfile2D * GetPedProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainRatio[i];};	// Return a pointer to the low-gain pedestal profile ratio
   TProfile2D * GetPedProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalHighGainRatio[i];};	// Return a pointer to the high-gain pedestal profile ratio
+  TProfile * GetPedLEDRefProfileLowGainRatio(int i) {ValidateComparisonProfiles(); return (TProfile*)fPedestalLEDRefLowGainRatio[i];};	// Return a pointer to the low-gain LEDRef profile ratio
+  TProfile * GetPedLEDRefProfileHighGainRatio(int i) {ValidateComparisonProfiles(); return (TProfile*)fPedestalLEDRefHighGainRatio[i];};	// Return a pointer to the high-gain LEDRef profile ratio 
   TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain peak-pedestal profile ratio
   TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain peak-pedestal profile ratio
   
@@ -98,6 +103,7 @@ class AliCaloCalibPedestal : public TObject {
   
   int GetColumns() const {return fColumns;}; //The number of columns per module
   int GetRows() const {return fRows;}; //The number of rows per module
+  int GetLEDRefs() const {return fLEDRefs;}; //The number of LED references/monitors per module
   int GetModules() const {return fModules;}; //The number of modules
   int GetRowMin() const {return fRowMin;}; //for histo def.
   int GetRowMax() const {return fRowMax;}; //for histo def.
@@ -162,8 +168,8 @@ class AliCaloCalibPedestal : public TObject {
   //since we have only around 12 objects (maximum) in the array anyway.
   TObjArray fPedestalLowGain; // pedestal info for low gain
   TObjArray fPedestalHighGain; // pedestal info for high gain
-  TObjArray fPedestalRMSLowGain; // pedestal rms info for low gain
-  TObjArray fPedestalRMSHighGain; // pedestal rms info for high gain
+  TObjArray fPedestalLEDRefLowGain; // pedestal LEDRef info for low gain
+  TObjArray fPedestalLEDRefHighGain; // pedestal LEDRef info for high gain
   TObjArray fPeakMinusPedLowGain; // (peak-pedestal) info for low gain
   TObjArray fPeakMinusPedHighGain; // (peak-pedestal) info for high gain
 
@@ -172,12 +178,16 @@ class AliCaloCalibPedestal : public TObject {
   //The difference of profiles between this and the reference object
   TObjArray fPedestalLowGainDiff; //!
   TObjArray fPedestalHighGainDiff; //!
+  TObjArray fPedestalLEDRefLowGainDiff; //!
+  TObjArray fPedestalLEDRefHighGainDiff; //! 
   TObjArray fPeakMinusPedLowGainDiff; //!
   TObjArray fPeakMinusPedHighGainDiff; //!
   
   //The ratio of profiles between this and the reference object
   TObjArray fPedestalLowGainRatio; //!
   TObjArray fPedestalHighGainRatio; //!
+  TObjArray fPedestalLEDRefLowGainRatio; //!
+  TObjArray fPedestalLEDRefHighGainRatio; //! 
   TObjArray fPeakMinusPedLowGainRatio; //!
   TObjArray fPeakMinusPedHighGainRatio; //!
   
@@ -197,8 +207,9 @@ class AliCaloCalibPedestal : public TObject {
   kDetType fDetType; //The detector type for this object
   int fColumns;	//The number of columns per module
   int fRows;	//The number of rows per module
+  int fLEDRefs;	//The number of LED references/monitors per module
   int fModules;	//The number of modules
-  int fRowMin; // Mimimum Row number
+  int fRowMin; // Minimum Row number
   int fRowMax; // Maximum now number
   int fRowMultiplier; // Multiplication factor to get proper row range between PHOS and EMCAL
   TString fCaloString; // id for which detector type we have 
@@ -216,9 +227,10 @@ class AliCaloCalibPedestal : public TObject {
   //Constants needed by the class: EMCAL ones are kept in AliEMCALGeoParams.h
   static const int fgkPhosRows = 64; // number of rows per module for PHOS
   static const int fgkPhosCols = 56; // number of columns per module for PHOS
+  static const int fgkPhosLEDRefs = 1; // no LED monitor channels for PHOS, set to 1 just to keep code simpler (also create LEDRef histos for PHOS)
   static const int fgkPhosModules = 5; // number of modules for PHOS
-  
-  ClassDef(AliCaloCalibPedestal, 7)
+
+  ClassDef(AliCaloCalibPedestal, 8)
 
 };
     

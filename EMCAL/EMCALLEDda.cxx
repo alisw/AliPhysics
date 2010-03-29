@@ -8,8 +8,7 @@
   Input Files: argument list
   Output Files: RESULT_FILE=EMCALLED.root, to be exported to the DAQ FXS
   fileId:  FILE_ID=EMCALLED    
-  Trigger types used: CALIBRATION_EVENT (temporarily also PHYSICS_EVENT to start with)
-  [When we have real data files later, we should only use CALIBRATION_EVENT]
+  Trigger types used: CALIBRATION_EVENT 
 */
 /*
   This process reads RAW data from the files provided as command line arguments
@@ -181,8 +180,8 @@ int main(int argc, char **argv) {
       }
       eventT = event->eventType; /* just convenient shorthand */
       
-      /* skip start/end of run events */
-      if ( (eventT != physicsEvent) && (eventT != calibrationEvent) ) {
+      /* only look at calibration events */
+      if ( eventT != calibrationEvent ) {
 	continue;
       }
       
@@ -216,7 +215,7 @@ int main(int argc, char **argv) {
   // write class to rootfile
   //
   
-  printf ("%d physics/calibration events processed.\n",nevents);
+  printf ("%d calibration events processed.\n",nevents);
   
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 

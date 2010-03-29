@@ -58,17 +58,21 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   TObject(),
   fPedestalLowGain(),
   fPedestalHighGain(),
-  fPedestalRMSLowGain(),
-  fPedestalRMSHighGain(),
+  fPedestalLEDRefLowGain(),
+  fPedestalLEDRefHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
   fPeakMinusPedHighGainHisto(),
   fPedestalLowGainDiff(),
   fPedestalHighGainDiff(),
+  fPedestalLEDRefLowGainDiff(),
+  fPedestalLEDRefHighGainDiff(),
   fPeakMinusPedLowGainDiff(),
   fPeakMinusPedHighGainDiff(),
   fPedestalLowGainRatio(),
   fPedestalHighGainRatio(),
+  fPedestalLEDRefLowGainRatio(),
+  fPedestalLEDRefHighGainRatio(),
   fPeakMinusPedLowGainRatio(),
   fPeakMinusPedHighGainRatio(),
   fDeadMap(),
@@ -81,6 +85,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   fDetType(kNone),
   fColumns(0),
   fRows(0),
+  fLEDRefs(0),
   fModules(0),
   fRowMin(0),
   fRowMax(0),
@@ -100,6 +105,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   if (detectorType == kPhos) {
     fColumns = fgkPhosCols;
     fRows = fgkPhosRows;
+    fLEDRefs = fgkPhosLEDRefs;
     fModules = fgkPhosModules;
     fCaloString = "PHOS";
     fRowMin = -1*fRows;
@@ -112,6 +118,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     //case, if someone intentionally gives another number
     fColumns = AliEMCALGeoParams::fgkEMCALCols;
     fRows = AliEMCALGeoParams::fgkEMCALRows;
+    fLEDRefs = AliEMCALGeoParams::fgkEMCALLEDRefs;
     fModules = AliEMCALGeoParams::fgkEMCALModules;
     fCaloString = "EMCAL";
     fRowMin = 0;
@@ -140,23 +147,22 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
     fPedestalHighGain.Add(new TProfile2D(name, title,
 					 fColumns, 0.0, fColumns, 
 					 fRows, fRowMin, fRowMax,"s"));
-    //All Samples, low gain
-    name = "hPedestalRMSlowgain";
+
+    //LED Ref/Mon pedestals, low gain
+    name = "hPedestalLEDReflowgain";
     name += i;
-    title = "Pedestal RMS, low gain, module ";
+    title = "Pedestal LEDRef, low gain, module ";
     title += i; 
-    fPedestalRMSLowGain.Add(new TProfile2D(name, title,
-					fColumns, 0.0, fColumns, 
-					fRows, fRowMin, fRowMax,"s"));
-  
-    //All Samples, high gain
-    name = "hPedestalRMShighgain";
+    fPedestalLEDRefLowGain.Add(new TProfile(name, title,
+					    fLEDRefs, 0.0, fLEDRefs, "s"));
+    
+    //LED Ref/Mon pedestals, high gain
+    name = "hPedestalLEDRefhighgain";
     name += i;
-    title = "Pedestal RMS, high gain, module ";
+    title = "Pedestal LEDRef, high gain, module ";
     title += i; 
-    fPedestalRMSHighGain.Add(new TProfile2D(name, title,
-					 fColumns, 0.0, fColumns, 
-					 fRows, fRowMin, fRowMax,"s"));
+    fPedestalLEDRefHighGain.Add(new TProfile(name, title,
+					     fLEDRefs, 0.0, fLEDRefs, "s"));
   
     //Peak-Pedestals, low gain
     name = "hPeakMinusPedlowgain";
@@ -197,18 +203,13 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(kDetType detectorType) :
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
-  fPedestalRMSLowGain.Compress();
-  fPedestalRMSHighGain.Compress();
+  fPedestalLEDRefLowGain.Compress();
+  fPedestalLEDRefHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fPeakMinusPedHighGainHisto.Compress();
   fDeadMap.Compress();
-  //Make them the owners of the profiles, so we don't need to care about deleting them
-  //fPedestalLowGain.SetOwner();
-  //fPedestalHighGain.SetOwner();
-  //fPeakMinusPedLowGain.SetOwner();
-  //fPeakMinusPedHighGain.SetOwner();
-  
+
 }
 
 // dtor
@@ -225,17 +226,21 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   TObject(ped),
   fPedestalLowGain(),
   fPedestalHighGain(),
-  fPedestalRMSLowGain(),
-  fPedestalRMSHighGain(),
+  fPedestalLEDRefLowGain(),
+  fPedestalLEDRefHighGain(),
   fPeakMinusPedLowGain(),
   fPeakMinusPedHighGain(),
   fPeakMinusPedHighGainHisto(),
   fPedestalLowGainDiff(),
   fPedestalHighGainDiff(),
+  fPedestalLEDRefLowGainDiff(),
+  fPedestalLEDRefHighGainDiff(),
   fPeakMinusPedLowGainDiff(),
   fPeakMinusPedHighGainDiff(),
   fPedestalLowGainRatio(),
   fPedestalHighGainRatio(),
+  fPedestalLEDRefLowGainRatio(),
+  fPedestalLEDRefHighGainRatio(),
   fPeakMinusPedLowGainRatio(),
   fPeakMinusPedHighGainRatio(),
   fDeadMap(),
@@ -248,6 +253,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   fDetType(ped.GetDetectorType()),
   fColumns(ped.GetColumns()),
   fRows(ped.GetRows()),
+  fLEDRefs(ped.GetLEDRefs()),
   fModules(ped.GetModules()),
   fRowMin(ped.GetRowMin()),
   fRowMax(ped.GetRowMax()),
@@ -268,8 +274,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   for (int i = 0; i < fModules; i++) {
     fPedestalLowGain.Add( ped.GetPedProfileLowGain(i) );
     fPedestalHighGain.Add( ped.GetPedProfileHighGain(i) );
-    fPedestalRMSLowGain.Add( ped.GetPedRMSProfileLowGain(i) );
-    fPedestalRMSHighGain.Add( ped.GetPedRMSProfileHighGain(i) );
+    fPedestalLEDRefLowGain.Add( ped.GetPedLEDRefProfileLowGain(i) );
+    fPedestalLEDRefHighGain.Add( ped.GetPedLEDRefProfileHighGain(i) );
     fPeakMinusPedLowGain.Add( ped.GetPeakProfileLowGain(i) );
     fPeakMinusPedHighGain.Add( ped.GetPeakProfileHighGain(i) );
     fPeakMinusPedHighGainHisto.Add( ped.GetPeakHighGainHisto(i) );
@@ -280,8 +286,8 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
   //Compress the arrays, in order to remove the empty objects (a 16 slot array is created by default)
   fPedestalLowGain.Compress();
   fPedestalHighGain.Compress();
-  fPedestalRMSLowGain.Compress();
-  fPedestalRMSHighGain.Compress();
+  fPedestalLEDRefLowGain.Compress();
+  fPedestalLEDRefHighGain.Compress();
   fPeakMinusPedLowGain.Compress();
   fPeakMinusPedHighGain.Compress();
   fPeakMinusPedHighGainHisto.Compress();
@@ -307,6 +313,8 @@ void AliCaloCalibPedestal::Reset()
   for (int i = 0; i < fModules; i++) {
     GetPedProfileLowGain(i)->Reset();
     GetPedProfileHighGain(i)->Reset();
+    GetPedLEDRefProfileLowGain(i)->Reset();
+    GetPedLEDRefProfileHighGain(i)->Reset();
     GetPeakProfileLowGain(i)->Reset();
     GetPeakProfileHighGain(i)->Reset();
     GetPeakHighGainHisto(i)->Reset();
@@ -317,11 +325,15 @@ void AliCaloCalibPedestal::Reset()
   
       GetPedProfileLowGainDiff(i)->Reset();
       GetPedProfileHighGainDiff(i)->Reset();
+      GetPedLEDRefProfileLowGainDiff(i)->Reset();
+      GetPedLEDRefProfileHighGainDiff(i)->Reset();
       GetPeakProfileLowGainDiff(i)->Reset();
       GetPeakProfileHighGainDiff(i)->Reset();
       
       GetPedProfileLowGainRatio(i)->Reset();
       GetPedProfileHighGainRatio(i)->Reset();
+      GetPedLEDRefProfileLowGainRatio(i)->Reset();
+      GetPedLEDRefProfileHighGainRatio(i)->Reset();
       GetPeakProfileLowGainRatio(i)->Reset();
       GetPeakProfileHighGainRatio(i)->Reset();
     }
@@ -486,7 +498,6 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
   
   // indices for the reading
   int sample = 0;
-  int gain = 0;
   int time = 0;
   int i = 0; // sample counter
   int startBin = 0;
@@ -499,13 +510,10 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
       int max = AliEMCALGeoParams::fgkSampleMin, min = AliEMCALGeoParams::fgkSampleMax; // min and max sample values
       int nsamples = 0;
 
-      // for the pedestal calculation
-      int sampleSum = 0; // sum of samples
-      int squaredSampleSum = 0; // sum of samples squared
-      int nSum = 0; // number of samples in sum
-      // calc. quantities
-      double mean = 0, squaredMean = 0, rms = 0;
-      
+      // pedestal samples
+      int nPed = 0;
+      vector<int> pedSamples; 
+
       while (in->NextBunch()) {
 	const UShort_t *sig = in->GetSignals();
 	startBin = in->GetStartTimeBin();
@@ -521,9 +529,8 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 	  // should we add it for the pedestal calculation?
 	  if ( (fFirstPedestalSample<=time && time<=fLastPedestalSample) || // sample time in range
 	       !fSelectPedestalSamples ) { // or we don't restrict the sample range.. - then we'll take all 
-	    sampleSum += sample;
-	    squaredSampleSum += sample*sample;
-	    nSum++;
+	    pedSamples.push_back( sig[i] );
+	    nPed++;
 	  }
 	  
 	} // loop over samples in bunch
@@ -531,28 +538,6 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
 
       if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
 
-      // calculate pedesstal estimate: mean of possibly selected samples
-      if (nSum > 0) {
-	mean = sampleSum / (1.0 * nSum);
-	squaredMean = squaredSampleSum / (1.0 * nSum);
-	// The variance (rms squared) is equal to the mean of the squares minus the square of the mean..
-	rms = sqrt(squaredMean - mean*mean); 
-      }
-      else {
-	mean = 0;
-	squaredMean = 0;
-	rms  = 0;
-      }
-      
-      // we're done with the calc. for this channel; let's prepare to fill histo
-      gain = -1; // init to not valid value
-      if ( in->IsLowGain() ) {
-	gain = 0;
-      }
-      else if ( in->IsHighGain() ) {
-	gain = 1;
-      }
-      
       // it should be enough to check the SuperModule info for each DDL really, but let's keep it here for now
       int arrayPos = in->GetModule(); //The modules are numbered starting from 0
       if (arrayPos >= fModules) {
@@ -566,25 +551,45 @@ Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStreamV3 *in)
       
       fNChanFills++; // one more channel found, and profile to be filled
       //NOTE: coordinates are (column, row) for the profiles
-      if (gain == 0) {
+      if ( in->IsLowGain() ) {
 	//fill the low gain histograms
 	((TProfile2D*)fPeakMinusPedLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
-	if (nSum>0) { // only fill pedestal info in case it could be calculated
-	  ((TProfile2D*)fPedestalLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), mean); 
-	  ((TProfile2D*)fPedestalRMSLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
+	if (nPed>0) { // only fill pedestal info in case it could be calculated
+	  for ( i=0; i<nPed; i++) {
+	    ((TProfile2D*)fPedestalLowGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), pedSamples[i]); 
+	  }
 	}
       } 
-      else if (gain == 1) {	
+      else if ( in->IsHighGain() ) {	
       	//fill the high gain ones
 	((TProfile2D*)fPeakMinusPedHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), max - min);
-	if (nSum>0) { // only fill pedestal info in case it could be calculated
-	  ((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), mean); 
-	  ((TProfile2D*)fPedestalRMSHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), rms);
+	if (nPed>0) { // only fill pedestal info in case it could be calculated
+	  for ( i=0; i<nPed; i++) {
+	    ((TProfile2D*)fPedestalHighGain[arrayPos])->Fill(in->GetColumn(), fRowMultiplier*in->GetRow(), pedSamples[i]); 
+	  }	  
 	}
 	// for warning checks
 	int idx = in->GetRow() + fRows * in->GetColumn();
 	((TH2F*)fPeakMinusPedHighGainHisto[arrayPos])->Fill(idx, max - min);
-      }//end if valid gain
+      } 
+      else if ( in->IsLEDMonData() ) {
+	// for LED Mon data, the mapping class holds the gain info in the Row variable
+	// and the Strip number in the Column..
+	int gain = in->GetRow(); 
+	int stripId = in->GetColumn();
+	if (nPed>0 && stripId<fLEDRefs) {
+	  if (gain == 0) {
+	    for ( i=0; i<nPed; i++) {
+	      ((TProfile*)fPedestalLEDRefLowGain[arrayPos])->Fill(stripId, pedSamples[i]);
+	    }
+	  }
+	  else {
+	    for ( i=0; i<nPed; i++) {
+	      ((TProfile*)fPedestalLEDRefHighGain[arrayPos])->Fill(stripId, pedSamples[i]);
+	    }
+	  }
+	}
+      }
 
       } // nsamples>0 check, some data found for this channel; not only trailer/header
     }// end while over channel   
@@ -621,11 +626,11 @@ Bool_t AliCaloCalibPedestal::SaveHistograms(TString fileName, Bool_t saveEmptyHi
     if( ((TProfile2D *)fPedestalHighGain[i])->GetEntries() || saveEmptyHistos) {
       fPedestalHighGain[i]->Write();
     }
-    if( ((TProfile2D *)fPedestalRMSLowGain[i])->GetEntries() || saveEmptyHistos) {
-      fPedestalRMSLowGain[i]->Write();
+    if( ((TProfile *)fPedestalLEDRefLowGain[i])->GetEntries() || saveEmptyHistos) {
+      fPedestalLEDRefLowGain[i]->Write();
     }
-    if( ((TProfile2D *)fPedestalRMSHighGain[i])->GetEntries() || saveEmptyHistos) {
-      fPedestalRMSHighGain[i]->Write();
+    if( ((TProfile *)fPedestalLEDRefHighGain[i])->GetEntries() || saveEmptyHistos) {
+      fPedestalLEDRefHighGain[i]->Write();
     }
     if( ((TH2F *)fPeakMinusPedHighGainHisto[i])->GetEntries() || saveEmptyHistos) { 
       fPeakMinusPedHighGainHisto[i]->Write();
@@ -662,7 +667,7 @@ Bool_t AliCaloCalibPedestal::LoadReferenceCalib(TString fileName, TString object
   }
 	
   delete sourceFile;
- 
+
   //Reset the histogram ownership behaviour. NOTE: a better workaround would be good, since this may accidentally set AddDirectory to true, even
   //if we are called by someone who has set it to false...
   TH1::AddDirectory(kTRUE);
@@ -699,6 +704,22 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
 					     fColumns, 0.0, fColumns, 
 					     fRows, fRowMin, fRowMax,"s"));
 
+    //LED Ref/Mon pedestals, low gain
+    name = "hPedestalLEDReflowgainDiff";
+    name += i;
+    title = "Pedestal difference LEDRef, low gain, module ";
+    title += i; 
+    fPedestalLEDRefLowGainDiff.Add(new TProfile(name, title,
+						fLEDRefs, 0.0, fLEDRefs, "s"));
+    
+    //LED Ref/Mon pedestals, high gain
+    name = "hPedestalLEDRefhighgainDiff";
+    name += i;
+    title = "Pedestal difference LEDRef, high gain, module ";
+    title += i; 
+    fPedestalLEDRefHighGainDiff.Add(new TProfile(name, title,
+						 fLEDRefs, 0.0, fLEDRefs, "s"));
+
     //Peak-Pedestals, high gain
     name = "hPeakMinusPedhighgainDiff";
     name += i;
@@ -707,6 +728,15 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     fPeakMinusPedHighGainDiff.Add(new TProfile2D(name, title,
 						 fColumns, 0.0, fColumns, 
 						 fRows, fRowMin, fRowMax,"s"));
+
+    //Peak-Pedestals, low gain
+    name = "hPeakMinusPedlowgainDiff";
+    name += i;
+    title = "Peak-Pedestal difference, low gain, module ";
+    title += i; 
+    fPeakMinusPedLowGainDiff.Add(new TProfile2D(name, title,
+						fColumns, 0.0, fColumns, 
+						fRows, fRowMin, fRowMax,"s"));
   
     //Pedestals, low gain
     name = "hPedlowgainRatio";
@@ -725,6 +755,22 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
     fPedestalHighGainRatio.Add(new TProfile2D(name, title,
 					      fColumns, 0.0, fColumns, 
 					      fRows, fRowMin, fRowMax,"s"));
+
+    //LED Ref/Mon pedestals, low gain
+    name = "hPedestalLEDReflowgain";
+    name += i;
+    title = "Pedestal ratio LEDRef, low gain, module ";
+    title += i; 
+    fPedestalLEDRefLowGainRatio.Add(new TProfile(name, title,
+						 fLEDRefs, 0.0, fLEDRefs, "s"));
+    
+    //LED Ref/Mon pedestals, high gain
+    name = "hPedestalLEDRefhighgainRatio";
+    name += i;
+    title = "Pedestal ratio LEDRef, high gain, module ";
+    title += i; 
+    fPedestalLEDRefHighGainRatio.Add(new TProfile(name, title,
+						  fLEDRefs, 0.0, fLEDRefs, "s"));
   
     //Peak-Pedestals, low gain
     name = "hPeakMinusPedlowgainRatio";
@@ -757,38 +803,79 @@ void AliCaloCalibPedestal::ComputeDiffAndRatio()
     return;//Return if the reference object isn't loaded
   }
 
+  int bin = 0;
+  double diff = 0;
+  double ratio = 1;
   for (int i = 0; i < fModules; i++) {
-    //Compute the ratio of the histograms
-    
-    ((TProfile2D*)fPedestalLowGainRatio[i])->Divide(GetPedProfileLowGain(i), fReference->GetPedProfileLowGain(i), 1.0, 1.0);
-    ((TProfile2D*)fPedestalHighGainRatio[i])->Divide(GetPedProfileHighGain(i), fReference->GetPedProfileHighGain(i), 1.0, 1.0);
-    ((TProfile2D*)fPeakMinusPedLowGainRatio[i])->Divide(GetPeakProfileLowGain(i), fReference->GetPeakProfileLowGain(i), 1.0, 1.0);
-    ((TProfile2D*)fPeakMinusPedHighGainRatio[i])->Divide(GetPeakProfileHighGain(i), fReference->GetPeakProfileHighGain(i), 1.0, 1.0);
-  
     //For computing the difference, we cannot simply do TProfile2D->Add(), because that subtracts the sum of all entries,
     //which means that the mean of the new profile will not be the difference of the means. So do it by hand:
-    for (int j = 0; j <= fColumns; j++) {
-      for (int k = 0; k <= fRows; k++) {
-	int bin = ((TProfile2D*)fPeakMinusPedHighGainDiff[i])->GetBin(j+1, k+1);//Note that we assume here that all histos have the same structure...
-	double diff = fReference->GetPeakProfileHighGain(i)->GetBinContent(bin) - GetPeakProfileHighGain(i)->GetBinContent(bin);
-	((TProfile2D*)fPeakMinusPedHighGainDiff[i])->SetBinContent(j+1, k+1, diff);
-	((TProfile2D*)fPeakMinusPedHighGainDiff[i])->SetBinEntries(bin, 1);
+    for (int j = 0; j < fColumns; j++) {
+      for (int k = 0; k < fRows; k++) {
+	bin = ((TProfile2D*)fPeakMinusPedHighGainDiff[i])->GetBin(j+1, k+1);//Note that we assume here that all histos have the same structure...
 
-	diff = fReference->GetPeakProfileLowGain(i)->GetBinContent(bin) - GetPeakProfileLowGain(i)->GetBinContent(bin);
-	((TProfile2D*)fPeakMinusPedLowGainDiff[i])->SetBinContent(j+1, k+1, diff);
-	((TProfile2D*)fPeakMinusPedLowGainDiff[i])->SetBinEntries(bin, 1);
-    
-	diff = fReference->GetPedProfileHighGain(i)->GetBinContent(bin) - GetPedProfileHighGain(i)->GetBinContent(bin);
-	((TProfile2D*)fPedestalHighGainDiff[i])->SetBinContent(j+1, k+1, diff);
-	((TProfile2D*)fPedestalHighGainDiff[i])->SetBinEntries(bin, 1);
+	if (fReference->GetPeakProfileHighGain(i)->GetBinContent(bin) > 0) {
+	  diff = GetPeakProfileHighGain(i)->GetBinContent(bin) - fReference->GetPeakProfileHighGain(i)->GetBinContent(bin);
+	  ((TProfile2D*)fPeakMinusPedHighGainDiff[i])->SetBinContent(bin, diff);
+	  ((TProfile2D*)fPeakMinusPedHighGainDiff[i])->SetBinEntries(bin, 1);
+	  ratio = GetPeakProfileHighGain(i)->GetBinContent(bin) / fReference->GetPeakProfileHighGain(i)->GetBinContent(bin);  
+	  ((TProfile2D*)fPeakMinusPedHighGainRatio[i])->SetBinContent(bin, ratio);
+	  ((TProfile2D*)fPeakMinusPedHighGainRatio[i])->SetBinEntries(bin, 1);
+	}
 
-	diff = fReference->GetPedProfileLowGain(i)->GetBinContent(bin) - GetPedProfileLowGain(i)->GetBinContent(bin);
-	((TProfile2D*)fPedestalLowGainDiff[i])->SetBinContent(j+1, k+1, diff);
-	((TProfile2D*)fPedestalLowGainDiff[i])->SetBinEntries(bin, 1);
-       
+	if (fReference->GetPeakProfileLowGain(i)->GetBinContent(bin) > 0) {
+	  diff = GetPeakProfileLowGain(i)->GetBinContent(bin) - fReference->GetPeakProfileLowGain(i)->GetBinContent(bin);
+	  ((TProfile2D*)fPeakMinusPedLowGainDiff[i])->SetBinContent(bin, diff);
+	  ((TProfile2D*)fPeakMinusPedLowGainDiff[i])->SetBinEntries(bin, 1);
+	  ratio = GetPeakProfileLowGain(i)->GetBinContent(bin) / fReference->GetPeakProfileLowGain(i)->GetBinContent(bin);  
+	  ((TProfile2D*)fPeakMinusPedLowGainRatio[i])->SetBinContent(bin, ratio);
+	  ((TProfile2D*)fPeakMinusPedLowGainRatio[i])->SetBinEntries(bin, 1);
+	}
+
+	if (fReference->GetPedProfileHighGain(i)->GetBinContent(bin) > 0) {
+	  diff = GetPedProfileHighGain(i)->GetBinContent(bin) - fReference->GetPedProfileHighGain(i)->GetBinContent(bin);
+	  ((TProfile2D*)fPedestalHighGainDiff[i])->SetBinContent(bin, diff);
+	  ((TProfile2D*)fPedestalHighGainDiff[i])->SetBinEntries(bin, 1);
+	  ratio = GetPedProfileHighGain(i)->GetBinContent(bin) / fReference->GetPedProfileHighGain(i)->GetBinContent(bin);  
+	  ((TProfile2D*)fPedestalHighGainRatio[i])->SetBinContent(bin, ratio);
+	  ((TProfile2D*)fPedestalHighGainRatio[i])->SetBinEntries(bin, 1);
+	}
+
+	if (fReference->GetPedProfileLowGain(i)->GetBinContent(bin) > 0) {
+	  diff = GetPedProfileLowGain(i)->GetBinContent(bin) - fReference->GetPedProfileLowGain(i)->GetBinContent(bin);
+	  ((TProfile2D*)fPedestalLowGainDiff[i])->SetBinContent(bin, diff);
+	  ((TProfile2D*)fPedestalLowGainDiff[i])->SetBinEntries(bin, 1);
+	  ratio = GetPedProfileLowGain(i)->GetBinContent(bin) / fReference->GetPedProfileLowGain(i)->GetBinContent(bin);  
+	  ((TProfile2D*)fPedestalLowGainRatio[i])->SetBinContent(bin, ratio);
+	  ((TProfile2D*)fPedestalLowGainRatio[i])->SetBinEntries(bin, 1);
+	}
+
       } // rows
     } // columns
-    
+
+    // same for LED Ref/Mon channels
+    for (int j = 0; j <= fLEDRefs; j++) {    
+      bin = j+1;//Note that we assume here that all histos have the same structure...
+
+      if (fReference->GetPedLEDRefProfileHighGain(i)->GetBinContent(bin) > 0) {
+	diff = GetPedLEDRefProfileHighGain(i)->GetBinContent(bin) - fReference->GetPedLEDRefProfileHighGain(i)->GetBinContent(bin);
+	((TProfile*)fPedestalLEDRefHighGainDiff[i])->SetBinContent(bin, diff);
+	((TProfile*)fPedestalLEDRefHighGainDiff[i])->SetBinEntries(bin, 1);
+	ratio = GetPedLEDRefProfileHighGain(i)->GetBinContent(bin) / fReference->GetPedLEDRefProfileHighGain(i)->GetBinContent(bin);  
+	((TProfile*)fPedestalLEDRefHighGainRatio[i])->SetBinContent(bin, ratio);
+	((TProfile*)fPedestalLEDRefHighGainRatio[i])->SetBinEntries(bin, 1);
+      }
+
+      if (fReference->GetPedLEDRefProfileLowGain(i)->GetBinContent(bin) > 0) {
+	diff = GetPedLEDRefProfileLowGain(i)->GetBinContent(bin) - fReference->GetPedLEDRefProfileLowGain(i)->GetBinContent(bin);
+	((TProfile*)fPedestalLEDRefLowGainDiff[i])->SetBinContent(bin, diff);
+	((TProfile*)fPedestalLEDRefLowGainDiff[i])->SetBinEntries(bin, 1);
+	ratio = GetPedLEDRefProfileLowGain(i)->GetBinContent(bin) / fReference->GetPedLEDRefProfileLowGain(i)->GetBinContent(bin);  
+	((TProfile*)fPedestalLEDRefLowGainRatio[i])->SetBinContent(bin, ratio);
+	((TProfile*)fPedestalLEDRefLowGainRatio[i])->SetBinEntries(bin, 1);
+      } 
+     
+    }
+
   } // modules
  
 }
