@@ -343,7 +343,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG1QASym){
-     gROOT->LoadMacro("$ALICE_ROOT/prod/acrcaf/qa_pp/AddTaskQAsym.C");
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PWG1macros/AddTaskQAsym.C");
      AliAnalysisTaskQASym *taskQASym = AddTaskQAsym(-1);
      if (!taskQASym) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQASym cannot run for this train conditions - EXCLUDED");
    }
@@ -925,7 +925,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
    }
    if(iPWG1QASym){
-     if (!LoadSource(Form("%s/prod/acrcaf/qa_pp/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+     if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
    if(iPWG4TmpSourceSara){
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
