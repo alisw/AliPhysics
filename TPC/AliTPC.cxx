@@ -283,9 +283,11 @@ void AliTPC::CreateMaterials()
   // drift gases 
   //----------------------------------------------------------------
 
-
+  //
   // Drift gases 1 - nonsensitive, 2 - sensitive
-  // Ne-CO2-N (85-10-5)
+  // Ne-CO2-N2 (90-10-5) (volume) values at 20deg and 1 atm.
+  // rho(Ne) = 0.839 g/cm^3, rho(CO2) = 1.842 g/cm^3, rho(N2) = 1.165 g/cm^3
+  // for the calculation - everything is normalized to 1
 
   amat[0]= 20.18;
   amat[1]=12.011;
@@ -297,12 +299,12 @@ void AliTPC::CreateMaterials()
   zmat[2]=8.;
   zmat[3]=7.;
 
-  wmat[0]=0.7707;
-  wmat[1]=0.0539;
-  wmat[2]=0.1438;
-  wmat[3]=0.0316;
+  wmat[0]=0.756992632;
+  wmat[1]=0.056235789;
+  wmat[2]=0.128469474;
+  wmat[3]=0.058395789;
  
-  density=0.0010252;
+  density=0.00095;
 
   AliMixture(12,"Ne-CO2-N-1",amat,zmat,density,4,wmat);
   AliMixture(13,"Ne-CO2-N-2",amat,zmat,density,4,wmat);
