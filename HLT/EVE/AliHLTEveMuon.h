@@ -14,6 +14,9 @@
 class AliHLTHOMERBlockDesc;
 class TEveStraightLineSet;
 class TEvePointSet;
+class TEveTrackList;
+class AliESDMuonTrack;
+class AliHLTMUONTrackStruct;
 
 class AliHLTEveMuon : public AliHLTEveBase {
 
@@ -46,15 +49,23 @@ private:
 
   /** Process block containing clusters */
   void ProcessClusters(AliHLTHOMERBlockDesc * block, TEvePointSet * clusters);
-  /** Process block containing tracks */
+  /** Process block containing Manso tracks */
   void ProcessTracks(AliHLTHOMERBlockDesc * block, TEveStraightLineSet * tracks);
+  /** Process block containing Full Tracks **/
+  Int_t ProcessFullTracks(AliHLTHOMERBlockDesc * block, TEveTrackList * tracks);
   
-  /** create the cluster pointset*/
-  TEvePointSet * CreateClusters();
-  /** create the tracks lineset */
-  TEveStraightLineSet * CreateTrackSet();
+  /** Convert muon Full Tracks block to Muon ESD tracks **/
+  int MakeMUONESDTrack(AliESDMuonTrack *muonESDTrack, const AliHLTMUONTrackStruct *muonHLTTrack);
 
-  TEveStraightLineSet * fTracks; //The track elements
+  /** create the cluster pointset**/
+  TEvePointSet * CreateClusters();
+  /** create the Manso tracks lineset **/
+  TEveStraightLineSet * CreateTrackSet();
+  /** create the tracks for Full Tracker **/
+  TEveTrackList * CreateFullTrackList();
+
+  TEveTrackList *  fFullTrackList; //The track elements for Full Tracker
+  TEveStraightLineSet * fTracks; //The track elements for Manso Tracker
   TEvePointSet * fClusters; //The cluster elements
 
   ClassDef(AliHLTEveMuon, 0);

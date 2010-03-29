@@ -26,12 +26,29 @@
 #include "TEvePointSet.h"
 #include "AliEveHOMERManager.h"
 #include "TEveManager.h"
+
+
+#include "TEveVSDStructs.h"
+#include "TGeoGlobalMagField.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDMuonCluster.h"
+#include "AliEveMUONTrack.h"
+#include "AliHLTMUONConstants.h"
+#include "AliHLTMUONUtils.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONConstants.h"
+#include "TEveTrackPropagator.h"
+
+using namespace std;
+
+class AliHLTMUONUtils;
+class AliEveMuonTrack;
 
 ClassImp(AliHLTEveMuon);
 
 AliHLTEveMuon::AliHLTEveMuon() : 
   AliHLTEveBase(),
+  fFullTrackList(NULL),
   fTracks(NULL),
   fClusters(NULL)
 {
@@ -41,6 +58,10 @@ AliHLTEveMuon::AliHLTEveMuon() :
 AliHLTEveMuon::~AliHLTEveMuon()
 {
   //Destructor
+  if (fFullTrackList)
+    delete fFullTrackList;
+  fFullTrackList = NULL;
+  
   if (fTracks)
     delete fTracks;
   fTracks = NULL;
@@ -53,8 +74,8 @@ AliHLTEveMuon::~AliHLTEveMuon()
 
 void AliHLTEveMuon::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
-    if ( (block->GetDataType().CompareTo("RECHITS") == 0) || (block->GetDataType().CompareTo("TRIGRECS") == 0) ) {
-      if(!fClusters) {
+  if ( (block->GetDataType().CompareTo("RECHITS") == 0) || (block->GetDataType().CompareTo("TRIGRECS") == 0) ) {
+    if(!fClusters) {
       fClusters = CreateClusters();
       fEventManager->GetEveManager()->AddElement(fClusters);
     }
@@ -69,7 +90,18 @@ void AliHLTEveMuon::ProcessBlock(AliHLTHOMERBlockDesc * block) {
     }
     
     ProcessTracks( block, fTracks );
+
+  }else if(block->GetDataType().CompareTo("TRACKS") == 0){
+    
+    if ( !fFullTrackList ) {
+      fFullTrackList = CreateFullTrackList(); 
+      fEventManager->GetEveManager()->AddElement(fFullTrackList);      
+      gEve->AddElement(fFullTrackList);
+    }
+    
+    ProcessFullTracks( block,  fFullTrackList );
   } 
+ 
 }
 
 TEvePointSet * AliHLTEveMuon::CreateClusters() {
@@ -81,9 +113,17 @@ TEvePointSet * AliHLTEveMuon::CreateClusters() {
 }
 
 TEveStraightLineSet * AliHLTEveMuon::CreateTrackSet() {
+  // See header file
   TEveStraightLineSet * ls = new TEveStraightLineSet("MUON Tracks");
   ls->SetMainColor(kRed);
   ls->SetLineWidth(3);
+  return ls;
+}
+
+TEveTrackList * AliHLTEveMuon::CreateFullTrackList(){
+  // See header file
+  TEveTrackList * ls = new TEveTrackList("MUON Full Tracks");
+  ls->SetMainColor(kBlue);
   return ls;
 }
 
@@ -112,6 +152,11 @@ void AliHLTEveMuon::ResetElements(){
     fTracks->Destroy();
     fTracks = NULL;
   }
+  if ( fFullTrackList ){
+    fFullTrackList->Destroy();
+    fFullTrackList = NULL;
+  }
+
 
 }
 
@@ -201,4 +246,108 @@ void AliHLTEveMuon::ProcessTracks(AliHLTHOMERBlockDesc * block, TEveStraightLine
     }
     //    cout<<"NofManso Tracks : "<<mantrackblock.Nentries()<<endl;
   }
+}
+
+int AliHLTEveMuon::MakeMUONESDTrack(AliESDMuonTrack *muonESDTrack, const AliHLTMUONTrackStruct *muonHLTTrack)
+{
+  // See header for documentation
+  AliHLTUInt32_t clusterIndex = 0;  // for the cluster unique ID.			
+  AliHLTMUONParticleSign sign;
+  bool hitset[16];
+  AliHLTMUONUtils::UnpackTrackFlags(
+  				    muonHLTTrack->fFlags, sign, hitset
+  				    );
+			
+  TVector3 mom(muonHLTTrack->fPx, muonHLTTrack->fPy, muonHLTTrack->fPz);
+  if (mom.Mag() != 0)
+    muonESDTrack->SetInverseBendingMomentum(muonHLTTrack->fInverseBendingMomentum);
+  else
+    muonESDTrack->SetInverseBendingMomentum(0.);
+  muonESDTrack->SetThetaX(muonHLTTrack->fThetaX);
+  muonESDTrack->SetThetaY(muonHLTTrack->fThetaY);
+  muonESDTrack->SetZ(muonHLTTrack->fZ);
+  muonESDTrack->SetBendingCoor(muonHLTTrack->fY);
+  muonESDTrack->SetNonBendingCoor(muonHLTTrack->fX);
+
+  //printf("(X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",muonHLTTrack->fX,muonHLTTrack->fY,muonHLTTrack->fZ);
+
+  muonESDTrack->SetChi2(muonHLTTrack->fChi2);
+
+  Int_t nHits = 0;
+  for (int i = 0; i < 16; i++)
+    {
+      if (not hitset[i]) continue;
+				
+      AliHLTUInt8_t chamber;
+      AliHLTUInt16_t detElemId;
+      AliHLTMUONUtils::UnpackRecHitFlags((muonHLTTrack->fHit[i]).fFlags, chamber, detElemId);
+      
+      AliESDMuonCluster cluster;
+      cluster.SetUniqueID(AliMUONVCluster::BuildUniqueID(chamber, detElemId, clusterIndex++));
+      cluster.SetXYZ((muonHLTTrack->fHit[i]).fX, (muonHLTTrack->fHit[i]).fY, (muonHLTTrack->fHit[i]).fZ);
+      cluster.SetErrXY(    // Use nominal values.
+		       AliHLTMUONConstants::DefaultNonBendingReso(),
+		       AliHLTMUONConstants::DefaultBendingReso()
+			   );
+      cluster.SetCharge(-1.);   // Indicate no total charge calculated.
+      cluster.SetChi2(-1.);   // Indicate no fit made.
+      muonESDTrack->AddCluster(cluster);
+      nHits++;
+      muonESDTrack->AddInMuonClusterMap(chamber);
+    }
+  
+  muonESDTrack->SetNHit(nHits);
+
+  return 0;
+}
+
+Int_t AliHLTEveMuon::ProcessFullTracks(AliHLTHOMERBlockDesc * block, TEveTrackList * fullTracks) {
+
+  // See header for documentation 
+
+  Int_t iResult = 0;
+
+  Double_t b[3], x[3];
+  x[0] = 0.0 ; x[1] = 0.0 ; x[2] = -950.0;
+  TGeoGlobalMagField::Instance()->Field(x,b);
+  //" Field at (0.0, 0.0, -950.0) [at the middle of dipole magnet] 
+  //should be (6.79, 0.03, -0.17) or similar value with change of sign"
+  if(TMath::AreEqualAbs(b[0],0.0,1.0e-5) and TMath::AreEqualAbs(b[1],0.0,1.0e-5) and TMath::AreEqualAbs(b[2],0.0,1.0e-5)){
+    printf("At (X,Y,Z) : (%6.2lf,%6.2lf,%6.2lf) Field (Bx,By,Bz) is (%6.2lf,%6.2lf,%6.2lf)\n",
+	   x[0],x[1],x[2],b[0],b[1],b[2]);    
+    cerr<<"Magnetic field is not properly set, MUON tracking will not possble"<<endl;
+    return 1;
+  }
+  
+  
+
+  TEveRecTrack rt;
+  
+  unsigned long size = block->GetSize();
+  Int_t * buffer = (Int_t *)block->GetData();
+
+  AliHLTMUONTracksBlockReader muontrackblock(buffer, size);
+  const AliHLTMUONTrackStruct* mtrack = muontrackblock.GetArray();
+  //cout<<"NofTracks : "<<muontrackblock.Nentries()<<endl;
+  for(AliHLTUInt32_t ientry = 0; ientry < muontrackblock.Nentries(); ientry++){
+    
+    AliESDMuonTrack *muonESDTrack = new AliESDMuonTrack();
+    MakeMUONESDTrack(muonESDTrack,mtrack);
+    if(muonESDTrack->GetNHit()==0){
+      muonESDTrack->Delete();
+      continue;
+    }
+    
+    rt.fLabel = ientry;
+    AliEveMUONTrack* track = new AliEveMUONTrack(&rt, fullTracks->GetPropagator());
+    track->MakeESDTrack(muonESDTrack);
+    //track->SetTitle(Form("HLT Track : %d, pt : %lf",ientry,TMath::Sqrt(((mtrack->fPx * mtrack->fPx) + (mtrack->fPy * mtrack->fPy)))));
+    track->SetName(Form("HLT Track : %d, pt : %lf",ientry,TMath::Sqrt(((mtrack->fPx * mtrack->fPx) + (mtrack->fPy * mtrack->fPy)))));
+    gEve->AddElement(track, fullTracks);
+    
+    mtrack++;
+  }//track loop
+  
+  return iResult;
+
 }
