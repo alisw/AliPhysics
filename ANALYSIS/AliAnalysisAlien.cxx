@@ -932,18 +932,18 @@ Bool_t AliAnalysisAlien::CreateJDL()
          TString outputArchive = fOutputArchive;
          if (!fMergeExcludes.IsNull()) {
             arr = fMergeExcludes.Tokenize(" ");
-            TIter next(arr);
-            while ((os=(TObjString*)next())) {
+            TIter next1(arr);
+            while ((os=(TObjString*)next1())) {
                outputArchive.ReplaceAll(Form("%s,",os->GetString().Data()),"");
                outputArchive.ReplaceAll(os->GetString(),"");
             }
             delete arr;
          }
          arr = outputArchive.Tokenize(" ");
-         TIter next1(arr);
+         TIter next2(arr);
          comment = comment1;
          first = kTRUE;
-         while ((os=(TObjString*)next1())) {
+         while ((os=(TObjString*)next2())) {
             if (!first) comment = NULL;
             if (!os->GetString().Contains("@") && fCloseSE.Length())
                fMergingJDL->AddToOutputArchive(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
@@ -975,18 +975,18 @@ Bool_t AliAnalysisAlien::CreateJDL()
          TString outputFiles = fOutputFiles;
          if (!fMergeExcludes.IsNull()) {
             arr = fMergeExcludes.Tokenize(" ");
-            TIter next(arr);
-            while ((os=(TObjString*)next())) {
+            TIter next1(arr);
+            while ((os=(TObjString*)next1())) {
                outputFiles.ReplaceAll(Form("%s,",os->GetString().Data()),"");
                outputFiles.ReplaceAll(os->GetString(),"");
             }
             delete arr;
          }
          arr = outputFiles.Tokenize(" ");
-         TIter next(arr);
+         TIter next2(arr);
          comment = comment1;
          first = kTRUE;
-         while ((os=(TObjString*)next())) {
+         while ((os=(TObjString*)next2())) {
             // Ignore ouputs in jdl that are also in outputarchive
             TString sout = os->GetString();
             if (sout.Index("@")>0) sout.Remove(sout.Index("@"));
