@@ -65,8 +65,7 @@ ClassImp(AliHLTTPCCalibSeedMakerComponent) //ROOT macro for the implementation o
 AliHLTTPCCalibSeedMakerComponent::AliHLTTPCCalibSeedMakerComponent()
     :    
     fTPCGeomParam(0)
-   //,fSeedArray(0)
-   //,seedArray(0x0)
+   ,fSeedArray(0x0)
    ,fdEdx(0x0)
 {
   // see header file for class documentation
@@ -138,10 +137,9 @@ int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*
   fTPCGeomParam = AliTPCcalibDB::Instance()->GetParameters();
   if(!fTPCGeomParam) HLTError("TPC Parameters are not loaded.");
   
-  //seedArray = new TObjArray();
-  //seedArray->SetOwner(kTRUE);
-  //fSeedArray = new TClonesArray("AliTPCseed");    
-
+  fSeedArray = new TObjArray(1000);  
+  //fSeedArray->SetOwner(kTRUE);
+  
   fdEdx = new TH2F("fdEdx","energy loss vs. momentum", 400, -200, 200, 300, 0, 300);
   
   return 0;
@@ -151,16 +149,9 @@ int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*
 int AliHLTTPCCalibSeedMakerComponent::DoDeinit() { 
 // see header file for class documentation  
   
-  if(fTPCGeomParam)     delete fTPCGeomParam;     fTPCGeomParam    = NULL;          
-  //if(fSeedArray)        delete fSeedArray; 	  fSeedArray       = NULL;	      
- 
-//   TFile f("hlt_seeds.root","RECREATE");
-//   seedArray->Write("hlt_seeds",TObject::kSingleKey);
-//   f.Close();
-
-//  if(seedArray) delete seedArray; seedArray = 0x0;  
-  
-  if(fdEdx) delete fdEdx; fdEdx = 0x0;
+  if(fTPCGeomParam) delete fTPCGeomParam; fTPCGeomParam = NULL;	  
+  if(fSeedArray)    delete fSeedArray;    fSeedArray	= NULL;	
+  if(fdEdx)         delete fdEdx;         fdEdx         = NULL;
 
   return 0;
 }
@@ -171,11 +162,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
   if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR)) return 0;
 
   int nInputClusters = 0;
-  int nInputTracks = 0;
-
-  TObjArray *arr = new TObjArray(1000);
-  arr->SetOwner(kTRUE);
-  //seedArray->Add(arr);
+  fSeedArray->Clear();
   
   for(Int_t i=0; i<fkNPartition; i++){
       delete[] fPartitionClusters[i];    
@@ -261,31 +248,31 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
  
   //------------------ loop over track data blocks --------------------//
 
-  //fSeedArray->Clear();
- 
+  int nTracks = 0;
   for(const AliHLTComponentBlockData *pBlock = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); pBlock != NULL; pBlock = GetNextInputBlock()){
       
       AliHLTTracksData *dataPtr = (AliHLTTracksData*) pBlock->fPtr;
-      int nTracks = dataPtr->fCount;
+      //int nTracks = dataPtr->fCount;
+      nTracks = dataPtr->fCount;
     
-      AliHLTExternalTrackParam *currTrack = dataPtr->fTracklets;
-      nInputTracks += nTracks;
-    
+      AliHLTExternalTrackParam *currTrack = dataPtr->fTracklets;     
+      
       for(Int_t itr=0; itr<nTracks && ( (AliHLTUInt8_t *)currTrack < ((AliHLTUInt8_t *) pBlock->fPtr)+pBlock->fSize); itr++){
     
          // create an offline track
          AliHLTGlobalBarrelTrack gb(*currTrack);
-         AliTPCseed *tTPC = new AliTPCseed();
-         tTPC->Set( gb.GetX(), gb.GetAlpha(), gb.GetParameter(), gb.GetCovariance() );
-            
+         AliTPCseed tTPC;
+         tTPC.Set( gb.GetX(), gb.GetAlpha(), gb.GetParameter(), gb.GetCovariance() );
+	            
          Int_t mcLabel = -1;
          if( mcLabels.find(gb.TrackID())!=mcLabels.end() ) mcLabel = mcLabels[gb.TrackID()];      
-         tTPC->SetLabel(mcLabel);
+         tTPC.SetLabel(mcLabel);
             
-         // set the clusters      
+         // set the clusters 
+	     
          for(UInt_t ic=0; ic<currTrack->fNPoints; ic++){	
-      
-             tTPC->SetNumberOfClusters(currTrack->fNPoints);
+            
+             tTPC.SetNumberOfClusters(currTrack->fNPoints);
           
 	     UInt_t id      = currTrack->fPointIDs[ic];
 	     int iSlice     = id>>25;
@@ -313,35 +300,32 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	     int row = c->GetRow();
 	     if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
 	
-	     tTPC->SetClusterPointer(row, c);	
+	     tTPC.SetClusterPointer(row, c);	
 	
-	     AliTPCTrackerPoint &point = *( tTPC->GetTrackPoint( row ) );
-	     //tTPC->Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
-	     Double_t angle2 = tTPC->GetSnp()*tTPC->GetSnp();
+	     AliTPCTrackerPoint &point = *( tTPC.GetTrackPoint( row ) );
+	     //tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
+	     Double_t angle2 = tTPC.GetSnp()*tTPC.GetSnp();
 	     angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
 	     point.SetAngleY( angle2 );
-	     point.SetAngleZ( tTPC->GetTgl() );
+	     point.SetAngleZ( tTPC.GetTgl() );
          } // end of associated cluster loop
 
       // Cook dEdx
-      
-      //arr->Add(tTPC); // without the indices
-      arr->AddAt( tTPC,TMath::Abs(tTPC->GetLabel()) ); // if the run is on real data, the label will be -1
-      
-      fdEdx->Fill( tTPC->P()*tTPC->Charge(), tTPC->CookdEdx(0.02, 0.6) );
-      
+           
+      AliTPCseed *seed = &(tTPC);      
+      fSeedArray->AddAt( seed, TMath::Abs(seed->GetLabel()) );
+      fdEdx->Fill( seed->P()*seed->Charge(), seed->CookdEdx(0.02, 0.6) );
+          
       unsigned int step = sizeof( AliHLTExternalTrackParam ) + currTrack->fNPoints * sizeof( unsigned int );
       currTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currTrack) + step );  
 
       }// end of vector track loop           
-  } // end of loop over blocks of merged tracks  
+  } // end of loop over blocks of merged tracks 
   
-   PushBack((TObject*)arr, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC, 0x0);
-   PushBack((TObject*)fdEdx, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, 0x0);
-   
-   arr->Delete();  
-   
-   //PushBack((TObject*)fSeedArray, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC, 0x0);
-   
+  HLTDebug("Number of reconstructed tracks %d, number of produced seeds %d\n", nTracks, fSeedArray->GetEntries());  
+  
+  PushBack((TObject*)fSeedArray, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC, 0x0);
+  PushBack((TObject*)fdEdx, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC, 0x0);
+         
   return 0;
 } // end DoEvent()
