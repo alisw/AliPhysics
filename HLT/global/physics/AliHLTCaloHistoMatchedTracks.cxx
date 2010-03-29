@@ -50,13 +50,13 @@ AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistMatchDistance->SetMarkerStyle(21);
   fHistArray->AddLast(fHistMatchDistance);
 
-  fHistMatchedEnergy = new TH1F( Form("%s fHistMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with matching tracks", det.Data()), 200, 0, 200);
+  fHistMatchedEnergy = new TH1F( Form("%s fHistMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with matching tracks", det.Data()), 5000, 0, 100);
   fHistMatchedEnergy->GetXaxis()->SetTitle("Cluster Energy (GeV)");
   fHistMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistMatchedEnergy->SetMarkerStyle(21);
   fHistArray->AddLast(fHistMatchedEnergy);
 
-  fHistUnMatchedEnergy = new TH1F( Form("%s fHistUnMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with no matching track", det.Data()), 200, 0, 200);
+  fHistUnMatchedEnergy = new TH1F( Form("%s fHistUnMatchedEnergy", det.Data()), Form("%s Energy distribution of clusters with no matching track", det.Data()), 5000, 0, 100);
   fHistUnMatchedEnergy->GetXaxis()->SetTitle("Cluster Energy (GeV)");
   fHistUnMatchedEnergy->GetYaxis()->SetTitle("Number of clusters");
   fHistUnMatchedEnergy->SetMarkerStyle(21);
