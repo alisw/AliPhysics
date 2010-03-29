@@ -134,7 +134,7 @@ void AliSymBDMatrix::Print(Option_t* option) const
 }
 
 //___________________________________________________________
-void AliSymBDMatrix::MultiplyByVec(Double_t *vecIn,Double_t *vecOut) const
+void AliSymBDMatrix::MultiplyByVec(const Double_t *vecIn,Double_t *vecOut) const
 {
   // fill vecOut by matrix*vecIn
   // vector should be of the same size as the matrix

@@ -38,8 +38,8 @@ class AliMatrixSparse : public AliMatrixSq
   Double_t&        DiagElem(Int_t r);
   void             SortIndices(Bool_t valuesToo=kFALSE);
   //
-  void MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const; 
-  void MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
+  void MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const; 
+  void MultiplyByVec(const Double_t* vecIn, Double_t* vecOut) const;
   //
   void AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n);
   //
@@ -51,7 +51,7 @@ class AliMatrixSparse : public AliMatrixSq
 };
 
 //___________________________________________________
-inline void AliMatrixSparse::MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const 
+inline void AliMatrixSparse::MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const 
 {
   MultiplyByVec((Double_t*)vecIn.GetMatrixArray(),(Double_t*)vecOut.GetMatrixArray());
 }

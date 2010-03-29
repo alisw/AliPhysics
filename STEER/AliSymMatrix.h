@@ -49,8 +49,8 @@ class AliSymMatrix : public AliMatrixSq {
   void          SetSizeUsed(Int_t sz)                                  {fRowLwb = sz;}
   //
   void          Scale(Double_t coeff);
-  void          MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
-  void          MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const;
+  void          MultiplyByVec(const Double_t* vecIn, Double_t* vecOut) const;
+  void          MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const;
   void          AddToRow(Int_t r, Double_t *valc, Int_t *indc,Int_t n);
   //
   // ---------------------------------- Dummy methods of MatrixBase
@@ -118,7 +118,7 @@ inline Double_t& AliSymMatrix::operator()(Int_t row, Int_t col)
 }
 
 //___________________________________________________________
-inline void AliSymMatrix::MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const
+inline void AliSymMatrix::MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const
 {
   MultiplyByVec(vecIn.GetMatrixArray(), vecOut.GetMatrixArray());
 }

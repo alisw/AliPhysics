@@ -33,8 +33,8 @@ class AliMatrixSq : public TMatrixDBase {
   virtual void  Reset()                                          = 0;
   virtual void  PrintCOO()                           const;          // print in COO format
   //
-  virtual void  MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
-  virtual void  MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const;
+  virtual void  MultiplyByVec(const Double_t* vecIn, Double_t* vecOut) const;
+  virtual void  MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const;
   //
   Bool_t        IsSymmetric()                       const {return fSymmetric;}
   void          SetSymmetric(Bool_t v=kTRUE)              {fSymmetric = v;}
@@ -71,7 +71,7 @@ class AliMatrixSq : public TMatrixDBase {
 
 
 //___________________________________________________________
-inline void AliMatrixSq::MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const
+inline void AliMatrixSq::MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const
 {
   MultiplyByVec(vecIn.GetMatrixArray(), vecOut.GetMatrixArray());
 }

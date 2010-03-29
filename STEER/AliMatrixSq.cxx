@@ -20,7 +20,7 @@ ClassImp(AliMatrixSq)
 
 
 //___________________________________________________________
-void AliMatrixSq::MultiplyByVec(Double_t *vecIn,Double_t *vecOut) const
+void AliMatrixSq::MultiplyByVec(const Double_t *vecIn,Double_t *vecOut) const
 {
   // fill vecOut by matrix*vecIn
   // vector should be of the same size as the matrix

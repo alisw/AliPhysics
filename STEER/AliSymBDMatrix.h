@@ -50,8 +50,8 @@ class AliSymBDMatrix : public AliMatrixSq {
   void          SetDecomposed(Bool_t v=kTRUE)                          {SetBit(kDecomposedBit,v);}
   Bool_t        IsDecomposed()                                   const {return TestBit(kDecomposedBit);}
   //
-  void          MultiplyByVec(Double_t* vecIn, Double_t* vecOut) const;
-  void          MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const;
+  void          MultiplyByVec(const Double_t* vecIn, Double_t* vecOut) const;
+  void          MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const;
   void          AddToRow(Int_t r, Double_t *valc,Int_t *indc,Int_t n);
   //
   // protected:
@@ -117,7 +117,7 @@ inline Double_t& AliSymBDMatrix::operator()(Int_t row)
 }
 
 //___________________________________________________________
-inline void AliSymBDMatrix::MultiplyByVec(TVectorD &vecIn, TVectorD &vecOut) const
+inline void AliSymBDMatrix::MultiplyByVec(const TVectorD &vecIn, TVectorD &vecOut) const
 {
   MultiplyByVec(vecIn.GetMatrixArray(), vecOut.GetMatrixArray());
 }
