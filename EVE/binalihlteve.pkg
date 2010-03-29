@@ -8,8 +8,8 @@ $(BINPATH)/alihlteve: $(EveBaseLIB) $(EveHLTLIB)
 EINCLUDE :=
 ELIBSDIR :=
 
-ELIBS    := EveBase EveHLT \
-  HLTbase AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU \
+ELIBS    := EveBase EveHLT EveDet \
+  HLTbase AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON \
   TPCbase TPCsim TPCrec \
   ITSbase ITSrec \
   TRDbase TRDrec AliHLTTRD \
@@ -21,7 +21,11 @@ ELIBS    := EveBase EveHLT \
   ANALYSIS ANALYSISalice \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
-   XMLParser STAT
+  XMLParser STAT \
+  TOFbase TOFsim \
+  FMDbase FMDsim FMDrec \
+  PMDbase \
+  T0base
 
 PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL -lEve $(SYSLIBS)
 
