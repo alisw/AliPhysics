@@ -1022,7 +1022,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          return kFALSE;
       } else {
          if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s", workdir.Data(), fGridOutputDir.Data());
-         if (!DirectoryExists(fGridOutputDir)) {
+         if (!fProductionMode && !DirectoryExists(fGridOutputDir)) {
             if (gGrid->Mkdir(fGridOutputDir)) {
                Info("CreateJDL", "\n#####   Created alien output directory %s", fGridOutputDir.Data());
             } else {
