@@ -71,7 +71,7 @@ void AliHLTEveTRD::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   
     if(!fCanvas) {
       fCanvas = CreateCanvas("TRD QA", "TRD QA");
-      fCanvas->Divide(3, 2);
+      fCanvas->Divide(3, 3);
     }
 
     AddHistogramsToCanvas(block, fCanvas, fHistoCount);
