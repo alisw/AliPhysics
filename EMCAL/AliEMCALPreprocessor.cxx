@@ -225,8 +225,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   }
   
   // SIGNAL/LED ENTRIES:
-  
-  if( runType == kStandAloneRunType ) {
+  if( runType == kPhysicsRunType || runType == kStandAloneRunType ) {
     Int_t numSources = 1;
     Int_t signalSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Signal","DAQ");
