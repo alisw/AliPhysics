@@ -69,10 +69,16 @@ enum EPluginRunMode {
    virtual void        SetInputFormat(const char *format="xml-single")   = 0;
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   = 0;
    virtual void        SetMergeExcludes(const char *list)                = 0;
+   virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   = 0;
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      = 0;
    virtual void        SetNtestFiles(Int_t nfiles)                       = 0;
    virtual void        SetJDLName(const char *name="analysis.jdl")       = 0;
    virtual void        SetPreferedSE(const char *se)                     = 0;
+   virtual void        SetProductionMode(Int_t mode=1)                   = 0;
+   virtual void        SetRunPrefix(const char *prefix)                  = 0;
+   virtual void        SetOutputSingleFolder(const char *folder)         = 0;
+   virtual void        SetFastReadOption(Bool_t on=kTRUE)                = 0;
+   virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 = 0;
    
  // Set run mode.  Can be "full", "test", "offline", "submit" or "merge"
    virtual void        SetRunMode(const char *mode="full");
@@ -86,7 +92,7 @@ enum EPluginRunMode {
    virtual void        WriteAnalysisFile()                               = 0;
    virtual void        WriteAnalysisMacro()                              = 0;
    virtual void        WriteExecutable()                                 = 0;
-   virtual void        WriteValidationScript()                           = 0;
+   virtual void        WriteValidationScript(Bool_t merge=kFALSE)        = 0;
 
 protected:
    virtual Bool_t      Connect()                                         = 0;

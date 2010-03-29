@@ -67,6 +67,7 @@ public:
    virtual void        SetInputFormat(const char *format="xml-single")   {fInputFormat = format;}
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   {fMaxInitFailed = nfail;}
    virtual void        SetMergeExcludes(const char *list)                {fMergeExcludes = list;};
+   virtual void        SetMergeViaJDL(Bool_t on=kTRUE)                   {fMergeViaJDL = on ? 1 : 0;}
    virtual void        SetMasterResubmitThreshold(Int_t percentage)      {fMasterResubmitThreshold = percentage;}
    virtual void        SetNtestFiles(Int_t nfiles)                       {fNtestFiles = nfiles;}
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
@@ -74,8 +75,11 @@ public:
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
    virtual void        SetRunPrefix(const char *prefix)                  {fRunPrefix = prefix;}
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
+   virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
+   virtual void        SetOverwriteMode(Bool_t on=kTRUE)                 {fOverwriteMode = on ? 1 : 0;}
 
-   TGridJDL           *GetGridJDL() {return fGridJDL;}
+   TGridJDL           *GetGridJDL() const {return fGridJDL;}
+   TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
    const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
 //Utilities
    virtual Bool_t      CreateDataset(const char *pattern);
@@ -84,16 +88,21 @@ public:
    static Bool_t       DirectoryExists(const char *lfn);
    static Bool_t       FileExists(const char *lfn);
    static  const char *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
+   static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
    virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
+   static Bool_t       SetupPar(const char *package);
    virtual void        Submit();
+   virtual void        SubmitMerging();
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
+   virtual void        WriteMergingMacro();
+   virtual void        WriteMergeExecutable();
    virtual void        WriteExecutable();
    virtual Bool_t      WriteJDL(Bool_t copy);
    virtual void        WriteProductionFile(const char *filename) const;
-   virtual void        WriteValidationScript();
+   virtual void        WriteValidationScript(Bool_t merge=kFALSE);
 
 protected:
    void                CdWork();
@@ -109,6 +118,7 @@ protected:
 
 private:
    TGridJDL        *fGridJDL;         //! JDL maker
+   TGridJDL        *fMergingJDL;      //! JDL maker
    Int_t            fPrice;           // Grid price for the job;
    Int_t            fTTL;             // Time to live.
    Int_t            fSplitMaxInputFileNumber; // Maximum number of files to be processed per subjob
@@ -121,6 +131,9 @@ private:
    Int_t            fNsubmitted;      // Number of jobs submitted
    Int_t            fProductionMode;  // Production mode (0-off, 1-on)
    Int_t            fOutputToRunNo;   // Use run number as output directory
+   Int_t            fMergeViaJDL;     // Enable merging via automatic JDL
+   Int_t            fFastReadOption;  // Use xrootd tweaks to reduce timeouts in file access
+   Int_t            fOverwriteMode;   // Overwrite existing files if any
    TString          fRunNumbers;      // List of runs to be processed
    TString          fExecutable;      // Executable script for AliEn job
    TString          fExecutableCommand;  // Command(s) to be executed in the executable script
@@ -155,6 +168,6 @@ private:
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
    
-   ClassDef(AliAnalysisAlien, 10)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 12)   // Class providing some AliEn utilities
 };
 #endif
