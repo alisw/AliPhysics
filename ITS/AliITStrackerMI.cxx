@@ -3650,8 +3650,11 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
   //--------------------------------------------------------------------
   Int_t tpcLabel=-1; 
      
-  if (track->GetESDtrack())   tpcLabel = track->GetESDtrack()->GetTPCLabel();
-
+  if (track->GetESDtrack()){
+    tpcLabel = track->GetESDtrack()->GetTPCLabel();
+    ULong_t trStatus=track->GetESDtrack()->GetStatus();
+    if(!(trStatus&AliESDtrack::kTPCin)) tpcLabel=track->GetLabel(); // for ITSsa tracks
+  }
    track->SetChi2MIP(9,0);
    Int_t nwrong=0;
    for (Int_t i=0;i<track->GetNumberOfClusters();i++){

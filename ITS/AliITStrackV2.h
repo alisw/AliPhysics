@@ -13,10 +13,10 @@
 #include <AliKalmanTrack.h>
 #include "AliITSRecoParam.h"
 #include "AliITSgeomTGeo.h"
+#include "AliESDtrack.h"
 
 /* $Id$ */
 
-class AliESDtrack;
 class AliESDVertex;
 class AliTracker;
 
@@ -60,6 +60,9 @@ public:
   void UpdateESDtrack(ULong_t flags) const;
   
   AliESDtrack *GetESDtrack() const {return fESDtrack;}
+  virtual ULong_t  GetStatus() const {
+    if(fESDtrack){return fESDtrack->GetStatus();} 
+    else { AliWarning("null ESD track pointer - status 0"); return 0;} }
 
   Int_t GetDetectorIndex() const {return GetLabel();}
   Double_t GetdEdx() const {return fdEdx;}
