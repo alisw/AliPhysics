@@ -33,7 +33,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual const char*  GetOutputFileName();
     virtual Bool_t       Init(Option_t* option);
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
-    virtual Bool_t       BeginEvent(Long64_t /*entry*/){return kTRUE;}
+    virtual Bool_t       BeginEvent(Long64_t /*entry*/) {return kTRUE;}
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char * /* path */) {return kTRUE;}
     virtual Bool_t       FinishEvent();
@@ -47,6 +47,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsTracksBranchReplication()       {fNeedsTracksBranchReplication       = kTRUE;}
     virtual void         SetNeedsVerticesBranchReplication()     {fNeedsVerticesBranchReplication     = kTRUE;}
     virtual void         SetNeedsV0sBranchReplication()          {fNeedsV0sBranchReplication          = kTRUE;}
+    virtual void         SetNeedsCascadesBranchReplication()     {fNeedsCascadesBranchReplication     = kTRUE;}
     virtual void         SetNeedsTrackletsBranchReplication()    {fNeedsTrackletsBranchReplication    = kTRUE;}
     virtual void         SetNeedsPMDClustersBranchReplication()  {fNeedsPMDClustersBranchReplication  = kTRUE;}
     virtual void         SetNeedsJetsBranchReplication()         {fNeedsJetsBranchReplication         = kTRUE;}
@@ -74,6 +75,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t               NeedsTracksBranchReplication()       const {return  fNeedsTracksBranchReplication;}
     Bool_t               NeedsVerticesBranchReplication()     const {return  fNeedsVerticesBranchReplication;}
     Bool_t               NeedsV0sBranchReplication()          const {return  fNeedsV0sBranchReplication;}
+    Bool_t               NeedsCascadesBranchReplication()     const {return  fNeedsCascadesBranchReplication;}
     Bool_t               NeedsTrackletsBranchReplication()    const {return  fNeedsTrackletsBranchReplication;}
     Bool_t               NeedsPMDClustersBranchReplication()  const {return  fNeedsPMDClustersBranchReplication;}
     Bool_t               NeedsJetsBranchReplication()         const {return  fNeedsJetsBranchReplication;}
@@ -99,6 +101,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
     Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
     Bool_t                   fNeedsV0sBranchReplication;          // Flag for V0s replication
+    Bool_t                   fNeedsCascadesBranchReplication;     // Flag for Cascade replication
     Bool_t                   fNeedsTrackletsBranchReplication;    // Flag for Tracklets replication
     Bool_t                   fNeedsPMDClustersBranchReplication;  // Flag for PMDClusters replication
     Bool_t                   fNeedsJetsBranchReplication;         // Flag for Jets replication
@@ -113,7 +116,7 @@ class AliAODHandler : public AliVEventHandler {
     TFile                   *fFileA;                  //! Output file
     TString                  fFileName;               //  Output file name
     TObjArray               *fExtensions;             //  List of extensions
-    TObjArray               *fFilters;                // List of filtered AOD's
+    TObjArray               *fFilters;                //  List of filtered AOD's
     ClassDef(AliAODHandler, 6)
 };
 

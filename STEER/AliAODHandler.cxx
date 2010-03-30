@@ -57,6 +57,7 @@ AliAODHandler::AliAODHandler() :
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
     fNeedsV0sBranchReplication(kFALSE),
+    fNeedsCascadesBranchReplication(kFALSE),
     fNeedsTrackletsBranchReplication(kFALSE),
     fNeedsPMDClustersBranchReplication(kFALSE),
     fNeedsJetsBranchReplication(kFALSE),
@@ -86,6 +87,7 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
     fNeedsV0sBranchReplication(kFALSE),
+    fNeedsCascadesBranchReplication(kFALSE),
     fNeedsTrackletsBranchReplication(kFALSE),
     fNeedsPMDClustersBranchReplication(kFALSE),
     fNeedsJetsBranchReplication(kFALSE),
@@ -127,6 +129,7 @@ Bool_t AliAODHandler::Init(Option_t* opt)
   // Initialize IO
   //
   // Create the AODevent object
+    
   Bool_t createStdAOD = fIsStandard || fFillAOD;
   if(!fAODEvent && createStdAOD){
     fAODEvent = new AliAODEvent();
@@ -190,7 +193,6 @@ void AliAODHandler::StoreMCParticles(){
   if (!fAODEvent) return;
   TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
   if(!mcarray)return;
-  mcarray->Delete();
 
   AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
   if(!mcHeader)return;
@@ -394,7 +396,7 @@ Bool_t AliAODHandler::FinishEvent()
   // Fill data structures
   if(fFillAOD && fFillAODRun && fAODEvent){
       fAODEvent->MakeEntriesReferencable();
-      // StoreMCParticles();
+      fTreeA->BranchRef();
       FillTree();
   }
   if (fFillAODRun) {      
@@ -412,6 +414,9 @@ Bool_t AliAODHandler::FinishEvent()
       }       
   }  
   if (fIsStandard) fAODEvent->ResetStd();
+  TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
+  if(mcarray) mcarray->Delete();
+
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
   return kTRUE;
@@ -461,7 +466,6 @@ void AliAODHandler::CreateTree(Int_t flag)
     // Creates the AOD Tree
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
-    fTreeA->BranchRef();    
     if (flag == 0) fTreeA->SetDirectory(0);
 }
 
@@ -470,7 +474,7 @@ void AliAODHandler::FillTree()
 {
  
     // Fill the AOD Tree
-  fTreeA->Fill();
+    fTreeA->Fill();
 }
 
 //______________________________________________________________________________
@@ -510,7 +514,6 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filen
       
       fTreeA->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
 		     kBufsize, kSplitlevel - 1);
-      //    fTreeA->Branch(obj->GetName(), cname, addobj);
     }
     owd->cd();
 }
@@ -683,10 +686,8 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
     if (!fTreeE->FindBranch(obj->GetName())) {
       // Do the same as if we book via 
       // TTree::Branch(TCollection*)
-      
       fTreeE->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
 		     kBufsize, kSplitlevel - 1);
-      //    fTreeA->Branch(obj->GetName(), cname, addobj);
     }
     owd->cd();
 }
