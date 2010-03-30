@@ -27,10 +27,15 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   
   AliAnaCalorimeterQA() ; // default ctor
   AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
+	
+private:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
+	
+public:
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
   
-  void ClusterHistograms(const TLorentzVector mom, Float_t *pos, const Int_t nCaloCellsPerCluster, const Int_t nModule,
+  void ClusterHistograms(const TLorentzVector mom, Float_t *pos, Float_t * showerShape, 
+						 const Int_t nCaloCellsPerCluster, const Int_t nModule,
 						 const Int_t nTracksMatched, const TObject* track, 
 						 const Int_t * labels, const Int_t nLabels);
 	
@@ -62,8 +67,8 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
 
   Int_t GetModuleNumber(AliESDCaloCluster * cluster);
   Int_t GetModuleNumber(AliAODCaloCluster * cluster);
-  Int_t GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow);
-
+  Int_t GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow, Int_t &iRCU);
+	
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 
   //Histogram binning setters
@@ -184,7 +189,16 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
 	Float_t GetHistoRMin()   const { return fHistoRMin ; }
 	Float_t GetHistoRMax()   const { return fHistoRMax ; }	
 	
-
+	virtual void SetHistoShowerShapeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+		fHistoSSBins  = n ;
+		fHistoSSMax   = max ;
+		fHistoSSMin   = min ;
+	}
+	
+	Int_t   GetHistoShowerShapeBins()  const { return fHistoSSBins ; }
+	Float_t GetHistoShowerShapeMin()   const { return fHistoSSMin ; }
+	Float_t GetHistoShowerShapeMax()   const { return fHistoSSMax ; }	
+	
 	
  private:
   
@@ -193,7 +207,8 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   Bool_t  fMakePlots   ;    // Print plots
   Bool_t  fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
   Int_t   fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
-	
+  Int_t   fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
+
   //Histograms
   //Histogram Bins
   Int_t   fHistoPOverEBins;        // p/E histogram number of bins
@@ -229,6 +244,9 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   Int_t   fHistoZBins;             // z (cm) position histogram number of bins
   Float_t fHistoZMax;              // z (cm) position maximum value
   Float_t fHistoZMin;              // z (cm) position minimum value
+  Int_t   fHistoSSBins;            // Shower Shape parameter histogram number of bins
+  Float_t fHistoSSMax;             // Shower Shape parameter position maximum value
+  Float_t fHistoSSMin;             // Shower Shape parameter position minimum value
 	
   //CaloClusters 
   TH1F * fhE  ; //! E distribution, Reco
@@ -258,14 +276,18 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F * fh2Pt ; //! pT distribution, Reco vs MC
   TH2F * fh2Phi; //! phi distribution, Reco vs MC
   TH2F * fh2Eta; //! eta distribution, Reco vs MC
+  
+  TH3F * fhLambda  ;     //! Shower ellipse axis Lambda 0 vs vs Lambda 1 vs E
+  TH2F * fhDispersion  ; //! Shower dispersion vs E
+	
   TH2F * fhIM; //! cluster pairs invariant mass
   TH2F * fhIMCellCut; //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F * fhAsym; //! cluster pairs invariant mass	
+  
   TH3F * fhNCellsPerCluster;           //! N cells per cluster vs cluster energy vs eta of cluster	
   TH3F * fhNCellsPerClusterMIP;        //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
   TH3F * fhNCellsPerClusterMIPCharged; //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
-  
-	
+  	
   TH1F * fhNClusters; //! Number of clusters
 	
   TH1F * fhCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells
@@ -324,6 +346,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F ** fhGridCellsTimeMod ;    //! Cells ordered in column/row for different module, weighted with time, Reco
   TH1F ** fhAmplitudeMod ;        //! Amplitude measured in towers/crystals different module, Reco
   TH1F ** fhAmplitudeModFraction; //! Amplitude measured in towers/crystals different fractions of module, Reco
+  TH2F ** fhTimeAmpPerRCU;        //! Time vs Amplitude measured in towers/crystals different RCU
   TH2F ** fhIMMod;                //! cluster pairs invariant mass, different module,
   TH2F ** fhIMCellCutMod;         //! cluster pairs invariant mass, n cells > 1 per cluster, different module
 
@@ -433,7 +456,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,7)
+	ClassDef(AliAnaCalorimeterQA,8)
 } ;
 
 
