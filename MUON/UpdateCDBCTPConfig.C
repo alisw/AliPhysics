@@ -58,6 +58,7 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliTriggerConfiguration.h"
+#include "AliSimulation.h"
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
@@ -65,6 +66,10 @@
 
 void UpdateCDBCTPConfig(Bool_t check = false) {
   
+  // AliSimulation object must exist, as it is used via AliMC
+  // which is used in AliTriggerConfiguration::CheckConfiguration()
+  AliSimulation sim;
+
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   cdb->SetRun(0);
