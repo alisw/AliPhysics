@@ -104,6 +104,7 @@ private:
   Bool_t  Process3D(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
   Bool_t  Process3DL(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
   Bool_t  Process3Darray(ETRDresolutionPlot ip, Int_t idx=-1, TF1 *f=NULL,  Float_t scale=1.);
+  Bool_t  Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt);
 
   UChar_t             fStatus;          // steer parameter of the task
   UShort_t            fIdxPlot;         //! plot counter (internal)
