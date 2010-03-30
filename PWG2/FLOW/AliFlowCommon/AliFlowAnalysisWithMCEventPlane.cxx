@@ -372,7 +372,8 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
 	dErrVRP += dYieldPtRP*dYieldPtRP*dErrvPtRP*dErrvPtRP;
       }
   }
-  if (TMath::AreEqualAbs(dSumRP, 0.0, 1e-10) ) {
+  
+  if (!(TMath::AreEqualAbs(dSumRP, 0.0, 1e-10)) ) {
     dVRP /= dSumRP;  //because pt distribution should be normalised
     dErrVRP /= (dSumRP*dSumRP);
     dErrVRP = TMath::Sqrt(dErrVRP); 
@@ -418,7 +419,8 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
       }
     }//end of for(Int_t b=0;b<iNbinsPt;b++)  
   } else { cout<<"fHistProFlow is NULL"<<endl; }
-  if ( TMath::AreEqualAbs(dSumPOI, 0.0, 1e-10) ) {
+
+  if (!(TMath::AreEqualAbs(dSumPOI, 0.0, 1e-10)) ) {
     dVPOI /= dSumPOI;  //because pt distribution should be normalised
     dErrVPOI /= (dSumPOI*dSumPOI);
     dErrVPOI = TMath::Sqrt(dErrVPOI); 
