@@ -111,7 +111,7 @@ public:
   void      GetCovAt(Double_t x, Double_t *cov) const;
   void      GetCovXY(Double_t *cov) const { memcpy(cov, &fCov[0], 3*sizeof(Double_t));}
   void      GetCovRef(Double_t *cov) const { memcpy(cov, &fRefCov, 7*sizeof(Double_t));}
-  static Double_t GetCovSqrt(const Double_t * const c, Double_t *d);
+  static Int_t GetCovSqrt(const Double_t * const c, Double_t *d);
   static Double_t GetCovInv(const Double_t * const c, Double_t *d);
   UChar_t   GetErrorMsg() const      { return fErrorMsg;}
   Float_t   GetdX() const            { return fdX;}

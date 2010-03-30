@@ -693,7 +693,7 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
 }
 
 //____________________________________________________________
-Double_t AliTRDseedV1::GetCovSqrt(const Double_t * const c, Double_t *d)
+Int_t AliTRDseedV1::GetCovSqrt(const Double_t * const c, Double_t *d)
 {
 // Helper function to calculate the square root of the covariance matrix. 
 // The input matrix is stored in the vector c and the result in the vector d. 
@@ -712,6 +712,7 @@ Double_t AliTRDseedV1::GetCovSqrt(const Double_t * const c, Double_t *d)
 // Author A.Bercuci <A.Bercuci@gsi.de>
 // Date   Mar 19 2009
 
+  const Double_t kZero(1.e-20);
   Double_t l[2], // eigenvalues
            v[3]; // eigenvectors
   // the secular equation and its solution :
@@ -720,26 +721,33 @@ Double_t AliTRDseedV1::GetCovSqrt(const Double_t * const c, Double_t *d)
   // L12 = [Tr(c) +- sqrt(Tr(c)^2-4*DET(c))]/2
   Double_t tr = c[0]+c[2],           // trace
           det = c[0]*c[2]-c[1]*c[1]; // determinant
-  if(TMath::Abs(det)<1.e-20) return -1.;
+  if(TMath::Abs(det)<kZero) return 1;
   Double_t dd = TMath::Sqrt(tr*tr - 4*det);
-  l[0] = .5*(tr + dd);
-  l[1] = .5*(tr - dd);
-  if(l[0]<0. || l[1]<0.) return -1.;
-
+  l[0] = .5*(tr + dd*(c[0]>c[2]?-1.:1.));
+  l[1] = .5*(tr + dd*(c[0]>c[2]?1.:-1.));
+  if(l[0]<kZero || l[1]<kZero) return 2;
   // the sym V matrix
   // | v00   v10|
   // | v10   v11|
-  Double_t tmp = (l[0]-c[0])/c[1];
-  v[0] = TMath::Sqrt(1./(tmp*tmp+1));
-  v[1] = tmp*v[0];
-  v[2] = v[1]*c[1]/(l[1]-c[2]);
+  Double_t den = (l[0]-c[0])*(l[0]-c[0])+c[1]*c[1];
+  if(den<kZero){ // almost diagonal
+    v[0] = TMath::Sign(0., c[1]);
+    v[1] = TMath::Sign(1., (l[0]-c[0]));
+    v[2] = TMath::Sign(0., c[1]*(l[0]-c[0])*(l[1]-c[2]));
+  } else {
+    Double_t tmp = 1./TMath::Sqrt(den);
+    v[0] = c[1]* tmp;
+    v[1] = (l[0]-c[0])*tmp;
+    if(TMath::Abs(l[1]-c[2])<kZero) v[2] = TMath::Sign(v[0]*(l[0]-c[0])/kZero, (l[1]-c[2]));
+    else v[2] = v[0]*(l[0]-c[0])/(l[1]-c[2]);
+  }
   // the VD^{1/2}V is: 
   l[0] = TMath::Sqrt(l[0]); l[1] = TMath::Sqrt(l[1]);
   d[0] = v[0]*v[0]*l[0]+v[1]*v[1]*l[1];
   d[1] = v[0]*v[1]*l[0]+v[1]*v[2]*l[1];
   d[2] = v[1]*v[1]*l[0]+v[2]*v[2]*l[1];
 
-  return 1.;
+  return 0;
 }
 
 //____________________________________________________________
