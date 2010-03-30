@@ -1,5 +1,5 @@
-#ifndef AliITSQADataMakerRec_H
-#define AliITSQADataMakerRec_H
+#ifndef ALIITSQADATAMAKERREC_H
+#define ALIITSQADATAMAKERREC_H
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -20,24 +20,24 @@
 
 #include "AliQADataMakerRec.h"
 
-#include "AliDetectorRecoParam.h"
-#include "AliReconstructor.h"
-#include "AliITSDDLModuleMapSDD.h"
-#include "AliQAManager.h"
+class AliDetectorRecoParam;
+class AliReconstructor;
+//#include "AliITSDDLModuleMapSDD.h"
 
+class AliQAManager;
 class AliITSQASPDDataMakerRec;
 class AliITSQASDDDataMakerRec;
 class AliITSQASSDDataMakerRec;
 class AliITSRecPoint;
 class AliRawReader;
 class TH2F;
-//class AliITSDDLModuleMapSDD;
+class AliITSDDLModuleMapSDD;
 
 class AliITSQADataMakerRec: public AliQADataMakerRec {
 
-friend class AliITSQASPDDataMakerRec;
-friend class AliITSQASDDDataMakerRec;
-friend class AliITSQASSDDataMakerRec;
+  friend class AliITSQASPDDataMakerRec; //friend class of SPD QA
+  friend class AliITSQASDDDataMakerRec; //friend class of SDD QA
+  friend class AliITSQASSDDataMakerRec; //friend class of SSD QA
 
 public:
   AliITSQADataMakerRec(Bool_t kMode = kFALSE, Short_t subDet = 0, Short_t ldc = 0); // kMode = kFALSE (offline), kTRUE (online); subDet = 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
@@ -65,21 +65,21 @@ public:
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
 
   virtual ~AliITSQADataMakerRec(); // dtor
- Short_t GetSubDet(){return fSubDetector;};
- Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task,Int_t specie=0);
- Int_t GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task);
- TH2F *GetITSGlobalHisto(Int_t layer);
- static Bool_t AreEqual(Double_t a1, Double_t a2);
-
- virtual void SetRunNumber(Int_t runnumber){fRunNumber=runnumber;};
- Int_t GetRunNumber(){return fRunNumber;};
-
- virtual void SetEventNumber(Int_t eventnumber){fEventNumber=eventnumber;};
- Int_t GetEventNumber() const {return fEventNumber;};
- AliITSDDLModuleMapSDD *GetDDLSDDModuleMap();
-
-private:
-
+  Short_t GetSubDet()const {return fSubDetector;};
+  Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task,Int_t specie=0);
+  Int_t GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task);
+  TH2F *GetITSGlobalHisto(Int_t layer);
+  static Bool_t AreEqual(Double_t a1, Double_t a2);
+  
+  virtual void SetRunNumber(Int_t runnumber){fRunNumber=runnumber;};
+  Int_t GetRunNumber()const {return fRunNumber;};
+  
+  virtual void SetEventNumber(Int_t eventnumber){fEventNumber=eventnumber;};
+  Int_t GetEventNumber() const {return fEventNumber;};
+  AliITSDDLModuleMapSDD *GetDDLSDDModuleMap();
+  
+ private:
+  
   Bool_t  fkOnline;                        //online (1) or offline (0) use
   Short_t fSubDetector;                    // subDetector: 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
   Short_t fLDC;				   // number of LDC: 0 (one LDC for the whole subdetector)

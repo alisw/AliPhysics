@@ -31,39 +31,39 @@
 #include <TH1F.h>
 #include <TBranch.h>
 #include <TTree.h>
-#include <TGaxis.h>
 #include <TMath.h>
-#include <TF1.h>
-#include <TDirectory.h>
-#include <TSystem.h>
 #include <TObjArray.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliITSQASDDDataMakerRec.h"
-#include "AliLog.h"
 #include "AliQAv1.h"
-#include "AliQAChecker.h"
 #include "AliRawReader.h"
 #include "AliITSRawStream.h"
 #include "AliITSRawStreamSDD.h"
-#include "AliITSRawStreamSDDCompressed.h"
-#include "AliITSDetTypeRec.h"
 #include "AliITSdigit.h"
 #include "AliITSRecPoint.h"
 #include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
-#include "Riostream.h"
-#include "AliITSdigitSDD.h"
-#include "AliITS.h"
-#include "AliRunLoader.h"
-#include "AliITSLoader.h"
-#include "AliITSDetTypeRec.h"
 #include "AliITSCalibrationSDD.h"
+
+class TGaxis;
+class TF1;
+class TSystem;
+class AliLog;
+class AliQAChecker;
+class AliITSRawStreamSDDCompressed;
+class AliCDBStorage;
+class Riostream;
+class AliITSdigitSDD;
+class AliITS;
+class AliRunLoader;
+class AliITSLoader;
+class AliITSDetTypeRec;
+
 
 
 ClassImp(AliITSQASDDDataMakerRec)
@@ -146,6 +146,9 @@ AliITSQASDDDataMakerRec& AliITSQASDDDataMakerRec::operator = (const AliITSQASDDD
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 {
+
+  //Start of a QA cycle
+
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Start of SDD Cycle with event specie %s for task %s\n",AliRecoParam::GetEventSpecieName(fAliITSQADataMakerRec->GetEventSpecie()),AliQAv1::GetTaskName(fAliITSQADataMakerRec->GetTaskIndexSelected()).Data()));
   if(!fCalibration) {CreateTheCalibration();}
 
@@ -176,6 +179,7 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 //____________________________________________________________________________ 
 void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray* /*list*/)
 {
+  //end of a QA cycle
 	AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
 	if(task==AliQAv1::kRAWS){
 	  //	  printf("fNevent %d \n",fNEvent);
@@ -550,14 +554,14 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   //AliInfo(Form("fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()] %d\n",fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]));
   TH1F *h0 = new TH1F("SDDLay3TotCh","Layer 3 total charge",1000/nOnline,-0.5, 499.5); //position number 0
   //h0->SetBit(TH1::kCanRebin);
-  h0->GetXaxis()->SetTitle("ADC value");
+  h0->GetXaxis()->SetTitle("KeV");
   h0->GetYaxis()->SetTitle("Entries");
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h0, 0 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);//NON expert image
   fSDDhRecPointsTask++;
  
   TH1F *h1 = new TH1F("SDDLay4TotCh","Layer 4 total charge",1000/nOnline,-0.5, 499.5);//position number 1
   //h1->SetBit(TH1::kCanRebin);
-  h1->GetXaxis()->SetTitle("ADC value");
+  h1->GetXaxis()->SetTitle("Kev");
   h1->GetYaxis()->SetTitle("Entries");
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h1, 1 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image);//NON expert image
   fSDDhRecPointsTask++;
@@ -777,8 +781,9 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 
 //_______________________________________________________________
 
-Int_t AliITSQASDDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task, Int_t specie)
+Int_t AliITSQASDDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task, Int_t specie)const
 {
+  // Returns offset number according to the specified task
   Int_t offset=0;
   if( task == AliQAv1::kRAWS ){offset=fGenRawsOffset[specie];}
   else if(task == AliQAv1::kDIGITSR ){offset=fGenDigitsOffset[specie];}
@@ -789,7 +794,7 @@ Int_t AliITSQASDDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task, Int_t specie
 //_______________________________________________________________
 
 void AliITSQASDDDataMakerRec::SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie) {
-  // Returns offset number according to the specified task
+  // Set offset number according to the specified task
   if( task == AliQAv1::kRAWS ) {fGenRawsOffset[specie]=offset;}
   else if( task == AliQAv1::kDIGITSR ) {fGenDigitsOffset[specie]=offset;}
   else if( task == AliQAv1::kRECPOINTS ) {fGenRecPointsOffset[specie]=offset;}
@@ -799,6 +804,7 @@ void AliITSQASDDDataMakerRec::SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset,
 
 Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task)
 {
+  //return the number of histo booked for a given Task
   Int_t histotot=0;
   if( task == AliQAv1::kRAWS ){ histotot=fSDDhRawsTask ;}
   else if(task == AliQAv1::kDIGITSR) { histotot=fSDDhDigitsTask;}
@@ -813,7 +819,7 @@ Int_t AliITSQASDDDataMakerRec::GetTaskHisto(AliQAv1::TASKINDEX_t task)
 
 void AliITSQASDDDataMakerRec::CreateTheMap()
 {
-
+  //Create the SDD DDL Module Map
   AliCDBEntry *ddlMapSDD = AliCDBManager::Instance()->Get("ITS/Calib/DDLMapSDD");
   Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
   if(!ddlMapSDD){
@@ -833,7 +839,7 @@ void AliITSQASDDDataMakerRec::CreateTheMap()
 
 void AliITSQASDDDataMakerRec::CreateTheCalibration()
 {
-
+  //Take from the OCDB the calibration information for the SDD 
     AliCDBEntry *calibSDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
     Bool_t cacheStatus = AliCDBManager::Instance()->GetCacheFlag();
     if(!calibSDD)
@@ -927,7 +933,7 @@ void AliITSQASDDDataMakerRec::CreateTheCalibration()
 
 void AliITSQASDDDataMakerRec::InitCalibrationArray()
 {
-
+  //create the histograms with the calibration informations. The histograms are stored in a TObjArray
     TH1D *pattern1  = new TH1D("CALSDDModPattern","Calibration HW Modules pattern",fgknSDDmodules,239.5,499.5);
     TH2D *patternl3 = new TH2D("CALSDDphizL3","Calibration SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
     TH2D *patternl4 = new TH2D("CALSDDphizL4"," Calibration SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5);
@@ -944,7 +950,7 @@ void AliITSQASDDDataMakerRec::InitCalibrationArray()
 
 void AliITSQASDDDataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
 {
-  
+  //reset the SDD calibration histograms
   AliInfo(Form("Reset detector in SDD called for task index %i", task));
   if(task== AliQAv1::kRAWS ){
   fDDLModuleMap=NULL;

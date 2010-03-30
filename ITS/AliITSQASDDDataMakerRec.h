@@ -1,5 +1,5 @@
-#ifndef AliITSQASDDDataMakerRec_H
-#define AliITSQASDDDataMakerRec_H
+#ifndef ALIITSQASDDDATAMAKERREC_H
+#define ALIITSQASDDDATAMAKERREC_H
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -15,10 +15,11 @@
 
 #include "AliQAv1.h"
 #include "AliITSQADataMakerRec.h"
-#include "AliITSCalibrationSDD.h"
 
+class AliITSCalibrationSDD;
 class TObjArray;
 class AliITSDDLModuleMapSDD;
+
 class AliITSQASDDDataMakerRec: public TObject {
 
 public:
@@ -39,11 +40,11 @@ public:
   virtual void InitCalibrationArray();
 
   virtual ~AliITSQASDDDataMakerRec(); // dtor
-  Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
+  Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0)const;
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
-  AliITSDDLModuleMapSDD* GetDDLSDDModuleMap(){return fDDLModuleMap; };
+  AliITSDDLModuleMapSDD* GetDDLSDDModuleMap()const{return fDDLModuleMap; };
 
 private:
 
@@ -54,8 +55,8 @@ private:
   //static const Int_t fgkDDLIDshift = 0;    // necessary option until RawStream Table is complete
   static const Int_t fgkLADDonLAY3 = 14;   // number of ladder on layer 3
   static const Int_t fgkLADDonLAY4 = 22;   // number of ladder on layer 4
-  static const Int_t fgkTotalNumberSDDAnodes = 512;
-  static const Int_t fgkNumberOfSDDAnodesperSide =256;
+  static const Int_t fgkTotalNumberSDDAnodes = 512; //total number of the anodes of a SDD modules
+  static const Int_t fgkNumberOfSDDAnodesperSide =256; //number of the anodes of an half SDD modules
 
   AliITSQADataMakerRec *fAliITSQADataMakerRec; // pointer to the main ctor
   Bool_t  fkOnline;                            // online (1) or offline (0) use
