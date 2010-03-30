@@ -22,27 +22,38 @@
 // last modified by F. Bellini (fbellini@cern.ch) on 02/03/2010      //
 ///////////////////////////////////////////////////////////////////////
 
- 
+/* Modified by fbellini on 30/03/2010
+   Changed raws time histos range to 610ns
+   Added FilterLTMData() and FilterSpare() methods
+   Added check on enabled channels for raw data 		
+   Updated RecPoints QA
+  
+*/
+
+/* Modified by fbellini on 02/03/2010
+   Fixed raw data decoding methods (use AliTOFRawStream::LoadRawDataBuffer())
+   Added filter for noisy channels and read map from OCDB
+   Added GetCalibData() method
+   Added CheckVolumeID() and CheckEquipID() methods  
+   Updated Raw QA
+*/
+
 #include <TClonesArray.h>
 #include <TH1F.h> 
 #include <TH2F.h> 
 
-#include "AliLog.h"
+
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
-
+#include "AliTOFRawStream.h"
 #include "AliTOFcluster.h"
 #include "AliTOFQADataMakerRec.h"
-#include "AliTOFRawStream.h"
 #include "AliTOFrawData.h"
 #include "AliTOFGeometry.h"
-#include "AliTOFdigit.h"
 #include "AliTOFChannelOnlineStatusArray.h"
 
 
@@ -86,6 +97,9 @@ AliTOFQADataMakerRec& AliTOFQADataMakerRec::operator = (const AliTOFQADataMakerR
 //----------------------------------------------------------------------------
 AliTOFChannelOnlineStatusArray* AliTOFQADataMakerRec::GetCalibData() const
 {
+  //
+  // Retrive TOF calib objects from OCDB
+  //
     AliCDBManager *man = AliCDBManager::Instance();
 
     AliCDBEntry *cdbe=0;
@@ -115,33 +129,40 @@ void AliTOFQADataMakerRec::InitRaws()
   //
   // create Raws histograms in Raws subdir
   //
-
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1F * h0 = new TH1F("hTOFRaws",      "Number of TOF Raw Hits; TOF raw hits number;Counts ",1001, -1., 1000.) ;
-  TH1F * h1 = new TH1F("hTOFRawsIA",    "Number of TOF Raw Hits - I/A side; TOF raw hits number [10 power];Counts ",1001, -1., 1000.) ;
-  TH1F * h2 = new TH1F("hTOFRawsOA",    "Number of TOF Raw Hits - O/A side; TOF raw hits number [10 power];Counts ",1001, -1., 1000.) ;
-  TH1F * h3 = new TH1F("hTOFRawsIC",    "Number of TOF Raw Hits - I/C side; TOF raw hits number [10 power];Counts ",1001, -1., 1000.) ;
-  TH1F * h4 = new TH1F("hTOFRawsOC",    "Number of TOF Raw Hits - O/C side; TOF raw hits number [10 power] ;Counts ",1001, -1., 1000.) ;
-  TH1F * h5  = new TH1F("hTOFRawsTimeIA", "Raws Time Spectrum in TOF (ns) - I/A side;Measured raw TOF time [ns];Counts", 100000,0. ,2440.) ; 
-  TH1F * h6  = new TH1F("hTOFRawsTimeOA", "Raws Time Spectrum in TOF (ns) - O/A side;Measured raw TOF time [ns];Counts", 100000,0. ,2440.) ; 
-  TH1F * h7  = new TH1F("hTOFRawsTimeIC", "Raws Time Spectrum in TOF (ns) - I/C side;Measured raw TOF time [ns];Counts", 100000,0. ,2440.) ; 
-  TH1F * h8  = new TH1F("hTOFRawsTimeOC", "Raws Time Spectrum in TOF (ns) - O/C side;Measured raw TOF time [ns];Counts", 100000,0. ,2440.) ; 
-  TH1F * h9  = new TH1F("hTOFRawsToTIA",  "Raws ToT Spectrum in TOF (ns) - I/A side;Measured raw ToT [ns];Counts", 10000, 0., 244.) ; 
+  TH1F * h0 =  new TH1F("hTOFRaws",      "Number of TOF Raw Hits; TOF raw hits number;Counts ",1001, -1., 1000.) ;
+  TH1F * h1 =  new TH1F("hTOFRawsIA",    "Number of TOF Raw Hits - I/A side; TOF raw hits number ;Counts ",1001, -1., 1000.) ;
+  TH1F * h2 =  new TH1F("hTOFRawsOA",    "Number of TOF Raw Hits - O/A side; TOF raw hits number ;Counts ",1001, -1., 1000.) ;
+  TH1F * h3 =  new TH1F("hTOFRawsIC",    "Number of TOF Raw Hits - I/C side; TOF raw hits number ;Counts ",1001, -1., 1000.) ;
+  TH1F * h4 =  new TH1F("hTOFRawsOC",    "Number of TOF Raw Hits - O/C side; TOF raw hits number  ;Counts ",1001, -1., 1000.) ;
+  TH1F * h5  = new TH1F("hTOFRawsTimeIA", "Raws Time Spectrum in TOF (ns) - I/A side;Measured raw TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h6  = new TH1F("hTOFRawsTimeOA", "Raws Time Spectrum in TOF (ns) - O/A side;Measured raw TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h7  = new TH1F("hTOFRawsTimeIC", "Raws Time Spectrum in TOF (ns) - I/C side;Measured raw TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h8  = new TH1F("hTOFRawsTimeOC", "Raws Time Spectrum in TOF (ns) - O/C side;Measured raw TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h9  = new TH1F("hTOFRawsToTIA",  "Raws ToT Spectrum in TOF (ns) - I/A side;Measured raw ToT [ns];Counts", 1000, 0., 244.) ; 
   TH1F * h10  = new TH1F("hTOFRawsToTOA", "Raws ToT Spectrum in TOF (ns) - O/A side;Measured raw ToT [ns];Counts", 10000, 0., 244.) ; 
   TH1F * h11  = new TH1F("hTOFRawsToTIC", "Raws ToT Spectrum in TOF (ns) - I/C side;Measured raw ToT [ns];Counts", 10000, 0., 244.) ; 
   TH1F * h12  = new TH1F("hTOFRawsToTOC", "Raws ToT Spectrum in TOF (ns) - O/C side;Measured raw ToT [ns];Counts", 10000, 0., 244.) ; 
+
   TH1F * h13  = new TH1F("hTOFRawsTRMHitRate035", "TRM hit rate - crates 0 to 35 ;TRM index = DDL*10+TRM(0-9);Counts",  361, 0., 361.) ; 
   TH1F * h14  = new TH1F("hTOFRawsTRMHitRate3671","TRM hit rate - crates 36 to 71 ;TRM index = DDL*10+TRM(0-9);Counts", 361, 361., 722.) ; 
-  TH1F * h15  = new TH1F("hTOFRawsVolumeErrorCounter","Invalid hit/volume association error counter per DDL; DDL; error counter ",73, -1., 72.) ; 
-  TH2F * h16  = new TH2F("hTOFRawsClusMap","Raws vs TOF eta-phi;eta (2*strip+padz);phi (48*sector+padx)",183, -0.5, 182.5,865,-0.5,864.5) ; 
-  TH1F * h17  = new TH1F("hTOFOrphansTime", "Raws Time Spectrum in TOF (ns) for hits with no ToT measurement;Measured raw TOF time [ns];Counts", 100000,0. ,2440.) ; 
-  TH1F * h18  = new TH1F("hTOFRawsDecodingErrorCounter",  "Invalid hit/equipment association error counter per DDL; DDL; error counter ",73, -1., 72.) ; 
+  TH1F * h15 = new TH1F("hTOFRawsLTMHitRate", "LTM hit rate; Crate; Counts",  72, 0., 72.);
+  
+  TH1F * h16  = new TH1F("hTOFRawsVolumeErrorCounter","Invalid hit/volume association error counter per DDL; DDL; error counter ",73, -1., 72.) ; 
+  TH1F * h17  = new TH1F("hTOFRawsEquipErrorCounter",  "Invalid hit/equipment association error counter per DDL; DDL; error counter ",73, -1., 72.) ; 
+ 
+  TH1F * h18  = new TH1F("hTOFOrphansTime", "Raws Time Spectrum in TOF (ns) for hits with no ToT measurement;Measured raw TOF time [ns];Counts", 25000,0. ,610.) ; 
   TH1F * h19 = new TH1F("hTOFRawsWords",    "Number of TOF Raw words per event; TOF raw words number;Counts ",1001, -1., 1000.) ;
   TH2F * h20 = new TH2F("hTOFRawTimeVsDDL",    "TOF raw time spectrum vs DDL; TOF raw time [ns];DDL ",1000,0. ,2440., 72, 0., 72.) ;
   TH2F * h21 = new TH2F("hTOFRawToTVsDDL",     "TOF raw ToT spectrum vs DDL; TOF raw ToT [ns];DDL ",   100, 0., 244., 72, 0., 72.) ;
+  TH2F * h22  = new TH2F("hTOFRawsClusMap","Raws vs TOF eta-phi;eta (2*strip+padz);phi (48*sector+padx)",183, -0.5, 182.5,865,-0.5,864.5) ; 
+  
+ // TH1F * h23 = new TH1F("hTOFRawsDecodingErr","Decoding errors counts per DDL; DDL;Counts",72,0,72);
+ // TH1F * h24 = new TH1F("hTOFRawsEventsPerDDL","Events number per DDL; DDL; Event Number",72,0,72);
+  
   
     h0->Sumw2() ;
     h1->Sumw2() ;
@@ -165,7 +186,8 @@ void AliTOFQADataMakerRec::InitRaws()
     h19->Sumw2() ;
     h20->Sumw2() ;
     h21->Sumw2() ; 
-      
+    h22->Sumw2() ;
+   
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
   Add2RawsList(h1,   1,  expert, !image, !saveCorr) ;
   Add2RawsList(h2,   2,  expert, !image, !saveCorr) ;
@@ -182,12 +204,14 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h13, 13,  expert, !image, !saveCorr) ;
   Add2RawsList(h14, 14,  expert, !image, !saveCorr) ;
   Add2RawsList(h15, 15,  expert, !image, !saveCorr) ;
-  Add2RawsList(h16, 16, !expert,  image, !saveCorr) ;
+  Add2RawsList(h16, 16,  expert, !image, !saveCorr) ;
   Add2RawsList(h17, 17,  expert, !image, !saveCorr) ;
   Add2RawsList(h18, 18,  expert, !image, !saveCorr) ;
   Add2RawsList(h19, 19,  expert, !image, !saveCorr) ;
   Add2RawsList(h20, 20,  expert, !image, !saveCorr) ;
   Add2RawsList(h21, 21,  expert, !image, !saveCorr) ;
+  Add2RawsList(h22, 22, !expert,  image, !saveCorr) ;
+  
 
 }
 
@@ -198,26 +222,56 @@ void AliTOFQADataMakerRec::InitRecPoints()
   // create RecPoints histograms in RecPoints subdir
   //
 
-  Bool_t expert = kFALSE;
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
 
-  TH1F * h0 = new TH1F("hTOFRecPoints",    "Number of TOF RecPoints ",301, -1.02, 5.) ;   h0->Sumw2() ;
-  Add2RecPointsList(h0, 0, expert) ;
+  TH1F * h0 = new TH1F("hTOFRecPoints",    "Number of TOF RecPoints per event;TOF recPoints number;Counts",1001, -1., 1000.) ;
+  TH1F * h1  = new TH1F("hTOFRecPointsTimeIA", "RecPoints Time Spectrum in TOF (ns) - I/A side;Calibrated TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h2 = new TH1F("hTOFRecPointsTimeOA", "RecPoints Time Spectrum in TOF (ns)- O/A side;Calibrated TOF time [ns];Counts", 25000,0. ,610.) ;
+  TH1F * h3  = new TH1F("hTOFRecPointsTimeIC", "RecPoints Time Spectrum in TOF (ns)- I/C side;Calibrated TOF time [ns];Counts", 25000,0. ,610.) ;
+  TH1F * h4  = new TH1F("hTOFRecPointsTimeOC", "RecPoints Time Spectrum in TOF (ns)- O/C side;Calibrated TOF time [ns];Counts", 25000,0. ,610.) ;
+  
+  TH1F * h5  = new TH1F("hTOFRecPointsRawTimeIA", "RecPoints raw Time Spectrum in TOF (ns)-I/A side ;Measured TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h6  = new TH1F("hTOFRecPointsRawTimeOA", "RecPoints raw Time Spectrum in TOF (ns)-O/A side;Measured TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h7  = new TH1F("hTOFRecPointsRawTimeIC", "RecPoints raw Time Spectrum in TOF (ns)-I/C side;Measured TOF time [ns];Counts", 25000,0. ,610.) ; 
+  TH1F * h8  = new TH1F("hTOFRecPointsRawTimeOC", "RecPoints raw Time Spectrum in TOF (ns)-O/C side;Measured TOF time [ns];Counts", 25000,0. ,610.) ; 
+ 
+  TH1F * h9  = new TH1F("hTOFRecPointsToTIA", "RecPoints ToT Spectrum in TOF (ns)-I/A side;Measured TOT [ns];Counts",10000, 0., 244. ) ; 
+  TH1F * h10  = new TH1F("hTOFRecPointsToTOA", "RecPoints ToT Spectrum in TOF (ns)-O/A side;Measured TOT [ns];Counts",10000, 0., 244. ) ; 
+  TH1F * h11  = new TH1F("hTOFRecPointsToTIC", "RecPoints ToT Spectrum in TOF (ns)-I/C side;Measured TOT [ns];Counts",10000, 0., 244. ) ; 
+  TH1F * h12  = new TH1F("hTOFRecPointsToTOC", "RecPoints ToT Spectrum in TOF (ns)-O/C side;Measured TOT [ns];Counts",10000, 0., 244. ) ; 
+  
+  TH2F * h13  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF phi-eta; eta (2*strip+padz);phi (48*sector+padx)",183, -0.5, 182.5,865,-0.5,864.5) ; 
 
-  TH1F * h1  = new TH1F("hTOFRecPointsTime", "RecPoints Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
-  h1->Sumw2() ;
-  Add2RecPointsList(h1, 1, expert) ;
-
-  TH1F * h2  = new TH1F("hTOFRecPointsRawTime", "RecPoints raw Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
-  h2->Sumw2() ;
-  Add2RecPointsList(h2, 2, expert) ;
-
-  TH1F * h3  = new TH1F("hTOFRecPointsToT", "RecPoints ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
-  h3->Sumw2() ;
-  Add2RecPointsList(h3, 3, expert) ;
-
-  TH2F * h4  = new TH2F("hTOFRecPointsClusMap","RecPoints vs TOF eta-phi",183, -0.5, 182.5,865,-0.5,864.5) ; 
-  h4->Sumw2() ;
-  Add2RecPointsList(h4, 4, expert) ;
+    h0->Sumw2() ;
+    h1->Sumw2() ;
+    h2->Sumw2() ;
+    h3->Sumw2() ;
+    h4->Sumw2() ;
+    h5->Sumw2() ;
+    h6->Sumw2() ;
+    h7->Sumw2() ;
+    h8->Sumw2() ;
+    h9->Sumw2() ;
+    h10->Sumw2() ;
+    h11->Sumw2() ;
+    h12->Sumw2() ;
+    h13->Sumw2() ;
+    
+  Add2RecPointsList(h0, 0, !expert, image) ;
+  Add2RecPointsList(h1, 1, !expert, image) ;
+  Add2RecPointsList(h2, 2, !expert, image) ;
+  Add2RecPointsList(h3, 3, !expert, image) ;
+  Add2RecPointsList(h4, 4, !expert, image) ;
+  Add2RecPointsList(h5, 5, expert, !image) ;
+  Add2RecPointsList(h6, 6, expert, !image) ;
+  Add2RecPointsList(h7, 7, expert, !image) ;
+  Add2RecPointsList(h8, 8, expert, !image) ;
+  Add2RecPointsList(h9, 9,   !expert, image) ;
+  Add2RecPointsList(h10, 10, !expert, image) ;
+  Add2RecPointsList(h11, 11, !expert, image) ;
+  Add2RecPointsList(h12, 12, !expert, image) ;
+  Add2RecPointsList(h13, 13, expert, !image) ;
 
 }
 
@@ -234,15 +288,15 @@ void AliTOFQADataMakerRec::InitESDs()
   h0->Sumw2() ; 
   Add2ESDsList(h0, 0, expert) ;
 
-  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFESDsTime", "Time Spectrum in TOF (ns)", 1000, 0., 244) ; 
   h1->Sumw2() ;
   Add2ESDsList(h1, 1, expert) ;
 
-  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 2000, 0., 200) ; 
+  TH1F * h2  = new TH1F("hTOFESDsRawTime", "raw Time Spectrum in TOF (ns)", 1000, 0., 244) ; 
   h2->Sumw2() ;
   Add2ESDsList(h2, 2, expert) ;
 
-  TH1F * h3  = new TH1F("hTOFESDsToT", "ToT Spectrum in TOF (ns)", 500, 0., 50) ; 
+  TH1F * h3  = new TH1F("hTOFESDsToT", "ToT Spectrum in TOF (ns)", 1000, 0., 244) ; 
   h3->Sumw2() ;
   Add2ESDsList(h3, 3, expert) ;
 
@@ -293,7 +347,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    equipmentID[3]=tofRawDatum->GetTDC();
 	    equipmentID[4]=tofRawDatum->GetTDCchannel();
 	    
-	    if (!CheckEquipID(equipmentID)) GetRawsData(18)->Fill(equipmentID[0]);
+	    if (!CheckEquipID(equipmentID)) GetRawsData(17)->Fill(equipmentID[0]);
 	    else {
 		tofInput.EquipmentId2VolumeId(iDDL, 
 					      tofRawDatum->GetTRM(), 
@@ -301,9 +355,12 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 					      tofRawDatum->GetTDC(), 
 					      tofRawDatum->GetTDCchannel(), 
 					      volumeID);
-		
-		if (!CheckVolumeID(volumeID)) GetRawsData(15)->Fill(equipmentID[0]);  
-		else {
+		if (FilterSpare(equipmentID)) continue;
+		if (FilterLTMData(equipmentID)) GetRawsData(15)->Fill(equipmentID[0]);
+		 else {
+		  if (!CheckVolumeID(volumeID)) GetRawsData(16)->Fill(equipmentID[0]);  
+			else {
+			
 		    GetMapIndeces(volumeID,out);
 		    
 		    volumeID2[0]=volumeID[0];
@@ -314,7 +371,8 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		    chIndex=AliTOFGeometry::GetIndex(volumeID2);
 		    
 		    if (tofRawDatum->GetTOT()){	    
-			if (!(fCalibData->GetNoiseStatus(chIndex)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)) {//noise filter
+			if (!(fCalibData->GetNoiseStatus(chIndex)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+			 && (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk)) {//noise and enabled filter
 			    ntof[0]++; //counter for tof hits
 			    if (volumeID2[0]>4 && volumeID2[0]<14){       //I side
 				if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
@@ -344,10 +402,10 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 				}
 			    }
 			    //compute TRM offset
-			    Int_t trm= iDDL*10+(volumeID[1]-3);
+			    Int_t trm= iDDL*10+(equipmentID[1]-3);
 			    if (iDDL>=0 && iDDL<36) GetRawsData(13)->Fill(trm) ;//in ns 
 			    if (iDDL>=36 && iDDL<72) GetRawsData(14)->Fill(trm) ;//in ns 
-			    GetRawsData(16)->Fill( out[0],out[1]) ;//raw map
+			    GetRawsData(22)->Fill( out[0],out[1]) ;//raw map
 			    
 			    GetRawsData(20)->Fill(tofRawDatum->GetTOF()*tdc2ns,iDDL);
 			    GetRawsData(21)->Fill(tofRawDatum->GetTOT()*tot2ns,iDDL);
@@ -355,10 +413,12 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 			}//noise filter
 		    }//end hit selection
 		    else { //orphans
-			if (!(fCalibData->GetNoiseStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad))
-			    GetRawsData(17)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
+			if (!(fCalibData->GetNoiseStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+			 && (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk))
+			    GetRawsData(18)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
 		    }//end orphans
-		}//end volumeID check
+		    }//end volumeID check
+		    }//end LTM filter
 	    }//end equipID check
 	}
     } // while loop
@@ -375,62 +435,99 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
 }
 
-
 //____________________________________________________________________________
 void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
-    //
-    // Make data from Clusters
-    //
-    
-    Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
-    Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
-    
-    Int_t in[5];
-    Int_t out[5];
-    
-    TBranch *branch=clustersTree->GetBranch("TOF");
-    if (!branch) { 
-	AliError("can't get the branch with the TOF clusters !");
-	return;
-    }
-    
-    static TClonesArray dummy("AliTOFcluster",10000);
-    dummy.Clear();
-    TClonesArray *clusters=&dummy;
-    branch->SetAddress(&clusters);
-    
-    // Import the tree
-    clustersTree->GetEvent(0);  
-    
-    Int_t nentries=clusters->GetEntriesFast();
-    if(nentries<=0){
-	GetRecPointsData(0)->Fill(-1.) ; 
-    }else{
-	GetRecPointsData(0)->Fill(TMath::Log10(nentries)) ; 
-    } 
-    
-    TIter next(clusters) ; 
-    AliTOFcluster * c ; 
-    while ( (c = dynamic_cast<AliTOFcluster *>(next())) ) {
-	GetRecPointsData(1)->Fill(c->GetTDC()*tdc2ns);
-	GetRecPointsData(2)->Fill(c->GetTDCRAW()*tdc2ns);
-	GetRecPointsData(3)->Fill(c->GetToT()*tot2ns);
-	
-	in[0] = c->GetDetInd(0);
-	in[1] = c->GetDetInd(1);
-	in[2] = c->GetDetInd(2);
-	in[3] = c->GetDetInd(4); //X and Z indeces inverted in RecPoints
-	in[4] = c->GetDetInd(3); //X and Z indeces inverted in RecPoints
-	
-	GetMapIndeces(in,out);
-	GetRecPointsData(4)->Fill(out[0],out[1]);
-	
-    }
+  //
+  // Make data from Clusters
+  //
+ 
+  Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;
+  Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
+
+  Int_t volumeID[5];
+  Int_t volumeID2[5];
+  Int_t out[5];
+
+  TBranch *branch=clustersTree->GetBranch("TOF");
+  if (!branch) { 
+    AliError("can't get the branch with the TOF clusters !");
+    return;
+  }
+
+  static TClonesArray dummy("AliTOFcluster",10000);
+  dummy.Clear();
+  TClonesArray *clusters=&dummy;
+  branch->SetAddress(&clusters);
+
+  // Import the tree
+  clustersTree->GetEvent(0);  
+ 
+  Int_t nentries=clusters->GetEntriesFast();
+  if(nentries<=0){
+      GetRecPointsData(0)->Fill(-1.) ; 
+  }else{
+      GetRecPointsData(0)->Fill(nentries) ; 
+  } 
+  
+  TIter next(clusters) ; 
+  AliTOFcluster * c ; 
+  while ( (c = dynamic_cast<AliTOFcluster *>(next())) ) {
+   
+      volumeID[0] = c->GetDetInd(0);
+      volumeID[1] = c->GetDetInd(1);
+      volumeID[2] = c->GetDetInd(2);
+      volumeID[3] = c->GetDetInd(4); //X and Z indeces inverted in RecPoints
+      volumeID[4] = c->GetDetInd(3); //X and Z indeces inverted in RecPoints
+      
+      for (Int_t i=0;i<5;i++){
+	  volumeID2[i]=c->GetDetInd(i); //X and Z indeces inverted in RecPoints
+      }
+      
+      GetMapIndeces(volumeID,out);
+      //Int_t chIndex=AliTOFGeometry::GetIndex(volumeID2);
+      Int_t iDDL=AliTOFRawStream::Geant2DDL(volumeID2);
+      
+      if (c->GetTDCRAW() && c->GetTDC() && c->GetToT()){
+	  if (volumeID2[0]>4 && volumeID2[0]<14){       //I side
+	      if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
+		  GetRecPointsData(1)->Fill( c->GetTDC()*tdc2ns) ;//in ns
+		  GetRecPointsData(5)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
+		  GetRecPointsData(9)->Fill( c->GetToT()*tot2ns) ;//in ns
+		  
+	      } else {
+		  if ((iDDL%4==2)|| (iDDL%4==3)){//C side
+		      GetRecPointsData(3)->Fill( c->GetTDC()*tdc2ns) ;//in ns
+		      GetRecPointsData(7)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
+		      GetRecPointsData(11)->Fill( c->GetToT()*tot2ns) ;//in ns
+		  }
+	      }
+	  } else {
+	      if (volumeID2[0]<5 || volumeID2[0]>13){       //O side
+		  if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
+		      GetRecPointsData(2)->Fill( c->GetTDC()*tdc2ns) ;//in ns
+		      GetRecPointsData(6)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
+		      GetRecPointsData(10)->Fill( c->GetToT()*tot2ns) ;//in ns
+		  } else {
+		      if ((iDDL%4==2)|| (iDDL%4==3)){//C side
+			  GetRecPointsData(4)->Fill( c->GetTDC()*tdc2ns) ;//in ns
+			  GetRecPointsData(8)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
+			  GetRecPointsData(12)->Fill( c->GetToT()*tot2ns) ;//in ns
+		      }
+		  }
+	      }
+	  }
+	  GetRecPointsData(13)->Fill(out[0],out[1]);
+	  
+      }
+       
+  }//end while  
+ 
+  
 }
 
 //____________________________________________________________________________
-void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
+void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * const esd)
 {
   //
   // make QA data from ESDs
@@ -465,7 +562,6 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
   if(ntof>0)GetESDsData(4)->Fill(ntofpid/ntof) ;
 
 }
-
 //____________________________________________________________________________ 
 void AliTOFQADataMakerRec::StartOfDetectorCycle()
 {
@@ -486,7 +582,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
 //____________________________________________________________________________
-void AliTOFQADataMakerRec::GetMapIndeces(Int_t* in , Int_t* out)
+void AliTOFQADataMakerRec::GetMapIndeces(const Int_t* const in , Int_t* out)
 {
   //
   //return appropriate indeces for the theta-phi map
@@ -532,8 +628,11 @@ void AliTOFQADataMakerRec::GetMapIndeces(Int_t* in , Int_t* out)
   
 }
 //---------------------------------------------------------------
-Bool_t  AliTOFQADataMakerRec::CheckVolumeID(Int_t *volumeID)
+Bool_t  AliTOFQADataMakerRec::CheckVolumeID(const Int_t * const volumeID)
 {
+    //
+    //Checks volume ID validity
+    //
    
     for (Int_t j=0;j<5;j++){
 	if (volumeID[j]<0) {
@@ -546,15 +645,53 @@ Bool_t  AliTOFQADataMakerRec::CheckVolumeID(Int_t *volumeID)
 }
 
 //---------------------------------------------------------------
-Bool_t  AliTOFQADataMakerRec::CheckEquipID(Int_t *equipmentID)
+Bool_t  AliTOFQADataMakerRec::CheckEquipID(const Int_t * const equipmentID)
 {
+    //
+    //Checks equipment ID validity
+    
    for (Int_t j=0;j<5;j++){
 	if (equipmentID[j]<0) {
-	  if (j==0)equipmentID[j]=-1;
 	  AliDebug(1,Form("Invalid equipment volume index for equipmentID[%i]",j));
 	  return kFALSE;
 	}
    }
    return kTRUE;
 }
+//---------------------------------------------------------------
+Bool_t  AliTOFQADataMakerRec::FilterLTMData(const Int_t * const equipmentID) const
+{
+  /*It returns kTRUE if data come from LTM.
+    It thus filter trigger-related signals  */
 
+  Int_t ddl, trm, tdc;
+  //if (!CheckEquipID(equipmentID)) return kFALSE;
+  ddl = equipmentID[0];
+  trm = equipmentID[1];
+  tdc = equipmentID[3];
+  
+  if ((ddl%2==1) && (trm==3) && (tdc>11 && tdc<15))
+    return kTRUE;
+  else 
+    return kFALSE;
+ 
+}
+//---------------------------------------------------------------
+Bool_t  AliTOFQADataMakerRec::FilterSpare(const Int_t * const equipmentID) const
+{
+  /*It returns kTRUE if data come from spare 
+    equipment ID. 
+    So far only check on TRM 3 crate left is implemented */
+
+  Int_t ddl, trm, tdc;
+  //if (!CheckEquipID(equipmentID)) return kFALSE;
+  ddl = equipmentID[0];
+  trm = equipmentID[1];
+  tdc = equipmentID[3];
+  
+  if ((ddl%2==1) && (trm==3) && (tdc>2 && tdc<12))
+    return kTRUE;
+  else 
+    return kFALSE;
+ 
+}

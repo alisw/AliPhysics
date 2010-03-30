@@ -15,7 +15,6 @@
 
 #include "AliQADataMakerRec.h"
 #include "AliQAv1.h"
-#include "AliTOFChannelOnlineStatusArray.h"
 
 class AliCDBManager;
 class AliCDBEntry;
@@ -38,15 +37,18 @@ private:
   virtual void   InitESDs() ; 
   virtual void   InitRecPoints() ; 
   virtual void   InitRaws() ; 
-  virtual void   MakeESDs(AliESDEvent * esd) ;
+  virtual void   MakeESDs(AliESDEvent * const esd) ;
   virtual void   MakeRecPoints(TTree * recTree) ; 
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   StartOfDetectorCycle() ; 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
-  virtual void   GetMapIndeces(Int_t *in, Int_t *out) ; 
+  virtual void   GetMapIndeces(const Int_t * const in, Int_t *out) ; 
+  	      Int_t  GetStripIndex(const Int_t * const in);
   virtual void   EnableNoiseFiltering(Bool_t enable){fEnableNoiseFiltering = enable;};
-  Bool_t   CheckVolumeID(Int_t *equipmentID); 
-  Bool_t   CheckEquipID(Int_t *equipmentID); 
+          Bool_t CheckVolumeID(const Int_t * const equipmentID); 
+          Bool_t CheckEquipID( const Int_t * const equipmentID); 
+          Bool_t FilterLTMData(const Int_t * const equipmentID) const; 
+          Bool_t FilterSpare(  const Int_t * const equipmentID) const;
 
   Bool_t fEnableNoiseFiltering; //the choice is not implemented so far
   ClassDef(AliTOFQADataMakerRec,2)  // description 
