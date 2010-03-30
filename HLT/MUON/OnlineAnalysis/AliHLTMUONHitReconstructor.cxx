@@ -38,8 +38,8 @@
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONUtils.h"
-#include <cstring>
-#include <strings.h>
+#include "AliRawDataHeader.h"
+#include <cassert>
 
 
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
@@ -1893,6 +1893,28 @@ void AliHLTMUONHitReconstructor::Clear()
   
   // for(int i=0;i<130;i++)
   //   fMaxFiredPerDetElem[i] = 0;
+}
+
+
+AliHLTInt32_t AliHLTMUONHitReconstructor::GetkNofDetElemInDDL(Int_t iDDL)
+{
+	/// Returns the number of detection elements for a DDL.
+	
+	if(iDDL>=0 && iDDL<=19)
+		return fgkNofDetElemInDDL[iDDL];
+	else
+		return -1;
+}
+
+
+AliHLTInt32_t AliHLTMUONHitReconstructor::GetkMinDetElemIdInDDL(Int_t iDDL)
+{
+	/// Returns the first detection element ID for a DDL.
+	
+	if(iDDL>=0 && iDDL<=19)
+		return fgkMinDetElemIdInDDL[iDDL];
+	else
+		return -1;
 }
 
 
