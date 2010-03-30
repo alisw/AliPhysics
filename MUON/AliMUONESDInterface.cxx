@@ -25,6 +25,7 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMUONVTriggerTrackStore.h"
 #include "AliMUON2DMapIterator.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
@@ -80,6 +81,7 @@ TString AliMUONESDInterface::fgTrackStoreName = "AliMUONTrackStoreV1";
 TString AliMUONESDInterface::fgClusterStoreName = "AliMUONClusterStoreV2";
 TString AliMUONESDInterface::fgDigitStoreName = "AliMUONDigitStoreV2R";
 TString AliMUONESDInterface::fgTriggerStoreName = "AliMUONTriggerStoreV1";
+TString AliMUONESDInterface::fgTriggerTrackStoreName = "AliMUONTriggerTrackStoreV1";
 
 //_____________________________________________________________________________
 AliMUONESDInterface::AliMUONESDInterface()
@@ -523,6 +525,18 @@ AliMUONVTriggerStore* AliMUONESDInterface::NewTriggerStore()
   return reinterpret_cast<AliMUONVTriggerStore*>(classPtr->New());
 }
 
+//_____________________________________________________________________________
+AliMUONVTriggerTrackStore* AliMUONESDInterface::NewTriggerTrackStore()
+{
+  /// Create an empty trigger track store of type fgTriggerTrackStoreName
+  TClass* classPtr = TClass::GetClass(fgTriggerTrackStoreName);
+  if (!classPtr || !classPtr->InheritsFrom("AliMUONVTriggerTrackStore")) {
+    cout<<"E-AliMUONESDInterface::NewTriggerTrackStore: Unable to create store of type "<<fgTriggerTrackStoreName.Data()<<endl;
+    return 0x0;
+  }
+  return reinterpret_cast<AliMUONVTriggerTrackStore*>(classPtr->New());
+}
+
 //_________________________________________________________________________
 void AliMUONESDInterface::GetParamAtVertex(const AliESDMuonTrack& esdTrack, AliMUONTrackParam& trackParam)
 {
@@ -772,6 +786,7 @@ void AliMUONESDInterface::ESDToMUON(const AliESDMuonTrack& esdTrack, AliMUONLoca
     return;
   }
   
+  locTrg.SetUniqueID(locTrg.GetUniqueID());
   locTrg.SetLoCircuit(esdTrack.LoCircuit());
   locTrg.SetLoStripX(esdTrack.LoStripX());
   locTrg.SetLoStripY(esdTrack.LoStripY());

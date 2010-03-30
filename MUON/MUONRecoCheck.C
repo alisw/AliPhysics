@@ -51,6 +51,8 @@
 #include "AliMUONVTrackStore.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONVTriggerTrackStore.h"
+#include "AliMUONTriggerTrack.h"
 
 Double_t langaufun(Double_t *x, Double_t *par);
 
@@ -65,10 +67,12 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   // File for histograms and histogram booking
   TFile *histoFile = new TFile("MUONRecoCheck.root", "RECREATE");
   
-  TH1F *hReconstructible = new TH1F("hReconstructible"," Nb of reconstructible tracks ",15,-0.5,14.5);
+  TH1F *hReconstructible = new TH1F("hReconstructible"," Nb of reconstructible tracks / evt",15,-0.5,14.5);
   TH1F *hReco = new TH1F("hReco"," Nb of reconstructed tracks / evt",15,-0.5,14.5);
   TH1F *hNClusterComp = new TH1F("hNClusterComp"," Nb of compatible clusters / track ",15,-0.5,14.5);
   TH1F *hTrackRefID = new TH1F("hTrackRefID"," track reference ID ",100,-0.5,99.5);
+  TH1F *hTriggerable = new TH1F("hTriggerable"," Nb of triggerable tracks / evt",15,-0.5,14.5);
+  TH1F *hTriggered = new TH1F("hTriggered"," Nb of triggered tracks / evt",15,-0.5,14.5);
   
   // momentum resolution at vertex
   histoFile->mkdir("momentumAtVertex","momentumAtVertex");
@@ -150,6 +154,14 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   gResidualYPerChSigma->SetName("gResidualYPerChSigma");
   gResidualYPerChSigma->SetTitle("cluster-track residual-Y per Ch: sigma;chamber ID;#sigma_{Y} (cm)");
   gResidualYPerChSigma->SetMarkerStyle(kFullDotLarge);
+
+  histoFile->mkdir("trigger");
+  histoFile->cd("trigger");
+  TH1F* hResidualTrigX11 = new TH1F("hResiudalTrigX11", "Residual X11", 100, -10., 10.);
+  TH1F* hResidualTrigY11 = new TH1F("hResiudalTrigY11", "Residual Y11", 100, -10., 10.);
+  TH1F* hResidualTrigSlopeY = new TH1F("hResiudalTrigSlopeY", "Residual Y slope", 100, -0.1, 0.1);
+  TH1F* hTriggerableMatchFailed = new TH1F("hTriggerableMatchFailed", "Triggerable multiplicity for events with no match", 15, -0.5, 14.5);
+  
   
   // ###################################### initialize ###################################### //
   AliMUONRecoCheck rc(esdFileName, pathSim);
@@ -196,6 +208,45 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
     
     nReconstructibleTracks += trackRefStore->GetSize();
     nReconstructedTracks += trackStore->GetSize();
+
+    AliMUONVTriggerTrackStore* triggerTrackRefStore = rc.TriggerableTracks(ievent);
+    AliMUONVTriggerTrackStore* triggerTrackStore = rc.TriggeredTracks(ievent);
+
+    hTriggerable->Fill(triggerTrackRefStore->GetSize());
+    hTriggered->Fill(triggerTrackStore->GetSize());
+
+    // loop over trigger trackRef
+    TIter nextTrig(triggerTrackRefStore->CreateIterator());
+    AliMUONTriggerTrack* triggerTrackRef;
+    Int_t nTriggerMatches = 0;
+    while ( ( triggerTrackRef = static_cast<AliMUONTriggerTrack*>(nextTrig()) ) )
+    {
+      
+      AliMUONTriggerTrack* triggerTrackMatched = 0x0;
+      
+      // loop over trackReco and look for compatible track
+      TIter nextTrig2(triggerTrackStore->CreateIterator());
+      AliMUONTriggerTrack* triggerTrackReco;
+      while ( ( triggerTrackReco = static_cast<AliMUONTriggerTrack*>(nextTrig2()) ) )
+      {
+	
+        // check if trackReco is compatible with trackRef
+        if (triggerTrackReco->Match(*triggerTrackRef, sigmaCut)) {
+          triggerTrackMatched = triggerTrackReco;
+          nTriggerMatches++;
+          break;
+        }
+      }
+      
+      if (triggerTrackMatched) { // tracking requirements verified, track is found
+        hResidualTrigX11->Fill( triggerTrackMatched->GetX11() - triggerTrackRef->GetX11() );
+        hResidualTrigY11->Fill( triggerTrackMatched->GetY11() - triggerTrackRef->GetY11() );
+        hResidualTrigSlopeY->Fill( triggerTrackMatched->GetSlopeY() - triggerTrackRef->GetSlopeY() );
+      }
+    } // loop on trigger track ref
+    
+    if ( nTriggerMatches != triggerTrackStore->GetSize() )
+      hTriggerableMatchFailed->Fill(triggerTrackRefStore->GetSize());
     
     // loop over trackRef
     TIter next(trackRefStore->CreateIterator());
@@ -203,7 +254,7 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
     while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) )
     {
       
-      hTrackRefID->Fill(trackRef->GetMCLabel());
+      hTrackRefID->Fill(trackRef->GetUniqueID());
       
       AliMUONTrack* trackMatched = 0x0;
       Int_t nMatchClusters = 0;
@@ -215,10 +266,8 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
       {
 	
 	// check if trackReco is compatible with trackRef
-	Int_t n = 0;
 	if (trackReco->Match(*trackRef, sigmaCut, nMatchClusters)) {
 	  trackMatched = trackReco;
-	  nMatchClusters = n;
 	  break;
 	}
 	

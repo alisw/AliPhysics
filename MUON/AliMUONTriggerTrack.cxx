@@ -49,7 +49,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fCovariances(0x0)
 {
   /// default ctr
-      AliDebug(1,Form("this=%p",this));
+      AliDebug(5,Form("this=%p",this));
 }
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, Float_t z21, Float_t slopeX, Float_t slopeY, Int_t loTrgNum, Long_t theGTPattern, UShort_t hitsPatternInTrigCh)
@@ -66,7 +66,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, 
       fCovariances(0x0)
 {
 /// ctor from local trigger output
-        AliDebug(1,Form("this=%p x11=%f y11=%f z11=%f z21=%f slopeX=%f slopeY=%f loTrgNum=%d GTPattern=%ld HitsPatternInTrigCh %i",
+        AliDebug(5,Form("this=%p x11=%f y11=%f z11=%f z21=%f slopeX=%f slopeY=%f loTrgNum=%d GTPattern=%ld HitsPatternInTrigCh %i",
                         this,x11,y11,z11,z21,slopeX,slopeY,loTrgNum,theGTPattern,fHitsPatternInTrigCh));
 
 }
@@ -75,7 +75,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, 
 AliMUONTriggerTrack::~AliMUONTriggerTrack()
 {
   /// Destructor
-  AliDebug(1,Form("this=%p",this));
+  AliDebug(5,Form("this=%p",this));
   if (fCovariances) {
     delete fCovariances;
     fCovariances = 0x0;
@@ -100,7 +100,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
 /// copy ctor
 ///
   if (theMUONTriggerTrack.fCovariances) fCovariances = new TMatrixD(*(theMUONTriggerTrack.fCovariances));
-  AliDebug(1,Form("this=%p copy ctor",this));
+  AliDebug(5,Form("this=%p copy ctor",this));
 
 }
       
@@ -182,4 +182,42 @@ const TMatrixD& AliMUONTriggerTrack::GetCovariances() const
     fCovariances->Zero();
   }
   return *fCovariances;
+}
+
+//__________________________________________________________________________
+Bool_t AliMUONTriggerTrack::Match(AliMUONTriggerTrack &track, Double_t sigmaCut) const
+{
+  /// Try to match this track with the given track. Matching conditions:
+  /// - x, y position and y slope within sigmaCut
+  
+  TMatrixD paramDiff(3,1);
+  Double_t deltaZ = GetZ11() - track.GetZ11();
+  paramDiff(0,0) = GetX11() - track.GetX11();
+  paramDiff(1,0) = GetY11() - ( track.GetY11() + track.GetSlopeY() * deltaZ );
+  paramDiff(2,0) = GetSlopeY() - track.GetSlopeY();
+  Double_t chi2 = 0.;
+  TMatrixD cov1(GetCovariances());
+  TMatrixD cov2(track.GetCovariances());
+
+  AliDebug(3, Form("this Y11 %f  track Y11: %f (Z11 %f)  -> %f (Z11 %f)", GetY11(), track.GetY11(), track.GetZ11(), track.GetY11() + track.GetSlopeY() * deltaZ, GetZ11()));
+
+  TMatrixD sumCov(cov1,TMatrixD::kPlus,cov2);
+  if (sumCov.Determinant() != 0) {
+    sumCov.Invert();      
+    TMatrixD tmp(sumCov,TMatrixD::kMult,paramDiff);
+    TMatrixD chi2M(paramDiff,TMatrixD::kTransposeMult,tmp);
+    chi2 = chi2M(0,0);
+  } else {
+    AliWarning(" Determinant = 0");
+    Double_t sigma2 = 0.;
+    for (Int_t iVar = 0; iVar < 3; iVar++) {
+      sigma2 = cov1(iVar,iVar) + cov2(iVar,iVar);
+      chi2 += paramDiff(iVar,0) * paramDiff(iVar,0) / sigma2;
+    }
+  }
+
+  if ( chi2/3 > sigmaCut * sigmaCut )
+    return kFALSE;
+  
+  return kTRUE;
 }

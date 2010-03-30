@@ -1266,12 +1266,13 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
   trackHitPattern.ExecuteValidation(trackStore, triggerTrackStore, triggerStore);
 }
 
-  //__________________________________________________________________________
+
+//__________________________________________________________________________
 void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCircuit& circuit,
                                                          const AliMUONVTriggerStore& triggerStore,
                                                          AliMUONVTriggerTrackStore& triggerTrackStore)
 {
-  /// To make the trigger tracks from Local Trigger
+  /// Fill trigger track store from local trigger
   AliDebug(1, "");
   AliCodeTimerAuto("",0);
 
@@ -1284,64 +1285,75 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
     gloTrigPat = globalTrigger->GetGlobalResponse();
   }
   
+  AliMUONTriggerTrack triggerTrack;
+  
   TIter next(triggerStore.CreateIterator());
   AliMUONLocalTrigger* locTrg(0x0);
-
-  const Double_t kTrigNonBendReso = AliMUONConstants::TriggerNonBendingReso();
-  const Double_t kTrigBendReso = AliMUONConstants::TriggerBendingReso();
-  const Double_t kSqrt12 = TMath::Sqrt(12.);
-      
-  AliMUONTriggerTrack triggerTrack;
-  TMatrixD trigCov(3,3);
   
   while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) )
   {
     if ( locTrg->IsTrigX() && locTrg->IsTrigY() ) 
     { // make Trigger Track if trigger in X and Y
-
-      Int_t localBoardId = locTrg->LoCircuit();
-
-      Float_t y11 = circuit.GetY11Pos(localBoardId, locTrg->LoStripX()); 
-      Float_t z11 = circuit.GetZ11Pos(localBoardId, locTrg->LoStripX());
-      // need first to convert deviation to [0-30] 
-      // (see AliMUONLocalTriggerBoard::LocalTrigger)
-      Int_t deviation = locTrg->GetDeviation(); 
-      Int_t stripX21 = locTrg->LoStripX()+deviation+1;
-      Float_t y21 = circuit.GetY21Pos(localBoardId, stripX21);       
-      Float_t z21 = circuit.GetZ21Pos(localBoardId, stripX21);
-      Float_t x11 = circuit.GetX11Pos(localBoardId, locTrg->LoStripY());
       
-      AliDebug(1, Form(" MakeTriggerTrack %3d %2d %2d %2d (%f %f %f) (%f %f)\n",locTrg->LoCircuit(),
-                       locTrg->LoStripX(),locTrg->LoStripX()+deviation+1,locTrg->LoStripY(),x11, y11, z11, y21, z21));
-
- 
-      Double_t deltaZ = z11 - z21;
-      
-      Float_t slopeX = x11/z11;
-      Float_t slopeY = (y11-y21) / deltaZ;
-
-      Float_t sigmaX = circuit.GetX11Width(localBoardId, locTrg->LoStripY()) / kSqrt12;
-      Float_t sigmaY = circuit.GetY11Width(localBoardId, locTrg->LoStripX()) / kSqrt12;
-      Float_t sigmaY21 = circuit.GetY21Width(localBoardId, locTrg->LoStripX()) / kSqrt12;
-
-      trigCov.Zero();
-      trigCov(0,0) = kTrigNonBendReso * kTrigNonBendReso + sigmaX * sigmaX;
-      trigCov(1,1) = kTrigBendReso * kTrigBendReso + sigmaY * sigmaY;
-      trigCov(2,2) = 
-	(2. * kTrigBendReso * kTrigBendReso + sigmaY * sigmaY + sigmaY21 * sigmaY21 ) / deltaZ / deltaZ;
-      trigCov(1,2) = trigCov(2,1) = trigCov(1,1) / deltaZ;
-
-      triggerTrack.SetX11(x11);
-      triggerTrack.SetY11(y11);
-      triggerTrack.SetZ11(z11);
-      triggerTrack.SetZ21(z21);
-      triggerTrack.SetSlopeX(slopeX);
-      triggerTrack.SetSlopeY(slopeY);
-      triggerTrack.SetGTPattern(gloTrigPat);
-      triggerTrack.SetLoTrgNum(localBoardId);
-      triggerTrack.SetCovariances(trigCov);
+      TriggerToTrack(circuit, *locTrg, triggerTrack, gloTrigPat);
 
       triggerTrackStore.Add(triggerTrack);
     } // board is fired 
   } // end of loop on Local Trigger
+}
+
+//__________________________________________________________________________
+void AliMUONVTrackReconstructor::TriggerToTrack(const AliMUONTriggerCircuit& circuit,
+                                                const AliMUONLocalTrigger& locTrg,
+                                                AliMUONTriggerTrack& triggerTrack,
+                                                UChar_t globalTriggerPattern)
+{
+  /// To make the trigger tracks from Local Trigger
+  const Double_t kTrigNonBendReso = AliMUONConstants::TriggerNonBendingReso();
+  const Double_t kTrigBendReso = AliMUONConstants::TriggerBendingReso();
+  const Double_t kSqrt12 = TMath::Sqrt(12.);
+  
+  TMatrixD trigCov(3,3);
+
+  Int_t localBoardId = locTrg.LoCircuit();
+      
+  Float_t y11 = circuit.GetY11Pos(localBoardId, locTrg.LoStripX()); 
+  Float_t z11 = circuit.GetZ11Pos(localBoardId, locTrg.LoStripX());
+  // need first to convert deviation to [0-30] 
+  // (see AliMUONLocalTriggerBoard::LocalTrigger)
+  Int_t deviation = locTrg.GetDeviation(); 
+  Int_t stripX21 = locTrg.LoStripX()+deviation+1;
+  Float_t y21 = circuit.GetY21Pos(localBoardId, stripX21);       
+  Float_t z21 = circuit.GetZ21Pos(localBoardId, stripX21);
+  Float_t x11 = circuit.GetX11Pos(localBoardId, locTrg.LoStripY());
+      
+  AliDebug(1, Form(" MakeTriggerTrack %3d %2d %2d %2d (%f %f %f) (%f %f)\n",locTrg.LoCircuit(),
+                   locTrg.LoStripX(),locTrg.LoStripX()+deviation+1,locTrg.LoStripY(),x11, y11, z11, y21, z21));
+      
+  Double_t deltaZ = z11 - z21;
+      
+  Float_t slopeX = x11/z11;
+  Float_t slopeY = (y11-y21) / deltaZ;
+      
+  Float_t sigmaX = circuit.GetX11Width(localBoardId, locTrg.LoStripY()) / kSqrt12;
+  Float_t sigmaY = circuit.GetY11Width(localBoardId, locTrg.LoStripX()) / kSqrt12;
+  Float_t sigmaY21 = circuit.GetY21Width(localBoardId, locTrg.LoStripX()) / kSqrt12;
+      
+  trigCov.Zero();
+  trigCov(0,0) = kTrigNonBendReso * kTrigNonBendReso + sigmaX * sigmaX;
+  trigCov(1,1) = kTrigBendReso * kTrigBendReso + sigmaY * sigmaY;
+  trigCov(2,2) = 
+    (2. * kTrigBendReso * kTrigBendReso + sigmaY * sigmaY + sigmaY21 * sigmaY21 ) / deltaZ / deltaZ;
+    trigCov(1,2) = trigCov(2,1) = trigCov(1,1) / deltaZ;
+      
+  triggerTrack.SetX11(x11);
+  triggerTrack.SetY11(y11);
+  triggerTrack.SetZ11(z11);
+  triggerTrack.SetZ21(z21);
+  triggerTrack.SetSlopeX(slopeX);
+  triggerTrack.SetSlopeY(slopeY);
+  triggerTrack.SetGTPattern(globalTriggerPattern);
+  triggerTrack.SetLoTrgNum(localBoardId);
+  triggerTrack.SetCovariances(trigCov);
+  triggerTrack.SetUniqueID(locTrg.GetUniqueID());
 }

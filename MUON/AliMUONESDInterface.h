@@ -25,6 +25,7 @@ class AliMUONVDigit;
 class AliMUONVDigitStore;
 class AliMUONLocalTrigger;
 class AliMUONTriggerTrack;
+class AliMUONVTriggerTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONTrackParam;
 class AliMUONVTrackReconstructor;
@@ -102,6 +103,7 @@ public: // static methods
   static AliMUONVClusterStore* NewClusterStore();
   static AliMUONVDigitStore* NewDigitStore();
   static AliMUONVTriggerStore* NewTriggerStore();
+  static AliMUONVTriggerTrackStore* NewTriggerTrackStore();
   
   // ESD track parameters --> MUON track parameters
   static void GetParamAtVertex(const AliESDMuonTrack& esdTrack, AliMUONTrackParam& trackParam);
@@ -158,6 +160,7 @@ private:
   static TString fgClusterStoreName; ///< class name of the cluster store to use
   static TString fgDigitStoreName;   ///< class name of the digit store to use
   static TString fgTriggerStoreName; ///< class name of the trigger store to use
+  static TString fgTriggerTrackStoreName; ///< class name of the trigger track store to use
   
   // data containers
   AliMUONVTrackStore*   fTracks;   ///< track container

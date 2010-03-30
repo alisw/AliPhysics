@@ -41,6 +41,8 @@
 #include "AliMUONConstants.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTriggerTrack.h"
+#include "AliMUONVTriggerTrackStore.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -49,11 +51,24 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 
+#include "AliGeomManager.h"
+#include "AliMpCDB.h"
+#include "AliMpDDLStore.h"
+#include "AliMUONCDB.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONTriggerCircuit.h"
+#include "AliMUONVTrackReconstructor.h"
+#include "AliMUONVTriggerStore.h"
+
+#include "TGeoManager.h"
+
 #include <TFile.h>
 #include <TTree.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <Riostream.h>
+
+#include "AliMUONRecoCheck.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRecoCheck)
@@ -69,7 +84,11 @@ fESDFile (0x0),
 fCurrentEvent(0),
 fTrackRefStore(0x0),
 fRecoTrackRefStore(0x0),
+fRecoTriggerRefStore(0x0),
 fRecoTrackStore(0x0),
+fRecoTriggerTrackStore(0x0),
+fGeometryTransformer(0x0),
+fTriggerCircuit(0x0),
 fESDEventOwner(kTRUE)
 {
   /// Normal ctor
@@ -105,7 +124,11 @@ fESDFile (0x0),
 fCurrentEvent(0),
 fTrackRefStore(0x0),
 fRecoTrackRefStore(0x0),
+fRecoTriggerRefStore(0x0),
 fRecoTrackStore(0x0),
+fRecoTriggerTrackStore(0x0),
+fGeometryTransformer(0x0),
+fTriggerCircuit(0x0),
 fESDEventOwner(kFALSE)
 {
   /// Normal ctor
@@ -115,7 +138,6 @@ fESDEventOwner(kFALSE)
   
   // ESD MUON Tracks
   fESDEvent = esdEvent;
-  
 }
 
 //_____________________________________________________________________________
@@ -128,6 +150,8 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
     if (fESDFile) fESDFile->Close();
   }
   ResetStores();
+  delete fGeometryTransformer;
+  delete fTriggerCircuit;
 }
 
 //_____________________________________________________________________________
@@ -136,15 +160,44 @@ void AliMUONRecoCheck::ResetStores()
   /// Deletes all the store objects that have been created and resets the pointers to 0x0
   delete fTrackRefStore;      fTrackRefStore = 0x0;
   delete fRecoTrackRefStore;  fRecoTrackRefStore = 0x0;
+  delete fRecoTriggerRefStore;  fRecoTriggerRefStore = 0x0;
   delete fRecoTrackStore;     fRecoTrackStore = 0x0;
+  delete fRecoTriggerTrackStore; fRecoTriggerTrackStore = 0x0;
 }
+
+//_____________________________________________________________________________
+Bool_t AliMUONRecoCheck::InitCircuit()
+{
+
+  if ( fTriggerCircuit ) return kTRUE;
+
+  if ( !AliMUONCDB::CheckOCDB() ) return kFALSE;
+
+  if ( !AliGeomManager::GetGeometry() )
+    AliGeomManager::LoadGeometry();
+
+  if ( !AliMpDDLStore::Instance(false) )
+    AliMpCDB::LoadDDLStore();
+	
+  fGeometryTransformer = new AliMUONGeometryTransformer();
+  fGeometryTransformer->LoadGeometryData();
+  
+  fTriggerCircuit = new AliMUONTriggerCircuit(fGeometryTransformer);
+
+  // reset tracker for local trigger to trigger track conversion
+  if ( ! AliMUONESDInterface::GetTracker() )
+    AliMUONESDInterface::ResetTracker();
+  
+  return kTRUE;
+}
+
 
 //_____________________________________________________________________________
 Int_t AliMUONRecoCheck::GetRunNumber()
 {
   /// Return the run number of the current ESD event
   
-  if (fESDEventOwner && fRecoTrackStore == 0x0) {
+  if (fESDEventOwner && fRecoTrackStore == 0x0 && fRecoTriggerTrackStore == 0x0) {
     if (!fESDTree || fESDTree->GetEvent(fCurrentEvent) <= 0) {
       AliError(Form("fails to read ESD object for event %d: cannot get the run number",fCurrentEvent));
       return -1;
@@ -192,6 +245,36 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event, Bool_t re
   }
 }
 
+
+//_____________________________________________________________________________
+AliMUONVTriggerTrackStore* AliMUONRecoCheck::TriggeredTracks(Int_t event)
+{
+  /// Return a track store containing the reconstructed trigger tracks (converted into 
+  /// MUONTriggerTrack objects) for a given event.
+	
+  if (!fESDEventOwner) {
+    if (fRecoTriggerTrackStore == 0x0) MakeTriggeredTracks();
+    return fRecoTriggerTrackStore;
+  }
+	
+  if (event != fCurrentEvent) {
+    ResetStores();
+    fCurrentEvent = event;
+  }
+	
+  if (fRecoTriggerTrackStore != 0x0) return fRecoTriggerTrackStore;
+  else {
+    if (!fESDTree) return 0x0;
+    if (fESDTree->GetEvent(event) <= 0) {
+      AliError(Form("fails to read ESD object for event %d", event));
+      return 0x0;
+    }
+    MakeTriggeredTracks();
+    return fRecoTriggerTrackStore;
+  }
+}
+
+
 //_____________________________________________________________________________
 AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
 {
@@ -220,6 +303,34 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
 }
 
 //_____________________________________________________________________________
+AliMUONVTriggerTrackStore* AliMUONRecoCheck::TriggerableTracks(Int_t event)
+{
+  /// Return a trigger track store containing the triggerable track references (converted into 
+  /// AliMUONTriggerTrack objects) for a given event
+	
+  if (!fESDEventOwner) {
+    if (fRecoTriggerRefStore == 0x0) MakeTriggerableTracks();
+    return fRecoTriggerRefStore;
+  }
+	
+  if (event != fCurrentEvent) {
+    ResetStores();
+    fCurrentEvent = event;
+  }
+	
+  if (fRecoTriggerRefStore != 0x0) return fRecoTriggerRefStore;
+  else {
+    if (!fMCEventHandler->GetEvent(event)) {
+      AliError(Form("fails to read MC objects for event %d", event));
+      return 0x0;
+    }
+    MakeTriggerableTracks();
+    return fRecoTriggerRefStore;
+  }
+}
+
+
+//_____________________________________________________________________________
 AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t requestedStationMask, Bool_t request2ChInSameSt45)
 {
   /// Return a track store containing the reconstructible tracks for a given event,
@@ -246,6 +357,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t 
   }
 }
 
+
 //_____________________________________________________________________________
 void AliMUONRecoCheck::MakeReconstructedTracks(Bool_t refit)
 {
@@ -260,6 +372,41 @@ void AliMUONRecoCheck::MakeReconstructedTracks(Bool_t refit)
   }
   
 }
+
+
+//_____________________________________________________________________________
+void AliMUONRecoCheck::MakeTriggeredTracks()
+{
+  /// Make reconstructed trigger tracks
+  if (!(fRecoTriggerTrackStore = AliMUONESDInterface::NewTriggerTrackStore())) return;
+	
+  AliMUONVTriggerStore* tmpTriggerStore = AliMUONESDInterface::NewTriggerStore();
+  if ( ! tmpTriggerStore ) return;
+  
+  // loop over all reconstructed tracks and add them to the store (include ghosts)
+  Int_t nTracks = (Int_t) fESDEvent->GetNumberOfMuonTracks();
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+    AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
+    if (esdTrack->ContainTriggerData()) AliMUONESDInterface::Add(*esdTrack, *tmpTriggerStore);
+  }
+	
+  if ( ! InitCircuit() ) return;
+  
+  AliMUONVTrackReconstructor* tracker = AliMUONESDInterface::GetTracker();
+  tracker->EventReconstructTrigger(*fTriggerCircuit, *tmpTriggerStore, *fRecoTriggerTrackStore);
+  
+  delete tmpTriggerStore;
+}
+
+//_____________________________________________________________________________
+void AliMUONRecoCheck::TriggerToTrack(const AliMUONLocalTrigger& locTrg, AliMUONTriggerTrack& triggerTrack)
+{
+  /// Make trigger track from local trigger info
+  if ( ! InitCircuit() ) return;
+  AliMUONVTrackReconstructor* tracker = AliMUONESDInterface::GetTracker();
+  tracker->TriggerToTrack(*fTriggerCircuit, locTrg, triggerTrack);
+}
+
 
 //_____________________________________________________________________________
 void AliMUONRecoCheck::MakeTrackRefs()
@@ -385,6 +532,74 @@ void AliMUONRecoCheck::MakeTrackRefs()
   delete cStore;
   delete tmpTrackRefStore;
 }
+
+//_____________________________________________________________________________
+void AliMUONRecoCheck::MakeTriggerableTracks()
+{
+  /// Make triggerable tracks
+ if (!(fRecoTriggerRefStore = AliMUONESDInterface::NewTriggerTrackStore()))
+   return;
+
+  Double_t x, y, z, slopeX, slopeY, pZ;
+  TParticle* particle;
+  TClonesArray* trackRefs;
+  Int_t nTrackRef = fMCEventHandler->MCEvent()->GetNumberOfTracks();
+	
+  // loop over simulated tracks
+  for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; ++iTrackRef) {
+    Int_t nHits = fMCEventHandler->GetParticleAndTR(iTrackRef, particle, trackRefs);
+		
+    // skip empty trackRefs
+    if (nHits < 1) continue;
+				
+    AliMUONTriggerTrack track;
+    Int_t hitsOnTrigger = 0;
+    Int_t currCh = -1;
+		
+    // loop over simulated track hits
+    for (Int_t iHit = 0; iHit < nHits; ++iHit) {        
+      AliTrackReference* trackReference = static_cast<AliTrackReference*>(trackRefs->UncheckedAt(iHit));
+			
+      // skip trackRefs not in MUON
+      if (trackReference->DetectorId() != AliTrackReference::kMUON) continue;
+
+      // check chamberId of current trackReference
+      Int_t detElemId = trackReference->UserId();
+      Int_t chamberId = detElemId / 100 - 1;
+      if (chamberId < AliMUONConstants::NTrackingCh() || chamberId >= AliMUONConstants::NCh() ) continue;
+			
+			
+      if ( hitsOnTrigger == 0 ) {
+        // Get track parameters of current hit
+        x = trackReference->X();
+        y = trackReference->Y();
+        z = trackReference->Z();
+        pZ = trackReference->Pz();
+        slopeX = ( pZ == 0. ) ? 99999. : trackReference->Px() / pZ;
+        slopeY = ( pZ == 0. ) ? 99999. : trackReference->Py() / pZ;
+
+        track.SetX11(x);
+        track.SetY11(y);
+        track.SetZ11(z);
+        track.SetSlopeX(slopeX);
+        track.SetSlopeY(slopeY);
+      }
+
+      if ( currCh != chamberId ) {
+        hitsOnTrigger++;
+        currCh = chamberId;
+      }
+
+    } // loop on hits
+		
+    if ( hitsOnTrigger >= 3 ){
+      // store the track
+      track.SetUniqueID(iTrackRef);
+      fRecoTriggerRefStore->Add(track);
+    }
+  }
+}
+
 
 //_____________________________________________________________________________
 void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore)
@@ -561,6 +776,32 @@ AliMUONTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTrack &track, AliMUON
       
     }
     
+  }
+  
+  return matchedTrack;
+  
+}
+
+
+//_____________________________________________________________________________
+AliMUONTriggerTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTriggerTrack &track, AliMUONVTriggerTrackStore &triggerTrackStore,
+                                                           Double_t sigmaCut)
+{
+  /// Return the trigger track from the store matched with the given track (or 0x0).
+  /// Matching is done by comparing cluster/TrackRef positions.
+  
+  AliMUONTriggerTrack *matchedTrack = 0x0;
+  
+  // look for the corresponding simulated track if any
+  TIter next(triggerTrackStore.CreateIterator());
+  AliMUONTriggerTrack* track2;
+  while ( ( track2 = static_cast<AliMUONTriggerTrack*>(next()) ) ) {
+      
+    // check compatibility
+    if (track.Match(*track2, sigmaCut)) {
+      matchedTrack = track2;
+      break;
+    }
   }
   
   return matchedTrack;

@@ -18,7 +18,12 @@ class TTree;
 class AliESDEvent;
 class AliMCEventHandler;
 class AliMUONVTrackStore;
+class AliMUONVTriggerTrackStore;
 class AliMUONTrack;
+class AliMUONTriggerTrack;
+class AliMUONGeometryTransformer;
+class AliMUONTriggerCircuit;
+class AliMUONLocalTrigger;
 
 class AliMUONRecoCheck : public TObject 
 {
@@ -29,13 +34,22 @@ public:
 
   /// Return the list of reconstructed tracks
   AliMUONVTrackStore* ReconstructedTracks(Int_t event, Bool_t refit = kTRUE);
-  
+
+  /// Return the list of reconstructed trigger tracks
+  AliMUONVTriggerTrackStore* TriggeredTracks(Int_t event);
+
+  void TriggerToTrack(const AliMUONLocalTrigger& locTrg, AliMUONTriggerTrack& triggerTrack);
+	
   /// Return reference muon tracks
   AliMUONVTrackStore* TrackRefs(Int_t event);
 
+  /// Return triggerable reference tracks
+  AliMUONVTriggerTrackStore* TriggerableTracks(Int_t event);
+	
   /// Return reconstructible reference tracks
   AliMUONVTrackStore* ReconstructibleTracks(Int_t event, UInt_t requestedStationMask = 0x1F, Bool_t request2ChInSameSt45 = kTRUE);
-  
+
+	
   /// Return the run number of the current ESD event
   Int_t GetRunNumber();
   
@@ -52,6 +66,11 @@ public:
   static AliMUONTrack* FindCompatibleTrack(AliMUONTrack &track, AliMUONVTrackStore &trackStore,
 					   Int_t &nMatchClusters, Bool_t useLabel = kFALSE, Double_t sigmaCut = 10.);
   
+  /// Return the trigger track from the store matched with the given track (or 0x0)
+  static AliMUONTriggerTrack* FindCompatibleTrack(AliMUONTriggerTrack &track,
+                                                  AliMUONVTriggerTrackStore &triggerTrackStore,
+                                                  Double_t sigmaCut = 10.);
+  
 private:
   /// Not implemented
   AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
@@ -61,12 +80,18 @@ private:
   void ResetStores();
   
   void MakeReconstructedTracks(Bool_t refit);
+	
+  void MakeTriggeredTracks();
   
   void MakeTrackRefs();
   
   void CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore);
   
   void MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45 = kTRUE);
+	
+  void MakeTriggerableTracks();
+	
+  Bool_t InitCircuit();
 
 private:
   AliMCEventHandler* fMCEventHandler; ///< to access MC truth information
@@ -78,7 +103,12 @@ private:
   
   AliMUONVTrackStore* fTrackRefStore;     ///< current simulated tracks (owner)
   AliMUONVTrackStore* fRecoTrackRefStore; ///< current reconstructible tracks (owner)
+  AliMUONVTriggerTrackStore* fRecoTriggerRefStore; ///< current triggerable tracks (owner)
   AliMUONVTrackStore* fRecoTrackStore;    ///< current reconstructed tracks (owner)
+  AliMUONVTriggerTrackStore* fRecoTriggerTrackStore;    ///< current reconstructed trigger tracks (owner)
+	
+  AliMUONGeometryTransformer* fGeometryTransformer; ///< geometry transformer
+  AliMUONTriggerCircuit* fTriggerCircuit; ///< trigger circuit
   
   Bool_t fESDEventOwner;         ///< using constructor from the analysis task
 

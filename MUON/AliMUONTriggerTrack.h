@@ -81,6 +81,8 @@ class AliMUONTriggerTrack : public TObject
     const TMatrixD& GetCovariances() const;
     void  SetCovariances(const TMatrixD& covariances);
     void  SetCovariances(const Double_t matrix[3][3]);
+  
+    Bool_t Match(AliMUONTriggerTrack &track, Double_t sigmaCut) const;
     
 protected:
   private:
