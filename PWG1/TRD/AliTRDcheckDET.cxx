@@ -408,10 +408,10 @@ TObjArray *AliTRDcheckDET::Histos(){
   fContainer->AddAt(h, kNtrackletsSTA);
 
   // Binning for momentum dependent tracklet Plots
-  const Int_t kNp(14);
-  Float_t P=0.1;
+  const Int_t kNp(30);
+  Float_t P=0.2;
   Float_t binsP[kNp+1], binsTrklt[AliTRDgeometry::kNlayer+1];
-  for(Int_t i=0;i<kNp+1; i++,P=TMath::Exp(i*.15)-1.) binsP[i]=P;
+  for(Int_t i=0;i<kNp+1; i++,P=TMath::Exp(i*i*.001)-1.) binsP[i]=P;
   for(Int_t il = 0; il <= AliTRDgeometry::kNlayer; il++) binsTrklt[il] = 0.5 + il;
   if(!(h = (TH1F *)gROOT->FindObject("htlsBAR"))){
     // Make tracklets for barrel tracks momentum dependent (if we do not exceed min and max values)
