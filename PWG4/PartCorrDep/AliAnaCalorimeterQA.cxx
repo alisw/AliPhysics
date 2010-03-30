@@ -59,7 +59,7 @@ ClassImp(AliAnaCalorimeterQA)
 //____________________________________________________________________________
   AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
     AliAnaPartCorrBaseClass(), fCalorimeter(""), fStyleMacro(""), 
-    fMakePlots(kFALSE), fCorrelateCalos(kFALSE), fNModules(12), 
+    fMakePlots(kFALSE), fCorrelateCalos(kFALSE), fNModules(12), fNRCU(2),
     fHistoPOverEBins(100),     fHistoPOverEMax(100.),     fHistoPOverEMin(0.),
     fHistodEdxBins(100),       fHistodEdxMax(100.),       fHistodEdxMin(0.),
     fHistodRBins(100),         fHistodRMax(100.),         fHistodRMin(0.),
@@ -71,11 +71,14 @@ ClassImp(AliAnaCalorimeterQA)
     fHistoXBins(100),          fHistoXMax(1000),           fHistoXMin(-1000),
     fHistoYBins(100),          fHistoYMax(1000),           fHistoYMin(-1000),
     fHistoZBins(100),          fHistoZMax(1000),           fHistoZMin(-1000),
+	fHistoSSBins(40),          fHistoSSMax(10),            fHistoSSMin(0),
     fhE(0),fhPt(0),fhPhi(0),fhEta(0),   fhEtaPhiE(0),
     fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiECharged(0), 
     fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
-    fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0), fhIM(0), fhIMCellCut(0),fhAsym(0), 
+    fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0),
+	fhLambda(0), fhDispersion(0), 
+	fhIM(0), fhIMCellCut(0),fhAsym(0), 
     fhNCellsPerCluster(0),fhNCellsPerClusterMIP(0), fhNCellsPerClusterMIPCharged(0), fhNClusters(0), 
     fhCellTimeSpreadRespectToCellMax(0),fhCellIdCellLargeTimeSpread(0),
     fhRNCells(0),fhXNCells(0),fhYNCells(0),fhZNCells(0),
@@ -87,7 +90,7 @@ ClassImp(AliAnaCalorimeterQA)
     fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
     fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
     fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
-    fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhIMMod(0),  fhIMCellCutMod(0),
+    fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), fhIMMod(0),  fhIMCellCutMod(0),
     fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
     fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
     fhGenElePt(0),fhGenEleEta(0),fhGenElePhi(0), fhEMVxyz(0),  fhEMR(0), fhHaVxyz(0),  fhHaR(0),
@@ -119,7 +122,7 @@ ClassImp(AliAnaCalorimeterQA)
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :   
   AliAnaPartCorrBaseClass(qa), fCalorimeter(qa.fCalorimeter), fStyleMacro(qa.fStyleMacro), 
-  fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos), fNModules(qa.fNModules),
+  fMakePlots(qa.fMakePlots), fCorrelateCalos(qa.fCorrelateCalos), fNModules(qa.fNModules), fNRCU(qa.fNRCU),
   fHistoPOverEBins(qa.fHistoPOverEBins), fHistoPOverEMax(qa.fHistoPOverEMax), fHistoPOverEMin(qa.fHistoPOverEMin),
   fHistodEdxBins(qa.fHistodEdxBins), fHistodEdxMax(qa.fHistodEdxMax), fHistodEdxMin(qa.fHistodEdxMin), 
   fHistodRBins(qa.fHistodRBins), fHistodRMax(qa.fHistodRMax), fHistodRMin(qa.fHistodRMin),
@@ -131,6 +134,7 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fHistoXBins(qa.fHistoXBins), fHistoXMax(qa.fHistoXMax),  fHistoXMin(qa.fHistoXMin),
   fHistoYBins(qa.fHistoYBins), fHistoYMax(qa.fHistoYMax),  fHistoYMin(qa.fHistoYMin),
   fHistoZBins(qa.fHistoZBins), fHistoZMax(qa.fHistoZMax),  fHistoZMin(qa.fHistoZMin),
+  fHistoSSBins(qa.fHistoSSBins),fHistoSSMax(qa.fHistoSSMax), fHistoSSMin(qa.fHistoSSMin),
   fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), fhEtaPhiE(qa.fhEtaPhiE), 
   fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
   fhEtaCharged(qa.fhEtaCharged), fhEtaPhiECharged(qa.fhEtaPhiECharged), 
@@ -139,6 +143,7 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fhDeltaE(qa.fhDeltaE), fhDeltaPt(qa.fhDeltaPt), fhDeltaPhi(qa.fhDeltaPhi), fhDeltaEta(qa.fhDeltaEta),
   fhRatioE(qa.fhRatioE), fhRatioPt(qa.fhRatioPt), fhRatioPhi(qa.fhRatioPhi), fhRatioEta(qa.fhRatioEta),
   fh2E(qa.fh2E), fh2Pt(qa.fh2Pt), fh2Phi(qa.fh2Phi),fh2Eta(qa.fh2Eta), 
+  fhLambda(qa.fhLambda), fhDispersion(qa.fhDispersion), 
   fhIM(qa.fhIM), fhIMCellCut(qa.fhIMCellCut), fhAsym(qa.fhAsym), 
   fhNCellsPerCluster(qa.fhNCellsPerCluster), fhNCellsPerClusterMIP(qa.fhNCellsPerClusterMIP),
   fhNCellsPerClusterMIPCharged(qa.fhNCellsPerClusterMIPCharged),fhNClusters(qa.fhNClusters), 
@@ -157,9 +162,9 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fhCaloCorrNCells(qa.fhCaloCorrNCells), fhCaloCorrECells(qa.fhCaloCorrECells),
   fhEMod(qa.fhEMod), fhNClustersMod(qa.fhNClustersMod), 
   fhNCellsPerClusterMod(qa.fhNCellsPerClusterMod), fhNCellsMod(qa.fhNCellsMod),  
-  fhGridCellsMod(qa.fhGridCellsMod),  fhGridCellsEMod(qa.fhGridCellsEMod),
-  fhGridCellsTimeMod(qa.fhGridCellsTimeMod), fhAmplitudeMod(qa.fhAmplitudeMod), fhAmplitudeModFraction(qa.fhAmplitudeModFraction),
-  fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
+  fhGridCellsMod(qa.fhGridCellsMod),  fhGridCellsEMod(qa.fhGridCellsEMod), fhGridCellsTimeMod(qa.fhGridCellsTimeMod), 
+  fhAmplitudeMod(qa.fhAmplitudeMod), fhAmplitudeModFraction(qa.fhAmplitudeModFraction),
+  fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
   fhGenGamPt(qa.fhGenGamPt), fhGenGamEta(qa.fhGenGamEta), fhGenGamPhi(qa.fhGenGamPhi),
   fhGenPi0Pt(qa.fhGenPi0Pt), fhGenPi0Eta(qa.fhGenPi0Eta), fhGenPi0Phi(qa.fhGenPi0Phi),
   fhGenEtaPt(qa.fhGenEtaPt), fhGenEtaEta(qa.fhGenEtaEta), fhGenEtaPhi(qa.fhGenEtaPhi),
@@ -191,144 +196,144 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
 }
 
 //_________________________________________________________________________
-AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA & qa)
-{
-  // assignment operator
-
-  if(this == &qa)return *this;
-  ((AliAnaPartCorrBaseClass *)this)->operator=(qa);
-
-  fCalorimeter     = qa.fCalorimeter;
-  fStyleMacro      = qa.fStyleMacro;	
-  fMakePlots       = qa.fMakePlots;
-  fCorrelateCalos  = qa.fCorrelateCalos;
-  fNModules        = qa.fNModules; 
-	
-  fHistoPOverEBins = qa.fHistoPOverEBins;  fHistoPOverEMax = qa.fHistoPOverEMax;  fHistoPOverEMin = qa.fHistoPOverEMin; 
-  fHistodEdxBins = qa.fHistodEdxBins;  fHistodEdxMax = qa.fHistodEdxMax;  fHistodEdxMin = qa.fHistodEdxMin;  
-  fHistodRBins = qa.fHistodRBins;  fHistodRMax = qa.fHistodRMax;  fHistodRMin = qa.fHistodRMin; 
-  fHistoTimeBins = qa.fHistoTimeBins;  fHistoTimeMax = qa.fHistoTimeMax;  fHistoTimeMin = qa.fHistoTimeMin; 
-  fHistoNBins = qa.fHistoNBins;  fHistoNMax = qa.fHistoNMax;  fHistoNMin = qa.fHistoNMin;  
-  fHistoRatioBins = qa.fHistoRatioBins;  fHistoRatioMax = qa.fHistoRatioMax;  fHistoRatioMin = qa.fHistoRatioMin; 
-  fHistoVertexDistBins = qa.fHistoVertexDistBins;  fHistoVertexDistMax = qa.fHistoVertexDistMax;  fHistoVertexDistMin = qa.fHistoVertexDistMin; 
-  fHistoRBins = qa.fHistoRBins; fHistoRMax = qa.fHistoRMax;  fHistoRMin = qa.fHistoRMin;
-  fHistoXBins = qa.fHistoXBins; fHistoXMax = qa.fHistoXMax;  fHistoXMin = qa.fHistoXMin;
-  fHistoYBins = qa.fHistoYBins; fHistoYMax = qa.fHistoYMax;  fHistoYMin = qa.fHistoYMin;
-  fHistoZBins = qa.fHistoZBins; fHistoZMax = qa.fHistoZMax;  fHistoZMin = qa.fHistoZMin;																	  
-  fhE      = qa.fhE;
-  fhPt     = qa.fhPt;
-  fhPhi    = qa.fhPhi;
-  fhEta    = qa.fhEta;
-  fhEtaPhiE= qa.fhEtaPhiE;
-	
-  fhECharged      = qa.fhECharged;
-  fhPtCharged     = qa.fhPtCharged;
-  fhPhiCharged    = qa.fhPhiCharged;
-  fhEtaCharged    = qa.fhEtaCharged;
-  fhEtaPhiECharged = qa.fhEtaPhiECharged;
-
-  fhEChargedNoOut      = qa.fhEChargedNoOut;
-  fhPtChargedNoOut     = qa.fhPtChargedNoOut;
-  fhPhiChargedNoOut    = qa.fhPhiChargedNoOut;
-  fhEtaChargedNoOut    = qa.fhEtaChargedNoOut;
-  fhEtaPhiChargedNoOut = qa.fhEtaPhiChargedNoOut;
-	
-  fhIM   = qa.fhIM;   fhIMCellCut   = qa.fhIMCellCut;
-  fhAsym = qa.fhAsym;
-	
-  fhNCellsPerCluster           = qa.fhNCellsPerCluster;
-  fhNCellsPerClusterMIP        = qa.fhNCellsPerClusterMIP;
-  fhNCellsPerClusterMIPCharged = qa.fhNCellsPerClusterMIPCharged;
-
-  fhNClusters           = qa.fhNClusters;
-	
-  fhDeltaE   = qa.fhDeltaE;	
-  fhDeltaPt  = qa.fhDeltaPt;
-  fhDeltaPhi = qa.fhDeltaPhi;
-  fhDeltaEta = qa.fhDeltaEta;
-	
-  fhRatioE   = qa.fhRatioE;	
-  fhRatioPt  = qa.fhRatioPt;
-  fhRatioPhi = qa.fhRatioPhi;
-  fhRatioEta = qa.fhRatioEta;
-	
-  fh2E   = qa.fh2E;	
-  fh2Pt  = qa.fh2Pt;
-  fh2Phi = qa.fh2Phi;
-  fh2Eta = qa.fh2Eta;
-	
-  fhCellTimeSpreadRespectToCellMax = qa.fhCellTimeSpreadRespectToCellMax; 
-  fhCellIdCellLargeTimeSpread      = qa.fhCellIdCellLargeTimeSpread;
-	
-  fhRNCells = qa.fhRNCells; fhXNCells = qa.fhXNCells; fhYNCells = qa.fhYNCells; fhZNCells = qa.fhZNCells;
-  fhRE      = qa.fhRE;      fhXE      = qa.fhXE;      fhYE      = qa.fhYE;      fhZE      = qa.fhZE;    fhXYZ     = qa.fhXYZ;
-  fhRCellE  = qa.fhRCellE;  fhXCellE  = qa.fhXCellE;  fhYCellE  = qa.fhYCellE;  fhZCellE = qa.fhZCellE; fhXYZCell = qa.fhXYZCell;
-	
-  fhDeltaCellClusterRNCells = qa.fhDeltaCellClusterRNCells; fhDeltaCellClusterXNCells = qa.fhDeltaCellClusterXNCells; 
-  fhDeltaCellClusterYNCells = qa.fhDeltaCellClusterYNCells; fhDeltaCellClusterZNCells = qa.fhDeltaCellClusterZNCells;
-  fhDeltaCellClusterRE      = qa.fhDeltaCellClusterRE;      fhDeltaCellClusterXE      = qa.fhDeltaCellClusterXE;  
-  fhDeltaCellClusterYE      = qa.fhDeltaCellClusterYE;      fhDeltaCellClusterZE      = qa.fhDeltaCellClusterZE;
-	
-  fhNCells    = qa.fhNCells;
-  fhAmplitude = qa.fhAmplitude;
-  fhAmpId     = qa.fhAmpId;
-  fhTime      = qa.fhTime;
-  fhTimeId    = qa.fhTimeId;
-  fhTimeAmp   = qa.fhTimeAmp;
-  fhEtaPhiAmp = qa.fhEtaPhiAmp;
-	
-  fhCaloCorrNClusters = qa.fhCaloCorrNClusters; fhCaloCorrEClusters = qa.fhCaloCorrEClusters;
-  fhCaloCorrNCells = qa.fhCaloCorrNCells;  fhCaloCorrECells = qa.fhCaloCorrECells;
-	
-  fhEMod = qa.fhEMod; fhNClustersMod = qa.fhNClustersMod; 
-  fhNCellsPerClusterMod = qa.fhNCellsPerClusterMod; fhNCellsMod = qa.fhNCellsMod;  
-  fhGridCellsMod = qa.fhGridCellsMod;  fhGridCellsEMod = qa.fhGridCellsEMod; fhGridCellsTimeMod = qa.fhGridCellsTimeMod; 
-  fhAmplitudeMod = qa.fhAmplitudeMod; fhAmplitudeModFraction = qa.fhAmplitudeModFraction; 
-  fhIMMod=qa.fhIMMod; fhIMCellCutMod=qa.fhIMCellCutMod;
-	
-  fhGenGamPt = qa.fhGenGamPt  ; fhGenGamEta = qa.fhGenGamEta  ; fhGenGamPhi = qa.fhGenGamPhi  ;
-  fhGenPi0Pt = qa.fhGenPi0Pt  ; fhGenPi0Eta = qa.fhGenPi0Eta  ; fhGenPi0Phi = qa.fhGenPi0Phi  ;
-  fhGenEtaPt = qa.fhGenEtaPt  ; fhGenEtaEta = qa.fhGenEtaEta  ; fhGenEtaPhi = qa.fhGenEtaPhi  ;
-  fhGenOmegaPt = qa.fhGenOmegaPt  ; fhGenOmegaEta = qa.fhGenOmegaEta  ; fhGenOmegaPhi = qa.fhGenOmegaPhi  ;
-  fhGenElePt = qa.fhGenElePt  ; fhGenEleEta = qa.fhGenEleEta  ; fhGenElePhi = qa.fhGenElePhi ;	
-
-  fhEMVxyz = qa.fhEMVxyz ;  fhEMR = qa.fhEMR ; fhHaVxyz = qa.fhHaVxyz ;  fhHaR = qa.fhHaR ;
-  fhGamE = qa.fhGamE ;fhGamPt = qa.fhGamPt ;fhGamPhi = qa.fhGamPhi ;fhGamEta = qa.fhGamEta ; 
-  fhGamDeltaE   = qa.fhDeltaE; fhGamDeltaPt  = qa.fhDeltaPt; fhGamDeltaPhi = qa.fhDeltaPhi; fhGamDeltaEta = qa.fhDeltaEta;
-	
-  fhGamRatioE   = qa.fhGamRatioE;  fhGamRatioPt  = qa.fhGamRatioPt;  fhGamRatioPhi = qa.fhGamRatioPhi;  fhGamRatioEta = qa.fhGamRatioEta;
-
-  fhEleE = qa.fhEleE ;fhElePt = qa.fhElePt ;fhElePhi = qa.fhElePhi ;fhEleEta = qa.fhEleEta ;
-  fhPi0E = qa.fhPi0E ;fhPi0Pt = qa.fhPi0Pt ;fhPi0Phi = qa.fhPi0Phi ;fhPi0Eta = qa.fhPi0Eta ; 
-  fhNeHadE = qa.fhNeHadE ;fhNeHadPt = qa.fhNeHadPt ;fhNeHadPhi = qa.fhNeHadPhi ;fhNeHadEta = qa.fhNeHadEta ; 
-  fhChHadE = qa.fhChHadE ;fhChHadPt = qa.fhChHadPt ;fhChHadPhi = qa.fhChHadPhi ;fhChHadEta = qa.fhChHadEta ;
-  fhGenGamAccE = qa.fhGenGamAccE ;  fhGenPi0AccE = qa.fhGenPi0AccE ;
-  fhGenGamAccPt = qa.fhGenGamAccPt ;fhGenGamAccEta = qa.fhGenGamAccEta ;fhGenGamAccPhi = qa.fhGenGamAccPhi ;
-  fhGenPi0AccPt = qa.fhGenPi0AccPt ;fhGenPi0AccEta = qa.fhGenPi0AccEta; fhGenPi0AccPhi = qa.fhGenPi0AccPhi ;	
-		
-  fhGamECharged = qa.fhGamECharged; fhGamPtCharged = qa.fhGamPtCharged; fhGamPhiCharged = qa.fhGamPhiCharged; fhGamEtaCharged = qa.fhGamEtaCharged;  
-  fhEleECharged = qa.fhEleECharged; fhElePtCharged = qa.fhElePtCharged; fhElePhiCharged = qa.fhElePhiCharged; fhEleEtaCharged = qa.fhEleEtaCharged; 
-  fhPi0ECharged = qa.fhPi0ECharged; fhPi0PtCharged = qa.fhPi0PtCharged; fhPi0PhiCharged = qa.fhPi0PhiCharged; fhPi0EtaCharged = qa.fhPi0EtaCharged;  
-  fhNeHadECharged = qa.fhNeHadECharged; fhNeHadPtCharged = qa.fhNeHadPtCharged; fhNeHadPhiCharged = qa.fhNeHadPhiCharged; fhNeHadEtaCharged = qa.fhNeHadEtaCharged;  
-  fhChHadECharged = qa.fhChHadECharged; fhChHadPtCharged = qa.fhChHadPtCharged; fhChHadPhiCharged = qa.fhChHadPhiCharged; fhChHadEtaCharged = qa.fhChHadEtaCharged; 	
-	
-  fh1pOverE    = qa.fh1pOverE;
-  fh1dR        = qa.fh1dR;
-  fh2MatchdEdx = qa.fh2MatchdEdx;
-  fh2EledEdx   = qa.fh2EledEdx;	
-	
-  fhMCEle1pOverE    = qa.fhMCEle1pOverE; 
-  fhMCEle1dR        = qa.fhMCEle1dR; 
-  fhMCEle2MatchdEdx = qa.fhMCEle2MatchdEdx ;
-	
-  fhMCChHad1pOverE = qa.fhMCChHad1pOverE; fhMCChHad1dR = qa.fhMCChHad1dR;  fhMCChHad2MatchdEdx = qa.fhMCChHad2MatchdEdx; 
-  fhMCNeutral1pOverE = qa.fhMCNeutral1pOverE; fhMCNeutral1dR = qa.fhMCNeutral1dR;  fhMCNeutral2MatchdEdx = qa.fhMCNeutral2MatchdEdx; 
-  fh1pOverER02 = qa.fh1pOverER02;  fhMCEle1pOverER02 = qa.fhMCEle1pOverER02;  fhMCChHad1pOverER02 = qa.fhMCChHad1pOverER02;  
-  fhMCNeutral1pOverER02 = qa.fhMCNeutral1pOverER02;
-	
-  return *this;
-
-}
+//AliAnaCalorimeterQA & AliAnaCalorimeterQA::operator = (const AliAnaCalorimeterQA & qa)
+//{
+//  // assignment operator
+//
+//  if(this == &qa)return *this;
+//  ((AliAnaPartCorrBaseClass *)this)->operator=(qa);
+//
+//  fCalorimeter     = qa.fCalorimeter;
+//  fStyleMacro      = qa.fStyleMacro;	
+//  fMakePlots       = qa.fMakePlots;
+//  fCorrelateCalos  = qa.fCorrelateCalos;
+//  fNModules        = qa.fNModules; 
+//	
+//  fHistoPOverEBins = qa.fHistoPOverEBins;  fHistoPOverEMax = qa.fHistoPOverEMax;  fHistoPOverEMin = qa.fHistoPOverEMin; 
+//  fHistodEdxBins = qa.fHistodEdxBins;  fHistodEdxMax = qa.fHistodEdxMax;  fHistodEdxMin = qa.fHistodEdxMin;  
+//  fHistodRBins = qa.fHistodRBins;  fHistodRMax = qa.fHistodRMax;  fHistodRMin = qa.fHistodRMin; 
+//  fHistoTimeBins = qa.fHistoTimeBins;  fHistoTimeMax = qa.fHistoTimeMax;  fHistoTimeMin = qa.fHistoTimeMin; 
+//  fHistoNBins = qa.fHistoNBins;  fHistoNMax = qa.fHistoNMax;  fHistoNMin = qa.fHistoNMin;  
+//  fHistoRatioBins = qa.fHistoRatioBins;  fHistoRatioMax = qa.fHistoRatioMax;  fHistoRatioMin = qa.fHistoRatioMin; 
+//  fHistoVertexDistBins = qa.fHistoVertexDistBins;  fHistoVertexDistMax = qa.fHistoVertexDistMax;  fHistoVertexDistMin = qa.fHistoVertexDistMin; 
+//  fHistoRBins = qa.fHistoRBins; fHistoRMax = qa.fHistoRMax;  fHistoRMin = qa.fHistoRMin;
+//  fHistoXBins = qa.fHistoXBins; fHistoXMax = qa.fHistoXMax;  fHistoXMin = qa.fHistoXMin;
+//  fHistoYBins = qa.fHistoYBins; fHistoYMax = qa.fHistoYMax;  fHistoYMin = qa.fHistoYMin;
+//  fHistoZBins = qa.fHistoZBins; fHistoZMax = qa.fHistoZMax;  fHistoZMin = qa.fHistoZMin;																	  
+//  fhE      = qa.fhE;
+//  fhPt     = qa.fhPt;
+//  fhPhi    = qa.fhPhi;
+//  fhEta    = qa.fhEta;
+//  fhEtaPhiE= qa.fhEtaPhiE;
+//	
+//  fhECharged      = qa.fhECharged;
+//  fhPtCharged     = qa.fhPtCharged;
+//  fhPhiCharged    = qa.fhPhiCharged;
+//  fhEtaCharged    = qa.fhEtaCharged;
+//  fhEtaPhiECharged = qa.fhEtaPhiECharged;
+//
+//  fhEChargedNoOut      = qa.fhEChargedNoOut;
+//  fhPtChargedNoOut     = qa.fhPtChargedNoOut;
+//  fhPhiChargedNoOut    = qa.fhPhiChargedNoOut;
+//  fhEtaChargedNoOut    = qa.fhEtaChargedNoOut;
+//  fhEtaPhiChargedNoOut = qa.fhEtaPhiChargedNoOut;
+//	
+//  fhIM   = qa.fhIM;   fhIMCellCut   = qa.fhIMCellCut;
+//  fhAsym = qa.fhAsym;
+//	
+//  fhNCellsPerCluster           = qa.fhNCellsPerCluster;
+//  fhNCellsPerClusterMIP        = qa.fhNCellsPerClusterMIP;
+//  fhNCellsPerClusterMIPCharged = qa.fhNCellsPerClusterMIPCharged;
+//
+//  fhNClusters           = qa.fhNClusters;
+//	
+//  fhDeltaE   = qa.fhDeltaE;	
+//  fhDeltaPt  = qa.fhDeltaPt;
+//  fhDeltaPhi = qa.fhDeltaPhi;
+//  fhDeltaEta = qa.fhDeltaEta;
+//	
+//  fhRatioE   = qa.fhRatioE;	
+//  fhRatioPt  = qa.fhRatioPt;
+//  fhRatioPhi = qa.fhRatioPhi;
+//  fhRatioEta = qa.fhRatioEta;
+//	
+//  fh2E   = qa.fh2E;	
+//  fh2Pt  = qa.fh2Pt;
+//  fh2Phi = qa.fh2Phi;
+//  fh2Eta = qa.fh2Eta;
+//	
+//  fhCellTimeSpreadRespectToCellMax = qa.fhCellTimeSpreadRespectToCellMax; 
+//  fhCellIdCellLargeTimeSpread      = qa.fhCellIdCellLargeTimeSpread;
+//	
+//  fhRNCells = qa.fhRNCells; fhXNCells = qa.fhXNCells; fhYNCells = qa.fhYNCells; fhZNCells = qa.fhZNCells;
+//  fhRE      = qa.fhRE;      fhXE      = qa.fhXE;      fhYE      = qa.fhYE;      fhZE      = qa.fhZE;    fhXYZ     = qa.fhXYZ;
+//  fhRCellE  = qa.fhRCellE;  fhXCellE  = qa.fhXCellE;  fhYCellE  = qa.fhYCellE;  fhZCellE = qa.fhZCellE; fhXYZCell = qa.fhXYZCell;
+//	
+//  fhDeltaCellClusterRNCells = qa.fhDeltaCellClusterRNCells; fhDeltaCellClusterXNCells = qa.fhDeltaCellClusterXNCells; 
+//  fhDeltaCellClusterYNCells = qa.fhDeltaCellClusterYNCells; fhDeltaCellClusterZNCells = qa.fhDeltaCellClusterZNCells;
+//  fhDeltaCellClusterRE      = qa.fhDeltaCellClusterRE;      fhDeltaCellClusterXE      = qa.fhDeltaCellClusterXE;  
+//  fhDeltaCellClusterYE      = qa.fhDeltaCellClusterYE;      fhDeltaCellClusterZE      = qa.fhDeltaCellClusterZE;
+//	
+//  fhNCells    = qa.fhNCells;
+//  fhAmplitude = qa.fhAmplitude;
+//  fhAmpId     = qa.fhAmpId;
+//  fhTime      = qa.fhTime;
+//  fhTimeId    = qa.fhTimeId;
+//  fhTimeAmp   = qa.fhTimeAmp;
+//  fhEtaPhiAmp = qa.fhEtaPhiAmp;
+//	
+//  fhCaloCorrNClusters = qa.fhCaloCorrNClusters; fhCaloCorrEClusters = qa.fhCaloCorrEClusters;
+//  fhCaloCorrNCells = qa.fhCaloCorrNCells;  fhCaloCorrECells = qa.fhCaloCorrECells;
+//	
+//  fhEMod = qa.fhEMod; fhNClustersMod = qa.fhNClustersMod; 
+//  fhNCellsPerClusterMod = qa.fhNCellsPerClusterMod; fhNCellsMod = qa.fhNCellsMod;  
+//  fhGridCellsMod = qa.fhGridCellsMod;  fhGridCellsEMod = qa.fhGridCellsEMod; fhGridCellsTimeMod = qa.fhGridCellsTimeMod; 
+//  fhAmplitudeMod = qa.fhAmplitudeMod; fhAmplitudeModFraction = qa.fhAmplitudeModFraction; 
+//  fhIMMod=qa.fhIMMod; fhIMCellCutMod=qa.fhIMCellCutMod;
+//	
+//  fhGenGamPt = qa.fhGenGamPt  ; fhGenGamEta = qa.fhGenGamEta  ; fhGenGamPhi = qa.fhGenGamPhi  ;
+//  fhGenPi0Pt = qa.fhGenPi0Pt  ; fhGenPi0Eta = qa.fhGenPi0Eta  ; fhGenPi0Phi = qa.fhGenPi0Phi  ;
+//  fhGenEtaPt = qa.fhGenEtaPt  ; fhGenEtaEta = qa.fhGenEtaEta  ; fhGenEtaPhi = qa.fhGenEtaPhi  ;
+//  fhGenOmegaPt = qa.fhGenOmegaPt  ; fhGenOmegaEta = qa.fhGenOmegaEta  ; fhGenOmegaPhi = qa.fhGenOmegaPhi  ;
+//  fhGenElePt = qa.fhGenElePt  ; fhGenEleEta = qa.fhGenEleEta  ; fhGenElePhi = qa.fhGenElePhi ;	
+//
+//  fhEMVxyz = qa.fhEMVxyz ;  fhEMR = qa.fhEMR ; fhHaVxyz = qa.fhHaVxyz ;  fhHaR = qa.fhHaR ;
+//  fhGamE = qa.fhGamE ;fhGamPt = qa.fhGamPt ;fhGamPhi = qa.fhGamPhi ;fhGamEta = qa.fhGamEta ; 
+//  fhGamDeltaE   = qa.fhDeltaE; fhGamDeltaPt  = qa.fhDeltaPt; fhGamDeltaPhi = qa.fhDeltaPhi; fhGamDeltaEta = qa.fhDeltaEta;
+//	
+//  fhGamRatioE   = qa.fhGamRatioE;  fhGamRatioPt  = qa.fhGamRatioPt;  fhGamRatioPhi = qa.fhGamRatioPhi;  fhGamRatioEta = qa.fhGamRatioEta;
+//
+//  fhEleE = qa.fhEleE ;fhElePt = qa.fhElePt ;fhElePhi = qa.fhElePhi ;fhEleEta = qa.fhEleEta ;
+//  fhPi0E = qa.fhPi0E ;fhPi0Pt = qa.fhPi0Pt ;fhPi0Phi = qa.fhPi0Phi ;fhPi0Eta = qa.fhPi0Eta ; 
+//  fhNeHadE = qa.fhNeHadE ;fhNeHadPt = qa.fhNeHadPt ;fhNeHadPhi = qa.fhNeHadPhi ;fhNeHadEta = qa.fhNeHadEta ; 
+//  fhChHadE = qa.fhChHadE ;fhChHadPt = qa.fhChHadPt ;fhChHadPhi = qa.fhChHadPhi ;fhChHadEta = qa.fhChHadEta ;
+//  fhGenGamAccE = qa.fhGenGamAccE ;  fhGenPi0AccE = qa.fhGenPi0AccE ;
+//  fhGenGamAccPt = qa.fhGenGamAccPt ;fhGenGamAccEta = qa.fhGenGamAccEta ;fhGenGamAccPhi = qa.fhGenGamAccPhi ;
+//  fhGenPi0AccPt = qa.fhGenPi0AccPt ;fhGenPi0AccEta = qa.fhGenPi0AccEta; fhGenPi0AccPhi = qa.fhGenPi0AccPhi ;	
+//		
+//  fhGamECharged = qa.fhGamECharged; fhGamPtCharged = qa.fhGamPtCharged; fhGamPhiCharged = qa.fhGamPhiCharged; fhGamEtaCharged = qa.fhGamEtaCharged;  
+//  fhEleECharged = qa.fhEleECharged; fhElePtCharged = qa.fhElePtCharged; fhElePhiCharged = qa.fhElePhiCharged; fhEleEtaCharged = qa.fhEleEtaCharged; 
+//  fhPi0ECharged = qa.fhPi0ECharged; fhPi0PtCharged = qa.fhPi0PtCharged; fhPi0PhiCharged = qa.fhPi0PhiCharged; fhPi0EtaCharged = qa.fhPi0EtaCharged;  
+//  fhNeHadECharged = qa.fhNeHadECharged; fhNeHadPtCharged = qa.fhNeHadPtCharged; fhNeHadPhiCharged = qa.fhNeHadPhiCharged; fhNeHadEtaCharged = qa.fhNeHadEtaCharged;  
+//  fhChHadECharged = qa.fhChHadECharged; fhChHadPtCharged = qa.fhChHadPtCharged; fhChHadPhiCharged = qa.fhChHadPhiCharged; fhChHadEtaCharged = qa.fhChHadEtaCharged; 	
+//	
+//  fh1pOverE    = qa.fh1pOverE;
+//  fh1dR        = qa.fh1dR;
+//  fh2MatchdEdx = qa.fh2MatchdEdx;
+//  fh2EledEdx   = qa.fh2EledEdx;	
+//	
+//  fhMCEle1pOverE    = qa.fhMCEle1pOverE; 
+//  fhMCEle1dR        = qa.fhMCEle1dR; 
+//  fhMCEle2MatchdEdx = qa.fhMCEle2MatchdEdx ;
+//	
+//  fhMCChHad1pOverE = qa.fhMCChHad1pOverE; fhMCChHad1dR = qa.fhMCChHad1dR;  fhMCChHad2MatchdEdx = qa.fhMCChHad2MatchdEdx; 
+//  fhMCNeutral1pOverE = qa.fhMCNeutral1pOverE; fhMCNeutral1dR = qa.fhMCNeutral1dR;  fhMCNeutral2MatchdEdx = qa.fhMCNeutral2MatchdEdx; 
+//  fh1pOverER02 = qa.fh1pOverER02;  fhMCEle1pOverER02 = qa.fhMCEle1pOverER02;  fhMCChHad1pOverER02 = qa.fhMCChHad1pOverER02;  
+//  fhMCNeutral1pOverER02 = qa.fhMCNeutral1pOverER02;
+//	
+//  return *this;
+//
+//}
 
 //________________________________________________________________________________________________________________________________________________
 //AliAnaCalorimeterQA::~AliAnaCalorimeterQA() {
@@ -376,14 +381,17 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	Int_t xbins       = GetHistoXBins();            Float_t xmax      = GetHistoXMax();            Float_t xmin      = GetHistoXMin(); 
 	Int_t ybins       = GetHistoYBins();            Float_t ymax      = GetHistoYMax();            Float_t ymin      = GetHistoYMin(); 
 	Int_t zbins       = GetHistoZBins();            Float_t zmax      = GetHistoZMax();            Float_t zmin      = GetHistoZMin(); 
+	Int_t ssbins      = GetHistoShowerShapeBins();  Float_t ssmax     = GetHistoShowerShapeMax();  Float_t ssmin     = GetHistoShowerShapeMin();
 	
 	//EMCAL
 	Int_t colmax = 48;
 	Int_t rowmax = 24;
+	fNRCU   = 2 ;
 	//PHOS
 	if(fCalorimeter=="PHOS"){
-		colmax=56;
-		rowmax=64;
+		colmax = 56;
+		rowmax = 64;
+		fNRCU   = 4 ;
 	}
 	
 	
@@ -409,8 +417,21 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhEtaPhiE->SetYTitle("#phi (rad)");
 	fhEtaPhiE->SetZTitle("E (GeV) ");
 	outputContainer->Add(fhEtaPhiE);
-
-
+	
+	//Shower shape
+	fhLambda  = new TH3F ("hLambda","#lambda_{0}^{2} vs #lambda_{1}^{2} vs energy, reconstructed clusters",
+						   ssbins,ssmin,ssmax,ssbins,ssmin,ssmax,nptbins,ptmin,ptmax); 
+	fhLambda->SetXTitle("#lambda_{0}^{2}  ");
+	fhLambda->SetYTitle("#lambda_{1}^{2}  ");
+	fhLambda->SetZTitle("E (GeV) ");
+	outputContainer->Add(fhLambda);
+	
+	fhDispersion  = new TH2F ("hDispersion"," dispersion vs energy, reconstructed clusters",
+						  ssbins,ssmin,ssmax,nptbins,ptmin,ptmax); 
+	fhDispersion->SetXTitle("Dispersion  ");
+	fhDispersion->SetYTitle("E (GeV) ");
+	outputContainer->Add(fhDispersion);
+	
 	//Track Matching
 
 	fhECharged  = new TH1F ("hECharged","E reconstructed clusters, matched with track", nptbins,ptmin,ptmax); 
@@ -724,6 +745,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	fhAmplitudeMod         = new TH1F*[fNModules];
 	if(fCalorimeter=="EMCAL")
 		fhAmplitudeModFraction = new TH1F*[fNModules*3];
+
+	fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
+
 	fhIMMod                = new TH2F*[fNModules];
 	fhIMCellCutMod         = new TH2F*[fNModules];
 
@@ -775,7 +799,18 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 				fhAmplitudeModFraction[imod*3+ifrac]->SetXTitle("E (GeV)");
 				outputContainer->Add(fhAmplitudeModFraction[imod*3+ifrac]);
 			}
+			
 		}
+		
+		for(Int_t ircu = 0; ircu < fNRCU; ircu++){
+				fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
+														   Form("Cell reconstructed Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
+														   nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+				fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
+				fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("time (ns)");
+				outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+		}
+		
 		
 		fhIMMod[imod]  = new TH2F (Form("hIM_Mod%d",imod),
 								   Form("Cluster pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
@@ -1335,17 +1370,34 @@ Int_t AliAnaCalorimeterQA::GetModuleNumber(AliAODCaloCluster * cluster)
 	
 	return -1;
 }
-//____________________________________________________________________________________________________________________________________________________
-Int_t AliAnaCalorimeterQA::GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow) 
+
+//_____________________________________________________________________________________________________________
+Int_t AliAnaCalorimeterQA::GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow, Int_t & iRCU) 
 {
-	//Get the EMCAL/PHOS module number that corresponds to this absId
+	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
 	Int_t imod = -1;
 	if ( absId >= 0) {
 		if(fCalorimeter=="EMCAL"){
 			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
 			GetReader()->GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
 			GetReader()->GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
-										     iIphi, iIeta,irow,icol);
+																		 iIphi, iIeta,irow,icol);
+			
+			//RCU0
+			if (0<=irow&&irow<8) iRCU=0; // first cable row
+			else if (8<=irow&&irow<16 && 0<=icol&&icol<24) iRCU=0; // first half; 
+			//second cable row
+			//RCU1
+			else if(8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
+			//second cable row
+			else if(16<=irow&&irow<24) iRCU=1; // third cable row
+			
+			if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
+			if (iRCU<0) {
+				printf("AliAnaCalorimeterQA - Wrong EMCAL RCU number = %d\n", iRCU);
+				abort();
+			}			
+			
 			return imod ;
 		}//EMCAL
 		else{//PHOS
@@ -1354,12 +1406,20 @@ Int_t AliAnaCalorimeterQA::GetModuleNumberCellIndexes(const Int_t absId, Int_t &
 			irow = relId[2];
 			icol = relId[3];
 			imod = relId[0]-1;
+			iRCU= (Int_t)(relId[2]-1)/16 ;
+			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
+			if (iRCU >= fNRCU) {
+				printf("AliAnaCalorimeterQA - Wrong PHOS RCU number = %d\n", iRCU);
+				abort();
+			}			
 			return imod;
 		}//PHOS	
 	}
 	
 	return -1;
 }
+
+//_______________________________________________________________________________________________________________________________________
 Int_t AliAnaCalorimeterQA::GetNewRebinForRePlotting(TH1D* histo, const Float_t newXmin, const Float_t newXmax,const Int_t newXnbins) const
 {
   //Calculate the rebinning for the new requested bin size, only used when replotting executing the Terminte
@@ -1396,7 +1456,8 @@ void AliAnaCalorimeterQA::InitParameters()
   fCalorimeter = "EMCAL"; //or PHOS
   fStyleMacro  = "" ;
   fNModules    = 12; // set maximum to maximum number of EMCAL modules
-	 
+  fNRCU        = 2;  // set maximum number of RCU in EMCAL per SM
+	
   fHistoPOverEBins     = 100 ;  fHistoPOverEMax     = 10.  ;  fHistoPOverEMin     = 0. ;
   fHistodEdxBins       = 200 ;  fHistodEdxMax       = 400. ;  fHistodEdxMin       = 0. ;  
   fHistodRBins         = 300 ;  fHistodRMax         = 3.15 ;  fHistodRMin         = 0. ;
@@ -1408,7 +1469,8 @@ void AliAnaCalorimeterQA::InitParameters()
   fHistoXBins          = 100 ;  fHistoXMax          = 500  ;  fHistoXMin          = -500  ;//cm
   fHistoYBins          = 100 ;  fHistoYMax          = 500  ;  fHistoYMin          = -500  ;//cm
   fHistoZBins          = 100 ;  fHistoZMax          = 600  ;  fHistoZMin          = -500  ;//cm
-
+  fHistoSSBins         = 40  ;  fHistoSSMax         = 10  ;   fHistoSSMin         = 0  ;
+	
 }
 
 //__________________________________________________________________
@@ -1541,7 +1603,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	TObject * track = 0x0;
 	
 	Float_t pos[3] ;
-	
+	Float_t showerShape[3] ;
 	//Loop over CaloClusters
 	//if(nCaloClusters > 0)printf("QA  : Vertex Cut passed %f, cut %f, entries %d, %s\n",v[2], 40., nCaloClusters, fCalorimeter.Data());
 	for(Int_t iclus = 0; iclus < nCaloClusters; iclus++){
@@ -1578,6 +1640,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				track = 0;
 			}
 			
+			//Shower shape parameters
+			showerShape[0] = clus->GetM20();
+			showerShape[1] = clus->GetM02();
+			showerShape[2] = clus->GetClusterDisp();
+
 			//======================
 			//Cells in cluster
 			//======================
@@ -1709,6 +1776,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(nTracksMatched > 0)
 				track  = (AliAODTrack*)clus->GetTrackMatched(0);
 			
+		    //Shower shape parameters
+			showerShape[0] = clus->GetM20();
+			showerShape[1] = clus->GetM02();
+			showerShape[2] = clus->GetDispersion();
+			
 			//======================
 			//Cells in cluster
 			//======================
@@ -1788,7 +1860,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		//Fill histograms related to single cluster or track matching
 		//-----------------------------------------------------------
 
-		ClusterHistograms(mom, pos, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
+		ClusterHistograms(mom, pos, showerShape, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
 		
 			 
 		//-----------------------------------------------------------
@@ -1874,6 +1946,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	for(Int_t imod = 0; imod < fNModules; imod++ ) nCellsInModule[imod] = 0;
 	Int_t icol = -1;
 	Int_t irow = -1;
+	Int_t iRCU = -1;
 	Float_t amp  = 0.;
 	Float_t time = 0.;
 	Int_t id     = -1;
@@ -1895,7 +1968,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 		for (Int_t iCell = 0; iCell < ncells; iCell++) {      
 			if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
-			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell), icol, irow);
+			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell), icol, irow, iRCU);
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			
 			if(nModule < fNModules) {	
@@ -1914,7 +1987,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					if(icol > 15 && icol < 32) ifrac = 1;
 					else if(icol > 31) ifrac = 2;
 					fhAmplitudeModFraction[nModule*3+ifrac]->Fill(amp);
+					
+										
 				}
+				
+				fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time);
+			
 				nCellsInModule[nModule]++;
 				fhGridCellsMod[nModule]    ->Fill(icol,irow);
 				fhGridCellsEMod[nModule]   ->Fill(icol,irow,amp);
@@ -1979,7 +2057,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		for (Int_t iCell = 0; iCell < ncells; iCell++) {  
 			id      = cell->GetCellNumber(iCell);
 			if(GetDebug() > 2 )  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), id);
-			nModule = GetModuleNumberCellIndexes(id, icol, irow);
+			nModule = GetModuleNumberCellIndexes(id, icol, irow, iRCU);
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			
 			if(nModule < fNModules) {	
@@ -1993,6 +2071,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 					else if(icol > 31) ifrac = 2;
 					fhAmplitudeModFraction[nModule*3+ifrac]->Fill(amp);
 				}
+				
+				fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, -1);
+				
 				nCellsInModule[nModule]++;
 				fhGridCellsMod[nModule] ->Fill(icol,irow);
 				fhGridCellsEMod[nModule]->Fill(icol,irow,amp);
@@ -2049,7 +2130,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 
 
 //__________________________________
-void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, Float_t *pos, 
+void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, Float_t *pos, Float_t *showerShape,
 					    const Int_t nCaloCellsPerCluster,const Int_t nModule,
 					    const Int_t nTracksMatched,  const TObject * track,  
 					    const Int_t * labels, const Int_t nLabels){
@@ -2086,6 +2167,10 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, Float_t *p
 	Float_t rxyz = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);//+pos[2]*pos[2]);
 	fhRE     ->Fill(rxyz,e);
 	
+	//Shower shape parameters
+	fhLambda->Fill(showerShape[0], showerShape[1], e);
+	fhDispersion->Fill(showerShape[2],e);
+
 	//Cells per cluster
 	fhNCellsPerCluster   ->Fill(e, nCaloCellsPerCluster,eta);
 	fhNCellsPerClusterMIP->Fill(e, nCaloCellsPerCluster,eta);
@@ -2692,6 +2777,9 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhEta     = (TH1F *) outputList->At(index++);
 	fhEtaPhiE = (TH3F *) outputList->At(index++);
 	
+	fhLambda      = (TH3F *)  outputList->At(index++);
+	fhDispersion  = (TH2F *)  outputList->At(index++);
+	
 	fhECharged       = (TH1F *) outputList->At(index++); 	
 	fhPtCharged      = (TH1F *) outputList->At(index++); 
 	fhPhiCharged     = (TH1F *) outputList->At(index++); 
@@ -2777,7 +2865,11 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhGridCellsTimeMod     = new TH2F*[fNModules];
 	fhAmplitudeMod         = new TH1F*[fNModules];
 	if(fCalorimeter=="EMCAL")
-		fhAmplitudeModFraction = new TH1F*[fNModules*3];	
+		fhAmplitudeModFraction = new TH1F*[fNModules*3];
+	
+	//EMCAL
+	fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
+	
 	fhIMMod                = new TH2F*[fNModules];
 	fhIMCellCutMod         = new TH2F*[fNModules];
 		
@@ -2791,11 +2883,16 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
 			fhGridCellsTimeMod[imod]     = (TH2F *) outputList->At(index++); 
 		fhAmplitudeMod[imod]         = (TH1F *) outputList->At(index++);
+		
 		if(fCalorimeter=="EMCAL"){
 			for(Int_t ifrac = 0; ifrac < 3; ifrac++){
 				fhAmplitudeModFraction[imod*3+ifrac] = (TH1F *) outputList->At(index++); 
 			}
 		}
+		
+		for(Int_t ircu = 0; ircu < fNRCU; ircu++)
+			fhTimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
+		
 		fhIMMod[imod]                = (TH2F *) outputList->At(index++); 
 		fhIMCellCutMod[imod]         = (TH2F *) outputList->At(index++); 	
 
