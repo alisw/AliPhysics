@@ -70,7 +70,11 @@ AliFMDRing::AliFMDRing(Char_t id)
     fHybridVerticies(0),
     fFeetPositions(0)
 {
-  // CTOR
+  // Constructor 
+  // 
+  // Parameters: 
+  //    id      Type of ring (either 'I' or 'O') 
+  // 
   SetBondingWidth();
   SetWaferRadius();
   SetSiThickness();
@@ -148,6 +152,9 @@ void
 AliFMDRing::Init()
 {
   // Initialize 
+  // 
+  // All derived quantities are calculated here. 
+  // 
 #if 0
   Double_t tanTheta  = TMath::Tan(fTheta * TMath::Pi() / 180.);
   Double_t tanTheta2 = TMath::Power(tanTheta,2);
@@ -189,6 +196,11 @@ TVector2*
 AliFMDRing::GetVertex(Int_t i) const
 {
   // Get the i'th vertex of polygon shape
+  // 
+  // the polygon shape describes the shape of the rings' sensors
+  // 
+  // Parameters: 
+  //     i    The vertex number to get (from 0 to 5)
   return static_cast<TVector2*>(fVerticies.At(i));
 }
 
@@ -197,6 +209,11 @@ TVector2*
 AliFMDRing::GetSensorVertex(Int_t i) const
 {
   // Get the i'th vertex of polygon shape
+  // 
+  // the polygon shape describes the shape of the rings' sensors
+  // 
+  // Parameters: 
+  //     i    The vertex number to get (from 0 to 5)
   return static_cast<TVector2*>(fSensorVerticies.At(i));
 }
 
@@ -205,6 +222,11 @@ TVector2*
 AliFMDRing::GetHybridVertex(Int_t i) const
 {
   // Get the i'th vertex of polygon shape
+  // 
+  // the polygon shape describes the shape of the rings' hybrid cards
+  // 
+  // Parameters: 
+  //     i    The vertex number to get (from 0 to 5)
   return static_cast<TVector2*>(fHybridVerticies.At(i));
 }
 
@@ -213,6 +235,11 @@ TVector2*
 AliFMDRing::GetFootPosition(Int_t i) const
 {
   // Get the i'th vertex of polygon shape
+  // 
+  // The feet are attached to the hybrid cards
+  // 
+  // Parameters: 
+  //     i    The foot number to get (from 0 to 2)
   return static_cast<TVector2*>(fFeetPositions.At(i));
 }
 
@@ -221,6 +248,9 @@ Double_t
 AliFMDRing::GetStripRadius(UShort_t strip) const
 {
   // Return the nominal strip radius 
+  // 
+  // Parameter 
+  //   strip    Strip number (0-511 for inners, 0-255 for outers)
   Double_t rmax     = GetMaxR();
   Double_t stripoff = GetMinR();
   Double_t dstrip   = (rmax - stripoff) / GetNStrips();
@@ -231,6 +261,16 @@ AliFMDRing::GetStripRadius(UShort_t strip) const
 Double_t
 AliFMDRing::GetModuleDepth() const
 {
+  // Get the total depth of a module (sensor + hybrid card) 
+  // 
+  // The depth is the sum of 
+  // 
+  //   The silicon thickness 
+  //   The thickness of spacers between the silicon and hybrid
+  //   The thickness of the hybrid PCB
+  //   The thickness of the copper layer in the PCB
+  //   The thickness of the chip layer in the PCB
+  //   The height of the legs
   return (GetSiThickness() 
 	  + GetSpacing() 
 	  + GetPrintboardThickness()
@@ -244,6 +284,8 @@ AliFMDRing::GetModuleDepth() const
 Double_t
 AliFMDRing::GetFullDepth() const
 {
+  // Get the full depth of this ring, including the honeycomb, 
+  // digitizer and card. 
   return (GetModuleDepth() 
 	  + GetModuleSpacing()
 	  + GetHoneycombThickness()
@@ -263,6 +305,16 @@ AliFMDRing::Detector2XYZ(UShort_t sector,
 {
   // Translate detector coordinates (this,sector,strip) to global
   // coordinates (x,y,z)
+  // 
+  // Parameters 
+  //    sector        Sector number in this ring 
+  //    strip         Strip number in this ring 
+  //    x             On return, the global X coordinate
+  //    y             On return, the global Y coordinate 
+  //    z             On return, the z coordinate in the ring plane 
+  //
+  // The ring plane is the plane half way between the two sensor
+  // layers. 
   if (sector >= GetNSectors()) {
     Error("Detector2XYZ", "Invalid sector number %d (>=%d) in ring %c", 
 	  sector, GetNSectors(), fId);
@@ -291,6 +343,14 @@ AliFMDRing::XYZ2Detector(Double_t  x,
 {
   // Translate global coordinates (x,y,z) to detector coordinates
   // (this,sector,strip)
+  // 
+  //  Parameters: 
+  //     x       Global x coordinate 
+  //     y       Global y coordinate
+  //     z       Global y coordinate
+  //     sector  On return, the sector number in this ring
+  //     strip   On return, the strip number in this ring
+  // 
   sector = strip = 0;
   Double_t r = TMath::Sqrt(x * x + y * y);
   Int_t str = Int_t((r - fMinR) / GetPitch());
@@ -314,6 +374,11 @@ AliFMDRing::XYZ2Detector(Double_t  x,
 Float_t 
 AliFMDRing::GetStripLength(UShort_t strip) const 
 {
+  // Get the length of a strip 
+  // 
+  // Parameters:
+  //   strip     Strip number (0-511 for inners, 0-255 for outers)
+  // 
   if(strip >= GetNStrips())
     Error("GetStripLength", "Invalid strip number %d (>=%d)", 
 	  strip, GetNStrips(), fId);
@@ -325,24 +390,27 @@ AliFMDRing::GetStripLength(UShort_t strip) const
   TVector2* corner1  = GetVertex(2);  
   TVector2* corner2  = GetVertex(3);
   
-  Float_t slope      = (corner1->Y() - corner2->Y()) / (corner1->X() - corner2->X());
-  Float_t constant   = (corner2->Y()*corner1->X()-(corner2->X()*corner1->Y())) / (corner1->X() - corner2->X());
+  Float_t slope      = ((corner1->Y() - corner2->Y()) / 
+			(corner1->X() - corner2->X()));
+  Float_t constant   = ((corner2->Y() * corner1->X() - 
+			 (corner2->X()*corner1->Y())) / 
+			(corner1->X() - corner2->X()));
   Float_t radius     = GetMinR() + strip*segment;
   
-  Float_t d          = TMath::Power(TMath::Abs(radius*slope),2) + TMath::Power(radius,2) - TMath::Power(constant,2);
+  Float_t d          = (TMath::Power(TMath::Abs(radius*slope),2) + 
+			TMath::Power(radius,2) - TMath::Power(constant,2));
   
   Float_t arclength  = GetBaseStripLength(strip);
   if(d>0) {
-    
-    Float_t x        = (-1*TMath::Sqrt(d) -slope*constant) / (1+TMath::Power(slope,2));
+    Float_t x        = ((-1 * TMath::Sqrt(d) -slope*constant) / 
+			(1 + TMath::Power(slope,2)));
     Float_t y        = slope*x + constant;
     Float_t theta    = TMath::ATan2(x,y);
     
     if(x < corner1->X() && y > corner1->Y()) {
-      arclength = radius*theta;                        //One sector since theta is by definition half-hybrid
-      
+      //One sector since theta is by definition half-hybrid
+      arclength = radius*theta;
     }
-    
   }
   
   return arclength;
@@ -353,11 +421,15 @@ AliFMDRing::GetStripLength(UShort_t strip) const
 Float_t 
 AliFMDRing::GetBaseStripLength(UShort_t strip) const 
 {  
+  // Get the basic strip length 
+  // 
+  // Parameters:
+  //   strip    Strip number
   Float_t rad             = GetMaxR()-GetMinR();
   Float_t segment         = rad / GetNStrips();
-  Float_t basearc         = 2*TMath::Pi() / (0.5*GetNSectors()); // One hybrid: 36 degrees inner, 18 outer
+  Float_t basearc         = 2*TMath::Pi() / (0.5*GetNSectors()); 
   Float_t radius          = GetMinR() + strip*segment;
-  Float_t basearclength   = 0.5*basearc * radius;                // One sector   
+  Float_t basearclength   = 0.5*basearc * radius;                
   
   return basearclength;
 }

@@ -334,6 +334,55 @@ public:
       -	@c FMD @c Plastic$ Plastic (Support legs for the hybrid cards)
   */
   virtual void   CreateMaterials(); 
+  /** 
+   * Declare tracking parameters for a medium 
+   * 
+   * Cut offs are in GeV. 
+   * @param imed                     Medium identifier
+   * @param gamma                    Cut off for tracking photons
+   * @param electron                 Cut off for tracking electrons
+   * @param neutral_hadron           Cut off for tracking neutral hadrons
+   * @param charged_hadron           Cut off for tracking charged hadrons
+   * @param muon                     Cut off for tracking muons
+   * @param electron_bremstrahlung   Cut off for tracking electron brehmstralung
+   * @param muon__bremstrahlung      Cut off for tracking muon brehmstralung
+   * @param electron_delta           Cut off for tracking delta electrons
+   * @param muon_delta               Cut off for tracking delta muons
+   * @param muon_pair                Cut off for muon->ee pair production
+   * @param annihilation             Enable annihilation
+   * @param bremstrahlung            Enable brehmstralung
+   * @param compton_scattering       Enable Compton scattering
+   * @param decay                    Enable decays
+   * @param delta_ray                Enable delta rays
+   * @param hadronic                 Enable hadronic interactions
+   * @param energy_loss              Enable energy loss
+   * @param multiple_scattering      Enable multiple scattering
+   * @param pair_production          Enable pair production
+   * @param photon_production        Enable cherenkov photon production
+   * @param rayleigh_scattering      Enable rayleigh scattering
+   */ 
+  void SetTrackingParameters(Int_t imed, 
+			     Float_t gamma,                 
+			     Float_t electron, 
+			     Float_t neutral_hadron, 
+			     Float_t charged_hadron, 
+			     Float_t muon,
+			     Float_t electron_bremstrahlung, 
+			     Float_t muon__bremstrahlung, 
+			     Float_t electron_delta,
+			     Float_t muon_delta,
+			     Float_t muon_pair,
+			     Int_t   annihilation, 
+			     Int_t   bremstrahlung, 
+			     Int_t   compton_scattering, 
+			     Int_t   decay,
+			     Int_t   delta_ray, 
+			     Int_t   hadronic, 
+			     Int_t   energy_loss, 
+			     Int_t   multiple_scattering, 
+			     Int_t   pair_production, 
+			     Int_t   photon_production, 
+			     Int_t   rayleigh_scattering);
   /** Initialize this detector */
   virtual void   Init();
   /** This member function is called when ever a track deposites

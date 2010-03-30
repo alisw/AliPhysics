@@ -432,6 +432,57 @@ void AliFMD::CreateMaterials()
 
 //____________________________________________________________________
 void  
+AliFMD::SetTrackingParameters(Int_t imed, 
+			      Float_t gamma,                 
+			      Float_t electron, 
+			      Float_t neutral_hadron, 
+			      Float_t charged_hadron, 
+			      Float_t muon,
+			      Float_t electron_bremstrahlung, 
+			      Float_t muon__bremstrahlung, 
+			      Float_t electron_delta,
+			      Float_t muon_delta,
+			      Float_t muon_pair,
+			      Int_t   annihilation, 
+			      Int_t   bremstrahlung, 
+			      Int_t   compton_scattering, 
+			      Int_t   decay,
+			      Int_t   delta_ray, 
+			      Int_t   hadronic, 
+			      Int_t   energy_loss, 
+			      Int_t   multiple_scattering, 
+			      Int_t   pair_production, 
+			      Int_t   photon_production, 
+			      Int_t   rayleigh_scattering)
+{
+  if (!gMC) return;
+  TArrayI& idtmed = *(GetIdtmed());
+  Int_t    iimed  = idtmed[imed];
+  gMC->Gstpar(iimed, "CUTGAM",	gamma);
+  gMC->Gstpar(iimed, "CUTELE",	electron);
+  gMC->Gstpar(iimed, "CUTNEU",	neutral_hadron);
+  gMC->Gstpar(iimed, "CUTHAD",	charged_hadron);
+  gMC->Gstpar(iimed, "CUTMUO",	muon);
+  gMC->Gstpar(iimed, "BCUTE",	electron_bremstrahlung);
+  gMC->Gstpar(iimed, "BCUTM",	muon__bremstrahlung);
+  gMC->Gstpar(iimed, "DCUTE",	electron_delta);
+  gMC->Gstpar(iimed, "DCUTM",	muon_delta);
+  gMC->Gstpar(iimed, "PPCUTM",	muon_pair);
+  gMC->Gstpar(iimed, "ANNI",	Float_t(annihilation));
+  gMC->Gstpar(iimed, "BREM",	Float_t(bremstrahlung));
+  gMC->Gstpar(iimed, "COMP",	Float_t(compton_scattering));
+  gMC->Gstpar(iimed, "DCAY",	Float_t(decay));
+  gMC->Gstpar(iimed, "DRAY",	Float_t(delta_ray));
+  gMC->Gstpar(iimed, "HADR",	Float_t(hadronic));
+  gMC->Gstpar(iimed, "LOSS",	Float_t(energy_loss));
+  gMC->Gstpar(iimed, "MULS",	Float_t(multiple_scattering));
+  gMC->Gstpar(iimed, "PAIR",	Float_t(pair_production));
+  gMC->Gstpar(iimed, "PHOT",	Float_t(photon_production));
+  gMC->Gstpar(iimed, "RAYL",	Float_t(rayleigh_scattering));
+}
+
+//____________________________________________________________________
+void  
 AliFMD::Init()
 {
   // Initialize the detector 
