@@ -9,8 +9,8 @@
 
 /// @file   AliHLTTriggerCaloClusterEnergy.h
 /// @author Svein Lindal
-/// @date   2009-08-17
-/// @brief  HLT energy threshold trigger for PHOS
+/// @date   2010-03-25
+/// @brief  Base class for CALO HLT energy threshold triggers
 
 /**
  * @class  AliHLTTriggerCaloClusterEnergy
@@ -128,7 +128,7 @@ protected :
   const char* fgkOCDBEntry; //!transient
 
   
-  AliHLTComponentDataType fgkInputDataType;
+  AliHLTComponentDataType fgkInputDataType;   ///Input data type for calo struct input, must be set in child class
   
 
   ClassDef(AliHLTTriggerCaloClusterEnergy, 0)

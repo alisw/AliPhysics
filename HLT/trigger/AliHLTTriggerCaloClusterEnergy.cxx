@@ -65,6 +65,13 @@ AliHLTTriggerCaloClusterEnergy::AliHLTTriggerCaloClusterEnergy(TString detector)
 
 AliHLTTriggerCaloClusterEnergy::~AliHLTTriggerCaloClusterEnergy() {
   // see header file for class documentation
+  if (fClusterReader)
+    delete fClusterReader;
+  fClusterReader = NULL;
+
+  if(fClustersRefs)
+    delete fClustersRefs;
+  fClustersRefs = NULL;
 }
 
 Int_t AliHLTTriggerCaloClusterEnergy::DoTrigger() {
@@ -167,7 +174,9 @@ int AliHLTTriggerCaloClusterEnergy::DoInit(int argc, const char** argv) {
 }
 
 int AliHLTTriggerCaloClusterEnergy::DoDeinit() {
+
   // see header file for class documentation
+ 
   return 0;
 }
 
