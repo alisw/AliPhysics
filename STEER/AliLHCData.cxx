@@ -274,8 +274,8 @@ Int_t AliLHCData::FillScalarRecord(const TMap* dcsMap, int refs[2], const char* 
   //
   AliInfo(Form("Acquiring record: %s",rec));
   //
-  TObjArray *arr,*arrE;
-  Int_t nEntries,nEntriesE,iEntry,iEntryE;
+  TObjArray *arr=0,*arrE=0;
+  Int_t nEntries=0,nEntriesE=0,iEntry=0,iEntryE=0;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
@@ -493,8 +493,8 @@ Int_t AliLHCData::FillBCLuminosities(const TMap* dcsMap, int refs[2],const char*
   // fill luminosities per bunch crossing
   //
   AliInfo(Form("Acquiring record: %s",rec));
-  TObjArray *arr,*arrE;
-  Int_t nEntries,nEntriesE,iEntry,iEntryE;
+  TObjArray *arr,*arrE=0;
+  Int_t nEntries=0,nEntriesE=0,iEntry=0,iEntryE=0;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
@@ -800,7 +800,7 @@ Int_t AliLHCData::GetNInteractingBunchesMeasured(int i) const
   if (!rec) {AliInfo(Form("No record %d found",i)); return -1;}
   if (!rec->IsProcessed1()) { AliInfo("Interacting bunches were not marked"); return -1;}
   int n = 0;
-  for (int i=rec->GetSize();i--;) if ( (*rec)[i]<0 ) n++;
+  for (int j=rec->GetSize();j--;) if ( (*rec)[j]<0 ) n++;
   return n;
 }
 
@@ -812,7 +812,7 @@ Int_t AliLHCData::GetNInteractingBunchesDeclared(int i) const
   if (!rec) {AliInfo(Form("No record %d found",i)); return -1;}
   if (!rec->IsProcessed1()) { AliInfo("Interacting bunches were not marked"); return -1; }
   int n = 0;
-  for (int i=rec->GetSize();i--;) if ( (*rec)[i]<0 ) n++;
+  for (int j=rec->GetSize();j--;) if ( (*rec)[j]<0 ) n++;
   return n;
 }
 
