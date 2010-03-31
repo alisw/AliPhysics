@@ -197,6 +197,11 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
   //loop on the MC event
   for (Int_t ipart = 0; ipart < mcEvent->GetNumberOfTracks(); ipart++) { 
     AliMCParticle *mcPart  = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(ipart));
+    if(!mcPart) continue;
+
+    Double_t vz = mcPart->Zv();
+    if (TMath::Abs(vz) > 50.) continue;//exclude particles generated out of the acceptance
+    if(TMath::Abs(mcPart->Eta()) > 1.0) continue;
 
     //Protons
     //check the MC-level cuts
@@ -254,6 +259,11 @@ void AliProtonAbsorptionCorrection::FillAbsorptionMaps(AliESDEvent *esd,
     if(label > mcEvent->GetNumberOfTracks()) continue;
 
     AliMCParticle *mcPart  = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(label));
+    if(!mcPart) continue;
+
+    Double_t vz = mcPart->Zv();
+    if (TMath::Abs(vz) > 50.) continue;//exclude particles generated out of the acceptance
+    if(TMath::Abs(mcPart->Eta()) > 1.0) continue;
 
     if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
