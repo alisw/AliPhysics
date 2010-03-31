@@ -287,7 +287,7 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
     
   }
   
-  if(fDebug > 0)printf("AliCaloPID::GetPdg:Final Pdg: %d \n", pdg);
+  if(fDebug > 0)printf("AliCaloPID::GetPdg:Final Pdg: %d, cluster energy %2.2f \n", pdg,energy);
    
   return pdg ;
   
