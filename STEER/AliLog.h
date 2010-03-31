@@ -5,8 +5,9 @@
 
 /* $Id$ */
 
-#include <TObject.h>
+#include <TClass.h>
 #include <TObjArray.h>
+#include <TObject.h>
 #include <TString.h>
 
 // deprecation macro
