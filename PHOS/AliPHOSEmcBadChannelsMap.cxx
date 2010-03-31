@@ -81,6 +81,17 @@ AliPHOSEmcBadChannelsMap& AliPHOSEmcBadChannelsMap::operator= (const AliPHOSEmcB
 
 //_________________________________________________________________
 
+void AliPHOSEmcBadChannelsMap::SetBadChannel(Int_t module, Int_t col, Int_t row)
+{
+  // Declare a channel (module,col,row) as a bad, if it was not set before
+
+  if (!fBadChannelEmc[module-1][col-1][row-1]) {
+    fBadChannelEmc[module-1][col-1][row-1] = kTRUE;
+    ++fBads; 
+  }
+}
+//_________________________________________________________________
+
 void AliPHOSEmcBadChannelsMap::BadChannelIds(Int_t *badIds)
 {
   //Fill array badIds by the Ids of bad channels.
@@ -110,6 +121,8 @@ void AliPHOSEmcBadChannelsMap::BadChannelIds(Int_t *badIds)
 	  geom->RelToAbsNumbering(relId,absId);
 	  badIds[iBad]=absId;
 	  iBad++;
+	  printf("mod=%d, col=%d, row=%d, absId=%d, N=%d\n",
+		 mod,col,row,absId,iBad);
 	}
       }
     }
