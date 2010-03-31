@@ -197,8 +197,6 @@ void AliAODHandler::StoreMCParticles(){
   AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
   if(!mcHeader)return;
 
-  mcHeader->Reset();
-
   // Get the MC Infos.. Handler needs to be set before 
   // while adding the branch
   // This needs to be done, not to depend on the AnalysisManager
@@ -399,7 +397,8 @@ Bool_t AliAODHandler::FinishEvent()
       fTreeA->BranchRef();
       FillTree();
   }
-  if (fFillAODRun) {      
+
+  if (fFillAOD) {      
       if (fExtensions) {
 	  TIter next(fExtensions);
 	  AliAODExtension *ext;
@@ -416,6 +415,9 @@ Bool_t AliAODHandler::FinishEvent()
   if (fIsStandard) fAODEvent->ResetStd();
   TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
   if(mcarray) mcarray->Delete();
+
+  AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
+  if(!mcHeader) mcHeader->Reset();
 
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
