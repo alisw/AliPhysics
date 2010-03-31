@@ -11,10 +11,8 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
-#include <TGeoGlobalMagField.h>
-#include <TObject.h>
+#include "AliTrackerBase.h"
 
-#include "AliMagF.h"
 #include "AliRecoParam.h"
 #include "AliPlaneEff.h"
 
@@ -26,54 +24,28 @@ class AliExternalTrackParam;
 class AliTrackPoint;
 class AliKalmanTrack;
 class AliEventInfo;
-class AliTracker : public TObject {
+
+class AliTracker : public AliTrackerBase {
 public:
   AliTracker();
   virtual ~AliTracker(){}
+
   virtual Int_t Clusters2Tracks(AliESDEvent *event)=0;
   virtual Int_t PropagateBack(AliESDEvent *event)=0;
   virtual Int_t RefitInward(AliESDEvent *event)=0;
-  virtual Int_t PostProcess(AliESDEvent */*event*/) {return 0;}
-  void SetVertex(const Double_t *xyz, const Double_t *ers=0) { 
-     fX=xyz[0]; fY=xyz[1]; fZ=xyz[2];
-     if (ers) { fSigmaX=ers[0]; fSigmaY=ers[1]; fSigmaZ=ers[2]; } 
-  }
-
-//protected:
   virtual Int_t LoadClusters(TTree *)=0;
   virtual void UnloadClusters()=0;
-  virtual void FillClusterArray(TObjArray* array) const;
   virtual AliCluster *GetCluster(Int_t index) const=0;
+
+  virtual Int_t PostProcess(AliESDEvent */*event*/) {return 0;}
+  virtual void FillClusterArray(TObjArray* array) const;
   virtual AliPlaneEff *GetPlaneEff() {return NULL;}
   virtual Bool_t GetTrackPoint(Int_t /* index */ , AliTrackPoint& /* p */) const { return kFALSE;}
   virtual Bool_t GetTrackPointTrackingError(Int_t /* index */, 
   	   AliTrackPoint& /* p */, const AliESDtrack* /* t */) { return kFALSE;}
   virtual void  UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
   virtual void  CookLabel(AliKalmanTrack *t,Float_t wrong) const; 
-  Double_t GetX() const {return fX;}
-  Double_t GetY() const {return fY;}
-  Double_t GetZ() const {return fZ;}
-  Double_t GetSigmaX() const {return fSigmaX;}
-  Double_t GetSigmaY() const {return fSigmaY;}
-  Double_t GetSigmaZ() const {return fSigmaZ;}
 
-  static Double_t GetTrackPredictedChi2(AliExternalTrackParam *track,
-                                        Double_t mass, Double_t step, 
-			          const AliExternalTrackParam *backup);
-  static 
-  Double_t MeanMaterialBudget(const Double_t *start, const Double_t *end, Double_t *mparam);
-  static
-  Bool_t PropagateTrackTo(AliExternalTrackParam *track, Double_t x, Double_t m,
-			  Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8, Double_t sign=1.);  
-  static Bool_t PropagateTrackToBxByBz(AliExternalTrackParam *track, Double_t x, 
-         Double_t m,
-				Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8,Double_t sign=1.);  
-  //
-  static Double_t GetBz(const Double_t *r);
-  static void GetBxByBz(const Double_t r[3], Double_t b[3]);
-  static Double_t GetBz();
-  static Bool_t   UniformField();
-  //
   static void FillResiduals(const AliExternalTrackParam *t,
 			   Double_t *p, Double_t *cov, 
                            UShort_t id, Bool_t updated=kTRUE);
@@ -90,28 +62,13 @@ protected:
   AliTracker(const AliTracker &atr);
 private:
   AliTracker & operator=(const AliTracker & atr);
-  static Bool_t fFillResiduals;       // Fill residuals flag
+  static Bool_t fFillResiduals;     // Fill residuals flag
   static TObjArray **fResiduals;    //! Array of histograms with residuals
 
-  Double_t fX;  //X-coordinate of the primary vertex
-  Double_t fY;  //Y-coordinate of the primary vertex
-  Double_t fZ;  //Z-coordinate of the primary vertex
- 
-  Double_t fSigmaX; // error of the primary vertex position in X
-  Double_t fSigmaY; // error of the primary vertex position in Y
-  Double_t fSigmaZ; // error of the primary vertex position in Z
-  
   static AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
   AliEventInfo*                      fEventInfo;    //! pointer to the event info object
   
-  ClassDef(AliTracker,5) //abstract tracker
+  ClassDef(AliTracker,6) //abstract tracker
 };
-
-//__________________________________________________________________________
-inline Bool_t AliTracker::UniformField()
-{
-  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  return fld ? fld->IsUniform():kTRUE;
-}
 
 #endif

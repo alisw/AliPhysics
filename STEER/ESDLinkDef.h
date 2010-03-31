@@ -87,6 +87,7 @@
 #pragma link C++ class  AliTriggerScalersESD+;
 #pragma link C++ class  AliTriggerScalersRecordESD+;
 #pragma link C++ class  AliESDHandler+;
+#pragma link C++ class  AliTrackerBase+;
 
 #pragma link C++ function operator*(const AliFMDMap&,const AliFMDMap&);
 #pragma link C++ function operator/(const AliFMDMap&,const AliFMDMap&);
