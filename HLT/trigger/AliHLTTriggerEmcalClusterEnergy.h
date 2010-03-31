@@ -1,28 +1,28 @@
 //-*- Mode: C++ -*-
 // $Id$
-#ifndef ALIHLTTRIGGERPHOSCLUSTERENERGY_H
-#define ALIHLTTRIGGERPHOSCLUSTERENERGY_H
+#ifndef ALIHLTTRIGGEREMCALCLUSTERENERGY_H
+#define ALIHLTTRIGGEREMCALCLUSTERENERGY_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/// @file   AliHLTTriggerPhosClusterEnergy.h
+/// @file   AliHLTTriggerEmcalClusterEnergy.h
 /// @author Svein Lindal
 /// @date   2009-08-17
-/// @brief  HLT energy threshold trigger for PHOS
+/// @brief  HLT energy threshold trigger for EMCAL
 
 #include "AliHLTTriggerCaloClusterEnergy.h"
 
 /**
- * @class  AliHLTTriggerPhosClusterEnergy
- * HLT trigger component for high energy clusters in PHOS
+ * @class  AliHLTTriggerEmcalClusterEnergy
+ * HLT trigger component for high energy clusters in EMCAL
  * 
- * Triggers on PHOS clusters containing energy > threshold value. 
+ * Triggers on EMCAL clusters containing energy > threshold value. 
  * Configurable through database entry or from command line using "-energy" option
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b PhosClusterEnergyTrigger                             <br>
+ * Component ID: \b EmcalClusterEnergyTrigger                             <br>
  * Library: \b libAliHLTTrigger.so                                        <br>
  * Input Data Types:  kAliHLTDataTypeESDObject, kAliHLTDataTypeESDTree    <br>
  * Output Data Types: ::kAliHLTAnyDataType                                <br>
@@ -42,7 +42,7 @@
  * component arguments.
  *
  * <h2>Default CDB entries:</h2>
- * HLT/ConfigHLT/PhosClusterEnergyTrigger: TObjString storing the arguments
+ * HLT/ConfigHLT/EmcalClusterEnergyTrigger: TObjString storing the arguments
  *
  * <h2>Performance:</h2>
  * 
@@ -56,11 +56,11 @@
  * \ingroup alihlt_trigger_components
  */
 
-class AliHLTTriggerPhosClusterEnergy : public AliHLTTriggerCaloClusterEnergy {
+class AliHLTTriggerEmcalClusterEnergy : public AliHLTTriggerCaloClusterEnergy {
 
 public:
-  AliHLTTriggerPhosClusterEnergy();
-  ~AliHLTTriggerPhosClusterEnergy();
+  AliHLTTriggerEmcalClusterEnergy();
+  ~AliHLTTriggerEmcalClusterEnergy();
 
 
   /// inherited from AliHLTTrigger: name of this trigger
@@ -74,7 +74,7 @@ private:
   ///Inherited from AliHLTTriggerCaloClusterEnergy, get the correct set of ESD calo clusters
   Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
 
-  ClassDef(AliHLTTriggerPhosClusterEnergy, 0)
+  ClassDef(AliHLTTriggerEmcalClusterEnergy, 0)
 };
 
-#endif //ALIHLTTRIGGERPHOSCLUSTERENERGY_H
+#endif

@@ -15,10 +15,10 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/// @file   AliHLTTriggerPhosClusterEnergy.cxx
+/// @file   AliHLTTriggerEmcalClusterEnergy.cxx
 /// @author Svein Lindal <slindal@fys.uio.no>
 /// @date   2009-08-17
-/// @brief  HLT energy threshold trigger for PHOS
+/// @brief  HLT energy threshold trigger for EMCAL
 ///      
 
 // see header file for class documentation
@@ -28,21 +28,21 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 
-#include "AliHLTTriggerPhosClusterEnergy.h"
+#include "AliHLTTriggerEmcalClusterEnergy.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTDomainEntry.h"
 
 
-AliHLTTriggerPhosClusterEnergy gPhosClusterEnergyTrigger;
+AliHLTTriggerEmcalClusterEnergy gEmcalClusterEnergyTrigger;
 
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTTriggerPhosClusterEnergy)
+ClassImp(AliHLTTriggerEmcalClusterEnergy)
 
-AliHLTTriggerPhosClusterEnergy::AliHLTTriggerPhosClusterEnergy()  : 
-AliHLTTriggerCaloClusterEnergy("PHOS")
+AliHLTTriggerEmcalClusterEnergy::AliHLTTriggerEmcalClusterEnergy()  : 
+AliHLTTriggerCaloClusterEnergy("EMCAL")
 {
   // see header file for class documentation
   // or
@@ -50,24 +50,24 @@ AliHLTTriggerCaloClusterEnergy("PHOS")
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlts
 
-  fgkOCDBEntry = "HLT/ConfigHLT/PhosClusterEnergyTrigger";
-  fgkInputDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS;
+  fgkOCDBEntry = "HLT/ConfigHLT/EmcalClusterEnergyTrigger";
+  fgkInputDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL;
 }
 
-AliHLTTriggerPhosClusterEnergy::~AliHLTTriggerPhosClusterEnergy() {
+AliHLTTriggerEmcalClusterEnergy::~AliHLTTriggerEmcalClusterEnergy() {
   // see header file for class documentation
 }
 
-const char* AliHLTTriggerPhosClusterEnergy::GetTriggerName() const {
+const char* AliHLTTriggerEmcalClusterEnergy::GetTriggerName() const {
   // see header file for class documentation
-  return "PhosClusterEnergyTrigger";
+  return "EmcalClusterEnergyTrigger";
 }
 
-AliHLTComponent* AliHLTTriggerPhosClusterEnergy::Spawn() {
+AliHLTComponent* AliHLTTriggerEmcalClusterEnergy::Spawn() {
   // see header file for class documentation
-  return new AliHLTTriggerPhosClusterEnergy;
+  return new AliHLTTriggerEmcalClusterEnergy;
 }
 
-Int_t AliHLTTriggerPhosClusterEnergy::GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ){
-  return esd->GetPHOSClusters(clustersRefs);
+Int_t AliHLTTriggerEmcalClusterEnergy::GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ){
+  return esd->GetEMCALClusters(clustersRefs);
 }
