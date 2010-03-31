@@ -292,6 +292,15 @@ void AliEMCALQADataMakerRec::InitRaws()
 				nTot2x2, -0.5, nTot2x2-0.5) ;
   Add2RawsList(hT4, kPedTRU, expert, image, !saveCorr) ;
 
+  // L0 trigger hits: # of hits (bins are TRU channels)
+  TH1I * hT5 = new TH1I("hTRUEmcalL0hits", "L0 trigger hits: Total number of 2x2 L0 generated", nTot2x2, -0.5, nTot2x2);
+  hT5->Sumw2();
+  Add2RawsList(hT5, kNL0TRU, expert, image, !saveCorr);
+
+  // L0 trigger hits: average time (bins are TRU channels)
+  TProfile * hT6 = new TProfile("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTot2x2, -0.5, nTot2x2); 
+  Add2RawsList(hT6, kTimeL0TRU, expert, image, !saveCorr);
+
   // and also LED Mon..
   // LEDMon has both high and low gain channels, just as regular FEE/towers
   int nTotLEDMon = fSuperModules * AliEMCALGeoParams::fgkEMCALLEDRefs; // max number of LEDMon channels for all SuperModules
@@ -372,7 +381,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
   rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL's 
 
-  AliRecoParam::EventSpecie_t saveSpecie = fEventSpecie ; 
+  AliRecoParam::EventSpecie_t saveSpecie = fEventSpecie ;
+
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
     SetEventSpecie(AliRecoParam::kCalib) ;
   }
@@ -383,6 +393,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   int nRows = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
   int nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
   int n2x2PerSM = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
+  int n2x2PerTRU = AliEMCALGeoParams::fgkEMCAL2x2PerTRU;
 
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
   int nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules] = {0};
@@ -390,6 +401,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   int nTotalSMTRU[AliEMCALGeoParams::fgkEMCALModules] = {0};
   int nTotalSMLGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
   int nTotalSMHGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
+
+  int nTRUL0ChannelBits = 10; // used for L0 trigger bits checks
 
   // start loop over input stream  
   int iSM = 0;
@@ -414,6 +427,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  // indices for pedestal calc.
 	  int firstPedSample = 0;
 	  int lastPedSample = 0;
+	  bool isTRUL0IdData = false;
 
 	  if (! in.IsTRUData() ) { // high gain, low gain, LED Mon data - all have the same shaper/sampling 
 	    AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
@@ -428,6 +442,9 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    time = fitResults.GetTof();	
 	    firstPedSample = fFirstPedestalSampleTRU;
 	    lastPedSample = fLastPedestalSampleTRU;
+	    if (in.GetColumn() > n2x2PerTRU) {
+	      isTRUL0IdData = true;
+	    }
 	  }
   
 	  // pedestal samples
@@ -450,19 +467,41 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  int bunchLength = bunchlist.at(bunchIndex).GetLength(); 
 	  const UShort_t *sig = bunchlist.at(bunchIndex).GetData();
 	  int timebin = 0;
-	  for (int i = 0; i<bunchLength; i++) {
-	    timebin = startBin--;
-	    if ( firstPedSample<=timebin && timebin<=lastPedSample ) {
-	      pedSamples.push_back( sig[i] );
-	      nPed++;
-	    }	    
-	  } // i
+
+	  if (! isTRUL0IdData) { // regular data, can look at pedestals
+	    for (int i = 0; i<bunchLength; i++) {
+	      timebin = startBin--;
+	      if ( firstPedSample<=timebin && timebin<=lastPedSample ) {
+		pedSamples.push_back( sig[i] );
+		nPed++;
+	      }	    
+	    } // i
 	  //	  printf("nPed %d\n", nPed);
+	  }
+	  else { // TRU L0 Id Data
+	    // which TRU the channel belongs to?
+	    int TRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
+
+	    for (int i = 0; i< bunchLength; i++) {
+	      for( int j = 0; j < nTRUL0ChannelBits; j++ ){
+		// check if the bit j is 1
+		if( (sig[i] & ( 1 << j )) > 0 ){
+		  int TRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
+		  if(TRUIdInSM < n2x2PerTRU) {
+		    int TRUAbsId = TRUIdInSM + n2x2PerTRU * TRUId;
+		    // Fill the histograms
+		    GetRawsData(kNL0TRU)->Fill(TRUAbsId);
+		    GetRawsData(kTimeL0TRU)->Fill(TRUAbsId, startBin);
+		  }
+		}
+	      }
+	      startBin--;
+	    } // i	
+	  } // TRU L0 Id data			
 
 	  // fill histograms
 	  if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
 	    int towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
-	  
 	    if ( in.IsLowGain() ) { 
 	      nTotalSMLG[iSM]++; 
 	      GetRawsData(kTowerLG)->Fill(towerId);
@@ -493,11 +532,9 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  // TRU
 	  else if ( in.IsTRUData() && in.GetColumn()<AliEMCALGeoParams::fgkEMCAL2x2PerTRU) {
 	    // for TRU data, the mapping class holds the TRU internal 2x2 number (0..95) in the Column var..
-	    int iTRU = iRCU; //TRU0 is from RCU0, TRU1 from RCU1
-	    if (iRCU>0 && in.GetBranch()>0) iTRU=2; // TRU2 is from branch B on RCU1
+	    int iTRU = (iRCU*in.GetBranch() + iRCU); //TRU0 is from RCU0, TRU1 from RCU1, TRU2 is from branch B on RCU1
 	    int iTRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
 	      + in.GetColumn();
-	    
 	    nTotalSMTRU[iSM]++; 
 	    if ( (amp > fMinSignalTRU) && (amp < fMaxSignalTRU) ) { 
 	      GetRawsData(kSigTRU)->Fill(iTRU2x2Id, amp);
@@ -573,7 +610,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   GetRawsData(kNtotTRU)->Fill(nTotalTRU);
   GetRawsData(kNtotLGLEDMon)->Fill(nTotalLGLEDMon);
   GetRawsData(kNtotHGLEDMon)->Fill(nTotalHGLEDMon);
-  
+ 
+
   SetEventSpecie(saveSpecie) ; 
   // just in case the next rawreader consumer forgets to reset; let's do it here again..
   rawReader->Reset() ;

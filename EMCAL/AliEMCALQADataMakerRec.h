@@ -37,6 +37,7 @@ public:
     kNsmodTRU,kTimeTRU,
     kSigTRU,kNtotTRU,
     kPedTRU,
+    kNL0TRU, kTimeL0TRU,
     // and also LED Mon info
     kNsmodLGLEDMon,kNsmodHGLEDMon,kTimeLGLEDMon,kTimeHGLEDMon,
     kSigLGLEDMon,kSigHGLEDMon,kNtotLGLEDMon,kNtotHGLEDMon,
