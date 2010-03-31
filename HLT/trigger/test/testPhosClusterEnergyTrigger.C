@@ -26,8 +26,6 @@ void CreateInput(const char* filename, Int_t numOfTracks, Double_t minPt, Double
   
   Double_t et = gRandom->Rndm() * (maxPt - minPt) + minPt;
   
-  cout << et << endl;
-  
   cluster.SetE(et);
   cluster.SetClusterType(AliESDCaloCluster::kPHOSCluster);
   //cluster.SetClusterType(nuOfmTracks);
