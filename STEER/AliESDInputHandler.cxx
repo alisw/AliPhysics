@@ -105,6 +105,9 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
       theTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
     }
 
+    SwitchOffBranches();
+    SwitchOnBranches();
+
     if (!fEvent) fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
