@@ -632,7 +632,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
   }
   for(Int_t is(1); is<=AliPID::kSPECIES; is++){
     h1[0] = h2->ProjectionX("Ncl_px", 2*is-1, 2*is);
-    TGraphErrors *ge=(TGraphErrors*)arr->At(is);
+    ge=(TGraphErrors*)arr->At(is);
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
     }
