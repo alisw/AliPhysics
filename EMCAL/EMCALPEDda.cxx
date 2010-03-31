@@ -212,9 +212,12 @@ int main(int argc, char **argv) {
   
   printf ("%d physics/calibration events processed.\n",nevents);
 
+  /* Fitting/compute methods step commented out for now (March 31, 2010) 
+   - not necessary to do here 
   // look for dead, hot and noisy towers
   calibPedestal->ComputeDeadTowers();
   calibPedestal->ComputeHotAndWarningTowers();
+  */
 
   TFile f(RESULT_FILE, "recreate");
   if (!f.IsZombie()) { 
