@@ -58,7 +58,7 @@ void AliHLTGlobalTrackMatcher::DoInit( ) {
   //BALLE TODO: Change hardcoded values to something that is initialised through command line or something!!!
 
 
-  fMatchDistance = 400*400;
+  fMatchDistance = 40*40;
 
   fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
   fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
