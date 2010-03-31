@@ -32,6 +32,9 @@ ClassImp(AliHLTGlobalTriggerDecision)
 
 
 namespace {
+const char* kgNULLObjMessage =
+  "The global decision object contains NULL pointers in the fContributingTriggers array."
+  " This is unexpected and probably indicates a serious problem.";
 const char* kgSplitModeMessage =
   "The global decision object contains NULL pointers in the fInputObjects array."
   " This means that it was written to a TTree branch with the split-mode > 0."
@@ -103,7 +106,7 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
       else
       {
         AliHLTLogging log;
-        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgNULLObjMessage);
       }
     }
     if (NumberOfTriggerInputs() == 0)
@@ -138,7 +141,7 @@ void AliHLTGlobalTriggerDecision::Print(Option_t* option) const
       else
       {
         AliHLTLogging log;
-        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+        log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgNULLObjMessage);
       }
     }
     if (NumberOfTriggerInputs() == 0)
@@ -233,12 +236,12 @@ AliHLTGlobalTriggerDecision& AliHLTGlobalTriggerDecision::operator=(const AliHLT
     else
     {
       AliHLTLogging log;
-      log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgSplitModeMessage);
+      log.LoggingVarargs(kHLTLogError, this->ClassName(), FUNCTIONNAME(), __FILE__, __LINE__, kgNULLObjMessage);
     }
   }
 
   DeleteInputObjects();
-  for (int inputObject=0; inputObject<src.NumberOfTriggerInputs(); inputObject++) {
+  for (int inputObject=0; inputObject<src.NumberOfInputObjects(); inputObject++) {
     const TObject* pInputObject=src.InputObject(inputObject);
     if (pInputObject != NULL)
     {

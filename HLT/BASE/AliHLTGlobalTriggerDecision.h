@@ -171,6 +171,10 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    *   a deep copy of the object. This means that the added object can only be deleted
    *   after this global trigger object is no longer using the object, unless <i>own</i>
    *   is true. If <i>own</i> is true then the object must not be deleted by the caller.
+   * \note The kCanDelete bit of the object is modified by this method call and is
+   *   used to track who the object belongs to. This bit should not be modified for
+   *   the object after a call to this method, until the decision object is cleared
+   *   or destroyed.
    */
   void AddInputObjectRef(TObject* object, bool own = false);
   
