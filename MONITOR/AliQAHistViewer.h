@@ -11,6 +11,8 @@
 #ifndef ALIQAHISTVIEWER_H
 #define ALIQAHISTVIEWER_H
 
+#include <TGFrame.h>
+
 class TRootEmbeddedCanvas;
 class AliQAHistNavigator;
 class TGComboBox;

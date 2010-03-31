@@ -18,6 +18,7 @@
 class TList;
 class TFile;
 class TString;
+class TH1;
 
 class AliQADirList : public TNamed{
 public:
