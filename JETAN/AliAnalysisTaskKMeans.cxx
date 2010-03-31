@@ -501,12 +501,12 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
     // Cluster Multiplicity
     if (rmaxG > 0. && TMath::Abs(etaC) < 0.4) {
       for (Int_t i = 0; i < 1; i++) {
-	Int_t im = (best.GetInd())[i];
+	im = (best.GetInd())[i];
 	fH1CEtaR->Fill(mEta[im]);
       }
       
       for (Int_t i = 0; i < 1; i++) {
-	Int_t im = (best.GetInd())[i];
+	im = (best.GetInd())[i];
 	for (Int_t j = 0; j < ic; j++) {
 	  Double_t dphi = DeltaPhi(mPhi[im], phiR[j]);
 	  Double_t deta = mEta[im] - etaR[j];
