@@ -1278,6 +1278,7 @@ void AliTRDcheckDET::MakePlotnTrackletsVsP(){
   Int_t np(ax->GetNbins());
   for(Int_t ipBin(1); ipBin<np; ipBin++){
     h = hBar->ProjectionY("npBin", ipBin, ipBin);
+    if(!Int_t(h->Integral())) return;
     h->Scale(100./h->Integral());
     Float_t p(ax->GetBinCenter(ipBin)); 
     Float_t dp(ax->GetBinWidth(ipBin)); 
