@@ -91,9 +91,7 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
     fTree->GetEntry(0);
     
     // Get pointer to ESD event
-    SwitchOffBranches();
-    SwitchOnBranches();
-    
+     
     if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
       // Try to add ESDfriend. branch as friend
       TString esdTreeFName, esdFriendTreeFName;    
