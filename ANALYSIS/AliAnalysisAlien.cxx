@@ -1990,6 +1990,12 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          Error("WriteAnalysisMacro", "could not open file %s for writing", fAnalysisMacro.Data());
          return;
       }
+      Bool_t hasSTEERBase = kFALSE;
+      Bool_t hasESD = kFALSE;
+      Bool_t hasAOD = kFALSE;
+      Bool_t hasANALYSIS = kFALSE;
+      Bool_t hasANALYSISalice = kFALSE;
+      Bool_t hasCORRFW = kFALSE;
       TString func = fAnalysisMacro;
       TString type = "ESD";
       TString comment = "// Analysis using ";
@@ -2045,12 +2051,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          TIter next(fPackages);
          TObject *obj;
          TString pkgname;
-         Bool_t hasSTEERBase = kFALSE;
-         Bool_t hasESD = kFALSE;
-         Bool_t hasAOD = kFALSE;
-         Bool_t hasANALYSIS = kFALSE;
-         Bool_t hasANALYSISalice = kFALSE;
-         Bool_t hasCORRFW = kFALSE;
+         TString setupPar = "AliAnalysisAlien::SetupPar";
          while ((obj=next())) {
             pkgname = obj->GetName();
             if (pkgname == "STEERBase" ||
@@ -2065,19 +2066,20 @@ void AliAnalysisAlien::WriteAnalysisMacro()
                 pkgname == "ANALYSISalice.par") hasANALYSISalice = kTRUE;
             if (pkgname == "CORRFW" ||
                 pkgname == "CORRFW.par")    hasCORRFW = kTRUE;
-         }   
+         }
+         if (hasANALYSISalice) setupPar = "SetupPar";   
          if (!hasSTEERBase) out << "   gSystem->Load(\"libSTEERBase\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"STEERBase\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"STEERBase\")) return;" << endl;
          if (!hasESD)       out << "   gSystem->Load(\"libESD\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"ESD\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"ESD\")) return;" << endl;
          if (!hasAOD)       out << "   gSystem->Load(\"libAOD\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"AOD\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"AOD\")) return;" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"ANALYSIS\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"ANALYSISalice\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"ANALYSISalice\")) return;" << endl;
          if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"CORRFW\")) return;" << endl << endl;
+         else out << "   if (!" << setupPar << "(\"CORRFW\")) return;" << endl << endl;
          out << "// Compile other par packages" << endl;
          next.Reset();
          while ((obj=next())) {
@@ -2094,7 +2096,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
                 pkgname == "ANALYSISalice.par" ||
                 pkgname == "CORRFW" ||
                 pkgname == "CORRFW.par") continue;
-            out << "   if (!AliAnalysisAlien::SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
+            out << "   if (!" << setupPar << "(\"" << obj->GetName() << "\")) return;" << endl;
          }   
       }   
       if (fAdditionalLibs.Length()) {
@@ -2256,6 +2258,46 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   return chain;" << endl;
          out << "}" << endl << endl;
       }   
+      if (hasANALYSISalice) {
+         out <<"//________________________________________________________________________________" << endl;
+         out << "Bool_t SetupPar(const char *package) {" << endl;
+         out << "// Compile the package and set it up." << endl;
+         out << "   TString pkgdir = package;" << endl;
+         out << "   pkgdir.ReplaceAll(\".par\",\"\");" << endl;
+         out << "   gSystem->Exec(Form(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
+         out << "   TString cdir = gSystem->WorkingDirectory();" << endl;
+         out << "   gSystem->ChangeDirectory(pkgdir);" << endl;
+         out << "   // Check for BUILD.sh and execute" << endl;
+         out << "   if (!gSystem->AccessPathName(\"PROOF-INF/BUILD.sh\")) {" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      printf(\"*** Building PAR archive    ***\\n\");" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      if (gSystem->Exec(\"PROOF-INF/BUILD.sh\")) {" << endl;
+         out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", pkgdir.Data());" << endl;
+         out << "         gSystem->ChangeDirectory(cdir);" << endl;
+         out << "         return kFALSE;" << endl;
+         out << "      }" << endl;
+         out << "   } else {" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", pkgdir.Data());" << endl;
+         out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      return kFALSE;" << endl;
+         out << "   }" << endl;
+         out << "   // Check for SETUP.C and execute" << endl;
+         out << "   if (!gSystem->AccessPathName(\"PROOF-INF/SETUP.C\")) {" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      printf(\"***    Setup PAR archive    ***\\n\");" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      gROOT->Macro(\"PROOF-INF/SETUP.C\");" << endl;
+         out << "   } else {" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", pkgdir.Data());" << endl;
+         out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      return kFALSE;" << endl;
+         out << "   }" << endl;
+         out << "   // Restore original workdir" << endl;
+         out << "   gSystem->ChangeDirectory(cdir);" << endl;
+         out << "   return kTRUE;" << endl;
+         out << "}" << endl;
+      }
       Info("WriteAnalysisMacro", "\n#####   Analysis macro to run on worker nodes <%s> written",fAnalysisMacro.Data());
    }   
    Bool_t copy = kTRUE;
@@ -2294,6 +2336,12 @@ void AliAnalysisAlien::WriteMergingMacro()
          Error("WriteMergingMacro", "could not open file %s for writing", fAnalysisMacro.Data());
          return;
       }
+      Bool_t hasSTEERBase = kFALSE;
+      Bool_t hasESD = kFALSE;
+      Bool_t hasAOD = kFALSE;
+      Bool_t hasANALYSIS = kFALSE;
+      Bool_t hasANALYSISalice = kFALSE;
+      Bool_t hasCORRFW = kFALSE;
       TString func = mergingMacro;
       TString comment;
       func.ReplaceAll(".C", "");
@@ -2335,12 +2383,7 @@ void AliAnalysisAlien::WriteMergingMacro()
          TIter next(fPackages);
          TObject *obj;
          TString pkgname;
-         Bool_t hasSTEERBase = kFALSE;
-         Bool_t hasESD = kFALSE;
-         Bool_t hasAOD = kFALSE;
-         Bool_t hasANALYSIS = kFALSE;
-         Bool_t hasANALYSISalice = kFALSE;
-         Bool_t hasCORRFW = kFALSE;
+         TString setupPar = "AliAnalysisAlien::SetupPar";
          while ((obj=next())) {
             pkgname = obj->GetName();
             if (pkgname == "STEERBase" ||
@@ -2356,18 +2399,19 @@ void AliAnalysisAlien::WriteMergingMacro()
             if (pkgname == "CORRFW" ||
                 pkgname == "CORRFW.par")    hasCORRFW = kTRUE;
          }   
+         if (hasANALYSISalice) setupPar = "SetupPar";   
          if (!hasSTEERBase) out << "   gSystem->Load(\"libSTEERBase\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"STEERBase\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"STEERBase\")) return;" << endl;
          if (!hasESD)       out << "   gSystem->Load(\"libESD\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"ESD\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"ESD\")) return;" << endl;
          if (!hasAOD)       out << "   gSystem->Load(\"libAOD\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"AOD\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"AOD\")) return;" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"ANALYSIS\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"ANALYSISalice\")) return;" << endl;
+         else out << "   if (!" << setupPar << "(\"ANALYSISalice\")) return;" << endl;
          if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
-         else out << "   if (!AliAnalysisAlien::SetupPar(\"CORRFW\")) return;" << endl << endl;
+         else out << "   if (!" << setupPar << "(\"CORRFW\")) return;" << endl << endl;
          out << "// Compile other par packages" << endl;
          next.Reset();
          while ((obj=next())) {
@@ -2384,7 +2428,7 @@ void AliAnalysisAlien::WriteMergingMacro()
                 pkgname == "ANALYSISalice.par" ||
                 pkgname == "CORRFW" ||
                 pkgname == "CORRFW.par") continue;
-            out << "   if (!AliAnalysisAlien::SetupPar(\"" << obj->GetName() << "\")) return;" << endl;
+            out << "   if (!" << setupPar << "(\"" << obj->GetName() << "\")) return;" << endl;
          }   
       }   
       if (fAdditionalLibs.Length()) {
@@ -2448,6 +2492,46 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      }" << endl;
       out << "   }" << endl;
       out << "}" << endl << endl;
+      if (hasANALYSISalice) {
+         out <<"//________________________________________________________________________________" << endl;
+         out << "Bool_t SetupPar(const char *package) {" << endl;
+         out << "// Compile the package and set it up." << endl;
+         out << "   TString pkgdir = package;" << endl;
+         out << "   pkgdir.ReplaceAll(\".par\",\"\");" << endl;
+         out << "   gSystem->Exec(Form(\"tar xvzf %s.par\", pkgdir.Data()));" << endl;
+         out << "   TString cdir = gSystem->WorkingDirectory();" << endl;
+         out << "   gSystem->ChangeDirectory(pkgdir);" << endl;
+         out << "   // Check for BUILD.sh and execute" << endl;
+         out << "   if (!gSystem->AccessPathName(\"PROOF-INF/BUILD.sh\")) {" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      printf(\"*** Building PAR archive    ***\\n\");" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      if (gSystem->Exec(\"PROOF-INF/BUILD.sh\")) {" << endl;
+         out << "         ::Error(\"SetupPar\", \"Cannot build par archive %s\", pkgdir.Data());" << endl;
+         out << "         gSystem->ChangeDirectory(cdir);" << endl;
+         out << "         return kFALSE;" << endl;
+         out << "      }" << endl;
+         out << "   } else {" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/BUILD.sh for package %s\", pkgdir.Data());" << endl;
+         out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      return kFALSE;" << endl;
+         out << "   }" << endl;
+         out << "   // Check for SETUP.C and execute" << endl;
+         out << "   if (!gSystem->AccessPathName(\"PROOF-INF/SETUP.C\")) {" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      printf(\"***    Setup PAR archive    ***\\n\");" << endl;
+         out << "      printf(\"*******************************\\n\");" << endl;
+         out << "      gROOT->Macro(\"PROOF-INF/SETUP.C\");" << endl;
+         out << "   } else {" << endl;
+         out << "      ::Error(\"SetupPar\",\"Cannot access PROOF-INF/SETUP.C for package %s\", pkgdir.Data());" << endl;
+         out << "      gSystem->ChangeDirectory(cdir);" << endl;
+         out << "      return kFALSE;" << endl;
+         out << "   }" << endl;
+         out << "   // Restore original workdir" << endl;
+         out << "   gSystem->ChangeDirectory(cdir);" << endl;
+         out << "   return kTRUE;" << endl;
+         out << "}" << endl;
+      }
    }   
    Bool_t copy = kTRUE;
    if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
