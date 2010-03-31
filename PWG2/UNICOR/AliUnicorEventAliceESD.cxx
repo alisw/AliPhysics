@@ -26,12 +26,13 @@
 ClassImp(AliUnicorEventAliceESD)
 
 //=============================================================================
-AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEvent(), fESD(esd) 
+  AliUnicorEventAliceESD::AliUnicorEventAliceESD(AliESDEvent *esd) : AliUnicorEvent(), fESD(esd), fPhysicsSelection(0) 
 {
   // constructor 
 
   //  printf("%s object created\n",ClassName());
   if (!fESD) fESD = new AliESDEvent();
+  fPhysicsSelection = new AliPhysicsSelection();
 }
 //=============================================================================
 AliUnicorEventAliceESD::~AliUnicorEventAliceESD()
@@ -44,10 +45,9 @@ Bool_t AliUnicorEventAliceESD::Good() const
 {
   // event cuts
 
-  const AliESDVertex *vtx = fESD->GetPrimaryVertexSPD();
+  //  if (!fPhysicsSelection->IsCollisionCandidate(fESD)) return kFALSE;
+  const AliESDVertex *vtx = fESD->GetPrimaryVertex();
   if (!vtx->GetStatus()) return kFALSE;
-  if (vtx->GetZRes()>0.1) return kFALSE; // 1.5 used for TPC 
-  if (vtx->IsFromVertexerZ() && vtx->GetDispersion()>0.2) return kFALSE;
   if (fabs(Zver())>1) return kFALSE;
   return kTRUE;
 }
@@ -62,7 +62,7 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
   AliESDtrack *track = fESD->GetTrack(i);
   if (!track->IsOn(AliESDtrack::kTPCrefit)) return 0;        // TPC refit
   if (!track->IsOn(AliESDtrack::kITSrefit)) return 0;        // ITS refit
-  if (track->GetTPCNcls() < 100) return 0;                   // number of TPC clusters
+  if (track->GetTPCNcls() < 90) return 0;                    // number of TPC clusters
   if (track->GetKinkIndex(0) > 0) return 0;                  // no kink daughters
   const AliExternalTrackParam *tp = GetTrackParam(i);
   if (!tp) return 0;                                         // track param
@@ -93,8 +93,7 @@ Bool_t AliUnicorEventAliceESD::ParticleGood(Int_t i, Int_t pidi) const
 
   if (pidi == -211) return p[AliPID::kPion]+p[AliPID::kMuon]>0.5 && q==-1;
   else if (pidi == 211) return p[AliPID::kPion]+p[AliPID::kMuon]>0.5 && q==1;
-  //if (pidi == -211) return ParticleDedx(i)<1.2 && ParticleP(i)<0.75 && q==-1;
-  //else if (pidi == 211) return ParticleDedx(i)<1.2 && ParticleP(i)<0.75 && q==1;
+
   else if (pidi == -321) return p[AliPID::kKaon]>0.5 && q==-1;
   else if (pidi ==  321) return p[AliPID::kKaon]>0.5 && q==1;
   else if (pidi == -2212) return p[AliPID::kProton]>0.5 && q==-1;
