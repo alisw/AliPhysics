@@ -43,6 +43,7 @@ AliVZEROCalibData::AliVZEROCalibData()
 	fTimeOffset[t]  = 5.0;
         fTimeGain[t]    = 1.0;
 	fDeadChannel[t]= kFALSE;
+	fDiscriThr[t]  = 2.5;
     }
     for(int t=0; t<128; t++) {
         fPedestal[t]    = 0.0;     
@@ -82,6 +83,7 @@ AliVZEROCalibData::AliVZEROCalibData(const char* name)
        fTimeOffset[t]  = 5.0;
        fTimeGain[t]    = 1.0;
        fDeadChannel[t]= kFALSE;
+       fDiscriThr[t]  = 2.5;
     }
    for(int t=0; t<128; t++) {
        fPedestal[t]    = 0.0;     
@@ -123,6 +125,7 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
       fTimeGain[t]     = calibda.GetTimeGain(t); 
       fDeadChannel[t]  = calibda.IsChannelDead(t);
+      fDiscriThr[t]    = calibda.GetDiscriThr(t);
   }  
   
   for(int i=0; i<kNCIUBoards ;i++) {
@@ -157,6 +160,7 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
       fTimeGain[t]     = calibda.GetTimeGain(t); 
       fDeadChannel[t]  = calibda.IsChannelDead(t);
+      fDiscriThr[t]    = calibda.GetDiscriThr(t);
   }   
   for(int i=0; i<kNCIUBoards ;i++) {
       fTimeResolution[i]  = calibda.GetTimeResolution(i);
@@ -221,6 +225,7 @@ void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
 	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
 	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,8*iBoard+(iChannel-1));
+	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,8*iBoard+(iChannel-1));
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
 }
 
@@ -526,4 +531,31 @@ void AliVZEROCalibData::SetRollOver(UInt_t offset, Int_t board)
   }
   else
     AliError(Form("Board %d is not valid",board));
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetDiscriThr(Float_t thr, Int_t channel)
+{
+  // Set the TDC discriminator
+  // threshold values expressed in units of ADC
+  if((channel>=0) && (channel<64)){
+    if (thr > 0) {
+      fDiscriThr[channel]=thr;
+      AliInfo(Form("Discriminator threshold for channel %d set to %f",channel,fDiscriThr[channel]));
+    }
+    else {
+      AliWarning(Form("Ignore wrong threshold value (%f) for channel %d !",thr,channel));
+    }
+  }
+  else
+    AliError(Form("Channel %d is not valid",channel));
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetDiscriThr(const Float_t* thresholds) 
+{
+  // Set the TDC discriminator
+  // threshold values expressed in units of ADC
+  if(thresholds) for(int t=0; t<64; t++) fDiscriThr[t] = thresholds[t];
+  else for(int t=0; t<64; t++) fDiscriThr[t] = 2.5;
 }

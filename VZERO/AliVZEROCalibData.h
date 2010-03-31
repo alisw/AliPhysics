@@ -63,6 +63,9 @@ class AliVZEROCalibData: public TNamed {
   UInt_t   GetTriggerCountOffset(Int_t board) const { return ((board>=0 && board<kNCIUBoards)?fTriggerCountOffset[board]:0); }
   const UInt_t*  GetRollOver() const { return fRollOver; }
   UInt_t   GetRollOver(Int_t board) const { return ((board>=0 && board<kNCIUBoards)?fRollOver[board]:0); }
+
+  Float_t  GetDiscriThr(Int_t channel)	const {return fDiscriThr[channel];}
+  Float_t* GetDiscriThr()   const {return (Float_t*)fDiscriThr;}
     
   void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
   void     SetPedestal(const Float_t* Pedestal);
@@ -101,6 +104,9 @@ class AliVZEROCalibData: public TNamed {
   void     SetRollOver(UInt_t *offsets);
   void     SetRollOver(UInt_t offset, Int_t board);
 
+  void     SetDiscriThr(Float_t thr, Int_t channel);
+  void     SetDiscriThr(const Float_t* thresholds);
+
   Float_t  GetMIPperADC(Int_t channel) const;
 
  protected:
@@ -123,7 +129,9 @@ class AliVZEROCalibData: public TNamed {
   UInt_t   fTriggerCountOffset[kNCIUBoards]; // HPTDC trigger count offset (25ns units)
   UInt_t   fRollOver[kNCIUBoards]; // HPTDC roll-over (25ns units)
 
-  ClassDef(AliVZEROCalibData,5)    // VZERO Calibration data
+  Float_t  fDiscriThr[64];     // Discriminator thresholds
+
+  ClassDef(AliVZEROCalibData,6)    // VZERO Calibration data
 };
 
 #endif

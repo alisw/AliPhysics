@@ -216,6 +216,12 @@ void AliVZERODataDCS::Init(){
 	  }
 	}
 
+	for(int iCIU = 0; iCIU<8 ; iCIU++){
+	  for(int iCh=1;iCh<=8;iCh++){
+	    fAliasNames[iAlias++] = Form("V00/FEE/CIU%d/DiscriThr%d",iCIU,iCh);
+	  }
+	}
+
   if(iAlias!=kNAliases) 
   	      AliError(Form("Number of DCS Aliases defined not correct"));
 
