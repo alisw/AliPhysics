@@ -145,7 +145,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
    //===========================================================================
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("CalorimeterPerformance");
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
-  task->SetDebugLevel(0);
+  //task->SetDebugLevel(-1);
+  task->SelectCollisionCandidates();
   task->SetAnalysisMaker(maker);	
   mgr->AddTask(task);
   
