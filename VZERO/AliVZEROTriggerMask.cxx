@@ -14,10 +14,19 @@
  **************************************************************************/
 
 /* $Id$ */
+//-------------------------------------------
+// Class : AliVZEROTriggerMask
+//
+// Fill up the trigger mask word.
+//
+
 #include <Riostream.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
+#include <TTree.h>
+#include <TClonesArray.h>
+
 #include <AliGeomManager.h>
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -76,16 +85,18 @@ Double_t AliVZEROTriggerMask::GetZPosition(const char* symname){
 
 
 void AliVZEROTriggerMask::FillMasks(TTree* vzeroDigitsTree,
-				TClonesArray* vzeroDigits)
+				TClonesArray* const vzeroDigits)
 {
-  const Double_t LightSpeed = 2.9979245800; // cm/100 ps
-  Float_t Z_V0A = TMath::Abs(GetZPosition("VZERO/V0A"));
-  Float_t Z_V0C = TMath::Abs(GetZPosition("VZERO/V0C"));
+// Fill up the trigger mask word using the TDC 
+
+  const Double_t lightSpeed = 2.9979245800; // cm/100 ps
+  Float_t zV0A = TMath::Abs(GetZPosition("VZERO/V0A"));
+  Float_t zV0C = TMath::Abs(GetZPosition("VZERO/V0C"));
 
   // distance in time units from nominal vertex to V0
-  Float_t v0a_dist = Z_V0A/LightSpeed; // 100 of picoseconds
-  Float_t v0c_dist = Z_V0C/LightSpeed; // 100 of picoseconds
-  Float_t bunch_separation = 1000.0; // 100 of picoseconds
+  Float_t v0aDist = zV0A/lightSpeed; // 100 of picoseconds
+  Float_t v0cDist = zV0C/lightSpeed; // 100 of picoseconds
+  Float_t bunchSeparation = 1000.0; // 100 of picoseconds
 
   // mask
   UInt_t one=1;
@@ -101,26 +112,26 @@ void AliVZEROTriggerMask::FillMasks(TTree* vzeroDigitsTree,
       //      vzeroDigitsTree->GetEvent(d);
       AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(d);
       
-      Int_t   PMNumber   = digit->PMNumber();
+      Int_t   pmNumber   = digit->PMNumber();
       Float_t adc        = digit->ADC();
       Float_t tdc        = digit->Time()*10.0; // in 100 of picoseconds
 
       if (adc>fAdcThresHold) {
-	if (PMNumber<32) { // in V0C
-	  if (tdc>(v0c_dist-fTimeWindowWidthBBC/2.0) &&
-	      tdc<(v0c_dist+fTimeWindowWidthBBC/2.0))
-	    fBBtriggerV0C+=(one<<PMNumber);
-	  if (tdc>(bunch_separation-v0c_dist-fTimeWindowWidthBGC/2.0) &&
-	      tdc<(bunch_separation-v0c_dist+fTimeWindowWidthBGC/2.0))
-	   fBGtriggerV0C+=(one<<PMNumber); 
+	if (pmNumber<32) { // in V0C
+	  if (tdc>(v0cDist-fTimeWindowWidthBBC/2.0) &&
+	      tdc<(v0cDist+fTimeWindowWidthBBC/2.0))
+	    fBBtriggerV0C+=(one<<pmNumber);
+	  if (tdc>(bunchSeparation-v0cDist-fTimeWindowWidthBGC/2.0) &&
+	      tdc<(bunchSeparation-v0cDist+fTimeWindowWidthBGC/2.0))
+	   fBGtriggerV0C+=(one<<pmNumber); 
 	}
-	if (PMNumber>31) { // in V0A
-	  Int_t shift = PMNumber-32;
-	  if (tdc>(v0a_dist-fTimeWindowWidthBBA/2.0) &&
-	      tdc<(v0a_dist+fTimeWindowWidthBBA/2.0)) 
+	if (pmNumber>31) { // in V0A
+	  Int_t shift = pmNumber-32;
+	  if (tdc>(v0aDist-fTimeWindowWidthBBA/2.0) &&
+	      tdc<(v0aDist+fTimeWindowWidthBBA/2.0)) 
 	    fBBtriggerV0A+=(one<<shift);
-	  if (tdc>(bunch_separation-v0a_dist-fTimeWindowWidthBGA/2.0) &&
-	      tdc<(bunch_separation-v0a_dist+fTimeWindowWidthBGA/2.0))
+	  if (tdc>(bunchSeparation-v0aDist-fTimeWindowWidthBGA/2.0) &&
+	      tdc<(bunchSeparation-v0aDist+fTimeWindowWidthBGA/2.0))
 	    fBGtriggerV0A+=(one<<shift); 
 	}
       }

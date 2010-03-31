@@ -1,5 +1,5 @@
-#ifndef ALIVZEROTriggerMask_H
-#define ALIVZEROTriggerMask_H
+#ifndef ALIVZEROTRIGGERMASK_H
+#define ALIVZEROTRIGGERMASK_H
 
 ///_________________________________________________________________________
 ///
@@ -7,8 +7,8 @@
 ///_________________________________________________________________________   
 
 #include <TObject.h>
-#include <TTree.h>
-#include <TClonesArray.h>
+class TTree;
+class TClonesArray;
 
 class AliVZEROTriggerMask : public TObject
 {
@@ -17,7 +17,7 @@ class AliVZEROTriggerMask : public TObject
    virtual        ~AliVZEROTriggerMask(){}  // destructor
 
    void FillMasks(TTree* vzeroDigitsTree,
-		  TClonesArray* vzeroDigits);
+		  TClonesArray* const vzeroDigits);
    Double_t GetZPosition(const char* symname);
 
    void            SetAdcThreshold(Float_t t=55.0) 
@@ -31,18 +31,18 @@ class AliVZEROTriggerMask : public TObject
    void            SetTimeWindowWidthBGC(Float_t w=20.0) 
      {fTimeWindowWidthBGC=w;}
 
-   UInt_t GetBBtriggerV0A() { return fBBtriggerV0A;}
-   UInt_t GetBGtriggerV0A() { return fBGtriggerV0A;}
-   UInt_t GetBBtriggerV0C() { return fBBtriggerV0C;}
-   UInt_t GetBGtriggerV0C() { return fBGtriggerV0C;}
+   UInt_t GetBBtriggerV0A() const { return fBBtriggerV0A;}
+   UInt_t GetBGtriggerV0A() const { return fBGtriggerV0A;}
+   UInt_t GetBBtriggerV0C() const { return fBBtriggerV0C;}
+   UInt_t GetBGtriggerV0C() const { return fBGtriggerV0C;}
 
 private:
 
-   Float_t fAdcThresHold;
-   Float_t fTimeWindowWidthBBA; // 
-   Float_t fTimeWindowWidthBGA; // 
-   Float_t fTimeWindowWidthBBC; // 
-   Float_t fTimeWindowWidthBGC; // 
+   Float_t fAdcThresHold; // Threshold on the ADC
+   Float_t fTimeWindowWidthBBA; // size of the BBA window
+   Float_t fTimeWindowWidthBGA; // size of the BGA window
+   Float_t fTimeWindowWidthBBC; // size of the BBC window
+   Float_t fTimeWindowWidthBGC; // size of the BGC window
    UInt_t fBBtriggerV0A; // bit mask for Beam-Beam trigger in V0A
    UInt_t fBGtriggerV0A; // bit mask for Beam-Gas trigger in V0A
    UInt_t fBBtriggerV0C; // bit mask for Beam-Beam trigger in V0C
@@ -52,4 +52,4 @@ private:
    ClassDef( AliVZEROTriggerMask, 1 )  // VZERO Trigger Detector class
 };
 
-#endif // AliVZEROTriggerMask_H
+#endif // ALIVZEROTRIGGERMASK_H
