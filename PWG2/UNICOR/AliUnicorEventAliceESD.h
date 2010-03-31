@@ -10,9 +10,11 @@
 #include <cmath>
 #include "TVector2.h"
 #include "AliESDEvent.h"
-#include "AliMultiplicity.h"
+#include "AliPhysicsSelection.h"
 #include "AliExternalTrackParam.h"
 #include "AliUnicorEvent.h"
+
+class AliPhysicsSelection;
 
 //=============================================================================
 class AliUnicorEventAliceESD : public AliUnicorEvent {
@@ -29,7 +31,7 @@ class AliUnicorEventAliceESD : public AliUnicorEvent {
   Double_t    Centrality() const {return 0.9999*exp(-NGoodParticles()/7.0);} // OK for pp
   void        RP(Double_t &qx, Double_t &qy) const {AliUnicorEvent::RP(qx,qy,2);}
   Double_t    RPphi() const {Double_t qx,qy; RP(qx,qy); return atan2(qy,qx);}
-  Double_t    Zver() const {return fESD->GetPrimaryVertexSPD()->GetZv()/10.0;}
+  Double_t    Zver() const {return fESD->GetPrimaryVertex()->GetZv()/10.0;}
   Int_t       NParticles() const {return fESD->GetNumberOfTracks();}
   Int_t       NGoodParticles() const {int n=0; for (int i=0; i<NParticles(); i++) if (ParticleGood(i)) n++; return n;}
   //  Int_t       NGoodParticles() const {int n=0; for (int i=0; i<fESD->GetMultiplicity()->GetNumberOfTracklets(); i++) if (fabs(fESD->GetMultiplicity()->GetEta(i))<0.8) n++; return n;}
@@ -44,12 +46,13 @@ class AliUnicorEventAliceESD : public AliUnicorEvent {
   void        SetESD(AliESDEvent * const esd) {fESD = esd;}
   AliESDEvent *GetESD() const {return fESD;}
   //const AliExternalTrackParam *GetTrackParam(Int_t i) const {return fESD->GetTrack(i);}
-  //const AliExternalTrackParam *GetTrackParam(Int_t i) const {return fESD->GetTrack(i)->GetConstrainedParam();}
-  const AliExternalTrackParam *GetTrackParam(Int_t i) const {return fESD->GetTrack(i)->GetInnerParam();} // not at vtx!
+  const AliExternalTrackParam *GetTrackParam(Int_t i) const {return fESD->GetTrack(i)->GetConstrainedParam();}
+  //const AliExternalTrackParam *GetTrackParam(Int_t i) const {return fESD->GetTrack(i)->GetInnerParam();} // not at vtx!
   //const AliExternalTrackParam *GetTrackParam(Int_t i) const {return fESD->GetTrack(i)->GetTPCInnerParam();}
 
  protected:
-  AliESDEvent *fESD;   //! pointer to the actual source of data
+  AliESDEvent *fESD;                      //! pointer to the actual source of data
+  AliPhysicsSelection *fPhysicsSelection; //! interaction event filter
 
   ClassDef(AliUnicorEventAliceESD,0)
 };
