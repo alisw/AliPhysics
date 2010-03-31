@@ -508,6 +508,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s",calorimeter.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
+  task->SelectCollisionCandidates();
   task->SetAnalysisMaker(maker);
   //if(!kSimulation)task->SelectCollisionCandidates(); //AliPhysicsSelection has to be attached before.
   mgr->AddTask(task);
