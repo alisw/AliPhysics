@@ -15,10 +15,10 @@
 class AliHMPIDHit : public AliHit //   TObject-AliHit-AliHMPIDHit
 {
 public:
-  AliHMPIDHit(                                                                           ):AliHit(     ),fCh(-1),fPid(-1 ),fQ(-1),fLx(0),fLy(0){} //default ctor
-  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y,const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y){e=QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
-  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y                  ):AliHit(     ),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y){e=QdcTot(e);fTrack=tid;}//manual ctor 
-  AliHMPIDHit(const AliHMPIDHit &h):AliHit(h),fCh(h.fCh),fPid(h.fPid),fQ(h.fQ),fLx(h.fLx),fLy(h.fLy) {}//copy ctor
+  AliHMPIDHit(                                                                           ):AliHit(     ),fCh(-1),fPid(-1 ),fQ(-1),fLx(0),fLy(0),fT(0) {} //default ctor
+  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y, Float_t time, const TVector3 &p):AliHit(0,tid),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y),fT(time) {e=QdcTot(e);fX=p.X();fY=p.Y();fZ=p.Z();}
+  AliHMPIDHit(Int_t c,Float_t &e,Int_t pid,Int_t tid,Float_t x,Float_t y, Float_t time                 ):AliHit(     ),fCh(c ),fPid(pid),fQ(0 ),fLx(x),fLy(y),fT(time){e=QdcTot(e);fTrack=tid;}//manual ctor 
+  AliHMPIDHit(const AliHMPIDHit &h):AliHit(h),fCh(h.fCh),fPid(h.fPid),fQ(h.fQ),fLx(h.fLx),fLy(h.fLy),fT(h.fT) {}//copy ctor
   virtual ~AliHMPIDHit()                                                                                                                                 {}
 //framework part
          void    Print(Option_t *opt="")const;                                                    //from TObject to print current status
@@ -28,6 +28,7 @@ public:
          void    Hit2Sdi(TClonesArray *pSdiLst,Int_t n=1)const;                                                       //add sdigits of this hit to the list 
          Float_t LorsX  (                               )const{return fLx;                                    }       //hit X position in LORS, [cm]
          Float_t LorsY  (                               )const{return fLy;                                    }       //hit Y position in LORS, [cm]
+         Float_t HitTime(                               )const{return fT;                                     }       //hit formation time, [sec]
          Int_t   Pid    (                               )const{return fPid;                                   }       //PID
          Float_t Q      (                               )const{return fQ;                                     }       //total charge, [QDC]
   inline Float_t QdcTot (Float_t e                      );                                                            //calculate total charge of the hit          
@@ -39,6 +40,7 @@ protected:                                                                     /
   Float_t  fQ;                                                                 //total charge [QDC]
   Float_t  fLx;                                                                //hit X position in chamber LORS, [cm]
   Float_t  fLy;                                                                //hit Y position in chamber LORS, [cm]
+  Float_t  fT;                                                                 //hit formation time, [sec] 
   ClassDef(AliHMPIDHit,5)                                                      //HMPID hit class 
 };//class AliHMPIDhit
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  

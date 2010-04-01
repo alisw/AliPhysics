@@ -72,8 +72,8 @@ void AliHMPIDHit::Print(Option_t *opt)const
     case 50000051:     sPart="feed";break;
   }
 
-  Printf("%sHIT: ch=%i                 (%7.6f,%7.6f) Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
-         opt,  Ch(),                    fLx,fLy,  fQ,     fTrack,         X(),  Y(),  Z(),   sPart, 
+  Printf("%sHIT: ch=%i                 (%7.6f,%7.6f), time[nsec]=%f Q=%8.3f TID= %5i, MARS=(%7.2f,%7.2f,%7.2f) %s  %s",
+         opt,  Ch(),                    fLx,fLy, fT*TMath::Power(10,9), fQ,     fTrack,         X(),  Y(),  Z(),   sPart, 
                         (AliHMPIDParam::IsInDead(LorsX(),LorsY()))? "IN DEAD ZONE":"");
 }//Print
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

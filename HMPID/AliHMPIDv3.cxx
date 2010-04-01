@@ -891,9 +891,10 @@ void AliHMPIDv3::StepManager()
       Int_t   pid=     gMC->TrackPid();                                                          //take PID
       Float_t etot=    gMC->Etot();                                                              //total hpoton energy, [GeV] 
       Double_t x[3];   gMC->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
-    TString tmpname = volname; tmpname.Remove(0,4); Int_t idch = tmpname.Atoi();                 //retrieve the chamber number
-    Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(idch,x,xl,yl);                         //take LORS position 
-      new((*fHits)[fNhits++])AliHMPIDHit(idch,etot,pid,tid,xl,yl,x);                             //HIT for photon, position at P, etot will be set to Q
+      Float_t hitTime= (Float_t)gMC->TrackTime();                                                //hit formation time       
+      TString tmpname = volname; tmpname.Remove(0,4); Int_t idch = tmpname.Atoi();               //retrieve the chamber number
+      Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(idch,x,xl,yl);                       //take LORS position 
+      new((*fHits)[fNhits++])AliHMPIDHit(idch,etot,pid,tid,xl,yl,hitTime,x);                             //HIT for photon, position at P, etot will be set to Q
       if(fDoFeed) GenFee(etot);                                                                  //generate feedback photons etot is modified in hit ctor to Q of hit
     }//photon hit PC and DE >0 
   }//photon hit PC
@@ -916,13 +917,14 @@ void AliHMPIDv3::StepManager()
       Int_t tid=          gMC->GetStack()->GetCurrentTrackNumber();                               //take TID
       Int_t pid=          gMC->TrackPid();                                                        //take PID
       Double_t out[3];    gMC->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
+      Float_t hitTime= (Float_t)gMC->TrackTime();                                                         //hit formation time       
       out[0]=0.5*(out[0]+in[0]);                                                                  //
       out[1]=0.5*(out[1]+in[1]);                                                                  //take hit position at the anod plane
       out[2]=0.5*(out[2]+in[2]);
       TString tmpname = volname;  tmpname.Remove(0,4);  Int_t idch = tmpname.Atoi();              //retrieve the chamber number
       Float_t xl,yl;AliHMPIDParam::Instance()->Mars2Lors(idch,out,xl,yl);                         //take LORS position
       if(eloss>0) {
-        new((*fHits)[fNhits++])AliHMPIDHit(idch,eloss,pid,tid,xl,yl,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
+        new((*fHits)[fNhits++])AliHMPIDHit(idch,eloss,pid,tid,xl,yl,hitTime,out);                           //HIT for MIP, position near anod plane, eloss will be set to Q 
         if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
       }
     }else                                                                                         //just going inside
