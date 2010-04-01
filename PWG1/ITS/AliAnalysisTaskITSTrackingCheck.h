@@ -178,6 +178,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F     *fHistd0zITSMIoneSPDInAccP150200; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP500700; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP10001500; //! output hist
+  TH2F     *fHistd0zVSetaTPCInAccP10001500; //! output hist
   TH2F     *fHistd0rphiVSphiITSMIoneSPDInAccP10001500; //! output hist
   TH2F     *fHistd0rphiVSetaITSMIoneSPDInAccP10001500; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccS150200; //! output hist
