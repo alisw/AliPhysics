@@ -4,11 +4,11 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   // A. Dainese 28.11.09
   // 
 
-  gStyle->SetOptStat(0);
+  //gStyle->SetOptStat(0);
 
   TFile *f= new TFile(fname.Data());
 
-  TList *list=(TList*)f->Get("cOutput");
+  TList *list=(TList*)f->Get("cOutputITS");
   TH1F *fHistNclsITSSA = (TH1F*)list->FindObject("fHistNclsITSSA");
   TH1F *fHistClusterMapITSSA = (TH1F*)list->FindObject("fHistClusterMapITSSA");
   TH1F *fHistClusterMapITSSAok = (TH1F*)list->FindObject("fHistClusterMapITSSAok");
@@ -22,14 +22,14 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   TH1F *fHistClusterMapITSSAInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAInAcc");
   TH1F *fHistClusterMapITSSAokInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAokInAcc");
   TH1F *fHistClusterMapITSSAbadInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAbadInAcc");
-  TH1F *fHistClusterMapModuleITSSAokInAcc = (TH1F*)list->FindObject("fHistClusterMapModuleITSSAokInAcc");
-  TH1F *fHistClusterMapModuleITSSAbadInAcc = (TH1F*)list->FindObject("fHistClusterMapModuleITSSAbadInAcc");
+  TH1F *fHistClusterMapModuleITSMIokInAcc = (TH1F*)list->FindObject("fHistClusterMapModuleITSMIokInAcc");
+  TH1F *fHistClusterMapModuleITSMIbadInAcc = (TH1F*)list->FindObject("fHistClusterMapModuleITSMIbadInAcc");
   TH1F *fHistClusterMapITSSAskippedInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAskippedInAcc");
   TH1F *fHistClusterMapITSSAoutinzInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAoutinzInAcc");
   TH1F *fHistClusterMapITSSAokoutinzbadInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAokoutinzbadInAcc");
   TH1F *fHistClusterMapITSSAnorefitInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAnorefitInAcc");
   TH1F *fHistClusterMapITSSAnoclsInAcc = (TH1F*)list->FindObject("fHistClusterMapITSSAnoclsInAcc");
-  TH1F *fHistClusterMapModuleITSSAnoclsInAcc = (TH1F*)list->FindObject("fHistClusterMapModuleITSSAnoclsInAcc");
+  TH1F *fHistClusterMapModuleITSMInoclsInAcc = (TH1F*)list->FindObject("fHistClusterMapModuleITSMInoclsInAcc");
   TH1F *fHistNclsITSMI = (TH1F*)list->FindObject("fHistNclsITSMI");
   TH1F *fHistClusterMapITSMI = (TH1F*)list->FindObject("fHistClusterMapITSMI");
   TH1F *fHistClusterMapITSMIok = (TH1F*)list->FindObject("fHistClusterMapITSMIok");
@@ -44,17 +44,76 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   TH1F *fHistPhiITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPhiITSMIokbadoutinz6InAcc");
 
   TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  TH1F *fHistPtTPCInAccMCtwoSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMCtwoSPD");
+  TH1F *fHistPtTPCInAccMConeSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMConeSPD");
   TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAcc = (TH1F*)list->FindObject("fHistPtITSMI5InAcc");
   TH1F *fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
   TH1F *fHistPtITSMI3InAcc = (TH1F*)list->FindObject("fHistPtITSMI3InAcc");
   TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
   TH1F *fHistPtITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz6InAcc");
   TH1F *fHistPtITSMIokbadoutinz5InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz5InAcc");
   TH1F *fHistPtITSMIokbadoutinz4InAcc = (TH1F*)list->FindObject("fHistPtITSMIokbadoutinz4InAcc");
+  TH1F *fHistPtTPCInAccP = (TH1F*)list->FindObject("fHistPtTPCInAccP");
+  TH1F *fHistPtITSMI6InAccP = (TH1F*)list->FindObject("fHistPtITSMI6InAccP");
+  TH1F *fHistPtITSMI5InAccP = (TH1F*)list->FindObject("fHistPtITSMI5InAccP");
+  TH1F *fHistPtITSMI4InAccP = (TH1F*)list->FindObject("fHistPtITSMI4InAccP");
+  TH1F *fHistPtITSMI3InAccP = (TH1F*)list->FindObject("fHistPtITSMI3InAccP");
+  TH1F *fHistPtITSMI2InAccP = (TH1F*)list->FindObject("fHistPtITSMI2InAccP");
+  TH1F *fHistPtITSMISPDInAccP = (TH1F*)list->FindObject("fHistPtITSMISPDInAccP");
+  TH1F *fHistPtITSMIoneSPDInAccP = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAccP");
+  TH1F *fHistPtTPCInAccS = (TH1F*)list->FindObject("fHistPtTPCInAccS");
+  TH1F *fHistPtITSMI6InAccS = (TH1F*)list->FindObject("fHistPtITSMI6InAccS");
+  TH1F *fHistPtITSMI5InAccS = (TH1F*)list->FindObject("fHistPtITSMI5InAccS");
+  TH1F *fHistPtITSMI4InAccS = (TH1F*)list->FindObject("fHistPtITSMI4InAccS");
+  TH1F *fHistPtITSMI3InAccS = (TH1F*)list->FindObject("fHistPtITSMI3InAccS");
+  TH1F *fHistPtITSMI2InAccS = (TH1F*)list->FindObject("fHistPtITSMI2InAccS");
+  TH1F *fHistPtITSMISPDInAccS = (TH1F*)list->FindObject("fHistPtITSMISPDInAccS");
+  TH1F *fHistPtITSMIoneSPDInAccS = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAccS");
+
+  TH1F *fHistRProdVtxInAccP = (TH1F*)list->FindObject("fHistRProdVtxInAccP");
+  TH1F *fHistRProdVtxInAccS = (TH1F*)list->FindObject("fHistRProdVtxInAccS");
+
+  TH1F *fHistxlocSDDok = (TH1F*)list->FindObject("fHistxlocSDDok");
+  TH1F *fHistxlocSDDall = (TH1F*)list->FindObject("fHistxlocSDDall");
+  TH1F *fHistzlocSDDok = (TH1F*)list->FindObject("fHistzlocSDDok");
+  TH1F *fHistzlocSDDall = (TH1F*)list->FindObject("fHistzlocSDDall");
+
+  TH1F *fHistPtITSTPCsel = (TH1F*)list->FindObject("fHistPtITSTPCsel");
+  TH1F *fHistPtITSTPCselP = (TH1F*)list->FindObject("fHistPtITSTPCselP");
+  TH1F *fHistPtITSTPCselS = (TH1F*)list->FindObject("fHistPtITSTPCselS");
+  TH1F *fHistPtITSTPCselPfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
+  TH1F *fHistPtITSTPCselSfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
+  TH1F *fHistPtITSTPCselSfromMat = (TH1F*)list->FindObject("fHistPtITSTPCselSfromMat");
+
+  TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
+  TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
+  TH1F *fHistPtTPCInAccSfromMat = (TH1F*)list->FindObject("fHistPtTPCInAccSfromMat");
+
+
 
   //---------------------------------------------------------------
+  TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
+  TH1F *fHistPtITSMIge2InAccP = (TH1F*)fHistPtITSMI6InAccP->Clone("fHistPtITSMIge2InAccP");
+  fHistPtITSMIge2InAccP->Add(fHistPtITSMI5InAccP);
+  fHistPtITSMIge2InAccP->Add(fHistPtITSMI4InAccP);
+  fHistPtITSMIge2InAccP->Add(fHistPtITSMI3InAccP);
+  fHistPtITSMIge2InAccP->Add(fHistPtITSMI2InAccP);
+  TH1F *fHistPtITSMIge2InAccS = (TH1F*)fHistPtITSMI6InAccS->Clone("fHistPtITSMIge2InAccS");
+  fHistPtITSMIge2InAccS->Add(fHistPtITSMI5InAccS);
+  fHistPtITSMIge2InAccS->Add(fHistPtITSMI4InAccS);
+  fHistPtITSMIge2InAccS->Add(fHistPtITSMI3InAccS);
+  fHistPtITSMIge2InAccS->Add(fHistPtITSMI2InAccS);
+
+  TH1F* fHistPtITSMISPDInAccMC=(TH1F*)fHistPtITSMISPDInAcc->Clone("fHistPtITSMISPDInAccMC");
+  TH1F* fHistPtITSMIoneSPDInAccMC=(TH1F*)fHistPtITSMIoneSPDInAcc->Clone("fHistPtITSMIoneSPDInAccMC");
+
 
   TLegend *l1=new TLegend(0.5,0.5,0.9,0.9);
   TLegend *l2=new TLegend(0.5,0.5,0.9,0.9);
@@ -127,18 +186,53 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistClusterMapITSMInocls->SetMarkerStyle(24);
   fHistClusterMapITSMInocls->Draw("same");
 
-  TCanvas *c3 =new TCanvas("c3","c3",10,10,1200,400);
-  fHistClusterMapModuleITSSAokInAcc->SetLineColor(1);
-  fHistClusterMapModuleITSSAokInAcc->Draw();
-  l2->AddEntry(fHistClusterMapModuleITSSAokInAcc,"ok","l");
-  fHistClusterMapModuleITSSAbadInAcc->SetLineColor(2);
-  fHistClusterMapModuleITSSAbadInAcc->Draw("same");
-  l2->AddEntry(fHistClusterMapModuleITSSAbadInAcc,"bad","l");
-  fHistClusterMapModuleITSSAnoclsInAcc->SetLineColor(3);
-  fHistClusterMapModuleITSSAnoclsInAcc->Draw("same");
-  l2->AddEntry(fHistClusterMapModuleITSSAnoclsInAcc,"no cls","l");
+  TCanvas *c3 =new TCanvas("c3","c3",10,10,1200,800);
+  c3->Divide(1,2);
+  c3->cd(1);
+  fHistClusterMapModuleITSMIokInAcc->SetLineColor(1);
+  fHistClusterMapModuleITSMIokInAcc->Draw();
+  l2->AddEntry(fHistClusterMapModuleITSMIokInAcc,"ok","l");
+  fHistClusterMapModuleITSMIbadInAcc->SetLineColor(3);
+  fHistClusterMapModuleITSMIbadInAcc->Draw("same");
+  l2->AddEntry(fHistClusterMapModuleITSMIbadInAcc,"bad","l");
+  fHistClusterMapModuleITSMInoclsInAcc->SetLineColor(2);
+  fHistClusterMapModuleITSMInoclsInAcc->Draw("same");
+  l2->AddEntry(fHistClusterMapModuleITSMInoclsInAcc,"no cls","l");
   l2->Draw();
+  c3->cd(2);
+  TH1F *fHistClusterMapModuleITSMIallInAcc=(TH1F*)fHistClusterMapModuleITSMIokInAcc->Clone("fHistClusterMapModuleITSMIallInAcc");
+  fHistClusterMapModuleITSMIallInAcc->Add(fHistClusterMapModuleITSMIbadInAcc);
+  fHistClusterMapModuleITSMIallInAcc->Add(fHistClusterMapModuleITSMInoclsInAcc);
+  TH1F *fHistClusterMapModuleITSMIokRatioInAcc=(TH1F*)fHistClusterMapModuleITSMIokInAcc->Clone("fHistClusterMapModuleITSMIokRatioInAcc");
+  fHistClusterMapModuleITSMIokRatioInAcc->Divide(fHistClusterMapModuleITSMIallInAcc);
+  for(Int_t ib=1;ib<=fHistClusterMapModuleITSMIokRatioInAcc->GetNbinsX();ib++) {
+    fHistClusterMapModuleITSMIokRatioInAcc->SetBinError(ib,0);
+    if(fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib)) fHistClusterMapModuleITSMIokRatioInAcc->SetBinError(ib,TMath::Sqrt(fHistClusterMapModuleITSMIokRatioInAcc->GetBinContent(ib)*(1.-fHistClusterMapModuleITSMIokRatioInAcc->GetBinContent(ib))/fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib))); 
+  }
+  fHistClusterMapModuleITSMIokRatioInAcc->Draw();
+  TH1F *fHistClusterMapModuleITSMIbadRatioInAcc=(TH1F*)fHistClusterMapModuleITSMIbadInAcc->Clone("fHistClusterMapModuleITSMIbadRatioInAcc");
+  fHistClusterMapModuleITSMIbadRatioInAcc->Divide(fHistClusterMapModuleITSMIallInAcc);
+  for(Int_t ib=1;ib<=fHistClusterMapModuleITSMIokRatioInAcc->GetNbinsX();ib++) {
+    fHistClusterMapModuleITSMIbadRatioInAcc->SetBinError(ib,0);
+    if(fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib)) fHistClusterMapModuleITSMIbadRatioInAcc->SetBinError(ib,TMath::Sqrt(fHistClusterMapModuleITSMIbadRatioInAcc->GetBinContent(ib)*(1.-fHistClusterMapModuleITSMIbadRatioInAcc->GetBinContent(ib))/fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib))); 
+  }
+  fHistClusterMapModuleITSMIbadRatioInAcc->Draw("same");
+  TH1F *fHistClusterMapModuleITSMInoclsRatioInAcc=(TH1F*)fHistClusterMapModuleITSMInoclsInAcc->Clone("fHistClusterMapModuleITSMInoclsRatioInAcc");
+  fHistClusterMapModuleITSMInoclsRatioInAcc->Divide(fHistClusterMapModuleITSMIallInAcc);
+  for(Int_t ib=1;ib<=fHistClusterMapModuleITSMIokRatioInAcc->GetNbinsX();ib++) {
+    fHistClusterMapModuleITSMInoclsRatioInAcc->SetBinError(ib,0);
+    if(fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib)) fHistClusterMapModuleITSMInoclsRatioInAcc->SetBinError(ib,TMath::Sqrt(fHistClusterMapModuleITSMInoclsRatioInAcc->GetBinContent(ib)*(1.-fHistClusterMapModuleITSMInoclsRatioInAcc->GetBinContent(ib))/fHistClusterMapModuleITSMIallInAcc->GetBinContent(ib))); 
+  }
+  fHistClusterMapModuleITSMInoclsRatioInAcc->Draw("same");
 
+  TCanvas *c3b = new TCanvas("c3b","c3b");
+  c3b->Divide(2,1);
+  c3b->cd(1);
+  fHistxlocSDDok->Divide(fHistxlocSDDall);
+  fHistxlocSDDok->Draw();
+  c3b->cd(2);
+  fHistzlocSDDok->Divide(fHistzlocSDDall);
+  fHistzlocSDDok->Draw();
 
   TCanvas *c4 =new TCanvas("c4","c4",10,10,500,500);
   c4->SetGridy();
@@ -149,6 +243,52 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPhiITSMIokbadoutinz6InAcc->SetTitle("Fraction of tracks with 6 layers ok");
   fHistPhiITSMIokbadoutinz6InAcc->Draw();
 
+  TCanvas *c5c =new TCanvas("c5c","c5c",10,10,600,600);
+  c5c->SetGridy();
+  TH1F *fHistPtTPCInAccSecFrac = (TH1F*)fHistPtTPCInAccS->Clone("fHistPtTPCInAccSecFrac");  
+  fHistPtTPCInAccSecFrac->Divide(fHistPtTPCInAcc);
+  fHistPtTPCInAccSecFrac->SetLineColor(kOrange+7);
+  fHistPtTPCInAccSecFrac->SetTitle("Fraction of secondaries");
+  fHistPtTPCInAccSecFrac->SetYTitle("sec/all");
+  fHistPtTPCInAccSecFrac->Draw();
+  TH1F *fHistPtITSMI2InAccSecFrac = (TH1F*)fHistPtITSMI2InAccS->Clone("fHistPtITSMI2InAccSecFrac");  
+  fHistPtITSMI2InAccSecFrac->Divide(fHistPtITSMI2InAcc);
+  fHistPtITSMI2InAccSecFrac->SetLineColor(7);
+  fHistPtITSMI2InAccSecFrac->Draw("same"); 
+  TH1F *fHistPtITSMIge2InAccSecFrac = (TH1F*)fHistPtITSMIge2InAccS->Clone("fHistPtITSMIge2InAccSecFrac");  
+  fHistPtITSMIge2InAccSecFrac->Divide(fHistPtITSMIge2InAcc);
+  fHistPtITSMIge2InAccSecFrac->Draw("same");
+  TH1F *fHistPtITSMI3InAccSecFrac = (TH1F*)fHistPtITSMI3InAccS->Clone("fHistPtITSMI3InAccSecFrac");  
+  fHistPtITSMI3InAccSecFrac->Divide(fHistPtITSMI3InAcc);
+  fHistPtITSMI3InAccSecFrac->SetLineColor(6);
+  fHistPtITSMI3InAccSecFrac->Draw("same");
+  TH1F *fHistPtITSMI4InAccSecFrac = (TH1F*)fHistPtITSMI4InAccS->Clone("fHistPtITSMI4InAccSecFrac");  
+  fHistPtITSMI4InAccSecFrac->Divide(fHistPtITSMI4InAcc);
+  fHistPtITSMI4InAccSecFrac->SetLineColor(4);
+  fHistPtITSMI4InAccSecFrac->Draw("same");
+  TH1F *fHistPtITSMI5InAccSecFrac = (TH1F*)fHistPtITSMI5InAccS->Clone("fHistPtITSMI5InAccSecFrac");  
+  fHistPtITSMI5InAccSecFrac->Divide(fHistPtITSMI5InAcc);
+  fHistPtITSMI5InAccSecFrac->SetLineColor(3);
+  fHistPtITSMI5InAccSecFrac->Draw("same");
+  TH1F *fHistPtITSMI6InAccSecFrac = (TH1F*)fHistPtITSMI6InAccS->Clone("fHistPtITSMI6InAccSecFrac");  
+  fHistPtITSMI6InAccSecFrac->Divide(fHistPtITSMI6InAcc);
+  fHistPtITSMI6InAccSecFrac->SetLineColor(2);
+  fHistPtITSMI6InAccSecFrac->SetLineColor(2);
+  fHistPtITSMI6InAccSecFrac->Draw("same");
+  TH1F *fHistPtITSMISPDInAccSecFrac = (TH1F*)fHistPtITSMISPDInAccS->Clone("fHistPtITSMISPDInAccSecFrac");  
+  fHistPtITSMISPDInAccSecFrac->Divide(fHistPtITSMISPDInAcc);
+  fHistPtITSMISPDInAccSecFrac->SetLineColor(9);
+  fHistPtITSMISPDInAccSecFrac->Draw("same");
+  TH1F *fHistPtITSMIoneSPDInAccSecFrac = (TH1F*)fHistPtITSMIoneSPDInAccS->Clone("fHistPtITSMIoneSPDInAccSecFrac");  
+  fHistPtITSMIoneSPDInAccSecFrac->Divide(fHistPtITSMIoneSPDInAcc);
+  fHistPtITSMIoneSPDInAccSecFrac->SetLineColor(15);
+  fHistPtITSMIoneSPDInAccSecFrac->Draw("same");
+  TH1F *fHistPtITSTPCselSecFrac = (TH1F*)fHistPtITSTPCselS->Clone("fHistPtITSTPCselSecFrac");  
+  fHistPtITSTPCselSecFrac->Divide(fHistPtITSTPCsel);
+  fHistPtITSTPCselSecFrac->SetLineColor(15);
+  fHistPtITSTPCselSecFrac->Draw("same");
+
+
   TLegend *l3=new TLegend(0.5,0.5,0.9,0.9);
   TLegend *l4=new TLegend(0.5,0.5,0.9,0.9);
   TCanvas *c5 =new TCanvas("c5","c5",10,10,1200,600);
@@ -156,16 +296,11 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   c5_1->SetGridy();
   c5_2->SetGridy();
   c5->cd(1);
-  TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
-  fHistPtITSMIge2InAcc->Divide(fHistPtTPCInAcc);
   fHistPtITSMIge2InAcc->SetMaximum(1.5);
   fHistPtITSMIge2InAcc->SetMinimum(0);
   fHistPtITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
   fHistPtITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMIge2InAcc->Divide(fHistPtTPCInAcc);
   fHistPtITSMIge2InAcc->Draw();
   l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
   fHistPtITSMI6InAcc->Divide(fHistPtTPCInAcc);
@@ -192,6 +327,14 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   fHistPtITSMISPDInAcc->SetLineColor(9);
   l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
   fHistPtITSMISPDInAcc->Draw("same");
+  fHistPtITSMIoneSPDInAcc->Divide(fHistPtTPCInAcc);
+  fHistPtITSMIoneSPDInAcc->SetLineColor(15);
+  l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
+  fHistPtITSMIoneSPDInAcc->Draw("same");
+  fHistPtITSTPCsel->Divide(fHistPtTPCInAcc);
+  fHistPtITSTPCsel->SetLineColor(kAzure+1);
+  l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
+  fHistPtITSTPCsel->Draw("same");
   fHistPtITSMIge2InAcc->Draw("same");
   l3->Draw();
   c5->cd(2);
@@ -222,6 +365,125 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   l4->Draw();
 
 
+  TLegend *l4d=new TLegend(0.5,0.5,0.9,0.9);
+  TCanvas *c5d =new TCanvas("c5d","c5d",10,10,600,600);
+  c5d->SetGridy();
+  c5d->SetGridy();
+  fHistPtITSMISPDInAccMC->SetMaximum(1.5);
+  fHistPtITSMISPDInAccMC->SetMinimum(0);
+  fHistPtITSMISPDInAccMC->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistPtITSMISPDInAccMC->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMISPDInAccMC->Divide(fHistPtTPCInAccMCtwoSPD);
+  fHistPtITSMISPDInAccMC->SetLineColor(9);
+  l4d->AddEntry(fHistPtITSMISPDInAccMC,"2SPD + any","l");
+  fHistPtITSMISPDInAccMC->Draw();
+  fHistPtITSMIoneSPDInAccMC->Divide(fHistPtTPCInAccMConeSPD);
+  fHistPtITSMIoneSPDInAccMC->SetLineColor(15);
+  l4d->AddEntry(fHistPtITSMIoneSPDInAccMC,">=1SPD + any","l");
+  fHistPtITSMIoneSPDInAccMC->Draw("same");
+  l4d->Draw();
+
+  TFile *eff=new TFile("eff.root","recreate");
+  fHistPtITSMIge2InAcc->Write();
+  fHistPtITSMI6InAcc->Write();
+  fHistPtITSMI5InAcc->Write();
+  fHistPtITSMI4InAcc->Write();
+  fHistPtITSMI3InAcc->Write();
+  fHistPtITSMI2InAcc->Write();
+  fHistPtITSMISPDInAcc->Write();
+  fHistPtITSMIoneSPDInAcc->Write();
+  fHistPtITSTPCsel->Write();
+  fHistClusterMapModuleITSMIokRatioInAcc->Write();
+  fHistClusterMapModuleITSMIbadRatioInAcc->Write();
+  fHistClusterMapModuleITSMInoclsRatioInAcc->Write();
+  eff->Close();
+
+  c5c->cd();
+  l3->Draw();
+
+
+  TCanvas *c5b =new TCanvas("c5b","c5b",10,10,600,600);
+  c5b->SetLogy();
+  fHistRProdVtxInAccP->SetLineColor(2);
+  fHistRProdVtxInAccP->SetMinimum(1);
+  fHistRProdVtxInAccS->SetMinimum(1);
+  fHistRProdVtxInAccP->Draw();
+  fHistRProdVtxInAccS->Draw("sames");
+
+  TCanvas *c5a =new TCanvas("c5a","c5a",10,10,1200,600);
+  c5a->Divide(2,1);
+  c5a_1->SetGridy();
+  c5a_2->SetGridy();
+  c5a->cd(1);
+  fHistPtITSMIge2InAccP->SetMaximum(1.5);
+  fHistPtITSMIge2InAccP->SetMinimum(0);
+  fHistPtITSMIge2InAccP->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistPtITSMIge2InAccP->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMIge2InAccP->Draw();
+  fHistPtITSMIge2InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI6InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI6InAccP->SetLineColor(2);
+  fHistPtITSMI6InAccP->Draw("same");
+  fHistPtITSMI5InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI5InAccP->SetLineColor(3);
+  fHistPtITSMI5InAccP->Draw("same");
+  fHistPtITSMI4InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI4InAccP->SetLineColor(4);
+  fHistPtITSMI4InAccP->Draw("same");
+  fHistPtITSMI3InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI3InAccP->SetLineColor(6);
+  fHistPtITSMI3InAccP->Draw("same");
+  fHistPtITSMI2InAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMI2InAccP->SetLineColor(7);
+  fHistPtITSMI2InAccP->Draw("same");
+  fHistPtITSMISPDInAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMISPDInAccP->SetLineColor(9);
+  fHistPtITSMISPDInAccP->Draw("same");
+  fHistPtITSMIoneSPDInAccP->Divide(fHistPtTPCInAccP);
+  fHistPtITSMIoneSPDInAccP->SetLineColor(15);
+  fHistPtITSMIoneSPDInAccP->Draw("same");
+  fHistPtITSTPCselP->Divide(fHistPtTPCInAccP);
+  fHistPtITSTPCselP->SetLineColor(kAzure+1);
+  fHistPtITSTPCselP->Draw("same");
+  fHistPtITSMIge2InAccP->Draw("same");
+  l3->Draw();
+  c5a->cd(2);
+  fHistPtITSMIge2InAccS->SetMaximum(1.5);
+  fHistPtITSMIge2InAccS->SetMinimum(0);
+  fHistPtITSMIge2InAccS->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistPtITSMIge2InAccS->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMIge2InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMIge2InAccS->Draw();
+  fHistPtITSMI6InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI6InAccS->SetLineColor(2);
+  fHistPtITSMI6InAccS->Draw("same");
+  fHistPtITSMI5InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI5InAccS->SetLineColor(3);
+  fHistPtITSMI5InAccS->Draw("same");
+  fHistPtITSMI4InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI4InAccS->SetLineColor(4);
+  fHistPtITSMI4InAccS->Draw("same");
+  fHistPtITSMI3InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI3InAccS->SetLineColor(6);
+  fHistPtITSMI3InAccS->Draw("same");
+  fHistPtITSMI2InAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMI2InAccS->SetLineColor(7);
+  fHistPtITSMI2InAccS->Draw("same");
+  fHistPtITSMISPDInAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMISPDInAccS->SetLineColor(9);
+  fHistPtITSMISPDInAccS->Draw("same");
+  fHistPtITSMIoneSPDInAccS->Divide(fHistPtTPCInAccS);
+  fHistPtITSMIoneSPDInAccS->SetLineColor(15);
+  fHistPtITSMIoneSPDInAccS->Draw("same");
+  fHistPtITSTPCselS->Divide(fHistPtTPCInAccS);
+  fHistPtITSTPCselS->SetLineColor(kAzure+1);
+  fHistPtITSTPCselS->Draw("same");
+  fHistPtITSMIge2InAccS->Draw("same");
+  l3->Draw();
+
+
+
+
   // PLOT ALIGNMENT CHECKS
   //
   TH1F *hSPDTrackletsTBdxy = new TH1F("hSPDTrackletsTBdxy","SPD tracklets; SPD tracklet to SPD vertex distance in (x,y) [cm]; entries",100,-0.1,0.1);
@@ -238,7 +500,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
 
   for(Int_t i=0;i<fNtupleITSAlignSPDTracklets->GetEntries();i++) {
     fNtupleITSAlignSPDTracklets->GetEvent(i);
-    if(pt<1.3) continue;
+    if(pt<.01) continue;
     if(TMath::Abs(TMath::Abs(phi)-0.5*TMath::Pi())<0.25*TMath::Pi()) {
       // top-bottom
       hSPDTrackletsTBdxy->Fill(dxy);
@@ -258,7 +520,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   hSPDTrackletsTBdxy->SetLineColor(4);
   hSPDTrackletsTBdxy->Draw();
   hSPDTrackletsLRdxy->SetLineColor(2);
-  hSPDTrackletsLRdxy->Draw("same");
+  hSPDTrackletsLRdxy->Draw("sames");
   l6->AddEntry(hSPDTrackletsTBdxy,"top-bottom","l");
   l6->AddEntry(hSPDTrackletsLRdxy,"left-right","l");
   l6->Draw();
@@ -266,7 +528,7 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   hSPDTrackletsTBdz->SetLineColor(4);
   hSPDTrackletsTBdz->Draw();
   hSPDTrackletsLRdz->SetLineColor(2);
-  hSPDTrackletsLRdz->Draw("same");
+  hSPDTrackletsLRdz->Draw("sames");
   l6->Draw();
 
 
@@ -288,9 +550,9 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
 
   for(Int_t i=0;i<fNtupleITSAlignExtra->GetEntries();i++) {
     fNtupleITSAlignExtra->GetEvent(i);
-    if(pt<0.5) continue;
+    if(pt<0.1) continue;
     if(layer!=0 && layer!=1) continue;
-    if(npoints<4) continue;
+    if(npoints<3) continue;
     phi = TMath::ATan2(y,x);
     if(TMath::Abs(TMath::Abs(phi)-0.5*TMath::Pi())<0.25*TMath::Pi()) {
       // top-bottom
@@ -317,6 +579,1783 @@ void PlotITSTrackingHists(TString fname="ITS.Performance.root") {
   hSPDExtraClsLRdz->SetLineColor(2);
   hSPDExtraClsLRdz->Draw("same");
   l6->Draw();
+
+
+  return;
+}
+//-----------------------------------------------------------------------------
+void PlotEffRatio() {
+
+  TFile *f= new TFile("eff_lhc10a8_100k_trkvtx.root");
+
+  TH1F *fHistPtITSMI6InAcc = (TH1F*)f->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMI5InAcc = (TH1F*)f->Get("fHistPtITSMI5InAcc");
+  TH1F *fHistPtITSMI4InAcc = (TH1F*)f->Get("fHistPtITSMI4InAcc");
+  TH1F *fHistPtITSMI3InAcc = (TH1F*)f->Get("fHistPtITSMI3InAcc");
+  TH1F *fHistPtITSMI2InAcc = (TH1F*)f->Get("fHistPtITSMI2InAcc");
+  TH1F *fHistPtITSMIge2InAcc = (TH1F*)f->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcc = (TH1F*)f->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)f->Get("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSTPCsel = (TH1F*)f->Get("fHistPtITSTPCsel");
+  TH1F *fHistClusterMapModuleITSMIokRatioInAcc = (TH1F*)f->Get("fHistClusterMapModuleITSMIokRatioInAcc");
+
+  TFile *fMC= new TFile("eff_lhc10a8_100k_spdvtx.root");
+
+  TH1F *fHistPtITSMI6InAccMC = (TH1F*)fMC->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMI5InAccMC = (TH1F*)fMC->Get("fHistPtITSMI5InAcc");
+  TH1F *fHistPtITSMI4InAccMC = (TH1F*)fMC->Get("fHistPtITSMI4InAcc");
+  TH1F *fHistPtITSMI3InAccMC = (TH1F*)fMC->Get("fHistPtITSMI3InAcc");
+  TH1F *fHistPtITSMI2InAccMC = (TH1F*)fMC->Get("fHistPtITSMI2InAcc");
+  TH1F *fHistPtITSMIge2InAccMC = (TH1F*)fMC->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAccMC = (TH1F*)fMC->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAccMC = (TH1F*)fMC->Get("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSTPCselMC = (TH1F*)fMC->Get("fHistPtITSTPCsel");
+  TH1F *fHistClusterMapModuleITSMIokRatioInAccMC = (TH1F*)fMC->Get("fHistClusterMapModuleITSMIokRatioInAcc");
+
+  TCanvas *c = new TCanvas("c","c",0,0,600,500);
+  c->SetGridy();
+  fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAccMC);
+  fHistPtITSMI6InAcc->Draw();
+  fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAccMC);
+  fHistPtITSMI5InAcc->Draw("same");
+  fHistPtITSMI4InAcc->Divide(fHistPtITSMI4InAccMC);
+  fHistPtITSMI4InAcc->Draw("same");
+  fHistPtITSMI3InAcc->Divide(fHistPtITSMI3InAccMC);
+  fHistPtITSMI3InAcc->Draw("same");
+  fHistPtITSMI2InAcc->Divide(fHistPtITSMI2InAccMC);
+  fHistPtITSMI2InAcc->Draw("same");
+  fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAccMC);
+  fHistPtITSMIge2InAcc->Draw("same");
+  fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAccMC);
+  fHistPtITSMISPDInAcc->Draw("same");
+  fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAccMC);
+  fHistPtITSMIoneSPDInAcc->Draw("same");
+  fHistPtITSTPCsel->Divide(fHistPtITSTPCselMC);
+  fHistPtITSTPCsel->Draw("same");
+  TLegend *l3=new TLegend(0.5,0.5,0.9,0.9);
+  l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
+  l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
+  l3->AddEntry(fHistPtITSMI5InAcc,"5 cls","l");
+  l3->AddEntry(fHistPtITSMI4InAcc,"4 cls","l");
+  l3->AddEntry(fHistPtITSMI3InAcc,"3 cls","l");
+  l3->AddEntry(fHistPtITSMI2InAcc,"2 cls","l");
+  l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
+  l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
+  l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
+  l3->Draw();
+
+  TCanvas *cc = new TCanvas("cc","cc",0,0,600,500);
+  cc->Divide(1,2);
+  cc->cd(1);
+  fHistClusterMapModuleITSMIokRatioInAccMC->SetLineColor(4);
+  fHistClusterMapModuleITSMIokRatioInAccMC->Draw();
+  fHistClusterMapModuleITSMIokRatioInAcc->Draw("same");
+  cc->cd(2);
+  for(Int_t i=1;i<=fHistClusterMapModuleITSMIokRatioInAccMC->GetNbinsX();i++) {
+    if(fHistClusterMapModuleITSMIokRatioInAccMC->GetBinContent(i)<0.02) {
+      fHistClusterMapModuleITSMIokRatioInAccMC->SetBinContent(i,1); 
+      if(fHistClusterMapModuleITSMIokRatioInAcc->GetBinContent(i)<0.02) {
+	fHistClusterMapModuleITSMIokRatioInAcc->SetBinContent(i,1); 
+      }
+    }
+  }
+  TH1F* fHistClusterMapDataOverMC=(TH1F*)fHistClusterMapModuleITSMIokRatioInAcc->Clone("fHistClusterMapDataOverMC");
+  fHistClusterMapDataOverMC->Divide(fHistClusterMapModuleITSMIokRatioInAccMC);
+  fHistClusterMapDataOverMC->Draw();
+
+  return;
+}
+
+void PlotImpPar_rphi(Int_t rebin=1) {
+
+
+  TFile *fMC= new TFile("ITS.Performance.root");
+
+  TList *list=(TList*)fMC->Get("cOutputITS");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP150200MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS150200MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200fromStrange");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS150200fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200fromMat");
+  /*  TH1F *fHistd0rphiITSMIoneSPDInAccP350450MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS350450MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450fromStrange");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS350450fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450fromMat");*/
+  TH1F *fHistd0rphiITSMIoneSPDInAccP500700MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP500700");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700fromStrange");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700from211MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700from211");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700from22MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700from22");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700from310MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700from310");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700from321MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700from321");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700from3122MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700from3122");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700fromMat");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP10001500MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP10001500");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS10001500MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500fromStrange");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500fromMat");
+  /*  TH1F *fHistd0rphiITSMIoneSPDInAccP25004000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS25004000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS25004000fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000fromStrange");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS25004000fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000fromMat");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP40008000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP40008000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000MC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000fromStrange");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000fromMat"); */
+
+  TH1F *fHistd0rphiITSMIoneSPDInAcc150200MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP150200MC->Clone("fHistd0rphiITSMIoneSPDInAcc150200MC");
+  fHistd0rphiITSMIoneSPDInAcc150200MC->Add(fHistd0rphiITSMIoneSPDInAccS150200MC);
+  fHistd0rphiITSMIoneSPDInAcc150200MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc150200MC->GetEntries());
+  /*  TH1F *fHistd0rphiITSMIoneSPDInAcc350450MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP350450MC->Clone("fHistd0rphiITSMIoneSPDInAcc350450MC");
+      fHistd0rphiITSMIoneSPDInAcc350450MC->Add(fHistd0rphiITSMIoneSPDInAccS350450MC); 
+      fHistd0rphiITSMIoneSPDInAcc350450MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc350450MC->GetEntries());*/
+  TH1F *fHistd0rphiITSMIoneSPDInAcc500700MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP500700MC->Clone("fHistd0rphiITSMIoneSPDInAcc500700MC");
+  fHistd0rphiITSMIoneSPDInAcc500700MC->Add(fHistd0rphiITSMIoneSPDInAccS500700MC);
+  fHistd0rphiITSMIoneSPDInAcc500700MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc500700MC->GetEntries());
+  TH1F *fHistd0rphiITSMIoneSPDInAcc10001500MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP10001500MC->Clone("fHistd0rphiITSMIoneSPDInAcc10001500MC");
+  fHistd0rphiITSMIoneSPDInAcc10001500MC->Add(fHistd0rphiITSMIoneSPDInAccS10001500MC);
+  fHistd0rphiITSMIoneSPDInAcc10001500MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc10001500MC->GetEntries());
+  /*  TH1F *fHistd0rphiITSMIoneSPDInAcc25004000MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP25004000MC->Clone("fHistd0rphiITSMIoneSPDInAcc25004000MC");
+  fHistd0rphiITSMIoneSPDInAcc25004000MC->Add(fHistd0rphiITSMIoneSPDInAccS25004000MC);
+  fHistd0rphiITSMIoneSPDInAcc25004000MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc25004000MC->GetEntries());
+  TH1F *fHistd0rphiITSMIoneSPDInAcc40008000MC=(TH1F*)fHistd0rphiITSMIoneSPDInAccP40008000MC->Clone("fHistd0rphiITSMIoneSPDInAcc40008000MC");
+  fHistd0rphiITSMIoneSPDInAcc40008000MC->Add(fHistd0rphiITSMIoneSPDInAccS40008000MC);
+  fHistd0rphiITSMIoneSPDInAcc40008000MC->Scale(1./fHistd0rphiITSMIoneSPDInAcc40008000MC->GetEntries());
+  */
+
+  TFile *f= new TFile("ITS.Performance_104065_104892_pass4_trkvtx_noTPCdca.root");
+
+  TList *list=(TList*)f->Get("cOutputITS");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP150200 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS150200 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
+  /*TH1F *fHistd0rphiITSMIoneSPDInAccP350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP350450");
+    TH1F *fHistd0rphiITSMIoneSPDInAccS350450 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS350450");*/
+  TH1F *fHistd0rphiITSMIoneSPDInAccP500700 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP500700");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS500700 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS500700");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP10001500 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP10001500");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS10001500 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS10001500");
+  /*TH1F *fHistd0rphiITSMIoneSPDInAccP25004000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS25004000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS25004000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP40008000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP40008000");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS40008000 = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS40008000");*/
+  TH1F *fHistd0rphiITSMIoneSPDInAcc150200=(TH1F*)fHistd0rphiITSMIoneSPDInAccP150200->Clone("fHistd0rphiITSMIoneSPDInAcc150200");
+  fHistd0rphiITSMIoneSPDInAcc150200->Add(fHistd0rphiITSMIoneSPDInAccS150200);
+  fHistd0rphiITSMIoneSPDInAcc150200->Scale(1./fHistd0rphiITSMIoneSPDInAcc150200->GetEntries());
+  /*TH1F *fHistd0rphiITSMIoneSPDInAcc350450=(TH1F*)fHistd0rphiITSMIoneSPDInAccP350450->Clone("fHistd0rphiITSMIoneSPDInAcc350450");
+  fHistd0rphiITSMIoneSPDInAcc350450->Add(fHistd0rphiITSMIoneSPDInAccS350450);
+  fHistd0rphiITSMIoneSPDInAcc350450->Scale(1./fHistd0rphiITSMIoneSPDInAcc350450->GetEntries());*/
+  TH1F *fHistd0rphiITSMIoneSPDInAcc500700=(TH1F*)fHistd0rphiITSMIoneSPDInAccP500700->Clone("fHistd0rphiITSMIoneSPDInAcc500700");
+  fHistd0rphiITSMIoneSPDInAcc500700->Add(fHistd0rphiITSMIoneSPDInAccS500700);
+  fHistd0rphiITSMIoneSPDInAcc500700->Scale(1./fHistd0rphiITSMIoneSPDInAcc500700->GetEntries());
+  TH1F *fHistd0rphiITSMIoneSPDInAcc10001500=(TH1F*)fHistd0rphiITSMIoneSPDInAccP10001500->Clone("fHistd0rphiITSMIoneSPDInAcc10001500");
+  fHistd0rphiITSMIoneSPDInAcc10001500->Add(fHistd0rphiITSMIoneSPDInAccS10001500);
+  fHistd0rphiITSMIoneSPDInAcc10001500->Scale(1./fHistd0rphiITSMIoneSPDInAcc10001500->GetEntries());
+  /*TH1F *fHistd0rphiITSMIoneSPDInAcc25004000=(TH1F*)fHistd0rphiITSMIoneSPDInAccP25004000->Clone("fHistd0rphiITSMIoneSPDInAcc25004000");
+  fHistd0rphiITSMIoneSPDInAcc25004000->Add(fHistd0rphiITSMIoneSPDInAccS25004000);
+  fHistd0rphiITSMIoneSPDInAcc25004000->Scale(1./fHistd0rphiITSMIoneSPDInAcc25004000->GetEntries());
+  TH1F *fHistd0rphiITSMIoneSPDInAcc40008000=(TH1F*)fHistd0rphiITSMIoneSPDInAccP40008000->Clone("fHistd0rphiITSMIoneSPDInAcc40008000");
+  fHistd0rphiITSMIoneSPDInAcc40008000->Add(fHistd0rphiITSMIoneSPDInAccS40008000);
+  fHistd0rphiITSMIoneSPDInAcc40008000->Scale(1./fHistd0rphiITSMIoneSPDInAcc40008000->GetEntries()); */
+
+
+  TCanvas *c1 = new TCanvas("c1","c1");
+  c1->Divide(3,2);
+  c1->cd(1);
+  fHistd0rphiITSMIoneSPDInAcc150200MC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc150200->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc150200MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAcc150200MC->Draw();
+  fHistd0rphiITSMIoneSPDInAcc150200->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc150200->Draw("same");
+  /*  c1->cd(2);
+  fHistd0rphiITSMIoneSPDInAcc350450MC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc350450->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc350450MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAcc350450MC->Draw();
+  fHistd0rphiITSMIoneSPDInAcc350450->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc350450->Draw("same"); */
+  c1->cd(3);
+  fHistd0rphiITSMIoneSPDInAcc500700MC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc500700->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc500700MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAcc500700MC->Draw();
+  fHistd0rphiITSMIoneSPDInAcc500700->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc500700->Draw("same");
+  c1->cd(4);
+  fHistd0rphiITSMIoneSPDInAcc10001500MC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc10001500->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc10001500MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAcc10001500MC->Draw();
+  fHistd0rphiITSMIoneSPDInAcc10001500->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc10001500->Draw("same");
+  /*  c1->cd(5);
+  fHistd0rphiITSMIoneSPDInAcc25004000MC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc25004000->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc25004000MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAcc25004000MC->Draw();
+  fHistd0rphiITSMIoneSPDInAcc25004000->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc25004000->Draw("same");
+  c1->cd(6);
+  fHistd0rphiITSMIoneSPDInAcc40008000MC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc40008000->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAcc40008000MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAcc40008000MC->Draw();
+  fHistd0rphiITSMIoneSPDInAcc40008000->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc40008000->Draw("same");
+  */
+
+  TCanvas *c1a = new TCanvas("c1a","c1a");
+  c1a->Divide(3,1);
+  c1a->cd(1);
+  TH1F* fHistd0rphiITSMIoneSPDInAcc150200Ratio=(TH1F*)fHistd0rphiITSMIoneSPDInAcc150200->Clone("fHistd0rphiITSMIoneSPDInAcc150200Ratio");
+  fHistd0rphiITSMIoneSPDInAcc150200Ratio->Divide(fHistd0rphiITSMIoneSPDInAcc150200MC);
+  fHistd0rphiITSMIoneSPDInAcc150200Ratio->Draw();
+  c1a->cd(2);
+  TH1F* fHistd0rphiITSMIoneSPDInAcc500700Ratio=(TH1F*)fHistd0rphiITSMIoneSPDInAcc500700->Clone("fHistd0rphiITSMIoneSPDInAcc500700Ratio");
+  fHistd0rphiITSMIoneSPDInAcc500700Ratio->Divide(fHistd0rphiITSMIoneSPDInAcc500700MC);
+  fHistd0rphiITSMIoneSPDInAcc500700Ratio->Draw();
+  c1a->cd(3);
+  TH1F* fHistd0rphiITSMIoneSPDInAcc10001500Ratio=(TH1F*)fHistd0rphiITSMIoneSPDInAcc10001500->Clone("fHistd0rphiITSMIoneSPDInAcc10001500Ratio");
+  fHistd0rphiITSMIoneSPDInAcc10001500Ratio->Divide(fHistd0rphiITSMIoneSPDInAcc10001500MC);
+  fHistd0rphiITSMIoneSPDInAcc10001500Ratio->Draw();
+
+
+
+  TCanvas *c2 = new TCanvas("c2","c2");
+  c2->Divide(3,2);
+  c2_1->SetLogy();
+  c2_2->SetLogy();
+  c2_3->SetLogy();
+  c2_4->SetLogy();
+  c2_5->SetLogy();
+  c2_6->SetLogy();
+  c2->cd(1);
+  fHistd0rphiITSMIoneSPDInAccP150200MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS150200MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS150200fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccP150200MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccP150200MC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS150200MC->SetLineColor(6);
+  fHistd0rphiITSMIoneSPDInAccS150200MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS150200fromMatMC->SetLineColor(9);
+  fHistd0rphiITSMIoneSPDInAccS150200fromMatMC->Draw("same");
+  /* c2->cd(2);
+  fHistd0rphiITSMIoneSPDInAccP350450MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS350450MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS350450fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccP350450MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccP350450MC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS350450MC->SetLineColor(6);
+  fHistd0rphiITSMIoneSPDInAccS350450MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS350450fromMatMC->SetLineColor(9);
+  fHistd0rphiITSMIoneSPDInAccS350450fromMatMC->Draw("same");
+*/ 
+ c2->cd(3);
+  fHistd0rphiITSMIoneSPDInAccP500700MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccP500700MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccP500700MC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS500700MC->SetLineColor(6);
+  fHistd0rphiITSMIoneSPDInAccS500700MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS500700fromMatMC->SetLineColor(9);
+  fHistd0rphiITSMIoneSPDInAccS500700fromMatMC->Draw("same");
+  c2->cd(4);
+  fHistd0rphiITSMIoneSPDInAccP10001500MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS10001500MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccP10001500MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccP10001500MC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS10001500MC->SetLineColor(6);
+  fHistd0rphiITSMIoneSPDInAccS10001500MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC->SetLineColor(9);
+  fHistd0rphiITSMIoneSPDInAccS10001500fromMatMC->Draw("same");
+  /*
+  c2->cd(5);
+  fHistd0rphiITSMIoneSPDInAccP25004000MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS25004000MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS25004000fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS25004000fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccP25004000MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccP25004000MC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS25004000MC->SetLineColor(6);
+  fHistd0rphiITSMIoneSPDInAccS25004000MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS25004000fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS25004000fromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS25004000fromMatMC->SetLineColor(9);
+  fHistd0rphiITSMIoneSPDInAccS25004000fromMatMC->Draw("same");
+  c2->cd(6);
+  fHistd0rphiITSMIoneSPDInAccP40008000MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS40008000MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccP40008000MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccP40008000MC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS40008000MC->SetLineColor(6);
+  fHistd0rphiITSMIoneSPDInAccS40008000MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC->SetLineColor(9);
+  fHistd0rphiITSMIoneSPDInAccS40008000fromMatMC->Draw("same");
+*/
+  TCanvas *c2b = new TCanvas("c2b","c2b");
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->SetLineColor(8);
+  fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS500700from310MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from310MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAccS500700from310MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS500700from321MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from321MC->SetLineColor(5);
+  fHistd0rphiITSMIoneSPDInAccS500700from321MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS500700from3122MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from3122MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from3122MC->Draw("same");
+
+  TCanvas *c2c = new TCanvas("c2c","c2c");
+  fHistd0rphiITSMIoneSPDInAccS500700fromMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700fromMatMC->Draw();
+  fHistd0rphiITSMIoneSPDInAccS500700from211MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from211MC->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAccS500700from211MC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccS500700from22MC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from22MC->SetLineColor(1);
+  fHistd0rphiITSMIoneSPDInAccS500700from22MC->Draw("same");
+
+
+
+  TCanvas *c3 = new TCanvas("c3","c3");
+  c3->Divide(3,2);
+  c3_1->SetLogx();
+  c3_2->SetLogx();
+  c3_3->SetLogx();
+  c3_4->SetLogx();
+  c3_5->SetLogx();
+  c3_6->SetLogx();
+  Float_t d0cut[15]={0.0301,0.0401,0.0501,0.0601,0.0801,0.101,0.151,0.201,0.251,0.301,0.401,0.601,0.801,1.001,1.401};
+  /*
+  c3->cd(1);
+  Float_t fracP150200[15],fracS150200[15],fracSfromStrange150200[15],fracS150200Strp30[15],fracS150200Strm30[15],fracS150200Matm10[15],fracS150200Matp10[15];
+  Float_t intPtot150200=fHistd0rphiITSMIoneSPDInAccP150200MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP150200MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccP150200MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccP150200MC->FindBin(+d0cut[i]);
+    Float_t intPcut150200=fHistd0rphiITSMIoneSPDInAccP150200MC->Integral(bin1,bin2);
+    Float_t intScut150200=fHistd0rphiITSMIoneSPDInAccS150200MC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut150200=fHistd0rphiITSMIoneSPDInAccS150200fromStrangeMC->Integral(bin1,bin2);
+    Float_t intScut150200Strp30 = intScut150200 + 0.3*intSfromStrangecut150200; 
+    Float_t intScut150200Strm30 = intScut150200 - 0.3*intSfromStrangecut150200; 
+    Float_t intScut150200Matp10 = intScut150200 + 0.1*(intScut150200-intSfromStrangecut150200); 
+    Float_t intScut150200Matm10 = intScut150200 - 0.1*(intScut150200-intSfromStrangecut150200); 
+    fracP150200[i]=intPcut150200/intPtot150200;
+    fracS150200[i]=1.-intScut150200/(intPcut150200+intScut150200);
+    fracS150200Strp30[i]=1.-intScut150200Strp30/(intPcut150200+intScut150200Strp30);
+    fracS150200Strm30[i]=1.-intScut150200Strm30/(intPcut150200+intScut150200Strm30);
+    fracS150200Matp10[i]=1.-intScut150200Matp10/(intPcut150200+intScut150200Matp10);
+    fracS150200Matm10[i]=1.-intScut150200Matm10/(intPcut150200+intScut150200Matm10);
+    fracSfromStrange150200[i]=1.-intSfromStrangecut150200/(intPcut150200+intScut150200);
+  }
+  TGraph *gfracP150200=new TGraph(15,d0cut,fracP150200);
+  gfracP150200->SetMarkerColor(2);
+  gfracP150200->SetMarkerStyle(20);
+  gfracP150200->Draw("ap");
+  TGraph *gfracS150200=new TGraph(15,d0cut,fracS150200);
+  gfracS150200->SetMarkerColor(4);
+  gfracS150200->SetMarkerStyle(21);
+  gfracS150200->Draw("p");
+  TGraph *gfracSfromStrange150200=new TGraph(15,d0cut,fracSfromStrange150200);
+  gfracSfromStrange150200->SetMarkerColor(8);
+  gfracSfromStrange150200->SetMarkerStyle(22);
+  gfracSfromStrange150200->Draw("p");  */
+   /*
+  c3->cd(2);
+  Float_t fracP350450[15],fracS350450[15],fracSfromStrange350450[15],fracS350450Strp30[15],fracS350450Strm30[15],fracS350450Matm10[15],fracS350450Matp10[15];
+  Float_t intPtot350450=fHistd0rphiITSMIoneSPDInAccP350450MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP350450MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccP350450MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccP350450MC->FindBin(+d0cut[i]);
+    Float_t intPcut350450=fHistd0rphiITSMIoneSPDInAccP350450MC->Integral(bin1,bin2);
+    Float_t intScut350450=fHistd0rphiITSMIoneSPDInAccS350450MC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut350450=fHistd0rphiITSMIoneSPDInAccS350450fromStrangeMC->Integral(bin1,bin2);
+    Float_t intScut350450Strp30 = intScut350450 + 0.3*intSfromStrangecut350450; 
+    Float_t intScut350450Strm30 = intScut350450 - 0.3*intSfromStrangecut350450; 
+    Float_t intScut350450Matp10 = intScut350450 + 0.1*(intScut350450-intSfromStrangecut350450); 
+    Float_t intScut350450Matm10 = intScut350450 - 0.1*(intScut350450-intSfromStrangecut350450); 
+    fracP350450[i]=intPcut350450/intPtot350450;
+    fracS350450[i]=1.-intScut350450/(intPcut350450+intScut350450);
+    fracS350450Strp30[i]=1.-intScut350450Strp30/(intPcut350450+intScut350450Strp30);
+    fracS350450Strm30[i]=1.-intScut350450Strm30/(intPcut350450+intScut350450Strm30);
+    fracS350450Matp10[i]=1.-intScut350450Matp10/(intPcut350450+intScut350450Matp10);
+    fracS350450Matm10[i]=1.-intScut350450Matm10/(intPcut350450+intScut350450Matm10);
+    fracSfromStrange350450[i]=1.-intSfromStrangecut350450/(intPcut350450+intScut350450);
+  }
+  TGraph *gfracP350450=new TGraph(15,d0cut,fracP350450);
+  gfracP350450->SetMarkerColor(2);
+  gfracP350450->SetMarkerStyle(20);
+  gfracP350450->Draw("ap");
+  TGraph *gfracS350450=new TGraph(15,d0cut,fracS350450);
+  gfracS350450->SetMarkerColor(4);
+  gfracS350450->SetMarkerStyle(21);
+  gfracS350450->Draw("p");
+  TGraph *gfracSfromStrange350450=new TGraph(15,d0cut,fracSfromStrange350450);
+  gfracSfromStrange350450->SetMarkerColor(8);
+  gfracSfromStrange350450->SetMarkerStyle(22);
+  gfracSfromStrange350450->Draw("p");
+*/
+  c3->cd(3);
+  Float_t fracP500700[15],fracS500700[15],fracSfromStrange500700[15],fracS500700Strp30[15],fracS500700Strm30[15],fracS500700Matm10[15],fracS500700Matp10[15];
+  Float_t intPtot500700=fHistd0rphiITSMIoneSPDInAccP500700MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP500700MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccP500700MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccP500700MC->FindBin(+d0cut[i]);
+    Float_t intPcut500700=fHistd0rphiITSMIoneSPDInAccP500700MC->Integral(bin1,bin2);
+    Float_t intScut500700=fHistd0rphiITSMIoneSPDInAccS500700MC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut500700=fHistd0rphiITSMIoneSPDInAccS500700fromStrangeMC->Integral(bin1,bin2);
+    Float_t intScut500700Strp30 = intScut500700 + 0.3*intSfromStrangecut500700; 
+    Float_t intScut500700Strm30 = intScut500700 - 0.3*intSfromStrangecut500700; 
+    Float_t intScut500700Matp10 = intScut500700 + 0.1*(intScut500700-intSfromStrangecut500700); 
+    Float_t intScut500700Matm10 = intScut500700 - 0.1*(intScut500700-intSfromStrangecut500700); 
+    fracP500700[i]=intPcut500700/intPtot500700;
+    fracS500700[i]=1.-intScut500700/(intPcut500700+intScut500700);
+    fracS500700Strp30[i]=1.-intScut500700Strp30/(intPcut500700+intScut500700Strp30);
+    fracS500700Strm30[i]=1.-intScut500700Strm30/(intPcut500700+intScut500700Strm30);
+    fracS500700Matp10[i]=1.-intScut500700Matp10/(intPcut500700+intScut500700Matp10);
+    fracS500700Matm10[i]=1.-intScut500700Matm10/(intPcut500700+intScut500700Matm10);
+    fracSfromStrange500700[i]=1.-intSfromStrangecut500700/(intPcut500700+intScut500700);
+  }
+  TGraph *gfracP500700=new TGraph(15,d0cut,fracP500700);
+  gfracP500700->SetMarkerColor(2);
+  gfracP500700->SetMarkerStyle(20);
+  gfracP500700->Draw("ap");
+  TGraph *gfracS500700=new TGraph(15,d0cut,fracS500700);
+  gfracS500700->SetMarkerColor(4);
+  gfracS500700->SetMarkerStyle(21);
+  gfracS500700->Draw("p");
+  TGraph *gfracSfromStrange500700=new TGraph(15,d0cut,fracSfromStrange500700);
+  gfracSfromStrange500700->SetMarkerColor(8);
+  gfracSfromStrange500700->SetMarkerStyle(22);
+  gfracSfromStrange500700->Draw("p");
+
+  c3->cd(4);
+  Float_t fracP10001500[15],fracS10001500[15],fracSfromStrange10001500[15],fracS10001500Strp30[15],fracS10001500Strm30[15],fracS10001500Matm10[15],fracS10001500Matp10[15];
+  Float_t intPtot10001500=fHistd0rphiITSMIoneSPDInAccP10001500MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP10001500MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccP10001500MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccP10001500MC->FindBin(+d0cut[i]);
+    Float_t intPcut10001500=fHistd0rphiITSMIoneSPDInAccP10001500MC->Integral(bin1,bin2);
+    Float_t intScut10001500=fHistd0rphiITSMIoneSPDInAccS10001500MC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut10001500=fHistd0rphiITSMIoneSPDInAccS10001500fromStrangeMC->Integral(bin1,bin2);
+    Float_t intScut10001500Strp30 = intScut10001500 + 0.3*intSfromStrangecut10001500; 
+    Float_t intScut10001500Strm30 = intScut10001500 - 0.3*intSfromStrangecut10001500; 
+    Float_t intScut10001500Matp10 = intScut10001500 + 0.1*(intScut10001500-intSfromStrangecut10001500); 
+    Float_t intScut10001500Matm10 = intScut10001500 - 0.1*(intScut10001500-intSfromStrangecut10001500); 
+    fracP10001500[i]=intPcut10001500/intPtot10001500;
+    fracS10001500[i]=1.-intScut10001500/(intPcut10001500+intScut10001500);
+    fracS10001500Strp30[i]=1.-intScut10001500Strp30/(intPcut10001500+intScut10001500Strp30);
+    fracS10001500Strm30[i]=1.-intScut10001500Strm30/(intPcut10001500+intScut10001500Strm30);
+    fracS10001500Matp10[i]=1.-intScut10001500Matp10/(intPcut10001500+intScut10001500Matp10);
+    fracS10001500Matm10[i]=1.-intScut10001500Matm10/(intPcut10001500+intScut10001500Matm10);
+    fracSfromStrange10001500[i]=1.-intSfromStrangecut10001500/(intPcut10001500+intScut10001500);
+  }
+  TGraph *gfracP10001500=new TGraph(15,d0cut,fracP10001500);
+  gfracP10001500->SetMarkerColor(2);
+  gfracP10001500->SetMarkerStyle(20);
+  gfracP10001500->Draw("ap");
+  TGraph *gfracS10001500=new TGraph(15,d0cut,fracS10001500);
+  gfracS10001500->SetMarkerColor(4);
+  gfracS10001500->SetMarkerStyle(21);
+  gfracS10001500->Draw("p");
+  TGraph *gfracSfromStrange10001500=new TGraph(15,d0cut,fracSfromStrange10001500);
+  gfracSfromStrange10001500->SetMarkerColor(8);
+  gfracSfromStrange10001500->SetMarkerStyle(22);
+  gfracSfromStrange10001500->Draw("p");
+  /*
+  c3->cd(5);
+  Float_t fracP25004000[15],fracS25004000[15],fracSfromStrange25004000[15],fracS25004000Strp30[15],fracS25004000Strm30[15],fracS25004000Matm10[15],fracS25004000Matp10[15];
+  Float_t intPtot25004000=fHistd0rphiITSMIoneSPDInAccP25004000MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP25004000MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccP25004000MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccP25004000MC->FindBin(+d0cut[i]);
+    Float_t intPcut25004000=fHistd0rphiITSMIoneSPDInAccP25004000MC->Integral(bin1,bin2);
+    Float_t intScut25004000=fHistd0rphiITSMIoneSPDInAccS25004000MC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut25004000=fHistd0rphiITSMIoneSPDInAccS25004000fromStrangeMC->Integral(bin1,bin2);
+    Float_t intScut25004000Strp30 = intScut25004000 + 0.3*intSfromStrangecut25004000; 
+    Float_t intScut25004000Strm30 = intScut25004000 - 0.3*intSfromStrangecut25004000; 
+    Float_t intScut25004000Matp10 = intScut25004000 + 0.1*(intScut25004000-intSfromStrangecut25004000); 
+    Float_t intScut25004000Matm10 = intScut25004000 - 0.1*(intScut25004000-intSfromStrangecut25004000); 
+    fracP25004000[i]=intPcut25004000/intPtot25004000;
+    fracS25004000[i]=1.-intScut25004000/(intPcut25004000+intScut25004000);
+    fracS25004000Strp30[i]=1.-intScut25004000Strp30/(intPcut25004000+intScut25004000Strp30);
+    fracS25004000Strm30[i]=1.-intScut25004000Strm30/(intPcut25004000+intScut25004000Strm30);
+    fracS25004000Matp10[i]=1.-intScut25004000Matp10/(intPcut25004000+intScut25004000Matp10);
+    fracS25004000Matm10[i]=1.-intScut25004000Matm10/(intPcut25004000+intScut25004000Matm10);
+    fracSfromStrange25004000[i]=1.-intSfromStrangecut25004000/(intPcut25004000+intScut25004000);
+  }
+  TGraph *gfracP25004000=new TGraph(15,d0cut,fracP25004000);
+  gfracP25004000->SetMarkerColor(2);
+  gfracP25004000->SetMarkerStyle(20);
+  gfracP25004000->Draw("ap");
+  TGraph *gfracS25004000=new TGraph(15,d0cut,fracS25004000);
+  gfracS25004000->SetMarkerColor(4);
+  gfracS25004000->SetMarkerStyle(21);
+  gfracS25004000->Draw("p");
+  TGraph *gfracSfromStrange25004000=new TGraph(15,d0cut,fracSfromStrange25004000);
+  gfracSfromStrange25004000->SetMarkerColor(8);
+  gfracSfromStrange25004000->SetMarkerStyle(22);
+  gfracSfromStrange25004000->Draw("p");
+
+  c3->cd(6);
+  Float_t fracP40008000[15],fracS40008000[15],fracSfromStrange40008000[15],fracS40008000Strp30[15],fracS40008000Strm30[15],fracS40008000Matm10[15],fracS40008000Matp10[15];
+  Float_t intPtot40008000=fHistd0rphiITSMIoneSPDInAccP40008000MC->Integral(1,fHistd0rphiITSMIoneSPDInAccP40008000MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccP40008000MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccP40008000MC->FindBin(+d0cut[i]);
+    Float_t intPcut40008000=fHistd0rphiITSMIoneSPDInAccP40008000MC->Integral(bin1,bin2);
+    Float_t intScut40008000=fHistd0rphiITSMIoneSPDInAccS40008000MC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut40008000=fHistd0rphiITSMIoneSPDInAccS40008000fromStrangeMC->Integral(bin1,bin2);
+    Float_t intScut40008000Strp30 = intScut40008000 + 0.3*intSfromStrangecut40008000; 
+    Float_t intScut40008000Strm30 = intScut40008000 - 0.3*intSfromStrangecut40008000; 
+    Float_t intScut40008000Matp10 = intScut40008000 + 0.1*(intScut40008000-intSfromStrangecut40008000); 
+    Float_t intScut40008000Matm10 = intScut40008000 - 0.1*(intScut40008000-intSfromStrangecut40008000); 
+    fracP40008000[i]=intPcut40008000/intPtot40008000;
+    fracS40008000[i]=1.-intScut40008000/(intPcut40008000+intScut40008000);
+    fracS40008000Strp30[i]=1.-intScut40008000Strp30/(intPcut40008000+intScut40008000Strp30);
+    fracS40008000Strm30[i]=1.-intScut40008000Strm30/(intPcut40008000+intScut40008000Strm30);
+    fracS40008000Matp10[i]=1.-intScut40008000Matp10/(intPcut40008000+intScut40008000Matp10);
+    fracS40008000Matm10[i]=1.-intScut40008000Matm10/(intPcut40008000+intScut40008000Matm10);
+    fracSfromStrange40008000[i]=1.-intSfromStrangecut40008000/(intPcut40008000+intScut40008000);
+  }
+  TGraph *gfracP40008000=new TGraph(15,d0cut,fracP40008000);
+  gfracP40008000->SetMarkerColor(2);
+  gfracP40008000->SetMarkerStyle(20);
+  gfracP40008000->Draw("ap");
+  TGraph *gfracS40008000=new TGraph(15,d0cut,fracS40008000);
+  gfracS40008000->SetMarkerColor(4);
+  gfracS40008000->SetMarkerStyle(21);
+  gfracS40008000->Draw("p");
+  TGraph *gfracSfromStrange40008000=new TGraph(15,d0cut,fracSfromStrange40008000);
+  gfracSfromStrange40008000->SetMarkerColor(8);
+  gfracSfromStrange40008000->SetMarkerStyle(22);
+  gfracSfromStrange40008000->Draw("p");
+*/
+
+  /*
+  TCanvas *c4 = new TCanvas("c4","c4");
+  c4->Divide(3,1);
+  c4_1->SetLogx();
+  c4_2->SetLogx();
+  c4_3->SetLogx();
+
+  c4->cd(1);
+  Float_t intDatacut150200[15],intDataPcut150200[15],intDataPall150200[15];
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAcc150200->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAcc150200->FindBin(+d0cut[i]);
+    intDatacut150200[i]=fHistd0rphiITSMIoneSPDInAcc150200->Integral(bin1,bin2);
+    intDataPcut150200[i]=intDatacut150200[i]*fracS150200[i];
+    intDataPall150200[i]=intDataPcut150200[i]/fracP150200[i];
+  }
+  TGraph *gintDatacut150200=new TGraph(15,d0cut,intDatacut150200);
+  gintDatacut150200->SetMarkerColor(1);
+  gintDatacut150200->SetMarkerStyle(20);
+  gintDatacut150200->Draw("ap");
+  TGraph *gintDataPcut150200=new TGraph(15,d0cut,intDataPcut150200);
+  gintDataPcut150200->SetMarkerColor(1);
+  gintDataPcut150200->SetMarkerStyle(24);
+  gintDataPcut150200->Draw("p");
+  TGraph *gintDataPall150200=new TGraph(15,d0cut,intDataPall150200);
+  gintDataPall150200->SetMarkerColor(2);
+  gintDataPall150200->SetMarkerStyle(22);
+  gintDataPall150200->Draw("p");
+
+  c4->cd(2);
+  Float_t intDatacut500700[15],intDataPcut500700[15],intDataPall500700[15];
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAcc500700->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAcc500700->FindBin(+d0cut[i]);
+    intDatacut500700[i]=fHistd0rphiITSMIoneSPDInAcc500700->Integral(bin1,bin2);
+    intDataPcut500700[i]=intDatacut500700[i]*fracS500700[i];
+    intDataPall500700[i]=intDataPcut500700[i]/fracP500700[i];
+  }
+  TGraph *gintDatacut500700=new TGraph(15,d0cut,intDatacut500700);
+  gintDatacut500700->SetMarkerColor(1);
+  gintDatacut500700->SetMarkerStyle(20);
+  gintDatacut500700->Draw("ap");
+  TGraph *gintDataPcut500700=new TGraph(15,d0cut,intDataPcut500700);
+  gintDataPcut500700->SetMarkerColor(1);
+  gintDataPcut500700->SetMarkerStyle(24);
+  gintDataPcut500700->Draw("p");
+  TGraph *gintDataPall500700=new TGraph(15,d0cut,intDataPall500700);
+  gintDataPall500700->SetMarkerColor(2);
+  gintDataPall500700->SetMarkerStyle(22);
+  gintDataPall500700->Draw("p");
+
+  c4->cd(3);
+  Float_t intDatacut10001500[15],intDataPcut10001500[15],intDataPall10001500[15];
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAcc10001500->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAcc10001500->FindBin(+d0cut[i]);
+    intDatacut10001500[i]=fHistd0rphiITSMIoneSPDInAcc10001500->Integral(bin1,bin2);
+    intDataPcut10001500[i]=intDatacut10001500[i]*fracS10001500[i];
+    intDataPall10001500[i]=intDataPcut10001500[i]/fracP10001500[i];
+  }
+  TGraph *gintDatacut10001500=new TGraph(15,d0cut,intDatacut10001500);
+  gintDatacut10001500->SetMarkerColor(1);
+  gintDatacut10001500->SetMarkerStyle(20);
+  gintDatacut10001500->Draw("ap");
+  TGraph *gintDataPcut10001500=new TGraph(15,d0cut,intDataPcut10001500);
+  gintDataPcut10001500->SetMarkerColor(1);
+  gintDataPcut10001500->SetMarkerStyle(24);
+  gintDataPcut10001500->Draw("p");
+  TGraph *gintDataPall10001500=new TGraph(15,d0cut,intDataPall10001500);
+  gintDataPall10001500->SetMarkerColor(2);
+  gintDataPall10001500->SetMarkerStyle(22);
+  gintDataPall10001500->Draw("p");
+
+  
+  TCanvas *c5 = new TCanvas("c5","c5");
+  c5->Divide(3,1);
+  c5_1->SetLogx();
+  c5_2->SetLogx();
+  c5_3->SetLogx();
+
+  c5->cd(1);
+  Float_t intDataPall150200Strp30[15],intDataPall150200Strm30[15],intDataPall150200Matp10[15],intDataPall150200Matm10[15];
+  for(Int_t i=0;i<15;i++) {
+    intDataPall150200Strp30[i]=intDatacut150200[i]*fracS150200Strp30[i]/fracP150200[i];
+    intDataPall150200Strm30[i]=intDatacut150200[i]*fracS150200Strm30[i]/fracP150200[i];
+    intDataPall150200Matp10[i]=intDatacut150200[i]*fracS150200Matp10[i]/fracP150200[i];
+    intDataPall150200Matm10[i]=intDatacut150200[i]*fracS150200Matm10[i]/fracP150200[i];
+  }
+  gintDataPall150200->Draw("ap");
+
+  TGraph *gintDataPall150200Strp30=new TGraph(15,d0cut,intDataPall150200Strp30);
+  gintDataPall150200Strp30->SetMarkerColor(1);
+  gintDataPall150200Strp30->SetMarkerStyle(22);
+  gintDataPall150200Strp30->Draw("p");
+  TGraph *gintDataPall150200Strm30=new TGraph(15,d0cut,intDataPall150200Strm30);
+  gintDataPall150200Strm30->SetMarkerColor(1);
+  gintDataPall150200Strm30->SetMarkerStyle(22);
+  gintDataPall150200Strm30->Draw("p");
+  TGraph *gintDataPall150200Matp10=new TGraph(15,d0cut,intDataPall150200Matp10);
+  gintDataPall150200Matp10->SetMarkerColor(3);
+  gintDataPall150200Matp10->SetMarkerStyle(22);
+  gintDataPall150200Matp10->Draw("p");
+  TGraph *gintDataPall150200Matm10=new TGraph(15,d0cut,intDataPall150200Matm10);
+  gintDataPall150200Matm10->SetMarkerColor(3);
+  gintDataPall150200Matm10->SetMarkerStyle(22);
+  gintDataPall150200Matm10->Draw("p");
+
+  c5->cd(2);
+  Float_t intDataPall500700Strp30[15],intDataPall500700Strm30[15],intDataPall500700Matp10[15],intDataPall500700Matm10[15];
+  for(Int_t i=0;i<15;i++) {
+    intDataPall500700Strp30[i]=intDatacut500700[i]*fracS500700Strp30[i]/fracP500700[i];
+    intDataPall500700Strm30[i]=intDatacut500700[i]*fracS500700Strm30[i]/fracP500700[i];
+    intDataPall500700Matp10[i]=intDatacut500700[i]*fracS500700Matp10[i]/fracP500700[i];
+    intDataPall500700Matm10[i]=intDatacut500700[i]*fracS500700Matm10[i]/fracP500700[i];
+  }
+  gintDataPall500700->Draw("ap");
+
+  TGraph *gintDataPall500700Strp30=new TGraph(15,d0cut,intDataPall500700Strp30);
+  gintDataPall500700Strp30->SetMarkerColor(1);
+  gintDataPall500700Strp30->SetMarkerStyle(22);
+  gintDataPall500700Strp30->Draw("p");
+  TGraph *gintDataPall500700Strm30=new TGraph(15,d0cut,intDataPall500700Strm30);
+  gintDataPall500700Strm30->SetMarkerColor(1);
+  gintDataPall500700Strm30->SetMarkerStyle(22);
+  gintDataPall500700Strm30->Draw("p");
+  TGraph *gintDataPall500700Matp10=new TGraph(15,d0cut,intDataPall500700Matp10);
+  gintDataPall500700Matp10->SetMarkerColor(3);
+  gintDataPall500700Matp10->SetMarkerStyle(22);
+  gintDataPall500700Matp10->Draw("p");
+  TGraph *gintDataPall500700Matm10=new TGraph(15,d0cut,intDataPall500700Matm10);
+  gintDataPall500700Matm10->SetMarkerColor(3);
+  gintDataPall500700Matm10->SetMarkerStyle(22);
+  gintDataPall500700Matm10->Draw("p");
+
+  c5->cd(3);
+  Float_t intDataPall10001500Strp30[15],intDataPall10001500Strm30[15],intDataPall10001500Matp10[15],intDataPall10001500Matm10[15];
+  for(Int_t i=0;i<15;i++) {
+    intDataPall10001500Strp30[i]=intDatacut10001500[i]*fracS10001500Strp30[i]/fracP10001500[i];
+    intDataPall10001500Strm30[i]=intDatacut10001500[i]*fracS10001500Strm30[i]/fracP10001500[i];
+    intDataPall10001500Matp10[i]=intDatacut10001500[i]*fracS10001500Matp10[i]/fracP10001500[i];
+    intDataPall10001500Matm10[i]=intDatacut10001500[i]*fracS10001500Matm10[i]/fracP10001500[i];
+  }
+  gintDataPall10001500->Draw("ap");
+
+  TGraph *gintDataPall10001500Strp30=new TGraph(15,d0cut,intDataPall10001500Strp30);
+  gintDataPall10001500Strp30->SetMarkerColor(1);
+  gintDataPall10001500Strp30->SetMarkerStyle(22);
+  gintDataPall10001500Strp30->Draw("p");
+  TGraph *gintDataPall10001500Strm30=new TGraph(15,d0cut,intDataPall10001500Strm30);
+  gintDataPall10001500Strm30->SetMarkerColor(1);
+  gintDataPall10001500Strm30->SetMarkerStyle(22);
+  gintDataPall10001500Strm30->Draw("p");
+  TGraph *gintDataPall10001500Matp10=new TGraph(15,d0cut,intDataPall10001500Matp10);
+  gintDataPall10001500Matp10->SetMarkerColor(3);
+  gintDataPall10001500Matp10->SetMarkerStyle(22);
+  gintDataPall10001500Matp10->Draw("p");
+  TGraph *gintDataPall10001500Matm10=new TGraph(15,d0cut,intDataPall10001500Matm10);
+  gintDataPall10001500Matm10->SetMarkerColor(3);
+  gintDataPall10001500Matm10->SetMarkerStyle(22);
+  gintDataPall10001500Matm10->Draw("p");
+  */
+  return;
+}
+//---------------------------------------------------------------------------
+void PlotImpPar_z() {
+
+  TFile *fMC= new TFile("ITS.Performance_lhc10a8_100k.root");
+
+  TList *list=(TList*)fMC->Get("cOutputITS");
+  TH1F *fHistd0zITSMIoneSPDInAccP150200MC = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccP150200");
+  TH1F *fHistd0zITSMIoneSPDInAccS150200MC = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccS150200");
+  TH1F *fHistd0zITSMIoneSPDInAccP500700MC = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccP500700");
+  TH1F *fHistd0zITSMIoneSPDInAccS500700MC = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccS500700");
+  TH1F *fHistd0zITSMIoneSPDInAccP10001500MC = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccP10001500");
+  TH1F *fHistd0zITSMIoneSPDInAccS10001500MC = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccS10001500");
+  TH1F *fHistd0zITSMIoneSPDInAcc150200MC=(TH1F*)fHistd0zITSMIoneSPDInAccP150200MC->Clone("fHistd0zITSMIoneSPDInAcc150200MC");
+  fHistd0zITSMIoneSPDInAcc150200MC->Add(fHistd0zITSMIoneSPDInAccS150200MC);
+  fHistd0zITSMIoneSPDInAcc150200MC->Scale(1./fHistd0zITSMIoneSPDInAcc150200MC->GetEntries());
+  TH1F *fHistd0zITSMIoneSPDInAcc500700MC=(TH1F*)fHistd0zITSMIoneSPDInAccP500700MC->Clone("fHistd0zITSMIoneSPDInAcc500700MC");
+  fHistd0zITSMIoneSPDInAcc500700MC->Add(fHistd0zITSMIoneSPDInAccS500700MC);
+  fHistd0zITSMIoneSPDInAcc500700MC->Scale(1./fHistd0zITSMIoneSPDInAcc500700MC->GetEntries());
+  TH1F *fHistd0zITSMIoneSPDInAcc10001500MC=(TH1F*)fHistd0zITSMIoneSPDInAccP10001500MC->Clone("fHistd0zITSMIoneSPDInAcc10001500MC");
+  fHistd0zITSMIoneSPDInAcc10001500MC->Add(fHistd0zITSMIoneSPDInAccS10001500MC);
+  fHistd0zITSMIoneSPDInAcc10001500MC->Scale(1./fHistd0zITSMIoneSPDInAcc10001500MC->GetEntries());
+
+
+  TFile *f= new TFile("ITS.Performance_104892.root");
+
+  TList *list=(TList*)f->Get("cOutputITS");
+  TH1F *fHistd0zITSMIoneSPDInAccP150200 = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccP150200");
+  TH1F *fHistd0zITSMIoneSPDInAccS150200 = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccS150200");
+  TH1F *fHistd0zITSMIoneSPDInAccP500700 = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccP500700");
+  TH1F *fHistd0zITSMIoneSPDInAccS500700 = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccS500700");
+  TH1F *fHistd0zITSMIoneSPDInAccP10001500 = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccP10001500");
+  TH1F *fHistd0zITSMIoneSPDInAccS10001500 = (TH1F*)list->FindObject("fHistd0zITSMIoneSPDInAccS10001500");
+  TH1F *fHistd0zITSMIoneSPDInAcc150200=(TH1F*)fHistd0zITSMIoneSPDInAccP150200->Clone("fHistd0zITSMIoneSPDInAcc150200");
+  fHistd0zITSMIoneSPDInAcc150200->Add(fHistd0zITSMIoneSPDInAccS150200);
+  fHistd0zITSMIoneSPDInAcc150200->Scale(1./fHistd0zITSMIoneSPDInAcc150200->GetEntries());
+  TH1F *fHistd0zITSMIoneSPDInAcc500700=(TH1F*)fHistd0zITSMIoneSPDInAccP500700->Clone("fHistd0zITSMIoneSPDInAcc500700");
+  fHistd0zITSMIoneSPDInAcc500700->Add(fHistd0zITSMIoneSPDInAccS500700);
+  fHistd0zITSMIoneSPDInAcc500700->Scale(1./fHistd0zITSMIoneSPDInAcc500700->GetEntries());
+  TH1F *fHistd0zITSMIoneSPDInAcc10001500=(TH1F*)fHistd0zITSMIoneSPDInAccP10001500->Clone("fHistd0zITSMIoneSPDInAcc10001500");
+  fHistd0zITSMIoneSPDInAcc10001500->Add(fHistd0zITSMIoneSPDInAccS10001500);
+  fHistd0zITSMIoneSPDInAcc10001500->Scale(1./fHistd0zITSMIoneSPDInAcc10001500->GetEntries());
+
+
+  TCanvas *c1 = new TCanvas("c1","c1");
+  c1->Divide(3,1);
+  c1->cd(1);
+  fHistd0zITSMIoneSPDInAcc150200MC->SetLineColor(2);
+  fHistd0zITSMIoneSPDInAcc150200MC->Draw();
+  fHistd0zITSMIoneSPDInAcc150200->SetLineColor(4);
+  fHistd0zITSMIoneSPDInAcc150200->Draw("same");
+  c1->cd(2);
+  fHistd0zITSMIoneSPDInAcc500700MC->SetLineColor(2);
+  fHistd0zITSMIoneSPDInAcc500700MC->Draw();
+  fHistd0zITSMIoneSPDInAcc500700->SetLineColor(4);
+  fHistd0zITSMIoneSPDInAcc500700->Draw("same");
+  c1->cd(3);
+  fHistd0zITSMIoneSPDInAcc10001500MC->SetLineColor(2);
+  fHistd0zITSMIoneSPDInAcc10001500MC->Draw();
+  fHistd0zITSMIoneSPDInAcc10001500->SetLineColor(4);
+  fHistd0zITSMIoneSPDInAcc10001500->Draw("same");
+
+  TCanvas *c2 = new TCanvas("c2","c2");
+  c2->Divide(3,1);
+  c2_1->SetLogy();
+  c2_2->SetLogy();
+  c2_3->SetLogy();
+  c2->cd(1);
+  fHistd0zITSMIoneSPDInAccP150200MC->SetMinimum(1);
+  fHistd0zITSMIoneSPDInAccS150200MC->SetMinimum(1);
+  fHistd0zITSMIoneSPDInAccP150200MC->SetLineColor(1);
+  fHistd0zITSMIoneSPDInAccP150200MC->Draw();
+  fHistd0zITSMIoneSPDInAccS150200MC->SetLineColor(6);
+  fHistd0zITSMIoneSPDInAccS150200MC->Draw("same");
+  c2->cd(2);
+  fHistd0zITSMIoneSPDInAccP500700MC->SetMinimum(1);
+  fHistd0zITSMIoneSPDInAccS500700MC->SetMinimum(1);
+  fHistd0zITSMIoneSPDInAccP500700MC->SetLineColor(1);
+  fHistd0zITSMIoneSPDInAccP500700MC->Draw();
+  fHistd0zITSMIoneSPDInAccS500700MC->SetLineColor(6);
+  fHistd0zITSMIoneSPDInAccS500700MC->Draw("same");
+  c2->cd(3);
+  fHistd0zITSMIoneSPDInAccP10001500MC->SetMinimum(1);
+  fHistd0zITSMIoneSPDInAccS10001500MC->SetMinimum(1);
+  fHistd0zITSMIoneSPDInAccP10001500MC->SetLineColor(1);
+  fHistd0zITSMIoneSPDInAccP10001500MC->Draw();
+  fHistd0zITSMIoneSPDInAccS10001500MC->SetLineColor(6);
+  fHistd0zITSMIoneSPDInAccS10001500MC->Draw("same");
+
+
+  TCanvas *c3 = new TCanvas("c3","c3");
+  c3->Divide(3,1);
+  c3_1->SetLogx();
+  c3_2->SetLogx();
+  c3_3->SetLogx();
+  Float_t d0cut[15]={0.05,0.06,0.08,0.10,0.15,0.2,0.25,0.30,0.35,0.40,0.50,0.60,0.80,1.,3.40};
+
+  c3->cd(1);
+  Float_t fracP150200[15],fracS150200[15];
+  Float_t intPtot150200=fHistd0zITSMIoneSPDInAccP150200MC->Integral(1,fHistd0zITSMIoneSPDInAccP150200MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0zITSMIoneSPDInAccP150200MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0zITSMIoneSPDInAccP150200MC->FindBin(+d0cut[i]);
+    Float_t intPcut150200=fHistd0zITSMIoneSPDInAccP150200MC->Integral(bin1,bin2);
+    Float_t intScut150200=fHistd0zITSMIoneSPDInAccS150200MC->Integral(bin1,bin2);
+    fracP150200[i]=intPcut150200/intPtot150200;
+    fracS150200[i]=1.-intScut150200/(intPcut150200+intScut150200);
+  }
+  TGraph *gfracP150200=new TGraph(15,d0cut,fracP150200);
+  gfracP150200->SetMarkerColor(2);
+  gfracP150200->SetMarkerStyle(20);
+  gfracP150200->Draw("ap");
+  TGraph *gfracS150200=new TGraph(15,d0cut,fracS150200);
+  gfracS150200->SetMarkerColor(4);
+  gfracS150200->SetMarkerStyle(21);
+  gfracS150200->Draw("p");
+
+  c3->cd(2);
+  Float_t fracP500700[15],fracS500700[15];
+  Float_t intPtot500700=fHistd0zITSMIoneSPDInAccP500700MC->Integral(1,fHistd0zITSMIoneSPDInAccP500700MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0zITSMIoneSPDInAccP500700MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0zITSMIoneSPDInAccP500700MC->FindBin(+d0cut[i]);
+    Float_t intPcut500700=fHistd0zITSMIoneSPDInAccP500700MC->Integral(bin1,bin2);
+    Float_t intScut500700=fHistd0zITSMIoneSPDInAccS500700MC->Integral(bin1,bin2);
+    fracP500700[i]=intPcut500700/intPtot500700;
+    fracS500700[i]=1.-intScut500700/(intPcut500700+intScut500700);
+  }
+  TGraph *gfracP500700=new TGraph(15,d0cut,fracP500700);
+  gfracP500700->SetMarkerColor(2);
+  gfracP500700->SetMarkerStyle(20);
+  gfracP500700->Draw("ap");
+  TGraph *gfracS500700=new TGraph(15,d0cut,fracS500700);
+  gfracS500700->SetMarkerColor(4);
+  gfracS500700->SetMarkerStyle(21);
+  gfracS500700->Draw("p");
+
+  c3->cd(3);
+  Float_t fracP10001500[15],fracS10001500[15];
+  Float_t intPtot10001500=fHistd0zITSMIoneSPDInAccP10001500MC->Integral(1,fHistd0zITSMIoneSPDInAccP10001500MC->GetNbinsX());
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0zITSMIoneSPDInAccP10001500MC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0zITSMIoneSPDInAccP10001500MC->FindBin(+d0cut[i]);
+    Float_t intPcut10001500=fHistd0zITSMIoneSPDInAccP10001500MC->Integral(bin1,bin2);
+    Float_t intScut10001500=fHistd0zITSMIoneSPDInAccS10001500MC->Integral(bin1,bin2);
+    fracP10001500[i]=intPcut10001500/intPtot10001500;
+    fracS10001500[i]=1.-intScut10001500/(intPcut10001500+intScut10001500);
+  }
+  TGraph *gfracP10001500=new TGraph(15,d0cut,fracP10001500);
+  gfracP10001500->SetMarkerColor(2);
+  gfracP10001500->SetMarkerStyle(20);
+  gfracP10001500->Draw("ap");
+  TGraph *gfracS10001500=new TGraph(15,d0cut,fracS10001500);
+  gfracS10001500->SetMarkerColor(4);
+  gfracS10001500->SetMarkerStyle(21);
+  gfracS10001500->Draw("p");
+
+  return;
+}
+//----------------------------------------------------------------------------
+void Corrections() {
+
+  TFile *f_cutits= new TFile("ITS.Performance_lhc09d10_500k_noz0cut_nodcaTPC.root");
+
+  TList *list=(TList*)f_cutits->Get("cOutputITS");
+
+  TH1F *fHistNEvents = (TH1F*)list->FindObject("fHistNEvents");
+  Float_t nEventsSelWithVertex = fHistNEvents->GetBinContent(5);
+
+  TH1F *fHistPtITSTPCsel = (TH1F*)list->FindObject("fHistPtITSTPCsel");
+  NormalizePtHist(fHistPtITSTPCsel,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselP = (TH1F*)list->FindObject("fHistPtITSTPCselP");
+  NormalizePtHist(fHistPtITSTPCselP,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselS = (TH1F*)list->FindObject("fHistPtITSTPCselS");
+  NormalizePtHist(fHistPtITSTPCselS,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselPfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselPfromStrange");
+  NormalizePtHist(fHistPtITSTPCselPfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselSfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
+  NormalizePtHist(fHistPtITSTPCselSfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselSfromMat = (TH1F*)list->FindObject("fHistPtITSTPCselSfromMat");
+  NormalizePtHist(fHistPtITSTPCselSfromMat,nEventsSelWithVertex);
+
+
+  TFile *f_cuttpc= new TFile("ITS.Performance_lhc09d10_500k_noz0cut.root");
+
+  TList *list=(TList*)f_cuttpc->Get("cOutputITS");
+
+  TH1F *fHistNEvents = (TH1F*)list->FindObject("fHistNEvents");
+  nEventsSelWithVertex = fHistNEvents->GetBinContent(5);
+
+  TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  NormalizePtHist(fHistPtTPCInAcc,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccP = (TH1F*)list->FindObject("fHistPtTPCInAccP");
+  NormalizePtHist(fHistPtTPCInAccP,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccS = (TH1F*)list->FindObject("fHistPtTPCInAccS");
+  NormalizePtHist(fHistPtTPCInAccS,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccPfromStrange"); 
+  NormalizePtHist(fHistPtTPCInAccPfromStrange,nEventsSelWithVertex);
+ TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
+  NormalizePtHist(fHistPtTPCInAccSfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccSfromMat = (TH1F*)list->FindObject("fHistPtTPCInAccSfromMat");
+  NormalizePtHist(fHistPtTPCInAccSfromMat,nEventsSelWithVertex);
+
+
+  TFile *f_nocut= new TFile("ITS.Performance_lhc09d10_500k_nod0z0cut.root");
+
+  TList *list=(TList*)f_nocut->Get("cOutputITS");
+
+  TH1F *fHistNEvents = (TH1F*)list->FindObject("fHistNEvents");
+  nEventsSelWithVertex = fHistNEvents->GetBinContent(5);
+
+  TH1F *fHistPtITSTPCselnocut = (TH1F*)list->FindObject("fHistPtITSTPCsel");
+  NormalizePtHist(fHistPtITSTPCselnocut,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselnocutP = (TH1F*)list->FindObject("fHistPtITSTPCselP");
+  NormalizePtHist(fHistPtITSTPCselnocutP,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselnocutS = (TH1F*)list->FindObject("fHistPtITSTPCselS");
+  NormalizePtHist(fHistPtITSTPCselnocutS,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselnocutPfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselPfromStrange");
+  NormalizePtHist(fHistPtITSTPCselnocutPfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselnocutSfromStrange = (TH1F*)list->FindObject("fHistPtITSTPCselSfromStrange");
+  NormalizePtHist(fHistPtITSTPCselnocutSfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtITSTPCselnocutSfromMat = (TH1F*)list->FindObject("fHistPtITSTPCselSfromMat");
+  NormalizePtHist(fHistPtITSTPCselnocutSfromMat,nEventsSelWithVertex);
+
+  TH1F *fHistPtTPCInAccnocut = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  NormalizePtHist(fHistPtTPCInAccnocut,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccnocutP = (TH1F*)list->FindObject("fHistPtTPCInAccP");
+  NormalizePtHist(fHistPtTPCInAccnocutP,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccnocutS = (TH1F*)list->FindObject("fHistPtTPCInAccS");
+  NormalizePtHist(fHistPtTPCInAccnocutS,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccnocutPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccPfromStrange"); 
+  NormalizePtHist(fHistPtTPCInAccnocutPfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccnocutSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
+  NormalizePtHist(fHistPtTPCInAccnocutSfromStrange,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccnocutSfromMat = (TH1F*)list->FindObject("fHistPtTPCInAccSfromMat");
+  NormalizePtHist(fHistPtTPCInAccnocutSfromMat,nEventsSelWithVertex);
+
+  // cut efficiencies
+  
+  TH1F *fHistPtITSTPCeffselP = (TH1F*)fHistPtITSTPCselP->Clone("fHistPtITSTPCeffselP");
+  fHistPtITSTPCeffselP->Divide(fHistPtITSTPCselnocutP);
+  TH1F *fHistPtITSTPCeffselS = (TH1F*)fHistPtITSTPCselS->Clone("fHistPtITSTPCeffselS");
+  fHistPtITSTPCeffselS->Divide(fHistPtITSTPCselnocutS);
+  TH1F *fHistPtITSTPCeffselSfromStrange = (TH1F*)fHistPtITSTPCselSfromStrange->Clone("fHistPtITSTPCeffselSfromStrange");
+  fHistPtITSTPCeffselSfromStrange->Divide(fHistPtITSTPCselnocutSfromStrange);
+  TH1F *fHistPtITSTPCeffselSfromMat = (TH1F*)fHistPtITSTPCselSfromMat->Clone("fHistPtITSTPCeffselSfromMat");
+  fHistPtITSTPCeffselSfromMat->Divide(fHistPtITSTPCselnocutSfromMat);
+
+  TH1F *fHistPtTPCeffInAccP = (TH1F*)fHistPtTPCInAccP->Clone("fHistPtTPCeffInAccP");
+  fHistPtTPCeffInAccP->Divide(fHistPtTPCInAccnocutP);
+  TH1F *fHistPtTPCeffInAccS = (TH1F*)fHistPtTPCInAccS->Clone("fHistPtTPCeffInAccS");
+  fHistPtTPCeffInAccS->Divide(fHistPtTPCInAccnocutS);
+  TH1F *fHistPtTPCeffInAccSfromStrange = (TH1F*)fHistPtTPCInAccSfromStrange->Clone("fHistPtTPCeffInAccSfromStrange");
+  fHistPtTPCeffInAccSfromStrange->Divide(fHistPtTPCInAccnocutSfromStrange);
+  TH1F *fHistPtTPCeffInAccSfromMat = (TH1F*)fHistPtTPCInAccSfromMat->Clone("fHistPtTPCeffInAccSfromMat");
+  fHistPtTPCeffInAccSfromMat->Divide(fHistPtTPCInAccnocutSfromMat);
+
+
+  TLegend *l0=new TLegend(0.5,0.5,0.9,0.9);
+  TCanvas *c0=new TCanvas("c0","c0");
+  c0->Divide(2,1);
+  c0->cd(1);
+  TH1F *fHistPtITSTPCselFracS = (TH1F*)fHistPtITSTPCselS->Clone("fHistPtITSTPCselFracS");
+  fHistPtITSTPCselFracS->Divide(fHistPtITSTPCsel);
+  fHistPtITSTPCselFracS->SetLineColor(2);
+  l0->AddEntry(fHistPtITSTPCselFracS,"secondaries","l");
+  fHistPtITSTPCselFracS->Draw();
+  TH1F *fHistPtITSTPCselFracSfromStrange = (TH1F*)fHistPtITSTPCselSfromStrange->Clone("fHistPtITSTPCselFracSfromStrange");
+  fHistPtITSTPCselFracSfromStrange->Divide(fHistPtITSTPCsel);
+  fHistPtITSTPCselFracSfromStrange->SetLineColor(6);
+  l0->AddEntry(fHistPtITSTPCselFracSfromStrange,"sec. from strange","l");
+  fHistPtITSTPCselFracSfromStrange->Draw("same");
+  TH1F *fHistPtITSTPCselFracSfromMat = (TH1F*)fHistPtITSTPCselSfromMat->Clone("fHistPtITSTPCselFracSfromMat");
+  fHistPtITSTPCselFracSfromMat->Divide(fHistPtITSTPCsel);
+  fHistPtITSTPCselFracSfromMat->SetLineColor(kOrange+7);
+  l0->AddEntry(fHistPtITSTPCselFracSfromMat,"sec. from material","l");
+  fHistPtITSTPCselFracSfromMat->Draw("same");
+  l0->Draw();
+  c0->cd(2);
+  TH1F *fHistPtTPCInAccFracS = (TH1F*)fHistPtTPCInAccS->Clone("fHistPtTPCInAccFracS");
+  fHistPtTPCInAccFracS->Divide(fHistPtTPCInAcc);
+  fHistPtTPCInAccFracS->SetLineColor(2);
+  fHistPtTPCInAccFracS->Draw();
+  TH1F *fHistPtTPCInAccFracSfromStrange = (TH1F*)fHistPtTPCInAccSfromStrange->Clone("fHistPtTPCInAccFracSfromStrange");
+  fHistPtTPCInAccFracSfromStrange->Divide(fHistPtTPCInAcc);
+  fHistPtTPCInAccFracSfromStrange->SetLineColor(6);
+  fHistPtTPCInAccFracSfromStrange->Draw("same");
+  TH1F *fHistPtTPCInAccFracSfromMat = (TH1F*)fHistPtTPCInAccSfromMat->Clone("fHistPtTPCInAccFracSfromMat");
+  fHistPtTPCInAccFracSfromMat->Divide(fHistPtTPCInAcc);
+  fHistPtTPCInAccFracSfromMat->SetLineColor(kOrange+7);
+  fHistPtTPCInAccFracSfromMat->Draw("same");
+
+  TLegend *l1=new TLegend(0.5,0.5,0.9,0.9);
+  TCanvas *c1=new TCanvas("c1","c1");
+  c1->Divide(2,1);
+  c1->cd(1);
+  fHistPtITSTPCeffselP->SetYTitle("dca cut efficiency");
+  fHistPtITSTPCeffselP->SetLineColor(1);
+  l1->AddEntry(fHistPtITSTPCeffselP,"primaries","l");
+  fHistPtITSTPCeffselP->Draw();
+  fHistPtITSTPCeffselS->SetLineColor(2);
+  l1->AddEntry(fHistPtITSTPCeffselS,"secondaries","l");
+  fHistPtITSTPCeffselS->Draw("same");
+  fHistPtITSTPCeffselSfromStrange->SetLineColor(6);
+  l1->AddEntry(fHistPtITSTPCeffselSfromStrange,"sec. from strange","l");
+  fHistPtITSTPCeffselSfromStrange->Draw("same");
+  fHistPtITSTPCeffselSfromMat->SetLineColor(kOrange+7);
+  l1->AddEntry(fHistPtITSTPCeffselSfromMat,"sec. from material","l");
+  fHistPtITSTPCeffselSfromMat->Draw("same");
+  l1->Draw();
+  c1->cd(2);
+  fHistPtTPCeffInAccP->SetYTitle("dca cut efficiency");
+  fHistPtTPCeffInAccP->SetLineColor(1);
+  fHistPtTPCeffInAccP->Draw();
+  fHistPtTPCeffInAccS->SetLineColor(2);
+  fHistPtTPCeffInAccS->Draw("same");
+  fHistPtTPCeffInAccSfromStrange->SetLineColor(6);
+  fHistPtTPCeffInAccSfromStrange->Draw("same");
+  fHistPtTPCeffInAccSfromMat->SetLineColor(kOrange+7);
+  fHistPtTPCeffInAccSfromMat->Draw("same");
+
+
+
+  Float_t weightStrange=1.;
+  Float_t weightMat=1.;
+
+  TH1F *fHistPtITSTPCselCocktail = MakeCocktail(fHistPtITSTPCselP,
+						fHistPtITSTPCselPfromStrange,
+						fHistPtITSTPCselS,
+						fHistPtITSTPCselSfromStrange,
+						fHistPtITSTPCselSfromMat,
+						weightStrange,
+						weightMat,
+						"fHistPtITSTPCselCocktail");
+
+  TH1F *fHistPtITSTPCselPCocktail = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail");
+
+  TH1F *fHistPtITSTPCallPCocktail = CorrectToPnocut(fHistPtITSTPCselPCocktail,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail");
+
+
+  TH1F *fHistPtTPCInAccCocktail = MakeCocktail(fHistPtTPCInAccP,
+						fHistPtTPCInAccPfromStrange,
+						fHistPtTPCInAccS,
+						fHistPtTPCInAccSfromStrange,
+						fHistPtTPCInAccSfromMat,
+						weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccCocktail");
+
+  TH1F *fHistPtTPCInAccPCocktail = CorrectToP(fHistPtTPCInAccCocktail,
+					      fHistPtTPCInAccSfromStrange,
+					      fHistPtTPCInAccSfromMat,
+					      weightStrange,
+					      weightMat,
+					      "fHistPtTPCInAccPCocktail");
+
+  TH1F *fHistPtTPCallPCocktail = CorrectToPnocut(fHistPtTPCInAccPCocktail,
+						 fHistPtTPCeffInAccP,
+						 "fHistPtTPCallPCocktail");
+
+
+
+  TLegend *l2=new TLegend(0.5,0.5,0.9,0.9);
+  TCanvas *c2 = new TCanvas("c2","c2");
+  c2->Divide(2,1);
+  c2->cd(1);
+  fHistPtITSTPCselCocktail->SetLineColor(4);
+  l2->AddEntry(fHistPtITSTPCselCocktail,"all, with dca cut","l");
+  fHistPtITSTPCselCocktail->Draw();
+  fHistPtITSTPCselPCocktail->SetLineColor(7);
+  l2->AddEntry(fHistPtITSTPCselPCocktail,"primaries, with dca cut","l");
+  fHistPtITSTPCselPCocktail->Draw("same");
+  fHistPtITSTPCallPCocktail->SetLineColor(6);
+  l2->AddEntry(fHistPtITSTPCallPCocktail,"primaries, w/o dca cut","l");
+  fHistPtITSTPCallPCocktail->Draw("same");
+  l2->Draw();
+  c2->cd(2);
+  fHistPtTPCInAccCocktail->SetLineColor(4);
+  fHistPtTPCInAccCocktail->Draw();
+  fHistPtTPCInAccPCocktail->SetLineColor(7);
+  fHistPtTPCInAccPCocktail->Draw("same");
+  fHistPtTPCallPCocktail->SetLineColor(6);
+  fHistPtTPCallPCocktail->Draw("same");
+
+
+  // systematic from secondaries
+  weightStrange=1.3;
+  weightMat=1.0;
+  TH1F *fHistPtITSTPCselPCocktail1 = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail1");
+  TH1F *fHistPtITSTPCallPCocktail1 = CorrectToPnocut(fHistPtITSTPCselPCocktail1,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail1");
+  weightStrange=0.7;
+  weightMat=1.0;
+  TH1F *fHistPtITSTPCselPCocktail2 = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail2");
+  TH1F *fHistPtITSTPCallPCocktail2 = CorrectToPnocut(fHistPtITSTPCselPCocktail2,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail2");
+  weightStrange=1.0;
+  weightMat=1.1;
+  TH1F *fHistPtITSTPCselPCocktail3 = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail3");
+  TH1F *fHistPtITSTPCallPCocktail3 = CorrectToPnocut(fHistPtITSTPCselPCocktail3,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail3");
+  weightStrange=1.0;
+  weightMat=0.9;
+  TH1F *fHistPtITSTPCselPCocktail4 = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail4");
+  TH1F *fHistPtITSTPCallPCocktail4 = CorrectToPnocut(fHistPtITSTPCselPCocktail4,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail4");
+  weightStrange=1.3;
+  weightMat=1.1;
+  TH1F *fHistPtITSTPCselPCocktail5 = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail5");
+  TH1F *fHistPtITSTPCallPCocktail5 = CorrectToPnocut(fHistPtITSTPCselPCocktail5,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail5");
+  weightStrange=0.7;
+  weightMat=0.9;
+  TH1F *fHistPtITSTPCselPCocktail6 = CorrectToP(fHistPtITSTPCselCocktail,
+					       fHistPtITSTPCselSfromStrange,
+					       fHistPtITSTPCselSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtITSTPCselPCocktail6");
+  TH1F *fHistPtITSTPCallPCocktail6 = CorrectToPnocut(fHistPtITSTPCselPCocktail6,
+						    fHistPtITSTPCeffselP,
+						    "fHistPtITSTPCallPCocktail6");
+
+  weightStrange=1.3;
+  weightMat=1.0;
+  TH1F *fHistPtTPCInAccPCocktail1 = CorrectToP(fHistPtTPCInAccCocktail,
+					       fHistPtTPCInAccSfromStrange,
+					       fHistPtTPCInAccSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccPCocktail1");
+  TH1F *fHistPtTPCallPCocktail1 = CorrectToPnocut(fHistPtTPCInAccPCocktail1,
+						    fHistPtTPCeffInAccP,
+						    "fHistPtTPCallPCocktail1");
+  weightStrange=0.7;
+  weightMat=1.0;
+  TH1F *fHistPtTPCInAccPCocktail2 = CorrectToP(fHistPtTPCInAccCocktail,
+					       fHistPtTPCInAccSfromStrange,
+					       fHistPtTPCInAccSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccPCocktail2");
+  TH1F *fHistPtTPCallPCocktail2 = CorrectToPnocut(fHistPtTPCInAccPCocktail2,
+						    fHistPtTPCeffInAccP,
+						    "fHistPtTPCallPCocktail2");
+  weightStrange=1.0;
+  weightMat=1.1;
+  TH1F *fHistPtTPCInAccPCocktail3 = CorrectToP(fHistPtTPCInAccCocktail,
+					       fHistPtTPCInAccSfromStrange,
+					       fHistPtTPCInAccSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccPCocktail3");
+  TH1F *fHistPtTPCallPCocktail3 = CorrectToPnocut(fHistPtTPCInAccPCocktail3,
+						    fHistPtTPCeffInAccP,
+						    "fHistPtTPCallPCocktail3");
+  weightStrange=1.0;
+  weightMat=0.9;
+  TH1F *fHistPtTPCInAccPCocktail4 = CorrectToP(fHistPtTPCInAccCocktail,
+					       fHistPtTPCInAccSfromStrange,
+					       fHistPtTPCInAccSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccPCocktail4");
+  TH1F *fHistPtTPCallPCocktail4 = CorrectToPnocut(fHistPtTPCInAccPCocktail4,
+						    fHistPtTPCeffInAccP,
+						    "fHistPtTPCallPCocktail4");
+  weightStrange=1.3;
+  weightMat=1.1;
+  TH1F *fHistPtTPCInAccPCocktail5 = CorrectToP(fHistPtTPCInAccCocktail,
+					       fHistPtTPCInAccSfromStrange,
+					       fHistPtTPCInAccSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccPCocktail5");
+  TH1F *fHistPtTPCallPCocktail5 = CorrectToPnocut(fHistPtTPCInAccPCocktail5,
+						    fHistPtTPCeffInAccP,
+						    "fHistPtTPCallPCocktail5");
+  weightStrange=0.7;
+  weightMat=0.9;
+  TH1F *fHistPtTPCInAccPCocktail6 = CorrectToP(fHistPtTPCInAccCocktail,
+					       fHistPtTPCInAccSfromStrange,
+					       fHistPtTPCInAccSfromMat,
+					       weightStrange,
+					       weightMat,
+					       "fHistPtTPCInAccPCocktail6");
+  TH1F *fHistPtTPCallPCocktail6 = CorrectToPnocut(fHistPtTPCInAccPCocktail6,
+						    fHistPtTPCeffInAccP,
+						    "fHistPtTPCallPCocktail6");
+
+  TLegend *l3=new TLegend(0.5,0.5,0.9,0.9);
+  TCanvas *c3 = new TCanvas("c3","c3");
+  c3->Divide(2,1);
+  c3->cd(1);
+  l3->AddEntry(fHistPtITSTPCallPCocktail,"central","l");
+  fHistPtITSTPCallPCocktail->Draw();
+  l3->AddEntry(fHistPtITSTPCallPCocktail1,"strange #pm 30%","l");
+  fHistPtITSTPCallPCocktail1->SetLineColor(1);
+  fHistPtITSTPCallPCocktail2->SetLineColor(1);
+  fHistPtITSTPCallPCocktail1->Draw("same");
+  fHistPtITSTPCallPCocktail2->Draw("same");
+  l3->AddEntry(fHistPtITSTPCallPCocktail3,"material #pm 10%","l");
+  fHistPtITSTPCallPCocktail3->SetLineColor(8);
+  fHistPtITSTPCallPCocktail4->SetLineColor(8);
+  fHistPtITSTPCallPCocktail3->Draw("same");
+  fHistPtITSTPCallPCocktail4->Draw("same");
+  l3->AddEntry(fHistPtITSTPCallPCocktail5,"strange #pm 30% & material #pm 10%","l");
+  fHistPtITSTPCallPCocktail5->SetLineColor(4);
+  fHistPtITSTPCallPCocktail6->SetLineColor(4);
+  fHistPtITSTPCallPCocktail5->Draw("same");
+  fHistPtITSTPCallPCocktail6->Draw("same");
+  l3->Draw();
+  c3->cd(2);
+  fHistPtTPCallPCocktail->Draw();
+  fHistPtTPCallPCocktail1->SetLineColor(1);
+  fHistPtTPCallPCocktail2->SetLineColor(1);
+  fHistPtTPCallPCocktail1->Draw("same");
+  fHistPtTPCallPCocktail2->Draw("same");
+  fHistPtTPCallPCocktail3->SetLineColor(8);
+  fHistPtTPCallPCocktail4->SetLineColor(8);
+  fHistPtTPCallPCocktail3->Draw("same");
+  fHistPtTPCallPCocktail4->Draw("same");
+  fHistPtTPCallPCocktail5->SetLineColor(4);
+  fHistPtTPCallPCocktail6->SetLineColor(4);
+  fHistPtTPCallPCocktail5->Draw("same");
+  fHistPtTPCallPCocktail6->Draw("same");
+
+  /*
+  TCanvas *c4 = new TCanvas("c4","c4");
+  c4->Divide(2,1);
+  c4->cd(1);
+  fHistPtITSTPCallPCocktail2->Add(fHistPtITSTPCallPCocktail,-1);
+  fHistPtITSTPCallPCocktail2->Divide(fHistPtITSTPCallPCocktail);
+  fHistPtITSTPCallPCocktail2->Draw();
+  fHistPtITSTPCallPCocktail4->Add(fHistPtITSTPCallPCocktail,-1);
+  fHistPtITSTPCallPCocktail4->Divide(fHistPtITSTPCallPCocktail);
+  fHistPtITSTPCallPCocktail4->Draw("same");
+  fHistPtITSTPCallPCocktail6->Add(fHistPtITSTPCallPCocktail,-1);
+  fHistPtITSTPCallPCocktail6->Divide(fHistPtITSTPCallPCocktail);
+  fHistPtITSTPCallPCocktail6->Draw("same");
+  l3->Draw();
+  c4->cd(2);
+  fHistPtTPCallPCocktail2->Add(fHistPtTPCallPCocktail,-1);
+  fHistPtTPCallPCocktail2->Divide(fHistPtTPCallPCocktail);
+  fHistPtTPCallPCocktail2->Draw();
+  fHistPtTPCallPCocktail4->Add(fHistPtTPCallPCocktail,-1);
+  fHistPtTPCallPCocktail4->Divide(fHistPtTPCallPCocktail);
+  fHistPtTPCallPCocktail4->Draw("same");
+  fHistPtTPCallPCocktail6->Add(fHistPtTPCallPCocktail,-1);
+  fHistPtTPCallPCocktail6->Divide(fHistPtTPCallPCocktail);
+  fHistPtTPCallPCocktail6->Draw("same");
+  */
+
+  return;
+}
+//-------------------------------------------------------------
+void NormalizePtHist(TH1F *h,Float_t n) {
+
+  for(Int_t i=1; i<=h->GetNbinsX(); i++) {
+    if(h->GetBinContent(i)) {
+      h->SetBinContent(i,h->GetBinContent(i)/h->GetBinWidth(i));
+      h->SetBinError(i,h->GetBinError(i)/h->GetBinWidth(i));
+    }
+  }
+  h->Scale(1./n);
+
+  return;
+}
+//----------------------------------------------------------------------
+TH1F *MakeCocktail(TH1F *fHistPtselP,
+		   TH1F *fHistPtselPfromStrange,
+		   TH1F *fHistPtselS,
+		   TH1F *fHistPtselSfromStrange,
+		   TH1F *fHistPtselSfromMat,
+		   Float_t weightStrange,
+		   Float_t weightMat,TString name) {
+
+  // build histogram with yield passing cut
+  TH1F *fHistPtselCocktail = (TH1F*)fHistPtselP->Clone(name.Data());
+  fHistPtselCocktail->Add(fHistPtselS);
+  fHistPtselCocktail->Add(fHistPtselPfromStrange,weightStrange-1.);
+  fHistPtselCocktail->Add(fHistPtselSfromStrange,weightStrange-1.);
+  fHistPtselCocktail->Add(fHistPtselSfromMat,weightMat-1.);
+
+
+  return fHistPtselCocktail;
+}
+//----------------------------------------------------------------------
+TH1F *CorrectToP(TH1F *fHistPtselCocktail,
+		TH1F *fHistPtselSfromStrange,
+		TH1F *fHistPtselSfromMat,
+		Float_t weightStrange,
+		Float_t weightMat,TString name) {
+
+
+  // build histogram with yield of primaries passing cut
+  TH1F* fHistPtselPCocktail = (TH1F*)fHistPtselCocktail->Clone(name.Data());
+  fHistPtselPCocktail->Add(fHistPtselSfromStrange,-weightStrange);
+  fHistPtselPCocktail->Add(fHistPtselSfromMat,-weightMat);
+
+  return fHistPtselPCocktail;
+}
+//----------------------------------------------------------------------
+TH1F *CorrectToPnocut(TH1F *fHistPtselPCocktail,
+		     TH1F *fHistPteffselP,TString name) {
+
+  // build histogram with yield of primaries without cut
+  TH1F *fHistPtallPCocktail = (TH1F*)fHistPtselPCocktail->Clone(name.Data());
+  //printf("%f\n",fHistPtallPCocktail->GetBinContent(6));
+  fHistPtallPCocktail->Divide(fHistPteffselP);
+  //printf("%f\n",fHistPtallPCocktail->GetBinContent(6));
+
+  return fHistPtallPCocktail;
+}
+//----------------------------------------------------------------------
+void CompareTPCPt() {
+
+  TFile *f_tpcrefit= new TFile("ITS.Performance_104892pass2_etale05.root");
+
+  TList *list=(TList*)f_tpcrefit->Get("cOutputITS");
+
+  TH1F *fHistNEvents = (TH1F*)list->FindObject("fHistNEvents");
+  Float_t nEventsSelWithVertex = fHistNEvents->GetBinContent(5);
+
+  TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  NormalizePtHist(fHistPtTPCInAcc,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccNoTRDout = (TH1F*)list->FindObject("fHistPtTPCInAccNoTRDout");
+  NormalizePtHist(fHistPtTPCInAccNoTRDout,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccNoTOFout = (TH1F*)list->FindObject("fHistPtTPCInAccNoTOFout");
+  NormalizePtHist(fHistPtTPCInAccNoTOFout,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccWithPtTPCAtVtx = (TH1F*)list->FindObject("fHistPtTPCInAccWithPtTPCAtVtx");
+  NormalizePtHist(fHistPtTPCInAccWithPtTPCAtVtx,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccWithPtTPCAtInnerWall = (TH1F*)list->FindObject("fHistPtTPCInAccWithPtTPCAtInnerWall");
+  NormalizePtHist(fHistPtTPCInAccWithPtTPCAtInnerWall,nEventsSelWithVertex);
+
+
+  TFile *f_notpcrefit= new TFile("ITS.Performance_104892pass3_etale05.root");
+
+  TList *list=(TList*)f_notpcrefit->Get("cOutputITS");
+
+  TH1F *fHistNEventsNoRefit = (TH1F*)list->FindObject("fHistNEvents");
+  nEventsSelWithVertex = fHistNEventsNoRefit->GetBinContent(5);
+
+  TH1F *fHistPtTPCInAccNoRefit = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  NormalizePtHist(fHistPtTPCInAccNoRefit,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccNoTRDoutNoRefit = (TH1F*)list->FindObject("fHistPtTPCInAccNoTRDout");
+  NormalizePtHist(fHistPtTPCInAccNoTRDoutNoRefit,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccNoTOFoutNoRefit = (TH1F*)list->FindObject("fHistPtTPCInAccNoTOFout");
+  NormalizePtHist(fHistPtTPCInAccNoTOFoutNoRefit,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccWithPtTPCAtVtxNoRefit = (TH1F*)list->FindObject("fHistPtTPCInAccWithPtTPCAtVtx");
+  NormalizePtHist(fHistPtTPCInAccWithPtTPCAtVtxNoRefit,nEventsSelWithVertex);
+  TH1F *fHistPtTPCInAccWithPtTPCAtInnerWallNoRefit = (TH1F*)list->FindObject("fHistPtTPCInAccWithPtTPCAtInnerWall");
+  NormalizePtHist(fHistPtTPCInAccWithPtTPCAtInnerWallNoRefit,nEventsSelWithVertex);
+
+
+
+  TLegend *l1 = new TLegend(0.5,0.5,0.9,0.9);
+  TCanvas *c1=new TCanvas("c1","c1",0,0,1000,600);
+  c1->Divide(2,1);
+  c1->cd(1);
+  fHistPtTPCInAcc->SetMarkerStyle(20);
+  l1->AddEntry(fHistPtTPCInAcc,"p_{t} measurement:","");
+  l1->AddEntry(fHistPtTPCInAcc,"at vtx, from main params","p");
+  fHistPtTPCInAcc->Draw();
+  fHistPtTPCInAccWithPtTPCAtVtx->SetMarkerStyle(21);
+  fHistPtTPCInAccWithPtTPCAtVtx->SetMarkerColor(2);
+  l1->AddEntry(fHistPtTPCInAccWithPtTPCAtVtx,"at vtx, from TPC params","p");
+  fHistPtTPCInAccWithPtTPCAtVtx->Draw("same");
+  fHistPtTPCInAccWithPtTPCAtInnerWall->SetMarkerStyle(25);
+  fHistPtTPCInAccWithPtTPCAtInnerWall->SetMarkerColor(2);
+  l1->AddEntry(fHistPtTPCInAccWithPtTPCAtInnerWall,"at r=80cm, from TPC params","p");
+  fHistPtTPCInAccWithPtTPCAtInnerWall->Draw("same");
+  fHistPtTPCInAccNoTOFout->SetMarkerStyle(23);
+  fHistPtTPCInAccNoTOFout->SetMarkerColor(3);
+  fHistPtTPCInAccNoTOFout->Draw("same");
+  fHistPtTPCInAccNoTRDout->SetMarkerStyle(24);
+  fHistPtTPCInAccNoTRDout->SetMarkerColor(4);
+  fHistPtTPCInAccNoTRDout->Draw("same");
+  l1->Draw();
+  c1->cd(2);
+  fHistPtTPCInAccNoRefit->SetMarkerStyle(20);
+  fHistPtTPCInAccNoRefit->Draw();
+  fHistPtTPCInAccWithPtTPCAtVtxNoRefit->SetMarkerStyle(21);
+  fHistPtTPCInAccWithPtTPCAtVtxNoRefit->SetMarkerColor(2);
+  fHistPtTPCInAccWithPtTPCAtVtxNoRefit->Draw("same");
+  fHistPtTPCInAccWithPtTPCAtInnerWallNoRefit->SetMarkerStyle(25);
+  fHistPtTPCInAccWithPtTPCAtInnerWallNoRefit->SetMarkerColor(2);
+  fHistPtTPCInAccWithPtTPCAtInnerWallNoRefit->Draw("same");
+  fHistPtTPCInAccNoTOFoutNoRefit->SetMarkerStyle(23);
+  fHistPtTPCInAccNoTOFoutNoRefit->SetMarkerColor(3);
+  fHistPtTPCInAccNoTOFoutNoRefit->Draw("same");
+  fHistPtTPCInAccNoTRDoutNoRefit->SetMarkerStyle(24);
+  fHistPtTPCInAccNoTRDoutNoRefit->SetMarkerColor(4);
+  fHistPtTPCInAccNoTRDoutNoRefit->Draw("same");
+  //l1->Draw();
+
+  return;
+}
+
+TH1F*  gHistTemplateStrange;
+TH1F*  gHistTemplatePandMat;
+Float_t gd0min=0.15;
+Float_t gd0max=1.5;
+
+
+Double_t FitMCTemplate(Double_t *x, Double_t *par) {
+   Double_t xx = x[0];
+   if(TMath::Abs(xx)<gd0min) return 0;
+   Int_t bin = gHistTemplateStrange->GetXaxis()->FindBin(xx);
+   Double_t pandmat = par[0]*gHistTemplatePandMat->GetBinContent(bin);
+   Double_t strange = par[1]*gHistTemplateStrange->GetBinContent(bin);
+   return strange + pandmat;
+}
+
+void FitImpPar_rphi() {
+
+  Int_t rebin=1;
+
+  TFile *fMC= new TFile("ITS.Performance_lhc10a8a12_trkvtx_noTPCdca_120310.root");
+
+  TList *list=(TList*)fMC->Get("cOutputITS");
+  TH1F *fHistd0rphiITSMIoneSPDInAccPMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
+  TH1F *fHistd0rphiITSMIoneSPDInAccSMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
+  TH1F *fHistd0rphiITSMIoneSPDInAccSfromMatMC = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200fromMat");
+  fHistd0rphiITSMIoneSPDInAccPMC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAccSMC->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAccSfromMatMC->Rebin(rebin);
+
+  TH1F *fHistd0rphiITSMIoneSPDInAccSfromStrangeMC=(TH1F*)fHistd0rphiITSMIoneSPDInAccSMC->Clone("fHistd0rphiITSMIoneSPDInAccSfromStrangeMC");
+  fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->Add(fHistd0rphiITSMIoneSPDInAccSfromMatMC,-1.);
+  TH1F *fHistd0rphiITSMIoneSPDInAccMC=(TH1F*)fHistd0rphiITSMIoneSPDInAccPMC->Clone("fHistd0rphiITSMIoneSPDInAccMC");
+  fHistd0rphiITSMIoneSPDInAccMC->Add(fHistd0rphiITSMIoneSPDInAccSMC);
+  //fHistd0rphiITSMIoneSPDInAccMC->Scale(1./fHistd0rphiITSMIoneSPDInAccMC->GetEntries());
+  TH1F *fHistd0rphiITSMIoneSPDInAccPandMatMC=(TH1F*)fHistd0rphiITSMIoneSPDInAccPMC->Clone("fHistd0rphiITSMIoneSPDInAccPandMatMC");
+  fHistd0rphiITSMIoneSPDInAccPandMatMC->Add(fHistd0rphiITSMIoneSPDInAccSfromMatMC);
+
+  // templates
+  gHistTemplateStrange = (TH1F*)fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->Clone("gHistTemplateStrange");
+  gHistTemplatePandMat = (TH1F*)fHistd0rphiITSMIoneSPDInAccPandMatMC->Clone("gHistTemplatePandMat");
+
+  
+
+
+  TFile *f= new TFile("ITS.Performance_104065_104892_pass4_trkvtx_noTPCdca.root");
+  //TFile *f= new TFile("ITS.Performance_lhc10a8_300k_trkvtx_noTPCdca.root");
+
+  TList *list=(TList*)f->Get("cOutputITS");
+  TH1F *fHistd0rphiITSMIoneSPDInAccP = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccP150200");
+  TH1F *fHistd0rphiITSMIoneSPDInAccS = (TH1F*)list->FindObject("fHistd0rphiITSMIoneSPDInAccS150200");
+  fHistd0rphiITSMIoneSPDInAccP->Rebin(rebin);
+  fHistd0rphiITSMIoneSPDInAccS->Rebin(rebin);
+
+  TH1F *fHistd0rphiITSMIoneSPDInAcc=(TH1F*)fHistd0rphiITSMIoneSPDInAccP->Clone("fHistd0rphiITSMIoneSPDInAcc");
+  fHistd0rphiITSMIoneSPDInAcc->Add(fHistd0rphiITSMIoneSPDInAccS);
+
+
+  TF1 *fitMCtemplate = new TF1("fitMCtemplate",FitMCTemplate,-gd0max,+gd0max,2);
+
+  TH1F* fHistd0rphiITSMIoneSPDInAccCopy = (TH1F*)fHistd0rphiITSMIoneSPDInAcc->Clone("fHistd0rphiITSMIoneSPDInAccCopy");
+  for(Int_t ib=1;ib<=fHistd0rphiITSMIoneSPDInAccCopy->GetNbinsX();ib++) {
+    if(TMath::Abs(fHistd0rphiITSMIoneSPDInAccCopy->GetBinCenter(ib))<gd0min) {
+      fHistd0rphiITSMIoneSPDInAccCopy->SetBinContent(ib,0);
+      fHistd0rphiITSMIoneSPDInAccCopy->SetBinError(ib,0);
+    }
+  }
+  fHistd0rphiITSMIoneSPDInAccCopy->Fit("fitMCtemplate","RL");
+
+
+  fHistd0rphiITSMIoneSPDInAccPandMatMC->Scale(fitMCtemplate->GetParameter(0));
+  fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->Scale(fitMCtemplate->GetParameter(1));
+  TH1F *fHistd0rphiITSMIoneSPDInAccMCFit=(TH1F*)fHistd0rphiITSMIoneSPDInAccPandMatMC->Clone("fHistd0rphiITSMIoneSPDInAccMCFit");
+  fHistd0rphiITSMIoneSPDInAccMCFit->Add(fHistd0rphiITSMIoneSPDInAccSfromStrangeMC);
+
+  TCanvas *c1 = new TCanvas("c1","c1",1000,1000);
+  c1->SetLogy();
+  fHistd0rphiITSMIoneSPDInAccCopy->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccCopy->SetMaximum(2*fHistd0rphiITSMIoneSPDInAcc->GetMaximum());
+  fHistd0rphiITSMIoneSPDInAcc->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccPandMatMC->SetMinimum(1);
+  fHistd0rphiITSMIoneSPDInAccCopy->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAccCopy->Draw();
+  fHistd0rphiITSMIoneSPDInAcc->SetLineColor(4);
+  fHistd0rphiITSMIoneSPDInAcc->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccMCFit->SetLineColor(2);
+  fHistd0rphiITSMIoneSPDInAccMCFit->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->SetLineColor(3);
+  fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->Draw("same");
+  fHistd0rphiITSMIoneSPDInAccPandMatMC->SetLineColor(15);
+  fHistd0rphiITSMIoneSPDInAccPandMatMC->Draw("same");
+
+
+
+  TCanvas *c3 = new TCanvas("c3","c3");
+  c3->SetLogx();
+  c3->SetGridx();
+  c3->SetGridy();
+  Float_t d0cut[15]={0.0301,0.0401,0.0501,0.0601,0.0801,0.101,0.151,0.201,0.251,0.301,0.401,0.601,0.801,1.001,1.401};
+
+  Float_t fracSfromStrange[15],fracSfromStrangeMC[15],fracSfromMatMC[15],fracS[15],fracSMC[15],fracSRatio[15];
+  for(Int_t i=0;i<15;i++) {
+    Int_t bin1=fHistd0rphiITSMIoneSPDInAccPandMatMC->FindBin(-d0cut[i]);
+    Int_t bin2=fHistd0rphiITSMIoneSPDInAccPandMatMC->FindBin(+d0cut[i]);
+    Float_t intDatacut=fHistd0rphiITSMIoneSPDInAcc->Integral(bin1,bin2);
+    Float_t intMCcut=fHistd0rphiITSMIoneSPDInAccMC->Integral(bin1,bin2);
+    Float_t intSfromStrangecut=fHistd0rphiITSMIoneSPDInAccSfromStrangeMC->Integral(bin1,bin2);
+    Float_t intSfromMatcut=fHistd0rphiITSMIoneSPDInAccSfromMatMC->Integral(bin1,bin2);
+    fracSfromStrange[i]=intSfromStrangecut/intDatacut;
+    fracSfromStrangeMC[i]=intSfromStrangecut/fitMCtemplate->GetParameter(1)/intMCcut;
+    fracSfromMatMC[i]=intSfromMatcut/intMCcut;
+
+    fracS[i]=fracSfromStrange[i]+fracSfromMatMC[i];
+    fracSMC[i]=fracSfromStrangeMC[i]+fracSfromMatMC[i];
+
+    fracSRatio[i]=fracS[i]/fracSMC[i];
+  }
+  TGraph *gfracSfromStrange=new TGraph(15,d0cut,fracSfromStrange);
+  gfracSfromStrange->SetMarkerColor(2);
+  gfracSfromStrange->SetMarkerStyle(20);
+  gfracSfromStrange->Draw("ap");
+
+  TGraph *gfracSfromStrangeMC=new TGraph(15,d0cut,fracSfromStrangeMC);
+  gfracSfromStrangeMC->SetMarkerColor(1);
+  gfracSfromStrangeMC->SetMarkerStyle(22);
+  gfracSfromStrangeMC->Draw("p");
+
+  TGraph *gfracSfromMatMC=new TGraph(15,d0cut,fracSfromMatMC);
+  gfracSfromMatMC->SetMarkerColor(4);
+  gfracSfromMatMC->SetMarkerStyle(21);
+  gfracSfromMatMC->Draw("p");
+
+  TGraph *gfracS=new TGraph(15,d0cut,fracS);
+  gfracS->SetMarkerColor(2);
+  gfracS->SetMarkerStyle(24);
+  gfracS->Draw("p");
+
+  TGraph *gfracSMC=new TGraph(15,d0cut,fracSMC);
+  gfracSMC->SetMarkerColor(1);
+  gfracSMC->SetMarkerStyle(25);
+  gfracSMC->Draw("p");
+
+
+  TCanvas *c4 = new TCanvas("c4","c4");
+  c4->SetLogx();
+  c4->SetGridx();
+  c4->SetGridy();
+
+  TGraph *gfracSRatio=new TGraph(15,d0cut,fracSRatio);
+  gfracSRatio->SetMarkerColor(9);
+  gfracSRatio->SetMarkerStyle(21);
+  gfracSRatio->Draw("ap");
+
+
+  return;
+}
+//-----------------------------------------------------------------------------
+void PlotEffVSErrors() {
+
+  TFile *f1= new TFile("eff_104892_pd_testnew1.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew1 = (TH1F*)f1->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew1 = (TH1F*)f1->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew1 = (TH1F*)f1->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew1 = (TH1F*)f1->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew1->SetMarkerStyle(20);
+  fHistPtITSMIge2InAcctestnew1->SetMarkerStyle(20);
+  fHistPtITSMISPDInAcctestnew1->SetMarkerStyle(20);
+  fHistPtITSMIoneSPDInAcctestnew1->SetMarkerStyle(20);
+  fHistPtITSMI6InAcctestnew1->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew1->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew1->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew1->SetMarkerColor(15);
+
+
+  TFile *f2= new TFile("eff_104892_pd_testnew2.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew2 = (TH1F*)f2->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew2 = (TH1F*)f2->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew2 = (TH1F*)f2->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew2 = (TH1F*)f2->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew2->SetMarkerStyle(21);
+  fHistPtITSMIge2InAcctestnew2->SetMarkerStyle(21);
+  fHistPtITSMISPDInAcctestnew2->SetMarkerStyle(21);
+  fHistPtITSMIoneSPDInAcctestnew2->SetMarkerStyle(21);
+  fHistPtITSMI6InAcctestnew2->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew2->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew2->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew2->SetMarkerColor(15);
+
+
+  TFile *f3= new TFile("eff_104892_pd_testnew3.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew3 = (TH1F*)f3->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew3 = (TH1F*)f3->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew3 = (TH1F*)f3->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew3 = (TH1F*)f3->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew3->SetMarkerStyle(22);
+  fHistPtITSMIge2InAcctestnew3->SetMarkerStyle(22);
+  fHistPtITSMISPDInAcctestnew3->SetMarkerStyle(22);
+  fHistPtITSMIoneSPDInAcctestnew3->SetMarkerStyle(22);
+  fHistPtITSMI6InAcctestnew3->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew3->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew3->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew3->SetMarkerColor(15);
+
+
+  TFile *f5= new TFile("eff_104892_pd_testnew5.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew5 = (TH1F*)f5->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew5 = (TH1F*)f5->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew5 = (TH1F*)f5->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew5 = (TH1F*)f5->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew5->SetMarkerStyle(24);
+  fHistPtITSMIge2InAcctestnew5->SetMarkerStyle(24);
+  fHistPtITSMISPDInAcctestnew5->SetMarkerStyle(24);
+  fHistPtITSMIoneSPDInAcctestnew5->SetMarkerStyle(24);
+  fHistPtITSMI6InAcctestnew5->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew5->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew5->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew5->SetMarkerColor(15);
+
+
+  TFile *f6= new TFile("eff_104892_pd_testnew6.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew6 = (TH1F*)f6->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew6 = (TH1F*)f6->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew6 = (TH1F*)f6->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew6 = (TH1F*)f6->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew6->SetMarkerStyle(25);
+  fHistPtITSMIge2InAcctestnew6->SetMarkerStyle(25);
+  fHistPtITSMISPDInAcctestnew6->SetMarkerStyle(25);
+  fHistPtITSMIoneSPDInAcctestnew6->SetMarkerStyle(25);
+  fHistPtITSMI6InAcctestnew6->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew6->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew6->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew6->SetMarkerColor(15);
+
+
+  TFile *f7= new TFile("eff_104892_pd_testnew7.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew7 = (TH1F*)f7->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew7 = (TH1F*)f7->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew7 = (TH1F*)f7->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew7 = (TH1F*)f7->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew7->SetMarkerStyle(23);
+  fHistPtITSMIge2InAcctestnew7->SetMarkerStyle(23);
+  fHistPtITSMISPDInAcctestnew7->SetMarkerStyle(23);
+  fHistPtITSMIoneSPDInAcctestnew7->SetMarkerStyle(23);
+  fHistPtITSMI6InAcctestnew7->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew7->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew7->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew7->SetMarkerColor(15);
+
+
+  TFile *f8= new TFile("eff_104892_pd_testnew8.root");
+
+  TH1F *fHistPtITSMI6InAcctestnew8 = (TH1F*)f8->Get("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMIge2InAcctestnew8 = (TH1F*)f8->Get("fHistPtITSMIge2InAcc");
+  TH1F *fHistPtITSMISPDInAcctestnew8 = (TH1F*)f8->Get("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcctestnew8 = (TH1F*)f8->Get("fHistPtITSMIoneSPDInAcc");
+
+  fHistPtITSMI6InAcctestnew8->SetMarkerStyle(28);
+  fHistPtITSMIge2InAcctestnew8->SetMarkerStyle(28);
+  fHistPtITSMISPDInAcctestnew8->SetMarkerStyle(28);
+  fHistPtITSMIoneSPDInAcctestnew8->SetMarkerStyle(28);
+  fHistPtITSMI6InAcctestnew8->SetMarkerColor(2);
+  fHistPtITSMIge2InAcctestnew8->SetMarkerColor(1);
+  fHistPtITSMISPDInAcctestnew8->SetMarkerColor(9);
+  fHistPtITSMIoneSPDInAcctestnew8->SetMarkerColor(15);
+
+
+  TCanvas *c= new TCanvas("c","c");
+  fHistPtITSMI6InAcctestnew1->Draw();
+  fHistPtITSMIge2InAcctestnew1->Draw("same");
+  fHistPtITSMISPDInAcctestnew1->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew1->Draw("same");
+  fHistPtITSMI6InAcctestnew2->Draw("same");
+  fHistPtITSMIge2InAcctestnew2->Draw("same");
+  fHistPtITSMISPDInAcctestnew2->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew2->Draw("same");
+  fHistPtITSMI6InAcctestnew3->Draw("same");
+  fHistPtITSMIge2InAcctestnew3->Draw("same");
+  fHistPtITSMISPDInAcctestnew3->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew3->Draw("same");
+  fHistPtITSMI6InAcctestnew5->Draw("same");
+  fHistPtITSMIge2InAcctestnew5->Draw("same");
+  fHistPtITSMISPDInAcctestnew5->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew5->Draw("same");
+  fHistPtITSMI6InAcctestnew6->Draw("same");
+  fHistPtITSMIge2InAcctestnew6->Draw("same");
+  fHistPtITSMISPDInAcctestnew6->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew6->Draw("same");
+  fHistPtITSMI6InAcctestnew7->Draw("same");
+  fHistPtITSMIge2InAcctestnew7->Draw("same");
+  fHistPtITSMISPDInAcctestnew7->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew7->Draw("same");
+  fHistPtITSMI6InAcctestnew8->Draw("same");
+  fHistPtITSMIge2InAcctestnew8->Draw("same");
+  fHistPtITSMISPDInAcctestnew8->Draw("same");
+  fHistPtITSMIoneSPDInAcctestnew8->Draw("same");
 
 
   return;
