@@ -2610,26 +2610,26 @@ void  AliTPCcalibTracks::MakeQPosNormAll(TTree * chainres, AliTPCClusterParam * 
   //
   TString *strZ0 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ.Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamZ0,covMatrix,-1,0,maxPoints);
   printf("Z0 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
-  param->fPosZcor[0] = (TVectorD*) fitParamZ0.Clone();
+  param->PosZcor(0) = (TVectorD*) fitParamZ0.Clone();
   //
   TString *strZ1 = toolkit.FitPlane(chainres,"(Cl.fZ-PZ0.fElements[0]):CSigmaZ0",fstringZ.Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamZ1,covMatrix,-1,0,maxPoints);
   //
   printf("Z1 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
-  param->fPosZcor[1] = (TVectorD*) fitParamZ1.Clone();
-  param->fPosZcor[2] = (TVectorD*) fitParamZ1.Clone();
+  param->PosZcor(1) = (TVectorD*) fitParamZ1.Clone();
+  param->PosZcor(2) = (TVectorD*) fitParamZ1.Clone();
   //
   // Y corrections
   //   
   TString *strY0 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY.Data(), "Cl.fDetector<36"+cutA, chi2,npoints,fitParamY0,covMatrix,-1,0,maxPoints);
   printf("Y0 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
-  param->fPosYcor[0] = (TVectorD*) fitParamY0.Clone();
+  param->PosYcor(0) = (TVectorD*) fitParamY0.Clone();
   
 
   TString *strY1 = toolkit.FitPlane(chainres,"(Cl.fY-PY0.fElements[0]):CSigmaY0",fstringY.Data(), "Cl.fDetector>36"+cutA, chi2,npoints,fitParamY1,covMatrix,-1,0,maxPoints);
   //
   printf("Y1 - chi2/npoints = %f\n",TMath::Sqrt(chi2/npoints));
-  param->fPosYcor[1] = (TVectorD*) fitParamY1.Clone();
-  param->fPosYcor[2] = (TVectorD*) fitParamY1.Clone();
+  param->PosYcor(1) = (TVectorD*) fitParamY1.Clone();
+  param->PosYcor(2) = (TVectorD*) fitParamY1.Clone();
   //
   //
   //

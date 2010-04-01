@@ -61,7 +61,7 @@ public :
   virtual void  SetGati(Float_t K3X, Float_t K3Y,
 		     Float_t padDistance,
 		     Float_t kNorm=1);
-  void SetParam(TF2 * GRF,Float_t kNorm, 
+  void SetParam(TF2 *const GRF,Float_t kNorm, 
 		Float_t sigmaX=0, Float_t sigmaY=0);
   void SetNdiv(Int_t Ndiv){fNdiv=Ndiv;}
   virtual Float_t GetSigmaX() const {return fSigmaX;}

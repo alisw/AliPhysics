@@ -13,8 +13,8 @@
 
 
 #include <TObject.h>
-#include <TVectorD.h>
-#include <TMatrixD.h>
+#include <TVectorDfwd.h>
+#include <TMatrixDfwd.h>
 
 class TTree;
 class TObjArray;
@@ -25,17 +25,17 @@ class AliTPCClusterParam : public TObject {
   static AliTPCClusterParam* Instance();
   AliTPCClusterParam();
   AliTPCClusterParam(const AliTPCClusterParam& param);
-  AliTPCClusterParam & operator=(const AliTPCClusterParam&);
+  AliTPCClusterParam & operator=(const AliTPCClusterParam& param);
   virtual           ~AliTPCClusterParam();
   virtual void	Print(Option_t* option = "") const;
-  void SetInstance(AliTPCClusterParam*param){fgInstance = param;}
+  void SetInstance(AliTPCClusterParam *const param){fgInstance = param;}
   //
   // Seting functions
   //
   void FitData(TTree * tree);
   void FitResol(TTree * tree);
   void FitRMS(TTree * tree);
-  void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
+  void SetQnorm(Int_t ipad, Int_t itype,  const TVectorD *const norm); 
   void SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val); 
   Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const; 
   void ResetQnormCorr(); 
@@ -54,20 +54,20 @@ class AliTPCClusterParam : public TObject {
   //
   // Error parameterization
   //
-  Float_t GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle);
-  Float_t GetError0Par(Int_t dim, Int_t type, Float_t z, Float_t angle);
-  Float_t GetError1(Int_t dim, Int_t type, Float_t z, Float_t angle);
-  Float_t GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
-  Float_t GetErrorQPar(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
-  Float_t GetErrorQParScaled(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
+  Float_t GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle) const;
+  Float_t GetError0Par(Int_t dim, Int_t type, Float_t z, Float_t angle) const;
+  Float_t GetError1(Int_t dim, Int_t type, Float_t z, Float_t angle) const;
+  Float_t GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
+  Float_t GetErrorQPar(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
+  Float_t GetErrorQParScaled(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
   //
   // Shape parameterization
   //
-  Float_t GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t angle);
-  Float_t GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t angle);
-  Float_t GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
-  Float_t GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
-  Float_t GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM);
+  Float_t GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t angle) const;
+  Float_t GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t angle) const;
+  Float_t GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
+  Float_t GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const;
+  Float_t GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM) const;
   //
   //
   //
@@ -122,9 +122,6 @@ class AliTPCClusterParam : public TObject {
   static Double_t QmaxCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0,  Float_t effLength=0, Float_t effDiff=1);
   static Double_t QtotCorrection(Int_t sector, Int_t row, Float_t cpad, Float_t ctime, Float_t ky, Float_t kz, Float_t rmsy0, Float_t rmsz0, Float_t qtot, Float_t thr,  Float_t effLength=0, Float_t effDiff=1);
 
-
-
- public: 
   //
   //
   //
@@ -138,7 +135,13 @@ class AliTPCClusterParam : public TObject {
   void FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);  
   void FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);  
   //
+  TVectorD*& PosYcor(Int_t ind) {return fPosYcor[ind];}
+  TVectorD*& PosZcor(Int_t ind) {return fPosZcor[ind];}
+  Float_t ParamS0Par(Int_t i, Int_t j, Int_t k) const {return fParamS0Par[i][j][k];}
+  TVectorD* QpadTnorm() const {return fQpadTnorm;}
+  TVectorD* QpadMnorm() const {return fQpadMnorm;}
 
+protected:
   Float_t fRatio;               //ratio of values constibution to error
   Float_t fParamS0[2][3][4];    //error parameterization coeficients
   Float_t fErrorS0[2][3][4];    //error parameterization coeficients
@@ -177,7 +180,6 @@ class AliTPCClusterParam : public TObject {
   TVectorD  *fPosYcor[3];       //  position correction parameterization 
   TVectorD  *fPosZcor[3];       //  position correction parameterization
   //
- protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
   ClassDef(AliTPCClusterParam,6)    //  TPC Cluster parameter class
 };

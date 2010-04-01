@@ -792,7 +792,7 @@ void AliTPCClusterParam::FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_
 
 
 
-Float_t  AliTPCClusterParam::GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle){
+Float_t  AliTPCClusterParam::GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
   //
   //
   //
@@ -805,7 +805,7 @@ Float_t  AliTPCClusterParam::GetError0(Int_t dim, Int_t type, Float_t z, Float_t
 }
 
 
-Float_t  AliTPCClusterParam::GetError0Par(Int_t dim, Int_t type, Float_t z, Float_t angle){
+Float_t  AliTPCClusterParam::GetError0Par(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
   //
   //
   //
@@ -822,7 +822,7 @@ Float_t  AliTPCClusterParam::GetError0Par(Int_t dim, Int_t type, Float_t z, Floa
 
 
 
-Float_t  AliTPCClusterParam::GetError1(Int_t dim, Int_t type, Float_t z, Float_t angle){
+Float_t  AliTPCClusterParam::GetError1(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
   //
   //
   //
@@ -837,7 +837,7 @@ Float_t  AliTPCClusterParam::GetError1(Int_t dim, Int_t type, Float_t z, Float_t
   return value;
 }
 
-Float_t  AliTPCClusterParam::GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean){
+Float_t  AliTPCClusterParam::GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
   //
   //
   //
@@ -853,7 +853,7 @@ Float_t  AliTPCClusterParam::GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t
 
 }
 
-Float_t  AliTPCClusterParam::GetErrorQPar(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean){
+Float_t  AliTPCClusterParam::GetErrorQPar(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
   //
   //
   //
@@ -872,7 +872,7 @@ Float_t  AliTPCClusterParam::GetErrorQPar(Int_t dim, Int_t type, Float_t z, Floa
 
 }
 
-Float_t  AliTPCClusterParam::GetErrorQParScaled(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean){
+Float_t  AliTPCClusterParam::GetErrorQParScaled(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
   //
   //
   //
@@ -893,7 +893,7 @@ Float_t  AliTPCClusterParam::GetErrorQParScaled(Int_t dim, Int_t type, Float_t z
 
 }
 
-Float_t  AliTPCClusterParam::GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t angle){
+Float_t  AliTPCClusterParam::GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
   //
   // calculate mean RMS of cluster - z,angle - parameters for each pad and dimension separatelly
   //
@@ -905,7 +905,7 @@ Float_t  AliTPCClusterParam::GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t a
   return value;
 }
 
-Float_t  AliTPCClusterParam::GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t angle){
+Float_t  AliTPCClusterParam::GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t angle) const {
   //
   // calculate mean RMS of cluster - z,angle - pad length scalling
   //
@@ -924,7 +924,7 @@ Float_t  AliTPCClusterParam::GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t a
   return value;
 }
 
-Float_t  AliTPCClusterParam::GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean){
+Float_t  AliTPCClusterParam::GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
   //
   // calculate mean RMS of cluster - z,angle, Q dependence
   //
@@ -938,7 +938,7 @@ Float_t  AliTPCClusterParam::GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t a
   return value;
 }
 
-Float_t  AliTPCClusterParam::GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean){
+Float_t  AliTPCClusterParam::GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean) const {
   //
   // calculates RMS of signal shape fluctuation
   //
@@ -948,7 +948,7 @@ Float_t  AliTPCClusterParam::GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float
   return value;
 }
 
-Float_t  AliTPCClusterParam::GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM){
+Float_t  AliTPCClusterParam::GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM) const {
   //
   // calculates vallue - sigma distortion contribution
   //
@@ -1380,7 +1380,7 @@ Float_t AliTPCClusterParam::QnormHis(Int_t ipad, Int_t itype, Float_t dr, Float_
 
 
 
-void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, TVectorD * norm){
+void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, const TVectorD *const norm){
   //
   // set normalization
   //

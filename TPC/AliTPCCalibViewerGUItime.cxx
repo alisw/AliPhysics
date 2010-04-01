@@ -465,7 +465,7 @@ void AliTPCCalibViewerGUItime::UseFile(const char* fileName, const char* treeNam
   
 }
 //______________________________________________________________________________
-void AliTPCCalibViewerGUItime::UseChain(TChain* chain  = 0)
+void AliTPCCalibViewerGUItime::UseChain(TChain *const chain  = 0)
 {
   //
   //

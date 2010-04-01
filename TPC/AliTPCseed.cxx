@@ -1035,8 +1035,8 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
 
     if (padNorm==1){
       //taken from OCDB
-      if (type==0 && parcl->fQpadTnorm) corrPadType = (*parcl->fQpadTnorm)[ipad];
-      if (type==1 && parcl->fQpadTnorm) corrPadType = (*parcl->fQpadMnorm)[ipad];
+      if (type==0 && parcl->QpadTnorm()) corrPadType = (*parcl->QpadTnorm())[ipad];
+      if (type==1 && parcl->QpadMnorm()) corrPadType = (*parcl->QpadMnorm())[ipad];
 
     }
     if (padNorm==2){

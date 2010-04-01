@@ -60,14 +60,14 @@ public:
   void DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h);
   
   void UseFile(const char* fileName, const char* treeName);
-  void UseChain(TChain *chain);
+  void UseChain(TChain *const chain);
   void UseConfigFile(const char* file="");
   void Reload(Int_t first=1);
   void AddReferenceTree(const char* treeFileName, const char* refName="R");
 
   
-  void SetCalibViewerGUI(AliTPCCalibViewerGUI *gui) {fCalibViewerGUI=gui;}
-  void SetCalibViewerGUItab(TGTabElement *tab) {fCalibViewerGUItab=tab;}
+  void SetCalibViewerGUI(AliTPCCalibViewerGUI *const gui) {fCalibViewerGUI=gui;}
+  void SetCalibViewerGUItab(TGTabElement *const tab) {fCalibViewerGUItab=tab;}
   void SetCacheDir(const char* cachedir) {fOutputCacheDir=cachedir;}
   void SetConfigFileName(const char* file) {fConfigFile=file;}
   
