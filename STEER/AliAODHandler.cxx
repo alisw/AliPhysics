@@ -417,7 +417,7 @@ Bool_t AliAODHandler::FinishEvent()
   if(mcarray) mcarray->Delete();
 
   AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
-  if(!mcHeader) mcHeader->Reset();
+  if(mcHeader) mcHeader->Reset();
 
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
