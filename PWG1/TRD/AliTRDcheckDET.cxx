@@ -1278,24 +1278,31 @@ void AliTRDcheckDET::MakePlotnTrackletsVsP(){
   Int_t np(ax->GetNbins());
   for(Int_t ipBin(1); ipBin<np; ipBin++){
     h = hBar->ProjectionY("npBin", ipBin, ipBin);
-    if(!Int_t(h->Integral())) return;
+    if(!Int_t(h->Integral())) continue;
     h->Scale(100./h->Integral());
     Float_t p(ax->GetBinCenter(ipBin)); 
     Float_t dp(ax->GetBinWidth(ipBin)); 
+    Int_t ip(g[0]->GetN());
     for(Int_t itl(AliTRDgeometry::kNlayer); itl--;){
-      g[itl]->SetPoint(ipBin-1, p, h->GetBinContent(itl+1));
-      g[itl]->SetPointError(ipBin-1, dp/3.46, h->GetBinError(itl+1));
+      g[itl]->SetPoint(ip, p, h->GetBinContent(itl+1));
+      g[itl]->SetPointError(ip, dp/3.46, h->GetBinError(itl+1));
     }
   }
 
-  TLegend *leg = new TLegend(0.5, 0.75, 0.9, 0.9);
+  TLegend *leg = new TLegend(0.76, 0.6, 1., 0.9);
   leg->SetBorderSize(0);
   leg->SetHeader("Tracklet/Track");
   leg->SetFillStyle(0);
   h = hBar->ProjectionX("npxBin"); h->Reset();
-  h->GetYaxis()->SetRangeUser(0., 90.);
-  h->GetXaxis()->SetMoreLogLabels();
+  h->SetTitle("");
+  h->GetYaxis()->SetRangeUser(1., 99.);
+  h->GetYaxis()->SetMoreLogLabels();
+  h->GetYaxis()->CenterTitle();
+  h->GetYaxis()->SetTitleOffset(1.2);
   h->SetYTitle("Prob. [%]");
+  h->GetXaxis()->SetRangeUser(0.4, 12.);
+  h->GetXaxis()->SetMoreLogLabels();
+  h->GetXaxis()->CenterTitle();
   h->Draw("p");
   for(Int_t itl(AliTRDgeometry::kNlayer); itl--;){
     g[itl]->Draw("pc");
@@ -1303,7 +1310,7 @@ void AliTRDcheckDET::MakePlotnTrackletsVsP(){
   }
 
   leg->Draw();
-  gPad->SetLogx();
+  gPad->SetLogx();gPad->SetLogy();
 }
 
 //________________________________________________________

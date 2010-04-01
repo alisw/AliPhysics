@@ -87,7 +87,7 @@ const Int_t   AliTRDinfoGen::fgkEvVertexN = 1;
 
 const Float_t AliTRDinfoGen::fgkTrkDCAxy  = 40.;
 const Float_t AliTRDinfoGen::fgkTrkDCAz   = 15.;
-const Int_t   AliTRDinfoGen::fgkNclTPC    = 10;
+const Int_t   AliTRDinfoGen::fgkNclTPC    = 100;
 const Float_t AliTRDinfoGen::fgkPt        = 0.2;
 const Float_t AliTRDinfoGen::fgkEta       = 0.9;
 

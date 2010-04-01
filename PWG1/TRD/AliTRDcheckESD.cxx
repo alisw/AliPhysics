@@ -69,7 +69,7 @@ const Float_t AliTRDcheckESD::fgkEvVertexZ = 15.;
 const Int_t   AliTRDcheckESD::fgkEvVertexN = 1;
 const Float_t AliTRDcheckESD::fgkTrkDCAxy  = 40.;
 const Float_t AliTRDcheckESD::fgkTrkDCAz   = 15.;
-const Int_t   AliTRDcheckESD::fgkNclTPC    = 10;
+const Int_t   AliTRDcheckESD::fgkNclTPC    = 100;
 const Float_t AliTRDcheckESD::fgkPt        = 0.2;
 const Float_t AliTRDcheckESD::fgkEta       = 0.9;
 
@@ -227,7 +227,8 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     hF->GetXaxis()->SetTitleOffset(1.2);
     hF->GetYaxis()->CenterTitle();
     hF->Draw("p");
-    for(Int_t ig(0); ig<fgkNgraph[kPtRes]/2; ig++){
+    //for(Int_t ig(0); ig<fgkNgraph[kPtRes]/2; ig++){
+    for(Int_t ig(2); ig<6; ig++){
       if(!(g = (TGraphErrors*)arr->At(ig))) continue;
       if(!g->GetN()) continue;
       g->Draw("pl");
@@ -248,7 +249,8 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     leg->SetTextSize(0.03813559);
     {
       Int_t nPlots(0);
-      for(Int_t ig(fgkNgraph[kPtRes]/2); ig<fgkNgraph[kPtRes]; ig++){
+      //for(Int_t ig(fgkNgraph[kPtRes]/2); ig<fgkNgraph[kPtRes]; ig++){
+      for(Int_t ig(12); ig<16; ig++){
         if(!(g = (TGraphErrors*)arr->At(ig))) continue;
         if(!g->GetN()) continue;
         nPlots++;
