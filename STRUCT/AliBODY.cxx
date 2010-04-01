@@ -148,7 +148,7 @@ void AliBODY::CreateMaterials()
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
-  Float_t dAir = 1.20479E-3;
+  Float_t dAir = 1.20479E-3 * 960./1014.;
   Float_t dAir1 = 1.20479E-10;
   //
   AliMixture(1,"Vacuum  $",aAir,zAir,dAir1,4,wAir);
