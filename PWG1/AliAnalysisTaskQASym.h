@@ -138,11 +138,15 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH2F        *fRecDcaPosPhiEtaNeg;  //dca-phi for pos tracks and neg eta
   TH2F        *fRecDcaNegPhiEtaNeg;  //dca-phi for neg tracks and neg eta
 
+  TH2F        *fRecDcaPosPtEtaPos;  //dca-pt for pos tracks and pos eta
+  TH2F        *fRecDcaNegPtEtaPos;  //dca-pt for neg tracks and pos eta
+  TH2F        *fRecDcaPosPtEtaNeg;  //dca-pt for pos tracks and neg eta
+  TH2F        *fRecDcaNegPtEtaNeg;  //dca-pt for neg tracks and neg eta
+
   TH2F        *fRecPtPosPhiEtaPos;  //pt-phi for pos tracks and pos eta
   TH2F        *fRecPtNegPhiEtaPos;  //pt-phi for neg tracks and pos eta 
   TH2F        *fRecPtPosPhiEtaNeg;  //pt-phi for pos tracks and neg eta
   TH2F        *fRecPtNegPhiEtaNeg;  //pt-phi for neg tracks and neg eta
-
 
   TH3F        *fRecDcaPhiPtPosEtaPos; //dca-pt-phi for pos tracks and pos eta
   TH3F        *fRecDcaPhiPtNegEtaPos; //dca-pt-phi for neg tracks and pos eta
@@ -150,6 +154,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH3F        *fRecDcaPhiPtNegEtaNeg; //dca-pt-phi for neg tracks and neg eta
 
   TH2F        *fEtavPt;
+  TH2F        *fCompareTPCparam;
 
   Double_t  sdca;
   Float_t xy, z, xvertexcor, yvertexcor;
