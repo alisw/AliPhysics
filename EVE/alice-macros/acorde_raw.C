@@ -43,7 +43,7 @@ void acorde_raw()
 
   gEve->AddElement(acorde);
 
-  for (Int_t module=0; module < 60; ++module)
+  for (Int_t module=0; module < 60; module++)
   {
     TString path = acorde_module_path(module);
     // printf("%2d - %s\n", i, path.Data());
@@ -58,9 +58,10 @@ void acorde_raw()
     // Here check state and assign color, I do it partially for now.
     Int_t  word_idx = module / 30;
     Int_t  bit_idx  = module % 30;
-    Bool_t val      = (dy[word_idx] & (1 << bit_idx)) != 0;
-    //printf("Module %2d: word_idx = %d, bit_idx = %2d => val = %d\n",
-    //       module, word_idx, bit_idx, val);
+    //Bool_t val      = (dy[word_idx] & (1 << bit_idx)) != 0;
+    Bool_t val      = (dy[word_idx] & (1 << bit_idx)) != 0; // from Mario
+ //   printf("Module %2d: word_idx = %d, bit_idx = %2d => val = %d\n",
+   //        module, word_idx, bit_idx, val);
 
     TEveGeoShape* eg_shape = new TEveGeoShape(TString::Format("Module %d", module),
                                               TString::Format("Module %d, %s", module, val ? "ON" : "OFF"));
@@ -91,5 +92,7 @@ TString acorde_module_path(Int_t module)
   TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("ACORDE/Array%d", module));
   if (!pne) return "";
 
-  return Form("%s/ACORDE2_5", pne->GetTitle());
+  //return Form("%s/ACORDE2_5", pne->GetTitle());
+  return Form("%s/ACORDESCINTILLATORMODULE_6", pne->GetTitle());
+
 }
