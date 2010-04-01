@@ -31,7 +31,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
   enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatV0A,kStatV0C,kStatSSD1,kStatFO1AndV0,kStatV0,kStatAny2Hits,kStatOffline,kStatBG,kStatAccepted};
 
 #ifdef VERBOSE_STAT
-  enum {kStatRowBG=5,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGood,kStatRowFracGood,kStatRowGood};
+  enum {kStatRowBG=5,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood};
 #else
   enum {kStatRowBG=5,kStatRowAcc,kStatRowGood};
 #endif

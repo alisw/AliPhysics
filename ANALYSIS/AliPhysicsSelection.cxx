@@ -472,6 +472,8 @@ const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
   }
   else if (runNumber >= 105256 && runNumber <= 105268) {
     return "4x4c";
+  } else if (runNumber == 114786 || runNumber == 114798 || runNumber == 114783 ) {
+    return "Single_2b_1_1_1";
   }
   else {
     AliError(Form("Unknown filling scheme (run %d)", runNumber));
@@ -487,6 +489,8 @@ Int_t AliPhysicsSelection::GetRatioBBBE(Int_t runNumber) {
 
   if (runNumber == 105143 || runNumber == 105160) {
     return 8;
+  }else if (runNumber == 114786 || runNumber == 114798 || runNumber == 114783 ) {
+    return 1;
   }
   else if (fComputeBG &&
 	   !(runNumber >= 105256 && runNumber <= 105268) &&
@@ -549,6 +553,12 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2454 #346";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #2128";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
+    else AliError(Form("Unknown trigger: %s", trigger));
+  } if (runNumber == 114786 || runNumber == 114798 || runNumber == 114783 ) {
+    if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #346";
+    else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2131";
+    else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #3019";
+    else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #1238";
     else AliError(Form("Unknown trigger: %s", trigger));
   }
   else {
@@ -924,6 +934,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
       
 	  if (cint1B>0) {
 	    Int_t acc  = fRatioBEEE*cint1E; 
+	    Double_t acc_err = TMath::Sqrt(fRatioBEEE*fRatioBEEE*cint1E);
 	    //      Int_t bg   = cint1A + cint1C - 2*acc;
 	    Float_t bg   = fBIFactorA*(cint1A-acc) + fBIFactorC*(cint1C-acc) ;
 	    Float_t good = Float_t(cint1B) - bg - acc;
@@ -943,12 +954,14 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowBG,bg);	
 	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowBG,errBG);	
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAcc,acc);	
-	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowAcc,TMath::Sqrt(fRatioBEEE*fRatioBEEE*cint1E));	
+	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowAcc,acc_err);	
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowGood,good);    
 	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowGood,errGood);    
 
 #ifdef VERBOSE_STAT
+	    //kStatRowBG=5,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowGood,kStatRowErrGood
 	    Float_t accFrac   = Float_t(acc) / cint1B  *100;
+	    Float_t errAccFrac= Float_t(acc_err) / cint1B  *100;
 	    Float_t bgFrac    = Float_t(bg)  / cint1B  *100;
 	    Float_t goodFrac  = Float_t(good)  / good1 *100;
 	    Float_t errGoodFrac = errGood/good1 * 100;
@@ -956,8 +969,9 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowBGFrac,bgFrac);	
 	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowBGFrac,errFracBG);	
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAccFrac,accFrac);    
-	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAccFrac,errGoodFrac);    
+	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowAccFrac,errAccFrac);    
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowGoodFrac,goodFrac);    
+	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowErrGoodFrac,errGoodFrac);    
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowErrGood,errGood);    
 #endif
 	  }
