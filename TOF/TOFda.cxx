@@ -321,6 +321,8 @@ main(int argc, char **argv)
     
     /* delete raw reader */
     delete rawReader;
+    /* free event */
+    free(event);
     
   } /* end of loop over events */
 

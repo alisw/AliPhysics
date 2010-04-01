@@ -3,9 +3,9 @@
 <!ELEMENT TOFConfig (Folder)>
 <!ELEMENT Folder EMPTY>
 <!ATTLIST Folder MeanMultiplicity CDATA #REQUIRED>
-<!ATTLIST Folder MaxMits CDATA #REQUIRED>
+<!ATTLIST Folder MaxHits CDATA #REQUIRED>
 ]>
 <TOFConfig>
-<Folder MeanMultiplicity="20" MaxHits="10000000">
+<Folder MeanMultiplicity="25" MaxHits="1000000">
 </Folder>
 </TOFConfig>
