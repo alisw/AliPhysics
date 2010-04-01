@@ -316,8 +316,11 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
     if (handler) handler->SetFillAOD(isSelected);
 
-    if( fInputHandler ) fEntry = fInputHandler->GetReadEntry();
-  
+    if( fInputHandler ) {
+	fEntry = fInputHandler->GetReadEntry();
+	fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
+    }
+    
 
 // Notify the change of run number
     if (InputEvent() && (InputEvent()->GetRunNumber() != fCurrentRunNumber)) {

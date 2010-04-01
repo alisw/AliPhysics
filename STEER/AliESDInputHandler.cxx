@@ -70,7 +70,6 @@ AliESDInputHandler::AliESDInputHandler() :
 AliESDInputHandler::~AliESDInputHandler() 
 {
   //  destructor
-  //  delete fEvent;
 }
 
 //______________________________________________________________________________
@@ -83,33 +82,19 @@ AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
 
 Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* opt)
 {
+    //
     // Initialisation necessary for each new tree 
+    // 
     fAnalysisType = opt;
     fTree         = tree;
     
     if (!fTree) return kFALSE;
     fTree->GetEntry(0);
     
-    // Get pointer to ESD event
-     
-    if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
-      // Try to add ESDfriend. branch as friend
-      TString esdTreeFName, esdFriendTreeFName;    
-      TTree* theTree = fTree->GetTree();
-      if (!theTree) theTree = tree;
-      esdTreeFName = (theTree->GetCurrentFile())->GetName();
-      esdFriendTreeFName = esdTreeFName;
-      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
-      theTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
-    }
-
-    SwitchOffBranches();
-    SwitchOnBranches();
 
     if (!fEvent) fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);
     fNEvents = fTree->GetEntries();
-    fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
     return kTRUE;
 }
 
@@ -136,7 +121,6 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t entry)
   //
   // Friends
   ((AliESDEvent*)fEvent)->SetESDfriend(fFriend);
-  
   return kTRUE;
 }
 
@@ -152,6 +136,31 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     // Notify a directory change
     AliInfo(Form("Directory change %s \n", path));
     //
+    // Handle the friends first
+    //
+    if (!fTree->FindBranch("ESDfriend.") && fReadFriends) {
+      // Try to add ESDfriend. branch as friend
+      TString esdTreeFName, esdFriendTreeFName;    
+      esdTreeFName = (fTree->GetCurrentFile())->GetName();
+      esdFriendTreeFName = esdTreeFName;
+      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
+
+      TTree* cTree = fTree->GetTree();
+      if (!cTree) cTree = fTree;
+      
+      cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
+      cTree->SetBranchStatus("ESDfriend.", 1);
+      fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+      cTree->SetBranchAddress("ESDfriend.", &fFriend);
+    } 
+    //
+    //
+    SwitchOffBranches();
+    SwitchOnBranches();
+    fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
+    
+
+    //
     if (fUseHLT) {
 	// Get HLTesdTree from current file
 	TTree* cTree = fTree;
@@ -164,6 +173,9 @@ Bool_t AliESDInputHandler::Notify(const char* path)
 	  fHLTEvent->ReadFromTree(fHLTTree);
 	}
     }
+
+
+
 
     if (!fUseTags) return (kTRUE);
     
