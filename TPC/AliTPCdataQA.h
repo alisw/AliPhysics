@@ -6,8 +6,7 @@
 
 
 #include <TH1F.h>
-#include <TProfile.h>
-#include <TObjArray.h>
+class TProfile;
 #include "AliRecoParam.h"
 
 class TArrayF;
@@ -35,22 +34,22 @@ public:
 
   AliTPCdataQA& operator = (const  AliTPCdataQA &source);
  void  DumpToFile(const Char_t *filename, const Char_t *dir="", Bool_t append=kFALSE);
- void MakeTree(const char *fname="QApad.root");
+ void MakeTree(const char *fname="QApad.root") const;
 
   //
-  Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
-  Bool_t ProcessEventFast(AliRawReader        *rawReader);
-  Bool_t ProcessEvent(AliTPCRawStream *rawStream);
-  Bool_t ProcessEvent(AliTPCRawStreamV3 *rawStreamV3);
-  Bool_t ProcessEvent(AliRawReader    *rawReader);
-  Bool_t ProcessEventOld(AliRawReader    *rawReader);
-  Bool_t ProcessEvent(eventHeaderStruct   *event);
+  Bool_t ProcessEventFast(AliTPCRawStreamFast *const rawStreamFast);
+  Bool_t ProcessEventFast(AliRawReader        *const rawReader);
+  Bool_t ProcessEvent(AliTPCRawStream *const rawStream);
+  Bool_t ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3);
+  Bool_t ProcessEvent(AliRawReader    *const rawReader);
+  Bool_t ProcessEventOld(AliRawReader    *const rawReader);
+  Bool_t ProcessEvent(eventHeaderStruct   *const event);
 
   void   Analyse();
   //
   //
-  void SetPedestal(AliTPCCalPad *pedestalCal){ fPedestal = pedestalCal;}
-  void SetNoise(AliTPCCalPad *noiseCal){ fNoise = noiseCal;}
+  void SetPedestal(AliTPCCalPad *const pedestalCal){ fPedestal = pedestalCal;}
+  void SetNoise(AliTPCCalPad *const noiseCal){ fNoise = noiseCal;}
 
   AliTPCCalPad *GetNoThreshold() const { return fNoThreshold;}
   AliTPCCalPad *GetMaxCharge() const { return fMaxCharge;}
@@ -72,7 +71,7 @@ public:
   TH1F*     GetHistNclustersVsEvent();
 
   //
-  AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
+  AliTPCAltroMapping **GetAltroMapping() const { return fMapping; };
   void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; };
   //
   //
@@ -104,7 +103,7 @@ private:
   void GetPadAndTimeBin(Int_t bin, Int_t& iPad, Int_t& iTimeBin); // Get pad and time bin corresponding to the 1d bin
   Float_t GetQ(const Float_t* adcArray, const Int_t time,
 	       const Int_t pad, const Int_t maxTimeBins, 
-	       Int_t& timeMin,Int_t& timeMax,Int_t& padMin,Int_t& padMax);
+	       Int_t& timeMin,Int_t& timeMax,Int_t& padMin,Int_t& padMax) const;
   void UpdateEventHistograms();
   void UpdateEventHisto(TH1F* hist, Float_t average);
 
@@ -154,8 +153,6 @@ private:
   Int_t fPadsMax;                  //!  Maximum number of time bins
   Int_t fTimeBinsMax;              //!  Maximum number of time bins
 
-
-public:
   ClassDef(AliTPCdataQA, 5)  // Implementation of the TPC Raw QA
 };
 

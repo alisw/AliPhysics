@@ -66,12 +66,11 @@ using namespace std;
 #include <TH2F.h>
 #include <TString.h>
 #include <TMath.h>
-#include <TF1.h>
-#include <TRandom.h>
 #include <TDirectory.h>
 #include <TFile.h>
 #include <TError.h>
 #include <TMap.h>
+#include <TProfile.h>
 //AliRoot includes
 #include "AliRawReader.h"
 #include "AliRawReaderRoot.h"
@@ -457,7 +456,7 @@ void AliTPCdataQA::UpdateEventHisto(TH1F* hist, Float_t average)
 }
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
+Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
 {
   //
   // Event Processing loop - AliTPCRawStreamV3
@@ -504,7 +503,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *rawStreamV3)
 }
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
+Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *const rawReader)
 {
   //
   //  Event processing loop - AliRawReader
@@ -521,7 +520,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *rawReader)
 }
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
+Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *const rawStreamFast)
 {
   //
   // Event Processing loop - AliTPCRawStream
@@ -563,7 +562,7 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
   return withInput;
 }
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *rawReader)
+Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *const rawReader)
 {
   //
   //  Event processing loop - AliRawReader
@@ -578,7 +577,7 @@ Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *rawReader)
 }
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
+Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *const rawStream)
 {
   //
   // Event Processing loop - AliTPCRawStream
@@ -622,7 +621,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStream *rawStream)
 
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEventOld(AliRawReader *rawReader)
+Bool_t AliTPCdataQA::ProcessEventOld(AliRawReader *const rawReader)
 {
   //
   //  Event processing loop - AliRawReader
@@ -641,7 +640,7 @@ Bool_t AliTPCdataQA::ProcessEventOld(AliRawReader *rawReader)
 
 
 //_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEvent(eventHeaderStruct *event)
+Bool_t AliTPCdataQA::ProcessEvent(eventHeaderStruct *const event)
 {
   //
   //  process date event
@@ -980,7 +979,7 @@ void AliTPCdataQA::Analyse()
 
 
 //_____________________________________________________________________
-void AliTPCdataQA::MakeTree(const char *fname){
+void AliTPCdataQA::MakeTree(const char *fname) const {
   //
   // Export result to the tree -located in the file
   // This file can be analyzed using AliTPCCalibViewer
@@ -1110,7 +1109,7 @@ void AliTPCdataQA::SetExpandDigit(const Int_t iRow, Int_t iPad,
 Float_t AliTPCdataQA::GetQ(const Float_t* adcArray, const Int_t time, 
 			   const Int_t pad, const Int_t maxTimeBins, 
 			   Int_t& timeMin, Int_t& timeMax, 
-			   Int_t& padMin,  Int_t& padMax) 
+			   Int_t& padMin,  Int_t& padMax) const
 {
   //
   // This methods return the charge in the bin time+pad*maxTimeBins
@@ -1126,37 +1125,37 @@ Float_t AliTPCdataQA::GetQ(const Float_t* adcArray, const Int_t time,
 }
 
 //______________________________________________________________________________
-void AliTPCdataQA::Streamer(TBuffer &R__b)
+void AliTPCdataQA::Streamer(TBuffer &xRuub)
 {
   // Automatic schema evolution was first used from revision 4
   // Code based on:
   // http://root.cern.ch/root/roottalk/roottalk02/3207.html
 
-   UInt_t R__s, R__c;
-   if (R__b.IsReading()) {
-      Version_t R__v = R__b.ReadVersion(&R__s, &R__c);
+   UInt_t xRuus, xRuuc;
+   if (xRuub.IsReading()) {
+      Version_t xRuuv = xRuub.ReadVersion(&xRuus, &xRuuc);
       //we use the automatic algorithm for class version > 3
-      if (R__v > 3) {
-	AliTPCdataQA::Class()->ReadBuffer(R__b, this, R__v, R__s,
-					  R__c);
+      if (xRuuv > 3) {
+	AliTPCdataQA::Class()->ReadBuffer(xRuub, this, xRuuv, xRuus,
+					  xRuuc);
 	return;
       }
-      TH1F::Streamer(R__b);
-      R__b >> fFirstTimeBin;
-      R__b >> fLastTimeBin;
-      R__b >> fAdcMin;
-      R__b >> fAdcMax;
-      R__b >> fNLocalMaxima;
-      R__b >> fMaxCharge;
-      R__b >> fMeanCharge;
-      R__b >> fNoThreshold;
-      R__b >> fNTimeBins;
-      R__b >> fNPads;
-      R__b >> fTimePosition;
-      R__b >> fEventCounter;
-      R__b >> fIsAnalysed;
-      R__b.CheckByteCount(R__s, R__c, AliTPCdataQA::IsA());
+      TH1F::Streamer(xRuub);
+      xRuub >> fFirstTimeBin;
+      xRuub >> fLastTimeBin;
+      xRuub >> fAdcMin;
+      xRuub >> fAdcMax;
+      xRuub >> fNLocalMaxima;
+      xRuub >> fMaxCharge;
+      xRuub >> fMeanCharge;
+      xRuub >> fNoThreshold;
+      xRuub >> fNTimeBins;
+      xRuub >> fNPads;
+      xRuub >> fTimePosition;
+      xRuub >> fEventCounter;
+      xRuub >> fIsAnalysed;
+      xRuub.CheckByteCount(xRuus, xRuuc, AliTPCdataQA::IsA());
    } else {
-     AliTPCdataQA::Class()->WriteBuffer(R__b,this);
+     AliTPCdataQA::Class()->WriteBuffer(xRuub,this);
    }
 }
