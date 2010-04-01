@@ -198,6 +198,7 @@ fHistd0rphiITSMIoneSPDInAccP40008000(0),
 fHistd0zITSMIoneSPDInAccP150200(0),
 fHistd0zITSMIoneSPDInAccP500700(0),
 fHistd0zITSMIoneSPDInAccP10001500(0),
+fHistd0zVSetaTPCInAccP10001500(0),
 fHistd0rphiVSphiITSMIoneSPDInAccP10001500(0),
 fHistd0rphiVSetaITSMIoneSPDInAccP10001500(0),
 fHistd0rphiITSMIoneSPDInAccS150200(0),
@@ -379,6 +380,7 @@ fHistd0rphiITSMIoneSPDInAccP40008000(0),
 fHistd0zITSMIoneSPDInAccP150200(0),
 fHistd0zITSMIoneSPDInAccP500700(0),
 fHistd0zITSMIoneSPDInAccP10001500(0),
+fHistd0zVSetaTPCInAccP10001500(0),
 fHistd0rphiVSphiITSMIoneSPDInAccP10001500(0),
 fHistd0rphiVSetaITSMIoneSPDInAccP10001500(0),
 fHistd0rphiITSMIoneSPDInAccS150200(0),
@@ -1090,6 +1092,9 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistd0zITSMIoneSPDInAccP10001500->SetMinimum(0);
   fOutput->Add(fHistd0zITSMIoneSPDInAccP10001500);
 
+  fHistd0zVSetaTPCInAccP10001500 = new TH2F("fHistd0zVSetaTPCInAccP10001500","Long. imp. par. to VertexSPD for TPC tracks; d_{0} z [cm]; eta",100,-4,4,10,-1,1);
+  fOutput->Add(fHistd0zVSetaTPCInAccP10001500);
+
   fHistd0rphiVSphiITSMIoneSPDInAccP10001500 = new TH2F("fHistd0rphiVSphiITSMIoneSPDInAccP10001500","Transverse imp. par. to VertexTracks for primaries; d_{0} rphi [cm]; phi",30,-0.3,0.3,40,0,2*3.1415);
   fOutput->Add(fHistd0rphiVSphiITSMIoneSPDInAccP10001500);
 
@@ -1341,8 +1346,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
   Double_t maxchi2perTPCcl=4.;
   Double_t minEtaInAcc=-0.8; // -0.8
   Double_t maxEtaInAcc=0.8; // 0.8
-  Double_t maxdcaxy=1.e6;//2.4;
-  Double_t maxdcaz=1.e6;//3.2;
+  Double_t maxdcaxy=2.4;//2.4;
+  Double_t maxdcaz=3.2;//3.2;
   AliESDtrackCuts* esdtrackCutsTPC = new AliESDtrackCuts("esdtrackCutsTPC");
   esdtrackCutsTPC->SetMaxDCAToVertexXY(maxdcaxy);
   esdtrackCutsTPC->SetMaxDCAToVertexZ(maxdcaz);
@@ -1870,6 +1875,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if(track->Pt()>1.000 && track->Pt()<1.500) {
 	if(isPrimary) {
 	  fHistd0rphiTPCInAccP10001500->Fill(d0z0TPC[0]);
+	  fHistd0zVSetaTPCInAccP10001500->Fill(d0z0TPC[1],trackTPC->Eta());
+
 	  if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1) && itsrefit)
 	    fHistd0rphiITSMISPDInAccP10001500->Fill(d0z0[0]);
 	  if((track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) && itsrefit) {
