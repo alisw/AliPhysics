@@ -3242,7 +3242,6 @@ Bool_t AliReconstruction::InitPlaneEff() {
  //  Input: none
  //  Return: kTRUE if all operations have been done properly, kFALSE otherwise
  //
- AliWarning(Form("Implementation of this method not yet completed !! Method return kTRUE"));
 
   fSPDTrackleter = NULL;
   TString detStr = fLoadCDB;
