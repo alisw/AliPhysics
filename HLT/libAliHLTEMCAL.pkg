@@ -40,11 +40,12 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW VZERO
 
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lAliHLTCalo -lESD -lCDB  \
 	       -lEMCALrec -lEMCALsim -lEMCALbase -lEMCALUtils \
+	       -lVZERObase \
                -lTPCrec -lTPCbase -lTRDrec -lTRDbase \
                -lSTEER -lSTEERBase -lRAWDatarec 
 
