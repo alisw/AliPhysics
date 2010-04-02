@@ -5294,7 +5294,7 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t aCM55J[4]={12.0107,14.0067,15.9994,1.00794};
     Float_t zCM55J[4]={6.,7.,8.,1.};
     Float_t wCM55J[4]={0.908508078,0.010387573,0.055957585,0.025146765};
-    Float_t dCM55J = 1.63;
+    Float_t dCM55J = 1.8;
 
     //ALCM55J
 

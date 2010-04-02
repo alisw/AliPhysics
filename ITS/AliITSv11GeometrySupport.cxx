@@ -1547,11 +1547,15 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
 // Updated:      11 Apr 2008  Mario Sitta
 // Measures from drawings give overlaps with SPD thermal shield wings,
 // so the terminal part of the SSD cone was reduced
+//
+// Updated:      30 Mar 2010  Mario Sitta
+// Following M. van Leeuwen's suggestion on material budget, the thickness
+// of the carbon fiber cylinder was increased from 0.6 to 0.625mm
 
   // Dimensions of the Central cylinder and flanges
   const Double_t kCylinderHalfLength   = (1144.0/2) *fgkmm;
   const Double_t kCylinderOuterRadius  = ( 595.0/2) *fgkmm;
-  const Double_t kCylinderThickness    =        0.6 *fgkmm;
+  const Double_t kCylinderThickness    =       0.625*fgkmm;
   const Double_t kFoamHalfLength       = (1020.0/2) *fgkmm;
   const Double_t kFoamThickness        =        5.0 *fgkmm;
   const Double_t kFlangeHalfLength     =
@@ -3714,7 +3718,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
 
   // Overall position and rotation of the A-Side Cable Trays
   // (parts of 0872/G/D)
-  const Double_t kTrayARTrans            =  410.00 *fgkmm;
+  const Double_t kTrayARTrans            =  408.35 *fgkmm;
   const Double_t kTrayAZTrans            = 1011.00 *fgkmm;
   const Double_t kTrayAZToSupportRing    =  435.00 *fgkmm;
   const Double_t kExternTrayZTrans       =  853.00 *fgkmm;
@@ -3940,7 +3944,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
 
   // Dimensions and positions of the A-Side Cable Trays
   // (parts of 0872/G/D)
-  const Double_t kTrayARTrans            =  410.00 *fgkmm;
+  const Double_t kTrayARTrans            =  408.35 *fgkmm;
   const Double_t kTrayAZTrans            = 1011.00 *fgkmm;
   const Double_t kForwardSideYTrans      =   12.00 *fgkmm;//!!!TO BE CHECKED!!!
   const Double_t kCoversYTrans           =    2.00 *fgkmm;
@@ -3984,8 +3988,8 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
 
 
   // The two tray components as assemblies
-  TGeoVolumeAssembly *cableTrayAFR =
-    new TGeoVolumeAssembly("ITSsupportSSDTrayAForwRear");
+  TGeoVolumeAssembly *cableTrayAForw =
+    new TGeoVolumeAssembly("ITSsupportSSDTrayAForw");
   TGeoVolumeAssembly *cableTrayAExt =
     new TGeoVolumeAssembly("ITSsupportSSDTrayAExt");
   
@@ -4317,48 +4321,48 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
 
 
   // Now build up the tray
-  cableTrayAFR->AddNode(forwTrayFirst, 1, 0);
+  cableTrayAForw->AddNode(forwTrayFirst, 1, 0);
 
-  cableTrayAFR->AddNode(forwTraySecond, 1,
+  cableTrayAForw->AddNode(forwTraySecond, 1,
 			new TGeoTranslation(0, 0, kForwardTrayFirstLen) );
 
   xloc = kTrayWidth/2 + kForwardSideThick/2;
   yloc = kForwardTrayFirstHeight + kForwardSideHeight/2 - kForwardSideYTrans;
   zloc = kForwardSideLength/2;
-  cableTrayAFR->AddNode(forwTraySide,1,
+  cableTrayAForw->AddNode(forwTraySide,1,
 			new TGeoTranslation( xloc, yloc, zloc) );
-  cableTrayAFR->AddNode(forwTraySide,2,
+  cableTrayAForw->AddNode(forwTraySide,2,
 			new TGeoTranslation(-xloc, yloc, zloc) );
 
   yloc = kForwardTrayFirstHeight + kForwardSideHeight - kForwardSideYTrans
        - kForwardCoverHeight;
-  cableTrayAFR->AddNode(forwTraySideCover,1,
+  cableTrayAForw->AddNode(forwTraySideCover,1,
 			new TGeoTranslation(0, yloc, 0) );
 
   yloc = kTrayTotalHeight - kCoversYTrans;
   zloc = kForwardTrayTotalLen - kForwardCoverLen;
-  cableTrayAFR->AddNode(forwardTrayCover,1,
+  cableTrayAForw->AddNode(forwardTrayCover,1,
 			new TGeoTranslation(0, yloc, zloc) );
 
   yloc = kTrayThick + forwCopper->GetDY();
   zloc = forwCopper->GetDZ();
-  cableTrayAFR->AddNode(forwCableCu, 1,
+  cableTrayAForw->AddNode(forwCableCu, 1,
 			new TGeoTranslation(0, yloc, zloc) );
 
   yloc = kTrayThick + kCopperHeight + forwPlastic->GetDY();
   zloc = forwPlastic->GetDZ();
-  cableTrayAFR->AddNode(forwCableFEP, 1,
+  cableTrayAForw->AddNode(forwCableFEP, 1,
 			new TGeoTranslation(0, yloc, zloc) );
 
   yloc = kTrayThick + kCopperHeight + kCablePlasticHeight + forwWater->GetDY();
   zloc = forwWater->GetDZ();
-  cableTrayAFR->AddNode(forwTrayWater, 1,
+  cableTrayAForw->AddNode(forwTrayWater, 1,
 			new TGeoTranslation(0, yloc, zloc) );
 
   yloc = kTrayThick + kCopperHeight + kCablePlasticHeight
        + kCoolingWaterHeight + forwPUR->GetDY();
   zloc = forwPUR->GetDZ();
-  cableTrayAFR->AddNode(forwPolyUr, 1,
+  cableTrayAForw->AddNode(forwPolyUr, 1,
 			new TGeoTranslation(0, yloc, zloc) );
 
   // To simplify following placement in MARS, origin is on top
@@ -4405,7 +4409,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
   alpharot = kTrayAFirstRotAng;
   xloc = kTrayARTrans*SinD(alpharot);
   yloc = kTrayARTrans*CosD(alpharot);
-  moth->AddNode(cableTrayAFR,1,
+  moth->AddNode(cableTrayAForw,1,
 			    new TGeoCombiTrans( xloc, yloc, zloc,
 			    new TGeoRotation("",-alpharot,0,0)   )   );
   xloc = rExtTray*SinD(alpharot);
@@ -4417,7 +4421,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
   alpharot += 180;
   xloc = kTrayARTrans*SinD(alpharot);
   yloc = kTrayARTrans*CosD(alpharot);
-  moth->AddNode(cableTrayAFR,2,
+  moth->AddNode(cableTrayAForw,2,
 			    new TGeoCombiTrans( xloc, yloc, zloc,
 			    new TGeoRotation("",-alpharot,0,0)   )   );
   xloc = rExtTray*SinD(alpharot);
@@ -4429,7 +4433,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
   alpharot = -kTrayAFirstRotAng - 2*kTrayASecondRotAng;
   xloc = kTrayARTrans*SinD(alpharot);
   yloc = kTrayARTrans*CosD(alpharot);
-  moth->AddNode(cableTrayAFR,3,
+  moth->AddNode(cableTrayAForw,3,
 			    new TGeoCombiTrans( xloc, yloc, zloc,
 			    new TGeoRotation("",-alpharot,0,0)   )   );
   xloc = rExtTray*SinD(alpharot);
@@ -4441,7 +4445,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
   alpharot += 180;
   xloc = kTrayARTrans*SinD(alpharot);
   yloc = kTrayARTrans*CosD(alpharot);
-  moth->AddNode(cableTrayAFR,4,
+  moth->AddNode(cableTrayAForw,4,
 			    new TGeoCombiTrans( xloc, yloc, zloc,
 			    new TGeoRotation("",-alpharot,0,0)   )   );
   xloc = rExtTray*SinD(alpharot);
