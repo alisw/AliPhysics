@@ -89,6 +89,7 @@ the AliITS class.
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSSD.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSSD.h"
@@ -1316,15 +1317,24 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal));
     }
     rawReader->Reset();
-     AliITSpListItem* sdig = 0;
+    AliITSpListItem* sdig = 0;
     
+    Int_t firstssd = GetITSgeom()->GetStartDet(kSSD);
+    Double_t adcToEv = 1.;
     for (Int_t mod = 0; mod < size; mod++)
-    {
-	Int_t nsdig =  modA[mod]->GetEntries();
-	for (Int_t ie = 0; ie < nsdig; ie++) {
-	    sdig = (AliITSpListItem*) (modA[mod]->At(ie));
-	    new (aSDigits[ie]) AliITSpListItem(-1, -1, mod, sdig->GetIndex(), sdig->GetSignal());
+      {
+      if(mod>=firstssd) {
+	AliITSCalibrationSSD* calssd = (AliITSCalibrationSSD*)fDetTypeSim->GetCalibrationModel(mod);
+	adcToEv = 1./calssd->GetSSDDEvToADC(1.);
+      }
+      Int_t nsdig =  modA[mod]->GetEntries();
+      for (Int_t ie = 0; ie < nsdig; ie++) {
+	sdig = (AliITSpListItem*) (modA[mod]->At(ie));
+	Int_t digsig = sdig->GetSignal();
+	if(mod>=firstssd) digsig*=adcToEv; // for SSD: convert back charge from ADC to electron
+	new (aSDigits[ie]) AliITSpListItem(-1, -1, mod, sdig->GetIndex(), digsig);
 	    Float_t sig = sdig->GetSignalAfterElect();
+	    if(mod>=firstssd) sig*=adcToEv;
 	    if (sig > 0.) {
 		sdig = (AliITSpListItem*)aSDigits[ie];
 		sdig->AddSignalAfterElect(mod, sdig->GetIndex(), Double_t(sig));
