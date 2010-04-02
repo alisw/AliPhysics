@@ -28,7 +28,7 @@ class AliESDtrackCuts;
 class AliTRDCalDet;
 
 #include "TObjString.h"
-#include "AliAnalysisTaskSE.h" 
+#include "AliAnalysisTask.h" 
 #include "TMath.h"
 
 class AliTRDCalibTask : public AliAnalysisTask {
@@ -41,7 +41,11 @@ class AliTRDCalibTask : public AliAnalysisTask {
   virtual void   Exec(Option_t *);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Load(const Char_t *filename);
+  virtual Bool_t Load(TList *lister);
   void           Plot();
+  virtual Long64_t  Merge(TCollection *li);
+  void           AddTask(const AliTRDCalibTask * calibTask);
+  TList          *GetList() const {return fListHist;};
 
   void SetHisto2d(Bool_t histo2d)                                   {fHisto2d=histo2d;};
   void SetVector2d(Bool_t vector2d)                                 {fVector2d=vector2d;};
@@ -153,5 +157,4 @@ class AliTRDCalibTask : public AliAnalysisTask {
 };
 
 #endif
-
 
