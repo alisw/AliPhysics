@@ -39,6 +39,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   void SetOnlySPDFO(Bool_t set=kTRUE) {fOnlySPDFO=set;}
+  void SetDownsamplelowpt(Bool_t set=kTRUE) {fDownsamplelowpt=set;}
   void SetGeometryFileName(TString name="geometry.root") {fGeometryFileName=name;}
   void SetITSRecoParam(AliITSRecoParam *rp) {fITSRecoParam=rp;}
   static Int_t WriteTrackPointsInIdealGeom(Char_t *fin="AliTrackPoints.root", 
@@ -58,6 +59,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTaskSE
 
 
   Bool_t fOnlySPDFO;         // only SPDtriggered events
+  Bool_t fDownsamplelowpt;   // skip part of low pt tracks (only for pp B-on)
   TString fGeometryFileName; // where to find the geometry.root
   AliITSRecoParam *fITSRecoParam;  // keeps the settings for the filter
   AliESDEvent  *fESD;        // ESD object
@@ -75,7 +77,7 @@ class AliAlignmentDataFilterITS : public AliAnalysisTaskSE
   TNtuple *fntExtra;         //! output QA ntuple  
   TNtuple *fntCosmicMatching;//! output QA ntuple  
 
-  ClassDef(AliAlignmentDataFilterITS,3); // AliAnalysisTask to extract ITS points for alignment
+  ClassDef(AliAlignmentDataFilterITS,4); // AliAnalysisTask to extract ITS points for alignment
 };
 
 #endif
