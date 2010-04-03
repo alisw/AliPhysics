@@ -27,6 +27,7 @@ AliAlignmentDataFilterITS *AddTaskAlignmentDataFilterITS()
   itsRecoParam->SetAlignFilterUseLayer(4,kTRUE);
   itsRecoParam->SetAlignFilterUseLayer(5,kTRUE);
   taskFilter->SetITSRecoParam(itsRecoParam);
+  taskFilter->SetDownsamplelowpt(kTRUE);
   //taskFilter->SetOnlySPDFO();
   taskFilter->SetGeometryFileName("alien:///alice/cern.ch/user/d/dainesea/geometry.root");
   // Add to the manager

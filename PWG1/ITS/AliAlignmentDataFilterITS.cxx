@@ -32,6 +32,7 @@
 #include <TMap.h>
 #include <TVector3.h>
 #include <TGeoManager.h>
+#include <TRandom.h>
 
 #include "AliLog.h"
 #include "AliCDBEntry.h"
@@ -57,6 +58,7 @@ ClassImp(AliAlignmentDataFilterITS)
 AliAlignmentDataFilterITS::AliAlignmentDataFilterITS():
 AliAnalysisTaskSE(),
 fOnlySPDFO(kFALSE),
+fDownsamplelowpt(kFALSE),
 fGeometryFileName("geometry.root"),
 fITSRecoParam(0),
 fESD(0),
@@ -81,6 +83,7 @@ fntCosmicMatching(0)
 AliAlignmentDataFilterITS::AliAlignmentDataFilterITS(const char *name):
 AliAnalysisTaskSE(name),
 fOnlySPDFO(kFALSE),
+fDownsamplelowpt(kFALSE),
 fGeometryFileName("geometry.root"),
 fITSRecoParam(0),
 fESD(0),
@@ -275,6 +278,11 @@ void AliAlignmentDataFilterITS::UserExec(Option_t */*option*/)
     printf("AliAlignmentDataFilterITS::Exec(): no ESD \n");
     return;
   } 
+
+  //AliESDfriend *esdfriend = (AliESDfriend*)(fESD->FindListObject("AliESDfriend"));
+
+  //if(!esdfriend) printf("AliAlignmentDataFilterITS::Exec(): no ESDfriend \n");
+  //fESD->SetESDfriend(esdfriend);
 
   // Post the data for slot 0
   fHistNevents->Fill(0);
@@ -761,6 +769,9 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
     AliESDtrack * track = esd->GetTrack(itrack);
     if (!track) continue;
 
+    if(fDownsamplelowpt && TMath::Abs(esd->GetMagneticField())>0.01 &&
+       track->Pt()<gRandom->Rndm()) continue;
+
     if(track->GetNcls(0)<GetRecoParam()->GetAlignFilterMinITSPoints()) continue;
 
     if((GetRecoParam()->GetAlignFilterOnlyITSSATracks()) && track->GetNcls(1)>0) continue;
@@ -792,7 +803,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
     Bool_t layerOK[6]; for(Int_t l1=0;l1<6;l1++) layerOK[l1]=kFALSE;
     
     array = track->GetTrackPointArray();
-    if(!array) continue;
+    if(!array) {printf("no track points\n"); continue;}
     for(ipt=0; ipt<array->GetNPoints(); ipt++) {
       array->GetPoint(point,ipt);
       volId = point.GetVolumeID();
