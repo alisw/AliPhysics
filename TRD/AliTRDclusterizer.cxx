@@ -770,7 +770,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   const AliTRDrecoParam *const recoParam = fReconstructor->GetRecoParam();
 
   fMaxThresh            = (Short_t)recoParam->GetClusMaxThresh();
-  fMaxThreshTest        = (Short_t)(fMaxThresh/2+fBaseline);
+  fMaxThreshTest        = (Short_t)(recoParam->GetClusMaxThresh()/2+fBaseline);
   fSigThresh            = (Short_t)recoParam->GetClusSigThresh();
   fMinMaxCutSigma       = recoParam->GetMinMaxCutSigma();
   fMinLeftRightCutSigma = recoParam->GetMinLeftRightCutSigma();
