@@ -273,7 +273,7 @@ void AliHLTMUONHitReconstructor::TryRecover(ERecoveryMode mode)
 bool AliHLTMUONHitReconstructor::Run(
 		const AliHLTUInt32_t* rawData,
 		AliHLTUInt32_t rawDataSize,
-		AliHLTMUONRecHitStruct* recHit,
+		AliHLTMUONRecHitStruct* const recHit,
 		AliHLTUInt32_t& nofHit
 	) 
 {

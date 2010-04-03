@@ -51,7 +51,7 @@ public:
 	bool Run(
 			const AliHLTUInt32_t* rawData,
 			AliHLTUInt32_t rawDataSize,
-			AliHLTMUONRecHitStruct* recHit,
+			AliHLTMUONRecHitStruct* const recHit,
 			AliHLTUInt32_t& nofHit
 		);
 	
@@ -189,7 +189,7 @@ private:
 		void OnError(ErrorCode code, const void* location);
 		
 		void SetDCCut(AliHLTInt32_t dcCut) {fDCCut = dcCut;}
-		void SetPadData(AliHLTMUONPad* padData) {fPadData = padData;}
+		void SetPadData(AliHLTMUONPad* const padData) {fPadData = padData;}
 		void SetLookUpTable(const AliHLTMUONHitRecoLutRow* lookUpTableData) {fkLookUpTableData = lookUpTableData;}
 
 		void SetIdManuChannelToEntry(const IdManuChannelToEntry* idToEntry) {fkIdToEntry = idToEntry;}
@@ -198,8 +198,8 @@ private:
 		AliHLTInt32_t DDLNumber() const { return fDDL; }
 		void DDLNumber(AliHLTInt32_t value) { fDDL = (value & 0x1F); }  // 0x1F forces value into our required range.
 		// The following two methods have to called after set the ddl
-		void SetNofFiredDetElemId(AliHLTUInt16_t *nofDataInDetElem) {fNofDataInDetElem = nofDataInDetElem;}
-		void SetMaxFiredPerDetElem(AliHLTUInt16_t **dataCountListPerDetElem) {fDataCountListPerDetElem = dataCountListPerDetElem;}		
+		void SetNofFiredDetElemId(AliHLTUInt16_t* const nofDataInDetElem) {fNofDataInDetElem = nofDataInDetElem;}
+		void SetMaxFiredPerDetElem(AliHLTUInt16_t** const dataCountListPerDetElem) {fDataCountListPerDetElem = dataCountListPerDetElem;}		
 
 
 		AliHLTInt32_t GetDataCount() const {return fDataCount;}
