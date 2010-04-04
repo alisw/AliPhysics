@@ -224,9 +224,15 @@ main(int argc, char **argv)
     /* retry if got no event */
     if (event==NULL) continue;
     /* check event type */
-    if (event->eventType != PHYSICS_EVENT && event->eventType != CALIBRATION_EVENT) continue;
+    if (event->eventType != PHYSICS_EVENT && event->eventType != CALIBRATION_EVENT) {
+      free(event);
+      continue;
+    }
     /* check inhibit collection */
-    if (event->eventType == PHYSICS_EVENT && inhibitCollection) continue;
+    if (event->eventType == PHYSICS_EVENT && inhibitCollection) {
+      free(event);
+      continue;
+    }
     /* increment number of physics events */
     if (event->eventType == PHYSICS_EVENT) nPhysicsEvents++;
     /* increment number of calib events */
