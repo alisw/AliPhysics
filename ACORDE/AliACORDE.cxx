@@ -132,7 +132,7 @@ void AliACORDE::CreateMaterials()
   Float_t zMolasse[10] = {1., 6., 8., 11., 12., 13., 14., 19., 20., 26.};
   Float_t wMolasse[10] = {0.008, 0.043, 0.485, 0.007, 0.042, 0.037, 0.215, 0.023, 0.1, 0.04};
   Float_t dMolasse = 2.40;
-  AliMixture(24, "Molasse$", aMolasse, zMolasse, dMolasse, 10, wMolasse);
+  AliMixture(24, "Molasse$", aMolasse, zMolasse, 2*dMolasse, 10, wMolasse); // correction to density of molasse alpine newDen=2*dmolasse
 
   // **************** 
   //     Defines tracking media parameters. 
@@ -275,7 +275,7 @@ void AliACORDE::Digits2Raw()
     // 2.3 set the array entry for each digit
     AliACORDEdigit* digit = (AliACORDEdigit*) adigits->At(idig);
     Int_t mod = digit->GetModule();
-    Modules[mod-1]=kTRUE;
+    Modules[mod]=kTRUE;
   } 
   // 3. Unload digits
   fLoader->UnloadDigits();
