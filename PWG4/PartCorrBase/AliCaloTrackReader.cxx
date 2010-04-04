@@ -59,7 +59,8 @@ ClassImp(AliCaloTrackReader)
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fEMCALGeoName("EMCAL_COMPLETE"),fPHOSGeoName("PHOSgeo"), 
-    fEMCALGeo(0x0), fPHOSGeo(0x0), fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE)
+    fEMCALGeo(0x0), fPHOSGeo(0x0), fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), fAnaLED(kFALSE),
+    fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0),fPHOSBadChannelMap(0)
 {
   //Ctor
   
@@ -96,7 +97,9 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fFiredTriggerClassName(g.fFiredTriggerClassName),
   fEMCALGeoName(g.fEMCALGeoName),           fPHOSGeoName(g.fPHOSGeoName),
   fEMCALGeo(new AliEMCALGeoUtils(*g.fEMCALGeo)), fPHOSGeo(new AliPHOSGeoUtils(*g.fPHOSGeo)),
-  fEMCALGeoMatrixSet(g.fEMCALGeoMatrixSet), fPHOSGeoMatrixSet(g.fPHOSGeoMatrixSet)
+  fEMCALGeoMatrixSet(g.fEMCALGeoMatrixSet), fPHOSGeoMatrixSet(g.fPHOSGeoMatrixSet),
+  fAnaLED(g.fAnaLED),  fRemoveBadChannels(g.fRemoveBadChannels),
+  fEMCALBadChannelMap(g.fEMCALBadChannelMap),fPHOSBadChannelMap(g.fPHOSBadChannelMap)
 {
   // cpy ctor
   
@@ -162,7 +165,12 @@ AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & 
   fPHOSGeo           = new AliPHOSGeoUtils(*source.fPHOSGeo);
   fEMCALGeoMatrixSet = source.fEMCALGeoMatrixSet; 
   fPHOSGeoMatrixSet  = source.fPHOSGeoMatrixSet;
+  fAnaLED            = source.fAnaLED;
+  fRemoveBadChannels = source.fRemoveBadChannels;
+  fEMCALBadChannelMap= source.fEMCALBadChannelMap;
+  fPHOSBadChannelMap = source.fPHOSBadChannelMap;
 
+	
   return *this;
   
 }
@@ -214,6 +222,40 @@ AliCaloTrackReader::~AliCaloTrackReader() {
 	
 }
 
+//_________________________________________________________________________________________________________
+Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells){
+	// Check that in the cluster cells, there is no bad channel of those stored 
+	// in fEMCALBadChannelMap or fPHOSBadChannelMap
+	
+	if (!fRemoveBadChannels) return kFALSE;
+	
+	Int_t icol = -1;
+	Int_t irow = -1;
+	Int_t imod = -1;
+	for(Int_t iCell = 0; iCell<nCells; iCell++){
+	
+		//Get the column and row
+		if(calorimeter == "EMCAL"){
+			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
+			fEMCALGeo->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
+			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
+			if(GetEMCALChannelStatus(imod, icol, irow))return kTRUE;
+		}
+		else if(calorimeter=="PHOS"){
+			Int_t    relId[4];
+			fPHOSGeo->AbsToRelNumbering(cellList[iCell],relId);
+			irow = relId[2];
+			icol = relId[3];
+			imod = relId[0]-1;
+			if(GetPHOSChannelStatus(imod, icol, irow)) return kTRUE;
+		}
+		else return kFALSE;
+		
+	}// cell cluster loop
+	
+	return kFALSE;
+
+}
 
 //_________________________________________________________________________
 Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(){
@@ -351,8 +393,6 @@ void AliCaloTrackReader::Init()
 		}
 		else printf("AliCaloTrackReader::Init() - Second input not added, reader is not AOD\n");
 	}
-	
-	
 }
 //_______________________________________________________________
 void AliCaloTrackReader::InitParameters()
@@ -391,6 +431,20 @@ void AliCaloTrackReader::InitParameters()
 	fEMCALGeoMatrixSet = kFALSE;
 	fPHOSGeoMatrixSet  = kFALSE;
   }
+	
+  fAnaLED = kFALSE;
+	
+  fRemoveBadChannels = kFALSE;
+	
+  for (int i = 0; i < 12; i++) 
+	fEMCALBadChannelMap.Add(new TH2I(Form("EMCALBadChannelMap_SM%d",i),Form("EMCALBadChannelMap_SM%d",i), 
+									 48, 0, 48, 24, 0, 24));
+	
+  for (int i = 0; i < 5; i++) 
+	fPHOSBadChannelMap.Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 
+									 56, 0, 56, 64, 0, 64));
+	fEMCALBadChannelMap.Compress();
+	fPHOSBadChannelMap.Compress();
 	
 }
 
@@ -444,7 +498,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Clean std AOD       =     %d\n", fCleanOutputStdAOD) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
-
+  printf("Rremove Clusters with bad channels? %d\n",fRemoveBadChannels);
   printf("    \n") ;
 } 
 
@@ -456,13 +510,33 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   fCurrentFileName = TString(currentFileName);
 
   //Select events only fired by a certain trigger configuration if it is provided
-  if( fFiredTriggerClassName  !=""){
+  Int_t eventType = ((AliESDHeader*)fInputEvent->GetHeader())->GetEventType();
+  if( fFiredTriggerClassName  !="" && !fAnaLED){
+	if(eventType!=7)return kFALSE; //Only physics event, do not use for simulated events!!!
     if(fDebug > 0) 
       printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
 	     GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
     if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
   }
-  
+  else if(fAnaLED){
+//	  kStartOfRun =       1,    // START_OF_RUN
+//	  kEndOfRun =         2,    // END_OF_RUN
+//	  kStartOfRunFiles =  3,    // START_OF_RUN_FILES
+//	  kEndOfRunFiles =    4,    // END_OF_RUN_FILES
+//	  kStartOfBurst =     5,    // START_OF_BURST
+//	  kEndOfBurst =       6,    // END_OF_BURST
+//	  kPhysicsEvent =     7,    // PHYSICS_EVENT
+//	  kCalibrationEvent = 8,    // CALIBRATION_EVENT
+//	  kFormatError =      9,    // EVENT_FORMAT_ERROR
+//	  kStartOfData =      10,   // START_OF_DATA
+//	  kEndOfData =        11,   // END_OF_DATA
+//	  kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
+//	  kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
+	 
+	  if(eventType!=7 && fDebug > 1 )printf("AliCaloTrackReader::FillInputEvent() - DO LED, Event Type <%d>, 8 Calibration \n",  eventType);
+	  if(eventType!=8)return kFALSE;
+  }
+		
   if(fOutputEvent && (fDataType != kAOD) && ((fOutputEvent->GetCaloClusters())->GetEntriesFast()!=0 ||(fOutputEvent->GetTracks())->GetEntriesFast()!=0)){
     if (fFillCTS || fFillEMCAL || fFillPHOS) {
       printf("AliCaloTrackReader::AODCaloClusters or AODTracks already filled by the filter, do not use the ESD reader, use the AOD reader, STOP\n");

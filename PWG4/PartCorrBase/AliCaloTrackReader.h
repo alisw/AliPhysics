@@ -22,6 +22,7 @@ class TLorentzVector ;
 #include "TObjArray.h"
 class TArrayF;  
 class TTree ;
+#include "TH2I.h"
 
 //--- ANALYSIS system ---
 class AliStack ; 
@@ -190,6 +191,25 @@ class AliCaloTrackReader : public TObject {
   AliPHOSGeoUtils * GetPHOSGeometry() const {return fPHOSGeo;}	
   Bool_t IsPHOSGeoMatrixSet()  {return fPHOSGeoMatrixSet ; }
 
+  void AnalyzeOnlyLED()     {fAnaLED = kTRUE;}
+  void AnalyzeOnlyPhysics() {fAnaLED = kFALSE;}
+	
+  // Bad channels
+	
+  Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
+  void SwitchOnBadChannelsRemoval()    {fRemoveBadChannels = kTRUE ; }
+  void SwitchOffBadChannelsRemoval()   {fRemoveBadChannels = kFALSE ; }
+	
+  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) { return ((TH2I*)fEMCALBadChannelMap[iSM])->GetBinContent(iCol,iRow);}
+  Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) { return ((TH2I*)fPHOSBadChannelMap[imod])->GetBinContent(iCol,iRow);}
+
+  TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap[iSM];}
+  TH2I * GetPHOSChannelStatusMap(Int_t imod) const {return (TH2I*)fPHOSBadChannelMap[imod];}
+
+  void SetEMCALChannelStatusMap(TObjArray map) {fEMCALBadChannelMap = map;}
+  void SetPHOSChannelStatusMap (TObjArray map) {fPHOSBadChannelMap  = map;}
+	
+  Bool_t ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
 	
  protected:
   Int_t	           fEventNumber; // Event number
@@ -238,14 +258,18 @@ class AliCaloTrackReader : public TObject {
   TString        fDeltaAODFileName ;   // Delta AOD file name
   TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
 
-  TString        fEMCALGeoName;  // Name of geometry to use for EMCAL.
-  TString        fPHOSGeoName;   // Name of geometry to use for PHOS.	
-  AliEMCALGeoUtils * fEMCALGeo ; //! EMCAL geometry pointer
-  AliPHOSGeoUtils  * fPHOSGeo  ; //! PHOS  geometry pointer  
-  Bool_t         fEMCALGeoMatrixSet; // Check if the transformation matrix is set for EMCAL
-  Bool_t         fPHOSGeoMatrixSet ; // Check if the transformation matrix is set for PHOS
+  TString        fEMCALGeoName;       // Name of geometry to use for EMCAL.
+  TString        fPHOSGeoName;        // Name of geometry to use for PHOS.	
+  AliEMCALGeoUtils * fEMCALGeo ;      //! EMCAL geometry pointer
+  AliPHOSGeoUtils  * fPHOSGeo  ;      //! PHOS  geometry pointer  
+  Bool_t         fEMCALGeoMatrixSet;  // Check if the transformation matrix is set for EMCAL
+  Bool_t         fPHOSGeoMatrixSet ;  // Check if the transformation matrix is set for PHOS
+  Bool_t         fAnaLED;             // Analyze LED data only.
+  Bool_t         fRemoveBadChannels;  // Check the channel status provided and remove clusters with bad channels
+  TObjArray      fEMCALBadChannelMap; //! Array of histograms with map of bad channels, EMCAL
+  TObjArray      fPHOSBadChannelMap;  //! Array of histograms with map of bad channels, PHOS
 
-  ClassDef(AliCaloTrackReader,11)
+  ClassDef(AliCaloTrackReader,12)
 } ;
 
 

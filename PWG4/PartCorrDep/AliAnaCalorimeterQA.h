@@ -325,10 +325,15 @@ public:
   TH1F * fhNCells;    //! Number of towers/crystals with signal
   TH1F * fhAmplitude; //! Amplitude measured in towers/crystals
   TH2F * fhAmpId;     //! Amplitude measured in towers/crystals vs id of tower.	
+  TH3F * fhEtaPhiAmp; //! eta vs phi vs amplitude, cells
+
   TH1F * fhTime;      //! Time measured in towers/crystals
   TH2F * fhTimeId;    //! Time vs Absolute cell Id
   TH2F * fhTimeAmp;   //! Time vs Amplitude 
-  TH3F * fhEtaPhiAmp; //! eta vs phi vs amplitude, cells
+//  TH1F * fhT0Time;    //! T0 - EMCAL Time measured in towers/crystals
+//  TH2F * fhT0TimeId;  //! T0 - EMCAL Time vs Absolute cell Id
+//  TH2F * fhT0TimeAmp; //! T0 - EMCAL Time vs Amplitude 
+
 
   //Calorimeters Correlation
   TH2F * fhCaloCorrNClusters; // EMCAL vs PHOS, number of clusters	
@@ -347,9 +352,11 @@ public:
   TH1F ** fhAmplitudeMod ;        //! Amplitude measured in towers/crystals different module, Reco
   TH1F ** fhAmplitudeModFraction; //! Amplitude measured in towers/crystals different fractions of module, Reco
   TH2F ** fhTimeAmpPerRCU;        //! Time vs Amplitude measured in towers/crystals different RCU
+  //TH2F ** fhT0TimeAmpPerRCU;      //! T0 - EMCAL Time vs Amplitude measured in towers/crystals different RCU
+  //TH2F ** fhTimeCorrRCU;          //! Correlate time entries in the different RCU, E > 0.3
   TH2F ** fhIMMod;                //! cluster pairs invariant mass, different module,
   TH2F ** fhIMCellCutMod;         //! cluster pairs invariant mass, n cells > 1 per cluster, different module
-
+	
   //MC  
   TH1F *fhGenGamPt  ; // pt of primary gamma
   TH1F *fhGenGamEta ; // eta of primart gamma
