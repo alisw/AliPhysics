@@ -197,6 +197,10 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
     AliESDCaloCluster * clus = 0;
     if ( (clus = ((AliESDEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
       if (clus->IsEMCAL()){
+		  
+	//Check if the cluster contains any bad channel
+	if(ClusterContainsBadChannel("EMCAL",clus->GetCellsAbsId(), clus->GetNCells())) continue;
+		  
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	if(fDebug > 3 && momentum.E() > 0.1) printf("AliCaloTrackESDReader::FillInputEMCAL() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
@@ -214,7 +218,7 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	  
 	  Float_t energy = clus->E();
 	  Char_t ttype= AliAODCluster::kEMCALClusterv1;
-	  
+		
 	  //Put new aod object in file in AOD calo clusters array
 	  AliAODCaloCluster *caloCluster = new((*(fOutputEvent->GetCaloClusters()))[naod++]) 
 	    AliAODCaloCluster(id,nLabel,labels,energy, pos, NULL,ttype,0);
@@ -278,6 +282,10 @@ void AliCaloTrackESDReader::FillInputPHOS() {
     AliESDCaloCluster * clus = 0;
     if ( (clus = ((AliESDEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
       if (clus->IsPHOS()){
+		  
+	//Check if the cluster contains any bad channel
+	if(ClusterContainsBadChannel("PHOS",clus->GetCellsAbsId(), clus->GetNCells())) continue;
+
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	if(fDebug > 3 && momentum.E() > 0.1)printf("AliCaloTrackESDReader::FillInputPHOS() - all clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",

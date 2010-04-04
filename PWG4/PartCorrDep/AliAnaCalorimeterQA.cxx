@@ -86,11 +86,14 @@ ClassImp(AliAnaCalorimeterQA)
     fhRCellE(0), fhXCellE(0), fhYCellE(0), fhZCellE(0),fhXYZCell(0),
     fhDeltaCellClusterRNCells(0),fhDeltaCellClusterXNCells(0),fhDeltaCellClusterYNCells(0),fhDeltaCellClusterZNCells(0),
     fhDeltaCellClusterRE(0),     fhDeltaCellClusterXE(0),     fhDeltaCellClusterYE(0),     fhDeltaCellClusterZE(0),
-    fhNCells(0), fhAmplitude(0), fhAmpId(0), fhTime(0), fhTimeId(0), fhTimeAmp(0), fhEtaPhiAmp(0),
+    fhNCells(0), fhAmplitude(0), fhAmpId(0), fhEtaPhiAmp(0), 
+	fhTime(0), fhTimeId(0), fhTimeAmp(0), //fhT0Time(0), fhT0TimeId(0), fhT0TimeAmp(0), 
     fhCaloCorrNClusters(0), fhCaloCorrEClusters(0), fhCaloCorrNCells(0), fhCaloCorrECells(0),
     fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
     fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
-    fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), fhIMMod(0),  fhIMCellCutMod(0),
+    fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), //fhT0TimeAmpPerRCU(0), 
+	//fhTimeCorrRCU(0),
+    fhIMMod(0),  fhIMCellCutMod(0),
     fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
     fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
     fhGenElePt(0),fhGenEleEta(0),fhGenElePhi(0), fhEMVxyz(0),  fhEMR(0), fhHaVxyz(0),  fhHaR(0),
@@ -156,15 +159,17 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fhDeltaCellClusterYNCells(qa.fhDeltaCellClusterYNCells),fhDeltaCellClusterZNCells(qa.fhDeltaCellClusterZNCells),
   fhDeltaCellClusterRE(qa.fhDeltaCellClusterRE),          fhDeltaCellClusterXE(qa.fhDeltaCellClusterXE),
   fhDeltaCellClusterYE(qa.fhDeltaCellClusterYE),          fhDeltaCellClusterZE(qa.fhDeltaCellClusterZE),
-  fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude), fhAmpId(fhAmpId),
-  fhTime(qa.fhTime), fhTimeId(qa.fhTimeId),fhTimeAmp(qa.fhTimeAmp),fhEtaPhiAmp(qa.fhEtaPhiAmp),
+  fhNCells(qa.fhNCells), fhAmplitude(qa.fhAmplitude), fhAmpId(fhAmpId), fhEtaPhiAmp(qa.fhEtaPhiAmp),
+  fhTime(qa.fhTime), fhTimeId(qa.fhTimeId),fhTimeAmp(qa.fhTimeAmp),
+  //fhT0Time(qa.fhT0Time),fhT0TimeId(qa.fhT0TimeId), fhT0TimeAmp(qa.fhT0TimeAmp), 
   fhCaloCorrNClusters(qa.fhCaloCorrNClusters), fhCaloCorrEClusters(qa.fhCaloCorrEClusters),
   fhCaloCorrNCells(qa.fhCaloCorrNCells), fhCaloCorrECells(qa.fhCaloCorrECells),
   fhEMod(qa.fhEMod), fhNClustersMod(qa.fhNClustersMod), 
   fhNCellsPerClusterMod(qa.fhNCellsPerClusterMod), fhNCellsMod(qa.fhNCellsMod),  
   fhGridCellsMod(qa.fhGridCellsMod),  fhGridCellsEMod(qa.fhGridCellsEMod), fhGridCellsTimeMod(qa.fhGridCellsTimeMod), 
   fhAmplitudeMod(qa.fhAmplitudeMod), fhAmplitudeModFraction(qa.fhAmplitudeModFraction),
-  fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
+  fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), //fhT0TimeAmpPerRCU(qa.fhT0TimeAmpPerRCU), //fhTimeCorrRCU(qa.fhTimeCorrRCU),
+  fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
   fhGenGamPt(qa.fhGenGamPt), fhGenGamEta(qa.fhGenGamEta), fhGenGamPhi(qa.fhGenGamPhi),
   fhGenPi0Pt(qa.fhGenPi0Pt), fhGenPi0Eta(qa.fhGenPi0Eta), fhGenPi0Phi(qa.fhGenPi0Phi),
   fhGenEtaPt(qa.fhGenEtaPt), fhGenEtaEta(qa.fhGenEtaEta), fhGenEtaPhi(qa.fhGenEtaPhi),
@@ -708,6 +713,20 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhTimeAmp->SetYTitle("Cell Time (ns)");
 		fhTimeAmp->SetXTitle("Cell Energy (GeV)");
 		outputContainer->Add(fhTimeAmp);
+		
+//		fhT0Time  = new TH1F ("hT0Time","Cell Time",ntimebins,timemin,timemax); 
+//		fhT0Time->SetXTitle("T_{0} - T_{EMCal} (ns)");
+//		outputContainer->Add(fhT0Time);
+//		
+//		fhT0TimeId  = new TH2F ("hT0TimeId","Cell Time vs Absolute Id",ntimebins,timemin,timemax,rowmax*colmax*fNModules,0,rowmax*colmax*fNModules); 
+//		fhT0TimeId->SetXTitle("T_{0} - T_{EMCal} (ns)");
+//		fhT0TimeId->SetYTitle("Cell Absolute Id");
+//		outputContainer->Add(fhT0TimeId);
+//		
+//		fhT0TimeAmp  = new TH2F ("hT0TimeAmp","Cell Time vs Cell Energy",nptbins*2,ptmin,ptmax,ntimebins,timemin,timemax); 
+//		fhT0TimeAmp->SetYTitle("T_{0} - T_{EMCal} (ns)");
+//		fhT0TimeAmp->SetXTitle("Cell Energy (GeV)");
+//		outputContainer->Add(fhT0TimeAmp);
 	}
 	
 	
@@ -747,7 +766,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		fhAmplitudeModFraction = new TH1F*[fNModules*3];
 
 	fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
-
+	//fhT0TimeAmpPerRCU      = new TH2F*[fNModules*fNRCU];
+	//fhTimeCorrRCU          = new TH2F*[fNModules*fNRCU*fNModules*fNRCU];
+	
 	fhIMMod                = new TH2F*[fNModules];
 	fhIMCellCutMod         = new TH2F*[fNModules];
 
@@ -804,11 +825,31 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 		
 		for(Int_t ircu = 0; ircu < fNRCU; ircu++){
 				fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
-														   Form("Cell reconstructed Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
+														   Form("Cell Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
 														   nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
 				fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
 				fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("time (ns)");
 				outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+			
+//				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hT0TimeAmp_Mod%d_RCU%d",imod,ircu),
+//															  Form("Cell Energy vs T0-Cell Time in Module %d, RCU %d ",imod,ircu), 
+//															  nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+//				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
+//				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("T_{0} - T_{EMCal} (ns)");
+//				outputContainer->Add(fhT0TimeAmpPerRCU[imod*fNRCU+ircu]);
+//			
+			
+//				for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
+//						for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
+//							Int_t index =  (imod2*fNRCU+ircu2)+(fNModules*fNRCU)*(ircu+imod)+fNRCU*fNModules*imod; 
+//							fhTimeCorrRCU[index]  = new TH2F (Form("hTimeCorrRCU_Mod%d_RCU%d_CompareTo_Mod%d_RCU%d",imod, ircu,imod2, ircu2),
+//																			Form("Cell Energy > 0.3, Correlate cell Time in Module %d, RCU %d to Module %d, RCU %d",imod,ircu,imod2, ircu2),
+//																			ntimebins,timemin,timemax,ntimebins,timemin,timemax); 
+//							fhTimeCorrRCU[index]->SetXTitle("Trigger Cell Time (ns)");
+//							fhTimeCorrRCU[index]->SetYTitle("Cell Time (ns)");
+//							outputContainer->Add(fhTimeCorrRCU[index]);
+//						}
+//				}
 		}
 		
 		
@@ -1613,9 +1654,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
 			AliESDCaloCluster* clus =  (AliESDCaloCluster*) (caloClusters->At(iclus));
+			
+			//Check if the cluster contains any bad channel
+			if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;	
+			
 			//Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
+			
 			//Check only certain regions
 			Bool_t in = kTRUE;
 			if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
@@ -1755,7 +1801,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		}//ESDs
 		else{
 			AliAODCaloCluster* clus =  (AliAODCaloCluster*) (caloClusters->At(iclus));
-
+			
+			//Check if the cluster contains any bad channel
+			if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;
+			
 			//Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
@@ -1878,6 +1927,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
 				if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
 					AliESDCaloCluster* clus2 =  (AliESDCaloCluster*) (caloClusters->At(jclus));
+					//Check if the cluster contains any bad channel
+					if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;	
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
 					//Check only certain regions
@@ -1892,6 +1943,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				}
 				else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD){
 					AliAODCaloCluster* clus2 =  (AliAODCaloCluster*) (caloClusters->At(jclus));
+					//Check if the cluster contains any bad channel
+					if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;	
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
 					//Check only certain regions
@@ -1972,6 +2025,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			
 			if(nModule < fNModules) {	
+				//Check if the cell is a bad channel
+				if(fCalorimeter=="EMCAL"){
+					if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+				}
+				else {
+					if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+				}
+
 				amp     = cell->GetAmplitude(iCell);
 				time    = cell->GetTime(iCell)*1e9;//transform time to ns
 				//printf("%s: time %g\n",fCalorimeter.Data(), time);
@@ -1981,6 +2042,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				fhTime     ->Fill(time);
 				fhTimeId   ->Fill(time,id);
 				fhTimeAmp  ->Fill(amp,time);
+				//Double_t t0 = ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0();
+				//printf("---->>> Time EMCal %e, T0 %e, T0 vertex %e, T0 clock %e, T0 trig %d \n",time,t0, 
+				//	   ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0zVertex(),
+				//	   ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0clock(),
+				//	   ((AliESDEvent*)GetReader()->GetInputEvent())->GetT0Trig());
+				//fhT0Time     ->Fill(time-t0);
+				//fhT0TimeId   ->Fill(time-t0,id);
+				//fhT0TimeAmp  ->Fill(amp,time-t0);
+				
 				fhAmplitudeMod[nModule]->Fill(amp);
 				if(fCalorimeter=="EMCAL"){
 					Int_t ifrac = 0;
@@ -1991,13 +2061,39 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 										
 				}
 				
-				fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time);
-			
+				fhTimeAmpPerRCU  [nModule*fNRCU+iRCU]->Fill(amp, time);
+				//printf("id %d, nModule %d, iRCU %d: Histo Name %s\n",id, nModule,iRCU, fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->GetName());
+				//fhT0TimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time-t0);
 				nCellsInModule[nModule]++;
 				fhGridCellsMod[nModule]    ->Fill(icol,irow);
 				fhGridCellsEMod[nModule]   ->Fill(icol,irow,amp);
-				if(amp > 0.5)fhGridCellsTimeMod[nModule]->Fill(icol,irow,time);
-
+				if(amp > 0.3){
+					fhGridCellsTimeMod[nModule]->Fill(icol,irow,time);
+					
+//					AliESDCaloCells * cell2 = 0x0; 
+//					if(fCalorimeter == "PHOS") cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+//					else		           cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+//					Int_t icol2    = -1;
+//					Int_t irow2    = -1;
+//					Int_t iRCU2    = -1;
+//					Float_t amp2   =  0.;
+//					Float_t time2  =  0.;
+//					Int_t id2      = -1;
+//					Int_t nModule2 = -1;
+//					for (Int_t iCell2 = 0; iCell2 < ncells; iCell2++) {  
+//						amp2    = cell2->GetAmplitude(iCell2);
+//						if(amp2 < 0.3) continue;
+//						if(iCell2 == iCell) continue;
+//						time2    = cell2->GetTime(iCell2)*1e9;//transform time to ns
+//						//printf("%s: time %g\n",fCalorimeter.Data(), time);
+//						id2      = cell2->GetCellNumber(iCell2);
+//						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), icol2, irow2, iRCU2);
+//						Int_t index = (nModule2*fNRCU+iRCU2)+(fNModules*fNRCU)*(iRCU+fNRCU*nModule); 
+//						//printf("id %d, nModule %d, iRCU %d, id2 %d, nModule2 %d, iRCU2 %d, index %d: Histo Name %s\n",id, nModule,iRCU,cell2->GetCellNumber(iCell2),nModule2,iRCU2,index, fhTimeCorrRCU[index]->GetName());
+//						fhTimeCorrRCU[index]->Fill(time,time2);	
+//						
+//					}// second cell loop
+				}// amplitude cut
 			}//nmodules
 			
 			//Get Eta-Phi position of Cell
@@ -2061,6 +2157,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			
 			if(nModule < fNModules) {	
+				//Check if the cell is a bad channel
+				if(fCalorimeter=="EMCAL"){
+					if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+				}
+				else{
+					if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+				}	
+				
 				amp     = cell->GetAmplitude(iCell);
 				fhAmplitude->Fill(amp);
 				fhAmpId    ->Fill(amp,id);
@@ -2844,6 +2948,11 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		fhTime       = (TH1F *) outputList->At(index++); 
 		fhTimeId     = (TH2F *) outputList->At(index++); 
 		fhTimeAmp    = (TH2F *) outputList->At(index++); 
+		
+//		fhT0Time       = (TH1F *) outputList->At(index++); 
+//		fhT0TimeId     = (TH2F *) outputList->At(index++); 
+//		fhT0TimeAmp    = (TH2F *) outputList->At(index++); 
+		
 	}
 	
 	
@@ -2890,9 +2999,15 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 			}
 		}
 		
-		for(Int_t ircu = 0; ircu < fNRCU; ircu++)
+		for(Int_t ircu = 0; ircu < fNRCU; ircu++){
 			fhTimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
-		
+//			fhT0TimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
+//			for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
+//				for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
+//					fhTimeCorrRCU[imod*fNRCU+ircu+imod2*fNRCU+ircu2]  = (TH2F *) outputList->At(index++);
+//				}
+//			}
+		}
 		fhIMMod[imod]                = (TH2F *) outputList->At(index++); 
 		fhIMCellCutMod[imod]         = (TH2F *) outputList->At(index++); 	
 

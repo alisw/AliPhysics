@@ -153,6 +153,10 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
     AliAODCaloCluster * clus = 0;
     if ( (clus = ((AliAODEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
       if (clus->IsEMCALCluster()){
+		  
+	//Check if the cluster contains any bad channel
+	if(ClusterContainsBadChannel("EMCAL",clus->GetCellsAbsId(), clus->GetNCells())) continue;
+		  
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	
@@ -220,6 +224,10 @@ void AliCaloTrackAODReader::FillInputPHOS() {
     AliAODCaloCluster * clus = 0;
     if ( (clus = ((AliAODEvent*)fInputEvent)->GetCaloCluster(iclus)) ) {
       if (clus->IsPHOSCluster()){
+		  
+	//Check if the cluster contains any bad channel
+	if(ClusterContainsBadChannel("PHOS",clus->GetCellsAbsId(), clus->GetNCells())) continue;
+		  
 	TLorentzVector momentum ;
 	clus->GetMomentum(momentum, v);      
 	
