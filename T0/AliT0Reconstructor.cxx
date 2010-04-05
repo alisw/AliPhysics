@@ -30,6 +30,7 @@
 #include "AliT0Reconstructor.h"
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
+#include "AliESDfriend.h"
 
 #include <TArrayI.h>
 #include <TGraph.h>
@@ -46,7 +47,12 @@ ClassImp(AliT0Reconstructor)
 					     fAmpLEDrec(),
 					     fQTC(0),
 					     fAmpLED(0),
-					     fCalib()
+                                             fCalib(),
+                                             fLatencyHPTDC(9000),
+                                             fLatencyL1(0),
+                                             fLatencyL1A(0),
+                                             fLatencyL1C(0)
+
 {
   //constructor
 
@@ -62,6 +68,11 @@ ClassImp(AliT0Reconstructor)
 	  if (gr2) fQTC.AddAtAndExpand(gr2,i) ; 	
   }
 
+  fLatencyL1 = fParam->GetLatencyL1();
+  fLatencyL1A = fParam->GetLatencyL1A();
+  fLatencyL1C = fParam->GetLatencyL1C();
+  fLatencyHPTDC = fParam->GetLatencyHPTDC();
+  AliDebug(10,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",fLatencyL1, fLatencyL1A, fLatencyL1C, fLatencyHPTDC));
   
   // fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
   //fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
@@ -222,11 +233,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
   Int_t refAmp = GetRecoParam()->GetRefAmp();
   Int_t refPoint = GetRecoParam()->GetRefPoint();
-  Float_t latencyL1 = GetRecoParam()->GetLatencyL1();
-  Float_t latencyL1A = GetRecoParam()->GetLatencyL1A();
-  Float_t latencyL1C = GetRecoParam()->GetLatencyL1C();
-  Float_t latencyHPTDC = GetRecoParam()->GetLatencyHPTDC();
-  AliDebug(10,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",latencyL1,latencyL1A,latencyL1C, latencyHPTDC));
+
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
@@ -237,6 +244,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   // Float_t meanVertex = fParam->GetMeanVertex();
   Float_t meanVertex = 0;
 
+  cout<<" @@@@ Latency "<<fLatencyL1<<endl;
   for (Int_t i0=0; i0<105; i0++)
     {
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
@@ -354,14 +362,14 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 }
        }
        if(besttimeA < 999999) 
-	 frecpoints->SetTimeBestA(0.001* besttimeA * channelWidth - latencyHPTDC + latencyL1A);
+	 frecpoints->SetTimeBestA(0.001* besttimeA * channelWidth - fLatencyHPTDC + fLatencyL1A);
        if( besttimeC < 999999 ) 
-	 frecpoints->SetTimeBestC( 0.001 *besttimeC * channelWidth - latencyHPTDC + latencyL1C);
+	 frecpoints->SetTimeBestC( 0.001 *besttimeC * channelWidth - fLatencyHPTDC + fLatencyL1C);
        AliDebug(10,Form(" pmtA %i besttimeA %f ps, pmtC %i besttimeC %f ps",
 		       pmtBestA,besttimeA, pmtBestC,  besttimeC));
         if(besttimeA <999999 && besttimeC < 999999 ){
-	 timeDiff = ( besttimeA - besttimeC) *0.001 * channelWidth + latencyL1A - latencyL1C;
-	 timeclock = 0.001*channelWidth * Float_t( besttimeA+besttimeC)/2. - latencyHPTDC + latencyL1;  
+	 timeDiff = ( besttimeA - besttimeC) *0.001 * channelWidth + fLatencyL1A - fLatencyL1C;
+	 timeclock = 0.001*channelWidth * Float_t( besttimeA+besttimeC)/2. - fLatencyHPTDC + fLatencyL1;  
 	 meanTime = (besttimeA+besttimeC-2.*Float_t(ref))/2.;
 	 vertex =  meanVertex - c*(timeDiff)/2. ; //+ (fdZonA - fdZonC)/2; 
 	}
@@ -380,15 +388,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	if(allData[trchan[itr]][0]>0) tr[itr]=true;
 	frecpoints->SetT0Trig(tr);
       }
-      for (Int_t i=0; i<5; i++) 
-	printf(" T0 trigers %i ",tr[i]);
-      printf(" \n ");
       
-      
-      } // if (else )raw data
-      recTree->Fill();
-      if(frecpoints) delete frecpoints;
-    }
+    } // if (else )raw data
+  recTree->Fill();
+  if(frecpoints) delete frecpoints;
+}
   
   
   //____________________________________________________________
@@ -401,7 +405,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   ****************************************************/
   
   AliDebug(1,Form("Start FillESD T0"));
-
+  Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t c = 29.9792458; // cm/ns
   Float_t currentVertex=0, shift=0;
   Int_t ncont=0;
@@ -417,8 +421,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
     ncont = vertex->GetNContributors();
     // cout<<" spdver "<<spdver<<" ncont "<<ncont<<endl;
-    if(ncont>1 ) {
-      //     hVertexSPD->Fill(spdver);
+    if(ncont>2 ) {
       shift = currentVertex/c;
       //	  cout<<" vertex shif "<<shift<<" vertex "<<spdver<<" IsFromVertexer3D  "<<fverSPD->IsFromVertexer3D()<<endl;
     }
@@ -441,7 +444,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   } 
     
     brRec->GetEntry(0);
-    Double32_t amp[24], time[24];  
+    Double32_t amp[24], time[24], ampQTC[24], timecorr[24];  
     Double32_t timeClock[3];
     Double32_t zPosition = frecpoints -> GetVertex();
     Double32_t timeStart = frecpoints -> GetMeanTime();
@@ -451,6 +454,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     for ( Int_t i=0; i<24; i++) {
       time[i] =  frecpoints -> GetTime(i); // ps to ns
       amp[i] = frecpoints -> GetAmp(i);
+      ampQTC[i] = frecpoints -> AmpLED(i);
     }
     Int_t trig= frecpoints ->GetT0Trig();
     pESD->SetT0Trig(trig);
@@ -463,6 +467,24 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
     
     AliDebug(1,Form("T0: Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
+
+    /* if (pESD) {
+     AliESDfriend *fr = (AliESDfriend*)pESD->FindListObject("AliESDfriend");
+     if (fr) {
+        AliDebug(1, Form("Writing TZERO friend data to ESD tree"));
+
+	if (ncont>2) {
+	  for ( Int_t i=0; i<24; i++) {
+	    if(i<12) timecorr[i]=time[i]-shift*channelWidth;
+	    if(i>11) timecorr[i]=time[i]-shift*channelWidth;
+	    fr->SetT0timeCorr(timecorr) ;
+	  }
+            fr->SetT0ampLEDminCFD(amp);
+            fr->SetT0ampQTC(ampQTC);
+	}
+    }
+  }
+    */
     
     
 } // vertex in 3 sigma

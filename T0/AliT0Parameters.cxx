@@ -30,6 +30,7 @@
 #include "AliT0CalibData.h"   
 #include "AliT0CalibWalk.h"   
 #include "AliT0CalibTimeEq.h"   
+#include "AliT0CalibLatency.h"   
 #include "AliT0LookUpKey.h"
 #include "AliT0LookUpValue.h"
 #include <AliCDBManager.h>        
@@ -46,6 +47,7 @@
 AliT0CalibTimeEq* AliT0Parameters::fgCalibData = 0;
 AliT0CalibData* AliT0Parameters::fgLookUp = 0;
 AliT0CalibWalk* AliT0Parameters::fgSlewCorr =0;
+AliT0CalibLatency *AliT0Parameters::fgLatency=0;
 //====================================================================
 ClassImp(AliT0Parameters)
 #if 0
@@ -140,7 +142,18 @@ AliT0Parameters::Init()
     fIsInit = kFALSE;
     return;
   }
-  fIsInit = kTRUE;
+  //latency
+  
+ fLatency  = stor->Get("T0/Calib/Latency");
+  if (fLatency){
+    fgLatency  = (AliT0CalibLatency*)fLatency->GetObject();
+  }
+  else {
+     AliWarning(" !!! no latency  in CDB "); 
+    return;
+  }
+  
+fIsInit = kTRUE;
 }
 
 
@@ -195,6 +208,46 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
     }
    
   return fgCalibData->GetTimeEq(ipmt);
+}
+
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetLatencyHPTDC() 
+  {
+  // return LatencyHPTDC for CFD channel
+  if (!fLatency) 
+    {
+      fLatencyHPTDC=9000.;
+      return fLatencyHPTDC;
+    }
+   
+  return fgLatency->GetLatencyHPTDC();
+}
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetLatencyL1() 
+  {
+  // return time delay for CFD channel
+   
+  return fgLatency->GetLatencyL1();
+}
+
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetLatencyL1A() 
+  {
+  // return time delay for CFD channel
+   
+  return fgLatency->GetLatencyL1A();
+}
+
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetLatencyL1C() 
+  {
+  // return time delay for CFD channel
+   
+  return fgLatency->GetLatencyL1C();
 }
 //__________________________________________________________________
 

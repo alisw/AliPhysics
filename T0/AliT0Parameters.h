@@ -23,6 +23,7 @@ class AliT0CalibData;
 class AliCDBEntry;
 class AliT0CalibWalk;
 class AliT0CalibTimeEq;
+class AliT0CalibLatency;
 
 class AliT0Parameters : public TNamed
 {
@@ -62,13 +63,14 @@ public:
   Double_t GetZPositionShift(const char* symname);
 
 
+
   TGraph *  GetPMTeff(Int_t ipmt) const  
   {return (TGraph*)fPMTeff.At(ipmt);}
   Float_t GetpmtEFF(Int_t ipmt, Float_t lambda) const
   {return((TGraph*)fPMTeff.At(ipmt))->Eval(lambda);} 
 
 
-  TGraph *  GetAmpLEDRec(Int_t ipmt) const;  
+  TGraph *GetAmpLEDRec(Int_t ipmt) const;  
   TGraph *GetWalk(Int_t ipmt )  const;
   TGraph *GetQTC(Int_t ipmt) const;
   TGraph *GetAmpLED(Int_t ipmt) const;
@@ -85,7 +87,17 @@ public:
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
   Int_t GetNumberOfTRMs();
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
-  
+ 
+  Float_t GetLatencyHPTDC();
+  Float_t GetLatencyL1();/* {return fLatencyL1;} */
+  Float_t GetLatencyL1A(); /* {return fLatencyL1A;}*/ 
+  Float_t GetLatencyL1C(); /* {return fLatencyL1C;} */
+ 
+  void SetLatencyHPTDC(Float_t lat) {fLatencyHPTDC=lat;} 
+  void SetLatencyL1(Float_t lat) {fLatencyL1=lat;} 
+  void SetLatencyL1A(Float_t lat) { fLatencyL1A=lat;} 
+  void  SetLatencyL1C(Float_t lat) { fLatencyL1C=lat;} 
+
  protected:
   static AliT0Parameters* fgInstance; // Static singleton instance
   
@@ -109,24 +121,33 @@ public:
   Float_t   fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   Float_t     fMeanT0; //mean of T0distribution with vertex=0;
   Float_t     fMeanVertex; // mean of vertex distribution;
-  
+   
+  Float_t  fLatencyHPTDC; // all latencies;
+  Float_t  fLatencyL1; // all latencies;
+  Float_t  fLatencyL1A; // all latencies;
+  Float_t  fLatencyL1C; // all latencies;
+    
   TMap      fLookUp;           //lookup table
   Int_t     fNumberOfTRMs;    // number of TRMs in setup
   
+  //latency
+
 
   static AliT0CalibTimeEq * fgCalibData; // singleton for Calibration data
   static AliT0CalibData * fgLookUp; // singleton for Calibration data
   static AliT0CalibWalk * fgSlewCorr; // singleton for Calibration data
+  static AliT0CalibLatency * fgLatency; // singleton for Calibration data
   
   AliCDBEntry*   fCalibentry ;  // pointer to T0 calibration object
   AliCDBEntry*   fLookUpentry ;  // pointer to T0 lokkup table
   AliCDBEntry*   fSlewCorr ;  // pointer to slewing correction
+  AliCDBEntry*   fLatency ;  // pointer to latency
 
  private:
   AliT0Parameters(const  AliT0Parameters&);
   AliT0Parameters& operator=(const AliT0Parameters&);
   
-  ClassDef(AliT0Parameters,5)
+  ClassDef(AliT0Parameters,6)
  
 };
 
