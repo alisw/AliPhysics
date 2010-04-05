@@ -46,6 +46,7 @@
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoDecayHF4Prong.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliRDHFCutsD0toKpi.h"
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliMixedEvent.h"
@@ -71,6 +72,7 @@ fLikeSign(kFALSE),
 fMixEvent(kFALSE),
 fTrackFilter(0x0),
 fTrackFilterSoftPi(0x0),
+fCutsD0toKpi(0x0),
 fFindVertexForDstar(kTRUE)
 {
   // Default constructor
@@ -103,6 +105,7 @@ fLikeSign(source.fLikeSign),
 fMixEvent(source.fMixEvent),
 fTrackFilter(source.fTrackFilter),
 fTrackFilterSoftPi(source.fTrackFilterSoftPi),
+fCutsD0toKpi(source.fCutsD0toKpi),
 fFindVertexForDstar(source.fFindVertexForDstar)
 {
   //
@@ -139,6 +142,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fMixEvent = source.fMixEvent;
   fTrackFilter = source.fTrackFilter;
   fTrackFilterSoftPi = source.fTrackFilterSoftPi;
+  fCutsD0toKpi = source.fCutsD0toKpi;
   fFindVertexForDstar = source.fFindVertexForDstar;
 
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
@@ -157,6 +161,7 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fV1) { delete fV1; fV1=0; }
   if(fTrackFilter) { delete fTrackFilter; fTrackFilter=0; }
   if(fTrackFilterSoftPi) { delete fTrackFilterSoftPi; fTrackFilterSoftPi=0; }
+  if(fCutsD0toKpi) { delete fCutsD0toKpi; fCutsD0toKpi=0; }
   if(fAODMap) { delete fAODMap; fAODMap=0; }
 }
 //----------------------------------------------------------------------------
@@ -975,18 +980,22 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   the2Prong->SetProngIDs(2,id);
   delete primVertexAOD; primVertexAOD=NULL;
 
-  
-  // select D0->Kpi
-  Int_t checkD0,checkD0bar;
-  if(fD0toKpi)   okD0          = the2Prong->SelectD0(fD0toKpiCuts,checkD0,checkD0bar);
-  //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
-  // select J/psi from B
-  Int_t checkJPSI;
-  if(fJPSItoEle) okJPSI        = the2Prong->SelectBtoJPSI(fBtoJPSICuts,checkJPSI);
-  //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
-  // select D0->Kpi from Dstar
-  if(fDstar)     okD0fromDstar = the2Prong->SelectD0(fD0fromDstarCuts,checkD0,checkD0bar);
-  //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
+ 
+  if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a Dstar 
+    // select D0->Kpi
+    Int_t checkD0,checkD0bar;
+    if(fD0toKpi)   okD0 = the2Prong->SelectD0(fD0toKpiCuts,checkD0,checkD0bar);
+    //if(fD0toKpi)   okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+    //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
+    // select J/psi from B
+    Int_t checkJPSI;
+    if(fJPSItoEle) okJPSI        = the2Prong->SelectBtoJPSI(fBtoJPSICuts,checkJPSI);
+    //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
+    // select D0->Kpi from Dstar
+    if(fDstar)     okD0fromDstar = the2Prong->SelectD0(fD0fromDstarCuts,checkD0,checkD0bar);
+    //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
+  }
+
 
   // remove the primary vertex (was used only for selection)
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
@@ -1344,6 +1353,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
   if(fRecoPrimVtxSkippingTrks) printf("RecoPrimVtxSkippingTrks\n");
   if(fRmTrksFromPrimVtx) printf("RmTrksFromPrimVtx\n");
   if(fD0toKpi) {
+    if(fCutsD0toKpi) fCutsD0toKpi->PrintAll();
     printf("Reconstruct D0->Kpi candidates with cuts:\n");
     printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
@@ -1518,9 +1528,11 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg2);
       if(TMath::Abs(minv-mPDG)<fD0toKpiCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsD0toKpi->GetMassCut()) retval=kTRUE;
       pdg2[0]=321; pdg2[1]=211;
       minv = rd->InvMass(nprongs,pdg2);
       if(TMath::Abs(minv-mPDG)<fD0toKpiCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsD0toKpi->GetMassCut()) retval=kTRUE;
       break;
     case 1:                  // JPSI->ee
       pdg2[0]=11; pdg2[1]=11;

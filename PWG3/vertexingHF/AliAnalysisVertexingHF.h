@@ -20,6 +20,7 @@ class AliAODRecoDecayHF3Prong;
 class AliAODRecoDecayHF4Prong;
 class AliAODRecoCascadeHF;
 class AliAnalysisFilter;
+class AliRDHFCutsD0toKpi;
 class AliESDtrack;
 class AliVEvent;
 class AliAODVertex;
@@ -81,6 +82,8 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { fTrackFilterSoftPi = trackF; }
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter; }
   AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
+  void SetCutsD0toKpi(AliRDHFCutsD0toKpi* cuts) { fCutsD0toKpi = cuts; }
+  AliRDHFCutsD0toKpi* GetCutsD0toKpi() const { return fCutsD0toKpi; }
   void SetD0toKpiCuts(Double_t cut0=1000.,Double_t cut1=100000.,
 		      Double_t cut2=1.1,Double_t cut3=0.,Double_t cut4=0.,
 		      Double_t cut5=100000.,Double_t cut6=100000.,
@@ -170,6 +173,8 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisFilter *fTrackFilter; //  Track Filter for displaced vertices
   AliAnalysisFilter *fTrackFilterSoftPi; //  Track Filter for D* soft pion
   // candidates cuts
+  AliRDHFCutsD0toKpi *fCutsD0toKpi; // D0->Kpi cuts
+
   Double_t fD0toKpiCuts[9]; // cuts on D0->Kpi candidates
                   // (to be passed to AliAODRecoDecayHF2Prong::SelectD0())
                           // 0 = inv. mass half width [GeV]   
@@ -303,7 +308,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,13);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,14);  // Reconstruction of HF decay candidates
 };
 
 
