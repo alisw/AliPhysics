@@ -34,6 +34,11 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
   //--- set cuts for candidates selection
+  //AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi();
+  //Float_t cutsArrayD0toKpi[9]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
+  //cutsD0toKpi->SetCuts(9,cutsArrayD0toKpi);
+  //cutsD0toKpi->AddTrackCuts(esdTrackCuts);
+  //vHF->SetCutsD0toKpi(cutsD0toKpi);
   vHF->SetD0toKpiCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
   vHF->SetBtoJPSICuts(0.350);
   vHF->SetDplusCuts(0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85);
