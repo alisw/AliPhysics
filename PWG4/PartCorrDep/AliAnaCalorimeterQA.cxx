@@ -92,7 +92,7 @@ ClassImp(AliAnaCalorimeterQA)
     fhEMod(0), fhNClustersMod(0), fhNCellsPerClusterMod(0), fhNCellsMod(0),  
     fhGridCellsMod(0), fhGridCellsEMod(0), fhGridCellsTimeMod(0), 
     fhAmplitudeMod(0), fhAmplitudeModFraction(0),fhTimeAmpPerRCU(0), //fhT0TimeAmpPerRCU(0), 
-	//fhTimeCorrRCU(0),
+    //fhTimeCorrRCU(0),
     fhIMMod(0),  fhIMCellCutMod(0),
     fhGenGamPt(0),fhGenGamEta(0),fhGenGamPhi(0),fhGenPi0Pt(0),fhGenPi0Eta(0),fhGenPi0Phi(0),
     fhGenEtaPt(0),fhGenEtaEta(0),fhGenEtaPhi(0),fhGenOmegaPt(0),fhGenOmegaEta(0),fhGenOmegaPhi(0),
@@ -168,7 +168,7 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fhNCellsPerClusterMod(qa.fhNCellsPerClusterMod), fhNCellsMod(qa.fhNCellsMod),  
   fhGridCellsMod(qa.fhGridCellsMod),  fhGridCellsEMod(qa.fhGridCellsEMod), fhGridCellsTimeMod(qa.fhGridCellsTimeMod), 
   fhAmplitudeMod(qa.fhAmplitudeMod), fhAmplitudeModFraction(qa.fhAmplitudeModFraction),
-  fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), //fhT0TimeAmpPerRCU(qa.fhT0TimeAmpPerRCU), //fhTimeCorrRCU(qa.fhTimeCorrRCU),
+  fhTimeAmpPerRCU(qa.fhTimeAmpPerRCU), //fhT0TimeAmpPerRCU(qa.fhT0TimeAmpPerRCU), fhTimeCorrRCU(qa.fhTimeCorrRCU),
   fhIMMod(qa.fhIMMod),fhIMCellCutMod(qa.fhIMCellCutMod),
   fhGenGamPt(qa.fhGenGamPt), fhGenGamEta(qa.fhGenGamEta), fhGenGamPhi(qa.fhGenGamPhi),
   fhGenPi0Pt(qa.fhGenPi0Pt), fhGenPi0Eta(qa.fhGenPi0Eta), fhGenPi0Phi(qa.fhGenPi0Phi),
@@ -2026,13 +2026,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			
 			if(nModule < fNModules) {	
 				//Check if the cell is a bad channel
-				if(fCalorimeter=="EMCAL"){
-					if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+				if(GetReader()->IsBadChannelsRemovalSwitchedOn()){
+					if(fCalorimeter=="EMCAL"){
+						if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+					}
+					else {
+						if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+					}
 				}
-				else {
-					if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
-				}
-
 				amp     = cell->GetAmplitude(iCell);
 				time    = cell->GetTime(iCell)*1e9;//transform time to ns
 				//printf("%s: time %g\n",fCalorimeter.Data(), time);
@@ -2158,13 +2159,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			
 			if(nModule < fNModules) {	
 				//Check if the cell is a bad channel
-				if(fCalorimeter=="EMCAL"){
-					if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+				if(GetReader()->IsBadChannelsRemovalSwitchedOn()){
+					if(fCalorimeter=="EMCAL"){
+						if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+					}
+					else{
+						if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+					}	
 				}
-				else{
-					if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
-				}	
-				
 				amp     = cell->GetAmplitude(iCell);
 				fhAmplitude->Fill(amp);
 				fhAmpId    ->Fill(amp,id);
@@ -3001,7 +3003,7 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 		
 		for(Int_t ircu = 0; ircu < fNRCU; ircu++){
 			fhTimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
-//			fhT0TimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
+			//fhT0TimeAmpPerRCU[imod*fNRCU+ircu] = (TH2F *) outputList->At(index++); 
 //			for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
 //				for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
 //					fhTimeCorrRCU[imod*fNRCU+ircu+imod2*fNRCU+ircu2]  = (TH2F *) outputList->At(index++);

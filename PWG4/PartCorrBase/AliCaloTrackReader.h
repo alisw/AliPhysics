@@ -200,9 +200,12 @@ class AliCaloTrackReader : public TObject {
   void SwitchOnBadChannelsRemoval()    {fRemoveBadChannels = kTRUE ; }
   void SwitchOffBadChannelsRemoval()   {fRemoveBadChannels = kFALSE ; }
 	
-  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) { return ((TH2I*)fEMCALBadChannelMap[iSM])->GetBinContent(iCol,iRow);}
-  Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) { return ((TH2I*)fPHOSBadChannelMap[imod])->GetBinContent(iCol,iRow);}
-
+  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { return (Int_t) ((TH2I*)fEMCALBadChannelMap[iSM])->GetBinContent(iCol,iRow);}
+  Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) const { return (Int_t) ((TH2I*)fPHOSBadChannelMap[imod])->GetBinContent(iCol,iRow);}
+	
+  void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { ((TH2I*)fEMCALBadChannelMap[iSM])->SetBinContent(iCol,iRow,c);}
+  void SetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) { ((TH2I*)fPHOSBadChannelMap[imod])->SetBinContent(iCol,iRow,c);}
+	
   TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap[iSM];}
   TH2I * GetPHOSChannelStatusMap(Int_t imod) const {return (TH2I*)fPHOSBadChannelMap[imod];}
 
