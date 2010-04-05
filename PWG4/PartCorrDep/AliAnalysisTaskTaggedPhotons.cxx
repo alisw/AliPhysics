@@ -79,6 +79,16 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() : AliAnalysisTaskSE
   fhConversionRadius(0x0),fhInteractionRadius(0x0),fhEvents(0x0)
 {
   //Default constructor
+  for (Int_t i = 0; i < 4; i++)
+    {
+      fhRecAll[i] = 0;
+      fhRecPhotonPID[i] = 0;
+      fhRecOtherPID[i] = 0;
+      fhTaggedPID[i] = 0;
+      fhInvMassReal[i] = 0;
+      fhInvMassMixed[i] = 0;
+    }
+
 }
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) : 
@@ -106,6 +116,15 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fhConversionRadius(0x0),fhInteractionRadius(0x0),fhEvents(0x0)
 {
   // Constructor.
+  for (Int_t i = 0; i < 4; i++)
+    {
+      fhRecAll[i] = 0;
+      fhRecPhotonPID[i] = 0;
+      fhRecOtherPID[i] = 0;
+      fhTaggedPID[i] = 0;
+      fhInvMassReal[i] = 0;
+      fhInvMassMixed[i] = 0;
+    }
 
   // Output slots 
   DefineOutput(1,  TList::Class()) ; 
@@ -138,6 +157,16 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fhConversionRadius(0x0),fhInteractionRadius(0x0),fhEvents(0x0)
 {
   // cpy ctor
+  for (Int_t i = 0; i < 4; i++)
+    {
+      fhRecAll[i] = 0;
+      fhRecPhotonPID[i] = 0;
+      fhRecOtherPID[i] = 0;
+      fhTaggedPID[i] = 0;
+      fhInvMassReal[i] = 0;
+      fhInvMassMixed[i] = 0;
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -727,6 +756,7 @@ void AliAnalysisTaskTaggedPhotons::Init()
 void AliAnalysisTaskTaggedPhotons::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
+  if (fDebug > 1) Printf("Terminate()");
 
   //Write everything to the file
   char outname[55];
@@ -850,7 +880,7 @@ fhEvents->Write();
   fhEvents->Write();
 */
 
-outfile->Close();
+  outfile->Close();
 
 }
 //______________________________________________________________________________
