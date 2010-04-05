@@ -3029,11 +3029,11 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
 	continue;
       }
       if (!strstr(path,"ALIC")) {
-        //AliDebugClass(1,Form("Not a valid path: %s\n",path));
+        AliDebugClass(1,Form("Not a valid path: %s\n",path));
         continue;
       }
       if (!gGeoManager->cd(path)) {
-        //AliErrorClass(Form("Cannot go to path: %s\n",path));
+        AliErrorClass(Form("Cannot go to path: %s\n",path));
         continue;
       }
       TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
