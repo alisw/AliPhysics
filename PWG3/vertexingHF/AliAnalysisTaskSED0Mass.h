@@ -41,12 +41,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   enum{kD0,kLS};
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
+  void SetCutOnDistr(Int_t cutondistr=0){fCutOnDistr=cutondistr;}
 
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
-  void     FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
+  void     FillMassHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
+  void     FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout);
   TList    *fOutputPPR; //! list send on output slot 1
   TList    *fOutputmycuts; //! list send on output slot 2
   TH1F     *fNentries;    //! histogram with number of events on output slot 3
@@ -56,13 +58,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   AliAnalysisVertexingHF *fVHFmycuts;  // Vertexer heavy flavour (used to pass the cuts)
   Int_t    fArray;        //   can be D0 or Like Sign candidates
   Bool_t   fReadMC;       // flag for MC array: kTRUE = read it, kFALSE = do not read it
+  Int_t    fCutOnDistr;   // Flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts 
 
   Int_t    fTotPosPairs[5];     //
   Int_t    fTotNegPairs[5];     // 
   Double_t fLsNormalization;  //  normalization
 
 
-  ClassDef(AliAnalysisTaskSED0Mass,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,6); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

@@ -62,6 +62,7 @@ fVHFPPR(0),
 fVHFmycuts(0),
 fArray(0),
 fReadMC(0),
+fCutOnDistr(0),
 fLsNormalization(1.)
 
 {
@@ -81,6 +82,7 @@ fVHFPPR(0),
 fVHFmycuts(0),
 fArray(0),
 fReadMC(0),
+fCutOnDistr(0),
 fLsNormalization(1.)
 
 {
@@ -149,7 +151,6 @@ void AliAnalysisTaskSED0Mass::Init()
   // 2 sets of dedidcated cuts -- defined in UserExec
   fVHFPPR = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
   fVHFmycuts = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
-  
   return;
 }
 
@@ -391,6 +392,13 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(5,"nEventsGoodVtx+>2tracks");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
+  // Post the data
+  PostData(1,fOutputPPR);
+  PostData(2,fOutputmycuts);
+  PostData(3,fNentries);
+  PostData(4,fDistr);
+  PostData(5,fChecks);
+
   return;
 }
 
@@ -439,6 +447,33 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     return;
   }
   
+  
+  TClonesArray *mcArray = 0;
+  AliAODMCHeader *mcHeader = 0;
+
+  if(fReadMC) {
+    // load MC particles
+    mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    if(!mcArray) {
+      printf("AliAnalysisTaskSED0Mass::UserExec: MC particles branch not found!\n");
+      return;
+    }
+    
+    // load MC header
+    mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!mcHeader) {
+      printf("AliAnalysisTaskSED0Mass::UserExec: MC header branch not found!\n");
+      return;
+    }
+  }
+  
+  //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
+  
+  //histogram filled with 1 for every AOD
+  fNentries->Fill(0);
+    
+
+  
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
 
@@ -455,585 +490,372 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   Int_t ntracks=0,isGoodTrack=0;
 
   if(aod) ntracks=aod->GetNTracks();
-  //cout<<"ntracks = "<<ntracks<<endl;
-  //cout<<"Before loop"<<endl;
-  //loop on tracks in the event
-  for (Int_t k=0;k<ntracks;k++){
-    AliAODTrack* track=aod->GetTrack(k);
-    //cout<<"in loop"<<endl;
-    //check clusters of the tracks
-    Int_t nclsTot=0,nclsSPD=0;
+
+  //consider multiplicity <= 5 tracks only
+  if (ntracks<=5) {
+
+    //cout<<"ntracks = "<<ntracks<<endl;
+    //cout<<"Before loop"<<endl;
+    //loop on tracks in the event
+    for (Int_t k=0;k<ntracks;k++){
+      AliAODTrack* track=aod->GetTrack(k);
+      //cout<<"in loop"<<endl;
+      //check clusters of the tracks
+      Int_t nclsTot=0,nclsSPD=0;
     
-    for(Int_t l=0;l<6;l++) {
+      for(Int_t l=0;l<6;l++) {
 	if(TESTBIT(track->GetITSClusterMap(),l)) {
 	  nclsTot++; if(l<2) nclsSPD++;
 	}
-    }
+      }
     
-    if (track->Pt()>0.3 &&
-	track->GetStatus()&AliESDtrack::kTPCrefit &&
-	track->GetStatus()&AliESDtrack::kITSrefit &&
-	nclsTot>3 &&
-	nclsSPD>0) {//fill hist good tracks
-      //cout<<"in if"<<endl;
-      ((TH1F*)fChecks->FindObject("hptGoodTr"))->Fill(track->Pt());
-      isGoodTrack++;
+      if (track->Pt()>0.3 &&
+	  track->GetStatus()&AliESDtrack::kTPCrefit &&
+	  track->GetStatus()&AliESDtrack::kITSrefit &&
+	  nclsTot>3 &&
+	  nclsSPD>0) {//fill hist good tracks
+	//cout<<"in if"<<endl;
+	((TH1F*)fChecks->FindObject("hptGoodTr"))->Fill(track->Pt());
+	isGoodTrack++;
+      }
+      //cout<<"isGoodTrack = "<<isGoodTrack<<endl;
+      ((TH1F*)fChecks->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
     }
-    //cout<<"isGoodTrack = "<<isGoodTrack<<endl;
-    ((TH1F*)fChecks->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
-  }
-  //number of events with good vertex and at least 2 good tracks
-  if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
+    //number of events with good vertex and at least 2 good tracks
+    if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
+
+
+    // loop over candidates
+    Int_t nInD0toKpi = inputArray->GetEntriesFast();
+    if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+
+    for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
+      //Int_t nPosPairs=0, nNegPairs=0;
+      //cout<<"inside the loop"<<endl;
+      AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
+      Bool_t unsetvtx=kFALSE;
+      if(!d->GetOwnPrimaryVtx()) {
+	d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+	unsetvtx=kTRUE;
+      }
   
-  TClonesArray *mcArray = 0;
-  AliAODMCHeader *mcHeader = 0;
+      //check reco daughter in acceptance
+      Double_t eta0=d->EtaProng(0);
+      Double_t eta1=d->EtaProng(1);
+      Bool_t prongsinacc=kFALSE;
+      if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) prongsinacc=kTRUE;
 
-  if(fReadMC) {
-    // load MC particles
-    mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if(!mcArray) {
-      printf("AliAnalysisTaskSED0Mass::UserExec: MC particles branch not found!\n");
-      return;
-    }
+      //cuts order
+      //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
+      //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
+      //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
+      //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
+      //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
+      //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
+      //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
+      //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
+      //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   
-    // load MC header
-    mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if(!mcHeader) {
-      printf("AliAnalysisTaskSED0Mass::UserExec: MC header branch not found!\n");
-      return;
-    }
-  }
-  
-  //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
-
-  //histogram filled with 1 for every AOD
-  fNentries->Fill(0);
-  PostData(3,fNentries);
-  //cout<<"First PostData"<<endl;
-
-  // loop over candidates
-  Int_t nInD0toKpi = inputArray->GetEntriesFast();
-  if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
-
-  for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
-    //Int_t nPosPairs=0, nNegPairs=0;
-    //cout<<"inside the loop"<<endl;
-    AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
-  
-    //check reco daughter in acceptance
-    Double_t eta0=d->EtaProng(0);
-    Double_t eta1=d->EtaProng(1);
-    Bool_t prongsinacc=kFALSE;
-    if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) prongsinacc=kTRUE;
-
-    //add distr here
-    UInt_t pdgs[2];
+      Int_t ptbin=0;
+      Bool_t isInRange=kFALSE;
+      Double_t pt = d->Pt(); //mother pt    
+      //cout<<"P_t = "<<pt<<endl;
+      if (pt>0. && pt<=1.) {
+	ptbin=1;
+	isInRange=kTRUE;
+	/*
+	//test d0 cut
+	fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.00025,0.7);
+	*/
+	//original
+	fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
+      
+	//       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
+	//       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
+	//printf("I'm in the bin %d\n",ptbin);
+      
+      }
     
-    Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
-    pdgs[0]=211;
-    pdgs[1]=321;
-    Double_t minvD0 = d->InvMassD0();
-    pdgs[1]=211;
-    pdgs[0]=321;
-    Double_t minvD0bar = d->InvMassD0bar();
-    //cout<<"inside mass cut"<<endl;
-
-    Int_t pdgDgD0toKpi[2]={321,211};
-    Int_t lab=-9999;
-    if(fReadMC) lab=d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
-    Double_t pt = d->Pt(); //mother pt
+      if(pt>1. && pt<=3.) {
+	if(pt>1. && pt<=2.) ptbin=2;  
+	if(pt>2. && pt<=3.) ptbin=3;  
+	isInRange=kTRUE;
+	/*
+	//test d0 cut
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,0.1,-0.00025,0.8);
+	*/
+	//original
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.6);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
+      
+	//printf("I'm in the bin %d\n",ptbin);
+      }
  
+      if(pt>3. && pt<=5.){
+	ptbin=4;  
+	isInRange=kTRUE;
+	/*
+	//test d0 cut
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
+	*/
+	//original
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
+      
+	//printf("I'm in the bin %d\n",ptbin);
+      }
+      if(pt>5.&& pt<=10.){ //additional upper limit to compare with Correction Framework
+	ptbin=5;
+	isInRange=kTRUE;
+	/*
+	//test d0 cut
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.9);
+	*/
+	//original
+	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
+	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
+      
+      }//if(pt>5)    if (pt>0. && pt<=1.) {
+      //printf("I'm in the bin %d\n",ptbin);
+      //old
+      //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
+
+      if(prongsinacc && isInRange){
+
+	if(!fCutOnDistr){
+	  AliAnalysisVertexingHF*  fdummy = new AliAnalysisVertexingHF();
+	  FillVarHists(ptbin,d,mcArray,fdummy,fDistr);
+	}else{
+
+	  if(fCutOnDistr==1) FillVarHists(ptbin,d,mcArray,fVHFPPR,fDistr);
+	  if(fCutOnDistr==2) FillVarHists(ptbin,d,mcArray,fVHFmycuts,fDistr);
+	}
+
+	FillMassHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
+	FillMassHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
+      }
+      if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    } //end for prongs
+  }
+  // Post the data
+  PostData(1,fOutputPPR);
+  PostData(2,fOutputmycuts);
+  PostData(3,fNentries);
+  PostData(4,fDistr);
+  PostData(5,fChecks);
+  cout<<"Other PostData"<<endl;
+  return;
+}
+
+//____________________________________________________________________________
+void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout){
+  //
+  // function used in UserExec to fill variable histograms:
+  //
+
+  //add distr here
+  UInt_t pdgs[2];
+    
+  Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  pdgs[0]=211;
+  pdgs[1]=321;
+  Double_t minvD0 = part->InvMassD0();
+  pdgs[1]=211;
+  pdgs[0]=321;
+  Double_t minvD0bar = part->InvMassD0bar();
+  //cout<<"inside mass cut"<<endl;
+
+  Int_t pdgDgD0toKpi[2]={321,211};
+  Int_t lab=-9999;
+  if(fReadMC) lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+  //Double_t pt = d->Pt(); //mother pt
+  Bool_t isSelected=kFALSE;
+  Int_t okD0=-1,okD0bar=-1;
+
+  if(fCutOnDistr && part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) isSelected=kTRUE;//selected  
+
+  TString fillthispi="",fillthisK="",fillthis="";
+
+  if(!fCutOnDistr || (fCutOnDistr && isSelected)){ //if no cuts or cuts passed 
+
     if(lab>=0 && fReadMC){ //signal
 
       //check pdg of the prongs
-      AliAODTrack *prong0=(AliAODTrack*)d->GetDaughter(0);
-      AliAODTrack *prong1=(AliAODTrack*)d->GetDaughter(1);
+      AliAODTrack *prong0=(AliAODTrack*)part->GetDaughter(0);
+      AliAODTrack *prong1=(AliAODTrack*)part->GetDaughter(1);
       Int_t labprong[2];
       labprong[0]=prong0->GetLabel();
       labprong[1]=prong1->GetLabel();
       AliAODMCParticle *mcprong=0;
       Int_t pdgProng[2]={0,0};
       for (Int_t iprong=0;iprong<2;iprong++){
-	if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong[iprong]);
+	if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)arrMC->At(labprong[iprong]);
 	pdgProng[iprong]=mcprong->GetPdgCode();
       }
 
- 
       //no mass cut ditributions: ptbis
 	
-      if(pt>0. && pt<=1.) {
-	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
-	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_1"))->Fill(d->PtProng(0));
-	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_1"))->Fill(d->PtProng(1));
-	}else {
-	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
-	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_1"))->Fill(d->PtProng(0));
-	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_1"))->Fill(d->PtProng(1));
-	  }
+      fillthispi="hptpiSnoMcut_";
+      fillthispi+=ptbin;
+
+      fillthisK="hptKSnoMcut_";
+      fillthisK+=ptbin;
+
+      if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
+	((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(0));
+	((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(1));
+      }else {
+	if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
+	  ((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(0));
+	  ((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(1));
 	}
       }
-      if(pt>1. && pt<=2.) {
-	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
-	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_2"))->Fill(d->PtProng(0));
-	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_2"))->Fill(d->PtProng(1));
-	}else {
-	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
-	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_2"))->Fill(d->PtProng(0));
-	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_2"))->Fill(d->PtProng(1));
-	  }
-	}
-      }
-      if(pt>2. && pt<=3.) {
-	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
-	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_3"))->Fill(d->PtProng(0));
-	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_3"))->Fill(d->PtProng(1));
-	}else {
-	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
-	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_3"))->Fill(d->PtProng(0));
-	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_3"))->Fill(d->PtProng(1));
-	  }
-	}
-      }
-      if(pt>3. && pt<=5.) {
-
-	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
-	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_4"))->Fill(d->PtProng(0));
-	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_4"))->Fill(d->PtProng(1));
-	}else {
-	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
-	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_4"))->Fill(d->PtProng(0));
-	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_4"))->Fill(d->PtProng(1));
-	  }
-	}
-      }
-      if(pt>5.)           {
-
-	if (TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321){
-	  ((TH1F*)fDistr->FindObject("hptpiSnoMcut_5"))->Fill(d->PtProng(0));
-	  ((TH1F*)fDistr->FindObject("hptKSnoMcut_5"))->Fill(d->PtProng(1));
-	}else {
-	  if (TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211){
-	    ((TH1F*)fDistr->FindObject("hptKSnoMcut_5"))->Fill(d->PtProng(0));
-	    ((TH1F*)fDistr->FindObject("hptpiSnoMcut_5"))->Fill(d->PtProng(1));
-	  }
-	}
-      }
-
-      if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421){//D0
-		  	 
-	//no mass cut ditributions: mass, costhetastar
-	
-	if(pt>0. && pt<=1.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_1"))->Fill(minvD0);
-	}
-	if(pt>1. && pt<=2.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_2"))->Fill(minvD0);
-
-	}
-	if(pt>2. && pt<=3.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_3"))->Fill(minvD0);
-
-	}
-	if(pt>3. && pt<=5.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_4"))->Fill(minvD0);
-
-	}
-	if(pt>5.)           {
-	  ((TH1F*)fDistr->FindObject("hMassS_5"))->Fill(minvD0);
-
-	}
-
+      
+      //no mass cut ditributions: mass
+      fillthis="hMassS_";
+      fillthis+=ptbin;
+      
+      if (((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421){//D0
+	((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
       }
       else { //D0bar
-
-	//no mass cut ditributions: mass
-
-	if(pt>0. && pt<=1.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_1"))->Fill(minvD0bar);
-
-	}
-	if(pt>1. && pt<=2.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_2"))->Fill(minvD0bar);
-
-	}
-	if(pt>2. && pt<=3.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_3"))->Fill(minvD0bar);
-
-	}
-	if(pt>3. && pt<=5.) {
-	  ((TH1F*)fDistr->FindObject("hMassS_4"))->Fill(minvD0bar);
-
-	}
-	if(pt>5.)           {
-	  ((TH1F*)fDistr->FindObject("hMassS_5"))->Fill(minvD0bar);
-	}
-
+	((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
       }
-
+      
       //apply cut on invariant mass on the pair
       if(TMath::Abs(minvD0-mPDG)<0.03 || TMath::Abs(minvD0bar-mPDG)<0.03){
-
+	
 	if(fArray==1) cout<<"LS signal: ERROR"<<endl;
 	for (Int_t iprong=0; iprong<2; iprong++){
-	  AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(iprong);
+	  AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(iprong);
 	  labprong[iprong]=prong->GetLabel();
-
+	  
 	  //cout<<"prong name = "<<prong->GetName()<<" label = "<<prong->GetLabel()<<endl;
-	  if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)mcArray->At(labprong[iprong]);
+	  if(labprong[iprong]>=0)  mcprong= (AliAODMCParticle*)arrMC->At(labprong[iprong]);
 	  Int_t pdgprong=mcprong->GetPdgCode();
+	  
 	  if(TMath::Abs(pdgprong)==211) {
 	    //cout<<"pi"<<endl;
-	    if(pt>0. && pt<=1.){
-	      ((TH1F*)fDistr->FindObject("hptpiS_1"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0piS_1"))->Fill(d->Getd0Prong(iprong));
-	    }
-	    if(pt>1. && pt<=2.){
-	      ((TH1F*)fDistr->FindObject("hptpiS_2"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0piS_2"))->Fill(d->Getd0Prong(iprong));
-	    }
-
-	    if(pt>2. && pt<=3.){
-	      ((TH1F*)fDistr->FindObject("hptpiS_3"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0piS_3"))->Fill(d->Getd0Prong(iprong));
-
-	    }
-	    if(pt>3. && pt<=5.){
-	      ((TH1F*)fDistr->FindObject("hptpiS_4"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0piS_4"))->Fill(d->Getd0Prong(iprong));
-
-	    }
-	    if(pt>5.)          {
-	      ((TH1F*)fDistr->FindObject("hptpiS_5"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0piS_5"))->Fill(d->Getd0Prong(iprong));
-
-	    }
-
-
-	}
-
-	if(TMath::Abs(pdgprong)==321) {
-	    //cout<<"kappa"<<endl;
-	    if(pt>0. && pt<=1.){
-	      ((TH1F*)fDistr->FindObject("hptKS_1"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0KS_1"))->Fill(d->Getd0Prong(iprong));
-	    }
-	    if(pt>1. && pt<=2.){
-	      ((TH1F*)fDistr->FindObject("hptKS_2"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0KS_2"))->Fill(d->Getd0Prong(iprong));
-	    }
-	    if(pt>2. && pt<=3.){
-	      ((TH1F*)fDistr->FindObject("hptKS_3"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0KS_3"))->Fill(d->Getd0Prong(iprong));
-	    }
-	    if(pt>3. && pt<=5.){
-	      ((TH1F*)fDistr->FindObject("hptKS_4"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0KS_4"))->Fill(d->Getd0Prong(iprong));
-
-	    }
-	    if(pt>5.)          {
-	      ((TH1F*)fDistr->FindObject("hptKS_5"))->Fill(d->PtProng(iprong));
-	      ((TH1F*)fDistr->FindObject("hd0KS_5"))->Fill(d->Getd0Prong(iprong));
-
-	    }
-
-	  }
-
-	  if(pt>0. && pt<=1.){
-	    ((TH1F*)fDistr->FindObject("hdcaS_1"))->Fill(d->GetDCA());
-
-	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
-	      ((TH1F*)fDistr->FindObject("hcosthetastarS_1"))->Fill(d->CosThetaStarD0());
-	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_1"))->Fill(d->CosThetaStarD0bar());
-
-	  }
-	  if(pt>1. && pt<=2.){
-	    ((TH1F*)fDistr->FindObject("hdcaS_2"))->Fill(d->GetDCA());
-
-	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
-	      ((TH1F*)fDistr->FindObject("hcosthetastarS_2"))->Fill(d->CosThetaStarD0());
-	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_2"))->Fill(d->CosThetaStarD0bar());
-
-	  }
-	  if(pt>2. && pt<=3.){
-	    ((TH1F*)fDistr->FindObject("hdcaS_3"))->Fill(d->GetDCA());
-
-	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
-	      ((TH1F*)fDistr->FindObject("hcosthetastarS_3"))->Fill(d->CosThetaStarD0());
-	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_3"))->Fill(d->CosThetaStarD0bar());
-
-	  }
-	  if(pt>3. && pt<=5.){
-	    ((TH1F*)fDistr->FindObject("hdcaS_4"))->Fill(d->GetDCA());
-
-	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
-	      ((TH1F*)fDistr->FindObject("hcosthetastarS_4"))->Fill(d->CosThetaStarD0());
-	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_4"))->Fill(d->CosThetaStarD0bar());
-
-	  }
-	  if(pt>5.)          {
-	    ((TH1F*)fDistr->FindObject("hdcaS_5"))->Fill(d->GetDCA());
-
-	    if (((AliAODMCParticle*)mcArray->At(lab))->GetPdgCode() == 421)
-	      ((TH1F*)fDistr->FindObject("hcosthetastarS_5"))->Fill(d->CosThetaStarD0());
-	    else ((TH1F*)fDistr->FindObject("hcosthetastarS_5"))->Fill(d->CosThetaStarD0bar());
-
+	    
+	    fillthispi="hptpiS_";
+	    fillthispi+=ptbin;
+	    ((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(iprong));
+	    
+	    fillthisK="hd0KS_";
+	    fillthisK+=ptbin;
+	    ((TH1F*)listout->FindObject(fillthisK))->Fill(part->Getd0Prong(iprong));
 	  }
 	  
-	}
+	  if(TMath::Abs(pdgprong)==321) {
+	    //cout<<"kappa"<<endl;
+	    
+	    fillthisK="hptKS_";
+	    fillthisK+=ptbin;
+	    ((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(iprong));
+	    
+	    fillthisK="hd0KS_";
+	    fillthisK+=ptbin;
+	    ((TH1F*)listout->FindObject(fillthisK))->Fill(part->Getd0Prong(iprong));
+	  }
 
-	if(pt>0. && pt<=1.){
-	  ((TH1F*)fDistr->FindObject("hd0d0S_1"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointS_1"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_1"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>1. && pt<=2.){
-	  ((TH1F*)fDistr->FindObject("hd0d0S_2"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointS_2"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_2"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>2. && pt<=3.){
-	  ((TH1F*)fDistr->FindObject("hd0d0S_3"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointS_3"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_3"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>3. && pt<=5.){
-	  ((TH1F*)fDistr->FindObject("hd0d0S_4"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointS_4"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_4"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>5.)          {
-	  ((TH1F*)fDistr->FindObject("hd0d0S_5"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointS_5"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0S_5"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
+	  fillthis="hdcaS_";
+	  fillthis+=ptbin;	  
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->GetDCA());
 
-      } //invmass cut
+	  fillthis="hcosthetapointS_";
+	  fillthis+=ptbin;	  
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle());
 
+	  fillthis="hcosthpointd0d0S_";
+	  fillthis+=ptbin;	  
+	  ((TH2F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Prodd0d0());
+	  
+	  fillthis="hcosthetastarS_";
+	  fillthis+=ptbin;
+	  if (((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	  else ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());
+
+	  fillthis="hd0d0S_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->Prodd0d0());
+ 
+	}
+      }
     } else{ //Background or LS
       //cout<<"is background"<<endl;
-      pt = d->Pt();
-
+     
       //no mass cut distributions: mass, ptbis
-      if(pt>0. && pt<=1.) {
-	((TH1F*)fDistr->FindObject("hMassB_1"))->Fill(minvD0);
-	((TH1F*)fDistr->FindObject("hMassB_1"))->Fill(minvD0bar);
+      fillthis="hMassB_";
+      fillthis+=ptbin;
 
-	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_1"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_1"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_1"))->Fill(d->PtProng(1));
+      if (!fCutOnDistr || (fCutOnDistr>0 && okD0==1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
+      if (!fCutOnDistr || (fCutOnDistr>0 && okD0bar==1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
 
-      }
-      if(pt>1. && pt<=2.) {
-	((TH1F*)fDistr->FindObject("hMassB_2"))->Fill(minvD0);
-	((TH1F*)fDistr->FindObject("hMassB_2"))->Fill(minvD0bar);
-
-	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_2"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_2"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_2"))->Fill(d->PtProng(1));
-
-      }
-      if(pt>2. && pt<=3.) {
-	((TH1F*)fDistr->FindObject("hMassB_3"))->Fill(minvD0);
-	((TH1F*)fDistr->FindObject("hMassB_3"))->Fill(minvD0bar);
-
-	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_3"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_3"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_3"))->Fill(d->PtProng(1));
-
-      }
-      if(pt>3. && pt<=5.) {
-	((TH1F*)fDistr->FindObject("hMassB_4"))->Fill(minvD0);
-	((TH1F*)fDistr->FindObject("hMassB_4"))->Fill(minvD0bar);
-
-	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_4"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_4"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_4"))->Fill(d->PtProng(1));
- 
-      }
-      if(pt>5.)           { 
-	((TH1F*)fDistr->FindObject("hMassB_5"))->Fill(minvD0);
-	((TH1F*)fDistr->FindObject("hMassB_5"))->Fill(minvD0bar);
-
-	((TH1F*)fDistr->FindObject("hptB1prongnoMcut_5"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_5"))->Fill(d->PtProng(0));
-	((TH1F*)fDistr->FindObject("hptB2prongsnoMcut_5"))->Fill(d->PtProng(1));
- 
-      }
+      fillthis="hptB1prongnoMcut_";
+      fillthis+=ptbin;
+      
+      ((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(0));
+      
+      fillthis="hptB2prongsnoMcut_";
+      fillthis+=ptbin;
+      ((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(0));
+      ((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(1));
 
       //apply cut on invariant mass on the pair
       if(TMath::Abs(minvD0-mPDG)<0.03 || TMath::Abs(minvD0bar-mPDG)<0.03){
 
 
-	AliAODTrack *prong=(AliAODTrack*)d->GetDaughter(0);
+	AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
 	if(!prong) cout<<"No daughter found";
 	else{
 	  if(prong->Charge()==1) {fTotPosPairs[4]++;} else {fTotNegPairs[4]++;}
 	}
-	if(pt>0. && pt<=1.){
-	  //normalise pt distr to half afterwards
-	  ((TH1F*)fDistr->FindObject("hptB_1"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_1"))->Fill(d->PtProng(1));
-	  ((TH1F*)fDistr->FindObject("hd0B_1"))->Fill(d->Getd0Prong(0));
-	  ((TH1F*)fDistr->FindObject("hdcaB_1"))->Fill(d->GetDCA());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_1"))->Fill(d->CosThetaStarD0());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_1"))->Fill(d->CosThetaStarD0bar());	
-	  ((TH1F*)fDistr->FindObject("hd0d0B_1"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointB_1"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_1"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>1. && pt<=2.){
-	  ((TH1F*)fDistr->FindObject("hptB_2"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_2"))->Fill(d->PtProng(1));
-	  ((TH1F*)fDistr->FindObject("hd0B_2"))->Fill(d->Getd0Prong(0));
-	  ((TH1F*)fDistr->FindObject("hdcaB_2"))->Fill(d->GetDCA());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_2"))->Fill(d->CosThetaStarD0());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_2"))->Fill(d->CosThetaStarD0bar());	
-	  ((TH1F*)fDistr->FindObject("hd0d0B_2"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointB_2"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_2"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>2. && pt<=3.){
-	  ((TH1F*)fDistr->FindObject("hptB_3"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_3"))->Fill(d->PtProng(1));
-	  ((TH1F*)fDistr->FindObject("hd0B_3"))->Fill(d->Getd0Prong(0));
-	  ((TH1F*)fDistr->FindObject("hdcaB_3"))->Fill(d->GetDCA());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_3"))->Fill(d->CosThetaStarD0());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_3"))->Fill(d->CosThetaStarD0bar());	
-	  ((TH1F*)fDistr->FindObject("hd0d0B_3"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointB_3"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_3"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>3. && pt<=5.){
-	  ((TH1F*)fDistr->FindObject("hptB_4"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_4"))->Fill(d->PtProng(1));
-	  ((TH1F*)fDistr->FindObject("hd0B_4"))->Fill(d->Getd0Prong(0));
-	  ((TH1F*)fDistr->FindObject("hdcaB_4"))->Fill(d->GetDCA());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_4"))->Fill(d->CosThetaStarD0());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_4"))->Fill(d->CosThetaStarD0bar());	
-	  ((TH1F*)fDistr->FindObject("hd0d0B_4"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointB_4"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_4"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}
-	if(pt>5.)         {
-	  ((TH1F*)fDistr->FindObject("hptB_5"))->Fill(d->PtProng(0));((TH1F*)fDistr->FindObject("hptB_5"))->Fill(d->PtProng(1));
-	  ((TH1F*)fDistr->FindObject("hd0B_5"))->Fill(d->Getd0Prong(0));
-	  ((TH1F*)fDistr->FindObject("hdcaB_5"))->Fill(d->GetDCA());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_5"))->Fill(d->CosThetaStarD0());
-	  ((TH1F*)fDistr->FindObject("hcosthetastarB_5"))->Fill(d->CosThetaStarD0bar());	
-	  ((TH1F*)fDistr->FindObject("hd0d0B_5"))->Fill(d->Prodd0d0());
-	  ((TH1F*)fDistr->FindObject("hcosthetapointB_5"))->Fill(d->CosPointingAngle());
-	  ((TH1F*)fDistr->FindObject("hcosthpointd0d0B_5"))->Fill(d->CosPointingAngle(),d->Prodd0d0());
-	}       
+	
+	//normalise pt distr to half afterwards
+	fillthis="hptB_";
+	fillthis+=ptbin;
 
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(0));((TH1F*)listout->FindObject("hptB_1"))->Fill(part->PtProng(1));
 
-      }// end if inv mass cut
-    }//end if background
+	fillthis="hd0B_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(0));
 
-  
-  
-     //cuts order
-//       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
-//     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
-//     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
-//     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
-//     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
-//     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
-//     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
-//     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
-//     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
-  
-    Int_t ptbin=0;
-    Bool_t isInRange=kFALSE;
-    
-    //cout<<"P_t = "<<pt<<endl;
-    if (pt>0. && pt<=1.) {
-      ptbin=1;
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.00025,0.7);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-      
-//       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
-//       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
-      //printf("I'm in the bin %d\n",ptbin);
-      
-    }
-    
-    if(pt>1. && pt<=3.) {
-      if(pt>1. && pt<=2.) ptbin=2;  
-      if(pt>2. && pt<=3.) ptbin=3;  
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,0.1,-0.00025,0.8);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.6);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-      
-      //printf("I'm in the bin %d\n",ptbin);
-    }
- 
-    if(pt>3. && pt<=5.){
-      ptbin=4;  
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-      
-      //printf("I'm in the bin %d\n",ptbin);
-    }
-    if(pt>5.&& pt<=10.){ //additional upper limit to compare with Correction Framework
-      ptbin=5;
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.9);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-      
-    }//if(pt>5)    if (pt>0. && pt<=1.) {
-    //printf("I'm in the bin %d\n",ptbin);
-    //old
-    //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
-    if(prongsinacc && isInRange){
-      FillHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
-      FillHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
-    }
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
-  } //end for prongs
-  
+	fillthis="hdcaB_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->GetDCA());
 
-     
-  
-   
-  // Post the data
-  PostData(1,fOutputPPR);
-  PostData(2,fOutputmycuts);
-  PostData(4,fDistr);
-  PostData(5,fChecks);
-  //cout<<"Other PostData"<<endl;
+	fillthis="hcosthetastarB_";
+	fillthis+=ptbin;
+	if (!fCutOnDistr || (fCutOnDistr>0 && okD0==1))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	if (!fCutOnDistr || (fCutOnDistr>0 && okD0bar==1))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());	
+
+	fillthis="hd0d0B_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->Prodd0d0());
+
+	fillthis="hcosthetapointB_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle());
+
+	fillthis="hcosthpointd0d0B_";
+	fillthis+=ptbin;
+	((TH2F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Prodd0d0());
+	
+      }	
+    }
+  }
   return;
 }
 //____________________________________________________________________________*
-void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout){
+void AliAnalysisTaskSED0Mass::FillMassHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout){
   //
-  // function used in UserExec:
+  // function used in UserExec to fill mass histograms:
   //
 
 
@@ -1043,7 +865,7 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
   //cout<<"inside FillHist"<<endl;
   if(part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) {//selected
     Double_t invmassD0 = part->InvMassD0(), invmassD0bar = part->InvMassD0bar();
-    //printf("SELECTED\n");
+    printf("SELECTED\n");
 
 
     AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
@@ -1135,7 +957,7 @@ void AliAnalysisTaskSED0Mass::FillHists(Int_t ptbin, AliAODRecoDecayHF2Prong *pa
 
 
   } //else cout<<"NOT SELECTED"<<endl;
-
+  return;
 }
 //________________________________________________________________________
 void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
@@ -1155,12 +977,16 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     printf("ERROR: fOutputmycuts not available\n");
     return;
   }
+  fNentries = dynamic_cast<TH1F*>(GetOutputData(3));
+  if(!fNentries){
+    printf("ERROR: fNEntries not available\n");
+    return;
+  }
   fDistr = dynamic_cast<TList*> (GetOutputData(4));
   if (!fDistr) {
     printf("ERROR: fDistr not available\n");
     return;
   }
-
   fChecks = dynamic_cast<TList*> (GetOutputData(5));
   if (!fChecks) {
     printf("ERROR: fChecks not available\n");
@@ -1168,41 +994,48 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   }
 
   if(fArray==1){
-    for(Int_t ipt=0;ipt<4;ipt++){
+    for(Int_t ipt=0;ipt<5;ipt++){
       fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[ipt]*fTotNegPairs[ipt]); 
 
 
-      if(fLsNormalization>0) {
+      if(fLsNormalization>10e-6) {
 	
 	TString massName="histMass_";
 	massName+=ipt+1;
 	((TH1F*)fOutputPPR->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputPPR->FindObject(massName))->GetEntries());
 	((TH1F*)fOutputmycuts->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputmycuts->FindObject(massName))->GetEntries());
       }
-    }
+    
 
-    fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[4]*fTotNegPairs[4]);
+      fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[4]*fTotNegPairs[4]);
 
-    if(fLsNormalization>0) {
+      if(fLsNormalization>10e-6) {
 
-      TString nameDistr="hptB";
-      ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-      nameDistr="hdcaB";
-      ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-      nameDistr="hcosthetastarB";
-      ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-      nameDistr="hd0B";
-      ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-      nameDistr="hd0d0B";
-      ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-      nameDistr="hcosthetapointB";
-      ((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
-      nameDistr="hcosthpointd0d0B";
-      ((TH2F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH2F*)fDistr->FindObject(nameDistr))->GetEntries());
+	TString nameDistr="hptB_";
+	nameDistr+=ipt+1;
+	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	nameDistr="hdcaB_";
+	nameDistr+=ipt+1;
+	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	nameDistr="hcosthetastarB_";
+	nameDistr+=ipt+1;
+	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	nameDistr="hd0B_";
+	nameDistr+=ipt+1;
+	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	nameDistr="hd0d0B_";
+	nameDistr+=ipt+1;
+	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	nameDistr="hcosthetapointB_";
+	nameDistr+=ipt+1;
+	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
+	nameDistr="hcosthpointd0d0B_";
+	nameDistr+=ipt+1;
+	((TH2F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH2F*)fDistr->FindObject(nameDistr))->GetEntries());
 
+      }
     }
   }
-
   TString cvname;
 
   if (fArray==0){
