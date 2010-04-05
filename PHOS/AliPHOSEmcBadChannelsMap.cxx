@@ -121,8 +121,6 @@ void AliPHOSEmcBadChannelsMap::BadChannelIds(Int_t *badIds)
 	  geom->RelToAbsNumbering(relId,absId);
 	  badIds[iBad]=absId;
 	  iBad++;
-	  printf("mod=%d, col=%d, row=%d, absId=%d, N=%d\n",
-		 mod,col,row,absId,iBad);
 	}
       }
     }
