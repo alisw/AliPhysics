@@ -223,8 +223,6 @@ void AliAnalysisTaskJetServices::Init()
   //
   // Initialization
   //
-
-  Printf(">>> AnalysisTaskJetServices::Init() debug level %d\n",fDebug);
   if (fDebug > 1) printf("AnalysisTaskJetServices::Init() \n");
 
 }
