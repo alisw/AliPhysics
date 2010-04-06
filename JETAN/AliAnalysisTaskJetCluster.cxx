@@ -413,7 +413,6 @@ void AliAnalysisTaskJetCluster::Init()
   // Initialization
   //
 
-  Printf(">>> AnalysisTaskJetCluster::Init() debug level %d\n",fDebug);
   if (fDebug > 1) printf("AnalysisTaskJetCluster::Init() \n");
 
 }

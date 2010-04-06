@@ -387,7 +387,6 @@ void AliAnalysisTaskJetSpectrum2::Init()
   // Initialization
   //
 
-  Printf(">>> AnalysisTaskJetSpectrum2::Init() debug level %d\n",fDebug);
   if (fDebug > 1) printf("AnalysisTaskJetSpectrum2::Init() \n");
 
 }
