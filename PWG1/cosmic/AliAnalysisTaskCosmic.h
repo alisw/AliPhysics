@@ -1,6 +1,11 @@
 // gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include");
-#ifndef AliAnalysisTaskCosmic_cxx
-#define AliAnalysisTaskCosmic_cxx
+#ifndef AliAnalysisTaskCosmic_h
+#define AliAnalysisTaskCosmic_h
+
+//------------------------------------------------------------
+// Prototype of QA analysis mini-train
+// Origin: Andreas.Morsch@cern.ch
+//------------------------------------------------------------
 
 
 class TH1F;
@@ -32,6 +37,9 @@ class AliAnalysisTaskCosmic : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
  private:
+  AliAnalysisTaskCosmic(const AliAnalysisTaskCosmic&); // not implemented
+  AliAnalysisTaskCosmic& operator=(const AliAnalysisTaskCosmic&); // not implemented
+  
   TList*          fHists;        // List of histograms
   TH1F*           fhPt[6];       // Pt distribution
   TH1F*           fhTheta[6];    // Eta distribution

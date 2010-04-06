@@ -1,18 +1,16 @@
-#include "TChain.h"
-#include "TTree.h"
+//------------------------------------------------------------
+// Prototype of QA analysis mini-train
+// Origin: Andreas.Morsch@cern.ch
+//------------------------------------------------------------
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TProfile.h"
 #include "TList.h"
-#include "TTree.h"
-#include "TParticle.h"
-#include "TParticlePDG.h"
-
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisTaskCosmic.h"
-#include "AliESDInputHandler.h"
 
 ClassImp(AliAnalysisTaskCosmic)
 
@@ -188,7 +186,7 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
 //      if (!track) continue;
       // Pt cut
       Float_t pt     = track->Pt();
-      Float_t charge = track->Charge();
+      Short_t charge = track->Charge();
       Float_t phi    = track->Phi();
       if (phi > 0. && phi  < TMath::Pi()) charge*=(-1.);
 
@@ -196,7 +194,7 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
 
       // TPC track
       UInt_t status = track->GetStatus();
-      if (status&AliESDtrack::kTPCrefit ==0) continue;
+      if ((status&AliESDtrack::kTPCrefit) ==0) continue;
 
       Int_t nClustersTPC = track->GetTPCclusters(0);
       if (nClustersTPC < 50) continue;
@@ -260,7 +258,7 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
 	      AliESDtrack* track2 = esdE->GetTrack(jTracks);
 
 	      UInt_t status = track2->GetStatus();
-	      if (status&AliESDtrack::kTPCrefit ==0) continue;
+	      if ((status&AliESDtrack::kTPCrefit) ==0) continue;
 
 	      Int_t nClustersTPC2 = track2->GetTPCclusters(0);
 	      if (nClustersTPC2 < 50) continue;
@@ -297,7 +295,7 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
 	      Float_t z2 = track2->GetZ();
 	      Float_t x2 = track2->Xv();
 	      Float_t y2 = track2->Yv();
-	      Float_t charge2 = track2->Charge();
+	      Short_t charge2 = track2->Charge();
 	      Float_t dz  = z2 - z;
 	      Float_t dx  = x2 - x;
 	      Float_t dy  = y2 - y;

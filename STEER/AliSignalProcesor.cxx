@@ -101,7 +101,7 @@ TF1 * AliSignalProcesor::GetAsymGauss()
 
 
 
-void AliSignalProcesor::SplineSmoother(Double_t *ampin, Double_t *ampout, Int_t n)
+void AliSignalProcesor::SplineSmoother(const Double_t *ampin, Double_t *ampout, Int_t n) const
 {  
   //
   //
@@ -137,8 +137,7 @@ void AliSignalProcesor::SplineSmoother(Double_t *ampin, Double_t *ampout, Int_t 
 
 
 
-void AliSignalProcesor::TailCancelationALTRO(Double_t *ampin, Double_t *ampout, Float_t K, Float_t L, 
-		      Int_t n)
+void AliSignalProcesor::TailCancelationALTRO(const Double_t *ampin, Double_t *ampout, Float_t k, Float_t l, Int_t n) const
 {
   //
   // ALTRO
@@ -146,15 +145,15 @@ void AliSignalProcesor::TailCancelationALTRO(Double_t *ampin, Double_t *ampout, 
   ampout[0]  = ampin[0];
   temp = ampin[0];
   for (int i=1;i<n;i++){
-    ampout[i]   = ampin[i]   + (K-L)*temp;
-    temp        = ampin[i]   +  K*temp;
+    ampout[i]   = ampin[i]   + (k-l)*temp;
+    temp        = ampin[i]   +  k*temp;
   }
 }
 
 //
 //
-void AliSignalProcesor::TailCancelationTRD(Double_t *ampin, Double_t *ampout, Float_t r, Float_t c, 
-		      Int_t n)
+void AliSignalProcesor::TailCancelationTRD(const Double_t *ampin, Double_t *ampout, Float_t r, Float_t c, 
+		      Int_t n) const
 {
   //TRD
   //
@@ -168,8 +167,8 @@ void AliSignalProcesor::TailCancelationTRD(Double_t *ampin, Double_t *ampout, Fl
   
 }
 
-void AliSignalProcesor::TailMaker(Double_t *ampin, Double_t *ampout, Float_t lambda, 
-		      Int_t n)
+void AliSignalProcesor::TailMaker(const Double_t *ampin, Double_t *ampout, Float_t lambda, 
+		      Int_t n) const
 {
   
   Double_t l = TMath::Exp(-lambda);
@@ -206,12 +205,12 @@ void AliSignalProcesor::TailCancelationTRD1(Double_t *ampin, Double_t *ampout, F
 
 
 
-void AliSignalProcesor::TailCancelationMI(Double_t *ampin, Double_t *ampout, Float_t norm, 
-					Float_t lambda, Int_t n)
+void AliSignalProcesor::TailCancelationMI(const Double_t *ampin, Double_t *ampout, Float_t norm, 
+					Float_t lambda, Int_t n) const
 {
   
-  Double_t L = TMath::Exp(-lambda*0.5);
-  Double_t K = L*(1.-norm*lambda*0.5);
+  Double_t l = TMath::Exp(-lambda*0.5);
+  Double_t k = l*(1.-norm*lambda*0.5);
   //
   //
   Float_t in[10000];
@@ -234,8 +233,8 @@ void AliSignalProcesor::TailCancelationMI(Double_t *ampin, Double_t *ampout, Flo
   out[0]     = in[0];
   temp       = in[0];
   for (int i=1;i<=2*n;i++){
-    out[i]      = in[i]   + (K-L)*temp;
-    temp        = in[i]   +  K*temp;
+    out[i]      = in[i]   + (k-l)*temp;
+    temp        = in[i]   +  k*temp;
   }
   //
   //
@@ -248,8 +247,8 @@ void AliSignalProcesor::TailCancelationMI(Double_t *ampin, Double_t *ampout, Flo
 
 
 
-void AliSignalProcesor::TailMakerSpline(Double_t *ampin, Double_t *ampout, Float_t lambda, 
-		      Int_t n)
+void AliSignalProcesor::TailMakerSpline(const Double_t *ampin, Double_t *ampout, Float_t lambda, 
+		      Int_t n) const
 {
   
   Double_t l = TMath::Exp(-lambda*0.5);

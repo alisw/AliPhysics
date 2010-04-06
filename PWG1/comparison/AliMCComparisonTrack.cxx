@@ -1,6 +1,13 @@
+//-------------------------------------------------------------------------
+//
+// A calss for keeping the MC track information used in  
+// the comparison tasks by:  Andrei.Zalite@cern.ch
+//
+//-------------------------------------------------------------------------
+
 #include "AliMCComparisonTrack.h"
 
 AliMCComparisonTrack::AliMCComparisonTrack() :
-  MCLabel(0), MCPdg(0), Pz(0), Pt(0), Phi(0), 
-  LocalX(0), LocalY(0), Z(0)
+  fMCLabel(0), fMCPdg(0), fPz(0), fPt(0), fPhi(0), 
+  fLocalX(0), fLocalY(0), fZ(0)
   {}
