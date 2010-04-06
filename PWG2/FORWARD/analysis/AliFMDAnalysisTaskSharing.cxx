@@ -714,7 +714,7 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliHeader* header            = mcEvent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
-  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  //  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
   
   // if (!pythiaGenHeader) {
     //  std::cout<<" no pythia header!"<<std::endl;

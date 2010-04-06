@@ -152,7 +152,7 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
   outputList->Add(cloneList3);
   t.GenerateMult(AliFMDDndeta::kHitsTrVtx);
   TList* dNdetalist4 = t.GetMultList(AliFMDDndeta::kHits);
-  TList* cloneList4 = (TList*)dNdetalist3->Clone("HitsTrVtx");
+  TList* cloneList4 = (TList*)dNdetalist4->Clone("HitsTrVtx");
   cloneList4->SetName("HitsTrVtx");
   outputList->Add(cloneList4);
   // TFile file("fmd_ana_histos_tmp.root","RECREATE");

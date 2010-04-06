@@ -517,7 +517,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
 	  hPrimVtx->SetLabelFont(132,"xyz");
 	  hPrimVtx->SetStats(0000);
 	  hPrimVtx->GetXaxis()->SetTitle("#eta");
-	  //hPrimVtx->GetYaxis()->SetRangeUser(0,15);
+	  hPrimVtx->GetYaxis()->SetRangeUser(0,15);
 	  hPrimVtx->DrawCopy("E3");
 	  l->Draw();
 	  multhistproj->DrawCopy("same");
@@ -594,13 +594,15 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   // hReldif->Divide(hPrim);
   
  
- (0,7);
+ 
   //sumMult->Rebin(rebin);
   TH1F* hReldif = (TH1F*)sumMult->Clone("hReldif");
   if(rebin != 1) {
     RebinHistogram(sumMult,rebin);
-    RebinHistogram(primMult,rebin);
-    RebinHistogram(hReldif,rebin);
+    if(!realdata) {
+      RebinHistogram(primMult,rebin);
+      RebinHistogram(hReldif,rebin);
+    }
   }
   hReldif->Add(primMult,-1);
   hReldif->Divide(primMult);
@@ -616,6 +618,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata) {
   hReldif->GetYaxis()->SetRangeUser(-0.2,0.2);
   hReldif->SetStats(0000);
   hReldif->GetXaxis()->SetTitle("#eta");
+  
   hReldif->DrawCopy();
   TLine* zeroLine = new TLine(-6,0,6,0);
   zeroLine->SetLineWidth(2);

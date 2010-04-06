@@ -327,7 +327,7 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
 
 }
 //____________________________________________________________________
-TF1* AliFMDAnalysisTaskCollector::FitEnergyDistribution(TH1F* hEnergy, Int_t speciesOption) {
+TF1* AliFMDAnalysisTaskCollector::FitEnergyDistribution(TH1F* hEnergy, Int_t /*speciesOption*/) {
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   TF1* fitFunc = 0;
   if(hEnergy->GetEntries() != 0) {
