@@ -290,7 +290,6 @@ void AliAnalysisTaskGammaConversion::SetESDtrackCuts()
 void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
-  ConnectInputData("");
 	
   //Each event needs an empty branch
   //  fAODBranch->Clear();
