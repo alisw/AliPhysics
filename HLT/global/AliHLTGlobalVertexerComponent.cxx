@@ -495,7 +495,7 @@ void AliHLTGlobalVertexerComponent::FindPrimaryVertex()
 }
 
 
-void AliHLTGlobalVertexerComponent::FindV0s( vector<pair<int,int> > v0s  )
+void AliHLTGlobalVertexerComponent::FindV0s( vector<pair<int,int> > &v0s  )
 {
   //* V0 finder
 

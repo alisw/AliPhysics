@@ -108,7 +108,7 @@ private:
     };
 
   void FindPrimaryVertex();
-  void FindV0s(vector<pair<int,int> > v0s);
+  void FindV0s(vector<pair<int,int> > &v0s);
 
   int fNTracks; // n of input tracks
   AliESDTrackInfo *fTrackInfos; // information about esd tracks
