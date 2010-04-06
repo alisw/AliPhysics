@@ -301,30 +301,30 @@ int main(int argc, char **argv) {
   
   //Write the Total file (accumulated statistics for number of runs)
   sprintf(totfile,"PHOS_Calib_Total.root");
-  TFile * ftot = new TFile(totfile,"update");
+  TFile * ftot = new TFile(totfile,"recreate");
   
-  if (!ftot->IsZombie()){
-    printf("Updating file %s.\n",ftot->GetName());
+//   if (!ftot->IsZombie()){
+//     printf("Updating file %s.\n",ftot->GetName());
 
-    for(Int_t iMod=0; iMod<5; iMod++) {
-      if(!dAs[iMod]) continue;
+//     for(Int_t iMod=0; iMod<5; iMod++) {
+//       if(!dAs[iMod]) continue;
     
-      printf("DA1 for module %d detected.\n",iMod);
+//       printf("DA1 for module %d detected.\n",iMod);
     
-      for(Int_t iX=0; iX<64; iX++) {
-	for(Int_t iZ=0; iZ<56; iZ++) {
+//       for(Int_t iX=0; iX<64; iX++) {
+// 	for(Int_t iZ=0; iZ<56; iZ++) {
 	
-	  for(Int_t iGain=0; iGain<2; iGain++) {
-	    sprintf(h2name,"%d_%d_%d_%d",iMod,iX,iZ,iGain);
-	    TH2F* h2tot = (TH2F*)ftot->Get(h2name);
-	    const TH2F* h2run = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
-	    if(!h2tot && h2run) h2run->Write();
-	    if(h2tot && h2run) { h2tot->Add(h2run); h2tot->Write(h2tot->GetName(),TObject::kWriteDelete); }
-	  }
-	}
-      }
-    }
-  }
+// 	  for(Int_t iGain=0; iGain<2; iGain++) {
+// 	    sprintf(h2name,"%d_%d_%d_%d",iMod,iX,iZ,iGain);
+// 	    TH2F* h2tot = (TH2F*)ftot->Get(h2name);
+// 	    const TH2F* h2run = dAs[iMod]->GetTimeEnergyHistogram(iX,iZ,iGain); // Time vs Energy
+// 	    if(!h2tot && h2run) h2run->Write();
+// 	    if(h2tot && h2run) { h2tot->Add(h2run); h2tot->Write(h2tot->GetName(),TObject::kWriteDelete); }
+// 	  }
+// 	}
+//       }
+//     }
+//   }
   
   ftot->Close();
   
