@@ -22,14 +22,12 @@
  *****************************************************************************/
 
 #include <TObjArray.h>
-#include <TMatrixD.h>
 
-#include "AliESDVertex.h"
-#include "AliExternalTrackParam.h"
 #include "AliLog.h"
+#include "AliESDVertex.h"
 
+class AliExternalTrackParam;
 class AliVEvent;
-class AliESDEvent;
 class AliStrLine;
 
 class AliVertexerTracks : public TObject {
@@ -39,9 +37,9 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(Double_t fieldkG); 
   virtual ~AliVertexerTracks();
 
-  AliESDVertex* FindPrimaryVertex(AliVEvent *vEvent);
-  AliESDVertex* FindPrimaryVertex(TObjArray *trkArrayOrig,UShort_t *idOrig);
-  AliESDVertex* VertexForSelectedTracks(TObjArray *trkArray,UShort_t *id,
+  AliESDVertex* FindPrimaryVertex(const AliVEvent *vEvent);
+  AliESDVertex* FindPrimaryVertex(const TObjArray *trkArrayOrig,UShort_t *idOrig);
+  AliESDVertex* VertexForSelectedTracks(const TObjArray *trkArray,UShort_t *id,
 					Bool_t optUseFitter=kTRUE,
 					Bool_t optPropagate=kTRUE,
 					Bool_t optUseDiamondConstraint=kFALSE);
@@ -50,8 +48,8 @@ class AliVertexerTracks : public TObject {
 					Bool_t optPropagate=kTRUE,
 					Bool_t optUseDiamondConstraint=kFALSE);
   AliESDVertex* RemoveTracksFromVertex(AliESDVertex *inVtx,
-				       TObjArray *trkArray,UShort_t *id,
-				       Float_t *diamondxy) const; 
+				       const TObjArray *trkArray,UShort_t *id,
+				       const Float_t *diamondxy) const; 
   AliESDVertex* RemoveConstraintFromVertex(AliESDVertex *inVtx,
 					   Float_t *diamondxyz,
 					   Float_t *diamondcov) const;
@@ -100,18 +98,18 @@ class AliVertexerTracks : public TObject {
   void  SetMaxTgl(Double_t maxtgl=1.) { fMaxTgl=maxtgl; return; }
   void  SetOnlyFitter() { if(!fConstraint) AliFatal("Set constraint first!"); 
      fOnlyFitter=kTRUE; return; }
-  void  SetSkipTracks(Int_t n,Int_t *skipped);
+  void  SetSkipTracks(Int_t n,const Int_t *skipped);
   void  SetVtxStart(Double_t x=0,Double_t y=0,Double_t z=0) 
     { fNominalPos[0]=x; fNominalPos[1]=y; fNominalPos[2]=z; return; }
   void  SetVtxStartSigma(Double_t sx=3.,Double_t sy=3.,Double_t sz=15.) 
     { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
       fNominalCov[1]=0.; fNominalCov[3]=0.; fNominalCov[4]=0.; return; }
   void  SetVtxStart(AliESDVertex *vtx);
-  static Double_t GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0);
+  static Double_t GetStrLinMinDist(const Double_t *p0,const Double_t *p1,const Double_t *x0);
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
-  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
-  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
-  static AliESDVertex TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights=0);
+  static void GetStrLinDerivMatrix(const Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
+  static void GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,const Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
+  static AliESDVertex TrackletVertexFinder(const TClonesArray *lines, Int_t optUseWeights=0);
   static AliESDVertex TrackletVertexFinder(AliStrLine **lines, const Int_t knacc, Int_t optUseWeights=0);
   void     SetFieldkG(Double_t field=-999.) { fFieldkG=field; return; }
   Double_t GetFieldkG() const { 
@@ -123,12 +121,12 @@ class AliVertexerTracks : public TObject {
  protected:
   void     HelixVertexFinder();
   void     OneTrackVertFinder();
-  Int_t    PrepareTracks(TObjArray &trkArrayOrig,UShort_t *idOrig,
+  Int_t    PrepareTracks(const TObjArray &trkArrayOrig,const UShort_t *idOrig,
 			 Int_t optImpParCut);
   Bool_t   PropagateTrackTo(AliExternalTrackParam *track,
 			    Double_t xToGo);
   Bool_t   TrackToPoint(AliExternalTrackParam *t,
-		        TMatrixD &ri,TMatrixD &wWi,
+		        const TMatrixD &ri,TMatrixD &wWi,
 			Bool_t uUi3by3=kFALSE) const;     
   void     VertexFinder(Int_t optUseWeights=0);
   void     VertexFitter();

@@ -26,19 +26,15 @@
 //-----------------------------------------------------------------
 
 //---- Root headers --------
-#include <TSystem.h>
 #include <TDirectory.h>
 #include <TFile.h>
-#include <TTree.h>
 #include <TMatrixD.h>
 //---- AliRoot headers -----
-#include "AliLog.h"
 #include "AliStrLine.h"
 #include "AliExternalTrackParam.h"
 #include "AliNeutralTrackParam.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
-#include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliVertexerTracks.h"
 
@@ -126,7 +122,7 @@ AliVertexerTracks::~AliVertexerTracks()
   if(fIdSel) { delete fIdSel; fIdSel=NULL; }
 }
 //----------------------------------------------------------------------------
-AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
+AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
 {
 //
 // Primary vertex for current ESD or AOD event
@@ -237,7 +233,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(AliVEvent *vEvent)
   return fCurrentVertex;
 }
 //----------------------------------------------------------------------------
-AliESDVertex* AliVertexerTracks::FindPrimaryVertex(TObjArray *trkArrayOrig,
+AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig,
 						   UShort_t *idOrig)
 {
 //
@@ -379,7 +375,7 @@ Double_t AliVertexerTracks::GetDeterminant3X3(Double_t matr[][3])
  return det;
 }
 //-------------------------------------------------------------------------
-void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d)
+void AliVertexerTracks::GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,Double_t (*m)[3],Double_t *d)
 {
   //
   Double_t x12=p0[0]-p1[0];
@@ -401,7 +397,7 @@ void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t 
 
 }
 //--------------------------------------------------------------------------  
-void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d)
+void AliVertexerTracks::GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,const Double_t *sigmasq,Double_t (*m)[3],Double_t *d)
 {
   //
   Double_t x12=p1[0]-p0[0];
@@ -444,7 +440,7 @@ void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t 
 
   }
 //--------------------------------------------------------------------------   
-Double_t AliVertexerTracks::GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0)
+Double_t AliVertexerTracks::GetStrLinMinDist(const Double_t *p0,const Double_t *p1,const Double_t *x0)
 {
   //
   Double_t x12=p0[0]-p1[0];
@@ -569,8 +565,8 @@ void AliVertexerTracks::HelixVertexFinder()
   fVert.SetNContributors(ncombi);
 }
 //----------------------------------------------------------------------------
-Int_t AliVertexerTracks::PrepareTracks(TObjArray &trkArrayOrig,
-				       UShort_t *idOrig,
+Int_t AliVertexerTracks::PrepareTracks(const TObjArray &trkArrayOrig,
+				       const UShort_t *idOrig,
 				       Int_t optImpParCut) 
 {
 //
@@ -723,9 +719,9 @@ Bool_t AliVertexerTracks::PropagateTrackTo(AliExternalTrackParam *track,
 }
 //---------------------------------------------------------------------------
 AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
-							TObjArray *trkArray,
+							const TObjArray *trkArray,
 							UShort_t *id,
-							Float_t *diamondxy) const
+							const Float_t *diamondxy) const
 {
 //
 // Removes tracks in trksTree from fit of inVtx
@@ -1040,7 +1036,7 @@ void AliVertexerTracks::SetTPCMode(Double_t dcacut,
   return; 
 }
 //---------------------------------------------------------------------------
-void AliVertexerTracks::SetSkipTracks(Int_t n,Int_t *skipped) 
+void AliVertexerTracks::SetSkipTracks(Int_t n,const Int_t *skipped) 
 {
 //
 // Mark the tracks not to be used in the vertex reconstruction.
@@ -1095,7 +1091,7 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights)
   delete [] linarray;
 }
 //---------------------------------------------------------------------------
-AliESDVertex AliVertexerTracks::TrackletVertexFinder(TClonesArray *lines, Int_t optUseWeights)
+AliESDVertex AliVertexerTracks::TrackletVertexFinder(const TClonesArray *lines, Int_t optUseWeights)
 {
   // Calculate the point at minimum distance to prepared tracks (TClonesArray)
   const Int_t knacc = (Int_t)lines->GetEntriesFast();
@@ -1181,7 +1177,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const I
   Double_t det=GetDeterminant3X3(sum);
   Double_t sigma=0;
   
-  if(det!=0){
+  if(TMath::Abs(det) > kAlmost0){
     for(Int_t zz=0;zz<3;zz++){
       for(Int_t ww=0;ww<3;ww++){
 	for(Int_t kk=0;kk<3;kk++) vett[ww][kk]=sum[ww][kk];
@@ -1213,7 +1209,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const I
 
 //---------------------------------------------------------------------------
 Bool_t AliVertexerTracks::TrackToPoint(AliExternalTrackParam *t,
-				       TMatrixD &ri,TMatrixD &wWi,
+				       const TMatrixD &ri,TMatrixD &wWi,
 				       Bool_t uUi3by3) const 
 {
 //
@@ -1630,7 +1626,7 @@ void AliVertexerTracks::VertexFitter()
   return;
 }
 //----------------------------------------------------------------------------
-AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,
+AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(const TObjArray *trkArray,
 							 UShort_t *id,
 							 Bool_t optUseFitter,
 							 Bool_t optPropagate,
