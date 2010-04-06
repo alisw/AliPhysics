@@ -440,7 +440,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
    // only flag error if CE result is missing from LASER runs
    //    -- for PHYSICS run do CE processing if data available
    
-     if ( runType == kLaserRunType && source != "TRY" ) result += ceResult;
+     if ( runType == kLaserRunType && source != "TRY"  && ceResult<10 ) result += ceResult;
      status = new TParameter<int>("ceResult",ceResult);
      resultArray->Add(status);
 
