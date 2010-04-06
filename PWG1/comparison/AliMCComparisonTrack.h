@@ -1,5 +1,12 @@
-#ifndef AliMCComparisonTrack_cxx
-#define AliMCComparisonTrack_cxx
+#ifndef AliMCComparisonTrack_h
+#define AliMCComparisonTrack_h
+
+//-------------------------------------------------------------------------
+//
+// A calss for keeping the MC track information used in  
+// the comparison tasks by:  Andrei.Zalite@cern.ch
+//
+//-------------------------------------------------------------------------
 
 #include "TObject.h"
 
@@ -11,58 +18,50 @@ class AliMCComparisonTrack: public TObject
     virtual ~AliMCComparisonTrack() {}
     
     void SetLabel(Int_t Label)
-      {MCLabel = Label;}
+      {fMCLabel = Label;}
     void SetPDG(Int_t PDG) 
-      {MCPdg = PDG;}
+      {fMCPdg = PDG;}
     void SetPz(Float_t PZ)
-      {Pz = PZ;}
+      {fPz = PZ;}
     void SetPt(Float_t Ptrans)
-      {Pt = Ptrans;}
+      {fPt = Ptrans;}
     void SetPhi(Float_t PhiAngle)
-      {Phi = PhiAngle;}
+      {fPhi = PhiAngle;}
     void SetLocalX(Float_t localX)
-      {LocalX =localX;}
+      {fLocalX =localX;}
     void SetLocalY(Float_t localY)
-      {LocalY =localY;}  
+      {fLocalY =localY;}  
     void SetZ(Float_t Zcoor)
-      {Z = Zcoor;}
+      {fZ = Zcoor;}
       
-    Int_t GetLabel()
-      {return MCLabel;}  
-    Int_t GetPDG()
-      {return MCPdg;}
-    Float_t GetPz()
-      {return Pz;}  
-    Float_t GetPt()
-      {return Pt;}
-    Float_t GetPhi()
-      {return Phi;}
-    Float_t GetLocalX()
-      {return LocalX;}
-    Float_t GetLocalY()
-      {return LocalY;}      
-    Float_t GetZ()
-      {return Z;}
+    Int_t GetLabel() const
+      {return fMCLabel;}  
+    Int_t GetPDG() const
+      {return fMCPdg;}
+    Float_t GetPz() const
+      {return fPz;}  
+    Float_t GetPt() const
+      {return fPt;}
+    Float_t GetPhi() const
+      {return fPhi;}
+    Float_t GetLocalX() const
+      {return fLocalX;}
+    Float_t GetLocalY() const
+      {return fLocalY;}      
+    Float_t GetZ() const
+      {return fZ;}
   
   private:
-      // track label
-    Int_t MCLabel;
-      // PDG particle code
-    Int_t MCPdg;
-      // z-component of momentum
-    Float_t Pz;
-      // component of momentum in the transverse plane
-    Float_t Pt; 
-      // phi angle of the particle direction
-    Float_t Phi;
-      // local x-coordinate
-    Float_t LocalX;
-      // local y-coordinate
-    Float_t LocalY;
-      // z-coordinate
-    Float_t Z;
+    Int_t fMCLabel; // track label
+    Int_t fMCPdg;   // PDG particle code
+    Float_t fPz;    // z-component of momentum
+    Float_t fPt;    // component of momentum in the transverse plane
+    Float_t fPhi;   // phi angle of the particle direction
+    Float_t fLocalX; // local x-coordinate
+    Float_t fLocalY; // local y-coordinate
+    Float_t fZ;      // z-coordinate
     
-    ClassDef(AliMCComparisonTrack, 1); 
+    ClassDef(AliMCComparisonTrack, 2); 
 };
 
 
