@@ -100,9 +100,6 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
   // Fills in vars the values of the variables 
   //
 
-  cout<<"Ingetvarforopt"<<endl;
-  //PrintAll();
-
   if(nvars!=fnVarsForOpt) {
     printf("AliRDHFCutsD0toKpi::GetCutsVarsForOpt: wrong number of variables\n");
     return;
@@ -122,7 +119,6 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
   return;
 */
  
-  //possibile generalizzazione
   Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
@@ -199,38 +195,25 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   if(!fCutsRD){
     cout<<"Cut matrice not inizialized. Exit..."<<endl;
-    return -1;
+    return 0;
   }
   //PrintAll();
-  AliAODRecoDecayHF2Prong* d=(AliAODRecoDecayHF2Prong*)obj; // ????
+  AliAODRecoDecayHF2Prong* d=(AliAODRecoDecayHF2Prong*)obj;
 
-  Int_t returnvalue=1;
   if(!d){
     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
     return 0;
   }
 
+
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    Int_t ndaughters = d->GetNDaughters();
-    //cout<<"loop on "<<ndaughters<<"daughters"<<endl;
-    for(Int_t idg=0; idg<ndaughters; idg++) {
-      AliAODTrack *dgTrack = (AliAODTrack*)d->GetDaughter(idg);
-      if(!dgTrack) returnvalue=0;
-      //printf("charge %d\n",dgTrack->Charge());
-      if(dgTrack->Charge()==0) continue; // it's not a track, but a V0
-      // convert to ESD track here
-      AliESDtrack* esdTrack=new AliESDtrack(dgTrack); 
-      
-      if(!fTrackCuts->IsSelected(esdTrack)) returnvalue=0;//kFALSE;       
-    }
-    if(!returnvalue) return 0;
+    if(!AreDaughtersSelected(d)) return 0;
   }
 
 
-
-  //cout<<"cand sel? "<<selectionLevel<<" = "<<AliRDHFCuts::kAll<<" or "<<AliRDHFCuts::kCandidate<<endl;
+  Int_t returnvalue=1;
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 

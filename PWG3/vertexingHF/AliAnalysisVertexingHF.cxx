@@ -280,6 +280,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliESDtrack *negtrack1 = 0;
   AliESDtrack *negtrack2 = 0;
   AliESDtrack *trackPi   = 0;
+  //Double_t dcaMax = fCutsD0toKpi->GetDCACut();
   Double_t dcaMax = fD0toKpiCuts[1];
   if(dcaMax < fBtoJPSICuts[1]) dcaMax=fBtoJPSICuts[1];
   if(dcaMax < fDplusCuts[11])  dcaMax=fDplusCuts[11];
@@ -298,6 +299,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     return;
   }
     
+  // event selection
+  //if(!fCutsD0toKpi->IsEventSelected(event)) return;
   const AliVVertex *primary = event->GetPrimaryVertex();
   if(!primary) {
     AliDebug(1," No primary vertex from tracks");
