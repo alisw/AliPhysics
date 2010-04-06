@@ -22,9 +22,11 @@
  *****************************************************************************/
 
 #include <TObjArray.h>
+#include <TMatrixD.h>
 
 #include "AliLog.h"
 #include "AliESDVertex.h"
+
 
 class AliExternalTrackParam;
 class AliVEvent;
@@ -107,7 +109,7 @@ class AliVertexerTracks : public TObject {
   void  SetVtxStart(AliESDVertex *vtx);
   static Double_t GetStrLinMinDist(const Double_t *p0,const Double_t *p1,const Double_t *x0);
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
-  static void GetStrLinDerivMatrix(const Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
+  static void GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,Double_t (*m)[3],Double_t *d);
   static void GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,const Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
   static AliESDVertex TrackletVertexFinder(const TClonesArray *lines, Int_t optUseWeights=0);
   static AliESDVertex TrackletVertexFinder(AliStrLine **lines, const Int_t knacc, Int_t optUseWeights=0);
@@ -126,7 +128,7 @@ class AliVertexerTracks : public TObject {
   Bool_t   PropagateTrackTo(AliExternalTrackParam *track,
 			    Double_t xToGo);
   Bool_t   TrackToPoint(AliExternalTrackParam *t,
-		        const TMatrixD &ri,TMatrixD &wWi,
+		        TMatrixD &ri,TMatrixD &wWi,
 			Bool_t uUi3by3=kFALSE) const;     
   void     VertexFinder(Int_t optUseWeights=0);
   void     VertexFitter();

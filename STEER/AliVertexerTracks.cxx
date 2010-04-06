@@ -26,9 +26,10 @@
 //-----------------------------------------------------------------
 
 //---- Root headers --------
+#include <TSystem.h>
+#include <TClonesArray.h>
 #include <TDirectory.h>
 #include <TFile.h>
-#include <TMatrixD.h>
 //---- AliRoot headers -----
 #include "AliStrLine.h"
 #include "AliExternalTrackParam.h"
@@ -1209,7 +1210,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const I
 
 //---------------------------------------------------------------------------
 Bool_t AliVertexerTracks::TrackToPoint(AliExternalTrackParam *t,
-				       const TMatrixD &ri,TMatrixD &wWi,
+				       TMatrixD &ri,TMatrixD &wWi,
 				       Bool_t uUi3by3) const 
 {
 //
