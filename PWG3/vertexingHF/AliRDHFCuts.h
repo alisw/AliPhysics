@@ -53,11 +53,12 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
   Int_t   GetGlobalIndex(Int_t iVar,Int_t iPtBin) const;
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
-  Float_t GetMassCut(Int_t iPtBin=0) const { return (fCutsRD ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
 
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Bool_t IsEventSelected(AliVEvent *event) const;
+  Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
+
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) = 0;
 
   Int_t PtBin(Double_t pt) const;

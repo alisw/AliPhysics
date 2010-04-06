@@ -28,6 +28,8 @@
 #include "AliVVertex.h"
 #include "AliESDVertex.h"
 #include "AliAODVertex.h"
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
@@ -83,54 +85,11 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   //
   cout<<"Copy constructor"<<endl;
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
-  /*
-  if(source.GetPtBinLimits()) SetPtBins(source.fnPtBinLimits,source.GetPtBinLimits());
-  if(source.GetVarNames()) SetVarNames(source.fnVars,source.GetVarNames(),source.GetIsUpperCut());
-  */
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
   if(source.fVarNames) SetVarNames(source.fnVars,source.fVarNames,source.fIsUpperCut);
   if(source.fCutsRD) SetCuts(source.fGlobalIndex,source.fCutsRD);
   if(source.fVarsForOpt) SetVarsForOpt(source.fnVarsForOpt,source.fVarsForOpt);
   PrintAll();
-  /*
-  if (source.fCutsRD){
-    fCutsRD = new Float_t*[fnVars];
-    
-    for(Int_t iv=0; iv<fnVars; iv++) {
-      
-      fCutsRD[iv] = new Float_t[fnPtBins];
-      
-      for(Int_t ib=0; ib<fnPtBins; ib++) {
-	
-	fCutsRD[iv][ib] = source.fCutsRD[iv][ib];
-      }
-    }
-  }
-  */
-  /*
-  Float_t** cutsRD=0;
-  
-  cutsRD=new Float_t*[source.fnVars];
-  for (Int_t iv=0;iv<source.fnVars;iv++){
-    cutsRD[iv]=new Float_t[source.fnPtBins];
-  }
- 
-  source.GetCuts(source.fnVars,source.fnPtBins,cutsRD);
-
-  //if(source.GetCuts())SetCuts(source.fnVars,source.fnPtBins,source.GetCuts());
-  
-  for(Int_t iv=0; iv<source.fnVars; iv++) {
-
-    for(Int_t ib=0; ib<source.fnPtBins; ib++) {
-      cout<<"fCutsRD["<<iv<<"]["<<ib<<"] = "<<fCutsRD[iv][ib]<<endl;
-      //cutsRD[iv][ib] = fCutsRD[iv][ib];
-      //cout<<"cutsRD["<<iv<<"]["<<ib<<"] = "<<cutsRD[iv][ib]<<endl;
-    }
-  }
-  
-  if(cutsRD) SetCuts(source.fnVars,source.fnPtBins,cutsRD);
- */  
-  //if(source.GetVarsForOpt()) SetVarsForOpt(source.fnVars,source.GetVarsForOpt());
 
 }
 //--------------------------------------------------------------------------
@@ -159,25 +118,6 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   if(source.fVarsForOpt) SetVarsForOpt(source.fnVarsForOpt,source.fVarsForOpt);
   PrintAll();
 
-  /*
-  if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
-
-  if(source.GetPtBinLimits()) SetPtBins(source.fnPtBinLimits,source.GetPtBinLimits());
-  if(source.GetVarNames()) SetVarNames(source.fnVars,source.GetVarNames(),source.GetIsUpperCut());
-  */
-/*
-  Float_t** cutsRD;
-  cutsRD=new Float_t*[source.fnVars];
-  for (Int_t iv=0;iv<source.fnVars;iv++){
-    cutsRD[iv]=new Float_t[source.fnPtBins];
-  }
-  source.GetCuts(source.fnVars,source.fnPtBins,cutsRD);
-
-  if(cutsRD) SetCuts(source.fnVars,source.fnPtBins,cutsRD);
-*/
-  //if(source.GetCuts()) SetCuts(source.fnVars,source.fnPtBins,source.GetCuts());
-  //if(source.GetVarsForOpt()) SetVarsForOpt(source.fnVars,source.GetVarsForOpt());
-
   return *this;
 }
 //--------------------------------------------------------------------------
@@ -200,7 +140,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) const {
   //
   // Event selection
   // 
-  if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
+  //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
 
   // multiplicity cuts no implemented yet
 
@@ -214,6 +154,30 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) const {
 
   if(vertex->GetNContributors()<fMinVtxContr) return kFALSE; 
 
+  return kTRUE;
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
+  //
+  // Daughter tracks selection
+  // 
+  Int_t ndaughters = d->GetNDaughters();
+  AliESDtrack* esdTrack=0;
+
+  for(Int_t idg=0; idg<ndaughters; idg++) {
+    AliAODTrack *dgTrack = (AliAODTrack*)d->GetDaughter(idg);
+    if(!dgTrack) return kFALSE;
+    //printf("charge %d\n",dgTrack->Charge());
+    if(dgTrack->Charge()==0) continue; // it's not a track, but a V0
+    // convert to ESD track here
+    esdTrack=new AliESDtrack(dgTrack); 
+    
+    if(!fTrackCuts->IsSelected(esdTrack)) {
+      delete esdTrack; esdTrack=0;
+      return kFALSE;       
+    }
+    delete esdTrack; esdTrack=0;
+  }
   return kTRUE;
 }
 //---------------------------------------------------------------------------
@@ -399,7 +363,6 @@ void AliRDHFCuts::GetCuts(Float_t**& cutsRD) const{
 //     return;
 //   }
   cout<<"Give back a "<<fnVars<<"x"<<fnPtBins<<" matrix."<<endl;
-  //cutsRD=fCutsRD;
 
   if(!cutsRD) {
     cout<<"Initialization..."<<endl;
@@ -409,13 +372,13 @@ void AliRDHFCuts::GetCuts(Float_t**& cutsRD) const{
     }
   }
   
-  cout<<"Ptr cuts rd "<<cutsRD<<endl;
+
   Int_t iGlobal=0;
   for(Int_t iv=0; iv<fnVars; iv++) {
     for(Int_t ib=0; ib<fnPtBins; ib++) {
-      //cout<<"fCutsRD["<<iv<<"]["<<ib<<"] = "<<fCutsRD[iv][ib]<<endl;
+
       cutsRD[iv][ib] = fCutsRD[iGlobal];
-      //cout<<"cutsRD["<<iv<<"]["<<ib<<"] = "<<cutsRD[iv][ib]<<endl;
+
       iGlobal++;
     }
   }
@@ -424,6 +387,9 @@ void AliRDHFCuts::GetCuts(Float_t**& cutsRD) const{
 
 //---------------------------------------------------------------------------
 Int_t AliRDHFCuts::GetGlobalIndex(Int_t iVar,Int_t iPtBin) const{
+
+  // give the global index from variable and pt bin
+
   return iPtBin*fnVars+iVar;
 }
 
