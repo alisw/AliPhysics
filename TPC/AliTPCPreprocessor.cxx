@@ -1007,11 +1007,17 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
         }
 
        TGraph *grT=calCE->MakeGraphTimeCE(-1,0,2); // A side average
-       if ( grT ) rocTtime->AddAt(grT,nSectors);         
+       if ( grT ) { 
+         rocTtime->AddAt(grT,nSectors);         
+       } else {
+          result=10;
+       }
        grT=calCE->MakeGraphTimeCE(-2,0,2); // C side average
-       if ( grT ) rocTtime->AddAt(grT,nSectors+1);         
-
-
+       if ( grT ) {
+         rocTtime->AddAt(grT,nSectors+1);         
+       } else {
+          result=10;
+       }
        delete calCE;
        f->Close();
       }
@@ -1026,9 +1032,12 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
     metaData.SetAliRootVersion(ALIROOT_SVN_BRANCH);
     metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-    Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE);
-    if ( !storeOK ) ++result;
-    
+    if ( result == 0 ) {
+     Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE);
+     if ( !storeOK ) ++result;
+    } else {
+     Log ("Warning: Average time graphs not available - no OCDB entry written");
+    }   
   } else {
     Log ("Error: no CE entries available from FXS!");
     result = 1;
