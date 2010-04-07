@@ -220,6 +220,9 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   if(fPHOSGeo)  delete fPHOSGeo  ;
   if(fEMCALGeo) delete fEMCALGeo ;
 	
+  fEMCALBadChannelMap.Delete();
+  fPHOSBadChannelMap. Delete();
+	
 }
 
 //_________________________________________________________________________________________________________
@@ -443,8 +446,10 @@ void AliCaloTrackReader::InitParameters()
   for (int i = 0; i < 5; i++) 
 	fPHOSBadChannelMap.Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 
 									 56, 0, 56, 64, 0, 64));
+	fEMCALBadChannelMap.SetOwner(kTRUE);
+	fPHOSBadChannelMap. SetOwner(kTRUE);
 	fEMCALBadChannelMap.Compress();
-	fPHOSBadChannelMap.Compress();
+	fPHOSBadChannelMap. Compress();
 	
 }
 
@@ -509,7 +514,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
   if(!fInputEvent) {
-	  if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analisys\n");
+	  if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analysis\n");
 	  return kFALSE;
   }
   //Select events only fired by a certain trigger configuration if it is provided
