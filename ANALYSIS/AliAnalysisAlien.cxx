@@ -1313,7 +1313,7 @@ void AliAnalysisAlien::EnablePackage(const char *package)
    pkg.ReplaceAll(".par", "");
    pkg += ".par";
    if (gSystem->AccessPathName(pkg)) {
-      Error("EnablePackage", "Package %s not found", pkg.Data());
+      Fatal("EnablePackage", "Package %s not found", pkg.Data());
       return;
    }
    if (!TObject::TestBit(AliAnalysisGrid::kUsePars))
