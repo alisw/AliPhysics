@@ -62,7 +62,7 @@ ClassImp(AliTRDcheckESD)
 const Float_t AliTRDcheckESD::fgkxTPC = 290.;
 const Float_t AliTRDcheckESD::fgkxTOF = 365.;
 const UChar_t AliTRDcheckESD::fgkNgraph[AliTRDcheckESD::kNrefs] ={
-6, 4, 2, 20};
+8, 4, 2, 20};
 FILE* AliTRDcheckESD::fgFile = NULL;
 
 const Float_t AliTRDcheckESD::fgkEvVertexZ = 15.;
@@ -165,6 +165,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     leg->SetBorderSize(0); leg->SetFillStyle(0);
     for(Int_t ig(0); ig<fgkNgraph[kNCl]; ig++){
       if(!(g = (TGraphErrors*)arr->At(ig))) return kFALSE;
+      if(!g->GetN()) continue;
       g->Draw(ig?"pc":"apc"); leg->AddEntry(g, g->GetTitle(), "pl");
       if(ig) continue;
       hF=g->GetHistogram();
@@ -570,7 +571,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
           g->SetLineColor(ig+1); 
           g->SetMarkerColor(ig+1); 
           g->SetMarkerStyle(ig+20); 
-          g->SetNameTitle(Form("s%d", ig), ig? AliPID::ParticleLatexName(ig-1):"all");
+          g->SetName(Form("s%d", ig));
+          switch(ig){
+          case 0: g->SetTitle("ALL"); break;
+          case 1: g->SetTitle("NEG"); break;
+          case 2: g->SetTitle("POS"); break;
+          default: g->SetTitle(AliPID::ParticleLatexName(ig-3)); break;
+          };
         }
         break;
       case kTRDmom:
@@ -627,14 +634,36 @@ void AliTRDcheckESD::Terminate(Option_t *)
   if(!(h2 = (TH2I*)fHistos->At(kNCl))) return;
   ax = h2->GetXaxis();
   arr = (TObjArray*)fResults->At(kNCl);
+  // All tracks
   h1[0] = h2->ProjectionX("Ncl_px");
   TGraphErrors *ge=(TGraphErrors*)arr->At(0);
   for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
     ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
   }
+  // All charged tracks
+  TH1 *hNclCh[2] = {(TH1D*)h1[0]->Clone("NEG"), (TH1D*)h1[0]->Clone("POS")};
+  hNclCh[0]->Reset();hNclCh[1]->Reset();
+  for(Int_t is(1); is<=AliPID::kSPECIES; is++){
+    hNclCh[0]->Add(h2->ProjectionX("Ncl_px", 2*is-1, 2*is-1)); // neg
+    hNclCh[1]->Add(h2->ProjectionX("Ncl_px", 2*is, 2*is));     // pos
+  }
+  if(Int_t(hNclCh[0]->GetEntries())){
+    ge=(TGraphErrors*)arr->At(1);
+    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+      ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[0]->GetBinContent(ib));
+    }
+  }
+  if(Int_t(hNclCh[1]->GetEntries())){
+    ge=(TGraphErrors*)arr->At(2);
+    for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
+      ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[1]->GetBinContent(ib));
+    }
+  }
+  // Species wise
   for(Int_t is(1); is<=AliPID::kSPECIES; is++){
     h1[0] = h2->ProjectionX("Ncl_px", 2*is-1, 2*is);
-    ge=(TGraphErrors*)arr->At(is);
+    if(!Int_t(h1[0]->GetEntries())) continue;
+    ge=(TGraphErrors*)arr->At(2+is);
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
     }

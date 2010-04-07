@@ -399,25 +399,28 @@ void AliTRDinfoGen::UserExec(Option_t *){
             AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Pt[%5.2f]", fESDev->GetEventNumberInFile(), itrk, esdTrack->Pt()));
             selected = kFALSE;
           }
-          if(TMath::Abs(esdTrack->Eta()) > fgkEta){
+          if(selected && TMath::Abs(esdTrack->Eta()) > fgkEta){
             AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Eta[%5.2f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(esdTrack->Eta())));
             selected = kFALSE;
           }
-          if(esdTrack->GetTPCNcls() < fgkNclTPC){ 
+          if(selected && esdTrack->GetTPCNcls() < fgkNclTPC){ 
             AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] NclTPC[%d]", fESDev->GetEventNumberInFile(), itrk, esdTrack->GetTPCNcls()));
             selected = kFALSE;
           }
           Float_t par[2], cov[3];
           esdTrack->GetImpactParameters(par, cov);
           if(IsCollision()){ // cuts on DCA
-            if(TMath::Abs(par[0]) > fgkTrkDCAxy){ 
+            if(selected && TMath::Abs(par[0]) > fgkTrkDCAxy){ 
               AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAxy[%f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(par[0])));
               selected = kFALSE;
             }
-            if(TMath::Abs(par[1]) > fgkTrkDCAz){ 
+            if(selected && TMath::Abs(par[1]) > fgkTrkDCAz){ 
               AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAz[%f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(par[1])));
               selected = kFALSE;
             }
+          } else if(selected && fMCev && !fMCev->IsPhysicalPrimary(alab)){;
+            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Primary", fESDev->GetEventNumberInFile(), itrk));
+            selected = kFALSE;
           }
         }
         if(fTrackCut && !fTrackCut->IsSelected(esdTrack)) selected = kFALSE;
