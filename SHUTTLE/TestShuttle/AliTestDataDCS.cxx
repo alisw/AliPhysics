@@ -1,17 +1,38 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+*/
+
+//
+// Class to simulate the 
+// data coming from DCS
+// for a test preprocessor
+//
+
 #include "AliTestDataDCS.h"
 
-#include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
 #include <TTimeStamp.h>
-#include <TObjString.h>
-#include <TH2F.h>
-#include <TProfile.h>
 #include <TGraph.h>
-#include <TDatime.h>
-#include <TStyle.h>
 #include <TCanvas.h>
+#include <TObjArray.h>
+#include <TMap.h>
 
 ClassImp(AliTestDataDCS)
 
@@ -37,6 +58,11 @@ AliTestDataDCS::AliTestDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 	fGraphs("TGraph",kNGraphs),
 	fIsProcessed(kFALSE)
 {
+
+	//
+	// constructor
+	//
+
 	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
 	TTimeStamp(startTime).AsString(),
 	TTimeStamp(endTime).AsString()));
@@ -56,6 +82,10 @@ AliTestDataDCS::~AliTestDataDCS() {
 
 //---------------------------------------------------------------
 void AliTestDataDCS::ProcessData(TMap& aliasMap){
+
+	//
+	// processing the data
+	//
 
 	if(!(fHv[0])) Init();
 
@@ -115,6 +145,10 @@ void AliTestDataDCS::ProcessData(TMap& aliasMap){
 //---------------------------------------------------------------
 void AliTestDataDCS::Init(){
 
+	// 
+	// initialization
+	//
+
 	TH1::AddDirectory(kFALSE);
 
 	fGraphs.SetOwner(1);
@@ -156,7 +190,9 @@ void AliTestDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double
 //---------------------------------------------------------------
 void AliTestDataDCS::Draw(const Option_t* /*option*/)
 {
-// Draw all histos and graphs
+	//
+	// Draw all histos and graphs
+	//
 
   if(!fIsProcessed) return;
 
