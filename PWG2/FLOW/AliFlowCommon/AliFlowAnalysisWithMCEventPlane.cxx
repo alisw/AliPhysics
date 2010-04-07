@@ -27,6 +27,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TMath.h"
+#include "TVector2.h"
 
 #include "AliFlowCommonConstants.h"
 #include "AliFlowEventSimple.h"
@@ -34,6 +35,7 @@
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "AliFlowAnalysisWithMCEventPlane.h"
+#include "AliFlowVector.h"
 
 class AliFlowVector;
 

@@ -1,7 +1,34 @@
-#include "TStopwatch.h"
-#include "TObjArray"
-#include "Riostream.h"
-#include "TFile.h"
+#include <Riostream.h>
+#include <TStopwatch.h>
+#include <TObjArray.h>
+#include <TFile.h>
+#include <TRandom3.h>
+#include <TTimeStamp.h>
+
+#include <AliFlowCommon/AliFlowCommonConstants.h>
+#include <AliFlowCommon/AliFlowLYZConstants.h>
+#include <AliFlowCommon/AliFlowCumuConstants.h>
+#include <AliFlowCommon/AliFlowVector.h>
+#include <AliFlowCommon/AliFlowTrackSimple.h>
+#include <AliFlowCommon/AliFlowEventSimple.h>
+#include <AliFlowCommon/AliFlowTrackSimpleCuts.h>
+#include <AliFlowCommon/AliFlowCommonHist.h>
+#include <AliFlowCommon/AliFlowCommonHistResults.h>
+#include <AliFlowCommon/AliFlowLYZHist1.h>
+#include <AliFlowCommon/AliFlowLYZHist2.h>
+#include <AliFlowCommon/AliCumulantsFunctions.h>
+#include <AliFlowCommon/AliFlowLYZEventPlane.h>
+#include <AliFlowCommon/AliFlowAnalysisWithMCEventPlane.h>
+#include <AliFlowCommon/AliFlowAnalysisWithScalarProduct.h>
+#include <AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.h>
+#include <AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.h>
+#include <AliFlowCommon/AliFlowAnalysisWithCumulants.h>
+#include <AliFlowCommon/AliFlowAnalysisWithQCumulants.h>
+#include <AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.h>
+#include <AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.h>
+#include <AliFlowCommon/AliFlowAnalysisWithNestedLoops.h>
+#include <AliFlowTasks/AliFlowEventSimpleMaker.h>
+#include <FlowEventMakers/FlowEventSimpleMaker.h>
 
 //--------------------------------------------------------------------------------------
 // Run flow analysis on local data with custom FlowEvent maker
@@ -62,9 +89,11 @@ enum anaModes {mLocal,mLocalSource,mLocalPAR,};
 //mLocalPAR: Analyze data on your computer using root + PAR files
 //mLocalSource: Analyze data on your computer using root + source files
 
+void LoadLibraries(const anaModes mode);
+
 Int_t offset = 0;
                                           
-int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char* 
+int runFlowAnalysis(const anaModes mode=mLocal, Int_t aRuns = 100, const char* 
 		    dir="/data/alice1/kolk/KineOnly3/")
 		    //		    dir="/Users/snelling/alice_data/KineOnly3/")
 		    //		    dir="/Users/snelling/alice_data/stoomboot/5b/")
@@ -72,10 +101,10 @@ int runFlowAnalysis(Int_t mode=mLocal, Int_t aRuns = 100, const char*
   TStopwatch timer;
   timer.Start();
   
-  if (LYZ1SUM && LYZ2SUM) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
-  if (LYZ1PROD && LYZ2PROD) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(); }
-  if (LYZ2SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
-  if (LYZ1SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(); }
+  if (LYZ1SUM && LYZ2SUM) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(1); }
+  if (LYZ1PROD && LYZ2PROD) {cout<<"WARNING: you cannot run LYZ1 and LYZ2 at the same time! LYZ2 needs the output from LYZ1."<<endl; exit(1); }
+  if (LYZ2SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ2 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(1); }
+  if (LYZ1SUM && LYZEP) {cout<<"WARNING: you cannot run LYZ1 and LYZEP at the same time! LYZEP needs the output from LYZ2."<<endl; exit(1); }
 
 
   cout<<endl;

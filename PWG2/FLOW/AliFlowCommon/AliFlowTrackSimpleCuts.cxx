@@ -14,22 +14,22 @@
  **************************************************************************/
 
 /* $Id$ */ 
-#include "TNamed.h"
-#include "AliFlowTrackSimpleCuts.h"
-#include "AliFlowTrackSimple.h" 
-
 
 // AliFlowTrackSimpleCuts:
 // A simple track cut class to the the AliFlowTrackSimple 
 // for basic kinematic cuts
 //
 // author: N. van der Kolk (kolk@nikhef.nl)
+// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
+#include "TNamed.h"
+#include "TParticle.h"
+#include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowTrackSimple.h"
 
 ClassImp(AliFlowTrackSimpleCuts)
 
 //-----------------------------------------------------------------------
-
 AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
   fPtMax(0.),
   fPtMin(0.),
@@ -44,7 +44,6 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts):
   TNamed(),
   fPtMax(someCuts.fPtMax),
@@ -59,7 +58,6 @@ AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& som
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowTrackSimpleCuts& AliFlowTrackSimpleCuts::operator=(const AliFlowTrackSimpleCuts& someCuts)
 {
   fPtMax  = someCuts.fPtMax;
@@ -74,19 +72,15 @@ AliFlowTrackSimpleCuts& AliFlowTrackSimpleCuts::operator=(const AliFlowTrackSimp
 
 }
 
-
 //----------------------------------------------------------------------- 
-
 AliFlowTrackSimpleCuts::~AliFlowTrackSimpleCuts()
 {
   //destructor
   
 }
 
-
 //----------------------------------------------------------------------- 
-
-Bool_t AliFlowTrackSimpleCuts::PassesCuts(AliFlowTrackSimple *track)
+Bool_t AliFlowTrackSimpleCuts::PassesCuts(const AliFlowTrackSimple *track) const
 {
   //simple method to check if the simple track passes the simple cuts
   if(track->Pt() >= fPtMin && track->Pt() < fPtMax &&
@@ -95,4 +89,16 @@ Bool_t AliFlowTrackSimpleCuts::PassesCuts(AliFlowTrackSimple *track)
     { return kTRUE; } 
   else
     { return kFALSE; }  
+}
+
+//----------------------------------------------------------------------- 
+Bool_t AliFlowTrackSimpleCuts::PassesCuts(const TParticle* track) const
+{
+  //simple method to check if the simple track passes the simple cuts
+  if(track->Pt() >= fPtMin && track->Pt() < fPtMax &&
+     track->Eta() >= fEtaMin && track->Eta() < fEtaMax &&
+     track->Phi() >= fPhiMin && track->Phi() < fPhiMax)
+    return kTRUE; 
+  else
+    return kFALSE; 
 }

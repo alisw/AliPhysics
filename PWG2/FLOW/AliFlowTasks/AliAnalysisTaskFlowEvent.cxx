@@ -191,6 +191,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
 	  if (hdh) {
 	    fRP = hdh->ReactionPlaneAngle();
+      fEventMaker->SetMCReactionPlaneAngle(fRP);
 	    //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
 	  }
 	}
@@ -203,6 +204,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
       if (headerG) {
 	fRP = headerG->GetEventPlane();
+  fEventMaker->SetMCReactionPlaneAngle(fRP);
 	//cout<<"The reactionPlane from GeVSim is: "<< fRP <<endl;
       }
       //else { cout<<"headerG is NULL"<<endl; }
@@ -213,6 +215,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
       if (headerH) {
 	fRP = headerH->ReactionPlaneAngle();
+  fEventMaker->SetMCReactionPlaneAngle(fRP);
 	//cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
       }
       //else { cout<<"headerH is NULL"<<endl; }
@@ -223,20 +226,20 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliGenEposEventHeader* headerE = (AliGenEposEventHeader*)(mcEvent->GenEventHeader());
       if (headerE) {
 	fRP = headerE->ReactionPlaneAngle();
+  fEventMaker->SetMCReactionPlaneAngle(fRP);
 	//cout<<"The reactionPlane from EPOS is: "<< fR <<endl;
       }
       //else { cout<<"headerE is NULL"<<endl; }
     }
   }
 
-  // set the reaction plane angle for the flow event
-  fEventMaker->SetMCReactionPlaneAngle(fRP);
   //setting event cuts
   fEventMaker->SetMinMult(fMinMult);
   fEventMaker->SetMaxMult(fMaxMult);
   //setting ranges for eta subevents
   fEventMaker->SetSubeventEtaRange(fMinA,fMaxA,fMinB,fMaxB);
 
+  //TODO
   if (fbAfterburnerOn && fMyTRandom3) {  
     // set the new value of the values using a after burner
     cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;

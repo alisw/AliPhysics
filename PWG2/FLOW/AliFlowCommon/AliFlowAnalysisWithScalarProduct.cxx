@@ -15,23 +15,21 @@
 
 #define AliFlowAnalysisWithScalarProduct_cxx
  
-#include "Riostream.h"  //needed as include
-#include "TFile.h"      //needed as include
+#include "Riostream.h"
+#include "TFile.h"      
 #include "TList.h"
 #include "TMath.h"
 #include "TProfile.h"
 #include "TVector2.h"
+#include "TH1F.h"
 
-class TH1F;
-
-#include "AliFlowCommonConstants.h"    //needed as include
+#include "AliFlowCommonConstants.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 #include "AliFlowAnalysisWithScalarProduct.h"
-
-class AliFlowVector;
+#include "AliFlowVector.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // AliFlowAnalysisWithScalarProduct:

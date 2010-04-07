@@ -23,8 +23,10 @@
 class TObjArray;
 class TList;
 class TFile;
+class TDirectoryFile;
 
-class TH1;
+class TH1F;
+class TH1D;
 class TLegend;
 class TProfile;
 

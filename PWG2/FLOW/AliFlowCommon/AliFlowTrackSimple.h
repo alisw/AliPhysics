@@ -7,15 +7,18 @@
 
 #include "TNamed.h"
 #include "TBits.h"
+class TParticle;
 
 // AliFlowTrackSimple:
 // A simple track class to the the AliFlowEventSimple for flow analysis
 // author: N. van der Kolk (kolk@nikhef.nl)
+// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
 class AliFlowTrackSimple: public TNamed {
 
  public:
   AliFlowTrackSimple();
+  AliFlowTrackSimple(const TParticle* p);
   AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
   AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
