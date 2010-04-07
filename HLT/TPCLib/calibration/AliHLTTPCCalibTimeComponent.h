@@ -27,6 +27,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliESDfriend;
 class TObjArray;
+class AliTPCclusterMI;
 
 /**
  * @class AliHLTTPCCalibTimeComponent
@@ -99,11 +100,15 @@ class AliHLTTPCCalibTimeComponent : public AliHLTCalibrationProcessor
       AliESDtrack      *fESDtrack;  //!transient
       AliESDfriend     *fESDfriend; //!transient
       TObjArray        *fSeedArray; //!transient
-      AliHLTUInt32_t    fOutputSize; // output size
+      AliHLTUInt32_t    fOutputSize;// output size
       
+      static const Int_t fkNPartition = 36*6; // number of partitions in TPC
+      AliTPCclusterMI   *fPartitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
+      Int_t              fNPartitionClusters[fkNPartition]; //! number of clusters for each TPC partition
+
       /** the default configuration entry for this component */
       static const char* fgkOCDBEntry; //!transient
 
-      ClassDef(AliHLTTPCCalibTimeComponent, 4)
+      ClassDef(AliHLTTPCCalibTimeComponent, 5)
     };
 #endif
