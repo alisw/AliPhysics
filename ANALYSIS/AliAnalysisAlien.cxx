@@ -1620,11 +1620,19 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       Error("MergeOutputs", "Cannot merge outputs without grid connection. Terminate will NOT be executed");
       return kFALSE;
    }
-   if (fMergeViaJDL && !fProductionMode && TestBit(AliAnalysisGrid::kMerge)) {
+   if (fMergeViaJDL) {
+      if (!TestBit(AliAnalysisGrid::kMerge)) {
+         Info("MergeOutputs", "### Re-run with <MergeViaJDL> option in terminate mode of the plugin to submit merging jobs ###");
+         return kFALSE; 
+      }     
+      if (fProductionMode) {
+         Info("MergeOutputs", "### Merging will be submitted by LPM manager... ###");
+         return kFALSE;
+      }
       Info("MergeOutputs", "Submitting merging JDL");
       SubmitMerging();
       Info("MergeOutputs", "### Re-run with <MergeViaJDL> off to collect results after merging jobs are done ###");
-      Info("MergeOutputs", "### Not executing Terminate for now. This is not an error.");
+      Info("MergeOutputs", "### The Terminate() method is executed by the merging jobs");
       return kFALSE;
    }   
    // Get the output path
