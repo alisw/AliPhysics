@@ -625,6 +625,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     TList * nmsHistos = GetNeutralMesonSelection()->GetCreateOutputObjects() ;
     if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
       for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
+	delete nmsHistos;
   }
   
   //Save parameters used for analysis
