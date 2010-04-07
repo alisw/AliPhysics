@@ -134,7 +134,8 @@ TList *  AliNeutralMesonSelection::GetCreateOutputObjects()
   
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("MesonDecayHistos") ; 
-  
+	if(fKeepNeutralMesonHistos) outputContainer->SetOwner(kFALSE);
+	
   fhAnglePairNoCut  = new TH2F
     ("AnglePairNoCut",
      "Angle between all #gamma pair vs E_{#pi^{0}}",fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNAngleBins,fHistoAngleMin,fHistoAngleMax); 
