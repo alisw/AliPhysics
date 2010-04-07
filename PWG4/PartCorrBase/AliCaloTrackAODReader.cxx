@@ -77,7 +77,7 @@ AliCaloTrackAODReader::AliCaloTrackAODReader(const AliCaloTrackAODReader & aodr)
 //____________________________________________________________________________
 void AliCaloTrackAODReader::FillInputCTS() {
   //Return array with Central Tracking System (CTS) tracks
-
+  if(fDebug > 2 ) printf("AliCaloTrackAODReader::FillInputCTS()\n");
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
   Int_t naod = 0;
   Double_t p[3];
@@ -141,7 +141,8 @@ void AliCaloTrackAODReader::FillInputCTS() {
 //____________________________________________________________________________
 void AliCaloTrackAODReader::FillInputEMCAL() {
   //Return array with EMCAL clusters in aod format
-  
+  if(fDebug > 2 ) printf("AliCaloTrackAODReader::FillInputEMCAL()\n");
+	
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);
@@ -212,7 +213,8 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 //____________________________________________________________________________
 void AliCaloTrackAODReader::FillInputPHOS() {
   //Return array with PHOS clusters in aod format
-  
+  if(fDebug > 2 ) printf("AliCaloTrackAODReader::FillInputPHOS()\n");
+	
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);

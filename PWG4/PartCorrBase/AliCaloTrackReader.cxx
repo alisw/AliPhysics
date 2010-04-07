@@ -508,9 +508,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 
   fEventNumber = iEntry;
   fCurrentFileName = TString(currentFileName);
-
+  if(!fInputEvent) {
+	  if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analisys\n");
+	  return kFALSE;
+  }
   //Select events only fired by a certain trigger configuration if it is provided
-  Int_t eventType = ((AliESDHeader*)fInputEvent->GetHeader())->GetEventType();
+  Int_t eventType = 0;
+  if(fInputEvent->GetHeader())
+	  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
   if( fFiredTriggerClassName  !="" && !fAnaLED){
 	if(eventType!=7)return kFALSE; //Only physics event, do not use for simulated events!!!
     if(fDebug > 0) 

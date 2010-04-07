@@ -81,6 +81,8 @@ AliCaloTrackESDReader::AliCaloTrackESDReader(const AliCaloTrackESDReader & g) :
 //____________________________________________________________________________
 void AliCaloTrackESDReader::FillInputCTS() {
   //Return array with CTS tracks
+  if(fDebug > 2 ) printf("AliCaloTrackESDReader::FillInputCTS()\n");
+
   //TObjArray * fAODCTS = new TObjArray();
   Int_t nTracks   = fInputEvent->GetNumberOfTracks() ;
   Int_t naod = 0;
@@ -183,7 +185,8 @@ void AliCaloTrackESDReader::FillInputCTS() {
 //____________________________________________________________________________
 void AliCaloTrackESDReader::FillInputEMCAL() {
   //Return array with EMCAL clusters in aod format
-  
+  if(fDebug > 2 ) printf("AliCaloTrackESDReader::FillInputEMCAL()\n");
+	
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
   GetVertex(v);
@@ -267,6 +270,8 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 //____________________________________________________________________________
 void AliCaloTrackESDReader::FillInputPHOS() {
   //Return array with PHOS clusters in aod format
+  if(fDebug > 2 ) printf("AliCaloTrackESDReader::FillInputPHOS()\n");
+
   Int_t nEMCAL = (fOutputEvent->GetCaloClusters())->GetEntriesFast();
   //Get vertex for momentum calculation  
   Double_t v[3] ; //vertex ;
