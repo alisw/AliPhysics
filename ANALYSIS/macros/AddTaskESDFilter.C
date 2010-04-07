@@ -71,7 +71,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
    // ITS stand-alone tracks
    AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
-   esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
+   esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE, kTRUE);
 
    // Pixel OR necessary for the electrons
    AliESDtrackCuts *itsStrong = new AliESDtrackCuts("ITSorSPD", "pixel requirement for ITS");
