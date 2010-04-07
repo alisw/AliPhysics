@@ -1,7 +1,31 @@
-//------------------------------------------------------------
-// Prototype of QA analysis mini-train
-// Origin: Andreas.Morsch@cern.ch
-//------------------------------------------------------------
+/**************************************************************************
+ * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+// Analysis Task for the Quality Assurance of Cosmic Data
+// Two track segments in the are matched in angle and charged. T
+// The quality of the matching in is checked by comparing 
+// the tarnsverse momenta and starting points of the track segments
+//
+// Author
+// Andreas Morsch
+// andreas.morsch@cern.ch
+
+#include "TChain.h"
+#include "TTree.h"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -28,6 +52,7 @@ AliAnalysisTaskCosmic::AliAnalysisTaskCosmic(const char *name)
   //
   // Constructor
   //
+    
     for (Int_t i = 0; i < 6; i++) {
 	fhPt[i]      = 0;
 	fhTheta[i]   = 0;
@@ -45,6 +70,77 @@ AliAnalysisTaskCosmic::AliAnalysisTaskCosmic(const char *name)
     }
     
   DefineOutput(1,  TList::Class());
+}
+
+AliAnalysisTaskCosmic::AliAnalysisTaskCosmic(const AliAnalysisTaskCosmic& task)
+    : AliAnalysisTaskSE(task),
+      fHists(0),
+      fhDZvsZ(0),
+      fhDZvsPhi(0),
+      fhCh1Ch2(0),
+      fhPh1Ph2(0),
+      fhCl1Cl2G(0),
+      fhCl1Cl2B(0)
+{
+  // Copy constructor
+    fHists       = new TList();
+    fhDZvsZ      = (TH2F*)    ((task.fhDZvsZ)   ->Clone()); 
+    fhDZvsPhi    = (TH2F*)    ((task.fhDZvsPhi) ->Clone());
+    fhCh1Ch2     = (TH2F*)    ((task.fhCh1Ch2)  ->Clone());
+    fhPh1Ph2     = (TH2F*)    ((task.fhPh1Ph2)  ->Clone());
+    fhCl1Cl2G    = (TH2F*)    ((task.fhCl1Cl2G) ->Clone());
+    fhCl1Cl2B    = (TH2F*)    ((task.fhCl1Cl2B) ->Clone());
+    for (Int_t i = 0; i < 6; i++) {
+	fhPt[i]       =    (TH1F*) ((task.fhPt[i])        ->Clone());
+	fhTheta[i]    =    (TH1F*) ((task.fhTheta[i])     ->Clone());
+	fhPhi[i]      =    (TH1F*) ((task.fhPhi[i])       ->Clone());
+	fhDPhi[i]     =    (TH1F*) ((task.fhDPhi[i])      ->Clone());
+	fhDTheta[i]   =    (TH1F*) ((task.fhDTheta[i])    ->Clone());
+	fhDZ[i]       =    (TH1F*) ((task.fhDZ[i])        ->Clone());
+	fhDX[i]       =    (TH1F*) ((task.fhDX[i])        ->Clone());
+	fhDY[i]       =    (TH1F*) ((task.fhDY[i])        ->Clone());
+	fhDPt[i]      =    (TH1F*) ((task.fhDPt[i])       ->Clone());
+	fhD1ovPt[i]   =    (TH1F*) ((task.fhD1ovPt[i])    ->Clone());
+	fhDPtovPt[i]  =    (TH1F*) ((task.fhDPtovPt[i])   ->Clone());
+
+	fpDPt[i]      =    (TProfile*) ((task.fpDPt[i])       ->Clone());
+	fpDPtS[i]     =    (TProfile*) ((task.fpDPtS[i])      ->Clone());
+    }
+}
+
+//______________________________________________________________________________
+AliAnalysisTaskCosmic& AliAnalysisTaskCosmic::operator=(const AliAnalysisTaskCosmic& task)
+{
+  // Assignment operator
+  if(this!=&task) {
+
+    AliAnalysisTaskSE::operator=(task);
+
+    fHists       = new TList();
+    fhDZvsZ      = (TH2F*)    ((task.fhDZvsZ)   ->Clone()); 
+    fhDZvsPhi    = (TH2F*)    ((task.fhDZvsPhi) ->Clone());
+    fhCh1Ch2     = (TH2F*)    ((task.fhCh1Ch2)  ->Clone());
+    fhPh1Ph2     = (TH2F*)    ((task.fhPh1Ph2)  ->Clone());
+    fhCl1Cl2G    = (TH2F*)    ((task.fhCl1Cl2G) ->Clone());
+    fhCl1Cl2B    = (TH2F*)    ((task.fhCl1Cl2B) ->Clone());
+    for (Int_t i = 0; i < 6; i++) {
+	fhPt[i]       =    (TH1F*) ((task.fhPt[i])        ->Clone());
+	fhTheta[i]    =    (TH1F*) ((task.fhTheta[i])     ->Clone());
+	fhPhi[i]      =    (TH1F*) ((task.fhPhi[i])       ->Clone());
+	fhDPhi[i]     =    (TH1F*) ((task.fhDPhi[i])      ->Clone());
+	fhDTheta[i]   =    (TH1F*) ((task.fhDTheta[i])    ->Clone());
+	fhDZ[i]       =    (TH1F*) ((task.fhDZ[i])        ->Clone());
+	fhDX[i]       =    (TH1F*) ((task.fhDX[i])        ->Clone());
+	fhDY[i]       =    (TH1F*) ((task.fhDY[i])        ->Clone());
+	fhDPt[i]      =    (TH1F*) ((task.fhDPt[i])       ->Clone());
+	fhD1ovPt[i]   =    (TH1F*) ((task.fhD1ovPt[i])    ->Clone());
+	fhDPtovPt[i]  =    (TH1F*) ((task.fhDPtovPt[i])   ->Clone());
+
+	fpDPt[i]      =    (TProfile*) ((task.fpDPt[i])       ->Clone());
+	fpDPtS[i]     =    (TProfile*) ((task.fpDPtS[i])      ->Clone());
+    }
+  }
+  return *this;
 }
 
 
@@ -188,7 +284,7 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
       Float_t pt     = track->Pt();
       Short_t charge = track->Charge();
       Float_t phi    = track->Phi();
-      if (phi > 0. && phi  < TMath::Pi()) charge*=(-1.);
+      if (phi > 0. && phi  < TMath::Pi()) charge*=(-1);
 
 
 
@@ -350,7 +446,7 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
 		  Double_t sigmaPt = 0.5 * TMath::Sqrt(sigmaPt1 * sigmaPt1 + sigmaPt2 * sigmaPt2);
 		  if (TMath::Abs(dpt)/ptm > 0.2 && pt > 10. &&  charge > 0.)
 //		      printf("Track#2 %5d %5d %13.3f %13.3f %13.3f %13.3f\n", Entry(), jMin, track2->Phi(), dz, dpt, zOut2);	      		  
-		  if (zOut != 0. && zOut2 != 0.) fhDZvsZ->Fill(TMath::Abs(zOut) * zOut/zOut2, dz);
+		  if (TMath::Abs(zOut) > 1.e-10 && TMath::Abs(zOut2) > 1.e-10) fhDZvsZ->Fill(TMath::Abs(zOut) * zOut/zOut2, dz);
 		  if (zOut * zOut2 > 0. && zOut < 0) fhDZvsPhi->Fill(phi, dz);
 		  
 		  fhCh1Ch2->Fill(charge, track2->Charge());

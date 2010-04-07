@@ -2,6 +2,7 @@
 
 ORGSRCS  := $(wildcard PWG1/*.cxx)
 ORGSRCS  += $(wildcard PWG1/global/*.cxx)
+ORGSRCS  += $(wildcard PWG1/cosmic/*.cxx)
 ORGSRCS  += $(wildcard PWG1/tender/*.cxx)
 ORGSRCS  += $(wildcard PWG1/ITS/*.cxx)
 ORGSRCS  += $(wildcard PWG1/TRD/*.cxx)

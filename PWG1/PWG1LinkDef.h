@@ -106,5 +106,6 @@
 #pragma link C++ class  AliTRDpidRefMaker::AliTRDpidRefDataArray+;
 #pragma link C++ class  AliTRDpidRefMakerLQ+;
 #pragma link C++ class  AliTRDpidRefMakerNN+;
-
+// Cosmics QA
+#pragma link C++ class  AliAnalysisTaskCosmic+;
 #endif

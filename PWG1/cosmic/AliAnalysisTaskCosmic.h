@@ -1,11 +1,20 @@
-// gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include");
-#ifndef AliAnalysisTaskCosmic_h
-#define AliAnalysisTaskCosmic_h
+#ifndef ALIANALYSISTASKCOSMIC_H
+#define ALIANALYSISTASKCOSMIC_H 
 
-//------------------------------------------------------------
-// Prototype of QA analysis mini-train
-// Origin: Andreas.Morsch@cern.ch
-//------------------------------------------------------------
+/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+// Analysis Task for the Quality Assurance of Cosmic Data
+// Two track segments in the are matched in angle and charged. T
+// The quality of the matching in is checked by comparing 
+// the tarnsverse momenta and starting points of the track segments
+//
+// Author
+// Andreas Morsch
+// andreas.morsch@cern.ch
+
 
 
 class TH1F;
@@ -32,14 +41,13 @@ class AliAnalysisTaskCosmic : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskCosmic(const char *name = "AliAnalysisTaskCosmic");
   virtual ~AliAnalysisTaskCosmic() {}
+  AliAnalysisTaskCosmic(const AliAnalysisTaskCosmic& task); 
+  AliAnalysisTaskCosmic& operator=(const AliAnalysisTaskCosmic& task);
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
  private:
-  AliAnalysisTaskCosmic(const AliAnalysisTaskCosmic&); // not implemented
-  AliAnalysisTaskCosmic& operator=(const AliAnalysisTaskCosmic&); // not implemented
-  
   TList*          fHists;        // List of histograms
   TH1F*           fhPt[6];       // Pt distribution
   TH1F*           fhTheta[6];    // Eta distribution
