@@ -137,7 +137,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoInit( int /*argc*/, const char** /*argv*
   fTPCGeomParam = AliTPCcalibDB::Instance()->GetParameters();
   if(!fTPCGeomParam) HLTError("TPC Parameters are not loaded.");
   
-  fSeedArray = new TObjArray(1000);  
+  fSeedArray = new TObjArray(10000);  
   //fSeedArray->SetOwner(kTRUE);
   
   fdEdx = new TH2F("fdEdx","energy loss vs. momentum", 400, -200, 200, 300, 0, 300);
