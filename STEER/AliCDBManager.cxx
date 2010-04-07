@@ -505,6 +505,9 @@ void AliCDBManager::UnsetDefaultStorage() {
 		AliWarning("Clearing cache!");
 		ClearCache();
 	}
+
+	fRun = fStartRunLHCPeriod = fEndRunLHCPeriod = -1;
+	fRaw = kFALSE;
 	
 	fDefaultStorage = 0x0;
 }
