@@ -1624,7 +1624,8 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       Info("MergeOutputs", "Submitting merging JDL");
       SubmitMerging();
       Info("MergeOutputs", "### Re-run with <MergeViaJDL> off to collect results after merging jobs are done ###");
-      Info("MergeOutputs", "### Trying to continue merging ... (may fail if exited the shell prematurely)");
+      Info("MergeOutputs", "### Not executing Terminate for now. This is not an error.");
+      return kFALSE;
    }   
    // Get the output path
    if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("/%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
