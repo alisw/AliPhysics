@@ -113,27 +113,46 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   Double_t rms=0, rmsver=0;
   Int_t nent=0;
   Bool_t ok=false;
+  Int_t npeaks = 20;
+  Int_t sigma=3.;
+  Bool_t down=false;
+  Int_t index[20];
+  Int_t nfound=0;
   gFile = TFile::Open(filePhys);
-    if(!gFile) {
+  if(!gFile) {
     AliError("No input PHYS data found ");
   }
   else
     {
+      gFile->ls();
       ok=true;
       Char_t buf1[30];
       for (Int_t i=0; i<24; i++)
 	{
-	  sprintf(buf1,"CFD1-CFD%d",i+1);
+	  sprintf(buf1,"CFD1minCFD%d",i+1);
 	  TH1F *cfd = (TH1F*) gFile->Get(buf1);
 	  if(!cfd) AliWarning(Form("no histograms collected by PHYS DA for channel %i", i));
 	  //      printf(" i = %d buf1 = %s\n", i, buf1);
 	  if(cfd) {
-	    mean=cfd->GetMean();
-	    rms=cfd->GetRMS();
-	    nent=cfd->GetEntries();
-	    //	    printf ("%f %f %i \n",mean,rms,nent);
-	    if(nent<500 || rms>5 ) ok=false;
+	    TSpectrum *s = new TSpectrum(2*npeaks,1);
+	    nfound = s->Search(cfd,sigma," ",0.1);
+	    if(nfound!=0){
+	      Float_t *xpeak = s->GetPositionX();
+	      TMath::Sort(nfound, xpeak, index,down);
+	      Float_t xp = xpeak[index[0]];
+	      Double_t hmax = xp+3*sigma;
+	      Double_t hmin = xp-3*sigma;
+	      cfd->GetXaxis()->SetRangeUser(hmin-3,hmax+3);
+	      mean=cfd->GetMean();
+	      rms=cfd->GetRMS();
+	      nent=cfd->GetEntries();
+	      if(nent<500 || rms>5 ) ok=false;
+	    }
+	    else 
+	      ok=false;
 	  }
+	  
+	
 	   SetTimeEq(i,mean);
 	   SetTimeEqRms(i,rms);
 	  if (cfd) delete cfd;
