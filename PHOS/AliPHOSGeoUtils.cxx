@@ -150,9 +150,13 @@ AliPHOSGeoUtils::~AliPHOSGeoUtils(void)
     delete fMisalArray; fMisalArray=0 ;
   }
 
-  delete [] fStripMatrix;
-  delete [] fEMCMatrix;
-  delete [] fCPVMatrix;
+  for(Int_t mod=0; mod<5; mod++){
+    delete fEMCMatrix[mod] ;
+    for(Int_t istrip=0; istrip<224; istrip++)
+      delete fStripMatrix[mod][istrip];
+    delete fCPVMatrix[mod];
+    //    delete fPHOSMatrix[mod];
+  }
 }
 //____________________________________________________________________________
 Bool_t AliPHOSGeoUtils::AbsToRelNumbering(Int_t absId, Int_t * relid) const
