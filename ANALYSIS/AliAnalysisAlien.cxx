@@ -894,6 +894,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),analysisFile.Data()));
+      fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),analysisFile.Data()));
       if (IsUsingTags() && !gSystem->AccessPathName("ConfigureCuts.C"))
          fGridJDL->AddToInputSandbox(Form("LF:%s/ConfigureCuts.C", workdir.Data()));
       if (fAdditionalLibs.Length()) {
@@ -1298,7 +1299,7 @@ void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &is_collection, Boo
    }
    use_tags = slfn.Contains(".tag");
    if (slfn.Contains(".root")) msg += " type: root file;";
-   else                        msg += " type: unhnown file;";
+   else                        msg += " type: unknown file;";
    if (use_tags) msg += " using_tags: Yes";
    else          msg += " using_tags: No";
    Info("CheckDataType", msg.Data());
@@ -1845,7 +1846,12 @@ void AliAnalysisAlien::SubmitMerging()
    printf("### Submitting %d merging jobs...\n", ntosubmit);
    for (Int_t i=0; i<ntosubmit; i++) {
       TString query;
-      query = Form("submit %s %03d", mergeJDLName.Data(), i);
+      TString runOutDir = gSystem->BaseName(fInputFiles->At(i)->GetName());
+      runOutDir.ReplaceAll(".xml", "");
+      if (fOutputToRunNo)
+         query = Form("submit %s %s", mergeJDLName.Data(), runOutDir.Data());
+      else
+         query = Form("submit %s %03d", mergeJDLName.Data(), i);
       printf("********* %s\n",query.Data());
       TGridResult *res = gGrid->Command(query);
       if (res) {
@@ -2167,7 +2173,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "   }" << endl << endl;
       out << "   mgr->PrintStatus();" << endl;
       if (AliAnalysisManager::GetAnalysisManager()) {
-         if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>2) {
+         if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
             out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
          } else {
             out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
@@ -2491,6 +2497,31 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "         return;" << endl;
       out << "      }" << endl;
       out << "   }" << endl;
+      out << "// read the analysis manager from file" << endl;
+      TString analysisFile = fExecutable;
+      analysisFile.ReplaceAll(".sh", ".root");
+      out << "   TFile *file = TFile::Open(\"" << analysisFile << "\");" << endl;
+      out << "   if (!file) return;" << endl; 
+      out << "   TIter nextkey(file->GetListOfKeys());" << endl;
+      out << "   AliAnalysisManager *mgr = 0;" << endl;
+      out << "   TKey *key;" << endl;
+      out << "   while ((key=(TKey*)nextkey())) {" << endl;
+      out << "      if (!strcmp(key->GetClassName(), \"AliAnalysisManager\"))" << endl;
+      out << "         mgr = (AliAnalysisManager*)file->Get(key->GetName());" << endl;
+      out << "   };" << endl;
+      out << "   if (!mgr) {" << endl;
+      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file" << analysisFile <<"\");" << endl;
+      out << "      return;" << endl;
+      out << "   }" << endl << endl;
+      out << "   mgr->PrintStatus();" << endl;
+      if (AliAnalysisManager::GetAnalysisManager()) {
+         if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
+            out << "   gEnv->SetValue(\"XNet.Debug\", \"1\");" << endl;
+         } else {
+            out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
+         }
+      }   
+      out << "   mgr->StartAnalysis(\"gridterminate\");" << endl;
       out << "}" << endl << endl;
       if (hasANALYSISalice) {
          out <<"//________________________________________________________________________________" << endl;
@@ -2826,11 +2857,13 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
          out << "fi" << endl;
       }   
       delete arr;
-      out << "if ! [ -f outputs_valid ] ; then" << endl;
-      out << "   error=1" << endl;
-      out << "   echo \"Output files were not validated by the analysis manager\" >> stdout" << endl;
-      out << "   echo \"Output files were not validated by the analysis manager\" >> stderr" << endl;
-      out << "fi" << endl;
+      if (!merge) {
+        out << "if ! [ -f outputs_valid ] ; then" << endl;
+        out << "   error=1" << endl;
+        out << "   echo \"Output files were not validated by the analysis manager\" >> stdout" << endl;
+        out << "   echo \"Output files were not validated by the analysis manager\" >> stderr" << endl;
+        out << "fi" << endl;
+      }  
       
       out << "if [ $error = 0 ] ; then" << endl;
       out << "   echo \"* ----------------   Job Validated  ------------------*\""  << out_stream << endl;

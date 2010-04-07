@@ -1283,33 +1283,36 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
 
    if (fMode == kGridAnalysis) {
-      if (!fGridHandler) {
-         Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
-         Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
-         return -1;
-      }
-      // Write analysis manager in the analysis file
-      cout << "===== RUNNING GRID ANALYSIS: " << GetName() << endl;
-      // run local task configuration
-      TIter nextTask(fTasks);
-      AliAnalysisTask *task;
-      while ((task=(AliAnalysisTask*)nextTask())) {
-         task->LocalInit();
-      }
-      if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
-         Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
-         return -1;
-      }   
+      if (!anaType.Contains("terminate")) {
+         if (!fGridHandler) {
+            Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
+            Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
+            return -1;
+         }
+         // Write analysis manager in the analysis file
+         cout << "===== RUNNING GRID ANALYSIS: " << GetName() << endl;
+         // run local task configuration
+         TIter nextTask(fTasks);
+         AliAnalysisTask *task;
+         while ((task=(AliAnalysisTask*)nextTask())) {
+            task->LocalInit();
+         }
+         if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
+            Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
+            return -1;
+         }   
 
-      // Terminate grid analysis
-      if (fSelector && fSelector->GetStatus() == -1) return -1;
-      if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return 0;
-      cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
-      if (!fGridHandler->MergeOutputs()) {
-         // Return if outputs could not be merged or if it alien handler
-         // was configured for offline mode or local testing.
-         return 0;
-      }
+         // Terminate grid analysis
+         if (fSelector && fSelector->GetStatus() == -1) return -1;
+         if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return 0;
+         cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
+         if (!fGridHandler->MergeOutputs()) {
+            // Return if outputs could not be merged or if it alien handler
+            // was configured for offline mode or local testing.
+            return 0;
+         }
+      }   
+      cout << "===== TERMINATING GRID ANALYSIS JOB: " << GetName() << endl;
       ImportWrappers(NULL);
       Terminate();
       return 0;
