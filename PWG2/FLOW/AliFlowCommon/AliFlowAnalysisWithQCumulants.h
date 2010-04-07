@@ -27,6 +27,7 @@ class TGraph;
 class TH1;
 class TProfile;
 class TProfile2D;
+class TDirectoryFile;
 
 class AliFlowEventSimple;
 class AliFlowVector;

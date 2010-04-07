@@ -15,21 +15,22 @@
 
 /* $Id$ */ 
 
-#include "AliFlowTrackSimple.h"
-
-
 // AliFlowTrackSimple:
 // A simple track class to the the AliFlowEventSimple for flow analysis
 //
 //
 // author: N. van der Kolk (kolk@nikhef.nl)
+// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
+#include "TNamed.h"
+#include "TParticle.h"
+#include "AliFlowTrackSimple.h"
 
 ClassImp(AliFlowTrackSimple)
 
 //-----------------------------------------------------------------------
 
-AliFlowTrackSimple::AliFlowTrackSimple(): 
+AliFlowTrackSimple::AliFlowTrackSimple():
   fEta(0),
   fPt(0),
   fPhi(0),
@@ -37,7 +38,17 @@ AliFlowTrackSimple::AliFlowTrackSimple():
   fSubEventBits(0)
 {
   //constructor 
-  
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrackSimple::AliFlowTrackSimple(const TParticle* p):
+  fEta(p->Eta()),
+  fPt(p->Pt()),
+  fPhi(p->Phi()),
+  fFlowBits(0),
+  fSubEventBits(0)
+{
+  //ctor
 }
 
 //-----------------------------------------------------------------------

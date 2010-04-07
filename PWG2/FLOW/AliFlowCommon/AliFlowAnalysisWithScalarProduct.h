@@ -18,6 +18,7 @@ class TProfile;
 class TList;
 class TFile;
 class Riostream;
+class TDirectoryFile;
 
 /////////////////////////////////////////////////////////////////////////////
 // Description: Maker to analyze Flow from the Scalar Product method.

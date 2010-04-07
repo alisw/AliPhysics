@@ -19,8 +19,9 @@
 #include "AliFlowCommonConstants.h" // needed as include
 
 class TList;
-class TFile;
-class TH1;
+class TDirectoryFile;
+class TH1F;
+class TH1D;
 class TProfile;
 
 class AliFlowEventSimple;

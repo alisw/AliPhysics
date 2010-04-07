@@ -6,13 +6,15 @@
 // A simple track cut class to the the AliFlowTrackSimple for basic
 // kinematic cuts
 // author: N. van der Kolk (kolk@nikhef.nl)
+// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
 #ifndef ALIFLOWTRACKSIMPLECUTS_H
 #define ALIFLOWTRACKSIMPLECUTS_H
 
+#include "TNamed.h"
 #include "AliFlowTrackSimple.h"  //needed as include
 
-class TNamed;
+class TParticle;
 
 class AliFlowTrackSimpleCuts : public TNamed {
 
@@ -41,7 +43,8 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Int_t    GetPID() const       {return this->fPID; }
   
   //simple method to check if the simple track passes the simple cuts:
-  Bool_t PassesCuts(AliFlowTrackSimple *track);
+  Bool_t PassesCuts(const AliFlowTrackSimple *track) const;
+  Bool_t PassesCuts(const TParticle* p) const;
 
  private:
   Double_t fPtMax;

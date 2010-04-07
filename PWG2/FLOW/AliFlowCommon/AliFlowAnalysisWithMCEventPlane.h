@@ -11,6 +11,7 @@
 
 class TVector2;
 class TString;
+class TDirectoryFile;
 
 class AliFlowTrackSimple;
 class AliFlowEventSimple;

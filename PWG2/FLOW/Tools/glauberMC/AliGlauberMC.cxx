@@ -256,7 +256,7 @@ Double_t AliGlauberMC::GetdNdEta( const Double_t npp, const Double_t x) const
 {
   //Get particle density per unit of rapidity
   //using the two component model
-  return (npp*((1.-x)*fNpart/2.)+x*fNcoll);
+  return (npp*((1.-x)*fNpart/2.+x*fNcoll));
 }
 
 //______________________________________________________________________________

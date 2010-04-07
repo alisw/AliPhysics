@@ -22,9 +22,11 @@
 #include "AliFlowCommonConstants.h" // needed as include
 #include "TMatrixD.h"
 
+class TDirectoryFile;
 class TList;
 class TFile;
-class TH1;
+class TH1F;
+class TH1D;
 class TH2;
 class TH2D;
 class TProfile;

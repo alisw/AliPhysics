@@ -21,10 +21,11 @@ class TObjArray;
 class TList;
 class TFile;
 
-class TH1;
+class TH1D;
 class TProfile;
 class TProfile2D;
 class TProfile3D;
+class TDirectoryFile;
 
 class AliFlowEventSimple;
 class AliFlowTrackSimple;

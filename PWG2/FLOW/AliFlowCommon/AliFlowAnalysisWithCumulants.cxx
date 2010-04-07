@@ -23,36 +23,26 @@
 #define AliFlowAnalysisWithCumulants_cxx
 
 #include "Riostream.h"
-#include "AliFlowCommonConstants.h"
-#include "AliFlowCommonHist.h"
-#include "AliFlowCommonHistResults.h"
-#include "TChain.h"
+#include "TMath.h"
 #include "TFile.h"
-#include "TList.h" //NEW
-#include "TParticle.h"
-#include "TRandom3.h"
+#include "TList.h"
 #include "TProfile.h"
 #include "TProfile2D.h" 
 #include "TProfile3D.h"
+#include "TH1.h"
+#include "TH1F.h"
+#include "TH1D.h"
+
+#include "AliFlowCommonConstants.h"
+#include "AliFlowCommonHist.h"
+#include "AliFlowCommonHistResults.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisWithCumulants.h"
 #include "AliFlowCumuConstants.h"
 #include "AliCumulantsFunctions.h"
+#include "AliFlowVector.h"
 
-class TH1;
-class TGraph;
-class TPave;
-class TLatex;
-class TMarker;
-class TRandom3;
-class TObjArray;
-class TList;
-class TCanvas;
-class TSystem;
-class TROOT;
-class AliFlowVector;
-class TVector;
 
 //================================================================================================================
 
