@@ -36,6 +36,7 @@
 #include "TROOT.h"
 #include "TString.h"
 #include "TList.h"
+#include "TGraphAsymmErrors.h"
 
 // STEER includes
 #include "AliLog.h"
@@ -60,7 +61,6 @@ AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff(const char *name) :
   //
   // Output slot #1 writes into a TObjArray container
   DefineOutput(1,  TList::Class());
-  if (fUseGhosts) AliInfo("Use also trigger tracks not matching tracker tracks");
 }
 
 //________________________________________________________________________
@@ -197,7 +197,6 @@ void AliAnalysisTaskTrigChEff::UserExec(Option_t *) {
   UShort_t pattern = 0;
   AliESDMuonTrack *esdTrack = 0x0;
 
-  const Float_t kRadToDeg = 180./TMath::Pi();
   Int_t nTracks = esdEvent->GetNumberOfMuonTracks();
 
   const Int_t kFirstTrigCh = 11; //AliMpConstants::NofTrackingChambers()+1;
@@ -214,8 +213,8 @@ void AliAnalysisTaskTrigChEff::UserExec(Option_t *) {
 
     if(effFlag < AliESDMuonTrack::kChEff) continue; // Track not good for efficiency calculation
 
-    ((TH1F*)fList->At(kHthetaX))->Fill(esdTrack->GetThetaX() * kRadToDeg);
-    ((TH1F*)fList->At(kHthetaY))->Fill(esdTrack->GetThetaY() * kRadToDeg);
+    ((TH1F*)fList->At(kHthetaX))->Fill(esdTrack->GetThetaXUncorrected() * TMath::RadToDeg());
+    ((TH1F*)fList->At(kHthetaY))->Fill(esdTrack->GetThetaYUncorrected() * TMath::RadToDeg());
 
     othersEfficient.Reset(1);
     for(Int_t cath=0; cath<kNcathodes; cath++){
@@ -282,27 +281,39 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *) {
   /// Draw result to the screen
   /// Called once at the end of the query.
   //
-  if (!gROOT->IsBatch()) {
-    fList = dynamic_cast<TList*> (GetOutputData(1));
+  if ( gROOT->IsBatch() ) return;
+  fList = dynamic_cast<TList*> (GetOutputData(1));
 
-    TCanvas *can[kNcathodes];
-    TH1F *num = 0x0;
-    TH1F *den = 0x0;
+  TCanvas *can;
+  TH1F *num = 0x0;
+  TH1F *den = 0x0;
+  TGraphAsymmErrors* effGraph = 0x0;
+  TString baseName[3] = {"Chamber", "RPC", "Board"};
+  Int_t baseIndex1[3] = {kHchamberEff, kHslatEff, kHboardEff};
+  Int_t baseIndex2[3] = {kHchamberNonEff, kHslatNonEff, kHboardNonEff};
+  TString cathName[2] = {"BendPlane", "NonBendPlane"};
+  for (Int_t itype=0; itype<3; itype++) {
     for(Int_t cath=0; cath<kNcathodes; cath++){
-      TString canName = Form("can%i",cath);
-      can[cath] = new TCanvas(canName.Data(),canName.Data(),10*(1+cath),10*(1+cath),310,310);
-      can[cath]->SetFillColor(10); can[cath]->SetHighLightColor(10);
-      can[cath]->SetLeftMargin(0.15); can[cath]->SetBottomMargin(0.15);  
-      can[cath]->Divide(2,2);
+      TString canName = Form("efficiencyPer%s_%s",baseName[itype].Data(),cathName[cath].Data());
+      can = new TCanvas(canName.Data(),canName.Data(),10*(1+2*itype+cath),10*(1+2*itype+cath),310,310);
+      can->SetFillColor(10); can->SetHighLightColor(10);
+      can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);  
+      if ( itype > 0 )
+	can->Divide(2,2);
+
       for(Int_t ch=0; ch<kNchambers; ch++){
-	Int_t chCath = GetPlane(cath, ch);
-	num = (TH1F*)(fList->At(kHboardEff + chCath)->Clone());
-	den = (TH1F*)(fList->At(kHboardNonEff + chCath)->Clone());
+	Int_t chCath = ( itype == 0 ) ? cath : GetPlane(cath, ch);
+	num = (TH1F*)(fList->At(baseIndex1[itype] + chCath)->Clone());
+	den = (TH1F*)(fList->At(baseIndex2[itype] + chCath)->Clone());
 	den->Add(num);
-	num->Divide(den);
-	can[cath]->cd(ch+1);
-	num->DrawCopy("E");
-      }
-    }
-  }
+	effGraph = new TGraphAsymmErrors(num, den);
+	effGraph->GetYaxis()->SetRangeUser(0., 1.1);
+	effGraph->GetYaxis()->SetTitle("Efficiency");
+	effGraph->GetXaxis()->SetTitle(baseName[itype].Data());
+	can->cd(ch+1);
+	effGraph->Draw("AP");
+	if ( itype == 0 ) break;
+      } // loop on chamber
+    } // loop on cathode
+  } // loop on histo
 }
