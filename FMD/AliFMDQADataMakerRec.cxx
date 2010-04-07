@@ -146,15 +146,17 @@ void AliFMDQADataMakerRec::InitRaws()
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-
+  Int_t colors[3] = {kRed,kGreen,kBlue};
   TH1I* hADCCounts;
   for(Int_t det = 1; det<=3; det++) {
     Int_t firstring = (det==1 ? 1 : 0);
     for(Int_t iring = firstring;iring<=1;iring++) {
       Char_t ring = (iring == 1 ? 'I' : 'O');
       hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c",
-				      det, ring), "ADC counts;Amplitude [ADC counts];Counts",
+				      det, ring), Form("FMD%d%c ADC counts;Amplitude [ADC counts];Counts",det,ring),
 				 1024,0,1023);
+      hADCCounts->SetFillStyle(3001);
+      hADCCounts->SetFillColor(colors[det-1]+2-2*iring);
       
       Int_t index1 = GetHalfringIndex(det, ring, 0,1);
       Add2RawsList(hADCCounts, index1, !expert, image, !saveCorr);
