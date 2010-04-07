@@ -124,12 +124,11 @@ int main(int argc, char **argv) {
   TH1F *hCFD1minCFD[24];  
    
   for(Int_t ic=0; ic<24; ic++) {
-    hCFD1minCFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+    hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
   }
   TH1F *hVertex = new TH1F("hVertex","Z vertex",ccbx,cclx,ccmx);
   
-  Float_t meanShift[24];
-  
+ 
   // Allocation of histograms - end
 
   Int_t iev=0;
@@ -169,8 +168,8 @@ int main(int argc, char **argv) {
     case END_OF_RUN:
       break;
       
-    case PHYSICS_EVENT:
-      //    case CALIBRATION_EVENT:
+      //  case PHYSICS_EVENT:
+          case CALIBRATION_EVENT:
       iev++;
       
       if(iev==1){
@@ -197,48 +196,23 @@ int main(int argc, char **argv) {
 	  }
 	}
       }
-      else 
-	printf("No T0 data found!!!\n");
       
       // Fill the histograms
       Float_t besttimeA=9999999;
       Float_t besttimeC=9999999;
       Float_t time[24]; 
+      Int_t acshift=56;
       for (Int_t ik = 0; ik<24; ik++)
-	if(allData[ik+1][0]!=0 ){
-	  if(ik<12){
-	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[npmtC][0]);
-	     if(iev == 20000) 	meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
+	if(allData[ik+1][0]>0 ){
+	  if(ik<12 
+	     && (allData[ik+13][0]-allData[ik+1][0]) < 530 ){
+	    hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[npmtC][0]);
 	  }
-	  if(ik>11){
+	  if(ik>11
+	     && (allData[ik+57][0]-allData[ik+45][0]) <530 ){
 	    hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+npmtA][0]);
-	    if(iev == 20000) 	
-	      meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
 	  }
-	}
-      //fill vertex & mean time _ fast reconstruction
-      if (iev > 20000 && iev <50000)
-	{
-	  for (Int_t in=0; in<12; in++)  
-	    {
-	      time[in] = allData[in+1][0] - meanShift[in] + 5000 - allData[0][0] ;
-	      time[in+12] = allData[in+56+1][0] - meanShift[in+12] + 5000 - allData[0][0];
-	    }
-	  for (Int_t ipmt=0; ipmt<12; ipmt++){
-	    if(time[ipmt] > 1 ) {
-	      if(time[ipmt]<besttimeC)
-		besttimeC=time[ipmt]; //timeC
-	    }
-	  }
-	   for ( Int_t ipmt=12; ipmt<24; ipmt++){
-	     if(time[ipmt] > 1) {
-	       if(time[ipmt]<besttimeA) 
-		 besttimeA=time[ipmt]; //timeA
-	     }
-	   }
-	   Float_t vertex = 0.0299792 *(besttimeC - besttimeA)*24.4/2.; 
-	   hVertex->Fill(vertex);
-	   
+
 	}
       delete start;
       start = 0x0;
@@ -259,6 +233,7 @@ int main(int argc, char **argv) {
   }
   printf("After loop, before writing histos\n");
   // write a file with the histograms
+
   TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
