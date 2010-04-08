@@ -1,4 +1,4 @@
-void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_COMPLETE"){
+void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEAR",TString surveyFilename = "emcal_survey_edms1014917.txt"){
   // Create TClonesArray of full misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALFullMisAlignment.C";
@@ -41,7 +41,7 @@ void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_COMPLETE"){
   }    
 
 
-  AliEMCALSurvey emcalSurvey("emcal_survey_data.txt");
+  AliEMCALSurvey emcalSurvey(surveyFilename);
   emcalSurvey.CreateAliAlignObjParams(alobj);
 
   // *************************    2nd step    ***************

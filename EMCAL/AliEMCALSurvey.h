@@ -47,6 +47,7 @@ protected:
   AliEMCALSuperModuleDelta *fSuperModuleData; // Supermodule transformation data
 
   void InitSuperModuleData(const Double_t *xReal, const Double_t *yReal, const Double_t *zReal);
+  void InitSuperModuleData(const TObjArray* surveypoints);
 
 private:
   //Calculate shifts and rotations for supermodule.
