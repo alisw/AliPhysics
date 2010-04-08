@@ -31,10 +31,10 @@ public:
   void LoadCluster( const AliITSRecPoint &cluster);
   void Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTracks );
 
-  AliHLTITSTrack *Tracks(){ return fTracks;}
-  Int_t NTracks(){ return fNTracks;}
-  AliHLTITSTrack *ITSOutTracks(){ return fITSOutTracks;}
-  Int_t NITSOutTracks(){ return fNITSOutTracks;}
+  AliHLTITSTrack *Tracks() const { return fTracks;}
+  Int_t NTracks() const { return fNTracks;}
+  AliHLTITSTrack *ITSOutTracks() const { return fITSOutTracks;}
+  Int_t NITSOutTracks() const { return fNITSOutTracks;}
 
   Bool_t TransportToX( AliExternalTrackParam *t, double x ) const;
   Bool_t TransportToPhiX( AliExternalTrackParam *t, double phi, double x ) const;
@@ -72,7 +72,7 @@ public:
 
 protected:
 
-  const AliITSRecoParam *GetRecoParam(){ return fRecoParam; }
+  const AliITSRecoParam *GetRecoParam() const { return fRecoParam; }
   Bool_t ComputeRoad(AliHLTITSTrack* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
   
   
@@ -95,7 +95,7 @@ protected:
 
   // 
 
-  const AliITSRecoParam *fRecoParam;
+  const AliITSRecoParam *fRecoParam; //! 
 
   AliHLTITSLayer* fLayers; //!
   
@@ -114,11 +114,11 @@ protected:
   AliHLTITSTrack *fITSOutTracks; // array of tracks, fitted outward with ITS only
   int fNTracks;// n tracks
   int fNITSOutTracks;// n out tracks
-  double fLoadTime;
-  double fRecoTime;
-  int fNEvents;
-  AliITSRecPoint *fClusters;
-  int fNClusters;
+  double fLoadTime; //
+  double fRecoTime; //
+  int fNEvents; //
+  AliITSRecPoint *fClusters; //!
+  int fNClusters; //
 
 private:
   AliITStrackerHLT(const AliITStrackerHLT &tracker);

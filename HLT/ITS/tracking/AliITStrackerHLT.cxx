@@ -502,6 +502,7 @@ AliCluster *AliITStrackerHLT::GetCluster(Int_t index) const
 //------------------------------------------------------------------------
 void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track ) 
 {
+  // FollowProlongationTree
   for (Int_t ilayer=5; ilayer>=0; ilayer--) {
    
     AliHLTITSLayer &layer=fLayers[ilayer];
@@ -606,7 +607,7 @@ void AliITStrackerHLT::FollowProlongationTree(AliHLTITSTrack * track )
 
 Int_t AliITStrackerHLT::FitOutward(AliHLTITSTrack * track ) 
 {
-
+  // FitOutward
   track->ResetCovariance(100);
 
   for (Int_t iTrCl=track->GetNumberOfClusters()-1; iTrCl>=0; iTrCl--) {
