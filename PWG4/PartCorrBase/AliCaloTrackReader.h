@@ -38,13 +38,16 @@ class AliAODMCHeader;
 
 class AliCaloTrackReader : public TObject {
 
- public: 
+public: 
   
   AliCaloTrackReader() ; // ctor
   AliCaloTrackReader(const AliCaloTrackReader & g) ; // cpy ctor
-  AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ;//cpy assignment
   virtual ~AliCaloTrackReader() ;//virtual dtor
 
+private:
+  AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ;//cpy assignment
+
+public:
   enum inputDataType {kESD, kAOD, kMC};
   
   //Select generated events, depending on comparison of pT hard and jets.

@@ -99,81 +99,80 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fEMCALGeo(new AliEMCALGeoUtils(*g.fEMCALGeo)), fPHOSGeo(new AliPHOSGeoUtils(*g.fPHOSGeo)),
   fEMCALGeoMatrixSet(g.fEMCALGeoMatrixSet), fPHOSGeoMatrixSet(g.fPHOSGeoMatrixSet),
   fAnaLED(g.fAnaLED),  fRemoveBadChannels(g.fRemoveBadChannels),
-  fEMCALBadChannelMap(g.fEMCALBadChannelMap),fPHOSBadChannelMap(g.fPHOSBadChannelMap)
+  fEMCALBadChannelMap(),fPHOSBadChannelMap()
 {
-  // cpy ctor
-  
+  // cpy ctor  
 }
 
 //_________________________________________________________________________
-AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & source)
-{
-  // assignment operator
-  
-  if(&source == this) return *this;
-  
-  fDataType    = source.fDataType ;
-  fDebug       = source.fDebug ;
-  fEventNumber = source.fEventNumber ;
-  fCurrentFileName = source.fCurrentFileName ;
-  fFiducialCut = source.fFiducialCut;
-	
-  fComparePtHardAndJetPt = source.fComparePtHardAndJetPt;
-  fPtHardAndJetPtFactor  = source.fPtHardAndJetPtFactor;
-	
-  fCTSPtMin    = source.fCTSPtMin ;
-  fEMCALPtMin  = source.fEMCALPtMin ;
-  fPHOSPtMin   = source.fPHOSPtMin ; 
-  
-  fAODCTS     = new TObjArray(*source.fAODCTS) ;
-  fAODEMCAL   = new TObjArray(*source.fAODEMCAL) ;
-  fAODPHOS    = new TObjArray(*source.fAODPHOS) ;
-  fEMCALCells = new TNamed(*source.fEMCALCells) ;
-  fPHOSCells  = new TNamed(*source.fPHOSCells) ;
-
-  fInputEvent  = source.fInputEvent;
-  fOutputEvent = source.fOutputEvent;
-  fMC          = source.fMC;
-  
-  fFillCTS        = source.fFillCTS;
-  fFillEMCAL      = source.fFillEMCAL;
-  fFillPHOS       = source.fFillPHOS;
-  fFillEMCALCells = source.fFillEMCALCells;
-  fFillPHOSCells  = source.fFillPHOSCells;
-
-  fSecondInputAODTree    = source.fSecondInputAODTree;
-  fSecondInputAODEvent   = source.fSecondInputAODEvent;
-  fSecondInputFileName   = source.fSecondInputFileName;
-  fSecondInputFirstEvent = source.fSecondInputFirstEvent;
-
-  fAODCTSNormalInputEntries   = source.fAODCTSNormalInputEntries; 
-  fAODEMCALNormalInputEntries = source.fAODEMCALNormalInputEntries; 
-  fAODPHOSNormalInputEntries  = source.fAODPHOSNormalInputEntries;
-	
-  fTrackStatus        = source.fTrackStatus;
-  fReadStack          = source.fReadStack;
-  fReadAODMCParticles = source.fReadAODMCParticles;	
-	
-  fCleanOutputStdAOD  = source.fCleanOutputStdAOD;
-  fDeltaAODFileName   = source.fDeltaAODFileName;
-	
-  fFiredTriggerClassName = source.fFiredTriggerClassName  ;
-	
-  fEMCALGeoName      = source.fEMCALGeoName ; 
-  fPHOSGeoName       = source.fPHOSGeoName ; 
-  fEMCALGeo          = new AliEMCALGeoUtils(*source.fEMCALGeo);  
-  fPHOSGeo           = new AliPHOSGeoUtils(*source.fPHOSGeo);
-  fEMCALGeoMatrixSet = source.fEMCALGeoMatrixSet; 
-  fPHOSGeoMatrixSet  = source.fPHOSGeoMatrixSet;
-  fAnaLED            = source.fAnaLED;
-  fRemoveBadChannels = source.fRemoveBadChannels;
-  fEMCALBadChannelMap= source.fEMCALBadChannelMap;
-  fPHOSBadChannelMap = source.fPHOSBadChannelMap;
-
-	
-  return *this;
-  
-}
+//AliCaloTrackReader & AliCaloTrackReader::operator = (const AliCaloTrackReader & source)
+//{
+//  // assignment operator
+//  
+//  if(&source == this) return *this;
+//  
+//  fDataType    = source.fDataType ;
+//  fDebug       = source.fDebug ;
+//  fEventNumber = source.fEventNumber ;
+//  fCurrentFileName = source.fCurrentFileName ;
+//  fFiducialCut = source.fFiducialCut;
+//	
+//  fComparePtHardAndJetPt = source.fComparePtHardAndJetPt;
+//  fPtHardAndJetPtFactor  = source.fPtHardAndJetPtFactor;
+//	
+//  fCTSPtMin    = source.fCTSPtMin ;
+//  fEMCALPtMin  = source.fEMCALPtMin ;
+//  fPHOSPtMin   = source.fPHOSPtMin ; 
+//  
+//  fAODCTS     = new TObjArray(*source.fAODCTS) ;
+//  fAODEMCAL   = new TObjArray(*source.fAODEMCAL) ;
+//  fAODPHOS    = new TObjArray(*source.fAODPHOS) ;
+//  fEMCALCells = new TNamed(*source.fEMCALCells) ;
+//  fPHOSCells  = new TNamed(*source.fPHOSCells) ;
+//
+//  fInputEvent  = source.fInputEvent;
+//  fOutputEvent = source.fOutputEvent;
+//  fMC          = source.fMC;
+//  
+//  fFillCTS        = source.fFillCTS;
+//  fFillEMCAL      = source.fFillEMCAL;
+//  fFillPHOS       = source.fFillPHOS;
+//  fFillEMCALCells = source.fFillEMCALCells;
+//  fFillPHOSCells  = source.fFillPHOSCells;
+//
+//  fSecondInputAODTree    = source.fSecondInputAODTree;
+//  fSecondInputAODEvent   = source.fSecondInputAODEvent;
+//  fSecondInputFileName   = source.fSecondInputFileName;
+//  fSecondInputFirstEvent = source.fSecondInputFirstEvent;
+//
+//  fAODCTSNormalInputEntries   = source.fAODCTSNormalInputEntries; 
+//  fAODEMCALNormalInputEntries = source.fAODEMCALNormalInputEntries; 
+//  fAODPHOSNormalInputEntries  = source.fAODPHOSNormalInputEntries;
+//	
+//  fTrackStatus        = source.fTrackStatus;
+//  fReadStack          = source.fReadStack;
+//  fReadAODMCParticles = source.fReadAODMCParticles;	
+//	
+//  fCleanOutputStdAOD  = source.fCleanOutputStdAOD;
+//  fDeltaAODFileName   = source.fDeltaAODFileName;
+//	
+//  fFiredTriggerClassName = source.fFiredTriggerClassName  ;
+//	
+//  fEMCALGeoName      = source.fEMCALGeoName ; 
+//  fPHOSGeoName       = source.fPHOSGeoName ; 
+//  fEMCALGeo          = new AliEMCALGeoUtils(*source.fEMCALGeo);  
+//  fPHOSGeo           = new AliPHOSGeoUtils(*source.fPHOSGeo);
+//  fEMCALGeoMatrixSet = source.fEMCALGeoMatrixSet; 
+//  fPHOSGeoMatrixSet  = source.fPHOSGeoMatrixSet;
+//  fAnaLED            = source.fAnaLED;
+//  fRemoveBadChannels = source.fRemoveBadChannels;
+//  fEMCALBadChannelMap= source.fEMCALBadChannelMap;
+//  fPHOSBadChannelMap = source.fPHOSBadChannelMap;
+//
+//	
+//  return *this;
+//  
+//}
 
 //_________________________________
 AliCaloTrackReader::~AliCaloTrackReader() {
