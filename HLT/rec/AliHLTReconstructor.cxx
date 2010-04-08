@@ -16,10 +16,12 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTReconstructor.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Binding class for HLT reconstruction in AliRoot. */
+//  @file   AliHLTReconstructor.cxx
+//  @author Matthias Richter
+//  @date   
+//  @brief  Binding class for HLT reconstruction in AliRoot
+//          Implements bot the interface to run HLT chains embedded into
+//          AliReconstruction and the unpacking and treatment of HLTOUT
 
 #include <TSystem.h>
 #include <TObjString.h>
@@ -50,25 +52,22 @@
 
 class AliCDBEntry;
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTReconstructor)
 
 AliHLTReconstructor::AliHLTReconstructor()
-  : 
-  AliReconstructor(),
-  fFctProcessHLTOUT(NULL),
-  fpEsdManager(NULL),
-  fpPluginBase(new AliHLTPluginBase)
+  : AliReconstructor()
+  , fpEsdManager(NULL)
+  , fpPluginBase(new AliHLTPluginBase)
   , fFlags(0)
 { 
   //constructor
 }
 
 AliHLTReconstructor::AliHLTReconstructor(const char* options)
-  : 
-  AliReconstructor(),
-  fFctProcessHLTOUT(NULL),
-  fpEsdManager(NULL),
-  fpPluginBase(new AliHLTPluginBase)
+  : AliReconstructor()
+  , fpEsdManager(NULL)
+  , fpPluginBase(new AliHLTPluginBase)
   , fFlags(0)
 { 
   //constructor
@@ -190,16 +189,8 @@ void AliHLTReconstructor::Init()
   }
 
   if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
-    typedef int (*AliHLTSystemSetOptions)(AliHLTSystem* pInstance, const char* options);
-    gSystem->Load("libHLTinterface.so");
-    AliHLTSystemSetOptions pFunc=(AliHLTSystemSetOptions)(gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemSetOptions"));
-    if (pFunc) {
-      if ((pFunc)(pSystem, option.Data())<0) {
+    if (pSystem->ScanOptions(option.Data())<0) {
       AliError("error setting options for HLT system");
-      return;	
-      }
-    } else if (option.Length()>0) {
-      AliError(Form("version of HLT system does not support the options \'%s\'", option.Data()));
       return;
     }
     if ((pSystem->Configure())<0) {
@@ -207,9 +198,6 @@ void AliHLTReconstructor::Init()
       return;
     }
   }
-
-  gSystem->Load("libHLTinterface.so");
-  fFctProcessHLTOUT=(void (*)())gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemProcessHLTOUT");
 
   fpEsdManager=AliHLTEsdManager::New();
   fpEsdManager->SetOption(esdManagerOptions.Data());
@@ -471,13 +459,10 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
     }
   }
 
-  if (fFctProcessHLTOUT) {
-    typedef int (*AliHLTSystemProcessHLTOUT)(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd);
-    AliHLTSystemProcessHLTOUT pFunc=(AliHLTSystemProcessHLTOUT)fFctProcessHLTOUT;
-    if ((pFunc)(pSystem, pHLTOUT, esd)<0) {
-      AliError("error processing HLTOUT");
-    }
+  if (pSystem->ProcessHLTOUT(pHLTOUT, esd)<0) {
+    AliError("error processing HLTOUT");
   }
+
   if (bVerbose) {
     AliInfo("HLT ESD content:");
     esd->Print();

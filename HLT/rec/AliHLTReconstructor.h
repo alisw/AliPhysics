@@ -1,4 +1,5 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTRECONSTRUCTOR_H
 #define ALIHLTRECONSTRUCTOR_H
@@ -6,11 +7,12 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTReconstructor.h
-    @author Matthias Richter
-    @date   
-    @brief  Binding class for HLT simulation in AliRoot
-*/
+//  @file   AliHLTReconstructor.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  Binding class for HLT reconstruction in AliRoot
+//          Implements bot the interface to run HLT chains embedded into
+//          AliReconstruction and the unpacking and treatment of HLTOUT
 
 #include "AliReconstructor.h"
 
@@ -312,9 +314,6 @@ private:
   /** assignment operator prohibited */
   AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
 
-  /** function pointer: processing of HLTOUT data */
-  void (*fFctProcessHLTOUT)(); //!transient
-
   /** ESD manger instance for this reconstruction */
   AliHLTEsdManager* fpEsdManager; //!transient
 
@@ -325,7 +324,7 @@ private:
 
   static const char* fgkCalibStreamerInfoEntry; //! OCDB path
 
-  ClassDef(AliHLTReconstructor, 7)   // class for the HLT reconstruction
+  ClassDef(AliHLTReconstructor, 8)   // class for the HLT reconstruction
 
 };
 
