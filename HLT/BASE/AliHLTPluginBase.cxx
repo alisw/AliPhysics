@@ -24,6 +24,7 @@
 
 #include "AliHLTPluginBase.h"
 #include "AliHLTSystem.h"
+#include "AliHLTDataBuffer.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTPluginBase)
@@ -41,7 +42,17 @@ AliHLTPluginBase::AliHLTPluginBase()
 AliHLTPluginBase::~AliHLTPluginBase()
 {
   // see header file for class documentation
-  if (--fNofInstances<=0) delete fpSystem;
+  if (--fNofInstances<=0) {
+    delete fpSystem;
+
+    // 2010-04-07 not sure whether this is the best place for
+    // the global cleanup of memory pages. In case of AliReconstruction
+    // there is no cleanup method for the reconstructor plugins. They
+    // are just deleted at the end.
+    // However, here we can assume that some global cleanup takes place
+    // when we arrive at this point.
+    AliHLTDataBuffer::AliHLTRawPage::GlobalClean();
+  }
   fpSystem=NULL;
 }
 
