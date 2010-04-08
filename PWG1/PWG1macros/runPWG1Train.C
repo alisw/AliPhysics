@@ -7,6 +7,10 @@
   //            tasks are expected to be in the working  directory
   //    fname : name of the input file or input list
 
+
+  .L $ALICE_ROOT/PWG1/PWG1macros/runPWG1Train.C
+
+
 */
 
 void LoadTrainLibs(){
@@ -30,6 +34,10 @@ void LoadTrainLibs(){
   gSystem->Load("libPWG4PartCorrDep.so");
 }
 
+void TestConfig(){
+
+}
+
 void AddMacros(const char *addmacros){
   //
   // add tasks from selected macros - * convention can be used
@@ -37,7 +45,7 @@ void AddMacros(const char *addmacros){
   // Macros has to be without arguments
   //
   //
-  TString  macroList = gSystem->GetFromPipe(Form("ls %s",addmacros));  
+  TString  macroList = gSystem->GetFromPipe(Form("cat ConfigTask.txt |grep  %s",addmacros));  
   TObjArray * array  = macroList.Tokenize("\n");
 
   if (!array) { printf("No task specified"); return;}
