@@ -3,9 +3,8 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          for The ALICE Off-line Project.                               *
+ * Authors:                                                               *
+ *          for The ALICE HLT Project.                                    *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -16,10 +15,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTTRDCalibrationComponent.cxx
-    @author Timm Steinbeck, Matthias Richter
-    @date
-    @brief  A TRDCalibration processing component for the HLT. */
+//  @file   AliHLTTRDCalibrationComponent.cxx
+//  @author 
+//  @date
+//  @brief  A TRDCalibration processing component for the HLT. 
+// 
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -346,8 +346,8 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
       for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
 	const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
 	const TString tString=obString->GetString();
-	//printf("Trigger Output: %i\n",EvaluateCTPTriggerClass(tString.Data(),trigData));
-	if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kTRUE; break;}
+	printf("Trigger Output: %i\n",CheckCTPTrigger(tString.Data()));
+	if(CheckCTPTrigger(tString.Data())>0){TriggerPassed=kTRUE; break;}
       }
     }
     else{
@@ -355,7 +355,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
       for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
 	const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
 	const TString tString=obString->GetString();
-	if(EvaluateCTPTriggerClass(tString.Data(),trigData)){TriggerPassed=kFALSE; break;}
+	if(CheckCTPTrigger(tString.Data())>0){TriggerPassed=kFALSE; break;}
       }
     }
   }

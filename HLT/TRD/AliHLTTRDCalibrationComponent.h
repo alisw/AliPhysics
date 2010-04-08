@@ -7,10 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTRDCalibrationComponent.h
-    @author Timm Steinbeck, Matthias Richter
-    @date   
-    @brief  Declaration of a TRDCalibration component. */
+//  @file   AliHLTTRDCalibrationComponent.h
+//  @author 
+//  @date   
+//  @brief  Declaration of a TRDCalibration component. 
+// 
 
 
 #include "AliHLTCalibrationProcessor.h"
