@@ -72,6 +72,7 @@ class AliEMCALRawUtils : public TObject {
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
   void SetRawFormatTimeBins(Int_t val)             {fgTimeBins = val;}
+  void SetPedestalValue(Double_t val)              {fgPedestalValue = val;}
   
   static Int_t GetRawFormatTimeBins() { return fgTimeBins ; }    
   static Double_t GetRawFormatTimeMax() { return fgTimeBins*fgTimeBinWidth; }   
