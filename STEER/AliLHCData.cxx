@@ -98,7 +98,7 @@ AliLHCData::AliLHCData(const TMap* dcsMap, double tmin, double tmax)
 {
   Clear();
   SetTMin(tmin);
-  SetTMin(tmax);
+  SetTMax(tmax);
   FillData(dcsMap);
 }
 
@@ -126,7 +126,7 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     sprintf(buff,fgkDCSNames[kBunchLgtFillB],ibm+1);     // ----- measured bunch configuration
     FillBunchConfig(dcsMap, fBunchConfMeas[ibm], buff);
     //
-    sprintf(buff,fgkDCSNames[kBunchLgt],ibm+1);          // ----- maesured bunch lenghts
+    sprintf(buff,fgkDCSNames[kBunchLgt],ibm+1);          // ----- measured bunch lenghts
     FillBunchInfo(dcsMap, fBunchLengths[ibm],buff,ibm,kFALSE);  
     //
     sprintf(buff,fgkDCSNames[kIntBunchAv],ibm+1);        // ----- B-by-B intensities
@@ -155,11 +155,14 @@ Bool_t AliLHCData::FillData(const TMap* dcsMap, double tmin, double tmax)
     //
   }
   //
+  FlagInteractingBunches(fBunchConfMeas[0],fBunchConfMeas[1]);
+  FlagInteractingBunches(fBunchConfDecl[0],fBunchConfDecl[1]);
+  //
   for (int ilr=0;ilr<2;ilr++) {
     //
     sprintf(buff ,fgkDCSNames[kLumBunch], ilr ? 'R':'L');       // ---- BC-by-BC luminosity at IP2 and its error
     sprintf(buff1,fgkDCSNames[kLumBunchErr], ilr ? 'R':'L');
-    FillBCLuminosities(dcsMap, fLuminPerBC[ilr], buff, buff1, kTRUE);
+    FillBCLuminosities(dcsMap, fLuminPerBC[ilr], buff, buff1, 0); // BRAN L uses beam2 as a reference, BRAN R - beam1
     //
     sprintf(buff ,fgkDCSNames[kLumTot]   , ilr ? 'R':'L');       // ---- total luminosity at IP2 and its error
     sprintf(buff1,fgkDCSNames[kLumTotErr], ilr ? 'R':'L');
@@ -260,7 +263,7 @@ TObject* AliLHCData::FindRecValidFor(int start,int nrec, double tstamp) const
   AliLHCDipValI *prevObj = 0;
   for (int i=0;i<nrec;i++) {
     AliLHCDipValI* curObj = (AliLHCDipValI*)fData[start+i];
-    if (TimeDifference(tstamp,curObj->GetTimeStamp())>0) break;
+    if (TimeDifference(tstamp,curObj->GetTimeStamp())<0) break;
     prevObj = curObj;
   }
   if (!prevObj && nrec>0) prevObj = (AliLHCDipValI*)fData[start]; // if no exact match, return the 1st one
@@ -488,7 +491,7 @@ Int_t AliLHCData::FillBunchInfo(const TMap* dcsMap, int refs[2],const char* rec,
 }
  
 //___________________________________________________________________
-Int_t AliLHCData::FillBCLuminosities(const TMap* dcsMap, int refs[2],const char* rec, const char* recErr, Bool_t opt)
+Int_t AliLHCData::FillBCLuminosities(const TMap* dcsMap, int refs[2],const char* rec, const char* recErr, int useBeam)
 {
   // fill luminosities per bunch crossing
   //
@@ -507,38 +510,51 @@ Int_t AliLHCData::FillBCLuminosities(const TMap* dcsMap, int refs[2],const char*
     double tstamp = dcsVal->GetTimeStamp();
     if (tstamp>fTMax) break;
     //
-    AliLHCDipValI *bconf = GetBunchConfigMeasured(0,tstamp);  // luminosities are stored according to 1st beam bunches
+    AliLHCDipValI *bconf;
+    bconf = GetBunchConfigMeasured(useBeam,tstamp);  // luminosities are stored according to beam bunches
     if (!bconf) {
-      AliWarning(Form("Mearured bunch configuration for beam 1 at t=%.1f is not available, trying declared one",tstamp));
-      bconf = GetBunchConfigDeclared(0,tstamp);
+      AliWarning(Form("Mearured bunch configuration for beam%d at t=%.1f is not available, trying declared one",useBeam,tstamp));
+      bconf = GetBunchConfigDeclared(useBeam,tstamp);
     }
     if (!bconf) {
-      AliWarning(Form("Declared bunch configuration for beam 1 at t=%.1f is not available, skip this record",tstamp));
+      AliWarning(Form("Declared bunch configuration for beam%i at t=%.1f is not available, skip this record",useBeam,tstamp));
       return -1;
     }
     int nSlots = dcsVal->GetNEntries();     // count number of actual bunches (non-zeros)
     int nbunch = bconf->GetSize();
     double* dcsArr = dcsVal->GetDouble();
     //
-    // ATTENTION: FOR THE MOMENT STORE ALL SLOTS CORRESPONDING TO FILLED BUNCHES (until the scheme is clarified)
     if (nbunch>nSlots) {
       AliWarning(Form("More N bunches than slots in %s at time %.1f",rec,tstamp));
       continue;
     }
-    int dim = nbunch;
+    int dim = 0;
+    if (!bconf->IsProcessed1()) {
+      AliWarning(Form("Bunch conf. for beam%d has no marked interacting bunches, store all luminosity for all filled bunches",useBeam));
+      dim = nbunch;
+    }
+    else { // count number of interacting bunches
+      for (int i=nbunch;i--;) if ((*bconf)[i]<0) dim++;
+    }
+    //
     if (recErr) {
       if ( !(arrE=GetDCSEntry(dcsMap,recErr,iEntryE,fTMin,fTMax)) || iEntryE<0 ) nEntriesE = -999;
       else nEntriesE = arrE->GetEntriesFast();
       dim += 1;
     }
     AliLHCDipValF* curValF = new AliLHCDipValF(dim,tstamp);
-    for (int i=nbunch;i--;) {
-      int ind = opt ? (*bconf)[i]/10 : i;
+    int cnt = 0;
+    for (int i=0;i<nbunch;i++) {
+      int slot = (*bconf)[i];
+      if (bconf->IsProcessed1() && slot>0) continue;
+      //
+      int ind = TMath::Abs(slot)/10;
       if (ind>nSlots) {
-	AliError(Form("Bunch %d refers to wrong slot %d, set to -1",i,(*bconf)[i]));
-	(*curValF)[i] = -1;
+	AliError(Form("Bunch %d refers to wrong slot %d, set to -1",cnt,slot));
+	(*curValF)[cnt] = -1;
       }
-      else (*curValF)[i] = dcsArr[ind];
+      else (*curValF)[cnt] = dcsArr[ind];
+      cnt++;
     }
     //
     if (recErr) {
@@ -647,93 +663,93 @@ void AliLHCData::Print(const Option_t* opt) const
   //
   printf("********** SETTINGS FROM RUN CONTROL **********\n");
   //
-  printf("** Injection Scheme");
+  printf("* %-38s","Injection Scheme");
   PrintAux(full,fRCInjScheme);
   //
-  printf("** Beta Star");
+  printf("* %-38s","Beta Star");
   PrintAux(full,fRCBeta);
   //
-  printf("** Horisontal Crossing Angle");
+  printf("* %-38s","Horisontal Crossing Angle");
   PrintAux(full,fRCAngH);
   //
-  printf("** Vertical   Crossing Angle");
+  printf("* %-38s","Vertical   Crossing Angle");
   PrintAux(full,fRCAngV);
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d bunch filling scheme [negative: bunch interacting at IR2!]",ib+1);
+    printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
     PrintAux(full,fBunchConfDecl[ib]);
   }
   //
   printf("\n**********       MEASURED DATA       **********\n");
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d bunch filling scheme [negative: bunch interacts at IR2!]",ib+1);
+    printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
     PrintAux(full,fBunchConfMeas[ib]);
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d total intensity",ib+1);
+    printf("* Beam%d total intensity                 ",ib+1);
     PrintAux(full,fIntensTotal[ib]);
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d total intensity from bunch average",ib+1);
+    printf("* Beam%d total intensity (bunch average) ",ib+1);
     PrintAux(full,fIntensTotalAv[ib]);
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d intensity per bunch",ib+1);
+    printf("* Beam%d intensity per bunch             ",ib+1);
     PrintAux(full,fIntensPerBunch[ib]);
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d bunch lengths",ib+1);
+    printf("* Beam%d bunch lengths                   ",ib+1);
     PrintAux(full,fBunchLengths[ib]);
   } 
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d H. emittance",ib+1);
+    printf("* Beam%d Horisontal emittance            ",ib+1);
     PrintAux(full,fEmittanceH[ib]);
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d V. emittance",ib+1);
+    printf("* Beam%d Vertical emittance              ",ib+1);
     PrintAux(full,fEmittanceV[ib]);
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d H. sigma",ib+1);
+    printf("* Beam%d Horisontal sigma                ",ib+1);
     PrintAux(full,fBeamSigmaH[ib]);
   }
   //
   for (int ib=0;ib<2;ib++) {
-    printf("** Beam%d V. sigma",ib+1);
+    printf("* Beam%d Vertical sigma                  ",ib+1);
     PrintAux(full,fBeamSigmaV[ib]);
   }
   //
   for (int lr=0;lr<2;lr++) {
-    printf("** Total luminosity from BRANB_4%c2",lr ? 'R':'L');
+    printf("* Total luminosity from BRANB_4%c2       ",lr ? 'R':'L');
     PrintAux(full,fLuminTotal[lr]);
   } 
   //
   for (int lr=0;lr<2;lr++) {
-    printf("** Luminosity acquisition mode, BRANB_4%c2",lr ? 'R':'L');
-    PrintAux(full,fLuminPerBC[lr]);
+    printf("* Luminosity acq.mode, BRANB_4%c2        ",lr ? 'R':'L');
+    PrintAux(full,fLuminAcqMode[lr]);
   } 
   //
   for (int lr=0;lr<2;lr++) {
-    printf("** Luminosity per Bunch Crossing from BRANB_4%c2",lr ? 'R':'L');
+    printf("* Luminosity per BC from BRANB_4%c2      ",lr ? 'R':'L');
     PrintAux(full,fLuminPerBC[lr]);
   }
   //
   for (int lr=0;lr<2;lr++) {
-    printf("** Crossing angle, side %c",lr ? 'R':'L');
+    printf("* Crossing angle, side %c                ",lr ? 'R':'L');
     PrintAux(full,fCrossAngle[lr]);
   }
   //
   for (int coll=0;coll<kNCollimators;coll++)
     for (int jaw=0;jaw<kNJaws;jaw++) {
-      printf("** Collimator %s:%s",fgkDCSColNames[coll],fgkDCSColJaws[jaw]);
+      printf("* Collimator %10s:%16s",fgkDCSColNames[coll],fgkDCSColJaws[jaw]);
       PrintAux(full,fCollimators[coll][jaw]);
     }
   //
@@ -748,7 +764,7 @@ void AliLHCData::PrintAux(Bool_t full, const Int_t refs[2]) const
     printf(": N/A\n"); 
     return;
   }
-  printf(": (%d):\t",nrec); // number of records
+  printf(": (%3d):\t",nrec); // number of records
   if (!full) nrec = 1;
   int sz = ((AliLHCDipValI*)fData[refs[kStart]])->GetSizeTotal(); // dimension of the record
   Bool_t isStr = ((AliLHCDipValI*)fData[refs[kStart]])->IsTypeC();
@@ -824,4 +840,38 @@ Int_t AliLHCData::IsPilotPresent(int i) const
   if (!rec) {AliInfo(Form("No record %d found",i)); return -1;}
   TString scheme = rec->GetValues();
   return scheme.Contains("wp",TString::kIgnoreCase);
+}
+
+//___________________________________________________________________
+void AliLHCData::FlagInteractingBunches(const Int_t beam1[2],const Int_t beam2[2])
+{
+  // assign - sign to interacting bunches
+  const int kMaxSlots  = 3564;
+  const int kOffsBeam1 = 346;
+  const int kOffsBeam2 = 3019;
+  //
+  for (int ib1=0;ib1<beam1[kNStor];ib1++) {
+    AliLHCDipValI *bm1 = (AliLHCDipValI*)fData[ beam1[kStart] + ib1];
+    if (!bm1) continue;
+    AliLHCDipValI *bm2 = (AliLHCDipValI*)FindRecValidFor(beam2[kStart],beam2[kNStor], bm1->GetTimeStamp());
+    if (!bm2) continue;
+    //
+    int nb1 = bm1->GetSize();
+    int nb2 = bm2->GetSize();
+    int i1,i2;
+    for (i1=0;i1<nb1;i1++) {
+      int bunch2=-1, bunch1 = TMath::Abs((*bm1)[i1]);
+      int slot2 =-1, slot1  = (bunch1/10 + kOffsBeam1)%kMaxSlots;
+      for (i2=0;i2<nb2;i2++) {
+	bunch2 = TMath::Abs((*bm2)[i2]);
+	slot2 = (bunch2/10 + kOffsBeam2)%kMaxSlots;
+	if (slot1==slot2) break;
+      }
+      if (slot1!=slot2) continue;
+      (*bm1)[i1] = -bunch1;
+      (*bm2)[i2] = -bunch2;
+      bm1->SetProcessed1();
+      bm2->SetProcessed1();
+    }
+  }
 }

@@ -215,7 +215,7 @@ void AliLHCDipValT<Element>::Print(const Option_t *opt) const
     if (sz>1) printf("\n");
     Bool_t eolOK = kFALSE;
     for (int i=0;i<sz;i++) {
-      if      (tp == typeid(Int_t*).name()    || tp == typeid(UInt_t*).name() ) printf(" %+5d |" ,(Int_t)fArray[i]);
+      if      (tp == typeid(Int_t*).name()    || tp == typeid(UInt_t*).name() ) printf(" %6d |" ,(Int_t)fArray[i]);
       else if (tp == typeid(Double_t*).name() || tp == typeid(Float_t*).name()) printf(" %+.3e |",(Float_t)fArray[i]);
       else printf(" ");
       eolOK = kFALSE;
