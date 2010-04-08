@@ -1,6 +1,6 @@
 Executable="/alice/cern.ch/user/z/zampolli/bin/mergeMakeOCDB.sh";
 
-Packages={"VO_ALICE@AliRoot::v4-19-04-AN","VO_ALICE@ROOT::v5-26-00b-1","VO_ALICE@APISCONFIG::V1.1x"};
+Packages={"VO_ALICE@AliRoot::v4-19-04-AN","VO_ALICE@ROOT::v5-26-00b-2","VO_ALICE@APISCONFIG::V1.1x"};
 Jobtag =
            {
               "Merging Calibration Objects from calib train"
@@ -10,12 +10,12 @@ GUIDFILE="guid.txt";
 TTL = "28000";
 Price = 1;
 
-Requirements = ( other.CE == "ALICE::CERN::LCG" );
-
 Validationcommand ="/alice/cern.ch/user/z/zampolli/bin/CalibPass0/validationMerging.sh";
 
 JDLVariables={"Packages", "OutputDir"};
 GUIDFILE="guid.txt";
+
+Arguments = "$1 $2 $3";
 
 Workdirectorysize={"6000MB"}; 
 
