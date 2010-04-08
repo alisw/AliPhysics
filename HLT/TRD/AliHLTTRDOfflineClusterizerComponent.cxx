@@ -107,8 +107,7 @@ int AliHLTTRDOfflineClusterizerComponent::DoEvent(const AliHLTComponent_EventDat
 						  AliHLTComponent_TriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 						  AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
-  if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
-    return 0;
+  if(!IsDataEvent())return 0;
 
   if(!GetFirstInputBlock(AliHLTTRDDefinitions::fgkDigitsDataType))
     return AliHLTTRDClusterizerComponent::DoEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks );
