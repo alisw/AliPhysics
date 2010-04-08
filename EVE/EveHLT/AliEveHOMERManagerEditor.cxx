@@ -73,6 +73,12 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   AddFrame(fButtonNavigateFwd); //, new TGLayoutHints(...));
   fButtonNavigateFwd->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "NavigateFwd()");
 
+
+  fButtonPrintScreens = new TGTextButton(this, "  Save Viewers  ");
+  AddFrame(fButtonPrintScreens); //, new TGLayoutHints(...));
+  fButtonPrintScreens->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "PrintScreens()");
+
+
   fBoxTriggerSelector = new TGComboBox(this, "Select Trigger");
   fBoxTriggerSelector->AddEntry("HLT Global Trigger", 0);
   fBoxTriggerSelector->AddEntry("Barrel multiplicity trigger", 1);
@@ -86,11 +92,6 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonEventLoopText = new TGTextButton(this, "  Loop Events  ");
   AddFrame(fButtonEventLoopText); //, new TGLayoutHints(...));
   fButtonEventLoopText->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
-
-
-  fButtonPrintScreens = new TGTextButton(this, "  Save Viewers  ");
-  AddFrame(fButtonPrintScreens); //, new TGLayoutHints(...));
-  fButtonPrintScreens->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "PrintScreens()");
 
   fButtonEventLoop = new TGPictureButton(this, gClient->GetPicture("$ALICE_ROOT/EVE/hlt-macros/HLT-logo.png"));
   AddFrame(fButtonEventLoop); //, new TGLayoutHints(...));

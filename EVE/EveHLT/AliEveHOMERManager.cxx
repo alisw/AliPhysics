@@ -537,9 +537,9 @@ void AliEveHOMERManager::ResetDisplay () {
 void AliEveHOMERManager::PrintScreens() {
   //See header file for documentation
 
-  fEveManager->GetDefaultGLViewer()->SavePicture("3D.gif");
-  fRhoZViewer->GetGLViewer()->SavePicture("RhoZ.gif");
-  fRPhiViewer->GetGLViewer()->SavePicture("RPhi.gif");
+  fEveManager->GetDefaultGLViewer()->SavePicture(Form("0x%016X_3D.gif", GetEventID()));
+  fRhoZViewer->GetGLViewer()->SavePicture(Form("0x%016X_RhoZ.gif", GetEventID()));
+  fRPhiViewer->GetGLViewer()->SavePicture(Form("0x%016X_RPhi.gif", GetEventID()));
 
 }
 
