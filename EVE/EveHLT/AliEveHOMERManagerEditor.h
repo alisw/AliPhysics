@@ -38,6 +38,7 @@ public:
   void NavigateFwd();
   void SetTriggerString(int id);
   void WriteBlockListToFile();
+  void PrintScreens();
 protected:
 
   AliEveHOMERManager  *fM; // Model object.
@@ -47,6 +48,7 @@ protected:
   TGTextButton     *fButtonNextEvent; // Button to call next Even
   TGTextButton     *fButtonNavigateBack; // Button to navigate back
   TGTextButton     *fButtonNavigateFwd;  // Button to navigate fwd
+  TGTextButton     *fButtonPrintScreens;  // Button to print viewers
   TGComboBox       *fBoxTriggerSelector; // Drop down menu to select trigger criteria.
   TGTextButton     *fButtonEventLoopText; //Text button to start / stop event loop.
   //TGComboBox       *fBoxEventLoopSpeed; // Drop down menu to set the speed of the loop.

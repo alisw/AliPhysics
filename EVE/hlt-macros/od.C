@@ -208,8 +208,10 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   gHomerManager->SetGeoManager(gGeoManager);
   gHomerManager->SetRPhiManager(gRPhiMgr);
   gHomerManager->SetRPhiEventScene(gRPhiEventScene);
+  gHomerManager->SetRPhiViewer(gRPhiView);
   gHomerManager->SetRhoZManager(gRhoZMgr);
   gHomerManager->SetRhoZEventScene(gRhoZEventScene);
+  gHomerManager->SetRhoZViewer(gRhoZView);
   gHomerManager->SetBarrelFlag(showBarrel);
   gHomerManager->SetMuonFlag(showMuon);
 
@@ -492,6 +494,8 @@ Int_t updateDisplay() {
   return iResult;
 
 }
+
+
 
 
 
@@ -799,7 +803,7 @@ Int_t processV0Histograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
 
 
 
-//*-------------------------------------------------------------------------------------- 
+//*****************************************************************************
 Int_t processTRDCalibHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
   Int_t iResult = 0;
 
@@ -836,6 +840,7 @@ Int_t processTRDCalibHistograms(AliHLTHOMERBlockDesc* block, TCanvas * canvas) {
 
  return iResult;
 }
+
 //****************************************************************************
 void writeToFile(){
 
@@ -938,31 +943,3 @@ Int_t processTRDBlock (AliHLTHOMERBlockDesc * block) {
 
         
 
-
-void processHLTBlock(AliHLTHOMERBlockDesc * block) {
-
-  if ( ! block->GetDataType().CompareTo("ALIESDV0") ) {
-    if(!gTPCTrack){
-      gTPCTrack = new TEveTrackList("ESD Tracks");
-      gTPCTrack->SetMainColor(6);
-      gEve->AddElement(gTPCTrack);
-    }
-    
-    processEsdTracks(block, gTPCTrack);
-    gTPCTrack->ElementChanged();
-  } 
-  
-  else if ( ! block->GetDataType().CompareTo("ROOTTOBJ") ) {
-    processROOTTOBJ( block, gHLTText );
-  } 
-
-  else if ( ! block->GetDataType().CompareTo("HLTRDLST") ) {
-    processHLTRDLST( block );
-  } 
-
-  else if ( !block->GetDataType().CompareTo("ROOTHIST") ) {      
-    processPrimVertexHistograms( block , gPrimVertexCanvas);
-    gPrimVertexCanvas->Update();    
-  }
-
-} 

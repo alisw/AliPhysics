@@ -41,6 +41,7 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonEventLoopText(0),
 //  fBoxEventLoopSpeed(0),
   fButtonEventLoop(0),
+  fButtonPrintScreens(NULL),
  fEventLoopStarted(kFALSE) 
 {
   
@@ -86,6 +87,11 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   AddFrame(fButtonEventLoopText); //, new TGLayoutHints(...));
   fButtonEventLoopText->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
 
+
+  fButtonPrintScreens = new TGTextButton(this, "  Save Viewers  ");
+  AddFrame(fButtonPrintScreens); //, new TGLayoutHints(...));
+  fButtonPrintScreens->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "PrintScreens()");
+
   fButtonEventLoop = new TGPictureButton(this, gClient->GetPicture("$ALICE_ROOT/EVE/hlt-macros/HLT-logo.png"));
   AddFrame(fButtonEventLoop); //, new TGLayoutHints(...));
   fButtonEventLoop->Connect("Clicked()", "AliEveHOMERManagerEditor", this, "EventLoop()");
@@ -115,6 +121,12 @@ void AliEveHOMERManagerEditor::NextEvent() {
 void AliEveHOMERManagerEditor::WriteBlockListToFile() {
   gROOT->ProcessLineFast("writeToFile();");
 
+}
+
+
+void AliEveHOMERManagerEditor::PrintScreens() {
+  //Print screens
+  fM->PrintScreens();
 }
 
 void AliEveHOMERManagerEditor::NavigateFwd() {

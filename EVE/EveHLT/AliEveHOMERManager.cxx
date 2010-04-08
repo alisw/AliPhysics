@@ -24,6 +24,8 @@
 #include "TEveScene.h"
 #include "TEveProjectionManager.h"
 #include "TEveBrowser.h"
+#include "TGLViewer.h"
+#include "TEveViewer.h"
 
 #include "AliEveHOMERManager.h"
 #include "AliHLTHOMERBlockDesc.h"
@@ -65,6 +67,8 @@ TEveElementList("Homer Manager"),
   fRhoZManager(NULL),
   fRPhiEventScene(NULL),
   fRhoZEventScene(NULL),
+  fRhoZViewer(NULL),
+  fRPhiViewer(NULL),
   fTimer(NULL),
 //  fSourceListTimer(NULL),
   fPhosElement(NULL), 
@@ -425,7 +429,7 @@ void  AliEveHOMERManager::UpdateDisplay() {
 void AliEveHOMERManager::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
   
-#if 1//DEBUG
+#if 0//DEBUG
   printf( "------------------- xxxxxxxxxxxxxxx ----------------------\n");
   printf( "Detector           : %s\n", block->GetDetector().Data() );
   printf( "Datatype           : %s\n", block->GetDataType().Data() );
@@ -529,6 +533,15 @@ void AliEveHOMERManager::ResetDisplay () {
 
 }
 
+
+void AliEveHOMERManager::PrintScreens() {
+  //See header file for documentation
+
+  fEveManager->GetDefaultGLViewer()->SavePicture("3D.gif");
+  fRhoZViewer->GetGLViewer()->SavePicture("RhoZ.gif");
+  fRPhiViewer->GetGLViewer()->SavePicture("RPhi.gif");
+
+}
 
 void AliEveHOMERManager::StartLoop() {
   //See header file for documentation

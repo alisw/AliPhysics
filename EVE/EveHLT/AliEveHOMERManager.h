@@ -31,6 +31,7 @@ class TEveManager;
 class TEveScene;
 class TEveProjectionManager;
 class TTimer;
+class TEveViewer;
 
 class AliHLTEvePhos;
 class AliHLTEveEmcal;
@@ -100,13 +101,18 @@ public:
   /** Set the projection scenes and their managers */
   void SetRPhiManager (TEveProjectionManager * mgr) {fRPhiManager = mgr;}
   void SetRPhiEventScene (TEveScene * scene ) {fRPhiEventScene = scene;}
+  void SetRPhiViewer(TEveViewer * viewer ) {fRPhiViewer = viewer;}
   void SetRhoZManager(TEveProjectionManager * mgr) {fRhoZManager = mgr;}
   void SetRhoZEventScene(TEveScene * scene ) {fRhoZEventScene = scene;}
-  
+  void SetRhoZViewer(TEveViewer * viewer ) {fRhoZViewer = viewer;}
 
   /** Start and stop the automatic event loop */
   void StartLoop();
   void StopLoop();
+
+  /** Print the screens to a file **/
+  void PrintScreens();
+
  
 private:
 
@@ -137,6 +143,9 @@ private:
   TEveProjectionManager * fRhoZManager;   //The Rho- Z projection sene manager
   TEveScene * fRPhiEventScene;            //The R - Phi projection scene
   TEveScene * fRhoZEventScene;            //The Rho - Z projection sene
+  TEveViewer * fRPhiViewer;
+  TEveViewer * fRhoZViewer;
+  
 
 
   TTimer * fTimer;                   //Timer for event loop
