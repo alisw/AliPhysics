@@ -1,8 +1,6 @@
 // XEMacs -*-C++-*-
 #ifndef ALIHLTHOMERDATA_H
 #define ALIHLTHOMERDATA_H
-#ifndef HOMERBLOCKDESCRIPTOR_H
-#define HOMERBLOCKDESCRIPTOR_H
 
 //************************************************************************
 //*
@@ -193,7 +191,7 @@ const homer_uint8 kHOMERBigEndianByteOrder    = 2;
 #define HOMER_HEADER_CURRENT_VERSION              2
 
 
-class HOMERBlockDescriptor
+class AliHLTHOMERBlockDescriptor
     {
     public:
 
@@ -202,7 +200,7 @@ class HOMERBlockDescriptor
 		return sizeof(homer_uint64)*kCount_64b_Words;
 		}
 
-	HOMERBlockDescriptor( void* header = 0 )
+	AliHLTHOMERBlockDescriptor( void* header = 0 )
 	  : fHeader(header)
 		{
 		}
@@ -364,11 +362,13 @@ class HOMERBlockDescriptor
 	
     private:
       /** copy constructor prohibited */
-      HOMERBlockDescriptor(const HOMERBlockDescriptor&);
+      AliHLTHOMERBlockDescriptor(const AliHLTHOMERBlockDescriptor&);
       /** assignment operator prohibited */
-      HOMERBlockDescriptor& operator=(const HOMERBlockDescriptor&);
+      AliHLTHOMERBlockDescriptor& operator=(const AliHLTHOMERBlockDescriptor&);
     };
 
+// the HOMERBlockDescriptor is used in the code
+typedef class AliHLTHOMERBlockDescriptor HOMERBlockDescriptor;
 
 
 /*
@@ -381,5 +381,4 @@ class HOMERBlockDescriptor
 ***************************************************************************
 */
 
-#endif // HOMERBLOCKDESCRIPTOR_H
 #endif // ALIHLTHOMERDATA_H
