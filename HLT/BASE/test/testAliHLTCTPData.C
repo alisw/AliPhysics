@@ -228,7 +228,13 @@ int GetRandom(int min, int max)
 string GenerateTriggerClassName(int length)
 {
   string tcn;
+  bool toggle=false;
   for (int i=0; i<length; i++) {
+    // add random number of '-' characters, but not at beginning or end
+    if (i>0 && i<length-1 && GetRandom(5,10)==7 && (toggle=(!toggle))) {
+      tcn+='-';
+      continue;
+    }
     unsigned char c=GetRandom(48, 83);
     if (c>57) c+=7;
     tcn+=c;
@@ -246,13 +252,29 @@ int GenerateTriggerClasses(int size, vector<AliHLTCTPDataTest::AliHLTCTPTriggerC
   classes.clear();
   classes.resize(size);
   unsigned count=GetRandom(4, size>16?size/2:size);
+  int last=-1;
   for (unsigned i=0; i<count; i++) {
     int bit=0;
     do {
       bit=GetRandom(0, size);
     } while (classes[bit].Valid());
     classes[bit].Bit(bit);
+    if (last>=0 && GetRandom(5,10)==7) {
+      // generate similar class names by just adding or truncating characters
+      string name=classes[last].ClassName();
+      if (GetRandom(0,100)%2) {
+	name+=GenerateTriggerClassName(GetRandom(3,7)).c_str();
+	cout << "using appended name " << name << " (" << classes[last].ClassName() << ")" << endl;
+      } else {
+	int num=GetRandom(1,name.length()/2);
+	name.erase(name.length()-num, num);
+	cout << "using truncated name " << name << " (" << classes[last].ClassName() << ")" << endl;
+      }
+      classes[bit].ClassName(name.c_str());
+    } else {
     classes[bit].ClassName((GenerateTriggerClassName(GetRandom(5,15))).c_str());
+    }
+    last=bit;
     unsigned nofdetectors=GetRandom(1, 10);
     unsigned short detector=17;
     for (unsigned k=0; k<nofdetectors; k++) {
@@ -313,6 +335,20 @@ int testAliHLTCTPData()
     return iResult;
   }
 
+  for (element=triggerClasses.begin();
+       element!=triggerClasses.end();
+       element++) {
+    int index=ctpdata.Index(element->ClassName());
+    if (index<0) {
+      cerr << "error: can not find CTP trigger class name " << element->ClassName() << endl;
+      return -1;
+    }
+    if (element->Bit()!=(unsigned)index) {
+      cerr << "error: wrong index for CTP trigger class " << element->ClassName() << ": expected " << element->Bit() << " - got " << index << endl;
+      return -1;      
+    }
+  }
+
   AliHLTTriggerDataAccess trigData;
 
   // check the readout lists for the different trigger classes
@@ -359,11 +395,25 @@ int testAliHLTCTPData()
 	//cout << " " << element->Bit() << ":" << element->Trigger();
       }
       //cout << endl;
+      ctpdata.SetTriggers(*(trigData.Data()));
 
       // single class
       for (element=shuffle.begin();
 	   element!=shuffle.end() && iResult>=0 && trial<3;
 	   element++) {
+	int check=ctpdata.CheckTrigger(element->ClassName());
+	if (check<0) {
+	  cerr << "error avaluating CheckTrigger: class name " << element->ClassName() << " not found" << endl;
+	  iResult=-1;
+	  break;	  
+	}
+	if (check!=element->Trigger()) {
+	  cerr << "error avaluating CheckTrigger, class name " << element->ClassName() << ": expecting " << element->Trigger() << " - got " << check << endl;
+	  ctpdata.Print();
+	  iResult=-1;
+	  break;	  
+	}
+
 	// is
 	result=element->Trigger();
 	expression=element->ClassName();
