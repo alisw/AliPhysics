@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTCTPData.cxx
-    @author Matthias Richter
-    @date   2009-08-20
-    @brief  Container for CTP trigger classes and counters
-*/
+//  @file   AliHLTCTPData.cxx
+//  @author Matthias Richter
+//  @date   2009-08-20
+//  @brief  Container for CTP trigger classes and counters
+//  @note
 
 #include "AliHLTCTPData.h"
 #include "AliHLTReadoutList.h"
@@ -38,7 +38,9 @@ AliHLTCTPData::AliHLTCTPData()
   , fTriggers(0)
   , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
   , fCounters(gkNCTPTriggerClasses)
+  , fMap()
 {
+  // constructor
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -53,14 +55,15 @@ AliHLTCTPData::AliHLTCTPData(const char* parameter)
   , fTriggers(0)
   , fClassIds(AliHLTReadoutList::Class(), gkNCTPTriggerClasses)
   , fCounters(gkNCTPTriggerClasses)
+  , fMap()
 {
-  // see header file for class documentation
+  // constructor, init the CTP trigger classes
   InitCTPTriggerClasses(parameter);
 }
 
 AliHLTCTPData::~AliHLTCTPData()
 {
-  // see header file for class documentation
+  // destructor
   fClassIds.Delete();
 }
 
@@ -71,13 +74,15 @@ AliHLTCTPData::AliHLTCTPData(const AliHLTCTPData& src)
   , fTriggers(src.fTriggers)
   , fClassIds(src.fClassIds)
   , fCounters(src.Counters())
+  , fMap()
 {
-  // see header file for class documentation
+  // copy constructor
+  ReadMap();
 }
 
 AliHLTCTPData& AliHLTCTPData::operator=(const AliHLTCTPData& src)
 {
-  // see header file for class documentation
+  // assignment operator, clone content
   if (this!=&src) {
     SetName(src.GetName());
     SetTitle(src.GetTitle());
@@ -92,6 +97,7 @@ AliHLTCTPData& AliHLTCTPData::operator=(const AliHLTCTPData& src)
     fCounters=src.Counters();
   }
 
+  ReadMap();
   return *this;
 }
 
@@ -215,6 +221,7 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   }
 
   ResetCounters();
+  ReadMap();
 
   return 0;
 }
@@ -263,21 +270,27 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64
   // use a TFormula to interprete the expression
   // all classname are replaced by '[n]' which means the n'th parameter in the formula
   // the parameters are set to 0 or 1 depending on the bit in the trigger mask
-  //
-  // TODO: this will most likely fail for class names like 'base', 'baseA', 'baseB'
-  // the class names must be fully unique, none must be contained as substring in
-  // another class name. Probably not needed for the moment but needs to be extended.
+  const vector<unsigned> *pMap=&fMap;
+  vector<unsigned> tmp;
+  if (fMap.size()==0 && fClassIds.GetLast()>=0) {
+    // read map into temporary array and use it
+    ReadMap(tmp);
+    pMap=&tmp;
+    static bool suppressWarning=false;
+    if (!suppressWarning) HLTWarning("map not yet initialized, creating local map (slow), suppressing further warnings");
+    suppressWarning=true;
+  }
   vector<Double_t> par;
   TString condition=expression;
-  for (int i=0; i<gkNCTPTriggerClasses; i++) {
-    const char* className=Name(i);
+  for (unsigned index=0; index<pMap->size(); index++) {
+    const char* className=Name((*pMap)[index]);
     if (className && strlen(className)>0) {
       //HLTDebug("checking trigger class %s", className.Data());
       if (condition.Contains(className)) {
 	TString replace; replace.Form("[%d]", par.size());
 	//HLTDebug("replacing %s with %s in \"%s\"", className.Data(), replace.Data(), condition.Data());
 	condition.ReplaceAll(className, replace);
-	if (triggerMask&((AliHLTUInt64_t)0x1<<i)) par.push_back(1.0);
+	if (triggerMask&((AliHLTUInt64_t)0x1<<(*pMap)[index])) par.push_back(1.0);
 	else par.push_back(0.0);
       }
     }
@@ -304,6 +317,14 @@ int AliHLTCTPData::Index(const char* name) const
   // see header file for function documentation
   TObject* obj=fClassIds.FindObject(name);
   return obj!=NULL?fClassIds.IndexOf(obj):-1;
+}
+
+int AliHLTCTPData::CheckTrigger(const char* name) const
+{
+  // check status of a trigger class
+  int index=Index(name);
+  if (index<0) return index;
+  return (fTriggers&(0x1<<index))>0?1:0;
 }
 
 void AliHLTCTPData::Increment(const char* classIds)
@@ -381,6 +402,32 @@ const char* AliHLTCTPData::Name(int index) const
   if (index>fClassIds.GetLast()) return NULL;
   return fClassIds.At(index)->GetName();
 }
+
+int AliHLTCTPData::ReadMap(vector<unsigned> &map) const
+{
+  // read the index map for class names
+  // for nested class names (e.g. 'myclass' is contained in
+  // 'myclassA') the longer names is added first to the map.
+  for (int index=0; index<=fClassIds.GetLast(); index++) {
+    vector<unsigned>::iterator element=map.begin();
+    for (; element!=map.end(); element++) {
+      TString name=Name(index);
+      if (name.Contains(Name(*element))) {
+	// current name contains another one already in the map
+	// -> add before and go to next entry
+	element=map.insert(element, index);
+	break;
+      }
+    }
+
+    if (element==map.end()) {
+      // unique class name, append to map
+      map.push_back(index);
+    }
+  }
+  return 0;
+}
+
 
 AliHLTEventDDL AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& trigData) const
 {

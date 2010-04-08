@@ -100,6 +100,17 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   int Index(const char* name) const;
 
   /**
+   * Check state of a trigger class.
+   * If the class name is not part of the current trigger setup (i.e. ECS parameter
+   * does not contain a trigger definition for this class name) the function
+   * returns -1
+   * @return -1 class name not initialized, 
+   *          0 trigger not active
+   *          1 trigger active
+   */
+  int CheckTrigger(const char* name) const;
+
+  /**
    * Increment counter for CTP trigger classes
    * @param classIds  comma separated list of class ids
    */
@@ -169,12 +180,24 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    */
   int Add(const AliHLTCTPData& src, int factor, int &skipped);
 
+  /**
+   * Read the map of trigger class indexes
+   * The map is used in the generation of the TFormula from the trigger
+   * expression in order to handle similar class names correctly.
+   * For names like 'base', 'baseA', 'baseB' the class with the longer name
+   * has to be replaced first.
+   */
+  int ReadMap(vector<unsigned> &map) const;
+
+  int ReadMap() {return ReadMap(fMap);}
+
   AliHLTUInt64_t fMask;      /// mask of initialized trigger classes
   AliHLTUInt64_t fTriggers;  /// current trigger
   TClonesArray   fClassIds;  /// array of trigger class ids
   TArrayL64      fCounters;  /// trigger class counters
+  vector<unsigned> fMap;     //! index map for trigger expression evaluation
 
-  ClassDef(AliHLTCTPData, 1)
+  ClassDef(AliHLTCTPData, 2)
 };
 
 #endif
