@@ -50,8 +50,8 @@ void mergeProd(const Char_t *mark, const Char_t *files, const Int_t kBatch = 20)
   Bool_t kSVN = kFALSE;
 
   Int_t jbatch = 0, nbatch = 0;
-  string filename;
-  ifstream file(files);
+  std::string filename;
+  std::ifstream file(files);
   while(getline(file, filename)){
     if(Int_t(filename.find(mark)) < 0) continue;
     if(!nbatch){
