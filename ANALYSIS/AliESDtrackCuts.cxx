@@ -87,12 +87,17 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
   fCutRequireITSStandAlone(0),
+  fCutRejectITSpureSA(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutMaxDCAToVertexXY(0),
   fCutMaxDCAToVertexZ(0),
   fCutMinDCAToVertexXY(0),
   fCutMinDCAToVertexZ(0),
+  fCutMaxDCAToVertexXYPtDep(""),
+  fCutMaxDCAToVertexZPtDep(""),
+  fCutMinDCAToVertexXYPtDep(""),
+  fCutMinDCAToVertexZPtDep(""),
   fCutDCAToVertex2D(0),
   fPMin(0),
   fPMax(0),
@@ -171,12 +176,17 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutRequireTPCStandAlone(0),
   fCutRequireITSRefit(0),
   fCutRequireITSStandAlone(0),
+  fCutRejectITSpureSA(0),
   fCutNsigmaToVertex(0),
   fCutSigmaToVertexRequired(0),
   fCutMaxDCAToVertexXY(0),
   fCutMaxDCAToVertexZ(0),
   fCutMinDCAToVertexXY(0),
   fCutMinDCAToVertexZ(0),
+  fCutMaxDCAToVertexXYPtDep(""),
+  fCutMaxDCAToVertexZPtDep(""),
+  fCutMinDCAToVertexXYPtDep(""),
+  fCutMinDCAToVertexZPtDep(""),
   fCutDCAToVertex2D(0),
   fPMin(0),
   fPMax(0),
@@ -296,6 +306,7 @@ void AliESDtrackCuts::Init()
   fCutRequireTPCStandAlone = 0;
   fCutRequireITSRefit = 0;
   fCutRequireITSStandAlone = 0;
+  fCutRejectITSpureSA = 0;
 
   fCutNsigmaToVertex = 0;
   fCutSigmaToVertexRequired = 0;
@@ -304,6 +315,10 @@ void AliESDtrackCuts::Init()
   fCutDCAToVertex2D = 0;
   fCutMinDCAToVertexXY = 0;
   fCutMinDCAToVertexZ = 0;
+  fCutMaxDCAToVertexXYPtDep = "";
+  fCutMaxDCAToVertexZPtDep = "";
+  fCutMinDCAToVertexXYPtDep = "";
+  fCutMinDCAToVertexZPtDep = "";
 
   
   fPMin = 0;
@@ -404,6 +419,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutRequireTPCStandAlone = fCutRequireTPCStandAlone;
   target.fCutRequireITSRefit = fCutRequireITSRefit;
   target.fCutRequireITSStandAlone = fCutRequireITSStandAlone;
+  target.fCutRejectITSpureSA = fCutRejectITSpureSA;
 
   target.fCutNsigmaToVertex = fCutNsigmaToVertex;
   target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
@@ -412,6 +428,10 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutDCAToVertex2D = fCutDCAToVertex2D;
   target.fCutMinDCAToVertexXY = fCutMinDCAToVertexXY;
   target.fCutMinDCAToVertexZ = fCutMinDCAToVertexZ;
+  target.fCutMaxDCAToVertexXYPtDep = fCutMaxDCAToVertexXYPtDep;
+  target.fCutMaxDCAToVertexZPtDep = fCutMaxDCAToVertexZPtDep;
+  target.fCutMinDCAToVertexXYPtDep = fCutMinDCAToVertexXYPtDep;
+  target.fCutMinDCAToVertexZPtDep = fCutMinDCAToVertexZPtDep;
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -546,6 +566,35 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
   esdTrackCuts->SetMaxDCAToVertexZ(3.2);
   esdTrackCuts->SetMaxDCAToVertexXY(2.4);
   esdTrackCuts->SetDCAToVertex2D(kTRUE);
+  
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2009 data
+  
+  Printf("AliESDtrackCuts::GetStandardITSTPCTrackCuts: Creating track cuts for ITS+TPC.");
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+
+  // TPC  
+  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  // ITS
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  if(selPrimaries) {
+    // 7*(0.0050+0.0060/pt^0.9)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
+  }
+  esdTrackCuts->SetMaxDCAToVertexZ(1.e6);
+  esdTrackCuts->SetDCAToVertex2D(kFALSE);
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   
   return esdTrackCuts;
 }
@@ -707,6 +756,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     bCov[0]=0; bCov[2]=0;
   }
 
+
+  // set pt-dependent DCA cuts, if requested
+  SetPtDepDCACuts(esdTrack->Pt());
+
+
   Float_t dcaToVertexXY = b[0];
   Float_t dcaToVertexZ = b[1];
 
@@ -814,7 +868,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   
   if (fCutRequireITSStandAlone && ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)))
     cuts[31] = kTRUE;
-  
+
+  if (fCutRejectITSpureSA && (status & AliESDtrack::kITSpureSA)) 
+    cuts[31] = kTRUE;
+
+
   if (relUncertainty1Pt > fCutMaxRel1PtUncertainty)
      cuts[32] = kTRUE;
 
@@ -1391,5 +1449,55 @@ void AliESDtrackCuts::DrawHistograms()
   fhChi2PerClusterTPC[0]->DrawCopy();
   fhChi2PerClusterTPC[1]->SetLineColor(2);
   fhChi2PerClusterTPC[1]->DrawCopy("SAME");*/
+}
+//--------------------------------------------------------------------------
+void AliESDtrackCuts::SetPtDepDCACuts(Double_t pt) {
+  //
+  // set the pt-dependent DCA cuts
+  //
+
+  if(CheckPtDepDCA(fCutMaxDCAToVertexXYPtDep)) {
+    TString formula=fCutMaxDCAToVertexXYPtDep;
+    formula.ReplaceAll("pt","x");
+    TFormula dcacut("dcacut",formula.Data());
+    fCutMaxDCAToVertexXY=dcacut.Eval(pt);
+  }
+
+  if(CheckPtDepDCA(fCutMaxDCAToVertexZPtDep)) {
+    TString formula=fCutMaxDCAToVertexZPtDep;
+    formula.ReplaceAll("pt","x");
+    TFormula dcacut("dcacut",formula.Data());
+    fCutMaxDCAToVertexZ=dcacut.Eval(pt);
+  }
+
+  if(CheckPtDepDCA(fCutMinDCAToVertexXYPtDep)) {
+    TString formula=fCutMinDCAToVertexXYPtDep;
+    formula.ReplaceAll("pt","x");
+    TFormula dcacut("dcacut",formula.Data());
+    fCutMinDCAToVertexXY=dcacut.Eval(pt);
+  }
+
+  if(CheckPtDepDCA(fCutMinDCAToVertexZPtDep)) {
+    TString formula=fCutMinDCAToVertexZPtDep;
+    formula.ReplaceAll("pt","x");
+    TFormula dcacut("dcacut",formula.Data());
+    fCutMinDCAToVertexZ=dcacut.Eval(pt);
+  }
+
+
+  return;
+}
+//--------------------------------------------------------------------------
+Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
+  //
+  // Check the correctness of the string syntax
+  //
+  Bool_t retval=kTRUE;
+
+  if(!dist.Contains("pt")) {
+    if(print) printf("AliESDtrackCuts::CheckPtDepDCA(): string must contain \"pt\"\n");
+    retval= kFALSE;
+  } 
+  return retval;
 }
 

@@ -21,6 +21,8 @@
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
 
+#include <TString.h>
+
 #include "AliAnalysisCuts.h"
 
 class AliESDEvent;
@@ -56,6 +58,8 @@ public:
   
   // Standard cut definitions
   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
+
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
@@ -72,7 +76,7 @@ public:
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireTPCStandAlone(Bool_t b=kFALSE)  {fCutRequireTPCStandAlone=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
-  void SetRequireITSStandAlone(Bool_t b)         {fCutRequireITSStandAlone = b;}
+  void SetRequireITSStandAlone(Bool_t b,Bool_t rejectITSpureSA=kFALSE) {fCutRequireITSStandAlone = b; fCutRejectITSpureSA=rejectITSpureSA;}
   void SetAcceptKinkDaughters(Bool_t b=kTRUE)    {fCutAcceptKinkDaughters=b;}
   void SetAcceptSharedTPCClusters(Bool_t b=kTRUE){fCutAcceptSharedTPCClusters=b;}
   void SetMaxFractionSharedTPCClusters(Float_t max=1e10) {fCutMaxFractionSharedTPCClusters=max;}
@@ -87,7 +91,12 @@ public:
   void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutMaxDCAToVertexZ = dist;}
   void SetMinDCAToVertexXY(Float_t dist=0.)           {fCutMinDCAToVertexXY = dist;}
   void SetMinDCAToVertexZ(Float_t dist=0.)            {fCutMinDCAToVertexZ = dist;}
+  void SetMaxDCAToVertexXYPtDep(const char *dist="")         {CheckPtDepDCA(dist,kTRUE); fCutMaxDCAToVertexXYPtDep = dist;}
+  void SetMaxDCAToVertexZPtDep(const char *dist="")          {CheckPtDepDCA(dist,kTRUE); fCutMaxDCAToVertexZPtDep = dist;}
+  void SetMinDCAToVertexXYPtDep(const char *dist="")           {CheckPtDepDCA(dist,kTRUE); fCutMinDCAToVertexXYPtDep = dist;}
+  void SetMinDCAToVertexZPtDep(const char *dist="")            {CheckPtDepDCA(dist,kTRUE); fCutMinDCAToVertexZPtDep= dist;}
   void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
+
 
   // getters
 
@@ -111,6 +120,10 @@ public:
   Float_t GetMaxDCAToVertexZ()       const   { return fCutMaxDCAToVertexZ;}
   Float_t GetMinDCAToVertexXY()      const   { return fCutMinDCAToVertexXY;}
   Float_t GetMinDCAToVertexZ()       const   { return fCutMinDCAToVertexZ;}
+  const char* GetMaxDCAToVertexXYPtDep() const   { return fCutMaxDCAToVertexXYPtDep;}
+  const char* GetMaxDCAToVertexZPtDep()  const   { return fCutMaxDCAToVertexZPtDep;}
+  const char* GetMinDCAToVertexXYPtDep() const   { return fCutMinDCAToVertexXYPtDep;}
+  const char* GetMinDCAToVertexZPtDep()  const   { return fCutMinDCAToVertexZPtDep;}
   Bool_t  GetDCAToVertex2D()         const   { return fCutDCAToVertex2D;}
   Bool_t  GetRequireSigmaToVertex( ) const   { return fCutSigmaToVertexRequired;}
 
@@ -150,7 +163,9 @@ public:
 protected:
   void Init(); // sets everything to 0
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
-  
+  Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
+  void SetPtDepDCACuts(Double_t pt);
+
   enum { kNCuts = 35 }; 
 
   //######################################################
@@ -180,6 +195,7 @@ protected:
   Bool_t  fCutRequireTPCStandAlone;   // require TPC standalone tracks
   Bool_t  fCutRequireITSRefit;        // require ITS refit
   Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks
+  Bool_t  fCutRejectITSpureSA;        // reject  ITS standalone tracks found using all ITS clusters
 
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
@@ -188,6 +204,10 @@ protected:
   Float_t fCutMaxDCAToVertexZ;        // track-to-vertex cut in max absolute distance in z-plane
   Float_t fCutMinDCAToVertexXY;       // track-to-vertex cut on min absolute distance in xy-plane
   Float_t fCutMinDCAToVertexZ;        // track-to-vertex cut on min absolute distance in z-plane
+  TString fCutMaxDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut in max absolute distance in xy-plane
+  TString fCutMaxDCAToVertexZPtDep;   // pt-dep track-to-vertex cut in max absolute distance in z-plane
+  TString fCutMinDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut on min absolute distance in xy-plane
+  TString fCutMinDCAToVertexZPtDep;   // pt-dep track-to-vertex cut on min absolute distance in z-plane
   Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
 
   // esd kinematics cuts
@@ -235,7 +255,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 9)
+  ClassDef(AliESDtrackCuts, 10)
 };
 
 
