@@ -105,6 +105,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fh1NConstLeadingRecRan(0x0),
   fh1PtJetsRecInRan(0x0),
   fh1PtTracksGenIn(0x0),
+  fh1Nch(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
   fh2NConstPt(0x0),
@@ -126,6 +127,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fh2NRecJetsPtRan(0x0),
   fh2NConstPtRan(0x0),
   fh2NConstLeadingPtRan(0x0),
+  fh2PtNch(0x0),
+  fh2PtNchRan(0x0),
+  fh2PtNchN(0x0),
+  fh2PtNchNRan(0x0),
   fh2TracksLeadingJetPhiPtRan(0x0),
   fh2TracksLeadingJetPhiPtWRan(0x0),
   fHistList(0x0)  
@@ -170,6 +175,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh1NConstLeadingRecRan(0x0),
   fh1PtJetsRecInRan(0x0),
   fh1PtTracksGenIn(0x0),
+  fh1Nch(0x0),
   fh2NRecJetsPt(0x0),
   fh2NRecTracksPt(0x0),
   fh2NConstPt(0x0),
@@ -191,6 +197,10 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fh2NRecJetsPtRan(0x0),
   fh2NConstPtRan(0x0),
   fh2NConstLeadingPtRan(0x0),
+  fh2PtNch(0x0),
+  fh2PtNchRan(0x0),
+  fh2PtNchN(0x0),
+  fh2PtNchNRan(0x0),
   fh2TracksLeadingJetPhiPtRan(0x0),
   fh2TracksLeadingJetPhiPtWRan(0x0),
   fHistList(0x0)
@@ -266,6 +276,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     }
   }
 
+  const int nChMax = 100;
 
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
@@ -296,6 +307,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh1PtTracksRecIn  = new TH1F("fh1PtTracksRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtTracksLeadingRecIn  = new TH1F("fh1PtTracksLeadingRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtTracksGenIn  = new TH1F("fh1PtTracksGenIn","gen tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
+  fh1Nch = new TH1F("fh1Nch","charged multiplicity; N_{ch}",nChMax,-0.5,nChMax-0.5);
 
   fh2NRecJetsPt = new TH2F("fh2NRecJetsPt","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NRecJetsPtRan = new TH2F("fh2NRecJetsPtRan","Number of jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",nBinPt,binLimitsPt,50,-0.5,49.5);
@@ -307,6 +319,13 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh2NConstLeadingPt = new TH2F("fh2NConstLeadingPt","Number of constituents ;p_{T} (GeV/c);N",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NConstPtRan = new TH2F("fh2NConstPtRan","Number of constituents ;p_{T} (GeV/c);N",nBinPt,binLimitsPt,50,-0.5,49.5);
   fh2NConstLeadingPtRan = new TH2F("fh2NConstLeadingPtRan","Number of constituents ;p_{T} (GeV/c);N",nBinPt,binLimitsPt,50,-0.5,49.5);
+
+  fh2PtNch = new TH2F("fh2PtNch","p_T of cluster vs. multiplicity; N_{ch};p_{T} (GeV/c);",nChMax,-0.5,nChMax-0.5,nBinPt,binLimitsPt);
+  fh2PtNchRan = new TH2F("fh2PtNchRan","p_T of cluster vs. multiplicity ran; N_{ch};p_{T} (GeV/c);",nChMax,-0.5,nChMax-0.5,nBinPt,binLimitsPt);
+  fh2PtNchN = new TH2F("fh2PtNchN","p_T of cluster vs. multiplicity N weighted; N_{ch};p_{T} (GeV/c);",nChMax,-0.5,nChMax-0.5,nBinPt,binLimitsPt);
+  fh2PtNchNRan = new TH2F("fh2PtNchNRan","p_T of cluster vs. multiplicity N weighted ran; N_{ch};p_{T} (GeV/c);",nChMax,-0.5,nChMax-0.5,nBinPt,binLimitsPt);
+
+
 
   fh2JetPhiEta  = new TH2F("fh2JetPhiEta","eta vs phi all jets;#phi;#eta",
 			   nBinPhi,0.,2.*TMath::Pi(),nBinEta,binLimitsEta);
@@ -369,10 +388,15 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh1PtJetsLeadingRecInRan);
     fHistList->Add(fh1NConstLeadingRecRan);
     fHistList->Add(fh1PtJetsRecInRan);
+    fHistList->Add(fh1Nch);
     fHistList->Add(fh2NRecJetsPt);
     fHistList->Add(fh2NRecTracksPt);
     fHistList->Add(fh2NConstPt);
     fHistList->Add(fh2NConstLeadingPt);
+    fHistList->Add(fh2PtNch);
+    fHistList->Add(fh2PtNchRan);
+    fHistList->Add(fh2PtNchN);
+    fHistList->Add(fh2PtNchNRan);
     fHistList->Add(fh2JetPhiEta);
     fHistList->Add(fh2LeadingJetPhiEta);
     fHistList->Add(fh2JetEtaPt);
@@ -486,6 +510,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   TList genParticles;
 
   Int_t nT = GetListOfTracks(&recParticles,fTrackTypeRec);
+  Float_t nCh = recParticles.GetEntries(); 
+  fh1Nch->Fill(nCh);
   if(fDebug>2)Printf("%s:%d Selected Rec tracks: %d %d",(char*)__FILE__,__LINE__,nT,recParticles.GetEntries());
   nT = GetListOfTracks(&genParticles,fTrackTypeGen);
   if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nT,genParticles.GetEntries());
@@ -592,6 +618,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       // Fill Spectra with constituents
       vector<fastjet::PseudoJet> constituents = clustSeq.constituents(sortedJets[j]);
       fh1NConstRec->Fill(constituents.size());
+      fh2PtNch->Fill(nCh,tmpPt);
+      fh2PtNchN->Fill(nCh,tmpPt,constituents.size());
       fh2NConstPt->Fill(tmpPt,constituents.size());
       // loop over constiutents and fill spectrum
       for(unsigned int ic = 0; ic < constituents.size();ic++){
@@ -741,7 +769,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       vector<fastjet::PseudoJet> constituents = clustSeqRan.constituents(sortedJetsRan[j]);
       fh1NConstRecRan->Fill(constituents.size());
       fh2NConstPtRan->Fill(tmpPt,constituents.size());
-
+      fh2PtNchRan->Fill(nCh,tmpPt);
+      fh2PtNchNRan->Fill(nCh,tmpPt,constituents.size());
       // correlation
       Float_t tmpPhi =  tmpRec.Phi();
       if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    

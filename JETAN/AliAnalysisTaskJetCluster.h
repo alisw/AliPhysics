@@ -53,8 +53,6 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
-    // use for the CF
-    
 
     // for Fast Jet
     fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
@@ -130,7 +128,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH1F*         fh1PtJetsRecInRan;  // Jet pt for all jets
 
     TH1F*         fh1PtTracksGenIn;  // track pt for all tracks
-
+    TH1F*         fh1Nch;            // charged particle mult
 
     TH2F*         fh2NRecJetsPt;            // Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          // Number of found tracks above threshold
@@ -153,12 +151,16 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TH2F*         fh2NRecJetsPtRan;            // Number of found jets above threshold
     TH2F*         fh2NConstPtRan;           // number of constituents vs. pt
     TH2F*         fh2NConstLeadingPtRan;           // number of constituents vs. pt
+    TH2F*         fh2PtNch;               // p_T of cluster vs. multiplicity,
+    TH2F*         fh2PtNchRan;            // p_T of cluster vs. multiplicity,random
+    TH2F*         fh2PtNchN;               // p_T of cluster vs. multiplicity, weigthed with constituents
+    TH2F*         fh2PtNchNRan;            // p_T of cluster vs. multiplicity, weigthed with constituents random
     TH2F*         fh2TracksLeadingJetPhiPtRan; // track correlation with leading Jet
     TH2F*         fh2TracksLeadingJetPhiPtWRan; // track correlation with leading Jet
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 2) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetCluster, 3) // Analysis task for standard jet analysis
 };
  
 #endif
