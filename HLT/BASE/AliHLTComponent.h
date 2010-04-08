@@ -1409,10 +1409,25 @@ class AliHLTComponent : public AliHLTLogging {
    * Check whether a combination of trigger classes is fired.
    * The expression can contain trigger class ids and logic operators
    * like &&, ||, !, and ^, and may be grouped by parentheses.
+   * @note the function requires the setup of the CTP handling for the component by
+   * invoking SetupCTPData() from DoInit()
    * @param expression     a logic expression of trigger class ids
    * @param trigData       the trigger data data
    */
   bool EvaluateCTPTriggerClass(const char* expression, AliHLTComponentTriggerData& trigData) const;
+
+  /**
+   * Check state of a trigger class.
+   * If the class name is not part of the current trigger setup (i.e. ECS parameter
+   * does not contain a trigger definition for this class name) the function
+   * returns -1
+   * @note the function requires the setup of the CTP handling for the component by
+   * invoking SetupCTPData() from DoInit()
+   * @return -1 class name not initialized, 
+   *          0 trigger not active
+   *          1 trigger active
+   */
+  int CheckCTPTrigger(const char* name) const;
 
   /**
    * Get the overall solenoid field.

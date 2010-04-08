@@ -2518,6 +2518,19 @@ bool AliHLTComponent::EvaluateCTPTriggerClass(const char* expression, AliHLTComp
   return fpCTPData->EvaluateCTPTriggerClass(expression, trigData);
 }
 
+int AliHLTComponent::CheckCTPTrigger(const char* name) const
+{
+  // see header file for function documentation
+  if (!fpCTPData) {
+    static bool bWarningThrown=false;
+    if (!bWarningThrown) HLTError("Trigger classes not initialized, use SetupCTPData from DoInit()");
+    bWarningThrown=true;
+    return false;
+  }
+
+  return fpCTPData->CheckTrigger(name);
+}
+
 Double_t AliHLTComponent::GetBz()
 {
   // Returns Bz.
