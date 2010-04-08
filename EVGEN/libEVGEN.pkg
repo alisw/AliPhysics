@@ -31,7 +31,7 @@ HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=EVGENLinkDef.h
 
-EXPORT:=AliDecayer.h AliGenMC.h AliGenCocktailAfterBurner.h AliGenCocktail.h
+EXPORT:=AliDecayer.h AliGenMC.h AliGenCocktailAfterBurner.h AliGenCocktail.h AliOmegaDalitz.h
 
 EINCLUDE:=FASTSIM THijing PYTHIA6
 
