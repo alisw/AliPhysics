@@ -28,7 +28,7 @@ class AliHLTEMCALRecoParamHandler : public AliHLTCaloRecoParamHandler
 	 virtual ~AliHLTEMCALRecoParamHandler();
 	 
 	 /** See base class for documentation */
-	 virtual Int_t GetParametersFromCDB();
+	 // virtual Int_t GetParametersFromCDB(); //- no impl. changed by MP
 	 
 	 /** Get the energy corrected for non-linear effects etc. */
 	 virtual Float_t GetCorrectedEnergy(Float_t e);
