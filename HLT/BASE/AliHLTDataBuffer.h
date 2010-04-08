@@ -244,6 +244,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @brief  Descriptor of a data segment within the buffer.
    */
   class AliHLTDataSegment {
+    friend class AliHLTDataBuffer; // TODO: implement some getters/setters
   public:
     AliHLTDataSegment()
       :
@@ -307,7 +308,6 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /** data specification */
     AliHLTUInt32_t fSpecification;                                 // see above
 
-    friend class AliHLTDataBuffer; // TODO: implement some getters/setters
   };
 
   class AliHLTRawBuffer;
@@ -459,15 +459,15 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
      */
     void Print(const char* option);
 
-    int operator==(void*) const;
+    int operator==(void* ptr) const;
     int operator==(AliHLTUInt8_t* ptr) const {return fPtr==ptr;}
-    int operator<(void*) const;
-    int operator<=(void*) const;
-    int operator>(void*) const;
-    int operator-(void*) const;
-    int operator<(const AliHLTRawBuffer&) const;
-    int operator<=(const AliHLTRawBuffer&) const;
-    int operator>(const AliHLTRawBuffer&) const;
+    int operator<(void* ptr) const;
+    int operator<=(void* ptr) const;
+    int operator>(void* ptr) const;
+    int operator-(void* ptr) const;
+    int operator<(const AliHLTRawBuffer& op) const;
+    int operator<=(const AliHLTRawBuffer& op) const;
+    int operator>(const AliHLTRawBuffer& op) const;
 
     operator void*() const {return fPtr;}
     operator AliHLTUInt8_t*() const {return fPtr;}
