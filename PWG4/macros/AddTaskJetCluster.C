@@ -109,7 +109,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
      pwg4spec->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
      break;
    case "CA":
-     pwg4spec->SetAlgorithm(1); // kt from fastjet/JetDefinition.hh
+     pwg4spec->SetAlgorithm(1); // CA from fastjet/JetDefinition.hh
      break;
    case "KT":
      pwg4spec->SetAlgorithm(0); // kt from fastjet/JetDefinition.hh

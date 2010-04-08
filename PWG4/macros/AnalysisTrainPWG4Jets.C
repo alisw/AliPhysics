@@ -111,7 +111,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-1";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-26-00b-2";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-04-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
@@ -369,7 +369,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ = AddTaskJetServices();
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
-     else taskjetServ->SetRunRange(104000,105000);
+     else taskjetServ->SetRunRange(104000,125000);
      if(!kIsMC) taskjetServ->SetRealData(kTRUE);
      if(!iPhysicsSelection)taskjetServ->SetUsePhysicsSelection(kFALSE);
    }
@@ -461,15 +461,22 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskJetCluster *taskCl = 0;
      if(iPWG4Cluster&1){
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"KT");
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"CA");
      }
      if(iPWG4Cluster&2){
        UInt_t selection = 0;
        if(!iAODanalysis) selection = 0xffffff;
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"KT",selection);
+     }
+     if(iPWG4Cluster&4){
+       UInt_t selection = 0;
+       if(!iAODanalysis) selection = 0xffffff;
+       else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelection,"CA");
        AddTaskJetClusterDelta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,"CA",selection);
      }
+
+
      if (!taskCl) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCluster cannot run for this train conditions - EXCLUDED");
 
    }
@@ -1514,7 +1521,7 @@ Bool_t PatchJDL(){
   TGridJDL *jdl = gridHandler->GetGridJDL();
   if(iJETAN)jdl->AddToPackages("fastjet","v2.4.0");
   gridHandler->WriteJDL(kFALSE);
-  Printf("<<< Patching JDL");
+  Printf("<<<  Patching JDL");
   return kTRUE;
 }
 
