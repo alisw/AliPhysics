@@ -102,12 +102,12 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
       if(doEmcal){
 	AliHLTCaloHistoClusterEnergy * histo = new AliHLTCaloHistoClusterEnergy("EMCAL");
 	fEmcalHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
-	HLTInfo("Adding EMCAL cluster energy histogram");
+	HLTImportant("Adding EMCAL cluster energy histogram");
       }	
       if(doPhos){
 	AliHLTCaloHistoClusterEnergy * histo = new AliHLTCaloHistoClusterEnergy("PHOS");
 	fPhosHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
-	HLTInfo("Adding PHOS cluster energy histogram");
+	HLTImportant("Adding PHOS cluster energy histogram");
       }
     } 
 
@@ -115,12 +115,12 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
       if(doEmcal){
 	AliHLTCaloHistoInvMass * histo = new AliHLTCaloHistoInvMass("EMCAL");
 	fEmcalHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
-	HLTInfo("Adding EMCAL invariant mass histogram");
+	HLTImportant("Adding EMCAL invariant mass histogram");
       }	
       if(doPhos){
 	AliHLTCaloHistoInvMass * histo = new AliHLTCaloHistoInvMass("PHOS");
 	fPhosHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
-	HLTInfo("Adding PHOS invariant mass histogram");
+	HLTImportant("Adding PHOS invariant mass histogram");
       }
     } 
    
@@ -128,12 +128,12 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
       if(doEmcal){
 	AliHLTCaloHistoMatchedTracks * histo = new AliHLTCaloHistoMatchedTracks("EMCAL");
 	fEmcalHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
-	HLTInfo("Adding EMCAL track-matching histograms");
+	HLTImportant("Adding EMCAL track-matching histograms");
       }	
       if(doPhos){
 	AliHLTCaloHistoMatchedTracks * histo = new AliHLTCaloHistoMatchedTracks("PHOS");
 	fPhosHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
-	HLTInfo("Adding PHOS track-matching histograms");
+	HLTImportant("Adding PHOS track-matching histograms");
       }
     }
   }
