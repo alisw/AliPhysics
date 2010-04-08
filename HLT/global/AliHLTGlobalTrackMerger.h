@@ -5,15 +5,16 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTGlobalTrackMerger.h
-    @author Jacek Otwinowski (Jacek.Otwinowski@gsi.de)
-    @date   
-    @brief  The HLT TPC merger base class
-*/
+//  @file   AliHLTGlobalTrackMerger.h
+//  @author Jacek Otwinowski (Jacek.Otwinowski@gsi.de)
+//  @date   
+//  @brief  The HLT TPC merger base class
+// 
 
 
 class AliESDEvent;
 class AliESDVertex;
+class AliESDtrack;
 class AliExternalTrackParam;
 
 class TClonesArray;
@@ -21,7 +22,6 @@ class TTreeStream;
 class TTreeSRedirector;
 
 #include "AliHLTLogging.h"
-#include "AliESDtrack.h"
 
 /** 
  * @class AliHLTGlobalTrackMerger
@@ -40,14 +40,14 @@ public:
   void SetParameter(Double_t maxy=1., Double_t maxz=1., Double_t maxsnp=0.05, Double_t maxtgl=0.1, Double_t signed1Pt=0.001);
 
   // match tracks
-  Bool_t MatchTracks(AliExternalTrackParam *extTPC=0, AliESDtrack *trackTRD=0);
+  Bool_t MatchTracks(AliExternalTrackParam *extTPC=0, const AliESDtrack *trackTRD=0);
 
   // merge tracks
   Bool_t Merge(AliESDEvent *esdEvent=0);
   Bool_t MergeTracks(AliESDtrack *trackTPC=0, AliESDtrack *trackTRD=0, AliESDEvent *esdEvent=0);
 
   // propagate tracks to DCA to primary vertex
-  void PropagateTracksToDCA(AliESDEvent *esdEvent=0);
+  void PropagateTracksToDCA(const AliESDEvent *esdEvent=0);
 
   // Smooth track parameters 
   // (origin Sergey Gorbunov)

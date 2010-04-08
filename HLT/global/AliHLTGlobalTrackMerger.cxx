@@ -16,16 +16,17 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTGlobalTrackMerger.cxx
-    @author Jacek Otwinowski
-    @date   
-    @brief  The HLT global merger base class
-*/
+//  @file   AliHLTGlobalTrackMerger.cxx
+//  @author Jacek Otwinowski
+//  @date   
+//  @brief  The HLT global merger base class
+// 
 
 //#include "AliTPCReconstructor.h"
 
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliESDtrack.h"
 #include "AliTracker.h"
 #include "TTreeStream.h"
 
@@ -240,7 +241,7 @@ void AliHLTGlobalTrackMerger::SetParameter(Double_t maxy, Double_t maxz, Double_
 }
 
 //_____________________________________________________________________________
-Bool_t AliHLTGlobalTrackMerger::MatchTracks(AliExternalTrackParam *trackTPC, AliESDtrack *trackTRD)
+Bool_t AliHLTGlobalTrackMerger::MatchTracks(AliExternalTrackParam *trackTPC, const AliESDtrack *trackTRD)
 { 
   // match TPC and TRD tracks 
   // return kTRUE in case of matching
@@ -248,45 +249,45 @@ Bool_t AliHLTGlobalTrackMerger::MatchTracks(AliExternalTrackParam *trackTPC, Ali
   if(!trackTPC) return kFALSE;
   if(!trackTRD) return kFALSE;
 
-  Double_t x_tpc=trackTPC->GetX();
-  Double_t y_tpc=trackTPC->GetY();
-  Double_t z_tpc=trackTPC->GetZ();
-  Double_t snp_tpc=trackTPC->GetSnp();
-  Double_t tgl_tpc=trackTPC->GetTgl();
-  Double_t signed1Pt_tpc=trackTPC->GetSigned1Pt();
+  Double_t xTpc=trackTPC->GetX();
+  Double_t yTpc=trackTPC->GetY();
+  Double_t zTpc=trackTPC->GetZ();
+  Double_t snpTpc=trackTPC->GetSnp();
+  Double_t tglTpc=trackTPC->GetTgl();
+  Double_t signed1PtTpc=trackTPC->GetSigned1Pt();
 
-  Double_t x_trd=trackTRD->GetX();
-  Double_t y_trd=trackTRD->GetY();
-  Double_t z_trd=trackTRD->GetZ();
-  Double_t snp_trd=trackTRD->GetSnp();
-  Double_t tgl_trd=trackTRD->GetTgl();
-  Double_t signed1Pt_trd=trackTRD->GetSigned1Pt();
+  Double_t xTrd=trackTRD->GetX();
+  Double_t yTrd=trackTRD->GetY();
+  Double_t zTrd=trackTRD->GetZ();
+  Double_t snpTrd=trackTRD->GetSnp();
+  Double_t tglTrd=trackTRD->GetTgl();
+  Double_t signed1PtTrd=trackTRD->GetSigned1Pt();
 
   // debug stream
   // if (AliTPCReconstructor::StreamLevel()>0) {
   // //TTreeSRedirector &cstream = *fDebugStreamer;
   // *fDebugStreamer<<"match"<<
-  // "x_tpc="<<x_tpc<<
-  // "y_tpc="<<y_tpc<<
-  // "z_tpc="<<z_tpc<<
-  // "snp_tpc="<<snp_tpc<<
-  // "tgl_tpc="<<tgl_tpc<<
-  // "signed1Pt_tpc="<<signed1Pt_tpc<<
-  // "x_trd="<<x_trd<<
-  // "y_trd="<<y_trd<<
-  // "z_trd="<<z_trd<<
-  // "snp_trd="<<snp_trd<<
-  // "tgl_trd="<<tgl_trd<<
-  // "signed1Pt_trd="<<signed1Pt_trd<<
+  // "xTpc="<<xTpc<<
+  // "yTpc="<<yTpc<<
+  // "zTpc="<<zTpc<<
+  // "snpTpc="<<snpTpc<<
+  // "tglTpc="<<tglTpc<<
+  // "signed1PtTpc="<<signed1PtTpc<<
+  // "xTrd="<<xTrd<<
+  // "yTrd="<<yTrd<<
+  // "zTrd="<<zTrd<<
+  // "snpTrd="<<snpTrd<<
+  // "tglTrd="<<tglTrd<<
+  // "signed1PtTrd="<<signed1PtTrd<<
   // "\n";
   // }
 
-  if (TMath::Abs(x_tpc-x_trd) > 0) {/* get rid of warning*/;}
-  if (TMath::Abs(y_tpc-y_trd) > fMaxY) return kFALSE;
-  if (TMath::Abs(z_tpc-z_trd) > fMaxZ) return kFALSE;
-  if (TMath::Abs(snp_tpc-snp_trd) > fMaxSnp) return kFALSE;
-  if (TMath::Abs(tgl_tpc-tgl_trd) > fMaxTgl) return kFALSE;
-  if (TMath::Abs(signed1Pt_tpc-signed1Pt_trd) > fMaxSigned1Pt) return kFALSE;
+  if (TMath::Abs(xTpc-xTrd) > 0) {/* get rid of warning*/;}
+  if (TMath::Abs(yTpc-yTrd) > fMaxY) return kFALSE;
+  if (TMath::Abs(zTpc-zTrd) > fMaxZ) return kFALSE;
+  if (TMath::Abs(snpTpc-snpTrd) > fMaxSnp) return kFALSE;
+  if (TMath::Abs(tglTpc-tglTrd) > fMaxTgl) return kFALSE;
+  if (TMath::Abs(signed1PtTpc-signed1PtTrd) > fMaxSigned1Pt) return kFALSE;
 
 return kTRUE;
 }
@@ -354,6 +355,7 @@ Bool_t AliHLTGlobalTrackMerger::SmoothTracks( const Double_t T1[], const Double_
 //_____________________________________________________________________________
 void AliHLTGlobalTrackMerger::MultSSQ( const Double_t *A, const Double_t *B, Double_t *C, Int_t N )
 {
+  // no clue
   for( Int_t ind=0, i=0; i<N; ++i ){
     for( Int_t j=0; j<N; ++j, ++ind ){
       C[ind] = 0;
@@ -453,7 +455,7 @@ Bool_t AliHLTGlobalTrackMerger::InvertS( Double_t A[], Int_t N )
 }
 
 //_____________________________________________________________________________
-void  AliHLTGlobalTrackMerger::PropagateTracksToDCA(AliESDEvent *esdEvent)
+void  AliHLTGlobalTrackMerger::PropagateTracksToDCA(const AliESDEvent *esdEvent)
 {
   // try to propagate all tracks to DCA to primary vertex
   if(!esdEvent) return;
