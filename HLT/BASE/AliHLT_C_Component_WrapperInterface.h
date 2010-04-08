@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLT_C_COMPONENT_WARAPPERINTERFACE_H
 #define ALIHLT_C_COMPONENT_WARAPPERINTERFACE_H
@@ -6,12 +6,12 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLT_C_Component_WrapperInterface.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Pure C interface to the AliRoot HLT component handler
-    @note   Utilized by the HLT Online (PubSub) framework
-*/
+//  @file   AliHLT_C_Component_WrapperInterface.h
+//  @author Matthias Richter, Timm Steinbeck
+//  @date   
+//  @brief  Old C interface to the AliRoot HLT component handler
+//  @note   This interface is deprecated, the new interface is defined
+//          in HLT/BASE/AliHLTExternalInterface
 
 /** 
  * @defgroup alihlt_wrapper_interface_deprecated First version of the HLT wrapper

@@ -17,11 +17,12 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLT_C_Component_WrapperInterface.cxx
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Pure C interface to the AliRoot HLT component handler
-*/
+//  @file   AliHLT_C_Component_WrapperInterface.cxx
+//  @author Matthias Richter, Timm Steinbeck
+//  @date   
+//  @brief  Old C interface to the AliRoot HLT component handler
+//  @note   This interface is deprecated, the new interface is defined
+//          in HLT/BASE/AliHLTExternalInterface
 
 #if __GNUC__>= 3
 using namespace std;
@@ -39,6 +40,7 @@ static char* gRunType=NULL;
 
 int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
 {
+  // init the HLT system
   if ( gComponentHandler_C )
     {
       return EINPROGRESS;
@@ -71,6 +73,7 @@ int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* comenv )
 
 int AliHLT_C_Component_DeinitSystem()
 {
+  // De-init the HLT system and clean-up internal memory
   if ( gComponentHandler_C )
     {
       delete gComponentHandler_C;
@@ -81,6 +84,7 @@ int AliHLT_C_Component_DeinitSystem()
 
 int AliHLT_C_Component_LoadLibrary( const char* libraryPath )
 {
+  // load a component library
   if ( !gComponentHandler_C )
     return ENXIO;
   return gComponentHandler_C->LoadLibrary( libraryPath );
@@ -88,6 +92,7 @@ int AliHLT_C_Component_LoadLibrary( const char* libraryPath )
 
 int AliHLT_C_Component_UnloadLibrary( const char* /*libraryPath*/ )
 {
+  // unload a component library
   if ( !gComponentHandler_C )
     return ENXIO;
   // Matthias 26.10.2007
@@ -105,6 +110,7 @@ int AliHLT_C_Component_UnloadLibrary( const char* /*libraryPath*/ )
 
 int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int argc, const char** argv, AliHLTComponentHandle* handle )
 {
+  // create a component
   if ( !gComponentHandler_C )
     return ENXIO;
   if ( !handle ) return EINVAL;
@@ -126,6 +132,7 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
 
 void AliHLT_C_DestroyComponent( AliHLTComponentHandle handle )
 {
+  // destroy a component
   if ( !handle )
     return;
   
@@ -136,6 +143,7 @@ void AliHLT_C_DestroyComponent( AliHLTComponentHandle handle )
 
 int AliHLT_C_SetRunDescription(const AliHLTRunDesc* desc, const char* runType)
 {
+  // set run description
   if (!desc) return -EINVAL;
   if (desc->fStructSize<sizeof(AliHLTUInt32_t)) return -EINVAL;
   if (!gComponentHandler_C) return ENXIO;
@@ -157,6 +165,7 @@ int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponentEv
                            AliHLTComponentBlockData** outputBlocks,
                            AliHLTComponentEventDoneData** edd )
 {
+  // process one event
   if ( !handle )
     return ENXIO;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
@@ -165,6 +174,7 @@ int AliHLT_C_ProcessEvent( AliHLTComponentHandle handle, const AliHLTComponentEv
 
 int AliHLT_C_GetOutputDataType( AliHLTComponentHandle handle, AliHLTComponentDataType* dataType )
 {
+  // get output data type of a component
   if ( !handle )
     return ENXIO;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
@@ -174,6 +184,7 @@ int AliHLT_C_GetOutputDataType( AliHLTComponentHandle handle, AliHLTComponentDat
 
 int AliHLT_C_GetOutputSize( AliHLTComponentHandle handle, unsigned long* constBase, double* inputMultiplier )
 {
+  // get output data size of a component
   if ( !handle )
     return ENXIO;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
