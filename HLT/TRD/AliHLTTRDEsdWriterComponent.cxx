@@ -147,6 +147,7 @@ int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& /*ev
   fESD->SetOrbitNumber(GetOrbitNumber());
   fESD->SetBunchCrossNumber(GetBunchCrossNumber());
   fESD->SetTimeStamp(GetTimeStamp());
+  fESD->SetEventType(7);
 
   const AliHLTCTPData* pCTPData=CTPData();
   if (pCTPData) {
