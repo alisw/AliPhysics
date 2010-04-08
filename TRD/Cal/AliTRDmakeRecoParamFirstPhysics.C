@@ -29,7 +29,6 @@ TObjArray* CreateRecoParamObject()
 
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
   rec->SetEventSpecie(AliRecoParam::kLowMult);
-  rec->SetAsDefault();
   rec->SetNameTitle("Default", "TRD Default Reco Param");
   rec->SetNameTitle("LOW", "TRD Low Flux Reco Param");
   rec->SetRawStreamVersion("FAST");
@@ -46,6 +45,7 @@ TObjArray* CreateRecoParamObject()
   rec->SetNSigmaClusters(2.095);
   rec->SetRoadzMultiplicator(3.);
   rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
+  rec->SetAsDefault();
 
   recos->AddLast(rec = AliTRDrecoParam::GetHighFluxParam());
   rec->SetEventSpecie(AliRecoParam::kHighMult);

@@ -27,10 +27,10 @@ TObjArray* CreateRecoParamObject()
 
   AliTRDrecoParam *rec = 0x0;
   recos->AddLast(rec = AliTRDrecoParam::GetLowFluxParam());
-  rec->SetAsDefault();
   rec->SetEventSpecie(AliRecoParam::kLowMult);
   rec->SetNameTitle("LOW", "TRD Low Flux Reco Param");
   rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
+  rec->SetAsDefault();
   // further settings for low flux reco param
   // reco->SetThisAndThat()
 
