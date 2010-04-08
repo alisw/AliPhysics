@@ -1151,6 +1151,16 @@ Double_t AliESDtrack::GetMass() const {
 }
 
 //______________________________________________________________________________
+Double_t AliESDtrack::M() const
+{
+  // Returns the energy of the particle given its assumed mass.
+  // Assumes the pion mass if the particle can't be identified properly.
+
+  AliWarning("This is the ESD mass. Use it with care !"); 
+  return GetMass(); 
+}
+  
+//______________________________________________________________________________
 Double_t AliESDtrack::E() const
 {
   // Returns the energy of the particle given its assumed mass.
