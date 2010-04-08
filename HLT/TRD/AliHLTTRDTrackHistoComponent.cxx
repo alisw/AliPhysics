@@ -53,7 +53,10 @@ AliHLTTRDTrackHistoComponent::AliHLTTRDTrackHistoComponent()
   fTracksArray(NULL),
   fClPerTrkl(NULL),
   fTrklPerTrk(NULL),
-  fEvSize(NULL)
+  fEvSize(NULL),
+  fEtaDistrib(NULL),
+  fPhiDistrib(NULL),
+  fPtDistrib(NULL)
 {
   // see header file for class documentation
   // or
@@ -127,7 +130,9 @@ int AliHLTTRDTrackHistoComponent::DoInit(int argc, const char** argv)
   fClPerTrkl = new TH1F("TrdClPerTrkl","Clusters per Tracklet", AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb - 0.5);
   fTrklPerTrk = new TH1F("TrdTrklPerTrk","Tracklets per Track", 7, -0.5, 6.5);
   fEvSize = new TH1F("TrdTrEvSize", "Tracks size per event per ddl in kbyte", 512, 0, 512);
-  
+  fEtaDistrib = new TH1F("TrdTrEtaDistrib", "Eta distribution of tracks", 51, -1, 1);
+  fPhiDistrib = new TH1F("TrdTrPhiDistrib", "Phi distribution of tracks", 63, 0, 6.3);
+  fPtDistrib = new TH1F("TrdTrPtDistrib", "Pt distribution of tracks", 101, 0, 10);
   return 0;
 }
   
@@ -185,6 +190,9 @@ int AliHLTTRDTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
   // loop over tracks
   for(int i=0;i<fTracksArray->GetEntriesFast();i++) {
     trk=(AliTRDtrackV1*)fTracksArray->At(i);
+    fEtaDistrib->Fill(trk->Eta());
+    fPhiDistrib->Fill(trk->Phi());
+    fPtDistrib->Fill(trk->Pt());
     Int_t nrOfTrkls=0;
     for(int seedNr=0; seedNr<6; seedNr++){
       AliTRDseedV1* seed = trk->GetTracklet(seedNr);
@@ -203,6 +211,9 @@ int AliHLTTRDTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
   PushBack((TObject*)fClPerTrkl, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
   PushBack((TObject*)fTrklPerTrk, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
   PushBack((TObject*)fEvSize, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
+  PushBack((TObject*)fEtaDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
+  PushBack((TObject*)fPhiDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
+  PushBack((TObject*)fPtDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
   
   return 0;
 }

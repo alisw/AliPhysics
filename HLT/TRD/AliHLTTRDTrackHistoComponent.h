@@ -81,9 +81,12 @@ private:
   AliHLTUInt32_t fOutputSize;   // output size
   TClonesArray* fTracksArray;  // input array
 
-  TH1F *fClPerTrkl;
-  TH1F *fTrklPerTrk;
+  TH1F *fClPerTrkl;             // Number of clusters per tracklet
+  TH1F *fTrklPerTrk;            // Number of tracklets per track
   TH1F *fEvSize;                // Event size in kbyte
+  TH1F *fEtaDistrib;            // Eta distribution
+  TH1F *fPhiDistrib;            // Phi distribution
+  TH1F *fPtDistrib;             // Pt distribution
 
   ClassDef(AliHLTTRDTrackHistoComponent, 0);
 };
