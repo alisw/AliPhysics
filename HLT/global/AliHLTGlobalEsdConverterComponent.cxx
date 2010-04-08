@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTGlobalEsdConverterComponent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Global ESD converter component.
-*/
+//  @file   AliHLTGlobalEsdConverterComponent.cxx
+//  @author Matthias Richter
+//  @date   
+//  @brief  Global ESD converter component.
+// 
 
 // see header file for class documentation
 // or
@@ -249,31 +249,15 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 	  TObject* pObject=NULL;
 	  while ((pObject=next())!=NULL) {
 	    id=((TObjString*)pObject)->GetString().Data();
-	    if (fESD->GetList()->FindObject(id)) {
+	    TObject* pObj=fESD->GetList()->FindObject(id);
+	    if (pObj) {
 	      HLTDebug("removing object %s", id);
-	      fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
+	      fESD->GetList()->Remove(pObj);
+	      delete pObj;
 	    } else {
 	      HLTWarning("failed to remove object '%s' from ESD", id);
 	    }
 	  }
-	  // id="AliESDRun";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliESDHeader";        if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliESDZDC";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliESDFMD";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliESDVZERO";         if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliESDTZERO";         if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="TPCVertex";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="SPDVertex";           if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="PrimaryVertex";       if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliMultiplicity";     if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="PHOSTrigger";         if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="EMCALTrigger";        if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="SPDPileupVertices";   if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="TrkPileupVertices";   if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="Cascades";            if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="Kinks";               if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliRawDataErrorLogs"; if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
-	  // id="AliESDACORDE";        if (fESD->GetList()->FindObject(id)) fESD->GetList()->Remove(fESD->GetList()->FindObject(id));
 	  fESD->GetStdContent();
 	  delete pTokens;
 	}
