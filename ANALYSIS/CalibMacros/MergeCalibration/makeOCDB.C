@@ -1,13 +1,13 @@
 /*
-  Template of calibration/filtering  macro using ESD
+  macro to extract the OCDb entries
 
   Example:
-  .L $ALICE_ROOT/ANALYSIS/macros/runCalibTrain.C
-  runCalibTrain(105160);
+  .L $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/makeOCDB.C
+  makeOCDB("105160");
 
 */
 
-void makeOCDB(TString runNumberString, TString  ocdbStorage)
+void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 {
   gROOT->Macro("LoadLibraries.C");
   gROOT->LoadMacro("ConfigCalibTrain.C");
@@ -28,7 +28,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage)
   
   
   // Detector Tasks
-  makeOCDBTPC(runNumber);
+  makeOCDBTPC(runNumber,runNumber, "CalibObjects.root" , ocdbStorage);
   
   
   return;

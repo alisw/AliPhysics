@@ -3,7 +3,7 @@
   
   Example usage:
   
-  .L $ALICE_ROOT/ANALYSIS/macros/mergeCalibObjects.C
+  .L $ALICE_ROOT/ANALYSIS/CalibMacros/mergeCalibObjects.C
   mergeCalibObjects()
   
 */
@@ -18,14 +18,16 @@
 #include "AliTPCcalibBase.h"
 #include "TH1F.h"
 #include "TMethodCall.h"
+#include "TGrid.h"
+#include "TGridResult.h"
 
 #endif
 
-void IterTXT( const char * fileList="calib.list",Bool_t separate);
+void IterTXT( const char * fileList="calib.list",Bool_t separate=kFALSE);
 void IterAlien(const char* outputDir, const char* outputFileName="AliESDfriends_v1.root");
 void Merge(TFile* fileIn, TObjArray * array);
 void StoreResults(TObjArray * array);
-
+void StoreSeparateResults(TObjArray * array);
 
 void mergeCalibObjects( const char * fileList="calib.list",Bool_t separate=kFALSE){
 
@@ -69,7 +71,7 @@ void IterAlien(const char* outputDir, const char* outputFileName){
 	printf("command: %s\n", command.Data());
 	TGrid::Connect("alien://");
 	TGridResult *res = gGrid->Command(command);
-	if (!res) continue;
+	if (!res) return;
 	TIter nextmap(res);
 	TMap *map = 0;
 	// loop over the results
@@ -186,11 +188,9 @@ void Merge(TFile* fileIn, TObjArray * array){
     printf("%s\n",currentObject->GetName());
     callEnv.InitWithPrototype(currentObject->IsA(), "Merge", "TCollection*");
     if (!callEnv.IsValid()) {continue;}
-
-    TObject *mergedObject = array->FindObject(currentObject->GetName());
-    if (!mergedObject) continue;
-    TString oname=mergedObject->GetName();
+    TString oname=currentObject->GetName();
     if (oname.Contains("esdFriendTree")) continue;
+    TObject *mergedObject = array->FindObject(currentObject->GetName());
     if (!mergedObject) {
       array->AddLast(currentObject);
       carray->RemoveAt(i);
