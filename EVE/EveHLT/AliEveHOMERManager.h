@@ -143,8 +143,8 @@ private:
   TEveProjectionManager * fRhoZManager;   //The Rho- Z projection sene manager
   TEveScene * fRPhiEventScene;            //The R - Phi projection scene
   TEveScene * fRhoZEventScene;            //The Rho - Z projection sene
-  TEveViewer * fRPhiViewer;
   TEveViewer * fRhoZViewer;
+  TEveViewer * fRPhiViewer;
   
 
 

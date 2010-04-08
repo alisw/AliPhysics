@@ -37,11 +37,11 @@ TGedFrame(p, width, height, options | kVerticalFrame, back),
   fButtonNextEvent(0),
   fButtonNavigateBack(0),
   fButtonNavigateFwd(0),
-  fBoxTriggerSelector(0),
-  fButtonEventLoopText(0),
-//  fBoxEventLoopSpeed(0),
-  fButtonEventLoop(0),
   fButtonPrintScreens(NULL),
+  fBoxTriggerSelector(0),
+//  fBoxEventLoopSpeed(0),
+  fButtonEventLoopText(0),
+  fButtonEventLoop(0),
  fEventLoopStarted(kFALSE) 
 {
   
