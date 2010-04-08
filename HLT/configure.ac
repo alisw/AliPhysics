@@ -673,8 +673,19 @@ if test "x$enable_tpc" = "xyes" ; then
   				       cl.GetOutputClonesArray();])],
                                     [have_tpc_hltoffline_rec=yes], 
   				      [AC_DEFINE(HAVE_NOT_TPCOFFLINE_REC)])
-    LIBS=$save_LIBS
   AC_MSG_RESULT([$have_tpc_hltoffline_rec])
+
+    have_alitpcclusterparam_r40128=no
+    AC_MSG_CHECKING([checking for AliTPCClusterParam r40128])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTPCClusterParam.h>], 
+                                       [AliTPCClusterParam param;
+    				          float test=param.ParamS0Par(0,0,0)]);],
+                                       [have_alitpcclusterparam_r40128=yes],
+    				         [AC_DEFINE(HAVE_NOT_ALITPCCLUSTERPARAM_r40128)])
+    AC_MSG_RESULT([$have_alitpcclusterparam_r40128])
+
+    LIBS=$save_LIBS
+
 
   AC_CHECK_HEADER([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
   AC_CHECK_HEADER([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
