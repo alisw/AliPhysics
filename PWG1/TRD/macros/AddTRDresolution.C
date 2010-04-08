@@ -16,16 +16,16 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   if(!TSTBIT(map, kResolution)) return;
   printf("AddTRDresolution <- [0]=\"%s\" [1]=\"%s\" [2]=\"%s\"\n", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
 
-  // AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
-  // AliLog::SetClassDebugLevel("AliTRDresolution", 2);
+  //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
+  //AliLog::SetClassDebugLevel("AliTRDresolution", 2);
   AliTRDresolution *res(NULL);
-
+  //AliTRDresolution::SetSegmentationLevel(1);
   const Char_t *suffix[]={"", "SA", "K"};
   for(Int_t itq=0; itq<1/*3*/; itq++){
     mgr->AddTask(res = new AliTRDresolution(Form("TRDresolution%s", suffix[itq])));
     res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
-    res->SetDebugLevel(0);
+    //res->SetDebugLevel(2);
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(res, 1, ci[itq]);

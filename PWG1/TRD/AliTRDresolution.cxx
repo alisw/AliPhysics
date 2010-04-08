@@ -87,7 +87,6 @@
 
 ClassImp(AliTRDresolution)
 
-Float_t AliTRDresolution::fgPtThreshold = 1.; // GeV/c
 UChar_t const AliTRDresolution::fgNproj[kNviews] = {
   2, 2, 5, 5, 5,
   2, 5, 11, 11, 11
@@ -105,23 +104,27 @@ Char_t const * AliTRDresolution::fgPerformanceName[kNviews] = {
     ,"TRD2MC"
 };
 // Configure segmentation for y resolution/residuals
-// const Int_t AliTRDresolution::fgkNresYsegm = 6; const Char_t *AliTRDresolution::fgkResYsegmName = "Layer";   // layer wise
-const Int_t AliTRDresolution::fgkNresYsegm = 18; const Char_t *AliTRDresolution::fgkResYsegmName = "Sector"; // sector wise
-// const Int_t AliTRDresolution::fgkNresYsegm = 90; const Char_t *AliTRDresolution::fgkResYsegmName = "Stack";  // stack wise
-// const Int_t AliTRDresolution::fgkNresYsegm = 540; const Char_t *AliTRDresolution::fgkResYsegmName = "Detector"; // detector wise
+UChar_t AliTRDresolution::fgSegmentLevel = 0;
+Int_t const AliTRDresolution::fgkNresYsegm[3] = {
+  AliTRDgeometry::kNsector
+ ,AliTRDgeometry::kNsector*AliTRDgeometry::kNstack
+ ,AliTRDgeometry::kNdet
+};
+Char_t const *AliTRDresolution::fgkResYsegmName[3] = {
+  "Sector", "Stack", "Detector"};
 
 UChar_t const AliTRDresolution::fgNcomp[kNprojs] = {
   1,  1, //2, 
-  AliTRDresolution::fgkNresYsegm, 2, //2, 
-  2*AliTRDresolution::fgkNresYsegm, 2, 2, 2, 1, //5, 
-  2*AliTRDresolution::fgkNresYsegm, 2, 2, 2, 1, //5,
-  2*AliTRDresolution::fgkNresYsegm, 2, 2, 2, 1, //5,
+  AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, //2, 
+  2*AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, 2, 2, 1, //5, 
+  2*AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, 2, 2, 1, //5,
+  2*AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, 2, 2, 1, //5,
 // MC
-  AliTRDresolution::fgkNresYsegm, 2,          //2, 
-  AliTRDresolution::fgkNresYsegm, 2, 2, 2, 1, //5, 
-  AliTRDresolution::fgkNresYsegm, 2, 2, 2, 1, 1, 1, 1, 11, 11, 11, //11
-  AliTRDresolution::fgkNresYsegm, 2, 2, 2, 1, 1, 1, 1, 11, 11, 11, //11
-  6*AliTRDresolution::fgkNresYsegm, 6*2, 6*2, 6*2, 6, 6, 6, 6, 6*11, 6*11, 6*11  //11
+  AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2,          //2, 
+  AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, 2, 2, 1, //5, 
+  AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, 2, 2, 1, 1, 1, 1, 11, 11, 11, //11
+  AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 2, 2, 2, 1, 1, 1, 1, 11, 11, 11, //11
+  6*AliTRDresolution::fgkNresYsegm[fgSegmentLevel], 6*2, 6*2, 6*2, 6, 6, 6, 6, 6*11, 6*11, 6*11  //11
 };
 Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
   // Charge
@@ -129,37 +132,37 @@ Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
  ,{"dI/Impv", "x/x_{0}", "#delta I/I_{mpv}", "x[cm]"}
   // Clusters to Kalman
  ,{"Cluster2Track residuals", "tg(#phi)", "y [#mum]", "#sigma_{y} [#mum]"}
- ,{"Cluster2Track  YZ pulls", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"Cluster2Track  YZ pulls", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
   // TRD tracklet to Kalman fit
  ,{"Tracklet2Track Y residuals", "tg(#phi)", "y [#mum]", "#sigma_{y} [#mum]"}
- ,{"Tracklet2Track YZ pulls", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"Tracklet2Track YZ pulls", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"Tracklet2Track Z residuals", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"Tracklet2Track Z pulls", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"Tracklet2Track Phi residuals", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
   // TRDin 2 first TRD tracklet
  ,{"Tracklet2Track Y residuals @ TRDin", "tg(#phi)", "y [#mum]", "#sigma_{y} [#mum]"}
- ,{"Tracklet2Track YZ pulls @ TRDin", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"Tracklet2Track YZ pulls @ TRDin", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"Tracklet2Track Z residuals @ TRDin", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"Tracklet2Track Z pulls @ TRDin", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"Tracklet2Track Phi residuals @ TRDin", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
   // TRDout 2 first TRD tracklet
  ,{"Tracklet2Track Y residuals @ TRDout", "tg(#phi)", "y [#mum]", "#sigma_{y} [#mum]"}
- ,{"Tracklet2Track YZ pulls @ TRDout", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"Tracklet2Track YZ pulls @ TRDout", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"Tracklet2Track Z residuals @ TRDout", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"Tracklet2Track Z pulls @ TRDout", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"Tracklet2Track Phi residuals @ TRDout", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
   // MC cluster
  ,{"MC Cluster Y resolution", "tg(#phi)", "y [#mum]", "#sigma_{y} [#mum]"}
- ,{"MC Cluster YZ pulls", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"MC Cluster YZ pulls", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
   // MC tracklet
  ,{"MC Tracklet Y resolution", "tg(#phi)", "y [#mum]",  "#sigma_{y}[#mum]"}
- ,{"MC Tracklet YZ pulls", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"MC Tracklet YZ pulls", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"MC Tracklet Z resolution", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"MC Tracklet Z pulls", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"MC Tracklet Phi resolution", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
   // MC track TRDin
  ,{"MC Y resolution @ TRDin", "tg(#phi)", "y [#mum]", "#sigma_{y}[#mum]"}
- ,{"MC YZ pulls @ TRDin", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"MC YZ pulls @ TRDin", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"MC Z resolution @ TRDin", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"MC Z pulls @ TRDin", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"MC #Phi resolution @ TRDin", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
@@ -171,7 +174,7 @@ Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
  ,{"MC P resolution @ TRDin", "p^{MC} [GeV/c]", "(p^{REC}-p^{MC})/p^{MC} [%]", "MC: #sigma^{TPC}(#Deltap/p^{MC}) [%]"}
   // MC track TRDout
  ,{"MC Y resolution @ TRDout", "tg(#phi)", "y [#mum]", "#sigma_{y}[#mum]"}
- ,{"MC YZ pulls @ TRDout", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"MC YZ pulls @ TRDout", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"MC Z resolution @ TRDout", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"MC Z pulls @ TRDout", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"MC #Phi resolution @ TRDout", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
@@ -183,7 +186,7 @@ Char_t const *AliTRDresolution::fgAxTitle[kNprojs][4] = {
  ,{"MC P resolution @ TRDout", "p^{MC} [GeV/c]", "(p^{REC}-p^{MC})/p^{MC} [%]", "MC: #sigma^{TPC}(#Deltap/p^{MC}) [%]"}
   // MC track in TRD
  ,{"MC Track Y resolution", "tg(#phi)", "y [#mum]", "#sigma_{y} [#mum]"}
- ,{"MC Track YZ pulls", AliTRDresolution::fgkResYsegmName, "y / z", "#sigma_{y}"}
+ ,{"MC Track YZ pulls", AliTRDresolution::fgkResYsegmName[fgSegmentLevel], "y / z", "#sigma_{y}"}
  ,{"MC Track Z resolution", "tg(#theta)", "z [#mum]", "#sigma_{z} [#mum]"}
  ,{"MC Track Z pulls", "tg(#theta)", "z", "#sigma_{z}"}
  ,{"MC Track #Phi resolution", "tg(#phi)", "#phi [mrad]", "#sigma_{#phi} [mrad]"}
@@ -201,6 +204,7 @@ AliTRDresolution::AliTRDresolution()
   ,fStatus(0)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
+  ,fPtThreshold(1.)
   ,fReconstructor(NULL)
   ,fGeo(NULL)
   ,fDBPDG(NULL)
@@ -223,6 +227,7 @@ AliTRDresolution::AliTRDresolution(char* name)
   ,fStatus(0)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
+  ,fPtThreshold(1.)
   ,fReconstructor(NULL)
   ,fGeo(NULL)
   ,fDBPDG(NULL)
@@ -392,7 +397,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   }
   ULong_t status = fkESD ? fkESD->GetStatus():0;
 
-  Int_t sec(-1), stk(-1), det(-1);
+  Int_t sgm[3];
   Double_t covR[7], cov[3], dy[2], dz[2];
   Float_t pt, x0, y0, z0, dydx, dzdx;
   AliTRDseedV1 *fTracklet(NULL);  TObjArray *clInfoArr(NULL);
@@ -401,9 +406,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     if(!fTracklet->IsOK()) continue;
     x0 = fTracklet->GetX0();
     pt = fTracklet->GetPt();
-    det = fTracklet->GetDetector();
-    sec = AliTRDgeometry::GetSector(det);
-    stk = sec * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(det);
+    sgm[2] = fTracklet->GetDetector();
+    sgm[0] = AliTRDgeometry::GetSector(sgm[2]);
+    sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
+    
     // retrive the track angle with the chamber
     y0   = fTracklet->GetYref(0);
     z0   = fTracklet->GetZref(0);
@@ -428,7 +434,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       // rotate along pad
       dy[1] = cost*(dy[0] - dz[0]*tilt);
       dz[1] = cost*(dz[0] + dy[0]*tilt);
-      if(pt>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sec);
+      if(pt>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sgm[fgSegmentLevel]);
 
       // tilt rotation of covariance for clusters
       Double_t sy2(c->GetSigmaY2()), sz2(c->GetSigmaZ2());
@@ -439,7 +445,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       cov[0]+=covR[0]; cov[1]+=covR[1]; cov[2]+=covR[2];
       Double_t dyz[2]= {dy[1], dz[1]};
       Pulls(dyz, cov, tilt);
-      ((TH3S*)arr->At(1))->Fill(sec, dyz[0], dyz[1]);
+      ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dyz[0], dyz[1]);
   
       // Get z-position with respect to anode wire
       Int_t istk = fGeo->GetStack(c->GetDetector());
@@ -458,12 +464,12 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       clInfo->SetAnisochronity(d);
       clInfo->SetDriftLength(dx);
       clInfo->SetTilt(tilt);
-      if(DebugLevel()>=2){
+      if(DebugLevel()>=1){
         if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
         clInfoArr->Add(clInfo);
       }
     }
-    if(DebugLevel()>=2 && clInfoArr){
+    if(DebugLevel()>=1 && clInfoArr){
       (*DebugStream()) << "cluster"
         <<"status="  << status
         <<"clInfo.=" << clInfoArr
@@ -496,19 +502,21 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     return NULL;
   }
 
-  Int_t sec(-1), stk(-1), det(-1);
+  Int_t sgm[3];
   Double_t cov[3], covR[7]/*, sqr[3], inv[3]*/;
-  Double_t pt, x, dx, dy[2], dz[2];
+  Double_t pt, phi, tht, x, dx, dy[2], dz[2];
   AliTRDseedV1 *fTracklet(NULL);  
-  for(Int_t il=AliTRDgeometry::kNlayer; il--;){
+  for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++){
     if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
     if(!fTracklet->IsOK()) continue;
-    det = fTracklet->GetDetector();
-    sec = AliTRDgeometry::GetSector(det);
-    stk = sec * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(det);
+    sgm[2] = fTracklet->GetDetector();
+    sgm[0] = AliTRDgeometry::GetSector(sgm[2]);
+    sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
     x   = fTracklet->GetX();
     dx  = fTracklet->GetX0() - x;
     pt  = fTracklet->GetPt();
+    phi = fTracklet->GetYref(1);
+    tht = fTracklet->GetZref(1);
     // compute dy and dz
     dy[0]= fTracklet->GetYref(0)-dx*fTracklet->GetYref(1) - fTracklet->GetY();
     dz[0]= fTracklet->GetZref(0)-dx*fTracklet->GetZref(1) - fTracklet->GetZ();
@@ -521,8 +529,8 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     // calculate residuals using tilt rotation
     dy[1]= cost*(dy[0] - dz[0]*tilt);
     dz[1]= cost*(dz[0] + dy[0]*tilt);
-    ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sec+rc*fgkNresYsegm);
-    ((TH3S*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1], rc);
+    ((TH3S*)arr->At(0))->Fill(phi, dy[1], sgm[fgSegmentLevel]+rc*fgkNresYsegm[fgSegmentLevel]);
+    ((TH3S*)arr->At(2))->Fill(tht, dz[1], rc);
 
     // compute covariance matrix
     fTracklet->GetCovAt(x, cov);
@@ -530,16 +538,22 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     cov[0] += covR[0]; cov[1] += covR[1]; cov[2] += covR[2]; 
     Double_t dyz[2]= {dy[1], dz[1]};
     Pulls(dyz, cov, tilt);
-    ((TH3S*)arr->At(1))->Fill(sec, dyz[0], dyz[1]);
-    ((TH3S*)arr->At(3))->Fill(fTracklet->GetZref(1), dyz[1], rc);
+    ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dyz[0], dyz[1]);
+    ((TH3S*)arr->At(3))->Fill(tht, dyz[1], rc);
 
-    Double_t dphi((fTracklet->GetYref(1)-fTracklet->GetYfit(1))/(1-fTracklet->GetYref(1)*fTracklet->GetYfit(1)));
-    Double_t dtht((fTracklet->GetZref(1)-fTracklet->GetZfit(1))/(1-fTracklet->GetZref(1)*fTracklet->GetZfit(1)));
-    ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), TMath::ATan(dphi));
+    Double_t dphi((phi-fTracklet->GetYfit(1))/(1-phi*fTracklet->GetYfit(1)));
+    Double_t dtht((tht-fTracklet->GetZfit(1))/(1-tht*fTracklet->GetZfit(1)));
+    ((TH2I*)arr->At(4))->Fill(phi, TMath::ATan(dphi));
 
     if(DebugLevel()>=1){
       UChar_t err(fTracklet->GetErrorMsg());
       (*DebugStream()) << "tracklet"
+        <<"pt="  << pt
+        <<"phi=" << phi
+        <<"tht=" << tht
+        <<"det=" << sgm[2]
+        <<"dy0="  << dy[0]
+        <<"dz0="  << dz[0]
         <<"dy="  << dy[1]
         <<"dz="  << dz[1]
         <<"dphi="<< dphi
@@ -591,10 +605,10 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     AliWarning("Tracklet did not match Track.");
     return NULL;
   }
-  Int_t det(-1), stk(-1), sec(-1);
-  det = fTracklet->GetDetector();
-  sec = AliTRDgeometry::GetSector(det);
-  stk = sec * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(det);
+  Int_t sgm[3];
+  sgm[2] = fTracklet->GetDetector();
+  sgm[0] = AliTRDgeometry::GetSector(sgm[2]);
+  sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
   Double_t tilt(fTracklet->GetTilt())
           ,t2(tilt*tilt)
           ,corr(1./(1. + t2))
@@ -627,14 +641,14 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   dz[1] = cost*(dz[0] + dy[0]*tilt);
 
   TObjArray *arr = (TObjArray*)fContainer->At(kTrackIn);
-  if(1./PAR[4]>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sec+rc*fgkNresYsegm);
+  if(1./PAR[4]>fPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sgm[fgSegmentLevel]+rc*fgkNresYsegm[fgSegmentLevel]);
   ((TH3S*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1], rc);
   ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), dphi);
 
   Double_t dyz[2] = {dy[1], dz[1]};
   Double_t cc[3] = {COV(0,0)+cov[0], COV(0,1)+cov[1], COV(1,1)+cov[2]};
   Pulls(dyz, cc, tilt);
-  ((TH3S*)arr->At(1))->Fill(sec, dyz[0], dyz[1]);
+  ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dyz[0], dyz[1]);
   ((TH3S*)arr->At(3))->Fill(fTracklet->GetZref(1), dyz[1], rc);
 
 
@@ -642,7 +656,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   // register reference histo for mini-task
   h = (TH2I*)arr->At(0);
 
-  if(DebugLevel()>=1){
+  if(DebugLevel()>=2){
     (*DebugStream()) << "trackIn"
       << "x="       << x
       << "P="       << &PAR
@@ -691,8 +705,8 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   // fill histos
   arr = (TObjArray*)fContainer->At(kMCtrackIn);
   // y resolution/pulls
-  if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sec);
-  ((TH3S*)arr->At(1))->Fill(sec, (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)), (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)));
+  if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sgm[fgSegmentLevel]);
+  ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)), (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)));
   // z resolution/pulls
   ((TH3S*)arr->At(2))->Fill(dzdx0, PARMC[1]-PAR[1], 0);
   ((TH3S*)arr->At(3))->Fill(dzdx0, (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)), 0);
@@ -716,7 +730,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 //   if(sp>0.) ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/TMath::Sqrt(sp), sign*sIdx);
 
   // fill debug for MC 
-  if(DebugLevel()>=1){
+  if(DebugLevel()>=3){
     (*DebugStream()) << "trackInMC"
       << "P="   << &PARMC
       << "\n";
@@ -758,10 +772,10 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
     AliWarning("Tracklet did not match Track position.");
     return NULL;
   }
-  Int_t det(-1), stk(-1), sec(-1);
-  det = fTracklet->GetDetector();
-  sec = AliTRDgeometry::GetSector(det);
-  stk = sec * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(det);
+  Int_t sgm[3];
+  sgm[2] = fTracklet->GetDetector();
+  sgm[0] = AliTRDgeometry::GetSector(sgm[2]);
+  sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
   Double_t tilt(fTracklet->GetTilt())
           ,t2(tilt*tilt)
           ,corr(1./(1. + t2))
@@ -794,20 +808,20 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   dz[1] = cost*(dz[0] + dy[0]*tilt);
 
   TObjArray *arr = (TObjArray*)fContainer->At(kTrackOut);
-  if(1./PAR[4]>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), 1.e2*dy[1], sec+rc*fgkNresYsegm); // scale to fit general residual range !!!
+  if(1./PAR[4]>fPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), 1.e2*dy[1], sgm[fgSegmentLevel]+rc*fgkNresYsegm[fgSegmentLevel]); // scale to fit general residual range !!!
   ((TH3S*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1], rc);
   ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), dphi);
 
   Double_t dyz[2] = {dy[1], dz[1]};
   Double_t cc[3] = {COV(0,0)+cov[0], COV(0,1)+cov[1], COV(1,1)+cov[2]};
   Pulls(dyz, cc, tilt);
-  ((TH3S*)arr->At(1))->Fill(sec, dyz[0], dyz[1]);
+  ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dyz[0], dyz[1]);
   ((TH3S*)arr->At(3))->Fill(fTracklet->GetZref(1), dyz[1], rc);
 
   // register reference histo for mini-task
   h = (TH2I*)arr->At(0);
 
-  if(DebugLevel()>=1){
+  if(DebugLevel()>=2){
     (*DebugStream()) << "trackOut"
       << "x="       << x
       << "P="       << &PAR
@@ -856,8 +870,8 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   // fill histos
   arr = (TObjArray*)fContainer->At(kMCtrackOut);
   // y resolution/pulls
-  if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sec);
-  ((TH3S*)arr->At(1))->Fill(sec, (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)), (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)));
+  if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sgm[fgSegmentLevel]);
+  ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)), (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)));
   // z resolution/pulls
   ((TH3S*)arr->At(2))->Fill(dzdx0, PARMC[1]-PAR[1], 0);
   ((TH3S*)arr->At(3))->Fill(dzdx0, (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)), 0);
@@ -881,7 +895,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
 //   if(sp>0.) ((TH3S*)arr->At(11))->Fill(p0, (p0-p)/TMath::Sqrt(sp), sign*sIdx);
 
   // fill debug for MC 
-  if(DebugLevel()>=1){
+  if(DebugLevel()>=3){
     (*DebugStream()) << "trackOutMC"
       << "P="   << &PARMC
       << "\n";
@@ -909,9 +923,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Int_t pdg = fkMC->GetPDG(),
         sIdx(AliTRDpidUtil::Pdg2Pid(TMath::Abs(pdg))+1), // species index
         sign(0),
-        det(-1),
-        stk(-1),
-        sec(-1),
+        sgm[3],
         label(fkMC->GetLabel());
   if(!fDBPDG) fDBPDG=TDatabasePDG::Instance();
   TParticlePDG *ppdg(fDBPDG->GetParticle(pdg));
@@ -923,7 +935,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   Float_t pt0, x0, y0, z0, dx, dy, dz, dydx0, dzdx0;
   Double_t covR[7]/*, cov[3]*/;
 
-  if(DebugLevel()>=1){
+  if(DebugLevel()>=3){
     TVectorD dX(12), dY(12), dZ(12), Pt(12), dPt(12), cCOV(12*15);
     fkMC->PropagateKalman(&dX, &dY, &dZ, &Pt, &dPt, &cCOV);
     (*DebugStream()) << "MCkalman"
@@ -943,10 +955,9 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     if(!(fTracklet = fkTrack->GetTracklet(ily)))/* ||
        !fTracklet->IsOK())*/ continue;
 
-    det = fTracklet->GetDetector();
-    sec = AliTRDgeometry::GetSector(det);
-    Int_t istk = AliTRDgeometry::GetStack(det); 
-    stk = sec * AliTRDgeometry::kNstack + istk;
+    sgm[2] = fTracklet->GetDetector();
+    sgm[0] = AliTRDgeometry::GetSector(sgm[2]);
+    sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
     Double_t tilt(fTracklet->GetTilt())
             ,t2(tilt*tilt)
             ,corr(1./(1. + t2))
@@ -960,9 +971,9 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     // MC track position at reference radial position
     dx  = x0 - x;
-    if(DebugLevel()>=1){
+    if(DebugLevel()>=4){
       (*DebugStream()) << "MC"
-        << "det="     << det
+        << "det="     << sgm[2]
         << "pdg="     << pdg
         << "sgn="     << sign
         << "pt="      << pt0
@@ -991,8 +1002,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     arr = (TObjArray*)((TObjArray*)fContainer->At(kMCtrack))->At(ily);
     // y resolution/pulls
-    if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
-    ((TH3S*)arr->At(1))->Fill(sec, dy/TMath::Sqrt(covR[0]), dz/TMath::Sqrt(covR[2]));
+    if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sgm[fgSegmentLevel]);
+    ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dy/TMath::Sqrt(covR[0]), dz/TMath::Sqrt(covR[2]));
     // z resolution/pulls
     ((TH3S*)arr->At(2))->Fill(dzdx0, dz, 0);
     ((TH3S*)arr->At(3))->Fill(dzdx0, dz/TMath::Sqrt(covR[2]), 0);
@@ -1015,7 +1026,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     ((TH3S*)((TObjArray*)arr->At(10)))->Fill(p0, p/p0-1., sign*sIdx);
 
     // Fill Debug stream for Kalman track
-    if(DebugLevel()>=1){
+    if(DebugLevel()>=4){
       (*DebugStream()) << "MCtrack"
         << "pt="      << pt
         << "x="       << x
@@ -1047,14 +1058,14 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     // add tracklet residuals for y and dydx
     arr = (TObjArray*)fContainer->At(kMCtracklet);
 
-    if(pt0>fgPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
-    if(tt.GetS2Y()>0. && tt.GetS2Z()>0.) ((TH3S*)arr->At(1))->Fill(sec, dy/TMath::Sqrt(tt.GetS2Y()), dz/TMath::Sqrt(tt.GetS2Z()));
+    if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, dy, sgm[fgSegmentLevel]);
+    if(tt.GetS2Y()>0. && tt.GetS2Z()>0.) ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dy/TMath::Sqrt(tt.GetS2Y()), dz/TMath::Sqrt(tt.GetS2Z()));
     ((TH3S*)arr->At(2))->Fill(dzdl0, dz, rc);
     if(tt.GetS2Z()>0.) ((TH3S*)arr->At(3))->Fill(dzdl0, dz/TMath::Sqrt(tt.GetS2Z()), rc);
     ((TH2I*)arr->At(4))->Fill(dydx0, TMath::ATan(dphi));
   
     // Fill Debug stream for tracklet
-    if(DebugLevel()>=1){
+    if(DebugLevel()>=4){
       Float_t s2y = tt.GetS2Y();
       Float_t s2z = tt.GetS2Z();
       (*DebugStream()) << "MCtracklet"
@@ -1068,7 +1079,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
         << "\n";
     }
 
-    AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, istk);
+    AliTRDpadPlane *pp = fGeo->GetPadPlane(ily, AliTRDgeometry::GetStack(sgm[2]));
     Float_t zr0 = pp->GetRow0() + pp->GetAnodeWireOffset();
     //Double_t exb = AliTRDCommonParam::Instance()->GetOmegaTau(1.5);
 
@@ -1085,9 +1096,9 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       dz = cost*(z - zmc + tilt*(y-ymc));
       
       // Fill Histograms
-      if(q>20. && q<250. && pt0>fgPtThreshold){ 
-        ((TH3S*)arr->At(0))->Fill(dydx0, dy, sec);
-        ((TH3S*)arr->At(1))->Fill(sec, dy/TMath::Sqrt(c->GetSigmaY2()), dz/TMath::Sqrt(c->GetSigmaZ2()));
+      if(q>20. && q<250. && pt0>fPtThreshold){ 
+        ((TH3S*)arr->At(0))->Fill(dydx0, dy, sgm[fgSegmentLevel]);
+        ((TH3S*)arr->At(1))->Fill(sgm[fgSegmentLevel], dy/TMath::Sqrt(c->GetSigmaY2()), dz/TMath::Sqrt(c->GetSigmaZ2()));
       }
 
       // Fill calibration container
@@ -1103,13 +1114,13 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       clInfo->SetDriftLength(dx-.5*AliTRDgeometry::CamHght());
       clInfo->SetTilt(tilt);
       fMCcl->Add(clInfo);
-      if(DebugLevel()>=2){ 
+      if(DebugLevel()>=5){ 
         if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
         clInfoArr->Add(clInfo);
       }
     }
     // Fill Debug Tree
-    if(DebugLevel()>=2 && clInfoArr){
+    if(DebugLevel()>=5 && clInfoArr){
       (*DebugStream()) << "MCcluster"
         <<"clInfo.=" << clInfoArr
         << "\n";
@@ -1153,11 +1164,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -100.; xy[2] = .3; xy[3] = 1000.;
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kCluster, 0, 1, n, selection)) break;
     pad=(TVirtualPad*)l->At(1); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kCluster, 0, 1, n, selection)) break;
     return kTRUE;
   case 2: // cluster2track residuals
@@ -1165,38 +1176,38 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -100.; xy[2] = .3; xy[3] = 1000.;
     pad = (TVirtualPad*)l->At(0); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kCluster, 0, 1, n, selection)) break;
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-0.5; xy[3] = 2.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-0.5; xy[3] = 2.5;
     pad=(TVirtualPad*)l->At(1); pad->cd();
     pad->SetMargin(0.125, 0.015, 0.1, 0.015);
     if(!GetGraphArray(xy, kCluster, 1, 1)) break;
     return kTRUE;
   case 3: // kTrack y
     gPad->Divide(3, 2, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
-    xy[0] = -.3; xy[1] = -75.; xy[2] = .3; xy[3] = 500.;
+    xy[0] = -.3; xy[1] = -20.; xy[2] = .3; xy[3] = 100.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection)) break;
 
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection)) break;
 
     ((TVirtualPad*)l->At(2))->cd();
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection)) break;
 
     ((TVirtualPad*)l->At(3))->cd();
-    selStart=fgkNresYsegm; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection, "[RC]")) break;
 
     ((TVirtualPad*)l->At(4))->cd();
-    selStart=fgkNresYsegm/3+fgkNresYsegm; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3+fgkNresYsegm[fgSegmentLevel]; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection, "[RC]")) break;
 
     ((TVirtualPad*)l->At(5))->cd();
-    selStart=2*fgkNresYsegm/3+fgkNresYsegm; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3+fgkNresYsegm[fgSegmentLevel]; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrack, 0, 1, n, selection, "[RC]")) break;
     return kTRUE;
   case 4: // kTrack z
@@ -1216,7 +1227,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
   case 5: // kTrack  pulls
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
 
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-.5; xy[3] = 2.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-.5; xy[3] = 2.5;
     ((TVirtualPad*)l->At(0))->cd();
     if(!GetGraphArray(xy, kTrack, 1, 1)) break;
 
@@ -1233,11 +1244,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -1500.; xy[2] = .3; xy[3] = 5000.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackIn, 0, 1, n, selection)) break;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackIn, 0, 1, n, selection)) break;
     return kTRUE;
   case 8: // kTrackIn y
@@ -1245,9 +1256,9 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -1500.; xy[2] = .3; xy[3] = 5000.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackIn, 0, 1, n, selection)) break;
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-.5; xy[3] = 2.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-.5; xy[3] = 2.5;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
     if(!GetGraphArray(xy, kTrackIn, 1, 1)) break;
@@ -1273,11 +1284,11 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -50.; xy[2] = .3; xy[3] = 150.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackOut, 0, 1, n, selection)) break;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackOut, 0, 1, n, selection)) break;
     return kTRUE;
   case 12: // kTrackOut y
@@ -1285,9 +1296,9 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     xy[0] = -.3; xy[1] = -50.; xy[2] = .3; xy[3] = 150.;
     pad = ((TVirtualPad*)l->At(0)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kTrackOut, 0, 1, n, selection)) break;
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-.5; xy[3] = 2.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-.5; xy[3] = 2.5;
     pad=((TVirtualPad*)l->At(1)); pad->cd();
     pad->SetMargin(0.1, 0.1, 0.1, 0.01);
     if(!GetGraphArray(xy, kTrackOut, 1, 1)) break;
@@ -1311,40 +1322,40 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3]=650.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCcluster, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCcluster, 0, 1, n, selection)) break;
     return kTRUE;
   case 16: // kMCcluster
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3]=650.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCcluster, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm-.5; xy[3]=2.5;
+    xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fgSegmentLevel]-.5; xy[3]=2.5;
     if(!GetGraphArray(xy, kMCcluster, 1, 1)) break;
     return kTRUE;
   case 17: //kMCtracklet [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =500.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtracklet, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtracklet, 0, 1, n, selection)) break;
     return kTRUE;
   case 18: //kMCtracklet [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =500.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtracklet, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm-.5; xy[3]=2.5;
+    xy[0]=-.5; xy[1]=-0.5; xy[2]=fgkNresYsegm[fgSegmentLevel]-.5; xy[3]=2.5;
     if(!GetGraphArray(xy, kMCtracklet, 1, 1)) break;
     return kTRUE;
   case 19: //kMCtracklet [z]
@@ -1364,65 +1375,65 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=Int_t(fgkNresYsegm*0.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*0.); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer1")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=Int_t(fgkNresYsegm*0.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*0.5); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer1")) break;
     return kTRUE;
   case 22: //kMCtrack [y] ly [1]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=Int_t(fgkNresYsegm*1.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*1.); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer2")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=Int_t(fgkNresYsegm*1.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*1.5); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer2")) break;
     return kTRUE;
   case 23: //kMCtrack [y] ly [2]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=Int_t(fgkNresYsegm*2.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*2.); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer3")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=Int_t(fgkNresYsegm*2.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*2.5); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer3")) break;
     return kTRUE;
   case 24: //kMCtrack [y] ly [3]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=Int_t(fgkNresYsegm*3.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*3.); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer4")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=Int_t(fgkNresYsegm*3.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*3.5); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer4")) break;
     return kTRUE;
   case 25: //kMCtrack [y] ly [4]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=Int_t(fgkNresYsegm*4.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*4.); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer5")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=Int_t(fgkNresYsegm*4.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*4.5); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer5")) break;
     return kTRUE;
   case 26: //kMCtrack [y] ly [5]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.2; xy[1]=-50.; xy[2]=.2; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=Int_t(fgkNresYsegm*5.); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*5.); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer6")) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=Int_t(fgkNresYsegm*5.5); for(n=0; n<fgkNresYsegm/2; n++) selection[n]=selStart+n;
+    selStart=Int_t(fgkNresYsegm[fgSegmentLevel]*5.5); for(n=0; n<fgkNresYsegm[fgSegmentLevel]/2; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 0, 1, n, selection, "Layer6")) break;
     return kTRUE;
   case 27: //kMCtrack [y pulls] 
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-.5; xy[3] = 5.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-.5; xy[3] = 5.5;
     ((TVirtualPad*)l->At(0))->cd();
     selStart=0; for(n=0; n<6; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrack, 1, 1, n, selection)) break;
@@ -1612,19 +1623,19 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-1000.; xy[2]=.25; xy[3] =3000.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackIn, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(&xy[0], kMCtrackIn, 0, 1, n, selection)) break;
     return kTRUE;
   case 38: // kMCtrackIn [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.25; xy[1]=-1000.; xy[2]=.25; xy[3] =3000.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackIn, 0, 1, n, selection)) break;
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-.5; xy[3] = 2.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-.5; xy[3] = 2.5;
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphArray(xy, kMCtrackIn, 1, 1)) break;
     return kTRUE;
@@ -1697,19 +1708,19 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=0; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=0; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackOut, 0, 1, n, selection)) break;
     ((TVirtualPad*)l->At(1))->cd();
-    selStart=fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(&xy[0], kMCtrackOut, 0, 1, n, selection)) break;
     return kTRUE;
   case 46: // kMCtrackOut [y]
     gPad->Divide(2, 1, 1.e-5, 1.e-5); l=gPad->GetListOfPrimitives(); 
     xy[0]=-.3; xy[1]=-50.; xy[2]=.3; xy[3] =400.;
     ((TVirtualPad*)l->At(0))->cd();
-    selStart=2*fgkNresYsegm/3; for(n=0; n<fgkNresYsegm/3; n++) selection[n]=selStart+n;
+    selStart=2*fgkNresYsegm[fgSegmentLevel]/3; for(n=0; n<fgkNresYsegm[fgSegmentLevel]/3; n++) selection[n]=selStart+n;
     if(!GetGraphArray(xy, kMCtrackOut, 0, 1, n, selection)) break;
-    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm-.5; xy[3] = 2.5;
+    xy[0] = -.5; xy[1] = -0.5; xy[2] = fgkNresYsegm[fgSegmentLevel]-.5; xy[3] = 2.5;
     ((TVirtualPad*)l->At(1))->cd();
     if(!GetGraphArray(xy, kMCtrackOut, 1, 1)) break;
     return kTRUE;
@@ -1842,8 +1853,8 @@ Bool_t AliTRDresolution::PostProcess()
             gm->SetName(Form("m_%d%02d%02d", ig, ic, is));
             // this is important for labels in the legend 
             if(ic==0) {
-              gs->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm));
-              gm->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm));
+              gs->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm[fgSegmentLevel]));
+              gm->SetTitle(Form("%s %02d", fgkResYsegmName, is%fgkNresYsegm[fgSegmentLevel]));
             } else if(ic==1) {
               gs->SetTitle(Form("%s Ly[%d]", is%2 ?"z":"y", is/2));
               gm->SetTitle(Form("%s Ly[%d]", is%2?"z":"y", is/2));
@@ -2027,25 +2038,18 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name)
   arr->SetName(name); arr->SetOwner();
   TH1 *h(NULL); char hname[100], htitle[300];
 
-  const Int_t kNro(fgkNresYsegm), kNphi(48), kNdy(60);
-  Float_t Phi=-.48, Dy=-.15, RO=-0.5;
-  Float_t binsPhi[kNphi+1], binsDy[kNdy+1], binsRO[2*kNro+1];
-  for(Int_t i=0; i<kNphi+1; i++,Phi+=.02) binsPhi[i]=Phi;
-  for(Int_t i=0; i<kNdy+1; i++,Dy+=5.e-3) binsDy[i]=Dy;
-  for(Int_t i=0;i<2*kNro+1; i++,RO+=1.) binsRO[i]=RO;
-
   // tracklet resolution/pull in y direction
   sprintf(hname, "%s_%s_Y", GetNameId(), name);
-  sprintf(htitle, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];sector", GetNameId(), name);
+  sprintf(htitle, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, fgkResYsegmName[fgSegmentLevel]);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
-                 kNphi, binsPhi, kNdy, binsDy, 2*kNro, binsRO);
+                 48, -.48, .48, 60, -.15, .15, 2*fgkNresYsegm[fgSegmentLevel], -0.5, 2*fgkNresYsegm[fgSegmentLevel]-0.5);
   } else h->Reset();
   arr->AddAt(h, 0);
   sprintf(hname, "%s_%s_YZpull", GetNameId(), name);
-  sprintf(htitle, "YZ pull for \"%s\" @ %s;sector;#Delta y  / #sigma_{y};#Delta z  / #sigma_{z}", GetNameId(), name);
+  sprintf(htitle, "YZ pull for \"%s\" @ %s;%s;#Delta y  / #sigma_{y};#Delta z  / #sigma_{z}", GetNameId(), name, fgkResYsegmName[fgSegmentLevel]);
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, kNro, -0.5, kNro-0.5, 100, -4.5, 4.5, 100, -4.5, 4.5);
+    h = new TH3S(hname, htitle, fgkNresYsegm[fgSegmentLevel], -0.5, fgkNresYsegm[fgSegmentLevel]-0.5, 100, -4.5, 4.5, 100, -4.5, 4.5);
   } else h->Reset();
   arr->AddAt(h, 1);
 
