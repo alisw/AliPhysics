@@ -107,8 +107,6 @@
  * set from <tt>$ALICE_ROOT</tt>.
  */
 
-#include <AliHLTDataTypes.h>
-
 /////////////////////////////////////////////////////////////////////////////////////
 //
 // AliHLT external interface functions

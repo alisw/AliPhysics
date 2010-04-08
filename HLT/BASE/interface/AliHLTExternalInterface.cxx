@@ -16,11 +16,12 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTExternalInterface.cxx
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  Pure C interface to the AliRoot HLT analysis framework
-*/
+//  @file   AliHLTExternalInterface.cxx
+//  @author Matthias Richter, Timm Steinbeck
+//  @date   
+//  @brief  Pure C interface to the AliRoot HLT analysis framework
+//          The C interface is used from external applications like the HLT
+//          online framework
 
 #include "AliHLTExternalInterface.h"
 #include "AliHLTComponentHandler.h"
@@ -40,6 +41,7 @@ static char* gRunType=NULL;
 
 int AliHLTAnalysisInitSystem( unsigned long version, AliHLTAnalysisEnvironment* externalEnv, unsigned long runNo, const char* runType )
 {
+  // init the HLT system
   if ( gComponentHandler ) {
     return EINPROGRESS;
   }
@@ -90,6 +92,7 @@ int AliHLTAnalysisInitSystem( unsigned long version, AliHLTAnalysisEnvironment* 
 
 int AliHLTAnalysisDeinitSystem()
 {
+  // De-init the HLT system and clean-up internal memory
   if (gComponentHandler) delete gComponentHandler;
   gComponentHandler = NULL;
 
@@ -103,6 +106,7 @@ int AliHLTAnalysisDeinitSystem()
 
 int AliHLTAnalysisLoadLibrary( const char* libraryPath )
 {
+  // load a component library
   if ( !gComponentHandler )
     return ENXIO;
   return gComponentHandler->LoadLibrary( libraryPath );
@@ -110,6 +114,7 @@ int AliHLTAnalysisLoadLibrary( const char* libraryPath )
 
 int AliHLTAnalysisUnloadLibrary( const char* /*libraryPath*/ )
 {
+  // unload a component library
   if ( !gComponentHandler )
     return ENXIO;
   // Matthias 26.10.2007
@@ -127,6 +132,7 @@ int AliHLTAnalysisUnloadLibrary( const char* /*libraryPath*/ )
 
 int AliHLTAnalysisCreateComponent( const char* componentType, void* environParam, int argc, const char** argv, AliHLTComponentHandle* handle, const char* description )
 {
+  // create a component
   if ( !gComponentHandler ) return ENXIO;
   if (!handle) return EINVAL;
 
@@ -151,6 +157,7 @@ int AliHLTAnalysisCreateComponent( const char* componentType, void* environParam
 
 int AliHLTAnalysisDestroyComponent( AliHLTComponentHandle handle )
 {
+  // destroy a component
   if ( !handle )
     return ENOENT;
   
@@ -166,6 +173,7 @@ int AliHLTAnalysisProcessEvent( AliHLTComponentHandle handle, const AliHLTCompon
                            AliHLTComponentBlockData** outputBlocks,
                            AliHLTComponentEventDoneData** edd )
 {
+  // process one event
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
   if (!comp) return ENXIO;
@@ -182,6 +190,7 @@ int AliHLTAnalysisProcessEvent( AliHLTComponentHandle handle, const AliHLTCompon
 
 int AliHLTAnalysisGetOutputDataType( AliHLTComponentHandle handle, AliHLTComponentDataType* dataType )
 {
+  // get output data type of a component
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
   if (!comp) return ENXIO;
@@ -191,6 +200,7 @@ int AliHLTAnalysisGetOutputDataType( AliHLTComponentHandle handle, AliHLTCompone
 
 int AliHLTAnalysisGetOutputSize( AliHLTComponentHandle handle, unsigned long* constEventBase, unsigned long* constBlockBase, double* inputBlockMultiplier )
 {
+  // get output data size of a component
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
   if (!comp) return ENXIO;
@@ -205,7 +215,7 @@ struct AliHLTAnalysisInterfaceCall {
   void* fCall;
 };
 
-AliHLTAnalysisInterfaceCall gSignatures[]={
+const AliHLTAnalysisInterfaceCall gAliHLTInterfaceCallSignatures[]={
   //int AliHLTAnalysisInitSystem( unsigned long version, AliHLTAnalysisEnvironment* externalEnv, unsigned long runNo, const char* runType )
   {"int AliHLTAnalysisInitSystem(unsigned long,AliHLTAnalysisEnvironment*,unsigned long,const char*)", (void*)AliHLTAnalysisInitSystem},
 
@@ -238,10 +248,12 @@ AliHLTAnalysisInterfaceCall gSignatures[]={
 
 void* AliHLTAnalysisGetInterfaceCall(const char* signature)
 {
+  // get function pointer of an interface call
+  // the function pointer is selected according to the requested function signature
   if (!signature) return NULL;
-  for (int i=0; gSignatures[i].fSignature!=NULL; i++) {
-    if (strcmp(gSignatures[i].fSignature, signature)==0) {
-      return gSignatures[i].fCall;
+  for (int i=0; gAliHLTInterfaceCallSignatures[i].fSignature!=NULL; i++) {
+    if (strcmp(gAliHLTInterfaceCallSignatures[i].fSignature, signature)==0) {
+      return gAliHLTInterfaceCallSignatures[i].fCall;
     }
   }
   return NULL;
@@ -254,6 +266,7 @@ void* AliHLTAnalysisGetInterfaceCall(const char* signature)
 
 int AliHLTSystemSetOptions(AliHLTSystem* pInstance, const char* options)
 {
+  // deprecated helper function
   int iResult=0;
   if (pInstance) {
     AliHLTSystem* pSystem=reinterpret_cast<AliHLTSystem*>(pInstance);
@@ -270,6 +283,7 @@ int AliHLTSystemSetOptions(AliHLTSystem* pInstance, const char* options)
 
 int AliHLTSystemProcessHLTOUT(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliESDEvent* esd)
 {
+  // deprecated helper function
   int iResult=0;
   if (pInstance) {
     AliHLTSystem* pSystem=reinterpret_cast<AliHLTSystem*>(pInstance);
