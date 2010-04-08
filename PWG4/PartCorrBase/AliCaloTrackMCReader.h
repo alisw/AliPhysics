@@ -33,9 +33,12 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   
   AliCaloTrackMCReader() ; // ctor
   AliCaloTrackMCReader(const AliCaloTrackMCReader & g) ; // cpy ctor
-  AliCaloTrackMCReader & operator = (const AliCaloTrackMCReader & g) ;//cpy assignment
   virtual ~AliCaloTrackMCReader() ;//virtual dtor
-    
+
+ private :	
+  AliCaloTrackMCReader & operator = (const AliCaloTrackMCReader & g) ;//cpy assignment
+
+public:
   void InitParameters();
   
   void Print(const Option_t * opt) const; 

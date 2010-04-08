@@ -76,29 +76,29 @@ AliCaloTrackMCReader::AliCaloTrackMCReader(const AliCaloTrackMCReader & g) :
 }
 
 //_________________________________________________________________________
-AliCaloTrackMCReader & AliCaloTrackMCReader::operator = (const AliCaloTrackMCReader & source)
-{
-  // assignment operator
-
-  if(&source == this) return *this;
-
-  fDecayPi0 = source.fDecayPi0; 
-
-  delete fChargedParticlesArray;
-  fChargedParticlesArray = source.fChargedParticlesArray?new TArrayI(*source.fChargedParticlesArray):0x0;
-
-  delete fNeutralParticlesArray;
-  fNeutralParticlesArray = source.fNeutralParticlesArray?new TArrayI(*source.fNeutralParticlesArray):0x0;
-
-  delete fStatusArray;
-  fStatusArray = source.fStatusArray?new TArrayI(*source.fStatusArray):0x0;
- 
-  fKeepAllStatus = source.fKeepAllStatus ;
-
-  return *this;
-
-}
-
+//AliCaloTrackMCReader & AliCaloTrackMCReader::operator = (const AliCaloTrackMCReader & source)
+//{
+//  // assignment operator
+//
+//  if(&source == this) return *this;
+//
+//  fDecayPi0 = source.fDecayPi0; 
+//
+//  delete fChargedParticlesArray;
+//  fChargedParticlesArray = source.fChargedParticlesArray?new TArrayI(*source.fChargedParticlesArray):0x0;
+//
+//  delete fNeutralParticlesArray;
+//  fNeutralParticlesArray = source.fNeutralParticlesArray?new TArrayI(*source.fNeutralParticlesArray):0x0;
+//
+//  delete fStatusArray;
+//  fStatusArray = source.fStatusArray?new TArrayI(*source.fStatusArray):0x0;
+// 
+//  fKeepAllStatus = source.fKeepAllStatus ;
+//
+//  return *this;
+//
+//}
+//
 //_________________________________
 AliCaloTrackMCReader::~AliCaloTrackMCReader() {
   //Dtor
