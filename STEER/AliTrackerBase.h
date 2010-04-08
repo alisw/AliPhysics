@@ -8,8 +8,7 @@
 //-------------------------------------------------------------------------
 //                          class AliTrackerBase
 //        This is the base tracker class, independent on STEER 
-//       Origin: Iouri Belikov, IPHC, iouri.belikov@in2p3.fr 
-//    Most of the functions implemented by Marian.Ivanov@cern.ch
+//                      Origin: Marian.Ivanov@cern.ch
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
@@ -18,6 +17,8 @@
 #include "AliMagF.h"
 
 class AliExternalTrackParam;
+class AliTrackPoint;
+class AliTrackPointArray;
 
 class AliTrackerBase : public TObject {
 public:
@@ -51,7 +52,27 @@ public:
   static Double_t GetBz(const Double_t *r);
   static void GetBxByBz(const Double_t r[3], Double_t b[3]);
   static Double_t GetBz();
-  static Bool_t UniformField(); 
+  static Bool_t UniformField();
+
+
+  static Double_t MakeC(Double_t x1,Double_t y1,
+                        Double_t x2,Double_t y2,
+                        Double_t x3,Double_t y3);
+  static Double_t MakeSnp(Double_t x1,Double_t y1,
+                        Double_t x2,Double_t y2,
+                        Double_t x3,Double_t y3);
+  static Double_t MakeTgl(Double_t x1,Double_t y1,
+                        Double_t x2,Double_t y2,
+                        Double_t z1,Double_t z2);
+  static Double_t MakeTgl(Double_t x1,Double_t y1,
+                        Double_t x2,Double_t y2,
+                        Double_t z1,Double_t z2,Double_t c);
+  static AliExternalTrackParam *MakeSeed(AliTrackPoint &point0, 
+                                         AliTrackPoint &point1, 
+                                         AliTrackPoint &point2);
+  static Double_t FitTrack(AliExternalTrackParam *trackParam, 
+                           AliTrackPointArray *pointArray, 
+                           Double_t mass, Double_t maxStep);  
   //
 
 protected:

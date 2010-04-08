@@ -17,8 +17,8 @@
 
 //-------------------------------------------------------------------------
 //               Implementation of the AliTrackerBase class
-//  that is the base for AliTPCtracker, AliITStrackerV2 and AliTRDtracker    
-//        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+//                that is the base for the AliTracker class    
+//                     Origin: Marian.Ivanov@cern.ch
 //-------------------------------------------------------------------------
 #include <TClass.h>
 #include <TMath.h>
@@ -27,6 +27,7 @@
 #include "AliLog.h"
 #include "AliTrackerBase.h"
 #include "AliExternalTrackParam.h"
+#include "AliTrackPointArray.h"
 
 extern TGeoManager *gGeoManager;
 
@@ -383,4 +384,224 @@ Double_t AliTrackerBase::GetTrackPredictedChi2(AliExternalTrackParam *track,
   chi2=track->GetPredictedChi2(backup);
 
   return chi2;
+}
+
+
+
+
+Double_t AliTrackerBase::MakeC(Double_t x1,Double_t y1,
+                   Double_t x2,Double_t y2,
+                   Double_t x3,Double_t y3)
+{
+  //-----------------------------------------------------------------
+  // Initial approximation of the track curvature
+  //-----------------------------------------------------------------
+  x3 -=x1;
+  x2 -=x1;
+  y3 -=y1;
+  y2 -=y1;
+  //  
+  Double_t det = x3*y2-x2*y3;
+  if (TMath::Abs(det)<1e-10) {
+    return 0;
+  }
+  //
+  Double_t u = 0.5* (x2*(x2-x3)+y2*(y2-y3))/det;
+  Double_t x0 = x3*0.5-y3*u;
+  Double_t y0 = y3*0.5+x3*u;
+  Double_t c2 = 1/TMath::Sqrt(x0*x0+y0*y0);
+  if (det>0) c2*=-1;
+  return c2;
+}
+
+Double_t AliTrackerBase::MakeSnp(Double_t x1,Double_t y1,
+                   Double_t x2,Double_t y2,
+                   Double_t x3,Double_t y3)
+{
+  //-----------------------------------------------------------------
+  // Initial approximation of the track snp
+  //-----------------------------------------------------------------
+  x3 -=x1;
+  x2 -=x1;
+  y3 -=y1;
+  y2 -=y1;
+  //  
+  Double_t det = x3*y2-x2*y3;
+  if (TMath::Abs(det)<1e-10) {
+    return 0;
+  }
+  //
+  Double_t u = 0.5* (x2*(x2-x3)+y2*(y2-y3))/det;
+  Double_t x0 = x3*0.5-y3*u; 
+  Double_t y0 = y3*0.5+x3*u;
+  Double_t c2 = 1./TMath::Sqrt(x0*x0+y0*y0);
+  x0*=c2;
+  x0=TMath::Abs(x0);
+  if (y2*x2<0.) x0*=-1;
+  return x0;
+}
+
+Double_t AliTrackerBase::MakeTgl(Double_t x1,Double_t y1,
+                   Double_t x2,Double_t y2,
+                   Double_t z1,Double_t z2, Double_t c)
+{
+  //-----------------------------------------------------------------
+  // Initial approximation of the tangent of the track dip angle
+  //-----------------------------------------------------------------
+  //
+  x2-=x1;
+  y2-=y1;
+  z2-=z1;
+  Double_t d  =  TMath::Sqrt(x2*x2+y2*y2);  // distance  straight line
+  if (TMath::Abs(d*c*0.5)>1) return 0;
+  Double_t   angle2    = TMath::ASin(d*c*0.5); 
+  angle2  = z2*TMath::Abs(c/(angle2*2.));
+  return angle2;
+}
+
+
+Double_t AliTrackerBase::MakeTgl(Double_t x1,Double_t y1, 
+                   Double_t x2,Double_t y2,
+                   Double_t z1,Double_t z2) 
+{
+  //-----------------------------------------------------------------
+  // Initial approximation of the tangent of the track dip angle
+  //-----------------------------------------------------------------
+  return (z1 - z2)/sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+}
+
+
+AliExternalTrackParam * AliTrackerBase::MakeSeed( AliTrackPoint &point0, AliTrackPoint &point1, AliTrackPoint &point2){
+  //
+  // Make Seed  - AliExternalTrackParam from input 3 points   
+  // returning seed in local frame of point0
+  //
+  Double_t xyz0[3]={0,0,0};
+  Double_t xyz1[3]={0,0,0};
+  Double_t xyz2[3]={0,0,0};
+  Double_t alpha=point0.GetAngle();
+  Double_t xyz[3]={point0.GetX(),point0.GetY(),point0.GetZ()};
+  Double_t bxyz[3]; GetBxByBz(xyz,bxyz); 
+  Double_t bz = bxyz[2];
+  //
+  // get points in frame of point 0
+  //
+  AliTrackPoint p0r = point0.Rotate(alpha);
+  AliTrackPoint p1r = point1.Rotate(alpha);
+  AliTrackPoint p2r = point2.Rotate(alpha);
+  xyz0[0]=p0r.GetX();
+  xyz0[1]=p0r.GetY();
+  xyz0[2]=p0r.GetZ();
+  xyz1[0]=p1r.GetX();
+  xyz1[1]=p1r.GetY();
+  xyz1[2]=p1r.GetZ();
+  xyz2[0]=p2r.GetX();
+  xyz2[1]=p2r.GetY();
+  xyz2[2]=p2r.GetZ();
+  //
+  // make covariance estimate
+  //  
+  Double_t covar[15];
+  Double_t param[5]={0,0,0,0,0};
+  for (Int_t m=0; m<15; m++) covar[m]=0;
+  //
+  // calculate intitial param
+  param[0]=xyz0[1];              
+  param[1]=xyz0[2];
+  param[2]=MakeSnp(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz2[0],xyz2[1]);
+  param[4]=MakeC(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz2[0],xyz2[1]);
+  param[3]=MakeTgl(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz0[2],xyz1[2],param[4]);
+
+  //covariance matrix - only diagonal elements
+  //Double_t dist=p0r.GetX()-p2r.GetX();
+  Double_t deltaP=0;
+  covar[0]= p0r.GetCov()[3];
+  covar[2]= p0r.GetCov()[5];
+  //sigma snp
+  deltaP= (MakeSnp(xyz0[0],xyz0[1]+TMath::Sqrt(p0r.GetCov()[3]),xyz1[0],xyz1[1],xyz2[0],xyz2[1])-param[2]);
+  covar[5]+= deltaP*deltaP;
+  deltaP= (MakeSnp(xyz0[0],xyz0[1],xyz1[0],xyz1[1]+TMath::Sqrt(p1r.GetCov()[3]),xyz2[0],xyz2[1])-param[2]);
+  covar[5]+= deltaP*deltaP;
+  deltaP= (MakeSnp(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz2[0],xyz2[1]+TMath::Sqrt(p1r.GetCov()[3]))-param[2]);
+  covar[5]+= deltaP*deltaP;
+  //sigma tgl
+  //
+  deltaP=MakeTgl(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz0[2]+TMath::Sqrt(p1r.GetCov()[5]),xyz1[2],param[4])-param[3];
+  covar[9]+= deltaP*deltaP;
+  deltaP=MakeTgl(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz0[2],xyz1[2]+TMath::Sqrt(p1r.GetCov()[5]),param[4])-param[3];
+  covar[9]+= deltaP*deltaP;
+  //
+  
+  deltaP=MakeC(xyz0[0],xyz0[1]+TMath::Sqrt(p0r.GetCov()[3]),xyz1[0],xyz1[1],xyz2[0],xyz2[1])-param[4];
+  covar[14]+= deltaP*deltaP;
+  deltaP=MakeC(xyz0[0],xyz0[1],xyz1[0],xyz1[1]+TMath::Sqrt(p1r.GetCov()[3]),xyz2[0],xyz2[1])-param[4];
+  covar[14]+= deltaP*deltaP;
+  deltaP=MakeC(xyz0[0],xyz0[1],xyz1[0],xyz1[1],xyz2[0],xyz2[1]+TMath::Sqrt(p2r.GetCov()[3]))-param[4];
+  covar[14]+= deltaP*deltaP;
+  
+  covar[14]/=(bz*kB2C)*(bz*kB2C);
+  param[4]/=(bz*kB2C); // transform to 1/pt
+  AliExternalTrackParam * trackParam = new AliExternalTrackParam(xyz0[0],alpha,param, covar);
+  if (0) {
+    // consistency check  -to put warnings here 
+    // small disagrement once Track extrapolation used 
+    // nice agreement in seeds with MC track parameters - problem in extrapoloation - to be fixed
+    // to check later
+    Double_t y1,y2,z1,z2;
+    trackParam->GetYAt(xyz1[0],bz,y1);
+    trackParam->GetZAt(xyz1[0],bz,z1);
+    trackParam->GetYAt(xyz2[0],bz,y2);
+    trackParam->GetZAt(xyz2[0],bz,z2);
+    if (TMath::Abs(y1-xyz1[1])> TMath::Sqrt(p1r.GetCov()[3]*5)){
+      AliWarningClass("Seeding problem y1\n");
+    }
+    if (TMath::Abs(y2-xyz2[1])> TMath::Sqrt(p2r.GetCov()[3]*5)){
+      AliWarningClass("Seeding problem y2\n");
+    }
+    if (TMath::Abs(z1-xyz1[2])> TMath::Sqrt(p1r.GetCov()[5]*5)){
+      AliWarningClass("Seeding problem z1\n");
+    }
+  }
+  return trackParam;  
+} 
+
+Double_t  AliTrackerBase::FitTrack(AliExternalTrackParam * trackParam, AliTrackPointArray *pointArray, Double_t mass, Double_t maxStep){
+  //
+  // refit the track  - trackParam using the points in point array  
+  //
+  const Double_t kMaxSnp=0.99;
+  if (!trackParam) return 0;
+  Int_t  npoints=pointArray->GetNPoints();
+  AliTrackPoint point,point2;
+  Double_t pointPos[2]={0,0};
+  Double_t pointCov[3]={0,0,0};
+  // choose coordinate frame
+  // in standard way the coordinate frame should be changed point by point
+  // Some problems with rotation observed
+  // rotate method of AliExternalTrackParam should be revisited
+  pointArray->GetPoint(point,0);
+  pointArray->GetPoint(point2,npoints-1);
+  Double_t alpha=TMath::ATan2(point.GetY()-point2.GetY(), point.GetX()-point2.GetX());
+  
+  for (Int_t ipoint=npoints-1; ipoint>0; ipoint-=1){
+    pointArray->GetPoint(point,ipoint);
+    AliTrackPoint pr = point.Rotate(alpha);
+    trackParam->Rotate(alpha);
+    Bool_t status = PropagateTrackTo(trackParam,pr.GetX(),mass,maxStep,kFALSE,kMaxSnp);
+    if(!status){
+      AliWarningClass("Problem to propagate\n");    
+      break;
+    }
+    if (TMath::Abs(trackParam->GetSnp())>kMaxSnp){ 
+      AliWarningClass("sin(phi) > kMaxSnp \n");
+      break;
+    }
+    pointPos[0]=pr.GetY();//local y
+    pointPos[1]=pr.GetZ();//local z
+    pointCov[0]=pr.GetCov()[3];//simay^2
+    pointCov[1]=pr.GetCov()[4];//sigmayz
+    pointCov[2]=pr.GetCov()[5];//sigmaz^2
+    trackParam->Update(pointPos,pointCov); 
+  }
+  return 0;
 }
