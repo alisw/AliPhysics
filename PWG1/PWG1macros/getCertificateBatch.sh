@@ -1,5 +1,6 @@
-# Pseudo code to test the all components in the train and make report
-
+#
+# Pseudo code to test the all components in the train and make report on batch farm
+#
 
 #
 # 1. copy all task ans shell scirpts
@@ -12,13 +13,17 @@ cp /u/miranov/AliRoot/trunk/PWG1/PWG1macros/*.* .
 #
 bqueue=alice-t3_8h
 workdir=`pwd`
-for amacro in `ls  Add*.C`; do
-    mkdirhier $workdir/test$amacro
-    cd $workdir/test$amacro
-    cp $workdir/$amacro .
+rm -rf test*
+for fmacro in `cat ConfigTask.txt`; do
+    amacro=`basename $fmacro`
+    dname=`echo $workdir/test$amacro | sed s_.C__`
+    mkdirhier $dname
+    cd $dname
+    #
     cp $workdir/runPWG1Train.C .
     cp $workdir/*.sh  .
     cp $workdir/esd.list .
+    cp $workdir/ConfigTask.txt .
     echo bsub -q $bqueue getCertificate.sh $amacro
     bsub -q $bqueue getCertificate.sh $amacro esd.list
     cd $workdir
