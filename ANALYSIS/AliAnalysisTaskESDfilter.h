@@ -14,8 +14,7 @@
 #include "AliAODPid.h"
 class AliAnalysisFilter;
 class AliStack;
-
-
+class AliESDtrack;
 
 class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
 {
@@ -46,7 +45,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
     AliAnalysisTaskESDfilter& operator=(const AliAnalysisTaskESDfilter&);
     void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
-
+    Double_t Chi2perNDF(AliESDtrack* track);
+    
     // Filtering
     AliAnalysisFilter* fTrackFilter;      //  Track   Filter
     AliAnalysisFilter* fKinkFilter;       //  Kink    Filter

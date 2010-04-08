@@ -405,6 +405,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  selectInfo);
 	    aodTrack->SetTPCClusterMap(esdCascadeBach->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdCascadeBach->GetTPCSharedMap());
+	    aodTrack->SetChi2perNDF(Chi2perNDF(esdCascadeBach));
 	    aodTrackRefs->AddAt(aodTrack,idxBachFromCascade);
 	    
 	    if (esdCascadeBach->GetSign() > 0) nPosTracks++;
@@ -486,8 +487,9 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								selectInfo);
 		aodTrack->SetTPCClusterMap(esdCascadePos->GetTPCClusterMap());
 		aodTrack->SetTPCSharedMap (esdCascadePos->GetTPCSharedMap());
+		aodTrack->SetChi2perNDF(Chi2perNDF(esdCascadePos));
 		aodTrackRefs->AddAt(aodTrack,idxPosFromV0Dghter);
-		
+
 		if (esdCascadePos->GetSign() > 0) nPosTracks++;
 		aodTrack->ConvertAliPIDtoAODPID();
 		aodTrack->SetFlags(esdCascadePos->GetStatus());
@@ -530,6 +532,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 								selectInfo);
 		aodTrack->SetTPCClusterMap(esdCascadeNeg->GetTPCClusterMap());
 		aodTrack->SetTPCSharedMap (esdCascadeNeg->GetTPCSharedMap());
+		aodTrack->SetChi2perNDF(Chi2perNDF(esdCascadeNeg));
 		aodTrackRefs->AddAt(aodTrack,idxNegFromV0Dghter);
 		
 		if (esdCascadeNeg->GetSign() > 0) nPosTracks++;
@@ -746,6 +749,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  selectInfo);
 	    aodTrack->SetTPCClusterMap(esdV0Pos->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdV0Pos->GetTPCSharedMap());
+	    aodTrack->SetChi2perNDF(Chi2perNDF(esdV0Pos));
 	    aodTrackRefs->AddAt(aodTrack,posFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Pos->GetSign() > 0) nPosTracks++;
@@ -788,6 +792,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							  selectInfo);
 	    aodTrack->SetTPCClusterMap(esdV0Neg->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdV0Neg->GetTPCSharedMap());
+	    aodTrack->SetChi2perNDF(Chi2perNDF(esdV0Neg));
 	    
 	    aodTrackRefs->AddAt(aodTrack,negFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: neg track from original pt %.3f \n",aodTrack->Pt());
@@ -921,6 +926,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 							       selectInfo);
 			mother->SetTPCClusterMap(esdTrackM->GetTPCClusterMap());
 			mother->SetTPCSharedMap (esdTrackM->GetTPCSharedMap());
+			mother->SetChi2perNDF(Chi2perNDF(esdTrackM));
+
 			aodTrackRefs->AddAt(mother, imother);
 			
 			if (esdTrackM->GetSign() > 0) nPosTracks++;
@@ -1041,6 +1048,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 			     );
 	aodTrack->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
 	aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
+	aodTrack->SetChi2perNDF(Chi2perNDF(esdTrack));
+
 	aodTrackRefs->AddAt(aodTrack, nTrack);
 
 	
@@ -1295,6 +1304,20 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  aodpid->SetEMCALMomentum(emcmom);
 
 }
+
+Double_t  AliAnalysisTaskESDfilter::Chi2perNDF(AliESDtrack* track)
+{
+    // Calculate chi2 per ndf for track
+    Int_t  nClustersTPC = track->GetTPCNcls();
+
+    if ( nClustersTPC > 5) {
+       return (track->GetTPCchi2()/Float_t(nClustersTPC - 5));
+    } else {
+       return (-1.);
+    }
+ }
+
+
 
 void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 {
