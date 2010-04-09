@@ -3,19 +3,23 @@
  * Example macro to run locally an analysis task for comparing the offline
  * with the HLT esd tree.
  *
- * Its output is a root file containing the histograms defined in the
- * analysis task.
+ * The output is a root file containing the histograms defined in the
+ * analysis task. There is one output file per detector.
  *
  * Usage:
  * <pre>
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("phos")' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("phos tpc")' 2>&1 | tee task.log
  *   aliroot -b -q -l compare_HLT_offline_local.C 2>&1 | tee task.log
  * </pre>
+ *
+ * If no argument is specified, ALL detector tasks are run.
  *
  * @ingroup alihlt_tpc
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_local(){
+void compare_HLT_offline_local(const char* detectorTask="all"){
  
   TStopwatch timer;
   timer.Start();
@@ -35,11 +39,42 @@ void compare_HLT_offline_local(){
   gSystem->Load("libHLTbase.so");
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 
-
-  //-------------- Compile the analysis task ---------- //
   
-  gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
-  gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
+  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE;
+ 
+  TString allArgs = detectorTask;
+  TString argument;
+ 
+  TObjArray *pTokens = allArgs.Tokenize(" ");
+  if(pTokens){
+     for(int i=0; i<pTokens->GetEntries(); i++){
+         argument=((TObjString*)pTokens->At(i))->GetString();
+         if(argument.IsNull()) continue;
+
+         if(argument.CompareTo("tpc", TString::kIgnoreCase)==0){
+	    bTPC = kTRUE;
+	    continue;
+         } 
+       
+         if(argument.CompareTo("phos", TString::kIgnoreCase)==0){
+  	    bPHOS = kTRUE;
+	    continue;
+         }
+        
+	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
+	    bTPC  = kTRUE;
+	    bPHOS = kTRUE;
+	    bAll  = kTRUE;
+	    continue;
+         }
+         else break;
+    }
+  }
+    
+  
+  //-------------- Compile the analysis tasks ---------- //
+  if(bTPC)  gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
+  if(bPHOS) gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
 
   
   AliTagAnalysis *TagAna = new AliTagAnalysis("ESD"); 
@@ -85,22 +120,22 @@ void compare_HLT_offline_local(){
  
   //-------------- define the tasks ------------//
   
-  AliAnalysisTaskHLTTPC *task1 = new AliAnalysisTaskHLTTPC("offhlt_comparison_TPC");
-  mgr->AddTask(task1);
+  if(bTPC){ 
+     AliAnalysisTaskHLTTPC *taskTPC = new AliAnalysisTaskHLTTPC("offhlt_comparison_TPC");
+     mgr->AddTask(taskTPC);
+     AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
+     mgr->ConnectInput(taskTPC,0,mgr->GetCommonInputContainer());
+     //mgr->ConnectOutput (taskTPC, 0, mgr->GetCommonOutputContainer());
+     mgr->ConnectOutput(taskTPC,1,coutput1);
+  }
 
-  AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
-  mgr->AddTask(taskPHOS);
-
-  AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
-  AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
-  
-  mgr->ConnectInput(task1,0,mgr->GetCommonInputContainer());
-  //mgr->ConnectOutput (task1, 0, mgr->GetCommonOutputContainer());
-  mgr->ConnectOutput(task1,1,coutput1);
-  
-  mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskPHOS,1,coutput2);
-  
+  if(bPHOS){
+     AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
+     mgr->AddTask(taskPHOS);
+     AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
+     mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(taskPHOS,1,coutput2);
+  }
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
