@@ -27,8 +27,8 @@ class TVector3;
 class TEveVSDStructs;
 class TEveTrackPropagator;
 class TEveLine;
-class TEveVector;
 
+#include <TEveVector.h>
 #include <TEveVSDStructs.h>
 #include <TEvePointSet.h>
 #include <TPDGCode.h>
@@ -39,7 +39,6 @@ class AliEveCascadeList;
 #include "AliEveTrack.h"
 
 
-			 
 class AliEveCascade : public TEvePointSet
 {
   friend class AliEveCascadeList;
