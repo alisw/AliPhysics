@@ -69,6 +69,15 @@ AliHLTCaloHistoComponent::~AliHLTCaloHistoComponent()
 Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
   //see header file for documentation
   
+  TString allArgs = "";
+  
+  for ( int i = 0; i < argc; i++ ) {
+    if ( !allArgs.IsNull() ) allArgs += " ";
+    allArgs += argv[i];
+  }
+
+  HLTImportant("Configuring with string \"%s\"", allArgs.Data());
+
   
   fEmcalHistogramArray = new TObjArray();
   fEmcalHistogramArray->SetOwner(kTRUE);
@@ -86,19 +95,21 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
       doPhos = true;
       doEmcal = false;
     }
-    if(!strcmp("-emcal", argv[i])) {
+
+    else if(!strcmp("-emcal", argv[i])) {
       fDoEmcal = kTRUE;
       doEmcal = true;
       doPhos = false;
     }
-    if(!strcmp("-both", argv[i])) {
+
+    else if(!strcmp("-both", argv[i])) {
       fDoEmcal = kTRUE;
       fDoPhos = kTRUE;
       doEmcal = true;
       doPhos = true;
     }
     
-    if(!strcmp("-clusterenergy", argv[i])){
+    else if(!strcmp("-clusterenergy", argv[i])){
       if(doEmcal){
 	AliHLTCaloHistoClusterEnergy * histo = new AliHLTCaloHistoClusterEnergy("EMCAL");
 	fEmcalHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
@@ -111,7 +122,7 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
       }
     } 
 
-    if(!strcmp("-invariantmass", argv[i])){
+    else if(!strcmp("-invariantmass", argv[i])){
       if(doEmcal){
 	AliHLTCaloHistoInvMass * histo = new AliHLTCaloHistoInvMass("EMCAL");
 	fEmcalHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
@@ -124,7 +135,7 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
       }
     } 
    
-    if(!strcmp("-matchedtracks", argv[i])) {
+    else if(!strcmp("-matchedtracks", argv[i])) {
       if(doEmcal){
 	AliHLTCaloHistoMatchedTracks * histo = new AliHLTCaloHistoMatchedTracks("EMCAL");
 	fEmcalHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
@@ -135,7 +146,13 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
 	fPhosHistogramArray->AddLast(dynamic_cast<TObject*>(histo));
 	HLTImportant("Adding PHOS track-matching histograms");
       }
+    } 
+
+    else {
+      HLTError("Unknown argument \"%s\"", argv[i]);
     }
+
+
   }
     
   if(fDoPhos)
