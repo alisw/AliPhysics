@@ -26,7 +26,7 @@ AliAnalysisTaskCheckV0 *AddTaskCheckV0(Short_t lCollidingSystems  =0,  /*0 = pp,
    taskcheckv0->SetMaxPrimaryVtxPosZ(10.);                  // select |primvtx_z|<10
    taskcheckv0->SetMaxV0Rapidity(0.75);                     // select |y|<0.75
    taskcheckv0->SetMinV0Pt(0.2);                            // select pt>0.2
-   taskcheckv0->SetMaxV0Pt(3.5);                            // select pt<3.5
+   taskcheckv0->SetMaxV0Pt(10.0);                           // select pt<10.0
    taskcheckv0->SetMinDaughterTpcClusters(80);              // select TPC clusters>80
    mgr->AddTask(taskcheckv0);
 
