@@ -25,12 +25,14 @@ const Int_t multminESD = 1;  //used for CORRFW cuts
 const Int_t multmaxESD = 1000000; //used for CORRFW cuts 
 
 Bool_t requireVtxCuts = kTRUE;
-Double_t vertexXmin = -1.0;
-Double_t vertexXmax = 1.0;
-Double_t vertexYmin = -1.0;
-Double_t vertexYmax = 1.0;
-Double_t vertexZmin = -15.0; //-1.e99;
-Double_t vertexZmax = 15.0; //1.e99;
+const Double_t vertexXmin = -1.e99; 
+const Double_t vertexXmax = 1.e99;
+const Double_t vertexYmin = -1.e99;
+const Double_t vertexYmax = 1.e99;
+const Double_t vertexZmin = -1.e99; 
+const Double_t vertexZmax = 1.e99; 
+const Int_t vertexNContributorsmin = 1;
+const Int_t vertexNContributorsmax = 10000;
 
 //Bool_t UseMultCut = kFALSE;
 Bool_t UseMultCut = kTRUE;
@@ -48,6 +50,7 @@ const Double_t ptmaxRP = 10.0;
 const Double_t etaminRP  = -0.9;
 const Double_t etamaxRP  = 0.9;
 const Int_t    chargeRP = 1;  //not used
+const Bool_t   isChargedRP = kTRUE;
 
 //PID (on generated and reconstructed tracks)
 Bool_t UsePIDforRP = kFALSE;
@@ -57,7 +60,7 @@ const Int_t PdgRP = 211;
 //see /CORRFW/AliCFTrackQualityCuts class
 Bool_t UseTrackQualityforRP =  kTRUE;
 const Int_t    minClustersTpcRP = 80;           //default = -1; 
-const Double_t maxChi2PerClusterTpcRP = 3.5;    //default = 1.e+09;
+const Double_t maxChi2PerClusterTpcRP = 4.0;    //default = 1.e+09;
 const UShort_t minDedxClusterTpcRP = 0;
 const Int_t    minClustersItsRP = 2;            //panos
 const Double_t maxChi2PerClusterItsRP = 1.e+09; 
@@ -103,6 +106,7 @@ const Double_t ptmaxPOI = 10.0;
 const Double_t etaminPOI  = -0.9;
 const Double_t etamaxPOI  = 0.9;
 const Int_t    chargePOI = 1;  //not used
+const Bool_t   isChargedPOI = kTRUE;
 
 //PID (on generated and reconstructed tracks)
 Bool_t UsePIDforPOI = kFALSE;
@@ -112,7 +116,7 @@ const Int_t PdgPOI = 321;
 //see /CORRFW/AliCFTrackQualityCuts class
 Bool_t UseTrackQualityforPOI = kTRUE;
 const Int_t    minClustersTpcPOI = 80;
-const Double_t maxChi2PerClusterTpcPOI = 3.5;    
+const Double_t maxChi2PerClusterTpcPOI = 4.0;    
 const UShort_t minDedxClusterTpcPOI = 0;
 const Int_t    minClustersItsPOI = 2;
 const Double_t maxChi2PerClusterItsPOI = 1.e+09;
@@ -358,6 +362,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   recEventCuts->SetVertexXCut(vertexXmin, vertexXmax);
   recEventCuts->SetVertexYCut(vertexYmin, vertexYmax);
   recEventCuts->SetVertexZCut(vertexZmin, vertexZmax);
+  recEventCuts->SetVertexNContributors(vertexNContributorsmin,vertexNContributorsmax);
   if (QA) { 
     recEventCuts->SetQAOn(qaRP);
   }
@@ -368,6 +373,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   mcKineCutsRP->SetPtRange(ptminRP,ptmaxRP);
   mcKineCutsRP->SetEtaRange(etaminRP,etamaxRP);
   //mcKineCutsRP->SetChargeMC(chargeRP);
+  mcKineCutsRP->SetRequireIsCharged(isChargedRP);
   if (QA) { 
     mcKineCutsRP->SetQAOn(qaRP);
   }
@@ -376,6 +382,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   recKineCutsRP->SetPtRange(ptminRP,ptmaxRP);
   recKineCutsRP->SetEtaRange(etaminRP,etamaxRP);
   //recKineCutsRP->SetChargeRec(chargeRP);
+  recKineCutsRP->SetRequireIsCharged(isChargedRP);
   if (QA) { 
     recKineCutsRP->SetQAOn(qaRP);
   }
@@ -479,6 +486,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   mcKineCutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
   mcKineCutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
   //mcKineCutsPOI->SetChargeMC(chargePOI);
+  mcKineCutsPOI->SetRequireIsCharged(isChargedPOI);
   if (QA) { 
     mcKineCutsPOI->SetQAOn(qaPOI);
   }
@@ -487,6 +495,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   recKineCutsPOI->SetPtRange(ptminPOI,ptmaxPOI);
   recKineCutsPOI->SetEtaRange(etaminPOI,etamaxPOI);
   //recKineCutsPOI->SetChargeRec(chargePOI);
+  recKineCutsPOI->SetRequireIsCharged(isChargedPOI);
   if (QA) { 
     recKineCutsPOI->SetQAOn(qaPOI);
   }
@@ -596,15 +605,15 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   
   printf("CREATE ESD RECONSTRUCTION CUTS\n");
   TObjArray* recListRP = new TObjArray(0) ;
-  if (UseKineforRP)         recListRP->AddLast(recKineCutsRP); //cut on pt/eta/phi
-  if (UseTrackQualityforRP) recListRP->AddLast(recQualityCutsRP);
+  if (UseTrackQualityforRP) recListRP->AddLast(recQualityCutsRP);   //track quality
   if (UsePrimariesforRP)    recListRP->AddLast(recIsPrimaryCutsRP); //cut if it is a primary
-  
+  if (UseKineforRP)         recListRP->AddLast(recKineCutsRP);      //cut on pt/eta/phi  
+
   TObjArray* recListPOI = new TObjArray(0) ;
-  if (UseKineforPOI)         recListPOI->AddLast(recKineCutsPOI); //cut on pt/eta/phi
-  if (UseTrackQualityforPOI) recListPOI->AddLast(recQualityCutsPOI);
+  if (UseTrackQualityforPOI) recListPOI->AddLast(recQualityCutsPOI);   //track quality
   if (UsePrimariesforPOI)    recListPOI->AddLast(recIsPrimaryCutsPOI); //cut if it is a primary
-  
+  if (UseKineforPOI)         recListPOI->AddLast(recKineCutsPOI);      //cut on pt/eta/phi
+
   printf("CREATE ESD PID CUTS\n");
   TObjArray* fPIDCutListRP = new TObjArray(0) ;
   if(UsePIDforRP) {fPIDCutListRP->AddLast(cutPidRP);} //cut on ESD PID
