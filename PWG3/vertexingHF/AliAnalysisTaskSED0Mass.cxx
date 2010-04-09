@@ -491,157 +491,156 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 
   if(aod) ntracks=aod->GetNTracks();
 
-  //consider multiplicity <= 5 tracks only
-  if (ntracks<=5) {
 
-    //cout<<"ntracks = "<<ntracks<<endl;
-    //cout<<"Before loop"<<endl;
-    //loop on tracks in the event
-    for (Int_t k=0;k<ntracks;k++){
-      AliAODTrack* track=aod->GetTrack(k);
-      //cout<<"in loop"<<endl;
-      //check clusters of the tracks
-      Int_t nclsTot=0,nclsSPD=0;
+  //cout<<"ntracks = "<<ntracks<<endl;
+  //cout<<"Before loop"<<endl;
+  //loop on tracks in the event
+  for (Int_t k=0;k<ntracks;k++){
+    AliAODTrack* track=aod->GetTrack(k);
+    //cout<<"in loop"<<endl;
+    //check clusters of the tracks
+    Int_t nclsTot=0,nclsSPD=0;
     
-      for(Int_t l=0;l<6;l++) {
-	if(TESTBIT(track->GetITSClusterMap(),l)) {
-	  nclsTot++; if(l<2) nclsSPD++;
-	}
+    for(Int_t l=0;l<6;l++) {
+      if(TESTBIT(track->GetITSClusterMap(),l)) {
+	nclsTot++; if(l<2) nclsSPD++;
       }
-    
-      if (track->Pt()>0.3 &&
-	  track->GetStatus()&AliESDtrack::kTPCrefit &&
-	  track->GetStatus()&AliESDtrack::kITSrefit &&
-	  nclsTot>3 &&
-	  nclsSPD>0) {//fill hist good tracks
-	//cout<<"in if"<<endl;
-	((TH1F*)fChecks->FindObject("hptGoodTr"))->Fill(track->Pt());
-	isGoodTrack++;
-      }
-      //cout<<"isGoodTrack = "<<isGoodTrack<<endl;
-      ((TH1F*)fChecks->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
     }
-    //number of events with good vertex and at least 2 good tracks
-    if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
-
-
-    // loop over candidates
-    Int_t nInD0toKpi = inputArray->GetEntriesFast();
-    if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
-
-    for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
-      //Int_t nPosPairs=0, nNegPairs=0;
-      //cout<<"inside the loop"<<endl;
-      AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
-      Bool_t unsetvtx=kFALSE;
-      if(!d->GetOwnPrimaryVtx()) {
-	d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-	unsetvtx=kTRUE;
-      }
-  
-      //check reco daughter in acceptance
-      Double_t eta0=d->EtaProng(0);
-      Double_t eta1=d->EtaProng(1);
-      Bool_t prongsinacc=kFALSE;
-      if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) prongsinacc=kTRUE;
-
-      //cuts order
-      //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
-      //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
-      //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
-      //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
-      //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
-      //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
-      //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
-      //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
-      //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
-  
-      Int_t ptbin=0;
-      Bool_t isInRange=kFALSE;
-      Double_t pt = d->Pt(); //mother pt    
-      //cout<<"P_t = "<<pt<<endl;
-      if (pt>0. && pt<=1.) {
-	ptbin=1;
-	isInRange=kTRUE;
-	/*
-	//test d0 cut
-	fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.00025,0.7);
-	*/
-	//original
-	fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-      
-	//       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
-	//       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
-	//printf("I'm in the bin %d\n",ptbin);
-      
-      }
     
-      if(pt>1. && pt<=3.) {
-	if(pt>1. && pt<=2.) ptbin=2;  
-	if(pt>2. && pt<=3.) ptbin=3;  
-	isInRange=kTRUE;
-	/*
-	//test d0 cut
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,0.1,-0.00025,0.8);
-	*/
-	//original
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.6);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-      
-	//printf("I'm in the bin %d\n",ptbin);
-      }
- 
-      if(pt>3. && pt<=5.){
-	ptbin=4;  
-	isInRange=kTRUE;
-	/*
-	//test d0 cut
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
-	*/
-	//original
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-      
-	//printf("I'm in the bin %d\n",ptbin);
-      }
-      if(pt>5.&& pt<=10.){ //additional upper limit to compare with Correction Framework
-	ptbin=5;
-	isInRange=kTRUE;
-	/*
-	//test d0 cut
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.9);
-	*/
-	//original
-	fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
-	fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-      
-      }//if(pt>5)    if (pt>0. && pt<=1.) {
-      //printf("I'm in the bin %d\n",ptbin);
-      //old
-      //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
-
-      if(prongsinacc && isInRange){
-
-	if(!fCutOnDistr){
-	  AliAnalysisVertexingHF*  fdummy = new AliAnalysisVertexingHF();
-	  FillVarHists(ptbin,d,mcArray,fdummy,fDistr);
-	}else{
-
-	  if(fCutOnDistr==1) FillVarHists(ptbin,d,mcArray,fVHFPPR,fDistr);
-	  if(fCutOnDistr==2) FillVarHists(ptbin,d,mcArray,fVHFmycuts,fDistr);
-	}
-
-	FillMassHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
-	FillMassHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
-      }
-      if(unsetvtx) d->UnsetOwnPrimaryVtx();
-    } //end for prongs
+    if (track->Pt()>0.3 &&
+	track->GetStatus()&AliESDtrack::kTPCrefit &&
+	track->GetStatus()&AliESDtrack::kITSrefit &&
+	nclsTot>3 &&
+	nclsSPD>0) {//fill hist good tracks
+      //cout<<"in if"<<endl;
+      ((TH1F*)fChecks->FindObject("hptGoodTr"))->Fill(track->Pt());
+      isGoodTrack++;
+    }
+    //cout<<"isGoodTrack = "<<isGoodTrack<<endl;
+    ((TH1F*)fChecks->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
   }
+  //number of events with good vertex and at least 2 good tracks
+  if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
+  
+  
+  // loop over candidates
+  Int_t nInD0toKpi = inputArray->GetEntriesFast();
+  if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
+
+  AliAnalysisVertexingHF*  fdummy = 0;
+  
+  for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
+    //Int_t nPosPairs=0, nNegPairs=0;
+    //cout<<"inside the loop"<<endl;
+    AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
+    Bool_t unsetvtx=kFALSE;
+    if(!d->GetOwnPrimaryVtx()) {
+      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+      unsetvtx=kTRUE;
+    }
+    
+    //check reco daughter in acceptance
+    Double_t eta0=d->EtaProng(0);
+    Double_t eta1=d->EtaProng(1);
+    Bool_t prongsinacc=kFALSE;
+    if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) prongsinacc=kTRUE;
+    
+    //cuts order
+    //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
+    //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
+    //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
+    //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
+    //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
+    //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
+    //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
+    //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
+    //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
+    
+    Int_t ptbin=0;
+    Bool_t isInRange=kFALSE;
+    Double_t pt = d->Pt(); //mother pt    
+    //cout<<"P_t = "<<pt<<endl;
+    if (pt>0. && pt<=1.) {
+      ptbin=1;
+      isInRange=kTRUE;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.00025,0.7);
+      */
+      //original
+      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
+      
+      //       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
+      //       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
+      //printf("I'm in the bin %d\n",ptbin);
+      
+    }
+    
+    if(pt>1. && pt<=3.) {
+      if(pt>1. && pt<=2.) ptbin=2;  
+      if(pt>2. && pt<=3.) ptbin=3;  
+      isInRange=kTRUE;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,0.1,-0.00025,0.8);
+      */
+      //original
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.6);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
+      
+      //printf("I'm in the bin %d\n",ptbin);
+    }
+    
+    if(pt>3. && pt<=5.){
+      ptbin=4;  
+      isInRange=kTRUE;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
+      */
+      //original
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
+      
+      //printf("I'm in the bin %d\n",ptbin);
+    }
+    if(pt>5.&& pt<=10.){ //additional upper limit to compare with Correction Framework
+      ptbin=5;
+      isInRange=kTRUE;
+      /*
+      //test d0 cut
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.9);
+      */
+      //original
+      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
+      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
+      
+    }//if(pt>5)    if (pt>0. && pt<=1.) {
+    //printf("I'm in the bin %d\n",ptbin);
+    //old
+    //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
+    
+    if(prongsinacc && isInRange){
+
+      if(!fCutOnDistr){
+	FillVarHists(ptbin,d,mcArray,fdummy,fDistr);
+      }else{
+	
+	if(fCutOnDistr==1) FillVarHists(ptbin,d,mcArray,fVHFPPR,fDistr);
+	if(fCutOnDistr==2) FillVarHists(ptbin,d,mcArray,fVHFmycuts,fDistr);
+      }
+      
+      FillMassHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
+      FillMassHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
+    }
+    if(unsetvtx) d->UnsetOwnPrimaryVtx();
+  } //end for prongs
+
   // Post the data
   PostData(1,fOutputPPR);
   PostData(2,fOutputmycuts);
@@ -677,7 +676,9 @@ void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong 
   Bool_t isSelected=kFALSE;
   Int_t okD0=-1,okD0bar=-1;
 
-  if(fCutOnDistr && part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) isSelected=kTRUE;//selected  
+  if(fCutOnDistr && vhf) 
+    if(part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) 
+      isSelected=kTRUE;//selected  
 
   TString fillthispi="",fillthisK="",fillthis="";
 
