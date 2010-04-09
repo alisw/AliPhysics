@@ -37,6 +37,7 @@ Change all existing histograms as experts
 
 
 // --- AliRoot header files ---
+#include "AliDAQ.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
 #include "AliESDEvent.h"
@@ -376,6 +377,13 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
+
+  // make sure EMCal was readout during the event
+  Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
+  const UInt_t *detPattern = reader->GetDetectorPattern(); 
+  UInt_t emcInReadout = ( ((1 << emcID) & detPattern[0]) >> emcID);
+  if (! emcInReadout) return; // no point in looking at this event, if no EMCal data
+
   // setup
   rawReader->Reset() ;
   AliCaloRawStreamV3 in(rawReader,"EMCAL"); 
