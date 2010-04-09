@@ -414,9 +414,9 @@ void  AliEveITSScaledModule::DigitSelected(Int_t idx)
   // Override control-click from TEveQuadSet
   printf("AliEveITSScaledModule::DigitSelected "); Print();
 
-  DigitBase_t* qb  = GetDigit(idx);
-  TObject* obj  = qb->fId.GetObject();
-  ScaledDigit_t* sd = dynamic_cast<ScaledDigit_t*>(obj);
+  // DigitBase_t *qb  = GetDigit(idx);
+  TObject     *obj = GetId(idx);
+  ScaledDigit_t *sd = dynamic_cast<ScaledDigit_t*>(obj);
   TClonesArray *digits = fInfo->GetDigits(fID, fDetID);
   Int_t ndigits = digits->GetEntriesFast();
 

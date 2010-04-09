@@ -400,7 +400,7 @@ void AliEveITSModule::DigitSelected(Int_t idx)
   // Override secondary select (alt-click) from TEveQuadSet.
 
   DigitBase_t *qb  = GetDigit(idx);
-  TObject     *obj = qb->fId.GetObject();
+  TObject     *obj = GetId(idx);
   AliITSdigit *d   = dynamic_cast<AliITSdigit*>(obj);
   printf("AliEveITSModule::QuadSelected "); Print();
   printf("  idx=%d, value=%d, obj=0x%lx, digit=0x%lx\n",

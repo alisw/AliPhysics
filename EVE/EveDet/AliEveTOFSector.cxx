@@ -444,14 +444,9 @@ void AliEveTOFSector::DigitSelected(Int_t idx)
   // Override control-click from TEveQuadSet
   //
 
-  DigitBase_t* qb   = GetDigit(idx);
-  TObject* obj   = qb->fId.GetObject();
+  TObject* obj   = GetId(idx);
   AliTOFdigit* digs = dynamic_cast<AliTOFdigit*>(obj);
   // printf("AliEveTOFSector::QuadSelected "); Print();
-  /*
-  printf("  idx = %5i, value = %5d, obj = 0x%lx, digit = 0x%lx  ",
-	 idx, qb->fValue, (ULong_t)obj, (ULong_t)digs);
-  */
   if (digs)
     printf("\n Sector = %2i  Plate = %1i  Strip = %2i  PadZ = %1i PadX = %2i  ToT = %3i  Tof = %5i\n",
 	   fSector , digs->GetPlate(), digs->GetStrip(), digs->GetPadz(), digs->GetPadx(), digs->GetToT(), digs->GetTdc());
