@@ -82,7 +82,7 @@
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALTick.h"
+//#include "AliEMCALTick.h"
 #include "AliEMCALCalibData.h"
 #include "AliEMCALSimParam.h"
 #include "AliEMCALRawDigit.h"

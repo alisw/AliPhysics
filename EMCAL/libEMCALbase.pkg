@@ -6,9 +6,9 @@ AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
 AliEMCALRecPoint.cxx \
-AliEMCALClusterizer.cxx \
 AliEMCALHistoUtilities.cxx \
 AliEMCALSDigitizer.cxx \
+AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \
 AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
@@ -30,6 +30,7 @@ AliEMCALCalibReference.cxx \
 AliEMCALCalibMapAPD.cxx \
 SMcalib/AliEMCALCCUSBRawStream.cxx \
 AliEMCALRawDigit.cxx \
+AliEMCALTrigger.cxx \
 AliEMCALTriggerSTURawStream.cxx \
 AliEMCAL.cxx \
 AliEMCALRawUtils.cxx \

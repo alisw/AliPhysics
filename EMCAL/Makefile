@@ -10,12 +10,22 @@ ALICEINC      = -I.
 
 ### define include dir for local case and par case
 
+### in case of Root compilation for ANALYSIS, only load EMCALUtils
+### if modification of EMCAL libraries, include STEER and RAW
 ifneq ($(STEERBase_INCLUDE),)
   ALICEINC += -I../$(STEERBase_INCLUDE)
+else
+    ALICEINC += -I$(ALICE_ROOT)/include
+    ALICEINC += -I$(ALICE_ROOT)/STEER
+    ALICEINC += -I$(ALICE_ROOT)/RAW
+    ALICEINC += -I$(ALICE_ROOT)/VZERO
 endif
 
+### in modification of EMCAL libraries, and not modification of EMCALUtils, include EMCAL from aliroot 
 ifneq ($(EMCALUtils_INCLUDE),)
   ALICEINC += -I../$(EMCALUtils_INCLUDE)
+else
+ ALICEINC += -I$(ALICE_ROOT)/EMCAL
 endif
 
 ifneq ($(EMCALbase_INCLUDE),)
