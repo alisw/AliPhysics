@@ -26,8 +26,7 @@
 ClassImp(AliMagF)
 
 const Double_t AliMagF::fgkSol2DipZ    =  -700.;  
-const UShort_t AliMagF::fgkPolarityConvention = kConvLHC;
-
+const UShort_t AliMagF::fgkPolarityConvention = AliMagF::kConvLHC;
 /*
  Explanation for polarity conventions: these are the mapping between the
  current signs and main field components in L3 (Bz) and Dipole (Bx) (in Alice frame)
@@ -357,7 +356,7 @@ void AliMagF::MachineField(const Double_t *x, Double_t *b) const
 //_______________________________________________________________________
 void AliMagF::GetTPCInt(const Double_t *xyz, Double_t *b) const
 {
-  // Method to calculate the integral of magnetic integral from xyz to nearest cathode plane
+  // Method to calculate the integral_0^z of br,bt,bz 
   b[0]=b[1]=b[2]=0.0;
   if (fMeasuredMap) {
     fMeasuredMap->GetTPCInt(xyz,b);
@@ -366,14 +365,37 @@ void AliMagF::GetTPCInt(const Double_t *xyz, Double_t *b) const
 }
 
 //_______________________________________________________________________
+void AliMagF::GetTPCRatInt(const Double_t *xyz, Double_t *b) const
+{
+  // Method to calculate the integral_0^z of bx/bz,by/bz and (bx/bz)^2+(by/bz)^2
+  b[0]=b[1]=b[2]=0.0;
+  if (fMeasuredMap) {
+    fMeasuredMap->GetTPCRatInt(xyz,b);
+    b[2] /= 100;
+  }
+}
+
+//_______________________________________________________________________
 void AliMagF::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
 {
-  // Method to calculate the integral of magnetic integral from point to nearest cathode plane
+  // Method to calculate the integral_0^z of br,bt,bz 
   // in cylindrical coordiates ( -pi<phi<pi convention )
   b[0]=b[1]=b[2]=0.0;
   if (fMeasuredMap) {
     fMeasuredMap->GetTPCIntCyl(rphiz,b);
     for (int i=3;i--;) b[i] *= fFactorSol;
+  }
+}
+
+//_______________________________________________________________________
+void AliMagF::GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const
+{
+  // Method to calculate the integral_0^z of bx/bz,by/bz and (bx/bz)^2+(by/bz)^2
+  // in cylindrical coordiates ( -pi<phi<pi convention )
+  b[0]=b[1]=b[2]=0.0;
+  if (fMeasuredMap) {
+    fMeasuredMap->GetTPCRatIntCyl(rphiz,b);
+    b[2] /= 100;
   }
 }
 

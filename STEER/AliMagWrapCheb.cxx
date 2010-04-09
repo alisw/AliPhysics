@@ -30,6 +30,10 @@ fNParamsSol(0),fNZSegSol(0),fNPSegSol(0),fNRSegSol(0),
   fSegZTPC(0),fSegPTPC(0),fSegRTPC(0),
   fBegSegPTPC(0),fNSegPTPC(0),fBegSegRTPC(0),fNSegRTPC(0),fSegIDTPC(0),fMinZTPC(1.e6),fMaxZTPC(-1.e6),fParamsTPC(0),fMaxRTPC(0),
 //
+  fNParamsTPCRat(0),fNZSegTPCRat(0),fNPSegTPCRat(0),fNRSegTPCRat(0),
+  fSegZTPCRat(0),fSegPTPCRat(0),fSegRTPCRat(0),
+  fBegSegPTPCRat(0),fNSegPTPCRat(0),fBegSegRTPCRat(0),fNSegRTPCRat(0),fSegIDTPCRat(0),fMinZTPCRat(1.e6),fMaxZTPCRat(-1.e6),fParamsTPCRat(0),fMaxRTPCRat(0),
+//
   fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
   fSegZDip(0),fSegYDip(0),fSegXDip(0),
   fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
@@ -48,6 +52,10 @@ AliMagWrapCheb::AliMagWrapCheb(const AliMagWrapCheb& src) :
   fNParamsTPC(0),fNZSegTPC(0),fNPSegTPC(0),fNRSegTPC(0),
   fSegZTPC(0),fSegPTPC(0),fSegRTPC(0),
   fBegSegPTPC(0),fNSegPTPC(0),fBegSegRTPC(0),fNSegRTPC(0),fSegIDTPC(0),fMinZTPC(1.e6),fMaxZTPC(-1.e6),fParamsTPC(0),fMaxRTPC(0),
+//
+  fNParamsTPCRat(0),fNZSegTPCRat(0),fNPSegTPCRat(0),fNRSegTPCRat(0),
+  fSegZTPCRat(0),fSegPTPCRat(0),fSegRTPCRat(0),
+  fBegSegPTPCRat(0),fNSegPTPCRat(0),fBegSegRTPCRat(0),fNSegRTPCRat(0),fSegIDTPCRat(0),fMinZTPCRat(1.e6),fMaxZTPCRat(-1.e6),fParamsTPCRat(0),fMaxRTPCRat(0),
 //
   fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
   fSegZDip(0),fSegYDip(0),fSegXDip(0),
@@ -103,6 +111,26 @@ void AliMagWrapCheb::CopyFrom(const AliMagWrapCheb& src)
     memcpy(fSegIDTPC  = new Int_t[fNRSegTPC], src.fSegIDTPC, sizeof(Int_t)*fNRSegTPC);
     fParamsTPC        = new TObjArray(fNParamsTPC);
     for (int i=0;i<fNParamsTPC;i++) fParamsTPC->AddAtAndExpand(new AliCheb3D(*src.GetParamTPCInt(i)),i);
+  }
+  //
+  fNParamsTPCRat    = src.fNParamsTPCRat;
+  fNZSegTPCRat      = src.fNZSegTPCRat;
+  fNPSegTPCRat      = src.fNPSegTPCRat;
+  fNRSegTPCRat      = src.fNRSegTPCRat;  
+  fMinZTPCRat       = src.fMinZTPCRat;
+  fMaxZTPCRat       = src.fMaxZTPCRat;
+  fMaxRTPCRat       = src.fMaxRTPCRat;
+  if (src.fNParamsTPCRat) {
+    memcpy(fSegZTPCRat   = new Float_t[fNZSegTPCRat], src.fSegZTPCRat, sizeof(Float_t)*fNZSegTPCRat);
+    memcpy(fSegPTPCRat   = new Float_t[fNPSegTPCRat], src.fSegPTPCRat, sizeof(Float_t)*fNPSegTPCRat);
+    memcpy(fSegRTPCRat   = new Float_t[fNRSegTPCRat], src.fSegRTPCRat, sizeof(Float_t)*fNRSegTPCRat);
+    memcpy(fBegSegPTPCRat= new Int_t[fNZSegTPCRat], src.fBegSegPTPCRat, sizeof(Int_t)*fNZSegTPCRat);
+    memcpy(fNSegPTPCRat  = new Int_t[fNZSegTPCRat], src.fNSegPTPCRat, sizeof(Int_t)*fNZSegTPCRat);
+    memcpy(fBegSegRTPCRat= new Int_t[fNPSegTPCRat], src.fBegSegRTPCRat, sizeof(Int_t)*fNPSegTPCRat);
+    memcpy(fNSegRTPCRat  = new Int_t[fNPSegTPCRat], src.fNSegRTPCRat, sizeof(Int_t)*fNPSegTPCRat);
+    memcpy(fSegIDTPCRat  = new Int_t[fNRSegTPCRat], src.fSegIDTPCRat, sizeof(Int_t)*fNRSegTPCRat);
+    fParamsTPCRat        = new TObjArray(fNParamsTPCRat);
+    for (int i=0;i<fNParamsTPCRat;i++) fParamsTPCRat->AddAtAndExpand(new AliCheb3D(*src.GetParamTPCRatInt(i)),i);
   }
   //
   fNParamsDip    = src.fNParamsDip;
@@ -173,6 +201,22 @@ void AliMagWrapCheb::Clear(const Option_t *)
   fMinZTPC = 1e6;
   fMaxZTPC = -1e6;
   fMaxRTPC = 0;
+  //
+  if (fNParamsTPCRat) {
+    delete   fParamsTPCRat;  fParamsTPCRat = 0;
+    delete[] fSegZTPCRat;    fSegZTPCRat   = 0;
+    delete[] fSegPTPCRat;    fSegPTPCRat   = 0;
+    delete[] fSegRTPCRat;    fSegRTPCRat   = 0;
+    delete[] fBegSegPTPCRat; fBegSegPTPCRat = 0;
+    delete[] fNSegPTPCRat;   fNSegPTPCRat   = 0;
+    delete[] fBegSegRTPCRat; fBegSegRTPCRat = 0;
+    delete[] fNSegRTPCRat;   fNSegRTPCRat   = 0;
+    delete[] fSegIDTPCRat;   fSegIDTPCRat   = 0;   
+  }
+  fNParamsTPCRat = fNZSegTPCRat = fNPSegTPCRat = fNRSegTPCRat = 0;
+  fMinZTPCRat = 1e6;
+  fMaxZTPCRat = -1e6;
+  fMaxRTPCRat = 0;
   //
   if (fNParamsDip) {
     delete   fParamsDip;  fParamsDip = 0;
@@ -262,6 +306,15 @@ void AliMagWrapCheb::Print(Option_t *) const
     for (int i=0;i<fNParamsTPC;i++) {
       printf("TPC%4d ",i);
       GetParamTPCInt(i)->Print();
+    }
+  }
+  //
+  printf("Segmentation for TPC field ratios integral (%+.2f<Z<%+.2f cm | R<%.2f cm)\n",fMinZTPCRat,fMaxZTPCRat,fMaxRTPCRat);
+  //
+  if (fParamsTPCRat) {
+    for (int i=0;i<fNParamsTPCRat;i++) {
+      printf("TPCRat%4d ",i);
+      GetParamTPCRatInt(i)->Print();
     }
   }
   //
@@ -371,6 +424,38 @@ Int_t AliMagWrapCheb::FindTPCSegment(const Double_t *rpz) const
   return fSegIDTPC[rid];
 }
 
+//__________________________________________________________________________________________________
+Int_t AliMagWrapCheb::FindTPCRatSegment(const Double_t *rpz) const 
+{
+  // find the segment containing point xyz. If it is outside find the closest segment 
+  if (!fNParamsTPCRat) return -1;
+  int rid,pid,zid = TMath::BinarySearch(fNZSegTPCRat,fSegZTPCRat,(Float_t)rpz[2]); // find zsegment
+  //
+  Bool_t reCheck = kFALSE;
+  while(1) {
+    int psegBeg = fBegSegPTPCRat[zid];
+    //
+    for (pid=0;pid<fNSegPTPCRat[zid];pid++) if (rpz[1]<fSegPTPCRat[psegBeg+pid]) break;
+    if ( --pid < 0 ) pid = 0;
+    pid +=  psegBeg;
+    //
+    int rsegBeg = fBegSegRTPCRat[pid];
+    for (rid=0;rid<fNSegRTPCRat[pid];rid++) if (rpz[0]<fSegRTPCRat[rsegBeg+rid]) break;
+    if ( --rid < 0) rid = 0;
+    rid +=  rsegBeg;
+    //
+    // to make sure that due to the precision problems we did not pick the next Zbin    
+    if (!reCheck && (rpz[2] - fSegZSol[zid] < 3.e-5) && zid &&
+	!GetParamSol(fSegIDSol[rid])->IsInside(rpz)) {  // check the previous Z bin
+      zid--;
+      reCheck = kTRUE;
+      continue;
+    } 
+    break;
+  }
+  return fSegIDTPCRat[rid];
+}
+
 
 //__________________________________________________________________________________________
 void AliMagWrapCheb::GetTPCInt(const Double_t *xyz, Double_t *b) const
@@ -388,6 +473,28 @@ void AliMagWrapCheb::GetTPCInt(const Double_t *xyz, Double_t *b) const
 #endif
   //
   GetTPCIntCyl(rphiz,b);
+  //
+  // convert field to cartesian system
+  CylToCartCylB(rphiz, b,b);
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::GetTPCRatInt(const Double_t *xyz, Double_t *b) const
+{
+  // compute TPCRat region field integral in cartesian coordinates.
+  // If point is outside of the parameterized region get it at closeset valid point
+  static Double_t rphiz[3];
+  //
+  // TPCRatInt region
+  // convert coordinates to cyl system
+  CartToCyl(xyz,rphiz);
+#ifndef _BRING_TO_BOUNDARY_
+  if ( (rphiz[2]>GetMaxZTPCRatInt()||rphiz[2]<GetMinZTPCRatInt()) ||
+       rphiz[0]>GetMaxRTPCRatInt()) {for (int i=3;i--;) b[i]=0; return;}
+#endif
+  //
+  GetTPCRatIntCyl(rphiz,b);
   //
   // convert field to cartesian system
   CylToCartCylB(rphiz, b,b);
@@ -436,7 +543,30 @@ void AliMagWrapCheb::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
     return;
   }
   AliCheb3D* par = GetParamTPCInt(id);
-  if (par->IsInside(rphiz)) {par->Eval(rphiz,b); return;}
+  if (par->IsInside(rphiz)) {
+    par->Eval(rphiz,b); 
+    return;
+  }
+  b[0] = b[1] = b[2] = 0;
+  return;
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const
+{
+  // compute field integral in TPCRat region in Cylindircal coordinates
+  // note: the check for the point being inside the parameterized region is done outside
+  int id = FindTPCRatSegment(rphiz);
+  if (id<0) {
+    b[0] = b[1] = b[2] = 0;
+    return;
+  }
+  AliCheb3D* par = GetParamTPCRatInt(id);
+  if (par->IsInside(rphiz)) {
+    par->Eval(rphiz,b); 
+    return;
+  }
   b[0] = b[1] = b[2] = 0;
   return;
   //
@@ -507,6 +637,27 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
     exit(1);
   }
   //
+  // TPCRatInt part     -----------------------------------------------------------
+  AliCheb3DCalc::ReadLine(buffs,stream);
+  if (!buffs.BeginsWith("START TPCRatINT")) {
+    Error("LoadData","Expected: \"START TPCRatINT\", found \"%s\"\nStop\n",buffs.Data());
+    exit(1);
+  }
+  AliCheb3DCalc::ReadLine(buffs,stream); // nparam
+  int nparTPCRatInt = buffs.Atoi(); 
+  //
+  for (int ip=0;ip<nparTPCRatInt;ip++) {
+    AliCheb3D* cheb = new AliCheb3D();
+    cheb->LoadData(stream);
+    AddParamTPCRatInt(cheb);
+  }
+  //
+  AliCheb3DCalc::ReadLine(buffs,stream);
+  if (!buffs.BeginsWith("END TPCRatINT")) {
+    Error("LoadData","Expected \"END TPCRatINT\", found \"%s\"\nStop\n",buffs.Data());
+    exit(1);
+  }
+  //
   // Dipole part    -----------------------------------------------------------
   AliCheb3DCalc::ReadLine(buffs,stream);
   if (!buffs.BeginsWith("START DIPOLE")) {
@@ -539,6 +690,7 @@ void AliMagWrapCheb::LoadData(const char* inpfile)
   BuildTableSol();
   BuildTableDip();
   BuildTableTPCInt();
+  BuildTableTPCRatInt();
   //
   printf("Loaded magnetic field \"%s\" from %s\n",GetName(),strf.Data());
   //
@@ -580,6 +732,18 @@ void AliMagWrapCheb::BuildTableTPCInt()
 	     &fSegIDTPC);
 }
 
+//__________________________________________________________________________________________
+void AliMagWrapCheb::BuildTableTPCRatInt()
+{
+  BuildTable(fNParamsTPCRat,fParamsTPCRat,
+	     fNZSegTPCRat,fNPSegTPCRat,fNRSegTPCRat,
+	     fMinZTPCRat,fMaxZTPCRat, 
+	     &fSegZTPCRat,&fSegPTPCRat,&fSegRTPCRat,
+	     &fBegSegPTPCRat,&fNSegPTPCRat,
+	     &fBegSegRTPCRat,&fNSegRTPCRat, 
+	     &fSegIDTPCRat);
+}
+
 #endif
 
 //_______________________________________________
@@ -594,6 +758,10 @@ AliMagWrapCheb::AliMagWrapCheb(const char* inputFile) :
   fNParamsTPC(0),fNZSegTPC(0),fNPSegTPC(0),fNRSegTPC(0),
   fSegZTPC(0),fSegPTPC(0),fSegRTPC(0),
   fBegSegPTPC(0),fNSegPTPC(0),fBegSegRTPC(0),fNSegRTPC(0),fSegIDTPC(0),fMinZTPC(1.e6),fMaxZTPC(-1.e6),fParamsTPC(0),fMaxRTPC(0),
+//
+  fNParamsTPCRat(0),fNZSegTPCRat(0),fNPSegTPCRat(0),fNRSegTPCRat(0),
+  fSegZTPCRat(0),fSegPTPCRat(0),fSegRTPCRat(0),
+  fBegSegPTPCRat(0),fNSegPTPCRat(0),fBegSegRTPCRat(0),fNSegRTPCRat(0),fSegIDTPCRat(0),fMinZTPCRat(1.e6),fMaxZTPCRat(-1.e6),fParamsTPCRat(0),fMaxRTPCRat(0),
 //
   fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
   fSegZDip(0),fSegYDip(0),fSegXDip(0),
@@ -631,6 +799,19 @@ void AliMagWrapCheb::AddParamTPCInt(const AliCheb3D* param)
 }
 
 //__________________________________________________________________________________________
+void AliMagWrapCheb::AddParamTPCRatInt(const AliCheb3D* param)
+{
+  // adds new parameterization piece for TPCRatInt
+  // NOTE: pieces must be added strictly in increasing R then increasing Z order
+  //
+  if (!fParamsTPCRat) fParamsTPCRat = new TObjArray();
+  fParamsTPCRat->Add( (AliCheb3D*)param);
+  fNParamsTPCRat++;
+  if (fMaxRTPCRat<param->GetBoundMax(0)) fMaxRTPCRat = param->GetBoundMax(0);
+  //
+}
+
+//__________________________________________________________________________________________
 void AliMagWrapCheb::AddParamDip(const AliCheb3D* param)
 {
   // adds new parameterization piece for Dipole
@@ -660,6 +841,28 @@ void AliMagWrapCheb::ResetTPCInt()
   fMinZTPC = 1e6;
   fMaxZTPC = -1e6;
   fMaxRTPC = 0;
+  //
+}
+
+//__________________________________________________________________________________________
+void AliMagWrapCheb::ResetTPCRatInt()
+{
+  // clean TPCRat field integral (used for update)
+  if (fNParamsTPCRat) {
+    delete   fParamsTPCRat;  fParamsTPCRat = 0;
+    delete[] fSegZTPCRat;    fSegZTPCRat   = 0;
+    delete[] fSegPTPCRat;    fSegPTPCRat   = 0;
+    delete[] fSegRTPCRat;    fSegRTPCRat   = 0;
+    delete[] fBegSegPTPCRat; fBegSegPTPCRat = 0;
+    delete[] fNSegPTPCRat;   fNSegPTPCRat   = 0;
+    delete[] fBegSegRTPCRat; fBegSegRTPCRat = 0;
+    delete[] fNSegRTPCRat;   fNSegRTPCRat   = 0;
+    delete[] fSegIDTPCRat;   fSegIDTPCRat   = 0;   
+  }
+  fNParamsTPCRat = fNZSegTPCRat = fNPSegTPCRat = fNRSegTPCRat = 0;
+  fMinZTPCRat = 1e6;
+  fMaxZTPCRat = -1e6;
+  fMaxRTPCRat = 0;
   //
 }
 
@@ -874,6 +1077,12 @@ void AliMagWrapCheb::SaveData(const char* outfile) const
   fprintf(stream,"START TPCINT\n#Number of pieces\n%d\n",fNParamsTPC);
   for (int ip=0;ip<fNParamsTPC;ip++) GetParamTPCInt(ip)->SaveData(stream);
   fprintf(stream,"#\nEND TPCINT\n");
+  //
+  // TPCRatInt part ---------------------------------------------------------
+  fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
+  fprintf(stream,"START TPCRatINT\n#Number of pieces\n%d\n",fNParamsTPCRat);
+  for (int ip=0;ip<fNParamsTPCRat;ip++) GetParamTPCRatInt(ip)->SaveData(stream);
+  fprintf(stream,"#\nEND TPCRatINT\n");
   //
   // Dip part   ---------------------------------------------------------
   fprintf(stream,"START DIPOLE\n#Number of pieces\n%d\n",fNParamsDip);

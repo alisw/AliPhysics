@@ -32,9 +32,11 @@ class AliMagF : public TVirtualMagField
   virtual ~AliMagF();
   //
   virtual void Field(const Double_t *x, Double_t *b);
-  void       GetTPCInt(const Double_t *xyz, Double_t *b)        const;
-  void       GetTPCIntCyl(const Double_t *rphiz, Double_t *b)   const;
-  Double_t   GetBz(const Double_t *xyz)                         const;
+  void       GetTPCInt(const Double_t *xyz, Double_t *b)         const;
+  void       GetTPCRatInt(const Double_t *xyz, Double_t *b)      const;
+  void       GetTPCIntCyl(const Double_t *rphiz, Double_t *b)    const;
+  void       GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const;
+  Double_t   GetBz(const Double_t *xyz)                          const;
   //
   AliMagWrapCheb* GetMeasuredMap()                              const {return fMeasuredMap;}
   //

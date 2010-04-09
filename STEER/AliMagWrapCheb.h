@@ -63,6 +63,9 @@ class AliMagWrapCheb: public TNamed
   Int_t      GetNParamsTPCInt()                           const {return fNParamsTPC;}
   Int_t      GetNSegZTPCInt()                             const {return fNZSegTPC;}
   //
+  Int_t      GetNParamsTPCRatInt()                        const {return fNParamsTPCRat;}
+  Int_t      GetNSegZTPCRatInt()                          const {return fNZSegTPCRat;}
+  //
   Int_t      GetNParamsDip()                              const {return fNParamsDip;}
   Int_t      GetNSegZDip()                                const {return fNZSegDip;}
   //
@@ -80,7 +83,12 @@ class AliMagWrapCheb: public TNamed
   Float_t    GetMaxZTPCInt()                              const {return fMaxZTPC;}
   Float_t    GetMaxRTPCInt()                              const {return fMaxRTPC;}
   //
+  Float_t    GetMinZTPCRatInt()                           const {return fMinZTPCRat;}
+  Float_t    GetMaxZTPCRatInt()                           const {return fMaxZTPCRat;}
+  Float_t    GetMaxRTPCRatInt()                           const {return fMaxRTPCRat;}
+  //
   AliCheb3D* GetParamSol(Int_t ipar)                      const {return (AliCheb3D*)fParamsSol->UncheckedAt(ipar);}
+  AliCheb3D* GetParamTPCRatInt(Int_t ipar)                const {return (AliCheb3D*)fParamsTPCRat->UncheckedAt(ipar);}
   AliCheb3D* GetParamTPCInt(Int_t ipar)                   const {return (AliCheb3D*)fParamsTPC->UncheckedAt(ipar);}
   AliCheb3D* GetParamDip(Int_t ipar)                      const {return (AliCheb3D*)fParamsDip->UncheckedAt(ipar);}
   //
@@ -89,12 +97,15 @@ class AliMagWrapCheb: public TNamed
   virtual void Field(const Double_t *xyz, Double_t *b)    const;
   Double_t     GetBz(const Double_t *xyz)                 const;
   //
-  void FieldCyl(const Double_t *rphiz, Double_t  *b)      const;
+  void FieldCyl(const Double_t *rphiz, Double_t  *b)      const;  
   void GetTPCInt(const Double_t *xyz, Double_t *b)        const;
   void GetTPCIntCyl(const Double_t *rphiz, Double_t *b)   const;
+  void GetTPCRatInt(const Double_t *xyz, Double_t *b)     const;
+  void GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const;
   //
   Int_t       FindSolSegment(const Double_t *xyz)         const; 
   Int_t       FindTPCSegment(const Double_t *xyz)         const; 
+  Int_t       FindTPCRatSegment(const Double_t *xyz)      const; 
   Int_t       FindDipSegment(const Double_t *xyz)         const; 
   static void CylToCartCylB(const Double_t *rphiz, const Double_t *brphiz,Double_t *bxyz);
   static void CylToCartCartB(const Double_t *xyz,  const Double_t *brphiz,Double_t *bxyz);
@@ -113,6 +124,7 @@ class AliMagWrapCheb: public TNamed
   //
   void       AddParamSol(const AliCheb3D* param);
   void       AddParamTPCInt(const AliCheb3D* param);
+  void       AddParamTPCRatInt(const AliCheb3D* param);
   void       AddParamDip(const AliCheb3D* param);
   void       BuildTable(Int_t npar,TObjArray *parArr, Int_t &nZSeg, Int_t &nYSeg, Int_t &nXSeg,
 			Float_t &minZ,Float_t &maxZ,Float_t **segZ,Float_t **segY,Float_t **segX,
@@ -120,7 +132,9 @@ class AliMagWrapCheb: public TNamed
   void       BuildTableSol();
   void       BuildTableDip();
   void       BuildTableTPCInt();
+  void       BuildTableTPCRatInt();
   void       ResetTPCInt();
+  void       ResetTPCRatInt();
   //
   //
 #endif
@@ -165,6 +179,23 @@ class AliMagWrapCheb: public TNamed
   TObjArray* fParamsTPC;             // Parameterization pieces for TPCint field
   Float_t    fMaxRTPC;               // max raduis for Solenoid field integral in TPC
   //
+  Int_t      fNParamsTPCRat;         // Total number of parameterization pieces for tr.field to Bz integrals in TPC region 
+  Int_t      fNZSegTPCRat;           // number of distinct Z segments in TpcRatInt
+  Int_t      fNPSegTPCRat;           // number of distinct P segments in TpcRatInt
+  Int_t      fNRSegTPCRat;           // number of distinct R segments in TpcRatInt
+  Float_t*   fSegZTPCRat;            //[fNZSegTPCRat] coordinates of distinct Z segments in TpcRatInt
+  Float_t*   fSegPTPCRat;            //[fNPSegTPCRat] coordinated of P segments for each Zsegment in TpcRatInt
+  Float_t*   fSegRTPCRat;            //[fNRSegTPCRat] coordinated of R segments for each Psegment in TpcRatInt
+  Int_t*     fBegSegPTPCRat;         //[fNPSegTPCRat] beginning of P segments array for each Z segment
+  Int_t*     fNSegPTPCRat;           //[fNZSegTPCRat] number of P segments for each Z segment
+  Int_t*     fBegSegRTPCRat;         //[fNPSegTPCRat] beginning of R segments array for each P segment
+  Int_t*     fNSegRTPCRat;           //[fNPSegTPCRat] number of R segments for each P segment
+  Int_t*     fSegIDTPCRat;           //[fNRSegTPCRat] ID of the TpcRatInt parameterization for given RPZ segment
+  Float_t    fMinZTPCRat;            // Min Z of TpcRatInt parameterization
+  Float_t    fMaxZTPCRat;            // Max Z of TpcRatInt parameterization
+  TObjArray* fParamsTPCRat;          // Parameterization pieces for TpcRatInt field
+  Float_t    fMaxRTPCRat;            // max raduis for Solenoid field ratios integral in TPC 
+  //
   Int_t      fNParamsDip;            // Total number of parameterization pieces for dipole 
   Int_t      fNZSegDip;              // number of distinct Z segments in Dipole
   Int_t      fNYSegDip;              // number of distinct Y segments in Dipole
@@ -181,7 +212,7 @@ class AliMagWrapCheb: public TNamed
   Float_t    fMaxZDip;               // Max Z of Dipole parameterization
   TObjArray* fParamsDip;             // Parameterization pieces for Dipole field
   //
-  ClassDef(AliMagWrapCheb,5)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
+  ClassDef(AliMagWrapCheb,7)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
   //
  };
 
