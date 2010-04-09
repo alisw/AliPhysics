@@ -106,7 +106,7 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000,
 
   
   //task to check the offline trigger
-  gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
   if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   
