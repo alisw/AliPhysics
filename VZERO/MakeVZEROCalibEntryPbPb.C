@@ -10,6 +10,13 @@ void MakeVZEROCalibEntryPbPb(Int_t run,const char *inputCDB = "raw://"){
   AliVZEROCalibData *calibdaorg = (AliVZEROCalibData*)entry->GetObject();
   AliVZEROCalibData *calibda = new AliVZEROCalibData(*calibdaorg);
 
+  for (Int_t i = 0; i < 64; ++i) {
+    calibda->SetTimeOffset(5.0,i);
+  }
+  for (Int_t i = 0; i < 8; ++i) {
+    calibda->SetWidthResolution(2,i);
+  }
+
   Float_t p0[64] = {
     7.094891, 7.124938, 7.089708, 7.098169, 7.094482, 7.147250, 7.170978, 7.183392, 
     7.145760, 7.148096, 7.153840, 7.143544, 7.186069, 7.194580, 7.203516, 7.195176, 
@@ -41,9 +48,9 @@ void MakeVZEROCalibEntryPbPb(Int_t run,const char *inputCDB = "raw://"){
   md->SetBeamPeriod(0);
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetComment("Pb-Pb VZERO Calibration from RAW OCDB");
-  AliCDBId id("VZERO/CalibPbPb/Data",0,AliCDBRunRange::Infinity());
+  AliCDBId id("VZERO/Calib/Data",0,AliCDBRunRange::Infinity());
 
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB/VZERO/PbPb");
   AliCDBStorage *storLoc = man->GetDefaultStorage();
   storLoc->Put(calibda, id, md);
 

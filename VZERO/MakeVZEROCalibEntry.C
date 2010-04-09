@@ -1,4 +1,3 @@
-
 void MakeVZEROCalibEntry(Int_t run,const char *inputCDB = "raw://"){
 
   AliCDBManager *man = AliCDBManager::Instance();
@@ -9,6 +8,13 @@ void MakeVZEROCalibEntry(Int_t run,const char *inputCDB = "raw://"){
   AliCDBEntry *entry = man->Get("VZERO/Calib/Data");
   AliVZEROCalibData *calibdaorg = (AliVZEROCalibData*)entry->GetObject();
   AliVZEROCalibData *calibda = new AliVZEROCalibData(*calibdaorg);
+
+  for (Int_t i = 0; i < 64; ++i) {
+    calibda->SetTimeOffset(5.0,i);
+  }
+  for (Int_t i = 0; i < 8; ++i) {
+    calibda->SetWidthResolution(2,i);
+  }
 
   // Creation of the object VZERO Calibration as a MetaData
   AliCDBMetaData *md= new AliCDBMetaData(); // metaData describing the object
