@@ -221,7 +221,7 @@ class AliHLTHOMERBlockDescriptor
 		    }
 		}
 
-	void SetByteOrder( homer_uint8 bo )
+	void SetByteOrder( homer_uint8 bo ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kByteOrderAttribute_8b_Offset ] = bo;
@@ -232,17 +232,17 @@ class AliHLTHOMERBlockDescriptor
 		    return ((homer_uint8*)fHeader)[ kByteOrderAttribute_8b_Offset ];
 		return 0xFF;
 		}
-	void SetVersion( homer_uint8 v )
+	void SetVersion( homer_uint8 v ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kVersionAttribute_8b_Offset ] = v;
 		}
-	void SetID( homer_uint64 id  )
+	void SetID( homer_uint64 id  ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kID_64b_Offset ] = id;
 		}
-	void SetHeaderLength( homer_uint64 l  )
+	void SetHeaderLength( homer_uint64 l  ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kLength_64b_Offset ] = l;
@@ -253,72 +253,72 @@ class AliHLTHOMERBlockDescriptor
 		    return ((homer_uint64*)fHeader)[ kLength_64b_Offset ];
 		return 0;
 		}
-	void SetAlignment( homer_uint8 type, homer_uint8 align )
+	void SetAlignment( homer_uint8 type, homer_uint8 align ) const
 		{
 		if ( fHeader && type<6 )
 		    ((homer_uint8*)fHeader)[ kAlignment_8b_StartOffset+type ] = align;
 		}
-	void SetUInt64Alignment( homer_uint8 align )
+	void SetUInt64Alignment( homer_uint8 align ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kUInt64Alignment_8b_Offset ] = align;
 		}
-	void SetUInt32Alignment( homer_uint8 align )
+	void SetUInt32Alignment( homer_uint8 align ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kUInt32Alignment_8b_Offset ] = align;
 		}
-	void SetUInt16Alignment( homer_uint8 align )
+	void SetUInt16Alignment( homer_uint8 align ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kUInt16Alignment_8b_Offset ] = align;
 		}
-	void SetUInt8Alignment( homer_uint8 align )
+	void SetUInt8Alignment( homer_uint8 align ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kUInt8Alignment_8b_Offset ] = align;
 		}
-	void SetDoubleAlignment( homer_uint8 align )
+	void SetDoubleAlignment( homer_uint8 align ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kDoubleAlignment_8b_Offset ] = align;
 		}
-	void SetFloatAlignment( homer_uint8 align )
+	void SetFloatAlignment( homer_uint8 align ) const
 		{
 		if ( fHeader )
 		    ((homer_uint8*)fHeader)[ kFloatAlignment_8b_Offset ] = align;
 		}
-	void SetType( homer_uint64 t )
+	void SetType( homer_uint64 t ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kType_64b_Offset ] = t;
 		}
-	void SetSubType1( homer_uint64 st1 )
+	void SetSubType1( homer_uint64 st1 ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kSubType1_64b_Offset ] = st1;
 		}
-	void SetSubType2( homer_uint64 st2 )
+	void SetSubType2( homer_uint64 st2 ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kSubType2_64b_Offset ] = st2;
 		}
-	void SetBirth_s( homer_uint64 bs )
+	void SetBirth_s( homer_uint64 bs ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kBirth_s_64b_Offset ] = bs;
 		}
-	void SetBirth_us( homer_uint64 bus )
+	void SetBirth_us( homer_uint64 bus ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kBirth_us_64b_Offset ] = bus;
 		}
-	void SetProducerNode( homer_uint64 pn )
+	void SetProducerNode( homer_uint64 pn ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kProducerNode_64b_Offset ] = pn;
 		}
-	void SetBlockOffset( homer_uint64 bo )
+	void SetBlockOffset( homer_uint64 bo ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kOffset_64b_Offset ] = bo;
@@ -329,7 +329,7 @@ class AliHLTHOMERBlockDescriptor
 		    return ((homer_uint64*)fHeader)[ kOffset_64b_Offset ];
 		return 0;
 		}
-	void SetBlockSize( homer_uint64 bs )
+	void SetBlockSize( homer_uint64 bs ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kSize_64b_Offset ] = bs;
@@ -340,7 +340,7 @@ class AliHLTHOMERBlockDescriptor
 		    return ((homer_uint64*)fHeader)[ kSize_64b_Offset ];
 		return 0;
 		}
-	void SetStatusFlags( homer_uint64 bs )
+	void SetStatusFlags( homer_uint64 bs ) const
 		{
 		if ( fHeader )
 		    ((homer_uint64*)fHeader)[ kStatusFlags_64b_Offset ] = bs;
