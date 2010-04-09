@@ -15,6 +15,7 @@
 
 class TString;
 class TMap;
+class TObjArray;
 
 #include <TObject.h>
 
@@ -29,6 +30,7 @@ class AliLHCReader : public TObject{
 
 	void SetStartTime(UInt_t startTime) {fStartTime=startTime;}
 	void SetEndTime(UInt_t endTime) {fEndTime = endTime;}
+	TObjArray* ReadSingleLHCDP(TString filename, TString alias);
 
  private:
 	AliLHCReader& operator=(const AliLHCReader *reader); // assignment operator

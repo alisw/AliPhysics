@@ -213,6 +213,137 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 	return mapLHC;
 }
 
+//--------------------------------------------------------------------------
+TObjArray* AliLHCReader::ReadSingleLHCDP(TString filename, TString alias)
+{
+	//
+	// reading the file with the inputs for the selected alias
+	// returning the TObjArray containing the information only for the current alias
+	//
+
+       	if( gSystem->AccessPathName( filename.Data() ) ) {
+		AliError(Form( "file (%s) not found", filename.Data() ) );
+		return NULL;
+	}
+
+	TString selection = gSystem->GetFromPipe(Form("grep -P '^\\d+\\s+%s+\\s' %s",alias.Data(), filename.Data()));
+
+	if (selection.Length() == 0) {
+		AliError(Form("Alias %s not fouond in LHC Data file, returning a null pointer",alias.Data()));
+		return NULL;
+	}
+
+	Int_t nline =0;
+
+	TObjArray* tokenslines = selection.Tokenize("\n");
+	Int_t ntokenslines = tokenslines->GetEntriesFast();
+	AliDebug(3,Form("Number of tokenslines = %d",ntokenslines));
+
+	TObjArray* array = new TObjArray(); // array to be returned
+	array->SetOwner(1);
+
+	for (Int_t iline=0; iline<ntokenslines; iline++){
+		TString strLine = ((TObjString*)tokenslines->At(iline))->String();
+		AliDebug(4,Form("***************** line = %s\n",strLine.Data()));
+		TObjArray* tokens = strLine.Tokenize("\t");
+		Int_t ntokens = tokens->GetEntriesFast();
+		AliDebug(3,Form("Number of tokens = %d",ntokens));
+		if (ntokens < 4){  
+			AliInfo(Form("Wrong number of tokens --> # tokens = %d at line %d",ntokens,nline));
+			// requiring at least the index of the DP, the DP name, the format, and the number of entries
+			delete tokens;
+			continue;
+		}
+		Int_t lhcDPindex = (((TObjString*)tokens->At(0))->String()).Atoi();
+		AliDebug(2,Form("lhcDPindex = %d",lhcDPindex));
+		TObjString* lhcDPname = (TObjString*)tokens->At(1);
+		TString lhcDPtype = ((TObjString*)tokens->At(2))->String();
+		AliDebug(2,Form("lhcDPname = %s",(lhcDPname->String()).Data()));
+		AliDebug(2,Form("lhcDPtype = %s",lhcDPtype.Data()));
+		TObjArray* typeTokens = lhcDPtype.Tokenize(":");
+		if (typeTokens->GetEntriesFast() < 2 ){  
+			// requiring the the type and the number of elements for each measurement
+			AliError(Form("The format does not match the expected one, skipping the current line for DP = %s", lhcDPtype.Data()));
+			delete typeTokens;
+			delete tokens;
+			continue;
+		}
+		TString type = ((TObjString*)typeTokens->At(0))->String();
+		AliDebug(2,Form("type = %s",type.Data()));
+      		Int_t nelements = (((TObjString*)typeTokens->At(1))->String()).Atoi();
+		AliDebug(2,Form("nelements = %i",nelements));
+		Int_t nentries = (((TObjString*)tokens->At(3))->String()).Atoi();
+		AliDebug(2,Form("nentries = %i",nentries));
+		Int_t nValuesPerEntry = nelements+1;
+		Int_t nfixed = 4; // n. of fixed entries
+		for (Int_t ientry=0; ientry< nentries; ientry ++){
+			Int_t indextime = nfixed+nValuesPerEntry*ientry+nelements;
+			TString strTimestamp = ((TObjString*)tokens->At(indextime))->String();
+			Double_t timestamp = strTimestamp.Atof();
+			AliDebug(2,Form("Timestamp in unix time = %f (s)",timestamp));
+			if (fStartTime!=0 && fEndTime!=0 && (fStartTime > timestamp || fEndTime < timestamp)){
+				// error in case the measurement is not within the data taking time interval
+				AliError(Form("Timestamp for entry %d of DP %s not in [%d,%d]", ientry, lhcDPtype.Data(),fStartTime,fEndTime));
+				continue;
+			}
+			if (type == "i"){
+				Int_t* value = new Int_t[nelements];
+				for (Int_t ielement=0; ielement<nelements; ielement++){
+					value[ielement] = (((TObjString*)tokens->At(nfixed+ielement+ientry*nValuesPerEntry))->String()).Atoi();
+					AliDebug(2,Form("Value at index %d = %d",nfixed+ielement+ientry*nValuesPerEntry,value[ielement]));
+				}
+				AliDCSArray* dcs = new AliDCSArray(nelements,value,timestamp);
+				array->Add(dcs);
+				delete[] value;
+			}
+			else if (type == "b"){
+				Bool_t* value = new Bool_t[nelements];
+				for (Int_t ielement=0; ielement<nelements; ielement++){
+					value[ielement] = Bool_t((((TObjString*)tokens->At(nfixed+ielement+ientry*nValuesPerEntry))->String()).Atoi());
+					AliDebug(2,Form("Value at index %d = %d",nfixed+ielement+ientry*nValuesPerEntry,Int_t(value[ielement])));
+				}
+				AliDCSArray* dcs = new AliDCSArray(nelements,value,timestamp);
+				array->Add(dcs);
+				delete[] value;
+			}
+			else if (type == "f"){ // the floats should be considered as doubles
+				Double_t* value = new Double_t[nelements];
+				for (Int_t ielement=0; ielement<nelements; ielement++){
+					TString tempstr = (TString)(((TObjString*)tokens->At(nfixed+ielement+ientry*nValuesPerEntry))->String());
+					value[ielement] = (((TObjString*)tokens->At(nfixed+ielement+ientry*nValuesPerEntry))->String()).Atof();
+					AliDebug(2,Form("Value at index %d = %f from string %s",nfixed+ielement+ientry*nValuesPerEntry,value[ielement],tempstr.Data()));
+				} 
+				AliDCSArray* dcs = new AliDCSArray(nelements,value,timestamp);
+				array->Add(dcs);
+				delete[] value;
+			} 
+			else if (type == "s"){
+				TObjArray* value = new TObjArray();
+				value->SetOwner(1);
+				for (Int_t ielement=0; ielement<nelements; ielement++){
+				  TObjString* strobj = (new TObjString(((TObjString*)tokens->At(nfixed+ielement+ientry*nValuesPerEntry))->String()));
+					AliDebug(2,Form("Value at index %d = %s",nfixed+ielement+ientry*nValuesPerEntry,(strobj->String()).Data()));
+					value->Add(strobj);
+				}
+				AliDCSArray* dcs = new AliDCSArray(nelements,value,timestamp);
+				array->Add(dcs);
+				delete value;
+			}
+			else{
+				AliError(Form("Non-expected type %s",type.Data()));
+				delete typeTokens;
+				delete tokens;	
+				delete tokenslines;
+				return NULL;
+			} 
+		}
+		delete typeTokens;
+		delete tokens;
+	}
+	delete tokenslines;
+	return array;
+}
+
 
 
 
