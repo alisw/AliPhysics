@@ -75,29 +75,31 @@ protected:
   AliACORDEConstants();
 
   static AliACORDEConstants* fgInstance; // static instanton
-
+  AliACORDEConstants (const AliACORDEConstants& fgInstance);
+  AliACORDEConstants& operator = (const AliACORDEConstants& fInstance);
+ 
   static const Float_t fgkModuleLength; // Module lenght
   static const Float_t fgkModuleWidth;  // Module width
   static const Float_t fgkModuleHeight; // Module height
-  static const Float_t fgkInsideModulePositionX[60]; 
-  static const Float_t fgkInsideModulePositionY[60];
-  static const Float_t fgkInsideModulePositionZ[60];
-  static const Float_t fgkCenterModulePositionX[60];
-  static const Float_t fgkCenterModulePositionY[60];
-  static const Float_t fgkCenterModulePositionZ[60];
-  static const Float_t fgkOutsideModulePositionX[60];
-  static const Float_t fgkOutsideModulePositionY[60];
-  static const Float_t fgkOutsideModulePositionZ[60];
+  static const Float_t fgkInsideModulePositionX[60]; // Module X-Position (inside)
+  static const Float_t fgkInsideModulePositionY[60]; // Module Y-Position (inside)
+  static const Float_t fgkInsideModulePositionZ[60]; // Module Z-Position (inside)
+  static const Float_t fgkCenterModulePositionX[60]; // Module X-Position (centroid)
+  static const Float_t fgkCenterModulePositionY[60]; // Module Y-Position (centroid)
+  static const Float_t fgkCenterModulePositionZ[60]; // Module Z-Position (centroid)
+  static const Float_t fgkOutsideModulePositionX[60]; // Module X-Position (outside)
+  static const Float_t fgkOutsideModulePositionY[60]; // Module Y-Position (outside)
+  static const Float_t fgkOutsideModulePositionZ[60]; // Module Z-Position (outside)
   static const Float_t fgkOldModulePositionX[60]; // OLD position in ALICE
   static const Float_t fgkOldModulePositionY[60]; // of center of module
-  static const Float_t fgkOldModulePositionZ[60]; 
-  static const Float_t fgkSupportModulePositionX[60];
-  static const Float_t fgkSupportModulePositionY[60];
-  static const Float_t fgkSupportModulePositionZ[60];
-  static const Float_t fgkOldExtraModulePositionZ[4];
-  static const Float_t fgkOldExtraModulePositionX;
-  static const Float_t fgkOldExtraModulePositionY;
-  static const Int_t fgkOldModuleElectronicChannel[60];
+  static const Float_t fgkOldModulePositionZ[60]; // Old position of module Z
+  static const Float_t fgkSupportModulePositionX[60]; // Position of bar support X
+  static const Float_t fgkSupportModulePositionY[60]; // Position of bar support Y
+  static const Float_t fgkSupportModulePositionZ[60]; // Position of bar support Z
+  static const Float_t fgkOldExtraModulePositionZ[4]; // Old Position in Z for central modules (up face)
+  static const Float_t fgkOldExtraModulePositionX; // Old Position in X for central modules (up face)
+  static const Float_t fgkOldExtraModulePositionY; // Old Position in Y for central modules (up face)
+  static const Int_t fgkOldModuleElectronicChannel[60]; // Old DCS-Elecronoc assigment for modules
 
   static const Float_t fgkPlasticLength; // Plastic length
   static const Float_t fgkPlasticWidth;  // Plastic width
@@ -105,13 +107,13 @@ protected:
 
 
   static const Float_t fgkProfileWidth;   // profile of the module
-  static const Float_t fgkProfileThickness; 
+  static const Float_t fgkProfileThickness; // thickness of scintillator
   static const Float_t fgkDepth; // Alice IP depth from surface
 
-  static const Float_t fgkHitEnergyThreshold;
-  static const Float_t fgkMaxHitTimeDifference;
-  static const Int_t fgkMultiMuonThreshold;
-  static const Float_t fgkMultiMuonWindow;
+  static const Float_t fgkHitEnergyThreshold; // thereshold of energy
+  static const Float_t fgkMaxHitTimeDifference; // time difference of hit in modules
+  static const Int_t fgkMultiMuonThreshold; // thereshold of energy (AMU-mode)
+  static const Float_t fgkMultiMuonWindow; // time window (AMU-mode)
 
 
  private:

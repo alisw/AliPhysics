@@ -19,7 +19,7 @@
 //
 // AliACORDEConstants class
 //
-// This class serves to group constants needed by ACORDE detector in 1
+// This class includes the constants needed by ACORDE detector in 
 // easily accessible place. All constants are public const static data 
 // members. The class is never instatiated.
 // Authors: Arturo Fernandez, Enrique Gamez, Mario Rodriguez Cahuantzi, Eleazar Cuautle(ICN-UNAM) 
@@ -238,6 +238,10 @@ AliACORDEConstants::AliACORDEConstants()
 //_____________________________________________________________________________
 AliACORDEConstants* AliACORDEConstants::Instance()
 {
+// 
+// Instance implementacion
+//
+
   if ( !fgInstance ) {
     fgInstance = new AliACORDEConstants;
   }
@@ -247,52 +251,82 @@ AliACORDEConstants* AliACORDEConstants::Instance()
 //_____________________________________________________________________________
 AliACORDEConstants::~AliACORDEConstants()
 {
+// 
+// destructor for instance
+//
   fgInstance = 0;
 }
 
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::InsideModulePositionX(Int_t i) const
 {
+//
+// Returns the InsideModulePositionX
+//
 	return fgkInsideModulePositionX[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::InsideModulePositionY(Int_t i) const
 {
+//
+// returns the InsideModulePositionY
+//
 	return fgkInsideModulePositionY[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::InsideModulePositionZ(Int_t i) const
-{	
+{
+//
+// returns the InsideModulePositionZ
+//	
 	return fgkInsideModulePositionZ[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::CenterModulePositionX(Int_t i) const
 {
+//
+// returns the center module position X
+//
 	return fgkCenterModulePositionX[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::CenterModulePositionY(Int_t i) const
 {
+//
+// returns the center module position Y
+//
 	return fgkCenterModulePositionY[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::CenterModulePositionZ(Int_t i) const
-{	
+{
+//
+// returns the center module position Z
+//	
 	return fgkCenterModulePositionZ[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::OutsideModulePositionX(Int_t i) const
 {
+//
+// returns the outside module position x
+//
 	return fgkOutsideModulePositionX[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::OutsideModulePositionY(Int_t i) const
 {
+//
+// returns the out side module position y
+//
 	return fgkOutsideModulePositionY[i];
 }
 //_____________________________________________________________________________
 Float_t AliACORDEConstants::OutsideModulePositionZ(Int_t i) const
-{	
+{
+//
+// returns the out side module position z
+//	
 	return fgkOutsideModulePositionZ[i];
 }
 //_____________________________________________________________________________
