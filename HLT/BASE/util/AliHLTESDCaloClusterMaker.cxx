@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -97,8 +99,11 @@ AliHLTESDCaloClusterMaker::FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterH
 	}
       esdCluster.SetCellsAbsId(idArrayPtr);
       esdCluster.SetCellsAmplitudeFraction(ampFracArrayPtr);
+#ifndef HAVE_NOT_ALIESDCALOCLUSTER_r38477
+      // this is to ensure compilation with the v4-18-Release branch for the moment
+      // until the changes of AliESDCaloCluster have been ported
       esdCluster.SetTrackDistance(caloClusterStructPtr->fTrackDx, caloClusterStructPtr->fTrackDz);
-
+#endif //HAVE_NOT_ALIESDCALOCLUSTER_r38477
    
       delete [] idArrayPtr;
       delete [] ampFracArrayPtr;
