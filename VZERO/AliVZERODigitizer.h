@@ -15,6 +15,8 @@
 
 #include "AliDigitizer.h"
 
+#include "AliVZEROConst.h"
+
 class TClonesArray;
 class TF1;
 class AliRunDigitizer;
@@ -33,17 +35,19 @@ class AliVZERODigitizer: public AliDigitizer {
    virtual Bool_t Init();
    virtual void   Exec(Option_t* option=0);
 
-   void AddDigit(Int_t PMnumber, Float_t adc, Float_t time);
+   void AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Float_t width, Bool_t integrator);
    void ResetDigit();
-   void GetCollisionMode();
-   void GetCollisionMode(Int_t collisionMode, Float_t beamEnergy) 
-                        {fCollisionMode=collisionMode; fBeamEnergy=beamEnergy;}
 						
    AliVZEROCalibData *GetCalibData() const;
-   Int_t GetPMNumber(Int_t cell) const;
 
    TF1*   GetSignalShape() const { return fSignalShape; }
+   TF1*   GetPMResponse() const { return fPMResponse; }
+   TF1*   GetSinglePhESpectrum() const { return fSinglePhESpectrum; }
    double SignalShape(double *x, double *par);
+   double PMResponse(double *x, double *par);
+   double SinglePhESpectrum(double *x, double *par);
+
+   Int_t  Cell2Pmt(Int_t cell) const;
 
  protected:
  
@@ -56,18 +60,28 @@ class AliVZERODigitizer: public AliDigitizer {
    AliVZERODigitizer& operator = (const AliVZERODigitizer& /*digitizer*/); 
   
    Float_t  fPhotoCathodeEfficiency; // Photocathode efficiency
-   Float_t  fPMVoltage ;             // Photomultiplier voltage
-   Float_t  fPMGain;                 // Photomultiplier gain
 
    Int_t    fNdigits;                //! Number of digits
    TClonesArray *fDigits;            //! List of digits
    
-   Int_t    fCollisionMode;          // =0->p-p, =1->A-A
-   Float_t  fBeamEnergy;	     // beam energy
-
    TF1*     fSignalShape;            // function which describes the PMT signal shape
+   TF1*     fPMResponse;             // function which describes the PM time response
+   TF1*     fSinglePhESpectrum;      // function which describes the single ph.e. PM response
+
+   Float_t  fAdc[64][kNClocks];      //! Container for ADC samples
+   Float_t  fLeadingTime[64];        //! Leading time container
+   Float_t  fTimeWidth[64];          //! Time width container
+   Float_t  fAdcPedestal[64][2];     //! Pedestals, one per integrator
+   Float_t  fAdcSigma[64][2];        //! Sigma of pedestals
+   Float_t  fPmGain[64];             //! PMT gains
+   Int_t    fNBins[64];              //! Number of bins in fTime container
+   Int_t    fNBinsLT[64];            //! Number of bins in fTime container (match window only)
+   Float_t  fBinSize[64];            //! Bin size in fTime container
+   Float_t  fHptdcOffset[64];        //! HPTDC time offsets channel by channel
+
+   Float_t *fTime[64];               //! Main container used in digitization
    
-   ClassDef(AliVZERODigitizer,3)     // digitizer for VZERO
+   ClassDef(AliVZERODigitizer,5)     // digitizer for VZERO
 
 };
 

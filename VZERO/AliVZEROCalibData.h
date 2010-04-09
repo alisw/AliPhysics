@@ -42,8 +42,7 @@ class AliVZEROCalibData: public TNamed {
   Bool_t   IsChannelDead(Int_t channel)	const {return fDeadChannel[channel];}
   Bool_t*  GetDeadMap()   const {return (bool*)fDeadChannel;} 
    
-  Float_t  GetGain(Int_t channel)	const {return fGain[channel];}
-  Float_t* GetGain()   const {return (float*)fGain;}  
+  Float_t  GetGain(Int_t channel)	const;
   Float_t  GetTimeOffset(Int_t channel)	const {return fTimeOffset[channel];}
   Float_t* GetTimeOffset()   const {return (float*)fTimeOffset;}
   Float_t  GetTimeGain(Int_t channel)	const {return fTimeGain[channel];}
@@ -82,8 +81,6 @@ class AliVZEROCalibData: public TNamed {
   void     SetDeadChannel(Bool_t val, Int_t channel) {fDeadChannel[channel]=val;}
   void     SetDeadMap(const Bool_t* deadMap);  
    
-  void 	   SetGain(Float_t val, Int_t channel) {fGain[channel]=val;}
-  void 	   SetGain(const Float_t* Gain);  
   void     SetTimeOffset(Float_t val, Int_t channel);
   void     SetTimeOffset(const Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
@@ -117,7 +114,6 @@ class AliVZEROCalibData: public TNamed {
   Float_t  fMeanHV[64];        // Mean PMT HV needed to compute MIP value
   Float_t  fWidthHV[64];       // Width of the PMT HV
   
-  Float_t  fGain[128];	       // Gain factor used in digitization only  
   Float_t  fTimeOffset[64];    // Time offsets of the TDC
   Float_t  fTimeGain[64];      // Gain factors of the TDC
   Bool_t   fDeadChannel[64];   // List of dead channels
@@ -131,7 +127,7 @@ class AliVZEROCalibData: public TNamed {
 
   Float_t  fDiscriThr[64];     // Discriminator thresholds
 
-  ClassDef(AliVZEROCalibData,6)    // VZERO Calibration data
+  ClassDef(AliVZEROCalibData,7)    // VZERO Calibration data
 };
 
 #endif

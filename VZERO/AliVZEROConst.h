@@ -3,10 +3,17 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 
-const    Float_t kC     =  1e-11;
-const    Float_t kthau  =  2.1*1e-9;
-const    Float_t ktheta =  50.0 * kC;
-const    Float_t kQe    =  1.6e-19;
+const Float_t kIntTimeRes = 0.5; // intrinsic time resolution of the scintillator
+const Float_t kV0CDelayCables = 8.1; // delay cables on the C side (in ns)
+const Float_t kV0Offset = 1461.4; // general V0 offset between the TDCs and the trigger
+const Float_t kADCTimeOffset = -189.0; // ADC sampling clock offset (in ns)
+const Int_t   kNClocks = 21; // Number of ADC clocks that are read out
+const Float_t kChargePerADC = 0.6e-12; // Charge per ADC
+const Int_t   kMinTDCWidth = 13; // minimum signal width measured by TDC
+const Int_t   kMaxTDCWidth = 128; // maximum signal width measured by TDC
+const Float_t kPMRespTime = 3.2; // PM response time (corresponds to 1.9 ns rise time)
+const Float_t kPMTransparency = 0.25; // Transparency of the first dynode of the PM
+const Float_t kPMNbOfSecElec = 6.0;   // Number of secondary electrons emitted from first dynode (per ph.e.)
 
 #endif
 

@@ -32,9 +32,9 @@
 #include <AliGeomManager.h>
 #include <TRandom.h>
 #include <TF1.h>
+#include <TH1F.h>
 
 // --- AliRoot header files ---
-#include "AliVZEROConst.h"
 #include "AliRun.h"
 #include "AliVZERO.h"
 #include "AliVZEROhit.h"
@@ -46,7 +46,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliVZEROCalibData.h"
-
+#include "AliCTPTimeParams.h"
 #include "AliVZEROdigit.h"
 #include "AliVZERODigitizer.h"
 
@@ -56,13 +56,11 @@ ClassImp(AliVZERODigitizer)
                    :AliDigitizer(),
                     fCalibData(GetCalibData()),
                     fPhotoCathodeEfficiency(0.18),
-                    fPMVoltage(768.0),
-                    fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
                     fNdigits(0),
                     fDigits(0),
-                    fCollisionMode(0),
-                    fBeamEnergy(0.),
-                    fSignalShape(NULL)
+                    fSignalShape(NULL),
+                    fPMResponse(NULL),
+                    fSinglePhESpectrum(NULL)
    
 {
   // default constructor
@@ -77,7 +75,52 @@ ClassImp(AliVZERODigitizer)
 //   fCalibData = GetCalibData();
 
   fSignalShape = new TF1("VZEROSignalShape",this,&AliVZERODigitizer::SignalShape,0,200,6,"AliVZERODigitizer","SignalShape");
-  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
+  //  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
+  fSignalShape->SetParameters(1.34330e+00,1.13007e+02,-4.95705e-01,
+			      3.68911e+00,1.01040e+00, 3.94675e-01);
+  fPMResponse = new TF1("VZEROPMResponse",this,&AliVZERODigitizer::PMResponse,-kPMRespTime,2.*kPMRespTime,0,"AliVZERODigitizer","PMResponse");
+  fSinglePhESpectrum = new TF1("VZEROSinglePhESpectrum",this,&AliVZERODigitizer::SinglePhESpectrum,0,20,0,"AliVZERODigitizer","SinglePhESpectrum");
+
+  // Now get the CTP L0->L1 delay
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeDelays");
+  if (!entry2) AliFatal("VZERO time delays are not found in OCDB !");
+  TH1F *delays = (TH1F*)entry2->GetObject();
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+
+    for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
+    fLeadingTime[i] = fTimeWidth[i] = 0;
+
+    fPmGain[i] = fCalibData->GetGain(i);
+
+    fAdcPedestal[i][0] = fCalibData->GetPedestal(i);
+    fAdcSigma[i][0]    = fCalibData->GetSigma(i); 
+    fAdcPedestal[i][1] = fCalibData->GetPedestal(i+64);
+    fAdcSigma[i][1]    = fCalibData->GetSigma(i+64); 
+
+    Int_t board = i / 8;
+    fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
+			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+			    fCalibData->GetTimeResolution(board));
+    fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
+			      fCalibData->GetTimeResolution(board));
+    fBinSize[i] = fCalibData->GetTimeResolution(board);
+    fHptdcOffset[i] = (((Float_t)fCalibData->GetTriggerCountOffset(board)-
+			(Float_t)fCalibData->GetRollOver(board))*25.0+
+		       fCalibData->GetTimeOffset(i)+
+		       l1Delay+
+		       delays->GetBinContent(i+1)+
+		       kV0Offset);
+
+    fTime[i] = new Float_t[fNBins[i]];
+    memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
+  }
+
 }
 
 //____________________________________________________________________________ 
@@ -85,29 +128,62 @@ ClassImp(AliVZERODigitizer)
                     :AliDigitizer(manager),
 		     fCalibData(GetCalibData()),
                      fPhotoCathodeEfficiency(0.18),
-                     fPMVoltage(768.0),
-                     fPMGain(TMath::Power((fPMVoltage / 112.5) ,7.04277)),
 		     fNdigits(0),
                      fDigits(0),
-		     fCollisionMode(0),
-                     fBeamEnergy(0.),
-		     fSignalShape(NULL)
+		     fSignalShape(NULL),
+                     fPMResponse(NULL),
+                     fSinglePhESpectrum(NULL)
 		                        
 {
   // constructor
+  // Initialize OCDB and containers used in the digitization
   
-//   fNdigits = 0;
-//   fDigits  = 0;
-//   
-//   fPhotoCathodeEfficiency =   0.18;
-//   fPMVoltage              =  768.0;
-//   fPMGain = TMath::Power( (fPMVoltage / 112.5) ,7.04277 );
-  
-//  fCalibData = GetCalibData();
- 
   fSignalShape = new TF1("VZEROSignalShape",this,&AliVZERODigitizer::SignalShape,0,200,6,"AliVZERODigitizer","SignalShape");
-  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
+  //  fSignalShape->SetParameters(0,1.57345e1,-4.25603e-1,2.9,6.40982,3.69339e-01);
+  fSignalShape->SetParameters(1.34330e+00,1.13007e+02,-4.95705e-01,
+			      3.68911e+00,1.01040e+00, 3.94675e-01);
+  fPMResponse = new TF1("VZEROPMResponse",this,&AliVZERODigitizer::PMResponse,-kPMRespTime,2.*kPMRespTime,0,"AliVZERODigitizer","PMResponse");
+  fSinglePhESpectrum = new TF1("VZEROSinglePhESpectrum",this,&AliVZERODigitizer::SinglePhESpectrum,0,20,0,"AliVZERODigitizer","SinglePhESpectrum");
   
+  // Now get the CTP L0->L1 delay
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeDelays");
+  if (!entry2) AliFatal("VZERO time delays are not found in OCDB !");
+  TH1F *delays = (TH1F*)entry2->GetObject();
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+
+    for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
+    fLeadingTime[i] = fTimeWidth[i] = 0;
+
+    fPmGain[i] = fCalibData->GetGain(i);
+
+    fAdcPedestal[i][0] = fCalibData->GetPedestal(i);
+    fAdcSigma[i][0]    = fCalibData->GetSigma(i); 
+    fAdcPedestal[i][1] = fCalibData->GetPedestal(i+64);
+    fAdcSigma[i][1]    = fCalibData->GetSigma(i+64); 
+
+    Int_t board = i / 8;
+    fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
+			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+			    fCalibData->GetTimeResolution(board));
+    fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
+			      fCalibData->GetTimeResolution(board));
+    fBinSize[i] = fCalibData->GetTimeResolution(board);
+    fHptdcOffset[i] = (((Float_t)fCalibData->GetTriggerCountOffset(board)-
+			(Float_t)fCalibData->GetRollOver(board))*25.0+
+		       fCalibData->GetTimeOffset(i)+
+		       l1Delay+
+		       delays->GetBinContent(i+1)+
+		       kV0Offset);
+
+    fTime[i] = new Float_t[fNBins[i]];
+    memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
+  }
 }
            
 //____________________________________________________________________________ 
@@ -125,6 +201,18 @@ ClassImp(AliVZERODigitizer)
     delete fSignalShape;
     fSignalShape = NULL;
   }
+  if (fPMResponse) {
+    delete fPMResponse;
+    fPMResponse = NULL;
+  }
+  if (fSinglePhESpectrum) {
+    delete fSinglePhESpectrum;
+    fSinglePhESpectrum = NULL;
+  }
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+    if (fTime[i]) delete [] fTime[i];
+  }
 }
 
 //_____________________________________________________________________________
@@ -135,10 +223,6 @@ Bool_t AliVZERODigitizer::Init()
   // Initialises the Digit array
   fDigits = new TClonesArray ("AliVZEROdigit", 1000);
   
-  //  TGeoHMatrix *im = AliGeomManager::GetMatrix("VZERO/V0C");
-  //  im->Print();
-
-  GetCollisionMode();
   return kTRUE;
 }
 
@@ -146,56 +230,16 @@ Bool_t AliVZERODigitizer::Init()
 void AliVZERODigitizer::Exec(Option_t* /*option*/) 
 {   
   // Creates digits from hits
-     
-  Float_t     map[80];    // 48 values on V0C + 32 on V0A
-//  Int_t       pmNumber[80];
-  Float_t     adc[64];    // 32 PMs on V0C + 32 PMs on V0A
-  Float_t     time[80], time_ref[80], time2[64];
-  Float_t     adc_gain[80]; 
-  Float_t     adc_pedestal[64],adc_sigma[64];    
   fNdigits     =    0;  
-  Float_t     pmGain_smeared[64];  
-  Float_t     cPM[80];
-  
-  // Smearing of the PM tubes intrinsic characteristics
-  
-  for(Int_t ii=0; ii<64; ii++) {
-      pmGain_smeared[ii] = gRandom->Gaus(fPMGain, fPMGain/5); }
-              
-  // Retrieval of ADC gain values and pedestal information from local CDB 
-  // I use only the first 64th values of the calibration array in CDB 
-  // as I have no beam burst structure - odd or even beam burst number
-  
-  // Reminder : We have 16 scintillating cells mounted on 8 PMs 
-  // on Ring 3 and Ring 4 in V0C -  added to produce  ADC outputs 
-  // on these rings... 
-   
-  for(Int_t i=0; i<16; i++) { 
-	adc_gain[i] = fCalibData->GetGain(i); 
-	cPM[i]      = fPhotoCathodeEfficiency * pmGain_smeared[i];
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+    memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
+    for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
+    fLeadingTime[i] = fTimeWidth[i] = 0;
   }
-  
-  for(Int_t j=16; j<48; j=j+2) { 
-	Int_t i=(j+17)/2;
-	adc_gain[j]   = fCalibData->GetGain(i);	    
-	adc_gain[j+1] = fCalibData->GetGain(i); 
-	cPM[j]        = fPhotoCathodeEfficiency * pmGain_smeared[i];   
-	cPM[j+1]      = fPhotoCathodeEfficiency * pmGain_smeared[i]; 
-  }
-	    
-  for(Int_t i=48; i<80; i++){ 
-	adc_gain[i] = fCalibData->GetGain(i-16); 
-	cPM[i]      = fPhotoCathodeEfficiency * pmGain_smeared[i-16];
-  };
-  
-  for(Int_t  i=0; i<64; i++){ 
-	  adc_pedestal[i] = fCalibData->GetPedestal(i);
-	  adc_sigma[i]    = fCalibData->GetSigma(i); 
-  }; 
-                                
-//  for(Int_t i=0; i<64; i++) { printf(" i = %d pedestal = %f sigma = %f \n\n", 
-//                                       i, adc_pedestal[i], adc_sigma[i] );} 
-            
+  Float_t integral = fPMResponse->Integral(-kPMRespTime,2.*kPMRespTime);
+  Float_t meansPhE = fSinglePhESpectrum->Mean(0,20);
+
   AliRunLoader* outRunLoader =  AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
   if (!outRunLoader) {
     Error("Exec", "Can not get output Run Loader");
@@ -242,82 +286,112 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
        continue; 
 	 }
        
-     for(Int_t i=0; i<80; i++) {map[i] = 0; time[i] = 0.0;}
-     
      TClonesArray* hits = vzero->Hits();
-             
+
+     //     Float_t lightYieldCorr[64] = {0.00707,0.00517,0.00520,0.00537,0.00735,0.00537,0.00733,0.00605,0.00778,0.00749,0.00701,0.00755,0.00732,0.00617,0.00669,0.00525,0.00752,0.00820,0.00797,0.01107,0.01080,0.00889,0.00880,0.01712,0.00866,0.00701,0.00811,0.00602,0.00879,0.00821,0.00861,0.01433,0.00061,0.00032,0.00099,0.00061,0.00034,0.00046,0.00031,0.00122,0.00155,0.00091,0.00032,0.00096,0.00120,0.00067,0.00113,0.00060,0.00158,0.00136,0.00340,0.00066,0.00076,0.00119,0.00129,0.00147,0.00137,0.00117,0.00088,0.00164,0.00128,0.00081,0.00121,0.00250};
+     Float_t lightYieldCorr[64] = {0.01173,0.00874,0.00878,0.00886,0.01151,0.00925,0.01167,0.00983,0.01181,0.01243,0.01115,0.01220,0.01228,0.01053,0.01021,0.00930,0.01270,0.01411,0.01316,0.01894,0.01923,0.01860,0.01738,0.00305,0.01584,0.01251,0.01344,0.00310,0.01302,0.01266,0.01407,0.00338,0.00089,0.00100,0.00130,0.00081,0.00052,0.01230,0.00059,0.02452,0.02980,0.00137,0.01421,0.00116,0.00141,0.00092,0.02480,0.00096,0.00182,0.00174,0.00218,0.00106,0.00116,0.00160,0.00162,0.03097,0.00194,0.00171,0.00132,0.00239,0.00173,0.00118,0.00163,0.00262};
 //  Now makes Digits from hits
-     
      Int_t nTracks = (Int_t) treeH->GetEntries();
      for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-         for (Int_t i=0; i<80; i++) {time_ref[i] = 999999.0;}   
          vzero->ResetHits();
          treeH->GetEvent(iTrack);
          Int_t nHits = hits->GetEntriesFast();
          for (Int_t iHit = 0; iHit < nHits; iHit++) {
-			 AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
-			 Int_t nPhot = hit->Nphot();
-			 Int_t cell  = hit->Cell();                          
-			 map[cell] += Float_t(nPhot);
-			 Float_t dt_scintillator = gRandom->Gaus(0,0.7);
-			 Float_t t = dt_scintillator + 1e9*hit->Tof();
-			 if (t > 0.0) {
-				 if(t < time_ref[cell]) time_ref[cell] = t;
-				 time[cell] = TMath::Min(t,time_ref[cell]); 
-			 }
-         }           // hit   loop      
-     }             // track loop
-
+	   AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
+	   Int_t nPhot = hit->Nphot();
+	   Int_t cell  = hit->Cell();                          
+	   Int_t pmt = Cell2Pmt(cell);
+	   Float_t dt_scintillator = gRandom->Gaus(0,kIntTimeRes);
+	   Float_t t = dt_scintillator + 1e9*hit->Tof();
+	   if (pmt < 32) t += kV0CDelayCables;
+	   t += fHptdcOffset[pmt];
+	   Int_t nPhE;
+	   Float_t prob = lightYieldCorr[pmt]*fPhotoCathodeEfficiency; // Optical losses included!
+	   if (nPhot > 100)
+	     nPhE =gRandom->Gaus(prob*Float_t(nPhot)+0.5,
+				 sqrt(Float_t(nPhot)*prob*(1.-prob)));
+	   else
+	     nPhE = gRandom->Binomial(nPhot,prob);
+	   Float_t charge = TMath::Qe()*fPmGain[pmt]*fBinSize[pmt]/integral;
+	   for (Int_t iPhE = 0; iPhE < nPhE; ++iPhE) {
+	     Float_t tPhE = t + fSignalShape->GetRandom(0,fBinSize[pmt]*Float_t(fNBins[pmt]));
+	     Float_t gainVar = fSinglePhESpectrum->GetRandom(0,20)/meansPhE;
+	     Int_t firstBin = TMath::Max(0,(Int_t)((tPhE-kPMRespTime)/fBinSize[pmt]));
+	     Int_t lastBin = TMath::Min(fNBins[pmt]-1,(Int_t)((tPhE+2.*kPMRespTime)/fBinSize[pmt]));
+	     for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
+	       Float_t tempT = fBinSize[pmt]*(0.5+iBin)-tPhE;
+	       fTime[pmt][iBin] += gainVar*charge*fPMResponse->Eval(tempT);
+	     }
+	   }         // ph.e. loop
+         }           // hit loop
+     }               // track loop
      loader->UnloadHits();
+  }                  // input loop
 
-  }               // input loop
+  Float_t maximum = 0.9*fSignalShape->GetMaximum(0,200); // Not exact, one needs to do this on the convoluted
+  Float_t integral2 = fSignalShape->Integral(0,200); // function. Anyway the effect is small <10% on the 2.5 ADC thr
+  for (Int_t ipmt = 0; ipmt < 64; ++ipmt) {
+    Float_t thr = fCalibData->GetDiscriThr(ipmt)*kChargePerADC*maximum*fBinSize[ipmt]/integral2;
+    Bool_t ltFound = kFALSE, ttFound = kFALSE;
+    for (Int_t iBin = 0; iBin < fNBins[ipmt]; ++iBin) {
+      Float_t t = fBinSize[ipmt]*Float_t(iBin+0.5);
+      if (fTime[ipmt][iBin] > thr) {
+	if (!ltFound && (iBin < fNBinsLT[ipmt])) {
+	  ltFound = kTRUE;
+	  fLeadingTime[ipmt] = t;
+	}
+      }
+      else {
+	if (ltFound) {
+	  if (!ttFound) {
+	    ttFound = kTRUE;
+	    fTimeWidth[ipmt] = t - fLeadingTime[ipmt];
+	  }
+	}
+      }
+      Float_t tadc = t - kADCTimeOffset;
+      Int_t clock = kNClocks - Int_t(tadc/25.0) - 1;
+      if (clock >= 0 && clock < kNClocks)
+	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
+    }
+    Int_t board = ipmt / 8;
+    if (ltFound && ttFound) {
+      fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
+	Float_t(Int_t(fTimeWidth[ipmt]/fCalibData->GetWidthResolution(board)));
+      if (fTimeWidth[ipmt] < Float_t(kMinTDCWidth)*fCalibData->GetWidthResolution(board))
+	fTimeWidth[ipmt] = Float_t(kMinTDCWidth)*fCalibData->GetWidthResolution(board);
+      if (fTimeWidth[ipmt] > Float_t(kMaxTDCWidth)*fCalibData->GetWidthResolution(board))
+	fTimeWidth[ipmt] = Float_t(kMaxTDCWidth)*fCalibData->GetWidthResolution(board);
+    }
+  }
 
-// Now builds the scintillator cell response (80 cells i.e. 80 responses)
-         
-   for (Int_t i=0; i<80; i++) {    
-        Float_t q1 = Float_t ( map[i] )* cPM[i] * kQe;
-        Float_t noise = gRandom->Gaus(10.5,3.22);
-        Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
-        + noise*1e-3; 	
-	if(fCollisionMode >0) adc_gain[i] = adc_gain[i]/70.0; // reduce dynamics in Ion Collision Mode
-        map[i] =  pmResponse * adc_gain[i];
-        Float_t MIP = 1.0/fCalibData->GetMIPperADC(GetPMNumber(i));
-	if(fCollisionMode >0) MIP=2.0;
-//	printf("cell = %d,  ADC = %d, TDC = %f \n",i,map[i], time[i]*10.0 );
-        if(map[i] > (MIP/2.) )
-	          {map[i] = gRandom->Gaus(map[i], (MIP/6.) );}
-   }
-      
-// Now transforms 80 cell responses into 64 photomultiplier responses
-// Also adds the ADC pedestals taken out of the calibration data base
+  Int_t evenOrOdd = gRandom->Integer(2);
+  for (Int_t j=0; j<64; ++j){
+    for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
+      Int_t integrator = (iClock + evenOrOdd) % 2;
+      fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
+    }
+  }
 	
-   for (Int_t j=0; j<16; j++){
-        adc[j]  = map [j] + gRandom->Gaus(adc_pedestal[j], adc_sigma[j]);
-	time2[j]= time[j];}
-	
-   for (Int_t j=48; j<80; j++){
-        adc[j-16]  = map [j] + gRandom->Gaus(adc_pedestal[j-16],adc_sigma[j-16]);
-	time2[j-16]= time[j]; }
-	
-   for (Int_t j=0; j<16; j++){
-        adc[16+j] = map [16+2*j]+ map [16+2*j+1] + gRandom->Gaus(adc_pedestal[16+j], adc_sigma[16+j]);
-	Float_t min_time = TMath::Min(time [16+2*j],time [16+2*j+1]);
-	time2[16+j] = min_time;
-	if(min_time==0.0){time2[16+j]=TMath::Max(time[16+2*j],time[16+2*j+1]);}
-   }
-   	
+  // Now add digits to the digit Tree 
 
-// Now add digits to the digit Tree 
-        
-   for (Int_t i=0; i<64; i++) {      
-      if(adc[i] > 0) {
-//           printf(" Event, cell, adc, tof = %d %d %d %d\n", 
-//                    outRunLoader->GetEventNumber(),i, adc[i], Int_t((time2[i]*10.0) +0.5));
-//           multiply by 10 to have 100 ps per channel :
-		  
-		  AddDigit(i, adc[i], time2[i] ) ;
-	  }      
-   }
+  for (Int_t i=0; i<64; i++) {      
+    //    printf(" cell %d adc ",i);
+    //    for (Int_t j = 0; j < kNClocks; ++j)
+    //      printf("%d ", Int_t(fAdc[i][j]));
+    //    printf("\n");
+    Float_t totADC = 0;
+    for (Int_t j = 8; j <= 11; ++j) {
+      Int_t tempadc = Int_t(fAdc[i][j]);
+      if (tempadc > 1023) tempadc = 1023;
+      Int_t integrator = (j + evenOrOdd) % 2;
+      if ((Float_t(tempadc) - fAdcPedestal[i][integrator]) > (2.*fAdcSigma[i][integrator]))
+	totADC += (Float_t(tempadc) - fAdcPedestal[i][integrator]);
+    }
+    totADC += fAdcPedestal[i][(10+evenOrOdd)%2];
+    AddDigit(i, totADC, fLeadingTime[i], fTimeWidth[i], Bool_t((10+evenOrOdd)%2));
+  }
+
   treeD->Fill();
   outLoader->WriteDigits("OVERWRITE");  
   outLoader->UnloadDigits();     
@@ -325,17 +399,14 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time) 
+void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Float_t width, Bool_t integrator) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
-  Bool_t integrator;
-  if (((Int_t) gRandom->Uniform(2))<1) integrator = kFALSE;
-  else integrator = kTRUE;
 	 
-  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,0,kFALSE,kFALSE,integrator);
+  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,width,kFALSE,kFALSE,integrator);
 	 
 }
 //____________________________________________________________________________
@@ -346,62 +417,6 @@ void AliVZERODigitizer::ResetDigit()
 
   fNdigits = 0;
   if (fDigits) fDigits->Delete();
-}
-
-//____________________________________________________________________________
-void AliVZERODigitizer::GetCollisionMode()
-{
-// Retrieves the collision mode from GRP data
-
-// Initialization of the GRP entry 
-
-   Int_t run = AliCDBManager::Instance()->GetRun();
-  
-//   printf("\n ++++++ Run Number retrieved as %d \n",run); 
- 
-  AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data",run);
-  AliGRPObject* grpData = 0x0;
-   
-  if(entry){
-    TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
-    if(m){
-       m->Print();
-       grpData = new AliGRPObject();
-       grpData->ReadValuesFromMap(m);
-    }
-    else{
-       grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
-       entry->SetOwner(0);
-    }
-    AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
-  }
-
-  if(!grpData) AliError("No GRP entry found in OCDB!");
-
-// Retrieval of collision mode
-
-  TString beamType = grpData->GetBeamType();
-  if(beamType==AliGRPObject::GetInvalidString()){
-     AliError("GRP/GRP/Data entry:  missing value for the beam type !");
-     AliError("\t VZERO cannot retrieve beam type\n");
-     return;
-  }
-
-   if( (beamType.CompareTo("P-P") ==0)  || (beamType.CompareTo("p-p") ==0) ){
-       fCollisionMode=0;
-  }
-   else if( (beamType.CompareTo("Pb-Pb") ==0)  || (beamType.CompareTo("A-A") ==0) ){
-       fCollisionMode=1;
-   }
-    
-  fBeamEnergy = grpData->GetBeamEnergy();
-  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()) {
-     AliError("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0");
-     fBeamEnergy = 0.;
-  }
-  
-//     printf("\n ++++++ Beam type and collision mode retrieved as %s %d @ %1.3f GeV ++++++\n\n",beamType.Data(), fCollisionMode, fBeamEnergy);
-
 }
 
 //____________________________________________________________________________
@@ -435,32 +450,49 @@ AliVZEROCalibData* AliVZERODigitizer::GetCalibData() const
 
 }
 
-//____________________________________________________________________________
-Int_t AliVZERODigitizer::GetPMNumber(Int_t cell) const
-
-{
-   
-  Int_t pmNumber[80] = { 0,  1,  2,  3,  4,  5,  6,  7,
-                          8,  9, 10, 11, 12, 13, 14, 15, 
-			 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 
-			 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31,
-			 32, 33, 34, 35, 36, 37, 38, 39,
-		         40, 41, 42, 43, 44, 45, 46, 47, 
-			 48, 49, 50, 51, 52, 53, 54, 55,
-			 56, 57, 58, 59, 60, 61, 62, 63 };
-			      
-  return pmNumber[cell];	
-}
-
 double AliVZERODigitizer::SignalShape(double *x, double *par)
 {
+  // this function simulates the time
+  // of arrival of the photons at the
+  // photocathode
   Double_t xx = x[0];
   if (xx <= par[0]) return 0;
   Double_t a = 1./TMath::Power((xx-par[0])/par[1],1./par[2]);
   if (xx <= par[3]) return a;
   Double_t b = 1./TMath::Power((xx-par[3])/par[4],1./par[5]);
-  //  Double_t f = TMath::Min(a,b);
   Double_t f = a*b/(a+b);
   AliDebug(100,Form("x=%f func=%f",xx,f));
   return f;
+}
+
+double AliVZERODigitizer::PMResponse(double *x, double * /* par */)
+{
+  // this function describes the
+  // PM time response to a single
+  // photoelectron
+  Double_t xx = x[0]+kPMRespTime;
+  return xx*xx*TMath::Exp(-xx*xx/(kPMRespTime*kPMRespTime));
+}
+
+double AliVZERODigitizer::SinglePhESpectrum(double *x, double * /* par */)
+{
+  // this function describes the
+  // PM amplitude response to a single
+  // photoelectron
+  Double_t xx = x[0];
+  if (xx < 0) return 0;
+  return (TMath::Poisson(xx,kPMNbOfSecElec)+kPMTransparency*TMath::Poisson(xx,1.0));
+}
+
+Int_t AliVZERODigitizer::Cell2Pmt(Int_t cell) const
+{
+  // The method maps the scintillator
+  // indexes to the PM ones
+  if (cell < 0 || cell >= 80) {
+    AliError(Form("Wrong VZERO cell index %d",cell));
+    return -1;
+  }
+  if (cell < 16) return cell;
+  if (cell < 48) return 8 + cell/2;
+  return cell - 16;
 }

@@ -133,7 +133,6 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	    	
 		calibData->SetPedestal(pedMean);
 		calibData->SetSigma(pedSigma);			
-		calibData->SetGain(adcMean); 
 		calibData->SetADCsigma(adcSigma);
 		}				
 
