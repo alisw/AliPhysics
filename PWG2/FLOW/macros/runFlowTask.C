@@ -5,22 +5,19 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 
 // RUN SETTINGS
 
-//Boolean to run on ESD from real data or ESD from MC data
-Bool_t DATA = kFALSE;
-
 // Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
+Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
 Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
-Bool_t GFC      = kTRUE;  // cumulants based on generating function
-Bool_t QC       = kTRUE;  // cumulants using Q vectors
-Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
-Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
-Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
+Bool_t GFC      = kFALSE;  // cumulants based on generating function
+Bool_t QC       = kFALSE;  // cumulants using Q vectors
+Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
+Bool_t LYZ1SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (integrated v)
+Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
 Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
+Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
@@ -34,17 +31,18 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = -1, 
-		 //const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
-                 //const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
-void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000, 
-		 //const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
-                 //const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
-		 //const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
-		 //const Char_t* dataDir="/PWG0/jgrosseo/run000104892_pass4", Int_t offset=0)
-		 //const Char_t* dataDir="/PWG0/jgrosseo/run000104867_90_92_pass4", Int_t offset=0)
-		 //const Char_t* dataDir="/ALICE/pp010000/MC_LHC09a4_81xxx", Int_t offset=0)
-		 const Char_t* dataDir="/COMMON/COMMON/LHC10a8_run104867_8", Int_t offset=0)
+void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
+		 Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
+                 //Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
+
+//void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000, 
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
+                 //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
+		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/PWG0/jgrosseo/run000104892_pass4", Int_t offset=0)
+		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/PWG0/jgrosseo/run000104867_90_92_pass4", Int_t offset=0)
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/ALICE/pp010000/MC_LHC09a4_81xxx", Int_t offset=0)
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC10a8_run104867_8", Int_t offset=0)
 //void runFlowTask(Int_t mode = mGRID)
 {
   TStopwatch timer;
@@ -106,7 +104,10 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000,
 
   
   //task to check the offline trigger
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  if (mode == mLocal || mode == mGRID) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); }
+  else if (mode == mPROOF || mode == mLocalPAR) {
+    gROOT->LoadMacro("AddTaskPhysicsSelection.C"); }
   AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
   if (!DATA) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
   
@@ -120,13 +121,13 @@ void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000,
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   
-  if (mode==mLocal || mode == mLocalPAR) {
+  if (mode == mLocal || mode == mLocalPAR) {
     mgr->StartAnalysis("local",chain);
   }
-  else if (mode==mPROOF) {
+  else if (mode == mPROOF) {
     mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   }
-  else if (mode==mGRID) { 
+  else if (mode == mGRID) { 
     mgr->StartAnalysis("grid");
   }
   
