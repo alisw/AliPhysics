@@ -790,6 +790,16 @@ else
 				        have_alicalorawstream=yes], 
   				       [])
     AC_MSG_RESULT([$have_alicalorawstream])
+
+    have_aliesdcalocluster_r38477=no
+    AC_MSG_CHECKING([for AliESDCaloCluster r38477])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliESDCaloCluster.h>], 
+                                       [AliESDCaloCluster cluster;
+    				        cluster.SetTrackDistance(0.0, 0.0)]);],
+                                       [have_aliesdcalocluster_r38477=yes],
+    				         [AC_DEFINE(HAVE_NOT_ALIESDCALOCLUSTER_r38477)])
+    AC_MSG_RESULT([$have_aliesdcalocluster_r38477])
+
     AC_LANG_POP(C++)
     CPPFLAGS="$save_CPPFLAGS"
   fi
