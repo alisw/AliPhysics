@@ -39,6 +39,7 @@ void compare_HLT_offline_local(){
   //-------------- Compile the analysis task ---------- //
   
   gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
+  gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
 
   
   AliTagAnalysis *TagAna = new AliTagAnalysis("ESD"); 
