@@ -84,14 +84,23 @@ void compare_HLT_offline_local(){
  
   //-------------- define the tasks ------------//
   
-  AliAnalysisTaskHLTTPC *task1 = new AliAnalysisTaskHLTTPC("offhlt_comparison");
+  AliAnalysisTaskHLTTPC *task1 = new AliAnalysisTaskHLTTPC("offhlt_comparison_TPC");
   mgr->AddTask(task1);
 
-  AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
+  AliAnalysisTaskHLTPHOS *taskPHOS = new AliAnalysisTaskHLTPHOS("offhlt_comparison_PHOS");
+  mgr->AddTask(taskPHOS);
+
+  AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
+  AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
   
   mgr->ConnectInput(task1,0,mgr->GetCommonInputContainer());
   //mgr->ConnectOutput (task1, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(task1,1,coutput1);
+  
+  mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskPHOS,1,coutput2);
+  
+  
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
