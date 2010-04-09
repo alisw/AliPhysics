@@ -346,7 +346,6 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
       for(int i = 0; i < fTrgStrings->GetEntriesFast(); i++){
 	const TObjString *const obString=(TObjString*)fTrgStrings->At(i);
 	const TString tString=obString->GetString();
-	printf("Trigger Output: %i\n",CheckCTPTrigger(tString.Data()));
 	if(CheckCTPTrigger(tString.Data())>0){TriggerPassed=kTRUE; break;}
       }
     }
