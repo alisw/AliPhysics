@@ -213,7 +213,7 @@ AliTPCTransformation::~AliTPCTransformation(){
   delete fBitMask;
   delete fFixedParam;
 }
-void AliTPCTransformation::SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, TVectorD* fixedParams){
+void AliTPCTransformation::SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, const TVectorD *const fixedParams){
   //
   // Set parameters of transformation
   //
@@ -439,7 +439,7 @@ Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, Double_t * par
   return deltaAlpha*xyz[3];
 }
 
-Double_t  AliTPCTransformation::TPClocalRPhiEdge(Double_t *xyz, Double_t * param){
+Double_t  AliTPCTransformation::TPClocalRPhiEdge(Double_t *xyz, const Double_t *const param){
   //
   //
   // Scaling if the local y -phi
@@ -488,7 +488,7 @@ Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, Double_t * pa
 }
 
 
-Double_t       AliTPCTransformation::TPCdeltaFCROC(Double_t *xyz, Double_t * param){
+Double_t       AliTPCTransformation::TPCdeltaFCROC(Double_t *xyz, const Double_t *const param){
   // 
   // delta R(Z) ROC induced
   // param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
@@ -515,7 +515,7 @@ Double_t       AliTPCTransformation::TPCdeltaFCROC(Double_t *xyz, Double_t * par
 }
 
 
-Double_t       AliTPCTransformation::TPCdeltaFCCE(Double_t *xyz, Double_t * param){
+Double_t       AliTPCTransformation::TPCdeltaFCCE(Double_t *xyz, const Double_t *const param){
   // 
   // delta R(Z) CE (central electrode) induced
   // param[0] - switch  0 - use distance to IFC - 1 - distance to IFC
@@ -551,7 +551,7 @@ Double_t       AliTPCTransformation::TPCdeltaFCCE(Double_t *xyz, Double_t * para
 //
 //
 //
-Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, Double_t * param){
+Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
@@ -573,7 +573,7 @@ Double_t AliTPCTransformation:: TPClocaldLxdGX(Double_t *xyz, Double_t * param){
   return ca*factor;    
 }
 
-Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, Double_t * param){
+Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
@@ -595,7 +595,7 @@ Double_t AliTPCTransformation::TPClocaldLxdGY(Double_t *xyz, Double_t * param){
   return   sa*factor;  
 }
 
-Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, Double_t * param){
+Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
@@ -617,7 +617,7 @@ Double_t AliTPCTransformation:: TPClocaldLydGX(Double_t *xyz, Double_t * param){
   return            -sa*factor;  
 }
 
-Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, Double_t * param){
+Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter
@@ -640,7 +640,7 @@ Double_t AliTPCTransformation::TPClocaldLydGY(Double_t *xyz, Double_t * param){
 }
 
 
-Double_t AliTPCTransformation::TPClocaldRzdGX(Double_t *xyz, Double_t * param){
+Double_t AliTPCTransformation::TPClocaldRzdGX(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter - rotation angle in mrad
@@ -671,7 +671,7 @@ Double_t AliTPCTransformation::TPClocaldRzdGX(Double_t *xyz, Double_t * param){
   return  dgxR;            
 }
 
-Double_t AliTPCTransformation::TPClocaldRzdGY(Double_t *xyz, Double_t * param){
+Double_t AliTPCTransformation::TPClocaldRzdGY(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //       [3]    - scale parameter - rotation angle in mrad
@@ -724,7 +724,7 @@ Double_t        AliTPCTransformation::TPCDeltaZMediumLong(Double_t *xyz, Double_
   return xyz[3]*sign*signZ;
 }
 
-Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, Double_t * param){
+Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, const Double_t *const param){
   //
   // xyz - [0..2] - position 
   //        [3]    - scale parameter
@@ -746,7 +746,7 @@ Double_t        AliTPCTransformation::TPCDeltaZ(Double_t *xyz, Double_t * param)
 }
 
 
-Double_t       AliTPCTransformation::TPCTiltingZ(Double_t *xyz, Double_t * param){
+Double_t       AliTPCTransformation::TPCTiltingZ(Double_t *xyz, const Double_t *const param){
   // xyz - [0..2] - position 
   //        [3]    - scale parameter
   //        [4]    - volID

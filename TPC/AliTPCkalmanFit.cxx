@@ -125,10 +125,10 @@ void AliTPCkalmanFit::Init(){
   fCalibCovar = new TMatrixD(ncalibs,ncalibs);
   for (Int_t icalib=0;icalib<ncalibs; icalib++){
     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
-    (*fCalibParam)(icalib,0) = transform->fParam;
+    (*fCalibParam)(icalib,0) = transform->GetParam();
     for (Int_t jcalib=0;jcalib<ncalibs; jcalib++){
       if (icalib!=jcalib) (*fCalibCovar)(icalib,jcalib)= 0;
-      if (icalib==jcalib) (*fCalibCovar)(icalib,jcalib) = transform->fSigma*transform->fSigma;    
+      if (icalib==jcalib) (*fCalibCovar)(icalib,jcalib) = transform->GetSigma()*transform->GetSigma();    
     }
   }
   //
@@ -364,7 +364,7 @@ void AliTPCkalmanFit::FitTrackLinear(AliTrackPointArray &points, TTreeSRedirecto
   // save current param and covariance
   for (Int_t i=0; i<ncalibs;i++){
     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(i);
-    transform->fParam= (*fLinearParam)(i,0);
+    transform->SetParam( (*fLinearParam)(i,0));
     (*fCalibParam)(i,0) = (*fLinearParam)(i,0);
     for (Int_t j=0; j<ncalibs;j++){
       (*fCalibCovar)(i,j) = (*fLinearCovar)(i,j);
@@ -631,8 +631,8 @@ void AliTPCkalmanFit::PropagateTime(Int_t time){
   fLastTimeStamp = time;  
   for (Int_t icalib=0;icalib<ncalibs; icalib++){
     AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
-    if ((*fCalibCovar)(icalib,icalib)<transform->fSigmaMax*transform->fSigmaMax)
-      (*fCalibCovar)(icalib,icalib)+=  transform->fSigma2Time*TMath::Abs(deltaT);
+    if ((*fCalibCovar)(icalib,icalib)<transform->GetSigmaMax()*transform->GetSigmaMax())
+      (*fCalibCovar)(icalib,icalib)+=  transform->GetSigma2Time()*TMath::Abs(deltaT);
   }
 }
 
@@ -857,9 +857,9 @@ void AliTPCkalmanFit::ApplyCalibration(AliTrackPointArray *array, Double_t csign
     Double_t dxdydz[3]={0,0,0};
     for (Int_t icalib=0; icalib<ncalibs; icalib++){
       AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
-      dxdydz[0] += transform->GetDeltaXYZ(0,volId, transform->fParam, xyz[0], xyz[1], xyz[2]); 
-      dxdydz[1] += transform->GetDeltaXYZ(1,volId, transform->fParam, xyz[0], xyz[1], xyz[2]);  
-      dxdydz[2] += transform->GetDeltaXYZ(2,volId, transform->fParam, xyz[0], xyz[1], xyz[2]);  
+      dxdydz[0] += transform->GetDeltaXYZ(0,volId, transform->GetParam(), xyz[0], xyz[1], xyz[2]); 
+      dxdydz[1] += transform->GetDeltaXYZ(1,volId, transform->GetParam(), xyz[0], xyz[1], xyz[2]);  
+      dxdydz[2] += transform->GetDeltaXYZ(2,volId, transform->GetParam(), xyz[0], xyz[1], xyz[2]);  
     }
     ((Float_t*)array->GetX())[ipoint]+=csign*dxdydz[0];
     ((Float_t*)array->GetY())[ipoint]+=csign*dxdydz[1];

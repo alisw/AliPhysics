@@ -21,18 +21,24 @@ public:
   ~AliTPCTransformation();
   //
   virtual Double_t GetDeltaXYZ(Int_t coord, Int_t volID, Double_t param, Double_t x, Double_t y, Double_t z);
-  void SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, TVectorD* fixedParams);
+  void SetParams(Double_t param, Double_t sigma, Double_t sigma2Time, const TVectorD *const fixedParams);
   Bool_t Init();
   void   SetActive(Bool_t flag){ fIsActive = flag;}
-  Bool_t IsActive(){return fIsActive;}
+  Bool_t IsActive() const {return fIsActive;}
   //
+  Double_t GetParam() const {return fParam;}
+  void SetParam(Double_t param) {fParam=param;}
+  Double_t GetSigma() const {return fSigma;}
+  Double_t GetSigmaMax() const {return fSigmaMax;}
+  Double_t GetSigma2Time() const {return fSigma2Time;}
   //
   static TBits * BitsSide(Bool_t aside);
   static TBits * BitsAll();
   static void RegisterFormula(const char * name, GenFuncG formula);
   static AliTPCTransformation::GenFuncG FindFormula(const char * name);
   static Double_t Eval(const char * name, const Double_t*x,const Double_t*par);
-public:
+
+ private:
   //
   TString  * fNameX;         // x formula
   TString  * fNameY;         // y formula
@@ -55,7 +61,7 @@ public:
   static  Double_t       TPCscalingZDriftGy(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingZDriftT0(Double_t *xyz, Double_t * param);
   static  Double_t       TPCscalingPhiLocal(Double_t *xyz, Double_t * param);
-  static  Double_t       TPClocalRPhiEdge(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocalRPhiEdge(Double_t *xyz, const Double_t *const param);
   //
   // TPC Field cage + ROC misalingment induced distortion
   //
@@ -64,18 +70,18 @@ public:
   //
   // TPC field cage + ROC misalignemnt induced distortion
   //
-  static  Double_t       TPCdeltaFCROC(Double_t *xyz, Double_t * param); 
-  static  Double_t       TPCdeltaFCCE(Double_t *xyz, Double_t * param); 
+  static  Double_t       TPCdeltaFCROC(Double_t *xyz, const Double_t *const param); 
+  static  Double_t       TPCdeltaFCCE(Double_t *xyz, const Double_t *const param); 
 
   //
   // TPC local misalignment
   //
-  static  Double_t       TPClocaldLxdGX(Double_t *xyz, Double_t * param);
-  static  Double_t       TPClocaldLxdGY(Double_t *xyz, Double_t * param);
-  static  Double_t       TPClocaldLydGX(Double_t *xyz, Double_t * param);
-  static  Double_t       TPClocaldLydGY(Double_t *xyz, Double_t * param);
-  static  Double_t       TPClocaldRzdGX(Double_t *xyz, Double_t * param);
-  static  Double_t       TPClocaldRzdGY(Double_t *xyz, Double_t * param);
+  static  Double_t       TPClocaldLxdGX(Double_t *xyz, const Double_t *const param);
+  static  Double_t       TPClocaldLxdGY(Double_t *xyz, const Double_t *const param);
+  static  Double_t       TPClocaldLydGX(Double_t *xyz, const Double_t *const param);
+  static  Double_t       TPClocaldLydGY(Double_t *xyz, const Double_t *const param);
+  static  Double_t       TPClocaldRzdGX(Double_t *xyz, const Double_t *const param);
+  static  Double_t       TPClocaldRzdGY(Double_t *xyz, const Double_t *const param);
 
   //
   // TPC  quadrant misalignment
@@ -85,9 +91,9 @@ public:
   //
   // Z shift -
   //
-  static  Double_t       TPCDeltaZ(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCDeltaZ(Double_t *xyz, const Double_t *const param);
   static  Double_t       TPCDeltaZMediumLong(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCTiltingZ(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCTiltingZ(Double_t *xyz, const Double_t *const param);
   //
   Bool_t    fInit;          // initialization flag
   GenFuncG  fFormulaX;      //! x formula
@@ -95,7 +101,7 @@ public:
   GenFuncG  fFormulaZ;      //! z formula
   static  GenFuncG    fgFormulas[10000];   //! array of pointers to formula
   static  TObjArray*  fgFormulasName;      //! array of formalas name
-private:
+
   AliTPCTransformation &operator=(const AliTPCTransformation&);    // not implemented
 
   ClassDef(AliTPCTransformation,2);

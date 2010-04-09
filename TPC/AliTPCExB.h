@@ -1,9 +1,9 @@
-#ifndef ALITPC_EXB
-#define ALITPC_EXB
+#ifndef ALITPCEXB_H
+#define ALITPCEXB_H
 
 class AliMagF;
 #include "TObject.h"
-#include "TVectorD.h"
+#include "TVectorDfwd.h"
 
 class AliTPCExB:public TObject {
 public:
@@ -26,7 +26,7 @@ public:
   static Double_t GetDphi(Double_t r, Double_t phi, Double_t z, Double_t bz=5);
   static Double_t GetDz(Double_t r, Double_t phi, Double_t z, Double_t bz=5);
   static AliTPCExB*  Instance(){return fgInstance;}
-  static void SetInstance(AliTPCExB*param){fgInstance = param;}
+  static void SetInstance(AliTPCExB *const param){fgInstance = param;}
   //
   // Mag field scans
   //
@@ -46,9 +46,9 @@ public:
   //
   Double_t Eval(Int_t type, Double_t r, Double_t phi, Double_t z);
   Double_t SEval(Int_t type, Double_t r, Double_t phi, Double_t z){return Instance()->Eval(type,r,phi,z);}
-  static Double_t EvalMat(TVectorD &vec, Double_t r, Double_t phi, Double_t z);     // evalute parameterization
+  static Double_t EvalMat(const TVectorD &vec, Double_t r, Double_t phi, Double_t z);     // evalute parameterization
  
- public:
+ private:
   TVectorD *          fMatBrBz;       //param matrix Br/Bz
   TVectorD *          fMatBrfiBz;     //param matrix Br/Bz
   TVectorD *          fMatBrBzI0;     //param matrix Br/Bz integral  z>0 
@@ -56,7 +56,6 @@ public:
   TVectorD *          fMatBrfiBzI0;   //param matrix Br/Bz integral  z>0 
   TVectorD *          fMatBrfiBzI1;   //param matrix Br/Bz integral  z<0
   
- private:
   static AliTPCExB*   fgInstance;  //! Instance of this class (singleton implementation)
   static TObjArray    fgArray;     //! array of magnetic fields
   //

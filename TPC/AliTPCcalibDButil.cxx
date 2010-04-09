@@ -937,7 +937,7 @@ AliTPCCalPad* AliTPCcalibDButil::CreatePadTime0(Int_t model, Double_t &gyA, Doub
   return padTime0;
 }
 //_____________________________________________________________________________________
-Float_t AliTPCcalibDButil::GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC *rocOut)
+Float_t AliTPCcalibDButil::GetMeanAltro(const AliTPCCalROC *roc, const Int_t row, const Int_t pad, AliTPCCalROC *const rocOut)
 {
   //
   // GetMeanAlto information

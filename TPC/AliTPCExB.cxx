@@ -1,6 +1,6 @@
 #include "AliTPCExB.h"
 #include "TMath.h"
-#include "TTreeStream.h"
+//#include "TTreeStream.h"
 #include "AliMagF.h"
 #include "TLinearFitter.h"
 #include "AliTPCcalibDB.h"
@@ -413,7 +413,7 @@ Double_t AliTPCExB::Eval(Int_t type, Double_t r, Double_t phi, Double_t z){
 }
 
 
-Double_t AliTPCExB::EvalMat(TVectorD &vec, Double_t r, Double_t phi, Double_t z){
+Double_t AliTPCExB::EvalMat(const TVectorD &vec, Double_t r, Double_t phi, Double_t z){
   //
   // Evaluate taylor expansion in r,phi,z
   //

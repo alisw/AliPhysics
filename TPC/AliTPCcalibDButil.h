@@ -12,9 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-#include <TArrayI.h>
-#include <TVectorD.h>
-#include <TVectorF.h>
+class TArrayI;
+#include <TVectorDfwd.h>
+#include <TVectorFfwd.h>
 
 class TGraph;
 class TMap;
@@ -91,25 +91,25 @@ public:
   //setters for pad by pad information
   void SetPulserData(AliTPCCalPad * const tmean, AliTPCCalPad * const trms=0x0, AliTPCCalPad * const qmean=0x0)
                 {fPulserTmean=tmean; fPulserTrms=trms; fPulserQmean=qmean;}
-  void SetCEData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
+  void SetCEData(AliTPCCalPad *const tmean, AliTPCCalPad *const trms=0x0, AliTPCCalPad *const qmean=0x0)
                 {fCETmean=tmean; fCETrms=trms; fCEQmean=qmean;}
-  void SetNoisePedestal(AliTPCCalPad *noise, AliTPCCalPad *pedestal=0x0)
+  void SetNoisePedestal(AliTPCCalPad *const noise, AliTPCCalPad *const pedestal=0x0)
                 {fPadNoise=noise; fPedestals=pedestal;}
-  void SetALTROData(AliTPCCalPad *masked)
+  void SetALTROData(AliTPCCalPad *const masked)
                 {fALTROMasked=masked;}
-  void SetGoofieArray(AliDCSSensorArray *arr) {fGoofieArray=arr;}
+  void SetGoofieArray(AliDCSSensorArray *const arr) {fGoofieArray=arr;}
   
   //setters for pad by pad information
   void SetRefFile(const char* filename);
   void SetReferenceRun(Int_t run=-1);
   void UpdateRefDataFromOCDB();
-  void SetRefPulserData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
+  void SetRefPulserData(AliTPCCalPad *const tmean, AliTPCCalPad *const trms=0x0, AliTPCCalPad *const qmean=0x0)
                 {fRefPulserTmean=tmean; fRefPulserTrms=trms; fRefPulserQmean=qmean;}
-  void SetRefCEData(AliTPCCalPad *tmean, AliTPCCalPad *trms=0x0, AliTPCCalPad *qmean=0x0)
+  void SetRefCEData(AliTPCCalPad *const tmean, AliTPCCalPad *const trms=0x0, AliTPCCalPad *const qmean=0x0)
                 {fRefCETmean=tmean; fRefCETrms=trms; fRefCEQmean=qmean;}
-  void SetRefNoisePedestal(AliTPCCalPad *noise, AliTPCCalPad *pedestal=0x0)
+  void SetRefNoisePedestal(AliTPCCalPad *const noise, AliTPCCalPad *const pedestal=0x0)
                 {fRefPadNoise=noise; fRefPedestals=pedestal;}
-  void SetRefALTROData(AliTPCCalPad *masked)
+  void SetRefALTROData(AliTPCCalPad *const masked)
                 {fRefALTROMasked=masked;}
   
   //creation of derived pad by pad calibration data
