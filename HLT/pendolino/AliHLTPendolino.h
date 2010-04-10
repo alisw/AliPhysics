@@ -267,6 +267,9 @@ class AliHLTPendolino : public AliShuttleInterface {
 		 */
 //		virtual const char* GetTriggerConfiguration(); --> is private now
 
+  virtual const char* GetCTPTimeParams() {return "";}
+  virtual void Log(const char* name, const char* message, UInt_t level);
+
 		/**
 		 * Registers a preprocessor; actually it has to be a PredictionProcessor
 		 * since the Pendolino requires a PredictionProcessor. If the registered

@@ -27,6 +27,7 @@
 #include "AliHLTPredictionProcessorInterface.h"
 #include "AliHLTPendolinoLogger.h"
 #include "AliHLTPendolinoLoggerOStream.h"
+#include "AliHLTLogging.h"
 
 #include <AliCDBPath.h>
 #include <AliCDBEntry.h>
@@ -47,7 +48,7 @@ using namespace std;
 
 
 ClassImp(AliHLTPendolino)
-		
+
 
 /** Static string to define a local storage for the OCDB contact. */
 const TString AliHLTPendolino::kLOCAL_STORAGE_DEFINE = "local://";
@@ -783,4 +784,17 @@ UInt_t AliHLTPendolino::GetEndTimeDCSQuery()
 	return fEndTime;
 }
 
+void AliHLTPendolino::Log(const char* name , const char* message, UInt_t level)
+{
+  AliHLTLogging log;
+  AliHLTComponentLogSeverity severity=kHLTLogInfo;
+  switch (level) {
+  case 1: severity=kHLTLogBenchmark; break;
+  case 2: severity=kHLTLogDebug; break;
+  case 3: severity=kHLTLogInfo; break;
+  case 4: severity=kHLTLogWarning; break;
+  default: severity=kHLTLogError;
+  }
+  log.LoggingVarargs(severity, "AliHLTPendolino", name , __FILE__ , __LINE__ , message);
+}
 

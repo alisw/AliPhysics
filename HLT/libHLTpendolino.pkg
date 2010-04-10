@@ -2,6 +2,7 @@
 # $Id$
 
 CLASS_HDRS:=  	AliHLTPendolino.h \
+		AliHLTPendolinoListReader.h \
 		PredictionProcessor/AliHLTPredictionProcessorInterface.h \
 		PredictionProcessor/AliHLTPendolinoLoggerOStream.h \
 		PredictionProcessor/AliHLTPredictionProcessorDummy.h \
