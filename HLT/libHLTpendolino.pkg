@@ -22,8 +22,6 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 MODULE_DHDR:= 		
 
 EINCLUDE := 	HLT/pendolino \
-		HLT/pendolino/PendolinoHelper \
-		HLT/pendolino/DCSClient \
 		HLT/pendolino/PredictionProcessor \
 		HLT/pendolino/PredictionProcessor/HLT \
 		HLT/pendolino/PredictionProcessor/MUON \
