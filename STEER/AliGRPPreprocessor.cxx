@@ -831,31 +831,18 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		}
 		
 		// Processing data to go to AliLHCData object
-
-		TMap* lhcMap = (TMap*)lhcReader.ReadLHCDP(fileName.Data());
-		if (lhcMap) {
-			Log(Form("LHCData map entries = %d",lhcMap->GetEntries()));
-			
-			AliLHCData* dt = new AliLHCData(lhcMap,timeStart,timeEnd);
-			
-			// storing AliLHCData in OCDB
-			if (dt){			
-				AliCDBMetaData md;
-				md.SetResponsible("Ruben Shahoyan");
-				md.SetComment("LHC data from the GRP preprocessor.");
-				
-				Bool_t result = kTRUE;
-				result = Store("GRP", "LHCData", dt, &md); 
-				delete dt;
-				if (result) return 0;
-				else return 3;
-			}
-			else return 4;
-			delete lhcMap; 
-		}
-		else {
-			AliError("Cannot read correctly LHCData file");
-			return 2;
+		AliLHCData* dt = new AliLHCData(fileName.Data(),timeStart,timeEnd);
+		// storing AliLHCData in OCDB
+		if (dt){
+		  AliInfo(Form("Filled %d records to AliLHCData object",dt->GetData().GetEntriesFast()));
+		  AliCDBMetaData md;
+		  md.SetResponsible("Ruben Shahoyan");
+		  md.SetComment("LHC data from the GRP preprocessor.");
+		  Bool_t result = kTRUE;
+		  result = Store("GRP", "LHCData", dt, &md); 
+		  delete dt;
+		  if (result) return 0;
+		  else return 3;
 		}
 	}
 	

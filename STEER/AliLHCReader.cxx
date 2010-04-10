@@ -60,7 +60,7 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 	//
 	// reading the file with the inputs
 	//
-
+  gSystem->ExpandPathName(filename);
        	if( gSystem->AccessPathName( filename.Data() ) ) {
 		AliError(Form( "file (%s) not found", filename.Data() ) );
 		return NULL;
@@ -92,6 +92,14 @@ TMap* AliLHCReader::ReadLHCDP(TString filename)
 		}
 		TObjArray* tokens = strLine.Tokenize("\t");
 		Int_t ntokens = tokens->GetEntriesFast();
+		//
+		if ( strLine.Contains("LHC_ENTRIES ") ) {
+		  // RS: special treatment for "LHC_ENTRIES N" record, which is space (and not tab) separated)
+		  delete tokens;
+		  tokens = strLine.Tokenize(" ");
+		  ntokens = tokens->GetEntriesFast();
+		}
+		//
 		AliDebug(3,Form("Number of tokens = %d",ntokens));
 		if (ntokens == 2 && !(((TObjString*)tokens->At(0))->String()).CompareTo("LHC_ENTRIES")){
 			lhcEntries = (((TObjString*)tokens->At(1))->String()).Atoi();
@@ -220,7 +228,7 @@ TObjArray* AliLHCReader::ReadSingleLHCDP(TString filename, TString alias)
 	// reading the file with the inputs for the selected alias
 	// returning the TObjArray containing the information only for the current alias
 	//
-
+  gSystem->ExpandPathName(filename);
        	if( gSystem->AccessPathName( filename.Data() ) ) {
 		AliError(Form( "file (%s) not found", filename.Data() ) );
 		return NULL;
