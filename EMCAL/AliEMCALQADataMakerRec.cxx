@@ -380,7 +380,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   // make sure EMCal was readout during the event
   Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
-  const UInt_t *detPattern = reader->GetDetectorPattern(); 
+  const UInt_t *detPattern = rawReader->GetDetectorPattern(); 
   UInt_t emcInReadout = ( ((1 << emcID) & detPattern[0]) >> emcID);
   if (! emcInReadout) return; // no point in looking at this event, if no EMCal data
 
