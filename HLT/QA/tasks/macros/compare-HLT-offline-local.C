@@ -40,7 +40,7 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 
   
-  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE;
+  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -54,23 +54,25 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
          if(argument.CompareTo("tpc", TString::kIgnoreCase)==0){
 	    bTPC = kTRUE;
 	    continue;
-         } 
-       
+         }        
          if(argument.CompareTo("phos", TString::kIgnoreCase)==0){
   	    bPHOS = kTRUE;
 	    continue;
-         }
-         
+         }         
 	 if(argument.CompareTo("its", TString::kIgnoreCase)==0){
   	    bITS = kTRUE;
 	    continue;
-         }
-        
+         }	
+	 if(argument.CompareTo("global", TString::kIgnoreCase)==0){
+  	    bGLOBAL = kTRUE;
+	    continue;
+         }        
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
-	    bTPC  = kTRUE;
-	    bPHOS = kTRUE;
-	    bITS  = kTRUE;
-	    bAll  = kTRUE;
+	    bTPC    = kTRUE;
+	    bPHOS   = kTRUE;
+	    bITS    = kTRUE;
+	    bGLOBAL = kTRUE;
+	    bAll    = kTRUE;
 	    continue;
          }
          else break;
@@ -79,9 +81,10 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
     
   
   //-------------- Compile the analysis tasks ---------- //
-  if(bTPC)  gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
-  if(bPHOS) gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
-  if(bITS)  gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
+  if(bTPC)    gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
+  if(bPHOS)   gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
+  if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
+  if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
 
   
   AliTagAnalysis *TagAna = new AliTagAnalysis("ESD"); 
@@ -150,6 +153,14 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
      AliAnalysisDataContainer *coutput3 =  mgr->CreateContainer("its_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-ITS-comparison.root");  
      mgr->ConnectInput(taskITS,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskITS,1,coutput3);
+  }
+ 
+  if(bGLOBAL){
+     AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
+     mgr->AddTask(taskGLOBAL);
+     AliAnalysisDataContainer *coutput4 =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
+     mgr->ConnectInput(taskGLOBAL,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(taskGLOBAL,1,coutput4);
   }
   
   if (!mgr->InitAnalysis()) return;
