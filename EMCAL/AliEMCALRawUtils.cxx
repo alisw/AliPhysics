@@ -453,6 +453,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 
 	// go from time-bin units to physical time fgtimetrigger
 	time = time * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
+	// subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
+	time -= in.GetL1Phase();
 
 	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
 	// printf("Added tower: SM %d, row %d, column %d, amp %3.2f\n",in.GetModule(), in.GetRow(), in.GetColumn(),amp);

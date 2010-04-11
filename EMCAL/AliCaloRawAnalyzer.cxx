@@ -98,31 +98,29 @@ AliCaloRawAnalyzer::SelectSubarray( const Double_t *fData, const int length, con
 {
   //Selection of subset of data from one bunch that will be used for fitting or
   //Peak finding.  Go to the left and right of index of the maximum time bin
-  //Untile the ADC value is less that fFitArrayCut
+  //Until the ADC value is less that fFitArrayCut, or derivative changes sign (data jump)
   int tmpfirst =  maxindex;
   int tmplast  =  maxindex;
+  Double_t valFirst =  fData[maxindex];
+  Double_t valLast  =  fData[maxindex];
   
-  while((  tmpfirst  ) > 0  &&  ( fData[tmpfirst] >  fFitArrayCut   ))  
+  while( (tmpfirst >= 0) && (fData[tmpfirst] >= fFitArrayCut) &&
+	 (fData[tmpfirst]<valFirst || tmpfirst==maxindex) )  
     {
+      valFirst = fData[tmpfirst];
       tmpfirst -- ;
     }
   
-  while(( tmplast ) <  (length-1)   && ( fData [tmplast] >  fFitArrayCut ))
+  while( (tmplast < length) && (fData[tmplast] >= fFitArrayCut) &&
+	 (fData[tmplast]<valLast || tmplast==maxindex) )  
     {
+      valLast = fData[tmplast];
       tmplast ++;
     }
 
-
   *first = tmpfirst +1;
   *last =  tmplast -1;
-
-  int nsamples = *last - *first + 1;
-  if (nsamples < fNsampleCut) {
-    // keep edge bins (below threshold) also, for low # of samples case    
-    *first = tmpfirst;
-    *last =  tmplast; 
-  }
-
+  return;
 }
 
 
