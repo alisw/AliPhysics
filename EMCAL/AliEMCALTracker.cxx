@@ -438,7 +438,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 	
 	// step 5:
 	// save obtained information setting the 'fEMCALindex' field of AliESDtrack object
-	Int_t nSaved = 0, trackID, nGood = 0, nFake = 0;
+	Int_t nSaved = 0, trackID;
 	TListIter iter(fMatches);
 	AliEMCALMatch *match = 0;
 	while ( (match = (AliEMCALMatch*)iter.Next()) ) {
@@ -452,15 +452,8 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 		// cut on its and tpc track hits
 		if(esdTrack->GetNcls(0)<=fCutNITS)continue;
 		if(esdTrack->GetNcls(1)<=fCutNTPC)continue;
-
-		if (TMath::Abs(esdTrack->GetLabel()) == cluster->Label()) {
-			esdTrack->SetEMCALcluster(cluster->Index());
-			nGood++;
-		}
-		else {
-			esdTrack->SetEMCALcluster(-cluster->Index());
-			nFake++;
-		}
+	      
+		esdTrack->SetEMCALcluster(cluster->Index());
 		nSaved++;
 	}
 	/*
@@ -477,18 +470,13 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 		else {
 			AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(clusterID);
 			if (!cluster) continue;
-			if (esdTrack->GetLabel() == cluster->Label()) {
-				nGood++;
-				esdTrack->SetEMCALcluster(cluster->Index());
-			}
-			else {
-				esdTrack->SetEMCALcluster(-cluster->Index());
-			}
+		
+			esdTrack->SetEMCALcluster(cluster->Index());
 			nSaved++;
 		}
 	}
 	*/
-	AliDebug(1,Form("Saved %d matches [%d good + %d fake]", nSaved, nGood, nFake));
+	AliDebug(1,Form("Saved %d matches", nSaved));
 
 	return 0;
 }
