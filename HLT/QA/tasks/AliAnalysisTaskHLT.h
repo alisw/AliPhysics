@@ -46,18 +46,21 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
 
     TH1F *fHistTrigger, *fHistHLTTrigger; //! trigger counters 
        
-    TH1F *fMomentum_off;   //! momentum     
-    TH1F *fDCA_off;        //! track DCA to beam line	
-    TH1F *fNcluster_off;   //! #clusters per track
-    TH1F *fdEdx_off;       //! TPC signal (offline)
-    TH2F *fdEdx_vs_P_off;  //! dE/dx versus momentum for offline TPC tracks
-    TH1F *fPhi_off;        //! azimuthal angle distribution
-    TH1F *fTheta_off;      //! polar angle distribution
-    TH1F *fMult_off;       //! track multiplicity of the event
-    TH2F *fXYvertex_off;   //! XY primary vertex distribution
-    TH1F *fXvertex_off;    //! X primary vertex distribution
-    TH1F *fYvertex_off;    //! Y primary vertex distribution
-    TH1F *fZvertex_off;    //! Z primary vertex distribution
+    TH1F  *fMomentum_off;       //! momentum	 
+    TH1F  *fDCA_off;            //! track DCA to beam line	  
+    TH1F  *fNcluster_off;       //! #clusters per track
+    TH1F  *fdEdx_off;           //! TPC signal (offline)
+    TH2F  *fdEdx_vs_P_off;      //! dE/dx vs. momentum 
+    TH1F  *fPhi_off;            //! azimuthal angle distribution
+    TH1F  *fTheta_off;          //! polar angle distribution
+    TH1F  *fMult_off;           //! track multiplicity of the event    
+    TH2F  *fXYvertex_off;       //! XY primary vertex distribution
+    TH1F  *fXvertex_off;        //! X primary vertex distribution
+    TH1F  *fYvertex_off;        //! Y primary vertex distribution
+    TH1F  *fZvertex_off;        //! Z primary vertex distribution
+    TH1F  *fEta_off;            //! pseudorapidity
+    TH2F  *fNclus_vs_phi_off;   //! clusters per track vs. azimuthal angle 
+    TH2F  *fNclus_vs_theta_off; //! clusters per track vs. polar angle 
     
     TH1F  *fMomentum_hlt; 
     TH1F  *fDCA_hlt;	  
@@ -71,6 +74,9 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fXvertex_hlt;  
     TH1F  *fYvertex_hlt;  
     TH1F  *fZvertex_hlt;  
+    TH1F  *fEta_hlt;
+    TH2F  *fNclus_vs_phi_hlt;
+    TH2F  *fNclus_vs_theta_hlt;
    
 //     TH1F *fDCA_off_trig;      //! track DCA to beam line for triggered events
 //     TH1F *fNcluster_off_trig; //! #clusters per track for triggered events

@@ -67,7 +67,10 @@ ClassImp(AliAnalysisTaskHLT)
     ,fXYvertex_off(0)	
     ,fXvertex_off(0)	    
     ,fYvertex_off(0)	    
-    ,fZvertex_off(0)	    
+    ,fZvertex_off(0)
+    ,fEta_off(0)
+    ,fNclus_vs_phi_off(0)
+    ,fNclus_vs_theta_off(0)
     
     ,fMomentum_hlt(0)
     ,fDCA_hlt(0)  
@@ -81,6 +84,9 @@ ClassImp(AliAnalysisTaskHLT)
     ,fXvertex_hlt(0)
     ,fYvertex_hlt(0)
     ,fZvertex_hlt(0)
+    ,fEta_hlt(0)
+    ,fNclus_vs_phi_hlt(0)	    
+    ,fNclus_vs_theta_hlt(0)
     
 //     ,fDCA_off_trig(0)
 //     ,fNcluster_off_trig(0)
@@ -154,39 +160,48 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fMomentum_off = new TH1F("fMomentum_off", "momentum (offline)",300, 0., 100);
   fMomentum_hlt = new TH1F("fMomentum_hlt", "momentum (HLT)",    300, 0., 100);
  
-  fDCA_off = new TH1F("fDCA_off","DCA to beam line (offline)",250, 0, 250);
-  fDCA_hlt = new TH1F("fDCA_hlt","DCA to beam line (HLT)",    250, 0, 250);
+  fDCA_off = new TH1F("fDCA_off","DCA to beam line (offline)",200, -100, 100);
+  fDCA_hlt = new TH1F("fDCA_hlt","DCA to beam line (HLT)",    200, -100, 100);
  
-  fNcluster_off = new TH1F("fNcluster_off","clusters per track (offline)",200, 0, 200);
-  fNcluster_hlt = new TH1F("fNcluster_hlt","clusters per track (HLT)",    200, 0, 200);
+  fNcluster_off = new TH1F("fNcluster_off","clusters per track (offline)", 200, 0, 200);
+  fNcluster_hlt = new TH1F("fNcluster_hlt","clusters per track (HLT)",     200, 0, 200);
  
-  fdEdx_off = new TH1F("fdEdx_off","energy loss (offline)",500, 0, 500);
-  fdEdx_hlt = new TH1F("fdEdx_hlt","energy loss (HLT) - not filled yet",    500, 0, 500);
+  fdEdx_off = new TH1F("fdEdx_off","energy loss (offline)",             500, 0, 500);
+  fdEdx_hlt = new TH1F("fdEdx_hlt","energy loss (HLT) - not filled yet",500, 0, 500);
  
   fdEdx_vs_P_off = new TH2F("fdEdx_vs_P_off","dE/dx vs. momentum (offline)",100, 0., 100., 500, 0., 500.);
   fdEdx_vs_P_hlt = new TH2F("fdEdx_vs_P_hlt","dE/dx vs. momentum (HLT) - not filled yet",    100, 0., 100., 500, 0., 500.);
 
-  fPhi_off = new TH1F("fPhi_off","azimuthal angle distribution",360,0,360);
-  fPhi_hlt = new TH1F("fPhi_hlt","azimuthal angle distribution",360,0,360);
+  fPhi_off = new TH1F("fPhi_off","azimuthal angle distribution (offline)",360,0,360);
+  fPhi_hlt = new TH1F("fPhi_hlt","azimuthal angle distribution (HLT)",    360,0,360);
   
-  fTheta_off = new TH1F("fTheta_off","polar angle distribution",360,-180,180);
-  fTheta_hlt = new TH1F("fTheta_hlt","polar angle distribution",360,-180,180);
+  fTheta_off = new TH1F("fTheta_off","polar angle distribution (offline)",180,0,180);
+  fTheta_hlt = new TH1F("fTheta_hlt","polar angle distribution (HLT)",    180,0,180);
   
   fMult_off = new TH1F("fMult_off","track multiplicity (offline)",100,0,100);
   fMult_hlt = new TH1F("fMult_hlt","track multiplicity (HLT)",    100,0,100);
   
-  fXYvertex_off = new TH2F("fXYvertex_off","XY primary vertex (offline)",60,-15,15,80,-20,20);
-  fXYvertex_hlt = new TH2F("fXYvertex_hlt","XY primary vertex (HLT)",    60,-15,15,80,-20,20);
+  fXYvertex_off = new TH2F("fXYvertex_off","XY primary vertex (offline)",100,-5,5,100,-5,5);
+  fXYvertex_hlt = new TH2F("fXYvertex_hlt","XY primary vertex (HLT)",    100,-5,5,100,-5,5);
   
-  fXvertex_off = new TH1F("fXvertex_off","X primary vertex (offline)",80,-20,20);
-  fXvertex_hlt = new TH1F("fXvertex_hlt","X primary vertex (HLT)",    80,-20,20);
+  fXvertex_off = new TH1F("fXvertex_off","X primary vertex (offline)",100,-5,5);
+  fXvertex_hlt = new TH1F("fXvertex_hlt","X primary vertex (HLT)",    100,-5,5);
  
-  fYvertex_off = new TH1F("fYvertex_off","Y primary vertex (offline)",80,-20,20);
-  fYvertex_hlt = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",    80,-20,20);
+  fYvertex_off = new TH1F("fYvertex_off","Y primary vertex (offline)",100,-5,5);
+  fYvertex_hlt = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",    100,-5,5);
  
-  fZvertex_off = new TH1F("fZvertex_off","Z primary vertex (offline)",80,-20,20);
-  fZvertex_hlt = new TH1F("fZvertex_hlt","Z primary vertex (HLT)",    80,-20,20);
+  fZvertex_off = new TH1F("fZvertex_off","Z primary vertex (offline)",200,-10,10);
+  fZvertex_hlt = new TH1F("fZvertex_hlt","Z primary vertex (HLT)",    200,-10,10);
+  
+  fEta_off = new TH1F("fEta_off","pseudorapidity (offline)",100,-5,5);
+  fEta_hlt = new TH1F("fEta_hlt","pseudorapidity (HLT)",    100,-5,5);
  
+  fNclus_vs_phi_off = new TH2F("fNclus_vs_phi_off","clusters per track vs. #phi (offline)",360,0,360,160,0,160);
+  fNclus_vs_phi_hlt = new TH2F("fNclus_vs_phi_hlt","clusters per track vs. #phi (HLT)",    360,0,360,160,0,160);
+  
+  fNclus_vs_theta_off = new TH2F("fNclus_vs_theta_off","clusters per track vs. #theta (offline)",180,0,180,160,0,160);
+  fNclus_vs_theta_hlt = new TH2F("fNclus_vs_theta_hlt","clusters per track vs. #theta (HLT)",    180,0,180,160,0,160);
+
 
 //---------------------- add histograms to the output TList ------------------//
 
@@ -205,6 +220,9 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fXvertex_off);  
   fOutputList->Add(fYvertex_off);  
   fOutputList->Add(fZvertex_off);  
+  fOutputList->Add(fEta_off);  
+  fOutputList->Add(fNclus_vs_phi_off);  
+  fOutputList->Add(fNclus_vs_theta_off);
   
   fOutputList->Add(fMomentum_hlt); 
   fOutputList->Add(fDCA_hlt);	  
@@ -218,6 +236,9 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fXvertex_hlt);  
   fOutputList->Add(fYvertex_hlt);  
   fOutputList->Add(fZvertex_hlt);    
+  fOutputList->Add(fEta_hlt);  
+  fOutputList->Add(fNclus_vs_phi_hlt);  
+  fOutputList->Add(fNclus_vs_theta_hlt);
 }
 
 void AliAnalysisTaskHLT::NotifyRun(){
@@ -313,12 +334,15 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 	 //esdtrackHLT->PropagateToDCA(primVertex_hlt, bfield, 250., dz, covar);  
 	 //fHistOnlDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1])); // z resolution 
          
-         fDCA_hlt->Fill( TMath::Abs(esdtrackHLT->GetD(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), bfield)) ); 
+         fDCA_hlt->Fill( esdtrackHLT->GetD(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), bfield) ); 
          fMomentum_hlt->Fill( TMath::Abs(esdtrackHLT->P()) ); 
          fdEdx_hlt->Fill( esdtrackHLT->GetTPCsignal() );
          fdEdx_vs_P_hlt->Fill( TMath::Abs(esdtrackHLT->P()), esdtrackHLT->GetTPCsignal() );         
          fPhi_hlt->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
          fTheta_hlt->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
+	 fEta_hlt->Fill(esdtrackHLT->Eta());
+	 fNclus_vs_phi_hlt->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+	 fNclus_vs_theta_hlt->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
 	 
 	 if(esdHLT->IsHLTTriggerFired()){
 	    
@@ -358,12 +382,15 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 	 //esdtrackOFF->PropagateToDCA(primVertex_off, bfield, 250., dz, covar);  
 	 //fHistOfflDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1])); // z resolution 
          
-         fDCA_off->Fill( TMath::Abs(esdtrackOFF->GetD(esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv(), bfield)) ); 
+         fDCA_off->Fill( esdtrackOFF->GetD(esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv(), bfield) ); 
          fMomentum_off->Fill( TMath::Abs(esdtrackOFF->P()) ); 
          fdEdx_off->Fill( esdtrackOFF->GetTPCsignal() );
          fdEdx_vs_P_off->Fill( TMath::Abs(esdtrackOFF->P()), esdtrackOFF->GetTPCsignal() );         
          fPhi_off->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
          fTheta_off->Fill(esdtrackOFF->Theta()*TMath::RadToDeg());
+	 fEta_off->Fill(esdtrackOFF->Eta());
+	 fNclus_vs_phi_off->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+	 fNclus_vs_theta_off->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
 	 
 	 if(esdHLT->IsHLTTriggerFired()){
 	 
