@@ -42,7 +42,7 @@ template<class Element> class AliLHCDipValT : public TObject
   void                SetValues(const Element *v, Int_t n);
   void                SetTimeStamp(Double_t v)                      {fTimeStamp = v;}
   // 
-  Int_t               GetSizeTotal()                          const {return GetUniqueID();}
+  Int_t               GetSizeTotal()                          const {return fSizeTot;}
   Element             GetValue(Int_t i=0)                     const;
   Element*            GetValues()                             const {return (Element*)fArray;}
   Double_t            GetTimeStamp()                          const {return fTimeStamp;}
@@ -65,7 +65,8 @@ template<class Element> class AliLHCDipValT : public TObject
  protected:
   //
   Double_t            fTimeStamp;        // timestamp of the entry
-  Element*            fArray;            //[fUniqueID] array of entries
+  Int_t               fSizeTot;          // vector total size (including special slots, like for errors)
+  Element*            fArray;            //[fSizeTot] array of entries
   //
   ClassDef(AliLHCDipValT,1)
 };
@@ -74,7 +75,7 @@ template<class Element> class AliLHCDipValT : public TObject
 //__________________________________________________________________________
 template<class Element>
 AliLHCDipValT<Element>::AliLHCDipValT(Int_t size,Double_t t) 
-: fTimeStamp(t),fArray(0)
+: fTimeStamp(t),fSizeTot(0),fArray(0)
 {
   //def. constructor
   SetSize(size);
@@ -87,10 +88,9 @@ AliLHCDipValT<Element>::AliLHCDipValT(Int_t size,Double_t t)
 //__________________________________________________________________________
 template<class Element>
 AliLHCDipValT<Element>::AliLHCDipValT(const AliLHCDipValT<Element> &src)
-: TObject(src),fTimeStamp(src.fTimeStamp),fArray(0)
+: TObject(src),fTimeStamp(src.fTimeStamp),fSizeTot(0),fArray(0)
 {
   //copy constructor
-  SetUniqueID(0);
   SetSize(src.GetSizeTotal());
   memcpy(fArray,src.fArray,GetSizeTotal()*sizeof(Element));
 }
@@ -102,7 +102,6 @@ AliLHCDipValT<Element>& AliLHCDipValT<Element>::operator=(const AliLHCDipValT<El
   //assingment
   if (this != &src) {
     ((TObject*)this)->operator=(src);
-    SetUniqueID(0);
     if (GetSizeTotal()!=src.GetSizeTotal()) SetSize(src.GetSizeTotal());
     SetTimeStamp(src.GetTimeStamp());
     memcpy(fArray,src.fArray,GetSizeTotal()*sizeof(Element));    
@@ -191,11 +190,12 @@ void AliLHCDipValT<Element>::SetSize(Int_t sz)
     if (nc<sz) memset(arr+nc, 0, (sz-nc)*sizeof(Element));
     if (GetSizeTotal()) delete[] fArray;
     fArray = arr;
-    SetUniqueID(sz);
+    fSizeTot = sz;
   }
   else {
     delete[] fArray;
-    SetUniqueID(0);
+    fArray = 0;
+    fSizeTot = 0;
   }
 }
 

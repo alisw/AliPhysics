@@ -114,6 +114,7 @@ Bool_t AliLHCData::FillData(const TMap*   dcsMap,double tmin, double tmax)
   Clear();
   fMap2Process = dcsMap;
   FillData(tmin,tmax);
+  return kTRUE;
 }
 
 //___________________________________________________________________
@@ -123,6 +124,7 @@ Bool_t AliLHCData::FillData(const Char_t* dcsFile,double tmin, double tmax)
   Clear();
   fFile2Process = dcsFile;
   FillData(tmin,tmax);
+  return kTRUE;
 }
 
 //___________________________________________________________________
