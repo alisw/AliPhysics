@@ -55,6 +55,8 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F *fTheta_off;      //! polar angle distribution
     TH1F *fMult_off;       //! track multiplicity of the event
     TH2F *fXYvertex_off;   //! XY primary vertex distribution
+    TH1F *fXvertex_off;    //! X primary vertex distribution
+    TH1F *fYvertex_off;    //! Y primary vertex distribution
     TH1F *fZvertex_off;    //! Z primary vertex distribution
     
     TH1F  *fMomentum_hlt; 
@@ -66,12 +68,15 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fTheta_hlt;    
     TH1F  *fMult_hlt;	  
     TH2F  *fXYvertex_hlt; 
+    TH1F  *fXvertex_hlt;  
+    TH1F  *fYvertex_hlt;  
     TH1F  *fZvertex_hlt;  
    
-//     TH1F *fDCA_off_trig,      *fDCA_hlt_trig;      //! track DCA to beam line for triggered events
-//     TH1F *fNcluster_off_trig, *fNcluster_hlt_trig; //! #clusters per track for triggered events
-   
-   
+//     TH1F *fDCA_off_trig;      //! track DCA to beam line for triggered events
+//     TH1F *fNcluster_off_trig; //! #clusters per track for triggered events
+//     
+//     TH1F *fDCA_hlt_trig;     
+//     TH1F *fNcluster_hlt_trig;
    
    
 //     TH1F *fHistOfflTrkDCANoTrigNclsCut1; //! with cut on #clusters>=60

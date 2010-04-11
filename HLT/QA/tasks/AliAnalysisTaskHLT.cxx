@@ -65,6 +65,8 @@ ClassImp(AliAnalysisTaskHLT)
     ,fTheta_off(0)	
     ,fMult_off(0) 	
     ,fXYvertex_off(0)	
+    ,fXvertex_off(0)	    
+    ,fYvertex_off(0)	    
     ,fZvertex_off(0)	    
     
     ,fMomentum_hlt(0)
@@ -76,6 +78,8 @@ ClassImp(AliAnalysisTaskHLT)
     ,fTheta_hlt(0)  
     ,fMult_hlt(0)   
     ,fXYvertex_hlt(0)
+    ,fXvertex_hlt(0)
+    ,fYvertex_hlt(0)
     ,fZvertex_hlt(0)
     
 //     ,fDCA_off_trig(0)
@@ -157,10 +161,10 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fNcluster_hlt = new TH1F("fNcluster_hlt","clusters per track (HLT)",    200, 0, 200);
  
   fdEdx_off = new TH1F("fdEdx_off","energy loss (offline)",500, 0, 500);
-  fdEdx_hlt = new TH1F("fdEdx_hlt","energy loss (HLT)",    500, 0, 500);
+  fdEdx_hlt = new TH1F("fdEdx_hlt","energy loss (HLT) - not filled yet",    500, 0, 500);
  
   fdEdx_vs_P_off = new TH2F("fdEdx_vs_P_off","dE/dx vs. momentum (offline)",100, 0., 100., 500, 0., 500.);
-  fdEdx_vs_P_hlt = new TH2F("fdEdx_vs_P_hlt","dE/dx vs. momentum (HLT)",    100, 0., 100., 500, 0., 500.);
+  fdEdx_vs_P_hlt = new TH2F("fdEdx_vs_P_hlt","dE/dx vs. momentum (HLT) - not filled yet",    100, 0., 100., 500, 0., 500.);
 
   fPhi_off = new TH1F("fPhi_off","azimuthal angle distribution",360,0,360);
   fPhi_hlt = new TH1F("fPhi_hlt","azimuthal angle distribution",360,0,360);
@@ -174,6 +178,12 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fXYvertex_off = new TH2F("fXYvertex_off","XY primary vertex (offline)",60,-15,15,80,-20,20);
   fXYvertex_hlt = new TH2F("fXYvertex_hlt","XY primary vertex (HLT)",    60,-15,15,80,-20,20);
   
+  fXvertex_off = new TH1F("fXvertex_off","X primary vertex (offline)",80,-20,20);
+  fXvertex_hlt = new TH1F("fXvertex_hlt","X primary vertex (HLT)",    80,-20,20);
+ 
+  fYvertex_off = new TH1F("fYvertex_off","Y primary vertex (offline)",80,-20,20);
+  fYvertex_hlt = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",    80,-20,20);
+ 
   fZvertex_off = new TH1F("fZvertex_off","Z primary vertex (offline)",80,-20,20);
   fZvertex_hlt = new TH1F("fZvertex_hlt","Z primary vertex (HLT)",    80,-20,20);
  
@@ -192,6 +202,8 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fTheta_off);    
   fOutputList->Add(fMult_off);	  
   fOutputList->Add(fXYvertex_off); 
+  fOutputList->Add(fXvertex_off);  
+  fOutputList->Add(fYvertex_off);  
   fOutputList->Add(fZvertex_off);  
   
   fOutputList->Add(fMomentum_hlt); 
@@ -203,8 +215,9 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fTheta_hlt);    
   fOutputList->Add(fMult_hlt);	  
   fOutputList->Add(fXYvertex_hlt); 
-  fOutputList->Add(fZvertex_hlt);  
-  
+  fOutputList->Add(fXvertex_hlt);  
+  fOutputList->Add(fYvertex_hlt);  
+  fOutputList->Add(fZvertex_hlt);    
 }
 
 void AliAnalysisTaskHLT::NotifyRun(){
@@ -261,10 +274,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
       return;
   }
 
-  Double_t bfield = esdOFF->GetMagneticField();
-  
-  Double_t pos[] = { 0., 0., 0.};
-  AliVertex *vtx = new AliVertex(pos, 0., 0);
   
   //Fill CTP Trigger stuff
   //fHistTrigger->Fill(esdOFF->GetTriggerMask());
@@ -276,39 +285,66 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 
 
 
-
-  
+  Double_t bfield = esdOFF->GetMagneticField();
+ 
+  //---------------- HLT ESD tree -----------------------//
+      
   fMult_hlt->Fill( esdHLT->GetNumberOfTracks() );
-
-  //---------------- loop over HLT ESD tree -------------//
+	 
+  Double_t vertexHLT[3];
+  vertexHLT[0] = esdHLT->GetPrimaryVertex()->GetXv();
+  vertexHLT[1] = esdHLT->GetPrimaryVertex()->GetYv();
+  vertexHLT[2] = esdHLT->GetPrimaryVertex()->GetZv();
+  AliVertex *primVertex_hlt = new AliVertex(vertexHLT, 0., 0);
+  fXYvertex_hlt->Fill( esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv() );
+  fXvertex_hlt->Fill( esdHLT->GetPrimaryVertex()->GetXv() );
+  fYvertex_hlt->Fill( esdHLT->GetPrimaryVertex()->GetYv() );
+  fZvertex_hlt->Fill( esdHLT->GetPrimaryVertex()->GetZv() );
   
   for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){ 
   
       AliESDtrack *esdtrackHLT = esdHLT->GetTrack(i); 
       if(esdtrackHLT){ 
-         
+               
 	 fNcluster_hlt->Fill(esdtrackHLT->GetTPCNcls()); 
   		
 	 //Double_t dz[2]    = {-999., -999.};   
 	 //Double_t covar[3] = {0.,0.,0.};      	 
-	 //esdtrackHLT->PropagateToDCA(vtx, bfield, 250., dz, covar);  
+	 //esdtrackHLT->PropagateToDCA(primVertex_hlt, bfield, 250., dz, covar);  
 	 //fHistOnlDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1])); // z resolution 
          
-         fDCA_hlt->Fill( TMath::Abs(esdtrackHLT->GetD(0., 0., bfield)) ); 
+         fDCA_hlt->Fill( TMath::Abs(esdtrackHLT->GetD(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), bfield)) ); 
          fMomentum_hlt->Fill( TMath::Abs(esdtrackHLT->P()) ); 
          fdEdx_hlt->Fill( esdtrackHLT->GetTPCsignal() );
          fdEdx_vs_P_hlt->Fill( TMath::Abs(esdtrackHLT->P()), esdtrackHLT->GetTPCsignal() );         
          fPhi_hlt->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
          fTheta_hlt->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
 	 
-	 fXYvertex_hlt->Fill( esdHLT->GetPrimaryVertex()->GetX(), esdHLT->GetPrimaryVertex()->GetY() );
-	 fZvertex_hlt->Fill( esdHLT->GetPrimaryVertex()->GetZ() );
-      } 
-  } 
+	 if(esdHLT->IsHLTTriggerFired()){
+	    
+	 
+	 
+	 } // end if for triggered hlt events
+      } // end if esdtrack is kTRUE
+  } // end of loop over hlt tracks
+  
+  
+  
+  
+  //----------------- OFFLINE ESD tree ----------------//
   
   fMult_off->Fill( esdOFF->GetNumberOfTracks() );
+
+  Double_t vertexOFF[3];
+  vertexOFF[0] = esdOFF->GetPrimaryVertex()->GetXv();
+  vertexOFF[1] = esdOFF->GetPrimaryVertex()->GetYv();
+  vertexOFF[2] = esdOFF->GetPrimaryVertex()->GetZv();
+  AliVertex *primVertex_off = new AliVertex(vertexOFF, 0., 0);
+  fXYvertex_off->Fill( esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv() );
+  fXvertex_off->Fill( esdOFF->GetPrimaryVertex()->GetXv() );
+  fYvertex_off->Fill( esdOFF->GetPrimaryVertex()->GetYv() );
+  fZvertex_off->Fill( esdOFF->GetPrimaryVertex()->GetZv() );
   
-  //----------------- loop over OFFLINE ESD tree ----------------//
   
   for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){ 
      
@@ -319,94 +355,24 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   		
 	 //Double_t dz[2]    = {-999., -999.};   
 	 //Double_t covar[3] = {0.,0.,0.};      	 
-	 //esdtrackOFF->PropagateToDCA(vtx, bfield, 250., dz, covar);  
+	 //esdtrackOFF->PropagateToDCA(primVertex_off, bfield, 250., dz, covar);  
 	 //fHistOfflDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1])); // z resolution 
          
-         fDCA_off->Fill( TMath::Abs(esdtrackOFF->GetD(0., 0., bfield)) ); 
+         fDCA_off->Fill( TMath::Abs(esdtrackOFF->GetD(esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv(), bfield)) ); 
          fMomentum_off->Fill( TMath::Abs(esdtrackOFF->P()) ); 
          fdEdx_off->Fill( esdtrackOFF->GetTPCsignal() );
          fdEdx_vs_P_off->Fill( TMath::Abs(esdtrackOFF->P()), esdtrackOFF->GetTPCsignal() );         
          fPhi_off->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
          fTheta_off->Fill(esdtrackOFF->Theta()*TMath::RadToDeg());
 	 
-	 fXYvertex_off->Fill( esdOFF->GetPrimaryVertex()->GetX(), esdOFF->GetPrimaryVertex()->GetY() );
-	 fZvertex_off->Fill( esdOFF->GetPrimaryVertex()->GetZ() );
-      } 
-     
-//       AliESDtrack *esdTrk = esdOFF->GetTrack(i);      
-//       Double_t dz[2] = {-999., -999.};  
-//       Double_t covar[3] = {0};
-//       esdTrk->PropagateToDCA(vtx, bfield, 250., dz, covar);
-//       fHistOfflDZTrig->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1]));
-//    
-//       fHistOfflDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1]));
-// 
-//       fHistOfflTrkDCATrig->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield)));
-//       fDCA_off->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield))); 
-// 
-//       if(esdTrk->GetTPCNcls()>0){
-//      	 fHistOfflTrkNclsTrig->Fill(esdTrk->GetTPCNcls()); 
-//      	 fHistOfflTrkNcls->Fill(esdTrk->GetTPCNcls());
-//       }
-// 
-//       fHistOfflTrkPTrig->Fill(TMath::Abs(esdTrk->P()));
-//       fHistOfflTrkP->Fill(TMath::Abs(esdTrk->P()));
-//       fHistOffldEdx->Fill( esdTrk->GetTPCsignal());
-//       fHistOffldEdxVsP->Fill(TMath::Abs(esdTrk->P()), esdTrk->GetTPCsignal());
-  }
+	 if(esdHLT->IsHLTTriggerFired()){
+	 
+	 
+	 
+	 } // end if for triggered hlt events
+      } // end if esdtrack is kTRUE    
+  } // end of loop over hlt tracks
 
-
-//   if(esdHLT->IsHLTTriggerFired()){
-//      
-//      for(Int_t i=0; i<fTrgClsArray->GetEntries(); i++){ 
-//          if((esdOFF->GetFiredTriggerClasses()).Contains(((TObjString *)fTrgClsArray->At(i))->GetString())) fHistHLTTrigger->Fill(i);
-//      } 
-//      
-//      for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){
-//          AliESDtrack * esdtrackHLT = esdHLT->GetTrack(i);
-//         
-//       if(esdtrackHLT->GetTPCNcls()>0){
-// 	 fNcluster_hlt->Fill(esdtrackHLT->GetTPCNcls());
-// 	 fNcluster_hlt_trig->Fill(esdtrackHLT->GetTPCNcls());
-//       }
-// 	
-//       Double_t dz[2] = {-999., -999.};  
-//       Double_t covar[3] = {0.};
-//       
-//       esdtrackHLT->PropagateToDCA(vtx, bfield, 250., dz, covar); 
-//       fHistOnlDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1])); 
-//       
-//       if(esdtrackHLT){
-// 	 fDCA_hlt->Fill(TMath::Abs(esdtrackHLT->GetD(0., 0., bfield)));
-// 	 fMomentum_hlt->Fill(TMath::Abs(esdtrackHLT->P()));
-// 	 fdEdx_hlt->Fill(esdtrackHLT->GetTPCsignal());
-// 	 fdEdx_vs_P_hlt->Fill(TMath::Abs(esdtrackHLT->P()), esdtrackHLT->GetTPCsignal()); 
-// 	 fDCA_hlt_trig->Fill(TMath::Abs(esdtrackHLT->GetD(0., 0., bfield)));
-//       }
-//      }
-//   } else {
-//     for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){ 
-//     
-//         AliESDtrack *esdtrackHLT = esdHLT->GetTrack(i); 
-//         if(esdtrackHLT->GetTPCNcls()>0) fNcluster_hlt->Fill(esdtrackHLT->GetTPCNcls()); 
-//                   
-//         Double_t dz[2] = {-999., -999.};   
-//         Double_t covar[3] = {0.}; 
-//       
-//         esdtrackHLT->PropagateToDCA(vtx, bfield, 250., dz, covar);  
-//         fHistOnlDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1]));  
-//       
-//         if(esdtrackHLT){ 
-// 	   fDCA_hlt->Fill(TMath::Abs(esdtrackHLT->GetD(0., 0., bfield))); 
-// 	   fMomentum_hlt->Fill(TMath::Abs(esdtrackHLT->P())); 
-// 	   fdEdx_hlt->Fill( esdtrackHLT->GetTPCsignal());
-// 	   fdEdx_vs_P_hlt->Fill(TMath::Abs(esdtrackHLT->P()), esdtrackHLT->GetTPCsignal());
-// 	   
-// 	   fPhi_hlt->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
-// 	   fTheta_hlt->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
-//         } 
-//     } 
-//   }
 
 
 //   if(esdHLT->IsHLTTriggerFired()){
@@ -447,40 +413,10 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 //          fHistOffldEdx->Fill( esdTrk->GetTPCsignal());
 //          fHistOffldEdxVsP->Fill(TMath::Abs(esdTrk->P()), esdTrk->GetTPCsignal());
 //      }
-//   } else {
-// 
-//     for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){ 
-//       
-//         AliESDtrack * esdTrk = esdOFF->GetTrack(i); 
-//         Double_t dz[2] = {0};  
-//         Double_t covar[3] = {0};
-//         esdTrk->PropagateToDCA(vtx, bfield, 250., dz, covar); 
-//         fHistOfflDZNoTrig->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1])); 
-// 
-//         fHistOfflDZ->Fill(TMath::Abs(dz[0]), TMath::Abs(dz[1]));
-//         
-//         fHistOfflTrkDCANoTrig->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield)));
-//       
-//         if(esdTrk->GetTPCNcls()>0) fHistOfflTrkNclsNoTrig->Fill(esdTrk->GetTPCNcls()); 
-//       
-//         if(esdTrk->GetTPCNcls()>=60) fHistOfflTrkDCANoTrigNclsCut1->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield)));
-//         else fHistOfflTrkDCANoTrigNclsCut2->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield)));
-//       
-//         fDCA_off->Fill(TMath::Abs(esdTrk->GetD(0., 0., bfield)));
-//         fHistOfflTrkNcls->Fill(esdTrk->GetTPCNcls());
-//       
-//         fHistOfflTrkPNoTrig->Fill(TMath::Abs(esdTrk->P()));
-//         fHistOfflTrkP->Fill(TMath::Abs(esdTrk->P()));
-//         fHistOffldEdx->Fill( esdTrk->GetTPCsignal());
-//         fHistOffldEdxVsP->Fill(TMath::Abs(esdTrk->P()), esdTrk->GetTPCsignal());
-// 	
-// 	fPhi_off->Fill(esdTrk->Phi()*TMath::RadToDeg());
-// 	fTheta_off->Fill(esdTrk->Theta()*TMath::RadToDeg());
-//     }       
-//   }
 
   fNevt++;
-  delete vtx;
+  delete primVertex_off;
+  delete primVertex_hlt;
 
   // Post output data.
   PostData(1, fOutputList);
