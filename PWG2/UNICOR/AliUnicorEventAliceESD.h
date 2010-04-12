@@ -21,7 +21,7 @@ class AliUnicorEventAliceESD : public AliUnicorEvent {
 
  public:
               AliUnicorEventAliceESD(AliESDEvent *esd=0);
-              AliUnicorEventAliceESD(const AliUnicorEventAliceESD &ev): AliUnicorEvent(ev), fESD(ev.fESD) {}
+              AliUnicorEventAliceESD(const AliUnicorEventAliceESD &ev): AliUnicorEvent(ev), fESD(ev.fESD), fPhysicsSelection(ev.fPhysicsSelection) {}
   virtual     ~AliUnicorEventAliceESD();
   AliUnicorEventAliceESD &operator=(const AliUnicorEventAliceESD &source) {fESD = source.fESD; return *this;}
   Double_t    Etamin() const {return -0.75;}
