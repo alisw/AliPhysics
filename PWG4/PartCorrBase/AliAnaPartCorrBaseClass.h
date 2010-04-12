@@ -212,7 +212,7 @@ public:
   Float_t fMinPt ;              // Maximum pt of (trigger) particles in the analysis
   Float_t fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
 	
-  AliCaloTrackReader * fReader; //! Acces to ESD/AOD/MC data
+  AliCaloTrackReader * fReader; // Acces to ESD/AOD/MC data
   
   TClonesArray* fInputAODBranch ;    //! Selected input particles branch
   TString       fInputAODName ;      //  Name of input AOD branch;
