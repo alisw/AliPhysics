@@ -18,12 +18,12 @@ class AliTender;
 
 class AliTenderSupply : public TNamed {
 
-private:
+protected:
   const AliTender          *fTender;         // Tender car
   
 public:  
   AliTenderSupply();
-  AliTenderSupply(const char *name, const AliTender *tender);
+  AliTenderSupply(const char *name, const AliTender *tender=NULL);
   AliTenderSupply(const AliTenderSupply &other);
   virtual ~AliTenderSupply();
   AliTenderSupply& operator=(const AliTenderSupply &other);
@@ -31,6 +31,8 @@ public:
   // Run control
   virtual void              Init() = 0;
   virtual void              ProcessEvent() = 0;
+  
+  void                      SetTender(const AliTender *tender) {fTender = tender;}
     
   ClassDef(AliTenderSupply,1)  // Base class for tender user algorithms
 };

@@ -78,7 +78,12 @@ void AliTender::AddSupply(AliTenderSupply *supply)
 {
 // Addition of supplies.
   if (!fSupplies) fSupplies = new TObjArray();
+  if (fSupplies->FindObject(supply)) {
+     Error("AddSupply", "Tender supply %s already connected.", supply->GetName());
+     return;
+  }   
   fSupplies->Add(supply);
+  supply->SetTender(this);
 }
    
 //______________________________________________________________________________
