@@ -146,3 +146,10 @@ void AliTender::Exec(Option_t* /*option*/)
   fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
   PostData(0, fESD);
 }
+
+//______________________________________________________________________________
+void AliTender::SetDefaultCDBStorage(const char *dbString)
+{
+// Set default CDB storage
+   fDefaultStorage = dbString;
+}
