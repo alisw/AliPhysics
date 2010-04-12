@@ -10,9 +10,9 @@
 
 
 #include "AliAnalysisTask.h"
-#include "AliMUONGeometryTransformer.h"
 
 #include "AliCheckMuonDetEltResponse.h"
+#include "AliMUONGeometryTransformer.h"
 
 class AliESDEvent;
 class TClonesArray;
@@ -25,7 +25,6 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& rhs);
   AliAnalysisTaskMuonTrackingEff& operator=(const AliAnalysisTaskMuonTrackingEff&);
   AliAnalysisTaskMuonTrackingEff(const char* name,
-				 const AliMUONGeometryTransformer* transformer,
 				 Bool_t isCosmic = kFALSE);
   virtual ~AliAnalysisTaskMuonTrackingEff();
 
@@ -38,14 +37,14 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   static const Int_t fTotNbrOfDetectionElt;    ///< The total number of detection element in the tracking system.
   static const Int_t fTotNbrOfChamber;
 
-  void ComputeErrors();                        ///< Compute the error on the efficiency (see .ccx for the formula)
+  void ComputeErrors();                        ///< Compute the error on the efficiency (see .cxx for the formula)
   
   void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
   Bool_t IsCosmic() {return fIsCosmicData;};
 
  private:
-  const AliMUONGeometryTransformer* fTransformer;
-  AliESDEvent * fESD;               //!<ESD object
+  AliESDEvent * fESD;                             //!<ESD object
+  AliMUONGeometryTransformer *fTransformer;       //!<Transformer object
 
   TClonesArray* fDetEltEffHistList; //!<Detetcion efficiencies histograms list. 
   TClonesArray* fDetEltTDHistList;  //!<List of histograms of the tracks detected in the detection elements. 

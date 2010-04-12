@@ -41,6 +41,8 @@ public:
   void TrackLoop ();
   void TrackParamLoop ();
 
+  Int_t GetNbrUsableTracks(){return fNbrUsableTracks;};
+  void SetNbrUsableTracks(Int_t nUsable){fNbrUsableTracks = nUsable;};
   void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
   Bool_t IsCosmic() {return fIsCosmicData;};
  
@@ -77,7 +79,8 @@ private:
   Int_t fNbrClustersCh[10];      //!<Number of clusters in the chamber [fChamberNbr].
   Int_t fTracksTotalNbr;         //!<Total number of tracks in the event.
   Int_t fTrackFilter[10];        //!<To select track for the efficiency calculation.
-  Bool_t fIsCosmicData;          ///< Check if the data are cosmic rays (used only to cut cosmic shower at hte trigger level if true)
+  Bool_t fIsCosmicData;          //!<Check if the data are cosmic rays (used only to cut cosmic shower at the trigger level if true)
+  Int_t fNbrUsableTracks;        //!<Number of usable tracks (matches trigger and contains traker data, plus a trigger condition for cosmic)
 
   TClonesArray     * fTrackParams;
   AliMUONTrackParam* fTrackParam;

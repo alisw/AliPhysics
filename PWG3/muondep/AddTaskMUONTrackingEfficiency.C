@@ -19,13 +19,8 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicDat
   const Char_t* fileName = "MUON.TrackerEfficiency.root";
 
 
-  // Load the geometry
-  AliMUONGeometryTransformer* transformer = new AliMUONGeometryTransformer();
-  transformer->LoadGeometryData();
-
-
   // Create the task
-  AliAnalysisTaskMuonTrackingEff* taskMuonTrackingEff = new AliAnalysisTaskMuonTrackingEff("MuonTrackingEfficiency", transformer, isCosmicData);
+  AliAnalysisTaskMuonTrackingEff* taskMuonTrackingEff = new AliAnalysisTaskMuonTrackingEff("MuonTrackingEfficiency", isCosmicData);
   // Add to the manager
   mgr->AddTask(taskMuonTrackingEff);
 
@@ -57,6 +52,5 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t isCosmicDat
     mgr->ConnectOutput(taskMuonTrackingEff, 4, coutput4);
     mgr->ConnectOutput(taskMuonTrackingEff, 5, coutput5);
   
-    delete transformer;
     return taskMuonTrackingEff;
 }
