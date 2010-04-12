@@ -1555,6 +1555,9 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					Log("SHUTTLE", "Process - Could not redirect stderr");
 				
 			}
+
+			Log("SHUTTLE", "Executing TGrid::Connect");
+			TGrid::Connect("alien://");
 			
 			TString wd = gSystem->WorkingDirectory();
 			Int_t dir_lev1 = GetCurrentRun()/10000;
