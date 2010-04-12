@@ -922,8 +922,10 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(Float_t * pos)const{
   Double_t z=pos[2] ;
   while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
   while(phi<0.)phi+=TMath::TwoPi() ;
-printf("FiducialArea: phi=%f, z=%f \n",phi,z) ;
-printf("   fZmax=%f, fZmin=%f, fPhimax=%f, fPhimin=%f \n",fZmax,fZmin,fPhimax,fPhimin) ;
+  if(fDebug>2){
+    printf("FiducialArea: phi=%f, z=%f \n",phi,z) ;
+        printf("   fZmax=%f, fZmin=%f, fPhimax=%f, fPhimin=%f \n",fZmax,fZmin,fPhimax,fPhimin) ;
+  }
   if(fPHOS){
     //From active PHOS area remove bands in 10 cm
     const Double_t kphi=TMath::ATan(10./460.) ; //angular band width
@@ -931,8 +933,10 @@ printf("   fZmax=%f, fZmin=%f, fPhimax=%f, fPhimin=%f \n",fZmax,fZmin,fPhimax,fP
     Double_t dzMin=TMath::Ceil((z-fZmin)/10.) ;
     Double_t dphiMax=TMath::Ceil((fPhimax-phi)/kphi);
     Double_t dphiMin=TMath::Ceil((phi-fPhimin)/kphi);
-printf("In PHOS \n") ;
-printf("    dzMax=%f, dzMin=%f, dphiMax=%f, dphiMin=%f ret=%d\n",dzMax,dzMin,dphiMax,dphiMin,(Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin))) ;
+    if(fDebug>2){
+     printf("In PHOS \n") ;
+    printf("    dzMax=%f, dzMin=%f, dphiMax=%f, dphiMin=%f ret=%d\n",dzMax,dzMin,dphiMax,dphiMin,(Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin))) ;
+    }
     return (Int_t)TMath::Min(TMath::Min(dzMax,dzMin),TMath::Min(dphiMax,dphiMin)); 
   }
   else{//EMCAL
@@ -986,7 +990,7 @@ Bool_t  AliAnalysisTaskTaggedPhotons::TestCharged(Double_t dr,Double_t /*en*/)co
 void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
   //Read rotation matrixes from ESD
 
-printf("Init geometry \n") ;
+  if(fDebug>1)printf("Init geometry \n") ;
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent()) ;
   AliAODEvent * aod = 0x0 ;
   if(!esd)
