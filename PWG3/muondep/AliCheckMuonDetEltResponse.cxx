@@ -16,6 +16,7 @@
 //Class to check the response of the detection elements of the  MUON tracking chambers 
 //in function of the position in the detection element.
 //Author:  Nicolas LE BRIS - SUBATECH Nantes
+//Modified by Matthieu LENHARDT - SUBATECH Nantes
 
 //PWG3/muon:
 #include "AliAnalysisTaskMuonTrackingEff.h"
@@ -78,6 +79,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
   fESD(0x0),
   fTracksTotalNbr(0x0),
   fIsCosmicData(kFALSE),
+  fNbrUsableTracks(0),
   fTrackParams(0x0),
   fTrackParam(0x0),
   fCluster(0x0),
@@ -91,6 +93,8 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
     fNCh = AliCheckMuonDetEltResponse::fNbrOfChamber;
     fNSt = AliCheckMuonDetEltResponse::fNbrOfStation;
     fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
+    fIsCosmicData = kFALSE;
+    fNbrUsableTracks = 0;
 
     for (Int_t iCluster = 0; iCluster<fNCh; ++iCluster)
       fNbrClustersCh[iCluster] = 0;
@@ -109,6 +113,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltR
   fESD(0x0),
   fTracksTotalNbr(0x0),
   fIsCosmicData(kFALSE),
+  fNbrUsableTracks(0),
   fTrackParams(0x0),
   fTrackParam(0x0),
   fCluster(0x0),
@@ -146,6 +151,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
   fESD(esd),
   fTracksTotalNbr(0),
   fIsCosmicData(kFALSE),
+  fNbrUsableTracks(0),
   fTrackParams(0x0),
   fTrackParam(0),
   fCluster(0),
@@ -160,6 +166,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
     fNSt = AliCheckMuonDetEltResponse::fNbrOfStation;
     fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
     fIsCosmicData = isCosmic;
+    fNbrUsableTracks = 0;
 
     for (Int_t iCluster = 0; iCluster<fNCh; ++iCluster)
       fNbrClustersCh[iCluster] = 0;
@@ -191,7 +198,7 @@ void AliCheckMuonDetEltResponse::CheckDetEltResponse()
 
 //Loop on tracks
 //--------------
-    TrackLoop();
+  TrackLoop();
 }
 
 
@@ -199,73 +206,78 @@ void AliCheckMuonDetEltResponse::CheckDetEltResponse()
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::TrackLoop()
 {
-    AliESDMuonTrack* esdTrack;
-    AliMUONTrack track;
-    Int_t nTracks, iTrack;
+  AliESDMuonTrack* esdTrack;
+  AliMUONTrack track;
+  Int_t nTracks, iTrack;
 
-    nTracks = (Int_t)fESD -> GetNumberOfMuonTracks();
-    fTrackParams = new TClonesArray();
- ///Begininig of the loop:
+  nTracks = (Int_t)fESD -> GetNumberOfMuonTracks();
+  fTrackParams = new TClonesArray();
+  ///Begininig of the loop:
+  //if (fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL"))
+  {
     for (iTrack = 0; iTrack < nTracks; iTrack++)
-    {
-      esdTrack   = fESD -> GetMuonTrack(iTrack);
-  
-      if( esdTrack->ContainTrackerData() && esdTrack->GetMatchTrigger() > 0)
-	{
-	  if (fIsCosmicData)
-	    {
-	      // Beginnig of long stuff to check the number of trigger hit (to only keep muon trigger and cut cosmic showers)
-	      Int_t nTriggerHit = 0;
-	      Int_t nTriggerHitStrip[8] = {0, 0, 0, 0, 
-					   0, 0, 0, 0};
-	      UShort_t triggerPattern[8] = {esdTrack->GetTriggerX1Pattern(), esdTrack->GetTriggerX2Pattern(), esdTrack->GetTriggerX3Pattern(), esdTrack->GetTriggerX4Pattern(), 
-					    esdTrack->GetTriggerY1Pattern(), esdTrack->GetTriggerY2Pattern(), esdTrack->GetTriggerY3Pattern(), esdTrack->GetTriggerY4Pattern()};
-	      
-	      for (Int_t ii = 0; ii < 8; ii++)
-		{
-		  UShort_t pattern = triggerPattern[ii];
-		  Int_t binaryValue[16] = {0, 0, 0, 0,
-					   0, 0, 0, 0,
-					   0, 0, 0, 0,
-					   0, 0, 0, 0};
-		  
-		  for (Int_t jj = 15; jj >= 0; jj--)
-		    {
-		      Int_t base = 1;
-		      for (Int_t bb = 0; bb < jj; bb++)
-			base *= 2;
-		      
-		      if (pattern/base == 1)
-			{
-			  binaryValue[jj] = 1;
-			  pattern = pattern - base;
-			}
-		    }
-		}
-	      
-	      for (Int_t ii = 0; ii < 8; ii++)
-		nTriggerHit += nTriggerHitStrip[ii];
-	      // End of long stuff
-	      
-	      
-	      // Important part	  
-	      if (nTriggerHit < 10)
-		{
-		  AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-		  fTrackParams = track.GetTrackParamAtCluster();
-		  TrackParamLoop(); //!<Loop on trackParam.
-		}
-	    }
-
-	  // No trigger cut is required for non-cosmic data
-	  else
-	    {
-	      AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-	      fTrackParams = track.GetTrackParamAtCluster();
-	      TrackParamLoop(); //!<Loop on trackParam.
-	    }
-	}
-    }
+      {
+	esdTrack   = fESD -> GetMuonTrack(iTrack);
+	
+	if(esdTrack->ContainTrackerData() && esdTrack->GetMatchTrigger() > 0)
+	  {
+	    if (fIsCosmicData)
+	      {
+		// Beginnig of long stuff to check the number of trigger hit (to only keep muon trigger and cut cosmic showers)
+		Int_t nTriggerHit = 0;
+		Int_t nTriggerHitStrip[8] = {0, 0, 0, 0, 
+					     0, 0, 0, 0};
+		UShort_t triggerPattern[8] = {esdTrack->GetTriggerX1Pattern(), esdTrack->GetTriggerX2Pattern(), esdTrack->GetTriggerX3Pattern(), esdTrack->GetTriggerX4Pattern(), 
+					      esdTrack->GetTriggerY1Pattern(), esdTrack->GetTriggerY2Pattern(), esdTrack->GetTriggerY3Pattern(), esdTrack->GetTriggerY4Pattern()};
+		
+		for (Int_t ii = 0; ii < 8; ii++)
+		  {
+		    UShort_t pattern = triggerPattern[ii];
+		    Int_t binaryValue[16] = {0, 0, 0, 0,
+					     0, 0, 0, 0,
+					     0, 0, 0, 0,
+					     0, 0, 0, 0};
+		    
+		    for (Int_t jj = 15; jj >= 0; jj--)
+		      {
+			Int_t base = 1;
+			for (Int_t bb = 0; bb < jj; bb++)
+			  base *= 2;
+			
+			if (pattern/base == 1)
+			  {
+			    binaryValue[jj] = 1;
+			    pattern = pattern - base;
+			  }
+		      }
+		  }
+		
+		for (Int_t ii = 0; ii < 8; ii++)
+		  nTriggerHit += nTriggerHitStrip[ii];
+		// End of long stuff
+		
+		
+		// Important part	  
+		if (nTriggerHit < 10)
+		  {
+		    AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+		    fTrackParams = track.GetTrackParamAtCluster();
+		    TrackParamLoop(); //!<Loop on trackParam.
+		    fNbrUsableTracks += 1;
+		  }
+	      }
+	    
+	    // No trigger cut is required for non-cosmic data
+	    else
+	      {
+		AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+		fTrackParams = track.GetTrackParamAtCluster();
+		TrackParamLoop(); //!<Loop on trackParam.
+		fNbrUsableTracks += 1;
+	      }
+	  }
+      }
+  }
 }
 
 
@@ -323,7 +335,7 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
 	      fTrackFilter[ch1] = 0;                                      //<!
 	      fTrackFilter[ch2] = 0;                                      //<!
 	    }                                                             //<!
-	  
+
 	  if (chamberResponse[ch1]*chamberResponse[ch2] != 0)
 	    {
 	      filter            = fTrackFilter[ch3];

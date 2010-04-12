@@ -28,7 +28,7 @@
 #include <TH2F.h>
 #include <TH1F.h>
 #include <TMath.h>
-#include "Riostream.h"
+#include <Riostream.h>
 
 //ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -41,13 +41,14 @@
 #include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliAnalysisManager.h"
+#include "AliGeomManager.h"
+
 
 //PWG3/muon includes
 #include "AliAnalysisTaskMuonTrackingEff.h"
 #include "AliCheckMuonDetEltResponse.h"
 
 //MUON includes
-#include "AliMUONGeometryTransformer.h"
 #include "AliMUONTrackExtrap.h"
 
 ClassImp(AliAnalysisTaskMuonTrackingEff)
@@ -59,8 +60,8 @@ const Int_t AliAnalysisTaskMuonTrackingEff::fTotNbrOfChamber  = 10;
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
   :
   AliAnalysisTask(),
-  fTransformer(0x0),
   fESD(0x0),
+  fTransformer(0x0),
   fDetEltEffHistList(0x0),
   fDetEltTDHistList(0x0),
   fDetEltTTHistList(0x0),
@@ -76,8 +77,8 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& src)
   :
   AliAnalysisTask(src),
-  fTransformer(0x0),
   fESD(0x0),
+  fTransformer(0x0),
   fDetEltEffHistList(0x0),
   fDetEltTDHistList(0x0),
   fDetEltTTHistList(0x0),
@@ -103,12 +104,11 @@ AliAnalysisTaskMuonTrackingEff& AliAnalysisTaskMuonTrackingEff::operator=(const 
 
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
-							       const AliMUONGeometryTransformer* transformer,
 							       Bool_t isCosmic)
   :
   AliAnalysisTask(name, "AnalysisTaskESD"),
-  fTransformer(0x0),
   fESD(0x0),
+  fTransformer(0x0),
   fDetEltEffHistList(0x0),
   fDetEltTDHistList(0x0),
   fDetEltTTHistList(0x0),
@@ -120,9 +120,15 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 {
 //Constructor
 //-----------
-    
-  fIsCosmicData = isCosmic;
-  fTransformer = transformer;
+  
+  fIsCosmicData = isCosmic;  
+
+//Load the geometry
+  if (!AliGeomManager::GetGeometry())
+    AliGeomManager::LoadGeometry();
+  fTransformer = new AliMUONGeometryTransformer();
+  fTransformer->LoadGeometryData();  
+
 
 //Define detection element efficiency histograms
 //----------------------------------------------
@@ -137,7 +143,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
     fChamberEffHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 3);
     fChamberTDHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 1);
     fChamberTTHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 1);
-
+ 
 
 
     for (Int_t i = 0; i<fTotNbrOfDetectionElt; ++i)
@@ -200,7 +206,6 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> GetYaxis() -> SetTitleOffset(1.8); 
 	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> Sumw2();	
       }
-
 
     new((*fDetEltTDHistList )[fTotNbrOfDetectionElt]) TH2F("TD_Chamber" ,"TD_Chamber" ,10,0,10,1,0,1); //!<Detected tracks.
     new((*fDetEltTTHistList )[fTotNbrOfDetectionElt]) TH2F("TT_Chamber" ,"TT_Chamber" ,10,0,10,1,0,1); //!<Tracks total number.
@@ -269,10 +274,8 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 
 
 
-    //fChamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
 
-
-
+ 
 //Define input & output
 //---------------------
 
@@ -294,13 +297,14 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
 {
 // Destructor.
-    delete fDetEltEffHistList;
-    delete fDetEltTDHistList;
-    delete fDetEltTTHistList;
-    delete fChamberEffHistList;
-    delete fChamberTDHistList;
-    delete fChamberTTHistList;
-    delete fChamberEff;
+  delete fTransformer;
+  delete fDetEltEffHistList;
+  delete fDetEltTDHistList;
+  delete fDetEltTTHistList;
+  delete fChamberEffHistList;
+  delete fChamberTDHistList;
+  delete fChamberTTHistList;
+  delete fChamberEff;
 }
 
 
@@ -334,11 +338,9 @@ void AliAnalysisTaskMuonTrackingEff::ConnectInputData(Option_t */*option*/)
 void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
 {
 //Execute analysis for current event
-    
   if (fChamberEff == 0x0)
     fChamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
   fChamberEff->CheckDetEltResponse();
-
 
     for( Int_t i = 0; i<156; ++i)
     {
@@ -372,7 +374,9 @@ void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
 							     (TH1F*) fChamberEffHistList->UncheckedAt(11), 1., 0.); 
 
 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(12))-> Fill(0., ((Double_t)fESD -> GetNumberOfMuonTracks()));
+    ((TH1F*) fChamberEffHistList->UncheckedAt(12))-> Fill(0., ((Double_t)fChamberEff -> GetNbrUsableTracks()));
+    fChamberEff->SetNbrUsableTracks(0);
+    //((TH1F*) fChamberEffHistList->UncheckedAt(12))-> Fill(0., ((Double_t)fESD -> GetNumberOfMuonTracks()));
 
     ComputeErrors();
 
@@ -402,7 +406,7 @@ void AliAnalysisTaskMuonTrackingEff::ComputeErrors()
   // eff = Ntd/Ntt
   // error = max {1/Ntt, sqrt(eff*(1-eff)/Ntt)}
 
-  for (Int_t ii = 0; ii < 10; ii++)
+  for (Int_t ii = 0; ii <= 10; ii++)
     {
       Int_t NumberOfBins = ((TH1F*) fChamberEffHistList->UncheckedAt(ii))->GetNbinsX();
       for (Int_t jj = 1; jj <= NumberOfBins; jj++)
