@@ -18,7 +18,7 @@ class AliAnalysisTaskUnicorME : public AliAnalysisTaskME {
    
  public:                                        
   AliAnalysisTaskUnicorME(const char *name="dali");           // default constructor
-  AliAnalysisTaskUnicorME(const AliAnalysisTaskUnicorME &ta): AliAnalysisTaskME(ta), fEv0(ta.fEv0), fOutputList(ta.fOutputList) {}
+  AliAnalysisTaskUnicorME(const AliAnalysisTaskUnicorME &ta): AliAnalysisTaskME(ta), fEv0(ta.fEv0), fEv1(ta.fEv1), fOutputList(ta.fOutputList) {}
   AliAnalysisTaskUnicorME &operator=(const AliAnalysisTaskUnicorME &) {return (*this);} 
   virtual ~AliAnalysisTaskUnicorME() {}                       // destructor
   virtual void UserCreateOutputObjects();
