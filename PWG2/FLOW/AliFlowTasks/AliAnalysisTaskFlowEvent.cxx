@@ -180,7 +180,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(fInputEvent); // from TaskSE
 
   // if monte carlo event get reaction plane from monte carlo (depends on generator) 
-  if (mcEvent) {
+  if (mcEvent && mcEvent-> GenEventHeader()) {
 
     //COCKTAIL with HIJING
     if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Cocktail Header")) { //returns 0 if matches
@@ -191,20 +191,20 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 	  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (lhd->At(0)); 
 	  if (hdh) {
 	    fRP = hdh->ReactionPlaneAngle();
-      fEventMaker->SetMCReactionPlaneAngle(fRP);
+	    fEventMaker->SetMCReactionPlaneAngle(fRP);
 	    //cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
 	  }
 	}
       }
       //else { cout<<"headerC is NULL"<<endl; }
     }
-
+    
     //GEVSIM
     else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header")) { //returns 0 if matches
       AliGenGeVSimEventHeader* headerG = (AliGenGeVSimEventHeader*)(mcEvent->GenEventHeader());
       if (headerG) {
 	fRP = headerG->GetEventPlane();
-  fEventMaker->SetMCReactionPlaneAngle(fRP);
+	fEventMaker->SetMCReactionPlaneAngle(fRP);
 	//cout<<"The reactionPlane from GeVSim is: "<< fRP <<endl;
       }
       //else { cout<<"headerG is NULL"<<endl; }
@@ -215,7 +215,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliGenHijingEventHeader* headerH = (AliGenHijingEventHeader*)(mcEvent->GenEventHeader());
       if (headerH) {
 	fRP = headerH->ReactionPlaneAngle();
-  fEventMaker->SetMCReactionPlaneAngle(fRP);
+	fEventMaker->SetMCReactionPlaneAngle(fRP);
 	//cout<<"The reactionPlane from Hijing is: "<< fRP <<endl;
       }
       //else { cout<<"headerH is NULL"<<endl; }
@@ -226,7 +226,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliGenEposEventHeader* headerE = (AliGenEposEventHeader*)(mcEvent->GenEventHeader());
       if (headerE) {
 	fRP = headerE->ReactionPlaneAngle();
-  fEventMaker->SetMCReactionPlaneAngle(fRP);
+	fEventMaker->SetMCReactionPlaneAngle(fRP);
 	//cout<<"The reactionPlane from EPOS is: "<< fR <<endl;
       }
       //else { cout<<"headerE is NULL"<<endl; }
