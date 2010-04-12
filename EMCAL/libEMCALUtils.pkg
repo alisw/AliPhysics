@@ -14,7 +14,8 @@ AliCaloFitSubarray.cxx \
 AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \
 AliCaloRawAnalyzerPeakFinder.cxx \
-AliCaloRawAnalyzerNN.cxx  
+AliCaloRawAnalyzerNN.cxx \
+AliEMCALHistoUtilities.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

@@ -6,7 +6,6 @@ AliEMCALHit.cxx \
 AliEMCALLoader.cxx \
 AliEMCALWsuCosmicRaySetUp.cxx \
 AliEMCALRecPoint.cxx \
-AliEMCALHistoUtilities.cxx \
 AliEMCALSDigitizer.cxx \
 AliEMCALDigitizer.cxx \
 AliEMCALDigit.cxx \
