@@ -82,6 +82,10 @@ AliT0Parameters::AliT0Parameters()
    fTimeDelayTVD(0),
    fMeanT0(512),
    fMeanVertex(0),
+   fLatencyHPTDC(0),
+   fLatencyL1(0),
+   fLatencyL1A(0),
+   fLatencyL1C(0),
    fLookUp(0),
    fNumberOfTRMs(2),
    fCalibentry(), fLookUpentry(),fSlewCorr()
