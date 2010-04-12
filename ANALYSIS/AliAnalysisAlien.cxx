@@ -2855,11 +2855,14 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       TObjArray *arr = fOutputFiles.Tokenize(" ");
       TIter next1(arr);
       TString output_file;
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      TString extra = mgr->GetExtraFiles();
       while ((os=(TObjString*)next1())) { 
          output_file = os->GetString();
          Int_t index = output_file.Index("@");
          if (index > 0) output_file.Remove(index);
          if (merge && fMergeExcludes.Contains(output_file)) continue;
+         if (extra.Contains(output_file)) continue;
          out << "if ! [ -f " << output_file.Data() << " ] ; then" << endl;
          out << "   error=1" << endl;
          out << "   echo \"Output file(s) not found. Job FAILED !\""  << out_stream << endl;

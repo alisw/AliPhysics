@@ -1721,6 +1721,7 @@ void AliAnalysisManager::RegisterExtraFile(const char *fname)
 // connected to any output container, so that the manager can properly register,
 // retrieve or merge them when running in distributed mode. The file names are
 // separated by blancs. The method has to be called in MyAnalysisTask::LocalInit().
+   if (fExtraFiles.Contains(fname)) return;
    if (fExtraFiles.Length()) fExtraFiles += " ";
    fExtraFiles += fname;
 }
