@@ -695,6 +695,7 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
   AliHLTRunDesc runDesc;
   memset(&runDesc, 0, sizeof(AliHLTRunDesc));
   runDesc.fStructSize=sizeof(AliHLTRunDesc);
+  runDesc.fRunNo=AliHLTMisc::Instance().GetCDBRunNo();
   bd.fPtr=&runDesc;
   bd.fSize=sizeof(AliHLTRunDesc);
   bd.fDataType=dt;
