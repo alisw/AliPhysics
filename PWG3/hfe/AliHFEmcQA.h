@@ -32,6 +32,7 @@
 
 class TH1F;
 class TH2F;
+class TList;
 class TParticle;
 class TString;
 class AliStack;
@@ -41,66 +42,65 @@ class AliAODMCParticle;
 //________________________________________________________________
 class AliHFEmcQA: public TObject {
 
-        public: 
-                enum heavyType {kCharm=4, kBeauty=5, kElectronPDG=11};
-                enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-                enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6};
-                enum ProcessType
-                        {
-                        kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
-                        };
+  public: 
+    enum heavyType {kCharm=4, kBeauty=5, kElectronPDG=11};
+    enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
+    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6};
+    enum ProcessType {
+      kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
+    };
 
-                AliHFEmcQA();
-                AliHFEmcQA(const AliHFEmcQA &p); // copy constructor
-                AliHFEmcQA &operator=(const AliHFEmcQA &); // assignment operator
+    AliHFEmcQA();
+    AliHFEmcQA(const AliHFEmcQA &p); // copy constructor
+    AliHFEmcQA &operator=(const AliHFEmcQA &); // assignment operator
 
-                virtual ~AliHFEmcQA();
+    virtual ~AliHFEmcQA();
 
-                void PostAnalyze() const;
-                void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
-                void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
-                void SetGenEventHeader(AliGenEventHeader* const mcHeader){fMCHeader=mcHeader;} // set stack pointer
-                void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
-                void Init();
+    void MakeHistograms();
+    TList *GetList() const { return fQAhistos; };
+    void PostAnalyze() const;
+    void CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt=""); // create histograms for mc qa analysis
+    void SetStack(AliStack* const stack){fStack=stack;} // set stack pointer
+    void SetGenEventHeader(AliGenEventHeader* const mcHeader){fMCHeader=mcHeader;} // set stack pointer
+    void SetMCArray(TClonesArray* const mcarry){fMCArray=mcarry;} // set mcarray pointer
+    void Init();
 
-                void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
-                void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
-                void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
+    void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
+    void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
+    void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
 		void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
-                void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
+    void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
 		Int_t GetSource(TParticle * const mcpart); // return electron source id 
 		Int_t GetSource(AliAODMCParticle * const mcpart); // return electron source id for AOD
 
-        protected:
-                void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
-                void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
-                void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
-                Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
-                Bool_t IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from final parton shower
-                Float_t GetRapidity(TParticle *part) const; // return rapidity
-		Float_t GetRapidity(AliAODMCParticle *part) const; // return rapidity
+  protected:
+    void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
+    void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
+    void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
+    Bool_t IsFromInitialShower(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from initial parton shower 
+    Bool_t IsFromFinalParton(Int_t inputmotherlabel, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from final parton shower
 
-                AliStack* fStack; // stack pointer           
-                AliGenEventHeader* fMCHeader; // mcheader pointer
-                TClonesArray *fMCArray; // mc array pointer
+    AliStack* fStack; // stack pointer           
+    AliGenEventHeader* fMCHeader; // mcheader pointer
+    TClonesArray *fMCArray; // mc array pointer
 
-                static const Int_t fgkGluon; // gluon pdg code
-                static const Int_t fgkMaxGener; // ancester level wanted to be checked 
-                static const Int_t fgkMaxIter; // number of iteration to find out matching particle 
-                static const Int_t fgkqType; // number of particle type to be checked
+    static const Int_t fgkGluon; // gluon pdg code
+    static const Int_t fgkMaxGener; // ancester level wanted to be checked 
+    static const Int_t fgkMaxIter; // number of iteration to find out matching particle 
+    static const Int_t fgkqType; // number of particle type to be checked
 
-                struct AliHists{
-                        TH1F *fPdgCode; // histogram to store particle pdg code
-                        TH1F *fPt; // histogram to store pt
-                        TH1F *fY; // histogram to store rapidity
-                        TH1F *fEta; // histogram to store eta
+    struct AliHists{
+      TH1F *fPdgCode; // histogram to store particle pdg code
+      TH1F *fPt; // histogram to store pt
+      TH1F *fY; // histogram to store rapidity
+      TH1F *fEta; // histogram to store eta
 
 			AliHists()
 			  : fPdgCode()
 			  , fPt()
 			  , fY()
 			  , fEta()
-                        {
+      {
 			  // default constructor
 			};
 			AliHists(const AliHists & p)
@@ -108,7 +108,7 @@ class AliHFEmcQA: public TObject {
 			  , fPt(p.fPt)
 			  , fY(p.fY)
 			  , fEta(p.fEta)
-                        {
+      {
 			  // copy constructor
 			};
 			AliHists &operator=(const AliHists &)
@@ -116,14 +116,15 @@ class AliHFEmcQA: public TObject {
 			  // assignment operator, not yet implemented 
 			  return *this;
 			}
-                };
-                struct AliHistsComm {
-                        TH1F *fNq; // histogram to store number of quark
-                        TH1F *fProcessID; // histogram to store process id 
-                        TH2F *fePtRatio; // fraction of electron pT from D or B hadron
-                        TH2F *fDePtRatio; // fraction of D electron pT from B hadron 
-                        TH2F *feDistance; // distance between electron production point to mother particle 
-                        TH2F *fDeDistance; // distance between D electron production point to mother particle
+      void FillList(TList *l) const;
+    };
+    struct AliHistsComm {
+      TH1F *fNq; // histogram to store number of quark
+      TH1F *fProcessID; // histogram to store process id 
+      TH2F *fePtRatio; // fraction of electron pT from D or B hadron
+      TH2F *fDePtRatio; // fraction of D electron pT from B hadron 
+      TH2F *feDistance; // distance between electron production point to mother particle 
+      TH2F *fDeDistance; // distance between D electron production point to mother particle
 
 			AliHistsComm()
 			  : fNq()
@@ -132,7 +133,7 @@ class AliHFEmcQA: public TObject {
 			  , fDePtRatio()
 			  , feDistance()
 			  , fDeDistance()
-                        {
+      {  
 			  // default constructor
 			};
 			AliHistsComm(const AliHistsComm & p)
@@ -142,7 +143,7 @@ class AliHFEmcQA: public TObject {
 			  , fDePtRatio(p.fDePtRatio)
 			  , feDistance(p.feDistance)
 			  , fDeDistance(p.fDeDistance)
-                        {
+      {
 			  // copy constructor
 			};
 			AliHistsComm &operator=(const AliHistsComm &)
@@ -150,18 +151,20 @@ class AliHFEmcQA: public TObject {
 			  // assignment operator, not yet implemented 
 			  return *this;
 			}
-                };
+      void FillList(TList *l) const;
+    };
 
-                AliHists fHist[2][7][5]; // struct of histograms to store kinematics of given particles
-                AliHistsComm fHistComm[2][5]; // struct of additional histograms of given particles
+    AliHists fHist[2][7][5]; // struct of histograms to store kinematics of given particles
+    AliHistsComm fHistComm[2][5]; // struct of additional histograms of given particles
 
-                TParticle *fHeavyQuark[50]; // store pointer of heavy flavour quark 
-                Int_t fIsHeavy[2]; // count of heavy flavour
-                Int_t fNparents; // number of heavy hadrons to be considered
-                Int_t fParentSelect[2][7]; // heavy hadron species
+    TList *fQAhistos;           // Container for QA histos
+    TParticle *fHeavyQuark[50]; // store pointer of heavy flavour quark 
+    Int_t fIsHeavy[2]; // count of heavy flavour
+    Int_t fNparents; // number of heavy hadrons to be considered
+    Int_t fParentSelect[2][7]; // heavy hadron species
 
 
-        ClassDef(AliHFEmcQA,1);
+  ClassDef(AliHFEmcQA,1);
 };
 
 #endif

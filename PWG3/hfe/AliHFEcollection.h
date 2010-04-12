@@ -30,7 +30,10 @@
 #include "TNamed.h"
 #endif
 
-class TList;
+#ifndef ROOT_THashList
+#include "THashList.h"
+#endif
+
 class TCollection;
 class TBrowser;
 
@@ -58,6 +61,7 @@ class AliHFEcollection : public TNamed{
   Bool_t CreateTHnSparse(const char* name, const char* title, Int_t dim, Int_t* nbins, Double_t* xmin, Double_t* xmax);
 
   Bool_t BinLogAxis(const char* name, Int_t dim);
+  Bool_t Sumw2(const char*name);
     
 
   Long64_t Merge(TCollection *list);
@@ -77,7 +81,7 @@ class AliHFEcollection : public TNamed{
    void Copy(TObject &ref) const;
 
  private:
-  TList*                           fList;      //! Object container
+  THashList*                           fList;      // Object container
 
   ClassDef(AliHFEcollection, 1)
 

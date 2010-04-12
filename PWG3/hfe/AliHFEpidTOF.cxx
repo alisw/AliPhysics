@@ -45,14 +45,14 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   AliHFEpidBase(name)
   , fPID(0x0)
   , fQAList(0x0)
-  , fESDpid(0x0)
+  , fESDpid(NULL)
   , fNsigmaTOF(3)
 {
   //
   // Constructor
   //
 
-  fESDpid = new AliESDpid();
+  fESDpid = new AliESDpid;
 
 }
 //___________________________________________________________________
@@ -60,7 +60,7 @@ AliHFEpidTOF::AliHFEpidTOF(const AliHFEpidTOF &c):
   AliHFEpidBase("")
   , fPID(0x0)
   , fQAList(0x0)
-  , fESDpid(0x0)
+  , fESDpid(NULL)
   , fNsigmaTOF(3)
 {  
   // 
@@ -102,7 +102,7 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
 
   target.fPID = fPID;          
   target.fQAList = fQAList;
-  target.fESDpid = new AliESDpid(*fESDpid);
+  target.fESDpid = new AliESDpid(*fESDpid); 
 
   AliHFEpidBase::Copy(ref);
 }
@@ -147,8 +147,6 @@ Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
   //
   Long_t status = 0;
   status = track->GetStatus(); 
- 
-  Float_t timeZeroTOF = 0;  // Need to get TimeZero first!
 
   if(!(status & AliESDtrack::kTOFout)) return 0;
   
@@ -206,7 +204,7 @@ Int_t AliHFEpidTOF::MakePIDesd(AliESDtrack *track, AliMCParticle * /*mcTrack*/){
   // sanity check, should not be necessary
   if(TMath::Abs(tTOFpidSum - 1) > 0.01) return 0;
 
-  Double_t nSigmas = fESDpid->NumberOfSigmasTOF(track, (AliPID::EParticleType)tMAXindex,timeZeroTOF);
+  Double_t nSigmas = fESDpid->NumberOfSigmasTOF(track, (AliPID::EParticleType)tMAXindex, 0.);
   if(TMath::Abs(nSigmas) > fNsigmaTOF) return 0;
 
   
@@ -229,12 +227,11 @@ Double_t AliHFEpidTOF::Likelihood(const AliESDtrack *track, Int_t species, Float
   
   //IMPORTANT: Tracks which are judged to be outliers get negative likelihoods -> unusable for combination with further detectors!
   
-  Float_t timeZeroTOF = 0; // Need to get timeZero first !
   if(!track) return -1.;
   Bool_t outlier = kTRUE;
   // Check whether distance from the respective particle line is smaller than r sigma
   for(Int_t hypo = 0; hypo < AliPID::kSPECIES; hypo++){
-    if(TMath::Abs(fESDpid->NumberOfSigmasTOF(track, (AliPID::EParticleType)hypo, timeZeroTOF)) > rsig)
+    if(TMath::Abs(fESDpid->NumberOfSigmasTOF(track, (AliPID::EParticleType)hypo, 0.)) > rsig)
       outlier = kTRUE;
     else {
       outlier = kFALSE;
@@ -276,3 +273,5 @@ void AliHFEpidTOF::AddQAhistograms(TList *qaList){
 
   qaList->AddLast(fQAList);
 }
+
+

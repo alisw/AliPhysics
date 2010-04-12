@@ -70,16 +70,17 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
     Int_t IsSignalElectron(AliVParticle *fTrack) const;
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
+    void SetHFEElecBackGround(AliHFEelecbackground * const elecBackGround) { fElecBackGround = elecBackGround; };
     void SetQAOn(Int_t qaLevel) { SETBIT(fQAlevel, qaLevel); };
     void SwitchOnPlugin(Int_t plug);
     void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
     void SetPIDdetectors(Char_t * const detectors){ fPIDdetectors = detectors; }
     void SetPIDStrategy(UInt_t strategy) { fPIDstrategy = strategy; }
-    void AddPIDdetector(Char_t *detector);
+    void AddPIDdetector(TString detector);
+    void SetTPCBetheBlochParameters(Double_t *pars);
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     void PrintStatus() const;
-    Float_t GetRapidity(TParticle *part) const;
  
   private:
     enum{
@@ -106,6 +107,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
         Int_t *fCurrent;      // Current entry to mimic an iterator
     };
     void MakeParticleContainer();
+    void MakeEventContainer();
     void ProcessMC();
     void ProcessESD();
     void ProcessAOD();
@@ -115,6 +117,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     ULong_t fQAlevel;                     // QA level
     TString fPIDdetectors;                // Detectors for Particle Identification
     UInt_t fPIDstrategy;                  // PID Strategy
+    Double_t fTPCBetheBlochParameters[5]; // TPC Bethe-Bloch Parameters
     UShort_t fPlugins;                    // Enabled Plugins
     AliCFManager *fCFM;                   //! Correction Framework Manager
     TList *fCorrelation;                  //! response matrix for unfolding  

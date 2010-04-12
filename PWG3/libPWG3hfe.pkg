@@ -1,23 +1,36 @@
 #-*- Mode: Makefile -*-
 
-SRCS= hfe/AliHFEcollection.cxx \
-      hfe/AliHFEmcQA.cxx \
-      hfe/AliHFEpairs.cxx \
-      hfe/AliHFEsecVtxs.cxx \
-      hfe/AliHFEsecVtx.cxx \
-      hfe/AliHFEpriVtx.cxx \
-      hfe/AliHFEelecbackground.cxx \
-      hfe/AliHFEpid.cxx \
-      hfe/AliHFEpidBase.cxx \
-      hfe/AliHFEpidITS.cxx \
-      hfe/AliHFEpidTPC.cxx \
-      hfe/AliHFEpidTRD.cxx \
-      hfe/AliHFEpidTOF.cxx \
-      hfe/AliHFEpidMC.cxx \
-      hfe/AliHFEextraCuts.cxx \
-      hfe/AliHFEcuts.cxx \
-      hfe/AliHFEpostAnalysis.cxx \
-      hfe/AliAnalysisTaskHFE.cxx
+SRCS=hfe/AliHFEtools.cxx \
+     hfe/AliHFEcollection.cxx \
+     hfe/AliHFEcontainer.cxx \
+     hfe/AliHFEmcQA.cxx \
+     hfe/AliHFEpairs.cxx \
+     hfe/AliHFEsecVtxs.cxx \
+     hfe/AliHFEsecVtx.cxx \
+     hfe/AliHFEpriVtx.cxx \
+     hfe/AliHFEelecbackground.cxx \
+     hfe/AliHFEV0pid.cxx \
+     hfe/AliHFEpidQA.cxx \
+     hfe/AliHFEpid.cxx \
+     hfe/AliHFEpidBase.cxx \
+     hfe/AliHFEpidITS.cxx \
+     hfe/AliHFEpidTPC.cxx \
+     hfe/AliHFEpidTRD.cxx \
+     hfe/AliHFEpidTOF.cxx \
+     hfe/AliHFEpidMC.cxx \
+     hfe/AliHFEextraCuts.cxx \
+     hfe/AliHFEcutStep.cxx \
+     hfe/AliHFEtrackFilter.cxx \
+     hfe/AliHFEcuts.cxx \
+     hfe/AliHFEdca.cxx \
+     hfe/AliAnalysisTaskDCA.cxx \
+     hfe/AliHFEdisplacedElectrons.cxx \
+     hfe/AliHFEpostAnalysis.cxx \
+     hfe/AliAnalysisTaskDisplacedElectrons.cxx \
+     hfe/AliAnalysisTaskHFEpidQA.cxx \
+     hfe/AliHFEefficiency.cxx \
+     hfe/AliAnalysisTaskHFE.cxx \
+     hfe/AliHFEV0pidMC.cxx
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR= PWG3hfeLinkDef.h

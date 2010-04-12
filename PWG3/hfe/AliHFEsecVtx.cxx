@@ -22,6 +22,7 @@
 //
 
 #include <TH2F.h>
+#include <TIterator.h>
 #include <TParticle.h>
 
 #include <AliESDEvent.h>
@@ -37,18 +38,22 @@
 #include <AliAODMCParticle.h>
 #include "AliHFEpairs.h"
 #include "AliHFEsecVtxs.h"
+#include "AliHFEtrackFilter.h"
 
 ClassImp(AliHFEsecVtx)
 
 //_______________________________________________________________________________________________
 AliHFEsecVtx::AliHFEsecVtx():
-  fESD1(0x0)
+  fFilter(0x0)
+  ,fESD1(0x0)
   ,fAOD1(0x0)
   ,fStack(0x0)
   ,fUseMCPID(kFALSE)
   ,fkSourceLabel()
   ,fNparents(0)
   ,fParentSelect()
+  ,fPtRng()
+  ,fDcaCut()
   ,fNoOfHFEpairs(0)
   ,fNoOfHFEsecvtxs(0)
   ,fHFEpairs(0x0)
@@ -76,6 +81,7 @@ AliHFEsecVtx::AliHFEsecVtx():
 //_______________________________________________________________________________________________
 AliHFEsecVtx::AliHFEsecVtx(const AliHFEsecVtx &p):
   TObject(p)
+  ,fFilter(0x0)
   ,fESD1(0x0)
   ,fAOD1(0x0)
   ,fStack(0x0)
@@ -83,6 +89,8 @@ AliHFEsecVtx::AliHFEsecVtx(const AliHFEsecVtx &p):
   ,fkSourceLabel()
   ,fNparents(p.fNparents)
   ,fParentSelect()
+  ,fPtRng()
+  ,fDcaCut()
   ,fNoOfHFEpairs(p.fNoOfHFEpairs)
   ,fNoOfHFEsecvtxs(p.fNoOfHFEsecvtxs)
   ,fHFEpairs(0x0)
@@ -103,6 +111,7 @@ AliHFEsecVtx::AliHFEsecVtx(const AliHFEsecVtx &p):
   //
   // Copy constructor
   //
+  fFilter = new AliHFEtrackFilter(*p.fFilter);
 }
 
 //_______________________________________________________________________________________________
@@ -125,6 +134,7 @@ AliHFEsecVtx::~AliHFEsecVtx()
   //
 
   //cout << "Analysis Done." << endl;
+  delete fFilter;
 }
 
 //__________________________________________
@@ -151,7 +161,62 @@ void AliHFEsecVtx::Init()
   fParentSelect[1][4] = 5132;
   fParentSelect[1][5] = 5232;
   fParentSelect[1][6] = 5332;
+
+  // momentum ranges to apply pt dependent cuts
+  fPtRng[0] = 1.0;
+  fPtRng[1] = 2.0;
+  fPtRng[2] = 2.5;
+  fPtRng[3] = 3.0;
+  fPtRng[4] = 5.0;
+  fPtRng[5] = 12.0;
+  fPtRng[6] = 20.0;
+
+  // momentum dependent DCA cut values (preliminary)
+  fDcaCut[0] = 0.04;
+  fDcaCut[1] = 0.03;
+  fDcaCut[2] = 0.02;
+  fDcaCut[3] = 0.015;
+  fDcaCut[4] = 0.01;
+  fDcaCut[5] = 0.005;
+
+  fFilter = new AliHFEtrackFilter("SecVtxFilter");
+  fFilter->MakeCutStepRecKineITSTPC();
+  fFilter->MakeCutStepPrimary();
 } 
+
+void AliHFEsecVtx::Process(AliVTrack *signalTrack){ 
+  if(signalTrack->Pt() < 1.0) return;
+  AliESDtrack *track = dynamic_cast<AliESDtrack *>(signalTrack);
+  InitHFEpairs();
+  InitHFEsecvtxs();
+  AliESDtrack *htrack = 0x0; 
+  fFilter->Flush();
+  fFilter->FilterTracks(fESD1);
+  TObjArray *candidates = fFilter->GetFilteredTracks();
+  TIterator *trackIter = candidates->MakeIterator();
+  while((htrack = dynamic_cast<AliESDtrack *>(trackIter->Next()))){
+    if(track->GetID() == htrack->GetID()) continue; // since it is for tagging single electron, don't need additional condition
+    if (htrack->Pt()<1.0) continue;
+    PairAnalysis(track, htrack, htrack->GetID()); // e-h pairing
+  }
+  delete trackIter;
+  /*for(int ip=0; ip<fSecVtx->HFEpairs()->GetEntriesFast(); ip++){
+      if(HasMCData()){
+        AliHFEpairs *pair = (AliHFEpairs*) (fSecVtx->HFEpairs()->UncheckedAt(ip));
+        if(!(pair->GetPairCode()>1. && pair->GetPairCode()<4.))  // apply various cuts
+        fSecVtx->HFEpairs()->RemoveAt(ip);
+      }
+    }*/
+  HFEpairs()->Compress();
+  RunSECVTX(track); // secondary vertexing with e,h1,h2,.. tracks
+  for(int ip=0; ip<HFEsecvtxs()->GetEntriesFast(); ip++){
+    AliHFEsecVtxs *secvtx=0x0;
+    secvtx = (AliHFEsecVtxs*) (HFEsecvtxs()->UncheckedAt(ip));
+    // here you apply cuts, then if it doesn't pass the cut, remove it from the fSecVtx->HFEsecvtxs() 
+  }
+  DeleteHFEpairs();
+  DeleteHFEsecvtxs();
+}
 
 //_______________________________________________________________________________________________
 void AliHFEsecVtx::CreateHistograms(TList *qaList)
@@ -213,6 +278,26 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   // calculate e-h pair characteristics and tag pair 
   //
 
+  //later consider the below
+  Float_t dca1[2]={-999.,-999.}, dca2[2]={-999.,-999.};
+  Float_t cov1[3]={-999.,-999.,-999.}, cov2[3]={-999.,-999.,-999.};
+
+  if (IsAODanalysis()){
+    AliESDtrack esdTrk1(track1);
+    AliESDtrack esdTrk2(track2);
+    esdTrk1.PropagateToDCA(fAOD1->GetPrimaryVertex(),0,10000,(Double_t*)dca1,(Double_t*)cov1);
+    esdTrk2.PropagateToDCA(fAOD1->GetPrimaryVertex(),0,10000,(Double_t*)dca2,(Double_t*)cov2);
+  }
+  else {
+    ((AliESDtrack*)track1)->GetImpactParameters(dca1,cov1);
+    ((AliESDtrack*)track2)->GetImpactParameters(dca2,cov2);
+  }
+
+  // apply pt dependent dca cut on hadrons
+  for(int ibin=0; ibin<6; ibin++){
+    if((track2->Pt()>fPtRng[ibin] && track2->Pt()<fPtRng[ibin+1]) && TMath::Abs(dca2[0])<fDcaCut[ibin]) return;
+  }
+
   // get KF particle input pid
   Int_t pdg1 = GetPDG(track1);
   Int_t pdg2 = GetPDG(track2);
@@ -259,43 +344,15 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
 
   // projection of kf vertex vector to the kf momentum direction 
   Double_t signedLxy=-999.;
-  Double_t psqr = kfpx*kfpx+kfpy*kfpy;
-  /*
+  if((dx*kfpx+dy*kfpy)>0) signedLxy = TMath::Sqrt(dx*dx+dy*dy);  
+  if((dx*kfpx+dy*kfpy)<0) signedLxy = -1*TMath::Sqrt(dx*dx+dy*dy);  
   //[the other way to think about]
-  if(psqr>0) {
-    if((dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr)>0) signedLxy = TMath::Sqrt(dx*dx+dy*dy);  
-    if((dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr)<0) signedLxy = -1*TMath::Sqrt(dx*dx+dy*dy);  
-  }*/
-  if(psqr>0) signedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
+  //Double_t psqr = kfpx*kfpx+kfpy*kfpy;
+  //if(psqr>0) signedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
 
   // DCA from primary to e-h KF particle (impact parameter of KF particle)
   Double_t vtx[2]={fPVx, fPVy}; 
   Double_t kfip = kfSecondary.GetDistanceFromVertexXY(vtx);
-
-  /* //later consider the below
-  Float_t dcaR1=-999., dcaR2=-999.;
-  Float_t dcaZ1=-999., dcaZ2=-999.;
-
-  if(IsAODanalysis()){
-    Double_t trkIpPar1[2];
-    Double_t trkIpCov1[3];
-    Double_t trkIpPar2[2];
-    Double_t trkIpCov2[3];
-
-    AliESDtrack esdTrk1(track1);
-    AliESDtrack esdTrk2(track2);
-    esdTrk1.PropagateToDCA(fAOD1->GetPrimaryVertex(),0,10000,trkIpPar1,trkIpCov1);
-    esdTrk2.PropagateToDCA(fAOD1->GetPrimaryVertex(),0,10000,trkIpPar2,trkIpCov2);
-
-    dcaR1=trkIpPar1[0];
-    dcaZ1=trkIpPar1[1];
-    dcaR2=trkIpPar2[0];
-    dcaZ2=trkIpPar2[1];
-  }
-  else {
-    ((AliESDtrack*)track1)->GetImpactParameters(dcaR1,dcaZ1);
-    ((AliESDtrack*)track2)->GetImpactParameters(dcaR2,dcaZ2);
-  }*/
 
   Int_t paircode = -1;
   if (HasMCData()) paircode = GetPairCode(track1,track2); 
@@ -320,7 +377,16 @@ void AliHFEsecVtx::PairAnalysis(AliVTrack* track1, AliVTrack* track2, Int_t inde
   dataE[3]=signedLxy;
   dataE[4]=kfip;
   dataE[5]=paircode;
+  /*
+  dataE[6]=TMath::Abs(dca1[0]);
+  dataE[7]=TMath::Abs(dca2[0]);
+  //if(cov1[0]>0) dataE[6]=Double_t(dca1[0]/cov1[0]);
+  //if(cov2[0]>0) dataE[7]=Double_t(dca2[0]/cov2[0]);
+  dataE[8]=track1->Pt();
+  dataE[9]=track2->Pt();
+  */
   fPairQA->Fill(dataE);
+
 }
 
 //_______________________________________________________________________________________________
@@ -407,10 +473,10 @@ void AliHFEsecVtx::FindSECVTXCandid(AliVTrack *track)
           AddHFEsecvtxToArray(&hfesecvtx);
           fNoOfHFEsecvtxs++; 
 
-          dataE[0]=pair->GetInvmass();
-          dataE[1]=pair->GetKFChi2();
-          dataE[2]=pair->GetSignedLxy();
-          dataE[3]=pair->GetKFIP();
+          dataE[0]=fInvmass;
+          dataE[1]=fKFchi2;
+          dataE[2]=fSignedLxy;
+          dataE[3]=fKFip;
           if(HasMCData()) dataE[4]=GetElectronSource(TMath::Abs(track->GetLabel()));
           dataE[5]=3;
           fSecvtxQA->Fill(dataE);
@@ -469,9 +535,11 @@ void AliHFEsecVtx::CalcSECVTXProperty(AliVTrack* track1, AliVTrack* track2, AliV
   Double_t vtx[2]={fPVx, fPVy};
   fKFip = kfSecondary.GetDistanceFromVertexXY(vtx);
 
-  // projection of kf vertex vector to the kf momentum direction 
-  Double_t psqr = kfpx*kfpx+kfpy*kfpy;
-  if(psqr>0) fSignedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
+  if((dx*kfpx+dy*kfpy)>0) fSignedLxy= TMath::Sqrt(dx*dx+dy*dy);
+  if((dx*kfpx+dy*kfpy)<0) fSignedLxy= -1*TMath::Sqrt(dx*dx+dy*dy);
+  //[the other way to think about] - projection of kf vertex vector to the kf momentum direction
+  //Double_t psqr = kfpx*kfpx+kfpy*kfpy;
+  //if(psqr>0) fSignedLxy=(dx*kfpx+dy*kfpy)/TMath::Sqrt(psqr);  
 }
 
 //_______________________________________________________________________________________________
@@ -1058,12 +1126,15 @@ void AliHFEsecVtx::MakeContainer(){
 
   const Int_t nDimPair=6;
   Int_t nBinPair[nDimPair] = {200, 500, 314, 2000, 2000, 11};
+  //Int_t nBinPair[nDimPair] = {200, 500, 314, 2000, 2000, 11, 1000, 1000, 60, 60};
   const Double_t kInvmassmin = 0., kInvmassmax = 20.;
   const Double_t kKFChi2min = 0, kKFChi2max= 50;
   const Double_t kOpenanglemin = 0, kOpenanglemax = 3.14;
   const Double_t kSignedLxymin = -10, kSignedLxymax= 10;
   const Double_t kKFIPmin = -10, kKFIPmax= 10;
   const Double_t kPairCodemin = -1, kPairCodemax= 10;
+  //const Double_t kDCAsigmin = 0, kDCAsigmax= 5;
+  //const Double_t kPtmin = 0, kPtmax= 30;
 
   Double_t* binEdgesPair[nDimPair];
   for(Int_t ivar = 0; ivar < nDimPair; ivar++)
@@ -1075,8 +1146,13 @@ void AliHFEsecVtx::MakeContainer(){
   for(Int_t i=0; i<=nBinPair[3]; i++) binEdgesPair[3][i]=(Double_t)kSignedLxymin + (kSignedLxymax - kSignedLxymin)/nBinPair[3]*(Double_t)i;
   for(Int_t i=0; i<=nBinPair[4]; i++) binEdgesPair[4][i]=(Double_t)kKFIPmin + (kKFIPmax - kKFIPmin)/nBinPair[4]*(Double_t)i;
   for(Int_t i=0; i<=nBinPair[5]; i++) binEdgesPair[5][i]=(Double_t)kPairCodemin + (kPairCodemax - kPairCodemin)/nBinPair[5]*(Double_t)i;
+  /*for(Int_t i=0; i<=nBinPair[6]; i++) binEdgesPair[6][i]=(Double_t)kDCAsigmin + (kDCAsigmax - kDCAsigmin)/nBinPair[6]*(Double_t)i;
+  for(Int_t i=0; i<=nBinPair[7]; i++) binEdgesPair[7][i]=binEdgesPair[6][i];
+  for(Int_t i=0; i<=nBinPair[8]; i++) binEdgesPair[8][i]=(Double_t)kPtmin + (kPtmax - kPtmin)/nBinPair[8]*(Double_t)i;
+  for(Int_t i=0; i<=nBinPair[9]; i++) binEdgesPair[9][i]=binEdgesPair[8][i];*/
 
-  fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code ", nDimPair, nBinPair);
+  fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code", nDimPair, nBinPair);
+  //fPairQA = new THnSparseF("pairQA", "QA for Pair; invmass[GeV/c^2]; KF chi2; opening angle; signed Lxy; KF ip; pair code; dca sig trk1; dca sig trk2; pt trk1; pt trk2 ", nDimPair, nBinPair);
   for(Int_t idim = 0; idim < nDimPair; idim++){
     fPairQA->SetBinEdges(idim, binEdgesPair[idim]);
   }
@@ -1103,4 +1179,8 @@ void AliHFEsecVtx::MakeContainer(){
   }
 
   fSecVtxList->AddAt(fSecvtxQA,1);
+  for(Int_t ivar = 0; ivar < nDimPair; ivar++)
+    delete binEdgesPair[ivar];
+  for(Int_t ivar = 0; ivar < nDimSecvtx; ivar++)
+    delete binEdgesSecvtx[ivar];
 }

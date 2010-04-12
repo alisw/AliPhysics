@@ -62,11 +62,12 @@ class AliHFEpidTRD : public AliHFEpidBase{
     Double_t GetTRDSignalV2(AliESDtrack *track, Int_t mcPID);
 
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
+
+    Double_t GetTRDthresholds(Double_t electronEff, Double_t p);
   protected:
     void Copy(TObject &ref) const;
     Int_t MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mcTrack);
     Int_t MakePIDaod(AliAODTrack *aofTrack, AliAODMCParticle *aodMC);
-    Double_t GetTRDthresholds(Double_t electronEff, Double_t p);
     Int_t GetMCpid(AliESDtrack *track);
     void InitParameters();
     virtual void AddQAhistograms(TList *l);
