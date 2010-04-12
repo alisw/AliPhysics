@@ -13,14 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
-
-
-
-*/
-
-
+/* $Id:$ */
 
 #include "AliExternalComparison.h"
 #include "AliExternalTrackParam.h"
@@ -62,7 +55,7 @@ AliExternalComparison::AliExternalComparison(const Text_t *name, const Text_t *t
 }
 
 AliExternalComparison::AliExternalComparison(const AliExternalComparison& comp)
-  :TNamed(comp.fName,comp.fTitle),
+  :TNamed(comp),
    fResolHistos(new TObjArray(*(comp.fResolHistos))),
    fPullHistos(new TObjArray(*(comp.fPullHistos))),
    fRangeMatrix(new TMatrixD(*(comp.fRangeMatrix))),
@@ -73,17 +66,18 @@ AliExternalComparison::AliExternalComparison(const AliExternalComparison& comp)
   //
 }
 
-AliExternalComparison& AliExternalComparison::operator=(const AliExternalComparison&comp)
+AliExternalComparison& AliExternalComparison::operator=(const AliExternalComparison& comp)
 {
   //
   //
   //
-  SetName(comp.GetName());
-  SetTitle(comp.GetTitle());
-  fResolHistos=new TObjArray(*(comp.fResolHistos));
-  fPullHistos=new TObjArray(*(comp.fPullHistos));
-  fRangeMatrix=new TMatrixD(*(comp.fRangeMatrix));
-  fCutMatrix=new TMatrixD(*(comp.fCutMatrix));
+  if(this != &comp) {
+    TNamed::operator=(comp);
+    fResolHistos=new TObjArray(*(comp.fResolHistos));
+    fPullHistos=new TObjArray(*(comp.fPullHistos));
+    fRangeMatrix=new TMatrixD(*(comp.fRangeMatrix));
+    fCutMatrix=new TMatrixD(*(comp.fCutMatrix));
+  }
   return *this;
 }
 
@@ -108,7 +102,7 @@ void AliExternalComparison::Analyze() {
 }
 
 
-Long64_t AliExternalComparison::Merge(TCollection *li) {
+Long64_t AliExternalComparison::Merge(TCollection *const li) {
   //
   //
   //   
@@ -126,7 +120,7 @@ Long64_t AliExternalComparison::Merge(TCollection *li) {
   return 0;  
 }
 
-void  AliExternalComparison:: Add(AliExternalComparison*comp){
+void  AliExternalComparison::Add(AliExternalComparison *const comp){
   //
   // Add comparison object
   //

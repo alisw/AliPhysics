@@ -6,7 +6,7 @@
 
 
 #include "TNamed.h"
-#include "TMatrixD.h"
+#include "TMatrixDfwd.h"
 class THnSparse;
 class TCollection;
 class AliExternalTrackParam;
@@ -18,12 +18,12 @@ class AliExternalComparison:public TNamed {
 public:
   AliExternalComparison(); 
   AliExternalComparison(const Text_t *name, const Text_t *title);
-  AliExternalComparison(const AliExternalComparison&);
-  AliExternalComparison& operator=(const AliExternalComparison&);
+  AliExternalComparison(const AliExternalComparison& comp);
+  AliExternalComparison& operator=(const AliExternalComparison& comp);
   //
   virtual ~AliExternalComparison();
-  virtual Long64_t       Merge(TCollection *li);
-  virtual void           Add(AliExternalComparison*comp);
+  virtual Long64_t       Merge(TCollection *const li);
+  virtual void           Add(AliExternalComparison *const comp);
   virtual void           Analyze();
   virtual void           Process(const AliExternalTrackParam *param0, const AliExternalTrackParam *param1);
   virtual void           Process(const AliExternalTrackParam *param0, TParticle *part);
@@ -45,7 +45,6 @@ public:
 
 protected:
   void    MakeHistos();
-public:
   TObjArray * fResolHistos;             // resolution histogram
   TObjArray * fPullHistos;              // pull       histogram
   TMatrixD  * fRangeMatrix;             // range matrix

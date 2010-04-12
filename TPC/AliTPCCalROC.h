@@ -32,9 +32,9 @@ class AliTPCCalROC : public TNamed {
   UInt_t        GetNrows() const               { return fNRows;};
   UInt_t        GetNchannels()       const     { return fNChannels;};
   UInt_t        GetNPads(UInt_t row)  const     { return (row<fNRows)? AliTPCROC::Instance()->GetNPads(fSector,row):0;};
-  Float_t      GetValue(UInt_t row, UInt_t pad) const { return ( (row<fNRows) && (fIndexes[row]+pad)<fNChannels)? fData[fIndexes[row]+pad]: 0; };
+  Float_t      GetValue(UInt_t row, UInt_t pad) const { return ( (row<fNRows) && (fkIndexes[row]+pad)<fNChannels)? fData[fkIndexes[row]+pad]: 0; };
   Float_t      GetValue(UInt_t channel) const { return  fData[channel]; };
-  void         SetValue(UInt_t row, UInt_t pad, Float_t vd) { if ( row<fNRows && (fIndexes[row]+pad)<fNChannels)fData[fIndexes[row]+pad]= vd; };
+  void         SetValue(UInt_t row, UInt_t pad, Float_t vd) { if ( row<fNRows && (fkIndexes[row]+pad)<fNChannels)fData[fkIndexes[row]+pad]= vd; };
   void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; };
   virtual void Draw(Option_t* option = "");
   //
@@ -46,10 +46,10 @@ class AliTPCCalROC : public TNamed {
   void Divide(const AliTPCCalROC * roc);   // divide each channel of the ROC by the coresponding value of 'roc'
   // statistic
   //
-  Double_t GetMean(AliTPCCalROC* outlierROC = 0);
-  Double_t GetRMS(AliTPCCalROC* outlierROC = 0);
-  Double_t GetMedian(AliTPCCalROC* outlierROC = 0) ;
-  Double_t GetLTM(Double_t *sigma=0, Double_t fraction=0.9, AliTPCCalROC* outlierROC = 0);
+  Double_t GetMean(AliTPCCalROC *const outlierROC = 0) const;
+  Double_t GetRMS(AliTPCCalROC *const outlierROC = 0) const;
+  Double_t GetMedian(AliTPCCalROC *const outlierROC = 0) const;
+  Double_t GetLTM(Double_t *const sigma=0, Double_t fraction=0.9, AliTPCCalROC *const outlierROC = 0);
   TH1F * MakeHisto1D(Float_t min=4, Float_t max=-4, Int_t type=0);     
   TH2F * MakeHisto2D(Float_t min=4, Float_t max=-4, Int_t type=0);   
   TH2F * MakeHistoOutliers(Float_t delta=4, Float_t fraction=0.7, Int_t mode=0);
@@ -62,13 +62,13 @@ class AliTPCCalROC : public TNamed {
   static void Test();
  protected:
   
-  Double_t GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction);
+  Double_t GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC *const ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction);
   void GetNeighbourhood(TArrayI* &rowArray, TArrayI* &padArray, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius);
   
   UInt_t     fSector;          // sector number
   UInt_t     fNChannels;       // number of channels
   UInt_t     fNRows;           // number of rows
-  const UInt_t* fIndexes;      //!indexes
+  const UInt_t* fkIndexes;      //!indexes
   Float_t  *fData;            //[fNChannels] Data
   ClassDef(AliTPCCalROC,2)    //  TPC ROC calibration class
 

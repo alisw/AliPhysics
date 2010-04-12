@@ -48,7 +48,7 @@ AliTPCCalROC::AliTPCCalROC()
 	      fSector(0),
 	      fNChannels(0),
 	      fNRows(0),
-	      fIndexes(0),
+	      fkIndexes(0),
 	      fData(0)
 {
   //
@@ -63,7 +63,7 @@ AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
 	      fSector(0),
 	      fNChannels(0),
 	      fNRows(0),
-	      fIndexes(0),
+	      fkIndexes(0),
 	      fData(0)
 {
   //
@@ -72,7 +72,7 @@ AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
   fSector = sector;
   fNChannels    =  AliTPCROC::Instance()->GetNChannels(fSector);
   fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
-  fIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+  fkIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
   fData = new Float_t[fNChannels];
   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = 0.;
 }
@@ -83,7 +83,7 @@ AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c)
 	      fSector(0),
 	      fNChannels(0),
 	      fNRows(0),
-	      fIndexes(0),
+	      fkIndexes(0),
 	      fData(0)
 {
   //
@@ -92,7 +92,7 @@ AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c)
   fSector = c.fSector;
   fNChannels    =  AliTPCROC::Instance()->GetNChannels(fSector);
   fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
-  fIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+  fkIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
   //
   fData   = new Float_t[fNChannels];
   for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = c.fData[idata];
@@ -129,7 +129,7 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
    //
    if (R__b.IsReading()) {
       AliTPCCalROC::Class()->ReadBuffer(R__b, this);
-      fIndexes =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+      fkIndexes =  AliTPCROC::Instance()->GetRowIndexes(fSector);
    } else {
       AliTPCCalROC::Class()->WriteBuffer(R__b,this);
    }
@@ -188,7 +188,7 @@ void AliTPCCalROC::Divide(const AliTPCCalROC*  roc) {
   }
 }
 
-Double_t AliTPCCalROC::GetMean(AliTPCCalROC* outlierROC) {
+Double_t AliTPCCalROC::GetMean(AliTPCCalROC *const outlierROC) const {
    //
    //  returns the mean value of the ROC
    //  pads with value != 0 in outlierROC are not used for the calculation
@@ -196,21 +196,21 @@ Double_t AliTPCCalROC::GetMean(AliTPCCalROC* outlierROC) {
    //
    if (!outlierROC) return TMath::Mean(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
-   Int_t NPoints = 0;
+   Int_t nPoints = 0;
    for (UInt_t i=0;i<fNChannels;i++) {
       if (!(outlierROC->GetValue(i))) {
-         ddata[NPoints]= fData[i];
-         NPoints++;
+         ddata[nPoints]= fData[i];
+         nPoints++;
       }
    }
    Double_t mean = 0;
-   if(NPoints>0)
-     mean = TMath::Mean(NPoints, ddata);
+   if(nPoints>0)
+     mean = TMath::Mean(nPoints, ddata);
    delete [] ddata;
    return mean;
 }
 
-Double_t AliTPCCalROC::GetMedian(AliTPCCalROC* outlierROC) {
+Double_t AliTPCCalROC::GetMedian(AliTPCCalROC *const outlierROC) const {
    //
    //  returns the median value of the ROC
    //  pads with value != 0 in outlierROC are not used for the calculation
@@ -218,21 +218,21 @@ Double_t AliTPCCalROC::GetMedian(AliTPCCalROC* outlierROC) {
    //
    if (!outlierROC) return TMath::Median(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
-   Int_t NPoints = 0;
+   Int_t nPoints = 0;
    for (UInt_t i=0;i<fNChannels;i++) {
       if (!(outlierROC->GetValue(i))) {
-         ddata[NPoints]= fData[i];
-         NPoints++;
+         ddata[nPoints]= fData[i];
+         nPoints++;
       }
    }
    Double_t median = 0;
-   if(NPoints>0)
-     median = TMath::Median(NPoints, ddata);
+   if(nPoints>0)
+     median = TMath::Median(nPoints, ddata);
    delete [] ddata;
    return median;
 }
 
-Double_t AliTPCCalROC::GetRMS(AliTPCCalROC* outlierROC) {
+Double_t AliTPCCalROC::GetRMS(AliTPCCalROC *const outlierROC) const {
    //
    //  returns the RMS value of the ROC
    //  pads with value != 0 in outlierROC are not used for the calculation
@@ -240,39 +240,39 @@ Double_t AliTPCCalROC::GetRMS(AliTPCCalROC* outlierROC) {
    //
    if (!outlierROC) return TMath::RMS(fNChannels, fData);
    Double_t *ddata = new Double_t[fNChannels];
-   Int_t NPoints = 0;
+   Int_t nPoints = 0;
    for (UInt_t i=0;i<fNChannels;i++) {
       if (!(outlierROC->GetValue(i))) {
-         ddata[NPoints]= fData[i];
-         NPoints++;
+         ddata[nPoints]= fData[i];
+         nPoints++;
       }
    }
    Double_t rms = 0;
-   if(NPoints>0)
-     rms = TMath::RMS(NPoints, ddata);
+   if(nPoints>0)
+     rms = TMath::RMS(nPoints, ddata);
    delete [] ddata;
    return rms;
 }
 
-Double_t AliTPCCalROC::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalROC* outlierROC){
+Double_t AliTPCCalROC::GetLTM(Double_t *const sigma, Double_t fraction, AliTPCCalROC *const outlierROC){
   //
   //  returns the LTM and sigma
   //  pads with value != 0 in outlierROC are not used for the calculation
    //  return 0 if no data is accepted by the outlier cuts 
   //
   Double_t *ddata = new Double_t[fNChannels];
-  UInt_t NPoints = 0;
+  UInt_t nPoints = 0;
   for (UInt_t i=0;i<fNChannels;i++) {
      if (!outlierROC || !(outlierROC->GetValue(i))) {
-        ddata[NPoints]= fData[i];
-        NPoints++;
+        ddata[nPoints]= fData[i];
+        nPoints++;
      }
   }
 
   Double_t ltm =0, lsigma=0;
-  if(NPoints>0) {
-    Int_t hh = TMath::Min(TMath::Nint(fraction *NPoints), Int_t(NPoints));
-    AliMathBase::EvaluateUni(NPoints,ddata, ltm, lsigma, hh);
+  if(nPoints>0) {
+    Int_t hh = TMath::Min(TMath::Nint(fraction *nPoints), Int_t(nPoints));
+    AliMathBase::EvaluateUni(nPoints,ddata, ltm, lsigma, hh);
     if (sigma) *sigma=lsigma;
   }
   
@@ -581,20 +581,20 @@ AliTPCCalROC * AliTPCCalROC::LocalFit(Int_t rowRadius, Int_t padRadius, AliTPCCa
   // chi2Threshold: Threshold for chi2 when EvalRobust is called
   // robustFraction: Fraction of data that will be used in EvalRobust
   //
-  AliTPCCalROC * ROCfitted = new AliTPCCalROC(fSector);
+  AliTPCCalROC * xROCfitted = new AliTPCCalROC(fSector);
   TLinearFitter fitterQ(6,"hyp5");
    // TLinearFitter fitterQ(6,"x0++x1++x2++x3++x4++x5");
   fitterQ.StoreData(kTRUE);
   for (UInt_t row=0; row < GetNrows(); row++) {
     //std::cout << "Entering row " << row << " of " << GetNrows() << " @ sector "<< fSector << " for local fitting... "<< std::endl;
     for (UInt_t pad=0; pad < GetNPads(row); pad++)
-      ROCfitted->SetValue(row, pad, GetNeighbourhoodValue(&fitterQ, row, pad, rowRadius, padRadius, ROCoutliers, robust, chi2Threshold, robustFraction));
+      xROCfitted->SetValue(row, pad, GetNeighbourhoodValue(&fitterQ, row, pad, rowRadius, padRadius, ROCoutliers, robust, chi2Threshold, robustFraction));
   }
-  return ROCfitted;
+  return xROCfitted;
 }
 
 
-Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC* ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction) {
+Double_t AliTPCCalROC::GetNeighbourhoodValue(TLinearFitter* fitterQ, Int_t row, Int_t pad, Int_t rRadius, Int_t pRadius, AliTPCCalROC *const ROCoutliers, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction) {
   //
   // AliTPCCalROC::GetNeighbourhoodValue - smoothing - PRIVATE
   // in this function the fit for LocalFit is done
@@ -804,35 +804,35 @@ AliTPCCalROC* AliTPCCalROC::CreateGlobalFitCalROC(TVectorD &fitParam, Int_t sect
   Float_t dlx, dly;
   Float_t centerPad[3] = {0};
   Float_t localXY[3] = {0};
-  AliTPCCalROC * ROCfitted = new AliTPCCalROC(sector);
+  AliTPCCalROC * xROCfitted = new AliTPCCalROC(sector);
   AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
-  tpcROCinstance->GetPositionLocal(sector, ROCfitted->GetNrows()/2, ROCfitted->GetNPads(ROCfitted->GetNrows()/2)/2, centerPad);  // calculate center of ROC 
+  tpcROCinstance->GetPositionLocal(sector, xROCfitted->GetNrows()/2, xROCfitted->GetNPads(xROCfitted->GetNrows()/2)/2, centerPad);  // calculate center of ROC 
   Int_t fitType = 1;
   if (fitParam.GetNoElements() == 6) fitType = 1;
   else fitType = 0;
   Double_t value = 0;
   if (fitType == 1) { // parabolic fit
-    for (UInt_t irow = 0; irow < ROCfitted->GetNrows(); irow++) {
-      for (UInt_t ipad = 0; ipad < ROCfitted->GetNPads(irow); ipad++) {
+    for (UInt_t irow = 0; irow < xROCfitted->GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < xROCfitted->GetNPads(irow); ipad++) {
 	tpcROCinstance->GetPositionLocal(sector, irow, ipad, localXY);   // calculate position localXY by pad and row number
 	dlx = localXY[0] - centerPad[0];
 	dly = localXY[1] - centerPad[1];
 	value = fitParam[0] + fitParam[1]*dlx + fitParam[2]*dly + fitParam[3]*dlx*dlx + fitParam[4]*dly*dly + fitParam[5]*dlx*dly;
-	ROCfitted->SetValue(irow, ipad, value);
+	xROCfitted->SetValue(irow, ipad, value);
       }
     }   
   }
   else {  // linear fit
-    for (UInt_t irow = 0; irow < ROCfitted->GetNrows(); irow++) {
-      for (UInt_t ipad = 0; ipad < ROCfitted->GetNPads(irow); ipad++) {
+    for (UInt_t irow = 0; irow < xROCfitted->GetNrows(); irow++) {
+      for (UInt_t ipad = 0; ipad < xROCfitted->GetNPads(irow); ipad++) {
 	tpcROCinstance->GetPositionLocal(sector, irow, ipad, localXY);   // calculate position localXY by pad and row number
 	dlx = localXY[0] - centerPad[0];
 	dly = localXY[1] - centerPad[1];
 	value = fitParam[0] + fitParam[1]*dlx + fitParam[2]*dly;
-	ROCfitted->SetValue(irow, ipad, value);
+	xROCfitted->SetValue(irow, ipad, value);
       }
     }   
   }
-  return ROCfitted;
+  return xROCfitted;
 }
 
