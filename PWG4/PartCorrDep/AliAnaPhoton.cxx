@@ -48,6 +48,7 @@ ClassImp(AliAnaPhoton)
     AliAnaPartCorrBaseClass(), fCalorimeter(""), 
     fMinDist(0.),fMinDist2(0.),fMinDist3(0.),fRejectTrackMatch(0),
 	fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
+	fTimeCutMin(-1), fTimeCutMax(9999999),
 	fhPtPhoton(0),fhPhiPhoton(0),fhEtaPhoton(0),
     //MC
     fhDeltaE(0), fhDeltaPt(0),fhRatioE(0), fhRatioPt(0),fh2E(0),fh2Pt(0),
@@ -73,7 +74,7 @@ AliAnaPhoton::AliAnaPhoton(const AliAnaPhoton & g) :
   fMinDist(g.fMinDist),fMinDist2(g.fMinDist2), fMinDist3(g.fMinDist3),
   fRejectTrackMatch(g.fRejectTrackMatch),
   fCheckConversion(g.fCheckConversion),fAddConvertedPairsToAOD(g.fAddConvertedPairsToAOD),
-  fMassCut(g.fMassCut),
+  fMassCut(g.fMassCut), fTimeCutMin(g.fTimeCutMin), fTimeCutMax(g.fTimeCutMax),	
   fhPtPhoton(g.fhPtPhoton),fhPhiPhoton(g.fhPhiPhoton),fhEtaPhoton(g.fhEtaPhoton), 
   //MC
   fhDeltaE(g.fhDeltaE), fhDeltaPt(g.fhDeltaPt), 
@@ -104,8 +105,11 @@ AliAnaPhoton & AliAnaPhoton::operator = (const AliAnaPhoton & g)
   fMinDist  = g.fMinDist;
   fMinDist2 = g.fMinDist2;
   fMinDist3 = g.fMinDist3;
-  fMassCut     = g.fMassCut;
+  fMassCut  = g.fMassCut;
 	
+  fTimeCutMin = g.fTimeCutMin; 
+  fTimeCutMax = g.fTimeCutMax;	
+
   fRejectTrackMatch       = g.fRejectTrackMatch;
   fCheckConversion        = g.fCheckConversion;
   fAddConvertedPairsToAOD = g.fAddConvertedPairsToAOD;
@@ -423,6 +427,9 @@ void AliAnaPhoton::InitParameters()
   fMinDist3 = 5.;
   fMassCut  = 0.03; //30 MeV
 	
+  fTimeCutMin  = -1;
+  fTimeCutMax  = 9999999;
+
   fRejectTrackMatch       = kTRUE ;
   fCheckConversion        = kFALSE;
   fAddConvertedPairsToAOD = kFALSE;
@@ -475,7 +482,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 	  	  
     //If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
-	  
+    Double_t tof = calo->GetTOF()*1e9;
+	printf("Photon:TOF %f\n",tof);
+	if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
+	printf("Photon2:TOF %f\n",tof);
+
 	//printf("AliAnaPhoton::Current Event %d; Current File Name : %s, E %f, pT %f, Ecl %f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), mom.E(), mom.Pt(),calo->E());
 
     //Check acceptance selection
@@ -845,6 +856,8 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Check Pair Conversion                = %d\n",fCheckConversion);
   printf("Add conversion pair to AOD           = %d\n",fAddConvertedPairsToAOD);
   printf("Conversion pair mass cut             = %f\n",fMassCut);
+  printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
+
   printf("    \n") ;
 	
 } 

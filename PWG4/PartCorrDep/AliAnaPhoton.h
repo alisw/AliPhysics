@@ -72,6 +72,10 @@ public:
   Float_t GetMassCut()    const {return fMassCut ; }
   void SetMassCut(Float_t m)    {fMassCut = m ; }
 	
+  void SetTimeCut(Double_t min, Double_t max) {fTimeCutMin = min; fTimeCutMax = max;}
+  Double_t GetTimeCutMin() const {return fTimeCutMin;}
+  Double_t GetTimeCutMax() const {return fTimeCutMax;}	
+	
   private:
  
   TString fCalorimeter ; // Calorimeter where the gamma is searched;
@@ -82,7 +86,9 @@ public:
   Bool_t  fCheckConversion;        // Combine pairs of clusters with mass close to 0
   Bool_t  fAddConvertedPairsToAOD; // Put Converted pairs in AOD
   Float_t fMassCut;                // Mass cut for the conversion pairs selection
-	
+  Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
+  Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
+
   //Histograms  
   TH1F * fhPtPhoton   ; //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ; //! Azimuthal angle of identified  photon vs transerse momentum 
@@ -128,7 +134,7 @@ public:
   TH2F * fhPhiUnknown;  //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;  //! eta of identified  Unknown gamma
 
-   ClassDef(AliAnaPhoton,6)
+   ClassDef(AliAnaPhoton,7)
 
 } ;
  

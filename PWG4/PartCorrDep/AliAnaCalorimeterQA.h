@@ -34,7 +34,7 @@ private:
 public:
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
   
-  void ClusterHistograms(const TLorentzVector mom, Float_t *pos, Float_t * showerShape, 
+  void ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, Float_t * showerShape, 
 						 const Int_t nCaloCellsPerCluster, const Int_t nModule,
 						 const Int_t nTracksMatched, const TObject* track, 
 						 const Int_t * labels, const Int_t nLabels);
@@ -70,6 +70,10 @@ public:
   Int_t GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow, Int_t &iRCU);
 	
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
+
+  void SetTimeCut(Double_t min, Double_t max) {fTimeCutMin = min; fTimeCutMax = max;}
+  Double_t GetTimeCutMin() const {return fTimeCutMin;}
+  Double_t GetTimeCutMax() const {return fTimeCutMax;}
 
   //Histogram binning setters
 
@@ -202,13 +206,15 @@ public:
 	
  private:
   
-  TString fCalorimeter ;    // Calorimeter selection
-  TString fStyleMacro  ;    // Location of macro for plots style
-  Bool_t  fMakePlots   ;    // Print plots
-  Bool_t  fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
-  Int_t   fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
-  Int_t   fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
-
+  TString  fCalorimeter ;    // Calorimeter selection
+  TString  fStyleMacro  ;    // Location of macro for plots style
+  Bool_t   fMakePlots   ;    // Print plots
+  Bool_t   fCorrelateCalos ; // Correlate PHOS/EMCAL clusters
+  Int_t    fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
+  Int_t    fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
+  Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
+  Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
+	
   //Histograms
   //Histogram Bins
   Int_t   fHistoPOverEBins;        // p/E histogram number of bins
@@ -290,6 +296,7 @@ public:
   	
   TH1F * fhNClusters; //! Number of clusters
 	
+  TH2F * fhClusterTimeEnergy;   //! Cluster Time vs Energy 
   TH1F * fhCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells
   TH1F * fhCellIdCellLargeTimeSpread;      //! Cells with large time respect to max (diff > 100 ns)
 	
@@ -463,7 +470,7 @@ public:
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-	ClassDef(AliAnaCalorimeterQA,8)
+	ClassDef(AliAnaCalorimeterQA,9)
 } ;
 
 
