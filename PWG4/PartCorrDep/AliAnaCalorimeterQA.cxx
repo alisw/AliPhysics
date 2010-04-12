@@ -1536,9 +1536,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
 			tof = clus->GetTOF()*1e9;
-			printf("QA:TOF %f\n",tof);
 			if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
-			printf("QA:TOF %f\n",tof);
 			
 			//Check only certain regions
 			Bool_t in = kTRUE;
