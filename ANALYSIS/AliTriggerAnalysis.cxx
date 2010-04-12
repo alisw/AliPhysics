@@ -41,6 +41,7 @@
 #include <AliESDVZERO.h>
 #include <AliESDZDC.h>
 #include <AliESDFMD.h>
+#include <AliESDVertex.h>
 
 ClassImp(AliTriggerAnalysis)
 
@@ -199,6 +200,9 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
   if (trigger & kOfflineFlag)
     str += " OFFLINE";  
   
+  if (trigger & kOneParticle)
+    str += " OneParticle";  
+
   return str;
 }
 
@@ -283,119 +287,120 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
 
   UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
   
+  Bool_t decision = kFALSE;
   switch (triggerNoFlags)
   {
     case kAcceptAll:
     {
-      return kTRUE;
+      decision = kTRUE;
       break;
     }
     case kMB1:
     {
       if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kMB2:
     {
       if (SPDGFOTrigger(aEsd, 0) && (V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kMB3:
     {
       if (SPDGFOTrigger(aEsd, 0) && V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kSPDGFO:
     {
       if (SPDGFOTrigger(aEsd, 0))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kSPDGFOBits:
     {
       if (SPDGFOTrigger(aEsd, 1))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kV0A:
     {
       if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kV0C:
     {
       if (V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kV0OR:
     {
       if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kV0AND:
     {
       if (V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kV0ABG:
     {
       if (V0Trigger(aEsd, kASide, kFALSE) == kV0BG)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kV0CBG:
     {
       if (V0Trigger(aEsd, kCSide, kFALSE) == kV0BG)
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kZDC:
     {
       if (ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kZDCA:
     {
       if (ZDCTrigger(aEsd, kASide))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kZDCC:
     {
       if (ZDCTrigger(aEsd, kCSide))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kFMDA:
     {
       if (FMDTrigger(aEsd, kASide))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kFMDC:
     {
       if (FMDTrigger(aEsd, kCSide))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kFPANY:
     {
       if (SPDGFOTrigger(aEsd, 0) || V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB || ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide) || FMDTrigger(aEsd, kASide) || FMDTrigger(aEsd, kCSide))
-        return kTRUE;
+        decision = kTRUE;
       break;
     }
     case kNSD1:
     {
       if (SPDFiredChips(aEsd, 0) >= 5 || (V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB))
-        return kTRUE;
+        decision = kTRUE;
        break;
     }
     case kMB1Prime:
@@ -409,7 +414,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
         count++;
       
       if (count >= 2)
-        return kTRUE;
+        decision = kTRUE;
         
       break;
     }
@@ -419,9 +424,29 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     }
   }
   
-  return kFALSE;
-}
+  // hadron-level requirement
+  if (decision && (trigger & kOneParticle))
+  {
+    decision = kFALSE;
+    
+    const AliESDVertex* vertex = aEsd->GetPrimaryVertexSPD();
+    const AliMultiplicity* mult = aEsd->GetMultiplicity();
 
+    if (mult && vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZv()) < 5.5) 
+    {
+      for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
+      {
+        if (TMath::Abs(mult->GetEta(i)) < 1)
+        {
+          decision = kTRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  return decision;
+}
 
 Bool_t AliTriggerAnalysis::IsTriggerClassFired(const AliESDEvent* aEsd, const Char_t* tclass) const 
 {
