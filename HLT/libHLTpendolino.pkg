@@ -10,6 +10,7 @@ CLASS_HDRS:=  	AliHLTPendolino.h \
 		PredictionProcessor/AliHLTPendolinoLoggerDump.h \
 		PredictionProcessor/HLT/AliHLTPredicProcTempMonitor.h \
 		PredictionProcessor/HLT/AliHLTPredictionProcessorHLT.h \
+		PredictionProcessor/GRP/AliHLTPredictionProcessorGRP.h \
 		PredictionProcessor/MUON/AliHLTPredictionProcessorMCH.h \
 		PredictionProcessor/MUON/AliHLTPredictionProcessorMTR.h \
 		PredictionProcessor/TPC/AliHLTDCSArray.h \

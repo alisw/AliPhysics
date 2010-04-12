@@ -153,32 +153,7 @@ class AliHLTPredictionProcessorHLT : public AliHLTPredictionProcessorInterface {
 		 */	
 		UInt_t fEndTime;  // Stores the end time of the to process DCS data
 
-        /**
-		 * TObjstring which stores the B-field value
-		 */
-		TObjString fBField;  // TObjstring which stores the B-field value
-
-		/**
-		 * Function to extract the B-field from the DCS value map
-		 *
-		 * @param dcsAliasMap the retrieved DCS value map
-		 *
-		 * @return 0 on sucess else an error code
-		 */
-		UInt_t ExtractBField(TMap* dcsAliasMap);
-
-		/**
-		 * Function to rertieve a sensor value from the DCS value map
-		 *
-		 * @param dcsAliasMap the retrieved DCS value map
-		 * @param stringId the alias name of the desired sensor value
-		 * @param value [return parameter] - the extracted sensor value
-		 *
-		 * @return true if sucessful, else false
-		 */
-		Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Float_t * value);
-		
-		ClassDef(AliHLTPredictionProcessorHLT, 1);
+		ClassDef(AliHLTPredictionProcessorHLT, 2);
 	
 };
 

@@ -89,7 +89,7 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 		 * @param startTime start time of data
 		 * @param endTime end time of data
 		 */
-//		virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
+		virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
 
 		/**
 		 * Function called by the Pendolino for each participating subdetector
@@ -124,6 +124,10 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 		 * @return the current run number
 		 */
 	   virtual Int_t GetRunNumber();	
+  
+  Bool_t IsPredicting() const {return fPredict;}
+  UInt_t StartTime() const {return fStartTime;}  
+  UInt_t EndTime() const {return fEndTime;}  
 
        /**
         * Function to let the Penolino add an request for an AliCDBEntry to the
@@ -140,6 +144,16 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
         */
        virtual Bool_t includeAliCDBEntryInList(const TString& entryPath);
 
+  /**
+   * Function to rertieve a sensor value from the DCS value map
+   *
+   * @param dcsAliasMap the retrieved DCS value map
+   * @param stringId the alias name of the desired sensor value
+   * @param value [return parameter] - the extracted sensor value
+   *
+   * @return true if sucessful, else false
+   */
+  Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Float_t * value) const;
 
 	private:
 		/**
@@ -166,8 +180,22 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 		 */
 		AliHLTPendolino* fpPend;  //  Stores pointer to Pendolino
 
+		/**
+		 * Stores if prediction shall be made
+		 */
+		Bool_t fPredict;  // flag for prediction making
+
+	 	/**
+		 * Stores the start time of the to process DCS data
+		 */	
+		UInt_t fStartTime;  // Stores the start time of the to process DCS data
+	
+	 	/**
+		 * Stores the end time of the to process DCS data
+		 */	
+		UInt_t fEndTime;  // Stores the end time of the to process DCS data
 		
-		ClassDef(AliHLTPredictionProcessorInterface, 6);
+		ClassDef(AliHLTPredictionProcessorInterface, 7);
 	
 };
 

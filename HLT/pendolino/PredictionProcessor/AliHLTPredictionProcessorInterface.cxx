@@ -24,15 +24,20 @@
 
 #include "AliHLTPredictionProcessorInterface.h"
 #include "AliHLTPendolino.h"
-//#include "AliShuttleInterface.h"
+#include "TObjArray.h"
+#include "AliDCSValue.h"
 
 
 ClassImp(AliHLTPredictionProcessorInterface)
 
 AliHLTPredictionProcessorInterface::AliHLTPredictionProcessorInterface(
-			const char* detector, AliHLTPendolino* pendolino) : 
-			AliPreprocessor(detector, reinterpret_cast<AliShuttleInterface*>
-					(pendolino)), fpPend(pendolino) {
+			const char* detector, AliHLTPendolino* pendolino) 
+  : AliPreprocessor(detector, reinterpret_cast<AliShuttleInterface*>(pendolino))
+  , fpPend(pendolino)
+  , fPredict(kFALSE)
+  , fStartTime(0)
+  , fEndTime(0)
+{
 }
 
 
@@ -44,6 +49,15 @@ Int_t AliHLTPredictionProcessorInterface::GetRunNumber() {
 	return fpPend->GetRunNumber();
 }
 
+void AliHLTPredictionProcessorInterface::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
+{
+  // initializes AliHLTPredictionProcessorHLT
+  if (GetRunNumber()!=run) {
+    Log(Form("run number argument %d differs from pendolino run number %d", run, GetRunNumber()));
+  }
+  fStartTime = startTime;
+  fEndTime = endTime;
+}
 
 Bool_t AliHLTPredictionProcessorInterface::includeAliCDBEntryInList(
             const TString& entryPath) {
@@ -51,5 +65,22 @@ Bool_t AliHLTPredictionProcessorInterface::includeAliCDBEntryInList(
     return fpPend->IncludeAliCDBEntryInList(entryPath);
 }
 
-
-
+Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
+							  const char* stringId, Float_t *value) const
+{
+  // extracts the sensor value
+  // return last value read from sensor specified by stringId
+  
+  TObjArray* valueSet;
+  TPair* pair = (TPair*)dcsAliasMap->FindObject(stringId);
+  if (pair) {
+    valueSet = (TObjArray*)pair->Value();
+    Int_t nentriesDCS = valueSet->GetEntriesFast() - 1;
+    if(nentriesDCS>=0){
+      AliDCSValue *val = (AliDCSValue *)valueSet->At(nentriesDCS);
+      *value=val->GetFloat();
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
