@@ -252,8 +252,9 @@ void AliRDHFCuts::SetVarsForOpt(Int_t nVars,Bool_t *forOpt) {
 }
 //---------------------------------------------------------------------------
 void AliRDHFCuts::SetCuts(Int_t nVars,Int_t nPtBins,Float_t **cutsRD) {
-  // set the cuts
-
+  //
+  // store the cuts
+  //
   if(nVars!=fnVars) {
     printf("Wrong number of variables: it has to be %d\n",fnVars);
     return;
@@ -265,32 +266,28 @@ void AliRDHFCuts::SetCuts(Int_t nVars,Int_t nPtBins,Float_t **cutsRD) {
 
   if(!fCutsRD)  fCutsRD = new Float_t[fGlobalIndex];
   
-  Int_t iGlobal=0;
+
   for(Int_t iv=0; iv<fnVars; iv++) {
 
     for(Int_t ib=0; ib<fnPtBins; ib++) {
 
-      fCutsRD[iGlobal] = cutsRD[iv][ib];
-      //cout<<"fCutsRD["<<iGlobal<<"] = "<<fCutsRD[iGlobal]<<endl;
-      iGlobal++;
       //check
-      if(iGlobal>fGlobalIndex) {
+      if(GetGlobalIndex(iv,ib)>=fGlobalIndex) {
 	cout<<"Overflow, exit..."<<endl;
 	return;
       }
+
+      fCutsRD[GetGlobalIndex(iv,ib)] = cutsRD[iv][ib];
+
     }
   }
-  //check
-  if(iGlobal != fGlobalIndex) {
-    cout<<"Total number of entries of cut matrix "<<iGlobal<<" not expected! Check please..."<<endl;
-    return;
-  }
-
-  cout<<"done"<<endl;
   return;
 }
 //---------------------------------------------------------------------------
 void AliRDHFCuts::SetCuts(Int_t glIndex,Float_t* cutsRDGlob){
+  //
+  // store the cuts
+  //
   if(glIndex != fGlobalIndex){
     cout<<"Wrong array size: it has to be "<<fGlobalIndex<<endl;
     return;
@@ -300,14 +297,13 @@ void AliRDHFCuts::SetCuts(Int_t glIndex,Float_t* cutsRDGlob){
   for(Int_t iGl=0;iGl<fGlobalIndex;iGl++){
     fCutsRD[iGl] = cutsRDGlob[iGl];
   }
-  cout<<"done"<<endl;
   return;
-
 }
-
-
 //---------------------------------------------------------------------------
-void AliRDHFCuts::PrintAll() const{
+void AliRDHFCuts::PrintAll() const {
+  //
+  // print all cuts values
+  // 
   if(fVarNames){
     cout<<"Array of variables"<<endl;
     for(Int_t iv=0;iv<fnVars;iv++){
@@ -346,67 +342,58 @@ void AliRDHFCuts::PrintAll() const{
    }
    cout<<endl;
   }
+  return;
 }
-
-
 //---------------------------------------------------------------------------
 void AliRDHFCuts::GetCuts(Float_t**& cutsRD) const{
+  //
   // get the cuts
+  //
 
-//   if(nVars!=fnVars){
-//     cout<<"Number of variables doesn't match or not defined yet"<<endl;
-//     return;
-//   }
+  //cout<<"Give back a "<<fnVars<<"x"<<fnPtBins<<" matrix."<<endl;
 
-//   if(nPtBins!=fnPtBins){
-//     cout<<"Number of pt bins doesn't match or not defined yet"<<endl;
-//     return;
-//   }
-  cout<<"Give back a "<<fnVars<<"x"<<fnPtBins<<" matrix."<<endl;
 
+  Int_t iv,ib;
   if(!cutsRD) {
-    cout<<"Initialization..."<<endl;
+    //cout<<"Initialization..."<<endl;
     cutsRD=new Float_t*[fnVars];
-    for(Int_t iv=0; iv<fnVars; iv++) {
+    for(iv=0; iv<fnVars; iv++) {
       cutsRD[iv] = new Float_t[fnPtBins];
     }
   }
   
-
-  Int_t iGlobal=0;
-  for(Int_t iv=0; iv<fnVars; iv++) {
-    for(Int_t ib=0; ib<fnPtBins; ib++) {
-
-      cutsRD[iv][ib] = fCutsRD[iGlobal];
-
-      iGlobal++;
-    }
+  for(Int_t iGlobal=0; iGlobal<fGlobalIndex; iGlobal++) {
+    GetVarPtIndex(iGlobal,iv,ib);
+    cutsRD[iv][ib] = fCutsRD[iGlobal];
   }
 
+  return;
 }
 
 //---------------------------------------------------------------------------
 Int_t AliRDHFCuts::GetGlobalIndex(Int_t iVar,Int_t iPtBin) const{
-
+  //
   // give the global index from variable and pt bin
-
+  //
   return iPtBin*fnVars+iVar;
 }
 
 //---------------------------------------------------------------------------
 void AliRDHFCuts::GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const {
+  //
   //give the index of the variable and of the pt bin from the global index
-
+  //
   iPtBin=(Int_t)iGlob/fnVars;
   iVar=iGlob%fnVars;
 
+  return;
 }
 
 //---------------------------------------------------------------------------
 Int_t AliRDHFCuts::PtBin(Double_t pt) const {
-
+  //
   //give the pt bin where the pt lies.
-
+  //
   Int_t ptbin=0;
   for (Int_t i=0;i<fnPtBins;i++){
     if(pt<fPtBinLimits[i+1]) {
