@@ -64,7 +64,7 @@ public:
 //   TH1F * BookMultHisto(const char * name, const char * title);  
 
   TH1F * GetDistributionHisto (const char * trigger_class, Int_t dist, const char * suffix = 0) ;
-  TH1F * BookDistributionHisto(const char * name, const char * title,const char * xtitle, Int_t nbin, Int_t min, Int_t max);  
+  TH1F * BookDistributionHisto(const char * name, const char * title,const char * xtitle, Int_t nbin, Float_t min, Float_t max);  
 
 
   void SetTimes(UInt_t start, UInt_t end)      { fStartTime=start;   fEndTime =end;   }

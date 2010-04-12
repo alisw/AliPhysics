@@ -695,8 +695,8 @@ TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * trigger_class,
   TString title ;
   TString xtitle;
   Int_t   nbin =0;
-  Int_t   min  =0;
-  Int_t   max  =0;
+  Float_t   min  =0;
+  Float_t   max  =0;
 
 
   if (dist == kDistSPDMult) {
@@ -759,7 +759,7 @@ TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * trigger_class,
 
 }
 
-TH1F * AliAnalysisTaskBGvsTime::BookDistributionHisto(const char * name, const char * title, const char * xtitle, Int_t nbin, Int_t min, Int_t max) {
+TH1F * AliAnalysisTaskBGvsTime::BookDistributionHisto(const char * name, const char * title, const char * xtitle, Int_t nbin, Float_t min, Float_t max) {
 
   // Book distributions histos
 
