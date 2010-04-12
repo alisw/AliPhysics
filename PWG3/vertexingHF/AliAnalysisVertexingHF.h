@@ -21,6 +21,11 @@ class AliAODRecoDecayHF4Prong;
 class AliAODRecoCascadeHF;
 class AliAnalysisFilter;
 class AliRDHFCutsD0toKpi;
+class AliRDHFCutsJpsitoee;
+class AliRDHFCutsDplustoKpipi;
+class AliRDHFCutsDstoKKpi;
+class AliRDHFCutsLctopKpi;
+class AliRDHFCutsD0toKpipipi;
 class AliESDtrack;
 class AliVEvent;
 class AliAODVertex;
@@ -84,6 +89,18 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
   void SetCutsD0toKpi(AliRDHFCutsD0toKpi* cuts) { fCutsD0toKpi = cuts; }
   AliRDHFCutsD0toKpi* GetCutsD0toKpi() const { return fCutsD0toKpi; }
+  void SetCutsJpsitoee(AliRDHFCutsJpsitoee* cuts) { fCutsJpsitoee = cuts; }
+  AliRDHFCutsJpsitoee* GetCutsJpsitoee() const { return fCutsJpsitoee; }
+  void SetCutsDplustoKpipi(AliRDHFCutsDplustoKpipi* cuts) { fCutsDplustoKpipi = cuts; }
+  AliRDHFCutsDplustoKpipi* GetCutsDplustoKpipi() const { return fCutsDplustoKpipi; }
+  void SetCutsDstoKKpi(AliRDHFCutsDstoKKpi* cuts) { fCutsDstoKKpi = cuts; }
+  AliRDHFCutsDstoKKpi* GetCutsDstoKKpi() const { return fCutsDstoKKpi; }
+  void SetCutsLctopKpi(AliRDHFCutsLctopKpi* cuts) { fCutsLctopKpi = cuts; }
+  AliRDHFCutsLctopKpi* GetCutsLctopKpi() const { return fCutsLctopKpi; }
+  void SetCutsD0toKpipipi(AliRDHFCutsD0toKpipipi* cuts) { fCutsD0toKpipipi = cuts; }
+  AliRDHFCutsD0toKpipipi* GetCutsD0toKpipipi() const { return fCutsD0toKpipipi; }
+  void SetCutsD0fromDstar(AliRDHFCutsD0toKpi* cuts) { fCutsD0fromDstar = cuts; }
+  AliRDHFCutsD0toKpi* GetCutsD0fromDstar() const { return fCutsD0fromDstar; }
   void SetD0toKpiCuts(Double_t cut0=1000.,Double_t cut1=100000.,
 		      Double_t cut2=1.1,Double_t cut3=0.,Double_t cut4=0.,
 		      Double_t cut5=100000.,Double_t cut6=100000.,
@@ -145,7 +162,6 @@ class AliAnalysisVertexingHF : public TNamed {
   enum { kBitDispl = 0, kBitSoftPi = 1 };
 
   Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
-
   Int_t fAODMapSize; // size of fAODMap 
   Int_t *fAODMap; //[fAODMapSize] map between index and ID for AOD tracks
 
@@ -174,6 +190,12 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisFilter *fTrackFilterSoftPi; //  Track Filter for D* soft pion
   // candidates cuts
   AliRDHFCutsD0toKpi *fCutsD0toKpi; // D0->Kpi cuts
+  AliRDHFCutsJpsitoee *fCutsJpsitoee; // J/psi->ee cuts
+  AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi; // D+->Kpipi cuts
+  AliRDHFCutsDstoKKpi *fCutsDstoKKpi; // Ds->KKpi cuts
+  AliRDHFCutsLctopKpi *fCutsLctopKpi; // Lc->pKpi cuts
+  AliRDHFCutsD0toKpipipi *fCutsD0toKpipipi; // D0->Kpipipi cuts
+  AliRDHFCutsD0toKpi *fCutsD0fromDstar; // D0 from Dstar cuts
 
   Double_t fD0toKpiCuts[9]; // cuts on D0->Kpi candidates
                   // (to be passed to AliAODRecoDecayHF2Prong::SelectD0())
@@ -308,7 +330,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,14);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,15);  // Reconstruction of HF decay candidates
 };
 
 
