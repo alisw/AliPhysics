@@ -848,9 +848,12 @@ Bool_t AliAnalysisAlien::CreateJDL()
       fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),mergeExec.Data()), "List of input files to be uploaded to workers");
       if (!fArguments.IsNull())
          fGridJDL->SetArguments(fArguments, "Arguments for the executable command");
-      fMergingJDL->SetArguments("$1");   
-      fGridJDL->SetTTL((UInt_t)fTTL);
-      fMergingJDL->SetTTL((UInt_t)fTTL);
+      fMergingJDL->SetArguments("$1"); 
+      fGridJDL->SetValue("TTL", Form("\"%d\"",fTTL));
+      fGridJDL->SetDescription("TTL", Form("Time after which the job is killed (%d min.)", fTTL/60));
+      fMergingJDL->SetValue("TTL", Form("\"%d\"",fTTL));
+      fMergingJDL->SetDescription("TTL", Form("Time after which the job is killed (%d min.)", fTTL/60));
+        
       if (fMaxInitFailed > 0) {
          fGridJDL->SetValue("MaxInitFailed", Form("\"%d\"",fMaxInitFailed));
          fGridJDL->SetDescription("MaxInitFailed", "Maximum number of first failing jobs to abort the master job");
@@ -2485,6 +2488,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   outputDir += dir;" << endl;    
       out << "   TString outputFiles = \"" << fOutputFiles << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << "\";" << endl;
+      out << "   mergeExcludes += \"" << AliAnalysisManager::GetAnalysisManager()->GetExtraFiles() << "\";" << endl;
       out << "   TObjArray *list = outputFiles.Tokenize(\" \");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
       out << "   TObjString *str;" << endl;
@@ -2503,7 +2507,6 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      merged = AliAnalysisAlien::MergeOutput(output_file, outputDir, " << fMaxMergeFiles << ");" << endl;
       out << "      if (!merged) {" << endl;
       out << "         printf(\"ERROR: Cannot merge %s\\n\", output_file.Data());" << endl;
-      out << "         return;" << endl;
       out << "      }" << endl;
       out << "   }" << endl;
       out << "// read the analysis manager from file" << endl;
