@@ -27,6 +27,11 @@
 #include "TRandom.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTProcessor.h"
+#include "AliHLTPluginBase.h"
+#include "AliHLTSystem.h"
+#include "AliHLTMisc.h"
+#include "AliHLTComponentHandler.h"
+#include "AliHLTConfiguration.h"
 #include "algorithm"
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -272,6 +277,12 @@ protected:
 
   int DoEvent( const AliHLTComponentEventData& /*evtData*/,
 	       AliHLTComponentTriggerData& /*trigData*/) {
+    if (!IsDataEvent()) return 0;
+
+    cout << "DoEvent: run no " << GetRunNo() << endl;
+    if ((int)GetRunNo()!=AliHLTMisc::Instance().GetCDBRunNo()) {
+      return -1;
+    }
     return 0;
   }
 private:
@@ -593,6 +604,41 @@ int testConfigure()
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 //
+// test event precessing sequence
+int testEventProcessing()
+{
+  int iResult=0;
+  cout << "checking AliHLTComponent processing sequence" << endl;
+  AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
+  if (!pHLT) {
+    cerr << "error: failed to create HLTSystem" << endl;
+    return -1;
+  }
+
+  // add the test component to the handler
+  pHLT->fpComponentHandler->AddComponent(new AliHLTTestComponent);
+
+  // configurattion with just the TestComponent
+  AliHLTConfiguration testcomponent("testcomponent", "TestComponent", "", "");
+  pHLT->BuildTaskList("testcomponent");
+
+  // setup the OCDB and init a random runno
+  AliHLTMisc::Instance().InitCDB("local:///tmp");
+  int runNo=GetRandom(0,1000);
+  AliHLTMisc::Instance().SetCDBRunNo(runNo);
+
+  // run one event
+  if ((iResult=pHLT->Run(1))<0) {
+    cerr << "error: event processing failed" << endl;
+    return iResult;
+  }
+
+  return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//
 // main functions
 
 int testAliHLTComponent()
@@ -600,6 +646,7 @@ int testAliHLTComponent()
   int iResult=0;
   //if ((iResult=testCTPTrigger())<0) return iResult;
   if ((iResult=testConfigure())<0) return iResult;
+  if ((iResult=testEventProcessing())<0) return iResult;
   return iResult;
 }
 
