@@ -12,6 +12,11 @@
 #pragma link C++ class AliAODRecoCascadeHF+;
 #pragma link C++ class AliRDHFCuts+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
+#pragma link C++ class AliRDHFCutsJpsitoee+;
+#pragma link C++ class AliRDHFCutsDplustoKpipi+;
+#pragma link C++ class AliRDHFCutsDstoKKpi+;
+#pragma link C++ class AliRDHFCutsLctopKpi+;
+#pragma link C++ class AliRDHFCutsD0toKpipipi+;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;

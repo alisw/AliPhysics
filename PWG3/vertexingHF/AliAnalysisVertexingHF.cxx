@@ -47,6 +47,11 @@
 #include "AliAODRecoDecayHF4Prong.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsJpsitoee.h"
+#include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDstoKKpi.h"
+#include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsD0toKpipipi.h"
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliMixedEvent.h"
@@ -73,6 +78,12 @@ fMixEvent(kFALSE),
 fTrackFilter(0x0),
 fTrackFilterSoftPi(0x0),
 fCutsD0toKpi(0x0),
+fCutsJpsitoee(0x0),
+fCutsDplustoKpipi(0x0),
+fCutsDstoKKpi(0x0),
+fCutsLctopKpi(0x0),
+fCutsD0toKpipipi(0x0),
+fCutsD0fromDstar(0x0),
 fFindVertexForDstar(kTRUE)
 {
   // Default constructor
@@ -106,6 +117,12 @@ fMixEvent(source.fMixEvent),
 fTrackFilter(source.fTrackFilter),
 fTrackFilterSoftPi(source.fTrackFilterSoftPi),
 fCutsD0toKpi(source.fCutsD0toKpi),
+fCutsJpsitoee(source.fCutsJpsitoee),
+fCutsDplustoKpipi(source.fCutsDplustoKpipi),
+fCutsDstoKKpi(source.fCutsDstoKKpi),
+fCutsLctopKpi(source.fCutsLctopKpi),
+fCutsD0toKpipipi(source.fCutsD0toKpipipi),
+fCutsD0fromDstar(source.fCutsD0fromDstar),
 fFindVertexForDstar(source.fFindVertexForDstar)
 {
   //
@@ -143,6 +160,12 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fTrackFilter = source.fTrackFilter;
   fTrackFilterSoftPi = source.fTrackFilterSoftPi;
   fCutsD0toKpi = source.fCutsD0toKpi;
+  fCutsJpsitoee = source.fCutsJpsitoee;
+  fCutsDplustoKpipi = source.fCutsDplustoKpipi;
+  fCutsDstoKKpi = source.fCutsDstoKKpi;
+  fCutsLctopKpi = source.fCutsLctopKpi;
+  fCutsD0toKpipipi = source.fCutsD0toKpipipi;
+  fCutsD0fromDstar = source.fCutsD0fromDstar;
   fFindVertexForDstar = source.fFindVertexForDstar;
 
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
@@ -162,6 +185,12 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fTrackFilter) { delete fTrackFilter; fTrackFilter=0; }
   if(fTrackFilterSoftPi) { delete fTrackFilterSoftPi; fTrackFilterSoftPi=0; }
   if(fCutsD0toKpi) { delete fCutsD0toKpi; fCutsD0toKpi=0; }
+  if(fCutsJpsitoee) { delete fCutsJpsitoee; fCutsJpsitoee=0; }
+  if(fCutsDplustoKpipi) { delete fCutsDplustoKpipi; fCutsDplustoKpipi=0; }
+  if(fCutsDstoKKpi) { delete fCutsDstoKKpi; fCutsDstoKKpi=0; }
+  if(fCutsLctopKpi) { delete fCutsLctopKpi; fCutsLctopKpi=0; }
+  if(fCutsD0toKpipipi) { delete fCutsD0toKpipipi; fCutsD0toKpipipi=0; }
+  if(fCutsD0fromDstar) { delete fCutsD0fromDstar; fCutsD0fromDstar=0; }
   if(fAODMap) { delete fAODMap; fAODMap=0; }
 }
 //----------------------------------------------------------------------------
@@ -280,11 +309,18 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   AliESDtrack *negtrack1 = 0;
   AliESDtrack *negtrack2 = 0;
   AliESDtrack *trackPi   = 0;
-  //Double_t dcaMax = fCutsD0toKpi->GetDCACut();
   Double_t dcaMax = fD0toKpiCuts[1];
   if(dcaMax < fBtoJPSICuts[1]) dcaMax=fBtoJPSICuts[1];
   if(dcaMax < fDplusCuts[11])  dcaMax=fDplusCuts[11];
   if(dcaMax < fD0to4ProngsCuts[1])  dcaMax=fD0to4ProngsCuts[1];
+  /*
+  Double_t dcaMax = fCutsD0toKpi->GetDCACut();
+  if(fCutsJpsitoee) dcaMax=TMath::Max(dcaMax,fCutsJpsitoee->GetDCACut());
+  if(fCutsDplustoKpipi) dcaMax=TMath::Max(dcaMax,fCutsDplustoKpipi->GetDCACut());
+  if(fCutsDstoKKpi) dcaMax=TMath::Max(dcaMax,fCutsDstoKKpi->GetDCACut());
+  if(fCutsLctopKpi) dcaMax=TMath::Max(dcaMax,fCutsLctopKpi->GetDCACut());
+  if(fCutsD0toKpipipi) dcaMax=TMath::Max(dcaMax,fCutsD0toKpipipi->GetDCACut());
+  */
   AliDebug(2,Form(" dca cut set to %f cm",dcaMax));
 
 
@@ -993,9 +1029,11 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
     // select J/psi from B
     Int_t checkJPSI;
     if(fJPSItoEle) okJPSI        = the2Prong->SelectBtoJPSI(fBtoJPSICuts,checkJPSI);
+    //if(fJPSItpEle)   okJPSI = (Bool_t)fCutsJpsitoee->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
     //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
     // select D0->Kpi from Dstar
     if(fDstar)     okD0fromDstar = the2Prong->SelectD0(fD0fromDstarCuts,checkD0,checkD0bar);
+    //if(fDstar)   okD0fromDstar = (Bool_t)fCutsD0fromDstar->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
     //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
   }
 
@@ -1098,6 +1136,11 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
     if(the3Prong->SelectDplus(fDplusCuts))   ok3Prong = kTRUE;
     if(the3Prong->SelectDs(fDsCuts,ok1,ok2,dum1,dum2)) ok3Prong = kTRUE;
     if(the3Prong->SelectLc(fLcCuts,ok1,ok2)) ok3Prong = kTRUE;
+    /*
+    if(fCutsDplustoKpipi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
+    if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
+    if(fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
+    */
   }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
 
@@ -1208,6 +1251,8 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 
   Int_t checkD0,checkD0bar;
   ok4Prong=the4Prong->SelectD0(fD0to4ProngsCuts,checkD0,checkD0bar);
+  //ok4Prong=(Bool_t)fCutsD0toKpipipi->IsSelected(the4Prong,AliRDHFCuts::kCandidate);
+
 
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
     the4Prong->UnsetOwnPrimaryVtx();
@@ -1356,8 +1401,8 @@ void AliAnalysisVertexingHF::PrintStatus() const {
   if(fRecoPrimVtxSkippingTrks) printf("RecoPrimVtxSkippingTrks\n");
   if(fRmTrksFromPrimVtx) printf("RmTrksFromPrimVtx\n");
   if(fD0toKpi) {
-    if(fCutsD0toKpi) fCutsD0toKpi->PrintAll();
     printf("Reconstruct D0->Kpi candidates with cuts:\n");
+    if(fCutsD0toKpi) fCutsD0toKpi->PrintAll();
     printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
@@ -1381,6 +1426,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    Theta(pisoft,D0plane) < %f\n",fDstarCuts[4]);
     printf("Reconstruct D*->D0pi candidates with cuts:\n");
     printf("   D0 from D* cuts:\n");
+    if(fCutsD0fromDstar) fCutsD0fromDstar->PrintAll();
     printf("    |M-MD0| [GeV]    < %f\n",fD0fromDstarCuts[0]);
     printf("    dca    [cm]  < %f\n",fD0fromDstarCuts[1]);
     printf("    cosThetaStar     < %f\n",fD0fromDstarCuts[2]);
@@ -1393,6 +1439,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
   }
   if(fJPSItoEle) {
     printf("Reconstruct J/psi from B candidates with cuts:\n");
+    if(fCutsJpsitoee) fCutsJpsitoee->PrintAll();
     printf("    |M-MJPSI| [GeV]    < %f\n",fBtoJPSICuts[0]);
     printf("    dca    [cm]  < %f\n",fBtoJPSICuts[1]);
     printf("    cosThetaStar     < %f\n",fBtoJPSICuts[2]);
@@ -1406,6 +1453,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
   if(f3Prong) {
     printf("Reconstruct 3 prong candidates.\n");
     printf("  D+->Kpipi cuts:\n");
+    if(fCutsDplustoKpipi) fCutsDplustoKpipi->PrintAll();
     printf("    |M-MD+| [GeV]    < %f\n",fDplusCuts[0]);
     printf("    pTK     [GeV/c]    > %f\n",fDplusCuts[1]);
     printf("    pTPi    [GeV/c]    > %f\n",fDplusCuts[2]);
@@ -1419,6 +1467,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    Sum d0^2 [cm^2]  > %f\n",fDplusCuts[10]);
     printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
     printf("  Ds->KKpi cuts:\n");
+    if(fCutsDstoKKpi) fCutsDstoKKpi->PrintAll();
     printf("    |M-MDs| [GeV]    < %f\n",fDsCuts[0]);
     printf("    pTK     [GeV/c]    > %f\n",fDsCuts[1]);
     printf("    pTPi    [GeV/c]    > %f\n",fDsCuts[2]);
@@ -1434,6 +1483,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    Inv. Mass  phi [GeV]  < %f\n",fDsCuts[12]);
     printf("    Inv. Mass  K0* [GeV]  < %f\n",fDsCuts[13]);
     printf("  Lc->pKpi cuts:\n");
+    if(fCutsLctopKpi) fCutsLctopKpi->PrintAll();
     printf("    |M-MLc| [GeV]    < %f\n",fLcCuts[0]);
     printf("    pTP     [GeV/c]    > %f\n",fLcCuts[1]);
     printf("    pTPi and pTK [GeV/c]    > %f\n",fLcCuts[2]);
@@ -1446,6 +1496,11 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    cosThetaPoint    > %f\n",fLcCuts[9]);
     printf("    Sum d0^2 [cm^2]  > %f\n",fLcCuts[10]);
     printf("    dca cut [cm]  < %f\n",fLcCuts[11]);
+  }
+  if(f4Prong) {
+    printf("Reconstruct 4 prong candidates.\n");
+    printf("  D0->Kpipipi cuts:\n");
+    if(fCutsD0toKpipipi) fCutsD0toKpipipi->PrintAll();
   }
 
   return;
@@ -1542,28 +1597,34 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       mPDG=TDatabasePDG::Instance()->GetParticle(443)->Mass();
       minv = rd->InvMass(nprongs,pdg2);
       if(TMath::Abs(minv-mPDG)<fBtoJPSICuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsJpsitoee->GetMassCut()) retval=kTRUE;
       break;
     case 2:                  // D+->Kpipi
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(411)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
       if(TMath::Abs(minv-mPDG)<fDplusCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsDplustoKpipi->GetMassCut()) retval=kTRUE;
                             // Ds+->KKpi
       pdg3[0]=321; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(431)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
       if(TMath::Abs(minv-mPDG)<fDsCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsDstoKKpi->GetMassCut()) retval=kTRUE;
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=321;
       minv = rd->InvMass(nprongs,pdg3);
       if(TMath::Abs(minv-mPDG)<fDsCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsDstoKKpi->GetMassCut()) retval=kTRUE;
                             // Lc->pKpi
       pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
       if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsLctopKpi->GetMassCut()) retval=kTRUE;
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
       minv = rd->InvMass(nprongs,pdg3);
       if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE; 
+      //if(TMath::Abs(minv-mPDG)<fCutsLctopKpi->GetMassCut()) retval=kTRUE;
       break;
     case 3:                  // D*->D0pi
       pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
@@ -1571,24 +1632,27 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       minv = rd->InvMass(nprongs,pdg2);
       if(TMath::Abs(minv-mPDG)<fDstarCuts[0]) retval=kTRUE;
       break;
-    case 4:                 // D0->K3pi without PID
+    case 4:                 // D0->Kpipipi without PID
       pdg4[0]=321; pdg4[1]=211; pdg4[2]=211; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
-      if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0])
-	retval=kTRUE;
+      if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       pdg4[0]=211; pdg4[1]=321; pdg4[2]=211; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
       if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       pdg4[0]=211; pdg4[1]=211; pdg4[2]=321; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
       if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       pdg4[0]=211; pdg4[1]=211; pdg4[2]=211; pdg4[3]=321;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = rd->InvMass(nprongs,pdg4);
       if(TMath::Abs(minv-mPDG)<fD0to4ProngsCuts[0]) retval=kTRUE;
+      //if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       break;
     default:
       printf("SelectInvMass(): wrong decay selection\n");
