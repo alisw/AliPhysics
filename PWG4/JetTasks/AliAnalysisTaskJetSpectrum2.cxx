@@ -798,10 +798,11 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     container[1] = etaRec;
     container[2] = phiRec;
 
-    if(ptRec>10.&&fDebug>0){
+    if(ptRec>30.&&fDebug>0){
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
-      Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),fInputHandler->GetTree()->GetReadEntry());
+      Printf("%s read event, %d",fInputHandler->GetTree()->GetCurrentFile()->GetName(),(int)fInputHandler->GetTree()->GetTree()->GetReadEntry());
+      if(fESD)Printf("ESDEvent  GetEventNumberInFile(): %d",fESD->GetEventNumberInFile());
       //  aodH->SetFillAOD(kTRUE);
       fAOD->GetHeader()->Print();
       Printf("TriggerClasses: %s",fAOD->GetFiredTriggerClasses().Data());
