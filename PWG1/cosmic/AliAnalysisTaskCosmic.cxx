@@ -353,8 +353,8 @@ void AliAnalysisTaskCosmic::UserExec(Option_t *)
 
 	      AliESDtrack* track2 = esdE->GetTrack(jTracks);
 
-	      UInt_t status = track2->GetStatus();
-	      if ((status&AliESDtrack::kTPCrefit) ==0) continue;
+	      UInt_t status2 = track2->GetStatus();
+	      if ((status2&AliESDtrack::kTPCrefit) ==0) continue;
 
 	      Int_t nClustersTPC2 = track2->GetTPCclusters(0);
 	      if (nClustersTPC2 < 50) continue;
