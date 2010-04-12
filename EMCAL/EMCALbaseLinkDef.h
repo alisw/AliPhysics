@@ -44,6 +44,7 @@
 #pragma link C++ class AliEMCALRawUtils+;
 #pragma link C++ class AliCaloRawAnalyzerFastFit+;
 #pragma link C++ class AliEMCAL+;
+#pragma link C++ class AliEMCALHistoUtilities+;
 
 #endif
 
