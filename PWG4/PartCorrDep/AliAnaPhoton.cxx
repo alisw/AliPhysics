@@ -483,9 +483,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
     Double_t tof = calo->GetTOF()*1e9;
-	printf("Photon:TOF %f\n",tof);
 	if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
-	printf("Photon2:TOF %f\n",tof);
 
 	//printf("AliAnaPhoton::Current Event %d; Current File Name : %s, E %f, pT %f, Ecl %f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), mom.E(), mom.Pt(),calo->E());
 
