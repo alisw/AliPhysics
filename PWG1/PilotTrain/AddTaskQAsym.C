@@ -104,9 +104,9 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    mgr->ConnectInput  (task1, 0, mgr->GetCommonInputContainer());
    mgr->ConnectInput  (task2, 0, mgr->GetCommonInputContainer());
 
-   mgr->ConnectOutput (task0, 0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput (task1, 0, mgr->GetCommonOutputContainer());
-   mgr->ConnectOutput (task2, 0, mgr->GetCommonOutputContainer());
+   // mgr->ConnectOutput (task0, 0, mgr->GetCommonOutputContainer());
+   // mgr->ConnectOutput (task1, 0, mgr->GetCommonOutputContainer());
+   // mgr->ConnectOutput (task2, 0, mgr->GetCommonOutputContainer());
 
    mgr->ConnectOutput (task0, 1, cout0);
    mgr->ConnectOutput (task1, 1, cout1);
