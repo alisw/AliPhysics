@@ -1013,8 +1013,15 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   Float_t vz = vertex->GetZ();
   if (TMath::Abs(vz) > 10.) return;
 
+  AliESDtrack *tpcP = 0x0;
+
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     
+    //prevent mem leak for TPConly track
+    if(fTrackType==2&&tpcP){
+      delete tpcP;
+      tpcP = 0;
+    }
 
     AliVParticle *track = event->GetTrack(iTrack);
     AliESDtrack *esdtrack =  dynamic_cast<AliESDtrack*>(track);
@@ -1027,7 +1034,6 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     }
     //__________
     // run Task for global tracks or ITS tracks or TPC tracks
-    AliESDtrack *tpcP = 0x0;
     const AliExternalTrackParam *tpcPin = 0x0;
     Double_t phiIn=0;
     if(fTrackType==0){
@@ -1316,10 +1322,15 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
 //     }//second track loop
 
-    if(fTrackType==2) delete tpcP; // delete in case of TPCOnlyTrack
+    // if(fTrackType==2) delete tpcP; // delete in case of TPCOnlyTrack
 
   }//first track loop
 
+  //prevent mem leak for TPConly track
+  if(fTrackType==2&&tpcP){
+    delete tpcP;
+    tpcP = 0;
+  }
   
  
 
