@@ -24,6 +24,32 @@
 //   Markus Heide <mheide@uni-muenster.de>
 //   Matus Kalisky <m.kalisky@uni-muenster.de>
 //
+// Overview over the 18 steps in the correction Framework
+// 0. Generated Electrons
+// 1. Signal Electrons
+// 2. Electron in Acceptance
+// ------------------------------------------------------------
+// 3. Rec without cuts (MC information)
+// 4. Rec Kine ITS/TPC (MC Information)
+// 5. Rec Primary (MC Information)
+// 6. HFE ITS (MC Information)
+// 7. HFE TRD (MC Information)
+// 8. PID (MC Information) 
+// ............................................................
+// 9. Rec without cuts(MC Information for tracks which are already registered)
+// 10. Rec Kine ITS/TPC (MC Information for tracks which are already registered)
+// 11. RecPrimary (MC Information for tracks which are already registered)
+// 12. HFE ITS (MC Information for tracks which are already registered)
+// 13. HFE TPC (MC Information for tracks which are already registered)
+// 14. PID (MC Information for tracks which are already registered)
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// 15. Rec without cuts
+// 16. Rec Kine ITS/TPC 
+// 17. Rec Primary
+// 18. HFE ITS
+// 19. HFE TRD
+// 20. PID
+//
 #include <TClass.h>
 #include <TList.h>
 #include <TObjArray.h>
@@ -138,10 +164,10 @@ void AliHFEcuts::Initialize(AliCFManager *cfm){
   }
 
   // Connect the event cuts
-  /*SetEventCutList(kEventStepGenerated);
+  SetEventCutList(kEventStepGenerated);
   SetEventCutList(kEventStepReconstructed);
   cfm->SetEventCutsList(kEventStepGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvGenCuts")));
-  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));*/
+  cfm->SetEventCutsList(kEventStepReconstructed, dynamic_cast<TObjArray *>(fCutList->FindObject("fEvRecCuts")));
   
   // Connect the particle cuts
   cfm->SetParticleCutsList(kStepMCGenerated, dynamic_cast<TObjArray *>(fCutList->FindObject("fPartGenCuts")));
@@ -211,12 +237,13 @@ void AliHFEcuts::SetParticleGenCutList(){
   if(IsRequireProdVertex()){
     genCuts->SetProdVtxRangeX(fProdVtx[0], fProdVtx[1]);
     genCuts->SetProdVtxRangeY(fProdVtx[2], fProdVtx[3]);
+    genCuts->SetProdVtxRange2D(kTRUE);  // Use ellipse
   }
   genCuts->SetRequirePdgCode(11, kTRUE);
   
   AliCFTrackKineCuts *kineMCcuts = new AliCFTrackKineCuts("fCutsKineMC","MC Kine Cuts");
   kineMCcuts->SetPtRange(fPtRange[0], fPtRange[1]);
-  kineMCcuts->SetEtaRange(-0.9, 0.9);
+  kineMCcuts->SetEtaRange(-0.8, 0.8);
 
   if(IsInDebugMode()){
     genCuts->SetQAOn(fHistQA);
@@ -286,7 +313,7 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts("fCutsKineRec", "REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
-  kineCuts->SetEtaRange(-0.9, 0.9);
+  kineCuts->SetEtaRange(-0.8, 0.8);
   
   if(IsInDebugMode()){
     trackQuality->SetQAOn(fHistQA);
@@ -379,7 +406,7 @@ Bool_t AliHFEcuts::CheckParticleCuts(CutStep_t step, TObject *o){
   //
   // Checks the cuts without using the correction framework manager
   // 
-  TString stepnames[kNcutSteps] = {"fPartGenCuts", "fPartAccCuts", "fPartRecCuts", "fPartPrimCuts", "fPartHFECuts"};
+  TString stepnames[kNcutStepsTrack] = {"fPartGenCuts", "fPartAccCuts", "fPartRecCuts", "fPartPrimCuts", "fPartHFECuts"};
   TObjArray *cuts = dynamic_cast<TObjArray *>(fCutList->FindObject(stepnames[step].Data()));
   if(!cuts) return kTRUE;
   TIterator *it = cuts->MakeIterator();

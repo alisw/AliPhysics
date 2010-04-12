@@ -41,18 +41,21 @@ class AliHFEcuts : public TObject{
       kStepMCGenerated = 0,
       kStepMCsignal = 1,
       kStepMCInAcceptance = 2,
-      kStepRecKineITSTPC = 3,
-      kStepRecPrim = 4,
-      kStepHFEcutsITS = 5,
-      kStepHFEcutsTRD = 6
+      kStepRecNoCut = 3,
+      kStepRecKineITSTPC = 4,
+      kStepRecPrim = 5,
+      kStepHFEcutsITS = 6,
+      kStepHFEcutsTRD = 7,
+      kStepPID = 8
     } CutStep_t;
     typedef enum{
       kEventStepGenerated = 0,
       kEventStepReconstructed = 1
     } EventCutStep_t;
     enum{
-      kNcutSteps = 7,
-      kNcutESDSteps = 4
+      kNcutStepsEvent = 2,
+      kNcutStepsTrack = 9,
+      kNcutStepsESDtrack = 6 
     };    // Additional constants
 
     AliHFEcuts();

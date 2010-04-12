@@ -51,6 +51,7 @@ class AliHFEpid : public TObject{
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData, hasMCdata); };
     TList *GetQAhistograms() const { return fQAlist; };
 
+    inline void SetTPCBetheBlochParameters(Double_t *pars);
   protected:
     Bool_t MakePidTpcTof(AliHFEpidObject *track);
     Bool_t MakePidTpcTrd(AliHFEpidObject *track);
@@ -93,10 +94,15 @@ class AliHFEpid : public TObject{
     AliHFEpidBase *fDetectorPID[kNdetectorPID];     //! Detector PID classes
     UInt_t fEnabledDetectors;                       //  Enabled Detectors
     UInt_t fPIDstrategy;                            //  PID Strategy
+    Double_t fTPCBetheBlochParameters[5];           //  TPC Bethe-Bloch Parameters
     TList *fQAlist;                                 //! QA histograms
     Int_t fDebugLevel;                              //  Debug Level
 
   ClassDef(AliHFEpid, 1)      // Steering class for Electron ID
 };
+
+void AliHFEpid::SetTPCBetheBlochParameters(Double_t *pars){
+  memcpy(fTPCBetheBlochParameters, pars, sizeof(Double_t)*5);
+}
 
 #endif

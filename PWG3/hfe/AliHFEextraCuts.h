@@ -96,10 +96,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     UChar_t fPixelITS;			// Cut on ITS Pixels
 
     Bool_t  fCheck;                     // check
-    
     TList *fQAlist;			//! Directory for QA histograms
-  
-    Int_t fDebugLevel;    // Debug Level
+    Int_t   fDebugLevel;                // Debug Level
   
   ClassDef(AliHFEextraCuts, 1)      // Additional cuts implemented by the ALICE HFE group
 };

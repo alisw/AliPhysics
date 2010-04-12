@@ -51,6 +51,7 @@ class AliHFEpriVtx : public TObject {
                 void CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t sourcePart, Int_t recpid, Double_t recprob); 
                 void GetNPriVxtContributor();
                 void FillNprimVtxContributor() const;
+		Double_t GetDistanceFromRecalVertexXY(AliESDtrack *ESDelectron); 
 
                 Int_t GetMCPID(AliESDtrack *track); // return mc pid
 

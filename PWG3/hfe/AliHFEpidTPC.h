@@ -35,6 +35,7 @@ class AliESDtrack;
 class AliMCParticle;
 class AliESDpid;
 class AliVParticle;
+class AliHFEcollection;
 
 class AliHFEpidTPC : public AliHFEpidBase{
   public:
@@ -53,6 +54,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
     Bool_t HasParticleRejection() const { return TestBit(kRejection); }
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
+    void SetBetheBlochParameters(Double_t *pars);
     inline void SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax);
     inline void SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax);
 
@@ -67,35 +69,6 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Double_t Suppression(const AliESDtrack *track, Int_t species);
 
   private:
-    typedef enum{
-      kHistTPCelectron = 0,
-      kHistTPCpion = 1,
-      kHistTPCmuon = 2,
-      kHistTPCkaon = 3,
-      kHistTPCproton = 4,
-      kHistTPCothers = 5,
-      kHistTPCall = 6,
-      kHistTPCselected = 7,
-      kHistTPCprobEl = 8,
-      kHistTPCprobPi = 9,
-      kHistTPCprobMu = 10,
-      kHistTPCprobKa = 11,
-      kHistTPCprobPro = 12,
-      kHistTPCprobOth = 13,
-      kHistTPCprobAll = 14,
-      kHistTPCsuppressPi = 15,
-      kHistTPCsuppressMu = 16,
-      kHistTPCsuppressKa = 17,
-      kHistTPCsuppressPro = 18,
-      kHistTPCenhanceElPi = 19,
-      kHistTPCenhanceElMu = 20,
-      kHistTPCenhanceElKa = 21,
-      kHistTPCenhanceElPro = 22,
-      kHistTPCElprobPi = 23,
-      kHistTPCElprobMu = 24,
-      kHistTPCElprobKa = 25,
-      kHistTPCElprobPro = 26
-    } QAHist_t;
     enum{
       kAsymmetricSigmaCut = BIT(20),
       kRejection = BIT(21)
@@ -109,10 +82,10 @@ class AliHFEpidTPC : public AliHFEpidBase{
     Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
     AliPID *fPID;                                           //! PID Object
-    AliESDpid *fESDpid;                               //! TPC PID object
-    TList *fQAList;                                         //! QA histograms
+    AliESDpid *fESDpid;                                     //! TPC PID object
+    AliHFEcollection *fQAList;                              //! QA histograms
 
-  ClassDef(AliHFEpidTPC, 2)   // TPC Electron ID class
+  ClassDef(AliHFEpidTPC, 1)   // TPC Electron ID class
 };
 
 inline void AliHFEpidTPC::SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax) { 

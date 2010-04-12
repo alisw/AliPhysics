@@ -34,8 +34,12 @@
 #include <TAxis.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TF1.h>
 #include <TString.h>
 #include <TLegend.h>
+#include <TStyle.h>
 
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
@@ -44,7 +48,12 @@
 #include "AliHFEelecbackground.h"
 #include <AliMCEvent.h>
 #include <AliStack.h>
-
+#include <AliKFParticle.h>
+#include "AliCFContainer.h"
+#include "AliHFEpid.h"
+#include "AliESDpid.h"
+#include "AliITSPIDResponse.h"
+#include "AliTPCPIDResponse.h"
 
 ClassImp(AliHFEelecbackground)
 
@@ -70,6 +79,19 @@ AliHFEelecbackground::AliHFEelecbackground():
   ,fMotherEta(-1)
   ,fIsPartner(kFALSE)
   ,fIsSplittedTrack(kFALSE)
+  ,fOpeningAngleCut(0.35)
+  ,fInvMassCut(140.0)
+  ,fChi2NdfCut(999999999.0)
+  ,fUseAliKFCode(kTRUE)
+  ,fSharedClusterCut(kFALSE)
+  ,fRequireITSStandalone(0)
+  ,fMinNbCls(2)
+  ,fMinITSChi2(10.0)
+  ,fMinNbClsSDDSPD(2)
+  ,fPIDPartner(kFALSE)
+  ,fPIDMethodPartner(0x0)
+  ,fPIDMethodPartnerITS(0x0)
+  ,fDebugLevel(0)
   ,fList(0x0)
   ,fListPostProcess(0x0)
 { 
@@ -99,6 +121,19 @@ AliHFEelecbackground::AliHFEelecbackground(const AliHFEelecbackground &p):
   ,fMotherEta(-1)
   ,fIsPartner(kFALSE)
   ,fIsSplittedTrack(kFALSE)
+  ,fOpeningAngleCut(0.35)
+  ,fInvMassCut(140.0)
+  ,fChi2NdfCut(999999999.0)
+  ,fUseAliKFCode(kTRUE)
+  ,fSharedClusterCut(kFALSE)
+  ,fRequireITSStandalone(0)
+  ,fMinNbCls(2)
+  ,fMinITSChi2(10.0)
+  ,fMinNbClsSDDSPD(2)
+  ,fPIDPartner(kFALSE)
+  ,fPIDMethodPartner(0x0)
+  ,fPIDMethodPartnerITS(0x0)
+  ,fDebugLevel(0)
   ,fList(0x0)  
   ,fListPostProcess(0x0)
 { 
@@ -125,6 +160,8 @@ AliHFEelecbackground::~AliHFEelecbackground()
   //
   // Destructor
   //
+  if(fPIDMethodPartner) delete fPIDMethodPartner;
+  if(fPIDMethodPartnerITS) delete fPIDMethodPartnerITS;
 
   if(fList){
     fList->Clear();
@@ -137,7 +174,7 @@ AliHFEelecbackground::~AliHFEelecbackground()
   }
 }
 //___________________________________________________________________________________________
-Bool_t AliHFEelecbackground::Load(const Char_t *filename)
+Bool_t AliHFEelecbackground::Load(const Char_t * filename)
 {
   //
   // Generic container loader
@@ -158,6 +195,16 @@ Bool_t AliHFEelecbackground::Load(const Char_t *filename)
   gFile->Close();
   return kTRUE;
 }
+//___________________________________________________________________________________________
+Bool_t AliHFEelecbackground::Load(TList * const outputlist)
+{
+  //
+  // Generic container loader
+  //
+  if(!outputlist) return kFALSE;
+  else   fList = (TList*)outputlist->Clone("HFEelecbackground");
+  return kTRUE;
+}
 //_______________________________________________________________________________________________
 void AliHFEelecbackground::Reset()
 {
@@ -176,24 +223,33 @@ void AliHFEelecbackground::Reset()
   fMotherEta = -1;
   fIsPartner = kFALSE;
   fIsSplittedTrack = kFALSE;
+  for(Int_t id = 0; id < 10; id++) {
+    fCuts[id] = kFALSE;
+  }
  
 }
 //_______________________________________________________________________________________________
-void AliHFEelecbackground::CreateHistograms(TList* const qaList)
+void AliHFEelecbackground::CreateHistograms(TList * const qaList)
 { 
   //
   // create histograms
   //
   if(!qaList) return;
-  
+
   fList = qaList;
-  fList->SetName("HFEelecbackground");
-  
+  fList->SetName("HFEelecbackground");  
+
+  //////////
   // bins
+  /////////
 
   Int_t nBinsPt = 25;
-  Double_t minPt = 0.001;
+  Double_t minPt = 0.01;
   Double_t maxPt = 10.0;
+  
+  Int_t nBinsPtMore = 100;
+  Double_t minPtMore = 0.01;
+  Double_t maxPtMore = 10.0;
   
   Int_t nBinsInv = 50;
   Double_t minInv = 0.0;
@@ -203,10 +259,19 @@ void AliHFEelecbackground::CreateHistograms(TList* const qaList)
   Double_t minOp = 0.0;
   Double_t maxOp = 2;
 
+  Int_t nBinsCh = 4;
+  Double_t minCh = 0.0;
+  Double_t maxCh = 4.0;
+  
   Double_t *binLimLogPt = new Double_t[nBinsPt+1];
   Double_t *binLimPt    = new Double_t[nBinsPt+1];
   for(Int_t i=0; i<=nBinsPt; i++) binLimLogPt[i]=(Double_t)TMath::Log10(minPt) + (TMath::Log10(maxPt)-TMath::Log10(minPt))/nBinsPt*(Double_t)i ;
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
+
+  Double_t *binLimLogPtMore = new Double_t[nBinsPtMore+1];
+  Double_t *binLimPtMore    = new Double_t[nBinsPtMore+1];
+  for(Int_t i=0; i<=nBinsPtMore; i++) binLimLogPtMore[i]=(Double_t)TMath::Log10(minPtMore) + (TMath::Log10(maxPtMore)-TMath::Log10(minPtMore))/nBinsPtMore*(Double_t)i ;
+  for(Int_t i=0; i<=nBinsPtMore; i++) binLimPtMore[i]=(Double_t)TMath::Power(10,binLimLogPtMore[i]);
 
   Double_t *binLimInv    = new Double_t[nBinsInv+1];
   for(Int_t i=0; i<=nBinsInv; i++) binLimInv[i]=(Double_t)minInv  + (maxInv-minInv)  /nBinsInv*(Double_t)i ;
@@ -214,227 +279,248 @@ void AliHFEelecbackground::CreateHistograms(TList* const qaList)
   Double_t *binLimOp    = new Double_t[nBinsOp+1];
   for(Int_t i=0; i<=nBinsOp; i++) binLimOp[i]=(Double_t)minOp  + (maxOp-minOp) /nBinsOp*(Double_t)i ;
   
+  Double_t *binLimCh    = new Double_t[nBinsCh+1];
+  for(Int_t i=0; i<=nBinsCh; i++) binLimCh[i]=(Double_t)minCh  + (maxCh-minCh) /nBinsCh*(Double_t)i ;
   
-  const Int_t nvarO = 3; // ptrectaggede, ptrecmother, openingangle or invmass
+  const Int_t nvarData = 5;
+  // pt reconstructed tagged e
+  // pt reconstructed mother
+  // opening angle
+  // invariant mass 
+  // Data: charge (0-opposite sign, 1-like sign ++, 2-like sign --, 3-rotated tracks)
 
-  Int_t iBinOInv[nvarO];
-  iBinOInv[0]=nBinsPt;
-  iBinOInv[1]=nBinsPt;
-  iBinOInv[2]=nBinsInv;
-  
-  Int_t iBinOOp[nvarO];
-  iBinOOp[0]=nBinsPt;
-  iBinOOp[1]=nBinsPt;
-  iBinOOp[2]=nBinsOp;
+  Int_t iBinData[nvarData];
+  iBinData[0]=nBinsPt;
+  iBinData[1]=nBinsPt;
+  iBinData[2]=nBinsOp;
+  iBinData[3]=nBinsInv;
+  iBinData[4]=nBinsCh;
   
   //
+  // Opening angle and invariant mass
   //
-  //
   
-  THnSparseF *openinganglepp = new THnSparseF("openinganglepp","",nvarO,iBinOOp);
-  openinganglepp->SetBinEdges(0,binLimPt);
-  openinganglepp->SetBinEdges(1,binLimPt);
-  openinganglepp->SetBinEdges(2,binLimOp);
-  openinganglepp->Sumw2();
-  
-  THnSparseF *openinganglenn = new THnSparseF("openinganglenn","",nvarO,iBinOOp);
-  openinganglenn->SetBinEdges(0,binLimPt);
-  openinganglenn->SetBinEdges(1,binLimPt);
-  openinganglenn->SetBinEdges(2,binLimOp);
-  openinganglenn->Sumw2();
-  
-  THnSparseF *openingangless = new THnSparseF("openingangless","",nvarO,iBinOOp);
-  openingangless->SetBinEdges(0,binLimPt);
-  openingangless->SetBinEdges(1,binLimPt);
-  openingangless->SetBinEdges(2,binLimOp);
-  openingangless->Sumw2();
-  
-  THnSparseF *openingangler = new THnSparseF("openingangler","",nvarO,iBinOOp);
-  openingangler->SetBinEdges(0,binLimPt);
-  openingangler->SetBinEdges(1,binLimPt);
-  openingangler->SetBinEdges(2,binLimOp);
-  openingangler->Sumw2();
-  
-  THnSparseF *openingangleos = new THnSparseF("openingangleos","",nvarO,iBinOOp);
-  openingangleos->SetBinEdges(0,binLimPt);
-  openingangleos->SetBinEdges(1,binLimPt);
-  openingangleos->SetBinEdges(2,binLimOp);
-  openingangleos->Sumw2();
+  THnSparseF *hsSparseData = new THnSparseF("OpeningangleinvmassData","",nvarData,iBinData);
+  hsSparseData->SetBinEdges(0,binLimPt);
+  hsSparseData->SetBinEdges(1,binLimPt);
+  hsSparseData->SetBinEdges(2,binLimOp);
+  hsSparseData->SetBinEdges(3,binLimInv);
+  hsSparseData->SetBinEdges(4,binLimCh);
+  hsSparseData->Sumw2();
 
-  THnSparseF *openinganglepi0=0x0;
-  THnSparseF *openingangleeta=0x0;
-  THnSparseF *openinganglegamma=0x0;
-  THnSparseF *openingangleC=0x0;
-  THnSparseF *openingangleB=0x0;
-  THnSparseF *openingangleSplittedTrackss=0x0;
-  THnSparseF *openingangleSplittedTrackos=0x0;
+  fList->AddAt(hsSparseData,kDatai);
+
+  //
+  // Radius, DCA and Chi2Ndf
+  //
+
+  TH1F *dataRadiusHisto = new TH1F("DataRadius","", 200, 0.0, 200.0); // recontructed radius from the AliKF of the e+e- pair
+  fList->AddAt(dataRadiusHisto,kDatar);
+
+  TH1F *dataDcaHisto = new TH1F("DataDCA","", 100, 0.0, 6.0); // dca distribution
+  fList->AddAt(dataDcaHisto,kDatadca); 
+  
+  TH1F *dataChi2NdfHisto = new TH1F("DataChi2Ndf","", 100, 0.0, 5.0); // chi2Ndf distribution    
+  fList->AddAt(dataChi2NdfHisto,kDatachi2Ndf); 
+  
 
   if(HasMCData()) {
 
-    openinganglepi0 = new THnSparseF("openinganglepi0","",nvarO,iBinOOp);
-    openinganglepi0->SetBinEdges(0,binLimPt);
-    openinganglepi0->SetBinEdges(1,binLimPt);
-    openinganglepi0->SetBinEdges(2,binLimOp);
-    openinganglepi0->Sumw2();
+    //
+    // Opening angle and invariant mass with MC infos
+    //
+
+    const Int_t nvarMCo = 6;
+    // pt reconstructed tagged e
+    // pt reconstructed mother
+    // opening angle
+    // invariant mass 
+    // MC: 0-FromBackground, 1-FromGamma, 2-FromPi0, 3-FromEta, 4-FromC, 5-FromB
+    // MCSplitted: 0-not, 1-splittedOs, 2-ksplittedSs
     
-    openingangleeta = new THnSparseF("openingangleeta","",nvarO,iBinOOp);
-    openingangleeta->SetBinEdges(0,binLimPt);
-    openingangleeta->SetBinEdges(1,binLimPt);
-    openingangleeta->SetBinEdges(2,binLimOp);
-    openingangleeta->Sumw2();    
 
-    openinganglegamma = new THnSparseF("openinganglegamma","",nvarO,iBinOOp);
-    openinganglegamma->SetBinEdges(0,binLimPt);
-    openinganglegamma->SetBinEdges(1,binLimPt);
-    openinganglegamma->SetBinEdges(2,binLimOp);
-    openinganglegamma->Sumw2();
+    Int_t nBinsMCOrigin = 6;
+    Double_t minMCOrigin = 0.0;
+    Double_t maxMCOrigin = 6.0;
+    
+    Double_t *binLimMCOrigin = new Double_t[nBinsMCOrigin+1];
+    for(Int_t i=0; i<=nBinsMCOrigin; i++) binLimMCOrigin[i]=(Double_t)minMCOrigin  + (maxMCOrigin-minMCOrigin) /nBinsMCOrigin*(Double_t)i ;
 
-    openingangleC = new THnSparseF("openingangleC","",nvarO,iBinOOp);
-    openingangleC->SetBinEdges(0,binLimPt);
-    openingangleC->SetBinEdges(1,binLimPt);
-    openingangleC->SetBinEdges(2,binLimOp);
-    openingangleC->Sumw2();
+    Int_t nBinsMCSplitted = 3;
+    Double_t minMCSplitted = 0.0;
+    Double_t maxMCSplitted = 3.0;
+    
+    Double_t *binLimMCSplitted = new Double_t[nBinsMCSplitted+1];
+    for(Int_t i=0; i<=nBinsMCSplitted; i++) binLimMCSplitted[i]=(Double_t)minMCSplitted  + (maxMCSplitted-minMCSplitted) /nBinsMCSplitted*(Double_t)i ;
+    
+    Int_t iBinMCo[nvarMCo];
+    iBinMCo[0]=nBinsPt;
+    iBinMCo[1]=nBinsPt;
+    iBinMCo[2]=nBinsOp;
+    iBinMCo[3]=nBinsInv;
+    iBinMCo[4]=nBinsMCOrigin;
+    iBinMCo[5]=nBinsMCSplitted;
+        
+    THnSparseF *hsSparseMCo = new THnSparseF("OpeningangleinvmassMC","",nvarMCo,iBinMCo);
+    hsSparseMCo->SetBinEdges(0,binLimPt);
+    hsSparseMCo->SetBinEdges(1,binLimPt);
+    hsSparseMCo->SetBinEdges(2,binLimOp);
+    hsSparseMCo->SetBinEdges(3,binLimInv);
+    hsSparseMCo->SetBinEdges(4,binLimMCOrigin);
+    hsSparseMCo->SetBinEdges(5,binLimMCSplitted);
+    hsSparseMCo->Sumw2();
 
-    openingangleB = new THnSparseF("openingangleB","",nvarO,iBinOOp);
-    openingangleB->SetBinEdges(0,binLimPt);
-    openingangleB->SetBinEdges(1,binLimPt);
-    openingangleB->SetBinEdges(2,binLimOp);
-    openingangleB->Sumw2();
+    fList->AddAt(hsSparseMCo,kMCo);
 
-    openingangleSplittedTrackss = new THnSparseF("openingangleSplittedTrackss","",nvarO,iBinOOp);
-    openingangleSplittedTrackss->SetBinEdges(0,binLimPt);
-    openingangleSplittedTrackss->SetBinEdges(1,binLimPt);
-    openingangleSplittedTrackss->SetBinEdges(2,binLimOp);
-    openingangleSplittedTrackss->Sumw2();
+    //
+    // Radius, DCA and Chi2Ndf with MC info
+    //
 
-    openingangleSplittedTrackos = new THnSparseF("openingangleSplittedTrackos","",nvarO,iBinOOp);
-    openingangleSplittedTrackos->SetBinEdges(0,binLimPt);
-    openingangleSplittedTrackos->SetBinEdges(1,binLimPt);
-    openingangleSplittedTrackos->SetBinEdges(2,binLimOp);
-    openingangleSplittedTrackos->Sumw2();
+    TH2F *mcRadiusHisto = new TH2F("MCRadius","", 200, 0.0, 200.0,6,-0.5,5.5); // recontructed radius from the AliKF of the e+e- pair
+    fList->AddAt(mcRadiusHisto,kMCr);
+    
+    TH2F *mcDcaHisto = new TH2F("MCDCA","", 100, 0.0, 6.0,6,-0.5,5.5); // dca distribution
+    fList->AddAt(mcDcaHisto,kMCdca); 
+    
+    TH2F *mcChi2NdfHisto = new TH2F("MCChi2Ndf","", 100, 0.0, 5.0,6,-0.5,5.5); // chi2Ndf distribution    
+    fList->AddAt(mcChi2NdfHisto,kMCchi2Ndf); 
 
+    //////////////////////////////////////////////////////////
+    // if fDebugLevel 1: Rejection efficiencies of the cuts
+    //////////////////////////////////////////////////////////
+
+    if(fDebugLevel > 0) {
+
+      if(HasMCData()) {
+	
+	const Int_t nvarMCe = 3;
+	// pt reconstructed tagged e
+	// cut passed: 0-all, 1-Partner tracked, 2-Opposite-sign, 3-SingleTrackCutPart, 4-ShareCluster, 5-PID, 6-DCA, 7-chi2Ndf AliKF, 8-Openingangle, 9-Invmass
+	// MC: 0-FromBackground, 1-FromGamma, 2-FromPi0, 3-FromEta, 4-FromC, 5-FromB
+      
+      Int_t nBinsMCCutPassed = 10;
+      Double_t minMCCutPassed = -0.5;
+      Double_t maxMCCutPassed = 9.5;
+      
+      Double_t *binLimMCCutPassed = new Double_t[nBinsMCCutPassed+1];
+      for(Int_t i=0; i<=nBinsMCCutPassed; i++) binLimMCCutPassed[i]=(Double_t)minMCCutPassed  + (maxMCCutPassed-minMCCutPassed) /nBinsMCCutPassed*(Double_t)i ;
+      
+      Int_t iBinMCe[nvarMCe];
+      iBinMCe[0]=nBinsPt;
+      iBinMCe[1]=nBinsMCCutPassed;
+      iBinMCe[2]=nBinsMCOrigin;
+      
+      THnSparseF *hsSparseMCe = new THnSparseF("CutPassedMC","",nvarMCe,iBinMCe);
+      hsSparseMCe->SetBinEdges(0,binLimPt);
+      hsSparseMCe->SetBinEdges(1,binLimMCCutPassed);
+      hsSparseMCe->SetBinEdges(2,binLimMCOrigin);
+      hsSparseMCe->Sumw2();
+      
+      fList->AddAt(hsSparseMCe,kMCe); 
+      
+      }
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // if fDebugLevel 1: PIDPartCut and ShareClusters
+    /////////////////////////////////////////////////////////////////
+
+    if(fDebugLevel > 1) {
+
+      if(!fRequireITSStandalone){
+	
+	//
+	// TPC 
+	//
+
+	TH2F *tpcPartner0 = new TH2F("TPCPartner0","", nBinsPtMore, binLimPtMore, 200, 0.0, 700.0); 
+	fList->AddAt(tpcPartner0,kMCcutPart0); 
+	TH2F *tpcPartner1 = new TH2F("TPCPartner1","", nBinsPtMore, binLimPtMore, 200, 0.0, 700.0); 
+	fList->AddAt(tpcPartner1,kMCcutPart1); 
+      
+      }
+      else {
+
+	//
+	// ITS
+	//
+
+	TH2F *itsPartner0 = new TH2F("ITSPartner0","", nBinsPtMore, binLimPtMore, 200, 0.0, 700.0); 
+	fList->AddAt(itsPartner0,kMCcutPart0); 
+	TH2F *itsPartner1 = new TH2F("ITSPartner1","", nBinsPtMore, binLimPtMore, 200, 0.0, 700.0); 
+	fList->AddAt(itsPartner1,kMCcutPart1); 
+
+	/////////////////////////////////////////////////////
+       	// dEdx of the four layers for the track partner
+	/////////////////////////////////////////////////////
+	const Int_t nvarITSsignal = 5;
+	
+	Int_t nBinsITSsignal  = 100;
+	Double_t minITSsignal = 0.0;
+	Double_t maxITSsignal = 350.0;
+	
+	Double_t *binLimITSsignal = new Double_t[nBinsITSsignal+1];
+	for(Int_t i=0; i<=nBinsITSsignal; i++) binLimITSsignal[i]=(Double_t)minITSsignal  + (maxITSsignal-minITSsignal) /nBinsITSsignal*(Double_t)i ;
+	
+	Int_t iBinITSsignal[nvarITSsignal];
+	iBinITSsignal[0]=nBinsPt;
+	iBinITSsignal[1]=nBinsITSsignal;
+	iBinITSsignal[2]=nBinsITSsignal;
+	iBinITSsignal[3]=nBinsITSsignal;
+	iBinITSsignal[4]=nBinsITSsignal;
+	
+	THnSparseF *hsSparseITSpid = new THnSparseF("SparseITSsignal","",nvarITSsignal,iBinITSsignal);
+	hsSparseITSpid->SetBinEdges(0,binLimPt);
+	hsSparseITSpid->SetBinEdges(1,binLimITSsignal);
+	hsSparseITSpid->SetBinEdges(2,binLimITSsignal);
+	hsSparseITSpid->SetBinEdges(3,binLimITSsignal);
+	hsSparseITSpid->SetBinEdges(4,binLimITSsignal);
+	hsSparseITSpid->Sumw2();
+	
+	fList->AddAt(hsSparseITSpid,kMCcutPart2); 
+
+	///////////////////////////////////////////////////////////////////////////////////////
+ 	// dEdx of the four layers for the track partner and track to reject splitted track
+	///////////////////////////////////////////////////////////////////////////////////////
+	const Int_t nvarITSsignalSplit = 5;
+
+	Int_t nBinsITSSplit  = 2;
+	Double_t minITSSplit = 0.0;
+	Double_t maxITSSplit = 2.0;
+	
+	Double_t *binLimITSSplit = new Double_t[nBinsITSSplit+1];
+	for(Int_t i=0; i<=nBinsITSSplit; i++) binLimITSSplit[i]=(Double_t)minITSSplit  + (maxITSSplit-minITSSplit) /nBinsITSSplit*(Double_t)i ;
+
+
+	Int_t nBinsITSsignalSplit  = 50;
+	Double_t minITSsignalSplit = -25.0;
+	Double_t maxITSsignalSplit = 25.0;
+	
+	Double_t *binLimITSsignalSplit = new Double_t[nBinsITSsignalSplit+1];
+	for(Int_t i=0; i<=nBinsITSsignalSplit; i++) binLimITSsignalSplit[i]=(Double_t)minITSsignalSplit  + (maxITSsignalSplit-minITSsignalSplit) /nBinsITSsignalSplit*(Double_t)i ;
+	
+	Int_t iBinITSsignalSplit[nvarITSsignalSplit];
+	iBinITSsignalSplit[0]=nBinsITSSplit;
+	for(Int_t k = 1; k < 5; k++){
+	  iBinITSsignalSplit[k]=nBinsITSsignalSplit;
+	}
+	
+	THnSparseF *hsSparseITSpidSplit = new THnSparseF("SparseITSsignalSplit","",nvarITSsignalSplit,iBinITSsignalSplit);
+	hsSparseITSpidSplit->SetBinEdges(0,binLimITSSplit);
+	for(Int_t k = 1; k < 5; k++) {
+	  hsSparseITSpidSplit->SetBinEdges(k,binLimITSsignalSplit);
+	}
+	hsSparseITSpidSplit->Sumw2();
+	
+	fList->AddAt(hsSparseITSpidSplit,kMCcutPart3); 
+	
+      }
+
+    }
+    
   }
-  
-  //
-  
-  THnSparseF *invmasspp = new THnSparseF("invmasspp","",nvarO,iBinOInv);
-  invmasspp->SetBinEdges(0,binLimPt);
-  invmasspp->SetBinEdges(1,binLimPt);
-  invmasspp->SetBinEdges(2,binLimInv);
-  invmasspp->Sumw2();
-  
-  THnSparseF *invmassnn = new THnSparseF("invmassnn","",nvarO,iBinOInv);
-  invmassnn->SetBinEdges(0,binLimPt);
-  invmassnn->SetBinEdges(1,binLimPt);
-  invmassnn->SetBinEdges(2,binLimInv);
-  invmassnn->Sumw2();
-  
-  THnSparseF *invmassss = new THnSparseF("invmassss","",nvarO,iBinOInv);
-  invmassss->SetBinEdges(0,binLimPt);
-  invmassss->SetBinEdges(1,binLimPt);
-  invmassss->SetBinEdges(2,binLimInv);
-  invmassss->Sumw2();
-  
-  THnSparseF *invmassr = new THnSparseF("invmassr","",nvarO,iBinOInv);
-  invmassr->SetBinEdges(0,binLimPt);
-  invmassr->SetBinEdges(1,binLimPt);
-  invmassr->SetBinEdges(2,binLimInv);
-  invmassr->Sumw2();
-  
-  THnSparseF *invmassos = new THnSparseF("invmassos","",nvarO,iBinOInv);
-  invmassos->SetBinEdges(0,binLimPt);
-  invmassos->SetBinEdges(1,binLimPt);
-  invmassos->SetBinEdges(2,binLimInv);
-  invmassos->Sumw2();
 
-  THnSparseF *invmasspi0=0x0;
-  THnSparseF *invmasseta=0x0;
-  THnSparseF *invmassgamma=0x0;
-  THnSparseF *invmassC=0x0;
-  THnSparseF *invmassB=0x0;
-  THnSparseF *invmassSplittedTrackss=0x0;
-  THnSparseF *invmassSplittedTrackos=0x0;
-  
-  if(HasMCData()) {
-    
-    invmasspi0 = new THnSparseF("invmasspi0","",nvarO,iBinOInv);
-    invmasspi0->SetBinEdges(0,binLimPt);
-    invmasspi0->SetBinEdges(1,binLimPt);
-    invmasspi0->SetBinEdges(2,binLimInv);
-    invmasspi0->Sumw2();
-    
-    invmasseta = new THnSparseF("invmasseta","",nvarO,iBinOInv);
-    invmasseta->SetBinEdges(0,binLimPt);
-    invmasseta->SetBinEdges(1,binLimPt);
-    invmasseta->SetBinEdges(2,binLimInv);
-    invmasseta->Sumw2();
-    
-    invmassgamma = new THnSparseF("invmassgamma","",nvarO,iBinOInv);
-    invmassgamma->SetBinEdges(0,binLimPt);
-    invmassgamma->SetBinEdges(1,binLimPt);
-    invmassgamma->SetBinEdges(2,binLimInv);
-    invmassgamma->Sumw2();
-
-    invmassC = new THnSparseF("invmassC","",nvarO,iBinOInv);
-    invmassC->SetBinEdges(0,binLimPt);
-    invmassC->SetBinEdges(1,binLimPt);
-    invmassC->SetBinEdges(2,binLimInv);
-    invmassC->Sumw2();
-
-    invmassB = new THnSparseF("invmassB","",nvarO,iBinOInv);
-    invmassB->SetBinEdges(0,binLimPt);
-    invmassB->SetBinEdges(1,binLimPt);
-    invmassB->SetBinEdges(2,binLimInv);
-    invmassB->Sumw2();
-
-    invmassSplittedTrackss = new THnSparseF("invmassSplittedTrackss","",nvarO,iBinOInv);
-    invmassSplittedTrackss->SetBinEdges(0,binLimPt);
-    invmassSplittedTrackss->SetBinEdges(1,binLimPt);
-    invmassSplittedTrackss->SetBinEdges(2,binLimInv);
-    invmassSplittedTrackss->Sumw2();
-
-    invmassSplittedTrackos = new THnSparseF("invmassSplittedTrackos","",nvarO,iBinOInv);
-    invmassSplittedTrackos->SetBinEdges(0,binLimPt);
-    invmassSplittedTrackos->SetBinEdges(1,binLimPt);
-    invmassSplittedTrackos->SetBinEdges(2,binLimInv);
-    invmassSplittedTrackos->Sumw2();
-  
-  }
-  
-  //
-  //
-  //
-
-  fList->AddAt(openinganglepp,kPp);
-  fList->AddAt(openinganglenn,kNn);
-  fList->AddAt(openingangless,kSs);
-  fList->AddAt(openingangler,kR);
-  fList->AddAt(openingangleos,kOs);
-  
-  fList->AddAt(invmasspp,kNSignComb+kPp);
-  fList->AddAt(invmassnn,kNSignComb+kNn);
-  fList->AddAt(invmassss,kNSignComb+kSs);
-  fList->AddAt(invmassr,kNSignComb+kR);
-  fList->AddAt(invmassos,kNSignComb+kOs);
-
-  if(HasMCData()) {
-    fList->AddAt(openinganglegamma,2*kNSignComb+kElectronFromGamma);
-    fList->AddAt(openinganglepi0,2*kNSignComb+kElectronFromPi0);
-    fList->AddAt(openingangleC,2*kNSignComb+kElectronFromC);
-    fList->AddAt(openingangleB,2*kNSignComb+kElectronFromB);
-    fList->AddAt(openingangleeta,2*kNSignComb+kElectronFromEta);
-    fList->AddAt(openingangleSplittedTrackss,2*kNSignComb+kSplittedTrackss);
-    fList->AddAt(openingangleSplittedTrackos,2*kNSignComb+kSplittedTrackos);
-
-    fList->AddAt(invmassgamma,2*kNSignComb+kNMCInfo+kElectronFromGamma);
-    fList->AddAt(invmasspi0,2*kNSignComb+kNMCInfo+kElectronFromPi0);
-    fList->AddAt(invmassC,2*kNSignComb+kNMCInfo+kElectronFromC);
-    fList->AddAt(invmassB,2*kNSignComb+kNMCInfo+kElectronFromB);
-    fList->AddAt(invmasseta,2*kNSignComb+kNMCInfo+kElectronFromEta);
-    fList->AddAt(invmassSplittedTrackss,2*kNSignComb+kNMCInfo+kSplittedTrackss);
-    fList->AddAt(invmassSplittedTrackos,2*kNSignComb+kNMCInfo+kSplittedTrackos);
-    
-  }
+  //qaList->Add(fList);
 
 }
 //_______________________________________________________________________________________________
@@ -443,18 +529,22 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
   //
   // calculate (tagged e-partner) dca, opening angle, invariant mass 
   //
-  
-  ////////////////////////
-  // Partner track cut
-  ////////////////////////
-  if(!SingleTrackCut(trackPart)) return;
 
+  /////////////////////
+  // pt tagged
+  //////////////////////
+  TVector3 v3Dtagged;
+  Double_t *pxyz = new Double_t[3];
+  track->PxPyPz(pxyz);
+  v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
+  fPtESD = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]); 
+  
   ////////////////////////
   // Take label
   ////////////////////////
   Int_t indexTrack = TMath::Abs(track->GetLabel());
   Int_t indexTrackPart = TMath::Abs(trackPart->GetLabel());
-
+  
   /////////////////////////
   // If MC data
   ////////////////////////
@@ -463,8 +553,12 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     
     // Take info track if not already done 
     if(indexTrack!= fIndexTrack) {
+
+      for(Int_t id = 0; id < 10; id++) {
+	fCuts[id] = kFALSE;
+      }
       
-      fIsFrom = -1;
+      fIsFrom = kElectronFromBackground;
           
       fPdg = GetPdg(indexTrack); 
       fLabMother = GetLabMother(indexTrack);
@@ -511,7 +605,7 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     if(indexTrackPart == fIndexTrack) fIsSplittedTrack = kTRUE;
     
   }
- 
+
   //////////////////////
   // Sign
   /////////////////////
@@ -519,102 +613,319 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
   if((track->Charge() > 0.0) && (trackPart->Charge() > 0.0)) sign = kPp; 
   if((track->Charge() < 0.0) && (trackPart->Charge() < 0.0)) sign = kNn; 
   if(((track->Charge() > 0.0) && (trackPart->Charge() < 0.0)) || ((track->Charge() < 0.0) && (trackPart->Charge() > 0.0))) sign = kOs; 
-       
+  
+  /////////////////////////
+  // Cut effects
+  ////////////////////////   
+  Double_t cuteffect[3];
+
+  if(fDebugLevel > 0) {  
+    if(HasMCData()) {
+      cuteffect[0] = fPtESD;
+      cuteffect[1] = 0.0;
+      cuteffect[2] = fIsFrom;
+      if(!fCuts[0]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[0] = kTRUE;
+      }
+    }
+  }
+
+
+  ///////////////////////////////
+  // Cut effect: Partner track 
+  ///////////////////////////////   
+  
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner) {
+      cuteffect[1] = 1.0;
+      if(!fCuts[1]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[1] = kTRUE;
+      }
+    }
+  }
+
+  ///////////////////////////////
+  // Cut effect: Opposite sign 
+  ///////////////////////////////   
+  
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner && (sign == kOs)) {
+      cuteffect[1] = 2.0;
+      if(!fCuts[2]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[2] = kTRUE;
+      }
+    }
+  }
+
+  ////////////////////////
+  // Partner track cut
+  ////////////////////////
+  if(!SingleTrackCut(trackPart)) return;
+
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner && (sign==kOs)) {
+      cuteffect[1] = 3.0;
+      if(!fCuts[3]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[3] = kTRUE;
+      }
+    }
+  }
+  
+  /////////////////////////
+  // shared clusters cut
+  /////////////////////////
+  if(fSharedClusterCut && ShareCluster(track,trackPart)) return;
+
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner && (sign==kOs)) {
+      cuteffect[1] = 4.0;
+      if(!fCuts[4]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[4] = kTRUE;
+      }
+    } 
+  }
+
+  ////////////////////////
+  // PID Partner track 
+  ////////////////////////
+  if(!PIDTrackCut(trackPart)) return;
+
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner && (sign==kOs)) {
+      cuteffect[1] = 5.0;
+      if(!fCuts[5]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[5] = kTRUE;
+      }
+    }
+  }
+
+  
   //////////////////////
   // DCA
   /////////////////////
   
   Double_t xthis,xp;
   Double_t dca = track->GetDCA(trackPart,fBz,xthis,xp);
+  (dynamic_cast<TH1F *>(fList->At(kDatadca)))->Fill(dca);
+  if(HasMCData()) {
+    //printf("has MC data for DCA\n");
+    //printf("IsPartner %d and isfrom %d\n",fIsPartner,fIsFrom);
+    if(fIsFrom==kElectronFromBackground) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
+    else {
+      if(fIsPartner) (dynamic_cast<TH2F *>(fList->At(kMCdca)))->Fill(dca,fIsFrom);
+    }
+  }
   if(TMath::Abs(dca) > 3.0) return;
-  
-  /////////////////////////////
-  // Propagate
-  ////////////////////////////
-      
-  Double_t norradius = TMath::Sqrt(fkVertex->GetX()*fkVertex->GetX()+fkVertex->GetY()*fkVertex->GetY());
-  
-  AliESDtrack *trackCopy = new AliESDtrack(*track);
-  AliESDtrack *trackPartCopy = new AliESDtrack(*trackPart);
-  Bool_t propagateok = kTRUE;
-  if((!(trackPartCopy->PropagateTo(norradius,fBz))) || (!(trackCopy->PropagateTo(norradius,fBz)))) propagateok = kFALSE;
-  if(!propagateok) {
-    if(trackCopy) delete trackCopy;
-    if(trackPartCopy) delete trackPartCopy;
-    return;
-  }  
-  
+
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner && (sign==kOs)) {
+      cuteffect[1] = 6.0;
+      if(!fCuts[6]) {
+	(dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	fCuts[6] = kTRUE;
+      }
+    }
+  }
+
   ///////////////////////////////////
   // Calcul mother variables
   ///////////////////////////////////
   Double_t results[5];
   Double_t resultsr[5];
+
   
-  CalculateMotherVariable(trackCopy,trackPartCopy,&results[0]);
-  CalculateMotherVariableR(trackCopy,trackPartCopy,&resultsr[0]);
+  if(!fUseAliKFCode) {
+    
+    /////////////////////////////
+    // Propagate
+    ////////////////////////////
+    
+    Double_t norradius = TMath::Sqrt(fkVertex->GetX()*fkVertex->GetX()+fkVertex->GetY()*fkVertex->GetY());
+    
+    AliESDtrack *trackCopy = new AliESDtrack(*track);
+    AliESDtrack *trackPartCopy = new AliESDtrack(*trackPart);
+    Bool_t propagateok = kTRUE;
+    if((!(trackPartCopy->PropagateTo(norradius,fBz))) || (!(trackCopy->PropagateTo(norradius,fBz)))) propagateok = kFALSE;
+    if(!propagateok) {
+      if(trackCopy) delete trackCopy;
+      if(trackPartCopy) delete trackPartCopy;
+      return;
+    }  
+  
+    CalculateMotherVariable(trackCopy,trackPartCopy,&results[0]);
+    CalculateMotherVariableR(trackCopy,trackPartCopy,&resultsr[0]);
+    
+    if(trackCopy) delete trackCopy;
+    if(trackPartCopy) delete trackPartCopy;
+    
+  }
+  else {
+    
+    if(!CalculateMotherVariable(track,trackPart,&results[0])) return;
+    if(fDebugLevel > 0) {     
+      if(HasMCData() && fIsPartner && (sign==kOs)) {
+	cuteffect[1] = 7.0;
+	if(!fCuts[7]) {
+	  (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	  fCuts[7] = kTRUE;
+	}
+      }
+    }
+  
+  }
   
   /////////////////////////////////////
   // Fill
   /////////////////////////////////////
    
   FillOutput(results, resultsr, sign);
+
+  if(fDebugLevel > 0) {  
+    if(HasMCData() && fIsPartner && (sign==kOs)) {
+      
+      if(TMath::Abs(results[4]) < fOpeningAngleCut) {
+	
+	cuteffect[1] = 8.0;
+	if(!fCuts[8]) {
+	  (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	  fCuts[8] = kTRUE;
+	}
+	if(TMath::Abs(results[1]) < fInvMassCut) {
+	  cuteffect[1] = 9.0;
+	  if(!fCuts[9]) {
+	    (dynamic_cast<THnSparseF *>(fList->At(kMCe)))->Fill(cuteffect);
+	    fCuts[9] = kTRUE;
+	  }
+	}
+      }
+    }    
+  }
   
-  if(trackCopy) delete trackCopy;
-  if(trackPartCopy) delete trackPartCopy;
-  
+ 
 }
 //_____________________________________________________________________________________
-void AliHFEelecbackground::CalculateMotherVariable(AliESDtrack* const track, AliESDtrack* const trackpart, Double_t *results)
+Bool_t AliHFEelecbackground::CalculateMotherVariable(AliESDtrack* const track, AliESDtrack* const trackpart, Double_t *results)
 {
   //
   // variables mother and take the pt of the track
   //
   // results contain: ptmother, invmass, etamother, phimother, openingangle
   //
+  // with a chi2Ndf cut for AliKF code
+  //
   
-  TVector3 v3Dtagged;
-  TVector3 v3Dpart;
-  
-  Double_t *pxyz = new Double_t[3];
-  track->PxPyPz(pxyz);
-  v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
-  fPtESD = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]); 
+  if(!fUseAliKFCode) {
+    
+    TVector3 v3Dtagged;
+    TVector3 v3Dpart;
+    
+    Double_t *pxyz = new Double_t[3];
+    track->PxPyPz(pxyz);
+    v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
+    
+    Double_t *pxyzpart = new Double_t[3];
+    trackpart->PxPyPz(pxyzpart);
+    v3Dpart.SetXYZ(pxyzpart[0],pxyzpart[1],pxyzpart[2]);
+    
+    
+    TVector3 motherrec = v3Dtagged + v3Dpart;
+    
+    Double_t etaESDmother = motherrec.Eta();
+    Double_t ptESDmother  = motherrec.Pt();
+    Double_t phiESDmother = motherrec.Phi();
+    if(phiESDmother > TMath::Pi()) phiESDmother = phiESDmother - (2*TMath::Pi());
+    
+    
+    // openinganglepropagated
+    Double_t openingangle = v3Dtagged.Angle(v3Dpart);
+    
+    // invmass
+    Double_t pESD      = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]+pxyz[2]*pxyz[2]);
+    Double_t pESDpart  = TMath::Sqrt(pxyzpart[0]*pxyzpart[0]+pxyzpart[1]*pxyzpart[1]+pxyzpart[2]*pxyzpart[2]);
+    
+    // e propagate
+    Double_t eESD     = TMath::Sqrt(pESD*pESD+fgkMe*fgkMe);
+    Double_t eESDpart = TMath::Sqrt(pESDpart*pESDpart+fgkMe*fgkMe);
+    
+    Double_t invmass = TMath::Sqrt((eESD+eESDpart)*(eESD+eESDpart)-(motherrec.Px()*motherrec.Px()+motherrec.Py()*motherrec.Py()+motherrec.Pz()*motherrec.Pz()));
+    
+    if(!results) return kFALSE;
 
-  Double_t *pxyzpart = new Double_t[3];
-  trackpart->PxPyPz(pxyzpart);
-  v3Dpart.SetXYZ(pxyzpart[0],pxyzpart[1],pxyzpart[2]);
- 
+    results[0] = ptESDmother;
+    results[1] = etaESDmother;
+    results[2] = phiESDmother;
+    results[3] = invmass;
+    results[4] = openingangle;
+    
+    return kTRUE;
 
-  
-  TVector3 motherrec = v3Dtagged + v3Dpart;
-  
-  Double_t etaESDmother = motherrec.Eta();
-  Double_t ptESDmother  = motherrec.Pt();
-  Double_t phiESDmother = motherrec.Phi();
-  if(phiESDmother > TMath::Pi()) phiESDmother = phiESDmother - (2*TMath::Pi());
-  
-  
-  // openinganglepropagated
-  Double_t openingangle = v3Dtagged.Angle(v3Dpart);
-  
-  // invmass
-  Double_t pESD      = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]+pxyz[2]*pxyz[2]);
-  Double_t pESDpart  = TMath::Sqrt(pxyzpart[0]*pxyzpart[0]+pxyzpart[1]*pxyzpart[1]+pxyzpart[2]*pxyzpart[2]);
-  
-  // e propagate
-  Double_t eESD     = TMath::Sqrt(pESD*pESD+fgkMe*fgkMe);
-  Double_t eESDpart = TMath::Sqrt(pESDpart*pESDpart+fgkMe*fgkMe);
-	    
-  Double_t invmass = TMath::Sqrt((eESD+eESDpart)*(eESD+eESDpart)-(motherrec.Px()*motherrec.Px()+motherrec.Py()*motherrec.Py()+motherrec.Pz()*motherrec.Pz()));
-
-  if(!results) {
-    results = new Double_t[5];
   }
-  results[0] = ptESDmother;
-  results[1] = etaESDmother;
-  results[2] = phiESDmother;
-  results[3] = invmass;
-  results[4] = openingangle;
+  else {
+    
+    AliKFParticle pair;
+    pair.Initialize();
+    
+    // pid
+    Int_t pid1 = -11;
+    if(track->Charge() > 0.0) pid1 = 11;
+    Int_t pid2 = -11;
+    if(trackpart->Charge() > 0.0) pid2 = 11;
+    
+    
+    // daughters
+    AliKFParticle kf(*track,pid1);
+    AliKFParticle kfpart(*trackpart,pid2);
+    
+    pair.AddDaughter(kf);
+    pair.AddDaughter(kfpart);
+    
+    // variables
+    Double_t openingangle = kf.GetAngle(kfpart);
+    Double_t chi2ndf = pair.GetChi2()/pair.GetNDF();
+    //Double_t decayLength = pair.GetDecayLength();
+    Double_t radius = pair.GetR();
+    //Double_t masserror = pair.GetErrMass()>0?pair.GetErrMass()/pair.GetMass():1000000;
+    Double_t ptpair = pair.GetPt();
+    Double_t etapair = pair.GetEta();
+    Double_t phipair = pair.GetPhi();
+    Double_t masspair = pair.GetMass();
+    
+    // Put them
+    if(!results) return kFALSE;
+
+    results[0] = ptpair;
+    results[1] = etapair;
+    results[2] = phipair;
+    results[3] = masspair;
+    results[4] = openingangle;
+
+    // chi2Ndf cut
+    (dynamic_cast<TH1F *>(fList->At(kDatachi2Ndf)))->Fill(chi2ndf);
+    if(HasMCData()){
+      if(fIsFrom==kElectronFromBackground) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
+      else {
+	if(fIsPartner) (dynamic_cast<TH2F *>(fList->At(kMCchi2Ndf)))->Fill(chi2ndf,fIsFrom);
+      }
+    }
+    if(chi2ndf > fChi2NdfCut) return kFALSE;
+    else {
+      (dynamic_cast<TH1F *>(fList->At(kDatar)))->Fill(radius);
+      if(HasMCData()) {
+	if(fIsFrom==kElectronFromBackground) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	else {
+	  if(fIsPartner) (dynamic_cast<TH2F *>(fList->At(kMCr)))->Fill(radius,fIsFrom);
+	}
+      }
+      return kTRUE;
+    }
+    
+  }
   
 }
 //_____________________________________________________________________________________
@@ -624,178 +935,396 @@ void AliHFEelecbackground::CalculateMotherVariableR(AliESDtrack* const track, Al
   // variables mother
   //
   // results contain: ptmother, invmass, etamother, phimother, openingangle
+  // Implemented only for no AliKF
   //
-  
-  TVector3 v3Dtagged;
-  TVector3 v3Dpart;
-  
-  Double_t *pxyz = new Double_t[3];
-  track->PxPyPz(pxyz);
-  v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
-  Double_t *pxyzpart = new Double_t[3];
-  trackpart->PxPyPz(pxyzpart);
-  v3Dpart.SetXYZ(pxyzpart[0],pxyzpart[1],pxyzpart[2]);
 
-  // rotate the partner
-  v3Dpart.RotateZ(TMath::Pi());
-  v3Dpart.GetXYZ(pxyzpart);
-
-  
-  TVector3 motherrec = v3Dtagged + v3Dpart;
-  
-  Double_t etaESDmother = motherrec.Eta();
-  Double_t ptESDmother  = motherrec.Pt();
-  Double_t phiESDmother = motherrec.Phi();
-  if(phiESDmother > TMath::Pi()) phiESDmother = phiESDmother - (2*TMath::Pi());
-  
-  
-  // openinganglepropagated
-  Double_t openingangle = v3Dtagged.Angle(v3Dpart);
-  //printf("Openingangle %f\n",openingangle);
-  
-  // invmass
-  Double_t pESD      = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]+pxyz[2]*pxyz[2]);
-  Double_t pESDpart  = TMath::Sqrt(pxyzpart[0]*pxyzpart[0]+pxyzpart[1]*pxyzpart[1]+pxyzpart[2]*pxyzpart[2]);
-  // e propagate
-  Double_t eESD     = TMath::Sqrt(pESD*pESD+fgkMe*fgkMe);
-  Double_t eESDpart = TMath::Sqrt(pESDpart*pESDpart+fgkMe*fgkMe);
-  
-  Double_t invmass = TMath::Sqrt((eESD+eESDpart)*(eESD+eESDpart)-(motherrec.Px()*motherrec.Px()+motherrec.Py()*motherrec.Py()+motherrec.Pz()*motherrec.Pz()));
-
-  if(!results) {
-    results = new Double_t[5];
+  if(!fUseAliKFCode) {
+    
+    TVector3 v3Dtagged;
+    TVector3 v3Dpart;
+    
+    Double_t *pxyz = new Double_t[3];
+    track->PxPyPz(pxyz);
+    v3Dtagged.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
+    Double_t *pxyzpart = new Double_t[3];
+    trackpart->PxPyPz(pxyzpart);
+    v3Dpart.SetXYZ(pxyzpart[0],pxyzpart[1],pxyzpart[2]);
+    
+    // rotate the partner
+    v3Dpart.RotateZ(TMath::Pi());
+    v3Dpart.GetXYZ(pxyzpart);
+    
+    
+    TVector3 motherrec = v3Dtagged + v3Dpart;
+    
+    Double_t etaESDmother = motherrec.Eta();
+    Double_t ptESDmother  = motherrec.Pt();
+    Double_t phiESDmother = motherrec.Phi();
+    if(phiESDmother > TMath::Pi()) phiESDmother = phiESDmother - (2*TMath::Pi());
+    
+    
+    // openinganglepropagated
+    Double_t openingangle = v3Dtagged.Angle(v3Dpart);
+    //printf("Openingangle %f\n",openingangle);
+    
+    // invmass
+    Double_t pESD      = TMath::Sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]+pxyz[2]*pxyz[2]);
+    Double_t pESDpart  = TMath::Sqrt(pxyzpart[0]*pxyzpart[0]+pxyzpart[1]*pxyzpart[1]+pxyzpart[2]*pxyzpart[2]);
+    // e propagate
+    Double_t eESD     = TMath::Sqrt(pESD*pESD+fgkMe*fgkMe);
+    Double_t eESDpart = TMath::Sqrt(pESDpart*pESDpart+fgkMe*fgkMe);
+    
+    Double_t invmass = TMath::Sqrt((eESD+eESDpart)*(eESD+eESDpart)-(motherrec.Px()*motherrec.Px()+motherrec.Py()*motherrec.Py()+motherrec.Pz()*motherrec.Pz()));
+    
+    if(!results) return;
+    
+    results[0] = ptESDmother;
+    results[1] = etaESDmother;
+    results[2] = phiESDmother;
+    results[3] = invmass;
+    results[4] = openingangle;
+    
   }
-  results[0] = ptESDmother;
-  results[1] = etaESDmother;
-  results[2] = phiESDmother;
-  results[3] = invmass;
-  results[4] = openingangle;
-
   
 }
 //_________________________________________________________________________________
 void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int_t sign) 
 {
   //
-  // Fill the invariant mass and opening angle distributions 
+  // Fill the Data and MC THnSparseF 
   //
+
+  if((!results) || (!resultsr)) return;
   
-  Double_t co[3];
+  Double_t co[6];
   co[0] = fPtESD;
-   
-  switch(sign){
-	
-      case kPp:
-	co[1] = results[0];
-	co[2] = TMath::Abs(results[4]);
-	(dynamic_cast<THnSparseF *>(fList->At(kPp)))->Fill(co);
-	(dynamic_cast<THnSparseF *>(fList->At(kSs)))->Fill(co);
-	if(HasMCData()){
-	  if(fIsSplittedTrack) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kSplittedTrackss)))->Fill(co);
-	}
+  co[1] = results[0];
+  co[2] = TMath::Abs(results[4]);
+  co[3] = results[3];
+  co[4] = sign;
+  co[5] = 0.0;
 
+  (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
 
-	co[2] = results[3];	
-	if(TMath::Abs(results[4]) < 0.8){
-	  (dynamic_cast<THnSparseF *>(fList->At(kPp+kNSignComb)))->Fill(co);
-	  (dynamic_cast<THnSparseF *>(fList->At(kSs+kNSignComb)))->Fill(co);
-	  if(HasMCData()){
-	    if(fIsSplittedTrack) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kSplittedTrackss+kNMCInfo)))->Fill(co);
-	  }
-	}
-
-	break;
-	
-      case kNn:
-	co[1] = results[0];
-	co[2] = TMath::Abs(results[4]);	
-	(dynamic_cast<THnSparseF *>(fList->At(kNn)))->Fill(co);
-	(dynamic_cast<THnSparseF *>(fList->At(kSs)))->Fill(co);
-	if(HasMCData()){
-	  if(fIsSplittedTrack) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kSplittedTrackss)))->Fill(co);
-	}
-	
-       	co[2] = results[3];	
-	if(TMath::Abs(results[4]) < 0.8){
-	  (dynamic_cast<THnSparseF *>(fList->At(kNn+kNSignComb)))->Fill(co);
-	  (dynamic_cast<THnSparseF *>(fList->At(kSs+kNSignComb)))->Fill(co);
-	  if(HasMCData()){
-	    if(fIsSplittedTrack) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kSplittedTrackss+kNMCInfo)))->Fill(co);
-	  }
-	}
-	break;
-	
-      case kOs:
-	co[1] = results[0];
-	co[2] = TMath::Abs(results[4]);	
-	(dynamic_cast<THnSparseF *>(fList->At(kOs)))->Fill(co);
-	if(HasMCData()) {
-	  if((fIsFrom == kElectronFromPi0) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromPi0)))->Fill(co);
-	  if((fIsFrom == kElectronFromEta) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromEta)))->Fill(co);
-	  if((fIsFrom == kElectronFromGamma) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromGamma)))->Fill(co);
-	  if((fIsFrom == kElectronFromC) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromC)))->Fill(co);
-	  if((fIsFrom == kElectronFromB) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromB)))->Fill(co);
-	  if(fIsSplittedTrack) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kSplittedTrackos)))->Fill(co);
-	}	
-	
-	co[2] = results[3];	
-	if(TMath::Abs(results[4]) < 0.8){
-	  (dynamic_cast<THnSparseF *>(fList->At(kOs+kNSignComb)))->Fill(co);
-	  if(HasMCData()) {
-	    if((fIsFrom == kElectronFromPi0) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromPi0+kNMCInfo)))->Fill(co);
-	    if((fIsFrom == kElectronFromEta) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromEta+kNMCInfo)))->Fill(co);
-	    if((fIsFrom == kElectronFromGamma) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromGamma+kNMCInfo)))->Fill(co);
-	    if((fIsFrom == kElectronFromC) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromC+kNMCInfo)))->Fill(co);
-	    if((fIsFrom == kElectronFromB) && (fIsPartner)) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kElectronFromB+kNMCInfo)))->Fill(co);
-	    if(fIsSplittedTrack) (dynamic_cast<THnSparseF *>(fList->At(2*kNSignComb+kSplittedTrackos+kNMCInfo)))->Fill(co);
-	  }	
-	}
-
-	// rotated
-	co[1] = resultsr[0];
-	co[2] = TMath::Abs(resultsr[4]);
-
-	(dynamic_cast<THnSparseF *>(fList->At(kR)))->Fill(co);
-
-	co[2] = resultsr[3];	
-	if(TMath::Abs(resultsr[4]) < 0.8){
-	  (dynamic_cast<THnSparseF *>(fList->At(kR+kNSignComb)))->Fill(co);
-	}
-	break;
-	
-  default:
+  if((sign==kOs) && (!fUseAliKFCode)) {
     
-    break;
+    co[1] = resultsr[0];
+    co[2] = TMath::Abs(resultsr[4]);
+    co[3] = resultsr[3];
+    co[4] = kR;
+    co[5] = 0.0;
+
+    (dynamic_cast<THnSparseF *>(fList->At(kDatai)))->Fill(co);
     
   }
-}      
+  
+  if(HasMCData()){
+
+    // Reset
+    co[1] = results[0];
+    co[2] = TMath::Abs(results[4]);
+    co[3] = results[3];
+
+    // Origin
+    co[4] = kElectronFromBackground;
+    if((sign==kOs) && fIsPartner) co[4] = fIsFrom;
+    
+    // Splitted tracks
+    co[5] = kNotSplitted;
+    if(fIsSplittedTrack) {
+      if(sign==kOs){
+	co[5] = kSplittedOs;
+      }
+      else {
+	co[5] = kSplittedSs;
+      }
+    }
+
+    (dynamic_cast<THnSparseF *>(fList->At(kMCo)))->Fill(co);
+
+  }
+ 
+}    
 //_______________________________________________________________________________________________
-Bool_t AliHFEelecbackground::SingleTrackCut(AliESDtrack* const track) const
+Bool_t AliHFEelecbackground::SingleTrackCut(AliESDtrack* const trackPart) const
 {
   //
   // Return minimum quality for the partner
   //
   
-  //if(track->GetKinkIndex(0)>0) return kFALSE;
+  if(trackPart->GetKinkIndex(0)>0) return kFALSE;
 
-  UInt_t status = track->GetStatus();
-  
-  if(((status & AliESDtrack::kTPCin)==0) && (status & AliESDtrack::kITSin)) {
+
+  UInt_t status = trackPart->GetStatus();
+
+  if(fRequireITSStandalone > 0) {
+
+    /////////////////////
+    // ITS Standalone
+    ////////////////////
     
-    Int_t nbcl = track->GetITSclusters(0);
-    if(nbcl > 1) return kTRUE;
-    else return kFALSE;
+    if(fRequireITSStandalone==1) {
+      if(((status & AliESDtrack::kITSin) == 0 || (trackPart->IsPureITSStandalone()) || status&AliESDtrack::kITSrefit==0)) return kFALSE;
+    }
+    
+    if(fRequireITSStandalone==2) {
+      if(!trackPart->IsPureITSStandalone() || ((status&AliESDtrack::kITSrefit)==0)) return kFALSE;
+    }
+    
+    // Chi2
+    Double_t chi2 = trackPart->GetITSchi2();
+    if(chi2 > fMinITSChi2) return kFALSE;
+
+    // Min Nb of clusters
+    Int_t nbcl = trackPart->GetITSclusters(0);
+    if(nbcl < fMinNbCls)  return kFALSE;  
+
+    // Min Nb of points in SDD and SPD
+    Int_t nbSDDSPD = 0;
+    for(Int_t layer = 0; layer < 4; layer++){
+      if(trackPart->HasPointOnITSLayer(layer)) nbSDDSPD++;
+    }
+    if(nbSDDSPD < fMinNbClsSDDSPD) return kFALSE;
+    
+    
+  }
+  else {
+
+    /////////
+    // TPC
+    /////////
+    
+    if((status&AliESDtrack::kTPCrefit)==0) return kFALSE;
+
+    // Min Nb of clusters
+    Int_t nbcl = trackPart->GetTPCclusters(0);
+    if(nbcl < fMinNbCls) return kFALSE;   
+    
+  }
+
+  return kTRUE;
+
+}  
+//_______________________________________________________________________________________________
+Bool_t AliHFEelecbackground::PIDTrackCut(AliESDtrack* const trackPart)
+{
+  //
+  // PID for the partner using TPC or ITS
+  //
+  
+  if(fRequireITSStandalone > 0) {
+
+    /////////////////////
+    // ITS Standalone
+    ////////////////////
+    
+    // signal
+    Double_t itsSignal = trackPart->GetITSsignal();
+    Double_t p = trackPart->P();
+    
+    if(fDebugLevel > 1) {        
+      (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,itsSignal);
+    }
+
+    ///////////
+    // PID
+    //////////
+    if(fPIDPartner) {
+      
+      // Take signal trackPart
+      Double_t dEdxSamplesPart[4];
+      trackPart->GetITSdEdxSamples(dEdxSamplesPart);
+
+      // Cut at 2 sigma
+      if(!fPIDMethodPartnerITS) fPIDMethodPartnerITS = new AliESDpid;
+      Float_t nsigma = fPIDMethodPartnerITS->NumberOfSigmasITS(trackPart, AliPID::kElectron);
+      if(TMath::Abs(nsigma) > 2.0) return kFALSE;
+      
+      // fill signal
+      if(fDebugLevel > 1) {        
+	
+	Double_t entries[5];
+	entries[0] = p;
+	entries[1] = dEdxSamplesPart[0];
+	entries[2] = dEdxSamplesPart[1];
+	entries[3] = dEdxSamplesPart[2];
+	entries[4] = dEdxSamplesPart[3];
+
+	(dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,itsSignal);
+	(dynamic_cast<THnSparseF *>(fList->At(kMCcutPart2)))->Fill(entries);
+	
+      }
+      
+    }
+    
+  }
+  else {
+
+    /////////
+    // TPC
+    /////////
+    
+    Double_t tpcSignal = trackPart->GetTPCsignal();
+    Double_t p = trackPart->GetInnerParam() ? trackPart->GetInnerParam()->P() : trackPart->P();
+
+    if(fDebugLevel > 1) {        
+      //printf("tpcSignal %f\n",tpcSignal);
+      (dynamic_cast<TH2F *>(fList->At(kMCcutPart0)))->Fill(p,tpcSignal);
+    }
+
+    // PID
+    if(fPIDPartner) {
+      if(!fPIDMethodPartner) return kFALSE;
+      AliHFEpidObject hfetrack;
+      hfetrack.fAnalysisType = AliHFEpidObject::kESDanalysis;
+      hfetrack.fRecTrack = trackPart;
+      //if(HasMCData()) hfetrack.fMCtrack = mctrack;
+      if(!fPIDMethodPartner->IsSelected(&hfetrack)) return kFALSE;
+      
+      if(fDebugLevel > 1) {  
+	(dynamic_cast<TH2F *>(fList->At(kMCcutPart1)))->Fill(p,tpcSignal);
+      }
+    }   
+    
+  }
+
+  return kTRUE;
+
+}
+//__________________________________________________________________________________________
+Bool_t AliHFEelecbackground::ShareCluster(AliESDtrack * const track1,AliESDtrack * const track2) const
+{
+  //
+  // Look if the two tracks shared clusters in the TPC or in the ITS depending on the method
+  //
+  // For TPC:
+  // hsfval: number of shared clusters 
+  // hsmval: quality of the tracks
+  //
+  // For ITS:
+  // compare the dEdx in the ITS
+  //
+
+  if(!fRequireITSStandalone) {
+
+    //////////
+    // TPC
+    //////////
+
+    
+    Int_t nh = 0;
+    Int_t an = 0;
+    Int_t ns = 0;
+    Float_t hsmval = 0.0;
+    Float_t hsfval = 0.0;
+   
+    for(unsigned int imap=0;imap<track1->GetTPCClusterMap().GetNbits(); imap++) {
+      if(track1->GetTPCClusterMap().TestBitNumber(imap) &&
+         track2->GetTPCClusterMap().TestBitNumber(imap)) {
+        // Do they share it ?
+        if (track1->GetTPCSharedMap().TestBitNumber(imap) &&
+            track2->GetTPCSharedMap().TestBitNumber(imap))
+          {
+            an++;
+            nh+=2;
+            ns+=2;
+          }
+	else {
+          an--;
+          nh+=2;
+        }
+      }
+      else if (track1->GetTPCClusterMap().TestBitNumber(imap) ||
+               track2->GetTPCClusterMap().TestBitNumber(imap)) {
+	an++;
+        nh++;
+      }
+    }
+
+    if (nh >0) {
+      hsmval = an*1.0/nh;
+      hsfval = ns*1.0/nh;
+    }
+    
+    
+    if((hsfval > 0.15) || (hsmval > -0.15)) return kTRUE; //they share cluster 
+    else return kFALSE;   
+ 
   
   }
+  else {
+
+    
+    //////////
+    // ITS
+    /////////
+
+    // Take signals 
+    Double_t dEdxSamples1[4];
+    track1->GetITSdEdxSamples(dEdxSamples1);
+    Double_t dEdxSamples2[4];
+    track2->GetITSdEdxSamples(dEdxSamples2);
+    
+    // If there are matching
+    Int_t nbClusters = 0;
+    Bool_t match[4] = {kTRUE,kTRUE,kTRUE,kTRUE};
+    Double_t limit[4] = {1.5,1.5,1.5,1.5};
+    for(Int_t layer = 0; layer < 4; layer++) {
+      if(track1->HasPointOnITSLayer(layer+2) && track2->HasPointOnITSLayer(layer+2)) {
+	if(TMath::Abs(dEdxSamples1[layer]-dEdxSamples2[layer])>limit[layer]) match[layer] = kFALSE;
+	nbClusters++;
+      }
+    }
+    //printf("nbClusters %d\n",nbClusters);
+    
+    // fill signal   
+    if(fDebugLevel > 1) {        
+      Double_t entriesSplit[5];
+      entriesSplit[0] = 0.0;
+      if(fIsSplittedTrack) entriesSplit[0] = 1.0; 
+      
+      for(Int_t layer = 0; layer < 4; layer++) {
+	if(track1->HasPointOnITSLayer(layer+2) && track2->HasPointOnITSLayer(layer+2)) {
+	  entriesSplit[layer+1] = dEdxSamples1[layer]-dEdxSamples2[layer];
+	}
+	else entriesSplit[layer+1] = -100.0;
+      }
+      (dynamic_cast<THnSparseF *>(fList->At(kMCcutPart3)))->Fill(entriesSplit);
+    }
+
+    // Return
+    Int_t nbClustersNotClose = 0;
+    for(Int_t layer = 0; layer < 4; layer++) {
+      if(!match[layer]) nbClustersNotClose++;
+    }
+    if((nbClusters > 1) && (nbClustersNotClose > 0.75*nbClusters)) return kFALSE;
+    else return kTRUE;
+    
+  }   
   
-  if(status & AliESDtrack::kTPCin) {
-  
-    if(status & AliESDtrack::kTPCrefit)  return kTRUE;
-    else return kFALSE;
-  
+}
+//____________________________________________________________________________________________________________
+void AliHFEelecbackground::SetPIDPartner() {
+
+  //
+  // Init the stuff for PID on the partner track
+  //
+
+  fPIDPartner = kTRUE;
+
+  if(fRequireITSStandalone == 0) {
+    
+    if(!fPIDMethodPartner) {
+      fPIDMethodPartner = new AliHFEpid();
+      fPIDMethodPartner->InitializePID("Strategy1");     // 3 sigma cut in TPC
+    }
+
   }
-  
-  return kFALSE;
+  else {
+    
+    if(!fPIDMethodPartnerITS) fPIDMethodPartnerITS = new AliESDpid;
+    
+  }
   
 }
 //______________________________________________________________________________________________
@@ -991,20 +1520,40 @@ void AliHFEelecbackground::PostProcess()
 
   if(!fList) return;
 
-  // invariant mass input spectra
-  THnSparseF *invmassss = dynamic_cast<THnSparseF *>(fList->FindObject("invmassss"));
-  THnSparseF *invmassr  = dynamic_cast<THnSparseF *>(fList->FindObject("invmassr"));
-  THnSparseF *invmassos = dynamic_cast<THnSparseF *>(fList->FindObject("invmassos"));
-  THnSparseF *invmassgamma = dynamic_cast<THnSparseF *>(fList->FindObject("invmassgamma"));
-  THnSparseF *invmasspi0 = dynamic_cast<THnSparseF *>(fList->FindObject("invmasspi0"));
-  THnSparseF *invmasseta = dynamic_cast<THnSparseF *>(fList->FindObject("invmasseta"));
-  THnSparseF *invmassC = dynamic_cast<THnSparseF *>(fList->FindObject("invmassC"));
-  THnSparseF *invmassB = dynamic_cast<THnSparseF *>(fList->FindObject("invmassB"));
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(1111);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetPadLeftMargin(0.13);
+  gStyle->SetPadRightMargin(0.13);
+
+  /////////////////////////
+  // Take the THnSparseF
+  /////////////////////////
+  THnSparseF *hsSparseData = dynamic_cast<THnSparseF *>(fList->FindObject("OpeningangleinvmassData")); 
+  THnSparseF *hsSparseMC = dynamic_cast<THnSparseF *>(fList->FindObject("OpeningangleinvmassMC")); 
+  THnSparseF *hsSparseCutPassedMC = dynamic_cast<THnSparseF *>(fList->FindObject("CutPassedMC")); 
+
+  /////////////////////////////////
+  // Cuts on the opening angle
+  ////////////////////////////////
+  TAxis *axisOpeningAngleData = hsSparseData->GetAxis(2);
+  Int_t binCutData = axisOpeningAngleData->FindBin(fOpeningAngleCut);
+  hsSparseData->GetAxis(2)->SetRange(1,binCutData);
+
+  if(hsSparseMC) {
+    TAxis *axisOpeningAngleMC = hsSparseMC->GetAxis(2);
+    Int_t binCutMC = axisOpeningAngleMC->FindBin(fOpeningAngleCut);
+    hsSparseMC->GetAxis(2)->SetRange(1,binCutMC);
+  }
   
-  TAxis *ptaxisinvmass = invmassss->GetAxis(0);
+  /////////////////////////
+  // Prepare the histos
+  ////////////////////////  
+
+  TAxis *ptaxisinvmass = hsSparseData->GetAxis(3);
   Int_t  nbinsptinvmass = ptaxisinvmass->GetNbins();  
   
-  // outputs
   TH1D **invmassosptproj = new TH1D*[nbinsptinvmass];
   TH1D **invmassssptproj = new TH1D*[nbinsptinvmass];
   TH1D **invmassrptproj = new TH1D*[nbinsptinvmass];
@@ -1015,55 +1564,70 @@ void AliHFEelecbackground::PostProcess()
   TH1D **invmassCptproj = new TH1D*[nbinsptinvmass];
   TH1D **invmassBptproj = new TH1D*[nbinsptinvmass];
 
-  TH1D *yieldPtFound = (TH1D *) invmassss->Projection(0);
+  TH1D *yieldPtFound = (TH1D *) hsSparseData->Projection(0);
   yieldPtFound->SetName("Found yield");
   yieldPtFound->Reset();
 
   TH1D *yieldPtSourcesMC = 0x0;
-  if(invmasspi0 && invmasseta && invmassgamma) {
-    yieldPtSourcesMC = (TH1D *) invmassss->Projection(0);
+  TH1D *yieldPtSignalCutMC = 0x0;
+  if(hsSparseMC) {
+    yieldPtSourcesMC = (TH1D *) hsSparseMC->Projection(0);
     yieldPtSourcesMC->SetName("Found yield");
     yieldPtSourcesMC->Reset();
-  }
-
-  TH1D *yieldPtSignalCutMC = 0x0;
-  if(invmassC && invmassB) {
-    yieldPtSignalCutMC = (TH1D *) invmassss->Projection(0);
+    
+    yieldPtSignalCutMC = (TH1D *) hsSparseMC->Projection(0);
     yieldPtSignalCutMC->SetName("Found yield");
     yieldPtSignalCutMC->Reset();
   }
-
+  
+  ////////////
   // canvas
+  ///////////
   Int_t nbrow = (Int_t) (nbinsptinvmass/5);
-  TString namecanvas("Invmassnamecanvas");
+  TString namecanvas("InvMassSpectra");
   TCanvas * canvas =new TCanvas(namecanvas,namecanvas,800,800);
   canvas->Divide(5,nbrow+1);
 
+  /////////////////////////////
+  // Loop on pt bins
+  /////////////////////////////
 
-  // loop on pt bins
   for(Int_t k=1; k <= nbinsptinvmass; k++){
 
     Double_t lowedge = ptaxisinvmass->GetBinLowEdge(k);
     Double_t upedge  = ptaxisinvmass->GetBinUpEdge(k);
+
+    // Pt bin
+    hsSparseData->GetAxis(0)->SetRange(k,k);
+    if(hsSparseMC) hsSparseMC->GetAxis(0)->SetRange(k,k);
     
-    ((TAxis *)invmassss->GetAxis(0))->SetRange(k,k);
-    ((TAxis *)invmassr->GetAxis(0))->SetRange(k,k);
-    ((TAxis *)invmassos->GetAxis(0))->SetRange(k,k);
-     
-    invmassosptproj[k-1] = invmassos->Projection(2);
-    invmassssptproj[k-1] = invmassss->Projection(2);
-    invmassrptproj[k-1]  = invmassr->Projection(2);
+    // 
+    hsSparseData->GetAxis(4)->SetRange(kOs+1,kOs+1);
+    invmassosptproj[k-1] = hsSparseData->Projection(3);
+    hsSparseData->GetAxis(4)->SetRange(kPp+1,kNn+1);
+    invmassssptproj[k-1] = hsSparseData->Projection(3);
+    hsSparseData->GetAxis(4)->SetRange(kR+1,kR+1);
+    invmassrptproj[k-1]  = hsSparseData->Projection(3);
+    hsSparseData->GetAxis(4)->SetRange(1,hsSparseData->GetAxis(4)->GetNbins()); 
     invmassgammaptproj[k-1] = 0x0;
     invmasspi0ptproj[k-1] = 0x0;
     invmassetaptproj[k-1] = 0x0;
     invmassCptproj[k-1] = 0x0;
     invmassBptproj[k-1] = 0x0;
-    if(invmassgamma) invmassgammaptproj[k-1] = invmassgamma->Projection(2);
-    if(invmasspi0) invmasspi0ptproj[k-1] = invmasspi0->Projection(2);
-    if(invmasseta) invmassetaptproj[k-1] = invmasseta->Projection(2);
-    if(invmassC) invmassCptproj[k-1] = invmassC->Projection(2);
-    if(invmassB) invmassBptproj[k-1] = invmassB->Projection(2);
-    
+    if(hsSparseMC) {
+      hsSparseMC->GetAxis(4)->SetRange(kElectronFromGamma+1,kElectronFromGamma+1);
+      invmassgammaptproj[k-1] = hsSparseMC->Projection(3);
+      hsSparseMC->GetAxis(4)->SetRange(kElectronFromPi0+1,kElectronFromPi0+1);
+      invmasspi0ptproj[k-1] = hsSparseMC->Projection(3);
+      hsSparseMC->GetAxis(4)->SetRange(kElectronFromEta+1,kElectronFromEta+1);
+      invmassetaptproj[k-1] = hsSparseMC->Projection(3);
+      hsSparseMC->GetAxis(4)->SetRange(kElectronFromC+1,kElectronFromC+1);
+      invmassCptproj[k-1] = hsSparseMC->Projection(3);
+      hsSparseMC->GetAxis(4)->SetRange(kElectronFromB+1,kElectronFromB+1);
+      invmassBptproj[k-1] = hsSparseMC->Projection(3);
+      hsSparseMC->GetAxis(4)->SetRange(1,hsSparseMC->GetAxis(4)->GetNbins()); 
+    }      
+
     invmassdiffptproj[k-1] = (TH1D *) invmassosptproj[k-1]->Clone();
     TString name("Invmassdiffptbin");
     name += k;
@@ -1085,9 +1649,7 @@ void AliHFEelecbackground::PostProcess()
     if(invmassetaptproj[k-1]) invmassetaptproj[k-1]->SetTitle((const char*)namee);
     if(invmassCptproj[k-1]) invmassCptproj[k-1]->SetTitle((const char*)namee);
     if(invmassBptproj[k-1]) invmassBptproj[k-1]->SetTitle((const char*)namee);
-        
-
-
+    
     invmassosptproj[k-1]->SetStats(0);
     invmassssptproj[k-1]->SetStats(0);
     invmassrptproj[k-1]->SetStats(0);
@@ -1124,26 +1686,48 @@ void AliHFEelecbackground::PostProcess()
     if(invmassetaptproj[k-1]) legiv->AddEntry(invmassetaptproj[k-1],"e^{+}e^{-} from #eta","p"); 
     legiv->Draw("same");
   
+    hsSparseData->GetAxis(0)->SetRange(1,hsSparseData->GetAxis(0)->GetNbins()); 
+    if(hsSparseMC) hsSparseMC->GetAxis(0)->SetRange(1,hsSparseMC->GetAxis(0)->GetNbins()); 
+
   }
+
+  ////////////////////////////////////////////////////
+  // End of plotting: do subtraction of background
+  ///////////////////////////////////////////////////
 
   yieldPtFound->SetStats(0);
   if(yieldPtSourcesMC) yieldPtSourcesMC->SetStats(0); 
   if(yieldPtSignalCutMC) yieldPtSignalCutMC->SetStats(0);  
 
-  TCanvas * canvasfin =new TCanvas("results","results",800,800);
+  TCanvas * canvasfin =new TCanvas("ResultsElecBackGround","ResultsElecBackGround",800,800);
   canvasfin->cd(1);
   yieldPtFound->Draw();
   if(yieldPtSourcesMC && yieldPtSignalCutMC) {
     yieldPtSourcesMC->Draw("same");
     yieldPtSignalCutMC->Draw("same");
     TLegend *lega = new TLegend(0.4,0.6,0.89,0.89);
-    lega->AddEntry(yieldPtFound,"Contributions found","p"); 
-    lega->AddEntry(yieldPtSourcesMC,"Contributions of e^{+}e^{-} from #gamma, #pi^{0} and #eta","p"); 
-    lega->AddEntry(yieldPtSignalCutMC,"Contributions of e^{+}e^{-} from C and B","p"); 
+    lega->AddEntry(yieldPtFound,"Contributions found","l"); 
+    lega->AddEntry(yieldPtSourcesMC,"Contributions of e^{+}e^{-} from #gamma, #pi^{0} and #eta","l"); 
+    lega->AddEntry(yieldPtSignalCutMC,"Contributions of e^{+}e^{-} from C and B","l"); 
     lega->Draw("same");
   }
   
+  if(hsSparseCutPassedMC){
+    hsSparseCutPassedMC->GetAxis(1)->SetRange(1,1); 
+    hsSparseCutPassedMC->GetAxis(2)->SetRange(1,4); 
+    TH1D *hsSparseCutPassedMCproj = hsSparseCutPassedMC->Projection(0);
 
+    TH1D *cYieldPtFound = (TH1D*)yieldPtFound->Clone("RatioEfficiency");
+    if(hsSparseCutPassedMCproj->Integral() > 0.0) cYieldPtFound->Divide(hsSparseCutPassedMCproj);
+
+    TCanvas * canvasfratio =new TCanvas("RatioEfficiency","RatioEfficiency",800,800);
+    canvasfratio->cd(1);
+    cYieldPtFound->Draw();
+  }
+
+  //////////////////////////
+  // fListPostProcess
+  /////////////////////////
   
   if(!fListPostProcess) fListPostProcess = new TList();
   fListPostProcess->SetName("ListPostProcess");
@@ -1184,46 +1768,37 @@ void AliHFEelecbackground::Plot() const
   //
   
   if(!fList) return;
+
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(1111);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetPadLeftMargin(0.13);
+  gStyle->SetPadRightMargin(0.13);
+
+
+  /////////////////////////
+  // Take the THnSparseF
+  /////////////////////////
+  THnSparseF *hsSparseData = dynamic_cast<THnSparseF *>(fList->FindObject("OpeningangleinvmassData")); 
+  THnSparseF *hsSparseMC = dynamic_cast<THnSparseF *>(fList->FindObject("OpeningangleinvmassMC")); 
   
-  // opening angle 
-  THnSparseF *openinganglepp = dynamic_cast<THnSparseF *>(fList->FindObject("openinganglepp"));
-  THnSparseF *openinganglenn = dynamic_cast<THnSparseF *>(fList->FindObject("openinganglenn"));
-  THnSparseF *openingangless = dynamic_cast<THnSparseF *>(fList->FindObject("openingangless"));
-  THnSparseF *openingangler  = dynamic_cast<THnSparseF *>(fList->FindObject("openingangler"));
-  THnSparseF *openingangleos = dynamic_cast<THnSparseF *>(fList->FindObject("openingangleos"));
-  
-  THnSparseF *openinganglegamma = dynamic_cast<THnSparseF *>(fList->FindObject("openinganglegamma"));
-  THnSparseF *openinganglepi0 = dynamic_cast<THnSparseF *>(fList->FindObject("openinganglepi0"));
-  THnSparseF *openingangleC = dynamic_cast<THnSparseF *>(fList->FindObject("openingangleC"));
-  THnSparseF *openingangleB = dynamic_cast<THnSparseF *>(fList->FindObject("openingangleB"));
-  THnSparseF *openingangleeta = dynamic_cast<THnSparseF *>(fList->FindObject("openingangleeta"));  
+  ////////////////////
+  // Opening angle
+  ////////////////////
 
-  THnSparseF *openingangleSplittedTrackss = dynamic_cast<THnSparseF *>(fList->FindObject("openingangleSplittedTrackss"));  
-  THnSparseF *openingangleSplittedTrackos = dynamic_cast<THnSparseF *>(fList->FindObject("openingangleSplittedTrackos"));  
-
-
-  // invariant mass
-  THnSparseF *invmasspp = dynamic_cast<THnSparseF *>(fList->FindObject("invmasspp"));
-  THnSparseF *invmassnn = dynamic_cast<THnSparseF *>(fList->FindObject("invmassnn"));
-  THnSparseF *invmassss = dynamic_cast<THnSparseF *>(fList->FindObject("invmassss"));
-  THnSparseF *invmassr  = dynamic_cast<THnSparseF *>(fList->FindObject("invmassr"));
-  THnSparseF *invmassos = dynamic_cast<THnSparseF *>(fList->FindObject("invmassos"));
-  
-  THnSparseF *invmassgamma = dynamic_cast<THnSparseF *>(fList->FindObject("invmassgamma"));
-  THnSparseF *invmasspi0 = dynamic_cast<THnSparseF *>(fList->FindObject("invmasspi0"));
-  THnSparseF *invmassC = dynamic_cast<THnSparseF *>(fList->FindObject("invmassC"));
-  THnSparseF *invmassB = dynamic_cast<THnSparseF *>(fList->FindObject("invmassB"));
-  THnSparseF *invmasseta = dynamic_cast<THnSparseF *>(fList->FindObject("invmasseta"));
-
-  THnSparseF *invmassSplittedTrackss = dynamic_cast<THnSparseF *>(fList->FindObject("invmassSplittedTrackss"));
-  THnSparseF *invmassSplittedTrackos = dynamic_cast<THnSparseF *>(fList->FindObject("invmassSplittedTrackos"));
-
-  // Projection over all pt
-  TH1D *openingangleppproj = openinganglepp->Projection(2);
-  TH1D *openinganglennproj = openinganglenn->Projection(2);
-  TH1D *openinganglessproj = openingangless->Projection(2);
-  TH1D *openinganglerproj  = openingangler->Projection(2);
-  TH1D *openingangleosproj = openingangleos->Projection(2);
+  // Opening angle one direction
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kPp+1);  
+  TH1D *openingangleppproj = hsSparseData->Projection(2);
+  hsSparseData->GetAxis(4)->SetRange(kNn+1,kNn+1);  
+  TH1D *openinganglennproj = hsSparseData->Projection(2);
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kNn+1);  
+  TH1D *openinganglessproj = hsSparseData->Projection(2);
+  hsSparseData->GetAxis(4)->SetRange(kR+1,kR+1);  
+  TH1D *openinganglerproj  = hsSparseData->Projection(2);
+  hsSparseData->GetAxis(4)->SetRange(kOs+1,kOs+1);  
+  TH1D *openingangleosproj = hsSparseData->Projection(2);
+  hsSparseData->GetAxis(4)->SetRange(1,hsSparseData->GetAxis(4)->GetNbins()); 
 
   TH1D *openinganglegammaproj = 0x0;
   TH1D *openinganglepi0proj = 0x0;
@@ -1232,36 +1807,90 @@ void AliHFEelecbackground::Plot() const
   TH1D *openingangleetaproj = 0x0;
   TH1D *openingangleSplittedTrackssproj = 0x0;
   TH1D *openingangleSplittedTrackosproj = 0x0;
-  if(openinganglegamma) openinganglegammaproj = openinganglegamma->Projection(2);
-  if(openinganglepi0) openinganglepi0proj = openinganglepi0->Projection(2);
-  if(openingangleC) openingangleCproj = openingangleC->Projection(2);
-  if(openingangleB) openingangleBproj = openingangleB->Projection(2);
-  if(openingangleeta) openingangleetaproj = openingangleeta->Projection(2);
-  if(openingangleSplittedTrackss) openingangleSplittedTrackssproj = openingangleSplittedTrackss->Projection(2);
-  if(openingangleSplittedTrackos) openingangleSplittedTrackosproj = openingangleSplittedTrackos->Projection(2);
+  if(hsSparseMC) {
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromGamma+1,kElectronFromGamma+1);  
+    openinganglegammaproj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromPi0+1,kElectronFromPi0+1);  
+    openinganglepi0proj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromEta+1,kElectronFromEta+1);  
+    openingangleetaproj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromC+1,kElectronFromC+1);  
+    openingangleCproj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromB+1,kElectronFromB+1);  
+    openingangleBproj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(4)->SetRange(1,hsSparseMC->GetAxis(4)->GetNbins());  
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedSs+1,kSplittedSs+1);  
+    openingangleSplittedTrackssproj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedOs+1,kSplittedOs+1);  
+    openingangleSplittedTrackosproj = hsSparseMC->Projection(2);
+    hsSparseMC->GetAxis(5)->SetRange(1,hsSparseMC->GetAxis(5)->GetNbins()); 
+  }
 
+  // Projection pt-opening angle
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kPp+1); 
+  TH2D *openingangleppproj2D = hsSparseData->Projection(0,2);
+  hsSparseData->GetAxis(4)->SetRange(kNn+1,kNn+1); 
+  TH2D *openinganglennproj2D = hsSparseData->Projection(0,2);
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kNn+1); 
+  TH2D *openinganglessproj2D = hsSparseData->Projection(0,2);
+  hsSparseData->GetAxis(4)->SetRange(kR+1,kR+1); 
+  TH2D *openinganglerproj2D  = hsSparseData->Projection(0,2);
+  hsSparseData->GetAxis(4)->SetRange(kOs+1,kOs+1); 
+  TH2D *openingangleosproj2D = hsSparseData->Projection(0,2);
+  hsSparseData->GetAxis(4)->SetRange(1,hsSparseData->GetAxis(4)->GetNbins()); 
 
-  TH1D *invmassppproj = invmasspp->Projection(2);
-  TH1D *invmassnnproj = invmassnn->Projection(2);
-  TH1D *invmassssproj = invmassss->Projection(2);
-  TH1D *invmassrproj  = invmassr->Projection(2);
-  TH1D *invmassosproj = invmassos->Projection(2);
+  TH2D *openinganglegammaproj2D = 0x0;
+  TH2D *openinganglepi0proj2D = 0x0;
+  TH2D *openingangleCproj2D = 0x0;
+  TH2D *openingangleBproj2D = 0x0;
+  TH2D *openingangleetaproj2D = 0x0;
+  TH2D *openingangleSplittedTrackssproj2D = 0x0;
+  TH2D *openingangleSplittedTrackosproj2D = 0x0;
+  if(hsSparseMC) {
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromGamma+1,kElectronFromGamma+1); 
+    openinganglegammaproj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromPi0+1,kElectronFromPi0+1); 
+    openinganglepi0proj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromEta+1,kElectronFromEta+1); 
+    openingangleetaproj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromC+1,kElectronFromC+1); 
+    openingangleCproj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromB+1,kElectronFromB+1); 
+    openingangleBproj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(4)->SetRange(1, hsSparseMC->GetAxis(4)->GetNbins());  
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedSs+1,kSplittedSs+1); 
+    openingangleSplittedTrackssproj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedOs+1,kSplittedOs+1); 
+    openingangleSplittedTrackosproj2D = hsSparseMC->Projection(0,2);
+    hsSparseMC->GetAxis(5)->SetRange(1,hsSparseMC->GetAxis(5)->GetNbins());
+  }
 
-  TH1D *invmassgammaproj = 0x0;
-  TH1D *invmasspi0proj = 0x0;
-  TH1D *invmassCproj = 0x0;
-  TH1D *invmassBproj = 0x0;
-  TH1D *invmassetaproj = 0x0;
-  TH1D *invmassSplittedTrackssproj = 0x0;
-  TH1D *invmassSplittedTrackosproj = 0x0;
-  if(invmassgamma) invmassgammaproj = invmassgamma->Projection(2);
-  if(invmasspi0) invmasspi0proj = invmasspi0->Projection(2);
-  if(invmassC) invmassCproj = invmassC->Projection(2);
-  if(invmassB) invmassBproj = invmassB->Projection(2);
-  if(invmasseta) invmassetaproj = invmasseta->Projection(2);
-  if(invmassSplittedTrackss) invmassSplittedTrackssproj = invmassSplittedTrackss->Projection(2);
-  if(invmassSplittedTrackos) invmassSplittedTrackosproj = invmassSplittedTrackos->Projection(2);
-  
+  openingangleppproj2D->SetStats(0);
+  openinganglennproj2D->SetStats(0);
+  openinganglessproj2D->SetStats(0);
+  openinganglerproj2D->SetStats(0);
+  openingangleosproj2D->SetStats(0);
+  if(openinganglegammaproj2D) openinganglegammaproj2D->SetStats(0);
+  if(openinganglepi0proj2D) openinganglepi0proj2D->SetStats(0);
+  if(openingangleCproj2D) openingangleCproj2D->SetStats(0);
+  if(openingangleBproj2D) openingangleBproj2D->SetStats(0);
+  if(openingangleetaproj2D) openingangleetaproj2D->SetStats(0);
+  if(openingangleSplittedTrackssproj2D) openingangleSplittedTrackssproj2D->SetStats(0);
+  if(openingangleSplittedTrackosproj2D) openingangleSplittedTrackosproj2D->SetStats(0);
+
+  openingangleppproj2D->SetTitle("openingangleppproj2D");
+  openinganglennproj2D->SetTitle("openinganglennproj2D");
+  openinganglessproj2D->SetTitle("openinganglessproj2D");
+  openinganglerproj2D->SetTitle("openinganglerproj2D");
+  openingangleosproj2D->SetTitle("openingangleosproj2D");
+  if(openinganglegammaproj2D) openinganglegammaproj2D->SetTitle("openinganglegammaproj2D");
+  if(openinganglepi0proj2D) openinganglepi0proj2D->SetTitle("openinganglepi0proj2D");
+  if(openingangleCproj2D) openingangleCproj2D->SetTitle("openingangleCproj2D");
+  if(openingangleBproj2D) openingangleBproj2D->SetTitle("openingangleBproj2D");
+  if(openingangleetaproj2D) openingangleetaproj2D->SetTitle("openingangleetaproj2D");
+  if(openingangleSplittedTrackssproj2D) openingangleSplittedTrackssproj2D->SetTitle("openingangleSplittedTrackssproj2D");
+  if(openingangleSplittedTrackosproj2D) openingangleSplittedTrackosproj2D->SetTitle("openingangleSplittedTrackosproj2D");  
+
   openingangleppproj->SetStats(0);
   openinganglennproj->SetStats(0);
   openinganglessproj->SetStats(0);
@@ -1274,19 +1903,6 @@ void AliHFEelecbackground::Plot() const
   if(openingangleetaproj) openingangleetaproj->SetStats(0);
   if(openingangleSplittedTrackssproj) openingangleSplittedTrackssproj->SetStats(0);
   if(openingangleSplittedTrackosproj) openingangleSplittedTrackosproj->SetStats(0);
-  
-  invmassppproj->SetStats(0);
-  invmassnnproj->SetStats(0);
-  invmassssproj->SetStats(0);
-  invmassrproj->SetStats(0);
-  invmassosproj->SetStats(0);
-  if(invmassgammaproj) invmassgammaproj->SetStats(0);
-  if(invmasspi0proj) invmasspi0proj->SetStats(0);
-  if(invmassCproj) invmassCproj->SetStats(0);
-  if(invmassBproj) invmassBproj->SetStats(0);
-  if(invmassetaproj) invmassetaproj->SetStats(0);
-  if(invmassSplittedTrackssproj) invmassSplittedTrackssproj->SetStats(0);
-  if(invmassSplittedTrackosproj) invmassSplittedTrackosproj->SetStats(0);
 
   openingangleppproj->SetTitle("");
   openinganglennproj->SetTitle("");
@@ -1301,6 +1917,77 @@ void AliHFEelecbackground::Plot() const
   if(openingangleSplittedTrackssproj) openingangleSplittedTrackssproj->SetTitle("");
   if(openingangleSplittedTrackosproj) openingangleSplittedTrackosproj->SetTitle("");
 
+  ////////////////////////////
+  // Invariant mass
+  ///////////////////////////
+
+  // Cuts on the opening angle
+  TAxis *axisOpeningAngleData = hsSparseData->GetAxis(2);
+  Int_t binCutData = axisOpeningAngleData->FindBin(fOpeningAngleCut);
+  hsSparseData->GetAxis(2)->SetRange(1,binCutData);
+  
+  // Debug
+  //printf("Get Bin low edge %f, Get Bin Up edge %f for hsSparseData\n",axisOpeningAngleData->GetBinLowEdge(binCutData),axisOpeningAngleData->GetBinUpEdge(binCutData));
+
+  // Invariant mass
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kPp+1);  
+  TH1D *invmassppproj = hsSparseData->Projection(3);
+  hsSparseData->GetAxis(4)->SetRange(kNn+1,kNn+1);  
+  TH1D *invmassnnproj = hsSparseData->Projection(3);
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kNn+1);  
+  TH1D *invmassssproj = hsSparseData->Projection(3);
+  hsSparseData->GetAxis(4)->SetRange(kR+1,kR+1);  
+  TH1D *invmassrproj  = hsSparseData->Projection(3);
+  hsSparseData->GetAxis(4)->SetRange(kOs+1,kOs+1);  
+  TH1D *invmassosproj = hsSparseData->Projection(3);
+  hsSparseData->GetAxis(4)->SetRange(1,hsSparseData->GetAxis(4)->GetNbins()); 
+
+  TH1D *invmassgammaproj = 0x0;
+  TH1D *invmasspi0proj = 0x0;
+  TH1D *invmassCproj = 0x0;
+  TH1D *invmassBproj = 0x0;
+  TH1D *invmassetaproj = 0x0;
+  TH1D *invmassSplittedTrackssproj = 0x0;
+  TH1D *invmassSplittedTrackosproj = 0x0;
+  if(hsSparseMC) {
+    TAxis *axisOpeningAngleMC = hsSparseMC->GetAxis(2);
+    Int_t binCutMC = axisOpeningAngleMC->FindBin(fOpeningAngleCut);
+    hsSparseMC->GetAxis(2)->SetRange(1,binCutMC);
+    
+    // Debug
+    //printf("Get Bin low edge %f, Get Bin Up edge %f for hsSparseMC\n",axisOpeningAngleMC->GetBinLowEdge(binCutMC),axisOpeningAngleMC->GetBinUpEdge(binCutMC));
+    
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromGamma+1,kElectronFromGamma+1);  
+    invmassgammaproj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromPi0+1,kElectronFromPi0+1);  
+    invmasspi0proj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromEta+1,kElectronFromEta+1);  
+    invmassetaproj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromC+1,kElectronFromC+1);  
+    invmassCproj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromB+1,kElectronFromB+1);  
+    invmassBproj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(4)->SetRange(1,hsSparseMC->GetAxis(4)->GetNbins()); 
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedSs+1,kSplittedSs+1);  
+    invmassSplittedTrackssproj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedOs+1,kSplittedOs+1);  
+    invmassSplittedTrackosproj = hsSparseMC->Projection(3);
+    hsSparseMC->GetAxis(5)->SetRange(1,hsSparseMC->GetAxis(5)->GetNbins());
+  }
+  
+  invmassppproj->SetStats(0);
+  invmassnnproj->SetStats(0);
+  invmassssproj->SetStats(0);
+  invmassrproj->SetStats(0);
+  invmassosproj->SetStats(0);
+  if(invmassgammaproj) invmassgammaproj->SetStats(0);
+  if(invmasspi0proj) invmasspi0proj->SetStats(0);
+  if(invmassCproj) invmassCproj->SetStats(0);
+  if(invmassBproj) invmassBproj->SetStats(0);
+  if(invmassetaproj) invmassetaproj->SetStats(0);
+  if(invmassSplittedTrackssproj) invmassSplittedTrackssproj->SetStats(0);
+  if(invmassSplittedTrackosproj) invmassSplittedTrackosproj->SetStats(0);
+
   invmassppproj->SetTitle("");
   invmassnnproj->SetTitle("");
   invmassssproj->SetTitle("");
@@ -1314,34 +2001,18 @@ void AliHFEelecbackground::Plot() const
   if(invmassSplittedTrackssproj) invmassSplittedTrackssproj->SetTitle("");
   if(invmassSplittedTrackosproj) invmassSplittedTrackosproj->SetTitle("");
 
-  // Projection pttagged variable
-  TH2D *openingangleppproj2D = openinganglepp->Projection(0,2);
-  TH2D *openinganglennproj2D = openinganglenn->Projection(0,2);
-  TH2D *openinganglessproj2D = openingangless->Projection(0,2);
-  TH2D *openinganglerproj2D  = openingangler->Projection(0,2);
-  TH2D *openingangleosproj2D = openingangleos->Projection(0,2);
-
-  TH2D *openinganglegammaproj2D = 0x0;
-  TH2D *openinganglepi0proj2D = 0x0;
-  TH2D *openingangleCproj2D = 0x0;
-  TH2D *openingangleBproj2D = 0x0;
-  TH2D *openingangleetaproj2D = 0x0;
-  TH2D *openingangleSplittedTrackssproj2D = 0x0;
-  TH2D *openingangleSplittedTrackosproj2D = 0x0;
-  if(openinganglegamma) openinganglegammaproj2D = openinganglegamma->Projection(0,2);
-  if(openinganglepi0) openinganglepi0proj2D = openinganglepi0->Projection(0,2);
-  if(openingangleC) openingangleCproj2D = openingangleC->Projection(0,2);
-  if(openingangleB) openingangleBproj2D = openingangleB->Projection(0,2);
-  if(openingangleeta) openingangleetaproj2D = openingangleeta->Projection(0,2);
-  if(openingangleSplittedTrackss) openingangleSplittedTrackssproj2D = openingangleSplittedTrackss->Projection(0,2);
-  if(openingangleSplittedTrackos) openingangleSplittedTrackosproj2D = openingangleSplittedTrackos->Projection(0,2);
-
-
-  TH2D *invmassppproj2D = invmasspp->Projection(0,2);
-  TH2D *invmassnnproj2D = invmassnn->Projection(0,2);
-  TH2D *invmassssproj2D = invmassss->Projection(0,2);
-  TH2D *invmassrproj2D  = invmassr->Projection(0,2);
-  TH2D *invmassosproj2D = invmassos->Projection(0,2);
+  // Projection pt-invariant mass angle
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kPp+1); 
+  TH2D *invmassppproj2D = hsSparseData->Projection(0,3);
+  hsSparseData->GetAxis(4)->SetRange(kNn+1,kNn+1); 
+  TH2D *invmassnnproj2D = hsSparseData->Projection(0,3);
+  hsSparseData->GetAxis(4)->SetRange(kPp+1,kNn+1); 
+  TH2D *invmassssproj2D = hsSparseData->Projection(0,3);
+  hsSparseData->GetAxis(4)->SetRange(kR+1,kR+1); 
+  TH2D *invmassrproj2D  = hsSparseData->Projection(0,3);
+  hsSparseData->GetAxis(4)->SetRange(kOs+1,kOs+1); 
+  TH2D *invmassosproj2D = hsSparseData->Projection(0,3);
+  hsSparseData->GetAxis(4)->SetRange(1,hsSparseData->GetAxis(4)->GetNbins()); 
 
   TH2D *invmassgammaproj2D = 0x0;
   TH2D *invmasspi0proj2D = 0x0;
@@ -1350,26 +2021,25 @@ void AliHFEelecbackground::Plot() const
   TH2D *invmassetaproj2D = 0x0;
   TH2D *invmassSplittedTrackssproj2D = 0x0;
   TH2D *invmassSplittedTrackosproj2D = 0x0;
-  if(invmassgamma) invmassgammaproj2D = invmassgamma->Projection(0,2);
-  if(invmasspi0) invmasspi0proj2D = invmasspi0->Projection(0,2);
-  if(invmassC) invmassCproj2D = invmassC->Projection(0,2);
-  if(invmassB) invmassBproj2D = invmassB->Projection(0,2);
-  if(invmasseta) invmassetaproj2D = invmasseta->Projection(0,2);
-  if(invmassSplittedTrackss) invmassSplittedTrackssproj2D = invmassSplittedTrackss->Projection(0,2);
-  if(invmassSplittedTrackos) invmassSplittedTrackosproj2D = invmassSplittedTrackos->Projection(0,2);
-  
-  openingangleppproj2D->SetStats(0);
-  openinganglennproj2D->SetStats(0);
-  openinganglessproj2D->SetStats(0);
-  openinganglerproj2D->SetStats(0);
-  openingangleosproj2D->SetStats(0);
-  if(openinganglegammaproj2D) openinganglegammaproj2D->SetStats(0);
-  if(openinganglepi0proj2D) openinganglepi0proj2D->SetStats(0);
-  if(openingangleCproj2D) openingangleCproj2D->SetStats(0);
-  if(openingangleBproj2D) openingangleBproj2D->SetStats(0);
-  if(openingangleetaproj2D) openingangleetaproj2D->SetStats(0);
-  if(openingangleSplittedTrackssproj2D) openingangleSplittedTrackssproj2D->SetStats(0);
-  if(openingangleSplittedTrackosproj2D) openingangleSplittedTrackosproj2D->SetStats(0);
+  if(hsSparseMC) {
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromGamma+1,kElectronFromGamma+1); 
+    invmassgammaproj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromPi0+1,kElectronFromPi0+1); 
+    invmasspi0proj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromEta+1,kElectronFromEta+1); 
+    invmassetaproj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromC+1,kElectronFromC+1); 
+    invmassCproj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(4)->SetRange(kElectronFromB+1,kElectronFromB+1); 
+    invmassBproj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(4)->SetRange(1,hsSparseMC->GetAxis(4)->GetNbins()); 
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedSs+1,kSplittedSs+1); 
+    invmassSplittedTrackssproj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(5)->SetRange(kSplittedOs+1,kSplittedOs+1); 
+    invmassSplittedTrackosproj2D = hsSparseMC->Projection(0,3);
+    hsSparseMC->GetAxis(5)->SetRange(1,hsSparseMC->GetAxis(5)->GetNbins()); 
+  }
+
   
   invmassppproj2D->SetStats(0);
   invmassnnproj2D->SetStats(0);
@@ -1383,20 +2053,7 @@ void AliHFEelecbackground::Plot() const
   if(invmassetaproj2D) invmassetaproj2D->SetStats(0);
   if(invmassSplittedTrackssproj2D) invmassSplittedTrackssproj2D->SetStats(0);
   if(invmassSplittedTrackosproj2D) invmassSplittedTrackosproj2D->SetStats(0);
-
-  openingangleppproj2D->SetTitle("openingangleppproj2D");
-  openinganglennproj2D->SetTitle("openinganglennproj2D");
-  openinganglessproj2D->SetTitle("openinganglessproj2D");
-  openinganglerproj2D->SetTitle("openinganglerproj2D");
-  openingangleosproj2D->SetTitle("openingangleosproj2D");
-  if(openinganglegammaproj2D) openinganglegammaproj2D->SetTitle("openinganglegammaproj2D");
-  if(openinganglepi0proj2D) openinganglepi0proj2D->SetTitle("openinganglepi0proj2D");
-  if(openingangleCproj2D) openingangleCproj2D->SetTitle("openingangleCproj2D");
-  if(openingangleBproj2D) openingangleBproj2D->SetTitle("openingangleBproj2D");
-  if(openingangleetaproj2D) openingangleetaproj2D->SetTitle("openingangleetaproj2D");
-  if(openingangleSplittedTrackssproj2D) openingangleSplittedTrackssproj2D->SetTitle("openingangleSplittedTrackssproj2D");
-  if(openingangleSplittedTrackosproj2D) openingangleSplittedTrackosproj2D->SetTitle("openingangleSplittedTrackosproj2D");
-
+  
   invmassppproj2D->SetTitle("invmassppproj2D");
   invmassnnproj2D->SetTitle("invmassnnproj2D");
   invmassssproj2D->SetTitle("invmassssproj2D");
@@ -1411,65 +2068,71 @@ void AliHFEelecbackground::Plot() const
   if(invmassSplittedTrackosproj2D) invmassSplittedTrackosproj2D->SetTitle("invmassSplittedTrackosproj2D");
 
 
+  /////////////
+  // Plot 
+  ////////////
+
   // Draw histograms for opening angle
   TCanvas * copeningangle =new TCanvas("openingangle","Openingangle",800,800);
   copeningangle->cd();
-  openingangleppproj->Draw();
-  openinganglennproj->Draw("same");
-  openinganglessproj->Draw("same");
-  openinganglerproj->Draw("same");
+  //openingangleppproj->Draw();
+  //openinganglennproj->Draw("same");
+  openinganglessproj->Draw();
+  //openinganglerproj->Draw("same");
   openingangleosproj->Draw("same");
   if(openinganglegammaproj) openinganglegammaproj->Draw("same");
   if(openinganglepi0proj) openinganglepi0proj->Draw("same");
-  if(openingangleCproj) openingangleCproj->Draw("same");
-  if(openingangleBproj) openingangleBproj->Draw("same");
+  //if(openingangleCproj) openingangleCproj->Draw("same");
+  //if(openingangleBproj) openingangleBproj->Draw("same");
   if(openingangleetaproj) openingangleetaproj->Draw("same");
   if(openingangleSplittedTrackssproj) openingangleSplittedTrackssproj->Draw("same");
   if(openingangleSplittedTrackosproj) openingangleSplittedTrackosproj->Draw("same");
   TLegend *lego = new TLegend(0.4,0.6,0.89,0.89);
-  lego->AddEntry(openingangleppproj,"positive-positive","p");
-  lego->AddEntry(openinganglennproj,"negative-negative","p");
+  //lego->AddEntry(openingangleppproj,"positive-positive","p");
+  //lego->AddEntry(openinganglennproj,"negative-negative","p");
   lego->AddEntry(openinganglessproj,"same-sign","p");
-  lego->AddEntry(openinganglerproj,"rotated","p");
+  //lego->AddEntry(openinganglerproj,"rotated","p");
   lego->AddEntry(openingangleosproj,"positive-negative","p");
   if(openinganglegammaproj) lego->AddEntry(openinganglegammaproj,"e^{+}e^{-} from #gamma","p");
   if(openinganglepi0proj) lego->AddEntry(openinganglepi0proj,"e^{+}e^{-} from #pi^{0}","p");
-  if(openingangleCproj) lego->AddEntry(openingangleCproj,"e^{+}e^{-} from c","p");
-  if(openingangleBproj) lego->AddEntry(openingangleBproj,"e^{+}e^{-} from b","p");
+  //if(openingangleCproj) lego->AddEntry(openingangleCproj,"e^{+}e^{-} from c","p");
+  //if(openingangleBproj) lego->AddEntry(openingangleBproj,"e^{+}e^{-} from b","p");
   if(openingangleetaproj) lego->AddEntry(openingangleetaproj,"e^{+}e^{-} from #eta","p");
   if(openingangleSplittedTrackssproj) lego->AddEntry(openingangleSplittedTrackssproj,"Splitted tracks same sign","p");
   if(openingangleSplittedTrackosproj) lego->AddEntry(openingangleSplittedTrackosproj,"Splitted tracks opposite sign","p");
   lego->Draw("same");
-
+  
   // Draw histograms for invariant mass
   TCanvas * cinvmass =new TCanvas("invmass","Invmass",800,800);
   cinvmass->cd();
-  invmassppproj->Draw();
-  invmassnnproj->Draw("same");
-  invmassssproj->Draw("same");
-  invmassrproj->Draw("same");
+  //invmassppproj->Draw();
+  //invmassnnproj->Draw("same");
+  invmassssproj->Draw();
+  //invmassrproj->Draw("same");
   invmassosproj->Draw("same");
   if(invmassgammaproj) invmassgammaproj->Draw("same");
   if(invmasspi0proj) invmasspi0proj->Draw("same");
-  if(invmassCproj) invmassCproj->Draw("same");
-  if(invmassBproj) invmassBproj->Draw("same");
+  //if(invmassCproj) invmassCproj->Draw("same");
+  //if(invmassBproj) invmassBproj->Draw("same");
   if(invmassetaproj) invmassetaproj->Draw("same");
   if(invmassSplittedTrackssproj) invmassSplittedTrackssproj->Draw("same");
   if(invmassSplittedTrackosproj) invmassSplittedTrackosproj->Draw("same");
   TLegend *legi = new TLegend(0.4,0.6,0.89,0.89);
-  legi->AddEntry(invmassppproj,"positive-positive","p");
-  legi->AddEntry(invmassnnproj,"negative-negative","p");
+  //legi->AddEntry(invmassppproj,"positive-positive","p");
+  //legi->AddEntry(invmassnnproj,"negative-negative","p");
   legi->AddEntry(invmassssproj,"same-sign","p");
-  legi->AddEntry(invmassrproj,"rotated","p");
+  //legi->AddEntry(invmassrproj,"rotated","p");
   legi->AddEntry(invmassosproj,"positive-negative","p");
   if(invmassgammaproj) legi->AddEntry(invmassgammaproj,"e^{+}e^{-} from #gamma","p");
   if(invmasspi0proj) legi->AddEntry(invmasspi0proj,"e^{+}e^{-} from #pi^{0}","p");
-  if(invmassCproj) legi->AddEntry(invmassCproj,"e^{+}e^{-} from c","p");
-  if(invmassBproj) legi->AddEntry(invmassBproj,"e^{+}e^{-} from b","p");
+  //if(invmassCproj) legi->AddEntry(invmassCproj,"e^{+}e^{-} from c","p");
+  //if(invmassBproj) legi->AddEntry(invmassBproj,"e^{+}e^{-} from b","p");
   if(invmassetaproj) legi->AddEntry(invmassetaproj,"e^{+}e^{-} from #eta","p");
   if(invmassSplittedTrackssproj) legi->AddEntry(invmassSplittedTrackssproj,"Splitted tracks same sign","p");
   if(invmassSplittedTrackosproj) legi->AddEntry(invmassSplittedTrackosproj,"Splitted tracks opposite sign","p");
   legi->Draw("same");
+
+  
 
   // Draw histograms for opening angle 2D
   TCanvas * copeningangle2D =new TCanvas("openingangle2D","Openingangle2D",800,800);
@@ -1526,5 +2189,649 @@ void AliHFEelecbackground::Plot() const
   if(invmassSplittedTrackssproj2D) invmassSplittedTrackssproj2D->Draw("lego");
   cinvmass2D->cd(12);
   if(invmassSplittedTrackosproj2D) invmassSplittedTrackosproj2D->Draw("lego");
+
+
+  ////////////////////////
+  // Cut efficiencies
+  ////////////////////////
+
+  THnSparseF *hsSparseMCe = dynamic_cast<THnSparseF *>(fList->FindObject("CutPassedMC"));
+  
+  if(hsSparseMCe) {
+
+    // init histos
+    TAxis *axissources = hsSparseMCe->GetAxis(2);
+    Int_t  nbsources = axissources->GetNbins(); 
+    TAxis *axiscuts = hsSparseMCe->GetAxis(1);
+    Int_t  nbcuts = axiscuts->GetNbins(); 
+    TH1D **histopassedcuts = new TH1D*[nbsources*nbcuts];  
+    Double_t *nbEntriesCuts = new Double_t[nbsources*nbcuts]; 
+
+    //printf("Number of cuts %d\n",nbcuts);
+
+    // canvas
+    TCanvas * chsSparseMCeeff =new TCanvas("hsSparseMCeeffDebug","hsSparseMCeeffDebug",800,800);
+    chsSparseMCeeff->Divide(3,1);
  
+    // histos
+    for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
+      hsSparseMCe->GetAxis(2)->SetRange(sourceid+1,sourceid+1);  
+      for(Int_t cut = 0; cut < nbcuts; cut++){
+	hsSparseMCe->GetAxis(1)->SetRange(cut+1,cut+1); 
+	histopassedcuts[sourceid*nbcuts+cut] = hsSparseMCe->Projection(0);
+     	hsSparseMCe->GetAxis(1)->SetRange(1,hsSparseMCe->GetAxis(1)->GetNbins()); 
+      }
+      hsSparseMCe->GetAxis(2)->SetRange(1,hsSparseMCe->GetAxis(2)->GetNbins());  
+    }
+
+    // calcul efficiencies
+    ///////////////////////
+    // histos
+    for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
+      // Next is compared to the partner tracked
+      for(Int_t cut = 2; cut < nbcuts; cut++){
+	nbEntriesCuts[sourceid*nbcuts+cut] = histopassedcuts[sourceid*nbcuts+cut]->GetEntries();
+	if(histopassedcuts[sourceid*nbcuts+1]->GetEntries() > 0.0) histopassedcuts[sourceid*nbcuts+cut]->Divide(histopassedcuts[sourceid*nbcuts+1]);
+      }
+      // First one is if the partner is tracked.
+      nbEntriesCuts[sourceid*nbcuts+1] = histopassedcuts[sourceid*nbcuts+1]->GetEntries();
+      if(histopassedcuts[sourceid*nbcuts]->GetEntries() > 0.0) histopassedcuts[sourceid*nbcuts+1]->Divide(histopassedcuts[sourceid*nbcuts]);
+      // First one is input
+      nbEntriesCuts[sourceid*nbcuts] = histopassedcuts[sourceid*nbcuts]->GetEntries();
+    }
+    
+    /////////////
+    // ratios
+    ////////////
+    for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
+      for(Int_t cut = 1; cut < nbcuts; cut++){
+	if(nbEntriesCuts[sourceid*nbcuts] > 0.0) nbEntriesCuts[sourceid*nbcuts+cut] = nbEntriesCuts[sourceid*nbcuts+cut]/nbEntriesCuts[sourceid*nbcuts]; 
+      }
+    }
+    TH1F *ratioHistoEntriesGamma = new TH1F("ratioHistoEntriesGamma","", nbcuts-1, 0.0, nbcuts-1.0);
+    TH1F *ratioHistoEntriesPi0 = new TH1F("ratioHistoEntriesPi0","", nbcuts-1, 0.0, nbcuts-1.0);
+    TH1F *ratioHistoEntriesC = new TH1F("ratioHistoEntriesC","", nbcuts-1, 0.0, nbcuts-1.0);
+    for(Int_t k = 1; k < nbcuts; k++){
+      ratioHistoEntriesGamma->SetBinContent(k,nbEntriesCuts[nbcuts+k]);
+      ratioHistoEntriesPi0->SetBinContent(k,nbEntriesCuts[2*nbcuts+k]);
+      ratioHistoEntriesC->SetBinContent(k,nbEntriesCuts[4*nbcuts+k]);
+    }     
+    //
+    TAxis *xAxisGamma = ratioHistoEntriesGamma->GetXaxis();
+    xAxisGamma->SetBinLabel(1,"Partner tracked");
+    xAxisGamma->SetBinLabel(2,"Opposite sign");
+    xAxisGamma->SetBinLabel(3,"Single Track Cut");
+    xAxisGamma->SetBinLabel(4,"Shared Clusters");
+    xAxisGamma->SetBinLabel(5,"PID");
+    xAxisGamma->SetBinLabel(6,"DCA");
+    xAxisGamma->SetBinLabel(7,"Chi^{2}/Ndf");
+    xAxisGamma->SetBinLabel(8,"Opening angle");
+    xAxisGamma->SetBinLabel(9,"Invariant mass");
+    //
+    TAxis *xAxisPi0 = ratioHistoEntriesPi0->GetXaxis();
+    xAxisPi0->SetBinLabel(1,"Partner tracked");
+    xAxisPi0->SetBinLabel(2,"Opposite sign");
+    xAxisPi0->SetBinLabel(3,"Single Track Cut");
+    xAxisPi0->SetBinLabel(4,"Shared Clusters");
+    xAxisPi0->SetBinLabel(5,"PID");
+    xAxisPi0->SetBinLabel(6,"DCA");
+    xAxisPi0->SetBinLabel(7,"Chi^{2}/Ndf");
+    xAxisPi0->SetBinLabel(8,"Opening angle");
+    xAxisPi0->SetBinLabel(9,"Invariant mass");
+    //
+    TAxis *xAxisC = ratioHistoEntriesC->GetXaxis();
+    xAxisC->SetBinLabel(1,"Partner tracked");
+    xAxisC->SetBinLabel(2,"Opposite sign");
+    xAxisC->SetBinLabel(3,"Single Track Cut");
+    xAxisC->SetBinLabel(4,"Shared Clusters");
+    xAxisC->SetBinLabel(5,"PID");
+    xAxisC->SetBinLabel(6,"DCA");
+    xAxisC->SetBinLabel(7,"Chi^{2}/Ndf");
+    xAxisC->SetBinLabel(8,"Opening angle");
+    xAxisC->SetBinLabel(9,"Invariant mass");
+    //
+    TCanvas * cRatioHistoEntries =new TCanvas("cRatioHistoEntries","cRatioHistoEntries",800,800);
+    cRatioHistoEntries->cd(1);
+    ratioHistoEntriesGamma->SetStats(0);
+    ratioHistoEntriesGamma->Draw();
+    ratioHistoEntriesPi0->SetStats(0);
+    ratioHistoEntriesPi0->Draw("same");
+    ratioHistoEntriesC->SetStats(0);
+    //ratioHistoEntriesC->Draw("same");
+    TLegend *legEntries = new TLegend(0.4,0.6,0.89,0.89);
+    legEntries->AddEntry(ratioHistoEntriesGamma,"#gamma","l");
+    legEntries->AddEntry(ratioHistoEntriesPi0,"#pi^{0}","l");
+    //legEntries->AddEntry(ratioHistoEntriesC,"c","p");
+    legEntries->Draw("same"); 
+
+    ////////////////////
+    // plot Debug
+    ///////////////////
+    Int_t source = 1;
+    chsSparseMCeeff->cd(1);
+    histopassedcuts[source*nbcuts+0]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+1]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+2]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+3]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+4]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+5]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+6]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+7]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+8]->SetTitle("#gamma");
+    histopassedcuts[source*nbcuts+9]->SetTitle("#gamma");
+    //histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+1]->SetStats(0);
+    histopassedcuts[source*nbcuts+2]->SetStats(0);
+    histopassedcuts[source*nbcuts+3]->SetStats(0);
+    histopassedcuts[source*nbcuts+4]->SetStats(0);
+    histopassedcuts[source*nbcuts+5]->SetStats(0);
+    histopassedcuts[source*nbcuts+6]->SetStats(0);
+    histopassedcuts[source*nbcuts+7]->SetStats(0);
+    histopassedcuts[source*nbcuts+8]->SetStats(0);
+    histopassedcuts[source*nbcuts+9]->SetStats(0);
+    //histopassedcuts[source*nbcuts+0]->Draw();
+    //histopassedcuts[source*nbcuts+1]->Draw("");
+    histopassedcuts[source*nbcuts+2]->Draw();
+    histopassedcuts[source*nbcuts+3]->Draw("same");
+    //histopassedcuts[source*nbcuts+4]->Draw("same");
+    histopassedcuts[source*nbcuts+5]->Draw("same");
+    histopassedcuts[source*nbcuts+6]->Draw("same");
+    //histopassedcuts[source*nbcuts+7]->Draw("same");
+    histopassedcuts[source*nbcuts+8]->Draw("same");
+    histopassedcuts[source*nbcuts+9]->Draw("same");
+    TLegend *legb = new TLegend(0.4,0.6,0.89,0.89);
+    //legb->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
+    //legb->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
+    legb->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
+    legb->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
+    //legb->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
+    legb->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
+    legb->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
+    //legb->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
+    legb->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
+    legb->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
+    legb->Draw("same");
+
+    source = 2;
+    chsSparseMCeeff->cd(2);
+    histopassedcuts[source*nbcuts+0]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+1]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+2]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+3]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+4]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+5]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+6]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+7]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+8]->SetTitle("#pi^{0}");
+    histopassedcuts[source*nbcuts+9]->SetTitle("#pi^{0}");
+    //histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+1]->SetStats(0);
+    histopassedcuts[source*nbcuts+2]->SetStats(0);
+    histopassedcuts[source*nbcuts+3]->SetStats(0);
+    histopassedcuts[source*nbcuts+4]->SetStats(0);
+    histopassedcuts[source*nbcuts+5]->SetStats(0);
+    histopassedcuts[source*nbcuts+6]->SetStats(0);
+    histopassedcuts[source*nbcuts+7]->SetStats(0);
+    histopassedcuts[source*nbcuts+8]->SetStats(0);
+    histopassedcuts[source*nbcuts+9]->SetStats(0);
+    //histopassedcuts[source*nbcuts+0]->Draw();
+    //histopassedcuts[source*nbcuts+1]->Draw();
+    histopassedcuts[source*nbcuts+2]->Draw();
+    histopassedcuts[source*nbcuts+3]->Draw("same");
+    //histopassedcuts[source*nbcuts+4]->Draw("same");
+    histopassedcuts[source*nbcuts+5]->Draw("same");
+    histopassedcuts[source*nbcuts+6]->Draw("same");
+    //histopassedcuts[source*nbcuts+7]->Draw("same");
+    histopassedcuts[source*nbcuts+8]->Draw("same");
+    histopassedcuts[source*nbcuts+9]->Draw("same");
+    TLegend *legc = new TLegend(0.4,0.6,0.89,0.89);
+    //legc->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
+    //legc->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
+    legc->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
+    legc->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
+    //legc->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
+    legc->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
+    legc->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
+    //legc->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
+    legc->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
+    legc->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
+    legc->Draw("same");
+
+    source = 4;
+    chsSparseMCeeff->cd(3);
+    histopassedcuts[source*nbcuts+0]->SetTitle("C");
+    histopassedcuts[source*nbcuts+1]->SetTitle("C");
+    histopassedcuts[source*nbcuts+2]->SetTitle("C");
+    histopassedcuts[source*nbcuts+3]->SetTitle("C");
+    histopassedcuts[source*nbcuts+4]->SetTitle("C");
+    histopassedcuts[source*nbcuts+5]->SetTitle("C");
+    histopassedcuts[source*nbcuts+6]->SetTitle("C");
+    histopassedcuts[source*nbcuts+7]->SetTitle("C");
+    histopassedcuts[source*nbcuts+8]->SetTitle("C");
+    histopassedcuts[source*nbcuts+9]->SetTitle("C");
+    //histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+1]->SetStats(0);
+    histopassedcuts[source*nbcuts+2]->SetStats(0);
+    histopassedcuts[source*nbcuts+3]->SetStats(0);
+    histopassedcuts[source*nbcuts+4]->SetStats(0);
+    histopassedcuts[source*nbcuts+5]->SetStats(0);
+    histopassedcuts[source*nbcuts+6]->SetStats(0);
+    histopassedcuts[source*nbcuts+7]->SetStats(0);
+    histopassedcuts[source*nbcuts+8]->SetStats(0);
+    histopassedcuts[source*nbcuts+9]->SetStats(0);
+    //histopassedcuts[source*nbcuts+0]->Draw();
+    //histopassedcuts[source*nbcuts+1]->Draw();
+    histopassedcuts[source*nbcuts+2]->Draw();
+    histopassedcuts[source*nbcuts+3]->Draw("same");
+    //histopassedcuts[source*nbcuts+4]->Draw("same");
+    histopassedcuts[source*nbcuts+5]->Draw("same");
+    histopassedcuts[source*nbcuts+6]->Draw("same");
+    //histopassedcuts[source*nbcuts+7]->Draw("same");
+    histopassedcuts[source*nbcuts+8]->Draw("same");
+    histopassedcuts[source*nbcuts+9]->Draw("same");
+    TLegend *lege = new TLegend(0.4,0.6,0.89,0.89);
+    //lege->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
+    //lege->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
+    lege->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
+    lege->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
+    //lege->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
+    lege->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
+    lege->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
+    //lege->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
+    lege->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
+    lege->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
+    lege->Draw("same");
+
+    //////////////////////
+    // Input
+    //////////////////////
+
+    TCanvas * chsSparseMCein =new TCanvas("hsSparseMCeinput","hsSparseMCeinput",800,800);
+    chsSparseMCein->cd(1);
+    Double_t nbGamma = 0.0;
+    source = 1;
+    nbGamma = histopassedcuts[source*nbcuts+0]->GetEntries();
+    histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+0]->Draw();
+    TLegend *leginput = new TLegend(0.4,0.6,0.89,0.89);
+    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#gamma","p");
+    Double_t nbPi0 = 0.0;
+    source = 2;
+    nbPi0 = histopassedcuts[source*nbcuts+0]->GetEntries();
+    histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+0]->Draw("same");
+    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#pi^{0}","p");
+    Double_t nbEta = 0.0;
+    source = 3;
+    nbEta = histopassedcuts[source*nbcuts+0]->GetEntries();
+    histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+0]->Draw("same");
+    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#eta","p");
+    Double_t nbC = 0.0;
+    source = 4;
+    nbC = histopassedcuts[source*nbcuts+0]->GetEntries();
+    histopassedcuts[source*nbcuts+0]->SetStats(0);
+    histopassedcuts[source*nbcuts+0]->Draw("same");
+    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"c","p");
+    leginput->Draw("same");
+
+    //printf("Gamma %f, pi^{0} %f and #eta %f, c %f\n",nbGamma,nbPi0,nbEta,nbC);
+
+    //////////////////////
+    // Tracked
+    //////////////////////
+
+    TCanvas * cTracked = new TCanvas("cTracked","cTracked",800,800);
+    cTracked->cd(1);
+    source = 1;
+    histopassedcuts[source*nbcuts+1]->Draw();
+    TLegend *legTracked = new TLegend(0.4,0.6,0.89,0.89);
+    legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#gamma","p");
+    source = 2;
+    histopassedcuts[source*nbcuts+1]->Draw("same");
+    legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#pi^{0}","p");
+    legTracked->Draw("same");
+  
+  }
+
+  /////////////////////////////////////
+  // Data Radius and chi2Ndf if AliKF
+  ////////////////////////////////////
+  
+  TH1F *hDataRadius = dynamic_cast<TH1F *>(fList->FindObject("DataRadius")); 
+  TH1F *hDataChi2Ndf = dynamic_cast<TH1F *>(fList->FindObject("DataChi2Ndf")); 
+
+  if(hDataRadius || hDataChi2Ndf) {
+    TCanvas * cDataRadiusChi2Ndf =new TCanvas("CanvasDataRadiusChi2Ndf","CanvasDataRadiusChi2Ndf",800,800);
+    cDataRadiusChi2Ndf->Divide(2,1);
+    cDataRadiusChi2Ndf->cd(1);
+    if(hDataRadius) hDataRadius->Draw();
+    cDataRadiusChi2Ndf->cd(2);
+    if(hDataChi2Ndf) hDataChi2Ndf->Draw();
+  }
+
+  ///////////////////////
+  // Data DCA
+  //////////////////////
+ 
+  TH1F *hDataDCA = dynamic_cast<TH1F *>(fList->FindObject("DataDCA")); 
+  
+  if(hDataDCA) {
+    TCanvas * cDataDCA =new TCanvas("CanvasDataDCA","CanvasDataDCA",800,800);
+    cDataDCA->cd(1);
+    hDataDCA->Draw();
+  }
+
+  /////////////////////////////////////
+  // MC Radius and chi2Ndf if AliKF
+  ////////////////////////////////////
+  
+  TH2F *hMCRadius = dynamic_cast<TH2F *>(fList->FindObject("MCRadius")); 
+  TH2F *hMCChi2Ndf = dynamic_cast<TH2F *>(fList->FindObject("MCChi2Ndf")); 
+
+  if(hMCRadius || hMCChi2Ndf) {
+    TCanvas * cMCRadiusChi2Ndf =new TCanvas("CanvasMCRadiusChi2Ndf","CanvasMCRadiusChi2Ndf",800,800);
+    cMCRadiusChi2Ndf->Divide(2,1);
+    cMCRadiusChi2Ndf->cd(1);
+    //TH1D *hMCRadiusBackground = hMCRadius->ProjectionX("MCRadiusBackGround",1,1,"e");
+    TH1D *hMCRadiusGamma = hMCRadius->ProjectionX("MCRadiusGamma",2,2,"e");
+    TH1D *hMCRadiusPi0 = hMCRadius->ProjectionX("MCRadiusPi0",3,3,"e");
+    TH1D *hMCRadiusEta = hMCRadius->ProjectionX("MCRadiusEta",4,4,"e");
+    TH1D *hMCRadiusC = hMCRadius->ProjectionX("MCRadiusC",5,5,"e");
+    TH1D *hMCRadiusB = hMCRadius->ProjectionX("MCRadiusB",6,6,"e");
+    //hMCRadiusBackground->Draw();
+    hMCRadiusGamma->Draw();
+    hMCRadiusPi0->Draw("same");
+    hMCRadiusEta->Draw("same");
+    hMCRadiusC->Draw("same");
+    hMCRadiusB->Draw("same");
+    TLegend *legRadius = new TLegend(0.4,0.6,0.89,0.89);
+    //legRadius->AddEntry(hMCRadiusBackground,"Background","p");
+    legRadius->AddEntry(hMCRadiusGamma,"#gamma","p");
+    legRadius->AddEntry(hMCRadiusPi0,"#pi^{0}","p");
+    legRadius->AddEntry(hMCRadiusEta,"#eta","p");
+    legRadius->AddEntry(hMCRadiusC,"c","p");
+    legRadius->AddEntry(hMCRadiusB,"b","p");
+    legRadius->Draw("same");
+    cMCRadiusChi2Ndf->cd(2);
+    //TH1D *hMCChi2NdfBackground = hMCChi2Ndf->ProjectionX("MCChi2NdfBackGround",1,1,"e");
+    TH1D *hMCChi2NdfGamma = hMCChi2Ndf->ProjectionX("MCChi2NdfGamma",2,2,"e");
+    TH1D *hMCChi2NdfPi0 = hMCChi2Ndf->ProjectionX("MCChi2NdfPi0",3,3,"e");
+    TH1D *hMCChi2NdfEta = hMCChi2Ndf->ProjectionX("MCChi2NdfEta",4,4,"e");
+    TH1D *hMCChi2NdfC = hMCChi2Ndf->ProjectionX("MCChi2NdfC",5,5,"e");
+    TH1D *hMCChi2NdfB = hMCChi2Ndf->ProjectionX("MCChi2NdfB",6,6,"e");
+    //hMCChi2NdfBackground->Draw();
+    hMCChi2NdfGamma->Draw();
+    hMCChi2NdfPi0->Draw("same");
+    hMCChi2NdfEta->Draw("same");
+    hMCChi2NdfC->Draw("same");
+    hMCChi2NdfB->Draw("same");
+    TLegend *legChi2Ndf = new TLegend(0.4,0.6,0.89,0.89);
+    //legChi2Ndf->AddEntry(hMCChi2NdfBackground,"Background","p");
+    legChi2Ndf->AddEntry(hMCChi2NdfGamma,"#gamma","p");
+    legChi2Ndf->AddEntry(hMCChi2NdfPi0,"#pi^{0}","p");
+    legChi2Ndf->AddEntry(hMCChi2NdfEta,"#eta","p");
+    legChi2Ndf->AddEntry(hMCChi2NdfC,"c","p");
+    legChi2Ndf->AddEntry(hMCChi2NdfB,"b","p");
+    legChi2Ndf->Draw("same");
+  }
+
+  ///////////////////////
+  // MC DCA
+  //////////////////////
+  
+  TH2F *hMCDCA = dynamic_cast<TH2F *>(fList->FindObject("MCDCA")); 
+  
+  if(hMCDCA) {
+    TCanvas * cMCDCA =new TCanvas("CanvasMCDCA","CanvasMCDCA",800,800);
+    cMCDCA->cd(1);
+    //TH1D *hMCDCABackground = hMCDCA->ProjectionX("MCDCABackGround",1,1,"e");
+    TH1D *hMCDCAGamma = hMCDCA->ProjectionX("MCDCAGamma",2,2,"e");
+    TH1D *hMCDCAPi0 = hMCDCA->ProjectionX("MCDCAPi0",3,3,"e");
+    TH1D *hMCDCAEta = hMCDCA->ProjectionX("MCDCAEta",4,4,"e");
+    TH1D *hMCDCAC = hMCDCA->ProjectionX("MCDCAC",5,5,"e");
+    TH1D *hMCDCAB = hMCDCA->ProjectionX("MCDCAB",6,6,"e");
+    //hMCDCABackground->Draw();
+    hMCDCAGamma->Draw();
+    hMCDCAPi0->Draw("same");
+    hMCDCAEta->Draw("same");
+    hMCDCAC->Draw("same");
+    hMCDCAB->Draw("same");
+    TLegend *legDCA = new TLegend(0.4,0.6,0.89,0.89);
+    //legDCA->AddEntry(hMCDCABackground,"Background","p");
+    legDCA->AddEntry(hMCDCAGamma,"#gamma","p");
+    legDCA->AddEntry(hMCDCAPi0,"#pi^{0}","p");
+    legDCA->AddEntry(hMCDCAEta,"#eta","p");
+    legDCA->AddEntry(hMCDCAC,"c","p");
+    legDCA->AddEntry(hMCDCAB,"b","p");
+    legDCA->Draw("same");
+  }
+
+
+  /////////////////////////
+  // PID Partner Signal
+  /////////////////////////
+  TF1 *betheBlochElectron = 0x0;
+  TF1 *betheBlochMuon = 0x0;
+  TF1 *betheBlochPion = 0x0;
+  TF1 *betheBlochKaon = 0x0;
+  TF1 *betheBlochProton = 0x0;
+
+  TH2F *hsignalPidPartner0 = dynamic_cast<TH2F *>(fList->FindObject("TPCPartner0")); 
+  TH2F *hsignalPidPartner1 = dynamic_cast<TH2F *>(fList->FindObject("TPCPartner1"));
+  if((!hsignalPidPartner0) && (!hsignalPidPartner1)) {
+    hsignalPidPartner0 = dynamic_cast<TH2F *>(fList->FindObject("ITSPartner0")); 
+    hsignalPidPartner1 = dynamic_cast<TH2F *>(fList->FindObject("ITSPartner1"));
+    
+    betheBlochElectron = new TF1("betheBlochElectron",BetheBlochElectronITS,0.1,10.0,0);
+    betheBlochMuon = new TF1("betheBlochMuon",BetheBlochMuonITS,0.1,10.0,0);
+    betheBlochPion = new TF1("betheBlochPion",BetheBlochPionITS,0.1,10.0,0);
+    betheBlochKaon = new TF1("betheBlochKaon",BetheBlochKaonITS,0.1,10.0,0);
+    betheBlochProton = new TF1("betheBlochProton",BetheBlochProtonITS,0.1,10.0,0);
+
+  }
+  else {
+
+    betheBlochElectron = new TF1("betheBlochElectron",BetheBlochElectronTPC,0.1,10.0,0);
+    betheBlochMuon = new TF1("betheBlochMuon",BetheBlochMuonTPC,0.1,10.0,0);
+    betheBlochPion = new TF1("betheBlochPion",BetheBlochPionTPC,0.1,10.0,0);
+    betheBlochKaon = new TF1("betheBlochKaon",BetheBlochKaonTPC,0.1,10.0,0);
+    betheBlochProton = new TF1("betheBlochProton",BetheBlochProtonTPC,0.1,10.0,0);
+
+  }
+
+
+  if((hsignalPidPartner0) || (hsignalPidPartner1)) {
+    TCanvas * cPidSignal =new TCanvas("cPidSignal","cPidSignal",800,800);
+    cPidSignal->Divide(2,1);
+    cPidSignal->cd(1);
+    if(hsignalPidPartner0) hsignalPidPartner0->Draw("colz");
+    if(betheBlochElectron) betheBlochElectron->Draw("same");
+    if(betheBlochMuon) betheBlochMuon->Draw("same");
+    if(betheBlochPion) betheBlochPion->Draw("same");
+    if(betheBlochKaon) betheBlochKaon->Draw("same");
+    if(betheBlochProton) betheBlochProton->Draw("same");
+    cPidSignal->cd(2);
+    if(hsignalPidPartner1) hsignalPidPartner1->Draw("colz");
+    if(betheBlochElectron) betheBlochElectron->Draw("same");
+    if(betheBlochMuon) betheBlochMuon->Draw("same");
+    if(betheBlochPion) betheBlochPion->Draw("same");
+    if(betheBlochKaon) betheBlochKaon->Draw("same");
+    if(betheBlochProton) betheBlochProton->Draw("same");
+  }
+  
+  THnSparseF *hsSparseITSsignal = dynamic_cast<THnSparseF *>(fList->FindObject("SparseITSsignal"));
+  if(hsSparseITSsignal) {
+
+   
+    TH2D *sddsdd = hsSparseITSsignal->Projection(1,2);
+    TH2D *ssdssd = hsSparseITSsignal->Projection(3,4);
+    TH2D *sddssda = hsSparseITSsignal->Projection(1,3);    
+    TH2D *sddssdb = hsSparseITSsignal->Projection(2,4);    
+    TH2D *sddssdc = hsSparseITSsignal->Projection(1,4);   
+    TH2D *sddssdd = hsSparseITSsignal->Projection(2,3);    
+
+    TCanvas * cITSSignal =new TCanvas("cITSSignal","cITSSignal",800,800);
+    cITSSignal->Divide(2,3);
+    cITSSignal->cd(1);
+    sddsdd->Draw("colz");
+    cITSSignal->cd(2);
+    ssdssd->Draw("colz");
+    cITSSignal->cd(3);
+    sddssda->Draw("colz");
+    cITSSignal->cd(4);
+    sddssdb->Draw("colz");
+    cITSSignal->cd(5);
+    sddssdc->Draw("colz");
+    cITSSignal->cd(6);
+    sddssdd->Draw("colz");
+  
+  } 
+
+  THnSparseF *hsSparseITSsignalSplit = dynamic_cast<THnSparseF *>(fList->FindObject("SparseITSsignalSplit"));
+  if(hsSparseITSsignalSplit) {
+
+    // no splitted
+    hsSparseITSsignalSplit->GetAxis(0)->SetRange(1,1);
+    
+    TH1D *layerITS2 = hsSparseITSsignalSplit->Projection(1);
+    TH1D *layerITS3 = hsSparseITSsignalSplit->Projection(2);
+    TH1D *layerITS4 = hsSparseITSsignalSplit->Projection(3);
+    TH1D *layerITS5 = hsSparseITSsignalSplit->Projection(4);
+
+    // splitted
+    hsSparseITSsignalSplit->GetAxis(0)->SetRange(2,2);
+    
+    TH1D *layerITS2s = hsSparseITSsignalSplit->Projection(1);
+    TH1D *layerITS3s = hsSparseITSsignalSplit->Projection(2);
+    TH1D *layerITS4s = hsSparseITSsignalSplit->Projection(3);
+    TH1D *layerITS5s = hsSparseITSsignalSplit->Projection(4);
+    
+    TCanvas * cITSSignalSplit =new TCanvas("cITSSignalSplit","cITSSignalSplit",800,800);
+    cITSSignalSplit->Divide(2,2);
+    cITSSignalSplit->cd(1);
+    layerITS2->Draw();
+    layerITS2s->Draw("same");
+    TLegend *legITS2 = new TLegend(0.4,0.6,0.89,0.89);
+    legITS2->AddEntry(layerITS2,"No splitted","p");
+    legITS2->AddEntry(layerITS2s,"Splitted","p");
+    legITS2->Draw("same");
+    cITSSignalSplit->cd(2);
+    layerITS3->Draw();
+    layerITS3s->Draw("same");
+    TLegend *legITS3 = new TLegend(0.4,0.6,0.89,0.89);
+    legITS3->AddEntry(layerITS3,"No splitted","p");
+    legITS3->AddEntry(layerITS3s,"Splitted","p");
+    legITS3->Draw("same");
+    cITSSignalSplit->cd(3);
+    layerITS4->Draw();
+    layerITS4s->Draw("same");
+    TLegend *legITS4 = new TLegend(0.4,0.6,0.89,0.89);
+    legITS4->AddEntry(layerITS4,"No splitted","p");
+    legITS4->AddEntry(layerITS4s,"Splitted","p");
+    legITS4->Draw("same");
+    cITSSignalSplit->cd(4);
+    layerITS5->Draw();
+    layerITS5s->Draw("same");
+    TLegend *legITS5 = new TLegend(0.4,0.6,0.89,0.89);
+    legITS5->AddEntry(layerITS5,"No splitted","p");
+    legITS5->AddEntry(layerITS5s,"Splitted","p");
+    legITS5->Draw("same");
+
+  
+  }  
+
 }
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochElectronITS(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for ITS
+  //
+  static AliITSPIDResponse itsPidResponse;
+  return itsPidResponse.Bethe(x[0],AliPID::ParticleMass(0));
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochMuonITS(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for ITS
+  //
+  static AliITSPIDResponse itsPidResponse;
+  return itsPidResponse.Bethe(x[0],AliPID::ParticleMass(1));
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochPionITS(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for ITS
+  //
+  static AliITSPIDResponse itsPidResponse;
+  return itsPidResponse.Bethe(x[0],AliPID::ParticleMass(2));
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochKaonITS(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for ITS
+  //
+  static AliITSPIDResponse itsPidResponse;
+  return itsPidResponse.Bethe(x[0],AliPID::ParticleMass(3));
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochProtonITS(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for ITS
+  //
+  static AliITSPIDResponse itsPidResponse;
+  return itsPidResponse.Bethe(x[0],AliPID::ParticleMass(4));
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochElectronTPC(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for TPC
+  //
+  static AliTPCPIDResponse tpcPidResponse;
+  return tpcPidResponse.GetExpectedSignal(x[0],AliPID::kElectron);
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochMuonTPC(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for TPC
+  //
+  static AliTPCPIDResponse tpcPidResponse;
+  return tpcPidResponse.GetExpectedSignal(x[0],AliPID::kMuon);
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochPionTPC(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for TPC
+  //
+  static AliTPCPIDResponse tpcPidResponse;
+  return tpcPidResponse.GetExpectedSignal(x[0],AliPID::kPion);
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochKaonTPC(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for TPC
+  //
+  static AliTPCPIDResponse tpcPidResponse;
+  return tpcPidResponse.GetExpectedSignal(x[0],AliPID::kKaon);
+}
+//_____________________________________________________________________________
+Double_t AliHFEelecbackground::BetheBlochProtonTPC(const Double_t *x, const Double_t * /*par*/) 
+{
+  //
+  // Bethe Bloch for TPC
+  //
+  static AliTPCPIDResponse tpcPidResponse;
+  return tpcPidResponse.GetExpectedSignal(x[0],AliPID::kProton);
+}
+
+
+

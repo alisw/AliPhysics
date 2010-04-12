@@ -30,6 +30,7 @@
 #include <TMath.h>
 
 #include "AliESDtrack.h"
+#include "AliLog.h"
 #include "AliMCParticle.h"
 
 #include "AliHFEextraCuts.h"
@@ -44,8 +45,8 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
   fPixelITS(0),
-  fCheck(kTRUE),
-  fQAlist(0x0),
+  fCheck(kFALSE),
+  fQAlist(0x0) ,
   fDebugLevel(0)
 {
   //
@@ -64,7 +65,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fPixelITS(c.fPixelITS),
   fCheck(c.fCheck),
   fQAlist(0x0),
-  fDebugLevel(c.fDebugLevel)
+  fDebugLevel(0)
 {
   //
   // Copy constructor
@@ -92,7 +93,6 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fPixelITS = c.fPixelITS;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
-
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
     if(IsQAOn()){
       fIsQAOn = kTRUE;
@@ -133,6 +133,7 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   // QA histograms are filled before track selection and for
   // selected tracks after track selection
   //
+  AliDebug(1, "Called");
   ULong64_t survivedCut = 0;	// Bitmap for cuts which are passed by the track, later to be compared with fRequirements
   if(IsQAOn()) FillQAhistosESD(track, kBeforeCuts);
   // Apply cuts
@@ -147,6 +148,8 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   Float_t xloc, zloc;
   track->GetITSModuleIndexInfo(0, det, status1, xloc, zloc);
   track->GetITSModuleIndexInfo(1, det, status2, xloc, zloc);
+  Bool_t statusL0 = CheckITSstatus(status1);
+  Bool_t statusL1 = CheckITSstatus(status2);
   if(TESTBIT(fRequirements, kMinImpactParamR)){
     // cut on min. Impact Parameter in Radial direction
     if(TMath::Abs(impactR) >= fImpactParamCut[0]) SETBIT(survivedCut, kMinImpactParamR);
@@ -169,83 +172,51 @@ Bool_t AliHFEextraCuts::CheckESDCuts(AliESDtrack *track){
   }
   if(TESTBIT(fRequirements, kMinTrackletsTRD)){
     // cut on minimum number of TRD tracklets
-    if(fDebugLevel > 0){
-      printf("Min TRD cut: [%d|%d]\n", fMinTrackletsTRD, trdTracklets);
-    }
+    AliDebug(1, Form("Min TRD cut: [%d|%d]\n", fMinTrackletsTRD, trdTracklets));
     if(trdTracklets >= fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
   }
   if(TESTBIT(fRequirements, kPixelITS)){
     // cut on ITS pixel layers
-    if(fDebugLevel > 0){
-      printf("ITS cluster Map: ");
-      PrintBitMap(itsPixel);
-    }
+    AliDebug(1, "ITS cluster Map: ");
+    //PrintBitMap(itsPixel);
     switch(fPixelITS){
-      case kFirst: 
-	if(!TESTBIT(itsPixel, 0)) {
-	  if(fCheck){
-	    if(!CheckITSstatus(status1)) {
-	      SETBIT(survivedCut, kPixelITS);
-	    }
-	  }
-	}
-	else {
-	  SETBIT(survivedCut, kPixelITS);
-	}
+      case kFirst:
+        AliDebug(2, "First");
+	      if(TESTBIT(itsPixel, 0)) 
+	        SETBIT(survivedCut, kPixelITS);
+        else
+	        if(fCheck && !statusL0)
+	          SETBIT(survivedCut, kPixelITS);
 		    break;
       case kSecond: 
-	if(!TESTBIT(itsPixel, 1)) {
-	  if(fCheck) {
-	    if(!CheckITSstatus(status2)) {
-	      SETBIT(survivedCut, kPixelITS);
-	    }
-	  }
-	}
-	else { 
-	  SETBIT(survivedCut, kPixelITS);
-	}
+        AliDebug(2, "Second");
+	      if(TESTBIT(itsPixel, 1))
+	        SETBIT(survivedCut, kPixelITS);
+        else
+	        if(fCheck && !statusL1)
+	          SETBIT(survivedCut, kPixelITS);
 		    break;
       case kBoth: 
-	if(!(TESTBIT(track->GetITSClusterMap(),0))) {
-	  if(fCheck) {  
-	    if(!CheckITSstatus(status1)) {
-	      if(!(TESTBIT(track->GetITSClusterMap(),1))) {
-		if(!CheckITSstatus(status2)) {
-		  SETBIT(survivedCut, kPixelITS);
-		}
-	      }
-	      else SETBIT(survivedCut, kPixelITS);
-	    }
-	  }
-	}
-	else {
-	  
-	  if(!(TESTBIT(track->GetITSClusterMap(),1))) {
-	    if(fCheck) {
-	      if(!CheckITSstatus(status2)) {
-		SETBIT(survivedCut, kPixelITS);
-	      }
-	    }
-	  }
-	  else SETBIT(survivedCut, kPixelITS);
-	
-	}
-	           break;
+        AliDebug(2, "Both");
+	      if(TESTBIT(itsPixel,0) && TESTBIT(itsPixel,1))
+		      SETBIT(survivedCut, kPixelITS);
+	      else
+          if(fCheck && !(statusL0 && statusL1)) 
+		        SETBIT(survivedCut, kPixelITS);
+	      break;
       case kAny: 
-	if((!TESTBIT(itsPixel, 0)) && (!TESTBIT(itsPixel, 1))){
-	  if(fCheck){
-	    if(!CheckITSstatus(status1) || (!CheckITSstatus(status2))) {
-	      SETBIT(survivedCut, kPixelITS);
-	    }
-	  }
-	}
-	else { 
-	  SETBIT(survivedCut, kPixelITS);
-	}
+        AliDebug(2, "Any");
+	      if(TESTBIT(itsPixel, 0) || TESTBIT(itsPixel, 1))
+	        SETBIT(survivedCut, kPixelITS);
+        else
+	        if(fCheck && !(statusL0 || statusL1))
+	            SETBIT(survivedCut, kPixelITS);
 		    break;
-      default: break;
+      default: 
+        AliDebug(2, "None");
+        break;
     }
-    if(fDebugLevel > 0)printf("Survived Cut: %s\n", TESTBIT(survivedCut, kPixelITS) ? "YES" : "NO");
+    AliDebug(1, Form("Survived Cut: %s\n", TESTBIT(survivedCut, kPixelITS) ? "YES" : "NO"));
   }
   if(fRequirements == survivedCut){
     //

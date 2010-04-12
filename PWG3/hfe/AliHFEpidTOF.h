@@ -35,7 +35,7 @@ class AliHFEpidTOF : public AliHFEpidBase{
   
     void SetTOFnSigma(Short_t nSigma) { fNsigmaTOF = nSigma; };
 
-    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.);  
+    Double_t Likelihood(const AliESDtrack *track, Int_t species, Float_t rsig = 2.); 
  
   protected:
     void Copy(TObject &ref) const;
@@ -58,7 +58,7 @@ class AliHFEpidTOF : public AliHFEpidBase{
   
     AliPID        *fPID;           //! PID Object
     TList         *fQAList;        //! QA histograms
-    AliESDpid     *fESDpid;        //! ESD pid object
+    AliESDpid *fESDpid;            //! ESD pid object
 
     Short_t fNsigmaTOF;            // TOF sigma band
 

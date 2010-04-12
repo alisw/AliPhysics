@@ -25,6 +25,7 @@
 #endif
 
 class AliCFContainer;
+class TH1;
 class TList;
 class AliHFEpostAnalysis : public TObject{
   public:
@@ -39,12 +40,16 @@ class AliHFEpostAnalysis : public TObject{
     void DrawMCSignal2Background();
     void DrawEfficiency();
     void DrawPIDperformance();
+    void DrawCutEfficiency();
   private:
     enum{
       kCFC,
       kPIDperf,
       kSigBackg
     };
+    TH1 *CreateHistoSignalToBackgroundMC(Int_t mode, Int_t charge);
+    TH1 *CreateHistoPIDperformance(Int_t mode, Int_t charge);
+
     TList *fResults;                          // Container for output objects
     UChar_t fAnalysisObjects;                       // S
     AliCFContainer *fEfficiencyContainer;     // Task Results

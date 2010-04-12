@@ -56,6 +56,7 @@ AliHFEpid::AliHFEpid():
   // Default constructor
   //
   memset(fDetectorPID, 0, sizeof(AliHFEpidBase *) * kNdetectorPID);
+  memset(fTPCBetheBlochParameters, 0, sizeof(Double_t) * 5);
 }
 
 //____________________________________________________________
@@ -70,6 +71,7 @@ AliHFEpid::AliHFEpid(const AliHFEpid &c):
   // Copy Constructor
   //
   memset(fDetectorPID, 0, sizeof(AliHFEpidBase *) * kNdetectorPID);
+  memcpy(fTPCBetheBlochParameters, c.fTPCBetheBlochParameters, sizeof(Double_t)*5);
   if(c.fDetectorPID[kMCpid])
     fDetectorPID[kMCpid] = new AliHFEpidMC(*(dynamic_cast<AliHFEpidMC *>(c.fDetectorPID[kMCpid])));
   if(c.fDetectorPID[kTPCpid])
@@ -100,10 +102,13 @@ AliHFEpid& AliHFEpid::operator=(const AliHFEpid &c){
     fDebugLevel = c.fDebugLevel;
   
     memset(fDetectorPID, 0, sizeof(AliHFEpidBase *) * kNdetectorPID);
+    memcpy(fTPCBetheBlochParameters, c.fTPCBetheBlochParameters, sizeof(Double_t)*5);
     if(c.fDetectorPID[kMCpid])
       fDetectorPID[kMCpid] = new AliHFEpidMC(*(dynamic_cast<AliHFEpidMC *>(c.fDetectorPID[kMCpid])));
     if(c.fDetectorPID[kTPCpid])
       fDetectorPID[kTPCpid] = new AliHFEpidTPC(*(dynamic_cast<AliHFEpidTPC *>(c.fDetectorPID[kTPCpid])));
+      if(fTPCBetheBlochParameters[0] > 1e-6)
+        (dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid])->SetBetheBlochParameters(fTPCBetheBlochParameters));
     if(c.fDetectorPID[kTRDpid])
       fDetectorPID[kTRDpid] = new AliHFEpidTRD(*(dynamic_cast<AliHFEpidTRD *>(c.fDetectorPID[kTOFpid])));
     if(c.fDetectorPID[kTOFpid])
@@ -169,6 +174,8 @@ Bool_t AliHFEpid::InitializePID(TString arg){
     if(det->String().CompareTo("TPC") == 0){
       AliInfo("Doing TPC PID");
       fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPC PID");
+      if(fTPCBetheBlochParameters[0] > 1e-6)
+        (dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid])->SetBetheBlochParameters(fTPCBetheBlochParameters));
       SETBIT(fEnabledDetectors, kTPCpid);
     } else if(det->String().CompareTo("TRD") == 0){
       fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRD PID");
@@ -439,7 +446,9 @@ void AliHFEpid::InitStrategy1(){
   // TPC alone, 3-sigma cut
   //
   AliHFEpidTPC *pid = new AliHFEpidTPC("strat1TPCpid");
-  pid->SetTPCnSigma(3);
+  if(fTPCBetheBlochParameters[0] > 1e-6)
+    pid->SetBetheBlochParameters(fTPCBetheBlochParameters);
+  pid->SetTPCnSigma(1);
   Bool_t status = pid->InitializePID();
   if(IsQAOn() && status) pid->SetQAOn(fQAlist);
   if(HasMCData() && status) pid->SetHasMCData();
@@ -452,6 +461,8 @@ void AliHFEpid::InitStrategy2(){
   // TPC alone, symmetric 3 sigma cut and asymmetric sigma cut in the momentum region between 2GeV/c and 10 GeV/c and sigma between -1 and 100
   //
   AliHFEpidTPC *pid = new AliHFEpidTPC("strat2TPCpid");
+  if(fTPCBetheBlochParameters[0] > 1e-6)
+    pid->SetBetheBlochParameters(fTPCBetheBlochParameters);
   pid->SetTPCnSigma(3);
   pid->SetAsymmetricTPCsigmaCut(2., 10., 0., 4.);
   Bool_t status = pid->InitializePID();
@@ -466,6 +477,8 @@ void AliHFEpid::InitStrategy3(){
   // TPC alone, symmetric 3 sigma cut and 2 - -100 sigma pion rejection
   //   
   AliHFEpidTPC *pid = new AliHFEpidTPC("strat3TPCpid");
+  if(fTPCBetheBlochParameters[0] > 1e-6)
+    pid->SetBetheBlochParameters(fTPCBetheBlochParameters);
   pid->SetTPCnSigma(3);
   pid->SetRejectParticle(AliPID::kPion, 0., -100., 10., 1.);
   Bool_t status = pid->InitializePID();
@@ -506,6 +519,8 @@ void AliHFEpid::InitStrategy6(){
   // Combined TPC-TOF PID, combination is discribed in the funtion MakePidTpcTof
   //
   AliHFEpidTPC *tpcpid = new AliHFEpidTPC("strat6TPCpid");
+  if(fTPCBetheBlochParameters[0] > 1e-6)
+    tpcpid->SetBetheBlochParameters(fTPCBetheBlochParameters);
   AliHFEpidTOF *tofpid = new AliHFEpidTOF("strat6TOFpid");
   Bool_t status = tpcpid->InitializePID();
   if(!status)

@@ -92,7 +92,7 @@ Int_t AliHFEpostAnalysis::SetResults(TList *input){
   // Publish the results to the post analysis
   //
   Int_t nFound = 0;
-  fEfficiencyContainer = dynamic_cast<AliCFContainer *>(input->FindObject("container"));
+  fEfficiencyContainer = dynamic_cast<AliCFContainer *>(input->FindObject("trackContainer"));
   if(!fEfficiencyContainer){
     AliError("Efficiency Correction Framework Container not found in the list of outputs");
   } else {
@@ -139,52 +139,85 @@ void AliHFEpostAnalysis::DrawMCSignal2Background(){
   if(!fSignalToBackgroundMC) return;
 
   // First Select everything within the first ITS Layer
-  fSignalToBackgroundMC->GetAxis(4)->SetRange(2,2);
-  // For Signal electrons we project axis 3 to everything > 0
-  fSignalToBackgroundMC->GetAxis(3)->SetRange(2,3);
-  TH1 *hSignal = fSignalToBackgroundMC->Projection(0);
-  hSignal->SetName("hSignal");
-  hSignal->SetTitle("Signal Electrons");
-  // For Background studies project axis 3 to bin 0
-  fSignalToBackgroundMC->GetAxis(3)->SetRange(1,1);
-  TH1 *hBackground = fSignalToBackgroundMC->Projection(0); 
-  hBackground->SetName("hBackground");
-  hBackground->SetTitle("Background Electrons");
-  // For All electrons we undo the projection of axis 3
-  fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetNbins());
-  TH1 *hAll = fSignalToBackgroundMC->Projection(0);
-  hAll->SetName("hAll");
-  hAll->SetTitle("All Electrons");
+  fSignalToBackgroundMC->GetAxis(5)->SetRange(2,2);
+  TH1 *hEff[3], *hSB[3];
+  // Select for different charge
+  hEff[0] = CreateHistoSignalToBackgroundMC(0, 0);
+  hEff[1] = CreateHistoSignalToBackgroundMC(0, 1);
+  hEff[2] = CreateHistoSignalToBackgroundMC(0, 2);
+
+  hSB[0] = CreateHistoSignalToBackgroundMC(1, 0);
+  hSB[1] = CreateHistoSignalToBackgroundMC(1, 1);
+  hSB[2] = CreateHistoSignalToBackgroundMC(1, 2);
+ 
+  // Undo projections
+  fSignalToBackgroundMC->GetAxis(5)->SetRange(0, fSignalToBackgroundMC->GetAxis(4)->GetNbins());
+
   // Prepare Canvas
-  TCanvas *cEff = new TCanvas("cEff", "MC Sig/Backg studies", 800, 400);
-  cEff->Divide(2);
-  // Plot Efficiency
-  TH1 *hEff = (TH1 *)hSignal->Clone();
-  hEff->Divide(hAll);
-  hEff->SetName("sigEff");
-  hEff->SetTitle("Signal/(Signal+Background)");
+  TCanvas *cMCSB = new TCanvas("cMCSB", "MC Sig/Backg studies", 800, 400);
+  cMCSB->Divide(2);
+  TLegend *leg;
+  TH1 **sample[2] = {&hEff[0], &hSB[0]};
+  const char *chargename[3] = {"All Charges", "Negative Charge", "Positive Charge"};
+  for(Int_t isample = 0; isample < 2; isample++){
+    leg = new TLegend(0.7, 0.1, 0.89, 0.3);
+    leg->SetBorderSize(1); 
+    leg->SetFillColor(kWhite);
+    cMCSB->cd(isample + 1);
+    for(Int_t icharge = 0; icharge < 3; icharge++){
+      sample[isample][icharge]->Draw(icharge > 0?  "psame" : "p");
+      leg->AddEntry(sample[isample][icharge], chargename[icharge], "p");
+    }
+    leg->Draw();
+    gPad->Update();
+  }
+}
+
+//____________________________________________________________
+TH1 *AliHFEpostAnalysis::CreateHistoSignalToBackgroundMC(Int_t mode, Int_t charge){ 
+  //
+  // Make Efficiency / SB histograms for different charges
+  //
+  TH1 *hNom = NULL, *hDenom = NULL;
+  if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(charge, charge);
+  // For Signal electrons we project axis 4 to everything > 0
+  fSignalToBackgroundMC->GetAxis(4)->SetRange(2,3);
+  hNom = fSignalToBackgroundMC->Projection(0);
+  hNom->SetName("nom");
+  fSignalToBackgroundMC->GetAxis(4)->SetRange(0, fSignalToBackgroundMC->GetAxis(4)->GetLast() + 1);
+  if(mode == 1) fSignalToBackgroundMC->GetAxis(4)->SetRange(1,1);
+  hDenom =  fSignalToBackgroundMC->Projection(0);
+  hDenom->SetName("denom");
+  if(mode == 1)  fSignalToBackgroundMC->GetAxis(4)->SetRange(0, fSignalToBackgroundMC->GetAxis(4)->GetLast() + 1);
+  if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetLast() + 1);
+
+  TH1 *hEff = dynamic_cast<TH1D *>(hNom->Clone());
+  char hname[256];
+  sprintf(hname, mode ? "sigToBack" : "sigEff");
+  char cname[256];
+  Color_t mycolor = kBlack;
+  switch(charge){
+    case 0: mycolor = kBlue; sprintf(cname, "All"); break;
+    case 1: mycolor = kBlack; sprintf(cname, "Neg"); break;
+    case 2: mycolor = kRed; sprintf(cname, "Pos"); break;
+    default: break;
+  }
+  sprintf(hname, "%s%s", hname, cname);
+  hEff->SetName(hname);
+  hEff->SetTitle(mode ? "Signal/Background" : "Signal/(Signal+Background)");
+  hEff->Divide(hDenom);
+
+  // Make nice plots
   hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
   hEff->GetYaxis()->SetTitle("Efficiency");
   hEff->SetStats(kFALSE);
+  hEff->SetLineColor(kBlack);
+  hEff->SetLineWidth(1);
   hEff->SetMarkerStyle(22);
-  hEff->SetMarkerColor(kBlue);
-  cEff->cd(1);
-  hEff->Draw("p");
-  // Plot Signal/Background
-  TH1 *hSB = (TH1 *)hSignal->Clone();
-  hSB->Divide(hBackground);
-  hSB->SetName("sigEff");
-  hSB->SetTitle("Signal/Background");
-  hSB->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  hSB->GetYaxis()->SetTitle("Signal/Background");
-  hSB->SetStats(kFALSE);
-  hSB->SetMarkerStyle(22);
-  hSB->SetMarkerColor(kBlue);
-  cEff->cd(2);
-  hSB->Draw("p");
+  hEff->SetMarkerColor(mycolor);
 
-  // Undo projections
-  fSignalToBackgroundMC->GetAxis(4)->SetRange(0, fSignalToBackgroundMC->GetAxis(4)->GetNbins());
+  delete hNom; delete hDenom;
+  return hEff;
 }
 
 //____________________________________________________________
@@ -227,7 +260,7 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   effSignal->SetStats(kFALSE);
   cEff->cd(2);
   effSignal->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepHFEcutsTRD + 1, AliHFEcuts::kStepMCGenerated);
+  effCalc->CalculateEfficiency(AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack, AliHFEcuts::kStepMCGenerated);
   TH1 *effPIDP = effCalc->Project(0);
   effPIDP->SetName("effPIDP");
   effPIDP->SetTitle("Efficiency of selected tracks");
@@ -240,7 +273,7 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   effPIDP->SetStats(kFALSE);
   cEff->cd(3);
   effPIDP->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepHFEcutsTRD + 1, AliHFEcuts::kStepMCInAcceptance);
+  effCalc->CalculateEfficiency(AliHFEcuts::kStepPID + 2*AliHFEcuts::kNcutStepsESDtrack, AliHFEcuts::kStepMCInAcceptance);
   TH1 *effPIDAcc = effCalc->Project(0);
   effPIDAcc->SetName("effPIDAcc");
   effPIDAcc->SetTitle("Efficiency of selected tracks in acceptance");
@@ -262,112 +295,170 @@ void AliHFEpostAnalysis::DrawPIDperformance(){
   // Plotting Ratio histograms
   // + All electrons / all candidates (Purity for Electrons)
   // + All signal electrons / all electrons (Purity for signals)
-  // For this the following pt-histograms have to be projected from the THnSparse
-  // + All Electron candidates
-  // + All Real electrons
-  // + All Signal Electrons
-  // + All misidentified electrons
-  // Additionally we draw Efficiency histograms:
-  // + Reconstructible Electrons
-  // + Signal Electrons
-  // + Selected Electrons
-  // + Selected Electrons in Acceptance
   //
 
   if(!fPIDperformance) return;
   // Make projection
-  // always project to pt dimension
-  // get the histograms under our control
-  TH1 *allCandidates = NULL, *allElectrons = NULL, *allSignals = NULL, *allFakes = NULL;
-  allCandidates = fPIDperformance->Projection(0);
-  allCandidates->SetName("hAllCandidates");
-  allCandidates->SetTitle("All Candidates");
-  allCandidates->Sumw2();
-  Int_t firstDim3 = fPIDperformance->GetAxis(3)->GetFirst(), lastDim3 = fPIDperformance->GetAxis(3)->GetLast();
-  fPIDperformance->GetAxis(3)->SetRange(firstDim3 + 1, lastDim3);
-  allElectrons = fPIDperformance->Projection(0);
-  allElectrons->Sumw2();
-  allElectrons->SetName("hAllElectrons");
-  allElectrons->SetTitle("All Electrons");
-  Int_t firstDim4 = fPIDperformance->GetAxis(4)->GetFirst(), lastDim4 = fPIDperformance->GetAxis(4)->GetLast();
-  fPIDperformance->GetAxis(4)->SetRange(firstDim4 + 1, lastDim4);
-  allSignals = fPIDperformance->Projection(0);
-  allSignals->Sumw2();
-  allSignals->SetName("hAllSignals");
-  allSignals->SetTitle("All Signal Electrons");
-  fPIDperformance->GetAxis(4)->SetRange(firstDim4, lastDim4);       // Reset 4th axis
-  fPIDperformance->GetAxis(3)->SetRange(firstDim3, firstDim3);  // Select fakes
-  allFakes = fPIDperformance->Projection(0);
-  allFakes->Sumw2();
-  allFakes->SetName("hAllFakes");
-  allFakes->SetTitle("All Fakes");
-  fPIDperformance->GetAxis(3)->SetRange(firstDim3, lastDim3);       // Reset also 3rd axis
+  TH1 *electronPurity[3], *signalPurity[3], *fakeContamination[3];
+  electronPurity[0] = CreateHistoPIDperformance(0, 0);
+  electronPurity[1] = CreateHistoPIDperformance(0, 1);
+  electronPurity[2] = CreateHistoPIDperformance(0, 2);
 
-  // Make Ratios
-  TH1D *electronPurity = dynamic_cast<TH1D *>(allElectrons->Clone());
-  electronPurity->Divide(allCandidates);
-  electronPurity->SetName("electronPurity");
-  electronPurity->SetTitle("Electron Purity");
-  electronPurity->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  electronPurity->GetYaxis()->SetTitle("Purity / %");
-  TH1D *signalPurity = dynamic_cast<TH1D *>(allSignals->Clone());
-  signalPurity->Divide(allElectrons);
-  signalPurity->SetName("signalPurity");
-  signalPurity->SetTitle("Purity of Electrons coming from Heavy flavours");
-  signalPurity->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  signalPurity->GetYaxis()->SetTitle("Purity / %");
-  TH1D *fakeContamination = dynamic_cast<TH1D *>(allFakes->Clone());
-  fakeContamination->Divide(allCandidates);
-  fakeContamination->SetName("fakeContamination");
-  fakeContamination->SetTitle("Contamination of misidentified hadrons");
-  fakeContamination->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  fakeContamination->GetYaxis()->SetTitle("Purity / %");
+  signalPurity[0] = CreateHistoPIDperformance(1, 0);
+  signalPurity[1] = CreateHistoPIDperformance(1, 1);
+  signalPurity[2] = CreateHistoPIDperformance(1, 2);
 
-  // Graphics settings
-  const Int_t nHistos = 7;
-  TH1 *hptr[7] = {allCandidates, allElectrons, allSignals, allFakes, electronPurity, signalPurity, fakeContamination}, *histo;
-  for(Int_t ihist = 0; ihist < nHistos; ihist++){
-    (histo = hptr[ihist])->SetStats(kFALSE);
-    histo->SetLineColor(kBlack);
-    histo->SetMarkerColor(kBlue);
-    histo->SetMarkerStyle(22);
-  }
-
-  // Make percent output
-  electronPurity->Scale(100);
-  signalPurity->Scale(100);
-  fakeContamination->Scale(100);
+  fakeContamination[0] = CreateHistoPIDperformance(2, 0);
+  fakeContamination[1] = CreateHistoPIDperformance(2, 1);
+  fakeContamination[2] = CreateHistoPIDperformance(2, 2);
 
   // Draw output
-  TCanvas *cSpectra = new TCanvas("cSpectra","pt Spectra", 800, 600);
-  cSpectra->Divide(2,2);
   TCanvas *cRatios = new TCanvas("cRatios", "Ratio Plots", 800, 600);
+  const char *chargename[3] = {"All Charges", "Negative Charge", "Positive Charge"};
   cRatios->Divide(2,2);
-  cSpectra->cd(1);
-  gPad->SetLogy();
-  allCandidates->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allCandidates->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allCandidates->Draw("e");
-  cSpectra->cd(2);
-  gPad->SetLogy();
-  allElectrons->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allElectrons->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allElectrons->Draw("e");
-  cSpectra->cd(3);
-  gPad->SetLogy();
-  allSignals->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allSignals->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allSignals->Draw("e");
-  cSpectra->cd(4);
-  gPad->SetLogy();
-  allFakes->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  allFakes->GetYaxis()->SetTitle("dN/dp_{T} 1/GeV/c");
-  allFakes->Draw("e");
-  cRatios->cd(1);
-  electronPurity->Draw("e");
-  cRatios->cd(2);
-  signalPurity->Draw("e");
-  cRatios->cd(3);
-  fakeContamination->Draw("e");
+  TH1 **sample[3] = {&electronPurity[0], &signalPurity[0], &fakeContamination[0]};
+  TLegend *leg;
+  for(Int_t isample = 0; isample < 3; isample++){
+    cRatios->cd(isample + 1);
+    leg = new TLegend(0.7, 0.1, 0.89, 0.3);
+    leg->SetBorderSize(1);
+    leg->SetFillColor(kWhite);
+    for(Int_t icharge = 0; icharge < 3; icharge++){
+      leg->AddEntry(sample[isample][icharge], chargename[icharge], "p");
+      sample[isample][icharge]->Draw(icharge > 0 ? "esame" : "e");
+    }
+    leg->Draw();
+    gPad->Update();
+  }
 }
 
+//____________________________________________________________
+TH1 *AliHFEpostAnalysis::CreateHistoPIDperformance(Int_t mode, Int_t charge){
+  //
+  // Make Histograms for PID performance plots
+  //
+  TH1 *hNom = NULL, *hDenom = NULL;
+  char hname[256], htitle[256], cname[256];
+  Color_t mycolor = kBlack;
+  if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(charge, charge);
+  // Normalisation by all candidates - no restriction in axis 4 - only for mode == 1 
+  if(mode == 1) fPIDperformance->GetAxis(4)->SetRange(2,2);
+  hDenom = fPIDperformance->Projection(0);
+  hDenom->Sumw2();
+  hDenom->SetName("hDenom");
+  if(mode == 1) fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetLast() + 1);
+  // Nominator need a restriction in the 4th axis
+  switch(mode){
+    case 0: // Electron purity
+      fPIDperformance->GetAxis(4)->SetRange(2,3);
+      sprintf(hname, "electronPurity");
+      sprintf(htitle, "Electron Purity");
+      break;
+    case 1: // Signal purity
+      fPIDperformance->GetAxis(4)->SetRange(3,3);   // here signal not divided into charm and beauty
+      sprintf(hname, "signalPurity");
+      sprintf(htitle, "Signal Purity");
+      break;
+    case 2: // Fake contamination
+      fPIDperformance->GetAxis(4)->SetRange(1,1);
+      sprintf(hname, "fakeContamination");
+      sprintf(htitle, "Contamination of misidentified hadrons");
+      break;
+    default: break;
+  }
+  switch(charge){
+    case 0: 
+      sprintf(cname, "All"); 
+      mycolor = kBlue;
+      break;
+    case 1: 
+      sprintf(cname, "Neg"); 
+      mycolor = kBlack;
+      break;
+    case 2: 
+      sprintf(cname, "Pos"); 
+      mycolor = kRed;
+      break;
+  }
+  sprintf(hname, "%s%s", hname, cname);
+  hNom = fPIDperformance->Projection(0);
+  hNom->Sumw2();
+  hNom->SetName("hNom");
+  // Reset axis
+  fPIDperformance->GetAxis(4)->SetRange(0, fPIDperformance->GetAxis(4)->GetLast() + 1);
+  if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetLast() + 1);
+
+  // Create Efficiency histogram
+  TH1 *hEff = dynamic_cast<TH1D *>(hNom->Clone());
+  hEff->SetName(hname);
+  hEff->SetTitle(htitle);
+  hEff->Divide(hDenom);
+  hEff->Scale(100.);
+  hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
+  hEff->GetYaxis()->SetTitle(mode < 2 ? "Purity / %" : "Contamination / %");
+  hEff->GetYaxis()->SetRangeUser(0., 100.);
+  hEff->SetStats(kFALSE);
+  hEff->SetLineColor(kBlack);
+  hEff->SetLineWidth(1);
+  hEff->SetMarkerColor(mycolor);
+  hEff->SetMarkerStyle(22);
+  delete hNom; delete hDenom;
+  return hEff;
+}
+
+//____________________________________________________________
+void AliHFEpostAnalysis::DrawCutEfficiency(){
+  //
+  // Calculate efficiency for each cut step
+  // Starting from MC steps 
+  //
+  TCanvas *output = new TCanvas("effCut", "Cut Step efficiency", 800, 600);
+  output->cd();
+  TLegend *leg = new TLegend(0.6, 0.7, 0.89, 0.89);
+  leg->SetHeader("Cut Step:");
+  leg->SetBorderSize(0);
+  leg->SetFillColor(kWhite);
+  leg->SetFillStyle(0);
+  const char* names[AliHFEcuts::kNcutStepsTrack - 1] = {"Acceptance", "No Cuts", "Rec Tracks" "Rec Kine(TPC/ITS)", "Primary", "HFE ITS", "HFE TRD", "PID", };
+  Color_t color[AliHFEcuts::kNcutStepsTrack - 1] = {kRed, kGreen, kMagenta, kBlack, kOrange, kTeal, kViolet, kBlue};
+  Marker_t marker[AliHFEcuts::kNcutStepsTrack - 1] = {24, 25, 26, 27, 28, 29, 30}; 
+  TH1 *hTemp = NULL;
+  AliCFEffGrid effcalc("cutEfficiency", "Cut step efficiency calculation", *fEfficiencyContainer);
+  // Calculate efficiency for MC Steps
+  effcalc.CalculateEfficiency(AliHFEcuts::kStepMCInAcceptance, AliHFEcuts::kStepMCGenerated);
+  hTemp = effcalc.Project(0);
+  hTemp->SetName("hEff1");
+  hTemp->SetMarkerColor(color[0]);
+  hTemp->SetMarkerStyle(marker[0]);
+  hTemp->GetXaxis()->SetTitle("P / GeV/c");
+  hTemp->GetYaxis()->SetTitle("Efficiency");
+  hTemp->GetYaxis()->SetRangeUser(0., 2.);
+  hTemp->SetStats(kFALSE);
+  hTemp->Draw("ep");
+  leg->AddEntry(hTemp, names[0], "p");
+  effcalc.CalculateEfficiency(AliHFEcuts::kStepRecNoCut + 2*AliHFEcuts::kNcutStepsESDtrack, AliHFEcuts::kStepMCGenerated);
+  hTemp = effcalc.Project(0);
+  hTemp->SetName("hEff2");
+  hTemp->SetMarkerColor(color[1]);
+  hTemp->SetMarkerStyle(marker[1]);
+  hTemp->GetXaxis()->SetTitle("P / GeV/c");
+  hTemp->GetYaxis()->SetTitle("Efficiency");
+  hTemp->GetYaxis()->SetRangeUser(0., 2.);
+  hTemp->SetStats(kFALSE);
+  hTemp->Draw("epsame");
+  leg->AddEntry(hTemp, names[1], "p");
+  for(Int_t istep = AliHFEcuts::kStepRecKineITSTPC; istep <= AliHFEcuts::kStepPID; istep++){
+    effcalc.CalculateEfficiency(istep + 2*AliHFEcuts::kNcutStepsESDtrack, istep-1 + 2*AliHFEcuts::kNcutStepsESDtrack); 
+    hTemp = effcalc.Project(0);
+    hTemp->SetName(Form("hEff%d", istep));
+    hTemp->SetMarkerColor(color[istep-2]);
+    hTemp->SetMarkerStyle(marker[istep-2]);
+    hTemp->SetStats(kFALSE);
+    hTemp->Draw("epsame");
+    hTemp->GetXaxis()->SetTitle("P / GeV/c");
+    hTemp->GetYaxis()->SetTitle("Efficiency");
+    hTemp->GetYaxis()->SetRangeUser(0., 2.);
+    leg->AddEntry(hTemp, names[istep-2], "p");
+  }
+  leg->Draw();
+}

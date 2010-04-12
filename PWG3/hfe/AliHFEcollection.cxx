@@ -26,7 +26,6 @@
 #include <TH2F.h>
 #include <THnSparse.h>
 #include <TProfile.h>
-#include <TList.h>
 #include <TString.h>
 #include <TBrowser.h>
 #include <TMath.h>
@@ -49,14 +48,14 @@ AliHFEcollection::AliHFEcollection():
   // default constructor
   //
 
-  fList = new TList();
+  fList = new THashList();
   if(!fList){
     AliError("Initialization of the list failed");
   }
   else{
     // list is owner of the objects. Once list is deleted, the objects
     // it contains will be deleted too
-    fList->SetOwner(kTRUE);
+    //fList->SetOwner(kTRUE);
   }
   //Printf("%s:%d,%p",(char*)__FILE__,__LINE__,fInstance);
   
@@ -71,14 +70,14 @@ AliHFEcollection::AliHFEcollection(char* name, char* title):
   // constructor
   //
  
-  fList = new TList();
+  fList = new THashList();
   if(!fList){
     AliError("Initialization of the list failed");
   }
   else{
     // list is owner of the objects. Once list is deleted, the objects
     // it contains will be deleted too
-    fList->SetOwner(kTRUE);
+    // fList->SetOwner(kTRUE);
   }
 }
 //___________________________________________________________________
@@ -114,7 +113,10 @@ void AliHFEcollection::Copy(TObject &ref) const {
 
   AliHFEcollection &target = dynamic_cast<AliHFEcollection &>(ref);
 
-  target.fList = fList;          
+  // Clone List Content
+  target.fList = new THashList();          
+  for(Int_t ien = 0; ien < fList->GetEntries(); ien++)
+    target.fList->Add(fList->At(ien)->Clone());
 }
 //___________________________________________________________________
 AliHFEcollection::~AliHFEcollection(){
@@ -122,7 +124,9 @@ AliHFEcollection::~AliHFEcollection(){
   //
   // Destructor
   //
-
+  if(fList)
+    fList->Delete();
+  delete fList;
   AliInfo("DESTRUCTOR");
 }
 //___________________________________________________________________
@@ -283,7 +287,7 @@ TObject* AliHFEcollection::Get(const char* name){
   
 
   if(!CheckObject(name)){
-    AliError(Form("Not possible to return pointer to the object '%s'\n", name));
+    AliWarning(Form("Not possible to return pointer to the object '%s'\n", name));
     return 0;
   }
 
@@ -328,6 +332,10 @@ Bool_t AliHFEcollection::Fill(const char* name, Int_t X, Double_t v){
 }
 //___________________________________________________________________
 Bool_t AliHFEcollection::Fill(const char* name, Int_t X, Int_t Y, Double_t v){
+
+  //
+  // Fill function fir 2 dimensional TH1 arrays
+  //
   
   const char* n = Form("%s_[%d][%d]", name, X, Y);
   TObject *o = Get(n);
@@ -392,8 +400,23 @@ Bool_t AliHFEcollection::CheckObject(const char* name){
   }
   
   if(!fList->FindObject(name)){
-    AliError(Form("Creating or Finding the object '%s' failed\n", name));
+    AliWarning(Form("Creating or Finding the object '%s' failed\n", name));
     return kFALSE;
+  }
+  return kTRUE;
+}
+//___________________________________________________________________
+Bool_t AliHFEcollection::Sumw2(const char* name){
+  //
+  // Set Sumw2 for the given object
+  //
+  if(!CheckObject(name)){
+    return kFALSE;
+  }
+
+  TObject *o = Get(name);
+  if(o->InheritsFrom("THnSparse")){
+    (dynamic_cast<THnSparse*>(o))->Sumw2();
   }
   return kTRUE;
 }
@@ -458,14 +481,24 @@ Long64_t AliHFEcollection::Merge(TCollection *list){
   //
   // Merge the collections
   //
-
-  if(!fList){
-    AliError("AliHFEcollection::Merge : No TList pointer ! ");
+  if(!list)
     return 0;
-  }
-
-  return fList->Merge(list);
+  if(list->IsEmpty())
+    return 1;
   
+  TIterator *iter = list->MakeIterator();
+  TObject *o = NULL;
+  Int_t index = 0;
+  while((o = iter->Next())){
+    AliHFEcollection *coll = dynamic_cast<AliHFEcollection *>(o);
+    if(!coll) continue; 
+    TList templist;       // Create temporary list containing all the lists to merge
+    templist.Add(coll->fList);
+    fList->Merge(&templist);
+    index++;
+  }
+  delete iter;
+  return index + 1;
 }
 //____________________________________________________________________
 void AliHFEcollection::Browse(TBrowser *b)

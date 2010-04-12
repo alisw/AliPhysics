@@ -40,6 +40,7 @@
 #include "AliESDpid.h"
 //#include "AliVParticle.h"
 
+#include "AliHFEcollection.h"
 #include "AliHFEpidTPC.h"
 
 
@@ -107,7 +108,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   target.fRejectionEnabled = fRejectionEnabled;
   target.fPID = new AliPID(*fPID);
   target.fESDpid = new AliESDpid(*fESDpid);
-  target.fQAList = dynamic_cast<TList *>(fQAList->Clone());
+  target.fQAList = new AliHFEcollection(*fQAList);
   memcpy(target.fLineCrossingSigma, fLineCrossingSigma, sizeof(Double_t) * AliPID::kSPECIES);
   memcpy(target.fPAsigCut, fPAsigCut, sizeof(Float_t) * 2);
   memcpy(target.fNAsigmaTPC, fNAsigmaTPC, sizeof(Float_t) * 2);
@@ -123,7 +124,6 @@ AliHFEpidTPC::~AliHFEpidTPC(){
   if(fPID) delete fPID;
   if(fESDpid) delete fESDpid;
   if(fQAList){
-    fQAList->Delete();
     delete fQAList;
   }
 }
@@ -163,8 +163,11 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   //
   //  Doing TPC PID as explained in IsSelected for ESD tracks
   //
-  if(IsQAon()) FillTPChistograms(esdTrack, mctrack);
   Float_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack, AliPID::kElectron);
+  if(IsQAon()){
+    FillTPChistograms(esdTrack, mctrack);
+    fQAList->Fill("fHistSigmaElectronAll",  esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), nsigma);
+  }
   // exclude crossing points:
   // Determine the bethe values for each particle species
   Bool_t isLineCrossing = kFALSE;
@@ -174,7 +177,7 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
     if(TMath::Abs(fESDpid->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
       // Point in a line crossing region, no PID possible, but !PID still possible ;-)
-      isLineCrossing = kTRUE;
+      isLineCrossing = kTRUE;      
       fLineCrossingType = ispecies;
       break;
     }
@@ -196,7 +199,10 @@ Int_t AliHFEpidTPC::MakePIDesd(AliESDtrack *esdTrack, AliMCParticle *mctrack){
   } else {
     if(TMath::Abs(nsigma) < fNsigmaTPC ) pdg = 11;
   }
-  if(IsQAon() && pdg != 0) (dynamic_cast<TH2I *>(fQAList->At(kHistTPCselected)))->Fill(esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), esdTrack->GetTPCsignal());
+  if(IsQAon() && pdg != 0){ 
+    fQAList->Fill("fHistTPCselected", esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), esdTrack->GetTPCsignal());
+    fQAList->Fill("fHistSigmaElectronSelected",  esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P(), nsigma);
+  }
 
   return pdg;
 }
@@ -299,49 +305,49 @@ void AliHFEpidTPC::FillTPChistograms(const AliESDtrack *track, const AliMCPartic
   Double_t p = track->GetInnerParam() ? track->GetInnerParam()->P() : track->P();
   if(HasMCData()){
     switch(TMath::Abs(mctrack->Particle()->GetPdgCode())){
-      case 11:    (dynamic_cast<TH2I *>(fQAList->At(kHistTPCelectron)))->Fill(p, tpcSignal);
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobEl)))->Fill(p, Likelihood(track, 0));
+      case 11:    fQAList->Fill("fHistTPCelectron", p, tpcSignal);
+	                fQAList->Fill("fHistTPCprobEl", p, Likelihood(track, 0));
 	                //histograms with ratio of likelihood to be electron/to be other species (a check for quality of likelihood PID);
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCenhanceElPi)))->Fill(p, -Suppression(track, 2));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCenhanceElMu)))->Fill(p, -Suppression(track, 1));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCenhanceElKa)))->Fill(p, -Suppression(track, 3));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCenhanceElPro)))->Fill(p, -Suppression(track, 4));
+	                fQAList->Fill("fHistTPCenhanceElPi", p, -Suppression(track, 2));
+	                fQAList->Fill("fHistTPCenhanceElMu", p, -Suppression(track, 1));
+	                fQAList->Fill("fHistTPCenhanceElKa", p, -Suppression(track, 3));
+	                fQAList->Fill("fHistTPCenhanceElPro", p, -Suppression(track, 4));
 	                //___________________________________________________________________________________________
 	                //Likelihoods for electrons to be other particle species
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCElprobPi)))->Fill(p, Likelihood(track, 2));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCElprobMu)))->Fill(p, Likelihood(track, 1));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCElprobKa)))->Fill(p, Likelihood(track, 3));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCElprobPro)))->Fill(p, Likelihood(track, 4));
+	                fQAList->Fill("fHistTPCElprobPi", p, Likelihood(track, 2));
+	                fQAList->Fill("fHistTPCElprobMu", p, Likelihood(track, 1));
+	                fQAList->Fill("fHistTPCElprobKa", p, Likelihood(track, 3));
+	                fQAList->Fill("fHistTPCElprobPro", p, Likelihood(track, 4));
 	                break;
 	    //___________________________________________________________________________________________
-      case 13:    (dynamic_cast<TH2I *>(fQAList->At(kHistTPCmuon)))->Fill(p, tpcSignal);
+      case 13:    fQAList->Fill("fHistTPCmuon", p, tpcSignal);
                   //Likelihood of muon to be an electron
-                  (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobMu)))->Fill(p, Likelihood(track, 0));
+                  fQAList->Fill("fHistTPCprobMu", p, Likelihood(track, 0));
                   //ratio of likelihood for muon to be a muon/an electron -> indicator for quality of muon suppression
                   //below functions are the same for other species
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressMu)))->Fill(p, Suppression(track, 1));
+	                fQAList->Fill("fHistTPCsuppressMu", p, Suppression(track, 1));
                   break;
-      case 211:   (dynamic_cast<TH2I *>(fQAList->At(kHistTPCpion)))->Fill(p, tpcSignal);
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobPi)))->Fill(p, Likelihood(track, 0));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressPi)))->Fill(p, Suppression(track, 2));
+      case 211:   fQAList->Fill("fHistTPCpion", p, tpcSignal);
+	                fQAList->Fill("fHistTPCprobPi", p, Likelihood(track, 0));
+	                fQAList->Fill("fHistTPCsuppressPi", p, Suppression(track, 2));
                   break;
-      case 321:   (dynamic_cast<TH2I *>(fQAList->At(kHistTPCkaon)))->Fill(p, tpcSignal);
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobKa)))->Fill(p, Likelihood(track, 0));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressKa)))->Fill(p, Suppression(track, 3));
+      case 321:   fQAList->Fill("fHistTPCkaon", p, tpcSignal);
+	                fQAList->Fill("fHistTPCprobKa", p, Likelihood(track, 0));
+	                fQAList->Fill("fHistTPCsuppressKa", p, Suppression(track, 3));
                   break;
-      case 2212:  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCproton)))->Fill(p, tpcSignal);
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobPro)))->Fill(p, Likelihood(track, 0));
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCsuppressPro)))->Fill(p, Suppression(track, 4));
+      case 2212:  fQAList->Fill("fHistTPCproton", p, tpcSignal);
+	                fQAList->Fill("fHistTPCprobPro", p, Likelihood(track, 0));
+	                fQAList->Fill("fHistTPCsuppressPro", p, Suppression(track, 4));
                   break;
-      default:    (dynamic_cast<TH2I *>(fQAList->At(kHistTPCothers)))->Fill(p, tpcSignal);
-	                (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobOth)))->Fill(p, Likelihood(track, 0));
+      default:    fQAList->Fill("fHistTPCothers", p, tpcSignal);
+	                fQAList->Fill("fHistTPCprobOth", p, Likelihood(track, 0));
 
 	                break;
     }
   }
   //TPC signal and Likelihood to be electron for all tracks (independent of MC information)
-  (dynamic_cast<TH2I *>(fQAList->At(kHistTPCall)))->Fill(p, tpcSignal);
-  (dynamic_cast<TH2F *>(fQAList->At(kHistTPCprobAll)))->Fill(p, Likelihood(track, 0));
+  fQAList->Fill("fHistTPCall", p, tpcSignal);
+  fQAList->Fill("kHistTPCprobAll", p, Likelihood(track, 0));
 }
 
 //___________________________________________________________________
@@ -349,42 +355,50 @@ void AliHFEpidTPC::AddQAhistograms(TList *qaList){
   //
   // Create QA histograms for TPC PID
   //
-  fQAList = new TList;
-  fQAList->SetName("fTPCqaHistos");
+  fQAList = new AliHFEcollection;
 
-  fQAList->AddAt(new TH2I("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 60, 0, 600), kHistTPCelectron); 
-  fQAList->AddAt(new TH2I("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 60, 0, 600), kHistTPCmuon);
-  fQAList->AddAt(new TH2I("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 60, 0, 600), kHistTPCpion);
-  fQAList->AddAt(new TH2I("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 60, 0, 600), kHistTPCkaon);
-  fQAList->AddAt(new TH2I("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 60, 0, 600), kHistTPCproton);
-  fQAList->AddAt(new TH2I("fHistTPCothers","TPC signal for other species", 200, 0, 20, 60, 0, 600), kHistTPCothers);
-  fQAList->AddAt(new TH2I("fHistTPCall","TPC signal for all species", 200, 0, 20, 60, 0, 600), kHistTPCall);
-  fQAList->AddAt(new TH2I("fHistTPCselected","TPC signal for all selected particles", 200, 0, 20, 60, 0, 600), kHistTPCselected);
+  fQAList->CreateTH2F("fHistTPCelectron","TPC signal for Electrons", 200, 0, 20, 60, 0, 600); 
+  fQAList->CreateTH2F("fHistTPCmuon","TPC signal for Muons", 200, 0, 20, 60, 0, 600);
+  fQAList->CreateTH2F("fHistTPCpion","TPC signal for Pions", 200, 0, 20, 60, 0, 600);
+  fQAList->CreateTH2F("fHistTPCkaon","TPC signal for Kaons", 200, 0, 20, 60, 0, 600);
+  fQAList->CreateTH2F("fHistTPCproton","TPC signal for Protons", 200, 0, 20, 60, 0, 600);
+  fQAList->CreateTH2F("fHistTPCothers","TPC signal for other species", 200, 0, 20, 60, 0, 600);
+  fQAList->CreateTH2F("fHistTPCall","TPC signal for all species", 200, 0, 20, 60, 0, 600);
+  fQAList->CreateTH2F("fHistTPCselected","TPC signal for all selected particles", 200, 0, 20, 60, 0, 600);
 
-  fQAList->AddAt(new TH2F("fHistTPCprobEl","TPC likelihood for electrons to be an electron vs. p", 200, 0.,20.,200,0.,1.), kHistTPCprobEl);
-  fQAList->AddAt(new TH2F("fHistTPCprobPi","TPC likelihood for pions to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobPi);
-  fQAList->AddAt(new TH2F("fHistTPCprobMu","TPC likelihood for muons to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobMu);
-  fQAList->AddAt(new TH2F("fHistTPCprobKa","TPC likelihood for kaons to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobKa);
-  fQAList->AddAt(new TH2F("fHistTPCprobPro","TPC likelihood for protons to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobPro);
-  fQAList->AddAt(new TH2F("fHistTPCprobOth","TPC likelihood for other particles to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobOth);
-  fQAList->AddAt(new TH2F("fHistTPCprobAll","TPC likelihood for all particles to be an electron vs. p",  200, 0.,20.,200, 0.,1.), kHistTPCprobAll);
+  fQAList->CreateTH2F("fHistTPCprobEl","TPC likelihood for electrons to be an electron vs. p", 200, 0.,20.,200,0.,1.);
+  fQAList->CreateTH2F("fHistTPCprobPi","TPC likelihood for pions to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
+  fQAList->CreateTH2F("fHistTPCprobMu","TPC likelihood for muons to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
+  fQAList->CreateTH2F("fHistTPCprobKa","TPC likelihood for kaons to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
+  fQAList->CreateTH2F("fHistTPCprobPro","TPC likelihood for protons to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
+  fQAList->CreateTH2F("fHistTPCprobOth","TPC likelihood for other particles to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
+  fQAList->CreateTH2F("fHistTPCprobAll","TPC likelihood for all particles to be an electron vs. p",  200, 0.,20.,200, 0.,1.);
 
+  fQAList->CreateTH2F("fHistTPCsuppressPi","log10 of TPC Likelihood(pion)/Likelihood(elec) for pions vs. p", 200, 0.,20.,200,-1.,5.8);
+  fQAList->CreateTH2F("fHistTPCsuppressMu","log10 of TPC Likelihood(muon)/Likelihood(elec) for muons vs. p", 200, 0.,20.,200,-1.,5.8);
+  fQAList->CreateTH2F("fHistTPCsuppressKa","log10 of TPC Likelihood(kaon)/Likelihood(elec) for kaons vs. p", 200, 0.,20.,200,-1.,5.8);
+  fQAList->CreateTH2F("fHistTPCsuppressPro","log10 of TPC Likelihood(proton)/Likelihood(elec)for protons vs. p", 200, 0.,20.,200,-1.,5.8);
 
- fQAList->AddAt(new TH2F("fHistTPCsuppressPi","log10 of TPC Likelihood(pion)/Likelihood(elec) for pions vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressPi);
- fQAList->AddAt(new TH2F("fHistTPCsuppressMu","log10 of TPC Likelihood(muon)/Likelihood(elec) for muons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressMu);
- fQAList->AddAt(new TH2F("fHistTPCsuppressKa","log10 of TPC Likelihood(kaon)/Likelihood(elec) for kaons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressKa);
- fQAList->AddAt(new TH2F("fHistTPCsuppressPro","log10 of TPC Likelihood(proton)/Likelihood(elec)for protons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressPro);
+  fQAList->CreateTH2F("fHistTPCenhanceElPi","log10 of TPC Likelihood(elec)/Likelihood(pion) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
+  fQAList->CreateTH2F("fHistTPCenhanceElMu","log10 of TPC Likelihood(elec)/Likelihood(muon) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
+  fQAList->CreateTH2F("fHistTPCenhanceElKa","log10 of TPC Likelihood(elec)/Likelihood(kaon) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
+  fQAList->CreateTH2F("fHistTPCenhanceElPro","log10 of TPC Likelihood(elec)/Likelihood(proton) for electrons vs. p", 200, 0.,20.,200,-1.,5.8);
 
- fQAList->AddAt(new TH2F("fHistTPCenhanceElPi","log10 of TPC Likelihood(elec)/Likelihood(pion) for electrons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressPi);
- fQAList->AddAt(new TH2F("fHistTPCenhanceElMu","log10 of TPC Likelihood(elec)/Likelihood(muon) for electrons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressMu);
- fQAList->AddAt(new TH2F("fHistTPCenhanceElKa","log10 of TPC Likelihood(elec)/Likelihood(kaon) for electrons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressKa);
- fQAList->AddAt(new TH2F("fHistTPCenhanceElPro","log10 of TPC Likelihood(elec)/Likelihood(proton) for electrons vs. p", 200, 0.,20.,200,-1.,5.8), kHistTPCsuppressPro);
+  fQAList->CreateTH2F("fHistTPCElprobPi","TPC likelihood for electrons to be a pion vs. p", 200, 0.,20.,200,0.,1.);
+  fQAList->CreateTH2F("fHistTPCElprobMu","TPC likelihood for electrons to be a muon vs. p", 200, 0.,20.,200,0.,1.);
+  fQAList->CreateTH2F("fHistTPCElprobKa","TPC likelihood for electrons to be a kaon vs. p", 200, 0.,20.,200,0.,1.);
+  fQAList->CreateTH2F("fHistTPCElprobPro","TPC likelihood for electrons to be a proton vs. p", 200, 0.,20.,200,0.,1.);
 
- fQAList->AddAt(new TH2F("fHistTPCElprobPi","TPC likelihood for electrons to be a pion vs. p", 200, 0.,20.,200,0.,1.), kHistTPCElprobPi);
- fQAList->AddAt(new TH2F("fHistTPCElprobMu","TPC likelihood for electrons to be a muon vs. p", 200, 0.,20.,200,0.,1.), kHistTPCElprobMu);
- fQAList->AddAt(new TH2F("fHistTPCElprobKa","TPC likelihood for electrons to be a kaon vs. p", 200, 0.,20.,200,0.,1.), kHistTPCElprobKa);
- fQAList->AddAt(new TH2F("fHistTPCElprobPro","TPC likelihood for electrons to be a proton vs. p", 200, 0.,20.,200,0.,1.), kHistTPCElprobPro);
+  fQAList->CreateTH2F("fHistSigmaElectronAll", "TPC NSigma around the Electron Line", 200, 0, 20, 40, -10, 10);
+  fQAList->CreateTH2F("fHistSigmaElectronSelected", "TPC NSigma around the Electron Line for selected Tracks", 200, 0, 20, 40, -10, 10);
 
+  qaList->AddLast(fQAList->GetList());
+}
 
-  qaList->AddLast(fQAList);
+//___________________________________________________________________
+void AliHFEpidTPC::SetBetheBlochParameters(Double_t *pars){
+  //
+  // Set non-default Bethe-Bloch Parameters
+  //
+  fESDpid->GetTPCResponse().SetBetheBlochParameters(pars[0], pars[1], pars[2], pars[3], pars[4]);
 }

@@ -282,3 +282,43 @@ void AliHFEpriVtx::FillNprimVtxContributor() const
         }
 
 }
+
+//_______________________________________________________________________________________________
+Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(AliESDtrack *ESDelectron) 
+{
+        //
+        // return recalculated DCA after removing input track from the primary vertex
+        //
+
+        // get track id of our selected electron
+        Int_t elecTrkID = ESDelectron->GetID();
+
+        AliKFParticle::SetField(fESD1->GetMagneticField());
+        AliKFParticle kfElectron(*ESDelectron,11);
+ 
+        // prepare kfprimary vertex
+        AliKFVertex kfESDprimary;
+
+        // Reconstructed Primary Vertex (with ESD tracks)
+        const AliESDVertex *primvtx = fESD1->GetPrimaryVertex();
+        Int_t n=primvtx->GetNIndices();
+
+        if (n>0 && primvtx->GetStatus()){
+
+                kfESDprimary = AliKFVertex(*primvtx);
+                UShort_t *priIndex = primvtx->GetIndices();
+
+                for (Int_t i=0;i<n;i++){
+
+                        Int_t idx = Int_t(priIndex[i]);
+                        if (idx == elecTrkID){
+                                kfESDprimary -= kfElectron;
+                                Double_t dcaAFrmElec = kfElectron.GetDistanceFromVertexXY(kfESDprimary);
+
+                                return dcaAFrmElec;
+                        }
+                } 
+        }  
+	return -1;
+
+}

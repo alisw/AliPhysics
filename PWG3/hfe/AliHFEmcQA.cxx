@@ -30,6 +30,7 @@
 #include <TH2F.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TList.h>
 #include <TParticle.h>
 
 #include <AliLog.h>
@@ -38,6 +39,7 @@
 #include <AliAODMCParticle.h>
 
 #include "AliHFEmcQA.h"
+#include "AliHFEtools.h"
 
 const Int_t AliHFEmcQA::fgkGluon=21;
 const Int_t AliHFEmcQA::fgkMaxGener=10;
@@ -48,9 +50,10 @@ ClassImp(AliHFEmcQA)
 
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA() : 
-        fStack(0x0) 
-        ,fMCHeader(0x0)
-        ,fMCArray(0x0)
+        fStack(NULL) 
+        ,fMCHeader(NULL)
+        ,fMCArray(NULL)
+        ,fQAhistos(NULL)
         ,fNparents(0) 
 {
         // Default constructor
@@ -60,9 +63,10 @@ AliHFEmcQA::AliHFEmcQA() :
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         TObject(p)
-        ,fStack(0x0) 
-        ,fMCHeader(0x0)
-        ,fMCArray(0x0)
+        ,fStack(NULL) 
+        ,fMCHeader(NULL)
+        ,fMCArray(NULL)
+        ,fQAhistos(p.fQAhistos)
         ,fNparents(p.fNparents) 
 {
         // Copy constructor
@@ -133,6 +137,8 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
      fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
      hname = hnopt+"Eta_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fEta = new TH1F(hname,hname,150,-7.5,7.5);
+     // Fill List
+     if(fQAhistos) fHist[iq][iqType][icut].FillList(fQAhistos);
   }
 
   if (icut == 0){ 
@@ -149,7 +155,7 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   fHistComm[iq][icut].feDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
   hname = hnopt+"DeDistance_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fDeDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
-
+  if(fQAhistos) fHistComm[iq][icut].FillList(fQAhistos);
 }
 
 //__________________________________________
@@ -251,12 +257,12 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
         if (partMother->GetPdgCode() > 0) { // quark
           fHist[iq][kQuark][0].fPdgCode->Fill(partMother->GetPdgCode());
           fHist[iq][kQuark][0].fPt->Fill(partMother->Pt());
-          fHist[iq][kQuark][0].fY->Fill(GetRapidity(partMother));
+          fHist[iq][kQuark][0].fY->Fill(AliHFEtools::GetRapidity(partMother));
           fHist[iq][kQuark][0].fEta->Fill(partMother->Eta());
         } else{ // antiquark
           fHist[iq][kantiQuark][0].fPdgCode->Fill(partMother->GetPdgCode());
           fHist[iq][kantiQuark][0].fPt->Fill(partMother->Pt());
-          fHist[iq][kantiQuark][0].fY->Fill(GetRapidity(partMother));
+          fHist[iq][kantiQuark][0].fY->Fill(AliHFEtools::GetRapidity(partMother));
           fHist[iq][kantiQuark][0].fEta->Fill(partMother->Eta());
         }
 
@@ -431,7 +437,7 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
               // fill hadron kinematics
               fHist[iq][kHadron][0].fPdgCode->Fill(pdgcodeCopy);
               fHist[iq][kHadron][0].fPt->Fill(partCopy->Pt());
-              fHist[iq][kHadron][0].fY->Fill(GetRapidity(partCopy));
+              fHist[iq][kHadron][0].fY->Fill(AliHFEtools::GetRapidity(partCopy));
               fHist[iq][kHadron][0].fEta->Fill(partCopy->Eta());
 
             }
@@ -519,13 +525,13 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
                   // fill electron kinematics
                   fHist[iq][kElectron2nd][icut].fPdgCode->Fill(mcpart->GetPdgCode());
                   fHist[iq][kElectron2nd][icut].fPt->Fill(mcpart->Pt());
-                  fHist[iq][kElectron2nd][icut].fY->Fill(GetRapidity(mcpart));
+                  fHist[iq][kElectron2nd][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
                   fHist[iq][kElectron2nd][icut].fEta->Fill(mcpart->Eta());
 
                   // fill mother hadron kinematics
                   fHist[iq][kDeHadron][icut].fPdgCode->Fill(grandMaPDG); 
                   fHist[iq][kDeHadron][icut].fPt->Fill(grandMa->Pt());
-                  fHist[iq][kDeHadron][icut].fY->Fill(GetRapidity(grandMa));
+                  fHist[iq][kDeHadron][icut].fY->Fill(AliHFEtools::GetRapidity(grandMa));
                   fHist[iq][kDeHadron][icut].fEta->Fill(grandMa->Eta());
                  
                   // ratio between pT of electron and pT of mother B hadron 
@@ -547,13 +553,13 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
               // fill electron kinematics
               fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
               fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
-              fHist[iq][kElectron][icut].fY->Fill(GetRapidity(mcpart));
+              fHist[iq][kElectron][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
               fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());  
 
               // fill mother hadron kinematics
               fHist[iq][keHadron][icut].fPdgCode->Fill(maPdgcodeCopy); 
               fHist[iq][keHadron][icut].fPt->Fill(partMotherCopy->Pt());
-              fHist[iq][keHadron][icut].fY->Fill(GetRapidity(partMotherCopy));
+              fHist[iq][keHadron][icut].fY->Fill(AliHFEtools::GetRapidity(partMotherCopy));
               fHist[iq][keHadron][icut].fEta->Fill(partMotherCopy->Eta());
 
               // ratio between pT of electron and pT of mother B hadron 
@@ -626,13 +632,13 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
             // fill electron kinematics
             fHist[iq][kElectron2nd][icut].fPdgCode->Fill(mcpart->GetPdgCode());
             fHist[iq][kElectron2nd][icut].fPt->Fill(mcpart->Pt());
-            fHist[iq][kElectron2nd][icut].fY->Fill(GetRapidity(mcpart));
+            fHist[iq][kElectron2nd][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
             fHist[iq][kElectron2nd][icut].fEta->Fill(mcpart->Eta());
 
             // fill mother hadron kinematics
             fHist[iq][kDeHadron][icut].fPdgCode->Fill(grandMaPDG);
             fHist[iq][kDeHadron][icut].fPt->Fill(grandMa->Pt());
-            fHist[iq][kDeHadron][icut].fY->Fill(GetRapidity(grandMa));
+            fHist[iq][kDeHadron][icut].fY->Fill(AliHFEtools::GetRapidity(grandMa));
             fHist[iq][kDeHadron][icut].fEta->Fill(grandMa->Eta());
 
             return;
@@ -649,13 +655,13 @@ void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, I
          // fill electron kinematics
          fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
          fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
-         fHist[iq][kElectron][icut].fY->Fill(GetRapidity(mcpart));
+         fHist[iq][kElectron][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
          fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());
 
          // fill mother hadron kinematics
          fHist[iq][keHadron][icut].fPdgCode->Fill(maPdgcodeCopy);
          fHist[iq][keHadron][icut].fPt->Fill(partMotherCopy->Pt());
-         fHist[iq][keHadron][icut].fY->Fill(GetRapidity(partMotherCopy));
+         fHist[iq][keHadron][icut].fY->Fill(AliHFEtools::GetRapidity(partMotherCopy));
          fHist[iq][keHadron][icut].fEta->Fill(partMotherCopy->Eta());
 
        }
@@ -756,28 +762,6 @@ void AliHFEmcQA::ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &mo
        motherlabel = -888;
        motherID = -888;
        AliDebug(1,"something strange!\n");
-}
-
-//__________________________________________
-Float_t AliHFEmcQA::GetRapidity(TParticle *part) const
-{
-      // return rapidity
-
-       Float_t rapidity;        
-       if(!((part->Energy() - part->Pz())*(part->Energy() + part->Pz())>0)) rapidity=-999; 
-       else rapidity = 0.5*(TMath::Log((part->Energy()+part->Pz()) / (part->Energy()-part->Pz()))); 
-       return rapidity;
-}
-
-//__________________________________________
-Float_t AliHFEmcQA::GetRapidity(AliAODMCParticle *part) const
-{
-      // return rapidity
-
-       Float_t rapidity;        
-       if(!((part->E() - part->Pz())*(part->E() + part->Pz())>0)) rapidity=-999; 
-       else rapidity = 0.5*(TMath::Log((part->E()+part->Pz()) / (part->E()-part->Pz()))); 
-       return rapidity;
 }
 
 //__________________________________________
@@ -933,3 +917,48 @@ Int_t AliHFEmcQA::GetSource(TParticle * const mcpart)
 
    return origin;
 }
+
+//__________________________________________
+void AliHFEmcQA::MakeHistograms(){
+  //
+  // Create the QA histograms
+  //
+  fQAhistos = new TList;
+  fQAhistos->SetName("MCqa");
+
+  CreateHistograms(AliHFEmcQA::kCharm,0,"mcqa_");               // create histograms for charm
+  CreateHistograms(AliHFEmcQA::kBeauty,0,"mcqa_");              // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,1,"mcqa_barrel_");        // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,1,"mcqa_barrel_");       // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,2,"mcqa_unitY_");         // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");        // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,3,"mcqa_reccut_");        // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,3,"mcqa_reccut_");       // create histograms for beauty
+  CreateHistograms(AliHFEmcQA::kCharm,4,"mcqa_recpidcut_");     // create histograms for charm 
+  CreateHistograms(AliHFEmcQA::kBeauty,4,"mcqa_recpidcut_");    // create histograms for beauty
+}
+
+//__________________________________________
+void AliHFEmcQA::AliHists::FillList(TList *l) const {
+  //
+  // Fill Histos into a list for output
+  //
+  if(fPdgCode) l->Add(fPdgCode);
+  if(fPt) l->Add(fPt);
+  if(fY) l->Add(fY);
+  if(fEta) l->Add(fEta);
+}
+
+//__________________________________________
+void AliHFEmcQA::AliHistsComm::FillList(TList *l) const { 
+  //
+  // Fill Histos into a list for output
+  //
+  if(fNq) l->Add(fNq);
+  if(fProcessID) l->Add(fProcessID);
+  if(fePtRatio) l->Add(fePtRatio);
+  if(fDePtRatio) l->Add(fDePtRatio);
+  if(feDistance) l->Add(feDistance);
+  if(fDeDistance) l->Add(fDeDistance);
+}
+
