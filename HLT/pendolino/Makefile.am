@@ -51,10 +51,10 @@ COMPILE_INFO			=  HLTpendolinoCompileInfo.cxx
 SHUTTLE_ADDON			= AliDCSClient.h AliDCSMessage.h
 
 $(SHUTTLE_ADDON):
-	ln -s $(ALICE_ROOT)/SHUTTLE/DCSClient/$@
+	test -e $@ || ln -s $(ALICE_ROOT)/SHUTTLE/DCSClient/$@
 
-$(SHUTTLE_ADDON:.h=.cxx): $($@:.cxx=.h)
-	ln -s $(ALICE_ROOT)/SHUTTLE/DCSClient/$@
+$(SHUTTLE_ADDON:.h=.cxx): $(SHUTTLE_ADDON)
+	test -e $@ || ln -s $(ALICE_ROOT)/SHUTTLE/DCSClient/$@
 
 # set the file name for the generated root dictionary
 DICTCPP				=  HLTpendolino-DICT.cxx
