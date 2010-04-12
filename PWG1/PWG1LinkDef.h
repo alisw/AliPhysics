@@ -108,4 +108,7 @@
 #pragma link C++ class  AliTRDpidRefMakerNN+;
 // Cosmics QA
 #pragma link C++ class  AliAnalysisTaskCosmic+;
+// Background and luminosity studies
+#pragma link C++ class  AliAnalysisTaskBGvsTime+;
+#pragma link C++ class  AliHistoListWrapper+;
 #endif
