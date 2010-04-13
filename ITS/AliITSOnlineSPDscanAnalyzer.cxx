@@ -959,7 +959,8 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapTot(UInt_t step) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       for (UInt_t col=0; col<32; col++) {
 	for (UInt_t row=0; row<256; row++) {
-	  fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
+          if(hs<2) fHitMapTot->Fill(chipNr*32+(31-col),(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
+	  else fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
 	}
       }
     }
@@ -983,11 +984,11 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t 
   returnHisto->SetMinimum(0);
   for (UInt_t col=0; col<32; col++) {
     for (UInt_t row=0; row<256; row++) {
-      returnHisto->Fill(col,row,fScanObj->GetHits(step,hs,chip,col,row));
+      if(hs<2) returnHisto->Fill(31-col,row,fScanObj->GetHits(step,hs,chip,col,row));
+      else returnHisto->Fill(col,row,fScanObj->GetHits(step,hs,chip,col,row));
     }
   }
 
   return returnHisto;
 }
-
 

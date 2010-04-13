@@ -584,7 +584,8 @@ TH2F* AliITSOnlineSPDphysAnalyzer::GetHitMapTot() {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       for (UInt_t col=0; col<32; col++) {
 	for (UInt_t row=0; row<256; row++) {
-	  fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
+          if(hs<2) fHitMapTot->Fill(chipNr*32+(31-col),(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
+	  else fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
 	}
       }
     }
@@ -608,9 +609,11 @@ TH2F* AliITSOnlineSPDphysAnalyzer::GetHitMapChip(UInt_t hs, UInt_t chip) {
   returnHisto->SetMinimum(0);
   for (UInt_t col=0; col<32; col++) {
     for (UInt_t row=0; row<256; row++) {
-      returnHisto->Fill(col,row,fPhysObj->GetHits(hs,chip,col,row));
+      if(hs<2) returnHisto->Fill(31-col,row,fPhysObj->GetHits(hs,chip,col,row));
+      else returnHisto->Fill(col,row,fPhysObj->GetHits(hs,chip,col,row));
     }
   }
 
   return returnHisto;
 }
+
