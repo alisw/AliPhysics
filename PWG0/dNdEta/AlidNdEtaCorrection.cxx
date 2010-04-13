@@ -37,7 +37,8 @@ AlidNdEtaCorrection::AlidNdEtaCorrection()
   fVertexRecoCorrection(0),
   fTriggerBiasCorrectionMBToINEL(0),
   fTriggerBiasCorrectionMBToNSD(0),
-  fTriggerBiasCorrectionMBToND(0)
+  fTriggerBiasCorrectionMBToND(0),
+  fTriggerBiasCorrectionMBToOnePart(0)
 {
   // default constructor
 }
@@ -49,7 +50,8 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   fVertexRecoCorrection(0),
   fTriggerBiasCorrectionMBToINEL(0),
   fTriggerBiasCorrectionMBToNSD(0),
-  fTriggerBiasCorrectionMBToND(0)
+  fTriggerBiasCorrectionMBToND(0),
+  fTriggerBiasCorrectionMBToOnePart(0)
 {
   //
   // constructor
@@ -61,6 +63,7 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   fTriggerBiasCorrectionMBToINEL = new AliCorrection("TriggerBias_MBToINEL", "TriggerBias_MBToINEL", analysis);
   fTriggerBiasCorrectionMBToNSD  = new AliCorrection("TriggerBias_MBToNSD", "TriggerBias_MBToNSD", analysis);
   fTriggerBiasCorrectionMBToND   = new AliCorrection("TriggerBias_MBToND", "TriggerBias_MBToND", analysis);
+  fTriggerBiasCorrectionMBToOnePart   = new AliCorrection("TriggerBias_MBToOnePart", "TriggerBias_MBToOnePart", analysis);
 }
 
 //____________________________________________________________________
@@ -92,6 +95,11 @@ AlidNdEtaCorrection::~AlidNdEtaCorrection()
     delete fTriggerBiasCorrectionMBToND;
     fTriggerBiasCorrectionMBToND = 0;
   }
+
+  if (fTriggerBiasCorrectionMBToOnePart) {
+    delete fTriggerBiasCorrectionMBToOnePart;
+    fTriggerBiasCorrectionMBToOnePart = 0;
+  }
 }
 
 //____________________________________________________________________
@@ -107,6 +115,7 @@ AlidNdEtaCorrection::Finish() {
   fTriggerBiasCorrectionMBToINEL->Divide();
   fTriggerBiasCorrectionMBToNSD->Divide();
   fTriggerBiasCorrectionMBToND->Divide();
+  fTriggerBiasCorrectionMBToOnePart->Divide();
 }
 
 //____________________________________________________________________
@@ -131,6 +140,7 @@ Long64_t AlidNdEtaCorrection::Merge(TCollection* list)
   TList* collectionTriggerBiasMBToINEL  = new TList;
   TList* collectionTriggerBiasMBToNSD   = new TList;
   TList* collectionTriggerBiasMBToND    = new TList;
+  TList* collectionTriggerBiasMBToOnePart    = new TList;
 
   Int_t count = 0;
   while ((obj = iter->Next())) {
@@ -144,6 +154,7 @@ Long64_t AlidNdEtaCorrection::Merge(TCollection* list)
     collectionTriggerBiasMBToINEL->Add(entry->fTriggerBiasCorrectionMBToINEL);
     collectionTriggerBiasMBToNSD ->Add(entry->fTriggerBiasCorrectionMBToNSD);
     collectionTriggerBiasMBToND  ->Add(entry->fTriggerBiasCorrectionMBToND);
+    collectionTriggerBiasMBToOnePart  ->Add(entry->fTriggerBiasCorrectionMBToOnePart);
 
     count++;
   }
@@ -152,12 +163,14 @@ Long64_t AlidNdEtaCorrection::Merge(TCollection* list)
   fTriggerBiasCorrectionMBToINEL ->Merge(collectionTriggerBiasMBToINEL);
   fTriggerBiasCorrectionMBToNSD  ->Merge(collectionTriggerBiasMBToNSD);
   fTriggerBiasCorrectionMBToND   ->Merge(collectionTriggerBiasMBToND);
+  fTriggerBiasCorrectionMBToOnePart->Merge(collectionTriggerBiasMBToOnePart);
 
   delete collectionNtrackToNparticle;
   delete collectionVertexReco;
   delete collectionTriggerBiasMBToINEL;
   delete collectionTriggerBiasMBToNSD;
   delete collectionTriggerBiasMBToND;
+  delete collectionTriggerBiasMBToOnePart;
 
   return count+1;
 }
@@ -173,7 +186,22 @@ void AlidNdEtaCorrection::Add(AlidNdEtaCorrection* aCorrectionsToAdd, Float_t c)
   fTriggerBiasCorrectionMBToINEL ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionINEL(),c);
   fTriggerBiasCorrectionMBToNSD  ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionNSD() ,c);
   fTriggerBiasCorrectionMBToND   ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionND()  ,c);
-    
+  fTriggerBiasCorrectionMBToOnePart   ->Add(aCorrectionsToAdd->GetTriggerBiasCorrectionOnePart()  ,c);
+}
+
+//____________________________________________________________________
+void AlidNdEtaCorrection::Scale(Float_t c) 
+{
+  //
+  // scales all contained corrections
+  // 
+
+  fTrack2ParticleCorrection      ->Scale(c);
+  fVertexRecoCorrection          ->Scale(c);
+  fTriggerBiasCorrectionMBToINEL ->Scale(c);
+  fTriggerBiasCorrectionMBToNSD  ->Scale(c);
+  fTriggerBiasCorrectionMBToND   ->Scale(c);
+  fTriggerBiasCorrectionMBToOnePart   ->Scale(c);
 }
 
 //____________________________________________________________________
@@ -187,7 +215,7 @@ void AlidNdEtaCorrection::Reset(void) {
   fTriggerBiasCorrectionMBToINEL ->Reset();
   fTriggerBiasCorrectionMBToNSD  ->Reset();
   fTriggerBiasCorrectionMBToND   ->Reset();
-    
+  fTriggerBiasCorrectionMBToOnePart   ->Reset();
 }
 
 
@@ -211,6 +239,7 @@ Bool_t AlidNdEtaCorrection::LoadHistograms(const Char_t* dir)
   fTriggerBiasCorrectionMBToINEL ->LoadHistograms();
   fTriggerBiasCorrectionMBToNSD  ->LoadHistograms();
   fTriggerBiasCorrectionMBToND   ->LoadHistograms();
+  fTriggerBiasCorrectionMBToOnePart   ->LoadHistograms();
 
   gDirectory->cd("..");
 
@@ -232,6 +261,7 @@ void AlidNdEtaCorrection::SaveHistograms()
   fTriggerBiasCorrectionMBToINEL->SaveHistograms();
   fTriggerBiasCorrectionMBToNSD ->SaveHistograms();
   fTriggerBiasCorrectionMBToND  ->SaveHistograms();
+  fTriggerBiasCorrectionMBToOnePart->SaveHistograms();
 
   gDirectory->cd("..");
 }
@@ -248,6 +278,7 @@ void AlidNdEtaCorrection::DrawHistograms()
   fTriggerBiasCorrectionMBToINEL->DrawHistograms();
   fTriggerBiasCorrectionMBToNSD ->DrawHistograms();
   fTriggerBiasCorrectionMBToND  ->DrawHistograms();
+  fTriggerBiasCorrectionMBToOnePart  ->DrawHistograms();
 }
 
 //____________________________________________________________________
@@ -262,6 +293,7 @@ void AlidNdEtaCorrection::DrawOverview(const char* canvasName)
   fTriggerBiasCorrectionMBToINEL->DrawOverview(canvasName);
   fTriggerBiasCorrectionMBToNSD ->DrawOverview(canvasName);
   fTriggerBiasCorrectionMBToND  ->DrawOverview(canvasName);
+  fTriggerBiasCorrectionMBToOnePart  ->DrawOverview(canvasName);
 }
 
 //____________________________________________________________________
@@ -272,11 +304,14 @@ void AlidNdEtaCorrection::FillMCParticle(Float_t vtx, Float_t eta, Float_t pt, B
 
   fTriggerBiasCorrectionMBToINEL->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
-  if (processType != AliPWG0Helper::kSD )
+  if ((processType & AliPWG0Helper::kSD) == 0)
     fTriggerBiasCorrectionMBToNSD->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
-  if (processType == AliPWG0Helper::kND )
+  if (processType & AliPWG0Helper::kND )
     fTriggerBiasCorrectionMBToND->GetTrackCorrection()->FillGene(vtx, eta, pt);
+
+  if (processType & AliPWG0Helper::kOnePart)
+    fTriggerBiasCorrectionMBToOnePart->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
   if (!trigger)
     return;
@@ -284,6 +319,7 @@ void AlidNdEtaCorrection::FillMCParticle(Float_t vtx, Float_t eta, Float_t pt, B
   fTriggerBiasCorrectionMBToINEL->GetTrackCorrection()->FillMeas(vtx, eta, pt);
   fTriggerBiasCorrectionMBToNSD->GetTrackCorrection()->FillMeas(vtx, eta, pt);
   fTriggerBiasCorrectionMBToND->GetTrackCorrection()->FillMeas(vtx, eta, pt);
+  fTriggerBiasCorrectionMBToOnePart->GetTrackCorrection()->FillMeas(vtx, eta, pt);
   fVertexRecoCorrection->GetTrackCorrection()->FillGene(vtx, eta, pt);
 
   if (!vertex)
@@ -309,11 +345,14 @@ void AlidNdEtaCorrection::FillEvent(Float_t vtx, Float_t n, Bool_t trigger, Bool
 
   fTriggerBiasCorrectionMBToINEL->GetEventCorrection()->FillGene(vtx, n);
 
-  if ( processType != AliPWG0Helper::kSD )
+  if ((processType & AliPWG0Helper::kSD) == 0)
     fTriggerBiasCorrectionMBToNSD->GetEventCorrection()->FillGene(vtx, n);
 
-  if (processType == AliPWG0Helper::kND )
+  if (processType & AliPWG0Helper::kND )
     fTriggerBiasCorrectionMBToND->GetEventCorrection()->FillGene(vtx, n);
+
+  if (processType & AliPWG0Helper::kOnePart)
+    fTriggerBiasCorrectionMBToOnePart->GetEventCorrection()->FillGene(vtx, n);
 
   if (!trigger)
     return;
@@ -321,6 +360,7 @@ void AlidNdEtaCorrection::FillEvent(Float_t vtx, Float_t n, Bool_t trigger, Bool
   fTriggerBiasCorrectionMBToINEL->GetEventCorrection()->FillMeas(vtx, n);
   fTriggerBiasCorrectionMBToNSD->GetEventCorrection()->FillMeas(vtx, n);
   fTriggerBiasCorrectionMBToND->GetEventCorrection()->FillMeas(vtx, n);
+  fTriggerBiasCorrectionMBToOnePart->GetEventCorrection()->FillMeas(vtx, n);
   fVertexRecoCorrection->GetEventCorrection()->FillGene(vtx, n);
 
   if (!vertex)
@@ -422,6 +462,7 @@ void AlidNdEtaCorrection::ReduceInformation()
   fTriggerBiasCorrectionMBToINEL ->ReduceInformation();
   fTriggerBiasCorrectionMBToNSD  ->ReduceInformation();
   fTriggerBiasCorrectionMBToND   ->ReduceInformation();
+  fTriggerBiasCorrectionMBToOnePart   ->ReduceInformation();
 }
 
 //____________________________________________________________________
@@ -437,6 +478,7 @@ AliCorrection* AlidNdEtaCorrection::GetCorrection(CorrectionType correctionType)
     case kINEL :           return fTriggerBiasCorrectionMBToINEL;
     case kNSD :            return fTriggerBiasCorrectionMBToNSD;
     case kND :             return fTriggerBiasCorrectionMBToND;
+    case kOnePart :             return fTriggerBiasCorrectionMBToOnePart;
   }
 
   return 0;

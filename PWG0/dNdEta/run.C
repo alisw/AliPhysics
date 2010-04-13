@@ -1,7 +1,7 @@
 void Load(const char* taskName, Bool_t debug)
 {
   TString compileTaskName;
-  compileTaskName.Form("%s.cxx++", taskName);
+  compileTaskName.Form("%s.cxx+", taskName);
   if (debug)
     compileTaskName += "g";
 
@@ -57,10 +57,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
   if (aProof)
   {
-    TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a"); 
     TProof::Open("alicecaf"); 
-    //gProof->SetParallel(2);
-    //gProof->SetParameter("PROOF_Packetizer", "TPacketizer");
 
     Bool_t fullAliroot = kFALSE;
     // Enable the needed package
@@ -85,8 +82,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     else
     {
       // needed if ITS recpoints are accessed, see AlidNdEtaTask, FULLALIROOT define statement
-      gProof->UploadPackage("$ALICE_ROOT/v4-18-12-AN-all.par");
-      gProof->EnablePackage("v4-18-12-AN-all");
+      gProof->UploadPackage("$ALICE_ROOT/v4-18-15-AN-all.par");
+      gProof->EnablePackage("v4-18-15-AN-all");
     
       gProof->Exec("TGrid::Connect(\"alien://\")", kTRUE);
       
@@ -119,15 +116,30 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   if (fullAliroot)
     AliESDInputHandler* esdH = new AliESDInputHandlerRP; // for RecPoints
   else
-    AliESDInputHandler* esdH = new AliESDInputHandlerRP;
+    AliESDInputHandler* esdH = new AliESDInputHandler;
   
-  esdH->SetInactiveBranches("AliESDACORDE FMD AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks Kinks Cascades ALIESDACORDE MuonTracks TrdTracks CaloClusters");
+  esdH->SetInactiveBranches("FMD AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks MuonTracks TrdTracks");
   mgr->SetInputEventHandler(esdH);
 
   AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn;
-  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag; // AcceptAll;
+  //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn | AliPWG0Helper::kSPDOnlyL0;
+  //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPCITS | AliPWG0Helper::kFieldOn;
+  
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
+  
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag;
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
+  
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kV0AND | AliTriggerAnalysis::kOfflineFlag; 
+  
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kV0OR | AliTriggerAnalysis::kOfflineFlag; 
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kV0OR | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle; 
 
-  AliPWG0Helper::PrintConf(analysisMode, trigger);
+  AliPWG0Helper::DiffTreatment diffTreatment = AliPWG0Helper::kMCFlags;
+  //AliPWG0Helper::DiffTreatment diffTreatment = AliPWG0Helper::kE710Cuts;
+  
+  AliPWG0Helper::PrintConf(analysisMode, trigger, diffTreatment);
 
   AliESDtrackCuts* esdTrackCuts = 0;
   if (!(analysisMode & AliPWG0Helper::kSPD))
@@ -154,6 +166,73 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     save = kTRUE;
   }
   
+  // physics selection
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  physicsSelectionTask = AddTaskPhysicsSelection((requiredData == 2) ? kFALSE : kTRUE);
+  
+  // 900 GeV 
+  if (0 && requiredData == 2)
+  {
+    physicsSelectionTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL #769 #3119");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1A-ABCE-NOPF-ALL #446 #2554");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1C-ABCE-NOPF-ALL #1334 #2228");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1-E-NOPF-ALL #790");
+  }
+  
+  // 7 TeV, run 114783
+  if (0 && requiredData == 2)
+  {
+    physicsSelectionTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL #345");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1A-ABCE-NOPF-ALL #2130");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1C-ABCE-NOPF-ALL #3018");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1-E-NOPF-ALL #1238");
+  }
+
+  // 7 TeV, run 114786,98
+  if (0 && requiredData == 2)
+  {
+    physicsSelectionTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL #346");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1A-ABCE-NOPF-ALL #2131");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1C-ABCE-NOPF-ALL #3019");
+    physicsSelectionTask->GetPhysicsSelection()->AddBGTriggerClass("+CINT1-E-NOPF-ALL #1238");
+    //physicsSelectionTask->GetPhysicsSelection()->Initialize(114786);
+  }
+
+  // FO efficiency (for MC)
+  if (1 && requiredData != 2)
+  {
+    //const char* fastORFile = "spdFOEff_run104824_52.root";
+    const char* fastORFile = "spdFOEff_run104867_92.root";
+    //const char* fastORFile = "spdFOEff_run105054_7.root";
+    //const char* fastORFile = "spdFOEff_run114931.root";
+  
+    Printf("NOTE: Simulating FAST-OR efficiency on the analysis level using file %s", fastORFile);
+    TFile::Open(fastORFile);
+    spdFOEff = (TH1F*) gFile->Get("spdFOEff");
+    physicsSelectionTask->GetPhysicsSelection()->Initialize(104867);
+    physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis()->SetSPDGFOEfficiency(spdFOEff);
+  }
+  
+  // V0 syst. study
+  if (0)
+  {
+    Printf("NOTE: Systematic study for VZERO enabled!");
+    physicsSelectionTask->GetPhysicsSelection()->Initialize(104867);
+    for (Int_t i=0; i<1; i++)
+    {
+      // for MC and data
+      //physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis(i)->SetV0HwPars(15, 61.5, 86.5);
+      physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis(i)->SetV0AdcThr(6);
+      // only for MC
+      //physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis(i)->SetV0HwPars(0, 0, 125);
+      //physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis(i)->SetV0AdcThr(0);
+    }
+  }
+  
+  // BG study
+  //physicsSelectionTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CINT1A-ABCE-NOPF-ALL");
+  //physicsSelectionTask->GetPhysicsSelection()->AddCollisionTriggerClass("+CINT1C-ABCE-NOPF-ALL");
+  
   // Create, add task
   if (runWhat == 0 || runWhat == 2)
   {
@@ -169,15 +248,19 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     //task->SetOnlyPrimaries();
     //task->SetFillPhi();
     //task->SetSymmetrize();
-    
+
+    // INEL>0 definition
+    //task->SetMultAxisEta1();
+
     task->SetTrigger(trigger);
     task->SetAnalysisMode(analysisMode);
     task->SetTrackCuts(esdTrackCuts);
-    //task->SetDeltaPhiCut(0.05);
-    
-    if (requiredData == 2)
-      task->SetCheckEventType();
-    task->SetTriggerClasses(requireClass, rejectClass);
+    //task->SetDeltaPhiCut(0.064);
+    task->SetDiffTreatment(diffTreatment);
+
+    //if (requiredData == 2)
+    //  task->SetCheckEventType();
+    //task->SetTriggerClasses(requireClass, rejectClass);
 
     mgr->AddTask(task);
 
@@ -188,6 +271,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     cOutput = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer);
     mgr->ConnectOutput(task, 0, cOutput);
   }
+
   if (runWhat == 1 || runWhat == 2)
   {
     Load("AlidNdEtaCorrectionTask", aDebug);
@@ -198,10 +282,17 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     //task2->SetOnlyPrimaries();
     //task2->SetSymmetrize();
 
+    // to account for gaps in real life SPD geometry
+    task2->SetSkipParticles();
+
+    // INEL>0 definition
+    //task2->SetMultAxisEta1();
+
     task2->SetTrigger(trigger);
     task2->SetAnalysisMode(analysisMode);
     task2->SetTrackCuts(esdTrackCuts);
-    //task2->SetDeltaPhiCut(0.05);
+    //task2->SetDeltaPhiCut(0.064);
+    task2->SetDiffTreatment(diffTreatment);
 
     mgr->AddTask(task2);
 
@@ -213,7 +304,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     mgr->ConnectOutput(task2, 0, cOutput);
   }
 
-  if (requiredData == 1) {
+  if (requiredData == 1) 
+  {
     // Enable MC event handler
     AliMCEventHandler* handler = new AliMCEventHandler;
     handler->SetReadTR(kFALSE);
@@ -247,8 +339,16 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
         case AliTriggerAnalysis::kMB3: path += "/mb3"; break;
         case AliTriggerAnalysis::kSPDGFO: path += "/spdgfo"; break;
         case AliTriggerAnalysis::kSPDGFOBits: path += "/spdgfobits"; break;
+        case AliTriggerAnalysis::kAcceptAll: path += "/all"; break;
+        case AliTriggerAnalysis::kV0AND: path += "/v0and"; break;
+        case AliTriggerAnalysis::kV0OR: path += "/v0or"; break;
+        case AliTriggerAnalysis::kNSD1: path += "/nsd1"; break;
+        case AliTriggerAnalysis::kMB1Prime: path += "/mb1prime"; break;
         default: Printf("ERROR: Trigger undefined for path to files"); return;
       }
+      
+      if (trigger & AliTriggerAnalysis::kOneParticle)
+        path += "-onepart";
       
       if (strlen(requireClass) > 0 && strlen(rejectClass) == 0)
       {
@@ -260,9 +360,15 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
       if (analysisMode & AliPWG0Helper::kSPD)
         path += "/spd";
       
+      if (analysisMode & AliPWG0Helper::kSPDOnlyL0)
+        path += "onlyL0";
+      
       if (analysisMode & AliPWG0Helper::kTPC)
         path += "/tpc";
         
+      if (analysisMode & AliPWG0Helper::kTPCITS)
+        path += "/tpcits";
+
       gSystem->mkdir(path, kTRUE);
       if (runWhat == 0 || runWhat == 2)
       {
@@ -272,8 +378,12 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
       }
       if (runWhat == 1 || runWhat == 2)
       {
-        gSystem->Rename("correction_map.root", path + "/correction_map.root");
+        if (optStr.Contains("process-types"))
+          gSystem->Rename("correction_mapprocess-types.root", path + "/correction_mapprocess-types.root");
+        else
+          gSystem->Rename("correction_map.root", path + "/correction_map.root");
       }
+      gSystem->Rename("event_stat.root", path + "/event_stat.root");
       
       Printf(">>>>> Moved files to %s", path.Data());
     }
@@ -282,8 +392,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   {
     gROOT->ProcessLine(".L CreateChainFromDataSet.C");
     ds = gProof->GetDataSet(data)->GetStagedSubset();
-    chain = CreateChainFromDataSet(ds);
-    mgr->StartAnalysis("local", chain, nRuns, offset);
+    chain = CreateChainFromDataSet(ds, "esdTree", nRuns);
+    mgr->StartAnalysis("local", chain, 1234567890, offset);
   }
   else
   {

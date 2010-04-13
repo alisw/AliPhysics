@@ -68,7 +68,7 @@ TPad* DrawChange(Bool_t spd, const char* basename, const char** changes, Int_t n
 {  
   Float_t etaMax = 1.05;
   if (spd)
-    etaMax = 1.79;
+    etaMax = 1.49;
 
   TH1F* hRatios[100];
   for(Int_t i=0; i<nChanges; i++) {
@@ -79,7 +79,7 @@ TPad* DrawChange(Bool_t spd, const char* basename, const char** changes, Int_t n
     hRatios[i]->SetMarkerSize(0.8);
 
     Float_t average = hRatios[i]->Integral(hRatios[i]->FindBin(-1), hRatios[i]->FindBin(1)) / (hRatios[i]->FindBin(1) - hRatios[i]->FindBin(-1) + 1);
-    Printf("%s: %.2f %%" , hRatios[i]->GetTitle(), (average - 1) * 100);
+    Printf("%s %s: %.2f %%" , changes[i], hRatios[i]->GetTitle(), (average - 1) * 100);
   }
   
   TPad* p = DrawCanvasAndPad("syst_changeInXsection",700,400);
@@ -173,7 +173,7 @@ void DrawEffectOfChangeInCrossSection(Bool_t spd = kFALSE, const char* fileName 
   TFile::Open(fileName);
 
 //  const Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdmoreddless", "sdlessddmore", "ddmore25","ddless25","sdmore25","sdless25", "dmore25", "dless25", "sdmoreddless25", "sdlessddmore25" };
-  const Char_t* changes[]  = { "ua5","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless" };
+  const Char_t* changes[]  = { "default","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless" };
   //const Char_t* changes[]  = { "pythia", "qgsm", "phojet" };
   //const Int_t nChanges = 3;
   Int_t colors[] = {1,1,4,1,2,2,4,2,1};
@@ -200,14 +200,14 @@ void DrawEffectOfChangeInComposition(Bool_t spd = kFALSE, const char* fileName =
 {
   TFile::Open(fileName);
 
-  const Char_t* changes[]  = { "PythiaRatios", "KBoosted", "KReduced", "pBoosted", "pReduced", "KBoostedpBoosted", "KReducedpReduced", "KBoostedpReduced", "KReducedpBoosted"};
-  const char*   names[]    = { "",             "K #times 1.5", "K #times 0.5", "p #times 1.5", "p #times 0.5", "K #times 1.5, p #times 1.5", "K #times 0.5, p #times 0.5", "K #times 1.5, p #times 0.5", "K #times 0.5, p #times 1.5" };
+  const Char_t* changes[]  = { "KBoosted", "KReduced", "pBoosted", "pReduced", "KBoostedpBoosted", "KReducedpReduced", "KBoostedpReduced", "KReducedpBoosted", "othersBoosted", "othersReduced" };
+  const char*   names[]    = { "K #times 1.3", "K #times 0.7", "p #times 1.3", "p #times 0.7", "K #times 1.3, p #times 1.3", "K #times 0.7, p #times 0.7", "K #times 1.3, p #times 0.7", "K #times 0.7, p #times 1.3", "O #times 1.3", "O #times 0.7" };
   //const Char_t* changes[]  = { "PythiaRatios", "PiBoosted",      "PiReduced", "KBoosted", "KReduced", "pBoosted", "pReduced", "othersBoosted", "othersReduced" };
   //const char*   names[]    = { "",             "#pi #times 1.5", "#pi #times 0.5", "K #times 1.5", "K #times 0.5", "p #times 1.5", "p #times 0.5",  "others #times 1.5", "others #times 0.5" };
-  Int_t colors[] = {1,1,2,2,1,2,1,4,4};
+  Int_t colors[] = {1,1,2,2,1,2,1,4,4,1,1};
 
-  c = DrawChange(spd, "", changes, 9, 9, colors, names, 0.03);
-  c->SaveAs("compositions.eps");
+  c = DrawChange(spd, "", changes, 10, 10, colors, names, 0.03);
+  //c->SaveAs("compositions.eps");
 }
 
 TPad* DrawCanvasAndPad(const Char_t* name, Int_t sizeX=600, Int_t sizeY=500) {
