@@ -54,14 +54,14 @@ AliTRDCalChamberStatus::AliTRDCalChamberStatus(const Text_t *name, const Text_t 
 
 }
 //_____________________________________________________________________________
-TH2D* AliTRDCalChamberStatus::Plot(Int_t sm, Int_t rphi) 
+TH2D* AliTRDCalChamberStatus::Plot(Int_t sm) 
 {
   //
   // Plot chamber status for supermodule and halfchamberside 
   // as a function of layer and stack
   //
 
-  TH2D *h2 = new TH2D(Form("sm_%d_rphi_%d",sm,rphi),Form("sm_%d_rphi_%d",sm,rphi),5,0.0,5.0,6,0.0,6.0);
+  TH2D *h2 = new TH2D(Form("sm_%d",sm),Form("sm_%d",sm),5,0.0,5.0,6,0.0,6.0);
   
   h2->SetXTitle("stack");
   h2->SetYTitle("layer");
@@ -73,17 +73,10 @@ TH2D* AliTRDCalChamberStatus::Plot(Int_t sm, Int_t rphi)
     Int_t layer  = i%6;
     Int_t stack  = static_cast<int>((i-start)/6.);
     Int_t status = GetStatus(i);
-    if(rphi == 0) {    
-      if(status!=4) h2->Fill(stack,layer,status);
-    }
-    else if(rphi == 1) {
-      if(status!=3) h2->Fill(stack,layer,status);
-    }
-    
+    h2->Fill(stack,layer,status);
   }
 
   return h2;
 
 }
-
 

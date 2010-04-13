@@ -262,6 +262,7 @@ void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t neve
   Bool_t notEmpty = kFALSE;
     
   AliTRDrawFastStream *rawStream = new AliTRDrawFastStream(rawReader);
+  rawStream->SetNoErrorWarning();
   rawStream->SetSharedPadReadout(kFALSE);
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager(kTRUE);
@@ -455,14 +456,18 @@ void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCS *calDCS) /*FOLD00*/
     if(stateB!=3 && stateB!=9) rphi = 2;
     vals[3] = rphi;
     if(rphi!=-1) fHnSparseHCM->Fill(&vals[0]);
-    
+
     //---------//
     //  Debug  //
     if(fDebugLevel > 0) {
       if( ((fCalChamberStatus->GetStatus(det) <= 1) && (stateA!=3 && stateA!=9)) || 
 	  ((fCalChamberStatus->GetStatus(det) <= 1) && (stateB!=3 && stateB!=9)) || 
-	  ((fCalChamberStatus->GetStatus(det) >= 2) && (stateA==3 || stateA==9)) || 
-	  ((fCalChamberStatus->GetStatus(det) >= 2) && (stateB==3 || stateB==9))  )
+	  ((fCalChamberStatus->GetStatus(det) == 2) && (stateA==3 || stateA==9)) || 
+	  ((fCalChamberStatus->GetStatus(det) == 2) && (stateB==3 || stateB==9)) ||
+	  ((fCalChamberStatus->GetStatus(det) == 3) && (stateA==3 || stateA==9)) ||
+          ((fCalChamberStatus->GetStatus(det) == 3) && (stateB!=3 && stateB!=9)) ||
+	  ((fCalChamberStatus->GetStatus(det) == 4) && (stateB==3 || stateB==9)) ||
+	  ((fCalChamberStatus->GetStatus(det) == 4) && (stateA!=3 && stateA!=9)) )
 	{
 	  //printf(" Different half chamber status in DCS and DATA!!\n");
 	  Double_t val[4] = {sm,lay,stac,1};
@@ -482,6 +487,44 @@ void AliTRDCalibChamberStatus::CheckEORStatus(AliTRDCalDCS *calDCS) /*FOLD00*/
     }
     //---------//
     //  Debug  //
+
+    //////////////////////////////////////////
+    // Change the status according to DCS
+    ///////////////////////////////////////////
+
+    // First put bad status if seen by DCS
+    /////////////////////////////////////////
+    if(stateA!=3 && stateA!=9 && stateB!=3 && stateB!=9) {
+      // completely masked from DCS
+      fCalChamberStatus->SetStatus(det,2);
+    }
+    if((stateA!=3 && stateA!=9) && (stateB==3 || stateB==9)) {
+      // Only A side masked from DCS
+      if(fCalChamberStatus->GetStatus(det) != 3) {
+	// But not from Data 
+	if(fCalChamberStatus->GetStatus(det) == 4) fCalChamberStatus->SetStatus(det,2);
+	if(fCalChamberStatus->GetStatus(det) <= 1) fCalChamberStatus->SetStatus(det,3);
+      }
+    }
+    if((stateA==3 || stateA==9) && (stateB!=3 && stateB!=9)) {
+      // Only B side masked from DCS
+      if(fCalChamberStatus->GetStatus(det) != 4) {
+	// But not from Data 
+	if(fCalChamberStatus->GetStatus(det) == 3) fCalChamberStatus->SetStatus(det,2);
+	if(fCalChamberStatus->GetStatus(det) <= 1) fCalChamberStatus->SetStatus(det,4);
+      }
+    }
+
+    // Then release in case of error 3 from DCS
+    /////////////////////////////////////////////
+    if(fCalChamberStatus->GetStatus(det)==2) {
+      if((stateA==3) && (stateB==3)) fCalChamberStatus->SetStatus(det,1);
+      if((stateA==3) && (stateB!=3)) fCalChamberStatus->SetStatus(det,4);
+      if((stateA!=3) && (stateB==3)) fCalChamberStatus->SetStatus(det,3);
+    }
+    if((fCalChamberStatus->GetStatus(det)==3) && (stateA==3)) fCalChamberStatus->SetStatus(det,1);
+    if((fCalChamberStatus->GetStatus(det)==4) && (stateB==3)) fCalChamberStatus->SetStatus(det,1);
+    
   }
 
 }
