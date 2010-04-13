@@ -29,6 +29,9 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 
+#include "AliTRDptrgParam.h"
+#include "AliTRDptrgCBB.h"
+
 #include "AliTRDTriggerL0.h"
 
 AliTRDTriggerL0::AliTRDTriggerL0()
@@ -46,12 +49,14 @@ void AliTRDTriggerL0::CreateInputs()
   if (fInputs.GetEntriesFast() > 0)
     return;
 
-  fInputs.AddLast(new AliTriggerInput("0HMB", "TRD", 1)); // whatever should be there
+  fInputs.AddLast(new AliTriggerInput("0HWU", "TRD", 1)); // TRD wake up
+  fInputs.AddLast(new AliTriggerInput("0HSG", "TRD", 1)); // single gap
+  fInputs.AddLast(new AliTriggerInput("0HDG", "TRD", 1)); // double gap
 }
 
 void AliTRDTriggerL0::Trigger()
 {
-  // just an example:
+
   AliRunLoader *runLoader = AliRunLoader::Instance();
   if (!runLoader)
     return;
@@ -59,6 +64,33 @@ void AliTRDTriggerL0::Trigger()
   if (!trdLoader)
     return;
 
-  // here comes the actual pretrigger simulation
+  AliTRDptrgParam* param = AliTRDptrgParam::Instance();
 
+  AliTRDptrgCBB* ptrgCBB = new AliTRDptrgCBB(runLoader, param, kDigits);
+
+  Int_t* simulationResult;
+  simulationResult = ptrgCBB->Simulate();
+  for (Int_t iResult = 1; iResult <= simulationResult[0]; iResult++) {
+    AliDebug(5, Form("Result[%d]=0x%x\n",iResult,simulationResult[iResult]));
+  }
+  if (simulationResult[0] > 0) { 
+    AliInfo("Fired single gap trigger");
+    SetInput("0HSG");
+  }
+
+  if (simulationResult[1] > 0) {
+    AliInfo("Fired  double gap trigger");
+    SetInput("0HDG");
+  }
+  if (simulationResult[2] > 0) {
+    AliInfo("Fired TRD wake up call trigger");
+    SetInput("0HWU");
+  }
+
+  delete ptrgCBB;
+  if (simulationResult != 0x0)
+    delete[] simulationResult;
+  simulationResult = 0x0;
+
+  AliDebug(5, Form("memory state: %d", param->CheckVariables()));
 }

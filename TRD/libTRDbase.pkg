@@ -62,9 +62,15 @@ SRCS= AliTRDarraySignal.cxx \
       AliTRDtrackletWord.cxx \
       AliTRDgtuSim.cxx \
       AliTRDgtuTMU.cxx \
+      AliTRDptrgFEB.cxx \
+      AliTRDptrgLUT.cxx \
+      AliTRDptrgCBB.cxx \
+      AliTRDptrgCBAC.cxx \
+      AliTRDptrgTLMU.cxx \
       AliTRDhit.cxx \
       AliTRDrecoParam.cxx \
       AliTRDSimParam.cxx \
+      AliTRDptrgParam.cxx \
 
 HDRS= $(SRCS:.cxx=.h)
 
