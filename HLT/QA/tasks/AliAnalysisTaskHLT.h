@@ -1,11 +1,11 @@
 // $Id$
+//* This file is property of and copyright by the ALICE HLT Project *
+//* ALICE Experiment at CERN, All rights reserved.                  *
+//* See cxx source for full Copyright notice                        *
 
 #ifndef ALIANALYSISTASKHLT_H
 #define ALIANALYSISTASKHLT_H
 
-//* This file is property of and copyright by the ALICE HLT Project *
-//* ALICE Experiment at CERN, All rights reserved.                  *
-//* See cxx source for full Copyright notice                        *
 
 /** @file AliAnalysisTaskHLT.h
     @author Kalliopi Kanaki
@@ -17,16 +17,17 @@
 class TH1F;
 class TH2F;
 class TList;
-class AliESDEvent;
-class AliESDtrack;
-class AliESDRun;
+//class AliESDEvent;
+//class AliESDtrack;
+//class AliESDRun;
 class TObjArray;
 
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
  
-  public:  
+  public: 
+    AliAnalysisTaskHLT();
     AliAnalysisTaskHLT(const char *name);
     virtual ~AliAnalysisTaskHLT() {}
     virtual void  UserCreateOutputObjects();
@@ -41,48 +42,48 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     /** assignment operator */
     AliAnalysisTaskHLT& operator=(const AliAnalysisTaskHLT&); 
 
-    AliESDRun *fESDRun;
-    TList *fOutputList;
+    //AliESDRun *fESDRun;
+    TList *fOutputList; // list of output histograms
 
     TH1F *fHistTrigger, *fHistHLTTrigger; //! trigger counters 
        
-    TH1F  *fMomentum_off;       //! momentum	 
-    TH1F  *fDCA_off;            //! track DCA to beam line	  
-    TH1F  *fNcluster_off;       //! #clusters per track
-    TH1F  *fdEdx_off;           //! TPC signal (offline)
-    TH2F  *fdEdx_vs_P_off;      //! dE/dx vs. momentum 
-    TH1F  *fPhi_off;            //! azimuthal angle distribution
-    TH1F  *fTheta_off;          //! polar angle distribution
-    TH1F  *fMult_off;           //! track multiplicity of the event    
-    TH2F  *fXYvertex_off;       //! XY primary vertex distribution
-    TH1F  *fXvertex_off;        //! X primary vertex distribution
-    TH1F  *fYvertex_off;        //! Y primary vertex distribution
-    TH1F  *fZvertex_off;        //! Z primary vertex distribution
-    TH1F  *fEta_off;            //! pseudorapidity
-    TH2F  *fNclus_vs_phi_off;   //! clusters per track vs. azimuthal angle 
-    TH2F  *fNclus_vs_theta_off; //! clusters per track vs. polar angle 
+    TH1F  *fMomentumOff;       //! momentum	 
+    TH1F  *fDCAOff;            //! track DCA to beam line	  
+    TH1F  *fNclusterOff;       //! #clusters per track
+    TH1F  *fdEdxOff;           //! TPC signal (offline)
+    TH2F  *fdEdxVSPOff;        //! dE/dx vs. momentum 
+    TH1F  *fPhiOff;            //! azimuthal angle distribution
+    TH1F  *fThetaOff;          //! polar angle distribution
+    TH1F  *fMultOff;           //! track multiplicity of the event    
+    TH2F  *fXYvertexOff;       //! XY primary vertex distribution
+    TH1F  *fXvertexOff;        //! X primary vertex distribution
+    TH1F  *fYvertexOff;        //! Y primary vertex distribution
+    TH1F  *fZvertexOff;        //! Z primary vertex distribution
+    TH1F  *fEtaOff;            //! pseudorapidity
+    TH2F  *fNclusVSphiOff;     //! clusters per track vs. azimuthal angle 
+    TH2F  *fNclusVSthetaOff;   //! clusters per track vs. polar angle 
     
-    TH1F  *fMomentum_hlt; 
-    TH1F  *fDCA_hlt;	  
-    TH1F  *fNcluster_hlt; 
-    TH1F  *fdEdx_hlt;	  
-    TH2F  *fdEdx_vs_P_hlt;
-    TH1F  *fPhi_hlt;	  
-    TH1F  *fTheta_hlt;    
-    TH1F  *fMult_hlt;	  
-    TH2F  *fXYvertex_hlt; 
-    TH1F  *fXvertex_hlt;  
-    TH1F  *fYvertex_hlt;  
-    TH1F  *fZvertex_hlt;  
-    TH1F  *fEta_hlt;
-    TH2F  *fNclus_vs_phi_hlt;
-    TH2F  *fNclus_vs_theta_hlt;
+    TH1F  *fMomentumHLT;       //! momentum	 
+    TH1F  *fDCAHLT;	       //! track DCA to beam line	  
+    TH1F  *fNclusterHLT;       //! #clusters per track
+    TH1F  *fdEdxHLT;	       //! TPC signal (offline)
+    TH2F  *fdEdxVSPHLT;        //! dE/dx vs. momentum 
+    TH1F  *fPhiHLT;	       //! azimuthal angle distribution
+    TH1F  *fThetaHLT;          //! polar angle distribution
+    TH1F  *fMultHLT;	       //! track multiplicity of the event    
+    TH2F  *fXYvertexHLT;       //! XY primary vertex distribution
+    TH1F  *fXvertexHLT;        //! X primary vertex distribution
+    TH1F  *fYvertexHLT;        //! Y primary vertex distribution
+    TH1F  *fZvertexHLT;        //! Z primary vertex distribution
+    TH1F  *fEtaHLT;	       //! pseudorapidity
+    TH2F  *fNclusVSphiHLT;     //! clusters per track vs. azimuthal angle 
+    TH2F  *fNclusVSthetaHLT;   //! clusters per track vs. polar angle 
    
-//     TH1F *fDCA_off_trig;      //! track DCA to beam line for triggered events
-//     TH1F *fNcluster_off_trig; //! #clusters per track for triggered events
+//     TH1F *fDCAOff_trig;      //! track DCA to beam line for triggered events
+//     TH1F *fNclusterOff_trig; //! #clusters per track for triggered events
 //     
-//     TH1F *fDCA_hlt_trig;     
-//     TH1F *fNcluster_hlt_trig;
+//     TH1F *fDCAHLT_trig;     
+//     TH1F *fNclusterHLT_trig;
    
    
 //     TH1F *fHistOfflTrkDCANoTrigNclsCut1; //! with cut on #clusters>=60
@@ -108,17 +109,17 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
 //     TH2F *fHistOfflDZTrig; //!
 //     TH2F *fHistOfflDZNoTrig; //!
 
-    Int_t fNevt;
-    TObjArray *fTrgClsArray;
+    //Int_t fNevt;
+    TObjArray *fTrgClsArray; // array of trigger classes
 
-    static const Float_t fgkPhiMin[5];
-    static const Float_t fgkPhiMax[5];
-    static const Float_t fgkEtaMin;
-    static const Float_t fgkEtaMax;
-    static const Float_t fgkNormX[5];
-    static const Float_t fgkNormY[5];
-    static const Float_t fgkInitPosX[5];
-    static const Float_t fgkInitPosY[5];
+//     static const Float_t fgkPhiMin[5];
+//     static const Float_t fgkPhiMax[5];
+//     static const Float_t fgkEtaMin;
+//     static const Float_t fgkEtaMax;
+//     static const Float_t fgkNormX[5];
+//     static const Float_t fgkNormY[5];
+//     static const Float_t fgkInitPosX[5];
+//     static const Float_t fgkInitPosY[5];
 
     ClassDef(AliAnalysisTaskHLT, 0);
 };
