@@ -177,8 +177,10 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
       test[specie] = 0. ; // nothing to check
     else {
       TH1 * hdata = (TH1*)list[specie]->At(kTowerHG) ; 
+       hdata->GetListOfFunctions()->RemoveAll();
       if(hdata->GetEntries()==0)
-	continue;
+    	continue;
+      hdata->GetListOfFunctions()->Remove(fText);
       Int_t  nbin   = hdata->GetNbinsX() ;
       Int_t  nTower = nbin/4 ;  // ! number of channels for each SM
       if(fText) {
@@ -202,7 +204,7 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
         Double_t ratio = 0. ;  //value to decide whether each SM works
         TH1F * proj    = NULL  ;  //a temp histogram store the difference from the average for the fitting procedure       
        
-       for(Int_t iTower = iSM*nTower ; iTower<(iSM+1)*nTower ; iTower++)  //channel loop to calculate the average
+        for(Int_t iTower = iSM*nTower ; iTower<(iSM+1)*nTower ; iTower++)  //channel loop to calculate the average
           aver += hdata->GetBinContent(iTower);
         
         aver /=nTower;
@@ -216,6 +218,7 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
           fLine[iSM] = new TLine((iSM+1)*nTower,ymin,(iSM+1)*nTower,ymax);
           fLine[iSM]->SetLineColor(1);
           fLine[iSM]->SetLineWidth(2);
+          hdata->GetListOfFunctions()->Remove(fLine[iSM]);
           hdata->GetListOfFunctions()->Add(fLine[iSM]);  
           list[specie]->AddAt(hdata, kTowerHG) ; 
         }          
@@ -273,8 +276,9 @@ AliEMCALQAChecker::CheckRaws(TObjArray ** list)
        fHref[iSM] = dynamic_cast<TLine*>(hdata->GetListOfFunctions()->FindObject(fHref[iSM]));
        if(!fHref[iSM]) {
          fHref[iSM] = new TLine(iSM*nTower,aver,(iSM+1)*nTower,aver);
-	       hdata->GetListOfFunctions()->Add(fHref[iSM]);  
-	       list[specie]->AddAt(hdata, kTowerHG) ; 
+         hdata->GetListOfFunctions()->Remove(fHref[iSM]);
+	 hdata->GetListOfFunctions()->Add(fHref[iSM]);  
+	 list[specie]->AddAt(hdata, kTowerHG) ; 
        }          
        else {
          fHref[iSM]->Clear() ; 
