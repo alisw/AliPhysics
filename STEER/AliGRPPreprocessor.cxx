@@ -45,12 +45,12 @@
 #include "AliTriggerRunScalers.h"
 
 #include "AliCDBMetaData.h"
-#include "AliLog.h"
 #include "AliESDVertex.h"
 #include "AliLHCReader.h"
 #include "AliLHCData.h"
 #include "AliDCSArray.h"
 
+class AliLog;
 class AliDCSValue;
 class AliShuttleInterface;
 
@@ -626,7 +626,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		TObjArray* energyArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[0]);
 		if (energyArray){			
 			Float_t energy = ProcessEnergy(energyArray,timeStart,timeEnd);
-			if (energy != -1) {
+			if (energy != -1.) {
 				grpobj->SetBeamEnergy(energy);
 				grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
 			}
@@ -2532,7 +2532,7 @@ Int_t AliGRPPreprocessor::ReceivePromptRecoParameters(UInt_t run, const char* db
 	return lastRun;
 }
 //-----------------------------------------------------------------
-Double_t AliGRPPreprocessor::CalculateMean(TObjArray* array){
+Double_t AliGRPPreprocessor::CalculateMean(TObjArray* const array){
 
 	//
 	// Calculating mean over TObjArray from LHC Data
@@ -2765,7 +2765,7 @@ Double_t AliGRPPreprocessor::CalculateMean(TObjArray* array){
 	return (parameters[0]);
 }
 //------------------------------------------------------------------------------------------------------
-Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* array, Double_t timeStart, Double_t timeEnd){
+Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* const array, Double_t timeStart, Double_t timeEnd){
 
 	//
 	// Method to processo LHC Energy information
