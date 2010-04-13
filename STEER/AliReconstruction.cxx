@@ -129,6 +129,7 @@
 #include <THashTable.h>
 #include <TGrid.h>
 #include <TMessage.h>
+#include <TUrl.h>
 
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
@@ -1143,6 +1144,10 @@ Bool_t AliReconstruction::InitGRP() {
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadCDB()
 {
+  // Load CDB entries for all active detectors.
+  // By default we load all the entries in <det>/Calib
+  // folder.
+
   AliCodeTimerAuto("",0);
 
   AliCDBManager::Instance()->Get("GRP/CTP/Config");
@@ -1164,6 +1169,9 @@ Bool_t AliReconstruction::LoadCDB()
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadTriggerScalersCDB()
 {
+  // Load CTP scalers from OCDB.
+  // The scalers are checked for consistency.
+
   AliCodeTimerAuto("",0);
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Scalers");
@@ -1181,6 +1189,9 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
 //_____________________________________________________________________________
 Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
 {
+  // Load CTP timing information (alignment)
+  // from OCDB.
+
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
 
   if (entry) {
@@ -1256,10 +1267,11 @@ Bool_t AliReconstruction::Run(const char* input)
 //_____________________________________________________________________________
 void AliReconstruction::InitRawReader(const char* input)
 {
-  AliCodeTimerAuto("",0);
-
   // Init raw-reader and
   // set the input in case of raw data
+
+  AliCodeTimerAuto("",0);
+
   if (input) fRawInput = input;
   fRawReader = AliRawReader::Create(fRawInput.Data());
   if (!fRawReader) {
@@ -1590,6 +1602,8 @@ Bool_t AliReconstruction::Process(Long64_t entry)
 //_____________________________________________________________________________
 void AliReconstruction::Init(TTree *tree)
 {
+  // Implementation of TSelector::Init()
+  // method
   if (tree == 0) {
     AliError("The input tree is not found!");
     return;
@@ -1613,7 +1627,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   AliCodeTimerAuto("",0);
 
-  AliESDpid PID;
+  AliESDpid pid;
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
     fRunLoader->SetEventNumber(iEvent);
@@ -1653,7 +1667,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
-	reconstructor->GetPidSettings(&PID);
+	reconstructor->GetPidSettings(&pid);
 	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
@@ -1762,7 +1776,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // barrel tracking
     if (!fRunTracking.IsNull()) {
-      if (!RunTracking(fesd,PID)) {
+      if (!RunTracking(fesd,pid)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
@@ -1792,7 +1806,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
  
     // combined PID
-    PID.MakePID(fesd);
+    pid.MakePID(fesd);
 
     if (fFillTriggerESD) {
       if (!FillTriggerESD(fesd)) {
@@ -3136,8 +3150,8 @@ void AliReconstruction::FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd)
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::CheckQA()
-{
+// void AliReconstruction::CheckQA()
+// {
 // check the QA of SIM for this run and remove the detectors 
 // with status Fatal
   
@@ -3172,7 +3186,7 @@ void AliReconstruction::CheckQA()
 //	fRunLocalReconstruction = newRunLocalReconstruction ; 
 //	fRunTracking            = newRunTracking ; 
 //	fFillESD                = newFillESD ; 
-}
+// }
 
 //_____________________________________________________________________________
 Int_t AliReconstruction::GetDetIndex(const char* detector)

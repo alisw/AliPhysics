@@ -19,7 +19,6 @@
 
 #include <TSelector.h>
 #include <TString.h>
-#include <TUrl.h>
 #include <TObjArray.h>
 
 class AliReconstructor;
@@ -146,8 +145,8 @@ public:
   void    InitQA();
   void    MergeQA(const char *fileName = NULL); 
   void    SetWriteQAExpert() { fWriteQAExpertData = kTRUE ; }
-  Bool_t  IsRunQA() { return fRunQA ; } 
-  Bool_t  IsRunGlobalQA() { return fRunGlobalQA ; }
+  Bool_t  IsRunQA() const { return fRunQA ; } 
+  Bool_t  IsRunGlobalQA() const { return fRunGlobalQA ; }
   Bool_t  IsInTasks(AliQAv1::TASKINDEX_t tsk) { return fQATasks.Contains(Form("%d", tsk)) ; }
   
   // Plane Efficiency Evaluation
@@ -200,7 +199,7 @@ private:
   void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);
 
   //Quality Assurance
-  void                 CheckQA() ;
+  //  void                 CheckQA() ;
 
   // Plane Efficiency evaluation
   Bool_t  FinishPlaneEff(); //ultimate tasks related to Plane Eff. evaluation 
