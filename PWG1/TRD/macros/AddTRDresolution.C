@@ -55,7 +55,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
       mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2Trk%s", res->GetName(), suffix)));
       mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibClErrParam.root"));*/
   
-      AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
+      //AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
       mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ClErrCalibMC"));
       taskCl->SetExB();
       taskCl->SetDebugLevel(0);
