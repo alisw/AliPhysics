@@ -85,7 +85,46 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
 AliHLTCaloRawAnalyzerComponentv3::~AliHLTCaloRawAnalyzerComponentv3()
 {
   //comment
-  DoDeinit();
+  //this is not created here but in the derived classes
+  //   if(fAnalyzerPtr)
+  //     {
+  //       delete fAnalyzerPtr;
+  //        fAnalyzerPtr = 0;
+  //     }
+
+  if(fMapperPtr)
+    {
+      delete  fMapperPtr;
+      fMapperPtr = 0;
+    }
+
+  if(fRawReaderMemoryPtr)
+    {
+      delete fRawReaderMemoryPtr;
+      fRawReaderMemoryPtr = 0;
+    }
+
+  if(fAltroRawStreamPtr)
+    {
+      delete fAltroRawStreamPtr;
+      fAltroRawStreamPtr = 0;
+    }
+
+  if (fRawDataWriter)
+    {
+      delete fRawDataWriter;
+      fRawDataWriter = 0;
+    }
+
+  if (fSanityInspectorPtr)
+    {
+      delete fSanityInspectorPtr;
+      fSanityInspectorPtr = 0;
+    }
+
+  // NOT A GOOD IDEA TO CALL VIRTUAL FUNCTION
+  // ESPECIALLY IN VIRTUAL DESTRUCTOR - just stick to it
+  // DoDeinit();
 }
 
 
@@ -154,12 +193,16 @@ int
 AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 {
   //comment
+  
+  //this is not created here but in the derived classes
+  //   if(fAnalyzerPtr)
+  //     {
+  //       delete fAnalyzerPtr;
+  //        fAnalyzerPtr = 0;
+  //     }
 
-  if(fAnalyzerPtr)
-    {
-      delete fAnalyzerPtr;
-      fAnalyzerPtr = 0;
-    }
+  // what about the rest of the created objects?
+  // in the contructor?
 
   if(fMapperPtr)
     {
@@ -403,7 +446,15 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter(AliHLTCaloConstan
   Init();
 }
 
-
+AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::~RawDataWriter()
+{
+  //destructor - added by MP
+  if (0 != fRawDataBuffer)
+    {
+      delete [] fRawDataBuffer;
+      fRawDataBuffer = 0;
+    }
+}
    
 void  
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::Init()
