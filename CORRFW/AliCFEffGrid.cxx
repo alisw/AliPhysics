@@ -77,7 +77,7 @@ AliCFEffGrid::AliCFEffGrid(const Char_t* name, const Char_t* title, const AliCFC
     Double_t* array=new Double_t[nbins+1] ;
     c.GetBinLimits(iVar,array);
     SetBinLimits(iVar,array);
-    delete array ;
+    delete [] array ;
   }
   for (Int_t iVar=0; iVar<GetNVar(); iVar++) SetVarTitle(iVar,c.GetVarTitle(iVar));
 }
