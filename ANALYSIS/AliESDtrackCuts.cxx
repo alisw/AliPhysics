@@ -580,6 +580,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
   // TPC  
+  esdTrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
