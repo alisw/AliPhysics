@@ -19,13 +19,13 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
   //AliLog::SetClassDebugLevel("AliTRDresolution", 2);
   AliTRDresolution *res(NULL);
-  //AliTRDresolution::SetSegmentationLevel(1);
   const Char_t *suffix[]={"", "SA", "K"};
   for(Int_t itq=0; itq<1/*3*/; itq++){
     mgr->AddTask(res = new AliTRDresolution(Form("TRDresolution%s", suffix[itq])));
     res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
-    //res->SetDebugLevel(2);
+    res->SetDebugLevel(0);
+    //if(itq==0) res->SetSegmentationLevel(1);
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(res, 1, ci[itq]);
@@ -46,20 +46,21 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
     // Cluster Error Parameterization
     if(TSTBIT(map, kClErrParam)){
       AliTRDclusterResolution *taskCl(NULL);
-      mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ClErrCalibESD"));
+/*      mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ClErrCalibESD"));
       taskCl->SetExB();
       taskCl->SetDebugLevel(0);
       //AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
   
       mgr->ConnectInput(taskCl,  0, mgr->GetCommonInputContainer()); 
-      mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2Trk", res->GetName())));
-      mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibClErrParam.root"));
+      mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2Trk%s", res->GetName(), suffix)));
+      mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibClErrParam.root"));*/
   
+      AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
       mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ClErrCalibMC"));
       taskCl->SetExB();
       taskCl->SetDebugLevel(0);
       mgr->ConnectInput(taskCl,  0, mgr->GetCommonInputContainer());  
-      mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2MC", res->GetName())));
+      mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2MC%s", res->GetName(), suffix)));
       mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibClErrParam.root"));
     }
   }

@@ -18,6 +18,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
   mgr->AddTask(info = new AliTRDinfoGen((char*)"genInfo"));
   info->SetDebugLevel(0);
   info->SetMCdata(mc);
+  info->SetLocalTrkSelection();
 
   // settings for collisions
   info->SetCollision(/*kFALSE*/);
@@ -27,7 +28,6 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContaine
       " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
     );
     info->SetLocalEvSelection();
-    info->SetLocalTrkSelection();
   }
   
   // Connect IO slots
