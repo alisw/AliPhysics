@@ -504,33 +504,41 @@ const char* ChangeComposition(void** correctionPointer, Int_t index)
       break;
 
       // one species enhanced / reduced
-    case 2: // + 50% kaons
-    case 3: // - 50% kaons
-    case 4: // + 50% protons
-    case 5: // - 50% protons
-    case 6: // + 50% kaons + 50% protons
-    case 7: // - 50% kaons - 50% protons
-    case 8: // + 50% kaons - 50% protons
-    case 9: // - 50% kaons + 50% protons
+    case 2: // + 30% kaons
+    case 3: // - 30% kaons
+    case 4: // + 30% protons
+    case 5: // - 30% protons
+    case 6: // + 30% kaons + 30% protons
+    case 7: // - 30% kaons - 30% protons
+    case 8: // + 30% kaons - 30% protons
+    case 9: // - 30% kaons + 30% protons
+    case 10: // + 30% others
+    case 11: // - 30% others
       TString* str = new TString;
       if (index < 6)
       {
         Int_t correctionIndex = index / 2;
-        Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
+        Double_t scaleFactor = (index % 2 == 0) ? 1.3 : 0.7;
   
         fdNdEtaCorrection[correctionIndex]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
         str->Form("%s%s", (correctionIndex == 0) ? "Pi" : ((correctionIndex == 1) ? "K" : (correctionIndex == 2) ? "p" : "others"), (index % 2 == 0) ? "Boosted" : "Reduced");
       }
-      else
+      else if (index < 10)
       {
-        Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
+        Double_t scaleFactor = (index % 2 == 0) ? 1.3 : 0.7;
         fdNdEtaCorrection[1]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
         str->Form("%s%s", "K", (scaleFactor > 1) ? "Boosted" : "Reduced");
         
         if (index >= 8)
-          scaleFactor = (index % 2 == 0) ? 0.5 : 1.5;
+          scaleFactor = (index % 2 == 0) ? 0.3 : 1.7;
         fdNdEtaCorrection[2]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
         *str += Form("%s%s", "p", (scaleFactor > 1) ? "Boosted" : "Reduced");
+      }
+      else
+      {
+        Double_t scaleFactor = (index % 2 == 0) ? 1.3 : 0.7;
+        fdNdEtaCorrection[3]->GetTrack2ParticleCorrection()->GetTrackCorrection()->Scale(scaleFactor);
+        str->Form("%s%s", "others", (scaleFactor > 1) ? "Boosted" : "Reduced");
       }
 
       return str->Data();
@@ -579,7 +587,13 @@ void Composition()
   const char* names[] = { "pi", "K", "p", "other" };
   TH1* hRatios[20];
 
-  Int_t nCompositions = 10;
+  //backgroundEvents = 1162+434; // Michele for MB1, run 104892, 15.02.10
+  backgroundEvents = -1;    // use 0 bin from MC! for 2.36 TeV
+  
+  Printf("Subtracting %d background events!!!", backgroundEvents);
+  gSystem->Sleep(1000);
+  
+  Int_t nCompositions = 12;
   Int_t counter = 0;
   for (Int_t comp = 1; comp < nCompositions; ++comp)
   {
@@ -621,7 +635,7 @@ void Composition()
 
     // skip "other" particle correction here
     // with them has to be dealt differently, maybe just increasing the neutral particles...
-    for (Int_t i=1; i<3; ++i)
+    for (Int_t i=1; i<4; ++i)
       collection->Add(fdNdEtaCorrection[i]);
 
     fdNdEtaCorrection[0]->Merge(collection);
@@ -776,7 +790,7 @@ void DrawdNdEtaDifferences()
   canvas2->SaveAs("particlecomposition_result.eps");
 }
 
-void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char_t* correctionFileName="correction_mapprocess-types.root", const char* analysisFileName = "analysis_esd_raw.root", const Char_t* outputFileName="systematics_vtxtrigger_compositions.root") {
+void mergeCorrectionsWithDifferentCrosssections(Int_t origin, Int_t correctionTarget = 3, Char_t* correctionFileName="correction_mapprocess-types.root", const char* analysisFileName = "analysis_esd_raw.root", const Char_t* outputFileName=0) {
   //
   // Function used to merge standard corrections with vertex
   // reconstruction corrections obtained by a certain mix of ND, DD
@@ -789,6 +803,17 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   // correctionTarget is of type AlidNdEtaCorrection::CorrectionType
   //    kINEL = 3
   //    kNSD = 4
+  //    kOnePart = 6
+
+  if (outputFileName == 0)
+  {
+    if (correctionTarget == 3)
+      outputFileName = "systematics_vtxtrigger_compositions_inel.root";
+    if (correctionTarget == 4)
+      outputFileName = "systematics_vtxtrigger_compositions_nsd.root";
+    if (correctionTarget == 6)
+      outputFileName = "systematics_vtxtrigger_compositions_onepart.root";
+  }
 
   loadlibs();
 
@@ -805,16 +830,133 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   //Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.5, 0.5, 1.5, 0.5, 0.5, 1.5, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
   //Float_t scalesDD[] = {1.0, 1.4, 0.6, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 1.25, 0.75, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75};
   //Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.4, 0.6, 1.4, 0.6, 0.4, 1.6, 1.0,  1.0,  1.25, 0.75, 1.25, 0.75, 0.75, 1.25};
-  Int_t nChanges = 9;
+/*  Int_t nChanges = 9;
 
   const Char_t* changes[]  = { "ua5","ddmore","ddless","sdmore","sdless", "dmore", "dless", "sdlessddmore", "sdmoreddless" };
   Float_t scalesND[] = {0.767, 0.767, 0.767, 0.767, 0.767, 0.767, 0.767, 0.767, 0.767};
   Float_t scalesDD[] = {0.080, 0.130, 0.030, 0.080, 0.080, 0.130, 0.030, 0.130, 0.030};
-  Float_t scalesSD[] = {0.153, 0.153, 0.153, 0.203, 0.103, 0.203, 0.103, 0.103, 0.203};
+  Float_t scalesSD[] = {0.153, 0.153, 0.153, 0.203, 0.103, 0.203, 0.103, 0.103, 0.203};*/
   
-  for (Int_t i=0; i<9; i++)
-    scalesND[i] = 1.0 - scalesDD[i] - scalesSD[i];
+  Float_t ref_SD = -1;
+  Float_t ref_DD = -1;
+  Float_t ref_ND = -1;
+  
+  Float_t error_SD = -1;
+  Float_t error_DD = -1;
+  Float_t error_ND = -1;
+  
+  GetRelativeFractions(origin, ref_SD, ref_DD, ref_ND, error_SD, error_DD, error_ND);
+  
+  Printf("Using x-sections:\n SD: %f +- %f\n DD: %f +- %f\n ND: %f +- %f", ref_SD, error_SD, ref_DD, error_DD, ref_ND, error_ND);
+  
+  const Char_t* changes[]  = { "default","sdless","sdmore","ddless","ddmore", "dless", "dmore", "sdlessddmore", "sdmoreddless" };
+  Int_t nChanges = 9;
+  Float_t scalesSD[9];
+  Float_t scalesDD[9];
+  Float_t scalesND[9];
+  
+  if (1)
+  {
+    // sample 8 points on the error ellipse
+    for (Int_t i=0; i<9; i++)
+    {
+      Float_t factorSD = 0;
+      Float_t factorDD = 0;
+      
+      if (i > 0 && i < 3)
+        factorSD = (i % 2 == 0) ? 1 : -1;
+      else if (i >= 3 && i < 5)
+        factorDD = (i % 2 == 0) ? 1 : -1;
+      else if (i >= 5 && i < 9)
+      {
+        factorSD = ((i % 2 == 0) ? 1.0 : -1.0) / TMath::Sqrt(2);
+        if (i == 5 || i == 6)
+          factorDD = factorSD;
+        else
+          factorDD = -factorSD;
+      }
+      
+      scalesSD[i] = ref_SD + factorSD * error_SD;
+      scalesDD[i] = ref_DD + factorDD * error_DD;
+      scalesND[i] = 1.0 - scalesDD[i] - scalesSD[i];
+      
+      Printf("Case %d: SD: %f DD: %f ND: %f", i, scalesSD[i], scalesDD[i], scalesND[i]);
+    }
+  }
+  else
+  {
+    Printf("WARNING: Special treatment for ratios active");
+    gSystem->Sleep(1000);
+    
+    // constrained values by allowed changing of cross-sections
+    Float_t pythiaScaling = 0.224 / 0.189;
 
+    if (origin == 10)
+    {
+      // 900 GeV
+      for (Int_t i=0; i<9; i++)
+      {
+        scalesSD[i] = 15.3;
+        scalesDD[i] = 9.5;
+      }
+
+      scalesSD[1] = 15.7;
+      scalesSD[2] = 17.6;
+      scalesSD[3] = 13.5;
+      scalesSD[4] = 17.6;
+
+      scalesDD[5] = 15.5;
+      scalesDD[6] = 8.8;
+      scalesDD[7] = 13.8;
+      scalesDD[8] = 7.6;
+    }
+    else if (origin == 20)
+    {
+      // 2.36 TeV
+      pythiaScaling = 0.217 / 0.167;
+      
+      for (Int_t i=0; i<9; i++)
+      {
+        scalesSD[i] = 15.9;
+        scalesDD[i] = 10.7;
+      }
+
+      scalesSD[1] = 13.5;
+      scalesSD[2] = 15.2;
+      scalesSD[3] = 13.5;
+      scalesSD[4] = 17.6;
+
+      scalesDD[5] = 13.8;
+      scalesDD[6] = 7.6;
+      scalesDD[7] = 13.8;
+      scalesDD[8] = 7.6;
+    }
+    else
+      AliFatal("Not supported");
+
+    for (Int_t i=0; i<9; i++)
+    {
+      scalesSD[i] /= 100;
+      scalesSD[i] *= pythiaScaling;
+      scalesDD[i] /= 100;
+      scalesND[i] = 1.0 - scalesDD[i] - scalesSD[i];
+      Printf("Case %d: SD: %f DD: %f ND: %f", i, scalesSD[i], scalesDD[i], scalesND[i]);
+    }
+  }
+  
+  Int_t backgroundEvents = 0;
+  
+  //backgroundEvents = 1162+434; // Michele for MB1, run 104892, 15.02.10
+  //backgroundEvents = 6;          // Michele for V0AND, run 104892, 15.02.10
+  
+  //backgroundEvents = 4398+961;   // Michele for MB1, run 104824-52, 16.02.10
+  //backgroundEvents = 19;         // Michele for V0AND, run 104824-52, 16.02.10
+  
+  backgroundEvents = -1;    // use 0 bin from MC! for 2.36 TeV
+  
+  Printf("Subtracting %d background events!!!", backgroundEvents);
+  gSystem->Sleep(1000);
+  
   /*
   const Char_t* changes[]  = { "pythia", "qgsm", "phojet"};
   Float_t scalesND[] = {1.0, 1.10, 1.11};
@@ -825,9 +967,9 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   
   // cross section from Pythia
   // 14 TeV!
-  Float_t sigmaND = 55.2;
-  Float_t sigmaDD = 9.78;
-  Float_t sigmaSD = 14.30;
+//   Float_t sigmaND = 55.2;
+//   Float_t sigmaDD = 9.78;
+//   Float_t sigmaSD = 14.30;
 
   // standard correction
   TFile::Open(correctionFileName);
@@ -840,6 +982,7 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   correctionStandard->GetTriggerBiasCorrectionINEL()->Reset();
   correctionStandard->GetTriggerBiasCorrectionNSD()->Reset();
   correctionStandard->GetTriggerBiasCorrectionND()->Reset();
+  correctionStandard->GetTriggerBiasCorrectionOnePart()->Reset();
 
   AlidNdEtaCorrection* corrections[100];
   TH1F* hRatios[100];
@@ -902,8 +1045,8 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
       if (j == 1 || j == 2)
       {
         dNdEtaCorrectionND->GetTriggerBiasCorrectionINEL()->Scale(scaleND);
-        dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->Scale(scalesDD[i]);
-        dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->Scale(scalesSD[i]);
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionINEL()->Scale(scaleDD);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionINEL()->Scale(scaleSD);
 
         dNdEtaCorrectionND->GetTriggerBiasCorrectionNSD()->Scale(scaleND);
         dNdEtaCorrectionDD->GetTriggerBiasCorrectionNSD()->Scale(scaleDD);
@@ -912,6 +1055,10 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
         dNdEtaCorrectionND->GetTriggerBiasCorrectionND()->Scale(scaleND);
         dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scaleDD);
         dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scaleSD);
+
+        dNdEtaCorrectionND->GetTriggerBiasCorrectionOnePart()->Scale(scaleND);
+        dNdEtaCorrectionDD->GetTriggerBiasCorrectionOnePart()->Scale(scaleDD);
+        dNdEtaCorrectionSD->GetTriggerBiasCorrectionOnePart()->Scale(scaleSD);
       }
 
       //clear track in correction
@@ -927,6 +1074,14 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
 
       current->Merge(&collection);
       current->Finish();
+      
+      // print 0 bin efficiency
+      TH1* hist2 = current->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->Get1DCorrection("y", -10, 10);
+      if (hist2->GetBinContent(1))
+      {
+        Float_t triggerEff = 100.0 / hist2->GetBinContent(1);
+        Printf("trigger eff in 0 bin is: %.2f %%", triggerEff);
+      }
 
       corrections[counter] = current;
 
@@ -936,7 +1091,7 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
       dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("fdNdEtaAnalysisESD", "fdNdEtaAnalysisESD");
       fdNdEtaAnalysis->LoadHistograms();
 
-      fdNdEtaAnalysis->Finish(current, 0.3, correctionTarget, Form("%d %d", j, i));
+      fdNdEtaAnalysis->Finish(current, 0.151, correctionTarget, Form("%d %d", j, i), backgroundEvents);
 
       name = "ratio";
       if (j==0) name.Append("_vetexReco_");
@@ -949,7 +1104,12 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
       name.Form("ND #times %0.2f DD #times %0.2f, SD #times %0.2f",scaleND,scaleDD,scaleSD);
       hRatios[counter]->SetTitle(name.Data());
       hRatios[counter]->SetYTitle("dN_{ch}/d#eta ratio #frac{default cross-section}{modified cross-sections}");
-
+      
+      TF1* pol0 = new TF1("pol0", "[0]", -0.49, 0.49);
+      pol0->SetParameter(0, 0);
+      hRatios[counter]->Fit(pol0, "RN");
+      Printf("Case %d: %f", i, pol0->GetParameter(0));
+      
       if (counter > 0)
         hRatios[counter]->Divide(hRatios[0],hRatios[counter],1,1);
 
@@ -974,12 +1134,8 @@ void mergeCorrectionsWithDifferentCrosssections(Int_t correctionTarget = 3, Char
   fout->Close();
 }
 
-void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctionFileName="correction_mapprocess-types.root", const Char_t* outputFileName="correction_map2.root") {
-  //
-  // Function used to merge standard corrections with vertex
-  // reconstruction corrections obtained by a certain mix of ND, DD
-  // and SD events.
-  //
+void GetRelativeFractions(Int_t origin, Float_t& ref_SD, Float_t& ref_DD, Float_t& ref_ND, Float_t& error_SD, Float_t& error_DD, Float_t& error_ND)
+{
   // origin: 
   //   -1 = Pythia (test)
   //   0 = UA5
@@ -988,6 +1144,103 @@ void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctio
   //   3 = Durham
   //
 
+  switch (origin)
+  {
+    case -10: // Pythia default at 900 GeV, 50% error
+      Printf("PYTHIA x-sections");
+      ref_SD = 0.223788; error_SD = ref_SD * 0.5;
+      ref_DD = 0.123315; error_DD = ref_DD * 0.5;
+      ref_ND = 0.652897; error_ND = 0;
+      break;
+
+    case -1: // Pythia default at 900 GeV, as test
+      Printf("PYTHIA x-sections");
+      ref_SD = 0.223788;
+      ref_DD = 0.123315;
+      ref_ND = 0.652897;
+      break;
+      
+    case 0: // UA5
+      Printf("UA5 x-sections a la first paper");
+      ref_SD = 0.153; error_SD = 0.05;
+      ref_DD = 0.080; error_DD = 0.05;
+      ref_ND = 0.767; error_ND = 0;
+      break;
+      
+    case 10: // UA5
+      Printf("UA5 x-sections hadron level definition for Pythia"); 
+      // Fractions in Pythia with UA5 cuts selection for SD
+      // ND: 0.688662
+      // SD: 0.188588 --> this should be 15.3
+      // DD: 0.122750
+      ref_SD = 0.224 * 0.153 / 0.189; error_SD = 0.023 * 0.224 / 0.189;
+      ref_DD = 0.095;                 error_DD = 0.06; 
+      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+      break;
+    
+    case 11: // UA5
+      Printf("UA5 x-sections hadron level definition for Phojet"); 
+      // Fractions in Phojet with UA5 cuts selection for SD
+      // ND: 0.783573
+      // SD: 0.151601 --> this should be 15.3
+      // DD: 0.064827
+      ref_SD = 0.191 * 0.153 / 0.152; error_SD = 0.023 * 0.191 / 0.152;
+      ref_DD = 0.095;                 error_DD = 0.06; 
+      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+      break;
+      
+    case 20: // E710, 1.8 TeV
+      Printf("E710 x-sections hadron level definition for Pythia");
+      // ND: 0.705709
+      // SD: 0.166590 --> this should be 15.9
+      // DD: 0.127701
+      ref_SD = 0.217 * 0.159 / 0.167; error_SD = 0.024 * 0.217 / 0.167;
+      ref_DD = 0.075 * 1.43;          error_DD = 0.02 * 1.43; 
+      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+      break;
+    
+    case 21: // E710, 1.8 TeV
+      Printf("E710 x-sections hadron level definition for Phojet"); 
+      // ND: 0.817462
+      // SD: 0.125506 --> this should be 15.9
+      // DD: 0.057032
+      ref_SD = 0.161 * 0.159 / 0.126; error_SD = 0.024 * 0.161 / 0.126;
+      ref_DD = 0.075 * 1.43;         error_DD = 0.02 * 1.43;
+      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+      break;
+    
+    case 1: // data 1.8 TeV
+      Printf("??? x-sections");
+      ref_SD = 0.152;
+      ref_DD = 0.092;
+      ref_ND = 1 - ref_SD - ref_DD;
+      break;
+      
+    case 2: // tel-aviv model
+      Printf("Tel-aviv model x-sections");
+      ref_SD = 0.171;
+      ref_DD = 0.094;
+      ref_ND = 1 - ref_SD - ref_DD;
+      break;
+    
+    case 3: // durham model
+      Printf("Durham model x-sections");
+      ref_SD = 0.190;
+      ref_DD = 0.125;
+      ref_ND = 1 - ref_SD - ref_DD;
+      break;
+    
+    default:
+      AliFatal(Form("Unknown origin %d", origin));
+  }
+}
+
+void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctionFileName="correction_mapprocess-types.root", const Char_t* outputFileName="correction_map2.root") {
+  //
+  // Function used to merge standard corrections with vertex
+  // reconstruction corrections obtained by a certain mix of ND, DD
+  // and SD events.
+  //
   loadlibs();
 
   const Char_t* typeName[] = { "vertexreco", "trigger", "vtxtrigger" };
@@ -996,43 +1249,15 @@ void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctio
   Float_t ref_DD = -1;
   Float_t ref_ND = -1;
   
-  switch (origin)
-  {
-    case -1: // Pythia, as test
-      ref_SD = 0.223788;
-      ref_DD = 0.123315;
-      ref_ND = 0.652897;
-      break;
-      
-    case 0: // UA5
-      ref_SD = 0.153;
-      ref_DD = 0.080;
-      ref_ND = 0.767;
-      break;
-      
-    case 1: // data 1.8 TeV
-      ref_SD = 0.152;
-      ref_DD = 0.092;
-      ref_ND = 1 - ref_SD - ref_DD;
-      break;
-      
-    case 2: // tel-aviv model
-      ref_SD = 0.171;
-      ref_DD = 0.094;
-      ref_ND = 1 - ref_SD - ref_DD;
-      break;
-    
-    case 3: // durham model
-      ref_SD = 0.190;
-      ref_DD = 0.125;
-      ref_ND = 1 - ref_SD - ref_DD;
-      break;
-    
-    default:
-      return;
-  }
-      
-  //Karel (UA5):
+  Float_t error_SD = -1;
+  Float_t error_DD = -1;
+  Float_t error_ND = -1;
+  
+  GetRelativeFractions(origin, ref_SD, ref_DD, ref_ND, error_SD, error_DD, error_ND);
+  
+  Printf("Using x-sections:\n SD: %f +- %f\n DD: %f +- %f\n ND: %f +- %f", ref_SD, error_SD, ref_DD, error_DD, ref_ND, error_ND);
+  
+//Karel (UA5):
 //     fsd = 0.153 +- 0.031
 //     fdd = 0.080 +- 0.050
 //     fnd = 0.767 +- 0.059
@@ -1043,8 +1268,6 @@ void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctio
 //       Durham model   Sd/Inel = 0.190           Dd/Inel = 0.125
 //       Data           Sd/Inel = 0.152 +- 0.030  Dd/Inel = 0.092 +- 0.45
 
-
-  
   // standard correction
   TFile::Open(correctionFileName);
   AlidNdEtaCorrection* correctionStandard = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
@@ -1056,6 +1279,7 @@ void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctio
   correctionStandard->GetTriggerBiasCorrectionINEL()->Reset();
   correctionStandard->GetTriggerBiasCorrectionNSD()->Reset();
   correctionStandard->GetTriggerBiasCorrectionND()->Reset();
+  correctionStandard->GetTriggerBiasCorrectionOnePart()->Reset();
 
   AlidNdEtaCorrection* corrections[100];
   TH1F* hRatios[100];
@@ -1114,6 +1338,10 @@ void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctio
   dNdEtaCorrectionDD->GetTriggerBiasCorrectionND()->Scale(scaleDD);
   dNdEtaCorrectionSD->GetTriggerBiasCorrectionND()->Scale(scaleSD);
 
+  dNdEtaCorrectionND->GetTriggerBiasCorrectionOnePart()->Scale(scaleND);
+  dNdEtaCorrectionDD->GetTriggerBiasCorrectionOnePart()->Scale(scaleDD);
+  dNdEtaCorrectionSD->GetTriggerBiasCorrectionOnePart()->Scale(scaleSD);
+
   //clear track in correction
   dNdEtaCorrectionND->GetTrack2ParticleCorrection()->Reset();
   dNdEtaCorrectionDD->GetTrack2ParticleCorrection()->Reset();
@@ -1128,6 +1356,14 @@ void CreateCorrectionsWithUA5CrossSections(Int_t origin, const Char_t* correctio
   current->Merge(&collection);
   current->Finish();
 
+  // print 0 bin efficiency
+  TH1* hist2 = current->GetTriggerBiasCorrectionINEL()->GetEventCorrection()->Get1DCorrection("y", -10, 10);
+  if (hist2->GetBinContent(1) > 0)
+  {
+    Float_t triggerEff = 100.0 / hist2->GetBinContent(1);
+    Printf("trigger eff in 0 bin is: %.2f %%", triggerEff);
+  }
+  
   TFile* fout = new TFile(outputFileName,"RECREATE");
   current->SaveHistograms();
 
@@ -1783,4 +2019,174 @@ void ChangePtInCorrection(const char* fileName = "correction_map.root", const ch
   
   Printf(">>>> After");
   corr->PrintInfo(0);
+}
+
+Float_t FitAverage(TH1* hist, Int_t n, Float_t* begin, Float_t *end, Int_t color, Int_t& totalBins)
+{
+  Float_t average = 0;
+  totalBins = 0;
+  
+  for (Int_t i=0; i<n; i++)
+  {
+    func = new TF1("func", "[0]", hist->GetXaxis()->GetBinLowEdge(hist->GetXaxis()->FindBin(begin[i])), hist->GetXaxis()->GetBinUpEdge(hist->GetXaxis()->FindBin(end[i])));
+    Int_t bins = hist->GetXaxis()->FindBin(end[i]) - hist->GetXaxis()->FindBin(begin[i]) + 1;
+    func->SetParameter(0, 1);
+    func->SetLineColor(color);
+
+    hist->Fit(func, "RNQ");
+    func->Draw("SAME");
+    
+    average += func->GetParameter(0) * bins;
+    totalBins += bins;
+  }
+  
+  return average / totalBins;
+}
+
+void SPDIntegrateGaps(Bool_t all, const char* mcFile = "../../../LHC10b2/v0or/spd/analysis_esd_raw.root")
+{
+  Float_t eta = 1.29;
+  Int_t binBegin = ((TH2*) gFile->Get("fEtaPhi"))->GetXaxis()->FindBin(-eta);
+  Int_t binEnd   = ((TH2*) gFile->Get("fEtaPhi"))->GetXaxis()->FindBin(eta);
+  
+  Printf("eta range: %f bins: %d %d", eta, binBegin, binEnd);
+  
+  if (!all)
+    Printf("Eta smaller than 0 side");
+  
+  c = new TCanvas;
+  TFile::Open("analysis_esd_raw.root");
+  hist = ((TH2*) gFile->Get("fEtaPhi"))->ProjectionY("hist", binBegin, (all) ? binEnd : 40);
+  hist->Rebin(2);
+  hist->SetStats(0);
+  hist->Sumw2();
+  hist->Draw("HIST");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  
+  TFile::Open(mcFile);  
+  mcHist = ((TH2*) gFile->Get("fEtaPhi"))->ProjectionY("mcHist", binBegin, (all) ? binEnd : 40);
+  mcHist->Rebin(2);
+  mcHist->SetLineColor(2);
+  mcHist->Scale(hist->Integral() / mcHist->Integral());
+  mcHist->Draw("SAME");
+  
+  Float_t add = 0;
+  Int_t bins;
+  
+  Float_t okRangeBegin[] = { 0.04, 0.67, 1.34 };
+  Float_t okRangeEnd[] =   { 0.55, 1.24, 1.63 };
+  Float_t gapRangeBegin[] = { 0.6, 1.27  };
+  Float_t gapRangeEnd[] =   { 0.65, 1.32 };
+  Float_t averageOK  = FitAverage(hist, 3, okRangeBegin, okRangeEnd, 1, bins);
+  Float_t averageGap = FitAverage(hist, 2, gapRangeBegin, gapRangeEnd, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin2[] = { 2.4, 2.65 };
+  Float_t okRangeEnd2[] =   { 2.55, 3.2 };
+  Float_t gapRangeBegin2[] = { 2.59, 3.3 };
+  Float_t gapRangeEnd2[] =   { 2.61, 3.3 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin2, okRangeEnd2, 1, bins);
+  averageGap = FitAverage(hist, 2, gapRangeBegin2, gapRangeEnd2, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin3[] = { 3.55, 3.9 };
+  Float_t okRangeEnd3[] =   { 3.8, 4.15 };
+  Float_t gapRangeBegin3[] = { 3.83  };
+  Float_t gapRangeEnd3[] =   { 3.86 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin3, okRangeEnd3, 1, bins);
+  averageGap = FitAverage(hist, 1, gapRangeBegin3, gapRangeEnd3, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin4[] = { 4.2, 4.5 };
+  Float_t okRangeEnd4[] =   { 4.4, 4.7 };
+  Float_t gapRangeBegin4[] = { 4.45  };
+  Float_t gapRangeEnd4[] =   { 4.45 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin4, okRangeEnd4, 1, bins);
+  averageGap = FitAverage(hist, 1, gapRangeBegin4, gapRangeEnd4, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin5[] = { 5.4, 5.7 };
+  Float_t okRangeEnd5[] =   { 5.6, 5.8 };
+  Float_t gapRangeBegin5[] = { 5.63  };
+  Float_t gapRangeEnd5[] =   { 5.67 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin5, okRangeEnd5, 1, bins);
+  averageGap = FitAverage(hist, 1, gapRangeBegin5, gapRangeEnd5, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Printf("This adds %.2f %% to the total number of tracklets (%f)", 100.0 * add / hist->Integral(), hist->Integral());
+  c->SaveAs("gap1.png");
+  
+  add1 = add;
+  total1 = hist->Integral();
+
+  if (all)
+    return;
+
+  Printf("\nEta larger than 0 side");
+  
+  c = new TCanvas;
+  TFile::Open("analysis_esd_raw.root");
+  hist = ((TH2*) gFile->Get("fEtaPhi"))->ProjectionY("hist2", 41, binEnd);
+  hist->Rebin(2);
+  hist->SetStats(0);
+  hist->Sumw2();
+  hist->Draw("HIST");
+  gPad->SetGridx();
+  gPad->SetGridy();
+  
+  TFile::Open(mcFile);  
+  mcHist = ((TH2*) gFile->Get("fEtaPhi"))->ProjectionY("mcHist", 41, binEnd);
+  mcHist->Rebin(2);
+  mcHist->SetLineColor(2);
+  mcHist->Scale(hist->Integral() / mcHist->Integral());
+  mcHist->Draw("SAME");
+  
+  add = 0;
+  
+  Float_t okRangeBegin[] = { 0.04, 0.67, 1.34 };
+  Float_t okRangeEnd[] =   { 0.55, 1.24, 1.63 };
+  Float_t gapRangeBegin[] = { 0.6, 1.27  };
+  Float_t gapRangeEnd[] =   { 0.65, 1.32 };
+  Float_t averageOK  = FitAverage(hist, 3, okRangeBegin, okRangeEnd, 1, bins);
+  Float_t averageGap = FitAverage(hist, 2, gapRangeBegin, gapRangeEnd, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin2[] = { 2.32, 2.65 };
+  Float_t okRangeEnd2[] =   { 2.55, 3.2 };
+  Float_t gapRangeBegin2[] = { 2.59, 3.3 };
+  Float_t gapRangeEnd2[] =   { 2.61, 3.3 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin2, okRangeEnd2, 1, bins);
+  averageGap = FitAverage(hist, 2, gapRangeBegin2, gapRangeEnd2, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin3[] = { 3.55, 3.9 };
+  Float_t okRangeEnd3[] =   { 3.8, 4.15 };
+  Float_t gapRangeBegin3[] = { 3.83  };
+  Float_t gapRangeEnd3[] =   { 3.86 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin3, okRangeEnd3, 1, bins);
+  averageGap = FitAverage(hist, 1, gapRangeBegin3, gapRangeEnd3, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+  
+  Float_t okRangeBegin4[] = { 4.2, 4.5 };
+  Float_t okRangeEnd4[] =   { 4.4, 4.7 };
+  Float_t gapRangeBegin4[] = { 4.45  };
+  Float_t gapRangeEnd4[] =   { 4.45 };
+  averageOK  = FitAverage(hist, 2, okRangeBegin4, okRangeEnd4, 1, bins);
+  averageGap = FitAverage(hist, 1, gapRangeBegin4, gapRangeEnd4, 2, bins);
+  add += bins * (averageOK - averageGap);
+  Printf("Average OK: %f %f %d: %f", averageOK, averageGap, bins, add);
+
+  Printf("This adds %.2f %% to the total number of tracklets (%f)", 100.0 * add / hist->Integral(), hist->Integral());
+  c->SaveAs("gap2.png");
+  
+  Printf("In total we add %.2f %%.", 100.0 * (add1 + add) / (total1 + hist->Integral()));
 }

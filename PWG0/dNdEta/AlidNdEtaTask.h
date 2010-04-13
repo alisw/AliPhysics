@@ -14,8 +14,6 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliESDEvent;
-class TGraph;
-class AliPhysicsSelection;
 class AliTriggerAnalysis;
 
 class AlidNdEtaTask : public AliAnalysisTask {
@@ -41,6 +39,8 @@ class AlidNdEtaTask : public AliAnalysisTask {
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
     void SetCheckEventType(Bool_t flag = kTRUE) { fCheckEventType = flag; }
     void SetSymmetrize(Bool_t flag = kTRUE) { fSymmetrize = flag; }
+    void SetMultAxisEta1(Bool_t flag = kTRUE) { fMultAxisEta1 = flag; }
+    void SetDiffTreatment(AliPWG0Helper::DiffTreatment diffTreatment) { fDiffTreatment = diffTreatment; }
     
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -62,24 +62,26 @@ class AlidNdEtaTask : public AliAnalysisTask {
     Bool_t  fUseMCKine;       // use the MC values for each found track/tracklet (for syst. check)
     Bool_t  fCheckEventType;  // check if event type is physics (for real data)
     Bool_t  fSymmetrize;      // move all negative to positive eta
+    Bool_t  fMultAxisEta1;    // restrict multiplicity count to |eta| < 1
+    AliPWG0Helper::DiffTreatment  fDiffTreatment;  // how to identify SD events (see AliPWG0Helper::GetEventProcessType)
 
     AliESDtrackCuts* fEsdTrackCuts;         // Object containing the parameters of the esd track cuts
-    AliPhysicsSelection* fPhysicsSelection; // Event Selection object
     AliTriggerAnalysis* fTriggerAnalysis;
 
     // Gathered from ESD
     dNdEtaAnalysis* fdNdEtaAnalysisESD;     //! contains the dndeta from the ESD
     // control hists
-    TH1F* fMult;                            //! raw multiplicity histogram (control histogram)
+    TH1F* fMult;                            //! raw multiplicity histogram
     TH1F* fMultVtx;                            //! raw multiplicity histogram of evts with vtx (control histogram)
     TH1F* fPartEta[3];            //! counted particles as function of eta (full vertex range, below 0 range, above 0 range)
     TH1F* fEvents;                //! events counted as function of vtx
-    TH1F* fVertexResolution;      //! z resolution of the vertex
+    TH2F* fVertexResolution;      //! z resolution of the vertex 
 
     // Gathered from MC (when fReadMC is set)
     dNdEtaAnalysis* fdNdEtaAnalysis;        //! contains the dndeta from the full sample
     dNdEtaAnalysis* fdNdEtaAnalysisND;      //! contains the dndeta for the ND sample
     dNdEtaAnalysis* fdNdEtaAnalysisNSD;     //! contains the dndeta for the NSD sample
+    dNdEtaAnalysis* fdNdEtaAnalysisOnePart; //! contains the dndeta for the one particle sample
     dNdEtaAnalysis* fdNdEtaAnalysisTr;      //! contains the dndeta from the triggered events
     dNdEtaAnalysis* fdNdEtaAnalysisTrVtx;   //! contains the dndeta from the triggered events with vertex
     dNdEtaAnalysis* fdNdEtaAnalysisTracks;  //! contains the dndeta from the triggered events with vertex counted from the mc particles associated to the tracks (comparing this to the raw values from the esd shows the effect of the detector resolution)
@@ -100,7 +102,6 @@ class AlidNdEtaTask : public AliAnalysisTask {
     TH2F* fFiredChips;            //! fired chips l1+l2 vs. number of tracklets (only for SPD analysis)
     TH2F* fTrackletsVsClusters;   //! number of tracklets vs. clusters in all ITS detectors (only for SPD analysis)
     TH2F* fTrackletsVsUnassigned; //! number of tracklets vs. number of unassigned clusters in L1 (only for SPD analysis)
-    TGraph* fTriggerVsTime;       //! trigger as function of event time
     TH1F* fStats;                 //! further statistics : bin 1 = vertexer 3d, bin 2 = vertexer z, etc (see CreateOutputObjects)
     TH2F* fStats2;                //! V0 vs SPD statistics
 

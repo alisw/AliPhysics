@@ -69,8 +69,9 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fUseMCKine(kFALSE),
   fCheckEventType(kFALSE),
   fSymmetrize(kFALSE),
+  fMultAxisEta1(kFALSE),
+  fDiffTreatment(AliPWG0Helper::kMCFlags),
   fEsdTrackCuts(0),
-  fPhysicsSelection(0),
   fTriggerAnalysis(0),
   fdNdEtaAnalysisESD(0),
   fMult(0),
@@ -80,6 +81,7 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fdNdEtaAnalysis(0),
   fdNdEtaAnalysisND(0),
   fdNdEtaAnalysisNSD(0),
+  fdNdEtaAnalysisOnePart(0),
   fdNdEtaAnalysisTr(0),
   fdNdEtaAnalysisTrVtx(0),
   fdNdEtaAnalysisTracks(0),
@@ -95,7 +97,6 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fFiredChips(0),
   fTrackletsVsClusters(0),
   fTrackletsVsUnassigned(0),
-  fTriggerVsTime(0),
   fStats(0),
   fStats2(0)
 {
@@ -211,7 +212,7 @@ void AlidNdEtaTask::CreateOutputObjects()
 
   for (Int_t i=0; i<3; ++i)
   {
-    fPartEta[i] = new TH1F(Form("dndeta_check_%d", i), Form("dndeta_check_%d", i), 60, -6, 6);
+    fPartEta[i] = new TH1F(Form("dndeta_check_%d", i), Form("dndeta_check_%d", i), 60, -3, 3);
     fPartEta[i]->Sumw2();
     fOutput->Add(fPartEta[i]);
   }
@@ -219,22 +220,15 @@ void AlidNdEtaTask::CreateOutputObjects()
   fEvents = new TH1F("dndeta_check_vertex", "dndeta_check_vertex", 800, -40, 40);
   fOutput->Add(fEvents);
 
-  Float_t resMax = (fAnalysisMode & AliPWG0Helper::kSPD) ? 0.2 : 2;
-  fVertexResolution = new TH1F("dndeta_vertex_resolution_z", "dndeta_vertex_resolution_z", 1000, 0, resMax);
+  fVertexResolution = new TH2F("dndeta_vertex_resolution_z", ";z resolution;#Delta #phi", 1000, 0, 2, 100, 0, 0.2);
   fOutput->Add(fVertexResolution);
 
   fPhi = new TH1F("fPhi", "fPhi;#phi in rad.;count", 720, 0, 2 * TMath::Pi());
   fOutput->Add(fPhi);
 
-  fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 18*5, 0, 2 * TMath::Pi());
+  fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 18*20, 0, 2 * TMath::Pi());
   fOutput->Add(fEtaPhi);
   
-  fTriggerVsTime = new TGraph; //TH1F("fTriggerVsTime", "fTriggerVsTime;trigger time;count", 100, 0, 100);
-  fTriggerVsTime->SetName("fTriggerVsTime");
-  fTriggerVsTime->GetXaxis()->SetTitle("trigger time");
-  fTriggerVsTime->GetYaxis()->SetTitle("count");
-  fOutput->Add(fTriggerVsTime);
-
   fStats = new TH1F("fStats", "fStats", 5, 0.5, 5.5);
   fStats->GetXaxis()->SetBinLabel(1, "vertexer 3d");
   fStats->GetXaxis()->SetBinLabel(2, "vertexer z");
@@ -246,11 +240,11 @@ void AlidNdEtaTask::CreateOutputObjects()
   fStats2 = new TH2F("fStats2", "fStats2", 7, -0.5, 6.5, 10, -0.5, 9.5);
   
   fStats2->GetXaxis()->SetBinLabel(1, "No trigger");
-  fStats2->GetXaxis()->SetBinLabel(2, "Splash identification");
-  fStats2->GetXaxis()->SetBinLabel(3, "No Vertex");
-  fStats2->GetXaxis()->SetBinLabel(4, "|z-vtx| > 10");
-  fStats2->GetXaxis()->SetBinLabel(5, "0 tracklets");
-  fStats2->GetXaxis()->SetBinLabel(6, "V0 Veto");
+  fStats2->GetXaxis()->SetBinLabel(2, "No Vertex");
+  fStats2->GetXaxis()->SetBinLabel(3, "Vtx res. too bad");
+  fStats2->GetXaxis()->SetBinLabel(4, "|z-vtx| > 15");
+  fStats2->GetXaxis()->SetBinLabel(5, "|z-vtx| > 10");
+  fStats2->GetXaxis()->SetBinLabel(6, "0 tracklets");
   fStats2->GetXaxis()->SetBinLabel(7, "Selected");
   
   fStats2->GetYaxis()->SetBinLabel(1, "n/a");
@@ -270,9 +264,9 @@ void AlidNdEtaTask::CreateOutputObjects()
   
   if (fAnalysisMode & AliPWG0Helper::kSPD)
   {
-    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 500, -0.2, 0.2);
+    fDeltaPhi = new TH1F("fDeltaPhi", "fDeltaPhi;#Delta #phi;Entries", 500, -0.16, 0.16);
     fOutput->Add(fDeltaPhi);
-    fDeltaTheta = new TH1F("fDeltaTheta", "fDeltaTheta;#Delta #theta;Entries", 500, -0.2, 0.2);
+    fDeltaTheta = new TH1F("fDeltaTheta", "fDeltaTheta;#Delta #theta;Entries", 500, -0.05, 0.05);
     fOutput->Add(fDeltaTheta);
     fFiredChips = new TH2F("fFiredChips", "fFiredChips;Chips L1 + L2;tracklets", 1201, -0.5, 1201, 50, -0.5, 49.5);
     fOutput->Add(fFiredChips);
@@ -311,6 +305,9 @@ void AlidNdEtaTask::CreateOutputObjects()
     fdNdEtaAnalysisNSD = new dNdEtaAnalysis("dndetaNSD", "dndetaNSD", fAnalysisMode);
     fOutput->Add(fdNdEtaAnalysisNSD);
 
+    fdNdEtaAnalysisOnePart = new dNdEtaAnalysis("dndetaOnePart", "dndetaOnePart", fAnalysisMode);
+    fOutput->Add(fdNdEtaAnalysisOnePart);
+
     fdNdEtaAnalysisTr = new dNdEtaAnalysis("dndetaTr", "dndetaTr", fAnalysisMode);
     fOutput->Add(fdNdEtaAnalysisTr);
 
@@ -331,17 +328,7 @@ void AlidNdEtaTask::CreateOutputObjects()
     fOutput->Add(fEsdTrackCuts);
   }
   
-  if (!fPhysicsSelection)
-    fPhysicsSelection = new AliPhysicsSelection;
-    
-  fPhysicsSelection->SetName("AliPhysicsSelection_outputlist"); // to prevent conflict with object that is automatically streamed back
   //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
-  //fOutput->Add(fPhysicsSelection);
-  
-  fTriggerAnalysis = new AliTriggerAnalysis;
-  fTriggerAnalysis->EnableHistograms();
-  fTriggerAnalysis->SetSPDGFOThreshhold(2);
-  fOutput->Add(fTriggerAnalysis);
 }
 
 void AlidNdEtaTask::Exec(Option_t*)
@@ -365,37 +352,24 @@ void AlidNdEtaTask::Exec(Option_t*)
       return;
     }
     
-//    if (fCheckEventType)
-//      eventTriggered = fPhysicsSelection->IsCollisionCandidate(fESD);
-    
-    // check event type (should be PHYSICS = 7)
-    if (fCheckEventType)
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    if (!inputHandler)
     {
-      UInt_t eventType = esdHeader->GetEventType();
-      if (eventType != 7)
-      {
-        Printf("Skipping event because it is of type %d", eventType);
-        return;
-      }
-      
-      //Printf("Trigger classes: %s:", fESD->GetFiredTriggerClasses().Data());
-      
-      Bool_t accept = kTRUE;
-      if (fRequireTriggerClass.Length() > 0 && !fESD->IsTriggerClassFired(fRequireTriggerClass))
-        accept = kFALSE;
-      if (fRejectTriggerClass.Length() > 0 && fESD->IsTriggerClassFired(fRejectTriggerClass))
-        accept = kFALSE;
-        
-      if (!accept)
-      {
-        Printf("Skipping event because it does not have the correct trigger class(es): %s", fESD->GetFiredTriggerClasses().Data());
-        return;
-      }
-
-      fStats->Fill(4);
+      Printf("ERROR: Could not receive input handler");
+      return;
     }
     
-    fTriggerAnalysis->FillHistograms(fESD);
+    eventTriggered = inputHandler->IsEventSelected();
+        
+    if (!fTriggerAnalysis)
+    {
+      AliPhysicsSelection* physicsSelection = dynamic_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+      if (physicsSelection)
+        fTriggerAnalysis = physicsSelection->GetTriggerAnalysis();
+    }
+      
+    if (eventTriggered)
+      eventTriggered = fTriggerAnalysis->IsTriggerFired(fESD, fTrigger);
     
     AliTriggerAnalysis::V0Decision v0A = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kFALSE);
     AliTriggerAnalysis::V0Decision v0C = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kFALSE);
@@ -413,138 +387,115 @@ void AlidNdEtaTask::Exec(Option_t*)
       if (v0A == AliTriggerAnalysis::kV0BB    && v0C == AliTriggerAnalysis::kV0BG)    vZero = 8;
       if (v0A == AliTriggerAnalysis::kV0BG    && v0C == AliTriggerAnalysis::kV0BB)    vZero = 9;
     }
+
+    if (vZero == 0)
+      Printf("VZERO: %d %d %d %d", vZero, eventTriggered, v0A, v0C);
       
     Bool_t filled = kFALSE;
       
-    // trigger 
-    eventTriggered = fTriggerAnalysis->IsTriggerFired(fESD, fTrigger);
-    
     if (!eventTriggered)
     {
       fStats2->Fill(0.0, vZero);
       filled = kTRUE;
     }
     
-    if (v0A == AliTriggerAnalysis::kV0BG || v0C == AliTriggerAnalysis::kV0BG)
-      eventTriggered = kFALSE;
-    
     if (eventTriggered)
-    {
       fStats->Fill(3);
-    }
       
-    if (fCheckEventType)
+    /*
+    // ITS cluster tree
+    AliESDInputHandlerRP* handlerRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalys
+isManager()->GetInputEventHandler());
+    if (handlerRP)
     {
-      /*const Int_t kMaxEvents = 1;
-      UInt_t maskedEvents[kMaxEvents][2] = { 
-        {-1, -1}
-      };
-    
-      for (Int_t i=0; i<kMaxEvents; i++)
-      {
-        if (fESD->GetPeriodNumber() == maskedEvents[i][0] && fESD->GetOrbitNumber() == maskedEvents[i][1])
-        {
-          Printf("Skipping event because it is masked: period: %d orbit: %x", fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
-          if (!filled)
+      TTree* itsClusterTree = handlerRP->GetTreeR("ITS");
+      if (!itsClusterTree)
+        return;
+
+      TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
+      TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
+
+      itsClusterBranch->SetAddress(&itsClusters);
+
+      Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();
+
+      Int_t totalClusters = 0;
+
+      // loop over the its subdetectors
+      for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
+
+        if (!itsClusterTree->GetEvent(iIts))
+          continue;
+
+        Int_t nClusters = itsClusters->GetEntriesFast();
+        totalClusters += nClusters;
+
+        #ifdef FULLALIROOT
+          if (fAnalysisMode & AliPWG0Helper::kSPD)
           {
-            fStats2->Fill(1, vZero);
-            filled = kTRUE;
-          }
-          return;
-        }
-      }*/
-      
-      // ITS cluster tree
-      AliESDInputHandlerRP* handlerRP = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-      if (handlerRP)
-      {
-        TTree* itsClusterTree = handlerRP->GetTreeR("ITS");  
-        if (!itsClusterTree)
-          return;
-          
-        TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
-        TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
-      
-        itsClusterBranch->SetAddress(&itsClusters);
-      
-        Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
-      
-        Int_t totalClusters = 0;
-          
-        // loop over the its subdetectors
-        for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
-          
-          if (!itsClusterTree->GetEvent(iIts)) 
-            continue;
-          
-          Int_t nClusters = itsClusters->GetEntriesFast();
-          totalClusters += nClusters;
-          
-          #ifdef FULLALIROOT
-            if (fAnalysisMode & AliPWG0Helper::kSPD)
-            {
-              // loop over clusters
-              while (nClusters--) {
-                AliITSRecPoint* cluster = (AliITSRecPoint*) itsClusters->UncheckedAt(nClusters);
-                
-                Int_t layer = cluster->GetLayer();
-                
-                if (layer > 1)
-                  continue;
-                  
-                Float_t xyz[3] = {0., 0., 0.};
-                cluster->GetGlobalXYZ(xyz);
-                
-                Float_t phi = TMath::Pi() + TMath::ATan2(-xyz[1], -xyz[0]);
-                Float_t z = xyz[2];
-                
-                fZPhi[layer]->Fill(z, phi);
-                fModuleMap->Fill(layer * 80 + cluster->GetDetectorIndex());
-              }
+            // loop over clusters
+            while (nClusters--) {
+              AliITSRecPoint* cluster = (AliITSRecPoint*) itsClusters->UncheckedAt(nClusters);
+
+              Int_t layer = cluster->GetLayer();
+
+              if (layer > 1)
+                continue;
+
+              Float_t xyz[3] = {0., 0., 0.};
+              cluster->GetGlobalXYZ(xyz);
+
+              Float_t phi = TMath::Pi() + TMath::ATan2(-xyz[1], -xyz[0]);
+              Float_t z = xyz[2];
+
+              fZPhi[layer]->Fill(z, phi);
+              fModuleMap->Fill(layer * 80 + cluster->GetDetectorIndex());
             }
-          #endif
-        }
-                
-        const AliMultiplicity* mult = fESD->GetMultiplicity();
-        if (!mult)
-          return;
-        
-        fTrackletsVsClusters->Fill(mult->GetNumberOfTracklets(), totalClusters);
-              
-        Int_t limit = 80 + mult->GetNumberOfTracklets() * 220/20;
-        
-        if (totalClusters > limit)
-        {
-          Printf("Skipping event because %d clusters is above limit of %d from %d tracklets: Period number: %d Orbit number: %x", totalClusters, limit, mult->GetNumberOfTracklets(), fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
-          if (!filled)
-          {
-            fStats2->Fill(1, vZero);
-            filled = kTRUE;
           }
-          return; // TODO we skip this also for the MC. not good...
-        }
+        #endif
       }
     }
-          
+    */
+      
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
     if (!vtxESD)
     {
       if (!filled)
       {
-        fStats2->Fill(2, vZero);
+        fStats2->Fill(1, vZero);
         filled = kTRUE;
       }
     }
     else
     {
+      if (!AliPWG0Helper::TestVertex(vtxESD, fAnalysisMode))
+      {
+        if (!filled)
+        {
+          fStats2->Fill(2, vZero);
+          filled = kTRUE;
+        }
+      }
+      
       Double_t vtx[3];
       vtxESD->GetXYZ(vtx);
+      
+      // try to compare spd vertex and vertexer from tracks
+      // remove vertices outside +- 15 cm
+      if (TMath::Abs(vtx[2]) > 15)
+      {
+        if (!filled)
+        {
+          fStats2->Fill(3, vZero);
+          filled = kTRUE;
+        }
+      }
       
       if (TMath::Abs(vtx[2]) > 10)
       {
         if (!filled)
         {
-          fStats2->Fill(3, vZero);
+          fStats2->Fill(4, vZero);
           filled = kTRUE;
         }
       }
@@ -557,26 +508,17 @@ void AlidNdEtaTask::Exec(Option_t*)
       {
         if (!filled)
         {
-          fStats2->Fill(4, vZero);
+          fStats2->Fill(5, vZero);
           filled = kTRUE;
         }
       }
     }
     
-    if (fCheckEventType)
-    {
-      if (vZero >= 5)
-      {
-        if (!filled)
-          fStats2->Fill(5, vZero);
-        return;
-      }
-    }
-        
     if (!filled)
+    {
       fStats2->Fill(6, vZero);
-      
-    //Printf("Skipping event %d: Period number: %d Orbit number: %x", decision, fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
+      //Printf("File: %s, IEV: %d, TRG: ---, Orbit: 0x%x, Period: %d, BC: %d", ((TTree*) GetInputData(0))->GetCurrentFile()->GetName(), fESD->GetEventNumberInFile(), fESD->GetOrbitNumber(),fESD->GetPeriodNumber(),fESD->GetBunchCrossNumber());
+    }
       
     if (eventTriggered)
       fStats->Fill(3);
@@ -586,14 +528,16 @@ void AlidNdEtaTask::Exec(Option_t*)
     // get the ESD vertex
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
     
-    //Printf("vertex is: %s", fESD->GetPrimaryVertex()->GetTitle());
-
     Double_t vtx[3];
 
     // fill z vertex resolution
     if (vtxESD)
     {
-      fVertexResolution->Fill(vtxESD->GetZRes());
+      if (strcmp(vtxESD->GetTitle(), "vertexer: Z") == 0)
+        fVertexResolution->Fill(vtxESD->GetZRes(), vtxESD->GetDispersion());
+      else
+        fVertexResolution->Fill(vtxESD->GetZRes(), 0);
+      
       //if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
       {
         fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
@@ -607,7 +551,7 @@ void AlidNdEtaTask::Exec(Option_t*)
           if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
           {
             fStats->Fill(1);
-            if (fCheckEventType && TMath::Abs(vtx[0] > 0.3))
+            if (fCheckEventType && TMath::Abs(vtx[0]) > 0.3)
             {
               Printf("Suspicious x-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
             }
@@ -616,10 +560,13 @@ void AlidNdEtaTask::Exec(Option_t*)
               Printf("Suspicious y-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
             }
           }
-          else if (strcmp(vtxESD->GetTitle(), "vertexer: Z") == 0)
-          {
+          
+          if (strcmp(vtxESD->GetTitle(), "vertexer: Z") == 0)
             fStats->Fill(2);
-          }
+          
+          // remove vertices outside +- 15 cm
+          if (TMath::Abs(vtx[2]) > 15)
+            vtxESD = 0;
       }
       else
         vtxESD = 0;
@@ -673,7 +620,7 @@ void AlidNdEtaTask::Exec(Option_t*)
         return;
       }
     }
-
+    
     // create list of (label, eta, pt) tuples
     Int_t inputCount = 0;
     Int_t* labelArr = 0;
@@ -681,99 +628,114 @@ void AlidNdEtaTask::Exec(Option_t*)
     Float_t* thirdDimArr = 0;
     if (fAnalysisMode & AliPWG0Helper::kSPD)
     {
-      // get tracklets
-      const AliMultiplicity* mult = fESD->GetMultiplicity();
-      if (!mult)
+      if (vtxESD)
       {
-        AliDebug(AliLog::kError, "AliMultiplicity not available");
-        return;
-      }
-
-      labelArr = new Int_t[mult->GetNumberOfTracklets()];
-      etaArr = new Float_t[mult->GetNumberOfTracklets()];
-      thirdDimArr = new Float_t[mult->GetNumberOfTracklets()];
-
-      // get multiplicity from SPD tracklets
-      for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
-      {
-        //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
-
-        if (fOnlyPrimaries)
-          if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
-            continue;
-
-        Float_t deltaPhi = mult->GetDeltaPhi(i);
-        // prevent values to be shifted by 2 Pi()
-        if (deltaPhi < -TMath::Pi())
-          deltaPhi += TMath::Pi() * 2;
-        if (deltaPhi > TMath::Pi())
-          deltaPhi -= TMath::Pi() * 2;
-
-        if (TMath::Abs(deltaPhi) > 1)
-          printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
-
-        Int_t label = mult->GetLabel(i, 0);
-        Float_t eta = mult->GetEta(i);
-        
-        // control histograms
-        Float_t phi = mult->GetPhi(i);
-        if (phi < 0)
-          phi += TMath::Pi() * 2;
-        fPhi->Fill(phi);
-        fEtaPhi->Fill(eta, phi);
-        
-//         if (deltaPhi < 0.01)
-//         {
-//           // layer 0
-//           Float_t z = vtx[2] + 3.9 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- eta)));
-//           fZPhi[0]->Fill(z, phi);
-//           // layer 1
-//           z = vtx[2] + 7.6 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- eta)));
-//           fZPhi[1]->Fill(z, phi);
-//         }
-
-        if (vtxESD && TMath::Abs(vtx[2]) < 10)
+        // get tracklets
+        const AliMultiplicity* mult = fESD->GetMultiplicity();
+        if (!mult)
         {
-          fDeltaPhi->Fill(deltaPhi);
-          fDeltaTheta->Fill(mult->GetDeltaTheta(i));
+          AliDebug(AliLog::kError, "AliMultiplicity not available");
+          return;
         }
-        
-        if (fDeltaPhiCut > 0 && TMath::Abs(deltaPhi) > fDeltaPhiCut)
-          continue;
-
-        if (fUseMCKine)
+  
+        Int_t arrayLength = mult->GetNumberOfTracklets();
+        if (fAnalysisMode & AliPWG0Helper::kSPDOnlyL0)
+          arrayLength += mult->GetNumberOfSingleClusters();
+          
+        labelArr = new Int_t[arrayLength];
+        etaArr = new Float_t[arrayLength];
+        thirdDimArr = new Float_t[arrayLength];
+  
+        // get multiplicity from SPD tracklets
+        for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i)
         {
-          if (label > 0)
+          //printf("%d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), mult->GetDeltaPhi(i));
+  
+          if (fOnlyPrimaries)
+            if (mult->GetLabel(i, 0) < 0 || mult->GetLabel(i, 0) != mult->GetLabel(i, 1) || !stack->IsPhysicalPrimary(mult->GetLabel(i, 0)))
+              continue;
+  
+          Float_t deltaPhi = mult->GetDeltaPhi(i);
+          // prevent values to be shifted by 2 Pi()
+          if (deltaPhi < -TMath::Pi())
+            deltaPhi += TMath::Pi() * 2;
+          if (deltaPhi > TMath::Pi())
+            deltaPhi -= TMath::Pi() * 2;
+  
+          if (TMath::Abs(deltaPhi) > 1)
+            printf("WARNING: Very high Delta Phi: %d %f %f %f\n", i, mult->GetTheta(i), mult->GetPhi(i), deltaPhi);
+  
+          Int_t label = mult->GetLabel(i, 0);
+          Float_t eta = mult->GetEta(i);
+          
+          // control histograms
+          Float_t phi = mult->GetPhi(i);
+          if (phi < 0)
+            phi += TMath::Pi() * 2;
+            
+          // TEST exclude probably inefficient phi region
+          //if (phi > 5.70 || phi < 0.06)
+          //  continue;
+            
+          fPhi->Fill(phi);
+          
+          if (vtxESD && TMath::Abs(vtx[2]) < 10)
           {
-            TParticle* particle = stack->Particle(label);
-            eta = particle->Eta();
-            phi = particle->Phi();
+            fEtaPhi->Fill(eta, phi);
+            fDeltaPhi->Fill(deltaPhi);
+            fDeltaTheta->Fill(mult->GetDeltaTheta(i));
           }
-          else
-            Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
+          
+          if (fDeltaPhiCut > 0 && (TMath::Abs(deltaPhi) > fDeltaPhiCut || TMath::Abs(mult->GetDeltaTheta(i)) > fDeltaPhiCut / 0.08 * 0.025))
+            continue;
+  
+          if (fUseMCKine)
+          {
+            if (label > 0)
+            {
+              TParticle* particle = stack->Particle(label);
+              eta = particle->Eta();
+              phi = particle->Phi();
+            }
+            else
+              Printf("WARNING: fUseMCKine set without fOnlyPrimaries and no label found");
+          }
+          
+          if (fSymmetrize)
+            eta = TMath::Abs(eta);
+  
+          etaArr[inputCount] = eta;
+          labelArr[inputCount] = label;
+          thirdDimArr[inputCount] = phi;
+          ++inputCount;
         }
         
-        if (fSymmetrize)
-          eta = TMath::Abs(eta);
-
-        etaArr[inputCount] = eta;
-        labelArr[inputCount] = label;
-        thirdDimArr[inputCount] = phi;
-        ++inputCount;
+        if (fAnalysisMode & AliPWG0Helper::kSPDOnlyL0)
+        {
+          // get additional clusters from L0 
+          for (Int_t i=0; i<mult->GetNumberOfSingleClusters(); ++i)
+          {
+            etaArr[inputCount] = -TMath::Log(TMath::Tan(mult->GetThetaSingle(i)/2.));
+            labelArr[inputCount] = -1;
+            thirdDimArr[inputCount] = mult->GetPhiSingle(i);
+            
+            ++inputCount;
+          }
+        }
+        
+        if (!fFillPhi)
+        {
+          // fill multiplicity in third axis
+          for (Int_t i=0; i<inputCount; ++i)
+            thirdDimArr[i] = inputCount;
+        }
+  
+        Int_t firedChips = mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
+        fFiredChips->Fill(firedChips, inputCount);
+        Printf("Accepted %d tracklets (%d fired chips)", inputCount, firedChips);
+        
+        fTrackletsVsUnassigned->Fill(inputCount, mult->GetNumberOfSingleClusters());
       }
-
-      if (!fFillPhi)
-      {
-        // fill multiplicity in third axis
-        for (Int_t i=0; i<inputCount; ++i)
-          thirdDimArr[i] = inputCount;
-      }
-
-      Int_t firedChips = mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
-      fFiredChips->Fill(firedChips, inputCount);
-      Printf("Accepted %d tracklets (%d fired chips)", inputCount, firedChips);
-      
-      fTrackletsVsUnassigned->Fill(inputCount, mult->GetNumberOfSingleClusters());
     }
     else if (fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS)
     {
@@ -783,6 +745,8 @@ void AlidNdEtaTask::Exec(Option_t*)
         return;
       }
 
+      Bool_t foundInEta10 = kFALSE;
+      
       if (vtxESD)
       {
         // get multiplicity from ESD tracks
@@ -821,6 +785,13 @@ void AlidNdEtaTask::Exec(Option_t*)
           if (eventTriggered && vtxESD)
             fRawPt->Fill(pT);
   
+          if (esdTrack->Pt() < 0.15)
+            continue;
+          
+          // INEL>0 trigger
+          if (TMath::Abs(esdTrack->Eta()) < 1 && esdTrack->Pt() > 0.15)
+            foundInEta10 = kTRUE;
+  
           if (fOnlyPrimaries)
           {
             if (label == 0)
@@ -850,13 +821,16 @@ void AlidNdEtaTask::Exec(Option_t*)
           ++inputCount;
         }
         
-        if (inputCount > 30)
-          Printf("Event with %d accepted TPC tracks. Period number: %d Orbit number: %x Bunch crossing number: %d", inputCount, fESD->GetPeriodNumber(), fESD->GetOrbitNumber(), fESD->GetBunchCrossNumber());
+        //if (inputCount > 30)
+        //  Printf("Event with %d accepted TPC tracks. Period number: %d Orbit number: %x Bunch crossing number: %d", inputCount, fESD->GetPeriodNumber(), fESD->GetOrbitNumber(), fESD->GetBunchCrossNumber());
         
         // TODO restrict inputCount used as measure for the multiplicity to |eta| < 1
   
         delete list;
       }
+      
+      if (!foundInEta10)
+        eventTriggered = kFALSE;
     }
     else
       return;
@@ -868,8 +842,6 @@ void AlidNdEtaTask::Exec(Option_t*)
       fMult->Fill(inputCount);
       fdNdEtaAnalysisESD->FillTriggeredEvent(inputCount);
 
-      fTriggerVsTime->SetPoint(fTriggerVsTime->GetN(), fESD->GetTimeStamp(), 1);
-
       if (vtxESD)
       {
         // control hist
@@ -877,8 +849,8 @@ void AlidNdEtaTask::Exec(Option_t*)
         if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
           fVertexVsMult->Fill(vtxESD->GetXv(), vtxESD->GetYv(), inputCount);
       
-        fMultVtx->Fill(inputCount);
-
+        Int_t part05 = 0;
+        Int_t part10 = 0;
         for (Int_t i=0; i<inputCount; ++i)
         {
           Float_t eta = etaArr[i];
@@ -895,13 +867,26 @@ void AlidNdEtaTask::Exec(Option_t*)
             else
               fPartEta[2]->Fill(eta);
           }
+          
+          if (TMath::Abs(eta) < 0.5)
+            part05++;
+          if (TMath::Abs(eta) < 1.0)
+            part10++;
         }
+        
+        Int_t multAxis = inputCount;
+        if (fMultAxisEta1)
+          multAxis = part10;
+
+        fMultVtx->Fill(multAxis);
+        //if (TMath::Abs(vtx[2]) < 10)
+        //  fMultVtx->Fill(part05);
 
         // for event count per vertex
-        fdNdEtaAnalysisESD->FillEvent(vtx[2], inputCount);
+        fdNdEtaAnalysisESD->FillEvent(vtx[2], multAxis);
 
         // control hist
-        if (inputCount > 0)
+        if (multAxis > 0)
           fEvents->Fill(vtx[2]);
 
         if (fReadMC)
@@ -931,7 +916,7 @@ void AlidNdEtaTask::Exec(Option_t*)
                 thirdDim = particle->Phi();
               }
               else
-                thirdDim = inputCount;
+                thirdDim = multAxis;
             }
             else
               thirdDim = particle->Pt();
@@ -943,11 +928,10 @@ void AlidNdEtaTask::Exec(Option_t*)
           } // end of track loop
 
           // for event count per vertex
-          fdNdEtaAnalysisTracks->FillEvent(vtxMC[2], inputCount);
+          fdNdEtaAnalysisTracks->FillEvent(vtxMC[2], multAxis);
         }
       }
     }
-
     if (etaArr)
       delete[] etaArr;
     if (labelArr)
@@ -994,18 +978,19 @@ void AlidNdEtaTask::Exec(Option_t*)
 
     TArrayF vtxMC(3);
     genHeader->PrimaryVertex(vtxMC);
-
+    
     // get process type
-    Int_t processType = AliPWG0Helper::GetEventProcessType(header);
+    Int_t processType = AliPWG0Helper::GetEventProcessType(fESD, header, stack, fDiffTreatment);
     AliDebug(AliLog::kDebug+1, Form("Found process type %d", processType));
 
-    if (processType==AliPWG0Helper::kInvalidProcess)
+    if (processType == AliPWG0Helper::kInvalidProcess)
       AliDebug(AliLog::kError, Form("Unknown process type %d.", processType));
 
     // loop over mc particles
     Int_t nPrim  = stack->GetNprimary();
 
     Int_t nAcceptedParticles = 0;
+    Bool_t oneParticleEvent = kFALSE;
 
     // count particles first, then fill
     for (Int_t iMc = 0; iMc < nPrim; ++iMc)
@@ -1025,7 +1010,10 @@ void AlidNdEtaTask::Exec(Option_t*)
       //AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
       Float_t eta = particle->Eta();
 
-       // make a rough eta cut (so that nAcceptedParticles is not too far off the true measured value (NB: this histograms are only gathered for comparison))
+      if (TMath::Abs(eta) < 1.0)
+        oneParticleEvent = kTRUE;
+
+      // make a rough eta cut (so that nAcceptedParticles is not too far off the true measured value (NB: these histograms are only gathered for comparison))
       if (TMath::Abs(eta) < 1.5) // && pt > 0.3)
         nAcceptedParticles++;
     }
@@ -1069,6 +1057,9 @@ void AlidNdEtaTask::Exec(Option_t*)
 
       if (processType == AliPWG0Helper::kND)
         fdNdEtaAnalysisND->FillTrack(vtxMC[2], eta, thirdDim);
+      
+      if (oneParticleEvent)
+        fdNdEtaAnalysisOnePart->FillTrack(vtxMC[2], eta, thirdDim);
 
       if (eventTriggered)
       {
@@ -1090,6 +1081,8 @@ void AlidNdEtaTask::Exec(Option_t*)
       fdNdEtaAnalysisNSD->FillEvent(vtxMC[2], nAcceptedParticles);
     if (processType == AliPWG0Helper::kND)
       fdNdEtaAnalysisND->FillEvent(vtxMC[2], nAcceptedParticles);
+    if (oneParticleEvent)
+      fdNdEtaAnalysisOnePart->FillEvent(vtxMC[2], nAcceptedParticles);
 
     if (eventTriggered)
     {
@@ -1118,7 +1111,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     for (Int_t i=0; i<3; ++i)
       fPartEta[i] = dynamic_cast<TH1F*> (fOutput->FindObject(Form("dndeta_check_%d", i)));
     fEvents = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_vertex"));
-    fVertexResolution = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
+    fVertexResolution = dynamic_cast<TH2F*> (fOutput->FindObject("dndeta_vertex_resolution_z"));
 
     fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
     fVertexVsMult = dynamic_cast<TH3F*> (fOutput->FindObject("fVertexVsMult"));
@@ -1133,13 +1126,10 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fFiredChips = dynamic_cast<TH2F*> (fOutput->FindObject("fFiredChips"));
     fTrackletsVsClusters = dynamic_cast<TH2F*> (fOutput->FindObject("fTrackletsVsClusters"));
     fTrackletsVsUnassigned = dynamic_cast<TH2F*> (fOutput->FindObject("fTrackletsVsUnassigned"));
-    fTriggerVsTime = dynamic_cast<TGraph*> (fOutput->FindObject("fTriggerVsTime"));
     fStats = dynamic_cast<TH1F*> (fOutput->FindObject("fStats"));
     fStats2 = dynamic_cast<TH2F*> (fOutput->FindObject("fStats2"));
 
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCuts"));
-    fPhysicsSelection = dynamic_cast<AliPhysicsSelection*> (fOutput->FindObject("AliPhysicsSelection_outputlist"));
-    fTriggerAnalysis = dynamic_cast<AliTriggerAnalysis*> (fOutput->FindObject("AliTriggerAnalysis"));
   }
 
   if (!fdNdEtaAnalysisESD)
@@ -1164,10 +1154,11 @@ void AlidNdEtaTask::Terminate(Option_t *)
 
     if (fPartEta[0])
     {
-      Int_t events1 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(-19.9), fEvents->GetXaxis()->FindBin(-0.001));
-      Int_t events2 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(0.001), fEvents->GetXaxis()->FindBin(19.9));
+      Int_t events1 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(-9.9), fEvents->GetXaxis()->FindBin(-0.001));
+      Int_t events2 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(0.001), fEvents->GetXaxis()->FindBin(9.9));
 
       Printf("%d events with vertex used", events1 + events2);
+      Printf("%d total events with vertex, %d total triggered events, %d triggered events with 0 multiplicity", (Int_t) fMultVtx->Integral(), (Int_t) fMult->Integral(), (Int_t) fMult->GetBinContent(1));
 
       if (events1 > 0 && events2 > 0)
       {
@@ -1207,15 +1198,6 @@ void AlidNdEtaTask::Terminate(Option_t *)
     if (fEsdTrackCuts)
       fEsdTrackCuts->SaveHistograms("esd_track_cuts");
 
-    if (fPhysicsSelection)
-    {
-      fPhysicsSelection->SaveHistograms("physics_selection");
-      fPhysicsSelection->Print();
-    }
-    
-    if (fTriggerAnalysis)
-      fTriggerAnalysis->SaveHistograms();
-
     if (fMult)
       fMult->Write();
 
@@ -1230,7 +1212,11 @@ void AlidNdEtaTask::Terminate(Option_t *)
       fEvents->Write();
 
     if (fVertexResolution)
+    {
       fVertexResolution->Write();
+      fVertexResolution->ProjectionX();
+      fVertexResolution->ProjectionY();
+    }
 
     if (fDeltaPhi)
       fDeltaPhi->Write();
@@ -1263,9 +1249,6 @@ void AlidNdEtaTask::Terminate(Option_t *)
     if (fTrackletsVsUnassigned)
       fTrackletsVsUnassigned->Write();
     
-    if (fTriggerVsTime)
-      fTriggerVsTime->Write();
-
     if (fStats)
       fStats->Write();
 
@@ -1291,6 +1274,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
       fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
       fdNdEtaAnalysisND = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaND"));
       fdNdEtaAnalysisNSD = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaNSD"));
+      fdNdEtaAnalysisOnePart = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaOnePart"));
       fdNdEtaAnalysisTr = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTr"));
       fdNdEtaAnalysisTrVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTrVtx"));
       fdNdEtaAnalysisTracks = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndetaTracks"));
@@ -1306,6 +1290,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fdNdEtaAnalysis->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisND->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisNSD->Finish(0, -1, AlidNdEtaCorrection::kNone);
+    fdNdEtaAnalysisOnePart->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisTr->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisTrVtx->Finish(0, -1, AlidNdEtaCorrection::kNone);
     fdNdEtaAnalysisTracks->Finish(0, -1, AlidNdEtaCorrection::kNone);
@@ -1319,6 +1304,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fdNdEtaAnalysis->SaveHistograms();
     fdNdEtaAnalysisND->SaveHistograms();
     fdNdEtaAnalysisNSD->SaveHistograms();
+    fdNdEtaAnalysisOnePart->SaveHistograms();
     fdNdEtaAnalysisTr->SaveHistograms();
     fdNdEtaAnalysisTrVtx->SaveHistograms();
     fdNdEtaAnalysisTracks->SaveHistograms();

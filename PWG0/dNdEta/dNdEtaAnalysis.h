@@ -44,7 +44,7 @@ public:
   void FillEvent(Float_t vtx, Float_t n);
   void FillTriggeredEvent(Float_t n);
 
-  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, const char* tag = "");
+  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, const char* tag = "", Int_t backgroundSubtraction = 0, TH1* combinatoricsCorrection = 0);
 
   void DrawHistograms(Bool_t simple = kFALSE);
   void LoadHistograms(const Char_t* dir = 0);

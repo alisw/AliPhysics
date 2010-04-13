@@ -36,6 +36,9 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
     void SetSymmetrize(Bool_t flag = kTRUE) { fSymmetrize = flag; }
+    void SetMultAxisEta1(Bool_t flag = kTRUE) { fMultAxisEta1 = flag; }
+    void SetDiffTreatment(AliPWG0Helper::DiffTreatment diffTreatment) { fDiffTreatment = diffTreatment; }
+    void SetSkipParticles(Bool_t flag = kTRUE) { fSystSkipParticles = flag; }
 
     void SetOption(const char* opt) { fOption = opt; }
 
@@ -51,10 +54,13 @@ class AlidNdEtaCorrectionTask : public AliAnalysisTask {
     Bool_t fFillPhi;                           // if true phi is filled as 3rd coordinate in all maps
     Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
     Bool_t  fSymmetrize;     // move all negative to positive eta
+    Bool_t  fMultAxisEta1;    // restrict multiplicity count to |eta| < 1
+    AliPWG0Helper::DiffTreatment  fDiffTreatment;  // how to identify SD events (see AliPWG0Helper::GetEventProcessType)
 
     Int_t fSignMode;                 // if 0 process all particles, if +-1 process only particles with that sign
     Bool_t fOnlyPrimaries;           // only process primaries (syst. studies)
     Int_t fStatError;                // statistical error evaluation: if set to 1 we only count unique primaries (binomial errors are valid), for 2 all the rest
+    Bool_t fSystSkipParticles;      // if true skips particles (systematic study)
 
     AliESDtrackCuts*  fEsdTrackCuts;             // Object containing the parameters of the esd track cuts
 

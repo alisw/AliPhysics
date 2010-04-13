@@ -31,7 +31,8 @@ public:
     kVertexReco,      // MB sample
     kINEL,
     kNSD,
-    kND
+    kND,
+    kOnePart
   };
 
   AlidNdEtaCorrection();
@@ -52,10 +53,12 @@ public:
   AliCorrection* GetTriggerBiasCorrectionINEL() {return fTriggerBiasCorrectionMBToINEL;}
   AliCorrection* GetTriggerBiasCorrectionNSD()  {return fTriggerBiasCorrectionMBToNSD;}
   AliCorrection* GetTriggerBiasCorrectionND()   {return fTriggerBiasCorrectionMBToND;}
+  AliCorrection* GetTriggerBiasCorrectionOnePart()   {return fTriggerBiasCorrectionMBToOnePart;}
   AliCorrection* GetCorrection(CorrectionType correctionType);
 
   void    Reset(void);
   void    Add(AlidNdEtaCorrection* aCorrectionsToAdd, Float_t c=1);
+  void    Scale(Float_t c);
 
   void    SaveHistograms();
   Bool_t  LoadHistograms(const Char_t* dir = 0);
@@ -73,12 +76,13 @@ protected:
   AliCorrection* fTriggerBiasCorrectionMBToINEL;  //-> handles the trigger bias MB->INEL, function of n and vtx_z
   AliCorrection* fTriggerBiasCorrectionMBToNSD;   //-> handles the trigger bias MB->NSD,  function of n and vtx_z
   AliCorrection* fTriggerBiasCorrectionMBToND;    //-> handles the trigger bias MB->ND,   function of n and vtx_z
+  AliCorrection* fTriggerBiasCorrectionMBToOnePart;    //-> handles the trigger bias MB->OnePart,   function of n and vtx_z
 
 private:
   AlidNdEtaCorrection(const AlidNdEtaCorrection&);
   AlidNdEtaCorrection& operator=(const AlidNdEtaCorrection&);
 
-  ClassDef(AlidNdEtaCorrection, 1)
+  ClassDef(AlidNdEtaCorrection, 2)
 };
 
 #endif

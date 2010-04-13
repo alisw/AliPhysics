@@ -77,12 +77,15 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
   // mult axis for event histogram
   Int_t nBinsN = 22;
   Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
+  //Int_t nBinsN = 8;
+  //Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 300.5};
   //Int_t nBinsN = 52;
   //Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5, 20.5, 21.5, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, 28.5, 29.5, 30.5, 31.5, 32.5, 33.5, 34.5, 35.5, 36.5, 37.5, 38.5, 39.5, 40.5, 41.5, 42.5, 43.5, 44.5, 45.5, 46.5, 47.5, 48.5, 49.5, 50.5, 100.5, 300.5};
 
   //Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
   //Float_t binLimitsVtx[] = {-20,-19,-18,-17,-16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
-  Float_t binLimitsVtx[] = {-30,-25,-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20,25,30};
+  //Float_t binLimitsVtx[] = {-30,-25,-20,-15,-10,-8,-6,-4,-2,0,2,4,6,8,10,15,20,25,30};
+  Float_t binLimitsVtx[] = {-30,-25,-20,-15,-10,-7,-5.5,-4,-3,-2,-1,0,1,2,3,4,5.5,7,10,15,20,25,30};
   /*Float_t binLimitsEta[] = {-3.0,-2.8,-2.6,-2.4,-2.2,
                             -2.0,-1.8,-1.6,-1.4,-1.2,
                             -1.0,-0.8,-0.6,-0.4,-0.2, 0.0,
@@ -96,25 +99,25 @@ AliCorrection::AliCorrection(const Char_t* name, const Char_t* title, AliPWG0Hel
                             0,0.25,0.5,0.75,
                             1.0,1.25,1.5,1.75,
                             2.0,2.25,2.5,2.75,3.0}; */
-  Float_t binLimitsEta[] = {-2.8,-2.4,-2,-1.6,-1.2,-0.8,-0.4,0,0.4,0.8,1.2,1.6,2.0,2.4,2.8}; 
+  //Float_t binLimitsEta[] = {-2.8,-2.4,-2,-1.6,-1.2,-0.8,-0.4,0,0.4,0.8,1.2,1.6,2.0,2.4,2.8}; 
   //Float_t binLimitsEta[] = {-2.8,-2.4,-2,-1.6,-1.2,-0.8,-0.5,0,0.5,0.8,1.2,1.6,2.0,2.4,2.8}; 
 
   //Float_t binLimitsEta[] = {-3,-2.6,-2.2,-1.8,-1.4,-1,-0.6,-0.2,0.2,0.6,1,1.4,1.8,2.2,2.6,3.0};
-//  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+  Float_t binLimitsEta[] = {-2,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
 //  Float_t binLimitsEta[] = { -7.0, -6.9, -6.8, -6.7, -6.6, -6.5, -6.4, -6.3, -6.2, -6.1, -6.0, -5.9, -5.8, -5.7, -5.6, -5.5, -5.4, -5.3, -5.2, -5.1, -5.0, -4.9, -4.8, -4.7, -4.6, -4.5, -4.4, -4.3, -4.2, -4.1, -4.0, -3.9, -3.8, -3.7, -3.6, -3.5, -3.4, -3.3, -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, -0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 7.0 };
 
-  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 18, binLimitsVtx, nBinsN, binLimitsN);
+  fEventCorr = new AliCorrectionMatrix2D("EventCorrection", Form("%s EventCorrection", fTitle.Data()), 22, binLimitsVtx, nBinsN, binLimitsN);
 
   if (analysisMode & AliPWG0Helper::kSPD)
   {
-    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 14, binLimitsEta, nBinsN2, binLimitsN2);
+    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",22, binLimitsVtx, 40, binLimitsEta, nBinsN2, binLimitsN2);
     fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
     fTrackCorr->SetAxisTitles("vtx-z (cm)", "#eta", title3);
     delete dummyBinning;
   }
   else
   {
-    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",18, binLimitsVtx, 14, binLimitsEta , nBinsPt, binLimitsPt);
+    TH3F* dummyBinning = new TH3F("dummyBinning","dummyBinning",22, binLimitsVtx, 40, binLimitsEta , nBinsPt, binLimitsPt);
     fTrackCorr = new AliCorrectionMatrix3D("TrackCorrection", Form("%s TrackCorrection", fTitle.Data()), dummyBinning);
     fTrackCorr->SetAxisTitles("vtx-z (cm)", "#eta", "p_{T} (GeV/c)");
     delete dummyBinning;
@@ -439,7 +442,10 @@ void AliCorrection::PrintStats(Float_t zRange, Float_t etaRange, Float_t ptCut)
   Float_t eventsM = measuredEvents->Integral(measuredEvents->GetXaxis()->FindBin(-zRange), measuredEvents->GetXaxis()->FindBin(zRange), 1, measuredEvents->GetNbinsY());
   Float_t eventsG = generatedEvents->Integral(generatedEvents->GetXaxis()->FindBin(-zRange), generatedEvents->GetXaxis()->FindBin(zRange), 1, generatedEvents->GetNbinsY());
 
-  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f", tracksM, tracksG, eventsM, eventsG);
+  Float_t eventsM1 = measuredEvents->Integral(measuredEvents->GetXaxis()->FindBin(-zRange), measuredEvents->GetXaxis()->FindBin(zRange), 2, measuredEvents->GetNbinsY());
+  Float_t eventsG1 = generatedEvents->Integral(generatedEvents->GetXaxis()->FindBin(-zRange), generatedEvents->GetXaxis()->FindBin(zRange), 2, generatedEvents->GetNbinsY());
+  
+  Printf("tracks measured: %.1f tracks generated: %.1f, events measured: %.1f, events generated %.1f, events (N>0) measured: %.1f, events (N>0) generated %.1f", tracksM, tracksG, eventsM, eventsG, eventsM1, eventsG1);
 
   if (tracksM > 0)
     Printf("Effective average correction factor for TRACKS: %.3f", tracksG / tracksM);

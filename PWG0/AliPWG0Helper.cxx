@@ -19,6 +19,7 @@
 #include <AliESD.h>
 #include <AliESDEvent.h>
 #include <AliESDVertex.h>
+#include <AliESDRun.h>
 #include <AliVertexerTracks.h>
 #include <AliMultiplicity.h>
 
@@ -70,7 +71,7 @@ Bool_t AliPWG0Helper::TestVertex(const AliESDVertex* vertex, AnalysisMode analys
 }
 
 //____________________________________________________________________
-const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug)
+const AliESDVertex* AliPWG0Helper::GetVertex(const AliESDEvent* aEsd, AnalysisMode analysisMode, Bool_t debug)
 {
   // Get the vertex from the ESD and returns it if the vertex is valid
   //
@@ -78,17 +79,29 @@ const AliESDVertex* AliPWG0Helper::GetVertex(AliESDEvent* aEsd, AnalysisMode ana
   // also the quality criteria that are applied)
 
   const AliESDVertex* vertex = 0;
-  if (analysisMode & kSPD || analysisMode & kTPCITS)
+  if (analysisMode & kSPD)
   {
     vertex = aEsd->GetPrimaryVertexSPD();
     if (debug)
       Printf("AliPWG0Helper::GetVertex: Returning SPD vertex");
   }
+  else if (analysisMode & kTPCITS)
+  {
+    vertex = aEsd->GetPrimaryVertexTracks();
+    if (debug)
+      Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
+    if (vertex && vertex->GetNContributors() <= 0)
+    {
+      if (debug)
+        Printf("AliPWG0Helper::GetVertex: Vertex from tracks has no contributors. Falling back to SPD vertex.");
+      vertex = aEsd->GetPrimaryVertexSPD();
+    }
+  }
   else if (analysisMode & kTPC)
   {
     vertex = aEsd->GetPrimaryVertexTPC();
     if (debug)
-      Printf("AliPWG0Helper::GetVertex: Returning vertex from tracks");
+      Printf("AliPWG0Helper::GetVertex: Returning vertex from TPC-only tracks");
   }
   else
     Printf("AliPWG0Helper::GetVertex: ERROR: Invalid second argument %d", analysisMode);
@@ -356,13 +369,13 @@ AliPWG0Helper::MCProcessType AliPWG0Helper::GetDPMjetEventProcessType(AliGenEven
   }
 
 
-  if(dpmJetType == 1){ // this is explicitly inelastic
+  if (dpmJetType == 1 || dpmJetType == 4) { // explicitly inelastic plus central diffraction
     globalType = kND;
   }  
-  else if(dpmJetType==5||dpmJetType==6){
+  else if (dpmJetType==5 || dpmJetType==6) {
     globalType = kSD;
   }
-  else if(dpmJetType==7||dpmJetType==4){// DD and double pomeron
+  else if (dpmJetType==7) {
     globalType = kDD;
   }
   return globalType;
@@ -500,7 +513,7 @@ void AliPWG0Helper::NormalizeToBinWidth(TH2* hist)
 }
 
 //____________________________________________________________________
-void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger)
+void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Trigger trigger, AliPWG0Helper::DiffTreatment diffTreatment)
 {
   //
   // Prints the given configuration
@@ -529,8 +542,189 @@ void AliPWG0Helper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tri
   
   str += "< and trigger >";
   str += AliTriggerAnalysis::GetTriggerName(trigger);
+  str += "< and diffractive treatment >";
+  
+  switch (diffTreatment)
+  {
+    case kMCFlags:
+      str += "MC flags";
+      break;
+    
+    case kUA5Cuts:
+      str += "UA5 cuts";
+      break;
+       
+    case kE710Cuts:
+      str += "E710 cuts";
+      break;
+    
+    case kALICEHadronLevel:
+      str += "ALICE hadron level";
+      break;
+  }
+  
   str += "< <<<<";
 
   Printf("%s", str.Data());
 }
 
+//____________________________________________________________________
+Double_t AliPWG0Helper::Rapidity(Double_t pt, Double_t pz, Double_t m)
+{
+  //
+  // calculates rapidity keeping the sign in case E == pz
+  //
+
+  Double_t energy = TMath::Sqrt(pt*pt+pz*pz+m*m);
+  if (energy != TMath::Abs(pz))
+    return 0.5*TMath::Log((energy+pz)/(energy-pz));
+
+  Printf("W- mt=0");
+  return TMath::Sign(1.e30,pz);
+}
+
+//____________________________________________________________________
+Bool_t AliPWG0Helper::IsHadronLevelSingleDiffractive(AliStack* stack, Float_t cms, Float_t xiMin, Float_t xiMax)
+{
+  //
+  // return if process is single diffractive on hadron level
+  // 
+  // xiMax and xiMin cut on M^2/s
+  //
+  // Based on code from Martin Poghoysan
+  //
+  
+  TParticle* part1 = 0;
+  TParticle* part2 = 0;
+  
+  Double_t smallestY = 1e10;
+  Double_t largestY  = -1e10;
+  
+  for (Int_t iParticle = 0; iParticle < stack->GetNprimary(); iParticle++)
+  {
+    TParticle* part = stack->Particle(iParticle);
+    if (!part)
+      continue;
+
+    Int_t pdg = TMath::Abs(part->GetPdgCode());
+
+    Int_t child1 = part->GetFirstDaughter();
+    Int_t ist    = part->GetStatusCode();
+
+    Int_t mfl  = Int_t (pdg / TMath::Power(10, Int_t(TMath::Log10(pdg))));
+    if (child1 > -1 || ist != 1)
+      mfl = 0; // select final state charm and beauty
+    if (!(stack->IsPhysicalPrimary(iParticle) || pdg == 111 || pdg == 3212 || pdg==3124 || mfl >= 4)) 
+      continue;
+    Int_t imother = part->GetFirstMother();
+    if (imother>0)
+    {
+      TParticle *partM = stack->Particle(imother);
+      Int_t pdgM=TMath::Abs(partM->GetPdgCode());
+      if (pdgM==111 || pdgM==3124 || pdgM==3212) 
+        continue;
+    }
+    
+    Double_t y = 0;
+
+    // fix for problem with getting mass of particle 3124
+    if (pdg != 3124)
+      y = Rapidity(part->Pt(), part->Pz(), part->GetMass());
+    else 
+      y = Rapidity(part->Pt(), part->Pz(), 1.5195);
+      
+    if (y < smallestY)
+    {
+      smallestY = y;
+      part1 = part;
+    }
+    
+    if (y > largestY)
+    {
+      largestY = y;
+      part2 = part;
+    }
+  }
+  
+  if (part1 == 0 || part2 == 0)
+    return kFALSE;
+
+  Int_t pdg1 = part1->GetPdgCode();
+  Int_t pdg2 = part2->GetPdgCode();
+
+  Double_t pt1 = part1->Pt();
+  Double_t pt2 = part2->Pt();
+  Double_t pz1 = part1->Pz();
+  Double_t pz2 = part2->Pz();
+  
+  Double_t y1 = TMath::Abs(Rapidity(pt1, pz1, 0.938));
+  Double_t y2 = TMath::Abs(Rapidity(pt2, pz2, 0.938));
+  
+  Int_t arm = -99999;
+  if (pdg1 == 2212 && pdg2 == 2212)
+  {
+    if (y1 > y2) 
+      arm = 0;
+    else
+      arm = 1;
+  }
+  else if (pdg1 == 2212) 
+    arm = 0;
+  else if (pdg2 == 2212) 
+    arm = 1;
+
+  Double_t M02s = 1. - 2 * part1->Energy() / cms;
+  Double_t M12s = 1. - 2 * part2->Energy() / cms;
+
+  if (arm == 0 && M02s > xiMin && M02s < xiMax)
+    return kTRUE;
+  else if (arm == 1 && M12s > xiMin && M12s < xiMax)
+    return kTRUE;
+
+  return kFALSE;
+}
+
+//____________________________________________________________________
+AliPWG0Helper::MCProcessType AliPWG0Helper::GetEventProcessType(AliESDEvent* esd, AliHeader* header, AliStack* stack, AliPWG0Helper::DiffTreatment diffTreatment)
+{
+  // 
+  // get process type
+  //
+  // diffTreatment:
+  //   kMCFlags: use MC flags
+  //   kUA5Cuts: SD events are those that have the MC SD flag and fulfill M^2/s < 0.05; DD from MC flag; Remainder is ND
+  //   kE710Cuts: SD events are those that have the MC SD flag and fulfill 2 < M^2 < 0.05s; DD from MC flag; Remainder is ND
+  //   kALICEHadronLevel: SD events are those that fulfill M^2/s < 0.05; DD from MC flag; Remainder is ND
+  //
+
+  MCProcessType mcProcessType = GetEventProcessType(header);
+  
+  if (diffTreatment == kMCFlags)
+    return mcProcessType;
+    
+  Float_t cms = esd->GetESDRun()->GetBeamEnergy();
+  if (esd->GetESDRun()->IsBeamEnergyIsSqrtSHalfGeV())
+    cms *= 2;
+  //Printf("cms = %f", cms);
+
+  if (diffTreatment == kUA5Cuts && mcProcessType == kSD)
+  {
+    if (IsHadronLevelSingleDiffractive(stack, cms, 0, 0.05))
+      return kSD;
+  }
+  else if (diffTreatment == kE710Cuts && mcProcessType == kSD)
+  {
+    if (IsHadronLevelSingleDiffractive(stack, cms, 2. / cms / cms, 0.05))
+      return kSD;
+  }
+  else if (diffTreatment == kALICEHadronLevel)
+  {
+    if (IsHadronLevelSingleDiffractive(stack, cms, 0, 0.05))
+      return kSD;
+  }
+  
+  if (mcProcessType == kSD)
+    return kND;
+    
+  return mcProcessType;
+}

@@ -194,7 +194,7 @@ void dNdEtaAnalysis::FillTriggeredEvent(Float_t n)
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, const char* tag)
+void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, AlidNdEtaCorrection::CorrectionType correctionType, const char* tag, Int_t backgroundSubtraction, TH1* combinatoricsCorrection)
 {
   //
   // correct with the given correction values and calculate dNdEta and pT distribution
@@ -204,6 +204,9 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   fTag.Form("Correcting dN/deta spectrum (data: %d) >>> %s <<<. Correction type: %d, pt cut: %.2f.", (Int_t) fAnalysisMode, tag, (Int_t) correctionType, ptCut);
   Printf("\n\n%s", fTag.Data());
+  
+  if (combinatoricsCorrection)
+    Printf("Combinatorics subtraction active!");
 
   // set corrections to 1
   fData->SetCorrectionToUnity();
@@ -246,6 +249,12 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         eventCorr->Multiply(correction->GetTriggerBiasCorrectionND()->GetEventCorrection()->GetCorrectionHistogram());
         break;
       }
+      case AlidNdEtaCorrection::kOnePart :
+      {
+        trackCorr->Multiply(correction->GetTriggerBiasCorrectionOnePart()->GetTrackCorrection()->GetCorrectionHistogram());
+        eventCorr->Multiply(correction->GetTriggerBiasCorrectionOnePart()->GetEventCorrection()->GetCorrectionHistogram());
+        break;
+      }
       default : break;
     }
   }
@@ -256,7 +265,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
 
   fData->ResetErrorsOnCorrections();
   fData->Multiply();
-
+  
   if (correctionType >= AlidNdEtaCorrection::kVertexReco)
   {
     // There are no events with vertex that have 0 multiplicity, therefore
@@ -269,9 +278,10 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     //TH2* measuredEvents = fData->GetEventCorrection()->GetMeasuredHistogram();
     TH2* correctedEvents = fData->GetEventCorrection()->GetGeneratedHistogram();
 
+    TH2* eAll  =    correction->GetCorrection(correctionType)->GetEventCorrection()->GetGeneratedHistogram();
     TH2* eTrig =    correction->GetVertexRecoCorrection()->GetEventCorrection()->GetGeneratedHistogram();
     TH2* eTrigVtx = correction->GetVertexRecoCorrection()->GetEventCorrection()->GetMeasuredHistogram();
-    TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, rawMeasured->GetNbinsY()+1);
+    TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, eTrigVtx->GetNbinsY()+1);
 
     //new TCanvas; correctedEvents->DrawCopy("TEXT");
 
@@ -283,10 +293,16 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     Int_t triggeredEventsWith0Mult = (Int_t) fMult->GetBinContent(1);
 
     Printf("%d triggered events with 0 mult. -- %d triggered events with vertex", triggeredEventsWith0Mult, allEventsWithVertex);
+    
+    if (backgroundSubtraction > 0)
+    {
+      triggeredEventsWith0Mult -= backgroundSubtraction;
+      Printf("Subtracted %d background events from 0 mult. bin", backgroundSubtraction);
+    }
 
     TH1* kineBias = (TH1*) vertexDist->Clone("kineBias");
     kineBias->Reset();
-
+    
     // loop over vertex bins
     for (Int_t i = 1; i <= rawMeasured->GetNbinsX(); i++)
     {
@@ -296,22 +312,35 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       if (eTrigVtx_projx->GetBinContent(i) == 0)
         continue;
 
-      Double_t fZ = eTrigVtx_projx->Integral(0, eTrigVtx_projx->GetNbinsX()+1) / eTrigVtx_projx->GetBinContent(i) *
-        eTrig->GetBinContent(i, 1) / eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1);
-      kineBias->SetBinContent(i, fZ);
-
-      events *= fZ;
-
-      // multiply with trigger correction if set above
-      events *= fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
-
       // calculate how many events we would have got with a pure MC-based correction
       //   in the given bin: measured events with vertex (mult > 0) * triggered events with mult 0 (mc) / events with vertex and mult > 0 (mc) * trigger correction for bin 0
-      Double_t mcEvents = vertexDist->GetBinContent(i) * eTrig->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i) * fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
+      Printf("+++ 0-Bin Correction for bin %d +++", i);
+      Printf("  Events: %f", vertexDist->GetBinContent(i));
+      Printf("  Ratio triggered N==0 / triggered vertex N>0: %f", eTrig->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i));
+      Printf("  Ratio all N==0 / triggered vertex N>0: %f", eAll->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i));
+      Printf("  Correction factor: %f", fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1));
 
-      Printf("Bin %d, alpha is %.2f, fZ is %.3f, number of events with 0 mult.: %.2f (MC comparison: %.2f)", i, alpha * 100., fZ, events, mcEvents);
-      Printf("Using MC value for 0-bin correction!");
-      events = mcEvents;
+      //Double_t mcEvents = vertexDist->GetBinContent(i) * eTrig->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i) * fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
+      Double_t mcEvents = vertexDist->GetBinContent(i) * eAll->GetBinContent(i, 1) / eTrigVtx_projx->GetBinContent(i);
+      if (backgroundSubtraction == -1)
+      {
+        Printf("Using MC value for 0-bin correction!"); 
+        events = mcEvents;
+      }
+      else
+      {
+        Double_t fZ = eTrigVtx_projx->Integral(0, eTrigVtx_projx->GetNbinsX()+1) / eTrigVtx_projx->GetBinContent(i) *
+          eTrig->GetBinContent(i, 1) / eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1);
+          
+        kineBias->SetBinContent(i, fZ);
+
+        events *= fZ;
+
+        // multiply with trigger correction if set above
+        events *= fData->GetEventCorrection()->GetCorrectionHistogram()->GetBinContent(i, 1);
+
+        Printf("  Bin %d, alpha is %.2f%%, fZ is %.3f, number of events with 0 mult.: %.2f (MC comparison: %.2f)", i, alpha * 100., fZ, events, mcEvents);
+      }
 
       correctedEvents->SetBinContent(i, 1, events);
     }
@@ -396,7 +425,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   }
 
   //new TCanvas(tag, tag, 800, 600);  vtxVsEta->DrawCopy("COLZ");
-
+  
   // clear result histograms
   for (Int_t vertexPos=0; vertexPos<kVertexBinning; ++vertexPos)
   {
@@ -416,7 +445,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       Int_t vertexBinEnd   = vertexHist->GetXaxis()->FindBin(vertexRangeEnd[vertexPos]);
 
       const Int_t *binBegin = 0;
-      const Int_t maxBins = 14;
+      const Int_t maxBins = 40;
       
       if (dataHist->GetNbinsY() != maxBins)
         AliFatal(Form("Binning of acceptance is different from data histogram: data=%d, acceptance=%d", dataHist->GetNbinsY(), maxBins));
@@ -425,20 +454,22 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       // produce with drawPlots.C: DetermineAcceptance(...)
       if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
-        const Int_t binBeginSPD[maxBins] = {-1, 16, 13, 9, 7, 5, 4, 4, 3, 3, 2, 2, 2, -1};
-
+        //const Int_t binBeginSPD[maxBins] = {15, 14, 13, 12, 11, 10, 9, 9, 8, 7, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+        const Int_t binBeginSPD[maxBins] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+        
         binBegin = binBeginSPD;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPC)
       {
-        //const Int_t binBeginTPC[30] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5, pt cut off 0.2 mev/c
-        //const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 9, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; // limit 5
+        const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
 
-        //binBegin = binBeginTPC;
+        binBegin = binBeginTPC;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
       {
-        // TODO create map
+        const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, -1, 14, 10, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1};
+
+        binBegin = binBeginTPCITS;
       }
 
       Int_t vtxBegin = 1;
@@ -529,6 +560,15 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         Float_t dndeta = sum / totalEvents;
         Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
 
+        // correct for additional combinatorics
+        Float_t combCorr = 0;
+        if (combinatoricsCorrection)
+        {
+          combCorr = combinatoricsCorrection->GetBinContent(combinatoricsCorrection->GetXaxis()->FindBin(vtxVsEta->GetYaxis()->GetBinCenter(iEta)));
+          dndeta *= combCorr;
+          error *= combCorr;
+        }
+        
         dndeta = dndeta / fdNdEta[vertexPos]->GetBinWidth(bin);
         error  = error / fdNdEta[vertexPos]->GetBinWidth(bin);
 
@@ -541,7 +581,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinContent(bin, dndeta);
         fdNdEtaPtCutOffCorrected[vertexPos]->SetBinError(bin, error);
 
-        //Printf("Bin %d has dN/deta = %f +- %f; %.2f tracks %.2f events (outside acceptance: %.2f tracks, %.2f events)", bin, dndeta, error, sum, totalEvents, unusedTracks, unusedEvents);
+        //Printf("Bin %d has dN/deta = %f +- %f; %.2f tracks %.2f events (outside acceptance: %.2f tracks, %.2f events) (comb. corr: %f)", bin, dndeta, error, sum, totalEvents, unusedTracks, unusedEvents, combCorr);
       }
     }
   }
