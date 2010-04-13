@@ -425,7 +425,7 @@ void AliCaloTrackReader::InitParameters()
   fPHOSGeoName  = "PHOSgeo";
 	
   if(gGeoManager) {// geoManager was set
-	printf("Geometry manager available\n");
+	if(fDebug > 2)printf("AliCaloTrackReader::InitParameters() - Geometry manager available\n");
 	fEMCALGeoMatrixSet = kTRUE;	 
 	fPHOSGeoMatrixSet  = kTRUE;	 
   }
@@ -438,6 +438,10 @@ void AliCaloTrackReader::InitParameters()
 	
   fRemoveBadChannels = kFALSE;
 	
+  //In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+	
   for (int i = 0; i < 12; i++) 
 	fEMCALBadChannelMap.Add(new TH2I(Form("EMCALBadChannelMap_SM%d",i),Form("EMCALBadChannelMap_SM%d",i), 
 									 48, 0, 48, 24, 0, 24));
@@ -445,10 +449,14 @@ void AliCaloTrackReader::InitParameters()
   for (int i = 0; i < 5; i++) 
 	fPHOSBadChannelMap.Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 
 									 56, 0, 56, 64, 0, 64));
-	fEMCALBadChannelMap.SetOwner(kTRUE);
-	fPHOSBadChannelMap. SetOwner(kTRUE);
-	fEMCALBadChannelMap.Compress();
-	fPHOSBadChannelMap. Compress();
+	
+  fEMCALBadChannelMap.SetOwner(kTRUE);
+  fPHOSBadChannelMap. SetOwner(kTRUE);
+  fEMCALBadChannelMap.Compress();
+  fPHOSBadChannelMap. Compress();
+	
+  //In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);
 	
 }
 
