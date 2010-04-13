@@ -41,6 +41,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <stdexcept>
 #include <cmath>
 
 #include "AliRawReader.h"
@@ -909,12 +910,18 @@ void AliCaloCalibPedestal::ComputeHotAndWarningTowers(const char * hotMapFile)
 	}
       }
 
-      //...and then we fit it
-      hPeakFit->Fit("gaus", "OQ", "",  hPeakFit->GetMean() - 3*hPeakFit->GetRMS(), 
-		    hPeakFit->GetMean() + 3*hPeakFit->GetRMS()); 
+      //...and then we try to fit it
+      double mean  = hPeakFit->GetMean();
+      double sigma = hPeakFit->GetRMS();
+      try {
+	hPeakFit->Fit("gaus", "OQ", "",  mean - 3*sigma, mean + 3*sigma);
+	mean  = hPeakFit->GetFunction("gaus")->GetParameter(1);
+	sigma = hPeakFit->GetFunction("gaus")->GetParameter(2);
+      }
+      catch (const std::exception & e) {
+	printf("AliCaloCalibPedestal: TH1D PeakFit exception %s", e.what()); 
+      }      
       //hPeakFit->Draw();
-      double mean  = hPeakFit->GetFunction("gaus")->GetParameter(1);
-      double sigma = hPeakFit->GetFunction("gaus")->GetParameter(2);
 
       delete hPeakFit;
 
