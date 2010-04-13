@@ -65,9 +65,11 @@ public:
   
   void    UserCreateOutputObjects();
   Float_t GetPtThreshold() const {return fPtThreshold;}
-  static Float_t GetSegmentationLevel() {return fgSegmentLevel;}
+  Float_t GetSegmentationLevel() {return fSegmentLevel;}
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
+  Bool_t  Load(const Char_t *filename = "TRD.Performance.root");
+
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
@@ -81,7 +83,7 @@ public:
   TH1*    PlotTrackOut(const AliTRDtrackV1 *t=NULL);
   TH1*    PlotMC(const AliTRDtrackV1 *t=NULL);
 
-  static void SetSegmentationLevel(Int_t l) {fgSegmentLevel = l;}
+  void    SetSegmentationLevel(Int_t l=0);
   void    SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
   void    SetRecoParam(AliTRDrecoParam *r);
   void    SetVerbose(Bool_t v = kTRUE) {v ? SETBIT(fStatus ,kVerbose): CLRBIT(fStatus ,kVerbose);}
@@ -96,8 +98,8 @@ private:
   AliTRDresolution& operator=(const AliTRDresolution&);
 
   void    AdjustF1(TH1 *h, TF1 *f);
-  TObjArray*  BuildMonitorContainerCluster(const char* name);
-  TObjArray*  BuildMonitorContainerTracklet(const char* name);
+  TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE);
+  TObjArray*  BuildMonitorContainerTracklet(const char* name, Bool_t expand=kFALSE);
   TObjArray*  BuildMonitorContainerTrack(const char* name);
   void    GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   Bool_t  Process(TH2* const h2, TF1 *f, Float_t k, TGraphErrors **g);
@@ -111,14 +113,14 @@ private:
   Bool_t  Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt);
 
   UChar_t             fStatus;          // steer parameter of the task
+  UChar_t             fSegmentLevel;    // steer parameter of the task
   UShort_t            fIdxPlot;         //! plot counter (internal)
   UShort_t            fIdxFrame;        //! frame counter (internal)
+  UShort_t            fNcomp[kNprojs];  //! number of projections per task
+  Char_t              *fAxTitle[kNprojs][4]; //! Title for all ref histos
   Float_t             fPtThreshold;     //! pt threshold for some performance plots
-  static UChar_t      fgSegmentLevel;    // steer parameter of the task
-  static Char_t const *fgPerformanceName[kNviews]; // name of performance plot
-  static UChar_t const fgNproj[kNviews]; // number of projections per task
-  static UChar_t const fgNcomp[kNprojs]; // number of projections per task
-  static Char_t const *fgAxTitle[kNprojs][4]; // Title for all ref histos
+  static Char_t const *fgPerformanceName[kNviews]; //! name of performance plot
+  static UChar_t const fgNproj[kNviews]; //! number of projections per task
   static Int_t const  fgkNresYsegm[3];  //! number of segments for saving y resolution
   static Char_t const *fgkResYsegmName[3];//! name of segment for saving y resolution
   AliTRDReconstructor *fReconstructor;  //! local reconstructor
@@ -133,6 +135,6 @@ private:
   TObjArray           *fMCcl;   //! cluster2mc calib
   TObjArray           *fMCtrklt;//! tracklet2mc calib
   
-  ClassDef(AliTRDresolution, 5) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 6) // TRD tracking resolution task
 };
 #endif
