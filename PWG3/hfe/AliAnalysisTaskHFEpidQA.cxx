@@ -24,6 +24,9 @@
 #include <TH1I.h>
 #include <TList.h>
 
+#include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
+#include "AliLog.h"
 #include "AliAnalysisTaskHFEpidQA.h"
 #include "AliHFEpidQA.h"
 #include "AliESDEvent.h"
@@ -92,13 +95,27 @@ void AliAnalysisTaskHFEpidQA::UserCreateOutputObjects(){
     tmp->SetName("V0pidMC");
     fOutput->Add(tmp);
   }
+
   
+}
+Bool_t AliAnalysisTaskHFEpidQA::UserNotify(){
+   // DEBUG
+  //printf("*****\n");
+  //printf(" -D Current File Name: %s \n", CurrentFileName());
+  return AliAnalysisTask::Notify();
+
 }
 
 void AliAnalysisTaskHFEpidQA::UserExec(Option_t *){
   //
   // Event Loop
-  //
+  // 
+  AliMCEventHandler* mcHandler = (dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()));
+  // check the MC data
+  if(fMCEvent && !mcHandler ) return;
+  if(fMCEvent &&  !mcHandler->InitOk() ) return;
+  if(fMCEvent &&  !mcHandler->TreeK() ) return;
+  if(fMCEvent &&  !mcHandler->TreeTR() ) return;
   if(fMCEvent) fPIDqa->SetMCEvent(fMCEvent);
   fPIDqa->SetRun((dynamic_cast<AliESDEvent*>(fInputEvent))->GetRunNumber());
   fPIDqa->SetT0((dynamic_cast<AliESDEvent*>(fInputEvent))->GetT0());
@@ -112,4 +129,5 @@ void AliAnalysisTaskHFEpidQA::Terminate(Option_t *){
   // Do Post Processing
   //
 }
+
 

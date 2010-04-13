@@ -136,14 +136,14 @@ void AliHFEpidQA::Init(){
  fOutput->BinLogAxis("hTPCnSigmaProton", 0);
 
   fOutput->CreateTH2F("hTPC_PID", "TPC pid all tracks; tpc pid probability; species",100, 0, 1, 5, -0.5, 4.5 );
-  fOutput->CreateTH2F("hTPC_PID_pt_Electron", "TPC PID for conversion electrons; pt (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_pt_Electron", 0);
-  fOutput->CreateTH2F("hTPC_PID_pt_PionK0", "TPC PID for K0 pions; pt (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_pt_PionK0", 0);
-  fOutput->CreateTH2F("hTPC_PID_pt_PionL", "TPC PID for Lambda pions; pt (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_pt_PionL", 0);
-  fOutput->CreateTH2F("hTPC_PID_pt_Proton", "TPC PID for Lambda protons; pt (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTPC_PID_pt_Proton", 0);
+  fOutput->CreateTH2F("hTPC_PID_p_Electron", "TPC PID for conversion electrons; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTPC_PID_p_Electron", 0);
+  fOutput->CreateTH2F("hTPC_PID_p_PionK0", "TPC PID for K0 pions; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTPC_PID_p_PionK0", 0);
+  fOutput->CreateTH2F("hTPC_PID_p_PionL", "TPC PID for Lambda pions; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTPC_PID_p_PionL", 0);
+  fOutput->CreateTH2F("hTPC_PID_p_Proton", "TPC PID for Lambda protons; p (GeV/c); TPC PID", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTPC_PID_p_Proton", 0);
 
 
   // TRD pid response
@@ -165,14 +165,14 @@ void AliHFEpidQA::Init(){
   
   fOutput->CreateTH2F("hTOF_PID", "TOF pid all tracks; tof pid probability; species",100, 0, 1,5,  -0.5, 4.5 );
 
-  fOutput->CreateTH2F("hTOF_PID_pt_Electron", "TOF PID for gamma converisons; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_pt_Electron", 0);
-  fOutput->CreateTH2F("hTOF_PID_pt_PionK0", "TOF PID for K0 pions; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_pt_PionK0", 0);
-  fOutput->CreateTH2F("hTOF_PID_pt_PionL", "TOF PID for Lambda pions; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_pt_PionL", 0);
-  fOutput->CreateTH2F("hTOF_PID_pt_Proton", "TOF PID for Lambda protons; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
-  fOutput->BinLogAxis("hTOF_PID_pt_Proton", 0);
+  fOutput->CreateTH2F("hTOF_PID_p_Electron", "TOF PID for gamma converisons; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTOF_PID_p_Electron", 0);
+  fOutput->CreateTH2F("hTOF_PID_p_PionK0", "TOF PID for K0 pions; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTOF_PID_p_PionK0", 0);
+  fOutput->CreateTH2F("hTOF_PID_p_PionL", "TOF PID for Lambda pions; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTOF_PID_p_PionL", 0);
+  fOutput->CreateTH2F("hTOF_PID_p_Proton", "TOF PID for Lambda protons; p_T (GeV/c); counts", 100, 0.1, 10, 5, -0.5, 4.5);
+  fOutput->BinLogAxis("hTOF_PID_p_Proton", 0);
 
   fOutput->CreateTH2F("hTOF_beta_Electron", "TOF beta for gamma conversions; #beta; p (GeV/c)", 120, 0, 1.2, 100, 0.1, 10);
   fOutput->BinLogAxis("hTOF_beta_Electron", 1);
@@ -399,7 +399,7 @@ void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
       
       // track kinematics
       Double_t p = tpcIn->P();
-      Double_t pt = tpcIn->Pt();
+      //Double_t pt = tpcIn->Pt();
 
       // TPC dEdx
       Double_t dEdx = esdTrack->GetTPCsignal();
@@ -407,12 +407,12 @@ void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
       fOutput->Fill(hname, p, dEdx);
 
       //TPC number of sigmas
-      Double_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack,(AliPID::EParticleType)species);
+      Double_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack,(AliPID::EParticleType)typePID[species]);
       sprintf(hname, "hTPCnSigma%s",  typeName[species]);
       fOutput->Fill(hname, p, nsigma);
 
       // TPC PID response
-      sprintf(hname, "hTPC_PID_pt_%s", typeName[species]);
+      sprintf(hname, "hTPC_PID_p_%s", typeName[species]);
       Double_t tpcPID[5] = {-1, -1, -1, -1, -1};
       esdTrack->GetTPCpid(tpcPID);
       Int_t ix = 0;
@@ -425,11 +425,11 @@ void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
 	fOutput->Fill("hTPC_PID", tpcPID[k], k);
       }
       if(tpcPID[ix] > 0){
-	fOutput->Fill(hname, pt, ix);
+	fOutput->Fill(hname, p, ix);
       }
 
       // TOF PID response
-      sprintf(hname, "hTOF_PID_pt_%s", typeName[species]);
+      sprintf(hname, "hTOF_PID_p_%s", typeName[species]);
       Double_t tofPID[5] = {-1., -1., -1., -1., -1};
       esdTrack->GetTOFpid(tofPID);
       tmp = 0.;
@@ -442,7 +442,7 @@ void AliHFEpidQA::FillPIDresponse(TObjArray * const particles, Int_t species){
 	  fOutput->Fill("hTOF_PID", tofPID[k], k);
       }
       if(tofPID[ix] > 0){
-	fOutput->Fill(hname, pt, ix);
+	fOutput->Fill(hname, p, ix);
       }
       
       //TRD first electron only

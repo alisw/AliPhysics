@@ -88,13 +88,13 @@ Bool_t AliHFEcutStep::IsSelected(TObject *o){
   // Filter tracks in the given cut step
   // Apply all cut objects
   //
-  AliInfo(Form("Cut Step %s: Number of cut objects: %d", GetName(), fCuts->GetEntriesFast()));
+  AliDebug(1, Form("Cut Step %s: Number of cut objects: %d", GetName(), fCuts->GetEntriesFast()));
   if(!fCuts->GetEntriesFast()) return kTRUE;
   Bool_t isSelected = kTRUE;
   for(Int_t iCut = 0; iCut < fCuts->GetEntriesFast(); iCut++){
     if(!(dynamic_cast<AliAnalysisCuts *>(fCuts->UncheckedAt(iCut)))->IsSelected(o)) isSelected = kFALSE;
   }
-  AliInfo(Form("Accepted: %s", isSelected ? "yes" : "no"));
+  AliDebug(1, Form("Accepted: %s", isSelected ? "yes" : "no"));
   return isSelected;
 } 
 

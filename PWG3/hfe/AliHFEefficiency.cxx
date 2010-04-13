@@ -31,7 +31,9 @@
 #include <TObjArray.h>
 #include <TPad.h>
 
+#include "AliAnalysisManager.h"
 #include "AliCFAcceptanceCuts.h"
+#include "AliCFTrackIsPrimaryCuts.h"
 #include "AliCFContainer.h"
 #include "AliCFEffGrid.h"
 #include "AliESDEvent.h"
@@ -43,6 +45,7 @@
 #include "AliHFEtrackFilter.h"
 #include "AliHFEtools.h"
 #include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 
 ClassImp(AliHFEefficiency)
 
@@ -120,6 +123,11 @@ void AliHFEefficiency::UserCreateOutputObjects(){
   AliHFEextraCuts *hfeitscuts = dynamic_cast<AliHFEextraCuts *>(hfeITS->GetCut("HFEPixelsCuts"));
   hfeitscuts->SetRequireITSpixel(AliHFEextraCuts::kFirst);
 
+  AliHFEcutStep *primary = fFilter->GetCutStep("Primary");
+  AliCFTrackIsPrimaryCuts *primcuts = dynamic_cast<AliCFTrackIsPrimaryCuts *>(primary->GetCut("PrimaryCuts"));
+  primcuts->SetMaxDCAToVertexXY(3);
+  primcuts->SetMaxDCAToVertexZ(5);
+
   fAcceptanceCuts = new AliCFAcceptanceCuts("Acceptance", "MC Acceptance Cuts");
   fAcceptanceCuts->SetMinNHitITS(3);
   fAcceptanceCuts->SetMinNHitTPC(2);
@@ -145,6 +153,10 @@ void AliHFEefficiency::UserExec(Option_t *){
   fEfficiency->NewEvent();
   fFilter->SetRecEvent(fInputEvent);
   if(fMCEvent){
+    AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if(!mcH->InitOk()) return;
+    if(!mcH->TreeK()) return;
+    if(!mcH->TreeTR()) return;
     fFilter->SetMC(fMCEvent);
     FilterMC();
   }
@@ -161,9 +173,14 @@ void AliHFEefficiency::UserExec(Option_t *){
     else
       fOutput->Fill("itspixel",0);
     AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel())));
-    AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mctrack->Particle()->GetFirstMother()));
-    fOutput->Fill("mcmother", mother->Particle()->GetPdgCode());
-    fOutput->Fill("ptres", mctrack->Pt(), (track->Pt() - mctrack->Pt())/mctrack->Pt());
+    if(mctrack){
+      Int_t motherLabel = mctrack->Particle()->GetFirstMother();
+      if(motherLabel){
+        AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(motherLabel));
+        fOutput->Fill("mcmother", mother->Particle()->GetPdgCode());
+      }
+      fOutput->Fill("ptres", mctrack->Pt(), (track->Pt() - mctrack->Pt())/mctrack->Pt());
+    }
   }
   delete iter;
   fFilter->Flush();

@@ -80,8 +80,6 @@ const Char_t *AliHFEdisplacedElectrons::fgkKineVarTitle[3] ={
 //__________________________________________________________
 AliHFEdisplacedElectrons::AliHFEdisplacedElectrons():
   fDebugLevel(0)
-  , fESD(0x0)
-  , fMC(0x0)
   , fTHnSparseDcaMcPionInfo(NULL)
   , fTHnSparseDcaMcEleInfo(NULL)
   , fTHnSparseDcaDataEleInfo(NULL)
@@ -94,15 +92,13 @@ AliHFEdisplacedElectrons::AliHFEdisplacedElectrons():
 }
 
 //__________________________________________________________
-AliHFEdisplacedElectrons::AliHFEdisplacedElectrons(const AliHFEdisplacedElectrons &displacedElectrons):
-  TObject(displacedElectrons)
-  , fDebugLevel(0)
-  , fESD(0x0)
-  , fMC(0x0)
-  , fTHnSparseDcaMcPionInfo(NULL)
-  , fTHnSparseDcaMcEleInfo(NULL)
-  , fTHnSparseDcaDataEleInfo(NULL)
-  , fOutputList(0x0)
+AliHFEdisplacedElectrons::AliHFEdisplacedElectrons(const AliHFEdisplacedElectrons &ref):
+  TObject(ref)
+  , fDebugLevel(ref.fDebugLevel)
+  , fTHnSparseDcaMcPionInfo(ref.fTHnSparseDcaMcPionInfo)
+  , fTHnSparseDcaMcEleInfo(ref.fTHnSparseDcaMcEleInfo)
+  , fTHnSparseDcaDataEleInfo(ref.fTHnSparseDcaDataEleInfo)
+  , fOutputList(ref.fOutputList)
   
 {
   //
@@ -112,12 +108,22 @@ AliHFEdisplacedElectrons::AliHFEdisplacedElectrons(const AliHFEdisplacedElectron
 
 
 //__________________________________________________________
-AliHFEdisplacedElectrons&AliHFEdisplacedElectrons::operator=(const AliHFEdisplacedElectrons &)
+AliHFEdisplacedElectrons&AliHFEdisplacedElectrons::operator=(const AliHFEdisplacedElectrons &ref)
 {
   //
   // Assignment operator
   //
-  Printf("Not yet implemented.");
+
+  if(this == &ref) return *this;
+  AliHFEdisplacedElectrons::operator=(ref);
+
+  fDebugLevel = ref.fDebugLevel;
+
+  fTHnSparseDcaMcPionInfo = ref.fTHnSparseDcaMcPionInfo;
+  fTHnSparseDcaMcEleInfo = ref.fTHnSparseDcaMcEleInfo;
+  fTHnSparseDcaDataEleInfo = ref.fTHnSparseDcaDataEleInfo;
+  fOutputList = ref.fOutputList;
+
   return *this;
 }
 
@@ -225,7 +231,7 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
   const Int_t nVarPion = 5;
   Int_t iBinPion[nVarPion] = {nBinsDca, nBinsDca, nBinsPt, nBinsRap, nBinsPhi};
    
-  THnSparseF *fTHnSparseDcaMcPionInfo = NULL; // empty for the moment 
+  //  THnSparseF *fTHnSparseDcaMcPionInfo = NULL; // empty for the moment 
   if(HasMCData()){
     fTHnSparseDcaMcPionInfo = new THnSparseF("dcaMcPionInfo", 
 					     "MC info:;dcaXY [50 #mum];dcaZ [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];", 	
@@ -244,7 +250,7 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
   const Int_t nVar = 6;
   Int_t iBin[nVar] = {nBinsEleSource,nBinsDca, nBinsDca, nBinsPt, nBinsRap, nBinsPhi};
   
-  THnSparseF *fTHnSparseDcaMcEleInfo = NULL; // empty for the moment 
+  //  THnSparseF *fTHnSparseDcaMcEleInfo = NULL; // empty for the moment 
   if(HasMCData()){
     fTHnSparseDcaMcEleInfo = new THnSparseF("dcaMcElectronInfo", 
 					 "MC info:;ID [electron source id];dcaXY [50 #mum];dcaZ [50 #mum];pT [GeV/c];y [rapidity];#phi [rad];",		
@@ -262,7 +268,7 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
   
   // for ESD: HFE pid
 
-  THnSparseF *fTHnSparseDcaDataEleInfo = NULL;  // empty for the moment
+  //  THnSparseF *fTHnSparseDcaDataEleInfo = NULL;  // empty for the moment
   const Int_t nVarData = 5;
   Int_t iBinData[nVarData] = {nBinsDca, nBinsDca, nBinsPt, nBinsRap, nBinsPhi};  
   
@@ -413,7 +419,7 @@ void AliHFEdisplacedElectrons::FillMCOutput(AliESDEvent * const fESDEvent, AliES
 
 
 //__________________________________________________________
-void AliHFEdisplacedElectrons::FillESDOutput(AliESDEvent * const fESD, AliESDtrack* const esdTrack)
+void AliHFEdisplacedElectrons::FillESDOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack)
 {
 
   // fill output
@@ -425,10 +431,10 @@ void AliHFEdisplacedElectrons::FillESDOutput(AliESDEvent * const fESD, AliESDtra
   Double_t phi = track->Phi();
   
   // obtain impact parameters in xy and y
-  const AliESDVertex *primVtx = fESD->GetPrimaryVertex();    
+  const AliESDVertex *primVtx = fESDEvent->GetPrimaryVertex();    
   
   Float_t magneticField = 5;  // initialized as 5kG
-  magneticField = fESD->GetMagneticField();  // in kG 
+  magneticField = fESDEvent->GetMagneticField();  // in kG 
   Double_t dz[2];   // error of dca in cm
   Double_t covardz[3];
   track->PropagateToDCA(primVtx,magneticField, 1000., dz, covardz); 
