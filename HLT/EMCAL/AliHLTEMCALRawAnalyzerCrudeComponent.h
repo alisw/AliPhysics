@@ -34,6 +34,7 @@ class  AliHLTEMCALRawAnalyzerCrudeComponent : public AliHLTEMCALRawAnalyzerCompo
  public:
   AliHLTEMCALRawAnalyzerCrudeComponent();
   virtual ~AliHLTEMCALRawAnalyzerCrudeComponent();
+  virtual int DoDeinit();
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn(); 
   //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);

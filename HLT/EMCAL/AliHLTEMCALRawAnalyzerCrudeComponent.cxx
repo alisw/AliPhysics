@@ -36,6 +36,7 @@ AliHLTEMCALRawAnalyzerCrudeComponent  gAliHLTEMCALRawAnalyzerCrudeComponent;
 //AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent : AliHLTEMCALRawAnalyzerComponent() 
 AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent() : AliHLTEMCALRawAnalyzerComponent()
 {
+  // constructor
   //  fAnalyzerPtr = new   AliHLTCaloRawAnalyzerCrude();
   fAnalyzerPtr = new   AliCaloRawAnalyzerCrude();
 }
@@ -43,13 +44,31 @@ AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent() : A
 
 AliHLTEMCALRawAnalyzerCrudeComponent::~AliHLTEMCALRawAnalyzerCrudeComponent()
 {
-
+  // destructor
+  if (0 != fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
 }
 
+int 
+AliHLTEMCALRawAnalyzerCrudeComponent::DoDeinit()
+{
+  //comment
+  if (0 != fAnalyzerPtr)
+    {
+      delete fAnalyzerPtr;
+      fAnalyzerPtr = 0;
+    }
+
+  return AliHLTEMCALRawAnalyzerComponent::DoDeinit();
+}
 
 const char* 
 AliHLTEMCALRawAnalyzerCrudeComponent::GetComponentID()
 {
+  // component id
   return "EmcalRawCrude";
 }
 
@@ -57,6 +76,7 @@ AliHLTEMCALRawAnalyzerCrudeComponent::GetComponentID()
 AliHLTComponent* 
 AliHLTEMCALRawAnalyzerCrudeComponent::Spawn()
 {
+  // spawn component
   return new AliHLTEMCALRawAnalyzerCrudeComponent();
 }
  
