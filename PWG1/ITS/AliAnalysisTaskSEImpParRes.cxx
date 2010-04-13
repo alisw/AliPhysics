@@ -41,6 +41,7 @@ AliAnalysisTaskSEImpParRes::AliAnalysisTaskSEImpParRes():
 AliAnalysisTaskSE(),
 fReadMC(kFALSE),
 fSelectedPdg(-1),
+fUseDiamond(kTRUE),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -71,6 +72,7 @@ AliAnalysisTaskSEImpParRes::AliAnalysisTaskSEImpParRes(const char *name):
 AliAnalysisTaskSE(name),
 fReadMC(kFALSE),
 fSelectedPdg(-1),
+fUseDiamond(kTRUE),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -524,15 +526,15 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   Float_t diamondcovxy[3];
   esd->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={esd->GetDiamondX(),esd->GetDiamondY(),0.};
-  diamondcovxy[0]=0.05*0.05;
-  diamondcovxy[2]=0.05*0.05;
+  //diamondcovxy[0]=0.05*0.05;
+  //diamondcovxy[2]=0.05*0.05;
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.};
   AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
 
   AliVertexerTracks *vertexer0 = new AliVertexerTracks(esd->GetMagneticField());
   vertexer0->SetITSMode();
   vertexer0->SetMinClusters(4);  
-  vertexer0->SetVtxStart(diamond);
+  if(fUseDiamond) vertexer0->SetVtxStart(diamond);
   AliESDVertex *vtxESDRec = (AliESDVertex*)vertexer0->FindPrimaryVertex(esd);
   delete vertexer0; vertexer0=0;
   if(vtxESDRec->GetNContributors()<1) return;
@@ -592,7 +594,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     AliVertexerTracks *vertexer = new AliVertexerTracks(esd->GetMagneticField());
     vertexer->SetITSMode();
     vertexer->SetMinClusters(4);
-    vertexer->SetVtxStart(diamond);
+    if(fUseDiamond) vertexer->SetVtxStart(diamond);
     Int_t skipped[2];
     skipped[0] = (Int_t)esdtrack->GetID();
     vertexer->SetSkipTracks(1,skipped);      
