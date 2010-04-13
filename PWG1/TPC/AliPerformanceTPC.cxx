@@ -302,14 +302,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     genHeader->PrimaryVertex(vtxMC);
   } 
   
-  // use ESD friends
-  if(bUseESDfriend) {
-    if(!esdFriend) {
-      Error("Exec","esdFriend not available");
-      return;
-    }
-  }
-
   // trigger
   if(!bUseMC &&GetTriggerClass()) {
     Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
@@ -329,9 +321,10 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
 
-    if(bUseESDfriend) {
-    AliESDfriendTrack *friendTrack=esdFriend->GetTrack(iTrack);
-    if(!friendTrack) continue;
+    if(bUseESDfriend && esdFriend) 
+    {
+      AliESDfriendTrack *friendTrack=esdFriend->GetTrack(iTrack);
+      if(!friendTrack) continue;
 
       TObject *calibObject=0;
       AliTPCseed *seed=0;
