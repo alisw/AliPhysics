@@ -26,6 +26,7 @@
 #include "AliCaloFitResults.h"
 #include "AliCaloBunchInfo.h"
 
+using namespace std;
 
 ClassImp(AliCaloRawAnalyzerCrude)  
 

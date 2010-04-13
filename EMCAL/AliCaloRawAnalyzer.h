@@ -29,35 +29,23 @@
 
 #define MAXSAMPLES 1008 //CRAP PTH
 
-//#include "AliCaloRawAnalyzer.h"
-
-//class AliCaloBunchInfo;
-
-//#include "AliCaloBunchInfo.h"
-
-
 #include <vector>
-using namespace std;
 
 class AliCaloBunchInfo;
 class AliCaloFitResults;
-
-//class vector<AliCaloBunchInfo> ;
-
-//class  vector;
 
 class  AliCaloRawAnalyzer : public TObject
 {
  public:
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
   virtual ~AliCaloRawAnalyzer();
-  virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				      const UInt_t altrocfg1,  const UInt_t altrocfg2 );
  
-  void PrintBunches( const vector<AliCaloBunchInfo> &bunchvector ) const;
+  void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector ) const;
   void PrintBunch( const AliCaloBunchInfo &bunch ) const ;
 
-  virtual int PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunchvector, 
+  virtual int PreFitEvaluateSamples( const std::vector<AliCaloBunchInfo>  &bunchvector, 
 				     const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, 
 				     Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last);
   void SetTimeConstraint(const int min, const int max );
@@ -85,7 +73,7 @@ class  AliCaloRawAnalyzer : public TObject
   bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;
   bool IsInTimeRange( const int maxindex ) const;
   Float_t  ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t altrocfg1,  const UInt_t altrocfg2, double *outarray ) const;
-  int  SelectBunch( const vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude ) const;
+  int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude ) const;
   virtual void SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const;
   Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
   

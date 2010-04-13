@@ -32,7 +32,7 @@
 #include <iostream>
 using namespace std;
 
-//ClassImp(AliCaloRawAnalyzer)  
+ClassImp(AliCaloRawAnalyzer)  
 
 AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) :  TObject(),
 										   fMinTimeIndex(-1),

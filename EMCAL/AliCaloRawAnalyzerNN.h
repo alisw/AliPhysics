@@ -35,7 +35,7 @@ class  AliCaloRawAnalyzerNN : public AliCaloRawAnalyzer
  public:
   AliCaloRawAnalyzerNN();
   virtual ~AliCaloRawAnalyzerNN();
-  virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
   //  virtual void SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const;
 

@@ -41,7 +41,7 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
  public:
   AliCaloRawAnalyzerPeakFinder();
   virtual ~AliCaloRawAnalyzerPeakFinder();
-  virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
 
  private:
   AliCaloRawAnalyzerPeakFinder( const AliCaloRawAnalyzerPeakFinder   & );

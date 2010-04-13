@@ -28,8 +28,6 @@
 #define NZCOLSSMOD   48     
 #define NXROWSSMOD   24    
 
-using namespace std;
-
 class AliCaloRawAnalyzer;
 class TH2D;
 class TH1D;
@@ -40,7 +38,7 @@ class  AliCaloRawAnalyzerComparison
  public:
   AliCaloRawAnalyzerComparison();
   virtual ~AliCaloRawAnalyzerComparison();
-  void Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+  void Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 		 const UInt_t altrocfg1,  const UInt_t altrocfg2, const int event, const int col, const int row ); 
   
   void EventChanged();
@@ -48,7 +46,7 @@ class  AliCaloRawAnalyzerComparison
   void WriteHistograms();
 
  private:
-  void IntiHistograms( vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref );
+  void IntiHistograms( std::vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref );
 
   TH1D *fAmpHistograms[NANALYZERS][NZCOLSSMOD][NXROWSSMOD];
 
@@ -62,7 +60,7 @@ class  AliCaloRawAnalyzerComparison
   TH1D *fTofResAbsolute[NANALYZERS]; //differntial tof resolution 
   
 
-  vector <AliCaloRawAnalyzer*> fRawAnalyzers; // raw analyzers
+  std::vector <AliCaloRawAnalyzer*> fRawAnalyzers; // raw analyzers
   AliCaloRawAnalyzer *fReferenceAnalyzer; // reference analyzer
   
   int fMod; // SuperModule index

@@ -32,7 +32,7 @@ class  AliCaloRawAnalyzerFastFit : public AliCaloRawAnalyzer
  public:
   AliCaloRawAnalyzerFastFit();
   virtual ~AliCaloRawAnalyzerFastFit();
-  virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				      const UInt_t altrocfg1,  const UInt_t altrocfg2 ); 
  private:
   Double_t fXAxis[1008]; // Xaxis (time bins) corresponding to the ADC samples

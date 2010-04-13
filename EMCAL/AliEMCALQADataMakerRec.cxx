@@ -62,6 +62,8 @@ Change all existing histograms as experts
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
 
+using namespace std;
+
 ClassImp(AliEMCALQADataMakerRec)
            
 //____________________________________________________________________________ 
@@ -488,18 +490,18 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  }
 	  else { // TRU L0 Id Data
 	    // which TRU the channel belongs to?
-	    int TRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
+	    int iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
 
 	    for (int i = 0; i< bunchLength; i++) {
 	      for( int j = 0; j < nTRUL0ChannelBits; j++ ){
 		// check if the bit j is 1
 		if( (sig[i] & ( 1 << j )) > 0 ){
-		  int TRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
-		  if(TRUIdInSM < n2x2PerTRU) {
-		    int TRUAbsId = TRUIdInSM + n2x2PerTRU * TRUId;
+		  int iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
+		  if(iTRUIdInSM < n2x2PerTRU) {
+		    int iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
 		    // Fill the histograms
-		    GetRawsData(kNL0TRU)->Fill(TRUAbsId);
-		    GetRawsData(kTimeL0TRU)->Fill(TRUAbsId, startBin);
+		    GetRawsData(kNL0TRU)->Fill(iTRUAbsId);
+		    GetRawsData(kTimeL0TRU)->Fill(iTRUAbsId, startBin);
 		  }
 		}
 	      }

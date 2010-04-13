@@ -34,7 +34,7 @@ class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
  public:
   AliCaloRawAnalyzerLMS();
   virtual ~AliCaloRawAnalyzerLMS();
-  virtual AliCaloFitResults  Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
   void PrintFitResult(const TF1 *f) const;
   
   // shaper tau value, in time-bins, and flag for keeping tau fixed

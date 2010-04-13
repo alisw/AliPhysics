@@ -34,7 +34,7 @@ class AliCaloBunchInfo;
 class  AliCaloRawAnalyzerCrude : public  AliCaloRawAnalyzer
 {
  public:
-   virtual AliCaloFitResults Evaluate( const vector<AliCaloBunchInfo> &bunchvector, 
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
    
    AliCaloRawAnalyzerCrude();
