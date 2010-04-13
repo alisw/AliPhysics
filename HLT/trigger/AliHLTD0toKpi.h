@@ -26,6 +26,7 @@ public:
   Double_t InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
   void cosThetaStar(AliExternalTrackParam* n, AliExternalTrackParam* p,Double_t &D0,Double_t &D0bar);
   Double_t pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv);
+  Double_t Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
 
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v);
 

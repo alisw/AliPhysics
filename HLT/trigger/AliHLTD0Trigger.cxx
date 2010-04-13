@@ -61,6 +61,7 @@ AliHLTD0Trigger::AliHLTD0Trigger()
   , fUseV0(false)
   , mD0PDG(TDatabasePDG::Instance()->GetParticle(421)->Mass())
   , fD0mass(NULL)
+  , fD0pt(NULL)
   , fPos()
   , fNeg()
   , fd0calc(NULL)                  
@@ -176,7 +177,10 @@ int AliHLTD0Trigger::DoTrigger()
   HLTDebug("Total Number of D0 found: %d",fTotalD0);
   HLTDebug("Total Number of True D0 found: %d",fTotalD0true);
 
-  if(fplothisto){PushBack( (TObject*) fD0mass, kAliHLTDataTypeHistogram,0);}
+  if(fplothisto){
+    PushBack( (TObject*) fD0mass, kAliHLTDataTypeHistogram,0);
+    PushBack( (TObject*) fD0pt, kAliHLTDataTypeHistogram,0);
+  }
   
   //if (iResult>=0) {
   if (1) {
@@ -219,6 +223,7 @@ int AliHLTD0Trigger::DoInit(int argc, const char** argv)
   fplothisto=false;
   // see header file for class documentation
   fD0mass = new TH1F("hMass","D^{0} mass plot",100,1.7,2);
+  fD0pt = new TH1F("hPt","D^{0} Pt plot",20,0,20);
   // first configure the default
   int iResult=0;
   if (iResult>=0) iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
@@ -412,6 +417,7 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0, Int_t& nD0true){
 	//fD0mass->Fill(minvbar);
 	fD0mass->Fill(fd0calc->InvMass(tN,tP));
 	fD0mass->Fill(fd0calc->InvMass(tP,tN));
+	fD0pt->Fill(fd0calc->Pt(tP,tN));
 	/*
 	if((fd0calc->InvMass(tN,tP) - mD0PDG) > finvMass){
 	  fD0mass->Fill(fd0calc->InvMass(tN,tP));

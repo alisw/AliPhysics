@@ -49,7 +49,7 @@ class AliHLTMCEvent;
  * \li -d0    <i> Impact parameter for decay products  </i> <br>
  * \li -d0d0    <i> Product of impact parameter for decay products  </i> <br>
  * \li -cospoint    <i> pointing angle  </i> <br>
- * \li -plothistogram    <i> ploting the inv. mass histogram  </i> <br>
+ * \li -plothistogram    <i> ploting the inv. mass and pt of D0  </i> <br>
  *
  * By default, configuration is loaded from OCDB, can be overridden by
  * component arguments.
@@ -129,6 +129,7 @@ class AliHLTD0Trigger : public AliHLTTrigger
 
   /// D0 inv. mass plot
   TH1F *fD0mass;                                           //! transient  
+  TH1F *fD0pt;                                             //! transient  
 
   vector<AliExternalTrackParam*> fPos;                       //! transient
   vector<AliExternalTrackParam*> fNeg;                       //! transient

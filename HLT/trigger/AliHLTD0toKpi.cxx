@@ -119,3 +119,13 @@ AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Dou
   return vertexAOD;
 
 }
+Double_t AliHLTD0toKpi::Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2)
+{
+  Double_t p1[3],p2[3];
+  d1->GetPxPyPz(p1);
+  d2->GetPxPyPz(p2);
+  
+  Double_t pt2 = (p1[0]+p2[0])*(p1[0]+p2[0]) + (p1[1]+p2[1])*(p1[1]+p2[1]);
+
+  return TMath::Sqrt(pt2);
+}
