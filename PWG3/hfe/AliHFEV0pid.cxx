@@ -103,11 +103,17 @@ void AliHFEV0pid::InitQA(){
     fQA->CreateTH1F("h_cutEfficiencyLambda", "Cut Efficiency for Lambdas", 10, 0, 10);
 
     // QA histograms for invariant mass
-    fQA->CreateTH1F("h_InvMassGamma", "Gamma invariant mass; inv mass {[eV/c^{2}]; counts", 100, 0, 0.25);
+    fQA->CreateTH1F("h_InvMassGamma", "Gamma invariant mass; inv mass [GeV/c^{2}]; counts", 100, 0, 0.25);
     fQA->CreateTH1F("h_InvMassK0s", "K0s invariant mass; inv mass [GeV/c^{2}]; counts", 100, 0.4, 0.65);
     fQA->CreateTH1F("h_InvMassPhi", "Phi invariant mass; inv mass [GeV/c^{2}]; counts", 100, 0.4, 0.65);
     fQA->CreateTH1F("h_InvMassLambda", "Lambda invariant mass; inv mass [GeV/c^{2}]; counts", 100, 1.05, 1.15);
     
+    // QA histograms for p distribution (of the daughters)
+    fQA->CreateTH1F("h_P_electron", "P distribution of the gamma electrons; p (GeV/c); counts", 100, 0.1, 10);
+    fQA->CreateTH1F("h_P_K0pion", "P distribution of the K0 pions; p (GeV/c); counts", 100, 0.1, 10);
+    fQA->CreateTH1F("h_P_Lpion", "P distribution of the Lambda pions; p (GeV/c); counts", 100, 0.1, 10);
+    fQA->CreateTH1F("h_P_Lproton", "P distribution of the Lambda protons; p (GeV/c); counts", 100, 0.1, 10);
+
     // QA invariant mass as a functin of pt
     fQA->CreateTH1Fvector1(20, "h_InvMassGamma_pt", "Gamma invarinat mass in pt bins; inv mass [GeV/c^{2}]; counts", 250, 0, 2);
     fQA->CreateTH1Fvector1(20, "h_InvMassK0_pt", "K0 invarinat mass in pt bins; inv mass [GeV/c^{2}]; counts", 250, 0, 2);
@@ -267,11 +273,11 @@ Bool_t AliHFEV0pid::IsGammaConv(TObject *v0){
   Double_t mPt = kfMother->GetPt();
   fQA->Fill("h_Pt_Gamma", mPt);
   Int_t ptBin = (int)(mPt*10.0);
-  fQA->Fill("h_InvMassGamma_pt", ptBin+1, invMass);
 
   if(fQA) fQA->Fill("h_InvMassGamma", invMass);
   if(invMass > 0.05) return kFALSE; 
-
+  fQA->Fill("h_InvMassGamma_pt", ptBin+1, invMass);
+  
   AliDebug(1, Form("Gamma identified, daughter IDs: %d,%d", daughter[0]->GetID(), daughter[1]->GetID()));
   // Identified gamma - store tracks in the electron containers
   if(!fIndices->Find(daughter[0]->GetID())){

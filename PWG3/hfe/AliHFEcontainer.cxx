@@ -250,12 +250,6 @@ AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const
   for(UInt_t ibin = 0; ibin < fNVars; ibin++) dummyBinning[ibin] = 1;
   AliCFContainer *cmerged = new AliCFContainer(name, title, nStepMerged, fNVars, dummyBinning);
   delete dummyBinning;
-  // cleanup old container content so that we can fill it with the new content
-  AliInfo("Removing temporary grids");
-  for(Int_t istep = 0; istep < cmerged->GetNStep(); istep++){
-    AliCFGridSparse *grid = cmerged->GetGrid(istep);
-    delete grid;
-  }
   // Fill container with content
   AliInfo("Filling new container");
   Int_t cstep = 0;

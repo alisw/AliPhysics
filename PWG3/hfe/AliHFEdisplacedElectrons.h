@@ -67,9 +67,9 @@ class AliHFEdisplacedElectrons : public TObject{
     kPDGbeauty = kBottom
   };  // PDG codes to be used
 
-  AliHFEdisplacedElectrons();
+  AliHFEdisplacedElectrons(); // default constructor
   AliHFEdisplacedElectrons(const AliHFEdisplacedElectrons &p); // copy constructor
-  AliHFEdisplacedElectrons &operator=(const AliHFEdisplacedElectrons &); // assignment operator
+  AliHFEdisplacedElectrons &operator=(const AliHFEdisplacedElectrons &ref); // assignment operator
 
   virtual ~AliHFEdisplacedElectrons();
 
@@ -120,9 +120,6 @@ class AliHFEdisplacedElectrons : public TObject{
   };   // several constant to be used
  
   UInt_t fDebugLevel;   // debug level
-  AliESDEvent* fESD;              //! ESD pointer              
-  AliMCEvent*  fMC;           //! MC event             
-  const AliESDVertex *fkVertex;    //! Primary vertex
 
   Int_t ElectronFromSource(AliStack *stack, Int_t eleLabel) const;
   Int_t ElePhotonDirect(AliStack *stack, Int_t label) const;
@@ -140,9 +137,9 @@ class AliHFEdisplacedElectrons : public TObject{
   static const Char_t *fgkKineVar[kNKineVar];  // particle names
   static const Char_t *fgkKineVarTitle[kNKineVar];  // particle names
 
-  THnSparseF *fTHnSparseDcaMcPionInfo;   //! container for MC part
-  THnSparseF *fTHnSparseDcaMcEleInfo;   //! container for MC part
-  THnSparseF *fTHnSparseDcaDataEleInfo; //! container for Data part
+  THnSparseF *fTHnSparseDcaMcPionInfo;   //! container for MC pion part
+  THnSparseF *fTHnSparseDcaMcEleInfo;   //! container for MC electron part
+  THnSparseF *fTHnSparseDcaDataEleInfo; //! container for Data electron part
 
   TList *fOutputList;  //! output container
   ClassDef(AliHFEdisplacedElectrons, 0);
