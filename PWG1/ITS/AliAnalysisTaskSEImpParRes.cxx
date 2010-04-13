@@ -21,8 +21,6 @@
 //     and Xianbao Yuan, yuanxb@iopp.ccnu.edu.cn; xianbao.yuan@pd.infn.it
 /////////////////////////////////////////////////////////
 
-#include <fstream.h>
-#include <Riostream.h>
 #include <TList.h>
 #include <TH1F.h>
 
