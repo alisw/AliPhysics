@@ -79,7 +79,8 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
 
   // get the FastOr bit mask
   TBits fastOrFiredMap = fDetTypeRec->GetFastOrFiredMap();
-
+  TBits firedChipMap = fDetTypeRec->GetFiredChipMap(itsClusterTree);
+ 
   AliITSMultReconstructor multReco;
 
   if(!success){
@@ -95,6 +96,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
     Short_t nfcL1 = multReco.GetNFiredChips(0);
     Short_t nfcL2 = multReco.GetNFiredChips(1);
     fMult = new AliMultiplicity(0,0,0,0,0,0,0,0,0,0,nfcL1,nfcL2,fastOrFiredMap);
+    fMult->SetFiredChipMap(firedChipMap);
     AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
     fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,itsClusterTree));
     for(Int_t kk=2;kk<=6;kk++){
@@ -138,6 +140,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
   fMult = new AliMultiplicity(notracks,tht,phi,dtht,dphi,labels,labelsL2,nosingleclus,ths,phs,nfcL1,nfcL2,fastOrFiredMap);
+  fMult->SetFiredChipMap(firedChipMap);
   AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
   fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,itsClusterTree));
   for(Int_t kk=2;kk<=6;kk++){

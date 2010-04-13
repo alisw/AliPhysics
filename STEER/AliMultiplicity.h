@@ -17,7 +17,7 @@ class AliMultiplicity : public TObject {
   AliMultiplicity();               // default constructor
   // standard constructor
   AliMultiplicity(Int_t ntr,Float_t *th, Float_t *ph, Float_t *dth, Float_t *dph, Int_t *labels,
-         Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, TBits fFastOrFiredChips);
+         Int_t* labelsL2, Int_t ns, Float_t *ts, Float_t *ps, Short_t nfcL1, Short_t nfcL2, const TBits & fFastOrFiredChips);
   AliMultiplicity(const AliMultiplicity& m);
   AliMultiplicity& operator=(const AliMultiplicity& m);
   virtual void Copy(TObject &obj) const;
@@ -60,16 +60,21 @@ class AliMultiplicity : public TObject {
     Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;
   }
 
-  Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
-  void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }
+  Short_t GetNumberOfFiredChips(Int_t layer) const { return fNumberOfFiredChips[layer]; }
+  void SetFiredChips(Int_t layer, Short_t firedChips) { fNumberOfFiredChips[layer] = firedChips; }
 
   UInt_t GetNumberOfITSClusters(Int_t layer) const { return layer<6 ? fITSClusters[layer] : 0; }
   UInt_t GetNumberOfITSClusters(Int_t layMin, Int_t layMax) const ;
   void SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
 
   void   SetFastOrFiredChips(UInt_t chipKey){fFastOrFiredChips.SetBitNumber(chipKey);}
-  TBits  GetFastOrFiredChips() const {return fFastOrFiredChips;}
+  const TBits & GetFastOrFiredChips() const {return fFastOrFiredChips;}
   Bool_t TestFastOrFiredChips(UInt_t chipKey) const {return fFastOrFiredChips.TestBitNumber(chipKey);}
+
+  void   SetFiredChipMap(TBits & firedChips){fFiredChips = firedChips;}
+  void   SetFiredChipMap(UInt_t chipKey){fFiredChips.SetBitNumber(chipKey);}
+  const TBits & GetFiredChipMap() const {return fFiredChips;}
+  Bool_t TestFiredChipMap(UInt_t chipKey) const {return fFiredChips.TestBitNumber(chipKey);}
 
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
@@ -85,11 +90,12 @@ class AliMultiplicity : public TObject {
   Double32_t *fDeltPhi;      //[fNtracks] array with delta phi values
   Double32_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
   Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
-  Short_t fFiredChips[2];    // Number of fired chips in the two SPD layers
+  Short_t fNumberOfFiredChips[2];    // Number of fired chips in the two SPD layers
   UInt_t fITSClusters[6];   // Number of ITS cluster per layer
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
+  TBits fFiredChips;         // Map of fired chips (= at least one cluster)
 
-  ClassDef(AliMultiplicity,10);
+  ClassDef(AliMultiplicity,11);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
