@@ -5,8 +5,7 @@ SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
 	AliRawData.cxx AliRawVEquipment.cxx AliRawEquipmentV2.cxx AliRawVEvent.cxx AliRawEventV2.cxx \
 	AliRawDataArrayV2.cxx AliRawDataArray.cxx \
 	AliStats.cxx AliRawEventTag.cxx \
-	AliAltroMapping.cxx AliCaloAltroMapping.cxx \
-	AliDAQ.cxx
+	AliAltroMapping.cxx AliCaloAltroMapping.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -22,7 +21,7 @@ ifdef DATE_ROOT
 EINCLUDE+= ${DATE_COMMON_DEFS}
 endif
 
-EXPORT:=AliRawDataHeader.h AliAltroMapping.h AliDAQ.h
+EXPORT:=AliRawDataHeader.h AliAltroMapping.h
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase

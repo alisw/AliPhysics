@@ -82,4 +82,6 @@
 #pragma link C++ class AliTOFPIDResponse+;
 #pragma link C++ class AliTRDPIDResponse+;
 
+#pragma link C++ class AliDAQ+;
+
 #endif

@@ -20,6 +20,5 @@
 #pragma link C++ class AliRawEventTag+;
 #pragma link C++ class AliAltroMapping+;
 #pragma link C++ class AliCaloAltroMapping+;
-#pragma link C++ class AliDAQ+;
 
 #endif
