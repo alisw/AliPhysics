@@ -16,6 +16,7 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
+
 /** @file  AliAnalysisTaskHLT.cxx  
     @author Kalliopi Kanaki
     @date 
@@ -26,20 +27,16 @@
 
 //#include <iostream>
 
+class AliAnalysisTask;
+class AliAnalysisManager;
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TString.h"
-
-
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
-class AliAnalysisTask;
-class AliAnalysisManager;
-//#include "AliAnalysisTask.h"
-//#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskHLT.h"
-
 
 ClassImp(AliAnalysisTaskHLT)
 
@@ -48,7 +45,6 @@ ClassImp(AliAnalysisTaskHLT)
 AliAnalysisTaskHLT::AliAnalysisTaskHLT()
     :
      AliAnalysisTaskSE()
-    //,fESDRun(0)
     ,fOutputList(0)
     ,fHistTrigger(0)
     ,fHistHLTTrigger(0)    
@@ -102,8 +98,7 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT()
  
 AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
     :
-     AliAnalysisTaskSE(name)
-    //,fESDRun(0)
+     AliAnalysisTaskSE(name)    
     ,fOutputList(0)
     ,fHistTrigger(0)
     ,fHistHLTTrigger(0)    
@@ -220,8 +215,8 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fdEdxOff = new TH1F("fdEdx_off","energy loss (offline)",             500, 0, 500);
   fdEdxHLT = new TH1F("fdEdx_hlt","energy loss (HLT) - not filled yet",500, 0, 500);
  
-  fdEdxVSPOff = new TH2F("fdEdx_vs_P_off","dE/dx vs. momentum (offline)",100, 0., 100., 500, 0., 500.);
-  fdEdxVSPHLT = new TH2F("fdEdx_vs_P_hlt","dE/dx vs. momentum (HLT) - not filled yet",    100, 0., 100., 500, 0., 500.);
+  fdEdxVSPOff = new TH2F("fdEdx_vs_P_off","dE/dx vs. momentum (offline)",             300, 0., 3., 500, 0., 500.);
+  fdEdxVSPHLT = new TH2F("fdEdx_vs_P_hlt","dE/dx vs. momentum (HLT) - not filled yet",300, 0., 3., 500, 0., 500.);
 
   fPhiOff = new TH1F("fPhi_off","azimuthal angle distribution (offline)",360,0,360);
   fPhiHLT = new TH1F("fPhi_hlt","azimuthal angle distribution (HLT)",    360,0,360);
@@ -379,7 +374,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
       AliESDtrack *esdtrackHLT = esdHLT->GetTrack(i); 
       if(esdtrackHLT){ 
                
-	 fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls()); 
+	 if(esdtrackHLT->GetTPCNcls()>0) fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls()); 
   		
 	 //Double_t dz[2]    = {-999., -999.};   
 	 //Double_t covar[3] = {0.,0.,0.};      	 
@@ -393,8 +388,8 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
          fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
          fThetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
 	 fEtaHLT->Fill(esdtrackHLT->Eta());
-	 fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-	 fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+	 if(esdtrackHLT->GetTPCNcls()>0) fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+	 if(esdtrackHLT->GetTPCNcls()>0) fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
 	 
 	 if(esdHLT->IsHLTTriggerFired()){
 	    
@@ -427,7 +422,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
       AliESDtrack *esdtrackOFF = esdOFF->GetTrack(i); 
       if(esdtrackOFF){ 
          
-	 fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
+	 if(esdtrackOFF->GetTPCNcls()>0) fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
   		
 	 //Double_t dz[2]    = {-999., -999.};   
 	 //Double_t covar[3] = {0.,0.,0.};      	 
@@ -441,8 +436,8 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
          fPhiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
          fThetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg());
 	 fEtaOff->Fill(esdtrackOFF->Eta());
-	 fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
-	 fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+	 if(esdtrackOFF->GetTPCNcls()>0) fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+	 if(esdtrackOFF->GetTPCNcls()>0) fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
 	 
 	 if(esdHLT->IsHLTTriggerFired()){
 	 
@@ -493,7 +488,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 //          fHistOffldEdxVsP->Fill(TMath::Abs(esdTrk->P()), esdTrk->GetTPCsignal());
 //      }
 
-  //fNevt++;
   delete primVertexOFF;
   delete primVertexHLT;
 
@@ -502,6 +496,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 }
 
 void AliAnalysisTaskHLT::Terminate(Option_t *){
+// see header file of AliAnalysisTask for documentation
   /*
   Printf("Number of tracks thru CE: %d", fNtracksThruZ0);
   Printf("Number of tracks thru CE from triggered events: %d", 
