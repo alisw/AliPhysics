@@ -625,7 +625,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		Log("*************Energy ");
 		TObjArray* energyArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[0]);
 		if (energyArray){			
-			Float_t energy = ProcessEnergy(energyArray,timeStart,timeEnd);
+			Float_t energy = ProcessEnergy(energyArray,timeStart);
 			if (energy != -1.) {
 				grpobj->SetBeamEnergy(energy);
 				grpobj->SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
@@ -636,12 +636,21 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			AliError("Energy not found in LHC Data file!!!");
 		}	
 
-		Double_t timeBeamMode = 0;
-		Double_t timeMachineMode = 0;
-		Double_t timeBeam = 0;
-		Bool_t flagBeamMode = kFALSE;  //flag set true if at least one BeamMode measurement is found within DAQ_time_start and DAQ_time_end
-		Bool_t flagMachineMode = kFALSE;  //flag set true if at least one MachineMode measurement is found within DAQ_time_start and DAQ_time_end
-		Bool_t flagBeam = kFALSE;  //flag set true if at least one Beam Type measurement is found within DAQ_time_start and DAQ_time_end
+		Double_t timeBeamModeEnd = timeEnd;        // max validity for Beam Mode 
+		Double_t timeMachineModeEnd = timeEnd;     // max validity for Machine Mode
+		Double_t timeBeamEnd = timeEnd;            // max validity for Beam Type
+		Double_t timeBeamModeStart = -1;    // min validity for Beam Mode
+		Double_t timeMachineModeStart = -1; // min validity for Machine Mode
+		Double_t timeBeamStart = -1;        // min validity for Beam Type
+		Int_t indexBeamMode = -1;                  // index of measurement used to set Beam Mode
+	        Int_t indexMachineMode = -1;               // index of measurement used to set Beam Mode
+		Int_t indexBeam = -1;                      // index of measurement used to set Beam Mode
+		Bool_t foundBeamModeStart = kFALSE;        // flag to be set in case an entry for the Beam Mode is found before (or at) SOR
+		Bool_t foundMachineModeStart = kFALSE;     // flag to be set in case an entry for the Beam Mode is found before (or at) SOR
+		Bool_t foundBeamStart = kFALSE;            // flag to be set in case an entry for the Beam Mode is found before (or at) SOR
+		Bool_t flagBeamMode = kFALSE;  //flag set true if a changed occurred in BeamMode
+		Bool_t flagMachineMode = kFALSE;  //flag set true if a changed occurred in MachineMode
+		Bool_t flagBeam = kFALSE;  //flag set true if a changed occurred in BeamType
 		
 		// BeamMode
 		Log("*************BeamMode (LHCState) ");
@@ -653,52 +662,48 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				AliInfo("Found zero entries for the Beam Mode, leaving it empty");
 			}
 			else{
-				if (nBeamMode==1){
-					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(0);
-					if (beamMode) {
-						if (beamMode->GetTimeStamp()>=timeStart && beamMode->GetTimeStamp()<=timeEnd){
-							TObjString* beamModeString = beamMode->GetStringArray(0);
-							AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
-							grpobj->SetLHCState(beamModeString->String());
+				for (Int_t iBeamMode = 0; iBeamMode<nBeamMode; iBeamMode++){
+					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(iBeamMode);
+					if (beamMode){
+						if (beamMode->GetTimeStamp()<=timeStart && beamMode->GetTimeStamp()>=timeBeamModeStart){// taking always the very last entry: of two measurements have the same timestamp, the last one is taken
+							timeBeamModeStart = beamMode->GetTimeStamp();
+							indexBeamMode = iBeamMode;
+							foundBeamModeStart = kTRUE;
 						}
-						else{
-							AliInfo("No Beam Mode found within DAQ_time_start and DAQ_time_end, leaving it empty");
+						else {
+							break;
+
 						}
-					}
-					else {
-						AliInfo("Invalid pointer for Beam Mode, leaving it empty");
 					}
 				}
+				if (!foundBeamModeStart){
+					AliInfo("No value for the Beam Mode found before start of run, the Beam Mode will remain empty");
+				}
 				else {
-					for (Int_t iBeamMode = 0; iBeamMode<nBeamMode; iBeamMode++){
-						AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(iBeamMode);
-						if (beamMode){
-							if (beamMode->GetTimeStamp()>=timeStart && beamMode->GetTimeStamp()<=timeEnd){
-								if (iBeamMode < nBeamMode-1){
-									AliDCSArray* beamMode1 = (AliDCSArray*)beamModeArray->At(iBeamMode+1);
-									if (beamMode1){
-										if (beamMode1->GetTimeStamp()>=timeStart && beamMode1->GetTimeStamp()<=timeEnd){
-											timeBeamMode = beamMode1->GetTimeStamp();
-											AliWarning(Form("The beam mode changed at timestamp %f! Setting it to the first value found and keeping track of the time of the change to set MaxTimeLHCValidity afterward",timeBeamMode));
-										}
-									}
-									else {
-										AliInfo("Invalid pointer for the first entry for Beam Mode after the first valid one, not considering anything after what has already been found");
-									}
+					AliDCSArray* beamMode = (AliDCSArray*)beamModeArray->At(indexBeamMode);
+					TObjString* beamModeString = beamMode->GetStringArray(0);
+					AliInfo(Form("LHC State (corresponding to BeamMode) = %s (set at %f)",(beamModeString->String()).Data(),beamMode->GetTimeStamp()));
+					grpobj->SetLHCState(beamModeString->String());
+					if (indexBeamMode < nBeamMode-1){
+						AliDCSArray* beamMode1 = (AliDCSArray*)beamModeArray->At(indexBeamMode+1);
+						if (beamMode1){
+							if (beamMode1->GetTimeStamp()<=timeStart){
+								AliError("you did not choose the correct value! there is still something before (or at) SOR, but later than this!");
+							}
+							else if (beamMode1->GetTimeStamp()>timeStart && beamMode1->GetTimeStamp()<=timeEnd){
+								timeBeamModeEnd = beamMode1->GetTimeStamp();
+								TObjString* beamModeString1 = beamMode1->GetStringArray(0);
+							        TString bmString0 = beamModeString->String();
+							        TString bmString1 = beamModeString1->String();
+								if (bmString0.CompareTo(bmString1.Data(),TString::kIgnoreCase) == -1){
+									AliWarning(Form("The beam mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",bmString0.Data(), bmString1.Data(), bmString0.Data(), timeBeamModeEnd));
+									flagBeamMode = kTRUE;
 								}
-								TObjString* beamModeString = beamMode->GetStringArray(0);
-								AliInfo(Form("LHC State (corresponding to BeamMode) = %s",(beamModeString->String()).Data()));
-								grpobj->SetLHCState(beamModeString->String());
-								flagBeamMode = kTRUE;
-								break;
 							}
 						}
 						else {
-							AliInfo("Invalid pointer for first entry for Beam Mode, no check can be done, leaving Beam Mode empty");
+							AliInfo("Invalid pointer for the first entry for Beam Mode after the first valid one, not considering anything after what has already been found");
 						}
-					}
-					if (!flagBeamMode){
-						AliError("Found values for BeamMode, but none within DAQ_time_start and DAQ_time_end, leaving it empty");
 					}
 				}
 			}
@@ -718,60 +723,52 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				AliInfo("No Machine Mode found, leaving it empty");
 			}
 			else{
-				if (nMachineMode ==1) {
-					AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(0);
+				for (Int_t iMachineMode = 0; iMachineMode<nMachineMode; iMachineMode++){
+					AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(iMachineMode);
 					if (machineMode){
-						if (machineMode && machineMode->GetTimeStamp()>=timeStart && machineMode->GetTimeStamp()<=timeEnd){
-							TObjString* machineModeString = machineMode->GetStringArray(0);
-							AliInfo(Form("Machine Mode = %s",(machineModeString->String()).Data()));
-							grpobj->SetMachineMode(machineModeString->String());
+						if (machineMode->GetTimeStamp()<=timeStart && machineMode->GetTimeStamp()>=timeMachineModeStart){// taking always the very last entry: of two measurements have the same timestamp, the last one is taken
+							timeMachineModeStart = machineMode->GetTimeStamp();
+							indexMachineMode = iMachineMode;
+							foundMachineModeStart = kTRUE;
 						}
 						else{
-							AliInfo("No Machine Mode found within DAQ_time_start and DAQ_time_end, leaving it empty");
+							break;
 						}
-					}
-					else{
-						AliInfo("Invalid pointer for Machine Mode, leaving it empty");
 					}
 				}
+				if (!foundMachineModeStart){
+					AliInfo("No value for the Machine Mode found before start of run, the Machine Mode will remain empty");
+				}
 				else {
-					for (Int_t iMachineMode = 0; iMachineMode<nMachineMode; iMachineMode++){
-						AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(iMachineMode);
-						if (machineMode){
-							if (machineMode->GetTimeStamp()>=timeStart && machineMode->GetTimeStamp()<=timeEnd){
-								if (iMachineMode < nMachineMode-1){
-									AliDCSArray* machineMode1 = (AliDCSArray*)machineModeArray->At(iMachineMode+1);
-									if (machineMode1){
-										if (machineMode1->GetTimeStamp()>=timeStart && machineMode1->GetTimeStamp()<=timeEnd){
-											timeMachineMode = machineMode1->GetTimeStamp();
-											AliWarning(Form("The machine mode changed at timestamp %f! Setting it to the first value found and keeping track of the time of the change to set MaxTimeLHCValidity afterwards",timeMachineMode));
-										}
-									}
-									else{
-										AliInfo("Invalid pointer for the first entry for Machine Mode after the first valid one, not considering anything after what has already been found");
-									}
+					AliDCSArray* machineMode = (AliDCSArray*)machineModeArray->At(indexMachineMode);
+					TObjString* machineModeString = machineMode->GetStringArray(0);
+					AliInfo(Form("MachineMode = %s (set at %f)",(machineModeString->String()).Data(),machineMode->GetTimeStamp()));
+					grpobj->SetMachineMode(machineModeString->String());
+					if (indexMachineMode < nMachineMode-1){
+						AliDCSArray* machineMode1 = (AliDCSArray*)machineModeArray->At(indexMachineMode+1);
+						if (machineMode1){
+							if (machineMode1->GetTimeStamp()>timeStart && machineMode1->GetTimeStamp()<=timeEnd){
+								timeMachineModeEnd = machineMode1->GetTimeStamp();
+								TObjString* machineModeString1 = machineMode1->GetStringArray(0);
+							        TString mmString0 = machineModeString->String();
+							        TString mmString1 = machineModeString1->String();
+								if (mmString0.CompareTo(mmString1.Data(),TString::kIgnoreCase) == -1){
+									AliWarning(Form("The machine mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",mmString0.Data(),mmString1.Data(),mmString0.Data(),timeMachineModeEnd));
+									flagMachineMode = kTRUE;
 								}
-								TObjString* machineModeString = machineMode->GetStringArray(0);
-								AliInfo(Form("Machine mode = %s",(machineModeString->String()).Data()));
-								grpobj->SetMachineMode(machineModeString->String());
-								flagMachineMode = kTRUE;
-								break;
 							}
 						}
-						else{
-							AliInfo("Invalid pointer for first entry for Machine Mode, no check can be done, leaving Machine Mode empty");
+						else {
+							AliInfo("Invalid pointer for the first entry for Machine Mode after the first valid one, not considering anything after what has already been found");
 						}
-					}
-					if (!flagMachineMode){
-						AliError("Found values for MachineMode, but none within DAQ_time_start and DAQ_time_end, leaving it empty");
 					}
 				}
 			}
 			delete machineModeArray;
 		}
-		else {
+		else{
 			AliError("Machine mode array not found in LHC Data file!!!");
-		}	
+		}
 		
 		// BeamType1 and BeamType2 - both put in the same string
 		Log("*************BeamType ");
@@ -782,106 +779,86 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 				AliInfo("No Beam Type found, leaving it empty");
 			}
 			else{
-				if (nBeam == 1){
-					AliDCSArray* beam = (AliDCSArray*)beamArray->At(0);
+				for (Int_t iBeam = 0; iBeam<nBeam; iBeam++){
+					AliDCSArray* beam = (AliDCSArray*)beamArray->At(iBeam);
 					if (beam){
-						if (beam->GetTimeStamp()>=timeStart && beam->GetTimeStamp()<=timeEnd){
-							TObjString* beamString = beam->GetStringArray(0);
-							TString beamType = beamString->String();
-							AliInfo(Form("Beam Type = %s",beamType.Data()));	
-							if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
-								AliInfo("Setting the beam type tp p-p");
-								grpobj->SetBeamType("p-p");
-							}
-							else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
-								AliInfo("Setting the beam type tp Pb-Pb");
-								grpobj->SetBeamType("Pb-Pb");
-							}
-							else{
-								AliError("Beam Type not known, leaving it empty");
+						if (beam->GetTimeStamp()<=timeStart && beam->GetTimeStamp()>=timeBeamStart){// taking always the very last entry: of two measurements have the same timestamp, the last one is taken
+							timeBeamStart = beam->GetTimeStamp();
+							indexBeam = iBeam;
+							foundBeamStart = kTRUE;
+						}
+						else{
+							break;
+						}
+					}
+				}
+				if (!foundBeamStart){
+					AliInfo("No value for the Machine Mode found before start of run, the Machine Mode will remain empty");
+				}
+				else {
+					AliDCSArray* beam = (AliDCSArray*)beamArray->At(indexBeam);
+					TObjString* beamString = beam->GetStringArray(0);
+					TString beamType = beamString->String();
+					AliInfo(Form("Beam Type = %s",beamType.Data()));	
+					if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
+						AliInfo("Setting beam type to p-p");
+						grpobj->SetBeamType("p-p");
+					}
+					else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
+						AliInfo("Setting beam type to Pb-Pb");
+						grpobj->SetBeamType("Pb-Pb");
+					}
+					else{
+						AliError("Beam Type not known, leaving it empty");
+					}
+					if (indexBeam < nBeam-1){
+						AliDCSArray* beam1 = (AliDCSArray*)beamArray->At(indexBeam+1);
+						if (beam1){
+							if (beam1->GetTimeStamp()>timeStart && beam1->GetTimeStamp()<=timeEnd){
+								timeBeamEnd = beam1->GetTimeStamp();
+								TObjString* beamString1 = beam1->GetStringArray(0);
+								TString beamType1 = beamString1->String();
+								if (beamType.CompareTo(beamType1.Data(),TString::kIgnoreCase) == -1){
+									AliWarning(Form("The Beam Type changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",beamType.Data(),(beamString1->String()).Data(),beamType.Data(),timeBeamEnd));
+									flagBeam = kTRUE;
+								}
 							}
 						}
 						else {
-							AliInfo("No Beam Type found within DAQ_time_start and DAQ_time_end, leaving it empty");
+							AliInfo("Invalid pointer for the first entry for Beam Type after the first valid one, not considering anything after what has already been found");
 						}
-					}
-					else{
-						AliInfo("Invalid pointer for Beam Type, leaving it empty");
-					}
-				}
-				else{
-					for (Int_t iBeam=0; iBeam<nBeam; iBeam++){
-						AliDCSArray* beam = (AliDCSArray*)beamArray->At(iBeam);
-						if (beam){
-							if (beam->GetTimeStamp()>=timeStart && beam->GetTimeStamp()<=timeEnd){
-								if (iBeam < nBeam-1){
-									AliDCSArray* beam1 = (AliDCSArray*)beamArray->At(iBeam+1);
-									if (beam1){
-										if (beam1->GetTimeStamp()>=timeStart && beam1->GetTimeStamp()<=timeEnd){
-											timeBeam = beam1->GetTimeStamp();
-											AliWarning(Form("The Beam Type changed at timestamp %f! Setting it to the first value found and keeping track of the time of the change to set MaxTimeLHCValidity afterwards",timeBeam));
-										}
-									}
-									else {
-										AliInfo("Invalid pointer for the first entry for Beam Type after the first valid one, not considering anything after what has already been found");
-									}
-								}
-								TObjString* beamString = beam->GetStringArray(0);
-								TString beamType = beamString->String();
-								AliInfo(Form("Beam Type = %s",beamType.Data()));	
-								if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
-									AliInfo("Setting the beam type to p-p");
-									grpobj->SetBeamType("p-p");
-								}
-								else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
-									AliInfo("Setting the beam type to Pb-Pb");
-									grpobj->SetBeamType("Pb-Pb");
-								}
-								else{
-									AliError("Beam Type not known, leaving it empty");
-								}
-								flagBeam = kTRUE;
-								break;
-							}
-						}
-						else{
-							AliInfo("Invalid pointer for first entry for Beam Type, no check can be done, leaving Beam Type empty");
-						}
-					}
-					if (!flagBeam){
-						AliError("Found values for Beam Type, but none within DAQ_time_start and DAQ_time_end, leaving it empty");
 					}
 				}
 			}
 			delete beamArray;
 		}
 		else{
-			AliError("BeamType array not found in LHC data file!!!");
-		}			
+			AliError("Beam Type array not found in LHC Data file!!!");
+		}		
 		
 		// Setting minTimeLHCValidity
-		if (timeBeamMode!=0 || timeMachineMode!=0 || timeBeam !=0){
+		if (timeBeamModeEnd!=0 || timeMachineModeEnd!=0 || timeBeamEnd !=0){
 			Double_t minTimeLHCValidity;
-			if (timeBeamMode == 0 && timeMachineMode == 0 && timeBeam != 0){ // timeBeam only != 0
-				minTimeLHCValidity = timeBeam;
+			if (flagBeamMode == kFALSE && flagMachineMode == kFALSE && flagBeam == kTRUE){ // flagBeam only true
+				minTimeLHCValidity = timeBeamEnd;
 			}
-			else if (timeBeamMode == 0 && timeMachineMode != 0 && timeBeam == 0){ // timeMachineMode only != 0
-				minTimeLHCValidity = timeMachineMode;
+			else if (flagBeamMode == kFALSE && flagMachineMode == kTRUE && flagBeam == kFALSE){ // flagMachineMode only true
+				minTimeLHCValidity = timeMachineModeEnd;
 			}
-			else if (timeBeamMode != 0 && timeMachineMode == 0 && timeBeam == 0){ // timeBeamMode only != 0
-				minTimeLHCValidity = timeBeamMode;
+			else if (flagBeamMode == kTRUE && flagMachineMode == kFALSE && flagBeam == kFALSE){ // flagBeamMode only true
+				minTimeLHCValidity = timeBeamModeEnd;
 			}
-			else if (timeBeamMode == 0 && timeMachineMode != 0 && timeBeam != 0){ // timeBeam and timeMachineMode only != 0
-				minTimeLHCValidity= TMath::Min(timeBeam,timeMachineMode);
+			else if (flagBeamMode == kFALSE && flagMachineMode == kTRUE && flagBeam == kTRUE){ // flagBeam and flagMachineMode only true
+				minTimeLHCValidity= TMath::Min(timeBeamEnd,timeMachineModeEnd);
 			}
-			else if (timeBeamMode != 0 && timeMachineMode == 0 && timeBeam != 0){ // timeBeam and timeBeamMode only != 0
-				minTimeLHCValidity= TMath::Min(timeBeam,timeBeamMode);
+			else if (flagBeamMode == kTRUE && flagMachineMode == kFALSE && flagBeam == kTRUE){ // flagBeam and flagBeamMode only true
+				minTimeLHCValidity= TMath::Min(timeBeamEnd,timeBeamModeEnd);
 			}
-			else if (timeBeamMode != 0 && timeMachineMode != 0 && timeBeam == 0){ // timeMachineMode and timeBeamMode only != 0
-				minTimeLHCValidity= TMath::Min(timeMachineMode,timeBeamMode);
+			else if (flagBeamMode == kTRUE && flagMachineMode == kTRUE && flagBeam == kFALSE){ // flagMachineMode and flagBeamMode only true
+				minTimeLHCValidity= TMath::Min(timeMachineModeEnd,timeBeamModeEnd);
 			}
 			else {
-				Double_t arrayTimes[3] = {timeBeamMode,timeMachineMode,timeBeam};
+				Double_t arrayTimes[3] = {timeBeamModeEnd,timeMachineModeEnd,timeBeamEnd};// flagMachineMode and flagBeamMode and flagBeam 
 				minTimeLHCValidity= TMath::MinElement(3,arrayTimes);
 			}
 			AliWarning(Form("Setting MaxTimeLHCValidity to %f",minTimeLHCValidity));
@@ -2769,7 +2746,7 @@ Double_t AliGRPPreprocessor::CalculateMean(TObjArray* const array){
 	return (parameters[0]);
 }
 //------------------------------------------------------------------------------------------------------
-Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* const array, Double_t timeStart, Double_t timeEnd){
+Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* const array, Double_t timeStart){
 
 	//
 	// Method to processo LHC Energy information
@@ -2778,25 +2755,36 @@ Float_t AliGRPPreprocessor::ProcessEnergy(TObjArray* const array, Double_t timeS
 
 	Int_t nCounts = array->GetEntries();
 	Float_t energy = -1;
-	Bool_t inRange = kFALSE;
+	Double_t timeEnergy = -1;
+	Int_t indexEnergy = -1;
+	Bool_t foundEnergy = kFALSE;
+
 	AliDebug(2,Form("Energy measurements = %d\n",nCounts));
 	if (nCounts ==0){
 		AliWarning("No Energy values found! Beam Energy remaining invalid!");
 	}
 	else{
-		for(Int_t i = 0; i < nCounts; i++) {
+		for (Int_t i = 0; i < nCounts; i++){
 			AliDCSArray *dcs = (AliDCSArray*)array->At(i);
-			if((dcs->GetTimeStamp() >= timeStart) &&(dcs->GetTimeStamp() <= timeEnd)) {
-				energy = (Float_t)(TMath::Nint(((Double_t)(dcs->GetInt(0)))*120/1000)); // sqrt(s)/2 energy in GeV
-				AliInfo(Form("Energy value found = %d, converting --> sqrt(s)/2 = %f (GeV)", dcs->GetInt(0),energy));
-				inRange = kTRUE;
-				break;
+			if (dcs){
+				if (dcs->GetTimeStamp()<=timeStart && dcs->GetTimeStamp()>=timeEnergy){// taking always the very last entry: of two measurements have the same timestamp, the last one is taken
+					timeEnergy = dcs->GetTimeStamp();
+					indexEnergy = i;
+					foundEnergy = kTRUE;
+				}
+				else{
+					break;
+				}
 			}
 		}
-		if (inRange == kFALSE){
-				AliInfo("No Energy value found between DAQ_time_start and DAQ_time_end - energy will remain invalid!");
+		if (!foundEnergy){
+			AliInfo("No value for the Energy found before start of run, the Energy will remain invalid");
 		}
-	
+		else {
+			AliDCSArray* dcs = (AliDCSArray*)array->At(indexEnergy);
+			energy = (Float_t)(TMath::Nint(((Double_t)(dcs->GetInt(0)))*120/1000)); // sqrt(s)/2 energy in GeV
+			AliInfo(Form("Energy value found = %d (at %f), converting --> sqrt(s)/2 = %f (GeV)", dcs->GetInt(0),dcs->GetTimeStamp(),energy));
+		}
 	}
 
 	return energy;
