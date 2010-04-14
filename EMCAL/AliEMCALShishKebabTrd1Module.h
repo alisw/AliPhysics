@@ -43,6 +43,8 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t  GetA() const {return fA;}
   Double_t  GetB() const {return fB;}
   Double_t  GetRadius() const {return fgr;}
+  TVector2  GetORB() const {return fORB;}
+  TVector2  GetORT() const {return fORT;}
   //  Additional offline staff 
   //  ieta=0 or 1 - Jun 02, 2006
   TVector2& GetCenterOfCellInLocalCoordinateofSM(Int_t ieta)
@@ -112,8 +114,11 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   Double_t fThetaOB2;  // theta of cell center line (go through OB2)
   // 3X3 case - Nov 9,2006
   TVector2 fOK3X3[3];
+  // Apr 14, 2010 - checking of geometry
+  TVector2 fORB; // position of right/bottom point of module
+  TVector2 fORT; // position of right/top    point of module
   // public:
-  ClassDef(AliEMCALShishKebabTrd1Module,3) // TRD1 Shish-Kebab module 
+  ClassDef(AliEMCALShishKebabTrd1Module, 4) // TRD1 Shish-Kebab module 
 };
 
 #endif

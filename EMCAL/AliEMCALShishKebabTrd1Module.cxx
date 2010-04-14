@@ -55,7 +55,9 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     fOB2(),
     fThetaOB1(0.),
     fThetaOB2(0.),
-    fOK3X3()
+    fOK3X3(),
+    fORB(), 
+    fORT()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
   if(fgGeometry==0) {
@@ -84,7 +86,9 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
     fOB2(),
     fThetaOB1(0.),
     fThetaOB2(0.),
-    fOK3X3()
+    fOK3X3(),
+    fORB(), 
+    fORT()
 { 
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
   fTheta  = leftNeighbor.GetTheta() - fgangle; 
@@ -108,7 +112,9 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKe
     fOB1(mod.fOB1),
     fOB2(mod.fOB2),
     fThetaOB1(mod.fThetaOB1),
-    fThetaOB2(mod.fThetaOB2)
+    fThetaOB2(mod.fThetaOB2),
+    fORB(mod.fORB),
+    fORT(mod.fORT)
 {
   //copy ctor
   for (Int_t i=0; i<3; i++) fOK3X3[i] = mod.fOK3X3[i];
@@ -178,6 +184,17 @@ void AliEMCALShishKebabTrd1Module::DefineAllStaff()
   // Jul 30, 2007 - for taking into account a position of shower maximum
   fThetaOB1 = fTheta - fgangle/4.; // ??
   fThetaOB2 = fTheta + fgangle/4.;
+
+  // Position of right/top point of module
+  // Gives the posibility to estimate SM size in z direction
+  Double_t xBottom     = (fgr - fB) / fA;
+  Double_t yBottom     = fgr;
+  fORB.Set(xBottom, yBottom);
+
+  Double_t l = fgb / TMath::Cos(fgangle/2.); // length of lateral module side
+  Double_t xTop = xBottom + l*TMath::Cos(TMath::ATan(fA));
+  Double_t yTop = fA*xTop + fB;
+  fORT.Set(xTop, yTop);
 }
 
 //_____________________________________________________________________________
@@ -298,21 +315,17 @@ void AliEMCALShishKebabTrd1Module::GetPositionAtCenterCellLine(Int_t ieta, Doubl
 Double_t  AliEMCALShishKebabTrd1Module::GetMaxEtaOfModule(int pri) const 
 { 
   // Right bottom point of module
-  Double_t xBottom     = (fgr - fB) / fA;
-  Double_t thetaBottom = TMath::ATan2(fgr, xBottom);
+  Double_t thetaBottom = TMath::ATan2(fORB.Y(),fORB.X());
   Double_t etaBottom   = ThetaToEta(thetaBottom);
   // Right top point of module
-  Double_t l = fgb / TMath::Cos(fgangle/2.); // length of lateral module side
-  Double_t xTop = xBottom + l*TMath::Cos(TMath::ATan(fA));
-  Double_t yTop = fA*xTop + fB;
-  Double_t thetaTop = TMath::ATan2(yTop, xTop);
+  Double_t thetaTop = TMath::ATan2(fORT.Y(),fORT.X());
   Double_t etaTop   = ThetaToEta(thetaTop);
 
   if(pri) { 
-    printf(" Right bottom point of module : eta %5.4f : theta %6.4f (%6.2f) \n", 
-    etaBottom, thetaBottom, thetaBottom * TMath::RadToDeg());
-    printf(" Right    top point of module : eta %5.4f : theta %6.4f (%6.2f) \n", 
-    etaTop, thetaTop, thetaTop * TMath::RadToDeg());
+    printf(" Right bottom point of module : eta %5.4f : theta %6.4f (%6.2f) : x(zglob) %7.2f y(phi) %5.2f \n", 
+	   etaBottom, thetaBottom, thetaBottom * TMath::RadToDeg(), fORB.X(), fORB.Y());
+    printf(" Right    top point of module : eta %5.4f : theta %6.4f (%6.2f) : x(zglob) %7.2f y(phi) %5.2f \n", 
+	   etaTop, thetaTop, thetaTop * TMath::RadToDeg(), fORT.X(), fORT.Y());
   }
   return etaBottom>etaTop ? etaBottom : etaTop;
 }
