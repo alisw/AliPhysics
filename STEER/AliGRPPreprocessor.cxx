@@ -789,10 +789,12 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 							TObjString* beamString = beam->GetStringArray(0);
 							TString beamType = beamString->String();
 							AliInfo(Form("Beam Type = %s",beamType.Data()));	
-							if (beamType.CompareTo("PROTON",TString::kIgnoreCase)){
+							if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
+								AliInfo("Setting the beam type tp p-p");
 								grpobj->SetBeamType("p-p");
 							}
-							else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase)){
+							else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
+								AliInfo("Setting the beam type tp Pb-Pb");
 								grpobj->SetBeamType("Pb-Pb");
 							}
 							else{
@@ -827,10 +829,12 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 								TObjString* beamString = beam->GetStringArray(0);
 								TString beamType = beamString->String();
 								AliInfo(Form("Beam Type = %s",beamType.Data()));	
-								if (beamType.CompareTo("PROTON",TString::kIgnoreCase)){
+								if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
+									AliInfo("Setting the beam type to p-p");
 									grpobj->SetBeamType("p-p");
 								}
-								else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase)){
+								else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
+									AliInfo("Setting the beam type to Pb-Pb");
 									grpobj->SetBeamType("Pb-Pb");
 								}
 								else{
