@@ -34,11 +34,15 @@ class AliRunTag : public TObject {
   //____________________________________________________//
   void SetRunId(Int_t Pid) {fAliceRunId = Pid;}
   void SetMagneticField(Float_t Pmag) {fAliceMagneticField = Pmag;}
+  void SetDipoleField(Float_t Pmag) {fAliceDipoleField = Pmag;}
   void SetRunStartTime(Int_t Pt0) {fAliceRunStartTime = Pt0;}
   void SetRunStopTime(Int_t Pt1) {fAliceRunStopTime = Pt1;}
   void SetAlirootVersion(TString v) {fAlirootVersion = v;}
   void SetRootVersion(TString v) {fRootVersion = v;}
   void SetGeant3Version(TString v) {fGeant3Version = v;}
+  void SetLHCPeriod(TString v) {fLHCPeriod = v; }
+  void SetReconstructionPass(TString v) {fRecPass = v; }
+  void SetProductionName(TString v) {fProductionName = v; }
   void SetRunQuality(Int_t Pn) {fAliceRunQuality = Pn;}
   void SetBeamEnergy(Float_t PE) {fAliceBeamEnergy = PE;}
   void SetBeamType(TString Ptype) {fAliceBeamType = Ptype;}
@@ -58,11 +62,15 @@ class AliRunTag : public TObject {
   //____________________________________________________//
   Int_t       GetRunId() const {return fAliceRunId;}
   Float_t     GetMagneticField() const {return fAliceMagneticField;}
+  Float_t     GetDipoleField() const {return fAliceDipoleField;}
   Int_t       GetRunStartTime() const {return fAliceRunStartTime;}
   Int_t       GetRunStopTime() const {return fAliceRunStopTime;}
   const char* GetAlirootVersion() const {return fAlirootVersion.Data();}
   const char* GetRootVersion() const {return fRootVersion.Data();}
   const char* GetGeant3Version() const {return fGeant3Version.Data();}
+  const char* GetLHCPeriod() const {return fLHCPeriod.Data();}
+  const char* GetReconstructionPass() const {return fRecPass.Data();}
+  const char* GetProductionName() const {return fProductionName.Data();}
   Int_t       GetRunQuality() const {return fAliceRunQuality;}
   Float_t     GetBeamEnergy() const {return fAliceBeamEnergy;}
   const char *GetBeamType() const {return fAliceBeamType.Data();}
@@ -82,11 +90,15 @@ class AliRunTag : public TObject {
  private:
   Int_t        fAliceRunId;              //the run id
   Float_t      fAliceMagneticField;      //value of the magnetic field
+  Float_t      fAliceDipoleField;        //value of the magnetic field in dipole
   Int_t        fAliceRunStartTime;       //run start date
   Int_t        fAliceRunStopTime;        //run stop date
   TString      fAlirootVersion;          //aliroot version
   TString      fRootVersion;             //root version
   TString      fGeant3Version;           //geant3 version
+  TString      fLHCPeriod;               //datataking period
+  TString      fRecPass;                 //Reconstruction pass number
+  TString      fProductionName;          //production name
   Bool_t       fAliceRunQuality;         //validation script
   Float_t      fAliceBeamEnergy;         //beam energy cm
   TString      fAliceBeamType;           //run type (pp, AA, pA)
@@ -103,7 +115,7 @@ class AliRunTag : public TObject {
   Int_t        fESLength;                // Length of the Event Specie Length
   Bool_t *     fEventSpecies;           //[fESLength] EventSpecies in this run	
   
-  ClassDef(AliRunTag,6)  //(ClassName, ClassVersion)
+  ClassDef(AliRunTag,7)  //(ClassName, ClassVersion)
 };
 //___________________________________________________________________________
 

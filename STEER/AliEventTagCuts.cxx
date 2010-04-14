@@ -169,7 +169,10 @@ AliEventTagCuts::AliEventTagCuts() :
   fNumberOfFiredChipsLayer2Min(0), fNumberOfFiredChipsLayer2Max(100000),
   fNumberOfFiredChipsLayer2Flag(kFALSE),
   fNumberOfSPDTrackletsMin(0), fNumberOfSPDTrackletsMax(100000),
-  fNumberOfSPDTrackletsFlag(kFALSE)
+  fNumberOfSPDTrackletsFlag(kFALSE),
+  
+  fFiredTriggerCleassFlag(kFALSE), fFiredTriggerCleass("")
+
 {
   //Default constructor which calls the Reset method.
   Reset();
@@ -335,6 +338,9 @@ void AliEventTagCuts::Reset() {
   fNumberOfFiredChipsLayer1Min = 0, fNumberOfFiredChipsLayer1Max = 100000;
   fNumberOfFiredChipsLayer2Min = 0, fNumberOfFiredChipsLayer2Max = 100000;
   fNumberOfSPDTrackletsMin = 0, fNumberOfSPDTrackletsMax = 100000;
+
+  fFiredTriggerCleass = "";
+  fFiredTriggerCleassFlag = kFALSE;
 }
 
 //___________________________________________________________________________
@@ -936,6 +942,12 @@ void AliEventTagCuts::SetHBTRadiiRange(Float_t low, Float_t high) {
   fHBTRadiiFlag = kTRUE;
 }
 
+void AliEventTagCuts::SetFiredTriggerClass(TString aclass)
+{
+  fFiredTriggerCleass = aclass;
+  fFiredTriggerCleassFlag = kTRUE;
+}
+
 //___________________________________________________________________________
 Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
   //Returns true if the event is accepted otherwise false.
@@ -1207,6 +1219,10 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
   if(fHBTRadiiFlag)
     if((EvTag->GetHBTRadii() < fHBTRadiiMin) || (EvTag->GetHBTRadii() > fHBTRadiiMax))
       return kFALSE; 
+
+  if (fFiredTriggerCleassFlag)
+    if (!EvTag->GetFiredTriggerClasses().Contains(fFiredTriggerCleass))
+      return kFALSE;
   
   return kTRUE;
 }

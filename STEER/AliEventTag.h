@@ -32,6 +32,8 @@ class AliEventTag : public TObject {
 
   void SetFiredTriggerClasses(TString names) {fFiredTriggerClasses = names;}
   void SetEventType(UInt_t ntype) {fEventType = ntype;}
+  void SetPhysicsFlag(UShort_t nflag) {fPhysicsFlag = nflag;}
+  void SetBackgroungFlag(UShort_t nflag) {fBackgroundFlag = nflag;}
 
   void SetGUID(TString Pid) {fGUID = Pid;}
   void SetPath(TString Pid) {fPath = Pid;}
@@ -119,6 +121,8 @@ class AliEventTag : public TObject {
 
   TString GetFiredTriggerClasses() const {return fFiredTriggerClasses;}
   UInt_t GetEventType() const {return fEventType;}
+  UShort_t GetPhysicsFlag() const {return fPhysicsFlag;}
+  UShort_t GetBackgroundFlag() const {return fBackgroundFlag;}
 
   const char *GetGUID() const {return fGUID.Data();}
   const char *GetPath() const {return fPath.Data();}
@@ -205,6 +209,8 @@ class AliEventTag : public TObject {
   UShort_t  fBunchCrossNumber;              //The BC number
   TString   fFiredTriggerClasses;           //List of the fired trigger class names
   UInt_t    fEventType;                     //event type == 7 ==> PHYSICS_EVENT
+  UShort_t  fPhysicsFlag;                   //1 - flagged as correct physics event
+  UShort_t  fBackgroundFlag;                //1 - flagged by the background rejection procedure
 
   TString   fGUID;		            //The unique identifier of the file
   TString   fPath;		            //The file's path (local storage)
@@ -284,7 +290,7 @@ class AliEventTag : public TObject {
   Short_t   fNbPMV0A;                       //Total number of fired channels in V0 A side
   Short_t   fNbPMV0C;                       //Total number of fired channels in V0 C side
 
-  ClassDef(AliEventTag,15)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,16)  //(ClassName, ClassVersion)
       };
 //___________________________________________________________________________
 

@@ -33,6 +33,8 @@ ClassImp(AliEventTag)
     fBunchCrossNumber(0),
     fFiredTriggerClasses(),
     fEventType(0),
+    fPhysicsFlag(0),
+    fBackgroundFlag(0),
     fGUID(0),
     fPath(0),
     fsize(0),
@@ -120,6 +122,8 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fBunchCrossNumber(evTag.fBunchCrossNumber),
   fFiredTriggerClasses(evTag.fFiredTriggerClasses),
   fEventType(evTag.fEventType),
+  fPhysicsFlag(evTag.fPhysicsFlag),
+  fBackgroundFlag(evTag.fBackgroundFlag),
   fGUID(evTag.fGUID),
   fPath(evTag.fPath),
   fsize(evTag.fsize),
@@ -209,6 +213,8 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetBunchCrossNumber(evTag.GetBunchCrossNumber());
     SetFiredTriggerClasses(evTag.GetFiredTriggerClasses());
     SetEventType(evTag.GetEventType());
+    SetPhysicsFlag(evTag.GetPhysicsFlag());
+    SetBackgroungFlag(evTag.GetBackgroundFlag());
     SetGUID(evTag.GetGUID());
     SetPath(evTag.GetPath());
     SetMD5(evTag.GetMD5());

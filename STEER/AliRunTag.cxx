@@ -32,11 +32,15 @@ ClassImp(AliRunTag)
     TObject(),
     fAliceRunId(-1),
     fAliceMagneticField(0.0),
+    fAliceDipoleField(0.0),
     fAliceRunStartTime(0),
     fAliceRunStopTime(0),
     fAlirootVersion(0),
     fRootVersion(0),
     fGeant3Version(0),
+    fLHCPeriod(0),
+    fRecPass(0),
+    fProductionName(0),
     fAliceRunQuality(0),
     fAliceBeamEnergy(0.0),
     fAliceBeamType(0),
@@ -71,11 +75,15 @@ AliRunTag::AliRunTag(const AliRunTag& tag):
 TObject(),
 fAliceRunId(tag.fAliceRunId),
 fAliceMagneticField(tag.fAliceMagneticField),
+fAliceDipoleField(tag.fAliceDipoleField),
 fAliceRunStartTime(tag.fAliceRunStartTime),
 fAliceRunStopTime(fAliceRunStopTime),
 fAlirootVersion(tag.fAlirootVersion),
 fRootVersion(tag.fRootVersion),
 fGeant3Version(tag.fGeant3Version),
+fLHCPeriod(tag.fLHCPeriod),
+fRecPass(tag.fRecPass),
+fProductionName(tag.fProductionName),
 fAliceRunQuality(tag.fAliceRunQuality),
 fAliceBeamEnergy(tag.fAliceBeamEnergy),
 fAliceBeamType(tag.fAliceBeamType),
@@ -113,11 +121,15 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
   if(&tag != this) {
     fAliceRunId               = tag.fAliceRunId ; 
     fAliceMagneticField       = tag.fAliceMagneticField ;
+    fAliceDipoleField         = tag.fAliceDipoleField ;
     fAliceRunStartTime        = tag.fAliceRunStartTime ; 
     fAliceRunStopTime         = tag.fAliceRunStopTime ; 
     fAlirootVersion           = tag.fAlirootVersion ; 
     fRootVersion              = tag.fRootVersion ;
     fGeant3Version            = tag.fGeant3Version ; 
+    fLHCPeriod                = tag.fLHCPeriod ; 
+    fRecPass                  = tag.fRecPass ; 
+    fProductionName           = tag.fProductionName ; 
     fAliceRunQuality          = tag.fAliceRunQuality ; 
     fAliceBeamEnergy          = tag.fAliceBeamEnergy ;
     fAliceBeamType            = tag.fAliceBeamType ; 
@@ -156,11 +168,15 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   //function that copies the run, lhc and detector levels
   SetRunId(oldtag->GetRunId());
   SetMagneticField(oldtag->GetMagneticField());
+  SetDipoleField(oldtag->GetDipoleField());
   SetRunStartTime(oldtag->GetRunStartTime());
   SetRunStopTime(oldtag->GetRunStopTime());
   SetAlirootVersion(oldtag->GetAlirootVersion());
   SetRootVersion(oldtag->GetRootVersion());
   SetGeant3Version(oldtag->GetGeant3Version());
+  SetLHCPeriod(oldtag->GetLHCPeriod());
+  SetReconstructionPass(oldtag->GetReconstructionPass());
+  SetProductionName(oldtag->GetProductionName());
   SetRunQuality(oldtag->GetRunQuality());
   SetBeamEnergy(oldtag->GetBeamEnergy());
   SetBeamType(oldtag->GetBeamType());
@@ -170,7 +186,7 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMask());
   SetQA(*(oldtag->GetQA())) ;  	
   SetQAArray(oldtag->GetQAArray(), oldtag->GetQALength()) ;  
-	SetEventSpecies(oldtag->GetEventSpecies(), oldtag->GetESLength()) ;  
+  SetEventSpecies(oldtag->GetEventSpecies(), oldtag->GetESLength()) ;  
 }
 
 //___________________________________________________________________________
@@ -208,6 +224,7 @@ void AliRunTag::SetLHCTag(Float_t lumin, TString type) {
 void AliRunTag::SetDetectorTag(UInt_t mask) {
   //Setter for the detector tags
   fDetectorTag.SetDetectorMask(mask);
+  fNumDetectors = fDetectorTag.GetDetectorMask()->GetEntries();
 }
 
 //___________________________________________________________________________

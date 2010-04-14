@@ -35,6 +35,7 @@ class TFile;
 class TGridResult;
 
 class AliGRPObject;
+class AliEventTag;
 
 //___________________________________________________________________________
 class AliESDTagCreator : public AliTagCreator {
@@ -44,6 +45,8 @@ class AliESDTagCreator : public AliTagCreator {
   ~AliESDTagCreator(); 
 
   void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRPObject *grpData, ULong_t * qa, Bool_t * es, Int_t qalength, Int_t eslength);
+  void CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData, ULong_t * qa, Bool_t * es, Int_t qalength, Int_t eslength);
+  void CreateESDRunTagSummary(TTree *chain);
 
   void SetInactiveBranches(const char* branches) {fBranches = branches;}
 
@@ -56,15 +59,17 @@ class AliESDTagCreator : public AliTagCreator {
   void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
   void CreateTag(TFile* file, const char *filepath, Int_t Counter);
 
+  void FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEventNumber, AliESDEvent *esd);
+
  private:
   void SwitchOffBranches() const;
   AliESDTagCreator(const AliESDTagCreator& creator);             
   AliESDTagCreator& operator=(const AliESDTagCreator& creator);
   
-  TChain *fChain; //chain of esd files
-  TList  *fGUIDList; //TList of guid TObjString
-  TList  *fMD5List; //TList of md5 TObjString
-  TList  *fTURLList; //TList of turl TObjString
+  TChain *fChain;     //chain of esd files
+  TList  *fGUIDList;  //TList of guid TObjString
+  TList  *fMD5List;   //TList of md5 TObjString
+  TList  *fTURLList;  //TList of turl TObjString
   TString fBranches;  //List of branches to be switched off (separated by space
   MemInfo_t *meminfo; //mem info
 
