@@ -76,6 +76,10 @@ public:
   Double_t GetTimeCutMin() const {return fTimeCutMin;}
   Double_t GetTimeCutMax() const {return fTimeCutMax;}	
 	
+  void SetNCellCut(Int_t n) {fNCellsCut = n;}
+  Double_t GetNCellCut() const {return fNCellsCut;}
+	
+	
   private:
  
   TString fCalorimeter ; // Calorimeter where the gamma is searched;
@@ -88,7 +92,8 @@ public:
   Float_t fMassCut;                // Mass cut for the conversion pairs selection
   Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
-
+  Int_t fNCellsCut ;     // Accept for the analysis clusters with more than fNCellsCut cells
+	
   //Histograms  
   TH1F * fhPtPhoton   ; //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ; //! Azimuthal angle of identified  photon vs transerse momentum 
@@ -134,7 +139,7 @@ public:
   TH2F * fhPhiUnknown;  //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;  //! eta of identified  Unknown gamma
 
-   ClassDef(AliAnaPhoton,7)
+   ClassDef(AliAnaPhoton,8)
 
 } ;
  
