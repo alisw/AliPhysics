@@ -9,7 +9,7 @@
  * Usage:
  * <pre>
  *   aliroot -b -q -l compare_HLT_offline_local.C'("phos")' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_local.C'("phos tpc")' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("phos tpc global")' 2>&1 | tee task.log
  *   aliroot -b -q -l compare_HLT_offline_local.C 2>&1 | tee task.log
  * </pre>
  *
@@ -85,41 +85,12 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
   if(bPHOS)   gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
-
-  
-  AliTagAnalysis *TagAna = new AliTagAnalysis("ESD"); 
-  //TagAna->ChainLocalTags("../Tags");
-
-//   AliRunTagCuts *runCuts = new AliRunTagCuts();
-//   AliLHCTagCuts *lhcCuts = new AliLHCTagCuts();
-//   AliDetectorTagCuts *detCuts = new AliDetectorTagCuts();
-//   AliEventTagCuts *evCuts = new AliEventTagCuts();
-//   evCuts->SetMultiplicityRange(11,12);  
-  
-
-  TChain *chain = 0x0;
-  //chain = TagAna->QueryTags(runCuts,lhcCuts,detCuts,evCuts);
-  chain = new TChain("esdTree");
  
-  //gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  //chain = CreateESDChain("esd_run84254.txt", 2);
-  
-  //chain->Add("/afs/.alihlt.cern.ch/public/rec/79876/AliESDs.root");
-  //chain->Add("/opt/HLT-public/rec/83683/rec/09000083683000.10/AliESDs.root");
-  
-  //chain->Add("/opt/HLT-public/rec/82762/ESDs/pass1/09000082762002.10/AliESDs.root");
-  //chain->Add("/opt/HLT-public/rec/82762/ESDs/pass1/09000082762004.10/AliESDs.root");
-  //chain->Add("/opt/HLT-public/rec/82762/ESDs/pass1/09000082762005.10/AliESDs.root");
-  //chain->Add("/opt/HLT-public/rec/82762/ESDs/pass1/09000082762006.10/AliESDs.root");
-  
-  //chain->Add("/opt/HLT-public/rec/84254/alien/09000084254009.200/AliESDs.root");
-  //chain->Add("/opt/HLT-public/rec/84254/alien/09000084254009.40/AliESDs.root");
-  //chain->Add("/opt/HLT-public/rec/84254/alien/09000084254009.10/AliESDs.root");
 
+  TChain *chain = new TChain("esdTree"); 
   chain->Add("~/7TeV/115322/10000115322040.110/AliESDs.root");
-  //chain->SetBranchStatus("*Calo*",0);
-
- 
+  //chain->Add("...");
+   
   //-------- Make the analysis manager ---------------//
  
   AliAnalysisManager *mgr  = new AliAnalysisManager("TestManager");
@@ -135,7 +106,6 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
      mgr->AddTask(taskTPC);
      AliAnalysisDataContainer *coutput1 =  mgr->CreateContainer("tpc_histograms", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-TPC-comparison.root");  
      mgr->ConnectInput(taskTPC,0,mgr->GetCommonInputContainer());
-     //mgr->ConnectOutput (taskTPC, 0, mgr->GetCommonOutputContainer());
      mgr->ConnectOutput(taskTPC,1,coutput1);
   }
 
