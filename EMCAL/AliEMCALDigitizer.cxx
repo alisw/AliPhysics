@@ -533,7 +533,7 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
     fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
   }
   
-  channel = static_cast<Int_t> (TMath::Ceil( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+  channel = static_cast<Int_t> (TMath::Floor( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
   
   if(channel > fNADCEC ) 
     channel =  fNADCEC ; 
