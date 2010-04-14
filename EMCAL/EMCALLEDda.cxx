@@ -47,6 +47,7 @@ extern "C" {
 #include "AliCaloRawStreamV3.h"
 #include "AliCaloAltroMapping.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 
 //
 // EMC calibration-helper algorithm includes
@@ -81,6 +82,8 @@ int main(int argc, char **argv) {
   /* log start of process */
   printf("EMCAL DA started - %s\n",__FILE__);
   
+  Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
+
   /* declare monitoring program */
   status=monitorDeclareMp( __FILE__ );
   if (status!=0) {
@@ -157,7 +160,7 @@ int main(int argc, char **argv) {
     /* read until EOF */
     struct eventHeaderStruct *event;
     eventTypeType eventT;
-    
+
     for ( ; ; ) { // infinite loop
       
       /* check shutdown condition */
@@ -179,12 +182,18 @@ int main(int argc, char **argv) {
 	continue;
       }
       eventT = event->eventType; /* just convenient shorthand */
-      
       /* only look at calibration events */
       if ( eventT != calibrationEvent ) {
+	free(event);    
 	continue;
       }
       
+      /* only look at events where EMCAL was included */
+      if (! TEST_DETECTOR_IN_PATTERN(event->eventDetectorPattern, emcID) ) {
+	free(event);    
+	continue;
+      }
+
       nevents++; // count how many acceptable events we have
       
       //  Signal calibration

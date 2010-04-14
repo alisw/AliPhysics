@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
       /* skip start/end of run events */
       if ( (eventT != physicsEvent) && (eventT != calibrationEvent) &&
 	   (eventT != systemSoftwareTriggerEvent) && (eventT != detectorSoftwareTriggerEvent) ) {
+	free(event);
 	continue;
       }
       
