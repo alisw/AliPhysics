@@ -1,4 +1,5 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTOUTCOMPONENT_H
 #define ALIHLTOUTCOMPONENT_H
@@ -6,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUTComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  The HLTOUT data sink component similar to HLTOUT nodes
-*/
+//  @file   AliHLTOUTComponent.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  The HLTOUT data sink component similar to HLTOUT nodes.
+//  @note   Used in the AliRoot environment only.
 
 // see class description below
 // or
@@ -31,6 +32,9 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  * The HLTOUT data sink component which models the behavior of the HLTOUT
  * nodes of the HLT cluster.
  * <h2>General properties:</h2>
+ * The HLTOUT component is attached at the end of a chain. It stores all input
+ * block in the HOMER format, distributed over a number of DDL link. The data
+ * is stored in a digit file or in raw ddl files.
  *
  * Component ID: \b HLTOUT <br>
  * Library: \b libHLTrec.so     <br>
@@ -44,6 +48,7 @@ typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -links      <i> n   </i> <br>
  *      number of output ddl links
+ * \li -digitfile  <i> name   </i> <br>
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -104,6 +109,9 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
    * Init method.
    */
   int DoInit( int argc, const char** argv );
+
+  /// inherited from AliHLTComponent,  component specific argument scan
+  int ScanConfigurationArgument(int argc, const char** argv);
 
   /**
    * Deinit method.
@@ -198,6 +206,9 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** global options for all instances */
   static int fgOptions; //! transient
 
+  /** digit file name */
+  TString fDigitFileName; //! transient
+
   /** the root file for the HLT 'digit' output */
   TFile* fpDigitFile; //!transient
 
@@ -213,6 +224,6 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** Data size kept in the internal buffer */
   int fReservedData; //!transient
 
-  ClassDef(AliHLTOUTComponent, 3)
+  ClassDef(AliHLTOUTComponent, 4)
 };
 #endif

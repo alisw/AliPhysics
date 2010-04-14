@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUTComponent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  The HLTOUT data sink component similar to HLTOUT nodes
-*/
+//  @file   AliHLTOUTComponent.cxx
+//  @author Matthias Richter
+//  @date   
+//  @brief  The HLTOUT data sink component similar to HLTOUT nodes
+//  @note   Used in the AliRoot environment only.
 
 #if __GNUC__>= 3
 using namespace std;
@@ -44,18 +44,18 @@ using namespace std;
 ClassImp(AliHLTOUTComponent)
 
 AliHLTOUTComponent::AliHLTOUTComponent()
-  :
-  AliHLTOfflineDataSink(),
-  fWriters(),
-  fNofDDLs(10),
-  fIdFirstDDL(7680), // 0x1e<<8
-  fBuffer(),
-  fpLibManager(NULL),
-  fpDigitFile(NULL),
-  fpDigitTree(NULL),
-  fppDigitArrays(NULL),
-  fReservedWriter(-1),
-  fReservedData(0)
+  : AliHLTOfflineDataSink()
+  , fWriters()
+  , fNofDDLs(10)
+  , fIdFirstDDL(7680) // 0x1e<<8
+  , fBuffer()
+  , fpLibManager(NULL)
+  , fDigitFileName("HLT.Digits.root")
+  , fpDigitFile(NULL)
+  , fpDigitTree(NULL)
+  , fppDigitArrays(NULL)
+  , fReservedWriter(-1)
+  , fReservedData(0)
 {
   // see header file for class documentation
   // or
@@ -105,35 +105,7 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
   int iResult=0;
-  TString argument="";
-  int bMissingParam=0;
-  for (int i=0; i<argc && iResult>=0; i++) {
-    argument=argv[i];
-    if (argument.IsNull()) continue;
-
-    // -links
-    if (argument.CompareTo("-links")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      TString parameter(argv[i]);
-      parameter.Remove(TString::kLeading, ' '); // remove all blanks
-      if (parameter.IsDigit()) {
-	fNofDDLs=parameter.Atoi();
-      } else {
-	HLTError("wrong parameter for argument %s, number expected", argument.Data());
-	iResult=-EINVAL;
-      }
-    } else {
-      HLTError("unknown argument %s", argument.Data());
-      iResult=-EINVAL;
-      break;
-    }
-  }
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
-  if (iResult>=0) {
-  }
+  if ((iResult=ScanConfigurationArgument(argc, argv))<0) return -iResult;
 
   // Make sure there is no library manager before we try and create a new one.
   if (fpLibManager) {
@@ -162,6 +134,78 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
   }
 
   return iResult;
+}
+
+int AliHLTOUTComponent::ScanConfigurationArgument(int argc, const char** argv)
+{
+  // see header file for class documentation
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
+  const char* key="";
+
+  // -links n
+  // specify number of ddl links
+  if (argument.CompareTo("-links")==0) {
+    if (++i>=argc) return -EPROTO;
+    TString parameter(argv[i]);
+    parameter.Remove(TString::kLeading, ' '); // remove all blanks
+    if (parameter.IsDigit()) {
+      fNofDDLs=parameter.Atoi();
+    } else {
+      HLTError("wrong parameter for argument %s, number expected", argument.Data());
+      return -EINVAL;
+    }
+
+    return 2;
+  } 
+
+  // -digitfile name
+  if (argument.CompareTo("-digitfile")==0) {
+    if (++i>=argc) return -EPROTO;
+    fDigitFileName=argv[i];
+
+    return 2;
+  }
+
+  // -rawout
+  key="-rawout";
+  if (argument.Contains(key)) {
+    argument.ReplaceAll(key, "");
+    if (argument.IsNull()) {
+      fgOptions|=kWriteRawFiles;
+    } else if (argument.CompareTo("=off")==0) {
+      fgOptions&=~kWriteRawFiles;
+    } else if (argument.CompareTo("=on")==0) {
+      fgOptions|=kWriteRawFiles;
+    } else {
+      HLTError("invalid parameter for argument %s: possible %s=off/%s=on", key, key, key);
+      return -EPROTO;
+    }
+
+    return 1;
+  }
+
+  // -digitout
+  key="-digitout";
+  if (argument.Contains(key)) {
+    argument.ReplaceAll(key, "");
+    if (argument.IsNull()) {
+      fgOptions|=kWriteDigits;
+    } else if (argument.CompareTo("=off")==0) {
+      fgOptions&=~kWriteDigits;
+    } else if (argument.CompareTo("=on")==0) {
+      fgOptions|=kWriteDigits;
+    } else {
+      HLTError("invalid parameter for argument %s: possible %s=off/%s=on", key, key, key);
+      return -EPROTO;
+    }
+
+    return 1;
+  }
+
+  // unknown argument
+  return -EINVAL;
 }
 
 int AliHLTOUTComponent::DoDeinit()
@@ -462,9 +506,8 @@ int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/
 {
   // see header file for class documentation
   int iResult=0;
-  const char* digitFileName="HLT.Digits.root";
   if (!fpDigitFile) {
-    fpDigitFile=new TFile(digitFileName, "RECREATE");
+    fpDigitFile=new TFile(fDigitFileName, "RECREATE");
   }
   if (fpDigitFile && !fpDigitFile->IsZombie()) {
     if (!fpDigitTree) {
@@ -492,7 +535,7 @@ int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/
       errorMsg=" (suppressing further error messages)";
     }
     if (GetEventCount()<5) {
-      HLTError("can not open HLT digit file %s%s", digitFileName, errorMsg);
+      HLTError("can not open HLT digit file %s%s", fDigitFileName.Data(), errorMsg);
     }
     iResult=-EBADF;
   }
