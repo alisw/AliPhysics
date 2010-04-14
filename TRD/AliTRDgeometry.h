@@ -229,7 +229,7 @@ class AliTRDgeometry : public AliGeometry {
 
   Char_t                fSMstatus[kNsector];                 //  Super module status byte
 
-  ClassDef(AliTRDgeometry,23)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,24)                                //  TRD geometry class
 
 };
 #endif
