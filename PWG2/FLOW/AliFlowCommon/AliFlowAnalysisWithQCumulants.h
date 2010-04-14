@@ -77,6 +77,9 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights();
     virtual void CalculateIntFlowCorrectionsForNUASinTerms();  
     virtual void CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights();    
+    virtual void CalculateIntFlowProductOfCorrectionTermsForNUA();
+    virtual void CalculateIntFlowSumOfEventWeightsNUA();
+    virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
     // ...  
     virtual void CalculateWeightedQProductsForIntFlow();
     virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent); 
@@ -109,6 +112,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void FinalizeCorrelationsIntFlow();
     virtual void FinalizeCorrectionTermsForNUAIntFlow(); 
     virtual void CalculateCovariancesIntFlow();  
+    virtual void CalculateCovariancesNUAIntFlow();  
     virtual void CalculateCumulantsIntFlow(); 
     virtual void CalculateIntFlow(); 
     virtual void FillCommonHistResultsIntFlow();
@@ -222,7 +226,9 @@ class AliFlowAnalysisWithQCumulants{
   void SetIntFlowExtraCorrelationsPro(TProfile* const intFlowExtraCorrelationsPro) {this->fIntFlowExtraCorrelationsPro = intFlowExtraCorrelationsPro;};
   TProfile* GetIntFlowExtraCorrelationsPro() const {return this->fIntFlowExtraCorrelationsPro;};  
   void SetIntFlowProductOfCorrelationsPro(TProfile* const intFlowProductOfCorrelationsPro) {this->fIntFlowProductOfCorrelationsPro = intFlowProductOfCorrelationsPro;};
-  TProfile* GetIntFlowProductOfCorrelationsPro() const {return this->fIntFlowProductOfCorrelationsPro;};  
+  TProfile* GetIntFlowProductOfCorrelationsPro() const {return this->fIntFlowProductOfCorrelationsPro;};    
+  void SetIntFlowProductOfCorrectionTermsForNUAPro(TProfile* const ifpoctfNUA) {this->fIntFlowProductOfCorrectionTermsForNUAPro = ifpoctfNUA;};
+  TProfile* GetIntFlowProductOfCorrectionTermsForNUAPro() const {return this->fIntFlowProductOfCorrectionTermsForNUAPro;};  
   void SetIntFlowCorrectionTermsForNUAPro(TProfile* const ifctfnp, Int_t const sc) {this->fIntFlowCorrectionTermsForNUAPro[sc] = ifctfnp;};
   TProfile* GetIntFlowCorrectionTermsForNUAPro(Int_t sc) const {return this->fIntFlowCorrectionTermsForNUAPro[sc];};  
   // integrated flow histograms holding all results:
@@ -241,6 +247,12 @@ class AliFlowAnalysisWithQCumulants{
   TH1D* GetIntFlowSumOfEventWeights(Int_t power) const {return this->fIntFlowSumOfEventWeights[power];};
   void SetIntFlowSumOfProductOfEventWeights(TH1D* const intFlowSumOfProductOfEventWeights) {this->fIntFlowSumOfProductOfEventWeights = intFlowSumOfProductOfEventWeights;};
   TH1D* GetIntFlowSumOfProductOfEventWeights() const {return this->fIntFlowSumOfProductOfEventWeights;}; 
+  void SetIntFlowCovariancesNUA(TH1D* const intFlowCovariancesNUA) {this->fIntFlowCovariancesNUA = intFlowCovariancesNUA;};
+  TH1D* GetIntFlowCovariancesNUA() const {return this->fIntFlowCovariancesNUA;};
+  void SetIntFlowSumOfEventWeightsNUA(TH1D* const ifsoewNUA, Int_t const sc, Int_t const power) {this->fIntFlowSumOfEventWeightsNUA[sc][power] = ifsoewNUA;};
+  TH1D* GetIntFlowSumOfEventWeightsNUA(Int_t sc, Int_t power) const {return this->fIntFlowSumOfEventWeightsNUA[sc][power];};
+  void SetIntFlowSumOfProductOfEventWeightsNUA(TH1D* const ifsopoewNUA) {this->fIntFlowSumOfProductOfEventWeightsNUA = ifsopoewNUA;};
+  TH1D* GetIntFlowSumOfProductOfEventWeightsNUA() const {return this->fIntFlowSumOfProductOfEventWeightsNUA;}; 
   void SetIntFlowQcumulants(TH1D* const intFlowQcumulants) {this->fIntFlowQcumulants = intFlowQcumulants;};
   TH1D* GetIntFlowQcumulants() const {return this->fIntFlowQcumulants;}; 
   void SetIntFlow(TH1D* const intFlow) {this->fIntFlow = intFlow;};
@@ -390,12 +402,14 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowEventWeightsForCorrelationsEBE; // 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
   TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
+  TH1D *fIntFlowEventWeightForCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
   //  3d.) profiles:
   TProfile *fAvMultiplicity; // profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
   TProfile *fIntFlowCorrelationsPro; // average correlations <<2>>, <<4>>, <<6>> and <<8>> (with wrong errors!) 
   TProfile *fIntFlowCorrelationsAllPro; // average all correlations for integrated flow (with wrong errors!)
   TProfile *fIntFlowExtraCorrelationsPro; // when particle weights are used some extra correlations appear 
-  TProfile *fIntFlowProductOfCorrelationsPro; // average product of correlations <2>, <4>, <6> and <8>:  
+  TProfile *fIntFlowProductOfCorrelationsPro; // average product of correlations <2>, <4>, <6> and <8>  
+  TProfile *fIntFlowProductOfCorrectionTermsForNUAPro; // average product of correction terms for NUA  
   TProfile *fIntFlowCorrectionTermsForNUAPro[2]; // average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms] 
   //  3e.) histograms with final results:
   TH1D *fIntFlowCorrelationsHist; // final results for average correlations <<2>>, <<4>>, <<6>> and <<8>> (with correct errors!) 
@@ -404,6 +418,9 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowCovariances; // final result for covariances of correlations (multiplied with weight dependent prefactor)
   TH1D *fIntFlowSumOfEventWeights[2]; // sum of linear and quadratic event weights for <2>, <4>, <6> and <8>: [0=linear 1,1=quadratic]
   TH1D *fIntFlowSumOfProductOfEventWeights; // sum of products of event weights for correlations <2>, <4>, <6> and <8>
+  TH1D *fIntFlowCovariancesNUA; // final result for covariances of all terms needed for NUA (multiplied with weight dependent prefactor)
+  TH1D *fIntFlowSumOfEventWeightsNUA[2][2]; // sum of linear and quadratic event weights for NUA terms: [0=sin,1=cos][0=linear 1,1=quadratic]
+  TH1D *fIntFlowSumOfProductOfEventWeightsNUA; // sum of products of event weights for NUA terms
   TH1D *fIntFlowQcumulants; // final results for integrated Q-cumulants QC{2}, QC{4}, QC{6} and QC{8}
   TH1D *fIntFlow; // final results for integrated flow estimates v_n{2,QC}, v_n{4,QC}, v_n{6,QC} and v_n{8,QC}
      
