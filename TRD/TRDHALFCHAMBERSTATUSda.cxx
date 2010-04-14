@@ -38,6 +38,7 @@ extern "C" {
 #include "AliRawReaderDate.h"
 #include "AliTRDrawFastStream.h"
 #include "AliTRDrawStreamBase.h"
+#include "AliLog.h"
 //#include "AliCDBManager.h"
 
 //
@@ -71,22 +72,31 @@ int main(int argc, char **argv) {
   /* log start of process */
   printf("TRD DA HALFCHAMBERSTATUS started\n");  
 
-
-  /* check that we got some arguments = list of files */
-  if (argc<2) {
+  if (argc!=2) {
     printf("Wrong number of arguments\n");
     return -1;
   }
 
 
-  /* copy locally a file from daq detector config db */
-  //status=daqDA_DB_getFile("myconfig","./myconfig.txt");
-  //if (status) {
-  //  printf("Failed to get config file : %d\n",status);
-  //  return -1;
-  //}
-  /* and possibly use it */
-  
+  /* define data source : this is argument 1 */  
+  status=monitorSetDataSource( argv[1] );
+  if (status!=0) {
+    printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
+    return -1;
+  }
+
+
+  /* declare monitoring program */
+  status=monitorDeclareMp( __FILE__ );
+  if (status!=0) {
+    printf("monitorDeclareMp() failed : %s\n",monitorDecodeError(status));
+    return -1;
+  }
+
+
+  /* define wait event timeout - 1s max */
+  monitorSetNowait();
+  monitorSetNoWaitNetworkTimeout(1000);
 
   /* init some counters */
   int nevents_total=0;
@@ -103,69 +113,65 @@ int main(int argc, char **argv) {
 
   // setting
   AliTRDrawFastStream::DisableSkipData();
- 
+  AliLog::SetGlobalLogLevel(AliLog::kFatal); 
 
-  /* read the data files */
-  int n;
-  for (n=1;n<argc;n++) {
-   
-    /* define data source : this is argument i */
-    printf("Processing file %s\n",argv[n]);
-    status=monitorSetDataSource( argv[n] );
-    if (status!=0) {
-      printf("monitorSetDataSource() failed : %s\n",monitorDecodeError(status));
-      return -1;
+  /* read the file  until EOF */
+  for(;;) {
+    struct eventHeaderStruct *event;
+    eventTypeType eventT;
+    
+    /* check shutdown condition */
+    if (daqDA_checkShutdown()) {break;}
+    
+    /* get next event */
+    status=monitorGetEventDynamic((void **)&event);
+    if (status==MON_ERR_EOF) {
+      printf("End of File detected\n");
+      break; /* end of monitoring file has been reached */
     }
-
-    /* read the file  until EOF */
-    for(;;) {
-      struct eventHeaderStruct *event;
-      eventTypeType eventT;
+    if (status!=0) {
+      printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
+      break;
+    }
+    
+    /* retry if got no event */
+    if (event==NULL) {
+      continue;
+    }
+    
+    /* use event - here, just write event id to result file */
+    eventT=event->eventType;
+    
+    if(eventT==PHYSICS_EVENT){
       
-      /* get next event */
-      status=monitorGetEventDynamic((void **)&event);
-      if (status==MON_ERR_EOF) {
-	printf("End of File %d detected\n",n);
-	break; /* end of monitoring file has been reached */
-      }
-      if (status!=0) {
-        printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
-        break;
-      }
-
-      /* retry if got no event */
-      if (event==NULL) {
-        break;
-      }
-
-      /* use event - here, just write event id to result file */
-      eventT=event->eventType;
-
-      if(eventT==PHYSICS_EVENT){
-
-	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-	rawReader->Select("TRD");
-	
-	calipad.ProcessEvent((AliRawReader *) rawReader,nevents);
-	nevents++;
-	delete rawReader;
+      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
+      rawReader->Select("TRD");
       
-      }
-
-      nevents_total++;
-
-      // get the run number
-      //runNb = event->eventRunNb;
-
-      /* free resources */
-      free(event);
+      calipad.ProcessEvent((AliRawReader *) rawReader,nevents);
+      nevents++;
+      delete rawReader;
+      
+    }
+    
+    nevents_total++;
+    
+    // get the run number
+    //runNb = event->eventRunNb;
+    
+    /* free resources */
+    free(event);
+    
+    /* exit when last event received, no need to wait for TERM signal */
+    if (eventT==END_OF_RUN) {
+      printf("EOR event detected\n");
+      break;
     }
   }
-
+  
 
   /* report progress */
   printf("%d events processed and %d used\n",nevents_total,nevents);
-
+  
   /* write file in any case to see what happens in case of problems*/
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
   calipad.AnalyseHisto();
