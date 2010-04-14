@@ -474,7 +474,7 @@ int main(int argc, char **argv) {
     if(maxXval[k]-150.<0.) xlow[k]=0.;
     else xlow[k] = maxXval[k]-150.;
     // checking if at least one histo is fitted
-    if(hZNChg[k]->GetEntries()!=0){
+    if(hZNChg[k]->GetEntries()!=0 || hZNChg[k]->GetMean()<=0){
       atLeastOneHisto=1;
       //
       hZNChg[k]->Fit("gaus","Q","",xlow[k],maxXval[k]+150.);
@@ -491,7 +491,7 @@ int main(int argc, char **argv) {
     if(nBin[k+5]!=0) maxXval[k+5] = maxBin[k+5]*xMax[k+5]/nBin[k+5];
     if(maxXval[k+5]-150.<0.) xlow[k+5]=0.;
     else xlow[k+5] = maxXval[k+5]-150.;
-    if(hZPChg[k]->GetEntries()!=0){
+    if(hZPChg[k]->GetEntries()!=0 || hZPChg[k]->GetMean()<=0){
       atLeastOneHisto=1; 
       //
       hZPChg[k]->Fit("gaus","Q","",xlow[k+5],maxXval[k+5]+150.);
@@ -509,7 +509,7 @@ int main(int argc, char **argv) {
       if(nBin[k+10]!=0) maxXval[k+10] = maxBin[k+10]*xMax[k+10]/nBin[k+10];
       if(maxXval[k+10]-150.<0.) xlow[k+10]=0.;
       else xlow[k+10] = maxXval[k+10]-150.;
-      if(hZEMhg[k]->GetEntries()!=0){
+      if(hZEMhg[k]->GetEntries()!=0 || hZEMhg[k]->GetMean()<=0){
         atLeastOneHisto=1; 
         //
         hZEMhg[k]->Fit("gaus","Q","",xlow[k+10],maxXval[k+10]+150.);
@@ -527,7 +527,7 @@ int main(int argc, char **argv) {
     if(nBin[k+12]!=0) maxXval[k+12] = maxBin[k+12]*xMax[k+12]/nBin[k+12];
     if(maxXval[k+12]-150.<0.) xlow[k+12]=0.;
     else xlow[k+12] = maxXval[k+12]-150.;
-    if(hZNAhg[k]->GetEntries()!=0){
+    if(hZNAhg[k]->GetEntries()!=0 || hZNAhg[k]->GetMean()<=0){
       atLeastOneHisto=1; 
       //
       hZNAhg[k]->Fit("gaus","Q","",xlow[k+12],maxXval[k+12]+150.);
@@ -544,7 +544,7 @@ int main(int argc, char **argv) {
     if(nBin[k+17]!=0) maxXval[k+17] = maxBin[k+17]*xMax[k+17]/nBin[k+17];
     if(maxXval[k+17]-150.<0.) xlow[k+17]=0.;
     else xlow[k+17] = maxXval[k+17]-150.;
-    if(hZPAhg[k]->GetEntries()!=0){
+    if(hZPAhg[k]->GetEntries()!=0 || hZPAhg[k]->GetMean()<=0){
       atLeastOneHisto=1; 
       //
       hZPAhg[k]->Fit("gaus","Q","",xlow[k+17],maxXval[k+17]+150.);
