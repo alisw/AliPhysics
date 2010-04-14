@@ -104,7 +104,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
    void SetDAQStartEndTimeOk(Bool_t daqStartEndTimeOk) {fdaqStartEndTimeOk = daqStartEndTimeOk;}
 
    Double_t CalculateMean(TObjArray* lhcObjArray);
-   Float_t ProcessEnergy(TObjArray* array, Double_t timeStart, Double_t timeEnd);
+   Float_t ProcessEnergy(TObjArray* array, Double_t timeStart);
 
  private:
  
