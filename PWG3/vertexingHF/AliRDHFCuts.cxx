@@ -112,6 +112,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fGlobalIndex=source.fGlobalIndex;
   fnVarsForOpt=source.fnVarsForOpt;
 
+  if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
   if(source.fVarNames) SetVarNames(source.fnVars,source.fVarNames,source.fIsUpperCut);
   if(source.fCutsRD) SetCuts(source.fGlobalIndex,source.fCutsRD);
