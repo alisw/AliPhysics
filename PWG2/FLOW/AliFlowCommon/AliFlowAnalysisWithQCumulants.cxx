@@ -124,10 +124,13 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowCorrelationsAllPro(NULL),
  fIntFlowExtraCorrelationsPro(NULL),
  fIntFlowProductOfCorrelationsPro(NULL),
+ fIntFlowProductOfCorrectionTermsForNUAPro(NULL),
  fIntFlowCorrelationsHist(NULL),
  fIntFlowCorrelationsAllHist(NULL),
  fIntFlowCovariances(NULL),
  fIntFlowSumOfProductOfEventWeights(NULL),
+ fIntFlowCovariancesNUA(NULL),
+ fIntFlowSumOfProductOfEventWeightsNUA(NULL),
  fIntFlowQcumulants(NULL),
  fIntFlow(NULL),
  // 4.) differential flow:
@@ -502,7 +505,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
   if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
   {
    if(nRP>1) this->CalculateIntFlowCorrelations(); // without using particle weights
-  } else 
+  } else // to if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
     {
      if(nRP>1) this->CalculateIntFlowCorrelationsUsingParticleWeights(); // with using particle weights   
     } 
@@ -521,6 +524,10 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
       if(nRP>0) this->CalculateIntFlowCorrectionsForNUASinTermsUsingParticleWeights();
       if(nRP>0) this->CalculateIntFlowCorrectionsForNUACosTermsUsingParticleWeights();     
      }  
+     
+   if(nRP>0) this->CalculateIntFlowProductOfCorrectionTermsForNUA();     
+   if(nRP>0) this->CalculateIntFlowSumOfEventWeightsNUA();     
+   if(nRP>0) this->CalculateIntFlowSumOfProductOfEventWeightsNUA();     
   } // end of if(fApplyCorrectionForNUA)
  } // end of if(!fEvaluateIntFlowNestedLoops)
 
@@ -767,6 +774,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  if(fApplyCorrectionForNUA) // to be improved (reorganized, etc)
  {
   this->FinalizeCorrectionTermsForNUAIntFlow();
+  this->CalculateCovariancesNUAIntFlow();
   this->CalculateQcumulantsCorrectedForNUAIntFlow();   
   this->CalculateIntFlowCorrectedForNUA(); 
  }
@@ -908,6 +916,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
   
   // average non-weighted 1-particle correction (cos terms) for non-uniform acceptance for single event:
   fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(1,cosP1n);
+  // event weights for NUA terms:
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->SetBinContent(1,dMult);
   
   // final average non-weighted 1-particle correction (cos terms) for non-uniform acceptance for all events:
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(0.5,cosP1n,dMult);  
@@ -925,7 +935,10 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
   // average non-weighted 2-particle correction (cos terms) for non-uniform acceptance for single event:
   fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(2,cosP1nP1n);
   fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(4,cosP2nM1n);
-  
+  // event weights for NUA terms:
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->SetBinContent(2,dMult*(dMult-1));
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->SetBinContent(4,dMult*(dMult-1));
+      
   // final average non-weighted 2-particle correction (cos terms) for non-uniform acceptance for all events:
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(1.5,cosP1nP1n,dMult*(dMult-1));  
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(3.5,cosP2nM1n,dMult*(dMult-1));
@@ -941,6 +954,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTerms()
   
   // average non-weighted 3-particle correction (cos terms) for non-uniform acceptance for single event:
   fIntFlowCorrectionTermsForNUAEBE[1]->SetBinContent(3,cosP1nM1nM1n);
+  // event weights for NUA terms:
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->SetBinContent(3,dMult*(dMult-1)*(dMult-2));
   
   // final average non-weighted 3-particle correction (cos terms) for non-uniform acceptance for all events:
   fIntFlowCorrectionTermsForNUAPro[1]->Fill(2.5,cosP1nM1nM1n,dMult*(dMult-1)*(dMult-2));  
@@ -991,7 +1006,9 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
   sinP1n = dImQ1n/dMult; 
      
   // average non-weighted 1-particle correction (sin terms) for non-uniform acceptance for single event:
-  fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(1,sinP1n);
+  fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(1,sinP1n);  
+  // event weights for NUA terms:
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->SetBinContent(1,dMult);
   
   // final average non-weighted 1-particle correction (sin terms) for non-uniform acceptance for all events:   
   fIntFlowCorrectionTermsForNUAPro[0]->Fill(0.5,sinP1n,dMult);  
@@ -1008,6 +1025,9 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
   // average non-weighted 2-particle correction (sin terms) for non-uniform acceptance for single event:
   fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(2,sinP1nP1n);
   fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(4,sinP2nM1n);
+  // event weights for NUA terms:
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->SetBinContent(2,dMult*(dMult-1));
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->SetBinContent(4,dMult*(dMult-1));
   
   // final average non-weighted 1-particle correction (sin terms) for non-uniform acceptance for all events:      
   fIntFlowCorrectionTermsForNUAPro[0]->Fill(1.5,sinP1nP1n,dMult*(dMult-1));  
@@ -1024,6 +1044,8 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
   
   // average non-weighted 3-particle correction (sin terms) for non-uniform acceptance for single event:
   fIntFlowCorrectionTermsForNUAEBE[0]->SetBinContent(3,sinP1nM1nM1n);
+  // event weights for NUA terms:
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->SetBinContent(3,dMult*(dMult-1)*(dMult-2));
   
   // final average non-weighted 3-particle correction (sin terms) for non-uniform acceptance for all events:  
   fIntFlowCorrectionTermsForNUAPro[0]->Fill(2.5,sinP1nM1nM1n,dMult*(dMult-1)*(dMult-2));  
@@ -1488,7 +1510,13 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  {
   fIntFlowCorrectionTermsForNUAEBE[sc] = new TH1D(Form("%s: %s terms",fIntFlowCorrectionTermsForNUAEBEName.Data(),sinCosFlag[sc].Data()),Form("Correction terms for non-uniform acceptance (%s terms)",sinCosFlag[sc].Data()),10,0,10);  
  }
- 
+ // event weights for terms for non-uniform acceptance: 
+ TString fIntFlowEventWeightForCorrectionTermsForNUAEBEName = "fIntFlowEventWeightForCorrectionTermsForNUAEBE";
+ fIntFlowEventWeightForCorrectionTermsForNUAEBEName += fAnalysisLabel->Data();
+ for(Int_t sc=0;sc<2;sc++) // sin or cos terms
+ {
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[sc] = new TH1D(Form("%s: %s terms",fIntFlowEventWeightForCorrectionTermsForNUAEBEName.Data(),sinCosFlag[sc].Data()),Form("Event weights for terms for non-uniform acceptance (%s terms)",sinCosFlag[sc].Data()),10,0,10);  
+ }
  // c) Book profiles: // to be improved (comment)
  // profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8:
  TString avMultiplicityName = "fAvMultiplicity";
@@ -1593,6 +1621,42 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  (fIntFlowProductOfCorrelationsPro->GetXaxis())->SetBinLabel(5,"<<4><8>>");
  (fIntFlowProductOfCorrelationsPro->GetXaxis())->SetBinLabel(6,"<<6><8>>");
  fIntFlowProfiles->Add(fIntFlowProductOfCorrelationsPro);
+ // average product of correction terms for NUA:  
+ TString intFlowProductOfCorrectionTermsForNUAProName = "fIntFlowProductOfCorrectionTermsForNUAPro";
+ intFlowProductOfCorrectionTermsForNUAProName += fAnalysisLabel->Data();
+ fIntFlowProductOfCorrectionTermsForNUAPro = new TProfile(intFlowProductOfCorrectionTermsForNUAProName.Data(),"Average products of correction terms for NUA",27,0,27);
+ fIntFlowProductOfCorrectionTermsForNUAPro->SetTickLength(-0.01,"Y");
+ fIntFlowProductOfCorrectionTermsForNUAPro->SetMarkerStyle(25); 
+ fIntFlowProductOfCorrectionTermsForNUAPro->SetLabelSize(0.05);
+ fIntFlowProductOfCorrectionTermsForNUAPro->SetLabelOffset(0.01,"Y");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(1,"<<2><cos(#phi)>>");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(2,"<<2><sin(#phi)>>");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(3,"<<cos(#phi)><sin(#phi)>>");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(4,"Cov(<2>,<cos(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(5,"Cov(<2>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(6,"Cov(<2>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(7,"Cov(<2>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(8,"Cov(<4>,<cos(#phi)>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(9,"Cov(<4>,<sin(#phi)>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(10,"Cov(<4>,<cos(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(11,"Cov(<4>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(12,"Cov(<4>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(13,"Cov(<4>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(14,"Cov(<cos(#phi)>,<cos(#phi_{1}+#phi_{2})>)"); 
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(15,"Cov(<cos(#phi)>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(16,"Cov(<cos(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(17,"Cov(<cos(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(18,"Cov(<sin(#phi)>,<cos(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(19,"Cov(<sin(#phi)>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(20,"Cov(<sin(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(21,"Cov(<sin(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(22,"Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(23,"Cov(<cos(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(24,"Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(25,"Cov(<sin(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(26,"Cov(<sin(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowProductOfCorrectionTermsForNUAPro->GetXaxis())->SetBinLabel(27,"Cov(<cos(#phi_{1}-#phi_{2}-#phi_{3}>,<sin(#phi_{1}-#phi_{2}-#phi_{3}>)");
+ fIntFlowProfiles->Add(fIntFlowProductOfCorrectionTermsForNUAPro);
  // average correction terms for non-uniform acceptance (with wrong errors!):
  for(Int_t sc=0;sc<2;sc++) // sin or cos terms
  {
@@ -1733,6 +1797,78 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  (fIntFlowSumOfProductOfEventWeights->GetXaxis())->SetBinLabel(5,"#sum_{i=1}^{N} w_{<4>} w_{<8>}");
  (fIntFlowSumOfProductOfEventWeights->GetXaxis())->SetBinLabel(6,"#sum_{i=1}^{N} w_{<6>} w_{<8>}");
  fIntFlowResults->Add(fIntFlowSumOfProductOfEventWeights);
+ // covariances of NUA terms (multiplied with weight dependent prefactor):
+ TString intFlowCovariancesNUAName = "fIntFlowCovariancesNUA";
+ intFlowCovariancesNUAName += fAnalysisLabel->Data();
+ fIntFlowCovariancesNUA = new TH1D(intFlowCovariancesNUAName.Data(),"Covariances for NUA (multiplied with weight dependent prefactor)",27,0,27);
+ fIntFlowCovariancesNUA->SetLabelSize(0.04);
+ fIntFlowCovariancesNUA->SetMarkerStyle(25);
+ fIntFlowCovariancesNUA->GetXaxis()->SetLabelSize(0.02);
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(1,"Cov(<2>,<cos(#phi)>");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(2,"Cov(<2>,<sin(#phi)>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(3,"Cov(<cos(#phi)>,<sin(#phi)>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(4,"Cov(<2>,<cos(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(5,"Cov(<2>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(6,"Cov(<2>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(7,"Cov(<2>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(8,"Cov(<4>,<cos(#phi)>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(9,"Cov(<4>,<sin(#phi)>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(10,"Cov(<4>,<cos(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(11,"Cov(<4>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(12,"Cov(<4>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(13,"Cov(<4>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(14,"Cov(<cos(#phi)>,<cos(#phi_{1}+#phi_{2})>)"); 
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(15,"Cov(<cos(#phi)>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(16,"Cov(<cos(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(17,"Cov(<cos(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(18,"Cov(<sin(#phi)>,<cos(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(19,"Cov(<sin(#phi)>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(20,"Cov(<sin(#phi)>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(21,"Cov(<sin(#phi)>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(22,"Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}+#phi_{2})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(23,"Cov(<cos(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(24,"Cov(<cos(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(25,"Cov(<sin(#phi_{1}+#phi_{2})>,<cos(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(26,"Cov(<sin(#phi_{1}+#phi_{2})>,<sin(#phi_{1}-#phi_{2}-#phi_{3})>)");
+ (fIntFlowCovariancesNUA->GetXaxis())->SetBinLabel(27,"Cov(<cos(#phi_{1}-#phi_{2}-#phi_{3}>,<sin(#phi_{1}-#phi_{2}-#phi_{3}>)");
+ fIntFlowResults->Add(fIntFlowCovariancesNUA);
+ // sum of linear and quadratic event weights for NUA terms:
+ TString intFlowSumOfEventWeightsNUAName = "fIntFlowSumOfEventWeightsNUA";
+ intFlowSumOfEventWeightsNUAName += fAnalysisLabel->Data();
+ for(Int_t sc=0;sc<2;sc++)
+ {
+  for(Int_t power=0;power<2;power++)
+  {
+   fIntFlowSumOfEventWeightsNUA[sc][power] = new TH1D(Form("%s: %s, %s",intFlowSumOfEventWeightsNUAName.Data(),powerFlag[power].Data(),sinCosFlag[sc].Data()),Form("Sum of %s event weights for NUA %s terms",powerFlag[power].Data(),sinCosFlag[sc].Data()),3,0,3);
+   fIntFlowSumOfEventWeightsNUA[sc][power]->SetLabelSize(0.05);
+   fIntFlowSumOfEventWeightsNUA[sc][power]->SetMarkerStyle(25);
+   if(power == 0)
+   {
+    (fIntFlowSumOfEventWeightsNUA[sc][power]->GetXaxis())->SetBinLabel(1,Form("#sum_{i=1}^{N} w_{<%s(#phi)>}",sinCosFlag[sc].Data()));
+    (fIntFlowSumOfEventWeightsNUA[sc][power]->GetXaxis())->SetBinLabel(2,Form("#sum_{i=1}^{N} w_{<%s(#phi_{1}+#phi_{2})>}",sinCosFlag[sc].Data()));
+    (fIntFlowSumOfEventWeightsNUA[sc][power]->GetXaxis())->SetBinLabel(3,Form("#sum_{i=1}^{N} w_{<%s(#phi_{1}-#phi_{2}-#phi_{3})>}",sinCosFlag[sc].Data()));
+   } else if(power == 1) 
+     {
+      (fIntFlowSumOfEventWeightsNUA[sc][power]->GetXaxis())->SetBinLabel(1,Form("#sum_{i=1}^{N} w_{<%s(#phi)>}^{2}",sinCosFlag[sc].Data()));
+      (fIntFlowSumOfEventWeightsNUA[sc][power]->GetXaxis())->SetBinLabel(2,Form("#sum_{i=1}^{N} w_{<%s(#phi_{1}+#phi_{2})>}^{2}",sinCosFlag[sc].Data()));
+      (fIntFlowSumOfEventWeightsNUA[sc][power]->GetXaxis())->SetBinLabel(3,Form("#sum_{i=1}^{N} w_{<%s(#phi_{1}-#phi_{2}-#phi_{3})>}^{2}",sinCosFlag[sc].Data()));
+     }
+   fIntFlowResults->Add(fIntFlowSumOfEventWeightsNUA[sc][power]);
+  }
+ }  
+ // sum of products of event weights for NUA terms:  
+ TString intFlowSumOfProductOfEventWeightsNUAName = "fIntFlowSumOfProductOfEventWeightsNUA";
+ intFlowSumOfProductOfEventWeightsNUAName += fAnalysisLabel->Data();
+ fIntFlowSumOfProductOfEventWeightsNUA = new TH1D(intFlowSumOfProductOfEventWeightsNUAName.Data(),"Sum of product of event weights for NUA terms",27,0,27);
+ fIntFlowSumOfProductOfEventWeightsNUA->SetLabelSize(0.05);
+ fIntFlowSumOfProductOfEventWeightsNUA->SetMarkerStyle(25);
+ (fIntFlowSumOfProductOfEventWeightsNUA->GetXaxis())->SetBinLabel(1,"#sum_{i=1}^{N} w_{<2>} w_{<cos(#phi)>}");
+ (fIntFlowSumOfProductOfEventWeightsNUA->GetXaxis())->SetBinLabel(2,"#sum_{i=1}^{N} w_{<2>} w_{<sin(#phi)>}");
+ (fIntFlowSumOfProductOfEventWeightsNUA->GetXaxis())->SetBinLabel(3,"#sum_{i=1}^{N} w_{<cos(#phi)>} w_{<sin(#phi)>}");
+ // ....
+ // to be improved - add labels for remaining bins
+ // ....
+ fIntFlowResults->Add(fIntFlowSumOfProductOfEventWeightsNUA);
  // final results for integrated Q-cumulants:
  TString intFlowQcumulantsName = "fIntFlowQcumulants";
  intFlowQcumulantsName += fAnalysisLabel->Data();
@@ -2542,51 +2678,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 {
- // Calculate averages of products of correlations for integrated flow  // to be improved (this method can be implemented better)
- 
- // a) Binning of fIntFlowProductOfCorrelationsPro is organized as follows:
- //     1st bin: <<2><4>> 
- //     2nd bin: <<2><6>>
- //     3rd bin: <<2><8>>
- //     4th bin: <<4><6>>
- //     5th bin: <<4><8>>
- //     6th bin: <<6><8>>
-
- /*
- Double_t dMult = (*fSMpk)(0,0); // multiplicity 
-
- Double_t twoEBE = fIntFlowCorrelationsEBE->GetBinContent(1); // <2>
- Double_t fourEBE = fIntFlowCorrelationsEBE->GetBinContent(2); // <4>
- Double_t sixEBE = fIntFlowCorrelationsEBE->GetBinContent(3); // <6>
- Double_t eightEBE = fIntFlowCorrelationsEBE->GetBinContent(4); // <8>
- 
- Double_t eW2 = 0.; // event weight for <2>
- Double_t eW4 = 0.; // event weight for <4>
- Double_t eW6 = 0.; // event weight for <6>
- Double_t eW8 = 0.; // event weight for <8>
- 
- if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
- {
-  eW2 = dMult*(dMult-1);
-  eW4 = dMult*(dMult-1)*(dMult-2)*(dMult-3);
-  eW6 = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5);
-  eW8 = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5)*(dMult-6)*(dMult-7);
- } else 
-   {
-    eW2 = (*fSMpk)(1,1)-(*fSMpk)(0,2); // dM11 = sum_{i,j=1,i!=j}^M w_i w_j;
-    eW4 = (*fSMpk)(3,1)-6.*(*fSMpk)(0,2)*(*fSMpk)(1,1)  
-        + 8.*(*fSMpk)(0,3)*(*fSMpk)(0,1)
-        + 3.*(*fSMpk)(1,2)-6.*(*fSMpk)(0,4); // dM1111 = sum_{i,j,k,l=1,i!=j!=k!=l}^M w_i w_j w_k w_l
-   }
-  
- fIntFlowProductOfCorrelationsPro->Fill(0.5,twoEBE*fourEBE,eW2*eW4); // <<2><4>> 
- fIntFlowProductOfCorrelationsPro->Fill(1.5,twoEBE*sixEBE,eW2*eW6); // <<2><6>>
- fIntFlowProductOfCorrelationsPro->Fill(2.5,twoEBE*eightEBE,eW2*eW8); // <<2><8>>
- fIntFlowProductOfCorrelationsPro->Fill(3.5,fourEBE*sixEBE,eW4*eW6); // <<4><6>>
- fIntFlowProductOfCorrelationsPro->Fill(4.5,fourEBE*eightEBE,eW4*eW8); // <<4><8>>
- fIntFlowProductOfCorrelationsPro->Fill(5.5,sixEBE*eightEBE,eW6*eW8); // <<6><8>>
- */
- 
+ // Calculate averages of products of correlations for integrated flow.
  
  Int_t counter = 0;
  
@@ -2601,6 +2693,181 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
  }
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrectionTermsForNUA()
+{
+ // Calculate averages of products of correction terms for NUA.
+ 
+ // a) Binning of fIntFlowProductOfCorrectionTermsForNUAPro is organized as follows:
+ //     1st bin: <<2><cos(phi)>> 
+ //     2nd bin: <<2><sin(phi)>>
+ //     3rd bin: <<cos(phi)><sin(phi)>>
+ //     4th bin: <<2><cos(phi1+phi2)>> 
+ //     5th bin: <<2><sin(phi1+phi2)>>
+ //     6th bin: <<2><cos(phi1-phi2-phi3)>> 
+ //     7th bin: <<2><sin(phi1-phi2-phi3)>>
+ //     8th bin: <<4><cos(phi1)>>
+ //     9th bin: <<4><sin(phi1)>>
+ //    10th bin: <<4><cos(phi1+phi2)>>
+ //    11th bin: <<4><sin(phi1+phi2)>>
+ //    12th bin: <<4><cos(phi1-phi2-phi3)>>
+ //    13th bin: <<4><sin(phi1-phi2-phi3)>>
+ //    14th bin: <<cos(phi1)><cos(phi1+phi2)>>
+ //    15th bin: <<cos(phi1)><sin(phi1+phi2)>> 
+ //    16th bin: <<cos(phi1)><cos(phi1-phi2-phi3)>>
+ //    17th bin: <<cos(phi1)><sin(phi1-phi2-phi3)>> 
+ //    18th bin: <<sin(phi1)><cos(phi1+phi2)>>
+ //    19th bin: <<sin(phi1)><sin(phi1+phi2)>> 
+ //    20th bin: <<sin(phi1)><cos(phi1-phi2-phi3)>>
+ //    21st bin: <<sin(phi1)><sin(phi1-phi2-phi3)>>
+ //    22nd bin: <<cos(phi1+phi2)><sin(phi1+phi2)>>
+ //    23rd bin: <<cos(phi1+phi2)><cos(phi1-phi2-phi3)>>
+ //    24th bin: <<cos(phi1+phi2)><sin(phi1-phi2-phi3)>>
+ //    25th bin: <<sin(phi1+phi2)><cos(phi1-phi2-phi3)>>
+ //    26th bin: <<sin(phi1+phi2)><sin(phi1-phi2-phi3)>>
+ //    27th bin: <<cos(phi1-phi2-phi3)><sin(phi1-phi2-phi3)>>
+ 
+ // <<2><cos(phi)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(0.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1));
+ // <<2><sin(phi)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(1.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1));
+ // <<cos(phi)><sin(phi)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(2.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1));
+ // <<2><cos(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(3.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)); 
+ // <<2><sin(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(4.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)); 
+ // <<2><cos(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(5.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)); 
+ // <<2><sin(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(6.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3)); 
+ // <<4><cos(phi1)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(7.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1));
+ // <<4><sin(phi1)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(8.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1));
+ // <<4><cos(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(9.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)); 
+ // <<4><sin(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(10.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2));
+ // <<4><cos(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(11.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)); 
+ // <<4><sin(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(12.5,
+                                                 fIntFlowCorrelationsEBE->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));   
+ // <<cos(phi1)><cos(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(13.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)); 
+ // <<cos(phi1)><sin(phi1+phi2)>>: 
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(14.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)); 
+ // <<cos(phi1)><cos(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(15.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)); 
+ // <<cos(phi1)><sin(phi1-phi2-phi3)>>: 
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(16.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));  
+ // <<sin(phi1)><cos(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(17.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2));  
+ // <<sin(phi1)><sin(phi1+phi2)>>: 
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(18.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2));  
+ // <<sin(phi1)><cos(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(19.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)); 
+ // <<sin(phi1)><sin(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(20.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(1)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3)); 
+ // <<cos(phi1+phi2)><sin(phi1+phi2)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(21.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)); 
+ // <<cos(phi1+phi2)><cos(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(22.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3));   
+ // <<cos(phi1+phi2)><sin(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(23.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));    
+ // <<sin(phi1+phi2)><cos(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(24.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3));    
+ // <<sin(phi1+phi2)><sin(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(25.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(2)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));    
+ // <<cos(phi1-phi2-phi3)><sin(phi1-phi2-phi3)>>:
+ fIntFlowProductOfCorrectionTermsForNUAPro->Fill(26.5,
+                                                 fIntFlowCorrectionTermsForNUAEBE[1]->GetBinContent(3)*fIntFlowCorrectionTermsForNUAEBE[0]->GetBinContent(3),
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)
+                                                 *fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));    
+
+} // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrectionTermsForNUA()
 
 
 //================================================================================================================================
@@ -2695,6 +2962,513 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
  }
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateCovariancesNUAIntFlow()
+{
+ // a) Calculate unbiased estimators Cov(*,*) for true covariances V_(*,*) for NUA terms.
+ // b) Store in histogram fIntFlowCovariancesNUA for instance the following: 
+ //
+ //             Cov(<2>,<cos(phi)>) * (sum_{i=1}^{N} w_{<2>}_i w_{<cos(phi)>}_i )/[(sum_{i=1}^{N} w_{<2>}_i) * (sum_{j=1}^{N} w_{<cos(phi)>}_j)]
+ // 
+ //    where N is the number of events, w_{<2>} is event weight for <2> and w_{<cos(phi)>} is event weight for <cos(phi)>.
+ // c) Binning of fIntFlowCovariancesNUA is organized as follows:
+ // 
+ //     1st bin: Cov(<2>,<cos(phi)>) * (sum_{i=1}^{N} w_{<2>}_i w_{<cos(phi)>}_i )/[(sum_{i=1}^{N} w_{<2>}_i) * (sum_{j=1}^{N} w_{<cos(phi)>}_j)] 
+ //     2nd bin: Cov(<2>,<sin(phi)>) * (sum_{i=1}^{N} w_{<2>}_i w_{<sin(phi)>}_i )/[(sum_{i=1}^{N} w_{<2>}_i) * (sum_{j=1}^{N} w_{<sin(phi)>}_j)]
+ //     3rd bin: Cov(<cos(phi)>,<sin(phi)>) * (sum_{i=1}^{N} w_{<cos(phi)>}_i w_{<sin(phi)>}_i )/[(sum_{i=1}^{N} w_{<cos(phi)>}_i) * (sum_{j=1}^{N} w_{<sin(phi)>}_j)]
+ // ...
+      
+ // Cov(<2>,<cos(phi)>):
+ Double_t product1 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(1); // <<2><cos(phi)>> 
+ Double_t term1st1 = fIntFlowCorrelationsPro->GetBinContent(1); // <<2>>
+ Double_t term2nd1 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi)>>
+ Double_t sumOfW1st1 = fIntFlowSumOfEventWeights[0]->GetBinContent(1); // W_{<2>}
+ Double_t sumOfW2nd1 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi)>}
+ Double_t sumOfWW1 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(1); // W_{<2>} * W_{<cos(phi)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator1 = product1 - term1st1*term2nd1; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator1 = 1.-sumOfWW1/(sumOfW1st1*sumOfW2nd1);
+ // covariance:
+ Double_t covariance1 = numerator1/denominator1;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor1 = sumOfWW1/(sumOfW1st1*sumOfW2nd1);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(1,wPrefactor1*covariance1);
+  
+ // Cov(<2>,<sin(phi)>):
+ Double_t product2 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(2); // <<2><sin(phi)>> 
+ Double_t term1st2 = fIntFlowCorrelationsPro->GetBinContent(1); // <<2>>
+ Double_t term2nd2 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi)>>
+ Double_t sumOfW1st2 = fIntFlowSumOfEventWeights[0]->GetBinContent(1); // W_{<2>}
+ Double_t sumOfW2nd2 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi)>}
+ Double_t sumOfWW2 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(2); // W_{<2>} * W_{<sin(phi)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator2 = product2 - term1st2*term2nd2; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator2 = 1.-sumOfWW2/(sumOfW1st2*sumOfW2nd2);
+ // covariance:
+ Double_t covariance2 = numerator2/denominator2;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor2 = sumOfWW2/(sumOfW1st2*sumOfW2nd2);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(2,wPrefactor2*covariance2);
+ 
+ // Cov(<cos(phi)>,<sin(phi)>):
+ Double_t product3 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(3); // <<cos(phi)><sin(phi)>> 
+ Double_t term1st3 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi)>>
+ Double_t term2nd3 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi)>>
+ Double_t sumOfW1st3 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi)>}
+ Double_t sumOfW2nd3 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi)>}
+ Double_t sumOfWW3 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(3); // W_{<cos(phi)>} * W_{<sin(phi)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator3 = product3 - term1st3*term2nd3; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator3 = 1.-sumOfWW3/(sumOfW1st3*sumOfW2nd3);
+ // covariance:
+ Double_t covariance3 = numerator3/denominator3;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor3 = sumOfWW3/(sumOfW1st3*sumOfW2nd3);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(3,wPrefactor3*covariance3);
+ 
+ // Cov(<2>,<cos(phi1+phi2)>):
+ Double_t product4 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(4); // <<2><cos(phi1+phi2)>> 
+ Double_t term1st4 = fIntFlowCorrelationsPro->GetBinContent(1); // <<2>>
+ Double_t term2nd4 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t sumOfW1st4 = fIntFlowSumOfEventWeights[0]->GetBinContent(1); // W_{<2>}
+ Double_t sumOfW2nd4 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfWW4 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(4); // W_{<2>} * W_{<cos(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator4 = product4 - term1st4*term2nd4; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator4 = 1.-sumOfWW4/(sumOfW1st4*sumOfW2nd4);
+ // covariance:
+ Double_t covariance4 = numerator4/denominator4;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor4 = sumOfWW4/(sumOfW1st4*sumOfW2nd4);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(4,wPrefactor4*covariance4);
+
+ // Cov(<2>,<sin(phi1+phi2)>):
+ Double_t product5 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(5); // <<2><sin(phi1+phi2)>> 
+ Double_t term1st5 = fIntFlowCorrelationsPro->GetBinContent(1); // <<2>>
+ Double_t term2nd5 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t sumOfW1st5 = fIntFlowSumOfEventWeights[0]->GetBinContent(1); // W_{<2>}
+ Double_t sumOfW2nd5 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfWW5 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(5); // W_{<2>} * W_{<sin(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator5 = product5 - term1st5*term2nd5; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator5 = 1.-sumOfWW5/(sumOfW1st5*sumOfW2nd5);
+ // covariance:
+ Double_t covariance5 = numerator5/denominator5;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor5 = sumOfWW5/(sumOfW1st5*sumOfW2nd5);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(5,wPrefactor5*covariance5);
+
+ // Cov(<2>,<cos(phi1-phi2-phi3)>):
+ Double_t product6 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(6); // <<2><cos(phi1-phi2-phi3)>> 
+ Double_t term1st6 = fIntFlowCorrelationsPro->GetBinContent(1); // <<2>>
+ Double_t term2nd6 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t sumOfW1st6 = fIntFlowSumOfEventWeights[0]->GetBinContent(1); // W_{<2>}
+ Double_t sumOfW2nd6 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(3); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfWW6 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(6); // W_{<2>} * W_{<cos(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator6 = product6 - term1st6*term2nd6; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator6 = 1.-sumOfWW6/(sumOfW1st6*sumOfW2nd6);
+ // covariance:
+ Double_t covariance6 = numerator6/denominator6;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor6 = sumOfWW6/(sumOfW1st6*sumOfW2nd6);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(6,wPrefactor6*covariance6);
+
+ // Cov(<2>,<sin(phi1-phi2-phi3)>):
+ Double_t product7 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(7); // <<2><sin(phi1-phi2-phi3)>> 
+ Double_t term1st7 = fIntFlowCorrelationsPro->GetBinContent(1); // <<2>>
+ Double_t term2nd7 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st7 = fIntFlowSumOfEventWeights[0]->GetBinContent(1); // W_{<2>}
+ Double_t sumOfW2nd7 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW7 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(7); // W_{<2>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator7 = product7 - term1st7*term2nd7; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator7 = 1.-sumOfWW7/(sumOfW1st7*sumOfW2nd7);
+ // covariance:
+ Double_t covariance7 = numerator7/denominator7;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor7 = sumOfWW7/(sumOfW1st7*sumOfW2nd7);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(7,wPrefactor7*covariance7);
+
+ // Cov(<4>,<cos(phi1>):
+ Double_t product8 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(8); // <<4><cos(phi1)>> 
+ Double_t term1st8 = fIntFlowCorrelationsPro->GetBinContent(2); // <<4>>
+ Double_t term2nd8 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi1)>>
+ Double_t sumOfW1st8 = fIntFlowSumOfEventWeights[0]->GetBinContent(2); // W_{<4>}
+ Double_t sumOfW2nd8 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi1)>}
+ Double_t sumOfWW8 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(8); // W_{<4>} * W_{<cos(phi1)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator8 = product8 - term1st8*term2nd8; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator8 = 1.-sumOfWW8/(sumOfW1st8*sumOfW2nd8);
+ // covariance:
+ Double_t covariance8 = numerator8/denominator8;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor8 = sumOfWW8/(sumOfW1st8*sumOfW2nd8);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(8,wPrefactor8*covariance8);
+
+ // Cov(<4>,<sin(phi1)>):
+ Double_t product9 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(9); // <<4><sin(phi1)>> 
+ Double_t term1st9 = fIntFlowCorrelationsPro->GetBinContent(2); // <<4>>
+ Double_t term2nd9 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi1)>>
+ Double_t sumOfW1st9 = fIntFlowSumOfEventWeights[0]->GetBinContent(2); // W_{<4>}
+ Double_t sumOfW2nd9 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi1)>}
+ Double_t sumOfWW9 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(9); // W_{<4>} * W_{<sin(phi1)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator9 = product9 - term1st9*term2nd9; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator9 = 1.-sumOfWW9/(sumOfW1st9*sumOfW2nd9);
+ // covariance:
+ Double_t covariance9 = numerator9/denominator9;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor9 = sumOfWW9/(sumOfW1st9*sumOfW2nd9);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(9,wPrefactor9*covariance9);
+
+ // Cov(<4>,<cos(phi1+phi2)>):
+ Double_t product10 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(10); // <<4><cos(phi1+phi2)>> 
+ Double_t term1st10 = fIntFlowCorrelationsPro->GetBinContent(2); // <<4>>
+ Double_t term2nd10 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t sumOfW1st10 = fIntFlowSumOfEventWeights[0]->GetBinContent(2); // W_{<4>}
+ Double_t sumOfW2nd10 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfWW10 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(10); // W_{<4>} * W_{<cos(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator10 = product10 - term1st10*term2nd10; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator10 = 1.-sumOfWW10/(sumOfW1st10*sumOfW2nd10);
+ // covariance:
+ Double_t covariance10 = numerator10/denominator10;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor10 = sumOfWW10/(sumOfW1st10*sumOfW2nd10);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(10,wPrefactor10*covariance10);
+
+ // Cov(<4>,<sin(phi1+phi2)>):
+ Double_t product11 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(11); // <<4><sin(phi1+phi2)>> 
+ Double_t term1st11 = fIntFlowCorrelationsPro->GetBinContent(2); // <<4>>
+ Double_t term2nd11 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t sumOfW1st11 = fIntFlowSumOfEventWeights[0]->GetBinContent(2); // W_{<4>}
+ Double_t sumOfW2nd11 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfWW11 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(11); // W_{<4>} * W_{<sin(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator11 = product11 - term1st11*term2nd11; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator11 = 1.-sumOfWW11/(sumOfW1st11*sumOfW2nd11);
+ // covariance:
+ Double_t covariance11 = numerator11/denominator11;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor11 = sumOfWW11/(sumOfW1st11*sumOfW2nd11);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(11,wPrefactor11*covariance11);
+
+ // Cov(<4>,<cos(phi1-phi2-phi3)>):
+ Double_t product12 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(12); // <<4><cos(phi1-phi2-phi3)>> 
+ Double_t term1st12 = fIntFlowCorrelationsPro->GetBinContent(2); // <<4>>
+ Double_t term2nd12 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t sumOfW1st12 = fIntFlowSumOfEventWeights[0]->GetBinContent(2); // W_{<4>}
+ Double_t sumOfW2nd12 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(3); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfWW12 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(12); // W_{<4>} * W_{<cos(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator12 = product12 - term1st12*term2nd12; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator12 = 1.-sumOfWW12/(sumOfW1st12*sumOfW2nd12);
+ // covariance:
+ Double_t covariance12 = numerator12/denominator12;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor12 = sumOfWW12/(sumOfW1st12*sumOfW2nd12);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(12,wPrefactor12*covariance12);
+
+ // Cov(<4>,<sin(phi1-phi2-phi3)>):
+ Double_t product13 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(13); // <<4><sin(phi1-phi2-phi3)>> 
+ Double_t term1st13 = fIntFlowCorrelationsPro->GetBinContent(2); // <<4>>
+ Double_t term2nd13 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st13 = fIntFlowSumOfEventWeights[0]->GetBinContent(2); // W_{<4>}
+ Double_t sumOfW2nd13 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW13 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(13); // W_{<4>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator13 = product13 - term1st13*term2nd13; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator13 = 1.-sumOfWW13/(sumOfW1st13*sumOfW2nd13);
+ // covariance:
+ Double_t covariance13 = numerator13/denominator13;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor13 = sumOfWW13/(sumOfW1st13*sumOfW2nd13);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(13,wPrefactor13*covariance13);
+
+ // Cov(<cos(phi1)>,<cos(phi1+phi2)>):
+ Double_t product14 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(14); // <<cos(phi1)><cos(phi1+phi2)>> 
+ Double_t term1st14 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi1)>>
+ Double_t term2nd14 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t sumOfW1st14 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi1)>}
+ Double_t sumOfW2nd14 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfWW14 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(14); // W_{<cos(phi1)>} * W_{<cos(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator14 = product14 - term1st14*term2nd14; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator14 = 1.-sumOfWW14/(sumOfW1st14*sumOfW2nd14);
+ // covariance:
+ Double_t covariance14 = numerator14/denominator14;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor14 = sumOfWW14/(sumOfW1st14*sumOfW2nd14);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(14,wPrefactor14*covariance14);
+
+ // Cov(<cos(phi1)>,<sin(phi1+phi2)>):
+ Double_t product15 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(15); // <<cos(phi1)><sin(phi1+phi2)>> 
+ Double_t term1st15 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi1)>>
+ Double_t term2nd15 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t sumOfW1st15 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi1)>}
+ Double_t sumOfW2nd15 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfWW15 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(15); // W_{<cos(phi1)>} * W_{<sin(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator15 = product15 - term1st15*term2nd15; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator15 = 1.-sumOfWW15/(sumOfW1st15*sumOfW2nd15);
+ // covariance:
+ Double_t covariance15 = numerator15/denominator15;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor15 = sumOfWW15/(sumOfW1st15*sumOfW2nd15);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(15,wPrefactor15*covariance15);
+
+ // Cov(<cos(phi1)>,<cos(phi1-phi2-phi3)>):
+ Double_t product16 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(16); // <<cos(phi1)><cos(phi1-phi2-phi3)>> 
+ Double_t term1st16 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi1)>>
+ Double_t term2nd16 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t sumOfW1st16 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi1)>}
+ Double_t sumOfW2nd16 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(3); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfWW16 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(16); // W_{<cos(phi1)>} * W_{<cos(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator16 = product16 - term1st16*term2nd16; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator16 = 1.-sumOfWW16/(sumOfW1st16*sumOfW2nd16);
+ // covariance:
+ Double_t covariance16 = numerator16/denominator16;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor16 = sumOfWW16/(sumOfW1st16*sumOfW2nd16);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(16,wPrefactor16*covariance16);
+
+ // Cov(<cos(phi1)>,<sin(phi1-phi2-phi3)>):
+ Double_t product17 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(17); // <<cos(phi1)><sin(phi1-phi2-phi3)>> 
+ Double_t term1st17 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(1); // <<cos(phi1)>>
+ Double_t term2nd17 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st17 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(1); // W_{<cos(phi1)>}
+ Double_t sumOfW2nd17 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW17 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(17); // W_{<cos(phi1)>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator17 = product17 - term1st17*term2nd17; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator17 = 1.-sumOfWW17/(sumOfW1st17*sumOfW2nd17);
+ // covariance:
+ Double_t covariance17 = numerator17/denominator17;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor17 = sumOfWW17/(sumOfW1st17*sumOfW2nd17);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(17,wPrefactor17*covariance17);
+
+ // Cov(<sin(phi1)>,<cos(phi1+phi2)>):
+ Double_t product18 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(18); // <<sin(phi1)><cos(phi1+phi2)>> 
+ Double_t term1st18 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi1)>>
+ Double_t term2nd18 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t sumOfW1st18 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi1)>}
+ Double_t sumOfW2nd18 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfWW18 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(18); // W_{<sin(phi1)>} * W_{<cos(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator18 = product18 - term1st18*term2nd18; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator18 = 1.-sumOfWW18/(sumOfW1st18*sumOfW2nd18);
+ // covariance:
+ Double_t covariance18 = numerator18/denominator18;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor18 = sumOfWW18/(sumOfW1st18*sumOfW2nd18);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(18,wPrefactor18*covariance18);
+
+ // Cov(<sin(phi1)>,<sin(phi1+phi2)>):
+ Double_t product19 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(19); // <<sin(phi1)><sin(phi1+phi2)>> 
+ Double_t term1st19 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi1)>>
+ Double_t term2nd19 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t sumOfW1st19 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi1)>}
+ Double_t sumOfW2nd19 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfWW19 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(19); // W_{<sin(phi1)>} * W_{<sin(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator19 = product19 - term1st19*term2nd19; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator19 = 1.-sumOfWW19/(sumOfW1st19*sumOfW2nd19);
+ // covariance:
+ Double_t covariance19 = numerator19/denominator19;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor19 = sumOfWW19/(sumOfW1st19*sumOfW2nd19);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(19,wPrefactor19*covariance19);
+
+ // Cov(<sin(phi1)>,<cos(phi1-phi2-phi3)>):
+ Double_t product20 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(20); // <<sin(phi1)><cos(phi1-phi2-phi3)>> 
+ Double_t term1st20 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi1)>>
+ Double_t term2nd20 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t sumOfW1st20 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi1)>}
+ Double_t sumOfW2nd20 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(3); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfWW20 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(20); // W_{<sin(phi1)>} * W_{<cos(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator20 = product20 - term1st20*term2nd20; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator20 = 1.-sumOfWW20/(sumOfW1st20*sumOfW2nd20);
+ // covariance:
+ Double_t covariance20 = numerator20/denominator20;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor20 = sumOfWW20/(sumOfW1st20*sumOfW2nd20);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(20,wPrefactor20*covariance20);
+
+ // Cov(<sin(phi1)>,<sin(phi1-phi2-phi3)>):
+ Double_t product21 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(21); // <<sin(phi1)><sin(phi1-phi2-phi3)>> 
+ Double_t term1st21 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(1); // <<sin(phi1)>>
+ Double_t term2nd21 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st21 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(1); // W_{<sin(phi1)>}
+ Double_t sumOfW2nd21 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW21 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(21); // W_{<sin(phi1)>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator21 = product21 - term1st21*term2nd21; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator21 = 1.-sumOfWW21/(sumOfW1st21*sumOfW2nd21);
+ // covariance:
+ Double_t covariance21 = numerator21/denominator21;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor21 = sumOfWW21/(sumOfW1st21*sumOfW2nd21);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(21,wPrefactor21*covariance21);
+
+ // Cov(<cos(phi1+phi2)>,<sin(phi1+phi2)>):
+ Double_t product22 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(22); // <<cos(phi1+phi2)><sin(phi1+phi2)>> 
+ Double_t term1st22 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t term2nd22 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t sumOfW1st22 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfW2nd22 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfWW22 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(22); // W_{<cos(phi1+phi2)>} * W_{<sin(phi1+phi2)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator22 = product22 - term1st22*term2nd22; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator22 = 1.-sumOfWW22/(sumOfW1st22*sumOfW2nd22);
+ // covariance:
+ Double_t covariance22 = numerator22/denominator22;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor22 = sumOfWW22/(sumOfW1st22*sumOfW2nd22);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(22,wPrefactor22*covariance22);
+
+ // Cov(<cos(phi1+phi2)>,<cos(phi1-phi2-phi3)>):
+ Double_t product23 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(23); // <<cos(phi1+phi2)><cos(phi1-phi2-phi3)>> 
+ Double_t term1st23 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t term2nd23 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t sumOfW1st23 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfW2nd23 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(3); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfWW23 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(23); // W_{<cos(phi1+phi2)>} * W_{<cos(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator23 = product23 - term1st23*term2nd23; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator23 = 1.-sumOfWW23/(sumOfW1st23*sumOfW2nd23);
+ // covariance:
+ Double_t covariance23 = numerator23/denominator23;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor23 = sumOfWW23/(sumOfW1st23*sumOfW2nd23);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(23,wPrefactor23*covariance23);
+
+ // Cov(<cos(phi1+phi2)>,<sin(phi1-phi2-phi3)>):
+ Double_t product24 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(24); // <<cos(phi1+phi2)><sin(phi1-phi2-phi3)>> 
+ Double_t term1st24 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t term2nd24 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st24 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1+phi2)>}
+ Double_t sumOfW2nd24 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW24 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(24); // W_{<cos(phi1+phi2)>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator24 = product24 - term1st24*term2nd24; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator24 = 1.-sumOfWW24/(sumOfW1st24*sumOfW2nd24);
+ // covariance:
+ Double_t covariance24 = numerator24/denominator24;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor24 = sumOfWW24/(sumOfW1st24*sumOfW2nd24);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(24,wPrefactor24*covariance24);
+
+ // Cov(<sin(phi1+phi2)>,<cos(phi1-phi2-phi3)>):
+ Double_t product25 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(25); // <<sin(phi1+phi2)><cos(phi1-phi2-phi3)>> 
+ Double_t term1st25 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t term2nd25 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t sumOfW1st25 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfW2nd25 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(3); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfWW25 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(25); // W_{<sin(phi1+phi2)>} * W_{<cos(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator25 = product25 - term1st25*term2nd25; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator25 = 1.-sumOfWW25/(sumOfW1st25*sumOfW2nd25);
+ // covariance:
+ Double_t covariance25 = numerator25/denominator25;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor25 = sumOfWW25/(sumOfW1st25*sumOfW2nd25);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(25,wPrefactor25*covariance25);
+
+ // Cov(<sin(phi1+phi2)>,<sin(phi1-phi2-phi3)>):
+ Double_t product26 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(26); // <<sin(phi1+phi2)><sin(phi1-phi2-phi3)>> 
+ Double_t term1st26 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t term2nd26 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st26 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(2); // W_{<sin(phi1+phi2)>}
+ Double_t sumOfW2nd26 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW26 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(26); // W_{<sin(phi1+phi2)>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator26 = product26 - term1st26*term2nd26; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator26 = 1.-sumOfWW26/(sumOfW1st26*sumOfW2nd26);
+ // covariance:
+ Double_t covariance26 = numerator26/denominator26;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor26 = sumOfWW26/(sumOfW1st26*sumOfW2nd26);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(26,wPrefactor26*covariance26);
+
+ // Cov(<cos(phi1-phi2-phi3)>,<sin(phi1-phi2-phi3)>):
+ Double_t product27 = fIntFlowProductOfCorrectionTermsForNUAPro->GetBinContent(27); // <<cos(phi1-phi2-phi3)><sin(phi1-phi2-phi3)>> 
+ Double_t term1st27 = fIntFlowCorrectionTermsForNUAPro[1]->GetBinContent(2); // <<cos(phi1-phi2-phi3)>>
+ Double_t term2nd27 = fIntFlowCorrectionTermsForNUAPro[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ Double_t sumOfW1st27 = fIntFlowSumOfEventWeightsNUA[1][0]->GetBinContent(2); // W_{<cos(phi1-phi2-phi3)>}
+ Double_t sumOfW2nd27 = fIntFlowSumOfEventWeightsNUA[0][0]->GetBinContent(3); // W_{<sin(phi1-phi2-phi3)>}
+ Double_t sumOfWW27 = fIntFlowSumOfProductOfEventWeightsNUA->GetBinContent(27); // W_{<cos(phi1-phi2-phi3)>} * W_{<sin(phi1-phi2-phi3)>}
+ // numerator in the expression for the the unbiased estimator for covariance:
+ Double_t numerator27 = product27 - term1st27*term2nd27; 
+ // denominator in the expression for the the unbiased estimator for covariance:
+ Double_t denominator27 = 1.-sumOfWW27/(sumOfW1st27*sumOfW2nd27);
+ // covariance:
+ Double_t covariance27 = numerator27/denominator27;
+ // weight dependent prefactor for covariance:
+ Double_t wPrefactor27 = sumOfWW27/(sumOfW1st27*sumOfW2nd27);
+ // finally, store "weighted" covariance:
+ fIntFlowCovariancesNUA->SetBinContent(27,wPrefactor27*covariance27);
+
+} // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesNUAIntFlow()
 
 
 //================================================================================================================================
@@ -2925,9 +3699,9 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlow()
 {
- // a) Calculate the final results for integrated flow estimates from Q-cumulants.
- // b) Propagate the statistical errors of measured multiparticle correlations to statistical errors of integrated flow estimates.  
- // c) Store the results and statistical errors of integrated flow estimates in histogram fIntFlow.
+ // a) Calculate the final results for reference flow estimates from Q-cumulants.
+ // b) Propagate the statistical errors of measured multiparticle correlations to statistical errors of reference flow estimates.  
+ // c) Store the results and statistical errors of reference flow estimates in histogram fIntFlow.
  //    Binning of fIntFlow is organized as follows:
  //
  //     1st bin: v{2,QC}
@@ -3450,8 +4224,13 @@ void AliFlowAnalysisWithQCumulants::InitializeArraysForIntFlow()
  for(Int_t sc=0;sc<2;sc++) // sin or cos terms
  {
   fIntFlowCorrectionTermsForNUAEBE[sc] = NULL;
+  fIntFlowEventWeightForCorrectionTermsForNUAEBE[sc] = NULL;
   fIntFlowCorrectionTermsForNUAPro[sc] = NULL;
   fIntFlowCorrectionTermsForNUAHist[sc] = NULL;
+  for(Int_t power=0;power<2;power++) // linear or quadratic 
+  {
+   fIntFlowSumOfEventWeightsNUA[sc][power] = NULL;
+  }
  }
  for(Int_t power=0;power<2;power++) // linear or quadratic 
  {
@@ -4817,32 +5596,8 @@ void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 {
- // Calculate sum of linear and quadratic event weights for correlations
- 
- 
- /*
- Double_t dMult = (*fSMpk)(0,0); // multiplicity 
-
- Double_t eventWeight[4] = {0}; 
- 
- if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
- {
-  eventWeight[0] = dMult*(dMult-1); // event weight for <2> 
-  eventWeight[1] = dMult*(dMult-1)*(dMult-2)*(dMult-3); // event weight for <4> 
-  eventWeight[2] = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5); // event weight for <6> 
-  eventWeight[3] = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5)*(dMult-6)*(dMult-7); // event weight for <8> 
- } else
-   {
-    eventWeight[0] = (*fSMpk)(1,1)-(*fSMpk)(0,2); // dM11 = sum_{i,j=1,i!=j}^M w_i w_j;
-    eventWeight[1] = (*fSMpk)(3,1)-6.*(*fSMpk)(0,2)*(*fSMpk)(1,1)  
-                   + 8.*(*fSMpk)(0,3)*(*fSMpk)(0,1)
-                   + 3.*(*fSMpk)(1,2)-6.*(*fSMpk)(0,4); // dM1111 = sum_{i,j,k,l=1,i!=j!=k!=l}^M w_i w_j w_k w_l
-    //eventWeight[2] = ... // to be improved (calculated)               
-    //eventWeight[3] = ... // to be improved (calculated)              
-   }
- */
-        
-                      
+ // Calculate sum of linear and quadratic event weights for correlations.
+                       
  for(Int_t p=0;p<2;p++) // power-1
  {
   for(Int_t ci=0;ci<4;ci++) // correlation index
@@ -4857,41 +5612,31 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 //================================================================================================================================
 
 
+void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeightsNUA()
+{
+ // Calculate sum of linear and quadratic event weights for NUA terms.
+                       
+ for(Int_t sc=0;sc<2;sc++) // sin or cos terms
+ {
+  for(Int_t p=0;p<2;p++) // power-1
+  {
+   for(Int_t ci=0;ci<3;ci++) // nua term index
+   { 
+    fIntFlowSumOfEventWeightsNUA[sc][p]->Fill(ci+0.5,pow(fIntFlowEventWeightForCorrectionTermsForNUAEBE[sc]->GetBinContent(ci+1),p+1)); 
+   }
+  }
+ }
+  
+} // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeightsNUA()
+
+
+//================================================================================================================================
+
+
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 {
  // Calculate sum of product of event weights for correlations
- 
- 
- /*
- Double_t dMult = (*fSMpk)(0,0); // multiplicity 
-
- Double_t eventWeight[4] = {0}; 
- 
- if(!(fUsePhiWeights||fUsePtWeights||fUseEtaWeights))
- {
-  eventWeight[0] = dMult*(dMult-1); // event weight for <2> 
-  eventWeight[1] = dMult*(dMult-1)*(dMult-2)*(dMult-3); // event weight for <4> 
-  eventWeight[2] = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5); // event weight for <6> 
-  eventWeight[3] = dMult*(dMult-1)*(dMult-2)*(dMult-3)*(dMult-4)*(dMult-5)*(dMult-6)*(dMult-7); // event weight for <8> 
- } else
-   {
-    eventWeight[0] = (*fSMpk)(1,1)-(*fSMpk)(0,2); // dM11 = sum_{i,j=1,i!=j}^M w_i w_j;
-    eventWeight[1] = (*fSMpk)(3,1)-6.*(*fSMpk)(0,2)*(*fSMpk)(1,1)  
-                   + 8.*(*fSMpk)(0,3)*(*fSMpk)(0,1)
-                   + 3.*(*fSMpk)(1,2)-6.*(*fSMpk)(0,4); // dM1111 = sum_{i,j,k,l=1,i!=j!=k!=l}^M w_i w_j w_k w_l
-    //eventWeight[2] = ... // to be improved (calculated)               
-    //eventWeight[3] = ... // to be improved (calculated)              
-   }
-
- fIntFlowSumOfProductOfEventWeights->Fill(0.5,eventWeight[0]*eventWeight[1]); 
- fIntFlowSumOfProductOfEventWeights->Fill(1.5,eventWeight[0]*eventWeight[2]); 
- fIntFlowSumOfProductOfEventWeights->Fill(2.5,eventWeight[0]*eventWeight[3]); 
- fIntFlowSumOfProductOfEventWeights->Fill(3.5,eventWeight[1]*eventWeight[2]); 
- fIntFlowSumOfProductOfEventWeights->Fill(4.5,eventWeight[1]*eventWeight[3]); 
- fIntFlowSumOfProductOfEventWeights->Fill(5.5,eventWeight[2]*eventWeight[3]); 
- */
   
- 
  Int_t counter = 0;
  
  for(Int_t ci1=1;ci1<4;ci1++)
@@ -4905,7 +5650,99 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 
  
 
-} // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowIntFlowSumOfProductOfEventWeights()
+} // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
+
+
+//================================================================================================================================
+
+
+void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeightsNUA()
+{
+ // Calculate sum of product of event weights for NUA terms.
+  
+ // w_{<2>} * w_{<cos(#phi)>}:
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(0.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1));
+ // w_{<2>} * w_{<sin(#phi)>}:
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(1.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1));
+ // w_{<cos(#phi)> * w_{<sin(#phi)>}:
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(2.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1));
+ // w_{<2>} * w{<cos(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(3.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)); 
+ // w_{<2>} * w{<sin(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(4.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2));
+ // w_{<2>} * w{<cos(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(5.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3));
+ // w_{<2>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(6.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(1)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));  
+ // w_{<4>} * w{<cos(phi1)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(7.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1));
+ // w_{<4>} * w{<sin(phi1)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(8.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1));
+ // w_{<4>} * w{<cos(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(9.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)*
+                                                 fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)); 
+ // w_{<4>} * w{<sin(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(10.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2));
+ // w_{<4>} * w{<cos(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(11.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3));
+ // w_{<4>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(12.5,fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));
+ // w_{<cos(phi1)>} * w{<cos(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(13.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2));
+ // w_{<cos(phi1)>} * w{<sin(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(14.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)); 
+ // w_{<cos(phi1)>} * w{<cos(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(15.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3));
+ // w_{<cos(phi1)>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(16.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));
+ // w_{<sin(phi1)>} * w{<cos(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(17.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2));
+ // w_{<sin(phi1)>} * w{<sin(phi1+phi2)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(18.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2));
+ // w_{<sin(phi1)>} * w{<cos(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(19.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3));
+ // w_{<sin(phi1)>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(20.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(1)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3)); 
+ // w_{<cos(phi1+phi2)>} * w{<sin(phi1+phi2))>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(21.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)); 
+ // w_{<cos(phi1+phi2)>} * w{<cos(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(22.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)); 
+ // w_{<cos(phi1+phi2)>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(23.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3)); 
+ // w_{<sin(phi1+phi2)>} * w{<cos(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(24.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)); 
+ // w_{<sin(phi1+phi2)>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(25.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(2)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3)); 
+ // w_{<cos(phi1-phi2-phi3)>} * w{<sin(phi1-phi2-phi3)>}
+ fIntFlowSumOfProductOfEventWeightsNUA->Fill(26.5,fIntFlowEventWeightForCorrectionTermsForNUAEBE[1]->GetBinContent(3)*
+                                                  fIntFlowEventWeightForCorrectionTermsForNUAEBE[0]->GetBinContent(3));
+
+} // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowIntFlowSumOfProductOfEventWeightsNUA()
 
 
 //================================================================================================================================
@@ -5725,7 +6562,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0)
+   if(TMath::Abs(denominator)>1e-6)
    {
     covTwoTwoReduced = (twoTwoReduced-two*twoReduced)/denominator;            
     wCovTwoTwoReduced = covTwoTwoReduced*prefactor; 
@@ -5740,7 +6577,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0)
+   if(TMath::Abs(denominator)>1e-6)
    {
     covTwoFourReduced = (twoFourReduced-two*fourReduced)/denominator;            
     wCovTwoFourReduced = covTwoFourReduced*prefactor; 
@@ -5755,7 +6592,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0)
+   if(TMath::Abs(denominator)>1e-6)
    {
     covFourTwoReduced = (fourTwoReduced-four*twoReduced)/denominator;            
     wCovFourTwoReduced = covFourTwoReduced*prefactor; 
@@ -5770,7 +6607,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0)
+   if(TMath::Abs(denominator)>1e-6)
    {
     covFourFourReduced = (fourFourReduced-four*fourReduced)/denominator;            
     wCovFourFourReduced = covFourFourReduced*prefactor; 
@@ -5785,7 +6622,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
   {
    denominator = 1.-term1/(term2*term3);
    prefactor = term1/(term2*term3);
-   if(denominator!=0)
+   if(TMath::Abs(denominator)>1e-6)
    {
     covTwoReducedFourReduced = (twoReducedFourReduced-twoReduced*fourReduced)/denominator;            
     wCovTwoReducedFourReduced = covTwoReducedFourReduced*prefactor; 
@@ -6201,6 +7038,17 @@ void AliFlowAnalysisWithQCumulants::GetPointersForIntFlowHistograms()
        cout<<"sc = "<<sc<<endl;
       } 
    } // end of for(Int_t sc=0;sc<2;sc++)           
+   // average products of correction terms for NUA:  
+   TString intFlowProductOfCorrectionTermsForNUAProName = "fIntFlowProductOfCorrectionTermsForNUAPro";
+   intFlowProductOfCorrectionTermsForNUAProName += fAnalysisLabel->Data();
+   TProfile *intFlowProductOfCorrectionTermsForNUAPro = dynamic_cast<TProfile*>(intFlowProfiles->FindObject(intFlowProductOfCorrectionTermsForNUAProName.Data()));
+   if(intFlowProductOfCorrectionTermsForNUAPro) 
+   {
+    this->SetIntFlowProductOfCorrectionTermsForNUAPro(intFlowProductOfCorrectionTermsForNUAPro);
+   } else 
+     {
+      cout<<"WARNING: intFlowProductOfCorrectionTermsForNUAPro is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
+     }     
   } else // to if(intFlowProfiles)  
     {
      cout<<"WARNING: intFlowProfiles is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
@@ -6284,6 +7132,47 @@ void AliFlowAnalysisWithQCumulants::GetPointersForIntFlowHistograms()
    } else 
      {
       cout<<"WARNING: intFlowSumOfProductOfEventWeights is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
+     } 
+   // covariances for NUA (multiplied with weight dependent prefactor):
+   TString intFlowCovariancesNUAName = "fIntFlowCovariancesNUA";
+   intFlowCovariancesNUAName += fAnalysisLabel->Data();
+   TH1D *intFlowCovariancesNUA = dynamic_cast<TH1D*>(intFlowResults->FindObject(intFlowCovariancesNUAName.Data()));
+   if(intFlowCovariancesNUA) 
+   {
+    this->SetIntFlowCovariancesNUA(intFlowCovariancesNUA); 
+   } else 
+     {
+      cout<<"WARNING: intFlowCovariancesNUA is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
+     } 
+   // sum of linear and quadratic event weights NUA terms:
+   TString intFlowSumOfEventWeightsNUAName = "fIntFlowSumOfEventWeightsNUA";
+   intFlowSumOfEventWeightsNUAName += fAnalysisLabel->Data();
+   for(Int_t sc=0;sc<2;sc++)
+   {
+    for(Int_t power=0;power<2;power++)
+    {
+     TH1D *intFlowSumOfEventWeightsNUA = dynamic_cast<TH1D*>(intFlowResults->FindObject(Form("%s: %s, %s",intFlowSumOfEventWeightsNUAName.Data(),powerFlag[power].Data(),sinCosFlag[sc].Data())));
+     if(intFlowSumOfEventWeightsNUA) 
+     {
+      this->SetIntFlowSumOfEventWeightsNUA(intFlowSumOfEventWeightsNUA,sc,power);
+     } else 
+       {
+        cout<<"WARNING: intFlowSumOfEventWeightsNUA is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
+        cout<<"sc    = "<<sc<<endl;
+        cout<<"power = "<<power<<endl;
+       }                                   
+    } // end of for(Int_t power=0;power<2;power++)                                                                  
+   } // end of for(Int_t sc=0;sc<2;sc++)     
+   // sum of products of event weights for NUA terms:  
+   TString intFlowSumOfProductOfEventWeightsNUAName = "fIntFlowSumOfProductOfEventWeightsNUA";
+   intFlowSumOfProductOfEventWeightsNUAName += fAnalysisLabel->Data();
+   TH1D *intFlowSumOfProductOfEventWeightsNUA = dynamic_cast<TH1D*>(intFlowResults->FindObject(intFlowSumOfProductOfEventWeightsNUAName.Data()));
+   if(intFlowSumOfProductOfEventWeightsNUA) 
+   {
+    this->SetIntFlowSumOfProductOfEventWeightsNUA(intFlowSumOfProductOfEventWeightsNUA);
+   } else 
+     {
+      cout<<"WARNING: intFlowSumOfProductOfEventWeightsNUA is NULL in AFAWQC::GPFIFH() !!!!"<<endl;
      } 
    // final results for integrated Q-cumulants:
    TString intFlowQcumulantsName = "fIntFlowQcumulants";
@@ -7191,7 +8080,101 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectedForNUA()
  fIntFlow->SetBinContent(2,v4);
  //fIntFlow->SetBinContent(3,v6);
  //fIntFlow->SetBinContent(4,v8);
-
+ 
+ /*
+ // propagate correctly error by including non-isotropic terms (to be improved - moved somewhere else):
+ // correlations:
+ Double_t two = fIntFlowCorrelationsHist->GetBinContent(1); // <<2>> 
+ //Double_t four = fIntFlowCorrelationsHist->GetBinContent(2); // <<4>>  
+ //Double_t six = fIntFlowCorrelationsHist->GetBinContent(3); // <<6>> 
+ //Double_t eight = fIntFlowCorrelationsHist->GetBinContent(4); // <<8>>  
+ // statistical errors of average 2-, 4-, 6- and 8-particle azimuthal correlations:
+ Double_t twoError = fIntFlowCorrelationsHist->GetBinError(1); // statistical error of <2>  
+ Double_t fourError = fIntFlowCorrelationsHist->GetBinError(2); // statistical error of <4>   
+ //Double_t sixError = fIntFlowCorrelationsHist->GetBinError(3); // statistical error of <6> 
+ //Double_t eightError = fIntFlowCorrelationsHist->GetBinError(4); // statistical error of <8> 
+ // nua terms: 
+ Double_t c1 = fIntFlowCorrectionTermsForNUAHist[1]->GetBinContent(1); // <<cos(phi1)>>
+ Double_t c2 = fIntFlowCorrectionTermsForNUAHist[1]->GetBinContent(2); // <<cos(phi1+phi2)>>
+ Double_t c3 = fIntFlowCorrectionTermsForNUAHist[1]->GetBinContent(3); // <<cos(phi1-phi2-phi3)>>
+ Double_t s1 = fIntFlowCorrectionTermsForNUAHist[0]->GetBinContent(1); // <<sin(phi1)>>
+ Double_t s2 = fIntFlowCorrectionTermsForNUAHist[0]->GetBinContent(2); // <<sin(phi1+phi2)>>
+ Double_t s3 = fIntFlowCorrectionTermsForNUAHist[0]->GetBinContent(3); // <<sin(phi1-phi2-phi3)>>
+ // statistical errors of nua terms:
+ Double_t c1Error = fIntFlowCorrectionTermsForNUAHist[1]->GetBinError(1); // statistical error of <cos(phi1)>
+ Double_t c2Error = fIntFlowCorrectionTermsForNUAHist[1]->GetBinError(2); // statistical error of <cos(phi1+phi2)>
+ Double_t c3Error = fIntFlowCorrectionTermsForNUAHist[1]->GetBinError(3); // statistical error of <cos(phi1-phi2-phi3)>
+ Double_t s1Error = fIntFlowCorrectionTermsForNUAHist[0]->GetBinError(1); // statistical error of <sin(phi1)>
+ Double_t s2Error = fIntFlowCorrectionTermsForNUAHist[0]->GetBinError(2); // statistical error of <sin(phi1+phi2)>
+ Double_t s3Error = fIntFlowCorrectionTermsForNUAHist[0]->GetBinError(3); // statistical error of <sin(phi1-phi2-phi3)>
+ 
+ // covariances for nua:
+ Double_t wCov24 = fIntFlowCovariances->GetBinContent(1); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+ Double_t wCov2c1 = fIntFlowCovariancesNUA->GetBinContent(1);
+ Double_t wCov2s1 = fIntFlowCovariancesNUA->GetBinContent(2);
+ Double_t wCovc1s1 = fIntFlowCovariancesNUA->GetBinContent(3);
+ Double_t wCov2c2 = fIntFlowCovariancesNUA->GetBinContent(4);
+ Double_t wCov2s2 = fIntFlowCovariancesNUA->GetBinContent(5); 
+ Double_t wCov2c3 = fIntFlowCovariancesNUA->GetBinContent(6); 
+ Double_t wCov2s3 = fIntFlowCovariancesNUA->GetBinContent(7); 
+ Double_t wCov4c1 = fIntFlowCovariancesNUA->GetBinContent(8);  
+ Double_t wCov4s1 = fIntFlowCovariancesNUA->GetBinContent(9); 
+ Double_t wCov4c2 = fIntFlowCovariancesNUA->GetBinContent(10); 
+ Double_t wCov4s2 = fIntFlowCovariancesNUA->GetBinContent(11); 
+ Double_t wCov4c3 = fIntFlowCovariancesNUA->GetBinContent(12);
+ Double_t wCov4s3 = fIntFlowCovariancesNUA->GetBinContent(13);
+ Double_t wCovc1c2 = fIntFlowCovariancesNUA->GetBinContent(14);
+ Double_t wCovc1s2 = fIntFlowCovariancesNUA->GetBinContent(15);
+ Double_t wCovc1c3 = fIntFlowCovariancesNUA->GetBinContent(16);
+ Double_t wCovc1s3 = fIntFlowCovariancesNUA->GetBinContent(17);
+ Double_t wCovs1c2 = fIntFlowCovariancesNUA->GetBinContent(18);
+ Double_t wCovs1s2 = fIntFlowCovariancesNUA->GetBinContent(19); 
+ Double_t wCovs1c3 = fIntFlowCovariancesNUA->GetBinContent(20);
+ Double_t wCovs1s3 = fIntFlowCovariancesNUA->GetBinContent(21); 
+ Double_t wCovc2s2 = fIntFlowCovariancesNUA->GetBinContent(22);  
+ Double_t wCovc2c3 = fIntFlowCovariancesNUA->GetBinContent(23);  
+ Double_t wCovc2s3 = fIntFlowCovariancesNUA->GetBinContent(24); 
+ Double_t wCovs2c3 = fIntFlowCovariancesNUA->GetBinContent(25); 
+ Double_t wCovs2s3 = fIntFlowCovariancesNUA->GetBinContent(26);
+ Double_t wCovc3s3 = fIntFlowCovariancesNUA->GetBinContent(27); 
+ */
+ 
+ /*
+ // 2nd order:
+ Double_t err2ndSquared = (1./(4.*pow(v2,2.)))
+                        * (pow(twoError,2.)+4.*pow(s1*s1Error,2.)+4.*pow(c1*c1Error,2.)
+                        // to be improved (add eventually also covariance terms)
+                        //- 4.*c1*wCov2c1-4.*s1*wCov2s1+8.*c1*s1*wCovc1s1 
+                        );
+ if(err2ndSquared>=0.) 
+ {
+  fIntFlow->SetBinError(1,pow(err2ndSquared,0.5)); // to be improved (enabled eventually)
+ } else
+   {
+    cout<<"WARNING: Statistical error of v{2,QC} (with non-isotropic terms included) is imaginary !!!! "<<endl;
+   }
+ // 4th order:
+ Double_t err4thSquared = (1./(16.*pow(v4,6.)))
+                        * (pow(4.*pow(two,2.)-8.*(pow(c1,2.)+pow(s1,2.)),2.)*pow(twoError,2.)
+                        + pow(fourError,2.)
+                        + 16.*pow(6.*pow(c1,3.)-2.*c1*c2+c3+6.*c1*pow(s1,2.)-2.*s1*s2-4.*c1*two,2.)*pow(c1Error,2.)
+                        + 16.*pow(6.*pow(c1,2.)*s1+2.*c2*s1+6.*pow(s1,3.)-2.*c1*s2-s3-4.*s1*two,2.)*pow(s1Error,2.)
+                        + 4.*pow(c2-2.*(pow(c1,2.)-pow(s1,2.)),2.)*pow(c2Error,2.)
+                        + 4.*pow(4*c1*s1-s2,2.)*pow(s2Error,2.)
+                        + 16.*pow(c1,2.)*pow(c3Error,2.)
+                        + 16.*pow(s1,2.)*pow(s3Error,2.)
+                        // to be improved (add eventually also covariance terms)
+                        // ...
+                        );
+ if(err4thSquared>=0.) 
+ {
+  fIntFlow->SetBinError(2,pow(err4thSquared,0.5)); // to be improved (enabled eventually)
+ } else
+   {
+    cout<<"WARNING: Statistical error of v{4,QC} (with non-isotropic terms included) is imaginary !!!! "<<endl;
+   }
+ */
+ 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectedForNUA()
 
    
@@ -7200,9 +8183,9 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectedForNUA()
 
 void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUAIntFlow() 
 {
- // From profile fIntFlowCorrectionTermsForNUAPro[2] access measured corretion terms
+ // From profile fIntFlowCorrectionTermsForNUAPro[sc] access measured correction terms for NUA
  // and their spread, correctly calculate the statistical errors and store the final 
- // results and statistical errors for correction terms in histogram fIntFlowCorrectionTermsForNUAHist[2].
+ // results and statistical errors for correction terms for NUA in histogram fIntFlowCorrectionTermsForNUAHist[sc].
  //
  // Remark: Statistical error of correction temrs is calculated as:
  //
@@ -7210,49 +8193,35 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUAIntFlow()
  //          termA = sqrt{sum_{i=1}^{N} w^2}/(sum_{i=1}^{N} w)
  //          termB = 1/sqrt(1-termA^2)   
  
- /* // to be improved (implement protection here)
- for(Int_t power=0;power<2;power++)
- { 
-  if(!(fIntFlowCorrelationsHist && fIntFlowCorrelationsPro && fIntFlowSumOfEventWeights[power])) 
-  {
-   cout<<"WARNING: fIntFlowCorrelationsHist && fIntFlowCorrelationsPro && fIntFlowSumOfEventWeights[power] is NULL in AFAWQC::FCIF() !!!!"<<endl;
-   cout<<"power = "<<power<<endl;
-   exit(0);
-  }
- }
- */
-  
  for(Int_t sc=0;sc<2;sc++) // sin or cos correction terms 
  {
-  for(Int_t ci=1;ci<=10;ci++) // correction term index
+  for(Int_t ci=1;ci<=3;ci++) // correction term index
   {
    Double_t correction = fIntFlowCorrectionTermsForNUAPro[sc]->GetBinContent(ci);
-   //Double_t spread = fIntFlowCorrectionTermsForNUAPro[sc]->GetBinError(ci);
-   //Double_t sumOfLinearEventWeights = fIntFlowSumOfEventWeights[0]->GetBinContent(ci);
-   //Double_t sumOfQuadraticEventWeights = fIntFlowSumOfEventWeights[1]->GetBinContent(ci);
-   //Double_t termA = 0.;
-   //Double_t termB = 0.;
-   //if(sumOfLinearEventWeights)
-   //{
-   // termA = pow(sumOfQuadraticEventWeights,0.5)/sumOfLinearEventWeights;
-   //} else
-   // {
-   //  cout<<"WARNING: sumOfLinearEventWeights == 0 in AFAWQC::FCIF() !!!!"<<endl;
-   //  cout<<"         (for "<<2*ci<<"-particle correlation)"<<endl;
-   // }
-   /*
+   Double_t spread = fIntFlowCorrectionTermsForNUAPro[sc]->GetBinError(ci);
+   Double_t sumOfLinearEventWeights = fIntFlowSumOfEventWeightsNUA[sc][0]->GetBinContent(ci);
+   Double_t sumOfQuadraticEventWeights = fIntFlowSumOfEventWeightsNUA[sc][1]->GetBinContent(ci);
+   Double_t termA = 0.;
+   Double_t termB = 0.;
+   if(sumOfLinearEventWeights)
+   {
+    termA = pow(sumOfQuadraticEventWeights,0.5)/sumOfLinearEventWeights;
+   } else
+     {
+      cout<<"WARNING: sumOfLinearEventWeights == 0 in AFAWQC::FCTFNIF() !!!!"<<endl;
+      cout<<"         (for "<<ci<<"-th correction term)"<<endl;
+     }
    if(1.-pow(termA,2.) > 0.)
    {
     termB = 1./pow(1-pow(termA,2.),0.5);
    } else
      {
-      cout<<"WARNING: 1.-pow(termA,2.) <= 0 in AFAWQC::FCIF() !!!!"<<endl;   
-      cout<<"         (for "<<2*ci<<"-particle correlation)"<<endl;
+      cout<<"WARNING: 1.-pow(termA,2.) <= 0 in AFAWQC::FCTFNIF() !!!!"<<endl;   
+      cout<<"         (for "<<ci<<"-th correction term)"<<endl;
      }     
    Double_t statisticalError = termA * spread * termB;
-   */
    fIntFlowCorrectionTermsForNUAHist[sc]->SetBinContent(ci,correction);
-   //fIntFlowCorrectionTermsForNUAHist[sc]->SetBinError(ci,statisticalError);
+   fIntFlowCorrectionTermsForNUAHist[sc]->SetBinError(ci,statisticalError);
   } // end of for(Int_t ci=1;ci<=10;ci++) // correction term index
  } // end of for(Int sc=0;sc<2;sc++) // sin or cos correction terms 
                                                                                                                                                                                                
@@ -7660,6 +8629,7 @@ void AliFlowAnalysisWithQCumulants::ResetEventByEventQuantities()
   for(Int_t sc=0;sc<2;sc++)
   {
    fIntFlowCorrectionTermsForNUAEBE[sc]->Reset();
+   fIntFlowEventWeightForCorrectionTermsForNUAEBE[sc]->Reset();
   } 
  }
     
@@ -8301,7 +9271,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectedForNUA(TString typ
 //==================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent)
+void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple * const anEvent)
 {
  // Evaluate with nested loops multiparticle correlations for integrated flow (without using the particle weights). 
 
@@ -8759,7 +9729,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrectionTermsForNUA()
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent)
+void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent)
 {
  // Evaluate with nested loops multiparticle correlations for integrated flow (using the particle weights). 
 
@@ -8979,7 +9949,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowExtraCorrelations()
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple* anEvent)
+void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoops(AliFlowEventSimple * const anEvent)
 {
  // Evaluate with nested loops correction terms for non-uniform acceptance relevant for NONAME integrated flow (to be improved (name)).
  //
@@ -9085,7 +10055,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLo
  cout<<endl;
 }
 //================================================================================================================================
-void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
  // Evaluate reduced correlations with nested loops without using the particle weights.
  
@@ -9364,7 +10334,7 @@ void AliFlowAnalysisWithQCumulants::PrintNumberOfParticlesInSelectedBin()
 
 //================================================================================================================================
 
-void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
  // Evaluate reduced correlations with nested loops without using the particle weights.
  
@@ -9535,7 +10505,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsU
 //================================================================================================================================
 
    
-void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
  // Evaluate with nested loops correction terms for non-uniform acceptance (both sin and cos terms) relevant for differential flow.
  
@@ -9821,7 +10791,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsi
          // 1-particle:
  Double_t cosP1nW1 = 0.; // <<w1 cos(n*(phi1))>>
    
- if(dMult>0 && (*fSMpk)(0,1) !=0.)
+ if(dMult>0 && TMath::Abs((*fSMpk)(0,1))>1e-6)
  {
   cosP1nW1 = dReQ1n1k/(*fSMpk)(0,1); 
   
@@ -9835,7 +10805,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsi
  // 2-particle:
  Double_t cosP1nP1nW1W1 = 0.; // <<w1 w2 cos(n*(phi1+phi2))>>
  
- if(dMult>1 && dM11 !=0.)
+ if(dMult>1 && TMath::Abs(dM11)>1e-6)
  {
   cosP1nP1nW1W1 = (pow(dReQ1n1k,2)-pow(dImQ1n1k,2)-dReQ2n2k)/dM11; 
   
@@ -9849,7 +10819,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUACosTermsUsi
  // 3-particle:
  Double_t cosP1nM1nM1nW1W1W1 = 0.; // <<w1 w2 w3 cos(n*(phi1-phi2-phi3))>>
  
- if(dMult>2 && dM111 !=0.)
+ if(dMult>2 && TMath::Abs(dM111)>1e-6)
  {
   cosP1nM1nM1nW1W1W1 = (dReQ1n1k*(pow(dReQ1n1k,2)+pow(dImQ1n1k,2))
                      - dReQ1n1k*dReQ2n2k-dImQ1n1k*dImQ2n2k
@@ -9910,7 +10880,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsi
  // 1-particle:
  Double_t sinP1nW1 = 0.; // <<w1 sin(n*(phi1))>>
  
- if(dMult>0 && (*fSMpk)(0,1) !=0.)
+ if(dMult>0 && TMath::Abs((*fSMpk)(0,1))>1e-6)
  {
   sinP1nW1 = dImQ1n1k/((*fSMpk)(0,1)); 
      
@@ -9924,7 +10894,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsi
  // 2-particle:
  Double_t sinP1nP1nW1W1 = 0.; // <<w1 w2 sin(n*(phi1+phi2))>>
  
- if(dMult>1 && dM11 !=0.)
+ if(dMult>1 && TMath::Abs(dM11)>1e-6)
  {
   sinP1nP1nW1W1 = (2.*dReQ1n1k*dImQ1n1k-dImQ2n2k)/dM11; 
      
@@ -9938,7 +10908,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsi
  // 3-particle:
  Double_t sinP1nM1nM1nW1W1W1 = 0.; // <<w1 w2 w3 sin(n*(phi1-phi2-phi3))>>
  
- if(dMult>2 && dM111 !=0.)
+ if(dMult>2 && TMath::Abs(dM111)>1e-6)
  {
   sinP1nM1nM1nW1W1W1 = (-dImQ1n1k*(pow(dReQ1n1k,2)+pow(dImQ1n1k,2))
                      + dReQ1n1k*dImQ2n2k-dImQ1n1k*dReQ2n2k
@@ -9959,7 +10929,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTermsUsi
 //================================================================================================================================
 
 
-void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent)
+void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrectionsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent)
 {
  // Evaluate with nested loops correction terms for non-uniform acceptance for integrated flow (using the particle weights). 
 
@@ -10535,7 +11505,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUs
 //================================================================================================================================
 
    
-void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* anEvent, TString type, TString ptOrEta)
+void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple * const anEvent, TString type, TString ptOrEta)
 {
  // Evaluate with nested loops correction terms for non-uniform acceptance 
  // with using particle weights (both sin and cos terms) relevant for differential flow.
