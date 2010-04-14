@@ -34,6 +34,7 @@
 #include "TLine.h"
 #include "TRandom.h"
 #include "TClonesArray.h"
+#include "TMath.h"
 
 #include "AliLog.h"
 #include "AliRunLoader.h"
@@ -561,6 +562,64 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
     for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
       Int_t value = adcArray->GetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin);
+      if (value < 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
+        fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP) + (fgAddBaseline << fgkAddDigits);
+        fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
+      }
+      else {
+        fZSMap[iAdc] = 0;
+        fADCR[iAdc][iTimeBin] = (value << fgkAddDigits) + (fgAddBaseline << fgkAddDigits);
+        fADCF[iAdc][iTimeBin] = (value << fgkAddDigits) + (fgAddBaseline << fgkAddDigits);
+      }
+    }
+  }
+}
+
+void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *digitsManager)
+{
+  // Set the ADC data from an AliTRDarrayADC 
+  // (by pad, to be used during initial reading in simulation)
+
+  if( !CheckInitialized() ) 
+    return;
+
+  fDigitsManager = digitsManager;
+  if (fDigitsManager) {
+    for (Int_t iDict = 0; iDict < 3; iDict++) {
+      AliTRDarrayDictionary *newDict = (AliTRDarrayDictionary*) fDigitsManager->GetDictionary(fDetector, iDict);
+      if (fDict[iDict] != 0x0 && newDict != 0x0) {
+        
+        if (fDict[iDict] == newDict)
+          continue;
+
+        fDict[iDict] = newDict;
+        
+        if (fDict[iDict]->GetDim() == 0) {
+          AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
+          continue;
+        }
+        fDict[iDict]->Expand(); 
+      }
+      else {
+        fDict[iDict] = newDict;
+        if (fDict[iDict])
+          fDict[iDict]->Expand();
+      }
+    }
+  }
+
+  if (fNTimeBin != adcArray->GetNtime())
+    SetNTimebins(adcArray->GetNtime());
+  
+  Int_t offset = (fMcmPos % 4 + 1) * 18 + (fRobPos % 2) * 72 + 1;
+
+  for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+    for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
+      Int_t value = -1;
+      Int_t pad = offset - iAdc;
+      if (pad > -1 && pad < 144) 
+	value = adcArray->GetData(GetRow(), offset - iAdc, iTimeBin);
+      //      Int_t value = adcArray->GetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin);
       if (value < 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
         fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP) + (fgAddBaseline << fgkAddDigits);
         fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
@@ -1313,11 +1372,11 @@ void AliTRDmcmSim::CalcFitreg()
                     maxCount = count[iLabel];
                     maxIdx = iLabel;
                   }
-                  currLabel = 0;
+                  currLabel = -1;
                   break;
                 }
               } 
-              if (currLabel > 0) {
+              if (currLabel >= 0) {
                 label[nLabels++] = currLabel;
               }
             }
@@ -1453,7 +1512,8 @@ void AliTRDmcmSim::FitTracklet()
   UShort_t nHits;                 // number of hits
   Int_t slope, offset;            // slope and offset of the tracklet
   Int_t sumX, sumY, sumXY, sumX2; // fit sums from fit registers
-  //int32_t SumY2;                // not used in the current TRAP program
+  Int_t sumY2;                // not used in the current TRAP program, now used for error calculation (simulation only)
+  Float_t fitError, fitSlope, fitOffset;
   FitReg_t *fit0, *fit1;          // pointers to relevant fit registers
   
 //  const uint32_t OneDivN[32] = {  // 2**31/N : exactly like in the TRAP, the simple division here gives the same result!
@@ -1487,6 +1547,7 @@ void AliTRDmcmSim::FitTracklet()
       q1      = fit0->fQ1    + fit1->fQ1;
       sumY    = fit0->fSumY  + fit1->fSumY  + 256*fit1->fNhits;
       sumXY   = fit0->fSumXY + fit1->fSumXY + 256*fit1->fSumX;
+      sumY2   = fit0->fSumY2 + fit1->fSumY2 + 512*fit1->fSumY + 256*256*fit1->fNhits;
 
       slope   = nHits*sumXY - sumX * sumY;
       offset  = sumX2*sumY  - sumX * sumXY;
@@ -1517,6 +1578,21 @@ void AliTRDmcmSim::FitTracklet()
                        fDetector, fRobPos, fMcmPos, slope, 
                        fTrapConfig->GetDmem(0xc030 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos), 
                        fTrapConfig->GetDmem(0xc031 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
+
+      AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i", 
+		       sumX, sumX2, sumY, sumY2, sumXY));
+
+      fitSlope  = (Float_t) (nHits * sumXY - sumX * sumY) / (nHits * sumX2 - sumX*sumX);
+
+      fitOffset = (Float_t) (sumX2 * sumY - sumX * sumXY) / (nHits * sumX2 - sumX*sumX);
+
+      Float_t sx  = (Float_t) sumX;
+      Float_t sx2 = (Float_t) sumX2;
+      Float_t sy  = (Float_t) sumY;
+      Float_t sy2 = (Float_t) sumY2;
+      Float_t sxy = (Float_t) sumXY;
+      fitError = sy2 - (sx2 * sy*sy - 2 * sx * sxy * sy + nHits * sxy*sxy) / (nHits * sx2 - sx*sx);
+      //fitError = (Float_t) sumY2 - (Float_t) (sumY*sumY) / nHits - fitSlope * ((Float_t) (sumXY - sumX*sumY) / nHits);
 
       Bool_t rejected = kFALSE;
       // deflection range table from DMEM
@@ -1583,11 +1659,11 @@ void AliTRDmcmSim::FitTracklet()
                   maxCount = count[iLabel];
                   maxIdx = iLabel;
                 }
-                currLabel = 0;
+                currLabel = -1;
                 break;
               }
             }
-            if (currLabel > 0) {
+            if (currLabel >= 0) {
               label[nLabels++] = currLabel;
             }
           }
@@ -1603,6 +1679,36 @@ void AliTRDmcmSim::FitTracklet()
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits1(nHits1);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ0(q0);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ1(q1);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetSlope(fitSlope);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetOffset(fitOffset);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetError(TMath::Sqrt(TMath::Abs(fitError)/nHits));
+
+//	// cluster information
+//	Float_t *res = new Float_t[nHits];
+//	Float_t *qtot = new Float_t[nHits];
+//	Int_t nCls = 0;
+//	for (Int_t iHit = 0; iHit < fNHits; iHit++) {
+//	  // check if hit contributes
+//	  if (fHits[iHit].fChannel == fFitPtr[cpu]) {
+//	    res[nCls] = fHits[iHit].fYpos - (fitSlope * fHits[iHit].fTimebin + fitOffset);
+//	    qtot[nCls] = fHits[iHit].fQtot;
+//	    nCls++;
+//	  }
+//	  else if (fHits[iHit].fChannel == fFitPtr[cpu] + 1) {
+//	    res[nCls] = fHits[iHit].fYpos + 256 - (fitSlope * fHits[iHit].fTimebin + fitOffset);
+//	    qtot[nCls] = fHits[iHit].fQtot;
+//	    nCls++;
+//	  }
+//	}
+//        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetClusters(res, qtot, nCls);
+//	delete [] res;
+//	delete [] qtot;
+
+	if (fitError < 0)
+	  AliError(Form("Strange fit error: %f from Sx: %i, Sy: %i, Sxy: %i, Sx2: %i, Sy2: %i, nHits: %i",
+			fitError, sumX, sumY, sumXY, sumX2, sumY2, nHits));
+	AliDebug(3, Form("fit slope: %f, offset: %f, error: %f", 
+			 fitSlope, fitOffset, TMath::Sqrt(TMath::Abs(fitError)/nHits)));
       }
     }
   }
@@ -1681,6 +1787,11 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
       if (~fZSMap[iAdc] == 0) {
         for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
           digits->SetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin, -1);
+        }
+      }
+      else if (iAdc < 2 || iAdc == 20) {
+        for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+          digits->SetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin, (fADCR[iAdc][iTimeBin] >> fgkAddDigits) - fgAddBaseline);
         }
       }
     }

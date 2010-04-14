@@ -48,6 +48,8 @@ class AliTRDmcmSim : public TObject {
           void      SetData(Int_t iadc, Int_t it, Int_t adc); // Set ADC data
 	  void      SetData(AliTRDarrayADC *adcArray, 
 			    AliTRDdigitsManager *digitsManager = 0x0);         // Set ADC data from adcArray
+	  void      SetDataByPad(AliTRDarrayADC *adcArray, 
+				 AliTRDdigitsManager *digitsManager = 0x0);    // Set ADC data from adcArray
           void      SetDataPedestal(Int_t iadc);              // Fill ADC data with pedestal values
 
   static  Bool_t    GetApplyCut() { return fgApplyCut; }

@@ -40,7 +40,13 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord) :
   fNHits(0),
   fNHits0(0),
   fNHits1(0),
-  fLabel(-1)
+  fLabel(-1),
+  fSlope(0.),
+  fOffset(0.),
+  fError(0.),
+  fNClusters(0),
+  fResiduals(0x0),
+  fClsCharges(0x0)
 { 
     fGeo = new AliTRDgeometry();
 }
@@ -57,7 +63,13 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
   fNHits(0),
   fNHits0(0),
   fNHits1(0),
-  fLabel(-1)
+  fLabel(-1),
+  fSlope(0.),
+  fOffset(0.),
+  fError(0.),
+  fNClusters(0),
+  fResiduals(0x0),
+  fClsCharges(0x0)
 { 
     fGeo = new AliTRDgeometry();
 }
@@ -74,7 +86,13 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob,
   fNHits(0),
   fNHits0(0),
   fNHits1(0),
-  fLabel(-1)
+  fLabel(-1),
+  fSlope(0.),
+  fOffset(0.),
+  fError(0.),
+  fNClusters(0),
+  fResiduals(0x0),
+  fClsCharges(0x0)
 { 
     fGeo = new AliTRDgeometry();
 }
@@ -91,13 +109,27 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
   fNHits(rhs.fNHits),
   fNHits0(rhs.fNHits0),
   fNHits1(rhs.fNHits1),
-  fLabel(rhs.fLabel)
+  fLabel(rhs.fLabel),
+  fSlope(rhs.fLabel),
+  fOffset(rhs.fOffset),
+  fError(rhs.fError),
+  fNClusters(rhs.fNClusters),
+  fResiduals(0x0),
+  fClsCharges(0x0)
 {
     fGeo = new AliTRDgeometry();
+    fResiduals = new Float_t[fNClusters];
+    fClsCharges = new Float_t[fNClusters];
+    for (Int_t iCls = 0; iCls < fNClusters; iCls++) {
+      fResiduals[iCls] = rhs.fResiduals[iCls];
+      fClsCharges[iCls] = rhs.fClsCharges[iCls];
+    }
 }
 
 AliTRDtrackletMCM::~AliTRDtrackletMCM() 
 {
+  delete [] fResiduals;
+  delete [] fClsCharges;
     delete fGeo;
 }
 
@@ -119,5 +151,20 @@ Int_t AliTRDtrackletMCM::GetdY() const
   }
   else {
     return ((fTrackletWord >> 13) & 0x7f);
+  }
+}
+
+void AliTRDtrackletMCM::SetClusters(Float_t *res, Float_t *q, Int_t n)
+{
+  fNClusters = n;
+  delete [] fResiduals;
+  delete [] fClsCharges;
+
+  fResiduals = new Float_t[fNClusters];
+  fClsCharges = new Float_t[fNClusters];
+
+  for (Int_t iCls = 0; iCls < fNClusters; iCls++) {
+    fResiduals[iCls] = res[iCls];
+    fClsCharges[iCls] = q[iCls];
   }
 }

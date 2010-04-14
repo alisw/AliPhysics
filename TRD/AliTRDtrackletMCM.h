@@ -65,6 +65,18 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   void SetNHits0(Int_t nhits) { fNHits0 = nhits; }
   void SetNHits1(Int_t nhits) { fNHits1 = nhits; }
 
+  void SetSlope(Float_t slope) { fSlope = slope; }
+  void SetOffset(Float_t offset) { fOffset = offset; }
+  void SetError(Float_t error) { fError = error; }
+  void SetClusters(Float_t *res, Float_t *q, Int_t n);
+
+  Float_t GetSlope() const { return fSlope; }
+  Float_t GetOffset() const { return fOffset; }
+  Float_t GetError() const { return fError; }
+  Int_t   GetNClusters() const { return fNClusters; }
+  Float_t *GetResiduals() const { return fResiduals; }
+  Float_t *GetClsCharges() const { return fClsCharges; }
+
  protected:
   AliTRDgeometry *fGeo; //! TRD geometry
 
@@ -82,6 +94,13 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Int_t fNHits1; // no. of contributing clusters in window 1
 
   Int_t fLabel; // label for MC track
+  
+  Float_t  fSlope;	      // tracklet slope
+  Float_t  fOffset;	      // tracklet offset
+  Float_t  fError;            // tracklet error
+  Int_t    fNClusters;	      // no. of clusters
+  Float_t *fResiduals;	      //[fNClusters] cluster to tracklet residuals
+  Float_t *fClsCharges;	      //[fNClusters] cluster charge
 
  private:
   AliTRDtrackletMCM& operator=(const AliTRDtrackletMCM &rhs);   // not implemented
