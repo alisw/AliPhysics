@@ -11,10 +11,9 @@
 //----------------------------------------------------------------------------//
 
 #include "TObject.h"
-#include "TString.h"
 
 class AliESDtrack;
-class AliTOFcalibHisto;
+/* class AliTOFcalibHisto; */
 class AliESDEvent;
 
 class AliTOFT0v1: public TObject {
@@ -26,10 +25,9 @@ public:
   AliTOFT0v1(AliESDEvent *event);
   virtual ~AliTOFT0v1() ; // dtor
  
-  void SetCalib(AliTOFcalibHisto * const calib){fCalib = calib;};
+  //  void SetCalib(AliTOFcalibHisto * const calib){fCalib = calib;};
 
   Double_t* DefineT0(Option_t *option); 
-  Double_t* DefineT0RawCorrection(Option_t *option); 
   
   void      SetTimeResolution(Double_t timeresolution);// timeresolution in [s] e.g. for 120 ps -> 1.2e-10
   
@@ -51,7 +49,7 @@ public:
   Double_t fTimeResolution;  // global time resolution used to calculate T0
   Float_t fTimeCorr;  // global time resolution used to calculate T0
   AliESDEvent* fEvent;      //evento per il quale si vuole calcolare il T0
-  AliTOFcalibHisto *fCalib; // pointer to the class with the TOF time corrections
+/*   AliTOFcalibHisto *fCalib; // pointer to the class with the TOF time corrections */
 
   Double_t fT0SigmaT0def[4]; // array with the event information ([0]=event time -- [1] = sigma -- [2] = tracks on the TOF -- [3] = tracks used for the event time)
   
