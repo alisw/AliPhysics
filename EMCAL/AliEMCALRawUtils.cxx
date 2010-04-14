@@ -837,6 +837,40 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
   return lowGain ; 
 }
 
+void AliEMCALRawUtils::CalculateChi2(const Double_t* t, const Double_t* y, const Int_t nPoints, 
+const Double_t sig, const Double_t tau, const Double_t amp, const Double_t t0, Double_t &chi2)
+{
+  //   Input:
+  //   t[]   - array of time bins
+  //   y[]   - array of amplitudes after pedestal subtractions;
+  //   nPoints  - number of points 
+  //   sig   - error of amplitude measurement (one value for all channels)
+  //           if sig<0 that mean sig=1.
+  //   tau   - filter time response (in timebin units)
+  //   amp   - amplitude at t0;
+  //   t0    - time of max amplitude; 
+  // Output:
+  //   chi2 - chi2
+  //   ndf = nPoints - 2 when tau fixed 
+  //   ndf = nPoints - 3 when tau free
+  static Double_t par[5]={0.0, 0.0, 0.0, 2.0, 0.0};
+
+  par[0] = amp;
+  par[1] = t0;
+  par[2] = tau;
+  // par[3]=n=2.; par[4]=ped=0.0
+
+  Double_t dy = 0.0, x = 0.0, f=0.0;
+  for(Int_t i=0; i<nPoints; i++){
+    x     = t[i];
+    f     = RawResponseFunction(&x, par);
+    dy    = y[i] - f;
+    chi2 += dy*dy;
+    printf(" AliEMCALRawUtils::CalculateChi2 : %i : y %f -> f %f : dy %f \n", i, y[i], f, dy); 
+  }
+  if(sig>0.0) chi2 /= (sig*sig);
+}
+
 //__________________________________________________________________
 void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)              
 {

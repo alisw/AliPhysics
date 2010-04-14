@@ -95,6 +95,8 @@ class AliEMCALRawUtils : public TObject {
   static Double_t RawResponseFunctionLog(Double_t *x, Double_t *par); 
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL, const Int_t keyErr=0) const;  
 
+  static void CalculateChi2(const Double_t* t,const Double_t* y,const Int_t nPoints, 
+			    const Double_t sig, const Double_t tau, const Double_t amp, const Double_t t0, Double_t &chi2);
 
  private:
   Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
