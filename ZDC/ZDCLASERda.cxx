@@ -391,9 +391,9 @@ int main(int argc, char **argv) {
 	        else if(detector==4) hZNAhg[sector]->Fill(CorrADC);
 	        else if(detector==5) hZPAhg[sector]->Fill(CorrADC);
 	        // ---- ZEM
-		else if(detector==3){
+		/*else if(detector==3){
 		  hZEMhg[sector-1]->Fill(CorrADC);
-		}
+		}*/
 	      }
 	      else if(rawStreamZDC->GetADCGain()==1){ // --- Low gain chain ---
 	        // ---- side C
@@ -403,7 +403,7 @@ int main(int argc, char **argv) {
 	        else if(detector==4) hZNAlg[sector]->Fill(CorrADC);
 	        else if(detector==5) hZPAlg[sector]->Fill(CorrADC);
 	        // ---- ZEM
-		else if(detector==3) hZEMlg[sector-1]->Fill(CorrADC);
+		//else if(detector==3) hZEMlg[sector-1]->Fill(CorrADC);
 	      }
 	    }
 	    // **** Reference PMs
@@ -499,8 +499,8 @@ int main(int argc, char **argv) {
       mean[k+5]  = (Float_t) (fun[k+5]->GetParameter(1));
       sigma[k+5] = (Float_t) (fun[k+5]->GetParameter(2));
     }
-    // --- ZEM1
-    if(k<2){
+    // --- ZEM
+/*    if(k<2){
       detector[k+10] = 3;
       quad[k+10] = k+1;
       maxBin[k+10] = hZEMhg[k]->GetMaximumBin();
@@ -509,6 +509,7 @@ int main(int argc, char **argv) {
       if(nBin[k+10]!=0) maxXval[k+10] = maxBin[k+10]*xMax[k+10]/nBin[k+10];
       if(maxXval[k+10]-150.<0.) xlow[k+10]=0.;
       else xlow[k+10] = maxXval[k+10]-150.;
+      printf("ZEM%d: entries %1.0f mean %1.0f\n",k+1,hZEMhg[k]->GetEntries(),hZEMhg[k]->GetMean());
       if(hZEMhg[k]->GetEntries()!=0 || hZEMhg[k]->GetMean()<=0){
         atLeastOneHisto=1; 
         //
@@ -518,6 +519,7 @@ int main(int argc, char **argv) {
         sigma[k+10] = (Float_t) (fun[k+10]->GetParameter(2));
       }
     }
+*/
     // --- ZNA
     detector[k+12] = 4;
     quad[k+12] = k;
@@ -740,10 +742,10 @@ int main(int argc, char **argv) {
      hZPClg[j]->Write();
      hZNAlg[j]->Write();
      hZPAlg[j]->Write();  
-     if(j<2){
+     /*if(j<2){
        hZEMhg[j]->Write();
        hZEMlg[j]->Write();
-    }
+     }*/
   }
   hPMRefChg->Write();
   hPMRefAhg->Write();
@@ -761,10 +763,10 @@ int main(int argc, char **argv) {
     delete hZPClg[j];
     delete hZNAlg[j];
     delete hZPAlg[j];
-    if(j<2){
+    /*if(j<2){
       delete hZEMhg[j];
       delete hZEMlg[j];
-    }
+    }*/
   }
   delete hPMRefChg;
   delete hPMRefAhg;
