@@ -23,47 +23,33 @@
 class AliDetectorRecoParam;
 class AliHLTCaloRecoParamHandler: public AliHLTCaloConstantsHandler
   {
-
-     public:
-     
-      /** Constructor, */
+  public:
+    /** Constructor, */
       AliHLTCaloRecoParamHandler(TString det); // See above
-    
       /** Destructor */
       virtual ~AliHLTCaloRecoParamHandler(); // See above
-      
       /** Get the parameters from CDB */
       virtual Int_t GetParametersFromCDB(); // See above
-      
       /** Get the corrected energy, should really be implemented by the child classes */
       virtual Float_t GetCorrectedEnergy(Float_t e) { return e; }
-       
       /** Get the log weight */
       Float_t GetLogWeight() { return fLogWeight; } 
-	 
       /** Get rec point threshold */
       Float_t GetRecPointThreshold() { return fRecPointThreshold; }
-	 
       /** Get rec point member threshold */
       Float_t GetRecPointMemberThreshold() { return fRecPointMemberThreshold; }
 
      protected:
-   
       /** Fill the parameters */
       virtual void FillParameters() = 0; //COMMENT
-	
       /** The log weight used in calculating the cluster position */
       Float_t fLogWeight; //COMMENT
-      
       /** The threshold for adding a digit to a recpoint */
       Float_t fRecPointMemberThreshold; //COMMENT
-      
       /** The threshold for starting a recpoint */
       Float_t fRecPointThreshold; //COMMENT
-
       /** A reco param object */
       AliDetectorRecoParam *fRecoParamPtr; 	//! transient
-
       /** CDB path to the reco param object */
       AliCDBPath fRecoParamPath;    //COMMENT
 

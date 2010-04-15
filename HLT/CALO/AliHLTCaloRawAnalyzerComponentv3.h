@@ -96,15 +96,18 @@ class AliAltroRawStreamV3;
  */ 
 
 
+
 #include "AliHLTProcessor.h"
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloRcuProcessor.h"
 
+//#include "TObject.h"
+
 class AliHLTCaloMapper;
 
 
-class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTCaloRcuProcessor 
+class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTCaloRcuProcessor
 {
  public:
 
@@ -128,6 +131,14 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   /** interface function, see @ref AliHLTComponent for description */
   //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list) = 0; 
+
+
+
+
+
+
+
+
 
 
   /** interface function, see @ref AliHLTComponent for description */
@@ -162,6 +173,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
    * @return the size output size used
    */
   virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize); 
+
 
   // unsigned long fCaloEventCount;
 
@@ -257,7 +269,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
 
   RawDataWriter *fRawDataWriter; 
 
-  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
+  //  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
 
 };
 
