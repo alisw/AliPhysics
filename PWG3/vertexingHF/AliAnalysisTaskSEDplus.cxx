@@ -31,6 +31,7 @@
 #include <TDatabasePDG.h>
 
 #include "AliAnalysisManager.h"
+#include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
@@ -54,16 +55,18 @@ fNtupleDplus(0),
 fUpmasslimit(1.965),
 fLowmasslimit(1.765),
 fNPtBins(0),
+fListCuts(0),
+fRDCutsProduction(0),
+fRDCutsAnalysis(0),
 fFillNtuple(kFALSE),
 fReadMC(kFALSE),
-fDoLS(kFALSE),
-fVHF(0)
+fDoLS(kFALSE)
 {
    // Default constructor
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,Bool_t fillNtuple):
+AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplustoKpipi *dpluscutsana,AliRDHFCutsDplustoKpipi *dpluscutsprod,Bool_t fillNtuple):
 AliAnalysisTaskSE(name),
 fOutput(0),
 fHistNEvents(0),
@@ -71,59 +74,75 @@ fNtupleDplus(0),
 fUpmasslimit(1.965),
 fLowmasslimit(1.765),
 fNPtBins(0),
+fListCuts(0),
+fRDCutsProduction(dpluscutsprod),
+fRDCutsAnalysis(dpluscutsana),
 fFillNtuple(fillNtuple),
 fReadMC(kFALSE),
-fDoLS(kFALSE),
-fVHF(0)
+fDoLS(kFALSE)
 {
-  Double_t ptlim[5]={0.,2.,3.,5,9999999.};
-  SetPtBinLimit(5, ptlim);
+  // 
+  // Standrd constructor
+  //
+  //Double_t ptlim[5]={0.,2.,3.,5,9999999.};
+   //SetPtBinLimit(5, ptlim);
+  SetPtBinLimit(fRDCutsAnalysis->GetNPtBins()+1,fRDCutsAnalysis->GetPtBinLimits());
   // Default constructor
    // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
-
+ // Output slot #2 writes cut to private output
+  //  DefineOutput(2,AliRDHFCutsDplustoKpipi::Class());
+  DefineOutput(2,TList::Class());
   if(fFillNtuple){
-    // Output slot #2 writes into a TNtuple container
-    DefineOutput(2,TNtuple::Class());  //My private output
+    // Output slot #3 writes into a TNtuple container
+    DefineOutput(3,TNtuple::Class());  //My private output
   }
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
 {
+  //
   // Destructor
+  //
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
   }
-  if (fVHF) {
-    delete fVHF;
-    fVHF = 0;
+
+  if (fListCuts) {
+    delete fListCuts;
+    fListCuts = 0;
   }
-  
-  // if(fArrayBinLimits) {
-  //delete fArrayBinLimits;
-  //fArrayBinLimits= 0;
-  //} 
-  
+
+  if(fRDCutsProduction){
+    delete fRDCutsProduction;
+    fRDCutsProduction = 0;
+  }
+
+   if(fRDCutsAnalysis){
+    delete fRDCutsAnalysis;
+    fRDCutsAnalysis = 0;
+  }
+
 }  
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t range){
+  // set invariant mass limits
   fUpmasslimit = 1.865+range;
   fLowmasslimit = 1.865-range;
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t lowlimit, Float_t uplimit){
+  // set invariant mass limits
   if(uplimit>lowlimit)
     {
       fUpmasslimit = lowlimit;
       fLowmasslimit = uplimit;
     }
 }
-
-
 //________________________________________________________________________
-void AliAnalysisTaskSEDplus::SetPtBinLimit(Int_t n, Double_t* lim){
+void AliAnalysisTaskSEDplus::SetPtBinLimit(Int_t n, Float_t* lim){
   // define pt bins for analysis
   if(n>kMaxPtBins){
     printf("Max. number of Pt bins = %d\n",kMaxPtBins);
@@ -152,18 +171,17 @@ void AliAnalysisTaskSEDplus::SetPtBinLimit(Int_t n, Double_t* lim){
 }
 //_________________________________________________________________
 Double_t  AliAnalysisTaskSEDplus::GetPtBinLimit(Int_t ibin){
+  // get pt bin limit
   if(ibin>fNPtBins)return -1;
   return fArrayBinLimits[ibin];
 } 
 
 //_________________________________________________________________
 void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS){
-
-/*
- * Fill the Like Sign histograms
- */
-
-  Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
+  //
+  //
+  // Fill the Like Sign histograms
+  //
 
   //count pos/neg tracks
   Int_t nPosTrks=0,nNegTrks=0;
@@ -201,7 +219,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    if(d->SelectDplus(fVHF->GetDplusCuts()))nDplusLS++;
+    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate))nDplusLS++;
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
@@ -219,47 +237,11 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       unsetvtx=kTRUE;
     }
  
-    if(d->SelectDplus(fVHF->GetDplusCuts())){
+    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)){
 
       //set tight cuts values
       Int_t iPtBin=-1;
       Double_t ptCand = d->Pt();
-         
-      if(ptCand<2.){    //NO change
-       cutsDplus[6]=0.022100;//added 
-	cutsDplus[7]=0.08;
- 	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.979;
-	cutsDplus[10]=0.0055;
-      }
-      else if(ptCand>2. && ptCand<3){ 
-	//iPtBin=1;
-	cutsDplus[6]=0.034;//added
-	cutsDplus[7]=0.09;//cutsDplus[7]=0.08;
- 	cutsDplus[8]=1.0;//cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.9975;//cutsDplus[9]=0.991;
-	cutsDplus[10]=0.0028;//cutsDplus[10]=0.005;
-      }else if(ptCand>3. && ptCand<5){ 
-	//iPtBin=2;
-	cutsDplus[6]=0.020667;//added
-	cutsDplus[7]=0.095;//cutsDplus[7]=0.1;
- 	cutsDplus[8]=0.5;//cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.995;//cutsDplus[9]=0.995;
-	cutsDplus[10]=0.000883;//cutsDplus[10]=0.0035;
-      }else{
-	//iPtBin=3;
-	cutsDplus[6]=0.023333;//added
-	cutsDplus[7]=0.115;//cutsDplus[7]=0.1;
- 	cutsDplus[8]=0.5;//cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.9975;//cutsDplus[9]=0.997;
-	cutsDplus[10]=0.000883;//cutsDplus[10]=0.001;
-      }
-      
-      
-
-      
-
-      
       for(Int_t ibin=0;ibin<fNPtBins&&iPtBin<0&&ptCand>fArrayBinLimits[0]&&ptCand<fArrayBinLimits[fNPtBins];ibin++){
       	if(ptCand<fArrayBinLimits[ibin+1])iPtBin=ibin;
       }
@@ -268,7 +250,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 	return;
       }
 
-      Bool_t passTightCuts=d->SelectDplus(cutsDplus);
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
 
       Int_t sign= d->GetCharge();
       Float_t wei=1;
@@ -309,7 +291,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       fPtMaxHistLS[indexcut]->Fill(ptmax);
       fDCAHistLS[indexcut]->Fill(dca);
       
-      if(passTightCuts){
+      if(passTightCuts==1){
 	fMassHistLSTC[index]->Fill(invMass,wei);
 	fMassHistLSTC[index+1]->Fill(invMass);
 	fMassHistLSTC[index+2]->Fill(invMass,wei2);
@@ -327,18 +309,25 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskSEDplus::Init()
-{
+
+//__________________________________________
+void AliAnalysisTaskSEDplus::Init(){
+  //
   // Initialization
-
+  //
   if(fDebug > 1) printf("AnalysisTaskSEDplus::Init() \n");
-
-  gROOT->LoadMacro("ConfigVertexingHF.C");
-
-  fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
-  fVHF->PrintStatus();
-
+  
+  //PostData(2,fRDCutsloose);//we should then put those cuts in a tlist if we have more than 1
+  fListCuts=new TList();
+  AliRDHFCutsDplustoKpipi *production = new AliRDHFCutsDplustoKpipi();
+  production=fRDCutsProduction;
+  AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi();
+  analysis=fRDCutsAnalysis;
+  
+  fListCuts->Add(production);
+  fListCuts->Add(analysis);
+  PostData(2,fListCuts);
+  
   return;
 }
 
@@ -608,8 +597,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
 
-   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
- fHistNEvents->Fill(0); // count event
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+  fHistNEvents->Fill(0); // count event
   // Post the data already here
   PostData(1,fOutput);
   
@@ -619,8 +608,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    
     aod = dynamic_cast<AliAODEvent*> (AODEvent());
-    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
-    // have to taken from the AOD event hold by the AliAODExtension
+     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+     // have to taken from the AOD event hold by the AliAODExtension
     AliAODHandler* aodHandler = (AliAODHandler*) 
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(aodHandler->GetExtensions()) {
@@ -675,7 +664,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Int_t nOS=0;
   Int_t index;
   Int_t pdgDgDplustoKpipi[3]={321,211,211};
-  Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
+  // Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};//TO REMOVE
+  //Double_t *cutsDplus = new (Double_t*)fRDCuts->GetCuts();
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     
@@ -686,45 +676,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
 
-    if(d->SelectDplus(fVHF->GetDplusCuts())) {
+    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate)) {
       Int_t iPtBin = -1;
       Double_t ptCand = d->Pt();
-      
-      if(ptCand<2.){   //NO CHANGE
-	cutsDplus[6]=0.022100;//added
-	cutsDplus[7]=0.08;
- 	cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.979;
-	cutsDplus[10]=0.0055;
-      }
-      else if(ptCand>2. && ptCand<3){ 
-	//iPtBin=1;
-	cutsDplus[6]=0.034;//added
-	cutsDplus[7]=0.09;//cutsDplus[7]=0.08;
- 	cutsDplus[8]=1.0;//cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.9975;//cutsDplus[9]=0.991;
-	cutsDplus[10]=0.0028;//cutsDplus[10]=0.005;
-      }else if(ptCand>3. && ptCand<5){ 
-	//iPtBin=2;
-	cutsDplus[6]=0.020667;//added
-	cutsDplus[7]=0.095;//cutsDplus[7]=0.1;
- 	cutsDplus[8]=0.5;//cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.995;//cutsDplus[9]=0.995;
-	cutsDplus[10]=0.000883;//cutsDplus[10]=0.0035;
-      }else{
-	//iPtBin=3;
-	cutsDplus[6]=0.023333;//added
-	cutsDplus[7]=0.115;//cutsDplus[7]=0.1;
- 	cutsDplus[8]=0.5;//cutsDplus[8]=0.5;
- 	cutsDplus[9]=0.9975;//cutsDplus[9]=0.997;
-	cutsDplus[10]=0.000883;//cutsDplus[10]=0.001;
-      }
-      
+
       for(Int_t ibin=0;ibin<fNPtBins&&iPtBin<0&&ptCand>fArrayBinLimits[0]&&ptCand<fArrayBinLimits[fNPtBins];ibin++){
 	if(ptCand<fArrayBinLimits[ibin+1])iPtBin=ibin;
       }
       
-      Bool_t passTightCuts=d->SelectDplus(cutsDplus);
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
+
       Int_t labDp=-1;
       Float_t deltaPx=0.;
       Float_t deltaPy=0.;
@@ -780,7 +741,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[22]=d->GetDCA();
 	tmp[23]=d->Prodd0d0(); 
 	fNtupleDplus->Fill(tmp);
-	PostData(2,fNtupleDplus);
+	PostData(3,fNtupleDplus);
       }
       Double_t dlen=d->DecayLength();
       Double_t cosp=d->CosPointingAngle();
@@ -800,7 +761,7 @@ Double_t ptmax=0;
 	fPtMaxHist[index]->Fill(ptmax);
 	fDCAHist[index]->Fill(dca);
 	
-	if(passTightCuts){
+	if(passTightCuts==1){
 	  fMassHistTC[index]->Fill(invMass);
 	}
 	
@@ -813,7 +774,7 @@ Double_t ptmax=0;
 	    fSumd02Hist[index]->Fill(sumD02);
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
-	    if(passTightCuts){
+	    if(passTightCuts==1){
 	      fMassHistTC[index]->Fill(invMass);
 
 	    }
@@ -826,23 +787,17 @@ Double_t ptmax=0;
 	    fSumd02Hist[index]->Fill(sumD02);
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
-	    if(passTightCuts){
+	    if(passTightCuts==1){
 	      fMassHistTC[index]->Fill(invMass);
 
 	    }	
 	  }
 	}
       }
-      /*
-      //start OS analysis
-      if(labDp<0)fHistOSbkg->Fill(d->InvMassDplus());
-      fHistOS->Fill(d->InvMassDplus());
-      */
-      nOS++;
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
- 
+  
   //start LS analysis
   if(fDoLS && arrayLikeSign) LSAnalysis(array3Prong,arrayLikeSign,aod,vtx1,nOS);
   
@@ -1009,7 +964,7 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
  }
 
   if(fFillNtuple){
-    fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(2));
+    fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(3));
   }
 
   TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
