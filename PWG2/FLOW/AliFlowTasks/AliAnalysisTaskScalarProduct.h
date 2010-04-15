@@ -33,6 +33,9 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   void   SetUsePhiWeights(Bool_t const aPhiW) {this->fUsePhiWeights = aPhiW;}
   Bool_t GetUsePhiWeights() const             {return this->fUsePhiWeights;}
 
+  void     SetRelDiffMsub(Double_t diff) { this->fRelDiffMsub = diff; }
+  Double_t GetRelDiffMsub() const        { return this->fRelDiffMsub; }
+
 
  private:
 
@@ -43,9 +46,10 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   AliFlowAnalysisWithScalarProduct* fSP;            // analysis object
   TList*                            fListHistos;    // collection of output
 
-  Bool_t                            fUsePhiWeights; // use phi weights
-  TList*                            fListWeights;   // list with weights
+  Bool_t    fUsePhiWeights; // use phi weights
+  TList*    fListWeights;   // list with weights
 
+  Double_t  fRelDiffMsub;   // the relative difference the two subevent multiplicities can have
   
   ClassDef(AliAnalysisTaskScalarProduct, 0); // example of analysis
 };

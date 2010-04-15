@@ -13,6 +13,15 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 
+///////////////////////////////////////////////
+// AliAnalysisTaskScalarProduct:
+//
+// analysis task for Scalar Product Method
+//
+// Author: Naomi van der Kolk (kolk@nikhef.nl)
+///////////////////////////////////////////////
+
+
 #include "Riostream.h" //needed as include
 
 class TFile;
@@ -28,14 +37,6 @@ class AliAnalysisTaskSE;
 #include "AliFlowCommonHist.h"
 #include "AliFlowCommonHistResults.h"
 
-///////////////////////////////////////////////
-// AliAnalysisTaskScalarProduct:
-//
-// analysis task for Scalar Product Method
-//
-// Author: Naomi van der Kolk (kolk@nikhef.nl)
-///////////////////////////////////////////////
-
 ClassImp(AliAnalysisTaskScalarProduct)
 
 //________________________________________________________________________
@@ -45,7 +46,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fSP(NULL),
   fListHistos(NULL),
   fUsePhiWeights(usePhiWeights),
-  fListWeights(NULL)
+  fListWeights(NULL),
+  fRelDiffMsub(1.0)
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
@@ -67,7 +69,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fSP(NULL),
   fListHistos(NULL),
   fUsePhiWeights(kFALSE),
-  fListWeights(NULL)
+  fListWeights(NULL),
+  fRelDiffMsub(1.0)
   {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
@@ -96,7 +99,10 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
   cout<<"AliAnalysisTaskScalarProduct::CreateOutputObjects()"<<endl;
   
   //Analyser
-  fSP  = new AliFlowAnalysisWithScalarProduct() ;
+  fSP = new AliFlowAnalysisWithScalarProduct();
+
+  //set the allowed relative difference in the subevent multiplicities
+  fSP->SetRelDiffMsub(fRelDiffMsub); 
     
   //for using phi weights:
   if(fUsePhiWeights) {
