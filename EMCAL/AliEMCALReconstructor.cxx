@@ -53,7 +53,6 @@
 #include "AliCDBManager.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCAL.h"
-#include "AliEMCALHistoUtilities.h"
 #include "AliESDVZERO.h"
 #include "AliCDBManager.h"
 #include "AliRunLoader.h"
@@ -130,12 +129,12 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   AliCodeTimer::Instance()->Print();
 } 
 
-//____________________________________________________________________________
-void AliEMCALReconstructor::Init()
-{
-  // Trigger hists - Oct 24, 2007
-  fList = AliEMCALHistoUtilities::GetTriggersListOfHists(kTRUE);
-}
+// //____________________________________________________________________________
+// void AliEMCALReconstructor::Init()
+// {
+//   // Trigger hists - Oct 24, 2007
+//    fList = AliEMCALHistoUtilities::GetTriggersListOfHists(kTRUE);
+// }
 
 //____________________________________________________________________________
 void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
@@ -340,7 +339,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   esd->AddEMCALTriggerPosition(triggerPosition);
   esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
   // Fill trigger hists
-  AliEMCALHistoUtilities::FillTriggersListOfHists(fList,&triggerPosition,&triggerAmplitudes);
+  //  AliEMCALHistoUtilities::FillTriggersListOfHists(fList,&triggerPosition,&triggerAmplitudes);
 
   //########################################
   //##############Fill CaloCells###############

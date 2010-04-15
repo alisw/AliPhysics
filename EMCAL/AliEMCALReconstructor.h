@@ -53,7 +53,8 @@ public:
    
   virtual ~AliEMCALReconstructor() ; //dtor
 
-  virtual  void Init();
+  virtual  void Init() {;}
+
   Bool_t       Debug() const { return fDebug ; }
 
   using AliReconstructor::FillESD;

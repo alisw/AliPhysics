@@ -33,7 +33,7 @@ AliEMCALTrigger.cxx \
 AliEMCALTriggerSTURawStream.cxx \
 AliEMCAL.cxx \
 AliEMCALRawUtils.cxx \
-AliCaloRawAnalyzerFastFit.cxx AliEMCALHistoUtilities.cxx
+AliCaloRawAnalyzerFastFit.cxx
 
 
 
