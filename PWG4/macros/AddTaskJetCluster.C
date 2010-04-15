@@ -69,7 +69,6 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
 
    if(type == "AOD"){
      // Assume all jet are produced already
-     pwg4spec->SetAODJetInput(kTRUE);
      pwg4spec->SetAODTrackInput(kTRUE);
      pwg4spec->SetAODMCInput(kTRUE);
    }
