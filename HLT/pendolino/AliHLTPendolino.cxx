@@ -20,7 +20,7 @@
 //  @author Sebastian Bablok
 //  @date   
 //  @brief  
-//  @note
+//  @note   maintained by Matthias.Richter@ift.uib.no
 
 #include "AliHLTPendolino.h"
 
@@ -51,28 +51,28 @@ ClassImp(AliHLTPendolino)
 
 
 /** Static string to define a local storage for the OCDB contact. */
-const TString AliHLTPendolino::kLOCAL_STORAGE_DEFINE = "local://";
+const TString AliHLTPendolino::fgkLocalStorageDefine = "local://";
 
-const char* AliHLTPendolino::kHLTInterfaceModule = "Pendolino-Core";
+const char* AliHLTPendolino::fgkHLTInterfaceModule = "Pendolino-Core";
 
-const TString AliHLTPendolino::kTaxiListBaseFolder = getenv("ALIHLT_T_HCDBDIR"); 
+const TString AliHLTPendolino::fgkTaxiListBaseFolder = getenv("ALIHLT_T_HCDBDIR"); 
 //"/opt/T-HCDB/lists/lists-taxi/";
 
-const TString AliHLTPendolino::kTaxiListFolderName = "lists/lists-taxi/";
+const TString AliHLTPendolino::fgkTaxiListFolderName = "lists/lists-taxi/";
 
-const TString AliHLTPendolino::kTaxiListPendolino = "Pendolino.list";
+const TString AliHLTPendolino::fgkTaxiListPendolino = "Pendolino.list";
 
-const Int_t AliHLTPendolino::kMAX_LINE_LENGTH = 256;
+const Int_t AliHLTPendolino::fgkMaxLineLength = 256;
 
-const Int_t AliHLTPendolino::kHLTPendolinoException = -10;
+const Int_t AliHLTPendolino::fgkHLTPendolinoException = -10;
 
-const Int_t AliHLTPendolino::kHLTPendolinoBadCast = -9;
+const Int_t AliHLTPendolino::fgkHLTPendolinoBadCast = -9;
 
-const Int_t AliHLTPendolino::kHLTPendolinoNotPredictProc = -8;
+const Int_t AliHLTPendolino::fgkHLTPendolinoNotPredictProc = -8;
 
-const Int_t AliHLTPendolino::kHLTPendolinoModuleNotExisting = -7;
+const Int_t AliHLTPendolino::fgkHLTPendolinoModuleNotExisting = -7;
 
-const Int_t AliHLTPendolino::kHLTPendolinoNoDCS = -6;
+const Int_t AliHLTPendolino::fgkHLTPendolinoNoDCS = -6;
 
 //const Int_t AliHLTPendolino::
 
@@ -83,9 +83,16 @@ AliHLTPendolino::AliHLTPendolino(Int_t run, TString HCDBbase, TString runType,
 			fRunType(runType), fRunNumber(run),
 			fHCDBPath(""), fPredictionProcessorMap(),
 			fpLogger(0), fOwnLogger(kFALSE),
-			fStartTime(startTime), fEndTime(endTime) {
+			fStartTime(startTime), fEndTime(endTime) 
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 	// C-tor of AliHLTPendolino
-	fHCDBPath = kLOCAL_STORAGE_DEFINE + HCDBbase;
+	fHCDBPath = fgkLocalStorageDefine + HCDBbase;
 	if (logger == 0) {
 		fpLogger = new AliHLTPendolinoLoggerOStream();
 		fOwnLogger = kTRUE;
@@ -113,29 +120,29 @@ AliHLTPendolino::~AliHLTPendolino() {
                     (fPredictionProcessorMap.GetValue(key));
 
             if (aPredict == 0) {
-                Log(kHLTInterfaceModule, 
+                Log(fgkHLTInterfaceModule, 
 						" *** ERROR, cannot delete registered processor '"
 					   	+ detector + "'; does not seem to be a PredictionProcessor.");
                 continue;
             }
-			Log(kHLTInterfaceModule, " ### [DEBUG] deleting PredictProc '" + 
+			Log(fgkHLTInterfaceModule, " ### [DEBUG] deleting PredictProc '" + 
 					detector + "'.");
 			delete aPredict;
         } catch (std::bad_cast) {
             // failed -> is not a AliHLTPredictionProcessorInterface implementation
             // -> discarding call
-            Log(kHLTInterfaceModule, " *** ERROR, cannot delete registered processor '"
+            Log(fgkHLTInterfaceModule, " *** ERROR, cannot delete registered processor '"
                     + detector + "'; does not seem to be a PredictionProcessor..");
             continue;
 
         } catch (std::exception& e) {
-            Log(kHLTInterfaceModule, 
+            Log(fgkHLTInterfaceModule, 
 					" *** Exception in call for deleting PrecitionProcessor '"
                     + detector + "'.");
             continue;
         }
     }
-	Log(kHLTInterfaceModule, " ### [DEBUG] Deleting of PredictionProcessors finished.");
+	Log(fgkHLTInterfaceModule, " ### [DEBUG] Deleting of PredictionProcessors finished.");
 
 	// clean up logger
 	if ((fOwnLogger) && (fpLogger != 0)) {
@@ -154,23 +161,23 @@ Bool_t AliHLTPendolino::Store(const AliCDBPath& path, TObject* object,
 	Int_t startNumber = 0;
 	Int_t endNumber = 0;
 	AliCDBManager* man = 0; 
-	AliCDBStorage* local_hcdb = 0;	
+	AliCDBStorage* localHCDB = 0;	
 
 	startNumber = ((fRunNumber - validityStart) <= 0) ? 0 : (fRunNumber - validityStart);
 	endNumber = (validityInfinite) ? AliCDBRunRange::Infinity() : fRunNumber;
 
 	man = AliCDBManager::Instance();
     if (man == 0) {
-		Log(kHLTInterfaceModule, " *** ERROR cannot obtain a CDB Manager reference.");
+		Log(fgkHLTInterfaceModule, " *** ERROR cannot obtain a CDB Manager reference.");
 		return kFALSE;
 	}
 
     // contact local storage (HCDB)
-    local_hcdb = man->GetStorage(fHCDBPath.Data());
-    if (local_hcdb == 0) {
+    localHCDB = man->GetStorage(fHCDBPath.Data());
+    if (localHCDB == 0) {
 		TString msg(" *** ERROR in initiating HCDB: ");
 		msg += fHCDBPath;
-        Log(kHLTInterfaceModule, msg.Data());
+        Log(fgkHLTInterfaceModule, msg.Data());
         man->DestroyActiveStorages();
         return kFALSE;
     }
@@ -186,12 +193,12 @@ Bool_t AliHLTPendolino::Store(const AliCDBPath& path, TObject* object,
     // Why using current run number as version number ???
 	AliCDBId entryID(path, startNumber, endNumber, fRunNumber, -1);
 	
-	if (local_hcdb->Put(object, entryID, metaData)) {
+	if (localHCDB->Put(object, entryID, metaData)) {
 		retVal = kTRUE;
 	} else {
 		TString msg(" *** Unable to store DCS data to HCDB: ");
 		msg += entryID.ToString();
-    	Log(kHLTInterfaceModule, msg.Data());
+    	Log(fgkHLTInterfaceModule, msg.Data());
     }
 
 	man->DestroyActiveStorages();
@@ -205,7 +212,7 @@ Bool_t AliHLTPendolino::StoreReferenceData(const AliCDBPath& path,
 	// Disabled Function inherited from interface
 	TString msg(" ~~~ PredictProc tries to store reference data to '" 
 			+ path.GetPath() + "'. Discarding call in Pendolino.");
-	Log(kHLTInterfaceModule, msg.Data());
+	Log(fgkHLTInterfaceModule, msg.Data());
 
 	return kFALSE;
 }
@@ -221,7 +228,7 @@ Bool_t AliHLTPendolino::StoreReferenceFile(const char* detector,
 	msg = " ~~~ PredictProc (" + det + ") tries to store reference file (" +
 			filename + ") to '" + gridname + 
 			"'. Discarding call in Pendolino.";
-    Log(kHLTInterfaceModule, msg.Data());
+    Log(fgkHLTInterfaceModule, msg.Data());
 
     return kFALSE;
 }
@@ -236,7 +243,7 @@ Bool_t AliHLTPendolino::StoreRunMetadataFile(const char* localFile,
     TString gridname(gridFileName);
     msg = " ~~~ PredictProc tries to store 'run meta data' file (" +
             filename + ") to '" + gridname + "'. Discarding call in Pendolino.";
-    Log(kHLTInterfaceModule, msg.Data());
+    Log(fgkHLTInterfaceModule, msg.Data());
 
     return kFALSE;
 }
@@ -252,7 +259,7 @@ const char* AliHLTPendolino::GetFile(Int_t system, const char* detector,
 	TString from(GetSystemName(system));
 	msg = " ~~~ PredictProc (" + det + ") requests file (" + filename + ") from '" 
 			+ src + "' at " + from + ". Discarding call in Pendolino.";
-	Log(kHLTInterfaceModule, msg.Data());
+	Log(fgkHLTInterfaceModule, msg.Data());
 
 	return NULL;
 }
@@ -261,7 +268,7 @@ const char* AliHLTPendolino::GetTriggerConfiguration() {
     // Disabled Function inherited from interface
     TString msg;
     msg = " ~~~ PredictProc tries to request Trigger configuration, this is disabled. Discarding call in Pendolino.";
-	Log(kHLTInterfaceModule, msg.Data());
+	Log(fgkHLTInterfaceModule, msg.Data());
 
 	return NULL;
 }
@@ -270,7 +277,7 @@ const char* AliHLTPendolino::GetTriggerDetectorMask() {
     // Disabled Function inherited from interface
     TString msg;
     msg = " ~~~ PredictProc tries to request Trigger configuration, this is disabled. Discarding call in Pendolino.";
-	Log(kHLTInterfaceModule, msg.Data());
+	Log(fgkHLTInterfaceModule, msg.Data());
 
 	return NULL;
 }
@@ -285,7 +292,7 @@ TList* AliHLTPendolino::GetFileSources(Int_t system, const char* detector,
     TString from(GetSystemName(system));
     msg = " ~~~ PredictProc (" + det + ") requests file sources for (" + filename 
 			+ ") from '" + from + ". Discarding call in Pendolino.";
-    Log(kHLTInterfaceModule, msg.Data());
+    Log(fgkHLTInterfaceModule, msg.Data());
 
     return NULL;
 }
@@ -300,7 +307,7 @@ TList* AliHLTPendolino::GetFileIDs(Int_t system, const char* detector,
     TString from(GetSystemName(system));
     msg = " ~~~ PredictProc (" + det + ") requests file IDs for (" + filename
             + ") from '" + from + ". Discarding call in Pendolino.";
-    Log(kHLTInterfaceModule, msg.Data());
+    Log(fgkHLTInterfaceModule, msg.Data());
 
     return NULL;
 }
@@ -313,7 +320,7 @@ const char* AliHLTPendolino::GetRunParameter(const char* /*lbEntry*/) {
 // maybe using a parameter file, where these settings are stored at start up by
 // the starting script and a dedicated class read and stores its content.
 
-	Log(kHLTInterfaceModule, 
+	Log(fgkHLTInterfaceModule, 
 			" ### GetRunParameter are not defined, yet. Feature will be available soon.");
 	return NULL;
 }
@@ -335,7 +342,7 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 	if (man == 0) {
 		TString msg(" *** ERROR, cannot obtain a CDB Manager reference for: ");
 		msg += detector;
-		Log(kHLTInterfaceModule, msg.Data());
+		Log(fgkHLTInterfaceModule, msg.Data());
 		return NULL;
 	}
 
@@ -343,7 +350,7 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 	if (hcdb == 0) {
 		TString msg(" *** ERROR, cannot acquire HCDB storage (");
 		msg += fHCDBPath + ") for fetching data for Pendolino.";
-		Log(kHLTInterfaceModule, msg.Data());
+		Log(fgkHLTInterfaceModule, msg.Data());
 		return NULL;
 	}
 	
@@ -353,7 +360,7 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 		TString msg(" ~~~ WARNING: no valid entry for '");
 		msg += path.GetPath() + "' in HCDB for run number ";
 		msg += fRunNumber;
-		Log(kHLTInterfaceModule, msg.Data());
+		Log(fgkHLTInterfaceModule, msg.Data());
 	}
 
 	return entry;
@@ -365,7 +372,7 @@ AliCDBEntry* AliHLTPendolino::GetFromOCDB(const char* detector,
 	} catch (std::bad_cast) {
 		TString msg(" *** ERROR, bad cast of HCDB entry (");
 		msg += path.GetPath() + ") after fetching from HCDB.";
-		Log(kHLTInterfaceModule, msg.Data());
+		Log(fgkHLTInterfaceModule, msg.Data());
 		return NULL;
 	}
 	return entry;
@@ -382,21 +389,21 @@ Bool_t AliHLTPendolino::IncludeAliCDBEntryInList(const TString& entryPath) {
 	TString filename;
 	TTimeStamp ts;
 
-	filename = kTaxiListBaseFolder + "/" + kTaxiListFolderName + 
-			kTaxiListPendolino;
-	Log(kHLTInterfaceModule, filename + " [DEBUG] filename");
+	filename = fgkTaxiListBaseFolder + "/" + fgkTaxiListFolderName + 
+			fgkTaxiListPendolino;
+	Log(fgkHLTInterfaceModule, filename + " [DEBUG] filename");
 
 	infile.open(filename, ios_base::in);
 	if (infile.is_open()) {
-		char line[kMAX_LINE_LENGTH];
+		char line[fgkMaxLineLength];
 
 		while (!infile.eof()) {
-			infile.getline(line, kMAX_LINE_LENGTH);
+			infile.getline(line, fgkMaxLineLength);
 			if (strncmp(line, entryPath.Data(), entryPath.Length()) == 0) {
 					// entry already exists, leave function after proper clean up
 				TString msg(" --- Entry '");
 				msg += entryPath + "' is already included in Taxi list file.";
-				Log(kHLTInterfaceModule, msg.Data());	
+				Log(fgkHLTInterfaceModule, msg.Data());	
 				infile.close();
 				return kTRUE;
 			}
@@ -408,7 +415,7 @@ Bool_t AliHLTPendolino::IncludeAliCDBEntryInList(const TString& entryPath) {
 		if (!outfile.is_open()) {
 			TString msg(" *** Unable to create Pendolino list file '");
 			msg += filename + "' for Taxi. Continueing without list update...";
-			Log(kHLTInterfaceModule, msg.Data());
+			Log(fgkHLTInterfaceModule, msg.Data());
 			return kFALSE;
 		}
 //		outfile.seekp(-1, ios::end);
@@ -420,13 +427,13 @@ Bool_t AliHLTPendolino::IncludeAliCDBEntryInList(const TString& entryPath) {
 
 		TString msg(" +++ Included missing entry '");
 		msg += entryPath + "' in Taxi list file.";
-		Log(kHLTInterfaceModule, msg.Data());
+		Log(fgkHLTInterfaceModule, msg.Data());
 		bRet = kTRUE;
 		
 	} else {
 		TString msg(" ~~~ Unable to open Pendolino list file '");
 	   	msg += filename + "' for Taxi. Creating new one.";
-		Log(kHLTInterfaceModule, msg.Data());
+		Log(fgkHLTInterfaceModule, msg.Data());
 		outfile.open(filename, ios_base::out);
 		
 		if (outfile.is_open()) {
@@ -444,7 +451,7 @@ Bool_t AliHLTPendolino::IncludeAliCDBEntryInList(const TString& entryPath) {
 		} else {
 			msg=" *** Unable to create Pendolino list file '";
 			msg += filename + "' for Taxi. Continueing without list update...";
-			Log(kHLTInterfaceModule, msg.Data());
+			Log(fgkHLTInterfaceModule, msg.Data());
 		}	
 	}
 	
@@ -462,7 +469,7 @@ void AliHLTPendolino::Log(const char* detector, const char* message) {
 void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 	// registers a PredictionProcessor
 	if (preprocessor == 0) {
-		Log(kHLTInterfaceModule, 
+		Log(fgkHLTInterfaceModule, 
 				" *** ERROR: Cannot register NULL pointer as PredictionProcessor.");
 		return;	
 	}
@@ -470,7 +477,7 @@ void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
     TString detector(preprocessor->GetName());
 
     if (fPredictionProcessorMap.GetValue(detector.Data())) {
-        Log(kHLTInterfaceModule, " ~~~ Already registered PredictionProcessor '" +
+        Log(fgkHLTInterfaceModule, " ~~~ Already registered PredictionProcessor '" +
                 detector + "'. Ignoring call.");
         return;
     }
@@ -486,17 +493,17 @@ void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 	// TODO move this in seperated call outside RegisterPreprocessor(..)
 	// safety reason, since preprocessor is not completely generated yet
 	if (!preprocessor->ProcessDCS()) {
-		Log(kHLTInterfaceModule, " *** PredictionProcessor '" + detector +
+		Log(fgkHLTInterfaceModule, " *** PredictionProcessor '" + detector +
 				"' not registered, because it will not process DCS values.");
 		return;
 	}
-	Log(kHLTInterfaceModule, "Module Processes DCS values, Registering PredictionProc " 
+	Log(fgkHLTInterfaceModule, "Module Processes DCS values, Registering PredictionProc " 
 			+ detector);
 	
 	// don't use this check, if there are several PreProcs from one detector
 	// they will have all have different names
 	//if (GetDetPos(detector.Data()) < 0) {
-	//	Log(kHLTInterfaceModule, "   *** Invalid detector name: " + detector);
+	//	Log(fgkHLTInterfaceModule, "   *** Invalid detector name: " + detector);
 	//}
 
 	// Check if preprocessor is actually PredictionProcessor
@@ -517,15 +524,15 @@ void AliHLTPendolino::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 	} catch (std::bad_cast) { 
 		// failed -> is not a AliHLTPredictionProcessorInterface implementation
 		// -> discarding call
-		Log(kHLTInterfaceModule, " *** Cannot register PredictionProcessor '" + detector +
+		Log(fgkHLTInterfaceModule, " *** Cannot register PredictionProcessor '" + detector +
 				"'. Does not implement the AliHLTPredictionProcessorInterface.");
 		return;
 	} catch (std::exception& e) {
-		Log(kHLTInterfaceModule, " *** Exception in the registering of the PredictProc.");		
+		Log(fgkHLTInterfaceModule, " *** Exception in the registering of the PredictProc.");		
 	}
 
 	if (fPredictionProcessorMap.GetValue(detector.Data())) {
-		Log(kHLTInterfaceModule, " ~~~ Already registered PredictionProcessor '" +
+		Log(fgkHLTInterfaceModule, " ~~~ Already registered PredictionProcessor '" +
 				detector + "'. Ignoring call.");
 		return;
 	}
@@ -554,7 +561,7 @@ UInt_t AliHLTPendolino::SetToPredictMaking() {
 					(fPredictionProcessorMap.GetValue(key));
 		
 			if (aPredict == 0) {
-				Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+				Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
 						+ detector +
 						"'. Does not implement the AliHLTPredictionProcessorInterface.");
 				continue;
@@ -564,19 +571,19 @@ UInt_t AliHLTPendolino::SetToPredictMaking() {
 			if ((aPredict->ProcessDCS()) && (aPredict->makePrediction() == 0)) {
 				retVal++;
 			} else {
-				Log(kHLTInterfaceModule, " *** PredictionProcessor '" + detector
+				Log(fgkHLTInterfaceModule, " *** PredictionProcessor '" + detector
 						+ "' does not allow DCS processing or failed to init prediction making.");
 			}
 		} catch (std::bad_cast) {
 	        // failed -> is not a AliHLTPredictionProcessorInterface implementation
     	    // -> discarding call
-        	Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '" 
+        	Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '" 
 					+ detector +
             	    "'. Does not implement the AliHLTPredictionProcessorInterface.");
         	continue;
 
 		} catch (std::exception& e) {
-			Log(kHLTInterfaceModule, " *** Exception in call for makePrediction of " 
+			Log(fgkHLTInterfaceModule, " *** Exception in call for makePrediction of " 
 					+ detector + ".");
 			continue;
 		}
@@ -595,39 +602,39 @@ Int_t AliHLTPendolino::setToPredictMaking(TString detector) {
 		TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 
 		if (object == 0) {
-			Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
+			Log(fgkHLTInterfaceModule, " *** No PredictionProcessor for '" +
 					detector + "' registered.");
-			return kHLTPendolinoModuleNotExisting;
+			return fgkHLTPendolinoModuleNotExisting;
 		}
 				
 		aPredict = dynamic_cast<AliHLTPredictionProcessorInterface*> (object);
 
 		if (aPredict == 0) {
-			Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+			Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
 					+ detector +
 					"'. Does not implement the AliHLTPredictionProcessorInterface.");
-			return kHLTPendolinoNotPredictProc;
+			return fgkHLTPendolinoNotPredictProc;
 		}
 //            detector = aPredict->GetName();
 
 		if (!((aPredict->ProcessDCS()) && (aPredict->makePrediction() == 0))) {
-			Log(kHLTInterfaceModule, " *** PredictionProcessor '" + detector +
+			Log(fgkHLTInterfaceModule, " *** PredictionProcessor '" + detector +
 					"' does not allow DCS processing or failed to init prediction making.");
-			retVal = kHLTPendolinoNoDCS;
+			retVal = fgkHLTPendolinoNoDCS;
 		}
 		
 	} catch (std::bad_cast) {
 		// failed -> is not a AliHLTPredictionProcessorInterface implementation
 		// -> discarding call
-		Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+		Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
 				+ detector +
 				"'. Does not implement the AliHLTPredictionProcessorInterface.");
-		retVal = kHLTPendolinoBadCast;
+		retVal = fgkHLTPendolinoBadCast;
 
 	} catch (std::exception& e) {
-		Log(kHLTInterfaceModule, " *** Exception in call for makePrediction of "
+		Log(fgkHLTInterfaceModule, " *** Exception in call for makePrediction of "
 				+ detector + ".");
-		retVal = kHLTPendolinoException;
+		retVal = fgkHLTPendolinoException;
     }
 	
     return retVal;
@@ -644,18 +651,18 @@ Int_t AliHLTPendolino::PrepareDCSValues(TString detector, TMap* DCSValues) {
 		TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 		
 		if (object == 0) {
-			Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
+			Log(fgkHLTInterfaceModule, " *** No PredictionProcessor for '" +
 					detector + "' registered.");
-			return kHLTPendolinoModuleNotExisting;
+			return fgkHLTPendolinoModuleNotExisting;
 		}
 				
 		aPredict = dynamic_cast<AliHLTPredictionProcessorInterface*> (object);
 
 		if (aPredict == 0) {
-			Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+			Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
 					+ detector +
 					"'. Does not implement the AliHLTPredictionProcessorInterface.");
-			return kHLTPendolinoNotPredictProc;
+			return fgkHLTPendolinoNotPredictProc;
 		}
 
 		retVal = aPredict->Process(DCSValues);
@@ -664,15 +671,15 @@ Int_t AliHLTPendolino::PrepareDCSValues(TString detector, TMap* DCSValues) {
 	} catch (std::bad_cast) {
 		// failed -> is not a AliHLTPredictionProcessorInterface implementation
 		// -> discarding call
-		Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+		Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
 				+ detector +
 				"'. Does not implement the AliHLTPredictionProcessorInterface.");
-		retVal = kHLTPendolinoBadCast;
+		retVal = fgkHLTPendolinoBadCast;
 
 	} catch (std::exception& e) {
-		Log(kHLTInterfaceModule, " *** Exception in call prepareDCSValues of "
+		Log(fgkHLTInterfaceModule, " *** Exception in call prepareDCSValues of "
 				+ detector + ".");
-		retVal = kHLTPendolinoException;
+		retVal = fgkHLTPendolinoException;
 	}
 	
 	return retVal;	
@@ -688,7 +695,7 @@ TMap* AliHLTPendolino::EmulateDCSMap(TString detector, TString aliasName) {
         TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 
         if (object == 0) {
-            Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
+            Log(fgkHLTInterfaceModule, " *** No PredictionProcessor for '" +
                     detector + "' registered.");
             return result;
         }
@@ -696,7 +703,7 @@ TMap* AliHLTPendolino::EmulateDCSMap(TString detector, TString aliasName) {
         aPredict = dynamic_cast<AliHLTPredictionProcessorInterface*> (object);
 
         if (aPredict == 0) {
-            Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+            Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
                     + detector +
                     "'. Does not implement the AliHLTPredictionProcessorInterface.");
             return result;
@@ -708,12 +715,12 @@ TMap* AliHLTPendolino::EmulateDCSMap(TString detector, TString aliasName) {
     } catch (std::bad_cast) {
         // failed -> is not a AliHLTPredictionProcessorInterface implementation
         // -> discarding call
-        Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+        Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
                 + detector +
                 "'. Does not implement the AliHLTPredictionProcessorInterface.");
 
     } catch (std::exception& e) {
-        Log(kHLTInterfaceModule, " *** Exception in call emulateDCSMap of "
+        Log(fgkHLTInterfaceModule, " *** Exception in call emulateDCSMap of "
                 + detector + ".");
     }
 	return result;
@@ -731,18 +738,18 @@ Int_t AliHLTPendolino::initPredictProc(TString detector, Int_t run,
         TObject* object = fPredictionProcessorMap.GetValue(detector.Data());
 
         if (object == 0) {
-            Log(kHLTInterfaceModule, " *** No PredictionProcessor for '" +
+            Log(fgkHLTInterfaceModule, " *** No PredictionProcessor for '" +
                     detector + "' registered.");
-            return kHLTPendolinoModuleNotExisting;
+            return fgkHLTPendolinoModuleNotExisting;
         }
 
         aPredict = dynamic_cast<AliHLTPredictionProcessorInterface*> (object);
 
         if (aPredict == 0) {
-            Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+            Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
                     + detector +
                     "'. Does not implement the AliHLTPredictionProcessorInterface.");
-            return kHLTPendolinoNotPredictProc;
+            return fgkHLTPendolinoNotPredictProc;
         }
 		
 		// Initialize Prediction Processor
@@ -751,15 +758,15 @@ Int_t AliHLTPendolino::initPredictProc(TString detector, Int_t run,
     } catch (std::bad_cast) {
         // failed -> is not a AliHLTPredictionProcessorInterface implementation
         // -> discarding call
-        Log(kHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
+        Log(fgkHLTInterfaceModule, " *** Cannot use PredictionProcessor '"
                 + detector +
                 "'. Does not implement the AliHLTPredictionProcessorInterface.");
-        retVal = kHLTPendolinoBadCast;
+        retVal = fgkHLTPendolinoBadCast;
 
     } catch (std::exception& e) {
-        Log(kHLTInterfaceModule, " *** Exception in call prepareDCSValues of "
+        Log(fgkHLTInterfaceModule, " *** Exception in call prepareDCSValues of "
                 + detector + ".");
-        retVal = kHLTPendolinoException;
+        retVal = fgkHLTPendolinoException;
     }
 
     return retVal;
@@ -786,6 +793,8 @@ UInt_t AliHLTPendolino::GetEndTimeDCSQuery()
 
 void AliHLTPendolino::Log(const char* name , const char* message, UInt_t level)
 {
+  // overloaded function of the shuttle interface
+  // translate into HLT log message
   AliHLTLogging log;
   AliHLTComponentLogSeverity severity=kHLTLogInfo;
   switch (level) {
