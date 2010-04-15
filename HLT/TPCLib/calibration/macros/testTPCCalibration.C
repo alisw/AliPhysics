@@ -53,23 +53,11 @@ void testTPCCalibration(const char* input="./", const char* option="task"){
   // init the HLT system in order to define the analysis chain below
   //
  
-  AliHLTSystem* gHLT=AliHLTPluginBase::GetInstance();
+  AliHLTSystem *gHLT=AliHLTPluginBase::GetInstance();
   
-  TString seedMakerInput;
-  if(seedMakerInput.Length()>0) seedMakerInput+=" ";
-  seedMakerInput+="TPC-globalmerger";
-  seedMakerInput+=" ";
-  seedMakerInput+="TPC-clusters";
-
-  AliHLTConfiguration seedconf("seeds", "TPCCalibSeedMaker", seedMakerInput.Data(), "");
-
-  AliHLTConfiguration esdconf("esd", "GlobalEsdConverter", "TPC-globalmerger", "");
-
   TString calibInput;
   if(calibInput.Length()>0) calibInput+=" ";
-  calibInput+="esd";
-  calibInput+=" ";
-  calibInput+="seeds";
+  calibInput+="GLOBAL-esd-converter TPC-globalmerger TPC-clusters";
     
   TString calibOption = option;
   if     (calibOption.CompareTo("task")==0)          AliHLTConfiguration calibtimeconf("TPCcalib",      "TPCCalibration",   calibInput.Data(), "");
