@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCAgent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Agent of the libAliHLTTPC library
-*/
+//  @file   AliHLTTPCAgent.cxx
+//  @author Matthias Richter
+//  @date   
+//  @brief  Agent of the libAliHLTTPC library
+//  @note   
 
 #include "AliHLTTPCAgent.h"
 #include "AliHLTConfiguration.h"
@@ -82,10 +82,10 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 ClassImp(AliHLTTPCAgent)
 
 AliHLTTPCAgent::AliHLTTPCAgent()
-  :
-  AliHLTModuleAgent("TPC"),
-  fRawDataHandler(NULL),
-  fTracksegsDataHandler(NULL)
+  : AliHLTModuleAgent("TPC")
+  , fRawDataHandler(NULL)
+  , fTracksegsDataHandler(NULL)
+  , fClustersDataHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -209,7 +209,19 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // the esd converter configuration
     handler->CreateConfiguration("TPC-hltout-tracks-esd-converter", "TPCEsdConverter", "TPC-hltout-tracks-publisher", "");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //
+    // a kChain HLTOUT configuration for processing of {'CLUSTERS':'TPC '} data blocks
+    // stores the blocks in file HLT.TPC.Clusters.root in HOMER format
+
+    // publisher component
+    handler->CreateConfiguration("TPC-hltout-cluster-publisher", "AliHLTOUTPublisher"   , NULL, "");
+
+    // the HLTOUT component collects the blocks and stores the file
+    handler->CreateConfiguration("TPC-hltout-cluster-dump", "HLTOUT", "TPC-hltout-cluster-publisher", "-digitfile HLT.TPC.Clusters.root -rawout=off -links 2");
   }
+
   return 0;
 }
 
@@ -315,9 +327,9 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
     }
   }
 
-  // dump for {'CLUSTERS':'TPC '} currently not used any more
+  // dump for {'CLUSTERS':'TPC '} blocks stored in a 'digit' file
   if (dt==AliHLTTPCDefinitions::fgkClustersDataType) {
-      desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
+      desc=AliHLTOUTHandlerDesc(kChain, dt, GetModuleId());
       return 1;
   }
 
@@ -347,6 +359,13 @@ AliHLTOUTHandler* AliHLTTPCAgent::GetOutputHandler(AliHLTComponentDataType dt,
       fRawDataHandler=new AliHLTTPCAgent::AliHLTTPCRawDataHandler;
     }
     return fRawDataHandler;
+  }
+
+  // dump for {'CLUSTERS':'TPC '}, stored in a file HLT.TPC.Clusters.root in HOMER format
+  if (dt==AliHLTTPCDefinitions::fgkClustersDataType) {
+    if (fClustersDataHandler==NULL)
+      fClustersDataHandler=new AliHLTOUTHandlerChain("chains=TPC-hltout-cluster-dump libHLTsim.so libAliHLTUtil.so");
+    return fClustersDataHandler;
   }
 
   // afterburner for {'TRAKSEGS':'TPC '} blocks to be converted to ESD format
@@ -380,6 +399,12 @@ int AliHLTTPCAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
     delete fTracksegsDataHandler;
     fTracksegsDataHandler=NULL;
   }
+
+  if (pInstance==fClustersDataHandler) {
+    delete fClustersDataHandler;
+    fClustersDataHandler=NULL;
+  }
+
   return 0;
 }
 

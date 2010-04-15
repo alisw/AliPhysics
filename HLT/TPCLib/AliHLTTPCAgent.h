@@ -1,15 +1,17 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTTPCAGENT_H
 #define ALIHLTTPCAGENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCAgent.h
-    @author Matthias Richter
-    @date   
-    @brief  Agent of the libAliHLTTPC library
-*/
+//  @file   AliHLTTPCAgent.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  Agent of the libAliHLTTPC library
+//  @note
 
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOUTHandlerEquId.h"
@@ -133,7 +135,10 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
   /** afterburner for {'TRAKSEGS':'TPC '} in the HLTOUT stream */
   AliHLTOUTHandlerChain* fTracksegsDataHandler; //! transient
 
-  ClassDef(AliHLTTPCAgent, 2);
+  /// handler for {'CLUSTERS':'TPC '}
+  AliHLTOUTHandlerChain* fClustersDataHandler; //! transient
+
+  ClassDef(AliHLTTPCAgent, 3);
 };
 
 #endif
