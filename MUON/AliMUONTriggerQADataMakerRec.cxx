@@ -62,6 +62,13 @@ ClassImp(AliMUONTriggerQADataMakerRec)
 #include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONQAIndices.h"
 
+namespace
+{
+  Double_t ProtectedSqrt(Double_t x)
+  {
+    return ( x > 0.0 ? TMath::Sqrt(x) : 0.0 );
+  }
+}
 //____________________________________________________________________________ 
 AliMUONTriggerQADataMakerRec::AliMUONTriggerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
@@ -1296,7 +1303,7 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos()
 
     if(totalNumberOf34!=0){
       ratio4434 = totalNumberOf44/totalNumberOf34;
-      errorRatio4434 = sqrt(totalNumberOf44*(1-ratio4434))/totalNumberOf34;
+      errorRatio4434 = ProtectedSqrt(totalNumberOf44*(1-ratio4434))/totalNumberOf34;
     }else{
       ratio4434 = 0;
       errorRatio4434 = 0;
@@ -1313,7 +1320,7 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos()
 
     if(NumberOf34Update!=0){
       ratio4434Update = NumberOf44Update/NumberOf34Update;
-      errorRatio4434Update = sqrt(NumberOf44Update*(1-ratio4434Update))/NumberOf34Update;
+      errorRatio4434Update = ProtectedSqrt(NumberOf44Update*(1-ratio4434Update))/NumberOf34Update;
     }else{
       ratio4434Update = 0;
       errorRatio4434Update = 0;
