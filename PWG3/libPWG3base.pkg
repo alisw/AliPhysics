@@ -1,7 +1,9 @@
 #-*- Mode: Makefile -*-
 
 SRCS:=  base/AliQuarkoniaAcceptance.cxx \
-        base/AliQuarkoniaEfficiency.cxx 
+        base/AliQuarkoniaEfficiency.cxx \
+        base/AliAnalysisTaskPtMothFromPtDaugh.cxx \
+        base/AliPtMothFromPtDaugh.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 
