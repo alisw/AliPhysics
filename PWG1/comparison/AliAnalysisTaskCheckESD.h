@@ -26,27 +26,27 @@ class AliAnalysisTaskCheckESD : public AliAnalysisTaskSE
   
  private:
 
-  TList* fListOfHistos;
+  TList* fListOfHistos;   // list of the histos
 
-  TH1F * fGen;
-  TH1F* fRec;
-  TH1F* fResPtInv;
-  TH1F* fResPhi;
-  TH1F* fResTheta;
-  TH2F* fDEdxRight;
-  TH2F* fDEdxWrong;
-  TH1F* fResTOFRight;
-  TH1F* fResTOFWrong;
-  TH1F* fEPHOS;
-  TH1F* fEEMCAL;
-  TH1F* fPtMUON;
-  TH1F* fMassK0;
-  TH1F* fMassLambda;
-  TH1F* fMassLambdaBar;
-  TH1F* fMassXi;
-  TH1F* fMassOmega;
-  TH1F* fScalars;
-  TH1F* fArrayHist;  
+  TH1F * fGen;            // generated tracks
+  TH1F* fRec;             // reconstructed tracks
+  TH1F* fResPtInv;        // 1/pt resolution
+  TH1F* fResPhi;          // phi resolution
+  TH1F* fResTheta;        // theta resolution
+  TH2F* fDEdxRight;       // dE/dx in TPC
+  TH2F* fDEdxWrong;       // 
+  TH1F* fResTOFRight;     // TOF resolution
+  TH1F* fResTOFWrong;     //
+  TH1F* fEPHOS;           // PHOS E
+  TH1F* fEEMCAL;          // EMCAL E
+  TH1F* fPtMUON;          // MUON pt 
+  TH1F* fMassK0;          // K0s mass
+  TH1F* fMassLambda;      // Lambda mass
+  TH1F* fMassLambdaBar;   // anti-Lambda mass
+  TH1F* fMassXi;          // Xi mass
+  TH1F* fMassOmega;       // Omega mass 
+  TH1F* fScalars;         // container of scalars
+  TH1F* fArrayHist;       // container of arrays
    
   AliAnalysisTaskCheckESD(const AliAnalysisTaskCheckESD&); // not implemented
   AliAnalysisTaskCheckESD& operator=(const AliAnalysisTaskCheckESD&); // not implemented
