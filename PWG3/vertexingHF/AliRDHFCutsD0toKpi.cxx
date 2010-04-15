@@ -106,18 +106,6 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
   }
 
   AliAODRecoDecayHF2Prong *dd = (AliAODRecoDecayHF2Prong*)d;
- /*
-  vars[0] = dd->GetDCA();
-  if(TMath::Abs(pdgdaughters[0])==211) {
-    vars[1] = dd->CosThetaStarD0();
-  } else {
-    vars[1] = dd->CosThetaStarD0bar();
-  }
-  vars[2] = dd->Prodd0d0();
-  vars[3] = dd->CosPointingAngle();
-
-  return;
-*/
  
   Int_t iter=-1;
   if(fVarsForOpt[0]){
@@ -233,40 +221,35 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
     if(d->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
     if(d->PtProng(0) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(1) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
     
-    if(!okD0 && !okD0bar) returnvalue=0;
+    if(!okD0 && !okD0bar) return 0;
     
     if(TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)] || 
        TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)]) okD0 = 0;
     if(TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)] ||
        TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) returnvalue=0;
+    if(!okD0 && !okD0bar) return 0;
     
-    if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) { okD0 = okD0bar = 0; returnvalue=0;
-    }
+    if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
     
     d->InvMassD0(mD0,mD0bar);
     if(TMath::Abs(mD0-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
     if(TMath::Abs(mD0bar-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) returnvalue=0;
+    if(!okD0 && !okD0bar) return 0;
     
     d->CosThetaStarD0(ctsD0,ctsD0bar);
     if(TMath::Abs(ctsD0) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0 = 0;
     if(TMath::Abs(ctsD0bar) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0bar = 0;
-    if(!okD0 && !okD0bar) returnvalue=0;
+    if(!okD0 && !okD0bar) return 0;
     
-    if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)]) { okD0 = okD0bar = 0; returnvalue=0; }
+    if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
     
-    if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)]) { okD0 = okD0bar = 0; returnvalue=0; }
-    
-    
+    if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
     
     if (okD0) returnvalue=1; //cuts passed as D0
     if (okD0bar) returnvalue=2; //cuts passed as D0bar
     if (okD0 && okD0bar) returnvalue=3; //cuts passed as D0 and D0bar
   }
 
-
   return returnvalue;
-
 }
 //---------------------------------------------------------------------------

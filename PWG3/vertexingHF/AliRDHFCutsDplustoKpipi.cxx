@@ -65,7 +65,7 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi() :
 			 kFALSE,
 			 kTRUE};
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[12]={kTRUE,
+  Bool_t forOpt[12]={kFALSE,
 		     kFALSE,
 		     kFALSE,
 		     kFALSE,
@@ -77,7 +77,7 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi() :
 		     kTRUE,
 		     kTRUE,
 		     kFALSE};
-  SetVarsForOpt(6,forOpt);
+  SetVarsForOpt(5,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 }
@@ -117,20 +117,7 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
 
   AliAODRecoDecayHF3Prong *dd = (AliAODRecoDecayHF3Prong*)d;
- /*
-  vars[0] = dd->GetDCA();
-  if(TMath::Abs(pdgdaughters[0])==211) {
-    vars[1] = dd->CosThetaStarD0();
-  } else {
-    vars[1] = dd->CosThetaStarD0bar();
-  }
-  vars[2] = dd->Prodd0d0();
-  vars[3] = dd->CosPointingAngle();
 
-  return;
-*/
- 
-  //possibile generalizzazione
   Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
@@ -146,11 +133,15 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
   if(fVarsForOpt[2]){
     iter++;
+    Float_t minPtDau=1000000.0;
     for(Int_t iprong=0;iprong<3;iprong++){
       if(TMath::Abs(pdgdaughters[iprong])==211) {
-	vars[iter]=dd->PtProng(iprong);
+	if(dd->PtProng(iprong)<minPtDau){
+	  minPtDau=dd->PtProng(iprong);
+	}
       }
     }
+    vars[iter]=minPtDau;
   }
   if(fVarsForOpt[3]){
     iter++;
@@ -162,15 +153,22 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
   if(fVarsForOpt[4]){
     iter++;
+    Float_t minImpParDau=1000000.0;
     for(Int_t iprong=0;iprong<3;iprong++){
       if(TMath::Abs(pdgdaughters[iprong])==211) {
-	vars[iter]=dd->Getd0Prong(iprong);
+	if(dd->Getd0Prong(iprong)<minImpParDau){
+	  minImpParDau=dd->Getd0Prong(iprong);
+	}
       }
     }
+   vars[iter]=minImpParDau;
   }
   if(fVarsForOpt[5]){
     iter++;
-    vars[iter]=dd->GetDist12toPrim();
+    Float_t dist12 = dd->GetDist12toPrim();
+    Float_t dist23 = dd->GetDist23toPrim();
+    if(dist12<dist23)vars[iter]=dist12;
+    else vars[iter]=dist23;
   }
   if(fVarsForOpt[6]){
     iter++;
@@ -198,7 +196,13 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
   if(fVarsForOpt[11]){
     iter++;
-    vars[iter]=dd->GetDCA();
+    Float_t maxDCA=0;
+    for(Int_t iprong=0;iprong<3;iprong++){
+      if(dd->GetDCA(iprong)<maxDCA){
+	maxDCA=dd->GetDCA(iprong);
+      }
+    }
+    vars[iter]=maxDCA;
   }
   return;
 }
@@ -209,7 +213,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
   }
   //PrintAll();
@@ -234,9 +238,9 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
      selectionLevel==AliRDHFCuts::kCandidate) {
     
     Double_t pt=d->Pt();
-    
+   
     Int_t ptbin=PtBin(pt);
-    
+
     Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
     Double_t mDplus=d->InvMassDplus();
     if(TMath::Abs(mDplus-mDplusPDG)>fCutsRD[GetGlobalIndex(0,ptbin)])return 0;
@@ -247,23 +251,24 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
 
     
 
-    //2track cuts
-    if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)])return 0;
-    if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.)return 0;
-    
-    //sec vert
-    if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)])return 0;
+  //2track cuts
+  if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)])return 0;
+  if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.)return 0;
 
-    if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)])return 0;
-    
-    if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)])return 0;
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)])return 0;
-    Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-    if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)])return 0;
-    
-    //DCA
-    for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;
-    
+  //sec vert
+  if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)])return 0;
+
+  if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)])return 0;
+
+  if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)])return 0;
+  if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)])return 0;
+  Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+  if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)])return 0;
+
+  //DCA
+  for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;
+  
+  return 1;
   }
   return 1;
 }
