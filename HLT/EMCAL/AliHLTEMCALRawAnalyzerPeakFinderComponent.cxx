@@ -32,8 +32,12 @@ AliHLTEMCALRawAnalyzerPeakFinderComponent  gAliHLTEMCALRawAnalyzerPeakFinderComp
 
 AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent (): AliHLTEMCALRawAnalyzerComponent()
 {
+
+  fAnalyzerPtr = new    AliCaloRawAnalyzerPeakFinder();
+
   // constructor
   //  fAnalyzerPtr = new    AliCaloRawAnalyzerPeakFinder();
+
 }
 
 

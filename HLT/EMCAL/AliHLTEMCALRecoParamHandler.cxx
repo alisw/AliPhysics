@@ -36,6 +36,15 @@ Float_t AliHLTEMCALRecoParamHandler::GetCorrectedEnergy ( Float_t e )
    return e;
 }
 
+
+Int_t 
+AliHLTEMCALRecoParamHandler::GetParametersFromCDB()
+{
+  // Avoiding linking error in EMCAL
+}
+
+
+
 void AliHLTEMCALRecoParamHandler::FillParameters()
 {
    //See header file for class documentation
