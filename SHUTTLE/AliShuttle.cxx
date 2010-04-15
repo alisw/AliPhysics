@@ -2046,6 +2046,8 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	Bool_t ecsSuccess = entry->GetECSSuccess();
 	TString runType = entry->GetRunType();
 	TString tmpdaqstartTime = entry->GetRunParameter("DAQ_time_start");
+	TString recordingFlagString = entry->GetRunParameter("GDCmStreamRecording");
+	UInt_t recordingFlag = recordingFlagString.Atoi();
 	UInt_t daqstartTime = tmpdaqstartTime.Atoi();
 	
 	UInt_t now = time(0);
@@ -2062,21 +2064,27 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 			if (endTime >= now - dcsDelay) {
 				Log("SHUTTLE", Form("Skipping run %d for now, because DCS buffer time is not yet expired", run));
 			} else {
-				if (runType == "PHYSICS") {
-					if (ecsSuccess) {
-						return entry;
+				if ((runType == "PHYSICS" || runType == "STANDALONE") && recordingFlag == 0){
+					Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is %s but the recording is OFF - Skipping!", run, runType.Data()));
+					skip = kTRUE;
+				} 
+				else {
+					if (runType == "PHYSICS") {
+						if (ecsSuccess) {
+							return entry;
+						} else {
+							Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is PHYSICS but ECS success flag not set (Reason = %s) - Skipping!", run, entry->GetRunParameter("eor_reason")));
+							skip = kTRUE;
+						} 
 					} else {
-						Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is PHYSICS but ECS success flag not set (Reason = %s) - Skipping!", run, entry->GetRunParameter("eor_reason")));
-						skip = kTRUE;
-					} 
-				} else {
-					if (ecsSuccess || daqstartTime > 0) {
-						if (ecsSuccess == kFALSE)
-							Log("SHUTTLE", Form("Processing run %d although in status ECS failure (Reason: %s), since run type != PHYSICS and DAQ_time_start != 0", run, entry->GetRunParameter("eor_reason")));
-						return entry;
-					} else {
-						Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is %s, ECS success flag was not set (Reason = %s) and DAQ_time_start was NULL - Skipping!", run, runType.Data(), entry->GetRunParameter("eor_reason")));
-						skip = kTRUE;
+						if (ecsSuccess || daqstartTime > 0) {
+							if (ecsSuccess == kFALSE)
+								Log("SHUTTLE", Form("Processing run %d although in status ECS failure (Reason: %s), since run type != PHYSICS and DAQ_time_start != 0", run, entry->GetRunParameter("eor_reason")));
+							return entry;
+						} else {
+							Log("SHUTTLE", Form("QueryRunParameters - Run type for run %d is %s, ECS success flag was not set (Reason = %s) and DAQ_time_start was NULL - Skipping!", run, runType.Data(), entry->GetRunParameter("eor_reason")));
+							skip = kTRUE;
+						}
 					}
 				}
 			}
