@@ -262,5 +262,5 @@ const char kAliHLTDataOriginITSSSD[kAliHLTComponentDataTypefOriginSize]  = {'I',
 const char kAliHLTDataOriginSample[kAliHLTComponentDataTypefOriginSize]  = {'S','M','P','L'};
 
 /** EMCAL */
-const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]   = {'E','M','C','L'};
+const char kAliHLTDataOriginEMCAL[kAliHLTComponentDataTypefOriginSize]   = {'E','M','C','A'};
 
