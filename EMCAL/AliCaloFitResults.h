@@ -19,9 +19,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 #include "Rtypes.h"
-
 #include "AliCaloFitSubarray.h"
 
 // Container class to hold results from fitting 
@@ -46,7 +44,7 @@ class  AliCaloFitResults
 			      const Float_t chi, 
 			      const Int_t ndf, 
 			      const Int_t minSig, 
-			      const AliCaloFitSubarray fitSubarray); 
+			      const AliCaloFitSubarray fitSubarray  ); 
 
   explicit AliCaloFitResults( const Int_t maxSig, 
 			      const Float_t ped, 
@@ -68,7 +66,7 @@ class  AliCaloFitResults
   // minimum interface
   explicit AliCaloFitResults( const Int_t maxSig, const Int_t minSig );
 
-
+  AliCaloFitResults();
   virtual  ~AliCaloFitResults();
   Int_t  GetMaxSig() const  { return fMaxSig;};
   Float_t   GetPed() const { return fPed;};
@@ -83,16 +81,16 @@ class  AliCaloFitResults
   AliCaloFitSubarray  GetFitSubarray() const { return fFitSubarray; };
   
  private:
-  AliCaloFitResults();
-  Int_t   fMaxSig;   //Maximum sample value ( 0 - 1023 )
+  // AliCaloFitResults();
+  Int_t   fMaxSig;      //Maximum sample value ( 0 - 1023 )
   Float_t    fPed;      //Pedestal 
-  Int_t   fStatus;   //Sucess or failure of fitting pocedure
+  Int_t   fStatus;      //Sucess or failure of fitting pocedure
   Float_t    fAmpSig;   //Amplitude in entities of ADC counts
-  Float_t    fTime;       //peak/max time of signal in entities of sample intervals 
-  Int_t    fMaxTimebin;  // timebin with maximum ADC value
+  Float_t    fTime;     //peak/max time of signal in entities of sample intervals 
+  Int_t    fMaxTimebin; //timebin with maximum ADC value
   Float_t    fChi2Sig;  //Chi Square of fit 
-  Int_t   fNdfSig;   //Number of degrees of freedom of fit
-  Int_t   fMinSig;   //Pedestal 
+  Int_t   fNdfSig;      //Number of degrees of freedom of fit
+  Int_t   fMinSig;      //Pedestal 
   AliCaloFitSubarray fFitSubarray; // info on time-bin array used for the fitting
 };
 

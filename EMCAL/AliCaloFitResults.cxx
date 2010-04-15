@@ -2,10 +2,10 @@
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
  *                                                                        *
- * Primary Author: Per Thomas Hille <p.t.hille@fys.uio.no>                *
+ * Primary Author: Per Thomas Hille <perthomas.hille@yale.edu>            *
  *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to p.t.hille@fys.uio.no                             *
+ * Please report bugs to perthomas.hille@yale.edu                         *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -18,6 +18,22 @@
 
 
 #include "AliCaloFitResults.h"
+
+AliCaloFitResults::AliCaloFitResults() : fMaxSig(-1),
+					 fPed(-1), 
+					 fStatus(-1),
+					 fAmpSig(-1),
+					 fTime(-1),
+					 fMaxTimebin(-1),
+					 fChi2Sig(-1),
+					 fNdfSig(-1),
+					 fMinSig(-1),
+					 fFitSubarray(10) 
+{
+  
+  
+}
+
 
 
 // Container class to hold results from fitting 
