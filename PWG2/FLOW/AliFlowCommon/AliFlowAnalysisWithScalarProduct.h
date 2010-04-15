@@ -14,6 +14,8 @@ class AliFlowEventSimple;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 
+class TH1D;
+class TH2D;
 class TProfile;
 class TList;
 class TFile;
@@ -40,16 +42,19 @@ class AliFlowAnalysisWithScalarProduct {
    void    WriteHistograms(TString* outputFileName);        //writes histograms locally
    void    WriteHistograms(TString outputFileName);         //writes histograms locally
    void    WriteHistograms(TDirectoryFile *outputFileName); //writes histograms locally
-   
-   void    SetDebug(Bool_t kt)   { this->fDebug = kt ; }
-   Bool_t  GetDebug() const      { return this->fDebug ; }
-
+    
    Double_t CalculateStatisticalError(Int_t bin, 
 				      Double_t aStatErrorQaQb,
 				      TProfile* aHistProUQ, 
 				      TProfile* aHistProUQQaQb, 
 				      TH1D** aHistSumOfWeights);
 
+   void    SetDebug(Bool_t kt)   { this->fDebug = kt ; }
+   Bool_t  GetDebug() const      { return this->fDebug ; }
+
+
+   void     SetRelDiffMsub(Double_t diff) { this->fRelDiffMsub = diff; }
+   Double_t GetRelDiffMsub() const        { return this->fRelDiffMsub; }
 
    //phi weights
    void    SetWeightsList(TList* const aWeightsList)  {this->fWeightsList = (TList*)aWeightsList->Clone();}
@@ -65,18 +70,31 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile* GetHistProUQPtRP() const   {return this->fHistProUQPtRP;} 
    TProfile* GetHistProUQPtPOI() const  {return this->fHistProUQPtPOI;}
    TProfile* GetHistProQaQb() const     {return this->fHistProQaQb;}
+   TProfile* GetHistProQaQbNorm() const {return this->fHistProQaQbNorm;}
    TH1D*     GetHistSumOfLinearWeights() const    {return this->fHistSumOfLinearWeights;}
    TH1D*     GetHistSumOfQuadraticWeights() const {return this->fHistSumOfQuadraticWeights;}
-   TProfile* GetHistProUQQaQbPtRP() const         {return this->fHistProUQQaQbPtRP;}   
-   TProfile* GetHistProUQQaQbEtaRP() const        {return this->fHistProUQQaQbEtaRP;}   
-   TProfile* GetHistProUQQaQbPtPOI() const        {return this->fHistProUQQaQbPtPOI;}   
-   TProfile* GetHistProUQQaQbEtaPOI() const            {return this->fHistProUQQaQbEtaPOI;}   
+
+   TProfile* GetHistProUQQaQbPtRP() const   {return this->fHistProUQQaQbPtRP;}   
+   TProfile* GetHistProUQQaQbEtaRP() const  {return this->fHistProUQQaQbEtaRP;}   
+   TProfile* GetHistProUQQaQbPtPOI() const  {return this->fHistProUQQaQbPtPOI;}   
+   TProfile* GetHistProUQQaQbEtaPOI() const {return this->fHistProUQQaQbEtaPOI;} 
    TH1D*     GetHistSumOfWeightsPtRP(Int_t i) const    {return this->fHistSumOfWeightsPtRP[i];}
    TH1D*     GetHistSumOfWeightsEtaRP(Int_t i) const   {return this->fHistSumOfWeightsEtaRP[i];}
    TH1D*     GetHistSumOfWeightsPtPOI(Int_t i) const   {return this->fHistSumOfWeightsPtPOI[i];}
    TH1D*     GetHistSumOfWeightsEtaPOI(Int_t i) const  {return this->fHistSumOfWeightsEtaPOI[i];}
+
    AliFlowCommonHist*        GetCommonHists() const    {return this->fCommonHists; }
    AliFlowCommonHistResults* GetCommonHistsRes() const {return this->fCommonHistsRes; }
+
+   TH1D* GetHistQaQb() const       {return this->fHistQaQb;}
+   TH1D* GetHistQaQbNorm() const   {return this->fHistQaQbNorm;}
+   TH1D* GetHistQaQbCos() const    {return this->fHistQaQbCos;}
+   TH1D* GetHistResolution() const {return this->fHistResolution;}
+   TH1D* GetHistQaNorm() const     {return this->fHistQaNorm;}
+   TH2D* GetHistQaNormvsMa() const {return this->fHistQaNormvsMa;}
+   TH1D* GetHistQbNorm() const     {return this->fHistQbNorm;}
+   TH2D* GetHistQbNormvsMb() const {return this->fHistQbNormvsMb;}
+   TH2D* GetMavsMb() const         {return this->fHistMavsMb;}
 
    //histogram setters
    void SetHistProUQetaRP(TProfile* const aHistProUQetaRP)   
@@ -89,10 +107,13 @@ class AliFlowAnalysisWithScalarProduct {
      {this->fHistProUQPtPOI = aHistProUQPtPOI;}
    void SetHistProQaQb(TProfile* const aHistProQaQb)         
      {this->fHistProQaQb = aHistProQaQb;}
+   void SetHistProQaQbNorm(TProfile* const aHistProQaQbNorm)         
+     {this->fHistProQaQbNorm = aHistProQaQbNorm;}
    void SetHistSumOfLinearWeights(TH1D* const aHistSumOfLinearWeights) 
      {this->fHistSumOfLinearWeights = aHistSumOfLinearWeights;}
    void SetHistSumOfQuadraticWeights(TH1D* const aHistSumOfQuadraticWeights) 
      {this->fHistSumOfQuadraticWeights = aHistSumOfQuadraticWeights;}
+
    void SetHistProUQQaQbPtRP(TProfile* const aHistProUQQaQbPtRP)     
      {this->fHistProUQQaQbPtRP = aHistProUQQaQbPtRP;}   
    void SetHistProUQQaQbEtaRP(TProfile* const aHistProUQQaQbEtaRP)   
@@ -109,12 +130,31 @@ class AliFlowAnalysisWithScalarProduct {
      {this->fHistSumOfWeightsPtPOI[i] = aHistSumOfWeightsPtPOI;}  
    void SetHistSumOfWeightsEtaPOI(TH1D* const aHistSumOfWeightsEtaPOI, Int_t const i) 
      {this->fHistSumOfWeightsEtaPOI[i] = aHistSumOfWeightsEtaPOI;}   
+
    void SetCommonHists(AliFlowCommonHist* const someCommonHists)              
      {this->fCommonHists = someCommonHists; }
    void SetCommonHistsRes(AliFlowCommonHistResults* const someCommonHistsRes) 
      {this->fCommonHistsRes = someCommonHistsRes; }
-   
 
+   void SetHistQaQb(TH1D* const aHistQaQb)
+     {this->fHistQaQb = aHistQaQb;}
+   void SetHistQaQbNorm(TH1D* const aHistQaQbNorm)
+     {this->fHistQaQbNorm = aHistQaQbNorm;}
+   void SetHistQaQbCos(TH1D* const aHistQaQbCos)
+     {this->fHistQaQbCos = aHistQaQbCos;}
+   void SetHistResolution(TH1D* const aHistResolution)
+     {this->fHistResolution = aHistResolution;}
+   void SetHistQaNorm(TH1D* const aHistQaNorm)
+     {this->fHistQaNorm = aHistQaNorm;}
+   void SetHistQaNormvsMa(TH2D* const aHistQaNormvsMa)
+     {this->fHistQaNormvsMa = aHistQaNormvsMa;}
+   void SetHistQbNorm(TH1D* const aHistQbNorm)
+     {this->fHistQbNorm = aHistQbNorm;}
+   void SetHistQbNormvsMb(TH2D* const aHistQbNormvsMb)
+     {this->fHistQbNormvsMb = aHistQbNormvsMb;}
+   void SetHistMavsMb(TH2D* const aHistMavsMb)
+     {this->fHistMavsMb = aHistMavsMb;}
+   
  private:
    AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& anAnalysis);            //copy constructor
    AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& anAnalysis); //assignment operator 
@@ -122,16 +162,20 @@ class AliFlowAnalysisWithScalarProduct {
    Int_t      fEventNumber;      // event counter
    Bool_t     fDebug ;           // flag for analysis: more print statements
 
+   Double_t   fRelDiffMsub;      // the relative difference the two subevent multiplicities can have
+
    TList*     fWeightsList;      // list holding input histograms with phi weights
    Bool_t     fUsePhiWeights;    // use phi weights
    TH1F*      fPhiWeights;       // histogram holding phi weights
 
    TList*     fHistList;         //list to hold all output histograms  
+
    TProfile*  fHistProUQetaRP;   //uQ(eta) for RP
    TProfile*  fHistProUQetaPOI;  //uQ(eta) for POI
    TProfile*  fHistProUQPtRP;    //uQ(pt) for RP
    TProfile*  fHistProUQPtPOI;   //uQ(pt) for POI
-   TProfile*  fHistProQaQb;      //average of QaQb (for event plane resolution)
+   TProfile*  fHistProQaQb;      //average of QaQb 
+   TProfile*  fHistProQaQbNorm;  //average of QaQb/MaMb
    TH1D*      fHistSumOfLinearWeights;     //holds sum of Ma*Mb
    TH1D*      fHistSumOfQuadraticWeights;  //holds sum of (Ma*Mb)^2
    
@@ -146,7 +190,17 @@ class AliFlowAnalysisWithScalarProduct {
    
    AliFlowCommonHist*        fCommonHists;    //control histograms
    AliFlowCommonHistResults* fCommonHistsRes; //results histograms
-
+   
+   TH1D*      fHistQaQb;         // distribution of QaQb
+   TH1D*      fHistQaQbNorm;     // distribution of QaQb/MaMb
+   TH1D*      fHistQaQbCos;      // distribution of the angle between Qa and Qb (from Acos (va*vb))
+   TH1D*      fHistResolution;   // distribution of cos(2(phi_a - phi_b))
+   TH1D*      fHistQaNorm;       // distribution of Qa/Ma
+   TH2D*      fHistQaNormvsMa;   // distribution of Qa/Ma vs Ma
+   TH1D*      fHistQbNorm;       // distribution of Qb/Mb
+   TH2D*      fHistQbNormvsMb;   // distribution of Qb/Mb vs Mb
+   TH2D*      fHistMavsMb;       // Ma vs Mb
+      
    ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
      };
  
