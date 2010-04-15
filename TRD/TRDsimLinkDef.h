@@ -17,4 +17,11 @@
 #pragma link C++ class  AliTRDTriggerL1+;
 #pragma link C++ class  AliTRDQADataMakerSim+;
 
+#pragma link C++ class  AliTRDptrgFEB+;
+#pragma link C++ class  AliTRDptrgLUT+;
+#pragma link C++ class  AliTRDptrgCBAC+;
+#pragma link C++ class  AliTRDptrgCBB+;
+#pragma link C++ class  AliTRDptrgTLMU+;
+#pragma link C++ class  AliTRDptrgParam+;
+
 #endif

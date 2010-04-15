@@ -87,15 +87,9 @@
 #pragma link C++ class  AliTRDgtuTMU+;
 #pragma link C++ class  AliTRDtrackGTU+;
 
-#pragma link C++ class  AliTRDptrgFEB+;
-#pragma link C++ class  AliTRDptrgLUT+;
-#pragma link C++ class  AliTRDptrgCBAC+;
-#pragma link C++ class  AliTRDptrgCBB+;
-#pragma link C++ class  AliTRDptrgTLMU+;
-
 #pragma link C++ class  AliTRDhit+;
 
 #pragma link C++ class  AliTRDrecoParam+;
 #pragma link C++ class  AliTRDSimParam+;
-#pragma link C++ class  AliTRDptrgParam+;
+
 #endif

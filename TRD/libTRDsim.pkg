@@ -7,6 +7,12 @@ SRCS= AliTRDsimTR.cxx \
       AliTRDTrigger.cxx \
       AliTRDTriggerL0.cxx \
       AliTRDTriggerL1.cxx \
+      AliTRDptrgFEB.cxx \
+      AliTRDptrgLUT.cxx \
+      AliTRDptrgCBB.cxx \
+      AliTRDptrgCBAC.cxx \
+      AliTRDptrgTLMU.cxx \
+      AliTRDptrgParam.cxx \
       AliTRDQADataMakerSim.cxx
 
 HDRS= $(SRCS:.cxx=.h)                
