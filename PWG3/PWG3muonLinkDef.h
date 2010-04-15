@@ -27,5 +27,6 @@
 #pragma link C++ class AliMuonsHFHeader+;
 #pragma link C++ class AliAnalysisTaskSEMuonsHF+;
 #pragma link C++ class AliAnalysisTaskDimuonCFContainerBuilder+;
+#pragma link C++ class AliAnalysisTaskMuonTreeBuilder+;
 #endif
 
