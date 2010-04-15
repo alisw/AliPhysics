@@ -64,7 +64,7 @@ AliRDHFCuts()
 			 kFALSE,
 			 kTRUE};
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[12]={kTRUE,
+  Bool_t forOpt[12]={kFALSE,
 		     kFALSE,
 		     kFALSE,
 		     kFALSE,
@@ -76,7 +76,7 @@ AliRDHFCuts()
 		     kTRUE,
 		     kTRUE,
 		     kFALSE};
-  SetVarsForOpt(6,forOpt);
+  SetVarsForOpt(5,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 }

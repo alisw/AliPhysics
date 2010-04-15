@@ -15,9 +15,9 @@
 
 /////////////////////////////////////////////////////////////
 //
-// Class for cuts on AOD reconstructed D0->Kpi
+// Class for cuts on AOD reconstructed D0->Kpipipi
 //
-// Author: A.Dainese, andrea.dainese@pd.infn.it
+// Author: r.romita@gsi.de, andrea.dainese@pd.infn.it
 /////////////////////////////////////////////////////////////
 
 #include <TDatabasePDG.h>
@@ -41,33 +41,33 @@ AliRDHFCuts()
   SetNVars(nvars);
   TString varNames[9]={"inv. mass [GeV]",   
 		       "dca [cm]",
-		       "cosThetaStar", 
-		       "pTK [GeV/c]",
-		       "pTPi [GeV/c]",
-		       "d0K [cm]",
-		       "d0Pi [cm]",
-		       "d0d0 [cm^2]",
-		       "cosThetaPoint"};
+                       "Dist 2-trk Vtx to PrimVtx [cm]",
+		       "Dist 3-trk Vtx to PrimVtx [cm]",
+		       "Dist 4-trk Vtx to PrimVtx [cm]",
+		       "cosThetaPoint",
+		       "pt [GeV/c]",
+		       "rho mass [GeV]",
+		       "PID cut"};
   Bool_t isUpperCut[9]={kTRUE,
 			kTRUE,
-			kTRUE,
 			kFALSE,
 			kFALSE,
-			kTRUE,
-			kTRUE,
+			kFALSE,
+			kFALSE,
+			kFALSE,
 			kTRUE,
 			kFALSE};
   SetVarNames(nvars,varNames,isUpperCut);
   Bool_t forOpt[9]={kFALSE,
 		    kTRUE,
 		    kTRUE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
 		    kTRUE,
-		    kTRUE};
-  SetVarsForOpt(4,forOpt);
+		    kTRUE,
+		    kTRUE,
+		    kFALSE,
+		    kFALSE,
+		    kFALSE};
+  SetVarsForOpt(5,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 }
@@ -106,7 +106,64 @@ void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars
   }
 
   AliAODRecoDecayHF4Prong *dd = (AliAODRecoDecayHF4Prong*)d;
- 
+
+  Int_t iter=-1;
+
+  if(fVarsForOpt[0]) {
+    iter++;
+    Double_t mD0[2],mD0bar[2];
+    if(TMath::Abs(pdgdaughters[1])==321 || TMath::Abs(pdgdaughters[3])==321) {
+      dd->InvMassD0(mD0);
+      if(TMath::Abs(pdgdaughters[1])==321) {
+       vars[iter]=mD0[0];
+      }else{
+       vars[iter]=mD0[1];
+      }
+    } else {
+      dd->InvMassD0bar(mD0bar);
+      if(TMath::Abs(pdgdaughters[0])==321) {
+       vars[iter]=mD0[0];
+      }else{
+       vars[iter]=mD0[1];
+      }
+   }
+  }
+
+  if(fVarsForOpt[1]){
+    iter++;
+    vars[iter]=dd->GetDCA();
+  }
+
+  if(fVarsForOpt[2]){
+    iter++;
+    vars[iter]=dd->GetDist12toPrim();
+  }
+  if(fVarsForOpt[3]){
+    iter++;
+    vars[iter]=dd->GetDist3toPrim();
+  }
+  if(fVarsForOpt[4]){
+    iter++;
+    vars[iter]=dd->GetDist4toPrim();
+  }
+  if(fVarsForOpt[5]){
+    iter++;
+    vars[iter]=dd->CosPointingAngle();
+  }
+  if(fVarsForOpt[6]){
+    iter++;
+    vars[iter]=dd->Pt();
+  }
+  if(fVarsForOpt[7]){
+    iter++;
+    vars[iter]=999999999.;
+    printf("ERROR: optmization for rho mass cut not implemented\n");
+  }
+  if(fVarsForOpt[8]){
+    iter++;
+    vars[iter]=999999999.;
+    printf("ERROR: optmization for PID cut not implemented\n");
+  }
   
   return;
 }
@@ -117,7 +174,7 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
   }
   //PrintAll();
@@ -141,11 +198,34 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
+
+    Int_t ptbin=PtBin(d->Pt());
     
+    Int_t okD0=1,okD0bar=1;    
+    Double_t mD0[2],mD0bar[2];
+    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+    d->InvMassD0(mD0);
+    if(TMath::Abs(mD0[0]-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)] &&
+       TMath::Abs(mD0[1]-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
+    d->InvMassD0bar(mD0bar);
+    if(TMath::Abs(mD0bar[0]-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)] &&
+       TMath::Abs(mD0bar[1]-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0bar = 0;
+    if(!okD0 && !okD0bar) return 0;
+    
+    if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
+    if(d->GetDist12toPrim() < fCutsRD[GetGlobalIndex(2,ptbin)]) return 0;
+    if(d->GetDist3toPrim() < fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;
+    if(d->GetDist4toPrim() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+    if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(5,ptbin)]) return 0;
+    if(d->Pt() < fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
+    if(!d->CutRhoMass(mD0,mD0bar,fCutsRD[GetGlobalIndex(0,ptbin)],fCutsRD[GetGlobalIndex(7,ptbin)])) return 0;
+
+    if (okD0) returnvalue=1; //cuts passed as D0
+    if (okD0bar) returnvalue=2; //cuts passed as D0bar
+    if (okD0 && okD0bar) returnvalue=3; //cuts passed as D0 and D0bar
   }
 
-
   return returnvalue;
-
 }
 //---------------------------------------------------------------------------

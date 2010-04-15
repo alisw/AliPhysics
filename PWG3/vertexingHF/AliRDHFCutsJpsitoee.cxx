@@ -106,18 +106,6 @@ void AliRDHFCutsJpsitoee::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   }
 
   AliAODRecoDecayHF2Prong *dd = (AliAODRecoDecayHF2Prong*)d;
- /*
-  vars[0] = dd->GetDCA();
-  if(TMath::Abs(pdgdaughters[0])==211) {
-    vars[1] = dd->CosThetaStarD0();
-  } else {
-    vars[1] = dd->CosThetaStarD0bar();
-  }
-  vars[2] = dd->Prodd0d0();
-  vars[3] = dd->CosPointingAngle();
-
-  return;
-*/
  
   Int_t iter=-1;
   if(fVarsForOpt[0]){
@@ -134,11 +122,11 @@ void AliRDHFCutsJpsitoee::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   }
   if(fVarsForOpt[3]){
     iter++;
-    vars[iter]=dd->PtProng(0);
+    if(pdgdaughters[0]==11) vars[iter]=dd->PtProng(0);
   }
   if(fVarsForOpt[4]){
     iter++;
-    vars[iter]=dd->PtProng(1);
+    if(pdgdaughters[1]==11) vars[iter]=dd->PtProng(1);
   }
   if(fVarsForOpt[5]){
     iter++;
@@ -166,7 +154,7 @@ Int_t AliRDHFCutsJpsitoee::IsSelected(TObject* obj,Int_t selectionLevel) {
   //
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
   }
   //PrintAll();
@@ -213,9 +201,7 @@ Int_t AliRDHFCutsJpsitoee::IsSelected(TObject* obj,Int_t selectionLevel) {
     if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
     
     if(d->CosPointingAngle()   < fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
-    
   }
-
 
   return 1;
 }
