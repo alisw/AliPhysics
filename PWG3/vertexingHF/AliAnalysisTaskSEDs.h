@@ -20,19 +20,20 @@
 #include <TH2F.h>
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisVertexingHF.h"
+#include "AliRDHFCutsDstoKKpi.h"
 
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
 
   AliAnalysisTaskSEDs();
-  AliAnalysisTaskSEDs(const char *name);
+  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassRange(Double_t rang=0.2){fMassRange=rang;}
-  void SetPtBins(Int_t n, Double_t* lim);
-
+  void SetPtBins(Int_t n, Float_t* lim);
+  void SetProductionCuts(AliRDHFCutsDstoKKpi* cuts){fProdCuts=cuts;}
+  void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -61,11 +62,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fDalitz[3*kMaxPtBins];      //! dalitz plot (sig,bkg,tot)
   Bool_t  fReadMC;                    //  flag for access to MC
   UChar_t fNPtBins;                   // number of Pt bins
-  Double_t fPtLimits[kMaxPtBins+1];   //  limits for pt bins
+  TList *fListCuts; //list of cuts
+  Float_t fPtLimits[kMaxPtBins+1];    //  limits for pt bins
   Double_t fMassRange;                // range for mass histogram 
-  AliAnalysisVertexingHF *fVHF;       //  Heavy flavour analysis object
+  AliRDHFCutsDstoKKpi *fProdCuts;     //Cuts for Analysis
+  AliRDHFCutsDstoKKpi *fAnalysisCuts; //Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,1);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,2);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif

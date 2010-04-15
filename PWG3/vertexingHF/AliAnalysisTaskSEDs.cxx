@@ -39,6 +39,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliRDHFCutsDstoKKpi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEDs.h"
 
@@ -52,33 +53,39 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fHistNEvents(0),
   fReadMC(kFALSE),
   fNPtBins(0),
+  fListCuts(0),
   fMassRange(0.2),
-  fVHF(0)
+  fProdCuts(0),
+  fAnalysisCuts(0)
 {
   // Default constructor
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name):
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
   fReadMC(kFALSE),
   fNPtBins(0),
+  fListCuts(0),
   fMassRange(0.2),
-  fVHF(0)
+  fProdCuts(productioncuts),
+  fAnalysisCuts(analysiscuts)
 {
   // Default constructor
   // Output slot #1 writes into a TList container
-  Double_t ptlim[6]={0.,1.,3.,5.,10.,9999999.};  
-  SetPtBins(5,ptlim);
+  Int_t nptbins=fAnalysisCuts->GetNPtBins();
+  Float_t *ptlim=fAnalysisCuts->GetPtBinLimits();
+  SetPtBins(nptbins,ptlim);
  
   DefineOutput(1,TList::Class());  //My private output
 
+  DefineOutput(2,TList::Class());
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Double_t* lim){
+void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t* lim){
   // define pt bins for analysis
   if(n>kMaxPtBins){
     printf("Max. number of Pt bins = %d\n",kMaxPtBins);
@@ -107,9 +114,18 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     delete fOutput;
     fOutput = 0;
   }
-  if (fVHF) {
-    delete fVHF;
-    fVHF = 0;
+  if (fListCuts) {
+    delete fListCuts;
+    fListCuts = 0;
+  }
+
+  if (fProdCuts) {
+    delete fProdCuts;
+    fProdCuts = 0;
+  }
+  if (fAnalysisCuts) {
+    delete fAnalysisCuts;
+    fAnalysisCuts = 0;
   }
 }  
 
@@ -120,11 +136,15 @@ void AliAnalysisTaskSEDs::Init()
 
   if(fDebug > 1) printf("AnalysisTaskSEDs::Init() \n");
 
-  gROOT->LoadMacro("ConfigVertexingHF.C");
-
-  fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
-  fVHF->PrintStatus();
-
+  fListCuts=new TList();
+  AliRDHFCutsDstoKKpi *production = new AliRDHFCutsDstoKKpi();
+  production=fProdCuts;
+  AliRDHFCutsDstoKKpi *analysis = new AliRDHFCutsDstoKKpi();
+  analysis=fAnalysisCuts;
+  
+  fListCuts->Add(production);
+  fListCuts->Add(analysis);
+  PostData(2,fListCuts);
   return;
 }
 
@@ -295,7 +315,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
   
   Int_t pdgDstoKKpi[3]={321,321,211};
-  Double_t cutsDs[14]={0.2,0.4,0.4,0.,0.,0.005,0.038,0.,0.,0.95,0.,0.1,0.004,0.035};
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     
@@ -305,14 +324,21 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       d->SetOwnPrimaryVtx(vtx1);
       unsetvtx=kTRUE;
     }
-    Int_t isKKpi,ispiKK;
-    Int_t isPhi,isK0star;
-    Int_t isKKpiTC,ispiKKTC;
-    Int_t isPhiTC,isK0starTC;
-    if(d->SelectDs(fVHF->GetDsCuts(),isKKpi,ispiKK,isPhi,isK0star)) {
+
+    Int_t retCodeProductionCuts=fProdCuts->IsSelected(d,AliRDHFCuts::kCandidate);
+    if(retCodeProductionCuts>0){
+      Int_t isKKpi=retCodeProductionCuts&1;
+      Int_t ispiKK=retCodeProductionCuts&2;
+//       Int_t isPhi=retCodeProductionCuts&4;
+//       Int_t isK0star=retCodeProductionCuts&8;
       Double_t ptCand = d->Pt();
-      Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,ptCand);
-      Bool_t passTightCuts=d->SelectDs(cutsDs,isKKpiTC,ispiKKTC,isPhiTC,isK0starTC);
+      Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,(Float_t)ptCand);
+      Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kCandidate);
+      Int_t isKKpiAC=retCodeAnalysisCuts&1;
+      Int_t ispiKKAC=retCodeAnalysisCuts&2;
+//       Int_t isPhiAC=retCodeAnalysisCuts&4;
+//       Int_t isK0starAC=retCodeAnalysisCuts&8;
+
       Int_t labDs=-1;
       if(fReadMC){
 	labDs = d->MatchToMC(431,arrayMC,3,pdgDstoKKpi);
@@ -324,26 +350,26 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       Int_t type=0;
       if(isKKpi) type+=1;
       if(ispiKK) type+=2;
-      Int_t typeTC=0;
-      if(isKKpiTC) typeTC+=1;
-      if(ispiKKTC) typeTC+=2;
+      Int_t typeAC=0;
+      if(isKKpiAC) typeAC+=1;
+      if(ispiKKAC) typeAC+=2;
       fCosPHist[index]->Fill(cosp);
       fDLenHist[index]->Fill(dlen);
       fChanHist[0]->Fill(type);
-      if(passTightCuts) fChanHistCuts[0]->Fill(typeTC);
+      if(retCodeAnalysisCuts>0) fChanHistCuts[0]->Fill(typeAC);
       if(fReadMC){
 	if(labDs>=0) {	  
 	  index=GetSignalHistoIndex(iPtBin);
 	  fCosPHist[index]->Fill(cosp);
 	  fDLenHist[index]->Fill(dlen);
 	  fChanHist[1]->Fill(type);	  
-	  if(passTightCuts) fChanHistCuts[1]->Fill(typeTC);
+	  if(retCodeAnalysisCuts>0) fChanHistCuts[1]->Fill(typeAC);
 	}else{
 	  index=GetBackgroundHistoIndex(iPtBin);
 	  fCosPHist[index]->Fill(cosp);
 	  fDLenHist[index]->Fill(dlen);
 	  fChanHist[2]->Fill(type);	  
-	  if(passTightCuts) fChanHistCuts[2]->Fill(typeTC);
+	  if(retCodeAnalysisCuts>0) fChanHistCuts[2]->Fill(typeAC);
 	}
       }
       if(isKKpi){
@@ -353,18 +379,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t mass01=d->InvMass2Prongs(0,1,321,321);
 	Double_t mass12=d->InvMass2Prongs(1,2,321,211);
 	fDalitz[index]->Fill(mass01,mass12);
-	if(passTightCuts && isKKpiTC) fMassHistCuts[index]->Fill(invMass);
+	if(retCodeAnalysisCuts>0 && isKKpiAC) fMassHistCuts[index]->Fill(invMass);
 	if(fReadMC){
 	  if(labDs>=0) {	  
 	    index=GetSignalHistoIndex(iPtBin);
 	    fMassHist[index]->Fill(invMass);
 	    fDalitz[index]->Fill(mass01,mass12);
-	    if(passTightCuts&& isKKpiTC) fMassHistCuts[index]->Fill(invMass);
+	    if(retCodeAnalysisCuts>0 && isKKpiAC) fMassHistCuts[index]->Fill(invMass);
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
 	    fMassHist[index]->Fill(invMass);
 	    fDalitz[index]->Fill(mass01,mass12);
-	    if(passTightCuts&& isKKpiTC) fMassHistCuts[index]->Fill(invMass);
+	    if(retCodeAnalysisCuts>0 && isKKpiAC) fMassHistCuts[index]->Fill(invMass);
 	  }
 	}	
       }
@@ -372,16 +398,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	index=GetHistoIndex(iPtBin);
 	Double_t invMass=d->InvMassDspiKK();
 	fMassHist[index]->Fill(invMass);
-	if(passTightCuts && ispiKKTC) fMassHistCuts[index]->Fill(invMass);
+	if(retCodeAnalysisCuts>0 && ispiKKAC) fMassHistCuts[index]->Fill(invMass);
 	if(fReadMC){
 	  if(labDs>=0) {	  
 	    index=GetSignalHistoIndex(iPtBin);
 	    fMassHist[index]->Fill(invMass);
-	    if(passTightCuts && ispiKKTC) fMassHistCuts[index]->Fill(invMass);
+	    if(retCodeAnalysisCuts>0 && ispiKKAC) fMassHistCuts[index]->Fill(invMass);
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
 	    fMassHist[index]->Fill(invMass);
-	    if(passTightCuts && ispiKKTC) fMassHistCuts[index]->Fill(invMass);
+	    if(retCodeAnalysisCuts>0 && ispiKKAC) fMassHistCuts[index]->Fill(invMass);
 	  }
 	}
       }

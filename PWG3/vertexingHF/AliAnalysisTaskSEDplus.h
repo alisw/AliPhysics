@@ -18,6 +18,7 @@
 #include <TH1F.h>
 #include <TArrayD.h>
 
+#include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 
@@ -26,14 +27,14 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDplus();
-  AliAnalysisTaskSEDplus(const char *name, Bool_t fillNtuple=kFALSE);
+  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts,AliRDHFCutsDplustoKpipi* productioncuts,Bool_t fillNtuple=kFALSE);
   virtual ~AliAnalysisTaskSEDplus();
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetDoLikeSign(Bool_t dols=kTRUE){fDoLS=dols;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
-  void SetPtBinLimit(Int_t n, Double_t *limitarray);
+  void SetPtBinLimit(Int_t n, Float_t *limitarray);
   
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
@@ -81,14 +82,16 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TNtuple *fNtupleDplus; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
-  Int_t fNPtBins; //number of bins in Pt for histograms
+  Int_t fNPtBins; //Number of Pt Bins
+  TList *fListCuts; //list of cuts
+  AliRDHFCutsDplustoKpipi *fRDCutsProduction; //Production D+ Cuts
+  AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; //Cuts for Analysis
   Double_t fArrayBinLimits[kMaxPtBins+1]; //limits for the Pt bins
   Bool_t fFillNtuple;   // flag for filling ntuple
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fDoLS;      //flag to do LS analysis
-  AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   
-  ClassDef(AliAnalysisTaskSEDplus,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
