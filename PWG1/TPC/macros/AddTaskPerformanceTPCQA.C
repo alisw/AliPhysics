@@ -31,7 +31,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //____________________________________________
-AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, const char *triggerClass="CINT1B-ABCE-NOPF-ALL")
+AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, const char *triggerClass=0)
 {
   //
   // Add AliPerformanceTask with TPC performance components
@@ -57,7 +57,7 @@ AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUs
   //
   // Create task
   //
-  AliPerformanceTask *task = new AliPerformanceTask("Performance","TPC Performance");
+  AliPerformanceTask *task = new AliPerformanceTask("PerformanceQA","TPC Performance");
   if (!task) {
     Error("AddTaskPerformanceTPC", "TPC performance task cannot be created!");
     return NULL;
@@ -133,7 +133,7 @@ AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUs
   //
   // Create containers for output
   //
-  AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPC", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%s.root", task->GetName()));
+  AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPCQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%s.root", task->GetName()));
   mgr->ConnectOutput(task, 1, coutput_tpc);
 
 return task;  
