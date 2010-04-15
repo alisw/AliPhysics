@@ -53,17 +53,17 @@ ClassImp(AliAnalysisTaskSED0Mass)
 //________________________________________________________________________
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
-fOutputPPR(0),
-fOutputmycuts(0),
-fNentries(0),
-fDistr(0), 
+fOutputMass(0),
+fDistr(0),
+fNentries(0), 
 fChecks(0),
-fVHFPPR(0),
-fVHFmycuts(0),
+fCutList(0),
+fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
 fLsNormalization(1.)
+
 
 {
   // Default constructor
@@ -71,72 +71,70 @@ fLsNormalization(1.)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name):
+AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0toKpi* cuts):
 AliAnalysisTaskSE(name),
-fOutputPPR(0), 
-fOutputmycuts(0), 
-fNentries(0),
+fOutputMass(0), 
 fDistr(0),
+fNentries(0),
 fChecks(0),
-fVHFPPR(0),
-fVHFmycuts(0),
+fCutList(0),
+fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
 fLsNormalization(1.)
 
+
 {
   // Default constructor
   for(Int_t i=0;i<5;i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
 
-  // Output slot #1 writes into a TList container
+  //fCuts=new AliRDHFCutsD0toKpi(*cuts);
+  fCuts=cuts;
+
+  // Output slot #1 writes into a TList container (mass with cuts)
   DefineOutput(1,TList::Class());  //My private output
-  // Output slot #2 writes into a TList container
+  // Output slot #2 writes into a TList container (distributions)
   DefineOutput(2,TList::Class());  //My private output
-  // Output slot #3 writes into a TH1F container
+  // Output slot #3 writes into a TH1F container (number of events)
   DefineOutput(3,TH1F::Class());  //My private output
-  // Output slot #4 writes into a TList container
+  // Output slot #4 writes into a TList container (quality check)
   DefineOutput(4,TList::Class());  //My private output
-  // Output slot #5 writes into a TList container
-  DefineOutput(5,TList::Class());  //My private output
+  // Output slot #5 writes into a TList container (cuts)
+  DefineOutput(5,AliRDHFCutsD0toKpi::Class());  //My private output
+  //DefineOutput(5,TList::Class());  //My private output
+
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
 {
-   if (fOutputPPR) {
-    delete fOutputPPR;
-    fOutputPPR = 0;
+   if (fOutputMass) {
+    delete fOutputMass;
+    fOutputMass = 0;
   }
-  if (fVHFPPR) {
-    delete fVHFPPR;
-    fVHFPPR = 0;
-  }
-  if (fOutputmycuts) {
-    delete fOutputmycuts;
-    fOutputmycuts = 0;
-  }
-
   if (fDistr) {
     delete fDistr;
     fDistr = 0;
   }
-
   if (fChecks) {
     delete fChecks;
     fChecks = 0;
   }
-
-  if (fVHFmycuts) {
-    delete fVHFmycuts;
-    fVHFmycuts = 0;
+  if (fCuts) {
+    delete fCuts;
+    fCuts = 0;
   }
   if (fNentries){
     delete fNentries;
     fNentries = 0;
   }
-
-
+ 
+  if(fCutList){
+    delete fCutList;
+    fCutList=0;
+  }
+ 
 }  
 
 //________________________________________________________________________
@@ -146,11 +144,17 @@ void AliAnalysisTaskSED0Mass::Init()
 
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::Init() \n");
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C");
+  
+  fCutList=new TList();
+  fCutList->SetOwner();
+  fCutList->SetName("listofCutsObj");
+  fCutList->Add(fCuts);
+  
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*fCuts);
+  // Post the data
+  PostData(5,copyfCuts);
+  //PostData(5,fCutList);
 
-  // 2 sets of dedidcated cuts -- defined in UserExec
-  fVHFPPR = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
-  fVHFmycuts = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
   return;
 }
 
@@ -163,13 +167,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::UserCreateOutputObjects() \n");
 
   // Several histograms are more conveniently managed in a TList
-  fOutputPPR = new TList();
-  fOutputPPR->SetOwner();
-  fOutputPPR->SetName("listPPR");
-
-  fOutputmycuts = new TList();
-  fOutputmycuts->SetOwner();
-  fOutputmycuts->SetName("listloose");
+  fOutputMass = new TList();
+  fOutputMass->SetOwner();
+  fOutputMass->SetName("listMass");
 
   fDistr = new TList();
   fDistr->SetOwner();
@@ -179,108 +179,106 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fChecks->SetOwner();
   fChecks->SetName("checkHistograms");
 
-  const Int_t nhist=5;
-
   TString nameMass=" ",nameSgn27=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassNocutsS =" ",nameMassNocutsB =" ", namedistr=" ";
 
-  for(Int_t i=0;i<nhist;i++){
+  for(Int_t i=0;i<fCuts->GetNPtBins();i++){
 
     nameMass="histMass_";
-    nameMass+=i+1;
+    nameMass+=i;
     nameSgn27="histSgn27_";
-    nameSgn27+=i+1;
+    nameSgn27+=i;
     nameSgn="histSgn_";
-    nameSgn+=i+1;
+    nameSgn+=i;
     nameBkg="histBkg_";
-    nameBkg+=i+1;
+    nameBkg+=i;
     nameRfl="histRfl_";
-    nameRfl+=i+1;
+    nameRfl+=i;
     nameMassNocutsS="hMassS_";
-    nameMassNocutsS+=i+1;
+    nameMassNocutsS+=i;
     nameMassNocutsB="hMassB_";
-    nameMassNocutsB+=i+1;
+    nameMassNocutsB+=i;
 
     //histograms of cut variable distributions
 
     //  pT
     namedistr="hptpiS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptpiS = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
 
     namedistr="hptKS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptKS = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
 
     namedistr="hptB_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptB = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
 
     //  pT no mass cut
     namedistr="hptpiSnoMcut_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptpiSnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution (pions);p_{T} [GeV/c]",200,0.,8.);
 
     namedistr="hptKSnoMcut_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptKSnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution (kaons);p_{T} [GeV/c]",200,0.,8.);
 
     namedistr="hptB1prongnoMcut_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptB1pnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
 
     namedistr="hptB2prongsnoMcut_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hptB2pnoMcut = new TH1F(namedistr.Data(), "P_{T} distribution;p_{T} [GeV/c]",200,0.,8.);
 
     
     //  dca
     namedistr="hdcaS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hdcaS = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
     namedistr="hdcaB_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hdcaB = new TH1F(namedistr.Data(), "DCA distribution;dca [cm]",200,0.,0.1);
 
     //  costhetastar
     namedistr="hcosthetastarS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hcosthetastarS = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
     namedistr="hcosthetastarB_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hcosthetastarB = new TH1F(namedistr.Data(), "cos#theta* distribution;cos#theta*",200,-1.,1.);
 
     // impact parameter
     namedistr="hd0piS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hd0piS = new TH1F(namedistr.Data(), "Impact parameter distribution (pions);d0(#pi) [cm]",200,-0.1,0.1);
 
     namedistr="hd0KS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hd0KS = new TH1F(namedistr.Data(), "Impact parameter distribution (kaons);d0(K) [cm]",200,-0.1,0.1);
     namedistr="hd0B_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hd0B = new TH1F(namedistr.Data(), "Impact parameter distribution;d0 [cm]",200,-0.1,0.1);
 
     namedistr="hd0d0S_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hd0d0S = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
     namedistr="hd0d0B_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hd0d0B = new TH1F(namedistr.Data(), "d_{0}#timesd_{0} distribution;d_{0}#timesd_{0} [cm^{2}]",200,-0.001,0.001);
 
     //  costhetapoint
     namedistr="hcosthetapointS_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hcosthetapointS = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
     namedistr="hcosthetapointB_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH1F *hcosthetapointB = new TH1F(namedistr.Data(), "cos#theta_{Point} distribution;cos#theta_{Point}",200,0,1.);
 
     namedistr="hcosthpointd0d0S_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH2F *hcosthpointd0d0S= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
     namedistr="hcosthpointd0d0B_";
-    namedistr+=i+1;
+    namedistr+=i;
     TH2F *hcosthpointd0d0B= new TH2F(namedistr.Data(),"Correlation cos#theta_{Point}-d_{0}#timesd_{0};cos#theta_{Point};d_{0}#timesd_{0} [cm^{2}]",200,0,1.,200,-0.001,0.001);
 
     fDistr->Add(hptpiS);
@@ -351,18 +349,12 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     tmpRl->Sumw2();
   //  printf("Created histograms %s\t%s\t%s\t%s\n",tmpM->GetName(),tmpS->GetName(),tmpB->GetName(),tmpR->GetName());
 
-    fOutputPPR->Add(tmpMt);
-    fOutputPPR->Add(tmpSt);
-    fOutputPPR->Add(tmpS27t);
-    fOutputPPR->Add(tmpBt);
-    fOutputPPR->Add(tmpRt);
+    fOutputMass->Add(tmpMt);
+    fOutputMass->Add(tmpSt);
+    fOutputMass->Add(tmpS27t);
+    fOutputMass->Add(tmpBt);
+    fOutputMass->Add(tmpRt);
 
-    fOutputmycuts->Add(tmpMl);
-    fOutputmycuts->Add(tmpSl);
-    fOutputmycuts->Add(tmpS27l);
-    fOutputmycuts->Add(tmpBl);
-    fOutputmycuts->Add(tmpRl);
- 
     fDistr->Add(tmpMS);
     fDistr->Add(tmpMB);
 
@@ -392,13 +384,13 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(5,"nEventsGoodVtx+>2tracks");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
+ 
   // Post the data
-  PostData(1,fOutputPPR);
-  PostData(2,fOutputmycuts);
+  PostData(1,fOutputMass);
+  PostData(2,fChecks);
   PostData(3,fNentries);
   PostData(4,fDistr);
-  PostData(5,fChecks);
-
+  
   return;
 }
 
@@ -408,6 +400,20 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
   //cout<<"I'm in UserExec"<<endl;
+
+
+    //cuts order
+    //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
+    //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
+    //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
+    //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
+    //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
+    //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
+    //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
+    //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
+    //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
+  
+
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
   TString bname;
@@ -491,9 +497,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 
   if(aod) ntracks=aod->GetNTracks();
 
-
   //cout<<"ntracks = "<<ntracks<<endl;
-  //cout<<"Before loop"<<endl;
+ 
   //loop on tracks in the event
   for (Int_t k=0;k<ntracks;k++){
     AliAODTrack* track=aod->GetTrack(k);
@@ -521,14 +526,12 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   }
   //number of events with good vertex and at least 2 good tracks
   if (isGoodTrack>=2 && isGoodVtx) fNentries->Fill(4);
-  
-  
+
+
   // loop over candidates
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   if(fDebug>1) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
 
-  AliAnalysisVertexingHF*  fdummy = 0;
-  
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     //Int_t nPosPairs=0, nNegPairs=0;
     //cout<<"inside the loop"<<endl;
@@ -538,121 +541,32 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    
+  
     //check reco daughter in acceptance
     Double_t eta0=d->EtaProng(0);
     Double_t eta1=d->EtaProng(1);
-    Bool_t prongsinacc=kFALSE;
-    if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) prongsinacc=kTRUE;
-    
-    //cuts order
-    //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
-    //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
-    //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
-    //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
-    //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
-    //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
-    //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
-    //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
-    //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
-    
-    Int_t ptbin=0;
-    Bool_t isInRange=kFALSE;
-    Double_t pt = d->Pt(); //mother pt    
-    //cout<<"P_t = "<<pt<<endl;
-    if (pt>0. && pt<=1.) {
-      ptbin=1;
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.0002,0.5);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.1,-0.00025,0.7);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.5);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.00025,0.7);
-      
-      //       fVHFPPR->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,0.05,0.05,-0.0002,0.7);
-      //       fVHFmycuts->SetD0toKpiCuts(0.7,0.04,0.8,0.5,0.5,1,1,-0.00015,0.5);
-      //printf("I'm in the bin %d\n",ptbin);
-      
+   
+    if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) {
+      FillVarHists(d,mcArray,fCuts,fDistr);
+      FillMassHists(d,mcArray,fCuts,fOutputMass);
     }
-    
-    if(pt>1. && pt<=3.) {
-      if(pt>1. && pt<=2.) ptbin=2;  
-      if(pt>2. && pt<=3.) ptbin=3;  
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0002,0.6);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,0.1,-0.00025,0.8);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0002,0.6);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,1,1,-0.00025,0.8);
-      
-      //printf("I'm in the bin %d\n",ptbin);
-    }
-    
-    if(pt>3. && pt<=5.){
-      ptbin=4;  
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.0001,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.8);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.0001,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.8);
-      
-      //printf("I'm in the bin %d\n",ptbin);
-    }
-    if(pt>5.&& pt<=10.){ //additional upper limit to compare with Correction Framework
-      ptbin=5;
-      isInRange=kTRUE;
-      /*
-      //test d0 cut
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00005,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.1,-0.00015,0.9);
-      */
-      //original
-      fVHFPPR->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00005,0.8);
-      fVHFmycuts->SetD0toKpiCuts(0.7,0.02,0.8,0.7,0.7,0.05,0.05,-0.00015,0.9);
-      
-    }//if(pt>5)    if (pt>0. && pt<=1.) {
-    //printf("I'm in the bin %d\n",ptbin);
-    //old
-    //fVHF->SetD0toKpiCuts(0.7,0.03,0.8,0.06,0.06,0.05,0.05,-0.0002,0.6); //2.p-p vertex reconstructed    
-    
-    if(prongsinacc && isInRange){
-
-      if(!fCutOnDistr){
-	FillVarHists(ptbin,d,mcArray,fdummy,fDistr);
-      }else{
-	
-	if(fCutOnDistr==1) FillVarHists(ptbin,d,mcArray,fVHFPPR,fDistr);
-	if(fCutOnDistr==2) FillVarHists(ptbin,d,mcArray,fVHFmycuts,fDistr);
-      }
-      
-      FillMassHists(ptbin,d,mcArray,fVHFPPR,fOutputPPR);
-      FillMassHists(ptbin,d,mcArray,fVHFmycuts,fOutputmycuts);
-    }
+  
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   } //end for prongs
 
+
   // Post the data
-  PostData(1,fOutputPPR);
-  PostData(2,fOutputmycuts);
+  PostData(1,fOutputMass);
+  PostData(2,fDistr);
   PostData(3,fNentries);
-  PostData(4,fDistr);
-  PostData(5,fChecks);
+  PostData(4,fChecks);
+
   cout<<"Other PostData"<<endl;
   return;
 }
 
 //____________________________________________________________________________
-void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout){
+void AliAnalysisTaskSED0Mass::FillVarHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout){
   //
   // function used in UserExec to fill variable histograms:
   //
@@ -674,16 +588,20 @@ void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong 
   if(fReadMC) lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
   //Double_t pt = d->Pt(); //mother pt
   Bool_t isSelected=kFALSE;
-  Int_t okD0=-1,okD0bar=-1;
 
-  if(fCutOnDistr && vhf) 
-    if(part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) 
-      isSelected=kTRUE;//selected  
+  if(fCutOnDistr){
+    isSelected = cuts->IsSelected(part,AliRDHFCuts::kAll);
+    if (!isSelected){
+      //cout<<"Not Selected"<<endl;
+      return;
+    }
+  }
 
   TString fillthispi="",fillthisK="",fillthis="";
 
+  Int_t ptbin=cuts->PtBin(part->Pt());
   if(!fCutOnDistr || (fCutOnDistr && isSelected)){ //if no cuts or cuts passed 
-
+    //printf("\nif no cuts or cuts passed\n");
     if(lab>=0 && fReadMC){ //signal
 
       //check pdg of the prongs
@@ -793,9 +711,9 @@ void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong 
       //no mass cut distributions: mass, ptbis
       fillthis="hMassB_";
       fillthis+=ptbin;
-
-      if (!fCutOnDistr || (fCutOnDistr>0 && okD0==1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
-      if (!fCutOnDistr || (fCutOnDistr>0 && okD0bar==1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
+      
+      if (!fCutOnDistr || (fCutOnDistr && (isSelected==1 || isSelected==3))) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
+      if (!fCutOnDistr || (fCutOnDistr && isSelected>1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
 
       fillthis="hptB1prongnoMcut_";
       fillthis+=ptbin;
@@ -833,8 +751,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong 
 
 	fillthis="hcosthetastarB_";
 	fillthis+=ptbin;
-	if (!fCutOnDistr || (fCutOnDistr>0 && okD0==1))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
-	if (!fCutOnDistr || (fCutOnDistr>0 && okD0bar==1))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());	
+	if (!fCutOnDistr || (fCutOnDistr && (isSelected==1 || isSelected==3)))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	    if (!fCutOnDistr || (fCutOnDistr && isSelected>1))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());	
 
 	fillthis="hd0d0B_";
 	fillthis+=ptbin;
@@ -853,8 +771,9 @@ void AliAnalysisTaskSED0Mass::FillVarHists(Int_t ptbin, AliAODRecoDecayHF2Prong 
   }
   return;
 }
-//____________________________________________________________________________*
-void AliAnalysisTaskSED0Mass::FillMassHists(Int_t ptbin, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAnalysisVertexingHF *vhf, TList *listout){
+//____________________________________________________________________________
+
+void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
   //
   // function used in UserExec to fill mass histograms:
   //
@@ -862,102 +781,109 @@ void AliAnalysisTaskSED0Mass::FillMassHists(Int_t ptbin, AliAODRecoDecayHF2Prong
 
   Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
-  Int_t okD0=0,okD0bar=0;
-  //cout<<"inside FillHist"<<endl;
-  if(part->SelectD0(vhf->GetD0toKpiCuts(),okD0,okD0bar)) {//selected
-    Double_t invmassD0 = part->InvMassD0(), invmassD0bar = part->InvMassD0bar();
-    printf("SELECTED\n");
+  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kAll); //selected
+  //cout<<"is selected = "<<isSelected<<endl;
 
+  //cout<<"check cuts = "<<endl;
+  //cuts->PrintAll();
+  if (!isSelected){
+    //cout<<"Not Selected"<<endl;
+    return;
+  }
 
-    AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
-    if(!prong) cout<<"No daughter found";
-    else{
-      if(prong->Charge()==1) {fTotPosPairs[ptbin-1]++;} else {fTotNegPairs[ptbin-1]++;}
-    }
+  cout<<"Candidate selected"<<endl;
 
-    TString fillthis="";
-    Int_t pdgDgD0toKpi[2]={321,211};
-    Int_t labD0=-1;
-    if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+  Double_t invmassD0 = part->InvMassD0(), invmassD0bar = part->InvMassD0bar();
+  //printf("SELECTED\n");
+  Int_t ptbin=cuts->PtBin(part->Pt());
 
-    //count candidates selected by cuts
-    fNentries->Fill(1);
-    //count true D0 selected by cuts
-    if (fReadMC && labD0>=0) fNentries->Fill(2);
-    PostData(3,fNentries);
+  AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
+  if(!prong) cout<<"No daughter found";
+  else{
+    if(prong->Charge()==1) {fTotPosPairs[ptbin-1]++;} else {fTotNegPairs[ptbin-1]++;}
+  }
 
-    if (okD0==1) {
-      fillthis="histMass_";
-      fillthis+=ptbin;
-      //cout<<"Filling "<<fillthis<<endl;
+  TString fillthis="";
+  Int_t pdgDgD0toKpi[2]={321,211};
+  Int_t labD0=-1;
+  if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
 
-      //printf("Fill mass with D0");
-      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+  //count candidates selected by cuts
+  fNentries->Fill(1);
+  //count true D0 selected by cuts
+  if (fReadMC && labD0>=0) fNentries->Fill(2);
+  //PostData(3,fNentries);
+
+  if (isSelected==1 || isSelected==3) { //D0
+    fillthis="histMass_";
+    fillthis+=ptbin;
+    //cout<<"Filling "<<fillthis<<endl;
+
+    //printf("Fill mass with D0");
+    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
  
-      if(labD0>=0) {
-	if(fArray==1) cout<<"LS signal ERROR"<<endl;
+    if(labD0>=0) {
+      if(fArray==1) cout<<"LS signal ERROR"<<endl;
 
-	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
-	Int_t pdgD0 = partD0->GetPdgCode();
-	//cout<<"pdg = "<<pdgD0<<endl;
-	if (pdgD0==421){ //D0
-	  //cout<<"Fill S with D0"<<endl;
-	  fillthis="histSgn_";
-	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-	  if(TMath::Abs(invmassD0 - mPDG) < 0.027){
-	    fillthis="histSgn27_";
-	    fillthis+=ptbin;
-	    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
-	  }
-	} else{ //it was a D0bar
-	  fillthis="histRfl_";
+      AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
+      Int_t pdgD0 = partD0->GetPdgCode();
+      //cout<<"pdg = "<<pdgD0<<endl;
+      if (pdgD0==421){ //D0
+	//cout<<"Fill S with D0"<<endl;
+	fillthis="histSgn_";
+	fillthis+=ptbin;
+	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+	if(TMath::Abs(invmassD0 - mPDG) < 0.027){
+	  fillthis="histSgn27_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
 	}
-      } else {//background
-	fillthis="histBkg_";
+      } else{ //it was a D0bar
+	fillthis="histRfl_";
 	fillthis+=ptbin;
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
       }
-      
-    }
-    if (okD0bar==1) {
-      fillthis="histMass_";
+    } else {//background
+      fillthis="histBkg_";
       fillthis+=ptbin;
-      //printf("Fill mass with D0bar");
-      ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar);
+      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+    }
+      
+  }
+  if (isSelected>1) { //D0bar
+    fillthis="histMass_";
+    fillthis+=ptbin;
+    //printf("Fill mass with D0bar");
+    ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar);
  
-      if(labD0>=0) {
-	if(fArray==1) cout<<"LS signal ERROR"<<endl;
-	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
-	Int_t pdgD0 = partD0->GetPdgCode();
-	//cout<<" pdg = "<<pdgD0<<endl;
-	if (pdgD0==-421){ //D0bar
-	  fillthis="histSgn_";
-	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
-	  if (TMath::Abs(invmassD0bar - mPDG) < 0.027){
-	    fillthis="histSgn27_";
-	    fillthis+=ptbin;
-	    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
-	  }
-
-	  
-	} else{
-	  fillthis="histRfl_";
+    if(labD0>=0) {
+      if(fArray==1) cout<<"LS signal ERROR"<<endl;
+      AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
+      Int_t pdgD0 = partD0->GetPdgCode();
+      //cout<<" pdg = "<<pdgD0<<endl;
+      if (pdgD0==-421){ //D0bar
+	fillthis="histSgn_";
+	fillthis+=ptbin;
+	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+	if (TMath::Abs(invmassD0bar - mPDG) < 0.027){
+	  fillthis="histSgn27_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
 	}
-      } else {//background or LS
-	fillthis="histBkg_";
+
+	  
+      } else{
+	fillthis="histRfl_";
 	fillthis+=ptbin;
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
       }
+    } else {//background or LS
+      fillthis="histBkg_";
+      fillthis+=ptbin;
+      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
     }
+  }
 
-
-  } //else cout<<"NOT SELECTED"<<endl;
   return;
 }
 //________________________________________________________________________
@@ -968,14 +894,14 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   if(fDebug > 1) printf("AnalysisTaskSED0Mass: Terminate() \n");
 
 
-  fOutputPPR = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutputPPR) {     
-    printf("ERROR: fOutputthight not available\n");
+  fOutputMass = dynamic_cast<TList*> (GetOutputData(1));
+  if (!fOutputMass) {     
+    printf("ERROR: fOutputMass not available\n");
     return;
   }
-  fOutputmycuts = dynamic_cast<TList*> (GetOutputData(2));
-  if (!fOutputmycuts) {     
-    printf("ERROR: fOutputmycuts not available\n");
+  fDistr = dynamic_cast<TList*> (GetOutputData(2));
+  if (!fDistr) {
+    printf("ERROR: fDistr not available\n");
     return;
   }
   fNentries = dynamic_cast<TH1F*>(GetOutputData(3));
@@ -983,55 +909,50 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     printf("ERROR: fNEntries not available\n");
     return;
   }
-  fDistr = dynamic_cast<TList*> (GetOutputData(4));
-  if (!fDistr) {
-    printf("ERROR: fDistr not available\n");
-    return;
-  }
-  fChecks = dynamic_cast<TList*> (GetOutputData(5));
+  fChecks = dynamic_cast<TList*> (GetOutputData(4));
   if (!fChecks) {
     printf("ERROR: fChecks not available\n");
     return;
   }
-
+  
   if(fArray==1){
     for(Int_t ipt=0;ipt<5;ipt++){
       fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[ipt]*fTotNegPairs[ipt]); 
 
 
-      if(fLsNormalization>10e-6) {
+      if(fLsNormalization>1e-6) {
 	
 	TString massName="histMass_";
-	massName+=ipt+1;
-	((TH1F*)fOutputPPR->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputPPR->FindObject(massName))->GetEntries());
-	((TH1F*)fOutputmycuts->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputmycuts->FindObject(massName))->GetEntries());
+	massName+=ipt;
+	((TH1F*)fOutputMass->FindObject(massName))->Scale((1/fLsNormalization)*((TH1F*)fOutputMass->FindObject(massName))->GetEntries());
+
       }
     
 
       fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[4]*fTotNegPairs[4]);
 
-      if(fLsNormalization>10e-6) {
+      if(fLsNormalization>1e-6) {
 
 	TString nameDistr="hptB_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hdcaB_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hcosthetastarB_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hd0B_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hd0d0B_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hcosthetapointB_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH1F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH1F*)fDistr->FindObject(nameDistr))->GetEntries());
 	nameDistr="hcosthpointd0d0B_";
-	nameDistr+=ipt+1;
+	nameDistr+=ipt;
 	((TH2F*)fDistr->FindObject(nameDistr))->Scale((1/fLsNormalization)*((TH2F*)fDistr->FindObject(nameDistr))->GetEntries());
 
       }
@@ -1045,11 +966,12 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
   TCanvas *cMass=new TCanvas(cvname,cvname);
   cMass->cd();
-  ((TH1F*)fOutputPPR->FindObject("histMass_4"))->Draw();
+  ((TH1F*)fOutputMass->FindObject("histMass_3"))->Draw();
 
   TCanvas* cStat=new TCanvas("cstat","Stat");
   cStat->cd();
   cStat->SetGridy();
+  //((TH1F*)fDistr->FindObject("nEntriesD0"))->Draw("htext0");
   fNentries->Draw("htext0");
 
   return;
