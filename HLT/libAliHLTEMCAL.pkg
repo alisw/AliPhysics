@@ -10,12 +10,15 @@ CLASS_HDRS:= \
 	AliHLTEMCALRawAnalyzerCrudeComponent.h \
 	AliHLTEMCALRawAnalyzerLMSComponent.h \
 	AliHLTEMCALRawAnalyzerPeakFinderComponent.h \
+	AliHLTEMCALRawAnalyzerFastFitComponent.h \
+	AliHLTEMCALRawAnalyzerNNComponent.h \
 	AliHLTEMCALSharedMemoryInterface.h  \
 	AliHLTEMCALConstants.h \
 	AliHLTEMCALDigitMakerComponent.h \
 	AliHLTEMCALClusterizerComponent.h \
 	AliHLTEMCALGeometry.h \
 	AliHLTEMCALRecoParamHandler.h
+
 
 # library sources
 MODULE_SRCS= \
@@ -40,12 +43,11 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW VZERO
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW
 
 
 LIBRARY_DEP := -lHLTbase -lAliHLTUtil -lAliHLTCalo -lESD -lCDB  \
 	       -lEMCALrec -lEMCALsim -lEMCALbase -lEMCALUtils \
-	       -lVZERObase \
                -lTPCrec -lTPCbase -lTRDrec -lTRDbase \
                -lSTEER -lSTEERBase -lRAWDatarec 
 
