@@ -253,6 +253,10 @@ AliHLTComponent* AliHLTCaloHistoComponent::Spawn() {
 
 Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/) {
 
+  fPhosHistogramArray->Clear();
+  fEmcalHistogramArray->Clear();
+
+
   //see header file for documentation
   Int_t iResult = 0;
 
