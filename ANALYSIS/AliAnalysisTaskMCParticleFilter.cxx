@@ -99,7 +99,7 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
     }
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
     if(!xtree){
-      Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
+      AliWarning(Form("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__));
       return kTRUE;
     }
     xtree->SetBranchAddress("xsection",&xsection);
@@ -299,7 +299,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
   if (colG) {
     aodMCHo->SetReactionPlaneAngle(colG->ReactionPlaneAngle());
-    printf("Found Collision Geometry. Got Reaction Plane %lf\n", colG->ReactionPlaneAngle());
+    AliInfo(Form("Found Collision Geometry. Got Reaction Plane %lf\n", colG->ReactionPlaneAngle()));
   }
 
 
