@@ -105,7 +105,7 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
   int iResult=0;
-  if ((iResult=ScanConfigurationArgument(argc, argv))<0) return -iResult;
+  if ((iResult=ConfigureFromArgumentString(argc, argv))<0) return iResult;
 
   // Make sure there is no library manager before we try and create a new one.
   if (fpLibManager) {
@@ -263,6 +263,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
   int iResult=0;
   HLTInfo("write %d output block(s)", evtData.fBlockCnt);
   int writerNo=0;
+  int blockCount=0;
   AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
   bool bIsDataEvent=IsDataEvent(&eventType);
   if (iResult>=0) {
@@ -317,12 +318,19 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
       // different fields in the homer header, which is an array of 64 bit
       // words.
       fWriters[writerNo]->AddBlock(homerHeader, blocks[n].fPtr);
+      blockCount++;
     }
   }
 
-  if (iResult>=0 && !bIsDataEvent) {
+  if (iResult>=0 && !bIsDataEvent && fNofDDLs>=2) {
     // data blocks from a special event are kept to be added to the
-    // following event.
+    // following event. In the current implementation at least 2 DDLs
+    // are required to allow to keep the blocks of the SOR event and
+    // include it in the first event. If only one writer is available
+    // the blocks are ignored. For the moment this is not expexted to
+    // be a problem since components should not gererate anything on
+    // SOR/EOR. The only case is the list of AliHLTComponentTableEntry
+    // transmitted for component statistics in debug mode.
     if (fReservedWriter>=0) {
       HLTWarning("overriding previous buffer of non-data event data blocks");
     }
@@ -331,23 +339,38 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
     // TODO: not yet clear whether it is smart to send the event id of
     // this special event or if it should be set from the id of the
     // following event where the data will be added
-    if ((bufferSize=FillOutputBuffer(evtData.fEventID, fWriters[writerNo], pBuffer))>0) {
+    if (blockCount>0 && (bufferSize=FillOutputBuffer(evtData.fEventID, fWriters[writerNo], pBuffer))>0) {
       fReservedWriter=writerNo;
       fReservedData=bufferSize;
     }
     fWriters[writerNo]->Clear();
+  } else if (iResult>=0 && !bIsDataEvent && fNofDDLs<2 && blockCount>0) {
+    HLTWarning("ignoring %d block(s) for special event of type %d: at least 2 DDLs are required", blockCount, eventType);
+  }
+
+  if (iResult>=0 && bIsDataEvent) {
+    iResult=Write(GetEventCount(), GetRunLoader());
   }
 
   return iResult;
 }
 
+
 int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* /*esd*/)
+{
+  // see header file for class documentation
+  // 2010-04-14 nothing to do any more. The data is written at the end of
+  // DumpEvent
+  return 0;
+}
+
+int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
 {
   // see header file for class documentation
   int iResult=0;
 
   if (fWriters.size()==0) return 0;
-  
+
   if (fReservedWriter>=0) {
     if (fgOptions&kWriteDigits) WriteDigitArray(fReservedWriter, &fBuffer[0], fReservedData);
     if (fgOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, fReservedWriter, &fBuffer[0], fReservedData);
