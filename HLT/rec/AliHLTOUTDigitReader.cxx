@@ -223,3 +223,15 @@ void AliHLTOUTDigitReader::SetParam(TTree* /*pDigitTree*/, int event)
   // framework.
   fEvent=event;
 }
+
+void AliHLTOUTDigitReader::SetParam(const char* filename, int event)
+{
+  // see header file for class documentation
+
+  if (filename && filename[0]!=0) {
+    fDigitFileName=filename;
+  } else {
+    HLTWarning("no valid digit file provided, using default file %s", fDigitFileName.Data());
+  }
+  fEvent=event;
+}

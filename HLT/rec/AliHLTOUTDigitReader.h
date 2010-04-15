@@ -68,6 +68,12 @@ class AliHLTOUTDigitReader : public AliHLTOUTHomerCollection {
    */
   void SetParam(TTree* pDigitTree, int event=-1);
 
+  /**
+   * Set name of the digit file as parameter
+   * Overloaded from AliHLTOUT
+   */ 
+  void SetParam(const char* filename, int event=-1);
+
   /** name of the digit file */
   TString fDigitFileName; //! transient
 

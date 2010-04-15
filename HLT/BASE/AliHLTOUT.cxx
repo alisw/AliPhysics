@@ -26,6 +26,7 @@
 #include <cassert>
 #include "AliHLTOUT.h"
 #include "AliHLTMessage.h"
+#include "AliHLTMisc.h"
 #include "TSystem.h"
 #include "TClass.h"
 #include "TROOT.h"
@@ -559,7 +560,7 @@ AliHLTUInt32_t AliHLTOUT::ByteSwap32(AliHLTUInt32_t src)
 AliHLTOUT* AliHLTOUT::New(AliRawReader* pRawReader)
 {
   // see header file for class documentation
-  AliHLTOUT* instance=New("AliHLTOUTRawReader");
+  AliHLTOUT* instance=AliHLTMisc::LoadInstance((AliHLTOUT*)0, "AliHLTOUTRawReader", "libHLTrec.so");
   if (instance) {
     instance->SetParam(pRawReader);
   }
@@ -569,40 +570,19 @@ AliHLTOUT* AliHLTOUT::New(AliRawReader* pRawReader)
 AliHLTOUT* AliHLTOUT::New(TTree* pDigitTree, int event)
 {
   // see header file for class documentation
-  AliHLTOUT* instance=New("AliHLTOUTDigitReader");
+  AliHLTOUT* instance=AliHLTMisc::LoadInstance((AliHLTOUT*)0, "AliHLTOUTDigitReader", "libHLTrec.so");
   if (instance) {
     instance->SetParam(pDigitTree, event);
   }
   return instance;
 }
 
-AliHLTOUT* AliHLTOUT::New(const char* classname)
+AliHLTOUT* AliHLTOUT::New(const char* filename, int event)
 {
   // see header file for class documentation
-  int iLibResult=0;
-  AliHLTOUT* instance=NULL;
-  AliHLTLogging log;
-  TClass* pCl=NULL;
-  ROOT::NewFunc_t pNewFunc=NULL;
-  do {
-    pCl=TClass::GetClass(classname);
-  } while (!pCl && (iLibResult=gSystem->Load("libHLTrec.so"))==0);
-  if (iLibResult>=0) {
-    if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
-      void* p=(*pNewFunc)(NULL);
-      if (p) {
-	instance=reinterpret_cast<AliHLTOUT*>(p);
-	if (!instance) {
-	  log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "type cast to AliHLTOUT instance failed");
-	}
-      } else {
-	log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "can not create AliHLTOUT instance from class descriptor");
-      }
-    } else {
-      log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "can not find AliHLTOUT class descriptor");
-    }
-  } else {
-    log.Logging(kHLTLogError, "AliHLTOUT::New", "HLTOUT handling", "can not load libHLTrec library");
+  AliHLTOUT* instance=AliHLTMisc::LoadInstance((AliHLTOUT*)0, "AliHLTOUTDigitReader", "libHLTrec.so");
+  if (instance) {
+    instance->SetParam(filename, event);
   }
   return instance;
 }
@@ -638,6 +618,17 @@ void AliHLTOUT::SetParam(AliRawReader* /*pRawReader*/)
 }
 
 void AliHLTOUT::SetParam(TTree* /*pDigitTree*/, int /*event*/)
+{
+  // see header file for class documentation
+  // default implementation, we should never get here
+  // this function can only be called from the class itsself and
+  // is intended to be used with the New functions. If we get into
+  // the default implementation there is a class mismatch.
+  assert(0);
+  fLog.LoggingVarargs(kHLTLogFatal, "AliHLTOUT", "SetParam" , __FILE__ , __LINE__ , "severe internal error: class mismatch");
+}
+
+void AliHLTOUT::SetParam(const char* /*filename*/, int /*event*/)
 {
   // see header file for class documentation
   // default implementation, we should never get here

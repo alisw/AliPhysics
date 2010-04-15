@@ -59,6 +59,13 @@ class AliHLTOUT {
   static AliHLTOUT* New(TTree* pDigitTree, int event=-1);
 
   /**
+   * Create an AliHLTOUTDigitReader instance
+   * Helper function to transparently access classes from the
+   * libHLTrec library.
+   */
+  static AliHLTOUT* New(const char* filename, int event=-1);
+
+  /**
    * Get the global instance.
    * The global instance is set temporarily by the AliHLTOUTGlobalInstanceGuard
    * mainly for the sake of data input to an analysis chain. The
@@ -732,13 +739,6 @@ class AliHLTOUT {
   const AliHLTOUTHandlerListEntry& FindHandlerDesc(AliHLTUInt32_t blockIndex);
 
   /**
-   * Internal New function for the external HLTOUT instances.
-   * Currently supported classes are AliHLTOUTRawReader and
-   * AliHLTOUTDigitReader, both implemented in libHLTrec.so.
-   */
-  static AliHLTOUT* New(const char* classname);
-
-  /**
    * Set the RawReader as parameter.
    * The function is for internal use only in conjunction with the
    * New() functions.
@@ -751,6 +751,13 @@ class AliHLTOUT {
    * New() functions.
    */
   virtual void SetParam(TTree* pDigitTree, int event=-1);
+
+  /**
+   * Set name of the digit file as parameter
+   * The function is for internal use only in conjunction with the
+   * New() functions.
+   */
+  virtual void SetParam(const char* filename, int event=-1);
 
   /** data type for the current block search, set from @ref SelectFirstDataBlock */
   AliHLTComponentDataType fSearchDataType; //!transient
