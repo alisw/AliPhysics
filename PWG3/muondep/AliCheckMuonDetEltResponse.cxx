@@ -61,13 +61,13 @@
 ClassImp(AliCheckMuonDetEltResponse)
 /// \endcond
 
-const Int_t AliCheckMuonDetEltResponse::fNbrOfChamber          = 10;
-const Int_t AliCheckMuonDetEltResponse::fNbrOfStation          = 5;
-const Int_t AliCheckMuonDetEltResponse::fNbrOfDetectionElt[10] = {4, 4, 4, 4, 18, 18, 26, 26, 26, 26};
-const Int_t AliCheckMuonDetEltResponse::fFirstDetectionElt[10] = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-const Int_t AliCheckMuonDetEltResponse::fOffset                = 100;
-const Int_t AliCheckMuonDetEltResponse::fOverlapSize           = 15;
-const Int_t AliCheckMuonDetEltResponse::fYSlatSize             = 20;
+const Int_t AliCheckMuonDetEltResponse::fgkNbrOfChamber          = 10;
+const Int_t AliCheckMuonDetEltResponse::fgkNbrOfStation          = 5;
+const Int_t AliCheckMuonDetEltResponse::fgkNbrOfDetectionElt[10] = {4, 4, 4, 4, 18, 18, 26, 26, 26, 26};
+const Int_t AliCheckMuonDetEltResponse::fgkFirstDetectionElt[10] = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+const Int_t AliCheckMuonDetEltResponse::fgkOffset                = 100;
+const Int_t AliCheckMuonDetEltResponse::fgkOverlapSize           = 15;
+const Int_t AliCheckMuonDetEltResponse::fgkYSlatSize             = 20;
 
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse() 
@@ -75,7 +75,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
   fNCh(0),
   fNSt(0),
   fNDE(0),
-  fTransformer(0x0),
+  fkTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
   fIsCosmicData(kFALSE),
@@ -90,8 +90,8 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
 {
 /// Default constructor
 
-    fNCh = AliCheckMuonDetEltResponse::fNbrOfChamber;
-    fNSt = AliCheckMuonDetEltResponse::fNbrOfStation;
+    fNCh = AliCheckMuonDetEltResponse::fgkNbrOfChamber;
+    fNSt = AliCheckMuonDetEltResponse::fgkNbrOfStation;
     fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
     fIsCosmicData = kFALSE;
     fNbrUsableTracks = 0;
@@ -109,7 +109,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltR
   fNCh(0),
   fNSt(0),
   fNDE(0),
-  fTransformer(0x0),
+  fkTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
   fIsCosmicData(kFALSE),
@@ -147,7 +147,7 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
   fNCh(0),
   fNSt(0),
   fNDE(0),
-  fTransformer(transformer),
+  fkTransformer(transformer),
   fESD(esd),
   fTracksTotalNbr(0),
   fIsCosmicData(kFALSE),
@@ -162,8 +162,8 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
 {
 /// Constructor
 
-    fNCh = AliCheckMuonDetEltResponse::fNbrOfChamber;
-    fNSt = AliCheckMuonDetEltResponse::fNbrOfStation;
+    fNCh = AliCheckMuonDetEltResponse::fgkNbrOfChamber;
+    fNSt = AliCheckMuonDetEltResponse::fgkNbrOfStation;
     fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
     fIsCosmicData = isCosmic;
     fNbrUsableTracks = 0;
@@ -206,6 +206,9 @@ void AliCheckMuonDetEltResponse::CheckDetEltResponse()
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::TrackLoop()
 {
+  //
+  // Track Loop
+  //
   AliESDMuonTrack* esdTrack;
   AliMUONTrack track;
   Int_t nTracks, iTrack;
@@ -285,6 +288,10 @@ void AliCheckMuonDetEltResponse::TrackLoop()
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::TrackParamLoop()
 {
+  //
+  // TrackParam Loop
+  //
+
   Int_t nTrackParams = (Int_t) fTrackParams->GetEntriesFast();  //!<Number of trackParams in the track.
   Int_t iTrackParam = 0;                                        //!<Number of the trackParam of the track.
   Int_t oldChamber = -1, newChamber = 0; //!<To check if there is 0, 1 or 2 (overlap cases) clusters in the same chamber for a track.                                      
@@ -365,7 +372,7 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
       posYG = fTrackParam->GetBendingCoor(); 
       posZG = fTrackParam->GetZ(); 
       
-      fTransformer->Global2Local(detElt, posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
+      fkTransformer->Global2Local(detElt, posXG, posYG, posZG, posXL, posYL, posZL);  //!<Transfomation from global to local positions.
       
       ///Filling histograms of the cluster positions on the detection element of the TRACKS DETECTED (TD):
       FillTDHistos(newChamber, detElt, posXL, posYL);
@@ -439,7 +446,7 @@ void AliCheckMuonDetEltResponse::FillTTHistos(Int_t chamber,
 
 
 //_____________________________________________________________________________
-Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber, 
+const Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber, 
 						  Int_t detElt)
 {
 ///
@@ -448,9 +455,9 @@ Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber,
 
     Int_t iDet = 0; //!<Position of the detection element (detElt) in the histograms' list.
 
-    if (chamber<4)             iDet = detElt-fOffset*(chamber+1)+ 4* chamber      ; 
-    if (chamber>3 && chamber<6) iDet = detElt-fOffset*(chamber+1)+18*(chamber-4)+16;
-    if (chamber>5)             iDet = detElt-fOffset*(chamber+1)+26*(chamber-6)+52;
+    if (chamber<4)             iDet = detElt-fgkOffset*(chamber+1)+ 4* chamber      ; 
+    if (chamber>3 && chamber<6) iDet = detElt-fgkOffset*(chamber+1)+18*(chamber-4)+16;
+    if (chamber>5)             iDet = detElt-fgkOffset*(chamber+1)+26*(chamber-6)+52;
 
     return iDet;    
 }
@@ -458,7 +465,7 @@ Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber,
 
 
 //_____________________________________________________________________________
-Int_t AliCheckMuonDetEltResponse::FromDetElt2LocalId(Int_t chamber, 
+const Int_t AliCheckMuonDetEltResponse::FromDetElt2LocalId(Int_t chamber, 
 						     Int_t detElt)
 {
 ///
@@ -505,10 +512,10 @@ void AliCheckMuonDetEltResponse::FindAndFillMissedDetElt(AliMUONTrackParam* extr
       
 	for (Int_t iDE = 0; iDE < nbrOfDetElt; iDE++)                    //!<Loop on all the detection element of the chamber
 	  {
-	    Int_t deId = (chamber + 1)*fOffset + iDE;                        //!<detection element Id 
+	    Int_t deId = (chamber + 1)*fgkOffset + iDE;                        //!<detection element Id 
 	    
-	    fTransformer->Global2Local(deId, pos1[0], pos1[1], pos1[2], pos1[3], pos1[4], pos1[5]);      //!<convesrion of point 1 and 2 in the local coordinates
-	    fTransformer->Global2Local(deId, pos2[0], pos2[1], pos2[2], pos2[3], pos2[4], pos2[5]);
+	    fkTransformer->Global2Local(deId, pos1[0], pos1[1], pos1[2], pos1[3], pos1[4], pos1[5]);      //!<convesrion of point 1 and 2 in the local coordinates
+	    fkTransformer->Global2Local(deId, pos2[0], pos2[1], pos2[2], pos2[3], pos2[4], pos2[5]);
 	    
 	    CoordinatesOfMissingCluster(pos1[3], pos1[4], pos1[5], pos2[3], pos2[4], pos2[5], posMiss[0], posMiss[1]);
 
