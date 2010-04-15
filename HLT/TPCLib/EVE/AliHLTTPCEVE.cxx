@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCEVE.cxx
-    @author Matthias Richter
-    @date   2008-11-22
-    @brief  AliEVE bindings for the HLT TPC.
-*/
+//  @file   AliHLTTPCEVE.cxx
+//  @author Matthias Richter
+//  @date   2008-11-22
+//  @brief  AliEVE bindings for the HLT TPC.
+//  @note   
 
 #include <cerrno>
 #include <cassert>
@@ -55,11 +55,10 @@ AliHLTTPCEVE::~AliHLTTPCEVE()
   // see header file for class documentation
 }
 
-TEvePointSet* AliHLTTPCEVE::MakePointSetFromHLTDigits(const char* /*path*/, int eventNo, TEveElement* cont, Float_t maxR) const
+TEvePointSet* AliHLTTPCEVE::MakePointSetFromHLTDigits(const char* path, int eventNo, TEveElement* cont, Float_t maxR) const
 {
   // see header file for class documentation
-  TTree* pDigitTree=NULL;
-  AliHLTOUT* pHLTOUT=AliHLTOUT::New(pDigitTree, eventNo);
+  AliHLTOUT* pHLTOUT=AliHLTOUT::New(path, eventNo);
   TEvePointSet* pointSet=MakePointSetFromHLTOUT(pHLTOUT, cont, maxR);
   AliHLTOUT::Delete(pHLTOUT);
   return pointSet;

@@ -39,7 +39,7 @@ class AliHLTTPCEVE : public AliHLTLogging {
   /**
    * Create EVE point collection from HLTOUT of HLT.Digits.root
    * Calls ::MakePointSetFromHLTOUT(AliHLTOUT*, TEveElement*, Float_t)
-   * @param path        path of the working directory
+   * @param path        path of the digit file
    * @param eventNo     event number to be displayed
    * @param cont        EVE element collection
    * @param maxR        geometrical cut, maximum radius of clusters

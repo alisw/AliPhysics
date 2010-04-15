@@ -45,7 +45,7 @@
  * @author Matthias.Richter@ift.uib.no
  * @date   2008-11-22
  */
-TEvePointSet* hlt_tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
+TEvePointSet* hlt_tpc_clusters(const char* digitfile=NULL, TEveElement* cont=0, Float_t maxR=270)
 {
   if (!TClass::GetClass("AliEveEventManager")) {
     Error("hlt_tpc_clusters.C", "EVE library not loaded, please start alieve correctly");
@@ -75,13 +75,16 @@ TEvePointSet* hlt_tpc_clusters(TEveElement* cont=0, Float_t maxR=270)
   TEvePointSet* clusters = NULL;
 
   AliESDEvent* pESD=eveManager->AssertESD();
-  if (eveManager->HasRawReader()) {
+  // extract from RawReader if available and no digit file has been specified
+  if (digitfile==NULL && eveManager->HasRawReader()) {
     AliRawReader* pRawReader=eveManager->AssertRawReader();
     if (pRawReader) {
+      Info("hlt_tpc_clusters.C", "extracting HLT TPC clusters from RawReader");
       clusters=hlttpceve.MakePointSetFromHLTOUT(pRawReader, cont, maxR);
     }
   } else {
-    clusters=hlttpceve.MakePointSetFromHLTDigits(eveManager->GetTitle(), eveManager->GetEventId(), cont, maxR);
+    Info("hlt_tpc_clusters.C", Form("extracting HLT TPC clusters from digit file %s", digitfile!=NULL?digitfile:""));
+    clusters=hlttpceve.MakePointSetFromHLTDigits(digitfile, eveManager->GetEventId(), cont, maxR);
   }
   if (!clusters) return NULL;
   
