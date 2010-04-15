@@ -709,8 +709,9 @@ void AliLHCData::Print(const Option_t* opt) const
     printf("Printing short info:\n<RecordType>(number of records): <TimeStamp, value> for 1st record only\n");
     full = kFALSE;
   }
-  printf("Fill#%6d Validity: %s - %s\n",fFillNumber,
-	 AliLHCDipValI::TimeAsString(fTMin),AliLHCDipValI::TimeAsString(fTMax));
+  TString sdtmn = AliLHCDipValI::TimeAsString(fTMin);
+  TString sdtmx = AliLHCDipValI::TimeAsString(fTMax);
+  printf("Fill#%6d Validity: %s - %s\n",fFillNumber,sdtmn.Data(),sdtmx.Data());
   //
   printf("********** SETTINGS FROM RUN CONTROL **********\n");
   //
