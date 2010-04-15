@@ -74,7 +74,7 @@ AliAnalysisTaskUE *AddTaskUE(Char_t *jetBranch = "jets",Char_t *cuts = "ALICE", 
 void ConfigTaskUE(AliAnalysisTaskUE * ueana){
   // common config,
   ueana->SetDebugLevel(0); 
-  ueana->SetPtRangeInHist(15, 0., 15.);
+  ueana->SetPtRangeInHist(100, 0., 100.);
 }
 
 //------------------------------------------------------------------------
