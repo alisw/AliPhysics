@@ -15,7 +15,7 @@
  *
  * If no argument is specified, ALL detector tasks are run. The GRID mode is by default 'full'.
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_qa
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 

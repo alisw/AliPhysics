@@ -15,7 +15,7 @@
  *
  * If no argument is specified, ALL detector tasks are run.
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_qa
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 
@@ -90,7 +90,8 @@ void compare_HLT_offline_local(const char* detectorTask="global"){
   TChain *chain = new TChain("esdTree"); 
   //chain->Add("alien:///alice/data/2010/LHC10b/000115322/10000115322040.110/AliESDs.root");
   
-  chain->Add("~/7TeV/115322/10000115322040.110/AliESDs.root");
+  chain->Add("AliESDs.root");
+  //chain->Add("~/7TeV/115322/10000115322040.110/AliESDs.root");
   //chain->Add("...");
    
   //-------- Make the analysis manager ---------------//

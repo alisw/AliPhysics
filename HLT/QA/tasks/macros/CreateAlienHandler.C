@@ -5,7 +5,7 @@
  *
  * It is loaded in compare_HLT_offline_grid.C.
  *
- * @ingroup alihlt_tpc
+ * @ingroup alihlt_qa
  * @author Kalliopi.Kanaki@ift.uib.no
  */
 
