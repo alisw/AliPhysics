@@ -9,9 +9,11 @@
 //Author: Nicolas LE BRIS - SUBATECH Nantes
 
 #include <TH2F.h>
-#include <TObject.h>
-#include <TClonesArray.h>
+//#include <TObject.h>
+//#include <TClonesArray.h>
 
+class TObject;
+class TClonesArray;
 class AliMUONTrackParam;
 class AliMUONTrack;
 class AliMUONVCluster;
@@ -41,10 +43,10 @@ public:
   void TrackLoop ();
   void TrackParamLoop ();
 
-  Int_t GetNbrUsableTracks(){return fNbrUsableTracks;};
+  const Int_t GetNbrUsableTracks(){return fNbrUsableTracks;};
   void SetNbrUsableTracks(Int_t nUsable){fNbrUsableTracks = nUsable;};
   void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
-  Bool_t IsCosmic() {return fIsCosmicData;};
+  const Bool_t IsCosmic() {return fIsCosmicData;};
  
 private:
   
@@ -69,12 +71,12 @@ private:
   Int_t fNSt; //!<Number of tracking station.
   Int_t fNDE; //!<Number of detection element in the tracking system.
 
-  Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt);
-  Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt);
+  const Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt);
+  const Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt);
 
-  const AliMUONGeometryTransformer* fTransformer; //!<Geometry transformer
+  const AliMUONGeometryTransformer* fkTransformer; //!<Geometry transformer
 
-  AliESDEvent* fESD;
+  AliESDEvent* fESD;             //!<ESD event object
 
   Int_t fNbrClustersCh[10];      //!<Number of clusters in the chamber [fChamberNbr].
   Int_t fTracksTotalNbr;         //!<Total number of tracks in the event.
@@ -82,22 +84,22 @@ private:
   Bool_t fIsCosmicData;          //!<Check if the data are cosmic rays (used only to cut cosmic shower at the trigger level if true)
   Int_t fNbrUsableTracks;        //!<Number of usable tracks (matches trigger and contains traker data, plus a trigger condition for cosmic)
 
-  TClonesArray     * fTrackParams;
-  AliMUONTrackParam* fTrackParam;
-  AliMUONVCluster  * fCluster;
+  TClonesArray     * fTrackParams;  //!<Clone Array of TrackParams
+  AliMUONTrackParam* fTrackParam;   //!<TrackParam data member
+  AliMUONVCluster  * fCluster;      //!<Cluster data member
 
   TClonesArray* fDetEltTDHistList; //!<List of histograms of the tracks detected in the detection elements 
   TClonesArray* fDetEltTTHistList; //!<List of histograms of the tracks which have passed through the detection elements
   TClonesArray* fChamberTDHistList; //!<List of histograms of the tracks detected in the chambers 
   TClonesArray* fChamberTTHistList; //!<List of histograms of the tracks which have passed through the chambers
 
-  static const Int_t fNbrOfChamber;            ///< The total number of chamber in the tracking system.
-  static const Int_t fNbrOfStation;            ///< The total number of station in the tracking system.
-  static const Int_t fNbrOfDetectionElt[10];   ///< The total number of detection element in each chamber.
-  static const Int_t fFirstDetectionElt[10];   ///< The Id of the first detection element of each chamber.
-  static const Int_t fOffset;                  ///< fFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
-  static const Int_t fOverlapSize;             ///< Average size (in cm) of the overlap area between two detection eltement.
-  static const Int_t fYSlatSize;               ///< Average size (in cm) of the overlap area between two detection eltement.
+  static const Int_t fgkNbrOfChamber;            ///< The total number of chamber in the tracking system.
+  static const Int_t fgkNbrOfStation;            ///< The total number of station in the tracking system.
+  static const Int_t fgkNbrOfDetectionElt[10];   ///< The total number of detection element in each chamber.
+  static const Int_t fgkFirstDetectionElt[10];   ///< The Id of the first detection element of each chamber.
+  static const Int_t fgkOffset;                  ///< fgkFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
+  static const Int_t fgkOverlapSize;             ///< Average size (in cm) of the overlap area between two detection eltement.
+  static const Int_t fgkYSlatSize;               ///< Average size (in cm) of the overlap area between two detection eltement.
 
   ClassDef(AliCheckMuonDetEltResponse, 0)
 };
