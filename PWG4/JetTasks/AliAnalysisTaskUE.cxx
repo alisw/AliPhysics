@@ -1218,7 +1218,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   
   // Can be use to get part pt distribution for differente Jet Pt bins
   fhFullRegPartPtDistVsEt = new TH2F("hFullRegPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading Jet P_{T}", fTrackEtaCut),
-                                     100,0.,50., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
+                                     200,0.,100., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
   fhFullRegPartPtDistVsEt->SetYTitle("Leading Jet P_{T}");
   fhFullRegPartPtDistVsEt->SetXTitle("p_{T}");
   fhFullRegPartPtDistVsEt->Sumw2();
@@ -1226,7 +1226,7 @@ void  AliAnalysisTaskUE::CreateHistos()
   
   // Can be use to get part pt distribution for differente Jet Pt bins
   fhTransRegPartPtDistVsEt = new TH2F("hTransRegPartPtDistVsEt", Form( "dN/dP_{T} in tranvese regions |#eta|<%3.1f vs Leading Jet P_{T}", fTrackEtaCut),  
-                                     100,0.,50., fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
+                                     200,0.,100., fBinsPtInHist, fMinJetPtInHist,   fMaxJetPtInHist);
   fhTransRegPartPtDistVsEt->SetYTitle("Leading Jet P_{T}");
   fhTransRegPartPtDistVsEt->SetXTitle("p_{T}");
   fhTransRegPartPtDistVsEt->Sumw2();
@@ -1330,14 +1330,14 @@ void  AliAnalysisTaskUE::CreateHistos()
   fListOfHistos->Add( fhRegBackwardSumPtvsMult );     // At(28);
   
   fhRegForwardPartPtDistVsEt = new TH2F("hRegForwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading Jet P_{T}", fTrackEtaCut),
-                                       100,0.,50., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
+                                       200,0.,100., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
   fhRegForwardPartPtDistVsEt->SetYTitle("Leading Jet P_{T}");
   fhRegForwardPartPtDistVsEt->SetXTitle("p_{T}");
   fhRegForwardPartPtDistVsEt->Sumw2();
   fListOfHistos->Add( fhRegForwardPartPtDistVsEt );  // At(29) 
   
   fhRegBackwardPartPtDistVsEt = new TH2F("hRegBackwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading Jet P_{T}", fTrackEtaCut),
-                                         100,0.,50., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
+                                         200,0.,100., fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
   fhRegBackwardPartPtDistVsEt->SetYTitle("Leading Jet P_{T}");
   fhRegBackwardPartPtDistVsEt->SetXTitle("p_{T}");
   fhRegBackwardPartPtDistVsEt->Sumw2();
