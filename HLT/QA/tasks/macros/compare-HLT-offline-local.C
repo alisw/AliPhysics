@@ -19,7 +19,7 @@
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_local(const char* detectorTask="all"){
+void compare_HLT_offline_local(const char* detectorTask="global"){
  
   TStopwatch timer;
   timer.Start();
@@ -40,7 +40,7 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 
   
-  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -72,7 +72,6 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
 	    bPHOS   = kTRUE;
 	    bITS    = kTRUE;
 	    bGLOBAL = kTRUE;
-	    bAll    = kTRUE;
 	    continue;
          }
          else break;
@@ -85,9 +84,12 @@ void compare_HLT_offline_local(const char* detectorTask="all"){
   if(bPHOS)   gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
- 
+  
+  //TGrid::Connect("alien");
 
   TChain *chain = new TChain("esdTree"); 
+  //chain->Add("alien:///alice/data/2010/LHC10b/000115322/10000115322040.110/AliESDs.root");
+  
   chain->Add("~/7TeV/115322/10000115322040.110/AliESDs.root");
   //chain->Add("...");
    
