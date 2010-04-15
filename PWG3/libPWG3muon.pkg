@@ -22,7 +22,8 @@ SRCS:=	 muon/AliAnalysisTaskESDMuonFilter.cxx \
                  muon/AliDimuInfoStoreMC.cxx \
                  muon/AliMuonsHFHeader.cxx \
                  muon/AliAnalysisTaskSEMuonsHF.cxx \
-		 muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx
+		 muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx \
+		 muon/AliAnalysisTaskMuonTreeBuilder.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
