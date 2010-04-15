@@ -140,7 +140,7 @@ TH1F *AliAnalysisTaskCheckESD::CreateEffHisto(const TH1F* hGen, const TH1F* hRec
       Double_t eff = nRecEff/nGenEff;
       hEff->SetBinContent(iBin, 100. * eff);
       Double_t error = sqrt(eff*(1.-eff) / nGenEff);
-      if (error == 0) error = 0.0001;
+      if (TMath::Abs(error) < 1.e-33) error = 0.0001;
       hEff->SetBinError(iBin, 100. * error);			
     }
     else {
@@ -691,7 +691,7 @@ void AliAnalysisTaskCheckESD::Terminate(Option_t *)
     if (nGenV0s > 0) {
       Double_t eff = nRecV0s*1./nGenV0s;
       Double_t effError = TMath::Sqrt(eff*(1.-eff) / nGenV0s);
-      if (effError == 0) effError = checkV0EffLow / TMath::Sqrt(1.*nGenV0s);
+      if (TMath::Abs(effError) < 1.e-33) effError = checkV0EffLow / TMath::Sqrt(1.*nGenV0s);
       Info("CheckESD", "V0 eff = (%.1f +- %.1f) %%", 
 	   100.*eff, 100.*effError);
       if (eff < checkV0EffLow - checkV0EffSigma*effError) {
