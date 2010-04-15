@@ -53,7 +53,7 @@ class AliEMCALRawUtils : public TObject {
   Int_t GetNoiseThreshold()                const { return fNoiseThreshold; }
   Int_t GetNPedSamples()                   const { return fNPedSamples; }
   // get methods for fast fit simulation
-  Double_t GetPedestalValue()  const {return fgPedestalValue;}
+  Int_t GetPedestalValue()  const {return fgPedestalValue;}
   Double_t GetFEENoise()       const {return fgFEENoise;}
 
   Bool_t GetRemoveBadChannels() const {return fRemoveBadChannels;}
@@ -72,7 +72,7 @@ class AliEMCALRawUtils : public TObject {
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
   void SetRawFormatTimeBins(Int_t val)             {fgTimeBins = val;}
-  void SetPedestalValue(Double_t val)              {fgPedestalValue = val;}
+  void SetPedestalValue(Int_t val)              {fgPedestalValue = val;}
   
   static Int_t GetRawFormatTimeBins() { return fgTimeBins ; }    
   static Double_t GetRawFormatTimeMax() { return fgTimeBins*fgTimeBinWidth; }   
