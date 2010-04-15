@@ -101,8 +101,12 @@ protected:
   TRefArray * fEmcalClustersArray;  //!transient Array to contain EMCAL Clusters
   TRefArray * fPhosClustersArray;  //!transient Array to contain PHOS Clusters
 
+  TObjArray * fPhosProducerArray; //!transient 
+  TObjArray * fEmcalProducerArray; //!transient 
+  
   TObjArray * fPhosHistogramArray; //!transient 
   TObjArray * fEmcalHistogramArray; //!transient 
+  
   
   Bool_t fDoEmcal;  //Fill EMCAL histos?
   Bool_t fDoPhos;   //Fill PHOS histos?
