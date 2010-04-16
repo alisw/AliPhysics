@@ -114,7 +114,9 @@ void AliAnalysisTaskNestedLoops::UserCreateOutputObjects()
    {
     Printf("ERROR: Could not retrieve histogram list (NL, Task::UserCreateOutputObjects()) !!!!"); 
    }
-   
+  
+ PostData(1,fListHistos);
+ 
 } // end of void AliAnalysisTaskNestedLoops::UserCreateOutputObjects() 
 
 //================================================================================================================

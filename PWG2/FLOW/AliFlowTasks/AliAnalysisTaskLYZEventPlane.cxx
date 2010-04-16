@@ -108,6 +108,7 @@ void AliAnalysisTaskLYZEventPlane::UserCreateOutputObjects()
   }
   else { cout<<"ERROR: Could not retrieve histogram list"<<endl;}
 
+ PostData(1,fListHistos);
 
 }
 

@@ -8,15 +8,15 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGRID};
 // Flow analysis method can be:(set to kTRUE or kFALSE)
 Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
 Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
-Bool_t GFC      = kFALSE;  // cumulants based on generating function
-Bool_t QC       = kFALSE;  // cumulants using Q vectors
-Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
-Bool_t LYZ1SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (integrated v)
-Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
+Bool_t GFC      = kTRUE;  // cumulants based on generating function
+Bool_t QC       = kTRUE;  // cumulants using Q vectors
+Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
+Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
+Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
 Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
+Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
 Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
@@ -43,11 +43,13 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1,
 		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/PWG0/jgrosseo/run000104867_90_92_pass4", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/ALICE/pp010000/MC_LHC09a4_81xxx", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC10a8_run104867_8", Int_t offset=0)
-//void runFlowTask(Int_t mode = mGRID)
+//void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
   TStopwatch timer;
   timer.Start();
   
+  CrossCheckUserSettings(DATA);
+
   LoadLibraries(mode);
 
   if (mode == mGRID) {
@@ -95,15 +97,14 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1,
     AliMCEventHandler *mc = new AliMCEventHandler();
     mgr->SetMCtruthEventHandler(mc); 
   }
-  
-  
+    
   //____________________________________________//
   // Load the analysis task
   gROOT->LoadMacro("AddTaskFlow.C");
   AliAnalysisTaskFlowEvent* taskFE = AddTaskFlow(type,METHODS,QA,WEIGHTS);
 
   
-  //task to check the offline trigger
+  // Task to check the offline trigger
   if (mode == mLocal || mode == mGRID) {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); }
   else if (mode == mPROOF || mode == mLocalPAR) {
@@ -136,6 +137,20 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1,
   
 }
 
+void CrossCheckUserSettings(Bool_t bData) 
+{
+ // Check in this method if the user settings make sense.
+ 
+ if(MCEP==kTRUE && bData==kTRUE)
+ {
+  cout<<endl;
+  cout<<"WARNING: In real datasets there is no Monte Carlo information available !!!!"<<endl;
+  cout<<"         Set for real data analysis DATA = kTRUE and MCEP = kFALSE in the macro."<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+} // end of void CrossCheckUserSettings()
 
 void LoadLibraries(const anaModes mode) {
   
