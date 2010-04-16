@@ -130,7 +130,9 @@ void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects()
    {
     Printf("ERROR: Could not retrieve histogram list (MH, Task::UserCreateOutputObjects()) !!!!"); 
    }
-   
+ 
+ PostData(1,fListHistos);
+  
 } // end of void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects() 
 
 //================================================================================================================

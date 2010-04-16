@@ -138,7 +138,9 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
    {
     Printf("ERROR: Could not retrieve histogram list (QC, Task::UserCreateOutputObjects()) !!!!"); 
    }
-   
+ 
+ PostData(1,fListHistos);
+  
 } // end of void AliAnalysisTaskQCumulants::UserCreateOutputObjects() 
 
 //================================================================================================================

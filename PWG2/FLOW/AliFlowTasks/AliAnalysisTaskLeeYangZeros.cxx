@@ -109,6 +109,8 @@ void AliAnalysisTaskLeeYangZeros::UserCreateOutputObjects()
     //    fListHistos->Print();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
+
+ PostData(1,fListHistos);
   
 }
 

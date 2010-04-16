@@ -111,6 +111,8 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
     {
       Printf("ERROR: Could not retrieve histogram list (FQD, Task::UserCreateOutputObjects()) !!!!"); 
     }
+
+ PostData(1,fListHistos);
   
 } // end of void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
 

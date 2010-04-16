@@ -122,6 +122,9 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
     fListHistos = fSP->GetHistList();
   }
   else {Printf("ERROR: Could not retrieve histogram list"); }
+
+  PostData(1,fListHistos);
+
 }
 
 //________________________________________________________________________
