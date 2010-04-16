@@ -141,7 +141,10 @@ TH1D *AliCFGridSparse::Project(Int_t ivar) const
   hist->SetXTitle(GetVarTitle(ivar));
   hist->SetName(Form("%s_proj-%s",GetName(),GetVarTitle(ivar)));
   hist->SetTitle(Form("%s: projection on %s",GetTitle(),GetVarTitle(ivar)));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar); iBin++) hist->GetXaxis()->SetBinLabel(iBin,GetAxis(ivar)->GetBinLabel(iBin));
+  for (Int_t iBin=1; iBin<=GetNBins(ivar); iBin++) {
+    TString binLabel = GetAxis(ivar)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) hist->GetXaxis()->SetBinLabel(iBin,binLabel);
+  }
   return hist;
 }
 //___________________________________________________________________
@@ -156,8 +159,14 @@ TH2D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2) const
   hist->SetYTitle(GetVarTitle(ivar2));
   hist->SetName(Form("%s_proj-%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
   hist->SetTitle(Form("%s: projection on %s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2)));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar1); iBin++) hist->GetXaxis()->SetBinLabel(iBin,GetAxis(ivar1)->GetBinLabel(iBin));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar2); iBin++) hist->GetYaxis()->SetBinLabel(iBin,GetAxis(ivar2)->GetBinLabel(iBin));
+  for (Int_t iBin=1; iBin<=GetNBins(ivar1); iBin++) {
+    TString binLabel = GetAxis(ivar1)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) hist->GetXaxis()->SetBinLabel(iBin,binLabel);
+  }
+  for (Int_t iBin=1; iBin<=GetNBins(ivar2); iBin++) {
+    TString binLabel = GetAxis(ivar2)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) hist->GetYaxis()->SetBinLabel(iBin,binLabel);
+  }
   return hist;
 }
 //___________________________________________________________________
@@ -173,9 +182,18 @@ TH3D *AliCFGridSparse::Project(Int_t ivar1, Int_t ivar2, Int_t ivar3) const
   hist->SetZTitle(GetVarTitle(ivar3));
   hist->SetName(Form("%s_proj-%s,%s,%s",GetName(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
   hist->SetTitle(Form("%s: projection on %s-%s-%s",GetTitle(),GetVarTitle(ivar1),GetVarTitle(ivar2),GetVarTitle(ivar3)));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar1); iBin++) hist->GetXaxis()->SetBinLabel(iBin,GetAxis(ivar1)->GetBinLabel(iBin));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar2); iBin++) hist->GetYaxis()->SetBinLabel(iBin,GetAxis(ivar2)->GetBinLabel(iBin));
-  for (Int_t iBin=1; iBin<=GetNBins(ivar3); iBin++) hist->GetZaxis()->SetBinLabel(iBin,GetAxis(ivar3)->GetBinLabel(iBin));
+  for (Int_t iBin=1; iBin<=GetNBins(ivar1); iBin++) {
+    TString binLabel = GetAxis(ivar1)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) hist->GetXaxis()->SetBinLabel(iBin,binLabel);
+  }
+  for (Int_t iBin=1; iBin<=GetNBins(ivar2); iBin++) {
+    TString binLabel = GetAxis(ivar2)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) hist->GetYaxis()->SetBinLabel(iBin,binLabel);
+  }
+  for (Int_t iBin=1; iBin<=GetNBins(ivar3); iBin++) {
+    TString binLabel = GetAxis(ivar3)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) hist->GetZaxis()->SetBinLabel(iBin,binLabel);
+  }
   return hist;
 }
 
@@ -799,8 +817,21 @@ TH1D* AliCFGridSparse::Slice(Int_t iVar, const Double_t *varMin, const Double_t 
     if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
     else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
   }
-  TH1D* projection = clone->Projection(iVar); 
-  for (Int_t iBin=1; iBin<=GetNBins(iVar); iBin++) projection->GetXaxis()->SetBinLabel(iBin,GetAxis(iVar)->GetBinLabel(iBin));
+
+  TH1D* projection = 0x0 ;
+
+  TObject* objInMem = gROOT->FindObject(Form("%s_proj_%d",clone->GetName(),iVar)) ;
+  if (objInMem) {
+    TString name(objInMem->ClassName());
+    if (name.CompareTo("TH1D")==0) projection = (TH1D*) objInMem ;
+    else projection = clone->Projection(iVar);
+  }
+  else projection = clone->Projection(iVar); 
+  delete clone;
+  for (Int_t iBin=1; iBin<=GetNBins(iVar); iBin++) {
+    TString binLabel = GetAxis(iVar)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
+  }
   return projection ;
 }
 
@@ -818,9 +849,25 @@ TH2D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, const Double_t *varMin, c
     if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
     else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
   }
-  TH2D* projection = clone->Projection(iVar1,iVar2); 
-  for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) projection->GetXaxis()->SetBinLabel(iBin,GetAxis(iVar1)->GetBinLabel(iBin));
-  for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) projection->GetYaxis()->SetBinLabel(iBin,GetAxis(iVar2)->GetBinLabel(iBin));
+
+  TH2D* projection = 0x0 ;
+
+  TObject* objInMem = gROOT->FindObject(Form("%s_proj_%d_%d",clone->GetName(),iVar2,iVar1)) ;
+  if (objInMem) {
+    TString name(objInMem->ClassName());
+    if (name.CompareTo("TH2D")==0) projection = (TH2D*) objInMem ;
+    else projection = clone->Projection(iVar1,iVar2);
+  }
+  else projection = clone->Projection(iVar1,iVar2); 
+  delete clone;
+  for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
+    TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
+  }
+  for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
+    TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
+  }
   return projection ;
 }
 
@@ -838,10 +885,29 @@ TH3D* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double
     if (useBins)  clone->GetAxis(iAxis)->SetRange((Int_t)varMin[iAxis],(Int_t)varMax[iAxis]);
     else          clone->GetAxis(iAxis)->SetRangeUser(varMin[iAxis],varMax[iAxis]);
   }
-  TH3D* projection = clone->Projection(iVar1,iVar2,iVar3); 
-  for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) projection->GetXaxis()->SetBinLabel(iBin,GetAxis(iVar1)->GetBinLabel(iBin));
-  for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) projection->GetYaxis()->SetBinLabel(iBin,GetAxis(iVar2)->GetBinLabel(iBin));
-  for (Int_t iBin=1; iBin<=GetNBins(iVar3); iBin++) projection->GetXaxis()->SetBinLabel(iBin,GetAxis(iVar3)->GetBinLabel(iBin));
+
+  TH3D* projection = 0x0 ;
+
+  TObject* objInMem = gROOT->FindObject(Form("%s_proj_%d_%d_%d",clone->GetName(),iVar1,iVar2,iVar3)) ;
+  if (objInMem) {
+    TString name(objInMem->ClassName());
+    if (name.CompareTo("TH3D")==0) projection = (TH3D*) objInMem ;
+    else projection = clone->Projection(iVar1,iVar2,iVar3);
+  }
+  else projection = clone->Projection(iVar1,iVar2,iVar3); 
+  delete clone;
+  for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
+    TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
+  }
+  for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
+    TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
+  }
+  for (Int_t iBin=1; iBin<=GetNBins(iVar3); iBin++) {
+    TString binLabel = GetAxis(iVar3)->GetBinLabel(iBin) ;
+    if (binLabel.CompareTo("") != 0) projection->GetZaxis()->SetBinLabel(iBin,binLabel);
+  }
   return projection ;
 }
 
