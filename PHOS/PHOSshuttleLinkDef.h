@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliPHOSPreprocessor+;
-#pragma link C++ class AliPHOSDA1+;
 #pragma link C++ class AliPHOSDA2+;
 #pragma link C++ class AliPHOSCpvDA1+;
 #pragma link C++ class AliPHOSCpvPreprocessor+;
