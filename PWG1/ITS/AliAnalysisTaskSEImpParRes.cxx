@@ -58,6 +58,8 @@ fOutputpullAllpointRec(0),
 fOutputpullAllpointSkip(0),
 fOutputOnlyRefitRec(0),
 fOutputOnlyRefitSkip(0),
+fOutputSinThetaRec(0),
+fOutputSinThetaSkip(0),
 fOutputPt(0),
 fNentries(0),
 fEstimVtx(0)
@@ -89,6 +91,8 @@ fOutputpullAllpointRec(0),
 fOutputpullAllpointSkip(0),
 fOutputOnlyRefitRec(0),
 fOutputOnlyRefitSkip(0),
+fOutputSinThetaRec(0),
+fOutputSinThetaSkip(0),
 fOutputPt(0),
 fNentries(0),
 fEstimVtx(0)
@@ -114,8 +118,10 @@ fEstimVtx(0)
   DefineOutput(15, TList::Class());  //My private output
   DefineOutput(16, TList::Class());
   DefineOutput(17, TList::Class());  //My private output
-  DefineOutput(18, TH1F::Class());
-  DefineOutput(19, TH1F::Class());
+  DefineOutput(18, TList::Class());
+  DefineOutput(19, TList::Class());  //My private output
+  DefineOutput(20, TH1F::Class());
+  DefineOutput(21, TH1F::Class());
 }
 
 //________________________________________________________________________
@@ -140,6 +146,8 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   if (fOutputpullAllpointSkip) {delete fOutputpullAllpointSkip; fOutputpullAllpointSkip=0x0;}
   if (fOutputOnlyRefitRec)             {delete fOutputOnlyRefitRec; fOutputOnlyRefitRec=0x0;}
   if (fOutputOnlyRefitSkip)          {delete fOutputOnlyRefitSkip; fOutputOnlyRefitSkip=0x0;}
+  if (fOutputSinThetaRec)                {delete fOutputSinThetaRec; fOutputSinThetaRec=0x0;}  
+  if (fOutputSinThetaSkip)             {delete fOutputSinThetaSkip; fOutputSinThetaSkip=0x0;}
   if (fOutputPt)                                          { delete fOutputPt; fOutputPt=0x0;}
   if (fNentries)                                 { delete fNentries;     fNentries    =0x0; }
   if (fEstimVtx)                                 { delete fEstimVtx;     fEstimVtx    =0x0; }
@@ -259,23 +267,23 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   }
 
   const Int_t nhist=26;
-  const TString d0ITSpureSArphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0ITSpureSAzTitle = "d_0 Distribution_z; d_0 [#mum]; Entries";
-  const TString d0allpointrphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0allpointzTitle  = "d_0 Distribution_z; d_0 [#mum]; Entries";
-  const TString d0partpointrphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0partpointzTitle  = "d_0 Distribution_z; d_0 [#mum]; Entries";
-  const TString d0onepointSPDrphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0onepointSPDzTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0postvtracrphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0postvtraczTitle  = "d_0 Distribution_z; d_0 [#mum]; Entries";
-  const TString d0negtvtracrphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0negtvtraczTitle  = "d_0 Distribution_z; d_0 [#mum]; Entries";
-  const TString d0pullAllpointrphiTitle = "d_0 Pull Distribution_rphi; d_0 pull; Entries";
-  const TString d0pullAllpointzTitle  = "d_0 Pull Distribution_z; d_0 pull; Entries";
-  const TString d0onlyRefitrphiTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
-  const TString d0onlyRefitzTitle  = "d_0 Distribution_z; d_0 [#mum]; Entries";
-  const TString d0ptTitle = "d_0 Distribution_rphi; d_0 [#mum]; Entries";
+  const TString d0ITSpureSArphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0ITSpureSAzTitle = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0allpointrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0allpointzTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0partpointrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0partpointzTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0onepointSPDrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0onepointSPDzTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0postvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0postvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0negtvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0negtvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0pullAllpointrphiTitle = "d_{0} Pull Distribution_rphi; d_{0} pull; Entries";
+  const TString d0pullAllpointzTitle  = "d_{0} Pull Distribution_z; d_{0} pull; Entries";
+  const TString d0onlyRefitrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0onlyRefitzTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";
+  const TString d0ptTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
   TString  named0itspureSArphiRec,named0itspureSAzRec,named0allpointrphiRec, named0allpointzRec,named0partpointrphiRec, named0partpointzRec,named0onepointSPDrphiRec, named0onepointSPDzRec,named0postvtracrphiRec, named0postvtraczRec,named0negtvtracrphiRec, named0negtvtraczRec,named0pt,named0pullAllpointrphiRec,named0pullAllpointzRec,named0onlyRefitrphiRec,named0onlyRefitzRec;
   TH1F *d0ITSpureSArphiRec=0,*d0ITSpureSAzRec=0,*d0AllpointrphiRec=0, *d0AllpointzRec=0,*d0PartpointrphiRec=0, *d0PartpointzRec=0,
     *d0OnepointSPDrphiRec=0,*d0OnepointSPDzRec=0,*d0PostvtracrphiRec=0, *d0PostvtraczRec=0,*d0NegtvtracrphiRec=0, *d0NegtvtraczRec=0,*d0Pt=0,*d0PullAllpointrphiRec,*d0PullAllpointzRec,*d0OnlyRefitrphiRec,*d0OnlyRefitzRec;
@@ -284,168 +292,168 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   TH1F *d0ITSpureSArphiSkip=0,*d0ITSpureSAzSkip=0,*d0AllpointrphiSkip=0, *d0AllpointzSkip=0,*d0PartpointrphiSkip=0, *d0PartpointzSkip=0,*d0OnepointSPDrphiSkip=0,*d0OnepointSPDzSkip=0,*d0PostvtracrphiSkip=0, *d0PostvtraczSkip=0,*d0NegtvtracrphiSkip=0,*d0NegtvtraczSkip=0,*d0PullAllpointrphiSkip,*d0PullAllpointzSkip,*d0OnlyRefitrphiSkip,*d0OnlyRefitzSkip;
 
 
-  for(Int_t i=0; i<nhist; i++) {
+  for(Int_t i=1; i<=nhist; i++) {
 
     named0itspureSArphiRec = "d0itspureSArphiRec_";
-    named0itspureSArphiRec += (i+1);
+    named0itspureSArphiRec += i;
     named0itspureSAzRec = "d0itspureSAzRec_";
-    named0itspureSAzRec += (i+1);
-    d0ITSpureSArphiRec = new TH1F(named0itspureSArphiRec.Data(), d0ITSpureSArphiTitle.Data(), 400, -2000., 2000.);
+    named0itspureSAzRec += i;
+    d0ITSpureSArphiRec = new TH1F(named0itspureSArphiRec.Data(), d0ITSpureSArphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0ITSpureSArphiRec->Sumw2();
     d0ITSpureSArphiRec->SetMinimum(0);  
     fOutputitspureSARec->Add(d0ITSpureSArphiRec);
-    d0ITSpureSAzRec = new TH1F(named0itspureSAzRec.Data(), d0ITSpureSAzTitle.Data(), 400, -2000., 2000.);
+    d0ITSpureSAzRec = new TH1F(named0itspureSAzRec.Data(), d0ITSpureSAzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0ITSpureSAzRec->Sumw2();
     d0ITSpureSAzRec->SetMinimum(0);  
     fOutputitspureSARec->Add(d0ITSpureSAzRec);
 
     named0itspureSArphiSkip = "d0itspureSArphiSkip_";
-    named0itspureSArphiSkip += (i+1);
+    named0itspureSArphiSkip += i;
     named0itspureSAzSkip = "d0itspureSAzSkip_";
-    named0itspureSAzSkip += (i+1);
-    d0ITSpureSArphiSkip = new TH1F(named0itspureSArphiSkip.Data(), d0ITSpureSArphiTitle.Data(), 400, -2000., 2000.);
+    named0itspureSAzSkip += i;
+    d0ITSpureSArphiSkip = new TH1F(named0itspureSArphiSkip.Data(), d0ITSpureSArphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0ITSpureSArphiSkip->Sumw2();
     d0ITSpureSArphiSkip->SetMinimum(0);  
     fOutputitspureSASkip->Add(d0ITSpureSArphiSkip);
-    d0ITSpureSAzSkip = new TH1F(named0itspureSAzSkip.Data(), d0ITSpureSAzTitle.Data(), 400, -2000., 2000.);
+    d0ITSpureSAzSkip = new TH1F(named0itspureSAzSkip.Data(), d0ITSpureSAzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0ITSpureSAzSkip->Sumw2();
     d0ITSpureSAzSkip->SetMinimum(0);  
     fOutputitspureSASkip->Add(d0ITSpureSAzSkip);
 
     named0allpointrphiRec = "d0allpointrphiRec_";
-    named0allpointrphiRec += (i+1);
+    named0allpointrphiRec += i;
     named0allpointzRec = "d0allpointzRec_";
-    named0allpointzRec += (i+1);
-    d0AllpointrphiRec = new TH1F(named0allpointrphiRec.Data(), d0allpointrphiTitle.Data(), 400, -2000., 2000.);
+    named0allpointzRec += i;
+    d0AllpointrphiRec = new TH1F(named0allpointrphiRec.Data(), d0allpointrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0AllpointrphiRec->Sumw2();
     d0AllpointrphiRec->SetMinimum(0);  
     fOutputallPointRec->Add(d0AllpointrphiRec);
-    d0AllpointzRec= new TH1F(named0allpointzRec.Data(), d0allpointzTitle.Data(), 400, -2000., 2000.);
+    d0AllpointzRec= new TH1F(named0allpointzRec.Data(), d0allpointzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0AllpointzRec->Sumw2();
     d0AllpointzRec->SetMinimum(0);  
     fOutputallPointRec->Add(d0AllpointzRec);
 
     named0allpointrphiSkip = "d0allpointrphiSkip_";
-    named0allpointrphiSkip += (i+1);
+    named0allpointrphiSkip += i;
     named0allpointzSkip = "d0allpointzSkip_";
-    named0allpointzSkip += (i+1);
-    d0AllpointrphiSkip = new TH1F(named0allpointrphiSkip.Data(), d0allpointrphiTitle.Data(), 400, -2000., 2000.);
+    named0allpointzSkip += i;
+    d0AllpointrphiSkip = new TH1F(named0allpointrphiSkip.Data(), d0allpointrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0AllpointrphiSkip->Sumw2();
     d0AllpointrphiSkip->SetMinimum(0);  
     fOutputallPointSkip->Add(d0AllpointrphiSkip);
-    d0AllpointzSkip = new TH1F(named0allpointzSkip.Data(), d0allpointzTitle.Data(), 400, -2000., 2000.);
+    d0AllpointzSkip = new TH1F(named0allpointzSkip.Data(), d0allpointzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0AllpointzSkip->Sumw2();
     d0AllpointzSkip->SetMinimum(0);  
     fOutputallPointSkip->Add(d0AllpointzSkip);
 
     named0partpointrphiRec = "d0partpointrphiRec_";
-    named0partpointrphiRec += (i+1);
+    named0partpointrphiRec += i;
     named0partpointzRec = "d0partpointzRec_";
-    named0partpointzRec += (i+1);
-    d0PartpointrphiRec = new TH1F(named0partpointrphiRec.Data(), d0partpointrphiTitle.Data(), 400, -2000., 2000.);
+    named0partpointzRec += i;
+    d0PartpointrphiRec = new TH1F(named0partpointrphiRec.Data(), d0partpointrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PartpointrphiRec->Sumw2();
     d0PartpointrphiRec->SetMinimum(0);  
     fOutputpartPointRec->Add(d0PartpointrphiRec);
-    d0PartpointzRec = new TH1F(named0partpointzRec.Data(), d0partpointzTitle.Data(), 400, -2000., 2000.);
+    d0PartpointzRec = new TH1F(named0partpointzRec.Data(), d0partpointzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PartpointzRec->Sumw2();
     d0PartpointzRec->SetMinimum(0);  
     fOutputpartPointRec->Add(d0PartpointzRec);
 
     named0partpointrphiSkip = "d0partpointrphiSkip_";
-    named0partpointrphiSkip += (i+1);
+    named0partpointrphiSkip += i;
     named0partpointzSkip = "d0partpointzSkip_";
-    named0partpointzSkip += (i+1);
-    d0PartpointrphiSkip = new TH1F(named0partpointrphiSkip.Data(), d0partpointrphiTitle.Data(), 400, -2000., 2000.);
+    named0partpointzSkip += i;
+    d0PartpointrphiSkip = new TH1F(named0partpointrphiSkip.Data(), d0partpointrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PartpointrphiSkip->Sumw2();
     d0PartpointrphiSkip->SetMinimum(0);  
     fOutputpartPointSkip->Add(d0PartpointrphiSkip);
-    d0PartpointzSkip = new TH1F(named0partpointzSkip.Data(), d0partpointzTitle.Data(), 400, -2000., 2000.);
+    d0PartpointzSkip = new TH1F(named0partpointzSkip.Data(), d0partpointzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PartpointzSkip->Sumw2();
     d0PartpointzSkip->SetMinimum(0);  
     fOutputpartPointSkip->Add(d0PartpointzSkip);
 
     named0onepointSPDrphiRec = "d0onepointSPDrphiRec_";
-    named0onepointSPDrphiRec += (i+1);
+    named0onepointSPDrphiRec += i;
     named0onepointSPDzRec = "d0onepointSPDzRec_";
-    named0onepointSPDzRec += (i+1);
-    d0OnepointSPDrphiRec = new TH1F(named0onepointSPDrphiRec.Data(), d0onepointSPDrphiTitle.Data(), 400, -2000., 2000.);
+    named0onepointSPDzRec += i;
+    d0OnepointSPDrphiRec = new TH1F(named0onepointSPDrphiRec.Data(), d0onepointSPDrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0OnepointSPDrphiRec->Sumw2();
     d0OnepointSPDrphiRec->SetMinimum(0);  
     fOutputonepointSPDRec->Add(d0OnepointSPDrphiRec);
-    d0OnepointSPDzRec = new TH1F(named0onepointSPDzRec.Data(), d0onepointSPDzTitle.Data(), 400, -2000., 2000.);
+    d0OnepointSPDzRec = new TH1F(named0onepointSPDzRec.Data(), d0onepointSPDzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0OnepointSPDzRec->Sumw2();
     d0OnepointSPDzRec->SetMinimum(0);  
     fOutputonepointSPDRec->Add(d0OnepointSPDzRec);
 
     named0onepointSPDrphiSkip = "d0onepointSPDrphiSkip_";
-    named0onepointSPDrphiSkip += (i+1);
+    named0onepointSPDrphiSkip += i;
     named0onepointSPDzSkip = "d0onepointSPDzSkip_";
-    named0onepointSPDzSkip += (i+1);
-    d0OnepointSPDrphiSkip = new TH1F(named0onepointSPDrphiSkip.Data(), d0onepointSPDrphiTitle.Data(), 400, -2000., 2000.);
+    named0onepointSPDzSkip += i;
+    d0OnepointSPDrphiSkip = new TH1F(named0onepointSPDrphiSkip.Data(), d0onepointSPDrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0OnepointSPDrphiSkip->Sumw2();
     d0OnepointSPDrphiSkip->SetMinimum(0);  
     fOutputonepointSPDSkip->Add(d0OnepointSPDrphiSkip);
-    d0OnepointSPDzSkip = new TH1F(named0onepointSPDzSkip.Data(), d0onepointSPDzTitle.Data(), 400, -2000., 2000.);
+    d0OnepointSPDzSkip = new TH1F(named0onepointSPDzSkip.Data(), d0onepointSPDzTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0OnepointSPDzSkip->Sumw2();
     d0OnepointSPDzSkip->SetMinimum(0);  
     fOutputonepointSPDSkip->Add(d0OnepointSPDzSkip);
 
     named0postvtracrphiRec = "d0postvtracrphiRec_";
-    named0postvtracrphiRec += (i+1);
+    named0postvtracrphiRec += i;
     named0postvtraczRec = "d0postvtraczRec_";
-    named0postvtraczRec += (i+1);
-    d0PostvtracrphiRec = new TH1F(named0postvtracrphiRec.Data(), d0postvtracrphiTitle.Data(), 400, -2000., 2000.);
+    named0postvtraczRec += i;
+    d0PostvtracrphiRec = new TH1F(named0postvtracrphiRec.Data(), d0postvtracrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PostvtracrphiRec->Sumw2();
     d0PostvtracrphiRec->SetMinimum(0);  
     fOutputpostvTracRec->Add(d0PostvtracrphiRec);
-    d0PostvtraczRec = new TH1F(named0postvtraczRec.Data(), d0postvtraczTitle.Data(), 400, -2000., 2000.);
+    d0PostvtraczRec = new TH1F(named0postvtraczRec.Data(), d0postvtraczTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PostvtraczRec->Sumw2();
     d0PostvtraczRec->SetMinimum(0);  
     fOutputpostvTracRec->Add(d0PostvtraczRec);
 
     named0postvtracrphiSkip = "d0postvtracrphiSkip_";
-    named0postvtracrphiSkip += (i+1);
+    named0postvtracrphiSkip += i;
     named0postvtraczSkip = "d0postvtraczSkip_";
-    named0postvtraczSkip += (i+1);
-    d0PostvtracrphiSkip = new TH1F(named0postvtracrphiSkip.Data(), d0postvtracrphiTitle.Data(), 400, -2000., 2000.);
+    named0postvtraczSkip += i;
+    d0PostvtracrphiSkip = new TH1F(named0postvtracrphiSkip.Data(), d0postvtracrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PostvtracrphiSkip->Sumw2();
     d0PostvtracrphiSkip->SetMinimum(0);  
     fOutputpostvTracSkip->Add(d0PostvtracrphiSkip);
-    d0PostvtraczSkip = new TH1F(named0postvtraczSkip.Data(), d0postvtraczTitle.Data(), 400, -2000., 2000.);
+    d0PostvtraczSkip = new TH1F(named0postvtraczSkip.Data(), d0postvtraczTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0PostvtraczSkip->Sumw2();
     d0PostvtraczSkip->SetMinimum(0);  
     fOutputpostvTracSkip->Add(d0PostvtraczSkip);
 
     named0negtvtracrphiRec = "d0negtvtracrphiRec_";
-    named0negtvtracrphiRec += (i+1);
+    named0negtvtracrphiRec += i;
     named0negtvtraczRec = "d0negtvtraczRec_";
-    named0negtvtraczRec += (i+1);
-    d0NegtvtracrphiRec = new TH1F(named0negtvtracrphiRec.Data(), d0negtvtracrphiTitle.Data(), 400, -2000., 2000.);
+    named0negtvtraczRec += i;
+    d0NegtvtracrphiRec = new TH1F(named0negtvtracrphiRec.Data(), d0negtvtracrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0NegtvtracrphiRec->Sumw2();
     d0NegtvtracrphiRec->SetMinimum(0);  
     fOutputnegtvTracRec->Add(d0NegtvtracrphiRec);
-    d0NegtvtraczRec = new TH1F(named0negtvtraczRec.Data(), d0negtvtraczTitle.Data(), 400, -2000., 2000.);
+    d0NegtvtraczRec = new TH1F(named0negtvtraczRec.Data(), d0negtvtraczTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0NegtvtraczRec->Sumw2();
     d0NegtvtraczRec->SetMinimum(0);  
     fOutputnegtvTracRec->Add(d0NegtvtraczRec);
 
     named0negtvtracrphiSkip = "d0negtvtracrphiSkip_";
-    named0negtvtracrphiSkip += (i+1);
+    named0negtvtracrphiSkip += i;
     named0negtvtraczSkip = "d0negtvtraczSkip_";
-    named0negtvtraczSkip += (i+1);
-    d0NegtvtracrphiSkip = new TH1F(named0negtvtracrphiSkip.Data(), d0negtvtracrphiTitle.Data(), 400, -2000., 2000.);
+    named0negtvtraczSkip += i;
+    d0NegtvtracrphiSkip = new TH1F(named0negtvtracrphiSkip.Data(), d0negtvtracrphiTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0NegtvtracrphiSkip->Sumw2();
     d0NegtvtracrphiSkip->SetMinimum(0);  
     fOutputnegtvTracSkip->Add(d0NegtvtracrphiSkip);
-    d0NegtvtraczSkip = new TH1F(named0negtvtraczSkip.Data(), d0negtvtraczTitle.Data(), 400, -2000., 2000.);
+    d0NegtvtraczSkip = new TH1F(named0negtvtraczSkip.Data(), d0negtvtraczTitle.Data(), 400, -Getd0HistRange(i), Getd0HistRange(i));
     d0NegtvtraczSkip->Sumw2();
     d0NegtvtraczSkip->SetMinimum(0);  
     fOutputnegtvTracSkip->Add(d0NegtvtraczSkip);
 
     named0pullAllpointrphiSkip = "d0pullAllpointrphiSkip_";
-    named0pullAllpointrphiSkip +=(i+1);
+    named0pullAllpointrphiSkip +=i;
     named0pullAllpointzSkip = "d0pullAllpointzSkip_";
-    named0pullAllpointzSkip +=(i+1);
+    named0pullAllpointzSkip +=i;
     d0PullAllpointrphiSkip = new TH1F(named0pullAllpointrphiSkip.Data(),d0pullAllpointrphiTitle.Data(),400,-10.,10.);
     d0PullAllpointrphiSkip->Sumw2();
     d0PullAllpointrphiSkip->SetMinimum(0);
@@ -456,9 +464,9 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputpullAllpointSkip->Add(d0PullAllpointzSkip);
 
     named0pullAllpointrphiRec = "d0pullAllpointrphiRec_";
-    named0pullAllpointrphiRec +=(i+1);
+    named0pullAllpointrphiRec +=i;
     named0pullAllpointzRec = "d0pullAllpointzRec_";
-    named0pullAllpointzRec +=(i+1);
+    named0pullAllpointzRec +=i;
     d0PullAllpointrphiRec = new TH1F(named0pullAllpointrphiRec.Data(),d0pullAllpointrphiTitle.Data(),400,-10.,10.);
     d0PullAllpointrphiRec->Sumw2();
     d0PullAllpointrphiRec->SetMinimum(0);
@@ -470,39 +478,170 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
 
 
     named0onlyRefitrphiRec = "d0onlyrefitrphiRec_";
-    named0onlyRefitrphiRec +=(i+1);
+    named0onlyRefitrphiRec +=i;
     named0onlyRefitzRec = "d0onlyrefitzRec_";
-    named0onlyRefitzRec +=(i+1);
-    d0OnlyRefitrphiRec = new TH1F(named0onlyRefitrphiRec.Data(),d0onlyRefitrphiTitle.Data(),400,-2000.,2000.);
+    named0onlyRefitzRec +=i;
+    d0OnlyRefitrphiRec = new TH1F(named0onlyRefitrphiRec.Data(),d0onlyRefitrphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
     d0OnlyRefitrphiRec->Sumw2();
     d0OnlyRefitrphiRec->SetMinimum(0);
     fOutputOnlyRefitRec->Add(d0OnlyRefitrphiRec);
-    d0OnlyRefitzRec = new TH1F(named0onlyRefitzRec.Data(),d0onlyRefitzTitle.Data(),400,-2000.,2000.);
+    d0OnlyRefitzRec = new TH1F(named0onlyRefitzRec.Data(),d0onlyRefitzTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
     d0OnlyRefitzRec->Sumw2();
     d0OnlyRefitzRec->SetMinimum(0);
     fOutputOnlyRefitRec->Add(d0OnlyRefitzRec);
 
 
     named0onlyRefitrphiSkip = "d0onlyrefitrphiSkip_";
-    named0onlyRefitrphiSkip +=(i+1);
+    named0onlyRefitrphiSkip +=i;
     named0onlyRefitzSkip = "d0onlyrefitzSkip_";
-    named0onlyRefitzSkip +=(i+1);
-    d0OnlyRefitrphiSkip = new TH1F(named0onlyRefitrphiSkip.Data(),d0onlyRefitrphiTitle.Data(),400,-2000.,2000.);
+    named0onlyRefitzSkip +=i;
+    d0OnlyRefitrphiSkip = new TH1F(named0onlyRefitrphiSkip.Data(),d0onlyRefitrphiTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
     d0OnlyRefitrphiSkip->Sumw2();
     d0OnlyRefitrphiSkip->SetMinimum(0);
     fOutputOnlyRefitSkip->Add(d0OnlyRefitrphiSkip);
-    d0OnlyRefitzSkip = new TH1F(named0onlyRefitzSkip.Data(),d0onlyRefitzTitle.Data(),400,-2000.,2000.);
+    d0OnlyRefitzSkip = new TH1F(named0onlyRefitzSkip.Data(),d0onlyRefitzTitle.Data(),400,-Getd0HistRange(i),Getd0HistRange(i));
     d0OnlyRefitzSkip->Sumw2();
     d0OnlyRefitzSkip->SetMinimum(0);
     fOutputOnlyRefitSkip->Add(d0OnlyRefitzSkip);
 
     named0pt = "d0pt_";
-    named0pt += (i+1);
+    named0pt += i;
     d0Pt = new TH1F(named0pt.Data(), d0ptTitle.Data(), 100, 0, 35.);
     d0Pt->Sumw2();
     d0Pt->SetMinimum(0);  
     fOutputPt->Add(d0Pt);
 
+  }
+
+  const Int_t nhistm=10;
+  for(Int_t i=1; i<=nhistm; i++) {
+    if (!fOutputSinThetaRec){
+      fOutputSinThetaRec = new TList();
+      fOutputSinThetaRec->SetOwner();
+      fOutputSinThetaRec->SetName("thetaRec");
+    }
+    
+    if (!fOutputSinThetaSkip){
+      fOutputSinThetaSkip = new TList();
+      fOutputSinThetaSkip->SetOwner();
+      fOutputSinThetaSkip->SetName("thetaSkip");
+    }
+    
+    const TString d0sinThetarphiTitle ="d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+    const TString d0sinThetazTitle ="d_{0} Distribution_z; d_{0} [#mum]; Entries";
+    
+    TString named0sinThetaonerphiRec,named0sinThetaonezRec,named0sinThetatworphiRec,named0sinThetatwozRec,named0sinThetathreerphiRec,named0sinThetathreezRec,named0sinThetafourrphiRec,named0sinThetafourzRec;
+    
+    TH1F *d0SinThetaonerphiRec,*d0SinThetaonezRec,*d0SinThetatworphiRec,*d0SinThetatwozRec,*d0SinThetathreerphiRec,*d0SinThetathreezRec,*d0SinThetafourrphiRec,*d0SinThetafourzRec;
+    
+    TString  named0sinThetaonerphiSkip,named0sinThetaonezSkip,named0sinThetatworphiSkip,named0sinThetatwozSkip,named0sinThetathreerphiSkip,named0sinThetathreezSkip,named0sinThetafourrphiSkip,named0sinThetafourzSkip;
+    
+    TH1F*d0SinThetaonerphiSkip,*d0SinThetaonezSkip,*d0SinThetatworphiSkip,*d0SinThetatwozSkip,*d0SinThetathreerphiSkip,*d0SinThetathreezSkip,*d0SinThetafourrphiSkip,*d0SinThetafourzSkip;
+    named0sinThetaonerphiRec = "d0sinthetaonerphiRec_";
+    named0sinThetaonerphiRec += i;
+    named0sinThetaonezRec ="d0sinthetaonezRec_";
+    named0sinThetaonezRec += i;
+    d0SinThetaonerphiRec = new TH1F(named0sinThetaonerphiRec.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetaonerphiRec->Sumw2();
+    d0SinThetaonerphiRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetaonerphiRec);
+    d0SinThetaonezRec = new TH1F(named0sinThetaonezRec.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetaonezRec->Sumw2();
+    d0SinThetaonezRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetaonezRec);
+    
+    named0sinThetatworphiRec = "d0sinthetatworphiRec_";
+    named0sinThetatworphiRec += i;
+    named0sinThetatwozRec ="d0sinthetatwozRec_";
+    named0sinThetatwozRec += i;
+    d0SinThetatworphiRec = new TH1F(named0sinThetatworphiRec.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetatworphiRec->Sumw2();
+    d0SinThetatworphiRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetatworphiRec);
+    d0SinThetatwozRec = new TH1F(named0sinThetatwozRec.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetatwozRec->Sumw2();
+    d0SinThetatwozRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetatwozRec);
+    
+    named0sinThetathreerphiRec = "d0sinthetathreerphiRec_";
+    named0sinThetathreerphiRec += i;
+    named0sinThetathreezRec ="d0sinthetathreezRec_";
+    named0sinThetathreezRec += i;
+    
+    d0SinThetathreerphiRec = new TH1F(named0sinThetathreerphiRec.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetathreerphiRec->Sumw2();
+    d0SinThetathreerphiRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetathreerphiRec);
+    d0SinThetathreezRec = new TH1F(named0sinThetathreezRec.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetathreezRec->Sumw2();
+    d0SinThetathreezRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetathreezRec);
+    
+    named0sinThetafourrphiRec = "d0sinthetafourrphiRec_";
+    named0sinThetafourrphiRec += i;
+    named0sinThetafourzRec ="d0sinthetafourzRec_";
+    named0sinThetafourzRec += i;
+    d0SinThetafourrphiRec = new TH1F(named0sinThetafourrphiRec.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetafourrphiRec->Sumw2();
+    d0SinThetafourrphiRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetafourrphiRec);
+    d0SinThetafourzRec = new TH1F(named0sinThetafourzRec.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetafourzRec->Sumw2();
+    d0SinThetafourzRec->SetMinimum(0);
+    fOutputSinThetaRec->Add(d0SinThetafourzRec);
+    
+    named0sinThetaonerphiSkip = "d0sinthetaonerphiSkip_";
+    named0sinThetaonerphiSkip += i;
+    named0sinThetaonezSkip ="d0sinthetaonezSkip_";
+    named0sinThetaonezSkip += i;
+    d0SinThetaonerphiSkip = new TH1F(named0sinThetaonerphiSkip.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetaonerphiSkip->Sumw2();
+    d0SinThetaonerphiSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetaonerphiSkip);
+    d0SinThetaonezSkip = new TH1F(named0sinThetaonezSkip.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetaonezSkip->Sumw2();
+    d0SinThetaonezSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetaonezSkip);
+    
+    named0sinThetatworphiSkip = "d0sinthetatworphiSkip_";
+    named0sinThetatworphiSkip += i;
+    named0sinThetatwozSkip ="d0sinthetatwozSkip_";
+    named0sinThetatwozSkip += i;
+    d0SinThetatworphiSkip = new TH1F(named0sinThetatworphiSkip.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetatworphiSkip->Sumw2();
+    d0SinThetatworphiSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetatworphiSkip);
+    d0SinThetatwozSkip = new TH1F(named0sinThetatwozSkip.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetatwozSkip->Sumw2();
+    d0SinThetatwozSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetatwozSkip);
+    
+    named0sinThetathreerphiSkip = "d0sinthetathreerphiSkip_";
+    named0sinThetathreerphiSkip += i;
+    named0sinThetathreezSkip ="d0sinthetathreezSkip_";
+    named0sinThetathreezSkip += i;
+    
+    d0SinThetathreerphiSkip = new TH1F(named0sinThetathreerphiSkip.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetathreerphiSkip->Sumw2();
+    d0SinThetathreerphiSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetathreerphiSkip);
+    d0SinThetathreezSkip = new TH1F(named0sinThetathreezSkip.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetathreezSkip->Sumw2();
+    d0SinThetathreezSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetathreezSkip);
+    
+    named0sinThetafourrphiSkip = "d0sinthetafourrphiSkip_";
+    named0sinThetafourrphiSkip += i;
+    named0sinThetafourzSkip ="d0sinthetafourzSkip_";
+    named0sinThetafourzSkip += i;
+    d0SinThetafourrphiSkip = new TH1F(named0sinThetafourrphiSkip.Data(),d0sinThetarphiTitle.Data(),400,-2000,2000);
+    d0SinThetafourrphiSkip->Sumw2();
+    d0SinThetafourrphiSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetafourrphiSkip);
+    d0SinThetafourzSkip = new TH1F(named0sinThetafourzSkip.Data(),d0sinThetazTitle.Data(),400,-2000,2000);
+    d0SinThetafourzSkip->Sumw2();
+    d0SinThetafourzSkip->SetMinimum(0);
+    fOutputSinThetaSkip->Add(d0SinThetafourzSkip);
   }
 
   if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
@@ -770,6 +909,60 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       ((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
       ((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
     }
+
+
+    //fill the d0 impact parameter with SinTheta distribution at fix Ptbin.
+    Double_t theta=esdtrack->Theta(); 
+    Double_t Sintheta=TMath::Sin(theta);
+    Int_t thetabin = SinThetaBin(Sintheta);
+    if(thetabin<0) {delete vtxESDSkip;continue;}
+
+    if(bin==1 && npointsITS==6) {
+      char *named0SinthetaonerphiRec = Form("d0sinthetaonerphiRec_%d", thetabin);
+      char *named0SinthetaonezRec = Form("d0sinthetaonezRec_%d", thetabin);
+      char *named0SinthetaonerphiSkip = Form("d0sinthetaonerphiSkip_%d", thetabin);
+      char *named0SinthetaonezSkip = Form("d0sinthetaonezSkip_%d", thetabin);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetaonerphiRec)))->Fill(10000*dzRec[0]);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetaonezRec)))->Fill(10000*dzRec[1]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetaonerphiSkip)))->Fill(10000*dzRecSkip[0]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetaonezSkip)))->Fill(10000*dzRecSkip[1]);
+    }
+
+
+    if(bin==5 && npointsITS==6) {
+      char *named0SinthetatworphiRec = Form("d0sinthetatworphiRec_%d", thetabin);
+      char *named0SinthetatwozRec = Form("d0sinthetatwozRec_%d", thetabin);
+      char *named0SinthetatworphiSkip = Form("d0sinthetatworphiSkip_%d", thetabin);
+      char *named0SinthetatwozSkip = Form("d0sinthetatwozSkip_%d", thetabin);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetatworphiRec)))->Fill(10000*dzRec[0]);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetatwozRec)))->Fill(10000*dzRec[1]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetatworphiSkip)))->Fill(10000*dzRecSkip[0]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetatwozSkip)))->Fill(10000*dzRecSkip[1]);
+    }
+
+
+    if(bin==10 && npointsITS==6) {
+      char *named0SinthetathreerphiRec = Form("d0sinthetathreerphiRec_%d", thetabin);
+      char *named0SinthetathreezRec = Form("d0sinthetathreezRec_%d", thetabin);
+      char *named0SinthetathreerphiSkip = Form("d0sinthetathreerphiSkip_%d", thetabin);
+      char *named0SinthetathreezSkip = Form("d0sinthetathreezSkip_%d", thetabin);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetathreerphiRec)))->Fill(10000*dzRec[0]);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetathreezRec)))->Fill(10000*dzRec[1]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetathreerphiSkip)))->Fill(10000*dzRecSkip[0]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetathreezSkip)))->Fill(10000*dzRecSkip[1]);
+    }
+    
+    if(bin==15 && npointsITS==6) {
+      char *named0SinthetafourrphiRec = Form("d0sinthetafourrphiRec_%d", thetabin);
+      char *named0SinthetafourzRec = Form("d0sinthetafourzRec_%d", thetabin);
+      char *named0SinthetafourrphiSkip = Form("d0sinthetafourrphiSkip_%d", thetabin);
+      char *named0SinthetafourzSkip = Form("d0sinthetafourzSkip_%d", thetabin);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetafourrphiRec)))->Fill(10000*dzRec[0]);
+      ((TH1F*)(fOutputSinThetaRec->FindObject(named0SinthetafourzRec)))->Fill(10000*dzRec[1]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetafourrphiSkip)))->Fill(10000*dzRecSkip[0]);
+      ((TH1F*)(fOutputSinThetaSkip->FindObject(named0SinthetafourzSkip)))->Fill(10000*dzRecSkip[1]);
+    }
+
     char *named0Pt = Form("d0pt_%d",bin);
     if(npointsITS==6) ((TH1F*)(fOutputPt->FindObject(named0Pt)))->Fill(pt);
 
@@ -795,9 +988,11 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   PostData(14, fOutputpullAllpointSkip);
   PostData(15, fOutputOnlyRefitRec);
   PostData(16, fOutputOnlyRefitSkip);
-  PostData(17, fOutputPt);
-  PostData(18, fNentries);
-  PostData(19,fEstimVtx);
+  PostData(17,fOutputSinThetaRec);
+  PostData(18,fOutputSinThetaSkip);
+  PostData(19, fOutputPt);
+  PostData(20, fNentries);
+  PostData(21,fEstimVtx);
   
   return;
 }
@@ -828,13 +1023,12 @@ Int_t AliAnalysisTaskSEImpParRes::PtBin(Double_t pt) const {
   if (pt>4.1 && pt<5.2) return 18; 
   if (pt>5.3 && pt<6.8)  return 19; 
   if (pt>7.0 && pt<8.8) return 20; 
-  if (pt>9. && pt<30.) return 2;
-  if (pt>30.1 && pt<32.) return 22; 
-  if (pt>32.5  && pt<33.)  return 23;
-  if (pt>33.2  && pt<33.8) return 24; 
-  if (pt>33.9  && pt<34.)  return 25;
-  if (pt>34.05  && pt<35.)  return 26;
-
+  if (pt>9. && pt<11.) return 21;
+  if (pt>11.1 && pt<14.) return 22; 
+  if (pt>14.1  && pt<17.)  return 23;
+  if (pt>17.2  && pt<21.8) return 24; 
+  if (pt>22.1  && pt<29.)  return 25;
+  if (pt>29.05  && pt<35.)  return 26;
   /*
   if (pt>0.22 && pt<0.23) return 1 ;
   if (pt>0.26 && pt<0.27) return 2 ; 
@@ -864,6 +1058,59 @@ Int_t AliAnalysisTaskSEImpParRes::PtBin(Double_t pt) const {
   if (pt>21.  && pt<32.)  return 26;
   */  
   return -1; 
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskSEImpParRes::Getd0HistRange(Int_t i) const {
+  //
+  // Return the range of the d0 histograms for each pt bin
+  //
+  if (i==1) return  2500.; 
+  if (i==2) return  1800.;
+  if (i==3) return  1750.;
+  if (i==4) return  1200.;
+  if (i==5) return  1000.;
+  if (i==6) return  900.;
+  if (i==7) return  850.;
+  if (i==8) return  700.;
+  if (i==9) return  650.;
+  if (i==10) return 600.;
+  if (i==11) return 550.;
+  if (i==12) return 500.;
+  if (i==13) return 450.;
+  if (i==14) return 400.;
+  if (i==15) return 390.;
+  if (i==16) return 380.;
+  if (i==17) return 380.;
+  if (i==18) return 350.;
+  if (i==19) return 320.;
+  if (i==20) return 300.;
+  if (i==21) return 290.;
+  if (i==22) return 270.;
+  if (i==23) return 250.;
+  if (i==24) return 270.;
+  if (i==25) return 279.;
+  if (i==26) return 270.;
+
+  return 2000.;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskSEImpParRes::SinThetaBin(Double_t sintheta) const {  
+  //
+  // Return the number of the sinTheta bin
+  // 
+  if(sintheta>0.7 && sintheta<0.73) return 1;
+  if(sintheta>0.73 && sintheta<0.76) return 2; 
+  if(sintheta>0.76 && sintheta<0.79) return 3; 
+  if(sintheta>0.79 && sintheta<0.82) return 4;
+  if(sintheta>0.82 && sintheta<0.85) return 5;       
+  if(sintheta>0.85 && sintheta<0.88) return 6; 
+  if(sintheta>0.88 && sintheta<0.91) return 7;
+  if(sintheta>0.91 && sintheta<0.94) return 8;       
+  if(sintheta>0.94 && sintheta<0.97) return 9; 
+  if(sintheta>0.97 && sintheta<1.0) return 10;  
+  return -1;
 }
 
 //_________________________________________________________________________
@@ -922,14 +1169,20 @@ void AliAnalysisTaskSEImpParRes::Terminate(Option_t */*option*/) {
 
   fOutputOnlyRefitSkip = dynamic_cast<TList*>(GetOutputData(16));
   if (!fOutputOnlyRefitSkip) printf("ERROR: fOutputOnlyRefitSkip not available\n");
+ 
+  fOutputSinThetaRec = dynamic_cast<TList*>(GetOutputData(17));
+  if (!fOutputSinThetaRec) printf("ERROR:fOutputSinThetaRec not available\n");
 
-  fOutputPt = dynamic_cast<TList*>(GetOutputData(17));
+  fOutputSinThetaSkip = dynamic_cast<TList*>(GetOutputData(18));
+  if (!fOutputSinThetaSkip) printf("ERROR:fOutputSinThetaSkip not available\n");
+
+  fOutputPt = dynamic_cast<TList*>(GetOutputData(19));
   if (!fOutputPt) printf("ERROR: fOutputPt not available\n");
 
-  fNentries = dynamic_cast<TH1F*>(GetOutputData(18));
+  fNentries = dynamic_cast<TH1F*>(GetOutputData(20));
   if (!fNentries) printf("ERROR: fNentries not available\n");
   
-  fEstimVtx = dynamic_cast<TH1F*>(GetOutputData(19));
+  fEstimVtx = dynamic_cast<TH1F*>(GetOutputData(21));
   if (!fEstimVtx) printf("ERROR: fEstimVtx not available\n");
   
   return;
