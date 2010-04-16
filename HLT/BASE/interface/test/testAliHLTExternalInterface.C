@@ -76,8 +76,6 @@ int CreateGRP() {
   float cmsEnergy=14000;
   grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
   grpObj->SetBeamType("p-p");
-  grpObj->SetLHCLuminosity(0,(AliGRPObject::Stats)0);
-  grpObj->SetBeamIntensity(0,(AliGRPObject::Stats)0);
   grpObj->SetL3Current(30000,(AliGRPObject::Stats)0);
   grpObj->SetDipoleCurrent(0,(AliGRPObject::Stats)0);  
   grpObj->SetL3Polarity(1);  
@@ -158,15 +156,15 @@ int main(int /*argc*/, const char** /*argv*/)
 #endif //HLT_MUON
 
 #ifdef HLT_PHOS
-  module="PHOS";
-  libraryPath="../../../";
-  libraryPath+=module;
-  libraryPath+="/.libs/libAliHLT";
-  libraryPath+=module;
-  libraryPath+=".so";
-  if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
-    return iResult;
-  }
+  // module="PHOS";
+  // libraryPath="../../../";
+  // libraryPath+=module;
+  // libraryPath+="/.libs/libAliHLT";
+  // libraryPath+=module;
+  // libraryPath+=".so";
+  // if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
+  //   return iResult;
+  // }
 #endif //HLT_PHOS
 
 #ifdef HLT_TRD
