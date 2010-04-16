@@ -39,13 +39,15 @@ public:
   void SetEndTime(Int_t endTime) {fEndTime = endTime;}
   void SetStartTimeDCSQuery(Int_t startTimeDCSQuery) {fStartTimeDCSQuery = startTimeDCSQuery;}
   void SetEndTimeDCSQuery(Int_t endTimeDCSQuery) {fEndTimeDCSQuery = endTimeDCSQuery;}
+  void SetNSecondsBeforeEOR(Int_t nSecondsBeforeEOR) {fNSecondsBeforeEOR = nSecondsBeforeEOR;}
   Int_t GetRun() const {return fRun;}
   Int_t GetStartTime() const {return fStartTime;}
   Int_t GetEndTime() const {return fEndTime;}
   Int_t GetStartTimeDCSQuery() const {return fStartTimeDCSQuery;}
   Int_t GetEndTimeDCSQuery() const {return fEndTimeDCSQuery;}
-
+  Int_t GetNSecondsBeforeEOR() const {return fNSecondsBeforeEOR;}
   Bool_t ProcessData(TMap& aliasMap);
+
   
   const char* GetAliasNameXLV(Int_t pos) const 
     {return pos<kNddl ? fAliasNamesXLVmap[pos].Data() : 0;}
@@ -113,7 +115,9 @@ private:
   
   TH1C * fHisto; // histogram
 
-  ClassDef(AliTOFLvHvDataPoints, 2);
+  Int_t fNSecondsBeforeEOR; // time window to choose if a run ended correctly or not [s]
+
+  ClassDef(AliTOFLvHvDataPoints, 3);
 };
 
 #endif
