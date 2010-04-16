@@ -98,6 +98,14 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
 									AliAnalysisManager::kOutputContainer,
 									"ImpParRes.Performance.root");
 
+  AliAnalysisDataContainer *coutputd0sinThetaRec = mgr->CreateContainer("coutputd0sinThetaRec",TList::Class(),
+ 									AliAnalysisManager::kOutputContainer,
+ 									"ImpParRes.Performance.root");
+  
+  AliAnalysisDataContainer *coutputd0sinThetaSkip = mgr->CreateContainer("coutputd0sinThetaSkip",TList::Class(),
+									 AliAnalysisManager::kOutputContainer,
+									 "ImpParRes.Performance.root");
+  
   AliAnalysisDataContainer *coutputd0Pt = mgr->CreateContainer("coutputd0Pt",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
 									"ImpParRes.Performance.root");
@@ -110,7 +118,9 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   AliAnalysisDataContainer *coutputEstimVtx = mgr->CreateContainer("coutputEstimVtx",TH1F::Class(),
 								     AliAnalysisManager::kOutputContainer, 
 								   "ImpParRes.Performance.root");
-  
+ 
+
+ 
   mgr->ConnectInput(d0ResTask,0,mgr->GetCommonInputContainer()); 
   //mgr->ConnectOutput(d0ResTask,0,mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(d0ResTask,1,coutputd0ITSpureSARec);
@@ -129,9 +139,11 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   mgr->ConnectOutput(d0ResTask,14,coutputd0pullAllpointSkip);
   mgr->ConnectOutput(d0ResTask,15,coutputd0onlyRefitRec);
   mgr->ConnectOutput(d0ResTask,16,coutputd0onlyRefitSkip);
-  mgr->ConnectOutput(d0ResTask,17,coutputd0Pt);
-  mgr->ConnectOutput(d0ResTask,18,coutputNentries);
-  mgr->ConnectOutput(d0ResTask,19,coutputEstimVtx);
+  mgr->ConnectOutput(d0ResTask,17,coutputd0sinThetaRec);
+  mgr->ConnectOutput(d0ResTask,18,coutputd0sinThetaSkip);
+  mgr->ConnectOutput(d0ResTask,19,coutputd0Pt);
+  mgr->ConnectOutput(d0ResTask,20,coutputNentries);
+  mgr->ConnectOutput(d0ResTask,21,coutputEstimVtx);
 
   return d0ResTask;
 }
