@@ -56,7 +56,7 @@ private:
   AliMUONTriggerQADataMakerRec& operator=(const AliMUONTriggerQADataMakerRec& qadm);
 
   void DisplayTriggerInfo();
-  void FillRatio4434Histos();
+  void FillRatio4434Histos(Int_t evtInterval);
   Bool_t FillTriggerDCSHistos();
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);

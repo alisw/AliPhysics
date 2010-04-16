@@ -155,9 +155,12 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
 
   ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->Divide(fNumberOf44Dec,fNumberOf34Dec);
 
+  FillRatio4434Histos(1);
+
   //reset bins temporary used to store informations
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(1,0); 
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(2,0);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(0,0); 
+  Int_t nbins =  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetNbinsX();
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(nbins+1,0);
 
   ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->SetMaximum(1.1);
   ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetMaximum(1.1);
@@ -713,7 +716,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // Compare data and reconstructed decisions and fill histos
   RawTriggerMatchOutLocal(inputTriggerStore, recoTriggerStore);
   //Fill ratio 44/34 histos
-  FillRatio4434Histos();
+  FillRatio4434Histos(fgkUpdateRatio4434);
   //RawTriggerMatchOutLocalInRegional(); // Not tested, hardware read-out doesn't work
   RawTriggerMatchOutGlobal(inputGlobalTrigger, recoGlobalTriggerFromGlobal, 'G');
   // Global, reconstruction from Local inputs: compare data and reconstructed decisions and fill histos
@@ -1151,9 +1154,16 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(AliMUONVTriggerStore&
     loCircuit = recoLocalTrigger->LoCircuit();
     Int_t iboard = loCircuit - 1;
   
-    // Fill ratio 44/34 histos
-    if (recoLocalTrigger->GetLoDecision()!=0) fNumberOf34Dec->Fill(loCircuit);
-    if (fTriggerProcessor->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE)) fNumberOf44Dec->Fill(loCircuit);
+    // Fill ratio 44/34 histos (if not scaler event)
+    if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
+      Bool_t is34 = ( recoLocalTrigger->GetLoDecision() != 0 );
+      Bool_t is44 = fTriggerProcessor->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE);
+      if ( is34 ) fNumberOf34Dec->Fill(loCircuit);
+      if ( is44 ) fNumberOf44Dec->Fill(loCircuit);
+
+      if ( is44 && ! is34 )
+	AliWarning("Event satisfies the 4/4 conditions but not the 3/4");
+    }
     
     inputLocalTrigger = inputTriggerStore.FindLocal(loCircuit);
 
@@ -1289,54 +1299,83 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobal(AliMUONGlobalTrigger
 }
 
 //____________________________________________________________________________ 
-void AliMUONTriggerQADataMakerRec::FillRatio4434Histos()
+void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
 {
   /// Fill ratio 44/34 histos
 
   Int_t numEvent = Int_t(((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents))->GetBinContent(1));
 
-  if (numEvent % fgkUpdateRatio4434 == 0){
-      Float_t totalNumberOf44 = fNumberOf44Dec->GetSumOfWeights();
-      Float_t totalNumberOf34 = fNumberOf34Dec->GetSumOfWeights();
-      Float_t ratio4434;
-      Float_t errorRatio4434;
+  // Fill every fgkUpdateRatio4434 events
+  if (numEvent % evtInterval != 0)
+    return;
 
-    if(totalNumberOf34!=0){
-      ratio4434 = totalNumberOf44/totalNumberOf34;
-      errorRatio4434 = ProtectedSqrt(totalNumberOf44*(1-ratio4434))/totalNumberOf34;
-    }else{
-      ratio4434 = 0;
-      errorRatio4434 = 0;
+  Float_t totalNumberOf44 = fNumberOf44Dec->GetSumOfWeights();
+  Float_t totalNumberOf34 = fNumberOf34Dec->GetSumOfWeights();
+
+  if ( totalNumberOf34 == 0 )
+    return;
+
+  TH1F* histoAllEvents = (TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents);
+  Int_t nbins =  histoAllEvents->GetNbinsX();
+  Float_t maxBin = histoAllEvents->GetXaxis()->GetBinLowEdge(nbins+1);
+
+  if ( numEvent - maxBin < 1) return;
+
+  // Use the underflow and overflow to store the number of 34 and 44
+  // in previous event
+  Float_t previousNumOf34 = histoAllEvents->GetBinContent(0);
+  Float_t previousNumOf44 = histoAllEvents->GetBinContent(nbins+1);
+
+  Float_t numOf34Update = totalNumberOf34 - previousNumOf34;
+  Float_t numOf44Update = totalNumberOf44 - previousNumOf44;
+
+  if ( numOf34Update == 0 && numOf44Update == 0 )
+    return;
+
+  Int_t newNbins = ( (Int_t)maxBin % fgkUpdateRatio4434 ) ? nbins : nbins+1;
+  TString cloneName;
+
+  Int_t hIndex[2] = {AliMUONQAIndices::kTriggerRatio4434AllEvents, AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate};
+  
+  for (Int_t ihisto=0; ihisto<2; ihisto++){
+    TH1F* currHisto = (TH1F*)GetRawsData(hIndex[ihisto]);
+    cloneName = Form("%sClone", currHisto->GetName());
+    TArrayD newAxis(newNbins+1);
+    for (Int_t ibin=0; ibin<newNbins; ibin++){
+      newAxis[ibin] = currHisto->GetXaxis()->GetBinLowEdge(ibin+1);
     }
-    
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(numEvent,ratio4434);
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinError(numEvent,errorRatio4434);
-
-
-      Float_t NumberOf44Update = totalNumberOf44 - ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetBinContent(2);
-      Float_t NumberOf34Update = totalNumberOf34 - ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetBinContent(1);
-      Float_t ratio4434Update;
-      Float_t errorRatio4434Update;
-
-    if(NumberOf34Update!=0){
-      ratio4434Update = NumberOf44Update/NumberOf34Update;
-      errorRatio4434Update = ProtectedSqrt(NumberOf44Update*(1-ratio4434Update))/NumberOf34Update;
-    }else{
-      ratio4434Update = 0;
-      errorRatio4434Update = 0;
+    newAxis[newNbins] = numEvent;
+    TH1F* copyHisto = (TH1F*)currHisto->Clone(cloneName.Data());
+    //currHisto->SetBins(newNbins, 0., fgkUpdateRatio4434*newNbins);
+    currHisto->SetBins(newNbins, newAxis.GetArray());
+    for (Int_t ibin=1; ibin<newNbins; ibin++){
+      currHisto->SetBinContent(ibin, copyHisto->GetBinContent(ibin));
+      currHisto->SetBinError(ibin, copyHisto->GetBinError(ibin));
     }
-    
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinContent(numEvent,ratio4434Update);
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinError(numEvent,errorRatio4434Update);
+    delete copyHisto;
+  }
 
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(1,totalNumberOf34);
-      ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(2,totalNumberOf44);
-   
+  Float_t ratio4434 = totalNumberOf44/totalNumberOf34;
+  Float_t errorRatio4434 = ProtectedSqrt(totalNumberOf44*(1-ratio4434))/totalNumberOf34;
+    
+  histoAllEvents->SetBinContent(newNbins,ratio4434);
+  histoAllEvents->SetBinError(newNbins,errorRatio4434);
+
+  Float_t ratio4434Update = 0.;
+  Float_t errorRatio4434Update = 0.;
+
+  if(numOf34Update!=0){
+    ratio4434Update = numOf44Update/numOf34Update;
+    if ( numOf44Update > numOf34Update )
+      AliWarning("Number of 4/4 is higher than number of 3/4");
+    errorRatio4434Update = ProtectedSqrt(numOf44Update*(1-ratio4434Update))/numOf34Update;
   }
   
-  Int_t newNBins = ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetNbinsX()+1;
-  
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBins(newNBins,0,newNBins);
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBins(newNBins,0,newNBins);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinContent(newNbins,ratio4434Update);
+  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinError(newNbins,errorRatio4434Update);
+
+  histoAllEvents->SetBinContent(0,totalNumberOf34);
+  histoAllEvents->SetBinContent(newNbins+1,totalNumberOf44);
+
 }
 
