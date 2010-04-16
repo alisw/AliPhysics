@@ -111,6 +111,7 @@ void AliHLTITSTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD );
+  list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITS );
 }
 
 AliHLTComponentDataType AliHLTITSTrackerComponent::GetOutputDataType()
@@ -364,7 +365,8 @@ int AliHLTITSTrackerComponent::DoEvent
  
     if ( (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD) ) || 
 	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) ||
-	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) 
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) ||
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITS) ) 
 	 ){      
       AliHLTITSClusterData *inPtr=reinterpret_cast<AliHLTITSClusterData*>( iter->fPtr );
       nClustersTotal+=inPtr->fSpacePointCnt;
