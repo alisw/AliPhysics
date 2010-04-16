@@ -56,14 +56,18 @@ protected :
 
   /** Process histogram block */
   void ProcessHistogram(AliHLTHOMERBlockDesc * block );
+  
+  /** Process and draw histograms */
+  void AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );  
 
-  
-  
+  Int_t GetPadNumber(TString name);  
+
   TEveBoxSet * fBoxSet;            //Boxset for clusters and digist
   
   TEveElementList * fElementList; //Element list to contain the clusters
 
   const Int_t fNModules;          //Number of modules in calorimeter
+
 
 
 private:
@@ -77,6 +81,8 @@ private:
 
   TString fName;  //PHOS or EMCAL
   
+  TString fPadTitles[9];
+
   ClassDef(AliHLTEveCalo, 0);
 };
 
