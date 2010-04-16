@@ -84,6 +84,9 @@
 // return=17: failed to store FEE data in OCDB
 // return=18: failed to store FEE reference data in OCDB
 // return=20: failed in retrieving status variable
+// return=100 : no DCS input data Map (HV and LV status)
+// return=200 : no DCS input data processing (HV and LV status)
+// return=300 : no DCS processed data was stored in Ref Data (HV and LV status)
 
 ClassImp(AliTOFPreprocessor)
 
@@ -230,7 +233,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
 
   Bool_t resultDCSMap=kFALSE;
 
-  // processing DCS
+  // processing DCS HV and LV data points
 
   fHVLVmaps->SetFDRFlag(fFDRFlag);
   
@@ -240,12 +243,12 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
       delete fHVLVmaps;
       fHVLVmaps = 0;
     }
-    return 1;// return error Code for DCS input data not found 
+    return 100;// return error Code for DCS input data not found 
   }
   else {
 
     // The processing of the DCS input data is forwarded to AliTOFDataDCS
-    if (0) { // AdC
+    //if (0) { // AdC
     resultDCSMap = fHVLVmaps->ProcessData(*dcsAliasMap);
     if (!resultDCSMap) {
       Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
@@ -253,7 +256,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
 	delete fHVLVmaps;
 	fHVLVmaps = 0;
       }
-      return 2;// return error Code for processed DCS data not stored 
+      return 200;// return error Code for processed DCS data not stored 
     }
     else {
 
@@ -331,7 +334,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
       */
 
     }
-    } // AdC
+    //} // AdC
   }
 
 
@@ -359,7 +362,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
   //AliInfo("Storing Status data from current run. Collected RO.and.HV.and.LV infos @ EOR"); // AdC
   metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.LV data.");
   AliInfo("Storing Status data from current run. Collected RO.and.LV infos @ SOR");
-  // store FEE data
+  // store TOF channel status
   if (!Store("Calib", "Status", fStatus, &metaData, 0, kTRUE)) {
     // failed
     Log("problems while storing RO.and.HV.and.LV Status data object");
@@ -371,7 +374,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
       delete fHVLVmaps;
       fHVLVmaps = 0;
     }
-    return 17; // return error code for problems  while storing FEE data
+    return 17; // return error code for problems while TOF channel status
   }
 
   // everything fine. return
