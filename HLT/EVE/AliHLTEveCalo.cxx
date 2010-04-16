@@ -121,7 +121,6 @@ void AliHLTEveCalo::ProcessDigits(AliHLTHOMERBlockDesc* block) {
     Float_t x = (ds->fX - 32)* 2.2;
       Float_t z = (ds->fZ - 28) * 2.2;
 
-      cout << "MODULE DIGITTYP  :" << ds->fModule;
 
     fBoxSet[4-ds->fModule].AddBox(x, 0, z, 2.2, ds->fEnergy*200, 2.2);
     fBoxSet[4-ds->fModule].DigitValue(static_cast<Int_t>(ds->fEnergy*10));

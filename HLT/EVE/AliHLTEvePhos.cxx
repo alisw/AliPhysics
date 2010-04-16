@@ -103,7 +103,6 @@ void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   TVector3 localVector;
   TVector3 globalVector(pos);
 
-  cout << "mod"  << module << endl;
 
   fGeoUtils->Global2Local(localVector, globalVector, 5-module);
   
