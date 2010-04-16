@@ -35,12 +35,12 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
     AliAnalysisDataContainer *co(NULL);
     co = mgr->CreateContainer(Form("%sCl2Trk%s", res->GetName(), suffix), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(res, AliTRDresolution::kClToTrk, co);
-    co = mgr->CreateContainer(Form("%sTrklt2Trk%s", res->GetName(), suffix), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(res, AliTRDresolution::kTrkltToTrk, co);
     co = mgr->CreateContainer(Form("%sCl2MC%s", res->GetName(), suffix), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(res, AliTRDresolution::kClToMC, co);
-    co = mgr->CreateContainer(Form("%sTrklt2MC%s", res->GetName(), suffix), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
-    mgr->ConnectOutput(res, AliTRDresolution::kTrkltToMC, co);
+//     co = mgr->CreateContainer(Form("%sTrklt2Trk%s", res->GetName(), suffix), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+//     mgr->ConnectOutput(res, AliTRDresolution::kTrkltToTrk, co);
+//     co = mgr->CreateContainer(Form("%sTrklt2MC%s", res->GetName(), suffix), TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+//     mgr->ConnectOutput(res, AliTRDresolution::kTrkltToMC, co);
     
     TObjArray *coa = mgr->GetContainers();
     // Cluster Error Parameterization
@@ -55,7 +55,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
       mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2Trk%s", res->GetName(), suffix)));
       mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibClErrParam.root"));*/
   
-      //AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
+      AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
       mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ClErrCalibMC"));
       taskCl->SetExB();
       taskCl->SetDebugLevel(0);

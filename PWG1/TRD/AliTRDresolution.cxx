@@ -127,9 +127,9 @@ AliTRDresolution::AliTRDresolution()
   ,fGraphS(NULL)
   ,fGraphM(NULL)
   ,fCl(NULL)
-  ,fTrklt(NULL)
   ,fMCcl(NULL)
-  ,fMCtrklt(NULL)
+/*  ,fTrklt(NULL)
+  ,fMCtrklt(NULL)*/
 {
   //
   // Default constructor
@@ -152,9 +152,9 @@ AliTRDresolution::AliTRDresolution(char* name)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
   ,fCl(NULL)
-  ,fTrklt(NULL)
   ,fMCcl(NULL)
-  ,fMCtrklt(NULL)
+/*  ,fTrklt(NULL)
+  ,fMCtrklt(NULL)*/
 {
   //
   // Default constructor
@@ -168,9 +168,9 @@ AliTRDresolution::AliTRDresolution(char* name)
   SetSegmentationLevel();
 
   DefineOutput(kClToTrk, TObjArray::Class()); // cluster2track
-  DefineOutput(kTrkltToTrk, TObjArray::Class()); // tracklet2track
   DefineOutput(kClToMC, TObjArray::Class()); // cluster2mc
-  DefineOutput(kTrkltToMC, TObjArray::Class()); // tracklet2mc
+/*  DefineOutput(kTrkltToTrk, TObjArray::Class()); // tracklet2track
+  DefineOutput(kTrkltToMC, TObjArray::Class()); // tracklet2mc*/
 }
 
 //________________________________________________________
@@ -186,9 +186,9 @@ AliTRDresolution::~AliTRDresolution()
   delete fReconstructor;
   if(gGeoManager) delete gGeoManager;
   if(fCl){fCl->Delete(); delete fCl;}
-  if(fTrklt){fTrklt->Delete(); delete fTrklt;}
   if(fMCcl){fMCcl->Delete(); delete fMCcl;}
-  if(fMCtrklt){fMCtrklt->Delete(); delete fMCtrklt;}
+/*  if(fTrklt){fTrklt->Delete(); delete fTrklt;}
+  if(fMCtrklt){fMCtrklt->Delete(); delete fMCtrklt;}*/
 }
 
 
@@ -198,15 +198,20 @@ void AliTRDresolution::UserCreateOutputObjects()
   // spatial resolution
   OpenFile(1, "RECREATE");
   fContainer = Histos();
+  InitExchangeContainers();
+}
 
+//________________________________________________________
+void AliTRDresolution::InitExchangeContainers()
+{
   fCl = new TObjArray();
   fCl->SetOwner(kTRUE);
-  fTrklt = new TObjArray();
-  fTrklt->SetOwner(kTRUE);
   fMCcl = new TObjArray();
   fMCcl->SetOwner(kTRUE);
+/*  fTrklt = new TObjArray();
+  fTrklt->SetOwner(kTRUE);
   fMCtrklt = new TObjArray();
-  fMCtrklt->SetOwner(kTRUE);
+  fMCtrklt->SetOwner(kTRUE);*/
 }
 
 //________________________________________________________
@@ -217,14 +222,14 @@ void AliTRDresolution::UserExec(Option_t *opt)
   //
 
   fCl->Delete();
-  fTrklt->Delete();
   fMCcl->Delete();
-  fMCtrklt->Delete();
+/*  fTrklt->Delete();
+  fMCtrklt->Delete();*/
   AliTRDrecoTask::UserExec(opt);
   PostData(kClToTrk, fCl);
-  PostData(kTrkltToTrk, fTrklt);
   PostData(kClToMC, fMCcl);
-  PostData(kTrkltToMC, fMCtrklt);
+/*  PostData(kTrkltToTrk, fTrklt);
+  PostData(kTrkltToMC, fMCtrklt);*/
 }
 
 //________________________________________________________
@@ -265,7 +270,7 @@ TH1* AliTRDresolution::PlotCharge(const AliTRDtrackV1 *track)
     return NULL;
   }
   TObjArray *arr = NULL;
-  if(!(arr = ((TObjArray*)fContainer->At(kCharge)))){
+  if(!fContainer || !(arr = ((TObjArray*)fContainer->At(kCharge)))){
     AliWarning("No output container defined.");
     return NULL;
   }
@@ -310,7 +315,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     return NULL;
   }
   TObjArray *arr = NULL;
-  if(!(arr = ((TObjArray*)fContainer->At(kCluster)))){
+  if(!fContainer || !(arr = ((TObjArray*)fContainer->At(kCluster)))){
     AliWarning("No output container defined.");
     return NULL;
   }
@@ -353,7 +358,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       // rotate along pad
       dy[1] = cost*(dy[0] - dz[0]*tilt);
       dz[1] = cost*(dz[0] + dy[0]*tilt);
-      if(pt>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sgm[fSegmentLevel]);
+      if(pt>fPtThreshold && c->IsInChamber()) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sgm[fSegmentLevel]);
 
       // tilt rotation of covariance for clusters
       Double_t sy2(c->GetSigmaY2()), sz2(c->GetSigmaZ2());
@@ -375,7 +380,6 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       if (d > 0.25) d  = 0.5 - d;
 
       AliTRDclusterInfo *clInfo = new AliTRDclusterInfo;
-      fCl->Add(clInfo);
       clInfo->SetCluster(c);
       Float_t covF[] = {cov[0], cov[1], cov[2]};
       clInfo->SetGlobalPosition(yt, zt, dydx, dzdx, covF);
@@ -383,6 +387,9 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       clInfo->SetAnisochronity(d);
       clInfo->SetDriftLength(dx);
       clInfo->SetTilt(tilt);
+      if(fCl) fCl->Add(clInfo);
+      else AliDebug(1, "Cl exchange container missing. Activate by calling \"InitExchangeContainers()\"");
+
       if(DebugLevel()>=1){
         if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
         clInfoArr->Add(clInfo);
@@ -416,7 +423,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     return NULL;
   }
   TObjArray *arr = NULL;
-  if(!(arr = (TObjArray*)fContainer->At(kTrack ))){
+  if(!fContainer || !(arr = (TObjArray*)fContainer->At(kTrack ))){
     AliWarning("No output container defined.");
     return NULL;
   }
@@ -507,6 +514,11 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     AliDebug(4, "No Track defined.");
     return NULL;
   }
+  TObjArray *arr = NULL;
+  if(!fContainer || !(arr = (TObjArray*)fContainer->At(kTrackIn))){
+    AliWarning("No output container defined.");
+    return NULL;
+  }
   AliExternalTrackParam *tin = NULL;
   if(!(tin = fkTrack->GetTrackIn())){
     AliWarning("Track did not entered TRD fiducial volume.");
@@ -559,7 +571,6 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   dy[1] = cost*(dy[0] - dz[0]*tilt);
   dz[1] = cost*(dz[0] + dy[0]*tilt);
 
-  TObjArray *arr = (TObjArray*)fContainer->At(kTrackIn);
   if(1./PAR[4]>fPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[1], sgm[fSegmentLevel]+rc*fgkNresYsegm[fSegmentLevel]);
   ((TH3S*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1], rc);
   ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), dphi);
@@ -622,7 +633,11 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 //   TMatrixD sqrcov(evecs, TMatrixD::kMult, TMatrixD(evalsm, TMatrixD::kMult, evecs.T()));
   
   // fill histos
-  arr = (TObjArray*)fContainer->At(kMCtrackIn);
+  if(!(arr = (TObjArray*)fContainer->At(kMCtrackIn))) {
+    AliWarning("No MC container defined.");
+    return h;
+  }
+
   // y resolution/pulls
   if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sgm[fSegmentLevel]);
   ((TH3S*)arr->At(1))->Fill(sgm[fSegmentLevel], (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)), (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)));
@@ -672,6 +687,11 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   if(track) fkTrack = track;
   if(!fkTrack){
     AliDebug(4, "No Track defined.");
+    return NULL;
+  }
+  TObjArray *arr = NULL;
+  if(!fContainer || !(arr = (TObjArray*)fContainer->At(kTrackOut))){
+    AliWarning("No output container defined.");
     return NULL;
   }
   AliExternalTrackParam *tout = NULL;
@@ -726,7 +746,6 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   dy[1] = cost*(dy[0] - dz[0]*tilt);
   dz[1] = cost*(dz[0] + dy[0]*tilt);
 
-  TObjArray *arr = (TObjArray*)fContainer->At(kTrackOut);
   if(1./PAR[4]>fPtThreshold) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), 1.e2*dy[1], sgm[fSegmentLevel]+rc*fgkNresYsegm[fSegmentLevel]); // scale to fit general residual range !!!
   ((TH3S*)arr->At(2))->Fill(fTracklet->GetZref(1), dz[1], rc);
   ((TH2I*)arr->At(4))->Fill(fTracklet->GetYref(1), dphi);
@@ -787,7 +806,10 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
 //   TMatrixD sqrcov(evecs, TMatrixD::kMult, TMatrixD(evalsm, TMatrixD::kMult, evecs.T()));
   
   // fill histos
-  arr = (TObjArray*)fContainer->At(kMCtrackOut);
+  if(!(arr = (TObjArray*)fContainer->At(kMCtrackOut))){
+    AliWarning("No MC container defined.");
+    return h;
+  }
   // y resolution/pulls
   if(pt0>fPtThreshold) ((TH3S*)arr->At(0))->Fill(dydx0, PARMC[0]-PAR[0], sgm[fSegmentLevel]);
   ((TH3S*)arr->At(1))->Fill(sgm[fSegmentLevel], (PARMC[0]-PAR[0])/TMath::Sqrt(COV(0,0)), (PARMC[1]-PAR[1])/TMath::Sqrt(COV(1,1)));
@@ -836,6 +858,10 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   if(track) fkTrack = track;
   if(!fkTrack){
     AliDebug(4, "No Track defined.");
+    return NULL;
+  }
+  if(!fContainer){
+    AliWarning("No output container defined.");
     return NULL;
   }
   // retriev track characteristics
@@ -1004,8 +1030,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
 
     arr = (TObjArray*)fContainer->At(kMCcluster);
     AliTRDcluster *c = NULL;
-    fTracklet->ResetClusterIter(kFALSE);
-    while((c = fTracklet->PrevCluster())){
+    tt.ResetClusterIter(kFALSE);
+    while((c = tt.PrevCluster())){
       Float_t  q = TMath::Abs(c->GetQ());
       x = c->GetX(); y = c->GetY();z = c->GetZ();
       dx = x0 - x; 
@@ -1015,7 +1041,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       dz = cost*(z - zmc + tilt*(y-ymc));
       
       // Fill Histograms
-      if(q>20. && q<250. && pt0>fPtThreshold){ 
+      if(q>20. && q<250. && pt0>fPtThreshold && c->IsInChamber()){ 
         ((TH3S*)arr->At(0))->Fill(dydx0, dy, sgm[fSegmentLevel]);
         ((TH3S*)arr->At(1))->Fill(sgm[fSegmentLevel], dy/TMath::Sqrt(c->GetSigmaY2()), dz/TMath::Sqrt(c->GetSigmaZ2()));
       }
@@ -1032,7 +1058,8 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       clInfo->SetAnisochronity(d);
       clInfo->SetDriftLength(dx);
       clInfo->SetTilt(tilt);
-      fMCcl->Add(clInfo);
+      if(fMCcl) fMCcl->Add(clInfo);
+      else AliDebug(1, "MCcl exchange container missing. Activate by calling \"InitExchangeContainers()\"");
       if(DebugLevel()>=5){ 
         if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
         clInfoArr->Add(clInfo);

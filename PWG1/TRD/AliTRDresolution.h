@@ -53,8 +53,8 @@ public:
   };
   enum ETRDresolutionOutSlots {
      kClToTrk    = 2
-    ,kTrkltToTrk = 3
-    ,kClToMC     = 4
+    ,kClToMC     = 3
+    ,kTrkltToTrk = 4
     ,kTrkltToMC  = 5
     ,kNOutSlots  = 4
   };
@@ -72,6 +72,7 @@ public:
 
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
+  void    InitExchangeContainers();
   Bool_t  IsVerbose() const {return TESTBIT(fStatus, kVerbose);}
   Bool_t  IsVisual() const {return TESTBIT(fStatus, kVisual);}
   Bool_t  PostProcess();
@@ -131,10 +132,10 @@ private:
 
   // calibration containers
   TObjArray           *fCl;     //! cluster2track calib
-  TObjArray           *fTrklt;  //! tracklet2track calib
   TObjArray           *fMCcl;   //! cluster2mc calib
-  TObjArray           *fMCtrklt;//! tracklet2mc calib
+/*  TObjArray           *fTrklt;  //! tracklet2track calib
+  TObjArray           *fMCtrklt;//! tracklet2mc calib*/
   
-  ClassDef(AliTRDresolution, 6) // TRD tracking resolution task
+  ClassDef(AliTRDresolution, 7) // TRD tracking resolution task
 };
 #endif
