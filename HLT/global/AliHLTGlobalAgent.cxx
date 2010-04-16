@@ -78,16 +78,45 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
+  TObjArray* pTokens=NULL;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // global vertexer component
+  //
+  // define the inputs 
+  TString vertexerInputs="TPC-globalmerger ITS-tracker";
+
+  // check for the availibility
+  pTokens=vertexerInputs.Tokenize(" ");
+  vertexerInputs="";
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (pHandler->FindConfiguration(module.Data())) {
+	vertexerInputs+=module;
+	vertexerInputs+=" ";
+      }
+    }
+    delete pTokens;
+    pTokens=NULL;
+  }
+  if (!vertexerInputs.IsNull()) {
+    HLTInfo("Configuring inputs to global HLT Vertexer: %s", vertexerInputs.Data());
+    pHandler->CreateConfiguration("GLOBAL-vertexer","GlobalVertexer",vertexerInputs,"");
+  } else {
+    HLTWarning("No inputs to global HLT Vertexer found");
+  }
 
   /////////////////////////////////////////////////////////////////////////////////////
   //
   // assembly of the global ESD
 
   // define the inputs to the global ESD
-  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker";
+  TString esdInputs="TPC-globalmerger TPC-mcTrackMarker ITS-tracker GLOBAL-vertexer";
 
   // check for the availibility
-  TObjArray* pTokens=esdInputs.Tokenize(" ");
+  pTokens=esdInputs.Tokenize(" ");
   esdInputs="";
   if (pTokens) {
     for (int n=0; n<pTokens->GetEntriesFast(); n++) {
@@ -98,6 +127,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
       }
     }
     delete pTokens;
+    pTokens=NULL;
   }
 
   if (esdInputs.Length()>0) {
@@ -110,19 +140,31 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
-  // global vertexer component
-  //
-  pHandler->CreateConfiguration("GLOBAL-vertexer","GlobalVertexer","GLOBAL-esd-converter","");
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  //
   // global histograms
   //
-  TString vertexhistoInput="GLOBAL-vertexer";
-  if (pHandler->FindConfiguration("ITS-SPD-vertexer")) {
-    vertexhistoInput+=" ITS-SPD-vertexer";
+  TString vertexhistoInput="GLOBAL-vertexer ITS-SPD-vertexer";
+
+  // check for the availibility
+  pTokens=vertexhistoInput.Tokenize(" ");
+  vertexhistoInput="";
+  if (pTokens) {
+    for (int n=0; n<pTokens->GetEntriesFast(); n++) {
+      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (pHandler->FindConfiguration(module.Data())) {
+	vertexhistoInput+=module;
+	vertexhistoInput+=" ";
+      }
+    }
+    delete pTokens;
+    pTokens=NULL;
   }
-  pHandler->CreateConfiguration("GLOBAL-vertexhisto","GlobalVertexerHisto", vertexhistoInput.Data(),"");
+
+  if (!vertexhistoInput.IsNull()) {
+    HLTInfo("Configuring inputs to global HLT Vertex histogram component: %s", vertexhistoInput.Data());
+    pHandler->CreateConfiguration("GLOBAL-vertexhisto","GlobalVertexerHisto", vertexhistoInput.Data(),"");
+  } else {
+    HLTWarning("No inputs to global HLT Vertex histogram component found");
+  }
   
   return 0;
 }
