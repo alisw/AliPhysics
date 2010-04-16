@@ -43,14 +43,14 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/shuttle HLT/EVE EVE/EveHLT EVE/EveBase \
+EINCLUDE := HLT/BASE HLT/shuttle HLT/EVE EVE/EveHLT EVE/EveBase EVE/EveDet \
 	    HLT/BASE/util HLT/BASE/HOMER  HLT/TPCLib \
 	    ITS PHOS TRIGGER VZERO EMCAL \
 	    STEER TRD HLT/TRD  \
 	    HLT/MUON MUON 
 
 
-LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase -AliHLTTPC -lMUONbase -lAliHLTMUON
+LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase -AliHLTTPC -lMUONbase -lAliHLTMUON -lEveDet
 
 ###############################################################################
 #
