@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // $Id$
 
 #ifndef ALIHLTITSAGENT_H
@@ -6,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTITSAgent.h
-    @author Matthias Richter
-    @date   25.08.2008
-    @brief  Agent of the libAliHLTITS library
-*/
+//  @file   AliHLTITSAgent.h
+//  @author Matthias Richter
+//  @date   25.08.2008
+//  @brief  Agent of the libAliHLTITS library
+//  @note
 
 #include "AliHLTModuleAgent.h"
 

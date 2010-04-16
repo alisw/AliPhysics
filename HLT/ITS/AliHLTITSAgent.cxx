@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTITSAgent.cxx
-    @author Matthias Richter
-    @date   25.08.2008
-    @brief  Agent of the libAliHLTITS library
-*/
+//  @file   AliHLTITSAgent.cxx
+//  @author Matthias Richter
+//  @date   25.08.2008
+//  @brief  Agent of the libAliHLTITS library
+//  @note
 
 #include <cassert>
 #include "AliHLTITSAgent.h"
@@ -29,8 +29,6 @@
 #include "AliHLTDAQ.h"
 
 // header files of library components
-
-// header file of the module preprocessor
 #include "AliHLTITSCompressRawDataSDDComponent.h"
 #include "AliHLTITSSSDQARecPointsComponent.h"
 #include "AliHLTITSQAComponent.h"
@@ -39,6 +37,9 @@
 #include "AliHLTITSTrackerComponent.h"
 #include "AliHLTITSVertexerSPDComponent.h"
 #include "AliHLTITSDigitPublisherComponent.h"
+
+// header file of the module preprocessor
+// none at the moment
 
 /** global instance for agent registration */
 AliHLTITSAgent gAliHLTITSAgent;
@@ -77,6 +78,8 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
   // ITS tracking is currently only working on raw data
   // to run on digits, a digit publisher needs to be implemented
 
+  TString trackerInput="";
+  TString vertexerSPDInput="";
   if (rawReader || !runloader) {
     // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
     // Alireconstruction: indicated by runloader==NULL, run always on raw data
@@ -102,22 +105,64 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //
-    // define the SPD vertexer Z configuration
+    // define the SPD vertexer Z input
     //
-    handler->CreateConfiguration("ITS-SPD-vertexer","ITSVertexerSPD", "ITS-SPD-CF","");
-    
+    vertexerSPDInput="ITS-SPD-CF";
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //
-    // define the ITS tracker configuration
+    // define the ITS tracker input
     //
-    TString trackerInput="ITS-SPD-CF ITS-SDD-CF ITS-SSD-CF";
+    trackerInput="ITS-SPD-CF ITS-SDD-CF ITS-SSD-CF";
+  }
+  else if (runloader && !rawReader) {
+    // indicates AliSimulation with no RawReader available -> run on digits
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // define the Digit Publisher and ITS cluster finder configuration
+    //
+    handler->CreateConfiguration("DigitPublisher","AliLoaderPublisher",NULL,"-loader ITSLoader -datatype 'ALITREED' 'ITS '");
+    handler->CreateConfiguration("DigitClusterFinder","ITSClusterFinderDigits","DigitPublisher","");
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // define the SPD vertexer Z input.
+    //
+    // Can not run on Digit ClusterFinder. Wrong inputtype. And wrong input data.
+    // If this is fixed in the VertexerSPD it needs to implement the data type
+    // handling for the ITS digits and ignore the input from the SDD and SSD
+    //vertexerSPDInput="DigitClusterFinder";
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // define the ITS tracker input
+    //
+    // Currently there is a seg fault in the TTree access from the DigitClusterFinder
+    // needs first to be investigated
+    //trackerInput="DigitClusterFinder";
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // define the SPD vertexer Z configuration
+  //
+  if (!vertexerSPDInput.IsNull()) {
+    handler->CreateConfiguration("ITS-SPD-vertexer","ITSVertexerSPD", vertexerSPDInput, "");
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // define the ITS tracker configuration
+  //
+  if (!trackerInput.IsNull()) {
     if (handler->FindConfiguration("TPC-globalmerger")) {
+      // add the TPC tracking if available
       trackerInput+=" TPC-globalmerger";
     }
     handler->CreateConfiguration("ITS-tracker","ITSTracker",trackerInput.Data(),"");
   }
+
   return 0;
 }
 
@@ -289,11 +334,13 @@ int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler,
   int spec=0x1;
   int ddlno=0;
 
+  bool bOneCFperDDL=false;
   TString origin=idString; origin.ReplaceAll("ITS", "I");
   TString cfBase=idString; cfBase+="_CF";
   TString componentId=idString; componentId.ReplaceAll("ITS", "ITSClusterFinder");
+  TString cfinput, cf;
   for(ddlno=minddl;ddlno<=maxddl;ddlno++){  
-    TString arg, publisher, cf;
+    TString arg, publisher;
  
     // the HLT origin defines are 4 chars: ISPD, ISSD, ISDD respectively
     arg.Form("-minid %d -datatype 'DDL_RAW ' '%s' -dataspec 0x%08x",ddlno, origin.Data(), spec);
@@ -301,13 +348,26 @@ int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler,
     publisher.Form("ITS-DP_%d", ddlno);
     pHandler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
 
+    if (cfinput.Length()>0) cfinput+=" ";
+    cfinput+=publisher;
+
+    if (bOneCFperDDL) {
     cf.Form("%s_%d",cfBase.Data(), ddlno);
     pHandler->CreateConfiguration(cf.Data(), componentId.Data(), publisher.Data(), "");
 
     if (output.Length()>0) output+=" ";
     output+=cf;
+    }
 
     spec=spec<<1;
+  }
+
+  if (bOneCFperDDL) {
+    cf.Form("%s",cfBase.Data());
+    pHandler->CreateConfiguration(cf.Data(), componentId.Data(), cfinput.Data(), "");
+
+    if (output.Length()>0) output+=" ";
+    output+=cf;
   }
   
   return 0;
