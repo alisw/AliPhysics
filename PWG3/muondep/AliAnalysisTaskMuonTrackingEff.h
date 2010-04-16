@@ -11,9 +11,9 @@
 
 #include "AliAnalysisTask.h"
 
-#include "AliCheckMuonDetEltResponse.h"
-#include "AliMUONGeometryTransformer.h"
 
+class AliCheckMuonDetEltResponse;
+class AliMUONGeometryTransformer;
 class AliESDEvent;
 class TClonesArray;
 class TH2F;
@@ -34,13 +34,13 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
   virtual void Exec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  static const Int_t fTotNbrOfDetectionElt;    ///< The total number of detection element in the tracking system.
-  static const Int_t fTotNbrOfChamber;
+  static const Int_t fgkTotNbrOfDetectionElt;    ///< The total number of detection element in the tracking system.
+  static const Int_t fgkTotNbrOfChamber;
 
   void ComputeErrors();                        ///< Compute the error on the efficiency (see .cxx for the formula)
   
   void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
-  Bool_t IsCosmic() {return fIsCosmicData;};
+  Bool_t IsCosmic() const {return fIsCosmicData;};
 
  private:
   AliESDEvent * fESD;                             //!<ESD object
@@ -57,7 +57,7 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTask
 
   Bool_t fIsCosmicData;
 
-  ClassDef(AliAnalysisTaskMuonTrackingEff, 1)
+  ClassDef(AliAnalysisTaskMuonTrackingEff, 0)
 };
 
 #endif

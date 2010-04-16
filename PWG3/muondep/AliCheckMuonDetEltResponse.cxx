@@ -18,14 +18,11 @@
 //Author:  Nicolas LE BRIS - SUBATECH Nantes
 //Modified by Matthieu LENHARDT - SUBATECH Nantes
 
-//PWG3/muon:
-#include "AliAnalysisTaskMuonTrackingEff.h"
+//PWG3/muondep:
 #include "AliCheckMuonDetEltResponse.h"
 
 //include STEER:
-#include "AliLog.h"
 #include "AliESDEvent.h"
-#include "AliTracker.h"
 #include "AliESDMuonTrack.h"
 
 //include MUON:
@@ -34,47 +31,34 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONConstants.h"
-#include "AliMUONGeometryTransformer.h"
 #include "AliMUONESDInterface.h"
+#include "AliMUONGeometryTransformer.h"
 
 //include MUON/mapping:
 #include "mapping/AliMpDEManager.h"
 #include "mapping/AliMpSegmentation.h"
-#include "mapping/AliMpSlat.h"
 #include "mapping/AliMpSlatSegmentation.h"
-#include "mapping/AliMpSector.h"
 #include "mapping/AliMpSectorSegmentation.h"
 #include "mapping/AliMpPad.h"
 
 //include ROOT:
-#include <Riostream.h>
-#include <TMath.h>
-#include <TROOT.h>
-#include <TSystem.h>
 #include <TH2F.h>
-#include <TH1F.h>
 #include <TClonesArray.h>
-#include <TPaveLabel.h>
-#include <TList.h>
 
 /// \cond CLASSIMP
 ClassImp(AliCheckMuonDetEltResponse)
 /// \endcond
 
-const Int_t AliCheckMuonDetEltResponse::fgkNbrOfChamber          = 10;
-const Int_t AliCheckMuonDetEltResponse::fgkNbrOfStation          = 5;
+const Int_t AliCheckMuonDetEltResponse::fgkNCh                   = AliMUONConstants::NTrackingCh();
+const Int_t AliCheckMuonDetEltResponse::fgkNSt                   = AliMUONConstants::NTrackingSt();
+const Int_t AliCheckMuonDetEltResponse::fgkNDE                   = 156;
 const Int_t AliCheckMuonDetEltResponse::fgkNbrOfDetectionElt[10] = {4, 4, 4, 4, 18, 18, 26, 26, 26, 26};
 const Int_t AliCheckMuonDetEltResponse::fgkFirstDetectionElt[10] = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
 const Int_t AliCheckMuonDetEltResponse::fgkOffset                = 100;
-const Int_t AliCheckMuonDetEltResponse::fgkOverlapSize           = 15;
-const Int_t AliCheckMuonDetEltResponse::fgkYSlatSize             = 20;
 
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse() 
 : TObject(),
-  fNCh(0),
-  fNSt(0),
-  fNDE(0),
   fkTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
@@ -90,25 +74,19 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
 {
 /// Default constructor
 
-    fNCh = AliCheckMuonDetEltResponse::fgkNbrOfChamber;
-    fNSt = AliCheckMuonDetEltResponse::fgkNbrOfStation;
-    fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
     fIsCosmicData = kFALSE;
     fNbrUsableTracks = 0;
 
-    for (Int_t iCluster = 0; iCluster<fNCh; ++iCluster)
+    for (Int_t iCluster = 0; iCluster<fgkNCh; ++iCluster)
       fNbrClustersCh[iCluster] = 0;
 
-    for (Int_t i=0; i<fNCh; ++i)
+    for (Int_t i=0; i<fgkNCh; ++i)
       fTrackFilter[i] = 0;
 }
 
 //_____________________________________________________________________________
 AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliCheckMuonDetEltResponse& src) 
 : TObject(src),
-  fNCh(0),
-  fNSt(0),
-  fNDE(0),
   fkTransformer(0x0),
   fESD(0x0),
   fTracksTotalNbr(0x0),
@@ -144,9 +122,6 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
 						       TClonesArray* chamberTTHistList,
 						       Bool_t isCosmic) 
 : TObject(),
-  fNCh(0),
-  fNSt(0),
-  fNDE(0),
   fkTransformer(transformer),
   fESD(esd),
   fTracksTotalNbr(0),
@@ -162,16 +137,13 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse(const AliMUONGeometryTran
 {
 /// Constructor
 
-    fNCh = AliCheckMuonDetEltResponse::fgkNbrOfChamber;
-    fNSt = AliCheckMuonDetEltResponse::fgkNbrOfStation;
-    fNDE = AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt;
     fIsCosmicData = isCosmic;
     fNbrUsableTracks = 0;
 
-    for (Int_t iCluster = 0; iCluster<fNCh; ++iCluster)
+    for (Int_t iCluster = 0; iCluster<fgkNCh; ++iCluster)
       fNbrClustersCh[iCluster] = 0;
     
-    for (Int_t i=0; i<fNCh; ++i)
+    for (Int_t i=0; i<fgkNCh; ++i)
       fTrackFilter[i] = 0;
     
 }
@@ -206,9 +178,7 @@ void AliCheckMuonDetEltResponse::CheckDetEltResponse()
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::TrackLoop()
 {
-  //
-  // Track Loop
-  //
+// Check if the track is kept
   AliESDMuonTrack* esdTrack;
   AliMUONTrack track;
   Int_t nTracks, iTrack;
@@ -260,7 +230,7 @@ void AliCheckMuonDetEltResponse::TrackLoop()
 		// End of long stuff
 		
 		
-		// Important part	  
+		// Important part
 		if (nTriggerHit < 10)
 		  {
 		    AliMUONESDInterface::ESDToMUON(*esdTrack, track);
@@ -288,16 +258,13 @@ void AliCheckMuonDetEltResponse::TrackLoop()
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::TrackParamLoop()
 {
-  //
-  // TrackParam Loop
-  //
-
+// Loop on all the track params and fill the histos
   Int_t nTrackParams = (Int_t) fTrackParams->GetEntriesFast();  //!<Number of trackParams in the track.
   Int_t iTrackParam = 0;                                        //!<Number of the trackParam of the track.
   Int_t oldChamber = -1, newChamber = 0; //!<To check if there is 0, 1 or 2 (overlap cases) clusters in the same chamber for a track.                                      
   Int_t detElt;                          //!<Detection element Id.
   
-  for (Int_t ch = 0; ch < fNCh; ++ch)
+  for (Int_t ch = 0; ch < fgkNCh; ++ch)
     fTrackFilter[ch] = 0;
 
 
@@ -313,7 +280,7 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
       chamberResponse[fCluster->GetChamberId()] = 1;
     }
 
-  for (Int_t station = 0; station < fNSt-1; ++station)
+  for (Int_t station = 0; station < fgkNSt-1; ++station)
     {
       Int_t filter;                                                       //<!
       Int_t ch1, ch2, ch3, ch4;                                           //<!
@@ -388,8 +355,8 @@ void AliCheckMuonDetEltResponse::TrackParamLoop()
 	      FindAndFillMissedDetElt(fTrackParam, oldChamber+1, nbrMissChamber); //!<Calculation of the parameters of the missing cluster(s).
 	    }
 	    
-	  if ( iTrackParam == nTrackParams - 1 && newChamber != fNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
-	    FindAndFillMissedDetElt(fTrackParam, fNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
+	  if ( iTrackParam == nTrackParams - 1 && newChamber != fgkNCh-1)           //!<Check if the last chamber, chamber 9 (from 0 to 9) has responded.
+	    FindAndFillMissedDetElt(fTrackParam, fgkNCh-1, 1);                      //!<Calculation of the parameters of the missing cluster(s) in the last chamber.
 	    
 	}
       oldChamber = newChamber; 
@@ -404,12 +371,13 @@ void AliCheckMuonDetEltResponse::FillTDHistos(Int_t chamber,
 					      Double_t posXL,
 					      Double_t posYL)
 {
+// Fill the histo for tracks detected
   if(fTrackFilter[chamber]== 1)
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
       ((TH2F*) fDetEltTDHistList->UncheckedAt(iDet))->Fill(posXL, posYL);
-      ((TH2F*) fDetEltTDHistList->UncheckedAt(fNDE))->Fill(chamber, 0);
+      ((TH2F*) fDetEltTDHistList->UncheckedAt(fgkNDE))->Fill(chamber, 0);
   
       Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
       detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
@@ -427,12 +395,13 @@ void AliCheckMuonDetEltResponse::FillTTHistos(Int_t chamber,
 					      Double_t posXL,
 					      Double_t posYL)
 {
+// Fill the histo for total number of tracks
   if(fTrackFilter[chamber] == 1)
     {
       Int_t iDet = 0; //!<Position of the detection element in the histograms' list.
       iDet = FromDetElt2iDet(chamber, detElt);
       ((TH2F*) fDetEltTTHistList->UncheckedAt(iDet)) -> Fill(posXL, posYL);
-      ((TH2F*) fDetEltTTHistList->UncheckedAt(fNDE))->Fill(chamber, 0);
+      ((TH2F*) fDetEltTTHistList->UncheckedAt(fgkNDE))->Fill(chamber, 0);
      
       Int_t detEltLocalId = 0;  //!<Id of the detection element in the station
       detEltLocalId =  FromDetElt2LocalId(chamber, detElt);
@@ -446,8 +415,8 @@ void AliCheckMuonDetEltResponse::FillTTHistos(Int_t chamber,
 
 
 //_____________________________________________________________________________
-const Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber, 
-						  Int_t detElt)
+Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber, 
+						  Int_t detElt) const
 {
 ///
 ///Connexion between the detection element X and its position in the list of histograms iX.
@@ -465,8 +434,8 @@ const Int_t AliCheckMuonDetEltResponse::FromDetElt2iDet(Int_t chamber,
 
 
 //_____________________________________________________________________________
-const Int_t AliCheckMuonDetEltResponse::FromDetElt2LocalId(Int_t chamber, 
-						     Int_t detElt)
+Int_t AliCheckMuonDetEltResponse::FromDetElt2LocalId(Int_t chamber, 
+						     Int_t detElt) const
 {
 ///
 ///Connexion between the detection element X and its number in the station.
@@ -536,7 +505,7 @@ void AliCheckMuonDetEltResponse::FindAndFillMissedDetElt(AliMUONTrackParam* extr
 //_____________________________________________________________________________
 void AliCheckMuonDetEltResponse::CoordinatesOfMissingCluster(Double_t x1, Double_t y1, Double_t z1,
 							     Double_t x2, Double_t y2, Double_t z2,
-							     Double_t& x, Double_t& y)
+							     Double_t& x, Double_t& y) const
 {
   //
   //Compute the coordinates of the missing cluster.
