@@ -38,6 +38,8 @@ AliHLTEveBase(),
   fPointSet(NULL)
 {
   // Constructor.
+
+  SetDetector(fName);
 }
 
 AliHLTEveITS::~AliHLTEveITS()
@@ -54,7 +56,8 @@ void AliHLTEveITS::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) {
     if(!fCanvas) {  
       fCanvas = CreateCanvas(Form("%s QA",fName.Data()), Form("%s QA", fName.Data()));
-      fCanvas->Divide(3, 2);
+      fCanvas->Divide(3, 3);
+      SetMaxHistograms(9);
     }
     AddHistogramsToCanvas( block , fCanvas, fHistoCount);
   } 

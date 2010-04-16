@@ -61,7 +61,6 @@ private :
   /** assignment operator prohibited */
   AliHLTEveITS& operator = (const AliHLTEveITS );
 
-  
   ClassDef(AliHLTEveITS, 0);
 };
 

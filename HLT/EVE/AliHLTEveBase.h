@@ -10,10 +10,12 @@
 #define ALIHLTEVEBASE_H
 
 #include "Rtypes.h"
+#include "TString.h"
+
 class AliHLTHOMERBlockDesc;
 class AliEveHOMERManager;
 class TCanvas;
-class TString;
+
 
 class AliHLTEveBase{
 
@@ -47,6 +49,15 @@ protected:
   /** Addhistograms to the canvas */
   virtual void AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount );
 
+
+	/// Getters and setters for the max number of histograms
+  void SetMaxHistograms(Int_t mh) {fMaxHistos = mh;}
+  Int_t GetMaxHistograms() const {return fMaxHistos;}
+  
+	///Getter and setter for the detector string
+  void SetDetector(TString det) {fDetector = det;}
+  TString GetDetector() const {return fDetector;}
+
   
   AliEveHOMERManager * fEventManager; //Pointer to AliEveHOMERManager instance
   TCanvas * fCanvas;                  //Canvas for histograms
@@ -59,6 +70,10 @@ private:
   AliHLTEveBase(const AliHLTEveBase&);
   /** assignment operator prohibited */
   AliHLTEveBase& operator=(const AliHLTEveBase&);
+
+  Int_t fMaxHistos;  // Maximum number histograms there is room for. 
+
+  TString fDetector;  //String denoting the detector
 
   ClassDef(AliHLTEveBase, 0);
 };

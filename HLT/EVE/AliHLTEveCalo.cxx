@@ -44,10 +44,16 @@ AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) :
   fBoxSet(NULL),
   fElementList(NULL),
   fNModules(nm),
-  fName(name)
+  fName(name), 
+  fPadTitles(NULL)
 {
   // Constructor.
-  for(int i = 0; i < 9; i++) {
+
+  SetMaxHistograms(9);
+
+  fPadTitles = new TString[GetMaxHistograms()];
+
+  for(int i = 0; i < GetMaxHistograms(); i++) {
     fPadTitles[i] = "";
   }
   
@@ -71,8 +77,6 @@ void AliHLTEveCalo::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
 
   if ( block->GetDataType().CompareTo("ROOTHIST") == 0 ) { 
-
-    cout <<"calo histo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<< endl;
     ProcessHistogram(block);
    
   } else {
@@ -176,27 +180,29 @@ void AliHLTEveCalo::ResetElements(){
 Int_t AliHLTEveCalo::GetPadNumber(TString name) {
 
 
-  cout << "GetPadNumber name   " << name << endl;
+  //cout << "GetPadNumber name   " << name << endl;
 
-  for(int i = 0; i < 9; i++) {
+  for(int i = 0; i < GetMaxHistograms(); i++) {
     if (!fPadTitles[i].CompareTo(name)){
       return i+1;
     }
     else if (!fPadTitles[i].CompareTo("")) {
-      cout <<"in empty title"<<endl;
+      //cout <<"in empty title"<<endl;
       fPadTitles[i] = name;
       return i+1;
     }
   }
   
-  cout << "BALLE returning default 1"<< endl;
-
+  if(fPadTitles[GetMaxHistograms()].CompareTo("")) {
+    cout << "AliHLTEveCalo::GetPadNumber:  We have more histograms than we have room for"<< endl;
+  }
   return 1;
 
 }
 
 void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
   //See header file for documentation
+
 
   if ( ! block->GetClassName().CompareTo("TObjArray")) {
     TIter next((TObjArray*)(block->GetTObject()));
@@ -207,40 +213,18 @@ void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
       Int_t iPad = GetPadNumber((static_cast<TH1*>(object))->GetName());
       canvas->cd(iPad);
 
+  
+
       //Check if histo is 2D histo
       TH2F* histo = dynamic_cast<TH2F*>(object);
       if(histo){
+
+	Int_t lb = histo->FindLastBinAbove(0,1);
+	if(lb > -1) {
+	  histo->SetAxisRange(0, histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
+	  histo->SetAxisRange(0, histo->GetYaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 2) + 3), "Y");
+	}
 	
-	TString name = histo->GetName();
-	if(name.Contains("ClusterEnergy")) {
-	  cout << "BALLE CE"<< endl;
-
-	  Int_t lb = histo->FindLastBinAbove(0,1);
-	  Int_t fb = histo->FindFirstBinAbove(0,1);
-
-	  if(lb > -1) {
-	    histo->SetAxisRange(0, histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
-	    histo->SetAxisRange(0, histo->GetYaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 2) + 3), "Y");
-	  }
-	} 
-	
-	else if (name.Contains("MatchDistance")) {
-	  cout << "BALLE MD"<< endl;
-	  Float_t min = histo->GetXaxis()->GetBinLowEdge( histo->FindFirstBinAbove(0, 1) -3 );
-	  Float_t max = histo->GetXaxis()->GetBinUpEdge( histo->FindLastBinAbove(0, 1) + 3);
-	  min = TMath::Abs(min);
-	  if(min > max) 
-	    max = min;
-	  histo->SetAxisRange(-max, max, "X");
-
-	  min = histo->GetYaxis()->GetBinLowEdge( histo->FindFirstBinAbove(0, 2) -3 );
-	  max = histo->GetYaxis()->GetBinUpEdge( histo->FindLastBinAbove(0, 2) + 3 );
-	  min = TMath::Abs(min);
-	  if(min > max) 
-	    max = min;
-	  histo->SetAxisRange(-max, max, "Y");
-	} 
-
 	histo->Draw("COLZ");
       }
       
@@ -251,8 +235,6 @@ void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
 	if (histo) {
 
 	  TString name = histo->GetName();
-	
-	  //canvas->cd(++cdCount);
 	  
 	  if(name.Contains("Energy")) {
 	    histo->SetAxisRange(0, histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
@@ -268,26 +250,32 @@ void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
 	}
       }
     }
-  }
-    
-  else if ( ! block->GetClassName().CompareTo("TH1F")) {
+  
+
+  } else if ( ! block->GetClassName().CompareTo("TH1F")) {
 
     TH1F* histo = reinterpret_cast<TH1F*>(block->GetTObject());
-    ++cdCount;
-    canvas->cd(cdCount);
-    histo->Draw();
-    
-  } 
-  
-  else if ( ! block->GetClassName().CompareTo("TH2F")) {
-    TH2F *histo = reinterpret_cast<TH2F*>(block->GetTObject());
-    if (histo) {
-      ++cdCount;
-      canvas->cd(cdCount);
-      histo->Draw("COLZ");
+    if(histo) {
+      
+      Int_t iPad = GetPadNumber(histo->GetName());
+      canvas->cd(iPad);
+      histo->Draw();
     }
-  }
+  
+  
+  } else if ( ! block->GetClassName().CompareTo("TH2F")) {
+    
+    TH2F *histo = reinterpret_cast<TH2F*>(block->GetTObject());
+    if(histo) {
+      
+      Int_t iPad = GetPadNumber(histo->GetName());
+      canvas->cd(iPad);
+      histo->Draw();
+    }
 
+
+  }
+  
   canvas->cd();
 }
 

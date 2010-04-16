@@ -80,8 +80,8 @@ private:
   AliHLTEveCalo& operator = (const AliHLTEveCalo &);
 
   TString fName;  //PHOS or EMCAL
-  
-  TString fPadTitles[9];
+ 
+  TString * fPadTitles;
 
   ClassDef(AliHLTEveCalo, 0);
 };

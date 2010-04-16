@@ -16,6 +16,7 @@ AliHLTEveAny::AliHLTEveAny() :
   AliHLTEveBase()
 {
   // Constructor.
+  SetDetector("Any detector");
 }
 
 AliHLTEveAny::~AliHLTEveAny()
@@ -40,6 +41,7 @@ void AliHLTEveAny::ProcessHistogram(AliHLTHOMERBlockDesc * block ) {
   if(!fCanvas) {
     fCanvas = CreateCanvas("Orphans", "Orphans");
     fCanvas->Divide(3, 2);
+    SetMaxHistograms(6);
   }
   AddHistogramsToCanvas(block, fCanvas, fHistoCount);
 }

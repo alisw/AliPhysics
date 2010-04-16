@@ -35,7 +35,9 @@ ClassImp(AliHLTEveBase);
 AliHLTEveBase::AliHLTEveBase() : 
   fEventManager(NULL), 
   fCanvas(NULL),
-  fHistoCount(0)
+  fHistoCount(0),
+  fMaxHistos(0), 
+  fDetector("")
 {
   // Constructor.
 }
@@ -64,14 +66,20 @@ TCanvas * AliHLTEveBase::CreateCanvas(TString  tabTitle, TString  canvasTitle ) 
   return canvas;
 }
 
+
 void AliHLTEveBase::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
   //See header file for documentation
+
    
   if ( ! block->GetClassName().CompareTo("TObjArray")) {
     TIter next((TObjArray*)(block->GetTObject()));
     TObject *object;
-   
+    
     while (( object = (TObject*) next())) {
+      if (cdCount == fMaxHistos) {
+	cout << "Too many histograms from detector, increase division size!!!!!!!!!!!! Detector: " << GetDetector() << endl;
+	break;
+      }
       TH2F* histo = dynamic_cast<TH2F*>(object);
       if(histo){
 	canvas->cd(++cdCount);
@@ -92,7 +100,11 @@ void AliHLTEveBase::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
 
     TH1F* histo = reinterpret_cast<TH1F*>(block->GetTObject());
     ++cdCount;
-    canvas->cd(cdCount);
+    if(cdCount > fMaxHistos){
+    
+      cout << "Too many histograms, divide canvas more or create additional. Or ask svein to fix it! Detector: "<< GetDetector()<<endl;
+      cdCount = 1;
+    }  canvas->cd(cdCount);
     histo->Draw();
     
   } 
@@ -101,6 +113,12 @@ void AliHLTEveBase::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
     TH2F *histo = reinterpret_cast<TH2F*>(block->GetTObject());
     if (histo) {
       ++cdCount;
+
+      if(cdCount > fMaxHistos){ 
+	cdCount = 1;
+	cout << "Too many histograms, divide canvas more or create additional. Or ask svein to fix it! Detector :" << GetDetector()<<endl;
+      }
+
       canvas->cd(cdCount);
       histo->Draw("COLZ");
     }
