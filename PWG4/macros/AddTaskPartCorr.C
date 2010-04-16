@@ -145,7 +145,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
 
   AliAnaPhoton *anaphoton1 = new AliAnaPhoton();
   anaphoton1->SetDebug(-1); //10 for lots of messages
-  anaphoton1->SetMinPt(0.);
+  if(calorimeter == "PHOS"){
+	  anaphoton1->SetNCellCut(1);// At least 2 cells
+	  anaphoton1->SetMinPt(0.2);
+  }
+  else {//EMCAL
+	  //anaphoton1->SetNCellCut(0);// At least 2 cells
+	  anaphoton1->SetMinPt(0.1); // no effect minium EMCAL cut.
+	  anaphoton1->SetTimeCut(550,750);// Time window of [550-750] ns 
+  }
+
   anaphoton1->SetMinDistanceToBadChannel(2, 4, 5);
   anaphoton1->SetCaloPID(pid);
   anaphoton1->SetCalorimeter(calorimeter);
@@ -199,7 +208,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   
   AliAnaPhoton *anaphoton2 = new AliAnaPhoton();
   anaphoton2->SetDebug(-1); //10 for lots of messages
-  anaphoton2->SetMinPt(0.);
+  if(calorimeter == "PHOS"){
+		anaphoton2->SetNCellCut(1);// At least 2 cells
+		anaphoton2->SetMinPt(0.2);
+  }
+  else {//EMCAL
+		//anaphoton2->SetNCellCut(0);// At least 2 cells
+		anaphoton2->SetMinPt(0.1); // no effect minium EMCAL cut.
+		anaphoton2->SetTimeCut(550,750);// Time window of [550-750] ns 
+  }
   anaphoton2->SetCaloPID(pid);
   anaphoton2->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaphoton2->SwitchOnDataMC() ;//Access MC stack and fill more histograms
