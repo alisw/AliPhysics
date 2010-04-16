@@ -1341,6 +1341,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
 	sprintf(command, "rm -r raw%d", iEvent);
 	gSystem->Exec(command);
       }
+      delete runLoader;
     }
 
     if (rootOutput) {
