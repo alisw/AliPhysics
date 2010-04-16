@@ -43,6 +43,7 @@ using namespace std;
 
 #include <cstdlib>
 #include <cerrno>
+#include "TFile.h"
 #include "TString.h"
 #include "TObjString.h"
 #include <sys/time.h>
@@ -383,7 +384,30 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	HLTFatal("No Digit Tree found");
 	return -1;
       }
+      // 2010-04-17 very crude workaround: TTree objects are difficult to send
+      // The actual case: Running ITS and TPC reconstruction fails at the second event
+      // to read the ITS digits from the TreeD
+      //
+      // Reason: reading fails in TBranch::GetBasket, there a new basket is opened from
+      // a TFile object. The function TBranch::GetFile returns the file object from
+      // an internal fDirectory (TDirectory) object. This file is at the second event
+      // set to the TPC.Digits.root. The internal mismatch creates a seg fault
+      //
+      // Investigation: TBranch::Streamer uses a crude assignment after creating the
+      // TBranch object
+      //    fDirectory = gDirectory;
+      // gDirectory is obviously not set correctly. Setting the directory to a TFile
+      // object for the ITS digits helps to fix the internal mess. Tried also to set
+      // the Directory for the TreeD to NULL (This has only effect if ones sets it 
+      // to something not NULL first, and then to NULL). But then no content, i.e.
+      // ITS clusters could be retrieved.
+      //
+      // Conclusion: TTree objects are hardly to be sent via TMessage, there are direct
+      // links to the file required anyhow.
+      TFile* dummy=new TFile("ITS.Digits.root");
+      tD->SetDirectory(dummy);
       tR = new TTree();
+      tR->SetDirectory(0);
       fDettype->SetTreeAddressD(tD);
       fDettype->MakeBranch(tR,"R");
       fDettype->SetTreeAddressR(tR);
@@ -391,7 +415,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
       fBenchmark.Start(1);
       fDettype->DigitsToRecPoints(tD,tR,0,opt,kTRUE);
       fBenchmark.Stop(1);
-      TClonesArray * fRecPoints;
+      TClonesArray * fRecPoints = NULL;
       tR->SetBranchAddress("ITSRecPoints",&fRecPoints);
       for(Int_t treeEntry=0;treeEntry<tR->GetEntries();treeEntry++){
 	tR->GetEntry(treeEntry);
@@ -404,6 +428,9 @@ int AliHLTITSClusterFinderComponent::DoEvent
       if(tR){
 	tR->Delete();
       }
+
+      tD->SetDirectory(0);
+      delete dummy;
       UInt_t nClusters=fclusters.size();
       
       UInt_t bufferSize = nClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
