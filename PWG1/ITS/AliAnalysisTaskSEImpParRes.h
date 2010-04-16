@@ -40,7 +40,8 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   AliAnalysisTaskSEImpParRes& operator=(const AliAnalysisTaskSEImpParRes& source);  
   
   Int_t PtBin(Double_t pt) const;
-
+  Int_t SinThetaBin(Double_t sintheta) const;
+  Double_t Getd0HistRange(Int_t i) const;
   Bool_t fReadMC;       // flag used to switch on/off MC reading
   Int_t  fSelectedPdg;  // only for a given particle species (-1 takes all tracks)
   Bool_t fUseDiamond;   // use diamond constraint in primary vertex
@@ -60,6 +61,8 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TList *fOutputpullAllpointSkip;//! pull ITS+TPC: 6 ITScls, w/o track in vtx
   TList *fOutputOnlyRefitRec;   //! ITS+TPC: any ITScls, with track in vtx
   TList *fOutputOnlyRefitSkip; //! ITS+TPC: any ITScls, w/o track in vtx
+  TList *fOutputSinThetaRec;              //! ITS+TPC: TH2F(pt,sintheta), with track in vtx
+  TList *fOutputSinThetaSkip;             //! ITS+TPC: TH2F(pt,sintheta), w/o track in vtx
   TList *fOutputPt;     //!           
   TH1F  *fNentries;   //! histogram of number of events
   TH1F  *fEstimVtx;   //! vertex resolution
