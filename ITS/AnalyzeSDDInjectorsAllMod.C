@@ -45,8 +45,8 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
   dmap->SetJun09Map();
 
-  TNtuple* ntsp=new TNtuple("ntsp","","mod:sid:an:stat:vall:v23:v13:v12:c1:c2:c3");
-  Float_t xnt[11];
+  TNtuple* ntsp=new TNtuple("ntsp","","mod:sid:an:stat:vall:errvall:v23:v13:v12:c1:c2:c3");
+  Float_t xnt[12];
   TH2F** histo = new TH2F*[kTotDDL*kModPerDDL*kSides];
   Int_t nWrittenEv[kTotDDL*kModPerDDL*kSides];
   TGraphErrors** gvel = new TGraphErrors*[kTotDDL*kModPerDDL*kSides];
@@ -180,15 +180,16 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 	      }
 	      xnt[0]=(Float_t)iMod;
 	      xnt[1]=(Float_t)isid;
-	      xnt[2]=(Float_t)ipad;
+	      xnt[2]=(Float_t)anal[index]->GetAnodeNumber(ipad);
 	      xnt[3]=(Float_t)st;
 	      xnt[4]=anal[index]->GetDriftSpeed(ipad);
-	      xnt[5]=anal23[index]->GetDriftSpeed(ipad);
-	      xnt[6]=anal13[index]->GetDriftSpeed(ipad);
-	      xnt[7]=anal12[index]->GetDriftSpeed(ipad);
-	      xnt[8]=anal[index]->GetCentroid(ipad,0);
-	      xnt[9]=anal[index]->GetCentroid(ipad,1);
-	      xnt[10]=anal[index]->GetCentroid(ipad,2);
+	      xnt[5]=anal[index]->GetDriftSpeedErr(ipad);
+	      xnt[6]=anal23[index]->GetDriftSpeed(ipad);
+	      xnt[7]=anal13[index]->GetDriftSpeed(ipad);
+	      xnt[8]=anal12[index]->GetDriftSpeed(ipad);
+	      xnt[9]=anal[index]->GetCentroid(ipad,0);
+	      xnt[10]=anal[index]->GetCentroid(ipad,1);
+	      xnt[11]=anal[index]->GetCentroid(ipad,2);
 	      ntsp->Fill(xnt);
 	    }
 	    if(anal[index]->GetInjPadStatus(jpad)>=statuscut){
@@ -264,8 +265,8 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
   ntsp->Write();
   for(Int_t iMod=0; iMod<260; iMod++){
     outfil->cd();
-    hvdriftl[iMod]->Write();    
-    hvdriftr[iMod]->Write();
+    //    hvdriftl[iMod]->Write();    
+    //    hvdriftr[iMod]->Write();
     Float_t modid=iMod+240;
     if(hvdriftl[iMod]->GetEntries()>0){
       Float_t avevell=hvdriftl[iMod]->GetMean();
@@ -380,11 +381,11 @@ void AnalyzeSDDInjectorsAllMod(Char_t *datafil,
 
 }
 
-void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Int_t year=2009, Char_t* dir="LHC09b_SDD",
+void AnalyzeSDDInjectorsAllMod(Int_t nrun, Int_t n2, Int_t year=2010, Char_t* dir="LHC10b_SDD",
 			       Int_t adcfreq=20, 
 			       Int_t nDDL=0, 
 			       Int_t firstEv=18, 
-			       Int_t lastEv=20,
+			       Int_t lastEv=25,
 			       Int_t jpad=20, 
 			       Int_t statuscut=7){
 
