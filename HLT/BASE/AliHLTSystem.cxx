@@ -1168,6 +1168,7 @@ int AliHLTSystem::ScanOptions(const char* options)
   if (options) {
     //AliHLTComponentHandler::TLibraryMode libMode=AliHLTComponentHandler::kDynamic;
     TString libs("");
+    TString excludelibs("");
     TString alloptions(options);
     TObjArray* pTokens=alloptions.Tokenize(" ");
     if (pTokens) {
@@ -1231,6 +1232,9 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";
+	} else if (token.BeginsWith("!lib") && token.EndsWith(".so")) {
+	  excludelibs+=token;
+	  excludelibs+=" ";
 	} else {
 	  HLTWarning("unknown option \'%s\'", token.Data());
 	}
@@ -1241,8 +1245,9 @@ int AliHLTSystem::ScanOptions(const char* options)
     if (iResult>=0) {
       if (libs.IsNull()) {
 	const char** deflib=fgkHLTDefaultLibs;
-	while (*deflib) {
-	  libs+=*deflib++;
+	for (;*deflib; deflib++) {
+	  if (excludelibs.Contains(*deflib)) continue;
+	  libs+=*deflib;
 	  libs+=" ";
 	}
       }
