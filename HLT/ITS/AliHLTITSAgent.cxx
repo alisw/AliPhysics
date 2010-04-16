@@ -140,7 +140,7 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     //
     // Currently there is a seg fault in the TTree access from the DigitClusterFinder
     // needs first to be investigated
-    //trackerInput="DigitClusterFinder";
+    trackerInput="DigitClusterFinder";
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
