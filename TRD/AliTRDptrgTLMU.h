@@ -53,7 +53,7 @@ class AliTRDptrgTLMU : public TObject {
   AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
   
   const UInt_t* fInputMask; // input mask for TOF-bits (18x32=576)
-  UInt_t fInputTOFinputBits[18]; // input bits from TOF (18x32)
+  UInt_t fTOFinputBits[18]; // input bits from TOF (18x32)
   
   UInt_t** fCMatrices;    // get coincidence matrices
   UInt_t** fMultiplicity;    // get multiplicity slices

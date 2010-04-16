@@ -866,32 +866,38 @@ Int_t AliTRDptrgParam::GenerateLUTs() {
   // CB-A (CB = 1 / kA)
   this->fCBLUTs[1][0] = this->GenerateLUTbasedOnEq(this->fCBALUTequX, 10, 1);
   for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@A][0]=%d", this->fCBLUTs[1][0]));
+    AliDebug(10, Form("fCBLUTs[@A][0][0x%x]=%d", iEntry,
+                      this->fCBLUTs[1][0][iEntry]));
   }
   this->fCBLUTs[1][1] = this->GenerateLUTbasedOnEq(this->fCBALUTequY, 10, 1);
   for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@A][1]=%d", this->fCBLUTs[1][1]));
+    AliDebug(10, Form("fCBLUTs[@A][1][0x%x]=%d", iEntry,
+                      this->fCBLUTs[1][1][iEntry]));
   }
 
   // CB-C (CB = 2 / kC)
   this->fCBLUTs[2][0] = this->GenerateLUTbasedOnEq(this->fCBCLUTequX, 10, 1);
   for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(6, Form("fCBLUTs[@C][0]=%d", this->fCBLUTs[2][0]));
+    AliDebug(6, Form("fCBLUTs[@C][0][0x%x]=%d", iEntry,
+                     this->fCBLUTs[2][0][iEntry]));
   }
   this->fCBLUTs[2][1] = this->GenerateLUTbasedOnEq(this->fCBCLUTequY, 10, 1);
   for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@C][1]=%d", this->fCBLUTs[2][0]));
+    AliDebug(10, Form("fCBLUTs[@C][1][0x%x]=%d", iEntry,
+                       this->fCBLUTs[2][0][iEntry]));
   }
  
   // CB-B (CB = 0 / kB)
-  this->fCBLUTs[0][0] = this->GenerateLUTbasedOnEq(this->fCBALUTequX, 12, 1);
+  this->fCBLUTs[0][0] = this->GenerateLUTbasedOnEq(this->fCBBLUTequX, 12, 1);
   for (Int_t iEntry = 0; iEntry < 4096; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@B][0]=%d", this->fCBLUTs[0][0]));
+    AliDebug(10, Form("fCBLUTs[@B][0][0x%x]=%d", iEntry,
+                      this->fCBLUTs[0][0][iEntry]));
   }
-  this->fCBLUTs[0][1] = this->GenerateLUTbasedOnEq(this->fCBALUTequY, 12, 1);
+  this->fCBLUTs[0][1] = this->GenerateLUTbasedOnEq(this->fCBBLUTequY, 12, 1);
   
   for (Int_t iEntry = 0; iEntry < 4096; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@B][1]=%d", this->fCBLUTs[0][1]));
+    AliDebug(10, Form("fCBLUTs[@B][1][0x%x]=%d", iEntry,
+                      this->fCBLUTs[0][1][iEntry]));
   }
 
   AliDebug(5, "LUTs were generated!");
@@ -1005,7 +1011,7 @@ void AliTRDptrgParam::SplitUpValues(TString value, TObjArray& arr) {
       }
     }
   }
-  if (temp.Length() != 0) { // TODO
+  if (temp.Length() != 0) {
     TObjString* t = new TObjString(temp.Data());
     arr.Add(t);         
   }
@@ -1048,7 +1054,7 @@ Bool_t AliTRDptrgParam::ParseMultiplicityCondition(TString condition,
     maskStr += condition[iLetter++];
   }
   (*mask) = BinaryTStringToInt(maskStr);
-  if ((*mask) == 0) { // TODO find a better method to detected parser errors
+  if ((*mask) == 0) { 
     AliDebug(5, Form("Invalid input mask: %s,[%s]", maskStr.Data(), 
                       condition.Data()));
     return kFALSE;
@@ -1540,7 +1546,7 @@ Int_t AliTRDptrgParam::LookUp(TString* const identifier) const {
   else if (identifier->CompareTo("TLMU_6", TString::kIgnoreCase) == 0) 
     return 0x400; 
   else if (identifier->CompareTo("TLMU_7", TString::kIgnoreCase) == 0) 
-    return 0x100; 
+    return 0x800; 
   else return 0x0; // Error
 }
 

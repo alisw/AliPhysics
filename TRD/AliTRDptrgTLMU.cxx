@@ -55,8 +55,10 @@ AliTRDptrgTLMU::AliTRDptrgTLMU(AliRunLoader *rl)
   // default ctor
  
   for (Int_t i = 0; i < 18; i++) {
-    this->fInputTOFinputBits[i] = 0;
+    this->fTOFinputBits[i] = 0;
   }
+  
+  this->LoadParams();
 }
 
 //______________________________________________________________________________
@@ -74,7 +76,7 @@ AliTRDptrgTLMU::AliTRDptrgTLMU(AliRunLoader *rl,  AliTRDptrgParam *param,
   // recommended ctor
   
   for (Int_t i = 0; i < 18; i++) {
-    this->fInputTOFinputBits[i] = 0;
+    this->fTOFinputBits[i] = 0;
   }
  
   this->LoadParams();
@@ -126,8 +128,11 @@ Int_t* AliTRDptrgTLMU::Simulate()
     // coincidence matrix
     if (this->fOutput[iResult][0] != -1) {
       for (Int_t iLine = 0; iLine < 18; iLine++) {
+        AliDebug(5, Form("Entry: %d, matrix: %d, line: %d, output: 0x%x", 
+                         iResult, this->fOutput[iResult][0], iLine, sm & 
+                         this->fCMatrices[this->fOutput[iResult][0]][iLine]));
         if (this->GetBitVectorMultiplicity(
-	     sm | this->fCMatrices[this->fOutput[iResult][0]][iLine]) > 1) {
+	     sm & this->fCMatrices[this->fOutput[iResult][0]][iLine]) > 1) {
 	  result[iResult + 1] = 1;
           break;
 	}        
@@ -136,7 +141,7 @@ Int_t* AliTRDptrgTLMU::Simulate()
     
     // multiplicity conditions
     if (this->fOutput[iResult][1] != -1) {
-      AliDebug(5, Form("Entry %d, slice: %d", iResult, 
+      AliDebug(5, Form("Entry: %d, slice: %d", iResult, 
                        this->fOutput[iResult][1]));
       if ((this->fMultiplicity[this->fOutput[iResult][1]][0] < multiplicity) &&
           (this->fMultiplicity[this->fOutput[iResult][1]][1] >= multiplicity)) {
@@ -167,8 +172,118 @@ Bool_t AliTRDptrgTLMU::LoadParams()
     // no parameter object assigned
     AliWarning("no parameter object assigned - using default settings!");
 
-    AliError("no default settings available!");
-    // TODO
+    UInt_t* imask = 0x0;
+    imask = new UInt_t[18];
+    for (Int_t i = 0; i < 18; i++) {
+      imask[i] = 0xFFFFFFFF;
+    }
+
+    this->fInputMask = imask;
+    
+    // TLMU Coincidence Matrices
+    this->fCMatrices = new UInt_t*[3];
+    this->fCMatrices[0] = new UInt_t[18];
+    this->fCMatrices[1] = new UInt_t[18];
+    this->fCMatrices[2] = new UInt_t[18];    
+
+    // Matrix 0: Back-To-Back
+    // Matrix 1: Back-To-Back +/-1
+    // Matrix 2: Back-To-Back +/-2
+    for (UInt_t iMatrix = 0; iMatrix < 3; iMatrix++) {
+      for (UInt_t iSlice = 0; iSlice < 18; iSlice++) {
+        if (iMatrix == 0) {
+          if (iSlice < 9) {
+            this->fCMatrices[iMatrix][iSlice] = 0x201 << iSlice; 
+            // Back-To-Back 
+            AliDebug(5, Form("fCMatrices[%d][%d]=0x%x",iMatrix,iSlice,
+                             this->fCMatrices[iMatrix][iSlice]));
+	  }
+          // because of symmetrie the other slices are not necessary
+        } 
+        else if (iMatrix == 1)  {
+          // Back-To-Back +/- 1
+          if (iSlice < 8) {
+            this->fCMatrices[iMatrix][iSlice] = 0x381 << iSlice;
+          }
+          else if (iSlice == 8) {
+            this->fCMatrices[iMatrix][iSlice] = 0x30101;
+          }
+          else if (iSlice == 9) {
+            this->fCMatrices[iMatrix][iSlice] = 0x20203;
+          }
+          else {
+            this->fCMatrices[iMatrix][iSlice] = 0x407 << (iSlice - 10);
+          } 
+          AliDebug(5, Form("fCMatrices[%d][%d]=0x%x",iMatrix,iSlice,
+                           this->fCMatrices[iMatrix][iSlice])); 
+        }
+        else if (iMatrix == 2) {
+          // Back-To-Back +/-2
+          if (iSlice < 7 ) {
+            this->fCMatrices[iMatrix][iSlice] = 0xF81 << iSlice;
+          }
+          else if (iSlice == 7) {
+            this->fCMatrices[iMatrix][iSlice] = 0x3C081;
+          }
+          else if (iSlice == 8) {
+            this->fCMatrices[iMatrix][iSlice] = 0x38103;
+          }
+          else if (iSlice == 9) {
+            this->fCMatrices[iMatrix][iSlice] = 0x30207;
+          }
+          else if (iSlice == 10) {
+            this->fCMatrices[iMatrix][iSlice] = 0x2040F;
+          }
+          else {
+            this->fCMatrices[iMatrix][iSlice] = 0x81F << (iSlice - 11);
+          } 
+          AliDebug(5, Form("fCMatrices[%d][%d]=0x%x",iMatrix,iSlice,
+                           this->fCMatrices[iMatrix][iSlice]));     
+        }
+      } 
+    }
+ 
+    // Mulitplicity
+    this->fMultiplicity = new UInt_t*[9];
+    for (Int_t i = 0; i < 9; i++) {
+      this->fMultiplicity[i] = new UInt_t[2];
+    }
+    this->fMultiplicity[0][0] = 0;
+    this->fMultiplicity[0][1] = 10;
+    this->fMultiplicity[1][0] = 10;
+    this->fMultiplicity[1][1] = 25;
+    this->fMultiplicity[2][0] = 25;
+    this->fMultiplicity[2][1] = 50;
+    this->fMultiplicity[3][0] = 50;
+    this->fMultiplicity[3][1] = 100;
+    this->fMultiplicity[4][0] = 100;
+    this->fMultiplicity[4][1] = 200;
+    this->fMultiplicity[5][0] = 200;
+    this->fMultiplicity[5][1] = 350;
+    this->fMultiplicity[6][0] = 350;
+    this->fMultiplicity[6][1] = 400;
+    this->fMultiplicity[7][0] = 400;
+    this->fMultiplicity[7][1] = 576;
+    this->fMultiplicity[8][0] = 100;
+    this->fMultiplicity[8][1] = 576;
+ 
+    // TLMU output
+    this->fOutput = new Int_t*[8];
+    for (Int_t i = 0; i < 9; i++) {
+      this->fOutput[i] = new Int_t[2];
+      this->fOutput[i][0] = -1;
+      this->fOutput[i][1] = -1;
+    }
+    this->fOutput[0][0] = 0;
+    this->fOutput[1][0] = 1;
+    this->fOutput[2][0] = 2;
+    this->fOutput[3][1] = 0;
+    this->fOutput[4][1] = 1;
+    this->fOutput[5][1] = 2;
+    this->fOutput[6][1] = 3;
+    this->fOutput[7][1] = 8;
+
+
   }
   else {
     // parameter object assigned
@@ -205,21 +320,25 @@ void AliTRDptrgTLMU::GetInputBits() {
   // initialise map
   for (Int_t i=0; i < 72; i++)
     for (Int_t j=0; j < 8; j++)
-      map[i][j] = 0;
+      map[i][j] = kFALSE;
 
   // get 576 TOF-to-TRD bits
   toftrig->GetTRDmap(map);
 
-  /* DEBUG output 
+  //* DEBUG output 
   // used to determine the correct bit assignment
+  AliDebug(5, "AliTOFTrigger->GetTRDmap(map):");
   for (Int_t i=0; i < 72; i++) {
-    AliDebug(5, Form("%d ", i));
-    for (Int_t j=7; j >= 0; j--) {
-      AliDebug(5, Form("%d", map[i][j])); 
-    }
+    AliDebug(5, Form("%d %d%d%d%d%d%d%d%d", i, map[i][0], map[i][1], map[i][2],
+                      map[i][3], map[i][4], map[i][5], map[i][6], map[i][7]));
   }
   //*/ // end of DEBUG output
-  
+
+  // initialise fTOFinputBits
+  for (Int_t i=0; i < 18; i++) {
+    this->fTOFinputBits[i] = 0;
+  }
+
  
   // transform Bool_t array to UInt_t bitvectors according to
   // http://www.physi.uni-heidelberg.de/~schicker/cbtof/cbtof_docu.pdf
@@ -234,15 +353,15 @@ void AliTRDptrgTLMU::GetInputBits() {
       tempC = 0x00010000;
       supermodule++;
     }
-    AliDebug(5, Form("(%2d,0x%8x,0x%8x)", iLTM, tempA, tempC));
+    // AliDebug(5, Form("(%2d,0x%8x,0x%8x)", iLTM, tempA, tempC));
     for (Int_t iLTMchan = 0; iLTMchan < 8; iLTMchan++) {
       // A-side
       if (map[iLTM][iLTMchan]) {
-        this->fInputTOFinputBits[supermodule] |= tempA;        
+        this->fTOFinputBits[supermodule] |= tempA;        
       }
       // C-side
       if (map[iLTM + 36][iLTMchan]) {
-        this->fInputTOFinputBits[supermodule] |= tempC;
+        this->fTOFinputBits[supermodule] |= tempC;
       }
       // change temp vectors
       tempA <<= 1;
@@ -253,8 +372,8 @@ void AliTRDptrgTLMU::GetInputBits() {
   // handle input mask
   for (Int_t iSM = 0; iSM < 18; iSM++) {
     AliDebug(5, Form("fInputTOFinputBits[%d]=0x%x", iSM, 
-             this->fInputTOFinputBits[iSM]));
-    this->fInputTOFinputBits[iSM] &= this->fInputMask[iSM];
+             this->fTOFinputBits[iSM]));
+    this->fTOFinputBits[iSM] &= this->fInputMask[iSM];
   }
 }
 
@@ -275,7 +394,6 @@ Int_t AliTRDptrgTLMU::BackToBack(Int_t iSM, Int_t range) {
   if (this->Or(iSM)) { // is there are active bits in supermodule iSM
     Int_t result = 0;
     for (Int_t i = counterPart - range; i <= counterPart + range; i++) {
-      // TODO WARNING: There are possible Errors with sm0 +-range!
       // check whether there are active bits in supermodule i (counterParts)
       if ((i >= 0) && (i < 18)) {
         if (Or(i)) {
@@ -321,7 +439,7 @@ inline Int_t AliTRDptrgTLMU::Or(Int_t  iSM) {
   // returns 1 if one or more bits are active in supermodule iSM
  
   if ((iSM >= 0) && (iSM < 18)) {
-    if (this->fInputTOFinputBits[iSM] > 0)
+    if (this->fTOFinputBits[iSM] > 0)
       return 1;
     else
       return 0; 
@@ -333,14 +451,13 @@ inline Int_t AliTRDptrgTLMU::Or(Int_t  iSM) {
 
 //______________________________________________________________________________
 Int_t AliTRDptrgTLMU::GetMultiplicity(Int_t iSM) {
-  // counts how many bits equal one are in class member fInputTOFinputBits[iSM]
+  // counts how many bits equal one are in class member fTOFinputBits[iSM]
   // (32bits from TOF to TRD of supermodule iSM)
 
-  UInt_t temp = this->fInputTOFinputBits[iSM];
+  UInt_t temp = this->fTOFinputBits[iSM];
   UInt_t mask = 0x01;
   Int_t multiplicity = 0;  
 	
-  // TODO maybe there is a more efficient way to do that?
   for (int iBit = 0; iBit < 32; iBit++) {
     if ((mask & temp) != 0x0) { // is the bit equal one?
       multiplicity++;

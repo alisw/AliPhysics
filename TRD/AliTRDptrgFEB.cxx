@@ -56,7 +56,7 @@ AliTRDptrgFEB::AliTRDptrgFEB(AliRunLoader *rl)
   fThreshold(0)
 {
   // default constructor
-  AliWarning("default ctor - not recommended");
+  AliError("default ctor - not recommended");
 }
 
 //______________________________________________________________________________
@@ -104,7 +104,7 @@ Int_t AliTRDptrgFEB::LoadDigits()
     // load V0's digits --------------------------------------------------------
     
     // get V0 run loader
-    AliLoader* loader = fRunLoader->GetLoader( "VZEROLoader" );
+    AliLoader* loader = this->fRunLoader->GetLoader( "VZEROLoader" );
 
     if (!loader) {
       AliError("Can not get VZERO loader");
@@ -123,12 +123,8 @@ Int_t AliTRDptrgFEB::LoadDigits()
     TBranch* digitBranch = vzeroDigitsTree->GetBranch("VZERODigit");
     digitBranch->SetAddress(&vzeroDigits);
     vzeroDigitsTree->GetEvent(0);	
-    //digitBranch->GetEvent(event);
-
-    AliDebug(5, Form("Number of Events: %d",
-                this->fRunLoader->GetNumberOfEvents()));
- 	   
- 
+    
+  
     Int_t nDigits = vzeroDigits->GetEntriesFast(); // get digit count
 		
     AliDebug(5, Form("Found a whole of %d digits", nDigits));    
@@ -141,7 +137,6 @@ Int_t AliTRDptrgFEB::LoadDigits()
       AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(iDigit);
 			      
       Int_t pmNumber   = digit->PMNumber();
-      // TODO check the assignment of the photomultipliers to the FEBs
       Int_t board   = pmNumber / 8;
       Int_t channel = pmNumber % 8;
       Int_t position = pmNumber / 32 + 1;
@@ -149,7 +144,6 @@ Int_t AliTRDptrgFEB::LoadDigits()
       // check whether the digits belongs to the current FEB, otherwise omit it
       if ((position == this->fPosition) && (board == this->fID)) {
         AliDebug(5, "Found an digit corresponding to the current FEB");
-				//if in timing window? // TODO
         Float_t value = digit->ADC();
         AliDebug(5, Form("ADC value: %f\n", value));
         Int_t channelBitMask = 0x01; 
@@ -220,7 +214,6 @@ Int_t AliTRDptrgFEB::LoadDigits()
       Int_t value = qtc1[i] - qtc0[i]; // calculate correct measurement value
 
       if (value > (Int_t)this->fThreshold[i - nStart]) {
-	// channelBitMask <<= 1; //(i - nStart);  // 2^(i - nStart) ERROR? TODO
         inputVector |= channelBitMask;    // Add bit
           
         AliDebug(5, Form("Threshold exceeded in channel %d,", i));
@@ -230,7 +223,6 @@ Int_t AliTRDptrgFEB::LoadDigits()
       channelBitMask <<= 1; // go on to the next channel
     }
     
-    // TODO check whether it is correct to delete the digit
     delete digits;
     return inputVector;
   }
@@ -263,7 +255,7 @@ Bool_t AliTRDptrgFEB::LoadParams()
       // initialize threshold
       this->fThreshold = new UInt_t[8]; 
       for (Int_t i = 0; i < 8; i++) {
-        this->fThreshold[i] = 10; // TODO choose a correct value
+        this->fThreshold[i] = 10; 
       }
       // initialize LUTsoutputWidth=<value optimized out>
       AliTRDptrgLUT* lut = new AliTRDptrgLUT();
@@ -287,7 +279,7 @@ Bool_t AliTRDptrgFEB::LoadParams()
       // initialize threshold
       this->fThreshold = new UInt_t[12];
       for (Int_t i = 0; i < 12; i++) {
-        this->fThreshold[i] = 10; // TODO choose a correct value
+        this->fThreshold[i] = 10; 
       }
       
       // initialize LUTsoutputWidth=<value optimized out>

@@ -172,7 +172,6 @@ Int_t* AliTRDptrgCBB::Simulate()
   
   
   // combine partResults and create inputVectors  
-  // TODO make assignment configurable
   Int_t mask = 0x1;
   for (Int_t i = 0; i < 3 ; i++) {
     for (Int_t j = 1; j <= partResults[i][0]; j++) {

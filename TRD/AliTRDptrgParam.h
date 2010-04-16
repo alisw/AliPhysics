@@ -171,7 +171,6 @@ class AliTRDptrgParam : public TObject {
   // T0 ------------------------------------------------------------------------
   // [position][channel] 12 channels at A and C side
   UInt_t** fFEBT0Thresholds; // threshold for analog value discrimination
-  //UInt_t** fFEBT0Delays; // delay is not used in simulation right now //TODO
   
   // [position][LUT][0 = threshold, 1 = bitmask] 2 LUTs at A and C side  
   UInt_t*** fFEBT0Multiplicities; // multiplicity threshold for T0
@@ -180,7 +179,6 @@ class AliTRDptrgParam : public TObject {
   // V0 ------------------------------------------------------------------------
   // [position][feb][channel] 4x8 channels per side (A and C)
   UInt_t*** fFEBV0Thresholds; // threshold for analog value discrimation
-  //UInt_t** fFEBV0Delays; // delay is not used in simulation right now //TODO
 
   // [position][feb][LUT][0 = threshold, 1 = bitmask] 2 LUTs per FEB 
   // (4 per Side) at each side ( A and C)

@@ -93,8 +93,8 @@ TLMU/MCNTR3/THR 200 300
 TLMU/MCNTR4/THR 300 400
 TLMU/MCNTR5/THR 400 500
 TLMU/MCNTR6/THR 500 520
-TLMU/MCNTR7/THR 520 540
-TLMU/MCNTR8/THR 540 999
+TLMU/MCNTR7/THR 520 576
+TLMU/MCNTR8/THR   1 576
 
 
 # Assign signal to output. CM means CMATRIX and MC means Multiplicity counter
@@ -171,8 +171,8 @@ CBC/LUT/1               !T0_1 && !V0-0_1 && !V0-1_1 && !V0-2_1 && !V0-3_1
 
 # Lookup table at CB-B
 
-CBB/LUT/0               ( !CB-A_1 || !CB-C_1 ) && TLMU_7
-CBB/LUT/1               ( !CB-A_1 && !CB-C_1 ) && TLMU_7
+CBB/LUT/0               ( CB-A_1 || CB-C_1 ) && TLMU_7
+CBB/LUT/1               ( CB-A_1 && CB-C_1 ) && TLMU_7
 
 # Timing parameter for trigger processor
 

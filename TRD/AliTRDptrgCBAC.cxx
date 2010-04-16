@@ -114,7 +114,7 @@ Bool_t AliTRDptrgCBAC::LoadParams()
     // 1
     LUT = new AliTRDptrgLUT();
     LUT->InitTable(10, 10, this->fParam->GetCBLUT(this->fPosition, 1), kFALSE); 
-    // do not copy table data // TODO 0x0
+    // do not copy table data 
     this->fLUTArray.AddLast(LUT);
   }
   else {
@@ -123,7 +123,7 @@ Bool_t AliTRDptrgCBAC::LoadParams()
     this->fLUTArray.AddLast(LUT);
     LUT = new AliTRDptrgLUT();
     this->fLUTArray.AddLast(LUT);
-		// the following lines are only needed for test reasons
+    // the following lines are only needed for test reasons
     LUT = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
     Int_t* initData = new Int_t[1024]; // 2^10
     for (Int_t i = 0; i < 1024; i++ ) {
@@ -150,7 +150,7 @@ AliTRDptrgCBAC::~AliTRDptrgCBAC()
 
 //______________________________________________________________________________
 Int_t* AliTRDptrgCBAC::Simulate()
-{ // TODO check new/delete
+{ 
   // Simulate the CBAC behavior of event
   Int_t nFEBs = this->fFEBArray.GetEntries();
   Int_t nLUTs = this->fLUTArray.GetEntries();
@@ -171,19 +171,19 @@ Int_t* AliTRDptrgCBAC::Simulate()
   Int_t mask = 0x1;
   for (Int_t iFEB = 0; iFEB < nFEBs ; iFEB++) {
     for (Int_t j = 1; j <= partResults[iFEB][0]; j++) {
-      if ((iBit++ >
+      if ((iBit >
            dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray[0])->GetInputWidth()) 
-          || (iBit++ >
+          || (iBit >
            dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray[0])->GetInputWidth())) {
         AliError("FEB result width does not match CB-A/C input with!");
       }
+      iBit++;
       if (partResults[iFEB][j] > 0) {
         inputVector |= mask; // Add bit to the corresponding inputVector
         mask <<= 1;
       } 
     }
   }
-  
 
   AliDebug(5, Form("Inputvector: 0x%x", inputVector));
     
