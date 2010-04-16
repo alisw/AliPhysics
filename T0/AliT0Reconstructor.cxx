@@ -244,7 +244,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   // Float_t meanVertex = fParam->GetMeanVertex();
   Float_t meanVertex = 0;
 
-  cout<<" @@@@ Latency "<<fLatencyL1<<endl;
+  AliDebug(1,Form(" @@@@ Latency ",fLatencyL1));
   for (Int_t i0=0; i0<105; i0++)
     {
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
