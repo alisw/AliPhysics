@@ -93,11 +93,13 @@ class AliHLTTRDEsdWriterComponent : public AliHLTRootFileWriterComponent
 
   /** the ESD tree */
   TTree* fTree; //! transient value
+  TTree* fFrTree; //! transient value
   
   /** the ESD */
   AliESDEvent* fESD; //! transient value
   AliESDfriend* fESDfriend; //! transient value
   TFile* fFile; //! transient value
+  TFile* fFrFile; //! transient value
   TClonesArray* fTracksArray; //! transient value
 
   ClassDef(AliHLTTRDEsdWriterComponent, 1)

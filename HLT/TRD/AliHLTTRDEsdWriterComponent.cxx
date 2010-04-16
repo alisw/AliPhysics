@@ -37,9 +37,11 @@ ClassImp(AliHLTTRDEsdWriterComponent)
 AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
 :AliHLTRootFileWriterComponent()
   ,fTree(NULL)
+  ,fFrTree(NULL)
   ,fESD(NULL)
   ,fESDfriend(NULL)
   ,fFile(NULL)
+  ,fFrFile(NULL)
   ,fTracksArray(NULL)
 {
   // see header file for class documentation
@@ -52,6 +54,7 @@ AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
 AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent(const AliHLTTRDEsdWriterComponent&)
   :AliHLTRootFileWriterComponent()
   ,fTree(NULL)
+  ,fFrTree(NULL)
   ,fESD(NULL)
   ,fESDfriend(NULL)
   ,fFile(NULL)
@@ -77,15 +80,16 @@ int AliHLTTRDEsdWriterComponent::InitWriter()
   // see header file for class documentation
   
   fFile = new TFile("AliHLTTRDESDs.root", "recreate");
-  fFile->cd();
   fESD = new AliESDEvent;
   fESD->CreateStdContent();
-  fTree = new TTree("esdTree", "Tree with HLT ESD objects");
+  fTree = new TTree("esdTree", "Tree with HLT::TRD ESD objects");
   fESD->WriteToTree(fTree);
+  fFrFile = new TFile("AliHLTTRDESDfriends.root", "recreate");
   fESDfriend = new AliESDfriend();
-  /*TBranch* br=*/fTree->Branch("ESDfriend.","AliESDfriend", &fESDfriend);
-  //br->SetFile("AliHLTTRDESDfriends.root");
+  fFrTree = new TTree("esdFriendTree", "Tree with HLT::TRD ESD Friend objects");
+  fFrTree->Branch("ESDfriend.","AliESDfriend", &fESDfriend);
   fESD->AddObject(fESDfriend);
+  fFile->cd();
   fTree->GetUserInfo()->Add(fESD);
   fTracksArray = new TClonesArray("AliTRDtrackV1");
 
@@ -99,9 +103,16 @@ int AliHLTTRDEsdWriterComponent::CloseWriter()
   // see header file for class documentation
 
   //fTree->Print();
+  fFile->cd();
+  fTree->Write(fTree->GetName(),TObject::kOverwrite);
   fFile->Write();
   fFile->Close();
+  fFrFile->cd();
+  fFrTree->Write(fFrTree->GetName(),TObject::kOverwrite);
+  fFrFile->Write();
+  fFrFile->Close();
   delete fFile; fFile=0;
+  delete fFrFile; fFrFile=0;
   //delete fTree;
   delete fTracksArray; fTracksArray=0;
 
@@ -176,8 +187,10 @@ int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& /*ev
   }
   
   fESD->GetESDfriend(fESDfriend);
-  Int_t nb = fTree->Fill();  //endless-
-  printf("Tree filled with %i bytes\n", nb);
+  Int_t nb = fTree->Fill();
+  HLTInfo("Tree filled with %i bytes\n", nb);  
+  nb = fFrTree->Fill();
+  HLTInfo("FrTree filled with %i bytes\n", nb);
   fESD->Reset();
   fESDfriend->~AliESDfriend();
   new (fESDfriend) AliESDfriend();
