@@ -27,8 +27,8 @@ class TLorentzVector;
 class TArrayF;
 
 class AliESDCaloCluster;
-class AliEMCALRecPoint;
-class AliRunLoader;
+//class AliEMCALRecPoint;
+//class AliRunLoader;
 
 class AliEMCALHistoUtilities: public TNamed {
   public:  AliEMCALHistoUtilities(const char *name="emcalUtilitiesRoutines",
@@ -57,15 +57,15 @@ class AliEMCALHistoUtilities: public TNamed {
   const char* yTit="", Int_t ifun=0, const char *optFit="W+", const char *fun="");
   // TChain
   static void InitChain(TChain *chain=0, const char* nameListOfFiles=0, Int_t nFileMax=0); 
-  static AliRunLoader* InitKinematics(const Int_t nev=0, const char* galiceName="galice.root");
-  static AliRunLoader* GetRunLoader(const Int_t nev, const Char_t* galiceName,
-				 const Char_t* eventFolderName, AliRunLoader* rlOld);
+  //static AliRunLoader* InitKinematics(const Int_t nev=0, const char* galiceName="galice.root");
+  //static AliRunLoader* GetRunLoader(const Int_t nev, const Char_t* galiceName,
+	//			 const Char_t* eventFolderName, AliRunLoader* rlOld);
   //
   static Double_t GetMomentum(const char* nameListOfFiles); 
   static int ParseString(const TString &topt, TObjArray &Opt); 
   // Analysis utilites
   static Bool_t GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster *cl);
-  static Bool_t GetLorentzVectorFromRecPoint(TLorentzVector &v, const AliEMCALRecPoint  *rp);
+  //static Bool_t GetLorentzVectorFromRecPoint(TLorentzVector &v, const AliEMCALRecPoint  *rp);
   // Drawing 
   static void DrawHist(TH1* hid=0,int lineWidth=1,int lineColor=1,const char* opt="",int lineStyle=1);
   // Fitting:
@@ -89,7 +89,7 @@ class AliEMCALHistoUtilities: public TNamed {
   static void   FillTriggersListOfHists(TList *l=0, TArrayF *triggerPosition=0, TArrayF *triggerAmplitudes=0);
   // Jet(s) kinematics
   static TList* GetJetsListOfHists(Int_t njet=2, Bool_t toBrowser=kFALSE);
-  static void   FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet);
+  //static void   FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet);
 
   AliEMCALHistoUtilities & operator = (const AliEMCALHistoUtilities &) {
     Fatal("operator =", "not implemented") ; return *this ; }

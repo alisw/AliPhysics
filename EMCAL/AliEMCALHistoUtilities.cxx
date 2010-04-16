@@ -49,8 +49,8 @@
 #include <TArrayF.h>
 
 #include "AliESDCaloCluster.h"
-#include "AliEMCALRecPoint.h"
-#include "AliRunLoader.h"
+//#include "AliEMCALRecPoint.h"
+//#include "AliRunLoader.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -363,65 +363,65 @@ void AliEMCALHistoUtilities::InitChain(TChain *chain, const char* nameListOfFile
   //  chain->Lookup();
 }
 
-AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char* galiceName)
-{
-  // Oct 15, 2007
-  // nev == 0 - new file
-  static AliRunLoader *rl = 0;
+//AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char* galiceName)
+//{
+//  // Oct 15, 2007
+//  // nev == 0 - new file
+//  static AliRunLoader *rl = 0;
+//
+//  if((rl == 0 || nev==0) && galiceName) {
+//    //printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (IN)\n", 
+//	// nev, rl, galiceName);  
+//    if(rl)  {
+//      rl->UnloadgAlice();
+//      delete rl;
+//    }
+//    rl = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
+//    rl->LoadgAlice(); // obligatory
+//    //printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (OUT)\n", 
+//	 //nev, rl, galiceName);  
+//  }
+//  if(rl) {
+//    rl->GetEvent(nev);
+//    rl->LoadKinematics();
+//    /* Get what you need after that
+//      rl->LoadHits();
+//      AliStack *stack=rl->Stack();
+//      AliESDCaloCluster * clus = esd->GetCaloCluster(n);
+//      Int_t label = clus->GetLabel(); // what is this 
+//      TParticle *primary=stack->Particle(label); 
+//    */
+//  }
+//  return rl;
+//}
 
-  if((rl == 0 || nev==0) && galiceName) {
-    //printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (IN)\n", 
-	// nev, rl, galiceName);  
-    if(rl)  {
-      rl->UnloadgAlice();
-      delete rl;
-    }
-    rl = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
-    rl->LoadgAlice(); // obligatory
-    //printf("<I> AliEMCALHistoUtilities::InitKinematics() : nev %i : rl %p : %s (OUT)\n", 
-	 //nev, rl, galiceName);  
-  }
-  if(rl) {
-    rl->GetEvent(nev);
-    rl->LoadKinematics();
-    /* Get what you need after that
-      rl->LoadHits();
-      AliStack *stack=rl->Stack();
-      AliESDCaloCluster * clus = esd->GetCaloCluster(n);
-      Int_t label = clus->GetLabel(); // what is this 
-      TParticle *primary=stack->Particle(label); 
-    */
-  }
-  return rl;
-}
-
-AliRunLoader* AliEMCALHistoUtilities::GetRunLoader(const Int_t nev, const Char_t* galiceName,
-				       const Char_t* eventFolderName, AliRunLoader* rlOld)
-{
-  // Nov 26, 2007
-  // nev == 0 - new file
-  AliRunLoader *rl = 0;
-
-  if(nev==0 && galiceName) {
-    printf("<I> AliEMCALHistoUtilities::GetLoader() : nev %i : %s (IN)\n", 
-	   nev, galiceName);  
-    if(rlOld) {
-      rlOld->UnloadgAlice();
-      delete rlOld;
-    }
-    TString folderName(eventFolderName);
-    if(folderName.Length() == 0) folderName = AliConfig::GetDefaultEventFolderName();
-    rl = AliRunLoader::Open(galiceName, folderName.Data(),"read");
-    rl->LoadgAlice(); // obligatory
-    printf("<I> AliEMCALHistoUtilities::GetLoader() : nev %i : %s : %s (OUT)\n", 
-	   nev, galiceName, folderName.Data());  
-  } else {
-    rl = rlOld;
-  }
-  if(rl) rl->LoadgAlice(); // obligatory
-  // if(rl) rl->GetEvent(nev);
-  return rl;
-}
+//AliRunLoader* AliEMCALHistoUtilities::GetRunLoader(const Int_t nev, const Char_t* galiceName,
+//				       const Char_t* eventFolderName, AliRunLoader* rlOld)
+//{
+//  // Nov 26, 2007
+//  // nev == 0 - new file
+//  AliRunLoader *rl = 0;
+//
+//  if(nev==0 && galiceName) {
+//    printf("<I> AliEMCALHistoUtilities::GetLoader() : nev %i : %s (IN)\n", 
+//	   nev, galiceName);  
+//    if(rlOld) {
+//      rlOld->UnloadgAlice();
+//      delete rlOld;
+//    }
+//    TString folderName(eventFolderName);
+//    if(folderName.Length() == 0) folderName = AliConfig::GetDefaultEventFolderName();
+//    rl = AliRunLoader::Open(galiceName, folderName.Data(),"read");
+//    rl->LoadgAlice(); // obligatory
+//    printf("<I> AliEMCALHistoUtilities::GetLoader() : nev %i : %s : %s (OUT)\n", 
+//	   nev, galiceName, folderName.Data());  
+//  } else {
+//    rl = rlOld;
+//  }
+//  if(rl) rl->LoadgAlice(); // obligatory
+//  // if(rl) rl->GetEvent(nev);
+//  return rl;
+//}
 
 Double_t AliEMCALHistoUtilities::GetMomentum(const char* nameListOfFiles)
 {
@@ -485,24 +485,24 @@ Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromESDCluster(TLorentzVector &v,
   return kTRUE;
 }
 
-Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromRecPoint(TLorentzVector &v, const AliEMCALRecPoint  *rp)
-{
-  // Jun 20, 2007
-  static Double_t e=0.0;
-  static TVector3 gpos;
-  if(rp==0) return kFALSE;
-  
-  e = Double_t(rp->GetPointEnergy());
-  if(e<=0.0) {
-    printf(" negative rec.point energy : %f \n", e);
-    return kFALSE;
-  }
-  rp->GetGlobalPosition(gpos);
-  gpos.SetMag(e);
-  v.SetVectM(gpos, 0.0);
-
-  return kTRUE;
-}
+//Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromRecPoint(TLorentzVector &v, const AliEMCALRecPoint  *rp)
+//{
+//  // Jun 20, 2007
+//  static Double_t e=0.0;
+//  static TVector3 gpos;
+//  if(rp==0) return kFALSE;
+//  
+//  e = Double_t(rp->GetPointEnergy());
+//  if(e<=0.0) {
+//    printf(" negative rec.point energy : %f \n", e);
+//    return kFALSE;
+//  }
+//  rp->GetGlobalPosition(gpos);
+//  gpos.SetMag(e);
+//  v.SetVectM(gpos, 0.0);
+//
+//  return kTRUE;
+//}
 //
 //// Drawing:
 //
@@ -715,49 +715,49 @@ TList* AliEMCALHistoUtilities::GetJetsListOfHists(Int_t njet, Bool_t toBrowser)
   return MoveHistsToList("JetLiOfHists", toBrowser);
 }
 
-void  AliEMCALHistoUtilities::FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet)
-{
-  // Oct 30, 2007; Nov 07;
-  // goodJet - output; only one jet with EMCAL acceptance
-
-  // Bad case
-  goodJet.SetPxPyPzE(0., 0., 0., 0.); 
-
-  if(l==0 || rl==0) return;
-  //try to get trigger jet info
-  AliHeader* alih = rl->GetHeader();
-  if (alih == 0) return;
-
-  AliGenEventHeader * genh = alih->GenEventHeader();
-  if (genh == 0) return;
-
-  AliGenPythiaEventHeader* genhpy = dynamic_cast<AliGenPythiaEventHeader *>(genh);
-  if(genhpy==0) return; // Not Pythia
-
-  Int_t nj = genhpy->NTriggerJets();
-  FillH1(l, 0, double(nj));
-
-  TLorentzVector* jets[4];
-  nj = nj>4?4:nj;
-
-  int ic=1;
-  for (Int_t i=0; i< nj; i++) {
-     Float_t p[4];
-     genhpy->TriggerJet(i,p);
-     jets[i] = new TLorentzVector(p);
-     FillH1(l, ic++, jets[i]->Eta());
-     FillH1(l, ic++, jets[i]->Theta()*TMath::RadToDeg());
-     FillH1(l, ic++, TVector2::Phi_0_2pi(jets[i]->Phi())*TMath::RadToDeg());
-     FillH1(l, ic++, jets[i]->Pt());
-     FillH1(l, ic++, jets[i]->E());
-
-     //printf(" %i pj %f %f %f %f : ic %i\n", i, p[0], p[1], p[2], p[3], ic);
-     if(ic >= l->GetSize()) break;
-  }
-  if(nj==1) {
-    Double_t eta=jets[0]->Eta(), phi=TVector2::Phi_0_2pi(jets[0]->Phi())*TMath::RadToDeg();
-    if(TMath::Abs(eta)<0.5 && (phi>90.&&phi<180.)) {
-      goodJet = (*jets[0]);
-    }
-  }
-}
+//void  AliEMCALHistoUtilities::FillJetKineListOfHists(TList *l, AliRunLoader* rl, TLorentzVector &goodJet)
+//{
+//  // Oct 30, 2007; Nov 07;
+//  // goodJet - output; only one jet with EMCAL acceptance
+//
+//  // Bad case
+//  goodJet.SetPxPyPzE(0., 0., 0., 0.); 
+//
+//  if(l==0 || rl==0) return;
+//  //try to get trigger jet info
+//  AliHeader* alih = rl->GetHeader();
+//  if (alih == 0) return;
+//
+//  AliGenEventHeader * genh = alih->GenEventHeader();
+//  if (genh == 0) return;
+//
+//  AliGenPythiaEventHeader* genhpy = dynamic_cast<AliGenPythiaEventHeader *>(genh);
+//  if(genhpy==0) return; // Not Pythia
+//
+//  Int_t nj = genhpy->NTriggerJets();
+//  FillH1(l, 0, double(nj));
+//
+//  TLorentzVector* jets[4];
+//  nj = nj>4?4:nj;
+//
+//  int ic=1;
+//  for (Int_t i=0; i< nj; i++) {
+//     Float_t p[4];
+//     genhpy->TriggerJet(i,p);
+//     jets[i] = new TLorentzVector(p);
+//     FillH1(l, ic++, jets[i]->Eta());
+//     FillH1(l, ic++, jets[i]->Theta()*TMath::RadToDeg());
+//     FillH1(l, ic++, TVector2::Phi_0_2pi(jets[i]->Phi())*TMath::RadToDeg());
+//     FillH1(l, ic++, jets[i]->Pt());
+//     FillH1(l, ic++, jets[i]->E());
+//
+//     //printf(" %i pj %f %f %f %f : ic %i\n", i, p[0], p[1], p[2], p[3], ic);
+//     if(ic >= l->GetSize()) break;
+//  }
+//  if(nj==1) {
+//    Double_t eta=jets[0]->Eta(), phi=TVector2::Phi_0_2pi(jets[0]->Phi())*TMath::RadToDeg();
+//    if(TMath::Abs(eta)<0.5 && (phi>90.&&phi<180.)) {
+//      goodJet = (*jets[0]);
+//    }
+//  }
+//}
