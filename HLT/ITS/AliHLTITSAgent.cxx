@@ -362,7 +362,7 @@ int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler,
     spec=spec<<1;
   }
 
-  if (bOneCFperDDL) {
+  if (!bOneCFperDDL) {
     cf.Form("%s",cfBase.Data());
     pHandler->CreateConfiguration(cf.Data(), componentId.Data(), cfinput.Data(), "");
 
