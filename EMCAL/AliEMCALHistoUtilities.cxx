@@ -48,7 +48,7 @@
 #include <Gtypes.h> // color, line style and so on
 #include <TArrayF.h>
 
-#include "AliESDCaloCluster.h"
+//#include "AliESDCaloCluster.h"
 //#include "AliEMCALRecPoint.h"
 //#include "AliRunLoader.h"
 #include "AliHeader.h"
@@ -464,26 +464,26 @@ int AliEMCALHistoUtilities::ParseString(const TString &topt, TObjArray &Opt)
 }
 
 // Analysis utilites
-Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster* cl)
-{
-  // May 8, 2007
-  static Double_t e=0.0;
-  static Float_t pos[3];
-  static TVector3 gpos;
-  if(cl==0) return kFALSE;
-  
-  e = Double_t(cl->E());
-  if(e<=0.0) {
-    printf(" negative cluster energy : %f \n", e);
-    return kFALSE;
-  }
-  cl->GetPosition(pos);
-  gpos.SetXYZ(Double_t(pos[0]), Double_t(pos[1]), Double_t(pos[2]));
-  gpos.SetMag(e);
-  v.SetVectM(gpos, 0.0);
-
-  return kTRUE;
-}
+//Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster* cl)
+//{
+//  // May 8, 2007
+//  static Double_t e=0.0;
+//  static Float_t pos[3];
+//  static TVector3 gpos;
+//  if(cl==0) return kFALSE;
+//  
+//  e = Double_t(cl->E());
+//  if(e<=0.0) {
+//    printf(" negative cluster energy : %f \n", e);
+//    return kFALSE;
+//  }
+//  cl->GetPosition(pos);
+//  gpos.SetXYZ(Double_t(pos[0]), Double_t(pos[1]), Double_t(pos[2]));
+//  gpos.SetMag(e);
+//  v.SetVectM(gpos, 0.0);
+//
+//  return kTRUE;
+//}
 
 //Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromRecPoint(TLorentzVector &v, const AliEMCALRecPoint  *rp)
 //{

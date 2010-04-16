@@ -23,10 +23,10 @@ class TGraphErrors;
 class TF1;
 class TLatex;
 class TChain;
-class TLorentzVector;
+//class TLorentzVector;
 class TArrayF;
 
-class AliESDCaloCluster;
+//class AliESDCaloCluster;
 //class AliEMCALRecPoint;
 //class AliRunLoader;
 
@@ -64,7 +64,7 @@ class AliEMCALHistoUtilities: public TNamed {
   static Double_t GetMomentum(const char* nameListOfFiles); 
   static int ParseString(const TString &topt, TObjArray &Opt); 
   // Analysis utilites
-  static Bool_t GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster *cl);
+  //static Bool_t GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster *cl);
   //static Bool_t GetLorentzVectorFromRecPoint(TLorentzVector &v, const AliEMCALRecPoint  *rp);
   // Drawing 
   static void DrawHist(TH1* hid=0,int lineWidth=1,int lineColor=1,const char* opt="",int lineStyle=1);
