@@ -48,6 +48,7 @@ class AliTOFDigitMap : public TObject
     Int_t  GetFilledCellNumber() const;
     Bool_t StripDigitCheck(Int_t iSector, Int_t iPlate, Int_t iStrip) const;
     Int_t  DigitInStrip(Int_t iSector, Int_t iPlate, Int_t iStrip) const;
+    Int_t  FilledCellsInStrip(Int_t iSector, Int_t iPlate, Int_t iStrip) const;
     void   ResetDigitNumber(Int_t *vol, Int_t dig);
     void   ResetDigit(Int_t *vol, Int_t dig);
     void   ResetDigit(Int_t *vol);

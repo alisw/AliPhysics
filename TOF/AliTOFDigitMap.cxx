@@ -313,6 +313,29 @@ Int_t AliTOFDigitMap::DigitInStrip(Int_t iSector, Int_t iPlate, Int_t iStrip) co
 }
 
 ////////////////////////////////////////////////////////////////////////
+Int_t AliTOFDigitMap::FilledCellsInStrip(Int_t iSector, Int_t iPlate, Int_t iStrip) const
+{
+  //
+  // Returns number of digits in the strip iStrip,
+  //         in the plate iPlate of the sector iSector
+  //
+
+  Int_t volume[5] = {iSector, iPlate, iStrip, -1, -1};
+  Int_t counter = 0;
+
+  for (Int_t iPadX=0; iPadX<fNpx; iPadX++)
+    for (Int_t iPadZ=0; iPadZ<fNpz; iPadZ++) {
+      volume[3] = iPadX;
+      volume[4] = iPadZ;
+      if (GetDigitIndex(volume, 0)>=0)
+	counter++;
+    }
+
+  return counter;
+
+}
+
+////////////////////////////////////////////////////////////////////////
 void AliTOFDigitMap::ResetDigitNumber(Int_t *vol, Int_t dig)
 {
   //

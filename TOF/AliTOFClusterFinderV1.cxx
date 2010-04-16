@@ -68,20 +68,35 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
-  fMaxDeltaTime(0),
+  fkRecoParam(0),//AliTOFReconstructor::GetRecoParam()),
+  fMaxDeltaTime(0),//fkRecoParam->GetMaxDeltaTime()),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFGeometry(new AliTOFGeometry()),
-  fTOFdigits(0),
-  fTOFRawStream(AliTOFRawStream())
+  fTOFdigits(new TTree()),
+  fTOFRawStream(AliTOFRawStream()),
+  fCalibrateTOFtimes(1)
 {
 //
 // Constructor
 //
-  const AliTOFRecoParam *recoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
-  fMaxDeltaTime = recoParam->GetMaxDeltaTime();
+
+  if (AliTOFReconstructor::GetRecoParam()) {
+    fkRecoParam = AliTOFReconstructor::GetRecoParam();
+    fMaxDeltaTime = fkRecoParam->GetMaxDeltaTime();
+  }
+  else
+    fMaxDeltaTime = 2;
+
+  TString validity = (TString)fTOFcalib->GetOfflineValidity();
+  if (validity.CompareTo("valid")==0) {
+    AliInfo(Form(" validity = %s - Using offline calibration parameters", validity.Data()));
+  } else {
+    AliInfo(Form(" validity = %s - Using online calibration parameters", validity.Data()));
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -91,20 +106,34 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
   fNumberOfTofDigits(0),
-  fMaxDeltaTime(0),
+  fkRecoParam(0),//AliTOFReconstructor::GetRecoParam()),
+  fMaxDeltaTime(0),//fkRecoParam->GetMaxDeltaTime()),
   fVerbose(0),
   fDecoderVersion(0),
   fTOFcalib(calib),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFGeometry(new AliTOFGeometry()),
-  fTOFdigits(0),
-  fTOFRawStream(AliTOFRawStream())
+  fTOFdigits(new TTree()),
+  fTOFRawStream(AliTOFRawStream()),
+  fCalibrateTOFtimes(1)
 {
 //
 // Constructor
 //
-  const AliTOFRecoParam *recoParam = AliTOFReconstructor::GetRecoParam();  // instantiate reco param from STEER...
-  fMaxDeltaTime = recoParam->GetMaxDeltaTime();
+
+  if (AliTOFReconstructor::GetRecoParam()) {
+    fkRecoParam = AliTOFReconstructor::GetRecoParam();
+    fMaxDeltaTime = fkRecoParam->GetMaxDeltaTime();
+  }
+  else
+    fMaxDeltaTime = 2;
+
+  TString validity = (TString)fTOFcalib->GetOfflineValidity();
+  if (validity.CompareTo("valid")==0) {
+    AliInfo(Form(" validity = %s - Using offline calibration parameters", validity.Data()));
+  } else {
+    AliInfo(Form(" validity = %s - Using online calibration parameters", validity.Data()));
+  }
 
 }
 //_____________________________________________________________________________
@@ -116,17 +145,26 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source
    fRecPoints(source.fRecPoints),
    fNumberOfTofClusters(0),
    fNumberOfTofDigits(0),
-   fMaxDeltaTime(2),
+   fkRecoParam(0),//AliTOFReconstructor::GetRecoParam()),
+   fMaxDeltaTime(0),//fkRecoParam->GetMaxDeltaTime()),
    fVerbose(0),
    fDecoderVersion(source.fDecoderVersion),
    fTOFcalib(source.fTOFcalib),
    fTOFdigitMap(new AliTOFDigitMap()),
    fTOFGeometry(new AliTOFGeometry()),
    fTOFdigits(source.fTOFdigits),
-   fTOFRawStream(source.fTOFRawStream)
-
+   fTOFRawStream(source.fTOFRawStream),
+   fCalibrateTOFtimes(1)
 {
   // copy constructor
+
+  if (AliTOFReconstructor::GetRecoParam()) {
+    fkRecoParam = AliTOFReconstructor::GetRecoParam();
+    fMaxDeltaTime = fkRecoParam->GetMaxDeltaTime();
+  }
+  else
+    fMaxDeltaTime = 2;
+
 }
 //_____________________________________________________________________________
 
@@ -147,6 +185,7 @@ AliTOFClusterFinderV1& AliTOFClusterFinderV1::operator=(const AliTOFClusterFinde
   fTOFGeometry=source.fTOFGeometry;
   fTOFdigits=source.fTOFdigits;
   fTOFRawStream=source.fTOFRawStream;
+  fCalibrateTOFtimes=source.fCalibrateTOFtimes;
   return *this;
 
 }
@@ -208,7 +247,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
   TClonesArray *digits = &staticDigits;
   branch->SetAddress(&digits);
   digitsTree->GetEvent(0);
-  AliInfo(Form("Number of TOF digits: %d", digits->GetEntriesFast()));
+  AliDebug(1,Form("Number of TOF digits: %d", digits->GetEntriesFast()));
 
   AliTOFdigit *tofDigit;
 
@@ -225,11 +264,13 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
   Bool_t status = kTRUE;
 
   AliDebug(1," Calibrating TOF Digits");
+  /*
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   if (validity.CompareTo("valid")==0) {
     AliInfo(Form(" validity = %s - Using offline calibration parameters", validity.Data()));
   } else
     AliInfo(Form(" validity = %s - Using online calibration parameters", validity.Data()));
+  */
 
   Int_t ii = 0;
   for (ii=0; ii<digits->GetEntriesFast(); ii++) {
@@ -247,6 +288,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
       }
     }
 
+    tdcCorr = tofDigit->GetTdc();
     status = MakeSlewingCorrection(detectorIndex, tofDigit->GetToT(), tofDigit->GetTdc(), tdcCorr);
 
     for (jj=0; jj<4; jj++) info[jj] = -1;
@@ -280,7 +322,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
   FillRecPoint();
   clusterTree->Fill();
 
-  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
+  AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   ResetRecpoint();
 
@@ -312,7 +354,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
 
   Raw2Digits(rawReader, fTOFdigits);
 
-  AliDebug(2,Form("Number of TOF digits: %d", fNumberOfTofDigits));
+  AliDebug(1,Form("Number of TOF digits: %d", fNumberOfTofDigits));
   ResetRecpoint();
 
   Int_t bufsize = 32000;
@@ -321,7 +363,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(AliRawReader *rawReader, TTree *clu
 
   clustersTree->Fill();
 
-  AliInfo(Form("Number of found clusters: %d", fNumberOfTofClusters));
+  AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
   ResetRecpoint();
 
@@ -374,11 +416,13 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
 
   Bool_t status = kTRUE;
 
+  /*
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   if (validity.CompareTo("valid")==0) {
     AliInfo(Form(" validity = %s - Using offline calibration parameters", validity.Data()));
   } else
     AliInfo(Form(" validity = %s - Using online calibration parameters", validity.Data()));
+  */
 
   if (fDecoderVersion)
     AliInfo("Using New Decoder");
@@ -393,7 +437,7 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
     else fTOFRawStream.LoadRawData(indexDDL);
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
-    if (clonesRawData->GetEntriesFast()!=0) AliInfo(Form(" TOF raw data number = %3d", clonesRawData->GetEntriesFast()));
+    if (clonesRawData->GetEntriesFast()!=0) AliDebug(2,Form(" TOF raw data number = %3d", clonesRawData->GetEntriesFast()));
     for (iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
@@ -408,6 +452,8 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       dummy = detectorIndex[3];
       detectorIndex[3] = detectorIndex[4];//padz
       detectorIndex[4] = dummy;//padx
+
+      tdcCorr = tofRawDatum->GetTOF();
       status = MakeSlewingCorrection(detectorIndex, tofRawDatum->GetTOT(), tofRawDatum->GetTOF(), tdcCorr);
 
       digit[0] = tdcCorr;
@@ -419,8 +465,8 @@ void AliTOFClusterFinderV1::Raw2Digits(AliRawReader *rawReader, TTree* digitsTre
       detectorIndex[3] = detectorIndex[4];//padx
       detectorIndex[4] = dummy;//padz
 
-    /* check valid index */
-    if (detectorIndex[0]==-1||detectorIndex[1]==-1||detectorIndex[2]==-1||detectorIndex[3]==-1||detectorIndex[4]==-1) continue;
+      /* check valid index */
+      if (detectorIndex[0]==-1||detectorIndex[1]==-1||detectorIndex[2]==-1||detectorIndex[3]==-1||detectorIndex[4]==-1) continue;
 
       // Do not reconstruct anything in the holes
       if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
@@ -498,18 +544,22 @@ void AliTOFClusterFinderV1::FillRecPoint()
   Int_t dummy4 = -1;
   Int_t dummy3 = -1;
   Int_t dummy2 = -1;
-  Int_t dummy    = -1;
+  Int_t dummy  = -1;
 
   for(Int_t iPlate=AliTOFGeometry::NPlates()-1; iPlate>=0; iPlate--) {
     for(Int_t iStrip=AliTOFGeometry::NStrip(iPlate)-1; iStrip>=0; iStrip--) {
       //for (Int_t iSector=AliTOFGeometry::NSectors()-1; iSector>=0; iSector--) {
       for (Int_t iSector=0; iSector<AliTOFGeometry::NSectors(); iSector++) {
 
+
+	if (fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip)) AliDebug(1,Form(" Number of TOF digits in (%2d,%1d,%2d) -> %d",iSector,iPlate,iStrip,fTOFdigitMap->FilledCellsInStrip(iSector,iPlate,iStrip)));
+
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersWithoutTOT(iSector, iPlate, iStrip); // clusters coming from digits without TOT measurement
 
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	//if (fTOFdigitMap->FilledCellsInStrip(iSector,iPlate,iStrip)>=4)
 	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
@@ -2432,19 +2482,32 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
     AliDebug(1,Form(" e adesso %1d", interestingCounter+1));
 
+    Int_t adesso1 = -1;
+    Int_t adesso2 = -1;
+    Int_t adesso3 = -1;
+    Int_t adesso4 = -1;
+
     switch(interestingCounter+1) {
 
     case 2:
 
-      for (Int_t adesso1=0; adesso1<interestingCounter+1; adesso1++) {
+      //for (adesso1=0; adesso1<interestingCounter+1; adesso1++) {
+      adesso1 = 0;
 	for (Int_t firstIndex=0; firstIndex<kMaxNumberOfDigitsPerVolume; firstIndex++) {
 	  if (selectedDigit[adesso1][firstIndex]==0x0) continue;
 
-	  for (Int_t adesso2=adesso1+1; adesso2<interestingCounter+1; adesso2++) {
+	  //for (adesso2=adesso1+1; adesso2<interestingCounter+1; adesso2++) {
+	  adesso2 = 1;
 	    for (Int_t secondIndex=0; secondIndex<kMaxNumberOfDigitsPerVolume; secondIndex++) {
 	      if (selectedDigit[adesso2][secondIndex]==0x0) continue;
 
-	      if (TMath::Abs(selectedDigit[adesso1][firstIndex]->GetTDC()-selectedDigit[adesso2][secondIndex]->GetTDC())>fMaxDeltaTime) continue;
+	      if (TMath::Abs(selectedDigit[adesso1][firstIndex]->GetTDC()-selectedDigit[adesso2][secondIndex]->GetTDC())>fMaxDeltaTime) {
+		AliDebug(1,Form(" selD1[%d][%d]->GetTDC()=%d selD2[%d][%d]->GetTDC()=%d -- %d ",
+				adesso1,firstIndex,selectedDigit[adesso1][firstIndex]->GetTDC(),
+				adesso2,secondIndex,selectedDigit[adesso2][secondIndex]->GetTDC(),
+				fMaxDeltaTime));
+		continue;
+	      }
 
 	      AliDebug(1, Form(" %1d %1d (0x%x) %1d %1d (0x%x)", adesso1, firstIndex,selectedDigit[adesso1][firstIndex],
 			       adesso2, secondIndex,selectedDigit[adesso2][secondIndex]));
@@ -2570,25 +2633,28 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
 
 	    } // close loop on second digit
-	  } // close loop on adesso2
+	    //} // close loop on adesso2
 
 	} // close loop on first digit
-      } // close loop on adesso1
+	  //} // close loop on adesso1
 
 
       break;
 
     case 3:
 
-      for (Int_t adesso1=0; adesso1<interestingCounter+1; adesso1++) {
+      //for (adesso1=0; adesso1<interestingCounter+1; adesso1++) {
+      adesso1 = 0;
 	for (Int_t firstIndex=0; firstIndex<kMaxNumberOfDigitsPerVolume; firstIndex++) {
 	  if (selectedDigit[adesso1][firstIndex]==0x0) continue;
 
-	  for (Int_t adesso2=adesso1+1; adesso2<interestingCounter+1; adesso2++) {
+	  //for (adesso2=adesso1+1; adesso2<interestingCounter+1; adesso2++) {
+	  adesso2 = 1;
 	    for (Int_t secondIndex=0; secondIndex<kMaxNumberOfDigitsPerVolume; secondIndex++) {
 	      if (selectedDigit[adesso2][secondIndex]==0x0) continue;
 
-	      for (Int_t adesso3=adesso2+1; adesso3<interestingCounter+1; adesso3++) {
+	      //for (adesso3=adesso2+1; adesso3<interestingCounter+1; adesso3++) {
+	      adesso3 = 2;
 		for (Int_t thirdIndex=0; thirdIndex<kMaxNumberOfDigitsPerVolume; thirdIndex++) {
 		  if (selectedDigit[adesso3][thirdIndex]==0x0) continue;
 
@@ -2755,32 +2821,32 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
 
 		} // close loop on third digit
-	      } // close loop on adesso3
+		//} // close loop on adesso3
 
 	    } // close loop on second digit
-	  } // close loop on adesso2
+	    //} // close loop on adesso2
 
 	} // close loop on first digit
-      } // close loop on adesso1
+	//} // close loop on adesso1
 
 
       break;
 
     case 4:
 
-      Int_t adesso1 = 0;
+      adesso1 = 0;
       for (Int_t firstIndex=0; firstIndex<kMaxNumberOfDigitsPerVolume; firstIndex++) {
 	if (selectedDigit[adesso1][firstIndex]==0x0) continue;
 
-	Int_t adesso2 = 1;
+	adesso2 = 1;
 	for (Int_t secondIndex=0; secondIndex<kMaxNumberOfDigitsPerVolume; secondIndex++) {
 	  if (selectedDigit[adesso2][secondIndex]==0x0) continue;
 
-	  Int_t adesso3 = 2;
+	  adesso3 = 2;
 	  for (Int_t thirdIndex=0; thirdIndex<kMaxNumberOfDigitsPerVolume; thirdIndex++) {
 	    if (selectedDigit[adesso3][thirdIndex]==0x0) continue;
 
-	    Int_t adesso4 = 3;
+	    adesso4 = 3;
 	    for (Int_t fourthIndex=0; fourthIndex<kMaxNumberOfDigitsPerVolume; fourthIndex++) {
 	      if (selectedDigit[adesso4][fourthIndex]==0x0) continue;
 
@@ -3481,6 +3547,9 @@ Bool_t AliTOFClusterFinderV1::MakeSlewingCorrection(Int_t *detectorIndex,
   else
     AliDebug(2, Form(" Good Status for channel %d",index));
 
+
+  if (fCalibrateTOFtimes) { // AdC
+
   // Get Rough channel online equalization 
   Double_t roughDelay = (Double_t)calDelay->GetDelay(index);  // in ns
   AliDebug(2,Form(" channel delay (ns) = %f", roughDelay));
@@ -3509,6 +3578,8 @@ Bool_t AliTOFClusterFinderV1::MakeSlewingCorrection(Int_t *detectorIndex,
   AliDebug(2,Form(" The channel time, corr (ps)= %e",timeCorr ));
   tdcCorr = (Int_t)(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
   
+  } // AdC
+
   return output;
 
 }
