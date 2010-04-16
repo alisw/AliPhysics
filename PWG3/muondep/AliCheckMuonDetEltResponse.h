@@ -8,17 +8,14 @@
 /// \brief tracking chamber efficiency from data
 //Author: Nicolas LE BRIS - SUBATECH Nantes
 
-#include <TH2F.h>
-//#include <TObject.h>
-//#include <TClonesArray.h>
+#include <TObject.h>
 
-class TObject;
-class TClonesArray;
+class AliESDEvent;
 class AliMUONTrackParam;
 class AliMUONTrack;
 class AliMUONVCluster;
 class AliMUONGeometryTransformer;
-class AliESDEvent;
+class TClonesArray;
 
 class AliCheckMuonDetEltResponse : public TObject
 {
@@ -43,10 +40,10 @@ public:
   void TrackLoop ();
   void TrackParamLoop ();
 
-  const Int_t GetNbrUsableTracks(){return fNbrUsableTracks;};
+  Int_t GetNbrUsableTracks() const {return fNbrUsableTracks;};
   void SetNbrUsableTracks(Int_t nUsable){fNbrUsableTracks = nUsable;};
+  Bool_t IsCosmic() const {return fIsCosmicData;};
   void SetCosmic(Bool_t isCosmic) {fIsCosmicData = isCosmic;};
-  const Bool_t IsCosmic() {return fIsCosmicData;};
  
 private:
   
@@ -61,22 +58,18 @@ private:
 
   void CoordinatesOfMissingCluster(Double_t x1, Double_t y1, Double_t z1,
 				   Double_t x2, Double_t y2, Double_t z2,
-				   Double_t& x, Double_t& y);
+				   Double_t& x, Double_t& y) const;
 
   Bool_t CoordinatesInDetEltSt12(Int_t DeId, Double_t x, Double_t y);
   Bool_t CoordinatesInDetEltSt345(Int_t DeId, Double_t x, Double_t y);
 
+  Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt) const;
+  Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt) const;
 
-  Int_t fNCh; //!<Number of tracking chamber.
-  Int_t fNSt; //!<Number of tracking station.
-  Int_t fNDE; //!<Number of detection element in the tracking system.
-
-  const Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt);
-  const Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt);
 
   const AliMUONGeometryTransformer* fkTransformer; //!<Geometry transformer
 
-  AliESDEvent* fESD;             //!<ESD event object
+  AliESDEvent* fESD;             //<!Current event
 
   Int_t fNbrClustersCh[10];      //!<Number of clusters in the chamber [fChamberNbr].
   Int_t fTracksTotalNbr;         //!<Total number of tracks in the event.
@@ -84,22 +77,21 @@ private:
   Bool_t fIsCosmicData;          //!<Check if the data are cosmic rays (used only to cut cosmic shower at the trigger level if true)
   Int_t fNbrUsableTracks;        //!<Number of usable tracks (matches trigger and contains traker data, plus a trigger condition for cosmic)
 
-  TClonesArray     * fTrackParams;  //!<Clone Array of TrackParams
-  AliMUONTrackParam* fTrackParam;   //!<TrackParam data member
-  AliMUONVCluster  * fCluster;      //!<Cluster data member
+  TClonesArray     * fTrackParams;  //!<Array of track param
+  AliMUONTrackParam* fTrackParam;   //!<Current track param
+  AliMUONVCluster  * fCluster;      //!<Current cluster
 
   TClonesArray* fDetEltTDHistList; //!<List of histograms of the tracks detected in the detection elements 
   TClonesArray* fDetEltTTHistList; //!<List of histograms of the tracks which have passed through the detection elements
   TClonesArray* fChamberTDHistList; //!<List of histograms of the tracks detected in the chambers 
   TClonesArray* fChamberTTHistList; //!<List of histograms of the tracks which have passed through the chambers
 
-  static const Int_t fgkNbrOfChamber;            ///< The total number of chamber in the tracking system.
-  static const Int_t fgkNbrOfStation;            ///< The total number of station in the tracking system.
+  static const Int_t fgkNCh;                     ///< The total number of chamber in the tracking system.
+  static const Int_t fgkNSt;                     ///< The total number of station in the tracking system.
+  static const Int_t fgkNDE;                     ///< Number of detection element in the tracking system.
   static const Int_t fgkNbrOfDetectionElt[10];   ///< The total number of detection element in each chamber.
   static const Int_t fgkFirstDetectionElt[10];   ///< The Id of the first detection element of each chamber.
-  static const Int_t fgkOffset;                  ///< fgkFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
-  static const Int_t fgkOverlapSize;             ///< Average size (in cm) of the overlap area between two detection eltement.
-  static const Int_t fgkYSlatSize;               ///< Average size (in cm) of the overlap area between two detection eltement.
+  static const Int_t fgkOffset;                  ///< fFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
 
   ClassDef(AliCheckMuonDetEltResponse, 0)
 };

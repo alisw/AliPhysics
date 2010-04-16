@@ -19,20 +19,13 @@
 
 
 //ROOT includes
-#include <TROOT.h>
-#include <TSystem.h>
 #include <TChain.h>
 #include <TFile.h>
-#include <TList.h>
 #include <TClonesArray.h>
 #include <TH2F.h>
-#include <TH1F.h>
-#include <TMath.h>
-#include <Riostream.h>
 
 //ANALYSIS includes
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTask.h"
 
 //STEER includes
 #include "AliESDEvent.h"
@@ -44,17 +37,18 @@
 #include "AliGeomManager.h"
 
 
-//PWG3/muon includes
+//PWG3/muondep includes
 #include "AliAnalysisTaskMuonTrackingEff.h"
 #include "AliCheckMuonDetEltResponse.h"
 
 //MUON includes
 #include "AliMUONTrackExtrap.h"
+#include "AliMUONGeometryTransformer.h"
 
 ClassImp(AliAnalysisTaskMuonTrackingEff)
 
-const Int_t AliAnalysisTaskMuonTrackingEff::fTotNbrOfDetectionElt  = 156;
-const Int_t AliAnalysisTaskMuonTrackingEff::fTotNbrOfChamber  = 10;
+const Int_t AliAnalysisTaskMuonTrackingEff::fgkTotNbrOfDetectionElt  = 156;
+const Int_t AliAnalysisTaskMuonTrackingEff::fgkTotNbrOfChamber  = 10;
 
 //________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
@@ -133,20 +127,20 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 //Define detection element efficiency histograms
 //----------------------------------------------
 
-    fDetEltEffHistList = new TClonesArray("TH2F",fTotNbrOfDetectionElt + 3); //!<+3 for: 1.the total efficiency chamber by chamber histogram.
+    fDetEltEffHistList = new TClonesArray("TH2F",fgkTotNbrOfDetectionElt + 3); //!<+3 for: 1.the total efficiency chamber by chamber histogram.
                                                                 //!<        2.the total number of tracks detected by the tracking system.
                                                                 //!<        3.the number of track used for the efficiency calculation chamber by chamber
-    fDetEltTDHistList  = new TClonesArray("TH2F",fTotNbrOfDetectionElt + 1);
-    fDetEltTTHistList  = new TClonesArray("TH2F",fTotNbrOfDetectionElt + 1);
+    fDetEltTDHistList  = new TClonesArray("TH2F",fgkTotNbrOfDetectionElt + 1);
+    fDetEltTTHistList  = new TClonesArray("TH2F",fgkTotNbrOfDetectionElt + 1);
 
 
-    fChamberEffHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 3);
-    fChamberTDHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 1);
-    fChamberTTHistList = new TClonesArray("TH1F", fTotNbrOfChamber + 1);
+    fChamberEffHistList = new TClonesArray("TH1F", fgkTotNbrOfChamber + 3);
+    fChamberTDHistList = new TClonesArray("TH1F", fgkTotNbrOfChamber + 1);
+    fChamberTTHistList = new TClonesArray("TH1F", fgkTotNbrOfChamber + 1);
  
 
 
-    for (Int_t i = 0; i<fTotNbrOfDetectionElt; ++i)
+    for (Int_t i = 0; i<fgkTotNbrOfDetectionElt; ++i)
     {
       Int_t iDetElt = 0;
       if      (i<16) iDetElt = 100*(i/4+1)       + i -  int(i/4)*4;
@@ -178,7 +172,7 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
       ((TH2F*) fDetEltEffHistList->UncheckedAt(i)) -> SetOption("LEGO");
     }
 
-    for (Int_t j = 0; j < fTotNbrOfChamber; j++)
+    for (Int_t j = 0; j < fgkTotNbrOfChamber; j++)
       {
 	Char_t histName[255]; 
 	Char_t histTitle[255];
@@ -207,70 +201,70 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const char* name,
 	((TH1F*) fChamberEffHistList->UncheckedAt(j)) -> Sumw2();	
       }
 
-    new((*fDetEltTDHistList )[fTotNbrOfDetectionElt]) TH2F("TD_Chamber" ,"TD_Chamber" ,10,0,10,1,0,1); //!<Detected tracks.
-    new((*fDetEltTTHistList )[fTotNbrOfDetectionElt]) TH2F("TT_Chamber" ,"TT_Chamber" ,10,0,10,1,0,1); //!<Tracks total number.
-    new((*fDetEltEffHistList)[fTotNbrOfDetectionElt]) TH2F("fChamberEff","fChamberEff",10,0,10,1,0,1); //!<Chamber efficiency.
+    new((*fDetEltTDHistList )[fgkTotNbrOfDetectionElt]) TH2F("TD_Chamber" ,"TD_Chamber" ,10,0,10,1,0,1); //!<Detected tracks.
+    new((*fDetEltTTHistList )[fgkTotNbrOfDetectionElt]) TH2F("TT_Chamber" ,"TT_Chamber" ,10,0,10,1,0,1); //!<Tracks total number.
+    new((*fDetEltEffHistList)[fgkTotNbrOfDetectionElt]) TH2F("fChamberEff","fChamberEff",10,0,10,1,0,1); //!<Chamber efficiency.
 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> GetXaxis() -> SetTitle("Chamber number");
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> GetYaxis() -> SetTitle("");
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> GetZaxis() -> SetTitle("Efficiency (%)");  
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> GetXaxis() -> SetTitleOffset(1.8);
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> GetYaxis() -> SetTitleOffset(1.8); 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> GetZaxis() -> SetTitleOffset(1.2); 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt)) -> SetOption("LEGO");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> GetXaxis() -> SetTitle("Chamber number");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> GetYaxis() -> SetTitle("");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> GetZaxis() -> SetTitle("Efficiency (%)");  
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> GetZaxis() -> SetTitleOffset(1.2); 
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt)) -> SetOption("LEGO");
   
     new((*fDetEltEffHistList)[157]) TH2F("TT_Chamber" ,"TT_Chamber" ,10,0,10,1,0,1); //!<Tracks total number by chamber.
 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> GetXaxis() -> SetTitle("Chamber number");
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> GetYaxis() -> SetTitle("");
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> GetZaxis() -> SetTitle("Number of tracks");  
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> GetXaxis() -> SetTitleOffset(1.8);
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> GetYaxis() -> SetTitleOffset(1.8); 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> GetZaxis() -> SetTitleOffset(1.2); 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 1)) -> SetOption("LEGO");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> GetXaxis() -> SetTitle("Chamber number");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> GetYaxis() -> SetTitle("");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> GetZaxis() -> SetTitle("Number of tracks");  
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> GetZaxis() -> SetTitleOffset(1.2); 
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 1)) -> SetOption("LEGO");
 
     new((*fDetEltEffHistList)[158]) TH2F("Total_Number_of_Tracks" ,"Total_Number_of_Tracks" ,1,0,1,1,0,1); //!<Tracks total number.
 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetXaxis() -> SetTitle("");
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetYaxis() -> SetTitle("");
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetZaxis() -> SetTitle("Number of tracks");  
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetXaxis() -> SetTitleOffset(1.8);
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetYaxis() -> SetTitleOffset(1.8); 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> GetZaxis() -> SetTitleOffset(1.2); 
-    ((TH2F*) fDetEltEffHistList->UncheckedAt(fTotNbrOfDetectionElt + 2)) -> SetOption("LEGO");    
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> GetXaxis() -> SetTitle("");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> GetYaxis() -> SetTitle("");
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> GetZaxis() -> SetTitle("Number of tracks");  
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> GetZaxis() -> SetTitleOffset(1.2); 
+    ((TH2F*) fDetEltEffHistList->UncheckedAt(fgkTotNbrOfDetectionElt + 2)) -> SetOption("LEGO");    
 
 
-    new((*fChamberTDHistList )[fTotNbrOfChamber]) TH1F("TD_Chamber_2" ,"TD_Chamber_2" ,10,0,10); //!<Detected tracks.
-    new((*fChamberTTHistList )[fTotNbrOfChamber]) TH1F("TT_Chamber_2" ,"TT_Chamber_2" ,10,0,10); //!<Tracks total number.
-    new((*fChamberEffHistList)[fTotNbrOfChamber]) TH1F("fChamberEff_2","fChamberEff_2",10,0,10); //!<Chamber efficiency.
+    new((*fChamberTDHistList )[fgkTotNbrOfChamber]) TH1F("TD_Chamber_2" ,"TD_Chamber_2" ,10,0,10); //!<Detected tracks.
+    new((*fChamberTTHistList )[fgkTotNbrOfChamber]) TH1F("TT_Chamber_2" ,"TT_Chamber_2" ,10,0,10); //!<Tracks total number.
+    new((*fChamberEffHistList)[fgkTotNbrOfChamber]) TH1F("fChamberEff_2","fChamberEff_2",10,0,10); //!<Chamber efficiency.
 
-    ((TH1F*) fChamberTDHistList->UncheckedAt(fTotNbrOfChamber)) -> Sumw2();
-    ((TH1F*) fChamberTTHistList->UncheckedAt(fTotNbrOfChamber)) -> Sumw2();
+    ((TH1F*) fChamberTDHistList->UncheckedAt(fgkTotNbrOfChamber)) -> Sumw2();
+    ((TH1F*) fChamberTTHistList->UncheckedAt(fgkTotNbrOfChamber)) -> Sumw2();
 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetXaxis() -> SetTitle("Chamber number");
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetYaxis() -> SetTitle("");
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetXaxis() -> SetTitleOffset(1.8);
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> GetYaxis() -> SetTitleOffset(1.8); 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> Sumw2();
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber)) -> SetOption("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber)) -> GetXaxis() -> SetTitle("Chamber number");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber)) -> GetYaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber)) -> Sumw2();
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber)) -> SetOption("");
   
     new((*fChamberEffHistList)[11]) TH1F("TT_Chamber_2" ,"TT_Chamber_2" ,10,0,10); //!<Tracks total number by chamber.
 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetXaxis() -> SetTitle("Chamber number");
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetYaxis() -> SetTitle("");
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetXaxis() -> SetTitleOffset(1.8);
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> GetYaxis() -> SetTitleOffset(1.8); 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> Sumw2();
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 1)) -> SetOption("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 1)) -> GetXaxis() -> SetTitle("Chamber number");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 1)) -> GetYaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 1)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 1)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 1)) -> Sumw2();
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 1)) -> SetOption("");
 
     new((*fChamberEffHistList)[12]) TH1F("Total_Number_of_Tracks_2" ,"Total_Number_of_Tracks_2" ,1,0,1); //!<Tracks total number.
 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetXaxis() -> SetTitle("");
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetYaxis() -> SetTitle("");
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetXaxis() -> SetTitleOffset(1.8);
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> GetYaxis() -> SetTitleOffset(1.8); 
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> Sumw2();    
-    ((TH1F*) fChamberEffHistList->UncheckedAt(fTotNbrOfChamber + 2)) -> SetOption("");    
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 2)) -> GetXaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 2)) -> GetYaxis() -> SetTitle("");
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 2)) -> GetXaxis() -> SetTitleOffset(1.8);
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 2)) -> GetYaxis() -> SetTitleOffset(1.8); 
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 2)) -> Sumw2();    
+    ((TH1F*) fChamberEffHistList->UncheckedAt(fgkTotNbrOfChamber + 2)) -> SetOption("");    
 
 
 
