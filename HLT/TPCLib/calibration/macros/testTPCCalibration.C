@@ -1,34 +1,38 @@
 // $Id$
 /*
  * Example macro to run the HLT tracker embedded into AliRoot reconstruction. 
- * The reconstruction is done from the TPC raw data. The seed maker and the 
- * calibration components have been added to the standard HLT TPC reconstruction.
+ * The reconstruction is done from the TPC raw data. The calibration components 
+ * have been added to the standard HLT TPC reconstruction.
  *
- * Its output is contained in TPC-globalmerger and all the TPC clusters necessary
- * to run the calibration are in TPC-clusters.
+ * They take input from TPC-clusters, TPC-globalmerger and GLOBAL-esd-converter. 
  *
  * Usage:
  * <pre>
- *   aliroot -b -q testTPCCalibration.C'("./")' | tee testTPCCalibration.log
- *   aliroot -b -q testTPCCalibration.C'("./","calibtime")' | tee testTPCCalibration.log
- *   aliroot -b -q testTPCCalibration.C'("./","calibtimegain")' | tee testTPCCalibration.log
+ * 
+ * Usage: aliroot -b -q -l testTPCCalibration.C'("file", "cdb", minEvent, maxEvent, option)'
+ *
+ * Examples:
+ *     testTPCCalibration.C'("raw://run12345", minEvent, MaxEvent,"calibtime")'
+ *     testTPCCalibration.C'("raw.root", "local://$PWD", minEvent, MaxEvent, "calibtime")'
+ * 
+ * Defaults
+ *     cdb="raw://"  -> takes OCDB from GRID
+ *     minEvent=-1   -> no lower event selection
+ *     maxEvent=-1   -> no upper event selection
+ *     option="task" -> loads the analysis task that calls both the drift velocity and the gain calibration
+ * 
  * </pre>
  *
- * The macro assumes raw data to be available in the rawx folders, either
- * simulated or real data. If this is the only input specified, the macro
- * will load the calibration analysis task. If the second argument is specified,
- * then the individual calibration classes can be tested.
+ * To see usage examples run:
+ * 
+ * aliroot -q testTPCCalibration.C
  *
- * <pre>
- *   aliroot -b -q testTPCCalibration.C'("raw.root","calibtime")'
- * </pre>
+ * The argument option should be 'calibtime' for now, as the rest of the options 
+ * call components that are not working yet.
  *
  * The reconstruction is steered by the AliReconstruction object in the
  * usual way.
  * 
- * !!!!!!! The user should be cautious to set correctly the paths for the 
- * default and specific storage. !!!
- *
  * @ingroup alihlt_tpc
  * @author Kalliopi.Kanaki@ift.uib.no
  */
@@ -89,7 +93,7 @@ void testTPCCalibration(const char* filename, const char *cdbURI, int minEvent=-
   AliReconstruction rec;
   rec.SetInput(filename);
   rec.SetRunVertexFinder(kFALSE);
-  rec.SetWriteESDfriend(kTRUE);
+  //rec.SetWriteESDfriend(kTRUE);
  
   if(minEvent>=0 || maxEvent>minEvent){
      if(minEvent<0) minEvent=0;
@@ -101,15 +105,11 @@ void testTPCCalibration(const char* filename, const char *cdbURI, int minEvent=-
   if     (calibOption.CompareTo("calibtime")==0)     rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so libAliHLTGlobal.so libAliHLTTPCCalibration.so loglevel=0x7c chains=calibTime"); 
   else if(calibOption.CompareTo("calibtimegain")==0) rec.SetOption("HLT", "libAliHLTUtil.so libAliHLTTPC.so libAliHLTGlobal.so libAliHLTTPCCalibration.so loglevel=0x7c chains=calibTimeGain");
   
-  rec.SetRunPlaneEff(kFALSE);
-  
-  rec.SetSpecificStorage("HLT/ConfigTPC/TPCCalibTime","local://$ALICE_ROOT/OCDB/");
-  
+  rec.SetRunPlaneEff(kFALSE);    
   // switch off cleanESD
   rec.SetCleanESD(kFALSE);
  
   rec.SetRunReconstruction("HLT");
-
   rec.SetRunQA(":");
 
   AliLog::Flush();
@@ -123,45 +123,19 @@ void testTPCCalibration(const char *filename, int minEvent=-1, int maxEvent=-1, 
 
 void testTPCCalibration(){
 
-  cout << "testTPCCalibration: Run AliRoot reconstruction locally" << endl;
-  cout << " Usage: aliroot -b -q -l \\" << endl;
-  cout << "     testTPCCalibration.C'(\"file\", \"cdb\", minEvent, maxEvent, modules)'" << endl;
+  cout << "testTPCCalibration: Run AliRoot reconstruction and TPC drift velocity calibration locally" << endl;
+  cout << " Usage: aliroot -b -q -l testTPCCalibration.C'(\"file\", \"cdb\", minEvent, maxEvent, option)'" << endl;
   cout << "" << endl;
   cout << " Examples:" << endl;
-  cout << "     testTPCCalibration.C'(\"alien:///alice/data/2009/.../....root\")' " << endl;
-  cout << "     testTPCCalibration.C'(\"raw://run12345\")'" << endl;
-  cout << "     testTPCCalibration.C'(\"raw://run12345\", minEvent, MaxEvent)'" << endl;
-  cout << "     testTPCCalibration.C'(\"raw.root\", \"local://$PWD\", minEvent, MaxEvent)'" << endl;
+  cout << "     testTPCCalibration.C'(\"raw://run12345\", minEvent, MaxEvent,\"calibtime\")'" << endl;
+  cout << "     testTPCCalibration.C'(\"raw.root\", \"local://$PWD\", minEvent, MaxEvent, \"calibtime\")'" << endl;
   cout << "" << endl;
   cout << " Defaults" << endl;
-  cout << "     cdb=\"raw://\"  -> take OCDB from GRID" << endl;
+  cout << "     cdb=\"raw://\"  -> takes OCDB from GRID" << endl;
   cout << "     minEvent=-1   -> no lower event selection" << endl;
   cout << "     maxEvent=-1   -> no upper event selection" << endl;
-  cout << "     modules=\"ALL\" -> all modules" << endl;
+  cout << "     option=\"task\" -> loads the analysis task that calls both the drift velocity and the gain calibration" << endl;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
