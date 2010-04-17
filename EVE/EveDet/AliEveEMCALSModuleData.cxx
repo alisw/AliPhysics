@@ -2,6 +2,8 @@
 // EMCAL event display
 // Store the data related to each Super Module (SM)
 // Possible storage of hits, digits and clusters per SM
+// For visualization
+// in alieve
 //
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
@@ -24,15 +26,15 @@
 
 ClassImp(AliEveEMCALSModuleData)
 
-Float_t AliEveEMCALSModuleData::fSModuleBigBox0 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleBigBox1 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleBigBox2 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleSmallBox0 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleSmallBox1 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleSmallBox2 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleCenter0 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleCenter1 = 0.;
-Float_t AliEveEMCALSModuleData::fSModuleCenter2 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleBigBox0 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleBigBox1 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleBigBox2 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleSmallBox0 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleSmallBox1 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleSmallBox2 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleCenter0 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleCenter1 = 0.;
+Float_t AliEveEMCALSModuleData::fgSModuleCenter2 = 0.;
 
 //______________________________________________________________________________
 AliEveEMCALSModuleData::AliEveEMCALSModuleData(Int_t sm,AliEMCALGeometry* geom, TGeoNode* node, TGeoHMatrix* m) :
@@ -153,15 +155,15 @@ void AliEveEMCALSModuleData::Init(Int_t sm)
 
   if(sm<fNsmfull)
     {
-      fSModuleBigBox0 = bbbox->GetDX();
-      fSModuleBigBox1 = bbbox->GetDY();
-      fSModuleBigBox2 = bbbox->GetDZ();
+      fgSModuleBigBox0 = bbbox->GetDX();
+      fgSModuleBigBox1 = bbbox->GetDY();
+      fgSModuleBigBox2 = bbbox->GetDZ();
     }
   else 
     {
-      fSModuleSmallBox0 = sbbox->GetDX();
-      fSModuleSmallBox1 = sbbox->GetDY();
-      fSModuleSmallBox2 = sbbox->GetDZ();
+      fgSModuleSmallBox0 = sbbox->GetDX();
+      fgSModuleSmallBox1 = sbbox->GetDY();
+      fgSModuleSmallBox2 = sbbox->GetDZ();
     }
 }
 

@@ -1,13 +1,14 @@
 //*************************************************************************
 // EMCAL event display
 // Store the data related to each Super Module
+// For visualization
 //
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
 //*************************************************************************
 
-#ifndef AliEveEMCALSModuleData_H
-#define AliEveEMCALSModuleData_H
+#ifndef ALIEVEEMCALSMODULEDATA_H
+#define ALIEVEEMCALSMODULEDATA_H
 
 #include <vector>
 
@@ -37,19 +38,19 @@ public:
   Int_t       GetNsm()       const {return fNsm;};
   Int_t       GetNsmf()      const {return fNsmfull;};
   Int_t       GetNsmh()      const {return fNsmhalf;};
-  std::vector< std::vector<Double_t> > GetDigitBuffer()   { return fDigitArray;   };  
-  std::vector< std::vector<Double_t> > GetClusterBuffer() { return fClusterArray; };  
-  std::vector< std::vector<Float_t> > GetHitBuffer()     { return fHitArray;     };  
+  std::vector< std::vector<Double_t> > GetDigitBuffer() const  { return fDigitArray;   };  
+  std::vector< std::vector<Double_t> > GetClusterBuffer() const { return fClusterArray; };  
+  std::vector< std::vector<Float_t> > GetHitBuffer() const { return fHitArray;     };  
 
   void        GetSModuleBigBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
-  { bbox0 = fSModuleBigBox0; bbox1 = fSModuleBigBox1; bbox2 = fSModuleBigBox2;};
+  const { bbox0 = fgSModuleBigBox0; bbox1 = fgSModuleBigBox1; bbox2 = fgSModuleBigBox2;};
   void        GetSModuleSmallBox(Float_t& bbox0, Float_t& bbox1, Float_t& bbox2) 
-  { bbox0 = fSModuleSmallBox0; bbox1 = fSModuleSmallBox1; bbox2 = fSModuleSmallBox2;};
+  const { bbox0 = fgSModuleSmallBox0; bbox1 = fgSModuleSmallBox1; bbox2 = fgSModuleSmallBox2;};
   void        GetSModuleCenter(Float_t& bboxCenter0, Float_t& bboxCenter1, Float_t& bboxCenter2) 
-  { bboxCenter0 = fSModuleCenter0; bboxCenter1 = fSModuleCenter1; bboxCenter2 = fSModuleCenter2;};
-  Float_t     GetPhiTileSize()   {return fPhiTileSize;};
-  Float_t     GetEtaTileSize()   {return fEtaTileSize;};
-  TGeoMatrix* GetSModuleMatrix() {return fMatrix;};
+  const { bboxCenter0 = fgSModuleCenter0; bboxCenter1 = fgSModuleCenter1; bboxCenter2 = fgSModuleCenter2;};
+  Float_t     GetPhiTileSize() const  {return fPhiTileSize;};
+  Float_t     GetEtaTileSize() const  {return fEtaTileSize;};
+  TGeoMatrix* GetSModuleMatrix() const {return fMatrix;};
   
  protected:
   AliEMCALGeometry* fGeom;                 // Data member to set/call EMCAL geometry
@@ -69,21 +70,21 @@ public:
   std::vector< std::vector<Double_t> > fDigitArray;   //|| Digit coordinates, etc.
   std::vector< std::vector<Double_t> > fClusterArray; //|| Rec point coordinates, etc.
   
-  static Float_t    fSModuleBigBox0;       // SM envelope box
-  static Float_t    fSModuleBigBox1;       // SM envelope box
-  static Float_t    fSModuleBigBox2;       // SM envelope box
-  static Float_t    fSModuleSmallBox0;     // SM envelope box
-  static Float_t    fSModuleSmallBox1;     // SM envelope box
-  static Float_t    fSModuleSmallBox2;     // SM envelope box
-  static Float_t    fSModuleCenter0;       // SM envelope box
-  static Float_t    fSModuleCenter1;       // SM envelope box
-  static Float_t    fSModuleCenter2;       // SM envelope box
+  static Float_t    fgSModuleBigBox0;       // SM envelope box
+  static Float_t    fgSModuleBigBox1;       // SM envelope box
+  static Float_t    fgSModuleBigBox2;       // SM envelope box
+  static Float_t    fgSModuleSmallBox0;     // SM envelope box
+  static Float_t    fgSModuleSmallBox1;     // SM envelope box
+  static Float_t    fgSModuleSmallBox2;     // SM envelope box
+  static Float_t    fgSModuleCenter0;       // SM envelope box
+  static Float_t    fgSModuleCenter1;       // SM envelope box
+  static Float_t    fgSModuleCenter2;       // SM envelope box
 
   TGeoMatrix*   fMatrix;                   // Matrix for local to global transformation
   TGeoHMatrix*  fHMatrix;                  // Matrix for local to global transformation
 
  private:
-  AliEveEMCALSModuleData(const AliEveEMCALSModuleData&);            
+  AliEveEMCALSModuleData(const AliEveEMCALSModuleData& esmdata);            
   AliEveEMCALSModuleData& operator=(const AliEveEMCALSModuleData&); // Not implemented
   
   ClassDef(AliEveEMCALSModuleData, 0);     // class with data for one chamber
