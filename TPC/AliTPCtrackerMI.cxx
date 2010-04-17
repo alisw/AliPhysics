@@ -606,7 +606,7 @@ void AliTPCtrackerMI::FillESD(const TObjArray* arr)
     }
     // << account for suppressed tracks in the kink indices (RS)
   }
-  printf("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks());
+  AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
 }
 
 
@@ -5327,7 +5327,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   kinks->Delete();
   delete kinks;
 
-  printf("Ncandidates=\t%d\t%d\t%d\t%d\n",esd->GetNumberOfKinks(),ncandidates,ntracks,nall);
+  AliInfo(Form("Ncandidates=\t%d\t%d\t%d\t%d\n",esd->GetNumberOfKinks(),ncandidates,ntracks,nall));
   timer.Print();
 }
 
