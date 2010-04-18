@@ -1,5 +1,5 @@
 /*
-  Make a Analysis/summary of syswatch.root files created in Anlysis train 
+  Make a Analysis/summary of syswatch.root files created in Analysis train 
 
   Summary created:  Memory usage - per train/task
                     CPU usage    - per train/task
@@ -223,7 +223,7 @@ void GetSummaryTask(){
     char hstring[1000];
     sprintf(hstring,"%s",hname->GetName());
     (*pcstream)<<"taskInfo"<<
-      "taskName="<<hstring<<   // host name
+      "taskName.="<<hname<<   // host name
       "vmev="<< vmev<<          // memory per task per even
       "tev="<<  tev<<           // time per event per task
       "vmevErr="<< vmevErr<<          // memory per task per even
@@ -282,7 +282,7 @@ void GetSummaryHost(){
     char hstring[1000];
     sprintf(hstring,"%s",hname->GetName());
     (*pcstream)<<"hostInfo"<<
-      "hostName="<<hstring<<   // host name
+      "hostName.="<<hname<<   // host name
       "iot="<< iot<<          // reading per second
       "tev="<< tev<<          // events per milisecond 
       // mean summary (all)
