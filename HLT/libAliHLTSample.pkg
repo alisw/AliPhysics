@@ -10,6 +10,7 @@
 # will be created from the names of the header files
 CLASS_HDRS:= 	AliHLTSampleComponent1.h \
 		AliHLTSampleComponent2.h \
+		AliHLTSampleESDAnalysisComponent.h \
 		AliHLTSampleMonitoringComponent.h \
 		AliHLTAgentSample.h \
 		AliHLTSamplePreprocessor.h \
@@ -36,7 +37,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 # enable automatic generation. 
 MODULE_DHDR:=
 
-EINCLUDE := HLT/BASE HLT/shuttle HLT/SampleLib
+EINCLUDE := HLT/BASE HLT/shuttle HLT/SampleLib STEER
 
 LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase
 
