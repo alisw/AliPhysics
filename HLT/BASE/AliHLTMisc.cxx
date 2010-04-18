@@ -65,22 +65,28 @@ int AliHLTMisc::SetCDBRunNo(int /*runNo*/)
   return -EFAULT;
 }
 
-int AliHLTMisc::GetCDBRunNo()
+int AliHLTMisc::GetCDBRunNo() const
 {
   // default method, functionality is implemented in the child class
   return -1;
 }
 
-AliCDBEntry* AliHLTMisc::LoadOCDBEntry(const char* /*path*/, int /*runNo*/, int /*version*/, int /*subVersion*/)
+AliCDBEntry* AliHLTMisc::LoadOCDBEntry(const char* /*path*/, int /*runNo*/, int /*version*/, int /*subVersion*/) const
 {
   // default method, functionality is implemented in the child class
   return NULL;
 }
 
-TObject* AliHLTMisc::ExtractObject(AliCDBEntry* /*entry*/)
+TObject* AliHLTMisc::ExtractObject(AliCDBEntry* /*entry*/) const
 {
   // default method, functionality is implemented in the child class
   return NULL;
+}
+
+int AliHLTMisc::CheckOCDBEntries(const TMap* const /*pMap*/) const
+{
+  // default method, functionality is implemented in the child class
+  return -ENOENT;
 }
 
 int AliHLTMisc::InitMagneticField() const

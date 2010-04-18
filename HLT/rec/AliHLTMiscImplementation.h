@@ -2,7 +2,7 @@
 // $Id$
 
 #ifndef ALIHLTMISCIMPLEMENTATION_H
-#define ALIHLTMISCIMPLEMENTATION_H_H
+#define ALIHLTMISCIMPLEMENTATION_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
@@ -24,11 +24,12 @@ class AliHLTMiscImplementation : public AliHLTMisc
   int InitCDB(const char* cdbpath);
 
   int SetCDBRunNo(int runNo);
-  int GetCDBRunNo();
+  int GetCDBRunNo() const;
 
-  AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1);
+  AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1) const;
 
-  TObject* ExtractObject(AliCDBEntry* entry);
+  TObject* ExtractObject(AliCDBEntry* entry) const;
+  int CheckOCDBEntries(const TMap* const pMap) const;
 
   int InitMagneticField() const;
 

@@ -25,6 +25,7 @@ class AliCDBEntry;
 class AliRawReader;
 class AliHLTComponentDataType;
 class AliHLTGlobalTriggerDecision;
+class TMap;
 
 class AliHLTMisc : public TObject {
  public:
@@ -39,11 +40,18 @@ class AliHLTMisc : public TObject {
   virtual int InitCDB(const char* cdbpath);
 
   virtual int SetCDBRunNo(int runNo);
-  virtual int GetCDBRunNo();
+  virtual int GetCDBRunNo() const;
 
-  virtual AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1);
+  /// Load an OCDB object
+  virtual AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1) const;
 
-  virtual TObject* ExtractObject(AliCDBEntry* entry);
+  // Extract the TObject instance from the CDB object
+  virtual TObject* ExtractObject(AliCDBEntry* entry) const;
+
+  /// check the availability of the OCDB entry descriptions in the TMap
+  ///  key : complete OCDB path of the entry
+  ///  value : auxiliary object - short description
+  virtual int CheckOCDBEntries(const TMap* const pMap) const;
 
   virtual int InitMagneticField() const;
 

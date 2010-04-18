@@ -90,7 +90,7 @@ int AliHLTMiscImplementation::SetCDBRunNo(int runNo)
   return iResult;
 }
 
-int AliHLTMiscImplementation::GetCDBRunNo()
+int AliHLTMiscImplementation::GetCDBRunNo() const
 {
   // see header file for function documentation
   AliCDBManager* pCDB = AliCDBManager::Instance();
@@ -103,7 +103,7 @@ int AliHLTMiscImplementation::GetCDBRunNo()
   return -1;
 }
 
-AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo, int version, int subVersion)
+AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo, int version, int subVersion) const
 {
   // see header file for function documentation
   AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
@@ -112,14 +112,50 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
   }
   if (version<0) version = store->GetLatestVersion(path, runNo);
   if (subVersion<0) subVersion = store->GetLatestSubVersion(path, runNo, version);
-  return AliCDBManager::Instance()->Get(path, runNo, version, subVersion);
+  return store->Get(path, runNo, version, subVersion);
 }
 
-TObject* AliHLTMiscImplementation::ExtractObject(AliCDBEntry* entry)
+TObject* AliHLTMiscImplementation::ExtractObject(AliCDBEntry* entry) const
 {
   // see header file for function documentation
   if (!entry) return NULL;
   return entry->GetObject();
+}
+
+int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
+{
+  // check the availability of the OCDB entry descriptions in the TMap
+  //  key : complete OCDB path of the entry
+  //  value : auxiliary object - short description
+  int iResult=0;
+  if (!pMap) return -EINVAL;
+
+  const TMap* pStorages=AliCDBManager::Instance()->GetStorageMap();
+  Int_t runNo = GetCDBRunNo();
+
+  TIterator* next=pMap->MakeIterator();
+  TObject* pEntry=NULL;
+  while ((pEntry=next->Next())) {
+    // check if the entry has specific storage
+    AliCDBStorage* pStorage=NULL;
+    TObject* pStorageId=pStorages->GetValue(pEntry->GetName());
+    if (pStorageId) {
+      pStorage=AliCDBManager::Instance()->GetStorage(pStorageId->GetName());
+    } else {
+      pStorage=AliCDBManager::Instance()->GetDefaultStorage();
+    }
+
+    if (pStorage->GetLatestVersion(pEntry->GetName(), runNo)<0) {
+      AliHLTLogging log;
+      log.Logging(kHLTLogError, "CheckOCDBEntries", "CDB handling", "can not find required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, pStorage->GetURI().Data());
+      iResult=-ENOENT;
+    } else {
+      AliHLTLogging log;
+      log.Logging(kHLTLogDebug, "CheckOCDBEntries", "CDB handling", "found required OCDB object %s for run number %d in storage %s", pEntry->GetName(), runNo, pStorage->GetURI().Data());
+    }
+  }
+
+  return iResult;
 }
 
 int AliHLTMiscImplementation::InitMagneticField() const
