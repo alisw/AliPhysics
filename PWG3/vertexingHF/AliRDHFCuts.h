@@ -46,8 +46,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t   GetNVars() const {return fnVars;} 
   TString *GetVarNames() const {return fVarNames;} 
   Bool_t  *GetVarsForOpt() const {return fVarsForOpt;} 
+  Int_t   GetNVarsForOpt() const {return fnVarsForOpt;}
   const Float_t *GetCuts() const {return fCutsRD;} 
-  void    GetCuts(Float_t**& cutsRD) const; 
+  void    GetCuts(Float_t**& cutsRD) const;
+  Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
@@ -96,3 +98,4 @@ class AliRDHFCuts : public AliAnalysisCuts
 };
 
 #endif
+

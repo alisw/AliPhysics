@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -414,3 +413,15 @@ Int_t AliRDHFCuts::PtBin(Double_t pt) const {
   }
   return ptbin;
 }
+//-------------------------------------------------------------------
+Float_t AliRDHFCuts::GetCutValue(Int_t iVar,Int_t iPtBin) const {
+  // 
+  // Give the value of cut set for the variable iVar and the pt bin iPtBin
+  //
+  if(!fCutsRD){
+    cout<<"Cuts not iniziaisez yet"<<endl;
+    return 0;
+  }
+  return fCutsRD[GetGlobalIndex(iVar,iPtBin)];
+}
+
