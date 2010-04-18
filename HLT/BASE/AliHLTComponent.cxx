@@ -257,6 +257,9 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     iResult=-EINVAL;
   }
   if (iResult>=0) {
+    iResult=CheckOCDBEntries();
+  }
+  if (iResult>=0) {
     iResult=DoInit(iNofChildArgs, pArguments);
   }
   if (iResult>=0) {
@@ -571,6 +574,36 @@ int AliHLTComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& /*tgtList*/
   // default implementation, childs can overload
   HLTLogKeyword("dummy");
   return 0;
+}
+
+void AliHLTComponent::GetOCDBObjectDescription( TMap* const /*targetArray*/)
+{
+  // default implementation, childs can overload
+  HLTLogKeyword("dummy");
+}
+
+int AliHLTComponent::CheckOCDBEntries(const TMap* const externList)
+{
+  // check the availability of the OCDB entry descriptions in the TMap
+  //  key : complete OCDB path of the entry
+  //  value : auxiliary object - short description
+  // if the external map was not provided the function invokes
+  // interface function GetOCDBObjectDescription() to retrieve the list.
+  int iResult=0;
+  if (externList) {
+    iResult=AliHLTMisc::Instance().CheckOCDBEntries(externList);
+  } else {
+    TMap* pMap=new TMap;
+    if (pMap) {
+      pMap->SetOwnerKeyValue(kTRUE);
+      GetOCDBObjectDescription(pMap);
+      iResult=AliHLTMisc::Instance().CheckOCDBEntries(pMap);
+      delete pMap;
+      pMap=NULL;
+    }
+  }
+
+  return iResult;
 }
 
 void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) const

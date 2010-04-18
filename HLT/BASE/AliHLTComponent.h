@@ -80,6 +80,7 @@ typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
 
 class AliHLTComponentHandler;
 class TObjArray;
+class TMap;
 class TStopwatch;
 class AliHLTComponent;
 class AliHLTMemoryFile;
@@ -573,12 +574,35 @@ class AliHLTComponent : public AliHLTLogging {
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) = 0;
 
   /**
+   * Get a list of OCDB object description.
+   * The list of objects is provided in a TMap
+   * - key: complete OCDB path, e.g. GRP/GRP/Data
+   * - value: short description why the object is needed
+   * Key and value objects created inside this class go into ownership of
+   * target TMap.
+   * @param targetMap   TMap instance receiving the list
+   * @return void
+   */
+  virtual void GetOCDBObjectDescription( TMap* const targetArray);
+
+  /**
    * Spawn function.
    * Each component must implement a spawn function to create a new instance of 
    * the class. Basically the function must return <i>new <b>my_class_name</b></i>.
    * @return new class instance
    */
   virtual AliHLTComponent* Spawn() = 0;
+
+  /**
+   * check the availability of the OCDB entry descriptions in the TMap
+   *  key : complete OCDB path of the entry
+   *  value : auxiliary object - short description
+   * if the external map was not provided the function invokes
+   * interface function GetOCDBObjectDescription() to retrieve the list.
+   * @param externList  map of entries to be tested
+   * @result 0 if all found, -ENOENT if objects not found
+   */
+  int CheckOCDBEntries(const TMap* const externList=NULL);
 
   /**
    * Find matching data types between this component and a consumer component.
