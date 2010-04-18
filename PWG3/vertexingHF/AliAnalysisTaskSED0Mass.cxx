@@ -32,6 +32,8 @@
 #include <TH2F.h>
 #include <TDatabasePDG.h>
 
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include "AliAnalysisManager.h"
 #include "AliESDtrack.h"
 #include "AliAODHandler.h"
@@ -375,7 +377,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fChecks->Add(hptGoodTr);
   fChecks->Add(hdistrGoodTr);
 
-  fNentries=new TH1F("nentriesD0", "nentriesD0->Integral(1,2) = number of AODs *** nentriesD0->Integral(3,4) = number of candidates selected with cuts *** nentriesD0->Integral(5,6) = number of D0 selected with cuts *** nentriesD0->Integral(7,8) = events with good vertex", 5,0.,5.);
+  const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
+  cout<<nameoutput<<endl;
+  fNentries=new TH1F(nameoutput, "nentriesD0->Integral(1,2) = number of AODs *** nentriesD0->Integral(3,4) = number of candidates selected with cuts *** nentriesD0->Integral(5,6) = number of D0 selected with cuts *** nentriesD0->Integral(7,8) = events with good vertex", 5,0.,5.);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandidatesSelected");
@@ -387,9 +391,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
  
   // Post the data
   PostData(1,fOutputMass);
-  PostData(2,fChecks);
+  PostData(2,fDistr);
   PostData(3,fNentries);
-  PostData(4,fDistr);
+  PostData(4,fChecks);
   
   return;
 }
@@ -904,11 +908,20 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     printf("ERROR: fDistr not available\n");
     return;
   }
+ 
+//   fNentries = dynamic_cast<TH1F*>(GetOutputData(3));
+//   if(!fNentries){
+//     printf("ERROR: fNEntries not available\n");
+//     return;
+//   }
+
   fNentries = dynamic_cast<TH1F*>(GetOutputData(3));
+  
   if(!fNentries){
     printf("ERROR: fNEntries not available\n");
     return;
   }
+
   fChecks = dynamic_cast<TList*> (GetOutputData(4));
   if (!fChecks) {
     printf("ERROR: fChecks not available\n");
@@ -976,4 +989,5 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
   return;
 }
+
 
