@@ -270,10 +270,10 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
 
   // calculate the production vertex ellipse
   Double32_t prodVtxXYmin = 0.;
-  if (fProdVtxXMin!=0 && fProdVtxYMin!=0)
+  if (fProdVtxXMin>0 && fProdVtxYMin>0)
 	prodVtxXYmin = partVx*partVx/(fProdVtxXMin*fProdVtxXMin) + partVy*partVy/(fProdVtxYMin*fProdVtxYMin);
   Double32_t prodVtxXYmax = 0.;
-  if(fProdVtxXMax!=0 && fProdVtxYMax!=0)
+  if(fProdVtxXMax>0 && fProdVtxYMax>0)
 	prodVtxXYmax = partVx*partVx/(fProdVtxXMax*fProdVtxXMax) + partVy*partVy/(fProdVtxYMax*fProdVtxYMax);
 
   Double32_t decayVx=0.;
@@ -385,19 +385,27 @@ void AliCFParticleGenCuts::SelectionBitMap(AliMCParticle* mcPart)
 
   ++iCutBit;
   if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) > fProdVtxXMin)
-    || ( fProdVtxRange2D && prodVtxXYmin >= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+    || ( fProdVtxRange2D && (fProdVtxXMin>0 && fProdVtxYMin>0) && prodVtxXYmin >= 1)
+    || ( fProdVtxRange2D && (fProdVtxXMin<=0 || fProdVtxYMin<=0) ) )
+   fBitmap->SetBitNumber(iCutBit,kTRUE);
 
   ++iCutBit;
   if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) < fProdVtxXMax)
-    || ( fProdVtxRange2D && prodVtxXYmax <= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+    || ( fProdVtxRange2D && (fProdVtxXMax>0 && fProdVtxYMax>0) && prodVtxXYmax <= 1)
+    || ( fProdVtxRange2D && (fProdVtxXMax<=0 || fProdVtxYMax<=0) ) )
+  fBitmap->SetBitNumber(iCutBit,kTRUE);
 
   ++iCutBit;
   if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) > fProdVtxYMin)
-    || ( fProdVtxRange2D && prodVtxXYmin >= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+    || ( fProdVtxRange2D &&  (fProdVtxXMin>0 && fProdVtxYMin>0) && prodVtxXYmin >= 1)
+    || ( fProdVtxRange2D &&  (fProdVtxXMin<=0 || fProdVtxYMin<=0) ) )
+  fBitmap->SetBitNumber(iCutBit,kTRUE);
 
   ++iCutBit;
   if ( (!fProdVtxRange2D && fCutValues->At(iCutBit) < fProdVtxYMax)
-    || ( fProdVtxRange2D && prodVtxXYmax <= 1))     fBitmap->SetBitNumber(iCutBit,kTRUE);
+    || ( fProdVtxRange2D && (fProdVtxXMax>0 && fProdVtxYMax>0) && prodVtxXYmax <= 1)
+    || ( fProdVtxRange2D && (fProdVtxXMax<=0 || fProdVtxYMax<=0) ) )
+  fBitmap->SetBitNumber(iCutBit,kTRUE);
 
   if ( fCutValues->At(++iCutBit) > fProdVtxZMin)    fBitmap->SetBitNumber(iCutBit,kTRUE);
   if ( fCutValues->At(++iCutBit) < fProdVtxZMax)    fBitmap->SetBitNumber(iCutBit,kTRUE);
