@@ -22,6 +22,7 @@
 
 
 #include "AliESDTZERO.h"
+#include "AliLog.h"
 
 
 ClassImp(AliESDTZERO)
@@ -99,15 +100,10 @@ void AliESDTZERO::Reset()
 void AliESDTZERO::Print(const Option_t *) const
 {
   // does noting fornow
-  printf(" Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f \n",fT0zVertex,  fT0timeStart, fT0TOF[0],fT0TOF[1],fT0TOF[2]);
+  AliInfo(Form(" Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f \n",fT0zVertex,  fT0timeStart, fT0TOF[0],fT0TOF[1],fT0TOF[2]));
 
-   Bool_t tr[5];
-  for (Int_t i=0; i<5; i++) tr[i]=false; 
-
-  for (Int_t i=0; i<5; i++) {
-    tr[i] = fT0trig & (1<<i);
-    printf(" AliT0ESD ::: T0 trigers %i ",tr[i]);
-  }
-    printf(" \n ");
+  Bool_t tr[5];
+  for (Int_t i=0; i<5; i++) tr[i] = fT0trig & (1<<i);
+  AliInfo(Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4])); 
 
 }

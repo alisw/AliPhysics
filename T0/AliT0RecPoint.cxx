@@ -29,6 +29,7 @@
 
  
 #include "AliT0RecPoint.h"
+#include "AliLog.h"
 
 
 ClassImp(AliT0RecPoint)
@@ -83,13 +84,7 @@ void AliT0RecPoint::SetT0Trig(Bool_t *tr)
 void AliT0RecPoint::PrintTriggerSignals(Int_t trig)
 {
   Bool_t tr[5];
-  for (Int_t i=0; i<5; i++) tr[i]=false; 
+  for (Int_t i=0; i<5; i++) tr[i]=trig&(1<<i);
 
-  for (Int_t i=0; i<5; i++) {
-    tr[i] = trig&(1<<i);
-    printf(" T0 trigers %i ",tr[i]);
-  }
-    printf(" \n ");
-  
-
+  AliInfo(Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
 }

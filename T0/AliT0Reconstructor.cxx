@@ -31,6 +31,7 @@
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
 #include "AliESDfriend.h"
+#include "AliLog.h"
 
 #include <TArrayI.h>
 #include <TGraph.h>
@@ -201,10 +202,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   frecpoints->SetT0clock(timeclock);
   frecpoints->SetT0Trig(tr);
 
-  for (Int_t i=0; i<5; i++) {
-    printf(" T0 trigers %i ",tr[i]);
-  }
-    printf(" \n ");
+  AliInfo(Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
 
   //online mean
   frecpoints->SetOnlineMean(Int_t(onlineMean));
