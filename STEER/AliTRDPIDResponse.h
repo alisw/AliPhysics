@@ -61,7 +61,7 @@ private:
 
  static const Double_t fgkPBins[kNPBins];
  TObjArray *fReferences; // Container for reference distributions
- Int_t     fMapRefHists[AliPID::kSPECIES][kNPBins];     
+ Int_t     fMapRefHists[AliPID::kSPECIES+1][kNPBins+1];     
                          // Map for the position of a given historgam in the container 
  UChar_t   fPIDmethod;   // PID method selector  
 
