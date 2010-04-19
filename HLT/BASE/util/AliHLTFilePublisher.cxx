@@ -457,7 +457,7 @@ int AliHLTFilePublisher::FileDesc::OpenFile()
   if ( fIsRaw ) fullFN = fName + "?filetype=raw";
   else fullFN = fName;
 
-  fpInstance = new TFile(fullFN);
+  fpInstance = TFile::Open(fullFN);
   if (fpInstance) {
     if (fpInstance->IsZombie()==0) {
       iResult=fpInstance->GetSize();
