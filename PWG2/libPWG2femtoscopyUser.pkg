@@ -1,7 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
-      FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityPairCut.cxx \
+SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityKTPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoShareQualityTPCEntranceSepPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoESDTrackCut.cxx \
@@ -30,6 +29,8 @@ SRCS= FEMTOSCOPY/AliFemtoUser/AliFemtoQPairCut.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticlePtPDG.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnTPCNcls.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnDEtaDPhi.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoCorrFctnGammaMonitor.cxx \
+      FEMTOSCOPY/AliFemtoUser/AliFemtoPairCutAntiGamma.cxx \
       FEMTOSCOPY/AliFemtoUser/AliFemtoCutMonitorParticleEtCorr.cxx
 
 #      FEMTOSCOPY/AliFemtoUser/AliFemtoPhiPairCut.cxx \
