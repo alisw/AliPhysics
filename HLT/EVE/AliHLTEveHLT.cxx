@@ -184,7 +184,9 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
     fHistEta->Fill(esd->GetTrack(iter)->Eta());
     fHistTheta->Fill(esd->GetTrack(iter)->Theta()*TMath::RadToDeg());
     fHistPhi->Fill(esd->GetTrack(iter)->Phi()*TMath::RadToDeg());
-    fHistnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
+    if(esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin || (esd->GetTrack(iter)->GetStatus()&AliESDtrack::kTPCin && esd->GetTrack(iter)->GetStatus()&AliESDtrack::kITSin)){
+       fHistnClusters->Fill(esd->GetTrack(iter)->GetTPCNcls());  
+    }
   }
   
   fHistMult->Fill(esd->GetNumberOfTracks()); // KK
