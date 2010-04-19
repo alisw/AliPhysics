@@ -10,8 +10,6 @@
 //  						    //
 //////////////////////////////////////////////////////
 
-class AliZDCDigit;
-
 #include "AliQADataMakerSim.h"
 class AliZDCQADataMakerSim: public AliQADataMakerSim {
 
@@ -27,16 +25,14 @@ private:
   virtual void   InitSDigits() {;} 
   virtual void   MakeHits();
   virtual void   MakeHits(TTree * hitTree);
-  virtual void   MakeDigits(){;} 
+  virtual void   MakeDigits(); 
   virtual void   MakeDigits(TTree * digTree);
   virtual void   MakeSDigits() {;} 
   virtual void   MakeSDigits(TTree * /*sdigTree*/) {;}
   virtual void   StartOfDetectorCycle(); 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
-  //
-  AliZDCDigit    *fDigit; 	//! Pointer to digit in tree  
   
-  ClassDef(AliZDCQADataMakerSim,2)  // description 
+  ClassDef(AliZDCQADataMakerSim, 3)  // description 
 
 };
 

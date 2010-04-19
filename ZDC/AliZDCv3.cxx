@@ -165,13 +165,13 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fDimZP[1] = 6.;
   fDimZP[2] = 75.;    
   fPosZNC[0] = 0.;
-  fPosZNC[1] = 1.2;
+  fPosZNC[1] = 0.;
   fPosZNC[2] = -11397.3; 
   fPosZPC[0] = 24.35;
   fPosZPC[1] = 0.;
   fPosZPC[2] = -11389.3; 
   fPosZNA[0] = 0.;
-  fPosZNA[1] = 1.2;
+  fPosZNA[1] = 0.;
   fPosZNA[2] = 11395.8;  
   fPosZPA[0] = 24.35;
   fPosZPA[1] = 0.;
@@ -2363,7 +2363,7 @@ void AliZDCv3::StepManager()
   Int_t   j, vol[2]={0,0}, ibeta=0, ialfa=0, ibe=0, nphe=0;
   Float_t hits[13], x[3], xdet[3], um[3], ud[3];
   Float_t destep=0., be=0., out=0.;
-  Double_t s[3], p[3];
+  Double_t s[3], p[4];
   const char *knamed;
   //
   for(j=0;j<13;j++) hits[j]=-999.;

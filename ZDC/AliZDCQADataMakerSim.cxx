@@ -28,22 +28,19 @@
 #include "AliZDCQADataMakerSim.h"
 #include "AliZDCHit.h"
 #include "AliZDCDigit.h"
-#include "AliZDCRawStream.h"
 
 ClassImp(AliZDCQADataMakerSim)
            
 //____________________________________________________________________________ 
   AliZDCQADataMakerSim::AliZDCQADataMakerSim() : 
-      AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kZDC), "ZDC Quality Assurance Data Maker"),
-      fDigit(0)
+      AliQADataMakerSim(AliQAv1::GetDetName(AliQAv1::kZDC), "ZDC Quality Assurance Data Maker")
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
 AliZDCQADataMakerSim::AliZDCQADataMakerSim(const AliZDCQADataMakerSim& qadm) :
-    AliQADataMakerSim(), 
-    fDigit(0) 
+    AliQADataMakerSim()
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()); 
@@ -147,10 +144,10 @@ void AliZDCQADataMakerSim::InitDigits()
   TH1F * hDigZNATotlg = new TH1F("hDigZNATotlg", "Digit lg signal in ZNA", 100, 0., 6000.);
   TH1F * hDigZPCTotlg = new TH1F("hDigZPCTotlg", "Digit lg signal in ZPC", 100, 0., 6000.);
   TH1F * hDigZPATotlg = new TH1F("hDigZPATotlg", "Digit lg signal in ZPA", 100, 0., 6000.);
-  Add2DigitsList(hDigZNCTotlg, 12, !expert, image);
-  Add2DigitsList(hDigZNATotlg, 13, !expert, image);
-  Add2DigitsList(hDigZPCTotlg, 14, !expert, image);
-  Add2DigitsList(hDigZPATotlg, 15, !expert, image);
+  Add2DigitsList(hDigZNCTotlg, 12, expert, !image);
+  Add2DigitsList(hDigZNATotlg, 13, expert, !image);
+  Add2DigitsList(hDigZPCTotlg, 14, expert, !image);
+  Add2DigitsList(hDigZPATotlg, 15, expert, !image);
   //
   TH1F * hDigSumQZNClg = new TH1F("hDigSumQZNClg", "Signal in 4 ZNC PMQlg",100, 0., 4000.);
   TH1F * hDigSumQZNAlg = new TH1F("hDigSumQZNAlg", "Signal in 4 ZNA PMQlg",100, 0., 4000.);
@@ -176,11 +173,9 @@ void AliZDCQADataMakerSim::InitDigits()
 void AliZDCQADataMakerSim::MakeHits()
 {
   //filling QA histos for Hits
-  //
 
   // Check id histograms already created for this Event Specie
-  if ( ! GetHitsData(0) )
-    InitHits() ;
+  if( !GetHitsData(0) ) InitHits();
   
   TIter next(fHitsArray); 
   AliZDCHit * hit; 
@@ -236,12 +231,9 @@ void AliZDCQADataMakerSim::MakeHits()
 void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
-  //
-  if(!hitTree){
-    AliError("Hit Tree not found!"); 
-    return;
-  }
-  //
+  
+  if(fHitsArray) fHitsArray->Clear() ; 
+  else fHitsArray = new TClonesArray("AliZDCHit", 1000);
 
   TBranch * branch = hitTree->GetBranch("ZDC") ;
 
@@ -250,104 +242,82 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     return;
   } 
   else{
-    if (fHitsArray) 
-      fHitsArray->Clear() ;                    
-    char** add = (char**) (branch->GetAddress());
-    if(add){
-        fHitsArray = (TClonesArray*)(*add);
-    } 
-    else{
-        if(!fHitsArray) fHitsArray = new TClonesArray("AliZDCHit", 1000);
-        branch->SetAddress(&fHitsArray);
-    }
-    Int_t ntracks = (Int_t) hitTree->GetEntries();
-    if (ntracks<=0) return;
-    //
-    for(Int_t itrack=0; itrack<ntracks; itrack++){
-        
-        branch->GetEntry(itrack);
-        //
-        MakeHits(); 
-        fHitsArray->Clear();
-    }	
+    Int_t nHits = 0;
+    branch->SetAddress(&fHitsArray) ;
+    for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
+      branch->GetEntry(ientry) ;
+      nHits += fHitsArray->GetEntriesFast();
+      MakeHits() ; 
+      fHitsArray->Clear();
+    } 	
   }
 }
 
 //___________________________________________________________________________
-void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
+void AliZDCQADataMakerSim::MakeDigits()
 {
-  // makes data from Digit Tree
-  TBranch * branch = digitTree->GetBranch("ZDC");
-  if(!branch){
-    AliError("ZDC branch in Digit Tree not found"); 
-    return;
-  } 
-  
-  // Check id histograms already created for this Event Specie
-  if ( ! GetDigitsData(0) )
-    InitDigits() ;
-  
-  branch->SetAddress(&fDigit);
-  
-  Int_t ndig = digitTree->GetEntries();
-   
+  // makes data from Digits
+  if( !GetDigitsData(0) ) InitDigits();
+ 
+  TIter next(fDigitsArray); 
+  AliZDCDigit * digit;
+     
   Float_t adcSum_ZNC=0., adcSum_ZNA=0., adcSum_ZPC=0., adcSum_ZPA=0.;
   Float_t adcSumQ_ZNC=0., adcSumQ_ZNA=0., adcSumQ_ZPC=0., adcSumQ_ZPA=0.;
   Float_t adcSum_ZNC_lg=0., adcSum_ZNA_lg=0., adcSum_ZPC_lg=0., adcSum_ZPA_lg=0.;
   Float_t adcSumQ_ZNC_lg=0., adcSumQ_ZNA_lg=0., adcSumQ_ZPC_lg=0., adcSumQ_ZPA_lg=0.;
-  //
-  for(Int_t i = 0; i < ndig; i++){
-      digitTree->GetEntry(i);
-      if(fDigit->GetSector(0)==1){
-	  adcSum_ZNC += fDigit->GetADCValue(0);
-	  adcSum_ZNC_lg += fDigit->GetADCValue(1);
+  
+  while ( (digit = dynamic_cast<AliZDCDigit *>(next())) ) {
+      if(digit->GetSector(0)==1){
+	  adcSum_ZNC += digit->GetADCValue(0);
+	  adcSum_ZNC_lg += digit->GetADCValue(1);
 	  //
-	  if(fDigit->GetSector(1)!=0){
-	      adcSumQ_ZNC += fDigit->GetADCValue(0);
-	      adcSumQ_ZNC_lg+= fDigit->GetADCValue(1);
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZNC += digit->GetADCValue(0);
+	      adcSumQ_ZNC_lg+= digit->GetADCValue(1);
 	  }
 	  else{
-	      GetDigitsData(8)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(20)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(8)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(20)->Fill(digit->GetADCValue(1));
 	  }
       }
-      else if(fDigit->GetSector(0)==2){
-	  adcSum_ZPC += fDigit->GetADCValue(0);
-	  adcSum_ZPC_lg += fDigit->GetADCValue(1);
+      else if(digit->GetSector(0)==2){
+	  adcSum_ZPC += digit->GetADCValue(0);
+	  adcSum_ZPC_lg += digit->GetADCValue(1);
 	  //
-	  if(fDigit->GetSector(1)!=0){
-	      adcSumQ_ZPC += fDigit->GetADCValue(0);
-	      adcSumQ_ZPC_lg+= fDigit->GetADCValue(1);
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZPC += digit->GetADCValue(0);
+	      adcSumQ_ZPC_lg+= digit->GetADCValue(1);
 	  }
 	  else{
-	      GetDigitsData(10)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(22)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(10)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(22)->Fill(digit->GetADCValue(1));
 	  }
       }
-      else if(fDigit->GetSector(0)==4){
-	  adcSum_ZNA += fDigit->GetADCValue(0);
-	  adcSum_ZNA_lg += fDigit->GetADCValue(1);
+      else if(digit->GetSector(0)==4){
+	  adcSum_ZNA += digit->GetADCValue(0);
+	  adcSum_ZNA_lg += digit->GetADCValue(1);
 	  //
-	  if(fDigit->GetSector(1)!=0){
-	      adcSumQ_ZNA += fDigit->GetADCValue(0);
-	      adcSumQ_ZNA_lg+= fDigit->GetADCValue(1);
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZNA += digit->GetADCValue(0);
+	      adcSumQ_ZNA_lg+= digit->GetADCValue(1);
 	  }
 	  else{
-	      GetDigitsData(9)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(21)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(9)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(21)->Fill(digit->GetADCValue(1));
 	  }
       }
-      else if(fDigit->GetSector(0)==5){
-	  adcSum_ZPA += fDigit->GetADCValue(0);
-	  adcSum_ZPA_lg += fDigit->GetADCValue(1);
+      else if(digit->GetSector(0)==5){
+	  adcSum_ZPA += digit->GetADCValue(0);
+	  adcSum_ZPA_lg += digit->GetADCValue(1);
 	  //
-	  if(fDigit->GetSector(1)!=0){
-	      adcSumQ_ZPA += fDigit->GetADCValue(0);
-	      adcSumQ_ZPA_lg+= fDigit->GetADCValue(1);
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZPA += digit->GetADCValue(0);
+	      adcSumQ_ZPA_lg+= digit->GetADCValue(1);
 	  }
 	  else{
-	      GetDigitsData(11)->Fill(fDigit->GetADCValue(0));
-	      GetDigitsData(23)->Fill(fDigit->GetADCValue(1));
+	      GetDigitsData(11)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(23)->Fill(digit->GetADCValue(1));
 	  }
       }
   }
@@ -371,6 +341,25 @@ void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree )
   GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
   GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
   GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);
+
+}
+
+//___________________________________________________________________________
+void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree)
+{
+  // makes data from Digit Tree
+  if(fDigitsArray) fDigitsArray->Clear() ; 
+  else fDigitsArray = new TClonesArray("AliZDCDigit", 1000) ; 
+
+  TBranch * branch = digitTree->GetBranch("ZDC");
+  if(!branch){
+    AliError("ZDC branch in Digit Tree not found"); 
+    return;
+  } 
+  
+  branch->SetAddress(&fDigitsArray);
+  branch->GetEntry(0) ; 
+  MakeDigits() ; 
 }
 
 //____________________________________________________________________________

@@ -151,11 +151,13 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   }  
   
   Int_t digNentries = digitsTree->GetEntries();
-  Float_t ootDigi[kNch];
+  Float_t ootDigi[kNch]; Int_t i=0;
   // -- Reading out-of-time signals (last kNch entries) for current event
   if(fPedSubMode==1){
     for(Int_t iDigit=kNch; iDigit<digNentries; iDigit++){
-       ootDigi[iDigit] = digitsTree->GetEntry(iDigit);
+       if(i<=kNch) ootDigi[i] = digitsTree->GetEntry(iDigit);
+       else AliWarning(" Can't read more out of time values: index>kNch !!!\n");
+       i++;
     }
   }
   
@@ -650,7 +652,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
      equalCoeffZP2[ji] = fTowCalibData->GetZP2EqualCoeff(ji); 
   }
   // --- Energy calibration factors ------------------------------------
-  Float_t calibEne[4];
+  Float_t calibEne[6];
   // **** Energy calibration coefficient set to 1 
   // **** (no trivial way to calibrate in p-p runs)
   for(Int_t ij=0; ij<6; ij++) calibEne[ij] = fEnCalibData->GetEnCalib(ij);

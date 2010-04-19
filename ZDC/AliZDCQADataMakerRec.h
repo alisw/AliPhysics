@@ -12,8 +12,12 @@
 
 
 #include "AliQADataMakerRec.h"
+#include "AliQAv1.h"
 
-class AliZDCDigit;
+class AliCDBManager;
+class AliCDBEntry;
+class AliCDBStorage;
+class AliZDCPedestals;
 
 class AliZDCQADataMakerRec: public AliQADataMakerRec {
 
@@ -22,23 +26,22 @@ public:
   AliZDCQADataMakerRec(const AliZDCQADataMakerRec& qadm) ;   
   AliZDCQADataMakerRec& operator = (const AliZDCQADataMakerRec& qadm) ;
   virtual ~AliZDCQADataMakerRec() {;} // dtor
+  AliZDCPedestals  *GetPedCalibData() const; 
+  
   
 private:
   virtual void   InitESDs(); 
-  virtual void   InitDigits() ; 
   virtual void   InitRecPoints();
   virtual void   InitRaws(); 
-  virtual void   MakeDigits(TTree * /*recTree*/) ;
-  virtual void   MakeDigits()  {return;}
   virtual void   MakeRecPoints(TTree * /*recTree*/);
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
-  virtual void   StartOfDetectorCycle() ; 
+  virtual void   StartOfDetectorCycle(); 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
 
-  AliZDCDigit    *fDigit; 	//! Pointer to digit in tree  
+  AliZDCPedestals *fPedCalibData; //! pedestal calibration data
  
-  ClassDef(AliZDCQADataMakerRec,1)  // description 
+  ClassDef(AliZDCQADataMakerRec,3)  // description 
 
 };
 

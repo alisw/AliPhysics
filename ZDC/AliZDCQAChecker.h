@@ -10,7 +10,7 @@
 //  						    //
 //////////////////////////////////////////////////////
 
-#include "AliQA.h"
+#include "AliQAv1.h"
 #include "AliQACheckerBase.h"
 
 class AliZDCQAChecker: public AliQACheckerBase {

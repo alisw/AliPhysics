@@ -77,12 +77,11 @@ AliGenZDC::AliGenZDC(Int_t npart)
   fName = "AliGenZDC";
   fTitle = "Generation of Test Particles for ZDCs";
   
-  Int_t i, j;
-  for(i=0; i<201; i++){
+  for(Int_t i=0; i<201; i++){
      fProbintp[i] = 0;
      fProbintn[i] = 0;
+     fPp[i] = 0;
   }
-  for(j=0; j<3; j++) fPp[i] = 0;
 }
 
 //_____________________________________________________________________________

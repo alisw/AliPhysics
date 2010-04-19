@@ -33,6 +33,12 @@ public:
   void SetVCollCentre(Float_t centre) {fVCollCentreY = centre;}
   void SetLumiLength(Float_t length) {fLumiLength = length;}
   
+  void SetYZNC(Float_t yZNC) {fPosZNC[1] = yZNC;}
+  void SetYZNA(Float_t yZNA) {fPosZNC[1] = yZNA;}
+  
+  void SetYZPC(Float_t yZPC) {fPosZPC[1] = yZPC;}
+  void SetYZPA(Float_t yZPA) {fPosZPC[1] = yZPA;}
+  
  
 protected:
 

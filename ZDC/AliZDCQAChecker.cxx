@@ -192,14 +192,14 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 	      else if(irawHisto==1) sumADCZNA = hdata->GetMean();
 	      else if(irawHisto==2) sumADCZPC = hdata->GetMean();
 	      else if(irawHisto==3) sumADCZPA = hdata->GetMean();
-	      else if(irawHisto==4) adcQZNC = hdata->GetMean();
-	      else if(irawHisto==5) adcQZNA = hdata->GetMean();
-	      else if(irawHisto==6) adcQZPC = hdata->GetMean();
-	      else if(irawHisto==7) adcQZPA = hdata->GetMean();
-	      else if(irawHisto==8)  adcCZNC = hdata->GetMean();
-	      else if(irawHisto==9)  adcCZNA = hdata->GetMean();
-	      else if(irawHisto==10) adcCZPC = hdata->GetMean();
-	      else if(irawHisto==11) adcCZPA = hdata->GetMean();
+	      else if(irawHisto==6) adcQZNC = hdata->GetMean();
+	      else if(irawHisto==7) adcQZNA = hdata->GetMean();
+	      else if(irawHisto==8) adcQZPC = hdata->GetMean();
+	      else if(irawHisto==9) adcQZPA = hdata->GetMean();
+	      else if(irawHisto==10) adcCZNC = hdata->GetMean();
+	      else if(irawHisto==11) adcCZNA = hdata->GetMean();
+	      else if(irawHisto==12) adcCZPC = hdata->GetMean();
+	      else if(irawHisto==13) adcCZPA = hdata->GetMean();
 	    }
 	    //
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
@@ -312,14 +312,14 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 	      else if(esdInd==3) sumADCZNA = hdata->GetMean();
 	      else if(esdInd==4) sumADCZPC = hdata->GetMean();
 	      else if(esdInd==5) sumADCZPA = hdata->GetMean();
-	      else if(esdInd==6) pmQZNC = hdata->GetMean();
-	      else if(esdInd==7) pmQZNA = hdata->GetMean();
-	      else if(esdInd==8) pmQZPC = hdata->GetMean();
-	      else if(esdInd==9) pmQZPA = hdata->GetMean();
-	      else if(esdInd==10) pmCZNC = hdata->GetMean();
-	      else if(esdInd==11) pmCZNA = hdata->GetMean();
-	      else if(esdInd==12) pmCZPC = hdata->GetMean();
-	      else if(esdInd==13) pmCZPA = hdata->GetMean();
+	      else if(esdInd==8) pmQZNC = hdata->GetMean();
+	      else if(esdInd==9) pmQZNA = hdata->GetMean();
+	      else if(esdInd==10) pmQZPC = hdata->GetMean();
+	      else if(esdInd==11) pmQZPA = hdata->GetMean();
+	      else if(esdInd==12) pmCZNC = hdata->GetMean();
+	      else if(esdInd==13) pmCZNA = hdata->GetMean();
+	      else if(esdInd==14) pmCZPC = hdata->GetMean();
+	      else if(esdInd==15) pmCZPA = hdata->GetMean();
 	    }
 	    //
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff

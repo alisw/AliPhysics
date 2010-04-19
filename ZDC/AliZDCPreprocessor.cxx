@@ -543,7 +543,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
        return 10;
      }
      Log(Form("File %s connected to process pedestal data", pedFileName));
-     Float_t pedVal[(2*knZDCch)][2];
+     Float_t pedVal[(3*knZDCch)][2];
      for(Int_t k=0; k<(2*knZDCch); k++){
         for(Int_t j=0; j<2; j++){
            int aleggi = fscanf(file,"%f",&pedVal[k][j]);
