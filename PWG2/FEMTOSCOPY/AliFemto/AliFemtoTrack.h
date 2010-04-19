@@ -65,6 +65,7 @@ public:
   float TPCchi2() const;       
   int   TPCncls() const;       
   short TPCnclsF() const;      
+  float TPCsignal() const;
   short TPCsignalN() const;    
   float TPCsignalS() const;   
 
@@ -95,6 +96,7 @@ public:
   void SetTPCchi2(const float& x);       
   void SetTPCncls(const int& i);       
   void SetTPCnclsF(const short& s);      
+  void SetTPCsignal(const float& s);
   void SetTPCsignalN(const short& s);    
   void SetTPCsignalS(const float& x);   
 
@@ -164,6 +166,7 @@ public:
   float  fTPCchi2;       // chi2 in the TPC
   int    fTPCncls;       // number of clusters assigned in the TPC
   short fTPCnclsF;       // number of findable clusters in the TPC
+  float fTPCsignal;      // dEdx TPC value
   short fTPCsignalN;     // number of points used for dEdx
   float fTPCsignalS;     // RMS of dEdx measurement
   float fSigmaToVertex;  // Distance from track to vertex in sigmas

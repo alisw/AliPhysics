@@ -94,6 +94,7 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
   unsigned int fMinSizePartCollection;               //  Don't use event if it has fewer than this many particles passing ParticleCuts default 0
 
+
 #ifdef __ROOT__
   ClassDef(AliFemtoSimpleAnalysis, 0)
 #endif
