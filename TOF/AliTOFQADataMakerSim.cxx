@@ -80,17 +80,17 @@ void AliTOFQADataMakerSim::InitHits()
   //
 
   const Bool_t expert   = kTRUE ; 
-  const Bool_t image    = kTRUE ; 
+  const Bool_t image    = kTRUE ;   
   
-  TH1F * h0 = new TH1F("hTOFHits",    "Number of TOF Hits;TOF hit number [10 power];Counts ",301, -1.02, 5.) ; 
+  TH1F * h0 = new TH1F("hTOFHits",    "Number of TOF Hits per event;TOF hit number;Counts ",101, -1., 100.) ; 
   h0->Sumw2() ;
   Add2HitsList(h0, 0, !expert, image) ;
 
-  TH1F * h1  = new TH1F("hTOFHitsTime", "Hits Time Spectrum in TOF (ns);Simulated TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFHitsTime", "Hits Time Spectrum in TOF (ns);Simulated TOF time [ns];Counts", 25000, 0., 610.) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, 1, !expert, image) ;
 
-  TH1F * h2  = new TH1F("hTOFHitsLength", "Length Spectrum in TOF (cm);Track length from primary vertex till hit TOF pad [cm];Counts", 500, 0., 500) ; 
+  TH1F * h2  = new TH1F("hTOFHitsLength", "Length Spectrum in TOF (cm);Track length from primary vertex till hit TOF pad [cm];Counts", 700, 0., 700) ; 
   h2->Sumw2() ;
   Add2HitsList(h2, 2, !expert, image) ;
 
@@ -98,6 +98,7 @@ void AliTOFQADataMakerSim::InitHits()
   h3->Sumw2() ;
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2HitsList(h3, 3, !expert, image) ;
+
 }
 
 //____________________________________________________________________________ 
@@ -110,15 +111,15 @@ void AliTOFQADataMakerSim::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digit;TOF digit number [10 power];Counts ",301, -1.02, 5.) ;
+  TH1F * h0 = new TH1F("hTOFDigits",    "Number of TOF Digit per event;TOF digit number;Counts ",101, -1., 100.) ;
   h0->Sumw2() ;
   Add2DigitsList(h0, 0, !expert, image) ;
 
-  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns);Digitized TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFDigitsTime", "Digits Time Spectrum in TOF (ns);Digitized TOF time [ns];Counts", 25000, 0., 610.) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ;
 
-  TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns);Digitized TOF time [ns];Counts", 500, 0., 50) ; 
+  TH1F * h2  = new TH1F("hTOFDigitsToT", "Digits ToT Spectrum in TOF (ns);Digitized ToT time [ns];Counts", 1000, 0., 48.8) ; 
   h2->Sumw2() ;
   Add2DigitsList(h2, 2, !expert, image) ;
 
@@ -139,11 +140,11 @@ void AliTOFQADataMakerSim::InitSDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits;TOF sdigit number [10 power];Counts ",301, -1.02, 5.) ;
+  TH1F * h0 = new TH1F("hTOFSDigits",    "Number of TOF SDigits per event;TOF sdigit number;Counts ",101, -1., 100.) ;
   h0->Sumw2() ;
   Add2SDigitsList(h0, 0, !expert, image) ;
 
-  TH1F * h1  = new TH1F("hTOFSDigitsTime", "SDigits Time Spectrum in TOF (ns);SDigitized TOF time [ns];Counts", 2000, 0., 200) ; 
+  TH1F * h1  = new TH1F("hTOFSDigitsTime", "SDigits Time Spectrum in TOF (ns);SDigitized TOF time [ns];Counts", 25000, 0., 610) ; 
   h1->Sumw2() ;
   Add2SDigitsList(h1, 1, !expert, image) ;
 
@@ -168,7 +169,7 @@ void AliTOFQADataMakerSim::MakeHits()
   if(nentries<=0) {
     GetHitsData(0)->Fill(-1.) ; 
   } else{
-    GetHitsData(0)->Fill(TMath::Log10(nentries)) ; 
+    GetHitsData(0)->Fill(nentries) ; 
   }
   TIter next(fHitsArray) ; 
   AliTOFhitT0 * hit ; 
@@ -235,7 +236,7 @@ void AliTOFQADataMakerSim::MakeDigits()
   if(nentries<=0){
     GetDigitsData(0)->Fill(-1.) ; 
   }else{
-    GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+    GetDigitsData(0)->Fill(nentries) ; 
   } 
 
   TIter next(fDigitsArray) ; 
@@ -293,7 +294,7 @@ void AliTOFQADataMakerSim::MakeSDigits()
   if(nentries<=0){
     GetSDigitsData(0)->Fill(-1.) ; 
   }else{
-    GetSDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+    GetSDigitsData(0)->Fill(nentries) ; 
   } 
 
   TIter next(fSDigitsArray) ; 
