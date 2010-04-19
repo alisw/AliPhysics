@@ -8,7 +8,7 @@
 
 
 /** @file AliAnalysisTaskHLT.h
-    @author Kalliopi Kanaki
+    @author Kalliopi Kanaki, Hege Erdal
     @date   
     @brief An analysis task to compare the offline and HLT esd trees
 */
@@ -59,9 +59,12 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fYvertexOff;        // Y primary vertex distribution
     TH1F  *fZvertexOff;        // Z primary vertex distribution
     TH1F  *fEtaOff;            // pseudorapidity
+    TH1F  *fEtaDCAcutOff;      // pseudorapidity with DCA cut
     TH2F  *fNclusVSphiOff;     // clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaOff;   // clusters per track vs. polar angle 
-    
+    TH1F  *fStatusOff;         //Status counters 
+    TH1F  *fStatusOff_Ocl;     //Status counters for TPCNcl=0
+     
     TH1F  *fMomentumHLT;       // momentum	
     TH1F  *fDCAHLT;	       // track DCA to beam line	 
     TH1F  *fNclusterHLT;       // #clusters per track
@@ -75,9 +78,12 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
     TH1F  *fYvertexHLT;        // Y primary vertex distribution
     TH1F  *fZvertexHLT;        // Z primary vertex distribution
     TH1F  *fEtaHLT;	       // pseudorapidity
+    TH1F  *fEtaDCAcutHLT;      // pseudorapidity with DCA cut
     TH2F  *fNclusVSphiHLT;     // clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaHLT;   // clusters per track vs. polar angle 
-
+    TH1F  *fStatusHLT;         //Status counters 
+    TH1F  *fStatusHLT_Ocl;     //Status counters for TPCNcl=0
+    
     TObjArray *fTrgClsArray; // array of trigger classes
    
 //     TH1F *fDCAOff_trig;      //! track DCA to beam line for triggered events
@@ -120,7 +126,7 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
 //     static const Float_t fgkInitPosX[5];
 //     static const Float_t fgkInitPosY[5];
 
-    ClassDef(AliAnalysisTaskHLT, 1);
+    ClassDef(AliAnalysisTaskHLT, 2);
 };
 
 #endif
