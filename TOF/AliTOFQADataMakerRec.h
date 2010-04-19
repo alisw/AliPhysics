@@ -43,14 +43,21 @@ private:
   virtual void   StartOfDetectorCycle() ; 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;
   virtual void   GetMapIndeces(const Int_t * const in, Int_t *out) ; 
-  	      Int_t  GetStripIndex(const Int_t * const in);
+  	  Int_t  GetStripIndex(const Int_t * const in);
   virtual void   EnableNoiseFiltering(Bool_t enable){fEnableNoiseFiltering = enable;};
+  virtual void   EnableDqmShifterOpt(Bool_t enable){ fEnableDqmShifterOpt = enable;};
           Bool_t CheckVolumeID(const Int_t * const equipmentID); 
           Bool_t CheckEquipID( const Int_t * const equipmentID); 
-          Bool_t FilterLTMData(const Int_t * const equipmentID) const; 
-          Bool_t FilterSpare(  const Int_t * const equipmentID) const;
+          Bool_t FilterLTMData(const Int_t * const equipmentID) const ; 
+          Bool_t FilterSpare(  const Int_t * const equipmentID) const ;
+	  
+	  Bool_t fEnableNoiseFiltering; //the choice is not implemented so far
+	  Bool_t fEnableDqmShifterOpt;  // draw option flag to help
+					// DQM shifter in the
+					// interpretation of the TOF
+					// raw QA histograms
+	  Int_t  fProcessedRawEventN;   // number of processed rawData events
 
-  Bool_t fEnableNoiseFiltering; //the choice is not implemented so far
   ClassDef(AliTOFQADataMakerRec,2)  // description 
 
 };
