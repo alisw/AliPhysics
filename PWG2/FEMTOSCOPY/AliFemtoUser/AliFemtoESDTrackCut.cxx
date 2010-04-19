@@ -110,6 +110,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
   fCharge = 0;  // takes both charges 0
   fPt[0]=0.0;              fPt[1] = 100.0;//100
   fRapidity[0]=-2;       fRapidity[1]=2;//-2 2
+  fEta[0]=-2;       fEta[1]=2;//-2 2
   fPidProbElectron[0]=-1;fPidProbElectron[1]=2;
   fPidProbPion[0]=-1;    fPidProbPion[1]=2;
   fPidProbKaon[0]=-1;fPidProbKaon[1]=2;
@@ -236,11 +237,19 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
   float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
   float tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
+  float tEta = track->P().PseudoRapidity();
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;
       //cout<<"No Go Through the cut"<<endl;   
       //cout<<fRapidity[0]<<" < Rapidity ="<<tRapidity<<" <"<<fRapidity[1]<<endl;
+      return false;
+    }
+  if ((tEta<fEta[0])||(tEta>fEta[1]))
+    {
+      fNTracksFailed++;
+      //cout<<"No Go Through the cut"<<endl;   
+      //cout<<fEta[0]<<" < Eta ="<<tEta<<" <"<<fEta[1]<<endl;
       return false;
     }
   if ((tPt<fPt[0])||(tPt>fPt[1]))
@@ -296,15 +305,25 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     }
 
   if (fMostProbable) {
-    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
-    tMost[1] = 0.0;
-    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
-    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
-    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
     int imost=0;
-    float ipidmax = 0.0;
-    for (int ip=0; ip<5; ip++)
-      if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+    if (fMostProbable == 2) {
+      if (IsPionTPCdEdx(track->P().Mag(), track->TPCsignal()))
+	imost = 2;
+    }
+    else if (fMostProbable == 3) {
+      if (IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+	imost = 3;
+    }
+    else {
+      tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
+      tMost[1] = 0.0;
+      tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
+      tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
+      tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
+      float ipidmax = 0.0;
+      for (int ip=0; ip<5; ip++)
+	if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+    }
     if (imost != fMostProbable) return false;
   }
   
@@ -336,8 +355,10 @@ AliFemtoString AliFemtoESDTrackCut::Report()
   sprintf(tCtemp,"Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
   tStemp+=tCtemp;
   sprintf(tCtemp,"Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
+  tStemp+=tCtemp; 
+  sprintf(tCtemp,"Particle eta:\t%E - %E\n",fEta[0],fEta[1]);
   tStemp+=tCtemp;
-  sprintf(tCtemp,"Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
+ sprintf(tCtemp,"Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
   tStemp += tCtemp;
   AliFemtoString returnThis = tStemp;
   return returnThis;
@@ -500,5 +521,41 @@ void AliFemtoESDTrackCut::SetMomRangeITSpidIs(const float& minp, const float& ma
 {
   fMinPforITSpid = minp;
   fMaxPforITSpid = maxp;
+}
+
+bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
+{
+  double a1 = -95.4545, b1 = 86.5455;
+  double a2 = 0.0,      b2 = 56.0;
+
+  if (mom < 0.32) {
+    if (dEdx < a1*mom+b1) return true;
+  }
+  if (dEdx < a2*mom+b2) return true;
+
+  return false;
+}
+
+bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
+{
+  double a1 = -159.1, b1 = 145.9;
+  double a2 = 0.0,    b2 = 60.0;
+  double a3 = -138.235, b3 = 166.44;
+  double a4 = -2015.79, b4 = 973.789;
+  
+  if (mom < 0.24) {
+    if (dEdx > a1*mom+b1) return true;
+  }    
+  else if (mom < 0.43) {
+    if ((dEdx > a1*mom+b1) && (dEdx < a4*mom+b4)) return true;
+  }
+  else if (mom < 0.54) {
+    if ((dEdx > a1*mom+b1) && (dEdx < a3*mom+b3)) return true;
+  }
+  else if (mom < 0.77) {
+    if ((dEdx > a2*mom+b2) && (dEdx < a3*mom+b3)) return true;
+  }
+  
+  return false;
 }
 

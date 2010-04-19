@@ -32,6 +32,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
   void SetPt(const float& lo, const float& hi);
   void SetRapidity(const float& lo, const float& hi);
+  void SetEta(const float& lo, const float& hi);
   void SetCharge(const int& ch);
   void SetPidProbElectron(const float& lo, const float& hi);
   void SetPidProbPion(const float& lo, const float& hi);
@@ -63,6 +64,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   int               fCharge;             // particle charge
   float             fPt[2];              // bounds for transverse momentum
   float             fRapidity[2];        // bounds for rapidity
+  float             fEta[2];             // bounds for pseudorapidity
   float             fPidProbElectron[2]; // bounds for electron probability
   float             fPidProbPion[2];     // bounds for pion probability
   float             fPidProbKaon[2];     // bounds for kaon probability
@@ -97,6 +99,9 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   float PidFractionKaon(float mom) const;
   float PidFractionProton(float mom) const;
 
+  bool IsPionTPCdEdx(float mom, float dEdx);
+  bool IsKaonTPCdEdx(float mom, float dEdx);
+
 #ifdef __ROOT__ 
   ClassDef(AliFemtoESDTrackCut, 1)
 #endif
@@ -105,6 +110,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
 inline void AliFemtoESDTrackCut::SetPt(const float& lo, const float& hi){fPt[0]=lo; fPt[1]=hi;}
 inline void AliFemtoESDTrackCut::SetRapidity(const float& lo,const float& hi){fRapidity[0]=lo; fRapidity[1]=hi;}
+inline void AliFemtoESDTrackCut::SetEta(const float& lo,const float& hi){fEta[0]=lo; fEta[1]=hi;}
 inline void AliFemtoESDTrackCut::SetCharge(const int& ch){fCharge = ch;}
 inline void AliFemtoESDTrackCut::SetPidProbElectron(const float& lo,const float& hi){fPidProbElectron[0]=lo; fPidProbElectron[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbPion(const float& lo,const float& hi){fPidProbPion[0]=lo; fPidProbPion[1]=hi;}
