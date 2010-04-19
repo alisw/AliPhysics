@@ -32,6 +32,7 @@
 #include "AliHLTGlobalTrackMergerComponent.h"
 #include "AliHLTGlobalEsdConverterComponent.h"
 #include "AliHLTGlobalVertexerComponent.h"
+#include "AliHLTGlobalOfflineVertexerComponent.h"
 #include "AliHLTV0HistoComponent.h"
 #include "AliHLTGlobalVertexerHistoComponent.h"
 #include "AliHLTGlobalHistoCollector.h"
@@ -66,6 +67,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTGlobalTrackMergerComponent);
   pHandler->AddComponent(new AliHLTGlobalEsdConverterComponent);
   pHandler->AddComponent(new AliHLTGlobalVertexerComponent);
+  pHandler->AddComponent(new AliHLTGlobalOfflineVertexerComponent);
   pHandler->AddComponent(new AliHLTGlobalVertexerHistoComponent);
   pHandler->AddComponent(new AliHLTV0HistoComponent );
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
