@@ -1,7 +1,7 @@
 // $Id$
 /**
  * @file rec-hlt-offline-vertexer.C
- * @brief Example macro to run the AliHLTSampleESDAnalysisComponent in
+ * @brief Example macro to run the AliHLTGlobalOfflineVertexerComponent in
  * AliReconstruction.
  *
  * The component subscribes to the output of the default HLT reconstruction
@@ -125,7 +125,7 @@ void rec_hlt_offline_vertexer(const char *filename,
 		       int minEvent=-1,
 		       int maxEvent=-1)
 {
-  rec_hlt_offline_vertexer(filename, "raw://", minEvent, maxEvent, modules, hltOptions);
+  rec_hlt_offline_vertexer(filename, "raw://", minEvent, maxEvent);
 }
 
 void rec_hlt_offline_vertexer()

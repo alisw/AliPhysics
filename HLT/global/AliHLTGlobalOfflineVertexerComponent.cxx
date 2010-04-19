@@ -95,8 +95,8 @@ void AliHLTGlobalOfflineVertexerComponent::GetOCDBObjectDescription( TMap* const
   // Key and value objects created inside this class go into ownership of
   // target TMap.
   if (!targetMap) return;
-  targetMap->Add(new TObjString("HLT/ConfigHLT/GlobalOfflineVertexer"),
-  		new TObjString("configuration object"));
+  // targetMap->Add(new TObjString("HLT/ConfigHLT/GlobalOfflineVertexer"),
+  // 		new TObjString("configuration object"));
   targetMap->Add(new TObjString("GRP/GRP/Data"),
 		new TObjString("GRP object"));
 }
@@ -131,6 +131,9 @@ int AliHLTGlobalOfflineVertexerComponent::DoInit( int argc, const char** argv )
   if (iResult>=0) {
     // implement the component initialization
     fVertexer=new AliVertexerTracks;
+    if (fVertexer) {
+      fVertexer->SetFieldkG(GetBz());
+    }
   }
 
   if (iResult<0) {
@@ -182,8 +185,17 @@ int AliHLTGlobalOfflineVertexerComponent::DoEvent(const AliHLTComponentEventData
   // input objects are not supposed to be changed by the component, so they
   // are defined const. However, the implementation of AliESDEvent does not
   // support this and we need the const_cast
-  const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(obj);
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   if (esd != NULL) {
+    esd->GetStdContent();
+    for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
+      AliESDtrack* track = esd->GetTrack(i);
+      // TODO: this is just a quick hack, the vertexer requires kITSrefit and
+      // at least 4 points
+      // the HLT reconstruction needs to be adapted according to that requirement
+      // we have to check which flag needs to be set at what stage
+      track->SetStatus(AliESDtrack::kITSrefit);
+    }
     AliESDVertex* vertex=fVertexer->FindPrimaryVertex(esd);
     if (vertex) {
       AliInfoClass("Offline Vertexer using the HLT ESD:");
