@@ -6,7 +6,6 @@
 #pragma link C++ class AliFemtoShareQualityKTPairCut;
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepPairCut;
 #pragma link C++ class AliFemtoESDTrackCut;
-#pragma link C++ class AliFemtoQPairCut;
 #pragma link C++ class AliFemtoShareQualityCorrFctn;
 #pragma link C++ class AliFemtoTPCInnerCorrFctn;
 #pragma link C++ class AliFemtoChi2CorrFctn;
@@ -35,4 +34,6 @@
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
+#pragma link C++ class AliFemtoCorrFctnGammaMonitor;
+#pragma link C++ class AliFemtoPairCutAntiGamma;
 //#pragma link C++ class AliFemtoPhiPairCut;
