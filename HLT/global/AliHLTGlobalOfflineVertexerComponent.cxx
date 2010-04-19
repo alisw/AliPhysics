@@ -31,6 +31,7 @@ using namespace std;
 #include "AliESDtrack.h"
 #include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
+#include "AliGRPRecoParam.h"
 #include "AliLog.h"
 #include "TMap.h"
 
@@ -133,6 +134,23 @@ int AliHLTGlobalOfflineVertexerComponent::DoInit( int argc, const char** argv )
     fVertexer=new AliVertexerTracks;
     if (fVertexer) {
       fVertexer->SetFieldkG(GetBz());
+
+      // initialize for TPC + ITS primary vertex
+      fVertexer->SetITSMode();
+      fVertexer->SetConstraintOff();
+      // get cuts for vertexer from AliGRPRecoParam
+      AliGRPRecoParam *grpRecoParam=NULL;
+      TObject* obj=LoadAndExtractOCDBObject("GRP/Calib/RecoParam");
+      if (obj) grpRecoParam=dynamic_cast<AliGRPRecoParam*>(obj);
+      if (grpRecoParam) {
+	Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
+	Double_t *cutsVertexer = new Double_t[nCutsVertexer];
+	grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
+	fVertexer->SetCuts(cutsVertexer);
+	delete [] cutsVertexer; cutsVertexer = NULL;
+      }
+      // to run on HLT events we do not require ITS refit
+      fVertexer->SetITSrefitNotRequired();
     }
   }
 
@@ -171,6 +189,7 @@ int AliHLTGlobalOfflineVertexerComponent::DoEvent(const AliHLTComponentEventData
 					      AliHLTComponentTriggerData& /*trigData*/)
 {
   // event processing function
+  int iResult=0;
 
   // check if this is a data event, there are a couple of special events
   // which should be ignored for normal processing
@@ -180,7 +199,8 @@ int AliHLTGlobalOfflineVertexerComponent::DoEvent(const AliHLTComponentEventData
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
-  const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
+  for (const TObject* obj = GetFirstInputObject(kAliHLTDataTypeESDObject, "AliESDEvent");
+       obj; obj = GetNextInputObject()) {
 
   // input objects are not supposed to be changed by the component, so they
   // are defined const. However, the implementation of AliESDEvent does not
@@ -200,13 +220,16 @@ int AliHLTGlobalOfflineVertexerComponent::DoEvent(const AliHLTComponentEventData
     if (vertex) {
       AliInfoClass("Offline Vertexer using the HLT ESD:");
       vertex->Print();
+      iResult = PushBack( vertex, kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut);
     }
+    break;
+  }
   }
 
   fBenchmark.Stop(0);
   AliInfoClass( fBenchmark.GetStatistics() );
 
-  return 0;
+  return iResult;
 }
 
 int AliHLTGlobalOfflineVertexerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
