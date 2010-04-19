@@ -142,6 +142,19 @@ fTriggerProcessor(0x0)
   /// normal ctor
 
   AliDebug(1,"");
+  
+  // Unload mapping objects
+  // if they have been loaded from the obsolete OCDB mapping objects
+
+  if ( AliMpDDLStore::Instance(false) ) {
+    AliCDBManager::Instance()->UnloadFromCache("MUON/Calib/DDLStore");
+    delete AliMpDDLStore::Instance();
+  }  
+
+  if ( AliMpSegmentation::Instance(false) ) { 
+    AliCDBManager::Instance()->UnloadFromCache("MUON/Calib/Mapping");
+    delete AliMpSegmentation::Instance();
+  }  
 
   // Load mapping
   if ( ! AliMpCDB::LoadDDLStore() ) {
