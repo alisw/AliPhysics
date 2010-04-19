@@ -143,12 +143,6 @@ fTriggerProcessor(0x0)
 
   AliDebug(1,"");
 
-  // Unload and delete old mapping
-  AliCDBManager::Instance()->UnloadFromCache("MUON/Calib/Mapping");
-  AliCDBManager::Instance()->UnloadFromCache("MUON/Calib/DDLStore");
-  delete AliMpDDLStore::Instance();
-  delete AliMpSegmentation::Instance();
-
   // Load mapping
   if ( ! AliMpCDB::LoadDDLStore() ) {
     AliFatal("Could not access mapping from OCDB !");
