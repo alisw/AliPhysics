@@ -164,16 +164,16 @@ void AliTOFQADataMakerRec::InitRaws()
   TH1F * h14  = new TH1F("hTOFRawsToTOC", "TOF Raws - Hit ToT (ns) - O/C side;Measured Hit ToT (ns);Counts", 1000, 0., 48.8) ; 
 
   TH1F * h15 = new TH1F("hTOFRawsLTMHits", "LTM hits ; Crate; Counts",  72, 0., 72.);
-  TH1F * h16  = new TH1F("hTOFRawsTRMHits035", "TRM hits  - crates 0 to 35 ;TRM index = SMid*10+TRM(0-9);Hits",  361, 0., 361.) ; 
-  TH1F * h17  = new TH1F("hTOFRawsTRMHits3671","TRM hits  - crates 36 to 71 ;TRM index = SMid*10+TRM(0-9);Hits", 361, 361., 722.) ; 
+  TH1F * h16  = new TH1F("hTOFRawsTRMHits035", "TRM hits  - crates 0 to 35 ;TRM index = SMid(crate*10)+TRM(0-9);Hits",  361, 0., 361.) ;
+  TH1F * h17  = new TH1F("hTOFRawsTRMHits3671","TRM hits  - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Hits", 361, 360., 721.) ;
   
   TH1F * h18 = new TH1F("hTOFRawChannelHits","TOF channel hits count; Channel ID; Hits", 158000, 0., 158000);
   
   TH1F * h19  = new TH1F("hTOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Counts", 25000, 0. ,610.) ; 
   TH2F * h20 = new TH2F("hTOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., 250, 0., 610.0) ;
-  TH2F * h21 = new TH2F("hTOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 361., 722., 250, 0., 610.0) ;
+  TH2F * h21 = new TH2F("hTOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 360., 721., 250, 0., 610.0) ;
   TH2F * h22 = new TH2F("hTOFRawToTVsTRM035",  "TOF raws - Hit ToT vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw ToT [ns] ", 361, 0., 361., 100, 0., 48.8) ;
-  TH2F * h23 = new TH2F("hTOFRawToTVsTRM3671",  "TOF raws - Hit ToT vs TRM - crates 36 to 72; TRM index = DDL*10+TRM(0-9);TOF raw ToT [ns] ", 361, 361., 722., 100, 0., 48.8) ;
+  TH2F * h23 = new TH2F("hTOFRawToTVsTRM3671",  "TOF raws - Hit ToT vs TRM - crates 36 to 72; TRM index = DDL*10+TRM(0-9);TOF raw ToT [ns] ", 361, 360., 721., 100, 0., 48.8) ;
   TH2F * h24 = new TH2F("hTOFTimeVsStrip","TOF Raws - Hit time vs. strip (theta); Strip index;Raws TOF time (ns) ", 91,0.,91, 250, 0., 610.) ; 
   
 // TH2F * h25 = new TH2F("hTOFRawsClusMap","Raws vs TOF eta-phi;eta (2*strip+padz);phi (48*sector+padx)",183, -0.5, 182.5,865,-0.5,864.5) ; 
@@ -264,9 +264,9 @@ void AliTOFQADataMakerRec::InitRecPoints()
   TH2F * h15 = new TH2F("hTOFRecTimeVsStrip","RecPoints TOF time vs. strip (theta); Strip index; RecPoints TOF time (ns) ",92,-1.,91, 250, 0., 610.) ;
 
   TH2F * h16 = new TH2F("hTOFRecPointsTimeVsTRM035","TOF RecPoints time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF time [ns]", 361, 0., 361., 250, 0., 610.0) ;
-  TH2F * h17 = new TH2F("hTOFRecPointsTimeVsTRM3671","TOF RecPoints time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF time [ns]", 361, 361., 722., 250, 0., 610.0) ;
+  TH2F * h17 = new TH2F("hTOFRecPointsTimeVsTRM3671","TOF RecPoints time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF time [ns]", 361, 360., 721., 250, 0., 610.0) ;
   TH2F * h18 = new TH2F("hTOFRecPointsToTVsTRM035","TOF RecPoints ToT vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF ToT [ns] ", 361, 0., 361., 100, 0., 48.8) ;
-  TH2F * h19 = new TH2F("hTOFRecPointsToTVsTRM3671","TOF RecPoints ToT vs TRM - crates 36 to 72; TRM index = DDL*10+TRM(0-9);TOF ToT [ns] ", 361, 361., 722., 100, 0., 48.8) ;
+  TH2F * h19 = new TH2F("hTOFRecPointsToTVsTRM3671","TOF RecPoints ToT vs TRM - crates 36 to 72; TRM index = DDL*10+TRM(0-9);TOF ToT [ns] ", 361, 360., 721., 100, 0., 48.8) ;
  
     h0->Sumw2() ;
     h1->Sumw2() ;
@@ -702,6 +702,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 
 	if (fEnableDqmShifterOpt){
 	    // Help make the raw qa histogram easier to interpret for the DQM shifter
+	    // This is still to be optimized...
+
 	    if (!GetRawsData(0) || !GetRawsData(5) || !GetRawsData(10) 
 		|| !GetRawsData(15) || !GetRawsData(16) || !GetRawsData(17)) {
 		printf("No histogram for DQM found - Possible memory corruption ???. Please check\n") ; 
@@ -749,33 +751,32 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    
 	    //make up for equipment hits count 
 	    for(Int_t j=15;j<18;j++){
-	      GetRawsData(j)->SetDrawOption("hist");
 	      GetRawsData(j)->SetLineColor(kBlue+1);
-	      GetRawsData(j)->SetFillColor(kBlue+1);
 	      GetRawsData(j)->SetLineWidth(1);
 	      if (j==15) {
-		  GetRawsData(j)->SetMarkerStyle(8);
-		  GetRawsData(j)->SetMarkerColor(kBlue+2);
+		GetRawsData(j)->SetMarkerStyle(8);
+		GetRawsData(j)->SetMarkerSize(0.7);
+		GetRawsData(j)->SetMarkerColor(kBlue+2);
+	      } else {
+		Int_t ySMmax=GetRawsData(j)->GetMaximum();
+		TLine* lineSMid[10];
+		
+		for (Int_t sm=0;sm<10;sm++){
+		  lineSMid[sm] = new TLine( 40*sm+360*(j%16), 0, 40*sm+360*(j%16), ySMmax);
+		  lineSMid[sm]->SetLineColor(kMagenta);
+		  lineSMid[sm]->SetLineWidth(2);
+		  GetRawsData(j)->GetListOfFunctions()->Add(lineSMid[sm]);
+		  GetRawsData(j)->SetFillColor(kBlue+1);
+		}
 	      }
-	      /*else {
-		  Int_t ySMmax=GetRawsData(j)->GetMaximum();
-		  TLine* lineSMid[18];
-		  for (Int_t sm=0;sm<18;sm++){
-		      lineSMid[sm] = new TLine(40*sm, 0,40*sm, ySMmax);
-		      lineSMid[sm]->SetLineColor(kMagenta);
-		      lineSMid[sm]->SetLineWidth(2);
-		      if ((40*sm>=j*360) && (40*sm<=(j+1)*360)) ((TH1F*)GetRawsData(j))->GetListOfFunctions()->Add(lineSMid[sm]);
-		  }
-	      }
-	      */
-	   }
+	    }
 	    
-	   //make up for orphans histo
-	   GetRawsData(19)->SetLineColor(kBlue+1);
-	   GetRawsData(19)->SetMarkerColor(kBlue+1);
-	   ((TH1F*)GetRawsData(19))->GetListOfFunctions()->Add(lineExpTimeMin);
-	   ((TH1F*)GetRawsData(19))->GetListOfFunctions()->Add(lineExpTimeMax);
-	 }
+	    //make up for orphans histo
+	    GetRawsData(19)->SetLineColor(kBlue+1);
+	    GetRawsData(19)->SetMarkerColor(kBlue+1);
+	    ((TH1F*)GetRawsData(19))->GetListOfFunctions()->Add(lineExpTimeMin);
+	    ((TH1F*)GetRawsData(19))->GetListOfFunctions()->Add(lineExpTimeMax);
+	}
     }
     AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
