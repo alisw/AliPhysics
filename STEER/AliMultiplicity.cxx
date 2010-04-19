@@ -18,11 +18,11 @@ AliMultiplicity::AliMultiplicity():
   fThsingle(0),
   fPhisingle(0),
   fFastOrFiredChips(1200),
-  fFiredChips(1200)
+  fClusterFiredChips(1200)
 {
   // Default Constructor
-  fNumberOfFiredChips[0] = 0;
-  fNumberOfFiredChips[1] = 0;
+  fFiredChips[0] = 0;
+  fFiredChips[1] = 0;
   for(Int_t ilayer = 0; ilayer < 6; ilayer++)fITSClusters[ilayer] = 0;
 }
 
@@ -40,7 +40,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   fThsingle(0),
   fPhisingle(0),
   fFastOrFiredChips(1200),
-  fFiredChips(1200)
+  fClusterFiredChips(1200)
 {
 // Standard constructor
   if(ntr>0){
@@ -67,8 +67,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
       fPhisingle[i]=ps[i];
     }
   }
-  fNumberOfFiredChips[0] = nfcL1;
-  fNumberOfFiredChips[1] = nfcL2;
+  fFiredChips[0] = nfcL1;
+  fFiredChips[1] = nfcL2;
   fFastOrFiredChips = fFastOr;
   for(Int_t ilayer = 0; ilayer < 6; ilayer++)fITSClusters[ilayer] = 0;
 }
@@ -87,7 +87,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fThsingle(0),
   fPhisingle(0),
   fFastOrFiredChips(1200),
-  fFiredChips(1200)
+  fClusterFiredChips(1200)
 {
   // copy constructor
   Duplicate(m);
@@ -164,8 +164,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
   if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
 
-  fNumberOfFiredChips[0] = m.fNumberOfFiredChips[0];
-  fNumberOfFiredChips[1] = m.fNumberOfFiredChips[1];
+  fFiredChips[0] = m.fFiredChips[0];
+  fFiredChips[1] = m.fFiredChips[1];
   for(Int_t ilayer = 0; ilayer < 6; ilayer++){
     fITSClusters[ilayer] = m.fITSClusters[ilayer];
   }
@@ -173,7 +173,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   
 
   fFastOrFiredChips = m.fFastOrFiredChips;
-  fFiredChips = m.fFiredChips;
+  fClusterFiredChips = m.fClusterFiredChips;
 }
 
 //______________________________________________________________________
