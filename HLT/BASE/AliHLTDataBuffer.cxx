@@ -935,7 +935,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawBuffer::Split(AliH
     }
     return part2;
   } else {
-    cout << "can not split fTotalSize=" << fTotalSize << "  fSize=" << fSize << "  at size=" << size << endl; 
+    //cout << "can not split fTotalSize=" << fTotalSize << "  fSize=" << fSize << "  at size=" << size << endl; 
   }
   return NULL;
 }
