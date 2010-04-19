@@ -45,6 +45,7 @@ AliFemtoTrack::AliFemtoTrack():
   fTPCchi2(0),       
   fTPCncls(0),       
   fTPCnclsF(0),      
+  fTPCsignal(0),
   fTPCsignalN(0),    
   fTPCsignalS(0),
   fSigmaToVertex(0),
@@ -86,6 +87,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCchi2(0),       
   fTPCncls(0),       
   fTPCnclsF(0),      
+  fTPCsignal(0),
   fTPCsignalN(0),    
   fTPCsignalS(0),
   fSigmaToVertex(0),
@@ -118,6 +120,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCchi2=t.fTPCchi2;       
   fTPCncls=t.fTPCncls;       
   fTPCnclsF=t.fTPCnclsF;      
+  fTPCsignal=t.fTPCsignal;
   fTPCsignalN=t.fTPCsignalN;    
   fTPCsignalS=t.fTPCsignalS;  
   fSigmaToVertex=t.fSigmaToVertex;
@@ -161,7 +164,8 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fITSncls=aTrack.fITSncls;        
   fTPCchi2=aTrack.fTPCchi2;       
   fTPCncls=aTrack.fTPCncls;       
-  fTPCnclsF=aTrack.fTPCnclsF;      
+  fTPCnclsF=aTrack.fTPCnclsF;
+  fTPCsignal=aTrack.fTPCsignal;
   fTPCsignalN=aTrack.fTPCsignalN;    
   fTPCsignalS=aTrack.fTPCsignalS;  
   fClusters=aTrack.fClusters;
@@ -205,6 +209,7 @@ void AliFemtoTrack::SetITSncls(const int& aITSncls){fITSncls=aITSncls;}
 void AliFemtoTrack::SetTPCchi2(const float& aTPCchi2){fTPCchi2=aTPCchi2;}       
 void AliFemtoTrack::SetTPCncls(const int& aTPCncls){fTPCncls=aTPCncls;}       
 void AliFemtoTrack::SetTPCnclsF(const short& aTPCnclsF){fTPCnclsF=aTPCnclsF;}      
+void AliFemtoTrack::SetTPCsignal(const float& aTPCsig){fTPCsignal=aTPCsig;}
 void AliFemtoTrack::SetTPCsignalN(const short& aTPCsignalN){fTPCsignalN=aTPCsignalN;}    
 void AliFemtoTrack::SetTPCsignalS(const float& aTPCsignalS){fTPCsignalS=aTPCsignalS;} 
 void AliFemtoTrack::SetSigmaToVertex(const float& aSigma){fSigmaToVertex=aSigma;} 
@@ -227,6 +232,7 @@ int   AliFemtoTrack::ITSncls() const{return fITSncls;}
 float AliFemtoTrack::TPCchi2() const{return fTPCchi2;}       
 int   AliFemtoTrack::TPCncls() const{return fTPCncls;}       
 short AliFemtoTrack::TPCnclsF() const{return fTPCnclsF;}      
+float AliFemtoTrack::TPCsignal() const{return fTPCsignal;}
 short AliFemtoTrack::TPCsignalN() const{return fTPCsignalN;}    
 float AliFemtoTrack::TPCsignalS() const{return fTPCsignalS;} 
 float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;} 

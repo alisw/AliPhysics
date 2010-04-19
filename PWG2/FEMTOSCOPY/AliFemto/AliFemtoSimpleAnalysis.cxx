@@ -322,7 +322,8 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   EventBegin(hbtEvent);  
   // event cut and event cut monitor
   bool tmpPassEvent = fEventCut->Pass(hbtEvent);
-  fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
+  if (!tmpPassEvent) 
+    fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   if (tmpPassEvent) {
 //     cout << "AliFemtoSimpleAnalysis::ProcessEvent() - Event has passed cut - build picoEvent from " <<
 //       hbtEvent->TrackCollection()->size() << " tracks in TrackCollection" << endl;
@@ -345,7 +346,8 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     // number of entries (jun2002)
     if ((fPicoEvent->FirstParticleCollection()->size() >= fMinSizePartCollection )
 	&& ( AnalyzeIdenticalParticles() || (fPicoEvent->SecondParticleCollection()->size() >= fMinSizePartCollection ))) {
-
+      fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
+      
 
 //------------------------------------------------------------------------------
 //   Temporary comment:
@@ -404,6 +406,7 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 
     }  // if ParticleCollections are big enough (mal jun2002)
     else{
+      fEventCut->FillCutMonitor(hbtEvent, !tmpPassEvent);
       delete fPicoEvent;
     }
   }   // if currentEvent is accepted by currentAnalysis
