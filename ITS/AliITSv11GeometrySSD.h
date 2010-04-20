@@ -113,9 +113,11 @@ private:
   static const Double_t fgkSSDCapacitor0603Length; // SSD Stiffener Capacitor 0603 Length
   static const Double_t fgkSSDCapacitor0603Width;  // SSD Stiffener Capacitor 0603 Width
   static const Double_t fgkSSDCapacitor0603Height; // SSD Stiffener Capacitor 0603 Height
+  static const Double_t fgkSSDCapacitor0603CapLength; // SSD Stiffener Capacitor 1812 Cap Length 
   static const Double_t fgkSSDCapacitor1812Length; // SSD Stiffener Capacitor 1812 Length 
   static const Double_t fgkSSDCapacitor1812Width;  // SSD Stiffener Capacitor 1812 Width
   static const Double_t fgkSSDCapacitor1812Height; // SSD Stiffener Capacitor 1812 Height
+  static const Double_t fgkSSDCapacitor1812CapLength; // SSD Stiffener Capacitor 1812 Cap Length 
   static const Double_t fgkSSDWireLength;          // SSD Stiffener Wire Length
   static const Double_t fgkSSDWireRadius;          // SSD Stiffener Wire Radius
   static const Double_t fgkSSDConnectorPosition[2];// SSD Connector Position respect to Stiffener
@@ -125,6 +127,7 @@ private:
   static const Double_t fgkSSDConnectorHeight;     // SSD Stiffener Connector Height
   static const Double_t fgkSSDConnectorAlHeight;     // SSD Stiffener Connector Al Height
   static const Double_t fgkSSDConnectorNiHeight;     // SSD Stiffener Connector Ni Height
+  static const Double_t fgkSSDConnectorSnHeight;     // SSD Stiffener Connector Sn Height
   /////////////////////////////////////////////////////////////////////////
   // Flex
   /////////////////////////////////////////////////////////////////////////
@@ -141,6 +144,7 @@ private:
   // SSD Ladder Cable 
   /////////////////////////////////////////////////////////////////////////////////
   static const Double_t fgkSSDLadderCableWidth;    // SSD Ladder Cable Width
+  static const Double_t fgkSSDLadderCableHeight[2];  // SSD Ladder Cable Height (thickness)
   /////////////////////////////////////////////////////////////////////////
   // SSD Module Components 
   /////////////////////////////////////////////////////////////////////////
@@ -476,6 +480,7 @@ private:
   TGeoMedium* fSSDStiffenerConnectorMedium;      // SSD Stiffener Connector Medium 
   TGeoMedium* fSSDStiffener0603CapacitorMedium;  // SSD Stiffener Capacitor 0603 Medium 
   TGeoMedium* fSSDStiffener1812CapacitorMedium;  // SSD Stiffener Capacitor 1812 Medium 
+  TGeoMedium* fSSDStiffenerCapacitorCapMedium;  // SSD Stiffener Capacitor Cap Medium 
   TGeoMedium* fSSDStiffenerHybridWireMedium;     // SSD Stiffener Wire Medium  
   TGeoMedium* fSSDKaptonFlexMedium;              // SSD Flex Kapton Layer Medium    
   TGeoMedium* fSSDAlTraceFlexMedium;             // SSD Flex Al Layer Medium 
@@ -495,6 +500,7 @@ private:
   TGeoMedium* fSSDRohaCellCone;                  // Medium for SSD Ring Cone Support
   TGeoMedium* fSSDAir;							 // SSD Air
   TGeoMedium* fSSDCopper;                        // Copper for SSD Cables
+  TGeoMedium* fSSDSn;                            // Tin for SSD solderings
   /////////////////////////////////////////////////////////////////////////
   Bool_t fCreateMaterials;		  // Bool variable which verifies if materials have been created
   Bool_t fTransformationMatrices; // Bool variable which verifies if matrices have been allocated
@@ -647,7 +653,7 @@ private:
   /////////////////////////////////////////////////////////////////////////
   // SSD Cone
   /////////////////////////////////////////////////////////////////////////
-  TGeoVolumeAssembly* fSSDCone;  // SSD Cone  
+  TGeoVolumeAssembly*fSSDCone;  // SSD Cone  
   /////////////////////////////////////////////////////////////////////////
   // Color Display 
   /////////////////////////////////////////////////////////////////////////
@@ -656,12 +662,13 @@ private:
   Int_t fColorPhynox;         //  ===
   Int_t fColorSilicon;        //  ===
   Int_t fColorAl;             //  ===
+  Int_t fColorNiSn;           //  ===
   Int_t fColorKapton;         //  ===
   Int_t fColorPolyhamide;     //  ===
   Int_t fColorStiffener;      //  ===
   Int_t fColorEpoxy;          //  ===
   Int_t fColorWater;		  //  ===
   Int_t fColorG10;            //  ===
-ClassDef(AliITSv11GeometrySSD, 4)     // ITS v11 SSD geometry
+ClassDef(AliITSv11GeometrySSD, 5)     // ITS v11 SSD geometry
 };
 #endif

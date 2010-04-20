@@ -5426,6 +5426,12 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t wFEP[2] = {  1.    ,  2.    };
     Float_t dFEP    = 2.15;
 
+    //SSD NiSn capacitor ends
+    Float_t aNiSn[2]  = { 56.6934,118.710};
+    Float_t zNiSn[2]  = {     28.,     50.};
+    Float_t wNiSn[2]  = {0.33, 0.67};
+    Float_t dNiSn     = wNiSn[0]*8.908 + wNiSn[1]*7.310;
+
     AliMaterial(1,"SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(1,"SI$",1,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
@@ -5514,6 +5520,12 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(65,"INOX$",aINOX,zINOX,dINOX,9,wINOX);
     AliMedium(65,"INOX$",65,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMixture(66,"NiSn$",aNiSn,zNiSn,dNiSn,2,wNiSn);
+    AliMedium(66,"NiSn$",66,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    AliMaterial(67,"Sn$", 118.710, 50., 7.310, 1.206, 999.);
+    AliMedium(67,"Sn$",67,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(68,"ROHACELL$",arohac,zrohac,drohac,-4,wrohac);
     AliMedium(68,"ROHACELL$",68,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
