@@ -24,6 +24,7 @@
 #include <Rtypes.h>
 
 #include "TClonesArray.h"
+#include "TObjArray.h"
 #include "TTree.h"
 #include "TTreeStream.h"
 
@@ -64,7 +65,7 @@ AliTOFtrackerMI::AliTOFtrackerMI():
   fDy(0), 
   fDz(0), 
   fTracks(new TClonesArray("AliTOFtrack")),
-  fSeeds(new TClonesArray("AliESDtrack")),
+  fSeeds(new TObjArray(15000)),
   fDebugStreamer(0x0)
  { 
   //AliTOFtrackerMI main Ctor
@@ -136,15 +137,12 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
 
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
-  TClonesArray &aESDTrack = *fSeeds;
-
 
   //Load ESD tracks into a local Array of ESD Seeds
-
-  for (Int_t i=0; i<fNseeds; i++) {
-    AliESDtrack *t=event->GetTrack(i);
-    new(aESDTrack[i]) AliESDtrack(*t);
-  }
+  if (!fSeeds)
+    fSeeds = new TObjArray(fNseeds);
+  for (Int_t i=0; i<fNseeds; i++)
+    fSeeds->AddLast(event->GetTrack(i));
 
   //Prepare ESD tracks candidates for TOF Matching
   CollectESD();
@@ -163,7 +161,7 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
 
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
-    AliESDtrack *seed =(AliESDtrack*)fSeeds->UncheckedAt(i);
+    AliESDtrack *seed =(AliESDtrack*)fSeeds->At(i);
 
     if ( (seed->GetStatus()&AliESDtrack::kTOFin)!=0 ) {
       t->SetStatus(AliESDtrack::kTOFin);
@@ -211,8 +209,8 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
 
   //Make TOF PID
 
-  fSeeds->Clear();
-  fTracks->Clear();
+  fSeeds->Clear(); delete fSeeds; fSeeds=0;
+  fTracks->Delete();
   return 0;
   
 }
@@ -225,7 +223,7 @@ void AliTOFtrackerMI::CollectESD() {
   Int_t c1=0;
   for (Int_t i=0; i<fNseeds; i++) {
 
-    AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
+    AliESDtrack *t =(AliESDtrack*)fSeeds->At(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
@@ -309,7 +307,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   for (Int_t i=0; i<fNseedsTOF; i++) {
 
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(i);
-    AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(track->GetSeedIndex());
+    AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
     Bool_t hasTime = ( (t->GetStatus()& AliESDtrack::kTIME)>0) ? kTRUE:kFALSE;   // did we integrate time
     Float_t trdquality = t->GetTRDQuality();
     //

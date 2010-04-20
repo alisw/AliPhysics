@@ -31,6 +31,7 @@
 
 #include <TSeqCollection.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TGeoManager.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -69,7 +70,7 @@ AliTOFtracker::AliTOFtracker():
   fnunmatch(0),
   fnmatch(0),
   fTracks(new TClonesArray("AliTOFtrack")),
-  fSeeds(new TClonesArray("AliESDtrack")),
+  fSeeds(new TObjArray(15000)),
   fHDigClusMap(0x0),
   fHDigNClus(0x0),
   fHDigClusTime(0x0),
@@ -170,15 +171,13 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
-  TClonesArray &aESDTrack = *fSeeds;
 
 
   //Load ESD tracks into a local Array of ESD Seeds
-
-  for (Int_t i=0; i<fNseeds; i++) {
-    AliESDtrack *t=event->GetTrack(i);
-    new(aESDTrack[i]) AliESDtrack(*t);
-  }
+  if (!fSeeds)
+    fSeeds = new TObjArray(fNseeds);
+  for (Int_t i=0; i<fNseeds; i++)
+    fSeeds->AddLast(event->GetTrack(i));
 
   //Prepare ESD tracks candidates for TOF Matching
   CollectESD();
@@ -195,7 +194,7 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=event->GetTrack(i);
-    AliESDtrack *seed =(AliESDtrack*)fSeeds->UncheckedAt(i);
+    AliESDtrack *seed =(AliESDtrack*)fSeeds->At(i);
 
     if ( (seed->GetStatus()&AliESDtrack::kTOFin)!=0 ) {
       t->SetStatus(AliESDtrack::kTOFin);
@@ -214,14 +213,14 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 	Int_t tlab[3]; seed->GetTOFLabel(tlab);    
 	t->SetTOFLabel(tlab);
 
-	Double_t alphaA = dynamic_cast<AliExternalTrackParam*>(t)->GetAlpha();
-	Double_t xA = dynamic_cast<AliExternalTrackParam*>(t)->GetX();
-	Double_t yA = dynamic_cast<AliExternalTrackParam*>(t)->GetY();
-	Double_t zA = dynamic_cast<AliExternalTrackParam*>(t)->GetZ();
-	Double_t p1A = dynamic_cast<AliExternalTrackParam*>(t)->GetSnp();
-	Double_t p2A = dynamic_cast<AliExternalTrackParam*>(t)->GetTgl();
-	Double_t p3A = dynamic_cast<AliExternalTrackParam*>(t)->GetSigned1Pt();
-	const Double_t *covA = dynamic_cast<AliExternalTrackParam*>(t)->GetCovariance();
+	Double_t alphaA = (Double_t)t->GetAlpha();
+	Double_t xA = (Double_t)t->GetX();
+	Double_t yA = (Double_t)t->GetY();
+	Double_t zA = (Double_t)t->GetZ();
+	Double_t p1A = (Double_t)t->GetSnp();
+	Double_t p2A = (Double_t)t->GetTgl();
+	Double_t p3A = (Double_t)t->GetSigned1Pt();
+	const Double_t *covA = (Double_t*)t->GetCovariance();
 
 	// Make attention, please:
 	//      AliESDtrack::fTOFInfo array does not be stored in the AliESDs.root file
@@ -252,14 +251,14 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 	Double_t length =  seed->GetIntegratedLength();
 	t->SetIntegratedLength(length);
 
-	Double_t alphaB = dynamic_cast<AliExternalTrackParam*>(t)->GetAlpha();
-	Double_t xB = dynamic_cast<AliExternalTrackParam*>(t)->GetX();
-	Double_t yB = dynamic_cast<AliExternalTrackParam*>(t)->GetY();
-	Double_t zB = dynamic_cast<AliExternalTrackParam*>(t)->GetZ();
-	Double_t p1B = dynamic_cast<AliExternalTrackParam*>(t)->GetSnp();
-	Double_t p2B = dynamic_cast<AliExternalTrackParam*>(t)->GetTgl();
-	Double_t p3B = dynamic_cast<AliExternalTrackParam*>(t)->GetSigned1Pt();
-	const Double_t *covB = dynamic_cast<AliExternalTrackParam*>(t)->GetCovariance();
+	Double_t alphaB = (Double_t)t->GetAlpha();
+	Double_t xB = (Double_t)t->GetX();
+	Double_t yB = (Double_t)t->GetY();
+	Double_t zB = (Double_t)t->GetZ();
+	Double_t p1B = (Double_t)t->GetSnp();
+	Double_t p2B = (Double_t)t->GetTgl();
+	Double_t p3B = (Double_t)t->GetSigned1Pt();
+	const Double_t *covB = (Double_t*)t->GetCovariance();
 	AliDebug(2,"Track params -now(before)-:");
 	AliDebug(2,Form("    X: %f(%f), Y: %f(%f), Z: %f(%f) --- alpha: %f(%f)",
 			xB,xA,
@@ -312,8 +311,8 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
   // Now done in AliESDpid
   // fPid->MakePID(event,timeZero);
 
-  fSeeds->Clear();
-  fTracks->Clear();
+  fSeeds->Clear(); delete fSeeds; fSeeds=0;
+  fTracks->Delete();
   return 0;
   
 }
@@ -327,7 +326,7 @@ void AliTOFtracker::CollectESD() {
   TClonesArray &aTOFTrack = *fTracks;
   for (Int_t i=0; i<fNseeds; i++) {
 
-    AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(i);
+    AliESDtrack *t =(AliESDtrack*)fSeeds->At(i);
     if ((t->GetStatus()&AliESDtrack::kTPCout)==0)continue;
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
@@ -447,7 +446,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       global[ii] = 0x0;
 
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(iseed);
-    AliESDtrack *t =(AliESDtrack*)fSeeds->UncheckedAt(track->GetSeedIndex());
+    AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
     //if ( t->GetTOFsignal()>0. ) continue;
     if ( (t->GetStatus()&AliESDtrack::kTOFout)!=0 ) continue;
     AliTOFtrack *trackTOFin =new AliTOFtrack(*track);

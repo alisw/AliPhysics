@@ -18,6 +18,7 @@
 
 class TTreeSRedirector;
 class TClonesArray;
+class TObjArray;
 
 class AliESDEvent;
 class AliESDpid;
@@ -81,9 +82,9 @@ private:
  Float_t fDy;           // Pad Size in Y (== X  TOF convention)
  Float_t fDz;           // Pad Size in Z 
  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
- TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
+ TObjArray* fSeeds;  //! pointer to the TObjArray with ESD tracks
  TTreeSRedirector *fDebugStreamer;     //!debug streamer
- ClassDef(AliTOFtrackerMI, 2) // TOF trackerMI 
+ ClassDef(AliTOFtrackerMI, 3) // TOF trackerMI 
 };
 
 #endif

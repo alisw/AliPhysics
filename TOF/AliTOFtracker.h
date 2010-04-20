@@ -21,6 +21,7 @@
 #include "AliTracker.h"
 
 class TClonesArray;
+class TObjArray;
 
 class TH1F;
 class TH2F;
@@ -78,7 +79,7 @@ private:
  Int_t fnmatch;         // Total matched tracks
  
  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
- TClonesArray* fSeeds;  //! pointer to the TClonesArray with ESD tracks
+ TObjArray* fSeeds;  //! pointer to the TObjArray with ESD tracks
  //Digits/Reco QA histos
 
  TH2F * fHDigClusMap; //Digits QA, Cluster Map 
@@ -101,7 +102,7 @@ private:
  Float_t fExpTimeKa; // exp time, Kaons
  Float_t fExpTimePr; // exp time, Protons
 
- ClassDef(AliTOFtracker, 4) // TOF tracker 
+ ClassDef(AliTOFtracker, 5) // TOF tracker 
 };
 
 #endif
