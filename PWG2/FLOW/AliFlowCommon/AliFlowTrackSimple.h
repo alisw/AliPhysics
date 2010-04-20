@@ -39,9 +39,13 @@ class AliFlowTrackSimple: public TNamed {
   void SetEta(Double_t eta);
   void SetPt(Double_t pt); 
   void SetPhi(Double_t phi);
-  void SetForRPSelection(Bool_t b); 
-  void SetForPOISelection(Bool_t b); 
+  void SetForRPSelection(Bool_t b=kTRUE); 
+  void SetForPOISelection(Bool_t b=kTRUE); 
   void SetForSubevent(Int_t i); 
+  
+  void ResolutionPt(Double_t resolution);
+
+  void AddFlow( Double_t flow, Double_t planeAngle);
     
  private:
   Double_t fEta;    // eta

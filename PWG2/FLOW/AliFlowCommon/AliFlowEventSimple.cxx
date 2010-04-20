@@ -39,11 +39,11 @@
 #include "AliFlowTrackSimple.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimpleCuts.h"
+#include "TRandom.h"
 
 ClassImp(AliFlowEventSimple)
 
 //-----------------------------------------------------------------------
-
 AliFlowEventSimple::AliFlowEventSimple():
   fTrackCollection(NULL),
   fNumberOfTracks(0),
@@ -58,7 +58,6 @@ AliFlowEventSimple::AliFlowEventSimple():
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
   fTrackCollection(NULL),
   fNumberOfTracks(0),
@@ -74,7 +73,6 @@ AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   TObject(),
   fTrackCollection(anEvent.fTrackCollection),
@@ -90,9 +88,9 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEvent)
 {
+  if (!fTrackCollection) fTrackCollection = new TObjArray();
   *fTrackCollection = *anEvent.fTrackCollection ;
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fEventNSelTracksRP = anEvent.fEventNSelTracksRP;
@@ -106,7 +104,6 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowEventSimple::~AliFlowEventSimple()
 {
   //destructor
@@ -118,12 +115,21 @@ AliFlowEventSimple::~AliFlowEventSimple()
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 {
   //get track i from collection
-  AliFlowTrackSimple* pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i) ;
+  if (i>=fNumberOfTracks) return NULL;
+  AliFlowTrackSimple* pTrack = static_cast<AliFlowTrackSimple*>(TrackCollection()->At(i)) ;
   return pTrack;
+}
+
+//-----------------------------------------------------------------------
+void AliFlowEventSimple::AddTrack( AliFlowTrackSimple* track )
+{
+  //add a track
+  if (!fTrackCollection) return;
+  fTrackCollection->AddLast(track);
+  fNumberOfTracks++;
 }
 
 //-----------------------------------------------------------------------
@@ -425,21 +431,21 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
     if (!pParticle) continue; //no particle
     if (!pParticle->IsPrimary()) continue;
 
-    Bool_t bPassedRPFlowCuts = rpCuts->PassesCuts(pParticle);
-    Bool_t bPassedPOIFlowCuts = poiCuts->PassesCuts(pParticle);
+    Bool_t rpOK = rpCuts->PassesCuts(pParticle);
+    Bool_t poiOK = poiCuts->PassesCuts(pParticle);
     
-    if (bPassedRPFlowCuts || bPassedPOIFlowCuts)
+    if (rpOK || poiOK)
     {
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple(pParticle);
 
       //marking the particles used for int. flow:
-      if(bPassedRPFlowCuts)
+      if(rpOK)
       {
         pTrack->SetForRPSelection(kTRUE);
         fEventNSelTracksRP++;
       }
       //marking the particles used for diff. flow:
-      if(bPassedPOIFlowCuts)
+      if(poiOK)
       {
         pTrack->SetForPOISelection(kTRUE);
         iSelParticlesPOI++;
@@ -466,5 +472,17 @@ void AliFlowEventSimple::CloneTracks(Int_t n)
       fNumberOfTracks++;
 
     }
+  }
+}
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::ResolutionPt(Double_t res)
+{
+  //smear pt of all tracks by gaussian with sigma=res
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
+    track->ResolutionPt(res);
   }
 }

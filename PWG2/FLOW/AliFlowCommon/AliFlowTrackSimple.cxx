@@ -25,6 +25,7 @@
 #include "TNamed.h"
 #include "TParticle.h"
 #include "AliFlowTrackSimple.h"
+#include "TRandom.h"
 
 ClassImp(AliFlowTrackSimple)
 
@@ -86,3 +87,16 @@ AliFlowTrackSimple::~AliFlowTrackSimple()
   
 }
 
+//----------------------------------------------------------------------- 
+void AliFlowTrackSimple::AddFlow( Double_t flow, Double_t planeAngle )
+{
+  //add flow wrt the eventplane
+  fPhi -= flow*TMath::Sin(2*(fPhi-planeAngle));
+}
+
+//----------------------------------------------------------------------- 
+void AliFlowTrackSimple::ResolutionPt(Double_t res)
+{
+  //smear the pt by a gaussian with sigma=res
+  fPt += gRandom->Gaus(0.,res);
+}

@@ -10,6 +10,7 @@
 #include <AliFlowCommon/AliFlowCumuConstants.h>
 #include <AliFlowCommon/AliFlowVector.h>
 #include <AliFlowCommon/AliFlowTrackSimple.h>
+#include <AliFlowCommon/AliFlowEvent.h>
 #include <AliFlowCommon/AliFlowEventSimple.h>
 #include <AliFlowCommon/AliFlowTrackSimpleCuts.h>
 #include <AliFlowCommon/AliFlowCommonHist.h>
@@ -617,7 +618,8 @@ void LoadLibraries(const anaModes mode) {
     
     // Flow event
     gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
-    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowEvent.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
     
     // Cuts

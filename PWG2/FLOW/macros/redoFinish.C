@@ -252,7 +252,8 @@ void LoadLibrariesRF(const libModes mode) {
     
     // Flow event
     gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+"); 
-    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");    
+    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");
+    gROOT->LoadMacro("AliFlowCommon/AliFlowEvent.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
     
     // Cuts

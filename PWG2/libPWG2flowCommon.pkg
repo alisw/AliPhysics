@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
-SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
+SRCS= FLOW/AliFlowCommon/AliFlowEvent.cxx \
+      FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommon/AliFlowTrackSimple.cxx \
       FLOW/AliFlowCommon/AliFlowTrackSimpleCuts.cxx \
       FLOW/AliFlowCommon/AliFlowVector.cxx \

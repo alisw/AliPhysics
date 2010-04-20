@@ -43,15 +43,18 @@ class AliFlowEventSimple: public TObject {
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
   void     SetMCReactionPlaneAngle(Double_t fPhiRP) { fMCReactionPlaneAngle=fPhiRP; fMCReactionPlaneAngleIsSet=kTRUE; }
 
+  void ResolutionPt(Double_t res);
+
   void CloneTracks(Int_t n);
  
   AliFlowTrackSimple* GetTrack(Int_t i);
-  TObjArray* TrackCollection() const                { return fTrackCollection; }
+  void AddTrack( AliFlowTrackSimple* track ); 
+  TObjArray* TrackCollection() const                { return fTrackCollection; } //deprecated!
  
   AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
 
- private:
+ protected:
   TObjArray*              fTrackCollection;           // collection of tracks
   Int_t                   fNumberOfTracks;            // number of tracks
   Int_t                   fEventNSelTracksRP;         // number of tracks that have passed the RP selection

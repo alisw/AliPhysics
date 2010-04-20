@@ -10,6 +10,7 @@
 
 #pragma link C++ class AliFlowVector+;
 #pragma link C++ class AliFlowTrackSimple+;
+#pragma link C++ class AliFlowEvent+;
 #pragma link C++ class AliFlowEventSimple+;
 
 #pragma link C++ class AliFlowTrackSimpleCuts+;
