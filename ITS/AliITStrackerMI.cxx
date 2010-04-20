@@ -34,19 +34,12 @@
 #include <TTreeStream.h>
 
 #include "AliLog.h"
+#include "AliGeomManager.h"
 #include "AliITSPlaneEff.h"
-#include "AliITSCalibrationSPD.h"
-#include "AliITSCalibrationSDD.h"
-#include "AliITSCalibrationSSD.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
-#include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliV0.h"
-#include "AliHelix.h"
 #include "AliITSChannelStatus.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
@@ -1152,7 +1145,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       while ((cl=layer.GetNextCluster(clidx))!=0) { 
 	if (ntracks[ilayer]>95) break; //space for skipped clusters  
 	Bool_t changedet =kFALSE;  
-	if (cl->GetQ()==0 && deadzoneSPD==kTRUE) continue;
+	if (TMath::Abs(cl->GetQ())<1.e-13 && deadzoneSPD==kTRUE) continue;
 	Int_t idetc=cl->GetDetectorIndex();
 
 	if (currenttrack->GetDetectorIndex()==idetc) { // track already on the cluster's detector
@@ -1196,13 +1189,13 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	// chi2 cut
 	AliDebug(2,Form("chi2 %f max %f",chi2trkcl,AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer)));
 	if (chi2trkcl < AliITSReconstructor::GetRecoParam()->GetMaxChi2s(ilayer)) {
-	  if (cl->GetQ()==0) deadzoneSPD=kTRUE; // only 1 prolongation with virtual cluster	  
+	  if (TMath::Abs(cl->GetQ())<1.e-13) deadzoneSPD=kTRUE; // only 1 prolongation with virtual cluster	  
 	  if (ntracks[ilayer]>=100) continue;
 	  AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
 	  updatetrack->SetClIndex(ilayer,-1);
 	  if (changedet) new (&currenttrack2) AliITStrackMI(backuptrack);
 
-	  if (cl->GetQ()!=0) { // real cluster
+	  if (TMath::Abs(cl->GetQ())>1.e-13) { // real cluster
 	    if (!UpdateMI(updatetrack,cl,chi2trkcl,(ilayer<<28)+clidx)) {
 	      AliDebug(2,"update failed");
 	      continue;
@@ -1249,7 +1242,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       } // loop over possible prolongations 
      
       // allow one prolongation without clusters
-      if (constrain && itrack<=1 && currenttrack1.GetNSkipped()==0 && deadzoneSPD==kFALSE && ntracks[ilayer]<100) {
+      if (constrain && itrack<=1 && TMath::Abs(currenttrack1.GetNSkipped())<1.e-13 && deadzoneSPD==kFALSE && ntracks[ilayer]<100) {
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
@@ -1966,7 +1959,7 @@ const AliITSRecPoint *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci,Boo
       if (z+fNMaxSigmaCl*TMath::Sqrt(fClusters[i]->GetSigmaZ2())<fZmin+fNMaxSigmaCl*fMaxSigmaClZ) continue;
       if (z-fNMaxSigmaCl*TMath::Sqrt(fClusters[i]->GetSigmaZ2())>fZmax-fNMaxSigmaCl*fMaxSigmaClZ) continue;
       //
-      if (fClusters[i]->GetQ()==0&&fSkip==2) continue;
+      if (TMath::Abs(fClusters[i]->GetQ())<1.e-13 && fSkip==2) continue;
       ci=i;
       if (!test) fI=i+1;
       return fClusters[i];
@@ -1975,7 +1968,7 @@ const AliITSRecPoint *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci,Boo
     for (Int_t i=fI; i<fImax; i++) {
       if (fYcs[i]<fYmin) continue;
       if (fYcs[i]>fYmax) continue;
-      if (fClustersCs[i]->GetQ()==0&&fSkip==2) continue;
+      if (TMath::Abs(fClustersCs[i]->GetQ())<1.e-13 && fSkip==2) continue;
       ci=fClusterIndexCs[i];
       if (!test) fI=i+1;
       return fClustersCs[i];
@@ -2762,7 +2755,7 @@ Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id
     Int_t l=(index & 0xf0000000) >> 28;
     Int_t c=(index & 0x0fffffff) >> 00;
     if (c>fgLayers[l].GetNumberOfClusters()) continue;
-    if (ny[l]==0){
+    if (ny[l]<1.e-13){
       printf("problem\n");
     }
     AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(index);
@@ -2812,7 +2805,7 @@ Int_t AliITStrackerMI::GetOverlapTrack(const AliITStrackMI *track, Int_t trackID
     Int_t index = clusterlist[icluster];
     Int_t l=(index & 0xf0000000) >> 28;
     Int_t c=(index & 0x0fffffff) >> 00;
-    if (ny[l]==0){
+    if (ny[l]<1.e-13){
       printf("problem\n");
     }
     if (c>fgLayers[l].GetNumberOfClusters()) continue;
@@ -3681,8 +3674,9 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
    
 }
 //------------------------------------------------------------------------
-void AliITStrackerMI::CookdEdx(AliITStrackMI* track)
-{
+void AliITStrackerMI::CookdEdx(AliITStrackMI* track){
+  //
+  // Fill the dE/dx in this track
   //
   track->SetChi2MIP(9,0);
   for (Int_t i=0;i<track->GetNumberOfClusters();i++){
@@ -3762,7 +3756,7 @@ Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,D
     }
   }
 
-  if (cl->GetQ()<=0) return 0;  // ingore the "virtual" clusters
+  if (TMath::Abs(cl->GetQ())<1.e-13) return 0;  // ingore the "virtual" clusters
 
 
   // Take into account the mis-alignment (bring track to cluster plane)
@@ -4800,4 +4794,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
-

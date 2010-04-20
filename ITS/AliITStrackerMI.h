@@ -64,10 +64,10 @@ public:
   Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
   AliPlaneEff *GetPlaneEff() {return (AliPlaneEff*)fPlaneEff;}   // return the pointer to AliPlaneEff
   void SetDetTypeRec(const AliITSDetTypeRec *detTypeRec) {fkDetTypeRec = detTypeRec; ReadBadFromDetTypeRec(); }
-  TObjArray* GetTrackHypothesys() {return &fTrackHypothesys;}
-  TObjArray* GetBestHypothesys()  {return &fBestHypothesys;}
-  TObjArray* GetOriginal()        {return &fOriginal;}
-  TTreeSRedirector *GetDebugStreamer() {return fDebugStreamer;}
+  TObjArray* GetTrackHypothesys()  {return &fTrackHypothesys;}
+  TObjArray* GetBestHypothesys()   {return &fBestHypothesys;}
+  TObjArray* GetOriginal()         {return &fOriginal;}
+  TTreeSRedirector *GetDebugStreamer() const {return fDebugStreamer;}
   static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t);
   void  SetForceSkippingOfLayer();
   Int_t ForceSkippingOfLayer(Int_t l) const { return fForceSkippingOfLayer[l]; }
@@ -129,8 +129,8 @@ public:
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
     Int_t FindClusterIndex(Float_t z) const;
-    AliITSRecPoint *GetCluster(Int_t i) const {return i<fN? fClusters[i]:0;} 
-    Float_t  *GetWeight(Int_t i)  {return i<fN ?&fClusterWeight[i]:0;}
+    AliITSRecPoint *GetCluster(Int_t i) const {return i<fN ? fClusters[i]:0;} 
+    Float_t  *GetWeight(Int_t i)  {return i<fN ? &fClusterWeight[i]:0;}
     AliITSdetector &GetDetector(Int_t n) const { return fDetectors[n]; }
     Int_t FindDetectorIndex(Double_t phi, Double_t z) const;
     Double_t GetThickness(Double_t y, Double_t z, Double_t &x0) const;
@@ -332,7 +332,7 @@ inline void AliITStrackerMI::SetupFirstPass(const Int_t *flags,const Double_t *c
   //              positive means "normal constraint"                    
 
    fConstraint[0]=flags[0];
-   if (cuts==0) return;
+   if (!cuts) return;
 }
 
 inline void AliITStrackerMI::SetupSecondPass(const Int_t *flags,const Double_t *cuts) {
@@ -344,7 +344,7 @@ inline void AliITStrackerMI::SetupSecondPass(const Int_t *flags,const Double_t *
   //              positive means "normal constraint"                    
 
    fConstraint[1]=flags[0];
-   if (cuts==0) return;
+   if (!cuts) return;
 }
 
 inline void AliITStrackerMI::CookLabel(AliKalmanTrack *t,Float_t wrong) const {
@@ -383,4 +383,3 @@ inline void  AliITStrackerMI::AliITSdetector::GetGlobalXYZ(const AliITSRecPoint 
   xyz[1] = fR*fSinPhi + cl->GetY()*fCosPhi;
 }
 #endif
-
