@@ -584,7 +584,7 @@ MUON 30  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1    
 *
 *    Med GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL 
 * Crystal
-PHOS  0   5e-4  1e-4  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
+PHOS  0   5e-5  1e-4  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
 * Titan cover
 PHOS  5   1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
 * Aluminium parts
