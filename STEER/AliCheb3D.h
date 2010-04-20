@@ -124,6 +124,7 @@ class AliCheb3D: public TNamed
   void         LoadData(FILE* stream);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
+  void         InvertSign();
   int*         GetNCNeeded(float xyz[3],int DimVar, float mn,float mx, float prec, Int_t npCheck=30);
   void         EstimateNPoints(float Prec, int gridBC[3][3],Int_t npd1=30,Int_t npd2=30,Int_t npd3=30);
   void         SaveData(const char* outfile,Bool_t append=kFALSE)        const;

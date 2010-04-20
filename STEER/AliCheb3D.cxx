@@ -657,6 +657,21 @@ void AliCheb3D::SaveData(FILE* stream) const
 }
 #endif
 
+//__________________________________________________________________________________________
+#ifdef _INC_CREATION_ALICHEB3D_
+void AliCheb3D::InvertSign()
+{
+  // invert the sign of all parameterizations
+  for (int i=fDimOut;i--;) {
+    AliCheb3DCalc* par =  GetChebCalc(i);
+    int ncf = par->GetNCoefs();
+    float *coefs = par->GetCoefs();
+    for (int j=ncf;j--;) coefs[j] = -coefs[j];
+  }
+}
+#endif
+
+
 //_______________________________________________
 void AliCheb3D::LoadData(const char* inpFile)
 {
