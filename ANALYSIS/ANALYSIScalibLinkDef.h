@@ -8,6 +8,7 @@
 #pragma link C++ class AliAnalysisTaskFilter+;
 #pragma link C++ class AliAnalysisTaskFilterFriend+;
 #pragma link C++ class AliAnalysisTaskFilterFriendSecond+;
+#pragma link C++ class AliAnalysisTaskFilterSTEER+;
 #pragma link C++ class AliAnalysisTaskAddObject+;
 
 #endif

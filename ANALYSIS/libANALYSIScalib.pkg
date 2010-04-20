@@ -4,6 +4,7 @@ SRCS = 	\
 	AliAnalysisTaskFilter.cxx \
 	AliAnalysisTaskFilterFriend.cxx \
 	AliAnalysisTaskFilterFriendSecond.cxx \
+	AliAnalysisTaskFilterSTEER.cxx \
 	AliAnalysisTaskAddObject.cxx
 
 
