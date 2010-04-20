@@ -1022,21 +1022,32 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
     AliWarning("No Histogram defined.");
     return NULL;
   }
-  Float_t offset = .5*AliTRDgeometry::CamHght();
   AliTRDseedV1 *tracklet = NULL;
   AliTRDcluster *c = NULL;
-  Double_t distance = 0;
-  Double_t x, y;
+  Double_t xd(0.), dqdl(0.);
+  TVectorD vq(AliTRDseedV1::kNtb), vxd(AliTRDseedV1::kNtb), vdqdl(AliTRDseedV1::kNtb);
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
-    tracklet->ResetClusterIter();
-    while((c = tracklet->NextCluster())){
+    Int_t det(tracklet->GetDetector());
+    Bool_t rc(tracklet->IsRowCross());
+    Int_t jc(0);
+    for(Int_t ic(0); ic<AliTRDseedV1::kNclusters; ic++){
+      if(!(c = tracklet->GetClusters(ic))) continue;
       if(!IsUsingClustersOutsideChamber() && !c->IsInChamber()) continue;
-      x = c->GetX()-AliTRDcluster::GetXcorr(c->GetLocalTimeBin());
-      y = c->GetY()-AliTRDcluster::GetYcorr(AliTRDgeometry::GetLayer(c->GetDetector()), c->GetCenter());
-
-      distance = tracklet->GetX0() - (c->GetX() + 0.3) + offset;
-      h->Fill(distance, TMath::Abs(c->GetQ()));
+      jc = TMath::Max(ic, ic-AliTRDseedV1::kNtb);
+      xd = tracklet->GetX0() - c->GetX(); vxd[jc] = xd;
+      dqdl=tracklet->GetdQdl(ic); vdqdl[jc] = dqdl;
+      h->Fill(xd, dqdl);
+    }
+    if(DebugLevel() > 3){
+      vq[jc]+=c->GetQ();
+      (*DebugStream()) << "PHx"
+        << "det="  << det
+        << "rc="   << rc
+        << "xd="   << &vxd
+        << "q="    << &vq
+        << "dqdl=" << &vdqdl
+        << "\n";
     }
   }  
   return h;
