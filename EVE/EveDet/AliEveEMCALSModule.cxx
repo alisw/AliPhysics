@@ -1,38 +1,37 @@
-//*************************************************************************
 // EMCAL event display
 // Visualization of an EMCAL super module.
 //
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
-//*************************************************************************
 
-#include <Riostream.h>
-#include <vector>
+#include "AliEveEMCALSModule.h"
 
-#include <TEveTrans.h>
-#include <TEveElement.h>
+//#include <vector>
+
 #include <TEveFrameBox.h>
 #include <TEveQuadSet.h>
 #include <TEvePointSet.h>
-#include <TClonesArray.h>
-#include <TVectorT.h>
-#include <TStyle.h>
-#include <TBuffer3DTypes.h>
-#include <TBuffer3D.h>
-#include <TVirtualPad.h>
-#include <TVirtualViewer3D.h>
 #include <TEveRGBAPalette.h>
 
-#include "AliEveEMCALData.h"
-#include "AliEveEMCALSModule.h"
-#include "AliEveEMCALSModuleData.h"
-#include "AliEMCALHit.h"
-#include "AliEMCALDigit.h"
 
+class Riostream;
+//class vector;
+class TEveTrans;
+class TEveElement;
+class TClonesArray;
+class TStyle;
+class TBuffer3DTypes;
+class TBuffer3D;
+class TVirtualPad;
+class TVirtualViewer3D;
+class AliEveEMCALData;
+class AliEMCALHit;
+class AliEMCALDigit;
+class AliEveEMCALSModuleData;
 
 ClassImp(AliEveEMCALSModule)
 
-Bool_t           AliEveEMCALSModule::fStaticInit = kFALSE;
+Bool_t           AliEveEMCALSModule::fgStaticInit = kFALSE;
 Float_t          AliEveEMCALSModule::fgSMBigBBox[3];
 Float_t          AliEveEMCALSModule::fgSMSmallBBox[3];
 TEveFrameBox*    AliEveEMCALSModule::fgFrameBigBox = 0;
@@ -126,7 +125,7 @@ AliEveEMCALSModule::~AliEveEMCALSModule()
 }
 
 //______________________________________________________________________________
-void AliEveEMCALSModule::DropData()
+void AliEveEMCALSModule::DropData() const
 {
   //
   // release the sm data
@@ -147,8 +146,8 @@ void AliEveEMCALSModule::InitStatics(AliEveEMCALSModuleData* md)
   // Bounding box, Framebox and Palette
   //
 
-  if (fStaticInit) return;
-  fStaticInit = kTRUE;
+  if (fgStaticInit) return;
+  fgStaticInit = kTRUE;
 
   md->GetSModuleBigBox(fgSMBigBBox[0],fgSMBigBBox[1], fgSMBigBBox[2]);
   md->GetSModuleSmallBox(fgSMSmallBBox[0],fgSMSmallBBox[1], fgSMSmallBBox[2]);
@@ -191,7 +190,7 @@ void AliEveEMCALSModule::SetHitSize(Int_t size)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* data)
+void AliEveEMCALSModule::SetDataSource(AliEveEMCALData* const data)
 {
   //
   // Set source of data.
@@ -251,7 +250,7 @@ void AliEveEMCALSModule::UpdateQuads()
 
   if (fEMCALSModuleData != 0) {
 
-    if (!fStaticInit)
+    if (!fgStaticInit)
       InitStatics(fEMCALSModuleData);
 
     // digits ------------------------

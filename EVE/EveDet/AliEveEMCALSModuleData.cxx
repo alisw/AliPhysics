@@ -1,28 +1,23 @@
-//*************************************************************************
+//
 // EMCAL event display
 // Store the data related to each Super Module (SM)
 // Possible storage of hits, digits and clusters per SM
-// For visualization
-// in alieve
 //
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
-//*************************************************************************
-
-#include <Riostream.h>
+//
 
 #include "AliEveEMCALSModuleData.h"
 
-#include <AliEMCALGeometry.h>
-
-#include <TVector2.h>
-#include <TVectorT.h>
-#include <TClonesArray.h>
-#include <TGeoNode.h>
 #include <TGeoBBox.h>
-#include <TGeoMatrix.h>
 
-#include <EveBase/AliEveEventManager.h>
+class Riostream;
+class TClonesArray;
+class TGeoNode;
+class TGeoMatrix;
+class AliEMCALGeometry;
+class TVector2;
+class AliEveEventManager;
 
 ClassImp(AliEveEMCALSModuleData)
 

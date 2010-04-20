@@ -1,27 +1,39 @@
-//*************************************************************************
-// EMCAL event display
+//
 // Visualization of an EMCAL super module.
 //
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
-//*************************************************************************
+//
 
 #ifndef ALIEVEEMCALSMODULE_H
 #define ALIEVEEMCALSMODULE_H
 
-#include <TEveQuadSet.h>
-#include <TEveElement.h>
-#include <TEveBoxSet.h>
-#include <TEveFrameBox.h>
-#include <TEvePointSet.h>
-#include <TClonesArray.h>
-#include <TTree.h>
-
-#include <TGedFrame.h>
+#include "AliEveEMCALSModuleData.h"
 
 class AliEveEMCALData;
-class AliEveEMCALSModuleData;
+class TEveQuadSet;
+class TEveBoxSet;
+class TEveFrameBox;
+class TEvePointSet;
+class TClonesArray;
+class TTree;
+class TGedFrame;
+class TGeoNode; 
+class TGeoMatrix; 
+class AliRun;
+class AliEMCALGeometry;
+class AliESDEvent;
+class AliEMCAL;
 
+class TEveTrans;
+class TStyle;
+class TBuffer3DTypes;
+class TBuffer3D;
+class TVirtualPad;
+class TVirtualViewer3D;
+class AliEveEMCALData;
+class AliEMCALHit;
+class AliEMCALDigit;
 
 class AliEveEMCALSModule : public TEveElement,
                            public TNamed,
@@ -32,14 +44,14 @@ class AliEveEMCALSModule : public TEveElement,
   AliEveEMCALSModule(Int_t smodid, const Text_t* n, const Text_t* t);
   ~AliEveEMCALSModule();
 
-  void DropData();
+  void DropData() const;
 
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
-  void  SetDataSource(AliEveEMCALData *data);
+  void  SetDataSource(AliEveEMCALData * const data);
   void  SetSModuleID(Int_t id);
   void  SetFrameColor(Color_t col) { fFrameColor = col; };
-  AliEveEMCALData* GetData() const { return fEMCALData; };
+  const AliEveEMCALData* GetData() const { return fEMCALData; };
   AliEveEMCALSModuleData* GetSModuleData() const;
   Int_t GetID() const { return fSModuleID; };
   void  SetClusterSize(Int_t size);
@@ -48,7 +60,7 @@ class AliEveEMCALSModule : public TEveElement,
   void UpdateQuads();
 
  protected:
-  AliEveEMCALData         *fEMCALData;        //  Data for the current event
+  AliEveEMCALData   *fEMCALData;        //  Data for the current event
   AliEveEMCALSModuleData  *fEMCALSModuleData; //  Data of Super Module (SM)
   Color_t                 fFrameColor;        //  Main coloring
   Int_t                   fSModuleID;         //  Id of super module, 0 to 11
@@ -61,7 +73,7 @@ class AliEveEMCALSModule : public TEveElement,
 
   static void InitStatics(AliEveEMCALSModuleData* md);
 
-  static   Bool_t           fStaticInit;       // Flag for static variable initialization.
+  static   Bool_t           fgStaticInit;       // Flag for static variable initialization.
   static   Float_t          fgSMBigBBox[3];    //  Bounding Box of full SM
   static   Float_t          fgSMSmallBBox[3];  //  Bounding Box of half SM
   static   TEveFrameBox    *fgFrameBigBox;     // Frame box per full SM
@@ -72,7 +84,7 @@ class AliEveEMCALSModule : public TEveElement,
   void SetupColor(Int_t val, UChar_t* pix) const;
 
  private:
-  AliEveEMCALSModule(const AliEveEMCALSModule&);            
+  AliEveEMCALSModule(const AliEveEMCALSModule &esm);            
   AliEveEMCALSModule& operator=(const AliEveEMCALSModule&); // Not implemented
 
   ClassDef(AliEveEMCALSModule, 0); // Base class for TRD hits visualisation

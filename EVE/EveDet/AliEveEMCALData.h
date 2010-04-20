@@ -1,37 +1,35 @@
-//*********************************************************************
-// - AliEVE implementation -
+//
 // Fill containers for visualisation of EMCAL data structures
-//    - read and store MC Hits
-//    - read and store digits from esds or runloader
-//    - read and store clusters from esds or runloader 
 //
 // Author: Magali Estienne (magali.estienne@cern.ch)
 // June 30 2008
-//*********************************************************************
+//
 
-#ifndef AliEveEMCALData_H
-#define AliEveEMCALData_H
+#ifndef ALIEVEEMCALDATA_H
+#define ALIEVEEMCALDATA_H
 
-#include <TEveUtil.h>
-#include <TEveQuadSet.h>
-#include <TEveBoxSet.h>
-#include <TEvePointSet.h>
-#include <TGedFrame.h>
-#include <TGeoNode.h>
+#include <TGeoNode.h> 
 #include <TGeoMatrix.h>
-#include <TClonesArray.h>
-#include <TTree.h>
+#include <TEveRGBAPalette.h>
+#include <TEveTrans.h>
+#include <TEveQuadSet.h> 
+#include "AliESDEvent.h"
+#include "AliRun.h"
+#include "AliEMCAL.h"
 
-#include <map>
-#include <vector>
-
+class Riostream;
+class map;
+class TTree;
+class AliRun;
 class AliRunLoader;
-class AliESDEvent;
-class AliEMCAL;
 class AliEMCALLoader;
 class AliEMCALGeometry;
-class AliEveEMCALSModule;
 class AliEveEMCALSModuleData;
+class TClonesArray; 
+class TEvePointSet; 
+class TGedFrame; 
+class TEveBoxSet; 
+class TEveUtil; 
 
 class AliEveEMCALData : public TObject, public TEveRefCnt
 {
@@ -40,11 +38,10 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
   AliEveEMCALData(AliRunLoader* rl, TGeoNode* node, TGeoHMatrix* m);
   ~AliEveEMCALData();
 
-  void Reset();
-  void SetTree(TTree* tree);
-  void SetESD(AliESDEvent* esd);
-  void SetNode(TGeoNode* node);
-  void InitEMCALGeom(AliRunLoader* rl);
+  void SetTree(TTree* const tree);
+  void SetESD(AliESDEvent* const esd);
+  void SetNode(TGeoNode* const node);
+  void InitEMCALGeom(AliRunLoader* const rl);
   void GetGeomInfo(Int_t id, Int_t &iSupMod, Double_t& x, Double_t& y, Double_t& z);
 
   void CreateAllSModules();
@@ -52,18 +49,18 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
   void DropAllSModules();
   void DeleteSuperModules();
 
-  void LoadHits(TTree* t);
+  void LoadHits(TTree* const t);
   void LoadDigits(TTree* t);
-  void LoadRecPoints(TTree* t);
-  void LoadHitsFromEMCALLoader(AliEMCALLoader* emcl);
-  void LoadDigitsFromEMCALLoader(AliEMCALLoader* emcl);
-  void LoadRecPointsFromEMCALLoader(AliEMCALLoader* emcl);
+  void LoadRecPoints(TTree* const t);
+  void LoadHitsFromEMCALLoader(AliEMCALLoader* const emcl);
+  void LoadDigitsFromEMCALLoader(AliEMCALLoader* const emcl);
+  void LoadRecPointsFromEMCALLoader(AliEMCALLoader* const emcl);
   void LoadDigitsFromESD();
   void LoadRecPointsFromESD();
-  void LoadRaw();
+  void LoadRaw() const;
 
   AliEveEMCALSModuleData* GetSModuleData(Int_t sm);
-  TEvePointSet*           GetPointSetData() {return fPoint;};
+  TEvePointSet*           GetPointSetData() const {return fPoint;};
 
  protected:
   AliEMCAL*         fEmcal;     // EMCal data member
@@ -84,7 +81,7 @@ class AliEveEMCALData : public TObject, public TEveRefCnt
 
  private:
   AliEveEMCALData(const AliEveEMCALData &edata);            
-  AliEveEMCALData& operator=(const AliEveEMCALData&); // Not implemented
+  AliEveEMCALData& operator=(const AliEveEMCALData &edata); // Not implemented
 
   ClassDef(AliEveEMCALData, 0); // Base class for TRD hits visualisation
 };

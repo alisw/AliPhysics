@@ -1,32 +1,26 @@
-//*********************************************************************
-// - AliEVE implementation -
+//
 // Fill containers for visualisation of EMCAL data structures
-//    - read and store MC Hits
-//    - read and store digits from esds or runloader
+//    - read and store MC Hits    - read and store digits from esds or runloader
 //    - read and store clusters from esds or runloader 
 //
 // Author: Magali Estienne (magali.estienne@cern.ch)
 // June 30 2008
-//*********************************************************************
+//
 
-#include <TObject.h>
-#include <TEveUtil.h>
+//#include <Riostream.h>
+//#include <vector>
+
 #include <TTree.h>
 #include <TBranch.h>
 #include <TObjArray.h>
 #include <TRefArray.h>
 #include <TClonesArray.h>
-#include <TEvePointSet.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
 
-#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliEMCALLoader.h"
-#include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliEMCAL.h"
-#include "AliEMCALGeometry.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALDigit.h"
 
@@ -35,8 +29,18 @@
 #include "AliESDCaloCluster.h"
 
 #include "AliEveEMCALData.h"
-#include "AliEveEMCALSModule.h"
 #include "AliEveEMCALSModuleData.h"
+
+class Riostream;
+class TObject;
+class TEveUtil;
+class TEvePointSet;
+class AliRun;
+class AliESDEvent;
+class AliEMCAL;
+class AliEMCALGeometry;
+class AliEveEMCALSModule;
+
 
 ClassImp(AliEveEMCALData)
 
@@ -127,12 +131,6 @@ AliEveEMCALData::~AliEveEMCALData()
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::Reset()
-{
-
-}
-
-//______________________________________________________________________________
 AliEveEMCALData::AliEveEMCALData(const AliEveEMCALData &edata) :
   TObject(edata),
   TEveRefCnt(edata),
@@ -175,7 +173,7 @@ AliEveEMCALData& AliEveEMCALData::operator=(const AliEveEMCALData &edata)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::SetTree(TTree* tree)
+void AliEveEMCALData::SetTree(TTree* const tree)
 {
   //
   // Set digit-tree to be used for digit retrieval. 
@@ -187,7 +185,7 @@ void AliEveEMCALData::SetTree(TTree* tree)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::SetESD(AliESDEvent* esd)
+void AliEveEMCALData::SetESD(AliESDEvent* const esd)
 {
   //
   // Set esd
@@ -197,7 +195,7 @@ void AliEveEMCALData::SetESD(AliESDEvent* esd)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::SetNode(TGeoNode* node)
+void AliEveEMCALData::SetNode(TGeoNode* const node)
 {
   //
   // Set node
@@ -207,7 +205,7 @@ void AliEveEMCALData::SetNode(TGeoNode* node)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::InitEMCALGeom(AliRunLoader* rl)
+void AliEveEMCALData::InitEMCALGeom(AliRunLoader* const rl)
 {
   //
   // Set data members for EMCAL geometry
@@ -301,7 +299,7 @@ void AliEveEMCALData::DeleteSuperModules()
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::LoadHits(TTree* t)
+void AliEveEMCALData::LoadHits(TTree* const t)
 {
   //
   // Get hit information from RunLoader
@@ -352,7 +350,7 @@ void AliEveEMCALData::LoadHits(TTree* t)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* emcl)
+void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* const emcl)
 {
   //
   // Get hit information from EMCAL Loader
@@ -441,7 +439,7 @@ void AliEveEMCALData::LoadDigits(TTree *t)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* emcl)
+void AliEveEMCALData::LoadDigitsFromEMCALLoader(AliEMCALLoader* const emcl)
 {
 
   //
@@ -524,7 +522,7 @@ void AliEveEMCALData::LoadDigitsFromESD()
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::LoadRecPoints(TTree* t)
+void AliEveEMCALData::LoadRecPoints(TTree* const t)
 {
   //
   // Get rec point information from RunLoader
@@ -565,7 +563,7 @@ void AliEveEMCALData::LoadRecPoints(TTree* t)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::LoadRecPointsFromEMCALLoader(AliEMCALLoader* emcl)
+void AliEveEMCALData::LoadRecPointsFromEMCALLoader(AliEMCALLoader* const emcl)
 {
   //
   // Get rec point information from EMCAL Loader
@@ -623,8 +621,8 @@ void AliEveEMCALData::LoadRecPointsFromESD()
   
   // Get reconstructed vertex position
   AliESDVertex* primVertex =(AliESDVertex*) fESD->GetVertex();
-  Double_t vertex_position[3] ; 
-  primVertex->GetXYZ(vertex_position) ; 
+  Double_t vertexPosition[3] ; 
+  primVertex->GetXYZ(vertexPosition) ; 
 
   //Get the CaloClusters
   //select EMCAL clusters only 
@@ -650,7 +648,7 @@ void AliEveEMCALData::LoadRecPointsFromESD()
       TVector3 vpos(pos[0],pos[1],pos[2]) ;
       TLorentzVector p4 ;
       TVector3 p3;
-      clus->GetMomentum(p4,vertex_position);
+      clus->GetMomentum(p4,vertexPosition);
       p3.SetXYZ(p4[0],p4[1],p4[2]);
       Double_t eta = p3.Eta();
       Double_t phi = ( (p3.Phi()) < 0) ? (p3.Phi()) + 2. * TMath::Pi() : (p3.Phi());
@@ -709,7 +707,7 @@ AliEveEMCALSModuleData* AliEveEMCALData::GetSModuleData(Int_t sm)
 }
 
 //______________________________________________________________________________
-void AliEveEMCALData::LoadRaw()
+void AliEveEMCALData::LoadRaw() const
 {
   //
   // Get raw information

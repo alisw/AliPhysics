@@ -1,24 +1,40 @@
-//*************************************************************************
-// EMCAL event display
+//
 // Store the data related to each Super Module
-// For visualization
 //
 //  Author: Magali Estienne (magali.estienne@cern.ch)
 //  June 30 2008
-//*************************************************************************
+//
 
 #ifndef ALIEVEEMCALSMODULEDATA_H
 #define ALIEVEEMCALSMODULEDATA_H
 
-#include <vector>
+#include "AliEveEMCALData.h"
 
-#include <TObject.h>
-#include <TClonesArray.h>
-#include <TGeoNode.h>
-#include <TGeoMatrix.h>
-#include <TEvePointSet.h>
+class TClonesArray;
+class TGeoNode;
+class TGeoMatrix;
+class TEvePointSet;
+class TEveQuadSet;
 
+class TEveBoxSet;
+class TEveFrameBox;
+class TEvePointSet;
+class TEveTrans;
+class TTree;
+class TStyle;
+class TGedFrame;
+class TBuffer3DTypes;
+class TBuffer3D;
+class TVirtualPad;
+class TVirtualViewer3D;
+class AliRun;
 class AliEMCALGeometry;
+class AliESDEvent;
+class AliEMCAL;
+class AliEMCALHit;
+class AliEMCALDigit;
+class AliEMCALGeometry;
+
 
 class AliEveEMCALSModuleData : public TObject
 {
