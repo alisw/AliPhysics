@@ -43,6 +43,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   void           SetOnlyITSTPCTracks() {fOnlyITSTPCTracks=kTRUE;}
   void           SetOnlyITSSATracks() {fOnlyITSSATracks=kTRUE;}
   void           SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}  
+  void           SetFillNtupleBeamSpot(Bool_t fillBeamSpot=kFALSE){fFillNtupleBeamSpot = fillBeamSpot;}
 
  protected:
   Bool_t       fCheckEventType; // read only events of type 7
@@ -53,6 +54,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   Bool_t       fOnlyITSTPCTracks; // only ITS-TPC tracks to redo ITSTPC vertex
   Bool_t       fOnlyITSSATracks;  // only ITS-SA tracks to redo ITSTPC vertex
   Bool_t       fFillNtuple;      // fill ntuple 
+  Bool_t       fFillNtupleBeamSpot; //beam spot info 
   AliESDEvent *fESD;            // ESD object
   TList       *fOutput;         //! list send on output slot 0
   TNtuple     *fNtupleVertexESD;//! output ntuple
@@ -66,6 +68,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhTPCVertexY; //! output histo
   TH1F        *fhTPCVertexZ; //! output histo
   TH2F        *fhTrackRefs;     //! output histo
+  TNtuple     *fNtupleBeamSpot; //! output ntuple beam spot  
 
  private:    
 
@@ -74,7 +77,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   AliESDVertex* ReconstructPrimaryVertexTPC(Bool_t constr=kFALSE) const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC(Bool_t constr=kFALSE,Int_t mode=0) const;
   
-  ClassDef(AliAnalysisTaskVertexESD,7); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,8); // primary vertex analysis
 };
 
 #endif

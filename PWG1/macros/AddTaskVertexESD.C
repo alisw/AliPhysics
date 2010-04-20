@@ -17,6 +17,8 @@ AliAnalysisTaskVertexESD *AddTaskVertexESD()
 
   // Create the task
   AliAnalysisTaskVertexESD *taskVtxESD = new AliAnalysisTaskVertexESD("VertexESD");
+  taskVtxESD->SetFillNtupleBeamSpot(kTRUE);
+  taskVtxESD->SetRerecoVertexITSTPC(kTRUE);
   AliLog::SetClassDebugLevel("AliAnalysisTaskVertexESD",10);
   // Add to the manager
   mgr->AddTask(taskVtxESD);
