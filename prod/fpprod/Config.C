@@ -397,7 +397,7 @@ void Config()
     {
         //=================== PHOS parameters ===========================
 
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
     }
 
 

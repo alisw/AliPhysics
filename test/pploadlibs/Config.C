@@ -491,7 +491,7 @@ void Config()
 
     if (iPHOS)
     {
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
     }
 
 
