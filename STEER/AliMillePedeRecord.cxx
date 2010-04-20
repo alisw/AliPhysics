@@ -28,14 +28,14 @@ fSize(0),fNGroups(0),fGroupID(0),fIndex(0),fValue(0) {SetUniqueID(0);}
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) : 
-  TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fGroupID(0),fIndex(0),fValue(0)
+  TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fGroupID(0),fIndex(0),fValue(0),fWeight(src.fWeight)
 {
   fIndex = new Int_t[GetDtBufferSize()];
   memcpy(fIndex,src.fIndex,fSize*sizeof(Int_t));
   fValue = new Double_t[GetDtBufferSize()];
   memcpy(fValue,src.fValue,fSize*sizeof(Double_t));
-  fGroupID = new Int_t[GetGrBufferSize()];
-  memcpy(fGroupID,src.fGroupID,GetGrBufferSize()*sizeof(Int_t));
+  fGroupID = new UShort_t[GetGrBufferSize()];
+  memcpy(fGroupID,src.fGroupID,GetGrBufferSize()*sizeof(UShort_t));
 }
 
 //_____________________________________________________________________________________________
@@ -49,6 +49,7 @@ AliMillePedeRecord& AliMillePedeRecord::operator=(const AliMillePedeRecord& rhs)
       rhs.GetIndexValue(i,ind,val);
       AddIndexValue(ind,val);
     }
+    fWeight = rhs.fWeight;
     for (int i=0;i<rhs.GetNGroups();i++) MarkGroup(rhs.GetGroupID(i));
   }
   return *this;
@@ -61,8 +62,9 @@ AliMillePedeRecord::~AliMillePedeRecord() {delete[] fIndex; delete[] fValue; del
 void AliMillePedeRecord::Reset()
 {
   fSize = 0;
-  for (int i=fNGroups;i--;) fGroupID[i] = -1;
+  for (int i=fNGroups;i--;) fGroupID[i] = 0;
   fNGroups = 0;
+  fWeight = 1.;
 }
 
 //_____________________________________________________________________________________________
@@ -72,7 +74,8 @@ void AliMillePedeRecord::Print(const Option_t *) const
   int cnt=0,point=0;
   //  
   if (fNGroups) printf("Groups: ");
-  for (int i=0;i<fNGroups;i++) printf("%4d |",GetGroupID(i)); printf("\n");
+  for (int i=0;i<fNGroups;i++) printf("%4d |",GetGroupID(i)); 
+  printf(" Weight: %+.2e\n",fWeight);
   while(cnt<fSize) {
     //
     Double_t resid = fValue[cnt++];
@@ -119,11 +122,11 @@ void AliMillePedeRecord::ExpandGrBuffer(Int_t bfsize)
 {
   // add extra space for groupID data 
   bfsize = TMath::Max(bfsize,GetGrBufferSize());
-  Int_t *tmpI = new Int_t[bfsize];
-  memcpy(tmpI,fGroupID, fNGroups*sizeof(Int_t));
-  delete fGroupID;
+  UShort_t *tmpI = new UShort_t[bfsize];
+  memcpy(tmpI,fGroupID, fNGroups*sizeof(UShort_t));
+  delete[] fGroupID;
   fGroupID = tmpI;
-  for (int i=fNGroups;i<bfsize;i++) fGroupID[i] = -1;
+  for (int i=fNGroups;i<bfsize;i++) fGroupID[i] = 0;
   //
   SetGrBufferSize(bfsize);
 }
@@ -132,14 +135,9 @@ void AliMillePedeRecord::ExpandGrBuffer(Int_t bfsize)
 void AliMillePedeRecord::MarkGroup(Int_t id)
 {
   // mark the presence of the detector group
+  id++; // groupID is stored as realID+1
   if (fNGroups>0 && fGroupID[fNGroups-1]==id) return; // already there
   if (fNGroups>=GetGrBufferSize()) ExpandGrBuffer(2*(fNGroups+1));
   fGroupID[fNGroups++] = id;  
 }
 
-//_____________________________________________________________________________________________
-Bool_t AliMillePedeRecord::IsGroupPresent(Int_t id) const
-{
-  for (int i=fNGroups;i--;) if (GetGroupID(i)==id) return kTRUE;
-  return kFALSE;
-}

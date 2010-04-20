@@ -123,6 +123,7 @@ class AliMillePede2: public TObject
   void                 SetGlobalConstraint(const int *indgb,double *dergb, int ngb, double val, double sigma=0);
   //
   // processing of the local measurement
+  void                 SetRecordWeight(double wgh);
   void                 SetLocalEquation(double *dergb, double *derlc, double lMeas, double lSigma);
   void                 SetLocalEquation(int *indgb, double *dergb, int ngb, int *indlc, 
 					double *derlc,int nlc,double lMeas,double lSigma);
@@ -210,6 +211,7 @@ class AliMillePede2: public TObject
   AliMillePedeRecord   *fRecord;                         // Buffer of measurements records
   TFile                *fDataRecFile;                    // File of processed measurements records
   TTree                *fTreeData;                       // Tree of processed measurements records
+  Int_t                 fRecFileStatus;                  // state of the record file (0-no, 1-read, 2-rw)
   //
   TString               fConstrRecFName;                 // Name of File for constraints records               
   TTree                *fTreeConstr;                     // Tree of constraint records

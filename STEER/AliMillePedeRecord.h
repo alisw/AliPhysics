@@ -39,15 +39,17 @@ class AliMillePedeRecord : public TObject
   void       AddIndexValue(Int_t ind, Double_t val);
   void       AddResidual(Double_t val)                             {AddIndexValue(-1,val);}
   void       AddWeight(Double_t val)                               {AddIndexValue(-2,val);}
+  void       SetWeight(Double_t w=1)                               {fWeight = w;}
   Bool_t     IsResidual(Int_t i)                             const {return fIndex[i]==-1;}
   Bool_t     IsWeight(Int_t i)                               const {return fIndex[i]==-2;}
   //
   Double_t  *GetValue()                                      const {return fValue;}
   Double_t   GetValue(Int_t i)                               const {return fValue[i];}
+  Double_t   GetWeight()                                     const {return fWeight;}
   //
   void       MarkGroup(Int_t id);
   Int_t      GetNGroups()                                    const {return fNGroups;}
-  Int_t      GetGroupID(Int_t i)                             const {return fGroupID[i];}
+  Int_t      GetGroupID(Int_t i)                             const {return fGroupID[i]-1;}
   Bool_t     IsGroupPresent(Int_t id)                        const;
   //
  protected:
@@ -61,18 +63,30 @@ class AliMillePedeRecord : public TObject
  protected:
   Int_t      fSize;                             // size of the record
   Int_t      fNGroups;                          // number of groups (e.g. detectors) contributing
-  Int_t   *  fGroupID;                          //[fNGroups] groups id's (in increasing order)
+  UShort_t*  fGroupID;                          //[fNGroups] groups id's+1 (in increasing order)
   Int_t   *  fIndex;                            //[fSize] index of variables
-  Double_t*  fValue;                            //[fSize] array of values: derivs,residuals
+  Double32_t* fValue;                           //[fSize] array of values: derivs,residuals
+  Double32_t  fWeight;                          //global weight for the record
   //
-  ClassDef(AliMillePedeRecord,1)                // Record of track residuals and local/global deriavtives
+  ClassDef(AliMillePedeRecord,2)                // Record of track residuals and local/global deriavtives
 };
 
+//_____________________________________________________________________________________________
 inline void  AliMillePedeRecord::AddIndexValue(Int_t ind, Double_t val) 
 {
+  // add new pair of index/value
   if (fSize>=GetDtBufferSize()) ExpandDtBuffer(2*(fSize+1));
   fIndex[fSize]=ind; 
   fValue[fSize++]=val;
+}
+
+//_____________________________________________________________________________________________
+inline Bool_t AliMillePedeRecord::IsGroupPresent(Int_t id) const
+{
+  // check if group is defined
+  id++;
+  for (int i=fNGroups;i--;) if (fGroupID[i]==id) return kTRUE;
+  return kFALSE;
 }
 
 #endif

@@ -82,6 +82,7 @@ AliMillePede2::AliMillePede2()
   fRecord(0),
   fDataRecFile(0),  
   fTreeData(0),
+  fRecFileStatus(0),
   //
   fConstrRecFName("/tmp/mp2_constraints_records.root"),
   fTreeConstr(0),
@@ -101,7 +102,7 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fInitPar(0),fDeltaPar(0),fSigmaPar(0),fIsLinear(0),fConstrUsed(0),fGlo2CGlo(0),fCGlo2Glo(0),
   fMatCLoc(0),fMatCGlo(0),fMatCGloLoc(0),fFillIndex(0),fFillValue(0),
   fDataRecFName(0),fRecord(0),fDataRecFile(0),
-  fTreeData(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),
+  fTreeData(0),fRecFileStatus(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),
   fCurrRecConstrID(0),fLocFitAdd(kTRUE)
 {printf("Dummy\n");}
 
@@ -215,12 +216,12 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
   if (!fRecord) fRecord = new AliMillePedeRecord();
   //
   fDataRecFile = TFile::Open(GetDataRecFName(),read ? "":"recreate");
-  if (!fDataRecFile) {AliInfo(Form("Failed to initialize data records file %s",GetDataRecFName())); return kFALSE;}
+  if (!fDataRecFile) {AliFatal(Form("Failed to initialize data records file %s",GetDataRecFName())); return kFALSE;}
   //
   AliInfo(Form("File %s used for derivatives records",GetDataRecFName()));
   if (read) {
     fTreeData = (TTree*)fDataRecFile->Get("AliMillePedeRecords_Data");
-    if (!fTreeData) {AliInfo(Form("Did not find data records tree in %s",GetDataRecFName())); return kFALSE;}
+    if (!fTreeData) {AliFatal(Form("Did not find data records tree in %s",GetDataRecFName())); return kFALSE;}
     fTreeData->SetBranchAddress("Record_Data",&fRecord);
     AliInfo(Form("Found %d derivatives records",fTreeData->GetEntries()));
   }
@@ -229,6 +230,7 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
     fTreeData->Branch("Record_Data","AliMillePedeRecord",&fRecord,32000,99);
   }
   fCurrRecDataID = -1;
+  fRecFileStatus = read ? 1:2;
   //
   return kTRUE;
 }
@@ -277,6 +279,7 @@ void AliMillePede2::CloseDataRecStorage()
     delete fDataRecFile;
     fDataRecFile = 0;
   }
+  fRecFileStatus = 0;
   //
 }
 
@@ -316,9 +319,16 @@ Bool_t AliMillePede2::ReadNextRecordConstraint()
 }
 
 //_____________________________________________________________________________________________
+void AliMillePede2::SetRecordWeight(double wgh)
+{
+  if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
+  fRecord->SetWeight(wgh);
+}
+
+//_____________________________________________________________________________________________
 void AliMillePede2::SetLocalEquation(double *dergb, double *derlc, double lMeas, double lSigma)
 {
-  if (!fDataRecFile || !fDataRecFile->IsWritable()) InitDataRecStorage(); // create a buffer to store the data
+  if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
   //
   // write data of single measurement
   if (lSigma<=0.0) { // If parameter is fixed, then no equation
@@ -353,7 +363,7 @@ void AliMillePede2::SetLocalEquation(int *indgb, double *dergb, int ngb, int *in
     return;
   }
   //
-  if (!fDataRecFile || !fDataRecFile->IsWritable()) InitDataRecStorage(); // create a buffer to store the data
+  if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
   //
   fRecord->AddResidual(lMeas);
   //
@@ -450,17 +460,18 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   }
   double vl;
   //
+  double gloWgh = fRecord->GetWeight(); // global weight for this set
   Int_t maxLocUsed = 0;
   //
   for (int ip=nPoints;ip--;) {  // Transfer the measurement records to matrices
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
-    double  weight = fRecord->GetValue( refGlo[ip]-1 );    
+    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;    
     double *derLoc = fRecord->GetValue()+refLoc[ip];
     double *derGlo = fRecord->GetValue()+refGlo[ip];
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
     int    *indGlo = fRecord->GetIndex()+refGlo[ip];
     //
-    for (int i=nrefGlo[ip];i--;) {       // suppress the global part (only relevant with iterations)
+    for (int i=nrefGlo[ip];i--;) {      // suppress the global part (only relevant with iterations)
       int iID = indGlo[i];              // Global param indice
       if (fSigmaPar[iID]<=0.) continue;                                    // fixed parameter RRRCheck
       if (fIsLinear[iID]) resid -= derGlo[i]*(fInitPar[iID]+fDeltaPar[iID]);  // linear parameter
@@ -480,7 +491,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   // first try to solve by faster Cholesky decomposition, then by Gaussian elimination
   if (!matCLoc.SolveChol(fVecBLoc,kTRUE)) {
-    AliInfo("Failed to solve locals by Cholesky, traying Gaussian Elimination");
+    AliInfo("Failed to solve locals by Cholesky, trying Gaussian Elimination");
     if (!matCLoc.SolveSpmInv(fVecBLoc,kTRUE)) { 
       AliInfo("Failed to solve locals by Gaussian Elimination, skip...");
       matCLoc.Print("d");
@@ -500,7 +511,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   for (int ip=nPoints;ip--;) {  // Calculate residuals
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
-    double  weight = fRecord->GetValue( refGlo[ip]-1 );    
+    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;    
     double *derLoc = fRecord->GetValue()+refLoc[ip];
     double *derGlo = fRecord->GetValue()+refGlo[ip];
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
@@ -529,6 +540,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
     nEq++;                        // number of equations			
   } // end of Calculate residuals
   //
+  lChi2 /= gloWgh;  
   int nDoF = nEq-maxLocUsed;
   lChi2 = (nDoF>0) ? lChi2/nDoF : 0;  // Chi^2/dof  
   //
@@ -554,7 +566,7 @@ Int_t AliMillePede2::LocalFit(double *localParams)
   //
   for (int ip=nPoints;ip--;) {  // Update matrices
     double  resid  = fRecord->GetValue( refLoc[ip]-1 );
-    double  weight = fRecord->GetValue( refGlo[ip]-1 );    
+    double  weight = fRecord->GetValue( refGlo[ip]-1 )*gloWgh;    
     double *derLoc = fRecord->GetValue()+refLoc[ip];
     double *derGlo = fRecord->GetValue()+refGlo[ip];
     int    *indLoc = fRecord->GetIndex()+refLoc[ip];
@@ -832,7 +844,7 @@ Int_t AliMillePede2::GlobalFitIteration()
     if (fProcPnt[i]<1) {
       fNGloFix++; 
       fVecBGlo[i] = 0.;
-      matCGlo.DiagElem(i) = float(fNLocEquations*fNLocEquations);
+      matCGlo.DiagElem(i) = 1.;//float(fNLocEquations*fNLocEquations);
     }
     else matCGlo.DiagElem(i) += (fgWeightSigma ? fProcPnt[i] : 1.)/(fSigmaPar[i]*fSigmaPar[i]);
   }
