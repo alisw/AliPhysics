@@ -19,7 +19,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 {
  public:
 
-  AliRDHFCutsDplustoKpipi();
+  AliRDHFCutsDplustoKpipi(const char* name="CutsDplustoKpipi");
   
   virtual ~AliRDHFCutsDplustoKpipi(){}
 

@@ -31,15 +31,15 @@
 ClassImp(AliRDHFCutsDstoKKpi)
 
 //--------------------------------------------------------------------------
-AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi() : 
-AliRDHFCuts()
+AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) : 
+AliRDHFCuts(name)
 {
   //
   // Default Constructor
   //
-  const Int_t nvars=14;
+  Int_t nvars=14;
   SetNVars(nvars);
-  TString varNames[nvars]={"inv. mass [GeV]",   
+  TString varNames[14]={"inv. mass [GeV]",   
 			"pTK [GeV/c]",
 			"pTPi [GeV/c]",
 			"d0K [cm]",
@@ -52,9 +52,8 @@ AliRDHFCuts()
 			"Sum d0^2 (cm^2)",
 			"dca [cm]",
 			"inv. mass (Mphi-MKK) [GeV]",
-			"inv. mass (MKo*-MKpi) [GeV]"
-};
-  Bool_t isUpperCut[nvars]={kTRUE,
+			"inv. mass (MKo*-MKpi) [GeV]"};
+  Bool_t isUpperCut[14]={kTRUE,
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
@@ -68,8 +67,8 @@ AliRDHFCuts()
 			 kTRUE,
 			 kTRUE,
 			 kTRUE};
-  SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[nvars]={kFALSE,
+  SetVarNames(14,varNames,isUpperCut);
+  Bool_t forOpt[14]={kFALSE,
 		    kFALSE,
 		    kFALSE,
 		    kFALSE,

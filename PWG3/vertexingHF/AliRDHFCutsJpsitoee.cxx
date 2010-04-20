@@ -31,8 +31,8 @@
 ClassImp(AliRDHFCutsJpsitoee)
 
 //--------------------------------------------------------------------------
-AliRDHFCutsJpsitoee::AliRDHFCutsJpsitoee() : 
-AliRDHFCuts()
+AliRDHFCutsJpsitoee::AliRDHFCutsJpsitoee(const char* name) : 
+AliRDHFCuts(name)
 {
   //
   // Default Constructor

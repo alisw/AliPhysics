@@ -15,7 +15,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
 {
  public:
 
-  AliRDHFCutsLctopKpi();
+  AliRDHFCutsLctopKpi(const char* name="CutsLctopKpi");
   
   virtual ~AliRDHFCutsLctopKpi(){}
 

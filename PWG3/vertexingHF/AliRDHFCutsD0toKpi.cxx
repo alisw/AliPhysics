@@ -31,8 +31,8 @@
 ClassImp(AliRDHFCutsD0toKpi)
 
 //--------------------------------------------------------------------------
-AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi() : 
-AliRDHFCuts()
+AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) : 
+AliRDHFCuts(name)
 {
   //
   // Default Constructor

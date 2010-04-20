@@ -15,7 +15,7 @@ class AliRDHFCutsD0toKpipipi : public AliRDHFCuts
 {
  public:
 
-  AliRDHFCutsD0toKpipipi();
+  AliRDHFCutsD0toKpipipi(const char* name="CutsD0toKpipipi");
   
   virtual ~AliRDHFCutsD0toKpipipi(){}
 

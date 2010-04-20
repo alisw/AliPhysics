@@ -10,12 +10,13 @@
 // Author: A.Dainese, andrea.dainese@lnl.infn.it
 //*************************************************************************
 
-
 #include <TClonesArray.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 
+class TList;
+class TString;
 
 class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
 {
@@ -31,6 +32,9 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  void SetDeltaAODFileName(const char* name) {fDeltaAODFileName=name;}
+  const char* GetDeltaAODFileName() const {return fDeltaAODFileName.Data();}
+  AliAnalysisVertexingHF *GetVertexingHF() const {return fVHF;}
   
  private:
 
@@ -38,6 +42,8 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   AliAnalysisTaskSEVertexingHF& operator=(const AliAnalysisTaskSEVertexingHF& source); 
 
   AliAnalysisVertexingHF *fVHF;        // Vertexer heavy flavour
+  TList        *fListOfCuts;           //! List of analysis cuts
+  TString       fDeltaAODFileName;     // Name of output file
   TClonesArray *fVerticesHFTClArr;     // Array of heavy-flavour vertices
   TClonesArray *fD0toKpiTClArr;        // Array of D0->Kpi
   TClonesArray *fJPSItoEleTClArr;      // Array of Jpsi->ee
@@ -47,7 +53,7 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   TClonesArray *fLikeSign2ProngTClArr; // Array of LikeSign2Prong
   TClonesArray *fLikeSign3ProngTClArr; // Array of LikeSign3Prong 
   
-  ClassDef(AliAnalysisTaskSEVertexingHF,4); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHF,5); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
 
 #endif

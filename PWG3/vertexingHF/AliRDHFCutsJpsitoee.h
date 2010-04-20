@@ -15,7 +15,7 @@ class AliRDHFCutsJpsitoee : public AliRDHFCuts
 {
  public:
 
-  AliRDHFCutsJpsitoee();
+  AliRDHFCutsJpsitoee(const char* name="CutsJpsitoee");
   
   virtual ~AliRDHFCutsJpsitoee(){}
 

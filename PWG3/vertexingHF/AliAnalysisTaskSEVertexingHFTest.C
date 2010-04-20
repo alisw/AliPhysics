@@ -75,15 +75,16 @@ void AliAnalysisTaskSEVertexingHFTest()
   
   // Output 
   AliAODHandler *aodHandler = new AliAODHandler();
+  const char* deltaAODfname="AliAOD.VertexingHF.root";
   if(createAOD) {
     aodHandler->SetOutputFileName("AliAOD.root");
   } else {
     aodHandler->SetFillAOD(kFALSE);
-    aodHandler->SetOutputFileName("AliAOD.VertexingHF.root");
+    aodHandler->SetOutputFileName(deltaAODfname);
     aodHandler->SetCreateNonStandardAOD();
   }
   mgr->SetOutputEventHandler(aodHandler);
-  mgr->RegisterExtraFile("AliAOD.VertexingHF.root");  
+  mgr->RegisterExtraFile(deltaAODfname);  
 
   if(!inputAOD && createAOD) {
     // MC Truth
@@ -115,7 +116,7 @@ void AliAnalysisTaskSEVertexingHFTest()
 
   // Vertexing analysis task    
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddTaskVertexingHF.C");
-  AliAnalysisTaskSEVertexingHF *hfTask = AddTaskVertexingHF();
+  AliAnalysisTaskSEVertexingHF *hfTask = AddTaskVertexingHF(deltaAODfname);
   
   
   //

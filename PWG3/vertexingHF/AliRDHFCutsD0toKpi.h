@@ -15,7 +15,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
 {
  public:
 
-  AliRDHFCutsD0toKpi();
+  AliRDHFCutsD0toKpi(const char* name="CutsD0toKpi");
   
   virtual ~AliRDHFCutsD0toKpi(){}
 
