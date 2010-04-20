@@ -16,17 +16,24 @@
 
 
 /*
+  Responsible: marian.ivanov@cern.ch 
+  Code to analyze the TPC calibration and to produce OCDB entries  
+
+
    .x ~/rootlogon.C
    gSystem->Load("libANALYSIS");
    gSystem->Load("libTPCcalib");
-   .L $ALICE_ROOT/TPC/AliTPCPreprocessorOffline.cxx+
 
    AliTPCPreprocessorOffline proces;
-   proces.CalibTimeGain(
+  process.CalibTimeGain("CalibObjects.root",run0,run1,ocdbPath);
+  // take the raw calibration data from the file CalibObjects.root 
+  // and make a OCDB entry with run  validity run0-run1
+  // results are stored at the ocdbPath - local or alien ...
+  // default storage ""- data stored at current working directory 
  
 */
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "Riostream.h"
+#include <fstream>
 #include "TMap.h"
 #include "TGraphErrors.h"
 #include "AliExternalTrackParam.h"
@@ -40,10 +47,7 @@
 #include "TH2D.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
-
 #include "AliESDfriend.h"
-
-
 #include "AliTPCcalibTime.h"
 #include "AliSplineFit.h"
 #include "AliCDBMetaData.h"
@@ -58,13 +62,12 @@
 #include "AliTPCcalibTimeGain.h"
 #include "AliSplineFit.h"
 #include "AliTPCPreprocessorOffline.h"
-#endif
 
 
 ClassImp(AliTPCPreprocessorOffline)
 
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
-  TNamed("PreprocessorOffline","PreprocessorOffline"),
+  TNamed("TPCPreprocessorOffline","TPCPreprocessorOffline"),
   kMinEntries(500),                      // minimal number of entries for fit
   startRun(0),                         // start Run - used to make fast selection in THnSparse
   endRun(0),                           // end   Run - used to make fast selection in THnSparse
@@ -82,6 +85,8 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fGainCosmic(0)       // calibration component for cosmic
 {
   //
+  // default constructor
+  //
 }
 
 AliTPCPreprocessorOffline::~AliTPCPreprocessorOffline() {
@@ -93,11 +98,11 @@ AliTPCPreprocessorOffline::~AliTPCPreprocessorOffline() {
 
 
 
-void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime* fTimeDrift){
+void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime* timeDrift){
   //
   // find the fist and last run
   //
-  TObjArray *hisArray =fTimeDrift->GetHistoDrift();
+  TObjArray *hisArray =timeDrift->GetHistoDrift();
   {for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
     THnSparse* addHist=(THnSparse*)hisArray->UncheckedAt(i);
     if (addHist->GetEntries()<kMinEntries) continue;
@@ -136,7 +141,6 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(Char_t* file, Int_t ustartRun, I
   //
   //
   //
-  const Int_t    kMinEntries=500;     // minimal number of entries
   if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
   else
   ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
@@ -193,7 +197,7 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
 
 
 
-void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *arr, Int_t startRun){
+void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *arr, Int_t lstartRun){
   //
   //  update the OCDB entry for the nominal time0
   //
@@ -213,7 +217,7 @@ void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *
   metaData->SetAliRootVersion("05-25-02"); //root version
   metaData->SetComment("Updated calibration of nominal time 0");
   AliCDBId* id1=NULL;
-  id1=new AliCDBId("TPC/Calib/Parameters", startRun, AliCDBRunRange::Infinity());
+  id1=new AliCDBId("TPC/Calib/Parameters", lstartRun, AliCDBRunRange::Infinity());
   AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
   gStorage->Put(param, (*id1), metaData);
 
@@ -685,15 +689,15 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * arr, TObjArray *pic
 
 
 
-void AliTPCPreprocessorOffline::CalibTimeGain(Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage){
+void AliTPCPreprocessorOffline::CalibTimeGain(Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  pocdbStorage){
   //
   // Update OCDB gain
   //
   ReadGainGlobal(fileName);
   AnalyzeGain(startRunNumber,endRunNumber, 1000,1.43);
   MakeQAPlot(1.43);  
-  if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-  UpdateOCDBGain( startRunNumber, endRunNumber, ocdbStorage.Data());
+  if (pocdbStorage.Length()==0) pocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  UpdateOCDBGain( startRunNumber, endRunNumber, pocdbStorage.Data());
 }
 
 

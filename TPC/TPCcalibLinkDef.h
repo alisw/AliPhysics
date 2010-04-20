@@ -32,6 +32,7 @@
 #pragma link C++ class AliTPCMisAligner+;
 #pragma link C++ class AliTPCcalibTrigger+;
 #pragma link C++ class AliTPCcalibMaterial+;
+#pragma link C++ class AliTPCPreprocessorOffline+;
 
 #endif
 

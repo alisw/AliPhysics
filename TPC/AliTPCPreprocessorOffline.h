@@ -4,17 +4,22 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
+//
 //
 //    Class to create OCDB entries - processing the results of the OFFLINE calibration
+//
+
 
 #include "TNamed.h"
 class TObjArray;
 class AliTPCcalibTime;
 class AliTPCcalibTimeGain;
 class AliTPCROC;
+class AliTPCParam;
+class TPad;
+class AliCDBRunRange;
 
-class AliTPCPreprocessorOffline:public TNamed {
+class AliTPCPreprocessorOffline:public TNamed { 
 public:
   AliTPCPreprocessorOffline();
   virtual ~AliTPCPreprocessorOffline();
@@ -27,7 +32,7 @@ public:
   // v drift part
   //
   void GetRunRange(AliTPCcalibTime* timeDrift);
-  void CalibTimeVdrift(Char_t* file="CalibObjectsTrain1.root", Int_t ustartRun=0, Int_t uendRun=AliCDBRunRange::Infinity(),TString ocdbStorage="");
+  void CalibTimeVdrift(Char_t* file, Int_t ustartRun, Int_t uendRun,TString ocdbStorage="");
   void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift, Int_t minEntries);
   void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
   void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
@@ -70,7 +75,8 @@ public:
   AliTPCcalibTimeGain * fGainCosmic;       // calibration component for cosmic
 
 private:
-  AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&){;} // not implemented
+  AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented
+  AliTPCPreprocessorOffline(const AliTPCPreprocessorOffline&); // not implemented
   ClassDef(AliTPCPreprocessorOffline,1)
 };
 
