@@ -985,7 +985,10 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     AliESDpid *fESDpid = new AliESDpid(); 
     AliTPCPIDResponse tpcResponse = fESDpid->GetTPCResponse(); 
     tpcResponse.SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]);
-    Double_t normalizeddEdx = TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
+
+    Double_t normalizeddEdx = -10.;
+    if((track->GetTPCsignal() > 0.0) && (tpcResponse.GetExpectedSignal(gP,AliPID::kProton) > 0.0))
+      TMath::Log(track->GetTPCsignal()/tpcResponse.GetExpectedSignal(gP,AliPID::kProton));
     
     if(normalizeddEdx >= fNRatio)
       return kTRUE;
