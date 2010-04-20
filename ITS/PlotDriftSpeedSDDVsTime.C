@@ -2,10 +2,12 @@
 #include <Riostream.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TGraph.h>
 #include <TStyle.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
+#include <TLine.h>
 #include <TSystem.h>
 #include <TGrid.h>
 #include <TMath.h>
