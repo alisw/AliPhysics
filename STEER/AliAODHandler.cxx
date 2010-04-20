@@ -413,12 +413,13 @@ Bool_t AliAODHandler::FinishEvent()
       }       
   }  
   if (fIsStandard) fAODEvent->ResetStd();
-  TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
-  if(mcarray) mcarray->Delete();
-
-  AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
-  if(mcHeader) mcHeader->Reset();
-
+  if (fAODEvent) {
+    TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
+    if(mcarray) mcarray->Delete();
+    
+    AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
+    if(mcHeader) mcHeader->Reset();
+  }
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
   return kTRUE;
