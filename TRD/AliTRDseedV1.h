@@ -238,7 +238,7 @@ private:
   Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
 
-  ClassDef(AliTRDseedV1, 10)                 // The offline TRD tracklet 
+  ClassDef(AliTRDseedV1, 11)                 // The offline TRD tracklet 
 };
 
 //____________________________________________________________
