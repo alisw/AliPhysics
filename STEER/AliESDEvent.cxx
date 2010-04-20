@@ -1257,8 +1257,10 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
       if(!branchname.EndsWith("."))branchname += ".";
     }
     if (!tree->FindBranch(branchname)) {
-      tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),
-		   kBufsize, kSplitlevel - 1);
+      // For the custom streamer to be called splitlevel
+      // has to be negative, only needed for HLT
+      Int_t splitLevel = (TString(obj->ClassName()) == "AliHLTGlobalTriggerDecision") ? -1 : kSplitlevel - 1;
+      tree->Bronch(branchname, obj->ClassName(), fESDObjects->GetObjectRef(obj),kBufsize, splitLevel);
     }
   }
 }
