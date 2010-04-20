@@ -35,7 +35,6 @@
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryBuilder.h"
-#include "AliMUONConstants.h"
 #include "AliMillepede.h"
 
 #include "AliMpExMap.h"
@@ -46,7 +45,6 @@
 
 #include "TMath.h"
 #include "TMatrixDSym.h"
-#include "TSystem.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONAlignment)
@@ -188,7 +186,7 @@ void AliMUONAlignment::FixDetElem(Int_t iDetElemId, TString sVarXYT){
   }
 }
 
-void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lChOnOff, Bool_t *lSpecLROnOff){
+void AliMUONAlignment::FixHalfSpectrometer(const Bool_t *lChOnOff, const Bool_t *lSpecLROnOff){
   /// Fix left or right detector
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
@@ -245,7 +243,7 @@ void AliMUONAlignment::FixHalfSpectrometer(Bool_t *lChOnOff, Bool_t *lSpecLROnOf
   }
 }
 
-void AliMUONAlignment::SetNonLinear(Bool_t *lChOnOff,Bool_t *lVarXYT){
+void AliMUONAlignment::SetNonLinear(const Bool_t *lChOnOff, const Bool_t *lVarXYT){
   /// Set non linear parameter flag selected chambers and degrees of freedom
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
@@ -269,7 +267,7 @@ void AliMUONAlignment::SetNonLinear(Bool_t *lChOnOff,Bool_t *lVarXYT){
   }
 }
 
-void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT){
+void AliMUONAlignment::AddConstraints(const Bool_t *lChOnOff, const Bool_t *lVarXYT){
   /// Add constraint equations for selected chambers and degrees of freedom 
   for (Int_t i = 0; i < fgNDetElem; i++){    
     Int_t iCh=0;
@@ -305,7 +303,7 @@ void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT){
 //   }
 }
 
-void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT, Bool_t *lDetTLBR, Bool_t *lSpecLROnOff){
+void AliMUONAlignment::AddConstraints(const Bool_t *lChOnOff, const Bool_t *lVarXYT, const Bool_t *lDetTLBR, const Bool_t *lSpecLROnOff){
   /// Add constraint equations for selected chambers, degrees of freedom and detector half 
   Double_t lDetElemLocX = 0.;
   Double_t lDetElemLocY = 0.;
@@ -510,7 +508,7 @@ void AliMUONAlignment::AddConstraints(Bool_t *lChOnOff,Bool_t *lVarXYT, Bool_t *
   }
 }
 
-void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t /*lWeight*/){
+void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t /*lWeight*/) const{
   /// Set constrain equation for top half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
@@ -530,7 +528,7 @@ void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
   }
 }
 
-void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight){
+void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight) const{
   /// Set constrain equation for left half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
@@ -550,7 +548,7 @@ void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
   }
 }
 
-void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t /*lWeight*/){
+void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t /*lWeight*/) const{
   /// Set constrain equation for bottom half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
@@ -572,7 +570,7 @@ void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstrai
   }
 }
 
-void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight){
+void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight) const{
   /// Set constrain equation for right half of spectrometer
   Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
   if (lCh>=1 && lCh<=4){
@@ -736,7 +734,7 @@ void AliMUONAlignment::FixParameter(Int_t iPar, Double_t value) {
   /// Parameter iPar is encourage to vary in [-value;value]. 
   /// If value == 0, parameter is fixed
   fMillepede->SetParSigma(iPar, value);
-  if (value==0) AliInfo(Form("Parameter %i Fixed", iPar));
+  if (TMath::Abs(value)<1e-4) AliInfo(Form("Parameter %i Fixed", iPar));
 }
 
 void AliMUONAlignment::ResetLocalEquation()
@@ -750,7 +748,7 @@ void AliMUONAlignment::ResetLocalEquation()
   }
 }
 
-void AliMUONAlignment::AllowVariations(Bool_t *bChOnOff) {
+void AliMUONAlignment::AllowVariations(const Bool_t *bChOnOff) {
   /// Set allowed variation for selected chambers based on fDoF and fAllowVar
   for (Int_t iCh=1; iCh<=10; iCh++) {
     if (bChOnOff[iCh-1]) {
@@ -958,7 +956,7 @@ void AliMUONAlignment::PrintGlobalParameters() {
 }
 
 //_________________________________________________________________________
-TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, double *lMisAlignment) const
+TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, const double *lMisAlignment) const
 {
   /// Realign given transformation by given misalignment and return the misaligned transformation
   
@@ -994,7 +992,7 @@ TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, doubl
 //______________________________________________________________________
 AliMUONGeometryTransformer *
 AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
-			    double *misAlignments, Bool_t verbose)
+			    const double *misAlignments, Bool_t verbose)
 			    
 {
   /// Returns a new AliMUONGeometryTransformer with the found misalignments

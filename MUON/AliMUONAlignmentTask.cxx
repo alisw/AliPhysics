@@ -311,7 +311,6 @@ void AliMUONAlignmentTask::Exec(Option_t *)
   }
 
   Double_t trackParams[8] = {0.,0.,0.,0.,0.,0.,0.,0.};
-  printf("ESD RunNumber %d , fLastRunNumber %d\n",fESD->GetRunNumber(),fLastRunNumber);
   if (fESD->GetRunNumber()!=fLastRunNumber){
     fLastRunNumber = fESD->GetRunNumber();
     Prepare(fGeoFilename.Data(),fDefaultOCDB.Data(),fMisAlignOCDB.Data());
@@ -327,13 +326,9 @@ void AliMUONAlignmentTask::Exec(Option_t *)
 //     fBenMom->Fill(1./invBenMom);
     if (TMath::Abs(invBenMom)<=1.04) {
       AliMUONTrack track;
-      printf("cero\n");
       AliMUONESDInterface::ESDToMUON(*esdTrack, track);
-      printf("uno %p\n", fAlign);
       fAlign->ProcessTrack(&track);
-      printf("dos\n");
       fAlign->LocalFit(fTrackOk++,trackParams,0);
-      printf("tres\n");
     }
     fTrackTot++;
     cout << "Processed " << fTrackTot << " Tracks." << endl;

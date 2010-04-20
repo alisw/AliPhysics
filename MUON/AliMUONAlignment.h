@@ -52,11 +52,11 @@ public:
   void FixStation(Int_t iSt);
   void FixChamber(Int_t iCh);
   void FixDetElem(Int_t iDetElemId, TString sVarXYT = "XYTZ");
-  void FixHalfSpectrometer(Bool_t *bChOnOff, Bool_t *bSpecLROnOff);
-  void AllowVariations(Bool_t *bChOnOff);
-  void SetNonLinear(Bool_t *bChOnOff, Bool_t *bVarXYT);
-  void AddConstraints(Bool_t *bChOnOff, Bool_t *bVarXYT);
-  void AddConstraints(Bool_t *bChOnOff, Bool_t *bVarXYT, Bool_t *bDetTLBR, Bool_t *bSpecLROnOff);
+  void FixHalfSpectrometer(const Bool_t *bChOnOff, const Bool_t *bSpecLROnOff);
+  void AllowVariations(const Bool_t *bChOnOff);
+  void SetNonLinear(const Bool_t *bChOnOff, const Bool_t *bVarXYT);
+  void AddConstraints(const Bool_t *bChOnOff, const Bool_t *bVarXYT);
+  void AddConstraints(const Bool_t *bChOnOff, const Bool_t *bVarXYT, const Bool_t *bDetTLBR, const Bool_t *bSpecLROnOff);
   void ResetConstraints();
 
   void FixParameter(Int_t param, Double_t value);
@@ -77,7 +77,7 @@ public:
   Double_t GetParError(Int_t iPar);
   
   AliMUONGeometryTransformer* 
-    ReAlign(const AliMUONGeometryTransformer * transformer, double *misAlignments, Bool_t verbose);
+    ReAlign(const AliMUONGeometryTransformer * transformer, const double *misAlignments, Bool_t verbose);
 
   void SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t chId, Double_t chResX, Double_t chResY, Double_t deResX, Double_t deResY);
 
@@ -88,10 +88,10 @@ public:
   AliMUONAlignment&  operator = (const AliMUONAlignment& right);
 
   void Init(Int_t nGlobal, Int_t nLocal, Int_t nStdDev);
-  void ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t lWeight=1.0);
-  void ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight=1.0);
-  void ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t lWeight=1.0);
-  void ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight=1.0);
+  void ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t lWeight=1.0) const;
+  void ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight=1.0) const;
+  void ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t lWeight=1.0) const;
+  void ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight=1.0) const;
   void FillDetElemData();
   void FillRecPointData();
   void FillTrackParamData();
@@ -99,7 +99,7 @@ public:
   void LocalEquationX();
   void LocalEquationY();
 
-  TGeoCombiTrans ReAlign(const TGeoCombiTrans& transform, double *detElemMisAlignment) const;
+  TGeoCombiTrans ReAlign(const TGeoCombiTrans& transform, const double *detElemMisAlignment) const;
 
   Bool_t fBFieldOn;        ///< Flag for Magnetic filed On/Off
   Bool_t fChOnOff[10];     ///< Flags for chamber On/Off
