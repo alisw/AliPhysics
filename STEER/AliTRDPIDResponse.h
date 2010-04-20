@@ -45,7 +45,7 @@ public:
  ~AliTRDPIDResponse();
 
  Int_t     GetPIDmethod() const { return fPIDmethod;}
- Bool_t    GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE);
+ Bool_t    GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE) const;
 
  Bool_t    IsOwner() const {return TestBit(kIsOwner);}
 
@@ -54,9 +54,9 @@ public:
 
 
 private:
- Bool_t    CookdEdx(Double_t *in, Double_t *out);
- Int_t     GetLowerMomentumBin(Double_t p);
- Double_t  GetProbabilitySingleLayer(Int_t species, Double_t dEdx, Double_t p);
+ Bool_t    CookdEdx(Double_t *in, Double_t *out) const;
+ Int_t     GetLowerMomentumBin(Double_t p) const;
+ Double_t  GetProbabilitySingleLayer(Int_t species, Double_t dEdx, Double_t p) const;
  Bool_t    Load(const Char_t *filename = NULL);
 
  static const Double_t fgkPBins[kNPBins];

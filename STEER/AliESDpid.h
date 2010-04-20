@@ -15,6 +15,7 @@
 #include "AliTPCPIDResponse.h"
 #include "AliITSPIDResponse.h"
 #include "AliTOFPIDResponse.h"
+#include "AliTRDPIDResponse.h"
 //#include "HMPID/AliHMPID.h"
 //#include "TRD/AliTRDpidESD.h"
 
@@ -22,14 +23,14 @@ class AliESDEvent;
 
 class AliESDpid {
 public:
-  AliESDpid(): fRange(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(), fTOFResponse() {;}
+  AliESDpid(): fRange(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(), fTOFResponse(), fTRDResponse(){;}
   virtual ~AliESDpid() {}
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t TimeZeroTOF=0) const;
   void MakeTPCPID(AliESDtrack *track) const;
   void MakeITSPID(AliESDtrack *track) const;
   void MakeTOFPID(AliESDtrack *track, Float_t TimeZeroTOF) const;
   //  void MakeHMPIDPID(AliESDtrack *track);
-  //  void MakeTRDPID(AliESDtrack *track);
+  void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
 
   enum ITSPIDmethod { kITSTruncMean, kITSLikelihood };
@@ -42,6 +43,7 @@ public:
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
   AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
+  AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
 
 
 private:
@@ -51,9 +53,9 @@ private:
   AliITSPIDResponse fITSResponse;
   AliTOFPIDResponse fTOFResponse;
   // AliHMPIDPIDResponse fHMPIDResponse;
-  // AliTRDPIDResponse fTRDResponse;
+  AliTRDPIDResponse fTRDResponse;
 
-  ClassDef(AliESDpid,3)  // PID calculation class
+  ClassDef(AliESDpid,4)  // PID calculation class
 };
 
 inline Float_t AliESDpid::NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EParticleType type) const {

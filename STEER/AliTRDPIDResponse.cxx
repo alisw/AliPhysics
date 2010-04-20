@@ -142,7 +142,7 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm)
+Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm) const
 {
 //
 // Calculate TRD likelihood values for the track based on dedx and 
@@ -202,7 +202,7 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Doubl
 
 
 //____________________________________________________________
-Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx){
+Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx) const {
  //
  // Get the non-normalized probability for a certain particle species as coming
  // from the reference histogram
@@ -236,7 +236,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
 }
 
 //____________________________________________________________
-Int_t AliTRDPIDResponse::GetLowerMomentumBin(Double_t p){
+Int_t AliTRDPIDResponse::GetLowerMomentumBin(Double_t p) const {
  //
  // Get the momentum bin for a given momentum value
  //
@@ -265,7 +265,7 @@ void AliTRDPIDResponse::SetOwner(){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::CookdEdx(Double_t *in, Double_t *out)
+Bool_t AliTRDPIDResponse::CookdEdx(Double_t *in, Double_t *out) const
 {
  switch(fPIDmethod){
  case 0: // NN 
