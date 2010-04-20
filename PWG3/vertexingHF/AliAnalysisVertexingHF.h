@@ -13,6 +13,7 @@
 
 #include <TNamed.h>
 
+class TList;
 class AliESDVertex;
 class AliAODRecoDecayHF;
 class AliAODRecoDecayHF2Prong;
@@ -49,6 +50,7 @@ class AliAnalysisVertexingHF : public TNamed {
 		      TClonesArray *aodLikeSign2ProngTClArr,
 		      TClonesArray *aodLikeSign3ProngTClArr);
 
+  TList* FillListOfCuts();
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
@@ -294,8 +296,11 @@ class AliAnalysisVertexingHF : public TNamed {
                         // 7 = Mass Pi+Pi- = mass of the rho0
                         // 8 = PID cut (one K in the quadruplet)
 
+  TList *fListOfCuts;    // pointer to list of cuts for output file
   Bool_t fFindVertexForDstar; // reconstruct a secondary vertex or assume it's from the primary vertex
   //
+  void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,const AliVEvent *event,
+	       const TObjArray *trkArray) const;
   void AddDaughterRefs(AliAODVertex *v,const AliVEvent *event,
 		       const TObjArray *trkArray) const;
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliVEvent *event,
@@ -330,7 +335,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
   //
-  ClassDef(AliAnalysisVertexingHF,15);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,16);  // Reconstruction of HF decay candidates
 };
 
 

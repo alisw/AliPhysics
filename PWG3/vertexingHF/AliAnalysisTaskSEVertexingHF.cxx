@@ -24,6 +24,8 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TClonesArray.h>
+#include <TList.h>
+#include <TString.h>
 
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
@@ -40,6 +42,8 @@ ClassImp(AliAnalysisTaskSEVertexingHF)
 AliAnalysisTaskSEVertexingHF::AliAnalysisTaskSEVertexingHF():
 AliAnalysisTaskSE(),
 fVHF(0),
+fListOfCuts(0),
+fDeltaAODFileName("AliAOD.VertexingHF.root"),
 fVerticesHFTClArr(0),
 fD0toKpiTClArr(0),
 fJPSItoEleTClArr(0),
@@ -56,6 +60,8 @@ fLikeSign3ProngTClArr(0)
 AliAnalysisTaskSEVertexingHF::AliAnalysisTaskSEVertexingHF(const char *name):
 AliAnalysisTaskSE(name),
 fVHF(0),
+fListOfCuts(0),
+fDeltaAODFileName("AliAOD.VertexingHF.root"),
 fVerticesHFTClArr(0),
 fD0toKpiTClArr(0),
 fJPSItoEleTClArr(0),
@@ -65,13 +71,21 @@ fDstarTClArr(0),
 fLikeSign2ProngTClArr(0),
 fLikeSign3ProngTClArr(0)
 {
-  // Default constructor
+  // Standard constructor
+
+  DefineOutput(1,TList::Class()); // analysis cuts
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSEVertexingHF::~AliAnalysisTaskSEVertexingHF()
 {
   // Destructor
+
+  if(fListOfCuts) {
+    delete fListOfCuts;
+    fListOfCuts=NULL;
+  }
+
 }  
 
 //________________________________________________________________________
@@ -89,7 +103,15 @@ void AliAnalysisTaskSEVertexingHF::Init()
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
   fVHF->PrintStatus();
-  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile("AliAOD.VertexingHF.root");
+
+
+  // write the objects AliRDHFCuts to a list to store in the output
+
+  fListOfCuts = fVHF->FillListOfCuts();
+
+  PostData(1,fListOfCuts);
+
+  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(fDeltaAODFileName.Data());
 
   return;
 }
@@ -106,7 +128,7 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
     Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
     return;
   }   
-  TString filename = "AliAOD.VertexingHF.root";
+  TString filename = fDeltaAODFileName;
   // When running on standard AOD to produce deltas, IsStandardAOD is never set,
   // If AODEvent is NULL, new branches have to be added to the new file(s) (A.G. 15/01/10)
   if(!IsStandardAOD() && AODEvent()) filename = "";

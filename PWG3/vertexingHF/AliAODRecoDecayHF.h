@@ -10,8 +10,10 @@
 //***********************************************************
 
 #include <TRef.h>
+#include <TList.h>
 #include "AliAODRecoDecay.h"
 
+class AliRDHFCuts;
 class AliKFParticle;
 
 class AliAODRecoDecayHF : public AliAODRecoDecay {
@@ -83,6 +85,10 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   // check if it is like-sign
   Bool_t IsLikeSign() const;
 
+  // list of cuts
+  void SetListOfCutsRef(TObject *obj) {fListOfCuts=obj;}
+  TList *GetListOfCuts() const {return (TList*)(fListOfCuts.GetObject());}
+  AliRDHFCuts *GetCuts(const char* name) const;
 
   // vertexing KF:
   AliKFParticle *ApplyVertexingKF(Int_t *iprongs,Int_t nprongs,Int_t *pdgs,
@@ -93,11 +99,11 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
   TRef          fEventPrimaryVtx; // ref to primary vertex of the event
+  TRef          fListOfCuts;  // ref to the list of analysis cuts
   Double_t     *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
   UShort_t     *fProngID;  //[fNProngs] track ID of daughters
 
-  ClassDef(AliAODRecoDecayHF,3)  // base class for AOD reconstructed 
-                                 // heavy-flavour decays
+  ClassDef(AliAODRecoDecayHF,4)  // base class for AOD reconstructed heavy-flavour decays
 };
 
 inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id) 
@@ -129,6 +135,17 @@ inline Bool_t AliAODRecoDecayHF::IsLikeSign() const
   }
 
   return kTRUE;
+}
+
+inline AliRDHFCuts *AliAODRecoDecayHF::GetCuts(const char* name) const
+{ 
+  // returns the analysis cuts
+
+  TList *list = GetListOfCuts();
+  if(!list) return 0;
+
+
+  return (AliRDHFCuts*)list->FindObject(name);
 }
 
 #endif
