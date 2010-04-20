@@ -120,7 +120,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   // virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
 
   /** interface function, see @ref AliHLTComponent for description */
-  virtual int DoInit(int argc =0, const char** argv  = 0);
+  virtual int DoInit(int argc =0, const char** argv  = 0) ;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int DoDeinit();
@@ -131,15 +131,6 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   /** interface function, see @ref AliHLTComponent for description */
   //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list) = 0; 
-
-
-
-
-
-
-
-
-
 
   /** interface function, see @ref AliHLTComponent for description */
   //  virtual AliHLTComponentDataType GetOutputDataType();

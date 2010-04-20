@@ -19,8 +19,8 @@
 #include "AliHLTCaloDigitMaker.h"
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTPHOSMapper.h"
-#include "AliHLTPHOSChannelDataHeaderStruct.h"
-#include "AliHLTPHOSChannelDataStruct.h"
+#include "AliHLTCaloChannelDataHeaderStruct.h"
+#include "AliHLTCaloChannelDataStruct.h"
 #include "AliPHOSEmcBadChannelsMap.h"
 #include "AliPHOSEmcCalibData.h"
 #include "TFile.h"
@@ -107,7 +107,7 @@ AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, doubl
 {
   //see header file for documentation
   constBase = 0;
-  inputMultiplier = (float)sizeof(AliHLTCaloDigitDataStruct)/sizeof(AliHLTPHOSChannelDataStruct) + 1;
+  inputMultiplier = (float)sizeof(AliHLTCaloDigitDataStruct)/sizeof(AliHLTCaloChannelDataStruct) + 1;
 }
 
 int 

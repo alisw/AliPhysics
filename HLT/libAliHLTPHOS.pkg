@@ -10,7 +10,6 @@ include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSDefinitions.h \
-		  AliHLTPHOSPhysicsAnalyzer.h \
 		  AliHLTPHOSProcessor.h \
 		  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSRawAnalyzerChiSquareFit.h \
@@ -22,16 +21,8 @@ CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSMapper.h \
 		  AliHLTPHOSRawAnalyzerPeakFinder.h \
 		  AliHLTPHOSSanityInspector.h \
-		  AliHLTPHOSSharedMemoryInterfacev2.h \
-		  AliHLTPHOSClusterAnalyser.h \
-		  AliHLTPHOSClusterAnalyserComponent.h \
-		  AliHLTPHOSESDMaker.h \
-		  AliHLTPHOSESDMakerComponent.h \
 		  AliHLTPHOSUtilities.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
-		  AliHLTPHOSESDEntriesMakerComponent.h \
-		  AliHLTPHOSESDCaloClusterWriterComponent.h \
-		  AliHLTPHOSDigitReader.h \
 		  AliHLTPHOSConstants.h \
 		  AliHLTPHOSGeometry.h \
 		  AliHLTPHOSRecoParamHandler.h
@@ -41,15 +32,7 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
 		  AliHLTPHOSConstant.h \
-		  AliHLTPHOSRecPointDataStruct.h \
-		  AliHLTPHOSRecPointContainerStruct.h \
-		  AliHLTPHOSDigitContainerDataStruct.h \
-		  AliHLTPHOSDigitDataStruct.h \
-		  AliHLTPHOSChannelDataStruct.h \
-		  AliHLTPHOSChannelDataHeaderStruct.h \
-		  AliHLTPHOSCoordinate.h \
-	          AliHLTPHOSChannelRawDataStruct.h 
-
+		  AliHLTPHOSCoordinate.h 
 
 ##Left empty for auto generation:
 MODULE_DHDR:=	  
