@@ -48,6 +48,7 @@ TObject(),
     fADCtokeV[i]=fgkADC2keVDefault;
   }  
   SetVDCorr2Side(kTRUE); // default for new objects will be separate corrections for 2 sides (bwd compatible)
+  //  SetVDCorrMult(kTRUE); // default for new objects will have multiplicative correction v'=(1+corr)*v (bwd compatible)
 }
 //_________________________________________________________________________
 void AliITSresponseSDD::SetHalfLadderATimeZero(Int_t lay, Int_t lad, Float_t tzero){

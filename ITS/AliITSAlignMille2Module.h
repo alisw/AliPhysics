@@ -28,8 +28,8 @@ class AliITSAlignMille2Module : public TNamed
 { 
 public: 
   enum {kSPD,kSDD,kSSD};
-  enum {kMaxParGeom=6,kMaxParTot=8,kSensDefBit=BIT(14),kGlobalGeomBit=BIT(15),kNotInConfBit=BIT(16)};
-  enum {kDOFTX,kDOFTY,kDOFTZ,kDOFPS,kDOFTH,kDOFPH,kDOFT0,kDOFDV};
+  enum {kMaxParGeom=6,kMaxParTot=9,kSensDefBit=BIT(14),kGlobalGeomBit=BIT(15),kNotInConfBit=BIT(16),kVdSDDSameLRBit=BIT(17)};
+  enum {kDOFTX,kDOFTY,kDOFTZ,kDOFPS,kDOFTH,kDOFPH,kDOFT0,kDOFDVL,kDOFDVR};
   //
   AliITSAlignMille2Module(); 
   AliITSAlignMille2Module(UShort_t volid);
@@ -53,10 +53,12 @@ public:
   Float_t      GetSigmaYFactor()                      const {return fSigmaFactor[1];}
   Float_t      GetSigmaZFactor()                      const {return fSigmaFactor[2];}
   Int_t        GetNProcessedPoints()                  const {return fNProcPoints;}
-  Bool_t       IsFreeDOF(Int_t dof)                   const {return fParCstr[dof]>0;}
+  Bool_t       IsFreeDOF(Int_t dof)                   const {return dof<fNParTot && fParCstr[dof]>0;}
   Bool_t       AreSensorsProvided()                   const {return TestBit(kSensDefBit);}
   Bool_t       GeomParamsGlobal()                     const {return TestBit(kGlobalGeomBit);}
   Bool_t       IsNotInConf()                          const {return TestBit(kNotInConfBit);}
+  Bool_t       IsVDriftLRSame()                       const {return TestBit(kVdSDDSameLRBit);}
+  //
   Bool_t       IsIn(UShort_t volid)                   const;
   Bool_t       IsAlignable()                          const;
   Bool_t       BelongsTo(AliITSAlignMille2Module* parent) const;
@@ -70,10 +72,10 @@ public:
   UShort_t     GetNParTot()                           const {return fNParTot;}
   UShort_t     GetNParFree()                          const {return fNParFree;}
   Float_t     *GetParVals()                           const {return fParVals;}
-  Double_t     GetParVal(int par)                     const {return fParVals[par];}
-  Double_t     GetParErr(int par)                     const {return fParErrs[par];}
-  Double_t     GetParConstraint(int par)              const {return fParCstr[par];}
-  Int_t        GetParOffset(Int_t par)                const {return fParOffs[par];}
+  Double_t     GetParVal(int par)                     const {return par<fNParTot ? fParVals[par] : 0;}
+  Double_t     GetParErr(int par)                     const {return par<fNParTot ? fParErrs[par] : 0;}
+  Double_t     GetParConstraint(int par)              const {return par<fNParTot ? fParCstr[par] : 0;}
+  Int_t        GetParOffset(Int_t par)                const {return par<fNParTot ? fParOffs[par] : -1;}
   Int_t        GetDetType()                           const {return fDetType;}
   Bool_t       IsParConstrained(Int_t par)            const {return fParCstr[par]>0 && fParCstr[par]<fgkDummyConstraint;}
   Bool_t       IsSPD()                                const {return fDetType == kSPD;}
@@ -99,6 +101,7 @@ public:
   void         SetSensorsProvided(Bool_t v=kTRUE)           {SetBit(kSensDefBit,v);}
   void         SetGeomParamsGlobal(Bool_t v=kTRUE)          {SetBit(kGlobalGeomBit,v);}
   void         SetNotInConf(Bool_t v=kTRUE)                 {SetBit(kNotInConfBit,v);}
+  void         SetVDriftLRSame(Bool_t v=kTRUE)              {SetBit(kVdSDDSameLRBit,v);}
   Int_t        Set(Int_t index,UShort_t volid, const char* symname, const TGeoHMatrix *m,Int_t nsv=0, const UShort_t *volidsv=0);
   //
   void         AddSensitiveVolume(UShort_t volid);

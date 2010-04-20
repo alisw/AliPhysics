@@ -26,7 +26,7 @@ class AliITSAlignMille2ConstrArray : public AliITSAlignMille2Constraint
   Double_t     GetCoeff(Int_t i)        const {return fCoeffs[i];}
   void         Print(Option_t* opt="")  const;
   //
-  void         AddModule(AliITSAlignMille2Module* mod);
+  void         AddModule(AliITSAlignMille2Module* mod,Bool_t needGeom = kTRUE);
   void         SetError(Double_t err)         {fError = err;}
   //
   virtual Bool_t IncludesModule(Int_t id)            const;

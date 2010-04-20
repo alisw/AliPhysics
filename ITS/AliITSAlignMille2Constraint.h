@@ -31,17 +31,17 @@ class AliITSAlignMille2Constraint : public TNamed
   Int_t        GetType()                const {return fType;}
   Int_t        GetModuleID()            const {return fModuleID;}
   Double_t     GetValue()               const {return fVal;}
-  UInt_t       GetPattern()             const {return (UInt_t)TestBits(0x0ffff);}
+  UInt_t       GetPattern()             const {return fPattern;}
   UInt_t       GetAppliedPattern()      const {return fApplied;}
   UInt_t       GetRemainingPattern()    const {return (~fApplied)&GetPattern();}
   Bool_t       IsApplied(Int_t par)     const {return fApplied & (0x1<<par);}
   Bool_t       IsApplied()              const {return (fApplied&0xffff)==GetPattern();}
-  Bool_t       IncludesParam(int id)    const {return TestBit( 0x0ffff&(0x1<<id) );}
+  Bool_t       IncludesParam(int id)    const {return fPattern&BIT(id);}
   void         Print(Option_t* opt="")  const;
   //
   void         SetConstraintID(UInt_t id)            {SetUniqueID(id);}
   void         SetType(Int_t t)                      {fType = t;}
-  void         SetPattern(UInt_t pat)                {SetBit(pat);}
+  void         SetPattern(UInt_t pat)                {fPattern = pat;}
   void         SetValue(Double_t val)                {fVal = val;}
   void         SetApplied(Int_t par)                 {fApplied |= par<0 ? 0x0ffff : (0x1<<par);}
   void         Disable()                             {fApplied |= 0x1<<kDisabledBit;}
@@ -61,6 +61,7 @@ class AliITSAlignMille2Constraint : public TNamed
   Double_t          fVal;               // constraint value
   Int_t             fModuleID;          // Id of the module involved, -1 for orphans
   UInt_t            fApplied;           // was it already applied?
+  UInt_t            fPattern;           // pattern of params involved
   //
   ClassDef(AliITSAlignMille2Constraint,0)
 };

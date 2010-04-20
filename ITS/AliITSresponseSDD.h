@@ -18,7 +18,7 @@
 
 class AliITSresponseSDD : public TObject {
  public:
-  enum {kVDCorr2Side = BIT(14)};   // if bit set, the object contains separate corrections for 2 sides
+  enum {kVDCorr2Side = BIT(14),kVDCorrMult = BIT(15)};   // if bit set, the object contains separate corrections for 2 sides
   //
   AliITSresponseSDD();
   virtual ~AliITSresponseSDD(){};
@@ -61,7 +61,9 @@ class AliITSresponseSDD : public TObject {
   }
   // 
   Bool_t IsVDCorr2Side()                       const {return TestBit(kVDCorr2Side);}
+  Bool_t IsVDCorrMult()                        const {return TestBit(kVDCorrMult);}
   void   SetVDCorr2Side(Bool_t v=kTRUE)              {SetBit(kVDCorr2Side,v);}
+  void   SetVDCorrMult(Bool_t v=kTRUE)               {SetBit(kVDCorrMult,v);}
   //
   static Float_t DefaultTimeOffset() {return fgkTimeOffsetDefault;}
   virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}

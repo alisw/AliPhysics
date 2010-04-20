@@ -44,6 +44,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliTracker.h"
 #include <TRandom.h>
+#include <TArrayD.h>
 
 ClassImp(AliITSTPArrayFit)
 
@@ -87,7 +88,7 @@ Double_t AliITSTPArrayFit::fgRhoLITS[AliITSTPArrayFit::kMaxLrITS] = {
 AliITSTPArrayFit::AliITSTPArrayFit() :
   fkPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
   fPntLast(-1),fNPBooked(0),fParAxis(-1),fCovI(0),fChi2NDF(0),
-  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(1.e6),
+  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(6.e5),
   fkAxID(0),fkAxCID(0),fCurT(0),
   fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
 {
@@ -101,7 +102,7 @@ AliITSTPArrayFit::AliITSTPArrayFit() :
 AliITSTPArrayFit::AliITSTPArrayFit(Int_t np) :
   fkPoints(0),fParSol(0),fBz(0),fCharge(0),fPntFirst(-1),
   fPntLast(-1),fNPBooked(np),fParAxis(-1),fCovI(0),fChi2NDF(0),
-  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(2.e3),
+  fMaxIter(20),fIter(0),fEps(1e-6),fMass(0),fSwitch2Line(kFALSE),fMaxRforHelix(6.e5),
   fkAxID(0),fkAxCID(0),fCurT(0),fFirstPosT(0),fNElsPnt(0),fElsId(0),fElsDR(0)
 {
   // constructor with booking of np points
@@ -415,23 +416,28 @@ Double_t AliITSTPArrayFit::GetPosition(Double_t *xyzPCA, const Double_t *xyz, co
 }
 
 //____________________________________________________
-Double_t AliITSTPArrayFit::GetPosition(Double_t *xyzPCA, const AliTrackPoint *pntCovInv) const
+Double_t AliITSTPArrayFit::GetPosition(Double_t *xyzPCA, const AliTrackPoint *pntCovInv, Bool_t useErr) const
 {
   // calculate the position of the track at PCA to pntCovInv
   // NOTE: the covariance matrix of the point must be inverted
-  Double_t covI[6],xyz[3] = {pntCovInv->GetX(),pntCovInv->GetY(),pntCovInv->GetZ()};
-  for (int i=6;i--;) covI[i] = pntCovInv->GetCov()[i];
-  Double_t t = GetParPCA(xyz,covI);
+  double t;
+  double xyz[3] = {pntCovInv->GetX(),pntCovInv->GetY(),pntCovInv->GetZ()};
+  if (useErr) {
+    Double_t covI[6];;
+    for (int i=6;i--;) covI[i] = pntCovInv->GetCov()[i];
+    t = GetParPCA(xyz,covI);
+  }
+  else t = GetParPCA(xyz);
   GetPosition(xyzPCA,t);
   return t;
 }
 
 //____________________________________________________
-void AliITSTPArrayFit::GetResiduals(Double_t *resPCA, const AliTrackPoint *pntCovInv) const
+void AliITSTPArrayFit::GetResiduals(Double_t *resPCA, const AliTrackPoint *pntCovInv, Bool_t useErr) const
 {
   // calculate the residuals  of the track at PCA to pntCovInv
   // NOTE: the covariance matrix of the point must be inverted
-  GetPosition(resPCA,pntCovInv);
+  GetPosition(resPCA,pntCovInv,useErr);
   resPCA[0] -= pntCovInv->GetX();
   resPCA[1] -= pntCovInv->GetY();
   resPCA[2] -= pntCovInv->GetZ();
@@ -670,7 +676,7 @@ void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, con
 {
   // get residual detivatives over the track parameters for the point with least weighted distance to the point
   //
-  if (!IsFieldON()) { // for the straight line calculate analytically
+  if (!IsHelix()) { // for the straight line calculate analytically
     GetDResDParamsLine(dXYZdP, xyz, covI);
     return;
   }
@@ -704,7 +710,7 @@ void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const 
   // get residuals detivative over the point position for the point with least weighted distance to the point
   //
 
-  if (!IsFieldON()) { // for the straight line calculate analytically
+  if (!IsHelix()) { // for the straight line calculate analytically
     GetDResDPosLine(dXYZdP, /*xyz,*/ covI);
     return;
   }
@@ -748,6 +754,9 @@ Double_t AliITSTPArrayFit::GetParPCAHelix(const Double_t* xyz, const Double_t* c
   Double_t dzD  = -fParams[kR0]*fParams[kDip];
   Double_t dphi = 0;
   //
+  double rEps = 1e-5/TMath::Abs(fParams[kR0]); // dphi corresponding to 0.1 micron
+  if (rEps>fEps) rEps = fEps;
+  //
   int it=0;
   do {
     cs = TMath::Cos(phi + fParams[kPhi0]);
@@ -782,9 +791,10 @@ Double_t AliITSTPArrayFit::GetParPCAHelix(const Double_t* xyz, const Double_t* c
       ddchi2 = dxDD*dx + dyDD*dy +         + dxD*dxD + dyD*dyD + dzD*dzD;
     }
     //
-    if (TMath::Abs(ddchi2)<fgkAlmostZero || TMath::Abs(dphi=dchi2/ddchi2)<fEps) break;
+    if (TMath::Abs(ddchi2)<fgkAlmostZero || TMath::Abs(dphi=dchi2/ddchi2)<rEps) break;
     phi -= dphi;    
   } while(++it<fMaxIter);
+
   //
   return phi;
 }
@@ -848,7 +858,7 @@ void AliITSTPArrayFit::GetResiduals(Double_t *res,Int_t ipnt) const
 void AliITSTPArrayFit::GetPosition(Double_t *xyz, Double_t t) const
 {
   // calculate track position for parameter value t
-  if (IsFieldON()) {
+  if (IsHelix()) {
     //
     Double_t rrho = fParams[kD0]+fParams[kR0];
     Double_t xc = rrho*TMath::Cos(fParams[kPhi0]);
@@ -898,7 +908,7 @@ void AliITSTPArrayFit::GetPosition(Double_t *xyz, Double_t t) const
 void AliITSTPArrayFit::GetDirCos(Double_t *dircos, Double_t t) const
 {
   // calculate track direction cosines for parameter value t
-  if (IsFieldON()) {
+  if (IsHelix()) {
     dircos[kZ] = -fParams[kDip];
     t += fParams[kPhi0];    
     dircos[kX] = TMath::Sin(t);
@@ -935,6 +945,296 @@ Double_t AliITSTPArrayFit::GetMachinePrec()
   return TMath::Abs(2.*eps);
 }
 
+//________________________________________________________________________________________________________
+Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
+{
+  // crude estimate of helix parameters, w/o errors and Eloss.
+  // Fast Riemann fit: Comp.Phy.Comm.131 (2000) 95
+  //
+  // if charge is not imposed (extQ==0) then it will be determined from the collision type
+  //
+  static TArrayD arrU,arrV,arrW;
+  double *parrW,*parrU,*parrV;
+  Bool_t eloss = IsELossON();
+  //
+  int np = fPntLast - fPntFirst + 1;
+  if (np<3) { AliError("At least 3 points are needed for helix fit"); return kFALSE; }
+  //
+  const float *x=fkPoints->GetX(),*y=fkPoints->GetY(),*z=fkPoints->GetZ(),*cov=fkPoints->GetCov();
+  //
+  if (fPntLast>arrU.GetSize()) {
+    arrU.Set(2*fPntLast);
+    arrV.Set(2*fPntLast);
+    arrW.Set(2*fPntLast);
+  }
+  parrU = arrU.GetArray();
+  parrV = arrV.GetArray();
+  parrW = arrW.GetArray();
+  //
+  double uav=0,vav=0,wav=0,muu=0,muv=0,muw=0,mvv=0,mvw=0,mww=0;
+  int minRId = fPntFirst;
+  //  
+  // get points span
+  double xmn=1e9,xmx=-1e9, ymn=1e9,ymx=-1e9;
+  for (int i=fPntFirst;i<=fPntLast;i++) {
+    parrW[i] = x[i]*x[i]+y[i]*y[i];
+    if (parrW[i]<parrW[minRId]) minRId = i; // point closest to origin
+    if (xmn>x[i]) xmn = x[i];
+    if (xmx<x[i]) xmx = x[i];
+    if (ymn>y[i]) ymn = y[i];
+    if (ymx<y[i]) ymx = y[i];
+  }
+  int minRId1 = minRId>fPntFirst ? fPntFirst:fPntFirst+1;
+  for (int i=fPntFirst;i<=fPntLast;i++) if (parrW[i]<parrW[minRId1] && i!=minRId) minRId1 = i; 
+  //
+  double xshift = (xmx+xmn)/2 + 10*(ymx-ymn); // shift origin to have uniform weights
+  double yshift = (ymx+ymn)/2 - 10*(xmx-xmn);
+  //  printf("X: %+e %+e Y: %+e %+e | shift: %+e %+e\n",xmn,xmx,ymn,ymx,xshift,yshift);
+  //
+  for (int i=fPntFirst;i<=fPntLast;i++) {
+    double xs = x[i] - xshift;
+    double ys = y[i] - yshift;
+    double w = xs*xs + ys*ys;
+    double scl = 1./(1.+w);
+    int i0 = i-fPntFirst;
+    wav += parrW[i0] = w*scl;
+    uav += parrU[i0] = xs*scl;
+    vav += parrV[i0] = ys*scl;
+  }
+  uav /= np;    vav /= np;   wav /= np;
+  //
+  for (int i=fPntFirst;i<=fPntLast;i++) {
+    //
+    // point next to closest
+    int i0 = i-fPntFirst;
+    if (parrW[i0]<parrW[minRId1-fPntFirst] && i!=minRId) minRId1 = i; 
+    double u = parrU[i0] - uav;
+    double v = parrV[i0] - vav;
+    double w = parrW[i0] - wav;
+    muu += u*u;
+    muv += u*v;
+    muw += u*w;
+    mvv += v*v;
+    mvw += v*w;
+    mww += w*w;
+  } 
+  muu/=np; muv/=np; muw/=np; mvv/=np; mvw/=np; mww/=np;
+  //
+  // find eigenvalues:
+  double trace3 = (muu + mvv + mww)/3.;
+  double muut = muu-trace3;
+  double mvvt = mvv-trace3;
+  double mwwt = mww-trace3;
+  double q = (muut*(mvvt*mwwt-mvw*mvw) - muv*(muv*mwwt-mvw*muw) + muw*(muv*mvw-mvvt*muw))/2;
+  double p = (muut*muut+mvvt*mvvt+mwwt*mwwt+2*(muv*muv+muw*muw+mvw*mvw))/6;
+  double dfpp = p*p*p-q*q;
+  dfpp = dfpp>0 ? TMath::Sqrt(dfpp)/q : 0;
+  double ph = TMath::ATan( dfpp )/3.;
+  if (ph<0) ph += TMath::Pi()/3;
+  p = p>0 ? TMath::Sqrt(p) : 0;
+  const double kSqrt3 = 1.73205080;
+  double snp = TMath::Sin(ph);
+  double csp = TMath::Cos(ph);
+  //  double eg1 = trace3 + 2*p*csp;
+  double eg2 = trace3 - p*(csp+kSqrt3*snp); // smallest one
+  //  double eg3 = trace3 - p*(csp-kSqrt3*snp);
+  // eigenvector for min.eigenvalue
+  muut = muu-eg2;
+  mvvt = mvv-eg2;
+  mwwt = mww-eg2;
+  double n0 = muv*mvw-muw*mvvt;
+  double n1 = muv*muw-mvw*muut;
+  double n2 = muut*mvvt-muv*muv;
+  // normalize to largest one
+  double nrm = TMath::Abs(n0);
+  if (nrm<TMath::Abs(n1)) nrm = TMath::Abs(n1);
+  if (nrm<TMath::Abs(n2)) nrm = TMath::Abs(n2);
+  n0/=nrm; n1/=nrm; n2/=nrm;
+  //
+  double cpar = -(uav*n0 + vav*n1 + wav*n2);
+  double xc = -n0/(cpar+n2)/2 + xshift;
+  double yc = -n1/(cpar+n2)/2 + yshift;
+  double rad = TMath::Sqrt(n0*n0+n1*n1-4*cpar*(cpar+n2))/2./TMath::Abs(cpar+n2);
+  //
+  //  printf("Rad: %+e xc: %+e yc: %+e | X0: %+e Y0: %+e | X1: %+e Y1: %+e\n",rad,xc,yc, x[minRId],y[minRId],x[minRId1],y[minRId1]);
+
+  // linear circle fit --------------------------------------------------- <<<
+  //
+  // decide sign(Q*B) and fill cicrle parameters ------------------------- >>>
+  int sqb;
+  if (extQ) {
+    SetCharge(extQ); 
+    sqb = fBz<0 ? -GetCharge():GetCharge();
+  }
+  else { 
+    // determine the charge from the collision type and field sign
+    // the negative Q*B will have positive Vc x dir product Z component
+    // with Vc={-xc,-yc} : vector from circle center to the origin
+    // and V0 - track direction vector (take {0,-1,1} for cosmics)
+    // If Bz is not provided, assume positive Bz
+    if ( IsTypeCosmics() ) sqb = xc>0 ? -1:1;
+    else {
+      // track direction vector as a - diference between the closest and the next to closest to origin points
+      double v0X = x[minRId1] - x[minRId];
+      double v0Y = y[minRId1] - y[minRId];
+      sqb = (yc*v0X - xc*v0Y)<0 ? -1:1;
+    }
+    SetCharge( fBz<0 ? -sqb : sqb);
+  }
+  //
+  Double_t phi = TMath::ATan2(yc,xc);
+  if (sqb<0) phi += TMath::Pi();
+  if      (phi > TMath::Pi()) phi -= 2.*TMath::Pi();
+  else if (phi <-TMath::Pi()) phi += 2.*TMath::Pi();
+  fParams[kPhi0] = phi;  
+  fParams[kR0]   = sqb<0 ? -rad:rad;  
+  fParams[kD0] = xc*TMath::Cos(phi) + yc*TMath::Sin(phi) - fParams[kR0];
+  //
+  // decide sign(Q*B) and fill cicrle parameters ------------------------- <<<
+  //
+  // find z-offset and dip + the parameter t of closest approach to hits - >>>
+  //
+  UInt_t hitLrPos=0;  // pattern of hit layers at pos
+  UInt_t hitLrNeg=0;  // and negative t's
+
+  Double_t ss=0,st=0,sz=0,stt=0,szt=0;
+  for (int i=fPntFirst;i<=fPntLast;i++) {
+    //
+    Double_t ze2 = cov[i*6 + kZZ];
+    Double_t t = TMath::ATan2(yc-y[i],xc-x[i]) - fParams[kPhi0]; // angle at measured z
+    if (fParams[kR0]<0)  t += TMath::Pi();
+    if      (t > TMath::Pi()) t -= TMath::Pi()*2;
+    else if (t <-TMath::Pi()) t += TMath::Pi()*2;
+    if (ze2<fgkAlmostZero) ze2 = 1E-8;
+    ze2 = 1./ze2;
+    ss += ze2;
+    st += t*ze2;
+    stt+= t*t*ze2;
+    sz += z[i]*ze2;
+    szt+= z[i]*t*ze2;
+    //
+    fCurT[i] = t; // parameter of the closest approach to the point
+    //    printf("%d %+e %+e %+e %+e\n",i,x[i],y[i],z[i],t);
+    if (eloss) {
+      double r = TMath::Sqrt(x[i]*x[i]+y[i]*y[i]);
+      int lr;
+      for (lr=kMaxLrITS;lr--;) if ( IsZero(r-fgkRLayITS[ lr ],1.) ) break;
+      if (lr<kMaxLrITS) {
+	if (t>0) hitLrPos |= (1<<lr);  // set bit of the layer
+	else     hitLrNeg |= (1<<lr);  // set bit of the layer
+      }
+    }
+  }
+  double det = ss*stt - st*st;
+  if (TMath::Abs(det)<fgkAlmostZero) { // no Z dependence
+    fParams[kDZ]  = sz/ss;
+    fParams[kDip] = 0;
+  }
+  else {
+    fParams[kDZ]  =  (sz*stt-st*szt)/det;
+    fParams[kDip] = -(ss*szt-st*sz)/det/fParams[kR0];
+  }
+  //
+  // find z-offset and dip + the parameter t of closest approach to hits - <<<
+  //
+  // fill info needed to account for ELoss ------------------------------- >>>
+  if (eloss) {
+    fNElsPnt = fPntLast - fPntFirst + 1;
+    //
+    // to account for the energy loss in the passive volumes, calculate the relevant t-parameters 
+    double* tcur = fCurT + fPntFirst;
+    double* ecur = fElsDR+ fPntFirst;
+    //
+    for (int ilp=3;ilp--;) {
+      int id = fgkPassivLrITS[ilp];
+      double tp = GetHelixParAtR( fgkRLayITS[ id ] );
+      if (tp<0) continue; // does not hit this radius
+      //
+      tcur[fNElsPnt] = GetSignQB()>0 ? -tp : tp;
+      ecur[fNElsPnt] = fgRhoLITS[ id ];
+      fNElsPnt++;
+      //      printf("Passive  on lr %d  %+e\n",ilp,tcur[fNElsPnt-1]);
+      //
+      if (IsTypeCosmics() && !IsZero(tp)) { // 2 crossings for cosmics
+	tcur[fNElsPnt] = -tcur[fNElsPnt-1];
+	ecur[fNElsPnt] =  ecur[fNElsPnt-1];
+	fNElsPnt++;
+	//printf("Passive* on lr %d  %+e\n",ilp,-tcur[fNElsPnt-1]);
+      }
+      //
+    }
+    // check if some active layers did not miss the hit, treat them as passive
+    for (int ilp=6;ilp--;) {
+      int id = fgkActiveLrITS[ilp];
+      double tp = GetHelixParAtR( fgkRLayITS[ id ] );
+      if (tp<0) continue; // does not hit this radius
+      //
+      if ( (GetSignQB()>0||IsTypeCosmics()) && !(hitLrNeg & (1<<id)) ) {
+	tcur[fNElsPnt] = -tp;
+	ecur[fNElsPnt] = fgRhoLITS[ id ];
+	fNElsPnt++;
+	//printf("Missed  on lr %d  %+e\n",ilp,-tp);
+      }
+      //
+      if ( (GetSignQB()<0||IsTypeCosmics()) && !(hitLrPos & (1<<id)) ) {
+	tcur[fNElsPnt] = tp;
+	ecur[fNElsPnt] = fgRhoLITS[ id ];
+	fNElsPnt++;
+	//printf("Missed* on lr %d  %e\n",ilp,tp);
+      }
+    }
+    //
+    TMath::Sort(fNElsPnt,fCurT+fPntFirst,fElsId,kFALSE);    // index e-loss points in increasing order
+    // find the position of smallest positive t-param
+    for (fFirstPosT=0;fFirstPosT<fNElsPnt;fFirstPosT++) if (fCurT[ fElsId[ fFirstPosT ] ]>0) break;
+    //
+    Double_t cdip = 1./TMath::Sqrt(1.+fParams[kDip]*fParams[kDip]);
+    Double_t ptot = TMath::Abs(fParams[kR0]*fgkCQConv*fBz/cdip); // momentum and energy
+    Double_t etot = TMath::Sqrt(ptot*ptot + fMass*fMass);      // in the point of closest approach to beam
+    Double_t normS[3];
+    //
+    // Positive t-params: along the track direction for negative track, against for positive
+    Double_t pcur = ptot, ecurr = etot;
+    for (int ip=fFirstPosT;ip<fNElsPnt;ip++) {
+      int tID = fElsId[ip];
+      Double_t t = fCurT[ tID ];
+      //
+      if (tID>fPntLast) { // this is not a hit layer but passive layer
+	double php = TMath::ATan2(yc-fParams[kR0]*TMath::Cos(fParams[kPhi0]+t),
+				  xc-fParams[kR0]*TMath::Cos(fParams[kPhi0]+t));
+	normS[0] = -TMath::Cos(php);  // normal to the cylinder at intersection point
+	normS[1] = -TMath::Sin(php);
+	normS[2] = 0;
+      }
+      else GetNormal(normS,fkPoints->GetCov()+tID*6);   // vector normal to hit module
+      fElsDR[tID] = GetDRofELoss(t,cdip,fElsDR[tID],normS,ptot,etot);
+    }
+    //
+    // negaive t-params: against the track direction for negative track, along for positive
+    pcur  = ptot;
+    ecurr = etot;
+    for (int ip=fFirstPosT;ip--;) {
+      int tID = fElsId[ip];
+      Double_t t = fCurT[ tID ];
+      //
+      if (tID>fPntLast) { // this is not a hit layer but passive layer
+	double php = TMath::ATan2(yc-fParams[kR0]*TMath::Cos(fParams[kPhi0]+t),
+				  xc-fParams[kR0]*TMath::Cos(fParams[kPhi0]+t));
+	normS[0] = -TMath::Cos(php);  // normal to the cylinder at intersection point
+	normS[1] = -TMath::Sin(php);
+	normS[2] = 0;	
+      }
+      else GetNormal(normS,fkPoints->GetCov()+tID*6);   // vector normal to hit module
+      //
+      fElsDR[tID] = GetDRofELoss(t,cdip,fElsDR[tID],normS,ptot,etot);
+    }
+  }
+  // fill info needed to account for ELoss ------------------------------- <<<
+  //
+  return kTRUE;
+}
+
+/*
 //________________________________________________________________________________________________________
 Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
 {
@@ -1006,6 +1306,19 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
   Double_t xc   = -(rhs0*mi00 + rhs1*mi01 + rhs2*mi02)/2;
   Double_t yc   = -(rhs0*mi01 + rhs1*mi11 + rhs2*mi12)/2;
   Double_t rho2 =  (rhs0*mi02 + rhs1*mi12 + rhs2*mi22);
+
+  //
+  // check
+  double bx = -2*xc;
+  double by = -2*yc;
+  double sm0=0,sm1=0;
+  for (int i=fPntFirst;i<=fPntLast;i++) {
+    double dst = bx*x[i]+by*y[i]+x[i]*x[i]+y[i]*y[i]+rho2;
+    sm0 += dst;
+    sm1 += dst*dst;
+    printf("Point %d: %+e %+e %+e\n",i,dst,sm0,sm1);
+  }
+
   //
   Double_t rad = xc*xc + yc*yc - rho2;
   rad = (rad>fgkAlmostZero) ? (TMath::Sqrt(rad)):fgkAlmostZero;
@@ -1181,7 +1494,7 @@ Bool_t AliITSTPArrayFit::FitHelixCrude(Int_t extQ)
   //
   return kTRUE;
 }
-
+*/
 //____________________________________________________
 Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr)
 {
@@ -1237,9 +1550,15 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
       dXYZdGlo[offs + kZ] = 0;
       //
       offs = kR0*3;                   // dXYZ/dR0
-      dXYZdGlo[offs + kX] =  cs0 - cst;
-      dXYZdGlo[offs + kY] =  sn0 - snt;
-      dXYZdGlo[offs + kZ] =  -fParams[kDip]*fCurT[ip];
+      if (TMath::Abs(fParams[kR0])<0.9*fMaxRforHelix) {
+	dXYZdGlo[offs + kX] =  cs0 - cst;
+	dXYZdGlo[offs + kY] =  sn0 - snt;
+	dXYZdGlo[offs + kZ] =  -fParams[kDip]*fCurT[ip];
+      }
+      else {
+	dXYZdGlo[offs + kX] = dXYZdGlo[offs + kY] = dXYZdGlo[offs + kZ] = 0;
+	fParSol->AddConstraint(kR0,0,1.e2);
+      }
       //
       offs = kDZ*3;                   // dXYZ/dDZ
       dXYZdGlo[offs + kX] =  0;
@@ -1251,9 +1570,12 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
       dXYZdGlo[offs + kY] =  0;
       dXYZdGlo[offs + kZ] = -fParams[kR0]*fCurT[ip];
       //
+      //      /*
       dXYZdLoc[kX] =  fParams[kR0]*snt;
       dXYZdLoc[kY] = -fParams[kR0]*cst;
       dXYZdLoc[kZ] = -fParams[kR0]*fParams[kDip];
+      //      */
+      //      dXYZdLoc[0] = dXYZdLoc[1] = dXYZdLoc[2] = 0;
       //
       fParSol->AddEquation(dXYZdGlo,dXYZdLoc,xyzRes,GetCovI(ip));
     }
@@ -1270,6 +1592,9 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
     Double_t *deltaG = fParSol->GetGlobals();
     //    Double_t *deltaT = fParSol->GetLocals();
     for (int ipar=5;ipar--;) fParams[ipar] -= deltaG[ipar];
+    //
+    if (TMath::Abs(fParams[kR0])>0.9*fMaxRforHelix) fParams[kR0] = TMath::Sign(0.9*fMaxRforHelix,fParams[kR0]);
+    //
     for (int ip=fPntFirst;ip<=fPntLast;ip++) {
       fCurT[ip] = CalcParPCA(ip);
       //      printf("iter%d : delta%2d : expl: %+e | %+e | R=%+e p0=%+e\n",iter,ip,deltaT[ip-fPntFirst], fCurT[ip],fParams[kR0],fParams[kPhi0]);
@@ -1278,8 +1603,8 @@ Double_t AliITSTPArrayFit::FitHelix(Int_t extQ, Double_t extPT,Double_t extPTerr
     iter++;
     //
     fChi2NDF = CalcChi2NDF();
-    //    printf("%d | %+.2e %+.2e %+.2e %+.2e %+.2e | chi2: %+.4e %+.4e\n",iter,deltaG[0],deltaG[1],deltaG[2],deltaG[3],deltaG[4],fChi2NDF,fChi2NDF-chiprev);
-    //    printf("->> %+.2e %+.2e %+.2e %+.2e %+.2e | Chi2: %+.6e %+.6e\n",fParams[0],fParams[1],fParams[2],fParams[3],fParams[4],fChi2NDF,fChi2NDF-chiprev);
+    //        printf("%2d | %+.2e %+.2e %+.2e %+.2e %+.2e | chi2: %+.4e %+.4e\n",iter,deltaG[0],deltaG[1],deltaG[2],deltaG[3],deltaG[4],fChi2NDF,fChi2NDF-chiprev);
+    //        printf("->>  %+.2e %+.2e %+.2e %+.2e %+.2e | Chi2: %+.6e %+.6e\n",fParams[0],fParams[1],fParams[2],fParams[3],fParams[4],fChi2NDF,fChi2NDF-chiprev);
     double difchi2 = chiprev - fChi2NDF;
     if ( difchi2<fEps && TMath::Abs(difchi2)<1e-4) {converged = kTRUE; break;} 
     //    if (errT*TMath::Abs(fParams[kR0])<kMaxTEffect && errP<fEps) {converged = kTRUE; break;} 
@@ -1476,7 +1801,7 @@ void AliITSTPArrayFit::Print(Option_t *) const
   //
   printf("Track of %3d points in Bz=%+.1f |Fit ",fPntLast-fPntFirst+1,fBz);
   if ( IsFitDone() ) {
-    if (IsFieldON())
+    if (IsHelix())
       printf("Helix: Chi2: %5.1f | %+.2e %+.2e %+.2e %+.2e %+.2e\n",
 	     fChi2NDF,fParams[kD0],fParams[kPhi0],fParams[kR0],fParams[kDZ],fParams[kDip]);
     else 
@@ -1595,7 +1920,7 @@ Bool_t AliITSTPArrayFit::CalcErrorMatrix()
   static AliSymMatrix cv(5);
   static Double_t dres[5][3]; 
   cv.Reset();
-  int npar = IsFieldON() ? 5:4;
+  int npar = IsHelix() ? 5:4;
   //
   for (int ip=fPntFirst;ip<=fPntLast;ip++) {
     GetDResDParams(&dres[0][0],ip);
@@ -1608,7 +1933,7 @@ Bool_t AliITSTPArrayFit::CalcErrorMatrix()
   }
   cv.SetSizeUsed(npar);
   if (cv.InvertChol()) {
-    cv.Print("l");
+    //cv.Print("l");
     int cnt = 0;
     for (int i=npar;i--;) for (int j=i+1;j--;)fParamsCov[cnt++] = cv(i,j);
     return kTRUE;
@@ -1623,8 +1948,21 @@ Double_t AliITSTPArrayFit::CalcParPCA(Int_t ipnt) const
   // get parameter for the point with least weighted distance to the point
   const double *xyz  = GetPoint(ipnt);
   const double *covI = GetCovI(ipnt);
-  if (IsFieldON()) return GetParPCAHelix(xyz,covI);
+  if (IsHelix()) return GetParPCAHelix(xyz,covI);
   else             return GetParPCALine(xyz,covI);
 }
 
+//____________________________________________________
+Double_t AliITSTPArrayFit::GetPt() const 
+{
+  return IsFieldON()&&IsHelix() ? TMath::Abs(fParams[kR0]*fBz*fgkCQConv) : -1;
+}
+
+//____________________________________________________
+Double_t AliITSTPArrayFit::GetP() const 
+{
+  if (!IsFieldON()) return -1;
+  Double_t cdip = 1./TMath::Sqrt(1.+fParams[kDip]*fParams[kDip]);
+  return TMath::Abs(fParams[kR0]*fgkCQConv*fBz/cdip); // momentum
+}
 

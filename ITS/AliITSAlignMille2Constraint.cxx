@@ -21,7 +21,8 @@ TNamed(),
 fType(kTypeMean),
 fVal(0),
 fModuleID(0),
-fApplied(0)
+fApplied(0),
+fPattern(0)
 {}
 
 //________________________________________________________________________________________________________
@@ -30,9 +31,9 @@ TNamed(name,""),
 fType(t),
 fVal(val),
 fModuleID(mdID),
-fApplied(0)
+fApplied(0),
+fPattern(pattern)
 {
-  SetPattern(pattern);
 }
 
 //________________________________________________________________________________________________________
@@ -41,7 +42,8 @@ TNamed(src),
 fType(src.fType),
 fVal(src.fVal),
 fModuleID(src.fModuleID),
-fApplied(src.fApplied)
+fApplied(src.fApplied),
+fPattern(src.fPattern)
 {/* DUMMY */} 
 
 //________________________________________________________________________________________________________

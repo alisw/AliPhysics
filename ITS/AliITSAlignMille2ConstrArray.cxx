@@ -34,7 +34,7 @@ AliITSAlignMille2ConstrArray::AliITSAlignMille2ConstrArray(const AliITSAlignMill
 {/* DUMMY */} 
 
 //________________________________________________________________________________________________________
-void AliITSAlignMille2ConstrArray::AddModule(AliITSAlignMille2Module* mod)
+void AliITSAlignMille2ConstrArray::AddModule(AliITSAlignMille2Module* mod, Bool_t needGeom)
 {
   int nmd = GetNModules();
   // check if its already not there
@@ -42,20 +42,22 @@ void AliITSAlignMille2ConstrArray::AddModule(AliITSAlignMille2Module* mod)
   fModuleIDs.Set(nmd+1);
   fModulePatt.Set(nmd+1);
   fModuleIDs[nmd] = mod->GetUniqueID();
-  double jacobian[AliITSAlignMille2Module::kMaxParGeom][AliITSAlignMille2Module::kMaxParGeom];
-  if (mod->GeomParamsGlobal()) mod->CalcDerivLocGlo(&jacobian[0][0]);
-  //
-  Short_t patt =  GetPattern();
-  if (mod->GeomParamsGlobal()) {
-    // the constraint is defined in the module's local frame. If the alignment of geom params is
-    // done in the global frame, we need to set the real parameter involved
-    patt &= 0xffff<< AliITSAlignMille2Module::kMaxParGeom;     // reset the geometry parameters
-    for (int i=0;i<AliITSAlignMille2Module::kMaxParGeom;i++) {
-      if (!IncludesParam(i)) continue;
-      for (int j=0;j<AliITSAlignMille2Module::kMaxParGeom;j++) if (jacobian[i][j]!=0) patt |= (0x1<<j);
+  if (needGeom) { // this is geometrical constraint
+    double jacobian[AliITSAlignMille2Module::kMaxParGeom][AliITSAlignMille2Module::kMaxParGeom];
+    if (mod->GeomParamsGlobal()) mod->CalcDerivLocGlo(&jacobian[0][0]);
+    //
+    Short_t patt =  GetPattern();
+    if (mod->GeomParamsGlobal()) {
+      // the constraint is defined in the module's local frame. If the alignment of geom params is
+      // done in the global frame, we need to set the real parameter involved
+      patt &= 0xffff<< AliITSAlignMille2Module::kMaxParGeom;     // reset the geometry parameters
+      for (int i=0;i<AliITSAlignMille2Module::kMaxParGeom;i++) {
+	if (!IncludesParam(i)) continue;
+	for (int j=0;j<AliITSAlignMille2Module::kMaxParGeom;j++) if (jacobian[i][j]!=0) patt |= (0x1<<j);
+      }
     }
+    fModulePatt[nmd] = patt;
   }
-  fModulePatt[nmd] = patt;
 }
 
 //________________________________________________________________________________________________________

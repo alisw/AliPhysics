@@ -65,7 +65,8 @@ class AliITSTPArrayFit : public TObject
   //
   void          SetBz(Double_t bz)                                {fBz = bz;}
   Double_t      GetBz()                                     const {return fBz;}
-  Bool_t        IsFieldON()                                 const {return TMath::Abs(fBz)>1e-5 && !IsSwitched2Line();}
+  Bool_t        IsHelix()                                   const {return fParAxis<0;}
+  Bool_t        IsFieldON()                                 const {return TMath::Abs(fBz)>1e-5;}
   Bool_t        IsTypeCosmics()                             const {return TestBit(kCosmicsBit);}
   Bool_t        IsTypeCollision()                           const {return !IsTypeCosmics();}
   Int_t         GetCharge()                                 const {return fCharge;}
@@ -73,8 +74,8 @@ class AliITSTPArrayFit : public TObject
   void          GetResiduals(Double_t *res, Int_t ipnt)     const;
   void          GetResiduals(Double_t *resPCA, const Double_t* xyz, const Double_t* covI=0)  const;
   Double_t      GetPosition( Double_t *xyzPCA, const Double_t* xyz, const Double_t* covI=0)  const;
-  Double_t      GetPosition( Double_t *xyzPCA, const AliTrackPoint *pntCovInv)               const;
-  void          GetResiduals(Double_t *xyzPCA, const AliTrackPoint *pntCovInv)               const;
+  Double_t      GetPosition( Double_t *xyzPCA, const AliTrackPoint *pntCovInv,Bool_t useErr=kFALSE) const;
+  void          GetResiduals(Double_t *xyzPCA, const AliTrackPoint *pntCovInv,Bool_t useErr=kFALSE) const;
   void          GetPosition(Double_t *xyz, Double_t t)      const;
   void          GetPosition(Double_t *xyz, Int_t pnt)       const;
   void          GetDirCos(Double_t *dircos, Double_t t)     const;
@@ -135,6 +136,10 @@ class AliITSTPArrayFit : public TObject
   Int_t         GetNIterations()                            const {return fIter;}
   Double_t      GetEps()                                    const {return fEps;}
   Double_t      GetMass()                                   const {return fMass;}
+  //
+  Double_t      GetPt()                                     const;
+  Double_t      GetP()                                      const;
+
   //
   void          Switch2Line(Bool_t v=kTRUE)                       {fSwitch2Line = v;}
   void          SetMaxRforHelix(Double_t r)                       {fMaxRforHelix = r>0 ? r : 1e9;}

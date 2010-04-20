@@ -35,6 +35,9 @@ class AliITSAlignMille2Constraint;
 class AliITSAlignMille2ConstrArray;
 class AliITSresponseSDD;
 class AliITSTPArrayFit;
+class AliITSsegmentationSDD;
+class AliITSDriftSpeedArraySDD;
+class AliCDBEntry;
 
 class AliITSAlignMille2: public TObject
 {
@@ -44,9 +47,11 @@ class AliITSAlignMille2: public TObject
   enum {kNLocal=5,kMaxPoints=100,
 	kNParChGeom = AliITSAlignMille2Module::kMaxParGeom,
 	kNParCh     = AliITSAlignMille2Module::kMaxParTot,
-	kMaxITSSensID=2197,kMaxITSSensVID=14300,kMinITSSupeModuleID=14336,
+	kMaxITSSensID=2197,kVtxSensID=kMaxITSSensID+1,kMaxITSSensVID=14300,kVtxSensVID=14371,
+	kMinITSSupeModuleID=14336,
 	kSDDoffsID=240,kNSDDmod=260};
   //
+  enum {kSameInitDeltasBit=BIT(14),kSameInitSDDRespBit=BIT(15),kSameInitSDDVDriftBit=BIT(16),kSameDiamondBit=BIT(17)};
  public:
   //
   AliITSAlignMille2(const Char_t *configFilename="AliITSAlignMille.conf",TList* userInfo=0);
@@ -73,6 +78,7 @@ class AliITSAlignMille2: public TObject
   AliITSAlignMille2Module*  GetMilleModule(Int_t id)             const {return (AliITSAlignMille2Module*)fMilleModule[id];}
   AliITSAlignMille2Module*  GetCurrentModule()                   const {return fCurrentModule;}
   AliITSAlignMille2Module*  GetSuperModule(Int_t id)             const {return (AliITSAlignMille2Module*)fSuperModule[id];}
+  AliITSAlignMille2Module*  CreateVertexModule();
   //
   AliAlignObjParams*        GetPrealignedObject(const Char_t* symname) const;
   AliAlignObjParams*        GetConstrRefObject(const Char_t* symname) const;
@@ -83,8 +89,9 @@ class AliITSAlignMille2: public TObject
   const Char_t* GetGeometryPath()                                   {return fGeometryPath.Data();}
   const Char_t* GetPreAlignmentPath()                               {return fPreDeltaPath.Data();}
   TClonesArray* GetPreAlignmentDeltas()                           const {return fPrealignment;}
-  AliITSresponseSDD* GetSDDPrecalibration()                       const {return fCorrectSDD;}
-  AliITSresponseSDD* GetSDDInit()                                 const {return fInitialRecSDD;}
+  AliITSresponseSDD* GetSDDPrecalResp()                           const {return fPreRespSDD;}
+  AliITSresponseSDD* GetSDDInitResp()                             const {return fIniRespSDD;}
+  TObjArray*         GetSDDInitVDrift()                           const {return fIniVDriftSDD;}
   void      PrintCurrentModuleInfo()                              const {if (fCurrentModule) fCurrentModule->Print();}
   void      Print(Option_t*)                                      const;
   Bool_t    IsConfigured()                                        const {return fIsConfigured;}
@@ -108,14 +115,17 @@ class AliITSAlignMille2: public TObject
   AliTrackPointArray   *PrepareTrack(const AliTrackPointArray *track); 
   AliTrackPointArray *GetCurrentTrack()     const                       {return (AliTrackPointArray*)fTrack;}
   AliTrackPoint      *GetCurrentCluster()   const                       {return (AliTrackPoint*)&fCluster;}
+  void      ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, Int_t pntID);
   void      SetCurrentTrack(const AliTrackPointArray *atp)              {fTrack = (AliTrackPointArray*)atp;}
   void      SetCurrentCluster(const AliTrackPoint &atp);
   void      InitTrackParams(int meth=1);
-  Int_t     ProcessTrack(const AliTrackPointArray *track);
+  Int_t     ProcessTrack(const AliTrackPointArray *track, Double_t wgh=1.0);
+  Int_t     FitTrack();
   Int_t     CheckCurrentTrack();
   //
   Int_t     CalcIntersectionPoint(Double_t *lpar, Double_t *gpar);
   Int_t     CalcDerivatives(Int_t paridx, Bool_t islpar);
+  void      JacobianPosGloLoc(int locid,double* jacobian);
   Double_t* GetLocalIntersectionPoint()                           const {return (Double_t*)fPintLoc;}
   Double_t* GetGlobalIntersectionPoint()                          const {return (Double_t*)fPintGlo;}
   AliTrackPointArray *SortTrack(const AliTrackPointArray *atp);
@@ -144,8 +154,10 @@ class AliITSAlignMille2: public TObject
   //
   TGeoHMatrix* GetSensorCurrMatrixSID(Int_t sid)                  const;
   TGeoHMatrix* GetSensorCurrMatrixVID(Int_t vid)                  const;
-
+  //
+  AliCDBEntry* GetCDBEntry(const char* path);
   // Hierarchical contraints
+  void      TieSDDVDriftsLR(AliITSAlignMille2Module* mod);
   Bool_t    PseudoParentsAllowed()                                const {return fAllowPseudoParents;}
   void      ConstrainModuleSubUnitsMean(Int_t idm, Double_t val=0, UInt_t pattern=0xff);
   void      ConstrainModuleSubUnitsMedian(Int_t idm, Double_t val=0, UInt_t pattern=0xff);
@@ -157,6 +169,10 @@ class AliITSAlignMille2: public TObject
   void      ApplyPreConstraints();
   void      ApplyPostConstraints();
   //
+  void      SetWeightPt(Double_t w=1)                                   {fWeightPt = w;}
+  void      SetSDDVDCorrMult(Bool_t v=kTRUE)                            {fIsSDDVDriftMult=v;}   
+  Double_t  GetWeightPt()                                         const {return fWeightPt;}
+  Bool_t    IsSDDVDCorrMult()                                     const {return fIsSDDVDriftMult;}
   Bool_t    IsParModConstrained(const AliITSAlignMille2Module* mod,Int_t par, Bool_t &meanmed, Bool_t &gaussian) const;
   Bool_t    IsParModFamilyVaried(const AliITSAlignMille2Module* mod,Int_t par,Int_t depth=999)             const;
   Bool_t    IsParFamilyFree(const AliITSAlignMille2Module* mod,Int_t par,Int_t depth=999)                  const;
@@ -172,6 +188,9 @@ class AliITSAlignMille2: public TObject
   //
   Double_t  GetTDriftSDD()                  const;
   Double_t  GetVDriftSDD()                  const;
+  Double_t  GetDriftSpeed(Int_t id)         const {return fDriftSpeed[id];}
+  Double_t  GetDriftTime0(Int_t id)         const {return fDriftTime0[id];}
+
   //
   AliITSAlignMille2Constraint* GetConstraint(Int_t i)            const {return (AliITSAlignMille2Constraint*)fConstraints.At(i);}
   AliITSAlignMille2Constraint* GetConstraint(const char* name)   const {return (AliITSAlignMille2Constraint*)fConstraints.FindObject(name);}
@@ -185,6 +204,7 @@ class AliITSAlignMille2: public TObject
   Double_t  *GetSigmaLoc()                                       const {return (Double_t*)fSigmaLoc;}
   Double_t   GetBField()                                         const {return fBField;}
   Bool_t     IsFieldON()                                         const {return fBOn;}
+  Bool_t     IsDiamondUsed()                                     const {return fUseDiamond;}
   Double_t  *GetLocalInitParam()                                 const {return (Double_t*)fLocalInitParam;}
   Double_t  *GetLocalInitParEr()                                 const {return (Double_t*)fLocalInitParEr;}
   Double_t   GetLocalDif(int par, int coor)                      const {return fDerivativeLoc[par][coor];}
@@ -219,7 +239,7 @@ class AliITSAlignMille2: public TObject
   //
  protected:
   //
-  struct Mille2Data { // structure to store data for 2 LocalEquations (X and Z)
+  struct Mille2Data { // structure to store data for LocalEquations (X and Z, optionally Y)
     enum {kMaxLev = 7};
     Double_t fMeas[3];                // measured coordinates
     Double_t fSigma[3];               // measured errors
@@ -237,11 +257,15 @@ class AliITSAlignMille2: public TObject
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
   TObjArray* GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew);
   Int_t     CheckConfigRecords(FILE* stream);
+  Int_t     ReloadInitCalib(TList *userInfo);
+  Int_t     ReloadInitCalib();
   //
   void      BuildHierarchy();
   Int_t     LoadSuperModuleFile(const Char_t *cfile="ITSMilleSuperModules.root");
   Int_t     LoadSDDResponse(TString& path, AliITSresponseSDD *&resp);
+  Int_t     LoadSDDVDrift(TString& path, TObjArray *&arr);
   Int_t     LoadDeltas(TString& path, TClonesArray *&arr);
+  Int_t     LoadDiamond(TString& path);
   void      ResetLocalEquation();
   Int_t     InitGeometry();
   Int_t     ApplyToGeometry();
@@ -253,7 +277,7 @@ class AliITSAlignMille2: public TObject
   //
   void      SetGeometryPath(const Char_t* filename="geometry.root") { fGeometryPath = filename; }
 
-  void      SetInitTrackParamsMeth(Int_t meth=1)                        {fInitTrackParamsMeth=meth;}
+  void      SetInitTrackParamsMeth(Int_t meth=1)                        {fIniTrackParamsMeth=meth;}
   //
   void      AddConstraint(Double_t *factor, Double_t value, Double_t sigma=0);
   void      InitGlobalParameters(Double_t *par);
@@ -275,13 +299,16 @@ class AliITSAlignMille2: public TObject
  protected:
   //
   enum {
-    kOCDBPath,
+    kOCDBDefaultPath,
+    kOCDBSpecificPath,
     kGeomFile,
     kSuperModileFile,
     kConstrRefFile,
     kPreDeltaFile,
     kPreCalSDDFile,
+    kPreVDriftSDDFile,
     kInitCalSDDFile,
+    kInitVDriftSDDFile,
     kInitDeltaFile,
     kGlobalDeltas,
     kConstrLocal,
@@ -295,6 +322,7 @@ class AliITSAlignMille2: public TObject
     kResCutOther,
     kLocalSigFactor,
     kStartFactor,
+    kFinalFactor,
     kBField,
     kSparseMatrix,
     kRequirePoint,
@@ -305,13 +333,18 @@ class AliITSAlignMille2: public TObject
     kTPAFitter,
     kUseLocalYErr,
     kMinPointsSens,
+    kSDDVDCorrMult,
+    kWeightPt,
+    kUseDiamond,
+    kSameSDDT0,
     //
     kNKeyWords
   };                                            // id's of the keywirds for config file records
 
   // millepede stuffs
   AliMillePede2 *fMillepede;                    // Detector independent alignment class
-  Double_t      fStartFac;                      // Initial value for chi2 cut 
+  Double_t      fStartFac;                      // Initial factor for chi2 cut 
+  Double_t      fFinalFac;                      // Final factor for chi2 cut 
   Double_t      fResCutInitial;                 // Cut on residual for first iteration
   Double_t      fResCut;                        // Cut on residual for other iterations 
   Int_t         fNGlobal;                       // Number of global parameters
@@ -346,10 +379,10 @@ class AliITSAlignMille2: public TObject
   Double_t      fConstrPTErr;                   // error on this constraint (0 - exact)
   Int_t         fConstrCharge;                  // optional constraint on charge of Helix track (0 - no constraint)
   //
-  Double_t      fDerivativeLoc[kNLocal][3];    // XYZ deriv. over local params
+  Double_t      fDerivativeLoc[kNLocal][3];     // XYZ deriv. over local params
   Double_t      fDerivativeGlo[kNParCh][3];     // XYZ deriv. over global params
   Int_t         fMinNPtsPerTrack;               // min number of points per track to accept it
-  Int_t         fInitTrackParamsMeth;           // method for track fit
+  Int_t         fIniTrackParamsMeth;            // method for track fit
   Int_t         fTotBadLocEqPoints;             // total number of reject points because of bad EqLoc
   AliTrackFitterRieman *fRieman;                // riemann fitter for helices
   //
@@ -369,20 +402,26 @@ class AliITSAlignMille2: public TObject
   // << new members
   //
   // OCDB stuff
-  TString       fDefCDBpath;                    // default OCDB path
-  TString       fInitDeltaPath;                 // where to take the deltas used to produce the points
-  TString       fInitSDDRespPath;               // where to take the initial SDD response used to produce the points
+  TList        *fIniUserInfo;                   // initial user info (validity is not guaranteed after initialization)
+  TString       fIniDeltaPath;                  // where to take the deltas used to produce the points
+  TString       fIniSDDRespPath;                // where to take the initial SDD response used to produce the points
   TString       fPreCalSDDRespPath;             // precalibration SDD response file name
+  TString       fIniSDDVDriftPath;              // initial SDD vdrift file name
+  TString       fPreSDDVDriftPath;              // initial SDD vdrift file name
   // geometry stuffs
   TString       fGeometryPath;                  // Geometry file name
   TString       fPreDeltaPath;                  // file with prealigned objects
   TString       fConstrRefPath;                 // file with prealigned objects wrt which constraints are defined
+  TString       fDiamondPath;                   // file with diamond constraint
   TGeoManager  *fGeoManager;                    // pointer to Alice geomanager
   Bool_t        fIsConfigured;                  // flag for loaded config file
   TArrayS       fPreAlignQF;                    // prealignment flags (not used?)
   //
-  AliITSresponseSDD* fCorrectSDD;               // array of SDD t0/vdrift calib params
-  AliITSresponseSDD* fInitialRecSDD;            // array of SDD t0/vdrift calib params used to create the track points
+  AliITSresponseSDD* fIniRespSDD;               // array of SDD t0/vdrift calib params used to create the track points
+  AliITSresponseSDD* fPreRespSDD;               // array of SDD t0/vdrift calib params
+  TObjArray*         fIniVDriftSDD;             // array of AliITSDriftSpeedArraySDD objects used for original reco
+  TObjArray*         fPreVDriftSDD;             // array of AliITSDriftSpeedArraySDD objects to be used as a starting point instead of fIniVDriftSDD
+  AliITSsegmentationSDD* fSegmentationSDD;      // extraction of SDD segmentation params
   TClonesArray* fPrealignment; // array of prealignment global deltas
   TClonesArray* fConstrRef;    // array of refererence deltas with respect to which the constraint are defined (survey?)
   TObjArray     fMilleModule; /// array of super modules to be aligned
@@ -403,9 +442,17 @@ class AliITSAlignMille2: public TObject
   Int_t         fExtraClustersMode; /// 1=remove random / 2=remove internal / 10=use only tracks with xcl
   // endpepo270809
   //
+  Double_t      fTrackWeight;                      //weight given by the user to current track
+  Double_t      fWeightPt;                         //weight track equations by pT in this power
+  Bool_t        fIsSDDVDriftMult;                  //use multiplicative correction for SDD vdrift
   Double_t      fDriftSpeed[50];                   //temporary array for drift times of SDD alitrackpoints
   Double_t      fDriftTime0[50];                   //temporary array for drift time 0's used for SDD alitrackpoints
   Double_t      fExtClusterPar[9];                 //array to store the parameters of the externally imposed cluster
+  AliTrackPoint fDiamond;                          //optional constraint on the vertex
+  AliTrackPoint fDiamondI;                         //constraint on the vertex with inverted error matrix
+  Bool_t        fUseDiamond;                       //use diamond as a vertex constraint
+  Int_t         fDiamondPointID;                   //ID of the diamond point in the track
+  Int_t         fDiamondModID;                     //id of the fake diamond module
   //
   static AliITSAlignMille2* fgInstance;         // global pointer on itself
   static Int_t              fgInstanceID;       // global counter of the instances

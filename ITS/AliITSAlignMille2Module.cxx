@@ -298,9 +298,9 @@ Int_t AliITSAlignMille2Module::Set(Int_t index, UShort_t volid, const char* symn
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::SetFreeDOF(Int_t dof,Double_t cstr)
 {
-  if (cstr>0)      fParCstr[dof] = fgkDummyConstraint+1.; // the parameter is free and unconstrained
-  else if (cstr<0) fParCstr[dof] = -cstr;                 // the parameter is free but constrained
-  else             fParCstr[dof] = 0;                     // fixed parameter
+  if (AliITSAlignMille2::IsZero(cstr)) fParCstr[dof] = 0;  // fixed parameter
+  else if (cstr>0)                     fParCstr[dof] = fgkDummyConstraint+1.; // the parameter is free and unconstrained
+  else                                 fParCstr[dof] = -cstr;                 // the parameter is free but constrained
 }
 
 //-------------------------------------------------------------
@@ -759,11 +759,14 @@ void AliITSAlignMille2Module::Print(Option_t*) const
   printf("Factors  : X=%.2f Y=%.2f Z=%.2f\n"
 	 "DOF: %cTx:%5d| %cTy:%5d| %cTz:%5d| %cPsi:%5d| %cTheta:%5d| %cPhi:%5d|",
 	 fSigmaFactor[0],fSigmaFactor[1],fSigmaFactor[2],
-	 IsFreeDOF(kDOFTX) ? '+':'-',fParOffs[kDOFTX],IsFreeDOF(kDOFTY) ? '+':'-',fParOffs[kDOFTY],
-	 IsFreeDOF(kDOFTZ) ? '+':'-',fParOffs[kDOFTZ],IsFreeDOF(kDOFPS) ? '+':'-',fParOffs[kDOFPS],
-	 IsFreeDOF(kDOFTH) ? '+':'-',fParOffs[kDOFTH],IsFreeDOF(kDOFPH) ? '+':'-',fParOffs[kDOFPH]);
-  if (IsSDD()) printf("%cT0:%5d| %cDV:%5d|",IsFreeDOF(kDOFT0)?'+':'-',fParOffs[kDOFT0],
-		      IsFreeDOF(kDOFDV)?'+':'-',fParOffs[kDOFDV]);
+	 IsFreeDOF(kDOFTX) ? '+':'-',GetParOffset(kDOFTX),IsFreeDOF(kDOFTY) ? '+':'-',GetParOffset(kDOFTY),
+	 IsFreeDOF(kDOFTZ) ? '+':'-',GetParOffset(kDOFTZ),IsFreeDOF(kDOFPS) ? '+':'-',GetParOffset(kDOFPS),
+	 IsFreeDOF(kDOFTH) ? '+':'-',GetParOffset(kDOFTH),IsFreeDOF(kDOFPH) ? '+':'-',GetParOffset(kDOFPH));
+  if (IsSDD()) {
+    printf("%cT0:%5d| %cDVl:%5d| %cDVr:%5d|",IsFreeDOF(kDOFT0)?'+':'-',GetParOffset(kDOFT0),
+	   IsFreeDOF(kDOFDVL)?'+':'-',GetParOffset(kDOFDVL),IsFreeDOF(kDOFDVR)?'+':'-',GetParOffset(kDOFDVR));
+    if (IsVDriftLRSame()) printf("(dVL=dVR)");
+  }
   printf("\n");
   fMatrix->Print();
   printf("%4d Sensitive volumes | %6d Processed Points\n",fNSensVol,fNProcPoints);
@@ -797,7 +800,7 @@ void AliITSAlignMille2Module::AssignDetType()
   else if (tp.Contains("SDD",TString::kIgnoreCase)) fDetType = kSDD;
   else if (tp.Contains("SSD",TString::kIgnoreCase)) fDetType = kSSD;
   else fDetType = -1;
-  fNParTot = IsSDD() ? 8:6;
+  fNParTot = IsSDD() ? kMaxParTot:kMaxParGeom;
   fNParFree = 0;
   fParVals = new Float_t[fNParTot];
   fParErrs = new Float_t[fNParTot];  
