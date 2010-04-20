@@ -262,6 +262,8 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
      if(!fRecoParamsPtr->GetParametersFromCDB())
      {
 	 fAnalyserPtr->SetRecoParamHandler(fRecoParamsPtr);
+	 fClusterizerPtr->SetEmcClusteringThreshold(fRecoParamsPtr->GetRecPointThreshold());
+	 fClusterizerPtr->SetEmcMinEnergyThreshold(fRecoParamsPtr->GetRecPointMemberThreshold());
      }
   }
   //
