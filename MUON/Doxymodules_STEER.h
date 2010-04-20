@@ -11,7 +11,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From STEERBaseLinkDef.h 38329 2010-01-17 19:17:24Z hristov
+// From STEERBaseLinkDef.h 40405 2010-04-14 14:41:08Z cvetan
 
     enum  AliLog::EType_t {};
  
@@ -85,6 +85,9 @@
     class AliITSPIDResponse {};
     class AliTPCPIDResponse {};
     class AliTOFPIDResponse {};
+    class AliTRDPIDResponse {};
+
+    class AliDAQ {};
 
 /** @} */
 
@@ -263,7 +266,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h 38329 2010-01-17 19:17:24Z hristov
+// From ESDLinkDef.h 40103 2010-03-31 09:03:39Z belikov
 
     enum   AliESDEvent::ESDListIndex {};
 
@@ -334,6 +337,9 @@
 
     class  AliTriggerScalersESD {};
     class  AliTriggerScalersRecordESD {};
+    class  AliESDHandler {};
+    class  AliTrackerBase {};
+    
 /** @} */
 
 /** @defgroup CDB CDB
@@ -423,6 +429,7 @@
     class AliAODMCHeader {};
     class AliAODPWG4Particle {};
     class AliAODPWG4ParticleCorrelation {};
+    class AliAODDimuon {};
 
 /** @} */
 

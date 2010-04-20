@@ -1,6 +1,6 @@
 // $Id$
 // The class categories definitions for Doxygen
-// From EVGENLinkDef.h 34050 2009-08-04 09:31:05Z morsch
+// From EVGENLinkDef.h 39592 2010-03-12 11:38:21Z morsch
 
 /** @defgroup EVGEN EVGEN
  *  Category of AliRoot event generator classes
@@ -57,6 +57,8 @@
     class  AliGenPromptPhotons {};
     class  AliGenPileup {};
     class  AliGenFunction {};
+    class  AliGenTHnSparse {};
+    class  AliOmegaDalitz {};
 
 /** @} */
 
