@@ -60,7 +60,8 @@ ClassImp(AliCaloTrackReader)
     fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fEMCALGeoName("EMCAL_COMPLETE"),fPHOSGeoName("PHOSgeo"), 
     fEMCALGeo(0x0), fPHOSGeo(0x0), fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), fAnaLED(kFALSE),
-    fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(0),fPHOSBadChannelMap(0)
+    fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(new TObjArray()),
+    fPHOSBadChannelMap(new TObjArray()), fTaskName("")
 {
   //Ctor
   
@@ -99,7 +100,9 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
   fEMCALGeo(new AliEMCALGeoUtils(*g.fEMCALGeo)), fPHOSGeo(new AliPHOSGeoUtils(*g.fPHOSGeo)),
   fEMCALGeoMatrixSet(g.fEMCALGeoMatrixSet), fPHOSGeoMatrixSet(g.fPHOSGeoMatrixSet),
   fAnaLED(g.fAnaLED),  fRemoveBadChannels(g.fRemoveBadChannels),
-  fEMCALBadChannelMap(),fPHOSBadChannelMap()
+  fEMCALBadChannelMap(new TObjArray(*g.fEMCALBadChannelMap)),
+  fPHOSBadChannelMap(new TObjArray(*g.fPHOSBadChannelMap)),
+  fTaskName(g.fTaskName)
 {
   // cpy ctor  
 }
@@ -219,8 +222,17 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   if(fPHOSGeo)  delete fPHOSGeo  ;
   if(fEMCALGeo) delete fEMCALGeo ;
 	
-  fEMCALBadChannelMap.Delete();
-  fPHOSBadChannelMap. Delete();
+  if(fEMCALBadChannelMap) { 
+    fEMCALBadChannelMap->Clear();
+    delete  fEMCALBadChannelMap;
+  }
+  if(fPHOSBadChannelMap) { 
+    fPHOSBadChannelMap->Clear();
+    delete  fPHOSBadChannelMap;
+  }
+
+  //fEMCALBadChannelMap. Delete();
+  //fPHOSBadChannelMap. Delete();
 	
 }
 
@@ -231,6 +243,9 @@ Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_
 	
 	if (!fRemoveBadChannels) return kFALSE;
 	
+	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap->GetEntries()) return kFALSE;
+	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap ->GetEntries()) return kFALSE;
+	printf("hello\n");
 	Int_t icol = -1;
 	Int_t irow = -1;
 	Int_t imod = -1;
@@ -240,6 +255,7 @@ Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_
 		if(calorimeter == "EMCAL"){
 			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
 			fEMCALGeo->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
+			if(fEMCALBadChannelMap->GetEntries() <= imod) continue;
 			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
 			if(GetEMCALChannelStatus(imod, icol, irow))return kTRUE;
 		}
@@ -249,12 +265,13 @@ Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_
 			irow = relId[2];
 			icol = relId[3];
 			imod = relId[0]-1;
+			if(fPHOSBadChannelMap->GetEntries() <= imod)continue;
 			if(GetPHOSChannelStatus(imod, icol, irow)) return kTRUE;
 		}
 		else return kFALSE;
 		
 	}// cell cluster loop
-	
+	printf("hello 2\n");
 	return kFALSE;
 
 }
@@ -395,11 +412,14 @@ void AliCaloTrackReader::Init()
 		}
 		else printf("AliCaloTrackReader::Init() - Second input not added, reader is not AOD\n");
 	}
+
+	//printf("TaskName in reader: %s\n",fTaskName.Data());
+	fEMCALBadChannelMap->SetName(Form("EMCALBadMap_%s",fTaskName.Data()));
+	fPHOSBadChannelMap->SetName(Form("PHOSBadMap_%s",fTaskName.Data()));
 }
 //_______________________________________________________________
 void AliCaloTrackReader::InitParameters()
 {
- 
   //Initialize the parameters of the analysis.
   fDataType   = kESD ;
   fCTSPtMin   = 0.2 ;
@@ -437,27 +457,39 @@ void AliCaloTrackReader::InitParameters()
   fAnaLED = kFALSE;
 	
   fRemoveBadChannels = kFALSE;
-	
+}
+
+//________________________________________________________________
+void AliCaloTrackReader::InitEMCALBadChannelStatusMap(){
+  //Init EMCAL bad channels map
+   if(fDebug > 0 )printf("AliCaloTrackReader::InitEMCALBadChannelStatusMap()\n");
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-	
-  for (int i = 0; i < 12; i++) 
-	fEMCALBadChannelMap.Add(new TH2I(Form("EMCALBadChannelMap_SM%d",i),Form("EMCALBadChannelMap_SM%d",i), 
-									 48, 0, 48, 24, 0, 24));
-	
-  for (int i = 0; i < 5; i++) 
-	fPHOSBadChannelMap.Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 
-									 56, 0, 56, 64, 0, 64));
-	
-  fEMCALBadChannelMap.SetOwner(kTRUE);
-  fPHOSBadChannelMap. SetOwner(kTRUE);
-  fEMCALBadChannelMap.Compress();
-  fPHOSBadChannelMap. Compress();
-	
+  
+  for (int i = 0; i < 12; i++) fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_SM%d_%s",i,fTaskName.Data()),Form("EMCALBadChannelMap_SM%d",i),  48, 0, 48, 24, 0, 24));
+  
+  fEMCALBadChannelMap->SetOwner(kTRUE);
+  fEMCALBadChannelMap->Compress();
+  
   //In order to avoid rewriting the same histograms
-  TH1::AddDirectory(oldStatus);
-	
+  TH1::AddDirectory(oldStatus);		
+}
+
+//________________________________________________________________
+void AliCaloTrackReader::InitPHOSBadChannelStatusMap(){
+  //Init PHOS bad channels map
+  if(fDebug > 0 )printf("AliCaloTrackReader::InitPHOSBadChannelStatusMap()\n");
+  //In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d_%s",i,fTaskName.Data()),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
+    
+  fPHOSBadChannelMap->SetOwner(kTRUE);
+  fPHOSBadChannelMap->Compress();
+  
+  //In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);		
 }
 
 //________________________________________________________________
@@ -489,6 +521,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
     return;
 
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
+  printf("Task name      : %s\n", fTaskName.Data()) ;
   printf("Data type      : %d\n", fDataType) ;
   printf("CTS Min pT     : %2.1f GeV/c\n", fCTSPtMin) ;
   printf("EMCAL Min pT   : %2.1f GeV/c\n", fEMCALPtMin) ;
@@ -510,7 +543,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Clean std AOD       =     %d\n", fCleanOutputStdAOD) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
-  printf("Rremove Clusters with bad channels? %d\n",fRemoveBadChannels);
+  printf("Remove Clusters with bad channels? %d\n",fRemoveBadChannels);
   printf("    \n") ;
 } 
 

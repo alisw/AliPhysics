@@ -127,6 +127,9 @@ void AliAnalysisTaskParticleCorrelation::Init()
   // to avoid problems when reading MC generator particles
   AliPDG::AddParticlesToPdgDataBase();
 
+  //Set in the reader the name of the task in case is needed
+  (fAna->GetReader())->SetTaskName(GetName());
+	
   // Initialise analysis
   fAna->Init();
 
