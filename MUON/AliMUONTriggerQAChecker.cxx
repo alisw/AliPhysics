@@ -97,6 +97,10 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
   
   TH1* currHisto = 0x0;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    TH1* hAnalyzedEvents = AliQAv1::GetData(list,AliMUONQAIndices::kTriggerRawNAnalyzedEvents,AliRecoParam::ConvertIndex(specie));
+    Int_t nAnalyzedEvents = 0;
+    if ( hAnalyzedEvents ) 
+      nAnalyzedEvents = hAnalyzedEvents->GetBinContent(1);
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
       currHisto = AliQAv1::GetData(list,histoRawsPercentIndex[ihisto],AliRecoParam::ConvertIndex(specie));
       if ( currHisto ){
@@ -116,7 +120,8 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 	  text->AddText(Form("%5.2f %% in %s", binContent, binName.Data()));
 	  //text->AddText(Form("%5.2f %% in %s (limit %5.2f %%)", binContent, binName.Data(), alarmPercent[ihisto][ibin-1]));
 	}
-	if ( ! isOk ) {
+	text->AddText(Form("Total events %i", nAnalyzedEvents));
+	if ( ! isOk || nAnalyzedEvents == 0 ) {
 	  text->SetFillColor(kRed);
 	  rv[specie] = MarkHisto(*currHisto, AliMUONVQAChecker::kError);
 	}

@@ -153,18 +153,21 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
   TH1* hSummary = GetRawsData(AliMUONQAIndices::kTriggerErrorSummary);
   hSummary->SetBinContent(AliMUONQAIndices::kAlgoLocalYCopy+1,mean/192.); //put the mean of the % of YCopy error in the kTriggerError's corresponding bin
 
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->Divide(fNumberOf44Dec,fNumberOf34Dec);
+  TH1F* hTriggerRatio = (TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434);
+  if ( hTriggerRatio ){
+    hTriggerRatio->Divide(fNumberOf44Dec,fNumberOf34Dec);
 
-  FillRatio4434Histos(1);
+    FillRatio4434Histos(1);
 
-  //reset bins temporary used to store informations
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(0,0); 
-  Int_t nbins =  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetNbinsX();
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(nbins+1,0);
+    //reset bins temporary used to store informations
+    ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(0,0); 
+    Int_t nbins =  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->GetNbinsX();
+    ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetBinContent(nbins+1,0);
 
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->SetMaximum(1.1);
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetMaximum(1.1);
-  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetMaximum(1.1);
+    ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434))->SetMaximum(1.1);
+    ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetMaximum(1.1);
+    ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetMaximum(1.1);
+  }
 }
 
 //____________________________________________________________________________ 
@@ -290,19 +293,21 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histo1D->GetYaxis()->SetTitle(errorAxisTitle.Data());
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerErrorLocalTrigY, expert, !image, !saveCorr);
 
-  histo1D = new TH1F("hTriggerRatio4434Local", "Ratio4434Local",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
-  histo1D->GetXaxis()->SetTitle(boardName.Data());
-  histo1D->GetYaxis()->SetTitle("ratio 44/34");
-  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerLocalRatio4434, expert, !image, !saveCorr);                                               
-  histo1D = new TH1F("hTriggerRatio4434AllEvents", "Ratio4434AllEvents",1,0,1);
-  histo1D->GetXaxis()->SetTitle("Event number");
-  histo1D->GetYaxis()->SetTitle("ratio 44/34");
-  histo1D->SetLineColor(4);                           
-  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRatio4434AllEvents, expert, !image, !saveCorr);                                               
-  histo1D = new TH1F("hTriggerRatio4434SinceLastUpdate", "Ratio4434SinceLastUpdate",1,0,1);
-  histo1D->GetXaxis()->SetTitle("Event number");
-  histo1D->GetYaxis()->SetTitle("ratio 44/34");                           
-  Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate, expert, !image, !saveCorr);
+  if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
+    histo1D = new TH1F("hTriggerRatio4434Local", "Ratio4434Local",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+    histo1D->GetXaxis()->SetTitle(boardName.Data());
+    histo1D->GetYaxis()->SetTitle("ratio 44/34");
+    Add2RawsList(histo1D, AliMUONQAIndices::kTriggerLocalRatio4434, expert, !image, !saveCorr);                                               
+    histo1D = new TH1F("hTriggerRatio4434AllEvents", "Ratio4434AllEvents",1,0,1);
+    histo1D->GetXaxis()->SetTitle("Event number");
+    histo1D->GetYaxis()->SetTitle("ratio 44/34");
+    histo1D->SetLineColor(4);                           
+    Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRatio4434AllEvents, expert, !image, !saveCorr);                                               
+    histo1D = new TH1F("hTriggerRatio4434SinceLastUpdate", "Ratio4434SinceLastUpdate",1,0,1);
+    histo1D->GetXaxis()->SetTitle("Event number");
+    histo1D->GetYaxis()->SetTitle("ratio 44/34");                           
+    Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate, expert, !image, !saveCorr);
+  }
 
   histo1D = new TH1F("hTriggerErrorLocal2RegionalLPtLSB", "ErrorLocal2RegionalLPtLSB",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
   histo1D->GetXaxis()->SetTitle(boardName.Data());
@@ -1316,6 +1321,7 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
     return;
 
   TH1F* histoAllEvents = (TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents);
+  if ( ! histoAllEvents ) return;
   Int_t nbins =  histoAllEvents->GetNbinsX();
   Float_t maxBin = histoAllEvents->GetXaxis()->GetBinLowEdge(nbins+1);
 
@@ -1329,6 +1335,7 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
   Float_t numOf34Update = totalNumberOf34 - previousNumOf34;
   Float_t numOf44Update = totalNumberOf44 - previousNumOf44;
 
+  // No new tracks since last update
   if ( numOf34Update == 0 && numOf44Update == 0 )
     return;
 
