@@ -39,7 +39,7 @@ class AliGenCorrHF : public AliGenMC
     static void IpBeauty(TH2F *hProbHH, Int_t &pdg3, Int_t &pdg4);
 
     // Computation of cumulative sums of cell wght-s, needed by GetQuarkPair
-    static Double_t ComputeIntegral(TFile* fG);
+    Double_t ComputeIntegral(TFile* fG);
 
     // fG - input file with QQbar kinematical grid (TTree) and fragm. functions (24 TH2-s)
     static void GetQuarkPair(TFile* fG, Double_t* fInt, Double_t &y1, Double_t &y2, Double_t &pt1, Double_t &pt2, Double_t &dphi);              
@@ -58,7 +58,7 @@ class AliGenCorrHF : public AliGenMC
     AliGenCorrHF(const AliGenCorrHF &CorrHF);
     AliGenCorrHF & operator=(const AliGenCorrHF & rhs);
 
-    static Double_t* fgIntegral; //! Pointer to array of cumulative sums of wght-s
+    Double_t* fgIntegral; //! Pointer to array of cumulative sums of wght-s
     static Int_t  fgnptbins;             // =12 Number of bins for the fragm. 
                                          //   function dependence on quark pt
     // Number of the grid bins in deltaphi, y and pt:  18, 30 and 50
@@ -71,6 +71,7 @@ class AliGenCorrHF : public AliGenMC
     ClassDef(AliGenCorrHF,1)  // Generator using parameterized QQbar & fragm. functions
 };
 #endif
+
 
 
 

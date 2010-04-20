@@ -31,10 +31,11 @@
 // Sept 09: added hadron pair composition probabilities via 2D histo (X.M. Zhang)
 // Oct 09: added energy choice between 7, 10, 14 TeV (for p-p), 4 TeV (for Pb-Pb),
 // 9 TeV (for p-Pb) and -9 TeV (for Pb-p) (S. Grigoryan)
+// April 10: removed "static" from definition of some variables (B. Vulpescu)
 //-------------------------------------------------------------------------
 // How it works (for the given flavor and p-p energy):
 //
-// 1) Reads QQbar kinematical grid from the Input file and generates
+// 1) Reads QQbar kinematical grid (TTree) from the Input file and generates
 // quark pairs according to the weights of the cells.
 // It is a 5D grid in y1,y2,pt1,pt2 and deltaphi, with occupancy weights
 // of the cells obtained from Pythia (see details in GetQuarkPair).
@@ -123,8 +124,6 @@ Int_t AliGenCorrHF::fgnptbins = 12;
 Double_t AliGenCorrHF::fgptbmin[12] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 9};
 Double_t AliGenCorrHF::fgptbmax[12] = {0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 9, 100};
 
-Double_t* AliGenCorrHF::fgIntegral = 0;
-
 //____________________________________________________________
     AliGenCorrHF::AliGenCorrHF():
 	fFileName(0),
@@ -133,7 +132,8 @@ Double_t* AliGenCorrHF::fgIntegral = 0;
 	fEnergy(0),
 	fBias(0.),
 	fTrials(0),
-	fDecayer(0)
+	fDecayer(0),
+	fgIntegral(0)
 {
 // Default constructor
 }
@@ -148,7 +148,8 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
     fBias(0.),
     fTrials(0),
     //    fDecayer(new AliDecayerPythia())
-    fDecayer(0)
+    fDecayer(0),
+    fgIntegral(0)
 {
 // Constructor using particle number, quark type, energy & default InputFile
 //
@@ -202,7 +203,8 @@ AliGenCorrHF::AliGenCorrHF(char* tname, Int_t npart, Int_t idquark, Int_t energy
     fBias(0.),
     fTrials(0),
     //    fDecayer(new AliDecayerPythia())
-    fDecayer(0)
+    fDecayer(0),
+    fgIntegral(0)
 {
 // Constructor using particle number, quark type, energy & user-defined InputFile
 //
@@ -292,9 +294,7 @@ void AliGenCorrHF::Generate()
   if (fQuark == 4) qm = 1.20;
   else             qm = 4.75;
 
-  static TClonesArray *particles;
-  //
-  if(!particles) particles = new TClonesArray("TParticle",1000);
+  TClonesArray *particles = new TClonesArray("TParticle",1000);
   
   TDatabasePDG *pDataBase = TDatabasePDG::Instance();
   //
@@ -580,6 +580,8 @@ void AliGenCorrHF::Generate()
   header->SetNProduced(fNprimaries);
   AddHeader(header);
 
+  delete particles;
+
 }
 //____________________________________________________________________________________
 void AliGenCorrHF::IpCharm(TH2F *hProbHH, Int_t &pdg3, Int_t &pdg4)
@@ -747,3 +749,4 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
 	pz4 = pz3;
       }
 }
+
