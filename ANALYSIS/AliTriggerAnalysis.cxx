@@ -733,7 +733,7 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
     else {
       for (Int_t i = begin; i < end; ++i) {
 	if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > fV0AdcThr) {
-	  Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i));
+	  Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i),aEsd->GetRunNumber());
 	  Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
 	  time += correctedTime*timeWeight;
             
@@ -778,7 +778,7 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   return kV0Empty;
 }
 
-Float_t AliTriggerAnalysis::V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+Float_t AliTriggerAnalysis::V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc, Int_t runNumber) const
 {
   // Correct for slewing and align the channels
   //
@@ -789,7 +789,8 @@ Float_t AliTriggerAnalysis::V0CorrectLeadingTime(Int_t i, Float_t time, Float_t 
   // Time alignment
   Float_t timeShift[64] = {0.477957 , 0.0889999 , 0.757669 , 0.205439 , 0.239666 , -0.183705 , 0.442873 , -0.281366 , 0.260976 , 0.788995 , 0.974758 , 0.548532 , 0.495023 , 0.868472 , 0.661167 , 0.358307 , 0.221243 , 0.530179 , 1.26696 , 1.33082 , 1.27086 , 1.77133 , 1.10253 , 0.634806 , 2.14838 , 1.50212 , 1.59253 , 1.66122 , 1.16957 , 1.52056 , 1.47791 , 1.81905 , -1.94123 , -1.29124 , -2.16045 , -1.78939 , -3.11111 , -1.87178 , -1.57671 , -1.70311 , -1.81208 , -1.94475 , -2.53058 , -1.7042 , -2.08109 , -1.84416 , -0.61073 , -1.77145 , 0.16999 , -0.0585339 , 0.00401133 , 0.397726 , 0.851111 , 0.264187 , 0.59573 , -0.158263 , 0.584362 , 1.20835 , 0.927573 , 1.13895 , 0.64648 , 2.18747 , 1.68909 , 0.451194};
 
-  time -= timeShift[i];
+  if(runNumber < 106031)
+    time -= timeShift[i];
 
   // Slewing correction
   if (adc == 0) return time;
@@ -797,6 +798,7 @@ Float_t AliTriggerAnalysis::V0CorrectLeadingTime(Int_t i, Float_t time, Float_t 
   Float_t p1 = 1.57345e1;
   Float_t p2 =-4.25603e-1;
 
+  if(runNumber >= 106031) adc *= (2.5/4.0);
   return (time - p1*TMath::Power(adc,p2));
 }
 

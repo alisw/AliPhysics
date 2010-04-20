@@ -83,7 +83,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t IsL2InputFired(const AliESDEvent* aEsd, UInt_t input) const;
     Bool_t IsInputFired(const AliESDEvent* aEsd, Char_t level, UInt_t input) const;
     
-    Float_t V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
+    Float_t V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc, Int_t runNumber) const;
     Float_t V0LeadingTimeWeight(Float_t adc) const;
     
     Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
