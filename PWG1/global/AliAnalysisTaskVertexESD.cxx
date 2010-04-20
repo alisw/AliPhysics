@@ -70,6 +70,7 @@ fRecoVtxITSTPCHalfEvent(kFALSE),
 fOnlyITSTPCTracks(kFALSE),
 fOnlyITSSATracks(kFALSE),
 fFillNtuple(kFALSE),
+fFillNtupleBeamSpot(kFALSE),
 fESD(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
@@ -82,7 +83,8 @@ fhTRKVertexZ(0),
 fhTPCVertexX(0),
 fhTPCVertexY(0),
 fhTPCVertexZ(0),
-fhTrackRefs(0)
+fhTrackRefs(0),
+fNtupleBeamSpot(0)
 {
   // Constructor
 
@@ -140,6 +142,9 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
 
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
+
+  fNtupleBeamSpot = new TNtuple("fNtupleBeamSpot", "beamSpot", "run:tstamp:triggered:ntrklets:xTRKnc:yTRKnc:zTRKnc:ntrksTRKnc");
+  fOutput->Add(fNtupleBeamSpot);
 
   return;
 }
@@ -240,6 +245,23 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   // use response of AliPhysicsSelection
   eventTriggered = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+ const AliMultiplicity *alimult = esdE->GetMultiplicity();
+  Int_t ntrklets=0,spd0cls=0;
+  if(alimult) {
+    ntrklets = alimult->GetNumberOfTracklets();
+
+    // if (ntrklets<10) return;
+
+    for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
+      if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
+    }
+    spd0cls = alimult->GetNumberOfSingleClusters()+ntrklets;
+  }
+
+
+  Float_t tstamp = esdE->GetTimeStamp();
+  Float_t cetTime = tstamp-1262307600.;
+
   Int_t ntracks = esdE->GetNumberOfTracks();
   Int_t nITS5or6=0,nTPCin=0,nTPCinEta09=0;
   //printf("Tracks # = %d\n",esdE->GetNumberOfTracks());
@@ -259,15 +281,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   const AliESDVertex *tpcv=esdE->GetPrimaryVertexTPC();
   const AliESDVertex *trkv=esdE->GetPrimaryVertexTracks();
 
-  const AliMultiplicity *alimult = esdE->GetMultiplicity();
-  Int_t ntrklets=0,spd0cls=0;
-  if(alimult) {
-    ntrklets = alimult->GetNumberOfTracklets();
-    for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
-      if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
-    }
-    spd0cls = alimult->GetNumberOfSingleClusters()+ntrklets;
-  }
+ 
   
   // fill histos
   
@@ -319,17 +333,26 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   // fill ntuple
   Int_t isize=82;
   Float_t xnt[82]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
-  
+
+  Int_t isizeSecNt=8;
+  Float_t secnt[8]; for(Int_t iii=0;iii<isizeSecNt;iii++) secnt[iii]=0.;
+
   Int_t index=0;
+  Int_t indexSecNt=0;
 
   xnt[index++]=(Float_t)esdE->GetRunNumber();
-  xnt[index++]=(Float_t)esdE->GetTimeStamp();
+  secnt[indexSecNt++]=(Float_t)esdE->GetRunNumber();
+
+  xnt[index++]=cetTime; //(Float_t)esdE->GetTimeStamp();
+  secnt[indexSecNt++]=cetTime;
+
   xnt[index++]=(Float_t)esdE->GetBunchCrossNumber();
+
   xnt[index++]=(eventTriggered ? 1. : 0.);
-
+  secnt[indexSecNt++]=(eventTriggered ? 1. : 0.);
+  
   xnt[index++]=(Float_t)dNchdy;
-
-
+  
   xnt[index++]=mcVertex[0];
   xnt[index++]=mcVertex[1];
   xnt[index++]=mcVertex[2];
@@ -366,8 +389,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   xnt[index++]=(trktitle.Contains("WithConstraint") ? 1. : 0.);  
 
   xnt[index++]=float(ntrklets);
+  secnt[indexSecNt++]=float(ntrklets);
+
   xnt[index++]=float(ntracks);
   xnt[index++]=float(nITS5or6);
+
   xnt[index++]=float(nTPCin);
   xnt[index++]=float(nTPCinEta09);
 
@@ -416,8 +442,15 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     xnt[index++]=trkvnc->GetZv();
     xnt[index++]=trkvnc->GetZRes();
     xnt[index++]=trkvnc->GetNContributors();
-    delete trkvnc; trkvnc=0;
+  
+    secnt[indexSecNt++]=trkvnc->GetXv();
+    secnt[indexSecNt++]=trkvnc->GetYv();
+    secnt[indexSecNt++]=trkvnc->GetZv();
+    secnt[indexSecNt++]=trkvnc->GetNContributors();
     
+    delete trkvnc; trkvnc=0;
+
+
     AliESDVertex *trkvc = ReconstructPrimaryVertexITSTPC(kTRUE);
     xnt[index++]=trkvc->GetXv();
     xnt[index++]=trkvc->GetXRes();
@@ -459,6 +492,9 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
   if(index>isize) printf("AliAnalysisTaskVertexESD: ERROR, index!=isize\n");
   if(fFillNtuple) fNtupleVertexESD->Fill(xnt);
+
+  if(indexSecNt>isizeSecNt) printf("AliAnalysisTaskVertexESD: ERROR, indexSecNt!=isizeSecNt\n");
+  if(fFillNtupleBeamSpot) fNtupleBeamSpot->Fill(secnt);
   
   // Post the data already here
   PostData(1, fOutput);
@@ -476,8 +512,15 @@ void AliAnalysisTaskVertexESD::Terminate(Option_t *)
     Printf("ERROR: fOutput not available");
     return;
   }
-
+  
+  if (!fNtupleVertexESD){
+    Printf("ERROR: fNtuple not available");
+    return;
+  }
+  
   fNtupleVertexESD = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleVertexESD"));
+
+  fNtupleBeamSpot = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleBeamSpot"));
 
   return;
 }
@@ -510,6 +553,7 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
   AliVertexerTracks vertexer(evt->GetMagneticField());
   vertexer.SetITSMode(); // defaults
   vertexer.SetMinClusters(4); // default is 5
+  //vertexer.SetITSpureSA();
   Float_t diamondcovxy[3]; evt->GetDiamondCovXY(diamondcovxy);
   Double_t pos[3]={evt->GetDiamondX(),evt->GetDiamondY(),0}; 
   Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
