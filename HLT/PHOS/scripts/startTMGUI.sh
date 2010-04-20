@@ -1,1 +1,0 @@
-/home/perthi/HLT/hlt-current/bin/Linux-i686/TMGUI.py -address tcpmsg://mixing:16009 -unconnected  -config /home/perthi/HLT/phos/PHOS_pi0_test-0-mixing-Master.xml                                        
