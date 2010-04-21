@@ -27,9 +27,9 @@ void show(const char* fileName = "event_stat.root")
   gStyle->SetStatX(0.87);
   gStyle->SetStatY(0.93);
 
-  TH2F * hBB  = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsT_CINT1B-ABCE-NOPF-ALL");
-  TH2F * hBE  = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsT_CINT1C-ABCE-NOPF-ALL");
-  TH2F * hBEA = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsT_CINT1A-ABCE-NOPF-ALL");
+  TH2F * hBB  = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsTCuts_CINT1B-ABCE-NOPF-ALL");
+  TH2F * hBE  = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsTCuts_CINT1C-ABCE-NOPF-ALL");
+  TH2F * hBEA = (TH2F*) gDirectory->Get("physics_selection/background_identification/hCvsTCuts_CINT1A-ABCE-NOPF-ALL");
 
   if(!hBB || !hBE || !hBEA) {
     printf("WARNING: no BG histos\n");
