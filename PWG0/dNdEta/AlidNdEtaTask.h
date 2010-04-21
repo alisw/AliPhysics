@@ -3,7 +3,7 @@
 #ifndef AlidNdEtaTask_H
 #define AlidNdEtaTask_H
 
-#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliPWG0Helper.h"
 #include "AliTriggerAnalysis.h"
 #include <TString.h>
@@ -16,16 +16,18 @@ class TH3F;
 class AliESDEvent;
 class AliTriggerAnalysis;
 
-class AlidNdEtaTask : public AliAnalysisTask {
+class AlidNdEtaTask : public AliAnalysisTaskSE {
   public:
     AlidNdEtaTask(const char* opt = "");
     virtual ~AlidNdEtaTask();
 
-    virtual void   ConnectInputData(Option_t *);
-    virtual void   CreateOutputObjects();
-    virtual void   Exec(Option_t*);
+    virtual void   ConnectInputData(Option_t *opt);
+    virtual void   UserCreateOutputObjects();
+    virtual void   UserExec(Option_t*);
     virtual void   Terminate(Option_t*);
-    virtual Bool_t   Notify();
+    virtual Bool_t UserNotify();
+    
+    Bool_t IsEventInBinZero();
 
     void SetTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts; }
     void SetAnalysisMode(AliPWG0Helper::AnalysisMode mode) { fAnalysisMode = mode; }
@@ -66,7 +68,6 @@ class AlidNdEtaTask : public AliAnalysisTask {
     AliPWG0Helper::DiffTreatment  fDiffTreatment;  // how to identify SD events (see AliPWG0Helper::GetEventProcessType)
 
     AliESDtrackCuts* fEsdTrackCuts;         // Object containing the parameters of the esd track cuts
-    AliTriggerAnalysis* fTriggerAnalysis;
 
     // Gathered from ESD
     dNdEtaAnalysis* fdNdEtaAnalysisESD;     //! contains the dndeta from the ESD

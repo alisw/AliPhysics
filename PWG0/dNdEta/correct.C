@@ -34,14 +34,14 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   
   //backgroundEvents = 1162+434; // Michele for MB1, run 104892, 15.02.10
   //backgroundEvents = 842;    // JF estimate for V0 systematic case 1
-  backgroundEvents = 6;          // Michele for V0AND, run 104892, 15.02.10
+  //backgroundEvents = 6;          // Michele for V0AND, run 104892, 15.02.10
   
   //backgroundEvents = 1758+434; // MB1, run 104867-92
   
   //backgroundEvents = 4398+961;   // Michele for MB1, run 104824-52, 16.02.10
   //backgroundEvents = 19;         // Michele for V0AND, run 104824-52, 16.02.10
   
-  //backgroundEvents = -1;    // use 0 bin from MC! for 2.36 TeV
+  backgroundEvents = -1;    // use 0 bin from MC! for 2.36 TeV
   //backgroundEvents = 900; // my estimate for 2.36 TeV
   
   //backgroundEvents = 918;   // V0OR for run 114786 w/o bunch intensities w/o proper 0 checking!
@@ -55,6 +55,8 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   {
     TFile::Open("corrComb.root");
     combinatoricsCorrection = (TH1*) gFile->Get("ratioofratios");
+    if (!combinatoricsCorrection)
+      combinatoricsCorrection = (TH1*) gFile->Get("correctiondNdEta");
     file->cd();
   }
   

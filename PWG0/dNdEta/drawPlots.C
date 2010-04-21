@@ -447,6 +447,8 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   TH1* histESDnsd = (TH1*) file->Get("dndetaNSD/dNdEta_corrected");
   TH1* histESDnsdNoPt = (TH1*) file->Get("dndetaNSD/dNdEta");
   TH1* histESDonePart = (TH1*) file->Get("dndetaOnePart/dNdEta_corrected");
+  if (!histESDonePart)
+    histESDonePart = new TH1F;
   TH1* histESDNoPt = (TH1*) file->Get("dndeta/dNdEta");
   TH1* histESDMB = (TH1*) file->Get("dndetaTr/dNdEta_corrected");
   TH1* histESDMBNoPt = (TH1*) file->Get("dndetaTr/dNdEta");
@@ -632,6 +634,8 @@ void dNdEta(Bool_t onlyESD = kFALSE, Bool_t save = kTRUE)
   histESD1->DrawCopy("SAME");
   histESD2->SetLineColor(4);
   histESD2->DrawCopy("SAME");
+  
+  PrintIntegratedDeviation(histESDnsd, histESDMB, "factor MB / NSD");
   
   if (onlyESD)
     return;
