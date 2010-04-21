@@ -559,9 +559,9 @@ void AliTPCv2::CreateGeometry()
   //
   // central membrane - 2 rings and a mylar membrane - assembly
   //
-  TGeoTube *ih = new TGeoTube(81.9,84.1,0.2);
-  TGeoTube *oh = new TGeoTube(250.,256.5,0.2);
-  TGeoTube *mem = new TGeoTube(84.1,250.,0.01);
+  TGeoTube *ih = new TGeoTube(81.05,84.05,0.3);
+  TGeoTube *oh = new TGeoTube(250.,256.,0.5);
+  TGeoTube *mem = new TGeoTube(84.05,250.,0.01);
 
   //
   TGeoMedium *m4 = gGeoManager->GetMedium("TPC_G10");
@@ -1175,8 +1175,8 @@ void AliTPCv2::CreateGeometry()
   //
   //
   //HV rods - makrolon + 0.58cm (diameter) Cu
-  TGeoTube *hvr = new TGeoTube(0.,1.465,126.7);
-  TGeoTube *hvc = new TGeoTube(0.,0.29,126.7);
+  TGeoTube *hvr = new TGeoTube(0.,1.465,126.5);
+  TGeoTube *hvc = new TGeoTube(0.,0.29,126.5);
   //
   TGeoVolume *hvrv = new TGeoVolume("TPC_HV_Rod",hvr,m6);
   TGeoVolume *hvcv = new TGeoVolume("TPC_HV_Cable",hvc,m7);
@@ -1333,7 +1333,7 @@ ctr1->RegisterYourself();
     r=81.5;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
-    z = 126.;
+    z = 126.1;
     //
     v9->AddNode(irhv,i+1,roth);
     v9->AddNode(orhv,i+1,roth);
@@ -1357,7 +1357,7 @@ ctr1->RegisterYourself();
     r=254.25;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
-    z=126.;
+    z=126.3;
     //
     if(i==3){//resistor rod outer
       rotrod.RotateZ(90.+angle);
@@ -1373,7 +1373,7 @@ ctr1->RegisterYourself();
       v9->AddNode(tpcmrod,i+55,new TGeoCombiTrans(x,y,-z,ref));//muon      
     }
     if(i==15){
-      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z)); //hv->A-side only      
+      v9->AddNode(hvrv,1,new TGeoTranslation(x,y,z+0.7)); //hv->A-side only      
     }
   } //end of rods positioning
 
