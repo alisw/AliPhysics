@@ -11,6 +11,7 @@
 
 #include <TRef.h>
 #include <TList.h>
+#include "AliAODTrack.h"
 #include "AliAODRecoDecay.h"
 
 class AliRDHFCuts;
@@ -82,6 +83,9 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   UShort_t GetProngID(Int_t ip) const 
     {if(fProngID) {return fProngID[ip];} else {return 9999;}}
 
+  // ITS clustermap for daughters
+  Bool_t DaughterHasPointOnITSLayer(Int_t dg,Int_t l) const;
+
   // check if it is like-sign
   Bool_t IsLikeSign() const;
 
@@ -146,6 +150,20 @@ inline AliRDHFCuts *AliAODRecoDecayHF::GetCuts(const char* name) const
 
 
   return (AliRDHFCuts*)list->FindObject(name);
+}
+
+inline Bool_t AliAODRecoDecayHF::DaughterHasPointOnITSLayer(Int_t dg,Int_t l) const
+{
+  // ITS clustermap for daughters
+
+  if(l<0 || l>5) {
+    printf("ERROR: layer has to be in the range 0-5\n");
+    return kFALSE;
+  }
+  AliAODTrack *t = (AliAODTrack*)GetDaughter(dg);
+  if(!t) return kFALSE;
+
+  return TESTBIT(t->GetITSClusterMap(),l);
 }
 
 #endif
