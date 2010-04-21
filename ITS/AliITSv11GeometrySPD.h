@@ -48,9 +48,6 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     // define/create materials
     virtual Int_t CreateSPDCentralMaterials(Int_t &medOffset,
                                             Int_t &matOffset) const;
-    // set SPD Central, GEANT3 type, tracking parameters
-    virtual void InitSPDCentral(Int_t offset, TVirtualMC *mc = gMC) const;
-
     /* Monitoring */
 
     // creates standard figures for the documentation of this class

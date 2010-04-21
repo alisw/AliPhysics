@@ -391,79 +391,7 @@ Int_t AliITSv11GeometrySPD::CreateSPDCentralMaterials(Int_t &medOffset,
     matOffset = matindex;
     return matOffset;
 }
-//______________________________________________________________________
-void AliITSv11GeometrySPD::InitSPDCentral(Int_t offset, TVirtualMC *vmc) const
-{
-     //
-     // Do all SPD Central detector initializations (e.g.: transport cuts).
-     // ---
-     // Here follow some GEANT3 physics switches, which are interesting
-     // for these settings to be defined:
-     // - "MULTS" (MULtiple Scattering):
-     //   the variable IMULS controls this process. See [PHYS320/325/328]
-     //   0 - No multiple scattering.
-     //   1 - (DEFAULT) Multiple scattering according to Moliere theory.
-     //   2 - Same as 1. Kept for backward compatibility.
-     //   3 - Pure Gaussian scattering according to the Rossi formula.
-     // - "DRAY" (Delta RAY production)
-     //   The variable IDRAY controls this process. See [PHYS430]
-     //   0 - No delta rays production.
-     //   1 - (DEFAULT) Delta rays production with generation of.
-     //   2 - Delta rays production without generation of.
-     // - "LOSS" (continuous energy loss)
-     //   The variable ILOSS controls this process.
-     //   0 - No continuous energy loss, IDRAY is set to 0.
-     //   1 - Continuous energy loss with generation of delta rays above
-     //       DCUTE (common/GCUTS/) and restricted Landau fluctuations
-     //        below DCUTE.
-     //   2 - (DEFAULT) Continuous energy loss without generation of
-     //       delta rays
-     //       and full Landau-Vavilov-Gauss fluctuations.
-     //       In this case the variable IDRAY is forced to 0 to avoid
-     //       double counting of fluctuations.
-     //   3 - Same as 1, kept for backward compatibility.
-     //   4 - Energy loss without fluctuation.
-     //       The value obtained from the tables is used directly.
-     // ---
-     // Arguments:
-     //    Int_t offset    --> the material/medium index offset
-     //    TVirtualMC *vmc --> pointer to the virtual Monte Carlo default gMC
-     //
 
-     Int_t i, n = 4;
-
-     for(i=0;i<n;i++) {
-          vmc->Gstpar(i+offset, "CUTGAM", 30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "CUTELE", 30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "CUTNEU", 30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "CUTHAD", 30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "CUTMUO", 30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "BCUTE",  30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "BCUTM",  30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "DCUTE",  30.0 * fgkKeV);
-          vmc->Gstpar(i+offset, "DCUTM",  30.0 * fgkKeV);
-          //vmc->Gstpar(i+offset, "PPCUTM", );
-          //vmc->Gstpar(i+offset, "PAIR", );
-          //vmc->Gstpar(i+offset, "COMPT", );
-          //vmc->Gstpar(i+offset, "PHOT", );
-          //vmc->Gstpar(i+offset, "PFIS", );
-          vmc->Gstpar(i+offset, "DRAY", 1);
-          //vmc->Gstpar(i+offset, "ANNI", );
-          //vmc->Gstpar(i+offset, "BREM", );
-          //vmc->Gstpar(i+offset, "HADR", );
-          //vmc->Gstpar(i+offset, "MUNU", );
-          //vmc->Gstpar(i+offset, "DCAY", );
-          vmc->Gstpar(i+offset, "LOSS", 1);
-          //vmc->Gstpar(i+offset, "MULS", );
-          //vmc->Gstpar(i+offset, "GHCOR1", );
-          //vmc->Gstpar(i+offset, "BIRK1", );
-          //vmc->Gstpar(i+offset, "BRIK2", );
-          //vmc->Gstpar(i+offset, "BRIK3", );
-          //vmc->Gstpar(i+offset, "LABS", );
-          //vmc->Gstpar(i+offset, "SYNC", );
-          //vmc->Gstpar(i+offset, "STRA", );
-     }
-}
 //______________________________________________________________________
 void AliITSv11GeometrySPD::SPDSector(TGeoVolume *moth, TGeoManager *mgr)
 {
