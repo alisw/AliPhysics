@@ -6,7 +6,6 @@
 // Author Michele Floris
 // michele.floris@cern.ch
 
-#include <TNamed.h>
 #include "AliAnalysisCuts.h"
 #include "AliLog.h"
 
@@ -14,6 +13,7 @@ class TList;
 class TH2F;
 class TH1F;
 class TCollection;
+
 
 class AliBackgroundSelection : public AliAnalysisCuts
 {
@@ -23,7 +23,7 @@ public:
   AliBackgroundSelection(const char* name, const char* title);
   AliBackgroundSelection(const AliBackgroundSelection& obj);  
   virtual ~AliBackgroundSelection();
-  virtual Bool_t IsSelected(TObject* obj);
+  virtual Bool_t IsSelected(TObject* const obj);
   virtual Bool_t IsSelected(TList*  ) {AliFatal("Not implemented");return 0;}
   virtual void   Init();
   virtual TList * GetOutput() {return fOutputHist;}
@@ -42,13 +42,13 @@ public:
   const char *  GetDeltaPhiHistoName(const char * trigger_name);
   const char *  GetDeltaPhiHistoNameAccepted(const char * trigger_name);
 
-  Long64_t Merge(TCollection* list);
+  Long64_t Merge(TCollection* const list);
   // Cuts Setters & Getters
   void SetCutParameters(Float_t a,Float_t b) {fACut = a; fBCut =b;}
   void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut;}
-  Float_t GetCutParameterA(){return fACut;}
-  Float_t GetCutParameterB(){return fBCut;}
-  Float_t GetDeltaPhiCut()  {return fDeltaPhiCut;}
+  const Float_t GetCutParameterA() const {return fACut;}
+  const Float_t GetCutParameterB() const {return fBCut;}
+  const Float_t GetDeltaPhiCut()   const {return fDeltaPhiCut;}
 
   // TODO: implement cut on global vertex DCA?
 

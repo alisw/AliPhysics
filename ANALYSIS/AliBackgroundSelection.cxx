@@ -1,22 +1,45 @@
+// ----------------------------------------------------------------
+// AliBackgroundSelection
+//
+// This class implements to cuts to reject background events from the
+// samples to be used in the physics analysis:
+// 1. A linear cut on the correlation cluster vs tracklets
+// 2. A cut on the delta phi window used by the vertexer Z
+// The parameters used in both cuts can be set
+// 
+// The class also produces control histograms for all and accepted
+// events, for each trigger class present in the data independently.
+// Histograms are booked on the fly in the UserExec, whenever a new
+// trigger class is found.
+//
+// After the first implementation, it was realized that the deltaphi
+// cut is more a quality selection cut than an event selection cut, so
+// it is effectively disabled by default.
+//
+// Author: Michele Floris, CERN
+// ----------------------------------------------------------------
+
+
 #include "AliBackgroundSelection.h"
 #include "TH2F.h"
 #include "TList.h"
-#include "AliLog.h"
 #include "TString.h"
 #include "AliESDInputHandlerRP.h"
 #include "AliAnalysisManager.h"
 #include "TTree.h"
+#include "AliMultiplicity.h"
 #ifdef PASS1RECO
 #include "../ITS/AliITSRecPoint.h"
 #endif
-#include "AliMultiplicity.h"
+
+
 
 ClassImp(AliBackgroundSelection)
 
 AliBackgroundSelection::AliBackgroundSelection():
   AliAnalysisCuts(), fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(10)
 {
-  
+  // ctor
   fOutputHist = new TList();
   fOutputHist->SetOwner();
   fACut = 65;
@@ -27,7 +50,7 @@ AliBackgroundSelection::AliBackgroundSelection():
 AliBackgroundSelection::AliBackgroundSelection(const char* name, const char* title):
   AliAnalysisCuts(name,title), fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(10)
 {
-
+  // ctor
   fOutputHist = new TList();
   fOutputHist->SetOwner();
   fACut = 65;
@@ -39,7 +62,7 @@ AliBackgroundSelection::AliBackgroundSelection(const char* name, const char* tit
 AliBackgroundSelection::AliBackgroundSelection(const AliBackgroundSelection& obj) : AliAnalysisCuts(obj),
 fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(0)
 {
-
+  // copy ctor
   fOutputHist  = obj.fOutputHist;
   fACut        = obj.fACut;
   fBCut        = obj.fBCut;
@@ -47,6 +70,7 @@ fOutputHist(0), fACut(0), fBCut(0), fDeltaPhiCut(0)
 }
 
 AliBackgroundSelection::~AliBackgroundSelection() {
+  // dtor
   if(fOutputHist) {
     delete fOutputHist;
     fOutputHist = 0;
@@ -54,8 +78,10 @@ AliBackgroundSelection::~AliBackgroundSelection() {
 
 }
 
-Bool_t AliBackgroundSelection::IsSelected(TObject* obj) 
+Bool_t AliBackgroundSelection::IsSelected(TObject* const obj) 
 {
+  // returns false if the event is identifiead as beam background,
+  // true otherwise.
 
   // reset fSelected
   SetSelected(kFALSE);
@@ -188,6 +214,7 @@ Bool_t AliBackgroundSelection::IsSelected(TObject* obj)
 
 void   AliBackgroundSelection::Init(){
 
+  // Set default cut values
   fACut = 65;
   fBCut = 4;
 
@@ -195,6 +222,8 @@ void   AliBackgroundSelection::Init(){
 
 
 void AliBackgroundSelection::BookClusterVsTrackletsHisto(const char * trigger_name){
+
+  // Book control histogram for the cut on the correlation cluster vs tracklets
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -218,6 +247,8 @@ void AliBackgroundSelection::BookClusterVsTrackletsHisto(const char * trigger_na
 
 void AliBackgroundSelection::BookDeltaPhiHisto(const char * trigger_name){
 
+  // Book control histogram for the cut on the DeltaPhi window used by vertexer Z
+
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -237,6 +268,12 @@ void AliBackgroundSelection::BookDeltaPhiHisto(const char * trigger_name){
 }
 
 TH2F * AliBackgroundSelection::GetClusterVsTrackletsHisto(const char * trigger_name){
+
+  // Returns the control histogram corresponding to a given trigger
+  // class. If it does not exist, it creates it and adds it to the
+  // output list
+  // All Events
+
   if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
   TH2F * h = (TH2F*) fOutputHist->FindObject(GetClusterVsTrackletsHistoName(trigger_name));  
   if(!h) {
@@ -246,6 +283,12 @@ TH2F * AliBackgroundSelection::GetClusterVsTrackletsHisto(const char * trigger_n
   return h;
 }
 TH1F * AliBackgroundSelection::GetDeltaPhiHisto(const char * trigger_name){
+
+  // Returns the control histogram corresponding to a given trigger
+  // class. If it does not exist, it creates it and adds it to the
+  // output list
+  // All Events
+
   if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
   TH1F * h = (TH1F*) fOutputHist->FindObject(GetDeltaPhiHistoName(trigger_name));  
   if(!h) {
@@ -256,6 +299,11 @@ TH1F * AliBackgroundSelection::GetDeltaPhiHisto(const char * trigger_name){
 }
 
 TH2F * AliBackgroundSelection::GetClusterVsTrackletsHistoAccepted(const char * trigger_name){
+
+  // Returns the control histogram corresponding to a given trigger
+  // class. If it does not exist, it creates it and adds it to the
+  // output list
+  // Events passing the cut only
 
   if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
   TH2F * h = (TH2F*) fOutputHist->FindObject(GetClusterVsTrackletsHistoNameAccepted(trigger_name));
@@ -269,6 +317,11 @@ TH2F * AliBackgroundSelection::GetClusterVsTrackletsHistoAccepted(const char * t
 
 TH1F * AliBackgroundSelection::GetDeltaPhiHistoAccepted(const char * trigger_name){
 
+  // Returns the control histogram corresponding to a given trigger
+  // class. If it does not exist, it creates it and adds it to the
+  // output list
+  // Events passing the cut only
+
   if(!fOutputHist) {AliError("List of histos not initialized");return 0;}
   TH1F * h = (TH1F*) fOutputHist->FindObject(GetDeltaPhiHistoNameAccepted(trigger_name));  
   if(!h) {
@@ -280,6 +333,9 @@ TH1F * AliBackgroundSelection::GetDeltaPhiHistoAccepted(const char * trigger_nam
 }
 
 const char * AliBackgroundSelection::GetClusterVsTrackletsHistoName(const char * trigger_name){
+
+  // build up the name of the cluster vs tracklets histo using the trigger class
+
     static TString str;
     str = ("hCvsT");
     str = str+GetName()+"_"+trigger_name;
@@ -287,6 +343,8 @@ const char * AliBackgroundSelection::GetClusterVsTrackletsHistoName(const char *
 }
 
 const char * AliBackgroundSelection::GetClusterVsTrackletsHistoNameAccepted(const char * trigger_name){
+
+  // build up the name of the cluster vs tracklets histo using the trigger class (accepted events)
     static TString str;
     str = ("hCvsT");
     str = str+GetName()+"_"+trigger_name + "_accepted";
@@ -294,6 +352,10 @@ const char * AliBackgroundSelection::GetClusterVsTrackletsHistoNameAccepted(cons
 }
 
 const char * AliBackgroundSelection::GetDeltaPhiHistoName(const char * trigger_name){
+
+  // build up the name of the delta phi histo using the trigger class
+
+
     static TString str;
     str = ("hDeltaPhi");
     str = str+GetName()+"_"+trigger_name;
@@ -301,13 +363,16 @@ const char * AliBackgroundSelection::GetDeltaPhiHistoName(const char * trigger_n
 }
 
 const char * AliBackgroundSelection::GetDeltaPhiHistoNameAccepted(const char * trigger_name){
+
+  // build up the name of the delta phi histo using the trigger class (accepted events)
+
     static TString str;
     str = ("hDeltaPhi");
     str = str+GetName()+"_"+trigger_name + "_accepted";
     return str.Data();
 }
 
-Long64_t AliBackgroundSelection::Merge(TCollection* list)
+Long64_t AliBackgroundSelection::Merge(TCollection* const list)
 {
   // Merge a list of AliBackgroundSelection objects with this (needed for
   // PROOF).
@@ -350,9 +415,9 @@ Long64_t AliBackgroundSelection::Merge(TCollection* list)
 
     Bool_t areListsDifferent=kTRUE;
     Int_t iloop = 0;
-    Int_t max_loops = hlist->GetSize() + fOutputHist->GetSize(); // In the worst case all of the histos will be different...    
+    Int_t maxLoops = hlist->GetSize() + fOutputHist->GetSize(); // In the worst case all of the histos will be different...    
     while(areListsDifferent) {
-      if(iloop>max_loops) AliFatal("Infinite Loop?");
+      if(iloop>maxLoops) AliFatal("Infinite Loop?");
       iloop++;
       // sort
       hlist->Sort();
