@@ -269,7 +269,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
   Double_t goodA1Max =  2.;
 //   Double_t goodA2Min = -0.5E-03;
 //   Double_t goodA2Max =  1.E-03;
-  Double_t goodA2Min = -0.5E-01; // changed 28/10/2009 (JLC) <=> no condition on a2
+  Double_t goodA2Min = -0.5E-01; // changed 28/10/2009 (JLC) <=> enlarged condition on a2
   Double_t goodA2Max =  1.E-01;
   // Table for uncalibrated  buspatches and manus
   THashList* uncalBuspatchManuTable = new THashList(1000,2);
@@ -496,15 +496,17 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 	  Int_t fitproceed=1;
 	  Int_t nbpf2Dynamic=nbpf2;
+	  Int_t ADClimit=4090; // when RMS < 0.5 (in other cases mean values forced to 4095, see DA_PED)
 	  for (Int_t j = 0; j < nbs; ++j)
 	    {
 	      Int_t k = j + fnInit;
 	      x[j]    = pedMean[k];
 	      if(x[j]<=0.){fitproceed=0; break;}
-	      if(x[j]>= ADCMax())
+	      //	      if(x[j]>= ADCMax())
+	      if(x[j]>= ADClimit)
 		{
 		  if(j < nbs-1){fitproceed=0; break;}
-		  else  nbpf2Dynamic=nbpf2-1;
+		  else { nbpf2Dynamic=nbpf2-1; break;}
 		}
 	      xErr[j] = pedSigma[k];
 	      y[j]    = injCharge[k];

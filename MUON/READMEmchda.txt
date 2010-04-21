@@ -70,12 +70,10 @@ The syntax is: MUONTRKPEDda.exe "raw data file"
 
 Two input files located in the DAQ Detector database (DetDB) are needed:
 
-- muontrkpedvalues is built in flight in CONFIGURATION_PED.sh (ECS script) and contains two parameters "config" and "writeconfig"
+- muontrkpedvalues is built in flight in CONFIGURATION_PED.sh (ECS script) and contains one parameter "config" : 
   config = 1 if configuration file has to be used (OnLine case)
   config = 0 if not (OffLine case for the time being)
-  writeconfig=0 if configuration is unchanged
-  writeconfig=1 if configuration is changed , then new config. file is written in DetDB
-
+  
 - config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker Station 3 if (for example) DA is running on ldc-MTRK-S3-0
 
 - DA validation: see Header of MUONTRKPEDda.cxx for reference run, and corresponding input mutrkpedvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
@@ -86,7 +84,7 @@ The syntax is: MUONTRKGAINda.exe "raw data file"
 
 Two input files located in the DAQ Detector database (DetDB) are needed:
 
-- muontrkcalibvalues: which attributes to each the run index (1->11) its corrresponding DAC value. The other parameters are used to tune the fit procedure (for expert). The last parameter indicates the number of events to be read: if "0" all events in the run are read, if not the parameter indicates the maximum number of events to be read. 
+- muontrkcalibvalues: which attributes to each run index (1->11) its corrresponding DAC value. The other parameters are used to tune the fit procedure (for expert). The last parameter indicates the number of events to be read: if "0" all events in the run are read, if not the parameter indicates the maximum number of events to be read. 
 Default values are listed below
 
 \verbatim

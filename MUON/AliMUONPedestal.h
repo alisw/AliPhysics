@@ -29,6 +29,8 @@ class AliMUONPedestal : public TObject
     AliMUONPedestal();
     virtual ~AliMUONPedestal();
     
+    /// return the number of current events
+    void SetAliNCurrentEvents(Int_t events) {fNCurrentEvents = events;}
     /// return the number of events
     void SetAliNEvents(Int_t events) {fNEvents = events;}
     /// return the Run number
@@ -50,6 +52,8 @@ class AliMUONPedestal : public TObject
 
     /// set config flag
     void SetconfigDA(Int_t ind) {fConfig = ind;}
+    /// set Nb of evt threshold to calculate pedestal
+    void SetnEvthreshold(Int_t ind) {fNEvthreshold = ind;}
     /// set specific  DA prefixname
     void SetprefixDA(const char* folder) { fPrefixDA=folder;}
     /// set the index of calibration runs
@@ -65,6 +69,8 @@ class AliMUONPedestal : public TObject
 
 protected:
     //    Int_t fN; ///<
+    Int_t fNCurrentEvents; ///< Number of current events
+    Int_t fNEvthreshold; ///< Nbevt threshold (pedestal calculation)
     Int_t fNEvents; ///< Number of events
     Int_t fRunNumber; ///< run number
     Int_t fNChannel; ///< Nb of channels (pads)
@@ -90,7 +96,7 @@ protected:
     /// Not implemented
     AliMUONPedestal& operator = (const AliMUONPedestal& rhs);
 
-  ClassDef(AliMUONPedestal,4) // Pedestal computing for DA 
+  ClassDef(AliMUONPedestal,5) // Pedestal computing for DA 
 };
 
 #endif

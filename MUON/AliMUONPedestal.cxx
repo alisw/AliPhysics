@@ -50,6 +50,8 @@ ClassImp(AliMUONPedestal)
 AliMUONPedestal::AliMUONPedestal()
 : TObject(),
 //fN(0),
+fNCurrentEvents(0),
+fNEvthreshold(0),
 fNEvents(0),
 fRunNumber(0),
 fNChannel(0),
@@ -96,20 +98,6 @@ void AliMUONPedestal::LoadConfig(const char* dbfile)
   Int_t busPatchId;
 
   ifstream filein(dbfile,ios::in);
-
-  // check if the 1st caracter of the 1st line is # (Config read from the OCDB => OffLine)
-  // NO NEED ANYMORE : change configuration tested by the Shuttle (from 16/02/10)
-//   string line; 
-//   getline(filein, line, '\n');
-//   cout << " line 1: " << line ;
-//   if ( int(line[0]) == 35 )  // ascii code of # character
-//     {
-//       cout << " ==>  1st caracter = " << line[0] << " (ascii code =" << int(line[0]) << ")" << endl;    
-//     }
-//   else  
-//     { filein.clear();  filein.seekg(0);  // rewind
-//       cout << " ==> rewind configuration file: "<< dbfile << endl;           
-//     } 
   
   while (!filein.eof())
     { 
@@ -194,6 +182,7 @@ void AliMUONPedestal::Finalize()
   
   Double_t pedMean;
   Double_t pedSigma;
+  Double_t pedSigmalimit=0.5;
   Int_t busPatchId;
   Int_t manuId;
   Int_t channelId;
@@ -201,8 +190,8 @@ void AliMUONPedestal::Finalize()
   // print in logfile
   if (fErrorBuspatchTable->GetSize())
     {
-      cout<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;
-      (*fFilcout)<<"\n* Buspatches with less statistics (due to parity errors)"<<endl;
+      cout<<"\nWarning: Buspatches with less statistics (due to parity errors)"<<endl;
+      (*fFilcout)<<"\nWarning: Buspatches with less statistics (due to parity errors)"<<endl;
       TIter nextParityError(fErrorBuspatchTable->CreateIterator());
       AliMUONErrorCounter* parityerror;
       while((parityerror = static_cast<AliMUONErrorCounter*>(nextParityError())))
@@ -212,6 +201,8 @@ void AliMUONPedestal::Finalize()
 	}
     }
 
+  Int_t nADC4090=0;
+  Int_t nADCmax=0;
   // iterator over pedestal
   TIter next(fPedestalStore ->CreateIterator());
   AliMUONVCalibParam* ped;
@@ -222,8 +213,8 @@ void AliMUONPedestal::Finalize()
       manuId                  = ped->ID1();
       if(manuId==0)
 	{
-	  cout << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
-	  (*fFilcout) << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
+	  cout << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
+	  (*fFilcout) << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << endl;
 	}
       Int_t eventCounter;
       // Correct the number of events for buspatch with errors
@@ -236,7 +227,6 @@ void AliMUONPedestal::Finalize()
 	{
 	  eventCounter = fNEvents;
 	}
-
       Int_t occupancy=0; // channel missing in raw data or read but rejected (case of parity error)
       // value of (buspatch, manu) occupancy
       AliMUONErrorCounter* manuCounter;
@@ -244,39 +234,45 @@ void AliMUONPedestal::Finalize()
       if(eventCounter>0)occupancy = manuCounter->Events()/64/eventCounter;
       if(occupancy>1)
 	{
-	  cout << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
-	  (*fFilcout) << " !!! BIG WARNING: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy <<endl;
+	  cout << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy << endl;
+	  (*fFilcout) << "Warning: ManuId = " << manuId << " !!! in  BP = " << busPatchId << " occupancy (>1) = " << occupancy <<endl;
 	}
 
       for (channelId = 0; channelId < ped->Size() ; ++channelId) 
 	{
-	  pedMean  = ped->ValueAsDouble(channelId, 0);
+ 	  pedMean  = ped->ValueAsDouble(channelId, 0);
 
-	  if (pedMean > 0) // connected channels
+	  if (pedMean >= 0) // connected channels
 	    {
 	      ped->SetValueAsDouble(channelId, 0, pedMean/(Double_t)eventCounter);
 	      pedMean  = ped->ValueAsDouble(channelId, 0);
 	      pedSigma = ped->ValueAsDouble(channelId, 1);
-	      ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
-	      if(manuId == 0)
-		{
-		  ped->SetValueAsDouble(channelId, 0, ADCMax());
+ 	      ped->SetValueAsDouble(channelId, 1, TMath::Sqrt(TMath::Abs(pedSigma/(Double_t)eventCounter - pedMean*pedMean)));
+
+	      if(eventCounter < fNEvthreshold )
+		{ nADCmax++; ped->SetValueAsDouble(channelId, 0, ADCMax());
+		  ped->SetValueAsDouble(channelId, 1, ADCMax());}
+	      if( ped->ValueAsDouble(channelId, 1) < pedSigmalimit )
+		{ nADC4090++; ped->SetValueAsDouble(channelId, 0, ADCMax()-5);
+		  ped->SetValueAsDouble(channelId, 1, ADCMax()-5);}
+	      if(manuId == 0 || occupancy>1)
+		{ nADCmax++; ped->SetValueAsDouble(channelId, 0, ADCMax());
 		  ped->SetValueAsDouble(channelId, 1, ADCMax());
-		}
-	      if(occupancy>1)
-		{
-		  ped->SetValueAsDouble(channelId, 0, ADCMax());
-		  ped->SetValueAsDouble(channelId, 1, ADCMax());
-		  if(channelId==0)ped->SetValueAsDouble(channelId, 0, ADCMax()+occupancy);
-		}
+		  if(occupancy>1 && channelId==0)ped->SetValueAsDouble(channelId, 0, ADCMax()+occupancy);}
 	    }
 	  else
-	    {
-	      ped->SetValueAsDouble(channelId, 0, ADCMax());
-	      ped->SetValueAsDouble(channelId, 1, ADCMax());
-	    }
+	    { nADCmax++; ped->SetValueAsDouble(channelId, 0, ADCMax());
+	      ped->SetValueAsDouble(channelId, 1, ADCMax());}
 	}
     }
+  if(nADCmax>0)
+    { char* detail=Form("Warning: Nb of Channels with bad Pedestal (Ped=4095) = %d over %d",nADCmax,fNChannel);
+      printf("%s\n",detail);
+      (*fFilcout) <<  detail << endl; }
+  if(nADC4090>0)
+    { char* detail=Form("Warning: Nb of Channels with PedSigma<0.5 (Ped=4090) = %d over %d",nADC4090,fNChannel);
+      printf("%s\n",detail);
+      (*fFilcout) <<  detail << endl; }
 }
 //______________________________________________________________________________
 void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
@@ -286,14 +282,18 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
   out<<"//===========================================================================" << endl;
   out<<"//                 Pedestal file calculated by "<< fPrefixDA.Data() << endl;
   out<<"//===========================================================================" << endl;
-  out<<"//       * Run           : " << fRunNumber << endl; 
-  out<<"//       * Date          : " << fDate->AsString("l") <<endl;
-  out<<"//       * Statictics    : " << fNEvents << endl;
+  out<<"//     * Run           : " << fRunNumber << endl; 
+  out<<"//     * Date          : " << fDate->AsString("l") <<endl;
+  out<<"//     * Statictics    : " << fNEvents << endl;
   if(fConfig)
-    out<<"//       * # of MANUS    : " << fNManuConfig << " read in the Det. config. " << endl;
-  out<<"//       * # of MANUS    : " << fNManu << " read in raw data " << endl;
-  out<<"//       * # of MANUS    : " << fNChannel/64 << " written in pedestal file " << endl;
-  out<<"//       * # of channels : " << fNChannel << endl;
+    out<<"//     * Nb of MANUS   : " << fNManuConfig << " read in the Det. config. " << endl;
+  out<<"//     * Nb of MANUS   : " << fNManu << " read in raw data " << endl;
+  out<<"//     * Nb of MANUS   : " << fNChannel/64 << " written in pedestal file " << endl;
+  out<<"//     * Nb of channels: " << fNChannel << endl;
+  out<<"//"<<endl;
+  out<<"//     * Below " << fNEvthreshold << " events=> Ped.&sig.=4095" << endl;
+  out<<"//     * PedSigma < 0.5 => Ped.&sig.=4090" << endl;
+
   if (fErrorBuspatchTable->GetSize())
     {
       out<<"//"<<endl;
@@ -302,12 +302,12 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
       AliMUONErrorCounter* parityerror;
       while((parityerror = static_cast<AliMUONErrorCounter*>(next())))
 	{
-	  out<<"//      BusPatch = "<<parityerror->BusPatch()<<"\t Nevents used = "<<fNEvents-parityerror->Events()<<endl;
+	  if(fNEvents-parityerror->Events()>fNEvthreshold)
+	    { out<<"//      BusPatch = "<<parityerror->BusPatch()<<"\t Nevents used = "<<fNEvents-parityerror->Events()<<endl; }
+	  else
+	    { out<<"//      BusPatch = "<<parityerror->BusPatch()<<"\t Nevents used = "<<fNEvents-parityerror->Events()<< " (Ped.&sig.=4095)" << endl; }
 	}
     }  
-
-//   out<<"//"<<endl;
-//   out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;
   Int_t writitle=0;
   Int_t occupancy=1;
   if(occupancy)
@@ -325,10 +325,10 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 	      writitle++;
 	      if(writitle==1){ 
 		out<<"//"<<endl;
-		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;}
+		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ? (Ped.&sig.=4095)"<<endl;}
 	      occupancy=TMath::Nint(pedMean-ADCMax());
 	      ped->SetValueAsDouble(0, 0, ADCMax());
-	      out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t occupancy = " << occupancy  <<endl;
+	      out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t occupancy = " << occupancy  << endl;
 	    }
 
 	  if (manuId==0 || (fConfig && static_cast<AliMUONErrorCounter*>(fManuBPoutofconfigTable->FindObject(busPatchId,manuId))))
@@ -336,13 +336,11 @@ void AliMUONPedestal::MakeASCIIoutput(ostream& out) const
 	      writitle++;
 	      if(writitle==1){ 
 		out<<"//"<<endl;
-		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ?"<<endl;}
+		out<<"//    * Puzzling (Buspatch,Manu) read in raw data ? (Ped.&sig.=4095)"<<endl;}
 	      out<<"//      BusPatch = "<< busPatchId <<"\t ManuId =  "<< manuId << "\t missing in the mapping" << endl;
 	    }
 	}
     }
-
-
   out<<"//"<<endl;
   out<<"//---------------------------------------------------------------------------" << endl;
   out<<"//---------------------------------------------------------------------------" << endl;
@@ -376,6 +374,7 @@ void AliMUONPedestal::MakeControlHistos()
 
   Double_t pedMean;
   Double_t pedSigma;
+  Double_t evt;
   Int_t busPatchId;
   Int_t manuId;
   Int_t channelId;
@@ -413,10 +412,12 @@ void AliMUONPedestal::MakeControlHistos()
   tree->Branch("channel",&channelId,",channel/I");
   tree->Branch("pedMean",&pedMean,",pedMean/D");
   tree->Branch("pedSigma",&pedSigma,",pedSigma/D");
+  tree->Branch("nevt",&evt,",evt/D");
 
   // iterator over pedestal
   TIter next(fPedestalStore ->CreateIterator());
   AliMUONVCalibParam* ped;
+  AliMUONErrorCounter* manuCounter;
   
   while ( ( ped = dynamic_cast<AliMUONVCalibParam*>(next() ) ) )
   {
@@ -427,6 +428,8 @@ void AliMUONPedestal::MakeControlHistos()
     {
       pedMean  = ped->ValueAsDouble(channelId, 0);
       pedSigma = ped->ValueAsDouble(channelId, 1);
+      manuCounter = static_cast<AliMUONErrorCounter*>(fManuBuspatchTable->FindObject(busPatchId,manuId));
+      evt = manuCounter->Events()/64;
           
       pedMeanHisto->Fill(pedMean);
       pedSigmaHisto->Fill(pedSigma);

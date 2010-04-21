@@ -29,7 +29,7 @@
 
 /*
 	-------------------------------------------------------------------------
-        2010-02-16 New version: MUONTRKPEDda.cxx,v 1.5
+        2010-04-18 New version: MUONTRKPEDda.cxx,v 1.6
 	-------------------------------------------------------------------------
 
 	Version for MUONTRKPEDda MUON tracking
@@ -66,6 +66,8 @@ extern "C" {
 #include "AliRawDataErrorLog.h"
 #include "AliMUONTrackerIO.h"
 #include "AliLog.h"
+#include "AliMUONDspHeader.h"
+#include "AliDAQ.h"
 
 //ROOT
 #include "TFile.h"
@@ -139,7 +141,8 @@ int main(Int_t argc, const char **argv)
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
   UInt_t runNumber   = 0;
-  Int_t nConfig = 1; 
+  Int_t nConfig = 1;
+  Int_t nEvthreshold = 10; //below this nb_evt pedestal are not calculated and forced to 4085 (sigma)
   ofstream filcout;
 
   // decode the input line
@@ -226,9 +229,11 @@ int main(Int_t argc, const char **argv)
       if(status) {printf(" !!! Failed  : input file %s is missing, status = %d\n",dbfile,status); return -1; } 
       ifstream filein(dbfile,ios::in);
       filein >> nConfig;
+      //      filein >> nEvthreshold;
     }
   else  printf(" ***  Config= %d: no configuration ascii file is used \n",nConfig); 
   muonPedestal->SetconfigDA(nConfig);
+  muonPedestal->SetnEvthreshold(nEvthreshold);
 
   // nConfig=1: configuration ascii file config_$DATE_ROLE_NAME read from DetDB
   if(nConfig)
@@ -250,9 +255,13 @@ int main(Int_t argc, const char **argv)
   // kMediumErrorDetail,  /// Logs a medium level of detail in the error messages.
   // kHighErrorDetail     /// Logs maximum information in the error messages.
   //  rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail);
-   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
+     rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
+  //   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
 
   printf("\n %s : Reading data from file %s\n",prefixDA,inputFile.Data());
+
+  Int_t tabTokenError[20][14];
+  for ( Int_t i=0 ; i<20 ; i++) { for ( Int_t j=0 ; j<14 ; j++) { tabTokenError[i][j]=0;}	}
 
   while (rawReader->NextEvent())
     {
@@ -264,14 +273,12 @@ int main(Int_t argc, const char **argv)
       // check shutdown condition 
       if (daqDA_checkShutdown()) 
 	break;
-
       //Skip events
       while (skipEvents)
 	{
 	  rawReader->NextEvent();
 	  skipEvents--;
 	}
-
       Int_t eventType = rawReader->GetType();
       runNumber = rawReader->GetRunNumber();
 
@@ -297,6 +304,7 @@ int main(Int_t argc, const char **argv)
       if (eventType != PHYSICS_EVENT)
 	continue; // for the moment
 
+      const char* detail = "";
       // First lopp over DDL's to find good events
       // Error counters per event (counters in the decoding lib are for each DDL)
       Bool_t eventIsErrorMessage = kFALSE;
@@ -312,6 +320,34 @@ int main(Int_t argc, const char **argv)
 	  eventParityErrors += rawStream->GetParityErrors();
 	  eventPaddingErrors += rawStream->GetPaddingErrors();
 	  eventTokenlostErrors += rawStream->GetTokenLostErrors();
+	  if (rawStream->GetTokenLostErrors())
+	    {
+	      nTokenlostErrors++;
+	      const AliMUONRawStreamTrackerHP::AliBlockHeader*      blkHeader  = 0x0;
+	      const AliMUONRawStreamTrackerHP::AliDspHeader*        dspHeader  = 0x0;
+	      Int_t nBlock = rawStream->GetBlockCount();
+	      for(Int_t iBlock = 0; iBlock < nBlock ;iBlock++)
+		{
+		  blkHeader = rawStream->GetBlockHeader(iBlock);
+		  //		  printf("Block %d Total length %d\n",iBlock,blkHeader->GetTotalLength());
+		  Int_t nDsp = rawStream->GetDspCount(iBlock);
+		  //		  printf("Block %d DSP %d\n",iBlock,nDsp);		  
+		  for(Int_t iDsp = 0; iDsp < nDsp ;iDsp++)
+		    {
+		      dspHeader =  blkHeader->GetDspHeader(iDsp);
+		      //		      printf("Dsp %d Add %X\n",iDsp,dspHeader);
+		      if (dspHeader->GetErrorWord())
+			{
+			  Int_t ddl = rawStream->GetDDL()  ; 
+			  //	 Int_t ddl = AliDAQ::DdlID("MUONTRK", rawStream->GetDDL()) - 2560 ; // format 2560 + ddl
+			  Int_t frt = (dspHeader->GetErrorWord() & 0xFFFF0000) >> 16 ; // 4*4bits right shift
+			  tabTokenError[ddl][frt]++;
+			  //	 printf(" DDL %d error word %X %d %d\n",ddl,dspHeader->GetErrorWord(),frt,tabTokenError[8][4]);
+			}
+		      
+		    }
+		}
+	    }
 	} while(rawStream->NextDDL()); 
 
       AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
@@ -319,6 +355,8 @@ int main(Int_t argc, const char **argv)
 	{
 	  // Good events (no error) -> compute pedestal for all channels
 	  rawStream->First(); 
+	  nEvents++;
+	  muonPedestal->SetAliNCurrentEvents(nEvents);
 	  while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
 	    {
 	      for(int i = 0; i < busPatch->GetLength(); ++i)
@@ -327,7 +365,6 @@ int main(Int_t argc, const char **argv)
 		  muonPedestal->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
 		}
 	    }
-	  nEvents++;
 	}
       else
 	{
@@ -350,6 +387,8 @@ int main(Int_t argc, const char **argv)
 			      <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
 		}
 	      rawStream->First();
+	      nEvents++;
+	      muonPedestal->SetAliNCurrentEvents(nEvents);
 	      while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
 		{
 		  // Check the buspatch -> if error not use it in the pedestal calculation
@@ -388,13 +427,14 @@ int main(Int_t argc, const char **argv)
 		      // errorCounter->Print();						
 		    } // end of if (!errorCount)
 		} // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
-	      nEvents++;
+	      //	      nEvents++;
 	      nEventsRecovered++;
 	    } //end of if (recoverParityErrors && eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
 	  else
 	    {
-	      filcout << " ----------- Date Event rejected = " << nDateEvents <<  " ----------------" << endl;
 	      // Fatal errors reject the event
+	      detail = Form(" ----------- Date Event rejected = %d  ----------------",nDateEvents);
+	      filcout << detail << endl;
 	      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
 					  ATTR_ORBIT_BC )) 
 		{
@@ -420,7 +460,8 @@ int main(Int_t argc, const char **argv)
       if (eventGlitchErrors)  nGlitchErrors++;
       if (eventParityErrors)  nParityErrors++;
       if (eventPaddingErrors) nPaddingErrors++;
-      if (eventTokenlostErrors) nTokenlostErrors++;
+      //      if (eventTokenlostErrors) nTokenlostErrors++;
+      //      muonPedestal->SetAliNCurrentEvents(nEvents);
 
     } // while (rawReader->NextEvent())
   delete rawReader;
@@ -447,10 +488,9 @@ int main(Int_t argc, const char **argv)
     
     amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
     TObjString peddata(stringout.str().c_str());
-    Int_t status =0;
-    status = amoreDA.Send("Pedestals",&peddata);
-    if ( status )
-      cout << "Warning: Failed to write Pedestals in the AMORE database : " << status << endl;
+    Int_t amoreStatus = amoreDA.Send("Pedestals",&peddata);
+    if ( amoreStatus )
+      cout << "Warning: Failed to write Pedestals in the AMORE database : " << amoreStatus << endl;
     else 
       cout << "amoreDA.Send(Pedestals) ok" << endl;  
 #else
@@ -485,6 +525,30 @@ int main(Int_t argc, const char **argv)
   cout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;
   cout << prefixDA << " : Pedestal Histo file    : " << muonPedestal->GetHistoFileName() << endl;
   cout << prefixDA << " : Ped. file (to SHUTTLE) : " << shuttleFile << endl;   
+
+  // Writing Token Error table
+  if(nTokenlostErrors)
+    {
+      char* detail=Form("\nWarning: Token Lost occurence \n");
+      printf("%s",detail);
+      filcout <<  detail ;
+      for ( Int_t i=0 ; i<20 ; i++) 
+	{ 
+	  for ( Int_t j=4 ; j<14 ; j++) 
+	    { 
+	      if(tabTokenError[i][j]>0)
+		{
+		  Int_t tab=tabTokenError[i][j];
+		  Int_t frt=j/2-1;
+		  Int_t station = i/4 +1;
+		  if( j % 2 == 0)detail=Form(" in DDL= %d (station %d) and FRT%d ( Up ) => %d Token errors (address = 0x%X0000)",2560+i,station,frt,tab,j);
+		  else detail=Form(" in DDL= %d (station %d) and FRT%d (Down) => %d Token errors (address = 0x%X0000)",2560+i,station,frt,tab,j);
+		  printf("%s\n",detail);
+		  filcout <<  detail << endl;
+		}
+	    }
+	}
+    }
 
   filcout << endl;
   filcout << prefixDA << " : Output logfile         : " << logOutputFile  << endl;

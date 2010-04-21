@@ -41,7 +41,7 @@
 
 /*
  -------------------------------------------------------------------------
- 2010-02-16 New version: MUONTRKGAINda.cxx,v 1.5
+ 2010-04-18 New version: MUONTRKGAINda.cxx,v 1.6
  -------------------------------------------------------------------------
  
  Version for MUONTRKGAINda MUON tracking
@@ -76,6 +76,9 @@ extern "C" {
 #include "AliMpConstants.h"
 #include "AliRawDataErrorLog.h"
 #include "AliMUONTrackerIO.h"
+#include "AliLog.h"
+#include "AliMUONDspHeader.h"
+#include "AliDAQ.h"
 
 //ROOT
 #include "TFile.h"
@@ -144,6 +147,7 @@ int main(Int_t argc, const char** argv)
   Int_t nTokenlostErrors= 0;
   Int_t nEventsRecovered = 0;
   Int_t nEvents = 0;
+  Int_t nEvthreshold = 10; //below this nb_evt the mean of the charge is not calculated and forced to 4085 (sigma)
   
   TString logOutputFile;
   Char_t flatFile[256]="";
@@ -204,6 +208,7 @@ int main(Int_t argc, const char** argv)
   muonGain->SetAliPrintLevel(printLevel);
   muonGain->SetAliPlotLevel(plotLevel);
   muonGain->SetconfigDA(nConfig);
+  muonGain->SetnEvthreshold(nEvthreshold);
   
   if(nConfig)
   {
@@ -218,10 +223,20 @@ int main(Int_t argc, const char** argv)
   // Rawdeader, RawStreamHP
   AliRawReader* rawReader = AliRawReader::Create(inputFile.Data());
   AliMUONRawStreamTrackerHP* rawStream  = new AliMUONRawStreamTrackerHP(rawReader);    
-  rawStream->DisableWarnings();
+  //  rawStream->DisableWarnings();
   rawStream->EnabbleErrorLogger();
+  //
+  // kLowErrorDetail,     /// Logs minimal information in the error messages.
+  // kMediumErrorDetail,  /// Logs a medium level of detail in the error messages.
+  // kHighErrorDetail     /// Logs maximum information in the error messages.
+  //  rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kLowErrorDetail);
+     rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
+  //   rawStream->SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kHighErrorDetail);
   
   cout << "\n" << prefixDA << " : Reading data from file " << inputFile.Data()  << endl;
+
+  Int_t tabTokenError[20][14];
+  for ( Int_t i=0 ; i<20 ; i++) { for ( Int_t j=0 ; j<14 ; j++) { tabTokenError[i][j]=0;}	}
   
   while (rawReader->NextEvent())
   {
@@ -238,8 +253,7 @@ int main(Int_t argc, const char** argv)
     {
       rawReader->NextEvent();
       skipEvents--;
-    }
-    
+    }  
     Int_t eventType = rawReader->GetType();
     runNumber = rawReader->GetRunNumber();
     
@@ -248,7 +262,7 @@ int main(Int_t argc, const char** argv)
     {
       sprintf(flatFile,"%s.log",prefixDA);
       logOutputFile=flatFile;
-      
+		AliLog::SetStreamOutput(&filcout); // Print details on logfile      
       filcout.open(logOutputFile.Data());
       filcout<<"//=================================================" << endl;
       filcout<<"//       " << prefixDA << " for run = " << runNumber << "  (DAC=" << injCharge << ")" << endl;
@@ -265,6 +279,7 @@ int main(Int_t argc, const char** argv)
     if (eventType != PHYSICS_EVENT)
       continue; // for the moment
     
+    const char* detail = "";
     // First lopp over DDL's to find good events
     // Error counters per event (counters in the decoding lib are for each DDL)
     Bool_t eventIsErrorMessage = kFALSE;
@@ -274,19 +289,49 @@ int main(Int_t argc, const char** argv)
     int eventTokenlostErrors = 0;
     rawStream->First();
     do
-    {
-      if (rawStream->IsErrorMessage()) eventIsErrorMessage = kTRUE;
-      eventGlitchErrors += rawStream->GetGlitchErrors();
-      eventParityErrors += rawStream->GetParityErrors();
-      eventPaddingErrors += rawStream->GetPaddingErrors();
-      eventTokenlostErrors += rawStream->GetTokenLostErrors();
-    } while(rawStream->NextDDL()); 
+      {
+	if (rawStream->IsErrorMessage()) eventIsErrorMessage = kTRUE;
+	eventGlitchErrors += rawStream->GetGlitchErrors();
+	eventParityErrors += rawStream->GetParityErrors();
+	eventPaddingErrors += rawStream->GetPaddingErrors();
+	eventTokenlostErrors += rawStream->GetTokenLostErrors();
+	if (rawStream->GetTokenLostErrors())
+	  {
+	    nTokenlostErrors++;
+	    const AliMUONRawStreamTrackerHP::AliBlockHeader*      blkHeader  = 0x0;
+	    const AliMUONRawStreamTrackerHP::AliDspHeader*        dspHeader  = 0x0;
+	    Int_t nBlock = rawStream->GetBlockCount();
+	    for(Int_t iBlock = 0; iBlock < nBlock ;iBlock++)
+	      {
+		blkHeader = rawStream->GetBlockHeader(iBlock);
+		//		  printf("Block %d Total length %d\n",iBlock,blkHeader->GetTotalLength());
+		Int_t nDsp = rawStream->GetDspCount(iBlock);
+		//		  printf("Block %d DSP %d\n",iBlock,nDsp);		  
+		for(Int_t iDsp = 0; iDsp < nDsp ;iDsp++)
+		  {
+		    dspHeader =  blkHeader->GetDspHeader(iDsp);
+		    //		      printf("Dsp %d Add %X\n",iDsp,dspHeader);
+		    if (dspHeader->GetErrorWord())
+		      {
+			Int_t ddl = rawStream->GetDDL()  ; 
+			//	 Int_t ddl = AliDAQ::DdlID("MUONTRK", rawStream->GetDDL()) - 2560 ; // format 2560 + ddl
+			Int_t frt = (dspHeader->GetErrorWord() & 0xFFFF0000) >> 16 ; // 4*4bits right shift
+			tabTokenError[ddl][frt]++;
+			//	 printf(" DDL %d error word %X %d %d\n",ddl,dspHeader->GetErrorWord(),frt,tabTokenError[8][4]);
+		      }
+		      
+		  }
+	      }
+	  }
+      } while(rawStream->NextDDL()); 
     
     AliMUONRawStreamTrackerHP::AliBusPatch* busPatch;
     if (!eventIsErrorMessage) 
     {
       // Good events (no error) -> compute pedestal for all channels
       rawStream->First(); 
+      nEvents++;
+      muonGain->SetAliNCurrentEvents(nEvents);
       while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
 	    {
 	      for(int i = 0; i < busPatch->GetLength(); ++i)
@@ -295,101 +340,105 @@ int main(Int_t argc, const char** argv)
           muonGain->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
         }
 	    }
-      nEvents++;
     }
     else
-    {
-      // Events with errors
-      if (eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
-	    {
-	      // Recover parity errors -> compute pedestal for all good buspatches
-	      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
-                                   ATTR_ORBIT_BC )) 
-        {
-          filcout <<"Event recovered -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
-          <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
-          <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
-        } 
-	      else 
-        {
-          filcout <<"Event recovered -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
-          <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
-          <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
-        }
-	      rawStream->First();
-	      while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
-        {
-          // Check the buspatch -> if error not use it in the pedestal calculation
-          int errorCount = 0;
-          for(int i = 0; i < busPatch->GetLength(); ++i)
-          {
-            if (!busPatch->IsParityOk(i)) errorCount++;
-          }
-          if (!errorCount) 
-          {
-            // Good buspatch
-            for(int i = 0; i < busPatch->GetLength(); ++i)
-            {
-              busPatch->GetData(i, manuId, channelId, charge);
-              muonGain->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
-            }
-          }
-          else
-          {
-            char bpname[256];
-            AliMUONErrorCounter* errorCounter;
-            // Bad buspatch -> not used (just print)
-            filcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
-            <<" parity errors "<<errorCount<<endl;
-            // Number of events where this buspatch is missing
-            sprintf(bpname,"bp%d",busPatch->GetBusPatchId());						
-            if (!(errorCounter = (AliMUONErrorCounter*) (muonGain->GetErrorBuspatchTable()->FindObject(bpname))))
-            {
-              // New buspatch
-              errorCounter = new AliMUONErrorCounter(busPatch->GetBusPatchId());
-              errorCounter->SetName(bpname);
-              muonGain->GetErrorBuspatchTable()->Add(errorCounter);
-            }
-            else
-            {
-              // Existing buspatch
-              errorCounter->Increment();
-            }	
-            // errorCounter->Print();						
-          } // end of if (!errorCount)
-        } // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
-	      nEvents++;
-	      nEventsRecovered++;
-	    } //end of if (eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
-      else
-	    {
-	      // Fatal errors reject the event
-	      if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
-                                   ATTR_ORBIT_BC )) 
-        {
-          filcout <<"Event rejected -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
-          <<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
-          <<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
-        } 
-	      else 
-        {
-          filcout <<"Event rejected -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
-          <<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
-          <<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
+      {
+	// Events with errors
+	if (eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
+	  {
+	    filcout << " ----------- Date Event recovered = " << nDateEvents <<  " ----------------" << endl;
+	    // Recover parity errors -> compute pedestal for all good buspatches
+	    if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
+					ATTR_ORBIT_BC )) 
+	      {
+		filcout <<"Event recovered -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
+			<<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
+			<<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
+	      } 
+	    else 
+	      {
+		filcout <<"Event recovered -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
+			<<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
+			<<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
+	      }
+	    rawStream->First();
+	    nEvents++;
+	    muonGain->SetAliNCurrentEvents(nEvents);
+	    while( (busPatch = (AliMUONRawStreamTrackerHP::AliBusPatch*) rawStream->Next())) 
+	      {
+		// Check the buspatch -> if error not use it in the pedestal calculation
+		int errorCount = 0;
+		for(int i = 0; i < busPatch->GetLength(); ++i)
+		  {
+		    if (!busPatch->IsParityOk(i)) errorCount++;
+		  }
+		if (!errorCount) 
+		  {
+		    // Good buspatch
+		    for(int i = 0; i < busPatch->GetLength(); ++i)
+		      {
+			busPatch->GetData(i, manuId, channelId, charge);
+			muonGain->MakePed(busPatch->GetBusPatchId(), (Int_t)manuId, (Int_t)channelId, (Int_t)charge);
+		      }
+		  }
+		else
+		  {
+		    char bpname[256];
+		    AliMUONErrorCounter* errorCounter;
+		    // Bad buspatch -> not used (just print)
+		    filcout<<"bpId "<<busPatch->GetBusPatchId()<<" words "<<busPatch->GetLength()
+			   <<" parity errors "<<errorCount<<endl;
+		    // Number of events where this buspatch is missing
+		    sprintf(bpname,"bp%d",busPatch->GetBusPatchId());						
+		    if (!(errorCounter = (AliMUONErrorCounter*) (muonGain->GetErrorBuspatchTable()->FindObject(bpname))))
+		      {
+			// New buspatch
+			errorCounter = new AliMUONErrorCounter(busPatch->GetBusPatchId());
+			errorCounter->SetName(bpname);
+			muonGain->GetErrorBuspatchTable()->Add(errorCounter);
+		      }
+		    else
+		      {
+			// Existing buspatch
+			errorCounter->Increment();
+		      }	
+		    // errorCounter->Print();						
+		  } // end of if (!errorCount)
+	      } // end of while( (busPatch = (AliMUONRawStreamTrackerHP ...
+	    //	      nEvents++;
+	    nEventsRecovered++;
+	  } //end of if (eventParityErrors && !eventGlitchErrors&& !eventPaddingErrors)
+	else
+	  {
+	    // Fatal errors reject the event
+	    detail = Form(" ----------- Date Event rejected = %d  ----------------",nDateEvents);
+	    filcout << detail << endl;
+	    if ( TEST_SYSTEM_ATTRIBUTE( rawReader->GetAttributes(),
+					ATTR_ORBIT_BC )) 
+	      {
+		filcout <<"Event rejected -> Period:"<<EVENT_ID_GET_PERIOD( rawReader->GetEventId() )
+			<<" Orbit:"<<EVENT_ID_GET_ORBIT( rawReader->GetEventId() )
+			<<" BunchCrossing:"<<EVENT_ID_GET_BUNCH_CROSSING( rawReader->GetEventId() )<<endl;				
+	      } 
+	    else 
+	      {
+		filcout <<"Event rejected -> nbInRun:"<<EVENT_ID_GET_NB_IN_RUN( rawReader->GetEventId() )
+			<<" burstNb:"<<EVENT_ID_GET_BURST_NB( rawReader->GetEventId() )
+			<<" nbInBurst:"<<EVENT_ID_GET_NB_IN_BURST( rawReader->GetEventId() )<<endl;
           
-        }
-	    } // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
-      filcout<<"Number of errors : Glitch "<<eventGlitchErrors
-      <<" Parity "<<eventParityErrors
-      <<" Padding "<<eventPaddingErrors
-      <<" Token lost "<<eventTokenlostErrors<<endl;
-      filcout<<endl;			
-    } // end of if (!rawStream->IsErrorMessage())
+	      }
+	  } // end of if (!rawStream->GetGlitchErrors() && !rawStream->GetPaddingErrors() ...
+	filcout<<"Number of errors : Glitch "<<eventGlitchErrors
+	       <<" Parity "<<eventParityErrors
+	       <<" Padding "<<eventPaddingErrors
+	       <<" Token lost "<<eventTokenlostErrors<<endl;
+	filcout<<endl;			
+      } // end of if (!rawStream->IsErrorMessage())
     
     if (eventGlitchErrors)  nGlitchErrors++;
     if (eventParityErrors)  nParityErrors++;
     if (eventPaddingErrors) nPaddingErrors++;
-    if (eventTokenlostErrors) nTokenlostErrors++;
+    //if (eventTokenlostErrors) nTokenlostErrors++;
 
   } // while (rawReader->NextEvent())
   delete rawReader;
@@ -427,6 +476,30 @@ int main(Int_t argc, const char** argv)
   filcout << prefixDA << " : Nb of events without errors = "   << nEvents-nEventsRecovered<< endl;
   filcout << prefixDA << " : Nb of events used           = "   << nEvents        << endl;
   
+  // Writing Token Error table
+  if(nTokenlostErrors)
+    {
+      char* detail=Form("\nWarning: Token Lost occurence \n");
+      printf("%s",detail);
+      filcout <<  detail ;
+      for ( Int_t i=0 ; i<20 ; i++) 
+	{ 
+	  for ( Int_t j=4 ; j<14 ; j++) 
+	    { 
+	      if(tabTokenError[i][j]>0)
+		{
+		  Int_t tab=tabTokenError[i][j];
+		  Int_t frt = j/2-1;
+		  Int_t station = i/4 +1;
+		  if( j % 2 == 0)detail=Form(" in DDL= %d (station %d) and FRT%d ( Up ) => %d Token errors (address = 0x%X0000)",2560+i,station,frt,tab,j);
+		  else detail=Form(" in DDL= %d (station %d) and FRT%d (Down) => %d Token errors (address = 0x%X0000)",2560+i,station,frt,tab,j);
+		  printf("%s\n",detail);
+		  filcout <<  detail << endl;
+		}
+	    }
+	}
+    }
+
   // Computing gain 
   if(nIndex==nEntries)
   {
