@@ -39,13 +39,22 @@
 #include <TRandom.h>
 #include <TProfile.h>
 #include <TProfile2D.h>
+#include <AliLog.h>
 
 ClassImp(AliMultiplicityCorrection)
+
+// Defined where the efficiency drops below 1/3
+// |eta| < 1.4 --> -0.3 ... 0.8
+// |eta| < 1.3 --> -1.9 ... 2.4
+// |eta| < 1.0 --> -5.6 ... 6.1
+//Double_t AliMultiplicityCorrection::fgVtxRangeBegin[kESDHists] = { -10.0, -5.6, -1.9 };
+//Double_t AliMultiplicityCorrection::fgVtxRangeEnd[kESDHists] =   {  10.0,  6.1,  2.4 };
+Double_t AliMultiplicityCorrection::fgVtxRangeBegin[kESDHists] = { -10.0, -5.5, -1.9 };
+Double_t AliMultiplicityCorrection::fgVtxRangeEnd[kESDHists] =   {  10.0,  5.5,  2.4 };
 
 // These are the areas where the quality of the unfolding results are evaluated
 // Default defined here, call SetQualityRegions to change them
 // unit is in multiplicity (not in bin!)
-
 // SPD:   peak area - flat area - low stat area
 Int_t AliMultiplicityCorrection::fgQualityRegionsB[kQualityRegions] = {1,  20, 70};
 Int_t AliMultiplicityCorrection::fgQualityRegionsE[kQualityRegions] = {10, 65, 80};
@@ -96,7 +105,11 @@ AliMultiplicityCorrection::AliMultiplicityCorrection() :
   //
 
   for (Int_t i = 0; i < kESDHists; ++i)
+  {
     fMultiplicityESD[i] = 0;
+    fTriggeredEvents[i] = 0;
+    fNoVertexEvents[i] = 0;
+  }
 
   for (Int_t i = 0; i < kMCHists; ++i)
   {
@@ -128,6 +141,8 @@ AliMultiplicityCorrection* AliMultiplicityCorrection::Open(const char* fileName,
     return 0;
   }
   
+  Printf("AliMultiplicityCorrection::Open: Reading file %s", fileName);
+  
   AliMultiplicityCorrection* mult = new AliMultiplicityCorrection(folderName, folderName);
   mult->LoadHistograms();
   
@@ -146,12 +161,14 @@ AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const C
   fLastChi2MC(0),
   fLastChi2MCLimit(0),
   fLastChi2Residuals(0),
-  fRatioAverage(0)
+  fRatioAverage(0),
+  fVtxBegin(0),
+  fVtxEnd(0)
 {
   //
   // named constructor
   //
-
+  
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -176,10 +193,12 @@ AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const C
 
   #define NBINNING 201, -0.5, 200.5
   
-  Double_t vtxRange[] = { 15, 6, 2 };
-
   for (Int_t i = 0; i < kESDHists; ++i)
-    fMultiplicityESD[i] = new TH2F(Form("fMultiplicityESD%d", i), "fMultiplicityESD;vtx-z;Ntracks;Count", 1, -vtxRange[i], vtxRange[i], NBINNING);
+  {
+    fMultiplicityESD[i] = new TH2F(Form("fMultiplicityESD%d", i), "fMultiplicityESD;vtx-z;measured multiplicity;Count", 1, fgVtxRangeBegin[i], fgVtxRangeEnd[i], NBINNING);
+    fTriggeredEvents[i] = new TH1F(Form("fTriggeredEvents%d", i), "fTriggeredEvents;measured multiplicity;Count", NBINNING);
+    fNoVertexEvents[i] = new TH1F(Form("fNoVertexEvents%d", i), "fNoVertexEvents;generated multiplicity;Count", NBINNING);
+  }
 
   for (Int_t i = 0; i < kMCHists; ++i)
   {
@@ -198,15 +217,134 @@ AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const C
 
   for (Int_t i = 0; i < kCorrHists; ++i)
   {
-    fCorrelation[i] = new TH3F(Form("fCorrelation%d", i), "fCorrelation;vtx-z;Npart;Ntracks", 1, -vtxRange[i%3], vtxRange[i%3], NBINNING, NBINNING);
-    fMultiplicityESDCorrected[i] = new TH1F(Form("fMultiplicityESDCorrected%d", i), "fMultiplicityESDCorrected;Npart;dN/dN", NBINNING);
+    fCorrelation[i] = new TH3F(Form("fCorrelation%d", i), "fCorrelation;vtx-z;true multiplicity;measured multiplicity", 1, fgVtxRangeBegin[i%3], fgVtxRangeEnd[i%3], NBINNING, NBINNING);
+    fMultiplicityESDCorrected[i] = new TH1F(Form("fMultiplicityESDCorrected%d", i), "fMultiplicityESDCorrected;true multiplicity;Count", NBINNING);
   }
 
   TH1::AddDirectory(oldStatus);
 
   AliUnfolding::SetNbins(120, 120);
   AliUnfolding::SetSkipBinsBegin(1);
-  AliUnfolding::SetNormalizeInput(kTRUE);
+  //AliUnfolding::SetNormalizeInput(kTRUE);
+}
+
+//____________________________________________________________________
+void AliMultiplicityCorrection::Rebin2DY(TH2F*& hist, Int_t nBins, Double_t* newBins) const
+{
+  // 
+  // rebins the y axis of a two-dimensional histogram giving variable size binning (missing in ROOT v5/25/02)
+  //
+  
+  TH2F* temp = new TH2F(hist->GetName(), Form("%s;%s;%s", hist->GetTitle(), hist->GetXaxis()->GetTitle(), hist->GetYaxis()->GetTitle()), hist->GetNbinsX(), hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax(), nBins, newBins);
+  
+  for (Int_t x=0; x<=hist->GetNbinsX()+1; x++)
+    for (Int_t y=0; y<=hist->GetNbinsY()+1; y++)
+      temp->Fill(hist->GetXaxis()->GetBinCenter(x), hist->GetYaxis()->GetBinCenter(y), hist->GetBinContent(x, y));
+  
+  for (Int_t x=0; x<=temp->GetNbinsX()+1; x++)
+    for (Int_t y=0; y<=temp->GetNbinsY()+1; y++)
+      temp->SetBinError(x, y, TMath::Sqrt(temp->GetBinContent(x, y)));
+      
+  delete hist;
+  hist = temp;
+} 
+
+//____________________________________________________________________
+void AliMultiplicityCorrection::Rebin3DY(TH3F*& hist, Int_t nBins, Double_t* newBins) const
+{
+  // 
+  // rebins the y axis of a three-dimensional histogram giving variable size binning (missing in ROOT v5/25/02)
+  // this function is a mess - and it should have been Fons who should have gone through the pain of writing it! (JF)
+  //
+  
+  // construct variable size arrays for fixed size binning axes because TH3 lacks some constructors
+  Double_t* xBins = new Double_t[hist->GetNbinsX()+1];
+  Double_t* zBins = new Double_t[hist->GetNbinsZ()+1];
+  
+  for (Int_t x=1; x<=hist->GetNbinsX()+1; x++)
+  {
+    xBins[x-1] = hist->GetXaxis()->GetBinLowEdge(x);
+    //Printf("%d %f", x, xBins[x-1]);
+  }
+  
+  for (Int_t z=1; z<=hist->GetNbinsZ()+1; z++)
+  {
+    zBins[z-1] = hist->GetZaxis()->GetBinLowEdge(z);
+    //Printf("%d %f", y, yBins[y-1]);
+  }
+  
+  TH3F* temp = new TH3F(hist->GetName(), Form("%s;%s;%s;%s", hist->GetTitle(), hist->GetXaxis()->GetTitle(), hist->GetYaxis()->GetTitle(), hist->GetZaxis()->GetTitle()), hist->GetNbinsX(), xBins, nBins, newBins, hist->GetNbinsZ(), zBins);
+  
+  for (Int_t x=0; x<=hist->GetNbinsX()+1; x++)
+    for (Int_t y=0; y<=hist->GetNbinsY()+1; y++)
+      for (Int_t z=0; z<=hist->GetNbinsZ()+1; z++)
+        temp->Fill(hist->GetXaxis()->GetBinCenter(x), hist->GetYaxis()->GetBinCenter(y), hist->GetZaxis()->GetBinCenter(z), hist->GetBinContent(x, y, z));
+  
+  for (Int_t x=0; x<=temp->GetNbinsX()+1; x++)
+    for (Int_t y=0; y<=temp->GetNbinsY()+1; y++)
+      for (Int_t z=0; z<=hist->GetNbinsZ()+1; z++)
+        temp->SetBinError(x, y, z, TMath::Sqrt(temp->GetBinContent(x, y, z)));
+      
+  delete[] xBins;
+  delete[] zBins;
+      
+  delete hist;
+  hist = temp;
+}
+
+//____________________________________________________________________
+void AliMultiplicityCorrection::RebinGenerated(Int_t nBins05, Double_t* newBins05, Int_t nBins10, Double_t* newBins10, Int_t nBins13, Double_t* newBins13)
+{
+  //
+  // Rebins the (and only the) generated multiplicity axis 
+  //
+  
+  Printf("Rebinning generated-multiplicity axis...");
+
+  // do not add this hists to the directory
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  if (kESDHists != 3)
+    AliFatal("This function only works for three ESD hists!");
+  
+  for (Int_t i = 0; i < kESDHists; ++i)
+  {
+    Int_t nBins = -1;
+    Double_t* newBins = 0;
+    
+    switch (i)
+    {
+      case 0:
+        nBins = nBins05;
+        newBins = newBins05;
+        break;
+      case 1:
+        nBins = nBins10;
+        newBins = newBins10;
+        break;
+      case 2:
+        nBins = nBins13;
+        newBins = newBins13;
+        break;
+    }
+  
+    // 1D
+    // TODO mem leak
+    fNoVertexEvents[i] = (TH1F*) fNoVertexEvents[i]->Rebin(nBins, fNoVertexEvents[i]->GetName(), newBins);
+    fMultiplicityESDCorrected[i] = (TH1F*) fMultiplicityESDCorrected[i]->Rebin(nBins, fMultiplicityESDCorrected[i]->GetName(), newBins);
+  
+    // 2D
+    Rebin2DY(fMultiplicityVtx[i], nBins, newBins);
+    Rebin2DY(fMultiplicityMB[i], nBins, newBins);
+    Rebin2DY(fMultiplicityINEL[i], nBins, newBins);
+    Rebin2DY(fMultiplicityNSD[i], nBins, newBins);
+
+    // 3D
+    Rebin3DY(fCorrelation[i], nBins, newBins);
+  }
+
+  TH1::AddDirectory(oldStatus);
 }
 
 //____________________________________________________________________
@@ -223,6 +361,14 @@ AliMultiplicityCorrection::~AliMultiplicityCorrection()
     if (fMultiplicityESD[i])
       delete fMultiplicityESD[i];
     fMultiplicityESD[i] = 0;
+    
+    if (fTriggeredEvents[i])
+      delete fTriggeredEvents[i];
+    fTriggeredEvents[i]= 0;
+  
+    if (fNoVertexEvents[i])
+      delete fNoVertexEvents[i];
+    fNoVertexEvents[i]= 0;
   }
 
   for (Int_t i = 0; i < kMCHists; ++i)
@@ -273,7 +419,7 @@ Long64_t AliMultiplicityCorrection::Merge(const TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  TList collections[kESDHists+kMCHists*4+kCorrHists*2];
+  TList collections[3*kESDHists+kMCHists*4+kCorrHists*2];
 
   Int_t count = 0;
   while ((obj = iter->Next())) {
@@ -283,41 +429,49 @@ Long64_t AliMultiplicityCorrection::Merge(const TCollection* list)
       continue;
 
     for (Int_t i = 0; i < kESDHists; ++i)
+    {
       collections[i].Add(entry->fMultiplicityESD[i]);
+      collections[kESDHists+i].Add(entry->fTriggeredEvents[i]);
+      collections[kESDHists*2+i].Add(entry->fNoVertexEvents[i]);
+    }
 
     for (Int_t i = 0; i < kMCHists; ++i)
     {
-      collections[kESDHists+i].Add(entry->fMultiplicityVtx[i]);
-      collections[kESDHists+kMCHists+i].Add(entry->fMultiplicityMB[i]);
-      collections[kESDHists+kMCHists*2+i].Add(entry->fMultiplicityINEL[i]);
-      collections[kESDHists+kMCHists*3+i].Add(entry->fMultiplicityNSD[i]);
+      collections[3*kESDHists+i].Add(entry->fMultiplicityVtx[i]);
+      collections[3*kESDHists+kMCHists+i].Add(entry->fMultiplicityMB[i]);
+      collections[3*kESDHists+kMCHists*2+i].Add(entry->fMultiplicityINEL[i]);
+      collections[3*kESDHists+kMCHists*3+i].Add(entry->fMultiplicityNSD[i]);
     }
 
     for (Int_t i = 0; i < kCorrHists; ++i)
-      collections[kESDHists+kMCHists*4+i].Add(entry->fCorrelation[i]);
+      collections[3*kESDHists+kMCHists*4+i].Add(entry->fCorrelation[i]);
 
     for (Int_t i = 0; i < kCorrHists; ++i)
-      collections[kESDHists+kMCHists*4+kCorrHists+i].Add(entry->fMultiplicityESDCorrected[i]);
+      collections[3*kESDHists+kMCHists*4+kCorrHists+i].Add(entry->fMultiplicityESDCorrected[i]);
 
     count++;
   }
 
   for (Int_t i = 0; i < kESDHists; ++i)
+  {
     fMultiplicityESD[i]->Merge(&collections[i]);
-
+    fTriggeredEvents[i]->Merge(&collections[kESDHists+i]);
+    fNoVertexEvents[i]->Merge(&collections[2*kESDHists+i]);
+  }
+  
   for (Int_t i = 0; i < kMCHists; ++i)
   {
-    fMultiplicityVtx[i]->Merge(&collections[kESDHists+i]);
-    fMultiplicityMB[i]->Merge(&collections[kESDHists+kMCHists+i]);
-    fMultiplicityINEL[i]->Merge(&collections[kESDHists+kMCHists*2+i]);
-    fMultiplicityNSD[i]->Merge(&collections[kESDHists+kMCHists*3+i]);
+    fMultiplicityVtx[i]->Merge(&collections[3*kESDHists+i]);
+    fMultiplicityMB[i]->Merge(&collections[3*kESDHists+kMCHists+i]);
+    fMultiplicityINEL[i]->Merge(&collections[3*kESDHists+kMCHists*2+i]);
+    fMultiplicityNSD[i]->Merge(&collections[3*kESDHists+kMCHists*3+i]);
   }
 
   for (Int_t i = 0; i < kCorrHists; ++i)
-    fCorrelation[i]->Merge(&collections[kESDHists+kMCHists*4+i]);
+    fCorrelation[i]->Merge(&collections[3*kESDHists+kMCHists*4+i]);
 
   for (Int_t i = 0; i < kCorrHists; ++i)
-    fMultiplicityESDCorrected[i]->Merge(&collections[kESDHists+kMCHists*4+kCorrHists+i]);
+    fMultiplicityESDCorrected[i]->Merge(&collections[3*kESDHists+kMCHists*4+kCorrHists+i]);
 
   delete iter;
 
@@ -342,9 +496,15 @@ Bool_t AliMultiplicityCorrection::LoadHistograms(const Char_t* dir)
   TList oldObjects;
   oldObjects.SetOwner(1);
   for (Int_t i = 0; i < kESDHists; ++i)
+  {
     if (fMultiplicityESD[i])
       oldObjects.Add(fMultiplicityESD[i]);
-
+    if (fTriggeredEvents[i])
+      oldObjects.Add(fTriggeredEvents[i]);
+    if (fNoVertexEvents[i])
+      oldObjects.Add(fNoVertexEvents[i]);
+  }
+  
   for (Int_t i = 0; i < kMCHists; ++i)
   {
     if (fMultiplicityVtx[i])
@@ -368,7 +528,9 @@ Bool_t AliMultiplicityCorrection::LoadHistograms(const Char_t* dir)
   for (Int_t i = 0; i < kESDHists; ++i)
   {
     fMultiplicityESD[i] = dynamic_cast<TH2F*> (gDirectory->Get(fMultiplicityESD[i]->GetName()));
-    if (!fMultiplicityESD[i])
+    fTriggeredEvents[i] = dynamic_cast<TH1F*> (gDirectory->Get(fTriggeredEvents[i]->GetName()));
+    fNoVertexEvents[i] = dynamic_cast<TH1F*> (gDirectory->Get(fNoVertexEvents[i]->GetName()));
+    if (!fMultiplicityESD[i] || !fTriggeredEvents[i] || !fNoVertexEvents[i])
       success = kFALSE;
   }
 
@@ -414,11 +576,17 @@ void AliMultiplicityCorrection::SaveHistograms(const char* dir)
   gDirectory->cd(dir);
 
   for (Int_t i = 0; i < kESDHists; ++i)
+  {
     if (fMultiplicityESD[i])
     {
       fMultiplicityESD[i]->Write();
       fMultiplicityESD[i]->ProjectionY(Form("%s_px", fMultiplicityESD[i]->GetName()), 1, fMultiplicityESD[i]->GetNbinsX())->Write();
     }
+    if (fTriggeredEvents[i])
+      fTriggeredEvents[i]->Write();
+    if (fNoVertexEvents[i])
+      fNoVertexEvents[i]->Write();
+  }
 
   for (Int_t i = 0; i < kMCHists; ++i)
   {
@@ -505,6 +673,35 @@ void AliMultiplicityCorrection::FillMeasured(Float_t vtx, Int_t measured05, Int_
 }
 
 //____________________________________________________________________
+void AliMultiplicityCorrection::FillTriggeredEvent(Int_t measured05, Int_t measured10, Int_t measured14)
+{
+  //
+  // fills raw distribution of triggered events
+  //
+  
+  fTriggeredEvents[0]->Fill(measured05);
+  fTriggeredEvents[1]->Fill(measured10);
+  fTriggeredEvents[2]->Fill(measured14);
+}
+
+//____________________________________________________________________
+void AliMultiplicityCorrection::FillNoVertexEvent(Float_t vtx, Bool_t vertexReconstructed, Int_t generated05, Int_t generated10, Int_t generated14, Int_t measured05, Int_t measured10, Int_t measured14)
+{
+  //
+  // fills raw distribution of triggered events
+  //
+  
+  if (vtx > fgVtxRangeBegin[0] && vtx < fgVtxRangeEnd[0] && (!vertexReconstructed || measured05 == 0))
+    fNoVertexEvents[0]->Fill(generated05);
+    
+  if (vtx > fgVtxRangeBegin[1] && vtx < fgVtxRangeEnd[1] && (!vertexReconstructed || measured10 == 0))
+    fNoVertexEvents[1]->Fill(generated10);
+    
+  if (vtx > fgVtxRangeBegin[2] && vtx < fgVtxRangeEnd[2] && (!vertexReconstructed || measured14 == 0))
+    fNoVertexEvents[2]->Fill(generated14);
+}
+
+//____________________________________________________________________
 void AliMultiplicityCorrection::FillCorrection(Float_t vtx, Int_t generated05, Int_t generated10, Int_t generated14, Int_t generatedAll, Int_t measured05, Int_t measured10, Int_t measured14)
 {
   //
@@ -534,7 +731,14 @@ void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullP
   fMultiplicityESDCorrected[correlationID]->Sumw2();
 
   // project without under/overflow bins
-  fCurrentESD = fMultiplicityESD[inputRange]->ProjectionY("fCurrentESD", 1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins());
+  Int_t begin = 1;
+  Int_t end = fMultiplicityESD[inputRange]->GetXaxis()->GetNbins();
+  if (fVtxEnd > fVtxBegin)
+  {
+    begin = fVtxBegin;
+    end = fVtxEnd;
+  }
+  fCurrentESD = fMultiplicityESD[inputRange]->ProjectionY("fCurrentESD", begin, end);
   fCurrentESD->Sumw2();
 
   // empty under/overflow bins in x, otherwise Project3D takes them into account
@@ -548,6 +752,9 @@ void AliMultiplicityCorrection::SetupCurrentHists(Int_t inputRange, Bool_t fullP
     }
   }
 
+  if (fVtxEnd > fVtxBegin)
+    hist->GetXaxis()->SetRange(fVtxBegin, fVtxEnd);
+  
   fCurrentCorrelation = (TH2*) hist->Project3D("zy");
   fCurrentCorrelation->Sumw2();
   
@@ -582,15 +789,21 @@ TH1* AliMultiplicityCorrection::GetEfficiency(Int_t inputRange, EventType eventT
   // calculates efficiency for given event type
   //
   
+  TString name1;
+  name1.Form("divisor%d", inputRange);
+  
+  TString name2;
+  name2.Form("CurrentEfficiency%d", inputRange);
+  
   TH1* divisor = 0;
   switch (eventType)
   {
     case kTrVtx : break;
-    case kMB: divisor = fMultiplicityMB[inputRange]->ProjectionY("divisor", 1, fMultiplicityMB[inputRange]->GetNbinsX(), "e"); break;
-    case kINEL: divisor = fMultiplicityINEL[inputRange]->ProjectionY("divisor", 1, fMultiplicityINEL[inputRange]->GetNbinsX(), "e"); break;
-    case kNSD: divisor = fMultiplicityNSD[inputRange]->ProjectionY("divisor", 1, fMultiplicityNSD[inputRange]->GetNbinsX(), "e"); break;
+    case kMB: divisor = fMultiplicityMB[inputRange]->ProjectionY(name1, 1, fMultiplicityMB[inputRange]->GetNbinsX(), "e"); break;
+    case kINEL: divisor = fMultiplicityINEL[inputRange]->ProjectionY(name1, 1, fMultiplicityINEL[inputRange]->GetNbinsX(), "e"); break;
+    case kNSD: divisor = fMultiplicityNSD[inputRange]->ProjectionY(name1, 1, fMultiplicityNSD[inputRange]->GetNbinsX(), "e"); break;
   }
-  TH1* eff = fMultiplicityVtx[inputRange]->ProjectionY("CurrentEfficiency", 1, fMultiplicityVtx[inputRange]->GetNbinsX(), "e");
+  TH1* eff = fMultiplicityVtx[inputRange]->ProjectionY(name2, 1, fMultiplicityVtx[inputRange]->GetNbinsX(), "e");
   
   if (eventType == kTrVtx)
   {
@@ -604,20 +817,34 @@ TH1* AliMultiplicityCorrection::GetEfficiency(Int_t inputRange, EventType eventT
 }
 
 //____________________________________________________________________
-TH1* AliMultiplicityCorrection::GetTriggerEfficiency(Int_t inputRange)
+TH1* AliMultiplicityCorrection::GetTriggerEfficiency(Int_t inputRange, EventType eventType)
 {
   //
   // calculates efficiency for given event type
   //
 
-  TH1* divisor = fMultiplicityINEL[inputRange]->ProjectionY("divisor", 1, fMultiplicityINEL[inputRange]->GetNbinsX(), "e");
-  TH1* eff = fMultiplicityMB[inputRange]->ProjectionY("CurrentEfficiency", 1, fMultiplicityMB[inputRange]->GetNbinsX(), "e");
+  TString name1;
+  name1.Form("divisor%d", inputRange);
+  
+  TString name2;
+  name2.Form("CurrentEfficiency%d", inputRange);
+
+  TH1* divisor = 0;
+  switch (eventType)
+  {
+    case kTrVtx : AliFatal("Not supported!"); break;
+    case kMB: divisor =   fMultiplicityMB[inputRange]->ProjectionY  (name1, 1, fMultiplicityMB[inputRange]->GetNbinsX(), "e"); break;
+    case kINEL: divisor = fMultiplicityINEL[inputRange]->ProjectionY(name1, 1, fMultiplicityINEL[inputRange]->GetNbinsX(), "e"); break;
+    case kNSD: divisor =  fMultiplicityNSD[inputRange]->ProjectionY (name1, 1, fMultiplicityNSD[inputRange]->GetNbinsX(), "e"); break;
+  }
+  TH1* eff = fMultiplicityMB[inputRange]->ProjectionY(name2, 1, fMultiplicityMB[inputRange]->GetNbinsX(), "e");
+  
   eff->Divide(eff, divisor, 1, 1, "B");
   return eff;
 }
 
 //____________________________________________________________________
-Int_t AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t check, TH1* initialConditions)
+Int_t AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Int_t zeroBinEvents, Bool_t check, TH1* initialConditions, Bool_t errorAsBias)
 {
   //
   // correct spectrum using minuit chi2 method
@@ -627,23 +854,106 @@ Int_t AliMultiplicityCorrection::ApplyMinuitFit(Int_t inputRange, Bool_t fullPha
 
   Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
   
-  AliUnfolding::SetCreateOverflowBin(5);
+  //AliUnfolding::SetCreateOverflowBin(5);
   AliUnfolding::SetUnfoldingMethod(AliUnfolding::kChi2Minimization);
-  SetupCurrentHists(inputRange, fullPhaseSpace, eventType);
+  AliUnfolding::SetMinimumInitialValue(kTRUE, 0.1);
   
-  if (!initialConditions)
+  // use here only vtx efficiency (to MB sample) which is always needed if we use the 0 bin
+  SetupCurrentHists(inputRange, fullPhaseSpace, (eventType == kTrVtx) ? kTrVtx : kMB);
+  
+  // TODO set errors on measured with 0.5 * TMath::ChisquareQuantile(0.1, 20000)
+  // see PDG: Statistics / Poission or binomial data / Eq. 32.49a/b in 2004 edition
+  
+  Calculate0Bin(inputRange, eventType, zeroBinEvents);
+
+  Int_t resultCode = -1;
+  if (errorAsBias == kFALSE)
   {
-    initialConditions = (TH1*) fCurrentESD->Clone("initialConditions");
-    initialConditions->Scale(1.0 / initialConditions->Integral());
-    if (!check)
+    resultCode = AliUnfolding::Unfold(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID], check);
+  }
+  else
+  {
+    resultCode = AliUnfolding::UnfoldGetBias(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID]);
+  }
+  
+  // HACK store new vertex reco efficiency for bin 0, changing number of events with trigger and vertex in MC map
+  if (zeroBinEvents > 0)
+  {
+    Printf("WARNING: Stored vertex reco efficiency from unfolding for bin 0.");
+    fMultiplicityVtx[inputRange]->SetBinContent(1, 1, fMultiplicityMB[inputRange]->GetBinContent(1, 1) * fCurrentEfficiency->GetBinContent(1));
+  }
+  
+  // correct for the trigger bias if requested
+  if (eventType > kMB)
+  {
+    Printf("Applying trigger efficiency");
+    TH1* eff = GetTriggerEfficiency(inputRange, eventType);
+    for (Int_t i=1; i<=fMultiplicityESDCorrected[correlationID]->GetNbinsX(); i++)
     {
-      // set minimum value to prevent MINUIT just staying in the small value
-      for (Int_t i=1; i<=initialConditions->GetNbinsX(); i++)
-        initialConditions->SetBinContent(i, TMath::Max(initialConditions->GetBinContent(i), 1e-3));
+      fMultiplicityESDCorrected[correlationID]->SetBinContent(i, fMultiplicityESDCorrected[correlationID]->GetBinContent(i) / eff->GetBinContent(i));
+      fMultiplicityESDCorrected[correlationID]->SetBinError(i, fMultiplicityESDCorrected[correlationID]->GetBinError(i) / eff->GetBinContent(i));
     }
   }
+  
+  return resultCode;
+}
 
-  return AliUnfolding::Unfold(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID], check);
+//____________________________________________________________________
+void AliMultiplicityCorrection::Calculate0Bin(Int_t inputRange, EventType eventType, Int_t zeroBinEvents)
+{
+  // fills the 0 bin
+  
+  if (eventType == kTrVtx)
+    return;
+  
+  Double_t fractionEventsInVertexRange = fMultiplicityESD[inputRange]->Integral(1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins()) / fMultiplicityESD[inputRange]->Integral(0, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins() + 1);
+  
+  // difference of fraction that is inside the considered range between triggered events and events with vertex
+  // Extension to NSD not needed, INEL and NSD vertex distributions are nature-given and unbiased!
+  Double_t differenceVtxDist = (fMultiplicityINEL[inputRange]->Integral(1, fMultiplicityINEL[inputRange]->GetXaxis()->GetNbins()) / fMultiplicityINEL[inputRange]->Integral(0, fMultiplicityINEL[inputRange]->GetXaxis()->GetNbins() + 1)) / (fMultiplicityVtx[inputRange]->Integral(1, fMultiplicityVtx[inputRange]->GetXaxis()->GetNbins()) / fMultiplicityVtx[inputRange]->Integral(0, fMultiplicityVtx[inputRange]->GetXaxis()->GetNbins() + 1));
+
+  Printf("Enabling 0 bin estimate for triggered events without vertex.");
+  Printf("  Events in 0 bin: %d", zeroBinEvents);
+  Printf("  Fraction in range: %.1f%%", fractionEventsInVertexRange * 100);
+  Printf("  Difference Vtx Dist: %f", differenceVtxDist);
+  
+  AliUnfolding::SetNotFoundEvents(zeroBinEvents * fractionEventsInVertexRange * differenceVtxDist);
+}
+
+//____________________________________________________________________
+void AliMultiplicityCorrection::FixTriggerEfficiencies(Int_t start)
+{
+  //
+  // sets trigger and vertex efficiencies to 1 for large multiplicities where no event was simulated
+  //
+  
+  for (Int_t etaRange = 0; etaRange < kMCHists; etaRange++)
+  {
+    for (Int_t i = 1; i <= fMultiplicityINEL[etaRange]->GetNbinsY(); i++)
+    {
+      if (fMultiplicityINEL[etaRange]->GetYaxis()->GetBinCenter(i) < start)
+        continue;
+        
+      if (fMultiplicityINEL[etaRange]->GetBinContent(1, i) > 0)
+        continue;
+        
+      fMultiplicityINEL[etaRange]->SetBinContent(1, i, 1);
+      fMultiplicityNSD[etaRange]->SetBinContent(1, i, 1);
+      fMultiplicityMB[etaRange]->SetBinContent(1, i, 1);
+      fMultiplicityVtx[etaRange]->SetBinContent(1, i, 1);
+    }
+  }
+}
+
+//____________________________________________________________________
+Float_t AliMultiplicityCorrection::GetFraction0Generated(Int_t inputRange)
+{
+  //
+  // returns the fraction of events that have 0 generated particles in the given range among all events without vertex OR 0 tracklets
+  //
+  
+  TH1* multMB = GetNoVertexEvents(inputRange);
+  return multMB->GetBinContent(1) / multMB->Integral();
 }
 
 //____________________________________________________________________
@@ -723,12 +1033,9 @@ void AliMultiplicityCorrection::DrawHistograms()
 void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRange, Bool_t fullPhaseSpace, Bool_t /*normalizeESD*/, TH1* mcHist, Bool_t simple, EventType eventType)
 {
   // draw comparison plots
-
-
-  //mcHist->Rebin(2);
-
+  
   Int_t esdCorrId = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
-
+  
   TString tmpStr;
   tmpStr.Form("%s_DrawComparison_%d", name, esdCorrId);
 
@@ -737,111 +1044,54 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
     printf("ERROR. Unfolded histogram is empty\n");
     return;
   }
-
-  //regain measured distribution used for unfolding, because the bins at high mult. were modified in SetupCurrentHists
-  fCurrentESD = fMultiplicityESD[esdCorrId]->ProjectionY("fCurrentESD", 1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins());
+  
+  Int_t begin = 1;
+  Int_t end = fMultiplicityESD[inputRange]->GetXaxis()->GetNbins();
+  if (fVtxEnd > fVtxBegin)
+  {
+    begin = fVtxBegin;
+    end = fVtxEnd;
+  }
+  fCurrentESD = fMultiplicityESD[esdCorrId]->ProjectionY("fCurrentESD", begin, end);
   fCurrentESD->Sumw2();
-  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
 
-  // normalize unfolded result to 1
-  fMultiplicityESDCorrected[esdCorrId]->Scale(1.0 / fMultiplicityESDCorrected[esdCorrId]->Integral());
-
-  //fCurrentESD->Scale(mcHist->Integral(2, 200));
-
-  //new TCanvas;
-  /*TH1* ratio = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("ratio");
-  ratio->Divide(mcHist);
-  ratio->Draw("HIST");
-  ratio->Fit("pol0", "W0", "", 20, 120);
-  Float_t scalingFactor = ratio->GetFunction("pol0")->GetParameter(0);
-  delete ratio;
-  mcHist->Scale(scalingFactor);*/
-
-  // find bin with <= 50 entries. this is used as limit for the chi2 calculation
-  Int_t mcBinLimit = 0;
-  for (Int_t i=20; i<mcHist->GetNbinsX(); ++i)
-  {
-    if (mcHist->GetBinContent(i) > 50)
-    {
-      mcBinLimit = i;
-    }
-    else
-      break;
-  }
-  Printf("AliMultiplicityCorrection::DrawComparison: MC bin limit is %d", mcBinLimit);
-  
-  // scale to 1
   mcHist->Sumw2();
-  if (mcHist->Integral() > 0)
-    mcHist->Scale(1.0 / mcHist->Integral());
-
-  // calculate residual
-
-  // for that we convolute the response matrix with the gathered result
-  // if normalizeESD is not set, the histogram is already normalized, this needs to be passed to CalculateMultiplicityESD
-  TH1* tmpESDEfficiencyRecorrected = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("tmpESDEfficiencyRecorrected");
-  
-  // undo trigger, vertex efficiency correction
-  fCurrentEfficiency = GetEfficiency(inputRange, eventType);
-  tmpESDEfficiencyRecorrected->Multiply(fCurrentEfficiency);
-  
-  TH2* convoluted = CalculateMultiplicityESD(tmpESDEfficiencyRecorrected, esdCorrId);
-  TH1* convolutedProj = convoluted->ProjectionY("convolutedProj", -1, -1, "e");
-  if (convolutedProj->Integral() > 0)
+  Int_t mcMax = 0;
+  for (Int_t i=5; i<=mcHist->GetNbinsX(); ++i)
   {
-    convolutedProj->Scale(1.0 / convolutedProj->Integral());
+    if (mcHist->GetBinContent(i) > 0)
+      mcMax = mcHist->GetXaxis()->GetBinCenter(i) + 2;
   }
-  else
-    printf("ERROR: convolutedProj is empty. Something went wrong calculating the convoluted histogram.\n");
-
-  TH1* residual = (TH1*) convolutedProj->Clone("residual");
-  residual->SetTitle("Residuals;Ntracks;(folded unfolded measured - measured) / e");
-
-  residual->Add(fCurrentESD, -1);
-  //residual->Divide(residual, fCurrentESD, 1, 1, "B");
+  if (mcMax == 0)
+  {
+    for (Int_t i=5; i<=fMultiplicityESDCorrected[esdCorrId]->GetNbinsX(); ++i)
+      if (fMultiplicityESDCorrected[esdCorrId]->GetBinContent(i) > 1)
+        mcMax = fMultiplicityESDCorrected[esdCorrId]->GetXaxis()->GetBinCenter(i) + 2;
+  }  
+  Printf("AliMultiplicityCorrection::DrawComparison: MC bin limit is %d", mcMax);
+  // calculate residual
+  Float_t tmp;
+  TH1* convolutedProj = (TH1*) GetConvoluted(esdCorrId, eventType)->Clone("convolutedProj");
+  TH1* residual = GetResiduals(esdCorrId, eventType, tmp);
 
   TH1* residualHist = new TH1F("residualHist", "residualHist", 51, -5, 5);
 
-  // find bin limit
-  Int_t lastBin = 0;
-  for (Int_t i=1; i<=fCurrentESD->GetNbinsX(); ++i)
-  {
-    if (fCurrentESD->GetBinContent(i) <= 5)
-    {
-      lastBin = i;
-      break;
-    }
-  }
-  
-  // TODO fix errors
   Float_t chi2 = 0;
-  for (Int_t i=1; i<=residual->GetNbinsX(); ++i)
+  for (Int_t i=1; i<=TMath::Min(residual->GetNbinsX(), 75); ++i)
   {
-    if (fCurrentESD->GetBinError(i) > 0)
-    {
-      Float_t value = residual->GetBinContent(i) / fCurrentESD->GetBinError(i);
-      if (i > 1 && i <= lastBin)
-        chi2 += value * value;
-      Printf("%d --> %f (%f)", i, value * value, chi2);
-      residual->SetBinContent(i, value);
-      residualHist->Fill(value);
-    }
-    else
-    {
-      //printf("Residual bin %d set to 0\n", i);
-      residual->SetBinContent(i, 0);
-    }
+    Float_t value = residual->GetBinContent(i);
+    // TODO has to get a parameter (used in Chi2Function, GetResiduals, and here)
+    if (i > 1)
+      chi2 += value * value;
+    Printf("%d --> %f (%f)", i, value * value, chi2);
+    residualHist->Fill(value);
     convolutedProj->SetBinError(i, 0);
-    residual->SetBinError(i, 0);
   }
   fLastChi2Residuals = chi2;
 
-  new TCanvas; residualHist->DrawCopy();
+  //new TCanvas; residualHist->DrawCopy();
 
-  //residualHist->Fit("gaus", "N");
-  //delete residualHist;
-
-  printf("Difference (Residuals) is %f for bin 2-%d\n", fLastChi2Residuals, lastBin);
+  printf("Difference (Residuals) is %f\n", fLastChi2Residuals);
 
   TCanvas* canvas1 = 0;
   if (simple)
@@ -863,31 +1113,33 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   canvas1->cd(1)->SetLeftMargin(0.12);
   canvas1->cd(1)->SetBottomMargin(0.12);
   TH1* proj = (TH1*) mcHist->Clone("proj");
+  if (proj->GetEntries() > 0)
+    AliPWG0Helper::NormalizeToBinWidth(proj);
 
-  // normalize without 0 bin
-  proj->Scale(1.0 / proj->Integral(2, proj->GetNbinsX()));
-  Printf("Normalized without 0 bin!");
-  proj->GetXaxis()->SetRangeUser(0, 200);
+  proj->GetXaxis()->SetRangeUser(0, mcMax);
   proj->GetYaxis()->SetTitleOffset(1.4);
-  //proj->SetLabelSize(0.05, "xy");
-  //proj->SetTitleSize(0.05, "xy");
   proj->SetTitle(Form(";True multiplicity in |#eta| < %.1f;Entries", (inputRange+1)*0.5));
   proj->SetStats(kFALSE);
 
+  fMultiplicityESDCorrected[esdCorrId]->GetXaxis()->SetRangeUser(0, mcMax);
+  fMultiplicityESDCorrected[esdCorrId]->GetYaxis()->SetRangeUser(0.1, fMultiplicityESDCorrected[esdCorrId]->GetMaximum() * 1.5);
+  fMultiplicityESDCorrected[esdCorrId]->GetYaxis()->SetTitleOffset(1.4);
+  fMultiplicityESDCorrected[esdCorrId]->SetTitle(Form(";True multiplicity in |#eta| < %.1f;Entries", (inputRange+1)*0.5));
+  fMultiplicityESDCorrected[esdCorrId]->SetStats(kFALSE);
+  
   fMultiplicityESDCorrected[esdCorrId]->SetLineColor(2);
   fMultiplicityESDCorrected[esdCorrId]->SetMarkerColor(2);
-  //fMultiplicityESDCorrected[esdCorrId]->SetMarkerStyle(5);
-  // normalize without 0 bin
-  fMultiplicityESDCorrected[esdCorrId]->Scale(1.0 / fMultiplicityESDCorrected[esdCorrId]->Integral(2, fMultiplicityESDCorrected[esdCorrId]->GetNbinsX()));
-  Printf("Normalized without 0 bin!");
 
+  TH1* esdCorrected = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("esdCorrected");
+  AliPWG0Helper::NormalizeToBinWidth(esdCorrected);
+  
   if (proj->GetEntries() > 0) {
     proj->DrawCopy("HIST");
-    fMultiplicityESDCorrected[esdCorrId]->DrawCopy("SAME HIST E");
+    esdCorrected->DrawCopy("SAME HIST E");
   }
   else
-    fMultiplicityESDCorrected[esdCorrId]->DrawCopy("HIST E");
-
+    esdCorrected->DrawCopy("HIST E");
+    
   gPad->SetLogy();
 
   TLegend* legend = new TLegend(0.3, 0.8, 0.93, 0.93);
@@ -896,7 +1148,6 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   legend->SetFillColor(0);
   legend->SetTextSize(0.04);
   legend->Draw();
-  // unfortunately does not work. maybe a bug? --> legend->SetTextSizePixels(14);
 
   canvas1->cd(2);
   canvas1->cd(2)->SetGridx();
@@ -907,20 +1158,15 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   canvas1->cd(2)->SetBottomMargin(0.12);
 
   gPad->SetLogy();
-  fCurrentESD->GetXaxis()->SetRangeUser(0, 200);
-  //fCurrentESD->SetLineColor(2);
+  fCurrentESD->GetXaxis()->SetRangeUser(0, mcMax);
   fCurrentESD->SetTitle(Form(";Measured multiplicity in |#eta| < %.1f;Entries", (inputRange+1)*0.5));
   fCurrentESD->SetStats(kFALSE);
   fCurrentESD->GetYaxis()->SetTitleOffset(1.4);
-  //fCurrentESD->SetLabelSize(0.05, "xy");
-  //fCurrentESD->SetTitleSize(0.05, "xy");
   fCurrentESD->DrawCopy("HIST E");
 
   convolutedProj->SetLineColor(2);
   convolutedProj->SetMarkerColor(2);
   convolutedProj->SetMarkerStyle(5);
-  //proj2->SetMarkerColor(2);
-  //proj2->SetMarkerStyle(5);
   convolutedProj->DrawCopy("HIST SAME P");
 
   legend = new TLegend(0.3, 0.8, 0.93, 0.93);
@@ -930,224 +1176,28 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   legend->SetTextSize(0.04);
   legend->Draw();
 
-  //TH1* diffMCUnfolded = dynamic_cast<TH1*> (proj->Clone("diffMCUnfolded"));
-  //diffMCUnfolded->Add(fMultiplicityESDCorrected[esdCorrId], -1);
-
-  /*Float_t chi2 = 0;
-  Float_t chi = 0;
-  fLastChi2MCLimit = 0;
-  Int_t limit = 0;
-  for (Int_t i=2; i<=200; ++i)
-  {
-    if (proj->GetBinContent(i) != 0)
-    {
-      Float_t value = (proj->GetBinContent(i) - fMultiplicityESDCorrected[esdCorrId]->GetBinContent(i)) / proj->GetBinContent(i);
-      chi2 += value * value;
-      chi += TMath::Abs(value);
-
-      //printf("%d %f\n", i, chi);
-
-      if (chi2 < 0.2)
-        fLastChi2MCLimit = i;
-
-      if (chi < 3)
-        limit = i;
-
-    }
-  }*/
-
-  /*chi2 = 0;
-  Float_t chi = 0;
-  Int_t limit = 0;
-  for (Int_t i=1; i<=diffMCUnfolded->GetNbinsX(); ++i)
-  {
-    if (fMultiplicityESDCorrected[esdCorrId]->GetBinError(i) > 0)
-    {
-      Double_t value = diffMCUnfolded->GetBinContent(i) / fMultiplicityESDCorrected[esdCorrId]->GetBinError(i);
-      if (value > 1e8)
-        value = 1e8; //prevent arithmetic exception
-      else if (value < -1e8)
-        value = -1e8;
-      if (i > 1)
-      {
-        chi2 += value * value;
-        chi += TMath::Abs(value);
-      }
-      diffMCUnfolded->SetBinContent(i, value);
-    }
-    else
-    {
-      //printf("diffMCUnfolded bin %d set to 0\n", i);
-      diffMCUnfolded->SetBinContent(i, 0);
-    }
-    if (chi2 < 1000)
-      fLastChi2MCLimit = i;
-    if (chi < 1000)
-      limit = i;
-    if (i == 150)
-      fLastChi2MC = chi2;
-  }
-
-  printf("limits %d %d\n", fLastChi2MCLimit, limit);
-  fLastChi2MCLimit = limit;
-
-  printf("Difference (from MC) is %f for bin 2-150. Limit is %d.\n", fLastChi2MC, fLastChi2MCLimit);*/
-
   if (!simple)
   {
-    /*canvas1->cd(3);
-
-    diffMCUnfolded->SetTitle("#chi^{2};Npart;(MC - Unfolded) / e(unfolded)");
-    //diffMCUnfolded->GetYaxis()->SetRangeUser(-20, 20);
-    diffMCUnfolded->GetXaxis()->SetRangeUser(0, 200);
-    diffMCUnfolded->DrawCopy("HIST");
-
-    TH1F* fluctuation = new TH1F("fluctuation", "fluctuation", 20, -5, 5);
-    for (Int_t i=20; i<=diffMCUnfolded->GetNbinsX(); ++i)
-      fluctuation->Fill(diffMCUnfolded->GetBinContent(i));
-
-    //new TCanvas; fluctuation->DrawCopy();
-    delete fluctuation;*/
-
-    /*TLegend* legend = new TLegend(0.6, 0.7, 0.85, 0.85);
-    legend->AddEntry(fMultiplicityESDCorrected, "ESD corrected");
-    legend->AddEntry(fMultiplicityMC, "MC");
-    legend->AddEntry(fMultiplicityESD, "ESD");
-    legend->Draw();*/
-
     canvas1->cd(4);
     residual->GetYaxis()->SetRangeUser(-5, 5);
-    residual->GetXaxis()->SetRangeUser(0, 200);
+    residual->GetXaxis()->SetRangeUser(0, mcMax);
+    residual->SetStats(kFALSE);
     residual->DrawCopy();
 
     canvas1->cd(5);
-
     TH1* ratio = (TH1*) fMultiplicityESDCorrected[esdCorrId]->Clone("ratio");
     ratio->Divide(mcHist);
     ratio->SetTitle("Ratio;true multiplicity;Unfolded / MC");
     ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
-    ratio->GetXaxis()->SetRangeUser(0, 200);
+    ratio->GetXaxis()->SetRangeUser(0, mcMax);
     ratio->SetStats(kFALSE);
     ratio->Draw("HIST");
-
-    Double_t ratioChi2 = 0;
-    fRatioAverage = 0;
-    fLastChi2MCLimit = 0;
-    for (Int_t i=2; i<=150; ++i)
-    {
-      Float_t value = ratio->GetBinContent(i) - 1;
-      if (value > 1e8)
-        value = 1e8; //prevent arithmetic exception
-      else if (value < -1e8)
-        value = -1e8;
-
-      ratioChi2 += value * value;
-      fRatioAverage += TMath::Abs(value);
-
-      if (ratioChi2 < 0.1)
-        fLastChi2MCLimit = i;
-    }
-    fRatioAverage /= 149;
-
-    printf("Sum over (ratio-1)^2 (2..150) is %f; average of |ratio-1| is %f\n", ratioChi2, fRatioAverage);
-    // TODO FAKE
-    fLastChi2MC = ratioChi2;
-
-    // FFT of ratio
-    canvas1->cd(6);
-    const Int_t kFFT = 128;
-    Double_t fftReal[kFFT];
-    Double_t fftImag[kFFT];
-
-    for (Int_t i=0; i<kFFT; ++i)
-    {
-      fftReal[i] = ratio->GetBinContent(i+1+10);
-      // test: ;-)
-      //fftReal[i] = cos(TMath::Pi() * 5 * 2 * i / 128);
-      fftImag[i] = 0;
-    }
-
-    FFT(-1, TMath::Nint(TMath::Log(kFFT) / TMath::Log(2)), fftReal, fftImag);
-
-    TH1* fftResult = (TH1*) ratio->Clone("fftResult");
-    fftResult->SetTitle("FFT;true multiplicity;coeff. (10...137)");
-    TH1* fftResult2 = (TH1*) ratio->Clone("fftResult2");
-    TH1* fftResult3 = (TH1*) ratio->Clone("fftResult3");
-    fftResult->Reset();
-    fftResult2->Reset();
-    fftResult3->Reset();
-    fftResult->GetYaxis()->UnZoom();
-    fftResult2->GetYaxis()->UnZoom();
-    fftResult3->GetYaxis()->UnZoom();
-
-    //Printf("AFTER FFT");
-    for (Int_t i=0; i<kFFT; ++i)
-    {
-      //Printf("%d: %f", i, fftReal[i]);
-      fftResult->SetBinContent(i+1, fftReal[i]);
-      /*if (i != 0 && TMath::Abs(fftReal[i]) > 0.5)
-      {
-        Printf("Nulled %d", i);
-        fftReal[i] = 0;
-      }*/
-    }
-
-    fftResult->SetLineColor(1);
-    fftResult->DrawCopy();
-
-
-    //Printf("IMAG");
-    for (Int_t i=0; i<kFFT; ++i)
-    {
-      //Printf("%d: %f", i, fftImag[i]);
-      fftResult2->SetBinContent(i+1, fftImag[i]);
-
-      fftResult3->SetBinContent(i+1, TMath::Sqrt(fftReal[i] * fftReal[i] + fftImag[i] * fftImag[i]));
-    }
-
-    fftResult2->SetLineColor(2);
-    fftResult2->DrawCopy("SAME");
-
-    fftResult3->SetLineColor(4);
-    fftResult3->DrawCopy("SAME");
-
-    for (Int_t i=1; i<kFFT - 1; ++i)
-    {
-      if (TMath::Sqrt(fftReal[i] * fftReal[i] + fftImag[i] * fftImag[i]) > 3)
-      {
-        fftReal[i-1] = 0;
-        fftReal[i] = 0;
-        fftReal[i+1] = 0;
-        fftImag[i-1] = 0;
-        fftImag[i] = 0;
-        fftImag[i+1] = 0;
-        //fftReal[i] = (fftReal[i-1] + fftReal[i+1]) / 2;
-        //fftImag[i]  = (fftImag[i-1] + fftImag[i+1]) / 2;
-        //Printf("Nulled %d to %f %f", i, fftReal[i], fftImag[i]);
-      }
-    }
-
-    FFT(1, TMath::Nint(TMath::Log(kFFT) / TMath::Log(2)), fftReal, fftImag);
-
-    TH1* fftResult4 = (TH1*) fftResult3->Clone("fftResult4");
-    fftResult4->Reset();
-
-    //Printf("AFTER BACK-TRAFO");
-    for (Int_t i=0; i<kFFT; ++i)
-    {
-      //Printf("%d: %f", i, fftReal[i]);
-      fftResult4->SetBinContent(i+1+10, fftReal[i]);
-    }
-
-    canvas1->cd(5);
-    fftResult4->SetLineColor(4);
-    fftResult4->DrawCopy("SAME");
 
     // plot (MC - Unfolded) / error (MC)
     canvas1->cd(3);
 
     TH1* diffMCUnfolded2 = dynamic_cast<TH1*> (proj->Clone("diffMCUnfolded2"));
-    diffMCUnfolded2->Add(fMultiplicityESDCorrected[esdCorrId], -1);
+    diffMCUnfolded2->Add(esdCorrected, -1);
 
     Int_t ndfQual[kQualityRegions];
     for (Int_t region=0; region<kQualityRegions; ++region)
@@ -1155,7 +1205,6 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
       fQuality[region] = 0;
       ndfQual[region] = 0;
     }
-
 
     Double_t newChi2 = 0;
     Double_t newChi2Limit150 = 0;
@@ -1167,7 +1216,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
       {
         value = diffMCUnfolded2->GetBinContent(i) / proj->GetBinError(i);
         newChi2 += value * value;
-        if (i > 1 && i <= mcBinLimit)
+        if (i > 1 && i <= mcMax)
           newChi2Limit150 += value * value;
         ++ndf;
 
@@ -1190,24 +1239,29 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
       Printf("Quality parameter %d (%d <= mult <= %d) is %f with %d df", region, fgQualityRegionsB[region], fgQualityRegionsE[region], fQuality[region], ndfQual[region]);
     }
 
-    if (mcBinLimit > 1)
+    if (mcMax > 1)
     {
-      // TODO another FAKE
-      fLastChi2MC = newChi2Limit150 / (mcBinLimit - 1);
-      Printf("Chi2 (2..%d) from (MC - Unfolded) / e(MC) is: %.2f ndf is %d --> chi2 / ndf = %.2f", mcBinLimit, newChi2Limit150, mcBinLimit - 1, fLastChi2MC);
+      fLastChi2MC = newChi2Limit150 / (mcMax - 1);
+      Printf("Chi2 (2..%d) from (MC - Unfolded) / e(MC) is: %.2f ndf is %d --> chi2 / ndf = %.2f", mcMax, newChi2Limit150, mcMax - 1, fLastChi2MC);
     }
     else
       fLastChi2MC = -1;
 
     Printf("Chi2 (full range) from (MC - Unfolded) / e(MC) is: %.2f ndf is %d --> chi2 / ndf = %.2f", newChi2, ndf, ((ndf > 0) ? newChi2 / ndf : -1));
 
-    diffMCUnfolded2->SetTitle("#chi^{2};Npart;(MC - Unfolded) / e(MC)");
+    diffMCUnfolded2->SetTitle("#chi^{2};true multiplicity;(MC - Unfolded) / e(MC)");
     diffMCUnfolded2->GetYaxis()->SetRangeUser(-5, 5);
-    diffMCUnfolded2->GetXaxis()->SetRangeUser(0, 200);
+    diffMCUnfolded2->GetXaxis()->SetRangeUser(0, mcMax);
     diffMCUnfolded2->DrawCopy("HIST");
+    
+    canvas1->cd(6);
+    // draw penalty factor
+    
+    TH1* penalty = AliUnfolding::GetPenaltyPlot(fMultiplicityESDCorrected[esdCorrId]);
+    penalty->SetStats(0);
+    penalty->GetXaxis()->SetRangeUser(0, mcMax);
+    penalty->DrawCopy("HIST");
   }
-
-  canvas1->SaveAs(Form("%s.gif", canvas1->GetName()));
 }
 
 //____________________________________________________________________
@@ -1391,7 +1445,7 @@ TH1* AliMultiplicityCorrection::CalculateStdDev(TH1** results, Int_t max)
 }
 
 //____________________________________________________________________
-TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, const TH1* compareTo)
+TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Int_t zeroBinEvents, Bool_t randomizeMeasured, Bool_t randomizeResponse, const TH1* compareTo)
 {
   //
   // evaluates the uncertainty that arises from the non-infinite statistics in the response matrix
@@ -1409,10 +1463,14 @@ TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType 
   gRandom->SetSeed(0);
   
   if (methodType == AliUnfolding::kChi2Minimization)
-    AliUnfolding::SetCreateOverflowBin(5);
+  {
+    Calculate0Bin(inputRange, eventType, zeroBinEvents);
+    AliUnfolding::SetMinimumInitialValue(kTRUE, 0.1);
+  }
+  
   AliUnfolding::SetUnfoldingMethod(methodType);
 
-  const Int_t kErrorIterations = 150;
+  const Int_t kErrorIterations = 20;
 
   TH1* maxError = 0;
   TH1* firstResult = 0;
@@ -1493,7 +1551,10 @@ TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType 
       Int_t returnCode = AliUnfolding::Unfold(fCurrentCorrelation, fCurrentEfficiency, measured, 0, result);
 
       if (returnCode != 0)
-        return 0;
+      {
+	n--;
+	continue;
+      }
     }
 
     // normalize
@@ -1628,17 +1689,21 @@ TH1* AliMultiplicityCorrection::StatisticalUncertainty(AliUnfolding::MethodType 
     fMultiplicityESDCorrected[correlationID]->SetBinContent(i, firstResult->GetBinContent(i));
 
   for (Int_t i=1; i<=fMultiplicityESDCorrected[correlationID]->GetNbinsX(); ++i)
-    fMultiplicityESDCorrected[correlationID]->SetBinError(i, maxError->GetBinContent(i) * fMultiplicityESDCorrected[correlationID]->GetBinContent(i));
+    fMultiplicityESDCorrected[correlationID]->SetBinError(i, standardDeviation->GetBinContent(i) * fMultiplicityESDCorrected[correlationID]->GetBinContent(i));
 
   return standardDeviation;
 }
 
 //____________________________________________________________________
-void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar, Int_t nIterations, TH1* initialConditions, Bool_t determineError)
+void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar, Int_t nIterations, TH1* initialConditions, Int_t determineError)
 {
   //
   // correct spectrum using bayesian method
   //
+  // determineError: 
+  //   0 = no errors
+  //   1 = from randomizing
+  //   2 = with UnfoldGetBias
 
   // initialize seed with current time
   gRandom->SetSeed(0);
@@ -1676,10 +1741,19 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
 
   AliUnfolding::SetBayesianParameters(regPar, nIterations);
   AliUnfolding::SetUnfoldingMethod(AliUnfolding::kBayesian);
-  if (AliUnfolding::Unfold(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID]) != 0)
+  
+  if (determineError <= 1)
+  {
+    if (AliUnfolding::Unfold(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID]) != 0)
+      return;
+  }
+  else if (determineError == 2)
+  {
+    AliUnfolding::UnfoldGetBias(fCurrentCorrelation, fCurrentEfficiency, fCurrentESD, initialConditions, fMultiplicityESDCorrected[correlationID]);
     return;
+  }  
 
-  if (!determineError)
+  if (determineError == 0)
   {
     Printf("AliMultiplicityCorrection::ApplyBayesianMethod: WARNING: No errors calculated.");
     return;
@@ -1692,7 +1766,7 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
 
   const Int_t kErrorIterations = 20;
 
-  printf("Spectrum unfolded. Determining error (%d iterations)...\n", kErrorIterations);
+  Printf("Spectrum unfolded. Determining error (%d iterations)...", kErrorIterations);
 
   TH1* randomized = (TH1*) fCurrentESD->Clone("randomized");
   TH1* resultArray[kErrorIterations+1];
@@ -1710,9 +1784,10 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
     TH1* result2 = (TH1*) fMultiplicityESDCorrected[correlationID]->Clone("result2");
     result2->Reset();
     if (AliUnfolding::Unfold(fCurrentCorrelation, fCurrentEfficiency, randomized, initialConditions, result2) != 0)
-      return;
-
-    result2->Scale(1.0 / result2->Integral());
+    {
+      n--;
+      continue;
+    }
 
     resultArray[n+1] = result2;
   }
@@ -1724,8 +1799,12 @@ void AliMultiplicityCorrection::ApplyBayesianMethod(Int_t inputRange, Bool_t ful
   for (Int_t n=0; n<kErrorIterations; ++n)
     delete resultArray[n+1];
 
+  Printf("Comparing bias and error:");
   for (Int_t i=1; i<=fMultiplicityESDCorrected[correlationID]->GetNbinsX(); ++i)
+  {
+    Printf("Bin %d: Content: %f Error: %f Bias: %f", i, fMultiplicityESDCorrected[correlationID]->GetBinContent(i), error->GetBinContent(i) * fMultiplicityESDCorrected[correlationID]->GetBinContent(i), fMultiplicityESDCorrected[correlationID]->GetBinError(i));
     fMultiplicityESDCorrected[correlationID]->SetBinError(i, error->GetBinContent(i) * fMultiplicityESDCorrected[correlationID]->GetBinContent(i));
+  }
 
   delete error;
 }
@@ -1953,12 +2032,73 @@ void AliMultiplicityCorrection::ApplyGaussianMethod(Int_t inputRange, Bool_t ful
 }
 
 //____________________________________________________________________
+TH1* AliMultiplicityCorrection::GetConvoluted(Int_t i, EventType eventType)
+{
+  // convolutes the corrected histogram i with the response matrix
+  
+  TH1* corrected = (TH1*) fMultiplicityESDCorrected[i]->Clone("corrected");
+  
+  // undo efficiency correction (hist must not be deleted, is reused)
+  TH1* efficiency = GetEfficiency(i, eventType);
+  //new TCanvas; efficiency->DrawCopy();
+  corrected->Multiply(efficiency);
+  
+  TH2* convoluted = CalculateMultiplicityESD(corrected, i);
+  TH1* convolutedProj = convoluted->ProjectionY("GetConvoluted_convolutedProj", 1, convoluted->GetNbinsX());
+  
+  delete convoluted;
+  delete corrected;
+  
+  return convolutedProj;
+}
+
+//____________________________________________________________________
+TH1* AliMultiplicityCorrection::GetResiduals(Int_t i, EventType eventType, Float_t& residualSum)
+{
+  // creates the residual histogram from the corrected histogram i corresponding to an eventType event sample using the corresponding correlation matrix
+  // residual is : M - UT / eM
+  // residualSum contains the squared sum of the residuals
+  
+  TH1* corrected = (TH1*) fMultiplicityESDCorrected[i]->Clone("corrected");
+  TH1* convolutedProj = GetConvoluted(i, eventType);
+  
+  Int_t begin = 1;
+  Int_t end = fMultiplicityESD[i]->GetNbinsX();
+  if (fVtxEnd > fVtxBegin)
+  {
+    begin = fVtxBegin;
+    end = fVtxEnd;
+  }
+  TH1* measuredProj = fMultiplicityESD[i]->ProjectionY("measuredProj", begin, end);
+  
+  TH1* residuals = (TH1*) measuredProj->Clone("GetResiduals_residuals");
+  residuals->SetTitle(";measured multiplicity;residuals (M-Ut)/e");
+  residuals->Add(convolutedProj, -1);
+  
+  residualSum = 0;
+  for (Int_t i=1; i<=residuals->GetNbinsX(); i++)
+  {
+    if (measuredProj->GetBinContent(i) > 0)
+      residuals->SetBinContent(i, residuals->GetBinContent(i) / TMath::Sqrt(measuredProj->GetBinContent(i)));
+    residuals->SetBinError(i, 0);
+    
+    if (i > 1)
+      residualSum += residuals->GetBinContent(i) * residuals->GetBinContent(i);
+  }
+  
+  delete corrected;
+  delete convolutedProj;
+  delete measuredProj;
+  
+  return residuals;
+}
+
+//____________________________________________________________________
 TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t correlationMap)
 {
   // runs the distribution given in inputMC through the response matrix identified by
   // correlationMap and produces a measured distribution
   // although it is a TH2F the vertex axis is not used at the moment and all entries are filled in mid-vertex
-  // if normalized is set, inputMC is expected to be normalized to the bin width
 
   if (!inputMC)
     return 0;
@@ -1977,6 +2117,9 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
     }
   }
 
+  if (fVtxEnd > fVtxBegin)
+    hist->GetXaxis()->SetRange(fVtxBegin, fVtxEnd);
+  
   TH2* corr = (TH2*) hist->Project3D("zy");
   //corr->Rebin2D(2, 1);
   corr->Sumw2();
@@ -2010,6 +2153,7 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
       Int_t mcGenBin = inputMC->GetXaxis()->FindBin(corr->GetXaxis()->GetBinCenter(gen));
 
       measured += inputMC->GetBinContent(mcGenBin) * corr->GetBinContent(gen, meas);
+      // TODO fix error
       error += inputMC->GetBinError(mcGenBin) * corr->GetBinContent(gen, meas);
     }
 

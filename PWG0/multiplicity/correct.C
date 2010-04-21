@@ -4,6 +4,21 @@
 // script to correct the multiplicity spectrum + helpers
 //
 
+Bool_t is900GeV = 0;
+Bool_t is2360TeV = 0;
+
+// 900 GeV, MC
+//const Int_t kBinLimits[]   = { 42, 57, 60 };
+//const Int_t kTrustLimits[] = { 26, 42, 54 };
+
+// 2.36 TeV
+//const Int_t kBinLimits[]   = { 43, 67, 83 };
+//const Int_t kTrustLimits[] = { 33, 57, 73 };
+
+// 7 TeV
+const Int_t kBinLimits[]   = { 60, 120, 60 };
+const Int_t kTrustLimits[] = { 26, 70, 54 };
+
 void SetTPC()
 {
   gSystem->Load("libPWG0base");
@@ -60,32 +75,134 @@ void loadlibs()
   gSystem->Load("libPWG0base");
 }
 
-void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = kFALSE, Int_t histID = 1, Bool_t fullPhaseSpace = kFALSE, Float_t beta  = 1e5, Int_t eventType = 0 /* AliMultiplicityCorrection::kTrVtx */, const char* targetFile = "unfolded.root", const char* folderESD = "Multiplicity")
+void LoadAndInitialize(void* multVoid, void* esdVoid, void* multTriggerVoid, Int_t histID, Bool_t fullPhaseSpace, Int_t* geneLimits)
 {
-  loadlibs();
-
-  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
-  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+  AliMultiplicityCorrection* mult = (AliMultiplicityCorrection*) multVoid;
+  AliMultiplicityCorrection* esd = (AliMultiplicityCorrection*) esdVoid;
+  AliMultiplicityCorrection* multTrigger = (AliMultiplicityCorrection*) multTriggerVoid;
   
-  //AliUnfolding::SetNbins(150, 150);
-  //AliUnfolding::SetNbins(65, 65); 
-  //AliUnfolding::SetNbins(35, 35);
-  //AliUnfolding::SetDebug(1);
+  for (Int_t i=0; i<3; i++)
+    geneLimits[i] = kBinLimits[i];
+  
+  // REBINNING
+  if (1)
+  {
+    // 900 GeV
+    if (is900GeV)
+    {
+      if (1)
+      {
+        Int_t bins05 = 31;
+        Double_t newBinsEta05[] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+                  10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+                  20.5, 22.5, 24.5, 26.5, 28.5, 30.5, 34.5, 38.5, 42.5, 50.5, 
+                  100.5 };
+      }
 
+      if (0)
+      {
+        Int_t bins05 = 29;
+        Double_t newBinsEta05[] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+                10.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+                20.5, 22.5, 24.5, 26.5, 28.5, 30.5, 34.5, 38.5, 42.5, 50.5, 
+                100.5 };
+      }
+      
+      if (0)
+      {
+        Int_t bins05 = 25;
+        Double_t* newBinsEta05 = new Double_t[bins05+1];
+      
+        //newBinsEta05[0] = -0.5;
+        //newBinsEta05[1] = 0.5;
+        //newBinsEta05[2] = 1.5;
+        //newBinsEta05[3] = 2.5;
+        
+        for (Int_t i=0; i<bins05+1; i++)
+          newBinsEta05[i] = -0.5 + i*2;
+          //newBinsEta05[i] = 4.5 + (i-4)*2;
+      }
+
+      Int_t bins10 = 54;
+      Double_t newBinsEta10[] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+                                  10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+                                  20.5, 21.5, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, 28.5, 29.5,
+                                  30.5, 31.5, 32.5, 33.5, 34.5, 35.5, 36.5, 37.5, 38.5, 39.5,
+                                  40.5, 42.5, 44.5, 46.5, 48.5, 50.5, 52.5, 54.5, 56.5, 58.5, 
+                                  60.5, 65.5, 70.5, 100.5 };
+                        
+      geneLimits[0] = bins05;
+      geneLimits[1] = bins10;
+      geneLimits[2] = bins10;
+    }
+    
+    // 2.36 TeV
+    if (is2360TeV)
+    {
+      Int_t bins05 = 36;
+      Double_t newBinsEta05[] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+				  10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+				  20.5, 22.5, 24.5, 26.5, 28.5, 30.5, 32.5, 34.5, 36.5, 38.5, 
+				  40.5, 45.5, 50.5, 55.5, 60.5, 100.5 };
+      Int_t bins10 = 64;
+      Double_t newBinsEta10[] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+				  10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+				  20.5, 21.5, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, 28.5, 29.5,
+				  30.5, 31.5, 32.5, 33.5, 34.5, 35.5, 36.5, 37.5, 38.5, 39.5,
+				  40.5, 42.5, 44.5, 46.5, 48.5, 50.5, 52.5, 54.5, 56.5, 58.5, 
+				  60.5, 62.5, 64.5, 66.5, 68.5, 70.5, 72.5, 74.5, 76.5, 78.5, 
+				  80.5, 85.5, 90.5, 100.5 };
+
+      geneLimits[0] = bins05;
+      geneLimits[1] = bins10;
+      geneLimits[2] = bins10;
+    }
+    
+    // 7 TeV
+    if (!is900GeV && !is2360TeV)
+    {
+      Int_t bins05 = 36;
+      Double_t newBinsEta05[] = { -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+				  10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+				  20.5, 22.5, 24.5, 26.5, 28.5, 30.5, 32.5, 34.5, 36.5, 38.5, 
+				  40.5, 45.5, 50.5, 55.5, 60.5, 100.5 };
+      
+      Int_t bins10 = 85;
+      Double_t newBinsEta10[] = { 
+          -0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
+				  10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5,
+				  20.5, 21.5, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, 28.5, 29.5,
+				  30.5, 31.5, 32.5, 33.5, 34.5, 35.5, 36.5, 37.5, 38.5, 39.5,
+				  40.5, 41.5, 42.5, 43.5, 44.5, 45.5, 46.5, 47.5, 48.5, 49.5, 
+				  50.5, 51.5, 52.5, 53.5, 54.5, 55.5, 56.5, 57.5, 58.5, 59.5, 
+				  60.5, 62.5, 64.5, 66.5, 68.5, 70.5, 72.5, 74.5, 76.5, 78.5, 
+				  80.5, 82.5, 84.5, 86.5, 88.5, 90.5, 92.5, 94.5, 96.5, 98.5, 
+				  100.5, 105.5, 110.5, 115.5, 120.5 };
+      
+      geneLimits[0] = bins05;
+      geneLimits[1] = bins10;
+      geneLimits[2] = bins10;
+    }
+
+    esd->RebinGenerated(bins05, newBinsEta05, bins10, newBinsEta10, bins10, newBinsEta10);
+    mult->RebinGenerated(bins05, newBinsEta05, bins10, newBinsEta10, bins10, newBinsEta10);
+    multTrigger->RebinGenerated(bins05, newBinsEta05, bins10, newBinsEta10, bins10, newBinsEta10);
+  }
+  
   for (Int_t hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
   {
-    switch (hID)
-    {
-      case 0: AliUnfolding::SetNbins(35, 35); break;
-      case 1: AliUnfolding::SetNbins(60, 60); break;
-      case 2: AliUnfolding::SetNbins(70, 70); beta *= 3; break;
-    }
-  
     TH2F* hist = esd->GetMultiplicityESD(hID);
-    TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
   
     mult->SetMultiplicityESD(hID, hist);
-  
+    mult->SetTriggeredEvents(hID, esd->GetTriggeredEvents(hID));
+    
+    // insert trigger efficiency in flat response matrix
+    for (Int_t evType = AliMultiplicityCorrection::kTrVtx; evType <= AliMultiplicityCorrection::kNSD; evType++)
+      mult->SetMultiplicityMC(hID, evType, multTrigger->GetMultiplicityMC(hID, evType));
+    
+    mult->SetNoVertexEvents(hID, multTrigger->GetNoVertexEvents(hID));
+    mult->FixTriggerEfficiencies(10);
+      
     // small hack to get around charge conservation for full phase space ;-)
     if (fullPhaseSpace)
     {
@@ -98,74 +215,371 @@ void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder 
           corr->SetBinError(i, j, corr->GetBinError(i-1, j));
         }
     }
+  }
+}
+
+void correct(const char* fileNameMC = "multiplicityMC.root", const char* folder = "Multiplicity", const char* fileNameESD = "multiplicityESD.root", Bool_t chi2 = 1, Int_t histID = 1, Bool_t fullPhaseSpace = kFALSE, Float_t beta = -25, Int_t eventType = 2 /* AliMultiplicityCorrection::kTrVtx */, const char* targetFile = "unfolded.root", const char* folderESD = "Multiplicity", Bool_t calcBias = kFALSE)
+{
+  loadlibs();
   
+  Int_t geneLimits[] = { 0, 0, 0 };
+  
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+  AliMultiplicityCorrection* multTrigger = AliMultiplicityCorrection::Open("multiplicityTrigger.root");
+
+  LoadAndInitialize(mult, esd, multTrigger, histID, fullPhaseSpace, geneLimits);
+  
+  //AliUnfolding::SetDebug(1);
+
+  for (Int_t hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
+  {
+    AliUnfolding::SetNbins(kBinLimits[hID], geneLimits[hID]);
+  
+    TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
+
     if (chi2)
     {
-      AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, beta);
+      if (is900GeV)
+      {
+        //Float_t regParamPol0[] = { 2, 2, 10 };   // TPCITS
+        Float_t regParamPol0[] = { 5, 15, 25 }; // SPD
+        Float_t regParamPol1[] =  { 0.15, 0.25, 0.5 };
+      }
+      else if (is2360TeV)
+      {
+        Float_t regParamPol0[] = { 10, 12, 40 };
+        Float_t regParamPol1[] =  { 0.25, 0.25, 2 };
+      }
+      else
+      {
+        Float_t regParamPol0[] = { 1, 25, 10 };
+        Float_t regParamPol1[] =  { 0.15, 0.5, 0.5 };
+        AliUnfolding::SetSkipBinsBegin(3);
+      }
+      
+      Int_t reg = AliUnfolding::kPol0;
+      if (beta > 0)
+        reg = AliUnfolding::kPol1;
+        
+      Float_t regParam = TMath::Abs(beta);
+      if (histID == -1)
+      {
+        if (beta > 0)
+          regParam = regParamPol1[hID];
+        else
+          regParam = regParamPol0[hID];
+      }
+      AliUnfolding::SetChi2Regularization(reg, regParam);
+      
+      //AliUnfolding::SetChi2Regularization(AliUnfolding::kLog, 1000000);
+      //AliUnfolding::SetChi2Regularization(AliUnfolding::kRatio, 10);
+      //TVirtualFitter::SetDefaultFitter("Minuit2");
+      
       //AliUnfolding::SetCreateOverflowBin(kFALSE);
       //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0); //mult->SetCreateBigBin(kFALSE);
       //mult->SetRegularizationParameters(AliMultiplicityCorrection::kNone, 0, 125); mult->SetCreateBigBin(kFALSE);
      // AliUnfolding::SetChi2Regularization(AliUnfolding::kEntropy, beta);
       //mult->SetRegularizationParameters(AliMultiplicityCorrection::kLog, 1e5);
       
-      //mult->ApplyMinuitFit(histID, fullPhaseSpace, AliMultiplicityCorrection::kTrVtx, kTRUE, mcCompare);
-      //mult->SetMultiplicityESDCorrected(histID, (TH1F*) mcCompare);
+      if (0)
+      {
+        // part for checking
+        TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
+        mcCompare->Sumw2();
+        mult->ApplyMinuitFit(hID, fullPhaseSpace, AliMultiplicityCorrection::kMB, 0, kTRUE, mcCompare);
+        mult->SetMultiplicityESDCorrected(hID, (TH1F*) mcCompare);
+      }
+      else
+      {
+        // Zero Bin
+        Int_t zeroBin = 0;
+        if (is900GeV) // from data
+        {
+          // background subtraction
+          Int_t background = 0;
+          
+          //background = 1091 + 4398; // MB1 for run 104824 - 52 (SPD)
+          //background = 1087 + 4398; // MB1 for run 104824 - 52 (TPCITS)
+          
+          //background = 417 + 1758; // MB1 for run 104867 - 92 (SPD)
+          //background = 1162+422;     // MB1 for run 104892 (TPCITS)
+          //background = 5830 + 1384;    // MB1 for run 104824,25,45,52,67,92 (TPC runs) (TPCITS)
+          
+          background = 20 + 0; // V0AND for run 104824 - 52
+          //background = 10 + 0; // V0AND for run 104867 - 92
+          
+          Printf("NOTE: Subtracting %d background events", background);
+          gSystem->Sleep(1000);
       
-      mult->ApplyMinuitFit(hID, fullPhaseSpace, eventType, kFALSE, 0, kFALSE); //hist2->ProjectionY("mymchist"));
-      //mult->ApplyNBDFit(histID, fullPhaseSpace, eventType);
+          zeroBin = mult->GetTriggeredEvents(hID)->GetBinContent(1) - background - mult->GetMultiplicityESD(hID)->Integral(0, 2, 1, 1);
+        }
+        else if (is2360TeV)
+        {
+          // from MC
+          Float_t fractionZeroBin = (multTrigger->GetTriggeredEvents(hID)->GetBinContent(1) - multTrigger->GetMultiplicityESD(hID)->Integral(0, 2, 1, 1)) / multTrigger->GetMultiplicityESD(hID)->Integral(1, 1, 1, mult->GetMultiplicityESD(hID)->GetNbinsY());
+          zeroBin = fractionZeroBin * mult->GetMultiplicityESD(hID)->Integral(1, 1, 1, mult->GetMultiplicityESD(hID)->GetNbinsY());
+          
+          Printf("Zero bin from MC: Estimating %d events with trigger but without vertex", zeroBin);
+          gSystem->Sleep(1000);
+        }
+        else
+        {
+          AliUnfolding::SetSkip0BinInChi2(kTRUE);
+        }
+      
+        //mult->SetVertexRange(3, 4);
+        mult->ApplyMinuitFit(hID, fullPhaseSpace, eventType, zeroBin, kFALSE, 0, calcBias);
+      }
     }
     else
     {
-      mult->ApplyBayesianMethod(hID, fullPhaseSpace, eventType, 1, 10, 0, kTRUE);
+      // HACK
+      //mult->GetMultiplicityESD(hID)->SetBinContent(1, 1, 0);
+      //for (Int_t bin=1; bin<=mult->GetCorrelation(hID)->GetNbinsY(); bin++)
+      //  mult->GetCorrelation(hID)->SetBinContent(1, bin, 1, 0);
+      AliUnfolding::SetChi2Regularization(AliUnfolding::kNone, 0);
+      mult->ApplyBayesianMethod(hID, fullPhaseSpace, eventType, 1, beta, 0, kTRUE);
       //mult->ApplyBayesianMethod(hID, fullPhaseSpace, eventType, 1, 5, 0, kFALSE);
     }
-  
-    mult->SetMultiplicityMC(hID, eventType, hist2);
   }
   
   Printf("Writing result to %s", targetFile);
   TFile* file = TFile::Open(targetFile, "RECREATE");
-  mult->SaveHistograms();
+  mult->SaveHistograms("Multiplicity");
   file->Write();
   file->Close();
+
+  if (histID == -1)
+    return;
 
   for (hID = ((histID == -1) ? 0 : histID); hID <= ((histID == -1) ? 2 : histID); hID++)
   {
     TH2F* hist2 = esd->GetMultiplicityMC(hID, eventType);
     TH1* mcCompare = hist2->ProjectionY("mcmchist", 1, hist2->GetNbinsX());
-    mult->DrawComparison(Form("%s_%d", (chi2) ? "MinuitChi2" : "Bayesian", hID), hID, fullPhaseSpace, kTRUE, mcCompare);
+    mult->DrawComparison(Form("%s_%d_%f", (chi2) ? "MinuitChi2" : "Bayesian", hID, beta), hID, fullPhaseSpace, kTRUE, mcCompare, kFALSE, eventType);
+
+    Printf("<n> = %f", mult->GetMultiplicityESDCorrected(hID)->GetMean());
   }
 }
 
-TH1* GetChi2Bias(Float_t alpha)
+void correctAll(Int_t eventType)
+{
+  const char* suffix = "";
+  switch (eventType)
+  {
+    case 0: suffix = "trvtx"; break;
+    case 1: suffix = "mb"; break;
+    case 2: suffix = "inel"; break;
+    case 3: suffix = "nsd"; break;
+  }
+
+  correct("multiplicityMC.root", "Multiplicity", "multiplicityESD.root", 1, -1, 0, -1, eventType, TString(Form("chi2a_%s.root", suffix)));
+  correct("multiplicityMC.root", "Multiplicity", "multiplicityESD.root", 1, -1, 0,  1, eventType, TString(Form("chi2b_%s.root", suffix)));
+  correct("multiplicityMC.root", "Multiplicity", "multiplicityESD.root", 0, -1, 0, 40, eventType, TString(Form("bayes_%s.root", suffix)));
+  
+  if (eventType == 3)
+    drawAll(1);
+  else if (eventType == 2)
+    drawAllINEL();
+}
+
+void drawAll(Bool_t showUA5 = kFALSE)
+{
+  const char* files[] = { "chi2a_nsd.root", "chi2b_nsd.root", "bayes_nsd.root" };
+  drawAll(files, showUA5);
+}
+
+void drawAllINEL()
+{
+  const char* files[] = { "chi2a_inel.root", "chi2b_inel.root", "bayes_inel.root" };
+  drawAll(files);
+}
+
+void drawAllMB()
+{
+  const char* files[] = { "chi2a_mb.root", "chi2b_mb.root", "bayes_mb.root" };
+  drawAll(files);
+}
+
+void drawAll(const char** files, Bool_t showUA5 = kFALSE, Bool_t normalize = kFALSE)
 {
   loadlibs();
   
-  const char* fileNameMC = "multiplicityMC.root";
-  const char* folder = "Multiplicity";
-  const char* fileNameESD = "multiplicityESD.root";
-  const char* folderESD = "Multiplicity";
+  Int_t colors[] = { 1, 2, 4 };
+  
+  c = new TCanvas(Form("c%d", gRandom->Uniform(100)), "c", 1800, 600);
+  c->Divide(3, 1);
+  
+  l = new TLegend(0.6, 0.6, 0.99, 0.99);
+  l->SetFillColor(0);
+  
+  TH1* hist0 = 0;
+  
+  for (Int_t hID=0; hID<3; hID++)
+  {
+    c->cd(hID+1)->SetLogy();
+    gPad->SetGridx();
+    gPad->SetGridy();
+    for (Int_t i=0; i<3; i++)
+    {
+      TFile::Open(files[i]);
+      
+      hist = (TH1*) gFile->Get(Form("Multiplicity/fMultiplicityESDCorrected%d", hID));
 
-  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open(fileNameMC, folder);
-  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
+      Float_t average0 = hist->GetMean();
+      hist2 = (TH1*) hist->Clone("temp");
+      hist2->SetBinContent(1, 0);
+      Float_t average1 = hist2->GetMean();
+      Printf("%d: <N> = %.2f <N>/(eta) = %.2f | without 0: <N> = %.2f <N>/(eta) = %.2f", hID, average0, average0 / ((hID+1) - 0.4 * (hID / 2)), average1, average1 / ((hID+1) - 0.4 * (hID / 2)));
+      
+      hist->SetLineColor(colors[i]);
+      
+      hist->SetStats(0);
+      hist->GetXaxis()->SetRangeUser(0, kBinLimits[hID]);
+      
+      Float_t min = 0.1;
+      Float_t max = hist->GetMaximum() * 1.5;
+      
+      if (normalize)
+        min = 1e-6;
+      
+      hist->GetYaxis()->SetRangeUser(min, max);
+      hist->SetTitle(";unfolded multiplicity;events");
+      
+      if (hID == 0)
+      {
+        l->AddEntry(hist, files[i]);
+      }
+      
+      if (hist->Integral() <= 0)
+        continue;
+      
+      if (normalize)
+        hist->Scale(1.0 / hist->Integral());
+      
+      AliPWG0Helper::NormalizeToBinWidth(hist);
+      
+      hist->DrawCopy((i == 0) ? "" : "SAME");
+      
+      if (!hist0)
+        hist0 = (TH1*) hist->Clone("hist0");
+    }
+      
+    if (hist0)
+    {
+      line = new TLine(kTrustLimits[hID], hist0->GetMinimum(), kTrustLimits[hID], hist0->GetMaximum());
+      line->SetLineWidth(3);
+      line->Draw();
+    }
+  }
   
-  //Int_t hID = 0; const Int_t kMaxBins = 35;
-  //Int_t hID = 1;  const Int_t kMaxBins = 60;
-  Int_t hID = 2;  const Int_t kMaxBins = 70;
-  AliUnfolding::SetNbins(kMaxBins, kMaxBins);
-  //AliUnfolding::SetDebug(1);
-  //AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, 50);
-  AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, alpha);
+  c->cd(1);
+  l->Draw();
   
-  TH2F* hist = esd->GetMultiplicityESD(hID);
-  mult->SetMultiplicityESD(hID, hist);  
+  if (showUA5)
+  {
+    TGraphErrors *gre = new TGraphErrors(23);
+    gre->SetName("Graph");
+    gre->SetTitle("UA5");
+    gre->SetFillColor(1);
+    gre->SetMarkerStyle(24);
+    gre->SetPoint(0,0,0.15);
+    gre->SetPointError(0,0.5,0.01);
+    gre->SetPoint(1,1,0.171);
+    gre->SetPointError(1,0.5,0.007);
+    gre->SetPoint(2,2,0.153);
+    gre->SetPointError(2,0.5,0.007);
+    gre->SetPoint(3,3,0.124);
+    gre->SetPointError(3,0.5,0.006);
+    gre->SetPoint(4,4,0.099);
+    gre->SetPointError(4,0.5,0.005);
+    gre->SetPoint(5,5,0.076);
+    gre->SetPointError(5,0.5,0.005);
+    gre->SetPoint(6,6,0.057);
+    gre->SetPointError(6,0.5,0.004);
+    gre->SetPoint(7,7,0.043);
+    gre->SetPointError(7,0.5,0.004);
+    gre->SetPoint(8,8,0.032);
+    gre->SetPointError(8,0.5,0.003);
+    gre->SetPoint(9,9,0.024);
+    gre->SetPointError(9,0.5,0.003);
+    gre->SetPoint(10,10,0.018);
+    gre->SetPointError(10,0.5,0.002);
+    gre->SetPoint(11,11,0.013);
+    gre->SetPointError(11,0.5,0.002);
+    gre->SetPoint(12,12,0.01);
+    gre->SetPointError(12,0.5,0.002);
+    gre->SetPoint(13,13,0.007);
+    gre->SetPointError(13,0.5,0.001);
+    gre->SetPoint(14,14,0.005);
+    gre->SetPointError(14,0.5,0.001);
+    gre->SetPoint(15,15,0.004);
+    gre->SetPointError(15,0.5,0.001);
+    gre->SetPoint(16,16,0.0027);
+    gre->SetPointError(16,0.5,0.0009);
+    gre->SetPoint(17,17,0.0021);
+    gre->SetPointError(17,0.5,0.0008);
+    gre->SetPoint(18,18,0.0015);
+    gre->SetPointError(18,0.5,0.0007);
+    gre->SetPoint(19,19,0.0011);
+    gre->SetPointError(19,0.5,0.0006);
+    gre->SetPoint(20,20,0.0008);
+    gre->SetPointError(20,0.5,0.0005);
+    gre->SetPoint(21,22,0.00065);
+    gre->SetPointError(21,1,0.0003);
+    gre->SetPoint(22,27.5,0.00013);
+    gre->SetPointError(22,3.5,7.1e-05);
+    
+    for (Int_t i=0; i<gre->GetN(); i++)
+    {
+      gre->GetY()[i] *= hist0->Integral();
+      gre->GetEY()[i] *= hist0->Integral();
+    }
+    
+    gre->Draw("P");
+    
+    ratio = (TGraphErrors*) gre->Clone("ratio");
+    
+    for (Int_t i=0; i<gre->GetN(); i++)
+    {
+      //Printf("%f %d", hist0->GetBinContent(hist0->FindBin(ratio->GetX()[i])), hist0->FindBin(ratio->GetX()[i]));
+      Int_t bin = hist0->FindBin(gre->GetX()[i]);
+      if (hist0->GetBinContent(bin) > 0)
+      {
+        ratio->GetEY()[i] = TMath::Sqrt((ratio->GetEY()[i] / ratio->GetY()[i])**2 + (hist0->GetBinError(bin) / hist0->GetBinContent(bin))**2);
+        ratio->GetY()[i] /= hist0->GetBinContent(bin);
+        ratio->GetEY()[i] *= ratio->GetY()[i];
+      }
+    }
+    new TCanvas;
+    gPad->SetGridx();
+    gPad->SetGridy();
+    //ratio->Print();
+    ratio->Draw("AP");
+    ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+  }
   
+  c->SaveAs("draw_all.png");
+}
+
+TH1* GetChi2Bias(Float_t alpha = -5)
+{
+  loadlibs();
+
+  AliMultiplicityCorrection::EventType eventType = AliMultiplicityCorrection::kMB;
+  Int_t hID = 1;
+  
+  correct("multiplicityMC.root", "Multiplicity", "multiplicityESD.root", 1, hID, 0, alpha, eventType, "nobias.root", "Multiplicity", kFALSE);
+
+  correct("multiplicityMC.root", "Multiplicity", "multiplicityESD.root", 1, hID, 0, alpha, eventType, "withbias.root", "Multiplicity", kTRUE);
+
   // without bias calculation
-  mult->ApplyMinuitFit(hID, kFALSE, 0, kFALSE);
+  mult = AliMultiplicityCorrection::Open("nobias.root");
   baseold = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("baseold");
   
   // with bias calculation
-  mult->ApplyMinuitFit(hID, kFALSE, 0, kFALSE, 0, kTRUE);
+  mult = AliMultiplicityCorrection::Open("withbias.root");
   base = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("base");
  
   // relative error plots
@@ -176,7 +590,7 @@ TH1* GetChi2Bias(Float_t alpha)
   ratio2 = (TH1*) mult->GetMultiplicityESDCorrected(hID)->Clone("hist1");
   ratio2->Reset();
 
-  for (Int_t t = 0; t<kMaxBins; t++)
+  for (Int_t t = 0; t<baseold->GetNbinsX(); t++)
   {
     Printf("Bin %d; Content: %f; Chi2 Error: %f; Bias: %f; In percent: %.2f %.2f", t+1, base->GetBinContent(t+1), baseold->GetBinError(t+1), base->GetBinError(t+1), (base->GetBinContent(t+1) > 0) ? 100.0 * baseold->GetBinError(t+1) / base->GetBinContent(t+1) : -1, (base->GetBinContent(t+1) > 0) ? 100.0 * base->GetBinError(t+1) / base->GetBinContent(t+1) : -1);
     if (base->GetBinContent(t+1) <= 0)
@@ -187,9 +601,9 @@ TH1* GetChi2Bias(Float_t alpha)
   
   //new TCanvas; base->Draw(); gPad->SetLogy();
 
-  new TCanvas;
+  c = new TCanvas;
   ratio1->GetYaxis()->SetRangeUser(0, 1);
-  ratio1->GetXaxis()->SetRangeUser(0, kMaxBins);
+  ratio1->GetXaxis()->SetRangeUser(0, 50);
   ratio1->Draw();
   ratio2->SetLineColor(2);
   ratio2->Draw("SAME");
@@ -243,7 +657,14 @@ void CheckBayesianBias()
   hist2->Draw("SAME");
 }
 
-void DataScan(Bool_t redo = kTRUE)
+void DrawUnfoldingLimit(Int_t hID, Float_t min, Float_t max)
+{
+  line = new TLine(kTrustLimits[hID], min, kTrustLimits[hID], max);
+  line->SetLineWidth(2);
+  line->Draw();
+}
+
+void DataScan(Int_t hID, Bool_t redo = kTRUE)
 {
   // makes a set of unfolded spectra and compares
   // don't forget FindUnfoldedLimit in plots.C
@@ -251,14 +672,13 @@ void DataScan(Bool_t redo = kTRUE)
   loadlibs();
 
   // files...
-  Bool_t mc = kTRUE;
+  Bool_t mc = 1;
   const char* fileNameMC = "multiplicityMC.root";
   const char* folder = "Multiplicity";
   const char* fileNameESD = "multiplicityESD.root";
   const char* folderESD = "Multiplicity";
-  Int_t hID = 0;  const Int_t kMaxBins = 35;
-  //Int_t hID = 1;  const Int_t kMaxBins = 60;
-  //Int_t hID = 2;  const Int_t kMaxBins = 70;
+  const Int_t kMaxBins = kBinLimits[hID];
+  
   AliMultiplicityCorrection::EventType eventType = AliMultiplicityCorrection::kTrVtx;
   Bool_t evaluteBias = kFALSE;
   
@@ -266,15 +686,15 @@ void DataScan(Bool_t redo = kTRUE)
   
   // chi2 range
   AliUnfolding::RegularizationType regBegin = AliUnfolding::kPol0;
-  AliUnfolding::RegularizationType regEnd = AliUnfolding::kPol0;
-  Float_t regParamBegin[] = { 0, 1, 10 }; 
-  Float_t regParamEnd[] = { 0, 40, 101 }; 
-  Float_t regParamStep[] = { 0, TMath::Sqrt(10), TMath::Sqrt(10) }; 
+  AliUnfolding::RegularizationType regEnd = AliUnfolding::kPol1;
+  Float_t regParamBegin[] = { 0, 1, 0.2, 3 }; 
+  Float_t regParamEnd[] = { 0, 11, 0.5, 31 }; 
+  Float_t regParamStep[] = { 0, 2, 2, TMath::Sqrt(10) }; 
 
   // bayesian range
-  Int_t iterBegin = 5;
-  Int_t iterEnd = 21;
-  Int_t iterStep = 5;
+  Int_t iterBegin = 40;
+  Int_t iterEnd = 41;
+  Int_t iterStep = 20;
   
   TList labels;
   
@@ -282,6 +702,16 @@ void DataScan(Bool_t redo = kTRUE)
   AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open(fileNameESD, folderESD);
   
   mult->SetMultiplicityESD(hID, esd->GetMultiplicityESD(hID));
+  
+  // insert trigger efficiency in flat response matrix
+  AliMultiplicityCorrection* multTrigger = AliMultiplicityCorrection::Open("multiplicityTrigger.root");
+  for (Int_t evType = AliMultiplicityCorrection::kTrVtx; evType <= AliMultiplicityCorrection::kNSD; evType++)
+    mult->SetMultiplicityMC(hID, evType, multTrigger->GetMultiplicityMC(hID, evType));
+  
+  mult->SetNoVertexEvents(hID, multTrigger->GetNoVertexEvents(hID));
+  mult->FixTriggerEfficiencies(10);
+  
+  Float_t fraction0Generated = multTrigger->GetFraction0Generated(hID);
   
   if (mc)
     mult->SetMultiplicityMC(hID, eventType, esd->GetMultiplicityMC(hID, eventType));
@@ -303,7 +733,7 @@ void DataScan(Bool_t redo = kTRUE)
     
       AliUnfolding::SetChi2Regularization(reg, regParam);
       
-      mult->ApplyMinuitFit(hID, kFALSE, eventType, kFALSE, 0, evaluteBias);
+      mult->ApplyMinuitFit(hID, kFALSE, eventType, fraction0Generated, kFALSE, 0, evaluteBias);
       
       file = TFile::Open(Form("datascan_%d.root", count), "RECREATE");
       mult->SaveHistograms();
@@ -347,17 +777,21 @@ void DataScan(Bool_t redo = kTRUE)
   
   TH1* residualSum = new TH1F("residualSum", ";;residual squared sum", count + 1, 0.5, count + 1.5);
   
+  Int_t allowedCount = count;
   count = 0;
   while (1)
   {
     mult = AliMultiplicityCorrection::Open(Form("datascan_%d.root", count++));
     if (!mult)
       break;
+    if (count > allowedCount+1)
+      break;
       
     hist = (TH1*) mult->GetMultiplicityESDCorrected(hID);
     hist->SetLineColor((count-1) % 4 + 1);
     hist->SetLineStyle((count-1) / 4 + 1);
     hist->GetXaxis()->SetRangeUser(0, kMaxBins);
+    hist->GetYaxis()->SetRangeUser(0.1, hist->GetMaximum() * 1.5);
     hist->SetStats(kFALSE);
     hist->SetTitle("");
     
@@ -365,6 +799,8 @@ void DataScan(Bool_t redo = kTRUE)
     
     c->cd(1);
     hist->DrawCopy((count == 1) ? "HIST" : "HISTSAME");
+    
+    DrawUnfoldingLimit(hID, 0.1, hist->GetMaximum());
     
     if (mc)
     {
@@ -374,7 +810,7 @@ void DataScan(Bool_t redo = kTRUE)
       c->cd(1);
       mcHist->SetMarkerStyle(24);
       mcHist->Draw("P SAME");
-    
+      
       c->cd(2);
       // calculate ratio using only the error on the mc bin
       ratio = (TH1*) hist->Clone("ratio");
@@ -389,6 +825,8 @@ void DataScan(Bool_t redo = kTRUE)
       ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
       ratio->GetYaxis()->SetTitle("Ratio unfolded / MC");
       ratio->DrawCopy((count == 1) ? "HIST" : "HISTSAME");
+    
+      DrawUnfoldingLimit(hID, 0.5, 1.5);
     }
     
     c->cd(3);
@@ -406,6 +844,8 @@ void DataScan(Bool_t redo = kTRUE)
     ratio->GetYaxis()->SetTitle("Ratio unfolded / unfolded reference case");
     ratio->DrawCopy((count == 1) ? "" : "SAME");
     
+    DrawUnfoldingLimit(hID, 0.5, 1.5);
+    
     c->cd(4);
     ratio = (TH1*) hist->Clone("ratio");
     for (Int_t bin=1; bin<=ratio->GetNbinsX(); bin++)
@@ -418,6 +858,8 @@ void DataScan(Bool_t redo = kTRUE)
     ratio->GetYaxis()->SetRangeUser(0, 1);
     ratio->GetYaxis()->SetTitle("Relative error");
     ratio->DrawCopy((count == 1) ? "" : "SAME");
+    
+    DrawUnfoldingLimit(hID, 0, 1);
     
     c->cd(5);
     Float_t sum;
@@ -1855,6 +2297,7 @@ void Merge(Int_t n, const char** files, const char* output)
       name.Form("Multiplicity%d", i);
 
     TFile::Open(files[i]);
+    Printf("Loading from file %s", files[i]);
     data[i] = new AliMultiplicityCorrection(name, name);
     data[i]->LoadHistograms("Multiplicity");
     if (i > 0)
@@ -2266,6 +2709,7 @@ void BuildResponseFromTree(const char* fileName, const char* target)
 {
   //
   // builds several response matrices with different particle ratios (systematic study)
+  // particle-species study
   // 
   // WARNING doesn't work uncompiled, see test.C
 
@@ -2282,8 +2726,10 @@ void BuildResponseFromTree(const char* fileName, const char* target)
   Int_t secondaries = 0;
   Int_t doubleCount = 0;
 
-  for (Int_t num = 0; num < 9; num++)
+  for (Int_t num = 0; num < 7; num++)
   {
+    Printf("%d", num);
+  
     TString name;
     name.Form("Multiplicity_%d", num);
     AliMultiplicityCorrection* fMultiplicity = new AliMultiplicityCorrection(name, name);
@@ -2292,21 +2738,25 @@ void BuildResponseFromTree(const char* fileName, const char* target)
     for (Int_t i = 0; i < 4; i++)
       ratio[i] = 1;
 
-    switch (num)
-    {
-      case 1 : ratio[1] = 0.5; break;
-      case 2 : ratio[1] = 1.5; break;
-      case 3 : ratio[2] = 0.5; break;
-      case 4 : ratio[2] = 1.5; break;
-      case 5 : ratio[1] = 0.5; ratio[2] = 0.5; break;
-      case 6 : ratio[1] = 1.5; ratio[2] = 1.5; break;
-      case 7 : ratio[1] = 0.5; ratio[2] = 1.5; break;
-      case 8 : ratio[1] = 1.5; ratio[2] = 0.5; break;
-    }
-
+    if (num == 1)
+      ratio[1] = 0.7;
+    if (num == 2)
+      ratio[1] = 1.3;
+    
+    if (num == 3)
+      ratio[2] = 0.7;
+    if (num == 4)
+      ratio[2] = 1.3;
+    
+    if (num == 5)
+      ratio[3] = 0.7;
+    if (num == 6)
+      ratio[3] = 1.3;
+      
     for (Int_t i=0; i<fParticleSpecies->GetEntries(); i++)
     {
       fParticleSpecies->GetEvent(i);
+      
 
       Float_t* f = fParticleSpecies->GetArgs();
 
@@ -2315,8 +2765,48 @@ void BuildResponseFromTree(const char* fileName, const char* target)
 
       for (Int_t j = 0; j < 4; j++)
       {
-        gene += ratio[j] * f[j+1];
-        meas += ratio[j] * f[j+1+4];
+        if (ratio[j] == 1)
+        {
+          gene += f[j+1];
+        }
+        else
+        {
+          for (Int_t k=0; k<f[j+1]; k++)
+          {
+            if (ratio[j] < 1 && gRandom->Uniform() < ratio[j])
+            {
+              gene += 1;
+            }
+            else if (ratio[j] > 1)
+            {
+              gene += 1;
+              if (gRandom->Uniform() < ratio[j] - 1)
+                gene += 1;
+            }
+          }
+        }
+          
+        if (ratio[j] == 1)
+        {
+          meas += f[j+1+4];
+        }
+        else
+        {
+          for (Int_t k=0; k<f[j+1+4]; k++)
+          {
+            if (ratio[j] < 1 && gRandom->Uniform() < ratio[j])
+            {
+              meas += 1;
+            }
+            else if (ratio[j] > 1)
+            {
+              meas += 1;
+              if (gRandom->Uniform() < ratio[j] - 1)
+                meas += 1;
+            }
+          }
+        }
+        
         tracks += f[j+1+4];
       }
 
@@ -2335,10 +2825,10 @@ void BuildResponseFromTree(const char* fileName, const char* target)
 
       //Printf("%.f %.f %.f %.f %.f", f[5], f[6], f[7], f[8], f[9]);
 
-      fMultiplicity->FillCorrection(f[0], gene, gene, gene, gene, 0, meas, meas, meas, meas);
+      fMultiplicity->FillCorrection(f[0], gene, gene, gene, gene, meas, meas, meas);
       // HACK all as kND = 1
-      fMultiplicity->FillGenerated(f[0], kTRUE, kTRUE, 1, gene, gene, gene, gene, 0);
-      fMultiplicity->FillMeasured(f[0], meas, meas, meas, meas);
+      fMultiplicity->FillGenerated(f[0], kTRUE, kTRUE, 1, gene, gene, gene, gene);
+      fMultiplicity->FillMeasured(f[0], meas, meas, meas);
     }
 
     //fMultiplicity->DrawHistograms();
@@ -2360,86 +2850,110 @@ void ParticleRatioStudy()
 {
   loadlibs();
 
-  for (Int_t num = 0; num < 9; num++)
+  for (Int_t num = 0; num < 7; num++)
   {
     TString target;
-    target.Form("chi2_species_%d.root", num);
-    correct("species.root", Form("Multiplicity_%d", num), "species.root", 1, 1, 0, 1e5, 0, target, "Multiplicity_0");
+    target.Form("chi2a_inel_species_%d.root", num);
+    
+    correct("compositions.root", Form("Multiplicity_%d", num), "multiplicityESD.root", 1, -1, 0, -1, 2, target);
   }
 }
 
-void MergeModifyCrossSection(const char* output = "multiplicityMC_xsection.root")
+void MergeCrossSection(Int_t xsectionID, const char* output = "multiplicityMC_xsection.root")
 {
-  const char* files[] = { "multiplicityMC_nd.root", "multiplicityMC_sd.root", "multiplicityMC_dd.root" };
+  const char* files[] = { "multiplicitySD.root", "multiplicityDD.root", "multiplicityND.root" };
 
   loadlibs();
 
   TFile::Open(output, "RECREATE");
   gFile->Close();
 
-  for (Int_t num = 0; num < 7; num++)
+  AliMultiplicityCorrection* data[3];
+  TList list;
+
+  Float_t ref_SD = -1;
+  Float_t ref_DD = -1;
+  Float_t ref_ND = -1;
+
+  Float_t error_SD = -1;
+  Float_t error_DD = -1;
+  Float_t error_ND = -1;
+
+  gROOT->ProcessLine(gSystem->ExpandPathName(".L $ALICE_ROOT/PWG0/dNdEta/drawSystematics.C"));
+  GetRelativeFractions(xsectionID, ref_SD, ref_DD, ref_ND, error_SD, error_DD, error_ND);
+  
+  for (Int_t i=0; i<3; ++i)
   {
-    AliMultiplicityCorrection* data[3];
-    TList list;
+    TString name;
+    name.Form("Multiplicity");
+    if (i > 0)
+      name.Form("Multiplicity_%d", i);
 
-    Float_t ratio[3];
-    switch (num)
-    {
-      case 0: ratio[0] = 1.0; ratio[1] = 1.0; ratio[2] = 1.0; break;
-      case 1: ratio[0] = 1.0; ratio[1] = 1.5; ratio[2] = 1.0; break;
-      case 2: ratio[0] = 1.0; ratio[1] = 0.5; ratio[2] = 1.0; break;
-      case 3: ratio[0] = 1.0; ratio[1] = 1.0; ratio[2] = 1.5; break;
-      case 4: ratio[0] = 1.0; ratio[1] = 1.0; ratio[2] = 0.5; break;
-      case 5: ratio[0] = 1.0; ratio[1] = 1.5; ratio[2] = 1.5; break;
-      case 6: ratio[0] = 1.0; ratio[1] = 0.5; ratio[2] = 0.5; break;
-      default: return;
-    }
-
-    for (Int_t i=0; i<3; ++i)
-    {
-      TString name;
-      name.Form("Multiplicity_%d", num);
-      if (i > 0)
-        name.Form("Multiplicity_%d_%d", num, i);
-
-      TFile::Open(files[i]);
-      data[i] = new AliMultiplicityCorrection(name, name);
-      data[i]->LoadHistograms("Multiplicity");
-
-      // modify x-section
-      for (Int_t j=0; j<AliMultiplicityCorrection::kMCHists; j++)
-      {
-        data[i]->GetMultiplicityVtx(j)->Scale(ratio[i]);
-        data[i]->GetMultiplicityMB(j)->Scale(ratio[i]);
-        data[i]->GetMultiplicityINEL(j)->Scale(ratio[i]);
-        data[i]->GetMultiplicityNSD(j)->Scale(ratio[i]);
-      }
-
-      for (Int_t j=0; j<AliMultiplicityCorrection::kESDHists; j++)
-        data[i]->GetMultiplicityESD(j)->Scale(ratio[i]);
-
-      for (Int_t j=0; j<AliMultiplicityCorrection::kCorrHists; j++)
-        data[i]->GetCorrelation(j)->Scale(ratio[i]);
-
-      if (i > 0)
-        list.Add(data[i]);
-    }
-
-    printf("Case %d, %s: Entries in response matrix 3: ND: %.2f SD: %.2f DD: %.2f", num, data[0]->GetName(), data[0]->GetCorrelation(3)->Integral(), data[1]->GetCorrelation(3)->Integral(), data[2]->GetCorrelation(3)->Integral());
-
-    data[0]->Merge(&list);
-
-    Printf(" Total: %.2f", data[0]->GetCorrelation(3)->Integral());
-
-    TFile::Open(output, "UPDATE");
-    data[0]->SaveHistograms();
-    gFile->Close();
-
-    list.Clear();
-
-    for (Int_t i=0; i<3; ++i)
-      delete data[i];
+    TFile::Open(files[i]);
+    data[i] = new AliMultiplicityCorrection(name, name);
+    data[i]->LoadHistograms("Multiplicity");
   }
+  
+  // TODO is the under/overflow bin scaled as well? --> seems like, verify anyway!
+
+  // calculating relative
+  Float_t sd = data[0]->GetMultiplicityINEL(0)->Integral(0, data[0]->GetMultiplicityINEL(0)->GetNbinsX()+1);
+  Float_t dd = data[1]->GetMultiplicityINEL(0)->Integral(0, data[1]->GetMultiplicityINEL(0)->GetNbinsX()+1);
+  Float_t nd = data[2]->GetMultiplicityINEL(0)->Integral(0, data[2]->GetMultiplicityINEL(0)->GetNbinsX()+1);
+  Float_t total = nd + dd + sd;
+  
+  nd /= total;
+  sd /= total;
+  dd /= total;
+  
+  Printf("Ratios in the correction map are: ND=%f, DD=%f, SD=%f", nd, dd, sd);
+  
+  Float_t ratio[3];
+  ratio[0] = ref_SD / sd;
+  ratio[1] = ref_DD / dd;
+  ratio[2] = ref_ND / nd;
+  
+  Printf("SD=%.2f, DD=%.2f, ND=%.2f",ratio[0], ratio[1], ratio[2]);
+  
+  for (Int_t i=0; i<3; ++i)
+  {
+    // modify x-section
+    for (Int_t j=0; j<AliMultiplicityCorrection::kMCHists; j++)
+    {
+      data[i]->GetMultiplicityVtx(j)->Scale(ratio[i]);
+      data[i]->GetMultiplicityMB(j)->Scale(ratio[i]);
+      data[i]->GetMultiplicityINEL(j)->Scale(ratio[i]);
+      data[i]->GetMultiplicityNSD(j)->Scale(ratio[i]);
+    }
+
+    for (Int_t j=0; j<AliMultiplicityCorrection::kESDHists; j++)
+    {
+      data[i]->GetMultiplicityESD(j)->Scale(ratio[i]);
+      data[i]->GetTriggeredEvents(j)->Scale(ratio[i]);
+      data[i]->GetNoVertexEvents(j)->Scale(ratio[i]);
+    }
+    
+    for (Int_t j=0; j<AliMultiplicityCorrection::kCorrHists; j++)
+      data[i]->GetCorrelation(j)->Scale(ratio[i]);
+
+    if (i > 0)
+      list.Add(data[i]);
+  }
+
+  printf("Case %d, %s: Entries in response matrix: SD: %.2f DD: %.2f ND: %.2f", xsectionID, data[0]->GetName(), data[0]->GetCorrelation(0)->Integral(), data[1]->GetCorrelation(0)->Integral(), data[2]->GetCorrelation(0)->Integral());
+
+  data[0]->Merge(&list);
+
+  Printf(" Total: %.2f", data[0]->GetCorrelation(0)->Integral());
+
+  TFile::Open(output, "RECREATE");
+  data[0]->SaveHistograms();
+  gFile->Close();
+
+  list.Clear();
+
+  for (Int_t i=0; i<3; ++i)
+    delete data[i];
 }
 
 void Rebin(const char* fileName = "multiplicityMC_3M.root", Int_t corrMatrix = 3)
@@ -2597,3 +3111,219 @@ void EvaluateRegularizationEffect(Int_t step, const char* fileNameRebinned = "mu
     canvas->SaveAs(Form("%s.eps", canvas->GetName()));
   }
 }
+
+void MergeDistributions()
+{
+  loadlibs();
+
+  const char* dir1 = "run000104824-52_pass4";
+  const char* dir2 = "run000104867_90_92_pass4";
+  
+  for (Int_t evType = 0; evType < 2; evType++)
+  {
+    Printf("%d", evType);
+    
+    const char* evTypeStr = ((evType == 0) ? "inel" : "nsd");
+
+    const char* id = "chi2a";
+    //const char* id = "bayes";
+    
+    TString suffix;
+    suffix.Form("/all/spd/%s_", id);
+    if (evType == 1)
+      suffix.Form("/v0and/spd/%s_", id);
+  
+    TString file1, file2;
+    file1.Form("%s%s%%s.root", dir1, suffix.Data());
+    file2.Form("%s%s%%s.root", dir2, suffix.Data());
+    
+    if (1)
+    {
+      const char* files[] = { Form(file1.Data(), evTypeStr), Form(file2.Data(), evTypeStr) };
+      Merge(2, files, Form("merged/%s_%s.root", id, evTypeStr));
+    }
+    else
+    {
+      AliMultiplicityCorrection* mult1 = AliMultiplicityCorrection::Open(Form(file1.Data(), evTypeStr));
+      AliMultiplicityCorrection* mult2 = AliMultiplicityCorrection::Open(Form(file2.Data(), evTypeStr));
+      
+      AliMultiplicityCorrection* target = new AliMultiplicityCorrection("Multiplicity", "Multiplicity");
+      
+      for (Int_t etaRange = 0; etaRange < 3; etaRange++)
+      {
+        hist1 = mult1->GetMultiplicityESDCorrected(etaRange);
+        hist2 = mult2->GetMultiplicityESDCorrected(etaRange);
+        targetHist = target->GetMultiplicityESDCorrected(etaRange);
+        
+        //hist1->Scale(1.0 / hist1->Integral());
+        //hist2->Scale(1.0 / hist2->Integral());
+        
+        //targetHist->SetBinContent(1, hist1->GetBinContent(1) * 0.5 + hist2->GetBinContent(1) * 0.5);
+        targetHist->SetBinContent(1, hist1->GetBinContent(1) + hist2->GetBinContent(1));
+        for (Int_t i=1; i<=hist1->GetNbinsX(); i++)
+        {
+          if (hist1->GetBinError(i) > 0 && hist2->GetBinError(i) > 0)
+          {
+            Float_t w1 = 1.0 / hist1->GetBinError(i) / hist1->GetBinError(i);
+            Float_t w2 = 1.0 / hist2->GetBinError(i) / hist2->GetBinError(i);
+            
+            Float_t average = (hist1->GetBinContent(i) * w1 + hist2->GetBinContent(i) * w2) / (w1 + w2);
+            
+            //targetHist->SetBinContent(i, average);
+            //targetHist->SetBinError(i, TMath::Max(mult1->GetBinError(i), mult2->GetBinError(i)));
+            
+            targetHist->SetBinContent(i, hist1->GetBinContent(i) + hist2->GetBinContent(i));
+            targetHist->SetBinError(i, hist1->GetBinError(i) + hist2->GetBinError(i));
+          }
+        }
+      }
+      
+      file = TFile::Open(Form("merged/%s_%s.root", id, evTypeStr), "RECREATE");
+      target->SaveHistograms();
+      file->Close();
+    }
+
+    const char* files2[] = { Form(file1.Data(), evTypeStr), Form(file2.Data(), evTypeStr), Form("merged/%s_%s.root", id, evTypeStr) };
+    drawAll(files2, (evType == 1), kTRUE);
+  }
+}
+
+void CompareDistributions(Int_t evType)
+{
+  loadlibs();
+  gROOT->ProcessLine(gSystem->ExpandPathName(".L $ALICE_ROOT/PWG0/dNdEta/drawPlots.C"));
+
+  const char* dir1 = "run000104824-52_pass4";
+  const char* dir2 = "run000104867_90_92_pass4";
+  
+  const char* evTypeStr = (evType == 0) ? "inel" : "nsd";
+
+  const char* suffix = "/all/spd/chi2a_";
+  if (evType == 1)
+    suffix = "/v0and/spd/chi2a_";
+  
+  TString file1, file2;
+  file1.Form("%s%s%s.root", dir1, suffix, evTypeStr);
+  file2.Form("%s%s%s.root", dir2, suffix, evTypeStr);
+    
+  for (Int_t hID = 0; hID < 3; hID++)
+    CompareQualityHists(file1, file2, Form("Multiplicity/fMultiplicityESDCorrected%d", hID), 1, 1);
+}
+
+void StatisticalUncertainty(Int_t methodType, Int_t etaRange, Bool_t mc = kFALSE)
+{
+  loadlibs();
+  
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open("multiplicityMC.root");
+  AliMultiplicityCorrection* esd = AliMultiplicityCorrection::Open("multiplicityESD.root");
+  AliMultiplicityCorrection* multTrigger = AliMultiplicityCorrection::Open("multiplicityTrigger.root");
+
+  TH1* mcHist = esd->GetMultiplicityMB(etaRange)->ProjectionY("mymc", 1, 1);
+
+  Int_t geneLimits[] = { 0, 0, 0 };
+
+  LoadAndInitialize(mult, esd, multTrigger, etaRange, kFALSE, geneLimits);
+
+  AliUnfolding::SetNbins(kBinLimits[etaRange], geneLimits[etaRange]);
+  AliUnfolding::SetChi2Regularization(AliUnfolding::kPol0, 5);
+  AliUnfolding::SetBayesianParameters(1, 10);
+
+  // background subtraction
+  Int_t background = 0;
+  
+  //background = 1091 + 4398; // MB1 for run 104824 - 52
+  background = 417 + 1758; // MB1 for run 104867 - 92
+  
+  //background = 20 + 0; // V0AND for run 104824 - 52
+  //background = 10 + 0; // V0AND for run 104867 - 92
+  
+  Printf("NOTE: Subtracting %d background events", background);
+
+  Int_t zeroBin = mult->GetTriggeredEvents(etaRange)->GetBinContent(1) - background - mult->GetMultiplicityESD(etaRange)->Integral(0, 2, 1, 1);
+  
+  TH1* errorMeasured = (TH1*) mult->StatisticalUncertainty((AliUnfolding::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kMB, zeroBin, kTRUE, kFALSE, ((mc) ? mcHist : 0))->Clone("errorMeasured");
+  
+  new TCanvas; errorMeasured->Draw();
+  new TCanvas; 
+
+  AliPWG0Helper::NormalizeToBinWidth(mult->GetMultiplicityESDCorrected(etaRange));
+  mult->GetMultiplicityESDCorrected(etaRange)->Draw();
+  
+  if (mc)
+  {
+    AliPWG0Helper::NormalizeToBinWidth(mcHist);
+    mcHist->Scale(mult->GetMultiplicityESDCorrected(etaRange)->Integral() / mcHist->Integral()); 
+    mcHist->SetLineColor(2);
+    mcHist->Draw("SAME");
+  }
+  gPad->SetLogy();
+  
+  TH1* errorResponse = (TH1*) mult->StatisticalUncertainty((AliUnfolding::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kMB, zeroBin, kFALSE, kTRUE, ((mc) ? mcHist : 0))->Clone("errorResponse");
+
+  TH1* errorBoth = (TH1*) mult->StatisticalUncertainty((AliUnfolding::MethodType) methodType, etaRange, kFALSE, AliMultiplicityCorrection::kMB, zeroBin, kTRUE, kTRUE, ((mc) ? mcHist : 0))->Clone("errorBoth");
+
+  if (mc)
+  {
+    TH1* result = mult->GetMultiplicityESDCorrected(etaRange);
+    DrawResultRatio(mcHist, result, "StatisticalUncertainty2.eps");
+  }
+
+  TFile* file = new TFile(Form("StatisticalUncertaintySPD%s.root", (methodType == 0) ? "Chi2" : "Bayesian"), "RECREATE");
+  errorResponse->Write();
+  errorMeasured->Write();
+  errorBoth->Write();
+  file->Close();
+}
+
+void ChangeResponseMatrixEfficiency(Bool_t reduceEff = kTRUE, Float_t factor = 0.01625)
+{
+  loadlibs();
+  
+  AliMultiplicityCorrection* mult = AliMultiplicityCorrection::Open("multiplicity.root");
+  
+  for (Int_t etaR = 0; etaR < 3; etaR++)
+  {
+    TH3* corr = mult->GetCorrelation(etaR);
+    TH3* corrOld = (TH3*) corr->Clone("corrOld");
+    
+    corr->Reset();
+    
+    Int_t total = 0;
+    Int_t change = 0;
+    for (Int_t x=0; x<=corr->GetNbinsX()+1; x++)
+    {
+      for (Int_t y=0; y<=corr->GetNbinsY()+1; y++)
+      {
+        Printf("%d", y);
+        for (Int_t z=0; z<=corr->GetNbinsZ()+1; z++)
+        {
+          Float_t tracklets = corr->GetZaxis()->GetBinCenter(z);
+          
+          for (Int_t n=0; n<corrOld->GetBinContent(x, y, z); n++)
+          {
+            total += tracklets;
+            Float_t trackletsNew = tracklets;
+            
+            for (Int_t i=0; i<tracklets; i++)
+            {
+              if (gRandom->Uniform() < factor)
+              {
+                trackletsNew += (reduceEff) ? -1 : 1;
+                change += (reduceEff) ? -1 : 1;
+              }
+            }
+                
+            corr->Fill(corr->GetXaxis()->GetBinCenter(x), corr->GetYaxis()->GetBinCenter(y), trackletsNew);
+          }
+        }
+      }
+    }
+    
+    Printf("%d: Changed %d out of %d total tracklets", etaR, change, total);
+  }
+
+  file = TFile::Open("out.root", "RECREATE");
+  mult->SaveHistograms();
+  file->Close();
+}
+
