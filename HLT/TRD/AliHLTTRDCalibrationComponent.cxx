@@ -286,7 +286,7 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
 
 Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_EventData& /*evtData*/,
                                                         const AliHLTComponent_BlockData* /*blocks*/,
-                                                        AliHLTComponent_TriggerData& trigData,
+                                                        AliHLTComponent_TriggerData& /*trigData*/,
                                                         AliHLTUInt8_t* /*outputPtr*/,
                                                         AliHLTUInt32_t& /*size*/,
                                                         vector<AliHLTComponent_BlockData>& /*outputBlocks*/)

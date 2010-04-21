@@ -58,6 +58,7 @@ AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent(const AliHLTTRDEsdWrite
   ,fESD(NULL)
   ,fESDfriend(NULL)
   ,fFile(NULL)
+  ,fFrFile(NULL)
   ,fTracksArray(NULL)
 {
 }
