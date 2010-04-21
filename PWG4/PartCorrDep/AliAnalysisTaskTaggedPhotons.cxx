@@ -23,7 +23,7 @@
 // fill invariant mass distributions for estimate background below pi0
 // peak so that estimate proportion of fake pairs. 
 // Fills as well controll MC histograms with clasification of the photon origin 
-// and check of the ptoportion of truly tagged photons.
+// and check of the proportion of truly tagged photons.
 // 
 //
 //*-- Dmitry Blau 
@@ -290,8 +290,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fhMCMissedTaggingMass= new TH2D("hMCMissedTaggingMass","Inv mass of pairs missed tagging",nmass,masses,nPtBins, ptBins ) ;
 
     //Conversion and annihilation radius distributions
-    fhConversionRadius  = new TH1D("fhConversionRadius","Radis of photon production (conversion)",100,0.,500.) ;
-    fhInteractionRadius = new TH1D("fhInteractionRadius","Radis of photon production (hadron interaction)",100,0.,500.);
+    fhConversionRadius  = new TH1D("fhConversionRadius","Radii of photon production (conversion)",100,0.,500.) ;
+    fhInteractionRadius = new TH1D("fhInteractionRadius","Radii of photon production (hadron interaction)",100,0.,500.);
 
     fhEvents               = new TH1D("hEvents", "Number of Events processed", 1, 0, 1);
 
@@ -395,7 +395,25 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //read geometry if not read yet
   if((fPHOS && fPHOSgeom==0) || (!fPHOS && fEMCALgeom==0))
     InitGeometry() ;
-
+  if(fPHOS && fPHOSgeom!=0){
+  }
+  if(!fPHOS && fEMCALgeom!=0){ //EMCAL geometry initialized, but still need to set matrixes
+    AliAODEvent * aod = 0x0 ;
+    if(!esd)
+      aod=dynamic_cast<AliAODEvent*>(InputEvent()) ;
+    if(!esd && !aod)
+      AliFatal("Can not read geometry matrixes from ESD/AOD: NO ESD") ;
+    for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+      if(esd){
+        const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
+        fEMCALgeom->SetMisalMatrix(m, mod) ;
+      }
+      else{
+        const TGeoHMatrix* m=aod->GetHeader()->GetEMCALMatrix(mod) ;
+        fEMCALgeom->SetMisalMatrix(m, mod) ;
+      }
+    }
+  }
   //MC stack init
   fStack=0x0 ;
   if(AliAnalysisManager::GetAnalysisManager()){
@@ -736,6 +754,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     delete tmp;
   }
 
+  delete caloClustersArr;
+
   PostData(1, fOutputList);
 }
 
@@ -757,131 +777,6 @@ void AliAnalysisTaskTaggedPhotons::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
   if (fDebug > 1) Printf("Terminate()");
-
-  //Write everything to the file
-  char outname[55];
-  if(fPHOS)
-    sprintf(outname,"Tagging_PHOS.root") ;
-  else  
-    sprintf(outname,"Tagging_EMCAL.root") ;
-  TFile *outfile = new TFile (outname,"recreate");
-
-fhRecAll[0]->Write();
-fhRecAll[1]->Write();
-fhRecAll[2]->Write();
-fhRecAll[3]->Write();
-fhRecAllArea1->Write();
-fhRecAllArea2->Write();
-fhRecAllArea3->Write();
-fhRecPhoton->Write();
-fhRecOther->Write();
-fhRecPhotonPID[0]->Write();
-fhRecPhotonPID[1]->Write();
-fhRecPhotonPID[2]->Write();
-fhRecPhotonPID[3]->Write();
-fhRecOtherPID[0]->Write();
-fhRecOtherPID[1]->Write();
-fhRecOtherPID[2]->Write();
-fhRecOtherPID[3]->Write();
-fhRecPhotPi0->Write();
-fhRecPhotEta->Write();
-fhRecPhotOmega->Write();
-fhRecPhotEtapr->Write();
-fhRecPhotConv->Write();
-fhRecPhotHadron->Write();
-fhRecPhotDirect->Write();
-fhRecPhotOther->Write();
-fhDecWMCPartner->Write();
-fhDecWMissedPartnerNotPhoton->Write();
-fhDecWMissedPartnerAll->Write();
-fhDecWMissedPartnerEmin->Write();
-fhDecWMissedPartnerConv->Write();
-fhDecWMissedPartnerStack->Write();
-fhDecWMissedPartnerGeom0->Write();
-fhDecWMissedPartnerGeom1->Write();
-fhDecWMissedPartnerGeom2->Write();
-fhDecWMissedPartnerGeom3->Write();
-fhPartnerMCReg->Write();
-fhPartnerMissedEmin->Write();
-fhPartnerMissedConv->Write();
-fhPartnerMissedGeo->Write();
-fhTaggedAll->Write();
-fhTaggedArea1->Write();
-fhTaggedArea2->Write();
-fhTaggedArea3->Write();
-
-fhTaggedPID[0]->Write();
-fhTaggedPID[1]->Write();
-fhTaggedPID[2]->Write();
-fhTaggedPID[3]->Write();
-fhTaggedMult->Write();
-fhTaggedMCTrue->Write();
-fhMCMissedTagging->Write();
-fhMCFakeTagged->Write();
-fhInvMassReal[0]->Write();
-fhInvMassReal[1]->Write();
-fhInvMassReal[2]->Write();
-fhInvMassReal[3]->Write();
-fhInvMassMixed[0]->Write();
-fhInvMassMixed[1]->Write();
-fhInvMassMixed[2]->Write();
-fhInvMassMixed[3]->Write();
-fhMCMissedTaggingMass->Write();
-fhConversionRadius->Write();
-fhInteractionRadius->Write();
-fhEvents->Write();
-
-/*
-  fhAllPhotons->Write() ;
-  fhNotPhotons->Write() ;
-  fhAllPhotonsPrimary->Write() ;
-  fhNotPhotonsPrimary->Write() ;
-  fhfakeNotPhotons->Write() ;
-
-  fhTaggedPhotons->Write();
-  fhfakeTaggedPhotons->Write();
-  fhDecayNotTaggedPhotons->Write();
-  fhstrangeNotTaggedPhotons->Write();
-  fhstrangeNotTaggedPhotonsPair->Write();
-  fhstrangeNotTaggedPhotonsRegCut->Write();
-  fhstrangeNotTaggedPhotonsPairRegCut->Write();
-
-  fhPi0DecayPhotonsPrimary->Write();
-  fhEtaDecayPhotonsPrimary->Write();
-  fhOmegaDecayPhotonsPrimary->Write();
-  fhEtaSDecayPhotonsPrimary->Write();
-  fhOtherDecayPhotonsPrimary->Write();
-  fhDecayPhotonsPrimary->Write();
-  fhConvertedPhotonsPrimary->Write();
-  fhConvertedPhotonsPrimaryHadronsDecays->Write();
-  fhCoordsConvertion->Write();
-  fhCoordsConvertion2->Write();
-
-  fhPHOSInvariantMassReal->Write();
-  fhPHOSInvariantMassMixed->Write();
-
-  fhPHOSPi0->Write();
-
-  fhPi0DecayPhotonsGeomfake->Write();
-  fhPi0DecayPhotonsTaggedPrimary->Write();
-  fhPi0DecayPhotonsTaggedPrimaryPair->Write();
-  fhPi0DecayPhotonsTaggedPrimaryRegCut->Write();
-  fhPi0DecayPhotonsTaggedPrimaryPairRegCut->Write();
-
-  fhPi0DecayPhotonsBigDecay->Write();
-  fhPi0DecayPhotonsPConv->Write();
-  fhPi0DecayPhotonsPGeo->Write();
-  fhPi0DecayPhotonsPReg->Write();
-
-  fhfakeTaggedPhotonsConv->Write();
-  fhfakeTaggedPhotonsPID->Write();
-
-  fhTrackRefCoords->Write();
-  fhEvents->Write();
-*/
-
-  outfile->Close();
-
 }
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt)const
