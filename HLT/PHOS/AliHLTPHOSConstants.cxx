@@ -71,7 +71,8 @@ AliHLTPHOSConstants::AliHLTPHOSConstants() :
   fkNBRANCHES(2),
   fkCELLSTEP(2.255),
   fkNRCUSPERSECTOR(-9999),
-  fkDDLOFFSET(1792)
+  fkDDLOFFSET(1792),
+  fkDETNAME("PHOS")
 {
   //Default constructor
 }

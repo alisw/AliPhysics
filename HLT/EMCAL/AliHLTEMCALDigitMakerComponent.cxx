@@ -165,6 +165,7 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	 {
 	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
 	    {
+	       module = 0; //removing warning
 		//fDigitMakerPtr->SetGain(x, z, fCalibData->GE(module, z+1, x+1), fCalibData->GetADCchannelEmc(module, z+1, x+1));
 	    }
 	 }
