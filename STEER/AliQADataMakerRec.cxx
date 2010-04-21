@@ -84,7 +84,6 @@ AliQADataMakerRec::~AliQADataMakerRec()
 	if ( fESDsQAList ) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( fESDsQAList[specie] ) {
-        if ( fESDsQAList[specie]->IsOwner() ) 
           fESDsQAList[specie]->Delete() ;     
       }
     }
@@ -93,8 +92,7 @@ AliQADataMakerRec::~AliQADataMakerRec()
 	if ( fRawsQAList ) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( fRawsQAList[specie] ) {
-        if ( fRawsQAList[specie]->IsOwner() ) 
-          fRawsQAList[specie]->Delete() ;
+        fRawsQAList[specie]->Delete() ;
       }
     }
     delete[] fRawsQAList ;
@@ -102,8 +100,7 @@ AliQADataMakerRec::~AliQADataMakerRec()
 	if ( fDigitsQAList ) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( fDigitsQAList[specie] ) {
-        if ( fDigitsQAList[specie]->IsOwner() ) 
-          fDigitsQAList[specie]->Delete() ;
+        fDigitsQAList[specie]->Delete() ;
       }
     }
 		delete[] fDigitsQAList ; 
@@ -111,8 +108,7 @@ AliQADataMakerRec::~AliQADataMakerRec()
 	if ( fRecPointsQAList ) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       if ( fRecPointsQAList[specie] ) {
-        if ( fRecPointsQAList[specie]->IsOwner() ) 
-          fRecPointsQAList[specie]->Delete() ;
+        fRecPointsQAList[specie]->Delete() ;
       }
     }
 		delete[] fRecPointsQAList ; 

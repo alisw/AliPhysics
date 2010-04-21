@@ -68,21 +68,18 @@ AliQADataMakerSim::~AliQADataMakerSim()
 	//dtor: delete the TObjArray and thei content
 	if ( fDigitsQAList ) { 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if ( fDigitsQAList[specie]->IsOwner() )
 			fDigitsQAList[specie]->Delete() ;
     }
 		delete[] fDigitsQAList ;
   }
 	if ( fHitsQAList ) {
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if ( fHitsQAList[specie]->IsOwner() ) 
 			fHitsQAList[specie]->Delete() ;
     }
    	delete[] fHitsQAList ;
   }
 	if ( fSDigitsQAList ) { 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if ( fSDigitsQAList[specie]->IsOwner() ) 
 			fSDigitsQAList[specie]->Delete() ; 
     }
  		delete[] fSDigitsQAList ;
