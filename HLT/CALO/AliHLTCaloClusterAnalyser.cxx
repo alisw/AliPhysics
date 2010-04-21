@@ -194,6 +194,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
   if(fGeometry == 0)
   {
      HLTError("No geometry object is initialised, creation of clusters stopped");
+     return  -1;
   }
 
   CalculateCenterOfGravity();
