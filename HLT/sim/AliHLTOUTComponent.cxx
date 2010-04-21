@@ -356,7 +356,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 }
 
 
-int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* /*esd*/)
+int AliHLTOUTComponent::FillESD(int /*eventNo*/, AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/)
 {
   // see header file for class documentation
   // 2010-04-14 nothing to do any more. The data is written at the end of
