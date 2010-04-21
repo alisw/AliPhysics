@@ -666,3 +666,16 @@ ZDC  3	 1e-3  1e-3  1e-3  1e-3	 0.01  1e-3  1e-3  -1	  -1  -1     0    0    0   
 ZDC  4	 1e-3  1e-3  1e-3  1e-3	 0.01  1e-3  1e-3  -1	  -1  -1     0    0    0    0   0     0   1     0    0    0   0
 * void with field
 ZDC  11	 1e-3  1e-3  1e-3  1e-3	 0.01  1e-3  1e-3  -1	  -1  -1     0    0    0    0   0     0   0     0    0    0   0
+
+* EMCAL  
+* ====
+*
+*     Med   GAM   ELEC   NHAD   CHAD   MUON   EBREM  MUHAB   EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL 
+* Lead
+EMCAL  1   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* Scintillator
+EMCAL  2   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* Aluminium parts
+EMCAL  3   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* Steel parts
+EMCAL  4   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
