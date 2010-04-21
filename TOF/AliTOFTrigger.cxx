@@ -633,7 +633,7 @@ void AliTOFTrigger::GetMap(Bool_t **map) const
 
   for(Int_t i = 0; i<kNLTM;i++)
     for(Int_t j = 0; j<kNCTTMchannels;j++)
-      map[i][j]=(i<36)?fCTTMmatrixFront[i][j]:fCTTMmatrixBack[i][j];
+      map[i][j]=(i<36)?fCTTMmatrixFront[i][j]:fCTTMmatrixBack[i-36][j];
 
 }
 
@@ -656,7 +656,7 @@ void AliTOFTrigger::GetTRDmap(Bool_t **map) const
   for(int i = kNLTM/2; i<kNLTM;i++)
     for(int j = 0; j<AliTOFTrigger::kNCTTMchannels;j++){
       UInt_t uTRDbit=j/3;
-      if(fCTTMmatrixBack[i][j]) map[i][uTRDbit]=kTRUE;
+      if(fCTTMmatrixBack[i - kNLTM/2][j]) map[i][uTRDbit]=kTRUE;
     }
 }
 
