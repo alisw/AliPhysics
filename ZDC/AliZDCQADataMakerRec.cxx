@@ -213,15 +213,6 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2ESDsList(hESDPMCZPA, 15, expert, !image);
   // 
   // ------------------- LOW GAIN CHAIN ---------------------------
-  TH1F * hESDZNCTotlg = new TH1F("hESDZNCTotlg", "ESD lg signal in ZNC", 100, 0., 6000.);
-  TH1F * hESDZNATotlg = new TH1F("hESDZNATotlg", "ESD lg signal in ZNA", 100, 0., 6000.);
-  TH1F * hESDZPCTotlg = new TH1F("hESDZPCTotlg", "ESD lg signal in ZPC", 100, 0., 10000.);
-  TH1F * hESDZPATotlg = new TH1F("hESDZPATotlg", "ESD lg signal in ZPA", 100, 0., 10000.);
-  Add2ESDsList(hESDZNCTotlg, expert, !image);
-  Add2ESDsList(hESDZNATotlg, expert, !image);
-  Add2ESDsList(hESDZPCTotlg, expert, !image);
-  Add2ESDsList(hESDZPATotlg, expert, !image);
-  //
   TH1F * hESDSumQZNClg = new TH1F("hESDSumQZNClg", "Sum of 4 lg ZNC sectors",100, 0., 4000.);
   TH1F * hESDSumQZNAlg = new TH1F("hESDSumQZNAlg", "Sum of 4 lg ZNA sectors",100, 0., 4000.);
   TH1F * hESDSumQZPClg = new TH1F("hESDSumQZPClg", "Sum of 4 lg ZPC sectors",100, 0., 4000.);
@@ -425,6 +416,7 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Float_t beamEne = esd->GetBeamEnergy();
     zdcESD->GetZNCentroidInPbPb(beamEne, centr_ZNC, centr_ZNA);
   }
+  else printf(" ZDC -> not possible to evaluate centroids for %s beam type\n\n",beamType.Data());
   GetESDsData(0)->Fill(centr_ZNC[0], centr_ZNC[1]);
   GetESDsData(1)->Fill(centr_ZNA[0], centr_ZNA[1]);
 
