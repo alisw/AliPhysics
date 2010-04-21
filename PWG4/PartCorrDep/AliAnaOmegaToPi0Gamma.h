@@ -42,7 +42,6 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
 
   void SetNPID(Int_t pid) {fNpid=pid;} //N pid cut 
   void SetNVtxZ(Int_t vtx){fNVtxZBin=vtx;} //N vertex Z cut
-  void SetNBadChDist(Int_t dist){fNBadChDistBin=dist;} //N dist cut
   void SetPi0MassPeakWidthCut(Double_t win){fPi0MassWindow=win;} 
 
   void SetPi0OverOmegaPtCut(Double_t cut){fPi0OverOmegaPtCut=cut;}
@@ -66,7 +65,6 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   Double_t *fVtxZCut;            //![fNVtxZBin] vtertx z cut
   Double_t *fCent;               //![fNCentBin] centrality cut
   Double_t *fRp;                 //![fNRpBin] reaction plane cut
-  Int_t *fBadChDist;             //![fNBadChDistBin] bad channel dist
   
   Double_t fPi0Mass;             //!nominal pi0 mass
   Double_t fPi0MassWindow;       //!pi0 mass windows
