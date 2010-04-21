@@ -118,15 +118,6 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Destructor */
     virtual ~AliHLTCaloClusterizerComponent();
 
-//     /** interface function, see @ref AliHLTComponent for description */
-//     void GetInputDataTypes ( std::vector<AliHLTComponentDataType>& list );
-
-//     /** interface function, see @ref AliHLTComponent for description */
-//     AliHLTComponentDataType GetOutputDataType();
-
-//     /** interface function, see @ref AliHLTComponent for description */
-//     void GetOutputDataSize ( unsigned long& constBase, double& inputMultiplier );
-
     /** interface function, see @ref AliHLTComponent for description */
 
     using  AliHLTCaloProcessor::DoEvent;
@@ -144,10 +135,13 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
 
     /** interface function, see @ref AliHLTComponent for
 	description */
-    int DoInit ( int argc, const char** argv );
+    virtual int DoInit ( int argc, const char** argv );
 
     /** interface function, see @ref AliHLTComponent for description */
-    int Deinit();
+    virtual int DoDeinit();
+
+    /** Initialise geometry objects */
+    virtual Int_t InitialiseGeometry() = 0;
 
     /** interface function, see @ref AliHLTComponent for description */
     int Reconfigure ( const char* cdbEntry, const char* chainId );
@@ -163,13 +157,7 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     
     /** Pointer to reconstruction parameters handler */
     AliHLTCaloRecoParamHandler *fRecoParamsPtr; //! transient
-    
-    /** Initialise geometry objects */
-    virtual Int_t InitialiseGeometry() = 0; 
-    
-    /** */
-    Bool_t fGeometryInitialised;
-     
+
   private:
 
     /** Array of pointers to our digits */

@@ -41,6 +41,7 @@ Int_t
 AliHLTEMCALRecoParamHandler::GetParametersFromCDB()
 {
   // Avoiding linking error in EMCAL
+  return 0;
 }
 
 

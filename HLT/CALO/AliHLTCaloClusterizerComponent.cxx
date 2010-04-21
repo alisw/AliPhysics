@@ -47,32 +47,11 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
   fDigitsPointerArray(0), 
   fOutputDigitsArray(0),
   fClusterizerPtr(0),
-  fDigitCount(0), 
-  fGeometryInitialised(true)
+  fDigitCount(0)
 {
   //See headerfile for documentation
-
-  fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
-
-  fClusterizerPtr = new AliHLTCaloClusterizer(det);
-
-  fClusterizerPtr->SetDigitArray(fDigitsPointerArray);
-   
-  fAnalyserPtr = new AliHLTCaloClusterAnalyser();
   
-  if(det == "PHOS")
-  {
-     fAnalyserPtr->SetClusterType(kPHOSCluster);
-  }
-  else if(det == "EMCAL")
-  {
-     fAnalyserPtr->SetClusterType(kEMCALClusterv1);
-  }
-  else
-  {
-     fAnalyserPtr->SetClusterType(kUndef);
-  }
-  
+ 
   
 }
 
@@ -85,21 +64,6 @@ delete fAnalyserPtr;
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
     }
-}
-
-
-int
-AliHLTCaloClusterizerComponent::Deinit()
-{
-  //See headerfile for documentation
-
-if (fClusterizerPtr)
-    {
-      delete fClusterizerPtr;
-      fClusterizerPtr = 0;
-    }
-
-  return 0;
 }
 
 int
@@ -126,7 +90,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   UInt_t specification = 0;
   
   AliHLTCaloDigitDataStruct *digitDataPtr = 0;
-  if(fGeometryInitialised == false) InitialiseGeometry();
+
   // Adding together all the digits, should be put in standalone method  
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -258,6 +222,27 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
 {
   //See headerfile for documentation
 
+  fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
+
+  fClusterizerPtr = new AliHLTCaloClusterizer(fCaloConstants->GetDETNAME());
+
+  fClusterizerPtr->SetDigitArray(fDigitsPointerArray);
+   
+  fAnalyserPtr = new AliHLTCaloClusterAnalyser();
+  
+  if(fCaloConstants->GetDETNAME() == "PHOS")
+  {
+     fAnalyserPtr->SetClusterType(kPHOSCluster);
+  }
+  else if(fCaloConstants->GetDETNAME() == "EMCAL")
+  {
+     fAnalyserPtr->SetClusterType(kEMCALClusterv1);
+  }
+  else
+  {
+     fAnalyserPtr->SetClusterType(kUndef);
+  }
+   InitialiseGeometry();
   if(fRecoParamsPtr)
   {
      if(!fRecoParamsPtr->GetParametersFromCDB())
@@ -279,6 +264,26 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
     }
 
   return 0;
+}
+int AliHLTCaloClusterizerComponent::DoDeinit()
+{
+   // See header file for documentation
+   if(fDigitsPointerArray)
+   {
+      delete []  fDigitsPointerArray;
+      fDigitsPointerArray = 0;
+   }
+   if(fClusterizerPtr)
+   {
+      delete fClusterizerPtr;
+      fClusterizerPtr = 0;
+   }
+   if(fAnalyserPtr)
+   {
+      delete fAnalyserPtr;
+      fAnalyserPtr = 0;
+   }
+   return 0;
 }
 
 Int_t 

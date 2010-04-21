@@ -20,6 +20,7 @@
 #include "AliHLTCaloRecPointDataStruct.h"
 #include "AliHLTCaloRecPointHeaderStruct.h"
 #include "AliHLTEMCALGeometry.h"
+#include "AliHLTEMCALRecoParamHandler.h"
 #include "AliHLTCaloClusterAnalyser.h"
 
 
@@ -48,7 +49,6 @@ AliHLTEMCALClusterizerComponent::AliHLTEMCALClusterizerComponent():
 {
   //See headerfile for documentation
 
-  fGeometryInitialised = false;
   fDataOrigin = const_cast<char*>(kAliHLTDataOriginEMCAL);
 
   //AliHLTEMCALGeometry *geom = new AliHLTEMCALGeometry;
@@ -101,10 +101,27 @@ AliHLTEMCALClusterizerComponent::Spawn()
 
   return new AliHLTEMCALClusterizerComponent();
 }
+int AliHLTEMCALClusterizerComponent::DoInit(int argc, const char** argv)
+{
+    fRecoParamsPtr = new AliHLTEMCALRecoParamHandler();
+
+    return AliHLTCaloClusterizerComponent::DoInit(argc, argv);
+}
+
+int AliHLTEMCALClusterizerComponent::DoDeinit()
+{
+   if(fRecoParamsPtr)
+   {
+      delete fRecoParamsPtr;
+      fRecoParamsPtr = 0;
+   }
+    return AliHLTCaloClusterizerComponent::DoDeinit();
+}
+
 
 int AliHLTEMCALClusterizerComponent::InitialiseGeometry()
 {
         fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry());
-	fGeometryInitialised = true;
+
 	return 0;
 }

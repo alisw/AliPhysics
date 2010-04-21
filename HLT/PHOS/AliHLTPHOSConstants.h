@@ -12,6 +12,7 @@
 
 #ifndef ALIHLTPHOSCONSTANTS_H
 #define ALIHLTPHOSCONSTANTS_H
+#include <TString.h>
 
 class AliHLTCaloConstants;
 
@@ -78,6 +79,8 @@ public:
   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 					
   
   Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
+  
+  TString GetDETNAME() const { return fkDETNAME; }
 
 private:
 
@@ -138,7 +141,8 @@ private:
   
   const Int_t fkDDLOFFSET;  //Constant
 
-
+  const TString fkDETNAME;  //Constant
+   
   ClassDef(AliHLTPHOSConstants, 1);
 
 };

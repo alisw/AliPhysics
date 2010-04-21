@@ -51,10 +51,6 @@ AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent():
 
   //AliHLTPHOSGeometry *geom = new AliHLTPHOSGeometry;
   
-  fAnalyserPtr->SetGeometry(new AliHLTPHOSGeometry);
-  
-  fRecoParamsPtr = new AliHLTPHOSRecoParamHandler();
-  
 }
 
 AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
@@ -99,4 +95,31 @@ AliHLTPHOSClusterizerComponent::Spawn()
   //See headerfile for documentation
 
   return new AliHLTPHOSClusterizerComponent();
+}
+
+int AliHLTPHOSClusterizerComponent::DoInit(int argc, const char** argv)
+{
+   
+   fRecoParamsPtr = new AliHLTPHOSRecoParamHandler(); 
+    
+    return AliHLTCaloClusterizerComponent::DoInit(argc, argv);
+}
+
+int AliHLTPHOSClusterizerComponent::DoDeinit()
+{
+    if(fRecoParamsPtr) 
+    {
+       delete fRecoParamsPtr;
+       fRecoParamsPtr = 0;
+    }
+    return AliHLTCaloClusterizerComponent::DoDeinit();
+}
+
+
+Int_t AliHLTPHOSClusterizerComponent::InitialiseGeometry()
+{
+ 
+  fAnalyserPtr->SetGeometry(new AliHLTPHOSGeometry);
+ 
+  return 0;
 }

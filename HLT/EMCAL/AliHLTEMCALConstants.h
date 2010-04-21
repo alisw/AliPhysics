@@ -95,7 +95,7 @@ public:
   Float_t GetGJ() const { return fkCJ;} //FR
   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 					
   Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
-
+  TString GetDETNAME() const { return fkDETNAME; }
 
 private:
 
@@ -165,6 +165,8 @@ private:
   const Int_t fkNRCUSPERSECTOR; //Constant
   
   const Int_t fkDDLOFFSET;   //Constant
+
+  const TString fkDETNAME;  //Constant
 
   ClassDef(AliHLTEMCALConstants, 1)
 

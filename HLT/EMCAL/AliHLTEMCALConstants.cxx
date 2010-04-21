@@ -79,7 +79,8 @@ AliHLTEMCALConstants::AliHLTEMCALConstants() :
   fkCRITICENERGY(8),
   fkCJ(0.5),
   fkNRCUSPERSECTOR(4),
-  fkDDLOFFSET(4608)
+  fkDDLOFFSET(4608),
+  fkDETNAME("EMCAL")
 {
   //Default constructor
 }

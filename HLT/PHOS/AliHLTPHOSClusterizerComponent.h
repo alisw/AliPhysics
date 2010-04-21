@@ -135,11 +135,15 @@ class AliHLTPHOSClusterizerComponent : public AliHLTCaloClusterizerComponent
   AliHLTComponent* Spawn();
 
 protected:
-   virtual int DoInit() {return 0; }
-  virtual int DoDeinit(){ return 0;}
-  virtual int Deinit() {return 0; }
+   
+   /** interface function, see @ref AliHLTComponent for description */
+    int DoInit ( int argc, const char** argv );
+   
+    /** interface function, see @ref AliHLTComponent for description */
+    virtual int DoDeinit();
+
     /** Initialise geometry objects */
-    virtual Int_t InitialiseGeometry(){return 0;} 
+    virtual Int_t InitialiseGeometry();
 
 private:
   

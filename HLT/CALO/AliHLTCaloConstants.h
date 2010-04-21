@@ -90,6 +90,8 @@ public:
   // end
   virtual Int_t GetNRCUSPERSECTOR() const = 0; 						
   virtual Int_t GetDDLOFFSET() const = 0;
+  
+  virtual TString GetDETNAME() const = 0;
 
   
 private:
