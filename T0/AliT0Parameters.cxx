@@ -88,8 +88,10 @@ AliT0Parameters::AliT0Parameters()
    fLatencyL1C(0),
    fLookUp(0),
    fNumberOfTRMs(2),
-   fCalibentry(), fLookUpentry(),fSlewCorr()
-
+   fCalibentry(), 
+   fLookUpentry(),
+   fSlewCorr(),
+   fLatency()
   
 {
   // Default constructor 
