@@ -16,6 +16,7 @@
 #include "AliESDEvent.h"
 #include "AliRun.h"
 #include "AliEMCAL.h"
+#include "TEvePointSet.h"
 
 class Riostream;
 class map;
@@ -26,7 +27,6 @@ class AliEMCALLoader;
 class AliEMCALGeometry;
 class AliEveEMCALSModuleData;
 class TClonesArray; 
-class TEvePointSet; 
 class TGedFrame; 
 class TEveBoxSet; 
 class TEveUtil; 
