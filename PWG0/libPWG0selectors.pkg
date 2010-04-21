@@ -7,9 +7,6 @@
 
 SRCS = dNdEta/AlidNdEtaTask.cxx \
        dNdEta/AlidNdEtaCorrectionTask.cxx \
-       TPC/AliROCESDAnalysisSelector.cxx \
-       TPC/AliROCRawAnalysisSelector.cxx \
-       TPC/AliROCClusterAnalysisSelector.cxx \
        highMultiplicity/AliHighMultiplicitySelector.cxx \
        multiplicity/AliMultiplicityTask.cxx \
        esdTrackCuts/AliCutTask.cxx \
@@ -21,7 +18,7 @@ HDRS = $(SRCS:.cxx=.h)
 
 DHDR= PWG0selectorsLinkDef.h
 
-EINCLUDE= TPC RAW ITS PWG0/dNdEta PWG0/TPC PWG0/highMultiplicity PWG0/multiplicity PWG0/esdTrackCuts PWG0/trigger PWG0/dNdPt PWG0/eventStats ANALYSIS
+EINCLUDE= TPC RAW ITS PWG0/dNdEta PWG0/highMultiplicity PWG0/multiplicity PWG0/esdTrackCuts PWG0/trigger PWG0/dNdPt PWG0/eventStats ANALYSIS
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
