@@ -375,6 +375,7 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   AliMUONTrackParam *trackParam;
   Double_t x1,y1,z1,slopex1,slopey1,pX1,pY1,pZ1,p1,pT1,eta1,phi1;
   Double_t x2,y2,z2,slopex2,slopey2,pX2,pY2,pZ2,p2,pT2,eta2,phi2;
+  Double_t dPhi;
   Double_t xAbs,yAbs,dAbs,aAbs,aMCS,aMC;
   Double_t xDCA,yDCA,dca,pU;
   Double_t aMCSMoy = 0., aMCS2Moy = 0., dMCSMoy = 0., dMCS2Moy = 0., adMCSMoy = 0.;
@@ -504,6 +505,10 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
 	eta2 = TMath::Log(TMath::Tan(0.5*TMath::ATan(-pT2/pZ2)));
 	phi2 = TMath::Pi()+TMath::ATan2(-pY2, -pX2);
         
+	dPhi = phi2-phi1;
+	if (dPhi < -TMath::Pi()) dPhi += 2.*TMath::Pi();
+	else if (dPhi > TMath::Pi()) dPhi -= 2.*TMath::Pi();
+	
         AliMUONTrackParam trackParamAtDCA(*((AliMUONTrackParam*) trackMatched->GetTrackParamAtCluster()->First()));
 	pU = trackParamAtDCA.P();
 	AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamAtDCA, z2);
@@ -516,13 +521,13 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
 	hResSlopeYVertex->Fill(slopey2-slopey1);
 	hPDCA->Fill(0.5*(p2+pU)*dca);
 	hResEtaVertex->Fill(eta2-eta1);
-	hResPhiVertex->Fill(phi2-phi1);
+	hResPhiVertex->Fill(dPhi);
 	if (aMC >= aAbsLimits[0] && aMC <= aAbsLimits[1]) {
 	  hResMomVertexVsMom->Fill(p1,p2-p1);
 	  hResSlopeXVertexVsMom->Fill(p1,slopex2-slopex1);
 	  hResSlopeYVertexVsMom->Fill(p1,slopey2-slopey1);
 	  hResEtaVertexVsMom->Fill(p1,eta2-eta1);
-	  hResPhiVertexVsMom->Fill(p1,phi2-phi1);
+	  hResPhiVertexVsMom->Fill(p1,dPhi);
 	}
 	hResMomVertexVsAngleVsMom->Fill(p1,aAbs,p2-p1);
 	if (aAbs > 2. && aAbs < 3.) {
@@ -548,7 +553,7 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
 	  hResSlopeYVertexVsPosAbsEnd_0_2_DegMC->Fill(dAbs,slopey2-slopey1);
 	  hPDCAVsPosAbsEnd_0_2_DegMC->Fill(dAbs,0.5*(p2+pU)*dca);
 	  hResEtaVertexVsPosAbsEnd_0_2_DegMC->Fill(dAbs,eta2-eta1);
-	  hResPhiVertexVsPosAbsEnd_0_2_DegMC->Fill(dAbs,phi2-phi1);
+	  hResPhiVertexVsPosAbsEnd_0_2_DegMC->Fill(dAbs,dPhi);
 	}
 	else if (aMC >= 2. && aMC < 3) {
 	  hResMomVertexVsPosAbsEnd_2_3_DegMC->Fill(dAbs,p2-p1);
@@ -556,7 +561,7 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
 	  hResSlopeYVertexVsPosAbsEnd_2_3_DegMC->Fill(dAbs,slopey2-slopey1);
 	  hPDCAVsPosAbsEnd_2_3_DegMC->Fill(dAbs,0.5*(p2+pU)*dca);
 	  hResEtaVertexVsPosAbsEnd_2_3_DegMC->Fill(dAbs,eta2-eta1);
-	  hResPhiVertexVsPosAbsEnd_2_3_DegMC->Fill(dAbs,phi2-phi1);
+	  hResPhiVertexVsPosAbsEnd_2_3_DegMC->Fill(dAbs,dPhi);
 	}
 	else if (aMC >= 3. && aMC < 10.) {
 	  hResMomVertexVsPosAbsEnd_3_10_DegMC->Fill(dAbs,p2-p1);
@@ -564,20 +569,20 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
 	  hResSlopeYVertexVsPosAbsEnd_3_10_DegMC->Fill(dAbs,slopey2-slopey1);
 	  hPDCAVsPosAbsEnd_3_10_DegMC->Fill(dAbs,0.5*(p2+pU)*dca);
 	  hResEtaVertexVsPosAbsEnd_3_10_DegMC->Fill(dAbs,eta2-eta1);
-	  hResPhiVertexVsPosAbsEnd_3_10_DegMC->Fill(dAbs,phi2-phi1);
+	  hResPhiVertexVsPosAbsEnd_3_10_DegMC->Fill(dAbs,dPhi);
 	}
 	hResMomVertexVsAngle->Fill(aAbs,p2-p1);
 	hResSlopeXVertexVsAngle->Fill(aAbs,slopex2-slopex1);
 	hResSlopeYVertexVsAngle->Fill(aAbs,slopey2-slopey1);
 	hPDCAVsAngle->Fill(aAbs,0.5*(p2+pU)*dca);
 	hResEtaVertexVsAngle->Fill(aAbs,eta2-eta1);
-	hResPhiVertexVsAngle->Fill(aAbs,phi2-phi1);
+	hResPhiVertexVsAngle->Fill(aAbs,dPhi);
 	hResMomVertexVsMCAngle->Fill(aMC,p2-p1);
 	hResSlopeXVertexVsMCAngle->Fill(aMC,slopex2-slopex1);
 	hResSlopeYVertexVsMCAngle->Fill(aMC,slopey2-slopey1);
 	hPDCAVsMCAngle->Fill(aMC,0.5*(p2+pU)*dca);
 	hResEtaVertexVsMCAngle->Fill(aMC,eta2-eta1);
-	hResPhiVertexVsMCAngle->Fill(aMC,phi2-phi1);
+	hResPhiVertexVsMCAngle->Fill(aMC,dPhi);
 	
         trackParam = (AliMUONTrackParam*) trackRef->GetTrackParamAtCluster()->First();
         x1 = trackParam->GetNonBendingCoor();
@@ -664,7 +669,7 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
     Double_t sigmaErr = f2->GetParError(3);
     Double_t sigmaPErr = TMath::Sqrt(sigma*sigma*sigmaErr*sigmaErr + fwhm*fwhm*fwhmErr*fwhmErr/(64.*log(2.)*log(2.))) / sigmaP;
     hResMomVertexVsMom->GetXaxis()->SetRange(i-rebinFactorX+1,i);
-    Double_t p = hResMomVertexVsMom->GetMean();
+    Double_t p = (tmp->GetEntries() > 0) ? hResMomVertexVsMom->GetMean() : 0.5 * (hResMomVertexVsMom->GetBinLowEdge(i-rebinFactorX+1) + hResMomVertexVsMom->GetBinLowEdge(i+1));
     hResMomVertexVsMom->GetXaxis()->SetRange();
     Double_t pErr[2] = {p-hResMomVertexVsMom->GetBinLowEdge(i-rebinFactorX+1), hResMomVertexVsMom->GetBinLowEdge(i+1)-p};
     gMeanResMomVertexVsMom->SetPoint(i/rebinFactorX-1, p, tmp->GetMean());
@@ -967,7 +972,7 @@ void FitGausResVsMom(TH2* h, Int_t nBins, const Double_t mean0, const Double_t s
     tmp->Rebin(rebin);
     tmp->Fit("fGaus","NQ");
     h->GetXaxis()->SetRange(i-rebinFactorX+1,i);
-    Double_t p = h->GetMean();
+    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
     h->GetXaxis()->SetRange();
     Double_t pErr[2] = {p-h->GetBinLowEdge(i-rebinFactorX+1), h->GetBinLowEdge(i+1)-p};
     gMean->SetPoint(i/rebinFactorX-1, p, fGaus->GetParameter(1));
@@ -996,7 +1001,7 @@ void FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* g
     tmp->Rebin(rebin);
     tmp->Fit("fPGaus","NQ");
     h->GetXaxis()->SetRange(i-rebinFactorX+1,i);
-    Double_t p = h->GetMean();
+    Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
     h->GetXaxis()->SetRange();
     Double_t pErr[2] = {p-h->GetBinLowEdge(i-rebinFactorX+1), h->GetBinLowEdge(i+1)-p};
     gSigma->SetPoint(i/rebinFactorX-1, p, fPGaus->GetParameter(2));
