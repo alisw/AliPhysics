@@ -27,6 +27,7 @@
 //	Analysis task for muon-dimuon analysis
 //	Works for real and MC events
 //	Works with the corresponding AddTask macro
+//	Includes a flag for physics selection
 //	
 //	author: L. Bianchi - Universita' & INFN Torino
 
@@ -415,12 +416,12 @@ Double_t AliAnalysisTaskMuonTreeBuilder::Rap(Double_t e, Double_t pz) const
 {
 // calculate rapidity
     Double_t rap;
-    if(e!=pz){
+    if(e>TMath::Abs(pz)){
 	rap = 0.5*TMath::Log((e+pz)/(e-pz));
 	return rap;
     }
     else{
-	rap = -200;
+	rap = 666.;
 	return rap;
     }
 }
@@ -440,47 +441,64 @@ Double_t AliAnalysisTaskMuonTreeBuilder::Phideg(Double_t phi) const
 Double_t AliAnalysisTaskMuonTreeBuilder::CostCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-// calculate costCS
-  TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM. frame
-  TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+// Cosine of the theta decay angle (mu+) in the Collins-Soper frame
+
+  TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM. frame
+  TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   Double_t mp=0.93827231;
   //
   // --- Fill the Lorentz vector for projectile and target in the CM frame
   //
-  PProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
-  PTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+  pProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+  pTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
   //
   // --- Get the muons parameters in the CM frame 
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PProjDimu=PProjCM;
-  PTargDimu=PTargCM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
-  PProjDimu.Boost(beta);
-  PTargDimu.Boost(beta);
-  //
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  if(beta.Mag()>=1) return 666.;
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pProjDimu=pProjCM;
+  pTargDimu=pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+  
+  //Debugging part -------------------------------------
+  Double_t debugProj[4]={0.,0.,0.,0.};
+  Double_t debugTarg[4]={0.,0.,0.,0.};
+  Double_t debugMu1[4]={0.,0.,0.,0.};
+  Double_t debugMu2[4]={0.,0.,0.,0.};
+  pMu1Dimu.GetXYZT(debugMu1);
+  pMu2Dimu.GetXYZT(debugMu2);
+  pProjDimu.GetXYZT(debugProj);
+  pTargDimu.GetXYZT(debugTarg);
+  if (debugProj[0]!=debugProj[0] ||debugProj[1]!=debugProj[1] || debugProj[2]!=debugProj[2] ||debugProj[3]!=debugProj[3]) return 666; 
+  if (debugTarg[0]!=debugTarg[0] ||debugTarg[1]!=debugTarg[1] || debugTarg[2]!=debugTarg[2] ||debugTarg[3]!=debugTarg[3]) return 666; 
+  if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
+  if (debugMu2[0]!=debugMu2[0] ||debugMu2[1]!=debugMu2[1] || debugMu2[2]!=debugMu2[2] ||debugMu2[3]!=debugMu2[3]) return 666; 
+  //----------------------------------------------------
+
   // --- Determine the z axis for the CS angle 
-  //
-  zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
-  //				     
+  zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+  				     
   // --- Determine the CS angle (angle between mu+ and the z axis defined above)
   Double_t cost;
   
-  if(charge1>0) {cost = zaxisCS.Dot((PMu1Dimu.Vect()).Unit());}
-  else {cost = zaxisCS.Dot((PMu2Dimu.Vect()).Unit());}
+  if(charge1>0) {cost = zaxisCS.Dot((pMu1Dimu.Vect()).Unit());}
+  else {cost = zaxisCS.Dot((pMu2Dimu.Vect()).Unit());}
+  
   return cost;
 }
 
@@ -488,37 +506,47 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 Double_t AliAnalysisTaskMuonTreeBuilder::CostHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-// calculate costHE
-  TLorentzVector PMu1CM, PMu2CM, PDimuCM; // In the CM frame 
-  TLorentzVector PMu1Dimu, PMu2Dimu; // In the dimuon rest frame
+// Cosine of the theta decay angle (mu+) in the Helicity frame
+  
+  TLorentzVector pMu1CM, pMu2CM, pDimuCM; // In the CM frame 
+  TLorentzVector pMu1Dimu, pMu2Dimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   //
   // --- Get the muons parameters in the CM frame
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the muon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
-  //
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  if(beta.Mag()>=1) return 666.;
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  
+  //Debugging part -------------------------------------
+  Double_t debugMu1[4]={0.,0.,0.,0.};
+  Double_t debugMu2[4]={0.,0.,0.,0.};
+  pMu1Dimu.GetXYZT(debugMu1);
+  pMu2Dimu.GetXYZT(debugMu2);
+  if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
+  if (debugMu2[0]!=debugMu2[0] ||debugMu2[1]!=debugMu2[1] || debugMu2[2]!=debugMu2[2] ||debugMu2[3]!=debugMu2[3]) return 666; 
+  //----------------------------------------------------
+ 
   // --- Determine the z axis for the calculation of the polarization angle (i.e. the direction of the dimuon in the CM system)
-  //
   TVector3 zaxis;
-  zaxis=(PDimuCM.Vect()).Unit();
+  zaxis=(pDimuCM.Vect()).Unit();
   
   // --- Calculation of the polarization angle (angle between mu+ and the z axis defined above)
   Double_t cost;
-  if(charge1>0) {cost = zaxis.Dot((PMu1Dimu.Vect()).Unit());} 
-  else {cost = zaxis.Dot((PMu2Dimu.Vect()).Unit());} 
+  if(charge1>0) {cost = zaxis.Dot((pMu1Dimu.Vect()).Unit());} 
+  else {cost = zaxis.Dot((pMu2Dimu.Vect()).Unit());} 
   return cost;
 }
 
@@ -526,51 +554,64 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 Double_t AliAnalysisTaskMuonTreeBuilder::PhiCS(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-// calculate phiCS
-   TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame
-   TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+// Phi decay angle (mu+) in the Collins-Soper frame
+
+   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM frame
+   TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
    TVector3 beta,yaxisCS, xaxisCS, zaxisCS;
    Double_t mp=0.93827231;
-   //
+   
    // --- Fill the Lorentz vector for projectile and target in the CM frame
-   //
-   PProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
-   PTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
-   //
+   pProjCM.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+   pTargCM.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); 
+   
    // --- Get the muons parameters in the CM frame 
-   //
-   PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-   PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
-   //
+   pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+   pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+   
    // --- Obtain the dimuon parameters in the CM frame
-   //
-   PDimuCM=PMu1CM+PMu2CM;
-   //
+   pDimuCM=pMu1CM+pMu2CM;
+   
    // --- Translate the dimuon parameters in the dimuon rest frame
-   //
-   beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-   PMu1Dimu=PMu1CM;
-   PMu2Dimu=PMu2CM;
-   PProjDimu=PProjCM;
-   PTargDimu=PTargCM;
-   PMu1Dimu.Boost(beta);
-   PMu2Dimu.Boost(beta);
-   PProjDimu.Boost(beta);
-   PTargDimu.Boost(beta);
-   //
+   beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+   if(beta.Mag()>=1) return 666.;
+   pMu1Dimu=pMu1CM;
+   pMu2Dimu=pMu2CM;
+   pProjDimu=pProjCM;
+   pTargDimu=pTargCM;
+   pMu1Dimu.Boost(beta);
+   pMu2Dimu.Boost(beta);
+   pProjDimu.Boost(beta);
+   pTargDimu.Boost(beta);
+
+   //Debugging part -------------------------------------
+   Double_t debugProj[4]={0.,0.,0.,0.};
+   Double_t debugTarg[4]={0.,0.,0.,0.};
+   Double_t debugMu1[4]={0.,0.,0.,0.};
+   Double_t debugMu2[4]={0.,0.,0.,0.};
+   pMu1Dimu.GetXYZT(debugMu1);
+   pMu2Dimu.GetXYZT(debugMu2);
+   pProjDimu.GetXYZT(debugProj);
+   pTargDimu.GetXYZT(debugTarg);
+   if (debugProj[0]!=debugProj[0] ||debugProj[1]!=debugProj[1] || debugProj[2]!=debugProj[2] ||debugProj[3]!=debugProj[3]) return 666; 
+   if (debugTarg[0]!=debugTarg[0] ||debugTarg[1]!=debugTarg[1] || debugTarg[2]!=debugTarg[2] ||debugTarg[3]!=debugTarg[3]) return 666; 
+   if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
+   if (debugMu2[0]!=debugMu2[0] ||debugMu2[1]!=debugMu2[1] || debugMu2[2]!=debugMu2[2] ||debugMu2[3]!=debugMu2[3]) return 666; 
+   //----------------------------------------------------
+
    // --- Determine the z axis for the CS angle 
-   //
-   zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
-   yaxisCS=(((PProjDimu.Vect()).Unit()).Cross((PTargDimu.Vect()).Unit())).Unit();
+   zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+   yaxisCS=(((pProjDimu.Vect()).Unit()).Cross((pTargDimu.Vect()).Unit())).Unit();
    xaxisCS=(yaxisCS.Cross(zaxisCS)).Unit();
  
    Double_t phi=0.;
    if(charge1>0) {
-       phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxisCS),((PMu1Dimu.Vect()).Dot(xaxisCS)));
+       phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxisCS),((pMu1Dimu.Vect()).Dot(xaxisCS)));
    } else {
-       phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxisCS),((PMu2Dimu.Vect()).Dot(xaxisCS)));
+       phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxisCS),((pMu2Dimu.Vect()).Dot(xaxisCS)));
    }
    if (phi>TMath::Pi()) phi=phi-TMath::Pi();
+   
    return phi;
 }
 
@@ -578,50 +619,61 @@ Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 Double_t AliAnalysisTaskMuonTreeBuilder::PhiHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-// calculate phiHE
-  TLorentzVector PMu1Lab, PMu2Lab, PProjLab, PTargLab, PDimuLab; // In the lab. frame 
-  TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+// Phi decay angle (mu+) in the Helicity frame
+  TLorentzVector pMu1Lab, pMu2Lab, pProjLab, pTargLab, pDimuLab; // In the lab. frame 
+  TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
   TVector3 beta,xaxis, yaxis,zaxis;
   Double_t mp=0.93827231;
 
-  //
   // --- Get the muons parameters in the LAB frame
-  //
-  PMu1Lab.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2Lab.SetPxPyPzE(px2,py2,pz2,e2);
-  //
+  pMu1Lab.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2Lab.SetPxPyPzE(px2,py2,pz2,e2);
+  
   // --- Obtain the dimuon parameters in the LAB frame
-  //
-  PDimuLab=PMu1Lab+PMu2Lab;
+  pDimuLab=pMu1Lab+pMu2Lab;
+  zaxis=(pDimuLab.Vect()).Unit();
   
-  zaxis=(PDimuLab.Vect()).Unit();
-  //
   // --- Translate the muon parameters in the dimuon rest frame
-  //
-  beta=(-1./PDimuLab.E())*PDimuLab.Vect();
+  beta=(-1./pDimuLab.E())*pDimuLab.Vect();
+  if(beta.Mag()>=1.) return 666.;
 
-  PProjLab.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // proiettile
-  PTargLab.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // bersaglio
+  pProjLab.SetPxPyPzE(0.,0.,-fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // proiettile
+  pTargLab.SetPxPyPzE(0.,0.,fBeamEnergy,TMath::Sqrt(fBeamEnergy*fBeamEnergy+mp*mp)); // bersaglio
 
-  PProjDimu=PProjLab;
-  PTargDimu=PTargLab;
+  pProjDimu=pProjLab;
+  pTargDimu=pTargLab;
 
-  PProjDimu.Boost(beta);
-  PTargDimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
   
-  yaxis=((PProjDimu.Vect()).Cross(PTargDimu.Vect())).Unit();
+  yaxis=((pProjDimu.Vect()).Cross(pTargDimu.Vect())).Unit();
   xaxis=(yaxis.Cross(zaxis)).Unit();
   
-  PMu1Dimu=PMu1Lab;
-  PMu2Dimu=PMu2Lab;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
+  pMu1Dimu=pMu1Lab;
+  pMu2Dimu=pMu2Lab;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  
+  //Debugging part -------------------------------------
+  Double_t debugProj[4]={0.,0.,0.,0.};
+  Double_t debugTarg[4]={0.,0.,0.,0.};
+  Double_t debugMu1[4]={0.,0.,0.,0.};
+  Double_t debugMu2[4]={0.,0.,0.,0.};
+  pMu1Dimu.GetXYZT(debugMu1);
+  pMu2Dimu.GetXYZT(debugMu2);
+  pProjDimu.GetXYZT(debugProj);
+  pTargDimu.GetXYZT(debugTarg);
+  if (debugProj[0]!=debugProj[0] ||debugProj[1]!=debugProj[1] || debugProj[2]!=debugProj[2] ||debugProj[3]!=debugProj[3]) return 666; 
+  if (debugTarg[0]!=debugTarg[0] ||debugTarg[1]!=debugTarg[1] || debugTarg[2]!=debugTarg[2] ||debugTarg[3]!=debugTarg[3]) return 666; 
+  if (debugMu1[0]!=debugMu1[0] ||debugMu1[1]!=debugMu1[1] || debugMu1[2]!=debugMu1[2] ||debugMu1[3]!=debugMu1[3]) return 666; 
+  if (debugMu2[0]!=debugMu2[0] ||debugMu2[1]!=debugMu2[1] || debugMu2[2]!=debugMu2[2] ||debugMu2[3]!=debugMu2[3]) return 666; 
+  //----------------------------------------------------
   
   Double_t phi=0.;
    if(charge1 > 0) {
-      phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxis),(PMu1Dimu.Vect()).Dot(xaxis));
+      phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
      } else { 
-      phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxis),(PMu2Dimu.Vect()).Dot(xaxis));
+      phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxis),(pMu2Dimu.Vect()).Dot(xaxis));
    }  
    return phi;
 }
