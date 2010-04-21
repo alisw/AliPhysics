@@ -43,8 +43,8 @@ ClassImp(AliAnaOmegaToPi0Gamma)
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaPartCorrBaseClass(),
 fInputAODGamma(0),fInputAODPi0(0), fInputAODGammaName(""),
-fEventsList(0),fNVtxZBin(1), fNCentBin(1), fNRpBin(1), fNBadChDistBin(1), fNpid(3),
-fNmaxMixEv(4), fVtxZCut(0), fCent(0), fRp(0), fBadChDist(0),
+fEventsList(0),fNVtxZBin(1), fNCentBin(1), fNRpBin(1), fNBadChDistBin(3), fNpid(3),
+fNmaxMixEv(4), fVtxZCut(0), fCent(0), fRp(0), 
 fPi0Mass(0.13498),fPi0MassWindow(0.015),fPi0OverOmegaPtCut(0.8),
 fGammaOverOmegaPtCut(0.3),
 fhEtalon(0),
@@ -68,7 +68,7 @@ fEventsList(ex.fEventsList),
 fNVtxZBin(ex.fNVtxZBin), fNCentBin(ex.fNCentBin), fNRpBin(ex.fNRpBin),
 fNBadChDistBin(ex.fNBadChDistBin),fNpid(ex.fNpid),
 fNmaxMixEv(ex.fNmaxMixEv),
-fVtxZCut(ex.fVtxZCut), fCent(ex.fCent), fRp(ex.fRp), fBadChDist(ex.fBadChDist),
+fVtxZCut(ex.fVtxZCut), fCent(ex.fCent), fRp(ex.fRp), 
 fPi0Mass(ex.fPi0Mass),
 fPi0MassWindow(ex.fPi0MassWindow),
 fPi0OverOmegaPtCut(ex.fPi0OverOmegaPtCut),
@@ -110,7 +110,6 @@ AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi
    fVtxZCut=ex.fVtxZCut;
    fCent=ex.fCent;
    fRp=ex.fRp;
-   fBadChDist=ex.fBadChDist;
 
    fPi0Mass=ex.fPi0Mass;
    fPi0MassWindow=ex.fPi0MassWindow;
@@ -165,7 +164,6 @@ AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma() {
  delete [] fVtxZCut;
  delete [] fCent;
  delete [] fRp;
- delete [] fBadChDist;
 
 }
 
@@ -182,9 +180,6 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
 
   fRp=new Double_t[fNRpBin];
   for(int i = 0;i<fNRpBin;i++)fRp[i]=0;
-
-  fBadChDist=new Int_t [fNBadChDistBin];
-  for(Int_t j=0;j<fNBadChDistBin;j++)   fBadChDist[j] = j+2;
 
 }
 
@@ -249,7 +244,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      Int_t index=idim*fNpid*fNBadChDistBin+ipid*fNBadChDistBin+idist;
 
 		     sprintf(key,"RealToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s Real Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s Real Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fRealOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fRealOmega0[index]->SetName(key) ;
@@ -257,7 +252,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fRealOmega0[index]);
 
 		     sprintf(key,"MixAToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixA Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixA Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixAOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixAOmega0[index]->SetName(key) ;
@@ -265,7 +260,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixAOmega0[index]);
 
 		     sprintf(key,"MixBToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixB Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixB Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixBOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixBOmega0[index]->SetName(key) ;
@@ -273,7 +268,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixBOmega0[index]);
 
 		     sprintf(key,"MixCToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixC Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixC Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixCOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixCOmega0[index]->SetName(key) ;
@@ -281,7 +276,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixCOmega0[index]);
 
 		     sprintf(key,"RealToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s Real Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s Real Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fRealOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fRealOmega1[index]->SetName(key) ;
@@ -289,7 +284,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fRealOmega1[index]);
 
                      sprintf(key,"MixAToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixA Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixA Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixAOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixAOmega1[index]->SetName(key) ;
@@ -297,7 +292,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixAOmega1[index]);
 
                      sprintf(key,"MixBToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixB Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixB Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixBOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixBOmega1[index]->SetName(key) ;
@@ -305,7 +300,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixBOmega1[index]);
 
                      sprintf(key,"MixCToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixC Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixC Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixCOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixCOmega1[index]->SetName(key) ;
@@ -313,7 +308,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixCOmega1[index]);
 
 		     sprintf(key,"RealToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s Real Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s Real Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fRealOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fRealOmega2[index]->SetName(key) ;
@@ -321,7 +316,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fRealOmega2[index]);
 
                      sprintf(key,"MixAToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixA Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixA Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixAOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixAOmega2[index]->SetName(key) ;
@@ -329,7 +324,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixAOmega2[index]);
 
                      sprintf(key,"MixBToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixB Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixB Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixBOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixBOmega2[index]->SetName(key) ;
@@ -337,7 +332,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
                      outputContainer->Add(fMixBOmega2[index]);
 
                      sprintf(key,"MixCToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
-                     sprintf(title, "%s MixC Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%dcm",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,fBadChDist[idist]);
+                     sprintf(title, "%s MixC Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
                      fhEtalon->Clone(key);
                      fMixCOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
                      fMixCOmega2[index]->SetName(key) ;
@@ -491,7 +486,6 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
              else continue;
          }
     }
-
     //caculate the asy and dist of the two photon from pi0 decay
     TLorentzVector dph1(photon1->Px(),photon1->Py(),photon1->Pz(),photon1->E());
     TLorentzVector dph2(photon2->Px(),photon2->Py(),photon2->Pz(),photon2->E());
@@ -544,9 +538,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
 	                if(photon1->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
 		    	   photon2->IsPIDOK(ipid,AliCaloPID::kPhoton) && 
 			   photon3->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
-			   photon1->DistToBad()>=fBadChDist[idist] &&
-			   photon2->DistToBad()>=fBadChDist[idist] &&
-			   photon3->DistToBad()>=fBadChDist[idist] ){
+			   photon1->DistToBad()>=idist &&
+			   photon2->DistToBad()>=idist &&
+			   photon3->DistToBad()>=idist ){
 			   //fill the histograms
                            if(GetDebug() > 2) printf("Real: index  %d  pt  %2.3f  mass   %2.3f \n", index, pi0gammapt, pi0gammamass);
 			   fRealOmega0[index]->Fill(pi0gammapt,pi0gammamass);
@@ -585,9 +579,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
                        if(photon1->IsPIDOK(ipid,AliCaloPID::kPhoton)&&
                           photon2->IsPIDOK(ipid,AliCaloPID::kPhoton)&&
                           mix1ph->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
-                          photon1->DistToBad()>=fBadChDist[idist] &&
-                          photon2->DistToBad()>=fBadChDist[idist] &&
-                          mix1ph->DistToBad()>=fBadChDist[idist] ){
+                          photon1->DistToBad()>=idist &&
+                          photon2->DistToBad()>=idist &&
+                          mix1ph->DistToBad()>=idist ){
                           if(GetDebug() > 2) printf("MixA: index  %d   pt  %2.3f  mass   %2.3f \n",index, pi0gammapt, pi0gammamass);
 		 	  //fill the histograms
 			  fMixAOmega0[index]->Fill(pi0gammapt,pi0gammamass);
@@ -639,9 +633,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   	                    if(ph1->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
 		               ph2->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
                                ph3->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
-			       ph1->DistToBad()>=fBadChDist[idist] &&
-                               ph2->DistToBad()>=fBadChDist[idist] &&
-                               ph3->DistToBad()>=fBadChDist[idist] ){
+			       ph1->DistToBad()>=idist &&
+                               ph2->DistToBad()>=idist &&
+                               ph3->DistToBad()>=idist ){
                                if(GetDebug() > 2) printf("MixB: index  %d   pt  %2.3f  mass   %2.3f \n", index, pi0gammapt, pi0gammamass);
 			       //fill histograms
 			       fMixBOmega0[index]->Fill(pi0gammapt,pi0gammamass);
@@ -677,9 +671,9 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
                                 if(ph1->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
                                    ph2->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
                                    ph3->IsPIDOK(ipid,AliCaloPID::kPhoton) &&
-				   ph1->DistToBad()>=fBadChDist[idist] &&
-                                   ph2->DistToBad()>=fBadChDist[idist] &&
-                                   ph3->DistToBad()>=fBadChDist[idist] ){
+				   ph1->DistToBad()>=idist &&
+                                   ph2->DistToBad()>=idist &&
+                                   ph3->DistToBad()>=idist ){
                                    if(GetDebug() > 2) printf("MixC: index  %d  pt  %2.3f  mass   %2.3f \n", index, pi0gammapt, pi0gammamass);
                   	           //fill histograms
 		  	          fMixCOmega0[index]->Fill(pi0gammapt,pi0gammamass);

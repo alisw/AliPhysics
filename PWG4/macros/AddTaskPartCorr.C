@@ -476,14 +476,13 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   anaomegaToPi0Gamma->SetDebug(-1);//10 for lots of messages
   anaomegaToPi0Gamma->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
   anaomegaToPi0Gamma->SetInputAODPhotonName(Form("Photons%s",calorimeter.Data()));
-  anaomegaToPi0Gamma->SetNPID(2);
-  anaomegaToPi0Gamma->SetNVtxZ(2);
-  anaomegaToPi0Gamma->SetNBadChDist(3);
+  anaomegaToPi0Gamma->SetNPID(1);
+  anaomegaToPi0Gamma->SetNVtxZ(1);
   anaomegaToPi0Gamma->SetNEventsMixed(4);
   if(calorimeter=="PHOS")
-           anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
+    anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.008); // PHOS
   else if(calorimeter=="EMCAL")
-           anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
+    anaomegaToPi0Gamma->SetPi0MassPeakWidthCut(0.012); // EMCAL 
   anaomegaToPi0Gamma->SetHistoPtRangeAndNBins(0, 20, 200) ;
   anaomegaToPi0Gamma->SetHistoMassRangeAndNBins(0, 1, 200) ;
   anaomegaToPi0Gamma->SetPi0OverOmegaPtCut(0.8);
@@ -508,7 +507,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anaisolpi0,8);
   maker->AddAnalysis(anacorrhadronpi0,9);
   maker->AddAnalysis(anacorrhadronisopi0,10);
-//  maker->AddAnalysis(anaomegaToPi0Gamma,11);   
+  maker->AddAnalysis(anaomegaToPi0Gamma,11);   
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;
