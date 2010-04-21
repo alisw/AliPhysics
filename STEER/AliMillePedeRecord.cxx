@@ -24,7 +24,7 @@ ClassImp(AliMillePedeRecord)
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord::AliMillePedeRecord() : 
-fSize(0),fNGroups(0),fGroupID(0),fIndex(0),fValue(0) {SetUniqueID(0);}
+fSize(0),fNGroups(0),fGroupID(0),fIndex(0),fValue(0),fWeight(1) {SetUniqueID(0);}
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) : 
