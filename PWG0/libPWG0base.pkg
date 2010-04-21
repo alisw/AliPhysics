@@ -10,13 +10,14 @@ SRCS = dNdEta/dNdEtaAnalysis.cxx \
       AliCorrection.cxx \
       AliPWG0Helper.cxx \
       AliUnfolding.cxx \
-      multiplicity/AliMultiplicityCorrection.cxx
+      multiplicity/AliMultiplicityCorrection.cxx \
+      genLevelSimulation/AliAnalysisTaskdNdetaMC.cxx
 
 HDRS = $(SRCS:.cxx=.h)
 
 DHDR= PWG0baseLinkDef.h
 
-EINCLUDE= PWG0/dNdEta PWG0/multiplicity
+EINCLUDE= PWG0/dNdEta PWG0/multiplicity PWG0/genLevelSimulation
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
