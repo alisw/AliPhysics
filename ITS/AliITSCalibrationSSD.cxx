@@ -84,6 +84,10 @@ AliITSCalibrationSSD::~AliITSCalibrationSSD(){
     // destructor
  
     delete [] fDetPar;
+    if(fNoise)delete fNoise;
+    if(fPedestal)delete fPedestal;
+    if(fGain)delete fGain;
+    if(fBadChannels)delete fBadChannels;
 }
 //______________________________________________________________________
 void AliITSCalibrationSSD::SetDetParam(Double_t  *par){

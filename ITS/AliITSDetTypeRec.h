@@ -52,9 +52,6 @@ class AliITSDetTypeRec : public TObject {
     virtual void SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual Bool_t GetCalibration();
-    virtual Bool_t GetCalibrationSPD(Bool_t cacheStatus);
-    virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
-    virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype) const;
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod) const;
@@ -118,6 +115,9 @@ class AliITSDetTypeRec : public TObject {
 			       AliITSBadChannelsSSDv2 *badChannelsSSD);
     void ReadOldSSDGain(const TObjArray *array, 
 			AliITSGainSSDv2 *gainSSD);
+    virtual Bool_t GetCalibrationSPD(Bool_t cacheStatus);
+    virtual Bool_t GetCalibrationSDD(Bool_t cacheStatus);
+    virtual Bool_t GetCalibrationSSD(Bool_t cacheStatus);
 
     //    virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     static const Int_t fgkNdettypes;          // number of det. types

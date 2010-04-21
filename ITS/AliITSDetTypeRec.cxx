@@ -167,7 +167,12 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
       if(fDDLMapSDD) delete fDDLMapSDD;
    }
   }
-  if(fSSDCalibration) delete fSSDCalibration;
+  if(fSSDCalibration){
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+      delete fSSDCalibration;
+      fSSDCalibration = NULL;
+    }
+  }
    if(fSPDDead){
     if(!(AliCDBManager::Instance()->GetCacheFlag())) {
       fSPDDead->Delete();
@@ -615,11 +620,12 @@ Bool_t AliITSDetTypeRec::GetCalibrationSSD(Bool_t cacheStatus) {
   }  	
 
   TObject *emptyssd = 0; TString ssdobjectname;
-  AliITSNoiseSSDv2 *noiseSSD = new AliITSNoiseSSDv2();  
+  AliITSNoiseSSDv2 *noiseSSD = NULL; 
   emptyssd = (TObject *)entryNoiseSSD->GetObject();
   ssdobjectname = emptyssd->GetName();
   if(ssdobjectname=="TObjArray") {
     TObjArray *noiseSSDOld = (TObjArray *)entryNoiseSSD->GetObject();
+    noiseSSD = new AliITSNoiseSSDv2(); 
     ReadOldSSDNoise(noiseSSDOld, noiseSSD);
   }
   else if(ssdobjectname=="AliITSNoiseSSDv2")
@@ -627,11 +633,12 @@ Bool_t AliITSDetTypeRec::GetCalibrationSSD(Bool_t cacheStatus) {
   if(!cacheStatus)entryNoiseSSD->SetObject(NULL);
   entryNoiseSSD->SetOwner(kTRUE);
 
-  AliITSGainSSDv2 *gainSSD = new AliITSGainSSDv2();
+  AliITSGainSSDv2 *gainSSD = NULL;;
   emptyssd = (TObject *)entryGainSSD->GetObject();
   ssdobjectname = emptyssd->GetName();
   if(ssdobjectname=="Gain") {
     TObjArray *gainSSDOld = (TObjArray *)entryGainSSD->GetObject();
+    gainSSD = new AliITSGainSSDv2();
     ReadOldSSDGain(gainSSDOld, gainSSD);
   }
   else if(ssdobjectname=="AliITSGainSSDv2")
@@ -639,11 +646,12 @@ Bool_t AliITSDetTypeRec::GetCalibrationSSD(Bool_t cacheStatus) {
   if(!cacheStatus)entryGainSSD->SetObject(NULL);
   entryGainSSD->SetOwner(kTRUE);
 
-  AliITSBadChannelsSSDv2 *badChannelsSSD = new AliITSBadChannelsSSDv2();
+  AliITSBadChannelsSSDv2 *badChannelsSSD = NULL;
   emptyssd = (TObject *)entryBadChannelsSSD->GetObject();
   ssdobjectname = emptyssd->GetName();
   if(ssdobjectname=="TObjArray") {
     TObjArray *badChannelsSSDOld = (TObjArray *)entryBadChannelsSSD->GetObject();
+    badChannelsSSD = new AliITSBadChannelsSSDv2();
     ReadOldSSDBadChannels(badChannelsSSDOld, badChannelsSSD);
   }
   else if(ssdobjectname=="AliITSBadChannelsSSDv2")
