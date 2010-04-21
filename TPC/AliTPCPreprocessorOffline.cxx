@@ -68,7 +68,7 @@ ClassImp(AliTPCPreprocessorOffline)
 
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   TNamed("TPCPreprocessorOffline","TPCPreprocessorOffline"),
-  kMinEntries(500),                      // minimal number of entries for fit
+  fMinEntries(500),                      // minimal number of entries for fit
   startRun(0),                         // start Run - used to make fast selection in THnSparse
   endRun(0),                           // end   Run - used to make fast selection in THnSparse
   startTime(0),                        // startTime - used to make fast selection in THnSparse
@@ -98,14 +98,14 @@ AliTPCPreprocessorOffline::~AliTPCPreprocessorOffline() {
 
 
 
-void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime* timeDrift){
+void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime * const  timeDrift){
   //
   // find the fist and last run
   //
   TObjArray *hisArray =timeDrift->GetHistoDrift();
   {for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
     THnSparse* addHist=(THnSparse*)hisArray->UncheckedAt(i);
-    if (addHist->GetEntries()<kMinEntries) continue;
+    if (addHist->GetEntries()<fMinEntries) continue;
     if (!addHist) continue;
     TH1D* histo    =addHist->Projection(3);
     TH1D* histoTime=addHist->Projection(0);
@@ -137,10 +137,14 @@ void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime* timeDrift){
 
 
 
-void AliTPCPreprocessorOffline::CalibTimeVdrift(Char_t* file, Int_t ustartRun, Int_t uendRun, TString pocdbStorage){
+void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun, TString pocdbStorage){
   //
-  //
-  //
+  // make calibration of the drift velocity
+  // Input parameters:
+  //      file                   - the location of input file
+  //      ustartRun, uendrun     - run validity period 
+  //      pocdbStorage           - path to hte OCDB storage
+  //                             - if empty - local storage 'pwd' uesed
   if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
   else
   ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
@@ -164,7 +168,7 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(Char_t* file, Int_t ustartRun, I
   //
   fVdriftArray = new TObjArray();
   AddAlignmentGraphs(fVdriftArray,fTimeDrift);
-  AddHistoGraphs(fVdriftArray,fTimeDrift,kMinEntries);
+  AddHistoGraphs(fVdriftArray,fTimeDrift,fMinEntries);
   AddLaserGraphs(fVdriftArray,fTimeDrift);
   //
   // 3. Append QA plots
@@ -197,7 +201,7 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
 
 
 
-void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *arr, Int_t lstartRun){
+void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t lstartRun){
   //
   //  update the OCDB entry for the nominal time0
   //
@@ -226,7 +230,7 @@ void AliTPCPreprocessorOffline::UpdateDriftParam(AliTPCParam *param, TObjArray *
 
 void AliTPCPreprocessorOffline::PrintArray(TObjArray *array){
   //
-  //
+  // Print the names of the entries in array
   //
   Int_t entries = array->GetEntries();
   for (Int_t i=0; i<entries; i++){
@@ -307,7 +311,7 @@ TGraphErrors* AliTPCPreprocessorOffline::FilterGraphMedianAbs(TGraphErrors * gra
 }
 
 
-void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift, Int_t minEntries){
+void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift, Int_t minEntries){
   //
   // Add graphs corresponding to the alignment
   //
@@ -356,7 +360,7 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
 
 
 
-void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift){
+void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *const timeDrift){
   //
   // Add graphs corresponding to alignment to the object array
   //
@@ -546,7 +550,7 @@ TGraphErrors * AliTPCPreprocessorOffline::MakeGraphFilter0(THnSparse *hisN, Int_
 
 void AliTPCPreprocessorOffline::SetDefaultGraphDrift(TGraph *graph, Int_t color, Int_t style){
   //
-  //
+  // Set default style for QA views
   //
   graph->GetXaxis()->SetTimeDisplay(kTRUE);
   graph->GetXaxis()->SetTimeFormat("#splitline{%d/%m}{%H:%M}");
@@ -573,18 +577,20 @@ void AliTPCPreprocessorOffline::SetDefaultGraphDrift(TGraph *graph, Int_t color,
 }
 
 void AliTPCPreprocessorOffline::SetPadStyle(TPad *pad, Float_t mx0, Float_t mx1, Float_t my0, Float_t my1){
-  //
-  //
+  // 
+  // Set default pad style for QA
+  // 
   pad->SetTicks(1,1);
   pad->SetMargin(mx0,mx1,my0,my1);
 }
 
 
-void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * arr, TObjArray *picArray){
+void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray){
+  //
+  // 0. make a default QA plots
+  // 1. Store them in the array
   //
   //
-  //
-  // margins
   Float_t mx0=0.12, mx1=0.1, my0=0.15, my1=0.1;
   //
   TGraphErrors* laserA       =(TGraphErrors*)arr->FindObject("GRAPH_MEAN_DRIFT_LASER_ALL_A");
@@ -689,7 +695,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * arr, TObjArray *pic
 
 
 
-void AliTPCPreprocessorOffline::CalibTimeGain(Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  pocdbStorage){
+void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  pocdbStorage){
   //
   // Update OCDB gain
   //
@@ -703,7 +709,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(Char_t* fileName, Int_t startRunNu
 
 
 
-void AliTPCPreprocessorOffline::ReadGainGlobal(Char_t* fileName){
+void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   //
   // read calibration entries from file
   // 
@@ -741,7 +747,7 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(Char_t* fileName){
 
 Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit,  Float_t FPtoMIPratio){
   //
-  //
+  // Analyze gain - produce the calibration graphs
   //
   fGainMIP->GetHistGainTime()->GetAxis(5)->SetRangeUser(startRunNumber, endRunNumber);
   // 1.) try to create MIP spline

@@ -23,26 +23,25 @@ class AliTPCPreprocessorOffline:public TNamed {
 public:
   AliTPCPreprocessorOffline();
   virtual ~AliTPCPreprocessorOffline();
-  void MakeAll(){;}
   void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, const char* storagePath);
   void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
-  void UpdateDriftParam(AliTPCParam *param, TObjArray *arr, Int_t startRun);
+  void UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t startRun);
 
   //
   // v drift part
   //
-  void GetRunRange(AliTPCcalibTime* timeDrift);
-  void CalibTimeVdrift(Char_t* file, Int_t ustartRun, Int_t uendRun,TString ocdbStorage="");
-  void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift, Int_t minEntries);
-  void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
+  void GetRunRange(AliTPCcalibTime* const timeDrift);
+  void CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun,TString ocdbStorage="");
+  void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift, Int_t minEntries);
+  void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift);
   void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
   void SetDefaultGraphDrift(TGraph *graph, Int_t color, Int_t style);
-  void MakeDefaultPlots(TObjArray * arr, TObjArray *picArray);
+  void MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray);
   //
   // Gain part
   //
-  void CalibTimeGain(Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage);
-  void ReadGainGlobal(Char_t* fileName="CalibObjectsTrain1.root");
+  void CalibTimeGain(const Char_t* fileName, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage);
+  void ReadGainGlobal(const Char_t* fileName="CalibObjectsTrain1.root");
   void MakeQAPlot(Float_t  FPtoMIPratio);
   Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit = 500, Float_t FPtoMIPratio = 1.43); 
   //
@@ -57,15 +56,15 @@ public:
   static TGraphErrors* FilterGraphDrift(TGraphErrors * graph, Float_t errSigmaCut, Float_t medianCutAbs);
   static TGraphErrors * MakeGraphFilter0(THnSparse *hisN, Int_t itime, Int_t ival, Int_t minEntries, Double_t offset=0);
 
-public:
-  Int_t kMinEntries;                      // minimal number of entries for fit
+private:
+  Int_t fMinEntries;                      // minimal number of entries for fit
   Int_t startRun;                         // start Run - used to make fast selection in THnSparse
   Int_t endRun;                           // end   Run - used to make fast selection in THnSparse
   Int_t startTime;                        // startTime - used to make fast selection in THnSparse
   Int_t endTime;                          // endTime   - used to make fast selection in THnSparse
   TString  ocdbStorage;                   // path to the OCDB storage
-  TObjArray * fVdriftArray;
-  AliTPCcalibTime * fTimeDrift;
+  TObjArray * fVdriftArray;               // array with output calibration graphs
+  AliTPCcalibTime * fTimeDrift;           // input data to construct calibration graphs
   TGraphErrors * fGraphMIP;                // graph time dependence of MIP
   TGraphErrors * fGraphCosmic;             // graph time dependence at Plateu
   AliSplineFit * fFitMIP;                  // fit of dependence - MIP
