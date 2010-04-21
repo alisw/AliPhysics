@@ -401,7 +401,8 @@ int AliHLTITSTrackerComponent::DoEvent
 
     if ( (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD) ) || 
 	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD) ) ||
-	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) 
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD) ) ||
+	 (iter->fDataType == (kAliHLTDataTypeClusters|kAliHLTDataOriginITS) ) 
 	 ){
       
       fBenchmark.AddInput(iter->fSize);
