@@ -31,7 +31,10 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCaloProcessor.h"
+#include "AliHLTCaloConstantsHandler.h"
 
+class AliEMCALCalibData;
+class AliCaloCalibPedestal;
 
 class AliHLTCaloDigitMaker;
 class AliHLTCaloDigitContainerDataStruct;
@@ -83,7 +86,7 @@ class AliHLTCaloDigitContainerDataStruct;
  * @ingroup alihlt_emcal
  */ 
 
-class AliHLTEMCALDigitMakerComponent : public AliHLTCaloProcessor
+class AliHLTEMCALDigitMakerComponent : public AliHLTCaloProcessor, public AliHLTCaloConstantsHandler
 {
 public:
 
@@ -132,6 +135,7 @@ protected:
   /** Get the ADC <-> Energy (GeV) gain factors */
   virtual int GetGainsFromCDB();
 
+  
 private:
 
    /** Copy constructor, prohibited */  
@@ -145,6 +149,18 @@ private:
 
   /** The output of the component, digits in a container */
   AliHLTCaloDigitContainerDataStruct *fDigitContainerPtr;  //! transient
+
+   /** Pedestal data (contains BCM) */
+  AliCaloCalibPedestal *fPedestalData; 
+  
+  /** Calib data (contains gain factors) */
+  AliEMCALCalibData *fCalibData;
+
+  /** Is the bad map initialised? */
+  Bool_t fBCMInitialised; //! transient
+
+   /** Are the gains initialised? */
+  Bool_t fGainsInitialised; //! transient
 
 };
 #endif

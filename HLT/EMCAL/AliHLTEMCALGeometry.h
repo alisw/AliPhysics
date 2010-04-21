@@ -36,7 +36,7 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry, public AliHLTLogging
 	void GetGlobalCoordinates(AliHLTEMCALRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord );
 	void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
 	virtual void ConvertRecPointCoordinates(Double_t &x, Double_t &y, Double_t &z) const;
-	virtual Int_t InitialiseGeometry() {return 0; }
+	virtual Int_t InitialiseGeometry();
 
 protected:
 	int GetGeometryFromCDB();

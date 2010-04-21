@@ -135,9 +135,13 @@ class AliHLTEMCALClusterizerComponent : public AliHLTCaloClusterizerComponent
   AliHLTComponent* Spawn();
 
 protected:
-   virtual int DoInit() {return 0; }
+   
+   virtual int DoInit(){return 0;}
+   
   virtual int DoDeinit(){ return 0;}
   virtual int Deinit() {return 0; }
+  
+  virtual int InitialiseGeometry();
 
 private:
   

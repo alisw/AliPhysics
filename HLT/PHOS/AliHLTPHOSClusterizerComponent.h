@@ -138,6 +138,8 @@ protected:
    virtual int DoInit() {return 0; }
   virtual int DoDeinit(){ return 0;}
   virtual int Deinit() {return 0; }
+    /** Initialise geometry objects */
+    virtual Int_t InitialiseGeometry(){return 0;} 
 
 private:
   

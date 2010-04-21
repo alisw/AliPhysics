@@ -22,6 +22,11 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
+#include "AliCaloCalibPedestal.h"
+#include "AliEMCALCalibData.h"
+#include "AliCDBEntry.h"
+#include "AliCDBPath.h"
+#include "AliCDBManager.h"
 #include "TFile.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -45,8 +50,13 @@ AliHLTEMCALDigitMakerComponent gAliHLTEMCALDigitMakerComponent;
 
 AliHLTEMCALDigitMakerComponent::AliHLTEMCALDigitMakerComponent() :
   AliHLTCaloProcessor(),
+  AliHLTCaloConstantsHandler("EMCAL"),
   fDigitMakerPtr(0),
-  fDigitContainerPtr(0)
+  fDigitContainerPtr(0),
+  fPedestalData(0),
+  fCalibData(0),
+  fBCMInitialised(true),
+  fGainsInitialised(true)
 {
   //see header file for documentation
 }
@@ -131,10 +141,35 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       
       if(iter->fDataType != AliHLTEMCALDefinitions::fgkChannelDataType)
 	{
-	  HLTDebug("Data block is not of type fgkChannelDataType");
 	  continue;
 	}
-
+      if(!fBCMInitialised)
+      {
+	 AliHLTEMCALMapper mapper(iter->fSpecification);
+	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 {
+	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	    {
+	       fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
+	    }
+	 }
+	 //delete fBadChannelMap;
+	 fBCMInitialised = true;
+      }
+      if(!fGainsInitialised)
+      {
+	 AliHLTEMCALMapper mapper(iter->fSpecification);;
+	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
+	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 {
+	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	    {
+		//fDigitMakerPtr->SetGain(x, z, fCalibData->GE(module, z+1, x+1), fCalibData->GetADCchannelEmc(module, z+1, x+1));
+	    }
+	 }
+	 fGainsInitialised = true;
+      }
       specification |= iter->fSpecification;
       tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
     
@@ -191,7 +226,7 @@ AliHLTEMCALDigitMakerComponent::DoInit(int argc, const char** argv )
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
 	}
     }
- 
+ GetBCMFromCDB();
   //fDigitMakerPtr->SetDigitThreshold(2);
 
   return 0;
@@ -200,9 +235,30 @@ AliHLTEMCALDigitMakerComponent::DoInit(int argc, const char** argv )
 int AliHLTEMCALDigitMakerComponent::GetBCMFromCDB()
 {
    // See header file for class documentation
+   
+     fBCMInitialised = false;
+   
+//   HLTInfo("Getting bad channel map...");
 
-
-
+  AliCDBPath path("EMCAL","Calib","Pedestals");
+  if(path.GetPath())
+    {
+      //      HLTInfo("configure from entry %s", path.GetPath());
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+	if (pEntry) 
+	{
+	    fPedestalData = (AliCaloCalibPedestal*)pEntry->GetObject();
+	}
+      else
+	{
+//	    HLTError("can not fetch object \"%s\" from CDB", path);
+	    return -1;
+	}
+    }
+   if(!fPedestalData) 
+   {
+	return -1;
+   }
 
    return 0;
 }
@@ -211,6 +267,29 @@ int AliHLTEMCALDigitMakerComponent::GetGainsFromCDB()
 {
    // See header file for class documentation
    
+     fGainsInitialised = false;
+   
+//   HLTInfo("Getting bad channel map...");
+
+  AliCDBPath path("EMCAL","Calib","Data");
+  if(path.GetPath())
+    {
+      //      HLTInfo("configure from entry %s", path.GetPath());
+      AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+	if (pEntry) 
+	{
+	    fCalibData = (AliEMCALCalibData*)pEntry->GetObject();
+	}
+      else
+	{
+//	    HLTError("can not fetch object \"%s\" from CDB", path);
+	    return -1;
+	}
+    }
+   if(!fCalibData) return -1;
+
+
+
    return 0;
 }
 

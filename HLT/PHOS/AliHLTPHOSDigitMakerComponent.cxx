@@ -247,24 +247,6 @@ int AliHLTPHOSDigitMakerComponent::GetBCMFromCDB()
     {
       //      HLTInfo("configure from entry %s", path.GetPath());
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-/*      if (pEntry) 
-	{
-	    fBadChannelMap = new Bool_t**[fCaloConstants->GetNMODULES()];
-	    AliPHOSEmcBadChannelsMap * badMap = (AliPHOSEmcBadChannelsMap*)pEntry->GetObject();
-	    for(Int_t mod = 0; mod < fCaloConstants->GetNMODULES(); mod++)
-	    {
-	       fBadChannelMap[mod] = new Bool_t*[fCaloConstants->GetNXCOLUMNSMOD()];
-	       for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	       {
-		  fBadChannelMap[mod][x] = new Bool_t[fCaloConstants->GetNZROWSMOD()];
-		  for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
-		  {
-		     fBadChannelMap[mod][x][z] = badMap->IsBadChannel(5 - mod, z+1, x+1);
-		     if(badMap->IsBadChannel(5-mod, z+1, x+1)) printf("Module: %d, channel x: %d, z: %d is: %d\n", mod, x, z, badMap->IsBadChannel(5-mod, z+1, x+1));
-		  }
-	       }
-	    }
-	}*/
 	if (pEntry) 
 	{
 	    fBadChannelMap = (AliPHOSEmcBadChannelsMap*)pEntry->GetObject();

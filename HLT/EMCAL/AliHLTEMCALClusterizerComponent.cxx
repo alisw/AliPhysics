@@ -6,7 +6,7 @@
  * Authors: Oystein Djuvsland <oysteind@ift.uib.no>                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
+ * `documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -48,11 +48,11 @@ AliHLTEMCALClusterizerComponent::AliHLTEMCALClusterizerComponent():
 {
   //See headerfile for documentation
 
+  fGeometryInitialised = false;
   fDataOrigin = const_cast<char*>(kAliHLTDataOriginEMCAL);
 
   //AliHLTEMCALGeometry *geom = new AliHLTEMCALGeometry;
   
-  fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry());
   
 }
 
@@ -100,4 +100,11 @@ AliHLTEMCALClusterizerComponent::Spawn()
   //See headerfile for documentation
 
   return new AliHLTEMCALClusterizerComponent();
+}
+
+int AliHLTEMCALClusterizerComponent::InitialiseGeometry()
+{
+        fAnalyserPtr->SetGeometry(new AliHLTEMCALGeometry());
+	fGeometryInitialised = true;
+	return 0;
 }

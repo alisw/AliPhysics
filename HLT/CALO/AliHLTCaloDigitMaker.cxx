@@ -302,7 +302,6 @@ bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, Al
 void AliHLTCaloDigitMaker::SetBadChannel(Int_t x, Int_t z, Bool_t bad)
 {
    // See header file for class documentation
-   
    fBadChannelMask[x][z][0] = bad;
    fBadChannelMask[x][z][1] = bad;
 }

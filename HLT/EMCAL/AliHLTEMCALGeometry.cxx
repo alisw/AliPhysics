@@ -37,9 +37,15 @@ AliHLTEMCALGeometry::AliHLTEMCALGeometry() :
 	//fGeo = new AliEMCALGeometry("EMCAL_COMPLETE","EMCAL");
 	//fGeo =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
 	//TGeoManager::Import("/home/fedro/work/AliRoot/test/QA/geometry.root");
-	fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+	//fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	fShmPtr = new AliHLTEMCALSharedMemoryInterface();
 	GetGeometryFromCDB();
+}
+
+Int_t AliHLTEMCALGeometry::InitialiseGeometry()
+{
+   
+   return GetGeometryFromCDB();
 }
 
 

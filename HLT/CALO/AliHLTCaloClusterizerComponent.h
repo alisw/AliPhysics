@@ -164,6 +164,12 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Pointer to reconstruction parameters handler */
     AliHLTCaloRecoParamHandler *fRecoParamsPtr; //! transient
     
+    /** Initialise geometry objects */
+    virtual Int_t InitialiseGeometry() = 0; 
+    
+    /** */
+    Bool_t fGeometryInitialised;
+     
   private:
 
     /** Array of pointers to our digits */
@@ -187,6 +193,7 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Assignment */
     AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent &); // not implemented
     
+   
   };
 
 #endif

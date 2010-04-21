@@ -47,7 +47,8 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
   fDigitsPointerArray(0), 
   fOutputDigitsArray(0),
   fClusterizerPtr(0),
-  fDigitCount(0)
+  fDigitCount(0), 
+  fGeometryInitialised(true)
 {
   //See headerfile for documentation
 
@@ -125,7 +126,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   UInt_t specification = 0;
   
   AliHLTCaloDigitDataStruct *digitDataPtr = 0;
-  
+  if(fGeometryInitialised == false) InitialiseGeometry();
   // Adding together all the digits, should be put in standalone method  
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
