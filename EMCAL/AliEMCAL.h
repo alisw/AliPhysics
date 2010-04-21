@@ -74,7 +74,7 @@ class AliEMCAL : public AliDetector {
 
 protected:
   void InitConstants();  //initializes some params
-  void DefineMediumParameters();  // define tracking medium parameters 
+  //void DefineMediumParameters();  // define tracking medium parameters; not needed set in galice.cuts 
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation

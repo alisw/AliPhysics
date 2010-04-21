@@ -14,39 +14,6 @@
  **************************************************************************/
 
 /* $Id$ */
-/* History of cvs commits:
- *
- * $Log$
-
- * Revision 1.54  2007/12/06 10:31:13  hristov
- * Bug fix: using the mapping from CDB
- *
- * Revision 1.53.10.1  2007/12/06 10:29:59  hristov
- * Bug fix: using the mapping from CDB
- *
- * Revision 1.53  2007/03/17 19:56:38  mvl
- * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
- *
- * Revision 1.52  2007/03/10 22:19:01  pavlinov
- * move one varibels from AliEMCALv2 to AliEMCAL
- *
- * Revision 1.51  2007/02/24 20:42:35  pavlinov
- * fixed error of Geant3 parameters initialisation
- *
- * Revision 1.50  2007/02/05 10:43:25  hristov
- * Changes for correct initialization of Geant4 (Mihaela)
- *
- * Revision 1.49  2007/01/22 17:29:12  pavlinov
- * EMCAL geometry can be created independently form anything now
- *
- * Revision 1.48  2006/12/19 02:34:13  pavlinov
- * clean up the EMCAL name scheme : super module -> module -> tower (or cell)
- *
- * Revision 1.47  2006/12/05 17:12:03  gustavo
- * Updated AliEMCAL::Digits2Raw, reads first provisional RCU mapping files to make Raw data with new AliCaloAltroMapping and AliCaloRawStream
- *
- *
- */
 //_________________________________________________________________________
 // Base Class for EMCAL description:
 // This class contains material definitions    
@@ -125,82 +92,83 @@ void AliEMCAL::InitConstants()
   fBirkC2 = 9.6e-6/(1.032 * 1.032);
   }
 
+//Not needed, modify $ALICE_ROOT/data/galice.cuts instead.
+//Load the modified one in the configuration file with SetTransPar
+// //____________________________________________________________________________
+// void AliEMCAL::DefineMediumParameters()
+// {
+//   //
+//   // EMCAL cuts (Geant3) 
+//   // 
+//   Int_t * idtmed = fIdtmed->GetArray() - 1599 ; 
+// // --- Set decent energy thresholds for gamma and electron tracking
 
-//____________________________________________________________________________
-void AliEMCAL::DefineMediumParameters()
-{
-  //
-  // EMCAL cuts (Geant3) 
-  // 
-  Int_t * idtmed = fIdtmed->GetArray() - 1599 ; 
-// --- Set decent energy thresholds for gamma and electron tracking
+//   // Tracking threshold for photons and electrons in Lead 
+//   Float_t cutgam=10.e-5; // 100 kev;
+//   Float_t cutele=10.e-5; // 100 kev;
+//   TString ntmp(GetTitle()); 
+//   ntmp.ToUpper();
+//   if(ntmp.Contains("10KEV")) {
+//     cutele = cutgam = 1.e-5;
+//   } else if(ntmp.Contains("50KEV")) {
+//     cutele = cutgam = 5.e-5;
+//   } else if(ntmp.Contains("100KEV")) {
+//     cutele = cutgam = 1.e-4;
+//   } else if(ntmp.Contains("200KEV")) {
+//     cutele = cutgam = 2.e-4;
+//   } else if(ntmp.Contains("500KEV")) {
+//     cutele = cutgam = 5.e-4;
+//   }
 
-  // Tracking threshold for photons and electrons in Lead 
-  Float_t cutgam=10.e-5; // 100 kev;
-  Float_t cutele=10.e-5; // 100 kev;
-  TString ntmp(GetTitle()); 
-  ntmp.ToUpper();
-  if(ntmp.Contains("10KEV")) {
-    cutele = cutgam = 1.e-5;
-  } else if(ntmp.Contains("50KEV")) {
-    cutele = cutgam = 5.e-5;
-  } else if(ntmp.Contains("100KEV")) {
-    cutele = cutgam = 1.e-4;
-  } else if(ntmp.Contains("200KEV")) {
-    cutele = cutgam = 2.e-4;
-  } else if(ntmp.Contains("500KEV")) {
-    cutele = cutgam = 5.e-4;
-  }
+//   gMC->Gstpar(idtmed[1600],"CUTGAM", cutgam);
+//   gMC->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
+//   gMC->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   gMC->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   // --- Generate explicitly delta rays in Lead ---
+//   gMC->Gstpar(idtmed[1600], "LOSS", 3) ;
+//   gMC->Gstpar(idtmed[1600], "DRAY", 1) ;
+//   gMC->Gstpar(idtmed[1600], "DCUTE", cutele) ;
+//   gMC->Gstpar(idtmed[1600], "DCUTM", cutele) ;
 
-  gMC->Gstpar(idtmed[1600],"CUTGAM", cutgam);
-  gMC->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
-  gMC->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  // --- Generate explicitly delta rays in Lead ---
-  gMC->Gstpar(idtmed[1600], "LOSS", 3) ;
-  gMC->Gstpar(idtmed[1600], "DRAY", 1) ;
-  gMC->Gstpar(idtmed[1600], "DCUTE", cutele) ;
-  gMC->Gstpar(idtmed[1600], "DCUTM", cutele) ;
+// // --- in aluminium parts ---
+//   gMC->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
+//   gMC->Gstpar(idtmed[1602],"CUTELE", cutele) ;
+//   gMC->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   gMC->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
+//   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
+//   gMC->Gstpar(idtmed[1602], "DCUTE", cutele) ;
+//   gMC->Gstpar(idtmed[1602], "DCUTM", cutele) ;
 
-// --- in aluminium parts ---
-  gMC->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
-  gMC->Gstpar(idtmed[1602],"CUTELE", cutele) ;
-  gMC->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
-  gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
-  gMC->Gstpar(idtmed[1602], "DCUTE", cutele) ;
-  gMC->Gstpar(idtmed[1602], "DCUTM", cutele) ;
+// // --- and finally thresholds for photons and electrons in the scintillator ---
+//   gMC->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
+//   gMC->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
+//   gMC->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   gMC->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   gMC->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
+//   gMC->Gstpar(idtmed[1601], "DRAY",1) ;
+//   gMC->Gstpar(idtmed[1601], "DCUTE", cutele) ;
+//   gMC->Gstpar(idtmed[1601], "DCUTM", cutele) ;
 
-// --- and finally thresholds for photons and electrons in the scintillator ---
-  gMC->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
-  gMC->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
-  gMC->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
-  gMC->Gstpar(idtmed[1601], "DRAY",1) ;
-  gMC->Gstpar(idtmed[1601], "DCUTE", cutele) ;
-  gMC->Gstpar(idtmed[1601], "DCUTM", cutele) ;
+//   // S steel - 
+//   gMC->Gstpar(idtmed[1603],"CUTGAM", cutgam);
+//   gMC->Gstpar(idtmed[1603],"CUTELE", cutele);
+//   gMC->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   gMC->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   // --- Generate explicitly delta rays 
+//   gMC->Gstpar(idtmed[1603], "LOSS",3);
+//   gMC->Gstpar(idtmed[1603], "DRAY",1);
+//   gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
+//   gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
 
-  // S steel - 
-  gMC->Gstpar(idtmed[1603],"CUTGAM", cutgam);
-  gMC->Gstpar(idtmed[1603],"CUTELE", cutele);
-  gMC->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  // --- Generate explicitly delta rays 
-  gMC->Gstpar(idtmed[1603], "LOSS",3);
-  gMC->Gstpar(idtmed[1603], "DRAY",1);
-  gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
-  gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
-
-  AliEMCALGeometry* geom = GetGeometry();
-  if(geom->GetILOSS()>=0) {
-    for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
-  } 
-  if(geom->GetIHADR()>=0) {
-    for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
-  }
-}
+//   AliEMCALGeometry* geom = GetGeometry();
+//   if(geom->GetILOSS()>=0) {
+//     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
+//   } 
+//   if(geom->GetIHADR()>=0) {
+//     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
+//   }
+// }
 
 //____________________________________________________________________________
 AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager) const
@@ -277,19 +245,15 @@ void AliEMCAL::CreateMaterials()
   fBirkC1 =  0.013/dP;
   fBirkC2 =  9.6e-6/(dP * dP);
 
-  // Call just in case of Geant3; What to do in case of Geant4 ?
-  // if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
-  // Just do the same but in Init() function
-  // DefineMediumParameters(); 
 }
 
 //____________________________________________________________________________
 void  AliEMCAL::Init()
-{
-  // Call just in case of Geant3; What to do in case of Geant4 ?
-  // if(gMC->InheritsFrom("TGeant3")) DefineMediumParameters(); // Feb 20, 2007
-  // Just do the same
-  DefineMediumParameters(); 
+{ 
+  // Init
+  //Not needed, modify $ALICE_ROOT/data/galice.cuts instead.
+  //Load the modified one in the configuration file with SetTransPar
+  //DefineMediumParameters(); 
 }     
 
 //____________________________________________________________________________
