@@ -231,9 +231,10 @@ void AliZDCQADataMakerSim::MakeHits()
 void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
-  
-  if(fHitsArray) fHitsArray->Clear() ; 
-  else fHitsArray = new TClonesArray("AliZDCHit", 1000);
+  if(!hitTree){
+    AliError("Can't get ZDC hit tree!!");
+    return; 
+  }	
 
   TBranch * branch = hitTree->GetBranch("ZDC") ;
 
@@ -241,16 +242,17 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
     AliError("ZDC branch in Hit Tree not found!"); 
     return;
   } 
-  else{
-    Int_t nHits = 0;
-    branch->SetAddress(&fHitsArray) ;
-    for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
-      branch->GetEntry(ientry) ;
-      nHits += fHitsArray->GetEntriesFast();
-      MakeHits() ; 
-      fHitsArray->Clear();
-    } 	
-  }
+  
+  if(fHitsArray) fHitsArray->Clear() ; 
+  else fHitsArray = new TClonesArray("AliZDCHit", 1000);
+ 
+  branch->SetAddress(&fHitsArray) ;
+  for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
+    branch->GetEntry(ientry) ;
+    MakeHits() ; 
+    fHitsArray->Clear() ; 
+  }   
+
 }
 
 //___________________________________________________________________________
@@ -360,10 +362,11 @@ void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree)
     return;
   } 
   
-  branch->SetAddress(&fDigitsArray);
-  branch->GetEntry(0) ; 
-  MakeDigits() ; 
-  fDigitsArray->Clear();
+  for (Int_t ient = 0; ient < branch->GetEntries(); ient++){
+    branch->SetAddress(&fDigitsArray);
+    branch->GetEntry(0) ; 
+    MakeDigits() ; 
+  }
 }
 
 //____________________________________________________________________________
