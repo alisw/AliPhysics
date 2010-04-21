@@ -125,8 +125,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kSPD | AliPWG0Helper::kFieldOn | AliPWG0Helper::kSPDOnlyL0;
   //AliPWG0Helper::AnalysisMode analysisMode = AliPWG0Helper::kTPCITS | AliPWG0Helper::kFieldOn;
   
-  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
-  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
+  //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag;
+  AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kAcceptAll | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
   
   //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag;
   //AliTriggerAnalysis::Trigger trigger      = AliTriggerAnalysis::kSPDGFOBits | AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kOneParticle;
@@ -202,14 +202,14 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   if (1 && requiredData != 2)
   {
     //const char* fastORFile = "spdFOEff_run104824_52.root";
-    const char* fastORFile = "spdFOEff_run104867_92.root";
+    //const char* fastORFile = "spdFOEff_run104867_92.root";
     //const char* fastORFile = "spdFOEff_run105054_7.root";
-    //const char* fastORFile = "spdFOEff_run114931.root";
+    const char* fastORFile = "spdFOEff_run114931.root";
   
     Printf("NOTE: Simulating FAST-OR efficiency on the analysis level using file %s", fastORFile);
     TFile::Open(fastORFile);
     spdFOEff = (TH1F*) gFile->Get("spdFOEff");
-    physicsSelectionTask->GetPhysicsSelection()->Initialize(104867);
+    physicsSelectionTask->GetPhysicsSelection()->Initialize(114931);
     physicsSelectionTask->GetPhysicsSelection()->GetTriggerAnalysis()->SetSPDGFOEfficiency(spdFOEff);
   }
   
@@ -241,6 +241,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
     if (requiredData == 1)
       task->SetReadMC();
+      
+    //physicsSelectionTask->GetPhysicsSelection()->SetBin0Callback("AlidNdEtaTask");
 
     // syst. error flags
     //task->SetUseMCVertex();
@@ -250,7 +252,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     //task->SetSymmetrize();
 
     // INEL>0 definition
-    //task->SetMultAxisEta1();
+    if (trigger & AliTriggerAnalysis::kOneParticle)
+      task->SetMultAxisEta1();
 
     task->SetTrigger(trigger);
     task->SetAnalysisMode(analysisMode);
@@ -269,7 +272,7 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
 
     // Attach output
     cOutput = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer);
-    mgr->ConnectOutput(task, 0, cOutput);
+    mgr->ConnectOutput(task, 1, cOutput);
   }
 
   if (runWhat == 1 || runWhat == 2)
@@ -286,7 +289,8 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     task2->SetSkipParticles();
 
     // INEL>0 definition
-    //task2->SetMultAxisEta1();
+    if (trigger & AliTriggerAnalysis::kOneParticle)
+      task2->SetMultAxisEta1();
 
     task2->SetTrigger(trigger);
     task2->SetAnalysisMode(analysisMode);

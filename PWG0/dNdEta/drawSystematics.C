@@ -1146,11 +1146,11 @@ void GetRelativeFractions(Int_t origin, Float_t& ref_SD, Float_t& ref_DD, Float_
 
   switch (origin)
   {
-    case -10: // Pythia default at 900 GeV, 50% error
+    case -10: // Pythia default at 7 GeV, 50% error
       Printf("PYTHIA x-sections");
-      ref_SD = 0.223788; error_SD = ref_SD * 0.5;
-      ref_DD = 0.123315; error_DD = ref_DD * 0.5;
-      ref_ND = 0.652897; error_ND = 0;
+      ref_SD = 0.192637; error_SD = ref_SD * 0.5;
+      ref_DD = 0.129877; error_DD = ref_DD * 0.5;
+      ref_ND = 0.677486; error_ND = 0;
       break;
 
     case -1: // Pythia default at 900 GeV, as test

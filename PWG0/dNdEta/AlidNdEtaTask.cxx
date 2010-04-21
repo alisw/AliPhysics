@@ -53,7 +53,7 @@
 ClassImp(AlidNdEtaTask)
 
 AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
-  AliAnalysisTask("AlidNdEtaTask", ""),
+  AliAnalysisTaskSE("AlidNdEtaTask"),
   fESD(0),
   fOutput(0),
   fOption(opt),
@@ -72,7 +72,6 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fMultAxisEta1(kFALSE),
   fDiffTreatment(AliPWG0Helper::kMCFlags),
   fEsdTrackCuts(0),
-  fTriggerAnalysis(0),
   fdNdEtaAnalysisESD(0),
   fMult(0),
   fMultVtx(0),
@@ -105,8 +104,8 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   //
 
   // Define input and output slots here
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TList::Class());
+  //DefineInput(0, TChain::Class());
+  DefineOutput(1, TList::Class());
   
   fZPhi[0] = 0;
   fZPhi[1] = 0;
@@ -129,7 +128,7 @@ AlidNdEtaTask::~AlidNdEtaTask()
   }
 }
 
-Bool_t AlidNdEtaTask::Notify()
+Bool_t AlidNdEtaTask::UserNotify()
 {
   static Int_t count = 0;
   count++;
@@ -138,13 +137,16 @@ Bool_t AlidNdEtaTask::Notify()
 }
 
 //________________________________________________________________________
-void AlidNdEtaTask::ConnectInputData(Option_t *)
+void AlidNdEtaTask::ConnectInputData(Option_t *opt)
 {
   // Connect ESD
   // Called once
+  
+  AliAnalysisTaskSE::ConnectInputData(opt);
 
   Printf("AlidNdEtaTask::ConnectInputData called");
 
+  /*
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
   if (!esdH) {
@@ -163,6 +165,7 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
     // Enable only the needed branches
     esdH->SetActiveBranches(branches);
   }
+  */
 
   // disable info messages of AliMCEvent (per event)
   AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
@@ -183,7 +186,7 @@ void AlidNdEtaTask::ConnectInputData(Option_t *)
   #endif
 }
 
-void AlidNdEtaTask::CreateOutputObjects()
+void AlidNdEtaTask::UserCreateOutputObjects()
 {
   // create result objects and add to output list
 
@@ -237,7 +240,7 @@ void AlidNdEtaTask::CreateOutputObjects()
   fStats->GetXaxis()->SetBinLabel(5, "physics events after veto");
   fOutput->Add(fStats);
   
-  fStats2 = new TH2F("fStats2", "fStats2", 7, -0.5, 6.5, 10, -0.5, 9.5);
+  fStats2 = new TH2F("fStats2", "fStats2", 7, -0.5, 6.5, 12, -0.5, 11.5);
   
   fStats2->GetXaxis()->SetBinLabel(1, "No trigger");
   fStats2->GetXaxis()->SetBinLabel(2, "No Vertex");
@@ -257,6 +260,8 @@ void AlidNdEtaTask::CreateOutputObjects()
   fStats2->GetYaxis()->SetBinLabel(8, "BGA BGC");
   fStats2->GetYaxis()->SetBinLabel(9, "BBA BGC");
   fStats2->GetYaxis()->SetBinLabel(10, "BGA BBC");
+  fStats2->GetYaxis()->SetBinLabel(11, "GFO");
+  fStats2->GetYaxis()->SetBinLabel(12, "NO GFO");
   fOutput->Add(fStats2);
 
   fTrackletsVsClusters = new TH2F("fTrackletsVsClusters", ";tracklets;clusters in ITS", 50, -0.5, 49.5, 1000, -0.5, 999.5);
@@ -331,16 +336,53 @@ void AlidNdEtaTask::CreateOutputObjects()
   //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
 }
 
-void AlidNdEtaTask::Exec(Option_t*)
+Bool_t AlidNdEtaTask::IsEventInBinZero()
+{
+  // checks if the event goes to the 0 bin
+  
+  fESD = (AliESDEvent*) fInputEvent;
+  
+  AliInputEventHandler* inputHandler = static_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return kFALSE;
+  }
+    
+  static AliTriggerAnalysis* triggerAnalysis = 0;
+  if (!triggerAnalysis)
+  {
+    AliPhysicsSelection* physicsSelection = dynamic_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if (physicsSelection)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+  }
+  
+  if (!triggerAnalysis)
+  {
+    Printf("ERROR: Could not receive trigger analysis object");
+    return kFALSE;
+  }
+  
+  if (!triggerAnalysis->IsTriggerFired(fESD, fTrigger))
+    return kFALSE;
+  
+  // TODO 0 bin check
+  
+  return kTRUE;
+}
+
+void AlidNdEtaTask::UserExec(Option_t*)
 {
   // process the event
 
+  fESD = (AliESDEvent*) fInputEvent;
+  
   // these variables are also used in the MC section below; however, if ESD is off they stay with their default values
   Bool_t eventTriggered = kFALSE;
   const AliESDVertex* vtxESD = 0;
 
   // post the data already here
-  PostData(0, fOutput);
+  PostData(1, fOutput);
 
   // ESD analysis
   if (fESD)
@@ -361,18 +403,20 @@ void AlidNdEtaTask::Exec(Option_t*)
     
     eventTriggered = inputHandler->IsEventSelected();
         
-    if (!fTriggerAnalysis)
+    static AliTriggerAnalysis* triggerAnalysis = 0;
+    if (!triggerAnalysis)
     {
       AliPhysicsSelection* physicsSelection = dynamic_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
       if (physicsSelection)
-        fTriggerAnalysis = physicsSelection->GetTriggerAnalysis();
+        triggerAnalysis = physicsSelection->GetTriggerAnalysis();
     }
       
     if (eventTriggered)
-      eventTriggered = fTriggerAnalysis->IsTriggerFired(fESD, fTrigger);
+      eventTriggered = triggerAnalysis->IsTriggerFired(fESD, fTrigger);
     
-    AliTriggerAnalysis::V0Decision v0A = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kFALSE);
-    AliTriggerAnalysis::V0Decision v0C = fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kFALSE);
+    AliTriggerAnalysis::V0Decision v0A = triggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kFALSE);
+    AliTriggerAnalysis::V0Decision v0C = triggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kFALSE);
+    Bool_t fastORHW = (triggerAnalysis->SPDFiredChips(fESD, 1) > 0);
     
     Int_t vZero = 0;
     if (v0A != AliTriggerAnalysis::kV0Invalid && v0C != AliTriggerAnalysis::kV0Invalid)
@@ -396,6 +440,7 @@ void AlidNdEtaTask::Exec(Option_t*)
     if (!eventTriggered)
     {
       fStats2->Fill(0.0, vZero);
+      fStats2->Fill(0.0, (fastORHW) ? 10 : 11);
       filled = kTRUE;
     }
     
@@ -463,6 +508,7 @@ isManager()->GetInputEventHandler());
       if (!filled)
       {
         fStats2->Fill(1, vZero);
+        fStats2->Fill(1, (fastORHW) ? 10 : 11);
         filled = kTRUE;
       }
     }
@@ -473,6 +519,7 @@ isManager()->GetInputEventHandler());
         if (!filled)
         {
           fStats2->Fill(2, vZero);
+          fStats2->Fill(2, (fastORHW) ? 10 : 11);
           filled = kTRUE;
         }
       }
@@ -487,6 +534,7 @@ isManager()->GetInputEventHandler());
         if (!filled)
         {
           fStats2->Fill(3, vZero);
+          fStats2->Fill(3, (fastORHW) ? 10 : 11);
           filled = kTRUE;
         }
       }
@@ -496,6 +544,7 @@ isManager()->GetInputEventHandler());
         if (!filled)
         {
           fStats2->Fill(4, vZero);
+          fStats2->Fill(4, (fastORHW) ? 10 : 11);
           filled = kTRUE;
         }
       }
@@ -509,6 +558,7 @@ isManager()->GetInputEventHandler());
         if (!filled)
         {
           fStats2->Fill(5, vZero);
+          fStats2->Fill(5, (fastORHW) ? 10 : 11);
           filled = kTRUE;
         }
       }
@@ -517,6 +567,7 @@ isManager()->GetInputEventHandler());
     if (!filled)
     {
       fStats2->Fill(6, vZero);
+      fStats2->Fill(6, (fastORHW) ? 10 : 11);
       //Printf("File: %s, IEV: %d, TRG: ---, Orbit: 0x%x, Period: %d, BC: %d", ((TTree*) GetInputData(0))->GetCurrentFile()->GetName(), fESD->GetEventNumberInFile(), fESD->GetOrbitNumber(),fESD->GetPeriodNumber(),fESD->GetBunchCrossNumber());
     }
       
@@ -1099,7 +1150,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-  fOutput = dynamic_cast<TList*> (GetOutputData(0));
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput)
     Printf("ERROR: fOutput not available");
 
