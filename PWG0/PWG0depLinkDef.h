@@ -8,9 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliTPCClusterHistograms+;
-#pragma link C++ class AliTPCRawHistograms+;
-
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtAnalysis+;

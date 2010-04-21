@@ -4,9 +4,7 @@
 
 # this library contains classed that depend on STEER
 
-SRCS = TPC/AliTPCClusterHistograms.cxx \
-       TPC/AliTPCRawHistograms.cxx \
-      dNdPt/AlidNdPtHelper.cxx \
+SRCS = dNdPt/AlidNdPtHelper.cxx \
       dNdPt/AlidNdPtAnalysis.cxx \
       dNdPt/AlidNdPtCorrection.cxx \
       dNdPt/AlidNdPtAcceptanceCuts.cxx \
@@ -20,7 +18,7 @@ HDRS = $(SRCS:.cxx=.h)
 
 DHDR= PWG0depLinkDef.h
 
-EINCLUDE= TPC PWG0/TPC
+EINCLUDE= TPC
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase
