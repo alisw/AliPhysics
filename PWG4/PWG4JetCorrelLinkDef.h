@@ -5,6 +5,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class CorrelList_t+;
+#pragma link C++ class CorrelListIter_t+;
+#pragma link C++ class CorrelListNode_t+;
 #pragma link C++ class AliJetCorrelMaker+;
 #pragma link C++ class AliJetCorrelSelector+;
 #pragma link C++ class AliJetCorrelReader+;
