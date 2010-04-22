@@ -118,6 +118,9 @@ void AliITSOnlineSDDInjectors::AddEvent(TH2F* his){
     for(Int_t i=0;i<kInjPads;i++){ 
       fSumDriftSpeed[i]=0.;
       fSumSqDriftSpeed[i]=0.;
+      fSumPadStatus[i]=0;
+      fSumPadStatusCut[i]=0;
+      fNEventsInPad[i]=0;
     }
   }
   Reset();
@@ -127,17 +130,23 @@ void AliITSOnlineSDDInjectors::AddEvent(TH2F* his){
   CalcTimeBinZero();
   for(Int_t j=0;j<kInjPads;j++){ 
     CalcDriftSpeed(j);
-    fSumDriftSpeed[j]+=fDriftSpeed[j];
-    fSumSqDriftSpeed[j]+=fDriftSpeed[j]*fDriftSpeed[j];
+    Int_t padStatus=GetInjPadStatus(j);
+    fSumPadStatus[j]+=padStatus;
+    if(padStatus>fPadStatusCutForFit){
+      fSumDriftSpeed[j]+=fDriftSpeed[j];
+      fSumSqDriftSpeed[j]+=fDriftSpeed[j]*fDriftSpeed[j];
+      fSumPadStatusCut[j]+=padStatus;
+      fNEventsInPad[j]++;
+    }
   }
   ++fNEvents;
 }
 //______________________________________________________________________
 Double_t AliITSOnlineSDDInjectors::GetRMSDriftSpeed(Int_t ipad) const {
   // 
-  if(fNEvents<=1) return 0.;
-  Double_t mean=fSumDriftSpeed[ipad]/(Double_t)fNEvents;
-  Double_t diff=fSumSqDriftSpeed[ipad]/(Double_t)fNEvents-mean*mean;
+  if(fNEventsInPad[ipad]<=1) return 0.;
+  Double_t mean=fSumDriftSpeed[ipad]/(Double_t)fNEventsInPad[ipad];
+  Double_t diff=fSumSqDriftSpeed[ipad]/(Double_t)fNEventsInPad[ipad]-mean*mean;
   if(diff<0.) diff=0.;
   return TMath::Sqrt(diff);
 }
@@ -148,12 +157,20 @@ void AliITSOnlineSDDInjectors::FitMeanDriftSpeedVsAnode(){
   if(fNEvents==0) return;
   for(Int_t i=0;i<kInjPads;i++){ 
     fDriftSpeed[i]=GetMeanDriftSpeed(i);
-    if(fNEvents>1){
+    Int_t padStatusCut=(Int_t)(GetMeanPadStatusCut(i)+0.5);
+    for(Int_t ilin=0; ilin<kInjLines ; ilin++) fGoodInj[i][ilin]=(padStatusCut&1<<ilin)>>ilin;
+    if(fNEventsInPad[i]>1){
       Double_t rms=GetRMSDriftSpeed(i);
-      if(rms>0.) fDriftSpeedErr[i]=rms/TMath::Sqrt(fNEvents);
+      if(rms>0.) fDriftSpeedErr[i]=rms/TMath::Sqrt(fNEventsInPad[i]);
+    }else{
+      for(Int_t ilin=0; ilin<kInjLines ; ilin++) fGoodInj[i][ilin]=0;
     }
   }
   FitDriftSpeedVsAnode();
+  for(Int_t i=0;i<kInjPads;i++){ 
+    Int_t padStatus=(Int_t)(GetMeanPadStatusCut(i)+0.5);
+    for(Int_t ilin=0; ilin<kInjLines ; ilin++) fGoodInj[i][ilin]=(padStatus&1<<ilin)>>ilin;
+  }
 }
 //______________________________________________________________________
 TGraphErrors* AliITSOnlineSDDInjectors::GetTimeVsDistGraph(Int_t jpad) const{
@@ -304,11 +321,11 @@ void AliITSOnlineSDDInjectors::PolyFit(Int_t degree){
     for(Int_t jpad=fFirstPadForFit; jpad<=fLastPadForFit; jpad++){
       Double_t x=(Double_t)GetAnodeNumber(jpad);
       if(fDriftSpeed[jpad]>0 && GetInjPadStatus(jpad)>fPadStatusCutForFit){
-	  vect[k1]+=fDriftSpeed[jpad]*TMath::Power(x,k1)/TMath::Power(fDriftSpeedErr[jpad],2);	
-	  if(k1==0) npts++;
-	  for(Int_t k2=0;k2<kNn;k2++){
-	    mat[k1][k2]+=TMath::Power(x,k1+k2)/TMath::Power(fDriftSpeedErr[jpad],2);
-	  }
+	vect[k1]+=fDriftSpeed[jpad]*TMath::Power(x,k1)/TMath::Power(fDriftSpeedErr[jpad],2);	
+	if(k1==0) npts++;
+	for(Int_t k2=0;k2<kNn;k2++){
+	  mat[k1][k2]+=TMath::Power(x,k1+k2)/TMath::Power(fDriftSpeedErr[jpad],2);
+	}
       }
     }
   }
@@ -593,7 +610,7 @@ TH1F* AliITSOnlineSDDInjectors::GetMeanDriftSpeedVsPadHisto() const{
       h->SetBinContent(i+1,GetMeanDriftSpeed(i));    
       Double_t rms=GetRMSDriftSpeed(i);
       Double_t err=0.;
-      if(rms>0.) err=rms/TMath::Sqrt(fNEvents);
+      if(rms>0.) err=rms/TMath::Sqrt(fNEventsInPad[i]);
       h->SetBinError(i+1,err);
     }
   }
@@ -619,7 +636,7 @@ Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
     hdsp.SetBinContent(i+1,GetMeanDriftSpeed(i));    
     Double_t rms=GetRMSDriftSpeed(i);
     Double_t err=0.;
-    if(rms>0.) err=rms/TMath::Sqrt(fNEvents);
+    if(rms>0.) err=rms/TMath::Sqrt(fNEventsInPad[i]);
     hdsp.SetBinError(i+1,err);
   }
   hdsp.Write();

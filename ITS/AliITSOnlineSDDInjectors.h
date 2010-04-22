@@ -109,10 +109,19 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void FitDriftSpeedVsAnode();
   void PolyFit(Int_t degree=3);
   Double_t GetMeanDriftSpeed(Int_t ipad) const{
-    if(fNEvents==0) return 0.;
-    return fSumDriftSpeed[ipad]/(Double_t)fNEvents;
+    if(fNEventsInPad[ipad]==0) return 0.;
+    return fSumDriftSpeed[ipad]/(Double_t)fNEventsInPad[ipad];
   }
   Double_t GetRMSDriftSpeed(Int_t ipad) const;
+  Double_t GetMeanPadStatusCut(Int_t ipad) const{
+    if(fNEventsInPad[ipad]==0) return 0.;
+    return (Double_t)fSumPadStatusCut[ipad]/(Double_t)fNEventsInPad[ipad];
+  }
+  Double_t GetMeanPadStatus(Int_t ipad) const{
+    if(fNEvents==0) return 0.;
+    return (Double_t)fSumPadStatus[ipad]/(Double_t)fNEvents;
+  }
+
   void FitMeanDriftSpeedVsAnode();
 
  protected:
@@ -140,21 +149,24 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Double_t fTbZero;                           // Time zero for injector event
   Double_t fRMSTbZero;                        // Error on time zero 
   Double_t fPosition[kInjLines];              // Coordinates of injector lines
-  UShort_t fTbMin[kInjLines];                // Minimum time bin for each line
-  UShort_t fTbMax[kInjLines];                // Maximum time bin for each line
-  Bool_t fGoodInj[kInjPads][kInjLines];      // array of good injectors
+  UShort_t fTbMin[kInjLines];                 // Minimum time bin for each line
+  UShort_t fTbMax[kInjLines];                 // Maximum time bin for each line
+  Bool_t fGoodInj[kInjPads][kInjLines];       // array of good injectors
   Double_t fCentroid[kInjPads][kInjLines];    // array of time bin centroids
   Double_t fRMSCentroid[kInjPads][kInjLines]; // array of time rms of injectors
   Double_t fDriftSpeed[kInjPads];             // drift speed  
   Double_t fDriftSpeedErr[kInjPads];          // error on drift speed
-  Int_t fNEvents;                            // number of events
+  Int_t fNEvents;                             // number of events
+  Int_t fNEventsInPad[kInjPads];              // number of events per pad
   Double_t fSumDriftSpeed[kInjPads];          // drift speed summed over events  
   Double_t fSumSqDriftSpeed[kInjPads];        // drift speed^2 sum
+  Int_t fSumPadStatus[kInjPads];              // pad status sum
+  Int_t fSumPadStatusCut[kInjPads];           // pad status (> cut) sum
   
-  Double_t *fParam;                           // parameters of polinomial fit to
+  Double_t *fParam;                          // parameters of polinomial fit to
                                              // drift speed vs. anode number
-  Int_t fPolDegree;                   // Degree of polynomial fit
-  Int_t fActualPolDegree;             // Degree actually used (<=fPolDegree)
+  Int_t fPolDegree;                  // Degree of polynomial fit
+  Int_t fActualPolDegree;            // Degree actually used (<=fPolDegree)
   Float_t fMinDriftSpeed;            // Minimum value for drift speed
   Float_t fMaxDriftSpeed;            // Maximum value for drift speed
   Float_t fMaxDriftSpeedErr;         // Maximum value for error on drift speed
@@ -170,6 +182,6 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Bool_t fUseTimeZeroSignal;         // flag for usage of time zero signal
                                      // in drift speed calculation
 
-  ClassDef(AliITSOnlineSDDInjectors,7)
+  ClassDef(AliITSOnlineSDDInjectors,8)
 };
 #endif
