@@ -13,7 +13,7 @@
  *   aliroot -b -q -l compare_HLT_offline_local.C 2>&1 | tee task.log
  * </pre>
  *
- * If no argument is specified, ALL detector tasks are run.
+ * If no argument is specified, the global task is run.
  *
  * @ingroup alihlt_qa
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
@@ -85,10 +85,10 @@ void compare_HLT_offline_local(const char* detectorTask="global"){
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   
-  //TGrid::Connect("alien");
+  //TGrid::Connect("alien://");
 
   TChain *chain = new TChain("esdTree"); 
-  //chain->Add("alien:///alice/data/2010/LHC10b/000115322/10000115322040.110/AliESDs.root");
+  //chain->Add("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root");
   
   chain->Add("AliESDs.root");
   //chain->Add("~/7TeV/115322/10000115322040.110/AliESDs.root");
