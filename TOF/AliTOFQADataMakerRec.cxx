@@ -21,7 +21,10 @@
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-/* Modified by fbellini on 16/04/2010
+/* Modified by fbellini on 22/04/2010
+   - Added filter for physics events
+
+   Modified by fbellini on 16/04/2010
    - Added EnableDqmShifterOpt() 
    - Modified EndOfDetectorCycle() with options for DQM		
    - Updated ESDs QA
@@ -364,142 +367,148 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   //
   // makes data from Raws
   //
-  
-  Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;//in ns
-  Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
-
-  Int_t nentries=0;
-  Int_t ntof[5]; /* 0=tot, 1=IA, 2=OA, 3=IC, 4=OC*/
-  for (Int_t j=0;j<5;j++){ ntof[j]=0;}
-
-  Int_t equipmentID[5]; //(ddl, trm, chain,tdc,channel)
-  Int_t volumeID[5];   //(sector,plate,strip,padX,padZ)
-  Int_t volumeID2[5];   //(sector,plate,strip,padZ,padX) to use AliTOFGeometry::GetIndex()
-  Int_t out[5]; //   out=(indexZ,indexPhi)   
-  Int_t chIndex=-1;
-
-  TClonesArray * clonesRawData;
-  AliTOFRawStream tofInput(rawReader);
-
-  //uncomment if needed to apply DeltaBC correction
-  //tofInput.ApplyBCCorrections(kTRUE);
-  
-  for (Int_t iDDL = 0; iDDL < AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); iDDL++){
-    rawReader->Reset();
-    tofInput.LoadRawDataBuffers(iDDL);
-    clonesRawData = (TClonesArray*)tofInput.GetRawData();
-    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
-	nentries++;
-	AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
-
-	if (tofRawDatum->GetTOF()){
+    if (rawReader->GetType()==7) {
 	
-	    equipmentID[0]=iDDL;
-	    equipmentID[1]=tofRawDatum->GetTRM(); 
-	    equipmentID[2]=tofRawDatum->GetTRMchain();
-	    equipmentID[3]=tofRawDatum->GetTDC();
-	    equipmentID[4]=tofRawDatum->GetTDCchannel();
+	Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;//in ns
+	Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
+	
+	Int_t nentries=0;
+	Int_t ntof[5]; /* 0=tot, 1=IA, 2=OA, 3=IC, 4=OC*/
+	for (Int_t j=0;j<5;j++){ ntof[j]=0;}
+	
+	Int_t equipmentID[5]; //(ddl, trm, chain,tdc,channel)
+	Int_t volumeID[5];   //(sector,plate,strip,padX,padZ)
+	Int_t volumeID2[5];   //(sector,plate,strip,padZ,padX) to use AliTOFGeometry::GetIndex()
+	Int_t out[5]; //   out=(indexZ,indexPhi)   
+	Int_t chIndex=-1;
+	
+	TClonesArray * clonesRawData;
+	AliTOFRawStream tofInput(rawReader);
+	
+	//uncomment if needed to apply DeltaBC correction
+	//tofInput.ApplyBCCorrections(kTRUE);
+	
+	for (Int_t iDDL = 0; iDDL < AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); iDDL++){
+	    rawReader->Reset();
 	    
-	    if (CheckEquipID(equipmentID)){
-		tofInput.EquipmentId2VolumeId(iDDL, 
-					      tofRawDatum->GetTRM(), 
-					      tofRawDatum->GetTRMchain(),
-					      tofRawDatum->GetTDC(), 
-					      tofRawDatum->GetTDCchannel(), 
-					      volumeID);
-		if (FilterSpare(equipmentID)) continue;
-		if (FilterLTMData(equipmentID)){ //counts LTM hits
-		    if (tofRawDatum->GetTOT()) GetRawsData(15)->Fill(equipmentID[0]);
-		} else {
-		    if (CheckVolumeID(volumeID)){  
-			
-			GetMapIndeces(volumeID,out);
-			volumeID2[0]=volumeID[0];
-			volumeID2[1]=volumeID[1];
-			volumeID2[2]=volumeID[2];
-			volumeID2[3]=volumeID[4];
-			volumeID2[4]=volumeID[3];
-			chIndex=AliTOFGeometry::GetIndex(volumeID2);
-			
-			if (tofRawDatum->GetTOT()){	    
-			    if (!(fCalibData->GetNoiseStatus(chIndex)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
-				&& (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk)) {//noise and enabled filter
-				ntof[0]++; //counter for tof hits
-
-				//fill global spectra for DQM plots
-				GetRawsData(5)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
-				GetRawsData(10)->Fill( tofRawDatum->GetTOT()*tot2ns) ;//in ns
+	    tofInput.LoadRawDataBuffers(iDDL);
+	    clonesRawData = (TClonesArray*)tofInput.GetRawData();
+	    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
+		nentries++;
+		AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
+		
+		if (tofRawDatum->GetTOF()){
+		    
+		    equipmentID[0]=iDDL;
+		    equipmentID[1]=tofRawDatum->GetTRM(); 
+		    equipmentID[2]=tofRawDatum->GetTRMchain();
+		    equipmentID[3]=tofRawDatum->GetTDC();
+		    equipmentID[4]=tofRawDatum->GetTDCchannel();
+		    
+		    if (CheckEquipID(equipmentID)){
+			tofInput.EquipmentId2VolumeId(iDDL, 
+						      tofRawDatum->GetTRM(), 
+						      tofRawDatum->GetTRMchain(),
+						      tofRawDatum->GetTDC(), 
+						      tofRawDatum->GetTDCchannel(), 
+						      volumeID);
+			if (FilterSpare(equipmentID)) continue;
+			if (FilterLTMData(equipmentID)){ //counts LTM hits
+			    if (tofRawDatum->GetTOT()) GetRawsData(15)->Fill(equipmentID[0]);
+			} else {
+			    if (CheckVolumeID(volumeID)){  
 				
-				//fill side-related spectra for experts plots
-				if (volumeID2[0]>4 && volumeID2[0]<14){       //I side
-				    if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
-					ntof[1]++;
-					GetRawsData(6)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-					GetRawsData(11)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
-				    } else {
-					if ((iDDL%4==2)|| (iDDL%4==3)){//C side
-					    ntof[3]++;
-					    GetRawsData(8)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-					    GetRawsData(13)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
-					}
-				    }
-				} else {                                    
-				    if (volumeID2[0]<5 || volumeID2[0]>13){   //O side
-					if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
-					    ntof[2]++;
-					    GetRawsData(7)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-					    GetRawsData(12)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
-					} else {
-					    if ((iDDL%4==2)|| (iDDL%4==3)){//C side
-						ntof[4]++;
-						GetRawsData(9)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-						GetRawsData(14)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+				GetMapIndeces(volumeID,out);
+				volumeID2[0]=volumeID[0];
+				volumeID2[1]=volumeID[1];
+				volumeID2[2]=volumeID[2];
+				volumeID2[3]=volumeID[4];
+				volumeID2[4]=volumeID[3];
+				chIndex=AliTOFGeometry::GetIndex(volumeID2);
+				
+				if (tofRawDatum->GetTOT()){	    
+				    if (!(fCalibData->GetNoiseStatus(chIndex)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+					&& (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk)) {//noise and enabled filter
+					ntof[0]++; //counter for tof hits
+					
+					//fill global spectra for DQM plots
+					GetRawsData(5)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
+					GetRawsData(10)->Fill( tofRawDatum->GetTOT()*tot2ns) ;//in ns
+					
+					//fill side-related spectra for experts plots
+					if (volumeID2[0]>4 && volumeID2[0]<14){       //I side
+					    if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
+						ntof[1]++;
+						GetRawsData(6)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
+						GetRawsData(11)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+					    } else {
+						if ((iDDL%4==2)|| (iDDL%4==3)){//C side
+						    ntof[3]++;
+						    GetRawsData(8)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
+						    GetRawsData(13)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+						}
 					    }
+					} else {                                    
+					    if (volumeID2[0]<5 || volumeID2[0]>13){   //O side
+						if ((iDDL%4==0)|| (iDDL%4==1)){ //A side
+						    ntof[2]++;
+						    GetRawsData(7)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
+						    GetRawsData(12)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+						} else {
+						    if ((iDDL%4==2)|| (iDDL%4==3)){//C side
+							ntof[4]++;
+							GetRawsData(9)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
+							GetRawsData(14)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+						    }
+						}
+					    }	
 					}
-				    }	
-				}
-				GetRawsData(18)->Fill(chIndex);
-				//compute TRM offset
-				Int_t trm= iDDL*10+(equipmentID[1]-3);
-				if (iDDL>=0 && iDDL<36) {
-				    GetRawsData(16)->Fill(trm) ;
-				    GetRawsData(20)->Fill(trm,tofRawDatum->GetTOF()*tdc2ns);
-				    GetRawsData(22)->Fill(trm,tofRawDatum->GetTOT()*tot2ns);
-				}
-				if (iDDL>=36 && iDDL<72) {
-				    GetRawsData(17)->Fill(trm) ;//in ns 
-				    GetRawsData(21)->Fill(trm,tofRawDatum->GetTOF()*tdc2ns);
-				    GetRawsData(23)->Fill(trm,tofRawDatum->GetTOT()*tot2ns);
-				}				
-				GetRawsData(24)->Fill(GetStripIndex(volumeID),tofRawDatum->GetTOF()*tdc2ns) ;
-				//GetRawsData(25)->Fill( out[0],out[1]) ;//raw map
-			    }//noise filter
-			}//end hit selection
-			else { //orphans
-			    if (!(fCalibData->GetNoiseStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
-				&& (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk))
-				GetRawsData(19)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
-			}//end orphans
-		    }//end volumeID check
-		}//end LTM filter
-	    }//end equipID check
+					GetRawsData(18)->Fill(chIndex);
+					//compute TRM offset
+					Int_t trm= iDDL*10+(equipmentID[1]-3);
+					if (iDDL>=0 && iDDL<36) {
+					    GetRawsData(16)->Fill(trm) ;
+					    GetRawsData(20)->Fill(trm,tofRawDatum->GetTOF()*tdc2ns);
+					    GetRawsData(22)->Fill(trm,tofRawDatum->GetTOT()*tot2ns);
+					}
+					if (iDDL>=36 && iDDL<72) {
+					    GetRawsData(17)->Fill(trm) ;//in ns 
+					    GetRawsData(21)->Fill(trm,tofRawDatum->GetTOF()*tdc2ns);
+					    GetRawsData(23)->Fill(trm,tofRawDatum->GetTOT()*tot2ns);
+					}				
+					GetRawsData(24)->Fill(GetStripIndex(volumeID),tofRawDatum->GetTOF()*tdc2ns) ;
+					//GetRawsData(25)->Fill( out[0],out[1]) ;//raw map
+				    }//noise filter
+				}//end hit selection
+				else { //orphans
+				    if (!(fCalibData->GetNoiseStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+					&& (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk))
+					GetRawsData(19)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
+				}//end orphans
+			    }//end volumeID check
+			}//end LTM filter
+		    }//end equipID check
+		}
+	    } //while loop
+	    clonesRawData->Clear();
+	} // DDL Loop
+	
+	for (Int_t j=0;j<5;j++){
+	    if(ntof[j]<=0) GetRawsData(j)->Fill(-1.) ; 
+	    else GetRawsData(j)->Fill(ntof[j]);
 	}
-    } //while loop
-    clonesRawData->Clear();
-  } // DDL Loop
-  
-  for (Int_t j=0;j<5;j++){
-      if(ntof[j]<=0) GetRawsData(j)->Fill(-1.) ; 
-      else GetRawsData(j)->Fill(ntof[j]);
-  }
-  fProcessedRawEventN++;
-  EnableDqmShifterOpt(kTRUE);
+	fProcessedRawEventN++;
+
+    } else {
+	AliDebug(1,Form("Event of type %d found. Skipping non-physics event for QA.\n", rawReader->GetType())); 
+    }
+    EnableDqmShifterOpt(kTRUE);
 }
 
 //____________________________________________________________________________
 void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 {
-  //
+    //
   // Make data from Clusters
   //
  
@@ -698,7 +707,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
 	    continue ; 
 	
-	AliInfo(Form("Processed %i raw events",fProcessedRawEventN));
+	AliInfo(Form("Processed %i physics raw events",fProcessedRawEventN));
 
 	if (fEnableDqmShifterOpt){
 	    // Help make the raw qa histogram easier to interpret for the DQM shifter
@@ -938,3 +947,4 @@ Bool_t  AliTOFQADataMakerRec::FilterSpare(const Int_t * const equipmentID) const
     return kFALSE;
  
 }
+
