@@ -60,6 +60,7 @@ class AliDAQ: public TObject {
 
   static const char *ListOfTriggeredDetectors(UInt_t detectorPattern);
   static UInt_t      DetectorPattern(const char *detectorList);
+  static UInt_t      DetectorPatternOffline(const char *detectorList);
 
   static const char *OfflineModuleName(const char *detectorName);
   static const char *OfflineModuleName(Int_t detectorID);
@@ -71,6 +72,13 @@ class AliDAQ: public TObject {
     kNDetectors = 21,    // Number of detectors
     kHLTId = 30          // HLT detector index
   };
+
+  enum DetectorBits {kSPD = 0x0001, kSDD = 0x0002, kSSD = 0x0004, kITS = 0x0007, 
+		     kTPC = 0x0008, kTRD = 0x0010, kTOF = 0x0020, kHMPID = 0x0040, 
+		     kPHOS = 0x0080, kCPV = 0x0100, kPMD = 0x0200, kMUONTRK = 0x0400,
+		     kMUONTRG = 0x0800, kMUON = 0x0c00, kFMD = 0x1000, kT0 = 0x2000, kVZERO = 0x4000,
+		     kZDC = 0x8000, kACORDE = 0x10000, kTRG = 0x20000, kEMCAL = 0x40000,
+		     kDAQTEST = 0x80000, kHLT = 0x40000000 };
 
  private:
 

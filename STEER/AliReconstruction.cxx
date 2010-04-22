@@ -1713,6 +1713,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
+    
+    ((AliESDRun*)fesd->GetESDRun())->SetDetectorsInDAQ(fRunInfo->GetDetectorMask());
+    ((AliESDRun*)fhltesd->GetESDRun())->SetDetectorsInDAQ(fRunInfo->GetDetectorMask());
+    ((AliESDRun*)fesd->GetESDRun())->SetDetectorsInReco(AliDAQ::DetectorPatternOffline(fFillESD.Data()));
+    ((AliESDRun*)fhltesd->GetESDRun())->SetDetectorsInReco(AliDAQ::DetectorPatternOffline(fFillESD.Data()));
+
     fesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
     fhltesd->SetEventNumberInFile(fRunLoader->GetHeader()->GetEventNrInRun());
 

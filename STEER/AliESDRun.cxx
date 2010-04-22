@@ -41,7 +41,9 @@ AliESDRun::AliESDRun() :
   fRunNumber(0),
   fRecoVersion(0),
   fBeamType(""),
-  fTriggerClasses(kNTriggerClasses)
+  fTriggerClasses(kNTriggerClasses),
+  fDetInDAQ(0),
+  fDetInReco(0)
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
@@ -62,7 +64,9 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
   fRunNumber(esd.fRunNumber),
   fRecoVersion(esd.fRecoVersion),
   fBeamType(""),
-  fTriggerClasses(TObjArray(kNTriggerClasses))
+  fTriggerClasses(TObjArray(kNTriggerClasses)),
+  fDetInDAQ(0),
+  fDetInReco(0)
 { 
   // Copy constructor
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
@@ -109,6 +113,9 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
       TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
       if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
     }
+
+    fDetInDAQ   = esd.fDetInDAQ;
+    fDetInReco  = esd.fDetInReco;
 
     for(Int_t m=0; m<kNPHOSMatrix; m++){
       if(esd.fPHOSMatrix[m])
@@ -202,6 +209,8 @@ void AliESDRun::Reset()
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
   fTriggerClasses.Clear();
+  fDetInDAQ   = 0;
+  fDetInReco  = 0;
 }
 
 //______________________________________________________________________________

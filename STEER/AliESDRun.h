@@ -45,6 +45,8 @@ public:
   void    SetBeamEnergy(Float_t be)    {fBeamEnergy = be;}
   void    SetBeamType(const char* bt)  {fBeamType = bt;}
   void    SetBeamEnergyIsSqrtSHalfGeV(Bool_t v=kTRUE) {SetBit(kConvSqrtSHalfGeV,v);}
+  void    SetDetectorsInDAQ(UInt_t detmask) { fDetInDAQ = detmask; }
+  void    SetDetectorsInReco(UInt_t detmask) { fDetInReco = detmask; }
 
   Bool_t  IsBeamEnergyIsSqrtSHalfGeV() const {return TestBit(kConvSqrtSHalfGeV);}  
   Double_t GetDiamondX() const {return fDiamondXY[0];}
@@ -62,7 +64,9 @@ public:
   Float_t     GetCurrentDip()              const {return fCurrentDip;}
   Float_t     GetBeamEnergy()              const {return IsBeamEnergyIsSqrtSHalfGeV() ? fBeamEnergy : fBeamEnergy/2;}
   const char* GetBeamType()                const {return fBeamType.Data();}
-
+  UInt_t      GetDetectorsInDAQ()         const {return fDetInDAQ; }
+  UInt_t      GetDetectorsInReco()         const {return fDetInReco; }
+ 
   void    SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {
     if ((i >= 0) && (i < kNPHOSMatrix)) fPHOSMatrix[i] = matrix;
   }
@@ -93,10 +97,12 @@ private:
   Int_t           fRecoVersion;     // Version of reconstruction
   TString         fBeamType;        // beam type from GRP
   TObjArray       fTriggerClasses;  // array of TNamed containing the names of the active trigger classes
+  UInt_t          fDetInDAQ;        // Detector mask for detectors in datataking
+  UInt_t          fDetInReco;       // Detector mask for detectors in reconstruction
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliESDRun,6)
+  ClassDef(AliESDRun,7)
 };
 
 #endif 

@@ -451,6 +451,33 @@ UInt_t  AliDAQ::DetectorPattern(const char *detectorList)
   return pattern;
 }
 
+UInt_t  AliDAQ::DetectorPatternOffline(const char *detectorList)
+{
+  // Returns a 32-bit word containing the
+  // the detector pattern corresponding to a given
+  // list of detectors.
+  // The list of detectors must follow offline module
+  // name convention.
+  UInt_t pattern = 0;
+  TString detList = detectorList;
+  for(Int_t iDet = 0; iDet < (kNDetectors-1); iDet++) {
+    TString det = fgkOfflineModuleName[iDet];
+    if((detList.CompareTo(det) == 0) || 
+       detList.BeginsWith(det) ||
+       detList.EndsWith(det) ||
+       detList.Contains( " "+det+" " )) pattern |= (1 << iDet) ;
+  }
+
+  // HLT
+  TString hltDet = fgkOfflineModuleName[kNDetectors-1];
+  if((detList.CompareTo(hltDet) == 0) || 
+       detList.BeginsWith(hltDet) ||
+       detList.EndsWith(hltDet) ||
+       detList.Contains( " "+hltDet+" " )) pattern |= (1 << kHLTId) ;
+  
+  return pattern;
+}
+
 const char *AliDAQ::OfflineModuleName(const char *detectorName)
 {
   // Returns the name of the offline module
