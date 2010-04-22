@@ -125,9 +125,6 @@ AliTPCcalibTime::AliTPCcalibTime()
    fRunBins(0),
    fRunStart(0),
    fRunEnd(0)
-//   fBinsVdrift(fTimeBins,fPtBins,fVdriftBins),
-//   fXminVdrift(fTimeStart,fPtStart,fVdriftStart),
-//   fXmaxVdrift(fTimeEnd,fPtEnd,fVdriftEnd)
 {  
   //
   // default constructor
@@ -140,6 +137,13 @@ AliTPCcalibTime::AliTPCcalibTime()
   for (Int_t i=0;i<10;i++) {
     fCosmiMatchingHisto[i]=0;
   }
+  //
+  for (Int_t i=0;i<5;i++) {
+    fResHistoTPCITS[i]=0;
+    fResHistoTPCTRD[i]=0;
+    fResHistoTPCvertex[i]=0;
+  }
+
 }
 
 AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t StartTime, UInt_t EndTime, Int_t deltaIntegrationTimeVdrift)
@@ -178,6 +182,13 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
     fHistVdriftLaserA[i]=0;
     fHistVdriftLaserC[i]=0;
   }
+
+  for (Int_t i=0;i<5;i++) {
+    fResHistoTPCITS[i]=0;
+    fResHistoTPCTRD[i]=0;
+    fResHistoTPCvertex[i]=0;
+  }
+
 
   AliInfo("Non Default Constructor");
   fTimeBins   =(EndTime-StartTime)/deltaIntegrationTimeVdrift;
@@ -240,12 +251,6 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fAlignTRDTPC->SetOwner(kTRUE);
   fAlignTOFTPC->SetOwner(kTRUE);
   
-  // fArrayDz->AddLast(fHistVdriftLaserA[0]);
-//   fArrayDz->AddLast(fHistVdriftLaserA[1]);
-//   fArrayDz->AddLast(fHistVdriftLaserA[2]);
-//   fArrayDz->AddLast(fHistVdriftLaserC[0]);
-//   fArrayDz->AddLast(fHistVdriftLaserC[1]);
-//   fArrayDz->AddLast(fHistVdriftLaserC[2]);
 
   fCosmiMatchingHisto[0]=new TH1F("Cosmics matching","p0-all"   ,100,-10*0.5356  ,10*0.5356  );
   fCosmiMatchingHisto[1]=new TH1F("Cosmics matching","p1-all"   ,100,-10*4.541   ,10*4.541   );
@@ -257,12 +262,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   fCosmiMatchingHisto[7]=new TH1F("Cosmics matching","p2-isPair",100,-10*0.01134 ,10*0.01134 );
   fCosmiMatchingHisto[8]=new TH1F("Cosmics matching","p3-isPair",100,-10*0.004644,10*0.004644);
   fCosmiMatchingHisto[9]=new TH1F("Cosmics matching","p4-isPair",100,-10*0.03773 ,10*0.03773 );
-//  Char_t nameHisto[3]={'p','0','\n'};
-//  for (Int_t i=0;i<10;i++){
-//    fCosmiMatchingHisto[i]=new TH1F("Cosmics matching",nameHisto,8192,0,0);
-//    nameHisto[1]++;
-//    if(i==4) nameHisto[1]='0';
-//  }
+  BookDistortionMaps();
 }
 
 AliTPCcalibTime::~AliTPCcalibTime(){
@@ -291,6 +291,17 @@ AliTPCcalibTime::~AliTPCcalibTime(){
       fCosmiMatchingHisto[i]=NULL;
     }
   }
+
+  for (Int_t i=0;i<5;i++) {
+    delete fResHistoTPCITS[i];
+    delete fResHistoTPCTRD[i];
+    delete fResHistoTPCvertex[i];
+    fResHistoTPCITS[i]=0;
+    fResHistoTPCTRD[i]=0;
+    fResHistoTPCvertex[i]=0;
+  }
+
+
   fAlignITSTPC->SetOwner(kTRUE);
   fAlignTRDTPC->SetOwner(kTRUE);
   fAlignTOFTPC->SetOwner(kTRUE);
@@ -473,8 +484,10 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
       vecDriftLaserA[2]=vdriftA[2]/250.;
       vecDriftLaserC[2]=vdriftC[2]/250.;
     }
-    if (isReject[0]==0) fHistVdriftLaserA[icalib]->Fill(vecDriftLaserA);
-    if (isReject[1]==0) fHistVdriftLaserC[icalib]->Fill(vecDriftLaserC);
+    //if (isReject[0]==0) fHistVdriftLaserA[icalib]->Fill(vecDriftLaserA);
+    //if (isReject[1]==0) fHistVdriftLaserC[icalib]->Fill(vecDriftLaserC);
+    fHistVdriftLaserA[icalib]->Fill(vecDriftLaserA);
+    fHistVdriftLaserC[icalib]->Fill(vecDriftLaserC);
   }
 
 //   THnSparse* curHist=new THnSparseF("","HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
@@ -870,14 +883,6 @@ AliSplineFit* AliTPCcalibTime::GetFitDrift(const char* name){
   return fitDrift;
 }
 
-//TObjArray* AliTPCcalibTime::GetFitDrift(){
-//  TObjArray* arrayFitDrift=new TObjArray();
-//  TIterator* iterator = fArrayDz->MakeIterator();
-//  iterator->Reset();
-//  THnSparse* addHist=NULL;
-//  while((addHist=(THnSparseF*)iterator->Next())) arrayFitDrift->AddLast(GetFitDrift(addHist->GetName()));
-//  return arrayFitDrift;
-//}
 
 Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
   //
@@ -912,22 +917,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
       localHist->Add(addHist);
     }
-//    TMap * addMap=cal->GetHistoDrift();
-//    if(!addMap) return 0;
-//    TIterator* iterator = addMap->MakeIterator();
-//    iterator->Reset();
-//    TPair* addPair=0;
-//    while((addPair=(TPair *)(addMap->FindObject(iterator->Next())))){
-//      THnSparse* addHist=dynamic_cast<THnSparseF*>(addPair->Value());
-//      if (!addHist) continue;
-//      addHist->Print();
-//      THnSparse* localHist=dynamic_cast<THnSparseF*>(fMapDz->GetValue(addHist->GetName()));
-//      if(!localHist){
-//        localHist=new THnSparseF(addHist->GetName(),"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
-//        fMapDz->Add(new TObjString(addHist->GetName()),localHist);
-//      }
-//      localHist->Add(addHist);
-//    }
+
     for(Int_t i=0;i<10;i++) if (cal->GetCosmiMatchingHisto(i)) fCosmiMatchingHisto[i]->Add(cal->GetCosmiMatchingHisto(i));
     //
     // Merge alignment
@@ -1325,6 +1315,12 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   align->AddTrackParams(&pITS,&pTPC);
   align->SetTimeStamp(fTime);
   align->SetRunNumber(fRun );
+  Float_t dca[2],cov[3];
+  track->GetImpactParameters(dca,cov);
+  if (TMath::Abs(dca[0])<kMaxDy&&TMath::Abs(dca[0])<kMaxDy){
+    FillResHistoTPCITS(&pTPC,&pITS);
+    FillResHistoTPC(track);
+  }
   //
   Int_t nupdates=align->GetNUpdates();
   align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates));
@@ -1486,6 +1482,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   align->AddTrackParams(&pTRD,&pTPC);
   align->SetTimeStamp(fTime);
   align->SetRunNumber(fRun );
+  FillResHistoTPCITS(&pTPC,&pTRD);
   //
   Int_t nupdates=align->GetNUpdates();
   align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates));
@@ -1733,3 +1730,137 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
 }
 
 
+void  AliTPCcalibTime::BookDistortionMaps(){
+  //
+  //   Book ndimensional histograms of distortions/residuals
+  //   Only primary tracks are selected for analysis
+  //
+ 
+  Double_t xminTrack[4], xmaxTrack[4];
+  Int_t binsTrack[4];
+  TString axisName[4];
+  TString axisTitle[4];
+  //
+  binsTrack[0]  =100;
+  axisName[0]   ="#Delta";
+  axisTitle[0]  ="#Delta";
+  //
+  binsTrack[1] =20;
+  xminTrack[1] =-1.5; xmaxTrack[1]=1.5;
+  axisName[1]  ="tanTheta";
+  axisTitle[1]  ="tan(#Theta)";
+  //
+  binsTrack[2] =90;
+  xminTrack[2] =-TMath::Pi(); xmaxTrack[2]=TMath::Pi(); 
+  axisName[2]  ="phi";
+  axisTitle[2]  ="#phi";
+  //
+  binsTrack[3] =20;
+  xminTrack[3] =-1.; xmaxTrack[3]=1.;   // 0.33 GeV cut 
+  axisName[3]  ="snp";
+  //
+  // delta y
+  xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
+  fResHistoTPCITS[0] = new THnSparseS("TPCITS#Delta_{Y} (cm)","#Delta_{Y} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCvertex[0]    = new THnSparseS("TPCVertex#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTRD[0] = new THnSparseS("TPCTRD#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta z
+  xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
+  fResHistoTPCITS[1] = new THnSparseS("TPCITS#Delta_{Z} (cm)","#Delta_{Z} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCvertex[1]    = new THnSparseS("TPCVertex#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTRD[1] = new THnSparseS("TPCTRD#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta snp-P2
+  xminTrack[0] =-0.01; xmaxTrack[0]=0.01;  // 
+  fResHistoTPCITS[2] = new THnSparseS("TPCITS#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCvertex[2] = new THnSparseS("TPCITS#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTRD[2] = new THnSparseS("TPCTRD#Delta_{#phi}","#Delta_{#phi}", 4, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta theta-P3
+  xminTrack[0] =-0.01; xmaxTrack[0]=0.01;  // 
+  fResHistoTPCITS[3] = new THnSparseS("TPCITS#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCvertex[3] = new THnSparseS("TPCITS#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTRD[3] = new THnSparseS("TPCTRD#Delta_{#theta}","#Delta_{#theta}", 4, binsTrack,xminTrack, xmaxTrack);
+  //
+  // delta theta-P4
+  xminTrack[0] =-0.05; xmaxTrack[0]=0.05;  // 
+  fResHistoTPCITS[4] = new THnSparseS("TPCITS#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCvertex[4] = new THnSparseS("TPCITS#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTRD[4] = new THnSparseS("TPCTRD#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
+  //
+  for (Int_t ivar=0;ivar<4;ivar++){
+    for (Int_t ivar2=0;ivar2<4;ivar2++){      
+      fResHistoTPCITS[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fResHistoTPCITS[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+      fResHistoTPCTRD[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fResHistoTPCTRD[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+      fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+    }
+  }
+}
+
+
+void        AliTPCcalibTime::FillResHistoTPCITS(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pITSOut ){
+  //
+  // fill residual histograms pTPCIn-pITSOut
+  // Histogram is filled only for primary tracks
+  //
+  Double_t histoX[4];
+  Double_t xyz[3];
+  pTPCIn->GetXYZ(xyz);
+  Double_t phi= TMath::ATan2(xyz[1],xyz[0]);
+  histoX[1]= pTPCIn->GetTgl();
+  histoX[2]= phi;
+  histoX[3]= pTPCIn->GetSnp();
+  //
+  for (Int_t ihisto=0; ihisto<5; ihisto++){
+    histoX[0]=pTPCIn->GetParameter()[ihisto]-pITSOut->GetParameter()[ihisto];
+    fResHistoTPCITS[ihisto]->Fill(histoX);
+  }
+}  
+
+     
+void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
+  //
+  // fill residual histograms pTPC - vertex
+  // Histogram is filled only for primary tracks
+  //
+  Double_t histoX[4];
+  const AliExternalTrackParam * pTPCIn = pTrack->GetInnerParam();
+  const AliExternalTrackParam * pTPCvertex  = pTrack->GetTPCInnerParam();
+  Double_t xyz[3];
+  pTPCIn->GetXYZ(xyz);
+  Double_t phi= TMath::ATan2(xyz[1],xyz[0]);
+  histoX[1]= pTPCIn->GetTgl();
+  histoX[2]= phi;
+  histoX[3]= pTPCIn->GetSnp();
+  //
+  Float_t dca[2], cov[3];
+  pTrack->GetImpactParametersTPC(dca,cov);
+  for (Int_t ihisto=0; ihisto<2; ihisto++){
+    histoX[0]=pTPCvertex->GetParameter()[ihisto]-pTrack->GetParameter()[ihisto];
+    fResHistoTPCITS[ihisto]->Fill(histoX);
+  }
+}
+
+
+void        AliTPCcalibTime::FillResHistoTPCTRD(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTRDIn ){
+  //
+  // fill resuidual histogram TPCout-TRDin
+  //
+  Double_t histoX[4];
+  Double_t xyz[3];
+  pTPCOut->GetXYZ(xyz);
+  Double_t phi= TMath::ATan2(xyz[1],xyz[0]);
+  histoX[1]= pTPCOut->GetTgl();
+  histoX[2]= phi;
+  histoX[3]= pTPCOut->GetSnp();
+  //
+  for (Int_t ihisto=0; ihisto<5; ihisto++){
+    histoX[0]=pTPCOut->GetParameter()[ihisto]-pTRDIn->GetParameter()[ihisto];
+    fResHistoTPCTRD[ihisto]->Fill(histoX);
+  }
+
+}

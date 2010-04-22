@@ -45,6 +45,7 @@
 #include "TLegend.h"
 #include "TPad.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
 #include "AliESDfriend.h"
@@ -78,6 +79,7 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fTimeDrift(0),
   fGraphMIP(0),                // graph time dependence of MIP
   fGraphCosmic(0),             // graph time dependence at Plateu
+  fGraphAttachmentMIP(0),
   fFitMIP(0),                  // fit of dependence - MIP
   fFitCosmic(0),               // fit of dependence - Plateu
   fGainArray(new TObjArray),               // array to be stored in the OCDB
@@ -701,6 +703,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   //
   ReadGainGlobal(fileName);
   AnalyzeGain(startRunNumber,endRunNumber, 1000,1.43);
+  AnalyzeAttachment(startRunNumber,endRunNumber);
   MakeQAPlot(1.43);  
   if (pocdbStorage.Length()==0) pocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   UpdateOCDBGain( startRunNumber, endRunNumber, pocdbStorage.Data());
@@ -785,6 +788,75 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
   return kTRUE;
 
 }
+
+
+Bool_t AliTPCPreprocessorOffline::AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit) {
+  //
+  // determine slope as a function of mean driftlength
+  //
+  fGainMIP->GetHistGainTime()->GetAxis(5)->SetRangeUser(startRunNumber, endRunNumber);
+  //
+  fGainMIP->GetHistGainTime()->GetAxis(2)->SetRangeUser(1.51,2.49); // only beam data
+  fGainMIP->GetHistGainTime()->GetAxis(4)->SetRangeUser(0.39,0.51); // only MIP pions
+  //
+  TH3D * hist = fGainMIP->GetHistGainTime()->Projection(1, 0, 3);
+  //
+  Double_t *xvec = new Double_t[hist->GetNbinsX()];
+  Double_t *yvec = new Double_t[hist->GetNbinsX()];
+  Double_t *xerr = new Double_t[hist->GetNbinsX()];
+  Double_t *yerr = new Double_t[hist->GetNbinsX()];
+  Int_t counter  = 0;
+  //
+  for(Int_t i=1; i < hist->GetNbinsX(); i++) {
+    Int_t nsum=0;
+    Int_t imin   =  i;
+    Int_t imax   =  i;    
+    for (Int_t idelta=0; idelta<10; idelta++){
+      //
+      imin   =  TMath::Max(i-idelta,1);
+      imax   =  TMath::Min(i+idelta,hist->GetNbinsX());
+      nsum = TMath::Nint(hist->Integral(imin,imax,1,hist->GetNbinsY()-1,1,hist->GetNbinsZ()-1));
+      //if (nsum==0) break;
+      if (nsum>minEntriesFit) break;
+    }
+    if (nsum<minEntriesFit) continue;
+    //
+    fGainMIP->GetHistGainTime()->GetAxis(1)->SetRangeUser(hist->GetXaxis()->GetBinCenter(imin),hist->GetXaxis()->GetBinCenter(imax)); // define time range
+    TGraphErrors * driftDep = AliTPCcalibBase::FitSlices(fGainMIP->GetHistGainTime(),0,3,100,10,0.1,0.7);
+    if (driftDep->GetN() < 4) {
+      delete driftDep;
+         continue;
+    }
+    //
+    TObjArray arr;
+    //
+    TF1 pol1("polynom1","pol1",10,240);
+    //driftDep->Fit(&pol1,"QNRROB=0.8");
+    driftDep->Fit(&pol1,"QNR");
+    xvec[counter] = 0.5*(hist->GetXaxis()->GetBinCenter(imin)+hist->GetXaxis()->GetBinCenter(imax));
+    yvec[counter] = pol1.GetParameter(1)/pol1.GetParameter(0);
+    xerr[counter] = 0;
+    yerr[counter] = pol1.GetParError(1)/pol1.GetParameter(0);
+    counter++;
+    //
+    delete driftDep;
+  }
+  //
+  fGraphAttachmentMIP = new TGraphErrors(counter, xvec, yvec, xerr, yerr);
+  if (fGraphAttachmentMIP) fGraphAttachmentMIP->SetName("TGRAPHERRORS_MEAN_ATTACHMENT_BEAM_ALL");// set proper names according to naming convention
+  fGainArray->AddLast(fGraphAttachmentMIP);
+  //
+  delete [] xvec;
+  delete [] yvec;
+  delete [] xerr;
+  delete [] yerr;
+  delete hist;
+  //
+  if (counter < 1) return kFALSE;
+  return kTRUE;
+}
+
+
 
 
 

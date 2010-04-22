@@ -58,6 +58,14 @@ public:
   TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
   TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
 
+  THnSparse*  GetResHistTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
+  THnSparse*  GetResHistoTPCvertex(Int_t index)      const { return (index<5) ? fResHistoTPCvertex[index]   :0;}        //TPC vertex matching map
+  THnSparse*  GetResHistoTPCTRD(Int_t index)   const { return (index<5) ? fResHistoTPCTRD[index]:0;}        //TPC-TRD    matching map
+
+  void        BookDistortionMaps();      // book histograms
+  void        FillResHistoTPCITS(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pITSOut );       // fill residual histo
+  void        FillResHistoTPC(const AliESDtrack * pTrack);
+  void        FillResHistoTPCTRD(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTRDIn );
 
 private:
   void ResetCurrent();                  // reset current values
@@ -80,12 +88,16 @@ private:
   AliTPCcalibTime& operator=(const AliTPCcalibTime&); 
 
   TH1F* fCosmiMatchingHisto[10];
-
+  //
+  // distortion maps
+  //
+  THnSparse*  fResHistoTPCITS[5];        //TPC-ITS    matching map
+  THnSparse*  fResHistoTPCvertex[5];           //TPC-ITS    vertex matching map
+  THnSparse*  fResHistoTPCTRD[5];        //TPC-TRD    matching map
   // laser histo
   THnSparse * fHistVdriftLaserA[3];	//Histograms for V drift from laser
   THnSparse * fHistVdriftLaserC[3];	//Histograms for V drift from laser
   // DELTA Z histo
-//  TMap*      fMapDz;			//Tmap of V drifts for different triggers
   TObjArray* fArrayDz;                  // array of DZ histograms for different triggers
   TObjArray* fAlignITSTPC;              // alignemnt array ITS TPC match
   TObjArray* fAlignTRDTPC;              // alignemnt array TRD TPC match

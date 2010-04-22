@@ -44,6 +44,7 @@ public:
   void ReadGainGlobal(const Char_t* fileName="CalibObjectsTrain1.root");
   void MakeQAPlot(Float_t  FPtoMIPratio);
   Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit = 500, Float_t FPtoMIPratio = 1.43); 
+  Bool_t AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit = 2000);
   //
   // QA drawing part
   //
@@ -67,6 +68,7 @@ private:
   AliTPCcalibTime * fTimeDrift;           // input data to construct calibration graphs
   TGraphErrors * fGraphMIP;                // graph time dependence of MIP
   TGraphErrors * fGraphCosmic;             // graph time dependence at Plateu
+  TGraphErrors * fGraphAttachmentMIP;      // graph time dependence of attachment (signal vs. mean driftlength)
   AliSplineFit * fFitMIP;                  // fit of dependence - MIP
   AliSplineFit * fFitCosmic;               // fit of dependence - Plateu
   TObjArray    * fGainArray;               // array to be stored in the OCDB
