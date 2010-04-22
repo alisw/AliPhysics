@@ -11,5 +11,6 @@
 //#pragma link C++ class AliAnalysisTaskFilterSTEER+;
 #pragma link C++ class AliAnalysisTaskAddObject+;
 #pragma link C++ class AliAnalysisTaskFilterSteer+;
+#pragma link C++ class AliFileMerger+;
 
 #endif
