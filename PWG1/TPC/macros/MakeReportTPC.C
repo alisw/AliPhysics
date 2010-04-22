@@ -197,7 +197,7 @@ void AnalyzeDrift(){
   static Double_t slopedZCErr=0;
   static Double_t offsetdZAchi2=0;
   static Double_t slopedZAchi2=0;
-  static Double_t offsetdZchi2=0;
+  static Double_t offsetdZCchi2=0;
   static Double_t slopedZCchi2=0;
   AliPerformanceTPC * pTPC=  (AliPerformanceTPC *)pTPCObject;
 
@@ -212,7 +212,7 @@ void AnalyzeDrift(){
   his1D->Fit(fpol1,"QNRROB=0.8","QNR",-0.8,-0.1);
   offsetdZC=fpol1->GetParameter(0);
   slopedZC=fpol1->GetParameter(1);
-  offsetdZCchi2=fpol1->GetChisquare();
+  //offsetdZCchi2=fpol1->GetChisquare();
   slopedZCchi2=fpol1->GetChisquare();
   //
   his1D->Fit(fpol1,"QNRROB=0.8","QNR",0.1,0.8);
@@ -266,71 +266,73 @@ void AnalyzeGain(){
   //
   // select MIP particles
   //
-  pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
-  pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
-  pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
-  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
-  //
-  // MIP position and resolution
-  //
-  TF1 gausFit("gausFit","gaus");
-  TH1 * hisProj1D = pTPCgain->GetDeDxHisto()->Projection(0);
-  hisProj1D->Fit(&gausFit,"QN","QN");
-  delete hisProj1D;
-  MIPmean = gausFit.GetParameter(1);
-  MIPresolution = 0;
-  if (MIPmean!=0) MIPresolution = gausFit.GetParameter(2)/MIPmean;
-  //
-  // MIP position vs. dip angle (attachment)
-  //
-  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0);
-  TH2* his2D = pTPCgain->GetDeDxHisto()->Projection(0,5);
-  TF1 * fpol = new TF1("fpol","pol1");
-  TObjArray arrayFit;
-  his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
-  delete his2D;
-  TH1 * his1D = (TH1*) arrayFit.At(1);
-  his1D->Fit(fpol,"QNROB=0.8","QNR",-1,0);
-  attachSlopeC = fpol->GetParameter(1);
-  //
-  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3);
-  TH2* his2DA = pTPCgain->GetDeDxHisto()->Projection(0,5);
-  TF1 * fpolA = new TF1("fpolA","pol1");
-  TObjArray arrayFitA;
-  his2DA->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
-  delete his2DA;
-  TH1 * his1DA = (TH1*) arrayFit.At(1);
-  his1DA->Fit(fpolA,"QNROB=0.8","QN",0,1);
-  attachSlopeA = fpolA->GetParameter(1);
-  //
-  // MIP position vs. sector
-  //
-  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
-  for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
-    TH1* his1D=0;
-    Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
-    Float_t phiUp  = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
-    pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
-    his1D = pTPCgain->GetDeDxHisto()->Projection(0);
-    TF1 gausFunc("gausFunc","gaus");
-    his1D->Fit(&gausFunc, "QN");
-    MIPvsSector(i) = gausFunc.GetParameter(1);
-    sector(i)=i;
-    delete his1D;
-  }
-  //
-  pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
-  for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
-    TH1* his1D=0;
-    Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
-    Float_t phiUp  = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
-    pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
-    his1D = pTPCgain->GetDeDxHisto()->Projection(0);
-    TF1 gausFunc("gausFunc","gaus");
-    his1D->Fit(&gausFunc, "QN");
-    MIPvsSector(i+18) = gausFunc.GetParameter(1);
-    sector(i+18)=i+18;
-    delete his1D;
+  if (pTPCgain){
+    pTPCgain->GetDeDxHisto()->GetAxis(7)->SetRangeUser(0.4,0.55);
+    pTPCgain->GetDeDxHisto()->GetAxis(0)->SetRangeUser(35,60);
+    pTPCgain->GetDeDxHisto()->GetAxis(6)->SetRangeUser(80,160);
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-1,1);
+    //
+    // MIP position and resolution
+    //
+    TF1 gausFit("gausFit","gaus");
+    TH1 * hisProj1D = pTPCgain->GetDeDxHisto()->Projection(0);
+    hisProj1D->Fit(&gausFit,"QN","QN");
+    delete hisProj1D;
+    MIPmean = gausFit.GetParameter(1);
+    MIPresolution = 0;
+    if (MIPmean!=0) MIPresolution = gausFit.GetParameter(2)/MIPmean;
+    //
+    // MIP position vs. dip angle (attachment)
+    //
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0);
+    TH2* his2D = pTPCgain->GetDeDxHisto()->Projection(0,5);
+    TF1 * fpol = new TF1("fpol","pol1");
+    TObjArray arrayFit;
+    his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
+    delete his2D;
+    TH1 * his1D = (TH1*) arrayFit.At(1);
+    his1D->Fit(fpol,"QNROB=0.8","QNR",-1,0);
+    attachSlopeC = fpol->GetParameter(1);
+    //
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3);
+    TH2* his2DA = pTPCgain->GetDeDxHisto()->Projection(0,5);
+    TF1 * fpolA = new TF1("fpolA","pol1");
+    TObjArray arrayFitA;
+    his2DA->FitSlicesY(0,0,-1,10,"QN",&arrayFit);
+    delete his2DA;
+    TH1 * his1DA = (TH1*) arrayFit.At(1);
+    his1DA->Fit(fpolA,"QNROB=0.8","QN",0,1);
+    attachSlopeA = fpolA->GetParameter(1);
+    //
+    // MIP position vs. sector
+    //
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(-3,0); // C side
+    for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
+      TH1* his1D=0;
+      Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
+      Float_t phiUp  = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
+      pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
+      his1D = pTPCgain->GetDeDxHisto()->Projection(0);
+      TF1 gausFunc("gausFunc","gaus");
+      his1D->Fit(&gausFunc, "QN");
+      MIPvsSector(i) = gausFunc.GetParameter(1);
+      sector(i)=i;
+      delete his1D;
+    }
+    //
+    pTPCgain->GetDeDxHisto()->GetAxis(5)->SetRangeUser(0,3); // A side
+    for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
+      TH1* his1D=0;
+      Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
+      Float_t phiUp  = -TMath::Pi() + (i+1)*(20./360.)*(2*TMath::Pi());
+      pTPCgain->GetDeDxHisto()->GetAxis(1)->SetRangeUser(phiLow,phiUp);
+      his1D = pTPCgain->GetDeDxHisto()->Projection(0);
+      TF1 gausFunc("gausFunc","gaus");
+      his1D->Fit(&gausFunc, "QN");
+      MIPvsSector(i+18) = gausFunc.GetParameter(1);
+      sector(i+18)=i+18;
+      delete his1D;
+    }
   }
   //
   printf("Gain QA report\n");
