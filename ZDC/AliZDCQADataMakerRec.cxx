@@ -75,7 +75,7 @@ AliZDCQADataMakerRec& AliZDCQADataMakerRec::operator = (const AliZDCQADataMakerR
 //____________________________________________________________________________ 
 AliZDCQADataMakerRec::~AliZDCQADataMakerRec()
 {
-  if(fPedCalibData){
+  if(fPedCalibData && !(AliCDBManager::Instance()->GetCacheFlag())){
     delete fPedCalibData;
     fPedCalibData=0;
   } 
