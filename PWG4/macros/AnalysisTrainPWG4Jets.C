@@ -34,6 +34,7 @@ Bool_t      kUseCPAR            = kFALSE;  // use par files for common libs
 Bool_t      kFillAOD = kFALSE;  // switch of AOD filling for on the fly analysis
 
 //== general input and output variables
+
 Int_t       iAODanalysis       = 1;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
@@ -47,6 +48,7 @@ TString     kCommonOutputFileName = "PWG4_JetTasksOutput.root";
 
 // ### Other flags to steer the analysis
 //==============================================================================
+Bool_t      kSkipTerminate      = kTRUE; // Do not call Teminate
 Bool_t      kUseDate            = kFALSE; // use date in train name
 Bool_t      kUseDebug           = kTRUE; // activate debugging
 Int_t       kUseSysInfo         = 0; // activate debugging
@@ -57,6 +59,7 @@ Bool_t      kUseESDTags         = kFALSE; // use ESD tags for selection
 Bool_t      kUseTR              = kFALSE;  // use track references
 Bool_t      kUseAODTags         = kFALSE;  // use AOD tags
 Bool_t      kSaveTrain          = kFALSE;  // save train configuration as: 
+
 
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
@@ -114,8 +117,12 @@ Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
 TString     kPluginRootVersion       = "v5-26-00b-2";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-04-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
+Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
+Bool_t      kPluginOverwriteMode    = kTRUE;  // overwrite existing collections
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
+
 // == grid plugin input and output variables
 TString     kGridDatadir      = "/alice/sim/PDC_08b/LHC09a1/AOD/";
 TString     kGridLocalRunList = "";
@@ -233,7 +240,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    mgr->SetNSysInfo(0);
    if (!strcmp(plugin_mode, "test")) mgr->SetNSysInfo(1);
    if (kUseSysInfo)mgr->SetNSysInfo(kUseSysInfo);
-   
+   mgr->SetSkipTerminate(kSkipTerminate);
 
    // Load analysis specific libraries
    if (!LoadAnalysisLibraries(smode)) {
@@ -403,7 +410,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
        AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
      }
-     if(iJETAN&3&&!kFillAOD&!iAODanalysis){
+     if(iJETAN==3&&!kFillAOD&!iAODanalysis){
        AddTaskJetSpectrum2("jetsAOD_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
        AddTaskJetSpectrum2("jetsAOD_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
@@ -1271,6 +1278,8 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      ifstream in1;
      in1.open(kGridLocalRunList.Data());
      int iRun;
+
+     /*
      char c;
      char cLine[250];
      while(!in1.eof()){
@@ -1286,7 +1295,19 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
        {
 	 in1.putback (c);
 	 in1.getline(cLine,250);
-	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %s", cLine);
+
+       }
+     }
+     */
+
+     // just use run numbers, negatives will be excluded
+     while(in1>>iRun){
+       if(iRun>0){
+	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
+	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
+       }
+       else{
+	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %d", iRun);
        }
      }
    }
@@ -1352,6 +1373,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetMergeExcludes(kGridMergeExclude);
    plugin->SetMaxMergeFiles(kGridMaxMergeFiles);
    plugin->SetNrunsPerMaster(kGridRunsPerMaster);
+   plugin->SetMergeViaJDL(kPluginMergeViaJDL);
+// Use fastread option
+   plugin->SetFastReadOption(kPluginFastReadOption);
+// UseOverwrite mode
+   plugin->SetOverwriteMode(kPluginOverwriteMode); 
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
    
