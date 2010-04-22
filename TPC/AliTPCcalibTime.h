@@ -58,7 +58,7 @@ public:
   TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
   TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
 
-  THnSparse*  GetResHistTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
+  THnSparse*  GetResHistoTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
   THnSparse*  GetResHistoTPCvertex(Int_t index)      const { return (index<5) ? fResHistoTPCvertex[index]   :0;}        //TPC vertex matching map
   THnSparse*  GetResHistoTPCTRD(Int_t index)   const { return (index<5) ? fResHistoTPCTRD[index]:0;}        //TPC-TRD    matching map
 
@@ -117,7 +117,7 @@ private:
   Int_t    fBinsVdrift[4];		//Bins for vdrift
   Double_t fXminVdrift[4];		//Xmax for vdrift
   Double_t fXmaxVdrift[4];		//Xmin for vdrift
-  ClassDef(AliTPCcalibTime, 2); 
+  ClassDef(AliTPCcalibTime, 3); 
 };
 
 #endif
