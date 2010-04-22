@@ -693,7 +693,6 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     delete genIter;
   }
   
-  fh1NRecJets->Fill(nRecJets);
   nRecJets = TMath::Min(nRecJets,kMaxJets);
 
   for(int ir = 0;ir < nRecJets;++ir){
