@@ -415,6 +415,8 @@ void AliTRDCalibTask::CreateOutputObjects()
    }
 
    if (!fESDfriend) {
+     fESDfriend = (AliESDfriend*)(fESD->FindListObject("AliESDfriend"));
+     if(!fESDfriend) Printf("ERROR: fESDfriend not available");
      //Printf("ERROR: fESDfriend not available");
      return;
    }
@@ -1286,4 +1288,3 @@ Long64_t AliTRDCalibTask::Merge(TCollection *li) {
   return 0;
   
 }
-
