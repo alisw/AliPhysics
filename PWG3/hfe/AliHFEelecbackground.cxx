@@ -1064,7 +1064,7 @@ Bool_t AliHFEelecbackground::SingleTrackCut(AliESDtrack* const trackPart) const
     ////////////////////
     
     if(fRequireITSStandalone==1) {
-      if(((status & AliESDtrack::kITSin) == 0 || (trackPart->IsPureITSStandalone()) || status&AliESDtrack::kITSrefit==0)) return kFALSE;
+      if(((status & AliESDtrack::kITSin) == 0 || (trackPart->IsPureITSStandalone()) || (status&AliESDtrack::kITSrefit==0))) return kFALSE;
     }
     
     if(fRequireITSStandalone==2) {
