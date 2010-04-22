@@ -25,14 +25,17 @@ public:
   AliZDCQADataMakerRec() ;          // ctor
   AliZDCQADataMakerRec(const AliZDCQADataMakerRec& qadm) ;   
   AliZDCQADataMakerRec& operator = (const AliZDCQADataMakerRec& qadm) ;
-  virtual ~AliZDCQADataMakerRec() {;} // dtor
+  virtual ~AliZDCQADataMakerRec(); // dtor
   AliZDCPedestals  *GetPedCalibData() const; 
   
   
 private:
+  virtual void   InitDigits(); 
   virtual void   InitESDs(); 
   virtual void   InitRecPoints();
   virtual void   InitRaws(); 
+  virtual void   MakeDigits() {;} 
+  virtual void   MakeDigits(TTree * digTree);
   virtual void   MakeRecPoints(TTree * /*recTree*/);
   virtual void   MakeRaws(AliRawReader* rawReader) ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;

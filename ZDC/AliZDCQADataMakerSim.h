@@ -25,7 +25,7 @@ private:
   virtual void   InitSDigits() {;} 
   virtual void   MakeHits();
   virtual void   MakeHits(TTree * hitTree);
-  virtual void   MakeDigits(); 
+  virtual void   MakeDigits() {;} 
   virtual void   MakeDigits(TTree * digTree);
   virtual void   MakeSDigits() {;} 
   virtual void   MakeSDigits(TTree * /*sdigTree*/) {;}

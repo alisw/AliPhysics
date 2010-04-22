@@ -256,24 +256,35 @@ void AliZDCQADataMakerSim::MakeHits(TTree * hitTree)
 }
 
 //___________________________________________________________________________
-void AliZDCQADataMakerSim::MakeDigits()
+void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree)
 {
-  // makes data from Digits
+  // makes data from Digit Tree
   if( !GetDigitsData(0) ) InitDigits();
-  
-  Int_t nentries = fDigitsArray->GetEntriesFast();
-  if(nentries==0) printf(" AliZDCQADataMakerSim: NO entries in digit array\n\n");
-  
-  TIter next(fDigitsArray); 
-  AliZDCDigit * digit;
+
+  if(!digitTree){
+    AliError("Can't get ZDC digit tree!!");
+    return; 
+  }	
+   
+  TBranch * branch = digitTree->GetBranch("ZDC");
+  if(!branch){
+    AliError("ZDC branch in digit tree not found"); 
+    return;
+  } 
+    
+  AliZDCDigit *digit = 0x0;
+  branch->SetAddress(&digit);
      
   Float_t adcSum_ZNC=0., adcSum_ZNA=0., adcSum_ZPC=0., adcSum_ZPA=0.;
   Float_t adcSumQ_ZNC=0., adcSumQ_ZNA=0., adcSumQ_ZPC=0., adcSumQ_ZPA=0.;
   Float_t adcSum_ZNC_lg=0., adcSum_ZNA_lg=0., adcSum_ZPC_lg=0., adcSum_ZPA_lg=0.;
   Float_t adcSumQ_ZNC_lg=0., adcSumQ_ZNA_lg=0., adcSumQ_ZPC_lg=0., adcSumQ_ZPA_lg=0.;
   
-  while ( (digit = dynamic_cast<AliZDCDigit *>(next())) ) {
-      if(digit->GetSector(0)==1){
+  Int_t ndig = digitTree->GetEntries();
+  for(Int_t i=0; i<ndig; i++){
+      branch->GetEntry(i);
+      
+      if(digit->GetSector(0)==1 && digit->GetSector(1)!=5){
 	  adcSum_ZNC += digit->GetADCValue(0);
 	  adcSum_ZNC_lg += digit->GetADCValue(1);
 	  //
@@ -299,7 +310,7 @@ void AliZDCQADataMakerSim::MakeDigits()
 	      GetDigitsData(22)->Fill(digit->GetADCValue(1));
 	  }
       }
-      else if(digit->GetSector(0)==4){
+      else if(digit->GetSector(0)==4 && digit->GetSector(1)!=5){
 	  adcSum_ZNA += digit->GetADCValue(0);
 	  adcSum_ZNA_lg += digit->GetADCValue(1);
 	  //
@@ -347,26 +358,6 @@ void AliZDCQADataMakerSim::MakeDigits()
   GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
   GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);
 
-}
-
-//___________________________________________________________________________
-void AliZDCQADataMakerSim::MakeDigits(TTree *digitTree)
-{
-  // makes data from Digit Tree
-  if(fDigitsArray) fDigitsArray->Clear() ; 
-  else fDigitsArray = new TClonesArray("AliZDCDigit", 1000) ; 
-   
-  TBranch * branch = digitTree->GetBranch("ZDC");
-  if(!branch){
-    AliError("ZDC branch in Digit Tree not found"); 
-    return;
-  } 
-  
-  for (Int_t ient = 0; ient < branch->GetEntries(); ient++){
-    branch->SetAddress(&fDigitsArray);
-    branch->GetEntry(0) ; 
-    MakeDigits() ; 
-  }
 }
 
 //____________________________________________________________________________

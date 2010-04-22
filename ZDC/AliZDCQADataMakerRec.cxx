@@ -55,7 +55,7 @@ ClassImp(AliZDCQADataMakerRec)
 //____________________________________________________________________________ 
 AliZDCQADataMakerRec::AliZDCQADataMakerRec(const AliZDCQADataMakerRec& qadm) :
   AliQADataMakerRec(),      
-  fPedCalibData(0x0)
+  fPedCalibData(qadm.fPedCalibData)
 
 {
   //copy ctor 
@@ -73,6 +73,15 @@ AliZDCQADataMakerRec& AliZDCQADataMakerRec::operator = (const AliZDCQADataMakerR
 }
 
 //____________________________________________________________________________ 
+AliZDCQADataMakerRec::~AliZDCQADataMakerRec()
+{
+  if(fPedCalibData){
+    delete fPedCalibData;
+    fPedCalibData=0;
+  } 
+}
+
+//____________________________________________________________________________ 
 AliZDCPedestals* AliZDCQADataMakerRec::GetPedCalibData() const
 {
 
@@ -84,6 +93,72 @@ AliZDCPedestals* AliZDCQADataMakerRec::GetPedCalibData() const
   if(!calibdata) AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;
+
+}
+
+//____________________________________________________________________________ 
+void AliZDCQADataMakerRec::InitDigits()
+{
+  // create Digits histograms in Digits subdir
+  //
+  const Bool_t expert   = kTRUE ; 
+  const Bool_t image    = kTRUE ; 
+  
+  // ------------------- HIGH GAIN CHAIN ---------------------------
+  TH1F * hDigZNCTot = new TH1F("hDigZNCTot", "Signal in ZNC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZNATot = new TH1F("hDigZNATot", "Signal in ZNA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZPCTot = new TH1F("hDigZPCTot", "Signal in ZPC;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  TH1F * hDigZPATot = new TH1F("hDigZPATot", "Signal in ZPA;Amplitude [ADC counts];Counts", 100, 0., 6000.);
+  Add2DigitsList(hDigZNCTot, 0, !expert, image);
+  Add2DigitsList(hDigZNATot, 1, !expert, image);
+  Add2DigitsList(hDigZPCTot, 2, !expert, image);
+  Add2DigitsList(hDigZPATot, 3, !expert, image);
+  //
+  TH1F * hDigSumQZNC = new TH1F("hDigSumQZNC", "Signal in 4 ZNC PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZNA = new TH1F("hDigSumQZNA", "Signal in 4 ZNA PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZPC = new TH1F("hDigSumQZPC", "Signal in 4 ZPC PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigSumQZPA = new TH1F("hDigSumQZPA", "Signal in 4 ZPA PMQ;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  Add2DigitsList(hDigSumQZNC, 4, expert, !image);
+  Add2DigitsList(hDigSumQZNA, 5, expert, !image);
+  Add2DigitsList(hDigSumQZPC, 6, expert, !image);
+  Add2DigitsList(hDigSumQZPA, 7, expert, !image);
+  //
+  TH1F * hDigPMCZNC = new TH1F("hDigPMCZNC", "Signal in ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZNA = new TH1F("hDigPMCZNA", "Signal in ZNA PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZPC = new TH1F("hDigPMCZPC", "Signal in ZPC PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  TH1F * hDigPMCZPA = new TH1F("hDigPMCZPA", "Signal in ZPA PMC;Amplitude [ADC counts];Counts",100, 0., 4000.);
+  Add2DigitsList(hDigPMCZNC, 8, expert, !image);
+  Add2DigitsList(hDigPMCZNA, 9, expert, !image);
+  Add2DigitsList(hDigPMCZPC, 10, expert, !image);
+  Add2DigitsList(hDigPMCZPA, 11, expert, !image);
+  // 
+  // ------------------- LOW GAIN CHAIN ---------------------------
+  TH1F * hDigZNCTotlg = new TH1F("hDigZNCTotlg", "Digit lg signal in ZNC", 100, 0., 6000.);
+  TH1F * hDigZNATotlg = new TH1F("hDigZNATotlg", "Digit lg signal in ZNA", 100, 0., 6000.);
+  TH1F * hDigZPCTotlg = new TH1F("hDigZPCTotlg", "Digit lg signal in ZPC", 100, 0., 6000.);
+  TH1F * hDigZPATotlg = new TH1F("hDigZPATotlg", "Digit lg signal in ZPA", 100, 0., 6000.);
+  Add2DigitsList(hDigZNCTotlg, 12, expert, !image);
+  Add2DigitsList(hDigZNATotlg, 13, expert, !image);
+  Add2DigitsList(hDigZPCTotlg, 14, expert, !image);
+  Add2DigitsList(hDigZPATotlg, 15, expert, !image);
+  //
+  TH1F * hDigSumQZNClg = new TH1F("hDigSumQZNClg", "Signal in 4 ZNC PMQlg",100, 0., 4000.);
+  TH1F * hDigSumQZNAlg = new TH1F("hDigSumQZNAlg", "Signal in 4 ZNA PMQlg",100, 0., 4000.);
+  TH1F * hDigSumQZPClg = new TH1F("hDigSumQZPClg", "Signal in 4 ZPC PMQlg",100, 0., 4000.);
+  TH1F * hDigSumQZPAlg = new TH1F("hDigSumQZPAlg", "Signal in 4 ZPA PMQlg",100, 0., 4000.);
+  Add2DigitsList(hDigSumQZNClg, 16, expert, !image);
+  Add2DigitsList(hDigSumQZNAlg, 17, expert, !image);
+  Add2DigitsList(hDigSumQZPClg, 18, expert, !image);
+  Add2DigitsList(hDigSumQZPAlg, 19, expert, !image);
+  //
+  TH1F * hDigPMCZNClg = new TH1F("hDigPMCZNClg", "Signal in ZNC PMClg",100, 0., 4000.);
+  TH1F * hDigPMCZNAlg = new TH1F("hDigPMCZNAlg", "Signal in ZNA PMClg",100, 0., 4000.);
+  TH1F * hDigPMCZPClg = new TH1F("hDigPMCZPClg", "Signal in ZPC PMClg",100, 0., 4000.);
+  TH1F * hDigPMCZPAlg = new TH1F("hDigPMCZPAlg", "Signal in ZPA PMClg",100, 0., 4000.);
+  Add2DigitsList(hDigPMCZNClg, 20, expert, !image);
+  Add2DigitsList(hDigPMCZNAlg, 21, expert, !image);
+  Add2DigitsList(hDigPMCZPClg, 22, expert, !image);
+  Add2DigitsList(hDigPMCZPAlg, 23, expert, !image);
 
 }
 
@@ -231,6 +306,115 @@ void AliZDCQADataMakerRec::InitESDs()
   Add2ESDsList(hESDPMCZPClg, 22, expert, !image);
   Add2ESDsList(hESDPMCZPAlg, 23, expert, !image);
 }
+
+//___________________________________________________________________________
+void AliZDCQADataMakerRec::MakeDigits(TTree *digitTree)
+{
+  // makes data from Digit Tree
+  if(!GetDigitsData(0)) InitDigits();
+
+  if(!digitTree){
+    AliError("Can't get ZDC digit tree!!");
+    return; 
+  }	
+   
+  TBranch * branch = digitTree->GetBranch("ZDC");
+  if(!branch){
+    AliError("ZDC branch in digit tree not found"); 
+    return;
+  } 
+    
+  AliZDCDigit *digit = 0x0;
+  branch->SetAddress(&digit);
+     
+  Float_t adcSum_ZNC=0., adcSum_ZNA=0., adcSum_ZPC=0., adcSum_ZPA=0.;
+  Float_t adcSumQ_ZNC=0., adcSumQ_ZNA=0., adcSumQ_ZPC=0., adcSumQ_ZPA=0.;
+  Float_t adcSum_ZNC_lg=0., adcSum_ZNA_lg=0., adcSum_ZPC_lg=0., adcSum_ZPA_lg=0.;
+  Float_t adcSumQ_ZNC_lg=0., adcSumQ_ZNA_lg=0., adcSumQ_ZPC_lg=0., adcSumQ_ZPA_lg=0.;
+  
+  Int_t ndig = digitTree->GetEntries();
+  for(Int_t i=0; i<ndig; i++){
+      branch->GetEntry(i);
+      
+      if(digit->GetSector(0)==1 && digit->GetSector(1)!=5){
+	  adcSum_ZNC += digit->GetADCValue(0);
+	  adcSum_ZNC_lg += digit->GetADCValue(1);
+	  //
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZNC += digit->GetADCValue(0);
+	      adcSumQ_ZNC_lg+= digit->GetADCValue(1);
+	  }
+	  else{
+	      GetDigitsData(8)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(20)->Fill(digit->GetADCValue(1));
+	  }
+      }
+      else if(digit->GetSector(0)==2){
+	  adcSum_ZPC += digit->GetADCValue(0);
+	  adcSum_ZPC_lg += digit->GetADCValue(1);
+	  //
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZPC += digit->GetADCValue(0);
+	      adcSumQ_ZPC_lg+= digit->GetADCValue(1);
+	  }
+	  else{
+	      GetDigitsData(10)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(22)->Fill(digit->GetADCValue(1));
+	  }
+      }
+      else if(digit->GetSector(0)==4 && digit->GetSector(1)!=5){
+	  adcSum_ZNA += digit->GetADCValue(0);
+	  adcSum_ZNA_lg += digit->GetADCValue(1);
+	  //
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZNA += digit->GetADCValue(0);
+	      adcSumQ_ZNA_lg+= digit->GetADCValue(1);
+	  }
+	  else{
+	      GetDigitsData(9)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(21)->Fill(digit->GetADCValue(1));
+	  }
+      }
+      else if(digit->GetSector(0)==5){
+	  adcSum_ZPA += digit->GetADCValue(0);
+	  adcSum_ZPA_lg += digit->GetADCValue(1);
+	  //
+	  if(digit->GetSector(1)!=0){
+	      adcSumQ_ZPA += digit->GetADCValue(0);
+	      adcSumQ_ZPA_lg+= digit->GetADCValue(1);
+	  }
+	  else{
+	      GetDigitsData(11)->Fill(digit->GetADCValue(0));
+	      GetDigitsData(23)->Fill(digit->GetADCValue(1));
+	  }
+      }
+  }
+  //
+  GetDigitsData(0)->Fill(adcSum_ZNC);
+  GetDigitsData(1)->Fill(adcSum_ZNA);
+  GetDigitsData(2)->Fill(adcSum_ZPC);
+  GetDigitsData(3)->Fill(adcSum_ZPA);
+  //
+  GetDigitsData(4)->Fill(adcSumQ_ZNC);
+  GetDigitsData(5)->Fill(adcSumQ_ZNA);
+  GetDigitsData(6)->Fill(adcSumQ_ZPC);
+  GetDigitsData(7)->Fill(adcSumQ_ZPA);
+  //
+  GetDigitsData(12)->Fill(adcSum_ZNC_lg);
+  GetDigitsData(13)->Fill(adcSum_ZNA_lg);
+  GetDigitsData(14)->Fill(adcSum_ZPC_lg);
+  GetDigitsData(15)->Fill(adcSum_ZPA_lg);
+  //
+  GetDigitsData(16)->Fill(adcSumQ_ZNC_lg);
+  GetDigitsData(17)->Fill(adcSumQ_ZNA_lg);
+  GetDigitsData(18)->Fill(adcSumQ_ZPC_lg);
+  GetDigitsData(19)->Fill(adcSumQ_ZPA_lg);
+  
+  delete digit;
+  digit=0;
+
+}
+
 
 //____________________________________________________________________________
 void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
@@ -416,7 +600,7 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Float_t beamEne = esd->GetBeamEnergy();
     zdcESD->GetZNCentroidInPbPb(beamEne, centr_ZNC, centr_ZNA);
   }
-  else printf(" ZDC -> not possible to evaluate centroids for %s beam type\n\n",beamType.Data());
+  else printf(" AliZDCQADataMakerRec::MakeESDs: can't calculate centroids for beam type: %s\n\n",beamType.Data());
   GetESDsData(0)->Fill(centr_ZNC[0], centr_ZNC[1]);
   GetESDsData(1)->Fill(centr_ZNA[0], centr_ZNA[1]);
 
