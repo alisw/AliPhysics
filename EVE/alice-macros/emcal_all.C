@@ -74,7 +74,8 @@ void emcal_all(const UInt_t evtNum = 0, Bool_t digFile = 0,
       }
     }
 
-  gGeoManager = gEve->GetDefaultGeometry();
+  //  gGeoManager = gEve->GetDefaultGeometry();
+  AliEveEventManager::AssertGeometry();
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
   emcal_data = new AliEveEMCALData(rl,node,m);
