@@ -4,10 +4,8 @@ SRCS = 	\
 	AliAnalysisTaskFilter.cxx \
 	AliAnalysisTaskFilterFriend.cxx \
 	AliAnalysisTaskFilterFriendSecond.cxx \
-	AliAnalysisTaskFilterSTEER.cxx \
-	AliAnalysisTaskAddObject.cxx
-
-
+	AliAnalysisTaskAddObject.cxx \
+	AliAnalysisTaskFilterSteer.cxx
 
 ifeq (yes,$(CHECKALIEN))
 PACKCXXFLAGS := $(CXXFLAGS) -DWITHALIEN

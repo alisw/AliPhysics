@@ -49,7 +49,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter():
 	fInputEvent(0x0),
 	fInputHandler(0x0),
 	fOutputESDfriend(0x0),
-	fTreeEF(0x0)
+	fTreeEF(0x0),
+	fInputESDfriend(0x0)
 {
 	//
 	// Default constructor
@@ -65,7 +66,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const char* name):
 	fInputEvent(0x0),
 	fInputHandler(0x0),
 	fOutputESDfriend(0x0),
-	fTreeEF(0x0)
+	fTreeEF(0x0),
+	fInputESDfriend(0x0)
 {
 	//
 	// Default constructor
@@ -84,7 +86,8 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const AliAnalysisTaskFilter& obj):
 	fInputEvent(0x0),
 	fInputHandler(0x0),
 	fOutputESDfriend(0x0),
-	fTreeEF(0x0)
+	fTreeEF(0x0),
+	fInputESDfriend(0x0)
 {
 	//
 	// Copy constructor
@@ -96,6 +99,7 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const AliAnalysisTaskFilter& obj):
 	fInputHandler = obj.fInputHandler;
 	fOutputESDfriend = obj.fOutputESDfriend;
 	fTreeEF        = obj.fTreeEF;    
+	fInputESDfriend = obj.fInputESDfriend;
 }
 
 
@@ -114,6 +118,7 @@ AliAnalysisTaskFilter& AliAnalysisTaskFilter::operator=(const AliAnalysisTaskFil
 	fInputHandler = other.fInputHandler;
 	fOutputESDfriend = other.fOutputESDfriend;
 	fTreeEF        = other.fTreeEF;    
+	fInputESDfriend = other.fInputESDfriend;
 	return *this;
 }
 
@@ -131,7 +136,17 @@ void AliAnalysisTaskFilter::ConnectInputData(Option_t* /*option*/)
 		((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 	if (fInputHandler) {
 		fInputEvent = fInputHandler->GetEvent();
-	} else {
+		if (fInputEvent){
+			fInputESDfriend = (AliESDfriend*)(fInputEvent->FindListObject("AliESDfriend"));
+			if (!fInputESDfriend){
+				AliError("No friend found");
+			}
+		}
+		else {
+			AliError("No Input Event found, the friend will remain empty");
+		}
+	} 
+	else {
 		AliError("No Input Event Handler connected") ; 
 		return ; 
 	}
@@ -181,16 +196,21 @@ void AliAnalysisTaskFilter::Exec(Option_t* option)
 	
 	if (UserSelectESDfriendForCurrentEvent()){
 		// Call the user analysis only if the event was selected   
+		handler->SelectEventForFriends();
 		fOutputESDfriend   = handler->GetESDfriend();
 		UserExec(option);
+		// copy the VZERO friend only if it is not already there
+		if (fOutputESDfriend->GetVZEROfriend() == 0x0){
+			AliDebug(2,"Copying VZERO friend object");
+			AliESDVZEROfriend* vZEROfriend = fInputESDfriend->GetVZEROfriend();
+			fOutputESDfriend->SetVZEROfriend(vZEROfriend);
+		}
 	}
 	else {
-	  // Set null pointer
-	  fOutputESDfriend = 0x0;
-
+		// Event not selected
+		AliDebug(2,"The event was not selected");
 	}
 
-	// Added protection in case the derived task is not an AOD producer.
 	AliAnalysisDataSlot *out0 = GetOutputSlot(0);
 	if (out0 && out0->IsConnected()) PostData(0, fTreeEF);    
 }
@@ -216,11 +236,42 @@ void AliAnalysisTaskFilter::AddFriendTrackAt(AliESDfriendTrack* t, Int_t index)
 	//
 
 	AliESDfriendTrack* currentTrack = (AliESDfriendTrack*)fOutputESDfriend->GetTrack(index);
-	if(currentTrack && currentTrack->GetCalibObject(0)){
-		AliWarning("Friend already there");
+	if(currentTrack){
+		if (currentTrack->TestSkipBit()){
+			AliDebug(2,Form("Friend at index %d already there but dummy - the skip bit will be set to FALSE", index));
+			t->SetSkipBit(kFALSE);
+		}
+		else{
+			AliDebug(2,Form("Friend at index %d already there and not dummy", index));
+			return;
+		}
+	}
+	else{
+		AliDebug(2,Form("Track at %d not there yet ",index));
+	}
+	AliDebug(2,Form("Adding track at %d",index));
+	fOutputESDfriend->AddTrackAt(t,index);
+	return;
+}
+
+//______________________________________________________________________
+
+void AliAnalysisTaskFilter::SkipFriendTrackAt(Int_t index)
+{
+	//
+	// Skip the friend track at the i-th position in the TClonesArray
+	// of the ESD friend tracks
+	//
+
+	AliESDfriendTrack* currentTrack = (AliESDfriendTrack*)fOutputESDfriend->GetTrack(index);
+	if (currentTrack){
+		AliDebug(2,Form("Track already there (no matter what validity) at %d, keeping it as it is", index));
 	}
 	else {
-		//		AliInfo("Adding track");
-		fOutputESDfriend->AddTrackAt(t,index);
+		AliDebug(2,Form("Adding NULL track at %d, and setting skip bit to TRUE",index));
+		AliESDfriendTrack* tNull = new AliESDfriendTrack();
+		tNull->SetSkipBit(kTRUE);
+		fOutputESDfriend->AddTrackAt(tNull,index);
 	}
+	return;
 }

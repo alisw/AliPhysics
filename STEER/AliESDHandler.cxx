@@ -33,7 +33,6 @@
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 
-
 ClassImp(AliESDHandler)
 
 //______________________________________________________________________________
@@ -42,8 +41,10 @@ AliESDHandler::AliESDHandler() :
 	fesdf(NULL),
 	fTreeEF(NULL),
 	fFileEF(NULL),
-	fFileName("AliESDfriends_v2.root")
+	fFileName("AliESDfriends_v1.root"),
+	fIsEventSelectedForFriends(kFALSE)
 {
+
 	// default constructor
 }
 
@@ -53,7 +54,8 @@ AliESDHandler::AliESDHandler(const char* name, const char* title):
 	fesdf(NULL),
 	fTreeEF(NULL),
 	fFileEF(NULL),
-	fFileName("AliESDfriends_v2.root")
+	fFileName("AliESDfriends_v1.root"),
+	fIsEventSelectedForFriends(kFALSE)
 {
 
 	// constructor with name and title
@@ -120,7 +122,7 @@ Bool_t AliESDHandler::FinishEvent()
 	FillTree();
 	
 	// resetting
-	fesdf->~AliESDfriend();
+	if (fesdf) fesdf->~AliESDfriend();
 	new(fesdf) AliESDfriend();  
 	return kTRUE;
 }
@@ -159,10 +161,13 @@ void AliESDHandler::FillTree()
 	//
 	// Fill the ESD Tree
 	//
-
-	AliDebug(2,Form("number of friend tracks = %d\n",fesdf->GetNumberOfTracks()));
-
+	if (fIsEventSelectedForFriends){
+		AliDebug(2,Form("number of friend tracks = %d\n",fesdf->GetNumberOfTracks()));
+	}
+	else {
+		fesdf->SetSkipBit(kTRUE);
+	}
+	AliDebug(2,Form("friend = %p",fesdf));
 	fFileEF->cd();
 	fTreeEF->Fill();
 }
-

@@ -45,13 +45,15 @@ class AliAnalysisTaskFilter : public AliAnalysisTask
 	// Getters
 	virtual Int_t         DebugLevel()  {return fDebug;     }
 	virtual AliVEvent*    InputEvent()  {return fInputEvent;}
+	virtual AliESDfriend* InputFriend() {return fInputESDfriend;}
 	virtual AliESDfriend* ESDfriend()   {return fOutputESDfriend; }
 	virtual TTree*        OutputTree()  {return fTreeEF;     }
 	virtual Long64_t      Entry()       {return fEntry;     }
 	virtual const char*   CurrentFileName();
 
-	// To add a friend track
+	// To add/skip a friend track
 	void AddFriendTrackAt(AliESDfriendTrack* t, Int_t index);
+	void SkipFriendTrackAt(Int_t index);
 
  protected:
 	Int_t                 fDebug;           //  Debug flag
@@ -60,8 +62,9 @@ class AliAnalysisTaskFilter : public AliAnalysisTask
 	AliInputEventHandler* fInputHandler;    //! Input Handler
 	AliESDfriend*         fOutputESDfriend; //! ESD friend out 
 	TTree*                fTreeEF;          //  ESD friend output Tree
+	AliESDfriend*         fInputESDfriend;  //! ESD friend input
 	
-	ClassDef(AliAnalysisTaskFilter, 2); // Analysis task for filtering friends
+	ClassDef(AliAnalysisTaskFilter, 3); // Analysis task for filtering friends
 };
 
 #endif

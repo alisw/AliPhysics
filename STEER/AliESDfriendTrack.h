@@ -59,6 +59,10 @@ public:
   Int_t GetMaxTPCcluster() {return fnMaxTPCcluster;}
   Int_t GetMaxTRDcluster() {return fnMaxTRDcluster;}
 
+  // bit manipulation for filtering
+  void SetSkipBit(Bool_t skip){SetBit(23,skip);}
+  Bool_t TestSkipBit() {return TestBit(23);}
+
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
   Int_t fnMaxITScluster; // Max number of ITS clusters

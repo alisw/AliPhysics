@@ -41,6 +41,10 @@ public:
 	  return fTracks.ls();
   }
 
+  // bit manipulation for filtering
+  void SetSkipBit(Bool_t skip){SetBit(23,skip);}
+  Bool_t TestSkipBit() {return TestBit(23);}
+
 protected:
   TClonesArray fTracks;    // ESD friend tracks
   AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data

@@ -28,7 +28,7 @@ class AliESDHandler : public AliVEventHandler {
 	virtual const char* GetOutputFileName(){return fFileName.Data();}
 	virtual Bool_t Init(Option_t* option);
 	virtual Bool_t Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
-	virtual Bool_t BeginEvent(Long64_t /*entry*/){return kTRUE;}
+	virtual Bool_t BeginEvent(Long64_t /*entry*/){fIsEventSelectedForFriends = kFALSE; return kTRUE;}
 	virtual Bool_t Notify() {return AliVEventHandler::Notify(); };
 	virtual Bool_t Notify(const char * /* path */) {return kTRUE;}
 	virtual Bool_t FinishEvent();
@@ -39,6 +39,8 @@ class AliESDHandler : public AliVEventHandler {
 	virtual TTree* GetTree() const {return fTreeEF;}
 	void FillTree();
 	void SetInputTree(TTree* /*tree*/) {;}
+	void SelectEventForFriends() {fIsEventSelectedForFriends = kTRUE;}
+
  private:
 
 	AliESDHandler(const AliESDHandler&);             // Not implemented
@@ -47,8 +49,9 @@ class AliESDHandler : public AliVEventHandler {
 	AliESDfriend* fesdf;    //! Pointer to the ESD friend
 	TTree* fTreeEF;         //! Output tree for friends
 	TFile* fFileEF;         //! Output file for friends
-	TString fFileName;      //!  Output file name for friends
-	
-    ClassDef(AliESDHandler, 2)
+	TString fFileName;      //! Output file name for friends
+	Bool_t fIsEventSelectedForFriends; //! flag to indicate if the event was selected to have the friends kept 
+
+    ClassDef(AliESDHandler, 3)
 };
 #endif

@@ -115,9 +115,9 @@ void AliAnalysisTaskAddObject::Exec(Option_t */*option*/)
 {
 
 	//	if (fDebug > 1) {
-		Long_t entry = fESDhandler->GetReadEntry();
-		Printf("AliAnalysisTaskAddObject::Exec() %s ==> processing event %lld\n", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry);
-		//}  
+	Long_t entry = fESDhandler->GetReadEntry();
+	AliDebug(2,Form("AliAnalysisTaskAddObject::Exec() %s ==> processing event %lld", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry));
+	//}  
 	fESDInput = fESDhandler->GetEvent();
 	if(!fESDInput) {
 		printf("AliAnalysisTaskAddObject::Exec(): no ESD \n");
