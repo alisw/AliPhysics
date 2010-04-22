@@ -70,9 +70,14 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   TH1F* hmodstatus=new TH1F("hmodstatus","",260,0.5,260.5);
   TH1F* hnbadch=new TH1F("hnbadch","",260,0.5,260.5);
   TH1F* hbase=new TH1F("hbase","",60,0.5,120.5);
+  TH2F* hbasemod=new TH2F("hbasemod","",260,239.5,499.5,50,0.,100.);
   TH1F* hnoise=new TH1F("hnoise","",100,0.,7.);
+  TH2F* hnoisemod=new TH2F("hnoisemod","",260,239.5,499.5,50,0.,10.);
   TH1F* hgain=new TH1F("hgain","",100,0.,4.);
+  TH2F* hgainmod=new TH2F("hgainmod","",260,239.5,499.5,50,0.,4.);
   TH1F* hchstatus=new TH1F("hchstatus","",2,-0.5,1.5);
+
+
   AliITSCalibrationSDD *cal;
   Int_t badModCounter3=0;
   Int_t badModCounter4=0;
@@ -143,7 +148,7 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
     printf(" # bad anodes = %d  ",cal->GetDeadChannels());
     if(cal->IsAMAt20MHz()) printf("      20 MHz sampling");
     else printf("      40 MHz sampling");
-    printf("\n");
+    printf(" Threshold L %d %d H %d %d\n",cal->GetZSLowThreshold(0),cal->GetZSLowThreshold(1),cal->GetZSHighThreshold(0),cal->GetZSHighThreshold(1));
     if(i<84) badAnodeCounter3+=cal->GetDeadChannels();
     else badAnodeCounter4+=cal->GetDeadChannels();
     hnbadch->SetBinContent(i+1,cal->GetDeadChannels());
@@ -161,15 +166,22 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
       if(cal->IsBadChannel(iAn)) hchstatus->Fill(0);
       if(!cal->IsBadChannel(iAn) && !cal->IsChipBad(ic) && !cal->IsBad() ){
 	hbase->Fill(base);
+	hbasemod->Fill(i+240,base);
 	hchstatus->Fill(1);
 	hnoise->Fill(noise);
+	hnoisemod->Fill(i+240,noise);
 	hgain->Fill(gain);
+	hgainmod->Fill(i+240,gain);
       }
     }
   }
   Int_t totbad3=badModCounter3*512+badChipCounter3*64+badAnodeCounterGoodModAndChip3;
   Int_t tot3=6*14*512;
   Float_t fracbad3=(Float_t)totbad3/(Float_t)tot3;
+  Float_t fracgm3=(Float_t)(84.-badModCounter3)/84.;
+  Float_t fracgm4=(Float_t)(176.-badModCounter4)/176.;
+  Float_t fraccgm3=1.-(Float_t)(badAnodeCounterGoodModAndChip3+badChipCounter3*64)/(512.*(Float_t)(84.-badModCounter3));
+  Float_t fraccgm4=1.-(Float_t)(badAnodeCounterGoodModAndChip4+badChipCounter4*64)/(512.*(Float_t)(176.-badModCounter4));
   Int_t totbad4=badModCounter4*512+badChipCounter4*64+badAnodeCounterGoodModAndChip4;
   Int_t tot4=8*22*512;
   Float_t fracbad4=(Float_t)totbad4/(Float_t)tot4;
@@ -179,11 +191,15 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   printf("# of bad modules                      = %d\n",badModCounter3);
   printf("# of bad chips in good modules        = %d\n",badChipCounter3);
   printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip3);
+  printf("Fraction of Good modules=%f\n",fracgm3);
+  printf("Fraction of good anodes in good modules+chips = %f\n",fraccgm3);
   printf("Fraction of bads (anodes+chips+mod)   = %f\n",fracbad3);
   printf("---- Layer 4 ----\n");
   printf("# of bad modules                      = %d\n",badModCounter4);
   printf("# of bad chips in good modules        = %d\n",badChipCounter4);
   printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip4);
+  printf("Fraction of Good modules=%f\n",fracgm4);
+  printf("Fraction of good anodes in good modules+chips = %f\n",fraccgm4);
   printf("Fraction of bads (anodes+chips+mod)   = %f\n",fracbad4);
   printf("---- Total   ----\n");
   printf("# of bad modules                      = %d\n",badModCounter3+badModCounter4);
@@ -233,17 +249,6 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
     lin->SetY2(i+0.5);
     lin->DrawClone();
   }
-
-  TCanvas *c0=new TCanvas("c0","Module status",800,800);
-  c0->Divide(1,2);
-  c0->cd(1);
-  hmodstatus->Draw();
-  hmodstatus->GetXaxis()->SetTitle("Module number");
-  hmodstatus->GetYaxis()->SetTitle("Module status (1=OK, 0=BAD)");
-  c0->cd(2);
-  hnbadch->Draw();
-  hnbadch->GetXaxis()->SetTitle("Module number");   
-  hnbadch->GetYaxis()->SetTitle("Number of bad anodes");
 
 
 
@@ -308,7 +313,34 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   hchstatus->GetXaxis()->SetTitle("Anode status (0=bad, 1=OK)");
   hchstatus->GetXaxis()->CenterTitle();
 
-
+  TCanvas *c1m=new TCanvas("c1m","Calib. vs. mod",1000,800);
+  c1m->Divide(2,2);
+  c1m->cd(1);
+  gPad->SetRightMargin(0.14);
+  hbasemod->SetStats(0);
+  hbasemod->Draw("colz"); 
+  hbasemod->GetXaxis()->SetTitle("Module Number");
+  hbasemod->GetYaxis()->SetTitle("Baseline");
+  c1m->cd(2);
+  gPad->SetRightMargin(0.14);
+  hnoisemod->SetStats(0);
+  hnoisemod->Draw("colz"); 
+  hnoisemod->GetXaxis()->SetTitle("Module Number");
+  hnoisemod->GetYaxis()->SetTitle("Noise");
+  c1m->cd(3);
+  gPad->SetRightMargin(0.14);
+  hgainmod->SetStats(0);
+  hgainmod->Draw("colz");
+  hgainmod->GetXaxis()->SetTitle("Module Number");
+  hgainmod->GetYaxis()->SetTitle("Gain");
+  c1m->cd(4);
+  hnbadch->Scale(1/512.);
+  hnbadch->SetMarkerStyle(20);
+  hnbadch->SetMarkerSize(0.8);
+  hnbadch->SetStats(0);
+  hnbadch->Draw("P");
+  hnbadch->GetXaxis()->SetTitle("Module number");   
+  hnbadch->GetYaxis()->SetTitle("Fraction of bad anodes");
 
 
 

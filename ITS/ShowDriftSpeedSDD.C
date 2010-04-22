@@ -1,7 +1,9 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TF1.h>
 #include <TFile.h>
+#include <TLine.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TGraph.h>
 #include <TStyle.h>
 #include <TSystem.h>
@@ -13,6 +15,7 @@
 #include "AliCDBEntry.h"
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDriftSpeedSDD.h"
+#include "AliITSgeomTGeo.h"
 #endif
 
 // Macro to plot the calibration parameters from the OCDB file 
@@ -32,6 +35,25 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   TObjArray *drspSDD = (TObjArray *)ent->GetObject();
   AliITSDriftSpeedArraySDD *vdriftarr0;
   AliITSDriftSpeedArraySDD *vdriftarr1;
+
+  TH2F* hlay3=new TH2F("hlay3","Injector Status Layer 3",12,-0.5,5.5,14,-0.5,13.5);
+  hlay3->GetXaxis()->SetTitle("Detector");
+  hlay3->GetYaxis()->SetTitle("Ladder");
+  hlay3->GetXaxis()->SetTickLength(0);
+  hlay3->GetYaxis()->SetTickLength(0);
+  hlay3->SetStats(0);
+  hlay3->SetMinimum(-0.01);
+  hlay3->SetMaximum(7.);
+  TH2F* hlay4=new TH2F("hlay4","Injector Status Layer 4",16,-0.5,7.5,22,-0.5,21.5);
+  hlay4->GetXaxis()->SetTitle("Detector");
+  hlay4->GetYaxis()->SetTitle("Ladder");
+  hlay4->GetXaxis()->SetTickLength(0);
+  hlay4->GetYaxis()->SetTickLength(0);
+  hlay4->GetYaxis()->SetTitle("Ladder");
+  hlay4->SetStats(0);
+  hlay4->SetMinimum(-0.01);
+  hlay4->SetMaximum(7.);
+
   TGraph **gvdr0=new TGraph*[260];
   TGraph **gvdr1=new TGraph*[260];
   TCanvas *c0=0x0;
@@ -92,6 +114,8 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
   for(Int_t i=firstmod; i<lastmod; i++){
     Int_t iMod=i+240;
+    Int_t lay,lad,det;
+    AliITSgeomTGeo::GetModuleId(iMod,lay,lad,det);
     Int_t i0=2*i;
     Int_t i1=1+2*i;
     vdriftarr0=(AliITSDriftSpeedArraySDD*)drspSDD->At(i0);
@@ -125,13 +149,41 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
       gvdr0[i]->SetPoint(iAn,(Float_t)iAn,vel0);
       gvdr1[i]->SetPoint(iAn,(Float_t)iAn,vel1);
     }
-    if(vdriftarr0->GetInjectorStatus()>0) iGoodInj++;
+    Int_t statusInj0=vdriftarr0->GetInjectorStatus();
+    Int_t statusInj1=vdriftarr1->GetInjectorStatus();
+    if(statusInj0>0) iGoodInj++;
     else iAverSpeed++;
-    if(vdriftarr1->GetInjectorStatus()>0) iGoodInj++;
+    if(statusInj1>0) iGoodInj++;
     else iAverSpeed++;
 
-    printf(" Mod. %d \tStatusLR=%X %X \t v(an 128l)= %f",iMod,vdriftarr0->GetInjectorStatus(),vdriftarr1->GetInjectorStatus(),vdriftarr0->GetDriftSpeed(0,128));
+    printf(" Mod. %d \tStatusLR=%X %X \t v(an 128l)= %f",iMod,statusInj0,statusInj1,vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f  Degree=%d %d\n",vdriftarr1->GetDriftSpeed(0,128),vdrift0->GetDegreeofPoly(),vdrift1->GetDegreeofPoly());
+
+    Int_t n7=(statusInj0&(0x1F<<25))>>25;
+    Int_t n6=(statusInj0&(0x1F<<20))>>20;
+    Int_t n5=(statusInj0&(0x1F<<15))>>15;
+    Int_t n4=(statusInj0&(0x1F<<5))>>10;
+    Int_t n3=(statusInj0&(0x1F<<5))>>5;
+    Int_t n2=statusInj0&0x1F;
+    Float_t aveStatus0=(7.*n7+6.*n6+5.*n5+4.*n4+3.*n3+2.*n2)/32.;
+    n7=(statusInj1&(0x1F<<25))>>25;
+    n6=(statusInj1&(0x1F<<20))>>20;
+    n5=(statusInj1&(0x1F<<15))>>15;
+    n4=(statusInj1&(0x1F<<5))>>10;
+    n3=(statusInj1&(0x1F<<5))>>5;
+    n2=statusInj1&0x1F;
+    Float_t aveStatus1=(7.*n7+6.*n6+5.*n5+4.*n4+3.*n3+2.*n2)/32.;
+
+    Int_t index=1+(det-1)*2;
+    if(lay==3){ 
+      hlay3->SetBinContent(index,lad,aveStatus0);
+      hlay3->SetBinContent(index+1,lad,aveStatus1);
+    }
+    if(lay==4){ 
+      hlay4->SetBinContent(index,lad,aveStatus0);
+      hlay4->SetBinContent(index+1,lad,aveStatus1);
+    }
+
 
     if(!kNoDraw){
       if (i%12==0 ) {
@@ -203,8 +255,43 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
   printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
 
+  gStyle->SetPalette(59);
+
+  TCanvas* clay=new TCanvas("clay","Injector Status",900,600);
+  clay->Divide(2,1);
+  clay->cd(1);
+  hlay3->Draw("colz");
+  TLine** linv3=new TLine*[5];
+  for(Int_t i=0;i<5;i++){
+    linv3[i]=new TLine(i+0.5,-0.5,i+0.5,13.5);
+    linv3[i]->SetLineColor(kGray+1);
+    linv3[i]->Draw();
+  }
+  TLine** linh3=new TLine*[13];
+  for(Int_t i=0;i<13;i++){
+    linh3[i]=new TLine(-0.5,i+0.5,5.5,i+0.5);
+    linh3[i]->SetLineColor(kGray+1);
+    linh3[i]->Draw();
+  }
+  clay->cd(2);
+  hlay4->Draw("colz");
+  TLine** linv4=new TLine*[7];
+  for(Int_t i=0;i<7;i++){
+    linv4[i]=new TLine(i+0.5,-0.5,i+0.5,21.5);
+    linv4[i]->SetLineColor(kGray+1);
+    linv4[i]->Draw();
+  }
+  TLine** linh4=new TLine*[21];
+  for(Int_t i=0;i<21;i++){
+    linh4[i]=new TLine(-0.5,i+0.5,7.5,i+0.5);
+    linh4[i]->SetLineColor(kGray+1);
+    linh4[i]->Draw();
+  }
+  clay->Modified();
+
+
   TCanvas* c2;
-  c2=new TCanvas("c2","",1000,700);
+  c2=new TCanvas("c2","Vdrift vs. mod",1000,700);
   vvsmod0->SetMarkerStyle(20);
   vvsmod0->Draw("AP");
   vvsmod0->GetXaxis()->SetTitle("Module Number");
@@ -216,7 +303,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   tright->Draw();
 
   TCanvas* c3;
-  c3=new TCanvas("c3","",900,900);
+  c3=new TCanvas("c3","Params vs. mod",900,900);
   c3->Divide(2,2);
   
   c3->cd(1);
