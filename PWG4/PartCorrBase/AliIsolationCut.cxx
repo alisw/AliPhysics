@@ -136,12 +136,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
   TObjArray * reftracks    =0x0;
-
-  if(fillAOD) {
-    refclusters = new TObjArray;
-    reftracks   = new TObjArray;
-  }
-
+  Int_t ntrackrefs = 0;
+  Int_t nclusterrefs = 0;
+  
   //Check charged particles in cone.
   if(plCTS){
     TVector3 p3;
@@ -160,6 +157,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       
       if(rad < fConeSize){
 	if(fillAOD) {
+	  ntrackrefs++;
+	  if(ntrackrefs==1){
+	    reftracks    = new TObjArray(0);
+	    reftracks->SetName(aodArrayRefName+"Tracks");
+	    reftracks->SetOwner(kFALSE);
+	  }
 	  reftracks->Add(track);
 	}
 	//printf("charged in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
@@ -189,16 +192,16 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       if(calo->GetID() == pCandidate->GetCaloLabel(0) || calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      //Skip matched clusters with tracks
       
       if(calo->GetNTracksMatched() > 0) continue ; 
-      	//Input from second AOD?
-		Int_t input = 0;
-		if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
-		else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
-		
-		//Get Momentum vector, 
-		if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
-		else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
-
-	  pt   = mom.Pt();
+      //Input from second AOD?
+      Int_t input = 0;
+      if     (pCandidate->GetDetector() == "EMCAL" && reader->GetAODEMCALNormalInputEntries() <= ipr) input = 1 ;
+      else if(pCandidate->GetDetector() == "PHOS"  && reader->GetAODPHOSNormalInputEntries()  <= ipr) input = 1;
+      
+      //Get Momentum vector, 
+      if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
+      else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
+      
+      pt   = mom.Pt();
       eta  = mom.Eta();
       phi  = mom.Phi() ;
       if(phi<0) phi+=TMath::TwoPi();
@@ -207,6 +210,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
       if(rad < fConeSize){
 	if(fillAOD) {
+	  nclusterrefs++;
+	  if(nclusterrefs==1){
+	    refclusters    = new TObjArray(0);
+	    refclusters->SetName(aodArrayRefName+"Clusters");
+	    //refclusters->SetOwner(kFALSE);
+	  }
 	  refclusters->Add(calo);
 	}
 	//printf("neutral in isolation cone pt %f, phi %f, eta %f, R %f \n",pt,phi,eta,rad);
@@ -221,14 +230,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   
   //Add reference arrays to AOD when filling AODs only
   if(fillAOD) {
-	if(refclusters->GetEntriesFast() > 0){ 
-		refclusters->SetName(aodArrayRefName+"Clusters");
-		pCandidate->AddObjArray(refclusters);
-	}
-	if(reftracks->GetEntriesFast()   > 0){
-		reftracks->SetName(aodArrayRefName+"Tracks");
-		pCandidate->AddObjArray(reftracks);
-	} 
+    if(refclusters)	pCandidate->AddObjArray(refclusters);
+    if(reftracks)	pCandidate->AddObjArray(reftracks);
   }
 
   //Check isolation, depending on method.
@@ -246,6 +249,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
     if(coneptsum < fPtFraction*ptC)
       isolated  =  kTRUE ;
   }
+
+  //  if(refclusters) delete refclusters;
+  //if(reftracks)   delete reftracks;
+
 }
 
 //__________________________________________________________________
