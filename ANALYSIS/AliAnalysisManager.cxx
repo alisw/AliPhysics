@@ -1627,6 +1627,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    AliAnalysisTask *task;
    // Check if the top tree is active.
    if (fTree) {
+      if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
+         AliSysInfo::AddStamp("Handlers_BeginEventGroup",(Int_t)ncalls, 1002, 0);
       TIter next(fTasks);
    // De-activate all tasks
       while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
@@ -1667,7 +1669,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
       // Gather system information if requested
       if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
-         AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1000, 1);
+         AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1001, 1);
       return;
    }   
    // The event loop is not controlled by TSelector   

@@ -86,6 +86,7 @@
 #include "TStopwatch.h"
 #include "TSystem.h"
 #include "TTree.h"
+#include "TFile.h"
 
 #include "TTimeStamp.h"
 #include "AliSysInfo.h"
@@ -138,7 +139,12 @@ AliSysInfo::AliSysInfo():
 	       <<"pIOld.fMemResident"<<"/D:"  // process info -previous
 	       <<"pIOld.fMemVirtual"<<"/D:"   //    
 	       <<"pIOld.fCpuUser"<<"/D:"      //
-	       <<"pIOld.fCpuSys"<<"/D"       //
+	       <<"pIOld.fCpuSys"<<"/D:"       //
+    // 
+	       <<"fileBytesRead"<<"/D:"       // file IO information
+	       <<"fileBytesWritten"<<"/D:"    //    
+	       <<"fileCounter"<<"/D:"         //
+	       <<"fileReadCalls"<<"/D"        //
 	       << endl;
   
 }
@@ -181,6 +187,10 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
   static CpuInfo_t  cpuInfoOld;
   static MemInfo_t  memInfoOld;
   static ProcInfo_t procInfoOld;  
+  Double_t fileBytesRead    = TFile::GetFileBytesRead();
+  Double_t fileBytesWritten = TFile::GetFileBytesWritten();
+  Double_t fileCounter      = TFile::GetFileCounter();
+  Double_t fileReadCalls    = TFile::GetFileReadCalls();
 
 
   (*(Instance()->fSysWatch)) 
@@ -212,6 +222,11 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
     <<setprecision(15)<< procInfoOld.fMemVirtual/1024.<<"\t"   //    
     << procInfoOld.fCpuUser<<"\t"      //
     << procInfoOld.fCpuSys<<"\t"       //
+    //
+    <<fileBytesRead<<"\t"           // file IO information
+    <<fileBytesWritten<<"\t"        //    
+    <<fileCounter<<"\t"             //
+    <<fileReadCalls<<"\t"            //
     << endl;
 
   stampOld   = stamp;
