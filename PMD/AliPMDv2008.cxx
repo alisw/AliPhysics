@@ -1447,47 +1447,7 @@ void AliPMDv2008::Init()
   Int_t *idtmed = fIdtmed->GetArray()-599;
   fMedSens=idtmed[605-1];
   // --- Generate explicitly delta rays in the iron, aluminium and lead --- 
-  gMC->Gstpar(idtmed[600], "LOSS", 3.);
-  gMC->Gstpar(idtmed[600], "DRAY", 1.);
-  
-  gMC->Gstpar(idtmed[603], "LOSS", 3.);
-  gMC->Gstpar(idtmed[603], "DRAY", 1.);
-  
-  gMC->Gstpar(idtmed[604], "LOSS", 3.);
-  gMC->Gstpar(idtmed[604], "DRAY", 1.);
-  
-  gMC->Gstpar(idtmed[605], "LOSS", 3.);
-  gMC->Gstpar(idtmed[605], "DRAY", 1.);
-  
-  gMC->Gstpar(idtmed[607], "LOSS", 3.);
-  gMC->Gstpar(idtmed[607], "DRAY", 1.);
-  
-  // --- Energy cut-offs in the Pb and Al to gain time in tracking --- 
-  // --- without affecting the hit patterns --- 
-  gMC->Gstpar(idtmed[600], "CUTGAM", 1e-4);
-  gMC->Gstpar(idtmed[600], "CUTELE", 1e-4);
-  gMC->Gstpar(idtmed[600], "CUTNEU", 1e-4);
-  gMC->Gstpar(idtmed[600], "CUTHAD", 1e-4);
-
-  gMC->Gstpar(idtmed[605], "CUTGAM", 1e-4);
-  gMC->Gstpar(idtmed[605], "CUTELE", 1e-4);
-  gMC->Gstpar(idtmed[605], "CUTNEU", 1e-4);
-  gMC->Gstpar(idtmed[605], "CUTHAD", 1e-4);
-
-  gMC->Gstpar(idtmed[603], "CUTGAM", 1e-4);
-  gMC->Gstpar(idtmed[603], "CUTELE", 1e-4);
-  gMC->Gstpar(idtmed[603], "CUTNEU", 1e-4);
-  gMC->Gstpar(idtmed[603], "CUTHAD", 1e-4);
-//   gMC->Gstpar(idtmed[609], "CUTGAM", 1e-4);
-//   gMC->Gstpar(idtmed[609], "CUTELE", 1e-4);
-//   gMC->Gstpar(idtmed[609], "CUTNEU", 1e-4);
-//   gMC->Gstpar(idtmed[609], "CUTHAD", 1e-4);
-  // --- Prevent particles stopping in the gas due to energy cut-off --- 
-  gMC->Gstpar(idtmed[604], "CUTGAM", 1e-5);
-  gMC->Gstpar(idtmed[604], "CUTELE", 1e-5);
-  gMC->Gstpar(idtmed[604], "CUTNEU", 1e-5);
-  gMC->Gstpar(idtmed[604], "CUTHAD", 1e-5);
-  gMC->Gstpar(idtmed[604], "CUTMUO", 1e-5);
+  // Gstpar removed from here and all energy cut-offs moved to galice.cuts
   // Visualization of volumes
   gMC->Gsatt("ECAR", "SEEN", 0);
   gMC->Gsatt("ECCU", "SEEN", 0);
