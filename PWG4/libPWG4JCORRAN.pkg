@@ -1,0 +1,28 @@
+
+SRCS=   JCORRAN/AliPhJBaseTrack.cxx \
+        JCORRAN/AliPhJPhoton.cxx \
+        JCORRAN/AliJPhoton.cxx \
+        JCORRAN/AliPhJPhotonList.cxx \
+        JCORRAN/AliJTrack.cxx \
+        JCORRAN/AliJMCTrack.cxx \
+        JCORRAN/AliPhJTrackList.cxx \
+        JCORRAN/AliPhJMCTrackList.cxx \
+        JCORRAN/AliPhJPiZero.cxx \
+        JCORRAN/AliPhJBaseHeader.cxx \
+        JCORRAN/AliJHeader.cxx \
+        JCORRAN/AliPhJHeaderList.cxx \
+        JCORRAN/AliJRunHeader.cxx \
+	JCORRAN/AliJCORRANSetup.cxx \
+	JCORRAN/AliJCORRANTask.cxx
+
+HDRS:= $(SRCS:.cxx=.h) JCORRAN/JConst.h 
+
+DHDR:= PWG4JCORRANLinkDef.h
+
+EXPORT:=$(SRCS:.cxx=.h)
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+                         -lESD -lAOD -lANALYSIS -lANALYSISalice \
+                         -L$(ROOTLIBDIR) -lEG
+endif

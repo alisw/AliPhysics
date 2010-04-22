@@ -73,6 +73,9 @@ ifneq ($(PWG4JetCorrel_INCLUDE),)
   ALICEINC += -I../$(PWG4JetCorrel_INCLUDE)
 endif
 
+ifneq ($(PWG4JCORRAN_INCLUDE),)
+  ALICEINC += -I../$(PWG4JCORRAN_INCLUDE)
+endif
 
 # only if no par file was loaded before
 #ifeq ($(ALICEINC),-I.)
