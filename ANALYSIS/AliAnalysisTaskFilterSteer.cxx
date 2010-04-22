@@ -19,10 +19,9 @@
 
 /////////////////////////////////////////////////////////////
 //
-//   Filtering task to be run on STEERING level
-//   1. Select randomly the event to be kept fully  0 cuttof - fKeepFraction - 
-//      gRandmom->Rndm() used. 
-//   2. Pt() cut used - fPtCut 
+//   Filtering task:  
+//   Selection of only 1% of the events for which to keep  
+//   the ESD friend
 //
 // /////////////////////////////////////////////////////////////
 
@@ -36,18 +35,17 @@
 #include "AliESDfriend.h"
 #include "AliAnalysisTaskFilter.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskFilterSTEER.h"
+#include "AliAnalysisTaskFilterSteer.h"
 #include "TRandom.h"
 
 
-ClassImp(AliAnalysisTaskFilterSTEER)
+ClassImp(AliAnalysisTaskFilterSteer)
 
 
 //________________________________________________________________________
-AliAnalysisTaskFilterSTEER::AliAnalysisTaskFilterSTEER():
+AliAnalysisTaskFilterSteer::AliAnalysisTaskFilterSteer():
 AliAnalysisTaskFilter(),
-fPtCut(0),
-fKeepFraction(0),
+fFraction(0.01),
 fESDInput(0),
 fESDfriendInput(0)
 {
@@ -61,10 +59,9 @@ fESDfriendInput(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskFilterSTEER::AliAnalysisTaskFilterSTEER(const char* name, Double_t ptCut, Double_t fractionCut):
+AliAnalysisTaskFilterSteer::AliAnalysisTaskFilterSteer(const char* name):
 AliAnalysisTaskFilter(name),
-fPtCut(ptCut),
-fKeepFraction(fractionCut),
+fFraction(0.01),
 fESDInput(0),
 fESDfriendInput(0)
 {
@@ -78,7 +75,7 @@ fESDfriendInput(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskFilterSTEER::~AliAnalysisTaskFilterSTEER()
+AliAnalysisTaskFilterSteer::~AliAnalysisTaskFilterSteer()
 {
 
 	// dtor
@@ -86,7 +83,7 @@ AliAnalysisTaskFilterSTEER::~AliAnalysisTaskFilterSTEER()
 }  
 
 //________________________________________________________________________
-void AliAnalysisTaskFilterSTEER::Init()
+void AliAnalysisTaskFilterSteer::Init()
 {
 	// Initialization
 	
@@ -94,7 +91,7 @@ void AliAnalysisTaskFilterSTEER::Init()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskFilterSTEER::UserCreateOutputObjects()
+void AliAnalysisTaskFilterSteer::UserCreateOutputObjects()
 {
 	//
 	// Create the output container
@@ -104,79 +101,65 @@ void AliAnalysisTaskFilterSTEER::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskFilterSTEER::UserExec(Option_t */*option*/)
+void AliAnalysisTaskFilterSteer::UserExec(Option_t */*option*/)
 {
 
-	AliInfo("Filling Friends");
+	// 
+	// Applying random selection of the events
 
 	fESDInput = dynamic_cast<AliESDEvent*>(InputEvent()); // get the input ESD
-	fESDfriendInput = (AliESDfriend*)(fESDInput->FindListObject("AliESDfriend"));
+	fESDfriendInput = InputFriend();  // get the input friend
 	if(!fESDInput) {
-		printf("AliAnalysisTaskFilterSTEER::Exec(): no ESD \n");
+		printf("AliAnalysisTaskFilterSteer::Exec(): no ESD \n");
 		return;
 	} 
 	if(!fESDfriendInput) {
-		printf("AliAnalysisTaskFilterSTEER::Exec(): no ESDfriend \n");
+		printf("AliAnalysisTaskFilterSteer::Exec(): no ESDfriend \n");
 		return;
 	} 
+
 	// attach ESDfriend
 	
 	AliESDfriend* esdFriendOutput = (AliESDfriend*)ESDfriend();  
-	AliInfo(Form("Number of ESD tracks in input = %d ",fESDInput->GetNumberOfTracks()));
-	AliInfo(Form("Number of tracks in input friends = %d ",fESDfriendInput->GetNumberOfTracks()));
-	AliInfo(Form("Number of tracks in output friendsNew before filtering = %d ",esdFriendOutput->GetNumberOfTracks()));
+	AliDebug(3,Form("Number of ESD tracks in input = %d ",fESDInput->GetNumberOfTracks()));
+	AliDebug(3,Form("Number of tracks in input friends = %d ",fESDfriendInput->GetNumberOfTracks()));
+	AliDebug(3,Form("Number of tracks in output friendsNew before filtering = %d ",esdFriendOutput->GetNumberOfTracks()));
 	
 	//
-	// select all for fraction of events - event selected randomly
-	// event number 0 always stored - to define the friends layout
+	//  keeping all the tracks for the randomly "fFraction" of the total number of events
 	//
-	AliESDfriendTrack* tNull = new AliESDfriendTrack();
-	if (fESDInput->GetEventNumberInFile()==0 || gRandom->Rndm()<fKeepFraction){
-	  //select all tracks for slected fraction
-	  AliInfo(Form("Keeping Event number  %d",fESDInput->GetEventNumberInFile()));
-	  for (Int_t i = 0; i< fESDInput->GetNumberOfTracks(); i++){
-	    // keep friend
-	    AliESDfriendTrack* tOld = (AliESDfriendTrack*)fESDfriendInput->GetTrack(i);
-	    if (tOld)  AddFriendTrackAt(tOld,i);
-	    else  AddFriendTrackAt(tNull,i);
-	  }
-	}
-	//
-	//
-	//
+
 	for (Int_t i = 0; i< fESDInput->GetNumberOfTracks(); i++){
-	  // keep friend
-	  AliESDfriendTrack* tOld = (AliESDfriendTrack*)fESDfriendInput->GetTrack(i);
-	  Bool_t isOK=kFALSE;
-	  if (tOld) 
-	    if (tOld->GetTPCOut()) 
-	      if (TMath::Abs(tOld->GetTPCOut()->Pt())>fPtCut) isOK=kTRUE;
-	  if (isOK){
-	    AliInfo(Form("Keeping %d-th track",i));
-	    AddFriendTrackAt(tOld,i);
-	  }else{
-	    AddFriendTrackAt(tNull,i);	    
-	  }
+		AliESDfriendTrack* tOld = (AliESDfriendTrack*)fESDfriendInput->GetTrack(i);
+		AddFriendTrackAt(tOld,i);
 	}			 
-	AliInfo(Form("Number of tracks in output friendsNew after filtering = %d ",esdFriendOutput->GetNumberOfTracks()));
-	AliInfo(Form("Number of tracks in output friendsNew after filtering with GetEntries() = %d ",esdFriendOutput->GetEntriesInTracks()));
+	AliDebug(2,Form("Number of tracks in output friendsNew after filtering = %d ",esdFriendOutput->GetNumberOfTracks()));
+	AliDebug(2,Form("Number of tracks in output friendsNew after filtering with GetEntries() = %d ",esdFriendOutput->GetEntriesInTracks()));
+
 	return;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskFilterSTEER::Terminate(Option_t */*option*/)
+void AliAnalysisTaskFilterSteer::Terminate(Option_t */*option*/)
 {
 	// Terminate analysis
 	//
-	AliDebug(2,"AliAnalysisTaskFilterSTEER: Terminate() \n");
+	AliDebug(2,"AliAnalysisTaskFilterSteer: Terminate() \n");
 	
 	return;
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskFilterSTEER::UserSelectESDfriendForCurrentEvent()
+Bool_t AliAnalysisTaskFilterSteer::UserSelectESDfriendForCurrentEvent()
 {
-  // 
-  // Selecting or discarding current event
-  //
-  return kTRUE;	
+	// 
+	// Selecting or discarding current event
+	//
+	Double_t number = gRandom->Rndm();
+	if (number<fFraction){
+		// keeping event
+		AliDebug(2,Form("*****************Selecting event (number = %f)",number));
+		return kTRUE;	
+	}
+	AliDebug(2,Form("*****************Skipping event (number = %f)",number));
+	return kFALSE;
 }

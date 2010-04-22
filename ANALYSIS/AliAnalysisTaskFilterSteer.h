@@ -7,19 +7,20 @@
 /*$Id$*/
 
 //*************************************************************************
-// Class AliAnalysisTaskFilterSTEER
+// Class AliAnalysisTaskFilterSteer
+// Implementing the filtering of the friend in order to reduce them to 1%
 // 
 //*************************************************************************
 
 #include "AliAnalysisTaskFilter.h"
 
-class AliAnalysisTaskFilterSTEER : public AliAnalysisTaskFilter
+class AliAnalysisTaskFilterSteer : public AliAnalysisTaskFilter
 {
  public:
 
-  AliAnalysisTaskFilterSTEER();
-  AliAnalysisTaskFilterSTEER(const char *name, Double_t ptCut, Double_t fractionCut);
-  virtual ~AliAnalysisTaskFilterSTEER();
+  AliAnalysisTaskFilterSteer();
+  AliAnalysisTaskFilterSteer(const char *name);
+  virtual ~AliAnalysisTaskFilterSteer();
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -28,18 +29,19 @@ class AliAnalysisTaskFilterSTEER : public AliAnalysisTaskFilter
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  void SetFraction(Double_t fraction) {fFraction = fraction;}
+  Double_t GetFraction() const {return fFraction;}
 
  private:
 
-  AliAnalysisTaskFilterSTEER(const AliAnalysisTaskFilterSTEER &);
-  AliAnalysisTaskFilterSTEER& operator=(const AliAnalysisTaskFilterSTEER&);
+  AliAnalysisTaskFilterSteer(const AliAnalysisTaskFilterSteer &);
+  AliAnalysisTaskFilterSteer& operator=(const AliAnalysisTaskFilterSteer&);
 
-  Double_t      fPtCut;           // pt cut
-  Double_t      fKeepFraction;    // fraction of tracks to keep
+  Double_t      fFraction;    // fraction of events for which to keep the friends
   //
   AliESDEvent  *fESDInput;        // ESD input object
   AliESDfriend *fESDfriendInput;  // ESD input friend object
-  ClassDef(AliAnalysisTaskFilterSTEER,1); 
+  ClassDef(AliAnalysisTaskFilterSteer,1); 
 };
 
 #endif
