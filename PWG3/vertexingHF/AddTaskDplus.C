@@ -1,4 +1,4 @@
-AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
+AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kTRUE,
 				     Bool_t readMC=kTRUE)
 {
   //                                                                                                                                    
@@ -38,8 +38,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
     prodcutsval[2][ipt]=0.4;
     prodcutsval[3][ipt]=0.;
     prodcutsval[4][ipt]=0.;
-    prodcutsval[5][ipt]=0.001;
-    prodcutsval[6][ipt]=0.006;
+    prodcutsval[5][ipt]=0.01;
+    prodcutsval[6][ipt]=0.06;
     prodcutsval[7][ipt]=0.02;
     prodcutsval[8][ipt]=0.;
     prodcutsval[9][ipt]=0.85;
