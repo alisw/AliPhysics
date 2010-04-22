@@ -132,11 +132,7 @@ AliESDEvent::AliESDEvent():
   fESDOld(0),
   fESDFriendOld(0),
   fConnected(kFALSE),
-  fUseOwnList(kFALSE),
-  fEMCALClusters(0), 
-  fFirstEMCALCluster(-1),
-  fPHOSClusters(0), 
-  fFirstPHOSCluster(-1)
+  fUseOwnList(kFALSE)
 {
 }
 //______________________________________________________________________________
@@ -172,11 +168,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fESDOld(esd.fESDOld ? new AliESD(*esd.fESDOld) : 0),
   fESDFriendOld(esd.fESDFriendOld ? new AliESDfriend(*esd.fESDFriendOld) : 0),
   fConnected(esd.fConnected),
-  fUseOwnList(esd.fUseOwnList),
-  fEMCALClusters(esd.fEMCALClusters), 
-  fFirstEMCALCluster(esd.fFirstEMCALCluster),
-  fPHOSClusters(esd.fPHOSClusters), 
-  fFirstPHOSCluster(esd.fFirstPHOSCluster)
+  fUseOwnList(esd.fUseOwnList)
 
 {
   // CKB init in the constructor list and only add here ...
@@ -297,11 +289,6 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 
   fConnected = source.fConnected;
   fUseOwnList = source.fUseOwnList;
-  fEMCALClusters = source.fEMCALClusters;
-  fFirstEMCALCluster = source.fFirstEMCALCluster;
-  fPHOSClusters = source.fPHOSClusters;
-  fFirstPHOSCluster = source.fFirstPHOSCluster;
-
 
   return *this;
 
@@ -448,10 +435,6 @@ void AliESDEvent::ResetStdContent()
 
   // don't reset fconnected fConnected and the list
 
-  fEMCALClusters=0; 
-  fFirstEMCALCluster=-1; 
-  fPHOSClusters=0; 
-  fFirstPHOSCluster=-1; 
 }
 
 
@@ -507,8 +490,6 @@ void AliESDEvent::Print(Option_t *) const
   if(fEMCALCells)printf("                 EMCALCells %d\n", fEMCALCells->GetNumberOfCells());
   else printf("                 EMCALCells not in the Event\n");
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
-  printf("                 phos      %d\n", GetNumberOfPHOSClusters());
-  printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
   printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
   TObject* pHLTDecision=GetHLTTriggerDecision();

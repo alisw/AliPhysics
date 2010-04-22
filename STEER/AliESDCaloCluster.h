@@ -134,17 +134,6 @@ public:
     if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
     else return -1;}
     
-  //_____________________________________________________
-  //Not used anymore, kept to avoid backward incompatibility
-  void AddDigitIndex(TArrayS & array)     { fDigitIndex   = new TArrayS(array) ; Warning("AddDigitAmplitude","This method is no more in use") ;}
-  void AddDigitAmplitude(TArrayS & array) {  fDigitAmplitude   = new TArrayS(array) ; Warning("AddDigitAmplitude","This method is no more in use") ;}
-  void AddDigitTime(TArrayS & array)      {  fDigitTime   = new TArrayS(array) ;Warning("AddDigitTime","This method is no more in use") ;}
-  TArrayS * GetDigitAmplitude() const {return  fDigitAmplitude;}
-  TArrayS * GetDigitTime() const      {return  fDigitTime;}
-  TArrayS * GetDigitIndex() const     {return  fDigitIndex;}
-  Int_t GetNumberOfDigits() const        { return -1;}
- //_____________________________________________________
-
 protected:
 
   TArrayI * fTracksMatched; //Index of tracks close to cluster. First entry is the most likely match.
@@ -155,12 +144,6 @@ protected:
   UShort_t *fCellsAbsId;   //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;    //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
-  //__________________________________________________________
-  //Not in use
-  TArrayS * fDigitAmplitude;   //digit energy (integer units) 
-  TArrayS * fDigitTime;        //time of this digit (integer units) 
-  TArrayS * fDigitIndex;       //calorimeter digit index 
-  //_________________________________________________________
 
   Double32_t   fGlobalPos[3];     // position in global coordinate systemD
   Double32_t   fEnergy;           // energy measured by calorimeter
@@ -180,7 +163,7 @@ protected:
   Char_t  fClusterType;      // Flag for different cluster type/versions
   Double32_t fTOF; //[0,0,12] time-of-flight
 
-  ClassDef(AliESDCaloCluster,9)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,10)  //ESDCaloCluster 
 };
 
 #endif 

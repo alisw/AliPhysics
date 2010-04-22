@@ -196,9 +196,9 @@ void AliEMCALQATask::Exec(Option_t *)
 	caloCluster->GetPosition(pos) ;
 	fhEMCALPos->Fill(pos[0],pos[1],pos[2]) ;
 	fhEMCALEnergy->Fill(caloCluster->E()) ;
-	fhEMCALDigits->Fill(entry, caloCluster->GetNumberOfDigits()) ;
+	fhEMCALDigits->Fill(entry, caloCluster->GetNCells()) ;
 	numberOfEmcalClustersv1++ ;
-	numberOfDigitsInEmcal += caloCluster->GetNumberOfDigits() ;    
+	numberOfDigitsInEmcal += caloCluster->GetNCells() ;    
 	// Float_t * pid = clus->GetPid() ;
 	// if(pid[AliPID::kPhoton]>0.9){
 	emcalVector[numberOfPhotonsInEmcal] = new TVector3(pos[0],pos[1],pos[2]) ;

@@ -368,19 +368,6 @@ public:
 
   void SetUseOwnList(Bool_t b){fUseOwnList = b;}
   Bool_t GetUseOwnList() const {return fUseOwnList;}
-  
-  // Remove this stuff CKB?
-  //---------------------------------------------------
-  Int_t GetNumberOfEMCALClusters() const {return fEMCALClusters;}
-  void  SetNumberOfEMCALClusters(Int_t clus) {fEMCALClusters = clus;}
-  Int_t GetFirstEMCALCluster() const {return fFirstEMCALCluster;}
-  void  SetFirstEMCALCluster(Int_t index) {fFirstEMCALCluster = index;}
- 
-  Int_t GetNumberOfPHOSClusters() const {return fPHOSClusters;}
-  void  SetNumberOfPHOSClusters(Int_t part) { fPHOSClusters = part ; }
-  void  SetFirstPHOSCluster(Int_t index) { fFirstPHOSCluster = index ; } 
-  Int_t GetFirstPHOSCluster() const  { return fFirstPHOSCluster ; }
-  //-------------------------------------------------------
 
   TArrayF *GetEMCALTriggerPosition() const {return  fEMCALTrigger?fEMCALTrigger->GetTriggerPosition():0x0;}
   TArrayF *GetEMCALTriggerAmplitudes() const {return  fEMCALTrigger?fEMCALTrigger->GetTriggerAmplitudes():0x0;}
@@ -449,14 +436,7 @@ protected:
 
   static const char* fgkESDListName[kESDListN]; //!
 
-  // Remove this stuff CKB
-  Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
-  Int_t        fFirstEMCALCluster; // First EMCAL cluster in the fCaloClusters list 
-
-  Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
-  Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
-
-  ClassDef(AliESDEvent,10)  //ESDEvent class 
+  ClassDef(AliESDEvent,11)  //ESDEvent class 
 };
 #endif 
 

@@ -37,9 +37,6 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fNCells(0),
   fCellsAbsId(0x0),
   fCellsAmpFraction(0x0),
-  fDigitAmplitude(0x0),//not in use
-  fDigitTime(0x0),//not in use
-  fDigitIndex(0x0),//not in use
   fEnergy(0),
   fDispersion(0),
   fChi2(0),
@@ -67,9 +64,6 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fNCells(clus.fNCells),
   fCellsAbsId(),
   fCellsAmpFraction(),
-  fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),//not in use
-  fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),//not in use
-  fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0),//not in use
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
@@ -186,45 +180,12 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
     fLabels = 0;
   }
 
-
-  if(source.fDigitAmplitude){
-    // assign or copy construct
-    if(fDigitAmplitude) *fDigitAmplitude = *source.fDigitAmplitude;
-    else fDigitAmplitude = new TArrayS(*source.fDigitAmplitude);
-   }
-  else{
-    delete fDigitAmplitude;
-    fDigitAmplitude = 0;
-  }
-
-
-
-  if(source.fDigitTime){
-    // assign or copy construct
-    if(fDigitTime) *fDigitTime = *source.fDigitTime;
-    else fDigitTime = new TArrayS(*source.fDigitTime);
-  }
-  else{
-    delete fDigitTime;
-    fDigitTime = 0;
-  }
-
-
-
-  if(source.fDigitIndex){
-    // assign or copy construct
-    if(fDigitIndex) *fDigitIndex = *source.fDigitIndex;
-    else fDigitIndex = new TArrayS(*source.fDigitIndex);
-  }
-  else{
-    delete fDigitIndex;
-    fDigitIndex = 0;
-  }
   
   return *this;
 
 }
 
+//_______________________________________________________________________
 void AliESDCaloCluster::Copy(TObject &obj) const {
   
   // this overwrites the virtual TOBject::Copy()
@@ -245,9 +206,6 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   //
   if(fTracksMatched)delete fTracksMatched;fTracksMatched = 0;
   if(fLabels) delete fLabels; fLabels = 0;
-  delete fDigitAmplitude;  //not in use
-  delete fDigitTime;  //not in use
-  delete fDigitIndex;  //not in use
   if(fCellsAmpFraction){ delete[] fCellsAmpFraction; fCellsAmpFraction=0;}
   if(fCellsAbsId){ delete[] fCellsAbsId;  fCellsAbsId = 0;}
 }
@@ -291,18 +249,16 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   //Vertex can be recovered with esd pointer doing:  
   //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
 
-  if(vertex){//calculate direction from vertex
-    fGlobalPos[0]-=vertex[0];
-    fGlobalPos[1]-=vertex[1];
-    fGlobalPos[2]-=vertex[2];
-  }
-  
-  Double_t r = TMath::Sqrt(fGlobalPos[0]*fGlobalPos[0]+
-		            fGlobalPos[1]*fGlobalPos[1]+
-		            fGlobalPos[2]*fGlobalPos[2]   ) ; 
-
-  p.SetPxPyPzE( fEnergy*fGlobalPos[0]/r,  fEnergy*fGlobalPos[1]/r,  fEnergy*fGlobalPos[2]/r,  fEnergy) ; 
-  
+	Double32_t pos[3]={ fGlobalPos[0], fGlobalPos[1], fGlobalPos[2]};
+	if(vertex){//calculate direction from vertex
+		pos[0]-=vertex[0];
+		pos[1]-=vertex[1];
+		pos[2]-=vertex[2];
+	}
+	
+	Double_t r = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]   ) ; 
+	
+	p.SetPxPyPzE( fEnergy*pos[0]/r,  fEnergy*pos[1]/r,  fEnergy*pos[2]/r,  fEnergy) ;   
 }
 
 //_______________________________________________________________________
