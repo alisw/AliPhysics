@@ -257,7 +257,9 @@ void AliV0Reader::Initialize(){
   AliKFParticle::SetField(fESDEvent->GetMagneticField());
 
   //  fCurrentEventGoodV0s = new TClonesArray("TClonesArray", 0);
-  fCurrentEventGoodV0s = new TClonesArray("AliKFParticle", 0);
+  if(fCurrentEventGoodV0s == NULL){
+    fCurrentEventGoodV0s = new TClonesArray("AliKFParticle", 0);
+  }
 
   if(fCalculateBackground == kTRUE){
     if(fBGEventInitialized == kFALSE){

@@ -108,7 +108,9 @@ void AliGammaConversionBGHandler::Initialize(Double_t * const zBinLimitsArray, D
   else{
     //Print warning
   }
-  fBGEventCounter= new Int_t*[fNBinsZ];
+  if(fBGEventCounter == NULL){
+    fBGEventCounter= new Int_t*[fNBinsZ];
+  }
   for(Int_t z=0;z<fNBinsZ;z++){
     fBGEventCounter[z]=new Int_t[fNBinsMultiplicity];
   }
