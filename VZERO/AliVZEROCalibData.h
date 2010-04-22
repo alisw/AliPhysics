@@ -81,7 +81,7 @@ class AliVZEROCalibData: public TNamed {
   void     SetDeadChannel(Bool_t val, Int_t channel) {fDeadChannel[channel]=val;}
   void     SetDeadMap(const Bool_t* deadMap);  
    
-  void     SetTimeOffset(Float_t val, Int_t channel);
+  void     SetTimeOffset(Float_t val, Int_t board, Int_t channel);
   void     SetTimeOffset(const Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(const Float_t* TimeGain);
@@ -101,10 +101,13 @@ class AliVZEROCalibData: public TNamed {
   void     SetRollOver(UInt_t *offsets);
   void     SetRollOver(UInt_t offset, Int_t board);
 
-  void     SetDiscriThr(Float_t thr, Int_t channel);
+  void     SetDiscriThr(Float_t thr, Int_t board, Int_t channel);
   void     SetDiscriThr(const Float_t* thresholds);
 
   Float_t  GetMIPperADC(Int_t channel) const;
+
+  static Int_t GetOfflineChannelNumber(Int_t board, Int_t channel);
+  static Int_t GetBoardNumber(Int_t channel);
 
  protected:
   Float_t  fPedestal[128];     // Mean pedestal values

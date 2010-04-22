@@ -220,8 +220,8 @@ void AliVZEROCalibData::SetParameter(TString name, Int_t val){
 	else if(name.Contains("SearchWindow")) SetSearchWindow((UInt_t) val,iBoard);
 	else if(name.Contains("TriggerCountOffset")) SetTriggerCountOffset((UInt_t) val,iBoard);
 	else if(name.Contains("RollOver")) SetRollOver((UInt_t) val,iBoard);
-	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,8*iBoard+(iChannel-1));
-	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,8*iBoard+(iChannel-1));
+	else if(name.Contains("DelayHit")) SetTimeOffset(0.01*(Float_t)val,iBoard,(iChannel-1));
+	else if(name.Contains("DiscriThr")) SetDiscriThr(((Float_t)val-2040.)/112.,iBoard,(iChannel-1));
 	else AliError(Form("No Setter found for FEE parameter : %s",name.Data()));
 }
 
@@ -275,14 +275,15 @@ void AliVZEROCalibData::SetDeadMap(const Bool_t* deadMap)
 }
 
 //________________________________________________________________
-void AliVZEROCalibData::SetTimeOffset(Float_t val, Int_t channel)
+void AliVZEROCalibData::SetTimeOffset(Float_t val, Int_t board, Int_t channel)
 {
-  if((channel>=0) && (channel<64)){
-    fTimeOffset[channel]=val;
-    AliInfo(Form("Time offset for channel %d set to %f",channel,fTimeOffset[channel]));
+  Int_t ch = AliVZEROCalibData::GetOfflineChannelNumber(board,channel);
+  if(ch >= 0){
+    fTimeOffset[ch]=val;
+    AliInfo(Form("Time offset for channel %d set to %f",ch,fTimeOffset[ch]));
   }
   else
-    AliError(Form("Channel %d is not valid",channel));
+    AliError("Board/Channel numbers are not valid");
 }
 
 //________________________________________________________________
@@ -554,21 +555,22 @@ void AliVZEROCalibData::SetRollOver(UInt_t offset, Int_t board)
 }
 
 //________________________________________________________________
-void AliVZEROCalibData::SetDiscriThr(Float_t thr, Int_t channel)
+void AliVZEROCalibData::SetDiscriThr(Float_t thr, Int_t board, Int_t channel)
 {
   // Set the TDC discriminator
   // threshold values expressed in units of ADC
-  if((channel>=0) && (channel<64)){
+  Int_t ch = AliVZEROCalibData::GetOfflineChannelNumber(board,channel);
+  if(ch >= 0){
     if (thr > 0) {
-      fDiscriThr[channel]=thr;
-      AliInfo(Form("Discriminator threshold for channel %d set to %f",channel,fDiscriThr[channel]));
+      fDiscriThr[ch]=thr;
+      AliInfo(Form("Discriminator threshold for channel %d set to %f",ch,fDiscriThr[ch]));
     }
     else {
-      AliWarning(Form("Ignore wrong threshold value (%f) for channel %d !",thr,channel));
+      AliWarning(Form("Ignore wrong threshold value (%f) for channel %d !",thr,ch));
     }
   }
   else
-    AliError(Form("Channel %d is not valid",channel));
+    AliError("Board/Channel numbers are not valid");
 }
 
 //________________________________________________________________
@@ -578,4 +580,35 @@ void AliVZEROCalibData::SetDiscriThr(const Float_t* thresholds)
   // threshold values expressed in units of ADC
   if(thresholds) for(int t=0; t<64; t++) fDiscriThr[t] = thresholds[t];
   else for(int t=0; t<64; t++) fDiscriThr[t] = 2.5;
+}
+
+Int_t AliVZEROCalibData::GetOfflineChannelNumber(Int_t board, Int_t channel)
+{
+  // Get the offline channel number from
+  // the FEE board and channel indexes
+
+  if (board < 0 || board >= 8) {
+    AliErrorClass(Form("Wrong FEE board number: %d",board));
+    return -1;
+  }
+  if (channel < 0 || channel >= 8) {
+    AliErrorClass(Form("Wrong FEE channel number: %d",channel));
+    return -1;
+  }
+
+  Int_t offCh = (board < 4) ? (8 * board + 32) : (8 * board -32);
+  offCh += (7 - channel);
+
+  return offCh;
+}
+
+Int_t AliVZEROCalibData::GetBoardNumber(Int_t channel)
+{
+  // Get FEE board number
+  // from offline channel index
+  if (channel >= 0 && channel < 32) return (channel / 8 + 4);
+  if (channel >=32 && channel < 64) return (channel / 8 - 4);
+
+  AliErrorClass(Form("Wrong channel index: %d",channel));
+  return -1;
 }

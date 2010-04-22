@@ -106,7 +106,7 @@ ClassImp(AliVZERODigitizer)
     fAdcPedestal[i][1] = fCalibData->GetPedestal(i+64);
     fAdcSigma[i][1]    = fCalibData->GetSigma(i+64); 
 
-    Int_t board = i / 8;
+    Int_t board = AliVZEROCalibData::GetBoardNumber(i);
     fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
 			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
 			    fCalibData->GetTimeResolution(board));
@@ -172,7 +172,7 @@ ClassImp(AliVZERODigitizer)
     fAdcPedestal[i][1] = fCalibData->GetPedestal(i+64);
     fAdcSigma[i][1]    = fCalibData->GetSigma(i+64); 
 
-    Int_t board = i / 8;
+    Int_t board = AliVZEROCalibData::GetBoardNumber(i);
     fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
 			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
 			    fCalibData->GetTimeResolution(board));
@@ -359,7 +359,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
       if (clock >= 0 && clock < kNClocks)
 	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
     }
-    Int_t board = ipmt / 8;
+    Int_t board = AliVZEROCalibData::GetBoardNumber(ipmt);
     if (ltFound && ttFound) {
       fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
 	Float_t(Int_t(fTimeWidth[ipmt]/fCalibData->GetWidthResolution(board)));
