@@ -47,7 +47,8 @@ AliTRDPIDResponse::AliTRDPIDResponse(const Char_t * filename):
  //
  // Default constructor
  //
- memset(fMapRefHists, 0, sizeof(Int_t) * 10);
+  Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
+ memset(fMapRefHists, 0, sizeof(Int_t) * size);
  Load(filename);
 }
 
@@ -62,7 +63,8 @@ AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
  // Flat copy of the reference histos
  // For creating a deep copy call SetOwner
  //
- memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * 10);
+  Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
+ memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
 }
 
 //____________________________________________________________
@@ -83,7 +85,8 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
    SetBit(kIsOwner, kFALSE);
  }
  fReferences = ref.fReferences;
- memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * 10);
+  Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
+ memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
  fPIDmethod = ref.fPIDmethod;
 
  return *this;
@@ -216,10 +219,12 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
    refHistLower = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin]));
    refHistUpper = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin+1]));
 
-   Double_t pLower = refHistLower->GetBinContent(refHistLower->GetXaxis()->FindBin(dEdx));
-   Double_t pUpper = refHistUpper->GetBinContent(refHistUpper->GetXaxis()->FindBin(dEdx));
+   if (refHistLower && refHistUpper ) {
+     Double_t pLower = refHistLower->GetBinContent(refHistLower->GetXaxis()->FindBin(dEdx));
+     Double_t pUpper = refHistUpper->GetBinContent(refHistUpper->GetXaxis()->FindBin(dEdx));
 
-   pLayer = pLower + (pUpper - pLower)/(fgkPBins[pbin+1]-fgkPBins[pbin]) * plocal; 
+     pLayer = pLower + (pUpper - pLower)/(fgkPBins[pbin+1]-fgkPBins[pbin]) * plocal; 
+   }
  }
  else{
    TH1 *refHist = NULL;
@@ -230,7 +235,8 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
      // overflow
      refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][kNPBins])); 
    }
-   pLayer = refHist->GetBinContent(refHist->GetXaxis()->FindBin(dEdx));
+   if (refHist)
+     pLayer = refHist->GetBinContent(refHist->GetXaxis()->FindBin(dEdx));
  }
  return pLayer;
 }
