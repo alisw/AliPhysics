@@ -59,17 +59,18 @@ fOutputMass(0),
 fDistr(0),
 fNentries(0), 
 fChecks(0),
-fCutList(0),
+//fCutList(0),
 fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
+fTotPosPairs(0),
+fTotNegPairs(0),
 fLsNormalization(1.)
 
 
 {
   // Default constructor
-  for(Int_t i=0;i<5;i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
 }
 
 //________________________________________________________________________
@@ -79,18 +80,22 @@ fOutputMass(0),
 fDistr(0),
 fNentries(0),
 fChecks(0),
-fCutList(0),
+//fCutList(0),
 fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
+fTotPosPairs(0),
+fTotNegPairs(0),
 fLsNormalization(1.)
 
 
 {
   // Default constructor
-  for(Int_t i=0;i<5;i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
-
+  fTotPosPairs=new Int_t[cuts->GetNPtBins()];
+  fTotNegPairs=new Int_t[cuts->GetNPtBins()];
+  for(Int_t i=0;i<cuts->GetNPtBins();i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
+    
   //fCuts=new AliRDHFCutsD0toKpi(*cuts);
   fCuts=cuts;
 
@@ -132,10 +137,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     fNentries = 0;
   }
  
-  if(fCutList){
-    delete fCutList;
-    fCutList=0;
-  }
+//   if(fCutList){
+//     delete fCutList;
+//     fCutList=0;
+//   }
  
 }  
 
@@ -147,10 +152,10 @@ void AliAnalysisTaskSED0Mass::Init()
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::Init() \n");
 
   
-  fCutList=new TList();
-  fCutList->SetOwner();
-  fCutList->SetName("listofCutsObj");
-  fCutList->Add(fCuts);
+//   fCutList=new TList();
+//   fCutList->SetOwner();
+//   fCutList->SetName("listofCutsObj");
+//   fCutList->Add(fCuts);
   
   AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*fCuts);
   // Post the data
@@ -804,7 +809,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
   if(!prong) cout<<"No daughter found";
   else{
-    if(prong->Charge()==1) {fTotPosPairs[ptbin-1]++;} else {fTotNegPairs[ptbin-1]++;}
+    if(prong->Charge()==1) {fTotPosPairs[ptbin]++;} else {fTotNegPairs[ptbin]++;}
   }
 
   TString fillthis="";
@@ -929,7 +934,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   }
   
   if(fArray==1){
-    for(Int_t ipt=0;ipt<5;ipt++){
+    for(Int_t ipt=0;ipt<5;ipt++){ //change 5 in GetNPtBins when sure it is written and check
       fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[ipt]*fTotNegPairs[ipt]); 
 
 
@@ -989,5 +994,4 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
   return;
 }
-
 

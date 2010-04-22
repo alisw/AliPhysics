@@ -54,14 +54,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TList    *fDistr;       //! list send on output slot 2
   TH1F     *fNentries;    //! histogram with number of events on output slot 3
   TList    *fChecks;       //! list send on output slot 4
-  TList* fCutList; //!
+  //TList*   fCutList; //!
   AliRDHFCutsD0toKpi *fCuts;  // Cuts - sent to output slot 5
   Int_t    fArray;        //   can be D0 or Like Sign candidates
   Bool_t   fReadMC;       // flag for MC array: kTRUE = read it, kFALSE = do not read it
   Bool_t    fCutOnDistr;   // Flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts 
 
-  Int_t    fTotPosPairs[5];     //
-  Int_t    fTotNegPairs[5];     // 
+  Int_t*    fTotPosPairs;     //
+  Int_t*    fTotNegPairs;     // 
   Double_t fLsNormalization;  //  normalization
 
 
