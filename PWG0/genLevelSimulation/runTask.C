@@ -41,6 +41,7 @@ void runTask(Float_t etamax=0.5,const char * incollection = 0, const char * outf
   AliAnalysisManager *mgr = new AliAnalysisManager("dNdeta");
 
   AliVEventHandler* esdH = new AliESDInputHandler;
+  ((AliESDInputHandler*)esdH)->SetReadFriends(kFALSE);
   mgr->SetInputEventHandler(esdH);
 
   // Create tasks

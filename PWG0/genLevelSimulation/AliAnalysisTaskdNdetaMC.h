@@ -11,7 +11,10 @@ class TH1I;
 class TGraphErrors;
 
 enum {kHistINEL,kHistNSD,kHistND,kHistSiD,kHistHL,kNHist};
-enum {kMult05,kMult10,kMult14,kNMultHist};// 
+enum {kEta05,kEta10,kEta14,kNEtaHist};// 
+enum {kPionPos, kProtonPos, kKaonPos,
+      kPionNeg, kProtonNeg, kKaonNeg,
+      kNPart}; //Particles used for identified particles pt spectra
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskdNdetaMC : public AliAnalysisTaskSE {
@@ -34,7 +37,9 @@ class AliAnalysisTaskdNdetaMC : public AliAnalysisTaskSE {
   TList * GetList() const { return fMyOut;} 
  private:
   TH1F         *fHistEta[kNHist]; //Eta spectrum 
-  TH1F         *fHistPt[kNHist]; //Eta spectrum  , |eta| < 0.8
+  TH1F         *fHistPt[kNHist]; // Pt spectrum  , |eta| < 0.8
+  TH1F         *fHistPtID[kNHist][kNPart]; //Pt identified particles, |y| < 0.5 
+  
   TGraphErrors *fNchDens; // <dN/deta>
   TList * fMyOut; // list of output histos
   TH1I * fHistIev; // number of events per class
@@ -42,12 +47,15 @@ class AliAnalysisTaskdNdetaMC : public AliAnalysisTaskSE {
   static Float_t fEtaMax; // max eta
   Bool_t fSkipNormalization; // Use this when you are running the job on the grid, so that you can normalize dNdeta after merging
 
-  Float_t  fEtaBins[kNMultHist];    // array of eta_max values
-  TH1F * fHistMult[kNHist][kNMultHist];   // array of multiplicity histos in the different eta ranges values, for the different event classes
+  Float_t  fEtaBins[kNEtaHist];    // array of eta_max values
+  TH1F * fHistMult[kNHist][kNEtaHist];   // array of multiplicity histos in the different eta ranges values, for the different event classes
 
   AliAnalysisTaskdNdetaMC(const AliAnalysisTaskdNdetaMC&); // not implemented
   AliAnalysisTaskdNdetaMC& operator=(const AliAnalysisTaskdNdetaMC&); // not implemented
   
+  static Int_t fPDGCodes[kNPart]; // array of PDG codes of particles for ID Spectra plots
+  static const char *  fPartNames[kNPart]; // array of particles names for ID Spectra plots
+
   ClassDef(AliAnalysisTaskdNdetaMC, 2); 
 };
 
