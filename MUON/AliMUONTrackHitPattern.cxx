@@ -635,17 +635,25 @@ void AliMUONTrackHitPattern::LocalBoardFromPos(Float_t x, Float_t y,
     for(Int_t loc=0; loc<fgkNlocations; loc++){
 	localBoard[loc]=-1;
     }
+    Float_t xg, yg, zg;
+    fkTransformer.Local2Global(detElemId, 0., 0., 0., xg, yg, zg);
+    Float_t z = zg - (y-yg)*TMath::Tan(TMath::DegToRad()*AliMUONConstants::St345Inclination());
     Float_t xl, yl, zl;
-    fkTransformer.Global2Local(detElemId, x, y, 0, xl, yl, zl);
-    TVector2 pos(xl,yl);
+    fkTransformer.Global2Local(detElemId, x, y, z, xl, yl, zl);
     const AliMpVSegmentation* seg = 
 	AliMpSegmentation::Instance()
           ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cathode));
-    if (seg){
-	AliMpPad pad = seg->PadByPosition(pos.X(),pos.Y(),kFALSE);
-	for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
-	    localBoard[loc] = pad.GetLocalBoardId(loc);
-	}
+    if ( ! seg ) return;
+    AliMpPad pad = seg->PadByPosition(xl,yl,kFALSE);
+    if ( ! pad.IsValid() ){
+      AliWarning(Form("Pad not found! DetElemId %i  position global (%f, %f, %f)  local (%f, %f, %f)\n", detElemId, x, y, z, xl, yl, zl));
+      return;
+    }
+
+    AliDebug(2, Form("\nWould match: DetElemId = %i  Pad = (%i,%i) = (%.2f,%.2f,%.2f)   Board %3i\n",detElemId,pad.GetIx(),pad.GetIy(),xl,yl,zl,pad.GetLocalBoardId(0)));
+
+    for (Int_t loc=0; loc<pad.GetNofLocations(); loc++){
+      localBoard[loc] = pad.GetLocalBoardId(loc);
     }
 }
 
