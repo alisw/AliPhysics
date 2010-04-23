@@ -354,14 +354,17 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
   return -d;
 }
 
-Bool_t AliExternalTrackParam::CorrectForMeanMaterial
-(Double_t xOverX0,  Double_t xTimesRho, Double_t mass, Bool_t anglecorr, 
- Double_t (*Bethe)(Double_t)) {
+Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
+(Double_t xOverX0,  Double_t xTimesRho, Double_t mass, 
+ Double_t dEdx,
+ Bool_t anglecorr) {
   //------------------------------------------------------------------
   // This function corrects the track parameters for the crossed material.
   // "xOverX0"   - X/X0, the thickness in units of the radiation length.
   // "xTimesRho" - is the product length*density (g/cm^2). 
   // "mass" - the mass of this particle (GeV/c^2).
+  // "dEdx" - mean enery loss (GeV/(g/cm^2)
+  // "anglecorr" - switch for the angular correction
   //------------------------------------------------------------------
   Double_t &fP2=fP[2];
   Double_t &fP3=fP[3];
@@ -401,7 +404,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   //Calculating the energy loss corrections************************
   Double_t cP4=1.;
   if ((xTimesRho != 0.) && (beta2 < 1.)) {
-     Double_t dE=Bethe(p/mass)*xTimesRho;
+     Double_t dE=dEdx*xTimesRho;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
      cP4 = (1.- e/p2*dE);
@@ -427,6 +430,57 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   return kTRUE;
 }
 
+Bool_t AliExternalTrackParam::CorrectForMeanMaterial
+(Double_t xOverX0,  Double_t xTimesRho, Double_t mass, 
+ Bool_t anglecorr,
+ Double_t (*Bethe)(Double_t)) {
+  //------------------------------------------------------------------
+  // This function corrects the track parameters for the crossed material.
+  // "xOverX0"   - X/X0, the thickness in units of the radiation length.
+  // "xTimesRho" - is the product length*density (g/cm^2). 
+  // "mass" - the mass of this particle (GeV/c^2).
+  // "anglecorr" - switch for the angular correction
+  // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
+  //------------------------------------------------------------------
+  
+  Double_t bg=GetP()/mass;
+  Double_t dEdx=Bethe(bg);
+
+  return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
+}
+
+Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
+(Double_t xOverX0, Double_t xTimesRho, Double_t mass,
+ Double_t zOverA,
+ Double_t density,
+ Double_t exEnergy,
+ Double_t jp1,
+ Double_t jp2,
+ Bool_t anglecorr) {
+  //------------------------------------------------------------------
+  // This function corrects the track parameters for the crossed material
+  // using the full Geant-like Bethe-Bloch formula parameterization
+  // "xOverX0"   - X/X0, the thickness in units of the radiation length.
+  // "xTimesRho" - is the product length*density (g/cm^2). 
+  // "mass" - the mass of this particle (GeV/c^2).
+  // "density"  - mean density (g/cm^3)
+  // "zOverA"   - mean Z/A
+  // "exEnergy" - mean exitation energy (GeV)
+  // "jp1"      - density effect first junction point
+  // "jp2"      - density effect second junction point
+  // "anglecorr" - switch for the angular correction
+  //
+  //  The default values of the parameters are for silicon 
+  //
+  //------------------------------------------------------------------
+
+  Double_t bg=GetP()/mass;
+  Double_t dEdx=BetheBlochGeant(bg,density,jp1,jp2,exEnergy,zOverA);
+
+  return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
+}
+
+
 
 Bool_t AliExternalTrackParam::CorrectForMaterial
 (Double_t d,  Double_t x0, Double_t mass, Double_t (*Bethe)(Double_t)) {
@@ -439,60 +493,9 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   // "x0"   - the radiation length (g/cm^2) 
   // "mass" - the mass of this particle (GeV/c^2)
   //------------------------------------------------------------------
-  Double_t &fP2=fP[2];
-  Double_t &fP3=fP[3];
-  Double_t &fP4=fP[4];
 
-  Double_t &fC22=fC[5];
-  Double_t &fC33=fC[9];
-  Double_t &fC43=fC[13];
-  Double_t &fC44=fC[14];
+  return CorrectForMeanMaterial(d,x0*d,mass,kTRUE,Bethe);
 
-  Double_t p=GetP();
-  Double_t p2=p*p;
-  Double_t beta2=p2/(p2 + mass*mass);
-  d*=TMath::Sqrt((1.+ fP3*fP3)/((1.-fP2)*(1.+fP2)));
-
-  //Multiple scattering******************
-  Double_t cC22 = 0.;
-  Double_t cC33 = 0.;
-  Double_t cC43 = 0.;
-  Double_t cC44 = 0.;
-  if (d!=0) {
-     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
-     //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
-     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
-     cC22 = theta2*(1.-fP2)*(1.+fP2)*(1. + fP3*fP3);
-     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
-     cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
-     cC44 = theta2*fP3*fP4*fP3*fP4;
-  }
-
-  //Energy losses************************
-  Double_t cP4=1.;
-  if (x0!=0. && beta2<1) {
-     d*=x0;
-     Double_t dE=Bethe(p/mass)*d;
-     Double_t e=TMath::Sqrt(p2 + mass*mass);
-     if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
-     cP4 = (1.- e/p2*dE);
-
-     // Approximate energy loss fluctuation (M.Ivanov)
-     const Double_t knst=0.07; // To be tuned.  
-     Double_t sigmadE=knst*TMath::Sqrt(TMath::Abs(dE)); 
-     cC44 += ((sigmadE*e/p2*fP4)*(sigmadE*e/p2*fP4)); 
- 
-  }
-
-  fC22 += cC22;
-  fC33 += cC33;
-  fC43 += cC43;
-  fC44 += cC44;
-  fP4  *= cP4;
-
-  CheckCovariance();
-
-  return kTRUE;
 }
 
 Double_t AliExternalTrackParam::BetheBlochAleph(Double_t bg,

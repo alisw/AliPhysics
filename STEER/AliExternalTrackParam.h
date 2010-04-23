@@ -131,9 +131,23 @@ class AliExternalTrackParam: public AliVTrack {
   void GetDZ(Double_t x,Double_t y,Double_t z,Double_t b,Float_t dz[2]) const; 
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
+
   Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho, 
         Double_t mass,  Bool_t anglecorr=kFALSE,
 	Double_t (*f)(Double_t)=AliExternalTrackParam::BetheBlochSolid);
+
+  Bool_t CorrectForMeanMaterialdEdx(Double_t xOverX0, Double_t xTimesRho, 
+	Double_t mass, Double_t dEdx, Bool_t anglecorr=kFALSE);
+
+  Bool_t CorrectForMeanMaterialZA(Double_t xOverX0, Double_t xTimesRho, 
+                                  Double_t mass,
+                                  Double_t zOverA=0.49848,
+                                  Double_t density=2.33,
+                                  Double_t exEnergy=173e-9,
+                                  Double_t jp1=0.20,
+                                  Double_t jp2=3.00,
+                                  Bool_t anglecorr=kFALSE
+  );
 
   //
   // Bethe-Bloch formula parameterizations
