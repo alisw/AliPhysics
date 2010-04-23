@@ -20,6 +20,7 @@
 #include "EVGEN/AliGenFixed.h"
 #include "EVGEN/AliGenBox.h"
 #include "STEER/AliMagF.h"
+#include "STEER/AliPID.h"
 #include "STRUCT/AliBODY.h"
 #include "STRUCT/AliMAG.h"
 #include "STRUCT/AliABSOv3.h"
@@ -145,7 +146,7 @@ void Config()
     // to cover specific cases
 
 
-    // The cocktail iitself
+    // The cocktail itself
 
     AliGenCocktail *gener = new AliGenCocktail();
     gener->SetPhiRange(0, 360);
@@ -320,7 +321,62 @@ void Config()
     gv0a->SetTheta(1.5);
     gv0a->SetPhi(70);
     gener->AddGenerator(gv0a,"Pi- for V0A",1);
-    
+
+
+    //PMD
+    AliGenFixed *gpmd=new AliGenFixed(1);
+    gpmd->SetPart(kGamma);
+    gpmd->SetMomentum(2);
+    gpmd->SetTheta(12.6);
+    gpmd->SetPhi(60);
+    gener->AddGenerator(gpmd,"Gamma for PMD",1);
+
+    //ZDC
+    AliGenFixed *gzdc1=new AliGenFixed(1);
+    gzdc1->SetPart(kProton);
+    gzdc1->SetMomentum(700);
+    gzdc1->SetTheta(0.6);
+    gzdc1->SetPhi(60);
+    gener->AddGenerator(gzdc1,"Proton for ZDC",1);
+
+    AliGenFixed *gzdc2=new AliGenFixed(1);
+    gzdc2->SetPart(kNeutron);
+    gzdc2->SetMomentum(500);
+    gzdc2->SetTheta(0.6);
+    gzdc2->SetPhi(60);
+    gener->AddGenerator(gzdc2,"Neutron for ZDC",1);
+
+    //T0
+    AliGenFixed *gt0=new AliGenFixed(1);
+    gt0->SetPart(kPiPlus);
+    gt0->SetMomentum(2);
+    gt0->SetTheta(5.1);
+    gt0->SetPhi(60);
+    gener->AddGenerator(gt0,"Pi+ for T0",1);
+
+    AliGenFixed *gt01=new AliGenFixed(1);
+    gt01->SetPart(kPiMinus);
+    gt01->SetMomentum(2);
+    gt01->SetTheta(5.1);
+    gt01->SetPhi(60);
+    gener->AddGenerator(gt01,"Pi- for T0",1);
+
+
+    //ACORDE
+    AliGenFixed *gacorde=new AliGenFixed(1);
+    gacorde->SetPart(kMuonPlus);
+    gacorde->SetMomentum(20);
+    gacorde->SetTheta(90.);
+    gacorde->SetPhi(90);
+    gener->AddGenerator(gacorde,"Muon+ for ACORDE",1);
+
+    AliGenFixed *gacorde1=new AliGenFixed(1);
+    gacorde1->SetPart(kMuonMinus);
+    gacorde1->SetMomentum(20);
+    gacorde1->SetTheta(90.);
+    gacorde1->SetPhi(90);
+    gener->AddGenerator(gacorde1,"Muon- for ACORDE",1);
+
     gener->Init();
 
 
@@ -343,15 +399,15 @@ void Config()
     Int_t   iPHOS  =  1;
     Int_t   iPIPE  =  1;
     Int_t   iPMD   =  1;
-    Int_t   iHMPID  =  1;
+    Int_t   iHMPID =  1;
     Int_t   iSHIL  =  1;
-    Int_t   iT0 =  1;
+    Int_t   iT0    =  1;
     Int_t   iTOF   =  1;
     Int_t   iTPC   =  1;
     Int_t   iTRD   =  1;
     Int_t   iZDC   =  1;
     Int_t   iEMCAL =  1;
-    Int_t   iACORDE   =  0;
+    Int_t   iACORDE=  1;
     Int_t   iVZERO =  1;
     rl->CdGAFile();
     //=================== Alice BODY parameters =============================
