@@ -99,7 +99,6 @@ AliMUONTrackerQADataMakerRec::~AliMUONTrackerQADataMakerRec()
   delete fDigitStore;
   delete fDigitMaker;
   delete fClusterStore;
-  delete fTrackerDataMaker;
   delete fCalibrationData;
   delete fMappingCheckRecPoints;
   if (fLogger)
