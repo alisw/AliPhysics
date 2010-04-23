@@ -59,11 +59,10 @@
 #include <TAxis.h>
 #include <TMath.h>
 #include <TDirectory.h>
-#include <TROOT.h>
 #include <TTreeStream.h>
 #include <TLinearFitter.h>
 #include <TVectorD.h>
-#include <TArrayF.h>
+#include <TROOT.h>
 
 #include "AliLog.h"
 #include "AliMathBase.h"
@@ -1144,7 +1143,7 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
     fCurrentCoef2[0] = (param[0]+fCurrentCoef[1]*fCurrentCoef2[1])/fCurrentCoef[0];
     fCurrentCoefE    = error[1];
     fCurrentCoefE2   = error[0];
-    if((fCurrentCoef2[0] != 0.0) && (param[0] != 0.0)){
+    if((TMath::Abs(fCurrentCoef2[0]) > 0.0000001) && (TMath::Abs(param[0]) > 0.0000001)){
       fCurrentCoefE2 = (fCurrentCoefE2/param[0]+fCurrentCoefE/fCurrentCoef[0])*fCurrentCoef2[0];
     }    
 
@@ -2060,7 +2059,7 @@ TObject *AliTRDCalibraFit::CreatePadObjectGain(const TObjArray *vectorFit, Doubl
       detector  = ((AliTRDFitInfo *) vectorFit->At(k))->GetDetector();
       AliTRDCalROC *calROC = object->GetCalROC(detector);
       Float_t mean         = detobject->GetValue(detector);
-      if(mean == 0) continue;
+      if(TMath::Abs(mean) <= 0.0000000001) continue;
       Int_t rowMax    = calROC->GetNrows();
       Int_t colMax    = calROC->GetNcols();
       for (Int_t row = 0; row < rowMax; row++) {
@@ -4166,11 +4165,11 @@ void AliTRDCalibraFit::FitPente(TH1* projPH)
   Float_t l3P2am = pentea->GetFunction("pol2")->GetParameter(2);
   Float_t l3P1amE = pentea->GetFunction("pol2")->GetParError(1);
   Float_t l3P2amE = pentea->GetFunction("pol2")->GetParError(2);
-  if (l3P2am != 0) {
+  if (TMath::Abs(l3P2am) > 0.00000001) {
     fPhd[0] = -(l3P1am / (2 * l3P2am));
   }
   if(!fTakeTheMaxPH){
-    if((l3P1am != 0.0) && (l3P2am != 0.0)){
+    if((TMath::Abs(l3P1am) > 0.0000000001) && (TMath::Abs(l3P2am) > 0.00000000001)){
       fCurrentCoefE2 = (l3P1amE/l3P1am + l3P2amE/l3P2am)*fPhd[0];
     }
   }
@@ -4197,10 +4196,10 @@ void AliTRDCalibraFit::FitPente(TH1* projPH)
   Float_t l3P2amf = projPH->GetFunction("pol2")->GetParameter(2);
   Float_t l3P1amfE = projPH->GetFunction("pol2")->GetParError(1);
   Float_t l3P2amfE = projPH->GetFunction("pol2")->GetParError(2);
-  if (l3P2amf != 0) {
+  if (TMath::Abs(l3P2amf) > 0.00000000001) {
     fPhd[1] = -(l3P1amf / (2 * l3P2amf));
   }
-  if((l3P1amf != 0.0) && (l3P2amf != 0.0)){
+  if((TMath::Abs(l3P1amf) > 0.0000000001) && (TMath::Abs(l3P2amf) > 0.000000001)){
     fCurrentCoefE = (l3P1amfE/l3P1amf + l3P2amfE/l3P2amf)*fPhd[1];
   }
   if(fTakeTheMaxPH){
@@ -4231,10 +4230,10 @@ void AliTRDCalibraFit::FitPente(TH1* projPH)
   Float_t l3P2dr = pente->GetFunction("pol2")->GetParameter(2);
   Float_t l3P1drE = pente->GetFunction("pol2")->GetParError(1);
   Float_t l3P2drE = pente->GetFunction("pol2")->GetParError(2);
-  if (l3P2dr != 0) {
+  if (TMath::Abs(l3P2dr) > 0.00000001) {
     fPhd[2] = -(l3P1dr / (2 * l3P2dr));
   }
-  if((l3P1dr != 0.0) && (l3P2dr != 0.0)){
+  if((TMath::Abs(l3P1dr) > 0.0000000001) && (TMath::Abs(l3P2dr) > 0.00000000001)){
     fCurrentCoefE += (l3P1drE/l3P1dr + l3P2drE/l3P2dr)*fPhd[2]; 
   }
   Float_t fPhdt0  = 0.0;
@@ -4601,7 +4600,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
     AliInfo("Too many fluctuations at the end!");
     put = kFALSE;
   }
-  if(pente->GetBinContent(binmin+1)==0){
+  if(TMath::Abs(pente->GetBinContent(binmin+1)) <= 0.0000000000001){
     AliInfo("No entries for the next bin!");
     pente->SetBinContent(binmin,0);
     if(pente->GetEntries() > 0) binmin = (Int_t) pente->GetMinimumBin();
@@ -4997,7 +4996,7 @@ Bool_t AliTRDCalibraFit::FitPRFGausMI(Double_t *arraye, Double_t *arraym, Double
 
   Double_t ret = FitGausMI(arraye, arraym, arrayme, nBins, xMin, xMax,&param); 
 
-  if(ret == -4){
+  if(TMath::Abs(ret+4) <= 0.000000001){
     fCurrentCoef[0] = -fCurrentCoef[1];
     return kFALSE;
   }
@@ -5060,7 +5059,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
 	  if((valueI - arrayme[ibin]) > 0.0) errorn = TMath::Log((valueI - arrayme[ibin])/valueI);
 	  error = TMath::Max(TMath::Abs(errorm),TMath::Abs(errorn));
 	}
-	if(error == 0.0) continue;
+	if(TMath::Abs(error) < 0.000000001) continue;
 	val      = TMath::Log(Float_t(valueI));
 	fitter.AddPoint(&xcenter,val,error);
 	npoints++;
@@ -5107,7 +5106,7 @@ Double_t AliTRDCalibraFit::FitGausMI(Double_t *arraye, Double_t *arraym, Double_
     
         
     if (!param)  param  = new TVectorD(3);
-    if(par[2] == 0.0) return -4.0;
+    if(TMath::Abs(par[2]) <= 0.000000001) return -4.0;
     Double_t  x      = TMath::Sqrt(TMath::Abs(-2*par[2])); 
     Double_t deltax = (fitter.GetParError(2))/x;
     Double_t errorparam2 = TMath::Abs(deltax)/(x*x);
@@ -5307,7 +5306,7 @@ void AliTRDCalibraFit::FitTnpRange(Double_t *arraye, Double_t *arraym, Double_t 
     Double_t ermin0       = 0.0;
     //Double_t prfe0      = 0.0;
     Double_t prf0         = 0.0;
-    if((pars0[2] > 0.0) && (pars0[1] != 0.0)) {
+    if((pars0[2] > 0.000000000001) && (TMath::Abs(pars0[1]) >= 0.000000000001)) {
       min0 = -pars0[1]/(2*pars0[2]);
       ermin0 = TMath::Abs(min0*(errorsx0/pars0[2]+linearfitter.GetParError(1)*pointError0/pars0[1]));
       prf0 = pars0[0]+pars0[1]*min0+pars0[2]*min0*min0;

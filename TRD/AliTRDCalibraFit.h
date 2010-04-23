@@ -30,6 +30,7 @@ class TH2F;
 class TF1;
 class TTreeSRedirector;
 
+
 class AliLog;
 
 class AliTRDCalibraMode;
@@ -169,7 +170,7 @@ class AliTRDCalibraFit : public TObject {
 	 AliTRDFitInfo &operator=(const AliTRDFitInfo&)     { return *this;            }
 	 virtual ~AliTRDFitInfo()                           { if(fCoef) { delete [] fCoef;} }
 	 
-	 void      SetCoef(Float_t *coef)             { fCoef = coef;            }
+	 void      SetCoef(Float_t *coef)                   { fCoef = coef;            }
 	 void      SetDetector(Int_t detector)              { fDetector = detector;    }
 	 
 	 Float_t  *GetCoef() const                          { return fCoef;            }
@@ -353,4 +354,3 @@ class AliTRDCalibraFit : public TObject {
 };
   
 #endif
-
