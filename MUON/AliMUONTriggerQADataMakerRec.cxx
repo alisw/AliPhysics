@@ -72,8 +72,6 @@ namespace
 //____________________________________________________________________________ 
 AliMUONTriggerQADataMakerRec::AliMUONTriggerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
-fNumberOf34Dec(0x0),
-fNumberOf44Dec(0x0),
 fDigitMaker(new AliMUONDigitMaker(kFALSE)),
 fCalibrationData(new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun())),
 fTriggerProcessor(new AliMUONTriggerElectronics(fCalibrationData)),
@@ -91,8 +89,6 @@ AliMUONTriggerQADataMakerRec::~AliMUONTriggerQADataMakerRec()
   delete fDigitStore;
   delete fTriggerProcessor;
   delete fCalibrationData;
-  delete fNumberOf34Dec;
-  delete fNumberOf44Dec;
 }
 
 //____________________________________________________________________________ 
@@ -155,7 +151,7 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
 
   TH1F* hTriggerRatio = (TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434);
   if ( hTriggerRatio ){
-    hTriggerRatio->Divide(fNumberOf44Dec,fNumberOf34Dec);
+    hTriggerRatio->Divide(((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec)),((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec)));
 
     FillRatio4434Histos(1);
 
@@ -419,10 +415,17 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   histo1D->GetYaxis()->SetTitle("Number of analyzed events");
   Add2RawsList(histo1D, AliMUONQAIndices::kTriggerRawNAnalyzedEvents, expert, !image, !saveCorr);
 
-  fNumberOf34Dec = new TH1F("hTriggerNumberOf34Dec", "hNumberOf34Dec",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
-  fNumberOf34Dec->SetDirectory(0); // Detach histo from file to avoid double delete
-  fNumberOf44Dec = new TH1F("hTriggerNumberOf44Dec", "hNumberOf44Dec",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
-  fNumberOf44Dec->SetDirectory(0); // Detach histo from file to avoid double delete
+  if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
+    histo1D = new TH1F("hTriggerNumberOf34Dec", "Number of 3/4",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+    histo1D->GetXaxis()->SetTitle(boardName.Data());
+    histo1D->GetYaxis()->SetTitle("Number of 3/4");
+    Add2RawsList(histo1D, AliMUONQAIndices::kTriggerNumberOf34Dec, expert, !image, !saveCorr);
+
+    histo1D = new TH1F("hTriggerNumberOf44Dec", "Number of 4/4",nbLocalBoard,0.5,(Float_t)nbLocalBoard+0.5);
+    histo1D->GetXaxis()->SetTitle(boardName.Data());
+    histo1D->GetYaxis()->SetTitle("Number of 4/4");
+    Add2RawsList(histo1D, AliMUONQAIndices::kTriggerNumberOf44Dec, expert, !image, !saveCorr);
+  }
 }
 
 //__________________________________________________________________
@@ -688,6 +691,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     } // NextDDL
 
     if ( ! containTriggerData ) return;
+
     GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents)->Fill(1.);
 
     nDeadLocal += AliMUONConstants::NTriggerCircuit() - countNotifiedBoards;
@@ -1163,8 +1167,8 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(AliMUONVTriggerStore&
     if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
       Bool_t is34 = ( recoLocalTrigger->GetLoDecision() != 0 );
       Bool_t is44 = fTriggerProcessor->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE);
-      if ( is34 ) fNumberOf34Dec->Fill(loCircuit);
-      if ( is44 ) fNumberOf44Dec->Fill(loCircuit);
+      if ( is34 ) ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec))->Fill(loCircuit);
+      if ( is44 ) ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec))->Fill(loCircuit);
 
       if ( is44 && ! is34 )
 	AliWarning("Event satisfies the 4/4 conditions but not the 3/4");
@@ -1314,8 +1318,8 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
   if (numEvent % evtInterval != 0)
     return;
 
-  Float_t totalNumberOf44 = fNumberOf44Dec->GetSumOfWeights();
-  Float_t totalNumberOf34 = fNumberOf34Dec->GetSumOfWeights();
+  Float_t totalNumberOf44 = ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec))->GetSumOfWeights();
+  Float_t totalNumberOf34 = ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec))->GetSumOfWeights();
 
   if ( totalNumberOf34 == 0 )
     return;
@@ -1335,8 +1339,9 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
   Float_t numOf34Update = totalNumberOf34 - previousNumOf34;
   Float_t numOf44Update = totalNumberOf44 - previousNumOf44;
 
-  // No new tracks since last update
-  if ( numOf34Update == 0 && numOf44Update == 0 )
+  // Not enough new tracks since last update
+  //if ( numOf34Update == 0 && numOf44Update == 0 )
+  if ( numOf34Update < evtInterval - 1 )
     return;
 
   Int_t newNbins = ( (Int_t)maxBin % fgkUpdateRatio4434 ) ? nbins : nbins+1;
@@ -1373,11 +1378,12 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
 
   if(numOf34Update!=0){
     ratio4434Update = numOf44Update/numOf34Update;
-    if ( numOf44Update > numOf34Update )
-      AliWarning("Number of 4/4 is higher than number of 3/4");
+    if ( numOf44Update > numOf34Update ){
+      AliWarning(Form("Number of 4/4 (%f) is higher than number of 3/4 (%f)", numOf44Update, numOf34Update));
+    }
     errorRatio4434Update = ProtectedSqrt(numOf44Update*(1-ratio4434Update))/numOf34Update;
   }
-  
+
   ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinContent(newNbins,ratio4434Update);
   ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetBinError(newNbins,errorRatio4434Update);
 

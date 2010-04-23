@@ -23,7 +23,6 @@ class TMap;
 class AliMpDCSNamer;
 class AliMUONVTriggerStore;
 class AliMUONGlobalTrigger;
-class TH1F;
 
 class AliMUONTriggerQADataMakerRec: public AliMUONVQADataMakerRec {
 
@@ -78,8 +77,6 @@ private:
   //Int_t fTriggerOutputGlobalRecFromLocalOutput[6]; //< Reconstructed Global outputs from Local outputs
 
   static const Int_t fgkUpdateRatio4434=50; ///< Event interval between 2 update of the Ratio4434 histos
-  TH1F *fNumberOf34Dec; //!< Number of Decision in coincidence 3/4 vs Local Board (for the calculation of the Ratio4434)
-  TH1F *fNumberOf44Dec; //!< Number of Decision in coincidence 4/4 vs Local Board (for the calculation of the Ratio4434)
   
   AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
   AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks

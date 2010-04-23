@@ -61,10 +61,11 @@ namespace AliMUONQAIndices
     kTriggerGlobalOutput      = 90,  ///< Number of Global outputs and Global algo errors
     kTriggerGlobalOutputNorm  = 91,  ///< Percentage of Global outputs and Global algo errors
     kTriggerRawNAnalyzedEvents= 100,  ///< Number of analyzed events per event specie
-    kTriggerLocalRatio4434       = 101,  ///< Ratio 44/34 vs Local Board Id
+    kTriggerLocalRatio4434           = 101,  ///< Ratio 44/34 vs Local Board Id
     kTriggerRatio4434AllEvents       = 102,  ///< Ratio 44/34 since the beginning of the run vs Event Number
-    kTriggerRatio4434SinceLastUpdate       = 103  ///< Ratio 44/34 for the last kUpdateRatio4434 events vs Event Number
-    
+    kTriggerRatio4434SinceLastUpdate = 103,  ///< Ratio 44/34 for the last kUpdateRatio4434 events vs Event Number
+    kTriggerNumberOf34Dec            = 104,  ///< Number of Decision in coincidence 3/4 vs Local Board
+    kTriggerNumberOf44Dec            = 105   ///< Number of Decision in coincidence 4/4 vs Local Board
   };
   
   /// Rec points histograms indices
