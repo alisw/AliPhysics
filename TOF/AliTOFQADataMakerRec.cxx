@@ -145,12 +145,12 @@ void AliTOFQADataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1F * h0 =  new TH1F("hTOFRaws",      "TOF raw hit multiplicity; TOF raw hits number;Counts ",201, -1., 200.) ;
+  TH1I * h0 =  new TH1I("hTOFRaws",      "TOF raw hit multiplicity; TOF raw hits number;Counts ",200, 0, 200) ;
 
-  TH1F * h1 =  new TH1F("hTOFRawsIA",    "TOF raw hit multiplicity - I/A side; TOF raw hits number ;Counts ",201, -1., 200.) ;
-  TH1F * h2 =  new TH1F("hTOFRawsOA",    "TOF raw hit multiplicity - O/A side; TOF raw hits number ;Counts ",201, -1., 200.) ;
-  TH1F * h3 =  new TH1F("hTOFRawsIC",    "TOF raw hit multiplicity - I/C side; TOF raw hits number ;Counts ",201, -1., 200.) ;
-  TH1F * h4 =  new TH1F("hTOFRawsOC",    "TOF raw hit multiplicity - O/C side; TOF raw hits number ;Counts ",201, -1., 200.) ;
+  TH1I * h1 =  new TH1I("hTOFRawsIA",    "TOF raw hit multiplicity - I/A side; TOF raw hits number ;Counts ",200, 0, 200) ;
+  TH1I * h2 =  new TH1I("hTOFRawsOA",    "TOF raw hit multiplicity - O/A side; TOF raw hits number ;Counts ",200, 0, 200) ;
+  TH1I * h3 =  new TH1I("hTOFRawsIC",    "TOF raw hit multiplicity - I/C side; TOF raw hits number ;Counts ",200, 0, 200) ;
+  TH1I * h4 =  new TH1I("hTOFRawsOC",    "TOF raw hit multiplicity - O/C side; TOF raw hits number ;Counts ",200, 0, 200) ;
 
   TH1F * h5  = new TH1F("hTOFRawsTime", "TOF Raws - Hit time (ns);Measured Hit time [ns];Counts", 25000,0. ,610.) ; 
 
@@ -166,11 +166,11 @@ void AliTOFQADataMakerRec::InitRaws()
   TH1F * h13  = new TH1F("hTOFRawsToTIC", "TOF Raws - Hit ToT (ns) - I/C side;Measured Hit ToT (ns);Counts", 1000, 0., 48.8) ; 
   TH1F * h14  = new TH1F("hTOFRawsToTOC", "TOF Raws - Hit ToT (ns) - O/C side;Measured Hit ToT (ns);Counts", 1000, 0., 48.8) ; 
 
-  TH1F * h15 = new TH1F("hTOFRawsLTMHits", "LTM hits ; Crate; Counts",  72, 0., 72.);
-  TH1F * h16  = new TH1F("hTOFRawsTRMHits035", "TRM hits  - crates 0 to 35 ;TRM index = SMid(crate*10)+TRM(0-9);Hits",  361, 0., 361.) ;
-  TH1F * h17  = new TH1F("hTOFRawsTRMHits3671","TRM hits  - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Hits", 361, 360., 721.) ;
+  TH1I * h15 = new TH1I("hTOFRawsLTMHits", "LTM hits ; Crate; Counts",  72, 0., 72.);
+  TH1I * h16  = new TH1I("hTOFRawsTRMHits035", "TRM hits  - crates 0 to 35 ;TRM index = SMid(crate*10)+TRM(0-9);Hits",  361, 0., 361.) ;
+  TH1I * h17  = new TH1I("hTOFRawsTRMHits3671","TRM hits  - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Hits", 361, 360., 721.) ;
   
-  TH1F * h18 = new TH1F("hTOFRawChannelHits","TOF channel hits count; Channel ID; Hits", 158000, 0., 158000);
+  TH1I * h18 = new TH1I("hTOFRawChannelHits","TOF channel hits count; Channel ID; Hits", 158000, 0., 158000);
   
   TH1F * h19  = new TH1F("hTOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Counts", 25000, 0. ,610.) ; 
   TH2F * h20 = new TH2F("hTOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., 250, 0., 610.0) ;
@@ -245,7 +245,7 @@ void AliTOFQADataMakerRec::InitRecPoints()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1F * h0 = new TH1F("hTOFRecPoints",    "TOF RecPoints multiplicity ; TOF RecPoints number;Counts",201, -1., 200.) ;
+  TH1I * h0 = new TH1I("hTOFRecPoints",    "TOF RecPoints multiplicity ; TOF RecPoints number;Counts",200, 0, 200) ;
 
   TH1F * h1 = new TH1F("hTOFRecPointsTimeIA", "RecPoints Time Spectrum in TOF (ns)- I/A side; Calibrated TOF time [ns];Counts", 25000, 0., 610.) ; 
   TH1F * h2 = new TH1F("hTOFRecPointsTimeOA", "RecPoints Time Spectrum in TOF (ns)- O/A side; Calibrated TOF time [ns];Counts", 25000, 0., 610.) ;
@@ -324,7 +324,7 @@ void AliTOFQADataMakerRec::InitESDs()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1F * h0  = new TH1F("hTOFESDs", "Number of matched TOF tracks per event;Number of TOF matched ESD tracks;Counts", 201, -1., 200.) ;  
+  TH1I * h0  = new TH1I("hTOFESDs", "Number of matched TOF tracks per event;Number of TOF matched ESD tracks;Counts", 200, 0, 200) ;  
   TH1F * h1  = new TH1F("hTOFESDsTime", "Matched  ESDs tracks: TOF Time spectrum; Calibrated TOF time [ns];Counts", 25000, 0., 610. ) ; 
   TH1F * h2  = new TH1F("hTOFESDsRawTime", "Matched ESDs tracks: TOF raw Time spectrum;Measured TOF time [ns];Counts", 25000, 0., 610.) ; 
   TH1F * h3  = new TH1F("hTOFESDsToT", "Matched ESDs tracks: TOF ToT spectrum; ESDs ToT [ns];Counts",1000, 0., 48.8) ; 
@@ -372,7 +372,6 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;//in ns
 	Double_t tot2ns=AliTOFGeometry::ToTBinWidth()*1E-3;
 	
-	Int_t nentries=0;
 	Int_t ntof[5]; /* 0=tot, 1=IA, 2=OA, 3=IC, 4=OC*/
 	for (Int_t j=0;j<5;j++){ ntof[j]=0;}
 	
@@ -394,7 +393,6 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    tofInput.LoadRawDataBuffers(iDDL);
 	    clonesRawData = (TClonesArray*)tofInput.GetRawData();
 	    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
-		nentries++;
 		AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
 		
 		if (tofRawDatum->GetTOF()){
@@ -494,11 +492,10 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	} // DDL Loop
 	
 	for (Int_t j=0;j<5;j++){
-	    if(ntof[j]<=0) GetRawsData(j)->Fill(-1.) ; 
-	    else GetRawsData(j)->Fill(ntof[j]);
+	    GetRawsData(j)->Fill(ntof[j]);
 	}
 	fProcessedRawEventN++;
-
+	
     } else {
 	AliDebug(1,Form("Event of type %d found. Skipping non-physics event for QA.\n", rawReader->GetType())); 
     }
@@ -533,12 +530,7 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   // Import the tree
   clustersTree->GetEvent(0);  
  
-  Int_t nentries=clusters->GetEntriesFast();
-  if(nentries<=0){
-      GetRecPointsData(0)->Fill(-1.) ; 
-  }else{
-      GetRecPointsData(0)->Fill(nentries) ; 
-  } 
+  GetRecPointsData(0)->Fill((Int_t)clusters->GetEntriesFast()) ; 
   
   TIter next(clusters) ; 
   AliTOFcluster * c ; 
@@ -658,12 +650,9 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	    }
 	}//end check on TPCrefit
     }
-    Int_t nentries=ntof;
-    if(nentries<=0){
-	GetESDsData(0)->Fill(-1.) ;
-    }else{
-	GetESDsData(0)->Fill(nentries) ;
-    }
+    
+    GetESDsData(0)->Fill(ntof) ;
+  
     
     if(ntof>0) {
 	Float_t ratio = (Int_t)ntofpid/(Int_t)ntof*100; //identified by TOF over matched
@@ -744,7 +733,6 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		//make up for hits count
 		GetRawsData(j)->SetMarkerColor(kRed);
 		GetRawsData(j)->SetMarkerStyle(7);
-		
 		//make up for time spectra
 		((TH1F*)GetRawsData(j+5))->GetListOfFunctions()->Add(lineExpTimeMin);
 		((TH1F*)GetRawsData(j+5))->GetListOfFunctions()->Add(lineExpTimeMax);
@@ -762,10 +750,12 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    for(Int_t j=15;j<18;j++){
 	      GetRawsData(j)->SetLineColor(kBlue+1);
 	      GetRawsData(j)->SetLineWidth(1);
+
 	      if (j==15) {
 		GetRawsData(j)->SetMarkerStyle(8);
 		GetRawsData(j)->SetMarkerSize(0.7);
 		GetRawsData(j)->SetMarkerColor(kBlue+2);
+	   
 	      } else {
 		Int_t ySMmax=GetRawsData(j)->GetMaximum();
 		TLine* lineSMid[10];
@@ -779,6 +769,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		}
 	      }
 	    }
+	    GetRawsData(18)->SetLineColor(kBlue+1);
+	    GetRawsData(18)->SetMarkerColor(kBlue+1);
 	    
 	    //make up for orphans histo
 	    GetRawsData(19)->SetLineColor(kBlue+1);
@@ -947,4 +939,3 @@ Bool_t  AliTOFQADataMakerRec::FilterSpare(const Int_t * const equipmentID) const
     return kFALSE;
  
 }
-
