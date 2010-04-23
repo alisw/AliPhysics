@@ -14,7 +14,6 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
     ::Error("AddTaskImpParRes", "No analysis manager to connect to.");
     return NULL;
   }   
-
   
   // Aanalysis task    
   AliAnalysisTaskSEImpParRes *d0ResTask = new AliAnalysisTaskSEImpParRes("d0ResAnalysis");
@@ -23,6 +22,11 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   d0ResTask->SetSelectedPdg(selPdg);
   d0ResTask->SetUseDiamond(diamond);
   mgr->AddTask(d0ResTask);
+
+  TString fname="ImpParRes.Performance";
+  if(selPdg>0) {fname+=selPdg;}
+  fname.Append(".root");
+
  
   //
   // Create containers for input/output
@@ -31,96 +35,147 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
 
   AliAnalysisDataContainer *coutputd0ITSpureSARec = mgr->CreateContainer("coutputd0ITSpureSARec",TList::Class(), 
 								   AliAnalysisManager::kOutputContainer,
-								   "ImpParRes.Performance.root");
+								   fname.Data());
 
   AliAnalysisDataContainer *coutputd0ITSpureSASkip = mgr->CreateContainer("coutputd0ITSpureSASkip",TList::Class(), 
 								   AliAnalysisManager::kOutputContainer,
-								   "ImpParRes.Performance.root");
+								   fname.Data());
 
   AliAnalysisDataContainer *coutputd0allPointRec = mgr->CreateContainer("coutputd0allPointRec",TList::Class(), 
 								   AliAnalysisManager::kOutputContainer,
-								   "ImpParRes.Performance.root");
+								   fname.Data());
   
   AliAnalysisDataContainer *coutputd0allPointSkip = mgr->CreateContainer("coutputd0allPointSkip",TList::Class(), 
 								   AliAnalysisManager::kOutputContainer,
-								   "ImpParRes.Performance.root");
+								   fname.Data());
  
   AliAnalysisDataContainer *coutputd0partPointRec = mgr->CreateContainer("coutputd0partPointRec",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0partPointSkip = mgr->CreateContainer("coutputd0partPointSkip",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0onepointSPDRec = mgr->CreateContainer("coutputd0onepointSPDRec",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0onepointSPDSkip = mgr->CreateContainer("coutputd0onepointSPDSkip",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0postvTracRec = mgr->CreateContainer("coutputd0postvTracRec",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
  
  
   AliAnalysisDataContainer *coutputd0postvTracSkip = mgr->CreateContainer("coutputd0postvTracSkip",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
  
   AliAnalysisDataContainer *coutputd0negtvTracRec = mgr->CreateContainer("coutputd0negtvTracRec",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
  
   AliAnalysisDataContainer *coutputd0negtvTracSkip = mgr->CreateContainer("coutputd0negtvTracSkip",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
-
-
- 
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0pullAllpointRec = mgr->CreateContainer("coutputd0pullAllpointRec",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
 
   AliAnalysisDataContainer *coutputd0pullAllpointSkip = mgr->CreateContainer("coutputd0pullAllpointSkip",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0onlyRefitRec = mgr->CreateContainer("coutputd0onlyRefitRec",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
 
   AliAnalysisDataContainer *coutputd0onlyRefitSkip = mgr->CreateContainer("coutputd0onlyRefitSkip",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
+									fname.Data());
+
 
   AliAnalysisDataContainer *coutputd0sinThetaRec = mgr->CreateContainer("coutputd0sinThetaRec",TList::Class(),
- 									AliAnalysisManager::kOutputContainer,
- 									"ImpParRes.Performance.root");
-  
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+
   AliAnalysisDataContainer *coutputd0sinThetaSkip = mgr->CreateContainer("coutputd0sinThetaSkip",TList::Class(),
-									 AliAnalysisManager::kOutputContainer,
-									 "ImpParRes.Performance.root");
-  
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+
+ AliAnalysisDataContainer *coutputd0allPointTrue = mgr->CreateContainer("coutputd0allPointTrue",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0postvTracTrue = mgr->CreateContainer("coutputd0postvTracTrue",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0negtvTracTrue = mgr->CreateContainer("coutputd0negtvTracTrue",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0pullAllpointTrue = mgr->CreateContainer("coutputd0pullAllpointTrue",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+
+ AliAnalysisDataContainer *coutputd0phiAllpointSkip = mgr->CreateContainer("coutputd0phiAllpointSkip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0phiPostvtracSkip = mgr->CreateContainer("coutputd0phiPostvtracSkip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+ 
+ AliAnalysisDataContainer *coutputd0phiNegtvtracSkip = mgr->CreateContainer("coutputd0phiNegtvtracSkip",TList::Class(),
+									    AliAnalysisManager::kOutputContainer,
+									  fname.Data());
+
+ 
+ AliAnalysisDataContainer *coutputd0clusterTypeSPD01Skip = mgr->CreateContainer("coutputd0clusterTypeSPD01Skip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0clusterTypeSPD02Skip = mgr->CreateContainer("coutputd0clusterTypeSPD02Skip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0clusterTypeSPD03Skip = mgr->CreateContainer("coutputd0clusterTypeSPD03Skip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0clusterTypeSPD11Skip = mgr->CreateContainer("coutputd0clusterTypeSPD11Skip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0clusterTypeSPD12Skip = mgr->CreateContainer("coutputd0clusterTypeSPD12Skip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+
+ AliAnalysisDataContainer *coutputd0clusterTypeSPD13Skip = mgr->CreateContainer("coutputd0clusterTypeSPD13Skip",TList::Class(),
+									AliAnalysisManager::kOutputContainer,
+									fname.Data());
+ 
   AliAnalysisDataContainer *coutputd0Pt = mgr->CreateContainer("coutputd0Pt",TList::Class(),
 									AliAnalysisManager::kOutputContainer,
-									"ImpParRes.Performance.root");
-
-  
+									fname.Data());
+ 
   AliAnalysisDataContainer *coutputNentries = mgr->CreateContainer("coutputNentries",TH1F::Class(),
 								     AliAnalysisManager::kOutputContainer, 
-								   "ImpParRes.Performance.root");
+								   fname.Data());
 
   AliAnalysisDataContainer *coutputEstimVtx = mgr->CreateContainer("coutputEstimVtx",TH1F::Class(),
 								     AliAnalysisManager::kOutputContainer, 
-								   "ImpParRes.Performance.root");
- 
-
- 
+								   fname.Data());
+  
   mgr->ConnectInput(d0ResTask,0,mgr->GetCommonInputContainer()); 
   //mgr->ConnectOutput(d0ResTask,0,mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(d0ResTask,1,coutputd0ITSpureSARec);
@@ -141,9 +196,21 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,Int_t selPdg=-
   mgr->ConnectOutput(d0ResTask,16,coutputd0onlyRefitSkip);
   mgr->ConnectOutput(d0ResTask,17,coutputd0sinThetaRec);
   mgr->ConnectOutput(d0ResTask,18,coutputd0sinThetaSkip);
-  mgr->ConnectOutput(d0ResTask,19,coutputd0Pt);
-  mgr->ConnectOutput(d0ResTask,20,coutputNentries);
-  mgr->ConnectOutput(d0ResTask,21,coutputEstimVtx);
-
+  mgr->ConnectOutput(d0ResTask,19,coutputd0allPointTrue);
+  mgr->ConnectOutput(d0ResTask,20,coutputd0postvTracTrue);
+  mgr->ConnectOutput(d0ResTask,21,coutputd0negtvTracTrue);
+  mgr->ConnectOutput(d0ResTask,22,coutputd0pullAllpointTrue);
+  mgr->ConnectOutput(d0ResTask,23,coutputd0phiAllpointSkip);
+  mgr->ConnectOutput(d0ResTask,24,coutputd0phiPostvtracSkip);
+  mgr->ConnectOutput(d0ResTask,25,coutputd0phiNegtvtracSkip);
+  mgr->ConnectOutput(d0ResTask,26,coutputd0clusterTypeSPD01Skip);
+  mgr->ConnectOutput(d0ResTask,27,coutputd0clusterTypeSPD02Skip);
+  mgr->ConnectOutput(d0ResTask,28,coutputd0clusterTypeSPD03Skip);
+  mgr->ConnectOutput(d0ResTask,29,coutputd0clusterTypeSPD11Skip);
+  mgr->ConnectOutput(d0ResTask,30,coutputd0clusterTypeSPD12Skip);
+  mgr->ConnectOutput(d0ResTask,31,coutputd0clusterTypeSPD13Skip);
+  mgr->ConnectOutput(d0ResTask,32,coutputd0Pt);
+  mgr->ConnectOutput(d0ResTask,33,coutputNentries);
+  mgr->ConnectOutput(d0ResTask,34,coutputEstimVtx);
   return d0ResTask;
 }
