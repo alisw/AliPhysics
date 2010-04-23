@@ -13,14 +13,18 @@
 // and background rejection based on the content of the ESD
 //
 //   Origin: Jan Fiete Grosse-Oetringhaus, CERN
+//           Michele Floris, CERN
 //-------------------------------------------------------------------------
 
 #include <AliAnalysisCuts.h>
 #include <TList.h>
 #include "TObjString.h"
 
+#define VERBOSE_STAT
+
 class AliESDEvent;
 class TH2F;
+class TH1F;
 class TCollection;
 class AliTriggerAnalysis;
 class AliAnalysisTaskSE;
@@ -76,8 +80,10 @@ public:
   
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
   void SetComputeBG   (Bool_t flag = kTRUE) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
+  void SetUseMuonTriggers(Bool_t flag = kTRUE) {fUseMuonTriggers = flag;}
   void SetBin0Callback( const char * cb) {fBin0CallBack = cb;} 
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
+  
 
 protected:
   Bool_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger) const;
@@ -99,6 +105,7 @@ protected:
     
   TH2F* fHistStatistics[2];      // how many events are cut away why {all,bin 0}
   TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
+  TH1F* fHistTriggerPattern;  // Pattern of the individual detectors in the MB1 trigger. Can reveal inconsistencies/inefficiencies in the trigger 
     
   Bool_t fSkipTriggerClassSelection;  // flag that determines if the trigger classs selection is skipped
   Bool_t fUsingCustomClasses;         // flag that is set if costum trigger classes are defined
@@ -107,16 +114,17 @@ protected:
   Float_t fBIFactorA;                 // ratio of interacting over non interacting bunch intensities for beam 1
   Float_t fBIFactorC;                 // ratio of interacting over non interacting bunch intensities for beam 2
 
-  Int_t fRatioBEEE;                   // ratio between the number of BX in the Beam-Empty and the Empty-Empty. Depends on the filling and on the trigger scheme
+  Int_t fRatioBEEE; // ratio between the number of BX in the Beam-Empty and the Empty-Empty. Depends on the filling and on the trigger scheme
 
-  Bool_t fComputeBG;                  // Switch on computation of background and filling of relevant stat table entries. If you enable this you can only process one run at a time (the relative bunch intensity used to compute this chages from run to run)
-  Bool_t fUseBXNumbers;            // Explicitely select "good" bunch crossing numbers (exclude pilot, afterpulses and fakes). If you anable this you can only process  runs within the same filling scheme.
-  TString fFillingScheme;             // stores the filling scheme of the current run.
+  Bool_t fComputeBG; // Switch on computation of background and filling of relevant stat table entries. If you enable this you can only process one run at a time (the relative bunch intensity used to compute this chages from run to run)
+  Bool_t fUseBXNumbers;	// Explicitely select "good" bunch crossing numbers (exclude pilot, afterpulses and fakes). If you anable this you can only process  runs within the same filling scheme.
+  Bool_t fUseMuonTriggers;	// if true, also use the muon triggers
+  TString fFillingScheme; // stores the filling scheme of the current run.
 
   TString fBin0CallBack; // callback used to determine if an event is in the bin0 (name of the task where the callback is implemented);
   Bin0Callback_t fBin0CallBackPointer; //! don't stream this. TO BE REMOVED SOON
 
-  ClassDef(AliPhysicsSelection, 6)
+  ClassDef(AliPhysicsSelection, 8)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);

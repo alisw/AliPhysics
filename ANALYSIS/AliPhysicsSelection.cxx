@@ -38,9 +38,17 @@
 // To print statistics after processing use:
 //   fPhysicsSelection->Print();
 //
-// To seleect the BX ids corresponding to real bunches crossings p2 use:
-//   fPhysicsSelection->SetUseBXNumbers();
-// you cannot process runs with different filling schemes if you require this option.
+// The BX ids corresponding to real bunches crossings p2 are
+// automatically selected. You cannot process runs with different
+// filling schemes if this option is set. If you want to disable this,
+// use: 
+//   fPhysicsSelection->SetUseBXNumbers(0);
+//
+//
+// If you are analizing muons and you want to keep the muon triggers
+// besides the CINT1B you can set:
+//   fPhysicsSelection->SetUseMuonTriggers();
+//
 //
 // To compute the Background automatically using the control triggers
 // use: 
@@ -116,6 +124,7 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fTriggerAnalysis(),
   fBackgroundIdentification(0),
   fHistBunchCrossing(0),
+  fHistTriggerPattern(0),
   fSkipTriggerClassSelection(0),
   fUsingCustomClasses(0),
   fSkipV0(0),
@@ -123,7 +132,8 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fBIFactorC(1),
   fRatioBEEE(2),
   fComputeBG(0),
-  fUseBXNumbers(0),
+  fUseBXNumbers(1),
+  fUseMuonTriggers(0),
   fFillingScheme(""),
   fBin0CallBack(""),
   fBin0CallBackPointer(0)
@@ -162,6 +172,11 @@ AliPhysicsSelection::~AliPhysicsSelection()
   {
     delete fHistBunchCrossing;
     fHistBunchCrossing = 0;
+  }
+  if (fHistTriggerPattern)
+  {
+    delete fHistTriggerPattern;
+    fHistTriggerPattern = 0;
   }
 
 }
@@ -330,6 +345,13 @@ Bool_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 
       Bool_t hwTrig = fastORHW > 0 || v0AHW || v0CHW;
 
+      // Fill trigger pattern histo
+      Int_t tpatt = 0;
+      if (fastORHW>0) tpatt+=1;
+      if (v0AHW)      tpatt+=2;
+      if (v0CHW)      tpatt+=4;
+      fHistTriggerPattern->Fill( tpatt );
+
       // fill statistics and return decision
       const Int_t nHistStat = 2;
       for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
@@ -472,7 +494,7 @@ const char * AliPhysicsSelection::GetFillingScheme(UInt_t runNumber)  {
   }
   else if (runNumber >= 105256 && runNumber <= 105268) {
     return "4x4c";
-  } else if (runNumber == 114786 || runNumber == 114798 || runNumber == 114783 ) {
+  } else if (runNumber >= 114786 && runNumber <= 116684) {
     return "Single_2b_1_1_1";
   }
   else {
@@ -489,7 +511,9 @@ Int_t AliPhysicsSelection::GetRatioBBBE(Int_t runNumber) {
 
   if (runNumber == 105143 || runNumber == 105160) {
     return 8;
-  }else if (runNumber == 114786 || runNumber == 114798 || runNumber == 114783 ) {
+  }else if (runNumber == 114786 || runNumber == 114798 ) {
+    return 1;
+  } else if (runNumber >= 114783 && runNumber <= 116684){
     return 1;
   }
   else if (fComputeBG &&
@@ -554,7 +578,7 @@ const char * AliPhysicsSelection::GetBXIDs(UInt_t runNumber, const char * trigge
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #1234 #2128";
     else if(!strcmp("CINT1-E-NOPF-ALL",trigger))     return " #790";
     else AliError(Form("Unknown trigger: %s", trigger));
-  } if (runNumber == 114786 || runNumber == 114798 || runNumber == 114783 ) {
+  } else if (runNumber >= 114786 && runNumber <= 116684) { // 7 TeV 2010, assume always the same filling scheme
     if     (!strcmp("CINT1B-ABCE-NOPF-ALL",trigger)) return " #346";
     else if(!strcmp("CINT1A-ABCE-NOPF-ALL",trigger)) return " #2131";
     else if(!strcmp("CINT1C-ABCE-NOPF-ALL",trigger)) return " #3019";
@@ -619,6 +643,14 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
         
       case 1:
 	{ // need a new scope to avoid cross-initialization errors
+
+	  if (fUseMuonTriggers) {
+	    // Muon trigger have the same BXIDs of the corresponding CINT triggers
+	    fCollTrigClasses.Add(new TObjString(Form("%s%s ","+CMUS1B-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL"))));
+	    fBGTrigClasses.Add  (new TObjString(Form("%s%s ","+CMUS1A-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL"))));
+	    fBGTrigClasses.Add  (new TObjString(Form("%s%s ","+CMUS1C-ABCE-NOPF-MUON",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL"))));	    
+	    fBGTrigClasses.Add  (new TObjString(Form("%s%s ","+CMUS1-E-NOPF-MUON"    ,  GetBXIDs(runNumber,"CINT1-E-NOPF-ALL"))));
+	  }
 	  TObjString * cint1b = new TObjString(Form("%s%s","+CINT1B-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1B-ABCE-NOPF-ALL")));
 	  TObjString * cint1a = new TObjString(Form("%s%s","+CINT1A-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1A-ABCE-NOPF-ALL")));
 	  TObjString * cint1c = new TObjString(Form("%s%s","+CINT1C-ABCE-NOPF-ALL",  GetBXIDs(runNumber,"CINT1C-ABCE-NOPF-ALL")));
@@ -628,6 +660,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
 	  fBGTrigClasses.Add(cint1a);
 	  fBGTrigClasses.Add(cint1c);
 	  fBGTrigClasses.Add(cint1e);
+
 	}
         break;
         
@@ -666,8 +699,27 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       delete fHistBunchCrossing;
   
     fHistBunchCrossing = new TH2F("fHistBunchCrossing", "fHistBunchCrossing;bunch crossing number;", 4000, -0.5, 3999.5,  count, -0.5, -0.5 + count);
-      
+
+    if (fHistTriggerPattern)
+      delete fHistTriggerPattern;
+    
+    const int ntrig=3;
     Int_t n = 1;
+    const Int_t nbinTrig = TMath::Nint(TMath::Power(2,ntrig));
+
+    fHistTriggerPattern = new TH1F("fHistTriggerPattern", "Trigger pattern: FO + 2*v0A + 4*v0C", 
+				   nbinTrig, -0.5, nbinTrig-0.5);    
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(1,"NO TRIG");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(2,"FO");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(3,"v0A");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(4,"FO & v0A");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(5,"v0C");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(6,"FO & v0C");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(7,"v0A & v0C");
+    fHistTriggerPattern->GetXaxis()->SetBinLabel(8,"FO & v0A & v0C");
+
+  
+    n = 1;
     for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
     {
       fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
@@ -877,8 +929,10 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
       collections[2].Add(entry->fHistStatistics[1]);
     if (entry->fHistBunchCrossing)
       collections[3].Add(entry->fHistBunchCrossing);
+    if (entry->fHistTriggerPattern)
+      collections[4].Add(entry->fHistTriggerPattern);
     if (entry->fBackgroundIdentification)
-      collections[4].Add(entry->fBackgroundIdentification);
+      collections[5].Add(entry->fBackgroundIdentification);
 
     count++;
   }
@@ -890,8 +944,10 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     fHistStatistics[1]->Merge(&collections[2]);
   if (fHistBunchCrossing)
     fHistBunchCrossing->Merge(&collections[3]);
+  if (fHistTriggerPattern)
+    fHistTriggerPattern->Merge(&collections[4]);
   if (fBackgroundIdentification)
-    fBackgroundIdentification->Merge(&collections[4]);
+    fBackgroundIdentification->Merge(&collections[5]);
   
   delete iter;
 
@@ -917,6 +973,8 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
     Int_t triggerScheme = GetTriggerScheme(UInt_t(fCurrentRun));
     if(triggerScheme != 1){
       AliWarning("BG estimate only supported for trigger scheme \"1\" (CINT1 suite)");
+    } else if (fUseMuonTriggers) {
+      AliWarning("BG estimate with muon triggers to be implemented");
     } else {
       Int_t nHistStat = 2;
       // TODO: get number of rows in a more flexible way
@@ -965,7 +1023,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 	    Float_t bgFrac    = Float_t(bg)  / cint1B  *100;
 	    Float_t goodFrac  = Float_t(good)  / good1 *100;
 	    Float_t errGoodFrac = errGood/good1 * 100;
-	    Float_t errFracBG = bg > 0 ? TMath::Sqrt(errBG/bg + 1/TMath::Sqrt(cint1B))*bgFrac : 0;
+	    Float_t errFracBG = bg > 0 ? TMath::Sqrt((errBG/bg)*(errBG/bg) + 1/cint1B)*bgFrac : 0;
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowBGFrac,bgFrac);	
 	    fHistStatistics[iHistStat]->SetBinError  (icol,kStatRowBGFrac,errFracBG);	
 	    fHistStatistics[iHistStat]->SetBinContent(icol,kStatRowAccFrac,accFrac);    
@@ -983,6 +1041,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
   fHistStatistics[0]->Write();
   fHistStatistics[1]->Write();
   fHistBunchCrossing->Write();
+  fHistTriggerPattern->Write();
   
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
   for (Int_t i=0; i < count; i++)
