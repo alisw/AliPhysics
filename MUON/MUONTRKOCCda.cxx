@@ -61,7 +61,7 @@
 #endif
 
 const char* OUTPUT_FILE = "mch.occupancy";
-const char* DAVERSION = "MUONTRKOCCda v1.3 ($Id$)";
+const char* DAVERSION = "MUONTRKOCCda v1.4 ($Id$)";
 
 //______________________________________________________________________________
 void Add(AliMUONVStore& destStore, const AliMUONVStore& srcStore)
@@ -311,20 +311,23 @@ int main(int argc, char **argv)
   
 #ifdef ALI_AMORE
   
-  // Send occupancy store (as a big string) to the AMORE DB
-  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-  
-  ostringstream str;
-  
-  GenerateOutputFile(accumulatedData,str,runNumber,numberOfUsedEvents);
-    
-  TObjString occupancyAsString(str.str().c_str());
-  
-  Int_t status = amoreDA.Send("Occupancy",&occupancyAsString);
-  if ( status )
+  if ( numberOfUsedEvents ) // do not update the AMORE pool with an empty object...
   {
-    cerr << "ERROR : Failed to write occupancies in the AMORE database : " << status << endl;
-  } 
+    // Send occupancy store (as a big string) to the AMORE DB
+    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+    
+    ostringstream str;
+    
+    GenerateOutputFile(accumulatedData,str,runNumber,numberOfUsedEvents);
+    
+    TObjString occupancyAsString(str.str().c_str());
+    
+    Int_t status = amoreDA.Send("Occupancy",&occupancyAsString);
+    if ( status )
+    {
+      cerr << "ERROR : Failed to write occupancies in the AMORE database : " << status << endl;
+    } 
+  }
 
 #endif
   
