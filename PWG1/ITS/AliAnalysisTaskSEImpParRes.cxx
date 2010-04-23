@@ -1097,7 +1097,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     esdtrack->PropagateToDCA(vtxESDRec, esd->GetMagneticField(), beampiperadius, dzRec, covdzRec);
     esdtrack->PropagateToDCA(vtxESDSkip, esd->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
     if(fReadMC) esdtrack->PropagateToDCA(vtxESDTrue, esd->GetMagneticField(), beampiperadius, dzTrue, covdzTrue);
-    if(covdzRec[0]<0 || covdzRec[2]<0 || covdzRecSkip[0]<0 || covdzRecSkip[2]<0) {
+    if(covdzRec[0]<1.e-13 || covdzRec[2]<1.e-13 || covdzRecSkip[0]<1.e-13 || covdzRecSkip[2]<1.e-13 || covdzTrue[0]<1.e-13 || covdzTrue[2]<1.e-13) {
       delete vtxESDSkip; vtxESDSkip = 0x0;
       continue;
     }
