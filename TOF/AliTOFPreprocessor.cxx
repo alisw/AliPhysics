@@ -342,7 +342,7 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
    * in this case we can return without errors. */
 
   if (!fIsStatusMapChanged) {
-    AliInfo("TOF FEE config has not changed. Do not overwrite stored file.");
+    AliInfo("TOF HW status config has not changed. Do not overwrite stored file.");
     return 0; // return ok
   }
 
@@ -358,10 +358,8 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Roberto Preghenella");
-  //metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.HV.and.LV data."); // AdC
-  //AliInfo("Storing Status data from current run. Collected RO.and.HV.and.LV infos @ EOR"); // AdC
-  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.LV data.");
-  AliInfo("Storing Status data from current run. Collected RO.and.LV infos @ SOR");
+  metaData.SetComment("This preprocessor fills an AliTOFChannelOnlineStatusArray object from FEE.and.HV.and.LV data.");
+  AliInfo("Storing Status data from current run. Collected RO.and.HV.and.LV infos @ EOR");
   // store TOF channel status
   if (!Store("Calib", "Status", fStatus, &metaData, 0, kTRUE)) {
     // failed
