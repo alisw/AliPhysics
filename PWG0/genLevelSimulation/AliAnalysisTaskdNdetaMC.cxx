@@ -44,7 +44,10 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskdNdetaMC)
 
-Float_t  AliAnalysisTaskdNdetaMC::fEtaMax = 0.5;
+Float_t      AliAnalysisTaskdNdetaMC::fEtaMax = 0.5;
+Int_t        AliAnalysisTaskdNdetaMC::fPDGCodes[]  = {211,2212,321,-211,-2212,-321} ;
+const char * AliAnalysisTaskdNdetaMC::fPartNames[] = {"PionPos", "ProtonPos", "KaonPos", "PionNeg", "ProtonNeg", "KaonNeg"} ;
+
 
 AliAnalysisTaskdNdetaMC::AliAnalysisTaskdNdetaMC() 
   : AliAnalysisTaskSE(), fNchDens(0), fMyOut(0), 
@@ -55,14 +58,20 @@ AliAnalysisTaskdNdetaMC::AliAnalysisTaskdNdetaMC()
   for(Int_t ihist = 0; ihist < kNHist; ihist++){
     fHistEta[ihist]  = 0;
     fHistPt[ihist]  = 0;
-    for(Int_t ihist2 = 0; ihist2 < kNMultHist; ihist2++){
+    for(Int_t ihist2 = 0; ihist2 < kNEtaHist; ihist2++){
       fHistMult[ihist][ihist2] = 0;    
+    }
+    for(Int_t ipart = 0; ipart < kNPart; ipart++){
+      fHistPtID[ihist][ipart] = 0;
     }
   }  
 
-  fEtaBins[kMult05] = 0.5;
-  fEtaBins[kMult10] = 1.0;
-  fEtaBins[kMult14] = 1.3;
+  
+
+
+  fEtaBins[kEta05] = 0.5;
+  fEtaBins[kEta10] = 1.0;
+  fEtaBins[kEta14] = 1.3;
 
   fEtaMax=0.5;
 
@@ -78,13 +87,16 @@ AliAnalysisTaskdNdetaMC::AliAnalysisTaskdNdetaMC(const char *name)
   for(Int_t ihist = 0; ihist < kNHist; ihist++){
     fHistEta[ihist]  = 0;
     fHistPt[ihist]  = 0;
-    for(Int_t ihist2 = 0; ihist2 < kNMultHist; ihist2++){
+    for(Int_t ihist2 = 0; ihist2 < kNEtaHist; ihist2++){
       fHistMult[ihist][ihist2] = 0;    
     }
+    for(Int_t ipart = 0; ipart < kNPart; ipart++){
+      fHistPtID[ihist][ipart] = 0;
+    }
   }
-  fEtaBins[kMult05] = 0.5;
-  fEtaBins[kMult10] = 1.0;
-  fEtaBins[kMult14] = 1.3;
+  fEtaBins[kEta05] = 0.5;
+  fEtaBins[kEta10] = 1.0;
+  fEtaBins[kEta14] = 1.3;
 
 
   fEtaMax=0.5;
@@ -115,13 +127,16 @@ AliAnalysisTaskdNdetaMC::AliAnalysisTaskdNdetaMC(const char *name, const char * 
   for(Int_t ihist = 0; ihist < kNHist; ihist++){
     fHistEta[ihist]  = 0;
     fHistPt[ihist]  = 0;
-    for(Int_t ihist2 = 0; ihist2 < kNMultHist; ihist2++){
+    for(Int_t ihist2 = 0; ihist2 < kNEtaHist; ihist2++){
       fHistMult[ihist][ihist2] = 0;    
     }
+    for(Int_t ipart = 0; ipart < kNPart; ipart++){
+      fHistPtID[ihist][ipart] = 0;
+    }
   }
-  fEtaBins[kMult05] = 0.5;
-  fEtaBins[kMult10] = 1.0;
-  fEtaBins[kMult14] = 1.3;
+  fEtaBins[kEta05] = 0.5;
+  fEtaBins[kEta10] = 1.0;
+  fEtaBins[kEta14] = 1.3;
 
 
   fEtaMax=0.5;
@@ -161,12 +176,17 @@ void AliAnalysisTaskdNdetaMC::UserCreateOutputObjects()
 
   const char * labelType[] = {"INEL", "NSD", "SiD", "ND", "HL"};
   for(Int_t ihist = 0; ihist < kNHist; ihist++){ // type
-    for(Int_t ihist2 = 0; ihist2 < kNMultHist; ihist2++) { // eta range
+    for(Int_t ihist2 = 0; ihist2 < kNEtaHist; ihist2++) { // eta range
       fHistMult[ihist][ihist2] = BookMultHisto(Form("fHistMult_%s_%1.1f",labelType[ihist],fEtaBins[ihist2]),
 					       Form("(dN/dN_{ch})_{|#eta_{max}|<%1.1f} (%s)",fEtaBins[ihist2],labelType[ihist]));    
     }
   }
-
+  for(Int_t ihist = 0; ihist < kNHist; ihist++){ // type
+    for(Int_t ipart = 0; ipart < kNPart; ipart++){ // particle
+      fHistPtID[ihist][ipart] = BookHptHist(Form("fHistPtID_%s_%s",labelType[ihist],fPartNames[ipart]),
+					    Form("fHistPtID (%s), %s - |y| < 0.5",labelType[ihist],fPartNames[ipart]));
+    }
+  }
   
   
   fNchDens = new TGraphErrors();
@@ -299,6 +319,8 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
     }
   }
 
+  
+
   fHistIev->Fill(kHistINEL);
   if (!isSD)                 fHistIev->Fill(kHistNSD);
   if (isSD)                  fHistIev->Fill(kHistSiD);
@@ -308,9 +330,9 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
     cout << "Event " << Int_t(fHistIev->GetBinContent(fHistIev->FindBin(kHistINEL))) << endl;
   
 
-
+  static const Float_t ymax =0.5;
   // Track loop
-  Int_t multiplicity[kNHist][kNMultHist] = {{0}};  
+  Int_t multiplicity[kNHist][kNEtaHist] = {{0}};  
   for (Int_t iTrack = 0; iTrack < mcEvent->GetNumberOfTracks(); iTrack++) {
     AliMCParticle *track = (AliMCParticle*)mcEvent->GetTrack(iTrack);
     if (!track) {
@@ -324,31 +346,51 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
       fHistEta[kHistINEL]->Fill(track->Eta());            
       if (isEtaLess08) fHistPt[kHistINEL] ->Fill(track->Pt());            
       if(track->Eta() > -fEtaMax && track->Eta() < fEtaMax) fHistNParticlesAtMidRapidity->Fill(kHistINEL);
+
+      for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart])  fHistPtID[kHistINEL][ipart]->Fill(track->Pt());
+      }
       
+
+
       if(!isSD) {
 	fHistEta[kHistNSD]->Fill(track->Eta());      
 	if (isEtaLess08) fHistPt [kHistNSD]->Fill(track->Pt());      
 	if(track->Eta() > -fEtaMax && track->Eta() < fEtaMax) fHistNParticlesAtMidRapidity->Fill(kHistNSD);
+	for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	  if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart])  fHistPtID[kHistNSD][ipart]->Fill(track->Pt());
+	}
       }
       if(isSD) {
 	fHistEta[kHistSiD]->Fill(track->Eta());      
 	if (isEtaLess08) fHistPt [kHistSiD]->Fill(track->Pt());      
 	if(track->Eta() > -fEtaMax && track->Eta() < fEtaMax) fHistNParticlesAtMidRapidity->Fill(kHistSiD);
+	for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	  if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart])  fHistPtID[kHistSiD][ipart]->Fill(track->Pt());
+	}
       }
       if (isND) {
 	fHistEta[kHistND]->Fill(track->Eta());      
 	if (isEtaLess08) fHistPt [kHistND]->Fill(track->Pt());      
 	if(track->Eta() > -fEtaMax && track->Eta() < fEtaMax) fHistNParticlesAtMidRapidity->Fill(kHistND);
+		for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	  if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart])  fHistPtID[kHistND][ipart]->Fill(track->Pt());
+	}
+
       }
       if (isThereOneCentralPart) {
 	fHistEta[kHistHL]->Fill(track->Eta());      
 	if (isEtaLess08) fHistPt [kHistHL]->Fill(track->Pt());      
 	if(track->Eta() > -fEtaMax && track->Eta() < fEtaMax) fHistNParticlesAtMidRapidity->Fill(kHistHL);
+	for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	  if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart])  fHistPtID[kHistHL][ipart]->Fill(track->Pt());
+	}
+
       }
 
       // fill array of multiplicity for different classes of events
       // and in different eta ranges
-      for(Int_t ihist = 0; ihist < kNMultHist; ihist++){
+      for(Int_t ihist = 0; ihist < kNEtaHist; ihist++){
 	if(track->Eta() > -fEtaBins[ihist] && track->Eta() < fEtaBins[ihist]) {
 	  multiplicity[kHistINEL][ihist]++;
 	  if(!isSD)                  multiplicity[kHistNSD][ihist]++;
@@ -364,7 +406,7 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
 
 
   // Fill multiplicity histos
-  for(Int_t ihist = 0; ihist < kNMultHist; ihist++){
+  for(Int_t ihist = 0; ihist < kNEtaHist; ihist++){
     fHistMult[kHistINEL][ihist] ->Fill(multiplicity[kHistINEL][ihist]);
     if(!isSD)                  fHistMult[kHistNSD][ihist]->Fill(multiplicity[kHistNSD][ihist]);
     if(isSD)                   fHistMult[kHistSiD][ihist]->Fill(multiplicity[kHistSiD][ihist]);
@@ -409,9 +451,13 @@ void AliAnalysisTaskdNdetaMC::Finalize() {
 
   const char * labelType[] = {"INEL", "NSD", "SiD", "ND", "HL"};
   for(Int_t ihist = 0; ihist < kNHist; ihist++){
-    for(Int_t ihist2 = 0; ihist2 < kNMultHist; ihist2++){
+    for(Int_t ihist2 = 0; ihist2 < kNEtaHist; ihist2++){
       fHistMult[ihist][ihist2] = (TH1F*) fMyOut->FindObject(Form("fHistMult_%s_%1.1f",labelType[ihist],fEtaBins[ihist2]));      
       if (!fHistMult[ihist][ihist2]) cout << "Cannot get histo " << Form("fHistMult_%s_%1.1f",labelType[ihist],fEtaBins[ihist2]) << endl;
+    }
+    for(Int_t ipart = 0; ipart < kNPart; ipart++){
+      fHistPtID[ihist][ipart] = (TH1F*) fMyOut->FindObject(Form("fHistPtID_%s_%s",labelType[ihist],fPartNames[ipart]));      
+      if(!fHistPtID[ihist][ipart]) AliWarning(Form("Cannot get histo fHistPtID_%s_%s",labelType[ihist],fPartNames[ipart]));
     }
   }
 
@@ -439,9 +485,13 @@ void AliAnalysisTaskdNdetaMC::Finalize() {
     if (!fSkipNormalization) {
       fHistEta[ihist]->Scale(1./iev, "width");       
       fHistPt[ihist] ->Scale(1./iev, "width");       
-      for(Int_t ihist2 = 0; ihist2 < kNMultHist; ihist2++){
+      for(Int_t ihist2 = 0; ihist2 < kNEtaHist; ihist2++){
 	fHistMult[ihist][ihist2]->Scale(1./iev);
       }
+      for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	fHistPtID[ihist][ipart]->Scale(1./iev, "width");
+      }
+      
     }
 
 
