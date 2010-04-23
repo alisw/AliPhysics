@@ -53,6 +53,7 @@
 #include "AliEMCALRecParam.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliEMCALReconstructor.h"
 
 #include "AliEMCALTracker.h"
 
@@ -155,7 +156,7 @@ void AliEMCALTracker::InitParameters()
 	//
 	
   // Check if the instance of AliEMCALRecParam exists, 
-  const AliEMCALRecParam* recParam = new AliEMCALRecParam();
+  const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
 
   if(!recParam){
     AliFatal("Reconstruction parameters for EMCAL not set!");
@@ -170,7 +171,7 @@ void AliEMCALTracker::InitParameters()
   fCutAlphaMax =  recParam->GetTrkCutAlphaMax();
   fCutNITS = recParam->GetTrkCutNITS();
   fCutNTPC = recParam->GetTrkCutNTPC();
-
+	
 }
 //
 //------------------------------------------------------------------------------
