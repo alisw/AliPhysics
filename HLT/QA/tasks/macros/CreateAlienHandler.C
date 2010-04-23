@@ -23,7 +23,7 @@ AliAnalysisGrid *CreateAlienHandler(const char* mode = "full", const char* detec
   
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b");
+  plugin->SetROOTVersion("v5-26-00b-2");
   plugin->SetAliROOTVersion("v4-19-10-AN");
 
   // data alien directory
@@ -32,7 +32,7 @@ AliAnalysisGrid *CreateAlienHandler(const char* mode = "full", const char* detec
   // Set data search pattern
   plugin->SetDataPattern("*ESD.tag.root"); 
   
-  plugin->AddRunNumber("000116112"); 
+  plugin->AddRunNumber("000115322"); 
   //plugin->SetRunRange(xxx,yyy);
  
   // define working and output directories
