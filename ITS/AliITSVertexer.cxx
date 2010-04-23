@@ -85,8 +85,8 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
 
   if(!success){
     if(!cosmics) {     
-      AliWarning("Tracklets multiplicity not determined because the primary vertex was not found");
-      AliWarning("Just counting the number of cluster-fired chips on the SPD layers");
+      AliDebug(1,"Tracklets multiplicity not determined because the primary vertex was not found");
+      AliDebug(1,"Just counting the number of cluster-fired chips on the SPD layers");
     }
     if (!itsClusterTree) {
       AliError(" Invalid ITS cluster tree !\n");

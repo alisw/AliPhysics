@@ -320,8 +320,8 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input,
   delete [] binsSPDInit;
   delete [] binsSPD;
   
-  // AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
-  Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
+  AliDebug(1,Form("found clusters in ITS SPD: %d", nClustersSPD));
+  
  
     // Fill the FastOr fired map
   for (UInt_t eq=0; eq<20; eq++) {

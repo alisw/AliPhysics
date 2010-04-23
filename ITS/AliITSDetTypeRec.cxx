@@ -906,6 +906,13 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
     // here removing bits which have no associated clusters 
     RemoveFastOrFiredFromDead(GetFiredChipMap(treeR));  
   }
+
+  AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
+  Int_t nClu[6];
+  nClu[0]=rpcont->GetNClustersInLayer(1,treeR);
+  for(Int_t iLay=2; iLay<=6; iLay++) nClu[iLay-1]=rpcont->GetNClustersInLayerFast(iLay);
+  AliInfo(Form("Number of RecPoints in ITS Layers = %d %d %d %d %d %d",
+	       nClu[0],nClu[1],nClu[2],nClu[3],nClu[4],nClu[5]));
 }
 //______________________________________________________________________
 void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *opt){
@@ -958,10 +965,13 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   }
   delete emptyArray;
 
+  AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
+  Int_t nClu[6];
+  nClu[0]=rpcont->GetNClustersInLayer(1,treeR);
+  for(Int_t iLay=2; iLay<=6; iLay++) nClu[iLay-1]=rpcont->GetNClustersInLayerFast(iLay);
+  AliInfo(Form("Number of RecPoints in ITS Layers = %d %d %d %d %d %d, Total = %d",
+	       nClu[0],nClu[1],nClu[2],nClu[3],nClu[4],nClu[5],nClusters));
   delete[] clusters;
-  Info("DigitsToRecPoints", "total number of found recpoints in ITS: %d\n", 
-       nClusters);
-  
 }
 //______________________________________________________________________
 void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TClonesArray** clusters,Option_t *opt){

@@ -440,7 +440,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++){ 
    delete ddlAnodeFired[iHyb];
   }
-  Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD); 
+  AliDebug(1,Form("found clusters in ITS SDD: %d", nClustersSDD));
 }
 
 //______________________________________________________________________

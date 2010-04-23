@@ -731,7 +731,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     if(!next) break;
   }
   
-  Info("FindClustersSSD", "found clusters in ITS SSD: %d", nClustersSSD);
+  AliDebug(1,Form("found clusters in ITS SSD: %d", nClustersSSD));
 }
 
 void AliITSClusterFinderV2SSD::

@@ -64,11 +64,11 @@ void AliITSReconstructor::GetPidSettings(AliESDpid *ESDpid) {
   Int_t pidOpt = GetRecoParam()->GetPID();
 
   if(pidOpt==1){
-    AliInfo("ITS LandauFitPID option has been selected\n");
+    AliDebug(1,"ITS LandauFitPID option has been selected\n");
     ESDpid->SetITSPIDmethod(AliESDpid::kITSLikelihood);
   }
   else{
-    AliInfo("ITS default PID\n");
+    AliDebug(1,"ITS default PID\n");
     ESDpid->SetITSPIDmethod(AliESDpid::kITSTruncMean);
   }
 }
@@ -180,30 +180,30 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   AliITSVertexer *vptr;
   Int_t vtxOpt = GetRecoParam()->GetVertexer();
   if(vtxOpt==3){
-    AliInfo("AliITSVertexerIons has been selected");
+    AliDebug(1,"AliITSVertexerIons has been selected");
     vptr =  new AliITSVertexerIons();
   }
   else if(vtxOpt==4){
     Double_t smear[3]={GetRecoParam()->GetVertexerFastSmearX(),
 		       GetRecoParam()->GetVertexerFastSmearY(),
 		       GetRecoParam()->GetVertexerFastSmearZ()};
-    AliInfo("AliITSVertexerFast has been selected"); 
+    AliDebug(1,"AliITSVertexerFast has been selected"); 
     vptr = new AliITSVertexerFast(smear);
   }
   else if(vtxOpt==1){
-    AliInfo("AliITSVertexerZ has been selected");
+    AliDebug(1,"AliITSVertexerZ has been selected");
     vptr =  new AliITSVertexerZ();
   }
   else if(vtxOpt==2){
-    AliInfo("AliITSVertexerCosmics has been selected");
+    AliDebug(1,"AliITSVertexerCosmics has been selected");
     vptr = new AliITSVertexerCosmics();
   }
   else if(vtxOpt==5){ 
-    AliInfo("Vertex is fixed in the position of the TDI\n");
+    AliDebug(1,"Vertex is fixed in the position of the TDI\n");
     vptr = new AliITSVertexerFixed("TDI");
   }
   else if(vtxOpt==6){ 
-    AliInfo("Vertex is fixed in the position of the TED\n");
+    AliDebug(1,"Vertex is fixed in the position of the TED\n");
     vptr = new AliITSVertexerFixed("TED");
   }
   else {
@@ -222,7 +222,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
     vtxr->SetDCACut(dcacut);
     Int_t pileupAlgo=GetRecoParam()->GetSPDVertexerPileupAlgo();
     vtxr->SetPileupAlgo(pileupAlgo);
-    AliInfo(Form("AliITSVertexer3D with pileup algo %d has been selected",pileupAlgo));
+    AliDebug(1,Form("AliITSVertexer3D with pileup algo %d has been selected",pileupAlgo));
     vptr = vtxr;
   }
   vptr->SetDetTypeRec(fDetTypeRec);
