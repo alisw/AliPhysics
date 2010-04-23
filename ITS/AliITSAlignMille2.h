@@ -189,6 +189,7 @@ class AliITSAlignMille2: public TObject
   Double_t  GetTDriftSDD()                  const;
   Double_t  GetVDriftSDD()                  const;
   Double_t  GetDriftSpeed(Int_t id)         const {return fDriftSpeed[id];}
+  Double_t  GetDriftSpeed0(Int_t id)        const {return fDriftSpeed0[id];}
   Double_t  GetDriftTime0(Int_t id)         const {return fDriftTime0[id];}
 
   //
@@ -445,7 +446,8 @@ class AliITSAlignMille2: public TObject
   Double_t      fTrackWeight;                      //weight given by the user to current track
   Double_t      fWeightPt;                         //weight track equations by pT in this power
   Bool_t        fIsSDDVDriftMult;                  //use multiplicative correction for SDD vdrift
-  Double_t      fDriftSpeed[50];                   //temporary array for drift times of SDD alitrackpoints
+  Double_t      fDriftSpeed[50];                   //temporary array for corrected drift speed of SDD alitrackpoints
+  Double_t      fDriftSpeed0[50];                  //temporary array for original  drift speed of SDD alitrackpoints
   Double_t      fDriftTime0[50];                   //temporary array for drift time 0's used for SDD alitrackpoints
   Double_t      fExtClusterPar[9];                 //array to store the parameters of the externally imposed cluster
   AliTrackPoint fDiamond;                          //optional constraint on the vertex

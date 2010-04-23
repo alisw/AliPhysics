@@ -4226,7 +4226,7 @@ AliITSresponseSDD* AliITSAlignMille2::CreateSDDResponse()
   //
   // if there was a precalibration provided, copy it to new arrray
   AliITSresponseSDD *precal = GetSDDPrecalResp();
-  if (!precal)       precal = GetSDDInitResp();
+  if (!precal && fIniVDriftSDD)       precal = GetSDDInitResp();    // InitResp is used only when IniVDrift is provided
   Bool_t isPreCalMult = precal&&precal->IsVDCorrMult() ? kTRUE : kFALSE; 
   AliITSresponseSDD *calibSDD = new AliITSresponseSDD();
   calibSDD->SetVDCorrMult(fIsSDDVDriftMult);
@@ -4238,8 +4238,8 @@ AliITSresponseSDD* AliITSAlignMille2::CreateSDDResponse()
     calibSDD->SetChargevsTime(precal->GetChargevsTime());
     for (int ind=kSDDoffsID;ind<kSDDoffsID+kNSDDmod;ind++) {
       calibSDD->SetModuleTimeZero(ind, precal->GetTimeZero(ind));
-      calibSDD->SetDeltaVDrift(ind, precal->GetDeltaVDrift(ind),kFALSE);
-      calibSDD->SetDeltaVDrift(ind, precal->GetDeltaVDrift(ind),kTRUE);
+      calibSDD->SetDeltaVDrift(ind, precal->GetDeltaVDrift(ind,kFALSE),kFALSE); // left
+      calibSDD->SetDeltaVDrift(ind, precal->GetDeltaVDrift(ind,kTRUE ),kTRUE);  // right
       calibSDD->SetADCtokeV(ind,precal->GetADCtokeV(ind));
     }
   }
@@ -4416,7 +4416,7 @@ void AliITSAlignMille2::ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, 
   if (tdif<0) tdif = 1;
   //
   // VDrift extraction
-  double vdrift = 0;
+  double vdrift=0,vdrift0=0;
   Bool_t sddSide = kFALSE;
   int sID0 = 2*(sID-kSDDoffsID);
   double zanode = -999;
@@ -4468,6 +4468,7 @@ void AliITSAlignMille2::ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, 
   }
   //
   if (vdrift<0) vdrift = 0;
+  vdrift0 = vdrift;
   // at this point we have vdrift and t0 used to create the original point.
   // see if precalibration was provided
   if (fPreRespSDD) {
@@ -4475,6 +4476,13 @@ void AliITSAlignMille2::ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, 
     double corr = fPreRespSDD->GetDeltaVDrift(sID, sddSide);
     if (fPreRespSDD->IsVDCorrMult()) vdrift *= 1+corr; // right side (xloc<0) may have different correction
     else                             vdrift += corr*1e-4;
+    //
+    // if IniRespSDD was used, it should be subtracted back, since it is accounted in the PreResp
+    if (fIniVDriftSDD&&fIniRespSDD) {
+      double corr1 = fIniRespSDD->GetDeltaVDrift(sID, sddSide);
+      if (fIniRespSDD->IsVDCorrMult()) vdrift *= (1-corr1);
+      else vdrift -= corr1*1e-4;
+    }
     tdif    = pnt->GetDriftTime() - t0Upd;
     // correct Xlocal
     fMeasLoc[0] = fSegmentationSDD->Dx()*1e-4 - vdrift*tdif;
@@ -4482,7 +4490,8 @@ void AliITSAlignMille2::ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, 
     fDriftTime0[pntID] =  t0Upd;
   }
   // TEMPORARY CORRECTION (if provided) --------------<<<
-  fDriftSpeed[pntID] = sddSide ? -vdrift : vdrift;
+  fDriftSpeed[pntID]  = sddSide ? -vdrift  : vdrift;
+  fDriftSpeed0[pntID] = sddSide ? -vdrift0 : vdrift0;
   //
   //  printf("#%d: t:%+e x:%+e v:%+e: side:%d\n",pntID,fDriftTime0[pntID],fMeasLoc[0],fDriftSpeed[pntID],sddSide);
 }
