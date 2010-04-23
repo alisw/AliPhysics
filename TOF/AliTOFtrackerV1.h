@@ -8,7 +8,7 @@
 
 //----------------------------------------------------------------------//
 //                                                                      //
-// AliTOFtrackerV1 Class                                                  //
+// AliTOFtrackerV1 Class                                                //
 // Task: Perform association of the ESD tracks to TOF Clusters          //
 // and Update ESD track with associated TOF Cluster parameters          //
 //                                                                      //
@@ -34,8 +34,6 @@ class AliESDpid;
 
 class AliTOFtrackerV1 : public AliTracker {
 
-enum {kMaxCluster=77777}; //maximal number of the TOF clusters
-
 public:
 
  AliTOFtrackerV1(); 
@@ -56,6 +54,8 @@ public:
  void FillClusterArray(TObjArray* arr) const;
 
 private:
+
+ enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 
  AliTOFtrackerV1(const AliTOFtrackerV1 &t); //Copy Ctor 
  AliTOFtrackerV1& operator=(const AliTOFtrackerV1 &source); // ass. op.

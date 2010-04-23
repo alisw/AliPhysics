@@ -20,6 +20,9 @@
 
 #include "AliTracker.h"
 
+#include "TObject.h"
+
+
 class TClonesArray;
 class TObjArray;
 
@@ -33,11 +36,56 @@ class AliTOFcluster;
 class AliTOFRecoParam;
 class AliTOFGeometry;
 
+class AliTOFtrackPoint : public TObject {
+
+ public:
+
+  AliTOFtrackPoint() :
+    fIndex(0),fDistance(0),fDistanceZ(0),
+    fDistanceY(0),fPropRadius(0),fLength(0) { };
+  AliTOFtrackPoint(Int_t index,Float_t dist,Float_t distZ,
+		   Float_t distY,Float_t radius,Float_t length) :
+    TObject(),
+    fIndex(index),fDistance(dist),fDistanceZ(distZ),
+    fDistanceY(distY),fPropRadius(radius),fLength(length) { };
+  AliTOFtrackPoint(const AliTOFtrackPoint & source) :
+    TObject(source),
+    fIndex(source.fIndex),
+    fDistance(source.fDistance),
+    fDistanceZ(source.fDistanceZ),
+    fDistanceY(source.fDistanceY),
+    fPropRadius(source.fPropRadius),
+    fLength(source.fLength) { };
+  AliTOFtrackPoint & operator=(const AliTOFtrackPoint & source)
+    { if (this == &source) return *this;
+      TObject::operator=(source);
+      fDistance=source.fDistance;fDistanceZ=source.fDistanceZ;fDistanceY=source.fDistanceY;
+      fPropRadius=source.fPropRadius;fLength=source.fLength;
+      return *this; };
+
+  Int_t Index()       const {return fIndex;} // cluster index
+  Float_t Distance()  const {return fDistance;} // distance
+  Float_t DistanceZ() const {return fDistanceZ;} // distance, Z component
+  Float_t DistanceY() const {return fDistanceY;} // distance, Y  component
+  Float_t PropRadius() const {return fPropRadius;} // propagation radius at TOF
+  Float_t Length() const {return fLength;} // reconstructed track length at TOF
+
+ private:
+
+  Int_t fIndex; // cluster index 
+  Float_t fDistance; // track-cluster distance
+  Float_t fDistanceZ; //  Z component of track-cluster distance
+  Float_t fDistanceY; //  Y component of track-cluster distance
+  Float_t fPropRadius; // track propagation radius
+  Float_t fLength; // receonstructed track length
+
+  //ClassDef(AliTOFtrackPoint, 1) // TOF matchable cluster
+
+}; 
+
 class AliTOFtracker : public AliTracker {
 
-enum {kMaxCluster=77777}; //maximal number of the TOF clusters
-
-public:
+ public:
 
  AliTOFtracker(); 
 
@@ -57,6 +105,8 @@ public:
  void FillClusterArray(TObjArray* arr) const;
 
 private:
+
+ enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 
  AliTOFtracker(const AliTOFtracker &t); //Copy Ctor 
  AliTOFtracker& operator=(const AliTOFtracker &source); // ass. op.
@@ -80,7 +130,9 @@ private:
  
  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
  TObjArray* fSeeds;  //! pointer to the TObjArray with ESD tracks
- //Digits/Reco QA histos
+                     //Digits/Reco QA histos
+ TObjArray* fTOFtrackPoints; //! pointer to TObjArray of matchable TOF
+			     //track points
 
  TH2F * fHDigClusMap; //Digits QA, Cluster Map 
  TH1F * fHDigNClus;   //Digits QA, # of clusters on TOF/event
@@ -102,7 +154,7 @@ private:
  Float_t fExpTimeKa; // exp time, Kaons
  Float_t fExpTimePr; // exp time, Protons
 
- ClassDef(AliTOFtracker, 5) // TOF tracker 
+ ClassDef(AliTOFtracker, 6) // TOF tracker 
 };
 
 #endif

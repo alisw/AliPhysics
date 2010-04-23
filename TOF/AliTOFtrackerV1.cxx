@@ -67,7 +67,7 @@ AliTOFtrackerV1::AliTOFtrackerV1():
   fnunmatch(0),
   fnmatch(0),
   fTracks(new TClonesArray("AliTOFtrack")),
-  fSeeds(new TObjArray(15000)),
+  fSeeds(new TObjArray(100)),
   fHDigClusMap(0x0),
   fHDigNClus(0x0),
   fHDigClusTime(0x0),
@@ -158,10 +158,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
   Int_t ntrk=event->GetNumberOfTracks();
   fNseeds = ntrk;
 
-
   //Load ESD tracks into a local Array of ESD Seeds
-  if (!fSeeds)
-    fSeeds = new TObjArray(fNseeds);
   for (Int_t i=0; i<fNseeds; i++)
     fSeeds->AddLast(event->GetTrack(i));
 
@@ -291,7 +288,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
     }
   }
 
-  fSeeds->Clear(); delete fSeeds; fSeeds=0;
+  fSeeds->Clear();
   fTracks->Delete();
   return 0;
   
@@ -390,7 +387,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
     //if ( t->GetTOFsignal()>0. ) continue;
     if ( (t->GetStatus()&AliESDtrack::kTOFout)!=0 ) continue;
-    AliTOFtrack *trackTOFin =new AliTOFtrack(*track);
+    AliTOFtrack *trackTOFin = new AliTOFtrack(*track);
      
     // Determine a window around the track
     Double_t x,par[5]; trackTOFin->GetExternalParameters(x,par);
@@ -403,16 +400,16 @@ void AliTOFtrackerV1::MatchTracks( ){
     }
 
     Double_t z    = par[1];   
-    Double_t dz   =  scaleFact*3.*TMath::Sqrt(TMath::Abs(cov[2])+dZ*dZ/12.);
-    Double_t dphi =  scaleFact*3.*TMath::Sqrt(TMath::Abs(cov[0])+dY*dY/12.)/sensRadius; 
+    Double_t dz   = scaleFact*3.*TMath::Sqrt(TMath::Abs(cov[2])+dZ*dZ/12.);
+    Double_t dphi = scaleFact*3.*TMath::Sqrt(TMath::Abs(cov[0])+dY*dY/12.)/sensRadius; 
 
     Double_t phi=TMath::ATan2(par[0],x) + trackTOFin->GetAlpha();
     if (phi<-TMath::Pi())phi+=2*TMath::Pi();
     if (phi>=TMath::Pi())phi-=2*TMath::Pi();
 
     //upper limit on window's size.
-    if(dz> dzMax) dz=dzMax;
-    if(dphi*sensRadius> dyMax) dphi=dyMax/sensRadius;
+    if (dz> dzMax) dz=dzMax;
+    if (dphi*sensRadius> dyMax) dphi=dyMax/sensRadius;
 
     // find the clusters inside the selected window 
     Int_t nc=0;
@@ -425,9 +422,9 @@ void AliTOFtrackerV1::MatchTracks( ){
  	AliWarning("No more matchable clusters can be stored! Please, increase the corresponding vectors size.");
 	break; /* R+ fix (buffer overflow protection) */
       }
-      if(c->GetZ() > z+dz) break;
-      if(c->IsUsed()) continue;      
-      if(!c->GetStatus()) {
+      if (c->GetZ() > z+dz) break;
+      if (c->IsUsed()) continue;      
+      if (!c->GetStatus()) {
 	AliDebug(1,"Cluster in channel declared bad!");
 	continue; // skip bad channels as declared in OCDB  
       }

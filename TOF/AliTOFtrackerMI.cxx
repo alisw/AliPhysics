@@ -65,7 +65,7 @@ AliTOFtrackerMI::AliTOFtrackerMI():
   fDy(0), 
   fDz(0), 
   fTracks(new TClonesArray("AliTOFtrack")),
-  fSeeds(new TObjArray(15000)),
+  fSeeds(new TObjArray(100)),
   fDebugStreamer(0x0)
  { 
   //AliTOFtrackerMI main Ctor
@@ -139,8 +139,6 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
   fNseeds = ntrk;
 
   //Load ESD tracks into a local Array of ESD Seeds
-  if (!fSeeds)
-    fSeeds = new TObjArray(fNseeds);
   for (Int_t i=0; i<fNseeds; i++)
     fSeeds->AddLast(event->GetTrack(i));
 
@@ -209,7 +207,7 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESDEvent * const event) {
 
   //Make TOF PID
 
-  fSeeds->Clear(); delete fSeeds; fSeeds=0;
+  fSeeds->Clear();
   fTracks->Delete();
   return 0;
   
@@ -283,8 +281,6 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   };
   
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
-
-  //AliTOFcalib *calib = new AliTOFcalib(); // AdC
 
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];

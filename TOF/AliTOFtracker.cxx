@@ -56,6 +56,7 @@
 extern TGeoManager *gGeoManager;
 extern TROOT *gROOT;
 
+
 ClassImp(AliTOFtracker)
 
 //_____________________________________________________________________________
@@ -70,7 +71,8 @@ AliTOFtracker::AliTOFtracker():
   fnunmatch(0),
   fnmatch(0),
   fTracks(new TClonesArray("AliTOFtrack")),
-  fSeeds(new TObjArray(15000)),
+  fSeeds(new TObjArray(100)),
+  fTOFtrackPoints(new TObjArray(10)),
   fHDigClusMap(0x0),
   fHDigNClus(0x0),
   fHDigClusTime(0x0),
@@ -130,6 +132,11 @@ AliTOFtracker::~AliTOFtracker() {
     delete fSeeds;
     fSeeds=0x0;
   }
+  if (fTOFtrackPoints){
+    fTOFtrackPoints->Delete();
+    delete fTOFtrackPoints;
+    fTOFtrackPoints=0x0;
+  }
 
 }
 //_____________________________________________________________________________
@@ -174,8 +181,6 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
 
 
   //Load ESD tracks into a local Array of ESD Seeds
-  if (!fSeeds)
-    fSeeds = new TObjArray(fNseeds);
   for (Int_t i=0; i<fNseeds; i++)
     fSeeds->AddLast(event->GetTrack(i));
 
@@ -311,7 +316,7 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
   // Now done in AliESDpid
   // fPid->MakePID(event,timeZero);
 
-  fSeeds->Clear(); delete fSeeds; fSeeds=0;
+  fSeeds->Clear();
   fTracks->Delete();
   return 0;
   
@@ -421,35 +426,21 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   Int_t * clind = new Int_t[fN];
   
   // Some init
-  const Int_t kNfoundMax = 10000; // related to nSteps value
-  Int_t         index[kNfoundMax];
-  Float_t        dist[kNfoundMax];
-  Float_t       distZ[kNfoundMax];
-  Float_t       distY[kNfoundMax]; // delta(rhoXphi) // AdC
-  Float_t       cxpos[kNfoundMax];
-  Float_t       crecL[kNfoundMax];
   const Int_t kNclusterMax = 1000; // related to fN value
-  TGeoHMatrix   global[kNclusterMax];
-     
+  TGeoHMatrix global[kNclusterMax];
+
   //The matching loop
   for (Int_t iseed=0; iseed<fNseedsTOF; iseed++) {
 
-    for (Int_t ii=0; ii<kNfoundMax; ii++) {
-      index[ii] = -1;
-      dist[ii] = 9999.;
-      distZ[ii] = 9999.;
-      distY[ii] = 9999.;
-      cxpos[ii] = 9999.;
-      crecL[ii] = 0.;
-    }
+    fTOFtrackPoints->Clear();
+
     for (Int_t ii=0; ii<kNclusterMax; ii++)
       global[ii] = 0x0;
-
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(iseed);
     AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
     //if ( t->GetTOFsignal()>0. ) continue;
     if ( (t->GetStatus()&AliESDtrack::kTOFout)!=0 ) continue;
-    AliTOFtrack *trackTOFin =new AliTOFtrack(*track);
+    AliTOFtrack *trackTOFin = new AliTOFtrack(*track);
 
     // Determine a window around the track
     Double_t x,par[5]; 
@@ -476,15 +467,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Double_t z=par[1];   
 
     //upper limit on window's size.
+    if (dz> dzMax) dz=dzMax;
+    if (dphi*sensRadius> dyMax) dphi=dyMax/sensRadius;
 
-    if(dz> dzMax) dz=dzMax;
-    if(dphi*sensRadius> dyMax) dphi=dyMax/sensRadius;
-
-
-    Int_t nc=0;
 
     // find the clusters in the window of the track
-
+    Int_t nc=0;
     for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {
 
       if (nc>=kNclusterMax) {
@@ -495,7 +483,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       AliTOFcluster *c=fClusters[k];
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
-
       if (!c->GetStatus()) {
 	AliDebug(1,"Cluster in channel declared bad!");
 	continue; // skip bad channels as declared in OCDB
@@ -569,11 +556,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Bool_t isInside = kFALSE;
     for (Int_t istep=0; istep<nStepsDone; istep++) {
 
-      if (nfound>=kNfoundMax) {
- 	AliWarning("No more track positions can be stored! Please, increase the corresponding vectors size.");
- 	break;
-      }
-
       Float_t ctrackPos[3];	
       ctrackPos[0] = trackPos[0][istep];
       ctrackPos[1] = trackPos[1][istep];
@@ -597,30 +579,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	}
 	if (accept) {
 
-	  dist[nfound] = TMath::Sqrt(dist3d[0]*dist3d[0] +
-				     dist3d[1]*dist3d[1] +
-				     dist3d[2]*dist3d[2]);
-	  AliDebug(2,Form(" dist3dLoc[0] = %f, dist3dLoc[1] = %f, dist3dLoc[2] = %f ",
-			  dist3d[0],dist3d[1],dist3d[2]));
-	  distZ[nfound] = dist3d[2]; // Z distance in the RF of the
-				     // hit pad closest to the
-				     // reconstructed track
-	  distY[nfound] = dist3d[0]; // X distance in the RF of the
-				     // hit pad closest to the
-				     // reconstructed track
-				     // It corresponds to Y coordinate
-	                             // in tracking RF
+	  fTOFtrackPoints->AddLast(new AliTOFtrackPoint(clind[i],
+							TMath::Sqrt(dist3d[0]*dist3d[0] + dist3d[1]*dist3d[1] + dist3d[2]*dist3d[2]),
+							dist3d[2], dist3d[0],
+							AliTOFGeometry::RinTOF()+istep*0.1,trackPos[3][istep]));
 
-
-	  AliDebug(2,Form("   dist3dLoc[0] = %f --- distY[%d] = %f",
-			  dist3d[0],nfound,distY[nfound]));
-	  AliDebug(2,Form("   dist3dLoc[2] = %f --- distZ[%d] = %f",
-			  dist3d[2],nfound,distZ[nfound]));
-
-
-	  crecL[nfound] = trackPos[3][istep];
-	  index[nfound] = clind[i]; // store cluster id 	    
-	  cxpos[nfound] = AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
+	  AliDebug(2,Form(" dist3dLoc[0] = %f, dist3dLoc[1] = %f, dist3dLoc[2] = %f ",dist3d[0],dist3d[1],dist3d[2]));
 	  nfound++;
 	  if(accept &&!mLastStep)break;
 	}//end if accept
@@ -649,30 +613,28 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t  mindistZ=0.;
     Float_t  mindistY=0.;
     for (Int_t iclus= 0; iclus<nfound;iclus++){
-      if (dist[iclus]< mindist){
-      	mindist = dist[iclus];
-      	mindistZ = distZ[iclus]; // Z distance in the RF of the hit
-				 // pad closest to the reconstructed
-				 // track
-      	mindistY = distY[iclus]; // Y distance in the RF of the hit
-				 // pad closest to the reconstructed
-				 // track
-      	xpos = cxpos[iclus];
-        idclus =index[iclus]; 
-        recL=crecL[iclus]+corrLen*0.5;
+      AliTOFtrackPoint *matchableTOFcluster = (AliTOFtrackPoint*)fTOFtrackPoints->At(iclus);
+      if (matchableTOFcluster->Distance()<mindist) {
+	mindist = matchableTOFcluster->Distance();
+	mindistZ = matchableTOFcluster->DistanceZ();  // Z distance in the
+						      // RF of the hit pad
+						      // closest to the
+						      // reconstructed
+						      // track
+	mindistY = matchableTOFcluster->DistanceY(); // Y distance in the
+						     // RF of the hit pad
+						     // closest to the
+						     // reconstructed
+						     // track
+      	xpos = matchableTOFcluster->PropRadius();
+        idclus = matchableTOFcluster->Index();
+        recL = matchableTOFcluster->Length() + corrLen*0.5;
       }
-    }
+    } // loop on found TOF track points
 
 
     AliTOFcluster *c=fClusters[idclus];
-    /*
-    Float_t tiltangle = AliTOFGeometry::GetAngles(c->GetDetInd(1),c->GetDetInd(2))*TMath::DegToRad();
-    Float_t localCheck=-mindistZ;
-    localCheck/=TMath::Cos(tiltangle); // Z (tracking/ALICE RF) component of
-				       // the distance between the
-				       // reconstructed track and the
-				       // TOF closest cluster
-    */
+
     AliDebug(2, Form("%7d     %7d     %10d     %10d  %10d  %10d      %7d",
 		     iseed,
 		     fnmatch-1,
@@ -684,14 +646,14 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     // Track length correction for matching Step 2 
 
-    if(mLastStep){
-      Float_t rc=TMath::Sqrt(c->GetR()*c->GetR() + c->GetZ()*c->GetZ());
-      Float_t rt=TMath::Sqrt(trackPos[0][70]*trackPos[0][70]
-			     +trackPos[1][70]*trackPos[1][70]
-			     +trackPos[2][70]*trackPos[2][70]);
-      Float_t dlt=rc-rt;      
+    if (mLastStep) {
+      Float_t rc = TMath::Sqrt(c->GetR()*c->GetR() + c->GetZ()*c->GetZ());
+      Float_t rt = TMath::Sqrt(trackPos[0][70]*trackPos[0][70]
+			       +trackPos[1][70]*trackPos[1][70]
+			       +trackPos[2][70]*trackPos[2][70]);
+      Float_t dlt=rc-rt;
       recL=trackPos[3][70]+dlt;
-    }    
+    }
 
     if (
 	(c->GetLabel(0)==TMath::Abs(trackTOFin->GetLabel()))
@@ -798,6 +760,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     }
     delete trackTOFout;
   }
+
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   delete [] clind;
  

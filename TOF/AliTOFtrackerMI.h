@@ -30,8 +30,6 @@ class AliTOFtrack;
 
 class AliTOFtrackerMI : public AliTracker {
 
-enum {kMaxCluster=77777}; //maximal number of the TOF clusters
-
 public:
 
  AliTOFtrackerMI(); 
@@ -51,6 +49,8 @@ public:
  void FillClusterArray(TObjArray* arr) const;
 
 private:
+
+ enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 
  AliTOFtrackerMI(const AliTOFtrackerMI &t); //Copy Ctor 
  AliTOFtrackerMI& operator=(const AliTOFtrackerMI &source); // ass. op.
