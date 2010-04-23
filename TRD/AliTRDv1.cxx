@@ -44,7 +44,7 @@ ClassImp(AliTRDv1)
 //_____________________________________________________________________________
 AliTRDv1::AliTRDv1()
   :AliTRD()
-  ,fTRon(kFALSE)
+  ,fTRon(kTRUE)
   ,fTR(NULL)
   ,fStepSize(0)
   ,fWion(0)
@@ -475,7 +475,8 @@ void AliTRDv1::StepManager()
 
     // Create the hits from TR photons if electron/positron is
     // entering the drift volume
-    if ((fTR) && 
+    if ((fTR)   &&
+        (fTRon) &&
         (TMath::Abs(gMC->TrackPid()) == kPdgElectron)) {
       CreateTRhit(det);
     }
