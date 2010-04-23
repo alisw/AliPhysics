@@ -1224,9 +1224,11 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       ((TH1F*)(fOutputallPointRec->FindObject(named0AllpointzRec)))->Fill(10000.*dzRec[1]);
       ((TH1F*)(fOutputallPointSkip->FindObject(named0AllpointrphiSkip)))->Fill(10000.*dzRecSkip[0]);
       ((TH1F*)(fOutputallPointSkip->FindObject(named0AllpointzSkip)))->Fill(10000.*dzRecSkip[1]);
-      ((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointrphiTrue)))->Fill(10000.*dzTrue[0]);
-      ((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointzTrue)))->Fill(10000.*dzTrue[1]);
-      
+      if(fReadMC) {
+	((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointrphiTrue)))->Fill(10000.*dzTrue[0]);
+	((TH1F*)(fOutputallPointTrue->FindObject(named0AllpointzTrue)))->Fill(10000.*dzTrue[1]);
+      }
+
       // pulls
       char *named0PullAllpointrphiRec = Form("d0pullAllpointrphiRec_%d", bin);
       char *named0PullAllpointrphiSkip = Form("d0pullAllpointrphiSkip_%d", bin);
@@ -1238,9 +1240,10 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       ((TH1F*)(fOutputpullAllpointRec->FindObject(named0PullAllpointzRec)))->Fill(dzRec[1]/TMath::Sqrt(covdzRec[2]));
       ((TH1F*)(fOutputpullAllpointSkip->FindObject(named0PullAllpointrphiSkip)))->Fill(dzRecSkip[0]/TMath::Sqrt(covdzRecSkip[0]));
       ((TH1F*)(fOutputpullAllpointSkip->FindObject(named0PullAllpointzSkip)))->Fill(dzRecSkip[1]/TMath::Sqrt(covdzRecSkip[2]));
-      ((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointrphiTrue)))->Fill(dzTrue[0]/TMath::Sqrt(covdzTrue[0]));
-      ((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
-      
+      if(fReadMC) {
+	((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointrphiTrue)))->Fill(dzTrue[0]/TMath::Sqrt(covdzTrue[0]));
+	((TH1F*)(fOutputpullAllpointTrue->FindObject(named0PullAllpointzTrue)))->Fill(dzTrue[1]/TMath::Sqrt(covdzTrue[2]));
+      }
       //postive and negative track
       Short_t charge=esdtrack->Charge();
       if(charge==1 ) {
@@ -1254,8 +1257,10 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputpostvTracRec->FindObject(named0PostvtraczRec)))->Fill(10000.*dzRec[1]);
 	((TH1F*)(fOutputpostvTracSkip->FindObject(named0PostvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
 	((TH1F*)(fOutputpostvTracSkip->FindObject(named0PostvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
-	((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
-	((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtraczTrue)))->Fill(10000.*dzTrue[1]);
+	if(fReadMC) {
+	  ((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
+	  ((TH1F*)(fOutputpostvTracTrue->FindObject(named0PostvtraczTrue)))->Fill(10000.*dzTrue[1]);
+	}
       }
       
       if(charge==-1 ) {
@@ -1269,9 +1274,11 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	((TH1F*)(fOutputnegtvTracRec->FindObject(named0NegtvtraczRec)))->Fill(10000.*dzRec[1]);
 	((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtracrphiSkip)))->Fill(10000.*dzRecSkip[0]);
 	((TH1F*)(fOutputnegtvTracSkip->FindObject(named0NegtvtraczSkip)))->Fill(10000.*dzRecSkip[1]);
-	((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
-	((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtraczTrue)))->Fill(10000.*dzTrue[1]);	
-      }    
+	if(fReadMC) {
+	  ((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtracrphiTrue)))->Fill(10000.*dzTrue[0]);
+	  ((TH1F*)(fOutputnegtvTracTrue->FindObject(named0NegtvtraczTrue)))->Fill(10000.*dzTrue[1]);	
+	}    
+      }
       
       // SinTheta 
       Double_t theta=esdtrack->Theta(); 
@@ -1391,12 +1398,12 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       }  
     }
     
-    delete vtxESDSkip; vtxESDSkip = 0x0;
+    if(vtxESDSkip) {delete vtxESDSkip; vtxESDSkip = 0x0;}
   }  // end loop of tracks
   
-  delete diamond; diamond=NULL;
-  delete vtxESDRec; vtxESDRec = 0x0;
-  delete vtxESDTrue;vtxESDTrue = 0x0;
+  if(diamond) {delete diamond; diamond=NULL;}
+  if(vtxESDRec) {delete vtxESDRec; vtxESDRec = 0x0;}
+  if(vtxESDTrue) {delete vtxESDTrue;vtxESDTrue = 0x0;}
   fNentries->Fill(1);
   PostData(1, fOutputitspureSARec);
   PostData(2, fOutputitspureSASkip);
