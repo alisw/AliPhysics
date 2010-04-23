@@ -156,6 +156,13 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
 // Constructor
 //
 
+  TString validity = (TString)fTOFcalib->GetOfflineValidity();
+  if (validity.CompareTo("valid")==0) {
+    AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
+  } else {
+    AliInfo(Form(" validity = %s - Using online calibration parameters",validity.Data()));
+  }
+
 }
 
 //______________________________________________________________________________
@@ -176,6 +183,13 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
 //
 // Constructor
 //
+
+  TString validity = (TString)fTOFcalib->GetOfflineValidity();
+  if (validity.CompareTo("valid")==0) {
+    AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
+  } else {
+    AliInfo(Form(" validity = %s - Using online calibration parameters",validity.Data()));
+  }
 
 }
 
@@ -1051,10 +1065,10 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   Int_t calibration = -1;
   if (validity.CompareTo("valid")==0) {
-    AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
+    //AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
     calibration = 1;
   } else {
-    AliInfo(Form(" validity = %s - Using online calibration parameters",validity.Data()));
+    //AliInfo(Form(" validity = %s - Using online calibration parameters",validity.Data()));
     calibration = 0 ;
   }
 
