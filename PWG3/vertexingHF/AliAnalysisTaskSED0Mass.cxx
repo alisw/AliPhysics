@@ -745,7 +745,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODRecoDecayHF2Prong *part, TClone
 	AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
 	if(!prong) cout<<"No daughter found";
 	else{
-	  if(prong->Charge()==1) {fTotPosPairs[4]++;} else {fTotNegPairs[4]++;}
+	  if(prong->Charge()==1) {fTotPosPairs[ptbin]++;} else {fTotNegPairs[ptbin]++;}
 	}
 	
 	//normalise pt distr to half afterwards
