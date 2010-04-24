@@ -73,7 +73,7 @@ Int_t       iPWG4JetSpectrum   = 0;      // jet spectrum analysis
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
 Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
 Int_t       iPWG4TmpSourceFrag = 0;      // Bastian's Fragmentation function not in svn
-Int_t       iPWG4TmpSourceChem = 0;      // Jet chemistry not in svn
+Int_t       iPWG4JetChem       = 0;      // Jet chemistry 
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
@@ -198,7 +198,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PWG1 QA sym       %d\n", iPWG1QASym);
    printf(":: use PWG4 Source Sara  %d\n",iPWG4TmpSourceSara);
    printf(":: use PWG4 Source BB    %d\n",iPWG4TmpSourceFrag);
-   printf(":: use PWG4 Source OB    %d\n",iPWG4TmpSourceChem);
+   printf(":: use PWG4 Jet Chem     %d\n",iPWG4JetChem);
    printf(":: use PWG4 Jet tasks    %d\n",iPWG4JetTasks);
    printf(":: use PWG4 Jet Services %d\n",iPWG4JetServices);     
    printf(":: use PWG4 Jet Spectrum %d\n",iPWG4JetSpectrum);
@@ -373,9 +373,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
 
-   if(iPWG4TmpSourceChem){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTask_obusch_jets.C");
-     AliAnalysisTask *taskChem = AddTask_obusch_jets();
+   if(iPWG4JetChem){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetChem.C");
+     AliAnalysisTask *taskChem = AddTaskJetChem();
      if (!taskChem) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetChem cannot run for this train conditions - EXCLUDED");
    }
 
@@ -389,6 +389,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      else taskjetServ->SetRunRange(104000,125000);
      if(!kIsMC) taskjetServ->SetRealData(kTRUE);
      if(!iPhysicsSelection)taskjetServ->SetUsePhysicsSelection(kFALSE);
+     taskjetServ->SetDebugLevel(0);
    }
 
    if(iPWG4JetSpectrum){
@@ -752,7 +753,7 @@ void CheckModuleFlags(const char *mode) {
 	iPWG4JetSpectrum = iPWG4UE = iPWG4ThreeJets = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4ThreeJets;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4ThreeJets||iPWG4JetChem;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
    if (iESDfilter) {iAODhandler=1;}
@@ -959,11 +960,13 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
      if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskFragFunc.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
-   if(iPWG4TmpSourceChem){
+
+   /*
+   if(iPWG4JetChem){
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
      if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskJetChem.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
-
+   */
 
    if (iPWG4PartCorrLibs) {   
       if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||

@@ -249,8 +249,8 @@ fhPythiaProcessKch(0x0),
 fhPythiaProcessp(0x0),
 fhPythiaProcesspbar(0x0),
 fh1Xsec(0x0),
-fh1Trials(0x0)
-{
+fh1Trials(0x0),
+fpdgdb(0x0){
   // Default constructor 
 
   fAreaReg = 2*TMath::Pi()/6.0 * 2*fTrackEtaCut;
@@ -676,13 +676,23 @@ Double_t AliAnalysisTaskJetChem::GetJetRadius(const AliAODJet* jet, const Double
 
   // calc jet radius containing fraction energyFrac of full jet pt  
   
+  const Int_t kArraySize = 1000;
+  const Int_t kInitVal   = -999;
+
   Int_t nTracks = jet->GetRefTracks()->GetEntriesFast();
 
-  Double_t deltaR[nTracks];
-  Double_t pt[nTracks];
-  Int_t index[nTracks];
-  for(int i=0; i<nTracks; i++) index[i] = -999;
+  if(nTracks>kArraySize){
+    AliError(Form("nTracks in jet %d exceeds max array size",nTracks));
+    return -1;
+  }
+
+
+  Double_t deltaR[kArraySize];
+  Double_t pt[kArraySize];
+  Int_t index[kArraySize];
+  for(int i=0; i<kArraySize; i++) index[i] = kInitVal;
   
+
   Double_t ptTot = 0;
 
   for(int i=0; i<nTracks; i++){
@@ -2283,7 +2293,7 @@ Bool_t AliAnalysisTaskJetChem::IsLambdaInvMass(const Double_t mass) const{
 
 // ---------------------------------------------------------------------------
 
-Bool_t AliAnalysisTaskJetChem::IsAcceptedDCAK0(const Double_t dca) const{
+Bool_t AliAnalysisTaskJetChem::IsAcceptedDCAK0(/*const Double_t dca*/) const{
 
   // DCA cut 
 
@@ -2293,7 +2303,7 @@ Bool_t AliAnalysisTaskJetChem::IsAcceptedDCAK0(const Double_t dca) const{
 
 // ---------------------------------------------------------------------------
 
-Bool_t AliAnalysisTaskJetChem::IsAcceptedDCALambda(const Double_t dca) const {
+Bool_t AliAnalysisTaskJetChem::IsAcceptedDCALambda(/*const Double_t dca*/) const {
 
   // DCA cut
 
@@ -2419,7 +2429,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	fhdRV0MC->Fill(dRV0MC);
       }
  
-      if(IsAcceptedDCAK0(fDCAV0ToVertex)){
+      if(IsAcceptedDCAK0(/*fDCAV0ToVertex*/)){
 	
 	fhV0InvMassK0DCA->Fill(massK0);
 	if(IsK0InvMass(massK0)) fhdNdptK0DCA->Fill(ptV0);
@@ -2466,14 +2476,14 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
       // Lambda 
 
-      if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+      if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	 IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	 IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
     
 	fhV0InvMassLambdaDCAdEdx->Fill(massLambda);
       }
       
-      if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+      if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	 IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
 	 IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)){
     
@@ -2499,7 +2509,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
 	// K0
 
-	if(IsAcceptedDCAK0(fDCAV0ToVertex) && 
+	if(IsAcceptedDCAK0(/*fDCAV0ToVertex*/) && 
 	   IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx) && 
 	   IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	  
@@ -2518,14 +2528,14 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
 	// Lambda
 	
-	if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	   IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	   IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	  
 	  fhV0InvMassLambdaJetEvt->Fill(massLambda);
 	}
 	
-	if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	   IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
 	   IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)){
 	  
@@ -2538,7 +2548,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	
 	  // K0
 
-	  if(IsAcceptedDCAK0(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCAK0(/*fDCAV0ToVertex*/) && 
 	     IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx) && 
 	     IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){ // K0 cuts
 	    
@@ -2553,21 +2563,21 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
 	  // Lambda
 	  
-	  if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	     IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	    
 	    fhV0InvMassLambdaMax->Fill(massLambda);
 	  }
 
-	  if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
 	     IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)){
 	    
 	    fhV0InvMassAntiLambdaMax->Fill(massAntiLambda);
 	  }
 	  
-	  if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     (IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	      IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
 	     (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
@@ -2587,7 +2597,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	
 	  // K0
   
-	  if(IsAcceptedDCAK0(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCAK0(/*fDCAV0ToVertex*/) && 
 	     IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx) && 
 	     IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	    
@@ -2604,21 +2614,21 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	  // Lambda
 	  
 	  
-	  if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	     IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	    
 	    fhV0InvMassLambdaMin->Fill(massLambda);
 	  }
 
-	  if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
 	     IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)){
 	    
 	    fhV0InvMassAntiLambdaMin->Fill(massAntiLambda);
 	  }
 	  
-	  if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     (IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	      IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
 	     (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
@@ -2645,7 +2655,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
 	    // K0
 
-	    if(IsAcceptedDCAK0(fDCAV0ToVertex) && 
+	    if(IsAcceptedDCAK0(/*fDCAV0ToVertex*/) && 
 	       IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx) && 
 	       IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){ // K0 cuts
 	      
@@ -2661,20 +2671,20 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
 	    // Lambda 
  	  
-	    if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	    if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	       IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	       IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	    
 	      fhV0InvMassLambdaJet->Fill(massLambda);
 	    }	  
-	    if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	    if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	       IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
 	       IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)){
 	      
 	      fhV0InvMassAntiLambdaJet->Fill(massAntiLambda);
 	    }
 	    
-	    if(IsAcceptedDCALambda(fDCAV0ToVertex) && 
+	    if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	       (IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 		IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
 	       (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 

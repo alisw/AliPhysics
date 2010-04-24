@@ -18,5 +18,6 @@
 #pragma link C++ class AliPWG4HighPtSpectra+;
 #pragma link C++ class AliAnalysisTaskPWG4PidDetEx+;
 #pragma link C++ class AliJetSpectrumUnfolding+;
+#pragma link C++ class AliAnalysisTaskJetChem+;
 
 #endif
