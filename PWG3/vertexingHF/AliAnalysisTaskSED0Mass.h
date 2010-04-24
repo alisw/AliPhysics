@@ -59,13 +59,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Int_t    fArray;        //   can be D0 or Like Sign candidates
   Bool_t   fReadMC;       // flag for MC array: kTRUE = read it, kFALSE = do not read it
   Bool_t    fCutOnDistr;   // Flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts 
-
-  Int_t*    fTotPosPairs;     //
-  Int_t*    fTotNegPairs;     // 
+  Int_t     fNPtBins;         // number of pt bins
+  Int_t*    fTotPosPairs;     //[fNPtBins]
+  Int_t*    fTotNegPairs;     //[fNPtBins] 
   Double_t fLsNormalization;  //  normalization
 
 
-  ClassDef(AliAnalysisTaskSED0Mass,6); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,7); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
+
