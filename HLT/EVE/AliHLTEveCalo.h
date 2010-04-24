@@ -62,7 +62,8 @@ protected :
 
   Int_t GetPadNumber(TString name);  
 
-  TEveBoxSet * fBoxSet;            //Boxset for clusters and digist
+  TEveBoxSet * fBoxSetDigits;            //Boxset for clusters and digist
+  TEveBoxSet * fBoxSetClusters;            //Boxset for clusters and digist
   
   TEveElementList * fElementList; //Element list to contain the clusters
 

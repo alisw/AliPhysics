@@ -41,7 +41,8 @@ ClassImp(AliHLTEveCalo);
 
 AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) : 
   AliHLTEveBase(), 
-  fBoxSet(NULL),
+  fBoxSetDigits(NULL),
+  fBoxSetClusters(NULL),
   fElementList(NULL),
   fNModules(nm),
   fName(name), 
@@ -63,9 +64,13 @@ AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) :
 AliHLTEveCalo::~AliHLTEveCalo()
 {
   //Destructor
-  if(fBoxSet)
-    delete fBoxSet;
-  fBoxSet = NULL;
+  if(fBoxSetDigits)
+    delete fBoxSetDigits;
+  fBoxSetDigits = NULL;
+
+  if(fBoxSetClusters)
+    delete fBoxSetClusters;
+  fBoxSetClusters = NULL;
 
   if(fElementList)
     delete fElementList;
@@ -113,24 +118,24 @@ void AliHLTEveCalo::ProcessHistogram(AliHLTHOMERBlockDesc * block ) {
 }
 
 
-void AliHLTEveCalo::ProcessDigits(AliHLTHOMERBlockDesc* block) {
-  //See header file for documentation
+// void AliHLTEveCalo::ProcessDigits(AliHLTHOMERBlockDesc* block) {
+//   //See header file for documentation
   
-  AliHLTCaloDigitDataStruct *ds = reinterpret_cast<AliHLTCaloDigitDataStruct*> (block->GetData());
-  UInt_t nDigits = block->GetSize()/sizeof(AliHLTCaloDigitDataStruct);
+//   AliHLTCaloDigitDataStruct *ds = reinterpret_cast<AliHLTCaloDigitDataStruct*> (block->GetData());
+//   UInt_t nDigits = block->GetSize()/sizeof(AliHLTCaloDigitDataStruct);
     
 
-  for(UInt_t i = 0; i < nDigits; i++, ds++) {
+//   for(UInt_t i = 0; i < nDigits; i++, ds++) {
 
-    Float_t x = (ds->fX - 32)* 2.2;
-      Float_t z = (ds->fZ - 28) * 2.2;
+//     Float_t x = (ds->fX - 32)* 2.2;
+//       Float_t z = (ds->fZ - 28) * 2.2;
 
 
-    fBoxSet[4-ds->fModule].AddBox(x, 0, z, 2.2, ds->fEnergy*200, 2.2);
-    fBoxSet[4-ds->fModule].DigitValue(static_cast<Int_t>(ds->fEnergy*10));
-  }
+//     fBoxSetDigits[4-ds->fModule].AddBox(x, 0, z, 2.2, ds->fEnergy*200, 2.2);
+//     fBoxSetDigits[4-ds->fModule].DigitValue(static_cast<Int_t>(ds->fEnergy*10));
+//   }
 
-}
+// }
 
 
 void AliHLTEveCalo::ProcessClusters(AliHLTHOMERBlockDesc* block) {
@@ -158,23 +163,36 @@ void AliHLTEveCalo::UpdateElements() {
   //See header file for documentation
   if(fCanvas) fCanvas->Update();
 
-  if(fBoxSet) {
+  if(fBoxSetDigits) {
     for(int im = 0; im < fNModules; im++) {
-      fBoxSet[im].ElementChanged();
+      fBoxSetDigits[im].ElementChanged();
     }
   }
+
+  if(fBoxSetClusters) {
+    for(int im = 0; im < fNModules; im++) {
+      fBoxSetClusters[im].ElementChanged();
+    }
+  }
+
 }
 
 void AliHLTEveCalo::ResetElements(){
   //See header file for documentation
   fHistoCount = 0;
   
-  if ( fBoxSet ){
+  if ( fBoxSetDigits ){
     for(int im = 0; im < fNModules; im++){
-      cout<<"Resetting"<<endl;
-      fBoxSet[im].Reset();   
+      fBoxSetDigits[im].Reset();   
     }
   }
+
+  if ( fBoxSetClusters ){
+    for(int im = 0; im < fNModules; im++){
+      fBoxSetClusters[im].Reset();   
+    }
+  }
+
 }
 
 Int_t AliHLTEveCalo::GetPadNumber(TString name) {

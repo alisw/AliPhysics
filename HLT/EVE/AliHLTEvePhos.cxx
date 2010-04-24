@@ -55,7 +55,8 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
   //See header file for documentation
 
   TEveElementList * elementList  = new TEveElementList("PHOS ");
-  fBoxSet = new TEveBoxSet[fNModules];
+  fBoxSetClusters = new TEveBoxSet[fNModules];
+  fBoxSetDigits = new TEveBoxSet[fNModules];
 
   AliPHOSGeometry * geo = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
   
@@ -67,23 +68,47 @@ TEveElementList * AliHLTEvePhos::CreateElementList() {
     
     TEveRGBAPalette* pal = new TEveRGBAPalette(0,512);
     pal->SetLimits(-1, 6);
-    fBoxSet[im].SetTitle(Form("Clusters Module %d", im));
-    fBoxSet[im].SetName(Form("Clusters Module %d", im));
-    fBoxSet[im].SetPalette(pal);
-    fBoxSet[im].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
-    fBoxSet[im].SetOwnIds(kTRUE);
+
+    //Create clusters box set
+    fBoxSetClusters[im].SetTitle(Form("Clusters Module %d", im));
+    fBoxSetClusters[im].SetName(Form("Clusters Module %d", im));
+    fBoxSetClusters[im].SetPalette(pal);
+    fBoxSetClusters[im].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
+    fBoxSetClusters[im].SetOwnIds(kTRUE);
     
     
     geo->GetModuleCenter(center, "CPV", im+1);
     angle = geo->GetPHOSAngle(im+1)*TMath::Pi()/180;
     
-    fBoxSet[im].RefitPlex();
-    TEveTrans& t = fBoxSet[im].RefMainTrans();
+    fBoxSetClusters[im].RefitPlex();
+    TEveTrans& t = fBoxSetClusters[im].RefMainTrans();
     t.SetupRotation(1, 2, angle );
     t.SetPos(center.X(), center.Y(), center.Z());
     
-    elementList->AddElement(&fBoxSet[im]);
+    elementList->AddElement(&fBoxSetClusters[im]);
+
+
+    //Create digits box set
+    fBoxSetDigits[im].SetTitle(Form("Digits Module %d", im));
+    fBoxSetDigits[im].SetName(Form("Digits Module %d", im));
+    fBoxSetDigits[im].SetPalette(pal);
+    fBoxSetDigits[im].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
+    fBoxSetDigits[im].SetOwnIds(kTRUE);
+    
+    
+    geo->GetModuleCenter(center, "CPV", im+1);
+    angle = geo->GetPHOSAngle(im+1)*TMath::Pi()/180;
+    
+    fBoxSetDigits[im].RefitPlex();
+    TEveTrans& t2 = fBoxSetDigits[im].RefMainTrans();
+    t2.SetupRotation(1, 2, angle );
+    t2.SetPos(center.X(), center.Y(), center.Z());
+    
+    elementList->AddElement(&fBoxSetDigits[im]);
+
+
   }
+
   return elementList;
 }
 
@@ -91,24 +116,20 @@ void AliHLTEvePhos::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t en
   //See header file for documentation
   Float_t x = (fX - 32)* 2.2;
   Float_t z = (fZ - 28) * 2.2;
-  fBoxSet[4-module].AddBox(x, 0, z, 2.2, energy*20, 2.2);
-  fBoxSet[4-module].DigitValue(static_cast<Int_t>(energy));
+  fBoxSetDigits[4-module].AddBox(x, 0, z, 2.2, energy*20, 2.2);
+  fBoxSetDigits[4-module].DigitValue(static_cast<Int_t>(energy));
 }
 
 
 void AliHLTEvePhos::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
 
-  
-
   TVector3 localVector;
   TVector3 globalVector(pos);
 
-
   fGeoUtils->Global2Local(localVector, globalVector, 5-module);
-  
 
  //See header file for documentation
-  fBoxSet[4-module].AddBox(localVector.X(), -70, localVector.Z(), 2.2, -energy*20, 2.2);
-  fBoxSet[4-module].DigitValue(static_cast<Int_t>(energy));
+  fBoxSetClusters[4-module].AddBox(localVector.X(), -70, localVector.Z(), 2.2, -energy*20, 2.2);
+  fBoxSetClusters[4-module].DigitValue(static_cast<Int_t>(energy));
 }
 

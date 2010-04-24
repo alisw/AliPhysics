@@ -63,19 +63,33 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
   TEveRGBAPalette* pal = new TEveRGBAPalette(0, 512);
   pal->SetLimits(0, 15);
   
-  fBoxSet = new TEveBoxSet[fNModules];
+  fBoxSetDigits = new TEveBoxSet[fNModules];
+  fBoxSetClusters = new TEveBoxSet[fNModules];
   
   for (Int_t sm=0; sm<fNModules; ++sm) {
     
-    fBoxSet[sm].SetTitle(Form("Clusters Module %d", sm));
-    fBoxSet[sm].SetName(Form("Clusters Module %d", sm));
-    fBoxSet[sm].SetOwnIds(kTRUE);
+    //Digits box set
+    fBoxSetDigits[sm].SetTitle(Form("Clusters Module %d", sm));
+    fBoxSetDigits[sm].SetName(Form("Clusters Module %d", sm));
+    fBoxSetDigits[sm].SetOwnIds(kTRUE);
     
-    fBoxSet[sm].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
-    fBoxSet[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
-    fBoxSet[sm].SetPalette(pal);
+    fBoxSetDigits[sm].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
+    fBoxSetDigits[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
+    fBoxSetDigits[sm].SetPalette(pal);
     
-    fElementList->AddElement(&fBoxSet[sm]);
+    fElementList->AddElement(&fBoxSetDigits[sm]);
+ 
+    //Clusters
+    fBoxSetClusters[sm].SetTitle(Form("Clusters Module %d", sm));
+    fBoxSetClusters[sm].SetName(Form("Clusters Module %d", sm));
+    fBoxSetClusters[sm].SetOwnIds(kTRUE);
+    
+    fBoxSetClusters[sm].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
+    fBoxSetClusters[sm].RefMainTrans().SetFrom(*gEMCALNode->GetDaughter(sm)->GetMatrix());
+    fBoxSetClusters[sm].SetPalette(pal);
+    
+    fElementList->AddElement(&fBoxSetClusters[sm]);
+
 
   }
   
@@ -85,8 +99,9 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
 void AliHLTEveEmcal::AddClusters(Float_t * pos, Int_t module, Float_t energy) {
   //See header file for documentation
 
-  fBoxSet[module].AddBox(15, pos[1], pos[2], energy*20, 6.1, 6.1);
-  fBoxSet[module].DigitValue(static_cast<Int_t>(energy));
+  fBoxSetClusters[module].AddBox(15, pos[1], pos[2], energy*20, 6.1, 6.1);
+  fBoxSetClusters[module].DigitValue(static_cast<Int_t>(energy));
+
 }
 
 void AliHLTEveEmcal::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t energy) {
@@ -96,8 +111,8 @@ void AliHLTEveEmcal::AddDigits(UShort_t fX, UShort_t fZ, Int_t module, Float_t e
   if(fGeoUtils->RelPosCellInSModule(absid, posX, posY, posZ)) {
     
     cout << posX << "  " << posY << "  " << posZ << endl;
-    fBoxSet[module].AddBox(15, posY, posZ, energy*5, 6.1, 6.1);
-    fBoxSet[module].DigitValue(static_cast<Int_t>(energy));
+    fBoxSetDigits[module].AddBox(15, posY, posZ, energy*5, 6.1, 6.1);
+    fBoxSetDigits[module].DigitValue(static_cast<Int_t>(energy));
   } else  {
     cout <<"AliHLTEveEmcal::AddClusters:  fail"<<endl;
   }
