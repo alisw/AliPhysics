@@ -220,7 +220,7 @@ Int_t AliHLTEveCalo::GetPadNumber(TString name) {
 
 }
 
-void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
+void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &/*cdCount*/) {
   //See header file for documentation
 
   if ( ! block->GetClassName().CompareTo("TObjArray")) {
