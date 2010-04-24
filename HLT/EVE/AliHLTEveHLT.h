@@ -64,6 +64,9 @@ private:
   //Create a title for the track
   TString CreateTrackTitle(AliESDtrack* t);
 
+  ///Create the pointset to display primary vertex
+  void CreateVertexPointSet();
+
   //Add track param to AliEveTrack
   void AddTrackParamToTrack(AliEveTrack* track, const AliExternalTrackParam* tp);
 
@@ -82,6 +85,7 @@ private:
   Bool_t fUseRkStepper;    // Use Runge Kutta for something something?
 
   TEveTrackList * fTrackList;  //Eve tracklist 
+  TEvePointSet * fPointSetVertex;      //Display primary vertex
 
   TCanvas * fTrCanvas;  //Canvas for track qa histos
 

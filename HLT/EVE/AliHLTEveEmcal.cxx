@@ -56,7 +56,7 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
   
   TGeoNode * gEMCALNode = fEventManager->GetGeoManager()->GetTopVolume()->FindNode("XEN1_1");
 
-  fElementList = new TEveElementList("EMCAL Cells");
+  fElementList = new TEveElementList("EMCAL Digits / Clusters");
   fElementList->SetTitle("Tooltip");
   
   //gStyle->SetPalette(1, 0);
@@ -69,8 +69,8 @@ TEveElementList * AliHLTEveEmcal::CreateElementList() {
   for (Int_t sm=0; sm<fNModules; ++sm) {
     
     //Digits box set
-    fBoxSetDigits[sm].SetTitle(Form("Clusters Module %d", sm));
-    fBoxSetDigits[sm].SetName(Form("Clusters Module %d", sm));
+    fBoxSetDigits[sm].SetTitle(Form("Digits Module %d", sm));
+    fBoxSetDigits[sm].SetName(Form("Digits Module %d", sm));
     fBoxSetDigits[sm].SetOwnIds(kTRUE);
     
     fBoxSetDigits[sm].Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);

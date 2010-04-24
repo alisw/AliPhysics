@@ -67,13 +67,15 @@ AliHLTEveCalo::~AliHLTEveCalo()
   if(fBoxSetDigits)
     delete fBoxSetDigits;
   fBoxSetDigits = NULL;
-
+  
   if(fBoxSetClusters)
     delete fBoxSetClusters;
   fBoxSetClusters = NULL;
 
-  if(fElementList)
+  if(fElementList) {
+    
     delete fElementList;
+  }
   fElementList = NULL;
 }
 
@@ -221,7 +223,6 @@ Int_t AliHLTEveCalo::GetPadNumber(TString name) {
 void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas * canvas, Int_t &cdCount ) {
   //See header file for documentation
 
-
   if ( ! block->GetClassName().CompareTo("TObjArray")) {
     TIter next((TObjArray*)(block->GetTObject()));
     TObject *object;
@@ -259,7 +260,10 @@ void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
 	  }
 
 	  else if(name.Contains("InvMass")) {
-	    histo->SetAxisRange(histo->GetXaxis()->GetBinLowEdge(histo->FindLastBinAbove(0, 1) - 3), histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
+	    histo->SetAxisRange(histo->GetXaxis()->GetBinLowEdge(histo->FindFirstBinAbove(0, 1) - 3), histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
+	    histo->Fit("gaus", "", "", histo->GetXaxis()->GetBinLowEdge(histo->FindFirstBinAbove(0, 1)), histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1)));
+	    //histo->Fit("gaus", "", "", histo->GetXaxis()->GetBinLowEdge(histo->FindFirstBinAbove(0, 1)), 0.3);
+	    //histo->Fit("gaus", )
 	  }
 
 	  histo->Draw();

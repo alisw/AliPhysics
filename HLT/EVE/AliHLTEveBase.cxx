@@ -50,7 +50,9 @@ AliHLTEveBase::~AliHLTEveBase()
     delete fCanvas;
   fCanvas = NULL;
 
-  fEventManager = NULL;
+	//  fEventManager->DestroyElements();
+  //fEventManager = NULL;
+
 }
 
 

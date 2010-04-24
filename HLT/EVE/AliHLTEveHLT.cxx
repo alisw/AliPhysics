@@ -45,6 +45,7 @@ AliHLTEveHLT::AliHLTEveHLT() :
   fUseIpOnFailedITS(kFALSE),
   fUseRkStepper(kFALSE),
   fTrackList(NULL),
+  fPointSetVertex(NULL),
   fTrCanvas(NULL),
   fHistPt(NULL), 
   fHistP(NULL), 
@@ -89,6 +90,7 @@ void AliHLTEveHLT::ProcessBlock(AliHLTHOMERBlockDesc * block) {
   //See header file for documentation
   if ( ! block->GetDataType().CompareTo("ALIESDV0") ) {
     if(!fTrackList) CreateTrackList();
+    if(!fPointSetVertex) CreateVertexPointSet();
     ProcessEsdBlock(block, fTrackList);
   } 
   
@@ -116,11 +118,14 @@ void AliHLTEveHLT::UpdateElements() {
   if(fCanvas) fCanvas->Update();
   DrawHistograms();
   if(fTrackList) fTrackList->ElementChanged();
+  if(fPointSetVertex) fPointSetVertex->ResetBBox();
+
 }
 
 void AliHLTEveHLT::ResetElements(){
     //See header file for documentation
   if(fTrackList) fTrackList->DestroyElements();
+  if(fPointSetVertex) fPointSetVertex->Reset();
   fHistoCount = 0;
 
 }
@@ -166,12 +171,26 @@ void AliHLTEveHLT::CreateTrackList() {
   gEve->AddElement(fTrackList);
 }
 
+void AliHLTEveHLT::CreateVertexPointSet() {
+  //See header file for documentation
+  fPointSetVertex = new TEvePointSet("Primary Vertex");
+  fPointSetVertex->SetMainColor(6);
+  fPointSetVertex->SetMarkerStyle((Style_t)kFullStar);
+
+  gEve->AddElement(fPointSetVertex);
+}
+
 
 void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList * cont ) {
   //See header file for documentation
 
   AliESDEvent* esd = (AliESDEvent *) (block->GetTObject());
   esd->GetStdContent();
+
+  Double_t vertex[3];
+  esd->GetPrimaryVertex()->GetXYZ(vertex);
+  fPointSetVertex->SetNextPoint(vertex[0], vertex[1], vertex[2]);
+  
   
   SetUpTrackPropagator(cont->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
 
