@@ -64,6 +64,7 @@ fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
+fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
 fLsNormalization(1.)
@@ -85,6 +86,7 @@ fCuts(0),
 fArray(0),
 fReadMC(0),
 fCutOnDistr(0),
+fNPtBins(1),
 fTotPosPairs(0),
 fTotNegPairs(0),
 fLsNormalization(1.)
@@ -92,9 +94,11 @@ fLsNormalization(1.)
 
 {
   // Default constructor
-  fTotPosPairs=new Int_t[cuts->GetNPtBins()];
-  fTotNegPairs=new Int_t[cuts->GetNPtBins()];
-  for(Int_t i=0;i<cuts->GetNPtBins();i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
+
+  fNPtBins=cuts->GetNPtBins();
+  fTotPosPairs=new Int_t[fNPtBins];
+  fTotNegPairs=new Int_t[fNPtBins];
+  for(Int_t i=0;i<fNPtBins;i++) {fTotPosPairs[i]=0; fTotNegPairs[i]=0;}
     
   //fCuts=new AliRDHFCutsD0toKpi(*cuts);
   fCuts=cuts;
@@ -994,4 +998,5 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
   return;
 }
+
 
