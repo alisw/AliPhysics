@@ -810,7 +810,7 @@ void AliHLTMUONHitReconstructor::RecXRecY()
       fNofYNeighbour[b]++;
     }
 
-    HLTDebug("Y charge : lower : %f, middle : %f, upper : %f",fPadData[idLower].fCharge,
+    HLTDebug("detelem : %d, Y charge : lower : %f, middle : %f, upper : %f",fPadData[idCentral].fDetElemId,fPadData[idLower].fCharge,
 	    fPadData[idCentral].fCharge,fPadData[idUpper].fCharge);
 
     //collect left coloumn
@@ -866,7 +866,7 @@ void AliHLTMUONHitReconstructor::RecXRecY()
 
     }
     //////////////////////////////////////////////////////////////////////////////////
-    HLTDebug("RecY[%d] : %f, nofChannel : %d",b,fRecY[b],fNofBChannel[b]);
+    HLTDebug("RecY[%d] : %f, nofChannel : %d, detelem : %d",b,fRecY[b],fNofBChannel[b],fPadData[idCentral].fDetElemId);
    
   }
       
@@ -903,7 +903,7 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     if(fPadData[idRight].fCharge>0.0)
       fNofNBChannel[nb]++ ;
 
-    HLTDebug("X charge left : %f, middle : %f, right : %f",fPadData[idLeft].fCharge,
+    HLTDebug("detelem : %d, X charge left : %f, middle : %f, right : %f",fPadData[idCentral].fDetElemId,fPadData[idLeft].fCharge,
 	    fPadData[idCentral].fCharge,fPadData[idRight].fCharge);
 
 
@@ -1255,7 +1255,7 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
               }
  	    }
 
-	    HLTDebug("Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
+	    HLTDebug("Part 1 : Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
                      fRecPoints[(*fRecPointsCount)].fX,
                      fRecPoints[(*fRecPointsCount)].fY,
                      fRecPoints[(*fRecPointsCount)].fZ
@@ -1271,7 +1271,7 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
   for(int b=0;b<fCentralCountB;b++){
     if(fRecY[b]!=0.0 and !isMergedY[b] and fNofBChannel[b]>2){
       idCentralB = fCentralChargeB[b];
-
+      
       minPadArea = (fPadData[idCentralB].fDetElemId < 204) ? 10.0*2.0*0.315*10.0*2.0*0.21 : 10.0*2.0*0.375*10.0*2.0*0.25 ;
 
       if(TMath::Abs(400.0*fPadData[idCentralB].fHalfPadSize*fPadData[idCentralB].fPadSizeXY - minPadArea)> 1.0e-5) continue;
@@ -1301,7 +1301,7 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	delete [] isMergedX;
 	return true;
       }
-
+      
       AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
 	         (fPadData[idCentralB].fDetElemId / 100) - 1,
 	         fPadData[idCentralB].fDetElemId
@@ -1346,7 +1346,7 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	      {0,      0,      0}
 	    },{
 	      {0,      0,      0},
-	      {0, idCentralNB, 0},
+	      {0,      0     , 0},
 	      {0,      0,      0}
 	    }};
 	  
@@ -1374,16 +1374,17 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	      if (fPadData[idRight].fIY < 236)
 		pad[0][2][2] = fGetIdTotalData[fPadData[idRight].fIX][fPadData[idRight].fIY+1][0];
 	    }
-	  
-	  for(int i=0;i<3;i++)
-	    for(int j=0;j<3;j++)
-	      pad[1][i][j] = pad[0][i][j];
+
+	  // For hits only in bending plane no need to copy the information to the non-bending side
+	  // for(int i=0;i<3;i++)
+	  //   for(int j=0;j<3;j++)
+	  //     pad[1][i][j] = pad[0][i][j];
 
               
 	  AliHLTInt32_t clusterId = fGenerateClusterInfo ? fClusters[fClusterCount-1].fId : -1;
           
 	  // Now generate the pad structures from all the pad indices found above.
-	  for (int i = 0; i < 2; i++)
+	  for (int i = 0; i < 1; i++)
 	    for (int j = 0; j < 3; j++)
               for (int k = 0; k < 3; k++)
 		{
@@ -1405,7 +1406,7 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 		}
 	}
       
-      HLTDebug("Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
+      HLTDebug("Part 2 : Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
 	       fRecPoints[(*fRecPointsCount)].fX,
 	       fRecPoints[(*fRecPointsCount)].fY,
 	       fRecPoints[(*fRecPointsCount)].fZ
@@ -1428,24 +1429,24 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
       minPadArea = (fPadData[idCentralNB].fDetElemId < 204) ? 10.0*2.0*0.315*10.0*2.0*0.21 : 10.0*2.0*0.375*10.0*2.0*0.25 ;
 
       if(TMath::Abs(400.0*fPadData[idCentralNB].fHalfPadSize*fPadData[idCentralNB].fPadSizeXY - minPadArea)> 1.0e-5) continue;
-
+      
       padCenterYNB = fPadData[idCentralNB].fRealY;
-
-
+      
+      
       if(fPadData[idCentralNB].fDetElemId<104)
 	padCenterYNB += 0.02*sin(14.5*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
       else if(fPadData[idCentralNB].fDetElemId>=200 && fPadData[idCentralNB].fDetElemId<204)
 	padCenterYNB += 0.02*sin(14.0*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
       else
 	padCenterYNB += 0.025*sin(12.0*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
-
-	    
+      
+      
       if(fPadData[idCentralNB].fDetElemId<204)
 	fRecX[nb] += 0.095*sin(10.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
       else //if(fPadData[idCentralNB].fDetElemId>=300 && fPadData[idCentralNB].fDetElemId<404)
 	fRecX[nb] += 0.085*sin(9.0*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
-	    
-	    
+      
+      
       // First check that we have not overflowed the buffer.
       if((*fRecPointsCount) == fMaxRecPointsCount){
 	HLTWarning("Number of RecHits (i.e. %d) exceeds the max number of RecHit limit %d."
@@ -1458,8 +1459,8 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
       }
 
       AliHLTUInt32_t idflags = AliHLTMUONUtils::PackRecHitFlags(
-	         (fPadData[idCentralB].fDetElemId / 100) - 1,
-	         fPadData[idCentralB].fDetElemId
+	         (fPadData[idCentralNB].fDetElemId / 100) - 1,
+	         fPadData[idCentralNB].fDetElemId
 	      );
       fRecPoints[(*fRecPointsCount)].fFlags = idflags;
       fRecPoints[(*fRecPointsCount)].fX = fRecX[nb];
@@ -1497,7 +1498,7 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	  // 3 by 3 pad structure around the central pad for the 2 planes.
 	  int pad[2][3][3] = {{
 	      {0,      0,      0},
-	      {0, idCentralB,  0},
+	      {0,      0,      0},
 	      {0,      0,      0}
  	        },{
 	      {0,      0,      0},
@@ -1531,15 +1532,16 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
                   pad[1][2][2] = fGetIdTotalData[fPadData[idUpper].fIX+1][fPadData[idUpper].fIY][1];
 	    }
 
-	  for(int i=0;i<3;i++)
-	    for(int j=0;j<3;j++)
-	      pad[0][i][j] = pad[1][i][j];
+	  // For hits only in non-bending plane no need to copy the information to the bending side
+	  // for(int i=0;i<3;i++)
+	  //   for(int j=0;j<3;j++)
+	  //     pad[0][i][j] = pad[1][i][j];
 	  
               
 	  AliHLTInt32_t clusterId = fGenerateClusterInfo ? fClusters[fClusterCount-1].fId : -1;
 	  
 	  // Now generate the pad structures from all the pad indices found above.
-	  for (int i = 0; i < 2; i++)
+	  for (int i = 1; i < 2; i++)
 	    for (int j = 0; j < 3; j++)
               for (int k = 0; k < 3; k++)
 		{
@@ -1560,12 +1562,13 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 		  fChannelCount++;
 		}
 	}
-
-      HLTDebug("Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
-	       fRecPoints[(*fRecPointsCount)].fX,
-	       fRecPoints[(*fRecPointsCount)].fY,
-	       fRecPoints[(*fRecPointsCount)].fZ
-	       );
+      
+      HLTDebug("Part 3 : Reconstructed hit (X,Y,Z) : (%f,%f,%f), detelemId : %d",
+		 fRecPoints[(*fRecPointsCount)].fX,
+		 fRecPoints[(*fRecPointsCount)].fY,
+		 fRecPoints[(*fRecPointsCount)].fZ,
+		 fPadData[idCentralNB].fDetElemId
+		 );
       (*fRecPointsCount)++;
     }//if lies wihtin 5.0 mm
   }// condn over fRecX ! = 0.0
@@ -1850,7 +1853,7 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
               }
  	    }
 
-	    HLTDebug("Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
+	    HLTDebug("Part 4(Slat) : Reconstructed hit (X,Y,Z) : (%f,%f,%f)",
                      fRecPoints[(*fRecPointsCount)].fX,
                      fRecPoints[(*fRecPointsCount)].fY,
                      fRecPoints[(*fRecPointsCount)].fZ

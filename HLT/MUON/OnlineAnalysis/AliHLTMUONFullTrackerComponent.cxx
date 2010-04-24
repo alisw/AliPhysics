@@ -173,6 +173,7 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
   // Process an event
   unsigned long totalSize = 0;
   AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
+  bool resultOk = true;
   // Loop over all input blocks in the event
 
   HLTDebug("Processing event %llu with %u input data blocks.",
@@ -192,6 +193,7 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	      );
       if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
       size = 0; // Important to tell framework that nothing was generated.
+      resultOk = false;
       return -ENOBUFS;
     }
 
@@ -210,6 +212,7 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
       AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
       if (not BlockStructureOk(inblock)){
   	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+	resultOk = false;
   	continue;
       }
 
@@ -221,17 +224,22 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
       AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
       if (not BlockStructureOk(inblock)){
   	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
+	resultOk = false;
   	continue;
       }
       
       fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(),inblock.Nentries());	
     }//check if trigger block
   }//loop over blocks array of rechit and trigrecs
-  
-  AliHLTUInt32_t nofTracks = block.MaxNumberOfEntries();
+
+  AliHLTUInt32_t nofTracks = 0;
+  if( resultOk ){
     
-  //  if (evtData.fBlockCnt!=3){
-  bool resultOk  = fTracker->Run(int(evtData.fEventID),block.GetArray(), nofTracks);
+    nofTracks   = block.MaxNumberOfEntries();
+    //  if (evtData.fBlockCnt!=3){
+    resultOk  = fTracker->Run(int(evtData.fEventID),block.GetArray(), nofTracks);
+  }
+
   if (resultOk){
     assert( nofTracks <= block.MaxNumberOfEntries() );
     block.SetNumberOfEntries(nofTracks);

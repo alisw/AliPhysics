@@ -349,7 +349,7 @@ Bool_t AliHLTMUONFullTracker::Init()
   if(! fChamberGeometryTransformer->LoadGeometryData()){
     HLTError("Failed to Load Geomerty Data ");
   }
-
+  
   fDetElemList.clear();  
   for(int ich=0;ich<AliMUONConstants::NCh();ich++){
     AliMpDEIterator it;
@@ -364,7 +364,7 @@ Bool_t AliHLTMUONFullTracker::Init()
 
 ///__________________________________________________________________________
 
-Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/,const AliHLTMUONRecHitStruct  *data, AliHLTInt32_t size)
+Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONRecHitStruct  *data, AliHLTInt32_t size)
 {
   /// Set the input for rechit points
   if(int(size)>=fgkMaxNofPointsPerCh/2)
@@ -374,14 +374,26 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/,const AliHLTMUONRec
   AliHLTUInt8_t chamber;
   
 #ifdef PRINT_POINTS  
-  printf("Received from DDL : %d, nofHits : %d\n",ddl,size);
+  printf("Received from DDL : %d, nofHits : %d, data : %p\n",ddl,size,data);
 #endif
   for( Int_t ipoint=0;ipoint<int(size);ipoint++){
+    if(!data){
+      HLTError("Null Data pointer from HitRec");
+      Clear();
+      return false;
+    }
+    
     AliHLTMUONUtils::UnpackRecHitFlags(data->fFlags,chamber,detElemID);
-    fChPoint[detElemID/100-1][fNofPoints[detElemID/100-1]++]  = (AliHLTMUONRecHitStruct  *)data;
+
+    if((not fDetElemList[detElemID]) or (chamber<0 ) or (chamber>=AliMUONConstants::NTrackingCh())){
+      HLTDebug("Invalid tracking detelem : %d or chamber : %d",detElemID,chamber);
+      continue;
+    }
+    
 #ifdef PRINT_POINTS  
-    //    printf("ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",chamber,detElemID,data->fX,data->fY,data->fZ);
+    printf("ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",chamber,detElemID,data->fX,data->fY,data->fZ);
 #endif
+    fChPoint[detElemID/100-1][fNofPoints[detElemID/100-1]++]  = (AliHLTMUONRecHitStruct  *)data;
     data++;
   }
 
@@ -401,9 +413,18 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONTr
   AliHLTUInt8_t chamber;
 
   for( Int_t ipoint=0;ipoint<int(size);ipoint++){
+    if(!data){
+      HLTError("Null Data pointer from TrigRec");
+      Clear();
+      return false;
+    }
     fChPoint11[fNofPoints[10]++] = (AliHLTMUONTriggerRecordStruct *)data;
     for( Int_t ich=0;ich<4;ich++){
       AliHLTMUONUtils::UnpackRecHitFlags((data->fHit[ich]).fFlags,chamber,detElemID);
+      if((not fDetElemList[detElemID]) or (chamber<AliMUONConstants::NTrackingCh()) or (chamber > AliMUONConstants::NCh()) ){
+	HLTDebug("Invalid trigger detelem : %d or chamber : %d",detElemID,chamber);
+	continue;
+      }
 #ifdef PRINT_POINTS  
       printf("size : %d, itrig  : %04d, ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",
 	     size,ipoint,chamber,detElemID,(data->fHit[ich]).fX,(data->fHit[ich]).fY,(data->fHit[ich]).fZ);
@@ -433,12 +454,13 @@ Bool_t AliHLTMUONFullTracker::Run( Int_t iEvent,AliHLTMUONTrackStruct *data, Ali
   }
   HLTDebug("Finishing SlatTrackSeg");
 
-  resultOk = PrelimMomCalc();
-  if(not resultOk){
-    HLTDebug("Error happened in calculating preliminary momentum, this event will be skipped");
+  if(resultOk){
+    resultOk = PrelimMomCalc();
+    if(not resultOk){
+      HLTDebug("Error happened in calculating preliminary momentum, this event will be skipped");
+    }
   }
   HLTDebug("Finishing PrelimMomCalc");
-
   
   if(resultOk){
     resultOk = QuadTrackSeg();
@@ -1993,7 +2015,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
     paramWeight.Invert();
   } else {
     Warning("KalmanFilter"," Determinant = 0");
-    return 1.e10;
+    return 1.0e10;
   }
 
 #ifdef PRINT_DETAIL_KALMAN
@@ -2026,7 +2048,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
     newParamCov.Invert();
   } else {
     Warning("RunKalmanFilter"," Determinant = 0");
-    return 1.e10;
+    return 1.0e10;
   }
 #ifdef PRINT_DETAIL_KALMAN
   Info("\tKalmanFilter","newParamCov.Print() [(W+U)^-1] (new covariances[W] for trackParamAtCluster)");
@@ -2698,6 +2720,12 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     Double_t chi2 = 0.0;
 
     chi2 = KalmanFilter(trackParam,&clus1);
+    
+    if( chi2 > 1.0e9 /* is order to check TMath::AreEqualAbs(chi2,,1.0e-5)*/  ) {
+      HLTWarning("Kalman Chi2 calculation cannot be completed...skipping slat track %d (c.p = 1)",ibacktrackseg);
+      fNofConnectedfrontTrackSeg[ibacktrackseg] = 0;
+      continue;
+    }
 
 #ifdef PRINT_KALMAN
     printf("\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\n",minCh,chi2,trackParam.GetInverseBendingMomentum());
@@ -2742,6 +2770,11 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
       extrapTrackParam.SetExtrapCovariances(extrapTrackParam.GetCovariances());
       
       chi2 = KalmanFilter(extrapTrackParam,&clus1);
+      if( chi2 > 1.0e9 /* is order to check TMath::AreEqualAbs(chi2,,1.0e-5)*/  ) {
+	HLTWarning("Kalman Chi2 calculation cannot be completed...skipping slat track %d (c.p = 2)",ibacktrackseg);
+	fNofConnectedfrontTrackSeg[ibacktrackseg] = 0;
+	continue;
+      }
       if(chi2<minChi2){
 	minChi2 = chi2;
 	minChi2Param = extrapTrackParam;
@@ -2788,7 +2821,12 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     extrapTrackParamAtCluster2.SetExtrapCovariances(extrapTrackParamAtCluster2.GetCovariances());
     
     chi2 = KalmanFilter(extrapTrackParamAtCluster2,&clus1);
-    
+    if(chi2 > 1.0e9 /* is order to check TMath::AreEqualAbs(chi2,,1.0e-5)*/ ) {
+      HLTWarning("Kalman Chi2 calculation cannot be completed...skipping slat track %d (c.p = 3)",ibacktrackseg);
+      fNofConnectedfrontTrackSeg[ibacktrackseg] = 0;
+      continue;
+    }
+
     trackParam = extrapTrackParamAtCluster2;
     
 #ifdef PRINT_KALMAN
