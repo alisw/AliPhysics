@@ -103,8 +103,8 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     
     Bool_t IsK0InvMass(const Double_t mass) const;
     Bool_t IsLambdaInvMass(const Double_t mass) const;
-    Bool_t IsAcceptedDCAK0(const Double_t dca) const;
-    Bool_t IsAcceptedDCALambda(const Double_t dca) const;
+    Bool_t IsAcceptedDCAK0(/*const Double_t dca*/) const;
+    Bool_t IsAcceptedDCALambda(/*const Double_t dca*/) const;
     Bool_t IsAccepteddEdx(const Double_t mom, const Double_t dEdx, AliPID::EParticleType n, const Double_t cutnSig) const;
     void   CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex, Bool_t& foundK0);
     void   CheckMCParticles(AliAODJet* jetVect, Int_t maxPtRegionIndex,Bool_t& isK0event);
