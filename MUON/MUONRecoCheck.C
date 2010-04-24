@@ -61,18 +61,20 @@
 
 Double_t langaufun(Double_t *x, Double_t *par);
 void     FitGausResVsMom(TH2* h, Int_t nBins, const Double_t mean0, const Double_t sigma0, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gSigma);
-void     FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* gSigma);
+void     FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gSigma);
 TCanvas* DrawVsAng(const char* name, const char* title, TH1* h1, TH2* h2);
 TCanvas* DrawVsPos(const char* name, const char* title, TH2* h1, TH2* h2, TH2* h3);
 TCanvas* DrawResMomVsMom(const char* name, const char* title, TH2* h, Int_t nBins, TF1* f2 = 0x0, const char* fitting = "");
 
 //------------------------------------------------------------------------------------
-void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const char* esdFileName="AliESDs.root",
-		    const char* ocdbPath = "local://$ALICE_ROOT/OCDB", Int_t absorberRegion = -1)
+void MUONRecoCheck(Int_t nEvent = -1, const char* pathSim="./generated/", const char* esdFileName="AliESDs.root",
+		   const char* ocdbPath = "local://$ALICE_ROOT/OCDB", const Double_t pMin = 0., const Double_t pMax = 300.,
+		   const Int_t pNBins = 30, Int_t absorberRegion = -1)
 {
   /// Associate the reconstructed tracks with the simulated ones and check the quality of the reconstruction
   /// (tracking/trigger efficiency; momentum, slope,... resolutions at first cluster and at vertex; cluster resolution).
-  /// You can limit the calculation of track resolution at vertex to the tracks crossing the absorber in a given region
+  /// - You can choose the momentum range and number of bins used to study the track resolution versus momentum.
+  /// - You can limit the calculation of track resolution at vertex to the tracks crossing the absorber in a given region
   /// with the flag "absorberRegion": -1=all, 1=[2,3]deg, 2=[3,10]deg.
   
   Double_t aAbsLimits[2];
@@ -92,6 +94,12 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
     aAbsLimits[1] = 90.;
   }
   
+  cout<<endl<<"Momentum range for track resolution studies: "<<pNBins<<" bins in ["<<pMin<<","<<pMax<<"] GeV/c"<<endl;
+  if (pMin >= pMax || pNBins <= 0) {
+    cout<<"--> incorrect momentum range"<<endl<<endl;
+    return;
+  } else cout<<endl;
+  
   AliLog::SetClassDebugLevel("AliMCEvent",-1);
   
   // ###################################### define histograms ###################################### //
@@ -109,10 +117,11 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   histoFile->mkdir("momentumAtVertex","momentumAtVertex");
   histoFile->cd("momentumAtVertex");
   
-  const Int_t pNBins = 30;
-  const Double_t pEdges[2] = {0., 300.};
+  const Double_t pEdges[2] = {pMin, pMax};
   const Int_t deltaPAtVtxNBins = 250;
-  const Double_t deltaPAtVtxEdges[2] = {-35., 15.};
+  Double_t deltaPAtVtxEdges[2];
+  if (pMax < 50.) { deltaPAtVtxEdges[0] = -20.; deltaPAtVtxEdges[1] = 5.; }
+  else { deltaPAtVtxEdges[0] = -35.; deltaPAtVtxEdges[1] = 15.; }
   
   TH1F *hResMomVertex = new TH1F("hResMomVertex"," delta P at vertex;#Delta_{p} (GeV/c)",deltaPAtVtxNBins,deltaPAtVtxEdges[0],deltaPAtVtxEdges[1]);
   
@@ -144,7 +153,10 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   histoFile->cd("momentumAtFirstCluster");
   
   const Int_t deltaPAtFirstClNBins = 500;
-  const Double_t deltaPAtFirstClEdges[2] = {-25., 25.};
+  Double_t deltaPAtFirstClEdges[2];
+  if (pMax < 25.) { deltaPAtFirstClEdges[0] = -5.; deltaPAtFirstClEdges[1] = 5.; }
+  else if (pMax < 50.) { deltaPAtFirstClEdges[0] = -10.; deltaPAtFirstClEdges[1] = 10.; }
+  else { deltaPAtFirstClEdges[0] = -25.; deltaPAtFirstClEdges[1] = 25.; }
   
   TH1F *hResMomFirstCluster = new TH1F("hResMomFirstCluster"," delta P at first cluster;#Delta_{p} (GeV/c)",deltaPAtFirstClNBins,deltaPAtFirstClEdges[0],deltaPAtFirstClEdges[1]);
   TH2D *hResMomFirstClusterVsMom = new TH2D("hResMomFirstClusterVsMom","#Delta_{p} at first cluster versus p;p (GeV/c);#Delta_{p} (GeV/c)",2*pNBins,pEdges[0],pEdges[1],deltaPAtFirstClNBins,deltaPAtFirstClEdges[0],deltaPAtFirstClEdges[1]);
@@ -224,7 +236,7 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   
   const Int_t deltaPDCANBins = 500;
   const Double_t deltaPDCAEdges[2] = {0., 1000.};
-  const Double_t deltaPMCSAngEdges[2] = {-0.5, 0.5};
+  const Double_t deltaPMCSAngEdges[2] = {-1.5, 1.5};
   
   TH1F *hPDCA = new TH1F("hPDCA","p #times DCA at vertex;p #times DCA (GeV #times cm)", deltaPDCANBins, deltaPDCAEdges[0], deltaPDCAEdges[1]);
   TH2D *hPDCAVsMom_2_3_Deg = new TH2D("hPDCAVsMom_2_3_Deg","p #times DCA versus p for tracks within [2,3[ degrees at absorber end;p (GeV/c);p #times DCA (GeV #times cm)",2*pNBins,pEdges[0],pEdges[1], deltaPDCANBins, deltaPDCAEdges[0], deltaPDCAEdges[1]);
@@ -239,9 +251,15 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   TH2D *hPDCAVsAngle = new TH2D("hPDCAVsAngle","p #times DCA versus track position at absorber end converted to degrees;angle (Deg);p #times DCA (GeV #times cm)",10,0.,10.,deltaPDCANBins, deltaPDCAEdges[0], deltaPDCAEdges[1]);
   TH2D *hPDCAVsMCAngle = new TH2D("hPDCAVsMCAngle","p #times DCA versus MC angle;MC angle (Deg);p #times DCA (GeV #times cm)",10,0.,10.,deltaPDCANBins, deltaPDCAEdges[0], deltaPDCAEdges[1]);
   
+  TGraphAsymmErrors* gMeanPDCAVsMom_2_3_Deg = new TGraphAsymmErrors(pNBins);
+  gMeanPDCAVsMom_2_3_Deg->SetName("gMeanPDCAVsMom_2_3_Deg");
+  gMeanPDCAVsMom_2_3_Deg->SetTitle("<p #times DCA> versus p for tracks within [2,3[ degrees at absorber end;p (GeV/c);<p #times DCA> (GeV #times cm)");
   TGraphAsymmErrors* gSigmaPDCAVsMom_2_3_Deg = new TGraphAsymmErrors(pNBins);
   gSigmaPDCAVsMom_2_3_Deg->SetName("gSigmaPDCAVsMom_2_3_Deg");
   gSigmaPDCAVsMom_2_3_Deg->SetTitle("#sigma_{p #times DCA} versus p for tracks within [2,3[ degrees at absorber end;p (GeV/c);#sigma_{p #times DCA} (GeV #times cm)");
+  TGraphAsymmErrors* gMeanPDCAVsMom_3_10_Deg = new TGraphAsymmErrors(pNBins);
+  gMeanPDCAVsMom_3_10_Deg->SetName("gMeanPDCAVsMom_3_10_Deg");
+  gMeanPDCAVsMom_3_10_Deg->SetTitle("<p #times DCA> versus p for tracks within [3,10[ degrees at absorber end;p (GeV/c);<p #times DCA> (GeV #times cm)");
   TGraphAsymmErrors* gSigmaPDCAVsMom_3_10_Deg = new TGraphAsymmErrors(pNBins);
   gSigmaPDCAVsMom_3_10_Deg->SetName("gSigmaPDCAVsMom_3_10_Deg");
   gSigmaPDCAVsMom_3_10_Deg->SetTitle("#sigma_{p #times DCA} versus p for tracks within [3,10[ degrees at absorber end;p (GeV/c);#sigma_{p #times DCA} (GeV #times cm)");
@@ -706,10 +724,10 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   FitGausResVsMom(hResSlopeYFirstClusterVsMom, pNBins, 0., 2.e-4, "slopeY residuals at first cluster", gMeanResSlopeYFirstClusterVsMom, gSigmaResSlopeYFirstClusterVsMom);
   
   // compute p*DCA resolution in the region [2,3] deg at absorber end
-  FitPDCAVsMom(hPDCAVsMom_2_3_Deg, pNBins, "p*DCA (tracks in [2,3] deg.)", gSigmaPDCAVsMom_2_3_Deg);
+  FitPDCAVsMom(hPDCAVsMom_2_3_Deg, pNBins, "p*DCA (tracks in [2,3] deg.)", gMeanPDCAVsMom_2_3_Deg, gSigmaPDCAVsMom_2_3_Deg);
   
   // compute p*DCA resolution in the region [3,10] deg at absorber end
-  FitPDCAVsMom(hPDCAVsMom_3_10_Deg, pNBins, "p*DCA (tracks in [3,10] deg.)", gSigmaPDCAVsMom_3_10_Deg);
+  FitPDCAVsMom(hPDCAVsMom_3_10_Deg, pNBins, "p*DCA (tracks in [3,10] deg.)", gMeanPDCAVsMom_3_10_Deg, gSigmaPDCAVsMom_3_10_Deg);
   
   // compute MCS angular dispersion in the region [2,3] deg at absorber end
   FitGausResVsMom(hPMCSAngVsMom_2_3_Deg, pNBins, 0., 2.e-3, "p*MCSAngle (tracks in [2,3] deg.)", gMeanPMCSAngVsMom_2_3_Deg, gSigmaPMCSAngVsMom_2_3_Deg);
@@ -808,7 +826,9 @@ void MUONRecoCheck (Int_t nEvent = -1, const char* pathSim="./generated/", const
   cResSlopeYVsPos->Write();
   
   histoFile->cd("DCA");
+  gMeanPDCAVsMom_2_3_Deg->Write();
   gSigmaPDCAVsMom_2_3_Deg->Write();
+  gMeanPDCAVsMom_3_10_Deg->Write();
   gSigmaPDCAVsMom_3_10_Deg->Write();
   gMeanPMCSAngVsMom_2_3_Deg->Write();
   gSigmaPMCSAngVsMom_2_3_Deg->Write();
@@ -985,7 +1005,7 @@ void FitGausResVsMom(TH2* h, Int_t nBins, const Double_t mean0, const Double_t s
 }
 
 //------------------------------------------------------------------------------------
-void FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* gSigma)
+void FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* gMean, TGraphAsymmErrors* gSigma)
 {
   /// generic function to fit p*DCA distributions
   static TF1* fPGaus = 0x0;
@@ -995,8 +1015,8 @@ void FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* g
   for (Int_t i = rebinFactorX; i <= h->GetNbinsX(); i+=rebinFactorX) {
     cout<<Form("\rFitting %s... %d/%d",fitting,i/rebinFactorX,nBins)<<flush;
     TH1D *tmp = h->ProjectionY("tmp",i-rebinFactorX+1,i,"e");
-    fPGaus->SetParameters(1.,-100.,100.);
-    Int_t rebin = 50.*(tmp->GetNbinsX()/(tmp->GetBinLowEdge(tmp->GetNbinsX()+1)-tmp->GetBinLowEdge(1)));
+    fPGaus->SetParameters(1.,0.,80.);
+    Int_t rebin = 25.*(tmp->GetNbinsX()/(tmp->GetBinLowEdge(tmp->GetNbinsX()+1)-tmp->GetBinLowEdge(1)));
     while (tmp->GetNbinsX()%rebin!=0) rebin--;
     tmp->Rebin(rebin);
     tmp->Fit("fPGaus","NQ");
@@ -1004,6 +1024,8 @@ void FitPDCAVsMom(TH2* h, Int_t nBins, const char* fitting, TGraphAsymmErrors* g
     Double_t p = (tmp->GetEntries() > 0) ? h->GetMean() : 0.5 * (h->GetBinLowEdge(i-rebinFactorX+1) + h->GetBinLowEdge(i+1));
     h->GetXaxis()->SetRange();
     Double_t pErr[2] = {p-h->GetBinLowEdge(i-rebinFactorX+1), h->GetBinLowEdge(i+1)-p};
+    gMean->SetPoint(i/rebinFactorX-1, p, fPGaus->GetParameter(1));
+    gMean->SetPointError(i/rebinFactorX-1, pErr[0], pErr[1], fPGaus->GetParError(1), fPGaus->GetParError(1));
     gSigma->SetPoint(i/rebinFactorX-1, p, fPGaus->GetParameter(2));
     gSigma->SetPointError(i/rebinFactorX-1, pErr[0], pErr[1], fPGaus->GetParError(2), fPGaus->GetParError(2));
     delete tmp;
