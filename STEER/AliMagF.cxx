@@ -43,6 +43,25 @@ const UShort_t AliMagF::fgkPolarityConvention = AliMagF::kConvLHC;
  Note: only "negative Bz(L3) with postive Bx(Dipole)" and its inverse was mapped in 2005. Hence 
  the GRP Manager will reject the runs with the current combinations (in the convention defined by the
  static Int_t AliMagF::GetPolarityConvention()) which do not lead to such field polarities.
+
+ ----------------------------------------------- 
+
+ Explanation on integrals in the TPC region
+ GetTPCInt(xyz,b) and GetTPCRatInt(xyz,b) give integrals from point (x,y,z) to point (x,y,0) 
+ (irrespectively of the z sign) of the following:
+ TPCInt:    b contains int{bx}, int{by}, int{bz}
+ TPCRatInt: b contains int{bx/bz}, int{by/bz}, int{(bx/bz)^2+(by/bz)^2}
+  
+ The same applies to integral in cylindrical coordinates:
+ GetTPCIntCyl(rphiz,b)
+ GetTPCIntRatCyl(rphiz,b)
+ They accept the R,Phi,Z coordinate (-pi<phi<pi) and return the field 
+ integrals in cyl. coordinates.
+
+ Thus, to compute the integral from arbitrary xy_z1 to xy_z2, one should take
+ b = b1-b2 with b1 and b2 coming from GetTPCInt(xy_z1,b1) and GetTPCInt(xy_z2,b2)
+
+ Note: the integrals are defined for the range -300<Z<300 and 0<R<300
 */
 //_______________________________________________________________________
 AliMagF::AliMagF():
