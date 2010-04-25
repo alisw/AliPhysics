@@ -88,8 +88,11 @@ private:
   Int_t FillInvariantMassHistograms(Int_t nc, Float_t cPos[][3], Float_t cEnergy[]);
 
   /** Histogram of the 2 cluster invariant mass */
-  TH1F *fHistTwoClusterInvMass;                 //!transient
+  TH1F *fHistTwoClusterInvMass0;                 //!transient
+  TH1F *fHistTwoClusterInvMass1;                 //!transient
   TH1F *fHistTwoClusterInvMass2;                 //!transient
+  TH1F *fHistTwoClusterInvMass3;                 //!transient
+  TH1F *fHistTwoClusterInvMass4;                 //!transient
 
   ClassDef(AliHLTCaloHistoInvMass, 0);
 

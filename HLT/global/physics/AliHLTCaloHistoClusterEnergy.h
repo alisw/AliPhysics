@@ -88,6 +88,9 @@ public:
   /** 2D histogram of cluster energy vs the number of cells in the cluster */
   TH2F * fHistClusterEnergyVsNCells;         //!transient
 
+/** 2D histogram of cluster energy deposit in eta vs phi */
+  TH2F * fHistClusterEnergyDepositEtaPhi;         //!transient
+  
   ClassDef(AliHLTCaloHistoClusterEnergy, 0);
 
 };

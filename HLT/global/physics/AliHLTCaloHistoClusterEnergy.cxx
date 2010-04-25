@@ -32,13 +32,15 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TRefArray.h"
+#include "TVector3.h"
 
 ClassImp(AliHLTCaloHistoClusterEnergy);
 
 AliHLTCaloHistoClusterEnergy::AliHLTCaloHistoClusterEnergy(TString det) :
   AliHLTCaloHistoProducer(),
   fHistClusterEnergy(NULL),
-  fHistClusterEnergyVsNCells(NULL)
+  fHistClusterEnergyVsNCells(NULL),
+  fHistClusterEnergyDepositEtaPhi(NULL)
 {
   // See header file for documentation
   fHistClusterEnergy = new TH1F(Form("%s fHistClusterEnergy", det.Data()), Form("%s Distribution of total energy in clusters", det.Data()), 5000, 0, 100);
@@ -50,6 +52,24 @@ AliHLTCaloHistoClusterEnergy::AliHLTCaloHistoClusterEnergy(TString det) :
   fHistClusterEnergyVsNCells->GetXaxis()->SetTitle("Energy in cluster (GeV)");
   fHistClusterEnergyVsNCells->GetYaxis()->SetTitle("Number of Cells in cluster");
   fHistArray->AddLast(fHistClusterEnergyVsNCells);
+  
+  Float_t phiMin = 0.;
+  Float_t phiMax = 360.;
+  Float_t etaMin = -1.;
+  Float_t etaMax = 1.;
+  
+  if(det == "PHOS")
+  {
+     phiMin = 255.0;
+     phiMax = 325.0;
+     etaMin = -0.13;
+     etaMax = 0.13;
+  }
+  
+  fHistClusterEnergyDepositEtaPhi = new TH2F(Form("%s fHistClusterEnergyDepositedEtaPhi", det.Data()), Form("%s Amount of energy deposited in Phi vs Eta", det.Data()), 200, phiMin, phiMax, 50, etaMin , etaMax);
+  fHistClusterEnergyVsNCells->GetXaxis()->SetTitle("#phi");
+  fHistClusterEnergyVsNCells->GetYaxis()->SetTitle("#eta");
+  fHistArray->AddLast(fHistClusterEnergyDepositEtaPhi);
 
 }
 
@@ -89,5 +109,12 @@ template <class T>
 Int_t AliHLTCaloHistoClusterEnergy::FillClusterEnergyHistos(T* cluster) {
   fHistClusterEnergy->Fill(cluster->E());
   fHistClusterEnergyVsNCells->Fill(cluster->E(), cluster->GetNCells());
+  
+  Float_t pos[3];
+  cluster->GetPosition(pos);
+  TVector3 vec(pos);
+  
+  fHistClusterEnergyDepositEtaPhi->Fill(vec.Phi(), vec.Eta(), cluster->E());
+  
   return 0;
 }

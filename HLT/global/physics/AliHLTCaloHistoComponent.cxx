@@ -315,9 +315,27 @@ Int_t AliHLTCaloHistoComponent::ProcessBlocks(const AliHLTComponentBlockData * p
   
   clustersVector.resize((int) (clusterHeader->fNClusters)); 
   Int_t nClusters = 0;
-  
+  Double_t ampFrac;
+  UShort_t cellId;
+  Bool_t cutCluster = false;
   while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
-    clustersVector[nClusters++] = clusterStruct;  
+     cutCluster = false;
+     if(clusterStruct->fEnergy > 0.5)
+     {
+	 for(UInt_t i = 0; i < clusterStruct->fNCells; i++)
+	 {
+	    fClusterReader->GetCell(clusterStruct, cellId, ampFrac, i);
+	    if(ampFrac > 0.9)
+	    {
+	       cutCluster = true;
+	       break;
+	    }
+	 }
+     if(!cutCluster)
+     {
+	 clustersVector[nClusters++] = clusterStruct;  
+     }
+     }
   }
   
   nClusters = clusterHeader->fNClusters;

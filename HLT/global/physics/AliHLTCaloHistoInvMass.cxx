@@ -39,37 +39,68 @@
 #include "TLorentzVector.h"
 
 AliHLTCaloHistoInvMass::AliHLTCaloHistoInvMass(TString det) :
-  fHistTwoClusterInvMass(NULL),
-  fHistTwoClusterInvMass2(NULL)
- 
+  fHistTwoClusterInvMass0(NULL),
+  fHistTwoClusterInvMass1(NULL),
+  fHistTwoClusterInvMass2(NULL),
+  fHistTwoClusterInvMass3(NULL),
+  fHistTwoClusterInvMass4(NULL)
 {
   // See header file for documentation
-  fHistTwoClusterInvMass = new TH1F(Form("%s fHistTwoClusterInvMass", det.Data()), Form("Invariant mass of two clusters in %s, E > 0.8 GeV", det.Data()), 200, 0, 1);
-  fHistTwoClusterInvMass->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
-  fHistTwoClusterInvMass->GetYaxis()->SetTitle("Counts");
-  fHistTwoClusterInvMass->SetMarkerStyle(21);
-  fHistArray->AddLast(fHistTwoClusterInvMass);
+  fHistTwoClusterInvMass0 = new TH1F(Form("%s fHistTwoClusterInvMass0", det.Data()), Form("Invariant mass of two clusters in %s, 0.8 GeV < E < 1.2", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass0->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
+  fHistTwoClusterInvMass0->GetYaxis()->SetTitle("Counts");
+  fHistTwoClusterInvMass0->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistTwoClusterInvMass0);
 
+  fHistTwoClusterInvMass1 = new TH1F(Form("%s fHistTwoClusterInvMass1", det.Data()), Form("Invariant mass of two clusters in %s, 1.2 GeV < E < 1.6", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass1->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
+  fHistTwoClusterInvMass1->GetYaxis()->SetTitle("Counts");
+  fHistTwoClusterInvMass1->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistTwoClusterInvMass1);
 
-  fHistTwoClusterInvMass2 = new TH1F(Form("%s fHistTwoClusterInvMass2", det.Data()), Form("Invariant mass of two clusters in %s E > 2.4 GeV", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass2 = new TH1F(Form("%s fHistTwoClusterInvMass2", det.Data()), Form("Invariant mass of two clusters in %s, 1.6 GeV < E < 2.0", det.Data()), 200, 0, 1);
   fHistTwoClusterInvMass2->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
   fHistTwoClusterInvMass2->GetYaxis()->SetTitle("Counts");
   fHistTwoClusterInvMass2->SetMarkerStyle(21);
   fHistArray->AddLast(fHistTwoClusterInvMass2);
+
+  fHistTwoClusterInvMass3 = new TH1F(Form("%s fHistTwoClusterInvMass3", det.Data()), Form("Invariant mass of two clusters in %s, 2.0 GeV < E < 4.0", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass3->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
+  fHistTwoClusterInvMass3->GetYaxis()->SetTitle("Counts");
+  fHistTwoClusterInvMass3->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistTwoClusterInvMass3);
+
+  fHistTwoClusterInvMass4 = new TH1F(Form("%s fHistTwoClusterInvMass4", det.Data()), Form("Invariant mass of two clusters in %s E > 4.0 GeV", det.Data()), 200, 0, 1);
+  fHistTwoClusterInvMass4->GetXaxis()->SetTitle("m_{#gamma#gamma} GeV");
+  fHistTwoClusterInvMass4->GetYaxis()->SetTitle("Counts");
+  fHistTwoClusterInvMass4->SetMarkerStyle(21);
+  fHistArray->AddLast(fHistTwoClusterInvMass4);
 
 
 }
 
 AliHLTCaloHistoInvMass::~AliHLTCaloHistoInvMass()
 {
-  if(fHistTwoClusterInvMass)
-    delete fHistTwoClusterInvMass;
-  fHistTwoClusterInvMass = NULL;
 
+  if(fHistTwoClusterInvMass0)
+    delete fHistTwoClusterInvMass0;
+  fHistTwoClusterInvMass0 = NULL;
+
+  if(fHistTwoClusterInvMass1)
+    delete fHistTwoClusterInvMass1;
+  fHistTwoClusterInvMass1 = NULL;
 
   if(fHistTwoClusterInvMass2)
     delete fHistTwoClusterInvMass2;
   fHistTwoClusterInvMass2 = NULL;
+
+  if(fHistTwoClusterInvMass3)
+    delete fHistTwoClusterInvMass3;
+  fHistTwoClusterInvMass3 = NULL;
+
+  if(fHistTwoClusterInvMass4)
+    delete fHistTwoClusterInvMass4;
+  fHistTwoClusterInvMass4 = NULL;
 
 
 }
@@ -116,7 +147,7 @@ Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(Int_t nc, Float_t cPos
   for(Int_t ic = 0; ic<(nc-1); ic++) { 
      
     //BALLE hardcoded variable
-    if(cEnergy[ic] < 0.8)
+    if(cEnergy[ic] < 0.4)
       continue;
 
     //Get momentum vector
@@ -128,9 +159,10 @@ Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(Int_t nc, Float_t cPos
     for(Int_t jc = ic+1; jc<nc; jc++) { 
      
     //BALLE hardcoded variable
-      if(cEnergy[jc] < 0.8)
+      if(cEnergy[jc] < 0.4)
 	continue;
 
+      
 
       
       //Get second momentum vector
@@ -141,13 +173,38 @@ Int_t AliHLTCaloHistoInvMass::FillInvariantMassHistograms(Int_t nc, Float_t cPos
       //Calculate inv mass
       Double_t m = TMath::Sqrt( 2 *(cEnergy[ic]* cEnergy[jc] - iVec.Dot(jVec) ) );
       
-      //Fill histogram
-      fHistTwoClusterInvMass->Fill(m);
+      //Fill histograms
       
-      //BALLE hardcoded variable
-      if( (cEnergy[ic] > 2.4) && (cEnergy[jc] > 2.4))
-	 fHistTwoClusterInvMass2->Fill(m);
-      
+      Float_t sum = cEnergy[ic]+cEnergy[ic];
+      if(sum > 1.2)
+      {
+	 if(sum > 1.6)
+	 {
+	    if(sum > 2.0)
+	    {
+	       if(sum > 4.0)
+	       {
+		  fHistTwoClusterInvMass4->Fill(m);
+	       }
+	       else
+	       {
+		  fHistTwoClusterInvMass3->Fill(m);
+	       }
+	    }
+	    else
+	    {
+	       fHistTwoClusterInvMass2->Fill(m);
+	    }
+	 }
+	 else
+	 {
+	    fHistTwoClusterInvMass1->Fill(m);
+	 }
+      }
+      else
+      {
+	 fHistTwoClusterInvMass0->Fill(m);
+      }
     }
   }
 
