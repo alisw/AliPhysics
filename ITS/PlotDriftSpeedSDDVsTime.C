@@ -41,6 +41,15 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   Char_t filnam[200],filnamalien[200];
   TGraphErrors** gvdrvstime=new TGraphErrors*[520];
   TGraphErrors** gvdrvsrun=new TGraphErrors*[520];
+  TGraph* gGoodInjVsRun=new TGraph(0);
+  gGoodInjVsRun->SetName("gGoodInjVsRun");
+  TGraph* gAverSpeedVsRun=new TGraph(0);
+  gAverSpeedVsRun->SetName("gAverSpeedVsRun");
+  TGraph* gGoodInjVsTime=new TGraph(0);
+  gGoodInjVsTime->SetName("gGoodInjVsTime");
+  TGraph* gAverSpeedVsTime=new TGraph(0);
+  gAverSpeedVsTime->SetName("gAverSpeedVsIime");
+  
   for(Int_t iMod=0; iMod<260;iMod++){
     gvdrvstime[iMod]=new TGraphErrors(0);    
     gvdrvstime[iMod]->SetTitle(Form("Module %d",iMod+240));
@@ -69,12 +78,32 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
     AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
     TObjArray *drspSDD = (TObjArray *)ent->GetObject();
     
+    Int_t iGoodInj=0;
+    Int_t iAverSpeed=0;
+    Float_t timeday=0;
+    
     AliITSDriftSpeedArraySDD *vdriftarr;
+    AliITSDriftSpeedArraySDD *vdriftarr0;
+    AliITSDriftSpeedArraySDD *vdriftarr1;
+
     for(Int_t iMod=0; iMod<260;iMod++){
       Int_t index=-1;
       if(anode<256) index=2*iMod;
       else index=2*iMod+1;
       vdriftarr=(AliITSDriftSpeedArraySDD*)drspSDD->At(index);
+	  
+      Int_t i0=2*iMod;
+      Int_t i1=1+2*iMod;
+      vdriftarr0=(AliITSDriftSpeedArraySDD*)drspSDD->At(i0);
+      vdriftarr1=(AliITSDriftSpeedArraySDD*)drspSDD->At(i1);
+	  
+      Int_t statusInj0=vdriftarr0->GetInjectorStatus();
+      Int_t statusInj1=vdriftarr1->GetInjectorStatus();
+      if(statusInj0>0) iGoodInj++;
+      else iAverSpeed++;
+      if(statusInj1>0) iGoodInj++;
+      else iAverSpeed++;
+	  
       Int_t iAn=anode;
       if(anode>256) iAn=anode-256;
       Float_t vdrift=vdriftarr->GetDriftSpeed(0,iAn);
@@ -89,7 +118,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
       if(year==2009) timeZero=1247762992;
       else timeZero=1262300400;
       if(timest<timeZero) continue;
-      Float_t timeday=float(timest-timeZero)/60./60./24.;
+      timeday=float(timest-timeZero)/60./60./24.;
       Float_t mob=vdrift*1.E5/Edrift;  
       Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
       if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift,temper);
@@ -97,7 +126,17 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
       gvdrvstime[iMod]->SetPoint(npt,timeday,vdrift);
       gvdrvstime[iMod]->SetPointError(npt,0,errSpeed[iMod]);
     }
-    f->Close();
+    Int_t npt=gGoodInjVsRun->GetN();
+    gGoodInjVsRun->SetPoint(npt,(Float_t)nrun,iGoodInj);
+    gAverSpeedVsRun->SetPoint(npt,(Float_t)nrun,iAverSpeed);
+	
+    npt=gGoodInjVsTime->GetN();
+    gGoodInjVsTime->SetPoint(npt,timeday,iGoodInj);
+    gAverSpeedVsTime->SetPoint(npt,timeday,iAverSpeed);
+	
+    printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
+    printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
+	f->Close();
   }
 
   Int_t mod1=244-240;
@@ -122,10 +161,14 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
     gvdrvstime[iMod]->Write();
     gvdrvsrun[iMod]->Write();
   }
+  gGoodInjVsRun->Write();
+  gGoodInjVsTime->Write();
+  gAverSpeedVsRun->Write();
+  gAverSpeedVsTime->Write();
   ofil->Close();
 
   gStyle->SetOptTitle(0);
-  TCanvas* c0=new TCanvas();
+  TCanvas* c0=new TCanvas("c0","Vdrift vs. time");
   c0->SetGridx();
   c0->SetGridy();
   gvdrvstime[mod1]->SetMarkerStyle(20);
@@ -165,7 +208,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   lent->SetTextColor(4);
   leg->Draw();
 
-  TCanvas* c1=new TCanvas();
+  TCanvas* c1=new TCanvas("c1","Vdrift vs. run");
   c1->SetGridx();
   c1->SetGridy();
   gvdrvsrun[mod1]->SetMarkerStyle(20);
@@ -254,7 +297,24 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
     lin->SetY2(i+0.5);
     lin->DrawClone();
   }
+
+  TCanvas* c4=new TCanvas("c4","GoodMod vs. run");
+  c4->SetGridx();
+  c4->SetGridy();
+  gGoodInjVsRun->SetMarkerStyle(20);
+  gGoodInjVsRun->SetMarkerColor(2);
+  gGoodInjVsRun->GetXaxis()->SetTitle("Run number");
+  gGoodInjVsRun->GetYaxis()->SetTitle("Half-modules with drift speed from injectors");
+  gGoodInjVsRun->Draw("AP");
   
+  TCanvas* c5=new TCanvas("c5","GoodMod vs. time");
+  c5->SetGridx();
+  c5->SetGridy();
+  gGoodInjVsTime->SetMarkerStyle(20);
+  gGoodInjVsTime->SetMarkerColor(2);
+  gGoodInjVsTime->GetXaxis()->SetTitle(title);
+  gGoodInjVsTime->GetYaxis()->SetTitle("Half-modules with drift speed from injectors");
+  gGoodInjVsTime->Draw("AP");
 }
 
 void FillErrors(Float_t errSpeed[260]){
