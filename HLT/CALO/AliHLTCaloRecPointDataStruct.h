@@ -52,13 +52,19 @@ struct AliHLTCaloRecPointDataStruct
 
   /** x coordinate */
   Float_t fX;                                 //COMMENT
-
+  
+  /** y coordinate */
+  Float_t fY;									//added, federico
+  
   /** z coordinate */ 
   Float_t fZ;                                 //COMMENT
 
   /** Module number */
   Int_t fModule;                              //COMMENT
-
+   
+   /** Particle type */
+  Int_t fParticle;                              //COMMENT
+  
   /** The total energy of the rec point */
   Float_t fAmp;                               //COMMENT
 

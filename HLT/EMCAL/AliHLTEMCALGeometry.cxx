@@ -55,7 +55,7 @@ AliHLTEMCALGeometry::~AliHLTEMCALGeometry()
 }
   
 void 
-AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTEMCALRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord)
+AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord)
 {
 
 	 Int_t istrip = 0;
