@@ -395,7 +395,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       if ( !fImage[esIndex] ) {
         fImage[esIndex] = new TCanvas(title, title) ;
       }
-      fImage[esIndex]->Clear() ; 
+      //fImage[esIndex]->Clear() ; 
       fImage[esIndex]->SetTitle(title) ; 
       fImage[esIndex]->cd() ; 
       TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
