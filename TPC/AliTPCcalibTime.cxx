@@ -1325,7 +1325,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   align->SetRunNumber(fRun );
   Float_t dca[2],cov[3];
   track->GetImpactParameters(dca,cov);
-  if (TMath::Abs(dca[0])<kMaxDy&&TMath::Abs(dca[0])<kMaxDy){
+  if (TMath::Abs(dca[0])<kMaxDy){
     FillResHistoTPCITS(&pTPC,&pITS);
     FillResHistoTPC(track);
   }
@@ -1749,7 +1749,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   TString axisName[4];
   TString axisTitle[4];
   //
-  binsTrack[0]  =100;
+  binsTrack[0]  =50;
   axisName[0]   ="#Delta";
   axisTitle[0]  ="#Delta";
   //
@@ -1771,6 +1771,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   xminTrack[0] =-1.0; xmaxTrack[0]=1.0;  // 
   fResHistoTPCITS[0] = new THnSparseS("TPCITS#Delta_{Y} (cm)","#Delta_{Y} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[0]    = new THnSparseS("TPCVertex#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-1.0; xmaxTrack[0]=1.0;  // 
   fResHistoTPCTRD[0] = new THnSparseS("TPCTRD#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta z
@@ -1780,7 +1781,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   fResHistoTPCTRD[1] = new THnSparseS("TPCTRD#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta snp-P2
-  xminTrack[0] =-0.025; xmaxTrack[0]=0.025;  // 
+  xminTrack[0] =-0.015; xmaxTrack[0]=0.015;  // 
   fResHistoTPCITS[2] = new THnSparseS("TPCITS#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[2] = new THnSparseS("TPCITSv#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[2] = new THnSparseS("TPCTRD#Delta_{#phi}","#Delta_{#phi}", 4, binsTrack,xminTrack, xmaxTrack);
@@ -1854,8 +1855,9 @@ void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
   //
   Float_t dca[2], cov[3];
   pTrack->GetImpactParametersTPC(dca,cov);
-  for (Int_t ihisto=0; ihisto<2; ihisto++){
+  for (Int_t ihisto=0; ihisto<5; ihisto++){
     histoX[0]=pTPCvertex->GetParameter()[ihisto]-lits.GetParameter()[ihisto];
+    if (ihisto<2) histoX[0]=dca[ihisto];
     fResHistoTPCvertex[ihisto]->Fill(histoX);
   }
 }
@@ -1873,8 +1875,12 @@ void        AliTPCcalibTime::FillResHistoTPCTRD(const AliExternalTrackParam * pT
   histoX[2]= phi;
   histoX[3]= pTPCOut->GetSnp();
   //
+  AliExternalTrackParam ltrd(*pTRDIn);
+  ltrd.Rotate(pTPCOut->GetAlpha());
+  ltrd.PropagateTo(pTPCOut->GetX(),fMagF);
+
   for (Int_t ihisto=0; ihisto<5; ihisto++){
-    histoX[0]=pTPCOut->GetParameter()[ihisto]-pTRDIn->GetParameter()[ihisto];
+    histoX[0]=pTPCOut->GetParameter()[ihisto]-ltrd.GetParameter()[ihisto];
     fResHistoTPCTRD[ihisto]->Fill(histoX);
   }
 

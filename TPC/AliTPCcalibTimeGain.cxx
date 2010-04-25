@@ -404,13 +404,13 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     }    
 
     if (seed) { 
-      Double_t tpcSignal = GetTPCdEdx(seed);
-      fHistDeDxTotal->Fill(meanP, tpcSignal);
-      //
       if (fLowMemoryConsumption) {
 	if (meanP > 0.5 || meanP < 0.4) continue;
 	meanP = 0.45; // set all momenta to one in order to save memory
       }
+      Double_t tpcSignal = GetTPCdEdx(seed);
+      fHistDeDxTotal->Fill(meanP, tpcSignal);
+      //
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
       Double_t vec[6] = {tpcSignal,time,2,meanDrift,meanP,runNumber};
       fHistGainTime->Fill(vec);
