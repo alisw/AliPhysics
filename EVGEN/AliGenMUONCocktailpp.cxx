@@ -16,9 +16,9 @@
 /* $Id$ */
 
 //
-// Classe to create the coktail for physics with muons for pp at 14 TeV
-// The followoing sources: 
-// jpsi,psiP, upsilon, upsilonP, upsilonPP are added to Pythia
+// Class to create the coktail for physics with muons for pp collisions
+// using the The followoing sources: 
+// jpsi, psiP, upsilon, upsilonP, upsilonPP, open charm and open beauty
 // The free parameeters are :
 //      pp reaction cross-section
 //      production cross-sections in pp collisions 
@@ -35,12 +35,19 @@
 // Cross-sections for charmonia are now directly taken from the Yellow Report 
 // (hep-ph/0311048) Tab.9, page 19. See below for details w.r.t. beam energy. 
 // usage: see example of Config in $ALICE_ROOT/prod/LHC09a10/Config.C
-
+//------------------------
+// 04/2010:
+// - CMS energy passed via parameter
+// i.e. gener->SetCMSEnergy(AliGenMUONCocktailpp::kCMS07TeV) in Config.C 
+// - resonances now added to the cocktail via AddReso2Generator 
+// - cleaning 
+// B.Vulpescu & P.Crochet         
+ 
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TF1.h>
 #include <TVirtualMC.h>
-
+#include <iostream.h>
 #include "AliGenCocktailEventHeader.h"
 
 #include "AliGenCocktailEntry.h"
@@ -81,82 +88,121 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
      fUpsPPPol(0),
      fPolFrame(0),
 
-// x-sections for pp @ 7 TeV: charmonia from hep-ph/0311048 Tab.9, page 19,
-// bottomnium as for 10 TeV
-/*     fCMSEnergy(7),
-     fSigmaReaction(0.0695),
-     fSigmaJPsi(21.8e-6),
-     fSigmaChic1(21.1e-6),
-     fSigmaChic2(34.9e-6),
-     fSigmaPsiP(4.93e-6),
-     fSigmaUpsilon(0.463e-6),
-     fSigmaUpsilonP(0.154e-6),
-     fSigmaUpsilonPP(0.0886e-6),
-     fSigmaCCbar(6.91e-3),
-     fSigmaBBbar(0.232e-3),
-*/
+     fCMSEnergyTeV(0),
+     fCMSEnergyTeVArray(),
+     fSigmaReaction(0),  
+     fSigmaReactionArray(),  
+     fSigmaJPsi(0),      
+     fSigmaJPsiArray(),      
+     fSigmaChic1(0),     
+     fSigmaChic1Array(),     
+     fSigmaChic2(0),     
+     fSigmaChic2Array(),     
+     fSigmaPsiP(0),      
+     fSigmaPsiPArray(),      
+     fSigmaUpsilon(0),   
+     fSigmaUpsilonArray(),   
+     fSigmaUpsilonP(0),  
+     fSigmaUpsilonPArray(),  
+     fSigmaUpsilonPP(0), 
+     fSigmaUpsilonPPArray(), 
+     fSigmaCCbar(0),     
+     fSigmaCCbarArray(),     
+     fSigmaBBbar(0),
+     fSigmaBBbarArray(),
 
-//x-sections for pp @ 10 TeV: charmonia and bottomonia from 14 TeV numbers
-// scaled down according to ccbar and bbar cross-sections
-     fCMSEnergy(10),
-     fSigmaReaction(0.0695),
-     fSigmaJPsi(26.06e-6),
-     fSigmaChic1(25.18e-6),
-     fSigmaChic2(41.58e-6),
-     fSigmaPsiP(5.88e-6),
-     fSigmaUpsilon(0.658e-6),
-     fSigmaUpsilonP(0.218e-6),
-     fSigmaUpsilonPP(0.122e-6),
-     fSigmaCCbar(8.9e-3),
-     fSigmaBBbar(0.33e-3),
-
-
-//x-sections for pp @ 14 TeV: charmonia from hep-ph/0311048 Tab.9, page 19,
-// bottomonium from hep-ph/0311048 Tab.9, page 19 taken inton account that 
-// feed-down from chib is included
-/*     fCMSEnergy(14),
-     fSigmaReaction(0.070),
-     fSigmaJPsi(32.9e-6),
-     fSigmaChic1(31.8e-6),
-     fSigmaChic2(52.5e-6),
-     fSigmaPsiP(7.43e-6),
-     fSigmaUpsilon(0.989e-6),
-     fSigmaUpsilonP(0.502e-6),
-     fSigmaUpsilonPP(0.228e-6),
-     fSigmaCCbar(11.2e-3),
-     fSigmaBBbar(0.51e-3),
-*/
      fSigmaSilent(kFALSE)
 {
 // Constructor
+
+// x-sections for pp @ 7 TeV: charmonia from hep-ph/0311048 Tab.9, page 19,
+// bottomnium as for 10 TeV
+    fCMSEnergyTeVArray[0] =   7.00;
+    fSigmaReactionArray[0] =  0.0695;
+    fSigmaJPsiArray[0] =      21.8e-6;
+    fSigmaChic1Array[0] =     21.1e-6;
+    fSigmaChic2Array[0] =     34.9e-6;
+    fSigmaPsiPArray[0] =      4.93e-6;
+    fSigmaUpsilonArray[0] =   0.463e-6;
+    fSigmaUpsilonPArray[0] =  0.154e-6;
+    fSigmaUpsilonPPArray[0] = 0.0886e-6;
+    fSigmaCCbarArray[0] =     6.91e-3;
+    fSigmaBBbarArray[0] =     0.232e-3;
+    
+//x-sections for pp @ 10 TeV: charmonia and bottomonia from 14 TeV numbers
+// scaled down according to ccbar and bbar cross-sections
+    fCMSEnergyTeVArray[1] =   10.00;
+    fSigmaReactionArray[1] =  0.0695;
+    fSigmaJPsiArray[1] =      26.06e-6;
+    fSigmaChic1Array[1] =     25.18e-6;
+    fSigmaChic2Array[1] =     41.58e-6;
+    fSigmaPsiPArray[1] =      5.88e-6;
+    fSigmaUpsilonArray[1] =   0.658e-6;
+    fSigmaUpsilonPArray[1] =  0.218e-6;
+    fSigmaUpsilonPPArray[1] = 0.122e-6;
+    fSigmaCCbarArray[1] =     8.9e-3;
+    fSigmaBBbarArray[1] =     0.33e-3;
+    
+//x-sections for pp @ 14 TeV: charmonia from hep-ph/0311048 Tab.9, page 19,
+// bottomonium from hep-ph/0311048 Tab.9, page 19 taken inton account that 
+// feed-down from chib is included
+    fCMSEnergyTeVArray[2] =   14.00;
+    fSigmaReactionArray[2] =  0.070;
+    fSigmaJPsiArray[2] =      32.9e-6;
+    fSigmaChic1Array[2] =     31.8e-6;
+    fSigmaChic2Array[2] =     52.5e-6;
+    fSigmaPsiPArray[2] =      7.43e-6;
+    fSigmaUpsilonArray[2] =   0.989e-6;
+    fSigmaUpsilonPArray[2] =  0.502e-6;
+    fSigmaUpsilonPPArray[2] = 0.228e-6;
+    fSigmaCCbarArray[2] =     11.2e-3;
+    fSigmaBBbarArray[2] =     0.51e-3;
+    
 }
 
 //_________________________________________________________________________
 AliGenMUONCocktailpp::~AliGenMUONCocktailpp()
-// Destructor
 {
-    
+// Destructor
+
+}
+
+//_________________________________________________________________________
+void AliGenMUONCocktailpp::SetCMSEnergy(CMSEnergyCode cmsEnergy) 
+{
+// setter for CMSEnergy and corresponding cross-sections
+  fCMSEnergyTeV   = fCMSEnergyTeVArray[cmsEnergy];
+  fSigmaReaction  = fSigmaReactionArray[cmsEnergy];  
+  fSigmaJPsi      = fSigmaJPsiArray[cmsEnergy];      
+  fSigmaChic1     = fSigmaChic1Array[cmsEnergy];     
+  fSigmaChic2     = fSigmaChic2Array[cmsEnergy];     
+  fSigmaPsiP      = fSigmaPsiPArray[cmsEnergy];      
+  fSigmaUpsilon   = fSigmaUpsilonArray[cmsEnergy];   
+  fSigmaUpsilonP  = fSigmaUpsilonPArray[cmsEnergy];  
+  fSigmaUpsilonPP = fSigmaUpsilonPPArray[cmsEnergy]; 
+  fSigmaCCbar     = fSigmaCCbarArray[cmsEnergy];     
+  fSigmaBBbar     = fSigmaBBbarArray[cmsEnergy];
 }
 
 //_________________________________________________________________________
 void AliGenMUONCocktailpp::SetResPolarization(Double_t JpsiPol, Double_t PsiPPol, Double_t UpsPol,
 				Double_t UpsPPol, Double_t UpsPPPol, char *PolFrame){
-   
+// setter for resonances polarization   
    if (strcmp(PolFrame,"kColSop")==0){
-      fJpsiPol  = (JpsiPol>=-1  && JpsiPol<=1)  ? JpsiPol  : 0;
-      fPsiPPol  = (PsiPPol>=-1  && PsiPPol<=1)  ? PsiPPol  : 0;
-      fUpsPol   = (UpsPol>=-1   && UpsPol<=1)   ? UpsPol   : 0;
-      fUpsPPol  = (UpsPPol>=-1  && UpsPPol<=1)  ? UpsPPol  : 0;
-      fUpsPPPol = (UpsPPPol>=-1 && UpsPPPol<=1) ? UpsPPPol : 0;
-      fPolFrame = 0;
+       fJpsiPol  = (JpsiPol>=-1  && JpsiPol<=1)  ? JpsiPol  : 0;
+       fPsiPPol  = (PsiPPol>=-1  && PsiPPol<=1)  ? PsiPPol  : 0;
+       fUpsPol   = (UpsPol>=-1   && UpsPol<=1)   ? UpsPol   : 0;
+       fUpsPPol  = (UpsPPol>=-1  && UpsPPol<=1)  ? UpsPPol  : 0;
+       fUpsPPPol = (UpsPPPol>=-1 && UpsPPPol<=1) ? UpsPPPol : 0;
+       fPolFrame = 0;
    } else if (strcmp(PolFrame,"kHelicity")==0){
-        fJpsiPol  = (JpsiPol>=-1  && JpsiPol<=1)  ? JpsiPol  : 0;
-        fPsiPPol  = (PsiPPol>=-1  && PsiPPol<=1)  ? PsiPPol  : 0;
-        fUpsPol   = (UpsPol>=-1   && UpsPol<=1)   ? UpsPol   : 0;
-        fUpsPPol  = (UpsPPol>=-1  && UpsPPol<=1)  ? UpsPPol  : 0;
-        fUpsPPPol = (UpsPPPol>=-1 && UpsPPPol<=1) ? UpsPPPol : 0;
-	fPolFrame = 1;
-   
+       fJpsiPol  = (JpsiPol>=-1  && JpsiPol<=1)  ? JpsiPol  : 0;
+       fPsiPPol  = (PsiPPol>=-1  && PsiPPol<=1)  ? PsiPPol  : 0;
+       fUpsPol   = (UpsPol>=-1   && UpsPol<=1)   ? UpsPol   : 0;
+       fUpsPPol  = (UpsPPol>=-1  && UpsPPol<=1)  ? UpsPPol  : 0;
+       fUpsPPPol = (UpsPPPol>=-1 && UpsPPPol<=1) ? UpsPPPol : 0;
+       fPolFrame = 1;
+
    } else {
        AliInfo(Form("The polarization frame is not valid"));
        AliInfo(Form("No polarization will be set"));
@@ -171,7 +217,9 @@ void AliGenMUONCocktailpp::SetResPolarization(Double_t JpsiPol, Double_t PsiPPol
 //_________________________________________________________________________
 void AliGenMUONCocktailpp::CreateCocktail()
 {
-    
+// create and add resonances and open HF to the coctail
+    Int_t cmsEnergy = Int_t(fCMSEnergyTeV);
+
 // These limits are only used for renormalization of quarkonia cross section
 // Pythia events are generated in 4pi  
     Double_t ptMin  = fPtMin;
@@ -182,21 +230,6 @@ void AliGenMUONCocktailpp::CreateCocktail()
     Double_t phiMax = fPhiMax*180./TMath::Pi();
     AliInfo(Form("Ranges pT:%4.1f : %4.1f GeV/c, y:%4.2f : %4.2f, Phi:%5.1f : %5.1f degres",ptMin,ptMax,yMin,yMax,phiMin,phiMax));
     
-// Ratios with respect to the reaction cross-section in the 
-// kinematics limit of the MUONCocktail
-    Double_t ratiojpsi;
-    Double_t ratiochic1;
-    Double_t ratiochic2;
-    Double_t ratiopsiP;
-    Double_t ratioupsilon;
-    Double_t ratioupsilonP;
-    Double_t ratioupsilonPP;
-    Double_t ratioccbar;
-    Double_t ratiobbbar;
-
-// Beam energy
-    Int_t cmsEnergy = fCMSEnergy; 
-
 // Cross sections in barns (from PPR Vol. II p: 552) pp - 14 TeV and 
 // corrected from feed down of higher resonances 
 
@@ -213,366 +246,105 @@ void AliGenMUONCocktailpp::CreateCocktail()
 // Cross sections corrected with the BR in mu+mu-
 // (only in case of use of AliDecayerPolarized)
 
-    if(TMath::Abs(fJpsiPol)  > 1.e-30)	{sigmajpsi      = fSigmaJPsi*0.0593;}
-    if(TMath::Abs(fChic1Pol) > 1.e-30)	{sigmachic1     = fSigmaChic1*0.;} // tb consistent
-    if(TMath::Abs(fChic2Pol) > 1.e-30)	{sigmachic2     = fSigmaChic2*0.;} // tb consistent 
-    if(TMath::Abs(fPsiPPol)  > 1.e-30)	{sigmapsiP      = fSigmaPsiP*0.0075;}
-    if(TMath::Abs(fUpsPol)   > 1.e-30)	{sigmaupsilon   = fSigmaUpsilon*0.0248;}
-    if(TMath::Abs(fUpsPPol)  > 1.e-30)	{sigmaupsilonP  = fSigmaUpsilonP*0.0193;}
-    if(TMath::Abs(fUpsPPPol) > 1.e-30)	{sigmaupsilonPP = fSigmaUpsilonPP*0.0218;}
-
-// MinBias NN cross section @ pp 14 TeV -PR  Vol II p:473
-    Double_t sigmaReaction = fSigmaReaction;
-
-    Int_t eincStart = 10;
+    if(TMath::Abs(fJpsiPol) > 1.e-30) {sigmajpsi      = fSigmaJPsi*0.0593;}
+    if(TMath::Abs(fChic1Pol) > 1.e-30) {sigmachic1     = fSigmaChic1*0.;} // tb consistent
+    if(TMath::Abs(fChic2Pol) > 1.e-30) {sigmachic2     = fSigmaChic2*0.;} // tb consistent 
+    if(TMath::Abs(fPsiPPol) > 1.e-30) {sigmapsiP      = fSigmaPsiP*0.0075;}
+    if(TMath::Abs(fUpsPol) > 1.e-30) {sigmaupsilon   = fSigmaUpsilon*0.0248;}
+    if(TMath::Abs(fUpsPPol) > 1.e-30) {sigmaupsilonP  = fSigmaUpsilonP*0.0193;}
+    if(TMath::Abs(fUpsPPPol) > 1.e-30) {sigmaupsilonPP = fSigmaUpsilonPP*0.0218;}
 
     AliInfo(Form("the parametrised resonances uses the decay mode %d",fDecayModeResonance));
 
-// Generation using CDF scaled distribution for pp@14TeV (from D. Stocco)
-//----------------------------------------------------------------------
-// Jpsi generator
-    AliGenParam * genjpsi;
-    if(cmsEnergy == eincStart){
+// Create and add resonances to the generator
+    AliGenParam * genjpsi=0;
+    AliGenParam * genchic1=0;
+    AliGenParam * genchic2=0;
+    AliGenParam * genpsiP=0;
+    AliGenParam * genupsilon=0;
+    AliGenParam * genupsilonP=0;
+    AliGenParam * genupsilonPP=0;
+    
+    Char_t nameJpsi[10];    
+    Char_t nameChic1[10];    
+    Char_t nameChic2[10];    
+    Char_t namePsiP[10];
+    Char_t nameUps[10];    
+    Char_t nameUpsP[10];    
+    Char_t nameUpsPP[10];    
+
+    sprintf(nameJpsi,"Jpsi");    
+    sprintf(nameChic1,"Chic1");
+    sprintf(nameChic2,"Chic2");
+    sprintf(namePsiP,"PsiP");
+    sprintf(nameUps,"Ups");
+    sprintf(nameUpsP,"UpsP");
+    sprintf(nameUpsPP,"UpsPP");
+
+    if(cmsEnergy == 10){
 	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 10", "Jpsi");
-    } else {
-	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp ", "Jpsi");
-    }
-// first step: generation in 4pi
-    genjpsi->SetPtRange(0.,100.);
-    genjpsi->SetYRange(-8.,8.);
-    genjpsi->SetPhiRange(0.,360.);
-    genjpsi->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genjpsi->SetDecayer(fDecayer);
-
-    genjpsi->Init();  // generation in 4pi
-    ratiojpsi = sigmajpsi / sigmaReaction * genjpsi->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax); // get weight
-    if (!fSigmaSilent) {
-      AliInfo(Form("jpsi prod. cross-section in pp %5.3g b",sigmajpsi));
-      AliInfo(Form("jpsi prod. probability per collision in acceptance %5.3g",ratiojpsi));
-    }
-// second step: generation in selected kinematical range
-    genjpsi->SetPtRange(ptMin, ptMax);  
-    genjpsi->SetYRange(yMin, yMax);
-    genjpsi->SetPhiRange(phiMin, phiMax);
-    genjpsi->Init(); // generation in selected kinematic range
-
-    TVirtualMCDecayer *jpsiDec = 0;
-    if(TMath::Abs(fJpsiPol) > 1.e-30){
-    AliInfo(Form("******Setting polarized decayer for J/psi"));
-    if(fPolFrame==0) {
-         jpsiDec = new AliDecayerPolarized(fJpsiPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-	 AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fJpsiPol));
-	   }
-    if(fPolFrame==1) {
-         jpsiDec = new AliDecayerPolarized(fJpsiPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fJpsiPol));
-	   }
-    jpsiDec->SetForceDecay(kAll);
-    jpsiDec->Init();
-    genjpsi->SetDecayer(jpsiDec);
-    }
-
-    AddGenerator(genjpsi, "Jpsi", ratiojpsi); // Adding Generator
-
-
-//----------------------------------------------------------------------
-// Chic1 generator
-    AliGenParam * genchic1;
-    if(cmsEnergy == eincStart){
 	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp 10", "Chic1");
-    } else {
-	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp ", "Chic1");
-    }
-// first step: generation in 4pi
-    genchic1->SetPtRange(0.,100.);
-    genchic1->SetYRange(-8.,8.);
-    genchic1->SetPhiRange(0.,360.);
-    genchic1->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genchic1->SetDecayer(fDecayer);
-
-    genchic1->Init();  // generation in 4pi
-    ratiochic1 = sigmachic1 / sigmaReaction * genchic1->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax); // get weight
-    if (!fSigmaSilent) {
-      AliInfo(Form("chic1 prod. cross-section in pp %5.3g b",sigmachic1));
-      AliInfo(Form("chic1 prod. probability per collision in acceptance %5.3g",ratiochic1));
-    }
-// second step: generation in selected kinematical range
-    genchic1->SetPtRange(ptMin, ptMax);  
-    genchic1->SetYRange(yMin, yMax);
-    genchic1->SetPhiRange(phiMin, phiMax);
-    genchic1->Init(); // generation in selected kinematic range
-
-    TVirtualMCDecayer *chic1Dec = 0;
-    if(fChic1Pol != 0){
-    AliInfo(Form("******Setting polarized decayer for Chic1"));
-    if(fPolFrame==0) {
-         chic1Dec = new AliDecayerPolarized(fChic1Pol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-	 AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fChic1Pol));
-	   }
-    if(fPolFrame==1) {
-         chic1Dec = new AliDecayerPolarized(fChic1Pol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fChic1Pol));
-	   }
-    chic1Dec->SetForceDecay(kAll);
-    chic1Dec->Init();
-    genchic1->SetDecayer(chic1Dec);
-    }
-
-    AddGenerator(genchic1, "Chic1", ratiochic1); // Adding Generator
-
-//----------------------------------------------------------------------
-// Chic2 generator
-    AliGenParam * genchic2;
-    if(cmsEnergy == eincStart){
 	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp 10", "Chic2");
-    } else {
-	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp ", "Chic2");
-    }
-// first step: generation in 4pi
-    genchic2->SetPtRange(0.,100.);
-    genchic2->SetYRange(-8.,8.);
-    genchic2->SetPhiRange(0.,360.);
-    genchic2->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genchic1->SetDecayer(fDecayer);
-
-    genchic2->Init();  // generation in 4pi
-    ratiochic2 = sigmachic2 / sigmaReaction * genchic2->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax); // get weight
-    if (!fSigmaSilent) {
-      AliInfo(Form("chic2 prod. cross-section in pp %5.3g b",sigmachic2));
-      AliInfo(Form("chic2 prod. probability per collision in acceptance %5.3g",ratiochic2));
-    }
-// second step: generation in selected kinematical range
-    genchic2->SetPtRange(ptMin, ptMax);  
-    genchic2->SetYRange(yMin, yMax);
-    genchic2->SetPhiRange(phiMin, phiMax);
-    genchic2->Init(); // generation in selected kinematic range
-
-    TVirtualMCDecayer *chic2Dec = 0;
-    if(fChic2Pol != 0){
-    AliInfo(Form("******Setting polarized decayer for Chic2"));
-    if(fPolFrame==0) {
-         chic2Dec = new AliDecayerPolarized(fChic2Pol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-	 AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fChic2Pol));
-	   }
-    if(fPolFrame==1) {
-         chic2Dec = new AliDecayerPolarized(fChic2Pol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fChic2Pol));
-	   }
-    chic2Dec->SetForceDecay(kAll);
-    chic2Dec->Init();
-    genchic2->SetDecayer(chic2Dec);
-    }
-
-    AddGenerator(genchic2, "Chic2", ratiochic2); // Adding Generator
-
-//------------------------------------------------------------------
-// Psi prime generator
-    AliGenParam * genpsiP;
-    if(cmsEnergy == eincStart){    
 	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp 10", "PsiP");
-    } else {
-	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp", "PsiP");
-    }
-// first step: generation in 4pi
-    genpsiP->SetPtRange(0.,100.);
-    genpsiP->SetYRange(-8.,8.);
-    genpsiP->SetPhiRange(0.,360.);
-    genpsiP->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genpsiP->SetDecayer(fDecayer);
-
-    genpsiP->Init();  // generation in 4pi
-    ratiopsiP = sigmapsiP / sigmaReaction * genpsiP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (!fSigmaSilent) {
-      AliInfo(Form("psiP prod. cross-section in pp %5.3g b",sigmapsiP));
-      AliInfo(Form("psiP prod. probability per collision in acceptance %5.3g",ratiopsiP));
-    }
-// second step: generation in selected kinematical range
-    genpsiP->SetPtRange(ptMin, ptMax);  
-    genpsiP->SetYRange(yMin, yMax);
-    genpsiP->SetPhiRange(phiMin, phiMax);
-    genpsiP->Init(); // generation in selected kinematic range
-
-     TVirtualMCDecayer *psipDec = 0;
-     if(TMath::Abs(fPsiPPol) > 1.e-30){
-      AliInfo(Form("******Setting polarized decayer for psi'"));
-      if(fPolFrame==0) {
-        psipDec = new AliDecayerPolarized(fPsiPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fPsiPPol));
-	  }
-      if(fPolFrame==1) {
-        psipDec = new AliDecayerPolarized(fPsiPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fPsiPPol));
-	  }
-      psipDec->SetForceDecay(kAll);
-      psipDec->Init();
-      genpsiP->SetDecayer(psipDec);
-     }
-
-    AddGenerator(genpsiP, "PsiP", ratiopsiP); // Adding Generator
-
-//------------------------------------------------------------------
-// Upsilon 1S generator
-    AliGenParam * genupsilon;
-    if(cmsEnergy == eincStart) {
 	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp 10", "Upsilon");
-    } else {
-	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp", "Upsilon");
-    }
-// first step: generation in 4pi
-    genupsilon->SetPtRange(0.,100.); 
-    genupsilon->SetYRange(-8.,8.);
-    genupsilon->SetPhiRange(0.,360.);
-    genupsilon->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genupsilon->SetDecayer(fDecayer);
-    genupsilon->Init();  // generation in 4pi
-    ratioupsilon = sigmaupsilon / sigmaReaction * genupsilon->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (!fSigmaSilent) {
-      AliInfo(Form("Upsilon 1S prod. cross-section in pp %5.3g b",sigmaupsilon));
-      AliInfo(Form("Upsilon 1S prod. probability per collision in acceptance %5.3g",ratioupsilon));
-    }
-// second step: generation in selected kinematical range
-    genupsilon->SetPtRange(ptMin, ptMax);  
-    genupsilon->SetYRange(yMin, yMax);
-    genupsilon->SetPhiRange(phiMin, phiMax);
-    genupsilon->Init(); // generation in selected kinematical range
-     
-     TVirtualMCDecayer *upsDec = 0;
-     if(TMath::Abs(fUpsPol) > 1.e-30){
-      AliInfo(Form("******Setting polarized decayer for Upsilon"));
-      if(fPolFrame==0) {
-        upsDec = new AliDecayerPolarized(fUpsPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fUpsPol));
-	  }
-      if(fPolFrame==1) {
-        upsDec = new AliDecayerPolarized(fUpsPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fUpsPol));
-	  }
-      upsDec->SetForceDecay(kAll);
-      upsDec->Init();
-      genupsilon->SetDecayer(upsDec);
-     }
 
-    AddGenerator(genupsilon,"Upsilon", ratioupsilon); // Adding Generator
-//------------------------------------------------------------------
-// Upsilon 2S generator
-    AliGenParam * genupsilonP;
-    if(cmsEnergy == eincStart){
 	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp 10", "UpsilonP");
-    } else {
-	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp", "UpsilonP");
-    }
-	
-// first step: generation in 4pi
-    genupsilonP->SetPtRange(0.,100.);
-    genupsilonP->SetYRange(-8.,8.);
-    genupsilonP->SetPhiRange(0.,360.);
-    genupsilonP->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genupsilonP->SetDecayer(fDecayer);  
-    genupsilonP->Init();  // generation in 4pi
-    ratioupsilonP = sigmaupsilonP / sigmaReaction * genupsilonP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (!fSigmaSilent) {
-      AliInfo(Form("Upsilon 2S prod. cross-section in pp %5.3g b",sigmaupsilonP));
-      AliInfo(Form("Upsilon 2S prod. probability per collision in acceptance %5.3g",ratioupsilonP));
-    }
-// second step: generation in the kinematical range
-    genupsilonP->SetPtRange(ptMin, ptMax);  
-    genupsilonP->SetYRange(yMin, yMax);
-    genupsilonP->SetPhiRange(phiMin, phiMax);
-    genupsilonP->Init(); // generation in selected kinematical range
-
-     TVirtualMCDecayer *upspDec = 0;
-     if(TMath::Abs(fUpsPPol) > 1.e-30){
-      AliInfo(Form("******Setting polarized decayer for Upsilon'"));
-      if(fPolFrame==0) {
-        upspDec = new AliDecayerPolarized(fUpsPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fUpsPPol));
-	  }
-      if(fPolFrame==1) {
-        upspDec = new AliDecayerPolarized(fUpsPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fUpsPPol));
-	  }
-      upspDec->SetForceDecay(kAll);
-      upspDec->Init();
-      genupsilonP->SetDecayer(upspDec);
-     }
-    
-    AddGenerator(genupsilonP,"UpsilonP", ratioupsilonP); // Adding Generator
-    
-//------------------------------------------------------------------
-// Upsilon 3S generator
-    AliGenParam * genupsilonPP;
-    if(cmsEnergy == eincStart){
 	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp 10", "UpsilonPP");
-    }
-    else {
+    } else if (cmsEnergy == 7){
+	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 7", "Jpsi");
+	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp 7", "Chic1");
+	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp 7", "Chic2");
+	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp 7", "PsiP");
+
+	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp 7", "Upsilon");
+	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp 7", "UpsilonP");
+	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp 7", "UpsilonPP");
+    } else if (cmsEnergy == 14){
+	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp ", "Jpsi");
+	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp ", "Chic1");
+	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp ", "Chic2");
+	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp", "PsiP");
+
+	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp", "Upsilon");
+	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp", "UpsilonP");
+
 	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp", "UpsilonPP");	
     }
 
-// first step: generation in 4pi
-    genupsilonPP->SetPtRange(0.,100.); 
-    genupsilonPP->SetYRange(-8.,8.);
-    genupsilonPP->SetPhiRange(0.,360.);
-    genupsilonPP->SetForceDecay(fDecayModeResonance);
-    //if (!gMC) genupsilonPP->SetDecayer(fDecayer);  
-    genupsilonPP->Init();  // generation in 4pi
-    ratioupsilonPP = sigmaupsilonPP / sigmaReaction * genupsilonPP->GetRelativeArea(ptMin,ptMax,yMin,yMax,phiMin,phiMax);
-    if (!fSigmaSilent) {
-      AliInfo(Form("Upsilon 3S prod. cross-section in pp %5.3g b",sigmaupsilonPP));
-      AliInfo(Form("Upsilon 3S prod. probability per collision in acceptance %5.3g",ratioupsilonPP));
-    }
-// second step: generation in selected kinematical range
-    genupsilonPP->SetPtRange(ptMin, ptMax);  
-    genupsilonPP->SetYRange(yMin, yMax);
-    genupsilonPP->SetPhiRange(phiMin, phiMax);
-    genupsilonPP->Init(); // generation in selected kinematical range
-
-     TVirtualMCDecayer *upsppDec = 0;
-     if(fUpsPPPol != 0){
-      AliInfo(Form("******Setting polarized decayer for Upsilon''"));
-      if(fPolFrame==0) {
-        upsppDec = new AliDecayerPolarized(fUpsPPPol,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",fUpsPPPol));
-	  }
-      if(fPolFrame==1) {
-        upsppDec = new AliDecayerPolarized(fUpsPPPol,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
-        AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",fUpsPPPol));
-	  }
-      upsppDec->SetForceDecay(kAll);
-      upsppDec->Init();
-      genupsilonPP->SetDecayer(upsppDec);
-     }
-    
-    AddGenerator(genupsilonPP,"UpsilonPP", ratioupsilonPP); // Adding Generator
+    AddReso2Generator(nameJpsi,genjpsi,sigmajpsi,fJpsiPol);
+    AddReso2Generator(nameChic1,genchic2,sigmachic1,fChic2Pol);
+    AddReso2Generator(nameChic2,genpsiP,sigmapsiP,fPsiPPol);    
+    AddReso2Generator(namePsiP,genchic1,sigmachic1,fChic1Pol);    
+    AddReso2Generator(nameUps,genupsilon,sigmaupsilon,fUpsPol);    
+    AddReso2Generator(nameUpsP,genupsilonP,sigmaupsilonP,fUpsPPol);    
+    AddReso2Generator(nameUpsPP,genupsilonPP,sigmaupsilonPP,fUpsPPPol);    
 
 //------------------------------------------------------------------
 // Generator of charm
-    
-    AliGenCorrHF *gencharm = new AliGenCorrHF(1, 4, cmsEnergy);  
+    AliGenCorrHF *gencharm = new AliGenCorrHF(1, 4, cmsEnergy);
     gencharm->SetMomentumRange(0,9999);
     gencharm->SetForceDecay(kAll);
-    ratioccbar = sigmaccbar/sigmaReaction;
-    //if (!gMC) gencharm->SetDecayer(fDecayer);  
+    Double_t ratioccbar = sigmaccbar/fSigmaReaction;
+    if (!gMC) gencharm->SetDecayer(fDecayer);  
     gencharm->Init();
     if (!fSigmaSilent) {
       AliInfo(Form("c-cbar prod. cross-section in pp %5.3g b",sigmaccbar));
       AliInfo(Form("c-cbar prod. probability per collision in acceptance %5.3g",ratioccbar));
     }
     AddGenerator(gencharm,"CorrHFCharm",ratioccbar);
-
 //------------------------------------------------------------------
 // Generator of beauty
-
-    AliGenCorrHF *genbeauty = new AliGenCorrHF(1, 5, cmsEnergy);  
+    AliGenCorrHF *genbeauty = new AliGenCorrHF(1, 5, cmsEnergy);
     genbeauty->SetMomentumRange(0,9999);
     genbeauty->SetForceDecay(kAll);
-    ratiobbbar = sigmabbbar/sigmaReaction;
-    //if (!gMC) genbeauty->SetDecayer(fDecayer);  
+    Double_t ratiobbbar = sigmabbbar/fSigmaReaction;
+    if (!gMC) genbeauty->SetDecayer(fDecayer);  
     genbeauty->Init();
     if (!fSigmaSilent) {
       AliInfo(Form("b-bbar prod. cross-section in pp  %5.3g b",sigmabbbar));
       AliInfo(Form("b-bbar prod. probability per collision in acceptance %5.3g",ratiobbbar));
     }
-    AddGenerator(genbeauty,"CorrHFBeauty",ratiobbbar); 
+    AddGenerator(genbeauty,"CorrHFBeauty",ratiobbbar);
 
 //-------------------------------------------------------------------
 // Pythia generator
@@ -596,9 +368,58 @@ void AliGenMUONCocktailpp::CreateCocktail()
 
 }
 
+//-------------------------------------------------------------------
+void AliGenMUONCocktailpp::AddReso2Generator(Char_t* nameReso, 
+					     AliGenParam* const genReso,
+					     Double_t sigmaReso,
+					     Double_t polReso)
+{
+// add resonances to the cocktail
+    Double_t phiMin = fPhiMin*180./TMath::Pi();
+    Double_t phiMax = fPhiMax*180./TMath::Pi();
+
+    // first step: generation in 4pi
+    genReso->SetPtRange(0.,100.); 
+    genReso->SetYRange(-8.,8.);
+    genReso->SetPhiRange(0.,360.);
+    genReso->SetForceDecay(fDecayModeResonance);
+    if (!gMC) genReso->SetDecayer(fDecayer);  
+    genReso->Init();  // generation in 4pi
+// Ratios with respect to the reaction cross-section in the 
+// kinematics limit of the MUONCocktail
+    Double_t ratioReso = sigmaReso / fSigmaReaction * genReso->GetRelativeArea(fPtMin,fPtMax,fYMin,fYMax,phiMin,phiMax);
+    if (!fSigmaSilent) {
+      AliInfo(Form("%s prod. cross-section in pp %5.3g b",nameReso,sigmaReso));
+      AliInfo(Form("%s prod. probability per collision in acceptance %5.3g",nameReso,ratioReso));
+    }
+// second step: generation in selected kinematical range
+    genReso->SetPtRange(fPtMin, fPtMax);  
+    genReso->SetYRange(fYMin, fYMax);
+    genReso->SetPhiRange(phiMin, phiMax);
+    genReso->Init(); // generation in selected kinematical range
+
+     TVirtualMCDecayer *decReso = 0;
+     if(TMath::Abs(polReso) > 1.e-30){
+      AliInfo(Form("******Setting polarized decayer for %s''",nameReso));
+      if(fPolFrame==0) {
+        decReso = new AliDecayerPolarized(polReso,AliDecayerPolarized::kColSop,AliDecayerPolarized::kMuon);
+        AliInfo(Form("******Reference frame: %s, alpha: %f","Collins-Soper",polReso));
+	  }
+      if(fPolFrame==1) {
+        decReso = new AliDecayerPolarized(polReso,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
+        AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",polReso));
+	  }
+      decReso->SetForceDecay(kAll);
+      decReso->Init();
+      genReso->SetDecayer(decReso);
+     }
+    
+    AddGenerator(genReso,nameReso,ratioReso); // Adding Generator    
+}
+
+//-------------------------------------------------------------------
 void AliGenMUONCocktailpp::Init()
 {
-    //
     // Initialisation
     TIter next(fEntries);
     AliGenCocktailEntry *entry;
@@ -660,6 +481,7 @@ void AliGenMUONCocktailpp::Generate()
 	    }
 	}  
 	next.Reset();
+
 
 // Testing primordial trigger: Single muons or dimuons with Pt above a Pt cut 
 // in the muon spectrometer acceptance

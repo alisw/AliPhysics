@@ -3,25 +3,25 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
 //
-// Classe to create the coktail for physics with muons for pp at 14 TeV
-// The followoing sources: 
-// jpsi,psiP, upsilon, upsilonP, upsilonPP are added to Pythia
-// The free parameeters are :
-//      pp reaction cross-section
-//      production cross-sections in pp collisions
+// Class to create the coktail for physics with muons for pp collisions
+// using the The followoing sources: 
+// jpsi, psiP, upsilon, upsilonP, upsilonPP, open charm and open beauty
+//
 
 #include "AliGenCocktail.h"
 #include "AliDecayer.h"
 
 class AliGenCocktailEntry;
+class AliGenParam;
 
 class AliGenMUONCocktailpp : public AliGenCocktail
 {
  public:
 
     AliGenMUONCocktailpp();
+    enum CMSEnergyCode { kCMS07TeV, kCMS10TeV, kCMS14TeV, kNCMSEs };    
+
     virtual ~AliGenMUONCocktailpp();    
     virtual void Init();
     virtual void CreateCocktail();
@@ -44,33 +44,25 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     void    SetMuonThetaRange(Float_t ThetaMin, Float_t ThetaMax){
 	fMuonThetaMinCut=ThetaMin;
 	fMuonThetaMaxCut=ThetaMax; }    
-    void    SetDecayer(AliDecayer* decayer){fDecayer = decayer;}
+    void    SetDecayer(AliDecayer* const decayer){fDecayer = decayer;}
     void    SetDecayModeResonance(Decay_t decay){ fDecayModeResonance = decay;}
     void    SetDecayModePythia(Decay_t decay){ fDecayModePythia = decay;}
     void    SetResPolarization(Double_t JpsiPol, Double_t PsiPPol, Double_t UpsPol, 
     				Double_t UpsPPol, Double_t UpsPPPol, char *PolFrame);
 
-    
-    void    SetCMSEnergy(Int_t einc)      { fCMSEnergy = einc; }
-    void    SetSigmaReaction(Double_t sig)      { fSigmaReaction = sig; }    
-    void    SetSigmaJPsi(Double_t sig)      { fSigmaJPsi = sig; }
-    void    SetSigmaChic1(Double_t sig)      { fSigmaChic1 = sig; }
-    void    SetSigmaChic2(Double_t sig)      { fSigmaChic2 = sig; }
-    void    SetSigmaPsiP(Double_t sig)      { fSigmaPsiP = sig; }
-    void    SetSigmaUpsilon(Double_t sig)   { fSigmaUpsilon = sig; }
-    void    SetSigmaUpsilonP(Double_t sig)  { fSigmaUpsilonP = sig; }
-    void    SetSigmaUpsilonPP(Double_t sig) { fSigmaUpsilonPP = sig; }
-    void    SetSigmaCCbar(Double_t sig)     { fSigmaCCbar = sig; }
-    void    SetSigmaBBbar(Double_t sig)     { fSigmaBBbar = sig; }
-
+    void    SetCMSEnergy(CMSEnergyCode cmsEnergy);
     void    SetSigmaSilent() { fSigmaSilent = kTRUE; }
+    
  protected:
 
     //
  private:
     AliGenMUONCocktailpp(const AliGenMUONCocktailpp &cocktail); 
     AliGenMUONCocktailpp & operator=(const AliGenMUONCocktailpp &cocktail); 
-    AliDecayer* fDecayer;        // External decayer
+
+    void AddReso2Generator(Char_t *nameReso, AliGenParam* const genReso, Double_t sigmaReso, Double_t polReso);
+    
+    AliDecayer* fDecayer; // External decayer
     Decay_t fDecayModeResonance; //decay mode in which resonances are forced to decay, default: kAll
     Decay_t fDecayModePythia; //decay mode in which particles in Pythia are forced to decay, default: kAll
     Int_t   fMuonMultiplicity; // Muon multiplicity for the primordial trigger
@@ -83,20 +75,34 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Int_t   fNGenerated;// Number of generated cocktails
     Double_t fJpsiPol, fChic1Pol, fChic2Pol, fPsiPPol, fUpsPol, fUpsPPol, fUpsPPPol;//Resonances polarization parameters
     Int_t    fPolFrame;//Resonances polarization frame (Collins-Soper / Helicity)
-    Int_t fCMSEnergy; // CMS beam energy
-    Double_t fSigmaReaction; //  cross-section pp
-    Double_t fSigmaJPsi;      // cross-section JPsi resonance
-    Double_t fSigmaChic1;      // cross-section Chic1 resonance
-    Double_t fSigmaChic2;      // cross-section Chic2 resonance    
-    Double_t fSigmaPsiP;      // cross-section Psi-prime resonance
-    Double_t fSigmaUpsilon;   // cross-section Upsilon resonance
-    Double_t fSigmaUpsilonP;  // cross-section Upsilon-prime resonance
-    Double_t fSigmaUpsilonPP; // cross-section Upsilon-double-prime resonance
-    Double_t fSigmaCCbar;     // cross-section correlated charm
-    Double_t fSigmaBBbar;     // cross-section correlated beauty
+//    Int_t fCMSEnergy; // CMS beam energy
+    
+    Double_t fCMSEnergyTeV;                 // energy
+    Double_t fCMSEnergyTeVArray[kNCMSEs];   //!
+    Double_t fSigmaReaction;                // xsec pp
+    Double_t fSigmaReactionArray[kNCMSEs];  //!
+    Double_t fSigmaJPsi;                    // xsec JPsi
+    Double_t fSigmaJPsiArray[kNCMSEs];      //!
+    Double_t fSigmaChic1;                   // xsec Chic1 
+    Double_t fSigmaChic1Array[kNCMSEs];     //!
+    Double_t fSigmaChic2;                   // xsec Chic2 
+    Double_t fSigmaChic2Array[kNCMSEs];     //!
+    Double_t fSigmaPsiP;                    // xsec Psi-prime
+    Double_t fSigmaPsiPArray[kNCMSEs];      //!
+    Double_t fSigmaUpsilon;                 // xsec Upsilon
+    Double_t fSigmaUpsilonArray[kNCMSEs];   //!
+    Double_t fSigmaUpsilonP;                // xsec Upsilon-prime 
+    Double_t fSigmaUpsilonPArray[kNCMSEs];  //!
+    Double_t fSigmaUpsilonPP;               // xsec Upsilon-double-prime
+    Double_t fSigmaUpsilonPPArray[kNCMSEs]; //!
+    Double_t fSigmaCCbar;                   // xsec correlated charm
+    Double_t fSigmaCCbarArray[kNCMSEs];     //!
+    Double_t fSigmaBBbar;                   // xsec correlated beauty
+    Double_t fSigmaBBbarArray[kNCMSEs];     //!
+    
     Bool_t   fSigmaSilent;    // hide values of cross-sections in output
 
-    ClassDef(AliGenMUONCocktailpp,4)  //  cocktail for physics in the Alice
+    ClassDef(AliGenMUONCocktailpp,5)  //  cocktail for physics in the Alice
 };
 
 #endif
