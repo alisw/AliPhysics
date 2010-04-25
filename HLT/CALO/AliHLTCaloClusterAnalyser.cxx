@@ -58,7 +58,9 @@ AliHLTCaloClusterAnalyser::AliHLTCaloClusterAnalyser() :
   fHaveDistanceToBadChannel(false),
   fGeometry(0),
   fClusterType(AliESDCaloCluster::kPHOSCluster),
-  fRecoParamsPtr(0)
+  fRecoParamsPtr(0),
+  fCutOnSingleCellClusters(false),
+  fSingleCellEnergyCut(0.5)
 {
   //See header file for documentation
 }
@@ -214,6 +216,11 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	 HLTError("Out of buffer: available size is: %d, total size used: %d", availableSize, totSize);
 	 return -ENOBUFS;
       }
+      
+      AliHLTCaloRecPointDataStruct *recPointPtr = fRecPointArray[i];
+
+      if(fCutOnSingleCellClusters && recPointPtr->fAmp > fSingleCellEnergyCut && recPointPtr->fMultiplicity == 1) continue;
+      
       totSize += sizeof(AliHLTCaloClusterDataStruct);
       
       caloClusterPtr = fCaloClusterDataPtr;
@@ -233,8 +240,6 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       caloClusterPtr->fTOF = 0;
       caloClusterPtr->fTrackDx = 0;
       caloClusterPtr->fTrackDz = 0;
-     
-      AliHLTCaloRecPointDataStruct *recPointPtr = fRecPointArray[i];
       
       AliHLTCaloGlobalCoordinate globalCoord;
       fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);

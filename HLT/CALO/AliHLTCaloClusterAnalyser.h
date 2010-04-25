@@ -179,7 +179,10 @@ public:
   */
   void SetRecoParamHandler(AliHLTCaloRecoParamHandler *recoParams) { fRecoParamsPtr = recoParams; }
   
+  /** Set cut on single cell clusters */
+  void SetCutOnSingleCellClusters(Bool_t doCut, Float_t energyCut) {fCutOnSingleCellClusters = doCut; fSingleCellEnergyCut = energyCut; }
   
+ 
 private:
   
   /** Used for calculation of center of gravity */
@@ -220,6 +223,12 @@ private:
   
   /** Handler to get the hold of reconstruction parameters */
   AliHLTCaloRecoParamHandler *fRecoParamsPtr; //COMMENT
+  
+  /** Should we cut out single celled high energy clusters? */
+  Bool_t fCutOnSingleCellClusters;       //COMMENT
+  
+  /** If we cut on single celled clusters, what is our energy cut? */
+  Float_t fSingleCellEnergyCut; //COMMENT
  
  /** Copy constructor  not implemented */
  AliHLTCaloClusterAnalyser ( const AliHLTCaloClusterAnalyser &); // not implemented

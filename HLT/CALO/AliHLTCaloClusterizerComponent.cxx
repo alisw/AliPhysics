@@ -214,6 +214,15 @@ AliHLTCaloClusterizerComponent::ScanConfigurationArgument(int argc, const char *
       fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
       return 1;
     }
+  
+  if (argument.CompareTo("-cutonsinglecell") == 0)
+    {
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fAnalyserPtr->SetCutOnSingleCellClusters(true, argument.Atof());
+      return 1;
+    }
+    
   return 0;
 }
 
