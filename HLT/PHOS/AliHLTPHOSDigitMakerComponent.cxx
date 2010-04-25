@@ -215,6 +215,9 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
   AliHLTCaloMapper *mapper = new AliHLTPHOSMapper();
   fDigitMakerPtr->SetMapper(mapper);
   
+  Float_t mintime = 0.;
+  Float_t maxtime =50.;
+  
   for(int i = 0; i < argc; i++)
     {
       if(!strcmp("-lowgainfactor", argv[i]))
@@ -225,8 +228,18 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 	{
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
 	}
+	if(!strcmp("-mintime", argv[i]))
+	{
+	   mintime = atof(argv[i+1]);
+	}
+	if(!strcmp("-maxtime", argv[i]))
+	{
+	   maxtime = atof(argv[i+1]);
+	}
     }
  
+ fDigitMakerPtr->SetTimeWindow(mintime, maxtime);
+
  if(GetBCMFromCDB()) return -1;
  if(GetGainsFromCDB()) return -1;
   

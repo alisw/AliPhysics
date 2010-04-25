@@ -56,7 +56,9 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
   fLowGainFactors(0),
   fBadChannelMask(0),
   fChannelBook(0),
-  fMaxEnergy(900)
+  fMaxEnergy(900),
+  fMinTime(0.0),
+  fMaxTime(1008.0)
 {
   // See header file for documentation
 
@@ -81,8 +83,8 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
       for(int z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
 	{
 
-	  fHighGainFactors[x][z] = 0.005;
-	  fLowGainFactors[x][z] = 0.08;
+	  fHighGainFactors[x][z] = 0.0153;
+	  fLowGainFactors[x][z] = 0.245;
 	 
 	  fBadChannelMask[x][z] = new Bool_t[fCaloConstants->GetNGAINS()];
 	  fBadChannelMask[x][z][fCaloConstants->GetHIGHGAIN()] = false;
@@ -242,7 +244,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
   fDigitStructPtr->fOverflow = false;
   
   fDigitStructPtr->fID = fDigitStructPtr->fZ * fCaloConstants->GetNXCOLUMNSMOD() + fDigitStructPtr->fX;
-
+  
   if(coord.fGain == fCaloConstants->GetHIGHGAIN() )
     {
       fDigitStructPtr->fEnergy = channelData->fEnergy*fHighGainFactors[coord.fX][coord.fZ];
@@ -271,7 +273,10 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 
 bool AliHLTCaloDigitMaker::UseDigit(AliHLTCaloCoordinate &channelCoordinates, AliHLTCaloChannelDataStruct *channel) 
 {
+   
    if(fBadChannelMask[channelCoordinates.fX][channelCoordinates.fZ][0] == true) return false;
+   if(channel->fTime < fMinTime || channel->fTime > fMaxTime) return false;
+   
   AliHLTCaloDigitDataStruct *tmpDigit = fChannelBook[channelCoordinates.fX][channelCoordinates.fZ];
   //printf("UseDigit: Got digit, x: %d, z: %d, gain: %d, amp: %f\n", channelCoordinates.fX, channelCoordinates.fZ, channelCoordinates.fGain, channel->fEnergy);
   if(tmpDigit)

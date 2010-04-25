@@ -122,6 +122,13 @@ public:
    */
    void SetGain(Int_t x, Int_t z, Float_t ratio, Float_t gain);
    
+   /**
+   * Set the time window for which we accept energy signals
+   * @param min is the minumum time
+   * @param max is the maximum time
+   */
+   void SetTimeWindow(Float_t min, Float_t max) { fMinTime = min; fMaxTime = max; }
+   
   /** Reset the channel book */
   void Reset();
 
@@ -174,6 +181,12 @@ private:
 
   /** Maximum energy we allow in a channel */
   Float_t fMaxEnergy;                                            //COMMENT
+  
+  /** Minimum accepted time */
+  Float_t fMinTime;                                                       //COMMENT
+  
+  /** Maximum accepted time */            
+  Float_t fMaxTime;                                                //COMMENT
 
   /** Assignment operator and copy constructor not implemented */
   AliHLTCaloDigitMaker(const AliHLTCaloDigitMaker &);
