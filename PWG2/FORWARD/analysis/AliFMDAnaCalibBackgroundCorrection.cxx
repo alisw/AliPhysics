@@ -77,6 +77,19 @@ void AliFMDAnaCalibBackgroundCorrection::SetDoubleHitCorrection(Int_t det,
   fListOfDoubleHitCorrection.Add(hCorrection);    
 }
 //____________________________________________________________________
+TH1F* AliFMDAnaCalibBackgroundCorrection::GetSPDDeadCorrection(Int_t  vtxbin) {
+  
+  TH1F* hCorrection    = (TH1F*)fListOfDoubleHitCorrection.FindObject(Form("hSPDDeadCorrection_vtx%d",vtxbin));
+  return hCorrection;
+}
+
+//____________________________________________________________________
+void AliFMDAnaCalibBackgroundCorrection::SetSPDDeadCorrection(Int_t vtxbin, 
+							      TH1F* hCorrection) {
+  hCorrection->SetName(Form("hSPDDeadCorrection_vtx%d",vtxbin));
+  fListOfDoubleHitCorrection.Add(hCorrection);    
+}
+//____________________________________________________________________
 void AliFMDAnaCalibBackgroundCorrection::SetRefAxis(TAxis* axis) {
   
  
@@ -87,6 +100,11 @@ void AliFMDAnaCalibBackgroundCorrection::SetRefAxis(TAxis* axis) {
 void AliFMDAnaCalibBackgroundCorrection::Init() {
   
   fArray.SetOwner();
+  
+  TObjArray* spdArray = new TObjArray();
+  spdArray->SetOwner();
+  fArray.AddAtAndExpand(spdArray,0);
+  
   for(Int_t det = 1; det<=3;det++) {
     TObjArray* detArray = new TObjArray();
     detArray->SetOwner();
@@ -106,6 +124,10 @@ void AliFMDAnaCalibBackgroundCorrection::Init() {
 TObjArray* AliFMDAnaCalibBackgroundCorrection::GetRingArray(Int_t det, 
 							    Char_t ring) {
   
+  if(det==0 || det == 4) {
+    TObjArray* spdArray  = (TObjArray*)fArray.At(det);
+    return spdArray;
+  }
   Int_t ringNumber      = (ring == 'I' ? 0 : 1);
   TObjArray* detArray  = (TObjArray*)fArray.At(det);
   TObjArray* ringArray = (TObjArray*)detArray->At(ringNumber);

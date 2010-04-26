@@ -96,6 +96,7 @@ public:
   static const char* GetSharingEffID()      { return fgkSharingEffID;}
   TH2F* GetBackgroundCorrection(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetDoubleHitCorrection(Int_t det, Char_t ring);
+  TH1F* GetSPDDeadCorrection(Int_t vtxbin);
   
   TH1F* GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin);
   TH1F* GetSharingEfficiencyTrVtx(Int_t det, Char_t ring, Int_t vtxbin);
@@ -120,6 +121,7 @@ public:
   Bool_t   IsEventTriggered(const AliESDEvent *esd) const;
   Bool_t   IsEventTriggered(const AliESDEvent *esd, Trigger trigger) ;
   void     SetEnergy(Energy energy) {fEnergy = energy;}
+  Energy   GetEnergy() {return fEnergy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   char*    GetPath(const char* species);
   void     SetCollisionSystem(Species collsystem) {fSpecies = collsystem;}

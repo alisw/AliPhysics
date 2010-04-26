@@ -477,6 +477,17 @@ TH1F* AliFMDAnaParameters::GetDoubleHitCorrection(Int_t det,
   return fBackground->GetDoubleHitCorrection(det,ring);
 }
 //_____________________________________________________________________
+TH1F* AliFMDAnaParameters::GetSPDDeadCorrection(Int_t vtxbin) {
+						
+  //Get correction for several hits in strips for p+p
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  
+  return fBackground->GetSPDDeadCorrection(vtxbin);
+}
+//_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
   //Get event selection efficiency object
   if(!fIsInit) {

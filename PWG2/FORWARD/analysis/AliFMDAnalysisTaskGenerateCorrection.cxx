@@ -13,6 +13,7 @@
 //#include "AliFMDGeometry.h"
 #include "TArray.h"
 #include "AliGenEventHeader.h"
+#include "AliMultiplicity.h"
 #include "AliHeader.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
@@ -69,19 +70,29 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
 //
   
   std::cout<<"Creating output objects"<<std::endl;
-  for(Int_t iring = 0; iring<2;iring++) {
-    Char_t ringChar = (iring == 0 ? 'I' : 'O');
-    Int_t nSec = (iring == 1 ? 40 : 20);
-    for(Int_t v=0; v<fNvtxBins;v++) {
-
+  for(Int_t v=0; v<fNvtxBins;v++) {
+    
+    TH2F* hSPDhits       = new TH2F(Form("hSPDhits_vtx%d",v),
+				    Form("hSPDhits_vtx%d",v),
+				    fNbinsEta, -6,6, 20, 0,2*TMath::Pi());
+    hSPDhits->Sumw2();
+    fListOfHits.Add(hSPDhits);
+    
+    for(Int_t iring = 0; iring<2;iring++) {
+      Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      Int_t nSec = (iring == 1 ? 40 : 20);
+      
       TH2F* hPrimary       = new TH2F(Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
 				      Form("hPrimary_FMD_%c_vtx%d",ringChar,v),
 				      fNbinsEta, -6,6, nSec, 0,2*TMath::Pi());
       hPrimary->Sumw2();
       fListOfPrimaries.Add(hPrimary);
+      
+      
     }
   }
   
+ 
   
   
   for(Int_t det =1; det<=3;det++) {
@@ -248,6 +259,16 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
     }
 
   }
+  
+  //SPD part HHD
+  TH2F* hSPDMult = (TH2F*)fListOfHits.FindObject(Form("hSPDhits_vtx%d", vertexBin));
+  
+  const AliMultiplicity* spdmult = esdevent->GetMultiplicity();
+  for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++) 
+    hSPDMult->Fill(spdmult->GetEta(j),spdmult->GetPhi(j));
+  
+  for(Int_t j = 0; j< spdmult->GetNumberOfSingleClusters();j++) 
+    hSPDMult->Fill(-TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.)),spdmult->GetPhiSingle(j));
     
   	
   PostData(1, &fListOfHits);
@@ -340,6 +361,35 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
       
     }
   }
+  for(Int_t vertexBin=0;vertexBin<fNvtxBins  ;vertexBin++) {
+    TH2F* hPrimary  = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",'I',vertexBin));
+    TH2F* hSPDMult = (TH2F*)fListOfHits.FindObject(Form("hSPDhits_vtx%d", vertexBin));
+    TH2F* hCorrection = (TH2F*)hSPDMult->Clone(Form("SPD_vtxbin_%d_correction",vertexBin));
+    hCorrection->SetTitle(hCorrection->GetName());
+    fListOfCorrection.Add(hCorrection);
+    hCorrection->Divide(hPrimary);
+    fBackground->SetBgCorrection(0,'Q',vertexBin,hCorrection);
+    
+    TH1F* hAlive = new TH1F(Form("hAliveSPD_vtxbin%d",vertexBin),Form("hAliveSPD_vtxbin%d",vertexBin),hSPDMult->GetNbinsX(),hSPDMult->GetXaxis()->GetXmin(), hSPDMult->GetXaxis()->GetXmax());
+    TH1F* hPresent = new TH1F(Form("hPresentSPD_vtxbin%d",vertexBin),Form("hPresentSPD_vtxbin%d",vertexBin),hSPDMult->GetNbinsX(),hSPDMult->GetXaxis()->GetXmin(), hSPDMult->GetXaxis()->GetXmax());
+    for(Int_t xx = 1; xx <=hSPDMult->GetNbinsX(); xx++) {
+      
+      if(TMath::Abs(hCorrection->GetXaxis()->GetBinCenter(xx)) > 2)
+	continue;
+      for(Int_t yy = 1; yy <=hSPDMult->GetNbinsY(); yy++) {
+	if(hCorrection->GetBinContent(xx,yy) > 0.1)
+	  hAlive->Fill(hCorrection->GetXaxis()->GetBinCenter(xx));
+	hPresent->Fill(hCorrection->GetXaxis()->GetBinCenter(xx));
+	
+      }
+    }
+    TH1F* hDeadCorrection = (TH1F*)hAlive->Clone(Form("hSPDDeadCorrection_vtxbin%d",vertexBin));
+    hDeadCorrection->Divide(hPresent);
+    fBackground->SetSPDDeadCorrection(vertexBin,hDeadCorrection);
+    fListOfCorrection.Add(hDeadCorrection);
+  }
+  
+  
   TAxis refAxis(fNvtxBins,-1*fZvtxCut,fZvtxCut);
   fBackground->SetRefAxis(&refAxis);
 
@@ -385,9 +435,13 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
 	      }
 	  }
       }
-  for(Int_t iring = 0; iring<2;iring++) {
-    Char_t ringChar = (iring == 0 ? 'I' : 'O');
-    for(Int_t v=0; v<fNvtxBins;v++) {
+  for(Int_t v=0; v<fNvtxBins;v++) {
+    TH2F* hSPDHits          = (TH2F*)listOfHits->FindObject(Form("hSPDhits_vtx%d", v));   
+    fListOfHits.Add(hSPDHits);
+    
+    for(Int_t iring = 0; iring<2;iring++) {
+      Char_t ringChar = (iring == 0 ? 'I' : 'O');
+      
       
       TH2F* hPrimary       = (TH2F*)listOfPrim->FindObject( Form("hPrimary_FMD_%c_vtx%d",ringChar,v));
       fListOfPrimaries.Add(hPrimary);
