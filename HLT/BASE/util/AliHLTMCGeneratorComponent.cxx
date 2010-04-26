@@ -133,7 +133,7 @@ AliHLTComponentDataType AliHLTMCGeneratorComponent::GetOutputDataType() {
 }
 
 // #################################################################################
-void AliHLTMCGeneratorComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
+void AliHLTMCGeneratorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
 
   constBase = 20000;
