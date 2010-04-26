@@ -139,7 +139,21 @@ void AliFMDAnalysisTaskDndeta::CreateOutputObjects()
 			      hBgTmp->GetXaxis()->GetXmax());
     hPrimVertexBin->Sumw2();
     fOutputList->Add(hPrimVertexBin);
-    
+    //SPD part
+    TH2F* hSPDMult  = new TH2F(Form("dNdeta_SPD_vtxbin%d",i),Form("dNdeta_SPD_vtxbin%d",i),
+			 hBgTmp->GetNbinsX(),
+			 hBgTmp->GetXaxis()->GetXmin(),
+			 hBgTmp->GetXaxis()->GetXmax(),
+			 20, 0, 2*TMath::Pi());
+    hSPDMult->Sumw2();
+    fOutputList->Add(hSPDMult);
+    TH2F* hSPDMultTrVtx  = new TH2F(Form("dNdetaTrVtx_SPD_vtxbin%d",i),Form("dNdetaTrVtx_SPD_vtxbin%d",i),
+			 hBgTmp->GetNbinsX(),
+			 hBgTmp->GetXaxis()->GetXmin(),
+			 hBgTmp->GetXaxis()->GetXmax(),
+			 20, 0, 2*TMath::Pi());
+    hSPDMultTrVtx->Sumw2();
+    fOutputList->Add(hSPDMultTrVtx);
   }
   
   fNevents.SetBins(nVtxbins,0,nVtxbins);
@@ -184,6 +198,15 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
     }
   }
   
+  //SPD code
+  TH2F* hMultSPDTotal      = (TH2F*)fOutputList->FindObject(Form("dNdeta_SPD_vtxbin%d",vtxbin));
+  TH2F* hMultSPDTotalTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d",vtxbin));
+  TH2F* hMultSPDInput      = (TH2F*)fInputList->FindObject(Form("mult_SPD_vtxbin%d",vtxbin));
+  TH2F* hMultSPDInputTrVtx = (TH2F*)fInputList->FindObject(Form("multTrVtx_SPD_vtxbin%d",vtxbin));
+  hMultSPDTotal->Add(hMultSPDInput);
+  hMultSPDTotalTrVtx->Add(hMultSPDInputTrVtx);
+  
+  
   if(pars->GetProcessPrimary())
     ProcessPrimary();
   
@@ -194,7 +217,6 @@ void AliFMDAnalysisTaskDndeta::Exec(Option_t */*option*/)
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
-  
   
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   
@@ -212,13 +234,26 @@ void AliFMDAnalysisTaskDndeta::Terminate(Option_t */*option*/) {
 	
 	TH1D* hMultProj   = hMultTotal->ProjectionX(Form("dNdeta_FMD%d%c_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
 	TH1D* hMultProjTrVtx   = hMultTrVtx->ProjectionX(Form("dNdeta_FMD%d%c_TrVtx_vtxbin%d_proj",det,ringChar,i),1,hMultTotal->GetNbinsY());
-	fOutputList->Add(hMultTrVtx);
+	//fOutputList->Add(hMultTrVtx);
 	fOutputList->Add(hMultProj);
 	fOutputList->Add(hMultProjTrVtx);
       }
     }
   }
-
+  
+  for(Int_t i =0; i<nVtxbins; i++) {
+    
+    TH2F* hSPDMult = (TH2F*)fOutputList->FindObject(Form("dNdeta_SPD_vtxbin%d",i));
+    TH2F* hSPDMultTrVtx = (TH2F*)fOutputList->FindObject(Form("dNdetaTrVtx_SPD_vtxbin%d",i));
+    
+    TH1D* hMultProj   = hSPDMult->ProjectionX(Form("dNdeta_SPD_vtxbin%d_proj",i),1,hSPDMult->GetNbinsY());
+    TH1D* hMultProjTrVtx   = hSPDMultTrVtx->ProjectionX(Form("dNdetaTrVtx_SPD_vtxbin%d_proj",i),1,hSPDMultTrVtx->GetNbinsY());
+   
+    fOutputList->Add(hMultProj);
+    fOutputList->Add(hMultProjTrVtx);
+  
+  }
+  
   std::cout<<"FMD analysis accepted "<<fNevents.GetEntries()<<" events"<<std::endl;
 }
 //_____________________________________________________________________
