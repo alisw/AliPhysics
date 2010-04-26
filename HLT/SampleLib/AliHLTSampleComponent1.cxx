@@ -1,26 +1,28 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  Timm Steinbeck <timm@kip.uni-heidelberg.de>           *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
-/** @file   AliHLTSampleComponent1.cxx
-    @author Matthias Richter, Timm M. Steinbeck
-    @date   
-    @brief  A sample processing component for the HLT. */
+//  @file   AliHLTSampleComponent1.cxx
+//  @author Matthias Richter, Timm M. Steinbeck
+//  @date   
+//  @brief  A sample processing component for the HLT.
+//          Component illustrates the basic functionality and component
+//          initialization. 
 
 #if __GNUC__== 3
 using namespace std;
@@ -29,88 +31,158 @@ using namespace std;
 #include "AliHLTSampleComponent1.h"
 #include "TString.h"
 #include "TObjString.h"
-#include "TObjArray.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
+#include "TMap.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSampleComponent1)
 
+/** one global instance used for registration */
+AliHLTSampleComponent1 gAliHLTSampleComponent1;
+
 AliHLTSampleComponent1::AliHLTSampleComponent1()
+  : AliHLTProcessor()
+  , fArgument1(0)
+  , fArgument2(0)
 {
+  // an example component which implements the ALICE HLT processor
+  // interface and illustrates the basic interface methods
+  //
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  //
+  // NOTE: all helper classes should be instantiated in DoInit()
 }
 
 AliHLTSampleComponent1::~AliHLTSampleComponent1()
 {
-  // see header file for class documentation
+  // destructor
+  //
+  // NOTE: implement proper cleanup in DoDeinit()
+}
+
+const char* AliHLTSampleComponent1::GetComponentID()
+{ 
+  // component property: id
+  return "Sample-component1";
+}
+
+void AliHLTSampleComponent1::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+{
+  // component property: list of input data types
+    list.push_back(kAliHLTAnyDataType);
+}
+
+AliHLTComponentDataType AliHLTSampleComponent1::GetOutputDataType()
+{
+  // component property: output data type
+  return kAliHLTVoidDataType;
+}
+
+void AliHLTSampleComponent1::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+{
+  // component property: output size estimator
+  constBase = 0;
+  inputMultiplier = 0;
+}
+
+void AliHLTSampleComponent1::GetOCDBObjectDescription( TMap* const targetMap)
+{
+  // Get a list of OCDB object description.
+  // The list of objects is provided in a TMap
+  // - key: complete OCDB path, e.g. GRP/GRP/Data
+  // - value: short description why the object is needed
+  // Key and value objects created inside this class go into ownership of
+  // target TMap.
+  if (!targetMap) return;
+  targetMap->Add(new TObjString("HLT/ConfigSample/SampleComponent1"),
+		 new TObjString("configuration object"));
+}
+
+AliHLTComponent* AliHLTSampleComponent1::Spawn()
+{
+  // Spawn function, return new class instance
+  return new AliHLTSampleComponent1;
 }
 
 int AliHLTSampleComponent1::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
   int iResult=0;
-  HLTInfo("parsing %d arguments", argc);
+
+  // init stage 1: default values for all data members
+  fArgument1=0;
+  fArgument2=0;
+
+  // init stage 2: read configuration object
+  // ScanConfigurationArgument() needs to be implemented
+  TString cdbPath="HLT/ConfigSample/SampleComponent1";
+  iResult=ConfigureFromCDBTObjString(cdbPath);
+
+  // init stage 3: read the component arguments
+  if (iResult>=0) {
+    iResult=ConfigureFromArgumentString(argc, argv);
+  }
+
+  if (iResult>=0) {
+    // implement the component initialization
+    if (!fArgument1) {
+      HLTError("mandatory argument \'-mandatory1\' missing");
+      iResult=-EPROTO;
+    }
+    if (!fArgument2) {
+      HLTError("mandatory argument \'-mandatory2\' missing");
+      iResult=-EPROTO;
+    }
+  }
+
+  if (iResult<0) {
+    // implement cleanup
+  }
+
+  return iResult;
+}
+
+int AliHLTSampleComponent1::ScanConfigurationArgument( int argc, const char** argv )
+{
+  // see header file for class documentation
+  int iResult=0;
 
   TString argument="";
   TString configuration=""; 
   int bMissingParam=0;
-  bool bHaveMandatory1=false;
-  bool bHaveMandatory2=false;
-  for (int i=0; i<argc && iResult>=0; i++) {
+  int i=0;
     argument=argv[i];
-    if (argument.IsNull()) continue;
+    if (argument.IsNull()) return 0;
 
     // -mandatory1
     if (argument.CompareTo("-mandatory1")==0) {
-      bHaveMandatory1|=1;
-      if ((bMissingParam=(++i>=argc))) break;
+      if (++i>=argc) return -EPROTO;
       HLTInfo("got \'-mandatory1\' argument: %s", argv[i]);
+      fArgument1=1;
 
       // -mandatory2
     } else if (argument.CompareTo("-mandatory2")==0) {
-      bHaveMandatory2|=1;
+      fArgument2=1;
       HLTInfo("got \'-mandatory2\' argument");
 
-      // -optional1
-    } else if (argument.CompareTo("-optional1")==0) {
-      if ((bMissingParam=(++i>=argc))) break;
-      HLTInfo("got \'-optional1\' argument: %s", argv[i]);
+      // -config1
+    } else if (argument.CompareTo("-config1")==0) {
+      if (++i>=argc) return -EPROTO;
+      HLTInfo("got \'%s\' argument: %s", argument.Data(), argv[i]);
 
-      // -optional2
-    } else if (argument.CompareTo("-optional2")==0) {
-      HLTInfo("got \'-optional2\' argument");
+      // -config2
+    } else if (argument.CompareTo("-config2")==0) {
+      HLTInfo("got \'%s\' argument", argument.Data());
 
     } else {
-      // the remaining arguments are treated as configuration
-      if (!configuration.IsNull()) configuration+=" ";
-      configuration+=argument;
+      // no recognized argument
+      i--;
     }
-  }
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
 
-  if (iResult>=0 && !bHaveMandatory1) {
-    HLTError("mandatory argument \'-mandatory1\' missing");
-    iResult=-EPROTO;
-  }
-  if (iResult>=0 && !bHaveMandatory2) {
-    HLTError("mandatory argument \'-mandatory2\' missing");
-    iResult=-EPROTO;
-  }
-  if (iResult>=0 && !configuration.IsNull()) {
-    iResult=Configure(configuration.Data());
-  } else {
-    iResult=Reconfigure(NULL, NULL);
-  }
-
-  return iResult;
+  return i+1;
 }
 
 int AliHLTSampleComponent1::DoDeinit()
@@ -133,47 +205,6 @@ int AliHLTSampleComponent1::DoEvent( const AliHLTComponentEventData& evtData, co
   }
   return 0;
 }
-
-int AliHLTSampleComponent1::Configure(const char* arguments)
-{
-  // see header file for class documentation
-  int iResult=0;
-  if (!arguments) return iResult;
-  HLTInfo("parsing configuration string \'%s\'", arguments);
-
-  TString allArgs=arguments;
-  TString argument;
-  int bMissingParam=0;
-
-  TObjArray* pTokens=allArgs.Tokenize(" ");
-  if (pTokens) {
-    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->GetString();
-      if (argument.IsNull()) continue;
-
-      // -config1
-      if (argument.CompareTo("-config1")==0) {
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("got \'-config1\': %s", ((TObjString*)pTokens->At(i))->GetString().Data());
-
-	// -config2
-      } else if (argument.CompareTo("-config2")==0) {
-	HLTInfo("got \'-config2\'");
-      } else {
-	HLTError("unknown argument %s", argument.Data());
-	iResult=-EINVAL;
-	break;
-      }
-    }
-    delete pTokens;
-  }
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
-  return iResult;
-}
-
 int AliHLTSampleComponent1::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
@@ -184,21 +215,10 @@ int AliHLTSampleComponent1::Reconfigure(const char* cdbEntry, const char* chainI
     path=cdbEntry;
     defaultNotify=" (default)";
   }
-  if (path) {
-    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	iResult=Configure(pString->GetString().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-      }
-    } else {
-      HLTError("can not fetch object \"%s\" from CDB", path);
-    }
-  }
+
+  HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
+  iResult=ConfigureFromCDBTObjString(path);
+
   return iResult;
 }
 

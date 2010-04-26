@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 #ifndef ALIHLTSAMPLECOMPONENT1_H
 #define ALIHLTSAMPLECOMPONENT1_H
 
@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTSampleComponent1.h
-    @author Matthias Richter, Timm Steinbeck
-    @date   
-    @brief  A sample processing component for the HLT.
-*/
+//  @file   AliHLTSampleComponent1.h
+//  @author Matthias Richter, Timm Steinbeck
+//  @date   
+//  @brief  A sample processing component for the HLT.
+//  
 
 #include "AliHLTProcessor.h"
 
@@ -21,6 +21,8 @@
  * This component does not any data processing at all. It just
  * illustrates the existence of several components in ine library and
  * allows to set up a very simple chain with different components.
+ * Component illustrates the basic functionality and component initialization.
+ * See @ref sample-component1.C
  *
  * <h2>General properties:</h2>
  *
@@ -36,14 +38,7 @@
  * \li -mandatory2                           <br>
  *      an argument without parameters
  *
- * <h2>Optional arguments:</h2>
- * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
- * \li -optional1      <i> teststring   </i> <br>
- *      an argument with one parameter
- * \li -optional2                            <br>
- *      an argument without parameters
- *
- * <h2>Configuration:</h2>
+ * <h2>Optional configuration arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -config1      <i> teststring   </i> <br>
  *      a configuration argument with one parameter
@@ -93,15 +88,14 @@ public:
   virtual ~AliHLTSampleComponent1();
 
   // AliHLTComponent interface functions
-  const char* GetComponentID() { return "Sample-component1";}
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
-    list.push_back(kAliHLTAnyDataType);
-  }
-  AliHLTComponentDataType GetOutputDataType() {return kAliHLTVoidDataType;}
-  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 0;};
+  const char* GetComponentID();
+  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
+  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+  void GetOCDBObjectDescription( TMap* const targetArray);
 
   // Spawn function, return new class instance
-  AliHLTComponent* Spawn() {return new AliHLTSampleComponent1;};
+  AliHLTComponent* Spawn();
 
  protected:
   // AliHLTComponent interface functions
@@ -110,22 +104,18 @@ public:
   int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+  int ScanConfigurationArgument(int argc, const char** argv);
   int Reconfigure(const char* cdbEntry, const char* chainId);
   int ReadPreprocessorValues(const char* modules);
 
   using AliHLTProcessor::DoEvent;
 
 private:
-  /**
-   * Configure the component.
-   * Parse a string for the configuration arguments and set the component
-   * properties.
-   *
-   * This function illustrates the scanning of an argument string. The string
-   * was presumably fetched from the CDB.
-   */
-  int Configure(const char* arguments);
 
-  ClassDef(AliHLTSampleComponent1, 1)
+  int fArgument1; //!transient
+  int fArgument2; //!transient
+
+  // version no 0 -> no streamer for member variables
+  ClassDef(AliHLTSampleComponent1, 0)
 };
 #endif

@@ -132,17 +132,18 @@
 
   // publisher for the reconfigure event
   TString arg;
-  arg.Form("-datatype COM_CONF PRIV -datafile %s", tmpFile1);
-  AliHLTConfiguration reconfevent("reconfevent", "FilePublisher", NULL , arg.Data());
+  arg.Form("-datatype COM_CONF PRIV -datafile %s -nextevent "
+	   "-datatype UPDT_DCS PRIV -datafile %s", tmpFile1, tmpFile2);
+  AliHLTConfiguration sep("steeringevents", "FilePublisher", NULL , arg.Data());
 
-  arg.Form("-datatype UPDT_DCS PRIV -datafile %s", tmpFile2);
-  AliHLTConfiguration updtdcsevent("updtdcsevent", "FilePublisher", NULL , arg.Data());
+  AliHLTConfiguration sc1("sc1", "Sample-component1", "steeringevents" , componentInit);
 
-  AliHLTConfiguration sc1("sc1", "Sample-component1", "reconfevent updtdcsevent" , componentInit);
-
-  // run the chain
+  // build the chain
   gHLT.BuildTaskList("sc1");
-  gHLT.Run();
+
+  // run two events, in the 1st event the component reconfiguration is emulated
+  // in the 2nd one the update of Preprocessor values
+  gHLT.Run(2);
 
   /////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////
