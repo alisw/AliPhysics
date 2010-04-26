@@ -162,7 +162,7 @@ int AliHLTOUTHandlerChain::InitSystem()
       if ((iResult=fpSystem->ScanOptions(fOptions.Data()))>=0) {
 	// load configurations if not specified by external macro
 	if (!fOptions.Contains("config="))
-	  iResult=CreateConfigurations(fpSystem->fpConfigurationHandler);
+	  iResult=CreateConfigurations(fpSystem->GetConfigurationHandler());
 
 	if (iResult>=0) {
 	  iResult=fpSystem->BuildTaskList(fChains.Data());

@@ -550,7 +550,7 @@ int AliHLTComponentHandler::UnloadLibraries()
   return iResult;
 }
 
-void (*AliHLTComponentHandler::FindSymbol(const char* library, const char* symbol))()
+AliHLTfctVoid AliHLTComponentHandler::FindSymbol(const char* library, const char* symbol)
 {
   // see header file for class documentation
   AliHLTLibHandle* hLib=FindLibrary(library);

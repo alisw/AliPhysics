@@ -146,51 +146,6 @@ AliHLTSystem::~AliHLTSystem()
 
 int AliHLTSystem::fgNofInstances=0;
 
-int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
-{
-  // see header file for class documentation
-  HLTLogKeyword("configuration handling");
-  int iResult=0;
-  if (pConf) {
-    HLTError("function not yet implemented");
-    iResult=-ENOSYS;
-  } else {
-    iResult=-EINVAL;
-  }
-  return iResult;
-}
-
-int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
-{
-  // see header file for class documentation
-  HLTLogKeyword("configuration handling");
-  int iResult=0;
-  if (pConf) {
-    if (pPrec) {
-      // find the position
-      HLTError("function not yet implemented");
-      iResult=-ENOSYS;
-    }
-  } else {
-    iResult=-EINVAL;
-  }
-  return iResult;
-}
-
-int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
-{
-  // see header file for class documentation
-  HLTLogKeyword("configuration handling");
-  int iResult=0;
-  if (pConf) {
-    HLTError("function not yet implemented");
-    iResult=-ENOSYS;
-  } else {
-    iResult=-EINVAL;
-  }
-  return iResult;
-}
-
 int AliHLTSystem::BuildTaskList(const char* id)
 {
   // see header file for class documentation
@@ -1563,7 +1518,7 @@ int AliHLTSystem::ClearStatusFlags(int flags)
   return fState;
 }
 
-void (*AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol))()
+AliHLTfctVoid AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol)
 {
   // see header file for class documentation
   if (fpComponentHandler==NULL) return NULL;

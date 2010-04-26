@@ -1107,6 +1107,9 @@ extern "C" {
   //
   //////////////////////////////////////////////////////////////////////////
 
+  /** definition of a void fct pointer */
+  typedef void (*AliHLTfctVoid)();
+
   /** logging function */
   typedef int (*AliHLTfctLogging)( void* param, 
 				   AliHLTComponentLogSeverity severity,

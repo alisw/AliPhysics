@@ -108,36 +108,6 @@ class AliHLTSystem : public AliHLTLogging {
   virtual ~AliHLTSystem();
 
   /**
-   * Pointer to an instance of @ref AliHLTComponentHandler.
-   */
-  AliHLTComponentHandler* fpComponentHandler;                      //! transient
-
-  /**
-   * Pointer to an instance of @ref AliHLTConfigurationHandler.
-   */
-  AliHLTConfigurationHandler* fpConfigurationHandler;              //! transient
-
-  /**
-   * Add a configuration to the end of the list.
-   * @param pConf    pointer to configuration to add
-   */
-  int AddConfiguration(AliHLTConfiguration* pConf);
-
-  /**
-   * Insert a configuration to the end of the list after the specified
-   * configuration.
-   * @param pConf    pointer to configuration to insert
-   * @param pPrec    pointer to configuration to insert the new one after
-   */
-  int InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec);
-
-  /**
-   * Remove a configuration from the list.
-   * @param pConf    pointer to configuration to delete
-   */
-  int DeleteConfiguration(AliHLTConfiguration* pConf);
-
-  /**
    * Build a task list 
    * This method is used to build the tasks from the 'master' configuration
    * objects which are added to the HLT system handler. This is an iterative
@@ -149,14 +119,6 @@ class AliHLTSystem : public AliHLTLogging {
    * @param pConf    configuration name/id
    */
   int BuildTaskList(const char* pConf);
-
-  /**
-   * Build task list from a configuration object.
-   * This method is kept for backward compatibility. Use the version
-   * with the configuration name.
-   * @param pConf    pointer to configuration to build the task list from
-   */
-  int BuildTaskList(AliHLTConfiguration* pConf);
 
   /**
    * Clean the list of tasks and delete all the task objects.
@@ -183,6 +145,8 @@ class AliHLTSystem : public AliHLTLogging {
   int AddHLTOUTTask(const char* chains);
 
   AliHLTOUTTask* GetHLTOUTTask() const {return fpHLTOUTTask;}
+  AliHLTComponentHandler* GetComponentHandler() const {return fpComponentHandler;}
+  AliHLTConfigurationHandler* GetConfigurationHandler() const {return fpConfigurationHandler;}
 
   /**
    * Find a task with an id.
@@ -398,7 +362,7 @@ class AliHLTSystem : public AliHLTLogging {
    * @param symbol       the symbol to find
    * @return void pointer to function
    */
-  void (*FindDynamicSymbol(const char* library, const char* symbol))();
+  AliHLTfctVoid FindDynamicSymbol(const char* library, const char* symbol);
 
   /**
    * Prepare the HLT system for running.
@@ -521,6 +485,16 @@ class AliHLTSystem : public AliHLTLogging {
   AliHLTSystem& operator=(const AliHLTSystem&);
 
   /**
+   * Build task list from a configuration object. 
+   * This method implements the configuration parsing and transformation into
+   * a list of AliHLTTask objects. It has been made private in April 2007. 
+   * Use BuildTaskList(const char*) instead.
+   *
+   * @param pConf    pointer to configuration to build the task list from
+   */
+  int BuildTaskList(AliHLTConfiguration* pConf);
+
+  /**
    * Set status flags.
    */
   int SetStatusFlags(int flags);
@@ -530,8 +504,11 @@ class AliHLTSystem : public AliHLTLogging {
    */
   int ClearStatusFlags(int flags);
 
-/*   TList fConfList; */
-/*   int fbListChanged; */
+  /// Pointer to an instance of @ref AliHLTComponentHandler.
+  AliHLTComponentHandler* fpComponentHandler;                      //! transient
+
+  /// Pointer to an instance of @ref AliHLTConfigurationHandler.
+  AliHLTConfigurationHandler* fpConfigurationHandler;              //! transient
 
   /** list of tasks */
   TList fTaskList;                                                 // see above

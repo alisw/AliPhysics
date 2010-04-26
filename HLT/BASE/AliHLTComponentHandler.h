@@ -108,7 +108,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @param symbol       the symbol to find
    * @return void pointer to function
    */
-  void (*FindSymbol(const char* library, const char* symbol))();
+  AliHLTfctVoid FindSymbol(const char* library, const char* symbol);
 
   /**
    * Unload a component shared library.
