@@ -5,12 +5,15 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliTPCcalibBase.h"
+#include "THnSparse.h"           // Temporary
+#include "TH1D.h"                // Temporary make code compiling for HLT in the 
 class TObjArray;
 
 class TH1F;
 class TH3F;
 class TH2F;
 class THnSparse;
+class TH1D;
 class TList;
 class AliESDEvent;
 class AliESDtrack;

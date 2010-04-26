@@ -544,7 +544,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (ntracks > fCutTracks) return;
   
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
-  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
   
   TObjArray  tpcSeeds(ntracks);
   Double_t vtxx[3]={0,0,0};
