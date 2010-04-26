@@ -180,7 +180,7 @@ Long64_t AliTRDCalibraVdriftLinearFit::Merge(const TCollection* list)
   return count;
 }
 //_____________________________________________________________________
-void AliTRDCalibraVdriftLinearFit::Add(AliTRDCalibraVdriftLinearFit *ped)
+void AliTRDCalibraVdriftLinearFit::Add(const AliTRDCalibraVdriftLinearFit *ped)
 {
   //
   // Add histo
@@ -189,7 +189,7 @@ void AliTRDCalibraVdriftLinearFit::Add(AliTRDCalibraVdriftLinearFit *ped)
   fVersion++;
 
   for (Int_t idet = 0; idet < 540; idet++){
-    const TH2S         *hped        = (TH2S*)ped->GetLinearFitterHisto(idet);
+    const TH2S         *hped        = (TH2S*)ped->GetLinearFitterHistoNoForce(idet);
     //printf("idet %d\n",idet);
     if ( hped != 0x0 ){
       //printf("add\n");
@@ -210,25 +210,38 @@ TH2S* AliTRDCalibraVdriftLinearFit::GetLinearFitterHisto(Int_t detector, Bool_t 
     if ( !force || fLinearFitterHistoArray.UncheckedAt(detector) )
 	return (TH2S*)fLinearFitterHistoArray.UncheckedAt(detector);
 
-    // if we are forced and TLinearFitter doesn't yes exist create it
+    return GetLinearFitterHistoForce(detector);
 
-    // new TH2F
-    TString name("LFDV");
-    name += detector;
-    name += "version";
-    name +=  fVersion;
-
-    TH2S *lfdv = new TH2S((const Char_t *)name,(const Char_t *) name
-    		  ,36,-0.9,0.9,48
-    		  ,-1.2,1.2);
-    lfdv->SetXTitle("tan(phi_{track})");
-    lfdv->SetYTitle("dy/dt");
-    lfdv->SetZTitle("Number of clusters");
-    lfdv->SetStats(0);
-    lfdv->SetDirectory(0);
-
-    fLinearFitterHistoArray.AddAt(lfdv,detector);
-    return lfdv;
+}
+//______________________________________________________________________________________
+TH2S* AliTRDCalibraVdriftLinearFit::GetLinearFitterHistoForce(Int_t detector)
+{
+  //
+  // return pointer to TH2F histo 
+  // if NULL create a new histo if it doesn't exist allready
+  //
+  if (fLinearFitterHistoArray.UncheckedAt(detector))
+    return (TH2S*)fLinearFitterHistoArray.UncheckedAt(detector);
+  
+  // if we are forced and TLinearFitter doesn't yes exist create it
+  
+  // new TH2F
+  TString name("LFDV");
+  name += detector;
+  name += "version";
+  name +=  fVersion;
+  
+  TH2S *lfdv = new TH2S((const Char_t *)name,(const Char_t *) name
+			,36,-0.9,0.9,48
+			,-1.2,1.2);
+  lfdv->SetXTitle("tan(phi_{track})");
+  lfdv->SetYTitle("dy/dt");
+  lfdv->SetZTitle("Number of clusters");
+  lfdv->SetStats(0);
+  lfdv->SetDirectory(0);
+  
+  fLinearFitterHistoArray.AddAt(lfdv,detector);
+  return lfdv;
 }
 //______________________________________________________________________________________
 Bool_t AliTRDCalibraVdriftLinearFit::GetParam(Int_t detector, TVectorD *param)

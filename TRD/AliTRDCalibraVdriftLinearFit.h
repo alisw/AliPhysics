@@ -35,8 +35,10 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
 
   void            Update(Int_t detector, Float_t tnp, Float_t pars1);
   void            FillPEArray();
-  void            Add(AliTRDCalibraVdriftLinearFit *ped);
+  void            Add(const AliTRDCalibraVdriftLinearFit *ped);
   TH2S           *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
+  TH2S           *GetLinearFitterHistoForce(Int_t detector);
+  TH2S           *GetLinearFitterHistoNoForce(Int_t detector) const   { return (TH2S*)fLinearFitterHistoArray.UncheckedAt(detector);};
   Bool_t          GetParam(Int_t detector, TVectorD *param);
   Bool_t          GetError(Int_t detector, TVectorD *error);
 
@@ -60,4 +62,3 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
 
 
 #endif
-
