@@ -16,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTConfiguration.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Implementation of HLT configurations.
-*/
+//  @file   AliHLTConfiguration.cxx
+//  @author Matthias Richter
+//  @date   2007
+//  @brief  HLT configuration description for a single component.
+//  @note   The class is used in Offline (AliRoot) context
 
 // see header file for class documentation
 // or

@@ -1,18 +1,17 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTCONFIGURATION_H
 #define ALIHLTCONFIGURATION_H
-/* This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTConfiguration.h
-    @author Matthias Richter
-    @date   
-    @brief  Base class and handling of HLT configurations.
-    @note   The class is used in Offline (AliRoot) context
-*/
+//  @file   AliHLTConfiguration.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  HLT configuration description for a single component.
+//  @note   The class is used in Offline (AliRoot) context
 
 // see below for class documentation
 // or
@@ -33,23 +32,39 @@ class AliHLTConfigurationHandler;
  * @class AliHLTConfiguration
  * @brief Description of HLT processing chains.
  *
- * This class describes a certain configuration af an HLT processing step
- * by the following parameters:
- * - a unique id string/name
- * - the id of the component
- * - the ids of the configurations it requires input from
- * - the arguments, which are passed to the component when it is initialized
+ * This class describes a configuration for an HLT component by means of
+ * the following parameters:
+ * - configuration id:      a unique id string/name
+ * - component id:          id returned by AliHLTComponent::GetComponentID()
+ * - parent configuartions: ids of configurations it requires input from
+ * - component arguments:   passed to the component when it is initialized
  *
- * The setup of a configuration requires simply the creation of a global object
- * of @ref AliHLTConfiguration. The Configuration is automatically registered
- * in the list of available configurations maintained by the @ref
- * AliHLTConfigurationHandler. The list is used by to resolve the dependencies
- * on other configurations. Hierarchies can be built up in an easy way.
+ * The definition of a configuration requires simply the creation of an object
+ * of type @ref AliHLTConfiguration. 
+ * <pre>
+ * AliHLTConfiguration myprocessor("MyProcessor", "Dummy", "publisher", "-output_percentage 80")
+ * </pre>
  *
- * A configuration is interpreted by the @ref AliHLTConfigurationHandler and
- * transformed into a Task List.
+ * The Configuration is automatically registered in the list of available
+ * configurations maintained by the @ref AliHLTConfigurationHandler.
+ * The list is used to resolve the dependencies on other configurations.
+ * Hierarchies can be built up by specifying the configuration id of parent
+ * configurations as input in the .
+ * A configuration entry is persistent and must be explicitly removed from
+ * the AliHLTConfigurationHandler if desired.
  *
- * @note This class is only used for the @ref alihlt_system.
+ * The registration mechanism requires the HLT system to be available. The
+ * global instance of AliHLTSystem is created and retrieved by
+ * <pre>
+ * // setup the HLT system
+ * AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
+ * </pre>
+ *
+ * A configuration is transformed into a list of AliHLTTask objects by the
+ * function AliHLTSystem::BuildTaskList().
+ *
+ * This class is only used in the HLT offline environment, see @ref alihlt_system
+ * for more details.
  *
  * @ingroup alihlt_system
  */

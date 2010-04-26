@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTSYSTEM_H
 #define ALIHLTSYSTEM_H
@@ -7,12 +7,12 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTSystem.h
-    @author Matthias Richter
-    @date   
-    @brief  Global HLT module management and AliRoot integration.
-    @note   The class is used in Offline (AliRoot) context
-*/
+//  @file   AliHLTSystem.h
+//  @author Matthias Richter
+//  @date   2007
+//  @brief  Global HLT module management and AliRoot integration.
+//  @note   The class is used in Offline (AliRoot) context
+// 
 
 /**
  * @defgroup alihlt_system HLT integration into AliRoot
@@ -25,9 +25,9 @@
  * - AliRoot simulation (AliSimulation)
  * - AliRoot reconstruction (AliReconstruction)
  *
- * The foundation of the off-line applications is a HLT chain described 
- * by the means of AliHLTConfiguration. Special components exist, which 
- * emulate the behavoir of the components of the HLT on-line data 
+ * In either case an HLT chain described by means of AliHLTConfiguration
+ * builds the core of any HLT application. Special components exist, which 
+ * emulate the behavior of the components of the HLT on-line data 
  * transportation framework. Together with the analysis components, this 
  * allows the full emulation of the behavoir of HLT analysis chain off-line.
  *
@@ -93,10 +93,38 @@ class TStopwatch;
 /**
  * @class AliHLTSystem
  * Main class for the HLT integration into AliRoot.
- * The class handles a list of configurations. Configurations are translated
- * into task lists which can be executed. 
- *
  * @note This class is only used for the @ref alihlt_system.
+ *
+ * @section alihltsystem_overview Main functionality
+ * The class implements the main binding functionality to run HLT
+ * embedded in AliRoot:
+ * - creates handlers for HLT components (AliHLTComponentHandler)
+ * and configurations (AliHLTConfigurationHandler).
+ * - implements the creation of a task list from configurations
+ * - runs the tasks of the task list
+ * - implements the interface to AliHLTReconstructor and AliHLTSimulation
+ * - manages the registered module agents (AliHLTModuleAgent) 
+ *
+ * @section alihltsystem_functions Main functions
+ * The following list gives the most important functions, see documentation
+ * of functions for details.
+ * - ScanOptions(const char*) initialize the system from arguments
+ * - BuildTaskList(const char*) build task list for a reconstruction chain
+ * - Run() processing loop for task list
+ * - Reconstruct() interface to AliHLTReconstructor
+ * - ProcessHLTOUT() process an HLTOUT colection
+ *
+ * @section alihltsystem_initialization Initialization
+ * AliHLTSystem is initialized with a list of component libraries which determine
+ * the actual functionality. See ScanOptions() for description of options.
+ *
+ * @section alihltsystem_usage Usage
+ * The class AliHLTPluginBase handles the global instance of AliHLTSystem,
+ * the instance is created and fetched like 
+ * <pre>
+ * // setup the HLT system
+ * AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
+ * </pre>
  *
  * @ingroup alihlt_system
  */
@@ -109,13 +137,18 @@ class AliHLTSystem : public AliHLTLogging {
 
   /**
    * Build a task list 
-   * This method is used to build the tasks from the 'master' configuration
-   * objects which are added to the HLT system handler. This is an iterative
-   * process since the task might depend upon other configurations. For each
-   * configuration object which has not yet been converted into a task, the
-   * method will be called iteratively. Finally, after building all tasks which
-   * the current one depends on have been created, the task is inserted to the
-   * list of tasks with the InsertTask method.
+   * This method is used to build the list of tasks from the configuration
+   * id of a single 'master' configuration.
+   *
+   * Configuration entries might depend upon other configurations. For each
+   * configuration which has not yet been converted into an AliHLTTask, the
+   * method will be called iteratively. Finally, after building all tasks
+   * providing the input for the current one, the task is inserted to the
+   * list of tasks with the InsertTask() method.
+   *
+   * The function can be called multiple times in order to add more than one
+   * chain to the system.
+   *
    * @param pConf    configuration name/id
    */
   int BuildTaskList(const char* pConf);
@@ -160,10 +193,10 @@ class AliHLTSystem : public AliHLTLogging {
   void PrintTaskList();
 
   /**
-   * Run the task list.
-   * The method checks whether the task list has already been build. If not,
-   * or the configuration list has been changed, the @ref BuildTaskList
-   * method is called.                                                    <br>
+   * Run one or more events.
+   * Core of the processing loop. The method expects the task list to be
+   * already created by a previous call to BuildTaskList(const char*)
+   *
    * All tasks of the list will be subsequently processed for each event.
    * The system can remain started if the \em bStop parameter is 0. In that
    * case the system just waits for the next event. A specific call with
@@ -269,13 +302,15 @@ class AliHLTSystem : public AliHLTLogging {
 
   /**
    * The memory allocation function for components.
-   * This function is part of the running environment of the components.
+   * This function is part of the running environment of the components, 
+   * see AliHLTAnalysisEnvironment
    */
   static void* AllocMemory( void* param, unsigned long size );
 
   /**
    * The allocation function for component EventDoneData.
-   * This function is part of the running environment of the components.
+   * This function is part of the running environment of the components,
+   * see AliHLTAnalysisEnvironment
    */
   static int AllocEventDoneData( void* param, AliHLTEventID_t eventID, unsigned long size, AliHLTComponentEventDoneData** edd );
 
@@ -285,24 +320,31 @@ class AliHLTSystem : public AliHLTLogging {
    * either by the AliHLTReconstructor plugin during AliRoot reconstruction
    * of raw data, or AliHLTSimulation during simulation of data.
    *
-   * The two cases are distinguished by the availablility of the run loader
+   * The two cases are distinguished by the availablility of the AliRunLoader
    * and raw reader.
-   * - AliRoot simulation: run loader is available and is propagated to the
+   * - AliRoot simulation: AliRunLoader is available and is propagated to the
    *   module agents (AliHLTModuleAgent) to generate the corresponding
    *   configurations and chains, and to the AliHLTOfflineSource components.
+   *   raw reader might be available depending on whether raw data was
+   *   simulated or not.
    * - AliRoot reconstruction: raw reader is available and is propagated to
-   *   the agents and AliHLTOfflineSource components.
+   *   the agents and AliHLTOfflineSource components. AliRunLoader is always
+   *   NULL.
    *
    * The system remains started after the processing and just waits for the
    * next event. A specific call with nofEvents==0 is needed to execute the
    * stop sequence.
    *
-   * The 'runLoader' and 'rawReader' parameters are set to all active
+   * The 'runLoader' and 'rawReader' parameters are propagated to all active
    * AliHLTOfflineDataSource's and the HLT chain is processed for the given
    * number of events. If the rawReader is NULL, reconstruction is done on
    * simulated data, from real data if a RawReader is specified.
+   *
+   * After setting up the system with the reconstruction parameters the
+   * Run() method is called and carries out the processing of the chain.
+   *
    * @param nofEvents     number of events
-   * @param runLoader     the AliRoot runloader
+   * @param runLoader     the AliRoot RunLoader
    * @param rawReader     the AliRoot RawReader
    * @return number of reconstructed events, neg. error code if failed 
    */
@@ -315,7 +357,7 @@ class AliHLTSystem : public AliHLTLogging {
    * and FillESD method of the AliRoot reconstruction.
    *
    * The method is most likely deprecated as the scheme has been slightly
-   * changed. The ESD is filled by the HLTOUT handlers u=implemented by the
+   * changed. The ESD is filled by the HLTOUT handlers implemented by the
    * HLT modules rather than by components within the reconstruction chain.
    * Still, HLT reconstruction chains can be run during the AliRoot
    * reconstruction, data produced by such chains is automatically added
@@ -325,9 +367,6 @@ class AliHLTSystem : public AliHLTLogging {
    * reconstruction interface. The HLT module must implement HLTOUT handlers
    * and provide those through the module agent.
    *
-   * This method is called on event basis, and thus must copy the previously
-   * reconstructed data of the event from the 'ESD' recorder. The FillESD
-   * method of all active AliHLTOfflineDataSink's is called.
    * @param eventNo       current event no (Note: this event number is just a
    *                      processing counter and is not related to the nature/
    *                      origin of the event
@@ -339,13 +378,19 @@ class AliHLTSystem : public AliHLTLogging {
 
   /**
    * Process the HLTOUT data.
+   * The provided instance of AliHLTOUT provides the access to the data.
+   * AliHLTSystem queries all registered module agents (AliHLTModuleAgent)
+   * for the ability to treat a specific data block. As the last step the
+   * ESD object is filled. Please note that the provided ESD is the hltEsd
+   * in case of AliReconstructor (switched in AliReconstruction).
    */
   int ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd);
 
   /**
    * Process all kChain-type data blocks of the HLTOUT data.
-   * The function is involed from ProcessHLTOUT as the first step in
-   * the processing.
+   * Handlers of type AliHLTModuleAgent::kChain are executed as the first
+   * step of the processing. The function is invoked from ProcessHLTOUT(),
+   * eventual output of the chain is added to the HLTOUT collection.
    */
   int ProcessHLTOUTkChain(AliHLTOUT* pHLTOUT);
 
@@ -367,10 +412,10 @@ class AliHLTSystem : public AliHLTLogging {
   /**
    * Prepare the HLT system for running.
    * - module agents are requested to register configurations
-   * - task lists are built from the top configurations of the modules
+   * - task lists are built from the reconstruction chains of the modules
    *
    * @param rawReader    instance of the raw reader or NULL
-   * @param runloader    optional instance of the run loader
+   * @param runloader    optional instance of the AliRunLoader
    * @return neg. error code if failed <br>
    *         -EBUSY      system is in kRunning state <br>
    */
@@ -379,7 +424,7 @@ class AliHLTSystem : public AliHLTLogging {
   /**
    * Old method kept for backward compatibilty.
    *
-   * @param runloader    optional instance of the run loader
+   * @param runloader    optional instance of the AliRunLoader
    * @return neg. error code if failed <br>
    *         -EBUSY      system is in kRunning state <br>
    */
@@ -388,7 +433,9 @@ class AliHLTSystem : public AliHLTLogging {
   /**
    * Scan options and load component libraries.
    * The options consist of blank separated tokens. Libraries can be just
-   * specified by their name. Further options
+   * specified by their name, and can be excluded by adding a '!'-mark in
+   * front. <br>
+   * Further options
    * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
    * \li loglevel=<i>level</i> <br>
    *     logging level for this processing
@@ -420,16 +467,22 @@ class AliHLTSystem : public AliHLTLogging {
    * Load the configurations specified by the module agents.
    * The runLoader is passed to the agent and allows configuration
    * selection.
+   * - AliSimulation: runloader valid, raw reader might be valid
+   * - AliReconstruction: runloader always NULL, raw reader valid
+   *
    * @param rawReader    instance of the raw reader or NULL
-   * @param runloader    optional instance of the run loader
+   * @param runloader    optional instance of the AliRunLoader
    * @return neg. error code if failed 
    */
   int LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runloader=NULL);
 
   /**
-   * Get the top configurations of all agents and build the task lists.
+   * Get the reconstruction chains from all agents and build the task lists.
+   * AliHLTModuleAgent implementations can define reconstruction chains
+   * depending on the availibility of AliRunLoader and AliRawReader parameters.
+   *
    * @param rawReader    instance of the raw reader or NULL
-   * @param runloader    optional instance of the run loader
+   * @param runloader    optional instance of the AliRunLoader
    * @return neg. error code if failed 
    */
   int BuildTaskListsFromReconstructionChains(AliRawReader* rawReader, 

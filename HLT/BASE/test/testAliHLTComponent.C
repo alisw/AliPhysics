@@ -16,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   testAliHLTComponent_CTPTrigger.C
-    @author Matthias Richter
-    @date   
-    @brief  Test program for the AliHLTComponent base class
- */
+// @file   testAliHLTComponent.C
+// @author Matthias Richter
+// @date   
+// @brief  Test program for the AliHLTComponent base class
+// 
 
 #ifndef __CINT__
 #include "TDatime.h"

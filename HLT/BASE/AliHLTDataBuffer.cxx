@@ -135,7 +135,8 @@ int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, A
   return iResult;
 }
 
-int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer, AliHLTDataSegmentList& tgtList)
+int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
+					       vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList)
 {
   // see header file for function documentation
   int iResult=0;

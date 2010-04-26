@@ -156,7 +156,10 @@ protected:
   typedef int (*fctDisCharArg)        ( const char*);
   typedef int (*fctDisNoArg)          ( );
 
-  /// @class AliHLTDimInterface Interface to the dim library
+  /** 
+   * @class AliHLTDimInterface
+   * Interface to the dim library
+   */
   class AliHLTDimInterface : public AliHLTLogging {
   public:
     AliHLTDimInterface();

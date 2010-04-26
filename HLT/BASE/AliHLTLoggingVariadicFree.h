@@ -6,11 +6,11 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTLoggingVariadicFree
-    @author Matthias Richter
-    @date   
-    @brief  Includes the logging primitives free of variadic macros.
-*/
+//  @file   AliHLTLoggingVariadicFree.h
+//  @author Matthias Richter
+//  @date   
+//  @brief  Includes the logging primitives free of variadic macros.
+// 
 
 // AliHLTLogging.h defines the logging macros according to the existence of
 // ALIHLTLOGGINGVARIADICFREE_H. In the latter case, i.e. when included via
