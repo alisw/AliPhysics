@@ -117,7 +117,7 @@ Char_t* AliLHCDipValT<Element>::TimeAsString(double t, Bool_t utc)
   static char buff[22];
   time_t tt = (time_t) t;
   struct tm *time = utc ? gmtime(&tt) : localtime(&tt);
-  sprintf(buff,"%02d:%02d:%02d %02d/%02d/%04d",time->tm_hour,time->tm_min,time->tm_hour,
+  sprintf(buff,"%02d:%02d:%02d %02d/%02d/%04d",time->tm_hour,time->tm_min,time->tm_sec,
 	  time->tm_mday,time->tm_mon+1,time->tm_year+1900);
   return (char*)buff;
 }

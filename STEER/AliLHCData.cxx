@@ -94,20 +94,16 @@ const Char_t* AliLHCData::fgkDCSColJaws[] = {
   "left_upstream","right_downstream","right_upstream"};
 
 //___________________________________________________________________
-AliLHCData::AliLHCData(const TMap* dcsMap, double tmin, double tmax, Bool_t ignoreSOR,Bool_t ignoreEOR)
+AliLHCData::AliLHCData(const TMap* dcsMap, double tmin, double tmax)
   : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(0),fMap2Process(0)
 {
-  SetIgnoreSOR(ignoreSOR);
-  SetIgnoreEOR(ignoreEOR);
   FillData(dcsMap,tmin,tmax);
 }
 
 //___________________________________________________________________
-AliLHCData::AliLHCData(const Char_t* dcsFile, double tmin, double tmax, Bool_t ignoreSOR,Bool_t ignoreEOR)
+AliLHCData::AliLHCData(const Char_t* dcsFile, double tmin, double tmax)
   : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(dcsFile),fMap2Process(0)
 {
-  SetIgnoreSOR(ignoreSOR);
-  SetIgnoreEOR(ignoreEOR);
   FillData(dcsFile,tmin,tmax);
 }
 
@@ -143,11 +139,9 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   SetTMax(tmax);
   //
   // -------------------------- extract Fill Number
-  int iEntry;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
-  TObjArray* arr = GetDCSEntry(fgkDCSNames[kFillNum],iEntry,tmin,tmax);
-  if (arr) SetFillNumber( ExtractInt( (AliDCSArray*)arr->At(iEntry), 0) );
+  int iFirst=0,iLast=0;
+  TObjArray* arr = GetDCSEntry(fgkDCSNames[kFillNum],iFirst,iLast,fTMin,fTMax);
+  if (arr) SetFillNumber( ExtractInt( (AliDCSArray*)arr->At(iFirst), 0) );
   if (fFile2Process) delete arr; // array was created on demand
   //
   for (int ibm=0;ibm<2;ibm++) {
@@ -227,10 +221,11 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
 }
 
 //___________________________________________________________________
-TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,double tmin,double tmax) const
+TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,int &last,double tmin,double tmax) const
 {
   // extract array from the DCS map or file and find the first entry within the time limits
   entry = -1;
+  last = -2;
   TObjArray* arr;
   if (fMap2Process) arr = (TObjArray*)fMap2Process->GetValue(key);
   else if (fFile2Process) {
@@ -248,11 +243,18 @@ TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,double tmin,double
     return 0;
   }
   int ntot = arr->GetEntriesFast();
+  //
+  // search 1st entry before or at tmin
+  AliDCSArray* ent = 0;
+  Bool_t found = kFALSE;
   for (entry=0;entry<ntot;entry++) {
-    AliDCSArray* ent = (AliDCSArray*)arr->At(entry);
-    if (ent->GetTimeStamp()>=tmin && ent->GetTimeStamp()<=tmax) break;
+    ent = (AliDCSArray*)arr->At(entry);
+    if (ent->GetTimeStamp()>=tmin-kMarginSOR && ent->GetTimeStamp()<=tmax+kMarginEOR) {
+      found = kTRUE;
+      if (ent->GetTimeStamp()>tmin) break;
+    }
   }
-  if (entry==ntot) {
+  if (!found) {
     entry = -1;
     TString str;
     str += AliLHCDipValD::TimeAsString(tmin);
@@ -262,6 +264,17 @@ TObjArray* AliLHCData::GetDCSEntry(const char* key,int &entry,double tmin,double
     if (fMap2Process) delete arr; // created on demand
     return 0;
   }
+  if (entry>0) entry--;
+  //
+  // search last entry at or after tmin
+  ent = 0;
+  for (last=entry;last<ntot;last++) {
+    ent = (AliDCSArray*)arr->At(last);
+    if (ent->GetTimeStamp()>tmax) break;
+  }
+  if (last == ntot) last--;
+  else if (ent->GetTimeStamp()>tmax+kMarginEOR) last--;
+  //
   return arr;
 }
 
@@ -323,47 +336,39 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
   AliInfo(Form("Acquiring record: %s",rec));
   //
   TObjArray *arr=0,*arrE=0;
-  Int_t nEntries=0,nEntriesE=0,iEntry=0,iEntryE=0;
+  Int_t iLast=0,iLastE=0,iFirst=0,iFirstE=0;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  double tmin = fTMin;
-  double tmax = fTMax;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
-  //
-  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
-  nEntries = arr->GetEntriesFast();
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
   //
   int dim = 1;
   if (recErr) {
-    if ( !(arrE=GetDCSEntry(recErr,iEntryE,tmin,tmax)) ) nEntriesE = -999;
-    else nEntriesE = arrE->GetEntriesFast();
+    arrE = GetDCSEntry(recErr,iFirstE,iLastE,fTMin,fTMax);
     dim += 1;
   }
   //
-  while (iEntry<nEntries) {
-    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iEntry++);
+  Bool_t last = kFALSE;
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
-    if (tstamp>fTMax) break;
     //
     AliLHCDipValF* curValF = new AliLHCDipValF(dim,tstamp);  // start new period
     (*curValF)[0] = ExtractDouble(dcsVal,0);     // value
     //
     if (recErr) {
       double errVal = -1;
-      while (iEntryE<nEntriesE) {       // try to find corresponding error
-	AliDCSArray *dcsValE = (AliDCSArray*) arrE->At(iEntryE);
+      while (iFirstE<=iLastE) {       // try to find corresponding error
+	AliDCSArray *dcsValE = (AliDCSArray*) arrE->At(iFirstE);
         double tstampE = dcsValE->GetTimeStamp();
-        if (tstampE>fTMax) break;
         int tdif = TimeDifference(tstamp,tstampE);
         if (!tdif) { // error matches to value
           errVal = ExtractDouble(dcsValE,0);
-	  iEntryE++; 
+	  iFirstE++; 
 	  break;
 	}
-        else if (tdif>0) iEntryE++; // error time lags behind, read the next one
+        else if (tdif>0) iFirstE++; // error time lags behind, read the next one
         else break;                 // error time is ahead of value, no error associated
       }
       (*curValF)[dim-1] = errVal;   // error
@@ -372,6 +377,7 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
     //
     fData.Add(curValF);
     refs[kNStor]++;
+    if (last) break;
   }
   //
   if (fFile2Process) {
@@ -388,24 +394,18 @@ Int_t AliLHCData::FillBunchConfig(int refs[2],const char* rec)
   //
   AliInfo(Form("Acquiring record: %s",rec));
   TObjArray *arr;
-  Int_t nEntries,iEntry;
+  Int_t iLast,iFirst;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  double tmin = fTMin;
-  double tmax = fTMax;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
-  //
-  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
-  nEntries = arr->GetEntriesFast();
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
   //
   AliLHCDipValI* prevRecI=0;
-  while (iEntry<nEntries) {
-    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iEntry++);
+  //  
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
-    if (tstamp>fTMax) break;
     //
     int bucket=0, nbunch=0, ndiff=0;
     int nSlots = dcsVal->GetNEntries();     // count number of actual bunches (non-zeros)
@@ -434,24 +434,17 @@ Int_t AliLHCData::FillAcqMode(int refs[2],const char* rec)
   //
   AliInfo(Form("Acquiring record: %s",rec));
   TObjArray *arr;
-  Int_t nEntries,iEntry;
+  Int_t iLast,iFirst;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  double tmin = fTMin;
-  double tmax = fTMax;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
-  //
-  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
-  nEntries = arr->GetEntriesFast();
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
   //
   AliLHCDipValI* prevRecI=0;
-  while (iEntry<nEntries) {
-    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iEntry++);
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
-    if (tstamp>fTMax) break;
     //
     int nSlots = dcsVal->GetNEntries();
     if (nSlots<1) continue;
@@ -476,23 +469,16 @@ Int_t AliLHCData::FillStringRecord(int refs[2],const char* rec)
   AliInfo(Form("Acquiring record: %s",rec));
   TString prevRec;
   TObjArray *arr;
-  Int_t nEntries,iEntry;
+  Int_t iLast,iFirst;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  double tmin = fTMin;
-  double tmax = fTMax;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
-  nEntries = arr->GetEntriesFast();
-  //
-  while (iEntry<nEntries) {
-    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iEntry++);
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
-    if (tstamp>fTMax) break;
     //
     TString &str = ExtractString(dcsVal);
     if (!prevRec.IsNull()) {if (str == prevRec) continue;} // skip similar record
@@ -517,23 +503,16 @@ Int_t AliLHCData::FillBunchInfo(int refs[2],const char* rec, int ibm, Bool_t inR
   //
   AliInfo(Form("Acquiring record: %s",rec));
   TObjArray *arr;
-  Int_t nEntries,iEntry;
+  Int_t iLast,iFirst;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  double tmin = fTMin;
-  double tmax = fTMax;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
-  nEntries = arr->GetEntriesFast();
-  //
-  while (iEntry<nEntries) {
-    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iEntry++);
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
-    if (tstamp>fTMax) break;
     //
     AliLHCDipValI *bconf = GetBunchConfigMeasured(ibm,tstamp);
     if (!bconf) {
@@ -575,23 +554,16 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
   //
   AliInfo(Form("Acquiring record: %s",rec));
   TObjArray *arr,*arrE=0;
-  Int_t nEntries=0,nEntriesE=0,iEntry=0,iEntryE=0;
+  Int_t iLast=0,iLastE=0,iFirst=0,iFirstE=0;
   //
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  double tmin = fTMin;
-  double tmax = fTMax;
-  if (IsSORIgnored()) tmin -= kTimeMargin;
-  if (IsSORIgnored()) tmax += kTimeMargin;
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
-  nEntries = arr->GetEntriesFast();
-  //
-  while (iEntry<nEntries) {
-    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iEntry++);
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
-    if (tstamp>fTMax) break;
     //
     AliLHCDipValI *bconf;
     bconf = GetBunchConfigMeasured(useBeam,tstamp);  // luminosities are stored according to beam bunches
@@ -621,8 +593,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
     }
     //
     if (recErr) {
-      if ( !(arrE=GetDCSEntry(recErr,iEntryE,tmin,tmax)) || iEntryE<0 ) nEntriesE = -999;
-      else nEntriesE = arrE->GetEntriesFast();
+      arrE=GetDCSEntry(recErr,iFirstE,iLastE,fTMin,fTMax);
       dim += 1;
     }
     AliLHCDipValF* curValF = new AliLHCDipValF(dim,tstamp);
@@ -642,17 +613,16 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
     //
     if (recErr) {
       double errVal = -1;
-      while (iEntryE<nEntriesE) {       // try to find corresponding error
-	AliDCSArray *dcsValE = (AliDCSArray*) arrE->At(iEntryE);
+      while (iFirstE<=iLastE) {       // try to find corresponding error
+	AliDCSArray *dcsValE = (AliDCSArray*) arrE->At(iFirstE);
 	double tstamp1 = dcsValE->GetTimeStamp();
-	if (tstamp1>fTMax) break;
 	int tdif = TimeDifference(tstamp,tstamp1);
 	if (!tdif) { // error matches to value
 	  errVal = dcsValE->GetDouble()[0];
-	  iEntryE++; 
+	  iFirstE++; 
 	  break;
 	}
-	else if (tdif>0) iEntryE++; // error time lags behind, read the next one
+	else if (tdif>0) iFirstE++; // error time lags behind, read the next one
 	else break;                 // error time is ahead of value, no error associated
       }
       (*curValF)[dim-1] = errVal;   // error
@@ -744,7 +714,6 @@ void AliLHCData::Print(const Option_t* opt) const
   if (!opts.Contains("f")) {
     printf("Use Print(\"f\") to print full info\n");
     printf("Printing short info:\n<RecordType>(number of records): <TimeStamp, value> for 1st record only\n");
-    printf("Ignoring strict time of SOR: %s, EOR: %s\n",IsSORIgnored()?"ON":"OFF",IsEORIgnored()?"ON":"OFF");
     full = kFALSE;
   }
   TString sdtmn = AliLHCDipValI::TimeAsString(fTMin,utcTime);
