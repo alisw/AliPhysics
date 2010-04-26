@@ -181,13 +181,6 @@ void AliHLTReconstructor::Init()
     option+=ecsParam;
   }
 
-  if (!libs.IsNull() &&
-      (!pSystem->CheckStatus(AliHLTSystem::kLibrariesLoaded)) &&
-      (pSystem->LoadComponentLibraries(libs.Data())<0)) {
-    AliError("error while loading HLT libraries");
-    return;
-  }
-
   if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
     if (pSystem->ScanOptions(option.Data())<0) {
       AliError("error setting options for HLT system");
