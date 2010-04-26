@@ -286,6 +286,8 @@ Bool_t AliESDInputHandlerRP::Notify(const char *path)
     // Some clean-up
     if (members) members->Delete();
 
+    AliESDInputHandler::Notify(path);
+    
     return kTRUE;
 }
 
