@@ -32,51 +32,19 @@ ClassImp(AliDetectorTag)
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag() :
   TObject(),
-  fDetectorArray(new TObjArray()),
-  fMask(0),
-  fITSSPD(kFALSE),
-  fITSSDD(kFALSE),
-  fITSSSD(kFALSE),
-  fTPC(kFALSE),
-  fTRD(kFALSE),
-  fTOF(kFALSE),
-  fHMPID(kFALSE),
-  fPHOS(kFALSE),
-  fPMD(kFALSE),
-  fMUON(kFALSE),
-  fFMD(kFALSE),
-  fTZERO(kFALSE),
-  fVZERO(kFALSE),
-  fZDC(kFALSE),
-  fEMCAL(kFALSE)
+  fMaskDAQ(0),
+  fMaskReco(0)
 {
   // Default constructor
-  for(Int_t k = 0; k < 32; k++) fDetectors[k] = 0;
 }
 
 //___________________________________________________________________________
 AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
   TObject(detTag),
-  fDetectorArray(new TObjArray(*detTag.fDetectorArray)),
-  fMask(detTag.fMask),
-  fITSSPD(detTag.fITSSPD),
-  fITSSDD(detTag.fITSSDD),
-  fITSSSD(detTag.fITSSSD),
-  fTPC(detTag.fTPC),
-  fTRD(detTag.fTRD),
-  fTOF(detTag.fTOF),
-  fHMPID(detTag.fHMPID),
-  fPHOS(detTag.fPHOS),
-  fPMD(detTag.fPMD),
-  fMUON(detTag.fMUON),
-  fFMD(detTag.fFMD),
-  fTZERO(detTag.fTZERO),
-  fVZERO(detTag.fVZERO),
-  fZDC(detTag.fZDC),
-  fEMCAL(detTag.fEMCAL)
+  fMaskDAQ(detTag.fMaskDAQ),
+  fMaskReco(detTag.fMaskReco)
  {
   // DetectorTag copy constructor
-  for(Int_t k = 0; k < 32; k++) fDetectors[k] = detTag.fDetectors[k];
 }
 
 //___________________________________________________________________________
@@ -85,24 +53,8 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
   if (this != &detTag) {
     TObject::operator=(detTag);
     
-    fDetectorArray = new TObjArray(*detTag.fDetectorArray);
-    fMask = detTag.fMask;   
-    fITSSPD = detTag.fITSSPD;
-    fITSSDD = detTag.fITSSDD;
-    fITSSSD = detTag.fITSSSD;
-    fTPC = detTag.fTPC;
-    fTRD = detTag.fTRD;
-    fTOF = detTag.fTOF;
-    fHMPID = detTag.fHMPID;
-    fPHOS = detTag.fPHOS;
-    fPMD = detTag.fPMD;
-    fMUON = detTag.fMUON;
-    fFMD = detTag.fFMD;
-    fTZERO = detTag.fTZERO;
-    fVZERO = detTag.fVZERO;
-    fZDC = detTag.fZDC;
-    fEMCAL = detTag.fEMCAL;
-    for(Int_t k = 0; k < 32; k++) fDetectors[k] = detTag.fDetectors[k];
+    fMaskDAQ = detTag.fMaskDAQ;   
+    fMaskReco = detTag.fMaskReco;   
   }
   return *this;
 }
@@ -110,68 +62,43 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
 //___________________________________________________________________________
 AliDetectorTag::~AliDetectorTag() {
   // Destructor
-  if (fDetectorArray)
-    delete fDetectorArray;
 }
 
-//___________________________________________________________________________
-void AliDetectorTag::Int2Bin() {
-  // Convert the integer into binary
-  Int_t j=0; 
-  UInt_t mask = fMask;
-  for(Int_t k = 0; k < 32; k++) fDetectors[k] = 0;
-  while(mask > 0) {
-   fDetectors[j] = mask%2;
-   mask = mask/2;
-   j++; 
-  }
-  SetDetectorConfiguration();
-}
 
 //___________________________________________________________________________
-UInt_t AliDetectorTag::GetIntDetectorMask() {
-  // Returns the detector mask UInt_t
-  UInt_t mask = 0;
-  for(Int_t k = 0; k < 32; k++) 
-    if(fDetectors[k] == 1) mask += (UInt_t)TMath::Power(2,k);
-  
-  return mask;
-}
-
-//___________________________________________________________________________
-void AliDetectorTag::SetDetectorConfiguration() {
-  //sets the detector configuration
-  if(fDetectors[0] == 1) {
-    SetITSSPD(); fDetectorArray->Add(new TObjString("SPD"));}
-  if(fDetectors[1] == 1) {
-    SetITSSDD(); fDetectorArray->Add(new TObjString("SDD"));}
-  if(fDetectors[2] == 1) {
-    SetITSSSD(); fDetectorArray->Add(new TObjString("SSD"));}
-  if(fDetectors[3] == 1) {
-    SetTPC(); fDetectorArray->Add(new TObjString("TPC"));}
-  if(fDetectors[4] == 1) {
-    SetTRD(); fDetectorArray->Add(new TObjString("TRD"));}
-  if(fDetectors[5] == 1) {
-    SetTOF(); fDetectorArray->Add(new TObjString("TOF"));}
-  if(fDetectors[6] == 1) {
-    SetHMPID();fDetectorArray->Add(new TObjString("HMPID"));}
-  if(fDetectors[7] == 1) {
-    SetPHOS(); fDetectorArray->Add(new TObjString("PHOS"));}
-  if(fDetectors[9] == 1) {
-    SetPMD(); fDetectorArray->Add(new TObjString("PMD"));}
-  if(fDetectors[10] == 1) {
-    SetMUON(); fDetectorArray->Add(new TObjString("MUON"));}
-  if(fDetectors[12] == 1) {
-    SetFMD(); fDetectorArray->Add(new TObjString("FMD"));}
-  if(fDetectors[13] == 1) {
-    SetTZERO(); fDetectorArray->Add(new TObjString("T0"));}
-  if(fDetectors[14] == 1) {
-    SetVZERO(); fDetectorArray->Add(new TObjString("VZERO"));}
-  if(fDetectors[15] == 1) {
-    SetZDC(); fDetectorArray->Add(new TObjString("ZDC"));}
-  if(fDetectors[18] == 1) {
-    SetEMCAL(); fDetectorArray->Add(new TObjString("EMCAL"));}
-}
+// void AliDetectorTag::SetDetectorConfiguration() {
+//   //sets the detector configuration
+//   if(fDetectors[0] == 1) {
+//     SetITSSPD(); fDetectorArray->Add(new TObjString("SPD"));}
+//   if(fDetectors[1] == 1) {
+//     SetITSSDD(); fDetectorArray->Add(new TObjString("SDD"));}
+//   if(fDetectors[2] == 1) {
+//     SetITSSSD(); fDetectorArray->Add(new TObjString("SSD"));}
+//   if(fDetectors[3] == 1) {
+//     SetTPC(); fDetectorArray->Add(new TObjString("TPC"));}
+//   if(fDetectors[4] == 1) {
+//     SetTRD(); fDetectorArray->Add(new TObjString("TRD"));}
+//   if(fDetectors[5] == 1) {
+//     SetTOF(); fDetectorArray->Add(new TObjString("TOF"));}
+//   if(fDetectors[6] == 1) {
+//     SetHMPID();fDetectorArray->Add(new TObjString("HMPID"));}
+//   if(fDetectors[7] == 1) {
+//     SetPHOS(); fDetectorArray->Add(new TObjString("PHOS"));}
+//   if(fDetectors[9] == 1) {
+//     SetPMD(); fDetectorArray->Add(new TObjString("PMD"));}
+//   if(fDetectors[10] == 1) {
+//     SetMUON(); fDetectorArray->Add(new TObjString("MUON"));}
+//   if(fDetectors[12] == 1) {
+//     SetFMD(); fDetectorArray->Add(new TObjString("FMD"));}
+//   if(fDetectors[13] == 1) {
+//     SetTZERO(); fDetectorArray->Add(new TObjString("T0"));}
+//   if(fDetectors[14] == 1) {
+//     SetVZERO(); fDetectorArray->Add(new TObjString("VZERO"));}
+//   if(fDetectors[15] == 1) {
+//     SetZDC(); fDetectorArray->Add(new TObjString("ZDC"));}
+//   if(fDetectors[18] == 1) {
+//     SetEMCAL(); fDetectorArray->Add(new TObjString("EMCAL"));}
+// }
 
 //___________________________________________________________________________
 void AliDetectorTag::PrintDetectorMask() {

@@ -1581,7 +1581,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   }    
   
   tag->SetLHCTag(lhcLuminosity,lhcState);
-  tag->SetDetectorTag(detectorMask);
+  tag->SetDetectorTag(esd->GetESDRun()->GetDetectorsInDAQ(), esd->GetESDRun()->GetDetectorsInReco());
   
   // Get magnetic field info
   Bool_t ok = kTRUE;
@@ -1724,7 +1724,7 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
   }
 
   tag->SetLHCTag(lhcLuminosity,lhcState);
-  tag->SetDetectorTag(detectorMask);
+  tag->SetDetectorTag(esd->GetESDRun()->GetDetectorsInDAQ(), esd->GetESDRun()->GetDetectorsInReco());
   
   // Get magnetic field info
   Bool_t ok = kTRUE;

@@ -50,7 +50,7 @@ class AliRunTag : public TObject {
   void SetDataType(Int_t i) {fAliceDataType = i;}
   void SetNEvents(Int_t Pn) { fNumEvents = Pn; }
   void SetLHCTag(Float_t Plumin, TString type);
-  void SetDetectorTag(UInt_t mask);
+  void SetDetectorTag(UInt_t mask, UInt_t maskReco=0);
   void SetQA(const AliQA &qa) { fQA=qa; }  	
   void SetQAArray(ULong_t * qa, Int_t qalength) ; 
   void SetEventSpecies(Bool_t * es, Int_t eslength) ;

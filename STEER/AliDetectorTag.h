@@ -15,6 +15,7 @@
 
 #include "TObject.h"
 #include "TObjArray.h"
+#include "AliDAQ.h"
 
 //___________________________________________________________________________
 class AliDetectorTag : public TObject {
@@ -26,69 +27,76 @@ class AliDetectorTag : public TObject {
   virtual ~AliDetectorTag();
   
   //____________________________________________________//
-  void SetDetectorMask(UInt_t mask) {fMask = mask; Int2Bin();}
-  TObjArray *GetDetectorMask() {return fDetectorArray;}
-  UInt_t GetIntDetectorMask();
+  void SetDetectorMask(UInt_t mask)     {fMaskDAQ = mask; fMaskReco = mask; }
+  void SetDetectorMaskDAQ(UInt_t mask)  {fMaskDAQ = mask;}
+  void SetDetectorMaskReco(UInt_t mask) {fMaskReco = mask;}
+  TObjArray *GetDetectorMask() { return 0; } // {return fDetectorArray;}
+  UInt_t GetIntDetectorMask() { return fMaskDAQ; }
+  UInt_t GetIntDetectorMaskDAQ() { return fMaskDAQ; }
+  UInt_t GetIntDetectorMaskReco() { return fMaskReco; }
+  const char *GetDetectorMaskDAQ() { return AliDAQ::ListOfTriggeredDetectors(fMaskDAQ); }
+  const char *GetDetectorMaskReco() { return AliDAQ::ListOfTriggeredDetectors(fMaskReco); }
   void PrintDetectorMask();
 
   //____________________________________________________//
-  Bool_t GetITSSPD() const {return fITSSPD;}
-  Bool_t GetITSSDD() const {return fITSSDD;}
-  Bool_t GetITSSSD() const {return fITSSSD;}
-  Bool_t GetTPC() const {return fTPC;}
-  Bool_t GetTRD() const {return fTRD;}
-  Bool_t GetTOF() const {return fTOF;}
-  Bool_t GetHMPID() const {return fHMPID;}
-  Bool_t GetPHOS() const {return fPHOS;}
-  Bool_t GetPMD() const {return fPMD;}
-  Bool_t GetMUON() const {return fMUON;}
-  Bool_t GetFMD() const {return fFMD;}
-  Bool_t GetTZERO() const {return fTZERO;}
-  Bool_t GetVZERO() const {return fVZERO;}
-  Bool_t GetZDC() const {return fZDC;}
-  Bool_t GetEMCAL() const {return fEMCAL;}
+  Bool_t GetITSSPD() const {return fMaskDAQ & AliDAQ::kSPD;}
+  Bool_t GetITSSDD() const {return fMaskDAQ & AliDAQ::kSSD;}
+  Bool_t GetITSSSD() const {return fMaskDAQ & AliDAQ::kSSD;}
+  Bool_t GetTPC()    const {return fMaskDAQ & AliDAQ::kTPC;}
+  Bool_t GetTRD()    const {return fMaskDAQ & AliDAQ::kTRD;}
+  Bool_t GetTOF()    const {return fMaskDAQ & AliDAQ::kTOF;}
+  Bool_t GetHMPID()  const {return fMaskDAQ & AliDAQ::kHMPID;}
+  Bool_t GetPHOS()   const {return fMaskDAQ & AliDAQ::kPHOS;}
+  Bool_t GetPMD()    const {return fMaskDAQ & AliDAQ::kPMD;}
+  Bool_t GetMUON()   const {return fMaskDAQ & AliDAQ::kMUON;}
+  Bool_t GetFMD()    const {return fMaskDAQ & AliDAQ::kFMD;}
+  Bool_t GetTZERO()  const {return fMaskDAQ & AliDAQ::kT0;}
+  Bool_t GetVZERO()  const {return fMaskDAQ & AliDAQ::kVZERO;}
+  Bool_t GetZDC()    const {return fMaskDAQ & AliDAQ::kZDC;}
+  Bool_t GetEMCAL()  const {return fMaskDAQ & AliDAQ::kEMCAL;}
   
   //____________________________________________________//
  private:
-  void Int2Bin();
-  void SetDetectorConfiguration();
+  //  void Int2Bin();
+  //   void SetDetectorConfiguration();
 
-  void SetITSSPD() {fITSSPD = kTRUE;}
-  void SetITSSDD() {fITSSDD = kTRUE;}
-  void SetITSSSD() {fITSSSD = kTRUE;}
-  void SetTPC() {fTPC = kTRUE;}
-  void SetTRD() {fTRD = kTRUE;}
-  void SetTOF() {fTOF = kTRUE;}
-  void SetHMPID() {fHMPID = kTRUE;}
-  void SetPHOS() {fPHOS = kTRUE;}
-  void SetPMD() {fPMD = kTRUE;}
-  void SetMUON() {fMUON = kTRUE;}
-  void SetFMD() {fFMD = kTRUE;}
-  void SetTZERO() {fTZERO = kTRUE;}
-  void SetVZERO() {fVZERO = kTRUE;}
-  void SetZDC() {fZDC = kTRUE;}
-  void SetEMCAL() {fEMCAL = kTRUE;}
+  void SetITSSPD() {fMaskDAQ |= AliDAQ::kSPD  ;}
+  void SetITSSDD() {fMaskDAQ |= AliDAQ::kSDD  ;}
+  void SetITSSSD() {fMaskDAQ |= AliDAQ::kSSD  ;}
+  void SetTPC()    {fMaskDAQ |= AliDAQ::kTPC  ;}
+  void SetTRD()    {fMaskDAQ |= AliDAQ::kTRD  ;}
+  void SetTOF()    {fMaskDAQ |= AliDAQ::kTOF  ;}
+  void SetHMPID()  {fMaskDAQ |= AliDAQ::kHMPID;}
+  void SetPHOS()   {fMaskDAQ |= AliDAQ::kPHOS ;}
+  void SetPMD()    {fMaskDAQ |= AliDAQ::kPMD  ;}
+  void SetMUON()   {fMaskDAQ |= AliDAQ::kMUON ;}
+  void SetFMD()    {fMaskDAQ |= AliDAQ::kFMD  ;}
+  void SetTZERO()  {fMaskDAQ |= AliDAQ::kT0   ;}
+  void SetVZERO()  {fMaskDAQ |= AliDAQ::kVZERO;}
+  void SetZDC()    {fMaskDAQ |= AliDAQ::kZDC  ;}
+  void SetEMCAL()  {fMaskDAQ |= AliDAQ::kEMCAL;}
   
-  TObjArray *fDetectorArray; //detectors' names - active
-  UInt_t     fMask;          //detector mask
-  UInt_t     fDetectors[32]; //detector mask
-  Bool_t     fITSSPD;        //ITS-SPD active = 1
-  Bool_t     fITSSDD;        //ITS-SDD active = 1
-  Bool_t     fITSSSD;        //ITS-SSD active = 1
-  Bool_t     fTPC;           //TPC active = 1
-  Bool_t     fTRD;           //TRD active = 1
-  Bool_t     fTOF;           //TOF active = 1
-  Bool_t     fHMPID;         //HMPID active = 1
-  Bool_t     fPHOS;          //PHOS active = 1
-  Bool_t     fPMD;           //PMD active = 1
-  Bool_t     fMUON;          //MUON active = 1
-  Bool_t     fFMD;           //FMD active = 1
-  Bool_t     fTZERO;         //TZERO active = 1
-  Bool_t     fVZERO;         //VZERO active = 1
-  Bool_t     fZDC;           //ZDC active = 1
-  Bool_t     fEMCAL;         //EMCAL active = 1
+  //   TObjArray *fDetectorArray; //detectors' names - active
+  UInt_t     fMaskDAQ;          //detector mask in DAQ
+  UInt_t     fMaskReco;         //detector mask in Reco
+  //   UInt_t     fDetectors[32]; //detector mask
+  //   Bool_t     fITSSPD;        //ITS-SPD active = 1
+  //   Bool_t     fITSSDD;        //ITS-SDD active = 1
+  //   Bool_t     fITSSSD;        //ITS-SSD active = 1
+  //   Bool_t     fTPC;           //TPC active = 1
+  //   Bool_t     fTRD;           //TRD active = 1
+  //   Bool_t     fTOF;           //TOF active = 1
+  //   Bool_t     fHMPID;         //HMPID active = 1
+  //   Bool_t     fPHOS;          //PHOS active = 1
+  //   Bool_t     fPMD;           //PMD active = 1
+  //   Bool_t     fMUON;          //MUON active = 1
+  //   Bool_t     fFMD;           //FMD active = 1
+  //   Bool_t     fTZERO;         //TZERO active = 1
+  //   Bool_t     fVZERO;         //VZERO active = 1
+  //   Bool_t     fZDC;           //ZDC active = 1
+  //   Bool_t     fEMCAL;         //EMCAL active = 1
 
-  ClassDef(AliDetectorTag,4)  //(ClassName, ClassVersion)
+  ClassDef(AliDetectorTag, 5)  //(ClassName, ClassVersion)
 };
 //______________________________________________________________________________
 

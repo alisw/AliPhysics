@@ -14,6 +14,7 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include <AliDAQ.h>
 
 class AliDetectorTag;
 
@@ -24,18 +25,22 @@ class AliDetectorTagCuts : public TObject {
   ~AliDetectorTagCuts();
    
  //____________________________________________________//
-  void SetListOfDetectors(const TString& detectors) {fDetectors = detectors; fDetectorsFlag = kTRUE;}
+  void SetListOfDetectors(const TString& detectors) {fDetectorsDAQ = AliDAQ::DetectorPattern(detectors); fDetectorsReco = AliDAQ::DetectorPattern(detectors); fDetectorsFlag = kTRUE;}
+  void SetListOfDetectorsDAQ(const TString& detectors) {fDetectorsDAQ = AliDAQ::DetectorPattern(detectors); fDetectorsFlag = kTRUE;}
+  void SetListOfDetectorsReco(const TString& detectors) {fDetectorsReco = AliDAQ::DetectorPattern(detectors); fDetectorsFlag = kTRUE;}
  
-  Bool_t IsAccepted(AliDetectorTag *lhcTag) const;
+  Bool_t IsAccepted(AliDetectorTag *detTag) const;
 
   //____________________________________________________//
  private:
-  Bool_t  IsSelected(TString detName, TString& detectors) const;
+  //  Bool_t  IsSelected(TString detName, TString& detectors) const;
 
-  TString fDetectors; //detectors active
-  Bool_t  fDetectorsFlag; //cut used or not
+  //  TString fDetectors; //detectors active
+  UInt_t fDetectorsReco;  //selected detector pattern for Reco
+  UInt_t fDetectorsDAQ;   //selected detector pattern for DAQ
+  Bool_t fDetectorsFlag; //cut used or not
   
-  ClassDef(AliDetectorTagCuts, 1)
+  ClassDef(AliDetectorTagCuts, 2)
 };
 
 #endif

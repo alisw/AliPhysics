@@ -32,7 +32,8 @@ ClassImp(AliDetectorTagCuts)
 //___________________________________________________________________________
 AliDetectorTagCuts::AliDetectorTagCuts() :
   TObject(),
-  fDetectors(0), 
+  fDetectorsDAQ(0),
+  fDetectorsReco(0),
   fDetectorsFlag(kFALSE)
 {
   //Default constructor which calls the Reset method.
@@ -46,42 +47,49 @@ AliDetectorTagCuts::~AliDetectorTagCuts() {
 //___________________________________________________________________________
 Bool_t AliDetectorTagCuts::IsAccepted(AliDetectorTag *detTag) const {
   //Returns true if the event is accepted otherwise false.
-  if(fDetectorsFlag){
-    TString detStr = fDetectors;
-    TObjArray *activeDetectors = detTag->GetDetectorMask();
-    for (Int_t iDet = 0; iDet < activeDetectors->GetEntries(); iDet++) {
-      TObjString *detectorString = (TObjString *)activeDetectors->At(iDet);
-      if (!IsSelected(detectorString->GetString(), detStr))return kFALSE;
-    }
+  if (fDetectorsFlag) {
+    Bool_t daqsel = (detTag->GetIntDetectorMaskDAQ() & fDetectorsDAQ) > 0;
+    Bool_t recsel = (detTag->GetIntDetectorMaskReco() & fDetectorsReco) > 0;
+    return (daqsel && recsel);
   }
-  return kTRUE;
+  return true;
+
+//   if(fDetectorsFlag){
+//     TString detStr = fDetectors;
+//     TObjArray *activeDetectors = detTag->GetDetectorMask();
+//     for (Int_t iDet = 0; iDet < activeDetectors->GetEntries(); iDet++) {
+//       TObjString *detectorString = (TObjString *)activeDetectors->At(iDet);
+//       if (!IsSelected(detectorString->GetString(), detStr))return kFALSE;
+//     }
+//   }
+//   return kTRUE;
 }
 
 //___________________________________________________________________________
-Bool_t AliDetectorTagCuts::IsSelected(TString detName, TString& detectors) const {
-  //Returns true if the detector is included
-  if ((detectors.CompareTo("ALL") == 0) ||
-      detectors.BeginsWith("ALL ") ||
-      detectors.EndsWith(" ALL") ||
-      detectors.Contains(" ALL ")) {
-    detectors = "ALL";
-    return kTRUE;
-  }
+// Bool_t AliDetectorTagCuts::IsSelected(TString detName, TString& detectors) const {
+//   //Returns true if the detector is included
+//   if ((detectors.CompareTo("ALL") == 0) ||
+//       detectors.BeginsWith("ALL ") ||
+//       detectors.EndsWith(" ALL") ||
+//       detectors.Contains(" ALL ")) {
+//     detectors = "ALL";
+//     return kTRUE;
+//   }
   
-  // search for the given detector
-  Bool_t result = kFALSE;
-  if ((detectors.CompareTo(detName) == 0) ||
-      detectors.BeginsWith(detName+" ") ||
-      detectors.EndsWith(" "+detName) ||
-      detectors.Contains(" "+detName+" ")) {
-    detectors.ReplaceAll(detName, "");
-    result = kTRUE;
-  }
+//   // search for the given detector
+//   Bool_t result = kFALSE;
+//   if ((detectors.CompareTo(detName) == 0) ||
+//       detectors.BeginsWith(detName+" ") ||
+//       detectors.EndsWith(" "+detName) ||
+//       detectors.Contains(" "+detName+" ")) {
+//     detectors.ReplaceAll(detName, "");
+//     result = kTRUE;
+//   }
 
-  // clean up the detectors string
-  while (detectors.Contains("  ")) detectors.ReplaceAll("  ", " ");
-  while (detectors.BeginsWith(" ")) detectors.Remove(0, 1);
-  while (detectors.EndsWith(" ")) detectors.Remove(detectors.Length()-1, 1);
+//   // clean up the detectors string
+//   while (detectors.Contains("  ")) detectors.ReplaceAll("  ", " ");
+//   while (detectors.BeginsWith(" ")) detectors.Remove(0, 1);
+//   while (detectors.EndsWith(" ")) detectors.Remove(detectors.Length()-1, 1);
  
-  return result;
-}
+//   return result;
+// }

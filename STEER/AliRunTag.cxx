@@ -183,7 +183,7 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetCalibVersion(oldtag->GetCalibVersion());
   SetDataType(oldtag->GetDataType());
   SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
-  SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMask());
+  SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMaskDAQ(), oldtag->GetDetectorTags()->GetIntDetectorMaskReco());
   SetQA(*(oldtag->GetQA())) ;  	
   SetQAArray(oldtag->GetQAArray(), oldtag->GetQALength()) ;  
   SetEventSpecies(oldtag->GetEventSpecies(), oldtag->GetESLength()) ;  
@@ -221,10 +221,19 @@ void AliRunTag::SetLHCTag(Float_t lumin, TString type) {
 }
 
 //___________________________________________________________________________
-void AliRunTag::SetDetectorTag(UInt_t mask) {
+void AliRunTag::SetDetectorTag(UInt_t mask, UInt_t maskReco) {
   //Setter for the detector tags
-  fDetectorTag.SetDetectorMask(mask);
-  fNumDetectors = fDetectorTag.GetDetectorMask()->GetEntries();
+  fDetectorTag.SetDetectorMaskDAQ(mask);
+  if (maskReco == 0)
+    fDetectorTag.SetDetectorMaskReco(mask);
+  else
+    fDetectorTag.SetDetectorMaskReco(maskReco);
+
+  int ndet = 0;
+  for (int iter=0; iter<32; iter++)  
+    ndet += (mask & (1 << iter)) > 0;
+  
+  fNumDetectors = ndet;
 }
 
 //___________________________________________________________________________
