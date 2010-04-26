@@ -199,10 +199,10 @@ Int_t AliITSRawStreamSPD::ReadCalibHeader() {
     if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTSMtriggerErr,ddlID,-1,-1,errMess.Data());
   }
   if (fRawReader->TestBlockAttribute(7)) { // bunch crossing difference error bit
-    TString errMess = "BC Difference Error Bit Set";
+    TString errMess = "High Multiplicity Event Flag Set";
     AliError(errMess.Data());
-    fRawReader->AddMajorErrorLog(kBCdiffErr,errMess.Data());
-    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kBCdiffErr,ddlID,-1,-1,errMess.Data());
+    fRawReader->AddMajorErrorLog(kHighMultiplicityFlag,errMess.Data());
+    if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHighMultiplicityFlag,ddlID,-1,-1,errMess.Data());
   }
 
   // set eq active and the participating half-staves (for access from outside this class), 
@@ -461,7 +461,7 @@ const Char_t* AliITSRawStreamSPD::GetErrorName(UInt_t errorCode) {
   else if (errorCode==kTrailerErrorBitErr)      return "Trailer Error Bit Set";
   else if (errorCode==kLinkRxDetectorFatalErr)  return "LinkRx/Detector Fatal Error Bit Set";
   else if (errorCode==kTSMtriggerErr)           return "TSM Trigger Error Bit Set";
-  else if (errorCode==kBCdiffErr)               return "BC Difference Error Bit Set";
+  else if (errorCode==kHighMultiplicityFlag)    return "High Multiplicity Event Flag Set";
   else return "";
 }
 //__________________________________________________________________________

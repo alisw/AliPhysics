@@ -135,7 +135,7 @@ class AliITSRawStreamSPD: public AliITSRawStream {
       kTrailerErrorBitErr,
       kLinkRxDetectorFatalErr,
       kTSMtriggerErr,
-      kBCdiffErr
+      kHighMultiplicityFlag
     };
 
   private :
