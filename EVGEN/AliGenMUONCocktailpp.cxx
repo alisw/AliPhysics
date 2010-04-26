@@ -47,7 +47,6 @@
 #include <TParticle.h>
 #include <TF1.h>
 #include <TVirtualMC.h>
-#include <iostream.h>
 #include "AliGenCocktailEventHeader.h"
 
 #include "AliGenCocktailEntry.h"
