@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kTRUE,Bool_t cutOnDistr=kFALSE)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -71,9 +71,9 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(5); // default is 5
+  esdTrackCuts->SetMinNClustersITS(4); // default is 5
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kBoth); //test d0 asimmetry
+					 AliESDtrackCuts::kAny); 
  // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
@@ -203,7 +203,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 
   //cout<<"\tbefore SetCuts : npt = "<<RDHFD0toKpi->GetNPtBins()<<endl;
   RDHFD0toKpi->SetCuts(nvars,nptbins,rdcutsvalmine);
-  RDHFD0toKpi->PrintAll();
+  //  RDHFD0toKpi->PrintAll();
 
   // Aanalysis task    
   TString taskname="MassAndDistrAnalysis";

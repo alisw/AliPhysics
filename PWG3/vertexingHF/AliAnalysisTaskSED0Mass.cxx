@@ -560,6 +560,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     Double_t eta1=d->EtaProng(1);
    
     if (TMath::Abs(eta0) < 0.9 && TMath::Abs(eta1) < 0.9) {
+      //apply cuts on tracks
+      Int_t isSelected = fCuts->IsSelected(d,AliRDHFCuts::kTracks);
+      if (!isSelected) return;
+      if(fDebug>1) cout<<"tracks selected";
+
       FillVarHists(d,mcArray,fCuts,fDistr);
       FillMassHists(d,mcArray,fCuts,fOutputMass);
     }
@@ -602,8 +607,9 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODRecoDecayHF2Prong *part, TClone
   //Double_t pt = d->Pt(); //mother pt
   Bool_t isSelected=kFALSE;
 
+
   if(fCutOnDistr){
-    isSelected = cuts->IsSelected(part,AliRDHFCuts::kAll);
+    isSelected = cuts->IsSelected(part,AliRDHFCuts::kCandidate);
     if (!isSelected){
       //cout<<"Not Selected"<<endl;
       return;
@@ -794,7 +800,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
   Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
-  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kAll); //selected
+  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate); //selected
   //cout<<"is selected = "<<isSelected<<endl;
 
   //cout<<"check cuts = "<<endl;
@@ -998,5 +1004,4 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
   return;
 }
-
 
