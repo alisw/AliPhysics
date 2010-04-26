@@ -183,7 +183,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       TH2F* hSPDMult      = (TH2F*)fOutputList->FindObject(Form("mult_SPD_vtxbin%d",vtxbin));
       hSPDMult->Reset();
       TH2F* hSPDMultTrVtx = (TH2F*)fOutputList->FindObject(Form("multTrVtx_SPD_vtxbin%d",vtxbin));
-      hSPDMult->Reset();
+      hSPDMultTrVtx->Reset();
     }
     
   }
