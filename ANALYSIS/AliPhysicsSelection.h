@@ -71,7 +71,7 @@ public:
   void AddCollisionTriggerClass(const char* className){ fCollTrigClasses.Add(new TObjString(className)); fUsingCustomClasses = kTRUE; }
   void AddBGTriggerClass(const char* className)       { fBGTrigClasses.Add(new TObjString(className));  fUsingCustomClasses = kTRUE; }
   
-  AliTriggerAnalysis* GetTriggerAnalysis() { return (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(0) : 0; }    
+  AliTriggerAnalysis* GetTriggerAnalysis(Int_t i = 0) { return (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(i) : 0; }    
     
   const TH2F* GetStatisticsHistogram(Int_t idx=kStatIdxAll) const { return fHistStatistics[idx]; }
   const TH2F* GetBunchCrossingHistogram() const { return fHistBunchCrossing; }
