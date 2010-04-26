@@ -86,7 +86,7 @@ AliAnalysisTask *AddTaskJetChem(){
 							   Form("%s:PWG4_JetChem",AliAnalysisManager::GetCommonFileName()));
 
   mgr->ConnectInput(task,0,cinput );
-  mgr->ConnectOutput(task,0,coutput);
+  mgr->ConnectOutput(task,1,coutput);
  
   return task;
 }
