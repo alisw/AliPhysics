@@ -50,6 +50,9 @@ class AliLHCData : public TObject
   enum Collim_t {kTCTVB4L2, kTCTVB4R2, kTCLIA4R2, kNCollimators};
   enum ColJaw_t {kGapDn,kGapUp,kLeftDn,kLeftUp,kRightDn,kRightUp,kNJaws};
   enum          {kMaxBSlots = 3564};
+  enum          {kIgnoreSOR = BIT(14), // if set: take all values with t>=SOR - margin, otherwise t>=SOR
+		 kIgnoreEOR = BIT(15), // if set: take all values with t>=EOR + margin, otherwise t<=EOR
+		 kTimeMargin = 60*60*24*30}; // use margin of 30 days
   //
   enum {kIntTot,kIntTotAv,kIntBunchAv,
 	kLumAcqMode,kLumTot,kLumTotErr,kLumBunch,kLumBunchErr,kLumCrossAng,kLumCrossAngErr,
@@ -62,18 +65,23 @@ class AliLHCData : public TObject
  public:
   //
  AliLHCData() : fTMin(0),fTMax(1e10),fFillNumber(0),fData(0),fFile2Process(0),fMap2Process(0) {Clear();}
-  AliLHCData(const TMap*   dcsMap,  double tmin=0, double tmax=1.e10);
-  AliLHCData(const Char_t* dcsFile, double tmin=0, double tmax=1.e10);
+  AliLHCData(const TMap*   dcsMap,  double tmin=0, double tmax=1.e10, Bool_t ignoreSOR=kTRUE,Bool_t ignoreEOR=kTRUE);
+  AliLHCData(const Char_t* dcsFile, double tmin=0, double tmax=1.e10, Bool_t ignoreSOR=kTRUE,Bool_t ignoreEOR=kTRUE);
   virtual ~AliLHCData() {}
   //
   Bool_t                FillData(const TMap*   dcsMap,  double tmin=0, double tmax=1.e20);
   Bool_t                FillData(const Char_t* dcsFile, double tmin=0, double tmax=1.e20);
   Double_t              GetTMin()                                    const {return fTMin;}
   Double_t              GetTMax()                                    const {return fTMax;}
+  Bool_t                IsSORIgnored()                               const {return TestBit(kIgnoreSOR);}
+  Bool_t                IsEORIgnored()                               const {return TestBit(kIgnoreEOR);}
   Int_t                 GetFillNumber()                              const {return fFillNumber;}
   void                  SetFillNumber(Int_t fill)                          {fFillNumber = fill;}
   void                  SetTMin(Double_t t)                                {fTMin = t<0?0:(t>1e10?1e10:t);}
   void                  SetTMax(Double_t t)                                {fTMax = t<0?0:(t>1e10?1e10:t);}
+  void                  SetIgnoreSOR(Bool_t v=kTRUE)                       {SetBit(kIgnoreSOR,v);}
+  void                  SetIgnoreEOR(Bool_t v=kTRUE)                       {SetBit(kIgnoreEOR,v);}
+  //
   virtual void          Print(const Option_t *opt="")                const;
   //
   Int_t GetNBunchConfigMeasured(int bm)           const {return GoodPairID(bm)?fBunchConfMeas[bm][kNStor]:-1;}

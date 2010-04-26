@@ -94,16 +94,20 @@ const Char_t* AliLHCData::fgkDCSColJaws[] = {
   "left_upstream","right_downstream","right_upstream"};
 
 //___________________________________________________________________
-AliLHCData::AliLHCData(const TMap* dcsMap, double tmin, double tmax)
+AliLHCData::AliLHCData(const TMap* dcsMap, double tmin, double tmax, Bool_t ignoreSOR,Bool_t ignoreEOR)
   : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(0),fMap2Process(0)
 {
+  SetIgnoreSOR(ignoreSOR);
+  SetIgnoreEOR(ignoreEOR);
   FillData(dcsMap,tmin,tmax);
 }
 
 //___________________________________________________________________
-AliLHCData::AliLHCData(const Char_t* dcsFile, double tmin, double tmax)
+AliLHCData::AliLHCData(const Char_t* dcsFile, double tmin, double tmax, Bool_t ignoreSOR,Bool_t ignoreEOR)
   : fTMin(0),fTMax(0),fFillNumber(0),fData(0),fFile2Process(dcsFile),fMap2Process(0)
 {
+  SetIgnoreSOR(ignoreSOR);
+  SetIgnoreEOR(ignoreEOR);
   FillData(dcsFile,tmin,tmax);
 }
 
@@ -140,7 +144,9 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   //
   // -------------------------- extract Fill Number
   int iEntry;
-  TObjArray* arr = GetDCSEntry(fgkDCSNames[kFillNum],iEntry,fTMin,fTMax);
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  TObjArray* arr = GetDCSEntry(fgkDCSNames[kFillNum],iEntry,tmin,tmax);
   if (arr) SetFillNumber( ExtractInt( (AliDCSArray*)arr->At(iEntry), 0) );
   if (fFile2Process) delete arr; // array was created on demand
   //
@@ -322,12 +328,17 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,fTMin,fTMax)) ) return -1;
+  double tmin = fTMin;
+  double tmax = fTMax;
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  //
+  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
   nEntries = arr->GetEntriesFast();
   //
   int dim = 1;
   if (recErr) {
-    if ( !(arrE=GetDCSEntry(recErr,iEntryE,fTMin,fTMax)) ) nEntriesE = -999;
+    if ( !(arrE=GetDCSEntry(recErr,iEntryE,tmin,tmax)) ) nEntriesE = -999;
     else nEntriesE = arrE->GetEntriesFast();
     dim += 1;
   }
@@ -382,7 +393,12 @@ Int_t AliLHCData::FillBunchConfig(int refs[2],const char* rec)
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,fTMin,fTMax)) ) return -1;
+  double tmin = fTMin;
+  double tmax = fTMax;
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  //
+  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
   nEntries = arr->GetEntriesFast();
   //
   AliLHCDipValI* prevRecI=0;
@@ -423,7 +439,12 @@ Int_t AliLHCData::FillAcqMode(int refs[2],const char* rec)
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,fTMin,fTMax)) ) return -1;
+  double tmin = fTMin;
+  double tmax = fTMax;
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  //
+  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
   nEntries = arr->GetEntriesFast();
   //
   AliLHCDipValI* prevRecI=0;
@@ -460,7 +481,12 @@ Int_t AliLHCData::FillStringRecord(int refs[2],const char* rec)
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,fTMin,fTMax)) ) return -1;
+  double tmin = fTMin;
+  double tmax = fTMax;
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  //
+  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
   nEntries = arr->GetEntriesFast();
   //
   while (iEntry<nEntries) {
@@ -496,7 +522,12 @@ Int_t AliLHCData::FillBunchInfo(int refs[2],const char* rec, int ibm, Bool_t inR
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,fTMin,fTMax)) ) return -1;
+  double tmin = fTMin;
+  double tmax = fTMax;
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  //
+  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
   nEntries = arr->GetEntriesFast();
   //
   while (iEntry<nEntries) {
@@ -549,7 +580,12 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
   refs[kStart] = fData.GetEntriesFast();
   refs[kNStor] = 0;
   //
-  if ( !(arr=GetDCSEntry(rec,iEntry,fTMin,fTMax)) ) return -1;
+  double tmin = fTMin;
+  double tmax = fTMax;
+  if (IsSORIgnored()) tmin -= kTimeMargin;
+  if (IsSORIgnored()) tmax += kTimeMargin;
+  //
+  if ( !(arr=GetDCSEntry(rec,iEntry,tmin,tmax)) ) return -1;
   nEntries = arr->GetEntriesFast();
   //
   while (iEntry<nEntries) {
@@ -585,7 +621,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
     }
     //
     if (recErr) {
-      if ( !(arrE=GetDCSEntry(recErr,iEntryE,fTMin,fTMax)) || iEntryE<0 ) nEntriesE = -999;
+      if ( !(arrE=GetDCSEntry(recErr,iEntryE,tmin,tmax)) || iEntryE<0 ) nEntriesE = -999;
       else nEntriesE = arrE->GetEntriesFast();
       dim += 1;
     }
@@ -703,106 +739,108 @@ void AliLHCData::Print(const Option_t* opt) const
   // print full info
   TString opts = opt;
   opts.ToLower();
+  Bool_t utcTime = opts.Contains("loc") ? kFALSE:kTRUE;
   Bool_t full = kTRUE;
   if (!opts.Contains("f")) {
     printf("Use Print(\"f\") to print full info\n");
     printf("Printing short info:\n<RecordType>(number of records): <TimeStamp, value> for 1st record only\n");
+    printf("Ignoring strict time of SOR: %s, EOR: %s\n",IsSORIgnored()?"ON":"OFF",IsEORIgnored()?"ON":"OFF");
     full = kFALSE;
   }
-  TString sdtmn = AliLHCDipValI::TimeAsString(fTMin);
-  TString sdtmx = AliLHCDipValI::TimeAsString(fTMax);
-  printf("Fill#%6d Validity: %s - %s\n",fFillNumber,sdtmn.Data(),sdtmx.Data());
+  TString sdtmn = AliLHCDipValI::TimeAsString(fTMin,utcTime);
+  TString sdtmx = AliLHCDipValI::TimeAsString(fTMax,utcTime);
+  printf("Fill#%6d Validity: %s - %s (%s)\n",fFillNumber,sdtmn.Data(),sdtmx.Data(),utcTime ? "UTC":"LOC");
   //
   printf("********** SETTINGS FROM RUN CONTROL **********\n");
   //
   printf("* %-38s","Injection Scheme");
-  PrintAux(full,fRCInjScheme);
+  PrintAux(full,fRCInjScheme,opts);
   //
   printf("* %-38s","Beta Star");
-  PrintAux(full,fRCBeta);
+  PrintAux(full,fRCBeta,opts);
   //
   printf("* %-38s","Horisontal Crossing Angle");
-  PrintAux(full,fRCAngH);
+  PrintAux(full,fRCAngH,opts);
   //
   printf("* %-38s","Vertical   Crossing Angle");
-  PrintAux(full,fRCAngV);
+  PrintAux(full,fRCAngV,opts);
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
-    PrintAux(full,fBunchConfDecl[ib]);
+    PrintAux(full,fBunchConfDecl[ib],opts);
   }
   //
   printf("\n**********       MEASURED DATA       **********\n");
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d filling  [- interacts at IR2!]  ",ib+1);
-    PrintAux(full,fBunchConfMeas[ib]);
+    PrintAux(full,fBunchConfMeas[ib],opts);
   } 
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d total intensity                 ",ib+1);
-    PrintAux(full,fIntensTotal[ib]);
+    PrintAux(full,fIntensTotal[ib],opts);
   } 
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d total intensity (bunch average) ",ib+1);
-    PrintAux(full,fIntensTotalAv[ib]);
+    PrintAux(full,fIntensTotalAv[ib],opts);
   } 
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d intensity per bunch             ",ib+1);
-    PrintAux(full,fIntensPerBunch[ib]);
+    PrintAux(full,fIntensPerBunch[ib],opts);
   }
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d bunch lengths                   ",ib+1);
-    PrintAux(full,fBunchLengths[ib]);
+    PrintAux(full,fBunchLengths[ib],opts);
   } 
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d Horisontal emittance            ",ib+1);
-    PrintAux(full,fEmittanceH[ib]);
+    PrintAux(full,fEmittanceH[ib],opts);
   }
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d Vertical emittance              ",ib+1);
-    PrintAux(full,fEmittanceV[ib]);
+    PrintAux(full,fEmittanceV[ib],opts);
   }
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d Horisontal sigma                ",ib+1);
-    PrintAux(full,fBeamSigmaH[ib]);
+    PrintAux(full,fBeamSigmaH[ib],opts);
   }
   //
   for (int ib=0;ib<2;ib++) {
     printf("* Beam%d Vertical sigma                  ",ib+1);
-    PrintAux(full,fBeamSigmaV[ib]);
+    PrintAux(full,fBeamSigmaV[ib],opts);
   }
   //
   for (int lr=0;lr<2;lr++) {
     printf("* Total luminosity from BRANB_4%c2       ",lr ? 'R':'L');
-    PrintAux(full,fLuminTotal[lr]);
+    PrintAux(full,fLuminTotal[lr],opts);
   } 
   //
   for (int lr=0;lr<2;lr++) {
     printf("* Luminosity acq.mode, BRANB_4%c2        ",lr ? 'R':'L');
-    PrintAux(full,fLuminAcqMode[lr],"bit");
+    PrintAux(full,fLuminAcqMode[lr],opts+"bit");
   } 
   //
   for (int lr=0;lr<2;lr++) {
     printf("* Luminosity per BC from BRANB_4%c2      ",lr ? 'R':'L');
-    PrintAux(full,fLuminPerBC[lr]);
+    PrintAux(full,fLuminPerBC[lr],opts);
   }
   //
   for (int lr=0;lr<2;lr++) {
     printf("* Crossing angle, side %c                ",lr ? 'R':'L');
-    PrintAux(full,fCrossAngle[lr]);
+    PrintAux(full,fCrossAngle[lr],opts);
   }
   //
   for (int coll=0;coll<kNCollimators;coll++)
     for (int jaw=0;jaw<kNJaws;jaw++) {
       printf("* Collimator %10s:%16s",fgkDCSColNames[coll],fgkDCSColJaws[jaw]);
-      PrintAux(full,fCollimators[coll][jaw]);
+      PrintAux(full,fCollimators[coll][jaw],opts);
     }
   //
 }
