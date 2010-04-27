@@ -42,7 +42,7 @@ private:
   /** Keep the assignement operator private since it should not be used */
   AliHLTCaloConstantsHandler & operator = (const AliHLTCaloConstantsHandler &);
   
-  //  ClassDef(AliHLTCaloConstantsHandler, 1);
+  ClassDef(AliHLTCaloConstantsHandler, 1);
 
 };
 

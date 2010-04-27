@@ -162,6 +162,8 @@ private:
    /** Are the gains initialised? */
   Bool_t fGainsInitialised; //! transient
 
+  ClassDef(AliHLTEMCALDigitMakerComponent, 1);
+
 };
 #endif
  

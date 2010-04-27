@@ -260,7 +260,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
 
   RawDataWriter *fRawDataWriter; 
 
-  //  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
+  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
 
 };
 

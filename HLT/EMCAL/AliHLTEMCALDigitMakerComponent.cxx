@@ -46,6 +46,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 
+ClassImp(AliHLTEMCALDigitMakerComponent)
+
 AliHLTEMCALDigitMakerComponent gAliHLTEMCALDigitMakerComponent;
 
 AliHLTEMCALDigitMakerComponent::AliHLTEMCALDigitMakerComponent() :

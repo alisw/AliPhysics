@@ -29,7 +29,7 @@
 #include "AliHLTCaloConstants.h"
 #include "AliHLTMisc.h"
 
-//ClassImp(AliHLTCaloConstantsHandler);
+ClassImp(AliHLTCaloConstantsHandler)
 
 AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
   fCaloConstants(NULL)
