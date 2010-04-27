@@ -147,10 +147,7 @@ void aliHLTTRDrun(const TString inDir)
 
   AliHLTConfiguration writerOffConf("esdWriter", "TRDEsdWriter", "HTracker", "-datafile AliHLTTRDESDs.root -concatenate-events -concatenate-blocks");
 
-  gHLT.BuildTaskList(&HTracker); 
-  //gHLT.BuildTaskList(&HESDMaker);
-  //gHLT.BuildTaskList(&writerOffConf);
-  //gHLT.BuildTaskList(&HCalib);
+  gHLT.BuildTaskList("HTracker");
 
   gHLT.Run(nEvents);
 }

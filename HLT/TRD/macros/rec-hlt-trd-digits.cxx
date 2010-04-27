@@ -106,7 +106,7 @@ int rec_hlt_trd_digits(const TString input){
   // root file writer (with esd friends and MC)
   AliHLTConfiguration writerDigiConf("TRD-DigiEsdFile", "TRDEsdWriter", "TRD-DigiTR", "-concatenate-events -concatenate-blocks");
   
-  gHLT.BuildTaskList(&writerDigiConf);
+  gHLT.BuildTaskList("TRD-DigiEsdFile");
   gHLT.Run(runLoader->GetNumberOfEvents());
 }
 
