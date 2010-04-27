@@ -32,6 +32,7 @@ AliAnalysisTaskDiJets::AliAnalysisTaskDiJets():
     AliAnalysisTaskSE(),
     fDiJets(0),
     fDiJetsIn(0),
+    fFillAOD(kFALSE),
     fHistList(0),
     fH1DeltaPt(0),
     fH1DeltaPhi(0),
@@ -48,6 +49,7 @@ AliAnalysisTaskDiJets::AliAnalysisTaskDiJets(const char* name):
     AliAnalysisTaskSE(name),
     fDiJets(0),
     fDiJetsIn(0),
+    fFillAOD(kFALSE),
     fHistList(0),
     fH1DeltaPt(0),
     fH1DeltaPhi(0),
@@ -67,8 +69,10 @@ void AliAnalysisTaskDiJets::UserCreateOutputObjects()
 //
     if (fDebug > 1) printf("AnalysisTaskDiJets::CreateOutPutData() \n");
     fDiJets = new TClonesArray("AliAODDiJet", 0);
-    fDiJets->SetName("dijets");
-    AddAODBranch("TClonesArray", &fDiJets);
+    if (fFillAOD){
+      fDiJets->SetName("dijets");
+      AddAODBranch("TClonesArray", &fDiJets);
+	}
 
     if (!fHistList) fHistList = new TList();
     Float_t pi=TMath::Pi();
