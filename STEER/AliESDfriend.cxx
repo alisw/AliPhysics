@@ -21,22 +21,26 @@
 //-------------------------------------------------------------------------
 
 #include "AliESDfriend.h"
+#include "AliESDVZEROfriend.h"
+#include "AliESDTZEROfriend.h"
 
 ClassImp(AliESDfriend)
 
 AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",15000),
-			      fESDVZEROfriend(NULL)
+  fESDVZEROfriend(NULL),
+  fESDTZEROfriend(NULL)
+
 {
  //
  // Default constructor
  //
-	//fTracks.BypassStreamer(kFALSE);
 }
 
 AliESDfriend::AliESDfriend(const AliESDfriend &f) :
   TObject(f),
   fTracks(f.fTracks),
-  fESDVZEROfriend(f.fESDVZEROfriend ? new AliESDVZEROfriend(*f.fESDVZEROfriend) : NULL)
+  fESDVZEROfriend(f.fESDVZEROfriend ? new AliESDVZEROfriend(*f.fESDVZEROfriend) : NULL),
+  fESDTZEROfriend(f.fESDTZEROfriend ? new AliESDTZEROfriend(*f.fESDTZEROfriend) : NULL)
 {
  //
  // Copy constructor
@@ -54,6 +58,11 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     delete fESDVZEROfriend; fESDVZEROfriend = NULL;
     if (!esd.fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
 
+    delete fESDTZEROfriend; fESDTZEROfriend = NULL;
+    if (!esd.fESDTZEROfriend) fESDTZEROfriend = new AliESDTZEROfriend(*esd.fESDTZEROfriend);
+ 
+ 
+ 
     return *this;
 }
 
@@ -67,6 +76,8 @@ AliESDfriend::~AliESDfriend() {
   delete fESDVZEROfriend;
 }
 
+
+
 void AliESDfriend::SetVZEROfriend(AliESDVZEROfriend * obj)
 {
   //
@@ -74,4 +85,12 @@ void AliESDfriend::SetVZEROfriend(AliESDVZEROfriend * obj)
   // (complete raw data)
   if (!fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend();
   if (obj) *fESDVZEROfriend = *obj;
+}
+void AliESDfriend::SetTZEROfriend(AliESDTZEROfriend * obj)
+{
+  //
+  // Set the TZERO friend data object
+  // (complete raw data)
+  if (!fESDTZEROfriend) fESDTZEROfriend = new AliESDTZEROfriend();
+  if (obj) *fESDTZEROfriend = *obj;
 }

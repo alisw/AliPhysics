@@ -21,6 +21,7 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfri
        AliESDHLTDecision.cxx \
        AliESDZDC.cxx \
        AliESDTZERO.cxx \
+       AliESDTZEROfriend.cxx \
        AliESDCaloTrigger.cxx \
        AliRawDataErrorLog.cxx \
        AliMeanVertex.cxx \

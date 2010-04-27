@@ -11,7 +11,9 @@
 #include <TClonesArray.h>
 
 #include "AliESDfriendTrack.h"
-#include "AliESDVZEROfriend.h"
+
+class AliESDVZEROfriend;
+class AliESDTZEROfriend;
 
 //_____________________________________________________________________________
 class AliESDfriend : public TObject {
@@ -36,6 +38,8 @@ public:
 
   void SetVZEROfriend(AliESDVZEROfriend * obj);
   AliESDVZEROfriend *GetVZEROfriend(){ return fESDVZEROfriend; }
+  void SetTZEROfriend(AliESDTZEROfriend * obj);
+  AliESDTZEROfriend *GetTZEROfriend(){ return fESDTZEROfriend; }
 
   void Ls(){
 	  return fTracks.ls();
@@ -48,8 +52,9 @@ public:
 protected:
   TClonesArray fTracks;    // ESD friend tracks
   AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data
+  AliESDTZEROfriend *fESDTZEROfriend; // TZERO calibration object
 
-  ClassDef(AliESDfriend,2) // ESD friend
+  ClassDef(AliESDfriend,3) // ESD friend
 };
 
 #endif

@@ -14,6 +14,7 @@
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
 #include "AliT0RecoParam.h"
+#include "AliESDTZEROfriend.h"
 
 class AliT0Reconstructor: public AliReconstructor {
  public:
@@ -46,6 +47,7 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t fLatencyL1;     //  latency for (T0A+T0C)/2
   Float_t fLatencyL1A;    // latency for T0A
   Float_t fLatencyL1C;    //latency for T0C
+  AliESDTZEROfriend*  fESDTZEROfriend; // ESD friend object 
 
  private:
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
