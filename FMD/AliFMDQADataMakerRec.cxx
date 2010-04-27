@@ -71,7 +71,8 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm)
   
 }
 //_____________________________________________________________________
-AliFMDQADataMakerRec& AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm ) 
+AliFMDQADataMakerRec& 
+AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm ) 
 {
   fRecPointsArray = qadm.fRecPointsArray;
   
@@ -120,7 +121,9 @@ void AliFMDQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts","Dist of ADC counts;ADC counts;Counts",1024,0,1024);
+  TH1I* hADCCounts = new TH1I("hADCCounts",
+			      "Dist of ADC counts;ADC counts;Counts",
+			      1024,0,1024);
   Add2DigitsList(hADCCounts, 0, !expert, image);
 }
 
@@ -152,12 +155,14 @@ void AliFMDQADataMakerRec::InitRaws()
     Int_t firstring = (det==1 ? 1 : 0);
     for(Int_t iring = firstring;iring<=1;iring++) {
       Char_t ring = (iring == 1 ? 'I' : 'O');
-      hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c",
-				      det, ring), Form("FMD%d%c ADC counts;Amplitude [ADC counts];Counts",det,ring),
-				 1024,0,1023);
+      hADCCounts = 
+	new TH1I(Form("hADCCounts_FMD%d%c", det, ring), 
+		 Form("FMD%d%c ADC counts;Amplitude [ADC counts];Counts",
+		      det,ring),1024,0,1023);
       hADCCounts->SetFillStyle(3001);
-      hADCCounts->SetFillColor(colors[det-1]+2-2*iring);
-      
+      hADCCounts->SetFillColor(colors[det-1]+2+iring);
+      hADCCounts->SetDrawOption("LOGY");
+
       Int_t index1 = GetHalfringIndex(det, ring, 0,1);
       Add2RawsList(hADCCounts, index1, !expert, image, !saveCorr);
       
@@ -168,11 +173,15 @@ void AliFMDQADataMakerRec::InitRaws()
 	board = board + b*16;
 	
 	
-	hADCCounts      = new TH1I(Form("hADCCounts_FMD%d%c_board%d",
-					det, ring, board), "ADC counts;Amplitude [ADC counts];Counts",
-				   1024,0,1023);
+	hADCCounts      = 
+	  new TH1I(Form("hADCCounts_FMD%d%c_0x%02x", det, ring, board), 
+		   Form("FMD%d%c_0x%x ADC counts;Amplitude [ADC counts];Counts",
+			det,ring, board),1024,0,1023);
 	hADCCounts->SetXTitle("ADC counts");
 	hADCCounts->SetYTitle("");
+	hADCCounts->SetFillStyle(3001);
+	hADCCounts->SetFillColor(colors[det-1]+2+iring);
+	hADCCounts->SetDrawOption("LOGY");
 	Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
 	Add2RawsList(hADCCounts, index2, expert, !image, !saveCorr);
 
