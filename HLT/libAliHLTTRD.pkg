@@ -11,6 +11,8 @@ CLASS_HDRS:= \
 	AliHLTTRDClusterizer.h \
 	AliHLTTRDEsdWriterComponent.h \
 	AliHLTTRDCalibrationComponent.h \
+        AliHLTTRDCalibFitComponent.h \
+        AliHLTTRDCalibHistoComponent.h \
 	AliHLTTRDCluster.h \
 	AliHLTTRDTracklet.h \
 	AliHLTTRDTrack.h \

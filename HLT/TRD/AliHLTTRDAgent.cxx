@@ -35,6 +35,8 @@ AliHLTTRDAgent gAliHLTTRDAgent;
 #include "AliHLTTRDClusterizerComponent.h"
 #include "AliHLTTRDTrackerV1Component.h"
 #include "AliHLTTRDCalibrationComponent.h"
+#include "AliHLTTRDCalibFitComponent.h"
+#include "AliHLTTRDCalibHistoComponent.h"
 #include "AliHLTTRDEsdWriterComponent.h"
 #include "AliHLTTRDClusterHistoComponent.h"
 #include "AliHLTTRDTrackHistoComponent.h"
@@ -91,6 +93,8 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTRDClusterizerComponent);
   pHandler->AddComponent(new AliHLTTRDTrackerV1Component);
   pHandler->AddComponent(new AliHLTTRDCalibrationComponent);
+  pHandler->AddComponent(new AliHLTTRDCalibFitComponent);
+  pHandler->AddComponent(new AliHLTTRDCalibHistoComponent);
   pHandler->AddComponent(new AliHLTTRDEsdWriterComponent);
   pHandler->AddComponent(new AliHLTTRDClusterHistoComponent);
   pHandler->AddComponent(new AliHLTTRDTrackHistoComponent);
