@@ -36,6 +36,7 @@
 #include "TObject.h"
 #include "TMath.h"
 #include <TSystem.h>
+#include <TDatime.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDPedestalDA)
@@ -52,9 +53,13 @@ AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA(),
   fMaxTimebin(3 * 4 * 3 * 16)  // 3 ddls, 4 FECs, 3 Altros, 16 channels
 {
   // Default constructor 
+  Rotate("peds.csv", 3);
   fOutputFile.open("peds.csv");
+  Rotate("ddl3072.csv", 10);
   fZSfileFMD1.open("ddl3072.csv");
+  Rotate("ddl3073.csv", 10);
   fZSfileFMD2.open("ddl3073.csv");
+  Rotate("ddl3074.csv", 10);
   fZSfileFMD3.open("ddl3074.csv");  
 }
 
@@ -358,6 +363,9 @@ void AliFMDPedestalDA::WriteHeaderToFile()
   // Write headers to output files 
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetPedestalShuttleID()),13);
+  TDatime now;
+  fOutputFile << "# This file created from run # " << fRunno 
+	      << " @ " << now.AsString() << std::endl;
   fOutputFile.write("# Detector, "
 		    "Ring, "
 		    "Sector, "
@@ -369,14 +377,17 @@ void AliFMDPedestalDA::WriteHeaderToFile()
 		    "Chi2/NDF \n", 71);
 
   std::ostream* zss[] = { &fZSfileFMD1, &fZSfileFMD2, &fZSfileFMD3, 0 };
-  for (size_t i = 0; i < 3; i++) 
-    *(zss[i]) << "# FMD 1 pedestals \n"
+  for (size_t i = 0; i < 3; i++)  {
+    *(zss[i]) << "# FMD " << (i+1) << " pedestals \n"
 	      << "# board, "
 	      << "altro, "
 	      << "channel, "
 	      << "timebin, "
 	      << "pedestal, "
 	      << "noise\n";
+    *(zss[i]) << "# This file created from run # " << fRunno 
+	      << " @ " << now.AsString() << std::endl;
+  }
 }
 
 //_____________________________________________________________________

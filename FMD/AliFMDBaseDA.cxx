@@ -33,6 +33,8 @@
 #include "AliFMDCalibStripRange.h"
 #include "AliLog.h"
 #include "AliRawEventHeaderBase.h"
+#include <TDatime.h>
+#include <TSystem.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDBaseDA)
@@ -48,6 +50,17 @@ AliFMDBaseDA::GetStripPath(UShort_t det,
 			   UShort_t str, 
 			   Bool_t   full) const
 {
+  // Get the strip path 
+  // 
+  // Parameters 
+  //     det      Detector number
+  //     ring     Ring identifier 
+  //     sec      Sector number 
+  //     str      Strip number
+  //     full     If true, return full path 
+  // 
+  // Return 
+  //     The path
   return Form("%s%sFMD%d%c[%02d,%03d]", 
 	      (full ? GetSectorPath(det, ring, sec, full) : ""), 
 	      (full ? "/" : ""), det, ring, sec, str);
@@ -59,6 +72,17 @@ AliFMDBaseDA::GetSectorPath(UShort_t det,
 			    UShort_t sec, 
 			    Bool_t   full) const
 {
+  // Get the strip path 
+  // 
+  // Parameters 
+  //     det      Detector number
+  //     ring     Ring identifier 
+  //     sec      Sector number 
+  //     str      Strip number
+  //     full     If true, return full path 
+  // 
+  // Return 
+  //     The path
   return Form("%s%sFMD%d%c[%02d]", 
 	      (full ? GetRingPath(det, ring, full) : ""), 
 	      (full ? "/" : ""), det, ring, sec);
@@ -69,6 +93,17 @@ AliFMDBaseDA::GetRingPath(UShort_t det,
 			  Char_t   ring, 
 			  Bool_t   full) const
 {
+  // Get the strip path 
+  // 
+  // Parameters 
+  //     det      Detector number
+  //     ring     Ring identifier 
+  //     sec      Sector number 
+  //     str      Strip number
+  //     full     If true, return full path 
+  // 
+  // Return 
+  //     The path
   return Form("%s%sFMD%d%c", 
 	      (full ? GetDetectorPath(det, full) : ""), 
 	      (full ? "/" : ""), det, ring);
@@ -78,6 +113,17 @@ const char*
 AliFMDBaseDA::GetDetectorPath(UShort_t det, 
 			      Bool_t   full) const
 {
+  // Get the strip path 
+  // 
+  // Parameters 
+  //     det      Detector number
+  //     ring     Ring identifier 
+  //     sec      Sector number 
+  //     str      Strip number
+  //     full     If true, return full path 
+  // 
+  // Return 
+  //     The path
   return Form("%s%sFMD%d", 
 	      (full ? fDiagnosticsFilename.Data() : ""), 
 	      (full ? ":/" : ""), det);
@@ -94,11 +140,13 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fPulseSize(10),
   fPulseLength(10),
   fRequiredEvents(0),
-  fCurrentEvent(0)
+  fCurrentEvent(0), 
+  fRunno(0)
 {
   //Constructor
-   fSeenDetectors[0] = fSeenDetectors[1] = fSeenDetectors[2] = kFALSE;
+  fSeenDetectors[0] = fSeenDetectors[1] = fSeenDetectors[2] = kFALSE;
   fDetectorArray.SetOwner();
+  Rotate("conditions.csv", 3);
   fConditionsFile.open("conditions.csv");
 }
 //_____________________________________________________________________
@@ -112,7 +160,8 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fPulseSize(baseDA.fPulseSize),
   fPulseLength(baseDA.fPulseLength),
   fRequiredEvents(baseDA.fRequiredEvents),
-  fCurrentEvent(baseDA.fCurrentEvent)
+  fCurrentEvent(baseDA.fCurrentEvent),
+  fRunno(baseDA.fRunno)
 {
   //Copy constructor
   fSeenDetectors[0] = baseDA.fSeenDetectors[0];
@@ -143,7 +192,8 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   
   
   reader->Reset();
-  
+  fRunno = reader->GetRunNumber();
+
   AliFMDRawReader* fmdReader  = new AliFMDRawReader(reader,0);
   TClonesArray*    digitArray = new TClonesArray("AliFMDDigit",0);
   
@@ -304,6 +354,9 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   //Write the conditions data to file
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fConditionsFile.write(Form("# %s \n",pars->GetConditionsShuttleID()),14);
+  TDatime now;
+  fConditionsFile << "# This file created from run number " << fRunno 
+		  << " at " << now.AsString() << std::endl;
   
   AliFMDCalibSampleRate* sampleRate = new AliFMDCalibSampleRate();
   AliFMDCalibStripRange* stripRange = new AliFMDCalibStripRange();
@@ -371,14 +424,62 @@ void AliFMDBaseDA::WriteConditionsData(AliFMDRawReader* fmdReader)
   
 }
 //_____________________________________________________________________ 
-Int_t AliFMDBaseDA::GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) const {
-
+Int_t AliFMDBaseDA::GetHalfringIndex(UShort_t det, Char_t ring, 
+				     UShort_t board) const 
+{
+  // Get the index corresponding to a half-ring 
+  // 
+  // Parameters: 
+  //   det    Detector number 
+  //   ring   Ring identifier 
+  //   board  Board number 
+  //
+  // Return 
+  //   Internal index of the board 
   UShort_t iring  =  (ring == 'I' ? 1 : 0);
   
   Int_t index = (((det-1) << 2) | (iring << 1) | (board << 0));
   
   return index-2;
   
+}
+//_____________________________________________________________________ 
+void AliFMDBaseDA::Rotate(const char* base, int max) const
+{
+  // 
+  // Rotate a set of files.   base is the basic name of the files.
+  // If the file base.max exists it is removed. 
+  // If the file base.n exists (where n < max) it is renamed to
+  // base.(n-1).  
+  // If the file base exists, it is renamed to base.1 
+  //
+  // Parameters:
+  //   base Base name of the files
+  //   max  Maximum number to keep (minus one for the current).
+
+  // Note:  TSystem::AccessPathName returns false if the condition is
+  // fulfilled! 
+
+  // Check if we have base.max, and if so, remove it. 
+  TString testName(Form("%s.%d", base, max));
+  if (!gSystem->AccessPathName(testName.Data())) 
+    gSystem->Unlink(testName.Data());
+    
+  // Loop down from max-1 to 1 and move files 
+  for (int i = max-1; i >= 1; i--) { 
+    testName = Form("%s.%d", base, i);
+    if (!gSystem->AccessPathName(testName.Data())) {
+      TString newName(Form("%s.%d", base, i+1));
+      gSystem->Rename(testName.Data(), newName.Data());
+    }
+  }
+
+  // If we have the file base, rename it to base.1 
+  testName = Form("%s", base);
+  if (!gSystem->AccessPathName(testName.Data())){
+    TString newName(Form("%s.%d", base, 1));
+    gSystem->Rename(testName.Data(), newName.Data());
+  }
 }
 
 

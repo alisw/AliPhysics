@@ -29,15 +29,16 @@
 // pulse and the response of the detector.
 //
 #include "AliFMDGainDA.h"
-#include "iostream"
-#include "fstream"
+// #include <iostream>
+// #include <fstream>
 #include "AliLog.h"
 #include "TF1.h"
-#include "TH1.h"
-#include "TMath.h"
+#include "TH1S.h"
+// #include "TMath.h"
 #include "TGraphErrors.h"
 #include "AliFMDParameters.h"
 #include "AliFMDAltroMapping.h"
+#include <TDatime.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDGainDA)
@@ -57,6 +58,10 @@ AliFMDGainDA::AliFMDGainDA()
     fSummaryGains("GainsSummary","Summary of gains",51200,0,51200),
     fCurrentSummaryStrip(1)
 {
+  // Constructor 
+  // 
+  // Parameters: 
+  //   None
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
   fOutputFile.open("gains.csv");
@@ -75,6 +80,10 @@ AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA)
      fSummaryGains(gainDA.fSummaryGains),
      fCurrentSummaryStrip(gainDA.fCurrentSummaryStrip)
 {  
+  // Copy Constructor 
+  // 
+  // Parameters: 
+  //   gainDA   Object to copy from 
   fCurrentPulse.Reset(0);
   fCurrentChannel.Reset(0);
 }
@@ -82,36 +91,30 @@ AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA)
 //_____________________________________________________________________
 AliFMDGainDA::~AliFMDGainDA() 
 {
+  // Destructor 
+  // 
+  // Parameters: 
+  //   None
 }
 
 //_____________________________________________________________________
 void AliFMDGainDA::Init() 
 {
-  
- 
+  // Initialize 
+  // 
+  // Parameters: 
+  //   None
   Int_t nEventsRequired = 0;
   
-  //for(UShort_t det=1; det<=3;det++) {
-  //  UShort_t firstring = (det == 1 ? 1 : 0);
-  //  for(UShort_t iring = firstring; iring <=1;iring++) {
-  //    Char_t ring = (iring == 1 ? 'I' : 'O');
-  //    for(UShort_t board =0 ; board <=1; board++) {
-  //	Int_t idx = GetHalfringIndex(det,ring,board);
-  for(Int_t idx = 0;idx<fEventsPerChannel.GetSize();idx++)
-    {
-      
-      Int_t nEvents = 0;
-      if(fPulseSize.At(idx))
-	nEvents = (fPulseLength.At(idx)*fHighPulse) / fPulseSize.At(idx);
-      fEventsPerChannel.AddAt(nEvents,idx);
-      if(nEvents>nEventsRequired) nEventsRequired = nEvents * fNumberOfStripsPerChip;
-      
-    }
-  //}
-  // }
-  
-  //8 pulser values * 128 strips * 100 samples
-  
+  for(Int_t idx = 0;idx<fEventsPerChannel.GetSize();idx++) {
+    Int_t nEvents = 0;
+    if(fPulseSize.At(idx))
+      nEvents = (fPulseLength.At(idx)*fHighPulse) / fPulseSize.At(idx);
+    fEventsPerChannel.AddAt(nEvents,idx);
+    if(nEvents>nEventsRequired) 
+      nEventsRequired = nEvents * fNumberOfStripsPerChip;
+    
+  }
   
   SetRequiredEvents(nEventsRequired); 
   
@@ -153,6 +156,14 @@ void AliFMDGainDA::AddChannelContainer(TObjArray* sectorArray,
 				       UShort_t sec, 
 				       UShort_t strip) 
 {  
+  // Make a channel container 
+  // 
+  // Parameters: 
+  //  sectorArray    Sectors 
+  //  det            Detector number
+  //  ring           Ring identifier 
+  //  sec            Sector number
+  //  strip          Strip number
   TGraphErrors* hChannel  = new TGraphErrors();
   hChannel->SetName(Form("FMD%d%c[%02d,%03d]", det, ring, sec, strip));
   hChannel->SetTitle(Form("FMD%d%c[%02d,%03d] ADC vs DAC", 
@@ -161,7 +172,12 @@ void AliFMDGainDA::AddChannelContainer(TObjArray* sectorArray,
 }
 
 //_____________________________________________________________________
-void AliFMDGainDA::FillChannels(AliFMDDigit* digit) {
+void AliFMDGainDA::FillChannels(AliFMDDigit* digit) 
+{
+  // Fill data into histogram
+  // 
+  // Parameters: 
+  //   digit  Digit to get the data from
 
   UShort_t det   = digit->Detector();
   Char_t   ring  = digit->Ring();
@@ -184,7 +200,15 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit) {
 void AliFMDGainDA::Analyse(UShort_t det, 
 			   Char_t   ring, 
 			   UShort_t sec, 
-			   UShort_t strip) {
+			   UShort_t strip) 
+{
+  // Analyse result of a single strip
+  // 
+  // Parameters: 
+  //  det            Detector number
+  //  ring           Ring identifier 
+  //  sec            Sector number
+  //  strip          Strip number
   TGraphErrors* grChannel = GetChannel(det,ring,sec,strip);
   if(!grChannel->GetN()) {
     AliWarning(Form("No entries for FMD%d%c, sector %d, strip %d",
@@ -248,6 +272,10 @@ void AliFMDGainDA::Analyse(UShort_t det,
 //_____________________________________________________________________
 void AliFMDGainDA::Terminate(TFile* diagFile)
 {
+  // End of file 
+  // 
+  // Parameters: 
+  //   None
   if(diagFile) {
     diagFile->cd();
     fSummaryGains.Write();
@@ -257,8 +285,15 @@ void AliFMDGainDA::Terminate(TFile* diagFile)
 //_____________________________________________________________________
 void AliFMDGainDA::WriteHeaderToFile() 
 {
+  // Write header to the output file
+  // 
+  // Parameters: 
+  //   None
   AliFMDParameters* pars       = AliFMDParameters::Instance();
   fOutputFile.write(Form("# %s \n",pars->GetGainShuttleID()),9);
+  TDatime now;
+  fOutputFile << "# This file created from run # " << fRunno 
+	      << " @ " << now.AsString() << std::endl;
   fOutputFile.write("# Detector, "
 		    "Ring, "
 		    "Sector, "
@@ -275,14 +310,21 @@ TH1S* AliFMDGainDA::GetChannelHistogram(UShort_t det,
 					UShort_t sec, 
 					UShort_t strip) 
 {
+  // Get the current histogram of a single strip
+  // 
+  // Parameters: 
+  //  det            Detector number
+  //  ring           Ring identifier 
+  //  sec            Sector number
+  //  strip          Strip number
   
-  UShort_t  Ring = 1;
+  UShort_t  lRing = 1;
   if(ring == 'O')
-    Ring = 0;
+    lRing = 0;
   
   
   TObjArray* detArray  = static_cast<TObjArray*>(fGainArray.At(det));
-  TObjArray* ringArray = static_cast<TObjArray*>(detArray->At(Ring));
+  TObjArray* ringArray = static_cast<TObjArray*>(detArray->At(lRing));
   TObjArray* secArray  = static_cast<TObjArray*>(ringArray->At(sec));
   TH1S* hChannel       = static_cast<TH1S*>(secArray->At(strip));
   
@@ -295,6 +337,13 @@ TGraphErrors* AliFMDGainDA::GetChannel(UShort_t det,
 				       UShort_t sec, 
 				       UShort_t strip) 
 {  
+  // Get the graph of a single strip
+  // 
+  // Parameters: 
+  //  det            Detector number
+  //  ring           Ring identifier 
+  //  sec            Sector number
+  //  strip          Strip number
   UShort_t      iring     = (ring == 'O' ? 0 : 1);
   TObjArray*    detArray  = static_cast<TObjArray*>(fDetectorArray.At(det));
   TObjArray*    ringArray = static_cast<TObjArray*>(detArray->At(iring));
@@ -310,6 +359,13 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
 				     UShort_t sec, 
 				     UShort_t strip) 
 {
+  // Go to next pulse size
+  // 
+  // Parameters: 
+  //  det            Detector number
+  //  ring           Ring identifier 
+  //  sec            Sector number
+  //  strip          Strip number
   
   AliFMDParameters* pars = AliFMDParameters::Instance();
   // UInt_t ddl, board,chip,ch;
@@ -377,12 +433,20 @@ void AliFMDGainDA::UpdatePulseAndADC(UShort_t det,
 //_____________________________________________________________________
 void AliFMDGainDA::ResetPulseAndUpdateChannel() 
 {  
+  // Reset all
+  // 
+  // Parameters: 
+  //   None
   fCurrentPulse.Reset(0); 
 }
 
 //_____________________________________________________________________
 void AliFMDGainDA::FinishEvent() 
 {
+  // End of event
+  // 
+  // Parameters: 
+  //   None
   for(UShort_t det=1; det<=3;det++) {
     UShort_t firstring = (det == 1 ? 1 : 0);
     for(UShort_t iring = firstring; iring <=1;iring++) {
@@ -390,12 +454,14 @@ void AliFMDGainDA::FinishEvent()
       for(UShort_t board =0 ; board <=1; board++) {
 	Int_t idx = GetHalfringIndex(det,ring,board);
 	
-	if( !fPulseLength.At(idx) || !fEventsPerChannel.At(idx))
+	if(!fPulseLength.At(idx) || !fEventsPerChannel.At(idx))
 	  continue;
-	if(GetCurrentEvent()>0 && ((GetCurrentEvent() % fPulseLength.At(idx)) == 0))
+	if(GetCurrentEvent()>0 && 
+	   ((GetCurrentEvent() % fPulseLength.At(idx)) == 0))
 	  fCurrentPulse.AddAt(fCurrentPulse.At(idx)+1,idx);
 	
-	if(GetCurrentEvent()>0 && ((GetCurrentEvent()) % fEventsPerChannel.At(idx)) == 0)
+	if(GetCurrentEvent()>0 && 
+	   ((GetCurrentEvent()) % fEventsPerChannel.At(idx)) == 0)
 	  fCurrentPulse.AddAt(0,idx);
       }
     }

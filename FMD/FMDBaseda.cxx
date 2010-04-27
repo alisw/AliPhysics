@@ -105,7 +105,9 @@ int main(int argc, char **argv)
       reader = new AliRawReaderDate((void*)event);
       baseDA.Run(reader);
       SODread = kTRUE;
-      retval = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
+      retval = 
+	daqDA_FES_storeFile("conditions.csv", 
+			    AliFMDParameters::Instance()->GetConditionsShuttleID());
       if (retval != 0) std::cerr << "Base DA failed" << std::endl;
       
       break;
