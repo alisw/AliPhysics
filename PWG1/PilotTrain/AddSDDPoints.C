@@ -12,7 +12,7 @@ AliAnalysisTaskSE* AddSDDPoints() {
     
     
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("coutputRP",TList::Class(),AliAnalysisManager::kOutputContainer,"SDD.Performance.root");
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("coutputRP",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:SDD_Performance", mgr->GetCommonFileName()));
     
     
     

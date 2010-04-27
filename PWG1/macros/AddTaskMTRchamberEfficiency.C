@@ -30,7 +30,7 @@ AliAnalysisTaskTrigChEff *AddTaskMTRchamberEfficiency(Bool_t useGhosts = kFALSE)
 
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cOutputTrigChEff = mgr->CreateContainer("triggerChamberEff", TList::Class(), AliAnalysisManager::kOutputContainer, "MUON.TriggerEfficiencyMap.root");
+  AliAnalysisDataContainer *cOutputTrigChEff = mgr->CreateContainer("triggerChamberEff", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MUON.TriggerEfficiencyMap", mgr->GetCommonFileName()));
 
   // Attach input
   mgr->ConnectInput(taskTrigChEff,0,mgr->GetCommonInputContainer());

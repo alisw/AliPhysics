@@ -133,7 +133,7 @@ AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUs
   //
   // Create containers for output
   //
-  AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPCQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("TPC.%s.root", task->GetName()));
+  AliAnalysisDataContainer *coutput_tpc = mgr->CreateContainer("TPCQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TPC_%s", mgr->GetCommonFileName(), task->GetName()));
   mgr->ConnectOutput(task, 1, coutput_tpc);
 
 return task;  

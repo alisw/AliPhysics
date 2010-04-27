@@ -145,6 +145,7 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
 
   fNtupleBeamSpot = new TNtuple("fNtupleBeamSpot", "beamSpot", "run:tstamp:triggered:ntrklets:xTRKnc:yTRKnc:zTRKnc:ntrksTRKnc");
   fOutput->Add(fNtupleBeamSpot);
+  PostData(1, fOutput);
 
   return;
 }
