@@ -27,7 +27,8 @@ AliAnalysisTaskSE* AddTaskVZEROQA(Int_t runNumber)
    mgr->AddTask(task);
   
    AliAnalysisDataContainer *cout  = mgr->CreateContainer("QAVZEROHists",TList::Class(),
-							AliAnalysisManager::kOutputContainer, "VZERO.Performance.root");
+							  AliAnalysisManager::kOutputContainer, Form("%s:VZERO_Performance", 
+												     mgr->GetCommonFileName()));
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 1, cout);

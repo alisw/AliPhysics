@@ -20,7 +20,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   //AliLog::SetClassDebugLevel("AliTRDefficiency", 5);  
   mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
   mgr->ConnectInput(eff, 1, ci[0]);
-  mgr->ConnectOutput(eff,1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectOutput(eff,1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
     
 
   // TRD combined tracking efficiency
@@ -32,7 +32,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
     // Create containers for input/output
     mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(eff, 1, ci[0]);
-    mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Performance.root", eff->GetName())));
+    mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName(),eff->GetName())));
   }
 
   // TRD single track selection
@@ -43,6 +43,6 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
   //AliLog::SetClassDebugLevel("AliTRDmultiplicity", 5);  
   mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
   mgr->ConnectInput(eff, 1, ci[0]);
-  mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Calib%s.root", eff->GetName())));
+  mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.Calib%s", mgr->GetCommonFileName(),eff->GetName())));
 }
 

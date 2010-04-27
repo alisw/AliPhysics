@@ -29,7 +29,7 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *cOutputITS = mgr->CreateContainer("cOutputITS",TList::Class(),AliAnalysisManager::kOutputContainer,"ITS.Performance.root");
+  AliAnalysisDataContainer *cOutputITS = mgr->CreateContainer("cOutputITS",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:ITS_Performance",mgr->GetCommonFileName()));
 
 
   // Attach input

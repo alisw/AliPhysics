@@ -28,7 +28,7 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   mgr->ConnectInput (pid, 0, mgr->GetCommonInputContainer());
   mgr->ConnectInput (pid, 1, ci[0]);
   mgr->ConnectInput (pid, 2, ci[1]);
-  mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   mgr->ConnectOutput(pid, 2, ce);
 
   if(!TSTBIT(map, kPIDRefMaker)) return;
@@ -44,8 +44,8 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   mgr->ConnectInput( ref, 1, ci[0]);
   mgr->ConnectInput( ref, 2, ci[1]);
   mgr->ConnectInput( ref, 3, ce);
-  mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorNN", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibPIDrefMaker.root"));
-  mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibPIDrefMaker.root"));
+  mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorNN", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker",mgr->GetCommonFileName())));
+  mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
 
   // TRD pid reference maker LQ 
   mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"refMakerLQ"));
@@ -57,8 +57,8 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   mgr->ConnectInput(ref, 1, ci[0]);
   mgr->ConnectInput(ref, 2, ci[1]);
   mgr->ConnectInput(ref, 3, ce);
-  mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibPIDrefMaker.root"));
-  mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibPIDrefMaker.root"));
-  mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.CalibPIDrefMakerLQ.root"));
+  mgr->ConnectOutput(ref, 1, mgr->CreateContainer("MonitorLQ", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+  mgr->ConnectOutput(ref, 2, mgr->CreateContainer(ref->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMaker", mgr->GetCommonFileName())));
+  mgr->ConnectOutput(ref, 3, mgr->CreateContainer("PDF", TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibPIDrefMakerLQ", mgr->GetCommonFileName())));
 }
 

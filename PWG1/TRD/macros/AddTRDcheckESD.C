@@ -15,6 +15,6 @@ void AddTRDcheckESD(AliAnalysisManager *mgr)
   checkESD->SetDebugLevel(0);
 
   mgr->ConnectInput(checkESD,  0, mgr->GetCommonInputContainer());  
-  mgr->ConnectOutput(checkESD, 1, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectOutput(checkESD, 1, mgr->CreateContainer(checkESD->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
 }
 

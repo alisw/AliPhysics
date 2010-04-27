@@ -24,7 +24,7 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   mgr->ConnectInput ( task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectInput ( task, 1, ci[1]);
   mgr->ConnectInput ( task, 2, ci[0]);
-  mgr->ConnectOutput( task, 1, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, "TRD.Performance.root"));
+  mgr->ConnectOutput( task, 1, mgr->CreateContainer(task->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   
 
   // CALIBRATION
@@ -48,5 +48,5 @@ void AddTRDcheckDET(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   // Create containers for input/output
   mgr->ConnectInput(ctask,  0, mgr->GetCommonInputContainer());
   mgr->ConnectInput(ctask,  1, ci[1]);
-  mgr->ConnectOutput(ctask, 1, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("TRD.Task%s.root", ctask->GetName())));
+  mgr->ConnectOutput(ctask, 1, mgr->CreateContainer(ctask->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.Task%s", mgr->GetCommonFileName(),ctask->GetName())));
 }

@@ -30,7 +30,7 @@ AliAnalysisTaskSE* AddTaskSPDQA() {
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("coutput1",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-							    "SPD.Performance.root");
+							    Form("%s:SPD_Performance",mgr->GetCommonFileName()));
 
 
 
