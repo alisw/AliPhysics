@@ -189,43 +189,51 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
 
    }
 
-  //Get the clusters
-  AliHLTCaloClusterDataStruct * caloClusterStruct;
-  vector<AliHLTCaloClusterDataStruct*> phosClustersVector;
-  
-   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+   AliHLTCaloClusterDataStruct * caloClusterStruct;
+   //Get the PHOS Clusters
+   vector<AliHLTCaloClusterDataStruct*> phosClustersVector;
+   
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS); pBlock!=NULL; pBlock=GetNextInputBlock()) {
      AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
      fClusterReader->SetMemory(caloClusterHeader);
-     
      if ( (caloClusterHeader->fNClusters) < 0) {
        HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
-       return -1;
+       continue;
      } else {    
-
-       //BALLE, TODO, make it able to do EMCAL as well!!!
-       phosClustersVector.resize((int) (caloClusterHeader->fNClusters)); 
-       Int_t nClusters = 0;
+       phosClustersVector.reserve( (int) (caloClusterHeader->fNClusters) + phosClustersVector.size() ); 
        while( (caloClusterStruct = fClusterReader->NextCluster()) != 0) {
-	 //BALLE stil just phos
-	 phosClustersVector[nClusters++] = caloClusterStruct;  
+	 phosClustersVector.push_back(caloClusterStruct);  
        }
-       
-       iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, fBz);
      }
-     
-     if(iResult <0) {
-       //HLTWarning("Error in track matcher");
-     }
-     PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
-     //PushBack(pBlock->fPtr, pBlock->fSize, kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny );
-  }
+   }
+   
 
+   //Get the EMCAL Clusters
+   vector<AliHLTCaloClusterDataStruct*> emcalClustersVector;
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+     AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+     fClusterReader->SetMemory(caloClusterHeader);
+     if ( (caloClusterHeader->fNClusters) < 0) {
+       HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
+       continue;
+     } else {    
+       emcalClustersVector.reserve( (int) (caloClusterHeader->fNClusters) + emcalClustersVector.size() ); 
+       while( (caloClusterStruct = fClusterReader->NextCluster()) != 0) {
+	 emcalClustersVector.push_back(caloClusterStruct);  
+       }
+     }
+   }
+   
+   iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, emcalClustersVector, fBz);
+
+   //Push the blocks on
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+     PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+   }
 
    fTrackArray->Clear();
-   //BALLE TODO phos only !!!!
    
    return iResult;
-
 }
 
 // int AliHLTGlobalTrackMatcherComponent::Configure(const char* arguments)

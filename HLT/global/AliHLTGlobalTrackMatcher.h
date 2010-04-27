@@ -30,7 +30,7 @@ public:
 
   //Main function, loops over tracks and calls appropriate functions to establish matches
   template <class T>
-  Int_t Match( TObjArray * trackArray, vector<T*>  &clustersVector, Double_t bz ); 
+  Int_t Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*>  &emcalClustersVector,  Double_t bz ); 
   
 private:
   
@@ -66,20 +66,19 @@ private:
 
 
 template <class T>
-Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &clustersVector, Double_t bz ) {
+Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*> &emcalClustersVector,  Double_t bz ) {
   //See above for documentation
 
+
   Int_t nTracks = trackArray->GetEntriesFast();
-  Int_t nPhosClusters = clustersVector.size();
- 
-  //TODO emcal not yet implemented
-  Int_t nEmcalClusters = 0; //BALLE event->GetEMCALClusters(fEmcalClustersArray);
+  Int_t nPhosClusters = phosClustersVector.size();
+  Int_t nEmcalClusters = emcalClustersVector.size(); 
   
+
+  //See if there are tracks and clusters to match
   if ( nTracks <= 0 ) {
-    //    HLTWarning("No tracks in event");
     return 0;
-  } else if  ( (nEmcalClusters <= 0) && (nPhosClusters <= 0))  {
-    //HLTWarning("No calorimeter clusters in Event"); 
+  } else if ( (nEmcalClusters <= 0) && (nPhosClusters <= 0))  {
     return 0;
   }
 
@@ -87,29 +86,24 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &clus
   for(int ic = 0; ic < nPhosClusters; ic++) {
     bestMatchPhos[ic] = 999999;
   }
-    
-  //BALLE TODO EMCAL implement
-  // Float_t bestMatchEmcal[nEmcalClusters];    
-  //   for(int ic = 0; ic < nEmcalClusters; ic++) {
-  //     bestMatchEmcal[ic] = 999999;
-  //   }
-    
-    
+
+  Float_t bestMatchEmcal[nEmcalClusters];   
+  for(int ic = 0; ic < nEmcalClusters; ic++) {
+    bestMatchEmcal[ic] = 999999;
+  }
+
   //Loop over tracks
   for (int it = 0; it < nTracks; it++ ) {
     AliExternalTrackParam * track = static_cast<AliExternalTrackParam*>(trackArray->At(it));
 
     if ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) {
-      MatchTrackToClusters( track, clustersVector, nPhosClusters, bestMatchPhos, bz);
-      
-      //BALLE TODO EMCAL !!!!
-      //     } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
-      //       MatchTrackToClusters( track, fEmcalClustersArray, nEmcalClusters, bestMatchEmcal, bz);
-    } 
-    
+      MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
 
-  } // track loop 
-  
+    } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
+      MatchTrackToClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
+    } 
+
+  }   
     
   return 0;
 } 
@@ -134,18 +128,11 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     cluster->GetPosition(clusterPosition);
    
     //Get track postion at radius of cluster
-    Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1]);      
+    Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1] + clusterPosition[2]*clusterPosition[2]);      
     if (! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
       HLTInfo("Track reached detector but not cluster!!!!!!");
       continue;
     }
-
-
-    //    HLTInfo("Cluster global position %f %f %f", clusterPosition[0],clusterPosition[1],clusterPosition[2]);
-
-    
-    //Calculate track - cluster residual
-  
 
     //Get residual in z= 0 plane (squared)
     Double_t dxy = 0;
@@ -159,8 +146,6 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     Double_t dz = dd*dd;
   
     Double_t match = dz + dxy;
-    
-    //    HLTInfo("Track cluster residual %f, maxmatch %f", match, fMatchDistance);
     
     if( match > fMatchDistance  )  {     
       continue;
@@ -176,7 +161,6 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     //Add track to cluster's array of matching tracks
     Int_t nTracksMatched = cluster->GetNTracksMatched();
     iResult = AddTrackToCluster(track->GetID(), cluster->GetTracksMatched(), match < bestMatch[ic], nTracksMatched);
-    //HLTInfo("Added track %d to cluster %d, it now has %d matching tracks", track->GetID(), cluster->GetID(), cluster->GetNTracksMatched());
   }
   
   return iResult;
