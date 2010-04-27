@@ -1034,7 +1034,8 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
     for(Int_t ic(0); ic<AliTRDseedV1::kNclusters; ic++){
       if(!(c = tracklet->GetClusters(ic))) continue;
       if(!IsUsingClustersOutsideChamber() && !c->IsInChamber()) continue;
-      jc = TMath::Max(ic, ic-AliTRDseedV1::kNtb);
+      jc = (ic-AliTRDseedV1::kNtb);
+      if(jc<0) jc+=AliTRDseedV1::kNtb;
       xd = tracklet->GetX0() - c->GetX(); vxd[jc] = xd;
       dqdl=tracklet->GetdQdl(ic); vdqdl[jc] = dqdl;
       h->Fill(xd, dqdl);
