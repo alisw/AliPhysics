@@ -64,6 +64,7 @@ class AliMagF : public TVirtualMagField
   Char_t*      GetParamName()                                   const {return (Char_t*)fParNames.GetTitle();}
   void         SetDataFileName(const Char_t* nm)                      {fParNames.SetName(nm);}
   void         SetParamName(const Char_t* nm)                         {fParNames.SetTitle(nm);}
+  virtual void Print(Option_t *opt)                             const;
   //
   Bool_t       LoadParameterization();
   static Int_t GetPolarityConvention()                                {return Int_t(fgkPolarityConvention);}

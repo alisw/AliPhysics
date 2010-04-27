@@ -146,11 +146,7 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
   fSolenoid = GetBz(xyz);
   SetFactorSol(factorSol);
   SetFactorDip(factorDip);
-  AliInfo(Form("Alice   B fields: Solenoid (%+.2f*)%.0f kG, Dipole %s (%+.2f) %s",
-	       factorSol,(fMapType==k5kG||fMapType==k5kGUniform)?5.:2.,
-	       fDipoleOFF ? "OFF":"ON",factorDip,fMapType==k5kGUniform?" |Constant Field!":""));
-  AliInfo(Form("Machine B fields for %s beam (%.0f GeV): QGrad: %.4f Dipole: %.4f",
-	       bt==kBeamTypeAA ? "A-A":(bt==kBeamTypepp ? "p-p":"OFF"),be,fQuadGradient,fDipoleField));
+  Print("a");
 }
 
 //_______________________________________________________________________
@@ -558,3 +554,19 @@ const char*  AliMagF::GetBeamTypeText() const
   }
 }
 
+//_____________________________________________________________________________
+void AliMagF::Print(Option_t *opt) const
+{
+  // print short or long info
+  TString opts = opt; opts.ToLower();
+  AliInfo(Form("%s:%s",GetName(),GetTitle()));
+  AliInfo(Form("Solenoid (%+.2f*)%.0f kG, Dipole %s (%+.2f) %s",
+	       GetFactorSol(),(fMapType==k5kG||fMapType==k5kGUniform)?5.:2.,
+	       fDipoleOFF ? "OFF":"ON",GetFactorDip(),fMapType==k5kGUniform?" |Constant Field!":""));
+  if (opts.Contains("a")) {
+    AliInfo(Form("Machine B fields for %s beam (%.0f GeV): QGrad: %.4f Dipole: %.4f",
+		 fBeamType==kBeamTypeAA ? "A-A":(fBeamType==kBeamTypepp ? "p-p":"OFF"),
+		 fBeamEnergy,fQuadGradient,fDipoleField));
+    AliInfo(Form("Uses %s of %s",GetParamName(),GetDataFileName()));
+  }
+}
