@@ -1408,10 +1408,11 @@ int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, con
 int AliHLTComponent::EstimateObjectSize(TObject* pObject) const
 {
   // see header file for function documentation
-  if (!pObject) return -EINVAL;
-    AliHLTMessage msg(kMESS_OBJECT);
-    msg.WriteObject(pObject);
-    return msg.Length();  
+  if (!pObject) return 0;
+
+  AliHLTMessage msg(kMESS_OBJECT);
+  msg.WriteObject(pObject);
+  return msg.Length();  
 }
 
 AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity, const char* dtID,
