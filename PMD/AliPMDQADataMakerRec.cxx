@@ -79,211 +79,33 @@ void AliPMDQADataMakerRec::InitRaws()
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  // Preshower plane
-
-    TH1I * h0 = new TH1I("hPreEdepM0","ADC Distribution PRE - Module 0;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h0->Sumw2();
-    Add2RawsList(h0, 0, !expert, image, !saveCorr); 
-
-    TH1I * h1 = new TH1I("hPreEdepM1","ADC Distribution PRE - Module 1;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h1->Sumw2();
-    Add2RawsList(h1, 1, !expert, image, !saveCorr); 
-
-    TH1I * h2 = new TH1I("hPreEdepM2","ADC Distribution PRE - Module 2;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h2->Sumw2();
-    Add2RawsList(h2, 2, !expert, image, !saveCorr); 
-    
-    TH1I * h3 = new TH1I("hPreEdepM3","ADC Distribution PRE - Module 3;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h3->Sumw2(); 
-    Add2RawsList(h3, 3, !expert, image, !saveCorr); 
-
-    TH1I * h4 = new TH1I("hPreEdepM4","ADC Distribution PRE - Module 4;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h4->Sumw2(); 
-    Add2RawsList(h4, 4, !expert, image, !saveCorr); 
-
-    TH1I * h5 = new TH1I("hPreEdepM5","ADC Distribution PRE - Module 5;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h5->Sumw2(); 
-    Add2RawsList(h5, 5, !expert, image, !saveCorr); 
-
-    TH1I * h6 = new TH1I("hPreEdepM6","ADC Distribution PRE - Module 6;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h6->Sumw2(); 
-    Add2RawsList(h6, 6, !expert, image, !saveCorr); 
-
-    TH1I * h7 = new TH1I("hPreEdepM7","ADC Distribution PRE - Module 7;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h7->Sumw2(); 
-    Add2RawsList(h7, 7, !expert, image, !saveCorr); 
-
-    TH1I * h8 = new TH1I("hPreEdepM8","ADC Distribution PRE - Module 8;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h8->Sumw2(); 
-    Add2RawsList(h8, 8, !expert, image, !saveCorr); 
-
-    TH1I * h9 = new TH1I("hPreEdepM9","ADC Distribution PRE - Module 9;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h9->Sumw2(); 
-    Add2RawsList(h9, 9, !expert, image, !saveCorr); 
-
-    TH1I * h10 = new TH1I("hPreEdepM10","ADC Distribution PRE - Module 10;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h10->Sumw2(); 
-    Add2RawsList(h10, 10, !expert, image, !saveCorr); 
-
-    TH1I * h11 = new TH1I("hPreEdepM11","ADC Distribution PRE - Module 11;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h11->Sumw2(); 
-    Add2RawsList(h11, 11, !expert, image, !saveCorr); 
-
-    TH1I * h12 = new TH1I("hPreEdepM12","ADC Distribution PRE - Module 12;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h12->Sumw2(); 
-    Add2RawsList(h12, 12, !expert, image, !saveCorr); 
-
-    TH1I * h13 = new TH1I("hPreEdepM13","ADC Distribution PRE - Module 13;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h13->Sumw2(); 
-    Add2RawsList(h13, 13, !expert, image, !saveCorr); 
-
-    TH1I * h14 = new TH1I("hPreEdepM14","ADC Distribution PRE - Module 14;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h14->Sumw2(); 
-    Add2RawsList(h14, 14, !expert, image, !saveCorr); 
-
-    TH1I * h15 = new TH1I("hPreEdepM15","ADC Distribution PRE - Module 15;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h15->Sumw2(); 
-    Add2RawsList(h15, 15, !expert, image, !saveCorr); 
-
-    TH1I * h16 = new TH1I("hPreEdepM16","ADC Distribution PRE - Module 16;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h16->Sumw2(); 
-    Add2RawsList(h16, 16, !expert, image, !saveCorr); 
-
-    TH1I * h17 = new TH1I("hPreEdepM17","ADC Distribution PRE - Module 17;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h17->Sumw2(); 
-    Add2RawsList(h17, 17, !expert, image, !saveCorr); 
-
-    TH1I * h18 = new TH1I("hPreEdepM18","ADC Distribution PRE - Module 18;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h18->Sumw2(); 
-    Add2RawsList(h18, 18, !expert, image, !saveCorr); 
-
-    TH1I * h19 = new TH1I("hPreEdepM19","ADC Distribution PRE - Module 19;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h19->Sumw2(); 
-    Add2RawsList(h19, 19, !expert, image, !saveCorr); 
-
-    TH1I * h20 = new TH1I("hPreEdepM20","ADC Distribution PRE - Module 20;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h20->Sumw2(); 
-    Add2RawsList(h20, 20, !expert, image, !saveCorr);
+  
+  TH1F *hCellAdcPRE = new TH1F("hCellAdcPRE", "Cell Wise ADC fill for PRE Shower Plane;Cells in SMN-ROW-COL;ADC", 234795, 0, 234795);
  
-    TH1I * h21 = new TH1I("hPreEdepM21","ADC Distribution PRE - Module 21;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h21->Sumw2(); 
-    Add2RawsList(h21, 21, !expert, image, !saveCorr); 
-
-    TH1I * h22 = new TH1I("hPreEdepM22","ADC Distribution PRE - Module 22;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h22->Sumw2(); 
-    Add2RawsList(h22, 22, !expert, image, !saveCorr); 
-
-    TH1I * h23 = new TH1I("hPreEdepM23","ADC Distribution PRE - Module 23;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h23->Sumw2(); 
-    Add2RawsList(h23, 23, !expert, image, !saveCorr);
-
-    // CPV histos
-
-    TH1I * h24 = new TH1I("hCpvEdepM24","ADC Distribution CPV - Module 24;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h24->Sumw2();
-    Add2RawsList(h24, 24, !expert, image, !saveCorr); 
-
-    TH1I * h25 = new TH1I("hCpvEdepM25","ADC Distribution CPV - Module 25;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h25->Sumw2(); 
-    Add2RawsList(h25, 25, !expert, image, !saveCorr); 
-
-    TH1I * h26 = new TH1I("hCpvEdepM26","ADC Distribution CPV - Module 26;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h26->Sumw2(); 
-    Add2RawsList(h26, 26, !expert, image, !saveCorr); 
-
-    TH1I * h27 = new TH1I("hCpvEdepM27","ADC Distribution CPV - Module 27;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h27->Sumw2(); 
-    Add2RawsList(h27, 27, !expert, image, !saveCorr); 
-
-    TH1I * h28 = new TH1I("hCpvEdepM28","ADC Distribution CPV - Module 28;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h28->Sumw2(); 
-    Add2RawsList(h28, 28, !expert, image, !saveCorr); 
-
-    TH1I * h29 = new TH1I("hCpvEdepM29","ADC Distribution CPV - Module 29;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h29->Sumw2(); 
-    Add2RawsList(h29, 29, !expert, image, !saveCorr); 
-
-    TH1I * h30 = new TH1I("hCpvEdepM30","ADC Distribution CPV - Module 30;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h30->Sumw2(); 
-    Add2RawsList(h30, 30, !expert, image, !saveCorr); 
-
-    TH1I * h31 = new TH1I("hCpvEdepM31","ADC Distribution CPV - Module 31;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h31->Sumw2(); 
-    Add2RawsList(h31, 31, !expert, image, !saveCorr); 
-
-    TH1I * h32 = new TH1I("hCpvEdepM32","ADC Distribution CPV - Module 32;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h32->Sumw2();
-    Add2RawsList(h32, 32, !expert, image, !saveCorr); 
-
-    TH1I * h33 = new TH1I("hCpvEdepM33","ADC Distribution CPV - Module 33;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h33->Sumw2();
-    Add2RawsList(h33, 33, !expert, image, !saveCorr); 
-
-    TH1I * h34 = new TH1I("hCpvEdepM34","ADC Distribution CPV - Module 34;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h34->Sumw2(); 
-    Add2RawsList(h34, 34, !expert, image, !saveCorr); 
-
-    TH1I * h35 = new TH1I("hCpvEdepM35","ADC Distribution CPV - Module 35;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h35->Sumw2(); 
-    Add2RawsList(h35, 35, !expert, image, !saveCorr); 
-
-    TH1I * h36 = new TH1I("hCpvEdepM36","ADC Distribution CPV - Module 36;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h36->Sumw2(); 
-    Add2RawsList(h36, 36, !expert, image, !saveCorr); 
-
-    TH1I * h37 = new TH1I("hCpvEdepM37","ADC Distribution CPV - Module 37;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h37->Sumw2(); 
-    Add2RawsList(h37, 37, !expert, image, !saveCorr); 
-
-    TH1I * h38 = new TH1I("hCpvEdepM38","ADC Distribution CPV - Module 38;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h38->Sumw2(); 
-    Add2RawsList(h38, 38, !expert, image, !saveCorr); 
-
-    TH1I * h39 = new TH1I("hCpvEdepM39","ADC Distribution CPV - Module 39;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h39->Sumw2(); 
-    Add2RawsList(h39, 39, !expert, image, !saveCorr); 
-
-    TH1I * h40 = new TH1I("hCpvEdepM40","ADC Distribution CPV - Module 40;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h40->Sumw2(); 
-    Add2RawsList(h40, 40, !expert, image, !saveCorr); 
-
-    TH1I * h41 = new TH1I("hCpvEdepM41","ADC Distribution CPV - Module 41;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h41->Sumw2();
-    Add2RawsList(h41, 41, !expert, image, !saveCorr); 
-
-    TH1I * h42 = new TH1I("hCpvEdepM42","ADC Distribution CPV - Module 42;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h42->Sumw2(); 
-    Add2RawsList(h42, 42, !expert, image, !saveCorr); 
-
-    TH1I * h43 = new TH1I("hCpvEdepM43","ADC Distribution CPV - Module 43;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h43->Sumw2(); 
-    Add2RawsList(h43, 43, !expert, image, !saveCorr); 
-
-    TH1I * h44 = new TH1I("hCpvEdepM44","ADC Distribution CPV - Module 44;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h44->Sumw2(); 
-    Add2RawsList(h44, 44, !expert, image, !saveCorr); 
-
-    TH1I * h45 = new TH1I("hCpvEdepM45","ADC Distribution CPV - Module 45;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h45->Sumw2();
-    Add2RawsList(h45, 45, !expert, image, !saveCorr); 
-
-    TH1I * h46 = new TH1I("hCpvEdepM46","ADC Distribution CPV - Module 46;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h46->Sumw2(); 
-    Add2RawsList(h46, 46, !expert, image, !saveCorr); 
-
-    TH1I * h47 = new TH1I("hCpvEdepM47","ADC Distribution CPV - Module 47;Amplitude [ADC counts];Counts", 100, 0, 2000);
-    h47->Sumw2(); 
-    Add2RawsList(h47, 47, !expert, image, !saveCorr); 
+  Add2RawsList(hCellAdcPRE, 0, !expert, image, !saveCorr);  
 
 
-    // Y vs. X for PRE and CPV planes
+  TH1F *hCellAdcCPV = new TH1F("hCellAdcCPV", "Cell Wise ADC fill for CPV Veto Plane;Cells in SMN-ROW-COL;ADC", 234795, 0, 234795);
+  
+  Add2RawsList(hCellAdcCPV, 1, !expert, image, !saveCorr);  
 
-    TH2F * h48 = new TH2F("hPreXY","PRE plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
-    Add2RawsList(h48, 48, !expert, !image, saveCorr);//Ajay
-    //Add2RawsList(h48, 48);//Ajay
-    TH2F * h49 = new TH2F("hCpvXY","CPV plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
-    Add2RawsList(h49, 49, !expert, !image, saveCorr);//Ajay
-    //Add2RawsList(h49, 49);//Ajay
+  
+  TH1F *hCalibEntPRE = new TH1F("hCalibEntPRE", "Cell Wise Frequency for PRE Shower Plane;Cells in SMN-ROW-COL;Frequency", 234795, 0, 234795);
+  
+  Add2RawsList(hCalibEntPRE, 2, !expert, image, !saveCorr);  
+
+
+  TH1F *hCellEntCPV = new TH1F("hCellEntCPV", "Cell Wise Frequency for CPV Veto Plane;Cells in SMN-ROW-COL;Frequency", 234795, 0, 234795);
+  
+  Add2RawsList(hCellEntCPV, 3, !expert, image, !saveCorr);  
+
+  
+  TH2F *hPreXY = new TH2F("hPreXY","PRE plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
+  Add2RawsList(hPreXY, 4, !expert, !image, saveCorr);
+  
+  TH2F *hCpvXY = new TH2F("hCpvXY","CPV plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
+  Add2RawsList(hCpvXY, 5, !expert, !image, saveCorr);
+  
 
 }
 
@@ -446,9 +268,13 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    if (row < 0 || row > 47) continue;
 	    if (col < 0 || col > 95) continue;
 
+	    Int_t ipp = 10000*smn + 100*row + col;
+
 	    if (det == 0)
 	    {
-		GetRawsData(smn)->Fill(sig);
+	      GetRawsData(0)->Fill(ipp, sig);
+	      GetRawsData(2)->Fill(ipp);
+
 		if(smn < 12)
 		{
 		    xpad = col;
@@ -459,12 +285,16 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		    xpad = row;
 		    ypad = col;
 		}
+
+
 		cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-		GetRawsData(48)->Fill(xx,yy);
+		GetRawsData(4)->Fill(xx,yy);
 	    }
 	    if (det == 1)
 	    {
-		GetRawsData(24+smn)->Fill(sig);
+	      GetRawsData(1)->Fill(ipp, sig);
+	      GetRawsData(3)->Fill(ipp);
+	
 		if(smn < 12)
 		{
 		    xpad = col;
@@ -477,7 +307,7 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		}
 
 		cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-		GetRawsData(49)->Fill(xx,yy);
+		GetRawsData(5)->Fill(xx,yy);
 
 	    }
 
