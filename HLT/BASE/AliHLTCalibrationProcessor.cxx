@@ -333,7 +333,7 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
   pHeader.fOrigin[gkAliHLTFXSHeaderfOriginSize-1] = 0;
 
   // ** Fill file ID
-  HLTInfo( "FXS Header FileID size max %i - actual %i .",gkAliHLTFXSHeaderfFileIDSize, strlen( pFileID ) );
+  HLTDebug( "FXS Header FileID size max %i - actual %i .",gkAliHLTFXSHeaderfFileIDSize, strlen( pFileID ) );
   strncpy ( pHeader.fFileID, pFileID, gkAliHLTFXSHeaderfFileIDSize ) ; 
 
   // To take care if fileIDs which are longer than gkAliHLTFXSHeaderfFileIDSize, write one 0 is cheaper than an if.
