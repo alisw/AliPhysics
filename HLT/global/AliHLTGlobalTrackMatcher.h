@@ -20,34 +20,20 @@
 #include "TObjArray.h"
 #include "TArrayI.h"
 
-class AliHLTGlobalTrackMatcher : public AliHLTLogging {
+class AliHLTGlobalTrackMatcher : public AliHLTLogging{
 
 public:
-
-  ///Constructor
   AliHLTGlobalTrackMatcher();
 
-  ///Destructor
+  /** destructor */
   virtual ~AliHLTGlobalTrackMatcher();
 
-  ///Main function, loops over tracks and calls appropriate functions to establish matches
+  //Main function, loops over tracks and calls appropriate functions to establish matches
   template <class T>
   Int_t Match( TObjArray * trackArray, vector<T*>  &clustersVector, Double_t bz ); 
-
-
-  ///Set the maximum Z to be within distance of detector volume
-  void SetMaxZ(Float_t z) { fMaxZ = z; }
-  ///Set the maximum X to be within distance of detector volume
-  void SetMaxX(Float_t x) { fMaxX = x; }
-  ///Set whether the detector is in positive y direction
-  void SetYSign(Bool_t y) { fYSign = y; }
-  ///Set the max distance to be considered a match
-  void SetMatchDistance(Float_t d)  { fMatchDistance = d*d; }
-  ///Set the radius of detector volume
-  void SetRadius(Float_t r) { fRadius = r; }
-
-private:  
-
+  
+private:
+  
   void DoInit();
 
   //Loops over clusters and decides if track is a good match to any of these
@@ -62,12 +48,15 @@ private:
   Bool_t IsTrackCloseToDetector(AliExternalTrackParam * track, Double_t bz, Double_t fMaxX, Bool_t ySign, Double_t fMaxZ, Double_t dRadius);
 
   // Geometrical cut off values used to decide whether track is anywhere near calorimeter volumes
-  Float_t fMaxZ;              // max Z track    (cm)
-  Float_t fMaxX;              // max X track    (cm)
+  Float_t fPhosMaxZ;              // max Z track    (cm)
+  Float_t fPhosMaxX;              // max X track    (cm)
+  Float_t fEmcalMaxZ;             // max Z track    (cm)
+  Float_t fEmcalMaxX;             // max X track    (cm)
 
-  Float_t fMatchDistance;     // Square of maximum distance where track is considered a match to cluster (cm^2)
-  Double_t fRadius;           // Radial position of detector volume
-  Bool_t fYSign;               // Positive or negative y
+  Float_t fMatchDistance;        // Square of maximum distance where track is considered a match to cluster (cm^2)
+
+  const Double_t fPhosRadius;          // Radial position of PHOS 
+  const Double_t fEmcalRadius;         // Radial position of EMCAL
 
   AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
   AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);
@@ -76,49 +65,72 @@ private:
 };
 
 
-
 template <class T>
 Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &clustersVector, Double_t bz ) {
   //See above for documentation
 
-
   Int_t nTracks = trackArray->GetEntriesFast();
-  Int_t nClusters = clustersVector.size();
-
+  Int_t nPhosClusters = clustersVector.size();
+ 
+  //TODO emcal not yet implemented
+  Int_t nEmcalClusters = 0; //BALLE event->GetEMCALClusters(fEmcalClustersArray);
+  
   if ( nTracks <= 0 ) {
+    //    HLTWarning("No tracks in event");
     return 0;
-  } else if  ( nClusters <= 0 )  {
+  } else if  ( (nEmcalClusters <= 0) && (nPhosClusters <= 0))  {
+    //HLTWarning("No calorimeter clusters in Event"); 
     return 0;
   }
 
-  Float_t bestMatch[nClusters];   
-  for(int ic = 0; ic < nClusters; ic++) {
-    bestMatch[ic] = 999999;
+  Float_t bestMatchPhos[nPhosClusters];   
+  for(int ic = 0; ic < nPhosClusters; ic++) {
+    bestMatchPhos[ic] = 999999;
   }
     
+  //BALLE TODO EMCAL implement
+  // Float_t bestMatchEmcal[nEmcalClusters];    
+  //   for(int ic = 0; ic < nEmcalClusters; ic++) {
+  //     bestMatchEmcal[ic] = 999999;
+  //   }
+    
+    
+  //Loop over tracks
   for (int it = 0; it < nTracks; it++ ) {
     AliExternalTrackParam * track = static_cast<AliExternalTrackParam*>(trackArray->At(it));
-    if ( IsTrackCloseToDetector(track, bz, fMaxX, fYSign, fMaxZ, fRadius ) ) {
-      MatchTrackToClusters( track, clustersVector, nClusters, bestMatch, bz);
+
+    if ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) {
+      MatchTrackToClusters( track, clustersVector, nPhosClusters, bestMatchPhos, bz);
+      
+      //BALLE TODO EMCAL !!!!
+      //     } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
+      //       MatchTrackToClusters( track, fEmcalClustersArray, nEmcalClusters, bestMatchEmcal, bz);
     } 
-  } 
+    
+
+  } // track loop 
+  
+    
   return 0;
-}
+} 
 
 
 
 template <class T>
 Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz) {
+  
   //See header file for documentation
   Int_t iResult = 0;
  
   Float_t clusterPosition[3];
   Double_t trackPosition[3];
  
-    for(int ic = 0; ic < nClusters; ic++) {
+  
+  for(int ic = 0; ic < nClusters; ic++) {
     
     T * cluster = clustersVector.at(ic);
     
+    //Get cluster global coordinates
     cluster->GetPosition(clusterPosition);
    
     //Get track postion at radius of cluster
@@ -128,21 +140,32 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
       continue;
     }
 
+
+    //    HLTInfo("Cluster global position %f %f %f", clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+
+    
     //Calculate track - cluster residual
+  
+
+    //Get residual in z= 0 plane (squared)
     Double_t dxy = 0;
     for(int i = 0; i < 2; i++) {
       Double_t dd = trackPosition[i] - clusterPosition[i];
       dxy += dd*dd;
     }
 
+    //Get z residual (squared)
     Double_t dd = trackPosition[2] - clusterPosition[2];
     Double_t dz = dd*dd;
   
     Double_t match = dz + dxy;
     
+    //    HLTInfo("Track cluster residual %f, maxmatch %f", match, fMatchDistance);
+    
     if( match > fMatchDistance  )  {     
       continue;
     }
+
 
     if (match < bestMatch[ic]) {
       bestMatch[ic] = match;
@@ -150,8 +173,10 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
       cluster->SetTrackDistance(TMath::Sqrt(dxy), TMath::Sqrt(dz));
     }
     
+    //Add track to cluster's array of matching tracks
     Int_t nTracksMatched = cluster->GetNTracksMatched();
     iResult = AddTrackToCluster(track->GetID(), cluster->GetTracksMatched(), match < bestMatch[ic], nTracksMatched);
+    //HLTInfo("Added track %d to cluster %d, it now has %d matching tracks", track->GetID(), cluster->GetID(), cluster->GetNTracksMatched());
   }
   
   return iResult;

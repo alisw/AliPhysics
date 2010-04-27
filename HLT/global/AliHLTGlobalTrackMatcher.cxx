@@ -1,4 +1,4 @@
-//$Id  $
+//$Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -22,6 +22,8 @@
 */
 
 #include "AliHLTGlobalTrackMatcher.h"
+//#include "AliESDCaloCluster.h"
+
 
 
 #if __GNUC__>= 3
@@ -32,18 +34,39 @@ ClassImp(AliHLTGlobalTrackMatcher)
 
 
 AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
-  fMaxZ(0),
-  fMaxX(0),
+  fPhosMaxZ(0),
+  fPhosMaxX(0),
+  fEmcalMaxZ(0),
+  fEmcalMaxX(0),
   fMatchDistance(0),
-  fRadius(0),
-  fYSign(kFALSE)
+  fPhosRadius(460),
+  fEmcalRadius(448)
 {
   //Default constructor
+  DoInit();
 }
 
+//_____________________________________________________________________________
 AliHLTGlobalTrackMatcher::~AliHLTGlobalTrackMatcher()
 {
   //Destructor
+
+}
+
+void AliHLTGlobalTrackMatcher::DoInit( ) {
+  //See header file for documentation
+  //BALLE TODO: Change hardcoded values to something that is initialised through command line or something!!!
+
+
+  fMatchDistance = 40*40;
+
+  fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
+  fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
+
+  fEmcalMaxZ = 350 + TMath::Sqrt(fMatchDistance) + 30;
+  fEmcalMaxX = 3000;
+
+
 }
 
 Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, TArrayI* matchedTracksArray, Bool_t bestMatch, Int_t nMatches){
@@ -61,11 +84,12 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, TArrayI* matchedTra
 }
 
 Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, bool bestMatch, Int_t nMatches ){
-  //See header file for documentation
+
+  //  HLTInfo("Adding track %d to cluster with %d previous matches", tId, nMatches);
   
   //BALLE TODO: remove hardcoded 9
-  if (nMatches > 9) {                                                   //BALLE this one tooo
-    HLTError("The number of matching tracks (%d) exceeds the array size of %d", nMatches, 9);
+  if (nMatches > 9) {                                                   //BALLE this on tooo
+    HLTDebug("The number of matching tracks (%d) exceeds the array size of %d", nMatches, 9);
     return 0;
   }
 
@@ -83,23 +107,23 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, 
 
 Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * track, Double_t bz, Double_t fMaxX, Bool_t ySign, Double_t fMaxZ, Double_t dRadius) {
   //See header file for documentation
-
+  
   //Get track instersection with cylinder defined by detector radius
   Double_t trackPosition[3] = {0, 0, 0};
   if (! (track->GetXYZAt(dRadius, bz, trackPosition)) ) {
     return kFALSE;
   }
 
+  //  HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
+
+
   //Positive y for EMCAL, negative for PHOS
   if(ySign) {
-    if (trackPosition[1] < 0 ) {
+    if (trackPosition[1] < 0 ) 
       return kFALSE;
-    }
-    
   } else {
-    if (trackPosition[1] > 0 ) {
+    if (trackPosition[1] > 0 ) 
       return kFALSE;
-    }
   }
   
   
@@ -109,6 +133,7 @@ Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * 
   if (TMath::Abs(trackPosition[0]) > fMaxX )
     return kFALSE;
 
-
+  // HLTInfo("kTRUE");
+  
   return kTRUE;  
 }
