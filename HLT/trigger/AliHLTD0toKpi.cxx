@@ -10,6 +10,7 @@
 #include "AliVertexerTracks.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliExternalTrackParam.h"
+#include "AliKFVertex.h"
 
 ClassImp(AliHLTD0toKpi)
 
@@ -79,32 +80,49 @@ Double_t AliHLTD0toKpi::pointingAngle(AliExternalTrackParam* n, AliExternalTrack
   return TMath::Cos(pta); 
 }
 
-AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v)
+AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, AliESDVertex *v, bool useKF)
 {
   
   AliESDVertex *vertexESD = 0;
   AliAODVertex *vertexAOD = 0;
   
-  AliVertexerTracks *vertexer = new AliVertexerTracks(b);
-  vertexer->SetVtxStart(v);
-  //if(isESD){vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);}
-  UShort_t *id = new UShort_t[2];
-  AliHLTGlobalBarrelTrack *t1 = (AliHLTGlobalBarrelTrack*) trkArray->At(0);
-  AliHLTGlobalBarrelTrack *t2 = (AliHLTGlobalBarrelTrack*) trkArray->At(1);
-  id[0]=(UShort_t) t1->GetID();
-  id[1]=(UShort_t) t2->GetID();
-  vertexESD = (AliESDVertex*)vertexer->VertexForSelectedTracks(trkArray,id);
-  delete id;
-  delete vertexer; vertexer=NULL;
-  
-  if(!vertexESD) return vertexAOD;
-  
-  if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) { 
-    //AliDebug(2,"vertexing failed"); 
-    delete vertexESD; vertexESD=NULL;
-    return vertexAOD;
+  if(!useKF){
+    AliVertexerTracks *vertexer = new AliVertexerTracks(b);
+    vertexer->SetVtxStart(v);
+    //if(isESD){vertexESD = (AliESDVertex*)vertexer->VertexForSelectedESDTracks(trkArray);}
+    UShort_t *id = new UShort_t[2];
+    AliHLTGlobalBarrelTrack *t1 = (AliHLTGlobalBarrelTrack*) trkArray->At(0);
+    AliHLTGlobalBarrelTrack *t2 = (AliHLTGlobalBarrelTrack*) trkArray->At(1);
+    id[0]=(UShort_t) t1->GetID();
+    id[1]=(UShort_t) t2->GetID();
+    vertexESD = (AliESDVertex*)vertexer->VertexForSelectedTracks(trkArray,id);
+    delete id;
+    delete vertexer; vertexer=NULL;
+    
+    if(!vertexESD) return vertexAOD;
+    
+    if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) { 
+      //AliDebug(2,"vertexing failed"); 
+      delete vertexESD; vertexESD=NULL;
+      return vertexAOD;
+    }
   }
-
+  else{
+    AliKFParticle::SetField(b);
+    
+    AliKFVertex vertexKF;
+    
+    Int_t nTrks = trkArray->GetEntriesFast();
+    for(Int_t i=0; i<nTrks; i++) {
+      AliESDtrack *esdTrack = (AliESDtrack*)trkArray->At(i);
+      AliKFParticle daughterKF(*esdTrack,211);
+      vertexKF.AddDaughter(daughterKF);
+    }
+    vertexESD = new AliESDVertex(vertexKF.Parameters(),
+				 vertexKF.CovarianceMatrix(),
+				 vertexKF.GetChi2(),
+				 vertexKF.GetNContributors());
+  }
   // convert to AliAODVertex
   Double_t pos[3],cov[6],chi2perNDF;
   vertexESD->GetXYZ(pos); // position

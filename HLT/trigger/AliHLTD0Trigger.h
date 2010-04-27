@@ -50,6 +50,7 @@ class AliHLTMCEvent;
  * \li -d0d0    <i> Product of impact parameter for decay products  </i> <br>
  * \li -cospoint    <i> pointing angle  </i> <br>
  * \li -plothistogram    <i> ploting the inv. mass and pt of D0  </i> <br>
+ * \li -useKF    <i> will use partilce KF for vertex finding  </i> <br>
  *
  * By default, configuration is loaded from OCDB, can be overridden by
  * component arguments.
@@ -143,6 +144,8 @@ class AliHLTD0Trigger : public AliHLTTrigger
   Double_t fField;                                          //!transient
   
   AliHLTMCEvent* fEvent;                                    //!transient
+
+  bool fuseKF;                                               //!transient
 
   /// the default configuration entry for this component
   static const char* fgkOCDBEntry; //!transient
