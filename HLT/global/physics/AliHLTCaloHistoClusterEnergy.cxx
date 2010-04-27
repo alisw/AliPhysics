@@ -33,6 +33,7 @@
 #include "TH2F.h"
 #include "TRefArray.h"
 #include "TVector3.h"
+#include "TMath.h"
 
 ClassImp(AliHLTCaloHistoClusterEnergy);
 
@@ -54,14 +55,14 @@ AliHLTCaloHistoClusterEnergy::AliHLTCaloHistoClusterEnergy(TString det) :
   fHistArray->AddLast(fHistClusterEnergyVsNCells);
   
   Float_t phiMin = 0.;
-  Float_t phiMax = 360.;
+  Float_t phiMax = 2*TMath::Pi();
   Float_t etaMin = -1.;
   Float_t etaMax = 1.;
   
   if(det == "PHOS")
   {
-     phiMin = 255.0;
-     phiMax = 325.0;
+     phiMin = 255.0/180.*TMath::Pi();
+     phiMax = 325.0/180.*TMath::Pi();
      etaMin = -0.13;
      etaMax = 0.13;
   }
