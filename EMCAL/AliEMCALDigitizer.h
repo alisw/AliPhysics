@@ -88,7 +88,7 @@ private:
   //Calculate the time of crossing of the threshold by front edge
   //Float_t FrontEdgeTime(TClonesArray * ticks) ;
 	
-  Int_t   DigitizeEnergy(Float_t energy, Int_t AbsId) ;
+  Float_t DigitizeEnergy(Float_t energy, Int_t AbsId) ;
   void    Digits2FastOR(TClonesArray*digitsTMP, TClonesArray* digitsTRG);
   void    DigitalFastOR(Double_t time, Double_t dE, Int_t timeSamples[], Int_t nSamples);
 	

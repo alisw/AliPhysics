@@ -43,7 +43,9 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fMinECut(0.45), 
   fUnfold(kFALSE), 
   fLocMaxCut(0.03), 
-  fTimeCut(1.),// high value, accept all//clustering
+  fTimeCut(1.),// high value, accept all
+  fTimeMin(-1.),// small value, accept all
+  fTimeMax(1.),// high value, accept all//clustering
   fTrkCutX(6.0), 
   fTrkCutY(6.0), 
   fTrkCutZ(6.0),  
@@ -233,7 +235,9 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fMinECut(rp.fMinECut), 
   fUnfold(rp.fUnfold), 
   fLocMaxCut(rp.fLocMaxCut), 
-  fTimeCut(rp.fTimeCut),//clustering
+  fTimeCut(rp.fTimeCut), 
+  fTimeMin(rp.fTimeMin),
+  fTimeMax(rp.fTimeMax),//clustering
   fTrkCutX(rp.fTrkCutX), 
   fTrkCutY(rp.fTrkCutY), 
   fTrkCutZ(rp.fTrkCutZ),  
@@ -283,7 +287,9 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fMinECut   = rp.fMinECut;
     fUnfold    = rp.fUnfold;
     fLocMaxCut = rp.fLocMaxCut; 
-	fTimeCut   = rp.fTimeCut;//clustering
+	fTimeCut   = rp.fTimeCut;
+	fTimeMax   = rp.fTimeMax;
+	fTimeMin   = rp.fTimeMin;//clustering
     fTrkCutX   = rp.fTrkCutX;
     fTrkCutY   = rp.fTrkCutY;
     fTrkCutZ   = rp.fTrkCutZ;
@@ -550,8 +556,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   // if nothing is specified print all, if "reco" just clusterization/track matching
   // if "pid", just PID parameters, if "raw", just raw utils parameters.
   if(!strcmp("",opt) || !strcmp("reco",opt)){
-    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%f \n",
-		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut));
+    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%f \n fTimeMin=%f \n fTimeMax=%f \n",
+		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut,fTimeMin,fTimeMax));
     
     AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
   }

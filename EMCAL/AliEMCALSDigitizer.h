@@ -36,8 +36,8 @@ public:
   AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) ;
   virtual ~AliEMCALSDigitizer(); // dtor
 
-  Int_t         Digitize(Float_t energy)const; //convert energy in GeV to int amplitude
-  Float_t       Calibrate(Int_t amp)const;  //opposite of Digitize()
+  Float_t       Digitize(Float_t energy)const; //convert energy in GeV to int amplitude
+  Float_t       Calibrate(Float_t amp)const;  //opposite of Digitize()
 
   virtual void  Exec(Option_t *option); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  

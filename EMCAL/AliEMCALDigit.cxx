@@ -41,7 +41,12 @@ ClassImp(AliEMCALDigit)
 
 //____________________________________________________________________________
 AliEMCALDigit::AliEMCALDigit() :  
-  AliDigitNew(),
+AliDigitNew(), 
+  fAmpFloat(0.),
+  fNSamples(0),
+  fSamples(0x0),
+  fNSamplesHG(0),
+  fSamplesHG(0x0),
   fNprimary(0),
   fNMaxPrimary(5),
   fPrimary(0x0),
@@ -52,7 +57,10 @@ AliEMCALDigit::AliEMCALDigit() :
   fDEParent(0x0),
   fMaxIter(0),
   fTime(0.), 
-  fTimeR(0.) 
+  fTimeR(0.),
+  fChi2(0.),
+  fNDF(0),
+  fTriggerDigit(kFALSE)
 
 {
   // default ctor 
@@ -74,8 +82,13 @@ AliEMCALDigit::AliEMCALDigit() :
 }
 
 //____________________________________________________________________________
-AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEnergy, Float_t time, Int_t index, Float_t dE) 
+AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, Float_t time, Bool_t trigger, Int_t index, Float_t dE) 
   : AliDigitNew(),
+    fAmpFloat(digEnergy),
+    fNSamples(0),
+	fSamples(0x0),
+    fNSamplesHG(0),
+    fSamplesHG(0x0),
     fNprimary(0),
     fNMaxPrimary(25),
     fPrimary(0x0),
@@ -86,16 +99,19 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
     fDEParent(0x0),
     fMaxIter(5),
     fTime(time),
-    fTimeR(time)
+    fTimeR(time),
+    fChi2(0.),
+    fNDF(0),
+	fTriggerDigit(trigger)
 {  
   // ctor with all data 
 
   // data memebrs of the base class (AliNewDigit)
-  fAmp         = DigEnergy ;
+  fAmp         = 0;
   fId          = id ;
   fIndexInList = index ; 
 
-  // data members
+  // data member  
   fPrimary = new Int_t[fNMaxPrimary] ;
   fDEPrimary = new Float_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
@@ -131,6 +147,11 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 //____________________________________________________________________________
 AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit) 
   : AliDigitNew(digit),
+	fAmpFloat(digit.fAmpFloat),	
+	fNSamples(digit.fNSamples),
+	fSamples(0x0),
+    fNSamplesHG(digit.fNSamplesHG),
+    fSamplesHG(0x0),
     fNprimary(digit.fNprimary),
     fNMaxPrimary(digit.fNMaxPrimary),
     fPrimary(0x0),
@@ -141,7 +162,10 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
     fDEParent(0x0),
     fMaxIter(digit.fMaxIter),
     fTime(digit.fTime),
-    fTimeR(digit.fTimeR)
+    fTimeR(digit.fTimeR), 
+    fChi2(digit.fChi2), 
+    fNDF(digit.fNDF),
+	fTriggerDigit(digit.fTriggerDigit)
 {
   // copy ctor
   
@@ -150,7 +174,12 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
 
-  // data members
+  // data members  
+  fSamples     = new Int_t[fNSamples]; 
+  for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
+  fSamplesHG   = new Int_t[fNSamplesHG]; 
+  for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
+	
   fPrimary = new Int_t[fNMaxPrimary] ;  
   fDEPrimary = new Float_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ;
@@ -175,6 +204,9 @@ AliEMCALDigit::~AliEMCALDigit()
     delete [] fDEPrimary ;
     delete [] fIparent ; 
     delete [] fDEParent ;
+	delete [] fSamples;
+	delete [] fSamplesHG;
+
 }
 
 //____________________________________________________________________________
@@ -223,6 +255,61 @@ Float_t AliEMCALDigit::GetPhi() const
   g->EtaPhiFromIndex(id,eta,phi);
   return phi ;
 }
+
+//____________________________________________________________________________
+Bool_t AliEMCALDigit::GetFALTROSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
+{
+	//Get FALTRO sample in time bin iSample
+	if (iSample >= fNSamples || iSample < 0 || !fTriggerDigit) return kFALSE;
+	
+	amp     =  fSamples[iSample] & 0xFFF;
+	timeBin = (fSamples[iSample] >> 12) & 0xFF;
+	
+	return kTRUE;
+}
+//____________________________________________________________________________
+Bool_t AliEMCALDigit::GetALTROSampleLG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
+{
+	//Get Low Gain ALTRO sample in time bin iSample
+	if (iSample >= fNSamples || iSample < 0 || fTriggerDigit) return kFALSE;
+	
+	amp     =  fSamples[iSample] & 0xFFF;
+	timeBin = (fSamples[iSample] >> 12) & 0xFF;
+	
+	return kTRUE;
+}
+
+//____________________________________________________________________________
+void AliEMCALDigit::SetALTROSamplesLG(const Int_t nSamples, Int_t *samples)
+{
+    //Set array of ALTRO samples, Low Gain or FALTRO 
+	fNSamples = nSamples;
+	fSamples  = new Int_t[fNSamples]; 
+	for (Int_t i=0; i < fNSamples; i++) fSamples[i] = samples[i];
+}
+
+//____________________________________________________________________________
+void AliEMCALDigit::SetALTROSamplesHG(const Int_t nSamples, Int_t *samples)
+{
+	//Set array of ALTRO samples, High Gain.
+	fNSamplesHG = nSamples;
+	fSamplesHG  = new Int_t[fNSamplesHG]; 
+	for (Int_t i=0; i < fNSamplesHG; i++) fSamplesHG[i] = samples[i];
+}
+
+
+//____________________________________________________________________________
+Bool_t AliEMCALDigit::GetALTROSampleHG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
+{
+	//Get High Gain ALTRO sample in time bin iSample
+	if (iSample >= fNSamplesHG || iSample < 0 || fTriggerDigit) return kFALSE;
+	
+	amp     =  fSamplesHG[iSample] & 0xFFF;
+	timeBin = (fSamplesHG[iSample] >> 12) & 0xFF;
+	
+	return kTRUE;
+}
+
 
 //____________________________________________________________________________
 Int_t AliEMCALDigit::GetPrimary(Int_t index) const
@@ -298,7 +385,11 @@ AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit)
   // Adds the amplitude of digits and completes the list of primary particles
   // if amplitude is larger than 
   
-  fAmp += digit.fAmp ;
+  fAmpFloat += digit.fAmpFloat ;
+  for (Int_t i=0; i < fNSamples  ; i++) fSamples[i]   += digit.fSamples[i];
+  for (Int_t i=0; i < fNSamplesHG; i++) fSamplesHG[i] += digit.fSamplesHG[i];
+
+  fAmp    += digit.fAmp ;
   if(fTime > digit.fTime)
     fTime = digit.fTime ;
   if (digit.fTimeR < fTimeR)
@@ -369,9 +460,14 @@ AliEMCALDigit AliEMCALDigit::operator*(Float_t factor)
 {
   // Multiplies the amplitude by a factor
   
-  Float_t tempo = static_cast<Float_t>(fAmp) ; 
-  tempo *= factor ; 
-  fAmp = static_cast<Int_t>(TMath::Ceil(tempo)) ; 
+  //Float_t tempo = static_cast<Float_t>(fAmp) ; 
+  //tempo *= factor ; 
+  //fAmp = static_cast<Int_t>(TMath::Floor(tempo)) ; 
+	
+  fAmpFloat *= factor;
+  for (Int_t i=0; i < fNSamples  ; i++) fSamples[i]   = Int_t(factor*fSamples[i]);
+  for (Int_t i=0; i < fNSamplesHG; i++) fSamplesHG[i] = Int_t(factor*fSamplesHG[i]);
+
   for(Int_t i=0; i < fNprimary; i++) 
     fDEPrimary[i] *= factor;
   for(Int_t i=0; i < fNiparent; i++) 
@@ -397,5 +493,43 @@ ostream& operator << ( ostream& out , const AliEMCALDigit & digit)
   out << "Position in list = " << digit.fIndexInList << endl ; 
   return out ;
 }
+
+//____________________________________________________________________________
+void AliEMCALDigit::Print(const Option_t* /*opt*/) const
+{
+    //Print
+	printf("===\nDigit id: %4d / Energy %2.3f ; Time %e ; Time samples %d ; Chi2 %2.3f, NDF %d, Trigger? %d \n",
+		   fId, fAmpFloat,fTime, fNSamples, fChi2, fNDF, fTriggerDigit);
+	if(fTriggerDigit){
+		printf("FALTRO: ");
+		for (Int_t i=0; i < GetNFALTROSamples(); i++) 
+		{
+			Int_t timeBin, amp;
+			GetFALTROSample(i, timeBin, amp);
+			printf(" (%d,%d) ",timeBin,amp);
+		}
+		printf("\n");
+	}//trigger
+	else{
+		printf("ALTRO, Low Gain: ");
+		for (Int_t i=0; i < GetNALTROSamplesLG(); i++) 
+		{
+			Int_t timeBin, amp;
+			GetALTROSampleLG(i, timeBin, amp);
+			printf(" (%d,%d) ",timeBin,amp);
+		}
+		printf("\n");
+		printf("ALTRO, High Gain: ");
+		for (Int_t i=0; i < GetNALTROSamplesHG(); i++) 
+		{
+			Int_t timeBin, amp;
+			GetALTROSampleHG(i, timeBin, amp);
+			printf(" (%d,%d) ",timeBin,amp);
+		}
+		printf("\n");
+	}//trigger
+	
+}
+
 
 

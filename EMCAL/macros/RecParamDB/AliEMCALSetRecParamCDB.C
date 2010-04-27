@@ -134,7 +134,14 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetMinECut(0.45);
   params->SetUnfold(kFALSE);
   params->SetLocMaxCut(0.03);
-  
+  params->SetTimeCut(100e-9);//100 ns
+  //Simulation
+  params->SetTimeMin(5e-9);//100 ns
+  params->SetTimeMax(50e-9);//100 ns
+   //Real Data
+  //params->SetTimeMin(550e-9);//100 ns
+  //params->SetTimeMax(750e-9);//100 ns
+
   //Track matching
   params->SetTrkCutX(6.0);
   params->SetTrkCutY(6.0);

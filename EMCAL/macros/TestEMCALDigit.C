@@ -66,7 +66,7 @@ void TestEMCALDigit()
 	
 	if(dig != 0){
 	  id   = dig->GetId() ; //cell (digit) label
-	  amp  = dig->GetAmp(); //amplitude in cell (digit)
+	  amp  = dig->GetAmplitude(); //amplitude in cell (digit)
 	  time = dig->GetTime();//time of creation of digit after collision
 	  
 	  cout<<"Cell ID "<<id<<" Amp "<<amp<<endl;//" time "<<time<<endl;

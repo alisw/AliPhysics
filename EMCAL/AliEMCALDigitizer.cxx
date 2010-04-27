@@ -369,7 +369,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
     Float_t energy = 0 ;
     // amplitude set to zero, noise will be added later
-    new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0, TimeOfNoise() ); // absID-1->absID
+    new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0., TimeOfNoise(),kFALSE); // absID-1->absID
     //look if we have to add signal?
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID)); // absID-1->absID
     
@@ -381,7 +381,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       //Follow PHOS and comment out this timing model til a better one
       //can be developed - JLK 28-Apr-2008
 
-      //Float_t a = digit->GetAmp() ;
+      //Float_t a = digit->GetAmplitude() ;
       //Float_t b = TMath::Abs( a /fTimeSignalLength) ;
       //Mark the beginning of the signal
       //new((*ticks)[contrib++]) AliEMCALTick(digit->GetTime(),0, b);  
@@ -390,7 +390,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
       // Calculate time as time of the largest digit
       Float_t time = digit->GetTime() ;
-      Float_t aTime= digit->GetAmp() ;
+      Float_t aTime= digit->GetAmplitude() ;
       
       // loop over input
       for(i = 0; i< fInput ; i++){  //loop over (possible) merge sources
@@ -409,12 +409,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 	  curSDigit->ShiftPrimary(primaryoffset) ;
 
 	  //Remove old timing model - JLK 28-April-2008
-	  //a = curSDigit->GetAmp() ;
+	  //a = curSDigit->GetAmplitude() ;
 	  //b = a /fTimeSignalLength ;
 	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime(),0, b);  
 	  //new((*ticks)[contrib++]) AliEMCALTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
-	  if(curSDigit->GetAmp()>aTime) {
-	    aTime = curSDigit->GetAmp();
+	  if(curSDigit->GetAmplitude()>aTime) {
+	    aTime = curSDigit->GetAmplitude();
 	    time = curSDigit->GetTime();
 	  }
 
@@ -428,7 +428,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 	}
       }
       //Here we convert the summed amplitude to an energy in GeV
-      energy = sDigitizer->Calibrate(digit->GetAmp()) ; // GeV
+      energy = sDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
       // add fluctuations for photo-electron creation
       energy *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
   
@@ -454,7 +454,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     //Now digitize the energy according to the sDigitizer method,
     //which merely converts the energy to an integer.  Later we will
     //check that the stored value matches our allowed dynamic ranges
-    digit->SetAmp(sDigitizer->Digitize(energy)) ;  
+    digit->SetAmplitude(sDigitizer->Digitize(energy)) ;  
     AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
 		     absID, energy, nextSig));
   } // for(absID = 0; absID < nEMC; absID++)
@@ -472,10 +472,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
     //First get the energy in GeV units.
-    energy = sDigitizer->Calibrate(digit->GetAmp()) ;
+    energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
     //Then digitize using the calibration constants of the ocdb
-    Int_t ampADC = DigitizeEnergy(energy, digit->GetId())  ; 	  
-    //if(ampADC>2)printf("Digit energy %f, amp %d, amp cal %d, threshold %d\n",energy,digit->GetAmp(),ampADC,fDigitThreshold);
+    Float_t ampADC = DigitizeEnergy(energy, digit->GetId())  ; 	  
+    //if(ampADC>2)printf("Digit energy %f, amp %d, amp cal %d, threshold %d\n",energy,digit->GetAmplitude(),ampADC,fDigitThreshold);
     if(ampADC < fDigitThreshold)
       digits->RemoveAt(i) ;
     else 
@@ -493,14 +493,15 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for (i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ; 
-    energy = sDigitizer->Calibrate(digit->GetAmp()) ;
-    digit->SetAmp(DigitizeEnergy(energy, digit->GetId()) ) ;
+    energy = sDigitizer->Calibrate(digit->GetAmplitude()) ;
+    digit->SetAmplitude(DigitizeEnergy(energy, digit->GetId()) ) ;
+	 // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
   }
 
 }
 
 // //_____________________________________________________________________
-Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
+Float_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
 { 
   // JLK 26-June-2008
   // Returns digitized value of the energy in a cell absId
@@ -521,7 +522,7 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
   Int_t nIeta   = -1;
   Int_t iphi    = -1;
   Int_t ieta    = -1;
-  Int_t channel = -999; 
+  Float_t channel = -999; 
 
   Bool_t bCell = geom->GetCellIndex(AbsId, iSupMod, nModule, nIphi, nIeta) ;
   if(!bCell)
@@ -533,8 +534,9 @@ Int_t AliEMCALDigitizer::DigitizeEnergy(Float_t energy, Int_t AbsId)
     fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
   }
   
-  channel = static_cast<Int_t> (TMath::Floor( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
-  
+  //channel = static_cast<Int_t> (TMath::Floor( (energy + fADCpedestalEC)/fADCchannelEC ))  ;
+  channel = (energy + fADCpedestalEC)/fADCchannelEC   ;
+
   if(channel > fNADCEC ) 
     channel =  fNADCEC ; 
   return channel ;
@@ -983,8 +985,8 @@ void AliEMCALDigitizer::PrintDigits(Option_t * option)
     Int_t index ;
     for (index = 0 ; index < digits->GetEntries() ; index++) {
       digit = dynamic_cast<AliEMCALDigit *>(digits->At(index)) ;
-      printf("\n%6d  %8d    %6.5e %4d      %2d : ",
-	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
+      printf("\n%6d  %8f    %6.5e %4d      %2d : ",
+	      digit->GetId(), digit->GetAmplitude(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
 	printf("%d ",digit->GetPrimary(iprimary+1) ) ; 

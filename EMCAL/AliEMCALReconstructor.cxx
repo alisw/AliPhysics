@@ -362,8 +362,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   Float_t energy = 0;
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)digits->At(idig);
-    if(dig->GetAmp() > 0 ){
-	  energy = (static_cast<AliEMCALClusterizerv1*> (fgClusterizer))->Calibrate(dig->GetAmp(),dig->GetId());
+    if(dig->GetAmplitude() > 0 ){
+	  energy = (static_cast<AliEMCALClusterizerv1*> (fgClusterizer))->Calibrate(dig->GetAmplitude(),dig->GetTime(),dig->GetId()); //TimeR or Time?
 	  if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them	
 		  emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
 		  idignew++;

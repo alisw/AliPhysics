@@ -812,7 +812,7 @@ void AliEMCALTrigger::FillTRU(const TClonesArray * digits, TClonesArray * ampmat
   for(Int_t idig = 0 ; idig < digits->GetEntriesFast() ; idig++){
     
     dig = dynamic_cast<AliEMCALDigit *>(digits->At(idig)) ;
-    amp    = Float_t(dig->GetAmp()); // Energy of the digit (arbitrary units)
+    amp    = Float_t(dig->GetAmplitude()); // Energy of the digit (arbitrary units)
     id     = dig->GetId() ;          // Id label of the cell
     timeR  = dig->GetTimeR() ;       // Earliest time of the digit
     if(amp<=0.0) AliDebug(1,Form(" id %i amp %f \n", id, amp));

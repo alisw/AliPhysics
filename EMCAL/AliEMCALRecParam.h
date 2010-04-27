@@ -35,12 +35,17 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t GetMinECut            () const     {return fMinECut             ;}
   Float_t GetLocMaxCut          () const     {return fLocMaxCut           ;}
   Float_t GetTimeCut            () const     {return fTimeCut             ;}
+  Float_t GetTimeMin            () const     {return fTimeMin             ;}
+  Float_t GetTimeMax            () const     {return fTimeMax             ;}
   Bool_t  GetUnfold             () const     {return fUnfold              ;}
+	
   void SetClusteringThreshold(Float_t thrsh)     {fClusteringThreshold = thrsh;}
-  void SetW0                 (Float_t w0)        {fW0 = w0                ;}
-  void SetMinECut            (Float_t minEcut)   {fMinECut = minEcut      ;}
+  void SetW0                 (Float_t w0)        {fW0        = w0         ;}
+  void SetMinECut            (Float_t ecut)      {fMinECut   = ecut       ;}
   void SetLocMaxCut          (Float_t locMaxCut) {fLocMaxCut = locMaxCut  ;}
-  void SetTimeCut            (Float_t timeCut)   {fTimeCut = timeCut  ;}
+  void SetTimeCut            (Float_t t)         {fTimeCut   = t          ;}
+  void SetTimeMin            (Float_t t)         {fTimeMin   = t          ;}
+  void SetTimeMax            (Float_t t)         {fTimeMax   = t          ;}
   void SetUnfold             (Bool_t unfold)     {fUnfold = unfold ; if(fUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!");}
   
   //PID (Guenole)
@@ -122,7 +127,9 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t fMinECut;              // Minimum energy for a digit to be a member of a cluster
   Bool_t  fUnfold;               // Flag to perform cluster unfolding
   Float_t fLocMaxCut;            // Minimum energy difference to consider local maxima in a cluster
-  Float_t fTimeCut ;             // Maximum time of digits in EMC cluster
+  Float_t fTimeCut ;             // Maximum time of digits with respect to EMC cluster max.
+  Float_t fTimeMin ;             // Minimum time of digits
+  Float_t fTimeMax ;             // Maximum time of digits
 
   //PID (Guenole)
   Double_t fGamma[6][6];         // Parameter to Compute PID for photons     
@@ -158,7 +165,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 		
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,10)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,11)     // Reconstruction parameters
     
     } ;
 

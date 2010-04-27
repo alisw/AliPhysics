@@ -285,13 +285,13 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 	  // Assign primary number only if deposited energy is significant
 	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
 					  hit->GetIparent(), hit->GetId(), 
-					  Digitize(energy), hit->GetTime(), 
+					  Digitize(energy), hit->GetTime(),kFALSE,
 					  -1, energy ) ;
 	  else
-	    curSDigit =  new AliEMCALDigit( -1               , 
-					    -1               ,
+	    curSDigit =  new AliEMCALDigit( -1, 
+					    -1,
 					    hit->GetId(), 
-					    Digitize(energy), hit->GetTime(), 
+					    Digitize(energy), hit->GetTime(),kFALSE,
 					    -1, energy ) ;
       } else {
 	Warning("Exec"," abs id %i is bad \n", hit->GetId());
@@ -357,7 +357,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 }
 
 //__________________________________________________________________
-Int_t AliEMCALSDigitizer::Digitize(Float_t energy)const {
+Float_t AliEMCALSDigitizer::Digitize(Float_t energy)const {
   // Digitize the energy
   //
   //JLK 26-Jun-2008 EXPLANATION LONG OVERDUE:
@@ -375,11 +375,12 @@ Int_t AliEMCALSDigitizer::Digitize(Float_t energy)const {
     AliWarning(Form("Too big or too small energy %f",aSignal));
     aSignal = TMath::Sign((Double_t)2147483647,aSignal);
   }
-  return (Int_t ) aSignal;
+
+  return (Float_t ) aSignal;
 }
 
 //__________________________________________________________________
-Float_t AliEMCALSDigitizer::Calibrate(Int_t amp)const {
+Float_t AliEMCALSDigitizer::Calibrate(Float_t amp)const {
   //
   // Convert the amplitude back to energy in GeV
   //
@@ -448,14 +449,15 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
     //loop over digits
     AliEMCALDigit * digit;
     printf("\n   Id  Amplitude    Time          Index Nprim: Primaries list \n") ;    
-    Int_t index, isum=0;
+	Int_t   index = 0;
+    Float_t isum  = 0.;
     char * tempo = new char[8192]; 
     for (index = 0 ; index < sdigits->GetEntries() ; index++) {
       digit = dynamic_cast<AliEMCALDigit *>( sdigits->At(index) ) ;
-      sprintf(tempo, "\n%6d  %8d    %6.5e %4d      %2d :",
-	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
+      sprintf(tempo, "\n%6d  %8f    %6.5e %4d      %2d :",
+	      digit->GetId(), digit->GetAmplitude(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
       printf("%s",tempo);
-      isum += digit->GetAmp();
+      isum += digit->GetAmplitude();
       
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
@@ -464,7 +466,7 @@ void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
       }  	 
     }
     delete tempo ;
-    printf("\n** Sum %i : %10.3f GeV/c **\n ", isum, Calibrate(isum));
+    printf("\n** Sum %2.3f : %10.3f GeV/c **\n ", isum, Calibrate(isum));
   } else printf("\n");
 }
 

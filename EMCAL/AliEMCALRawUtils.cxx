@@ -235,7 +235,7 @@ void AliEMCALRawUtils::Digits2Raw()
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
     AliEMCALDigit* digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit)) ;
-    if (digit->GetAmp() < fgThreshold) 
+    if (digit->GetAmplitude() < fgThreshold) 
       continue;
 
     //get cell indices
@@ -286,13 +286,13 @@ void AliEMCALRawUtils::Digits2Raw()
     // out of time range signal (?)
     if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
       AliInfo("Signal is out of time range.\n");
-      buffers[iDDL]->FillBuffer((Int_t)digit->GetAmp());
+      buffers[iDDL]->FillBuffer((Int_t)digit->GetAmplitude());
       buffers[iDDL]->FillBuffer(GetRawFormatTimeBins() );  // time bin
       buffers[iDDL]->FillBuffer(3);          // bunch length      
       buffers[iDDL]->WriteTrailer(3, ieta, iphi, nSM);  // trailer
       // calculate the time response function
     } else {
-      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmp(), adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
+      Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(), adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
       if (lowgain) 
 	buffers[iDDL]->WriteChannel(ieta, iphi, 0, GetRawFormatTimeBins(), adcValuesLow.GetArray(), fgThreshold);
       else 
@@ -339,7 +339,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
 
   // channel info parameters
-  Int_t lowGain = 0;
+  Int_t lowGain  = 0;
   Int_t caloFlag = 0; // low, high gain, or TRU, or LED ref.
 
   // start loop over input stream 
@@ -380,8 +380,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       if ( caloFlag < 2 ){ // ALTRO
 		
 	Float_t time = 0; 
-	Float_t amp = 0; 
-	short timeEstimate = 0;
+	Float_t amp  = 0; 
+	short timeEstimate  = 0;
 	Float_t ampEstimate = 0;
 	Bool_t fitDone = kFALSE;
 		
@@ -389,10 +389,10 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	// all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
 	AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
 
-	amp = fitResults.GetAmp();
-	time = fitResults.GetTime();
+	amp          = fitResults.GetAmp();
+	time         = fitResults.GetTime();
 	timeEstimate = fitResults.GetMaxTimebin();
-	ampEstimate = fitResults.GetMaxSig();
+	ampEstimate  = fitResults.GetMaxSig();
 	if (fitResults.GetStatus() == AliCaloFitResults::kFitPar) {
 	  fitDone = kTRUE;
 	} 
@@ -437,8 +437,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	  // AliDebug(2,Form("Fit results amp %f time %f not consistent with expectations amp %f time %d", amp, time, ampEstimate, timeEstimate));
 	  
 	  // for now just overwrite the fit results with the simple/initial estimate
-	  amp = ampEstimate;
-	  time = timeEstimate; 
+	  amp     = ampEstimate;
+	  time    = timeEstimate; 
 	  fitDone = kFALSE;
 	} 
       } // fitDone
@@ -448,8 +448,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	  amp += (0.5 - gRandom->Rndm()); // Rndm generates a number in ]0,1]
 	}
 
-	Int_t id =  fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-	lowGain = in.IsLowGain();
+	Int_t id = fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
+	lowGain  = in.IsLowGain();
 
 	// go from time-bin units to physical time fgtimetrigger
 	time = time * GetRawFormatTimeBinWidth(); // skip subtraction of fgTimeTrigger?
@@ -458,8 +458,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 
 	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
 	// printf("Added tower: SM %d, row %d, column %d, amp %3.2f\n",in.GetModule(), in.GetRow(), in.GetColumn(),amp);
-	// round off amplitude value to nearest integer
-	AddDigit(digitsArr, id, lowGain, TMath::Nint(amp), time); 
+	AddDigit(digitsArr, id, lowGain, amp, time); 
       }
       
 	}//ALTRO
@@ -516,7 +515,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSam
 }
 
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time) {
+void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time) {
   //
   // Add a new digit. 
   // This routine checks whether a digit exists already for this tower 
@@ -533,20 +532,20 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 
   if (!digit) { // no digit existed for this tower; create one
     if (lowGain && amp > fgkOverflowCut) 
-      amp = Int_t(fHighLowGainFactor * amp); 
+      amp *= fHighLowGainFactor; 
     Int_t idigit = digitsArr->GetEntries();
-    new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, idigit) ;	
+    new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, kFALSE, idigit) ;	
   }
   else { // a digit already exists, check range 
          // (use high gain if signal < cut value, otherwise low gain)
     if (lowGain) { // new digit is low gain
-      if (digit->GetAmp() > fgkOverflowCut) {  // use if stored digit is out of range
-	digit->SetAmp(Int_t(fHighLowGainFactor * amp));
+      if (digit->GetAmplitude() > fgkOverflowCut) {  // use if stored digit is out of range
+	digit->SetAmplitude(fHighLowGainFactor * amp);
 	digit->SetTime(time);
       }
     }
     else if (amp < fgkOverflowCut) { // new digit is high gain; use if not out of range
-      digit->SetAmp(amp);
+      digit->SetAmplitude(amp);
       digit->SetTime(time);
     }
   }
@@ -590,7 +589,7 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
       try {			
 	gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
 	// assign fit results
-	amp = signalF->GetParameter(0); 
+	amp  = signalF->GetParameter(0); 
 	time = signalF->GetParameter(1);
 
 	// cross-check with ParabolaFit to see if the results make sense
@@ -837,6 +836,7 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
   return lowGain ; 
 }
 
+//__________________________________________________________________
 void AliEMCALRawUtils::CalculateChi2(const Double_t* t, const Double_t* y, const Int_t nPoints, 
 const Double_t sig, const Double_t tau, const Double_t amp, const Double_t t0, Double_t &chi2)
 {

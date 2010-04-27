@@ -43,22 +43,22 @@ class AliEMCALRawUtils : public TObject {
   void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
 				  TClonesArray *digitsTRG=0x0);
 
-  void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
+  void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time);
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSamples[], Int_t nSamples);
 
   // Signal shape parameters
   Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ;}
-  Int_t GetRawFormatOrder()                const { return fOrder ; }   
+  Int_t    GetRawFormatOrder()             const { return fOrder ; }   
   Double_t GetRawFormatTau()               const { return fTau ; }    
-  Int_t GetNoiseThreshold()                const { return fNoiseThreshold; }
-  Int_t GetNPedSamples()                   const { return fNPedSamples; }
+  Int_t    GetNoiseThreshold()             const { return fNoiseThreshold; }
+  Int_t    GetNPedSamples()                const { return fNPedSamples; }
   // get methods for fast fit simulation
-  Int_t GetPedestalValue()  const {return fgPedestalValue;}
-  Double_t GetFEENoise()       const {return fgFEENoise;}
+  Int_t    GetPedestalValue()     const {return fgPedestalValue;}
+  Double_t GetFEENoise()          const {return fgFEENoise;}
 
-  Bool_t GetRemoveBadChannels() const {return fRemoveBadChannels;}
-  Int_t  GetFittingAlgorithm()  const {return fFittingAlgorithm; }
-  Bool_t UseFALTRO()            const {return fUseFALTRO; }
+  Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
+  Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
+  Bool_t   UseFALTRO()            const {return fUseFALTRO; }
 	
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
@@ -72,17 +72,17 @@ class AliEMCALRawUtils : public TObject {
   // set methods for fast fit simulation
   void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
   void SetRawFormatTimeBins(Int_t val)             {fgTimeBins = val;}
-  void SetPedestalValue(Int_t val)              {fgPedestalValue = val;}
+  void SetPedestalValue(Int_t val)                 {fgPedestalValue = val;}
   
-  static Int_t GetRawFormatTimeBins() { return fgTimeBins ; }    
-  static Double_t GetRawFormatTimeMax() { return fgTimeBins*fgTimeBinWidth; }   
+  static Int_t GetRawFormatTimeBins()        { return fgTimeBins ; }    
+  static Double_t GetRawFormatTimeMax()      { return fgTimeBins*fgTimeBinWidth; }   
   static Double_t GetRawFormatTimeBinWidth() { return fgTimeBinWidth; }   
   static Double_t GetRawFormatTimeBin() 
   { return GetRawFormatTimeMax() / GetRawFormatTimeBins(); }   
-  Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
-  Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
+  Double_t GetRawFormatTimeTrigger()    const { return fgTimeTrigger ; }
+  Int_t GetRawFormatThreshold()         const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 
-  AliCaloRawAnalyzer *GetRawAnalyzer() const { return fRawAnalyzer;}
+  AliCaloRawAnalyzer *GetRawAnalyzer()  const { return fRawAnalyzer;}
 
   virtual Option_t* GetOption() const { return fOption.Data(); }
   void SetOption(const Option_t* opt) { fOption = opt; }

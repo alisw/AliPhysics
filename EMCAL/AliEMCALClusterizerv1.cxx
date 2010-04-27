@@ -91,7 +91,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
     fToUnfold(kFALSE),
     fNumberOfECAClusters(0),fCalibData(0),fCaloPed(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-    fECAW0(0.),fTimeCut(1.),fMinECut(0.)
+    fECAW0(0.),fTimeCut(1.),fTimeMin(-1.),fTimeMax(1.),fMinECut(0.)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
@@ -106,7 +106,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
     fToUnfold(kFALSE),
     fNumberOfECAClusters(0),fCalibData(0), fCaloPed(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-    fECAW0(0.),fTimeCut(1.),fMinECut(0.)
+    fECAW0(0.),fTimeCut(1.),fTimeMin(-1.),fTimeMax(1.),fMinECut(0.)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
@@ -135,7 +135,7 @@ fDefaultInit(kFALSE),
 fToUnfold(kFALSE),
 fNumberOfECAClusters(0),fCalibData(calib), fCaloPed(caloped),
 fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-fECAW0(0.),fTimeCut(1.),fMinECut(0.)
+fECAW0(0.),fTimeCut(1.),fTimeMin(-1.),fTimeMax(1.),fMinECut(0.)
 {
 	// ctor, geometry and calibration are initialized elsewhere.
 	
@@ -155,7 +155,7 @@ fECAW0(0.),fTimeCut(1.),fMinECut(0.)
 }
 
 //____________________________________________________________________________
-Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t absId) 
+Float_t  AliEMCALClusterizerv1::Calibrate(const Float_t amp, const Float_t time, const Int_t absId) 
 {
  
   // Convert digitized amplitude into energy.
@@ -168,7 +168,7 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t absId)
       AliFatal("Did not get geometry from EMCALLoader") ;
     
     Int_t iSupMod = -1;
-    Int_t nModule  = -1;
+    Int_t nModule = -1;
     Int_t nIphi   = -1;
     Int_t nIeta   = -1;
     Int_t iphi    = -1;
@@ -192,6 +192,8 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t absId)
 		  AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
 		  return 0;
 	}
+	//Check if time is too large or too small, indication of a noisy channel, remove in this case
+	if(time > fTimeMax || time < fTimeMin) return 0;
 	  
     fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
     fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
@@ -440,10 +442,12 @@ void AliEMCALClusterizerv1::InitParameters()
     fToUnfold               = recParam->GetUnfold();
     if(fToUnfold) AliWarning("Cluster Unfolding ON. Implementing only for eta=0 case!!!"); 
     fECALocMaxCut           = recParam->GetLocMaxCut();
-	fTimeCut                = recParam->GetTimeCut();// Originally 300 ns time cut, in data time found to be between 350 ns and 1500 ns, relax the cut for the moment, 1s.
+    fTimeCut                = recParam->GetTimeCut();
+    fTimeMin                = recParam->GetTimeMin();
+    fTimeMax                = recParam->GetTimeMax();
 
-    AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f, fToUnfold=%d, fECALocMaxCut=%.3f, fTimeCut=%f",
-		    fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut));
+    AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s",
+		    fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
   }
 
 }
@@ -466,20 +470,24 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
 
   fGeom->GetCellIndex(d1->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
   fGeom->GetCellIndex(d2->GetId(), nSupMod2,nModule2,nIphi2,nIeta2);
-  if(nSupMod1 != nSupMod2) return 2; // different SM
 
+  // Do not aggregate cells in different SM
+  if(nSupMod1 != nSupMod2 ) return  2;
+  
   fGeom->GetCellPhiEtaIndexInSModule(nSupMod1,nModule1,nIphi1,nIeta1, iphi1,ieta1);
   fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nModule2,nIphi2,nIeta2, iphi2,ieta2);
-
+  
   rowdiff = TMath::Abs(iphi1 - iphi2);  
   coldiff = TMath::Abs(ieta1 - ieta2) ;  
   
-  // neighbours with at least commom side; May 11, 2007
-  if ((coldiff==0 && abs(rowdiff)==1) || (rowdiff==0 && abs(coldiff)==1)) rv = 1;  
- 
+  // neighbours in same SM with at least common side; May 11, 2007
+  if ((coldiff==0 && TMath::Abs(rowdiff)==1) || (rowdiff==0 && TMath::Abs(coldiff)==1)) rv = 1;  
+
+  //Diagonal?
+  //if ((coldiff==0 && TMath::Abs(rowdiff==1)) || (rowdiff==0 && TMath::Abs(coldiff==1)) || (TMath::Abs(rowdiff)==1 && TMath::Abs(coldiff==1))) rv = 1;
+	
   if (gDebug == 2 && rv==1) 
-  printf("AreNeighbours: neighbours=%d, id1=%d, relid1=%d,%d \n id2=%d, relid2=%d,%d \n", 
-	 rv, d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2);   
+  printf("AreNeighbours: id1=%d, (%d,%d) \n id2=%d, (%d,%d) \n",d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2);   
   
   return rv ; 
 }
@@ -506,8 +514,8 @@ void AliEMCALClusterizerv1::MakeClusters()
   double e = 0.0, ehs = 0.0;
   TIter nextdigitC(digitsC);
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
-    e = Calibrate(digit->GetAmp(), digit->GetId());
-    if ( e < fMinECut || digit->GetTimeR() > fTimeCut ) 
+    e = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());//Time or TimeR?
+    if ( e < fMinECut) //|| digit->GetTimeR() > fTimeCut ) // time window of cell checked in calibrate
       digitsC->Remove(digit);
     else    
       ehs += e;
@@ -520,7 +528,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // scan over the list of digitsC
     TArrayI clusterECAdigitslist(fDigitsArr->GetEntries());
 
-    if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp(), digit->GetId()) > fECAClusteringThreshold  ) ){
+    if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()) > fECAClusteringThreshold  ) ){
       // start a new Tower RecPoint
       if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
 
@@ -531,26 +539,31 @@ void AliEMCALClusterizerv1::MakeClusters()
 
       recPoint->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
 
-      recPoint->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId())) ; 
+      recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId())) ; //Time or TimeR?
       TObjArray clusterDigits;
       clusterDigits.AddLast(digit);	
       digitsC->Remove(digit) ; 
 
       AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(),
-      Calibrate(digit->GetAmp(),digit->GetId()), fECAClusteringThreshold));  
-      
+      Calibrate(digit->GetAmplitude(),digit->GetTime(),digit->GetId()), fECAClusteringThreshold));  //Time or TimeR?
+	  Float_t time = digit->GetTime();//Time or TimeR?
       // Grow cluster by finding neighbours
       TIter nextClusterDigit(&clusterDigits);
       while ( (digit = dynamic_cast<AliEMCALDigit*>(nextClusterDigit())) ) { // scan over digits in cluster 
-	TIter nextdigitN(digitsC); 
+        TIter nextdigitN(digitsC); 
         AliEMCALDigit *digitN = 0; // digi neighbor
         while ( (digitN = (AliEMCALDigit *)nextdigitN()) ) { // scan over all digits to look for neighbours
-	  if (AreNeighbours(digit, digitN)==1) {      // call (digit,digitN) in THAT oder !!!!! 
-	    recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmp(),digitN->GetId()) ) ;
-	    clusterDigits.AddLast(digitN) ; 
-	    digitsC->Remove(digitN) ; 
-	  } // if(ineb==1)
-        } // scan over digits
+			
+			//Do not add digits with too different time 
+			if(TMath::Abs(time - digitN->GetTime()) > fTimeCut ) continue; //Time or TimeR?
+			
+			if (AreNeighbours(digit, digitN)==1) {      // call (digit,digitN) in THAT oder !!!!! 
+		
+				recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmplitude(), digitN->GetTime(), digitN->GetId()) ) ;//Time or TimeR?
+				clusterDigits.AddLast(digitN) ; 
+				digitsC->Remove(digitN) ; 
+			} // if(ineb==1)
+		} // scan over digits
       } // scan over digits already in cluster
       if(recPoint)
         AliDebug(2,Form("MakeClusters: %d digitd, energy %f \n", clusterDigits.GetEntries(), recPoint->GetEnergy())); 
