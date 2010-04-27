@@ -186,7 +186,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 //  Default AOD
     if (fDebug > 1) printf("AnalysisTaskSE::CreateOutPutData() \n");
 
-    AliAODHandler* handler = (AliAODHandler*) 
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
          ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     
     Bool_t merging = kFALSE;
@@ -304,8 +304,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
 //
-    AliAODHandler* handler = (AliAODHandler*) 
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+
     AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
 //
 // Was event selected ?
@@ -510,7 +511,7 @@ const char* AliAnalysisTaskSE::CurrentFileName()
 void AliAnalysisTaskSE::AddAODBranch(const char* cname, void* addobj, const char *fname)
 {
     // Add a new branch to the aod tree
-    AliAODHandler* handler = (AliAODHandler*) 
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (handler) {
 	handler->AddBranch(cname, addobj, fname);
@@ -521,7 +522,7 @@ Bool_t AliAnalysisTaskSE::IsStandardAOD() const
 {
 // Check if the output AOD handler is configured for standard or delta AOD.
 // Users should first check that AODEvent() returns non-null.
-    AliAODHandler* handler = (AliAODHandler*) 
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
          ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (!handler) {
        Error("IsStandardAOD", "No AOD handler. Please use AODEvent() to check this first");
