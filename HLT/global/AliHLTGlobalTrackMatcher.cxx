@@ -114,7 +114,7 @@ Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * 
     return kFALSE;
   }
 
-  //  HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
+  //HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
 
 
   //Positive y for EMCAL, negative for PHOS

@@ -75,12 +75,15 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
   Int_t nEmcalClusters = emcalClustersVector.size(); 
   
 
+  //HLTError("tracks phos emcal %d %d %d", nTracks, nPhosClusters, nEmcalClusters);
+
   //See if there are tracks and clusters to match
   if ( nTracks <= 0 ) {
     return 0;
   } else if ( (nEmcalClusters <= 0) && (nPhosClusters <= 0))  {
     return 0;
   }
+
 
   Float_t bestMatchPhos[nPhosClusters];   
   for(int ic = 0; ic < nPhosClusters; ic++) {
@@ -145,6 +148,8 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     Double_t dd = trackPosition[2] - clusterPosition[2];
     Double_t dz = dd*dd;
   
+    //HLTError("dxy dx %f %f", TMath::Sqrt(dxy), TMath::Sqrt(dz));
+
     Double_t match = dz + dxy;
     
     if( match > fMatchDistance  )  {     

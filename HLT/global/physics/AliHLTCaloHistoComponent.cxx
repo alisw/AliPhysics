@@ -266,14 +266,12 @@ Int_t AliHLTCaloHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
 
   
   if (fDoEmcal) {
-    //    HLTInfo("Processing EMCAL blocks");
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL ); pBlock!=NULL; pBlock=GetNextInputBlock()) {
       ProcessBlocks(pBlock, fEmcalProducerArray);
     }
   }
 
   if (fDoPhos) {
-    //HLTInfo("Processing PHOS blocks");
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock( kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS ); pBlock!=NULL; pBlock=GetNextInputBlock()) {
       ProcessBlocks(pBlock, fPhosProducerArray);
     }
@@ -313,32 +311,30 @@ Int_t AliHLTCaloHistoComponent::ProcessBlocks(const AliHLTComponentBlockData * p
     return -1;
   }
   
-  clustersVector.resize((int) (clusterHeader->fNClusters)); 
+  clustersVector.reserve((int) (clusterHeader->fNClusters)); 
   Int_t nClusters = 0;
   Double_t ampFrac;
   UShort_t cellId;
   Bool_t cutCluster = false;
   while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
-     cutCluster = false;
-     if(clusterStruct->fEnergy > 0.5)
-     {
-	 for(UInt_t i = 0; i < clusterStruct->fNCells; i++)
-	 {
-	    fClusterReader->GetCell(clusterStruct, cellId, ampFrac, i);
-	    if(ampFrac > 0.9)
-	    {
-	       cutCluster = true;
-	       break;
-	    }
-	 }
-     if(!cutCluster)
-     {
-	 clustersVector[nClusters++] = clusterStruct;  
-     }
-     }
+    cutCluster = false;
+
+    if(clusterStruct->fEnergy > 0.5) {
+      for(UInt_t i = 0; i < clusterStruct->fNCells; i++) {
+	fClusterReader->GetCell(clusterStruct, cellId, ampFrac, i);
+	if(ampFrac > 0.9) {
+	  cutCluster = true;
+	  break;
+	}
+      }
+    }
+    
+    if(!cutCluster) {
+      clustersVector.push_back(clusterStruct);  
+    }
   }
   
-  nClusters = clusterHeader->fNClusters;
+  nClusters = clustersVector.size();
   
   for(int ih = 0; ih < histoArray->GetEntriesFast(); ih++) {
     iResult = static_cast<AliHLTCaloHistoProducer*>(histoArray->At(ih))->FillHistograms(nClusters, clustersVector);
