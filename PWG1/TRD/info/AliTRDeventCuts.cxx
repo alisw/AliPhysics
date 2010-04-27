@@ -44,6 +44,18 @@
 ClassImp(AliTRDeventCuts)
 
 //______________________________________________________________
+AliTRDeventCuts::AliTRDeventCuts():
+  TNamed("trdEventCuts", ""),
+  fTriggerNames(NULL),
+  fVertexN(1),
+  fVertexZ(15.)
+{
+  //
+  // Dummy Constructor
+  //
+}
+
+//______________________________________________________________
 AliTRDeventCuts::AliTRDeventCuts(const Char_t *name):
   TNamed(name, ""),
   fTriggerNames(NULL),

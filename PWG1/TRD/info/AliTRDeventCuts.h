@@ -22,6 +22,7 @@ class AliESDEvent;
 class AliTRDeventCuts : public TNamed
 {
 public:
+  AliTRDeventCuts();
   AliTRDeventCuts(const Char_t *name);
   ~AliTRDeventCuts();
 
