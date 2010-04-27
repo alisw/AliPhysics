@@ -125,7 +125,6 @@ void AliHLTReconstructor::Init()
   // the options scan has been moved to AliHLTSystem, the old code
   // here is kept to be able to run an older version of the HLT code
   // with newer AliRoot versions.
-  TString libs("");
   TString option = GetOption();
   TObjArray* pTokens=option.Tokenize(" ");
   option="";
@@ -156,9 +155,6 @@ void AliHLTReconstructor::Init()
 	token.ReplaceAll(","," ");
 	token.ReplaceAll("'","");
 	esdManagerOptions=token;
-      } else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
-	libs+=token;
-	libs+=" ";
       } else {
 	if (option.Length()>0) option+=" ";
 	option+=token;
