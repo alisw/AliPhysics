@@ -96,8 +96,8 @@ bool
 AliHLTEMCALRawAnalyzerComponent::CheckInputDataType(const AliHLTComponentDataType &datatype)
 {
   // Cheking if datatype is the correct one before processing 
-  //    cout << __FILE__ << __LINE__ << "  :  fID  = " << datatype.fID <<  " : fOrigin = " <<  datatype.fOrigin << endl;
-  //  cout << __FILE__ << __LINE__ << "fgkDDLRawDataType->fID = " << AliHLTEMCALDefinitions::fgkDDLRawDataType.fID <<
+  //    ////cout << __FILE__ << __LINE__ << "  :  fID  = " << datatype.fID <<  " : fOrigin = " <<  datatype.fOrigin << endl;
+  //  ////cout << __FILE__ << __LINE__ << "fgkDDLRawDataType->fID = " << AliHLTEMCALDefinitions::fgkDDLRawDataType.fID <<
   //  "fgkDDLRawDataType->fOrigin = " << AliHLTEMCALDefinitions::fgkDDLRawDataType.fOrigin << endl;
 
 
@@ -142,11 +142,11 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
   
   if( evntcnt %1000 == 0  )
     {
-      cout << __FILE__ << __LINE__ << " : Processing event "  << evntcnt   << endl; 
+      ////cout << __FILE__ << __LINE__ << " : Processing event "  << evntcnt   << endl; 
       wlast =  wcurrent;
       wcurrent = fgWatch.RealTime();
-      cout << wlast << ":" << wcurrent << endl;
-      cout << __FILE__ << __LINE__ << "The event rate is " <<  1000/( wcurrent  -  wlast ) << "  Hz" << endl; 
+      ////cout << wlast << ":" << wcurrent << endl;
+      ////cout << __FILE__ << __LINE__ << "The event rate is " <<  1000/( wcurrent  -  wlast ) << "  Hz" << endl; 
       fgWatch.Start(kFALSE); 
       //     wlast =  fgWatch.RealTime(); 
     }
@@ -155,11 +155,11 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
   if( evntcnt %100 == 0  )
     {
       
-      cout << __FILE__ << __LINE__ << " : Processing event "  << evntcnt   << endl; 
+      ////cout << __FILE__ << __LINE__ << " : Processing event "  << evntcnt   << endl; 
       wlast =  wcurrent;
       wcurrent = fgWatch.RealTime();
-      cout << wlast << ":" << wcurrent << endl;
-      cout << __FILE__ << __LINE__ << "The event rate is " <<  100/( wcurrent  -  wlast ) << "  Hz" << endl; 
+      ////cout << wlast << ":" << wcurrent << endl;
+      ////cout << __FILE__ << __LINE__ << "The event rate is " <<  100/( wcurrent  -  wlast ) << "  Hz" << endl; 
       fgWatch.Start(kFALSE); 
       //     wlast =  fgWatch.RealTime(); 
     }
@@ -173,23 +173,23 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
-      //   cout << __FILE__ << __LINE__ <<  "ndx =" << ndx  << endl;
+      //   //cout << __FILE__ << __LINE__ <<  "ndx =" << ndx  << endl;
       iter = blocks+ndx;
       if(  ! CheckInputDataType(iter->fDataType) )
 	{
-	  //	  cout << __FILE__ << __LINE__ <<  "  continue" << endl; 
+	  //	  //cout << __FILE__ << __LINE__ <<  "  continue" << endl; 
 	  continue;
 	}
       else
 	{
-	  //	  cout << __FILE__ << __LINE__ <<  "  else" << endl;  
+	  //	  //cout << __FILE__ << __LINE__ <<  "  else" << endl;  
 
 	  InitMapping( iter->fSpecification); 
 	  blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
 	  
 	  if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
 	    {
-	      //	     cout << __FILE__ << __LINE__ <<  "  return -ENOBUFS " << endl;   
+	      //	     //cout << __FILE__ << __LINE__ <<  "  return -ENOBUFS " << endl;   
 	      return -ENOBUFS;
 	    }
 	  

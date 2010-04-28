@@ -73,8 +73,8 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 
       //   assert("DDL spec is  %d", GetDDLFromSpec( specification ) );
      
-      cout << __FILE__ <<":"<< __LINE__ <<"DDL spec is " <<   GetDDLFromSpec( specification )  << endl;
-      cout << __FILE__ <<":"<< __LINE__ <<"mapping filename is " <<  fFilepath << endl;
+      ////cout << __FILE__ <<":"<< __LINE__ <<"DDL spec is " <<   GetDDLFromSpec( specification )  << endl;
+      //cout << __FILE__ <<":"<< __LINE__ <<"mapping filename is " <<  fFilepath << endl;
 	// sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
       FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
@@ -93,7 +93,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	    {
 	      res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
 	      
-	      //	      cout << __FILE__ << __LINE__ << "  tmpHwaddr  = " << tmpHwaddr << ", tmpXCol = " << (int)tmpXCol <<  ", tmpZRow = "<< (int)tmpZRow <<  ", tmpGain= "<< (int)tmpGain << endl;
+	      //	      //cout << __FILE__ << __LINE__ << "  tmpHwaddr  = " << tmpHwaddr << ", tmpXCol = " << (int)tmpXCol <<  ", tmpZRow = "<< (int)tmpZRow <<  ", tmpGain= "<< (int)tmpGain << endl;
 	      
 	      if(tmpGain < 2)
 		{
@@ -107,7 +107,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	}
       else
 	{
-	  cout << __FUNCTION__ << ":"<<__FILE__<<":"<< __LINE__ << "ERROR, could not open mapping file %s" <<  fFilepath << endl;
+	  //cout << __FUNCTION__ << ":"<<__FILE__<<":"<< __LINE__ << "ERROR, could not open mapping file %s" <<  fFilepath << endl;
       	  fIsInitializedMapping = false;	  
 	}
     }
