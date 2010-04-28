@@ -79,7 +79,8 @@ private:
    */ 
 
   AliHLTUInt32_t fOutputSize;   // output size
-  TClonesArray* fTracksArray;  // input array
+  AliHLTUInt32_t fSpec;         // accumulated specification
+  TClonesArray* fTracksArray;   // input array
 
   TH1F *fClPerTrkl;             // Number of clusters per tracklet
   TH1F *fTrklPerTrk;            // Number of tracklets per track

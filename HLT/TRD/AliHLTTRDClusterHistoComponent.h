@@ -78,12 +78,13 @@ private:
    */ 
 
   AliHLTUInt32_t fOutputSize;   // output size
+  AliHLTUInt32_t fSpec;         // accumulated specification
   TClonesArray* fClusterArray;  // input array
 
-  TH1F *fNClsDet;
-  TH1F *fClsAmp;
-  TH1F *fClsAmpDrift;
-  TH1F *fClsTB;
+  TH1F *fNClsDet;               // distribution of detectors
+  TH1F *fClsAmp;                // distribution of charge
+  TH1F *fClsAmpDrift;           // distribution of charge in drift region
+  TH1F *fClsTB;                 // distribution of time bins
 
   TH1F *fClsAmpDriftDet[540];
   TH1F *fClsAmpDist; 

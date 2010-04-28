@@ -50,6 +50,7 @@ ClassImp(AliHLTTRDTrackHistoComponent)
 AliHLTTRDTrackHistoComponent::AliHLTTRDTrackHistoComponent()
 : AliHLTProcessor(),
   fOutputSize(100000),
+  fSpec(0),
   fTracksArray(NULL),
   fClPerTrkl(NULL),
   fTrklPerTrk(NULL),
@@ -181,6 +182,7 @@ int AliHLTTRDTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
     AliHLTTRDUtils::ReadTracks(fTracksArray, iter->fPtr, iter->fSize);
     HLTDebug("TClonesArray of tracks: nbEntries = %i", fTracksArray->GetEntriesFast());
     gotData=kTRUE;
+    fSpec |= iter->fSpecification;
   }
   
   if(!gotData) return 0;
@@ -208,12 +210,12 @@ int AliHLTTRDTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
   
   fTracksArray->Delete();
   
-  PushBack((TObject*)fClPerTrkl, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
-  PushBack((TObject*)fTrklPerTrk, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-  PushBack((TObject*)fEvSize, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
-  PushBack((TObject*)fEtaDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);   
-  PushBack((TObject*)fPhiDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);  
-  PushBack((TObject*)fPtDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
+  PushBack((TObject*)fClPerTrkl, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);   
+  PushBack((TObject*)fTrklPerTrk, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);  
+  PushBack((TObject*)fEvSize, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  PushBack((TObject*)fEtaDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);   
+  PushBack((TObject*)fPhiDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);  
+  PushBack((TObject*)fPtDistrib, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
   
   return 0;
 }

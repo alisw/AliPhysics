@@ -46,6 +46,7 @@ ClassImp(AliHLTTRDClusterHistoComponent)
 AliHLTTRDClusterHistoComponent::AliHLTTRDClusterHistoComponent()
 : AliHLTProcessor(),
   fOutputSize(100000),
+  fSpec(0),
   fClusterArray(NULL),
   fNClsDet(NULL),
   fClsAmp(NULL),
@@ -193,17 +194,15 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
 
   const AliHLTComponentBlockData* iter = NULL;
   Bool_t gotData = kFALSE;
-  AliHLTUInt32_t spec = 0;
 
   for ( iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkClusterDataType); 
 	iter != NULL; iter = GetNextInputBlock() ) {
 
-    HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
-
     fEvSize->Fill((iter->fSize+0.5f)/1024);
     AliHLTTRDUtils::ReadClusters(fClusterArray, iter->fPtr, iter->fSize);
+    HLTDebug("TClonesArray of clusters: nbEntries = %i", fClusterArray->GetEntriesFast());
     gotData = kTRUE;
-    spec = iter->fSpecification;
+    fSpec |= iter->fSpecification;
   }
 
   if(!gotData) return 0;
@@ -245,14 +244,14 @@ int AliHLTTRDClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
 
   //fNScls->Fill(nSClusters);
 
-  PushBack((TObject*)fNClsDet, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  PushBack((TObject*)fClsAmp, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  PushBack((TObject*)fClsAmpDrift, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  //PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  //PushBack((TObject*)fNScls, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
-  PushBack((TObject*)fEvSize, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, spec);
+  PushBack((TObject*)fNClsDet, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  PushBack((TObject*)fClsAmp, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  PushBack((TObject*)fClsAmpDrift, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  PushBack((TObject*)fClsTB, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  //PushBack((TObject*)fClsAmpDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  //PushBack((TObject*)fNScls, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  PushBack((TObject*)fSClsDist, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
+  PushBack((TObject*)fEvSize, kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, fSpec);
 
   return 0;
 }

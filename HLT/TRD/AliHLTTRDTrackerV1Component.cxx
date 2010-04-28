@@ -272,12 +272,12 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	TObjString strg;
 	strg.String() += fNtimeBins;
 	if(trdTracks)
-	PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+	  PushBack(trdTracks, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, block.fSpecification);
 	else{
 	  TClonesArray temp("AliTRDtrackV1");
-	  PushBack(&temp, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+	  PushBack(&temp, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, block.fSpecification);
 	}
-	PushBack(&strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, 0);
+	PushBack(&strg, AliHLTTRDDefinitions::fgkHiLvlTracksDataType, block.fSpecification);
 
 	if(fEmulateHLTTracks && trdTracks){
 	  trdTracks->Delete();

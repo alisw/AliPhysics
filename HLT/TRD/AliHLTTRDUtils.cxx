@@ -239,8 +239,9 @@ void AliHLTTRDUtils::EmulateHLTTracks(TClonesArray* trackArray)
 
 AliHLTUInt32_t AliHLTTRDUtils::GetSM(AliHLTUInt32_t spec)
 {
-  spec -= 1;
-  int count = 0;
+  spec = (spec&-spec); // use only least significant bit
+  spec -= 1;           // as spec is now power of 2, this creates ones..
+  int count = 0;       // .. which are counted
   while (spec) {
     count++;
     spec &= spec - 1;
