@@ -68,8 +68,9 @@ protected:
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
   void           InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);
-  Char_t    fNameId[10];   //! unique identifier of task particularity
-  UChar_t   fNRefFigures;  //! no of reference figures reported by task
+  Bool_t         HasFunctorList() const { return fPlotFuncList != NULL; }
+  Char_t    fNameId[10];   // unique identifier of task particularity
+  UChar_t   fNRefFigures;  // no of reference figures reported by task
   TObjArray *fContainer;   //! container to store results
   TObjArray *fTracks;      //! Array of tracks
   const AliTRDtrackV1    *fkTrack;         //! current track
@@ -84,7 +85,7 @@ private:
   static TList      *fgTrendPoint;          //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream 
 
-  ClassDef(AliTRDrecoTask, 2) // base TRD reconstruction task
+  ClassDef(AliTRDrecoTask, 3) // base TRD reconstruction task
 };
 
 #endif
