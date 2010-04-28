@@ -116,6 +116,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
 {
 // Loop over Plot functors published by particular tasks
 
+  GetInputData(1);
   if(!fPlotFuncList){
     AliWarning("No functor list defined for the reference plots");
     return;
