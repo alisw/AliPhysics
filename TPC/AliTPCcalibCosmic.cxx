@@ -68,6 +68,7 @@
 #include "TFile.h"
 #include "TF1.h"
 #include "THnSparse.h"
+#include "TDatabasePDG.h"
 
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
@@ -636,8 +637,8 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       Double_t sign0=-1;
       Double_t sign1=1;
       Double_t maxsnp=0.90;
-      AliTracker::PropagateTrackToBxByBz(&param0,dmax+1,0.0005,3,kTRUE,maxsnp,sign0);
-      AliTracker::PropagateTrackToBxByBz(&param1,dmax+1,0.0005,3,kTRUE,maxsnp,sign1);
+      AliTracker::PropagateTrackToBxByBz(&param0,dmax+1,TDatabasePDG::Instance()->GetParticle("e-")->Mass(),3,kTRUE,maxsnp,sign0);
+      AliTracker::PropagateTrackToBxByBz(&param1,dmax+1,TDatabasePDG::Instance()->GetParticle("e-")->Mass(),3,kTRUE,maxsnp,sign1);
       //
       // Propagate rest to the 0,0 DCA - z should be ignored
       //

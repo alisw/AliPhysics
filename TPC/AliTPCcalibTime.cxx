@@ -647,8 +647,8 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
       //
       // Propagate using Magnetic field and correct fo material budget
       //
-      AliTracker::PropagateTrackTo(&param0,dmax+1,0.0005,3,kTRUE);
-      AliTracker::PropagateTrackTo(&param1,dmax+1,0.0005,3,kTRUE);
+      AliTracker::PropagateTrackTo(&param0,dmax+1,TDatabasePDG::Instance()->GetParticle("e-")->Mass(),3,kTRUE);
+      AliTracker::PropagateTrackTo(&param1,dmax+1,TDatabasePDG::Instance()->GetParticle("e-")->Mass(),3,kTRUE);
       //
       // Propagate rest to the 0,0 DCA - z should be ignored
       //

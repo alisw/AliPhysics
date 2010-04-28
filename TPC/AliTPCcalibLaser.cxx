@@ -114,6 +114,7 @@
 #include "TH2F.h"
 #include "TStatToolkit.h"
 #include "TROOT.h"
+#include "TDatabasePDG.h"
 
 
 #include "TTreeStream.h"
@@ -1354,8 +1355,8 @@ Int_t  AliTPCcalibLaser::FindMirror(AliESDtrack *track, AliTPCseed *seed){
 
 
   AliExternalTrackParam param(*(track->GetOuterParam()));
-  AliTracker::PropagateTrackTo(&param,kRadius0,0.10566,3,kTRUE);
-  AliTracker::PropagateTrackTo(&param,kRadius,0.10566,0.1,kTRUE);
+  AliTracker::PropagateTrackTo(&param,kRadius0,TDatabasePDG::Instance()->GetParticle("mu+")->Mass(),3,kTRUE);
+  AliTracker::PropagateTrackTo(&param,kRadius,TDatabasePDG::Instance()->GetParticle("mu+")->Mass(),0.1,kTRUE);
   AliTPCLaserTrack ltr;
   AliTPCLaserTrack *ltrp=0x0;
   //  AliTPCLaserTrack *ltrpjw=0x0;
