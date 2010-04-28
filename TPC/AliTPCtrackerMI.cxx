@@ -980,7 +980,7 @@ Double_t AliTPCtrackerMI::F1(Double_t x1,Double_t y1,
   y2 -=y1;
   //  
   Double_t det = x3*y2-x2*y3;
-  if (TMath::Abs(det)<1e-16){
+  if (TMath::Abs(det)<1e-10){
     return 100;
   }
   //
@@ -1006,7 +1006,7 @@ Double_t AliTPCtrackerMI::F2(Double_t x1,Double_t y1,
   y2 -=y1;
   //  
   Double_t det = x3*y2-x2*y3;
-  if (TMath::Abs(det)<1e-16) {
+  if (TMath::Abs(det)<1e-10) {
     return 100;
   }
   //
@@ -4295,6 +4295,7 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
   //0.  Sort tracks according quality
   //1.  Propagate the ext. param to reference radius
   Int_t nseed = array->GetEntriesFast();  
+  if (nseed<=0) return;
   Float_t * quality = new Float_t[nseed];
   Int_t   * indexes = new Int_t[nseed];
   for (Int_t i=0; i<nseed; i++) {
@@ -4410,6 +4411,9 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
   // 4. Delete temporary array
   //
   delete [] params; 
+  delete [] quality;
+  delete [] indexes;
+
 }
 
 

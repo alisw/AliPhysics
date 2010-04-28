@@ -1411,6 +1411,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
   //
   if (parin) (*parin)=paramIn;
   if (parout) (*parout)=paramOut;
+  delete track;
   return ncl;
 }
 
