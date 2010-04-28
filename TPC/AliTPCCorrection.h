@@ -1,0 +1,103 @@
+#ifndef ALI_TPC_CORRECTION_H
+#define ALI_TPC_CORRECTION_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// AliTPCCorrection class                                                     //
+//                                                                            //
+// This class provides a general framework to deal with space point           //
+// distortions. An correction class which inherits from here is for example   //
+// AliTPCExBBShape or AliTPCExBTwist                                          //
+//                                                                            //
+// General functions are (for example):                                       //
+//   CorrectPoint(x,roc) where x is the vector of inital positions in         //
+//   cartesian coordinates and roc represents the Read Out chamber number     //
+//   according to the offline naming convention. The vector x is overwritten  //
+//   with the corrected coordinates.                                          //
+//                                                                            //
+// An alternative usage would be CorrectPoint(x,roc,dx), which leaves the     //
+//   vector x untouched, put returns the distortions via the vector dx        //
+//                                                                            //
+// The class allows "effective Omega Tau" corrections to be shifted to the    //
+// single distortion classes.                                                 //
+//                                                                            //
+// Note: This class is normally used via the class AliTPCComposedCorrection   //
+//                                                                            //
+// date: 27/04/2010                                                           //
+// Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                        //
+////////////////////////////////////////////////////////////////////////////////
+
+
+#include <TNamed.h>
+class TH2F;
+class TCollection;
+
+class AliTPCCorrection : public TNamed {
+public:
+  enum CompositionType {kParallel,kQueue};
+
+  AliTPCCorrection();
+  AliTPCCorrection(const char *name,const char *title);
+  virtual ~AliTPCCorrection();
+  
+
+  // functions to correct a space point
+          void CorrectPoint (      Float_t x[],const Short_t roc);
+          void CorrectPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
+  virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
+
+  // functions to distort a space point
+          void DistortPoint (      Float_t x[],const Short_t roc);
+          void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
+  virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
+
+  // initialization
+  virtual void Init();
+
+  // convenience functions
+  virtual void Print(Option_t* option="") const;
+ 
+  TH2F* CreateHistoDRinXY   (Float_t z=10.,Int_t nx=100,Int_t ny=100);
+  TH2F* CreateHistoDRPhiinXY(Float_t z=10.,Int_t nx=100,Int_t nphi=100);
+  TH2F* CreateHistoDRinZR   (Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
+  TH2F* CreateHistoDRPhiinZR(Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
+
+  // normally called directly in the correction classes which inherit from this class
+  virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
+
+protected:
+  TH2F* CreateTH2F(const char *name,const char *title,
+		   const char *xlabel,const char *ylabel,const char *zlabel,
+		   Int_t nbinsx,Double_t xlow,Double_t xup,
+		   Int_t nbinsy,Double_t ylow,Double_t yup);
+ 
+  static const Double_t fgkTPC_Z0;      // nominal gating grid position 
+  static const Double_t fgkIFCRadius;   // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
+  static const Double_t fgkOFCRadius;   // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
+  static const Double_t fgkZOffSet;     // Offset from CE: calculate all distortions closer to CE as if at this point
+  static const Double_t fgkCathodeV;    // Cathode Voltage (volts)
+  static const Double_t fgkGG;          // Gating Grid voltage (volts)
+
+  enum {kNR=   92};              // Number of R points in the table for interpolating distortion data
+  enum {kNZ=  270};              // Number of Z points in the table for interpolating distortion data
+  static const Double_t fgkRList[kNR];
+  static const Double_t fgkZList[kNZ];
+
+  // Simple Interpolation functions: e.g. with tricubic interpolation (not yet in TH3)
+  Int_t fJLow; 
+  Int_t fKLow;
+  void Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
+				 const Double_t er[kNZ][kNR], Double_t &er_value );
+  Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
+			const Int_t order, const Double_t x );
+  void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
+  
+
+
+  ClassDef(AliTPCCorrection,1);
+};
+
+#endif

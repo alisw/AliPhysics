@@ -15,7 +15,7 @@ SRCS:=  AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx AliH2F.cxx \
 	AliTPCCalibRaw.cxx \
         AliTPCPreprocessor.cxx   AliTPCPreprocessorOnline.cxx \
         AliTPCCalibViewer.cxx  AliTPCCalibViewerGUI.cxx  AliTPCCalibViewerGUItime.cxx \
-  AliTPCCalibViewerGUIAlarms.cxx AliTPCCalibQAChecker.cxx \
+        AliTPCCalibViewerGUIAlarms.cxx AliTPCCalibQAChecker.cxx \
         AliTPCGenDBTemp.cxx AliTPCGenDBConf.cxx \
 	AliTPCExB.cxx  AliTPCExBExact.cxx AliTPCExBFirst.cxx \
         AliTPCTempMap.cxx AliTPCCalibVdrift.cxx \
@@ -23,7 +23,9 @@ SRCS:=  AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx AliH2F.cxx \
         AliTransform.cxx AliTPCTransform.cxx AliTPCAlign.cxx AliTPCGoofieValues.cxx \
 	AliTPCdataQA.cxx AliTPCQAChecker.cxx AliTPCConfigDA.cxx AliTPCConfigParser.cxx AliExternalComparison.cxx \
 	AliTPCkalmanTime.cxx AliESDcosmic.cxx AliTPCPointCorrection.cxx AliTPCTransformation.cxx \
-        AliTPCkalmanFit.cxx AliTPCLaserTrack.cxx AliTPCcalibBase.cxx  
+	AliTPCkalmanFit.cxx AliTPCLaserTrack.cxx AliTPCcalibBase.cxx \
+	AliTPCCorrection.cxx AliTPCInverseCorrection.cxx AliTPCComposedCorrection.cxx \
+	AliTPCExBBShape.cxx AliTPCExBTwist.cxx AliTPCGGVoltError.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 
