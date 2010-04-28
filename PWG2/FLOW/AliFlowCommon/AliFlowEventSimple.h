@@ -37,22 +37,26 @@ class AliFlowEventSimple: public TObject {
   void    Print(Option_t* option = "") const;      //method to print stats
   
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
-  void     SetNumberOfTracks(Int_t nr)              { fNumberOfTracks = nr; }
   Int_t    GetEventNSelTracksRP() const             { return fEventNSelTracksRP; } 
   void     SetEventNSelTracksRP(Int_t nr)           { fEventNSelTracksRP = nr; }  
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
   void     SetMCReactionPlaneAngle(Double_t fPhiRP) { fMCReactionPlaneAngle=fPhiRP; fMCReactionPlaneAngleIsSet=kTRUE; }
+  Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
 
   void ResolutionPt(Double_t res);
-
   void CloneTracks(Int_t n);
+  void SubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
+  void AddFlow( Double_t flow );
  
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 
-  TObjArray* TrackCollection() const                { return fTrackCollection; } //deprecated!
  
   AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
+
+  //these should go away!!!!
+  TObjArray* TrackCollection() const                { return fTrackCollection; } //deprecated!
+  void     SetNumberOfTracks(Int_t nr)              { fNumberOfTracks = nr; }
 
  protected:
   TObjArray*              fTrackCollection;           // collection of tracks

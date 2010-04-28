@@ -82,16 +82,19 @@ void AliFlowEvent::SetMCReactionPlaneAngle(const AliMCEvent* mcEvent)
       }
     }
   }
+  //GEVSIM
   else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"GeVSim header"))   //returns 0 if matches
   {
     AliGenGeVSimEventHeader* headerG = dynamic_cast<AliGenGeVSimEventHeader*>(mcEvent->GenEventHeader());
     if (headerG) AliFlowEventSimple::SetMCReactionPlaneAngle( headerG->GetEventPlane() );
   }
+  //HIJING
   else if (!strcmp(mcEvent-> GenEventHeader()->GetName(),"Hijing"))   //returns 0 if matches
   {
     AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
     if (headerH) AliFlowEventSimple::SetMCReactionPlaneAngle( headerH->ReactionPlaneAngle() );
   }
+  //EPOS
   else if (!strcmp(mcEvent->GenEventHeader()->GetName(),"EPOS"))
   {
     AliGenEposEventHeader* headerE = dynamic_cast<AliGenEposEventHeader*>(mcEvent->GenEventHeader());
@@ -132,12 +135,12 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
       pTrack->SetPhi(pParticle->Phi());
       pTrack->SetPt(pParticle->Pt());
 
-      if (rpOK)
+      if (rpOK && intCFManager)
       {
         pTrack->SetForRPSelection(kTRUE);
         fEventNSelTracksRP++;
       }
-      if (poiOK)
+      if (poiOK && diffCFManager)
       {
         pTrack->SetForPOISelection(kTRUE);
       }
@@ -181,13 +184,13 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     pTrack->SetPhi(pParticle->Phi() );
 
     //marking the particles used for int. flow:
-    if(rpOK)
+    if(rpOK && intCFManager)
     {
       pTrack->SetForRPSelection(kTRUE);
       fEventNSelTracksRP++;
     }
     //marking the particles used for diff. flow:
-    if(poiOK)
+    if(poiOK && diffCFManager)
     {
       pTrack->SetForPOISelection(kTRUE);
     }
@@ -228,12 +231,12 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
       pTrack->SetEta(pParticle->Eta() );
       pTrack->SetPhi(pParticle->Phi() );
 
-      if (rpOK)
+      if (rpOK && intCFManager)
       {
         pTrack->SetForRPSelection(kTRUE);
         fEventNSelTracksRP++;
       }
-      if (poiOK)
+      if (poiOK && diffCFManager)
       {
         pTrack->SetForPOISelection(kTRUE);
       }
@@ -270,15 +273,15 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
 //-----------------------------------------------------------------------
 AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
                             const AliMCEvent* anInputMc,
-                            Int_t anOption,
+                            KineSource anOption,
                             const AliCFManager* intCFManager,
                             const AliCFManager* diffCFManager ):
   AliFlowEventSimple(20)
 {
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
-  if (!(anOption ==0 || anOption ==1))
+  if (anOption==kNoKine)
   {
-    cout<<"WRONG OPTION IN AliFlowEventMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, Int_t anOption)"<<endl;
+    cout<<"WRONG OPTION IN AliFlowEventMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, KineSource anOption)"<<endl;
     exit(1);
   }
 
@@ -308,7 +311,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       Bool_t poiOK = kTRUE;
       if (intCFManager && diffCFManager)
       {
-      if(anOption == 0)
+      if(anOption == kESDkine)
       {
         //cout<<"take the PID from the MC & the kinematics from the ESD"<<endl;
         if (intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle,"mcGenCuts1") &&
@@ -318,7 +321,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
             diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle))
           poiOK=kTRUE;
       }
-      else if (anOption == 1)
+      else if (anOption == kMCkine)
       {
         //cout<<"take the PID and kinematics from the MC"<<endl;
         if (intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle))
@@ -332,13 +335,13 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
       //make new AliFlowTrackSimple
       AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      if(anOption == 0)   //take the PID from the MC & the kinematics from the ESD
+      if(anOption == kESDkine)   //take the PID from the MC & the kinematics from the ESD
       {
         pTrack->SetPt(pParticle->Pt() );
         pTrack->SetEta(pParticle->Eta() );
         pTrack->SetPhi(pParticle->Phi() );
       }
-      else if (anOption == 1)   //take the PID and kinematics from the MC
+      else if (anOption == kMCkine)   //take the PID and kinematics from the MC
       {
         pTrack->SetPt(pMcParticle->Pt() );
         pTrack->SetEta(pMcParticle->Eta() );
@@ -349,12 +352,12 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
         cout<<"Not a valid option"<<endl;
       }
 
-      if (rpOK)
+      if (rpOK && intCFManager)
       {
         fEventNSelTracksRP++;
         pTrack->SetForRPSelection();
       }
-      if (poiOK) pTrack->SetForPOISelection();
+      if (poiOK && diffCFManager) pTrack->SetForPOISelection();
 
       AddTrack(pTrack);
     }
