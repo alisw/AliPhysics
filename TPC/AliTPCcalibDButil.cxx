@@ -2523,7 +2523,7 @@ void AliTPCcalibDButil::FilterTracks(Int_t run, Double_t cutSigma, TTreeSRedirec
   Double_t medianY=0;
   if (!arrT) return;
   for (Int_t i=0; i<arrT->GetEntries();i++){
-    TGraphErrors *graph= (TGraphErrors*)arrT->At(i);
+    TGraphErrors *graph= dynamic_cast<TGraphErrors*>(arrT->At(i));
     if (!graph) continue;
     if (graph->GetN()<kMinPoints){
       delete graph;

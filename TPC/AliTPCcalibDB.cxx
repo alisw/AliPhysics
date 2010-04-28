@@ -476,9 +476,11 @@ void AliTPCcalibDB::UpdateNonRec(){
     fDataQA=dynamic_cast<AliTPCdataQA*>(entry->GetObject());
   }
   // High voltage
-  entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",fRun);
-  if (entry)  {
-    fVoltageArray.AddAt(entry->GetObject(),fRun);
+  if (fRun>=0){
+    entry = AliCDBManager::Instance()->Get("TPC/Calib/HighVoltage",fRun);
+    if (entry)  {
+      fVoltageArray.AddAt(entry->GetObject(),fRun);
+    }
   }
 
 }
@@ -889,6 +891,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   // - > Don't use it for reconstruction - Only for Calibration studies
   //
   if (run<=0) return;
+  fRun=run;
   AliCDBEntry * entry = 0;
   if (run>= fRunList.fN){
     fRunList.Set(run*2+1);
@@ -1019,6 +1022,9 @@ AliGRPObject *AliTPCcalibDB::GetGRP(Int_t run){
   //
   // Get GRP object for given run 
   //
+  if (run>= ((Instance()->fGRPArray)).GetEntriesFast()){
+    Instance()->UpdateRunInformations(run);    
+  }
   AliGRPObject * grpRun = dynamic_cast<AliGRPObject *>((Instance()->fGRPArray).At(run));
   if (!grpRun) {
     Instance()->UpdateRunInformations(run);
