@@ -325,9 +325,9 @@ Bool_t AliHLTTPCMapping::ReadArray(UInt_t patch, UInt_t arraySize, UInt_t rowArr
   assert(rowArray!=NULL || padArray!=NULL || hwaArray!=NULL);
   if (!rowArray || !padArray || !hwaArray) return kFALSE;
 
-  memset(rowArray, 0, arraySize*sizeof(rowArray[0]));
-  memset(padArray, 0, arraySize*sizeof(padArray[0]));
-  memset(hwaArray, 0, hwaMappingSize*sizeof(padArray[0]));
+  memset(rowArray, -1, arraySize*sizeof(rowArray[0]));
+  memset(padArray, -1, arraySize*sizeof(padArray[0]));
+  memset(hwaArray, -1, hwaMappingSize*sizeof(padArray[0]));
 
   ifstream inFile;
   TString filename;

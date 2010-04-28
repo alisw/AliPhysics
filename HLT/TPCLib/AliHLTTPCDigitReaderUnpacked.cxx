@@ -57,11 +57,12 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked()
   fPrevTime(0),
   fEndTimeBinOfBunch(0),
   fPrevSignal(0),
-  fPrevPad(0),
+  fPrevPad(-1),
   fPrevRow(-1),
   fNextChannelIsAlreadyConfirmed(kFALSE),
   fMapping(NULL),
   fDigitsVector(),
+  fBinRowPositionSorted(),
   fPatch(0)
 {
   // see header file for class documentation
@@ -92,7 +93,7 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fPrevTime=0;
   fEndTimeBinOfBunch=0;
   fPrevSignal=0;
-  fPrevPad=0;
+  fPrevPad=-1;
   fPrevRow=-1;
   fNextChannelIsAlreadyConfirmed=kFALSE;
   fDigitsVector.clear();
@@ -159,6 +160,34 @@ int AliHLTTPCDigitReaderUnpacked::GetNextRowData(AliHLTTPCDigitRowData*& pRow) c
     
   return iResult;
 }
+void AliHLTTPCDigitReaderUnpacked::SortBunchBinVector(){
+  fBinRowPositionSorted.clear();
+
+  fBinRowPositionSorted.push_back(0);
+  Int_t nAdded=0;
+  Int_t beginningOfPadIndex=0;
+  Int_t totalAdded=0;
+  for(Int_t i=1;i<(Int_t)fActRowData->fNDigit;i++){
+     if(fData[i-1].fPad == fData[i].fPad){// means that these sinals belong to the same pad
+      if(fData[i-1].fTime+1 == fData[i].fTime){ //means that the signal belong to the same bunch
+	nAdded++;
+	totalAdded++;
+	fBinRowPositionSorted.insert(fBinRowPositionSorted.begin()+beginningOfPadIndex+nAdded,i);
+      }
+      else{//we have a new bunch on this pad, put it in fornt of the previous bunch
+	totalAdded++;
+	nAdded=0;
+	fBinRowPositionSorted.insert(fBinRowPositionSorted.begin()+beginningOfPadIndex,i);
+      }
+    }
+    else{
+      totalAdded++;
+      beginningOfPadIndex=totalAdded;
+      fBinRowPositionSorted.push_back(i);
+      nAdded=0;
+    }
+  }
+}
 
 bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
   // see header file for class documentation
@@ -177,7 +206,6 @@ bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
 	rreadvalue = false;
 	return rreadvalue;
       }
-
       fBin = 0;
     }
     else {
@@ -193,6 +221,14 @@ bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
   }
 
   fData = fActRowData->fDigitData;
+
+  if(fBin==0){
+    SortBunchBinVector(); 
+  }
+
+  if(fPrevPad == -1){
+    fPrevPad = GetSortedPad();
+  }
  
   return rreadvalue;
 }
@@ -261,7 +297,7 @@ Int_t AliHLTTPCDigitReaderUnpacked::GetSortedTime(){
   assert(fData);
   if (!fData) return -1;
   int rtime;
-  rtime = (int)fData[fBin].fTime;
+  rtime = (int)fData[fBinRowPositionSorted.at(fBin)].fTime;
   if(fDataBunch.size()>1){
     fEndTimeBinOfBunch=rtime;
   }
@@ -273,7 +309,7 @@ Int_t AliHLTTPCDigitReaderUnpacked::GetSortedSignal(){
   assert(fData);
   if (!fData) return -1;
   int rsignal;
-  rsignal = (int)fData[fBin].fCharge;
+  rsignal = (int)fData[fBinRowPositionSorted.at(fBin)].fCharge;
   return rsignal;
 
 }
@@ -283,7 +319,7 @@ Int_t AliHLTTPCDigitReaderUnpacked::GetSortedPad() const{
   assert(fData);
   if (!fData) return -1;
   int rpad;
-  rpad = (int)fData[fBin].fPad;
+  rpad = (int)fData[fBinRowPositionSorted.at(fBin)].fPad;
   return rpad   ;
 }
 
@@ -313,9 +349,20 @@ bool AliHLTTPCDigitReaderUnpacked::NextChannel()
     fPrevSignal=GetSortedSignal();
     fPrevPad = GetSortedPad();
     fPrevRow = GetSortedRow();
+
+    if(GetAltroBlockHWaddr() == (UInt_t)-1){
+      fPrevPad = -1;
+      return NextChannel();
+    }
+
     return true;
   }
   else if(NextSignal()) { // there is data
+
+    if(GetAltroBlockHWaddr() == (UInt_t)-1){
+      fPrevPad = -1;
+      return NextChannel();
+    }
     return true;
   }
   return false;

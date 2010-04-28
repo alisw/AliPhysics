@@ -145,7 +145,7 @@ int AliHLTTPCDigitPublisherComponent::DoInit( int argc, const char** argv )
   if (iResult<0) return iResult;
 
   // fetch runLoader instance from interface
-  AliRunLoader* pRunLoader=GetRunLoader();
+  AliRunLoader* pRunLoader= AliRunLoader::Instance();   //GetRunLoader();
   if (pRunLoader) {
     if (fgpFileHandler==NULL) {
       fgpFileHandler=new AliHLTTPCFileHandler;

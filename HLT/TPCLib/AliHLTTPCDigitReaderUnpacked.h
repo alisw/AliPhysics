@@ -84,6 +84,8 @@ public:
 
   void SetUnsorted(bool unsorted){fUnsorted=unsorted;}
 
+  void SortBunchBinVector(); // fills the vector fBinRowPositionSorted so that digits are read in the correct order
+
   const AliHLTTPCDigitData* GetBunchDigits();
 
 protected:
@@ -151,6 +153,8 @@ private:
   AliHLTTPCMapping *fMapping;                           //! transient
 
   vector<AliHLTTPCDigitData> fDigitsVector;             //! transient
+
+  vector<Int_t>fBinRowPositionSorted;                      //! transient
 
   Int_t fPatch;
 
