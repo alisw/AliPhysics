@@ -165,7 +165,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     pTrk->SetHMPIDsignal(AliHMPIDRecon::kNotPerformed);                                        //ring reconstruction not yet performed
     
     Int_t ipCh=IntTrkCha(pTrk,xPc,yPc,xRa,yRa,theta,phi);                                        //find the intersected chamber for this track 
-    if(ipCh<0) continue;                                                                         //no intersection at all, go after next track
+    if(ipCh<0) {delete hmpTrk;hmpTrk=0x0;continue;}                                                                         //no intersection at all, go after next track
 
     pTrk->SetHMPIDtrk(xPc,yPc,theta,phi);                                                        //store initial infos
     pTrk->SetHMPIDcluIdx(ipCh,9999);                                                             //set chamber, index of cluster + cluster size
@@ -176,7 +176,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     nMipClusTot = pMipCluLst->GetEntries();                                                     //total number of clusters in the given chamber
     nClusCh[ipCh] = nMipClusTot;
     
-    if(nMipClusTot==0) continue;                                                                         
+    if(nMipClusTot==0) {delete hmpTrk;hmpTrk=0x0;continue;}                                                                         
     
     Int_t index=-1;                                                                             //index of the "best" matching cluster
     
@@ -205,18 +205,18 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
         index=iClu;
         bestHmpCluster=pClu;
       }
-    }
+    } // clusters loop
 
     if(!isOkQcut) {
       pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
-      continue;                                                                     
+      delete hmpTrk;hmpTrk=0x0; continue;                                                                     
     }
 
     Double_t radius = (pParam->Lors2Mars(ipCh,pParam->SizeAllX()/2,pParam->SizeAllY()/2)).Mag(); 
     
-    if(!AliTracker::PropagateTrackToBxByBz(hmpTrk,radius,pTrk->GetMass(),1,kFALSE)) continue;
+    if(!AliTracker::PropagateTrackToBxByBz(hmpTrk,radius,pTrk->GetMass(),1,kFALSE)) {delete hmpTrk;hmpTrk=0x0;continue;}
               
-    if(!hmpTrk->PropagateTo(bestHmpCluster)) continue;
+    if(!hmpTrk->PropagateTo(bestHmpCluster)) {delete hmpTrk;hmpTrk=0x0;continue;}
 
     Int_t cluSiz = bestHmpCluster->Size();
     pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
@@ -238,9 +238,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       
     if(dmin < distCut) {
       isOkDcut = kTRUE;
-    }
-
-    
+    }   
     
     if(!isOkDcut) {
       pTrk->SetHMPIDsignal(pParam->kMipDistCut);                                                //closest cluster with enough charge is still too far from intersection
@@ -248,10 +246,10 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     
     if(isOkQcut*isOkDcut) isMatched = kTRUE;                                                    // MIP-Track matched !!    
     
-    if(!isMatched) continue;                                                                    // If matched continue...
+    if(!isMatched) {delete hmpTrk;hmpTrk=0x0;continue;}                                           // If matched continue...
 
     Bool_t isOk = hmpTrk->Update(bestHmpCluster,0.1,0);
-    if(!isOk) continue;
+    if(!isOk) {delete hmpTrk;hmpTrk=0x0;continue;}
     pTrk->SetOuterHmpParam(hmpTrk,AliESDtrack::kHMPIDout);                 
 
     FillResiduals(hmpTrk,bestHmpCluster,kFALSE);
@@ -273,6 +271,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       if(nmean < 0){                                                                            //track didn' t pass through the radiator
          pTrk->SetHMPIDsignal(AliHMPIDRecon::kNoRad);                                           //set the appropriate flag
          pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                          //set index of cluster
+         delete hmpTrk;hmpTrk=0x0; 
          continue;
       }
     }
@@ -280,7 +279,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
     recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(ipCh),index,nmean,xRa,yRa);                   //search for Cerenkov angle of this track
 
-    if(pTrk->GetHMPIDsignal()<0) continue;
+    if(pTrk->GetHMPIDsignal()<0) {delete hmpTrk;hmpTrk=0x0;continue;}
         
     AliHMPIDPid pID;
     Double_t prob[5];
