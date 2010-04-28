@@ -40,9 +40,7 @@ ClassImp(AliAnalysisTaskQASym)
     : AliAnalysisTaskSE(name) 
     ,fTrackType(0)
     ,fFieldOn(kTRUE)
-
     ,fHists(0)
-
     ,fHistRECpt(0)
     ,fEta(0)
     ,fEtaPhi(0)
@@ -51,7 +49,7 @@ ClassImp(AliAnalysisTaskQASym)
     ,fDca(0)
     ,fqRec(0)
     ,fsigmaPt(0)
-  
+    
     ,fRecPtPos(0)
     ,fRecPtNeg(0)
     ,fRecPhiPos(0)
@@ -65,8 +63,8 @@ ClassImp(AliAnalysisTaskQASym)
     ,fRecDcaNegInv(0)
     ,fRecDPos(0)
     ,fRecDNeg(0)
-
-
+    
+    
     ,fRecQPtPosEta(0)
     ,fRecQPtNegEta(0)
     ,fRecPtPosEta(0)
@@ -77,7 +75,7 @@ ClassImp(AliAnalysisTaskQASym)
     ,fRecDcaNegEta(0)
     ,fRecDPosEta(0)
     ,fRecDNegEta(0)
-  
+    
     ,fRecPtPosVz(0)
     ,fRecPtNegVz(0)
     ,fRecEtaPosVz(0)
@@ -90,18 +88,21 @@ ClassImp(AliAnalysisTaskQASym)
     ,fRecQPtNegEtaVz(0)
     ,fRecEtaPtPosVz(0)
     ,fRecEtaPtNegVz(0)
-  
-  
+    
+    
     ,fDeltaPhiAll(0)
     ,fDeltaPhiLeading(0) 
     ,fDiffDcaD(0)
-
+    
     ,fPhiRec(0)
     ,fThetaRec(0)
     ,fNumber(0)
     ,fVx(0)
     ,fVy(0)
     ,fVz(0)
+    ,fVertexX(0)
+    ,fVertexY(0)
+    ,fVertexZ(0)
     ,test(0)
   
     ,fRecDcaPosPhi(0)
@@ -204,7 +205,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  Double_t range = 0.2;
+  Double_t range = 1.0;
   Double_t pt = 20.;
 
   fHists = new TList();
@@ -212,7 +213,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   //			  "pt:phi:theta:x:y:z:charge");
   fHistRECpt   = new TH1F("fHistRECpt", 
 			  " p_{T}",
-			  100, 0., 0.6);
+			  200, 0., pt);
   fEta   = new TH1F("fEta", 
 		    " #eta",
 		    200, -2., 2.);
@@ -236,17 +237,26 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		       180, 0., 2*TMath::Pi());
   fNumber   = new TH1F("fNumber", 
 		       "number of tracks per event",
-		       50, 0.5, 49.5);
+		       200, -0.5, 199.5);
   fVx   = new TH1F("fVx", 
-		   "X of vertex",
+		   "X of first track point",
 		   100, -1., 1.);
   fVy   = new TH1F("fVy", 
-		   "Y of vertex",
+		   "Y of first track point",
 		   100, -1., 1.);
   fVz   = new TH1F("fVz", 
-		   "Z of vertex",
+		   "Z of first track point",
 		   200, -50., 50.);
-
+  fVertexX   = new TH1F("fVerteX", 
+			"X of vertex",
+			100, -1., 1.);
+  fVertexY   = new TH1F("fVertexY", 
+			"Y of vertex",
+			100, -1., 1.);
+  fVertexZ   = new TH1F("fVertexZ", 
+			"Z of vertex",
+			200, -50., 50.);
+  
   fEtaPt   = new TH1F("fEtaPt", 
 		      " #eta/p_{T} ",
 		      100, -1., 1.);
@@ -832,6 +842,9 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fVx);
   fHists->Add(fVy);
   fHists->Add(fVz);
+  fHists->Add(fVertexX);
+  fHists->Add(fVertexY);
+  fHists->Add(fVertexZ);
 
   fHists->Add(fEtaPt);
   fHists->Add(fQPt);
@@ -1010,7 +1023,14 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   if(event->GetNumberOfTracks()!=0) fNumber->Fill(event->GetNumberOfTracks());
 
   const AliVVertex* vertex = event->GetPrimaryVertex();
+  Float_t vx = vertex->GetX();
+  Float_t vy = vertex->GetY();
   Float_t vz = vertex->GetZ();
+  
+  fVertexX->Fill(vx);
+  fVertexY->Fill(vy);
+  fVertexZ->Fill(vz);
+
   if (TMath::Abs(vz) > 10.) return;
 
   AliESDtrack *tpcP = 0x0;
@@ -1036,6 +1056,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     // run Task for global tracks or ITS tracks or TPC tracks
     const AliExternalTrackParam *tpcPin = 0x0;
     Double_t phiIn=0;
+
     if(fTrackType==0){
       //Fill all histograms with global tracks
       tpcP = esdtrack;
@@ -1332,7 +1353,6 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     tpcP = 0;
   }
   
- 
 
   // Post output data.
   // PostData(1, fHistPt);

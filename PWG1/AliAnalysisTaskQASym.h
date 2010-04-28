@@ -105,6 +105,9 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH1F * fVx;                  // x of first track point
   TH1F * fVy;                  // y of first track point
   TH1F * fVz;                  // z of first track point
+  TH1F * fVertexX;             // x of vertex
+  TH1F * fVertexY;             // y of vertex
+  TH1F * fVertexZ;             // z of vertex
   TNtuple * test;
 
   //new
