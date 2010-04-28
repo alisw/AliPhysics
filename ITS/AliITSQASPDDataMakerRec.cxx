@@ -217,7 +217,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   hSPDChipsMEB->GetXaxis()->SetTitle("chipkey");
   hSPDChipsMEB->SetLineColor(kRed);
   hSPDChipsMEB->GetYaxis()->SetTitle("MEB Problem (per cycle)");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hSPDChipsMEB, 5+shift, expert, !image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hSPDChipsMEB, 5+shift, !expert, !image, !saveCorr);
   fSPDhRawsTask++;
 // 6
   TH2F *hFastOrCorrelation = new TH2F("SPDFastOrCorrelation_OnlineSPD","Fast Or multiplicity correlation - SPD",100,0.,100.,100,0,100);
@@ -392,13 +392,13 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH1F *hHitMapChipInnerZ = new TH1F("SPDHitMapChipInnerZ_SPD","Hit map per ChipZ Inner - SPD",20,0.,20.);
   hHitMapChipInnerZ->GetXaxis()->SetTitle("Chip");
   hHitMapChipInnerZ->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipInnerZ, 32+offset, !expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipInnerZ, 32+offset, expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 33
   TH1F *hHitMapChipOuterZ = new TH1F("SPDHitMapChipOuterZ_SPD","Hit map per ChipZ Outer - SPD",20,0.,20.);
   hHitMapChipOuterZ->GetXaxis()->SetTitle("Chip");
   hHitMapChipOuterZ->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipOuterZ, 33+offset, !expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipOuterZ, 33+offset, expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 34
   TH1F *hHitMapStaveInnerPhi = new TH1F("SPDHitMapChipInnerPhi_SPD","Hit map per Stave in Phi Inner - SPD",20,0.,20.);
@@ -408,7 +408,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   if(ibinx%2==0) hHitMapStaveInnerPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i___Sector %i",ibinx%2,ibinx/2));
   else hHitMapStaveInnerPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%2));
   }
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveInnerPhi, 34+offset, !expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveInnerPhi, 34+offset, expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 35
   TH1F *hHitMapStaveOuterPhi = new TH1F("SPDHitMapChipOuterPhi_SPD","Hit map per Stave in Phi Outer - SPD",40,0.,40.);
@@ -418,7 +418,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   if(ibinx%4==0) hHitMapStaveOuterPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i___Sector %i ",ibinx%4+2,ibinx/4));
   else hHitMapStaveOuterPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%4+2));
   }
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveOuterPhi, 35+offset, !expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveOuterPhi, 35+offset, expert, image, !saveCorr);
   fSPDhRawsTask++;
    
   //AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Raws histograms booked\n",fSPDhRawsTask));
