@@ -85,6 +85,10 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusTPC;   //! Momentum resolution vs Chi2PerNClusTPC
   TH3F *fPtAllminPtTPCvsPtAllChi2PerNClusITS;   //! Momentum resolution vs Chi2PerNClusITS
 
+  TH3F *fPtAllminPtTPCvsNPointTPCPhi;           //! Momentum resolution vs NPointTPC vs Phi
+  TH3F *fPtAllminPtTPCvsNPointITSPhi;           //! Momentum resolution vs NPointITS vs Phi
+  TH3F *fPtAllminPtTPCvsRel1PtUncertaintyPhi;   //! Momentum resolution vs Rel1PtUncertainty vs Phi
+
   TH2F *fEtaPhiOutliers;                        //! Eta Phi for outliers in momentum resolution
  
   TH1F *fPtSelITSouter;                         //! Pt at ITS outer wall for all selected charged particles by fTrackCuts
@@ -142,7 +146,11 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtITSminPtTPCvsPtITSChi2C;             //! Momentum resolution vs Chi2Constrained
   TH3F *fPtITSminPtTPCvsPtITSRel1PtUncertainty; //! Momentum resolution vs relUncertainty1Pt
   TH3F *fPtITSminPtTPCvsPtITSChi2PerNClusTPC;   //! Momentum resolution vs Chi2PerNClusTPC
-  TH3F *fPtITSminPtTPCvsPtITSChi2PerNClusITS;  //! Momentum resolution vs Chi2PerNClusITS
+  TH3F *fPtITSminPtTPCvsPtITSChi2PerNClusITS;   //! Momentum resolution vs Chi2PerNClusITS
+
+  TH3F *fPtITSminPtTPCvsNPointTPCPhi;           //! Momentum resolution vs NPointTPC vs Phi
+  TH3F *fPtITSminPtTPCvsNPointITSPhi;           //! Momentum resolution vs NPointITS vs Phi
+  TH3F *fPtITSminPtTPCvsRel1PtUncertaintyPhi;   //! Momentum resolution vs Rel1PtUncertainty vs Phi
 
   TH3F *fPtRel1PtUncertaintyChi2PerClusTPC;     //! Global Pt vs relUncertainty1Pt vs Chi2PerClusTPC
   TH3F *fPtNPointTPCSChi2PerClusTPC;            //! Global Pt vs NPointTPCShared/NPointTPC vs Chi2PerClusTPC
