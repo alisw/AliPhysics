@@ -108,9 +108,9 @@ fConfig(0x0)
 //_____________________________________________________________________________
 AliMUONCalibrationData::~AliMUONCalibrationData()
 {
-  /// Destructor. Note that we're the owner of our pointers.
-  //PH The owner of the objects is CDB, do not delete them!
-  //  Reset();
+  /// Destructor. Note that we're the owner of our pointers if the OCDB cache
+  /// is not set. Otherwise the cache is supposed to take care of them...
+  if (!(AliCDBManager::Instance()->GetCacheFlag())) Reset();
 }
 
 //_____________________________________________________________________________
