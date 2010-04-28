@@ -552,8 +552,7 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for TPC-only cuts
-  // see ALICE note: ...
+  // creates an AliESDtrackCuts object and fills it with standard (pre data-taking) values for TPC-only cuts
   
   Printf("AliESDtrackCuts::GetStandardTPCOnlyTrackCuts: Creating track cuts for TPC-only.");
   
@@ -584,6 +583,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
   // ITS
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
