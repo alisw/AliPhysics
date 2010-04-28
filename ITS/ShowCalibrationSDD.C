@@ -81,10 +81,14 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   AliITSCalibrationSDD *cal;
   Int_t badModCounter3=0;
   Int_t badModCounter4=0;
+  Int_t badHybridCounter3=0;
+  Int_t badHybridCounter4=0;
   Int_t badAnodeCounter3=0;
   Int_t badAnodeCounter4=0;
   Int_t badAnodeCounterGoodMod3=0;
   Int_t badAnodeCounterGoodMod4=0;
+  Int_t badAnodeCounterGoodHybrid3=0;
+  Int_t badAnodeCounterGoodHybrid4=0;
   Int_t badAnodeCounterGoodModAndChip3=0;
   Int_t badAnodeCounterGoodModAndChip4=0;
   Int_t badChipCounter3=0;
@@ -100,10 +104,12 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
       printf("BAD\t");
       if(lay==3){ 
 	badModCounter3++;
+	badHybridCounter3+=2;
 	hlay3->SetBinContent(index,lad,0);
 	hlay3->SetBinContent(index+1,lad,0);
       }else if(lay==4){ 
 	badModCounter4++;
+	badHybridCounter4+=2;
 	hlay4->SetBinContent(index,lad,0);
 	hlay4->SetBinContent(index+1,lad,0);
       }
@@ -115,28 +121,44 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
 	badAnodeCounterGoodMod3+=cal->GetDeadChannels();
 	if(cal->IsChipBad(0) && cal->IsChipBad(1) && cal->IsChipBad(2) && cal->IsChipBad(3)){
 	  hlay3->SetBinContent(index,lad,0);
+	  badHybridCounter3++;
 	}else{
 	  hlay3->SetBinContent(index,lad,1);
+	  for(Int_t iAn=0; iAn<256; iAn++){
+	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid3++;
+	  }
 	}
 	if(cal->IsChipBad(4) && cal->IsChipBad(5) && cal->IsChipBad(6) && cal->IsChipBad(7)){
 	  hlay3->SetBinContent(index+1,lad,0);
+	  badHybridCounter3++;
 	}else{
 	  hlay3->SetBinContent(index+1,lad,1);
+	  for(Int_t iAn=256; iAn<512; iAn++){
+	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid3++;
+	  }
 	}
       }else{ 
 	badAnodeCounterGoodMod4+=cal->GetDeadChannels();
 	if(cal->IsChipBad(0) && cal->IsChipBad(1) && cal->IsChipBad(2) && cal->IsChipBad(3)){
 	  hlay4->SetBinContent(index,lad,0);
+	  badHybridCounter4++;
 	}else{
 	  hlay4->SetBinContent(index,lad,1);
+	  for(Int_t iAn=0; iAn<256; iAn++){
+	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid4++;
+	  }
 	}
 	if(cal->IsChipBad(4) && cal->IsChipBad(5) && cal->IsChipBad(6) && cal->IsChipBad(7)){
 	  hlay4->SetBinContent(index+1,lad,0);
+	  badHybridCounter4++;
 	}else{
 	  hlay4->SetBinContent(index+1,lad,1);
+	  for(Int_t iAn=256; iAn<512; iAn++){
+	    if(cal->IsBadChannel(iAn)) badAnodeCounterGoodHybrid4++;
+	  }
 	}
       }
-     }
+    }
     printf("   Chip Status (0=OK, 1=BAD): ");  
     for(Int_t ic=0; ic<8;ic++){ 
       printf("%d ",cal->IsChipBad(ic));
@@ -180,8 +202,12 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   Float_t fracbad3=(Float_t)totbad3/(Float_t)tot3;
   Float_t fracgm3=(Float_t)(84.-badModCounter3)/84.;
   Float_t fracgm4=(Float_t)(176.-badModCounter4)/176.;
+  Float_t fracgh3=(Float_t)(84.*2.-badHybridCounter3)/84./2.;
+  Float_t fracgh4=(Float_t)(176.*2-badHybridCounter4)/176./2.;
   Float_t fraccgm3=1.-(Float_t)(badAnodeCounterGoodModAndChip3+badChipCounter3*64)/(512.*(Float_t)(84.-badModCounter3));
   Float_t fraccgm4=1.-(Float_t)(badAnodeCounterGoodModAndChip4+badChipCounter4*64)/(512.*(Float_t)(176.-badModCounter4));
+  Float_t fraccgh3=1.-(Float_t)badAnodeCounterGoodHybrid3/(256.*(84.*2.-badHybridCounter3));
+  Float_t fraccgh4=1.-(Float_t)badAnodeCounterGoodHybrid4/(256.*(176.*2.-badHybridCounter4));
   Int_t totbad4=badModCounter4*512+badChipCounter4*64+badAnodeCounterGoodModAndChip4;
   Int_t tot4=8*22*512;
   Float_t fracbad4=(Float_t)totbad4/(Float_t)tot4;
@@ -190,17 +216,23 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   printf("---- Layer 3 ----\n");
   printf("# of bad modules                      = %d\n",badModCounter3);
   printf("# of bad chips in good modules        = %d\n",badChipCounter3);
-  printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip3);
+  printf("# of bad hybrids                      = %d\n",badHybridCounter3);
+  printf("# of bad anodes in good hybrids       = %d\n",badAnodeCounterGoodHybrid3);
   printf("Fraction of Good modules=%f\n",fracgm3);
-  printf("Fraction of good anodes in good modules+chips = %f\n",fraccgm3);
-  printf("Fraction of bads (anodes+chips+mod)   = %f\n",fracbad3);
+  printf("Fraction of Good hybrids=%f\n",fracgh3);
+  printf("Fraction of good anodes in good modules = %f\n",fraccgm3);
+  printf("Fraction of good anodes in good hybrids = %f\n",fraccgh3);
+  printf("Fraction of bads (anodes+chips+mod)     = %f\n",fracbad3);
   printf("---- Layer 4 ----\n");
   printf("# of bad modules                      = %d\n",badModCounter4);
   printf("# of bad chips in good modules        = %d\n",badChipCounter4);
-  printf("# of bad anodes in good modules+chips = %d\n",badAnodeCounterGoodModAndChip4);
+  printf("# of bad hybrids                      = %d\n",badHybridCounter4);
+  printf("# of bad anodes in good hybrids       = %d\n",badAnodeCounterGoodHybrid4);
   printf("Fraction of Good modules=%f\n",fracgm4);
-  printf("Fraction of good anodes in good modules+chips = %f\n",fraccgm4);
-  printf("Fraction of bads (anodes+chips+mod)   = %f\n",fracbad4);
+  printf("Fraction of Good hybrids=%f\n",fracgh4);
+  printf("Fraction of good anodes in good modules = %f\n",fraccgm4);
+  printf("Fraction of good anodes in good hybrids = %f\n",fraccgh4);
+  printf("Fraction of bads (anodes+chips+mod)     = %f\n",fracbad4);
   printf("---- Total   ----\n");
   printf("# of bad modules                      = %d\n",badModCounter3+badModCounter4);
   printf("# of bad chips in good modules        = %d\n",badChipCounter3+badChipCounter4);
