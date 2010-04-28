@@ -185,21 +185,43 @@ const TMatrixD& AliMUONTriggerTrack::GetCovariances() const
 }
 
 //__________________________________________________________________________
-Bool_t AliMUONTriggerTrack::Match(AliMUONTriggerTrack &track, Double_t sigmaCut) const
+Bool_t AliMUONTriggerTrack::Match(AliMUONTriggerTrack &track,
+				  Double_t sigmaCut) const
 {
   /// Try to match this track with the given track. Matching conditions:
   /// - x, y position and y slope within sigmaCut
   
-  TMatrixD paramDiff(3,1);
-  Double_t deltaZ = GetZ11() - track.GetZ11();
-  paramDiff(0,0) = GetX11() - track.GetX11();
-  paramDiff(1,0) = GetY11() - ( track.GetY11() + track.GetSlopeY() * deltaZ );
-  paramDiff(2,0) = GetSlopeY() - track.GetSlopeY();
-  Double_t chi2 = 0.;
-  TMatrixD cov1(GetCovariances());
-  TMatrixD cov2(track.GetCovariances());
+  // Find the track with the covariances correctly set
+  // Extrapolate to the z of the other track
+  Bool_t hasCov1 = ( GetCovariances().NonZeros() != 0 );
+  Bool_t hasCov2 = ( track.GetCovariances().NonZeros() != 0 );
 
-  AliDebug(3, Form("this Y11 %f  track Y11: %f (Z11 %f)  -> %f (Z11 %f)", GetY11(), track.GetY11(), track.GetZ11(), track.GetY11() + track.GetSlopeY() * deltaZ, GetZ11()));
+  const AliMUONTriggerTrack* trackToExtrap = ( hasCov2 ) ? &track : this;
+  const AliMUONTriggerTrack* fixedTrack = ( hasCov2 ) ? this : &track;
+
+  TMatrixD paramDiff(3,1);
+  Double_t deltaZ = fixedTrack->GetZ11() - trackToExtrap->GetZ11();
+  paramDiff(0,0) = fixedTrack->GetX11() - trackToExtrap->GetX11();
+  paramDiff(1,0) = fixedTrack->GetY11() - ( trackToExtrap->GetY11() + trackToExtrap->GetSlopeY() * deltaZ );
+  paramDiff(2,0) = fixedTrack->GetSlopeY() - trackToExtrap->GetSlopeY();
+  Double_t chi2 = 0.;
+
+  TMatrixD cov1(fixedTrack->GetCovariances());
+  TMatrixD cov2(trackToExtrap->GetCovariances());
+
+  // Extrapolate covariances to z
+  if ( deltaZ != 0 ) {
+    if ( hasCov1 || hasCov2 ){
+      TMatrixD jacob(3,3);
+      jacob.UnitMatrix();
+      jacob(1,2) = deltaZ;
+      TMatrixD tmp(trackToExtrap->GetCovariances(),TMatrixD::kMultTranspose,jacob);
+      TMatrixD tmp2(jacob,TMatrixD::kMult,tmp);
+      cov2 = tmp2;
+    }
+  }
+
+  AliDebug(3, Form("track1 Y11 %f  track2 Y11: %f (Z11 %f)  -> %f (Z11 %f)", fixedTrack->GetY11(), trackToExtrap->GetY11(), trackToExtrap->GetZ11(), trackToExtrap->GetY11() + trackToExtrap->GetSlopeY() * deltaZ, fixedTrack->GetZ11()));
 
   TMatrixD sumCov(cov1,TMatrixD::kPlus,cov2);
   if (sumCov.Determinant() != 0) {
