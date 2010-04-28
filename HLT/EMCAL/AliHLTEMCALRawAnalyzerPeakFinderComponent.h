@@ -32,6 +32,7 @@ class  AliHLTEMCALRawAnalyzerPeakFinderComponent : public AliHLTEMCALRawAnalyzer
   AliHLTEMCALRawAnalyzerPeakFinderComponent();
   virtual ~AliHLTEMCALRawAnalyzerPeakFinderComponent();
   virtual int DoDeinit();
+  virtual int DoInit(int argc, const char** argv);
   virtual const char* GetComponentID();
   virtual AliHLTComponent* Spawn(); 
  private:
