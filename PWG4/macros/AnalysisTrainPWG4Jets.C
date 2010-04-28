@@ -120,6 +120,7 @@ TString     kPluginAliRootVersion    = "v4-19-04-AN";  // *CHANGE ME IF MORE REC
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
 Bool_t      kPluginOverwriteMode    = kTRUE;  // overwrite existing collections
+Int_t       kPluginOutputToRunNumber = 1;     // write the output to subdirs named after run number
 // TString kPluginExecutableCommand = "root -b -q";
 TString     kPluginExecutableCommand = "source /Users/kleinb/setup_32bit_aliroot_trunk_clean_root_trunk.sh; alienroot -b -q ";
 
@@ -388,7 +389,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
      else taskjetServ->SetRunRange(104000,125000);
      if(!kIsMC) taskjetServ->SetRealData(kTRUE);
-     if(!iPhysicsSelection)taskjetServ->SetUsePhysicsSelection(kFALSE);
+     taskjetServ->SetUsePhysicsSelection((Bool_t)iPhysicsSelection);
      taskjetServ->SetDebugLevel(0);
    }
 
@@ -1383,7 +1384,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetOverwriteMode(kPluginOverwriteMode); 
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
-   
+   plugin->SetOutputToRunNo(kPluginOutputToRunNumber);     // write the output to subdirs named after run number
    
    // Put default output files to archive
    TString listhists = "";
