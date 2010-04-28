@@ -151,7 +151,7 @@ int AliHLTTRDHistoMergerComponent::DoEvent(const AliHLTComponentEventData& /*evt
       if(fIncSM[SM]){
 	for(int i = 0; fHistoArr[i]; i++){
 	  PushBack((TObject*)fHistoArr[i], kAliHLTDataTypeHistogram | kAliHLTDataOriginTRD, 0);
-	  fHistoArr[i]->Delete();
+	  delete fHistoArr[i];
 	  fHistoArr[i] = NULL;
 	}
 	for(int i=0; i<18; i++)
