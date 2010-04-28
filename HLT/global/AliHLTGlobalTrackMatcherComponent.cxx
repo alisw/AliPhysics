@@ -95,7 +95,7 @@ void AliHLTGlobalTrackMatcherComponent::GetOutputDataSize( unsigned long& constB
   // see header file for class documentation
   // XXX TODO: Find more realistic values.
   constBase = 80000;
-  inputMultiplier = 0;
+  inputMultiplier = 1;
 }
 
 AliHLTComponent* AliHLTGlobalTrackMatcherComponent::Spawn()
