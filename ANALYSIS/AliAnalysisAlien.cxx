@@ -1923,6 +1923,7 @@ Bool_t AliAnalysisAlien::SubmitNext()
       if (nwaiting>100) {iscalled = kFALSE; return kTRUE;}
       npermaster = (nrunning+nwaiting+nerror+ndone)/fNsubmitted;      
       if (npermaster) ntosubmit = (100-nwaiting)/npermaster;
+      if (!ntosubmit) ntosubmit = 1;
       printf("=== WAITING(%d) RUNNING(%d) DONE(%d) OTHER(%d) NperMaster=%d => to submit %d jobs\n", 
              nwaiting, nrunning, ndone, nerror, npermaster, ntosubmit);
    }
