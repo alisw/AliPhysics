@@ -33,9 +33,11 @@ class AliAnalysisTaskBGvsTime : public AliAnalysisTaskSE {
 
 public:
 
-  enum {kDistSPDMult, kDistTPCMult, kDistPt, kDistVertex, kDistVertexZ, kDistVertex3D, kDistDCATPC}; // Used to get and book histograms of "distributions" (not vs time")
+  enum {kDistSPDMult, kDistTPCMult, kDistPtLoose, kDistPt, kDistVertex, kDistVertexZ, kDistVertex3D, kDistDCATPC, kDistClsITSLayer}; // Used to get and book histograms of "distributions" (not vs time")
 
   enum {kEffPt05, kEffPt1, kNEff}; // used to bin histo for efficiency calculation.
+
+  enum {kEffStepGen, kEffStepTrig, kEffStepRec, kEffNSteps}; // used to bin histo for efficiency calculation.
 
   AliAnalysisTaskBGvsTime();
   AliAnalysisTaskBGvsTime(const char * name);
@@ -46,26 +48,28 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  const char * GetVsTimeHistoName(const char * trigger_class, Int_t nclusters, Int_t bx, const char * v0flag, const char * prefix = "");
-  const char * GetVsTimeHistoNameAll(const char * trigger_class);
+  const char * GetVsTimeHistoName(const char * triggerClass, Int_t nclusters, Int_t bx, const char * v0flag, const char * prefix = "");
+  const char * GetVsTimeHistoNameAll(const char * triggerClass);
 
-  const char * GetVsTimeHistoForLuminosityName(const char * trigger_class, Float_t ptmin);
+  const char * GetVsTimeHistoForLuminosityName(const char * triggerClass, Float_t ptmin);
 
-  TH1F * GetVsTimeHisto(const char * trigger_class, Int_t nclusters, Int_t bx, const char * v0flag, const char * prefix = "") 
-  {return GetVsTimeHisto(GetVsTimeHistoName(trigger_class,nclusters,bx,v0flag,prefix));}
-  TH1F * GetVsTimeHistoAll(const char * trigger_class)
-  {return GetVsTimeHisto(GetVsTimeHistoNameAll(trigger_class));}
+  TH1F * GetVsTimeHisto(const char * triggerClass, Int_t nclusters, Int_t bx, const char * v0flag, const char * prefix = "") 
+  {return GetVsTimeHisto(GetVsTimeHistoName(triggerClass,nclusters,bx,v0flag,prefix));}
+  TH1F * GetVsTimeHistoAll(const char * triggerClass)
+  {return GetVsTimeHisto(GetVsTimeHistoNameAll(triggerClass));}
 
   TH1F * GetVsTimeHisto(const char * name) ;
   
   TH1F * BookVsTimeHisto(const char * name, const char * title);  
 
-//   TH1F * GetMultHisto(const char * trigger_class) ;
+//   TH1F * GetMultHisto(const char * triggerClass) ;
 //   TH1F * BookMultHisto(const char * name, const char * title);  
 
-  TH1F * GetDistributionHisto (const char * trigger_class, Int_t dist, const char * suffix = 0) ;
+  TH1F * GetDistributionHisto (const char * triggerClass, Int_t dist, const char * suffix = 0) ;
   TH1F * BookDistributionHisto(const char * name, const char * title,const char * xtitle, Int_t nbin, Float_t min, Float_t max);  
 
+  TH1F * GetDeadTimeHisto(const char * triggerClass); //dead time vs time stamp
+//   TH2F * BookDeadTimeHisto(const char * name, const char * title);   
 
   void SetTimes(UInt_t start, UInt_t end)      { fStartTime=start;   fEndTime =end;   }
   void SetMultBins(Int_t nbins, Int_t * bins) { fNMultBins = nbins; fMultBins = bins;}
@@ -82,7 +86,7 @@ public:
   Bool_t IsEventInBinZero(); // returns true if the event has to be put in the bin0.
   Bool_t SelectOnImpPar(AliESDtrack* t) ;
 
-  TH1F * GetEfficiencyHisto(Bool_t Gen_NotRec);  // if the first argument is true, returns the histo at generation level, otherwise returns the histo at rec level. Fill this histo with elements of the enum kEffPt1, kEffPt05, ...
+  TH1F * GetEfficiencyHisto(Int_t step);  // if the first argument is 0, returns the histo at generation level, 1 returns the histo after the HW trigger, 2 returns the histo at rec level. Fill this histo with elements of the enum kEffPt1, kEffPt05, ...
 
 
 private:
@@ -118,7 +122,7 @@ private:
 
   AliAnalysisTaskBGvsTime& operator=(const AliAnalysisTaskBGvsTime& task);
   
-  ClassDef(AliAnalysisTaskBGvsTime, 1)
+  ClassDef(AliAnalysisTaskBGvsTime, 2)
 
 
 };

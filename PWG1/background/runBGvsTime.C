@@ -45,6 +45,12 @@ void runBGvsTime(const char * incollection,const char *filename,UInt_t start, UI
 //   mc->SetReadTR(kFALSE);
 //   mgr->SetMCtruthEventHandler(mc);
 	
+  if(mc) {
+    AliMCEventHandler *mch = new AliMCEventHandler();
+    mch->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(mch);
+  }
+  // assign simple task
   //____________________________________________//
   // assign simple task
   AliAnalysisTaskBGvsTime * task = new AliAnalysisTaskBGvsTime("TaskBGvsTime");
@@ -54,6 +60,7 @@ void runBGvsTime(const char * incollection,const char *filename,UInt_t start, UI
   const Int_t mult_bins[] = {0,1000};
   task->SetMultBins(2,mult_bins);
   task->SetTimes(start,end);
+  task->SetBinWidth(300); // binw in secs
 
   if(mc) task->SetMC();
 
