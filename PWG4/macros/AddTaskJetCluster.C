@@ -3,7 +3,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",
 
 AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelection = 1,Char_t *jf = "KT", UInt_t iFlag){
   AliAnalysisTaskJetCluster *js = 0;
-  if(kUseAODMC){
+  if(kUseAODMC&&false){// do not use the MC info yet
     if(iFlag&(1<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.00001);
     if(iFlag&(2<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.1);
     if(iFlag&(3<<0))js = AddTaskJetCluster("AOD","AODMC",filterMask,iPhysicsSelection,jf,0.2);
