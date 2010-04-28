@@ -530,7 +530,7 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
     
     // get a logger instance
     // what for??
-    AliLog::GetRootLogger();
+    //AliLog::GetRootLogger();
 
     if(nClAcc!=nClAccStep1) pRecHTA->SetFitStatus(kTRUE); else pRecHTA->SetFitStatus(kFALSE);
     
