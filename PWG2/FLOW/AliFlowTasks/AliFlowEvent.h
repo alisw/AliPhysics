@@ -23,6 +23,9 @@ class AliAODEvent;
 
 class AliFlowEvent: public AliFlowEventSimple {
 public:
+
+  enum KineSource { kNoKine, kESDkine, kMCkine };
+
   AliFlowEvent();
   AliFlowEvent(const AliFlowEvent& event);
   AliFlowEvent& operator=(const AliFlowEvent& event);
@@ -39,7 +42,7 @@ public:
                 const AliCFManager* poiCFManager=NULL );  //use CF(2x)
   AliFlowEvent( const AliESDEvent* anInput, 
                 const AliMCEvent* anInputMc, 
-                Int_t anOption=-1,
+                KineSource anOption=kNoKine,
                 const AliCFManager* rpCFManager=NULL, 
                 const AliCFManager* poiCFManager=NULL );  //use CF(2x)
 

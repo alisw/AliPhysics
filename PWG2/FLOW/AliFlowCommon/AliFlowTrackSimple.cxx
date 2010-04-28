@@ -75,7 +75,6 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
   fSubEventBits = aTrack.fSubEventBits;
 
   return *this;
-
 }
 
 
@@ -88,10 +87,10 @@ AliFlowTrackSimple::~AliFlowTrackSimple()
 }
 
 //----------------------------------------------------------------------- 
-void AliFlowTrackSimple::AddFlow( Double_t flow, Double_t planeAngle )
+void AliFlowTrackSimple::AddFlow( Double_t flow, Double_t reactionPlaneAngle )
 {
   //add flow wrt the eventplane
-  fPhi -= flow*TMath::Sin(2*(fPhi-planeAngle));
+  fPhi -= flow*TMath::Sin(2*(fPhi-reactionPlaneAngle));
 }
 
 //----------------------------------------------------------------------- 

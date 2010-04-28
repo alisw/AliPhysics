@@ -75,7 +75,7 @@ AliFlowEventSimple::AliFlowEventSimple(Int_t aLenght):
 //-----------------------------------------------------------------------
 AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   TObject(),
-  fTrackCollection(anEvent.fTrackCollection),
+  fTrackCollection(NULL),
   fNumberOfTracks(anEvent.fNumberOfTracks),
   fEventNSelTracksRP(anEvent.fEventNSelTracksRP),
   fMCReactionPlaneAngle(anEvent.fMCReactionPlaneAngle),
@@ -85,13 +85,15 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fMCReactionPlaneAngleWrap(anEvent.fMCReactionPlaneAngleWrap)
 {
   //copy constructor
+  fTrackCollection = (TObjArray*)anEvent.Clone(); //deep copy
 }
 
 //-----------------------------------------------------------------------
 AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEvent)
 {
-  if (!fTrackCollection) fTrackCollection = new TObjArray();
-  *fTrackCollection = *anEvent.fTrackCollection ;
+  //assignment operator
+  delete fTrackCollection;
+  fTrackCollection = (TObjArray*)anEvent.Clone(); //deep copy
   fNumberOfTracks = anEvent.fNumberOfTracks;
   fEventNSelTracksRP = anEvent.fEventNSelTracksRP;
   fMCReactionPlaneAngle = anEvent.fMCReactionPlaneAngle;
@@ -99,7 +101,6 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fNumberOfTracksWrap = anEvent.fNumberOfTracksWrap;
   fEventNSelTracksRPWrap = anEvent.fEventNSelTracksRPWrap;
   fMCReactionPlaneAngleWrap=anEvent.fMCReactionPlaneAngleWrap;
-
   return *this;
 }
 
@@ -119,7 +120,7 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 {
   //get track i from collection
   if (i>=fNumberOfTracks) return NULL;
-  AliFlowTrackSimple* pTrack = static_cast<AliFlowTrackSimple*>(TrackCollection()->At(i)) ;
+  AliFlowTrackSimple* pTrack = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i)) ;
   return pTrack;
 }
 
@@ -193,7 +194,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
   // loop over tracks
   for(Int_t i=0; i<fNumberOfTracks; i++)
   {
-    pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i);
+    pTrack = (AliFlowTrackSimple*)fTrackCollection->At(i);
     if(pTrack)
     {
       if(pTrack->InRPSelection())
@@ -306,7 +307,7 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
     // loop over tracks
     for(Int_t i=0; i<fNumberOfTracks; i++)
     {
-      pTrack = (AliFlowTrackSimple*)TrackCollection()->At(i);
+      pTrack = (AliFlowTrackSimple*)fTrackCollection->At(i);
       if(pTrack)
       {
         if(pTrack->InRPSelection())
@@ -451,8 +452,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
         iSelParticlesPOI++;
       }
       //adding a particles which were used either for int. or diff. flow to the list
-      fTrackCollection->Add(pTrack);
-      fNumberOfTracks++;
+      AddTrack(pTrack);
     }
   }//for i
   delete pParticle;
@@ -468,9 +468,7 @@ void AliFlowEventSimple::CloneTracks(Int_t n)
     {
       AliFlowTrackSimple* track = dynamic_cast<AliFlowTrackSimple*>(fTrackCollection->At(itrack));
       if (!track) continue;
-      fTrackCollection->Add(new AliFlowTrackSimple(*track));
-      fNumberOfTracks++;
-
+      AddTrack(new AliFlowTrackSimple(*track));
     }
   }
 }
@@ -482,7 +480,31 @@ void AliFlowEventSimple::ResolutionPt(Double_t res)
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (!track) continue;
-    track->ResolutionPt(res);
+    if (track) track->ResolutionPt(res);
   }
 }
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::SubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB )
+{
+  //Flag two subevents in given eta ranges
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    Double_t eta=track->Eta();
+    if (eta >= etaMinA && eta <= etaMaxA) track->SetForSubevent(0);
+    if (eta >= etaMinB && eta <= etaMaxB) track->SetForSubevent(1);
+  }
+}
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::AddFlow(Double_t flow)
+{
+  //add flow to all tracks wrt the reaction plane angle
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (track) track->AddFlow(flow, fMCReactionPlaneAngle);
+  }
+}
+

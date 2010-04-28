@@ -45,7 +45,7 @@ class AliFlowTrackSimple: public TNamed {
   
   void ResolutionPt(Double_t resolution);
 
-  void AddFlow( Double_t flow, Double_t planeAngle);
+  void AddFlow( Double_t flow, Double_t reactionPlaneAngle);
     
  private:
   Double_t fEta;    // eta
