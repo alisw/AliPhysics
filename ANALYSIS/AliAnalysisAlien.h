@@ -87,14 +87,14 @@ public:
    virtual void        EnablePackage(const char *package);
    static Bool_t       DirectoryExists(const char *lfn);
    static Bool_t       FileExists(const char *lfn);
-   static  const char *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
+   static const char  *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
    static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
    virtual Bool_t      StartAnalysis(Long64_t nentries=123456789, Long64_t firstentry=0);
    static Bool_t       SetupPar(const char *package);
-   virtual void        Submit();
-   virtual void        SubmitMerging();
+   virtual Bool_t      Submit();
+   virtual Bool_t      SubmitMerging();
    virtual void        WriteAnalysisFile();
    virtual void        WriteAnalysisMacro();
    virtual void        WriteMergingMacro();
@@ -110,7 +110,7 @@ protected:
    void                CheckDataType(const char *lfn, Bool_t &is_collection, Bool_t &is_xml, Bool_t &use_tags);
    virtual Bool_t      Connect();
    virtual void        SetDefaults();  
-   void                SubmitNext();
+   Bool_t              SubmitNext();
 
    Bool_t              IsCollection(const char *lfn) const;
    virtual Bool_t      IsSingleOutput() const;

@@ -1633,7 +1633,7 @@ Bool_t AliAnalysisAlien::MergeOutputs()
          return kFALSE;
       }
       Info("MergeOutputs", "Submitting merging JDL");
-      SubmitMerging();
+      if (!SubmitMerging()) return kFALSE;
       Info("MergeOutputs", "### Re-run with <MergeViaJDL> off to collect results after merging jobs are done ###");
       Info("MergeOutputs", "### The Terminate() method is executed by the merging jobs");
       return kFALSE;
@@ -1807,6 +1807,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       if (res) {
          const char *cjobId = res->GetKey(0,"jobId");
          if (!cjobId) {
+            gGrid->Stdout();
+            gGrid->Stderr();
             Error("StartAnalysis", "Your JDL %s could not be submitted", fJDLName.Data());
             return kFALSE;
          } else {
@@ -1817,10 +1819,13 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             jobID = cjobId;      
          }          
          delete res;
+      } else {
+         Error("StartAnalysis", "No grid result after submission !!! Bailing out...");
+         return kFALSE;      
       }   
    } else {
       // Submit for a range of enumeration of runs.
-      Submit();
+      if (!Submit()) return kFALSE;
    }   
          
    Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR JOB %s HAS FINISHED. #### \
@@ -1831,23 +1836,24 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
 }
 
 //______________________________________________________________________________
-void AliAnalysisAlien::Submit()
+Bool_t AliAnalysisAlien::Submit()
 {
 // Submit all master jobs.
    Int_t nmasterjobs = fInputFiles->GetEntries();
    Long_t tshoot = gSystem->Now();
-   if (!fNsubmitted) SubmitNext();
+   if (!fNsubmitted && !SubmitNext()) return kFALSE;
    while (fNsubmitted < nmasterjobs) {
       Long_t now = gSystem->Now();
       if ((now-tshoot)>30000) {
          tshoot = now;
-         SubmitNext();
+         if (!SubmitNext()) return kFALSE;
       }   
    }
+   return kTRUE;
 }
 
 //______________________________________________________________________________
-void AliAnalysisAlien::SubmitMerging()
+Bool_t AliAnalysisAlien::SubmitMerging()
 {
 // Submit all merging jobs.
    if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("/%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
@@ -1869,8 +1875,10 @@ void AliAnalysisAlien::SubmitMerging()
       if (res) {
          const char *cjobId = res->GetKey(0,"jobId");
          if (!cjobId) {
+            gGrid->Stdout();
+            gGrid->Stderr();
             Error("StartAnalysis", "Your JDL %s could not be submitted", mergeJDLName.Data());
-            return;
+            return kFALSE;
          } else {
             Info("StartAnalysis", "\n_______________________________________________________________________ \
             \n#####   Your JDL %s was successfully submitted. \nTHE JOB ID IS: %s \
@@ -1878,24 +1886,28 @@ void AliAnalysisAlien::SubmitMerging()
                    mergeJDLName.Data(), cjobId);
          }
          delete res;
+      } else {     
+         Error("SubmitMerging", "No grid result after submission !!! Bailing out...");
+         return kFALSE;
       }             
    }
-   if (!ntosubmit) return;
+   if (!ntosubmit) return kTRUE;
    Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR MERGING JOBS HAVE FINISHED. #### \
    \n You may exit at any time and terminate the job later using the option <terminate> but disabling SetMergeViaJDL\
    \n ##################################################################################");
    gSystem->Exec("aliensh");
+   return kTRUE;
 }
 
 //______________________________________________________________________________
-void AliAnalysisAlien::SubmitNext()
+Bool_t AliAnalysisAlien::SubmitNext()
 {
 // Submit next bunch of master jobs if the queue is free.
    static Bool_t iscalled = kFALSE;
    static Int_t firstmaster = 0;
    static Int_t lastmaster = 0;
    static Int_t npermaster  = 0;
-   if (iscalled) return;
+   if (iscalled) return kTRUE;
    iscalled = kTRUE;
    Int_t nrunning=0, nwaiting=0, nerror=0, ndone=0;
    Int_t ntosubmit = 0;
@@ -1906,9 +1918,9 @@ void AliAnalysisAlien::SubmitNext()
       TString status = GetJobStatus(firstmaster, lastmaster, nrunning, nwaiting, nerror, ndone);
       printf("=== master %d: %s\n", lastmaster, status.Data());
       // If last master not split, just return
-      if (status != "SPLIT") {iscalled = kFALSE; return;}
+      if (status != "SPLIT") {iscalled = kFALSE; return kTRUE;}
       // No more than 100 waiting jobs
-      if (nwaiting>100) {iscalled = kFALSE; return;}
+      if (nwaiting>100) {iscalled = kFALSE; return kTRUE;}
       npermaster = (nrunning+nwaiting+nerror+ndone)/fNsubmitted;      
       if (npermaster) ntosubmit = (100-nwaiting)/npermaster;
       printf("=== WAITING(%d) RUNNING(%d) DONE(%d) OTHER(%d) NperMaster=%d => to submit %d jobs\n", 
@@ -1917,7 +1929,7 @@ void AliAnalysisAlien::SubmitNext()
    Int_t nmasterjobs = fInputFiles->GetEntries();
    for (Int_t i=0; i<ntosubmit; i++) {
       // Submit for a range of enumeration of runs.
-      if (fNsubmitted>=nmasterjobs) {iscalled = kFALSE; return;}
+      if (fNsubmitted>=nmasterjobs) {iscalled = kFALSE; return kTRUE;}
       TString query;
       TString runOutDir = gSystem->BaseName(fInputFiles->At(fNsubmitted)->GetName());
       runOutDir.ReplaceAll(".xml", "");
@@ -1930,9 +1942,11 @@ void AliAnalysisAlien::SubmitNext()
       if (res) {
          TString cjobId1 = res->GetKey(0,"jobId");
          if (!cjobId1.Length()) {
-            Error("StartAnalysis", "Your JDL %s could not be submitted", fJDLName.Data());
             iscalled = kFALSE;
-            return;
+            gGrid->Stdout();
+            gGrid->Stderr();
+            Error("StartAnalysis", "Your JDL %s could not be submitted. The message was:", fJDLName.Data());
+            return kFALSE;
          } else {
             Info("StartAnalysis", "\n_______________________________________________________________________ \
             \n#####   Your JDL %s submitted (%d to go). \nTHE JOB ID IS: %s \
@@ -1945,9 +1959,13 @@ void AliAnalysisAlien::SubmitNext()
             fNsubmitted++;
          }          
          delete res;
+      } else {
+         Error("StartAnalysis", "No grid result after submission !!! Bailing out...");
+         return kFALSE;
       }   
    }
    iscalled = kFALSE;
+   return kTRUE;
 }
 
 //______________________________________________________________________________
