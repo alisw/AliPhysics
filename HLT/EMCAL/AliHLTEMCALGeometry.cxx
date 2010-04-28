@@ -83,16 +83,16 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
 	 Float_t E = recPoint.fAmp * 1000;
 
 	 //TVector3 v1;
-	 	Double_t glob[3];
-	 	Double_t loc[3];
+	 	Double_t glob[3] ={0,0,0};
+	 	Double_t loc[3] = {0,0,0};
 
-	 if (recPoint.fZ >= 47.5 || recPoint.fZ<-0.5) {
-		 Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid Z recpoint ");
+	 if (recPoint.fZ >= 47.51 || recPoint.fZ< -0.51) {
+		 Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid Z: %f from recpoint ", recPoint.fZ);
 		 return;
 	  }
 
-	  if (recPoint.fX >= 23.5 || recPoint.fX<-0.5) {
-		  Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid X recpoint ");
+	  if (recPoint.fX >= 23.51 || recPoint.fX< -0.51) {
+		  Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid X: % from recpoint ", recPoint.fX);
 		  return;
 	  }
 
@@ -204,7 +204,6 @@ void AliHLTEMCALGeometry::ConvertRecPointCoordinates(Double_t &x, Double_t &y, D
 int
 AliHLTEMCALGeometry::GetGeometryFromCDB()
 {
-  cout << "Getting geometry..." << endl;
 
  // AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
@@ -222,7 +221,6 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	    }
 
 	  gGeoManager = (TGeoManager*) pEntry->GetObject();
-	  cout<< "gGeoManager = 0x%x" << gGeoManager << endl;
 
 	  if(gGeoManager)
 	    {

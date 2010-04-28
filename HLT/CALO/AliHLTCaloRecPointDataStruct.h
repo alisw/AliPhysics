@@ -53,9 +53,6 @@ struct AliHLTCaloRecPointDataStruct
   /** x coordinate */
   Float_t fX;                                 //COMMENT
   
-  /** y coordinate */
-  Float_t fY;									//added, federico
-  
   /** z coordinate */ 
   Float_t fZ;                                 //COMMENT
 

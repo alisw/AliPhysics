@@ -257,7 +257,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
   else
     {
       fDigitStructPtr->fEnergy = channelData->fEnergy*fLowGainFactors[coord.fX][coord.fZ];
-      if(channelData->fEnergy >= 1023)
+      if(channelData->fEnergy >= fMaxEnergy)
 	{
 	  fDigitStructPtr->fOverflow = true;
 	}
