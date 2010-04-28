@@ -86,7 +86,7 @@ ClassImp(AliHLTITSClusterFinderSSD)
   fRecoParam = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
   if( !fRecoParam ){
     fRecoParam = AliITSRecoParam::GetHighFluxParam();
-    AliWarning("Using default AliITSRecoParam class");  
+    // AliWarning("Using default AliITSRecoParam class");  
   }
   fRawStream = new AliITSRawStreamSSD( fRawReader);
 }
@@ -153,12 +153,12 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
 
     if( next ){
       if( newDDL<0 || newDDL>15 ){
-	AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: wrong DDL number (%d)",newDDL));
+	// AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: wrong DDL number (%d)",newDDL));
 	continue;
       }
       
       if( newAD<1 || newAD>9 ){
-	AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: wrong AD number (%d)",newAD));
+	// AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: wrong AD number (%d)",newAD));
 	continue;
       }
     }
@@ -181,13 +181,13 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
 	fModule = AliITSRawStreamSSD::GetModuleNumber(ddl, (ad - 1)  * 12 + adc );
 	
 	if( fModule<0 ){
-	  AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: module (ddl %d ad %d adc %d) not found in the map",ddl,ad,adc));
+	  // AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: module (ddl %d ad %d adc %d) not found in the map",ddl,ad,adc));
 	  continue;
 	}
 
 	AliITSCalibrationSSD* cal = (AliITSCalibrationSSD*)fDetTypeRec->GetCalibrationModel(fModule);
 	if( !cal ){
-	  AliWarning(Form("HLT ClustersFinderSSD: No calibration found for module (ddl %d ad %d adc %d)",ddl,ad,adc));	    
+	   AliWarning(Form("HLT ClustersFinderSSD: No calibration found for module (ddl %d ad %d adc %d)",ddl,ad,adc));	    
 	  continue;
 	}
 
@@ -339,8 +339,6 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
     //cout<<"SSD: "<<ddl<<" "<<ad<<" "<<adc<<" "<<side<<" "<<strip<<" : "<<signal<<endl;
 
     if( strip<0 || strip>767 ){    
-      AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: wrong strip number (ddl %d ad %d adc %d side %d, strip %d", 
-		      ddl, ad, adc, side,strip) );
       continue;
     }
     
