@@ -175,6 +175,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtAllminPtTPCvsPtAllRel1PtUncertainty(0),
   fPtAllminPtTPCvsPtAllChi2PerNClusTPC(0),
   fPtAllminPtTPCvsPtAllChi2PerNClusITS(0),
+  fPtAllminPtTPCvsNPointTPCPhi(0),
+  fPtAllminPtTPCvsNPointITSPhi(0),
+  fPtAllminPtTPCvsRel1PtUncertaintyPhi(0),
   fEtaPhiOutliers(0),
   fPtSelITSouter(0),
   fPtITSouterminPtTPCvsPtAll(0),
@@ -225,6 +228,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtITSminPtTPCvsPtITSRel1PtUncertainty(0),
   fPtITSminPtTPCvsPtITSChi2PerNClusTPC(0),
   fPtITSminPtTPCvsPtITSChi2PerNClusITS(0),
+  fPtITSminPtTPCvsNPointTPCPhi(0),
+  fPtITSminPtTPCvsNPointITSPhi(0),
+  fPtITSminPtTPCvsRel1PtUncertaintyPhi(0),
   fPtRel1PtUncertaintyChi2PerClusTPC(0),
   fPtNPointTPCSChi2PerClusTPC(0),
   fPtNPointTPCSRel1PtUncertainty(0),
@@ -315,7 +321,7 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fHistListCosmics = new TList();
 
 
-  Int_t fgkNPhiBins=18;
+  Int_t fgkNPhiBins=36;
   Float_t kMinPhi = 0.;
   Float_t kMaxPhi = 2.*TMath::Pi();
   
@@ -324,7 +330,7 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   Int_t fgkNPtBins=(int)(fgkPtMax-fgkPtMin);
 
   Float_t fgkChi2PerClusMin = 0.;
-  Float_t fgkChi2PerClusMax = 3.5;
+  Float_t fgkChi2PerClusMax = 4.;
   Int_t fgkChi2PerClusBins = (int)(fgkChi2PerClusMax*10.);
   
 
