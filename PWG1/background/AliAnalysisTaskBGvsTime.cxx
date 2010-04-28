@@ -18,6 +18,12 @@
 // put in a histo in which each bin corresponds to a given rate histo
 // (eta < 0.8 and pt > 0.5 or pt > 1.0 at the time I'm writing this).
 
+// The rates are corrected for the dead time, computed using trigger
+// scalers. WARNING: the dead time computation will NOT WORK on CAF
+// (it assumes consecutive events).
+
+// Author: Michele Floris, CERN
+
 #include "AliAnalysisTaskBGvsTime.h"
 #include "AliESDInputHandler.h"
 #include "TString.h"
@@ -149,6 +155,7 @@ void AliAnalysisTaskBGvsTime::UserCreateOutputObjects()
   }
   
   fPhysicsSelection = new AliPhysicsSelection();
+  fPhysicsSelection->SetUseBXNumbers();
   if(fIsMC) fPhysicsSelection->SetAnalyzeMC();
   fPhysicsSelection->SetBin0Callback(this->GetName());
 
@@ -172,6 +179,7 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
   PostData(1,fListWrapper);
   PostData(2,fPhysicsSelection);
   
+
   const float etaCut = 0.8;
 
 
@@ -183,6 +191,16 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
   if (fUseBunchInt) {
     fPhysicsSelection->SetComputeBG();
   }
+
+  // Get V0 flags and trigger flags
+  static AliTriggerAnalysis * triggerAnalysis = new AliTriggerAnalysis();
+  Bool_t v0A   = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0A);
+  Bool_t v0C   = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
+  Bool_t v0ABG = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0ABG);
+  Bool_t v0CBG = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0CBG);
+  Bool_t mb1Offline = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kMB1);
+  Bool_t isInV0 = !v0ABG && !v0CBG && ((v0A && !v0C) || (v0C && !v0A)); // try to select beam gas in CINT1A/C events: require one v0 interaction (but not the other) and not BG hit in v0. This should select events produced in between the 2 v0s and boosted forward.
+
 
   // If it is MC: fill histo of generated events for efficiency calculations
   if (fIsMC) {
@@ -203,13 +221,19 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
 	
 	// Kinematic cuts:
 	if (TMath::Abs(mcPart->Eta()) < etaCut) {
-	  if (mcPart->Pt() > 0.5) atLeastPt1MC  = kTRUE; 
-	  if (mcPart->Pt() > 1.0) atLeastPt05MC = kTRUE; 
+	  if (mcPart->Pt() > 0.5) atLeastPt05MC  = kTRUE; 
+	  if (mcPart->Pt() > 1.0) atLeastPt1MC   = kTRUE; 
 	}
 	if (atLeastPt1MC && atLeastPt05MC) break; // no need to look for other tracks
       }
-      if (atLeastPt1MC ) GetEfficiencyHisto(1)->Fill(kEffPt05);    
-      if (atLeastPt05MC) GetEfficiencyHisto(1)->Fill(kEffPt1 );     
+      if (atLeastPt1MC ) {
+	GetEfficiencyHisto(kEffStepGen)->Fill(kEffPt1);    
+	if(mb1Offline) GetEfficiencyHisto(kEffStepTrig)->Fill(kEffPt1);    
+      }
+      if (atLeastPt05MC) {
+	GetEfficiencyHisto(kEffStepGen)->Fill(kEffPt05 );     
+	if(mb1Offline) GetEfficiencyHisto(kEffStepTrig)->Fill(kEffPt05);    
+      }
     }
   }
   
@@ -245,7 +269,7 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
   // get time stamp
   Long64_t timeStampBX = 0;
   timeStampBX = fESD->GetBunchCrossNumber();
-  timeStampBX += (Long64_t) 3564 * (fESD->GetOrbitNumber() + fESD->GetPeriodNumber() * 16777215);
+  timeStampBX += (Long64_t) 3564 * (fESD->GetOrbitNumber() + fESD->GetPeriodNumber() * 16777216);
   timeStampBX = (Long64_t) (25e-9 * timeStampBX);
   if (fFirstTimeStamp == 0) {
     fFirstTimeStamp = timeStampBX;   
@@ -263,20 +287,23 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
   Long64_t timeStamp = timeStampBX;
 
   Long64_t timeStampGDC = fESD->GetTimeStamp();  
+
   static TDatime timeOffsetDT(2009,12,5,0,0,0);
   static Long64_t timeOffset = timeOffsetDT.Convert();
-  
-  if (!fIsMC) {
-    fHistoTimeStampVsUTC->Fill(timeStampBX,timeStampGDC-timeOffset);
-    fHistoTimeStampDiffUTC->Fill(timeStampGDC-timeOffset-timeStampBX);
-  }
-  // Get V0 flags
-  static AliTriggerAnalysis * triggerAnalysis = new AliTriggerAnalysis();
-  Bool_t v0A   = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0A);
-  Bool_t v0C   = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
-  Bool_t v0ABG = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0ABG);
-  Bool_t v0CBG = triggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0CBG);
-  Bool_t isInV0 = !v0ABG && !v0CBG && ((v0A && !v0C) || (v0C && !v0A)); // try to select beam gas in CINT1A/C events: require one v0 interaction (but not the other) and not BG hit in v0. This should select events produced in between the 2 v0s and boosted forward.
+
+
+
+  // Get trigger scalers for dead time calculation (only data)
+  // Only CINT1B (at least for the time being)
+  AliESDHeader* esdheader = (AliESDHeader*)fESD->GetHeader();
+  static ULong64_t L0 = 0;
+  static ULong64_t L2 = 0;
+  if (fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")&&!fIsMC) {
+    AliTriggerScalersRecordESD* scalrecord = (AliTriggerScalersRecordESD*)esdheader->GetTriggerScalersRecord();
+    const AliTriggerScalersESD* scalers = scalrecord->GetTriggerScalersForClass(2); //2 is the cint1b class index in the trigger mask
+    L0 = scalers->GetLOCB(); //L0 before any vetos
+    L2 = scalers->GetL2CA(); //L2 after vetos
+  } 
 
 
   // loop over trigger classes in the event
@@ -342,6 +369,73 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
     GetDistributionHisto(trg.Data(),kDistSPDMult)->Fill(spdClusters);
     if(isInV0) GetDistributionHisto(trg.Data(),kDistSPDMult,"_inV0")->Fill(spdClusters);
     
+    // Distribution of hits per its layer:
+    for(Int_t ilayer = 0; ilayer < 6; ilayer++){
+      GetDistributionHisto(trg.Data(),kDistClsITSLayer)->Fill(ilayer,mult->GetNumberOfITSClusters(ilayer));// fill weighting with the number of CLS
+    }
+
+
+    // Dead time vs time stamp & time offset
+    // WARNING THIS WON'T WORK ON CAF, NOR GRID: REDO IT WITH A NEW MERGEABLE OBJECT
+    if (trg=="CINT1B-ABCE-NOPF-ALL"&&!fIsMC) {
+
+      // Fill time difference histos (only for CINt1B)
+      if (!fIsMC) {
+	fHistoTimeStampVsUTC->Fill(timeStampBX,timeStampGDC-timeOffset);
+	fHistoTimeStampDiffUTC->Fill(timeStampGDC-timeOffset-timeStampBX);
+      }
+
+      static ULong64_t oldL0   = 0;  // L0 counts at the beginning of this bin
+      static ULong64_t oldL2   = 0;  // L2 counts at the beginning of this bin
+      static ULong64_t prevL0   = 0; // L0 counts in the previous event
+      static ULong64_t prevL2   = 0; // L2 counts in the previous event
+
+      static ULong64_t oldTime = 0;  // time stamp at the beginning of this bin
+      static ULong64_t previousTime; // timestamp in the previous event
+
+      static Int_t prevbin = -1; // bin in the previous event
+
+      Int_t bin = GetDeadTimeHisto(trg.Data())->FindBin(timeStamp);
+
+      if (prevbin == -1) { // first event
+	prevbin = bin;
+	oldL0  = L0;
+	oldL2  = L2;
+	oldTime = timeStamp;
+
+      } else if (prevbin != bin) {
+	// New bin: let's fill the previous one
+	Double_t dL0 = Double_t(prevL0 - oldL0);
+	Double_t eL0 = TMath::Sqrt(dL0);
+
+	Double_t dL2 = Double_t(prevL2 - oldL2);
+	Double_t eL2 = TMath::Sqrt(dL2);
+
+	//	Double_t deadtime  =  Double_t(1 - dL2/dL0); // interested in relative fraction of dead time
+	Double_t deadtime  =  Double_t(dL2/dL0); // interested in relative fraction of dead time
+	Double_t edeadtime = TMath::Sqrt(eL2*eL2/dL2/dL2 + eL0*eL0/dL0/dL0)*deadtime;
+
+	cout << "DEADTIME " << endl;
+	cout << L0 << " " << dL0 << " " << oldL0 << " " << prevL0 << endl;
+	cout << L2 << " " << dL2 << " " << oldL2 << " " << prevL2 << endl;
+	cout << deadtime << endl;
+	
+	
+	
+
+	GetDeadTimeHisto(trg.Data())->SetBinContent(prevbin, deadtime );
+	GetDeadTimeHisto(trg.Data())->SetBinError  (prevbin, edeadtime);
+	
+	oldL0  = L0;
+	oldL2  = L2;
+	oldTime = timeStamp;	
+
+      }
+      prevbin = bin;
+      prevL0  = L0;
+      prevL2  = L2;
+	
+    }
 
     // TPC track multiplicity vs time
 
@@ -420,18 +514,11 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
 	GetVsTimeHisto(trg.Data(),-1,-1,                                  "inV0","MultTPCvsTime")->Fill(timeStamp);
       }
       
-      // Fill pt and DCA distribution
-      // pt
-      GetDistributionHisto(trg.Data(),kDistPt)->Fill(track->Pt());
-      if(isInV0) GetDistributionHisto(trg.Data(),kDistPt, "_inV0")->Fill(track->Pt());
-      // dca (on the xy plane)
-      Float_t xy_dca, z_dca;
-      track->GetImpactParameters(xy_dca,z_dca);
-      GetDistributionHisto(trg.Data(),kDistDCATPC)->Fill(xy_dca);
-      if(isInV0) GetDistributionHisto(trg.Data(),kDistDCATPC, "_inV0")->Fill(track->Pt());
 
       // has the event at least one track satisfying the required conditions? (used for rate/luminosity)
       if (TMath::Abs(track->Eta()) < etaCut) {
+	// Fill histo (pt distribution with standard cuts)
+	GetDistributionHisto(trg.Data(),kDistPt)->Fill(track->Pt());
 	if (track->Pt() > 0.5) {
 	  atLeastPt05 = kTRUE;
 	}
@@ -441,21 +528,52 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
       }
     }
 
-
     // Fill histos for luminosity: rate of events with at least one
     // track in the pseudo rapidity region |eta| < 0.8 and pt > 0.5 or
     // 1 GeV
     if (atLeastPt05) {
       GetVsTimeHisto(GetVsTimeHistoForLuminosityName(trg.Data(), 0.5))->Fill(timeStamp);
-      if(fIsMC) GetEfficiencyHisto(0)->Fill(kEffPt05);
+      if(fIsMC) GetEfficiencyHisto(kEffStepRec)->Fill(kEffPt05);
     }
     if (atLeastPt1)  {
       
       if(GetVsTimeHisto(GetVsTimeHistoForLuminosityName(trg.Data(), 1.0))->Fill(timeStamp) < 0) {
 	AliWarning(Form("Timestamp out of range %lld", timeStamp));
       };
-      if(fIsMC) GetEfficiencyHisto(0)->Fill(kEffPt1);
+      if(fIsMC) GetEfficiencyHisto(kEffStepRec)->Fill(kEffPt1);
     }
+    
+
+    // TPC TRACKS: loose selection in order to keep some BG track
+    ntracks = fESD->GetNumberOfTracks(); // Ignore vertex selecion
+    for(Int_t itrack = 0; itrack < ntracks; itrack++){
+      AliESDtrack * track = dynamic_cast<AliESDtrack*>(fESD->GetTrack(itrack));
+      // for each track
+      // Same as AliESDtrackCuts::GetStandardTPCOnlyTrackCuts() , but not using DCA cut
+      
+      AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+      
+      esdTrackCuts->SetMinNClustersTPC(50);
+      esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+      esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+      
+//       esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+//       esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+//       esdTrackCuts->SetDCAToVertex2D(kTRUE);
+       
+      if (!esdTrackCuts->AcceptTrack(track)) continue;
+      // Fill pt and DCA distribution
+      // pt
+      GetDistributionHisto(trg.Data(),kDistPtLoose)->Fill(track->Pt());
+      if(isInV0) GetDistributionHisto(trg.Data(),kDistPtLoose, "_inV0")->Fill(track->Pt());
+      // dca (on the xy plane)
+      Float_t xy_dca, z_dca;
+      track->GetImpactParameters(xy_dca,z_dca);
+      GetDistributionHisto(trg.Data(),kDistDCATPC)->Fill(xy_dca);
+      if(isInV0) GetDistributionHisto(trg.Data(),kDistDCATPC, "_inV0")->Fill(track->Pt());
+
+    }
+    
     
   }
 
@@ -511,21 +629,34 @@ void   AliAnalysisTaskBGvsTime::Terminate(Option_t *){
   // Compute Efficiency:
   if(fIsMC) {
     TH1F* hgen =(TH1F*) fListHisto->FindObject("hEffGen");
+    TH1F* htrg =(TH1F*) fListHisto->FindObject("hEffTrig");
     TH1F* hrec =(TH1F*) fListHisto->FindObject("hEffRec");
-    if (!hgen || !hrec) {
+    if (!hgen || !hrec || !htrg) {
       AliError("Cannot find eff histos");
     }
     else {
       TH1F* heff = (TH1F*) fListHisto->FindObject("hEffRatio");
+      TH1F* hefftrg = (TH1F*) fListHisto->FindObject("hEffRatioTrg");
       if (heff) {
 	AliWarning("hEffRatio already in output list?");
       }
       else {
 	heff = (TH1F*) hgen->Clone("hEffRatio");
-      }
+      } 
       heff->Reset();
       heff->Divide(hrec,hgen,1,1,"B");
       fListHisto->Add(heff);
+
+      if (hefftrg) {
+	AliWarning("hEffRatioTrg already in output list?");
+      }
+      else {
+	hefftrg = (TH1F*) hgen->Clone("hEffRatioTrg");
+      }
+      hefftrg->Reset();
+      hefftrg->Divide(htrg,hgen,1,1,"B");
+      fListHisto->Add(hefftrg);
+
     }
   }
   
@@ -579,6 +710,8 @@ TH1F * AliAnalysisTaskBGvsTime::BookVsTimeHisto(const char * name, const char * 
 
   TH1::AddDirectory(oldStatus);
   
+
+  delete bins;
   return h;
 }
 
@@ -592,7 +725,7 @@ TH1F * AliAnalysisTaskBGvsTime::GetVsTimeHisto(const char * name) {
 
 }
 
-TH1F * AliAnalysisTaskBGvsTime::GetEfficiencyHisto(Bool_t Gen_NotRec) {
+TH1F * AliAnalysisTaskBGvsTime::GetEfficiencyHisto(Int_t step) {
 
   // Return efficiency histo. If not existing, creates it.
   // 1 bin per category
@@ -605,7 +738,19 @@ TH1F * AliAnalysisTaskBGvsTime::GetEfficiencyHisto(Bool_t Gen_NotRec) {
   // level, otherwise returns the histo at rec level. Fill this histo
   // with elements of the enum kEffPt1, kEffPt05, ...
 
-  const char * name = Gen_NotRec ? "hEffGen" : "hEffRec";
+  const char * name = 0;
+  switch(step) {
+  case kEffStepGen:
+    name =  "hEffGen";
+    break;
+  case kEffStepRec:
+    name =  "hEffRec";
+    break;
+  case kEffStepTrig:
+    name =  "hEffTrig";
+    break;
+  }
+
 
   TH1F * h = (TH1F*) fListHisto->FindObject(name);
   if(!h) {
@@ -623,13 +768,13 @@ TH1F * AliAnalysisTaskBGvsTime::GetEfficiencyHisto(Bool_t Gen_NotRec) {
 
 }
 
-const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoForLuminosityName(const char * trigger_class, Float_t ptmin) {
+const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoForLuminosityName(const char * triggerClass, Float_t ptmin) {
 
   // Compose name of rate histos
 
   static TString name;
   name = "hRate_";
-  name += trigger_class;
+  name += triggerClass;
 
   name += Form ("_etamin_0.8_ptmin_%2.2f",ptmin);
 
@@ -637,14 +782,14 @@ const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoForLuminosityName(const char
 }
 
 
-const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoName(const char * trigger_class, Int_t nclusters, Int_t bx, const char * v0flag, const char *prefix){
+const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoName(const char * triggerClass, Int_t nclusters, Int_t bx, const char * v0flag, const char *prefix){
   
   // compose name of vs time histos w/ different cuts
   
   static TString name;
   name = "h";
   name = name +prefix+"_";
-  name += trigger_class;
+  name += triggerClass;
 
   if (nclusters >= 0) { 
     if(fMultBins){
@@ -670,18 +815,18 @@ const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoName(const char * trigger_cl
   else       name = name +"_BX"+long(bx)+"_"+v0flag;
   return name.Data();
 }
-const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoNameAll(const char * trigger_class) {
+const char * AliAnalysisTaskBGvsTime::GetVsTimeHistoNameAll(const char * triggerClass) {
 
   // Compose default name of vstime histos in a given trigger class
 
   static TString name;
   name = "h_";
-  name += trigger_class;
+  name += triggerClass;
   return name.Data();
 
 }
 
-TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * trigger_class, Int_t dist, const char * suffix) {
+TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * triggerClass, Int_t dist, const char * suffix) {
 
   // Returns distributions histos. If not existing, creates it.
 
@@ -690,6 +835,8 @@ TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * trigger_class,
   // - TPC tracks multiplicity
   // - TPC tracks pt
   // - Vz
+  // - TPC tracks DCA
+  // - cluster per ITS layer
 
   TString name  ;
   TString title ;
@@ -713,11 +860,18 @@ TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * trigger_class,
     nbin  = 25;
     min   = 0;
     max   = 50;
-  } else if (dist == kDistPt) {
-    name  = "hPt_";
-    title = "p_{T} distribution (";
+  } else if (dist == kDistPtLoose) {
+    name  = "hPtLoose_";
+    title = "p_{T} distribution - TPC, loose cuts (";
     xtitle = "p_{T} (GeV)";
     nbin  = 50;
+    min   = 0;
+    max   = 10;
+  } else if (dist == kDistPt) {
+    name  = "hPt_";
+    title = "p_{T} distribution - TPC, standard cuts, |#eta|<0.8 (";
+    xtitle = "p_{T} (GeV)";
+    nbin  = 100;
     min   = 0;
     max   = 10;
   } else if (dist == kDistVertex || dist == kDistVertexZ || dist == kDistVertex3D ) {
@@ -741,14 +895,22 @@ TH1F * AliAnalysisTaskBGvsTime::GetDistributionHisto(const char * trigger_class,
     min   = -0.5;
     max   = +0.5;
     name  = "hDCA_";
-    title = "TPC DCA distribution (";    
-  } else {
+    title = "TPC DCA distribution - loose cuts (";    
+    xtitle = "DCA";
+  } else if (dist == kDistClsITSLayer) {
+    nbin  = 6;
+    min   = -0.5;
+    max   = 5.5;
+    name  = "hClsITS_";
+    title = "Cluster per ITS layer (";    
+    xtitle = "ITS Layer";
+  }else {
     AliError(Form("Distribution type not supported: %d",dist));
     return 0;
   } 
 
 
-  name += trigger_class;
+  name += triggerClass;
   if (suffix) name += suffix;
   title = title+name+")";
 
@@ -778,6 +940,58 @@ TH1F * AliAnalysisTaskBGvsTime::BookDistributionHisto(const char * name, const c
   return h;
 
 }
+
+TH1F * AliAnalysisTaskBGvsTime::GetDeadTimeHisto(const char * triggerClass) {
+  // returns histo of dead time vs timestamp for a given trigger
+  // class. If the histo does not exist, it books it.
+  TString name  = "hDeadTime_"  ;
+  TString title = "Dead Time vs TimeStamp (";
+
+  name += triggerClass;
+  title = title+triggerClass+")";
+
+  
+  TH1F* h = (TH1F*) fListHisto->FindObject(name.Data());
+
+  if(!h) {
+    h = BookVsTimeHisto(name.Data(), title.Data());
+    h->SetYTitle("deadtime");
+  }
+  return h;
+
+
+}
+
+
+// TH2F * AliAnalysisTaskBGvsTime::BookDeadTimeHisto(const char * name, const char * title) {
+//   // Book dead time vs time stamp histos
+
+//   AliInfo(Form("Booking histo %s",name));
+
+//   Bool_t oldStatus = TH1::AddDirectoryStatus();
+//   TH1::AddDirectory(kFALSE);
+
+//   Float_t lenght =  fEndTime - fStartTime;
+//   Int_t nBins = TMath::FloorNint(lenght/fBinWidth)+1;
+//   Double_t * bins = new Double_t[nBins+1];
+//   for(Int_t ibin = 0; ibin <= nBins; ibin++){
+//     Float_t edge = ibin*fBinWidth - 0.5;
+//     bins[ibin] = edge < (lenght - 0.5) ? edge  : (lenght-0.5);
+//   }
+
+//   TH2F * h = new TH2F (name,title,nBins,bins,200,0.,2.);
+//   h->Sumw2();
+//   h->SetXTitle("Time (s)");
+//   h->SetYTitle("Dead Time");
+//   fListHisto->Add(h);
+//   TH1::AddDirectory(oldStatus);
+
+//   delete bins;
+
+//   return h;
+
+// }
+
 
 
 Bool_t AliAnalysisTaskBGvsTime::IsEventInBinZero() {
