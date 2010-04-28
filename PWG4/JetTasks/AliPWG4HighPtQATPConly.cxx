@@ -81,6 +81,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtAllminPtTPCvsPtAllRel1PtUncertainty(0),
   fPtAllminPtTPCvsPtAllChi2PerNClusTPC(0),
   fPtAllminPtTPCvsPtAllChi2PerNClusITS(0),
+  fPtAllminPtTPCvsNPointTPCPhi(0),
+  fPtAllminPtTPCvsNPointITSPhi(0),
+  fPtAllminPtTPCvsRel1PtUncertaintyPhi(0),
   fEtaPhiOutliers(0),
   fPtSelITSouter(0),
   fPtITSouterminPtTPCvsPtAll(0),
@@ -131,6 +134,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtITSminPtTPCvsPtITSRel1PtUncertainty(0),
   fPtITSminPtTPCvsPtITSChi2PerNClusTPC(0),
   fPtITSminPtTPCvsPtITSChi2PerNClusITS(0),
+  fPtITSminPtTPCvsNPointTPCPhi(0),
+  fPtITSminPtTPCvsNPointITSPhi(0),
+  fPtITSminPtTPCvsRel1PtUncertaintyPhi(0),
   fPtRel1PtUncertaintyChi2PerClusTPC(0),
   fPtNPointTPCSChi2PerClusTPC(0),
   fPtNPointTPCSRel1PtUncertainty(0),
@@ -404,6 +410,24 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtAllminPtTPCvsPtAllChi2PerNClusITS->SetZTitle("#chi^{2}/(2*NClusITS-5)");
   fHistList->Add(fPtAllminPtTPCvsPtAllChi2PerNClusITS);
 
+  fPtAllminPtTPCvsNPointTPCPhi = new TH3F("fPtAllminPtTPCvsNPointTPCPhi","PtAllminPtTPCvsNPointTPCPhi",fgkResPtBins,-1,1.,160,0.5,160.5,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtAllminPtTPCvsNPointTPCPhi->SetXTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
+  fPtAllminPtTPCvsNPointTPCPhi->SetYTitle("N_{point,TPC}");
+  fPtAllminPtTPCvsNPointTPCPhi->SetZTitle("#phi");
+  fHistList->Add(fPtAllminPtTPCvsNPointTPCPhi);
+
+  fPtAllminPtTPCvsNPointITSPhi = new TH3F("fPtAllminPtTPCvsNPointITSPhi","PtAllminPtTPCvsNPointITSPhi",fgkResPtBins,-1,1.,9,-0.5,8.5,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtAllminPtTPCvsNPointITSPhi->SetXTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
+  fPtAllminPtTPCvsNPointITSPhi->SetYTitle("N_{point,ITS}");
+  fPtAllminPtTPCvsNPointITSPhi->SetZTitle("#phi");
+  fHistList->Add(fPtAllminPtTPCvsNPointITSPhi);
+
+  fPtAllminPtTPCvsRel1PtUncertaintyPhi = new TH3F("fPtAllminPtTPCvsRel1PtUncertaintyPhi","PtAllminPtTPCvsRel1PtUncertaintyPhi",fgkResPtBins,-1,1.,30,0.,0.3,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtAllminPtTPCvsRel1PtUncertaintyPhi->SetXTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
+  fPtAllminPtTPCvsRel1PtUncertaintyPhi->SetYTitle("Rel1PtUncertainty");
+  fPtAllminPtTPCvsRel1PtUncertaintyPhi->SetZTitle("#phi");
+  fHistList->Add(fPtAllminPtTPCvsRel1PtUncertaintyPhi);
+
   fEtaPhiOutliers = new TH2F("fEtaPhiOutliers","PtAllminPtTPCvsPtAll",20, -1.,1.,fgkNPhiBins,kMinPhi,kMaxPhi);
   fEtaPhiOutliers->SetXTitle("#eta");
   fEtaPhiOutliers->SetYTitle("#phi");
@@ -661,6 +685,24 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtITSminPtTPCvsPtITSChi2PerNClusITS->SetZTitle("#chi^{2}/(2*NClusITS-5)");
   fHistListITS->Add(fPtITSminPtTPCvsPtITSChi2PerNClusITS);
 
+  fPtITSminPtTPCvsNPointTPCPhi = new TH3F("fPtITSminPtTPCvsNPointTPCPhi","PtITSminPtTPCvsNPointTPCPhi",fgkResPtBins,-1,1.,160,0.5,160.5,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtITSminPtTPCvsNPointTPCPhi->SetXTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
+  fPtITSminPtTPCvsNPointTPCPhi->SetYTitle("N_{point,TPC}");
+  fPtITSminPtTPCvsNPointTPCPhi->SetZTitle("#phi");
+  fHistListITS->Add(fPtITSminPtTPCvsNPointTPCPhi);
+
+  fPtITSminPtTPCvsNPointITSPhi = new TH3F("fPtITSminPtTPCvsNPointITSPhi","PtITSminPtTPCvsNPointITSPhi",fgkResPtBins,-1,1.,9,-0.5,8.5,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtITSminPtTPCvsNPointITSPhi->SetXTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
+  fPtITSminPtTPCvsNPointITSPhi->SetYTitle("N_{point,ITS}");
+  fPtITSminPtTPCvsNPointITSPhi->SetZTitle("#phi");
+  fHistListITS->Add(fPtITSminPtTPCvsNPointITSPhi);
+
+  fPtITSminPtTPCvsRel1PtUncertaintyPhi = new TH3F("fPtITSminPtTPCvsRel1PtUncertaintyPhi","PtITSminPtTPCvsRel1PtUncertaintyPhi",fgkResPtBins,-1,1.,30,0.,0.3,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtITSminPtTPCvsRel1PtUncertaintyPhi->SetXTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
+  fPtITSminPtTPCvsRel1PtUncertaintyPhi->SetYTitle("Rel1PtUncertainty");
+  fPtITSminPtTPCvsRel1PtUncertaintyPhi->SetZTitle("#phi");
+  fHistListITS->Add(fPtITSminPtTPCvsRel1PtUncertaintyPhi);
+
   fPtRel1PtUncertaintyChi2PerClusTPC = new TH3F("fPtRel1PtUncertaintyChi2PerClusTPC","PtITSminPtTPCvsPtITSRel1PtUncertainty",fgkNPtBins, fgkPtMin,fgkPtMax,30,0.,0.3,35,0.,3.5);
   fPtRel1PtUncertaintyChi2PerClusTPC->SetXTitle("p_{t}^{global}");
   fPtRel1PtUncertaintyChi2PerClusTPC->SetYTitle("Rel1PtUncertainty");
@@ -872,6 +914,10 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       fPtAllminPtTPCvsPtAllRel1PtUncertainty->Fill(pt,(1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt);
       fPtAllminPtTPCvsPtAllChi2PerNClusTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerClusterTPC);
       if(nPointITS>3) fPtAllminPtTPCvsPtAllChi2PerNClusITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerNPointITS);
+      fPtAllminPtTPCvsNPointTPCPhi->Fill((1./pt-1./ptTPC)/(1./pt),nClustersTPC,phi);
+      fPtAllminPtTPCvsNPointITSPhi->Fill((1./pt-1./ptTPC)/(1./pt),nPointITS,phi);
+      fPtAllminPtTPCvsRel1PtUncertaintyPhi->Fill((1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt,phi);
+
       if(TMath::Abs((1./pt-1./ptTPC)/(1./pt))>0.8) fEtaPhiOutliers->Fill(track->Eta(),phi);
       if (friendtrack.GetITSOut()) {
 	AliExternalTrackParam trackITSouter(*(friendtrack.GetITSOut())); 
@@ -949,6 +995,9 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       fPtITSminPtTPCvsPtITSRel1PtUncertainty->Fill(pt,(1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt);
       fPtITSminPtTPCvsPtITSChi2PerNClusTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerClusterTPC);
       if(nPointITS>3) fPtITSminPtTPCvsPtITSChi2PerNClusITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2PerNPointITS);
+      fPtITSminPtTPCvsNPointTPCPhi->Fill((1./pt-1./ptTPC)/(1./pt),nClustersTPC,phi);
+      fPtITSminPtTPCvsNPointITSPhi->Fill((1./pt-1./ptTPC)/(1./pt),nPointITS,phi);
+      fPtITSminPtTPCvsRel1PtUncertaintyPhi->Fill((1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt,phi);
 
       fPtRel1PtUncertaintyChi2PerClusTPC->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
       fPtNPointTPCSChi2PerClusTPC->Fill(pt,track->GetTPCnclsS()/nClustersTPC,chi2PerClusterTPC);
@@ -968,9 +1017,9 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 //________________________________________________________________________
 Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackNumber, Double_t ptMin)
 {
-  Bool_t candidate = kFALSE;
+  Bool_t candidate1 = kFALSE;
   Bool_t candidate2 = kFALSE;
-  if(!track1) return candidate;
+  if(!track1) return candidate1;
 
   Int_t nTracks = fESD->GetNumberOfTracks();
  
@@ -981,8 +1030,9 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
     if(!(fTrackCuts->AcceptTrack(track2))) continue;
     if(track2->Pt()<ptMin) continue;
     
-    //Check if same charge
-    if( (track1->GetSign()*track2->GetSign()) < 0. ) continue;
+    //Check if same charge. If not same charge, pair is cosmic candidate
+    //Removed condition for time being. Not so clear how wel we can measure curvature at high momenta
+    // if( (track1->GetSign()*track2->GetSign()) > 0. ) continue;
     
     //Check if back-to-back
     Double_t mom1[3],mom2[3];
@@ -990,7 +1040,7 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
     track2->GetPxPyPz(mom2);
     Double_t cosTheta = (mom1[0]*mom2[0]+mom1[1]*mom2[1]+mom1[2]*mom2[2])/( TMath::Sqrt(mom1[0]*mom1[0]+mom1[1]*mom1[1]+mom1[2]*mom1[2])*TMath::Sqrt(mom2[0]*mom2[0]+mom2[1]*mom2[1]+mom2[2]*mom2[2]) );
     Double_t theta = TMath::ACos(cosTheta);
-    if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate = kTRUE; candidate2 = kTRUE;}
+    if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
 
     if(candidate2) {
       fDeltaPtCosmicCandidates->Fill(track1->Pt()-track2->Pt());
@@ -1000,11 +1050,11 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
 
   }
 
-  if(candidate) {
+  if(candidate1) {
     fPtCosmicCandidates->Fill(track1->Pt());
   }
 
-   return candidate;
+   return candidate1;
 }
 
 //________________________________________________________________________
