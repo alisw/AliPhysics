@@ -51,6 +51,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessV0sNoCut();
   void ProcessV0s();
   void ProcessGammasForNeutralMesonAnalysis();
+  void ProcessGammasForOmegaMesonAnalysis();
+  void ProcessConvPHOSGammasForNeutralMesonAnalysis();
 		
   // for CF
   void SetCFManager(AliCFManager * const io) {fCFManager = io;};
@@ -63,7 +65,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void FillAODWithConversionGammas();
   // end AOD
 		
-		
+  static Bool_t IsGoodImpPar(AliESDtrack *const track);
+	
   // for GammaJetAnalysis
   void ProcessGammasForGammaJetAnalysis();
   void CreateListOfChargedParticles();
@@ -87,6 +90,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetTriggerCINT1B(Bool_t flag){fTriggerCINT1B=flag;}
   void SetDoMCTruth(Bool_t flag){fDoMCTruth=flag;}
   void SetDoNeutralMeson(Bool_t flag){fDoNeutralMeson=flag;}
+  void SetDoOmegaMeson(Bool_t flag){fDoOmegaMeson=flag;}
   void SetDoNeutralMesonV0MCCheck(Bool_t flag){fDoNeutralMesonV0MCCheck=flag;}
   void SetDoJet(Bool_t flag){fDoJet=flag;}
   void SetDoChic(Bool_t flag){fDoChic=flag;}
@@ -164,10 +168,12 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fTriggerCINT1B; //Flag to select trigger CINT1B
   Bool_t fDoMCTruth; // Flag to switch on/off MC truth 
   Bool_t fDoNeutralMeson; // flag
+  Bool_t fDoOmegaMeson; // flag
   Bool_t fDoJet; // flag
   Bool_t fDoChic; // flag
 		
   TClonesArray * fKFReconstructedGammasTClone; //! transient
+  TClonesArray * fKFReconstructedPi0sTClone; //! transient
   TClonesArray * fCurrentEventPosElectronTClone; //! transient
   TClonesArray * fCurrentEventNegElectronTClone; //! transient
   TClonesArray * fKFReconstructedGammasCutTClone; //! transient
@@ -178,6 +184,11 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   vector<Int_t> fElectronv1; // vector containing index of electron 1
   vector<Int_t> fElectronv2; // vector containing index of electron 2
 		
+  vector<Int_t> fGammav1; // vector containing index of gamma 1
+  vector<Int_t> fGammav2; // vector containing index of gamma 2
+		
+
+
   ///////Chi_c Analysis///////////////////////////
   //  vector<AliESDtrack*> fCurrentEventPosElectron;       // comment here
   //  vector<AliESDtrack*> fCurrentEventNegElectron;       // comment here
@@ -229,7 +240,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 
   vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
 
-  ClassDef(AliAnalysisTaskGammaConversion, 7); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 8); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

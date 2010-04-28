@@ -1057,14 +1057,27 @@ Bool_t AliV0Reader::GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, 
   Double_t xpoint =  radius * TMath::Cos(phi);
   Double_t ypoint =  radius * TMath::Sin(phi);
 
-  if(charge > 0){
-    xpoint = - xpoint;
-    ypoint = - ypoint;
-  }
+  if(b<0){
+    if(charge > 0){
+      xpoint = - xpoint;
+      ypoint = - ypoint;
+    }
 
-  if(charge < 0){
-    xpoint =  xpoint;
-    ypoint =  ypoint;
+    if(charge < 0){
+      xpoint =  xpoint;
+      ypoint =  ypoint;
+    }
+  }
+  if(b>0){
+    if(charge > 0){
+      xpoint =  xpoint;
+      ypoint =  ypoint;
+    }
+
+    if(charge < 0){
+      xpoint = - xpoint;
+      ypoint = - ypoint;
+    }
   }
   center[0] =  xpos + xpoint;
   center[1] =  ypos + ypoint;

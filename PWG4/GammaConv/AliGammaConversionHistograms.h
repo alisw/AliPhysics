@@ -79,8 +79,8 @@ class AliGammaConversionHistograms{
   Int_t fNRIndex; //r index
   Int_t fNZIndex; //z index
   //  Double_t fRBinLimits[8]; // Limits of the radius bins
-  Double_t fRBinLimits[13]; // Limits of the radius bins
-  Double_t fZBinLimits[7]; // Limits of the Z bins
+  Double_t fRBinLimits[14]; // Limits of the radius bins
+  Double_t fZBinLimits[13]; // Limits of the Z bins
   Double_t fMinRadius; //min radius cut
   Double_t fMaxRadius; //max radius cut
   Double_t fDeltaR; // delta r
