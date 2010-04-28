@@ -376,10 +376,14 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //------------------------------------------------------------
   //-----------------CLUSTERS-----------------------------
   //------------------------------------------------------------
+  clustersTree->SetBranchStatus("*",0); //disable all branches
+  clustersTree->SetBranchStatus("EMCALECARP",1); //Enable only the branch we need
+
   TObjArray *clusters = new TObjArray(100);
   TBranch *branch = clustersTree->GetBranch("EMCALECARP");
   branch->SetAddress(&clusters);
-  clustersTree->GetEvent(0);
+  branch->GetEntry(0);
+  //clustersTree->GetEvent(0);
 
   Int_t nClusters = clusters->GetEntries(),  nClustersNew=0;
   AliDebug(1,Form("%d clusters",nClusters));

@@ -556,8 +556,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   // if nothing is specified print all, if "reco" just clusterization/track matching
   // if "pid", just PID parameters, if "raw", just raw utils parameters.
   if(!strcmp("",opt) || !strcmp("reco",opt)){
-    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%f \n fTimeMin=%f \n fTimeMax=%f \n",
-		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut,fTimeMin,fTimeMax));
+    AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n",
+		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
     
     AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %\n", fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
   }

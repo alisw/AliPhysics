@@ -136,11 +136,11 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetLocMaxCut(0.03);
   params->SetTimeCut(100e-9);//100 ns
   //Simulation
-  params->SetTimeMin(5e-9);//100 ns
-  params->SetTimeMax(50e-9);//100 ns
+  //params->SetTimeMin(5e-9);//100 ns
+  //params->SetTimeMax(50e-9);//100 ns
    //Real Data
-  //params->SetTimeMin(550e-9);//100 ns
-  //params->SetTimeMax(750e-9);//100 ns
+  params->SetTimeMin(550e-9);//100 ns
+  params->SetTimeMax(750e-9);//100 ns
 
   //Track matching
   params->SetTrkCutX(6.0);
@@ -308,7 +308,14 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   AliEMCALRecParam* params =  AliEMCALRecParam::GetDefaultParameters();
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
   params->SetMinECut(0.01);  //10 MeV       	
-  
+  params->SetTimeCut(100e-9);//100 ns
+  //Simulation
+  //params->SetTimeMin(5e-9);//100 ns
+  //params->SetTimeMax(50e-9);//100 ns
+  //Real Data
+  params->SetTimeMin(550e-9);//100 ns
+  params->SetTimeMax(750e-9);//100 ns
+
   //PID parameters for pp  implemented 
   // as a first step, all array elements are initialized to 0.0
   Int_t i, j;
