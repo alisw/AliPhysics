@@ -57,10 +57,10 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fOtherContainer(NULL)
 {
   // see header file for documenation
-  for(Int_t i=0;i<7;i++){
+  for(Int_t i=0;i<14;i++){
     fRBinLimits[i]=0.;
   }
-  for(Int_t i=0;i<6;i++){
+  for(Int_t i=0;i<12;i++){
     fZBinLimits[i]=0.;
   }
 }
@@ -90,10 +90,10 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fOtherContainer(original.fOtherContainer)
 {    
   //see header file for documentation
-  for(Int_t i=0;i<7;i++){
+  for(Int_t i=0;i<14;i++){
     fRBinLimits[i]= original.fRBinLimits[i];
   }
-  for(Int_t i=0;i<6;i++){
+  for(Int_t i=0;i<12;i++){
     fZBinLimits[i]=original.fZBinLimits[i];
   }
 }
@@ -338,7 +338,7 @@ Int_t AliGammaConversionHistograms::GetZBin(Double_t zPos) const{
 
   for(Int_t i=0;i<fNZIndex;i++){
     //    cout<<"Test-limits::"<< fZBinLimits[i]<<endl;
-    if( TMath::Abs(zPos)>=fZBinLimits[i] && TMath::Abs(zPos)<fZBinLimits[i+1] ){
+    if( zPos>=fZBinLimits[i] && zPos<fZBinLimits[i+1] ){
       iResult=i;
     }
   }
@@ -366,7 +366,7 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
 	
   fNPhiIndex = nPhiIndex;
   fNRIndex   = nRIndex;
-  fNZIndex = 6;
+  fNZIndex = 13;
 
   //  fRBinLimits= new Double_t[8];   Kenneth: moved from pointer to fixed array
   /*
@@ -381,29 +381,36 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
   */
 
   fRBinLimits[0]=0.;
-  fRBinLimits[1]=5.75;
-  fRBinLimits[2]=9.5;
-  fRBinLimits[3]=13.;
-  fRBinLimits[4]=21.;
-  fRBinLimits[5]=27.5;
-  fRBinLimits[6]=35.;
-  fRBinLimits[7]=42.;
-  fRBinLimits[8]=55.;
-  fRBinLimits[9]=72.;
-  fRBinLimits[10]=81.5;
-  fRBinLimits[11]=90.;
-  fRBinLimits[12]=500.;
+  fRBinLimits[1]=3.5;
+  fRBinLimits[2]=5.75;
+  fRBinLimits[3]=9.5;
+  fRBinLimits[4]=13.;
+  fRBinLimits[5]=21.;
+  fRBinLimits[6]=27.5;
+  fRBinLimits[7]=35.;
+  fRBinLimits[8]=42.;
+  fRBinLimits[9]=55.;
+  fRBinLimits[10]=72.;
+  fRBinLimits[11]=81.5;
+  fRBinLimits[12]=90.;
+  fRBinLimits[13]=500.;
 
 
 
   //  fZBinLimits= new Double_t[7]; Kenneth: moved from pointer to fixed array
-  fZBinLimits[0]=0.;
-  fZBinLimits[1]=15.;
-  fZBinLimits[2]=30.;
-  fZBinLimits[3]=50.;
-  fZBinLimits[4]=100.;
-  fZBinLimits[5]=200.;
-  fZBinLimits[6]=500.;
+  fZBinLimits[0]=-500.;
+  fZBinLimits[1]=-200.;
+  fZBinLimits[2]=-100.;
+  fZBinLimits[3]=-50.;
+  fZBinLimits[4]=-30.;
+  fZBinLimits[5]=-15.;
+  fZBinLimits[6]= 0.;
+  fZBinLimits[7]= 15.;
+  fZBinLimits[8]= 30.;
+  fZBinLimits[9]= 50.;
+  fZBinLimits[10]=100.;
+  fZBinLimits[11]=200.;
+  fZBinLimits[12]=500.;
 
 
   fMinRadius      = minRadius;
