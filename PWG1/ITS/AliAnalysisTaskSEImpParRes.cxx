@@ -774,53 +774,56 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     fOutputPt->Add(d0Pt);
   }
 
+  if (!fOutputSinThetaRec){
+    fOutputSinThetaRec = new TList();
+    fOutputSinThetaRec->SetOwner();
+    fOutputSinThetaRec->SetName("thetaRec");
+  }
+  
+  if (!fOutputSinThetaSkip){
+    fOutputSinThetaSkip = new TList();
+    fOutputSinThetaSkip->SetOwner();
+    fOutputSinThetaSkip->SetName("thetaSkip");
+  }
+  
+  if (!fOutputphiAllpointSkip) {
+    fOutputphiAllpointSkip = new TList();
+    fOutputphiAllpointSkip->SetOwner();
+    fOutputphiAllpointSkip->SetName("phiallpointSkip");
+  }
+  
+  if (!fOutputphiPostvtracSkip) {
+    fOutputphiPostvtracSkip = new TList();
+    fOutputphiPostvtracSkip->SetOwner();
+    fOutputphiPostvtracSkip->SetName("postvtracSkip");
+  }
+  
+  if (!fOutputphiNegtvtracSkip) {
+    fOutputphiNegtvtracSkip = new TList();
+    fOutputphiNegtvtracSkip->SetOwner();
+    fOutputphiNegtvtracSkip->SetName("negtvtracSkip");
+  }
+  
+  
+  const TString d0sinThetarphiTitle ="d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0sinThetazTitle ="d_{0} Distribution_z; d_{0} [#mum]; Entries";  
+  const TString d0phiAllpointrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0phiAllpointzTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";    
+  const TString  d0phiPostvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0phiPostvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";  
+  const TString  d0phiNegtvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
+  const TString d0phiNegtvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";   
+  TString named0sinThetaonerphiRec,named0sinThetaonezRec,named0sinThetatworphiRec,named0sinThetatwozRec,named0sinThetathreerphiRec,named0sinThetathreezRec,named0sinThetafourrphiRec,named0sinThetafourzRec;
+  
+  TH1F *d0SinThetaonerphiRec,*d0SinThetaonezRec,*d0SinThetatworphiRec,*d0SinThetatwozRec,*d0SinThetathreerphiRec,*d0SinThetathreezRec,*d0SinThetafourrphiRec,*d0SinThetafourzRec;
+  
+  TString  named0sinThetaonerphiSkip,named0sinThetaonezSkip,named0sinThetatworphiSkip,named0sinThetatwozSkip,named0sinThetathreerphiSkip,named0sinThetathreezSkip,named0sinThetafourrphiSkip,named0sinThetafourzSkip,named0phiAllpointrphiSkip, named0phiAllpointzSkip,named0phiPostvtracrphiSkip, named0phiPostvtraczSkip,named0phiNegtvtracrphiSkip,named0phiNegtvtraczSkip;
+  
+  TH1F*d0SinThetaonerphiSkip,*d0SinThetaonezSkip,*d0SinThetatworphiSkip,*d0SinThetatwozSkip,*d0SinThetathreerphiSkip,*d0SinThetathreezSkip,*d0SinThetafourrphiSkip,*d0SinThetafourzSkip, *d0PhiAllpointrphiSkip,*d0PhiAllpointzSkip,*d0PhiPostvtracrphiSkip,*d0PhiPostvtraczSkip,*d0PhiNegtvtracrphiSkip,*d0PhiNegtvtraczSkip;
+  
   const Int_t nhistm=10;
   for(Int_t i=0; i<=nhistm; i++) {
-    if (!fOutputSinThetaRec){
-      fOutputSinThetaRec = new TList();
-      fOutputSinThetaRec->SetOwner();
-      fOutputSinThetaRec->SetName("thetaRec");
-    }
     
-    if (!fOutputSinThetaSkip){
-      fOutputSinThetaSkip = new TList();
-      fOutputSinThetaSkip->SetOwner();
-      fOutputSinThetaSkip->SetName("thetaSkip");
-    }
-
-    if (!fOutputphiAllpointSkip) {
-      fOutputphiAllpointSkip = new TList();
-      fOutputphiAllpointSkip->SetOwner();
-      fOutputphiAllpointSkip->SetName("phiallpointSkip");
-    }
-    
-    if (!fOutputphiPostvtracSkip) {
-      fOutputphiPostvtracSkip = new TList();
-      fOutputphiPostvtracSkip->SetOwner();
-      fOutputphiPostvtracSkip->SetName("postvtracSkip");
-    }
-    
-    if (!fOutputphiNegtvtracSkip) {
-      fOutputphiNegtvtracSkip = new TList();
-      fOutputphiNegtvtracSkip->SetOwner();
-      fOutputphiNegtvtracSkip->SetName("negtvtracSkip");
-    }
-    
-    const TString d0sinThetarphiTitle ="d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-    const TString d0sinThetazTitle ="d_{0} Distribution_z; d_{0} [#mum]; Entries";  
-    const TString d0phiAllpointrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-    const TString d0phiAllpointzTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";    
-    const TString  d0phiPostvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-    const TString d0phiPostvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";  
-    const TString  d0phiNegtvtracrphiTitle = "d_{0} Distribution_rphi; d_{0} [#mum]; Entries";
-    const TString d0phiNegtvtraczTitle  = "d_{0} Distribution_z; d_{0} [#mum]; Entries";   
-    TString named0sinThetaonerphiRec,named0sinThetaonezRec,named0sinThetatworphiRec,named0sinThetatwozRec,named0sinThetathreerphiRec,named0sinThetathreezRec,named0sinThetafourrphiRec,named0sinThetafourzRec;
-    
-    TH1F *d0SinThetaonerphiRec,*d0SinThetaonezRec,*d0SinThetatworphiRec,*d0SinThetatwozRec,*d0SinThetathreerphiRec,*d0SinThetathreezRec,*d0SinThetafourrphiRec,*d0SinThetafourzRec;
-    
-    TString  named0sinThetaonerphiSkip,named0sinThetaonezSkip,named0sinThetatworphiSkip,named0sinThetatwozSkip,named0sinThetathreerphiSkip,named0sinThetathreezSkip,named0sinThetafourrphiSkip,named0sinThetafourzSkip,named0phiAllpointrphiSkip, named0phiAllpointzSkip,named0phiPostvtracrphiSkip, named0phiPostvtraczSkip,named0phiNegtvtracrphiSkip,named0phiNegtvtraczSkip;
-    
-    TH1F*d0SinThetaonerphiSkip,*d0SinThetaonezSkip,*d0SinThetatworphiSkip,*d0SinThetatwozSkip,*d0SinThetathreerphiSkip,*d0SinThetathreezSkip,*d0SinThetafourrphiSkip,*d0SinThetafourzSkip, *d0PhiAllpointrphiSkip,*d0PhiAllpointzSkip,*d0PhiPostvtracrphiSkip,*d0PhiPostvtraczSkip,*d0PhiNegtvtracrphiSkip,*d0PhiNegtvtraczSkip;
 
     named0sinThetaonerphiRec = "d0sinthetaonerphiRec_";
     named0sinThetaonerphiRec += i;
@@ -927,6 +930,10 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
     d0SinThetafourzSkip->Sumw2();
     d0SinThetafourzSkip->SetMinimum(0);
     fOutputSinThetaSkip->Add(d0SinThetafourzSkip);
+  }
+
+  const Int_t nhistphi=20;
+  for(Int_t i=0; i<=nhistphi; i++) {
 
     named0phiAllpointrphiSkip = "d0phiallpointrphiSkip_";
     named0phiAllpointrphiSkip += i;
@@ -1341,7 +1348,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       //Double_t pi=TMath::Pi();
       Int_t phibin=PhiBin(phi);
       if(phibin<0) {delete vtxESDSkip;continue;}
-      if(pt>0.4 && pt<0.6){
+      if(pt>0.4 && pt<0.5){
 	char *named0PhiallpointrphiSkip =Form("d0phiallpointrphiSkip_%d",phibin);
 	char *named0PhiallpointzSkip = Form("d0phiallpointzSkip_%d",phibin);
 	char *named0PhipostvtracrphiSkip =Form("d0phipostvtracrphiSkip_%d",phibin);
@@ -1573,16 +1580,26 @@ Int_t AliAnalysisTaskSEImpParRes::SinThetaBin(Double_t sintheta) const {
 Int_t AliAnalysisTaskSEImpParRes::PhiBin(Double_t phi) const { 
   Double_t pi=TMath::Pi();
   if(phi>2.*pi || phi<0.) return -1;
-  if(phi<0.2*pi) return 1;
-  if(phi<0.4*pi) return 2;
-  if(phi<0.6*pi) return 3;
-  if(phi<0.8*pi) return 4;
-  if(phi<1.0*pi) return 5;
-  if(phi<1.2*pi) return 6;
-  if(phi<1.4*pi) return 7;
-  if(phi<1.6*pi) return 8;
-  if(phi<1.8*pi) return 9;
-  if(phi<2.*pi) return 10;
+  if(phi<0.1*pi) return 1;
+  if(phi<0.2*pi) return 2;
+  if(phi<0.3*pi) return 3;
+  if(phi<0.4*pi) return 4;
+  if(phi<0.5*pi) return 5;
+  if(phi<0.6*pi) return 6;
+  if(phi<0.7*pi) return 7;
+  if(phi<0.8*pi) return 8;
+  if(phi<0.9*pi) return 9;
+  if(phi<1.0*pi) return 10;
+  if(phi<1.1*pi) return 11;
+  if(phi<1.2*pi) return 12;
+  if(phi<1.3*pi) return 13;
+  if(phi<1.4*pi) return 14;
+  if(phi<1.5*pi) return 15;
+  if(phi<1.6*pi) return 16;
+  if(phi<1.7*pi) return 17;
+  if(phi<1.8*pi) return 18;
+  if(phi<1.9*pi) return 19;
+  if(phi<2.0*pi) return 20;
   return -1;
 }
 
