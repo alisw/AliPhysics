@@ -83,9 +83,9 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
      delete fReferences;
    }
    SetBit(kIsOwner, kFALSE);
- }
+ } else if(fReferences) delete fReferences;
  fReferences = ref.fReferences;
-  Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
+ Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
  fPIDmethod = ref.fPIDmethod;
 
@@ -97,10 +97,11 @@ AliTRDPIDResponse::~AliTRDPIDResponse(){
  //
  // Destructor
  //
- if(fReferences && IsOwner()){
-   fReferences->Delete();
-   delete fReferences;
+ if(IsOwner()){
+   // Destroy histos
+   if(fReferences) fReferences->Delete();
  }
+ if(fReferences) delete fReferences;
 }
 
 //____________________________________________________________
@@ -140,6 +141,7 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
  in->Close();
 
  AliDebug(2, Form("Successfully loaded %d Reference Histograms", arrayPos));
+ SetBit(kIsOwner, kTRUE);
  delete in;
  return kTRUE;
 }
@@ -266,6 +268,7 @@ void AliTRDPIDResponse::SetOwner(){
  TObjArray *ctmp = new TObjArray();
  for(Int_t ien = 0; ien < fReferences->GetEntriesFast(); ien++)
    ctmp->AddAt(fReferences->UncheckedAt(ien)->Clone(), ien);
+ delete fReferences;
  fReferences = ctmp;
  SetBit(kIsOwner, kTRUE);
 }
