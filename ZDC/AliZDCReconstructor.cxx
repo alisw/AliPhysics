@@ -725,8 +725,8 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   }
   //
   Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
-  calibZEM1[0] = corrADCZEM1[0]*calibEne[5];
-  calibZEM1[1] = corrADCZEM1[1]*calibEne[5];
+  calibZEM1[0] = corrADCZEM1[0]*calibEne[4];
+  calibZEM1[1] = corrADCZEM1[1]*calibEne[4];
   calibZEM2[0] = corrADCZEM2[0]*calibEne[5];
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
   for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
@@ -884,8 +884,8 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   calibSumZP2[1] = calibSumZP2[1]*calibEne[3];
   //
   Float_t sumZEM[]={0,0}, calibZEM1[]={0,0}, calibZEM2[]={0,0};
-  calibZEM1[0] = corrADCZEM1[0]*calibEne[5]*8.;
-  calibZEM1[1] = corrADCZEM1[1]*calibEne[5];
+  calibZEM1[0] = corrADCZEM1[0]*calibEne[4]*8.;
+  calibZEM1[1] = corrADCZEM1[1]*calibEne[4];
   calibZEM2[0] = corrADCZEM2[0]*calibEne[5]*8.;
   calibZEM2[1] = corrADCZEM2[1]*calibEne[5];
   for(Int_t k=0; k<2; k++) sumZEM[k] = calibZEM1[k] + calibZEM2[k];
