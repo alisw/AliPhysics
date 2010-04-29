@@ -19,7 +19,7 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
   {
   public:
     AliAnalysisTaskUE(const char* name="AliAnalysisTaskUE");
-    virtual           ~AliAnalysisTaskUE()  {if( fListOfHistos ) delete fListOfHistos;}
+    virtual           ~AliAnalysisTaskUE() {if ( fListOfHistos ) delete fListOfHistos; }
     
     // Implementation of interace methods
     virtual     Bool_t Notify();
@@ -50,6 +50,11 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     void  SetSimulateChJetPt(){fSimulateChJetPt = kTRUE;}
     void  SetUseAODMCParticle(){fUseAliStack = kFALSE;}
     
+    //Setters for Events QA
+    void  SetZVertex( Double_t val ) { fZVertex = val; }
+    void  SetTracksInVertex( Int_t val ){ fnTracksVertex = val; }
+    
+    // Stters for UE Analysis
     void   SetAnaTopology( Int_t val )    { fAnaType = val;    }
     void   SetRegionType( Int_t val )     { fRegionType = val; }
     void   SetUseChPartJet( Int_t val )   { fUseChPartJet = val; }
@@ -110,6 +115,10 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     Double_t fMinDistance;  // Minimum distance between rec jet and pyth
     Bool_t fSimulateChJetPt; // Naive simulation of charged jet Pt from original Jet in MC Header
     Bool_t fUseAliStack;     // Use AliSatck for particle info otherwise "mcparticles" branch in AOD
+    
+    // Cuts Events type
+    Int_t fnTracksVertex;  // QA tracks pointing to principal vertex (= 3 default) 
+    Double_t fZVertex;     // Position of Vertex in Z direction
     
     // Cuts 
     Int_t   fAnaType;          // Analysis type on jet topology: 
@@ -205,10 +214,10 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH1F*  fhRegionAvePartPtMinVsEt; //!
     TH1F*  fhRegionMaxPartPtMaxVsEt; //!
     
-    TH1F*  fhRegForwardSumPtVsEt;    //!
-    TH1F*  fhRegForwardMultVsEt;     //!
-    TH1F*  fhRegBackwardSumPtVsEt;   //!
-    TH1F*  fhRegBackwardMultVsEt;    //!
+    //TH1F*  fhRegForwardSumPtVsEt;    //!
+    //TH1F*  fhRegForwardMultVsEt;     //!
+    //TH1F*  fhRegBackwardSumPtVsEt;   //!
+    //TH1F*  fhRegBackwardMultVsEt;    //!
     TH2F*  fhRegForwardMult;         //!
     TH2F*  fhRegForwardSumPtvsMult;  //!
     TH2F*  fhRegBackwardMult;        //!
@@ -217,8 +226,9 @@ class  AliAnalysisTaskUE : public AliAnalysisTask
     TH2F*  fhRegBackwardPartPtDistVsEt; //!
     TH2F*  fhRegTransMult;         //!
     TH2F*  fhRegTransSumPtVsMult;    //!
-    TH2F*  fhMinRegSumPtJetPtBin;    //!,
+    TH2F*  fhMinRegSumPtJetPtBin;    //!
     TH2F*  fhMaxRegSumPtJetPtBin;    //!
+    TH1F*  fhVertexMult;
 
     //        TH2F*  fhValidRegion; //! test to be canceled
     

@@ -58,9 +58,9 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
   Int_t iCount = 0;
 
   // Jet Fidners Selected by run flag first bit 2^0 second by 2^1 etc
-  const char *cJF[14]        = {"UA1","UA1","UA1","CDF","DA","SISCONE","FASTJET","FASTKT","UA1LO","FASTKT","FASTKT","FASTKT","FASTKT","FASTKT"};
-  const Float_t radius[14]   = {  0.4,  0.7,  1.0,  0.7, 0.7,      0.4,      0.4,     0.4,    0.7,    0.1 ,    0.2 ,    0.6 ,    0.8 ,   0.001};
-  UInt_t  flag[14]           = {    6,    7,    7,    7,   7,        7,       7,       15,      7,     9 ,     9,     9 ,     9 ,      9};
+  const char *cJF[14]        = {"UA1","UA1","UA1", "CDF", "CDF","DA","DA","SISCONE","SISCONE","FASTJET","FASTJET","FASTKT","FASTKT","UA1LO"};
+  const Float_t radius[14]   = {  0.4,  0.7,  1.0,  0.4,    0.7, 0.4, 0.7,      0.4,     0.7,      0.4,       0.7,     0.4,     0.7,    0.4};
+  UInt_t  flag[14]           = {    6,    7,    7,    7,      7,   7,   7,        7,       7,        7,         7,       7,       7,      7};
   // flag[5] = 0; // set siscone to 0 for proof mode...
   // flag first bit AOD, second bit AODMC2 third bit AODMC2 third (8) bit AOODMC2b (limited acceptance)
   // i.e. 7 all, 6 only MC2 and MC

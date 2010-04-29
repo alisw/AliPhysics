@@ -18,11 +18,12 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Boo
   }
 
   if(iFlag&(1<<7))js = AddTaskJetSpectrum2("jets","jetsAOD_FASTJET04",filterMask,iPhysicsSelection);
+
   if(iFlag&(1<<8))js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",filterMask,iPhysicsSelection);
   if(iFlag&(1<<9))js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",filterMask,iPhysicsSelection);
+  if(iFlag&(1<<10))js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",filterMask,iPhysicsSelection);
   
-
-  if(iFlag&(1<<10)){
+  if(iFlag&(1<<11)){
     js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask,iPhysicsSelection);
     js->SetRecEtaWindow(0.2);
   }
@@ -62,8 +63,6 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    // pwg4spec->SetAnalysisType(AliAnalysisTaskJetSpectrum2::kAnaMC);
    // if(iAODanalysis)pwg4spec->SetAODInput(kTRUE);
    // pwg4spec->SetDebugLevel(11); 
-   Printf("Rec %sXXX",bRec);
-   Printf("Gen %sXXX",bGen);
 
    pwg4spec->SetBranchGen(bGen); 
    pwg4spec->SetBranchRec(bRec); 
