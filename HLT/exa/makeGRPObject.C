@@ -79,8 +79,6 @@ void makeGRPObject(float l3Current,
   float cmsEnergy=14000;
   grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
   grpObj->SetBeamType("p-p");
-  grpObj->SetLHCLuminosity(0,(AliGRPObject::Stats)0);
-  grpObj->SetBeamIntensity(0,(AliGRPObject::Stats)0);
   grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
   grpObj->SetDipoleCurrent(dipoleCurrent,(AliGRPObject::Stats)0);  
   grpObj->SetL3Polarity(l3Polarity);  
@@ -133,9 +131,9 @@ void makeGRPObject(const char* arguments="",
 	if (arg.CompareTo("off", TString::kIgnoreCase)==0) {
 	  l3Current=0;
 	  l3Polarity=0;
-	} else if (arg.IsDigit()) {
+	} else if (arg.IsFloat()) {
 	  l3Current=arg.Atof();
-	  l3Polarity=l3Current<0 ? 0:1;
+	  l3Polarity=l3Current<0 ? 1:0;
 	  l3Current=TMath::Abs(l3Current);
 	} else {
 	  cerr << "Invalid parameter for key 'l3=', allowed is 'off' or current" << endl;
@@ -146,9 +144,9 @@ void makeGRPObject(const char* arguments="",
 	if (arg.CompareTo("off", TString::kIgnoreCase)==0) {
 	  dipoleCurrent=0;
 	  dipolePolarity=0;
-	} else if (arg.IsDigit()) {
+	} else if (arg.IsFloat()) {
 	  dipoleCurrent=arg.Atof();
-	  dipolePolarity=dipoleCurrent<0 ? 0:1;
+	  dipolePolarity=dipoleCurrent<0 ? 1:0;
 	  dipoleCurrent=TMath::Abs(dipoleCurrent);
 	} else {
 	  cerr << "Invalid parameter for key 'dipole=', allowed is 'off' or current" << endl;
