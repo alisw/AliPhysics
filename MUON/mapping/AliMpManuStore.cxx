@@ -199,6 +199,8 @@ Bool_t AliMpManuStore::ReadData(const AliMpDetElement* de, Int_t& nofManus)
 
     delete stringList;
   }
+  
+  delete &in;
    
   return kTRUE;
 }
