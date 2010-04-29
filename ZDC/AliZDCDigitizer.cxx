@@ -47,6 +47,8 @@
 
 class AliCDBStorage;
 class AliZDCPedestals;
+class AliZDCEnCalib;
+class AliZDCTowerCalib;
 
 ClassImp(AliZDCDigitizer)
 
@@ -57,6 +59,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(0), 
+  fEnCalibData(0),
+  fTowCalibData(0),
   fSpectators2Track(kFALSE)
 {
   // Default constructor    
@@ -70,6 +74,8 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(GetPedData()), 
+  fEnCalibData(GetEnCalibData()),
+  fTowCalibData(GetTowCalibData()),
   fSpectators2Track(kFALSE)
 {
   // Get calibration data
@@ -95,6 +101,8 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   fIsSignalInADCGate(digitizer.fIsSignalInADCGate),
   fFracLostSignal(digitizer.fFracLostSignal),
   fPedData(digitizer.fPedData),
+  fEnCalibData(digitizer.fEnCalibData),
+  fTowCalibData(digitizer.fTowCalibData),
   fSpectators2Track(digitizer.fSpectators2Track)
 {
   // Copy constructor
@@ -157,7 +165,7 @@ Bool_t AliZDCDigitizer::Init()
       	beamEnergy, beamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
     }
   }
-  else{
+  else if((beamType.CompareTo("A-A")) == 0){
     // PTM gains for Pb-Pb @ 2.7_2.7 A TeV ***************
     for(Int_t j = 0; j < 5; j++){
       fPMGain[0][j] = 50000.;
@@ -167,8 +175,6 @@ Bool_t AliZDCDigitizer::Init()
       fPMGain[4][j] = 100000.;
       fPMGain[5][j] = 100000.;
     }
-    AliInfo(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	beamEnergy, beamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
   }
     
   // ADC Caen V965
@@ -184,6 +190,9 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // Execute digitization
 
   // ------------------------------------------------------------
+  // !!! 2nd ZDC set added 
+  // *** 1st 3 arrays are digits from REAL (simulated) hits
+  // *** last 2 are copied from simulated digits
   // --- pm[0][...] = light in ZN side C  [C, Q1, Q2, Q3, Q4]
   // --- pm[1][...] = light in ZP side C [C, Q1, Q2, Q3, Q4]
   // --- pm[2][...] = light in ZEM [x, 1, 2, x, x]
@@ -595,6 +604,36 @@ AliZDCPedestals* AliZDCDigitizer::GetPedData() const
   if(!entry) AliFatal("No calibration data loaded!");  
 
   AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCEnCalib* AliZDCDigitizer::GetEnCalibData() const
+{
+
+  // Getting calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EnergyCalib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCEnCalib *calibdata = dynamic_cast<AliZDCEnCalib*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCTowerCalib* AliZDCDigitizer::GetTowCalibData() const
+{
+
+  // Getting calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TowerCalib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCTowerCalib *calibdata = dynamic_cast<AliZDCTowerCalib*>  (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

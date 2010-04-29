@@ -72,9 +72,11 @@ private:
   Float_t fFracLostSignal;      // fraction of lost signal
   
   AliZDCPedestals  *fPedData; 	   //! pedestal calibration data
+  AliZDCEnCalib    *fEnCalibData;  //! energy and equalization calibration data
+  AliZDCTowerCalib *fTowCalibData; //! energy and equalization calibration data
   
   Bool_t  fSpectators2Track;    // should digitizer track spectators
        
-  ClassDef(AliZDCDigitizer, 11)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 10)     // digitizer for ZDC
 };    
 #endif
