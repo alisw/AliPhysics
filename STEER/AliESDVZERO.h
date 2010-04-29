@@ -14,6 +14,13 @@ public:
 	      Float_t *Time, Float_t *Width, Bool_t *BBFlag, Bool_t *BGFlag);
 
   virtual ~AliESDVZERO() {};
+
+  enum {
+    kCorrectedLeadingTime = BIT(14),
+    kTriggerBitsFilled = BIT(15),
+    kDecisionFilled = BIT(16)
+  };
+  enum Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
   
   // Setters
   virtual void SetBBtriggerV0A(UInt_t BBtrigger) {fBBtriggerV0A=BBtrigger;}
@@ -32,6 +39,14 @@ public:
     {for(Int_t i=0;i<64;i++) fBBFlag[i]=BBFlag[i];} 
   virtual void SetBGFlag(Bool_t BGFlag[64])
     {for(Int_t i=0;i<64;i++) fBGFlag[i]=BGFlag[i];}   
+
+  void SetV0ATime(Float_t time) {fV0ATime = time;}
+  void SetV0CTime(Float_t time) {fV0CTime = time;}
+  void SetV0ATimeError(Float_t err) {fV0ATimeError = err;}
+  void SetV0CTimeError(Float_t err) {fV0CTimeError = err;}
+
+  void SetV0ADecision(Decision des) {fV0ADecision = des;}
+  void SetV0CDecision(Decision des) {fV0CDecision = des;}
          
   // Getters  
   Short_t  GetNbPMV0A();
@@ -61,6 +76,14 @@ public:
   Bool_t   BGTriggerV0C(Int_t i);  
   Bool_t   GetBBFlag(Int_t i);
   Bool_t   GetBGFlag(Int_t i);
+
+  Float_t  GetV0ATime() const { return fV0ATime; }
+  Float_t  GetV0CTime() const { return fV0CTime; }
+  Float_t  GetV0ATimeError() const { return fV0ATimeError; }
+  Float_t  GetV0CTimeError() const { return fV0CTimeError; }
+
+  Decision GetV0ADecision() const { return fV0ADecision; }
+  Decision GetV0CDecision() const { return fV0CDecision; }
   
   Bool_t OutOfRange(Int_t i, const char *s, Int_t upper) const;
   AliESDVZERO &operator=(const AliESDVZERO& source);
@@ -78,8 +101,16 @@ protected:
   Float_t fWidth[64];        //  time width for each channel
   Bool_t  fBBFlag[64];       //  BB Flags from Online V0 Electronics
   Bool_t  fBGFlag[64];       //  BG Flags from Online V0 Electronics
-  
-  ClassDef(AliESDVZERO,7)
+
+  Float_t fV0ATime;          // Average time in V0A
+  Float_t fV0CTime;          // Average time in V0C
+  Float_t fV0ATimeError;     // Error in the average time in V0A
+  Float_t fV0CTimeError;     // Error in the average time in V0C
+
+  Decision fV0ADecision;     // V0A final decision based on average time of channels
+  Decision fV0CDecision;     // V0C final decision based on average time of channels
+
+  ClassDef(AliESDVZERO,8)
 };
 
 #endif

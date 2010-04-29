@@ -24,16 +24,16 @@
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
-#include <TTree.h>
-#include <TClonesArray.h>
+#include <TF1.h>
+#include <TMath.h>
 
 #include <AliGeomManager.h>
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliVZEROTriggerMask.h"
-#include "AliVZEROdigit.h"
+#include "AliVZEROConst.h"
+#include "AliVZEROCalibData.h"
+#include "AliESDVZERO.h"
+#include "AliVZEROReconstructor.h"
 
 //______________________________________________________________________
 ClassImp(AliVZEROTriggerMask)
@@ -43,17 +43,29 @@ ClassImp(AliVZEROTriggerMask)
 AliVZEROTriggerMask::AliVZEROTriggerMask()
   :TObject(),
    fAdcThresHold(0.0),
-   fTimeWindowWidthBBA(50.0),
-   fTimeWindowWidthBGA(20.0),
-   fTimeWindowWidthBBC(50.0),
-   fTimeWindowWidthBGC(20.0),
-   fBBtriggerV0A(0),
-   fBGtriggerV0A(0),
-   fBBtriggerV0C(0),
-   fBGtriggerV0C(0)
-   
+   fTimeWindowBBALow(-9.5),
+   fTimeWindowBBAUp(22.5),
+   fTimeWindowBGALow(-2.5),
+   fTimeWindowBGAUp(5.0),
+   fTimeWindowFakeALow(-17.5),
+   fTimeWindowFakeAUp(-9.5),
+   fTimeWindowBBCLow(-2.5),
+   fTimeWindowBBCUp(22.5),
+   fTimeWindowBGCLow(-2.5),
+   fTimeWindowBGCUp(2.5),
+   fTimeWindowFakeCLow(-22.5),
+   fTimeWindowFakeCUp(-8.5),
+   fV0ADist(0),
+   fV0CDist(0)
 {
-   SetAdcThreshold();
+  // Default constructor
+  //
+  Float_t zV0A = TMath::Abs(GetZPosition("VZERO/V0A"));
+  Float_t zV0C = TMath::Abs(GetZPosition("VZERO/V0C"));
+
+  // distance in time units from nominal vertex to V0
+  fV0ADist = zV0A/TMath::Ccgs()*1e9;
+  fV0CDist = zV0C/TMath::Ccgs()*1e9;
 }
 
 //________________________________________________________________________________
@@ -62,8 +74,10 @@ Double_t AliVZEROTriggerMask::GetZPosition(const char* symname){
 //
   Double_t *tr;
   TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
-  if (!pne) return 0;
-
+  if (!pne) {
+    AliFatalClass(Form("TGeoPNEntry with symbolic name %s does not exist!",symname));
+    return 0;
+  }
 
   TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
   if(pnode){
@@ -72,7 +86,7 @@ Double_t AliVZEROTriggerMask::GetZPosition(const char* symname){
   }else{
           const char* path = pne->GetTitle();
           if(!gGeoManager->cd(path)){
-                  AliErrorClass(Form("Volume path %s not valid!",path));
+                  AliFatalClass(Form("Volume path %s not valid!",path));
                   return 0;
           }
          tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
@@ -84,57 +98,106 @@ Double_t AliVZEROTriggerMask::GetZPosition(const char* symname){
 //________________________________________________________________________________
 
 
-void AliVZEROTriggerMask::FillMasks(TTree* vzeroDigitsTree,
-				TClonesArray* const vzeroDigits)
+void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
+				    AliVZEROCalibData *cal,
+				    TF1 *slewing)
 {
-// Fill up the trigger mask word using the TDC 
+  // Fill up the trigger mask word
+  // using the TDC data (already corrected for
+  // slewing and misalignment between channels)
 
-  const Double_t lightSpeed = 2.9979245800; // cm/100 ps
-  Float_t zV0A = TMath::Abs(GetZPosition("VZERO/V0A"));
-  Float_t zV0C = TMath::Abs(GetZPosition("VZERO/V0C"));
+  esdV0->SetBit(AliESDVZERO::kTriggerBitsFilled,kTRUE);
+  esdV0->SetBit(AliESDVZERO::kDecisionFilled,kTRUE);
 
-  // distance in time units from nominal vertex to V0
-  Float_t v0aDist = zV0A/lightSpeed; // 100 of picoseconds
-  Float_t v0cDist = zV0C/lightSpeed; // 100 of picoseconds
-  Float_t bunchSeparation = 1000.0; // 100 of picoseconds
+  UInt_t aBBtriggerV0A = 0; // bit mask for Beam-Beam trigger in V0A
+  UInt_t aBGtriggerV0A = 0; // bit mask for Beam-Gas trigger in V0A
+  UInt_t aBBtriggerV0C = 0; // bit mask for Beam-Beam trigger in V0C
+  UInt_t aBGtriggerV0C = 0; // bit mask for Beam-Gas trigger in V0C
 
-  // mask
-  UInt_t one=1;
- 
-  // loop over vzero entries
-  Int_t nEntries = (Int_t)vzeroDigitsTree->GetEntries();
-  for (Int_t e=0; e<nEntries; e++) {
-    vzeroDigitsTree->GetEvent(e);
+  const Float_t p1 = 2.19; // photostatistics term in the time resolution
+  const Float_t p2 = 1.31; // slewing related term in the time resolution
 
-    Int_t nDigits = vzeroDigits->GetEntriesFast();
-    
-    for (Int_t d=0; d<nDigits; d++) {
-      //      vzeroDigitsTree->GetEvent(d);
-      AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(d);
-      
-      Int_t   pmNumber   = digit->PMNumber();
-      Float_t adc        = digit->ADC();
-      Float_t tdc        = digit->Time()*10.0; // in 100 of picoseconds
+  // loop over vzero channels
+  Float_t timeAW = 0,timeCW = 0;
+  Float_t weightA = 0,weightC = 0;
+  Int_t ntimeA = 0, ntimeC = 0;
+  for (Int_t i = 0; i < 64; ++i) {
+    Float_t adc = esdV0->GetAdc(i);
+    if (adc > fAdcThresHold) {
+      Float_t tdc = esdV0->GetTime(i);
+      if (tdc > (AliVZEROReconstructor::kInvalidTime + 1e-6)) {
+	Float_t nphe = adc*kChargePerADC/(cal->GetGain(i)*TMath::Qe());
+	Float_t timeErr = TMath::Sqrt(kIntTimeRes*kIntTimeRes+
+				      p1*p1/nphe+
+				      p2*p2*(slewing->GetParameter(0)*slewing->GetParameter(1))*(slewing->GetParameter(0)*slewing->GetParameter(1))*
+				      TMath::Power(adc/cal->GetDiscriThr(i),2.*(slewing->GetParameter(1)-1.)));
 
-      if (adc>fAdcThresHold) {
-	if (pmNumber<32) { // in V0C
-	  if (tdc>(v0cDist-fTimeWindowWidthBBC/2.0) &&
-	      tdc<(v0cDist+fTimeWindowWidthBBC/2.0))
-	    fBBtriggerV0C+=(one<<pmNumber);
-	  if (tdc>(bunchSeparation-v0cDist-fTimeWindowWidthBGC/2.0) &&
-	      tdc<(bunchSeparation-v0cDist+fTimeWindowWidthBGC/2.0))
-	   fBGtriggerV0C+=(one<<pmNumber); 
+	if (i < 32) { // in V0C
+	  ntimeC++;
+	  timeCW += tdc/(timeErr*timeErr);
+	  weightC += 1.0/(timeErr*timeErr);
+
+	  if (tdc > (fV0CDist + fTimeWindowBBCLow) &&
+	      tdc < (fV0CDist + fTimeWindowBBCUp))
+	    aBBtriggerV0C |= (1 << i);
+	  if (tdc > (-fV0CDist + fTimeWindowBGCLow) &&
+	      tdc < (-fV0CDist + fTimeWindowBGCUp))
+	    aBGtriggerV0C |= (1 << i); 
 	}
-	if (pmNumber>31) { // in V0A
-	  Int_t shift = pmNumber-32;
-	  if (tdc>(v0aDist-fTimeWindowWidthBBA/2.0) &&
-	      tdc<(v0aDist+fTimeWindowWidthBBA/2.0)) 
-	    fBBtriggerV0A+=(one<<shift);
-	  if (tdc>(bunchSeparation-v0aDist-fTimeWindowWidthBGA/2.0) &&
-	      tdc<(bunchSeparation-v0aDist+fTimeWindowWidthBGA/2.0))
-	    fBGtriggerV0A+=(one<<shift); 
+	else { // in V0A
+	  ntimeA++;
+	  timeAW += tdc/(timeErr*timeErr);
+	  weightA += 1.0/(timeErr*timeErr);
+
+	  Int_t shift = i - 32;
+	  if (tdc > (fV0ADist + fTimeWindowBBALow) &&
+	      tdc < (fV0ADist + fTimeWindowBBAUp)) 
+	    aBBtriggerV0A |= (1 << shift);
+	  if (tdc > (-fV0ADist + fTimeWindowBGALow) &&
+	      tdc < (-fV0ADist + fTimeWindowBGAUp))
+	    aBGtriggerV0A |= (1 << shift); 
 	}
       }
-    } // end of loop over digits
-  } // end of loop over events in digits tree
+    }
+  } // end of loop over channels
+
+  esdV0->SetBBtriggerV0A(aBBtriggerV0A);
+  esdV0->SetBGtriggerV0A(aBGtriggerV0A);
+  esdV0->SetBBtriggerV0C(aBBtriggerV0C);
+  esdV0->SetBGtriggerV0C(aBGtriggerV0C);
+
+  if (weightA > 0) timeAW = timeAW/weightA;
+  else timeAW = AliVZEROReconstructor::kInvalidTime;
+
+  if (weightC > 0) timeCW = timeCW/weightC;
+  else timeCW = AliVZEROReconstructor::kInvalidTime;
+
+  esdV0->SetV0ATime(timeAW);
+  esdV0->SetV0CTime(timeCW);
+  esdV0->SetV0ATimeError((weightA > 0) ? (1./TMath::Sqrt(weightA)) : 0);
+  esdV0->SetV0ATimeError((weightC > 0) ? (1./TMath::Sqrt(weightC)) : 0);
+
+  esdV0->SetV0ADecision(AliESDVZERO::kV0Empty);
+  esdV0->SetV0CDecision(AliESDVZERO::kV0Empty);
+
+  if (timeAW > (fV0ADist + fTimeWindowBBALow) &&
+      timeAW < (fV0ADist + fTimeWindowBBAUp)) 
+    esdV0->SetV0ADecision(AliESDVZERO::kV0BB);
+  else if (timeAW > (-fV0ADist + fTimeWindowBGALow) &&
+	   timeAW < (-fV0ADist + fTimeWindowBGAUp))
+    esdV0->SetV0ADecision(AliESDVZERO::kV0BG);
+  else if (timeAW > (fV0ADist + fTimeWindowFakeALow) &&
+	   timeAW < (fV0ADist + fTimeWindowFakeAUp))
+    esdV0->SetV0ADecision(AliESDVZERO::kV0Fake);
+
+  if (timeCW > (fV0CDist + fTimeWindowBBCLow) &&
+      timeCW < (fV0CDist + fTimeWindowBBCUp)) 
+    esdV0->SetV0CDecision(AliESDVZERO::kV0BB);
+  else if (timeCW > (-fV0CDist + fTimeWindowBGCLow) &&
+	   timeCW < (-fV0CDist + fTimeWindowBGCUp))
+    esdV0->SetV0CDecision(AliESDVZERO::kV0BG);
+  else if (timeCW > (fV0CDist + fTimeWindowFakeCLow) &&
+	   timeCW < (fV0CDist + fTimeWindowFakeCUp))
+    esdV0->SetV0CDecision(AliESDVZERO::kV0Fake);
+
 }

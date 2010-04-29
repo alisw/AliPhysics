@@ -19,6 +19,7 @@
 #include "AliESDVZERO.h"
 #include "AliVZERORecoParam.h"
 
+class TF1;
 class AliVZEROCalibData;
 class AliESDEvent;
 class AliESDVZEROfriend;
@@ -51,9 +52,10 @@ public:
   void GetCollisionMode();
   
   AliVZEROCalibData *GetCalibData() const; 
+  Float_t            CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
 
   enum {kInvalidADC   =  -1024,
-        kInvalidTime  =  -1};
+        kInvalidTime  =  -1024};
 
 protected:
   AliESDVZERO*        fESDVZERO;       // ESD output object  
@@ -65,13 +67,15 @@ private:
   AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
   AliVZEROCalibData* fCalibData;      //! calibration data
+  Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
+  TF1*               fTimeSlewing;    //! Function for time slewing correction
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
 
   mutable TClonesArray *fDigitsArray; // clones-array for ConvertDigits() and FillESD()
 
-  ClassDef(AliVZEROReconstructor, 1)  // class for the VZERO reconstruction
+  ClassDef(AliVZEROReconstructor, 2)  // class for the VZERO reconstruction
 };
 
 #endif

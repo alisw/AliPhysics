@@ -9,7 +9,13 @@ AliESDVZERO::AliESDVZERO()
    fBBtriggerV0A(0),
    fBGtriggerV0A(0),
    fBBtriggerV0C(0),
-   fBGtriggerV0C(0)
+   fBGtriggerV0C(0),
+   fV0ATime(-1024),
+   fV0CTime(-1024),
+   fV0ATimeError(0),
+   fV0CTimeError(0),
+   fV0ADecision(kV0Invalid),
+   fV0CDecision(kV0Invalid)
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++){ 
@@ -28,7 +34,13 @@ AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
    fBBtriggerV0A(o.fBBtriggerV0A),
    fBGtriggerV0A(o.fBGtriggerV0A),
    fBBtriggerV0C(o.fBBtriggerV0C),
-   fBGtriggerV0C(o.fBGtriggerV0C)
+   fBGtriggerV0C(o.fBGtriggerV0C),
+   fV0ATime(o.fV0ATime),
+   fV0CTime(o.fV0CTime),
+   fV0ATimeError(o.fV0ATimeError),
+   fV0CTimeError(o.fV0CTimeError),
+   fV0ADecision(o.fV0ADecision),
+   fV0CDecision(o.fV0CDecision)
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++) {
@@ -50,8 +62,13 @@ AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
    fBBtriggerV0A(BBtriggerV0A),
    fBGtriggerV0A(BGtriggerV0A),
    fBBtriggerV0C(BBtriggerV0C),
-   fBGtriggerV0C(BGtriggerV0C)
-
+   fBGtriggerV0C(BGtriggerV0C),
+   fV0ATime(-1024),
+   fV0CTime(-1024),
+   fV0ATimeError(0),
+   fV0CTimeError(0),
+   fV0ADecision(kV0Invalid),
+   fV0CDecision(kV0Invalid)
 {
    // Constructor
    for(Int_t j=0; j<64; j++) {
@@ -75,6 +92,14 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
   fBGtriggerV0A=o.fBGtriggerV0A;
   fBBtriggerV0C=o.fBBtriggerV0C;
   fBGtriggerV0C=o.fBGtriggerV0C;
+
+  fV0ATime = o.fV0ATime;
+  fV0CTime = o.fV0CTime;
+  fV0ATimeError = o.fV0ATimeError;
+  fV0CTimeError = o.fV0CTimeError;
+  fV0ADecision = o.fV0ADecision;
+  fV0CDecision = o.fV0CDecision;
+
    for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = o.fMultiplicity[j];
        fAdc[j]    = o.fAdc[j];

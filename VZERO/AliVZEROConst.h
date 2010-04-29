@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 
-const Float_t kIntTimeRes = 0.5; // intrinsic time resolution of the scintillator
+const Float_t kIntTimeRes = 0.39; // intrinsic time resolution of the scintillator
 const Float_t kV0CDelayCables = 8.1; // delay cables on the C side (in ns)
 const Float_t kV0Offset = 1461.4; // general V0 offset between the TDCs and the trigger
 const Float_t kADCTimeOffset = -189.0; // ADC sampling clock offset (in ns)

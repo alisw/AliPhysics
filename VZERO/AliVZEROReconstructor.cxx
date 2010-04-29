@@ -21,6 +21,9 @@
 ///                                                                          //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TH1F.h>
+#include <TF1.h>
+
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliGRPObject.h"
@@ -29,6 +32,7 @@
 #include "AliCDBEntry.h"
 #include "AliVZEROReconstructor.h"
 #include "AliVZERORawStream.h"
+#include "AliVZEROConst.h"
 #include "AliESDEvent.h"
 #include "AliVZEROTriggerMask.h"
 #include "AliESDfriend.h"
@@ -36,6 +40,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROCalibData.h"
 #include "AliRunInfo.h"
+#include "AliCTPTimeParams.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -44,7 +49,8 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
                         fESDVZERO(0x0),
                         fESD(0x0),
                         fESDVZEROfriend(0x0),
-                        fCalibData(GetCalibData()),
+                        fCalibData(NULL),
+                        fTimeSlewing(NULL),
                         fCollisionMode(0),
                         fBeamEnergy(0.),
                         fDigitsArray(0)
@@ -52,8 +58,30 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
   // Default constructor  
   // Get calibration data
   
-  // fCalibData = GetCalibData(); 
+  fCalibData = GetCalibData();
 
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry2 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeDelays");
+  if (!entry2) AliFatal("VZERO time delays are not found in OCDB !");
+  TH1F *delays = (TH1F*)entry2->GetObject();
+
+  AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeSlewing");
+  if (!entry3) AliFatal("VZERO time slewing function is not found in OCDB !");
+  fTimeSlewing = (TF1*)entry3->GetObject();
+
+  for(Int_t i = 0 ; i < 64; ++i) {
+    Int_t board = AliVZEROCalibData::GetBoardNumber(i);
+    fTimeOffset[i] = (((Float_t)fCalibData->GetTriggerCountOffset(board)-
+			(Float_t)fCalibData->GetRollOver(board))*25.0+
+		       fCalibData->GetTimeOffset(i)+
+		       l1Delay+
+		       delays->GetBinContent(i+1)+
+		       kV0Offset);
+  }
 }
 
 
@@ -237,7 +265,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   for (Int_t i=0; i<64; i++){
        adc[i]    = 0.0;
        mult[i]   = 0.0;
-       time[i]   = 0.0;
+       time[i]   = kInvalidTime;
        width[i]  = 0.0;
        BBFlag[i] = kFALSE;
        BGFlag[i] = kFALSE;
@@ -258,7 +286,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 	Int_t k = pmNumber+64*integrator;
         Float_t  pedestal    = fCalibData->GetPedestal(k);
         adc[pmNumber]   =  digit->ADC() - pedestal; 
-        time[pmNumber]  =  digit->Time();
+        time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
 	width[pmNumber] =  digit->Width();
 	BBFlag[pmNumber]=  digit->BBFlag();
 	BGFlag[pmNumber]=  digit->BGFlag();
@@ -271,6 +299,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     } // end of loop over digits
   } // end of loop over events in digits tree
          
+  fESDVZERO->SetBit(AliESDVZERO::kCorrectedLeadingTime,kTRUE);
   fESDVZERO->SetMultiplicity(mult);
   fESDVZERO->SetADC(adc);
   fESDVZERO->SetTime(time);
@@ -278,21 +307,12 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   fESDVZERO->SetBBFlag(BBFlag);
   fESDVZERO->SetBGFlag(BGFlag);
 
-  // now get the trigger mask
+  // now fill the V0 decision and channel flags
+  {
+    AliVZEROTriggerMask triggerMask;
+    triggerMask.FillMasks(fESDVZERO, fCalibData, fTimeSlewing);
+  }
 
-  AliVZEROTriggerMask *TriggerMask = new AliVZEROTriggerMask();
-  TriggerMask->SetAdcThreshold(10.0/2.0);
-  TriggerMask->SetTimeWindowWidthBBA(50);
-  TriggerMask->SetTimeWindowWidthBGA(20);
-  TriggerMask->SetTimeWindowWidthBBC(50);
-  TriggerMask->SetTimeWindowWidthBGC(20);
-  TriggerMask->FillMasks(digitsTree, fDigitsArray);
-
-  fESDVZERO->SetBBtriggerV0A(TriggerMask->GetBBtriggerV0A());
-  fESDVZERO->SetBGtriggerV0A(TriggerMask->GetBGtriggerV0A());
-  fESDVZERO->SetBBtriggerV0C(TriggerMask->GetBBtriggerV0C());
-  fESDVZERO->SetBGtriggerV0C(TriggerMask->GetBGtriggerV0C());
-  
   if (esd) { 
      AliDebug(1, Form("Writing VZERO data to ESD tree"));
      esd->SetVZEROData(fESDVZERO);
@@ -374,17 +394,6 @@ AliVZEROCalibData* AliVZEROReconstructor::GetCalibData() const
 
   entry = man->Get("VZERO/Calib/Data");
 
-//   if(!entry){
-//     AliWarning("Load of calibration data from default storage failed!");
-//     AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
-//     Int_t runNumber = man->GetRun();
-//     entry = man->GetStorage("local://$ALICE_ROOT/OCDB")
-//       ->Get("VZERO/Calib/Data",runNumber);
-// 	
-//   }
-
-  // Retrieval of data in directory VZERO/Calib/Data:
-
   AliVZEROCalibData *calibdata = 0;
 
   if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
@@ -393,3 +402,23 @@ AliVZEROCalibData* AliVZEROReconstructor::GetCalibData() const
   return calibdata;
 }
 
+Float_t AliVZEROReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const
+{
+  // Correct the leading time
+  // for slewing effect and
+  // misalignment of the channels
+  if (time < 1e-6) return kInvalidTime;
+
+  // Channel alignment and general offset subtraction
+  if (i < 32) time -= kV0CDelayCables;
+  time -= fTimeOffset[i];
+
+  // In case of pathological signals
+  if (adc < 1e-6) return time;
+
+  // Slewing correction
+  Float_t thr = fCalibData->GetDiscriThr(i);
+  time -= fTimeSlewing->Eval(adc/thr);
+
+  return time;
+}
