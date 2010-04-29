@@ -50,6 +50,11 @@ class AliTRDfeeParam : public TObject
   virtual Int_t    GetRobSide(Int_t irob) const;
   virtual Int_t    GetColSide(Int_t icol) const;
 
+  static  UInt_t   AliToExtAli(Int_t rob, Int_t aliid);  // Converts the MCM-ROB combination to the extended MCM ALICE ID (used to address MCMs on the SCSN Bus)
+  static  Int_t    ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t rocType, Int_t *list, Int_t listSize);  // translates an extended MCM ALICE ID to a list of MCMs
+  static  Short_t  ChipmaskToMCMlist( UInt_t cmA, UInt_t cmB, UShort_t linkpair, Int_t *mcmList, Int_t listSize );
+  static  Short_t  GetRobAB( UShort_t robsel, UShort_t linkpair );  // Returns the chamber side (A=0, B=0) of a ROB
+
   static  Float_t  GetSamplingFrequency() { return (Float_t)fgkLHCfrequency / 4000000.0; }
   static  Int_t    GetNmcmRob()           { return fgkNmcmRob;      }
   static  Int_t    GetNmcmRobInRow()      { return fgkNmcmRobInRow; }

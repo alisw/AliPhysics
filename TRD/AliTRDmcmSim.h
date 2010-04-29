@@ -117,6 +117,21 @@ class AliTRDmcmSim : public TObject {
   static  ostream&  Raw  (ostream &os);                       // manipulator to activate raw output
   static  ostream&  Text (ostream &os);                       // manipulator to activate text output
 
+	  // PID
+	  Int_t GetPID(Int_t q0, Int_t q1);
+	  void PrintPidLutHuman();
+	  void PrintPidLutDatx(ostream& os) const;
+	  void SetPIDLutScaleDMEM();
+	  void SetPIDLut(TH2F *lut);
+	  void SetPIDLut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1);
+
+	  // I/O
+	  void PrintFitRegXml(ostream& os) const;
+	  void PrintTrackletsXml(ostream& os) const;
+	  void PrintAdcDatHuman(ostream& os) const;
+	  void PrintAdcDatXml(ostream& os) const;
+	  void PrintAdcDatDatx(ostream& os, Bool_t broadcast=kFALSE) const;
+
  protected:
 	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized
 	  

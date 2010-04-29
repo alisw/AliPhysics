@@ -468,7 +468,7 @@ void AliTRDmcmSim::Draw(Option_t* const option)
       AliTRDtrackletMCM *trkl = (AliTRDtrackletMCM*) (*fTrackletArray)[iTrkl];
       Float_t padWidth = 0.635 + 0.03 * (fDetector % 6);
       Float_t offset   = padWidth/256. * ((((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) - ((18*4*2 - 18*2 - 3) << 7)); // revert adding offset in FitTracklet
-      Int_t   ndrift   = fTrapConfig->GetDmem(0xc025, fDetector, fRobPos, fMcmPos) >> 5; 
+      Int_t   ndrift   = fTrapConfig->GetDmemUnsigned(0xc025, fDetector, fRobPos, fMcmPos) >> 5; 
       Float_t slope    = trkl->GetdY() * 140e-4 / ndrift; 
 
       Int_t t0 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS);
@@ -1503,12 +1503,12 @@ void AliTRDmcmSim::FitTracklet()
   UInt_t scaleY = (UInt_t) ((0.635 + 0.03 * layer)/(256.0 * 160.0e-4) * shift);
   UInt_t scaleD = (UInt_t) ((0.635 + 0.03 * layer)/(256.0 * 140.0e-4) * shift);
 
-  Int_t deflCorr = fTrapConfig->GetDmem(0xc022, fDetector, fRobPos, fMcmPos);
-  Int_t ndrift   = fTrapConfig->GetDmem(0xc025, fDetector, fRobPos, fMcmPos); 
+  Int_t deflCorr = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCorr, fDetector, fRobPos, fMcmPos);
+  Int_t ndrift   = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos); 
 
   // local variables for calculation
   Long64_t mult, temp, denom; //???
-  UInt_t q0, q1, qTotal;          // charges in the two windows and total charge
+  UInt_t q0, q1, pid;             // charges in the two windows and total charge
   UShort_t nHits;                 // number of hits
   Int_t slope, offset;            // slope and offset of the tracklet
   Int_t sumX, sumY, sumXY, sumX2; // fit sums from fit registers
@@ -1576,8 +1576,8 @@ void AliTRDmcmSim::FitTracklet()
 
       AliDebug(5, Form("Det: %3i, ROB: %i, MCM: %2i: deflection: %i, min: %i, max: %i", 
                        fDetector, fRobPos, fMcmPos, slope, 
-                       fTrapConfig->GetDmem(0xc030 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos), 
-                       fTrapConfig->GetDmem(0xc031 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
+                       (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos), 
+                       (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
 
       AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i", 
 		       sumX, sumX2, sumY, sumY2, sumXY));
@@ -1596,8 +1596,8 @@ void AliTRDmcmSim::FitTracklet()
 
       Bool_t rejected = kFALSE;
       // deflection range table from DMEM
-      if ((slope < fTrapConfig->GetDmem(0xc030 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)) || 
-          (slope > fTrapConfig->GetDmem(0xc031 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)))
+      if ((slope < ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))) || 
+          (slope > ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))))
         rejected = kTRUE;
 
       if (rejected && GetApplyCut())
@@ -1618,15 +1618,14 @@ void AliTRDmcmSim::FitTracklet()
           AliWarning("Overflow in offset");
         offset  = offset & 0x1FFF; // 13 bit
 
-	qTotal = 0; // set to zero as long as no reasonable PID calculation is available 
-                    // before: GetPID(q0/length/fgChargeNorm, q1/length/fgChargeNorm);
+	pid = GetPID(q0 >> fgkAddDigits, q1 >> fgkAddDigits);  // divided by 4 because in simulation there are two additional decimal places
 
-        if (qTotal > 0xff)
-          AliWarning("Overflow in charge");
-        qTotal  = qTotal & 0xFF; // 8 bit, exactly like in the TRAP program
+        if (pid > 0xff)
+          AliWarning("Overflow in PID");
+        pid  = pid & 0xFF; // 8 bit, exactly like in the TRAP program
         
         // assemble and store the tracklet word
-        fMCMT[cpu] = (qTotal << 24) | (padrow << 20) | (slope << 13) | offset;
+        fMCMT[cpu] = (pid << 24) | (padrow << 20) | (slope << 13) | offset;
 
         // calculate MC label
         Int_t mcLabel = -1;
@@ -1811,6 +1810,150 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
     }
   }
 }
+
+
+// ******************************
+// PID section
+//
+// Memory area for the LUT: 0xC100 to 0xC3FF
+//
+// The addresses for the parameters (the order is optimized for maximum calculation speed in the MCMs):
+// 0xC028: cor1
+// 0xC029: nBins(sF)
+// 0xC02A: cor0
+// 0xC02B: TableLength
+// Defined in AliTRDtrapConfig.h
+//
+// The algorithm implemented in the TRAP program of the MCMs (Venelin Angelov)
+//  1) set the read pointer to the beginning of the Parameters in DMEM
+//  2) shift right the FitReg with the Q0 + (Q1 << 16) to get Q1
+//  3) read cor1 with rpointer++
+//  4) start cor1*Q1
+//  5) read nBins with rpointer++
+//  6) start nBins*cor1*Q1
+//  7) read cor0 with rpointer++
+//  8) swap hi-low parts in FitReg, now is Q1 + (Q0 << 16)
+//  9) shift right to get Q0
+// 10) start cor0*Q0
+// 11) read TableLength
+// 12) compare cor0*Q0 with nBins
+// 13) if >=, clip cor0*Q0 to nBins-1
+// 14) add cor0*Q0 to nBins*cor1*Q1
+// 15) compare the result with TableLength
+// 16) if >=, clip to TableLength-1
+// 17) read from the LUT 8 bits
+
+
+Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
+{
+   ULong64_t addrQ0;
+   ULong64_t addr;
+
+   UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTnbins);  // number of bins in q0 / 4 !!
+   UInt_t pidTotalSize = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength);
+
+   ULong_t corrQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTcor0, fDetector, fRobPos, fMcmPos);
+   ULong_t corrQ1 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTcor1, fDetector, fRobPos, fMcmPos);
+
+   addrQ0 = corrQ0;
+   addrQ0 = (((addrQ0*q0)>>16)>>16); // because addrQ0 = (q0 * corrQ0) >> 32; does not work for unknown reasons
+   //   std::cout << "addrQ0: " << addrQ0 << ", q0: " << q0 << ", corrQ0: " << corrQ0 << std::endl;
+
+   if(addrQ0 >= nBinsQ0) {  // check for overflow
+      AliDebug(5,Form("Overflow in q0: %i/4 is bigger then %i", addrQ0, nBinsQ0));
+      addrQ0 = nBinsQ0 -1;
+   } 
+
+   addr = corrQ1;
+   addr = (((addr*q1)>>16)>>16);
+   addr = addrQ0 + nBinsQ0*addr; // because addr = addrQ0 + nBinsQ0* (((corrQ1*q1)>>32); does not work
+   //   std::cout << "addr: " <<  addr << ", q1: " << q1 << ", corrQ1: " << corrQ1 << std::endl;
+
+   if(addr >= pidTotalSize) {
+      AliDebug(5,Form("Overflow in q1. Address %i/4 is bigger then %i", addr, pidTotalSize));
+      addr = pidTotalSize -1;
+   } 
+
+   // For a LUT with 11 input and 8 output bits, the first memory address is set to  LUT[0] | (LUT[1] << 8) | (LUT[2] << 16) | (LUT[3] << 24)
+   // and so on
+   UInt_t result = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTStart+(addr/4));
+   return (result>>((addr%4)*8)) & 0xFF;
+}
+
+
+
+void AliTRDmcmSim::SetPIDLut(TH2F *lut)
+{
+  // set a user-defined PID LUT from a 2D histogram
+
+   UInt_t nBinsQ0 = lut->GetNbinsX();
+   UInt_t nBinsQ1 = lut->GetNbinsY();
+
+   Double_t scaleQ0 = lut->GetNbinsX() / lut->GetXaxis()->GetXmax();
+   Double_t scaleQ1 = lut->GetNbinsY() / lut->GetYaxis()->GetXmax();
+   fTrapConfig->SetPIDscale(scaleQ0, scaleQ1);
+   SetPIDLutScaleDMEM();
+      
+   UInt_t fPIDsizeX = 0;
+   if(nBinsQ0%4==0)
+      fPIDsizeX=nBinsQ0/4;
+   else
+      fPIDsizeX = (nBinsQ0/4)+1;
+
+   fTrapConfig->SetDmem(AliTRDtrapConfig::fgkDmemAddrLUTnbins, nBinsQ0); // number of bins in q0
+   fTrapConfig->SetDmem(AliTRDtrapConfig::fgkDmemAddrLUTLength, nBinsQ0*nBinsQ1);  // total size of the table in BYTES (does work because each bin is 8 bit wide)
+
+   UInt_t buffer;
+   Int_t dmemAddr=0;
+   if(nBinsQ0*nBinsQ1/4 < AliTRDtrapConfig::fgkDmemAddrLUTEnd - AliTRDtrapConfig::fgkDmemAddrLUTStart)  {  // /4 because each memory address contains 4 LUT entries
+      for (UInt_t iy = 0; iy < nBinsQ1; iy++) {
+	 for (UInt_t ix = 0; ix < fPIDsizeX; ix++) {
+	    buffer=0;
+	    for(UInt_t isub=0; isub<4; isub++) {
+	       if(ix*4+isub<nBinsQ0) {
+		  buffer |= ((Int_t) (255. * lut->GetBinContent(ix*4+isub +1, iy +1))) << isub*8 ;
+		  //AliDebug(10, Form("x: %d, y: %d -- %d, %d \n", ix*4+isub, iy, lut->GetBinContent(ix*4+isub, iy), ((Int_t) (255. * lut->GetBinContent(ix*4+isub +1, iy +1)))));
+	       }
+	       else
+		  buffer |= 0<<isub*8;
+	    }
+	    dmemAddr = AliTRDtrapConfig::fgkDmemAddrLUTStart+ix+(iy*fPIDsizeX);
+	    if(dmemAddr >= AliTRDtrapConfig::fgkDmemAddrLUTEnd) {
+	       AliError("LUT table size is too big!");
+	    }
+	    else {
+	       //	       AliDebug(8,Form("x: %d, y: %d is memory address %d, setting to %d \n", ix, iy, dmemAddr, buffer));
+	       fTrapConfig->SetDmem(AliTRDtrapConfig::fgkDmemAddrLUTStart+ix+(iy*fPIDsizeX), buffer);
+	    }
+	 }
+      }
+   }
+   else {
+      AliError("LUT table is too big!");
+   }
+}
+
+
+void AliTRDmcmSim::SetPIDLutScaleDMEM()
+{
+   Double_t scaleQ[2];
+   fTrapConfig->GetPIDscale(scaleQ);
+   
+   ULong64_t scale = 1;
+   scale = scale<<32;
+
+   fTrapConfig->SetDmem(AliTRDtrapConfig::fgkDmemAddrLUTcor0, TMath::Nint(scale*scaleQ[0]));
+   fTrapConfig->SetDmem(AliTRDtrapConfig::fgkDmemAddrLUTcor1, TMath::Nint(scale*scaleQ[1]));
+}
+
+
+void AliTRDmcmSim::SetPIDLut(Int_t* /* lut */, Int_t /* nbinsq0 */, Int_t /* nbinsq1 */)
+{
+   ;
+}
+
+
+
 
 // help functions, to be cleaned up
 
@@ -2095,4 +2238,217 @@ ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
   }
 
   return os;
+}
+
+
+void AliTRDmcmSim::PrintFitRegXml(ostream& os) const
+{
+   bool tracklet=false;
+
+  for (Int_t cpu = 0; cpu < 4; cpu++) {
+     if(fFitPtr[cpu] != 31)
+	tracklet=true;
+  }
+
+  if(tracklet==true) {
+     os << "<nginject>" << std::endl;
+     os << "<ack roc=\""<< fDetector <<  "\" cmndid=\"0\">" << std::endl;
+     os << "<dmem-readout>" << std::endl;
+     os << "<d det=\"" << fDetector << "\">" << std::endl;
+     os << " <ro-board rob=\"" << fRobPos << "\">" << std::endl;
+     os << "  <m mcm=\"" << fMcmPos << "\">" << std::endl;
+     
+     for(int cpu=0; cpu<4; cpu++) {
+	os << "   <c cpu=\"" << cpu << "\">" << std::endl;
+	if(fFitPtr[cpu] != 31) {
+	   for(int adcch=fFitPtr[cpu]; adcch<fFitPtr[cpu]+2; adcch++) {
+	      os << "    <ch chnr=\">" << adcch << "\">"<< std::endl;
+	      os << "     <hits>"   << fFitReg[adcch].fNhits << "</hits>"<< std::endl;
+	      os << "     <q0>"     << fFitReg[adcch].fQ0/4 << "</q0>"<< std::endl;    // divided by 4 because in simulation we have 2 additional decimal places
+	      os << "     <q1>"     << fFitReg[adcch].fQ1/4 << "</q1>"<< std::endl;    // in the output 
+	      os << "     <sumx>"   << fFitReg[adcch].fSumX << "</sumx>"<< std::endl;
+	      os << "     <sumxsq>" << fFitReg[adcch].fSumX2 << "</sumxsq>"<< std::endl;
+	      os << "     <sumy>"   << fFitReg[adcch].fSumY << "</sumy>"<< std::endl;
+	      os << "     <sumysq>" << fFitReg[adcch].fSumY2 << "</sumysq>"<< std::endl;
+	      os << "     <sumxy>"  << fFitReg[adcch].fSumXY << "</sumxy>"<< std::endl;
+	      os << "    </ch>" << std::endl;
+	   }
+	}
+	os << "      </c>" << std::endl;
+     }
+     os << "    </m>" << std::endl;
+     os << "  </ro-board>" << std::endl;
+     os << "</d>" << std::endl;
+     os << "</dmem-readout>" << std::endl;
+     os << "</ack>" << std::endl;
+     os << "</nginject>" << std::endl;
+  }
+}
+
+
+void AliTRDmcmSim::PrintTrackletsXml(ostream& os) const
+{
+   os << "<nginject>" << std::endl;
+   os << "<ack roc=\""<< fDetector <<  "\" cmndid=\"0\">" << std::endl;
+   os << "<dmem-readout>" << std::endl;
+   os << "<d det=\"" << fDetector << "\">" << std::endl;
+   os << "  <ro-board rob=\"" << fRobPos << "\">" << std::endl;
+   os << "    <m mcm=\"" << fMcmPos << "\">" << std::endl;
+
+   Int_t pid, padrow, slope, offset;
+   for(Int_t cpu=0; cpu<4; cpu++) {
+      if(fMCMT[cpu] == 0x10001000) {
+	 pid=-1;
+	 padrow=-1;
+	 slope=-1;
+	 offset=-1;
+      }
+      else {
+	 pid    = (fMCMT[cpu] & 0xFF000000) >> 24;
+	 padrow = (fMCMT[cpu] & 0xF00000  ) >> 20;
+	 slope  = (fMCMT[cpu] & 0xFE000   ) >> 13;
+	 offset = (fMCMT[cpu] & 0x1FFF    ) ;
+
+      }
+      os << "      <trk> <pid>" << pid << "</pid>" << " <padrow>" << padrow << "</padrow>" 
+	 << " <slope>" << slope << "</slope>" << " <offset>" << offset << "</offset>" << std::endl;
+   }
+
+   os << "    </m>" << std::endl;
+   os << "  </ro-board>" << std::endl;
+   os << "</d>" << std::endl;
+   os << "</dmem-readout>" << std::endl;
+   os << "</ack>" << std::endl;
+   os << "</nginject>" << std::endl;
+}
+
+
+void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
+{
+   os << "MCM " << fMcmPos << " on ROB " << fRobPos << 
+      " in detector " << fDetector << std::endl;
+    
+   os << "----- Unfiltered ADC data (10 bit) -----" << std::endl;
+   os << "ch    ";
+   for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) 
+      os << std::setw(5) << iChannel;
+   os << std::endl;
+   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+      os << "tb " << std::setw(2) << iTimeBin << ":";
+      for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
+	 os << std::setw(5) << (fADCR[iChannel][iTimeBin] >> fgkAddDigits);
+      }
+      os << std::endl;
+   }
+    
+   os << "----- Filtered ADC data (10+2 bit) -----" << std::endl;
+   os << "ch    ";
+   for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) 
+      os << std::setw(4) << iChannel
+         << ((~fZSMap[iChannel] != 0) ? "!" : " ");
+   os << std::endl;
+   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+      os << "tb " << std::setw(2) << iTimeBin << ":";
+      for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
+	 os << std::setw(4) << (fADCF[iChannel][iTimeBin])
+	    << (((fZSMap[iChannel] & (1 << iTimeBin)) == 0) ? "!" : " ");
+      }
+      os << std::endl;
+   }
+}
+
+
+void AliTRDmcmSim::PrintAdcDatXml(ostream& os) const
+{
+   os << "<nginject>" << std::endl;
+   os << "<ack roc=\""<< fDetector <<  "\" cmndid=\"0\">" << std::endl;
+   os << "<dmem-readout>" << std::endl;
+   os << "<d det=\"" << fDetector << "\">" << std::endl;
+   os << " <ro-board rob=\"" << fRobPos << "\">" << std::endl;
+   os << "  <m mcm=\"" << fMcmPos << "\">" << std::endl;
+
+    for(Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
+       os << "   <ch chnr=\"" << iChannel << "\">" << std::endl;
+       for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+	  os << "<tb>" << fADCF[iChannel][iTimeBin]/4 << "</tb>";
+       }
+       os << "   </ch>" << std::endl;
+    }
+
+   os << "  </m>" << std::endl;
+   os << " </ro-board>" << std::endl;
+   os << "</d>" << std::endl;
+   os << "</dmem-readout>" << std::endl;
+   os << "</ack>" << std::endl;
+   os << "</nginject>" << std::endl;
+}
+
+
+
+void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast) const
+{
+   fTrapConfig->PrintDatx(os, 2602, 1, 0, 127);  // command to enable the ADC clock - necessary to write ADC values to MCM
+   os << std::endl;
+
+   Int_t addrOffset = 0x2000;
+   Int_t addrStep   = 0x80;
+   Int_t addrOffsetEBSIA = 0x20;
+    
+   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
+      for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
+	 if(broadcast==kFALSE)
+	    fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, (fADCF[iChannel][iTimeBin]/4), GetRobPos(),  GetMcmPos());
+	 else
+	    fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, (fADCF[iChannel][iTimeBin]/4), 0, 127);
+      }
+      os << std::endl;
+   }
+}
+
+
+void AliTRDmcmSim::PrintPidLutHuman()
+{
+   UInt_t result;
+
+   UInt_t addrEnd = AliTRDtrapConfig::fgkDmemAddrLUTStart + fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength)/4; // /4 because each addr contains 4 values
+   UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTnbins);
+
+   std::cout << "nBinsQ0: " << nBinsQ0 << std::endl;
+   std::cout << "LUT table length: " << fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength)/4 << std::endl;
+ 
+   for(UInt_t addr=AliTRDtrapConfig::fgkDmemAddrLUTStart; addr< addrEnd; addr++) {
+      result = fTrapConfig->GetDmemUnsigned(addr);
+      std::cout << addr << " # x: " << (addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)%(nBinsQ0/4) << ", y: " <<(addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)/nBinsQ0 << "  #  " <<((result>>0)&0xFF)/255.0 
+		<< " | " << ((result>>8)&0xFF)/255.0
+		<< " | " << ((result>>16)&0xFF)/255.0 << " | " << ((result>>24)&0xFF)/255.0 << std::endl;
+   }
+}
+
+
+void AliTRDmcmSim::PrintPidLutDatx(ostream& os) const
+{
+   Double_t scaleQ[2];
+   fTrapConfig->GetPIDscale(scaleQ);
+   
+   ULong64_t scale = 1;
+   scale = scale<<32;
+
+   os << std::setw(5) << 27;          // cmd 
+   os << std::setw(8) << 4;           // scaleQ0
+   os << std::setw(12) << TMath::Nint(scale*scaleQ[0]);  // value
+   os << std::setw(8)  << 1 << std::endl;          // destination
+
+   os << std::setw(5) << 27;          // cmd 
+   os << std::setw(8) << 5;           // scaleQ1
+   os << std::setw(12) << TMath::Nint(scale*scaleQ[1]);  // value
+   os << std::setw(8)  << 1 << std::endl << std::endl;          // destination
+
+   fTrapConfig->PrintMemDatx(os, AliTRDtrapConfig::fgkDmemAddrLUTnbins);
+   fTrapConfig->PrintMemDatx(os, AliTRDtrapConfig::fgkDmemAddrLUTLength);
+
+   UInt_t addrStart = AliTRDtrapConfig::fgkDmemAddrLUTStart;
+   UInt_t addrEnd = addrStart +  (fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength)/4); // divided by 4 because each addr contains four values  
+   for(UInt_t addr=AliTRDtrapConfig::fgkDmemAddrLUTStart; addr< addrEnd; addr++) { 
+      fTrapConfig->PrintMemDatx(os, addr);
+   }
 }

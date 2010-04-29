@@ -349,6 +349,128 @@ Int_t AliTRDfeeParam::GetColSide(Int_t icol) const
 
 }
 
+
+
+UInt_t AliTRDfeeParam::AliToExtAli(Int_t rob, Int_t aliid)
+{
+   if(aliid!= 127)
+      return ( (1 << 10) | (rob << 7) | aliid);
+
+   return 127;
+}
+
+
+Int_t AliTRDfeeParam::ExtAliToAli(UInt_t dest, UShort_t linkpair, UShort_t rocType, Int_t *mcmList, Int_t listSize)
+{
+   // Converts an extended ALICE ID which identifies a single MCM or a group of MCMs to
+   // the corresponding list of MCMs. Only broadcasts (127) are encoded as 127 
+   // The return value is the number of MCMs in the list
+
+  mcmList[0]=-1;
+
+  Short_t nmcm = 0;
+  UInt_t mcm, rob, robAB;
+  UInt_t cmA = 0, cmB = 0;  // Chipmask for each A and B side
+  
+  // Default chipmask for 4 linkpairs (each bit correponds each alice-mcm)
+  static const UInt_t gkChipmaskDefLp[4] = { 0x1FFFF, 0x1FFFF, 0x3FFFF, 0x1FFFF };
+  
+  rob = dest >> 7;                              // Extract ROB pattern from dest.
+  mcm = dest & 0x07F;                           // Extract MCM pattern from dest.
+  robAB = GetRobAB( rob, linkpair ); // Get which ROB sides are selected.
+  
+  // Abort if no ROB is selected
+  if( robAB == 0 ) {
+    return 0;
+  }
+  
+  // Special case
+  if( mcm == 127 ) {
+    if( robAB == 3 ) {      // This is very special 127 can stay only if two ROBs are selected
+      mcmList[0]=127;      // broadcase to ALL
+      mcmList[1]=-1;
+      return 1;
+    }
+    cmA = cmB = 0x3FFFF;
+  } else if( (mcm & 0x40) != 0 ) { // If top bit is 1 but not 127, this is chip group.
+    if( (mcm & 0x01) != 0 )                  { cmA |= 0x04444; cmB |= 0x04444; } // chip_cmrg
+    if( (mcm & 0x02) != 0 )                  { cmA |= 0x10000; cmB |= 0x10000; } // chip_bmrg
+    if( (mcm & 0x04) != 0 && rocType == 0 ) { cmA |= 0x20000; cmB |= 0x20000; } // chip_hm3
+    if( (mcm & 0x08) != 0 && rocType == 1 ) { cmA |= 0x20000; cmB |= 0x20000; } // chip_hm4
+    if( (mcm & 0x10) != 0 )                  { cmA |= 0x01111; cmB |= 0x08888; } // chip_edge
+    if( (mcm & 0x20) != 0 )                  { cmA |= 0x0aaaa; cmB |= 0x03333; } // chip_norm
+  } else { // Otherwise, this is normal chip ID, turn on only one chip.
+    cmA = 1 << mcm;
+    cmB = 1 << mcm;
+  }
+  
+  // Mask non-existing MCMs
+  cmA &= gkChipmaskDefLp[linkpair];
+  cmB &= gkChipmaskDefLp[linkpair];
+  // Remove if only one side is selected
+  if( robAB == 1 ) 
+    cmB = 0;
+  if( robAB == 2 ) 
+    cmA = 0;
+  if( robAB == 4 && linkpair != 2 ) 
+    cmA = cmB = 0; // Restrict to only T3A and T3B
+  
+  // Finally convert chipmask to list of slaves
+  nmcm = ChipmaskToMCMlist( cmA, cmB, linkpair, mcmList, listSize);
+  
+  return nmcm;
+}
+
+
+Short_t AliTRDfeeParam::GetRobAB( UShort_t robsel, UShort_t linkpair )
+{
+  // Converts the ROB part of the extended ALICE ID to robs
+
+  if( (robsel & 0x8) != 0 ) { // 1000 .. direct ROB selection. Only one of the 8 ROBs are used.
+    robsel = robsel & 7;
+    if( (robsel % 2) == 0 && (robsel / 2) == linkpair ) 
+      return 1;  // Even means A side (position 0,2,4,6)
+    if( (robsel % 2) == 1 && (robsel / 2) == linkpair ) 
+      return 2;  // Odd  means B side (position 1,3,5,7)
+    return 0;
+  }
+  
+  // ROB group
+  if( robsel == 0 ) { return 3; } // Both   ROB
+  if( robsel == 1 ) { return 1; } // A-side ROB
+  if( robsel == 2 ) { return 2; } // B-side ROB
+  if( robsel == 3 ) { return 3; } // Both   ROB
+  if( robsel == 4 ) { return 4; } // Only T3A and T3B
+  // Other number 5 to 7 are ignored (not defined) 
+  
+  return 0;
+}
+
+
+Short_t AliTRDfeeParam::ChipmaskToMCMlist( UInt_t cmA, UInt_t cmB, UShort_t linkpair, Int_t *mcmList, Int_t listSize )
+{
+  // Converts the chipmask to a list of MCMs 
+  
+  Short_t nmcm = 0;
+  Short_t i;
+  for( i = 0 ; i < listSize ; i++ ) {
+     if( (cmA & (1 << i)) != 0 ) {
+        mcmList[nmcm] = ((linkpair*2) << 7) | i;
+	++nmcm;
+    }
+    if( (cmB & (1 << i)) != 0 ) {
+       mcmList[nmcm] = ((linkpair*2+1) << 7) | i;
+       ++nmcm;
+    }
+  }
+
+  mcmList[nmcm]=-1;
+  return nmcm;
+}
+
+
+
+
 //_____________________________________________________________________________
 //void AliTRDfeeParam::GetFilterParam( Float_t &r1, Float_t &r2, Float_t &c1
 //                                   , Float_t &c2, Float_t &ped ) const

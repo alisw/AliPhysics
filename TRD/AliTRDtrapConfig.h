@@ -11,6 +11,7 @@
 
 #include <TObject.h>
 #include <TString.h>
+#include <fstream>
 
 class AliTRDtrapConfig : public TObject
 {
@@ -461,31 +462,41 @@ class AliTRDtrapConfig : public TObject
 
   TrapReg_t          GetRegByAddress(Int_t address) const;
 
-  Int_t  GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
-  Bool_t PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
-  Bool_t PrintTrapAddr(Int_t addr, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1);
+  Int_t  GetTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
+  Bool_t PrintTrapReg(TrapReg_t reg, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
+  Bool_t PrintTrapAddr(Int_t addr, Int_t det = -1, Int_t rob = -1, Int_t mcm = -1) const;
 
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value);
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det);
   Bool_t SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm);
 
-  Int_t  Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm);
-  Bool_t Poke(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm);
+  UInt_t Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
+  Bool_t Poke(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm);
 
   void InitRegs();
   void ResetRegs();
+  void ResetDmem();
 
   // DMEM 
   Bool_t SetDmem(Int_t addr, UInt_t value);
-  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det);
+  //  Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det);
   Bool_t SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm);
   Bool_t SetDmem(Int_t addr, Int_t value) { return SetDmem(addr, (UInt_t) value); }
-  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det) { return SetDmem(addr, (UInt_t) value, det); }
+  //  Bool_t SetDmem(Int_t addr, Int_t value, Int_t det) { return SetDmem(addr, (UInt_t) value, det); }
   Bool_t SetDmem(Int_t addr, Int_t value, Int_t det, Int_t rob, Int_t mcm) { return SetDmem(addr, (UInt_t) value, det, rob, mcm); }
 
-  Int_t  GetDmem(Int_t addr, Int_t det, Int_t rob, Int_t mcm) { return GetDmemSigned(addr, det, rob, mcm); } 
-  Int_t  GetDmemSigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) { return (Int_t) GetDmemUnsigned(addr, det, rob, mcm); } 
-  UInt_t GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm);
+  UInt_t GetDmemUnsigned(Int_t addr) const;
+  UInt_t GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
+
+  void PrintMemDatx(ostream &os, Int_t addr) const;
+  void PrintMemDatx(ostream &os, Int_t addr, Int_t det, Int_t rob, Int_t mcm) const;
+  void PrintMemDatx(ostream &os, TrapReg_t reg) const;
+  void PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm) const;
+  void PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t rob, Int_t mcm) const;
+ 
+  // PID
+  void SetPIDscale(Double_t sq0, Double_t sq1) {fScaleQ0=sq0; fScaleQ1=sq1;}  // The two scaling factors are not available in the TRAP but needed by the DCS board
+  void GetPIDscale(Double_t scale[2]) {scale[0] = fScaleQ0; scale[1]=fScaleQ1;}  // The two scaling factors are not available in the TRAP but needed by the DCS board
 
   // configuration handling
   Bool_t LoadConfig();
@@ -493,7 +504,7 @@ class AliTRDtrapConfig : public TObject
 
   Bool_t ReadPackedConfig(Int_t det, UInt_t *data, Int_t size);
 
-  Int_t  ExtAliToAli( UInt_t dest, UShort_t linkpair, UShort_t rocType);
+  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);
 
   // DMEM addresses
   static const Int_t fgkDmemAddrLUTcor0       = 0xC02A;
@@ -511,6 +522,10 @@ class AliTRDtrapConfig : public TObject
   static const Int_t fgkDmemAddrNdrift        = 0xc025; // DMEM address of Ndrift
   static const Int_t fgkDmemAddrDeflCutStart  = 0xc030; // DMEM start address of deflection cut 
   static const Int_t fgkDmemAddrDeflCutEnd    = 0xc055; // DMEM end address of deflection cut
+
+  // DMEM memory in simulation;
+  static const Int_t fgkDmemStartAddress;           // start address in TRAP GIO
+  static const Int_t fgkDmemWords = 0xc400;         // number of words in DMEM
 
  protected:
   static AliTRDtrapConfig *fgInstance;  // pointer to instance (singleton)
@@ -540,22 +555,24 @@ class AliTRDtrapConfig : public TObject
   SimpleReg_t fRegs[kLastReg];          // array of TRAP registers
   RegValue_t fRegisterValue[kLastReg];  // array of TRAP register values in use
 
-  Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);
-  Short_t GetRobAB( UShort_t robsel, UShort_t linkpair ) const;  // Converts the ROB part of the extended ALICE ID to robs
-  Short_t ChipmaskToMCMlist( Int_t cmA, Int_t cmB, UShort_t linkpair ); // Converts the chipmask to a list of MCMs 
-
   static const UInt_t fgkScsnCmdWrite=10;  // Command number for the write command 
   static const Int_t fgkMaxLinkPairs=4;    // number of linkpairs used during configuration
   static const Int_t fgkMaxMcm;            // max. no. of MCMs to be treated
   static const Int_t fgkMcmlistSize=256;     // list of MCMs to which a value has to be written
 
-  Int_t fMcmlist[fgkMcmlistSize];  // stores the list of MCMs after the conversion from extAliID -> AliID
-
   // DMEM
-  static const Int_t fgkDmemStartAddress; // = 0xc000;  // start address in TRAP GIO
-  static const Int_t fgkDmemWords = 0x400;          // number of words in DMEM
   UInt_t* fDmem[fgkDmemWords]; // DMEM storage
-  //  Bool_t* fDmemValid[fgkDmemWords]; // DMEM valid flag storage
+  Int_t fDmemDepth[fgkDmemWords]; // memory space indicator for fDmem
+
+  static const Int_t fgkDmemSizeEmpty=0;
+  static const   Int_t fgkDmemSizeUniform = 1;
+  static const   Int_t fgkDmemSizeSmIndividual = 30*8*16;   // storage for each MCM within one supermodule
+  static const   Int_t fgkDmemSizeTotalIndividual = 540*6*8*16;  // one individual value for each and every MCM in the TRD
+  static const   Int_t fgkDmemSizeSmRocIndividual = 540; // one individual value for each chamber in TRD
+
+  // Online PID
+  Double_t fScaleQ0;  // scaling factor for the x-axis of the PID table
+  Double_t fScaleQ1;  // scaling factor for the y-axis of the PID table
 
   AliTRDtrapConfig(); // private constructor due to singleton implementation
 
