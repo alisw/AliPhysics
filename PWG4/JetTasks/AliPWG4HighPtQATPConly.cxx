@@ -994,8 +994,8 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       if(nClustersTPC>0.) fPtITSminPtTPCvsPtITSNPointTPCS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->GetTPCnclsS()/nClustersTPC);
       fPtITSminPtTPCvsPtITSDCAR->Fill(pt,(1./pt-1./ptTPC)/(1./pt),dca2D);
       fPtITSminPtTPCvsPtITSDCAZ->Fill(pt,(1./pt-1./ptTPC)/(1./pt),dcaZ);
-      fPtITSminPtTPCvsPtITSPhi->Fill(pt,(pt-ptTPC)/(pt),phi);
-      fPtITSminPtTPCvsPtITSNPointITS->Fill(pt,(pt-ptTPC)/(pt),nPointITS);
+      fPtITSminPtTPCvsPtITSPhi->Fill(pt,(1./pt-1./ptTPC)/(1./pt),phi);
+      fPtITSminPtTPCvsPtITSNPointITS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),nPointITS);
       fPtITSminPtTPCvsPtITSNSigmaToVertex->Fill(pt,(1./pt-1./ptTPC)/(1./pt),nSigmaToVertex);
       fPtITSminPtTPCvsPtITSChi2C->Fill(pt,(1./pt-1./ptTPC)/(1./pt),chi2C);
       fPtITSminPtTPCvsPtITSRel1PtUncertainty->Fill(pt,(1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt);

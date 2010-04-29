@@ -21,7 +21,7 @@ const Int_t   mintrackrefsTPC = 1;
 const Int_t   mintrackrefsITS = 1;
 const Int_t   charge  = 1;
 
-AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()//<some_parameters>)
+AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
 {
   // Creates HighPtSpectra analysis task and adds it to the analysis manager.
   
@@ -119,18 +119,22 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()//<some_parameters>)
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
-  //Standard Cuts
-  trackCuts->SetAcceptKinkDaughters(kFALSE);//
-  trackCuts->SetRequireTPCRefit(kTRUE);//
-  trackCuts->SetEtaRange(-0.9,0.9);//-0.5,0.5);//
-  trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);//
-  trackCuts->SetPtRange(0.15, 1e10);//
-  trackCuts->SetMinNClustersTPC(70);//
-  trackCuts->SetMaxChi2PerClusterTPC(3.5);//
-  trackCuts->SetRequireITSRefit(kTRUE);
-  trackCuts->SetMaxDCAToVertexXY(2.4);
-  trackCuts->SetMaxDCAToVertexZ(3.2);
-  trackCuts->SetDCAToVertex2D(kTRUE);
+//     //Standard Cuts
+//     trackCuts->SetAcceptKinkDaughters(kFALSE);
+//     trackCuts->SetRequireTPCStandAlone(kTRUE); 
+//     trackCuts->SetRequireTPCRefit(kTRUE);
+//     trackCuts->SetMinNClustersTPC(70);
+//     trackCuts->SetEtaRange(-0.9,0.9);
+//     trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+//     trackCuts->SetPtRange(0.15, 1e10);
+//     trackCuts->SetMaxChi2PerClusterTPC(3.5);
+//     trackCuts->SetMaxDCAToVertexXY(2.4);
+//     trackCuts->SetMaxDCAToVertexZ(3.2);
+//     trackCuts->SetDCAToVertex2D(kTRUE);
+//     trackCuts->SetRequireITSRefit(kTRUE);
+  trackCuts->SetEtaRange(-0.9,0.9);
+  trackCuts->SetPtRange(0.15, 1e10);
+  trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
 
  // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
@@ -188,11 +192,11 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()//<some_parameters>)
 //  char *outputfile = "outputAliPWG4HighPtSpectraTestTrain.root";
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG4_HighPtSpectra"; 
+
   AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("chist0HighPtSpectra", TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ccontainer0HighPtSpectra", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer1HighPtSpectra", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-
-
+  
   mgr->AddTask(taskPWG4HighPtSpectra);
 
   mgr->ConnectInput(taskPWG4HighPtSpectra,0,mgr->GetCommonInputContainer());

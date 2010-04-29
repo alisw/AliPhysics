@@ -115,7 +115,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-2";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-26-00b-4";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-04-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -460,8 +460,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4PtQATPC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQATPConly.C");
-     AliPWG4HighPtQATPConly *taskQATPC = AddTaskPWG4HighPtQATPConly();
-     if (!taskQATPC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQATPC cannot run for this train conditions - EXCLUDED");
+     AliPWG4HighPtQATPConly *taskQATPC = 0;
+     if(iPWG4PtQATPC&1)taskQATPC = AddTaskPWG4HighPtQATPConly(1);
+     if(iPWG4PtQATPC&2)taskQATPC = AddTaskPWG4HighPtQATPConly(2);
+
+ if (!taskQATPC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQATPC cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4PtSpectra){
