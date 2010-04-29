@@ -81,7 +81,6 @@ AliEMCALPreprocessor::AliEMCALPreprocessor(AliShuttleInterface* shuttle):
   // define run types to be processed
   AddRunType(kPedestalRunType);
   AddRunType(kPhysicsRunType);
-  AddRunType(kStandAloneRunType);
 }
 
 //______________________________________________________________________________________________
@@ -199,7 +198,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   
   // PEDESTAL ENTRIES:
   
-  if (runType == kPedestalRunType || runType == kStandAloneRunType) {
+  if ( runType == kPedestalRunType ) {
     Int_t numSources = 1;
     Int_t pedestalSource[2] = {AliShuttleInterface::kDAQ, AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Pedestal","DAQ");
@@ -225,7 +224,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   }
   
   // SIGNAL/LED ENTRIES:
-  if( runType == kPhysicsRunType || runType == kStandAloneRunType ) {
+  if( runType == kPhysicsRunType ) {
     Int_t numSources = 1;
     Int_t signalSource[2] = {AliShuttleInterface::kDAQ,AliShuttleInterface::kHLT} ;
     TString source = fConfEnv->GetValue("Signal","DAQ");
