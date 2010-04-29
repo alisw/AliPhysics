@@ -19,6 +19,7 @@
 #include "AliESDtrack.h"
 #include "TObjArray.h"
 #include "TArrayI.h"
+#include "TVector3.h"
 
 class AliHLTGlobalTrackMatcher : public AliHLTLogging{
 
@@ -129,14 +130,19 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     
     //Get cluster global coordinates
     cluster->GetPosition(clusterPosition);
-   
-    //Get track postion at radius of cluster
+
     Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1]);      
-    if (! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
-      HLTInfo("Track reached detector but not cluster!!!!!!");
+
+    //Rotate tracking system to the angle of the cluster
+    TVector3 cVec(clusterPosition);
+    if (! (track->Rotate(cVec.Phi())) ) {
       continue;
     }
-
+   
+    if(! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
+      continue;
+    }
+    
     //Get residual in z= 0 plane (squared)
     Double_t dxy = 0;
     for(int i = 0; i < 2; i++) {
@@ -148,14 +154,11 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     Double_t dd = trackPosition[2] - clusterPosition[2];
     Double_t dz = dd*dd;
   
-    //HLTError("dxy dx %f %f", TMath::Sqrt(dxy), TMath::Sqrt(dz));
-
     Double_t match = dz + dxy;
     
     if( match > fMatchDistance  )  {     
       continue;
     }
-
 
     if (match < bestMatch[ic]) {
       bestMatch[ic] = match;
