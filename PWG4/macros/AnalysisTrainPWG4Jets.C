@@ -312,7 +312,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // from each task configuration macro.
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE);
+     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE,kTRUE); // last flag also adds information on  
    }
 
    if (iESDfilter && !iAODanalysis) {
@@ -541,7 +541,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       TString cdir = gSystem->WorkingDirectory();
       gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
-      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz -bg-off";
+      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
