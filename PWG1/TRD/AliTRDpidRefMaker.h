@@ -81,7 +81,6 @@ public:
 
   virtual ~AliTRDpidRefMaker();
   
-  void    ConnectInputData(Option_t *opt);
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *option);
   Float_t GetPthreshold() const { return fPthreshold;}
@@ -98,18 +97,18 @@ protected:
   virtual void     LinkPIDdata();
   virtual void     Fill();
 
-  AliTRDReconstructor *fReconstructor;  //! reconstructor needed for recalculation the PID
+  AliTRDReconstructor *fReconstructor;  // reconstructor needed for recalculation the PID
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
   TObjArray     *fInfo;                 //! list of PID info
   AliTRDpidRefDataArray *fPIDdataArray; //! pid data array
   ETRDpidRefMakerSource  fRefPID;       // reference PID source
   ETRDpidRefMakerSource  fRefP;         // reference momentum source
-  UChar_t       fPIDbin;                //! species bin
-  Float_t       fFreq;                  //! training sample relative abundance
-  Float_t       fP;                     //! momentum
-  Float_t       fdEdx[8];               //! dEdx array
-  Float_t       fPID[AliPID::kSPECIES]; //! pid from v0s
+  UChar_t       fPIDbin;                // species bin
+  Float_t       fFreq;                  // training sample relative abundance
+  Float_t       fP;                     // momentum
+  Float_t       fdEdx[8];               // dEdx array
+  Float_t       fPID[AliPID::kSPECIES]; // pid from v0s
 
 private:
   AliTRDpidRefMaker(const AliTRDpidRefMaker&);              // not implemented

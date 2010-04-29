@@ -147,14 +147,6 @@ Float_t* AliTRDpidRefMaker::CookdEdx(AliTRDseedV1 *trklt)
 
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::ConnectInputData(Option_t *opt)
-{
-  AliTRDrecoTask::ConnectInputData(opt);
-  fV0s  = dynamic_cast<TObjArray*>(GetInputData(2));
-  fInfo = dynamic_cast<TObjArray*>(GetInputData(3));
-} 
-
-//________________________________________________________________________
 void AliTRDpidRefMaker::UserCreateOutputObjects()
 {
   // Create histograms
@@ -185,8 +177,10 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
   // Main loop
   // Called for each event
 
-  AliInfo(Form("Analyse N[%d] tracks", fTracks->GetEntriesFast()));
+  fV0s  = dynamic_cast<TObjArray*>(GetInputData(2));
+  fInfo = dynamic_cast<TObjArray*>(GetInputData(3));
 
+  AliInfo(Form("Analyse N[%d] tracks", fTracks->GetEntriesFast()));
   AliTRDtrackInfo     *track = NULL;
   AliTRDtrackV1    *trackTRD = NULL;
   AliTrackReference     *ref = NULL;

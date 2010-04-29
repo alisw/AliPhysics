@@ -115,18 +115,18 @@ private:
 
   UChar_t             fStatus;          // steer parameter of the task
   UChar_t             fSegmentLevel;    // steer parameter of the task
-  UShort_t            fIdxPlot;         //! plot counter (internal)
-  UShort_t            fIdxFrame;        //! frame counter (internal)
-  UShort_t            fNcomp[kNprojs];  //! number of projections per task
-  Char_t              *fAxTitle[kNprojs][4]; //! Title for all ref histos
-  Float_t             fPtThreshold;     //! pt threshold for some performance plots
+  UShort_t            fIdxPlot;         // plot counter (internal)
+  UShort_t            fIdxFrame;        // frame counter (internal)
+  UShort_t            fNcomp[kNprojs];  // number of projections per task
+  Char_t              *fAxTitle[kNprojs][4]; // Title for all ref histos
+  Float_t             fPtThreshold;     // pt threshold for some performance plots
   static Char_t const *fgPerformanceName[kNviews]; //! name of performance plot
   static UChar_t const fgNproj[kNviews]; //! number of projections per task
   static Int_t const  fgkNresYsegm[3];  //! number of segments for saving y resolution
   static Char_t const *fgkResYsegmName[3];//! name of segment for saving y resolution
-  AliTRDReconstructor *fReconstructor;  //! local reconstructor
-  AliTRDgeometry      *fGeo;            //! TRD geometry
-  TDatabasePDG        *fDBPDG;          //! PDG database
+  AliTRDReconstructor *fReconstructor;  // local reconstructor
+  AliTRDgeometry      *fGeo;            // TRD geometry
+  TDatabasePDG        *fDBPDG;          // PDG database
   TObjArray           *fGraphS;         //! result holder - sigma values
   TObjArray           *fGraphM;         //! result holder - mean values
 

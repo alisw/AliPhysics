@@ -102,21 +102,11 @@ AliTRDrecoTask::~AliTRDrecoTask()
 }
 
 //_______________________________________________________
-void AliTRDrecoTask::ConnectInputData(Option_t *)
-{
-  //
-  // Connect input data
-  //
-  AliAnalysisTaskSE::ConnectInputData();
-  fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
-}
-
-//_______________________________________________________
 void AliTRDrecoTask::UserExec(Option_t *)
 {
 // Loop over Plot functors published by particular tasks
 
-  GetInputData(1);
+  fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
   if(!fPlotFuncList){
     AliWarning("No functor list defined for the reference plots");
     return;

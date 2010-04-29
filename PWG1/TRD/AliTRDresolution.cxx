@@ -196,6 +196,8 @@ AliTRDresolution::~AliTRDresolution()
 void AliTRDresolution::UserCreateOutputObjects()
 {
   // spatial resolution
+
+  if(!HasFunctorList()) InitFunctorList();
   OpenFile(1, "RECREATE");
   fContainer = Histos();
   InitExchangeContainers();
