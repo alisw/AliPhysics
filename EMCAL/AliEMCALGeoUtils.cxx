@@ -438,6 +438,17 @@ Bool_t AliEMCALGeoUtils::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
     AliDebug(2,Form(" ieta %i : dmin %f (eta=%f) : nSupMod %i ", ieta, dmin, eta, nSupMod));
 
     if(eta<0) iphi = (nphi-1) - iphi;
+	  
+	//patch for mapping following alice convention  
+	if(nSupMod%2 == 0)		  
+		  ieta = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
+	else {
+		if(nSupMod<10) 
+				iphi = (fCentersOfCellsPhiDir.GetSize()-1)  -iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
+		else 
+				iphi = (fCentersOfCellsPhiDir.GetSize()/2-1)-iphi;// 11-iphi, revert the ordering on C side in order to keep convention.
+	}
+  
     absId = GetAbsCellIdFromCellIndexes(nSupMod, iphi, ieta);
 
     return kTRUE;
