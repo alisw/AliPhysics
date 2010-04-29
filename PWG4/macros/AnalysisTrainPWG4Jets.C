@@ -412,36 +412,20 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        else selection = 1<<0|1<<1|1<<2|1<<3|1<<4|1<<5|1<<7|1<<8|1<<9;
        AddTaskJetSpectrum2Delta(kHighPtFilterMask,kUseAODMC,iPhysicsSelection,selection);
      }
-     if(iJETAN==3&&!kFillAOD&!iAODanalysis){
-       AddTaskJetSpectrum2("jetsAOD_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
-       AddTaskJetSpectrum2("jetsAOD_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
-       AddTaskJetSpectrum2("jetsAOD_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
-       AddTaskJetSpectrum2("jetsAOD_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
-       AddTaskJetSpectrum2("jetsAOD_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
-       if(kIsMC){
-	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT00","",kHighPtFilterMask,iPhysicsSelection);
-	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT01","",kHighPtFilterMask,iPhysicsSelection);
-	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT02","",kHighPtFilterMask,iPhysicsSelection);
-	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT06","",kHighPtFilterMask,iPhysicsSelection);
-	 AddTaskJetSpectrum2("jetsAODMC2b_FASTKT08","",kHighPtFilterMask,iPhysicsSelection);
-       }
-     }
    }
    if(iPWG4UE){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskUE.C");
      AliAnalysisTaskUE *taskUE = 0;
      if(iPWG4UE&1)taskUE = AddTaskUE(); 
      if(iPWG4UE&2){
-       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJ","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJCC","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_CDF07","CDF","LJ","TRANSV","MAP"); 
-       taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJ","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJCC","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_ICDF","CDF","LJCC","TRANSV","MAP"); 
-       taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_NONE","CDF","MP","TRANSV","MAP");
-       taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MSP"); 
-       taskUE = AddTaskUE("jetsAOD_FASTKT04","CDF","LJ","TRANSV","MAP");
+       taskUE  =AddTaskUE("jetsAOD_CDF04","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
+       taskUE  =AddTaskUE("jetsAOD_CDF07","CDF", "LJ", "TRANSV","MSP");
+       taskUE  =AddTaskUE("jetsAOD_SISCONE04","CDF", "LJ", "TRANSV","MSP");
+       taskUE  =AddTaskUE("jetsAOD_SISCONE07","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
+       taskUE  =AddTaskUE("jetsAOD_ICDF","CDF","LJ","TRANSV","MSP");
+       taskUE  =AddTaskUE("jetsAOD_FASTKT04","CDF", "LJ", "TRANSV","MSP");
+       taskUE  =AddTaskUE("jetsAOD_FASTKT07","CDF", "LJ", "TRANSV","MSP"); //finder not yet in train
+       taskUE  =AddTaskUE("jetsAOD_NONE","CDF", "MP", "TRANSV","MSP");
      }
 
      if (!taskUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskUE cannot run for this train conditions - EXCLUDED");
