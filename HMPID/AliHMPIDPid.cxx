@@ -46,7 +46,7 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
   
   if(thetaCerExp<=0){                                         //HMPID does not find anything reasonable for this track, assign 0.2 for all species
     for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
-    return;
+    delete pPid ; pPid=0x0; return;
   } 
   
   Double_t p[3] = {0}, pmod = 0;
@@ -54,7 +54,7 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
   
   else {                                         
     for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
-    return;
+    delete pPid ; pPid=0x0; return;
   } 
   
   Double_t hTot=0;                               // Initialize the total height of the amplitude method
@@ -73,7 +73,7 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
     
     if(sigmaRing==0) {
       for(Int_t jPart=0;jPart<nsp;jPart++) prob[jPart]=1.0/(Float_t)nsp;
-      return;
+      delete pPid ; pPid=0x0; return;
     } 
     
     if(TMath::Abs(thetaCerExp-thetaCerTh)<4*sigmaRing) desert = kFALSE;                                                                //   
