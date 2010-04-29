@@ -108,6 +108,10 @@ void AliTRDefficiency::UserExec(Option_t *)
   Int_t labelsacc[10000]; 
   memset(labelsacc, 0, sizeof(Int_t) * 10000);
 	
+  fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
+  if(!fTracks) return;
+  if(!fTracks->GetEntriesFast()) return;
+  else AliDebug(2, Form("Tracks[%d] for %s", fTracks->GetEntriesFast(), GetName()));
   if(!fMissed){ 
     fMissed = new TClonesArray("AliTRDtrackInfo", 10);
     fMissed->SetOwner();

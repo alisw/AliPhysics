@@ -112,6 +112,8 @@ void AliTRDefficiencyMC::UserExec(Option_t *){
         ncontam(0);
   Bool_t isContamination = kFALSE;
   
+  fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
+  if(!fTracks) return;
   Int_t nTrackInfos = fTracks->GetEntriesFast();
   AliDebug(2, Form("   CANDIDATE TRACKS[%d]", nTrackInfos));
 

@@ -40,7 +40,6 @@ public:
   
   virtual void   UserCreateOutputObjects() = 0;
   virtual void   UserExec(Option_t *opt);
-  virtual void   ConnectInputData(Option_t *);
   virtual void   SetDebugLevel(Int_t level);
   
     

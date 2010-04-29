@@ -120,20 +120,20 @@ private:
   TH2D        *fDetSum;                          //! AddStatsPerDetector
   AliTRDCalibraVector *fDetSumVector;            //! AddStatsPerDetector
   
-  Bool_t      fHisto2d;                          //! histo
-  Bool_t      fVector2d;                         //! vector
-  Bool_t      fVdriftLinear;                     //! vdrift Linear
+  Bool_t      fHisto2d;                          // histo
+  Bool_t      fVector2d;                         // vector
+  Bool_t      fVdriftLinear;                     // vdrift Linear
   
-  Int_t       flow;                              //! lower limit nb of clusters
-  Int_t       fhigh;                             //! higher limit nb of clusters
-  Int_t       fNbTimeBins;                       //! number of timebins 
-  Bool_t      ffillZero;                         //! fill zero
-  Short_t     fNz[3];                            //! Nz mode 
-  Short_t     fNrphi[3];                         //! Nrphi mode
-  Bool_t      fnormalizeNbOfCluster;             //! normalize with number of clusters
-  Float_t     fmaxCluster;                       //! maxcluster (noise at the end)
-  Bool_t      fOfflineTracks;                    //! Offline refited tracks
-  Bool_t      fStandaloneTracks;                 //! Take only standalone tracks
+  Int_t       flow;                              // lower limit nb of clusters
+  Int_t       fhigh;                             // higher limit nb of clusters
+  Int_t       fNbTimeBins;                       // number of timebins 
+  Bool_t      ffillZero;                         // fill zero
+  Short_t     fNz[3];                            // Nz mode 
+  Short_t     fNrphi[3];                         // Nrphi mode
+  Bool_t      fnormalizeNbOfCluster;             // normalize with number of clusters
+  Float_t     fmaxCluster;                       // maxcluster (noise at the end)
+  Bool_t      fOfflineTracks;                    // Offline refited tracks
+  Bool_t      fStandaloneTracks;                 // Take only standalone tracks
 
   Bool_t      fCompressPerDetector;              //! Compress per detector 
 

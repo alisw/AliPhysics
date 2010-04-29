@@ -55,7 +55,6 @@ public:
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *opt);
-  virtual void ConnectInputData(Option_t *opt);
   virtual TObjArray *Histos();
 
   // Plotting Functions:

@@ -132,6 +132,7 @@ void AliTRDcheckPID::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
+  if(!HasFunctorList()) InitFunctorList();
   OpenFile(1, "RECREATE");
   fContainer = Histos();
 

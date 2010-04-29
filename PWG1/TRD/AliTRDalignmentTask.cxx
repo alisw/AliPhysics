@@ -68,6 +68,8 @@ AliTRDalignmentTask::~AliTRDalignmentTask()
 void AliTRDalignmentTask::UserCreateOutputObjects()
 {
   // spatial resolution
+
+  if(!HasFunctorList()) InitFunctorList();
   OpenFile(2, "RECREATE");
 
   fTree = new TTree("spTree", "Tree with track space point arrays");

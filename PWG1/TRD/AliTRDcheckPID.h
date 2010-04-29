@@ -85,8 +85,8 @@ private:
   void   LocalInit();
 
   static Char_t const *fgMethod[3];        // PID method name
-  AliTRDReconstructor *fReconstructor;     //! reconstructor needed for recalculation the PID
-  AliTRDpidUtil       *fUtil;              //! utility class for PID calculations
+  AliTRDReconstructor *fReconstructor;     // reconstructor needed for recalculation the PID
+  AliTRDpidUtil       *fUtil;              // utility class for PID calculations
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
   TObjArray           *fPID;               //! array of PID info/track for calibration
   TObjArray           *fEfficiency[AliPID::kSPECIES];      //! array of histograms with efficiency

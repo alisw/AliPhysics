@@ -14,14 +14,11 @@
 
 class TCanvas;
 class TObjArray;
-class TAxis;
 class AliTRDclusterResolution : public AliTRDrecoTask
 {
 public:
   enum EAxisBinning { // bins in z and x direction
-    kNTB = 24
-   ,kND  = 25
-   ,kN   = kND*kNTB
+    kND  = 25
   };
   enum EResultContainer { // results container type
     kCenter = 0   // cluster2center pad calibration
@@ -38,7 +35,6 @@ public:
   AliTRDclusterResolution(const char *name);
   virtual ~AliTRDclusterResolution();
 
-  void          ConnectInputData(Option_t *);
   void          UserCreateOutputObjects();
   void          UserExec(Option_t *);
   Int_t         GetDetector() const { return fDet; }
@@ -59,7 +55,7 @@ public:
   void          SetVisual();
   void          SetProcess(EResultContainer bit, Bool_t v = kTRUE) {v ? SETBIT(fStatus, bit) : CLRBIT(fStatus, bit);}
   void          SetSaveAs(Bool_t v = kTRUE) {SetBit(kSaveAs, v);}
-  inline void   ResetProcess();
+  inline void   ResetProcesses();
 
 protected:
   void    ProcessCharge();
@@ -73,21 +69,22 @@ private:
 
   TCanvas    *fCanvas; //! visualization canvas 
   TObjArray  *fInfo;   //! list of cluster info
-  TObjArray  *fResults;// list of result graphs/histos
-  TAxis      *fAt;     //! binning in the x(radial) direction (time)
+  TObjArray  *fResults;// list of result graphs/histos/trees
   UChar_t    fStatus;  // steer parameter of the task
   Short_t    fDet;     // detector (-1 for all)
   Float_t    fExB;     // tg of the Lorentz angle
   Float_t    fVdrift;  // mean drift velocity
+  Float_t    fT0;      // time 0
   static const Float_t fgkTimeBinLength;// time bin length (invers of sampling frequency)
 
   // working named variables
-  UChar_t    fLy;      //! TRD plane 
-  Float_t    fX;       //! local drift length 
-  Float_t    fY;       //! local rphi offset 
-  Float_t    fZ;       //! local anode wire offset 
-  Float_t    fR[4];    //! mean/sgm resolution
-  Float_t    fP[4];    //! mean/sgm pulls
+  UChar_t    fLy;      // TRD plane 
+  Float_t    fT;       // calibrated time 
+  Float_t    fX;       // local drift length 
+  Float_t    fY;       // local rphi offset 
+  Float_t    fZ;       // local anode wire offset 
+  Float_t    fR[4];    // mean/sgm resolution
+  Float_t    fP[4];    // mean/sgm pulls
   
   ClassDef(AliTRDclusterResolution, 3)  // cluster resolution
 };
@@ -111,7 +108,7 @@ inline Float_t AliTRDclusterResolution::GetVdrift() const
 }
 
 //___________________________________________________
-inline void AliTRDclusterResolution::ResetProcess()
+inline void AliTRDclusterResolution::ResetProcesses()
 {
   CLRBIT(fStatus, kQRes);
   CLRBIT(fStatus, kCenter);

@@ -121,19 +121,11 @@ AliTRDcheckDET::~AliTRDcheckDET(){
 }
 
 //_______________________________________________________
-void AliTRDcheckDET::ConnectInputData(Option_t *opt){
-  //
-  // Connect the Input data with the task
-  //
-  AliTRDrecoTask::ConnectInputData(opt);
-  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
-}
-
-//_______________________________________________________
 void AliTRDcheckDET::UserCreateOutputObjects(){
   //
   // Create Output Objects
   //
+  if(!HasFunctorList()) InitFunctorList();
   OpenFile(1,"RECREATE");
   fContainer = Histos();
   if(!fTriggerNames) fTriggerNames = new TMap();
@@ -145,6 +137,8 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   // Execution function
   // Filling TRD quality histos
   //
+
+  fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
   if(!HasMCdata() && fEventInfo->GetEventHeader()->GetEventType() != 7) return;	// For real data we select only physical events
   AliTRDrecoTask::UserExec(opt);  
   Int_t nTracks = 0;		// Count the number of tracks per event
