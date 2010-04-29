@@ -55,7 +55,7 @@ public:
   void    SetDoTraining(Bool_t train) {fDoTraining = train;};
   void    SetContinueTraining(Bool_t continTrain) {fContinueTraining = continTrain;};
   void    SetTrainPath(Int_t path) {fTrainPath = path;};
-  Bool_t    LoadFile(const Char_t *InFileNN);
+  Bool_t  LoadFile(const Char_t *InFileNN);
   void    SetScaledEdx(Float_t s) {fScale = s;};
 
   void    MakeTrainingLists(Int_t mombin = 0);                                 // build the training and the test list

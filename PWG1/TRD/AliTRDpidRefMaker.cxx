@@ -177,10 +177,11 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
   // Main loop
   // Called for each event
 
-  fV0s  = dynamic_cast<TObjArray*>(GetInputData(2));
-  fInfo = dynamic_cast<TObjArray*>(GetInputData(3));
+  if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
+  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;
+  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
 
-  AliInfo(Form("Analyse N[%d] tracks", fTracks->GetEntriesFast()));
+  AliDebug(1, Form("Analyse N[%d] tracks", fTracks->GetEntriesFast()));
   AliTRDtrackInfo     *track = NULL;
   AliTRDtrackV1    *trackTRD = NULL;
   AliTrackReference     *ref = NULL;
@@ -272,8 +273,7 @@ void AliTRDpidRefMaker::Fill()
 
   if(!fPIDdataArray->fNtracklets) return;
   fPIDbin = TMath::LocMax(AliPID::kSPECIES, fPID); // get particle type
-// Fill data tree
-  AliInfo(Form("fData[%p]", (void*)fData));
+  // Fill data tree
   fData->Fill();
 
   

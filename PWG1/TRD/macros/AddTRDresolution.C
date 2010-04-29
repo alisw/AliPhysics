@@ -55,7 +55,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
       mgr->ConnectInput(taskCl,  1, (AliAnalysisDataContainer*)coa->FindObject(Form("%sCl2Trk%s", res->GetName(), suffix)));
       mgr->ConnectOutput(taskCl, 1, mgr->CreateContainer(taskCl->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.CalibClErrParam", mgr->GetCommonFileName())));*/
   
-      AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
+      //AliLog::SetClassDebugLevel("AliTRDclusterResolution", 5);  
       mgr->AddTask(taskCl = new AliTRDclusterResolution((char*)"ClErrCalibMC"));
       taskCl->SetExB();
       taskCl->SetDebugLevel(0);
@@ -67,13 +67,12 @@ void AddTRDresolution(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataConta
 
   // TRD alignment
   if(TSTBIT(map, kAlignment)){
-    TObjArray *coa = mgr->GetContainers();
     AliTRDalignmentTask *taskAlign(NULL);
     mgr->AddTask(taskAlign = new AliTRDalignmentTask((char*)"TRDalignment"));
     taskAlign->SetDebugLevel(0);
     //AliLog::SetClassDebugLevel("AliTRDalignmentTask", 5);  
     mgr->ConnectInput(taskAlign,  0, mgr->GetCommonInputContainer());  
-    mgr->ConnectInput(taskAlign,  1, (AliAnalysisDataContainer*)coa->FindObject("TRDresolutionCl2Trk"));  
+    mgr->ConnectInput(taskAlign,  1, ci[0]);
     mgr->ConnectOutput(taskAlign, 1, mgr->CreateContainer(Form("h%s", taskAlign->GetName()), TObjArray::Class(), AliAnalysisManager::kExchangeContainer));
     mgr->ConnectOutput(taskAlign, 2, mgr->CreateContainer(taskAlign->GetName(), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD.Calib%s",mgr->GetCommonFileName(), taskAlign->GetName())));
   }
