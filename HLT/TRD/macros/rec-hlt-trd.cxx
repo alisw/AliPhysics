@@ -291,7 +291,6 @@ int rec_hlt_trd(const TString filename, TString outPath)
   rec.SetRunVertexFinder(kFALSE);
   rec.SetRunLocalReconstruction("HLT");
   rec.SetRunTracking(":");
-  rec.SetLoadAlignFromCDB(0);
   rec.SetFillESD("");
   rec.SetRunQA(":");
   rec.SetRunGlobalQA(kFALSE);
