@@ -73,8 +73,12 @@ Bool_t AlidNdPtTask::Notify()
 {
   static Int_t count = 0;
   count++;
-  Printf("Processing %d. file", count);
+  //Printf("Processing %d. file: %s", count, ((TTree*) GetInputData(0))->GetCurrentFile()->GetName());
+  TTree *chain = (TChain*)GetInputData(0);
+  if(chain)
+    Printf("Processing %d. file: %s", count, chain->GetCurrentFile()->GetName());
 
+  /*
   TChain *chain = (TChain*)GetInputData(0);
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!esdH) {
@@ -84,6 +88,7 @@ Bool_t AlidNdPtTask::Notify()
     if(chain)
     Printf("chain->GetCurrentFile()->GetName() %s", chain->GetCurrentFile()->GetName());
   }
+  */
 
 return kTRUE;
 }
