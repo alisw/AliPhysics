@@ -10,6 +10,7 @@
 #pragma link C++ class AliAODRecoDecayHF3Prong+;
 #pragma link C++ class AliAODRecoDecayHF4Prong+;
 #pragma link C++ class AliAODRecoCascadeHF+;
+#pragma link C++ class AliAODPidHF+;
 #pragma link C++ class AliRDHFCuts+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;

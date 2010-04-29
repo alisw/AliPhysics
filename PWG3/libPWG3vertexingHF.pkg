@@ -4,6 +4,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliAODRecoDecayHF2Prong.cxx  vertexingHF/AliAODRecoDecayHF3Prong.cxx \
        vertexingHF/AliAODRecoDecayHF4Prong.cxx \
        vertexingHF/AliAODRecoCascadeHF.cxx \
+       vertexingHF/AliAODPidHF.cxx \
        vertexingHF/AliRDHFCuts.cxx \
        vertexingHF/AliRDHFCutsD0toKpi.cxx \
        vertexingHF/AliRDHFCutsJpsitoee.cxx \
