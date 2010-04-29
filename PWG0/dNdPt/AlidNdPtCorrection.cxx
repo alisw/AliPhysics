@@ -863,9 +863,6 @@ void AlidNdPtCorrection::Init(){
   fEventCount->Sumw2();
 
 
-
-
-
   // init output folder
   fCorrectionFolder = CreateFolder("folderdNdPt","Correction dNdPt Folder");
 
@@ -1029,6 +1026,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   Bool_t isEventTriggered = kTRUE;
   AliPhysicsSelection *trigSel = NULL;
   AliTriggerAnalysis *trigAna = NULL; // needed for andV0
+
   if(evtCuts->IsTriggerRequired())  
   {
     //
@@ -1038,16 +1036,66 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       return;
     }
     
-    if(IsUseMCInfo()) { 
+    if(IsUseMCInfo()) 
+    { 
       trigSel->SetAnalyzeMC();
-      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
 
-      trigAna = trigSel->GetTriggerAnalysis();
-      if(!trigAna) 
-        return;
+      if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
+      {
+        // check V0 systematics (case1)
+	// Initialization done in the macro
+        trigAna = trigSel->GetTriggerAnalysis();
+        if(!trigAna) 
+          return;
 
-      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+        //trigAna->SetV0HwPars(15, 61.5, 86.5);
+        //trigAna->SetV0AdcThr(15);
+
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //printf("MB1 & kVZEROCase1  %d \n",isEventTriggered);
+        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
+      else if(GetParticleMode() == AlidNdPtHelper::kVZEROCase2)
+      {
+        // check V0 systematics (case2 only in MC)
+	// Initialization done in the macro
+
+        trigAna = trigSel->GetTriggerAnalysis();
+        if(!trigAna) 
+          return;
+
+        //trigAna->SetV0HwPars(0, 0, 125);
+        //trigAna->SetV0AdcThr(0);
+
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+	
+	if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
+      else {
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //printf("MB1 %d \n",isEventTriggered);
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          trigAna = trigSel->GetTriggerAnalysis();
+          if(!trigAna) 
+            return;
+
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
     }
     else {
       //
@@ -1061,17 +1109,43 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
       }
 
-      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+      if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
+      {
+        // check V0 systematics (case1)
+	// Initialization done in the macro
+        trigAna = trigSel->GetTriggerAnalysis();
+        if(!trigAna) 
+          return;
 
-      trigAna = trigSel->GetTriggerAnalysis();
-      if(!trigAna) 
-        return;
+        //trigAna->SetV0HwPars(15, 61.5, 86.5);
+        //trigAna->SetV0AdcThr(15);
 
-      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
+      else {
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //printf("MB1 %d \n",isEventTriggered);
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          trigAna = trigSel->GetTriggerAnalysis();
+          if(!trigAna) 
+            return;
+
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
     }
   }
-  
+
   // use MC information
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
@@ -1237,12 +1311,15 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
       if(esdTrackCuts->AcceptTrack(track)) 
       {
+          if(accCuts->AcceptTrack(track)) multRecTemp++;
+        /*
         if(GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) {
           if(AlidNdPtHelper::IsGoodImpPar(track) && accCuts->AcceptTrack(track)) multRecTemp++;
         }
 	else {
           if(accCuts->AcceptTrack(track)) multRecTemp++;
         }
+	*/
       }  
     }
 
@@ -1277,7 +1354,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         
       // track-level corrections
       if(!esdTrackCuts->AcceptTrack(track))  continue;
-      if(GetAnalysisMode()==AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt && !AlidNdPtHelper::IsGoodImpPar(track)) continue;
+      //if(GetAnalysisMode()==AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt && !AlidNdPtHelper::IsGoodImpPar(track)) continue;
 
         // cosmics analysis
         isCosmic = kFALSE;

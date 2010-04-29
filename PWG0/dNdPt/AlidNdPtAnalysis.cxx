@@ -328,17 +328,19 @@ void AlidNdPtAnalysis::Init(){
   // Init histograms
   //
 
-  const Int_t multNbins = 22;
-  const Int_t ptNbinsTrackEventCorr = 36;
+  const Int_t multNbins = 27;
+  const Int_t ptNbinsTrackEventCorr = 37;
   //const Int_t ptNbins = 56;
   const Int_t ptNbins = 55;
   const Int_t etaNbins = 30;
   const Int_t zvNbins = 12;
 
 
-  Double_t binsMult[multNbins+1] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,150};
+  Double_t binsMult[multNbins+1] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
+                                     9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
+				     19.5,20.5, 21.5, 22.5, 23.5, 24.5, 29.5, 149.5};
 
-  Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,5.0,10.0,16.0};
+  Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,4.0,6.0,10.0,16.0};
 
   Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
 
@@ -935,47 +937,120 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     //
     trigSel = GetPhysicsTriggerSelection();
     if(!trigSel) {
-      AliDebug(AliLog::kError, "cannot get trigSel");
+      printf("cannot get trigSel \n");
       return;
     }
-    
+
+    //
     if(IsUseMCInfo()) 
     { 
       trigSel->SetAnalyzeMC();
-      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-      //printf("MB1 %d \n",isEventTriggered);
 
-      trigAna = trigSel->GetTriggerAnalysis();
-      if(!trigAna) 
-        return;
+      if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
+      {
+        // check V0 systematics (case1)
+	// Initialization done in the macro
+        trigAna = trigSel->GetTriggerAnalysis();
+        if(!trigAna) 
+          return;
 
-      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-	//printf("V0AND %d \n",isEventTriggered);
+        //trigAna->SetV0HwPars(15, 61.5, 86.5);
+        //trigAna->SetV0AdcThr(15);
+
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //printf("MB1 & kVZEROCase1  %d \n",isEventTriggered);
+        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
+      else if(GetParticleMode() == AlidNdPtHelper::kVZEROCase2)
+      {
+        // check V0 systematics (case2 only in MC)
+	// Initialization done in the macro
+
+        trigAna = trigSel->GetTriggerAnalysis();
+        if(!trigAna) 
+         return;
+
+        //trigAna->SetV0HwPars(0, 0, 125);
+        //trigAna->SetV0AdcThr(0);
+
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+	
+	if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
+      else {
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //printf("MB1 %d \n",isEventTriggered);
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          trigAna = trigSel->GetTriggerAnalysis();
+          if(!trigAna) 
+            return;
+
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
     }
     else {
       //
       // 0-multiplicity bin for LHC background correction
       //
       if(GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-         GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
+         GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx  || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ||
+         GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTPCTrackSPDvtx
+	) 
       {
         trigSel->SetBin0CallbackViaPointer(&IsBinZeroTrackSPDvtx);
       } else {
         trigSel->SetBin0CallbackViaPointer(&IsBinZeroSPDvtx);
       }
 
-      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-	//printf("MB1 %d \n",isEventTriggered);
+      if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
+      {
+        // check V0 systematics (case1)
+	// Initialization done in the macro
+        trigAna = trigSel->GetTriggerAnalysis();
+        if(!trigAna) 
+          return;
 
-      trigAna = trigSel->GetTriggerAnalysis();
-      if(!trigAna) 
-        return;
+        //trigAna->SetV0HwPars(15, 61.5, 86.5);
+        //trigAna->SetV0AdcThr(15);
 
-      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-	//printf("V0AND %d \n",isEventTriggered);
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
+      else {
+        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+        //printf("MB1 %d \n",isEventTriggered);
+	
+        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
+	{
+          trigAna = trigSel->GetTriggerAnalysis();
+          if(!trigAna) 
+            return;
 
+          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+          //printf("V0AND %d \n",isEventTriggered);
+        }
+      }
     }
   }
 
@@ -1064,7 +1139,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        multMBTracks = mult->GetNumberOfTracklets();
   } 
   else if( GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-           GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt)
+           GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt
+           || GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTPCTrackSPDvtx
+	   )
   {
      if(vtxESD->GetStatus() && isRecVertex)
        multMBTracks = vtxESD->GetNContributors();
@@ -1110,13 +1187,68 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
 
+
       // esd track selection 
-      if(!esdTrackCuts->AcceptTrack(track))
-       continue;
- 
+      // ITS stand alone
+      if(GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTrackSPDvtx) 
+      {
+        if(!(track->GetStatus() & AliESDtrack::kITSpureSA)) continue;
+        if(!(track->GetStatus() & AliESDtrack::kITSrefit)) continue;
+        if(track->GetNcls(0)<4) continue;
+        if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) continue;
+      } 
+      else if(GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTPCTrackSPDvtx) 
+      {
+        //
+        // ITS and TPC stand alone tracks
+	//
+	if(!(track->GetStatus() & AliESDtrack::kITSpureSA)) continue;
+	if(!(track->GetStatus() & AliESDtrack::kITSrefit)) continue;
+	if(track->GetNcls(0)<4) continue;
+	if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) continue;
+
+        // Check matching with TPC only track
+	Bool_t hasMatch = kFALSE;
+	for(Int_t j=0; j<entries;++j) 
+        {
+	  if(i==j) continue;
+          AliESDtrack *track2 = (AliESDtrack*)allChargedTracks->At(j);
+          if(!track2) continue;
+          if(track2->Charge()==0) continue;
+	  if (!track2->GetTPCInnerParam()) continue;
+
+          // check loose cuts for TPC tracks
+          if(!esdTrackCuts->AcceptTrack(track2)) continue; 
+
+	  AliExternalTrackParam *innerTPC = new AliExternalTrackParam(*(track2->GetTPCInnerParam()));
+	  if(!innerTPC) continue;
+          Double_t x2[3]; track2->GetXYZ(x2);
+          Double_t b2[3]; AliTracker::GetBxByBz(x2,b2);
+	  Double_t dz[2],cov[3];
+	  Bool_t isPropOK = innerTPC->PropagateToDCABxByBz(vtxESD,b2,kVeryBig,dz,cov);
+          if(!isPropOK && innerTPC) {delete innerTPC; continue;}
+
+          // check matching
+          if (TMath::Abs(track->GetY() - innerTPC->GetY()) > 3) { delete innerTPC; continue; }
+          if (TMath::Abs(track->GetSnp() - innerTPC->GetSnp()) > 0.2) { delete innerTPC; continue; }
+          if (TMath::Abs(track->GetTgl() - innerTPC->GetTgl()) > 0.2) { delete innerTPC; continue; }
+
+	  hasMatch = kTRUE;
+	  if(innerTPC) delete innerTPC;
+	}
+
+        if(!hasMatch) continue;
+      }
+      else {
+        if(!esdTrackCuts->AcceptTrack(track)) 
+	  continue;
+      }
+
+      /*
       if(GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) {
         if(!AlidNdPtHelper::IsGoodImpPar(track)) continue;
       }
+      */
 
       //
       Bool_t isOK = kFALSE;
@@ -1127,7 +1259,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       // if TPC-ITS hybrid tracking (kTPCITSHybrid)
       // replace track parameters with TPC-ony track parameters
       //
-      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybrid || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
+      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybrid || 
+          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
+	  GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
       {
         // Relate TPC-only tracks to Track or SPD vertex
         isOK = track->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
@@ -1194,10 +1328,28 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     }  
 	  }
           else {
-             if(accCuts->AcceptTrack(track)) {
+             if(accCuts->AcceptTrack(track)) 
+	     {
                FillHistograms(track,stack,AlidNdPtHelper::kRecTracks); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
+
+               /*
+               if(!multMCTrueTracks && IsUseMCInfo()) 
+	       {
+	         Int_t label = TMath::Abs(track->GetLabel()); 
+	         TParticle* particle = stack->Particle(label);
+	         if(!particle) return;
+
+	         Bool_t prim = stack->IsPhysicalPrimary(label);
+	         if((particle->GetPDG()->Charge()/3.) != 0 && multRec > 3) 
+		 {
+                   printf("zero true mult event: %d \n", esdEvent->GetEventNumberInFile());
+	           printf("mcVtx %f,  label %d, prim %d, mcpt %f, mceta %f, mcphi %f \n", vtxMC[2], label, prim, particle->Pt(), particle->Eta(), particle->Phi());
+	           printf("zv %f, multRec %d, pt %f, eta %f, phi %f \n", vtxESD->GetZv(), multRec, track->Pt(), track->Eta(), track->Phi());
+	         }
+               }
+	       */
 	     }
           }
      }
@@ -1238,9 +1390,12 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      }
      Double_t vMultTrueEventMatrix[2] = { trackletMult,multMCTrueTracks };
      */
-     Double_t vMultTrueEventMatrix[2] = { multRec,multMCTrueTracks };
+     Double_t vMultTrueEventMatrix[2] = { multRec, multMCTrueTracks };
 
-     if(isEventOK && isEventTriggered) fEventMultCorrelationMatrix->Fill(vMultTrueEventMatrix);
+     if(isEventOK && isEventTriggered) {   
+       if(TMath::Abs(vtxMC[2]) < 10.0) // both Rec. and corresponding MC events must be accepted
+         fEventMultCorrelationMatrix->Fill(vMultTrueEventMatrix);
+     }
 
      // 
      // event level corrections (zv,N_MB)
@@ -1783,40 +1938,12 @@ if(!esdEvent) return kFALSE;
   if(vertex->GetNContributors() < 1) {
     // SPD vertex
     vertex = esdEvent->GetPrimaryVertexSPD();
-    if(TMath::Abs(vertex->GetZv()) > 15.0) return kTRUE; 
+    if(!vertex) return kTRUE;
   }
+  if(TMath::Abs(vertex->GetZv()) > 15.0) return kTRUE; 
   if( !AlidNdPtHelper::TestRecVertex(vertex, esdEvent->GetPrimaryVertexSPD(), AlidNdPtHelper::kTPCITSHybridTrackSPDvtx) ) 
     return kTRUE;
-
-  //
-
-  /*
-  //
-  if(vertex->GetNContributors() < 1) {
-    // SPD vertex
-    vertex = esdEvent->GetPrimaryVertexSPD();
-  }
-  if(!vertex) return kFALSE;
-
-  if(!vertex->GetStatus()) return kTRUE;
-  if(vertex->GetZRes() > 1000.) return kTRUE;
-  //if(vertex->GetZv() < -15.0) return kTRUE; 
-  //if(vertex->GetZv() > 15.0) return kTRUE; 
-
-  // always test with SPD vertex
-  const AliESDVertex* vertexSPD = esdEvent->GetPrimaryVertexSPD();
-  if(!vertexSPD) return kTRUE;
-  if(!vertexSPD->GetStatus()) return kTRUE;
-  if (vertexSPD->IsFromVertexerZ())
-  {
-    if (vertexSPD->GetDispersion() > 0.02) 
-      return kTRUE;
-  }
-
-  // check multiplicity
-  if(vertex->GetNContributors() < 1) return kTRUE;
-  */
-
+ 
 return kFALSE;
 }
 
@@ -1835,26 +1962,7 @@ if(!esdEvent) return kFALSE;
   if(!vertex) return kTRUE;
   if(TMath::Abs(vertex->GetZv()) > 15.0) return kTRUE; 
   if( !AlidNdPtHelper::TestRecVertex(vertex, esdEvent->GetPrimaryVertexSPD(), AlidNdPtHelper::kTPCSPDvtx) ) return kTRUE;
-
-  /*
-   
-  if(!vertex->GetStatus()) return kTRUE;
-  //if(vertex->GetZv() < -15.0) return kTRUE; 
-  //if(vertex->GetZv() > 15.0) return kTRUE; 
-  if(vertex->GetZRes() > 1000.) return kTRUE;
-  if (vertex->IsFromVertexerZ())
-  {
-    if (vertex->GetDispersion() > 0.02) 
-      return kTRUE;
-  }
-
-  // check multiplicity
-  const AliMultiplicity* mult = esdEvent->GetMultiplicity();
-  if (!mult) return kTRUE;
-  if(mult->GetNumberOfTracklets() < 1) return kTRUE;
-
-  */
-
+ 
 return kFALSE;
 }
 

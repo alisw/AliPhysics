@@ -77,7 +77,9 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, AlidNdPtE
     if (debug)
       Printf("AlidNdPtHelper::GetVertex: Returning SPD vertex");
   }
-  else if (analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || analysisMode == kTPCITSHybridTrackSPDvtx || analysisMode == kTPCITSHybridTrackSPDvtxDCArPt)
+  else if (analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || 
+           analysisMode == kTPCITSHybridTrackSPDvtx || analysisMode == kTPCITSHybridTrackSPDvtxDCArPt || 
+	   analysisMode == kITSStandAloneTrackSPDvtx ||  analysisMode == kITSStandAloneTPCTrackSPDvtx)
   {
     vertex = aEsd->GetPrimaryVertexTracks();
     if(!vertex) return NULL;
@@ -180,7 +182,7 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, const AliESDVer
   if (analysisMode == kSPD || analysisMode == kTPCITS || 
       analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate || analysisMode == kTPCITSHybrid ||
       analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || analysisMode == kTPCITSHybridTrackSPDvtx || analysisMode == kTPCITSHybridTrackSPDvtxDCArPt
-     )
+	   || analysisMode == kITSStandAloneTrackSPDvtx ||  analysisMode == kITSStandAloneTPCTrackSPDvtx)
   {
     requiredZResolution = 1000;
   }
@@ -347,6 +349,8 @@ void AlidNdPtHelper::PrintConf(AnalysisMode analysisMode, AliTriggerAnalysis::Tr
     case kTPCITSHybrid : str += "TPC tracking + ITS refit + >1 SPD cluster"; break;
     case kTPCITSHybridTrackSPDvtx : str += "TPC tracking + ITS refit + >1 SPD cluster + Tracks event vertex or SPD event vertex"; break;
     case kTPCITSHybridTrackSPDvtxDCArPt : str += "TPC tracking + ITS refit + >1 SPD cluster + Tracks event vertex or SPD event vertex + DCAr(pt)"; break;
+    case kITSStandAloneTrackSPDvtx : str += "ITS standalone + Tracks event vertex or SPD event vertex + DCAr(pt)"; break;
+    case kITSStandAloneTPCTrackSPDvtx : str += "kITSStandAloneTPCTrackSPDvtx + TPC stand alone track  + Tracks event vertex or SPD event vertex + DCAr(pt)"; break;
     case kMCRec : str += "TPC tracking + Replace rec. with MC values"; break;
   }
   str += " and trigger ";
@@ -535,11 +539,11 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
       track = AlidNdPtHelper::GetTPCOnlyTrackTrackSPDvtx(esdEvent,iTrack,kFALSE);
       if(!track) continue;
     }
-    else if( analysisMode == AlidNdPtHelper::kTPCITSHybrid )
+    else if(analysisMode == AlidNdPtHelper::kTPCITSHybrid )
     {
       track = AlidNdPtHelper::GetTrackSPDvtx(esdEvent,iTrack,kFALSE);
     }
-    else if( analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt)
+    else if(analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ||           kITSStandAloneTrackSPDvtx || kITSStandAloneTPCTrackSPDvtx)
     {
       track = AlidNdPtHelper::GetTrackTrackSPDvtx(esdEvent,iTrack,kFALSE);
     }
@@ -964,6 +968,10 @@ Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEven
   // MC particle stack
   stack = mcEvent->Stack();
   if (!stack) return 0;
+
+  //
+  //printf("minZv %f, maxZv %f \n", evtCuts->GetMinZv(), evtCuts->GetMaxZv());
+  //
 
   Bool_t isEventOK = evtCuts->AcceptMCEvent(mcEvent);
   if(!isEventOK) return 0; 
