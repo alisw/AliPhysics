@@ -96,7 +96,8 @@ AliEMCALTriggerBoard::~AliEMCALTriggerBoard()
    delete [] fRegion; fRegion = 0x0;
    delete []    fMap;    fMap = 0x0;
    
-	fPatches->Delete();
+   if(fPatches)fPatches->Delete();
+   delete fPatches;
 }
 
 //_______________

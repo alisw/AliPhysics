@@ -320,6 +320,8 @@ Int_t AliEMCALTriggerTRU::L0v1()
 				
 				nP++; // all FOR in the patch must have seen a max
 			}
+			
+			delete [] idx;
 		}
 		
 		if ( !nP ) 

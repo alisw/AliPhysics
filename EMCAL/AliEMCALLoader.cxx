@@ -235,7 +235,8 @@ Int_t AliEMCALLoader::GetEvent()
      TBranch * branchH = treeH->GetBranch(fDetectorName);
      branchH->SetAddress(&tempArr);
      for (Int_t iEnt = 0; iEnt < nEnt; iEnt++) {
-       treeH->GetEntry(iEnt);
+       //treeH->GetEntry(iEnt);
+	   branchH->GetEntry(iEnt);
        Int_t nHit = tempArr->GetEntriesFast();
        for (Int_t iHit = 0; iHit < nHit; iHit++) {
 	 new ((*fHits)[index]) AliEMCALHit(*((AliEMCALHit*)tempArr->At(iHit)));
@@ -258,7 +259,8 @@ Int_t AliEMCALLoader::GetEvent()
        fSDigits->Clear();
      }
      branchS->SetAddress(&fSDigits);
-     treeS->GetEvent(0);
+	 branchS->GetEntry(0);
+     //treeS->GetEvent(0);
    }
    
    // Digits
@@ -270,7 +272,8 @@ Int_t AliEMCALLoader::GetEvent()
        fDigits->Clear();
      }
      branchD->SetAddress(&fDigits);
-     treeD->GetEvent(0);
+	 branchD->GetEntry(0);
+     //treeD->GetEvent(0);
    }
 
    // RecPoints
@@ -282,7 +285,8 @@ Int_t AliEMCALLoader::GetEvent()
        fRecPoints->Clear();
      }
      branchR->SetAddress(&fRecPoints);
-     treeR->GetEvent(0);
+     //treeR->GetEvent(0);
+	 branchR->GetEntry(0);
    }
    
    return 0;
