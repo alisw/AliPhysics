@@ -178,7 +178,7 @@ void AliTPCGGVoltError::InitGGVoltErrorDistortion() {
 	Double_t zterm = TMath::Cos( k*(fgkTPC_Z0-TMath::Abs(z)) ) - 1 ;
 	intz += zterm * numerator / denominator ;
 	// Assume series converges, break if small terms
-	if ( n>10 && fabs(intz)*1.e-10 > fabs(numerator/denominator) ) break;   
+	if ( n>10 && TMath::Abs(intz)*1.e-10 > TMath::Abs(numerator/denominator) ) break;   
       }
       fGGVoltErrorER[i][j] = (Double_t) intz ;
 
