@@ -93,6 +93,7 @@ fPlaneEff(0) {
   for(i=0;i<4;i++) fSPDdetzcentre[i]=0.;
   for(i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
   for(i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
+  fOriginal.SetOwner();
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITStrackerMI(const Char_t *geom) : AliTracker(),
@@ -130,6 +131,7 @@ fPlaneEff(0) {
     AliWarning("\"geom\" is actually a dummy argument !");
   }
 
+  fOriginal.SetOwner();
   fCoefficients = 0;
   fAfterV0     = kFALSE;
 
@@ -281,6 +283,7 @@ fITSChannelStatus(tracker.fITSChannelStatus),
 fkDetTypeRec(tracker.fkDetTypeRec),
 fPlaneEff(tracker.fPlaneEff) {
   //Copy constructor
+  fOriginal.SetOwner();
   Int_t i;
   for(i=0;i<4;i++) {
     fSPDdetzcentre[i]=tracker.fSPDdetzcentre[i];
@@ -618,7 +621,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) AliITSV0Finder::FindV02(event,this);
   fAfterV0 = kTRUE;
   //
-  itsTracks.Delete();
+  itsTracks.Clear();
   //
   Int_t entries = fTrackHypothesys.GetEntriesFast();
   for (Int_t ientry=0; ientry<entries; ientry++) {
