@@ -59,6 +59,7 @@ class AliGenMC : public AliGenerator
 	{fTarget = tar; fATarget = a; fZTarget = z;}
     virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
+    virtual void BeamCrossAngle();
     virtual void AddHeader(AliGenEventHeader* header);
 
  protected:
@@ -94,7 +95,7 @@ class AliGenMC : public AliGenerator
     Int_t        fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t        fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
     Int_t        fNprimaries;                 // Number of produced and stored particles
-
+ 
  private:
     AliGenMC(const AliGenMC &MC);
     AliGenMC & operator=(const AliGenMC & rhs);

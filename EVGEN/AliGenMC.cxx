@@ -25,6 +25,8 @@
 #include <TMath.h>
 #include <TPDGCode.h>
 #include <TParticle.h>
+#include <TLorentzVector.h>
+#include <TVector3.h>
 
 #include "AliGenMC.h"
 #include "AliRun.h"
@@ -391,6 +393,46 @@ void AliGenMC::Boost()
 	iparticle->SetMomentum(px, py, pzb, eb);
     }
 }
+
+void AliGenMC::BeamCrossAngle()
+{
+  // Applies a boost in the y-direction in order to take into account the 
+  // beam crossing angle
+
+  Double_t thetaPr0, phiPr0, pyPr2, pzPr2;
+  TVector3 beta;
+  
+  thetaPr0 = fXingAngleY / 2.;
+  phiPr0 = 0;
+
+  // Momentum of the CMS system
+  pyPr2 = TMath::Sqrt(fEnergyCMS * fEnergyCMS/ 4 - 0.938 * 0.938) * TMath::Sin(thetaPr0); 
+  pzPr2 = TMath::Sqrt(fEnergyCMS * fEnergyCMS/ 4 - 0.938 * 0.938) * TMath::Cos(thetaPr0);
+
+  TLorentzVector proj1Vect, proj2Vect, projVect;
+  proj1Vect.SetPxPyPzE(0., pyPr2, pzPr2, fEnergyCMS/2);
+  proj2Vect.SetPxPyPzE(0., pyPr2,-pzPr2, fEnergyCMS/2);
+  projVect = proj1Vect + proj2Vect;
+  beta=(1. / projVect.E()) * (projVect.Vect());
+
+  Int_t i;
+  Int_t np = fParticles.GetEntriesFast();
+  for (i = 0; i < np; i++) 
+    {
+      TParticle* iparticle = (TParticle*) fParticles.At(i);
+
+      Double_t e   = iparticle->Energy();
+      Double_t px  = iparticle->Px();
+      Double_t py  = iparticle->Py();
+      Double_t pz  = iparticle->Pz();
+      
+      TLorentzVector partIn;
+      partIn.SetPxPyPzE(px,py,pz,e);
+      partIn.Boost(beta);
+      iparticle->SetMomentum(partIn.Px(),partIn.Py(),partIn.Pz(),partIn.E());
+    }
+}
+
 
 void AliGenMC::AddHeader(AliGenEventHeader* header)
 {
