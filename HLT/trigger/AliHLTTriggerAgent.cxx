@@ -437,6 +437,8 @@ int AliHLTTriggerAgent::AliHLTTriggerDecisionHandler::ProcessData(AliHLTOUT* pDa
 	      fSize=pMsg->CompLength();
 	      fpData->Set(fSize, pMsg->CompBuffer());
 	    }
+	    delete pMsg;
+	    pMsg=NULL;
 	  } else {
 	    HLTError("streaming of objects failed");
 	  }
