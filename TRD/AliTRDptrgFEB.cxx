@@ -107,14 +107,14 @@ Int_t AliTRDptrgFEB::LoadDigits()
     AliLoader* loader = this->fRunLoader->GetLoader( "VZEROLoader" );
 
     if (!loader) {
-      AliError("Can not get VZERO loader");
+      AliError("Cannot get VZERO loader");
       return -1;
     }
     loader->LoadDigits("READ");
     TTree* vzeroDigitsTree = loader->TreeD();
 
     if (!vzeroDigitsTree) {
-      AliError("Can not get the VZERO digit tree");
+      AliError("Cannot get the VZERO digit tree");
       return -1;
     }
     
@@ -166,6 +166,11 @@ Int_t AliTRDptrgFEB::LoadDigits()
     // load T0's digits --------------------------------------------------------
     AliLoader * fT0Loader = this->fRunLoader->GetLoader("T0Loader");
     //   AliT0digit *fDigits; 
+    if (!fT0Loader) {
+      AliError("Cannot get T0 loader");
+      return -1;
+    }
+      
     fT0Loader->LoadDigits("READ");
     // Creating T0 data container
 
