@@ -40,7 +40,7 @@ enum libModes {mLocal,mLocalSource};
 //void makeWeights(TString type="", TString method="GFC", TString cumulantOrder="4th", Int_t mode=mLocalSource)
 void makeWeights(TString type="", TString method="QC", TString cumulantOrder="4th", Int_t mode=mLocal)
 { 
- // 1. type: "ESD", "AOD", "ESDMC0", "ESDMC1", for Monte Carlo and 'on the fly' use simply "", ;
+ // 1. type: "ESD", "AOD", "ESDMCkineESD", "ESDMCkineMC", for Monte Carlo and 'on the fly' use simply "", ;
  // 2. method: MCEP, LYZ1, LYZ2, LYZEP, SP, FQD, GFC or QC; 
  // 3. cumulantOrder: 2nd, 4th, 6th or 8th;             
  // 4. mode: if mode = mLocal -> analyze data on your computer using aliroot

@@ -5,7 +5,7 @@ enum libModes {mLocal,mLocalSource};
 
 void redoFinish(TString type="ESD", Int_t mode=mLocal)
 {
- // type: type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
+ // type: type of analysis can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
  //       (if type="" output files are from MC simulation (default))
  // mode: if mode = mLocal: analyze data on your computer using aliroot
  //       if mode = mLocalSource: analyze data on your computer using root + source files

@@ -44,8 +44,8 @@ class AliFlowEventSimple: public TObject {
   Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
 
   void ResolutionPt(Double_t res);
+  void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
   void CloneTracks(Int_t n);
-  void SubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
   void AddFlow( Double_t flow );
  
   AliFlowTrackSimple* GetTrack(Int_t i);
