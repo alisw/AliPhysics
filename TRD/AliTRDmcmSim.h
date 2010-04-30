@@ -46,10 +46,10 @@ class AliTRDmcmSim : public TObject {
 
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
           void      SetData(Int_t iadc, Int_t it, Int_t adc); // Set ADC data
-	  void      SetData(AliTRDarrayADC *adcArray, 
-			    AliTRDdigitsManager *digitsManager = 0x0);         // Set ADC data from adcArray
-	  void      SetDataByPad(AliTRDarrayADC *adcArray, 
-				 AliTRDdigitsManager *digitsManager = 0x0);    // Set ADC data from adcArray
+	  void      SetData(AliTRDarrayADC * const adcArray, 
+			    AliTRDdigitsManager * const digitsManager = 0x0);         // Set ADC data from adcArray
+	  void      SetDataByPad(AliTRDarrayADC *const adcArray, 
+				 AliTRDdigitsManager * const digitsManager = 0x0);    // Set ADC data from adcArray
           void      SetDataPedestal(Int_t iadc);              // Fill ADC data with pedestal values
 
   static  Bool_t    GetApplyCut() { return fgApplyCut; }
@@ -72,6 +72,8 @@ class AliTRDmcmSim : public TObject {
 
 	  void      WriteData(AliTRDarrayADC *digits);
 	  Bool_t    StoreTracklets();                          // Stores tracklets via runloader
+	  TString   GetTrklBranchName() { return fTrklBranchName; }
+	  void      SetTrklBranchName(TString name) { fTrklBranchName = name; }
 
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ) const; // Produce raw data stream - Real data format
 	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM
@@ -122,7 +124,7 @@ class AliTRDmcmSim : public TObject {
 	  void PrintPidLutHuman();
 	  void PrintPidLutDatx(ostream& os) const;
 	  void SetPIDLutScaleDMEM();
-	  void SetPIDLut(TH2F *lut);
+	  void SetPIDLut(TH2F * const lut);
 	  void SetPIDLut(Int_t *lut, Int_t nbinsq0, Int_t nbinsq1);
 
 	  // I/O
@@ -162,6 +164,8 @@ class AliTRDmcmSim : public TObject {
 	  Int_t    *fZSMap;                             // Zero suppression map (1 dimensional projection)
 
 	  Int_t     fFitPtr[fgkNCPU];                   // pointer to the tracklet to be calculated by CPU i
+
+          TString   fTrklBranchName;   	                // name of the tracklet branch to right to
 
 	  // Parameter classes
 	  AliTRDfeeParam    *fFeeParam;                 // FEE parameters
@@ -203,18 +207,18 @@ class AliTRDmcmSim : public TObject {
 
 	  // Sort functions as in TRAP
 	  void Sort2(UShort_t  idx1i, UShort_t  idx2i, UShort_t  val1i, UShort_t  val2i, 
-		     UShort_t *idx1o, UShort_t *idx2o, UShort_t *val1o, UShort_t *val2o) const;
+		     UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const val1o, UShort_t * const val2o) const;
 	  void Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, 
 		     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, 
-		     UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, 
-		     UShort_t *val1o, UShort_t *val2o, UShort_t *val3o);
+		     UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, 
+		     UShort_t * const val1o, UShort_t * const val2o, UShort_t * const val3o);
 	  void Sort6To4(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, 
 			UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, 
-			UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, UShort_t *idx4o, 
-			UShort_t *val1o, UShort_t *val2o, UShort_t *val3o, UShort_t *val4o);
+			UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, UShort_t * const idx4o, 
+			UShort_t * const val1o, UShort_t * const val2o, UShort_t * const val3o, UShort_t * const val4o);
 	  void Sort6To2Worst(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, 
 			     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, 
-			     UShort_t *idx5o, UShort_t *idx6o);
+			     UShort_t * const idx5o, UShort_t * const idx6o);
 
 	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;  
 	  // Add a and b (unsigned) with clipping to the maximum value representable by nbits

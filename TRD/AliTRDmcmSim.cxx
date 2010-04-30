@@ -72,6 +72,7 @@ AliTRDmcmSim::AliTRDmcmSim() :
   fMCMT(NULL),
   fTrackletArray(NULL),
   fZSMap(NULL),
+  fTrklBranchName("mcmtrklbranch"),
   fFeeParam(NULL),
   fTrapConfig(NULL),
   fDigitsManager(NULL),
@@ -522,7 +523,7 @@ void AliTRDmcmSim::SetData( Int_t adc, Int_t it, Int_t data )
   fADCF[adc][it] = data << fgkAddDigits;
 }
 
-void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *digitsManager)
+void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager * const digitsManager)
 {
   // Set the ADC data from an AliTRDarrayADC
 
@@ -575,7 +576,7 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
   }
 }
 
-void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *digitsManager)
+void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsManager * const digitsManager)
 {
   // Set the ADC data from an AliTRDarrayADC 
   // (by pad, to be used during initial reading in simulation)
@@ -1756,9 +1757,9 @@ Bool_t AliTRDmcmSim::StoreTracklets()
   }
   
   AliTRDtrackletMCM *trkl = 0x0;
-  TBranch *trkbranch = trackletTree->GetBranch("mcmtrklbranch");
+  TBranch *trkbranch = trackletTree->GetBranch(fTrklBranchName.Data());
   if (!trkbranch)
-    trkbranch = trackletTree->Branch("mcmtrklbranch", "AliTRDtrackletMCM", &trkl, 32000);
+    trkbranch = trackletTree->Branch(fTrklBranchName.Data(), "AliTRDtrackletMCM", &trkl, 32000);
   
   for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
     trkl = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet]);
@@ -1846,6 +1847,8 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
 
 Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
 {
+  // return PID calculated from charges accumulated in two time windows
+
    ULong64_t addrQ0;
    ULong64_t addr;
 
@@ -1882,7 +1885,7 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
 
 
 
-void AliTRDmcmSim::SetPIDLut(TH2F *lut)
+void AliTRDmcmSim::SetPIDLut(TH2F * const lut)
 {
   // set a user-defined PID LUT from a 2D histogram
 
@@ -1936,6 +1939,8 @@ void AliTRDmcmSim::SetPIDLut(TH2F *lut)
 
 void AliTRDmcmSim::SetPIDLutScaleDMEM()
 {
+  // set scale factor for PID in DMEM
+
    Double_t scaleQ[2];
    fTrapConfig->GetPIDscale(scaleQ);
    
@@ -1981,8 +1986,8 @@ UInt_t AliTRDmcmSim::AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const
 
 void AliTRDmcmSim::Sort2(UShort_t  idx1i, UShort_t  idx2i, \
                             UShort_t  val1i, UShort_t  val2i, \
-                            UShort_t *idx1o, UShort_t *idx2o, \
-                            UShort_t *val1o, UShort_t *val2o) const
+                            UShort_t * const idx1o, UShort_t * const idx2o, \
+                            UShort_t * const val1o, UShort_t * const val2o) const
 {
   // sorting for tracklet selection
 
@@ -2004,8 +2009,8 @@ void AliTRDmcmSim::Sort2(UShort_t  idx1i, UShort_t  idx2i, \
 
 void AliTRDmcmSim::Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, \
                             UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, \
-                            UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, \
-                            UShort_t *val1o, UShort_t *val2o, UShort_t *val3o)
+                            UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, \
+                            UShort_t * const val1o, UShort_t * const val2o, UShort_t * const val3o)
 {
   // sorting for tracklet selection
 
@@ -2080,8 +2085,8 @@ void AliTRDmcmSim::Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, \
 
 void AliTRDmcmSim::Sort6To4(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, \
                                UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, \
-                               UShort_t *idx1o, UShort_t *idx2o, UShort_t *idx3o, UShort_t *idx4o, \
-                               UShort_t *val1o, UShort_t *val2o, UShort_t *val3o, UShort_t *val4o)
+                               UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, UShort_t * const idx4o, \
+                               UShort_t * const val1o, UShort_t * const val2o, UShort_t * const val3o, UShort_t * const val4o)
 {
   // sorting for tracklet selection
 
@@ -2108,7 +2113,7 @@ void AliTRDmcmSim::Sort6To4(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, U
 
 void AliTRDmcmSim::Sort6To2Worst(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, \
                                     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, \
-                                    UShort_t *idx5o, UShort_t *idx6o)
+                                    UShort_t * const idx5o, UShort_t * const idx6o)
 {
   // sorting for tracklet selection
 
@@ -2243,6 +2248,8 @@ ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
 
 void AliTRDmcmSim::PrintFitRegXml(ostream& os) const
 {
+  // print fit registres in XML format
+
    bool tracklet=false;
 
   for (Int_t cpu = 0; cpu < 4; cpu++) {
@@ -2288,6 +2295,8 @@ void AliTRDmcmSim::PrintFitRegXml(ostream& os) const
 
 void AliTRDmcmSim::PrintTrackletsXml(ostream& os) const
 {
+  // print tracklets in XML format
+
    os << "<nginject>" << std::endl;
    os << "<ack roc=\""<< fDetector <<  "\" cmndid=\"0\">" << std::endl;
    os << "<dmem-readout>" << std::endl;
@@ -2325,6 +2334,8 @@ void AliTRDmcmSim::PrintTrackletsXml(ostream& os) const
 
 void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
 {
+  // print ADC data in human-readable format
+
    os << "MCM " << fMcmPos << " on ROB " << fRobPos << 
       " in detector " << fDetector << std::endl;
     
@@ -2360,6 +2371,8 @@ void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
 
 void AliTRDmcmSim::PrintAdcDatXml(ostream& os) const
 {
+  // print ADC data in XML format 
+
    os << "<nginject>" << std::endl;
    os << "<ack roc=\""<< fDetector <<  "\" cmndid=\"0\">" << std::endl;
    os << "<dmem-readout>" << std::endl;
@@ -2387,6 +2400,8 @@ void AliTRDmcmSim::PrintAdcDatXml(ostream& os) const
 
 void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast) const
 {
+  // print ADC data in datx format (to send to FEE)
+
    fTrapConfig->PrintDatx(os, 2602, 1, 0, 127);  // command to enable the ADC clock - necessary to write ADC values to MCM
    os << std::endl;
 
@@ -2408,6 +2423,8 @@ void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast) const
 
 void AliTRDmcmSim::PrintPidLutHuman()
 {
+  // print PID LUT in human readable format
+
    UInt_t result;
 
    UInt_t addrEnd = AliTRDtrapConfig::fgkDmemAddrLUTStart + fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength)/4; // /4 because each addr contains 4 values
@@ -2427,6 +2444,8 @@ void AliTRDmcmSim::PrintPidLutHuman()
 
 void AliTRDmcmSim::PrintPidLutDatx(ostream& os) const
 {
+  // print PID LUT in datx format (to send to FEE)
+  
    Double_t scaleQ[2];
    fTrapConfig->GetPIDscale(scaleQ);
    
