@@ -40,7 +40,6 @@ public:
   TList *        GetExternParamlist() { return fExternParamList ;}
   TCanvas **     GetImage() { return fImage ; }
   TCanvas *      GetImage(AliRecoParam::EventSpecie_t es) { return fImage[AliRecoParam::AConvert(es)] ; }
-  void           GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB) ;
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det)   { AliQAv1::Instance(det) ; }
   virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
   void           PrintExternParam() ; 
@@ -52,11 +51,12 @@ public:
   void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
 
 protected:
-  virtual      Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam) ; 
+  virtual void Check(Double_t *rv, AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam) ; 
 
   Double_t     DiffC(const TH1 * href, const TH1 * hin) const ;   
   Double_t     DiffK(const TH1 * href, const TH1 * hin) const ;   
   void         Finish() const ; 
+  void         GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray **& dirOCDB) ;
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 
   TDirectory  * fDataSubDir     ; //! directory for the current task directory in the current detector directory in the data file
@@ -69,7 +69,7 @@ protected:
   TList       * fExternParamList; //List of external parameters (TParameter<double>)  
 
 private:
-  Double_t * Check(AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
+  void Check(Double_t * rv, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
 
   ClassDef(AliQACheckerBase,3)  // description 
 

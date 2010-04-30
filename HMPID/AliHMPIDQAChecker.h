@@ -26,12 +26,11 @@ class TObjArray ;
 class AliHMPIDQAChecker: public AliQACheckerBase {
 
 public:
-  AliHMPIDQAChecker() ;           // ctor
-  AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) ; // cpy ctor 
-  AliHMPIDQAChecker &operator=(const AliHMPIDQAChecker& qac);   //assignment operator
+  AliHMPIDQAChecker() ;          // ctor
+  AliHMPIDQAChecker(const AliHMPIDQAChecker& qac) ; // cpy ctor   
   virtual ~AliHMPIDQAChecker() ; // dtor
   
-  virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
+  virtual void Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) ;
   
   Double_t CheckEntries(TObjArray * list) const ;
   Double_t CheckRec(TObjArray *listrec, TObjArray *listref) const ;

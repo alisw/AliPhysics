@@ -43,28 +43,22 @@
 ClassImp(AliACORDEQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/)
+void AliACORDEQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/)
 {
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    rv[specie] = 0.0 ; 
-  return rv ;  
+    test[specie] = 0.0 ; 
 }
 //____________________________________________________________________________
-Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
+void AliACORDEQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
-
 // Close version to the final one for the ACORDE QA Checker
-
-  Double_t * test = new Double_t[AliRecoParam::kNSpecies]  ; 
-  Double_t * acoTest = new Double_t[AliRecoParam::kNSpecies] ;
   
 // Loop over the run species (for specie!= cosmic by now we set QA to INFO) 
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
 	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ; 
-	if (list[specie]->GetEntries() == 0) acoTest[specie] = 1.; // Nothing to check
+	if (list[specie]->GetEntries() == 0) test[specie] = 1.; // Nothing to check
 	else 
 	{
 		TIter next(list[specie]) ; 
@@ -85,7 +79,7 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
 					TH1 * href = NULL;
 					if (fRefSubDir) href = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName()));
 					else if (fRefOCDBSubDir[specie]) href = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName()));
-					acoTest[specie] = CheckAcordeRefHits(href,hdata);
+					test[specie] = CheckAcordeRefHits(href,hdata);
 				}else if (hdataName.Contains("ACORDEBitPattern"))
 				// Here we use an inner QA Checher without the QAref data
 				{
@@ -99,10 +93,10 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
 						}
 					}
 					Double_t simpleFlag = 1.-flagAcoQA/60.;
-					if ( (simpleFlag >= 0.90) && (simpleFlag <= 1.0) ) acoTest[specie] = 0.75; // INFO
-					if ( (simpleFlag >= 0.70) && (simpleFlag < 0.90) ) acoTest[specie] = 0.50; // WARNING
-					if ( (simpleFlag >= 0.25) && (simpleFlag < 0.70) ) acoTest[specie] = 0.25; // ERROR
-					if ( (simpleFlag >= 0.0) && (simpleFlag < 0.25) )  acoTest[specie] = -1.0; // FATAL
+					if ( (simpleFlag >= 0.90) && (simpleFlag <= 1.0) ) test[specie] = 0.75; // INFO
+					if ( (simpleFlag >= 0.70) && (simpleFlag < 0.90) ) test[specie] = 0.50; // WARNING
+					if ( (simpleFlag >= 0.25) && (simpleFlag < 0.70) ) test[specie] = 0.25; // ERROR
+					if ( (simpleFlag >= 0.0) && (simpleFlag < 0.25) )  test[specie] = -1.0; // FATAL
 				}	
 				// Setting Warning message for possible Empty Events with the ACORDE-Trigger
 					
@@ -113,23 +107,21 @@ Double_t * AliACORDEQAChecker::Check(AliQAv1::ALITASK_t /*index*/, TObjArray ** 
         			
 		}
 	}
-	if ( (specie == AliRecoParam::kHighMult) || (specie == AliRecoParam::kLowMult) || (specie == AliRecoParam::kCalib) ) acoTest[specie] = 0.75;
-	test[specie] = acoTest[specie]; // Assign of the acoTest to the test for final QAChecker value	
+    if ( (specie == AliRecoParam::kHighMult) || (specie == AliRecoParam::kLowMult) || (specie == AliRecoParam::kCalib) ) test[specie] = 0.75;
   }
-  	return test ; 
 }
 //____________________________________________________________________________
 Double_t AliACORDEQAChecker::CheckAcordeRefHits(const TH1 * href, const TH1 * hdata) const
 {
-	Double_t acoTest = 0.;
+	Double_t test = 0.;
 	Int_t flag=0;
 	for (Int_t i=0;i<60;i++)
 	{
 		if (TMath::Abs(href->GetBinContent(i)-hdata->GetBinContent(i))>10) flag++;
 	}
-	if ((flag>50)&&(flag<=60)) acoTest = -1.;
-	if ((flag>30)&&(flag<=50)) acoTest = 0.25;
-	if ((flag>10)&&(flag<=30)) acoTest = 0.5;
-	if ((flag>0)&&(flag<=10)) acoTest = 0.75;
-	return acoTest;
+	if ((flag>50)&&(flag<=60)) test = -1.;
+	if ((flag>30)&&(flag<=50)) test = 0.25;
+	if ((flag>10)&&(flag<=30)) test = 0.5;
+	if ((flag>0)&&(flag<=10)) test = 0.75;
+	return test;
 }

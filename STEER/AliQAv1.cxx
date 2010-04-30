@@ -288,30 +288,29 @@ Bool_t AliQAv1::CheckRange(AliRecoParam::EventSpecie_t es) const
 const char * AliQAv1::GetAliTaskName(ALITASK_t tsk)
 {
 	// returns the char name corresponding to module index
-	TString tskName ;
 	switch (tsk) {
 		case kNULLTASK:
 			break ; 
 		case kRAW:
-			tskName = "RAW" ;
+			return "RAW" ;
 			break ;  
 		case kSIM:
-			tskName = "SIM" ;
+			return "SIM" ;
 			break ;
 		case kREC:
-			tskName = "REC" ;
+			return "REC" ;
 			break ;
 		case kESD:
-			tskName = "ESD" ;
+			return "ESD" ;
 			break ;
 		case kANA:
-			tskName = "ANA" ;
+			return "ANA" ;
 			break ;
 		default:
-			tsk = kNULLTASK ; 
+      return "" ; 
 			break ;
 	}
-	return tskName.Data() ;
+  return "" ;
 }
 
 //_______________________________________________________________
@@ -473,12 +472,13 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 TFile * AliQAv1::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results	
-  if (fgQAResultFile ) 
+  if (fgQAResultFile && fgQAResultFile->IsOpen()) 
   {
-    if ( fgQAResultFile->IsOpen() ) 
-	fgQAResultFile->Close();
+    fgQAResultFile->Close();
   }
- 
+  delete fgQAResultFile;
+  fgQAResultFile=0x0;
+  
   TString dirName(fgQAResultDirName) ; 
   if ( dirName.Contains(fgkLabLocalFile)) 
     dirName.ReplaceAll(fgkLabLocalFile, "") ;
@@ -492,9 +492,8 @@ TFile * AliQAv1::GetQAResultFile()
     opt = "NEW" ; 
   }
   fgQAResultFile = TFile::Open(fileName, opt) ;   
-  if (!fgQAResultFile ) // something wrong when trying to open the file
-   fgQAResultFile = TFile::Open(fileName, "RECREATE");  
-  return fgQAResultFile ;
+	
+	return fgQAResultFile ;
 }
 
 //_______________________________________________________________
@@ -609,7 +608,7 @@ AliQAv1 * AliQAv1::Instance()
   if ( ! fgQA) {
     TFile * f = GetQAResultFile() ; 
     fgQA = static_cast<AliQAv1 *>(f->Get("QA")) ; 
-    //f->Close() ; 
+    f->Close() ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1() ;
   }
@@ -896,12 +895,10 @@ void AliQAv1::ShowStatus(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::Event
 void AliQAv1::ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t det, ALITASK_t tsk, const ULong_t status) const 
 {
 	// print the QA status in human readable format
-	TString text; 
-  QABIT_t bit = GetQAStatusBit(es, det, tsk) ; 
+  const QABIT_t bit = GetQAStatusBit(es, det, tsk) ; 
   if ( bit != kNULLBit ) {
-    text = GetBitName(bit) ; 
-    text += " " ; 
-    AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, text.Data())) ; 
+          AliInfoClass(Form("           %8s %8s %4s  \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk))) ; 
+      //    AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, GetBitName(bit))) ; 
   }
 }
 
