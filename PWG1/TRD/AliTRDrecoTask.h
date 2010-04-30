@@ -53,7 +53,7 @@ public:
   Bool_t         HasPostProcess() const  { return TestBit(kPostProcess);};
   virtual TObjArray* Histos()            { return fContainer;}
 
-  virtual Bool_t Load(const Char_t *filename = "TRD.Performance.root");
+  virtual Bool_t Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir = "TRD_Performance");
   virtual Bool_t Save(TObjArray * const res);
   virtual Bool_t PostProcess();
   virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);

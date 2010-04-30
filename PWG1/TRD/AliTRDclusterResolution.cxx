@@ -357,9 +357,9 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     return kTRUE;
   case kMean:
     if(!(t = (TTree*)fResults->At(kMean))) break;
-    t->Draw(Form("z:t>>h2x(%d, -0.5, %3.1f, %d, 0., 2.5)", 
+    if(!t->Draw(Form("z:t>>h2x(%d, -0.5, %3.1f, %d, 0., 2.5)", 
       AliTRDseedV1::kNtb, AliTRDseedV1::kNtb-0.5, kND),
-      "dx*(1)", "goff");
+      "dx*(1)", "goff")) break;
     h2 = (TH2F*)gROOT->FindObject("h2x");
     printf("  const Double_t dx[%d][%d]={\n", AliTRDseedV1::kNtb, kND);
     for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
@@ -380,9 +380,9 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     //h1->GetXaxis()->SetRange(2, AliTRDseedV1::kNtb-1); 
     h1->Draw("pc");
 
-    t->Draw(Form("z:t>>h2y(%d, -0.5, %3.1f, %d, 0., 2.5)", 
+    if(!t->Draw(Form("z:t>>h2y(%d, -0.5, %3.1f, %d, 0., 2.5)", 
       AliTRDseedV1::kNtb, AliTRDseedV1::kNtb-0.5, kND),
-      "dy*(1)", "goff");
+      "dy*(1)", "goff")) break;
     h2 = (TH2F*)gROOT->FindObject("h2y");
     printf("  const Double_t dy[%d][%d]={\n", AliTRDseedV1::kNtb, kND);
     for(Int_t ix=1; ix<=h2->GetNbinsX(); ix++){
