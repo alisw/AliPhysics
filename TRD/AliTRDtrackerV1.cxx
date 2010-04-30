@@ -359,8 +359,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
       // update calibration references using this track
       if(calibra->GetHisto2d()) calibra->UpdateHistogramsV1(&track);
       // save calibration object
-      if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0 &&
-fkRecoParam->IsOverPtThreshold(track.Pt())){ 
+      if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0) { 
         AliTRDtrackV1 *calibTrack = new AliTRDtrackV1(track);
         calibTrack->SetOwner();
         seed->AddCalibObject(calibTrack);
@@ -504,7 +503,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
     Double_t xTPC = 250.0;
     if(FollowProlongation(track)){	
       // Update the friend track
-      if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0 && fkRecoParam->IsOverPtThreshold(track.Pt())){ 
+      if (fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 0){ 
         TObject *o = NULL; Int_t ic = 0;
         AliTRDtrackV1 *calibTrack = NULL; 
         while((o = seed->GetCalibObject(ic++))){
