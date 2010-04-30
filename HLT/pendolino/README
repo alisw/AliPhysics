@@ -1,0 +1,43 @@
+This is a short documentation of the pendolino and experiences 
+gained during the commissioning session April 2010
+
+Pendolino consists currently of a package of nested scripts and macros
+
+The pendolino operates on the system HCDB for the hlt-operator and on the
+local operator HCDB ($HOME/HCDB) for all others.
+
+The RunManager starts the PendolinoManager which also is shown as a process
+in the TMGUI. The PendolinoManager uses the commands from the configuration
+file to start the pendolino.
+
+RunManager-PendolinoWrapper.sh
+ | -> ./initGRPEntries.sh
+ |      -> setGRPVal.C
+ |          - create the initial GRP object and set beam and runtype
+ | -> StartPendolino.sh
+       |- source environment
+       |- clean HCDB
+       |- release T-HCDB
+       |a) -> PrepareHCDB.sh  (hlt-operator)
+       |       - set links for all files in the T-HCDB
+       |b) -> setHCDB.C (al other operators)
+       |       - copy all objects valid for specified run to operator HCDB
+       |- release HCDB
+       |- send notification 'hcdb_prepared' to RunManager
+       |- merge lists (1 to 3)
+       |-> PendolinoDriver.sh (1 to 3 instances: fast, normal, slow)
+            -> runPendolino.C
+            - stays in a loop
+
+All scripts are installed on the HLT cluster under
+/opt/HLT/interfaces/pendolino
+The pendolino is compiled with the specific AliRoot version. This is not longer
+necessary, all pendolino libraries have been moved to AliRoot
+
+Problems during the commissioning April 2010:
+- bug: runPendolino.C  
+	if (mainUser.CompareTo(getenv("USER") != 0)) {
+- StartPendolino.sh: Pendolino_test was still true
+- StartPendolino.sh: environment .setbash.sh was moved to different place
+- pendolino - RunManager communication: TM_Notifier could not communicate with RunManager
+  because of wrong host settings in dcs0/1
