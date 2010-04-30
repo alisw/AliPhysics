@@ -375,6 +375,46 @@ void AliCaloTrackESDReader::FillInputPHOSCells() {
   
 }
 
+//____________________________________________________________________________________________________________________________________________________
+Int_t AliCaloTrackESDReader::GetModuleNumber(AliESDCaloCluster * cluster) const
+{
+	//Get the EMCAL/PHOS module number that corresponds to this cluster
+	TLorentzVector lv;
+	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
+	cluster->GetMomentum(lv,v);
+	Float_t phi = lv.Phi();
+	if(phi < 0) phi+=TMath::TwoPi();	
+	Int_t absId = -1;
+	if(cluster->IsEMCAL()){
+		GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
+		if(GetDebug() > 2) 
+			printf("AliCaloTrackESDReader::GetModuleNumber(ESD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
+				   lv.Eta(), phi*TMath::RadToDeg(),absId, GetEMCALGeometry()->GetSuperModuleNumber(absId));
+		return GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
+	}//EMCAL
+	else if(cluster->IsPHOS()){
+		Int_t    relId[4];
+		if ( cluster->GetNCells() > 0) {
+			absId = cluster->GetCellAbsId(0);
+			if(GetDebug() > 2) 
+				printf("AliCaloTrackESDReader::GetModuleNumber(ESD) - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
+					   lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
+		}
+		else return -1;
+		
+		if ( absId >= 0) {
+			GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
+			if(GetDebug() > 2) 
+				printf("AliCaloESDTrackReader::GetModuleNumber(ESD) - PHOS: Module %d\n",relId[0]-1);
+			return relId[0]-1;
+		}
+		else return -1;
+	}//PHOS
+	
+	return -1;
+}
+
+
 //____________________________________________________________________________
 void AliCaloTrackESDReader::GetVertex(Double_t  v[3]) const {
   //Return vertex position

@@ -245,7 +245,7 @@ Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_
 	
 	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap->GetEntries()) return kFALSE;
 	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap ->GetEntries()) return kFALSE;
-	printf("hello\n");
+
 	Int_t icol = -1;
 	Int_t irow = -1;
 	Int_t imod = -1;
@@ -271,7 +271,7 @@ Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_
 		else return kFALSE;
 		
 	}// cell cluster loop
-	printf("hello 2\n");
+
 	return kFALSE;
 
 }
@@ -375,6 +375,53 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const {
 		printf("AliCaloTrackReader::GetAODMCHeader() - Input are not AODs\n");
 		return 0x0;
 	}
+}
+
+//_____________________________________________________________________________________________________________
+Int_t AliCaloTrackReader::GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t & iRCU) const
+{
+	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
+	Int_t imod = -1;
+	if ( absId >= 0) {
+		if(calo=="EMCAL"){
+			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
+			fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+			
+			//RCU0
+			if (0<=irow&&irow<8) iRCU=0; // first cable row
+			else if (8<=irow&&irow<16 && 0<=icol&&icol<24) iRCU=0; // first half; 
+			//second cable row
+			//RCU1
+			else if(8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
+			//second cable row
+			else if(16<=irow&&irow<24) iRCU=1; // third cable row
+			
+			if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
+			if (iRCU<0) {
+				printf("AliCaloTrackReader::GetModuleNumberCellIndexes() - Wrong EMCAL RCU number = %d\n", iRCU);
+				abort();
+			}			
+			
+			return imod ;
+		}//EMCAL
+		else{//PHOS
+			Int_t    relId[4];
+			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			irow = relId[2];
+			icol = relId[3];
+			imod = relId[0]-1;
+			iRCU= (Int_t)(relId[2]-1)/16 ;
+			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
+			if (iRCU >= 4) {
+				printf("AliCaloTrackReader::GetModuleNumberCellIndexes() - Wrong PHOS RCU number = %d\n", iRCU);
+				abort();
+			}			
+			return imod;
+		}//PHOS	
+	}
+	
+	return -1;
 }
 
 //_______________________________________________________________

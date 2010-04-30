@@ -64,10 +64,6 @@ public:
 	
   void Terminate(TList * outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
-
-  Int_t GetModuleNumber(AliESDCaloCluster * cluster);
-  Int_t GetModuleNumber(AliAODCaloCluster * cluster);
-  Int_t GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow, Int_t &iRCU);
 	
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 

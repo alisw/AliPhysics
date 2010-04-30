@@ -17,9 +17,12 @@ class TObjArray ;
 #include <TObject.h>
 
 //Analysis
+class AliESDCaloCluster;
 class AliAODCaloCluster;
 class AliAODCaloCells;
-class AliCaloTrackReader ;   
+#include "AliCaloTrackReader.h"   
+#include "AliCaloTrackESDReader.h" 
+#include "AliCaloTrackAODReader.h" 
 class AliCaloPID ;
 class AliFiducialCut ;
 class AliIsolationCut ;
@@ -70,6 +73,14 @@ public:
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
   
+  //Calorimeter indexes information
+  Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
+	  return fReader->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU);}
+  Int_t GetModuleNumber(AliESDCaloCluster * cluster) const {
+	  return ((AliCaloTrackESDReader*)fReader)->GetModuleNumber(cluster);}
+  Int_t GetModuleNumber(AliAODCaloCluster * cluster) const {
+	  return ((AliCaloTrackAODReader*)fReader)->GetModuleNumber(cluster);}
+	
   virtual void Terminate(TList * /*outputList*/) {;}
 	
   //analysis AOD branch

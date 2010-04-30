@@ -233,6 +233,9 @@ public:
   TString  GetTaskName() const {return fTaskName;}
   void SetTaskName(TString name) {fTaskName = name;}
 
+  //Calorimeter indexes information
+  Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
+	
  protected:
   Int_t	           fEventNumber; // Event number
   TString          fCurrentFileName; // Current file name under analysis

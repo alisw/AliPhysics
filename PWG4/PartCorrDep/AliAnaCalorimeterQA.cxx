@@ -1204,132 +1204,6 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	return outputContainer;
 }
 
-//____________________________________________________________________________________________________________________________________________________
-Int_t AliAnaCalorimeterQA::GetModuleNumber(AliESDCaloCluster * cluster) 
-{
-	//Get the EMCAL/PHOS module number that corresponds to this cluster
-	TLorentzVector lv;
-	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
-	cluster->GetMomentum(lv,v);
-	Float_t phi = lv.Phi();
-	if(phi < 0) phi+=TMath::TwoPi();	
-	Int_t absId = -1;
-	if(fCalorimeter=="EMCAL"){
-		GetReader()->GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
-		if(GetDebug() > 2) 
-			printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-				   lv.Eta(), phi*TMath::RadToDeg(),absId, GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId));
-		return GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
-	}//EMCAL
-	else{//PHOS
-		Int_t    relId[4];
-		if ( cluster->GetNCells() > 0) {
-			absId = cluster->GetCellAbsId(0);
-			if(GetDebug() > 2) 
-				printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
-						lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
-		}
-		else return -1;
-		
-		if ( absId >= 0) {
-			(GetReader()->GetPHOSGeometry())->AbsToRelNumbering(absId,relId);
-			if(GetDebug() > 2) 
-				printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - PHOS: Module %d\n",relId[0]-1);
-			return relId[0]-1;
-		}
-		else return -1;
-	}//PHOS
-	
-	return -1;
-}
-
-//____________________________________________________________________________________________________________________________________________________
-Int_t AliAnaCalorimeterQA::GetModuleNumber(AliAODCaloCluster * cluster) 
-{
-	//Get the EMCAL/PHOS module number that corresponds to this cluster
-	TLorentzVector lv;
-	Double_t v[]={0.,0.,0.}; //not necessary to pass the real vertex.
-	cluster->GetMomentum(lv,v);
-	Float_t phi = lv.Phi();
-	if(phi < 0) phi+=TMath::TwoPi();	
-	Int_t absId = -1;
-	if(fCalorimeter=="EMCAL"){
-		GetReader()->GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
-		if(GetDebug() > 2) 
-			printf("AliAnaCalorimeterQA::GetModuleNumber(ESD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-				   lv.Eta(), phi*TMath::RadToDeg(),absId, GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId));
-		return GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
-	}//EMCAL
-	else{//PHOS
-		Int_t    relId[4];
-		if ( cluster->GetNCells() > 0) {
-			absId = cluster->GetCellAbsId(0);
-			if(GetDebug() > 2) 
-				printf("AliAnaCalorimeterQA::GetModuleNumber(AOD) - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
-					   lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
-		}
-		else return -1;
-		
-		if ( absId >= 0) {
-			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
-			if(GetDebug() > 2) 
-				printf("AliAnaCalorimeterQA::GetModuleNumber(AOD) - PHOS: Module %d\n",relId[0]-1);
-			return relId[0]-1;
-		}
-		else return -1;
-	}//PHOS
-	
-	return -1;
-}
-
-//_____________________________________________________________________________________________________________
-Int_t AliAnaCalorimeterQA::GetModuleNumberCellIndexes(const Int_t absId, Int_t & icol, Int_t & irow, Int_t & iRCU) 
-{
-	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
-	Int_t imod = -1;
-	if ( absId >= 0) {
-		if(fCalorimeter=="EMCAL"){
-			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-			GetReader()->GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-			GetReader()->GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
-																		 iIphi, iIeta,irow,icol);
-			
-			//RCU0
-			if (0<=irow&&irow<8) iRCU=0; // first cable row
-			else if (8<=irow&&irow<16 && 0<=icol&&icol<24) iRCU=0; // first half; 
-			//second cable row
-			//RCU1
-			else if(8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
-			//second cable row
-			else if(16<=irow&&irow<24) iRCU=1; // third cable row
-			
-			if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
-			if (iRCU<0) {
-				printf("AliAnaCalorimeterQA - Wrong EMCAL RCU number = %d\n", iRCU);
-				abort();
-			}			
-			
-			return imod ;
-		}//EMCAL
-		else{//PHOS
-			Int_t    relId[4];
-			GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
-			irow = relId[2];
-			icol = relId[3];
-			imod = relId[0]-1;
-			iRCU= (Int_t)(relId[2]-1)/16 ;
-			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
-			if (iRCU >= fNRCU) {
-				printf("AliAnaCalorimeterQA - Wrong PHOS RCU number = %d\n", iRCU);
-				abort();
-			}			
-			return imod;
-		}//PHOS	
-	}
-	
-	return -1;
-}
-
 //_______________________________________________________________________________________________________________________________________
 Int_t AliAnaCalorimeterQA::GetNewRebinForRePlotting(TH1D* histo, const Float_t newXmin, const Float_t newXmax,const Int_t newXnbins) const
 {
@@ -1900,7 +1774,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 		for (Int_t iCell = 0; iCell < ncells; iCell++) {      
 			if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
-			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell), icol, irow, iRCU);
+			nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell),fCalorimeter, icol, irow, iRCU);
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			
 			if(nModule < fNModules) {	
@@ -1969,7 +1843,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 //						time2    = cell2->GetTime(iCell2)*1e9;//transform time to ns
 //						//printf("%s: time %g\n",fCalorimeter.Data(), time);
 //						id2      = cell2->GetCellNumber(iCell2);
-//						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), icol2, irow2, iRCU2);
+//						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), fCalorimeter, icol2, irow2, iRCU2);
 //						Int_t index = (nModule2*fNRCU+iRCU2)+(fNModules*fNRCU)*(iRCU+fNRCU*nModule); 
 //						//printf("id %d, nModule %d, iRCU %d, id2 %d, nModule2 %d, iRCU2 %d, index %d: Histo Name %s\n",id, nModule,iRCU,cell2->GetCellNumber(iCell2),nModule2,iRCU2,index, fhTimeCorrRCU[index]->GetName());
 //						fhTimeCorrRCU[index]->Fill(time,time2);	
@@ -2035,7 +1909,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		for (Int_t iCell = 0; iCell < ncells; iCell++) {  
 			id      = cell->GetCellNumber(iCell);
 			if(GetDebug() > 2 )  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), id);
-			nModule = GetModuleNumberCellIndexes(id, icol, irow, iRCU);
+			nModule = GetModuleNumberCellIndexes(id, fCalorimeter, icol, irow, iRCU);
 			if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
 			
 			if(nModule < fNModules) {	
