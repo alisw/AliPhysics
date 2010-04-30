@@ -9,12 +9,26 @@
 
   Based on PHOS code written by
   Y. Schutz CERN July 2007
+ 
+ Created one histogram for QA shifter;-- Yaxian Mao: 11/2009
+ The idea:average counts for all the towers should be flat 
+ Change all existing histograms as experts
+ 
+ Change histograms for DQM shifter: --  Yaxian Mao 04/2010
+ Calcuate the amplitude ratio from current run and the LED reference, for QAChecker use
+ Also calculate the ratio of amplitude from LED Monitor system (current/Reference), to check LED system  
+ 
 */
 
 
 // --- ROOT system ---
 class TH1F ; 
-class TH1I ; 
+class TH1I ;
+class TH2F ;
+class TH2 ; 
+class TLine ;
+class TText ;
+class TProfile ;
 class TObjArray ; 
 
 // --- Standard library ---
@@ -23,6 +37,7 @@ class TObjArray ;
 #include "AliQADataMakerRec.h"
 class AliCaloRawAnalyzer;
 class AliCaloRawAnalyzerLMS;
+class AliEMCALGeoParams;
 
 class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
@@ -33,6 +48,7 @@ public:
     kNsmodLG,kNsmodHG,kTimeLG,kTimeHG,
     kSigLG,kSigHG,kNtotLG,kNtotHG,kTowerHG,kTowerLG,
     kPedLG,kPedHG,
+    k2DRatioAmp,kRatioDist, kLEDMonRatio, kLEDMonRatioDist,
     // then TRU info
     kNsmodTRU,kTimeTRU,
     kSigTRU,kNtotTRU,
@@ -104,6 +120,7 @@ public:
   int GetMaxSignalHGLEDMon() const {return fMaxSignalHGLEDMon;}; 
 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
+  void           GetCalibRefFromOCDB() ;
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 
   virtual void   InitRecPoints() ; 
@@ -116,7 +133,8 @@ public:
   virtual void   StartOfDetectorCycle() ; 
 
 private:
-
+ void ConvertProfile2H(TProfile * p, TH2 * histo) ; //change the profile plot to a 2D histogram
+  
   Int_t fFittingAlgorithm;             // select the fitting algorithm
   AliCaloRawAnalyzer *fRawAnalyzer;    // for signal fitting
   AliCaloRawAnalyzerLMS *fRawAnalyzerTRU;    // for signal fitting, for TRU
@@ -137,6 +155,14 @@ private:
   int fMinSignalHGLEDMon; // minimum signal, for LEDMon channels, high gain
   int fMaxSignalHGLEDMon; // maximum signal, for LEDMon channels, high gain
 
+  TProfile * fCalibRefHistoPro ; // Profile reference histogram from LED run
+  TH2F     * fCalibRefHistoH2F ; // H2F reference histogram from LED run
+  TProfile * fLEDMonRefHistoPro ; // Profile reference histogram from LED monitor
+  TH2F     * fHighEmcHistoH2F ; // H2F reference histogram from LED run
+
+//  TText **    fTextSM        ; //! Text info for each SM  
+//  TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
+//  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
 
   ClassDef(AliEMCALQADataMakerRec,5)  // description 
 

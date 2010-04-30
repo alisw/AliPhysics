@@ -18,11 +18,14 @@ Based on the QA code for PHOS written by Yves Schutz July 2007
 Authors:  J.Klay (Cal Poly) May 2008
           S. Salur LBL April 2008
  
-Created one histogram for QA shifter;
+Created one histogram for QA shifter;-- Yaxian Mao: 11/2009
 The idea:average counts for all the towers should be flat 
 Change all existing histograms as experts
- --By Yaxian Mao 
 
+Change histograms for DQM shifter: --  Yaxian Mao 04/2010
+Calcuate the amplitude ratio from current run and the LED reference, for QAChecker use
+Also calculate the ratio of amplitude from LED Monitor system (current/Reference), to check LED system  
+ 
 */
 
 // --- ROOT system ---
@@ -31,8 +34,10 @@ Change all existing histograms as experts
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h> 
+#include <TLine.h>
+#include <TText.h>
 #include <TProfile.h> 
-
+#include <TStyle.h>
 // --- Standard library ---
 
 
@@ -53,6 +58,8 @@ Change all existing histograms as experts
 #include "AliCaloRawStreamV3.h"
 #include "AliEMCALGeoParams.h"
 #include "AliRawEventHeaderBase.h"
+#include "AliQAManager.h"
+#include "AliCDBEntry.h"
 
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
@@ -86,13 +93,24 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
   fMinSignalLGLEDMon(0),
   fMaxSignalLGLEDMon(AliEMCALGeoParams::fgkSampleMax),
   fMinSignalHGLEDMon(0),
-  fMaxSignalHGLEDMon(AliEMCALGeoParams::fgkSampleMax)
+  fMaxSignalHGLEDMon(AliEMCALGeoParams::fgkSampleMax),
+  fCalibRefHistoPro(NULL),
+  fCalibRefHistoH2F(NULL),
+  fLEDMonRefHistoPro(NULL),
+  fHighEmcHistoH2F(NULL)
+//  fTextSM(new TText*[fSuperModules]) ,
+//  fLineCol(NULL),
+//  fLineRow(NULL)
+
 {
   // ctor
   SetFittingAlgorithm(fitAlgo);
   fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
+//  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
+//    fTextSM[sm] = NULL ;
+//  }
 }
 
 //____________________________________________________________________________ 
@@ -115,7 +133,14 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   fMinSignalLGLEDMon(qadm.GetMinSignalLGLEDMon()),
   fMaxSignalLGLEDMon(qadm.GetMaxSignalLGLEDMon()),
   fMinSignalHGLEDMon(qadm.GetMinSignalHGLEDMon()),
-  fMaxSignalHGLEDMon(qadm.GetMaxSignalHGLEDMon())
+  fMaxSignalHGLEDMon(qadm.GetMaxSignalHGLEDMon()),
+  fCalibRefHistoPro(NULL),
+  fCalibRefHistoH2F(NULL),
+  fLEDMonRefHistoPro(NULL),
+  fHighEmcHistoH2F(NULL)
+//  fTextSM(new TText*[fSuperModules]) ,
+//  fLineCol(NULL),
+//  fLineRow(NULL)
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -124,6 +149,9 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
+//  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
+//    fTextSM[sm] = qadm.fTextSM[sm] ;
+//  }  
 }
 
 //__________________________________________________________________
@@ -132,6 +160,11 @@ AliEMCALQADataMakerRec& AliEMCALQADataMakerRec::operator = (const AliEMCALQAData
   // Equal operator.
   this->~AliEMCALQADataMakerRec();
   new(this) AliEMCALQADataMakerRec(qadm);
+//  fLineCol = NULL;
+//  fLineRow = NULL;
+//  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
+//    fTextSM[sm] = qadm.fTextSM[sm] ;
+//  }    
   return *this;
 }
  
@@ -147,6 +180,59 @@ void AliEMCALQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
   AliQAChecker::Instance()->Run(AliQAv1::kEMCAL, task, list) ;  
 }
 
+//____________________________________________________________________________ 
+void AliEMCALQADataMakerRec::GetCalibRefFromOCDB()
+{
+  //Get the reference histogram from OCDB
+  TString sName1("hHighEmcalRawMaxMinusMin") ;
+  TString sName2("hLowLEDMonEmcalRawMaxMinusMin") ;
+  sName1.Prepend(Form("%s_", AliRecoParam::GetEventSpecieName(AliRecoParam::kCalib))) ; 
+  sName2.Prepend(Form("%s_", AliRecoParam::GetEventSpecieName(AliRecoParam::kCalib))) ; 
+  
+  TString refStorage(AliQAv1::GetQARefStorage()) ;
+  if (!refStorage.Contains(AliQAv1::GetLabLocalOCDB()) && !refStorage.Contains(AliQAv1::GetLabAliEnOCDB())) {
+    AliFatal(Form("%s is not a valid location for reference data", refStorage.Data())) ; 
+  } else {
+    AliQAManager* manQA = AliQAManager::QAManager(AliQAv1::kRAWS) ;    
+    AliQAv1::SetQARefDataDirName(AliRecoParam::kCalib) ;
+    if ( ! manQA->GetLock() ) { 
+      manQA->SetDefaultStorage(AliQAv1::GetQARefStorage()) ; 
+      manQA->SetSpecificStorage("*", AliQAv1::GetQARefStorage()) ;
+      manQA->SetRun(AliCDBManager::Instance()->GetRun()) ; 
+      manQA->SetLock() ; 
+    }
+    char * detOCDBDir = Form("%s/%s/%s", GetName(), AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
+    AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
+    if (entry) {
+      TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
+      if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
+        AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), GetName())) ; 
+        listDetQAD = NULL ; 
+      }
+      TObjArray * dirOCDB= NULL ; 
+      if ( listDetQAD )
+        dirOCDB = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), AliRecoParam::GetEventSpecieName(AliRecoParam::kCalib)))) ;       
+      if (dirOCDB){
+        fCalibRefHistoPro = dynamic_cast<TProfile *>(dirOCDB->FindObject(sName1.Data())) ; 
+        fLEDMonRefHistoPro = dynamic_cast<TProfile *>(dirOCDB->FindObject(sName2.Data())) ; 
+      }
+    }
+  }
+ 
+  if(fCalibRefHistoPro && fLEDMonRefHistoPro){
+    
+    //Defining histograms binning, each 2D histogram covers all SMs
+    Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
+    Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
+    Int_t nbinsPhi = nSMSectors * AliEMCALGeoParams::fgkEMCALRows;
+    
+    if(!fCalibRefHistoH2F)
+      fCalibRefHistoH2F =  new TH2F("hCalibRefHisto", "hCalibRefHisto", nbinsZ, -0.5, nbinsZ - 0.5, nbinsPhi, -0.5, nbinsPhi -0.5);
+    ConvertProfile2H(fCalibRefHistoPro,fCalibRefHistoH2F) ; 
+  } else {
+    AliFatal(Form("No reference object with name %s or %s found", sName1.Data(), sName2.Data())) ; 
+  }
+}
 //____________________________________________________________________________ 
 void AliEMCALQADataMakerRec::InitESDs()
 {
@@ -190,7 +276,7 @@ void AliEMCALQADataMakerRec::InitDigits()
 //____________________________________________________________________________ 
 void AliEMCALQADataMakerRec::InitRecPoints()
 {
-  // create Reconstructed Points histograms in RecPoints subdir
+  // create Reconstructed PoInt_ts histograms in RecPoints subdir
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
@@ -216,10 +302,16 @@ void AliEMCALQADataMakerRec::InitRaws()
    const Bool_t saveCorr = kTRUE ; 
    const Bool_t image    = kTRUE ; 
 
-  int nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
-  int nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
-
-  // counter info: number of channels per event (bins are SM index)
+  Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
+  Int_t nTot = fSuperModules * nTowersPerSM; // max number of towers in all SuperModules
+  
+  
+	//Defining histograms binning, each 2D histogram covers all SMs
+	Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
+	Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
+	Int_t nbinsPhi = nSMSectors * AliEMCALGeoParams::fgkEMCALRows;
+   
+   // counter info: number of channels per event (bins are SM index)
   TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod;SM Id;# of towers",
 			       fSuperModules, -0.5, fSuperModules-0.5) ;
   Add2RawsList(h0, kNsmodLG, expert, image, !saveCorr) ;
@@ -266,9 +358,31 @@ void AliEMCALQADataMakerRec::InitRaws()
   TH1I * h13 = new TH1I("hTowerLG", "Low Gains on the Tower;Tower", nTot,0, nTot) ;
   h13->Sumw2() ;
   Add2RawsList(h13, kTowerLG, !expert, image, !saveCorr) ;		
+ 
+  //temp 2D amplitude histogram for the current run
+  fHighEmcHistoH2F = new TH2F("h2DHighEC2", "High Gain EMC:Max - Min [ADC counts]", nbinsZ, -0.5 , nbinsZ-0.5, nbinsPhi, -0.5, nbinsPhi-0.5);
 
+  //add ratio histograms: to comapre the current run with the reference data 
+  TH2F * h15 = new TH2F("h2DRatioAmp", "High Gain Ratio to Reference:Amplitude_{current run}/Amplitude_{reference run}", nbinsZ, -0.5 , nbinsZ-0.5, 
+                        nbinsPhi, -0.5, nbinsPhi-0.5);
+  //settings for display in amore
+  h15->SetTitle("Amplitude_{current run}/Amplitude_{reference run}"); 
+    h15->SetMaximum(1.6);
+    h15->SetMinimum(0.4);
+    h15->SetOption("COLZ");
+    gStyle->SetOptStat(0);
+    Int_t color[] = {4,3,2} ;
+    gStyle->SetPalette(3,color);
+    h15->GetZaxis()->SetNdivisions(3);
+    h15->UseCurrentStyle();
+  Add2RawsList(h15, k2DRatioAmp, !expert, image, !saveCorr) ;
+
+	TH1F * h16 = new TH1F("hRatioDist", "Amplitude_{current run}/Amplitude_{reference run} ratio distribution", nTot, 0., 2.);
+  h16->SetMinimum(1.);
+  Add2RawsList(h16, kRatioDist, !expert, image, !saveCorr) ;
+ 
   // now repeat the same for TRU and LEDMon data
-  int nTot2x2 = fSuperModules * AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // max number of TRU channels for all SuperModules
+  Int_t nTot2x2 = fSuperModules * AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // max number of TRU channels for all SuperModules
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hT0 = new TProfile("hTRUEmcalSupermodules", "TRU EMC: # of TRU channels vs SuperMod;SM Id;# of TRU channels",
@@ -306,7 +420,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 
   // and also LED Mon..
   // LEDMon has both high and low gain channels, just as regular FEE/towers
-  int nTotLEDMon = fSuperModules * AliEMCALGeoParams::fgkEMCALLEDRefs; // max number of LEDMon channels for all SuperModules
+  Int_t nTotLEDMon = fSuperModules * AliEMCALGeoParams::fgkEMCALLEDRefs; // max number of LEDMon channels for all SuperModules
 
   // counter info: number of channels per event (bins are SM index)
   TProfile * hL0 = new TProfile("hLowLEDMonEmcalSupermodules", "LowLEDMon Gain EMC: # of strips vs SuperMod;SM Id;# of strips",
@@ -331,8 +445,8 @@ void AliEMCALQADataMakerRec::InitRaws()
   TProfile * hL5 = new TProfile("hHighLEDMonEmcalRawMaxMinusMin", "HighLEDMon Gain EMC: Max - Min vs stripId;Strip Id;Max-Min [ADC counts]",
 			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
   Add2RawsList(hL5, kSigHGLEDMon, expert, image, !saveCorr) ;
-
-  // total counter: channels per event
+  
+    // total counter: channels per event
   TH1I * hL6 = new TH1I("hLowLEDMonNtot", "LowLEDMon Gain EMC: Total Number of found strips;# of Strips;Counts", 200, 0, nTotLEDMon) ;
   hL6->Sumw2() ;
   Add2RawsList(hL6, kNtotLGLEDMon, expert, image, !saveCorr) ;
@@ -347,7 +461,22 @@ void AliEMCALQADataMakerRec::InitRaws()
   TProfile * hL9 = new TProfile("hHighLEDMonEmcalRawPed", "HighLEDMon Gain EMC: Pedestal vs stripId;Strip Id;Pedestal [ADC counts]",
 			       nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
   Add2RawsList(hL9, kPedHGLEDMon, expert, image, !saveCorr) ;
-
+  
+  //add two histograms for shifter from the LED monitor system: comapre LED monitor with the reference run
+  //to be used for decision whether we need to change reference data
+  TH1F * hL10 = new TH1F("hMaxMinusMinLEDMonRatio", "LEDMon amplitude, Ratio to reference run", nTotLEDMon, -0.5, nTotLEDMon-0.5) ;
+  Add2RawsList(hL10, kLEDMonRatio, !expert, image, !saveCorr) ;
+  //settings for display in amore
+  hL10->SetTitle("Amplitude_{LEDMon current}/Amplitude_{LEDMon reference}"); 
+  hL10->SetMaximum(1.6);
+  hL10->SetMinimum(0.4);
+//  hL10->SetOption("E");
+  TH1F * hL11 = new TH1F("hMaxMinusMinLEDMonRatioDist", "LEDMon amplitude, Ratio distribution", nTot, 0, 2);
+  hL11->SetMinimum(1.) ;
+  Add2RawsList(hL11, kLEDMonRatioDist, !expert, image, !saveCorr) ;
+  
+  GetCalibRefFromOCDB() ;   
+  GetCalibRefFromOCDB() ;   
 }
 
 //____________________________________________________________________________
@@ -384,7 +513,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t emcID = AliDAQ::DetectorID("EMCAL"); // bit 18..
   const UInt_t *detPattern = rawReader->GetDetectorPattern(); 
   UInt_t emcInReadout = ( ((1 << emcID) & detPattern[0]) >> emcID);
-  if (! emcInReadout) return; // no point in looking at this event, if no EMCal data
+  if (! emcInReadout) return; // no poInt_t in looking at this event, if no EMCal data
 
   // setup
   rawReader->Reset() ;
@@ -396,35 +525,34 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
     SetEventSpecie(AliRecoParam::kCalib) ;
   }
-  
+ 
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
 
-  int nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
-  int nRows = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
-  int nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
-  int n2x2PerSM = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
-  int n2x2PerTRU = AliEMCALGeoParams::fgkEMCAL2x2PerTRU;
+  const Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
+  const Int_t nRows        = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
+  const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
+  const Int_t n2x2PerSM    = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
+  const Int_t n2x2PerTRU   = AliEMCALGeoParams::fgkEMCAL2x2PerTRU;
 
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
-  int nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules] = {0};
-  int nTotalSMHG[AliEMCALGeoParams::fgkEMCALModules] = {0};
-  int nTotalSMTRU[AliEMCALGeoParams::fgkEMCALModules] = {0};
-  int nTotalSMLGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
-  int nTotalSMHGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
+  Int_t nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules]       = {0};
+  Int_t nTotalSMHG[AliEMCALGeoParams::fgkEMCALModules]       = {0};
+  Int_t nTotalSMTRU[AliEMCALGeoParams::fgkEMCALModules]      = {0};
+  Int_t nTotalSMLGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
+  Int_t nTotalSMHGLEDMon[AliEMCALGeoParams::fgkEMCALModules] = {0};
 
-  int nTRUL0ChannelBits = 10; // used for L0 trigger bits checks
-
+  const Int_t nTRUL0ChannelBits = 10; // used for L0 trigger bits checks
+  Int_t iSM = 0; // SuperModule index 
   // start loop over input stream  
-  int iSM = 0;
   while (in.NextDDL()) {
-    int iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
+    Int_t iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
 
     while (in.NextChannel()) {
       iSM = in.GetModule(); // SuperModule
-      //printf("iSM %d DDL %d", iSM, in.GetDDLNumber()); 
+      //prInt_tf("iSM %d DDL %d", iSM, in.GetDDLNumber()); 
       if (iSM>=0 && iSM<fSuperModules) { // valid module reading
 
-	int nsamples = 0;
+	Int_t nsamples = 0;
 	vector<AliCaloBunchInfo> bunchlist; 
 	while (in.NextBunch()) {
 	  nsamples += in.GetBunchLength();
@@ -432,34 +560,34 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	} 
 	
 	if (nsamples > 0) { // this check is needed for when we have zero-supp. on, but not sparse readout
-	  Float_t time = 0; 
-	  Float_t amp = 0; 
+	  Float_t time = 0.; 
+	  Float_t amp  = 0.; 
 	  // indices for pedestal calc.
-	  int firstPedSample = 0;
-	  int lastPedSample = 0;
-	  bool isTRUL0IdData = false;
+	  Int_t firstPedSample = 0;
+	  Int_t lastPedSample  = 0;
+	  bool isTRUL0IdData   = false;
 
 	  if (! in.IsTRUData() ) { // high gain, low gain, LED Mon data - all have the same shaper/sampling 
 	    AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
-	    amp = fitResults.GetAmp();
+	    amp  = fitResults.GetAmp();
 	    time = fitResults.GetTof();	
 	    firstPedSample = fFirstPedestalSample;
-	    lastPedSample = fLastPedestalSample;
+	    lastPedSample  = fLastPedestalSample;
 	  }
 	  else { // TRU data is special, needs its own analyzer
 	    AliCaloFitResults fitResults = fRawAnalyzerTRU->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
-	    amp = fitResults.GetAmp();
+	    amp  = fitResults.GetAmp();
 	    time = fitResults.GetTof();	
 	    firstPedSample = fFirstPedestalSampleTRU;
-	    lastPedSample = fLastPedestalSampleTRU;
+	    lastPedSample  = fLastPedestalSampleTRU;
 	    if (in.GetColumn() > n2x2PerTRU) {
 	      isTRUL0IdData = true;
 	    }
 	  }
   
 	  // pedestal samples
-	  int nPed = 0;
-	  vector<int> pedSamples; 
+	  Int_t nPed = 0;
+	  vector<Int_t> pedSamples; 
 	
 	  // select earliest bunch 
 	  unsigned int bunchIndex = 0;
@@ -474,31 +602,30 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  }
 
 	  // check bunch for entries in the pedestal sample range
-	  int bunchLength = bunchlist.at(bunchIndex).GetLength(); 
+	  Int_t bunchLength = bunchlist.at(bunchIndex).GetLength(); 
 	  const UShort_t *sig = bunchlist.at(bunchIndex).GetData();
-	  int timebin = 0;
+	  Int_t timebin = 0;
 
 	  if (! isTRUL0IdData) { // regular data, can look at pedestals
-	    for (int i = 0; i<bunchLength; i++) {
+	    for (Int_t i = 0; i<bunchLength; i++) {
 	      timebin = startBin--;
 	      if ( firstPedSample<=timebin && timebin<=lastPedSample ) {
 		pedSamples.push_back( sig[i] );
 		nPed++;
 	      }	    
 	    } // i
-	  //	  printf("nPed %d\n", nPed);
 	  }
 	  else { // TRU L0 Id Data
 	    // which TRU the channel belongs to?
-	    int iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
+	    Int_t iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
 
-	    for (int i = 0; i< bunchLength; i++) {
-	      for( int j = 0; j < nTRUL0ChannelBits; j++ ){
+	    for (Int_t i = 0; i< bunchLength; i++) {
+	      for( Int_t j = 0; j < nTRUL0ChannelBits; j++ ){
 		// check if the bit j is 1
 		if( (sig[i] & ( 1 << j )) > 0 ){
-		  int iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
+		  Int_t iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
 		  if(iTRUIdInSM < n2x2PerTRU) {
-		    int iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
+		    Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
 		    // Fill the histograms
 		    GetRawsData(kNL0TRU)->Fill(iTRUAbsId);
 		    GetRawsData(kTimeL0TRU)->Fill(iTRUAbsId, startBin);
@@ -511,7 +638,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 	  // fill histograms
 	  if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
-	    int towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
+	    Int_t towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
 	    if ( in.IsLowGain() ) { 
 	      nTotalSMLG[iSM]++; 
 	      GetRawsData(kTowerLG)->Fill(towerId);
@@ -520,7 +647,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		GetRawsData(kTimeLG)->Fill(towerId, time);
 	      }
 	      if (nPed > 0) {
-		for (int i=0; i<nPed; i++) {
+		for (Int_t i=0; i<nPed; i++) {
 		  GetRawsData(kPedLG)->Fill(towerId, pedSamples[i]);
 		}
 	      }
@@ -533,17 +660,17 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		GetRawsData(kTimeHG)->Fill(towerId, time);
 	      } 
 	      if (nPed > 0) {
-		for (int i=0; i<nPed; i++) {
+		for (Int_t i=0; i<nPed; i++) {
 		  GetRawsData(kPedHG)->Fill(towerId, pedSamples[i]);
 		}
 	      }
 	    } // gain==1
 	  } // low or high gain
-	  // TRU
+ 	  // TRU
 	  else if ( in.IsTRUData() && in.GetColumn()<AliEMCALGeoParams::fgkEMCAL2x2PerTRU) {
-	    // for TRU data, the mapping class holds the TRU internal 2x2 number (0..95) in the Column var..
-	    int iTRU = (iRCU*in.GetBranch() + iRCU); //TRU0 is from RCU0, TRU1 from RCU1, TRU2 is from branch B on RCU1
-	    int iTRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
+	    // for TRU data, the mapping class holds the TRU Int_ternal 2x2 number (0..95) in the Column var..
+	    Int_t iTRU = (iRCU*in.GetBranch() + iRCU); //TRU0 is from RCU0, TRU1 from RCU1, TRU2 is from branch B on RCU1
+	    Int_t iTRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
 	      + in.GetColumn();
 	    nTotalSMTRU[iSM]++; 
 	    if ( (amp > fMinSignalTRU) && (amp < fMaxSignalTRU) ) { 
@@ -551,7 +678,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	      GetRawsData(kTimeTRU)->Fill(iTRU2x2Id, time);
 	    }
 	    if (nPed > 0) {
-	      for (int i=0; i<nPed; i++) {
+	      for (Int_t i=0; i<nPed; i++) {
 		GetRawsData(kPedTRU)->Fill(iTRU2x2Id, pedSamples[i]);
 	      }
 	    }
@@ -560,8 +687,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  else if ( in.IsLEDMonData() ) {
 	    // for LED Mon data, the mapping class holds the gain info in the Row variable
 	    // and the Strip number in the Column..
-	    int gain = in.GetRow(); 
-	    int stripId = iSM*nStripsPerSM + in.GetColumn();
+	    Int_t gain = in.GetRow(); 
+	    Int_t stripId = iSM*nStripsPerSM + in.GetColumn();
 	  
 	    if ( gain == 0 ) { 
 	      nTotalSMLGLEDMon[iSM]++; 
@@ -570,7 +697,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		GetRawsData(kTimeLGLEDMon)->Fill(stripId, time);
 	      }
 	      if (nPed > 0) {
-		for (int i=0; i<nPed; i++) {
+		for (Int_t i=0; i<nPed; i++) {
 		  GetRawsData(kPedLGLEDMon)->Fill(stripId, pedSamples[i]);
 		}
 	      }
@@ -582,7 +709,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		GetRawsData(kTimeHGLEDMon)->Fill(stripId, time);
 	      }
 	      if (nPed > 0) {
-		for (int i=0; i<nPed; i++) {
+		for (Int_t i=0; i<nPed; i++) {
 		  GetRawsData(kPedHGLEDMon)->Fill(stripId, pedSamples[i]);
 		}
 	      }
@@ -596,13 +723,50 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
    
   }//end while over DDL's, of input stream 
 
+ // TProfile * p = dynamic_cast<TProfile *>(GetRawsData(kSigHG)) ;
+  ConvertProfile2H(dynamic_cast<TProfile *>(GetRawsData(kSigHG)), fHighEmcHistoH2F) ;  
+  Double_t binContent = 0. ;
+  //calculate the ratio of the amplitude and fill the histograms, only if the events type is Calib
+ if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
+  GetRawsData(k2DRatioAmp)->Reset(); 
+  GetRawsData(kRatioDist)->Reset(); 
+  for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
+    for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) {
+      if(fCalibRefHistoH2F->GetBinContent(ix, iy))binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy) ;
+      GetRawsData(k2DRatioAmp)->SetBinContent(ix, iy, binContent);
+      GetRawsData(kRatioDist)->Fill(GetRawsData(k2DRatioAmp)->GetBinContent(ix, iy));
+    }
+  } 
+ }
+  //Now for LED monitor system, to calculate the ratio as well
+  if(fLEDMonRefHistoPro){
+  GetRawsData(kLEDMonRatio)->Reset();	
+  GetRawsData(kLEDMonRatioDist)->Reset();
+  
+  Double_t binContent, binError;
+  
+  for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
+    
+    if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
+    else binContent = 0;
+    GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
+    
+    binError = GetRawsData(kSigLGLEDMon)->GetBinError(ib)/fLEDMonRefHistoPro->GetBinContent(ib) +
+    GetRawsData(kSigLGLEDMon)->GetBinContent(ib)/TMath::Power(fLEDMonRefHistoPro->GetBinContent(ib), 2)*fLEDMonRefHistoPro->GetBinError(ib);
+    GetRawsData(kLEDMonRatio)->SetBinError(ib, binError);
+    GetRawsData(kLEDMonRatioDist)->Fill(GetRawsData(kLEDMonRatio)->GetBinContent(ib));
+    }
+  }
+  
+  
+  
   // let's also fill the SM and event counter histograms
-  int nTotalHG = 0;
-  int nTotalLG = 0;
-  int nTotalTRU = 0;
-  int nTotalHGLEDMon = 0;
-  int nTotalLGLEDMon = 0;
-  for (iSM=0; iSM<fSuperModules; iSM++) {  
+  Int_t nTotalHG = 0;
+  Int_t nTotalLG = 0;
+  Int_t nTotalTRU = 0;
+  Int_t nTotalHGLEDMon = 0;
+  Int_t nTotalLGLEDMon = 0;
+  for (Int_t iSM=0; iSM<fSuperModules; iSM++) {  
     nTotalLG += nTotalSMLG[iSM]; 
     nTotalHG += nTotalSMHG[iSM]; 
     nTotalTRU += nTotalSMTRU[iSM]; 
@@ -673,19 +837,19 @@ void AliEMCALQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     return;
   }
   
-  TObjArray * emcrecpoints = new TObjArray(100) ;
-  emcbranch->SetAddress(&emcrecpoints);
+  TObjArray * emcRecPoints = new TObjArray(100) ;
+  emcbranch->SetAddress(&emcRecPoints);
   emcbranch->GetEntry(0);
   
-  GetRecPointsData(kRecPM)->Fill(emcrecpoints->GetEntriesFast()) ; 
-  TIter next(emcrecpoints) ; 
+  GetRecPointsData(kRecPM)->Fill(emcRecPoints->GetEntriesFast()) ; 
+  TIter next(emcRecPoints) ; 
   AliEMCALRecPoint * rp ; 
   while ( (rp = dynamic_cast<AliEMCALRecPoint *>(next())) ) {
-    GetRecPointsData(kRecPE)->Fill( rp->GetEnergy()) ;
+    GetRecPointsData(kRecPE)->Fill(rp->GetEnergy()) ;
     GetRecPointsData(kRecPDigM)->Fill(rp->GetMultiplicity());
   }
-  emcrecpoints->Delete();
-  delete emcrecpoints;
+  emcRecPoints->Delete();
+  delete emcRecPoints;
   
 }
 
@@ -737,3 +901,52 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
   return;
 }
 
+//_____________________________________________________________________________________
+void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo) 
+{  
+  // set some histogram defaults
+  //histo->Reset() ; 
+  //histo->SetStats(kFALSE); // no statistics box shown
+  Int_t nbinsProf = p->GetNbinsX();
+  
+  // loop through the TProfile p and fill the TH2F histo 
+  Int_t row = 0;
+  Int_t col = 0;
+  Double_t binContent = 0;
+  Int_t towerNum = 0; // global tower Id
+  //  i = 0; // tower Id within SuperModule
+  Int_t iSM = 0; // SuperModule index 
+  Int_t iSMSide = 0; // 0=A, 1=C side
+  Int_t iSMSector = 0; // 2 SM's per sector
+  
+  // indices for 2D plots
+  Int_t col2d = 0;
+  Int_t row2d = 0;
+  
+  for (Int_t ibin = 1; ibin <= nbinsProf; ibin++) {
+    towerNum = (Int_t) p->GetBinCenter(ibin);
+    binContent = p->GetBinContent(ibin);
+    
+    // figure out what the tower indices are: col, row within a SuperModule
+    iSM = towerNum/(AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols);
+    col = (towerNum/AliEMCALGeoParams::fgkEMCALRows) % (AliEMCALGeoParams::fgkEMCALCols);
+    row = towerNum % (AliEMCALGeoParams::fgkEMCALRows);
+    
+    //DecodeTowerNum(towerNum, &SM, &col, &row);
+    // then we calculate what the global 2D coord are, based on which SM 
+    // we are in
+    iSMSector = iSM / 2;
+    iSMSide = iSM % 2;
+    
+    if (iSMSide == 1) { // C side, shown to the right
+      col2d = col + AliEMCALGeoParams::fgkEMCALCols;
+    }
+    else { // A side, shown to the left 
+      col2d = col; 
+    }
+    
+    row2d = row + iSMSector * AliEMCALGeoParams::fgkEMCALRows;
+    
+    histo->SetBinContent(col2d+1, row2d+1, binContent);
+  }
+} 
