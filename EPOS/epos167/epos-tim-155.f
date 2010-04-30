@@ -394,7 +394,7 @@ c.....select new q2
       if (q2.lt.4.*q2fin+2.*amm2(idfl))then
         q2=amm2(idfl)
         if(ish.ge.9)then
-          write(ifch,'(a,i4,i4,2f15.8)') 'null:',0.
+          write(ifch,'(a,i4,i4,2f15.8)') 'null:',0
         endif
         idfla=0
         idflb=0
