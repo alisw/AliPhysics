@@ -472,13 +472,11 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 TFile * AliQAv1::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results	
-  if (fgQAResultFile && fgQAResultFile->IsOpen()) 
-  {
+  if (fgQAResultFile) {
+   if (fgQAResultFile->IsOpen()) 
     fgQAResultFile->Close();
+   delete fgQAResultFile;
   }
-  delete fgQAResultFile;
-  fgQAResultFile=0x0;
-  
   TString dirName(fgQAResultDirName) ; 
   if ( dirName.Contains(fgkLabLocalFile)) 
     dirName.ReplaceAll(fgkLabLocalFile, "") ;
@@ -492,8 +490,7 @@ TFile * AliQAv1::GetQAResultFile()
     opt = "NEW" ; 
   }
   fgQAResultFile = TFile::Open(fileName, opt) ;   
-	
-	return fgQAResultFile ;
+  return fgQAResultFile ; 
 }
 
 //_______________________________________________________________
@@ -606,9 +603,8 @@ AliQAv1 * AliQAv1::Instance()
   // Get an instance of the singleton. The only authorized way to call the ctor
 
   if ( ! fgQA) {
-    TFile * f = GetQAResultFile() ; 
-    fgQA = static_cast<AliQAv1 *>(f->Get("QA")) ; 
-    f->Close() ; 
+    GetQAResultFile() ; 
+    fgQA = static_cast<AliQAv1 *>(fgQAResultFile->Get("QA")) ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1() ;
   }
@@ -631,8 +627,8 @@ AliQAv1 * AliQAv1::Instance(const DETECTORINDEX_t det)
   // Get an instance of the singleton. The only authorized way to call the ctor
   
   if ( ! fgQA) {
-    TFile * f = GetQAResultFile() ; 
-    fgQA = static_cast<AliQAv1 *>(f->Get(GetQAName())) ; 
+    GetQAResultFile() ; 
+    fgQA = static_cast<AliQAv1 *>(fgQAResultFile->Get(GetQAName())) ; 
     if ( ! fgQA ) 
       fgQA = new AliQAv1(det) ;
   }		
