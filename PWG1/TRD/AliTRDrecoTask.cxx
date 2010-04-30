@@ -170,16 +170,20 @@ void AliTRDrecoTask::InitFunctorList()
 }
 
 //_______________________________________________________
-Bool_t AliTRDrecoTask::Load(const Char_t *filename)
+Bool_t AliTRDrecoTask::Load(const Char_t *file, const Char_t *dir)
 {
 // Generic container loader
 
-  if(!TFile::Open(filename)){
-    AliWarning(Form("Couldn't open file %s.", filename));
+  if(!TFile::Open(file)){
+    AliWarning(Form("Couldn't open file %s.", file));
+    return kFALSE;
+  }
+  if(!gFile->cd(dir)){
+    AliWarning(Form("Couldn't cd to %s in %s.", dir, file));
     return kFALSE;
   }
   TObjArray *o = NULL;
-  if(!(o = (TObjArray*)gFile->Get(GetName()))){
+  if(!(o = (TObjArray*)gDirectory->Get(GetName()))){
     AliWarning("Missing histogram container.");
     return kFALSE;
   }
