@@ -76,6 +76,8 @@ public:
   //Calorimeter indexes information
   Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
 	  return fReader->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU);}
+  Int_t GetModuleNumber(AliAODPWG4Particle * part) const {
+	  return fReader->GetModuleNumber(part);}
   Int_t GetModuleNumber(AliESDCaloCluster * cluster) const {
 	  return ((AliCaloTrackESDReader*)fReader)->GetModuleNumber(cluster);}
   Int_t GetModuleNumber(AliAODCaloCluster * cluster) const {

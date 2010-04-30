@@ -38,6 +38,9 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliAODPWG4Particle.h"
+#include "AliAODCaloCluster.h"
+#include "AliESDCaloCluster.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -376,6 +379,55 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const {
 		return 0x0;
 	}
 }
+
+//____________________________________________________________________________________________________________________________________________________
+Int_t AliCaloTrackReader::GetModuleNumber(AliAODPWG4Particle * particle) const
+{
+	//Get the EMCAL/PHOS module number that corresponds to this particle
+	
+	Int_t absId = -1;
+	if(particle->GetDetector()=="EMCAL"){
+		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
+		if(GetDebug() > 2) 
+			printf("AliCaloTrackReader::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
+				   particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
+		return fEMCALGeo->GetSuperModuleNumber(absId) ;
+	}//EMCAL
+	else if(particle->GetDetector()=="PHOS"){
+		Int_t    relId[4];
+		if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))   {
+			AliESDCaloCluster *cluster = ((AliESDEvent*)fInputEvent)->GetCaloCluster(particle->GetCaloLabel(0));
+			if ( cluster->GetNCells() > 0) {
+				absId = cluster->GetCellAbsId(0);
+				if(GetDebug() > 2) 
+					printf("AliCaloTrackReader::GetModuleNumber(ESD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
+						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
+			}
+			else return -1;
+		}//ESDs
+		else{
+			AliAODCaloCluster *cluster = ((AliAODEvent*)fInputEvent)->GetCaloCluster(particle->GetCaloLabel(0));
+			if ( cluster->GetNCells() > 0) {
+				absId = cluster->GetCellAbsId(0);
+				if(GetDebug() > 2) 
+					printf("AliCaloTrackReader::GetModuleNumber(AOD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
+						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
+			}
+			else return -1;
+		}//AODs
+		
+		if ( absId >= 0) {
+			fPHOSGeo->AbsToRelNumbering(absId,relId);
+			if(GetDebug() > 2) 
+				printf("PHOS: Module %d\n",relId[0]-1);
+			return relId[0]-1;
+		}
+		else return -1;
+	}//PHOS
+	
+	return -1;
+}
+
 
 //_____________________________________________________________________________________________________________
 Int_t AliCaloTrackReader::GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t & iRCU) const
