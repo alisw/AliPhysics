@@ -473,12 +473,12 @@ TFile * AliQAv1::GetQADataFile(const char * fileName)
 TFile * AliQAv1::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results	
-/*  if (fgQAResultFile ) 
+  if (fgQAResultFile ) 
   {
     if ( fgQAResultFile->IsOpen() ) 
 	fgQAResultFile->Close();
   }
-*/  
+ 
   TString dirName(fgQAResultDirName) ; 
   if ( dirName.Contains(fgkLabLocalFile)) 
     dirName.ReplaceAll(fgkLabLocalFile, "") ;
