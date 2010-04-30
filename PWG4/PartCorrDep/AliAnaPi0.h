@@ -50,10 +50,10 @@ public:
   //void SetEtalonHisto(TH3D * h);//Provide etalon of binning for histograms
   
   //Setters for parameters of event buffers
-  void SetNCentrBin(Int_t n=5){fNCentrBin=n ;} //number of bins in centrality 
-  void SetNZvertBin(Int_t n=5){fNZvertBin=n ;} //number of bins for vertex position
-  void SetNRPBin(Int_t n=6)   {fNrpBin=n ;}    //number of bins in reaction plain
-  void SetNMaxEvMix(Int_t n=20){fNmaxMixEv=n ;}//Maximal number of events for mixing
+  void SetNCentrBin(Int_t n=5) {fNCentrBin=n ;} //number of bins in centrality 
+  void SetNZvertBin(Int_t n=5) {fNZvertBin=n ;} //number of bins for vertex position
+  void SetNRPBin(Int_t n=6)    {fNrpBin=n ;}    //number of bins in reaction plain
+  void SetNMaxEvMix(Int_t n=20){fNmaxMixEv=n ;} //Maximal number of events for mixing
   
   //Setters for event selection
   void SetZvertexCut(Float_t zcut=40.){fZvtxCut=zcut ;} //cut on vertex position
@@ -64,11 +64,10 @@ public:
   void Terminate(TList* outputList);
   void ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
 	
-  Int_t GetModuleNumber(AliAODPWG4Particle * particle);
   void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
 	
-  Int_t GetNPID()   const {return fNPID ; }
-  void SetNPID(Int_t n)    {fNPID = n ; }
+  Int_t GetNPID()   const   {return fNPID ; }
+  void  SetNPID(Int_t n)    {fNPID = n ; }
 	
   void SwitchOnAngleSelection()    {fUseAngleCut = kTRUE ; }
   void SwitchOffAngleSelection()   {fUseAngleCut = kFALSE ; }

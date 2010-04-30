@@ -33,6 +33,7 @@ class AliAODEvent;
 class AliMCEvent;
 class AliFiducialCut;
 class AliAODMCHeader;
+class AliAODPWG4Particle;
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeoUtils.h"
 
@@ -234,6 +235,7 @@ public:
   void SetTaskName(TString name) {fTaskName = name;}
 
   //Calorimeter indexes information
+  Int_t GetModuleNumber(AliAODPWG4Particle * particle) const;
   Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
 	
  protected:

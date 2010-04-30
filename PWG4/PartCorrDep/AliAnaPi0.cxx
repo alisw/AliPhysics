@@ -398,53 +398,6 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("------------------------------------------------------\n") ;
 } 
 
-//____________________________________________________________________________________________________________________________________________________
-Int_t AliAnaPi0::GetModuleNumber(AliAODPWG4Particle * particle) 
-{
-  //Get the EMCAL/PHOS module number that corresponds to this particle
-  
-  Int_t absId = -1;
-  if(fCalorimeter=="EMCAL"){
-    GetReader()->GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
-    if(GetDebug() > 2) 
-      printf("AliAnaPi0::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-	     particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId));
-    return GetReader()->GetEMCALGeometry()->GetSuperModuleNumber(absId) ;
-  }//EMCAL
-  else{//PHOS
-    Int_t    relId[4];
-    if(!strcmp((GetReader()->GetInputEvent())->GetName(),"AliESDEvent"))   {
-      AliESDCaloCluster *cluster = ((AliESDEvent*)GetReader()->GetInputEvent())->GetCaloCluster(particle->GetCaloLabel(0));
-      if ( cluster->GetNCells() > 0) {
-	absId = cluster->GetCellAbsId(0);
-	if(GetDebug() > 2) 
-	  printf("AliAnaPi0::GetModuleNumber(ESD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
-		 particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
-      }
-      else return -1;
-    }//ESDs
-    else{
-      AliAODCaloCluster *cluster = ((AliAODEvent*)GetReader()->GetInputEvent())->GetCaloCluster(particle->GetCaloLabel(0));
-      if ( cluster->GetNCells() > 0) {
-	absId = cluster->GetCellAbsId(0);
-	if(GetDebug() > 2) 
-	  printf("AliAnaPi0::GetModuleNumber(AOD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
-		 particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
-      }
-      else return -1;
-    }//AODs
-    
-    if ( absId >= 0) {
-      GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
-      if(GetDebug() > 2) 
-	printf("PHOS: Module %d\n",relId[0]-1);
-      return relId[0]-1;
-    }
-    else return -1;
-  }//PHOS
-  
-  return -1;
-}
 
 //____________________________________________________________________________________________________________________________________________________
 void AliAnaPi0::MakeAnalysisFillHistograms() 
