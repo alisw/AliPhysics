@@ -47,7 +47,7 @@
 #include "TChain.h"
 #include "AliTOFDeltaBCOffset.h"
 #include "AliTOFCTPLatency.h"
-#include "AliTOFT0Fill.h"
+#include "AliTOFRunParams.h"
 #include "AliTOFT0FillOnlineCalib.h"
 #include "AliTOFHitField.h"
 #include "AliTOFChannelOffline.h"
@@ -760,18 +760,18 @@ AliTOFPreprocessor::ProcessT0Fill()
   Float_t t0FillCalibCoefficient = t0FillOnlineCalibObject->GetCoefficient();
   Log(Form("got \"T0FillOnlineCalib\" object: offset=%f coeff=%f", t0FillCalibOffset, t0FillCalibCoefficient));
 
-  /* get online status from OCDB */
-  cdbe = GetFromOCDB("Calib", "Status");
-  if (!cdbe) {
-    Log("cannot get \"Status\" entry from OCDB");
+  /* 
+   * at this stage status object is not on OCDB yet
+   * since it will be stored later. nevertheless we
+   * should have the array in memory since it has been
+   * already setup by ProcessFEF. 
+   */
+  
+  /* check status and latency window available */
+  if (!fStatus || !fLatencyWindow){
+    AliError("No valid fStatus or fLatencyWindow found, some errors must have occurred!!");
     return 21;
   }
-  AliTOFChannelOnlineStatusArray *statusArray = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
-  if (!statusArray) {
-    Log("cannot get \"Status\" object from CDB entry");
-    return 21;
-  }
-  Log("got \"Status\" object");
 
   /* get offline calibration from OCDB */
   cdbe = GetFromOCDB("Calib", "ParOffline");
@@ -866,7 +866,7 @@ AliTOFPreprocessor::ProcessT0Fill()
     totbin = hit->GetTOTBin();
     deltaBC = hit->GetDeltaBC();
     l0l1latency = hit->GetL0L1Latency();
-    latencyWindow = statusArray->GetLatencyWindow(index) * 1.e3;
+    latencyWindow = fLatencyWindow[index] * 1.e3;
     
     /* convert time in ps and tot in ns */
     timeps = timebin * AliTOFGeometry::TdcBinWidth();
@@ -879,7 +879,8 @@ AliTOFPreprocessor::ProcessT0Fill()
     for (Int_t ipar = 0; ipar < 6; ipar++) corrps += channelOffline->GetSlewPar(ipar) * TMath::Power(totns, ipar);
     corrps *= 1.e3;
     /* perform time correction */
-    timeps = timeps + (deltaBC - deltaBCOffset) * AliTOFGeometry::BunchCrossingBinWidth() + l0l1latency * AliTOFGeometry::BunchCrossingBinWidth() + ctpLatency - latencyWindow - corrps;
+    //    timeps = timeps + (deltaBC - deltaBCOffset) * AliTOFGeometry::BunchCrossingBinWidth() + l0l1latency * AliTOFGeometry::BunchCrossingBinWidth() + ctpLatency - latencyWindow - corrps; /* deltaBC correction removed for the time being */
+    timeps = timeps + l0l1latency * AliTOFGeometry::BunchCrossingBinWidth() + ctpLatency - latencyWindow - corrps;
     /* compute length and expected time */
     tofGeo.GetVolumeIndices(index, det);
     tofGeo.GetPosPar(det, pos);
@@ -909,7 +910,7 @@ AliTOFPreprocessor::ProcessT0Fill()
   /* rough landau fit of the edge */
   TF1 *landau = (TF1 *)gROOT->GetFunction("landau");
   landau->SetParameter(1, maxBinCenter);
-  Float_t fitMin = maxBinCenter - 1000.; /* fit from 10 ns before max */
+  Float_t fitMin = maxBinCenter - 1000.; /* fit from 1 ns before max */
   Float_t fitMax = maxBinCenter + binWidth; /* fit until a bin width above max */
   hT0Fill->Fit("landau", "q0", "", fitMin, fitMax);
   /* get rough landau mean and sigma to set a better fit range */
@@ -932,10 +933,22 @@ AliTOFPreprocessor::ProcessT0Fill()
   /* apply calibration to get T0-fill from egde */
   Float_t t0Fill = edge * t0FillCalibCoefficient + t0FillCalibOffset;
   Log(Form("estimated T0-fill: %f ps", t0Fill));
+  /* check edge error */
+  if (edgee > 300.) {
+    Log("edge error is large: store default T0-fill value (0 ps)");
+    t0Fill = 0.;
+  }
 
-  /* create T0-fill object */
-  AliTOFT0Fill *t0FillObject = new AliTOFT0Fill();
-  t0FillObject->SetT0Fill(t0Fill);
+  /* create RunParams object */
+  UInt_t timestamp[1] = {0};
+  Float_t t0[1] = {t0Fill};
+  Float_t tofReso[1] = {-1.};
+  Float_t t0Spread[1] = {-1.};
+  AliTOFRunParams *runParamsObject = new AliTOFRunParams(1);
+  runParamsObject->SetTimestamp(timestamp);
+  runParamsObject->SetT0(t0);
+  runParamsObject->SetTOFResolution(tofReso);
+  runParamsObject->SetT0Spread(t0Spread);
 
   /* store reference data */
   if(fStoreRefData){
@@ -947,7 +960,7 @@ AliTOFPreprocessor::ProcessT0Fill()
       Log("error while storing reference data");
       delete hT0Fill;
       delete hit;
-      delete t0FillObject;
+      delete runParamsObject;
       return 21;
     }
     Log("reference data successfully stored");
@@ -956,23 +969,132 @@ AliTOFPreprocessor::ProcessT0Fill()
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Roberto Preghenella");
-  metaData.SetComment("online T0-fill measurement");
-  if (!Store("Calib", "T0Fill", t0FillObject, &metaData, 0, kFALSE)) {
-    Log("error while storing T0-fill object");
+  metaData.SetComment("online RunParams measurement");
+  if (!Store("Calib", "RunParams", runParamsObject, &metaData, 0, kFALSE)) {
+    Log("error while storing RunParams object");
     delete hT0Fill;
     delete hit;
-    delete t0FillObject;
+    delete runParamsObject;
     return 21;
   }
-  Log("T0-fill object successfully stored");
+  Log("RunParams object successfully stored");
 
   delete hT0Fill;
   delete hit;
-  delete t0FillObject;
+  delete runParamsObject;
   return 0;
 
 }
  
+//_____________________________________________________________________________
+
+UInt_t 
+AliTOFPreprocessor::ProcessNoiseCalibTrg()
+{
+  // Processing data from DAQ using calibration triggers for noise measurement 
+
+  Log("Processing Noise (calibration trigger)");
+
+  /* check status and matching window available */
+  if (!fStatus || !fMatchingWindow){
+    AliError("No valid fStatus or fMatchingWindow found, some errors must have occurred!!");
+    return 22;
+  }
+
+  Float_t noiseThr = 1000.;   // setting default threshold for noise to 1000 Hz
+  // reading config map
+  AliCDBEntry *cdbEntry = GetFromOCDB("Calib","ConfigNoise");
+  if (!cdbEntry) Log(Form("No Configuration entry found in CDB, using default values: NoiseThr = %d",noiseThr));
+  else {
+    TMap *configMap = (TMap*)cdbEntry->GetObject();
+    if (!configMap) Log(Form("No map found in Config entry in CDB, using default values: NoiseThr = %d", noiseThr));
+    else {
+      TObjString *strNoiseThr = (TObjString*)configMap->GetValue("NoiseThr");
+      if (strNoiseThr) {
+	TString tmpstr = strNoiseThr->GetString();
+	noiseThr = tmpstr.Atoi();
+      }
+      else Log(Form("No NoiseThr value found in Map from ConfigNoise entry in CDB, using default value: NoiseThr = %i",noiseThr));
+    }
+  }
+
+  /* get file sources from FXS */
+  TList *fileList = GetFileSources(kDAQ, "CALIB");
+  if (!fileList || fileList->GetEntries() == 0) {
+    Log("cannot get DAQ source file list or empty list");
+    return 22;
+  }
+  Log(Form("got DAQ source file list: %d files", fileList->GetEntries()));
+  fileList->Print();
+
+  /* open input file (only one expected) */
+  TObjString *str = (TObjString *)fileList->At(0);
+  TString filename = GetFile(kDAQ, "CALIB", str->GetName());
+  Log(Form("opening input file: source=%s, filename=%s", str->String().Data(), filename.Data()));
+  TFile *filein = TFile::Open(filename.Data());
+  if (!filein || !filein->IsOpen()) {
+    Log("cannot open input file");
+    return 22;
+  }
+
+  /* get histo from input file */
+  TH1F *hCalibHit = (TH1F *)filein->Get("hCalibHit");
+  if (!hCalibHit) {
+    Log("cannot get \"hCalibHit\" histo");
+    return 22;
+  }
+
+  /* create and set noise rate histo and check rate */
+  TH1F *hNoiseRate = new TH1F("hNoiseRate", ";index;rate (Hz)", fNChannels, 0., fNChannels);
+  Float_t rate, rate_err;
+  for (Int_t ich = 0; ich < fNChannels; ich++) {
+    /* check channel enabled */
+    if (fStatus->GetHWStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFHWBad) continue;
+    /* set noise rate histo */
+    rate = hCalibHit->GetBinContent(ich + 1);
+    rate_err = hCalibHit->GetBinError(ich + 1);
+    rate /= fMatchingWindow[ich] * 1.e-9;
+    rate_err /= fMatchingWindow[ich] * 1.e-9;
+    hNoiseRate->SetBinContent(ich + 1, rate);
+    hNoiseRate->SetBinError(ich + 1, rate_err);
+    /* check noise rate and set noise flags */
+    if ((rate - 3. * rate_err) > noiseThr) {
+      Log(Form("channel %d detected as noisy: rate = (%f +- %f) Hz", ich, rate, rate_err));
+      if (fStatus->GetNoiseStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFNoiseOk) {
+	Log(Form("channel %d noise status changed from Ok to Bad", ich));
+	fStatus->SetNoiseStatus(ich, AliTOFChannelOnlineStatusArray::kTOFNoiseBad);
+	fIsStatusMapChanged = kTRUE;
+      }
+      else Log(Form("channel %d noise status unchanged", ich));
+    }
+    else {
+      if (fStatus->GetNoiseStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) {
+	Log(Form("channel %d noise status changed from Bad to Ok", ich));
+	fStatus->SetNoiseStatus(ich, AliTOFChannelOnlineStatusArray::kTOFNoiseOk);
+	fIsStatusMapChanged = kTRUE;
+      }
+    }
+  }
+
+  /* store reference data */
+  if(fStoreRefData){
+    AliCDBMetaData metaDataHisto;
+    metaDataHisto.SetBeamPeriod(0);
+    metaDataHisto.SetResponsible("Roberto Preghenella");
+    metaDataHisto.SetComment("calibration trigger noise rate histogram");
+    if (!StoreReferenceData("Calib","CalibNoise", hNoiseRate, &metaDataHisto)) {
+      Log("error while storing reference data");
+      delete hNoiseRate;
+      filein->Close();
+      return 22;
+    }
+    Log("reference data successfully stored");
+  }
+
+  delete hNoiseRate;
+  filein->Close();
+  return 0;
+}
 
 //_____________________________________________________________________________
 
@@ -1591,14 +1713,10 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
   if (runType == "PHYSICS") {
     //    Int_t iresultDAQ = ProcessOnlineDelays();
     Int_t iresultDAQ = ProcessT0Fill();
-    if (iresultDAQ != 0) {
-      return iresultDAQ;
-    }
-    else {
-      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-      Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
-      return iresultDCS+iResultHVandLVdps;
-    }
+    Int_t iresultNoiseCalib = ProcessNoiseCalibTrg();
+    Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
+    Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
+    return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps;
   }
 
   // storing

@@ -73,7 +73,7 @@ class AliTOFClusterFinder : public TObject
   //Int_t InsertCluster(Int_t *aa, Double_t *bb, Int_t *cc, Int_t d); // Fills TofClusters Array
   Int_t InsertCluster(AliTOFcluster *tofCluster);    // Fills TofClusters Array
   Int_t FindClusterIndex(Double_t z) const; // Returns cluster index 
-  void  CalibrateRecPoint(); // Apply calibration pars to Clusters
+  void  CalibrateRecPoint(UInt_t timestamp = 0); // Apply calibration pars to Clusters
 
   Int_t fVerbose;           // Verbose level (0:no msg,
                             //  1:msg, 2:digits in txt files)

@@ -133,7 +133,7 @@ Revision 0.01  2005/07/25 A. De Caro
 
 #include "AliTOFDeltaBCOffset.h"
 #include "AliTOFCTPLatency.h"
-#include "AliTOFT0Fill.h"
+#include "AliTOFRunParams.h"
 
 //extern TFile *gFile;
 
@@ -584,7 +584,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   AliDebug(1,Form("Number of found clusters: %d", fNumberOfTofClusters));
 
-  CalibrateRecPoint();
+  CalibrateRecPoint(rawReader->GetTimestamp());
   FillRecPoint();
 
   clustersTree->Fill();
@@ -733,7 +733,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   AliDebug(1,Form("Number of found clusters: %d for event: %d", fNumberOfTofClusters, iEvent));
 
-  CalibrateRecPoint();
+  CalibrateRecPoint(rawReader->GetTimestamp());
   FillRecPoint();
 
   fTreeR->Fill();
@@ -1033,7 +1033,7 @@ void AliTOFClusterFinder::FillRecPoint()
 }
 
 //_________________________________________________________________________
-void AliTOFClusterFinder::CalibrateRecPoint()
+void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
 {
   //
   // Copy the global array of AliTOFcluster, i.e. fTofClusters (sorted
@@ -1059,8 +1059,8 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Int_t deltaBCOffset = deltaBCOffsetObj->GetDeltaBCOffset();
   AliTOFCTPLatency *ctpLatencyObj = fTOFcalib->GetCTPLatency();
   Float_t ctpLatency = ctpLatencyObj->GetCTPLatency();
-  AliTOFT0Fill *t0FillObj = fTOFcalib->GetT0Fill();
-  Float_t t0Fill = t0FillObj->GetT0Fill();
+  AliTOFRunParams *runParamsObj = fTOFcalib->GetRunParams();
+  Float_t t0 = runParamsObj->EvalT0(timestamp);
 
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   Int_t calibration = -1;
@@ -1131,7 +1131,7 @@ void AliTOFClusterFinder::CalibrateRecPoint()
      *
      * the following corrections are performed in this way:
      *
-     *    time = timeRaw - deltaBC + L0L1Latency + CTPLatency - TDCLatencyWindow - T0Fill
+     *    time = timeRaw - deltaBC + L0L1Latency + CTPLatency - TDCLatencyWindow - T0
      *
      */
 
@@ -1139,18 +1139,18 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     AliDebug(2, Form("applying further corrections (L0L1Latency): L0L1Latency=%d (BC bins)", fTofClusters[ii]->GetL0L1Latency()));
     AliDebug(2, Form("applying further corrections (CTPLatency): CTPLatency=%f (ps)", ctpLatency));
     AliDebug(2, Form("applying further corrections (TDCLatencyWindow): TDCLatencyWindow=%f (ps)", tdcLatencyWindow));
-    AliDebug(2, Form("applying further corrections (T0Fill): T0Fill=%f (ps)", t0Fill));
+    AliDebug(2, Form("applying further corrections (T0): T0=%f (ps)", t0));
 
-    /* deltaBC correction */
-    timeCorr -= (fTofClusters[ii]->GetDeltaBC() - deltaBCOffset) * AliTOFGeometry::BunchCrossingBinWidth();
+    /* deltaBC correction (inhibited for the time being) */
+    //    timeCorr -= (fTofClusters[ii]->GetDeltaBC() - deltaBCOffset) * AliTOFGeometry::BunchCrossingBinWidth();
     /* L0L1-latency correction */
     timeCorr += fTofClusters[ii]->GetL0L1Latency() * AliTOFGeometry::BunchCrossingBinWidth();
     /* CTP-latency correction (from OCDB) */
     timeCorr += ctpLatency;
     /* TDC latency-window correction (from OCDB) */
     timeCorr -= tdcLatencyWindow;
-    /* T0Fill correction (from OCDB) */
-    timeCorr -= t0Fill;
+    /* T0 correction (from OCDB) */
+    timeCorr -= t0;
 
     /*
      * end of furhter corrections

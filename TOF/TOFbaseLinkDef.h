@@ -39,6 +39,7 @@
 #pragma link C++ class  AliTOFDeltaBCOffset+;
 #pragma link C++ class  AliTOFCTPLatency+;
 #pragma link C++ class  AliTOFT0Fill+;
+#pragma link C++ class  AliTOFRunParams+;
 #pragma link C++ class  AliTOFT0FillOnlineCalib+;
 #pragma link C++ class  AliTOFDCSmaps+;
 #pragma link C++ class  AliTOFLvHvDataPoints+;

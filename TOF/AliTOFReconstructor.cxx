@@ -64,6 +64,7 @@ AliTOFReconstructor::AliTOFReconstructor()
   if(!fTOFcalib->ReadDeltaBCOffsetFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
   if(!fTOFcalib->ReadCTPLatencyFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
   if(!fTOFcalib->ReadT0FillFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+  if(!fTOFcalib->ReadRunParamsFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
 }
 
 //_____________________________________________________________________________

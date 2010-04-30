@@ -116,7 +116,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFDeltaBCOffset.h"
 #include "AliTOFCTPLatency.h"
 #include "AliTOFT0Fill.h"
-
+#include "AliTOFRunParams.h"
 
 class TROOT;
 class TStyle;
@@ -147,7 +147,8 @@ AliTOFcalib::AliTOFcalib():
   fConfigMap(new TMap),
   fDeltaBCOffset(NULL),
   fCTPLatency(NULL),
-  fT0Fill(NULL)
+  fT0Fill(NULL),
+  fRunParams(NULL)
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
@@ -174,7 +175,8 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fConfigMap(calib.fConfigMap),
   fDeltaBCOffset(NULL),
   fCTPLatency(NULL),
-  fT0Fill(NULL)
+  fT0Fill(NULL),
+  fRunParams(NULL)
 {
   //TOF Calibration Class copy ctor
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
@@ -193,6 +195,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   if (calib.fDeltaBCOffset) fDeltaBCOffset = new AliTOFDeltaBCOffset(*calib.fDeltaBCOffset);
   if (calib.fCTPLatency) fCTPLatency = new AliTOFCTPLatency(*calib.fCTPLatency);
   if (calib.fT0Fill) fT0Fill = new AliTOFT0Fill(*calib.fT0Fill);
+  if (calib.fRunParams) fRunParams = new AliTOFRunParams(*calib.fRunParams);
 }
 
 //____________________________________________________________________________ 
@@ -242,6 +245,10 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
     if (fT0Fill) *fT0Fill = *calib.fT0Fill;
     else fT0Fill = new AliTOFT0Fill(*calib.fT0Fill);
   }
+  if (calib.fRunParams) {
+    if (fRunParams) *fRunParams = *calib.fRunParams;
+    else fRunParams = new AliTOFRunParams(*calib.fRunParams);
+  }
 
   return *this;
 }
@@ -279,6 +286,7 @@ AliTOFcalib::~AliTOFcalib()
     if (fDeltaBCOffset) delete fDeltaBCOffset;
     if (fCTPLatency) delete fCTPLatency;
     if (fT0Fill) delete fT0Fill;
+    if (fRunParams) delete fRunParams;
   }
   if (fTree!=0x0) delete fTree;
   if (fChain!=0x0) delete fChain;
@@ -1880,6 +1888,22 @@ AliTOFcalib::CreateT0Fill()
 //----------------------------------------------------------------------------
 
 void
+AliTOFcalib::CreateRunParams()
+{
+  /*
+   * create run params
+   */
+
+  if (fRunParams) {
+    AliWarning("RunParams object already defined, cannot create a new one");
+    return;
+  }
+  fRunParams = new AliTOFRunParams();
+}
+  
+//----------------------------------------------------------------------------
+
+void
 AliTOFcalib::WriteDeltaBCOffsetOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
 {
   /*
@@ -1931,6 +1955,25 @@ AliTOFcalib::WriteT0FillOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
   AliCDBManager *man = AliCDBManager::Instance();
   man->Put(fT0Fill, id, md);
   AliDebug(2,Form("T0Fill written on CDB with run range [%i, %i] ",minrun ,maxrun));
+  delete md;
+}
+
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::WriteRunParamsOnCDB(const Char_t *sel , Int_t minrun, Int_t maxrun)
+{
+  /*
+   * write run params on CDB 
+   */
+  
+  if (!fRunParams) return;
+  AliCDBId id(Form("%s/RunParams", sel), minrun, maxrun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Roberto Preghenella");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->Put(fRunParams, id, md);
+  AliDebug(2,Form("RunParams written on CDB with run range [%i, %i] ",minrun ,maxrun));
   delete md;
 }
 
@@ -1998,6 +2041,29 @@ AliTOFcalib::ReadT0FillFromCDB(const Char_t *sel , Int_t nrun)
   fT0Fill =(AliTOFT0Fill *)entry->GetObject();
   if(!fT0Fill){
     AliFatal("No T0Fill object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
+AliTOFcalib::ReadRunParamsFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read run params from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/RunParams", sel),nrun);
+  if (!entry) { 
+    AliFatal("No RunParams entry found in CDB");
+    exit(0);  
+  }
+  fRunParams =(AliTOFRunParams *)entry->GetObject();
+  if(!fRunParams){
+    AliFatal("No RunParams object found in CDB entry");
     exit(0);  
   }  
   return kTRUE; 

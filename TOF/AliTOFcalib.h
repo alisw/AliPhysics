@@ -43,6 +43,7 @@ class AliTOFChannelOnlineArray;
 class AliTOFDeltaBCOffset;
 class AliTOFCTPLatency;
 class AliTOFT0Fill;
+class AliTOFRunParams;
 
 class AliTOFcalib:public TTask{
 public:
@@ -70,9 +71,11 @@ public:
   void CreateDeltaBCOffset();
   void CreateCTPLatency();
   void CreateT0Fill();
+  void CreateRunParams();
   AliTOFDeltaBCOffset *GetDeltaBCOffset() const {return fDeltaBCOffset;};
   AliTOFCTPLatency *GetCTPLatency() const {return fCTPLatency;};
   AliTOFT0Fill *GetT0Fill() const {return fT0Fill;};
+  AliTOFRunParams *GetRunParams() const {return fRunParams;};
 
   // Methods to retrieve/write parameters from/on CDB
   // writing
@@ -100,6 +103,7 @@ public:
   void WriteDeltaBCOffsetOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteCTPLatencyOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteT0FillOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
+  void WriteRunParamsOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun);
 
   // reading
   Bool_t ReadSimHistoFromCDB(const Char_t *sel, Int_t nrun);
@@ -136,6 +140,7 @@ public:
   Bool_t ReadDeltaBCOffsetFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadCTPLatencyFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadT0FillFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadRunParamsFromCDB(const Char_t *sel, Int_t nrun);
 
 private:
   Int_t fNChannels; // number of TOF channels
@@ -163,8 +168,9 @@ private:
   AliTOFDeltaBCOffset *fDeltaBCOffset; // deltaBC offset
   AliTOFCTPLatency *fCTPLatency; // CTP latency
   AliTOFT0Fill *fT0Fill; // T0 fill
+  AliTOFRunParams *fRunParams; // run params
 
-  ClassDef(AliTOFcalib,8);
+  ClassDef(AliTOFcalib,9);
 };
 
 #endif // AliTOFcalib_H
