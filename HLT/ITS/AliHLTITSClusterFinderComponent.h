@@ -125,6 +125,9 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
   /** interface function, see @ref AliHLTComponent for description */
+  void GetOCDBObjectDescription( TMap* const targetMap);
+
+  /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
  protected:
@@ -156,7 +159,7 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   //Int_t DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/);
 
   int Reconfigure(const char* cdbEntry, const char* chainId);
-		
+
   using AliHLTProcessor::DoEvent;
  
   ///////////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ using namespace std;
 #include "AliITSReconstructor.h"
 #include "AliHLTITSClusterFinderSPD.h"
 #include "AliHLTITSClusterFinderSSD.h"
+#include "TMap.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -618,6 +619,29 @@ int AliHLTITSClusterFinderComponent::Reconfigure(const char* cdbEntry, const cha
   
   return iResult;
 }
+void AliHLTITSClusterFinderComponent::GetOCDBObjectDescription( TMap* const targetMap)
+{
+  // Get a list of OCDB object description.
+  if (!targetMap) return;
+  //SPD
+  targetMap->Add(new TObjString("ITS/Calib/SPDNoisy"),new TObjString("Calibration object for SPD" ));
+  targetMap->Add(new TObjString("ITS/Calib/SPDDead"),new TObjString("Calibration object for SPD" ));
+  targetMap->Add(new TObjString("TRIGGER/SPD/PITConditions"),new TObjString("Calibration object for SPD" ));
+  //SDD
+  targetMap->Add(new TObjString("ITS/Calib/CalibSDD"),new TObjString("Calibration object for SDD" ));
+  targetMap->Add(new TObjString("ITS/Calib/RespSDD"),new TObjString("Calibration object for SDD" ));
+  targetMap->Add(new TObjString("ITS/Calib/DriftSpeedSDD"),new TObjString("Calibration object for SDD" ));
+  targetMap->Add(new TObjString("ITS/Calib/DDLMapSDD"),new TObjString("Calibration object for SDD" ));
+  targetMap->Add(new TObjString("ITS/Calib/MapsTimeSDD"),new TObjString("Calibration object for SDD" ));
+  //SSD
+  targetMap->Add(new TObjString("ITS/Calib/NoiseSSD"),new TObjString("Calibration object for SSD" ));
+  targetMap->Add(new TObjString("ITS/Calib/GainSSD"),new TObjString("Calibration object for SSD" ));
+  targetMap->Add(new TObjString("ITS/Calib/BadChannelsSSD"),new TObjString("Calibration object for SSD" ));
+  //General reconstruction
+  targetMap->Add(new TObjString("GRP/CTP/Scalers"),new TObjString("General reconstruction object" ));
+}
+
+
 void AliHLTITSClusterFinderComponent::RecPointToSpacePoint(AliHLTUInt8_t* outputPtr,AliHLTUInt32_t& size){
   AliHLTITSClusterData *outputClusters = reinterpret_cast<AliHLTITSClusterData*>(outputPtr + size);
   outputClusters->fSpacePointCnt=fclusters.size();    
