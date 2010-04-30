@@ -942,7 +942,11 @@ void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,
 {
   // Add the AOD tracks as daughters of the vertex (TRef)
 
-  if(v->GetNDaughters()) return; // already done
+  Int_t nDg = v->GetNDaughters();
+  TObject *dg = 0;
+  if(nDg) dg = v->GetDaughter(0);
+
+  if(dg) return; // daughters already added
 
   Int_t nTrks = trkArray->GetEntriesFast();
 
