@@ -42,8 +42,18 @@
 #include <TH2F.h>
 #include <TMath.h>
 #include <TROOT.h>
+#include <TTreeStream.h>
+
+#include  "AliExternalTrackParam.h"
+#include  "AliTrackPointArray.h"
+#include  "TDatabasePDG.h"
+#include  "AliTrackerBase.h"
+#include  "AliTPCROC.h"
+
 
 #include "AliTPCCorrection.h"
+
+ClassImp(AliTPCCorrection)
 
 // FIXME: the following values should come from the database
 const Double_t AliTPCCorrection::fgkTPC_Z0   =249.7;     // nominal gating grid position 
@@ -455,4 +465,130 @@ void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Dou
   
 }
 
-ClassImp(AliTPCCorrection)
+
+AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTrackParam * trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream){
+  //
+  // Fit the track parameters - without and with distortion
+  // 1. Space points in the TPC are simulated along the trajectory  
+  // 2. Space points distorted
+  // 3. Fits  the non distorted and distroted track to the reference plane at refX
+  // 4. For visualization and debugging  purposes the space points and tracks can be stored  in the tree - using the TTreeSRedirector functionality 
+  //
+  // trackIn   - input track parameters
+  // refX     - reference X to fit the track
+  // dir      - direction - out=1 or in=-1
+  // pcstream -  debug streamer to check the results
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
+  const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
+  const Double_t kRTPC1  =roc->GetPadRowRadii(36,roc->GetNRows(36)-1);
+    
+  const Double_t kMaxSnp = 0.85;  
+  const Double_t kSigmaY=0.1;
+  const Double_t kSigmaZ=0.1;
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+
+  AliExternalTrackParam  track(*trackIn); // 
+  // generate points
+  AliTrackPointArray pointArray0(npoints0);
+  AliTrackPointArray pointArray1(npoints0);
+  Double_t xyz[3];
+  AliTrackerBase::PropagateTrackTo(&track,kRTPC0,kMass,3,kTRUE,kMaxSnp);
+  //
+  // simulate the track
+  Int_t npoints=0;
+  Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
+  for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
+    AliTrackerBase::PropagateTrackTo(&track,radius,kMass,3,kTRUE,kMaxSnp);
+    track.GetXYZ(xyz);
+    AliTrackPoint pIn0;                               // space point          
+    AliTrackPoint pIn1;
+    Int_t roc= (xyz[2]>0)? 0:18;
+    pointArray0.GetPoint(pIn0,npoints);
+    pointArray1.GetPoint(pIn1,npoints);
+    Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
+    Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
+    DistortPoint(distPoint, roc);
+    pIn0.SetXYZ(xyz[0], xyz[1],xyz[2]);
+    pIn1.SetXYZ(distPoint[0], distPoint[1],distPoint[2]);
+    //
+    track.Rotate(alpha);
+    AliTrackPoint prot0 = pIn0.Rotate(alpha);   // rotate to the local frame - non distoted  point
+    AliTrackPoint prot1 = pIn1.Rotate(alpha);   // rotate to the local frame -     distorted point
+    prot0.SetXYZ(prot0.GetX(),prot0.GetY(), prot0.GetZ(),covPoint);
+    prot1.SetXYZ(prot1.GetX(),prot1.GetY(), prot1.GetZ(),covPoint);
+    pIn0=prot0.Rotate(-alpha);                       // rotate back to global frame
+    pIn1=prot1.Rotate(-alpha);                       // rotate back to global frame
+    pointArray0.AddPoint(npoints, &pIn0);      
+    pointArray1.AddPoint(npoints, &pIn1);
+    npoints++;
+    if (npoints>=npoints0) break;
+  }
+  //
+  // refit track
+  //
+  AliExternalTrackParam *track0=0;
+  AliExternalTrackParam *track1=0;
+  AliTrackPoint   point1,point2,point3;
+  if (dir==1) {  //make seed inner
+    pointArray0.GetPoint(point1,1);
+    pointArray0.GetPoint(point2,10);
+    pointArray0.GetPoint(point3,20);
+  }
+  if (dir==-1){ //make seed outer
+    pointArray0.GetPoint(point1,npoints-20);
+    pointArray0.GetPoint(point2,npoints-10);
+    pointArray0.GetPoint(point3,npoints-1);
+  }  
+  track0 = AliTrackerBase::MakeSeed(point1, point2, point3);
+  track1 = AliTrackerBase::MakeSeed(point1, point2, point3);
+
+
+  for (Int_t jpoint=0; jpoint<npoints; jpoint++){
+    Int_t ipoint= (dir>0) ? ipoint: npoints-1-jpoint;
+    //
+    AliTrackPoint pIn0;
+    AliTrackPoint pIn1;
+    pointArray0.GetPoint(pIn0,ipoint);
+    pointArray1.GetPoint(pIn1,ipoint);
+    AliTrackPoint prot0 = pIn0.Rotate(track0->GetAlpha());   // rotate to the local frame - non distoted  point
+    AliTrackPoint prot1 = pIn1.Rotate(track1->GetAlpha());   // rotate to the local frame -     distorted point
+    //
+    AliTrackerBase::PropagateTrackTo(track0,prot0.GetX(),kMass,1,kFALSE,kMaxSnp);
+    AliTrackerBase::PropagateTrackTo(track1,prot1.GetX(),kMass,1,kFALSE,kMaxSnp);
+    track.GetXYZ(xyz);
+    //
+    Double_t pointPos[2]={0,0};
+    Double_t pointCov[3]={0,0,0};
+    pointPos[0]=prot0.GetY();//local y
+    pointPos[1]=prot0.GetZ();//local z
+    pointCov[0]=prot0.GetCov()[3];//simay^2
+    pointCov[1]=prot0.GetCov()[4];//sigmayz
+    pointCov[2]=prot0.GetCov()[5];//sigmaz^2
+    track0->Update(pointPos,pointCov);
+    //
+    pointPos[0]=prot1.GetY();//local y
+    pointPos[1]=prot1.GetZ();//local z
+    pointCov[0]=prot1.GetCov()[3];//simay^2
+    pointCov[1]=prot1.GetCov()[4];//sigmayz
+    pointCov[2]=prot1.GetCov()[5];//sigmaz^2
+    track1->Update(pointPos,pointCov);
+  }
+
+  AliTrackerBase::PropagateTrackTo(track0,refX,kMass,2.,kTRUE,kMaxSnp);
+  track1->Rotate(track0->GetAlpha());
+  AliTrackerBase::PropagateTrackTo(track1,refX,kMass,2.,kFALSE,kMaxSnp);
+
+  if (pcstream) (*pcstream)<<"fitDistort"<<
+    "point0.="<<&pointArray0<<   //  points
+    "point1.="<<&pointArray1<<   //  distorted points
+    "trackIn.="<<&track<<       //  original track
+    "track0.="<<track0<<         //  fitted track
+    "track1.="<<track1<<         //  fitted distorted track
+    "\n";
+  delete track0;
+  return track1;
+}
+
+

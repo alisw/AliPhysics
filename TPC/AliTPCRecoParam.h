@@ -70,6 +70,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   // Correction setup
   //
   void  SetUseFieldCorrection(Int_t flag){fUseFieldCorrection=flag;}
+  void  SetUseComposedCorrection(Bool_t flag){fUseComposedCorrection=flag;}
   void  SetUseRPHICorrection(Int_t flag){fUseRPHICorrection=flag;}
   void  SetUseRadialCorrection(Int_t flag){fUseRadialCorrection=flag;}
   void  SetUseQuadrantAlignment(Int_t flag){fUseQuadrantAlignment=flag;}
@@ -81,6 +82,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   //
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
+  Int_t GetUseComposedCorrection() const {return fUseComposedCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
   Int_t GetUseRadialCorrection() const {return fUseRadialCorrection;}
   Int_t GetUseQuadrantAlignment() const {return fUseQuadrantAlignment;}
@@ -143,6 +145,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   // Correction switches
   //
   Int_t fUseFieldCorrection;     // use field correction
+  Bool_t fUseComposedCorrection; // flag to use composed correction
   Int_t fUseRPHICorrection;      // use rphi correction
   Int_t fUseRadialCorrection;    // use radial correction
   Int_t fUseQuadrantAlignment;   // use quadrant alignment
@@ -168,7 +171,7 @@ public:
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 9)
+  ClassDef(AliTPCRecoParam, 10)
 };
 
 

@@ -37,6 +37,7 @@ class TMap;
 class AliMagF;
 class AliTPCcalibDButil;
 class AliCTPTimeParams;
+class AliTPCCorrection;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -64,6 +65,8 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetDedxGainFactor() const {return fDedxGainFactor;}
   AliTPCCalPad* GetPadTime0() const {return fPadTime0;}
   AliTPCCalPad* GetDistortionMap(Int_t i) const {return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;}
+  AliTPCCorrection * GetTPCComposedCorrection() const { return fComposedCorrection;}
+  void          SetTPCComposedCorrection(AliTPCCorrection *compCorr) { fComposedCorrection=compCorr;}
   AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
   AliTPCCalPad* GetPedestals() const{return fPedestals;}
   //ALTRO config data
@@ -175,6 +178,7 @@ protected:
   AliTPCCalPad* fDedxGainFactor;   // Gain calibration entry - for dEdx
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
   TObjArray   *fDistortionMap;    // distortion map
+  AliTPCCorrection *fComposedCorrection;  // general space point corrections
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry

@@ -59,6 +59,7 @@
 #include "TMath.h"
 #include "AliLog.h"
 #include "AliTPCExB.h"
+#include "AliTPCCorrection.h"
 #include "TGeoMatrix.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCCalibVdrift.h"
@@ -146,6 +147,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   AliTPCCalPad * distortionMapY = calib->GetDistortionMap(0); 
   AliTPCCalPad * distortionMapZ = calib->GetDistortionMap(1); 
   AliTPCParam  * param    = calib->GetParameters(); 
+  AliTPCCorrection * correction = calib->GetTPCComposedCorrection();
   if (!time0TPC){
     AliFatal("Time unisochronity missing");
   }
@@ -168,9 +170,9 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   // Alignment
   //TODO:  calib->GetParameters()->GetClusterMatrix(sector)->LocalToMaster(x,xx);
   RotatedGlobal2Global(sector,x);
+  
   //
-  //
-  // ExB correction
+  // old ExB correction 
   //
   if(fCurrentRecoParam&&fCurrentRecoParam->GetUseExBCorrection()) {
 
@@ -182,6 +184,18 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     xx[1] = x[1];
     xx[2] = x[2];
   }
+
+  //
+  // new composed  correction  - will replace soon ExB correction
+  //
+  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
+    Float_t distPoint[3]={xx[0],xx[1],xx[2]};
+    correction->CorrectPoint(distPoint, sector);
+    xx[0]=distPoint[0];
+    xx[1]=distPoint[1];
+    xx[2]=distPoint[2];
+  } 
+
 
   //
   // Time of flight correction

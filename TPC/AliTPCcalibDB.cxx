@@ -124,7 +124,7 @@ class AliTPCCalDet;
 #include "AliTPCCalibVdrift.h"
 #include "AliTPCCalibRaw.h"
 #include "AliTPCParam.h"
-
+#include "AliTPCCorrection.h"
 #include "AliTPCPreprocessorOnline.h"
 
 
@@ -179,6 +179,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fDedxGainFactor(0),
   fPadTime0(0),
   fDistortionMap(0),
+  fComposedCorrection(0),
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
@@ -219,6 +220,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fDedxGainFactor(0),
   fPadTime0(0),
   fDistortionMap(0),
+  fComposedCorrection(0),
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),

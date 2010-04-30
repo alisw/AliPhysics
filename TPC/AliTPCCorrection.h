@@ -34,6 +34,8 @@
 #include <TNamed.h>
 class TH2F;
 class TCollection;
+class TTreeSRedirector;
+class AliExternalTrackParam;
 
 class AliTPCCorrection : public TNamed {
 public:
@@ -67,6 +69,7 @@ public:
 
   // normally called directly in the correction classes which inherit from this class
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
+  AliExternalTrackParam * FitDistortedTrack(const AliExternalTrackParam * trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);
 
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,

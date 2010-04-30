@@ -86,6 +86,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBKinkFinder(kTRUE),
   fLastSeedRowSec(120),
   fUseFieldCorrection(2),      // use field correction
+  fUseComposedCorrection(kFALSE),      // use field correction
   fUseRPHICorrection(0),      // use rphi correction
   fUseRadialCorrection(0),    // use radial correction
   fUseQuadrantAlignment(0),   // use quadrant alignment

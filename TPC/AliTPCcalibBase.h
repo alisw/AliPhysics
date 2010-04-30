@@ -56,7 +56,7 @@ protected:
   Int_t  fEvent;                        //! current Event number
   Int_t  fTime;                         //!  current Time
   ULong64_t  fTrigger;                  //! current trigger mask
-  Float_t fMagF;                        //! current magnetic field 
+  Float_t fMagF;                        // current magnetic field 
   Int_t   fTriggerMaskReject;           //trigger mask - non accept trigger
   Int_t   fTriggerMaskAccept;           //trigger mask - accept
   Bool_t  fHasLaser;                    //flag the laser is overlayed with given event
@@ -68,7 +68,7 @@ protected:
 private:
   Int_t  fDebugLevel;                   //  debug level
 
-  ClassDef(AliTPCcalibBase,1)
+  ClassDef(AliTPCcalibBase,2)
 };
 
 #endif
