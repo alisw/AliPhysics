@@ -76,7 +76,6 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   //  TFile*        fOutputFile;              // temporary output file for testing
   //  AliESDEvent*  fESD;                   // ESD object
   //  AliAODEvent*  fAOD;                   // AOD object
-  AliFlowEventSimpleMaker* fEventMaker; // FlowEventSimple maker object
   TString       fAnalysisType;          // can be MC, ESD or AOD
   AliCFManager* fCFManager1;            // correction framework manager
   AliCFManager* fCFManager2;            // correction framework manager

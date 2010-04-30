@@ -25,7 +25,7 @@ Int_t methodMeshColor[nMethods] = {kRed-10,kRed-10,kRed-10,kRed-10};
 
 void showSpread(TString type="", Int_t mode=mLocal)
 {
- // type: type of analysis can be ESD, AOD, MC, ESDMC0, ESDMC1
+ // type: type of analysis can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
  //       (if type="" output files are from MC simulation (default))
  // mode: if mode = mLocal: analyze data on your computer using aliroot
  //       if mode = mLocalSource: analyze data on your computer using root + source files 

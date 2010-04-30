@@ -21,7 +21,7 @@ Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-ph
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
-// Analysis type can be ESD, AOD, MC, ESDMC0, ESDMC1
+// Analysis type can be ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
 const TString type = "ESD";
 
 // Boolean to fill/not fill the QA histograms
@@ -90,7 +90,7 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1,
     } 
   }
   
-  if (type == "MC" || type == "ESDMC0" || type == "ESDMC1"){
+  if (type == "MC" || type == "ESDMCkineESD" || type == "ESDMCkineMC"){
     AliVEventHandler* esdH = new AliESDInputHandler;
     mgr->SetInputEventHandler(esdH);
     

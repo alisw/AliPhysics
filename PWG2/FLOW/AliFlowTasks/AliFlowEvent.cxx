@@ -112,41 +112,41 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
 
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
 
-    //loop over tracks
-    for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+  //loop over tracks
+  for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+  {
+    //get input particle
+    AliMCParticle* pParticle = dynamic_cast<AliMCParticle*>(anInput->GetTrack(itrkN));
+    if (!pParticle) continue;
+
+    //check if pParticle passes the cuts
+    Bool_t rpOK = kTRUE;
+    Bool_t poiOK = kTRUE;
+    if (intCFManager && diffCFManager)
     {
-      //get input particle
-      AliMCParticle* pParticle = dynamic_cast<AliMCParticle*>(anInput->GetTrack(itrkN));
-      if (!pParticle) continue;
+      rpOK = intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pParticle);
+      poiOK = diffCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pParticle);
+    }
+    if (!(rpOK||poiOK)) continue;
 
-      //check if pParticle passes the cuts
-      Bool_t rpOK = kTRUE;
-      Bool_t poiOK = kTRUE;
-      if (intCFManager && diffCFManager)
-      {
-        rpOK = intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pParticle);
-        poiOK = diffCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pParticle);
-      }
-      if (!(rpOK||poiOK)) continue;
+    //TODO maybe make a class AliFlowTrack with a constructor from AliVParticle
+    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+    pTrack->SetEta(pParticle->Eta());
+    pTrack->SetPhi(pParticle->Phi());
+    pTrack->SetPt(pParticle->Pt());
 
-      //TODO maybe make a class AliFlowTrack with a constructor from AliVParticle
-      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      pTrack->SetEta(pParticle->Eta());
-      pTrack->SetPhi(pParticle->Phi());
-      pTrack->SetPt(pParticle->Pt());
+    if (rpOK && intCFManager)
+    {
+      pTrack->SetForRPSelection(kTRUE);
+      fEventNSelTracksRP++;
+    }
+    if (poiOK && diffCFManager)
+    {
+      pTrack->SetForPOISelection(kTRUE);
+    }
 
-      if (rpOK && intCFManager)
-      {
-        pTrack->SetForRPSelection(kTRUE);
-        fEventNSelTracksRP++;
-      }
-      if (poiOK && diffCFManager)
-      {
-        pTrack->SetForPOISelection(kTRUE);
-      }
-
-      AddTrack(pTrack) ;
-    }//for all tracks
+    AddTrack(pTrack) ;
+  }//for all tracks
   SetMCReactionPlaneAngle(anInput);
 }
 
@@ -208,40 +208,40 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
   //Fills the event from the AOD
   Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
 
-    //loop over tracks
+  //loop over tracks
   for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+  {
+    AliAODTrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+
+    //check if pParticle passes the cuts
+    Bool_t rpOK = kTRUE;
+    Bool_t poiOK = kTRUE;
+    if (intCFManager && diffCFManager)
     {
-      AliAODTrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
-
-      //check if pParticle passes the cuts
-      Bool_t rpOK = kTRUE;
-      Bool_t poiOK = kTRUE;
-      if (intCFManager && diffCFManager)
-      {
-        rpOK = ( intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
-                 intCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
-        poiOK = ( diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
-                  diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
-      }
-      if (!(rpOK || poiOK)) continue;
-
-      //make new AliFlowTrackSimple
-      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      pTrack->SetPt(pParticle->Pt() );
-      pTrack->SetEta(pParticle->Eta() );
-      pTrack->SetPhi(pParticle->Phi() );
-
-      if (rpOK && intCFManager)
-      {
-        pTrack->SetForRPSelection(kTRUE);
-        fEventNSelTracksRP++;
-      }
-      if (poiOK && diffCFManager)
-      {
-        pTrack->SetForPOISelection(kTRUE);
-      }
-      AddTrack(pTrack);
+      rpOK = ( intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+               intCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
+      poiOK = ( diffCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+                diffCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
     }
+    if (!(rpOK || poiOK)) continue;
+
+    //make new AliFlowTrackSimple
+    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+    pTrack->SetPt(pParticle->Pt() );
+    pTrack->SetEta(pParticle->Eta() );
+    pTrack->SetPhi(pParticle->Phi() );
+
+    if (rpOK && intCFManager)
+    {
+      pTrack->SetForRPSelection(kTRUE);
+      fEventNSelTracksRP++;
+    }
+    if (poiOK && diffCFManager)
+    {
+      pTrack->SetForPOISelection(kTRUE);
+    }
+    AddTrack(pTrack);
+  }
 
   //  if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult)
   //  {
@@ -296,21 +296,21 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
   //loop over ESD tracks
   for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+  {
+    AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+    //get Label
+    Int_t iLabel = pParticle->GetLabel();
+    //match to mc particle
+    AliMCParticle* pMcParticle = (AliMCParticle*) anInputMc->GetTrack(TMath::Abs(iLabel));
+
+    //check
+    if (TMath::Abs(pParticle->GetLabel())!=pMcParticle->Label()) cout<<"pParticle->GetLabel()!=pMcParticle->Label() "<<pParticle->GetLabel()<<"  "<<pMcParticle->Label()<<endl;
+
+    //check if pParticle passes the cuts
+    Bool_t rpOK = kTRUE;
+    Bool_t poiOK = kTRUE;
+    if (intCFManager && diffCFManager)
     {
-      AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
-      //get Label
-      Int_t iLabel = pParticle->GetLabel();
-      //match to mc particle
-      AliMCParticle* pMcParticle = (AliMCParticle*) anInputMc->GetTrack(TMath::Abs(iLabel));
-
-      //check
-      if (TMath::Abs(pParticle->GetLabel())!=pMcParticle->Label()) cout<<"pParticle->GetLabel()!=pMcParticle->Label() "<<pParticle->GetLabel()<<"  "<<pMcParticle->Label()<<endl;
-
-      //check if pParticle passes the cuts
-      Bool_t rpOK = kTRUE;
-      Bool_t poiOK = kTRUE;
-      if (intCFManager && diffCFManager)
-      {
       if(anOption == kESDkine)
       {
         //cout<<"take the PID from the MC & the kinematics from the ESD"<<endl;
@@ -329,38 +329,38 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
         if (diffCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle))
           poiOK=kTRUE;
       }
-      }
-
-      if (!(rpOK || poiOK)) continue;
-
-      //make new AliFlowTrackSimple
-      AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-      if(anOption == kESDkine)   //take the PID from the MC & the kinematics from the ESD
-      {
-        pTrack->SetPt(pParticle->Pt() );
-        pTrack->SetEta(pParticle->Eta() );
-        pTrack->SetPhi(pParticle->Phi() );
-      }
-      else if (anOption == kMCkine)   //take the PID and kinematics from the MC
-      {
-        pTrack->SetPt(pMcParticle->Pt() );
-        pTrack->SetEta(pMcParticle->Eta() );
-        pTrack->SetPhi(pMcParticle->Phi() );
-      }
-      else
-      {
-        cout<<"Not a valid option"<<endl;
-      }
-
-      if (rpOK && intCFManager)
-      {
-        fEventNSelTracksRP++;
-        pTrack->SetForRPSelection();
-      }
-      if (poiOK && diffCFManager) pTrack->SetForPOISelection();
-
-      AddTrack(pTrack);
     }
-    SetMCReactionPlaneAngle(anInputMc);
+
+    if (!(rpOK || poiOK)) continue;
+
+    //make new AliFlowTrackSimple
+    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+    if(anOption == kESDkine)   //take the PID from the MC & the kinematics from the ESD
+    {
+      pTrack->SetPt(pParticle->Pt() );
+      pTrack->SetEta(pParticle->Eta() );
+      pTrack->SetPhi(pParticle->Phi() );
+    }
+    else if (anOption == kMCkine)   //take the PID and kinematics from the MC
+    {
+      pTrack->SetPt(pMcParticle->Pt() );
+      pTrack->SetEta(pMcParticle->Eta() );
+      pTrack->SetPhi(pMcParticle->Phi() );
+    }
+    else
+    {
+      cout<<"Not a valid option"<<endl;
+    }
+
+    if (rpOK && intCFManager)
+    {
+      fEventNSelTracksRP++;
+      pTrack->SetForRPSelection();
+    }
+    if (poiOK && diffCFManager) pTrack->SetForPOISelection();
+
+    AddTrack(pTrack);
+  }
+  SetMCReactionPlaneAngle(anInputMc);
 }
 

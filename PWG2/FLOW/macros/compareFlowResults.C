@@ -1,4 +1,4 @@
-//type of analysis can be: ESD, AOD, MC, ESDMC0, ESDMC1
+//type of analysis can be: ESD, AOD, MC, ESDMCkineESD, ESDMCkineMC
 //const TString type = "ESD"; 
 
 enum libModes {mLocal,mLocalSource};

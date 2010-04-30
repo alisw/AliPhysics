@@ -485,7 +485,7 @@ void AliFlowEventSimple::ResolutionPt(Double_t res)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::SubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB )
+void AliFlowEventSimple::TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB )
 {
   //Flag two subevents in given eta ranges
   for (Int_t i=0; i<fNumberOfTracks; i++)
