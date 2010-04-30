@@ -11,7 +11,8 @@
  * can be used to:                                        *
  *                                                        *  
  *  a) Extract subdominant harmonics (like v1 and v4);    *
- *  b) Study strong parity violation.                     * 
+ *  b) Study flow of two-particle resonances;             *
+ *  c) Study strong parity violation.                     * 
  *                                                        * 
  * Author: Ante Bilandzic (abilandzic@gmail.com)          *
  *********************************************************/ 
@@ -44,6 +45,7 @@ class AliFlowAnalysisWithMixedHarmonics
   AliFlowAnalysisWithMixedHarmonics();
   virtual ~AliFlowAnalysisWithMixedHarmonics(); 
   // 0.) Methods called in the constructor:
+    virtual void InitializeArrays();
   // 1.) Method Init() and methods called within Init():
   virtual void Init();
     virtual void CrossCheckSettings();
@@ -54,19 +56,19 @@ class AliFlowAnalysisWithMixedHarmonics
     virtual void BookAllEventByEventQuantities();
     virtual void BookAllAllEventQuantities();
     virtual void BookAndFillWeightsHistograms();
-  // 2.) Method Make() and methods called within Make():
+    // 2.) Method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
     virtual void CheckPointersUsedInMake();
     virtual void Calculate3pCorrelator();
     virtual void CalculateNonIsotropicTerms();
+    virtual void CalculateDifferential3pCorrelator();
     virtual void ResetEventByEventQuantities();
   // 3.) Method Finish() and methods called within Finish():
   virtual void Finish();  
     virtual void CheckPointersUsedInFinish(); 
     virtual void AccessSettings();       
-    virtual void FinalizeNonIsotropicTerms();       
     virtual void CorrectForDetectorEffects();
-    virtual void QuantifyBiasFromDetectorEffects();
+    virtual void PrintOnTheScreen();  
   // 4.) Method GetOutputHistograms and method called within it:
   virtual void GetOutputHistograms(TList *outputListHistos);
     virtual void GetPointersForBaseHistograms();
@@ -95,6 +97,8 @@ class AliFlowAnalysisWithMixedHarmonics
   Double_t GetMinMultiplicity() const {return this->fMinMultiplicity;}; 
   void SetCorrectForDetectorEffects(Bool_t const cfde) {this->fCorrectForDetectorEffects = cfde;};
   Bool_t GetCorrectForDetectorEffects() const {return this->fCorrectForDetectorEffects;}; 
+  void SetPrintOnTheScreen(Bool_t const pots) {this->fPrintOnTheScreen = pots;};
+  Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};   
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists;};
   void SetWeightsList(TList* const wl) {this->fWeightsList = (TList*)wl->Clone();}
@@ -124,20 +128,16 @@ class AliFlowAnalysisWithMixedHarmonics
   void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
   void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
-  TList* GetResultsList() const {return this->fResultsList;}  
-  void Set3pCorrelatorHist(TH1D* const s3pcHist) {this->f3pCorrelatorHist = s3pcHist;};
-  TH1D* Get3pCorrelatorHist() const {return this->f3pCorrelatorHist;};
+  TList* GetResultsList() const {return this->fResultsList;}    
+  void Set3pCorrelatorHist(TH1D* const s3pHist) {this->f3pCorrelatorHist = s3pHist;};
+  TH1D* Get3pCorrelatorHist() const {return this->f3pCorrelatorHist;};  
   void SetDetectorBiasHist(TH1D* const dbHist) {this->fDetectorBiasHist = dbHist;};
   TH1D* GetDetectorBiasHist() const {return this->fDetectorBiasHist;};  
-  void SetNonIsotropicTermsHist(TH1D* const nitHist) {this->fNonIsotropicTermsHist = nitHist;};
-  TH1D* GetNonIsotropicTermsHist() const {return this->fNonIsotropicTermsHist;};  
-  void Set3pCorrelatorVsMHist(TH1D* const s3pcVsMHist) {this->f3pCorrelatorVsMHist = s3pcVsMHist;};
-  TH1D* Get3pCorrelatorVsMHist() const {return this->f3pCorrelatorVsMHist;};
   void SetDetectorBiasVsMHist(TH1D* const dbVsMHist) {this->fDetectorBiasVsMHist = dbVsMHist;};
   TH1D* GetDetectorBiasVsMHist() const {return this->fDetectorBiasVsMHist;};  
-  void SetNonIsotropicTermsVsMHist(TH2D* const nitVsMHist) {this->fNonIsotropicTermsVsMHist = nitVsMHist;};
-  TH2D* GetNonIsotropicTermsVsMHist() const {return this->fNonIsotropicTermsVsMHist;};
-  
+  void Set3pCorrelatorVsPtSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffPro[sd] = s3pcvpsd;};
+  TProfile* Get3pCorrelatorVsPtSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffPro[sd];};
+    
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
   AliFlowAnalysisWithMixedHarmonics& operator=(const AliFlowAnalysisWithMixedHarmonics& afawQc); 
@@ -151,6 +151,7 @@ class AliFlowAnalysisWithMixedHarmonics
   Double_t fMultipicityBinWidth; // width of multiplicity bin
   Double_t fMinMultiplicity; // minimal multiplicity
   Bool_t fCorrectForDetectorEffects; // correct 3-p correlator for detector effects
+  Bool_t fPrintOnTheScreen; // print or not the final results on the screen
   // 1.) Common:
   AliFlowCommonHist *fCommonHists; // common control histograms (filled only with events with 3 or more tracks for 3-p correlators) 
   Int_t fnBinsPhi; // number of phi bins
@@ -180,21 +181,21 @@ class AliFlowAnalysisWithMixedHarmonics
   TMatrixD *fSpk; // fS[p][k] = S_{p,k} = (sum_{i=1}^{M} w_{i}^{k})^{p+1} // note p+1 in the power to use 0th index in p in non-trivial way
   TH1D *f3pCorrelatorEBE; // 3-p correlator <cos[n(2phi1-phi2-phi3)]> for single event
   TH1D *fNonIsotropicTermsEBE; // correction terms to 3-p correlator <cos[n(2phi1-phi2-phi3)]> for single event
+  TProfile *fRePEBE[2]; // real part of p_n vs [(p1+p2)/2,|p1-p2|]
+  TProfile *fImPEBE[2]; // imaginary part of p_n vs [(p1+p2)/2,|p1-p2|]
   // 4.) Profiles:
   TList *fProfileList; // list holding all all-event profiles 
-  TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with wrong errors)
-  TProfile *fNonIsotropicTermsPro; // correction terms to 3-p correlator <cos[n(2phi1-phi2-phi3)]> for all events (with wrong errors)
-  TProfile *f3pCorrelatorVsMPro; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with wrong errors) versus multiplicity
-  TProfile2D *fNonIsotropicTermsVsMPro; // correction terms to <cos[n(2phi1-phi2-phi3)]> for all events (with wrong errors) versus multiplicity
+  TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> not corrected for detector effects
+  TProfile *fNonIsotropicTermsPro; // non-isotropic terms in the decomposition of 3-p correlator <<cos[n(2phi1-phi2-phi3)]>>
+  TProfile *f3pCorrelatorVsMPro; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> vs multiplicity
+  TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(2phi1-phi2-phi3)]> vs multiplicity
+  TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[n(2phi1-psi2-psi3)]>> vs [(p1+p2)/2,|p1-p2|]
   // 5.) Final results:
   TList *fResultsList; // list holding objects with final results 
-  TH1D *f3pCorrelatorHist; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with correct errors)
+  TH1D *f3pCorrelatorHist; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> corrected for detector effects
   TH1D *fDetectorBiasHist; // bias comming from detector inefficiencies to 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> (in %)
-  TH1D *fNonIsotropicTermsHist; // correction terms to 3-p correlator <cos[n(2phi1-phi2-phi3)]> for all events (with correct errors)
-  TH1D *f3pCorrelatorVsMHist; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> for all events (with correct errors) versus multiplicity
   TH1D *fDetectorBiasVsMHist; // bias comming from detector inefficiencies to 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> (in %) versus multiplicity
-  TH2D *fNonIsotropicTermsVsMHist; // correction terms to <cos[n(2phi1-phi2-phi3)]> for all events (with correct errors) versus multiplicity
-  
+
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
 };

@@ -76,7 +76,7 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t fUseEtaWeights; // use eta weights  
   TList *fWeightsList; // list with weights
   
-  ClassDef(AliAnalysisTaskMixedHarmonics, 0); 
+  ClassDef(AliAnalysisTaskMixedHarmonics, 1); 
 };
 
 //================================================================================================================
