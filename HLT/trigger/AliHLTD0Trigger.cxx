@@ -44,6 +44,7 @@
 #include "AliHLTMCEvent.h"
 #include "AliStack.h"
 #include "TParticle.h"
+#include "TMap.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTD0Trigger)
@@ -516,4 +517,10 @@ bool AliHLTD0Trigger::CheckTrackMC(AliExternalTrackParam* pt, AliExternalTrackPa
     }
   }
   return false;
+}
+void AliHLTD0Trigger::GetOCDBObjectDescription( TMap* const targetMap)
+{
+  // Get a list of OCDB object description.
+  if (!targetMap) return;
+  targetMap->Add(new TObjString("HLT/ConfigHLT/D0Trigger"),new TObjString("Object with default cuts for D0 reconstruction" ));
 }

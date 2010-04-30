@@ -80,6 +80,9 @@ class AliHLTD0Trigger : public AliHLTTrigger
   /// inherited from AliHLTComponent: create an instance
   virtual AliHLTComponent* Spawn();
 
+  /// inherited from AliHLTComponent: return OCDB requirements
+  void GetOCDBObjectDescription( TMap* const targetMap);
+
  protected:
   /// inherited from AliHLTComponent: handle the initialization
   int DoInit(int argc, const char** argv);
