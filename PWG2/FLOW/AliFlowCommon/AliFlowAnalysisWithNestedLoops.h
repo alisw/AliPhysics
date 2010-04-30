@@ -8,7 +8,8 @@
  * Only in this class nested loops are used for flow analysis. *
  * Nested loops are used to evaluate:                          *
  *                                                             *  
- *  a) Distribution of relative angle difference (phi1-phi2).  *
+ *  a) Distribution of relative angle difference (phi1-phi2);  *
+ *  b) Cross-check the results for mixed harmonics.            *
  *                                                             *
  *       Author: Ante Bilandzic (abilandzic@gmail.com)         *
  ***************************************************************/ 
@@ -36,29 +37,38 @@ class AliFlowAnalysisWithNestedLoops
   AliFlowAnalysisWithNestedLoops();
   virtual ~AliFlowAnalysisWithNestedLoops(); 
   // 0.) Methods called in the constructor:
+    virtual void InitializeArraysForMH();
   // 1.) Method Init() and methods called within Init():
   virtual void Init();
     virtual void CrossCheckSettings();
     virtual void AccessConstants();
     virtual void BookAndNestAllLists();
-    virtual void BookProfileHoldingSettings();
+    virtual void BookAndFillProfileHoldingSettings();
     virtual void BookCommonHistograms();
-    virtual void BookEverythingForDistributions();
+    virtual void BookEverythingForRAD(); // RAD = relative angle distribution phi1-phi2
+    virtual void BookEverythingForMH(); // MH = Mixed Harmonics
     virtual void BookAndFillWeightsHistograms();
   // 2.) Method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
     virtual void CheckPointersUsedInMake();
+    virtual void EvaluateNestedLoopsForRAD(AliFlowEventSimple *anEvent);
+    virtual void EvaluateNestedLoopsForMH(AliFlowEventSimple *anEvent);
   // 3.) Method Finish() and methods called within Finish():
   virtual void Finish();  
     virtual void CheckPointersUsedInFinish(); 
-    virtual void AccessSettings();       
+    virtual void AccessSettings();  
+    virtual void PrintOnTheScreen();     
   // 4.) Method GetOutputHistograms and method called within it:
   virtual void GetOutputHistograms(TList *outputListHistos);
+    virtual void GetPointersForBaseHistograms();
     virtual void GetPointersForCommonHistograms();
-    virtual void GetPointersForResultsHistograms();
+    virtual void GetPointersForRAD();
+    virtual void GetPointersForMH();
   // 5.) Other methods:   
   virtual void WriteHistograms(TString outputFileName);
   virtual void WriteHistograms(TDirectoryFile *outputFileName);  
+  virtual void CheckPointersForRAD(TString where);
+  virtual void CheckPointersForMH(TString where);
   // 6.) Setters and getters:
   void SetHistList(TList* const hl) {this->fHistList = hl;}
   TList* GetHistList() const {return this->fHistList;}  
@@ -68,6 +78,8 @@ class AliFlowAnalysisWithNestedLoops
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   void SetAnalysisSettings(TProfile* const as) {this->fAnalysisSettings = as;};
   TProfile* GetAnalysisSettings() const {return this->fAnalysisSettings;};
+  void SetPrintOnTheScreen(Bool_t const pots) {this->fPrintOnTheScreen = pots;};
+  Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};   
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists;};
   void SetWeightsList(TList* const wl) {this->fWeightsList = (TList*)wl->Clone();}
@@ -86,10 +98,27 @@ class AliFlowAnalysisWithNestedLoops
   TH1D* GetPtWeights() const {return this->fPtWeights;};
   void SetEtaWeights(TH1D* const histEtaWeights) {this->fEtaWeights = histEtaWeights;};
   TH1D* GetEtaWeights() const {return this->fEtaWeights;};
-  void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
-  TList* GetResultsList() const {return this->fResultsList;}  
+  void SetListRAD(TList* const lRAD) {this->fListRAD = lRAD;}
+  TList* GetListRAD() const {return this->fListRAD;}  
+  void SetEvaluateNestedLoopsForRAD(Bool_t const enlfRAD) {this->fEvaluateNestedLoopsForRAD = enlfRAD;};
+  Bool_t GetEvaluateNestedLoopsForRAD() const {return this->fEvaluateNestedLoopsForRAD;};
   void SetRelativeAngleDistribution(TH1D* const rad) {this->fRelativeAngleDistribution = rad;};
-  TH1D* GetRelativeAngleDistribution() const {return this->fRelativeAngleDistribution;};
+  TH1D* GetRelativeAngleDistribution() const {return this->fRelativeAngleDistribution;}; 
+  // QC:
+  // ...
+  // MH:
+  void SetListMH(TList* const lMH) {this->fListMH = lMH;}
+  TList* GetListMH() const {return this->fListMH;}  
+  void SetEvaluateNestedLoopsForMH(Bool_t const enlfMH) {this->fEvaluateNestedLoopsForMH = enlfMH;};
+  Bool_t GetEvaluateNestedLoopsForMH() const {return this->fEvaluateNestedLoopsForMH;};
+  void SetCorrelatorIntegerMH(Int_t const ciMH) {this->fCorrelatorIntegerMH = ciMH;};
+  Int_t GetCorrelatorIntegerMH() const {return this->fCorrelatorIntegerMH;}; 
+  void Set3pCorrelatorVsPtSumDiffDirectPro(TProfile* const s3pcvpsdd, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffDirectPro[sd] = s3pcvpsdd;};
+  TProfile* Get3pCorrelatorVsPtSumDiffDirectPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffDirectPro[sd];};
+  void SetCrossCheckInPtSumBinNo(Int_t const ccipsbn) {this->fCrossCheckInPtSumBinNo = ccipsbn;};
+  Int_t GetCrossCheckInPtSumBinNo() const {return this->fCrossCheckInPtSumBinNo;}; 
+  void SetCrossCheckInPtDiffBinNo(Int_t const ccipdbn) {this->fCrossCheckInPtDiffBinNo = ccipdbn;};
+  Int_t GetCrossCheckInPtDiffBinNo() const {return this->fCrossCheckInPtDiffBinNo;};  
   
  private:
   AliFlowAnalysisWithNestedLoops(const AliFlowAnalysisWithNestedLoops& afawQc);
@@ -99,6 +128,7 @@ class AliFlowAnalysisWithNestedLoops
   TString *fHistListName; // name of base list
   TString *fAnalysisLabel; // analysis label 
   TProfile *fAnalysisSettings; // profile to hold analysis settings
+  Bool_t fPrintOnTheScreen; // print or not on the screen
   // 1.) Common:
   AliFlowCommonHist *fCommonHists; // common control histograms (filled only with events with 3 or more tracks for 3-p correlators) 
   Int_t fnBinsPhi; // number of phi bins
@@ -122,12 +152,21 @@ class AliFlowAnalysisWithNestedLoops
   TH1F *fPhiWeights; // histogram holding phi weights
   TH1D *fPtWeights; // histogram holding phi weights
   TH1D *fEtaWeights; // histogram holding phi weights 
-  // 3.) Final results:
-  TList *fResultsList; // list holding objects with final results 
+  // 3.) Relative angle distribution (RAD):
+  TList *fListRAD; // list holding objects for calculation of relative angle distribution phi1-phi2 
+  Bool_t fEvaluateNestedLoopsForRAD; // evaluate nested loops for relative angle distribution
   TH1D *fRelativeAngleDistribution; // distribution of phi1-phi2 for all distinct pairs of particles
+  // 4.) Debugging and cross-checking QC:
+  // ...
+  // 5.) Debugging and cross-checking MH:
+  TList *fListMH; // list holding objects relevant for debugging and cross-checking of MH class
+  Bool_t fEvaluateNestedLoopsForMH; // evaluate nested loops for mixed harmonics
+  Int_t fCorrelatorIntegerMH; // integer n in cos[n(2phi1-psi2-psi3)]
+  TProfile *f3pCorrelatorVsPtSumDiffDirectPro[2]; // differential 3-p correlator cos[n(2phi1-psi2-psi3)] vs [(p1+p2)/2,|p1-p2|]
+  Int_t fCrossCheckInPtSumBinNo; // print on the screen result of cos[n(2phi1-psi2-psi3)] vs (p1+p2)/2 in this bin number 
+  Int_t fCrossCheckInPtDiffBinNo; // print on the screen result of cos[n(2phi1-psi2-psi3)] vs |p1-p2| in this bin number 
   
   ClassDef(AliFlowAnalysisWithNestedLoops, 0);
-
 };
 
 //================================================================================================================

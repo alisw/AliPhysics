@@ -59,7 +59,7 @@ class AliAnalysisTaskNestedLoops : public AliAnalysisTaskSE{
   Bool_t fUseEtaWeights; // use eta weights  
   TList *fWeightsList; // list with weights
   
-  ClassDef(AliAnalysisTaskNestedLoops, 0); 
+  ClassDef(AliAnalysisTaskNestedLoops, 1); 
 };
 
 //================================================================================================================
