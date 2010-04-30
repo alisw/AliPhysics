@@ -479,6 +479,12 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
   // dir      - direction - out=1 or in=-1
   // pcstream -  debug streamer to check the results
   //
+  // see AliExternalTrackParam.h documentation:
+  // track1.fP[0] - local y (rphi)
+  // track1.fP[1] - z 
+  // track1.fP[2] - sinus of local inclination angle
+  // track1.fP[3] - tangent of deep angle
+  // track1.fP[4] - 1/pt
   AliTPCROC * roc = AliTPCROC::Instance();
   const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
   const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
@@ -580,7 +586,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
   track1->Rotate(track0->GetAlpha());
   AliTrackerBase::PropagateTrackTo(track1,refX,kMass,2.,kFALSE,kMaxSnp);
 
-  if (pcstream) (*pcstream)<<"fitDistort"<<
+  if (pcstream) (*pcstream)<<Form("fitDistort%s",GetName())<<
     "point0.="<<&pointArray0<<   //  points
     "point1.="<<&pointArray1<<   //  distorted points
     "trackIn.="<<&track<<       //  original track
