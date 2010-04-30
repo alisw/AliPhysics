@@ -126,7 +126,6 @@ void AliTRDcheckDET::UserCreateOutputObjects(){
   // Create Output Objects
   //
   if(!HasFunctorList()) InitFunctorList();
-  OpenFile(1,"RECREATE");
   fContainer = Histos();
   if(!fTriggerNames) fTriggerNames = new TMap();
 }
@@ -139,7 +138,8 @@ void AliTRDcheckDET::UserExec(Option_t *opt){
   //
 
   fEventInfo = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
-  if(!HasMCdata() && fEventInfo->GetEventHeader()->GetEventType() != 7) return;	// For real data we select only physical events
+  AliDebug(2, Form("EventInfo[%p] Header[%p]", (void*)fEventInfo, (void*)(fEventInfo?fEventInfo->GetEventHeader():NULL)));
+
   AliTRDrecoTask::UserExec(opt);  
   Int_t nTracks = 0;		// Count the number of tracks per event
   Int_t triggermask = fEventInfo->GetEventHeader()->GetTriggerMask();

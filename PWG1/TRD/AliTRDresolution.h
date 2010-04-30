@@ -68,7 +68,7 @@ public:
   Float_t GetSegmentationLevel() {return fSegmentLevel;}
   Bool_t  GetRefFigure(Int_t ifig);
   TObjArray*  Histos(); 
-  Bool_t  Load(const Char_t *filename = "TRD.Performance.root");
+  Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
 
   TObjArray*  Results(Int_t i=0) const {return i ? fGraphS : fGraphM;} 
   void    UserExec(Option_t * opt);
@@ -124,8 +124,8 @@ private:
   static UChar_t const fgNproj[kNviews]; //! number of projections per task
   static Int_t const  fgkNresYsegm[3];  //! number of segments for saving y resolution
   static Char_t const *fgkResYsegmName[3];//! name of segment for saving y resolution
-  AliTRDReconstructor *fReconstructor;  // local reconstructor
-  AliTRDgeometry      *fGeo;            // TRD geometry
+  AliTRDReconstructor *fReconstructor;  //! local reconstructor
+  AliTRDgeometry      *fGeo;            //! TRD geometry
   TDatabasePDG        *fDBPDG;          // PDG database
   TObjArray           *fGraphS;         //! result holder - sigma values
   TObjArray           *fGraphM;         //! result holder - mean values
