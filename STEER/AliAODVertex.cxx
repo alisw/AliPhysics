@@ -266,7 +266,8 @@ Int_t AliAODVertex::GetNContributors() const
   // Returns the number of tracks used to fit this vertex.
   Int_t cont  = 0;
 
-  if (!strcmp(GetTitle(), "vertexer: 3D")) {
+  TString vtitle = GetTitle();
+  if (!vtitle.Contains("VertexerTracks")) {
     cont = fNContributors;
   } else {
     for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {

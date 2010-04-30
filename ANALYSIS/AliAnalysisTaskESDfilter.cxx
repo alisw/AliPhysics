@@ -268,8 +268,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
     primary->SetName(vtx->GetName());
     primary->SetTitle(vtx->GetTitle());
-    
-    if (!strcmp(vtx->GetTitle(), "vertexer: 3D")) primary->SetNContributors(vtx->GetNContributors());
+
+    TString vtitle = vtx->GetTitle();
+    if (!vtitle.Contains("VertexerTracks")) 
+      primary->SetNContributors(vtx->GetNContributors());
 
     if (fDebug > 0) primary->Print();
 
