@@ -128,12 +128,12 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   //
   // Booking rec points related histograms
   //0
-  TH2D *hLocalMapL1 = new TH2D("hLocalMapL1"," Local coordinates  - Layer 1",1320,-16.5,16.5,164,-0.5,40.5); // safe limits for local coordinates in a module : z = -4,4, x = -1,1;
+  TH2D *hLocalMapL1 = new TH2D("hLocalMapL1"," Local coordinates  - Layer 1",660,-16.5,16.5,410,-0.5,40.5); // safe limits for local coordinates in a module : z = -4,4, x = -1,1;
   hLocalMapL1->SetXTitle("direction Z [cm]");
   hLocalMapL1->SetYTitle("direction X [cm]");
   fOutput->AddLast(hLocalMapL1);
   //1
-  TH2D *hLocalMapL2 = new TH2D("hLocalMapL2"," Local coordinates  - Layer 2",1320,-16.5,16.5,324,-0.5,80.5);
+  TH2D *hLocalMapL2 = new TH2D("hLocalMapL2"," Local coordinates  - Layer 2",660,-16.5,16.5,810,-0.5,80.5);
   hLocalMapL2->SetXTitle("direction Z [cm]");
   hLocalMapL2->SetYTitle("direction X [cm]");
   fOutput->AddLast(hLocalMapL2);
@@ -222,15 +222,67 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
     printf("No AliESDEvent \n");
     return;
   }
- 
+
+  Bool_t recP = kTRUE;
   TTree * treeRP = hand->GetTreeR("ITS");
   if(!treeRP) {
-    printf("No RecPoints tree \n");
-    return;
+    //AliWarning("No ITS RecPoints tree ");
+    recP=kFALSE;
   }
 
-  ((TH1I*)fOutput->At(16))->Fill(0);
+  
 
+  // ESD related histograms
+ 
+   const AliESDVertex *vertex = ESD->GetPrimaryVertexSPD();
+   const AliMultiplicity *mult = ESD->GetMultiplicity();
+ 
+   // Event selection
+   if(!vertex) return;
+   if(!vertex->GetStatus()) return;
+   if(vertex->GetNContributors() < 1) return;
+
+  ((TH1I*)fOutput->At(16))->Fill(0);
+   
+  ((TH1I*)fOutput->At(11))->Fill(mult->GetNumberOfTracklets());
+  UInt_t bc = (UInt_t)ESD->GetBunchCrossNumber();
+  for(Int_t iChipKey=0; iChipKey < 1200; iChipKey++){
+    if(mult->TestFiredChipMap(iChipKey)) {
+     ((TH1F*)fOutput->At(5))->Fill(iChipKey);
+     if(bc>0)((TH2F*)fOutput->At(9))->Fill(iChipKey,bc%4);   
+     }
+    if(mult->TestFastOrFiredChips(iChipKey)) ((TH1F*)fOutput->At(6))->Fill(iChipKey);
+    if(mult->TestFastOrFiredChips(iChipKey) && mult->TestFiredChipMap(iChipKey)) {
+      ((TH1F*)fOutput->At(7))->Fill(iChipKey);
+      if(bc>0) ((TH2F*)fOutput->At(8))->Fill(iChipKey,bc%4);
+     
+    }
+    if(mult->TestFastOrFiredChips(iChipKey) && !mult->TestFiredChipMap(iChipKey)) ((TH1F*)fOutput->At(10))->Fill(iChipKey);
+  }
+  
+  
+  Double_t vtxPos[3] = {999, 999, 999};
+  if(vertex){
+    vertex->GetXYZ(vtxPos);
+ 
+    ((TH1F*)fOutput->At(15))->Fill(vtxPos[2]);
+ 
+    for(Int_t iTracklet =0; iTracklet < mult->GetNumberOfTracklets(); iTracklet++){
+
+      Float_t phiTr= mult->GetPhi(iTracklet);
+      Float_t etaTr =mult->GetEta(iTracklet);
+
+      ((TH2F*)fOutput->At(12))->Fill(etaTr,phiTr);
+
+      // Z pos or Z neg
+      Float_t z = vtxPos[2] + 3.9 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- etaTr)));
+      if(z>0) ((TH1F*)fOutput->At(13))->Fill(phiTr);
+      else ((TH1F*)fOutput->At(14))->Fill(phiTr);
+    }
+  } 
+  
+  
+  if(recP){
   // RecPoints info
 
   TClonesArray statITSrec("AliITSRecPoint");
@@ -242,9 +294,6 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
   }
 
   branch->SetAddress(&ITSCluster);
-
-  Bool_t firedchips[1200];
-  for(Int_t ikey=0; ikey<1200; ikey++) firedchips[ikey]=kFALSE;
 
   for(Int_t iMod=0;iMod<240;iMod++){
     branch->GetEvent(iMod);
@@ -291,58 +340,14 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
       }
       // ---- End Filling maps (local coordinates rearranged) -----
     
-      firedchips[AliSPDUtils::GetOfflineChipKeyFromOnline(eq,hs,chip)] = kTRUE;
       ((TH1F*)fOutput->At(3))->Fill(AliSPDUtils::GetOfflineChipKeyFromOnline(eq,hs,chip));
       ((TH1F*)fOutput->At(4))->Fill(eq*60+hs*10+chip);
    
     }
   }
+ }// end if rec points are available
  
-  // ESD related histograms
- 
-  const AliESDVertex *vertex = ESD->GetVertex();
-  const AliMultiplicity *mult = ESD->GetMultiplicity();
- 
-  ((TH1I*)fOutput->At(11))->Fill(mult->GetNumberOfTracklets());
-  UInt_t bc = (UInt_t)ESD->GetBunchCrossNumber();
-  for(Int_t iChipKey=0; iChipKey < 1200; iChipKey++){
-    if(firedchips[iChipKey]) {
-     ((TH1F*)fOutput->At(5))->Fill(iChipKey);
-     if(bc>0)((TH2F*)fOutput->At(9))->Fill(iChipKey,bc%4);
-      
-     }
-    if(mult->TestFastOrFiredChips(iChipKey)) ((TH1F*)fOutput->At(6))->Fill(iChipKey);
-    if(mult->TestFastOrFiredChips(iChipKey) && firedchips[iChipKey]) {
-      ((TH1F*)fOutput->At(7))->Fill(iChipKey);
-      if(bc>0) ((TH2F*)fOutput->At(8))->Fill(iChipKey,bc%4);
-     
-    }
-    if(mult->TestFastOrFiredChips(iChipKey) && !firedchips[iChipKey]) ((TH1F*)fOutput->At(10))->Fill(iChipKey);
-  }
   
-  
-  Double_t vtxPos[3] = {999, 999, 999};
-  if(vertex){
-    vertex->GetXYZ(vtxPos);
- 
-    ((TH1F*)fOutput->At(15))->Fill(vtxPos[2]);
- 
-    for(Int_t iTracklet =0; iTracklet < mult->GetNumberOfTracklets(); iTracklet++){
-
-      Float_t phiTr= mult->GetPhi(iTracklet);
-      Float_t etaTr =mult->GetEta(iTracklet);
-
-      ((TH2F*)fOutput->At(12))->Fill(etaTr,phiTr);
-
-      // Z pos or Z neg
-      Float_t z = vtxPos[2] + 3.9 / TMath::Tan(2 * TMath::ATan(TMath::Exp(- etaTr)));
-      if(z>0) ((TH1F*)fOutput->At(13))->Fill(phiTr);
-      else ((TH1F*)fOutput->At(14))->Fill(phiTr);
-      //if(vtxPos[2]>0 && etaTr>0)((TH1F*)fOutput->At(15))->Fill(phiTr); // z positive
-      //if(vtxPos[2]<0 && etaTr<0)((TH1F*)fOutput->At(16))->Fill(phiTr); // z negative
-     
-    }
-  } 
   
   
   /* PostData(0) is taken care of by AliAnalysisTaskSE */
