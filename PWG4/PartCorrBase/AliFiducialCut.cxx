@@ -157,8 +157,8 @@ Bool_t AliFiducialCut::CheckFiducialRegion(const TLorentzVector momentum, const 
 	Double_t eta =  momentum.Eta();
 	//printf("IsInFiducialCut::Det: %s, phi = %f, eta = %f\n", det.Data(),phi*TMath::RadToDeg(), eta);
 
-	Int_t netaregions =  fCTSFidCutMaxEta->GetSize();
-    Int_t nphiregions =  fCTSFidCutMaxPhi->GetSize();
+    Int_t netaregions = maxeta->GetSize();
+    Int_t nphiregions = maxphi->GetSize();
     if(netaregions !=  mineta->GetSize() || nphiregions !=  minphi->GetSize())
 		printf("AliFiducialCut::IsInFiducialCut() - Wrong number of fiducial cut regions: nmaxeta %d != nmineta %d; nmaxphi %d != nminphi %d\n",
 			   netaregions, mineta->GetSize(),  nphiregions, minphi->GetSize());
