@@ -193,19 +193,22 @@ Bool_t AliTRDpidRefMakerLQ::GetRefFigure(Int_t ifig)
 
 
 //________________________________________________________________________
-Bool_t AliTRDpidRefMakerLQ::Load(const Char_t */*fname*/)
+Bool_t AliTRDpidRefMakerLQ::Load(const Char_t *file, const Char_t *dir)
 {
-  const Char_t *name("PIDrefMaker");
-  if(gSystem->AccessPathName(Form("TRD.Calib%s.root", name), kReadPermission)){
-    AliError(Form("File TRD.Calib%s.root not readable", name));
+  if(gSystem->AccessPathName(file, kReadPermission)){
+    AliError(Form("File %s not readable", file));
     return kFALSE;
   }
-  if(!TFile::Open(Form("TRD.Calib%s.root", name))){
-    AliError(Form("File TRD.Calib%s.root corrupted", name));
+  if(!TFile::Open(file)) {
+    AliError(Form("File %s corrupted", file));
     return kFALSE;
   }
-  if (!(fData = dynamic_cast<TTree*>(gFile->Get(name)))) {
-    AliError(Form("Tree %s not available", name));
+  if(!gFile->cd(dir)){
+    AliWarning(Form("Couldn't cd to %s in %s.", dir, file));
+    return kFALSE;
+  }
+  if (!(fData = dynamic_cast<TTree*>(gDirectory->Get("PIDrefMaker")))) {
+    AliError("PIDref Tree not available");
     return kFALSE;
   }
   LinkPIDdata();

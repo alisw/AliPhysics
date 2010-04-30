@@ -197,8 +197,13 @@ void AliTRDresolution::UserCreateOutputObjects()
 {
   // spatial resolution
 
+  if(!fReconstructor){
+    fReconstructor = new AliTRDReconstructor();
+    fReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+  }
+  if(!fGeo) fGeo = new AliTRDgeometry();
+
   if(!HasFunctorList()) InitFunctorList();
-  OpenFile(1, "RECREATE");
   fContainer = Histos();
   InitExchangeContainers();
 }
@@ -2193,11 +2198,11 @@ TObjArray* AliTRDresolution::Histos()
 }
 
 //________________________________________________________
-Bool_t AliTRDresolution::Load(const Char_t *filename)
+Bool_t AliTRDresolution::Load(const Char_t *file, const Char_t *dir)
 {
 // Custom load function. Used to guess the segmentation level of the data.
 
-  if(!AliTRDrecoTask::Load(filename)) return kFALSE;
+  if(!AliTRDrecoTask::Load(file, dir)) return kFALSE;
 
   // look for cluster residual plot - always available
   TH3S* h3((TH3S*)((TObjArray*)fContainer->At(kClToTrk))->At(0));

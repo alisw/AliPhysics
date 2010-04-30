@@ -41,7 +41,7 @@ public:
   Bool_t      GetRefFigure(Int_t ifig);
   Bool_t      HasOnlineMonitor() const {return kTRUE;}
   TObjArray*  Histos();
-  Bool_t      Load(const Char_t *filename = "TRD.CalibPIDrefMaker.root");
+  Bool_t      Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir = "TRD.CalibPIDrefMaker");
   Bool_t      PostProcess();
   void        UserCreateOutputObjects();
   void        UserExec(Option_t *opt);
