@@ -39,11 +39,14 @@
 #include "AliLog.h"
 #include "AliTrackReference.h"
  
+
+#include <TGeoTrd1.h>
+
 ClassImp(AliFRAMEv2)
 
  
 //_____________________________________________________________________________
-AliFRAMEv2::AliFRAMEv2():
+  AliFRAMEv2::AliFRAMEv2():
     fHoles(0)
 {
 // Constructor
@@ -164,8 +167,8 @@ void AliFRAMEv2::CreateGeometry()
 //
   TGeoPgon* shB77A = new TGeoPgon(0., 360., 18, 2);
   shB77A->SetName("shB77A");
-  shB77A->DefineSection( 0, -376., 280., 415.7);
-  shB77A->DefineSection( 1,  376., 280., 415.7);
+  shB77A->DefineSection( 0, -376.5, 280., 415.7);
+  shB77A->DefineSection( 1,  376.5, 280., 415.7);
   TGeoBBox* shB77B = new TGeoBBox(3.42, 2., 375.5);
   shB77B->SetName("shB77B");
   TGeoTranslation* trB77A = new TGeoTranslation("trB77A", +283.32, 0., 0.);
@@ -519,7 +522,7 @@ void AliFRAMEv2::CreateGeometry()
 
   ptrd1[0] =  49.8;
   ptrd1[1] =  70.7;
-  ptrd1[2] = 376.0;    
+  ptrd1[2] = 376.5;  
   ptrd1[3] =  iFrH / 2.;  
   
   Float_t r      = 342.0;
@@ -825,23 +828,39 @@ void AliFRAMEv2::CreateGeometry()
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., -12.62, 0, "ONLY"); // CBL 28/6/2006
   }
 
-//
-// TOF  mother volumes
-//
+// 
+// TOF mother volumes as modified by B.Guerzoni
+// to remove overlaps/extrusions in case of aligned TOF SMs
+// 
   ptrd1[0] = 62.2500; 
-  ptrd1[1] = 67.3631; 
-  ptrd1[2] = 373.6; 
-  ptrd1[3] = 14.525; //AdC
+  ptrd1[1] = 64.25; 
+  ptrd1[2] = 372.6; 
+  ptrd1[3] = 14.525/2;
+  char nameChA[16];
+  sprintf(nameChA, "BTOFA");
+  TGeoTrd1 *trd1=new TGeoTrd1(nameChA,ptrd1[0],ptrd1[1],ptrd1[2],ptrd1[3]); 
+  trd1->SetName("BTOFA"); // just to avoid a warning
+  char nameChB[16];
+  sprintf(nameChB, "BTOFB");
+  TGeoBBox *box1 = new TGeoBBox(nameChB,64.25 ,372.6, 14.525/2);
+  box1->SetName("BTOFB"); // just to avoid a warning
+  TGeoTranslation *tr1 = new TGeoTranslation("trnsl1",0, 0, -14.525/2 );
+  tr1->RegisterYourself();
+  TGeoTranslation *tr2 = new TGeoTranslation("trnsl2",0, 0, +14.525/2 );
+  tr2->RegisterYourself();
+  TGeoCompositeShape *Btofcs =new TGeoCompositeShape("Btofcs","(BTOFA:trnsl1)+(BTOFB:trnsl2)");
+
+
   for (i = 0; i < 18; i++) {
     char nameCh[16];
     sprintf(nameCh, "BTOF%d",i);
     char nameMo[16];
     sprintf(nameMo, "BSEGMO%d",i);
-    gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
+    TGeoVolume* btf = new TGeoVolume(nameCh, Btofcs, gGeoManager->GetMedium("FRAME_Air"));
+    btf->SetName(nameCh); 
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    gMC->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); //AdC
+    gMC->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); 
   }
-
 //
 //    Geometry of Rails starts here
 //
