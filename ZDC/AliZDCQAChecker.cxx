@@ -28,19 +28,16 @@
 ClassImp(AliZDCQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
+void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray ** list,
       const AliDetectorRecoParam * /*recoParam*/) 
 {
   // Checks the QA histograms on the input list: 
   //
-  Double_t *  test   = new Double_t[AliRecoParam::kNSpecies] ;
-  Int_t *     ntests = new Int_t[AliRecoParam::kNSpecies]  ; 
   const char* taskName = AliQAv1::GetAliTaskName(index);
   printf("\n\tAliZDCQAChecker -> checking QA histos for task %s\n",taskName);
   //
   for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
-    test[specie] = 1.0; 
-    ntests[specie] = 0; 
+    Int_t count = 0; 
     //printf("\tAliZDCQAChecker -> specie %d\n\n",specie);
     
     if(!AliQAv1::Instance()->IsEventSpecieSet(specie))  continue; 
@@ -50,11 +47,11 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
     if(specie == AliRecoParam::kLowMult){
       if(list[specie]->GetEntries()==0){  
         AliWarning("\t The list to be checked is empty!"); // nothing to check
-        return test;
+        return ;
       }
       //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       TIter next(list[specie]); 
-      ntests[specie] = 0; 
+      count = 0; 
       TH1 * hdata;	  
       Float_t res=0., percentageDiff=0.15;
       while((hdata = dynamic_cast<TH1 *>(next()))){
@@ -95,7 +92,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumZNA!=0){
                   if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
@@ -103,7 +100,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else percentageDiff=
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumZPC!=0){
                   if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
@@ -111,7 +108,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumZPA!=0){
                   if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
@@ -119,7 +116,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	      }
 	      ihitHisto++;
@@ -149,7 +146,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZNA!=0){
                   if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
@@ -157,7 +154,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZPC!=0){
                   if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
@@ -165,7 +162,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZPA!=0){
                   if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
@@ -173,7 +170,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	      }
 	      idigHisto++;	      
@@ -210,7 +207,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZNA!=0){
             	if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
@@ -218,7 +215,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPC!=0){
             	if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
@@ -226,7 +223,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPA!=0){
             	if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
@@ -234,7 +231,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	    }
 	    irawHisto++;	    
@@ -270,7 +267,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZNA!=0){
             	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
@@ -278,7 +275,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZPC!=0){
             	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
@@ -286,7 +283,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZPA!=0){
             	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
@@ -294,7 +291,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	    }
 	    irecHisto++;	    
@@ -330,7 +327,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZNA!=0){
             	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
@@ -338,7 +335,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPC!=0){
             	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
@@ -346,7 +343,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPA!=0){
             	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
@@ -354,14 +351,14 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
             }
             esdInd++;
          }  
 	 else {
            AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
-           return NULL;
+           return ;
          }
         }//if(hdata) 
 	else AliError("AliZDCQAChecker-> No histos!!!\n");
@@ -373,12 +370,12 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
     else if (specie == AliRecoParam::kHighMult) {
       if(list[specie]->GetEntries()==0){  
         AliWarning("\t The list to be checked is empty!");
-        return test;
+        return ;
       }
       //AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\tAliZDCQAChecker-> checking QA histograms for task %s\n\n",taskName));
       //
       TIter next(list[specie]); 
-      ntests[specie] = 0; 
+      count = 0; 
       TH1 * hdata;	  
       Float_t res=0., percentageDiff=0.10;
       while((hdata = dynamic_cast<TH1 *>(next()))){
@@ -419,7 +416,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(meanZPC!=0 && meanZPA!=0){
                   if((TMath::Abs(meanZPC-meanZPA)/(meanZPA+meanZPC))<percentageDiff) 
@@ -427,7 +424,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
               }
 	      // --- Check whether (mean PMQi - PMC)/PMC < percentageDiff
@@ -438,7 +435,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(meanZNA!=0){
                   if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
@@ -446,7 +443,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(meanZPC!=0){
                   if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
@@ -454,7 +451,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(meanZPA!=0){
                   if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
@@ -462,7 +459,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	      }
 	      hitInd++;
@@ -493,7 +490,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZPC!=0 && sumADCZPA!=0){
                   if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
@@ -501,7 +498,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
               }
 	      // --- Check whether (sumADC PMQi - PMC)/PMC < percentageDiff
@@ -512,7 +509,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZNA!=0){
                   if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
@@ -520,7 +517,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZPC!=0){
                   if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
@@ -528,7 +525,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	        if(sumADCZPA!=0){
                   if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
@@ -536,7 +533,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
                   else 
                     res=.5;
                   test[specie] += res;
-                  ntests[specie]++;
+                  count++;
 		}
 	      }
               digInd++;
@@ -574,7 +571,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPC!=0 && sumADCZPA!=0){
             	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
@@ -582,7 +579,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
             }
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
@@ -593,7 +590,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZNA!=0){
             	if((TMath::Abs(adcQZNA-adcCZNA)/adcCZNA)<percentageDiff) 
@@ -601,7 +598,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPC!=0){
             	if((TMath::Abs(adcQZPC-adcCZPC)/adcCZPC)<percentageDiff) 
@@ -609,7 +606,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPA!=0){
             	if((TMath::Abs(adcQZPA-adcCZPA)/adcCZPA)<percentageDiff) 
@@ -617,7 +614,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	    }
 	    rawInd++;	 
@@ -654,7 +651,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZPC!=0 && sumZPA!=0){
             	if((TMath::Abs(sumZPC-sumZPA)/(sumZPA+sumZPC))<percentageDiff) 
@@ -662,7 +659,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
             }
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
@@ -673,7 +670,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZNA!=0){
             	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
@@ -681,7 +678,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZPC!=0){
             	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
@@ -689,7 +686,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumZPA!=0){
             	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
@@ -697,7 +694,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	    }
 	    recInd++;	 
@@ -734,7 +731,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPC!=0 && sumADCZPA!=0){
             	if((TMath::Abs(sumADCZPC-sumADCZPA)/(sumADCZPA+sumADCZPC))<percentageDiff) 
@@ -742,7 +739,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
             }
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
@@ -753,7 +750,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZNA!=0){
             	if((TMath::Abs(pmQZNA-pmCZNA)/pmCZNA)<percentageDiff) 
@@ -761,7 +758,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPC!=0){
             	if((TMath::Abs(pmQZPC-pmCZPC)/pmCZPC)<percentageDiff) 
@@ -769,7 +766,7 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
 	      if(sumADCZPA!=0){
             	if((TMath::Abs(pmQZPA-pmCZPA)/pmCZPA)<percentageDiff) 
@@ -777,14 +774,14 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
             	else 
             	  res=.5;
             	test[specie] += res;
-            	ntests[specie]++;
+            	count++;
 	      }
             }
             esdInd++;
           }  
 	  else {
             AliWarning(Form("\n\t No ZDC QA for %s task\n",taskName)); 
-            return NULL;
+            return ;
           } 
         }//if(hdata) 
 	else AliError("\t  No histos found for ZDC!!!\n");
@@ -795,22 +792,16 @@ Double_t * AliZDCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
     // ====================================================================
     else if (specie == AliRecoParam::kCalib) {
       AliWarning(Form("\n\t No check implemented in ZDC QA for %s task\n",taskName)); 
-      return test;
+      return ;
     } // Calibration
     // ====================================================================
     // 	Checks for cosmic events
     // ====================================================================
     else if (specie == AliRecoParam::kCosmic) {
       AliWarning(Form("\n\t No check implemented in ZDC QA for %s task\n",taskName)); 
-      return test;
+      return ; 
     } // Cosmic
-  } // Loop on species
-   
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if(ntests[specie]!=0) test[specie] = test[specie]/ntests[specie];
+    if(count!=0) test[specie] = test[specie]/count;
     AliDebug(AliQAv1::GetQADebugLevel(), Form("\n\t ZDC QA check result = %1.2f\n",test[specie]));
-  }
-  delete [] ntests ; 
-  return test; 
+  } // Loop on species
 }  
-

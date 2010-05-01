@@ -42,7 +42,7 @@
 ClassImp(AliVZEROQAChecker)
 
 //__________________________________________________________________
-Double_t * AliVZEROQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
+void AliVZEROQAChecker::Check(Double_t * check, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
 {
 
 // Main check function: Depending on the TASK, different checks will be applied
@@ -56,7 +56,6 @@ Double_t * AliVZEROQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 //   }
 
 //   Check that histos are filled - (FATAL) set if empty
-  Double_t * check = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     check[specie]    = 1.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
@@ -69,7 +68,6 @@ Double_t * AliVZEROQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
           check[specie] =  CheckEsds(list[specie]);
     } 
   }
-  return check; 
 }
 
 //_________________________________________________________________

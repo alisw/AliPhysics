@@ -104,15 +104,14 @@ AliITSQAChecker::~AliITSQAChecker(){
 
 }
 //____________________________________________________________________________
-Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam)
+void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam)
 {
 
 
   // basic checks on the QA histograms on the input list
   //for the ITS subdetectorQA (Raws Digits Hits RecPoints SDigits) return the worst value of the three result
   if(index == AliQAv1::kESD){
-
-    Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
+    
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
       rv[specie] = 0.0 ; 
       if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
@@ -247,10 +246,8 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, c
       //     AliDebug(AliQAv1::GetQADebugLevel(), Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
       AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
     }
-    return rv ; 
   }  // end of ESD QA
   
-  Double_t * retval = new Double_t[AliRecoParam::kNSpecies] ; 
   //____________________________________________________________________________
 
   Double_t spdCheck[AliRecoParam::kNSpecies] ;
@@ -267,7 +264,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, c
 	    spdCheck[specie]=0.;
 	    sddCheck[specie]=0.;
 	    ssdCheck[specie]=0.;
-	    retval[specie] = 0.0 ;// 
+	    rv[specie] = 0.0 ;// 
 	    //pixel
 	    if(fDet == 0 || fDet == 1) {
 	      fSPDChecker->SetTaskOffset(fSPDOffset);
@@ -285,7 +282,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, c
 		}
 	      //if(spdCheck[specie]<0.5)AliInfo(Form("SPD check result  for %s (%s) is < 0.5 .The result is %f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),spdCheck[specie]) );
 	      delete []stepSPD;
-	      retval[specie]=spdCheck[specie];
+	      rv[specie]=spdCheck[specie];
 	    }
 	    //drift
 	    if(fDet == 0 || fDet == 2) {
@@ -302,7 +299,7 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, c
 		}
 	      //if(sddCheck[specie]<0.5)AliInfo(Form("SDD check result  for %s (%s) is < 0.5 .The result is %f\f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),sddCheck[specie]) );
 	      delete []stepSDD;
-	      if(sddCheck[specie]>retval[specie])retval[specie]=sddCheck[specie];  
+	      if(sddCheck[specie]>rv[specie])rv[specie]=sddCheck[specie];  
 	    }
 	    //strip
 	    if(fDet == 0 || fDet == 3) {
@@ -319,16 +316,15 @@ Double_t * AliITSQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, c
 		}
 	      //if(ssdCheck[specie]<0.5)AliInfo(Form("SSD check result  for %s (%s) is < 0.5 . The result is %f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),ssdCheck[specie]) );
 	      delete [] stepSSD;
-	      if(ssdCheck[specie]>retval[specie])retval[specie]=ssdCheck[specie];
+	      if(ssdCheck[specie]>rv[specie])rv[specie]=ssdCheck[specie];
 	    }
 	    
-	    AliInfo(Form("Check result for %s: \n\t  SPD %f \n\t  SDD %f \n\t  SSD %f \n Check result %f \n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],sddCheck[specie],ssdCheck[specie],retval[specie]));
+	    AliInfo(Form("Check result for %s: \n\t  SPD %f \n\t  SDD %f \n\t  SSD %f \n Check result %f \n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],sddCheck[specie],ssdCheck[specie],rv[specie]));
 	    // here merging part for common ITS QA result
 	    // 
 	  }//end entries
       }//end if event specie
     }//end for
-    return retval;  
 }
 
 

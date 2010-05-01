@@ -36,14 +36,13 @@
 ClassImp(AliTOFQAChecker)
 
 //____________________________________________________________________________
-Double_t * AliTOFQAChecker::Check(AliQAv1::ALITASK_t /*index*/,
+void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
 				  TObjArray ** list,
 				  const AliDetectorRecoParam * /*recoParam*/) 
 {
   // Super-basic check on the QA histograms on the input list: 
   // look whether they are empty!
 
-  Double_t * test  = new Double_t[AliRecoParam::kNSpecies] ; 
   Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -83,7 +82,6 @@ Double_t * AliTOFQAChecker::Check(AliQAv1::ALITASK_t /*index*/,
       }
     }
   }
-  return test ; 
 }  
 
 

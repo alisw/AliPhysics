@@ -55,10 +55,9 @@ ClassImp(AliEMCALQAChecker)
 AliEMCALQAChecker::AliEMCALQAChecker() : 
 AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
 fTextSM(new TText*[fknSM]),
-fLineCol(new TLine(47.5,-0.5,47.5,47.5)),
-fLineRow(new TLine(-0.5,23.5,95.5,23.5)),
-fText(new TPaveText(0.2,1000.,0.7,2000.,"NDC")),
-fTest(new Double_t[AliRecoParam::kNSpecies])
+fLineCol(new TLine(48.0,0.,48.0,47.0)),
+fLineRow(new TLine(0.,24.,96.,24.)),
+fText(new TPaveText(0.4,10,0.7,20.))
 {
   // ctor
   fLineCol->SetLineColor(1);
@@ -69,32 +68,17 @@ fTest(new Double_t[AliRecoParam::kNSpecies])
   fTextSM[0]= new TText(20, 12, "SM A0");
   fTextSM[1]= new TText(20, 38, "SM A1");
   fTextSM[2]= new TText(64, 12, "SM C0");
-  fTextSM[3]= new TText(64, 38, "SM A0");
-
-  for (Int_t sm = 0 ; sm < fknSM ; sm++){
-//    fLine[sm] = NULL ; 
-//    fHref[sm] = NULL ; 
-  }
-  for (Int_t es = 0 ; es < AliRecoParam::kNSpecies ; es++) {
-   fTest[es] = 1.0 ; 
-  } 
+  fTextSM[3]= new TText(64, 38, "SM C1");
 }          
 
 //__________________________________________________________________
 AliEMCALQAChecker::~AliEMCALQAChecker() 
 {
 	/// dtor
-//  delete [] fLine ; 
-//  delete [] fHref ;
   delete [] fTextSM ;
-  if (fLineCol)
-    delete fLineCol ;
-  if (fLineRow)
-    delete fLineRow ;
-  if (fText) 
-    delete fText  ; 
-  if (fTest)
-    delete [] fTest ;
+  delete fLineCol ;
+  delete fLineRow ;
+  delete fText  ; 
 }
 
 //__________________________________________________________________
@@ -103,18 +87,13 @@ AliQACheckerBase(qac.GetName(), qac.GetTitle()),
 fTextSM(new TText*[fknSM]) ,
 fLineCol(static_cast<TLine*>(qac.fLineCol->Clone())) , 
 fLineRow(static_cast<TLine*>(qac.fLineRow->Clone())) , 
-fText(new TPaveText(0.2,1000.,0.7,2000.,"NDC")),
-fTest(new Double_t[AliRecoParam::kNSpecies])
+fText(new TPaveText(0.4,10,0.7,20.))
 {
    // copy ctor 
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
-//    fLine[sm] = new TLine(qac.fLine[sm]) ; 
-//    fHref[sm] = new TLine(qac.fHref[sm]) ; 
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
-  for (Int_t es = 0 ; es < AliRecoParam::kNSpecies ; es++) {
-   fTest[es] = 0.0 ; 
-  } 
+
 }   
 //__________________________________________________________________
 AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac) 
@@ -122,40 +101,34 @@ AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac)
   fTextSM  = new TText*[fknSM] ;
   fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
   fLineRow = static_cast<TLine*>(qac.fLineRow->Clone()) ; 
-  fText    = new TPaveText(0.2,1000.,0.7,2000.,"NDC") ;
-  fTest    = new Double_t[AliRecoParam::kNSpecies] ;
+  fText    = new TPaveText(0.4,10,0.7,20.) ;
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
-  for (Int_t es = 0 ; es < AliRecoParam::kNSpecies ; es++) {
-   fTest[es] = 0.0 ; 
-  } 
   return *this ;
 }
 
 //______________________________________________________________________________
-Double_t *
-AliEMCALQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
+void AliEMCALQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
 	/// Check objects in list
 	
 	if ( index == AliQAv1::kRAW ) 
 	{
-		return CheckRaws(list);
+    CheckRaws(test, list);
 		printf ("checkers for task %d \n", index) ;		
 	}
 	
 	if ( index == AliQAv1::kREC)
 	{
-		return CheckRecPoints(list);
+    CheckRecPoints(test, list);
 	}
 	
 	if ( index == AliQAv1::kESD )
 	{
-		return CheckESD(list);
+    CheckESD(test, list);
 	}
 	AliWarning(Form("Checker for task %d not implement for the moment",index));
-	return NULL;
 }
 
 //______________________________________________________________________________
@@ -187,7 +160,7 @@ AliEMCALQAChecker::MarkHisto(TH1& histo, Double_t value) const
 
 
 //______________________________________________________________________________
-Double_t * AliEMCALQAChecker::CheckRaws(TObjArray ** list)
+void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 {
 //  Check RAW QA histograms	
 //  We count the times of the response for each tower, the propability for all towers should be the same (average is given value).
@@ -205,10 +178,11 @@ Double_t * AliEMCALQAChecker::CheckRaws(TObjArray ** list)
   Double_t nTot = fknSM * nTowersPerSM ;
   Double_t rv = 0. ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    test[specie] = 0.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) 
       continue ; 
     if (list[specie]->GetEntries() == 0)  
-      fTest[specie] = 0. ; // nothing to check
+      test[specie] = 0. ; // nothing to check
     else {
       TH2F * hdata  = (TH2F*)list[specie]->At(k2DRatioAmp) ; 
       TH1F * ratio = (TH1F*)list[specie]->At(kRatioDist) ;
@@ -223,9 +197,9 @@ Double_t * AliEMCALQAChecker::CheckRaws(TObjArray ** list)
           hdata->GetListOfFunctions()->Add(fTextSM[iSM]); 
 	}
       }   
-      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){
-        ratio->GetListOfFunctions()->Add(fText) ;
-      }
+//      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){
+//        ratio->GetListOfFunctions()->Add(fText) ;
+//      }
 
       //now check the ratio histogram
       Double_t binContent = 0. ;  
@@ -240,22 +214,21 @@ Double_t * AliEMCALQAChecker::CheckRaws(TObjArray ** list)
       rv = NGoodTower/nTot ; 
       
       
-      if (rv < 0.9) {
-        fTest[specie] = 0.9 ;
-        // 2 lines text info for quality 
-        fText->Clear() ; 
-        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100)); 
-        fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
-      }
-      else {
-        fTest[specie] = 0.1 ;
-        fText->Clear() ; 
-        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100)); 
-        fText->AddText(Form("EMCAL = OK")); 
-      }
+//      if (rv < 0.9) {
+//        test[specie] = 0.9 ;
+//        // 2 lines text info for quality 
+//        fText->Clear() ; 
+//        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100)); 
+//        fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
+//      }
+//      else {
+//        test[specie] = 0.1 ;
+//        fText->Clear() ; 
+//        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100)); 
+//        fText->AddText(Form("EMCAL = OK")); 
+//      }
      } 
     } //finish the checking
-   return fTest ; 
 }
 
 //______________________________________________________________________________

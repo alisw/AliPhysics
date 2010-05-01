@@ -35,8 +35,8 @@
 ClassImp(AliTPCQAChecker)
 
 //__________________________________________________________________
-Double_t *
-AliTPCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, 
+void
+AliTPCQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray ** list, 
 		       const AliDetectorRecoParam * /*recoParam*/)
 {
   /* It is important to understand the destinction between indexed tasks (AliQAv1::TASKINDEX_t) which are used in the DataMaker classes and indexed tasks (AliQAv1::ALITASK_t) whihc are used in the checker class.
@@ -72,10 +72,9 @@ AliTPCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
   if (index!=AliQAv1::kRAW&&index!=AliQAv1::kSIM&&index!=AliQAv1::kREC&&index!=AliQAv1::kESD) {
     
     AliWarning(Form("Checker for task %d not implement for the moment",index));
-    return NULL;
+    return;
   }
   
-  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
     rv[specie] = 1.0; // All is fine 
   
@@ -99,8 +98,6 @@ AliTPCQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list,
 		   AliQAv1::GetAliTaskName(index),
 		   rv[specie]));
   }
-  
-  return rv;
 }
 
 //______________________________________________________________________________

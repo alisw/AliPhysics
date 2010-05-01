@@ -53,14 +53,12 @@
 ClassImp(AliT0QAChecker)
 
 //__________________________________________________________________
-Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
+void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/)
 {
 
   // Super-basic check on the QA histograms on the input list:
   // look whether they are empty!
-  
-  Double_t * test = new Double_t[AliRecoParam::kNSpecies] ; 
-  
+    
   char * detOCDBDir = Form("T0/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
 
   AliCDBEntry *QARefRec = AliQAManager::QAManager()->Get(detOCDBDir);
@@ -196,8 +194,6 @@ Double_t * AliT0QAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, co
     } //  if (list->GetEntries() != 0
     AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie])) ;
   } 
-  
-  return test ;
 }
 
 //--------------------------------------------------------------------------

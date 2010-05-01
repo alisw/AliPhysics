@@ -43,17 +43,16 @@ ClassImp(AliTRDQAChecker)
 
 //__________________________________________________________________
 
-Double_t * AliTRDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam* /*param*/) 
+void AliTRDQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam* /*param*/) 
 {
 
   // Super-basic check on the QA histograms on the input list: 
 
-  Double_t * test  = new Double_t[AliRecoParam::kNSpecies];
   for(Int_t i=0; i<AliRecoParam::kNSpecies; i++) test[i] = 0.5; 
 
   //Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
 
-  if (index != AliQAv1::kREC) return test;
+  if (index != AliQAv1::kREC) return;
 
   const Double_t lowAmp = 30;
   const Double_t highAmp = 50;
@@ -68,7 +67,6 @@ Double_t * AliTRDQAChecker::Check(AliQAv1::ALITASK_t index, TObjArray ** list, c
       test[specie] = value / hist->GetSum();
 
   }
-  return test ; 
 }  
 
 //____________________________________________________________________________

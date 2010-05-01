@@ -36,7 +36,7 @@ public:
   AliTRDQAChecker(const AliTRDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
   virtual ~AliTRDQAChecker() {;} // dtor
 
-  virtual Double_t * Check(AliQAv1::ALITASK_t /*index*/, TObjArray** /*list*/, const AliDetectorRecoParam* /*param*/) ;
+  virtual void Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TObjArray** /*list*/, const AliDetectorRecoParam* /*param*/) ;
 
 private:
   

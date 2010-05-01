@@ -33,7 +33,7 @@ public:
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det) ; 
 
 protected:  
-  virtual  Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam);
+  virtual void Check( Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam);
   Double_t CheckEntries(TObjArray * list) const ;
   Double_t CheckEsds(TObjArray * list) const;
   

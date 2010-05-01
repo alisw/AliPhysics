@@ -65,12 +65,12 @@ public:
 
 protected:
 		
-	virtual Double_t * Check(AliQAv1::ALITASK_t index, TObjArray ** list,  const AliDetectorRecoParam * /*recoParam*/) ;
+	virtual void Check( Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list,  const AliDetectorRecoParam * /*recoParam*/) ;
 	//virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 	
-	Double_t * CheckRaws(TObjArray ** list);
-	Double_t * CheckRecPoints(TObjArray** /*list*/){return NULL;}
-	Double_t * CheckESD(TObjArray** /*list*/){return NULL;}
+  void CheckRaws(Double_t* test, TObjArray ** list);
+	void CheckRecPoints(Double_t* test, TObjArray** /*list*/){;}
+	void CheckESD(Double_t* test, TObjArray** /*list*/){;}
 	TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
 	Double_t MarkHisto(TH1& histo, Double_t value) const;
 	
@@ -86,7 +86,6 @@ private:
   TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
   TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
   TPaveText * fText          ;  //! Information text for the quality of each SM
-  Double_t  * fTest          ; // result of QA
   ClassDef(AliEMCALQAChecker,2)  // description 
 
 };
