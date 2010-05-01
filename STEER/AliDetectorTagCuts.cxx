@@ -32,8 +32,8 @@ ClassImp(AliDetectorTagCuts)
 //___________________________________________________________________________
 AliDetectorTagCuts::AliDetectorTagCuts() :
   TObject(),
-  fDetectorsDAQ(0),
   fDetectorsReco(0),
+  fDetectorsDAQ(0),
   fDetectorsFlag(kFALSE)
 {
   //Default constructor which calls the Reset method.
