@@ -56,6 +56,7 @@
 
 #include <TCollection.h>
 #include <TIterator.h>
+#include <TTimeStamp.h>
 
 #include "AliTPCComposedCorrection.h"
 
@@ -171,8 +172,37 @@ void AliTPCComposedCorrection::Print(Option_t* option) const {
     }
     ++in;
   }
+  if (in==1) printf("  Info: The correction compound is empty: No corrections set\n");
   delete i;
 }
+
+
+void AliTPCComposedCorrection::Init() {
+  //
+  // Initialization funtion (not used at the moment)
+  //
+  
+  TIterator *i=fCorrections->MakeIterator();
+  AliTPCCorrection *c;
+  while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) 
+    c->Init();
+  delete i;
+  
+}
+
+void AliTPCComposedCorrection::Update(const TTimeStamp &timeStamp) {
+  //
+  // Update function 
+  //
+
+  TIterator *i=fCorrections->MakeIterator();
+  AliTPCCorrection *c;
+  while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) 
+    c->Update(timeStamp);
+  delete i;
+ 
+}
+
 
 
 void AliTPCComposedCorrection::SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {

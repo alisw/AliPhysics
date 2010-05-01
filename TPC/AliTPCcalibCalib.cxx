@@ -151,8 +151,9 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
 
   for (Int_t i=0;i<ntracks;++i) {
     AliESDtrack *track = event->GetTrack(i);     
-    AliESDfriendTrack *friendTrack = ESDfriend->GetTrack(i);
- 
+    AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) ESDfriend->GetTrack(i);
+    if (!friendTrack) continue;
+    track->SetFriendTrack(friendTrack);
     const AliExternalTrackParam * trackIn  = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
     AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
@@ -165,7 +166,7 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }
     if (!seed) continue;
-    RefitTrack(track, seed,event->GetMagneticField());
+    RefitTrack(track, seed, event->GetMagneticField());
     (*tpcOut)=*(track->GetOuterParam());  
   }
   return;
@@ -179,6 +180,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // 0 - Setup transform object
   //
+  AliESDfriendTrack *friendTrack = (AliESDfriendTrack *)track->GetFriendTrack();
+
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
   transform->SetCurrentRun(fRun);
@@ -316,8 +319,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   // And now do refit
   //
   AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetInnerParam();
-  AliExternalTrackParam * trackOutOld = (AliExternalTrackParam*)track->GetOuterParam();
-
+  AliExternalTrackParam * trackOuter = (AliExternalTrackParam*)track->GetOuterParam();
+  AliExternalTrackParam * trackOutOld   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
+    
 
   AliExternalTrackParam trackIn  = *trackOutOld;
   trackIn.ResetCovariance(kResetCov);
@@ -468,6 +472,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
  
   (*trackInOld)  = trackIn;
   (*trackOutOld) = trackOut;
+  (*trackOuter) = trackOut;
   AliExternalTrackParam *t = &trackIn;
   track->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   seed->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());

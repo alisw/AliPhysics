@@ -30,6 +30,8 @@
 
 #include <TString.h>
 #include "AliTPCInverseCorrection.h"
+#include <TTimeStamp.h>
+
 
 AliTPCInverseCorrection::AliTPCInverseCorrection()
   : fCorrection(0) {
@@ -59,6 +61,23 @@ AliTPCInverseCorrection::~AliTPCInverseCorrection() {
   //
   // virtual destructor
   //
+}
+
+
+void AliTPCInverseCorrection::Init() {
+  //
+  // Initialization funtion (not used at the moment)
+  //
+  if (fCorrection) fCorrection->Init();
+
+}
+
+void AliTPCInverseCorrection::Update(const TTimeStamp &timeStamp) {
+  //
+  // Update function 
+  //
+  if (fCorrection) fCorrection->Update(timeStamp);
+
 }
 
 void AliTPCInverseCorrection::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {

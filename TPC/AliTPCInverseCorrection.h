@@ -21,6 +21,7 @@
 
 #include "AliTPCCorrection.h"
 
+
 class AliTPCInverseCorrection : public AliTPCCorrection {
 public:
   AliTPCInverseCorrection();
@@ -31,6 +32,12 @@ public:
   AliTPCCorrection* GetCorrection() const {return fCorrection;}
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
+
+  // initialization and update functions
+  virtual void Init();
+  virtual void Update(const TTimeStamp &timeStamp);
+
+
 private:
   AliTPCCorrection *fCorrection; // The correction to be inverted.
 

@@ -53,6 +53,55 @@ AliTPCExBBShape::~AliTPCExBBShape() {
   //
 }
 
+void AliTPCExBBShape::Init() {
+  //
+  // Initialization funtion (not used at the moment)
+  //
+  
+  // Set default parameters
+  // FIXME: Ask the database for these entries
+  
+
+  AliMagF * mag = new AliMagF("mag","mag"); // from database (GRP?)
+  SetBField(mag);
+
+  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
+
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+
+  // Correction Terms for effective omegaTau; obtained by a laser calibration run
+  Double_t t1 = 0.9;   // ideally from database
+  Double_t t2 = 1.5;   // ideally from database
+
+  SetOmegaTauT1T2(wt,t1,t2);
+
+
+}
+
+void AliTPCExBBShape::Update(const TTimeStamp &/*timeStamp*/) {
+  //
+  // Update function 
+  //
+
+  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
+
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+
+  // Correction Terms for effective omegaTau; obtained by a laser calibration run
+  Double_t t1 = 0.9;   // ideally from database
+  Double_t t2 = 1.5;   // ideally from database
+
+  SetOmegaTauT1T2(wt,t1,t2);
+
+
+}
+
+
+
 void AliTPCExBBShape::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
   //
   // Calculates the space point corrections of the B field inperfections (B field shape) 

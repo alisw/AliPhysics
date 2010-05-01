@@ -50,6 +50,11 @@ public:
 
   virtual void Print(Option_t* option="") const;
 
+  // initialization and update functions
+  virtual void Init();
+  virtual void Update(const TTimeStamp &timeStamp);
+
+
 private:
   TCollection *fCorrections; // The corrections this one is composed of.
   CompositionType fMode;     // The way to apply the corrections (see general class documentation)

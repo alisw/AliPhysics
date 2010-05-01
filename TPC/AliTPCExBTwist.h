@@ -22,6 +22,11 @@ public:
   AliTPCExBTwist();
   virtual ~AliTPCExBTwist();
 
+  // initialization and update functions
+  virtual void Init();
+  virtual void Update(const TTimeStamp &timeStamp);
+
+
   // common setters and getters for ExB
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
     const Float_t wt1=t1*omegaTau;

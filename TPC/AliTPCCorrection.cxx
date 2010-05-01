@@ -43,6 +43,7 @@
 #include <TMath.h>
 #include <TROOT.h>
 #include <TTreeStream.h>
+#include <TTimeStamp.h>
 
 #include  "AliExternalTrackParam.h"
 #include  "AliTrackPointArray.h"
@@ -195,6 +196,12 @@ void AliTPCCorrection::GetDistortion(const Float_t x[],const Short_t roc,Float_t
 void AliTPCCorrection::Init() {
   //
   // Initialization funtion (not used at the moment)
+  //
+}
+
+void AliTPCCorrection::Update(const TTimeStamp &/*timeStamp*/) {
+  //
+  // Update function 
   //
 }
 

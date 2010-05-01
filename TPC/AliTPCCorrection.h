@@ -33,6 +33,7 @@
 
 #include <TNamed.h>
 class TH2F;
+class TTimeStamp;
 class TCollection;
 class TTreeSRedirector;
 class AliExternalTrackParam;
@@ -56,8 +57,9 @@ public:
           void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
 
-  // initialization
+  // initialization and update functions
   virtual void Init();
+  virtual void Update(const TTimeStamp &timeStamp);
 
   // convenience functions
   virtual void Print(Option_t* option="") const;

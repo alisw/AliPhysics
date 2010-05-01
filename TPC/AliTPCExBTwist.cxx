@@ -49,6 +49,50 @@ AliTPCExBTwist::~AliTPCExBTwist() {
   //
 }
 
+void AliTPCExBTwist::Init() {
+  //
+  // Initialization funtion (not used at the moment)
+  //
+  
+  // Set default parameters
+  // FIXME: Ask the database for these entries
+  
+  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
+
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+
+  // Correction Terms for effective omegaTau; obtained by a laser calibration run
+  Double_t t1 = 0.9;   // ideally from database
+  Double_t t2 = 1.5;   // ideally from database
+
+  SetOmegaTauT1T2(wt,t1,t2);
+
+  SetXTwist(0.0);//  ideally from the database
+  SetYTwist(0.0);//  ideally from the database
+}
+
+void AliTPCExBTwist::Update(const TTimeStamp &/*timeStamp*/) {
+  //
+  // Update function 
+  //
+
+  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
+
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+
+  // Correction Terms for effective omegaTau; obtained by a laser calibration run
+  Double_t t1 = 0.9;   // ideally from database
+  Double_t t2 = 1.5;   // ideally from database
+
+ SetOmegaTauT1T2(wt,t1,t2); 
+}
+
+
+
 void AliTPCExBTwist::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
   //
   // Calculates the correction of a mismatch between the E and B field axis
