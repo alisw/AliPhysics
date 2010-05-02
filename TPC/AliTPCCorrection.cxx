@@ -43,7 +43,12 @@
 #include <TMath.h>
 #include <TROOT.h>
 #include <TTreeStream.h>
+#include <TTree.h>
+#include <TFile.h>
 #include <TTimeStamp.h>
+#include <AliCDBStorage.h>
+#include <AliCDBId.h>
+#include <AliCDBMetaData.h>
 
 #include  "AliExternalTrackParam.h"
 #include  "AliTrackPointArray.h"
@@ -517,12 +522,12 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
     track.GetXYZ(xyz);
     AliTrackPoint pIn0;                               // space point          
     AliTrackPoint pIn1;
-    Int_t roc= (xyz[2]>0)? 0:18;
+    Int_t sector= (xyz[2]>0)? 0:18;
     pointArray0.GetPoint(pIn0,npoints);
     pointArray1.GetPoint(pIn1,npoints);
     Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
     Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
-    DistortPoint(distPoint, roc);
+    DistortPoint(distPoint, sector);
     pIn0.SetXYZ(xyz[0], xyz[1],xyz[2]);
     pIn1.SetXYZ(distPoint[0], distPoint[1],distPoint[2]);
     //
@@ -604,4 +609,93 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
   return track1;
 }
 
+
+
+
+
+TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
+  //
+  // create the distortion tree on a mesh with granularity given by step
+  // return the tree with distortions at given position 
+  // Map is created on the mesh with given step size
+  //
+  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("correction%s.root",GetName()));
+  Float_t xyz[3];
+  for (Double_t x= -250; x<250; x+=step){
+    for (Double_t y= -250; y<250; y+=step){
+      Double_t r    = TMath::Sqrt(x*x+y*y);
+      if (r<80) continue;
+      if (r>250) continue;      
+      for (Double_t z= -250; z<250; z+=step){
+	Int_t roc=(z>0)?0:18;
+	xyz[0]=x;
+	xyz[1]=y;
+	xyz[2]=z;
+	Double_t phi  = TMath::ATan2(y,x);
+	DistortPoint(xyz,roc);
+	Double_t r1    = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+	Double_t phi1  = TMath::ATan2(xyz[1],xyz[0]);
+	if ((phi1-phi)>TMath::Pi()) phi1-=TMath::Pi();
+	if ((phi1-phi)<-TMath::Pi()) phi1+=TMath::Pi();
+	Double_t dx = xyz[0]-x;
+	Double_t dy = xyz[1]-y;
+	Double_t dz = xyz[2]-z;
+	Double_t dr=r1-r;
+	Double_t drphi=(phi1-phi)*r;
+	(*pcstream)<<"distortion"<<
+	  "x="<<x<<           // original position        
+	  "y="<<y<<
+	  "z="<<z<<
+	  "r="<<r<<
+	  "phi="<<phi<<	  
+	  "x1="<<xyz[0]<<      // distorted position
+	  "y1="<<xyz[1]<<
+	  "z1="<<xyz[2]<<
+	  "r1="<<r1<<
+	  "phi1="<<phi1<<
+	  //
+	  "dx="<<dx<<          // delta position
+	  "dy="<<dy<<
+	  "dz="<<dz<<
+	  "dr="<<dr<<
+	  "drphi="<<drphi<<
+	  "\n";
+      }
+    }	
+  }
+  delete pcstream;
+  TFile f(Form("correction%s.root",GetName()));
+  TTree * tree = (TTree*)f.Get("distortion");
+  TTree * tree2= tree->CopyTree("1");
+  tree2->SetName(Form("dist%s",GetName()));
+  tree2->SetDirectory(0);
+  delete tree;
+  return tree2;
+}
+
+
+
+void AliTPCCorrection::StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment){
+  //
+  // Store object in the OCDB
+  // By default the object is stored in the current directory 
+  // default comment consit of user name and the date
+  //
+  TString ocdbStorage="";
+  ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  AliCDBMetaData *metaData= new AliCDBMetaData();
+  metaData->SetObjectClassName("AliTPCCorrection");
+  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion("05-25-01"); //root version
+  TString userName=gSystem->GetFromPipe("echo $USER");
+  TString date=gSystem->GetFromPipe("date");
+
+  if (!comment) metaData->SetComment(Form("Space point distortion calibration\n User: %s\n Data%s",userName.Data(),date.Data()));
+  if (comment) metaData->SetComment(comment);
+  AliCDBId* id1=NULL;
+  id1=new AliCDBId("TPC/Calib/Correction", startRun, endRun);
+  AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
+  gStorage->Put(this, (*id1), metaData);
+}
 

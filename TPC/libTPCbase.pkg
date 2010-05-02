@@ -25,7 +25,7 @@ SRCS:=  AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx AliH2F.cxx \
 	AliTPCkalmanTime.cxx AliESDcosmic.cxx AliTPCPointCorrection.cxx AliTPCTransformation.cxx \
 	AliTPCkalmanFit.cxx AliTPCLaserTrack.cxx AliTPCcalibBase.cxx \
 	AliTPCCorrection.cxx AliTPCInverseCorrection.cxx AliTPCComposedCorrection.cxx \
-	AliTPCExBBShape.cxx AliTPCExBTwist.cxx AliTPCGGVoltError.cxx
+	AliTPCExBBShape.cxx AliTPCExBTwist.cxx AliTPCGGVoltError.cxx AliTPCExBConical.cxx AliXRDPROOFtoolkit.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

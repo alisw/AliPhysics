@@ -89,12 +89,14 @@
 #pragma link C++ class AliESDcosmic+;
 #pragma link C++ class AliTPCLaserTrack+;
 #pragma link C++ class AliTPCcalibBase+;
+#pragma link C++ class AliXRDPROOFtoolkit+;
 
 #pragma link C++ class AliTPCCorrection+;
 #pragma link C++ class AliTPCInverseCorrection+;
 #pragma link C++ class AliTPCComposedCorrection+;
 #pragma link C++ class AliTPCExBBShape+;
 #pragma link C++ class AliTPCExBTwist+;
+#pragma link C++ class AliTPCExBConical+;
 #pragma link C++ class AliTPCGGVoltError+;
 
 #endif
