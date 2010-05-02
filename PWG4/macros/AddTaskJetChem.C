@@ -66,7 +66,7 @@ AliAnalysisTask *AddTaskJetChem(){
   //task->SelectAODBranch("jetsAOD_UA107");
   //task->SelectAODBranch("jets");
 
-  //task->SelectCollisionCandidates(); // either here or in userExec of task - but not for AODs ...
+  task->SelectCollisionCandidates(); // either here or in userExec of task - but not for AODs ...
 
   //  AliLog::SetGlobalLogLevel(AliLog::kInfo);    // kInfo // kDebug // kFatal
   //  task->SetDebugLevel(10);

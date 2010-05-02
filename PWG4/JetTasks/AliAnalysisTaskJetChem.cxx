@@ -2578,10 +2578,10 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	  }
 	  
 	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
-	     (IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
+	     ((IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	      IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
 	     (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
-	      IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx))){
+	      IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
 
 	    if(IsLambdaInvMass(massLambda) || (IsLambdaInvMass(massAntiLambda))){
 	      fhdNdzLambdaMax->Fill(z);
@@ -2629,10 +2629,10 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	  }
 	  
 	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
-	     (IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
+	     ((IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 	      IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
 	     (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
-	      IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx))){
+	      IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
 	    
 	    if(IsLambdaInvMass(massLambda) || (IsLambdaInvMass(massAntiLambda))){
 	      fhdNdzLambdaMin->Fill(z);
@@ -2685,10 +2685,10 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	    }
 	    
 	    if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
-	       (IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
+	       ((IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
 		IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
 	       (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
-		IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx))){
+		IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
 	      
 	      if(IsLambdaInvMass(massLambda) || (IsLambdaInvMass(massAntiLambda))){
 		fhdNdzLambdaJet->Fill(z);
