@@ -57,7 +57,7 @@ AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
 fTextSM(new TText*[fknSM]),
 fLineCol(new TLine(48.0,0.,48.0,47.0)),
 fLineRow(new TLine(0.,24.,96.,24.)),
-fText(new TPaveText(0.4,10,0.7,20.))
+fText(new TPaveText(0.2,40.,1.6,90.,"br"))
 {
   // ctor
   fLineCol->SetLineColor(1);
@@ -87,7 +87,7 @@ AliQACheckerBase(qac.GetName(), qac.GetTitle()),
 fTextSM(new TText*[fknSM]) ,
 fLineCol(static_cast<TLine*>(qac.fLineCol->Clone())) , 
 fLineRow(static_cast<TLine*>(qac.fLineRow->Clone())) , 
-fText(new TPaveText(0.4,10,0.7,20.))
+fText(new TPaveText(0.2,40.,1.6,90.,"br"))
 {
    // copy ctor 
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
@@ -101,7 +101,7 @@ AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac)
   fTextSM  = new TText*[fknSM] ;
   fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
   fLineRow = static_cast<TLine*>(qac.fLineRow->Clone()) ; 
-  fText    = new TPaveText(0.4,10,0.7,20.) ;
+  fText    = new TPaveText(0.2,40.,1.6,90.,"br") ;
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
@@ -162,21 +162,16 @@ AliEMCALQAChecker::MarkHisto(TH1& histo, Double_t value) const
 //______________________________________________________________________________
 void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 {
-//  Check RAW QA histograms	
-//  We count the times of the response for each tower, the propability for all towers should be the same (average is given value).
-//  We skip the first few cycles since the statistics is not enough, the average should be always larger than 1 at least.
-//  By calculating the difference between the counts for each tower and the average, we decide whether we should recalculate 
-//  the average depending the the gaus fitting on the divation distribution. 
-//  During the recalutation of the average, we count how many towers are used for the calculation.
-//  From the fraction of towers used, we decide whether each SM works fine or not
-//  From the divation of average, we set the QA flag for the full detetcor as INFO, WARNING, ERROR or FATAL.
+  //  Check RAW QA histograms	
+  //  -- Yaxian Mao, CCNU/CERN/LPSC
+  //adding new checking method: 25/04/2010, Yaxian Mao
+  //Comparing the amplitude from current run to the reference run, if the ratio in the range [0.8, .12], count as a good tower.
+  //If more than 90% towers are good, EMCAL works fine, otherwise experts should be contacted. 
   
-//  -- Yaxian Mao, CCNU/CERN/LPSC
    				
   //Float_t kThreshold = 80. ; 
   Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24x48
   Double_t nTot = fknSM * nTowersPerSM ;
-  Double_t rv = 0. ;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 0.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) 
@@ -197,13 +192,14 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
           hdata->GetListOfFunctions()->Add(fTextSM[iSM]); 
 	}
       }   
-//      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){
-//        ratio->GetListOfFunctions()->Add(fText) ;
-//      }
+      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){
+        ratio->GetListOfFunctions()->Add(fText) ;
+      }
 
       //now check the ratio histogram
       Double_t binContent = 0. ;  
       Int_t NGoodTower = 0 ;
+      Double_t rv = 0. ;
       for(Int_t ix = 1; ix <= hdata->GetNbinsX(); ix++) {
         for(Int_t iy = 1; iy <= hdata->GetNbinsY(); iy++) {
           binContent = hdata->GetBinContent(ix, iy) ; 
@@ -212,21 +208,23 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
         }
       }
       rv = NGoodTower/nTot ; 
-      
-      
-//      if (rv < 0.9) {
-//        test[specie] = 0.9 ;
-//        // 2 lines text info for quality 
-//        fText->Clear() ; 
-//        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100)); 
-//        fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
-//      }
-//      else {
-//        test[specie] = 0.1 ;
-//        fText->Clear() ; 
-//        fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100)); 
-//        fText->AddText(Form("EMCAL = OK")); 
-//      }
+      printf("%2.2f %% towers out of range [0.8, 1.2]\n", (1-rv)*100);
+      if(fText){
+        fText->DeleteText() ;
+        fText->Clear() ; 
+      }      
+      fText->AddText(Form("%2.2f %% towers out of range [0.8, 1.2]", (1-rv)*100));     
+      if (rv < 0.9) {
+        test[specie] = 0.9 ;
+        // 2 lines text info for quality         
+        fText->SetFillColor(2) ;
+        fText->AddText(Form("EMCAL = NOK, CALL EXPERTS!!!")); 
+      }
+      else {
+        test[specie] = 0.1 ;
+        fText->SetFillColor(3) ;
+        fText->AddText(Form("EMCAL = OK, ENJOY...")); 
+      }
      } 
     } //finish the checking
 }

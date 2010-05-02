@@ -361,7 +361,7 @@ void AliEMCALQADataMakerRec::InitRaws()
  
   //temp 2D amplitude histogram for the current run
   fHighEmcHistoH2F = new TH2F("h2DHighEC2", "High Gain EMC:Max - Min [ADC counts]", nbinsZ, -0.5 , nbinsZ-0.5, nbinsPhi, -0.5, nbinsPhi-0.5);
-
+   fHighEmcHistoH2F->SetDirectory(0) ; // this histo must be memory resident
   //add ratio histograms: to comapre the current run with the reference data 
   TH2F * h15 = new TH2F("h2DRatioAmp", "High Gain Ratio to Reference:Amplitude_{current run}/Amplitude_{reference run}", nbinsZ, -0.5 , nbinsZ-0.5, 
                         nbinsPhi, -0.5, nbinsPhi-0.5);
@@ -375,10 +375,12 @@ void AliEMCALQADataMakerRec::InitRaws()
     gStyle->SetPalette(3,color);
     h15->GetZaxis()->SetNdivisions(3);
     h15->UseCurrentStyle();
+    h15->SetDirectory(0);
   Add2RawsList(h15, k2DRatioAmp, !expert, image, !saveCorr) ;
 
 	TH1F * h16 = new TH1F("hRatioDist", "Amplitude_{current run}/Amplitude_{reference run} ratio distribution", nTot, 0., 2.);
   h16->SetMinimum(1.);
+  h16->SetDirectory(0);
   Add2RawsList(h16, kRatioDist, !expert, image, !saveCorr) ;
  
   // now repeat the same for TRU and LEDMon data
@@ -728,8 +730,10 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Double_t binContent = 0. ;
   //calculate the ratio of the amplitude and fill the histograms, only if the events type is Calib
  if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
-  GetRawsData(k2DRatioAmp)->Reset(); 
-  GetRawsData(kRatioDist)->Reset(); 
+  if(GetRawsData(k2DRatioAmp)->GetEntries())
+    GetRawsData(k2DRatioAmp)->Reset("ICE"); 
+  if(GetRawsData(kRatioDist)->GetEntries())
+    GetRawsData(kRatioDist)->Reset("ICE"); 
   for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
     for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) {
       if(fCalibRefHistoH2F->GetBinContent(ix, iy))binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy) ;
@@ -743,7 +747,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   GetRawsData(kLEDMonRatio)->Reset();	
   GetRawsData(kLEDMonRatioDist)->Reset();
   
-  Double_t binContent, binError;
+  Double_t binError = 0. ;
   
   for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
     
