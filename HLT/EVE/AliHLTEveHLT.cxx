@@ -188,9 +188,12 @@ void AliHLTEveHLT::ProcessEsdBlock( AliHLTHOMERBlockDesc * block, TEveTrackList 
   esd->GetStdContent();
 
   Double_t vertex[3];
-  esd->GetPrimaryVertex()->GetXYZ(vertex);
-  fPointSetVertex->SetNextPoint(vertex[0], vertex[1], vertex[2]);
+  const AliESDVertex * esdVertex = esd->GetPrimaryVertex();
   
+  if(esdVertex) {
+    esdVertex->GetXYZ(vertex);
+    fPointSetVertex->SetNextPoint(vertex[0], vertex[1], vertex[2]);
+  }
   
   SetUpTrackPropagator(cont->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
 
