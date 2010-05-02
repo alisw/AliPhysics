@@ -17,5 +17,6 @@
 #pragma link C++ class AliCaloTrackESDReader+;
 #pragma link C++ class AliCaloTrackAODReader+;
 #pragma link C++ class AliCaloTrackMCReader+;
+#pragma link C++ class AliCalorimeterUtils+;
 
 #endif

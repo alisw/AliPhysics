@@ -43,11 +43,8 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
 	
   TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
 
-  // Get calorimeter (Super)module number where this cluster falled
-  Int_t GetModuleNumber(AliESDCaloCluster * cluster) const;
-	
   ClassDef(AliCaloTrackESDReader,1)
-    } ;
+} ;
 
 
 #endif //ALICALOTRACKESDREADER_H

@@ -171,19 +171,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
     }
   }
-  
-  //If Geometry library loaded, do geometry selection during analysis.
-  if(fCalorimeter=="PHOS"){
-    if(!GetReader()->GetPHOSGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
-    GetReader()->InitPHOSGeometry();
-    
-  }
-  else 
-	if(fCalorimeter=="EMCAL"){
-		if(!GetReader()->GetEMCALGeometry()) printf("AliAnaPi0::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
-		GetReader()->InitEMCALGeometry();
-  }
-	
+  	
   TList * outputContainer = new TList() ; 
   outputContainer->SetName(GetName()); 
 	
@@ -570,10 +558,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 	      
 	      Bool_t inacceptance = kFALSE;
 	      if(fCalorimeter == "PHOS"){
-		if(GetReader()->GetPHOSGeometry() && GetReader()->IsPHOSGeoMatrixSet()){
+		if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
 		  Int_t mod ;
 		  Double_t x,z ;
-		  if(GetReader()->GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetReader()->GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
+		  if(GetPHOSGeometry()->ImpactOnEmc(phot1,mod,z,x) && GetPHOSGeometry()->ImpactOnEmc(phot2,mod,z,x)) 
 		    inacceptance = kTRUE;
 		  if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 		}
@@ -585,9 +573,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 		}
 		
 	      }	   
-	      else if(fCalorimeter == "EMCAL" && GetReader()->IsEMCALGeoMatrixSet()){
-		if(GetReader()->GetEMCALGeometry()){
-		  if(GetReader()->GetEMCALGeometry()->Impact(phot1) && GetReader()->GetEMCALGeometry()->Impact(phot2)) 
+	      else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+		if(GetEMCALGeometry()){
+		  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
 		    inacceptance = kTRUE;
 		  if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
 		}

@@ -27,6 +27,7 @@
 //---- AliRoot system ----
 #include "AliAnaPartCorrBaseClass.h"
 #include "AliCaloTrackReader.h"
+#include "AliCalorimeterUtils.h"
 #include "AliCaloPID.h"
 #include "AliFiducialCut.h"
 #include "AliIsolationCut.h"
@@ -50,6 +51,7 @@ ClassImp(AliAnaPartCorrBaseClass)
     fAODObjArrayName(""), fAddToHistogramsName(""),
     fAODCaloCells(0x0),//fAODCaloClusters(0x0),  
     fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
+	fCaloUtils(0x0),
 	//fAnaOutContainer(0x0),
     fHistoPtBins(0),   fHistoPtMax(0.),   fHistoPtMin(0.),
     fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
@@ -68,7 +70,7 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   TObject(), fDataMC(abc.fDataMC), fDebug(abc.fDebug),
   fCheckFidCut(abc.fCheckFidCut),  fCheckCaloPID(abc. fCheckCaloPID),
   fRecalculateCaloPID(abc.fRecalculateCaloPID),
-  fMinPt(abc.fMinPt), fMaxPt(abc.fMaxPt), fReader(abc.fReader),  
+  fMinPt(abc.fMinPt), fMaxPt(abc.fMaxPt), fReader(new AliCaloTrackReader(*abc.fReader)),  
   fInputAODBranch(new TClonesArray(*abc.fInputAODBranch)), fInputAODName(abc.fInputAODName),
   fOutputAODBranch(new TClonesArray(*abc.fOutputAODBranch)),fNewAOD(abc.fNewAOD), 
   fOutputAODName(abc.fOutputAODName), fOutputAODClassName(abc.fOutputAODClassName),
@@ -78,6 +80,7 @@ AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass(const AliAnaPartCorrBaseClass &
   fAODCaloCells(new AliAODCaloCells(*abc.fAODCaloCells)),
   fCaloPID(new AliCaloPID(*abc.fCaloPID)), fFidCut(new AliFiducialCut(*abc.fFidCut)), fIC(new AliIsolationCut(*abc.fIC)),
   fMCUtils(new AliMCAnalysisUtils(*abc.fMCUtils)), fNMS(new AliNeutralMesonSelection(*abc.fNMS)),
+  fCaloUtils(new AliCalorimeterUtils(*abc.fCaloUtils)),
   //fAnaOutContainer(abc.fAnaOutContainer),
   fHistoPtBins(abc.fHistoPtBins),     fHistoPtMax(abc.fHistoPtMax),     fHistoPtMin(abc.fHistoPtMin),
   fHistoPhiBins(abc.fHistoPhiBins),   fHistoPhiMax(abc.fHistoPhiMax),   fHistoPhiMin(abc.fHistoPhiMin),
@@ -103,19 +106,20 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
   fCheckCaloPID       = abc.fCheckCaloPID ;
   fCheckFidCut        = abc.fCheckFidCut ; 
 	
-  fReader             = abc.fReader ;
   //delete fAODCaloClusters; fAODCaloClusters   = new TClonesArray(*abc.fAODCaloClusters) ;
   delete fAODCaloCells ; fAODCaloCells      = new AliAODCaloCells(*abc.fAODCaloCells) ;
   
   fMinPt   = abc.fMinPt;
   fMaxPt   = abc.fMaxPt;
 	
-  delete fCaloPID; fCaloPID = new AliCaloPID        (*abc.fCaloPID);
-  delete fFidCut;  fFidCut  = new AliFiducialCut    (*abc.fFidCut);
-  delete fMCUtils; fMCUtils = new AliMCAnalysisUtils(*abc.fMCUtils);
-  delete fIC;      fIC      = new AliIsolationCut   (*abc.fIC);
-  delete fNMS;     fNMS     = new AliNeutralMesonSelection(*abc.fNMS);
-	
+  delete fCaloPID;   fCaloPID   = new AliCaloPID        (*abc.fCaloPID);
+  delete fFidCut;    fFidCut    = new AliFiducialCut    (*abc.fFidCut);
+  delete fMCUtils;   fMCUtils   = new AliMCAnalysisUtils(*abc.fMCUtils);
+  delete fIC;        fIC        = new AliIsolationCut   (*abc.fIC);
+  delete fNMS;       fNMS       = new AliNeutralMesonSelection(*abc.fNMS);
+  delete fCaloUtils; fCaloUtils = new AliCalorimeterUtils(*abc.fCaloUtils);
+  delete fReader;    fReader    = new AliCaloTrackReader(*abc.fReader) ;
+
   //fAnaOutContainer     = abc.fAnaOutContainer;
 	
   delete fInputAODBranch;  fInputAODBranch      = new TClonesArray(*abc.fInputAODBranch) ;
@@ -165,12 +169,13 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
 //	delete fAnaOutContainer ;
 //  }
 		
-  if(fReader)  delete fReader ;
-  if(fCaloPID) delete fCaloPID ;
-  if(fFidCut)  delete fFidCut ;
-  if(fIC)      delete fIC ;
-  if(fMCUtils) delete fMCUtils ;
-  if(fNMS)     delete fNMS ;
+  if(fReader)    delete fCaloUtils ;
+  if(fCaloUtils) delete fReader ;
+  if(fCaloPID)   delete fCaloPID ;
+  if(fFidCut)    delete fFidCut ;
+  if(fIC)        delete fIC ;
+  if(fMCUtils)   delete fMCUtils ;
+  if(fNMS)       delete fNMS ;
   
 }
 
@@ -476,12 +481,13 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fMinPt = 0.1  ; //Min pt in particle analysis
   fMaxPt = 300. ; //Max pt in particle analysis
 
-  fReader  = new AliCaloTrackReader();
-  fCaloPID = new AliCaloPID();
-  fFidCut  = new AliFiducialCut();
-  fIC      = new AliIsolationCut();
-  fMCUtils = new AliMCAnalysisUtils();	
-  fNMS     = new AliNeutralMesonSelection;
+  fReader    = new AliCaloTrackReader();
+  fCaloUtils = new AliCalorimeterUtils();
+  fCaloPID   = new AliCaloPID();
+  fFidCut    = new AliFiducialCut();
+  fIC        = new AliIsolationCut();
+  fMCUtils   = new AliMCAnalysisUtils();	
+  fNMS       = new AliNeutralMesonSelection;
   
   //fAnaOutContainer = new TList();
 	

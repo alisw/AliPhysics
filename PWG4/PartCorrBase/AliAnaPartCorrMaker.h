@@ -22,6 +22,7 @@ class TH1I;
 
 // --- Analysis system ---
 class AliCaloTrackReader ;
+class AliCalorimeterUtils ;
 
 class AliAnaPartCorrMaker : public TObject {
 
@@ -60,8 +61,11 @@ class AliAnaPartCorrMaker : public TObject {
   }
   
   AliCaloTrackReader * GetReader() const {return fReader ; }
-  void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
+  void SetReader(AliCaloTrackReader * reader) { fReader = reader ; }
   	
+  AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
+  void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
+	
   //Others
   void Init();
   void InitParameters();
@@ -80,7 +84,9 @@ class AliAnaPartCorrMaker : public TObject {
   Bool_t  fMakeAOD ; // If true makes analysis generating AODs
   Int_t   fAnaDebug; // Debugging info.
  
-  AliCaloTrackReader *  fReader ;   //  Pointer to reader 
+  AliCaloTrackReader  *  fReader ;     //  Pointer to reader 
+  AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
+
   TList * fAODBranchList ;          //! List with AOD branches created and needed in analysis
 
   TH1I *fhNEvents;                  //! Number of events counter histogram

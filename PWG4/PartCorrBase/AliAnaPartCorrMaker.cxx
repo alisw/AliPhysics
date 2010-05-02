@@ -46,7 +46,7 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker() :
 TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
 fMakeHisto(0), fMakeAOD(0), fAnaDebug(0), 
-fReader(0x0), fAODBranchList(new TList ), 
+fReader(0x0), fCaloUtils(0x0), fAODBranchList(new TList ), 
 fhNEvents(0x0)
 {
   //Default Ctor
@@ -54,8 +54,10 @@ fhNEvents(0x0)
   
   //Initialize parameters, pointers and histograms
   if(!fReader)
-    fReader = new AliCaloTrackReader();
-  
+    fReader    = new AliCaloTrackReader();
+  if(!fCaloUtils)
+	fCaloUtils = new AliCalorimeterUtils();
+	
   InitParameters();
 }
 
@@ -64,7 +66,9 @@ AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) :
 TObject(),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
 fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fAnaDebug(maker.fAnaDebug),
-fReader(new AliCaloTrackReader(*maker.fReader)), fAODBranchList(new TList()), 
+fReader(new AliCaloTrackReader(*maker.fReader)), 
+fCaloUtils(new AliCalorimeterUtils(*maker.fCaloUtils)),
+fAODBranchList(new TList()), 
 fhNEvents(maker.fhNEvents)
 {
   // cpy ctor
@@ -110,7 +114,9 @@ AliAnaPartCorrMaker::~AliAnaPartCorrMaker()
   
   if (fReader) delete fReader ;
   
-  
+  if (fCaloUtils) delete fCaloUtils ;
+
+	
   if(fAODBranchList){
 //		for(Int_t iaod = 0; iaod < fAODBranchList->GetEntries(); iaod++)
 //			fAODBranchList->At(iaod)->Clear();
@@ -148,6 +154,10 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
     //abort();
   }
 
+  //Initialize the geometry pointers
+  //GetCaloUtils()->InitPHOSGeometry();
+  //GetCaloUtils()->InitEMCALGeometry();
+		
   char newname[128];
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
@@ -188,13 +198,21 @@ void AliAnaPartCorrMaker::Init()
     //abort();
   }
 
+  //Initialize the geometry pointers
+  GetCaloUtils()->InitPHOSGeometry();
+  GetCaloUtils()->InitEMCALGeometry();
+	
   //Initialize reader
   fReader->Init();
+  fReader->SetCaloUtils(fCaloUtils); // pass the calo utils pointer to the reader
 	
+  //fCaloUtils->Init();
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
     
     AliAnaPartCorrBaseClass * ana =  ((AliAnaPartCorrBaseClass *) fAnalysisContainer->At(iana)) ;
     ana->SetReader(fReader); //SetReader for each analysis
+	ana->SetCaloUtils(fCaloUtils); //Set CaloUtils for each analysis
+
     ana->Init();
     
   }//Loop on analysis defined
@@ -232,6 +250,8 @@ void AliAnaPartCorrMaker::Print(const Option_t * opt) const
   
 	  printf("Print analysis Reader settings :\n") ;
 	  fReader->Print("");
+	  printf("Print analysis Calorimeter Utils settings :\n") ;
+	  fCaloUtils->Print("");
   }
 } 
 
@@ -266,6 +286,8 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
 	  if(fAnaDebug >= 1 )printf("*** Skip event *** %d \n",iEntry);
 	  return ;
   }
+	
+  fCaloUtils->SetGeometryTransformationMatrices(fReader->GetInputEvent());	
 	
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();

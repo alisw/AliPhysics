@@ -215,20 +215,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 {  
 	// Create histograms to be saved in output file and 
 	// store them in outputContainer
-    
-	//If Geometry library loaded, do geometry selection during analysis.
-	if(fCalorimeter=="PHOS"){
-		if(!GetReader()->GetPHOSGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize PHOS geometry!\n");
-		GetReader()->InitPHOSGeometry();
-		
-	}
-	else
-	if(fCalorimeter=="EMCAL"){
-		if(!GetReader()->GetEMCALGeometry()) printf("AliAnaCalorimeterQA::GetCreateOutputObjects() - Initialize EMCAL geometry!\n");
-		GetReader()->InitEMCALGeometry();
-	}
-	
-	
+    	
 	TList * outputContainer = new TList() ; 
 	outputContainer->SetName("QAHistos") ; 
 	
@@ -1402,10 +1389,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		
 		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
 			AliESDCaloCluster* clus =  (AliESDCaloCluster*) (caloClusters->At(iclus));
+			AliESDCaloCells * cell = 0x0; 
+			if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+			else			           cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
 			
-			//Check if the cluster contains any bad channel
-			if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;	
-			
+			//Check if the cluster contains any bad channel or it is close to the calorimeter borders
+			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;	
+			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell)) continue;
+
 			//Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
@@ -1445,10 +1436,6 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			//Cells in cluster
 			//======================
 
-			
-			AliESDCaloCells * cell = 0x0; 
-			if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-			else			   cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
 			//Get list of contributors
 			UShort_t * indexList = clus->GetCellsAbsId() ;
 			// check time of cells respect to max energy cell
@@ -1464,10 +1451,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			  absId  = indexList[ipos]; 
 			  
 			  //Get position of cell compare to cluster
-			  if(fCalorimeter=="EMCAL" && GetReader()->IsEMCALGeoMatrixSet()){
+			  if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
 			    
 			    Double_t cellpos[] = {0, 0, 0};
-			    GetReader()->GetEMCALGeometry()->GetGlobal(absId, cellpos);
+			    GetEMCALGeometry()->GetGlobal(absId, cellpos);
 			    
 			    fhDeltaCellClusterXNCells->Fill(pos[0]-cellpos[0],nCaloCellsPerCluster) ; 
 			    fhDeltaCellClusterYNCells->Fill(pos[1]-cellpos[1],nCaloCellsPerCluster) ; 
@@ -1483,10 +1470,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			    fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
 			
 //					Float_t celleta = 0, cellphi = 0;
-//					GetReader()->GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
+//					GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
 //					Int_t imod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
-//					GetReader()->GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-//					GetReader()->GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
+//					GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+//					GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
 //																				 iIphi, iIeta,iphi,ieta);
 //					printf("AbsId %d, SM %d, Index eta %d, phi %d\n", absId, imod, ieta, iphi);
 //					printf("Cluster E %f, eta %f, phi %f; Cell: Amp %f, eta %f, phi%f\n", mom.E(),mom.Eta(), mom.Phi()*TMath::RadToDeg(), cell->GetCellAmplitude(absId),celleta, cellphi*TMath::RadToDeg());
@@ -1497,15 +1484,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 //					
 
 			  }//EMCAL and its matrices are available
-			  else if(fCalorimeter=="PHOS" && GetReader()->IsPHOSGeoMatrixSet()){
+			  else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
 			    TVector3 xyz;
 			    Int_t relId[4], module;
 			    Float_t xCell, zCell;
 			    
-			    GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
+			    GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
 			    module = relId[0];
-			    GetReader()->GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-			    GetReader()->GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+			    GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+			    GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
 			    
 			    fhDeltaCellClusterXNCells->Fill(pos[0]-xyz.X(),nCaloCellsPerCluster) ; 
 			    fhDeltaCellClusterYNCells->Fill(pos[1]-xyz.Y(),nCaloCellsPerCluster) ; 
@@ -1551,10 +1538,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		}//ESDs
 		else{
 			AliAODCaloCluster* clus =  (AliAODCaloCluster*) (caloClusters->At(iclus));
+			AliAODCaloCells * cell = 0x0; 
+			if(fCalorimeter == "PHOS") cell =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+			else					   cell =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
 			
-			//Check if the cluster contains any bad channel
-			if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;
-			
+			//Check if the cluster contains any bad channel or it is close to calorimeter borders
+			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;
+			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell)) continue;
+
 			//Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
@@ -1586,11 +1577,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			//======================
 			//Cells in cluster
 			//======================
-			
-			AliAODCaloCells * cell = 0x0; 
-			if(fCalorimeter == "PHOS") cell =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-			else					   cell =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-			
+						
 			//Get list of contributors
 			UShort_t * indexList = clus->GetCellsAbsId() ;
 			Int_t absId   = -1 ;
@@ -1601,10 +1588,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				absId  = indexList[ipos]; 
 				
 				//Get position of cell compare to cluster
-				if(fCalorimeter=="EMCAL" && GetReader()->IsEMCALGeoMatrixSet()){
+				if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
 					
 					Double_t cellpos[] = {0, 0, 0};
-					GetReader()->GetEMCALGeometry()->GetGlobal(absId, cellpos);
+					GetEMCALGeometry()->GetGlobal(absId, cellpos);
 					
 					fhDeltaCellClusterXNCells->Fill(pos[0]-cellpos[0],nCaloCellsPerCluster) ; 
 					fhDeltaCellClusterYNCells->Fill(pos[1]-cellpos[1],nCaloCellsPerCluster) ; 
@@ -1625,15 +1612,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 //						printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);					
 					
 				}// EMCAL and its matrices are available
-				else if(fCalorimeter=="PHOS" && GetReader()->IsPHOSGeoMatrixSet()){
+				else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
 				  TVector3 xyz;
 				  Int_t relId[4], module;
 				  Float_t xCell, zCell;
 				  
-				  GetReader()->GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
+				  GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
 				  module = relId[0];
-				  GetReader()->GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-				  GetReader()->GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+				  GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+				  GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
 				  
 				  fhDeltaCellClusterXNCells->Fill(pos[0]-xyz.X(),nCaloCellsPerCluster) ; 
 				  fhDeltaCellClusterYNCells->Fill(pos[1]-xyz.Y(),nCaloCellsPerCluster) ; 
@@ -1680,8 +1667,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
 				if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
 					AliESDCaloCluster* clus2 =  (AliESDCaloCluster*) (caloClusters->At(jclus));
-					//Check if the cluster contains any bad channel
-					if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;	
+					AliESDCaloCells  * cell2 = 0x0; 
+					if(fCalorimeter == "PHOS") cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+					else			           cell2 =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+					//Check if the cluster contains any bad channel or it is close to calorimeter borders
+					if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;
+					if(!GetCaloUtils()->CheckCellFiducialRegion(clus2, cell2)) continue;
+
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
 					//Check only certain regions
@@ -1696,8 +1688,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 				}
 				else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD){
 					AliAODCaloCluster* clus2 =  (AliAODCaloCluster*) (caloClusters->At(jclus));
-					//Check if the cluster contains any bad channel
-					if(GetReader()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;	
+					AliAODCaloCells  * cell2 = 0x0; 
+					if(fCalorimeter == "PHOS") cell2 =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
+					else			           cell2 =  ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+					//Check if the cluster contains any bad channel or it is close to calorimeter borders 
+					if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus2->GetCellsAbsId(), clus2->GetNCells())) continue;
+					if(!GetCaloUtils()->CheckCellFiducialRegion(clus2, cell2)) continue;
+
 					//Get cluster kinematics
 					clus2->GetMomentum(mom2,v);
 					//Check only certain regions
@@ -1760,7 +1757,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		AliESDCaloCells * cell = 0x0; 
 		Int_t ncells = 0;
 		if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		else		           cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
+		else		               cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
 		
 		if(!cell) {
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s ESD CELLS available for analysis\n",fCalorimeter.Data());
@@ -1779,12 +1776,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			
 			if(nModule < fNModules) {	
 				//Check if the cell is a bad channel
-				if(GetReader()->IsBadChannelsRemovalSwitchedOn()){
+				if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
 					if(fCalorimeter=="EMCAL"){
-						if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+						if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
 					}
 					else {
-						if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
 					}
 				}
 				amp     = cell->GetAmplitude(iCell);
@@ -1853,14 +1850,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			}//nmodules
 			
 			//Get Eta-Phi position of Cell
-			if(fCalorimeter=="EMCAL" && GetReader()->IsEMCALGeoMatrixSet()){
+			if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
 			  Float_t celleta = 0.;
 			  Float_t cellphi = 0.;
-			  GetReader()->GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
+			  GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
 			  fhEtaPhiAmp->Fill(celleta,cellphi,amp);
 			  
 			  Double_t cellpos[] = {0, 0, 0};
-			  GetReader()->GetEMCALGeometry()->GetGlobal(id, cellpos);
+			  GetEMCALGeometry()->GetGlobal(id, cellpos);
 			  fhXCellE->Fill(cellpos[0],amp)  ; 
 			  fhYCellE->Fill(cellpos[1],amp)  ; 
 			  fhZCellE->Fill(cellpos[2],amp)  ;
@@ -1869,15 +1866,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			  
 			  fhXYZCell->Fill(cellpos[0],cellpos[1],cellpos[2])  ;
 			}//EMCAL Cells
-			else if(fCalorimeter=="PHOS" && GetReader()->IsPHOSGeoMatrixSet()){
+			else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
 			  TVector3 xyz;
 			  Int_t relId[4], module;
 			  Float_t xCell, zCell;
 			  
-			  GetReader()->GetPHOSGeometry()->AbsToRelNumbering(id,relId);
+			  GetPHOSGeometry()->AbsToRelNumbering(id,relId);
 			  module = relId[0];
-			  GetReader()->GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-			  GetReader()->GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+			  GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+			  GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
 			  Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
 			  fhXCellE ->Fill(xyz.X(),amp)  ; 
 			  fhYCellE ->Fill(xyz.Y(),amp)  ; 
@@ -1893,7 +1890,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 		Int_t ncells = 0;
 		
 		if(fCalorimeter == "PHOS") cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
-		else		           cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();	
+		else		               cell = ((AliAODEvent*)GetReader()->GetInputEvent())->GetEMCALCells();	
 		
 		if(!cell) {
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s AOD CELLS available for analysis\n",fCalorimeter.Data());
@@ -1914,12 +1911,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			
 			if(nModule < fNModules) {	
 				//Check if the cell is a bad channel
-				if(GetReader()->IsBadChannelsRemovalSwitchedOn()){
+				if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
 					if(fCalorimeter=="EMCAL"){
-						if(GetReader()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+						if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
 					}
 					else{
-						if(GetReader()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
 					}	
 				}
 				amp     = cell->GetAmplitude(iCell);
@@ -1942,14 +1939,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			}//nmodules
 			
 			//Get Eta-Phi position of Cell
-			if(fCalorimeter=="EMCAL" && GetReader()->IsEMCALGeoMatrixSet()){
+			if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
 			  Float_t celleta = 0.;
 			  Float_t cellphi = 0.;
-			  GetReader()->GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
+			  GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
 			  fhEtaPhiAmp->Fill(celleta,cellphi,amp);
 			  
 			  Double_t cellpos[] = {0, 0, 0};
-			  GetReader()->GetEMCALGeometry()->GetGlobal(id, cellpos);
+			  GetEMCALGeometry()->GetGlobal(id, cellpos);
 			  fhXCellE->Fill(cellpos[0],amp)  ; 
 			  fhYCellE->Fill(cellpos[1],amp)  ; 
 			  fhZCellE->Fill(cellpos[2],amp)  ;
@@ -1958,15 +1955,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			  
 			  fhXYZCell->Fill(cellpos[0],cellpos[1],cellpos[2])  ;
 			}//EMCAL Cells
-			else if(fCalorimeter=="PHOS" && GetReader()->IsPHOSGeoMatrixSet()){
+			else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
 			  TVector3 xyz;
 			  Int_t relId[4], module;
 			  Float_t xCell, zCell;
 			  
-			  GetReader()->GetPHOSGeometry()->AbsToRelNumbering(id,relId);
+			  GetPHOSGeometry()->AbsToRelNumbering(id,relId);
 			  module = relId[0];
-			  GetReader()->GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-			  GetReader()->GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+			  GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+			  GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
 			  Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());
 			  fhXCellE ->Fill(xyz.X(),amp)  ; 
 			  fhYCellE ->Fill(xyz.Y(),amp)  ; 

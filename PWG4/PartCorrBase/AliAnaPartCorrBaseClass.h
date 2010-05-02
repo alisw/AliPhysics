@@ -21,17 +21,18 @@ class AliESDCaloCluster;
 class AliAODCaloCluster;
 class AliAODCaloCells;
 #include "AliCaloTrackReader.h"   
-#include "AliCaloTrackESDReader.h" 
-#include "AliCaloTrackAODReader.h" 
 class AliCaloPID ;
 class AliFiducialCut ;
 class AliIsolationCut ;
 class AliMCAnalysisUtils ;
 class AliNeutralMesonSelection ;
+#include "AliCalorimeterUtils.h" ;
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
 #include "AliAODPWG4ParticleCorrelation.h"
+class AliEMCALGeoUtils;
+class AliPHOSGeoUtils;
 
 class AliAnaPartCorrBaseClass : public TObject {
 	
@@ -73,15 +74,18 @@ public:
   virtual AliCaloTrackReader * GetReader() const {return fReader ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
   
-  //Calorimeter indexes information
+  //Calorimeter helper class access methods
+  AliEMCALGeoUtils *  GetEMCALGeometry() const { return fCaloUtils->GetEMCALGeometry(); }
+  AliPHOSGeoUtils  *  GetPHOSGeometry()  const { return fCaloUtils->GetPHOSGeometry() ; }
+
   Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
-	  return fReader->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU);}
+	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU);}
   Int_t GetModuleNumber(AliAODPWG4Particle * part) const {
-	  return fReader->GetModuleNumber(part);}
+	  return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent());}
   Int_t GetModuleNumber(AliESDCaloCluster * cluster) const {
-	  return ((AliCaloTrackESDReader*)fReader)->GetModuleNumber(cluster);}
+	  return fCaloUtils->GetModuleNumber(cluster);}
   Int_t GetModuleNumber(AliAODCaloCluster * cluster) const {
-	  return ((AliCaloTrackAODReader*)fReader)->GetModuleNumber(cluster);}
+	  return fCaloUtils->GetModuleNumber(cluster);}
 	
   virtual void Terminate(TList * /*outputList*/) {;}
 	
@@ -94,7 +98,9 @@ public:
   virtual Bool_t NewOutputAOD() const {return fNewAOD;}
   virtual TString GetOutputAODClassName() const {return fOutputAODClassName;}
   virtual void SetOutputAODClassName(TString name) {fOutputAODClassName = name; }
-  
+  virtual AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
+  void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }	
+	
   virtual TString GetAODObjArrayName() const {return fAODObjArrayName;}
   virtual void SetAODObjArrayName(TString name) {fAODObjArrayName = name; }
 
@@ -135,7 +141,7 @@ public:
   
   virtual AliNeutralMesonSelection * GetNeutralMesonSelection() const {return  fNMS ;}
   virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { fNMS = nms ;}
-  
+	
   virtual Bool_t     IsDataMC() const {return fDataMC ; }
   virtual void SwitchOnDataMC()    {fDataMC = kTRUE ; }
   virtual void SwitchOffDataMC()    {fDataMC = kFALSE ; }
@@ -156,7 +162,7 @@ public:
   virtual Float_t    GetMinPt()         const {return fMinPt ; }
   virtual void SetMaxPt(Float_t pt)              {fMaxPt = pt ; }
   virtual void SetMinPt(Float_t pt)              {fMinPt = pt ; }
-  void SetPtCutRange(Double_t ptmin, Double_t ptmax)
+  virtual void SetPtCutRange(Double_t ptmin, Double_t ptmax)
   {  fMaxPt=ptmax;   fMinPt=ptmin;}
   
   //Histogrammes setters and getters
@@ -167,9 +173,9 @@ public:
     fHistoPtMin = min ;
   }
   
-  Int_t   GetHistoPtBins()  const { return fHistoPtBins; }
-  Float_t GetHistoPtMin()   const { return fHistoPtMin ; }
-  Float_t GetHistoPtMax()   const { return fHistoPtMax ; }
+  virtual Int_t   GetHistoPtBins()  const { return fHistoPtBins; }
+  virtual Float_t GetHistoPtMin()   const { return fHistoPtMin ; }
+  virtual Float_t GetHistoPtMax()   const { return fHistoPtMax ; }
   
   //Azimuthal angle
   virtual void SetHistoPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -178,9 +184,9 @@ public:
     fHistoPhiMin   = min ;
   }
   
-  Int_t   GetHistoPhiBins()  const { return fHistoPhiBins; }
-  Float_t GetHistoPhiMin()   const { return fHistoPhiMin ; }
-  Float_t GetHistoPhiMax()   const { return fHistoPhiMax ; }
+  virtual Int_t   GetHistoPhiBins()  const { return fHistoPhiBins; }
+  virtual Float_t GetHistoPhiMin()   const { return fHistoPhiMin ; }
+  virtual Float_t GetHistoPhiMax()   const { return fHistoPhiMax ; }
   
   //Pseudorapidity-rapidity
   virtual void SetHistoEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -189,9 +195,9 @@ public:
     fHistoEtaMin  = min ;
   }
   
-  Int_t   GetHistoEtaBins()  const { return fHistoEtaBins; }
-  Float_t GetHistoEtaMin()   const { return fHistoEtaMin ; }
-  Float_t GetHistoEtaMax()   const { return fHistoEtaMax ; }
+  virtual Int_t   GetHistoEtaBins()  const { return fHistoEtaBins; }
+  virtual Float_t GetHistoEtaMin()   const { return fHistoEtaMin ; }
+  virtual Float_t GetHistoEtaMax()   const { return fHistoEtaMax ; }
   
   //Mass
   virtual void SetHistoMassRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -200,9 +206,9 @@ public:
 	fHistoMassMin  = min ;
   }
 	
-  Int_t   GetHistoMassBins()  const { return fHistoMassBins ; }
-  Float_t GetHistoMassMin()   const { return fHistoMassMin ; }
-  Float_t GetHistoMassMax()   const { return fHistoMassMax ; }
+  virtual Int_t   GetHistoMassBins()  const { return fHistoMassBins ; }
+  virtual Float_t GetHistoMassMin()   const { return fHistoMassMin ; }
+  virtual Float_t GetHistoMassMax()   const { return fHistoMassMax ; }
 	
   //Asymetry
   virtual void SetHistoAsymmetryRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -211,9 +217,9 @@ public:
 	fHistoAsymMin  = min ;
   }
 	
-  Int_t   GetHistoAsymmetryBins()  const { return fHistoAsymBins ; }
-  Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin ; }
-  Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
+  virtual Int_t   GetHistoAsymmetryBins()  const { return fHistoAsymBins ; }
+  virtual Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin ; }
+  virtual Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
 	
  private:    
   
@@ -245,7 +251,8 @@ public:
   AliIsolationCut          * fIC;      //! Isolation cut 
   AliMCAnalysisUtils       * fMCUtils; //! MonteCarlo Analysis utils 
   AliNeutralMesonSelection * fNMS;     //! Neutral Meson Selection
-  
+  AliCalorimeterUtils      * fCaloUtils ; //  Pointer to CalorimeterUtils
+
   //TList * fAnaOutContainer;	// Temporal histogram output container, contents to be added to the main container passed to the main analysis frame
 
   //Histograms binning and range    
@@ -265,7 +272,7 @@ public:
   Float_t fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
   Float_t fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
 	
-  ClassDef(AliAnaPartCorrBaseClass,6)
+  ClassDef(AliAnaPartCorrBaseClass,7)
     } ;
 
 
