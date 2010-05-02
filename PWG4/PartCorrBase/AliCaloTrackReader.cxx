@@ -28,7 +28,6 @@
 
 // --- ROOT system ---
 #include "TFile.h"
-#include "TGeoManager.h"
 
 //---- ANALYSIS system ----
 #include "AliCaloTrackReader.h"
@@ -37,10 +36,6 @@
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliAODEvent.h"
-#include "AliESDEvent.h"
-#include "AliAODPWG4Particle.h"
-#include "AliAODCaloCluster.h"
-#include "AliESDCaloCluster.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -61,10 +56,7 @@ ClassImp(AliCaloTrackReader)
     fAODPHOSNormalInputEntries(0), fTrackStatus(0), 
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fCleanOutputStdAOD(kFALSE), fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
-    fEMCALGeoName("EMCAL_COMPLETE"),fPHOSGeoName("PHOSgeo"), 
-    fEMCALGeo(0x0), fPHOSGeo(0x0), fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), fAnaLED(kFALSE),
-    fRemoveBadChannels(kFALSE),fEMCALBadChannelMap(new TObjArray()),
-    fPHOSBadChannelMap(new TObjArray()), fTaskName("")
+    fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0)
 {
   //Ctor
   
@@ -73,39 +65,35 @@ ClassImp(AliCaloTrackReader)
 }
 
 //____________________________________________________________________________
-AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :   
-  TObject(g), fEventNumber(g.fEventNumber), fCurrentFileName(g.fCurrentFileName), 
-  fDataType(g.fDataType), fDebug(g.fDebug),
-  fFiducialCut(g.fFiducialCut),
-  fComparePtHardAndJetPt(g.fComparePtHardAndJetPt),
-  fPtHardAndJetPtFactor(g.fPtHardAndJetPtFactor),
-  fCTSPtMin(g.fCTSPtMin), fEMCALPtMin(g.fEMCALPtMin),fPHOSPtMin(g.fPHOSPtMin), 
-  fAODCTS(new TObjArray(*g.fAODCTS)),  
-  fAODEMCAL(new TObjArray(*g.fAODEMCAL)),
-  fAODPHOS(new TObjArray(*g.fAODPHOS)),
-  fEMCALCells(new TNamed(*g.fEMCALCells)),
-  fPHOSCells(new TNamed(*g.fPHOSCells)),
-  fInputEvent(g.fInputEvent), fOutputEvent(g.fOutputEvent), fMC(g.fMC),
-  fFillCTS(g.fFillCTS),fFillEMCAL(g.fFillEMCAL),fFillPHOS(g.fFillPHOS),
-  fFillEMCALCells(g.fFillEMCALCells),fFillPHOSCells(g.fFillPHOSCells),
-  fSecondInputAODTree(g.fSecondInputAODTree), 
-  fSecondInputAODEvent(g.fSecondInputAODEvent),
-  fSecondInputFileName(g.fSecondInputFileName), 
-  fSecondInputFirstEvent(g.fSecondInputFirstEvent),
-  fAODCTSNormalInputEntries(g.fAODCTSNormalInputEntries), 
-  fAODEMCALNormalInputEntries(g.fAODEMCALNormalInputEntries), 
-  fAODPHOSNormalInputEntries(g.fAODPHOSNormalInputEntries),
-  fTrackStatus(g.fTrackStatus),
-  fReadStack(g.fReadStack), fReadAODMCParticles(g.fReadAODMCParticles),
-  fCleanOutputStdAOD(g.fCleanOutputStdAOD), fDeltaAODFileName(g.fDeltaAODFileName),
-  fFiredTriggerClassName(g.fFiredTriggerClassName),
-  fEMCALGeoName(g.fEMCALGeoName),           fPHOSGeoName(g.fPHOSGeoName),
-  fEMCALGeo(new AliEMCALGeoUtils(*g.fEMCALGeo)), fPHOSGeo(new AliPHOSGeoUtils(*g.fPHOSGeo)),
-  fEMCALGeoMatrixSet(g.fEMCALGeoMatrixSet), fPHOSGeoMatrixSet(g.fPHOSGeoMatrixSet),
-  fAnaLED(g.fAnaLED),  fRemoveBadChannels(g.fRemoveBadChannels),
-  fEMCALBadChannelMap(new TObjArray(*g.fEMCALBadChannelMap)),
-  fPHOSBadChannelMap(new TObjArray(*g.fPHOSBadChannelMap)),
-  fTaskName(g.fTaskName)
+AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & reader) :   
+  TObject(reader), fEventNumber(reader.fEventNumber), fCurrentFileName(reader.fCurrentFileName), 
+  fDataType(reader.fDataType), fDebug(reader.fDebug),
+  fFiducialCut(reader.fFiducialCut),
+  fComparePtHardAndJetPt(reader.fComparePtHardAndJetPt),
+  fPtHardAndJetPtFactor(reader.fPtHardAndJetPtFactor),
+  fCTSPtMin(reader.fCTSPtMin), fEMCALPtMin(reader.fEMCALPtMin),fPHOSPtMin(reader.fPHOSPtMin), 
+  fAODCTS(new TObjArray(*reader.fAODCTS)),  
+  fAODEMCAL(new TObjArray(*reader.fAODEMCAL)),
+  fAODPHOS(new TObjArray(*reader.fAODPHOS)),
+  fEMCALCells(new TNamed(*reader.fEMCALCells)),
+  fPHOSCells(new TNamed(*reader.fPHOSCells)),
+  fInputEvent(reader.fInputEvent), fOutputEvent(reader.fOutputEvent), fMC(reader.fMC),
+  fFillCTS(reader.fFillCTS),fFillEMCAL(reader.fFillEMCAL),fFillPHOS(reader.fFillPHOS),
+  fFillEMCALCells(reader.fFillEMCALCells),fFillPHOSCells(reader.fFillPHOSCells),
+  fSecondInputAODTree(reader.fSecondInputAODTree), 
+  fSecondInputAODEvent(reader.fSecondInputAODEvent),
+  fSecondInputFileName(reader.fSecondInputFileName), 
+  fSecondInputFirstEvent(reader.fSecondInputFirstEvent),
+  fAODCTSNormalInputEntries(reader.fAODCTSNormalInputEntries), 
+  fAODEMCALNormalInputEntries(reader.fAODEMCALNormalInputEntries), 
+  fAODPHOSNormalInputEntries(reader.fAODPHOSNormalInputEntries),
+  fTrackStatus(reader.fTrackStatus),
+  fReadStack(reader.fReadStack), fReadAODMCParticles(reader.fReadAODMCParticles),
+  fCleanOutputStdAOD(reader.fCleanOutputStdAOD), fDeltaAODFileName(reader.fDeltaAODFileName),
+  fFiredTriggerClassName(reader.fFiredTriggerClassName),
+  fAnaLED(reader.fAnaLED), 
+  fTaskName(reader.fTaskName),
+  fCaloUtils(new AliCalorimeterUtils(*reader.fCaloUtils))
 {
   // cpy ctor  
 }
@@ -164,18 +152,6 @@ AliCaloTrackReader::AliCaloTrackReader(const AliCaloTrackReader & g) :
 //	
 //  fFiredTriggerClassName = source.fFiredTriggerClassName  ;
 //	
-//  fEMCALGeoName      = source.fEMCALGeoName ; 
-//  fPHOSGeoName       = source.fPHOSGeoName ; 
-//  fEMCALGeo          = new AliEMCALGeoUtils(*source.fEMCALGeo);  
-//  fPHOSGeo           = new AliPHOSGeoUtils(*source.fPHOSGeo);
-//  fEMCALGeoMatrixSet = source.fEMCALGeoMatrixSet; 
-//  fPHOSGeoMatrixSet  = source.fPHOSGeoMatrixSet;
-//  fAnaLED            = source.fAnaLED;
-//  fRemoveBadChannels = source.fRemoveBadChannels;
-//  fEMCALBadChannelMap= source.fEMCALBadChannelMap;
-//  fPHOSBadChannelMap = source.fPHOSBadChannelMap;
-//
-//	
 //  return *this;
 //  
 //}
@@ -221,61 +197,8 @@ AliCaloTrackReader::~AliCaloTrackReader() {
   }
 	
   if(fSecondInputAODEvent) delete fSecondInputAODEvent ;
-
-  if(fPHOSGeo)  delete fPHOSGeo  ;
-  if(fEMCALGeo) delete fEMCALGeo ;
 	
-  if(fEMCALBadChannelMap) { 
-    fEMCALBadChannelMap->Clear();
-    delete  fEMCALBadChannelMap;
-  }
-  if(fPHOSBadChannelMap) { 
-    fPHOSBadChannelMap->Clear();
-    delete  fPHOSBadChannelMap;
-  }
-
-  //fEMCALBadChannelMap. Delete();
-  //fPHOSBadChannelMap. Delete();
-	
-}
-
-//_________________________________________________________________________________________________________
-Bool_t AliCaloTrackReader::ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells){
-	// Check that in the cluster cells, there is no bad channel of those stored 
-	// in fEMCALBadChannelMap or fPHOSBadChannelMap
-	
-	if (!fRemoveBadChannels) return kFALSE;
-	
-	if(calorimeter == "EMCAL" && !fEMCALBadChannelMap->GetEntries()) return kFALSE;
-	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap ->GetEntries()) return kFALSE;
-
-	Int_t icol = -1;
-	Int_t irow = -1;
-	Int_t imod = -1;
-	for(Int_t iCell = 0; iCell<nCells; iCell++){
-	
-		//Get the column and row
-		if(calorimeter == "EMCAL"){
-			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-			fEMCALGeo->GetCellIndex(cellList[iCell],imod,iTower,iIphi,iIeta); 
-			if(fEMCALBadChannelMap->GetEntries() <= imod) continue;
-			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);			
-			if(GetEMCALChannelStatus(imod, icol, irow))return kTRUE;
-		}
-		else if(calorimeter=="PHOS"){
-			Int_t    relId[4];
-			fPHOSGeo->AbsToRelNumbering(cellList[iCell],relId);
-			irow = relId[2];
-			icol = relId[3];
-			imod = relId[0]-1;
-			if(fPHOSBadChannelMap->GetEntries() <= imod)continue;
-			if(GetPHOSChannelStatus(imod, icol, irow)) return kTRUE;
-		}
-		else return kFALSE;
-		
-	}// cell cluster loop
-
-	return kFALSE;
+  if (fCaloUtils) delete fCaloUtils ;
 
 }
 
@@ -380,102 +303,6 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const {
 	}
 }
 
-//____________________________________________________________________________________________________________________________________________________
-Int_t AliCaloTrackReader::GetModuleNumber(AliAODPWG4Particle * particle) const
-{
-	//Get the EMCAL/PHOS module number that corresponds to this particle
-	
-	Int_t absId = -1;
-	if(particle->GetDetector()=="EMCAL"){
-		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
-		if(GetDebug() > 2) 
-			printf("AliCaloTrackReader::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-				   particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
-		return fEMCALGeo->GetSuperModuleNumber(absId) ;
-	}//EMCAL
-	else if(particle->GetDetector()=="PHOS"){
-		Int_t    relId[4];
-		if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))   {
-			AliESDCaloCluster *cluster = ((AliESDEvent*)fInputEvent)->GetCaloCluster(particle->GetCaloLabel(0));
-			if ( cluster->GetNCells() > 0) {
-				absId = cluster->GetCellAbsId(0);
-				if(GetDebug() > 2) 
-					printf("AliCaloTrackReader::GetModuleNumber(ESD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
-						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
-			}
-			else return -1;
-		}//ESDs
-		else{
-			AliAODCaloCluster *cluster = ((AliAODEvent*)fInputEvent)->GetCaloCluster(particle->GetCaloLabel(0));
-			if ( cluster->GetNCells() > 0) {
-				absId = cluster->GetCellAbsId(0);
-				if(GetDebug() > 2) 
-					printf("AliCaloTrackReader::GetModuleNumber(AOD) - PHOS: cluster eta %f, phi %f, e %f, e cluster %f, absId %d\n",
-						   particle->Eta(), particle->Phi()*TMath::RadToDeg(), particle->E(), cluster->E(), absId);
-			}
-			else return -1;
-		}//AODs
-		
-		if ( absId >= 0) {
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
-			if(GetDebug() > 2) 
-				printf("PHOS: Module %d\n",relId[0]-1);
-			return relId[0]-1;
-		}
-		else return -1;
-	}//PHOS
-	
-	return -1;
-}
-
-
-//_____________________________________________________________________________________________________________
-Int_t AliCaloTrackReader::GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t & iRCU) const
-{
-	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
-	Int_t imod = -1;
-	if ( absId >= 0) {
-		if(calo=="EMCAL"){
-			Int_t iTower = -1, iIphi = -1, iIeta = -1; 
-			fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
-			
-			//RCU0
-			if (0<=irow&&irow<8) iRCU=0; // first cable row
-			else if (8<=irow&&irow<16 && 0<=icol&&icol<24) iRCU=0; // first half; 
-			//second cable row
-			//RCU1
-			else if(8<=irow&&irow<16 && 24<=icol&&icol<48) iRCU=1; // second half; 
-			//second cable row
-			else if(16<=irow&&irow<24) iRCU=1; // third cable row
-			
-			if (imod%2==1) iRCU = 1 - iRCU; // swap for odd=C side, to allow us to cable both sides the same
-			if (iRCU<0) {
-				printf("AliCaloTrackReader::GetModuleNumberCellIndexes() - Wrong EMCAL RCU number = %d\n", iRCU);
-				abort();
-			}			
-			
-			return imod ;
-		}//EMCAL
-		else{//PHOS
-			Int_t    relId[4];
-			fPHOSGeo->AbsToRelNumbering(absId,relId);
-			irow = relId[2];
-			icol = relId[3];
-			imod = relId[0]-1;
-			iRCU= (Int_t)(relId[2]-1)/16 ;
-			//Int_t iBranch= (Int_t)(relid[3]-1)/28 ; //0 to 1
-			if (iRCU >= 4) {
-				printf("AliCaloTrackReader::GetModuleNumberCellIndexes() - Wrong PHOS RCU number = %d\n", iRCU);
-				abort();
-			}			
-			return imod;
-		}//PHOS	
-	}
-	
-	return -1;
-}
-
 //_______________________________________________________________
 void AliCaloTrackReader::Init()
 {
@@ -511,11 +338,8 @@ void AliCaloTrackReader::Init()
 		}
 		else printf("AliCaloTrackReader::Init() - Second input not added, reader is not AOD\n");
 	}
-
-	//printf("TaskName in reader: %s\n",fTaskName.Data());
-	fEMCALBadChannelMap->SetName(Form("EMCALBadMap_%s",fTaskName.Data()));
-	fPHOSBadChannelMap->SetName(Form("PHOSBadMap_%s",fTaskName.Data()));
 }
+
 //_______________________________________________________________
 void AliCaloTrackReader::InitParameters()
 {
@@ -540,75 +364,8 @@ void AliCaloTrackReader::InitParameters()
   fCleanOutputStdAOD     = kFALSE; // Clean the standard clusters/tracks?
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName      = "";
-  fEMCALGeoName = "EMCAL_COMPLETE";
-  fPHOSGeoName  = "PHOSgeo";
-	
-  if(gGeoManager) {// geoManager was set
-	if(fDebug > 2)printf("AliCaloTrackReader::InitParameters() - Geometry manager available\n");
-	fEMCALGeoMatrixSet = kTRUE;	 
-	fPHOSGeoMatrixSet  = kTRUE;	 
-  }
-  else{
-	fEMCALGeoMatrixSet = kFALSE;
-	fPHOSGeoMatrixSet  = kFALSE;
-  }
-	
+	 	
   fAnaLED = kFALSE;
-	
-  fRemoveBadChannels = kFALSE;
-}
-
-//________________________________________________________________
-void AliCaloTrackReader::InitEMCALBadChannelStatusMap(){
-  //Init EMCAL bad channels map
-   if(fDebug > 0 )printf("AliCaloTrackReader::InitEMCALBadChannelStatusMap()\n");
-  //In order to avoid rewriting the same histograms
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  
-  for (int i = 0; i < 12; i++) fEMCALBadChannelMap->Add(new TH2I(Form("EMCALBadChannelMap_SM%d_%s",i,fTaskName.Data()),Form("EMCALBadChannelMap_SM%d",i),  48, 0, 48, 24, 0, 24));
-  
-  fEMCALBadChannelMap->SetOwner(kTRUE);
-  fEMCALBadChannelMap->Compress();
-  
-  //In order to avoid rewriting the same histograms
-  TH1::AddDirectory(oldStatus);		
-}
-
-//________________________________________________________________
-void AliCaloTrackReader::InitPHOSBadChannelStatusMap(){
-  //Init PHOS bad channels map
-  if(fDebug > 0 )printf("AliCaloTrackReader::InitPHOSBadChannelStatusMap()\n");
-  //In order to avoid rewriting the same histograms
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
-  for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d_%s",i,fTaskName.Data()),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
-    
-  fPHOSBadChannelMap->SetOwner(kTRUE);
-  fPHOSBadChannelMap->Compress();
-  
-  //In order to avoid rewriting the same histograms
-  TH1::AddDirectory(oldStatus);		
-}
-
-//________________________________________________________________
-void AliCaloTrackReader::InitEMCALGeometry()
-{
-	//Initialize EMCAL geometry if it did not exist previously
-	if (!fEMCALGeo){
-		fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName); 
-		if (!gGeoManager && fDebug > 0) printf("AliCaloTrackReader::InitEMCALGeometry() - Careful!, gGeoManager not loaded, load misalign matrices\n");
-	}
-}
-
-//________________________________________________________________
-void AliCaloTrackReader::InitPHOSGeometry()
-{
-	//Initialize PHOS geometry if it did not exist previously
-	if (!fPHOSGeo){
-		fPHOSGeo = new AliPHOSGeoUtils(fPHOSGeoName); 
-		if (!gGeoManager && fDebug > 0) printf("AliCaloTrackReader::InitPHOSGeometry() - Careful!, gGeoManager not loaded, load misalign matrices\n");
-	}	
 }
 
 //________________________________________________________________
@@ -642,7 +399,6 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Clean std AOD       =     %d\n", fCleanOutputStdAOD) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
-  printf("Remove Clusters with bad channels? %d\n",fRemoveBadChannels);
   printf("    \n") ;
 } 
 
@@ -717,45 +473,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
     }
     
   }
-	
-  //Get the EMCAL transformation geometry matrices from ESD 
-  if (!gGeoManager && fEMCALGeo) {//&& !fEMCALGeoMatrixSet) {
-    if(fDebug > 1) 
-      printf(" AliCaloTrackReader::FillInputEvent() - Load EMCAL misalignment matrices. \n");
-    if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
-      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-	if(((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod)) {
-	  //printf("EMCAL: mod %d, matrix %p\n",mod, ((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod));
-	  fEMCALGeo->SetMisalMatrix(((AliESDEvent*)fInputEvent)->GetEMCALMatrix(mod),mod) ;
-	  fEMCALGeoMatrixSet = kTRUE;//At least one, so good
-	}
-      }// loop over super modules	
-    }//ESD as input
-    else {
-      if(fDebug > 1)
-	printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-	  }//AOD as input
-  }//EMCAL geo && no geoManager
-  
-  //Get the PHOS transformation geometry matrices from ESD 
-  if (!gGeoManager && fPHOSGeo && !fPHOSGeoMatrixSet) {
-    if(fDebug > 1) 
-      printf(" AliCaloTrackReader::FillInputEvent() - Load PHOS misalignment matrices. \n");
-    if(!strcmp(fInputEvent->GetName(),"AliESDEvent"))  {
-      for(Int_t mod=0; mod < 5; mod++){ 
-	if(((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod)) {
-	  //printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod));
-	  fPHOSGeo->SetMisalMatrix(((AliESDEvent*)fInputEvent)->GetPHOSMatrix(mod),mod) ;
-	  fPHOSGeoMatrixSet  = kTRUE; //At least one so good
-	}
-      }// loop over modules	
-    }//ESD as input
-    else {
-      if(fDebug > 1) 
-	printf("AliCaloTrackReader::FillInputEvent() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
-    }//AOD as input
-  }//PHOS geo	and  geoManager was not set
-	
+		
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();

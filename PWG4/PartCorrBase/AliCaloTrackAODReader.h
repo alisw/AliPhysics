@@ -44,10 +44,7 @@ public:
   void SwitchOffWriteStdAOD() {fWriteOutputStdAOD = kFALSE;}
 
   TString GetFiredTriggerClasses() {return ((AliAODEvent*)GetInputEvent())->GetFiredTriggerClasses();}
-	
-  // Get calorimeter (Super)module number where this cluster falled
-  Int_t GetModuleNumber(AliAODCaloCluster * cluster) const ;
-	
+
   void Print(const Option_t * opt) const;
 	
 private:

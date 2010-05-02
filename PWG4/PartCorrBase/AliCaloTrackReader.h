@@ -17,12 +17,8 @@
 // --- ROOT system ---
 #include "TObject.h" 
 class TObjArray ; 
-class TLorentzVector ;
 #include "TString.h"
-#include "TObjArray.h"
-class TArrayF;  
 class TTree ;
-#include "TH2I.h"
 
 //--- ANALYSIS system ---
 class AliStack ; 
@@ -33,9 +29,7 @@ class AliAODEvent;
 class AliMCEvent;
 class AliFiducialCut;
 class AliAODMCHeader;
-class AliAODPWG4Particle;
-#include "AliPHOSGeoUtils.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliCalorimeterUtils.h"
 
 class AliCaloTrackReader : public TObject {
 
@@ -181,63 +175,16 @@ public:
   void SetFiredTriggerClassName(TString name ) {fFiredTriggerClassName = name ; }
   TString GetFiredTriggerClassName() const {return fFiredTriggerClassName ; }
   virtual TString GetFiredTriggerClasses() {return "";}
-	
-  //Calorimeters Geometry Methods
-  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name ; }
-  TString EMCALGeometryName() const { return fEMCALGeoName ; }
-  void InitEMCALGeometry() ; 
-  AliEMCALGeoUtils * GetEMCALGeometry() const {return fEMCALGeo;}
-  Bool_t IsEMCALGeoMatrixSet() {return fEMCALGeoMatrixSet; }
-
-  void SetPHOSGeometryName(TString name)   { fPHOSGeoName = name ; }
-  TString PHOSGeometryName() const { return fPHOSGeoName ; }
-  void InitPHOSGeometry() ; 
-  AliPHOSGeoUtils * GetPHOSGeometry() const {return fPHOSGeo;}	
-  Bool_t IsPHOSGeoMatrixSet()  {return fPHOSGeoMatrixSet ; }
 
   void AnalyzeOnlyLED()     {fAnaLED = kTRUE;}
   void AnalyzeOnlyPhysics() {fAnaLED = kFALSE;}
 	
-  // Bad channels
-	
-  Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval()    {fRemoveBadChannels = kTRUE ; }
-  void SwitchOffBadChannelsRemoval()   {fRemoveBadChannels = kFALSE ; }
-	
-  void InitEMCALBadChannelStatusMap() ;
-  void InitPHOSBadChannelStatusMap () ;
-
-  Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALBadChannelMap->GetEntries()>0) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-    else return -1;}
-
-  Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) const { 
-    if(fPHOSBadChannelMap->GetEntries()>0)return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
-    else return -1;}
-  
-  void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-    if(!fEMCALBadChannelMap->GetEntries())InitEMCALBadChannelStatusMap() ;
-    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
-  
-  void SetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
-	if(!fPHOSBadChannelMap->GetEntries()) InitPHOSBadChannelStatusMap() ; 
-	((TH2I*)fPHOSBadChannelMap->At(imod))->SetBinContent(iCol,iRow,c);}
-    
-  TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
-  TH2I * GetPHOSChannelStatusMap(Int_t imod) const {return (TH2I*)fPHOSBadChannelMap->At(imod);}
-
-  void SetEMCALChannelStatusMap(TObjArray *map) {fEMCALBadChannelMap = map;}
-  void SetPHOSChannelStatusMap (TObjArray *map) {fPHOSBadChannelMap  = map;}
-	
-  Bool_t ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
-	
   TString  GetTaskName() const {return fTaskName;}
   void SetTaskName(TString name) {fTaskName = name;}
 
-  //Calorimeter indexes information
-  Int_t GetModuleNumber(AliAODPWG4Particle * particle) const;
-  Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const ;
-	
+  AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
+  void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
+
  protected:
   Int_t	           fEventNumber; // Event number
   TString          fCurrentFileName; // Current file name under analysis
@@ -285,19 +232,13 @@ public:
   TString        fDeltaAODFileName ;   // Delta AOD file name
   TString        fFiredTriggerClassName  ;  // Name of trigger event type used to do the analysis
 
-  TString        fEMCALGeoName;       // Name of geometry to use for EMCAL.
-  TString        fPHOSGeoName;        // Name of geometry to use for PHOS.	
-  AliEMCALGeoUtils * fEMCALGeo ;      //! EMCAL geometry pointer
-  AliPHOSGeoUtils  * fPHOSGeo  ;      //! PHOS  geometry pointer  
-  Bool_t         fEMCALGeoMatrixSet;  // Check if the transformation matrix is set for EMCAL
-  Bool_t         fPHOSGeoMatrixSet ;  // Check if the transformation matrix is set for PHOS
   Bool_t         fAnaLED;             // Analyze LED data only.
-  Bool_t         fRemoveBadChannels;  // Check the channel status provided and remove clusters with bad channels
-  TObjArray     *fEMCALBadChannelMap; //! Array of histograms with map of bad channels, EMCAL
-  TObjArray     *fPHOSBadChannelMap;  //! Array of histograms with map of bad channels, PHOS
-  TString fTaskName;           // Name of task that executes the analysis
 
-  ClassDef(AliCaloTrackReader,13)
+  TString fTaskName;           // Name of task that executes the analysis
+	
+  AliCalorimeterUtils *  fCaloUtils ;  //  Pointer to CalorimeterUtils
+	
+  ClassDef(AliCaloTrackReader,14)
 } ;
 
 
