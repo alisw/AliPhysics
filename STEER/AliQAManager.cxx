@@ -609,7 +609,7 @@ void AliQAManager::Increment(const AliQAv1::TASKINDEX_t taskIndex)
 {
   // Increments the cycle counter for all QA Data Makers
   static AliQAv1::TASKINDEX_t currentTask = AliQAv1::kNTASKINDEX ; 
-  if (currentTask == taskIndex) 
+  if ( (currentTask == taskIndex) && taskIndex != AliQAv1::kNULLTASK )
     return ; 
   else 
     currentTask = taskIndex ; 
