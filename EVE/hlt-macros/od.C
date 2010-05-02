@@ -419,6 +419,8 @@ Int_t initializeEveViewer( Bool_t showBarrel, Bool_t showMuon ) {
 
   gStyle->SetPalette(1, 0);
 
+  gStyle->SetOptFit(1);
+
 
   
   return 0;

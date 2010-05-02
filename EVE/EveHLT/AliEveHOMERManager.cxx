@@ -547,7 +547,7 @@ void AliEveHOMERManager::StartLoop() {
   //See header file for documentation
   //fTimer->SetCommand("NextEvent()", "AliEveHOMERManager", this);
   SetEventLoopStarted(kTRUE);
-  fTimer->Start(3000);
+  fTimer->Start(10000);
 }
 
 void AliEveHOMERManager::StopLoop() {
