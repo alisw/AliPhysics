@@ -127,10 +127,16 @@ SetAnaTopology(AliAnalysisTaskUE * ueana, Char_t *at){
         ueana->SetJet3PtCut(10.);
        break;
 
-       case "MP":  // max Pt charged particle
+       case "MP_eta05":
         ueana->SetAnaTopology(4);
         ueana->SetJet1EtaCut(0.9);
        break;
+
+       case "MP_eta09":  // max Pt charged particle
+         ueana->SetAnaTopology(4);
+         ueana->SetJet1EtaCut(0.9);
+       break;
+
 
        default:
        Printf("\n >>>>>>> AddTaskUE Error Wrong Analysis Topology selected\n");
