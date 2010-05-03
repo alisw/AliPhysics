@@ -324,7 +324,7 @@ void AliTRDSaxHandler::OnStartElement(const char *name, const TList *attributes)
   // if there is a new DCS element put it in the correct array
   if (CompareString(tagName, "DCS")) {
     if (fSystem == kInsideFEE) {
-      fDCSFEEObj = new AliTRDCalDCSFEE();
+      fDCSFEEObj = new AliTRDCalDCSFEE(name,dcsTitle);
       fDCSFEEObj->SetDCSid(dcsId);
     }
     if (fSystem == kInsidePTR) {

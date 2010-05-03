@@ -35,13 +35,12 @@ ClassImp(AliTRDCalDCSFEE)
   
 //_____________________________________________________________________________
 AliTRDCalDCSFEE::AliTRDCalDCSFEE()
-  :TObject()
+  :TNamed()
   ,fStatusBit(0)
+  ,fDCSID(-1)
   ,fSM(-1)
   ,fStack(-1)
   ,fLayer(-1)
-  ,fGainTableRocSerial(0)
-  ,fDCSID(-1)
   ,fNumberOfTimeBins(-1)
   ,fConfigTag(-1)
   ,fSingleHitThres(-1)
@@ -52,29 +51,30 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
   ,fTCFilterLongDecPar(-1)
   ,fFastStatNoise(-1)
   ,fGainTableRocType("")
-  ,fFilterType("")
-  ,fReadoutParam("")
-  ,fTestPattern("")
-  ,fTrackletMode("")
-  ,fTrackletDef("")
-  ,fTriggerSetup("")
-  ,fAddOptions("") 
-  ,fConfigName("")
-  ,fConfigVersion("")
+  ,fGainTableRocSerial(0)
+  ,fFilterType(0)
+  ,fReadoutParam(0)
+  ,fTestPattern(0)
+  ,fTrackletMode(0)
+  ,fTrackletDef(0)
+  ,fTriggerSetup(0)
+  ,fAddOptions(0) 
+  ,fConfigName(0)
+  ,fConfigVersion(0)
   ,fGainTableName("")
   ,fGainTableDesc("")
 {
   //
   // AliTRDCalDCSFEE default constructor
   //
-  for(Int_t i=0; i<(Int_t)fgkROB; i++) {
-    for(Int_t j=0; j<(Int_t)fgkMCM; j++) {
+  for(Int_t i=0; i<fgkROB; i++) {
+    for(Int_t j=0; j<fgkMCM; j++) {
       fRStateGSM[i][j]  = -1;
       fRStateNI[i][j]   = -1;
       fRStateEV[i][j]   = -1;
       fRStatePTRG[i][j] = -1;
       fGainTableAdcdac[i][j] = -1;
-      for(Int_t k=0; k<(Int_t)fgkADC; k++) {
+      for(Int_t k=0; k<fgkADC; k++) {
 	fGainTableFgfn[i][j][k] = -1;
 	fGainTableFgan[i][j][k] = -1;
       }
@@ -84,64 +84,52 @@ AliTRDCalDCSFEE::AliTRDCalDCSFEE()
 
 
 //_____________________________________________________________________________
-AliTRDCalDCSFEE::AliTRDCalDCSFEE(const AliTRDCalDCSFEE &c)
-  :TObject(c)
-  ,fStatusBit(c.fStatusBit)
-  ,fSM(c.fSM)
-  ,fStack(c.fStack)
-  ,fLayer(c.fLayer)
-  ,fGainTableRocSerial(c.fGainTableRocSerial)
-  ,fDCSID(c.fDCSID)
-  ,fNumberOfTimeBins(c.fNumberOfTimeBins)
-  ,fConfigTag(c.fConfigTag)
-  ,fSingleHitThres(c.fSingleHitThres)
-  ,fThrPdClsThres(c.fThrPdClsThres)
-  ,fSelNoZS(c.fSelNoZS)
-  ,fTCFilterWeight(c.fTCFilterWeight)
-  ,fTCFilterShortDecPar(c.fTCFilterShortDecPar)
-  ,fTCFilterLongDecPar(c.fTCFilterLongDecPar)
-  ,fFastStatNoise(c.fFastStatNoise)
-  ,fGainTableRocType(c.fGainTableRocType)
-  ,fFilterType(c.fFilterType)
-  ,fReadoutParam(c.fReadoutParam)
-  ,fTestPattern(c.fTestPattern)
-  ,fTrackletMode(c.fTrackletMode)
-  ,fTrackletDef(c.fTrackletDef)
-  ,fTriggerSetup(c.fTriggerSetup)
-  ,fAddOptions(c.fAddOptions) 
-  ,fConfigName(c.fConfigName)
-  ,fConfigVersion(c.fConfigVersion)
-  ,fGainTableName(c.fGainTableName)
-  ,fGainTableDesc(c.fGainTableDesc)
+AliTRDCalDCSFEE::AliTRDCalDCSFEE(const char *name, const char *title)
+:TNamed(name,title)
+,fStatusBit(0)
+,fDCSID(-1)
+,fSM(-1)
+,fStack(-1)
+,fLayer(-1)
+,fNumberOfTimeBins(-1)
+,fConfigTag(-1)
+,fSingleHitThres(-1)
+,fThrPdClsThres(-1)
+,fSelNoZS(-1)
+,fTCFilterWeight(-1)
+,fTCFilterShortDecPar(-1)
+,fTCFilterLongDecPar(-1)
+,fFastStatNoise(-1)
+,fGainTableRocType("")
+,fGainTableRocSerial(0)
+,fFilterType(0)
+,fReadoutParam(0)
+,fTestPattern(0)
+,fTrackletMode(0)
+,fTrackletDef(0)
+,fTriggerSetup(0)
+,fAddOptions(0) 
+,fConfigName(0)
+,fConfigVersion(0)
+,fGainTableName("")
+,fGainTableDesc("")
 {
   //
-  // AliTRDCalDCSFEE copy constructor
+  // AliTRDCalDCSFEE constructor
   //
-  for(Int_t i=0; i<(Int_t)fgkROB; i++) {
-    for(Int_t j=0; j<(Int_t)fgkMCM; j++) {
-      fRStateGSM[i][j]  = c.fRStateGSM[i][j];
-      fRStateNI[i][j]   = c.fRStateNI[i][j];
-      fRStateEV[i][j]   = c.fRStateEV[i][j];
-      fRStatePTRG[i][j] = c.fRStatePTRG[i][j];
-      fGainTableAdcdac[i][j] = c.fGainTableAdcdac[i][j];
-      for(Int_t k=0; k<(Int_t)fgkADC; k++) {
-	fGainTableFgfn[i][j][k] = c.fGainTableFgfn[i][j][k];
-	fGainTableFgan[i][j][k] = c.fGainTableFgan[i][j][k];
+  for(Int_t i=0; i<fgkROB; i++) {
+    for(Int_t j=0; j<fgkMCM; j++) {
+      fRStateGSM[i][j]  = -1;
+      fRStateNI[i][j]   = -1;
+      fRStateEV[i][j]   = -1;
+      fRStatePTRG[i][j] = -1;
+      fGainTableAdcdac[i][j] = -1;
+      for(Int_t k=0; k<fgkADC; k++) {
+	fGainTableFgfn[i][j][k] = -1;
+	fGainTableFgan[i][j][k] = -1;
       }
     }
   }
 }
 
-
-//_____________________________________________________________________________
-AliTRDCalDCSFEE &AliTRDCalDCSFEE::operator=(const AliTRDCalDCSFEE &c)
-{
-  //
-  // Assignment operator
-  //
-  if (&c == this) return *this;
-
-  new (this) AliTRDCalDCSFEE(c);
-  return *this;
-}
 
