@@ -716,7 +716,7 @@ void AliTRDclusterResolution::ProcessCharge()
     s2x += AliTRDcluster::GetSX(ix);
   }
   s2x /= (AliTRDseedV1::kNtb-5); s2x *= s2x;
-  Double_t exb2 = fExB*fExB;
+  //Double_t exb2 = fExB*fExB;
 
   TObjArray *arr = (TObjArray*)fResults->At(kQRes);
   TGraphErrors *gqm = (TGraphErrors*)arr->At(0);
