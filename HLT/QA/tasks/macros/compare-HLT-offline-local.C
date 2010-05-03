@@ -85,6 +85,8 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   
+  if(!AliAnalysisGrid::CreateToken()) return NULL;
+  
   if(file.Contains("alien")) TGrid::Connect("alien://");
 
   TChain *chain = new TChain("esdTree"); 
