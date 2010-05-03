@@ -216,8 +216,8 @@ int AliHLTSampleCalibrationComponent::ProcessCalibration(const AliHLTComponentEv
   return 0;
 }
 
-int AliHLTSampleCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, 
-						     AliHLTComponentTriggerData& trigData)
+int AliHLTSampleCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, 
+						     AliHLTComponentTriggerData& /*trigData*/)
 {
   // prepare final result and ship to FXS
 

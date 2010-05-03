@@ -148,11 +148,8 @@ int AliHLTSampleComponent1::DoInit( int argc, const char** argv )
 int AliHLTSampleComponent1::ScanConfigurationArgument( int argc, const char** argv )
 {
   // see header file for class documentation
-  int iResult=0;
-
   TString argument="";
   TString configuration=""; 
-  int bMissingParam=0;
   int i=0;
     argument=argv[i];
     if (argument.IsNull()) return 0;
