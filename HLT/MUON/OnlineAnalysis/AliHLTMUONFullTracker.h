@@ -72,7 +72,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   ///Set the input of rechit blocks
   Bool_t SetInput(AliHLTInt32_t ddl, const AliHLTMUONRecHitStruct  *data, AliHLTInt32_t size);
   ///Main method to run and compute the tracks
-  Bool_t Run(int iEvent,AliHLTMUONTrackStruct *data, AliHLTUInt32_t& size);
+  Bool_t Run(AliHLTEventID_t iEvent,AliHLTMUONTrackStruct *data, AliHLTUInt32_t& size);
   ///To be called once from DoInit method of component
   Bool_t Init();
   ///Max number of points per chamber
@@ -126,6 +126,7 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   static const Int_t fgkMaxNofCh ;              /// maximum number of chambrs
   static const Int_t fgkMaxNofTracks;           /// maximum number of allowed tracks
   static const Int_t fgkMaxNofConnectedTracks;  /// maximum number of back to front connected tracks
+  static const Int_t fgkMaxNofTriggers;         /// maximum number of triggers (condition comes from simulation prediction)
   
   AliMUONGeometryTransformer *fChamberGeometryTransformer; /// Pointer to AliMUONGeometryTransformer
   AliHLTMUONRecHitStruct ***fChPoint; /// array of pointer to rechit data
@@ -151,7 +152,10 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   AliHLTUInt32_t fNofTracks; /// number of connected track segments
   DetElemList fDetElemList; ///Map for valid detelem
   Bool_t fFastTracking ; ///flag for fast tracking avoiding kalman
-
+  Int_t   fNofInputs; /// Nof inputs
+  
+  ///  Cross Check the inputs
+  Bool_t CheckInput(AliHLTEventID_t iEvent);
   /// Slat Track segments 
   Bool_t SlatTrackSeg();
   /// Calculate preliminary momentum

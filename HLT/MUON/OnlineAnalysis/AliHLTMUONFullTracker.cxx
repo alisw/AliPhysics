@@ -77,6 +77,7 @@ class	TMap;
 
 //#define PRINT_FULL 1
 
+
 #ifdef PRINT_FULL
 #define PRINT_POINTS 1
 #define PRINT_BACK 1
@@ -107,6 +108,7 @@ const Int_t AliHLTMUONFullTracker::fgkMaxNofPointsPerCh = 600;
 const Int_t AliHLTMUONFullTracker::fgkMaxNofCh = 11 ; /// 10tracking + 1 trigger
 const Int_t AliHLTMUONFullTracker::fgkMaxNofTracks = 200;
 const Int_t AliHLTMUONFullTracker::fgkMaxNofConnectedTracks = 20;
+const Int_t AliHLTMUONFullTracker::fgkMaxNofTriggers = 20;
 
 
 
@@ -132,7 +134,8 @@ AliHLTMUONFullTracker::AliHLTMUONFullTracker() :
   fNofConnected(0),
   fNofTracks(0),
   fDetElemList(),
-  fFastTracking(kFALSE)
+  fFastTracking(kFALSE),
+  fNofInputs(0)
 {
 
   /// Constructor of the class
@@ -283,20 +286,23 @@ Bool_t AliHLTMUONFullTracker::Clear(){
   for(int iFrontTrackSeg=0;iFrontTrackSeg<fNoffrontTrackSeg;iFrontTrackSeg++)
     for(int ipoint=0;ipoint<4;ipoint++)
       if(fFrontTrackSeg[iFrontTrackSeg].fIndex[ipoint]!=-1)
-	printf("FrontTrackSeg : %d\t%f\t%f\t%f\n",iFrontTrackSeg,
+	HLTImportant("FrontTrackSeg : %d\t%f\t%f\t%f\n",iFrontTrackSeg,
 	       fChPoint[ipoint][fFrontTrackSeg[iFrontTrackSeg].fIndex[ipoint]]->fX,
 	       fChPoint[ipoint][fFrontTrackSeg[iFrontTrackSeg].fIndex[ipoint]]->fY,
 	       fChPoint[ipoint][fFrontTrackSeg[iFrontTrackSeg].fIndex[ipoint]]->fZ); 
-  printf("\n\n");
+  HLTImportant("\n\n");
   for(int iBackTrackSeg=0;iBackTrackSeg<fNofbackTrackSeg;iBackTrackSeg++)
     for(int ipoint=0;ipoint<4;ipoint++)
       if(fBackTrackSeg[iBackTrackSeg].fIndex[ipoint]!=-1)
-	printf("BackTrackSeg : %d\t%f\t%f\t%f, nofFront : %d\n",iBackTrackSeg,
+	HLTImportant("BackTrackSeg : %d\t%f\t%f\t%f, nofFront : %d\n",iBackTrackSeg,
 	       fChPoint[ipoint+6][fBackTrackSeg[iBackTrackSeg].fIndex[ipoint]]->fX,
 	       fChPoint[ipoint+6][fBackTrackSeg[iBackTrackSeg].fIndex[ipoint]]->fY,
 	       fChPoint[ipoint+6][fBackTrackSeg[iBackTrackSeg].fIndex[ipoint]]->fZ,fNofConnectedfrontTrackSeg[iBackTrackSeg]); 
 #endif
   
+
+  fNofInputs = 0;
+
   for( Int_t ich=0;ich<fgkMaxNofCh;ich++)
     fNofPoints[ich] = 0;
   
@@ -340,7 +346,7 @@ Bool_t AliHLTMUONFullTracker::Init()
   }
   
   
-  HLTWarning("At (X,Y,Z) : (%6.2lf,%6.2lf,%6.2lf) Field (Bx,By,Bz) is (%6.2lf,%6.2lf,%6.2lf)",
+  HLTImportant("At (X,Y,Z) : (%6.2lf,%6.2lf,%6.2lf) Field (Bx,By,Bz) is (%6.2lf,%6.2lf,%6.2lf)",
 	     x[0],x[1],x[2],b[0],b[1],b[2]);
 
   AliMUONTrackExtrap::SetField();
@@ -359,6 +365,7 @@ Bool_t AliHLTMUONFullTracker::Init()
 	fDetElemList[detElemId] = detElemId;
       }
   }//chamber loop
+
   return true;
 }
 
@@ -374,7 +381,7 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONRe
   AliHLTUInt8_t chamber;
   
 #ifdef PRINT_POINTS  
-  printf("Received from DDL : %d, nofHits : %d, data : %p\n",ddl,size,data);
+  HLTImportant("Received from DDL : %d, nofHits : %d, data : %p",ddl,size,data);
 #endif
   for( Int_t ipoint=0;ipoint<int(size);ipoint++){
     if(!data){
@@ -385,18 +392,20 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONRe
     
     AliHLTMUONUtils::UnpackRecHitFlags(data->fFlags,chamber,detElemID);
 
-    if((not fDetElemList[detElemID]) or (chamber<0 ) or (chamber>=AliMUONConstants::NTrackingCh())){
+    if((not fDetElemList[detElemID]) or (chamber>=AliMUONConstants::NTrackingCh())){
       HLTDebug("Invalid tracking detelem : %d or chamber : %d",detElemID,chamber);
       continue;
     }
     
 #ifdef PRINT_POINTS  
-    printf("ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",chamber,detElemID,data->fX,data->fY,data->fZ);
+    HLTImportant("ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)",
+		  chamber,detElemID,data->fX,data->fY,data->fZ);
+		 
 #endif
     fChPoint[detElemID/100-1][fNofPoints[detElemID/100-1]++]  = (AliHLTMUONRecHitStruct  *)data;
     data++;
   }
-
+  fNofInputs++;
   return true;
 }
 
@@ -406,12 +415,18 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONTr
 {
   /// Set the input for trigrecs
 
-  if(int(size)>=fgkMaxNofPointsPerCh/2) 
-    size = 0;
+//   if(int(size)>=fgkMaxNofPointsPerCh/2) 
+//     size = 0;
+
+  if(int(size)>fgkMaxNofTriggers){
+    HLTWarning("More triggers (%d) found than max limit : %d (not possible physics events)",int(size),fgkMaxNofTriggers);
+    Clear();
+    return false;
+  }
 
   AliHLTUInt16_t detElemID;
   AliHLTUInt8_t chamber;
-
+  
   for( Int_t ipoint=0;ipoint<int(size);ipoint++){
     if(!data){
       HLTError("Null Data pointer from TrigRec");
@@ -426,31 +441,92 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONTr
 	continue;
       }
 #ifdef PRINT_POINTS  
-      printf("size : %d, itrig  : %04d, ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",
+      HLTImportant("size : %d, itrig  : %04d, ch : %02d, detelem : %04d, (X,Y,Z) : (%8.3f,%8.3f,%8.3f)\n",
 	     size,ipoint,chamber,detElemID,(data->fHit[ich]).fX,(data->fHit[ich]).fY,(data->fHit[ich]).fZ);
 #endif
     }///ich loop
     data++;
   }///ipoint
+    fNofInputs++;
   return true;
 }
 
  
 ///__________________________________________________________________________
 
-Bool_t AliHLTMUONFullTracker::Run( Int_t iEvent,AliHLTMUONTrackStruct *data, AliHLTUInt32_t& size)
+Bool_t AliHLTMUONFullTracker::CheckInput(AliHLTEventID_t iEvent)
+{
+  /// Cross Check all the inputs before the starting of the tracking
+
+  bool resultOk = true;
+  
+  if(fNofInputs > 22){ //if more than 22 inputs, do not do anything
+    
+    resultOk = false;
+    return resultOk;
+    
+  }else{ // make double sure that no space point pointer is null
+    
+    //HLTImportant("Found fNofInputs : %d less than 22",fNofInputs);
+    
+    //tracker chamber test
+    for(int ich=0;ich<fgkMaxNofCh-1;ich++){
+      for(int ipt=0;ipt<fNofPoints[ich];ipt++){
+	
+	if((not fChPoint[ich][ipt]) or (TMath::AreEqualAbs(fChPoint[ich][ipt]->fX,0.0,1.0e-5) and 
+					TMath::AreEqualAbs(fChPoint[ich][ipt]->fY,0.0,1.0e-5) and 
+					TMath::AreEqualAbs(fChPoint[ich][ipt]->fZ,0.0,1.0e-5))){
+	  resultOk = false;
+	  HLTError("iEvent : 0x%x, fNofInputs : %d, Nof tracker point for chamber %d, is not equal to nof valid tracker pointer",
+		   iEvent,fNofInputs,ich);
+	  return resultOk;
+	}
+      }// tracker ch loop
+    }// // if resultOk not already false  
+    
+    //trigger chamber test
+    if(fNofPoints[10] == 0){
+      resultOk = false;
+      return resultOk;
+    }    
+
+    for(int ipt=0;ipt<fNofPoints[10];ipt++){
+      if(not fChPoint11[ipt]){
+	resultOk = false;
+	HLTError("iEvent : 0x%x, fNofInputs : %d, Nof trigger points, is not equal to nof valid tracker pointer",
+		 iEvent,fNofInputs);
+	return resultOk;
+	
+      }
+    }// for loop over points
+
+  }// if less than expected blocks found
+  
+  return resultOk;
+  
+}
+
+
+///__________________________________________________________________________
+
+Bool_t AliHLTMUONFullTracker::Run( AliHLTEventID_t iEvent,AliHLTMUONTrackStruct *data, AliHLTUInt32_t& size)
 {
   /// Main Run call of the class
-  if(iEvent<0)
-    {
-      size = 0;
-      return true;
-    }
-  bool resultOk = true;
 
-  resultOk = SlatTrackSeg();
-  if(not resultOk){
-    HLTDebug("Error happened in tracking through slat chambers, this event will be skipped");
+  bool resultOk = true;
+  
+  HLTDebug("Processing iEvent : 0x%X, nof triggers : %d, fNofInputs : %d",iEvent,fNofPoints[10],fNofInputs);
+  
+  //   for(int ich=0;ich<fgkMaxNofCh;ich++)
+//     HLTDebug("\tNof hits in ich [%d] : %d\t",ich,fNofPoints[ich]);
+  
+  resultOk = CheckInput(iEvent);
+  
+  if(resultOk){
+    resultOk = SlatTrackSeg();
+    if(not resultOk){
+      HLTDebug("Error happened in tracking through slat chambers, this event will be skipped");
+    }
   }
   HLTDebug("Finishing SlatTrackSeg");
 
@@ -502,7 +578,7 @@ Bool_t AliHLTMUONFullTracker::Run( Int_t iEvent,AliHLTMUONTrackStruct *data, Ali
   if(!resultOk)
     size = 0;
 
-  HLTDebug("\niEvent: %d, has tracks : %d, triggers : %d, nof slat tracks : %d, quad tracks : %d, connected : %d\n",
+  HLTDebug("iEvent: 0x%X, has tracks : %d, triggers : %d, nof slat tracks : %d, quad tracks : %d, connected : %d\n",
 	   iEvent,size,fNofPoints[10],fNofbackTrackSeg,fNoffrontTrackSeg,fNofConnected);
   Clear();
   
@@ -560,7 +636,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 	 || not TMath::Finite(fTrackParam[ibackTrackSeg].Pz())) continue; 
 
 #ifdef PRINT_OUTPUT
-      printf("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
+      HLTImportant("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
 	     size,ibackTrackSeg,Int_t(TMath::Sign(1.,fTrackParam[ibackTrackSeg].GetInverseBendingMomentum())),
 	     TMath::Sqrt(fTrackParam[ibackTrackSeg].Px()*fTrackParam[ibackTrackSeg].Px() +
 			 fTrackParam[ibackTrackSeg].Py()*fTrackParam[ibackTrackSeg].Py()),
@@ -612,7 +688,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 	 || not TMath::Finite(fHalfTrack[ibackTrackSeg].fPz)) continue;
       
 #ifdef PRINT_OUTPUT
-      printf("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
+      HLTImportant("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
 	     size,ibackTrackSeg,Int_t(TMath::Sign(1.,fTrackParam[ibackTrackSeg].GetInverseBendingMomentum())),
 	     TMath::Sqrt(fHalfTrack[ibackTrackSeg].fPx*fHalfTrack[ibackTrackSeg].fPx +
 			 fHalfTrack[ibackTrackSeg].fPy*fHalfTrack[ibackTrackSeg].fPy),
@@ -715,7 +791,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
   Int_t minTrgCh,maxTrgCh;
 
 #ifdef PRINT_BACK
-  printf("\nAliHLTMUONFullTracker::SlatTrackSeg()--Begin\n\n");
+  HLTImportant("\nAliHLTMUONFullTracker::SlatTrackSeg()--Begin\n\n");
 #endif
   
 
@@ -781,16 +857,16 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     trigZ2 = (fChPoint11[itrig]->fHit[maxTrgCh]).fZ;
     
 #ifdef PRINT_BACK
-    printf("itrig : %d  trig 1 : (%f,%f,%f) \n",itrig,trigX1,trigY1,trigZ1);
-    printf("itrig : %d  trig 2 : (%f,%f,%f) \n",itrig,trigX2,trigY2,trigZ2);
+    HLTImportant("itrig : %d  trig 1 : (%f,%f,%f) \n",itrig,trigX1,trigY1,trigZ1);
+    HLTImportant("itrig : %d  trig 2 : (%f,%f,%f) \n",itrig,trigX2,trigY2,trigZ2);
 #endif
 
     /////////////////////////////////////////////////// Stn 5///////////////////////////////////////////////////////////////
 
 
     // #ifdef PRINT_BACK
-    //     printf("\textrap9 : (%f,%f,%f)\n",extrapCh9X,extrapCh9Y,extrapCh9Z);
-    //     printf("\textrap8 : (%f,%f,%f)\n",extrapCh8X,extrapCh8Y,extrapCh8Z);
+    //     HLTImportant("\textrap9 : (%f,%f,%f)\n",extrapCh9X,extrapCh9Y,extrapCh9Z);
+    //     HLTImportant("\textrap8 : (%f,%f,%f)\n",extrapCh8X,extrapCh8Y,extrapCh8Z);
     // #endif    
       
     nofFrontChPoints = 0; nofBackChPoints = 0;
@@ -822,7 +898,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	if(distChBack>circularWindow) continue;
 
 #ifdef PRINT_BACK
-	printf("\t\tpoints selected in Ch9  : (%f,%f,%f)\n",
+	HLTImportant("\t\tpoints selected in Ch9  : (%f,%f,%f)\n",
 	       distChBack,fChPoint[9][ipointch9]->fX,fChPoint[9][ipointch9]->fY,fChPoint[9][ipointch9]->fZ);
 #endif
 
@@ -859,7 +935,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	if(distChFront>circularWindow) continue;
 	
 #ifdef PRINT_BACK
-	printf("\t\tpoints selected in Ch8  : (%f,%f,%f)\n",
+	HLTImportant("\t\tpoints selected in Ch8  : (%f,%f,%f)\n",
 	       fChPoint[8][ipointch8]->fX,fChPoint[8][ipointch8]->fY,fChPoint[8][ipointch8]->fZ,distChFront);
 #endif
 	
@@ -877,7 +953,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	Sub(fChPoint[9][backIndex[ibackpoint]],fChPoint[8][frontIndex[ifrontpoint]],&pSeg1);
 	anglediff = TMath::RadToDeg()* Angle(&pSeg1,&pSeg2);
 	// #ifdef PRINT_BACK
-	// 	printf("\t\ttracklet-check-St5 : anglediff : %lf, minAngle : %lf\n",anglediff,minAngle);
+	// 	HLTImportant("\t\ttracklet-check-St5 : anglediff : %lf, minAngle : %lf\n",anglediff,minAngle);
 	// #endif	
 	if(anglediff<minAngle && fNofCells[1]<(fgkMaxNofTracks-1)){
 	  st5TrackletFound = true;
@@ -885,10 +961,10 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	  cells[1][fNofCells[1]].fSecond =  backIndex[ibackpoint];
 	  fNofCells[1]++ ;
 #ifdef PRINT_BACK
-	  printf("\t\ttracklet-St5 : anglediff : %lf\n",anglediff);
-	  printf("\t\t\tCh9  : (%f,%f,%f)\n",fChPoint[9][backIndex[ibackpoint]]->fX,
+	  HLTImportant("\t\ttracklet-St5 : anglediff : %lf\n",anglediff);
+	  HLTImportant("\t\t\tCh9  : (%f,%f,%f)\n",fChPoint[9][backIndex[ibackpoint]]->fX,
 		 fChPoint[9][backIndex[ibackpoint]]->fY,fChPoint[9][backIndex[ibackpoint]]->fZ);
-	  printf("\t\t\tCh8  : (%f,%f,%f)\n",fChPoint[8][frontIndex[ifrontpoint]]->fX,
+	  HLTImportant("\t\t\tCh8  : (%f,%f,%f)\n",fChPoint[8][frontIndex[ifrontpoint]]->fX,
 		 fChPoint[8][frontIndex[ifrontpoint]]->fY,fChPoint[8][frontIndex[ifrontpoint]]->fZ);
 #endif
 	}///anglediff condition
@@ -916,7 +992,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	  cells[1][fNofCells[1]].fSecond =  backIndex[ibackpoint];
 	  fNofCells[1]++ ;
 #ifdef PRINT_BACK
-	  printf("\t\tno st tracklet and single point-Ch9 : anglediff : %lf\n",anglediff);
+	  HLTImportant("\t\tno st tracklet and single point-Ch9 : anglediff : %lf\n",anglediff);
 #endif
 	}
       }///back
@@ -931,14 +1007,14 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	  cells[1][fNofCells[1]].fSecond =  -1;
 	  fNofCells[1]++ ;
 #ifdef PRINT_BACK
-	  printf("\t\tno st tracklet and single point-Ch8 : anglediff : %lf\n",anglediff);
+	  HLTImportant("\t\tno st tracklet and single point-Ch8 : anglediff : %lf\n",anglediff);
 #endif
 	}
       }///front
     }///if no tracklets found condition
     
 #ifdef PRINT_BACK
-    printf("\tnofTracks found after stn 5 : %d\n",fNofCells[1]);
+    HLTImportant("\tnofTracks found after stn 5 : %d\n",fNofCells[1]);
 #endif
     
     if(!st5TrackletFound && !ch9PointFound && !ch8PointFound) continue;
@@ -949,8 +1025,8 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     /////////////////////////////////////////////////// Stn 4///////////////////////////////////////////////////////////////
     
     // #ifdef PRINT_BACK
-    //       printf("\textrap7 :  (%f,%f,%f)\n",extrapCh7X,extrapCh7Y,extrapCh7Z);
-    //       printf("\textrap6 :  (%f,%f,%f)\n",extrapCh6X,extrapCh6Y,extrapCh6Z);
+    //       HLTImportant("\textrap7 :  (%f,%f,%f)\n",extrapCh7X,extrapCh7Y,extrapCh7Z);
+    //       HLTImportant("\textrap6 :  (%f,%f,%f)\n",extrapCh6X,extrapCh6Y,extrapCh6Z);
     // #endif    
     
     nofFrontChPoints = 0; nofBackChPoints = 0;
@@ -982,7 +1058,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	
 	if(distChBack>circularWindow) continue;
 #ifdef PRINT_BACK
-	printf("\t\tpoints selected in Ch7  : (%f,%f,%f)\n",
+	HLTImportant("\t\tpoints selected in Ch7  : (%f,%f,%f)\n",
 	       fChPoint[7][ipointch7]->fX,fChPoint[7][ipointch7]->fY,fChPoint[7][ipointch7]->fZ);
 #endif
 	
@@ -1018,7 +1094,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	if(distChFront>circularWindow) continue;
 	
 #ifdef PRINT_BACK
-	printf("\t\tpoints selected in Ch6  : (%f,%f,%f)\n",
+	HLTImportant("\t\tpoints selected in Ch6  : (%f,%f,%f)\n",
 	       fChPoint[6][ipointch6]->fX,fChPoint[6][ipointch6]->fY,fChPoint[6][ipointch6]->fZ);
 #endif
 	frontIndex[nofFrontChPoints++] = ipointch6;
@@ -1040,10 +1116,10 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	  cells[0][fNofCells[0]].fSecond =  backIndex[ibackpoint];
 	  fNofCells[0]++ ;
 #ifdef PRINT_BACK
-	  printf("\t\ttracklet-St4 : anglediff : %lf\n",anglediff);
-	  printf("\t\t\tCh7  : (%f,%f,%f)\n",fChPoint[7][backIndex[ibackpoint]]->fX,
+	  HLTImportant("\t\ttracklet-St4 : anglediff : %lf\n",anglediff);
+	  HLTImportant("\t\t\tCh7  : (%f,%f,%f)\n",fChPoint[7][backIndex[ibackpoint]]->fX,
 		 fChPoint[7][backIndex[ibackpoint]]->fY,fChPoint[7][backIndex[ibackpoint]]->fZ);
-	  printf("\t\t\tCh6  : (%f,%f,%f)\n",fChPoint[6][frontIndex[ifrontpoint]]->fX,
+	  HLTImportant("\t\t\tCh6  : (%f,%f,%f)\n",fChPoint[6][frontIndex[ifrontpoint]]->fX,
 		 fChPoint[6][frontIndex[ifrontpoint]]->fY,fChPoint[6][frontIndex[ifrontpoint]]->fZ);
 #endif
 	}///anglediff condn
@@ -1071,7 +1147,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	  cells[0][fNofCells[0]].fSecond =  backIndex[ibackpoint];
 	  fNofCells[0]++ ;
 #ifdef PRINT_BACK
-	  printf("\t\tno st tracklet and single point-Ch7 : anglediff : %lf\n",anglediff);
+	  HLTImportant("\t\tno st tracklet and single point-Ch7 : anglediff : %lf\n",anglediff);
 #endif
 	}
       }///back
@@ -1086,14 +1162,14 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	  cells[0][fNofCells[0]].fSecond =  -1;
 	  fNofCells[0]++ ;
 #ifdef PRINT_BACK
-	  printf("\t\tno st tracklet and single point-Ch6 : anglediff : %lf\n",anglediff);
+	  HLTImportant("\t\tno st tracklet and single point-Ch6 : anglediff : %lf\n",anglediff);
 #endif
 	}
       }///front
     }///if no tracklets found condition
     
 #ifdef PRINT_BACK
-    printf("\tnofTracks found after stn 4 : %d\n",fNofCells[0]);
+    HLTImportant("\tnofTracks found after stn 4 : %d\n",fNofCells[0]);
 #endif
     
     if(!st4TrackletFound && !ch7PointFound && !ch6PointFound) continue;
@@ -1104,7 +1180,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     ////////////////////////////////////////////// Analyse and fill trackseg array////////////////////////////////////////
     ;
 #ifdef PRINT_BACK
-    printf("\tfNofbackTrackSeg : %d, st5TrackletFound : %d, st4TrackletFound : %d\n",fNofbackTrackSeg,st5TrackletFound,st4TrackletFound);
+    HLTImportant("\tfNofbackTrackSeg : %d, st5TrackletFound : %d, st4TrackletFound : %d\n",fNofbackTrackSeg,st5TrackletFound,st4TrackletFound);
 #endif
 
     if(st5TrackletFound && st4TrackletFound){
@@ -1129,14 +1205,14 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 	    fBackTrackSeg[fNofbackTrackSeg].fTrigRec = fChPoint11[itrig]->fId;
 	    minAngle = anglediff;
 #ifdef PRINT_BACK
-	    printf("\t\ttracklet-St4 and St5 : anglediff : %lf\n",anglediff);
-	    printf("\t\t\tCh9  : (%f,%f,%f)\n",fChPoint[9][index4]->fX,
+	    HLTImportant("\t\ttracklet-St4 and St5 : anglediff : %lf\n",anglediff);
+	    HLTImportant("\t\t\tCh9  : (%f,%f,%f)\n",fChPoint[9][index4]->fX,
 		   fChPoint[9][index4]->fY,fChPoint[9][index4]->fZ);
-	    printf("\t\t\tCh8  : (%f,%f,%f)\n",fChPoint[8][index3]->fX,
+	    HLTImportant("\t\t\tCh8  : (%f,%f,%f)\n",fChPoint[8][index3]->fX,
 		   fChPoint[8][index3]->fY,fChPoint[8][index3]->fZ);
-	    printf("\t\t\tCh7  : (%f,%f,%f)\n",fChPoint[7][index2]->fX,
+	    HLTImportant("\t\t\tCh7  : (%f,%f,%f)\n",fChPoint[7][index2]->fX,
 		   fChPoint[7][index2]->fY,fChPoint[7][index2]->fZ);
-	    printf("\t\t\tCh6  : (%f,%f,%f)\n",fChPoint[6][index1]->fX,
+	    HLTImportant("\t\t\tCh6  : (%f,%f,%f)\n",fChPoint[6][index1]->fX,
 		   fChPoint[6][index1]->fY,fChPoint[6][index1]->fZ);
 #endif
 	  }///if minangle
@@ -1376,7 +1452,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifdef PRINT_BACK
-    printf("\n");
+    HLTImportant("\n");
 #endif
 
   }///trigger loop
@@ -1386,7 +1462,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
   for( Int_t ibacktrackseg=0;ibacktrackseg<fNofbackTrackSeg;ibacktrackseg++){
     
 #ifdef PRINT_BACK
-    printf("Index : (%d,%d,%d,%d) \n",fBackTrackSeg[ibacktrackseg].fIndex[0],
+    HLTImportant("Index : (%d,%d,%d,%d) \n",fBackTrackSeg[ibacktrackseg].fIndex[0],
 	   fBackTrackSeg[ibacktrackseg].fIndex[1],fBackTrackSeg[ibacktrackseg].fIndex[2],
 	   fBackTrackSeg[ibacktrackseg].fIndex[3]);
 #endif
@@ -1431,8 +1507,8 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
   }///backtrigseg loop
 
 #ifdef PRINT_BACK
-  printf("AliHLTMUONFullTracker::SlatTrackSeg()--End\n");
-  printf("\n\n");
+  HLTImportant("AliHLTMUONFullTracker::SlatTrackSeg()--End\n");
+  HLTImportant("\n\n");
 #endif
   
   return true;
@@ -1540,7 +1616,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   
   
 #ifdef PRINT_FRONT
-  printf("\nAliHLTMUONFullTracker::QuadTrackSeg()--Begin\n\n");
+  HLTImportant("\nAliHLTMUONFullTracker::QuadTrackSeg()--Begin\n\n");
 #endif
 
   for( Int_t ibackpoint=0;ibackpoint<fNofPoints[3];ibackpoint++){
@@ -1557,9 +1633,9 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 	if(nofSt2Cells >= (fgkMaxNofCellsPerCh-1)) continue;
 	
 	// #ifdef PRINT_FRONT
-	// 	printf("\t\t\tCh3  : %d, (%f,%f,%f)\n",
+	// 	HLTImportant("\t\t\tCh3  : %d, (%f,%f,%f)\n",
 	// 	       nofSt2Cells,fChPoint[3][ibackpoint]->fX,fChPoint[3][ibackpoint]->fY,fChPoint[3][ibackpoint]->fZ);
-	// 	printf("\t\t\tCh2  :(%f,%f,%f)\n\n",
+	// 	HLTImportant("\t\t\tCh2  :(%f,%f,%f)\n\n",
 	// 	       fChPoint[2][ifrontpoint]->fX,fChPoint[2][ifrontpoint]->fY,fChPoint[2][ifrontpoint]->fZ);
 	// #endif
 	
@@ -1591,9 +1667,9 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 	   
 	
 	// #ifdef PRINT_FRONT
-	// 	printf("\t\t\tCh1  : %d, (%f,%f,%f)\n",
+	// 	HLTImportant("\t\t\tCh1  : %d, (%f,%f,%f)\n",
 	// 	       nofSt1Cells,fChPoint[1][ibackpoint]->fX,fChPoint[1][ibackpoint]->fY,fChPoint[1][ibackpoint]->fZ);
-	// 	printf("\t\t\tCh0  :(%f,%f,%f)\n\n",
+	// 	HLTImportant("\t\t\tCh0  :(%f,%f,%f)\n\n",
 	// 	       fChPoint[0][ifrontpoint]->fX,fChPoint[0][ifrontpoint]->fY,fChPoint[0][ifrontpoint]->fZ);
 	// #endif
 	ch1CellPoint[nofSt1Cells] = ibackpoint;
@@ -1608,7 +1684,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   }
   
 #ifdef PRINT_FRONT
-  printf("\tnofSt1Cells : %d, nofSt2Cells : %d\n",nofSt1Cells,nofSt2Cells);
+  HLTImportant("\tnofSt1Cells : %d, nofSt2Cells : %d\n",nofSt1Cells,nofSt2Cells);
 #endif
   
   for( Int_t ibacktrackseg=0;ibacktrackseg<fNofbackTrackSeg;ibacktrackseg++)
@@ -1667,7 +1743,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 	  anglediff = TMath::RadToDeg()* (Angle(&pSeg1,&pSeg2) + Angle(&pSeg2,&pSeg3));
 
 	  // #ifdef PRINT_FRONT
-	  // 	  printf("\t\t\tanglediff : %lf\n",anglediff);
+	  // 	  HLTImportant("\t\t\tanglediff : %lf\n",anglediff);
 	  // #endif	  
 	  if(anglediff<minAngle){
 	    minAngle = anglediff;
@@ -1706,11 +1782,11 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   
 
 #ifdef PRINT_FRONT
-  printf("\tfNofConnected : %d, nofNCfBackTrackSeg : %d\n",fNofConnected,nofNCfBackTrackSeg);
-  printf("\tfNofPoints[3] : %d, fNofPoints[2] : %d\n",fNofPoints[3],fNofPoints[2]);
+  HLTImportant("\tfNofConnected : %d, nofNCfBackTrackSeg : %d\n",fNofConnected,nofNCfBackTrackSeg);
+  HLTImportant("\tfNofPoints[3] : %d, fNofPoints[2] : %d\n",fNofPoints[3],fNofPoints[2]);
   if(nofNCfBackTrackSeg==0){
-    printf("All fBackTrackSegs are connected with fFrontTrackSegs, no need to search further\n");
-    printf("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
+    HLTImportant("All fBackTrackSegs are connected with fFrontTrackSegs, no need to search further\n");
+    HLTImportant("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
   }
 #endif
   
@@ -1751,7 +1827,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 	  
 	  anglediff = TMath::RadToDeg()* Angle(&pSeg1,&pSeg2) ;
 	  // #ifdef PRINT_FRONT
-	  // 	  printf("\t\t annglediff(Ch4) : %lf\n",anglediff);
+	  // 	  HLTImportant("\t\t annglediff(Ch4) : %lf\n",anglediff);
 	  // #endif	  
 	  if(anglediff<minAngle){
 	    minAngle = anglediff;
@@ -1782,7 +1858,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       inclinationFront = (fChPoint[2][ifrontpoint]->fX - fChPoint[1][ch1CellPoint[itrackletfront]]->fX)/
 	(fChPoint[2][ifrontpoint]->fZ - fChPoint[1][ch1CellPoint[itrackletfront]]->fZ) ;
       // #ifdef PRINT_FRONT
-      //       printf("\t\texpectSt3X : %f, expectSt3Y : %f, inclinationFront : %f\n",expectSt3X,expectSt3Y,inclinationFront);
+      //       HLTImportant("\t\texpectSt3X : %f, expectSt3Y : %f, inclinationFront : %f\n",expectSt3X,expectSt3Y,inclinationFront);
       // #endif      
       
       for( Int_t ibacktrackseg=0;ibacktrackseg<nofNCfBackTrackSeg;ibacktrackseg++){  
@@ -1795,7 +1871,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 
 	  anglediff = TMath::RadToDeg()* Angle(&pSeg1,&pSeg2) ;
 	  // #ifdef PRINT_FRONT
-	  // 	  printf("\t\t annglediff(Ch3) : %lf\n",anglediff);
+	  // 	  HLTImportant("\t\t annglediff(Ch3) : %lf\n",anglediff);
 	  // #endif	  
 	  if(anglediff<minAngle){
 	    minAngle = anglediff;
@@ -1840,10 +1916,10 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       fNofConnected++;
 
 #ifdef PRINT_FRONT
-  printf("\tfNofConnected : %d, nofSNCfBackTrackSeg : %d\n",fNofConnected,nofSNCfBackTrackSeg);
+  HLTImportant("\tfNofConnected : %d, nofSNCfBackTrackSeg : %d\n",fNofConnected,nofSNCfBackTrackSeg);
   if(nofSNCfBackTrackSeg==0){
-    printf("All fBackTrackSegs are connected with fFrontTrackSegs, no need to search further\n");
-    printf("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
+    HLTImportant("All fBackTrackSegs are connected with fFrontTrackSegs, no need to search further\n");
+    HLTImportant("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
   }
 #endif
 
@@ -1958,9 +2034,9 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       fNofConnected++;
   
 #ifdef PRINT_FRONT
-  printf("\tfNofConnected : %d\n",fNofConnected);
-  printf("Three spacepoints are found in fFrontTrackSegs\n");
-  printf("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
+  HLTImportant("\tfNofConnected : %d\n",fNofConnected);
+  HLTImportant("Three spacepoints are found in fFrontTrackSegs\n");
+  HLTImportant("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
 #endif
 
 
@@ -1975,7 +2051,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
   //// return the additional track chi2
 
 #ifdef PRINT_DETAIL_KALMAN
-  printf("AliHLTMUONFullTracker::KalmanFilter()--Begin\n\n");
+  HLTImportant("AliHLTMUONFullTracker::KalmanFilter()--Begin\n\n");
 #endif
 
 
@@ -1984,7 +2060,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
 #ifdef PRINT_DETAIL_KALMAN
   Info("\tKalmanFilter","param.Print() [p]");
   param.Print();
-  printf("GetZ : %lf\n",trackParamAtCluster.GetZ());
+  HLTImportant("GetZ : %lf\n",trackParamAtCluster.GetZ());
 #endif
 
 
@@ -2031,7 +2107,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
   clusterWeight(2,2) = 1. / cluster->fErrY2;
 #ifdef PRINT_DETAIL_KALMAN
   Info("\tKalmanFilter","clusterWeight.Print() [U]");
-  printf("\tErrX2 : %lf, ErrY2 : %lf\n",cluster->fErrX2,cluster->fErrY2);
+  HLTImportant("\tErrX2 : %lf, ErrY2 : %lf\n",cluster->fErrX2,cluster->fErrY2);
   clusterWeight.Print();
 #endif
 
@@ -2070,7 +2146,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
 
   /// Save the new parameters
   trackParamAtCluster.SetParameters(newParam);
-  ///   printf(Form("Pt : %lf\n",TMath::Sqrt(trackParamAtCluster.Px()*trackParamAtCluster.Px() + 
+  ///   HLTImportant(Form("Pt : %lf\n",TMath::Sqrt(trackParamAtCluster.Px()*trackParamAtCluster.Px() + 
   /// 				      trackParamAtCluster.Py()*trackParamAtCluster.Py())));
   
   
@@ -2087,7 +2163,7 @@ Double_t AliHLTMUONFullTracker::KalmanFilter(AliMUONTrackParam &trackParamAtClus
 #ifdef PRINT_DETAIL_KALMAN
   Info("\tKalmanFilter","addChi2Track.Print() [additional chi2 = ((p'-p)^-1)W(p'-p) + ((p'-m)^-1)U(p'-m)))]");
   addChi2Track.Print();
-  printf("AliHLTMUONFullTracker::KalmanFilter()--End\n\n");
+  HLTImportant("AliHLTMUONFullTracker::KalmanFilter()--End\n\n");
 #endif
 
 
@@ -2183,7 +2259,7 @@ void AliHLTMUONFullTracker::PropagateTracks(Double_t charge, Float_t& px, Float_
     OneStepHelix3(charge,step,vect,vout);
     ///SetPoint(fCount,vout[0],vout[1],vout[2]);
     ///fCount++;
-    ///     printf("(x,y,z) : (%f,%f,%f)\n",vout[0],vout[1],vout[2]);
+    ///     HLTImportant("(x,y,z) : (%f,%f,%f)\n",vout[0],vout[1],vout[2]);
     for (Int_t i = 0; i < 7; i++) {
       vect[i] = vout[i];
     }
@@ -2552,8 +2628,8 @@ Bool_t AliHLTMUONFullTracker::SelectFront()
     ifronttrackseg = fBackToFront[ibacktrackseg][fNofConnectedfrontTrackSeg[ibacktrackseg]-1];
     
 #ifdef PRINT_SELECT
-    printf("AliHLTMUONFullTracker::SelectFront()--Begin\n\n");
-    printf("\tbacktrack : %d is connected with : %d front tracks\n",
+    HLTImportant("AliHLTMUONFullTracker::SelectFront()--Begin\n\n");
+    HLTImportant("\tbacktrack : %d is connected with : %d front tracks\n",
 	   ibacktrackseg,fNofConnectedfrontTrackSeg[ibacktrackseg]);
 #endif
 
@@ -2620,9 +2696,9 @@ Bool_t AliHLTMUONFullTracker::SelectFront()
     ///     fTrackParam[ibacktrackseg] = trackParam;
     
 #ifdef PRINT_SELECT
-    printf("\tbacktrack : %d is connected with : %d front tracks\n",
+    HLTImportant("\tbacktrack : %d is connected with : %d front tracks\n",
 	   ibacktrackseg,fNofConnectedfrontTrackSeg[ibacktrackseg]);
-    printf("AliHLTMUONFullTracker::SelectFront()--End\n\n");
+    HLTImportant("AliHLTMUONFullTracker::SelectFront()--End\n\n");
 
 #endif
     
@@ -2652,8 +2728,8 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     ifronttrackseg = fBackToFront[ibacktrackseg][fNofConnectedfrontTrackSeg[ibacktrackseg]-1];
     
 #ifdef PRINT_KALMAN
-    printf("AliHLTMUONFullTracker::KalmanChi2Test()--Begin\n\n");
-    printf("\tbacktrack : %d is connected with : %d front tracks, front track index %d\n",
+    HLTImportant("AliHLTMUONFullTracker::KalmanChi2Test()--Begin\n\n");
+    HLTImportant("\tbacktrack : %d is connected with : %d front tracks, front track index %d\n",
 	   ibacktrackseg,fNofConnectedfrontTrackSeg[ibacktrackseg],ifronttrackseg);
 #endif
     maxIndex = (fBackTrackSeg[ibacktrackseg].fIndex[3]!=-1)?3:2;
@@ -2689,9 +2765,9 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
     
 #ifdef PRINT_KALMAN
-    printf("\t\tCh%d  : (%f,%f,%f)\n",maxCh,clus2.fX,clus2.fY,clus2.fZ);
-    printf("\t\tCh%d  : (%f,%f,%f)\n",minCh,clus1.fX,clus1.fY,clus1.fZ);
-    printf("\t\tFor minCh : %d, GetBeMom : %lf\n",minCh,trackParam.GetInverseBendingMomentum());
+    HLTImportant("\t\tCh%d  : (%f,%f,%f)\n",maxCh,clus2.fX,clus2.fY,clus2.fZ);
+    HLTImportant("\t\tCh%d  : (%f,%f,%f)\n",minCh,clus1.fX,clus1.fY,clus1.fZ);
+    HLTImportant("\t\tFor minCh : %d, GetBeMom : %lf\n",minCh,trackParam.GetInverseBendingMomentum());
 #endif      
 
     ///       trackParam->SetClusterPtr(clus[8]);
@@ -2728,7 +2804,7 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     }
 
 #ifdef PRINT_KALMAN
-    printf("\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\n",minCh,chi2,trackParam.GetInverseBendingMomentum());
+    HLTImportant("\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\n",minCh,chi2,trackParam.GetInverseBendingMomentum());
     ///       TMatrixD para2(trackParam->GetParameters());
     ///       para2.Print();
 #endif      
@@ -2792,9 +2868,9 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     trackParam = minChi2Param ;
     
 #ifdef PRINT_KALMAN
-    printf("\t\t\tCh%d  : (%f,%f,%f)\n",minCh,clus1.fX,clus1.fY,clus1.fZ);
-    printf("\t\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\t",minCh,chi2,trackParam.GetInverseBendingMomentum());
-    printf(Form("Pt : %lf\n",TMath::Sqrt(trackParam.Px()*trackParam.Px() + 
+    HLTImportant("\t\t\tCh%d  : (%f,%f,%f)\n",minCh,clus1.fX,clus1.fY,clus1.fZ);
+    HLTImportant("\t\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\t",minCh,chi2,trackParam.GetInverseBendingMomentum());
+    HLTImportant(Form("Pt : %lf\n",TMath::Sqrt(trackParam.Px()*trackParam.Px() + 
 					 trackParam.Py()*trackParam.Py())));
 #endif      
     
@@ -2830,12 +2906,12 @@ Bool_t AliHLTMUONFullTracker::KalmanChi2Test()
     trackParam = extrapTrackParamAtCluster2;
     
 #ifdef PRINT_KALMAN
-    printf("\t\tCh%d  : (%f,%f,%f)\n",minCh,clus1.fX,clus1.fY,clus1.fZ);
-    printf("\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\t",minCh,chi2,trackParam.GetInverseBendingMomentum());
-    printf(Form("Pt : %lf\n",TMath::Sqrt(extrapTrackParamAtCluster2.Px()*extrapTrackParamAtCluster2.Px() + 
+    HLTImportant("\t\tCh%d  : (%f,%f,%f)\n",minCh,clus1.fX,clus1.fY,clus1.fZ);
+    HLTImportant("\t\tFor minCh : %d, Chi2 = %lf, GetBeMom : %lf\t",minCh,chi2,trackParam.GetInverseBendingMomentum());
+    HLTImportant(Form("Pt : %lf\n",TMath::Sqrt(extrapTrackParamAtCluster2.Px()*extrapTrackParamAtCluster2.Px() + 
 					 extrapTrackParamAtCluster2.Py()*extrapTrackParamAtCluster2.Py())));
     trackParam.Print();
-    printf("AliHLTMUONFullTracker::KalmanChi2Test()--End\n\n");
+    HLTImportant("AliHLTMUONFullTracker::KalmanChi2Test()--End\n\n");
 #endif      
     ///AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
     //trackParam.SetInverseBendingMomentum(trackParam.GetCharge());
