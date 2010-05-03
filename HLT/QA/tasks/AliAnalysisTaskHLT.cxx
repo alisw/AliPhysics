@@ -488,13 +488,15 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   // Track cuts (except d0 cut)
   //------- TPC track selection --------
   Int_t    minclsTPCOff=70;
+  Double_t maxchi2perTPCcl=4.;
+  
   AliESDtrackCuts* esdtrackCutsITSTPCOff = new AliESDtrackCuts("esdtrackCutsITSTPC");
   esdtrackCutsITSTPCOff->SetRequireITSRefit(kTRUE);
   esdtrackCutsITSTPCOff->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					       AliESDtrackCuts::kAny);
   esdtrackCutsITSTPCOff->SetAcceptKinkDaughters(kFALSE);
   esdtrackCutsITSTPCOff->SetMinNClustersTPC(minclsTPCOff);
-  esdtrackCutsITSTPCOff->SetMaxChi2PerClusterTPC(maxchi2perTPCcl); 
+  //esdtrackCutsITSTPCOff->SetMaxChi2PerClusterTPC(maxchi2perTPCcl); 
 
 
   Double_t vertexOFF[3];
