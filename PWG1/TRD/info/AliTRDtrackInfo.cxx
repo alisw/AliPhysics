@@ -299,7 +299,6 @@ void AliTRDtrackInfo::AddTrackRef(const AliTrackReference *tref)
   // Add track reference
   //
 
-  SetMC();
   if(fMC->fNTrackRefs >= 12){ 
     SetCurved();
     return;
