@@ -47,6 +47,7 @@ public :
                         {return fRingArea;}                                                        //area of the current ring in cm^2 
   Double_t GetRingAcc   (                                                                   )const
                         {return fRingAcc;}                                                         //portion of the ring ([0,1]) accepted by geometry.To scale n. of photons 
+  Double_t FindRingExt  (Double_t ckov,Double_t xPc,Double_t yPc,Double_t thRa,Double_t phRa);     //find ring acceptance by external parameters
   void     SetTrack     (Double_t xRad,Double_t yRad,Double_t theta,Double_t phi            )
                                 {fTrkDir.SetMagThetaPhi(1,theta,phi);  fTrkPos.Set(xRad,yRad);}    //set track parameter at RAD
   void     SetImpPC     (Double_t xPc,Double_t yPc                                          )
