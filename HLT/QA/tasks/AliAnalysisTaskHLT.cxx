@@ -496,7 +496,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 					       AliESDtrackCuts::kAny);
   esdtrackCutsITSTPCOff->SetAcceptKinkDaughters(kFALSE);
   esdtrackCutsITSTPCOff->SetMinNClustersTPC(minclsTPCOff);
-  //esdtrackCutsITSTPCOff->SetMaxChi2PerClusterTPC(maxchi2perTPCcl); 
+  esdtrackCutsITSTPCOff->SetMaxChi2PerClusterTPC(maxchi2perTPCcl); 
 
 
   Double_t vertexOFF[3];
