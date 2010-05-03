@@ -235,16 +235,16 @@ void AliHLTEveCalo::AddHistogramsToCanvas(AliHLTHOMERBlockDesc * block, TCanvas 
   
 
       //Check if histo is 2D histo
-      TH2F* histo = dynamic_cast<TH2F*>(object);
-      if(histo){
+      TH2F* histo2 = dynamic_cast<TH2F*>(object);
+      if(histo2){
 
-	Int_t lb = histo->FindLastBinAbove(0,1);
+	Int_t lb = histo2->FindLastBinAbove(0,1);
 	if(lb > -1) {
-	  histo->SetAxisRange(0, histo->GetXaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 1) + 3), "X");
-	  histo->SetAxisRange(0, histo->GetYaxis()->GetBinUpEdge(histo->FindLastBinAbove(0, 2) + 3), "Y");
+	  histo2->SetAxisRange(0, histo2->GetXaxis()->GetBinUpEdge(histo2->FindLastBinAbove(0, 1) + 3), "X");
+	  histo2->SetAxisRange(0, histo2->GetYaxis()->GetBinUpEdge(histo2->FindLastBinAbove(0, 2) + 3), "Y");
 	}
 	
-	histo->Draw("COLZ");
+	histo2->Draw("COLZ");
       }
       
 
