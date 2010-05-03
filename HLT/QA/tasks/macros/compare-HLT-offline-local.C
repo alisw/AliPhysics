@@ -8,18 +8,18 @@
  *
  * Usage:
  * <pre>
- *   aliroot -b -q -l compare_HLT_offline_local.C'("phos")' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_local.C'("phos tpc global")' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_local.C 2>&1 | tee task.log
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","phos")' 2>&1 | tee task.log
+ *   aliroot -b -q -l compare_HLT_offline_local.C'("/home/blabla/AliESDs.root","phos tpc global")' 2>&1 | tee task.log
+ *   aliroot -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
  * </pre>
- *
- * If no argument is specified, the global task is run.
+ * 
+ * If alien:// is contained in the name of the file, then the macro connects to the grid to access the file.
  *
  * @ingroup alihlt_qa
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_local(const char* detectorTask="global"){
+void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
  
   TStopwatch timer;
   timer.Start();
@@ -85,13 +85,12 @@ void compare_HLT_offline_local(const char* detectorTask="global"){
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   
-  //TGrid::Connect("alien://");
+  if(file.Contains("alien")) TGrid::Connect("alien://");
 
   TChain *chain = new TChain("esdTree"); 
+  chain->Add(file);
+ 
   //chain->Add("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root");
-  
-  chain->Add("AliESDs.root");
-  //chain->Add("~/7TeV/115322/10000115322040.110/AliESDs.root");
   //chain->Add("...");
    
   //-------- Make the analysis manager ---------------//
