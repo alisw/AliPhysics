@@ -84,8 +84,6 @@ void  AliTRDmultiplicity::UserCreateOutputObjects()
   // Create output objects
   //
 
-  OpenFile(1, "RECREATE");
-
   TH1 *h = 0x0;
   fContainer = new TObjArray();
   for(Int_t is=0; is<AliTRDgeometry::kNsector; is++){

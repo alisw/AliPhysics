@@ -133,7 +133,6 @@ void AliTRDcheckPID::UserCreateOutputObjects()
   // Called once
 
   if(!HasFunctorList()) InitFunctorList();
-  OpenFile(1, "RECREATE");
   fContainer = Histos();
 
   fPID = new TObjArray();

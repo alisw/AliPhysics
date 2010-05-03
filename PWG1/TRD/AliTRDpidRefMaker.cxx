@@ -152,7 +152,6 @@ void AliTRDpidRefMaker::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  OpenFile(1, "RECREATE");
   fContainer = new TObjArray();
   fContainer->SetName(Form("Moni%s", GetName()));
 
