@@ -170,39 +170,46 @@ void AliZDCQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   
   // **************************** NON EXPERT HISTOS ****************************
-  TH1F * hZNCSpectrum = new TH1F("hZNCSpectrum","ZNC spectrum;Amplitude [ADC counts];Counts",100,0.,3000.);
-  TH1F * hZPCSpectrum = new TH1F("hZPCSpectrum","ZPC spectrum;Amplitude [ADC counts];Counts",100,0.,3000.);
-  TH1F * hZNASpectrum = new TH1F("hZNASpectrum","ZNA spectrum;Amplitude [ADC counts];Counts",100,0.,3000.);
-  TH1F * hZPASpectrum = new TH1F("hZPASpectrum","ZPA spectrum;Amplitude [ADC counts];Counts",100,0.,3000.);
-  TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,0.,2000.);
-  TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,0.,2000.);
+  TH1F * hZNCSpectrum = new TH1F("hZNCSpectrum","ZNC spectrum;Amplitude [ADC counts];Counts",100,7.,1007.);
+  TH1F * hZPCSpectrum = new TH1F("hZPCSpectrum","ZPC spectrum;Amplitude [ADC counts];Counts",100,7.,1007.);
+  TH1F * hZNASpectrum = new TH1F("hZNASpectrum","ZNA spectrum;Amplitude [ADC counts];Counts",100,7.,1007.);
+  TH1F * hZPASpectrum = new TH1F("hZPASpectrum","ZPA spectrum;Amplitude [ADC counts];Counts",100,7.,1007.);
+  TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,7.,2007.);
+  TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,7.,2007.);
   Add2RawsList(hZNCSpectrum, 0, !expert, image);
   Add2RawsList(hZNASpectrum, 1, !expert, image);
   Add2RawsList(hZPCSpectrum, 2, !expert, image);
   Add2RawsList(hZPASpectrum, 3, !expert, image);
   Add2RawsList(hZEM1Spectrum, 4, !expert, image);
   Add2RawsList(hZEM2Spectrum, 5, !expert, image);
-  
+    
   // **************************** EXPERT HISTOS ****************************
-  // ------------------- HIGH GAIN CHAIN ---------------------------
-  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw sumQ ZNC;Amplitude [ADC counts];Counts",100, 0., 1000.);
-  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw sumQ ZNA;Amplitude [ADC counts];Counts",100, 0., 1000.);
-  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw sumQ ZPC;Amplitude [ADC counts];Counts",100, 0., 1000.);
-  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw sumQ ZPA;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw sumQ ZNC;Amplitude [ADC counts];Counts",100, 7., 1007.);
+  TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw sumQ ZNA;Amplitude [ADC counts];Counts",100, 7., 1007.);
+  TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw sumQ ZPC;Amplitude [ADC counts];Counts",100, 7., 1007.);
+  TH1F * hRawSumQZPA = new TH1F("hRawSumQZPA", "Raw sumQ ZPA;Amplitude [ADC counts];Counts",100, 7., 1007.);
   Add2RawsList(hRawSumQZNC, 10, expert, !image);
   Add2RawsList(hRawSumQZNA, 11, expert, !image);
   Add2RawsList(hRawSumQZPC, 12, expert, !image);
   Add2RawsList(hRawSumQZPA, 13, expert, !image);
   //
-  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 1000.);
-  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 0., 1000.);
-  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 0., 1000.);
-  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 0., 1000.);
+  TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 7., 1007.);
+  TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 7., 1007.);
+  TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 7., 1007.);
+  TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 7., 1007.);
   Add2RawsList(hRawPMCZNC, 6, expert, !image);
   Add2RawsList(hRawPMCZNA, 7, expert, !image);
   Add2RawsList(hRawPMCZPC, 8, expert, !image);
   Add2RawsList(hRawPMCZPA, 9, expert, !image);
-  //
+  
+  TH2F * hZNCpmCvsPMq = new TH2F("hZNCpmCvsPMq", "ZNC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
+  TH2F * hZPCpmCvsPMq = new TH2F("hZPCpmCvsPMq", "ZPC;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
+  TH2F * hZNApmCvsPMq = new TH2F("hZNApmCvsPMq", "ZNA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
+  TH2F * hZPApmCvsPMq = new TH2F("hZPApmCvsPMq", "ZPA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
+  Add2RawsList(hZNCpmCvsPMq, 10, !expert, image);
+  Add2RawsList(hZPCpmCvsPMq, 11, !expert, image);
+  Add2RawsList(hZNApmCvsPMq, 12, !expert, image);
+  Add2RawsList(hZPApmCvsPMq, 13, !expert, image);
 }
 
 //____________________________________________________________________________
@@ -434,6 +441,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   
     Float_t zncSignal=0., znaSignal=0., zpcSignal=0., zpaSignal=0.;
     Float_t zncSumQ=0., znaSumQ=0., zpcSumQ=0., zpaSumQ=0.;
+    Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
     Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
     
     if(stream.IsADCDataWord() && 
@@ -453,7 +461,10 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	    zncSignal  += pedSubVal; 
 	    isZNCFired = kTRUE;
 	    if(quad!=0) zncSumQ += pedSubVal;
-	    else GetRawsData(10)->Fill(pedSubVal);
+	    else{
+	      zncpmC = pedSubVal;
+	      GetRawsData(10)->Fill(pedSubVal);
+	    }
 	  }
         }
         else if(det == 2){ 
@@ -463,7 +474,10 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	    zpcSignal += pedSubVal; 
 	    isZPCFired = kTRUE;
 	    if(quad!=0) zpcSumQ += pedSubVal;
-	    else GetRawsData(12)->Fill(pedSubVal);
+	    else{
+	      zpcpmC = pedSubVal;
+	      GetRawsData(12)->Fill(pedSubVal);
+	    }
 	  }
         }
         else if(det == 3){ 
@@ -485,20 +499,26 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
           pedindex = quad+12;
           if(gain == 0){
 	    Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	    znaSignal  += (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	    znaSignal  += pedSubVal; 
 	    isZNAFired = kTRUE;
 	    if(quad!=0) znaSumQ += pedSubVal;
-	    else GetRawsData(11)->Fill(pedSubVal);
+	    else{
+	      znapmC = pedSubVal;
+	      GetRawsData(11)->Fill(pedSubVal);
+	    }
 	  }
         }
         else if(det == 5){
           pedindex = quad+17;
           if(gain == 0){
 	    Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	    zpaSignal  += (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	    zpaSignal  += pedSubVal; 
 	    isZPAFired = kTRUE;
 	    if(quad!=0) zpaSumQ += pedSubVal;
-	    else GetRawsData(13)->Fill(pedSubVal);
+	    else{
+	      zpapmC = pedSubVal;
+	      GetRawsData(13)->Fill(pedSubVal);
+	    }
 	  }
         }
        }
@@ -508,18 +528,22 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     if(isZNCFired){
       GetRawsData(0)->Fill(zncSignal);
       GetRawsData(6)->Fill(zncSumQ);
+      GetRawsData(10)->Fill(zncpmC); 
     }
     if(isZPCFired){
       GetRawsData(2)->Fill(zpcSignal);
       GetRawsData(8)->Fill(zncSumQ);
+      GetRawsData(11)->Fill(zpcpmC); 
     }
     if(isZNAFired){ 
       GetRawsData(1)->Fill(znaSignal);
       GetRawsData(7)->Fill(znaSumQ);
+      GetRawsData(12)->Fill(znapmC); 
     }
     if(isZPAFired){ 
       GetRawsData(3)->Fill(zpaSignal);
       GetRawsData(9)->Fill(znaSumQ);
+      GetRawsData(13)->Fill(zpapmC); 
     }
     
   } //stream.Next()
