@@ -37,6 +37,7 @@
 #include "AliHLTCaloClusterDataStruct.h"
 #include "TRefArray.h"
 #include "TString.h"
+#include "TMap.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerCaloClusterEnergy)
@@ -209,7 +210,16 @@ int AliHLTTriggerCaloClusterEnergy::ScanConfigurationArgument(int argc, const ch
 }
 
 void AliHLTTriggerCaloClusterEnergy::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) {
-  // see header file for class documentation
+  // see header file for documentation
   constBase = sizeof(AliHLTTriggerDecision) + sizeof(AliHLTDomainEntry)*14;
   inputMultiplier = 1;
+}
+
+
+void AliHLTTriggerCaloClusterEnergy::GetOCDBObjectDescription( TMap* const targetMap) {
+  // Get a list of OCDB object description.
+  if (!targetMap) return;
+  targetMap->Add(new TObjString(fgkOCDBEntry),
+		 new TObjString(Form("%s threshold trigger OCDB object", fDetector.Data()) ) 
+		 );
 }
