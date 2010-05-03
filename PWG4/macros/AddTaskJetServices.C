@@ -20,7 +20,7 @@ AliAnalysisTaskJetServices *AddTaskJetServices()
    // Create the task and configure it.
    //===========================================================================
    
-   AliAnalysisTaskJetServices* pwg4serv = new  AliAnalysisTaskJetServices("Jet Services");
+   AliAnalysisTaskJetServices* pwg4serv = new  AliAnalysisTaskJetServices("JetServices");
       
 
    if(type == "AOD"){

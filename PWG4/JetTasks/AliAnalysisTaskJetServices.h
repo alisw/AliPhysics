@@ -22,6 +22,7 @@ class AliCFManager;
 
 class TList;
 class TChain;
+class TH1F;
 class TH2F;
 class TH3F;
 class TProfile;
@@ -40,14 +41,16 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void LocalInit() { Init(); }
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
-    virtual void SetZVertexCut(Float_t f){fZVtxCut = f;}
+    virtual void SetZVertexCut(Float_t f){fVtxZCut = f;}
     virtual Bool_t Notify();
 
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
     virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
     virtual void SetRealData(Bool_t b){fRealData = b;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
-    enum { kAllTriggered = 0,kTriggeredSPDVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexIn,kSelected,kConstraints};
+    Bool_t IsEventSelectedESD(AliESDEvent* esd);
+    Bool_t IsEventSelectedAOD(AliAODEvent* aod);
+    enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexIn,kSelected,kConstraints};
 
  private:
 
@@ -58,7 +61,11 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Bool_t        fUsePhysicsSelection;// decide wether we take into account physicsselction task
     Bool_t        fRealData;           // true for real data to allow correct trigger slection
     Float_t       fAvgTrials;          // Average number of trials
-    Float_t       fZVtxCut;            // Average number of trials
+    Float_t       fVtxXMean;          // mean x for cuts
+    Float_t       fVtxYMean;          // mean y for cuts
+    Float_t       fVtxZMean;          // mean z for cuts
+    Float_t       fVtxRCut;           // vtx cut in R
+    Float_t       fVtxZCut;           // vtzx cut in Z
     Float_t       fRunRange[2];        // only important for real data for 
     TProfile*     fh1Xsec;             // pythia cross section and trials
     TH1F*         fh1Trials;           // trials are added
@@ -72,7 +79,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2VtxXY;          // XY position of VTX were available
     TList *fHistList; // Output list
    
-    ClassDef(AliAnalysisTaskJetServices,3)
+    ClassDef(AliAnalysisTaskJetServices,4)
 };
  
 #endif
