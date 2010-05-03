@@ -592,8 +592,8 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
    Double_t px   = -100.;
    Double_t py   = -100.;
    Double_t rat  = -100.; 
-   Double_t xE  = -100.; 
-   Double_t cosi  = -100.; 
+   Double_t xE   = -100.; 
+   Double_t cosi = -100.; 
    Double_t phi  = -100. ;
    Double_t eta  = -100. ;
    Double_t p[3];
@@ -613,7 +613,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
      phi  = mom.Phi() ;
      if(phi < 0) phi+=TMath::TwoPi();
      rat   = pt/ptTrig ;
-     xE   = -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
+     xE    = -(px*pxTrig+py*pyTrig)/(ptTrig*ptTrig);
      if(xE <0.)xE =-xE;
      cosi = TMath::Log(1/xE);
     // printf("rat = %f, xE = %f, cosi =%f \n", rat, xE, cosi);
@@ -675,7 +675,9 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
      else{
 	   nrefs++;
 	   if(nrefs==1){
-		reftracks    = new TObjArray;
+		reftracks = new TObjArray(0);
+		reftracks->SetName(GetAODObjArrayName()+"Tracks");
+		reftracks->SetOwner(kFALSE);
 	   }
        reftracks->Add(track);
      }//aod particle loop
@@ -683,7 +685,6 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   
    //Fill AOD with reference tracks, if not filling histograms
    if(!bFillHisto && reftracks) {
-     reftracks->SetName(GetAODObjArrayName()+"Tracks");
      aodParticle->AddObjArray(reftracks);
    }
 	
