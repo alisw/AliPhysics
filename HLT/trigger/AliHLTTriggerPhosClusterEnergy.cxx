@@ -50,8 +50,8 @@ AliHLTTriggerCaloClusterEnergy("PHOS")
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlts
 
-  fgkOCDBEntry = "HLT/ConfigHLT/PhosClusterEnergyTrigger";
-  fgkInputDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS;
+  fOCDBEntry = "HLT/ConfigHLT/PhosClusterEnergyTrigger";
+  fInputDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS;
 }
 
 AliHLTTriggerPhosClusterEnergy::~AliHLTTriggerPhosClusterEnergy() {

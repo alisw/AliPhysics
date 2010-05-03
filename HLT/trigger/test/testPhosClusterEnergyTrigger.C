@@ -31,7 +31,6 @@ void CreateInput(const char* filename, Int_t numOfTracks, Double_t minPt, Double
   //cluster.SetClusterType(nuOfmTracks);
 
   event.AddCaloCluster(&cluster);
-  event.SetFirstPHOSCluster(0);
 
   event.Write();
   delete file;
@@ -80,14 +79,14 @@ bool testPhosClusterEnergyTrigger()
   gSystem->Load("libAliHLTMUON.so");
   gSystem->Load("libAliHLTTRD.so");
   gSystem->Load("libAliHLTTrigger.so");
-  CreateInput("PhosClusterEnergyTriggerTestInput1.root", -2, 0.1, 1.99);
+  CreateInput("PhosClusterEnergyTriggerTestInput1.root", -2, 0.1, 0.99);
   CreateInput("PhosClusterEnergyTriggerTestInput2.root", 0, 2.1, 4.0);
   AliHLTSystem sys;
   sys.LoadComponentLibraries("libAliHLTUtil.so");
   sys.LoadComponentLibraries("libAliHLTTrigger.so");
   const char* cmdline = " -datatype ROOTTOBJ 'HLT ' -datafile PhosClusterEnergyTriggerTestInput1.root -nextevent -datafile PhosClusterEnergyTriggerTestInput2.root";
   AliHLTConfiguration pub("pub", "ROOTFilePublisher", NULL, cmdline);
-  AliHLTConfiguration proc("proc", "PhosClusterEnergyTrigger", "pub", "-energy 2");
+  AliHLTConfiguration proc("proc", "PhosClusterEnergyTrigger", "pub", "");
   AliHLTConfiguration sink("sink", "ROOTFileWriter", "proc", "-datafile PhosClusterEnergyTriggerTestOutput.root -concatenate-events");
   sys.BuildTaskList("sink");
   sys.Run(2);

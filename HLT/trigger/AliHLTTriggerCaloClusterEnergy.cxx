@@ -48,8 +48,8 @@ AliHLTTriggerCaloClusterEnergy::AliHLTTriggerCaloClusterEnergy(TString detector)
   fClustersRefs(NULL),
   fDetector(detector),
   fClusterReader(NULL),
-  fgkOCDBEntry(""), 
-  fgkInputDataType()
+  fOCDBEntry(""), 
+  fInputDataType()
 {
   // see header file for class documentation
   // or
@@ -62,7 +62,6 @@ AliHLTTriggerCaloClusterEnergy::AliHLTTriggerCaloClusterEnergy(TString detector)
 
 }
 
-//const char* AliHLTTriggerCaloClusterEnergy::fgkOCDBEntry="HLT/ConfigHLT/CaloClusterEnergyTrigger";
 
 AliHLTTriggerCaloClusterEnergy::~AliHLTTriggerCaloClusterEnergy() {
   // see header file for class documentation
@@ -87,7 +86,7 @@ Int_t AliHLTTriggerCaloClusterEnergy::DoTrigger() {
   //Try the caloclusterstruct input
 
   
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(fgkInputDataType); pBlock!=NULL; pBlock=GetNextInputBlock()) {
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(fInputDataType); pBlock!=NULL; pBlock=GetNextInputBlock()) {
     AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
     fClusterReader->SetMemory(caloClusterHeader);
     
@@ -162,7 +161,7 @@ int AliHLTTriggerCaloClusterEnergy::DoInit(int argc, const char** argv) {
   // see header file for class documentation
 
   // first configure the default
-  int iResult=ConfigureFromCDBTObjString(fgkOCDBEntry);
+  int iResult=ConfigureFromCDBTObjString(fOCDBEntry);
 
   // configure from the command line parameters if specified
   if (iResult>=0 && argc>0) {
@@ -186,7 +185,7 @@ int AliHLTTriggerCaloClusterEnergy::Reconfigure(const char* cdbEntry, const char
 
   // configure from the specified antry or the default one
   const char* entry=cdbEntry;
-  if (!entry || entry[0]==0) entry=fgkOCDBEntry;
+  if (!entry || entry[0]==0) entry=fOCDBEntry;
 
   return ConfigureFromCDBTObjString(entry);
 }
@@ -219,7 +218,7 @@ void AliHLTTriggerCaloClusterEnergy::GetOutputDataSize(unsigned long& constBase,
 void AliHLTTriggerCaloClusterEnergy::GetOCDBObjectDescription( TMap* const targetMap) {
   // Get a list of OCDB object description.
   if (!targetMap) return;
-  targetMap->Add(new TObjString(fgkOCDBEntry),
+  targetMap->Add(new TObjString(fOCDBEntry),
 		 new TObjString(Form("%s threshold trigger OCDB object", fDetector.Data()) ) 
 		 );
 }

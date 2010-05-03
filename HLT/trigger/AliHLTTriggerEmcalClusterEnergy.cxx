@@ -50,8 +50,8 @@ AliHLTTriggerCaloClusterEnergy("EMCAL")
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlts
 
-  fgkOCDBEntry = "HLT/ConfigHLT/EmcalClusterEnergyTrigger";
-  fgkInputDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL;
+  fOCDBEntry = "HLT/ConfigHLT/EmcalClusterEnergyTrigger";
+  fInputDataType = kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL;
 }
 
 AliHLTTriggerEmcalClusterEnergy::~AliHLTTriggerEmcalClusterEnergy() {

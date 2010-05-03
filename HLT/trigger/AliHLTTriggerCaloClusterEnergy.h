@@ -129,10 +129,10 @@ protected :
   AliHLTCaloClusterReader * fClusterReader; //!transient
 
   /// the default configuration entry for this component
-  const char* fgkOCDBEntry; //!transient
+  const char* fOCDBEntry; //!transient
 
   
-  AliHLTComponentDataType fgkInputDataType;   ///Input data type for calo struct input, must be set in child class
+  AliHLTComponentDataType fInputDataType;   ///Input data type for calo struct input, must be set in child class
   
 
   ClassDef(AliHLTTriggerCaloClusterEnergy, 0)
