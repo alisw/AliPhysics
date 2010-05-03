@@ -123,11 +123,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
 {  
   //Search in cone around a candidate particle if it is isolated 
   Float_t phiC  = pCandidate->Phi() ;
-  Float_t etaC = pCandidate->Eta() ;
-  Float_t ptC = pCandidate->Pt() ;
-  Float_t pt     = -100. ;
+  Float_t etaC  = pCandidate->Eta() ;
+  Float_t ptC   = pCandidate->Pt() ;
+  Float_t pt    = -100. ;
   Float_t eta   = -100.  ;
-  Float_t phi    = -100.  ;
+  Float_t phi   = -100.  ;
   Float_t rad   = -100 ;
   n = 0 ;
   coneptsum = 0.; 
@@ -135,8 +135,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
 
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
-  TObjArray * reftracks    =0x0;
-  Int_t ntrackrefs = 0;
+  TObjArray * reftracks   = 0x0;
+  Int_t ntrackrefs   = 0;
   Int_t nclusterrefs = 0;
   
   //Check charged particles in cone.
@@ -158,8 +158,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       if(rad < fConeSize){
 	if(fillAOD) {
 	  ntrackrefs++;
-	  if(ntrackrefs==1){
-	    reftracks    = new TObjArray(0);
+	  if(ntrackrefs == 1){
+	    reftracks = new TObjArray(0);
 	    reftracks->SetName(aodArrayRefName+"Tracks");
 	    reftracks->SetOwner(kFALSE);
 	  }
@@ -212,9 +212,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
 	if(fillAOD) {
 	  nclusterrefs++;
 	  if(nclusterrefs==1){
-	    refclusters    = new TObjArray(0);
+	    refclusters = new TObjArray(0);
 	    refclusters->SetName(aodArrayRefName+"Clusters");
-	    //refclusters->SetOwner(kFALSE);
+	    refclusters->SetOwner(kFALSE);
 	  }
 	  refclusters->Add(calo);
 	}
@@ -250,7 +250,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       isolated  =  kTRUE ;
   }
 
-  //  if(refclusters) delete refclusters;
+  //if(refclusters) delete refclusters;
   //if(reftracks)   delete reftracks;
 
 }
