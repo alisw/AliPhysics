@@ -12,9 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-class TArrayI;
-#include <TVectorDfwd.h>
-#include <TVectorFfwd.h>
+#include <TArrayI.h>
+#include <TVectorD.h>
+#include <TVectorF.h>
 
 class TGraph;
 class TMap;
