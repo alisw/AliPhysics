@@ -266,7 +266,6 @@ AliTRDclusterResolution::~AliTRDclusterResolution()
 //_______________________________________________________
 void AliTRDclusterResolution::UserCreateOutputObjects()
 {
-  OpenFile(1, "RECREATE");
   fContainer = Histos();
 }
 

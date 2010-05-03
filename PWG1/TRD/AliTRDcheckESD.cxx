@@ -128,8 +128,6 @@ void AliTRDcheckESD::UserCreateOutputObjects()
   //
   // Create Output Containers (TObjectArray containing 1D histograms)
   //
-  //OpenFile(0, "RECREATE");  
-
   Histos();
 }
 

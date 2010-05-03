@@ -82,7 +82,6 @@ void  AliTRDefficiency::UserCreateOutputObjects()
   // Create output objects
   //
 
-  //OpenFile(1, "RECREATE");
   const Int_t nbins = AliTRDCalPID::kNMom;
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
 

@@ -204,8 +204,6 @@ void AliTRDcalibration::UserCreateOutputObjects()
 {
   // Create output objects
 
-  OpenFile(1, "RECREATE");
-  
   // Number of time bins
   if(fNbTimeBins==0) {
     AliTRDcalibDB *cal = AliTRDcalibDB::Instance();

@@ -75,9 +75,7 @@ void AliTRDefficiencyMC::UserCreateOutputObjects(){
   // Create output objects
   //
 
-  OpenFile(1, "RECREATE");
   fContainer = Histos();
-
 }
 
 //_____________________________________________________________________________
