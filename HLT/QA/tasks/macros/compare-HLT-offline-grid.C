@@ -19,13 +19,13 @@
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_grid(const char* mode = "full", const char* detectorTask="global"){
+void compare_HLT_offline_grid(TString runNumber, TString dataDir, TString gridWorkingDir, TString gridOutputDir, const char* mode = "full", const char* detectorTask="global"){
  
   TStopwatch timer;
   timer.Start();
 
-  gSystem->Load("libTree");
- // gSystem->Load("libCore");
+  //gSystem->Load("libTree");
+  gSystem->Load("libCore");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
   gSystem->Load("libPhysics");
@@ -90,7 +90,7 @@ void compare_HLT_offline_grid(const char* mode = "full", const char* detectorTas
   
   // Create and configure the alien handler plugin
   gROOT->LoadMacro("CreateAlienHandler.C");
-  AliAnalysisGrid *alienHandler = CreateAlienHandler(mode, detectorTask);
+  AliAnalysisGrid *alienHandler = CreateAlienHandler(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, detectorTask);
   if (!alienHandler) return;
   
   // Connect plugin to the analysis manager

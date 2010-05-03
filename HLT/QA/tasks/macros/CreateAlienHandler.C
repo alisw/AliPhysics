@@ -9,7 +9,7 @@
  * @author Kalliopi.Kanaki@ift.uib.no
  */
 
-AliAnalysisGrid *CreateAlienHandler(const char* mode = "full", const char* detectorTask="global"){
+AliAnalysisGrid *CreateAlienHandler(TString runNumber, TString dataDir, TString gridWorkingDir, TString gridOutputDir, const char* mode = "full", const char* detectorTask="global"){
   
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -23,21 +23,25 @@ AliAnalysisGrid *CreateAlienHandler(const char* mode = "full", const char* detec
   
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-2");
-  plugin->SetAliROOTVersion("v4-19-10-AN");
+  plugin->SetROOTVersion("v5-26-00b-4");
+  plugin->SetAliROOTVersion("v4-19-11-AN");
 
   // data alien directory
-  plugin->SetGridDataDir("/alice/data/2010/LHC10b/");
+  //plugin->SetGridDataDir("/alice/data/2010/LHC10b");
+  plugin->SetGridDataDir(dataDir.Data());
   
   // Set data search pattern
-  plugin->SetDataPattern("*ESD.tag.root"); 
+  plugin->SetDataPattern("*ESDs.root");
   
-  plugin->AddRunNumber("000115322"); 
+  //plugin->AddRunNumber(115322); 
+  plugin->AddRunNumber(runNumber); 
   //plugin->SetRunRange(xxx,yyy);
  
   // define working and output directories
-  plugin->SetGridWorkingDir("ESDcomparison"); // relative to $HOME
-  plugin->SetGridOutputDir("output");         // relative to working dir
+  //plugin->SetGridWorkingDir("ESDcomparison"); // relative to $HOME
+  //plugin->SetGridOutputDir("output");         // relative to working dir
+  plugin->SetGridWorkingDir(gridWorkingDir); // relative to $HOME
+  plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
   
   
   Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
