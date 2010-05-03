@@ -126,7 +126,7 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double_t GetSigmaCutForImprovement() const {return fSigmaCutForImprovement;}
   
   /// set the cut in sigma to apply on track during trigger hit pattern search
-  void     SetSigmaCutForTrigger(Double_t val) {fSigmaCutForTrigger = val;} 
+  void     SetSigmaCutForTrigger(Double_t val) {fSigmaCutForTrigger = val; fMaxNormChi2MatchTrigger = val*val;} 
   /// return the cut in sigma to apply on track during trigger hit pattern search
   Double_t GetSigmaCutForTrigger() const {return fSigmaCutForTrigger;}
   /// set the cut in strips to apply on trigger track during trigger chamber efficiency
@@ -138,8 +138,6 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// return the maximum search area in strips to apply on trigger track during trigger chamber efficiency
   Double_t GetMaxStripAreaForTrigger() const {return fMaxStripAreaForTrigger;}
   
-  /// set the maximum normalized chi2 of tracking/trigger track matching
-  void     SetMaxNormChi2MatchTrigger(Double_t val) {fMaxNormChi2MatchTrigger = val;} 
   /// return the maximum normalized chi2 of tracking/trigger track matching
   Double_t GetMaxNormChi2MatchTrigger() const {return fMaxNormChi2MatchTrigger;}
   
