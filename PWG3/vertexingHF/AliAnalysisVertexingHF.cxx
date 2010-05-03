@@ -1388,7 +1388,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 	for(Int_t j=0; j<event->GetNumberOfTracks(); j++) {
 	  AliVTrack *vtrack = (AliVTrack*)event->GetTrack(j);
 	  if(!vtrack->GetCovarianceXYZPxPyPz(covtest)) {
-	    id = (Int_t)t->GetID();
+	    id = (Int_t)vtrack->GetID();
 	    if(id<0) continue;
 	    skipped[nTrksToSkip++] = id;
 	  }
