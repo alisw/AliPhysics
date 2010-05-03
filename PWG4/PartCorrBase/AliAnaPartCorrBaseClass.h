@@ -26,7 +26,7 @@ class AliFiducialCut ;
 class AliIsolationCut ;
 class AliMCAnalysisUtils ;
 class AliNeutralMesonSelection ;
-#include "AliCalorimeterUtils.h" ;
+#include "AliCalorimeterUtils.h" 
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
