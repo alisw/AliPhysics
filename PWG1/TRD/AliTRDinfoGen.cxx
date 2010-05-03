@@ -279,6 +279,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliTRDseedV1 *tracklet = NULL;
   AliTRDcluster *cl = NULL;
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
+    new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
     AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2)));
 
@@ -322,7 +323,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
         iref++;
       }
 
-      new(fTrackInfo) AliTRDtrackInfo();
+      fTrackInfo->SetMC();
       fTrackInfo->SetPDG(fPdg);
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
       Int_t jref = iref;//, kref = 0;
@@ -334,9 +335,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
         jref++;
       }
       AliDebug(3, Form("NtrackRefs[%d(%d)]", fTrackInfo->GetNTrackRefs(), nRefs));
-    } else {
-      new (fTrackInfo) AliTRDtrackInfo();
-      fTrackInfo->SetPDG(fPdg);
     }
 
     // copy some relevant info to TRD track info
