@@ -39,6 +39,7 @@ ClassImp(AliFlowEventSimpleMakerOnTheFly)
 
 
 AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
+  fUseGlauberModel(kFALSE),
   fMultDistrOfRPsIsGauss(kFALSE),
   fMultiplicityOfRP(0),
   fMultiplicitySpreadOfRP(0.),
@@ -133,16 +134,13 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
 
 //========================================================================
 
-AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI)
+Int_t AliFlowEventSimpleMakerOnTheFly::DetermineMultiplicity()
 {
-  // method to create event on the fly
+ // Determine multiplicity for current event.
+ 
+ Int_t iNewMultiplicityOfRP = fMultiplicityOfRP;
   
-  AliFlowEventSimple* pEvent = new AliFlowEventSimple(fMultiplicityOfRP);
-   
-  // sampling the multiplicity:
-  Int_t iNewMultiplicityOfRP = fMultiplicityOfRP;
-  
-  if(fMultDistrOfRPsIsGauss) {
+ if(fMultDistrOfRPsIsGauss) {
     if (fMultiplicitySpreadOfRP>0.0) iNewMultiplicityOfRP = (Int_t)fMyTRandom3->Gaus(fMultiplicityOfRP,fMultiplicitySpreadOfRP);
     fPtSpectra->SetParameter(0,iNewMultiplicityOfRP);
   } else {
@@ -154,50 +152,116 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
     }
   }
   
+ return iNewMultiplicityOfRP;
+ 
+} // end of AliFlowEventSimpleMakerOnTheFly::DetermineMultiplicity()
+
+//========================================================================
+
+void AliFlowEventSimpleMakerOnTheFly::DetermineV1()
+{
+ // Determine flow harmonics v1 for current event (if v1 is not pt or eta dependent).
+
+ Double_t dNewV1RP=fV1RP;
+ if(fV1SpreadRP>0.0) {dNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
+ fPhiDistribution->SetParameter(0,dNewV1RP);
+  
+} // end of void AliFlowEventSimpleMakerOnTheFly::DetermineV1()
+  
+//========================================================================
+
+void AliFlowEventSimpleMakerOnTheFly::DetermineV4()
+{
+ // Determine flow harmonics v4 for current event (if v4 is not pt or eta dependent).
+ 
+ Double_t dNewV4RP = fV4RP;
+ if(fV4SpreadRP>0.0) dNewV4RP = fMyTRandom3->Gaus(fV4RP,fV4SpreadRP);
+ fPhiDistribution->SetParameter(3,dNewV4RP);
+
+} // end of void AliFlowEventSimpleMakerOnTheFly::DetermineV4()
+
+//========================================================================
+
+void AliFlowEventSimpleMakerOnTheFly::DetermineV2()
+{
+ // Determine flow harmonics v2 for current event (if v2 is not pt or eta dependent).
+
+ Double_t dNewV2RP = fV2RP;
+ 
+ if(fConstantV2IsSampledFromGauss) 
+ {
+  if(fV2SpreadRP>0.0) 
+  {
+   dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);}
+  fPhiDistribution->SetParameter(1,dNewV2RP);
+ } else if(fMinV2RP < fMaxV2RP) 
+   {
+    dNewV2RP = fMyTRandom3->Uniform(fMinV2RP,fMaxV2RP);   
+    fPhiDistribution->SetParameter(1,dNewV2RP);  
+   } else if(fMinV2RP == fMaxV2RP)
+     {
+      dNewV2RP = fMinV2RP;
+      fPhiDistribution->SetParameter(1,dNewV2RP);          
+     }
+
+} // end of void AliFlowEventSimpleMakerOnTheFly::DetermineV2()
+
+//========================================================================
+
+Int_t AliFlowEventSimpleMakerOnTheFly::GlauberModel()
+{
+ // Determine multiplicity and flow harmonics for current event from Glauber moder
+ 
+ Int_t multiplicity = 0;
+ Double_t v1 = 0.;
+ Double_t v2 = 0.;
+ Double_t v4 = 0.;
+ 
+ // Determine multiplicity, v1, v2 and v4 from Glauber model:
+  
+ // multiplicity = ... 
+ // v1 = ...
+ // v2 = ...
+ // v4 = ...
+ 
+ // Set obtained values as parameters in relevant distributions:
+ fPtSpectra->SetParameter(0,multiplicity);
+ fPhiDistribution->SetParameter(0,v1);
+ fPhiDistribution->SetParameter(1,v2);
+ fPhiDistribution->SetParameter(3,v4);
+ 
+ return multiplicity;
+ 
+} // end of Int_t AliFlowEventSimpleMakerOnTheFly::GlauberModel()
+
+//========================================================================
+
+AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI)
+{
+  // Method to create event on the fly.
+  
+  // Determine multiplicity and flow harmonics (if not pt or eta dependent) for current event:
+  Int_t multiplicityRP = 0;
+  if(!fUseGlauberModel)
+  {
+   multiplicityRP = DetermineMultiplicity(); 
+   if(!(fPtDependentHarmonicV1||fEtaDependentHarmonicV1)) {DetermineV1();}
+   if(!(fPtDependentHarmonicV2||fEtaDependentHarmonicV2)) {DetermineV2();}
+   if(!(fPtDependentHarmonicV4||fEtaDependentHarmonicV4)) {DetermineV4();}
+  } else
+    {
+     // Determine multipliciy and flow harmonics from Glauber model:
+     multiplicityRP = GlauberModel();
+    }  
+  
+  AliFlowEventSimple* pEvent = new AliFlowEventSimple(multiplicityRP);
+    
   // set the 'temperature' of RPs
   fPtSpectra->SetParameter(1,fTemperatureOfRP);  
   
   // sampling the reaction plane
   Double_t dMCReactionPlaneAngle = fMyTRandom3->Uniform(0.,TMath::TwoPi());
   fPhiDistribution->SetParameter(2,dMCReactionPlaneAngle);
-  
-  // sampling the V1:
-  if(!(fPtDependentHarmonicV1 || fEtaDependentHarmonicV1))
-  {
-   Double_t dNewV1RP=fV1RP;
-   if(fV1SpreadRP>0.0) {dNewV1RP = fMyTRandom3->Gaus(fV1RP,fV1SpreadRP);}
-   fPhiDistribution->SetParameter(0,dNewV1RP);
-  }
-  
-  // sampling the V2:
-  if(!(fPtDependentHarmonicV2 || fEtaDependentHarmonicV2)) 
-  {
-   Double_t dNewV2RP = fV2RP;
-   if(fConstantV2IsSampledFromGauss) 
-   {
-    if(fV2SpreadRP>0.0) 
-    {
-     dNewV2RP = fMyTRandom3->Gaus(fV2RP,fV2SpreadRP);
-    }
-    fPhiDistribution->SetParameter(1,dNewV2RP);
-   } else if(fMinV2RP < fMaxV2RP) 
-     {
-      dNewV2RP = fMyTRandom3->Uniform(fMinV2RP,fMaxV2RP);    
-	   fPhiDistribution->SetParameter(1,dNewV2RP);  
-     } else if(fMinV2RP == fMaxV2RP)
-        {
-	      dNewV2RP = fMinV2RP;
-	      fPhiDistribution->SetParameter(1,dNewV2RP);          
-        }
-  } // end of if(!(bPtDependentHarmonicV2 || bEtaDependentHarmonicV2))
-  
-  // sampling the V4:
-  if(!(fPtDependentHarmonicV4 || fEtaDependentHarmonicV4))
-  {
-   Double_t dNewV4RP = fV4RP;
-   if(fV4SpreadRP>0.0) dNewV4RP = fMyTRandom3->Gaus(fV4RP,fV4SpreadRP);
-   fPhiDistribution->SetParameter(3,dNewV4RP);
-  }
   
   // eta:
   Double_t dEtaMin = -1.; // to be improved 
@@ -225,7 +289,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
     bUniformAcceptance = kFALSE;
   }
   // loop over original tracks:
-  for(Int_t i=0;i<iNewMultiplicityOfRP;i++) 
+  for(Int_t i=0;i<multiplicityRP;i++) 
   {
    // sample the pt and eta for original track: 
    dPtOriginalTrack = fPtSpectra->GetRandom();
