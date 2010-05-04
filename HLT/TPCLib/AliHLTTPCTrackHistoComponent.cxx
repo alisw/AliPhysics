@@ -370,3 +370,9 @@ int AliHLTTPCTrackHistoComponent::ScanConfigurationArgument(int argc, const char
   }    
   return -EINVAL;
 }
+
+void AliHLTTPCTrackHistoComponent::GetOCDBObjectDescription( TMap* const targetMap){
+// Get a list of OCDB object description needed for the particular component
+  if (!targetMap) return;
+  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCTrackHisto"), new TObjString("component arguments for setting the size of the filled ntuples and the event modulo for the mean multiplicity distribution"));
+}
