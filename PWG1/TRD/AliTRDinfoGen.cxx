@@ -456,6 +456,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       Int_t iref = 0; AliTrackReference *ref = NULL; 
       Int_t nRefsTRD = 0;
       new(fTrackInfo) AliTRDtrackInfo();
+      fTrackInfo->SetMC();
       fTrackInfo->SetPDG(fPdg);
       while(iref<nRefs){ // count TRD TR
         Bool_t kIN(kFALSE);
