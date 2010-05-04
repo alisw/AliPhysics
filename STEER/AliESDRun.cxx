@@ -37,6 +37,8 @@ AliESDRun::AliESDRun() :
   fCurrentDip(0),
   fBeamEnergy(0),
   fMagneticField(0),
+  fDiamondZ(0),
+  fDiamondSig2Z(0),
   fPeriodNumber(0),
   fRunNumber(0),
   fRecoVersion(0),
@@ -60,6 +62,8 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
   fCurrentDip(0),
   fBeamEnergy(0),
   fMagneticField(esd.fMagneticField),
+  fDiamondZ(esd.fDiamondZ),
+  fDiamondSig2Z(esd.fDiamondSig2Z),
   fPeriodNumber(esd.fPeriodNumber),
   fRunNumber(esd.fRunNumber),
   fRecoVersion(esd.fRecoVersion),
@@ -102,6 +106,8 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
     fPeriodNumber=esd.fPeriodNumber;
     fRecoVersion=esd.fRecoVersion;
     fMagneticField=esd.fMagneticField;
+    fDiamondZ=esd.fDiamondZ;
+    fDiamondSig2Z=esd.fDiamondSig2Z;
     fBeamType = esd.fBeamType;
     fCurrentL3  = esd.fCurrentL3;
     fCurrentDip = esd.fCurrentDip;
@@ -166,11 +172,13 @@ void AliESDRun::SetDiamond(const AliESDVertex *vertex) {
   // set the interaction diamond
   fDiamondXY[0]=vertex->GetXv();
   fDiamondXY[1]=vertex->GetYv();
+  fDiamondZ=vertex->GetZv();
   Double32_t cov[6];
   vertex->GetCovMatrix(cov);
   fDiamondCovXY[0]=cov[0];
   fDiamondCovXY[1]=cov[1];
   fDiamondCovXY[2]=cov[2];
+  fDiamondSig2Z=cov[5];
 }
 
 
@@ -178,8 +186,8 @@ void AliESDRun::SetDiamond(const AliESDVertex *vertex) {
 void AliESDRun::Print(const Option_t *) const
 {
   // Print some data members
-  printf("Mean vertex in RUN %d: X=%.4f Y=%.4f cm\n",
-	 GetRunNumber(),GetDiamondX(),GetDiamondY());
+  printf("Mean vertex in RUN %d: X=%.4f Y=%.4f Z=%.4f cm\n",
+	 GetRunNumber(),GetDiamondX(),GetDiamondY(),GetDiamondZ());
   printf("Beam Type: %s, Energy: %.1f GeV\n",fBeamType.IsNull() ? "N/A":fBeamType.Data(),fBeamEnergy);
   printf("Magnetic field in IP= %f T | Currents: L3:%+.1f Dipole:%+.1f %s\n",
 	 GetMagneticField(),fCurrentL3,fCurrentDip,TestBit(kUniformBMap) ? "(Uniform)":"");
@@ -208,6 +216,8 @@ void AliESDRun::Reset()
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
+  fDiamondZ=0.;
+  fDiamondSig2Z=10.*10.;
   fTriggerClasses.Clear();
   fDetInDAQ   = 0;
   fDetInReco  = 0;

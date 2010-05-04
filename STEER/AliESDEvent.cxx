@@ -468,8 +468,8 @@ void AliESDEvent::Print(Option_t *) const
 	   fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
 	   fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
 	   fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
-  printf("Mean vertex in RUN: X=%.4f Y=%.4f cm\n",
-	 GetDiamondX(),GetDiamondY());
+  printf("Mean vertex in RUN: X=%.4f Y=%.4f Z=%.4f cm\n",
+	 GetDiamondX(),GetDiamondY(),GetDiamondZ());
   if(fSPDMult)
     printf("SPD Multiplicity. Number of tracklets %d \n",
            fSPDMult->GetNumberOfTracklets());

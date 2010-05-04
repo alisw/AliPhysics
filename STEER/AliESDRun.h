@@ -51,8 +51,10 @@ public:
   Bool_t  IsBeamEnergyIsSqrtSHalfGeV() const {return TestBit(kConvSqrtSHalfGeV);}  
   Double_t GetDiamondX() const {return fDiamondXY[0];}
   Double_t GetDiamondY() const {return fDiamondXY[1];}
+  Double_t GetDiamondZ() const {return fDiamondZ;}
   Double_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
   Double_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
+  Double_t GetSigma2DiamondZ() const {return fDiamondSig2Z;}
   void GetDiamondCovXY(Float_t cov[3]) const {
     for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
   }
@@ -92,6 +94,8 @@ private:
   Double32_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
   Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
+  Double32_t      fDiamondZ;        // Interaction diamond (z) in RUN
+  Double32_t      fDiamondSig2Z;    // Interaction diamond sigma^2 (z) in RUN
   UInt_t          fPeriodNumber;    // PeriodNumber
   Int_t           fRunNumber;       // Run Number
   Int_t           fRecoVersion;     // Version of reconstruction
@@ -102,7 +106,7 @@ private:
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliESDRun,7)
+  ClassDef(AliESDRun,8)
 };
 
 #endif 

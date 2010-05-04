@@ -1883,18 +1883,31 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        ftVertexer->SetITSMode();
        ftVertexer->SetConstraintOff();
        // get cuts for vertexer from AliGRPRecoParam
+       Bool_t constrSPD=kFALSE;
        if (grpRecoParam) {
 	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
 	 Double_t *cutsVertexer = new Double_t[nCutsVertexer];
 	 grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
 	 ftVertexer->SetCuts(cutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
-	 if(fDiamondProfile && grpRecoParam->GetVertexerTracksConstraintITS()) { 
-	   if(fDiamondProfile->GetXRes()<kRadius) ftVertexer->SetVtxStart(fDiamondProfile); // apply constraint only if sigmax is smaller than the beam pipe radius 
+	 if(grpRecoParam->GetVertexerTracksConstraintITS()) { 
+	   if(fDiamondProfile && fDiamondProfile->GetXRes()<kRadius){
+	     ftVertexer->SetVtxStart(fDiamondProfile); // apply constraint only if sigmax is smaller than the beam pipe radius 
+	   }else{
+	     if(fDiamondProfileSPD && fDiamondProfileSPD->GetXRes()<kRadius){
+	       ftVertexer->SetVtxStart(fDiamondProfileSPD);
+	       constrSPD=kTRUE;
+	     }
+	   }
 	 } 
        }
        AliESDVertex *pvtx=ftVertexer->FindPrimaryVertex(fesd);
        if (pvtx) {
+	 if(constrSPD){
+	   TString title=pvtx->GetTitle();
+	   title.Append("SPD");
+	   pvtx->SetTitle(title);
+	 }
           if (pvtx->GetStatus()) {
              fesd->SetPrimaryVertexTracks(pvtx);
              for (Int_t i=0; i<ntracks; i++) {
@@ -1938,8 +1951,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     }
     delete[] selectedIdx;
 
-    if(fDiamondProfile) fesd->SetDiamond(fDiamondProfile);
-    
+    if(fDiamondProfile && fDiamondProfile->GetXRes()<kRadius) fesd->SetDiamond(fDiamondProfile);
+    else fesd->SetDiamond(fDiamondProfileSPD);
 
     if (fRunV0Finder) {
        // V0 finding

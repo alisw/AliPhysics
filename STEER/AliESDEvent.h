@@ -113,8 +113,10 @@ public:
   void     SetDiamond(const AliESDVertex *vertex) { if(fESDRun) fESDRun->SetDiamond(vertex);}
   Double_t  GetDiamondX() const {return fESDRun?fESDRun->GetDiamondX():0;}
   Double_t  GetDiamondY() const {return fESDRun?fESDRun->GetDiamondY():0;}
+  Double_t  GetDiamondZ() const {return fESDRun?fESDRun->GetDiamondZ():0;}
   Double_t  GetSigma2DiamondX() const {return  fESDRun?fESDRun->GetSigma2DiamondX():0;}
   Double_t  GetSigma2DiamondY() const {return  fESDRun?fESDRun->GetSigma2DiamondY():0;}
+  Double_t  GetSigma2DiamondZ() const {return  fESDRun?fESDRun->GetSigma2DiamondZ():0;}
   void      GetDiamondCovXY(Float_t cov[3]) const {if(fESDRun) fESDRun->GetDiamondCovXY(cov);}   
   void     SetTriggerClass(const char*name, Int_t index) {if(fESDRun) fESDRun->SetTriggerClass(name,index);}
   void     SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {if(fESDRun) fESDRun->SetPHOSMatrix(matrix,i);}
