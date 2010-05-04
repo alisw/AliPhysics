@@ -68,6 +68,7 @@ class AliFlowAnalysisWithMixedHarmonics
     virtual void CheckPointersUsedInFinish(); 
     virtual void AccessSettings();       
     virtual void CorrectForDetectorEffects();
+    virtual void CorrectForDetectorEffectsVsM();
     virtual void PrintOnTheScreen();  
   // 4.) Method GetOutputHistograms and method called within it:
   virtual void GetOutputHistograms(TList *outputListHistos);
@@ -130,7 +131,9 @@ class AliFlowAnalysisWithMixedHarmonics
   void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
   TList* GetResultsList() const {return this->fResultsList;}    
   void Set3pCorrelatorHist(TH1D* const s3pHist) {this->f3pCorrelatorHist = s3pHist;};
-  TH1D* Get3pCorrelatorHist() const {return this->f3pCorrelatorHist;};  
+  TH1D* Get3pCorrelatorHist() const {return this->f3pCorrelatorHist;};    
+  void Set3pCorrelatorVsMHist(TH1D* const s3pVsMHist) {this->f3pCorrelatorVsMHist = s3pVsMHist;};
+  TH1D* Get3pCorrelatorVsMHist() const {return this->f3pCorrelatorVsMHist;};
   void SetDetectorBiasHist(TH1D* const dbHist) {this->fDetectorBiasHist = dbHist;};
   TH1D* GetDetectorBiasHist() const {return this->fDetectorBiasHist;};  
   void SetDetectorBiasVsMHist(TH1D* const dbVsMHist) {this->fDetectorBiasVsMHist = dbVsMHist;};
@@ -179,8 +182,6 @@ class AliFlowAnalysisWithMixedHarmonics
   TMatrixD *fReQnk; // fReQ[n][k] = Re[Q_{n,k}] = sum_{i=1}^{M} w_{i}^{k} cos(n*phi_{i})
   TMatrixD *fImQnk; // fImQ[n][k] = Im[Q_{n,k}] = sum_{i=1}^{M} w_{i}^{k} sin(n*phi_{i})
   TMatrixD *fSpk; // fS[p][k] = S_{p,k} = (sum_{i=1}^{M} w_{i}^{k})^{p+1} // note p+1 in the power to use 0th index in p in non-trivial way
-  TH1D *f3pCorrelatorEBE; // 3-p correlator <cos[n(2phi1-phi2-phi3)]> for single event
-  TH1D *fNonIsotropicTermsEBE; // correction terms to 3-p correlator <cos[n(2phi1-phi2-phi3)]> for single event
   TProfile *fRePEBE[2]; // real part of p_n vs [(p1+p2)/2,|p1-p2|]
   TProfile *fImPEBE[2]; // imaginary part of p_n vs [(p1+p2)/2,|p1-p2|]
   // 4.) Profiles:
@@ -194,6 +195,7 @@ class AliFlowAnalysisWithMixedHarmonics
   TList *fResultsList; // list holding objects with final results 
   TH1D *f3pCorrelatorHist; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> corrected for detector effects
   TH1D *fDetectorBiasHist; // bias comming from detector inefficiencies to 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> (in %)
+  TH1D *f3pCorrelatorVsMHist; // 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> vs multiplicity corrected for detector effects
   TH1D *fDetectorBiasVsMHist; // bias comming from detector inefficiencies to 3-p correlator <<cos[n(2phi1-phi2-phi3)]>> (in %) versus multiplicity
 
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
