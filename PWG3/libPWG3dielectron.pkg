@@ -12,7 +12,12 @@ SRCS= dielectron/AliDielectron.cxx \
       dielectron/AliAnalysisTaskDielectronEfficiency.cxx \
       dielectron/AliAnalysisTaskMultiDielectron.cxx \
       dielectron/AliDielectronVarCuts.cxx \
-      dielectron/AliDielectronPairLegCuts.cxx
+      dielectron/AliDielectronPairLegCuts.cxx \
+      dielectron/AliDielectronSignalBase.cxx \
+      dielectron/AliDielectronSignalFunc.cxx \
+      dielectron/AliDielectronSignalExt.cxx \
+      dielectron/AliDielectronSpectrum.cxx \
+      dielectron/AliDielectronDebugTree.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

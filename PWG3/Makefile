@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG3vertexingHF.so libPWG3hfe.so 
+default-target: libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG3vertexingHF.so libPWG3hfe.so libPWG3dielectron.so
 
 ALICEINC      = -I.
 
@@ -216,3 +216,25 @@ G__PWG3hfe.cxx G__PWG3hfe.h: $(HDRS_PWG3hfe) $(DHDR_PWG3hfe)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 
+## libPWG3dielectron part
+##include libPWG3dielectron.pkg
+	
+DHDR_PWG3dielectron := $(DHDR)
+HDRS_PWG3dielectron := $(HDRS)
+SRCS_PWG3dielectron := $(SRCS) G__PWG3dielectron.cxx
+OBJS_PWG3dielectron := $(SRCS_PWG3dielectron:.cxx=.o)
+
+libPWG3dielectron.so: $(OBJS_PWG3dielectron)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(ARCH),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+			
+G__PWG3dielectron.cxx G__PWG3dielectron.h: $(HDRS_PWG3dielectron) $(DHDR_PWG3dielectron)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
