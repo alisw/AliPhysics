@@ -57,10 +57,13 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     void ReflectPoint(Double_t x1, Double_t y1, Double_t x2, Double_t y2,
 		      Double_t x3, Double_t y3, Double_t &x, Double_t &y);
 
-    void TraySupportsSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void  TraySupportsSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
     void SPDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void SPDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
     void SDDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void SDDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
     void SSDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void SSDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
 
     TGeoVolumeAssembly* CreateSDDForwardTraySideA(TGeoManager *mgr);
 
@@ -72,6 +75,9 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
 
     TGeoXtru* CreateSDDSSDTraysSideA(const Double_t trayLen,
 				     const Double_t trayHi);
+
+    TGeoVolumeAssembly* CreateSDDSSDTraysSideC(const char *trayName,
+					       TGeoManager *mgr=gGeoManager);
 
     ClassDef(AliITSv11GeometrySupport,1) // ITS v11 Support geometry
 };

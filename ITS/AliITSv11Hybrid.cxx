@@ -4507,8 +4507,6 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   gMC->Gspos("IPA2", 1, "ITSV", 0., 0., 95.25, 0, "ONLY");  
   gMC->Gspos("IPA2", 2, "ITSV", 0., 0., -95.25, idrotm[200], "ONLY"); 
 
-  } // Move this graph down as you implement services in TGeo - M.S. 28may08
-
 
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE ABSORBER SIDE - COPPER PART
   //     UPPER PART
@@ -4615,7 +4613,6 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   //  gMC->Gspos("ICC4", 1, "ITSV", 0., 0., ztpc+dgh[2], 0, "ONLY");  
   gMC->Gspos("ICC4", 1, "ITSV", 0., 0., -(ztpc+dgh[2]), idrotm[199], "ONLY");  
   
-  if (! AliITSInitGeometry::ServicesAreTGeoNative()) {
 
   // --- DEFINE CABLES/COOLING BELOW THE TPC ON THE OTHER SIDE W.R.T.
   //     THE ABSORBER - COPPER PART - UPPER PART
