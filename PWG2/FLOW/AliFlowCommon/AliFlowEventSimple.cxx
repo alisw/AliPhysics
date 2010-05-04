@@ -366,7 +366,7 @@ void AliFlowEventSimple::Print(Option_t *option) const
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
-  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d, MC EventPlaneAngle= %f",
+  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d, MC EventPlaneAngle= %f\n",
           GetName(),fNumberOfTracks, fEventNSelTracksRP, fMCReactionPlaneAngle );
 
   if (fTrackCollection)
