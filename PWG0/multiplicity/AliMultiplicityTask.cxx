@@ -307,10 +307,10 @@ void AliMultiplicityTask::Exec(Option_t*)
         else
           labelArr[inputCount] = -1;
           
-        for (Int_t i=0; i<3; i++)
+        for (Int_t j=0; j<3; j++)
         {
-          if (vtx[2] > fMultiplicity->GetVertexBegin(i) && vtx[2] < fMultiplicity->GetVertexEnd(i))
-            fEta[i]->Fill(etaArr[inputCount]);
+          if (vtx[2] > fMultiplicity->GetVertexBegin(j) && vtx[2] < fMultiplicity->GetVertexEnd(j))
+            fEta[j]->Fill(etaArr[inputCount]);
         }
         
         // we have to repeat the trigger here, because the tracklet might have been kicked out fSystSkipParticles

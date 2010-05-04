@@ -98,7 +98,7 @@ void AliMultiplicityCorrection::SetQualityRegions(Bool_t SPDStudy)
 
 //____________________________________________________________________
 AliMultiplicityCorrection::AliMultiplicityCorrection() :
-  TNamed(), fCurrentESD(0), fCurrentCorrelation(0), fCurrentEfficiency(0), fLastBinLimit(0), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0)
+  TNamed(), fCurrentESD(0), fCurrentCorrelation(0), fCurrentEfficiency(0), fLastBinLimit(0), fLastChi2MC(0), fLastChi2MCLimit(0), fLastChi2Residuals(0), fRatioAverage(0), fVtxBegin(0), fVtxEnd(0)
 {
   //
   // default constructor
@@ -2076,14 +2076,14 @@ TH1* AliMultiplicityCorrection::GetResiduals(Int_t i, EventType eventType, Float
   residuals->Add(convolutedProj, -1);
   
   residualSum = 0;
-  for (Int_t i=1; i<=residuals->GetNbinsX(); i++)
+  for (Int_t j=1; j<=residuals->GetNbinsX(); j++)
   {
-    if (measuredProj->GetBinContent(i) > 0)
-      residuals->SetBinContent(i, residuals->GetBinContent(i) / TMath::Sqrt(measuredProj->GetBinContent(i)));
-    residuals->SetBinError(i, 0);
+    if (measuredProj->GetBinContent(j) > 0)
+      residuals->SetBinContent(j, residuals->GetBinContent(j) / TMath::Sqrt(measuredProj->GetBinContent(j)));
+    residuals->SetBinError(j, 0);
     
-    if (i > 1)
-      residualSum += residuals->GetBinContent(i) * residuals->GetBinContent(i);
+    if (j > 1)
+      residualSum += residuals->GetBinContent(j) * residuals->GetBinContent(j);
   }
   
   delete corrected;
