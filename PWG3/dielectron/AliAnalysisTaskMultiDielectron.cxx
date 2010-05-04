@@ -22,11 +22,15 @@
 #include <TChain.h>
 
 #include <AliCFContainer.h>
+#include <AliInputEventHandler.h>
+#include <AliESDInputHandler.h>
+#include <AliAnalysisManager.h>
 #include <AliVEvent.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
 #include "AliDielectronCF.h"
+#include "AliDielectronMC.h"
 #include "AliAnalysisTaskMultiDielectron.h"
 
 ClassImp(AliAnalysisTaskMultiDielectron)
@@ -36,7 +40,8 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   AliAnalysisTaskSE(),
   fListDielectron(),
   fListHistos(),
-  fListCF()
+  fListCF(),
+  fSelectPhysics(kFALSE)
 {
   //
   // Constructor
@@ -48,7 +53,8 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   AliAnalysisTaskSE(name),
   fListDielectron(),
   fListHistos(),
-  fListCF()
+  fListCF(),
+  fSelectPhysics(kFALSE)
 {
   //
   // Constructor
@@ -68,7 +74,7 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
   // Add all histogram manager histogram lists to the output TList
   //
 
-  if (!fListHistos.IsEmpty()) return; //already initialised
+  if (!fListHistos.IsEmpty()||!fListCF.IsEmpty()) return; //already initialised
 
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
@@ -86,7 +92,32 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   // Main loop. Called for every event
   //
 
-  if (fListHistos.IsEmpty()) return;
+  if (fListHistos.IsEmpty()&&fListCF.IsEmpty()) return;
+
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliESDInputHandler *esdHandler=0x0;
+  if ( (esdHandler=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler())) && esdHandler->GetESDpid() ){
+    AliDielectronVarManager::SetESDpid(esdHandler->GetESDpid());
+  } else {
+    //load esd pid bethe bloch parameters depending on the existance of the MC handler
+    // yes: MC parameters
+    // no:  data parameters
+    if (!AliDielectronVarManager::GetESDpid()){
+      if (AliDielectronMC::Instance()->HasMC()) {
+        AliDielectronVarManager::InitESDpid();
+      } else {
+        AliDielectronVarManager::InitESDpid(1);
+      }
+    }
+  } 
+  // Was event selected ?
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  Bool_t isSelected = kTRUE;
+  if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
+    isSelected = inputHandler->IsEventSelected();
+  }
+  
+  if (!isSelected) return;
   
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
@@ -101,5 +132,18 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
+{
+  //
+  // Write debug tree
+  //
+  TIter nextDie(&fListDielectron);
+  AliDielectron *die=0;
+  while ( (die=static_cast<AliDielectron*>(nextDie())) ){
+    die->SaveDebugTree();
+  }
 }
 

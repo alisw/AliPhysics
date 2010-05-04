@@ -49,6 +49,7 @@ AliDielectronVarCuts::AliDielectronVarCuts() :
     fActiveCuts[i]=0;
     fCutMin[i]=0;
     fCutMax[i]=0;
+    fCutExclude[i]=kFALSE;
   }
 }
 
@@ -106,7 +107,7 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
     SETBIT(fSelectedCutsMask,iCut);
-    if ( (values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]) ) CLRBIT(fSelectedCutsMask,iCut);
+    if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
   }
   
   Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
@@ -116,7 +117,7 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
 }
 
 //________________________________________________________________________
-void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max)
+void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -128,6 +129,7 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Doub
   }
   fCutMin[fNActiveCuts]=min;
   fCutMax[fNActiveCuts]=max;
+  fCutExclude[fNActiveCuts]=excludeRange;
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)type;
   ++fNActiveCuts;
@@ -147,7 +149,14 @@ void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
   }
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=(Int_t)fActiveCuts[iCut];
-    printf("Cut %02d: %f < %s < %f\n", iCut,
-           fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
+    Bool_t inverse=fCutExclude[iCut];
+
+    if (!inverse){
+      printf("Cut %02d: %f < %s < %f\n", iCut,
+             fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
+    } else {
+      printf("Cut %02d: !(%f < %s < %f)\n", iCut,
+             fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), fCutMax[iCut]);
+    }
   }
 }

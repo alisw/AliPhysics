@@ -34,6 +34,9 @@ public:
   AliDielectronMC(AnalysisType type=kUNSET);
   virtual ~AliDielectronMC();
 
+  void SetHasMC(Bool_t hasMC) { fHasMC=hasMC; }
+  Bool_t HasMC() const { return fHasMC; }
+  
   static AliDielectronMC* Instance();
   
   void Initialize();                              // initialization
@@ -72,6 +75,7 @@ private:
   AliStack      *fStack;    // MC stack
 
   AnalysisType fAnaType;    // Analysis type
+  Bool_t fHasMC;            // Do we have an MC handler?
   
   static AliDielectronMC* fgInstance; //! singleton pointer
   

@@ -76,32 +76,42 @@ public:
   virtual const Double_t *PID() const { return 0;} //TODO: check
   // Dummy
   Int_t PdgCode() const {return 0;}
-  
-  Double_t OpeningAngle() const { return fOpeningAngle; }
+
 
   UChar_t GetType() const { return fType; }
   void SetType(Char_t type) { fType=type; }
 
   void SetLabel(Int_t label) {fLabel=label;}
+  
+  //inter leg information
+  Double_t OpeningAngle()         const { return fD1.GetAngle(fD2);                   }
+  Double_t DistanceDaughters()    const { return fD1.GetDistanceFromParticle(fD2);    }
+  Double_t DistanceDaughtersXY()  const { return fD1.GetDistanceFromParticleXY(fD2);  }
+  Double_t DeviationDaughters()   const { return fD1.GetDeviationFromParticle(fD2);   }
+  Double_t DeviationDaughtersXY() const { return fD1.GetDeviationFromParticleXY(fD2); }
+  
   // internal KF particle
-  const AliKFParticle& GetKFParticle() const { return fPair; }
-
+  const AliKFParticle& GetKFParticle()       const { return fPair; }
+  const AliKFParticle& GetKFFirstDaughter()  const { return fD1;   }
+  const AliKFParticle& GetKFSecondDaughter() const { return fD2;   }
+  
   // daughter references
   AliVParticle* GetFirstDaughter()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
   AliVParticle* GetSecondDaughter()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
 
   
 private:
-  Double_t fOpeningAngle; // opening angle of the pair
   Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
   Int_t    fLabel;        // MC label
   
   AliKFParticle fPair;   // KF particle internally used for pair calculation
-
+  AliKFParticle fD1;     // KF particle first daughter
+  AliKFParticle fD2;     // KF particle1 second daughter
+  
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
   
-  ClassDef(AliDielectronPair,2)
+  ClassDef(AliDielectronPair,3)
 };
 
 #endif

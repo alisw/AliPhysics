@@ -26,10 +26,11 @@
 ClassImp(AliDielectronPair)
 
 AliDielectronPair::AliDielectronPair() :
-  fOpeningAngle(-1),
   fType(-1),
   fLabel(-1),
   fPair(),
+  fD1(),
+  fD2(),
   fRefD1(),
   fRefD2()
 {
@@ -42,10 +43,11 @@ AliDielectronPair::AliDielectronPair() :
 //______________________________________________
 AliDielectronPair::AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
                                      AliVTrack * const particle2, Int_t pid2, Char_t type) :
-  fOpeningAngle(-1),
   fType(type),
   fLabel(-1),
   fPair(),
+  fD1(),
+  fD2(),
   fRefD1(),
   fRefD2()
 {
@@ -69,24 +71,29 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
                                   AliVTrack * const particle2, Int_t pid2)
 {
   //
-  // Set the tracks to the pair KF particle
+  // Sort particles by pt, first particle larget Pt
+  // set AliKF daughters and pair
   //
   fPair.Initialize();
+  fD1.Initialize();
+  fD2.Initialize();
   
   AliKFParticle kf1(*particle1,pid1);
   AliKFParticle kf2(*particle2,pid2);
-    
+
   fPair.AddDaughter(kf1);
   fPair.AddDaughter(kf2);
   
   if (particle1->Pt()>particle2->Pt()){
     fRefD1 = particle1;
     fRefD2 = particle2;
+    fD1+=kf1;
+    fD2+=kf2;
   } else {
     fRefD1 = particle2;
     fRefD2 = particle1;
+    fD1+=kf2;
+    fD2+=kf1;
   }
-
-  fOpeningAngle=kf1.GetAngle(kf2);
 }
 

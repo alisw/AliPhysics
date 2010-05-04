@@ -28,6 +28,7 @@
 class AliVEvent;
 class THashList;
 class AliDielectronCF;
+class AliDielectronDebugTree;
 
 //________________________________________________________________
 class AliDielectron : public TNamed {
@@ -68,9 +69,13 @@ public:
 
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
+
+  void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
   
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
   static const char* PairClassName(Int_t i)  { return (i>=0&&i<10)?fgkPairClassNames[i]:""; }
+
+  void SaveDebugTree();
   
 private:
 
@@ -96,6 +101,8 @@ private:
 
   AliDielectronCF *fCfManagerPair;//Correction Framework Manager for the Pair
 
+  AliDielectronDebugTree *fDebugTree;  // Debug tree output
+  
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void FillPairArrays(Int_t arr1, Int_t arr2);
   
@@ -112,11 +119,12 @@ private:
   void ProcessMC();
   
   void  FillHistograms(const AliVEvent *ev);
+  void  FillDebugTree();
   
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,1);
+  ClassDef(AliDielectron,2);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

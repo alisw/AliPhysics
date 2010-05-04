@@ -49,8 +49,11 @@ AliDielectronMC* AliDielectronMC::Instance()
   AnalysisType type=kUNSET;
   if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()) type=kESD;
   else if (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODHandler::Class()) type=kAOD;
+
+  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   
   fgInstance=new AliDielectronMC(type);
+  fgInstance->SetHasMC(mcHandler!=0x0);
   
   return fgInstance;
 }
@@ -59,7 +62,8 @@ AliDielectronMC* AliDielectronMC::Instance()
 AliDielectronMC::AliDielectronMC(AnalysisType type):
   fMCEvent(0x0),
   fStack(0x0),
-  fAnaType(type)
+  fAnaType(type),
+  fHasMC(kTRUE)
 {
   //
   // default constructor
@@ -397,6 +401,7 @@ Int_t AliDielectronMC::GetLabelMotherWithPdgESD(const AliVParticle *particle1, c
   if (!mcMother1) return -1;
   if (lblMother1!=lblMother2) return -1;
   if (TMath::Abs(mcPart1->PdgCode())!=11) return -1;
+  if (mcPart1->PdgCode()!=-mcPart2->PdgCode()) return -1;
   if (mcMother1->PdgCode()!=pdgMother) return -1;
   
   return lblMother1;
@@ -423,6 +428,7 @@ Int_t AliDielectronMC::GetLabelMotherWithPdgAOD(const AliVParticle *particle1, c
   if (!mcMother1) return -1;
   if (lblMother1!=lblMother2) return -1;
   if (TMath::Abs(mcPart1->GetPdgCode())!=11) return -1;
+  if (mcPart1->GetPdgCode()!=-mcPart2->GetPdgCode()) return -1;
   if (mcMother1->GetPdgCode()!=pdgMother) return -1;
   
   return lblMother1;

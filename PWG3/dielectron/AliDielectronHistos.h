@@ -31,16 +31,18 @@ public:
   
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax,
-                     UInt_t valTypeX=kNoAutoFill);
+                     UInt_t valTypeX=kNoAutoFill, Bool_t logBinX=kFALSE);
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax,
                      Int_t nbinsY, Double_t ymin, Double_t ymax,
-                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0);
+                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0,
+                     Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE);
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax,
                      Int_t nbinsY, Double_t ymin, Double_t ymax,
                      Int_t nbinsZ, Double_t zmin, Double_t zmax,
-                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0);
+                     UInt_t valTypeX=kNoAutoFill, UInt_t valTypeY=0, UInt_t valTypeZ=0,
+                     Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE);
   
   void UserHistogram(const char* histClass, TH1* hist, UInt_t valTypes=kNoAutoFill);
 
@@ -56,6 +58,7 @@ public:
   TH1* GetHistogram(const char* histClass, const char* name) const;
 
   void SetHistogramList(THashList &list);
+  void ResetHistogramList(){fHistoList.Clear();}
   const THashList* GetHistogramList() const {return &fHistoList;}
   
   void AddClass(const char* histClass);
@@ -74,7 +77,7 @@ public:
 //   virtual TObject  **GetObjectRef(const TObject *obj) const { return 0; }
 //   virtual TIterator *MakeIterator(Bool_t dir = kIterForward) const ;
 //   virtual TObject   *Remove(TObject *obj) { return 0; }
-  
+
 private:
   THashList fHistoList;             //-> list of histograms
 
@@ -86,6 +89,9 @@ private:
   void PrintStructure() const;
 
   Bool_t IsHistogramOk(const char* classTable, const char* name);
+  
+  Double_t* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const;
+  Double_t* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax) const;
   
   enum {kNoAutoFill=1000000000};
 
