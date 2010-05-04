@@ -26,11 +26,13 @@ class AliAnalysisTaskMultiDielectron : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskMultiDielectron();
   AliAnalysisTaskMultiDielectron(const char *name);
-  virtual ~AliAnalysisTaskMultiDielectron(){}
+  virtual ~AliAnalysisTaskMultiDielectron(){  }
 
-  virtual void  UserExec(Option_t *option);
-  virtual void  UserCreateOutputObjects();
+  virtual void UserExec(Option_t *option);
+  virtual void UserCreateOutputObjects();
+  virtual void FinishTaskOutput();
   
+  void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
   
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
   
@@ -39,6 +41,8 @@ private:
   TList fListDielectron;             // List of dielectron framework instances
   TList fListHistos;                 //! List of histogram manager lists in the framework classes
   TList fListCF;                     //! List with CF Managers
+
+  Bool_t fSelectPhysics;             // Whether to use physics selection
   
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);

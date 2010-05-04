@@ -42,6 +42,8 @@ public:
   void SetStepForAfterAllCuts(Bool_t steps=kTRUE)      { fStepForAfterAllCuts=steps;      }
   void SetStepsForEachCut(Bool_t steps=kTRUE)          { fStepsForEachCut=steps;          }
   void SetStepsForCutsIncreasing(Bool_t steps=kTRUE)   { fStepsForCutsIncreasing=steps;   }
+  void SetStepsForSignal(Bool_t steps=kTRUE)           { fStepsForSignal=steps;           }
+  void SetStepsForBackground(Bool_t steps=kTRUE)       { fStepsForBackground=steps;       }
   
   void SetPdgMother(Int_t pdg) { fPdgMother=pdg; }
   
@@ -75,7 +77,7 @@ private:
   
   Int_t           fNCuts;                         // Number of cuts in the filter concerned
 
-  Double_t        *fValues;                       // Value array for filling the container
+  Double_t        *fValues;                       //! Value array for filling the container
   
   Bool_t fStepForMCtruth;               //create a step for the MC truth
   Bool_t fStepForNoCutsMCmotherPid;     //create a step for before cuts, but with MC truth of the mother
@@ -83,12 +85,17 @@ private:
   Bool_t fStepsForEachCut;              //create steps for each cut?
   Bool_t fStepsForCutsIncreasing;       //create steps for increasing cut combinatons?
                                         //e.g. cut1&cut2, cut1&cut2&cut3 ...
-
+  Bool_t fStepsForSignal;               //steps for pure signal
+  Bool_t fStepsForBackground;           //steps for pure background
+  
   UInt_t fStepMasks[kNmaxAddSteps];      //steps for additional cut combinatons
   UInt_t fNStepMasks;                    //number of configured step masks
 
   Int_t fPdgMother;                      //Pdg code of MCtruth validation
   AliCFContainer* fCfContainer;          //the CF container
+
+  Bool_t fHasMC;                         //if MC info is available
+  Int_t  fNAddSteps;                     //number of additional MC related steps per cut step
   
   AliDielectronCF(const AliDielectronCF &c);
   AliDielectronCF &operator=(const AliDielectronCF &c);

@@ -57,6 +57,8 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronCF.h"
 #include "AliDielectronMC.h"
 #include "AliDielectronVarManager.h"
+#include "AliDielectronDebugTree.h"
+
 #include "AliDielectron.h"
 
 ClassImp(AliDielectron)
@@ -90,7 +92,8 @@ AliDielectron::AliDielectron() :
   fPdgMother(443),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
-  fCfManagerPair(0x0)
+  fCfManagerPair(0x0),
+  fDebugTree(0x0)
 {
   //
   // Default constructor
@@ -107,7 +110,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPdgMother(443),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
-  fCfManagerPair(0x0)
+  fCfManagerPair(0x0),
+  fDebugTree(0x0)
 {
   //
   // Named constructor
@@ -123,6 +127,7 @@ AliDielectron::~AliDielectron()
   //
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
+  if (fDebugTree) delete fDebugTree;
 }
 
 //________________________________________________________________
@@ -132,8 +137,8 @@ void AliDielectron::Init()
   // Initialise objects
   //
   if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
-  AliDielectronVarManager::InitESDpid(); //currently this will take the values for MC
-}
+  
+} 
 
 //________________________________________________________________
 void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
@@ -142,10 +147,13 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   // Process the events
   //
 
-  AliDielectronVarManager::SetEvent(0x0);
+  AliDielectronVarManager::SetEvent(ev1);
    
   //in case we have MC load the MC event and process the MC particles
-  if (AliDielectronMC::Instance()->ConnectMCEvent()) ProcessMC();
+  if (AliDielectronMC::Instance()->HasMC()) {
+    AliDielectronMC::Instance()->ConnectMCEvent();
+    ProcessMC();
+  }
   
   //if candidate array doesn't exist, create it
   if (!fPairCandidates->UncheckedAt(0)) {
@@ -178,7 +186,9 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
 
   //in case there is a histogram manager, fill the QA histograms
   if (fHistos) FillHistograms(ev1);
-  
+
+  //fill debug tree if a manager is attached
+  if (fDebugTree) FillDebugTree();
 }
 
 //________________________________________________________________
@@ -310,6 +320,28 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2) {
   delete candidate;
 }
 
+//________________________________________________________________
+void AliDielectron::FillDebugTree()
+{
+  //
+  // Fill Histogram information for tracks and pairs
+  //
+  
+  //Fill Debug tree
+  for (Int_t i=0; i<10; ++i){
+    Int_t ntracks=PairArray(i)->GetEntriesFast();
+    for (Int_t ipair=0; ipair<ntracks; ++ipair){
+      fDebugTree->Fill(static_cast<AliDielectronPair*>(PairArray(i)->UncheckedAt(ipair)));
+    }
+  }
+}
 
-
+//________________________________________________________________
+void AliDielectron::SaveDebugTree()
+{
+  //
+  // delete the debug tree, this will also write the tree
+  //
+  if (fDebugTree) fDebugTree->DeleteStreamer();
+}
 

@@ -22,6 +22,7 @@
 
 
 #include <TNamed.h>
+#include <TVectorD.h>
 #include <AliCFContainer.h>
 
 class TObjArray;
@@ -72,11 +73,13 @@ public:
   TObjArray* CollectHistosEff(Int_t dim, Int_t *vars, const char* nominators, Int_t denominator, Int_t type=0);
   TH1* ProjectEff(Int_t ndim, Int_t *vars);
   
-  
+  const TVectorD& GetData() const {return fVdata;}
   void Draw(const TObjArray *arr, const char* opt="");
 private:
   AliCFContainer *fCfContainer;                     // CF container
   AliCFEffGrid   *fEffGrid;                         // Efficiency calculation
+
+  TVectorD fVdata;                                  // vector with data, like mean efficiencies
   
   AliDielectronCFdraw(const AliDielectronCFdraw &c);
   AliDielectronCFdraw &operator=(const AliDielectronCFdraw &c);

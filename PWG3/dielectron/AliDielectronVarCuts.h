@@ -22,8 +22,9 @@
 //#############################################################
 
 #include <Rtypes.h>
+
 #include <AliAnalysisCuts.h>
-#include <AliDielectronVarManager.h>
+#include "AliDielectronVarManager.h"
 
 class AliDielectronVarCuts : public AliAnalysisCuts {
 public:
@@ -34,8 +35,8 @@ public:
   AliDielectronVarCuts(const char* name, const char* title);
   virtual ~AliDielectronVarCuts();
   //TODO: make copy constructor and assignment operator public
-  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max);
-  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t value);
+  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t excludeRange=kFALSE);
+  void AddCut(AliDielectronVarManager::ValueTypes type, Double_t value, Bool_t excludeRange=kFALSE);
   
   // setters
   void    SetCutOnMCtruth(Bool_t mc=kTRUE) { fCutOnMCtruth=mc; }
@@ -76,6 +77,7 @@ private:
   
   Double_t fCutMin[AliDielectronVarManager::kNMaxValues];           // minimum values for the cuts
   Double_t fCutMax[AliDielectronVarManager::kNMaxValues];           // maximum values for the cuts
+  Bool_t fCutExclude[AliDielectronVarManager::kNMaxValues];         // inverse cut logic?
   
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
@@ -87,13 +89,13 @@ private:
 //
 //Inline functions
 //
-inline void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t value)
+inline void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t value, Bool_t excludeRange)
 {
   //
   // Set cut in a small delta around value
   //
   const Double_t kDelta=1e-20;
-  AddCut(type,value-kDelta,value+kDelta);
+  AddCut(type,value-kDelta,value+kDelta, excludeRange);
 }
 
 #endif

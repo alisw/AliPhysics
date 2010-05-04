@@ -57,11 +57,21 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "P_InnerParam",
   "TPC_signal",
   "TPC_nSigma_Electrons",
+  "TPC_nSigma_Pions",
+  "TPC_nSigma_Muons",
+  "TPC_nSigma_Kaons",
+  "TPC_nSigma_Protons",
+  "TOF_nSigma_Pions",
+  "TOF_nSigma_Muons",
+  "TOF_nSigma_Kaons",
+  "TOF_nSigma_Protons",
   //
   "Chi2NDF",
   "DecayLength",
   "R",
   "OpeningAngle",
+  "LegDistance",
+  "LegDistanceXY",
   "Merr",
   "DCA",
   "PairType",
@@ -77,8 +87,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "Nevents"
 };
 
-AliESDpid* AliDielectronVarManager::fgESDpid = new AliESDpid;
+AliESDpid* AliDielectronVarManager::fgESDpid = 0x0;
 AliVEvent* AliDielectronVarManager::fgEvent  = 0x0;
+AliKFVertex* AliDielectronVarManager::fgKFVertex  = 0x0;
 //________________________________________________________________
 AliDielectronVarManager::AliDielectronVarManager() :
   TNamed("AliDielectronVarManager","AliDielectronVarManager")
