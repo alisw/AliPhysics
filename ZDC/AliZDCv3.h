@@ -34,10 +34,10 @@ public:
   void SetLumiLength(Float_t length) {fLumiLength = length;}
   
   void SetYZNC(Float_t yZNC) {fPosZNC[1] = yZNC;}
-  void SetYZNA(Float_t yZNA) {fPosZNC[1] = yZNA;}
+  void SetYZNA(Float_t yZNA) {fPosZNA[1] = yZNA;}
   
   void SetYZPC(Float_t yZPC) {fPosZPC[1] = yZPC;}
-  void SetYZPA(Float_t yZPA) {fPosZPC[1] = yZPA;}
+  void SetYZPA(Float_t yZPA) {fPosZPA[1] = yZPA;}
   
  
 protected:
