@@ -922,3 +922,41 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
   return iResult;
 }
 
+void AliHLTTPCClusterFinderComponent::GetOCDBObjectDescription( TMap* const targetMap){
+// Get a list of OCDB object description needed for the particular component
+  
+  if (!targetMap) return;
+  
+  // OCDB entries for component arguments
+  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinder32Bit"),    new TObjString("component arguments, empty at the moment"));
+  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderPacked"),   new TObjString("component arguments, empty at the moment"));
+  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderUnpacked"), new TObjString("component arguments, empty at the moment"));
+  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderDecoder"),  new TObjString("component arguments, empty at the moment"));
+  
+  // OCDB entries to be fetched by the TAXI (access via the AliTPCcalibDB class)
+  targetMap->Add(new TObjString("TPC/Calib/Parameters"),    new TObjString("unknown content"));
+  targetMap->Add(new TObjString("TPC/Calib/TimeDrift"),     new TObjString("drift velocity calibration"));
+  targetMap->Add(new TObjString("TPC/Calib/Temperature"),   new TObjString("temperature map"));
+  targetMap->Add(new TObjString("TPC/Calib/PadGainFactor"), new TObjString("gain factor pad by pad"));
+  targetMap->Add(new TObjString("TPC/Calib/ClusterParam"),  new TObjString("cluster parameters"));
+  
+  // OCDB entries needed to be fetched by the Pendolino
+  targetMap->Add(new TObjString("TPC/Calib/AltroConfig"), new TObjString("contains the altro config, e.g. info about the L0 trigger timing"));
+  targetMap->Add(new TObjString("GRP/CTP/CTPtiming"),     new TObjString("content used in the cluster coordinate transformation in relation to the L0 trigger timing"));
+
+  // OCDB entries necessary for replaying data on the HLT cluster
+  targetMap->Add(new TObjString("GRP/GRP/Data"), new TObjString("contains magnetic field info"));  
+ 
+  // OCDB entries needed to suppress fatals/errors/warnings during reconstruction
+  targetMap->Add(new TObjString("TPC/Calib/PadTime0"),    new TObjString("time0 offset pad by pad"));
+  targetMap->Add(new TObjString("TPC/Calib/PadNoise"),    new TObjString("pad noise values"));
+  targetMap->Add(new TObjString("TPC/Calib/Pedestals"),   new TObjString("pedestal info"));
+  targetMap->Add(new TObjString("TPC/Calib/Pulser"),      new TObjString("pulser info"));
+  targetMap->Add(new TObjString("TPC/Calib/CE"),          new TObjString("CE laser calibration result"));
+  targetMap->Add(new TObjString("TPC/Calib/Raw"),         new TObjString("unknown content"));
+  targetMap->Add(new TObjString("TPC/Calib/QA"),          new TObjString("not important"));
+  targetMap->Add(new TObjString("TPC/Calib/Mapping"),     new TObjString("unknown content"));
+  targetMap->Add(new TObjString("TPC/Calib/Goofie"),      new TObjString("Goofie values, not used at the moment (05.03.2010)"));
+  targetMap->Add(new TObjString("TPC/Calib/HighVoltage"), new TObjString("high voltage values, not used"));
+  targetMap->Add(new TObjString("TPC/Calib/Ref"),         new TObjString("unknown content"));
+}

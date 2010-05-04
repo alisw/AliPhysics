@@ -150,6 +150,8 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
+  /** interface function, see @ref AliHLTComponent for description */
+  void GetOCDBObjectDescription( TMap* const targetMap);
 
     protected:
 	
