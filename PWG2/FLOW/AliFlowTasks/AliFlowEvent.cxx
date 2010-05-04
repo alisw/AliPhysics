@@ -34,6 +34,7 @@
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowEvent.h"
+#include "AliLog.h"
 
 ClassImp(AliFlowEvent)
 
@@ -281,7 +282,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
   //fills the event with tracks from the ESD and kinematics from the MC info via the track label
   if (anOption==kNoKine)
   {
-    cout<<"WRONG OPTION IN AliFlowEventMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, KineSource anOption)"<<endl;
+    AliFatal("WRONG OPTION IN AliFlowEventMaker::FillTracks(AliESDEvent* anInput, AliMCEvent* anInputMc, KineSource anOption)");
     exit(1);
   }
 
@@ -290,7 +291,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
   Int_t iNumberOfInputTracksMC = anInputMc->GetNumberOfTracks() ;
   if (iNumberOfInputTracksMC==-1)
   {
-    cout<<"Skipping Event -- No MC information available for this event"<<endl;
+    AliError("Skipping Event -- No MC information available for this event");
     return;
   }
 
@@ -304,7 +305,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     AliMCParticle* pMcParticle = (AliMCParticle*) anInputMc->GetTrack(TMath::Abs(iLabel));
 
     //check
-    if (TMath::Abs(pParticle->GetLabel())!=pMcParticle->Label()) cout<<"pParticle->GetLabel()!=pMcParticle->Label() "<<pParticle->GetLabel()<<"  "<<pMcParticle->Label()<<endl;
+    if (TMath::Abs(pParticle->GetLabel())!=pMcParticle->Label())
+      AliWarning(Form("pParticle->GetLabel()!=pMcParticle->Label(), %i, %i", pParticle->GetLabel(), pMcParticle->Label()));
 
     //check if pParticle passes the cuts
     Bool_t rpOK = kTRUE;
@@ -313,7 +315,6 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     {
       if(anOption == kESDkine)
       {
-        //cout<<"take the PID from the MC & the kinematics from the ESD"<<endl;
         if (intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle,"mcGenCuts1") &&
             intCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle))
           rpOK=kTRUE;
@@ -323,7 +324,6 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       }
       else if (anOption == kMCkine)
       {
-        //cout<<"take the PID and kinematics from the MC"<<endl;
         if (intCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle))
           rpOK=kTRUE;
         if (diffCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,pMcParticle))
@@ -346,10 +346,6 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       pTrack->SetPt(pMcParticle->Pt() );
       pTrack->SetEta(pMcParticle->Eta() );
       pTrack->SetPhi(pMcParticle->Phi() );
-    }
-    else
-    {
-      cout<<"Not a valid option"<<endl;
     }
 
     if (rpOK && intCFManager)

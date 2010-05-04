@@ -63,6 +63,8 @@
 
 #include "AliAnalysisTaskFlowEvent.h"
 
+#include "AliLog.h"
+
 ClassImp(AliAnalysisTaskFlowEvent)
 
 //________________________________________________________________________
@@ -160,7 +162,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
 
   if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC"))
   {
-    cout<<"WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD and MC are allowed."<<endl;
+    AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD and MC are allowed.");
     exit(1);
   }
 }
@@ -182,20 +184,26 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     // This handler can return the current MC event
     if (!(fCFManager1&&fCFManager2))
     {
-      cout << "ERROR: No pointer to correction framework cuts! " << endl;
+      AliError("ERROR: No pointer to correction framework cuts! ");
       return;
     }
     if (!mcEvent)
     {
-      Printf("ERROR: Could not retrieve MC event");
+      AliError("ERROR: Could not retrieve MC event");
       return;
     }
 
     fCFManager1->SetMCEventInfo(mcEvent);
     fCFManager2->SetMCEventInfo(mcEvent);
     
-    Printf("Number of MC particles: %d", mcEvent->GetNumberOfTracks());
-    // analysis
+    AliInfo(Form("Number of MC particles: %d", mcEvent->GetNumberOfTracks()));
+
+    //check multiplicity 
+    if (!fCFManager1->CheckEventCuts(AliCFManager::kEvtGenCuts,mcEvent))
+    {
+      AliWarning("Event does not pass multiplicity cuts"); return;
+    }
+    //make event
     flowEvent = new AliFlowEvent(mcEvent,fCFManager1,fCFManager2);
   }
   // Make the FlowEvent for ESD input
@@ -203,17 +211,25 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   {
     if (!(fCFManager1&&fCFManager2))
     {
-      cout << "ERROR: No pointer to correction framework cuts! " << endl;
+      AliError("ERROR: No pointer to correction framework cuts!");
       return;
     }
     if (!myESD)
     {
-      Printf("ERROR: ESD not available");
+      AliError("ERROR: ESD not available");
       return;
     }
+
     //check the offline trigger (check if the event has the correct trigger)
-    Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
-    // analysis
+    AliInfo(Form("There are %d tracks in this event", fInputEvent->GetNumberOfTracks()));
+
+    //check multiplicity
+    if (!fCFManager1->CheckEventCuts(AliCFManager::kEvtRecCuts,myESD))
+    {
+      AliWarning("Event does not pass multiplicity cuts"); return;
+    }
+
+    //make event
     flowEvent = new AliFlowEvent(myESD,fCFManager1,fCFManager2);
   }
   // Make the FlowEvent for ESD input combined with MC info
@@ -221,25 +237,32 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   {
     if (!(fCFManager1&&fCFManager2))
     {
-      cout << "ERROR: No pointer to correction framework cuts! " << endl;
+      AliError("ERROR: No pointer to correction framework cuts! ");
       return;
     }
     if (!myESD)
     {
-      Printf("ERROR: ESD not available");
+      AliError("ERROR: ESD not available");
       return;
     }
-    Printf("There are %d tracks in this event", fInputEvent->GetNumberOfTracks());
+    AliInfo(Form("There are %d tracks in this event", fInputEvent->GetNumberOfTracks()));
 
     if (!mcEvent)
     {
-      Printf("ERROR: Could not retrieve MC event");
+      AliError("ERROR: Could not retrieve MC event");
       return;
     }
 
     fCFManager1->SetMCEventInfo(mcEvent);
     fCFManager2->SetMCEventInfo(mcEvent);
 
+    //check multiplicity
+    if (!fCFManager1->CheckEventCuts(AliCFManager::kEvtRecCuts,myESD))
+    {
+      AliWarning("Event does not pass multiplicity cuts"); return;
+    }
+
+    //make event
     if (fAnalysisType == "ESDMCkineESD")
     {
       flowEvent = new AliFlowEvent(myESD, mcEvent, AliFlowEvent::kESDkine, fCFManager1, fCFManager2 );
@@ -254,16 +277,19 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   {
     if (!myAOD)
     {
-      Printf("ERROR: AOD not available");
+      AliError("ERROR: AOD not available");
       return;
     }
-    Printf("There are %d tracks in this event", myAOD->GetNumberOfTracks());
+    AliInfo(Form("There are %d tracks in this event", myAOD->GetNumberOfTracks()));
     flowEvent = new AliFlowEvent(myAOD);
   }
 
-  //check event cuts
+  //check final event cuts
   Int_t mult = flowEvent->NumberOfTracks();
-  if (mult<fMinMult && mult>fMaxMult) return;
+  if (mult<fMinMult && mult>fMaxMult)
+  {
+    AliWarning("FlowEvent cut on multiplicity"); return;
+  }
 
   //tag subevents
   flowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);
