@@ -98,7 +98,7 @@ void AliACORDEReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digit
       Int_t  index = iChannel / 30;
       Int_t  bit   = iChannel % 30;
       if (rawStream.GetWord(index) & (1 << bit))
-        new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliACORDEdigit(iChannel+1,0);
+        new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()]) AliACORDEdigit(iChannel,0);
     }
   }
 
@@ -136,8 +136,8 @@ void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     AliACORDEdigit* digit = (AliACORDEdigit*) fDigitsArray->At(d);
     Int_t module = digit->GetModule();
 
-    AcoHitSingle[module-1] = kTRUE;
-    AcoHitMulti[module-1] = kTRUE;
+    AcoHitSingle[module] = kTRUE;
+    AcoHitMulti[module] = kTRUE;
   }  
   TString ActiveTriggerDetector = esd->GetFiredTriggerClasses();
   if (ActiveTriggerDetector.Contains("ASL")) fESDACORDE->SetACORDEBitPattern(AcoHitSingle);
