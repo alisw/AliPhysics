@@ -83,6 +83,15 @@ Double_t etaRange = 0.0; // If the original track with pseudorapidity eta is spl
 Double_t nonflowSectorMin = 0.0; // detector's sector in which tracks will be splitted starts at this angle (in degrees)                         
 Double_t nonflowSectorMax = 360.0; // detector's sector in which tracks will be splitted ends at this angle (in degrees)                        
 
+//===GLAUBER MODEL================================================================
+Bool_t bUseGlauberModel = kFALSE; // 1.) if kTRUE = multiplicity and constant flow harmonics are 
+                                  //                determined event-by-event from Glauber model
+                                  //                (pt and/or eta dependence of flow harmonics not supported;
+                                  //                settings for multiplicity and flow harmonics bellow are irrelevant) 
+                                  // 2.) if kFALSE = multiplicity and flow harmonics are determined
+                                  //                 independently event-by-event with bellow settings
+                                  //                 (pt and/or eta dependence of flow harmonics supported)
+
 //===FLOW HARMONICS===============================================================
 // harmonics V1, V2, V4... are constants or functions of pt and eta:         
 Bool_t bPtDependentHarmonicV1 = kFALSE; 
@@ -135,7 +144,7 @@ Bool_t bMultDistrOfRPsIsGauss = kTRUE;
                     
 Int_t iMultiplicityOfRP = 500;        // mean multiplicity of RPs (if sampled from Gaussian)
 Double_t dMultiplicitySpreadOfRP = 0; // multiplicity spread of RPs (if sampled from Gaussian)
-Int_t iMinMultOfRP = 400;              // minimal multiplicity of RPs (if sampled uniformly)
+Int_t iMinMultOfRP = 400;              // minimal multiplicity of RPs(if sampled uniformly)
 Int_t iMaxMultOfRP = 600;             // maximal multiplicity of RPs (if sampled uniformly)
                     
 //===DETECTOR ACCEPTANCE===============================================================
@@ -410,17 +419,22 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  eventMakerOnTheFly->SetEtaRange(etaRange);
  eventMakerOnTheFly->SetNonflowSectorMin(nonflowSectorMin*TMath::Pi()/180.);
  eventMakerOnTheFly->SetNonflowSectorMax(nonflowSectorMax*TMath::Pi()/180.);
- if(bMultDistrOfRPsIsGauss)
+ eventMakerOnTheFly->SetUseGlauberModel(bUseGlauberModel);
+ 
+ if(!bUseGlauberModel)
  {
-  eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
-  eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
-  eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
- } else
-   {
-    eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
-    eventMakerOnTheFly->SetMinMultOfRP(iMinMultOfRP);
-    eventMakerOnTheFly->SetMaxMultOfRP(iMaxMultOfRP); 
-   }
+  if(bMultDistrOfRPsIsGauss)
+  {
+   eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
+   eventMakerOnTheFly->SetMultiplicityOfRP(iMultiplicityOfRP);
+   eventMakerOnTheFly->SetMultiplicitySpreadOfRP(dMultiplicitySpreadOfRP);
+  } else
+    {
+     eventMakerOnTheFly->SetMultDistrOfRPsIsGauss(bMultDistrOfRPsIsGauss);
+     eventMakerOnTheFly->SetMinMultOfRP(iMinMultOfRP);
+     eventMakerOnTheFly->SetMaxMultOfRP(iMaxMultOfRP); 
+    }
+ } // end of if(!bUseGlauberModel)
   
  eventMakerOnTheFly->SetTemperatureOfRP(dTemperatureOfRP);
  eventMakerOnTheFly->SetPtDependentHarmonicV1(bPtDependentHarmonicV1);
@@ -432,8 +446,11 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  // V1:
  if(!(bPtDependentHarmonicV1 || bEtaDependentHarmonicV1))
  {
-  eventMakerOnTheFly->SetV1RP(dV1RP);
-  eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
+  if(!bUseGlauberModel)
+  {
+   eventMakerOnTheFly->SetV1RP(dV1RP);
+   eventMakerOnTheFly->SetV1SpreadRP(dV1SpreadRP);  
+  } 
  } else // (pt,eta) dependent V1
    {
     eventMakerOnTheFly->SetV1vsPtEtaMax(dV1vsPtEtaMax);
@@ -445,16 +462,19 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  // V2:
  if(!(bPtDependentHarmonicV2 || bEtaDependentHarmonicV2)) // constant V2
  { 
-  eventMakerOnTheFly->SetConstantV2IsSampledFromGauss(bConstantV2IsSampledFromGauss);
-  if(bConstantV2IsSampledFromGauss) // Gauss
+  if(!bUseGlauberModel)
   {
-   eventMakerOnTheFly->SetV2RP(dV2RP);
-   eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
-  } else // uniform
-    {
-     eventMakerOnTheFly->SetMinV2RP(dMinV2RP);
-     eventMakerOnTheFly->SetMaxV2RP(dMaxV2RP);  
-    }
+   eventMakerOnTheFly->SetConstantV2IsSampledFromGauss(bConstantV2IsSampledFromGauss);
+   if(bConstantV2IsSampledFromGauss) // Gauss
+   {
+    eventMakerOnTheFly->SetV2RP(dV2RP);
+    eventMakerOnTheFly->SetV2SpreadRP(dV2SpreadRP);  
+   } else // uniform
+     {
+      eventMakerOnTheFly->SetMinV2RP(dMinV2RP);
+      eventMakerOnTheFly->SetMaxV2RP(dMaxV2RP);  
+     }
+  } // end of if(!bUseGlauberModel)  
  } else // (pt,eta) dependent V2
    {
     eventMakerOnTheFly->SetV2vsPtEtaMax(dV2vsPtEtaMax);
@@ -470,8 +490,11 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  // V4:
  if(!(bPtDependentHarmonicV4 || bEtaDependentHarmonicV4))
  {
-  eventMakerOnTheFly->SetV4RP(dV4RP);
-  eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
+  if(!bUseGlauberModel)
+  {
+   eventMakerOnTheFly->SetV4RP(dV4RP);
+   eventMakerOnTheFly->SetV4SpreadRP(dV4SpreadRP);  
+  }
  } 
  
  // non-uniform acceptance:
@@ -661,6 +684,18 @@ void CheckUserSettings()
   break;
  }
  
+ if(bUseGlauberModel)
+ {
+  if(bPtDependentHarmonicV1||bEtaDependentHarmonicV1||
+     bPtDependentHarmonicV2||bEtaDependentHarmonicV2||
+     bPtDependentHarmonicV4||bEtaDependentHarmonicV4)
+  {   
+   cout<<"WARNING: When using Glauber model pt and/or eta dependence of flow harmonics is not supported !!!!"<<endl;
+   cout<<"         Set all booleans bPtDependentHarmonic* to kFALSE in the macro."<<endl;
+   exit(0); 
+  }
+ }
+
  if(bPtDependentHarmonicV4 && !bPtDependentHarmonicV2))
  {
   cout<<"WARNING: V4(pt,eta) is determined as pow(V2(pt,eta),2.) !!!!"<<endl;
@@ -688,7 +723,7 @@ void CheckUserSettings()
   cout<<"         You must also have bPtDependentHarmonicV2 = bPtDependentHarmonicV4 in the macro."<<endl;
   exit(0); 
  }
- 
+  
 } // end of void CheckUserSettings()
 
 void LoadLibraries(const anaModes mode) {

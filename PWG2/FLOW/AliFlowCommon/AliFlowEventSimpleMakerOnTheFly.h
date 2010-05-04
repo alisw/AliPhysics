@@ -32,6 +32,11 @@ class AliFlowEventSimpleMakerOnTheFly {
 
   virtual void Init(); 
   
+  Int_t DetermineMultiplicity(); // determine multiplicity for current event
+  virtual void DetermineV1(); // determine flow harmonics v1 for current event (if v1 is not pt or eta dependent)
+  virtual void DetermineV2(); // determine flow harmonics v2 for current event (if v2 is not pt or eta dependent)
+  virtual void DetermineV4(); // determine flow harmonics v4 for current event (if v4 is not pt or eta dependent)
+  Int_t GlauberModel(); // determine multiplicity and flow harmonics for current event from Glauber moder
   AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI);  // create an event on the fly
  
     
@@ -40,6 +45,9 @@ class AliFlowEventSimpleMakerOnTheFly {
   //                        *****************************
   //................................................................................................
   // setters and getters for global parameters:
+  void SetUseGlauberModel(Bool_t const ugm) {this->fUseGlauberModel = ugm;};
+  Bool_t GetUseGlauberModel() const {return this->fUseGlauberModel;};
+  
   void SetMultDistrOfRPsIsGauss(Bool_t const mdorig) {this->fMultDistrOfRPsIsGauss = mdorig;};
   Bool_t GetMultDistrOfRPsIsGauss() const {return this->fMultDistrOfRPsIsGauss;};
   
@@ -160,6 +168,7 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   //................................................................................................
   // global parameters:
+  Bool_t    fUseGlauberModel;        // if kTRUE multiplicity and flow harmonics are determined e-b-e from Glauber model
   Bool_t    fMultDistrOfRPsIsGauss;  // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
                                      //                 mean = fMultiplicityOfRP and spread = fMultiplicitySpreadOfRP
                                      // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
