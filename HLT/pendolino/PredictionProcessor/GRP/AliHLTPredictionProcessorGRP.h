@@ -103,6 +103,15 @@ public:
    */
   virtual TMap* produceTestData(TString aliasName = "");
 
+  /**
+   * Create the initial GRP entry.
+   * The beam type and run type parameters are propagated form the ECS to
+   * the run manager, and provided as arguments to the pendolino.
+   * The initial GRP entry is created ignoring the magnetic field, this
+   * is updated by the pendolino afterwords.
+   */
+  static bool CreateInitialGRPEntry(int runno, const char* beamtype,
+				    const char* runtype, const char* detectorList);
 
 protected:
 

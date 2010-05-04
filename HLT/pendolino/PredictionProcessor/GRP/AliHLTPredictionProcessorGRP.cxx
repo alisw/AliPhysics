@@ -23,11 +23,12 @@
 // 
 
 #include "AliHLTPredictionProcessorGRP.h"
-#include <AliCDBMetaData.h>
-#include <AliCDBEntry.h>
-
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliGRPObject.h"
 #include "AliCDBMetaData.h"
+#include "AliCDBId.h"
+#include <cassert>
 
 //#include <TObjArray.h>
 //#include <AliDCSValue.h>
@@ -140,27 +141,63 @@ UInt_t AliHLTPredictionProcessorGRP::Process(TMap* dcsAliasMap)
     bRet=kFALSE;
   }
 
-  // generate GRP object
-  AliGRPObject* grpObj=new AliGRPObject;
-  float cmsEnergy=14000;
-  grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
-  grpObj->SetBeamType("p-p");
+  AliGRPObject* grpObj=NULL;
+  AliGRPObject* grpExist=NULL;
+  AliCDBMetaData* cdbMetaData=NULL;
+  bool bUpdate=false;
+
+  // read existing GRP object
+  AliCDBEntry* pEntry=GetFromOCDB("GRP","Data");
+  if (pEntry) {
+    grpExist=dynamic_cast<AliGRPObject*>(pEntry->GetObject());
+    if (grpExist) {
+      // possible values for polarities: 0 and 1
+      // nominal value of currents is thousands of ampere 
+      bUpdate=bUpdate || (TMath::Abs(grpExist->GetL3Polarity()- l3Polarity)>0.5);
+      bUpdate=bUpdate || (TMath::Abs(grpExist->GetL3Current(AliGRPObject::kMean) - l3Current)>10.0);
+      bUpdate=bUpdate || (TMath::Abs(grpExist->GetDipolePolarity()- dipolePolarity)>0.5);
+      bUpdate=bUpdate || (TMath::Abs(grpExist->GetDipoleCurrent(AliGRPObject::kMean) - dipoleCurrent)>10.0);
+
+      cdbMetaData=pEntry->GetMetaData();
+    }
+  }
+  // don't write if object is there and up-to-date
+  if (grpExist && !bUpdate) return 0;
+
+  if (grpExist) {
+    // update existing object
+    grpObj=grpExist;
+  } else {
+    // generate GRP object
+    grpObj=new AliGRPObject;
+    float cmsEnergy=14000;
+    grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
+    grpObj->SetBeamType("p-p");
+  }
   grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
   grpObj->SetDipoleCurrent(dipoleCurrent,(AliGRPObject::Stats)0);  
   grpObj->SetL3Polarity(l3Polarity);  
   grpObj->SetDipolePolarity(dipolePolarity);
   grpObj->SetPolarityConventionLHC();                    // LHC convention +/+ current -> -/- field main components
-  // TODO: set also the pressure sensors, but first need to clarify how to use the AliDCSSensor
 
-  UInt_t start=0;
-  AliCDBMetaData cdbMetaData;
-  cdbMetaData.SetResponsible("ALICE HLT");
-  cdbMetaData.SetComment(Form("GRP entry for the magnetic field initialization of HLT components, produced by %s", ClassName()));
-  
-  if (Store("GRP", "Data", grpObj, &cdbMetaData, start, kTRUE)) {
+  if (!cdbMetaData) {
+    cdbMetaData=new AliCDBMetaData;
+    cdbMetaData->SetResponsible("Matthias.Richter@cern.ch");
+    cdbMetaData->SetComment(Form("GRP entry for the magnetic field initialization of HLT components, produced by %s", ClassName()));
+  }
+
+  // note: 'validityStart' specifies run no w.r.t. current run no -> thus 0
+  // create with run specific validity -> kFALSE 
+  if (Store("GRP", "Data", grpObj, cdbMetaData, 0, kFALSE)) {
   } else {
     Log(" *** Failed to store GRP object");
     return 7;
+  }
+  if (!grpExist) {
+    if (grpObj) delete grpObj;
+    grpObj=NULL;
+    if (cdbMetaData) delete cdbMetaData;
+    cdbMetaData=NULL;
   }
   
   return 0;
@@ -174,4 +211,41 @@ TMap* AliHLTPredictionProcessorGRP::produceTestData(TString /*aliasName*/)
   return resultMap;
 }
 
+bool AliHLTPredictionProcessorGRP::CreateInitialGRPEntry(int runno, const char* beamtype, const char* runtype, const char* detectorList)
+{
+  // Create the initial GRP entry.
+  // The beam type and run type parameters are propagated form the ECS to
+  // the run manager, and provided as arguments to the pendolino.
+  // The initial GRP entry is created ignoring the magnetic field, this
+  // is updated by the pendolino afterwords.
 
+  AliGRPObject* grpObj=new AliGRPObject;
+  float cmsEnergy=14000; // check if this can be obtained from somewhere
+  grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
+  grpObj->SetBeamType(beamtype);
+  grpObj->SetRunType(runtype);
+  grpObj->SetL3Current(0.0,(AliGRPObject::Stats)0);
+  grpObj->SetDipoleCurrent(0.0,(AliGRPObject::Stats)0);  
+  grpObj->SetL3Polarity(0);  
+  grpObj->SetDipolePolarity(0);
+  grpObj->SetPolarityConventionLHC();
+  grpObj->SetTimeStart(time(NULL));   // check if time can be fetched from ECS
+
+  /* the following needs to be checked
+  grpObj->SetLHCPeriod(getenv("LHC_PERIOD"));
+  grpObj->SetNumberOfDetectors(numOfDetectors);
+  grpObj->SetDetectorMask(detectMask);  
+  */
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man || !man->IsDefaultStorageSet()) {
+    return false;
+  }
+
+  AliCDBPath cdbPath("GRP/GRP/Data");
+  AliCDBId cdbId(cdbPath, runno, runno);
+  AliCDBMetaData cdbMetaData;
+  cdbMetaData.SetResponsible("matthias.richter@cern.ch");
+  cdbMetaData.SetComment(Form("Online GRP entry, produced by AliHLTPredictionProcessorGRP"));
+  return man->Put(grpObj, cdbId, &cdbMetaData);
+}
