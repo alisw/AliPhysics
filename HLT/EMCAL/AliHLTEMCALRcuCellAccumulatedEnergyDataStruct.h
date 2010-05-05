@@ -19,10 +19,6 @@
  * provided "as is" without express or implied warranty.                   *
  **************************************************************************/
 
-//#include "AliHLTPHOSCommonDefs.h"
-//#include "AliHLTCaloConstant.h"
-// using namespace PhosHLTConst;
-//using namespace CaloHLTConst;
 
 #include "AliHLTEMCALConstant.h"
 

@@ -29,50 +29,30 @@ ClassImp(AliHLTEMCALConstants);
 
 AliHLTEMCALConstants::AliHLTEMCALConstants() :
   AliHLTCaloConstants(),
-  fkMAXHOSTS(20),
-  fkDEFAULTEVENTPORT(42001),
   fkNZROWSRCU(56),
   fkNXCOLUMNSRCU(16),
   fkNZROWSMOD(48),
   fkNXCOLUMNSMOD(24),
-  fkNDATATYPES(10),
-  fkPFMAXPATHLENGTH(256),
-  fkPFDEFAULTNSAMPLES(70),
-  fkPFDEFAULTSTARTINDEX(0),
-  fkDEFAULTTAU(0.2),
-  fkDEFAULTFS(10),
-  fkCSPSPERFEE(32),
-
-  // fkRCU0(0),
-  // fkRCU1(1),
-  // fkRCU2(2),
-  // fkRCU3(3),
-  // fkZ0(0),
-  // fkZ1(1),
-  // fkX0(0),
-  // fkX1(1),
- 
   fkNMODULES(10),
   fkNRCUS(4),
   fkNRCUSPERMODULE(2),
   fkNRCUSPERTOTAL(fkNMODULES*fkNRCUSPERMODULE),
-  fkNFEECS(9),
-  fkNALTROS(4),
-  fkNALTROCHANNELS(16),
-  fkNBRANCHES(2), 
-  fkCELLSTEP(6.0),
-  fkMAXCELLSTEPETA(6.32), 	// FR: max tower dimension along eta
-  fkMINCELLSTEPETA(5.99), 	// FR: min tower dimension along eta
-  fkCELLSTEPPHI(6.04667), 	// FR: tower dimension along phi
-  fkCELLHEIGHT(27.74),  	// FR: tower height
-  fkCELLANGLE(1.50),  		// FR: tower tapeiring angle (DEG)
-  fkRADLENGTH(1.23),
-  fkCRITICENERGY(8),
-  fkCJ(0.5),
-  fkNRCUSPERSECTOR(4),
-  fkDDLOFFSET(4608),
-  fkDETNAME("EMCAL")
+  fkNFEECS(9)
 {
+  fkDETNAME = "EMCAL";
+    //  fkNBRANCHES(2), 
+  fkCELLSTEP = 6.0;
+  fkMAXCELLSTEPETA =6.32; 	// FR: max tower dimension along eta
+  fkMINCELLSTEPETA = 5.99; 	// FR: min tower dimension along eta
+  fkCELLSTEPPHI = 6.04667; 	// FR: tower dimension along phi
+  fkCELLHEIGHT =  27.74;  	// FR: tower height
+  fkCELLANGLE  =  1.50;  		// FR: tower tapeiring angle (DEG)
+  fkRADLENGTH  =  1.23;
+  fkCRITICENERGY =  8;
+  fkCJ  =   0.5;
+  //  fkNRCUSPERSECTOR(4),
+  fkDDLOFFSET =  4608;
+
   //Default constructor
 }
 

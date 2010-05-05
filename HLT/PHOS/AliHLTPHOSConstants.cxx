@@ -29,38 +29,20 @@ ClassImp(AliHLTPHOSConstants);
 
 AliHLTPHOSConstants::AliHLTPHOSConstants() :
   AliHLTCaloConstants(),
-  fkMAXHOSTS(20),
-  fkDEFAULTEVENTPORT(42001),
   fkNZROWSRCU(56),
   fkNXCOLUMNSRCU(16),
   fkNZROWSMOD(56),
   fkNXCOLUMNSMOD(64),
-  fkNDATATYPES(10),
-  fkCSPSPERFEE(32),
-  
-  // fkRCU0(0),
-  // fkRCU1(1),
-  // fkRCU2(2),
-  // fkRCU3(3),
-  // fkZ0(0),
-  // fkZ1(1),
-  // fkX0(0),
-  // fkX1(1),
-
   fkNMODULES(5),
   fkNRCUS(4),
   fkNRCUSPERMODULE(4),
   fkNRCUSPERTOTAL(fkNMODULES*fkNRCUSPERMODULE),
-  fkNFEECS(14),
-  fkNALTROS(4),
-  fkNALTROCHANNELS(16),
-  fkNBRANCHES(2),
-  fkCELLSTEP(2.255),
-  //  fkNRCUSPERSECTOR(-9999),
-  fkDDLOFFSET(1792),
-  fkDETNAME("PHOS")
+  fkNFEECS(14)
 {
   //Default constructor
+  fkDETNAME = "PHOS";
+  fkCELLSTEP = 2.255;
+  fkDDLOFFSET = 1792;
 }
 
 AliHLTPHOSConstants::~AliHLTPHOSConstants()

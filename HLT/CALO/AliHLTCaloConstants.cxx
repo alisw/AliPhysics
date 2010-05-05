@@ -28,7 +28,23 @@
 
 ClassImp(AliHLTCaloConstants);
 
-AliHLTCaloConstants::AliHLTCaloConstants()
+AliHLTCaloConstants::AliHLTCaloConstants() : fkNALTROS(4),
+					     fkNALTROCHANNELS(16),
+					     fkNBRANCHES(2),
+					     fkCSPSPERFEE(32),
+					     fkNDATATYPES(10),
+					     fkMAXHOSTS(20),
+					     fkDEFAULTEVENTPORT(42001), 
+					     fkCELLSTEP(-1),
+					     fkMAXCELLSTEPETA(-1),
+					     fkMINCELLSTEPETA(-1),
+					     fkCELLSTEPPHI(-1),
+					     fkCELLHEIGHT(-1),
+					     fkCELLANGLE(-1)
+					     fkRADLENGTH(-1),
+					     fkCRITICENERGY(-1),
+					     fkCJ(-1),
+					     fkDDLOFFSET(-1)
 {
   //Default constructor
 }
