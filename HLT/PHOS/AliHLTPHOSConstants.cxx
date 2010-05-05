@@ -29,7 +29,7 @@ ClassImp(AliHLTPHOSConstants);
 
 AliHLTPHOSConstants::AliHLTPHOSConstants() : AliHLTCaloConstants()
 {
-  
+  InitConstants();
 }
 
 
@@ -42,7 +42,6 @@ AliHLTPHOSConstants::~AliHLTPHOSConstants()
 void 
 AliHLTPHOSConstants::InitConstants()
 {
- 
   fkNZROWSRCU = 56;
   fkNXCOLUMNSRCU = 16;
   fkNZROWSMOD = 56;
@@ -55,5 +54,4 @@ AliHLTPHOSConstants::InitConstants()
   fkDETNAME = "PHOS";
   fkCELLSTEP = 2.255;
   fkDDLOFFSET = 1792;
-  
 }

@@ -122,16 +122,16 @@ class AliHLTEMCALOnlineDisplayEventTab : public AliHLTEMCALOnlineDisplayTab
  private:
   AliHLTEMCALOnlineDisplayEventTab();
   
+  
   // void FillRawData(const AliHLTEMCALChannelRawDataStruct &rawStr);
   void FillRawData(const AliHLTCaloChannelRawDataStruct &rawStr);
-  
-
- AliHLTEMCALGetEventButton* fgEventButtPtr; 
+  AliHLTEMCALGetEventButton* fgEventButtPtr; 
   void InitDisplay(TGTab *tabPtr){};
   void InitDisplay(TGTab * tabPtr, int runnumber);
   AliHLTEMCALOnlineDisplay *fOnlineDisplayPtr;
   // AliHLTCaloSharedMemoryInterfacev2  *fShmPtr;   
   AliHLTEMCALSharedMemoryInterface  *fShmPtr;   
+
 };
 
 

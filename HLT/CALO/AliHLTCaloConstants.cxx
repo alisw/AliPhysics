@@ -24,11 +24,11 @@
 
 #include "AliHLTCaloConstants.h"
 
-
 ClassImp(AliHLTCaloConstants);
 
 
-AliHLTCaloConstants::AliHLTCaloConstants() :   fkCELLSTEP(-1),
+AliHLTCaloConstants::AliHLTCaloConstants() :   fgInstance(0),
+					       fkCELLSTEP(-1),
 					       fkMAXCELLSTEPETA(-1),
 					       fkMINCELLSTEPETA(-1),
 					       fkCELLSTEPPHI(-1),
@@ -64,5 +64,21 @@ AliHLTCaloConstants::AliHLTCaloConstants() :   fkCELLSTEP(-1),
 AliHLTCaloConstants::~AliHLTCaloConstants()
 {
   //Default destructor
+}
+ 
+
+
+AliHLTCaloConstants*
+AliHLTCaloConstants::Instance()
+{
+  if (fgInstance != 0 )
+    {
+      return fgInstance; 
+    }
+  else
+    {
+      fgInstance = new  AliHLTCaloConstants();
+      return fgInstance; 
+    }
 }
 

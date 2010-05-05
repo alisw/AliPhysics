@@ -17,13 +17,6 @@
 #ifndef ALIHLTCALOCONSTANTS_H
 #define ALIHLTCALOCONSTANTS_H
 
-// #define  fgkALTROMAXSAMPLES   1008  /**<The maximum number of samples of the ALTRO*/ 
-// #define  fgkALTROMAXPRESAMPLES  15  //Constant 
-// #define  fgkNGAINS  2
-// #define  fgkHIGHGAIN  1
-// #define  fgkLOWGAIN  0
-// #define  fkMAXBINVALUE  1023 //Constant
-
 #define  ALTROMAXSAMPLES   1008  /**<The maximum number of samples of the ALTRO*/ 
 #define  ALTROMAXPRESAMPLES  15  //Constant 
 #define  NGAINS  2
@@ -33,18 +26,17 @@
 #define  MAXHOSTS 20 // For the onlinedisplay
 #define  DEFAULTEVENTPORT 42001
 
-
 class AliHLTCaloConstants
 {
 
 public:
 
   AliHLTCaloConstants();
-
-
   virtual ~AliHLTCaloConstants();
-  
-  virtual void InitConstants() = 0; 
+ 
+
+  // virtual void InitConstants() = 0; 
+
 
   static  Int_t GetALTROMAXSAMPLES()    { return  ALTROMAXSAMPLES; }; 
   static  Int_t GetNGAINS()       { return NGAINS; }; 	
@@ -68,7 +60,8 @@ public:
   Int_t GetNALTROS() {  return fkNALTROS; }; 					
   Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS; }; 					
   Int_t GetNBRANCHES() const { return fkNBRANCHES; }; 					
- 
+  AliHLTCaloConstants* Instance();
+
    // EMCAL specific
   Float_t GetCELLSTEP() const { return fkCELLSTEP; }
   Float_t GetMAXCELLSTEPETA() const { return fkMAXCELLSTEPETA; }  //FR
@@ -82,8 +75,12 @@ public:
   //  virtual Int_t GetDDLOFFSET() const = 0;
   TString GetDETNAME() { return fkDETNAME; };
   
-  
+  //  static AliHLTCaloConstants *fgInstance;
+  AliHLTCaloConstants *fgInstance;
+
 protected:
+  
+
   TString fkDETNAME;
   Float_t fkCELLSTEP; //Constant
   Float_t fkMAXCELLSTEPETA;

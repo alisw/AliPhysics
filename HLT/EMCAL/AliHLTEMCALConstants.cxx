@@ -29,6 +29,7 @@ ClassImp(AliHLTEMCALConstants);
 
 AliHLTEMCALConstants::AliHLTEMCALConstants() : AliHLTCaloConstants()
 {
+  InitConstants();
   //Default constructor
 }
 
