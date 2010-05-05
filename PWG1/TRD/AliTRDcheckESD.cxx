@@ -508,22 +508,28 @@ TObjArray* AliTRDcheckESD::Histos()
 }
 
 //____________________________________________________________________
-Bool_t AliTRDcheckESD::Load(const Char_t *filename, const Char_t *name)
+Bool_t AliTRDcheckESD::Load(const Char_t *file, const Char_t *dir, const Char_t *name)
 {
 // Load data from performance file
 
-  if(!TFile::Open(filename)){
-    AliWarning(Form("Couldn't open file %s.", filename));
+  if(!TFile::Open(file)){
+    AliWarning(Form("Couldn't open file %s.", file));
     return kFALSE;
   }
-  TObjArray *o = NULL;
-  if(!(o = (TObjArray*)gFile->Get(name ? name : GetName()))){
-    AliWarning("Missing histogram container.");
+  if(dir){
+    if(!gFile->cd(dir)){
+      AliWarning(Form("Couldn't cd to %s in %s.", dir, file));
+      return kFALSE;
+    }
+  }
+  TObjArray *o(NULL);
+  const Char_t *tn=(name ? name : GetName());
+  if(!(o = (TObjArray*)gDirectory->Get(tn))){
+    AliWarning(Form("Missing histogram container %s.", tn));
     return kFALSE;
   }
   fHistos = (TObjArray*)o->Clone(GetName());
   gFile->Close();
-  SETBIT(fStatus, kLoad);
   return kTRUE;
 }
 
@@ -543,7 +549,7 @@ Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val)
 void AliTRDcheckESD::Terminate(Option_t *)
 {
 // Steer post-processing 
-  if(!IsLoad()){
+  if(!fHistos){
     fHistos = dynamic_cast<TObjArray *>(GetOutputData(1));
     if(!fHistos){
       AliError("Histogram container not found in output");

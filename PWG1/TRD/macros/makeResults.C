@@ -98,7 +98,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "",
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  if(files) mergeProd("TRD.Performance.root", files);
+  if(files) mergeProd("AnalysisResults.root", files);
   Int_t fSteerTask = ParseOptions(opt);
 
   if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
@@ -121,7 +121,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "",
 //______________________________________________________
 void processTRD(TNamed *otask)
 {
-  printf("processTRD %s %s\n", otask->GetName(), otask->GetTitle());
+  printf("process[%s] : %s\n", otask->GetName(), otask->GetTitle());
   Int_t debug(0);
   AliTRDrecoTask *task = dynamic_cast<AliTRDrecoTask*>(otask);
   task->SetDebugLevel(debug);
@@ -129,7 +129,7 @@ void processTRD(TNamed *otask)
   task->SetMCdata(mc);
   task->SetFriends(friends);
 
-  if(!task->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
+  if(!task->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")))){
     Error("makeResults.C", Form("Load data container for task %s failed.", task->GetName()));
     delete task;
     return;
@@ -151,7 +151,7 @@ void processTRD(TNamed *otask)
 //______________________________________________________
 void processESD(TNamed *otask)
 {
-  printf("processESD %s %s\n", otask->GetName(), otask->GetTitle());
+  printf("process[%s] : %s\n", otask->GetName(), otask->GetTitle());
 
   AliTRDcheckESD *esd = dynamic_cast<AliTRDcheckESD*>(otask);
   if(!esd){
@@ -159,8 +159,7 @@ void processESD(TNamed *otask)
     delete otask;
     return;
   }
-  printf("esd[%p]\n", (void*)esd);
-  if(!esd->Load(Form("%s/TRD.Performance.root", gSystem->ExpandPathName("$PWD")))){
+  if(!esd->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")), "TRD_Performance")){
     Error("makeResults.C", Form("Load data container for task %s failed.", esd->GetName()));
     delete esd;
     return;
