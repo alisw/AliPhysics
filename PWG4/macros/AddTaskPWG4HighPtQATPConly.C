@@ -43,9 +43,9 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts
     trackCuts->SetDCAToVertex2D(kTRUE);
   }
   else if(cuts==2) {
+    trackCuts=trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
     trackCuts->SetEtaRange(-0.9,0.9);
     trackCuts->SetPtRange(0.15, 1e10);
-    trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
     trackCuts->SetRequireITSRefit(kFALSE);
   }
 
@@ -64,7 +64,7 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts
     trackCutsITS->SetDCAToVertex2D(kTRUE); 
   }
  else if(cuts==2) {
-   trackCutsITS->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
+   trackCutsITS=trackCutsITS->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
    trackCutsITS->SetEtaRange(-0.9,0.9);
    trackCutsITS->SetPtRange(0.15, 1e10);
  }

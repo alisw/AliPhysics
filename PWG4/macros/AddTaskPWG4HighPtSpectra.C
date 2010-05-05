@@ -69,7 +69,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   const Int_t nbin1  = nbin13; //bins in pt 98 
   const Int_t nbin2  =  18;//36; //bins in phi
   const Int_t nbin3  =  9; //bins in eta
-  const Int_t nbin4  =  80; //bins in DCAR
+  const Int_t nbin4  =  40; //bins in DCAR
   const Int_t nbin5  =  35; //bins in Chi2/#NclusTPC
 
   //arrays for the number of bins in each dimension
@@ -134,7 +134,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
 //     trackCuts->SetRequireITSRefit(kTRUE);
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
-  trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
+  trackCuts=trackCuts->GetStandardITSTPCTrackCuts2009(kTRUE);//Primary Track Selection
 
  // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
