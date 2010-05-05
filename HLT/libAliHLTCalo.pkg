@@ -33,7 +33,6 @@ MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
 ## all header files of this module
 MODULE_HDRS:= 	$(CLASS_HDRS) \
-		AliHLTCaloConstant.h \
 		AliHLTCaloDigitContainerDataStruct.h \
 		AliHLTCaloRecPointDataStruct.h \
 		AliHLTCaloRecPointContainerStruct.h \
