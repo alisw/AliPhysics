@@ -99,7 +99,23 @@ class AliFlowAnalysisWithMCEventPlane {
    // harmonic:
    void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
    Int_t GetHarmonic() const {return this->fHarmonic;};
- 
+   
+   // flow of resonances:
+   // a) methods:
+   virtual void BookObjectsForFlowOfResonances();
+   virtual void FlowOfResonances(AliFlowEventSimple* anEvent);
+   // b) setters and getters:
+   void SetResonanceList(TList* const rl) {this->fResonanceList = rl;}
+   TList* GetResonanceList() const {return this->fResonanceList;}    
+   void SetFlowOfResonances(Bool_t const ffor) {this->fFlowOfResonances = ffor;};
+   Bool_t GetFlowOfResonances() const {return this->fFlowOfResonances;};   
+   void SetResonanceSettings(TProfile* const rs) {this->fResonanceSettings = rs;};
+   TProfile* GetResonanceSettings() const {return this->fResonanceSettings;};
+   void SetPairCorrelator(TProfile* const spc, Int_t const cs) {this->fPairCorrelator[cs] = spc;};
+   TProfile* GetPairCorrelator(Int_t cs) const {return this->fPairCorrelator[cs];};
+   void SetXinPairAngle(Double_t const xipa) {this->fXinPairAngle = xipa;};
+   Double_t GetXinPairAngle() const {return this->fXinPairAngle;};   
+  
  private:
  
    AliFlowAnalysisWithMCEventPlane(const AliFlowAnalysisWithMCEventPlane& aAnalysis);             //copy constructor
@@ -127,9 +143,16 @@ class AliFlowAnalysisWithMCEventPlane {
    TProfile2D*  fHistProDiffFlowPtEtaPOI; // profile used to calculate the differential flow (Pt,Eta) of POI particles
    TProfile*    fHistProDiffFlowPtPOI;    // profile used to calculate the differential flow (Pt) of POI particles 
    TProfile*    fHistProDiffFlowEtaPOI;   // profile used to calculate the differential flow (Eta) of POI particles
-   TH1D*        fHistSpreadOfFlow;        // histogram filled with NONAME integrated flow calculated e-b-e    
+   TH1D*        fHistSpreadOfFlow;        // histogram filled with reference flow calculated e-b-e    
    Int_t        fHarmonic;                // harmonic 
-    
+   
+   // objects needed for a study of flow of resonances (and in addition for strong parity violation):
+   TList *fResonanceList; // list to hold all objects relevant for a study of flow of resonances 
+   Bool_t fFlowOfResonances; // evaluate and store objects relevant for study of flow of resonances
+   TProfile *fResonanceSettings; // profile used to hold all flags relevant for the flow of resonances
+   TProfile *fPairCorrelator[2]; // profiles used to calculate <cos[n(phi_{pair}-RP)]> and <sin[n(phi_{pair}-RP)]> (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2
+   Double_t fXinPairAngle; // x in definition phi_{pair} = x*phi1+(1-x)*phi2
+                                       
    ClassDef(AliFlowAnalysisWithMCEventPlane,1)  // Analyse particle distribution versus MC reaction plane
      };
 

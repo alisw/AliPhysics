@@ -60,13 +60,25 @@ ClassImp(AliFlowAnalysisWithMCEventPlane)
    fHistProDiffFlowPtPOI(NULL),
    fHistProDiffFlowEtaPOI(NULL),
    fHistSpreadOfFlow(NULL),
-   fHarmonic(2)
+   fHarmonic(2),
+   fResonanceList(NULL),
+   fFlowOfResonances(kFALSE),
+   fResonanceSettings(NULL),
+   fXinPairAngle(0.5)
 {
 
   // Constructor.
   fHistList = new TList();
 
   fQsum = new TVector2;        // flow vector sum
+  
+  fResonanceList = new TList();
+  // Initialize arrays needed for the flow of resonances:
+  for(Int_t cs=0;cs<2;cs++) // cos/sin
+  {
+   fPairCorrelator[cs] = NULL;
+  }
+  
 }
 
  
@@ -192,6 +204,8 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
   fHistList->Add(fHistSpreadOfFlow);           
  
   fEventNumber = 0;  //set number of events to zero
+  
+  if(fFlowOfResonances) this->BookObjectsForFlowOfResonances();
         
   TH1::AddDirectory(oldHistAddStatus);
 } 
@@ -274,7 +288,9 @@ void AliFlowAnalysisWithMCEventPlane::Make(AliFlowEventSimple* anEvent) {
     // store flow value for this event:
     fHistSpreadOfFlow->Fill(flowEBE->GetBinContent(1),flowEBE->GetBinEntries(1));
     delete flowEBE; 
-  }
+  
+    if(fFlowOfResonances) FlowOfResonances(anEvent);
+  }    
 }
   //--------------------------------------------------------------------    
 
@@ -447,5 +463,72 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   //cout<<".....finished"<<endl;
 }
 
+void AliFlowAnalysisWithMCEventPlane::BookObjectsForFlowOfResonances()
+{
+ // Book all objecsts needed to study flow of resonances.
  
+ // List:
+ fResonanceList->SetName("Resonances");
+ fResonanceList->SetOwner(kTRUE);   
+ fHistList->Add(fResonanceList); 
  
+ // Profile holding settings for flow of resoances:
+ TString resonanceSettingsName = "fResonanceSettings";
+ fResonanceSettings = new TProfile(resonanceSettingsName.Data(),"Settings for flow of resonances",2,0,2);
+ //fResonanceSettings->GetXaxis()->SetLabelSize(0.025);
+ fResonanceSettings->GetXaxis()->SetBinLabel(1,"fFlowOfResonances");
+ fResonanceSettings->Fill(0.5,(Int_t)fFlowOfResonances);
+ fResonanceSettings->GetXaxis()->SetBinLabel(2,"x in #phi_{pair}"); // phi_{pair} = x*phi1+(1-x)*phi2
+ fResonanceSettings->Fill(1.5,fXinPairAngle); 
+ fResonanceList->Add(fResonanceSettings);
+ 
+ // Profiles used to calculate <cos[n(phi_{pair}-RP)]> and <sin[n(phi_{pair}-RP)]> (0 = cos, 1 = sin), where phi_{pair} = x*phi1+(1-x)*phi2:
+ TString cosSinFlag[2] = {"Cos","Sin"};
+ TString cosSinTitleFlag[2] = {"cos[n(#phi_{pair}-#psi_{RP})]","sin[n(#phi_{pair}-#psi_{RP})]"};
+ TString pairCorrelatorName = "fPairCorrelator";
+ for(Int_t cs=0;cs<2;cs++)
+ { 
+  fPairCorrelator[cs] = new TProfile(Form("%s%s",pairCorrelatorName.Data(),cosSinFlag[cs].Data()),cosSinTitleFlag[cs].Data(),1,0.,1.);
+  fPairCorrelator[cs]->GetXaxis()->SetBinLabel(1,cosSinTitleFlag[cs].Data());
+  fResonanceList->Add(fPairCorrelator[cs]); 
+ } 
+
+} // end of void AliFlowAnalysisWithMCEventPlane::BookObjectsForFlowOfResonances()
+
+void AliFlowAnalysisWithMCEventPlane::FlowOfResonances(AliFlowEventSimple* anEvent)
+{
+ // Evaluate correlators relevant for the flow of resonances.
+ 
+ // Get the MC reaction plane angle:
+ Double_t RP = anEvent->GetMCReactionPlaneAngle();  
+ // Get the number of tracks:
+ Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+ AliFlowTrackSimple *pTrack = NULL;
+ Double_t dPhi1 = 0.;
+ Double_t dPhi2 = 0.;
+ Double_t x = fXinPairAngle; // shortcut
+ Double_t n = fHarmonic; // shortcut
+ for(Int_t i=0;i<iNumberOfTracks;i++) 
+ {
+  pTrack = anEvent->GetTrack(i); 
+  if(pTrack && pTrack->InRPSelection())
+  {
+   dPhi1 = pTrack->Phi();
+  }
+  for(Int_t j=0;j<iNumberOfTracks;j++) 
+  {
+   if(j==i) continue;
+   pTrack = anEvent->GetTrack(j); 
+   if(pTrack && pTrack->InRPSelection())
+   {
+    dPhi2 = pTrack->Phi();
+   }  
+   Double_t dPhiPair = x*dPhi1+(1.-x)*dPhi2;
+   fPairCorrelator[0]->Fill(0.5,TMath::Cos(n*(dPhiPair-RP)),1.); 
+   fPairCorrelator[1]->Fill(0.5,TMath::Sin(n*(dPhiPair-RP)),1.); 
+  } // end of for(Int_t j=i+1;j<iNumberOfTracks;j++) 
+ } // end of for(Int_t i=0;i<iNumberOfTracks;i++) 
+ 
+} // end of void AliFlowAnalysisWithMCEventPlane::FlowOfResonances()
+
+
