@@ -18,6 +18,7 @@
 #include "AliHLTEMCALMapper.h"
 
 #include "AliHLTEMCALConstant.h"
+
 #include "assert.h"
 
 using namespace EmcalHLTConst;
@@ -30,7 +31,7 @@ AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHL
   fCellSize = 6;
   InitAltroMapping(specification);
   InitDDLSpecificationMapping();
-  fIsInitializedMapping = true; //CRAP PTH, must check is the initilization actually went ok
+  fIsInitializedMapping = true; //CRAP PTH, must check if the initilization actually went ok
 }
 
 
@@ -39,10 +40,6 @@ AliHLTEMCALMapper::~AliHLTEMCALMapper()
 
 }
   
-
-
-// channelCoord[0] = (static_cast<Float_t>(channelId&0x3f) - NXCOLUMNSMOD/2)* fCellStep;
-// channelCoord[1] = (static_cast<Float_t>((channelId >> 6)&0x3f) - NZROWSMOD/2) * fCellStep;
 
 void 
 AliHLTEMCALMapper::GetLocalCoord(const int channelId, Float_t* localCoord) const
@@ -66,16 +63,9 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
   
   if(base !=0)
     {
-      //      int tmpddlindex =  GetDDLFromSpec( specification )%2; 
-
       sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
       sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
 
-      //   assert("DDL spec is  %d", GetDDLFromSpec( specification ) );
-     
-      ////cout << __FILE__ <<":"<< __LINE__ <<"DDL spec is " <<   GetDDLFromSpec( specification )  << endl;
-      //cout << __FILE__ <<":"<< __LINE__ <<"mapping filename is " <<  fFilepath << endl;
-	// sprintf(fFilepath,"%s/PHOS/mapping/RCU0.data", base);
       FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
 	{
@@ -93,8 +83,6 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	    {
 	      res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
 	      
-	      //	      //cout << __FILE__ << __LINE__ << "  tmpHwaddr  = " << tmpHwaddr << ", tmpXCol = " << (int)tmpXCol <<  ", tmpZRow = "<< (int)tmpZRow <<  ", tmpGain= "<< (int)tmpGain << endl;
-	      
 	      if(tmpGain < 2)
 		{
 		  fHw2geomapPtr[tmpHwaddr].fXCol   = (char)tmpXCol;
@@ -107,7 +95,6 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	}
       else
 	{
-	  //cout << __FUNCTION__ << ":"<<__FILE__<<":"<< __LINE__ << "ERROR, could not open mapping file %s" <<  fFilepath << endl;
       	  fIsInitializedMapping = false;	  
 	}
     }

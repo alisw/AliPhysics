@@ -8,11 +8,12 @@
 
 #include "AliHLTProcessor.h"
 //#include "AliHLTCaloBase.h"
-#include "AliHLTCaloDefinitions.h"
+// #include "AliHLTCaloDefinitions.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTCaloConstant.h"
 
-using namespace CaloHLTConst;
+// #include "AliHLTCaloConstant.h"
+
+// using namespace CaloHLTConst;
 
 //class AliHLTCaloProcessor:public AliHLTProcessor, public AliHLTCaloBase
 class AliHLTCaloProcessor:public AliHLTProcessor

@@ -29,7 +29,10 @@
 #include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliHLTCaloConstantsHandler.h"
-#include "AliHLTCaloConstants.h"
+
+
+//#include "AliHLTCaloConstants.h"
+
 #include "AliHLTCaloRcuProcessor.h"
 #include "AliHLTCaloCrazynessDefinitions.h"
 #include "AliHLTCaloChannelRawDataStruct.h"

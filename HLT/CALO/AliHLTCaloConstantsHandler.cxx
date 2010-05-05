@@ -31,15 +31,22 @@
 
 ClassImp(AliHLTCaloConstantsHandler)
 
+
 AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
   fCaloConstants(NULL)
 {
   if (det.CompareTo("PHOS") == 0) {
-    fCaloConstants = AliHLTMisc::LoadInstance( (AliHLTCaloConstants*) NULL, "AliHLTPHOSConstants", "libAliHLTPHOS.so");
-  } else {
-    fCaloConstants = AliHLTMisc::LoadInstance( (AliHLTCaloConstants*) NULL, "AliHLTEMCALConstants", "libAliHLTEMCAL.so");
-  }
+    fCaloConstants = AliHLTMisc::LoadInstance( ( AliHLTCaloConstants*  ) NULL, 
+					       "AliHLTPHOSConstants", "libAliHLTPHOS.so");
+  } 
+  else 
+    {
+      fCaloConstants = AliHLTMisc::LoadInstance( ( AliHLTCaloConstants* ) NULL, 
+						 "AliHLTEMCALConstants" , "libAliHLTEMCAL.so");
+    }
 }
+
+
 
 
 AliHLTCaloConstantsHandler::~AliHLTCaloConstantsHandler()

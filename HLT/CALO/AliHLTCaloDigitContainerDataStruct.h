@@ -37,10 +37,10 @@ x * without fee, provided that the above copyright notice appears in all   *
 
 #include "Rtypes.h"
 #include "AliHLTCaloDigitDataStruct.h"
-#include "AliHLTCaloConstant.h"
 
 
-using namespace CaloHLTConst;
+
+// using namespace CaloHLTConst;
 
 /**
  * @struct AliHLTCaloDigitContainerDataStruct

@@ -22,11 +22,11 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTCaloCoordinate.h"
 #include "Rtypes.h"
-#include "AliHLTCaloConstant.h"
+
 
 ///comment
 
-using namespace CaloHLTConst;
+// using namespace CaloHLTConst;
 
 struct  AliHLTCaloChannelRawDataStruct : public AliHLTCaloChannelDataStruct
 {

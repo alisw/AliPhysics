@@ -21,7 +21,11 @@
 
 //#include "AliHLTCaloRcuFFTDataStruct.h"
 
+#include  "AliHLTCaloConstants.h"
+
 ClassImp(AliHLTCaloFourier);
+
+
 
 AliHLTCaloFourier::AliHLTCaloFourier() :  fFFT_own(0),
 					  fFFTInputArray(0),
@@ -36,6 +40,8 @@ AliHLTCaloFourier::AliHLTCaloFourier() :  fFFT_own(0),
 }
 
 
+
+
 AliHLTCaloFourier::AliHLTCaloFourier(const AliHLTCaloFourier&) : fFFT_own(0),
 								 fFFTInputArray(0),
 								 fFFTOutputArray(0),
@@ -47,6 +53,7 @@ AliHLTCaloFourier::AliHLTCaloFourier(const AliHLTCaloFourier&) : fFFT_own(0),
 {
   
 }
+
 
 
 AliHLTCaloFourier::~AliHLTCaloFourier()
@@ -132,7 +139,7 @@ AliHLTCaloFourier::CheckSignal(const Int_t *data, const int length)
       cout << "FourierAna::CheckSignal min = "<< tmpMin << "  max =  " << tmpMax << endl;
     }
   
-  if( (tmpMax >= MAXBINVALUE) || tmpMin < 1 )
+  if( (tmpMax >= AliHLTCaloConstants::GetMAXBINVALUE() ) || tmpMin < 1 )
     {
       cout << "ERROR, FourierAna::CheckSignal failed, signal out of range, min= "<< tmpMin << "max = " << tmpMax << endl;
       return false;
@@ -152,7 +159,7 @@ AliHLTCaloFourier::Init()
   fFFTInputArray = new double[fFixedDataSize];
   fFFTOutputArray = new double[fFixedDataSize];
   
-  for(int gain = 0; gain < NGAINS; gain ++)
+  for(int gain = 0; gain <  AliHLTCaloConstants::GetNGAINS(); gain ++)
     {
       fFFTOupuStruct.fDataLength = fFixedDataSize;
  
@@ -162,7 +169,7 @@ AliHLTCaloFourier::Init()
 	  fFFTOutputArray[k] = 0;
 
 	}
-      for(int i=0; i <  ALTROMAXSAMPLES  ; i++)
+      for(int i=0; i <  AliHLTCaloConstants::GetALTROMAXSAMPLES()  ; i++)
 	{
 	  fFFTOupuStruct.fGlobalAccumulatedPSD[gain][i] = 0;
 	  fFFTOupuStruct.fGlobalLastPSD[gain][i] = 0;

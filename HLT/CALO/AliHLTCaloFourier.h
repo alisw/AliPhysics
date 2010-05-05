@@ -25,7 +25,11 @@
 #include "Rtypes.h"
 #include "TVirtualFFT.h"
 #include "TMath.h"
-#include "AliHLTCaloConstant.h"
+
+// #include "AliHLTCaloConstant.h"
+
+#include "AliHLTCaloConstants.h"
+
 #include <iostream>
 
 #include "AliHLTCaloRcuFFTDataStruct.h"
