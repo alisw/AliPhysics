@@ -26,7 +26,11 @@ class AliHLTPHOSConstants : public AliHLTCaloConstants
 {
 public:
   AliHLTPHOSConstants();
+
   ~AliHLTPHOSConstants();
+  
+  virtual void InitConstants(); 
+
   // private:
   ClassDef(AliHLTPHOSConstants, 1)
 };

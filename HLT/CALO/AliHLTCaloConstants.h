@@ -40,11 +40,13 @@ class AliHLTCaloConstants
 public:
 
   AliHLTCaloConstants();
+
+
   virtual ~AliHLTCaloConstants();
-  //   Int_t GetMAXHOSTS() const  { return fkMAXHOSTS; } ; 				       	
-  //   Int_t GetDEFAULTEVENTPORT()  const { return fkDEFAULTEVENTPORT; }; 			       
+  
+  virtual void InitConstants() = 0; 
+
   static  Int_t GetALTROMAXSAMPLES()    { return  ALTROMAXSAMPLES; }; 
-  //   static  Int_t GetALTROMAXPRESAMPLES()  { return ALTROMAXPRESAMPLES; } ; 
   static  Int_t GetNGAINS()       { return NGAINS; }; 	
   static  Int_t GetHIGHGAIN()     { return HIGHGAIN; };
   static  Int_t GetLOWGAIN()      { return LOWGAIN; }; 
