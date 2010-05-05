@@ -260,6 +260,7 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
  if (MCEP) {
    AliFlowAnalysisWithMCEventPlane *mcep = new AliFlowAnalysisWithMCEventPlane();
    //mcep->SetHarmonic(2); // default is v2
+   //mcep->SetFlowOfResonances(kTRUE);
    mcep->Init();
  }
 
