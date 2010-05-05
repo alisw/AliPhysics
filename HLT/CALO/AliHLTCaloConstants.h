@@ -44,28 +44,24 @@ public:
   static  Int_t GetHIGHGAIN()   { return fgkHIGHGAIN; };
   static  Int_t GetLOWGAIN()    { return fgkLOWGAIN; }; 
   static  Int_t GetMAXBINVALUE()  {return fkMAXBINVALUE; }; 	
-  
-  
-  // virtual Int_t GetNZROWSMOD() const { return fgkNZROWSMOD;} 
-  virtual Int_t GetNZROWSMOD() const = 0;
 
-  virtual Int_t GetNZROWSRCU() const = 0;
-  virtual Int_t GetNXCOLUMNSRCU() const = 0;
-  virtual Int_t GetNXCOLUMNSMOD() const = 0; 			     	
-  //  virtual Int_t GetNGAINS() const = 0; 				
-  virtual Int_t GetNDATATYPES() const { return fkNDATATYPES; } ; 				       	
-  virtual Int_t GetPFMAXPATHLENGTH() const = 0;
-  virtual Int_t GetPFDEFAULTNSAMPLES() const = 0; 			       	
-  virtual Int_t GetPFDEFAULTSTARTINDEX() const = 0; 				
-  virtual Double_t GetDEFAULTTAU() const = 0; 					
-  virtual Int_t GetDEFAULTFS() const = 0; 				       
+  Int_t GetNDATATYPES() const { return fkNDATATYPES; } ; 				       	
   Int_t GetCSPSPERFEE() const {  return fkCSPSPERFEE; }; 			       		
  
-  virtual Int_t GetNMODULES() const = 0; 					
-  virtual Int_t GetNRCUS() const = 0; 						
-  virtual Int_t GetNRCUSPERMODULE() const = 0; 				       	
-  virtual Int_t GetNRCUSPERTOTAL() const = 0; 					
-  virtual Int_t GetNFEECS() const = 0; 						
+  
+  
+  Int_t GetNZROWSRCU() const { return fkNZROWSRCU;}
+  Int_t GetNXCOLUMNSRCU() const { return fkNXCOLUMNSRCU;} 
+  Int_t GetNZROWSMOD() const { return fkNZROWSMOD;} 
+  Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD;} 
+  Int_t GetNMODULES() const { return fkNMODULES;} 
+  Int_t GetNRCUS() const { return fkNRCUS;} 
+  Int_t GetNRCUSPERMODULE() const { return fkNRCUSPERMODULE;} 
+  Int_t GetNRCUSPERTOTAL() const { return fkNRCUSPERTOTAL;} 
+  Int_t GetNFEECS() const { return fkNFEECS;} 
+  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
+
+
   Int_t GetNALTROS() {  return fkNALTROS; }; 					
   Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS; }; 					
   Int_t GetNBRANCHES() const { return fkNBRANCHES; }; 					
@@ -80,7 +76,7 @@ public:
   Float_t GetRADLENGTH() const { return fkRADLENGTH; }        //FR
   Float_t GetCRITICENERGY() const { return fkCRITICENERGY; }        //FR
   Float_t GetCJ() const { return fkCJ;} //FR
-  virtual Int_t GetDDLOFFSET() const = 0;
+  //  virtual Int_t GetDDLOFFSET() const = 0;
   TString GetDETNAME() { return fkDETNAME; };
   
   
@@ -96,7 +92,17 @@ protected:
   Float_t fkCRITICENERGY;
   Float_t fkCJ;
   Int_t fkDDLOFFSET;   //Constant
-  
+
+  Int_t fkNZROWSRCU; /**<Number of rows per module*/ 
+  Int_t fkNXCOLUMNSRCU;//Constant
+  Int_t fkNZROWSMOD;  /**<Number of rows per module*/ 
+  Int_t fkNXCOLUMNSMOD;  /**<Number of columns per module*/ 
+  Int_t fkNMODULES;   /**<Number of modules of the EMCAL detector*/
+  Int_t fkNRCUS;   /**<Number of RCUs per Module*/
+  Int_t fkNRCUSPERMODULE;   /**<Number of RCUs per Module*/
+  Int_t fkNRCUSPERTOTAL; /**<Total number of RCUs for EMCAL*/
+  Int_t fkNFEECS;  /**<Number of Frontend cards per branch*/
+
 private:
   const Int_t fkNALTROS;  /**<Number of ALTROs per frontend card*/
   const Int_t fkNALTROCHANNELS;  //Constant
