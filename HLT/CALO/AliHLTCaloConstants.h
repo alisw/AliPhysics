@@ -62,14 +62,18 @@ public:
  
   
   virtual Int_t GetCSPSPERFEE() const = 0; 			       		
-  virtual Int_t GetRCU0() const = 0; 			       			
-  virtual Int_t GetRCU1() const = 0; 						
-  virtual Int_t GetRCU2() const = 0; 						
-  virtual Int_t GetRCU3() const = 0; 
-  virtual Int_t GetZ0() const = 0;  	
-  virtual Int_t GetZ1() const = 0; 						
-  virtual Int_t GetX0() const = 0; 					       	
-  virtual Int_t GetX1() const = 0; 					       
+ 
+  // virtual Int_t GetRCU0() const = 0; 			       			
+  // virtual Int_t GetRCU1() const = 0; 						
+  // virtual Int_t GetRCU2() const = 0; 						
+  // virtual Int_t GetRCU3() const = 0; 
+  // virtual Int_t GetZ0() const = 0;  	
+  // virtual Int_t GetZ1() const = 0; 						
+  // virtual Int_t GetX0() const = 0; 					       	
+  // virtual Int_t GetX1() const = 0; 					       
+  
+
+
   virtual Int_t GetNMODULES() const = 0; 					
   virtual Int_t GetNRCUS() const = 0; 						
   virtual Int_t GetNRCUSPERMODULE() const = 0; 				       	

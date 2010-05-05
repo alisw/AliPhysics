@@ -20,10 +20,8 @@ class AliHLTPHOSConstants : public AliHLTCaloConstants
 {
 
 public:
-  
   AliHLTPHOSConstants();
   ~AliHLTPHOSConstants();
-
   Int_t GetMAXHOSTS() const { return fkMAXHOSTS;}				
   Int_t GetDEFAULTEVENTPORT() const { return fkDEFAULTEVENTPORT; }		
   Int_t GetNZROWSRCU() const { return fkNZROWSRCU;}				
@@ -31,17 +29,7 @@ public:
   Int_t GetNZROWSMOD() const { return fkNZROWSMOD;} 				
   Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD;} 			
   Int_t GetNDATATYPES() const { return fkNDATATYPES;} 				
-
   Int_t GetCSPSPERFEE() const { return fkCSPSPERFEE;} 				
-
-  Int_t GetRCU0() const { return fkRCU0;} 					
-  Int_t GetRCU1() const { return fkRCU1;} 					
-  Int_t GetRCU2() const { return fkRCU2;} 					
-  Int_t GetRCU3() const { return fkRCU3;} 					
-  Int_t GetZ0() const { return fkZ0;} 						
-  Int_t GetZ1() const { return fkZ1;} 						
-  Int_t GetX0() const { return fkX0;} 						
-  Int_t GetX1() const { return fkX1;} 						
   Int_t GetNMODULES() const { return fkNMODULES;} 				
   Int_t GetNRCUS() const { return fkNRCUS;} 					
   Int_t GetNRCUSPERMODULE() const { return fkNRCUSPERMODULE;} 			
@@ -52,7 +40,7 @@ public:
   Int_t GetNBRANCHES() const { return fkNBRANCHES;} 				
   Float_t GetCELLSTEP() const { return fkCELLSTEP; } 				//   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 			  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
   TString GetDETNAME() const { return fkDETNAME; }
-
+  
 private:
   /** Constant members */
   const Int_t fkMAXHOSTS;                  //Constant
@@ -62,29 +50,8 @@ private:
   const Int_t fkNZROWSMOD;  /**<Number of rows per module*/ 
   const Int_t fkNXCOLUMNSMOD;  /**<Number of columns per module*/ 
   const Int_t fkNDATATYPES;          //Constant
-
-  //  const Int_t fkPFMAXPATHLENGTH;          //Constant
-
-  // const Int_t fkPFDEFAULTNSAMPLES;          //Constant
-  //  const Int_t fkPFDEFAULTSTARTINDEX;          //Constant
-
-  //  const Double_t fkDEFAULTTAU; /**<Assume that the signal rise time of the altrp
-
-  // pulses is 2 us (nominal value of the electronics)*/
-
-  //  const Int_t fkDEFAULTFS; /**<Assume that the signal is samples with 10 MHZ samle rate*/
-  
   const Int_t fkCSPSPERFEE; //Constant
-  const Int_t fkRCU0; //Constant
-  const Int_t fkRCU1; //Constant
-  const Int_t fkRCU2; //Constant
-  const Int_t fkRCU3; //Constant
-
-  const Int_t fkZ0; //Constant
-  const Int_t fkZ1; //Constant
-  const Int_t fkX0; //Constant
-  const Int_t fkX1; //Constant
-
+  
   const Int_t fkNMODULES;   /**<Number of modules of the PHOS detector*/
   const Int_t fkNRCUS;   /**<Number of RCUs per Module*/
  

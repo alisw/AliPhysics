@@ -45,17 +45,7 @@ public:
   Int_t GetPFDEFAULTSTARTINDEX() const { return fkPFDEFAULTSTARTINDEX;} 
   Double_t GetDEFAULTTAU() const { return fkDEFAULTTAU;} 
   Int_t GetDEFAULTFS() const { return fkDEFAULTFS;} 
-
- 
   Int_t GetCSPSPERFEE() const { return fkCSPSPERFEE;} 
-  Int_t GetRCU0() const { return fkRCU0;} 
-  Int_t GetRCU1() const { return fkRCU1;} 
-  Int_t GetRCU2() const { return fkRCU2;} 
-  Int_t GetRCU3() const { return fkRCU3;} 
-  Int_t GetZ0() const { return fkZ0;} 
-  Int_t GetZ1() const { return fkZ1;} 
-  Int_t GetX0() const { return fkX0;} 
-  Int_t GetX1() const { return fkX1;} 
   Int_t GetNMODULES() const { return fkNMODULES;} 
   Int_t GetNRCUS() const { return fkNRCUS;} 
   Int_t GetNRCUSPERMODULE() const { return fkNRCUSPERMODULE;} 
@@ -93,15 +83,7 @@ private:
   const Int_t fkDEFAULTFS; /**<Assume that the signal is samples with 10 MHZ samle rate*/
   
   const Int_t fkCSPSPERFEE;//Constant
-  const Int_t fkRCU0;//Constant
-  const Int_t fkRCU1;//Constant
-  const Int_t fkRCU2;//Constant
-  const Int_t fkRCU3;//Constant
-  const Int_t fkZ0;//Constant
-  const Int_t fkZ1;//Constant
-  const Int_t fkX0;//Constant
-  const Int_t fkX1; //Constant
-
+  
   const Int_t fkNMODULES;   /**<Number of modules of the EMCAL detector*/
   const Int_t fkNRCUS;   /**<Number of RCUs per Module*/
   const Int_t fkNRCUSPERMODULE;   /**<Number of RCUs per Module*/
