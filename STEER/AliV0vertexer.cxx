@@ -32,8 +32,8 @@ ClassImp(AliV0vertexer)
 Double_t AliV0vertexer::fgChi2max=33.; //max chi2
 Double_t AliV0vertexer::fgDNmin=0.05;  //min imp parameter for the 1st daughter
 Double_t AliV0vertexer::fgDPmin=0.05;  //min imp parameter for the 2nd daughter
-Double_t AliV0vertexer::fgDCAmax=0.5;  //max DCA between the daughter tracks
-Double_t AliV0vertexer::fgCPAmin=0.99; //min cosine of V0's pointing angle
+Double_t AliV0vertexer::fgDCAmax=1.5;  //max DCA between the daughter tracks
+Double_t AliV0vertexer::fgCPAmin=0.9;  //min cosine of V0's pointing angle
 Double_t AliV0vertexer::fgRmin=0.2;    //min radius of the fiducial volume
 Double_t AliV0vertexer::fgRmax=100.;   //max radius of the fiducial volume
 
