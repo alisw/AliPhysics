@@ -19,12 +19,14 @@
  * provided "as is" without express or implied warranty.                   *
  **************************************************************************/
 
-
 //#include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTCaloConstant.h"
+//#include "AliHLTCaloConstant.h"
 // using namespace PhosHLTConst;
-using namespace CaloHLTConst;
+//using namespace CaloHLTConst;
 
+#include "AliHLTEMCALConstant.h"
+
+using namespace EmcalHLTConst;
 
 struct AliHLTCaloRcuCellAccumulatedEnergyDataStruct
 {
@@ -33,16 +35,16 @@ struct AliHLTCaloRcuCellAccumulatedEnergyDataStruct
   AliHLTUInt8_t fRcuZ; 
   float fAccumulatedEnergies[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
   AliHLTUInt32_t fHits[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
-  AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
-
+  AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSMOD][NZROWSMOD][NGAINS]; 
+  
   /*
   AliHLTUInt8_t fModuleID;
   AliHLTUInt8_t fRcuX;
   AliHLTUInt8_t fRcuZ; 
-  float fAccumulatedEnergies[NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  AliHLTUInt32_t fHits[NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  */
+  float fAccumulatedEnergies[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
+  AliHLTUInt32_t fHits[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
+  AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
+  */  
 
 };
 

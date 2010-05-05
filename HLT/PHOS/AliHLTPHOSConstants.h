@@ -32,18 +32,8 @@ public:
   Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD;} 			
   Int_t GetNDATATYPES() const { return fkNDATATYPES;} 				
 
-  //  Int_t GetPFMAXPATHLENGTH() const { return fkPFMAXPATHLENGTH;} 		
-  // Int_t GetPFDEFAULTNSAMPLES() const{ return fkPFDEFAULTNSAMPLES;} 		
-  //  Int_t GetPFDEFAULTSTARTINDEX() const { return fkPFDEFAULTSTARTINDEX;} 	
-  //  Double_t GetDEFAULTTAU() const { return fkDEFAULTTAU;} 			
-  //   Int_t GetDEFAULTFS() const { return fkDEFAULTFS;} 				
-
-  Int_t GetMODULE0() const { return fkMODULE0;} 				
-  Int_t GetMODULE1() const { return fkMODULE1;} 				
-  Int_t GetMODULE2() const { return fkMODULE2;} 				
-  Int_t GetMODULE3() const { return fkMODULE3;} 				
-  Int_t GetMODULE4() const { return fkMODULE4;} 				
   Int_t GetCSPSPERFEE() const { return fkCSPSPERFEE;} 				
+
   Int_t GetRCU0() const { return fkRCU0;} 					
   Int_t GetRCU1() const { return fkRCU1;} 					
   Int_t GetRCU2() const { return fkRCU2;} 					
@@ -83,12 +73,7 @@ private:
   // pulses is 2 us (nominal value of the electronics)*/
 
   //  const Int_t fkDEFAULTFS; /**<Assume that the signal is samples with 10 MHZ samle rate*/
-  const Int_t fkMODULE0;          //Constant
-  const Int_t fkMODULE1;          //Constant
-  const Int_t fkMODULE2;          //Constant
-  const Int_t fkMODULE3;          //Constant
-  const Int_t fkMODULE4;          //Constant
-         
+  
   const Int_t fkCSPSPERFEE; //Constant
   const Int_t fkRCU0; //Constant
   const Int_t fkRCU1; //Constant
