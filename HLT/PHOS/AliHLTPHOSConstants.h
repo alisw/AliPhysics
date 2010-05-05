@@ -26,18 +26,19 @@ public:
 
   Int_t GetMAXHOSTS() const { return fkMAXHOSTS;}				
   Int_t GetDEFAULTEVENTPORT() const { return fkDEFAULTEVENTPORT; }		
-  Int_t GetMAXBINVALUE() const { return fkMAXBINVALUE; } 			
-  Int_t GetHIGHGAIN() const { return fkHIGHGAIN;} 				
-  Int_t GetLOWGAIN() const { return fkLOWGAIN;} 				
+  //  Int_t GetMAXBINVALUE() const { return fkMAXBINVALUE; } 			
+
+  //  Int_t GetHIGHGAIN() const { return fkHIGHGAIN;} 				
+  //  Int_t GetLOWGAIN() const { return fkLOWGAIN;} 				
   										
-  Int_t GetALTROMAXSAMPLES() const {return fkALTROMAXSAMPLES;} 			
-  Int_t GetALTROMAXPRESAMPLES() const { return fkALTROMAXPRESAMPLES;} 		
+  //  Int_t GetALTROMAXSAMPLES() const {return fkALTROMAXSAMPLES;} 			
+  //  Int_t GetALTROMAXPRESAMPLES() const { return fkALTROMAXPRESAMPLES;} 		
  										
   Int_t GetNZROWSRCU() const { return fkNZROWSRCU;}				
   Int_t GetNXCOLUMNSRCU() const { return fkNXCOLUMNSRCU;} 			
   Int_t GetNZROWSMOD() const { return fkNZROWSMOD;} 				
   Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD;} 			
-  Int_t GetNGAINS() const { return fkNGAINS;} 					
+  //  Int_t GetNGAINS() const { return fkNGAINS;} 					
   Int_t GetNDATATYPES() const { return fkNDATATYPES;} 				
  										
   Int_t GetPFMAXPATHLENGTH() const { return fkPFMAXPATHLENGTH;} 		
@@ -87,18 +88,18 @@ private:
   /** Constant members */
   const Int_t fkMAXHOSTS;                  //Constant
   const Int_t fkDEFAULTEVENTPORT;          //Constant
-  const Int_t fkMAXBINVALUE;          //Constant
-  const Int_t fkHIGHGAIN;          //Constant
-  const Int_t fkLOWGAIN;          //Constant
+  //   const Int_t fkMAXBINVALUE;          //Constant
+  //  const Int_t fkHIGHGAIN;          //Constant
+  //  const Int_t fkLOWGAIN;          //Constant
 
-  const Int_t fkALTROMAXSAMPLES; /**<The maximum number of samples of the ALTRO*/
-  const Int_t fkALTROMAXPRESAMPLES;           //Constant
+  //  const Int_t fkALTROMAXSAMPLES; /**<The maximum number of samples of the ALTRO*/
+  //   const Int_t fkALTROMAXPRESAMPLES;           //Constant
 
   const Int_t fkNZROWSRCU; /**<Number of rows per module*/ 
   const Int_t fkNXCOLUMNSRCU;          //Constant
   const Int_t fkNZROWSMOD;  /**<Number of rows per module*/ 
   const Int_t fkNXCOLUMNSMOD;  /**<Number of columns per module*/ 
-  const Int_t fkNGAINS;  /**<Number of gains per ALTRO channel*/
+  //   const Int_t fkNGAINS;  /**<Number of gains per ALTRO channel*/
   const Int_t fkNDATATYPES;          //Constant
 
   const Int_t fkPFMAXPATHLENGTH;          //Constant
