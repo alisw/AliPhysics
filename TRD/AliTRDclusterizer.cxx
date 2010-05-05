@@ -26,6 +26,7 @@
 
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliTreeLoader.h"
 #include "AliAlignObj.h"
 
 #include "AliTRDclusterizer.h"
@@ -618,12 +619,17 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   if (fReconstructor->IsWritingTracklets()) {
     AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
     if (!trklLoader) {
-      AliError("Could not get the tracklets data loader, adding it now!");
+      //AliInfo("Could not get the tracklets data loader, adding it now!");
       trklLoader = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
       AliRunLoader::Instance()->GetLoader("TRDLoader")->AddDataLoader(trklLoader);
     }
-    if (!trklLoader->Tree())
-      AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->MakeTree();
+    AliTreeLoader *trklTreeLoader = dynamic_cast<AliTreeLoader*> (trklLoader->GetBaseLoader("tracklets-raw"));
+    if (!trklTreeLoader) {
+      trklTreeLoader = new AliTreeLoader("tracklets-raw", trklLoader);
+      trklLoader->AddBaseLoader(trklTreeLoader);
+    }
+    if (!trklTreeLoader->Tree())
+      trklTreeLoader->MakeTree();
   }
 
   // tracklet container for raw tracklet writing
@@ -664,8 +670,11 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   
   if (fReconstructor->IsWritingTracklets()) {
     if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
-      trklLoader->WriteData("OVERWRITE");
-      trklLoader->Unload();
+      if (trklLoader) {
+	if (AliTreeLoader *trklTreeLoader = (AliTreeLoader*) trklLoader->GetBaseLoader("tracklets-raw"))
+	  trklTreeLoader->WriteData("OVERWRITE");
+	trklLoader->UnloadAll();
+      }
     }
   }
 

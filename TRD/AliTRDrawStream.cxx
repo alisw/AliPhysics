@@ -34,6 +34,7 @@
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDtrackletWord.h"
+#include "AliTreeLoader.h"
 
 #include "AliTRDrawStream.h"
 
@@ -44,16 +45,16 @@ ClassImp(AliTRDrawStream)
 
 // some static information 
 const Int_t AliTRDrawStream::fgkMcmOrder[] = {12, 13, 14, 15, 
-						    8, 9, 10, 11, 
-						    4, 5, 6, 7, 
-						    0, 1, 2, 3};
+					      8, 9, 10, 11, 
+					      4, 5, 6, 7, 
+					      0, 1, 2, 3};
 const Int_t  AliTRDrawStream::fgkRobOrder [] = {0, 1, 2, 3};
 const Int_t  AliTRDrawStream::fgkNlinks = 12;
 const Int_t  AliTRDrawStream::fgkNstacks = 5;
 const UInt_t AliTRDrawStream::fgkDataEndmarker     = 0x00000000;
 const UInt_t AliTRDrawStream::fgkTrackletEndmarker = 0x10001000;
 
-char* AliTRDrawStream::fgErrorMessages[] = {
+const char* AliTRDrawStream::fgErrorMessages[] = {
   "Unknown error",
   "Link monitor active",
   "Pretrigger counter mismatch",
@@ -75,6 +76,7 @@ char* AliTRDrawStream::fgErrorMessages[] = {
 };
 
 AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
+  fStats(), 
   fRawReader(rawReader),
   fDigitsManager(0x0),
   fDigitsParam(0x0),
@@ -119,6 +121,7 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
   fCurrBC(-1),
   fCurrPtrgCnt(-1),
   fCurrPtrgPhase(-1),
+  fNDumpMCMs(0),
   fTrackletArray(0x0),
   fAdcArray(0x0),
   fSignalIndex(0x0),
@@ -197,6 +200,7 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
     // setting the pointer to data and current reading position
     fPayloadCurr = fPayloadStart = (UInt_t*) (buffer);
     fPayloadSize = fRawReader->GetDataSize() / sizeof(UInt_t);
+    fStats.fStatsSector[fCurrEquipmentId - 1024].fBytes = fRawReader->GetDataSize();
     AliDebug(2, Form("Read buffer of size: %i", fRawReader->GetDataSize()));
 
     // read SMU index header
@@ -308,7 +312,11 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
   AliLoader* trdLoader = rl ? rl->GetLoader("TRDLoader") : NULL;
   AliDataLoader *trklLoader = trdLoader ? trdLoader->GetDataLoader("tracklets") : NULL;
   if (trklLoader) {
-    trklTree = trklLoader->Tree();
+    AliTreeLoader *trklTreeLoader = (AliTreeLoader*) trklLoader->GetBaseLoader("tracklets-raw");
+    if (trklTreeLoader) 
+      trklTree = trklTreeLoader->Tree();
+    else 
+      trklTree = trklLoader->Tree();
   }
 
   if (fTrackletTree != trklTree)
@@ -445,8 +453,16 @@ Int_t AliTRDrawStream::ReadStackIndexHeader(Int_t stack)
 Int_t AliTRDrawStream::ReadLinkData()
 {
   // read the data in one link (one HC) until the data endmarker is reached
+  // returns the number of words read!
 
   Int_t count = 0;
+  UInt_t* startPosLink = fPayloadCurr;
+
+//  printf("----- HC: %i -----\n", fCurrHC);
+//  for (Int_t i = 0; i < 3; i++) {
+//    printf("0x%08x 0x%08x 0x%08x 0x%08x\n", 
+//	   fPayloadCurr[i*4+0], fPayloadCurr[i*4+1], fPayloadCurr[i*4+2], fPayloadCurr[i*4+3]);
+//  }
 
   count += ReadTracklets();
 
@@ -520,13 +536,16 @@ Int_t AliTRDrawStream::ReadLinkData()
   }
   else {
     AliError(LinkError(kInvalidDetector, Form("%i", det)));
-    UInt_t *startPos = fPayloadCurr;
     while (fPayloadCurr - fPayloadStart < fPayloadSize &&
 	   *fPayloadCurr != fgkDataEndmarker)
       fPayloadCurr++;
-    count += fPayloadCurr - startPos;
   }
   
+  fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fBytes     += (fPayloadCurr - startPosLink) * sizeof(UInt_t);
+  fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fBytesRead += count * sizeof(UInt_t);
+  fStats.fStatsSector[fCurrSm].fBytesRead                      += count * sizeof(UInt_t);
+  fStats.fBytesRead                                            += count * sizeof(UInt_t);
+
   return count;
 }
 
@@ -548,6 +567,8 @@ Int_t AliTRDrawStream::ReadTracklets()
   if (fTrackletArray->GetEntriesFast() > 0) {
     AliDebug(1, Form("Found %i tracklets in %i %i %i (ev. %i)", fTrackletArray->GetEntriesFast(), 
 		     fCurrSm, fCurrSlot, fCurrLink, fRawReader->GetEventIndex()));
+    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNTracklets += fTrackletArray->GetEntriesFast();
+    fStats.fStatsSector[fCurrSm].fNTracklets                      += fTrackletArray->GetEntriesFast();
     if (fTrackletTree)
       fTrackletTree->Fill();
   }
@@ -557,7 +578,7 @@ Int_t AliTRDrawStream::ReadTracklets()
 	  fPayloadCurr - fPayloadStart < fPayloadSize)) 
     fPayloadCurr++;
   
-  return (fPayloadCurr - start) / sizeof(UInt_t);
+  return fPayloadCurr - start;
 }
 
 Int_t AliTRDrawStream::ReadHcHeader()
@@ -744,6 +765,7 @@ Int_t AliTRDrawStream::ReadZSData()
     
     // ----- Checking MCM Header -----
     AliDebug(2, Form("MCM header: 0x%08x", *fPayloadCurr));
+    UInt_t *startPosMCM = fPayloadCurr;
     
     // ----- checking for proper readout order - ROB -----
     if (GetROBReadoutPos(ROB(*fPayloadCurr) / 2) >= lastrobpos) {
@@ -830,6 +852,10 @@ Int_t AliTRDrawStream::ReadZSData()
       AliDebug(2, Form("Now looking %i words", timebins / 3));
       Int_t adccol = adccoloff - channelno;
       Int_t padcol = padcoloff - channelno;
+//      if (adccol < 3 || adccol > 165) 
+//	AliInfo(Form("writing channel %i of det %3i %i:%2i to adcrow/-col: %i/%i padcol: %i", 
+//		     channelno, fCurrHC/2, fCurrRobPos, fCurrMcmPos, row, adccol, padcol));
+
       while (adcwc < timebins / 3 && 
 	     *(fPayloadCurr) != fgkDataEndmarker && 
 	     fPayloadCurr - fPayloadStart < fPayloadSize) {
@@ -837,14 +863,14 @@ Int_t AliTRDrawStream::ReadZSData()
 	if (channelno % 2 != 0)	{ // odd channel
 	  if (check != 0x2 && channelno < 21) {
 	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("Invalid check bits: %i for %2i. ADC word in odd channel: %i", 
+			      Form("%i for %2i. ADC word in odd channel %i", 
 				   check, adcwc+1, channelno) ));
 	  }
 	}
 	else {			// even channel
 	  if (check != 0x3 && channelno < 21) {
 	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("Invalid check bits: %i for %2i. ADC word in even channel: %i", 
+			      Form("%i for %2i. ADC word in even channel %i", 
 				   check, adcwc+1, channelno) ));
 	  }
 	}
@@ -874,11 +900,21 @@ Int_t AliTRDrawStream::ReadZSData()
       
       channelcount++;
     }
-    
+
+    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNChannels += channelcount;
+    fStats.fStatsSector[fCurrSm].fNChannels                      += channelcount;
     if (channelcount != channelcountExp)
       AliError(MCMError(kAdcChannelsMiss));
     
     mcmcount++;
+    fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNMCMs++;
+    fStats.fStatsSector[fCurrSm].fNMCMs++;
+
+    if (IsDumping() && DumpingMCM(fCurrHC/2, fCurrRobPos, fCurrMcmPos)) {
+      DumpRaw(Form("Det %3i ROB %i MCM %2i", fCurrHC/2, fCurrRobPos, fCurrMcmPos),
+	      startPosMCM, fPayloadCurr - startPosMCM);
+    }
+
     // continue with next MCM
   }
 
@@ -980,14 +1016,14 @@ Int_t AliTRDrawStream::ReadNonZSData()
 	if (channelno % 2 != 0)	{ // odd channel
 	  if (check != 0x2 && channelno < 21) {
 	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("Invalid check bits: %i for %2i. ADC word in odd channel: %i", 
+			      Form("%i for %2i. ADC word in odd channel %i", 
 				   check, adcwc+1, channelno) ));
 	  }
 	}
 	else {			// even channel
 	  if (check != 0x3 && channelno < 21) {
 	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("Invalid check bits: %i for %2i. ADC word in even channel: %i", 
+			      Form("%i for %2i. ADC word in even channel %i", 
 				   check, adcwc+1, channelno) ));
 	  }
 	}
@@ -1039,20 +1075,16 @@ Bool_t AliTRDrawStream::ConnectTracklets(TTree *trklTree)
   if (!fTrackletTree) 
     return kTRUE;
 
-  TString trackletBranch("trkl");
-
-  if (!fTrackletTree->GetBranch(trackletBranch.Data())) {
-    TTree *t = new TTree("test", "test");
-    //    t->SetDirectory(0x0);
-    t->Branch("branch", &fCurrSm);
-    fTrackletTree->AddFriend(t, "friend");
+  if (!fTrackletTree->GetBranch("hc")) 
     fTrackletTree->Branch("hc", &fCurrHC, "hc/I");
-    fTrackletTree->Branch("trkl", &fTrackletArray);
-  } 
-  else {
+  else 
     fTrackletTree->SetBranchAddress("hc", &fCurrHC);
+
+  if (!fTrackletTree->GetBranch("trkl")) 
+    fTrackletTree->Branch("trkl", &fTrackletArray);
+  else 
     fTrackletTree->SetBranchAddress("trkl", &fTrackletArray);
-  }
+
   return kTRUE;
 }
 
@@ -1155,3 +1187,89 @@ const char* AliTRDrawStream::GetErrorMessage(ErrorCode_t errCode)
   else 
     return ""; 
 } 
+
+void AliTRDrawStream::AliTRDrawStats::ClearStats()
+{
+  // clear statistics (includes clearing sector-wise statistics)
+
+  fBytesRead = 0;
+  for (Int_t iSector = 0; iSector < 18; iSector++) {
+    fStatsSector[iSector].ClearStats();
+  }
+
+}
+
+void AliTRDrawStream::AliTRDrawStats::AliTRDrawStatsSector::ClearStats()
+{
+  // clear statistics (includes clearing HC-wise statistics)
+
+  fBytes = 0;
+  fBytesRead = 0;
+  fNTracklets = 0;
+  fNMCMs = 0;
+  fNChannels = 0;
+
+  for (Int_t iHC = 0; iHC < 60; iHC++) {
+    fStatsHC[iHC].ClearStats();
+  }
+}
+
+void AliTRDrawStream::AliTRDrawStats::AliTRDrawStatsSector::AliTRDrawStatsHC::ClearStats()
+{
+  // clear statistics
+
+  fBytes = 0;
+  fBytesRead = 0;
+  fNTracklets = 0;
+  fNMCMs = 0;
+  fNChannels = 0;
+}
+
+void AliTRDrawStream::SetDumpMCM(Int_t det, Int_t rob, Int_t mcm, Bool_t dump)
+{ 
+  // mark MCM for dumping of raw data
+
+  if (dump) {
+    fDumpMCM[fNDumpMCMs++] = (det << 7) | (rob << 4) | mcm; 
+  }
+  else {
+    Int_t iMCM;
+    for (iMCM = 0; iMCM < fNDumpMCMs; iMCM++) {
+      if (fDumpMCM[iMCM] == ((det << 7) | (rob << 4) | mcm)) {
+	fNDumpMCMs--;
+	break;
+      }
+    }
+    for ( ; iMCM < fNDumpMCMs; iMCM++) {
+      fDumpMCM[iMCM] = fDumpMCM[iMCM+1];
+    }
+  }
+}
+
+Bool_t AliTRDrawStream::DumpingMCM(Int_t det, Int_t rob, Int_t mcm) 
+{
+  // check if MCM data should be dumped
+
+  for (Int_t iMCM = 0; iMCM < fNDumpMCMs; iMCM++) {
+    if (fDumpMCM[iMCM] == ((det << 7) | (rob << 4) | mcm)) {
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+void AliTRDrawStream::DumpRaw(TString title, UInt_t *start, Int_t length)
+{
+  // dump raw data
+
+  title += "\n";
+  Int_t pos = 0;
+  for ( ; pos+3 < length; pos += 4) {
+    title += Form("0x%08x 0x%08x 0x%08x 0x%08x\n", 
+		  start[pos+0], start[pos+1], start[pos+2], start[pos+3]);
+  }
+  for ( ; pos < length; pos++) {
+    title += Form("0x%08x ", start[pos]);
+  }
+  AliInfo(title);
+}

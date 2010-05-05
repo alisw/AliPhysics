@@ -19,12 +19,14 @@
 class TObjArray;
 class TString;
 class TTree;
+class TBranch;
 
 class AliRawReader;
 class AliTRDdigitsManager;
 class AliTRDdigitsParam;
 class AliTRDarrayADC;
 class AliTRDSignalIndex;
+class AliTRDtrackletContainer;
 
 class AliTRDrawStream : public AliTRDrawStreamBase
 {
@@ -71,8 +73,69 @@ class AliTRDrawStream : public AliTRDrawStreamBase
     kLastErrorCode
   }; 
 
+  enum ErrorBehav_t {
+    kTolerate,
+    kDiscardMCM,
+    kDiscardHC
+  };
+
   TTree* GetErrorTree() const { return fErrors; }
   static const char* GetErrorMessage(ErrorCode_t errCode);
+
+  // event statistics
+  class AliTRDrawStats : public TObject {
+  public:
+    AliTRDrawStats() : TObject(), fBytesRead(0) {}
+    void ClearStats();
+
+    class AliTRDrawStatsSector : public TObject {
+    public:
+      AliTRDrawStatsSector() : TObject(), fBytes(0), fBytesRead(0), fNTracklets(0), fNMCMs(0), fNChannels(0) {}
+      void ClearStats();
+
+      class AliTRDrawStatsHC : public TObject {
+      public:
+        AliTRDrawStatsHC() : TObject(), fBytes(0), fBytesRead(0), fNTracklets(0), fNMCMs(0), fNChannels(0) {}
+	void ClearStats();
+
+	Int_t fBytes;             // number of bytes (not necessarily read)
+ 	Int_t fBytesRead;	  // number of bytes read
+	Int_t fNTracklets;	  // number of tracklets
+	Int_t fNMCMs;		  // number of MCMs (from MCM headers)
+	Int_t fNChannels;	  // number of channels
+	ClassDef(AliTRDrawStatsHC, 1);
+      };
+
+      Int_t fBytes;		     // number of bytes (not necessarily read)
+      Int_t fBytesRead;		     // number of bytes read
+      Int_t fNTracklets;	     // number of tracklets
+      Int_t fNMCMs;		     // number of MCMs (from MCM headers)
+      Int_t fNChannels;		     // number of channels
+      AliTRDrawStatsHC fStatsHC[60]; //[60] HC-wise statistics
+      ClassDef(AliTRDrawStatsSector, 1);
+    };
+
+
+    AliTRDrawStatsSector fStatsSector[18]; //[18] sector-wise statistics
+    Int_t fBytesRead;			   // number of bytes read
+    ClassDef(AliTRDrawStats, 1);
+  };
+
+  AliTRDrawStats fStats; 	     // event statistics, clearing must be done by the user
+
+  AliTRDrawStats* GetStats() { return &fStats; }
+  Int_t GetEventSize(Int_t sector) { return fStats.fStatsSector[sector].fBytes; }
+  Int_t GetNTracklets(Int_t sector) { return fStats.fStatsSector[sector].fNTracklets; }
+  Int_t GetNMCMs(Int_t sector) { return fStats.fStatsSector[sector].fNMCMs; }
+  Int_t GetNChannels(Int_t sector) { return fStats.fStatsSector[sector].fNChannels; }
+
+  // raw data dumping
+  void SetDumpMCM(Int_t det, Int_t rob, Int_t mcm, Bool_t dump = kTRUE);
+
+  Bool_t IsDumping() { return (fNDumpMCMs > 0); }
+  Bool_t DumpingMCM(Int_t det, Int_t rob, Int_t mcm);
+
+  void DumpRaw(TString title, UInt_t *start, Int_t length); 
 
  protected:
   Int_t ReadSmHeader();
@@ -111,7 +174,8 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   TString ROBError      (ErrorCode_t err = kUnknown, TString msg = ""); 
   TString MCMError      (ErrorCode_t err = kUnknown, TString msg = ""); 
 
-  static char* fgErrorMessages[kLastErrorCode]; // error messages corresponding to the error codes
+  static const char* fgErrorMessages[kLastErrorCode]; // error messages corresponding to the error codes
+  ErrorBehav_t fgErrorBehav[kLastErrorCode];          // bevhaviour in case of error of given type
 
   // I/O
   AliRawReader *fRawReader;                     // pointer to the raw reader to take the data from 
@@ -124,7 +188,7 @@ class AliTRDrawStream : public AliTRDrawStreamBase
 
   UInt_t *fPayloadStart;                        // pointer to start of data payload
   UInt_t *fPayloadCurr;                         // pointer to current reading position in the payload
-  Int_t   fPayloadSize;                         // size of the payload
+  Int_t   fPayloadSize;                         // size of the payload (in UInt_t words)
 
   static const Int_t fgkNlinks;                 // number of links to read
   static const Int_t fgkNstacks;                // number of stacks to read
@@ -182,6 +246,10 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t fCurrBC;				// current BC
   Int_t fCurrPtrgCnt;				// current pretrigger count
   Int_t fCurrPtrgPhase;				// current pretrigger phase
+
+  // settings for dumping
+  Int_t fDumpMCM[100];		                // MCMs to dump
+  Int_t fNDumpMCMs;                             // number of MCMs to dump
 
   // tracklet information
   TClonesArray *fTrackletArray;			// pointer to array for tracklet storage

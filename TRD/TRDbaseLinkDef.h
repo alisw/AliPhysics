@@ -9,7 +9,7 @@
 #pragma link off all functions;
 
 #pragma link C++ ioctortype TRootIoCtor;
- 
+
 #pragma link C++ class  AliTRDSignalIndex+;
 #pragma link C++ class  AliTRDarraySignal+;
 #pragma link C++ class  AliTRDarrayDictionary+;
@@ -29,6 +29,9 @@
 #pragma link C++ class  AliTRDrawStream+;
 #pragma link C++ class  AliTRDrawStreamBase+;
 #pragma link C++ class  AliTRDtestBeam+;
+#pragma link C++ class  AliTRDrawStream::AliTRDrawStats+;
+#pragma link C++ class  AliTRDrawStream::AliTRDrawStats::AliTRDrawStatsSector+;
+#pragma link C++ class  AliTRDrawStream::AliTRDrawStats::AliTRDrawStatsSector::AliTRDrawStatsHC+;
 
 #pragma link C++ class  AliTRDCommonParam+;
 #pragma link C++ class  AliTRDfeeParam+;
@@ -91,5 +94,4 @@
 
 #pragma link C++ class  AliTRDrecoParam+;
 #pragma link C++ class  AliTRDSimParam+;
-
 #endif

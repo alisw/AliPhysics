@@ -30,6 +30,7 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliFstream.h"
+#include "AliTreeLoader.h"
 
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
@@ -1065,12 +1066,18 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
   // ----- preparing tracklet output -----
   AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets");
   if (!trklLoader) {
-    AliError("Could not get the tracklets data loader, adding it now!");
+    //AliInfo("Could not get the tracklets data loader, adding it now!");
     trklLoader = new AliDataLoader("TRD.Tracklets.root","tracklets", "tracklets");
     AliRunLoader::Instance()->GetLoader("TRDLoader")->AddDataLoader(trklLoader);
   }
-  if (!trklLoader->Tree())
-    AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")->MakeTree();
+  AliTreeLoader *trklTreeLoader = dynamic_cast<AliTreeLoader*> (trklLoader->GetBaseLoader("tracklets-raw"));
+  if (!trklTreeLoader) {
+    trklTreeLoader = new AliTreeLoader("tracklets-raw", trklLoader);
+    trklLoader->AddBaseLoader(trklTreeLoader);
+  }
+
+  if (!trklTreeLoader->Tree())
+    trklTreeLoader->MakeTree();
 
   // Loop through the digits
   Int_t det    = 0;
@@ -1096,10 +1103,10 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 	}
     }
 
-  if (trklLoader) {
-    trklLoader->WriteData("OVERWRITE");
-    trklLoader->Unload();
-  }
+  if (trklTreeLoader)
+    trklTreeLoader->WriteData("OVERWRITE");
+  if (trklLoader) 
+    trklLoader->UnloadAll();
 
   if (fTrackletContainer){
     delete [] fTrackletContainer[0];
