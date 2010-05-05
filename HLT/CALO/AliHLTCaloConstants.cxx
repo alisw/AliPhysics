@@ -33,14 +33,14 @@ AliHLTCaloConstants::AliHLTCaloConstants() :   fkCELLSTEP(-1),
 					       fkMINCELLSTEPETA(-1),
 					       fkCELLSTEPPHI(-1),
 					       fkCELLHEIGHT(-1),
-					       fkCELLANGLE(-1)
+					       fkCELLANGLE(-1),
 					       fkRADLENGTH(-1),
 					       fkCRITICENERGY(-1),
 					       fkCJ(-1),
 					       fkDDLOFFSET(-1),
 					       fkNZROWSRCU(-1),
 					       fkNXCOLUMNSRCU(-1),
-					       fkNZROWSMOD(-1)
+					       fkNZROWSMOD(-1),
 					       fkNXCOLUMNSMOD(-1),
 					       fkNMODULES(-1),  
 					       fkNRCUS(-1),  
@@ -53,7 +53,7 @@ AliHLTCaloConstants::AliHLTCaloConstants() :   fkCELLSTEP(-1),
 					       fkCSPSPERFEE(32),
 					       fkNDATATYPES(10),
 					       fkMAXHOSTS(20),
-					       fkDEFAULTEVENTPORT(42001),
+					       fkDEFAULTEVENTPORT(42001)
 					       
 					
 {

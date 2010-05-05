@@ -12,6 +12,7 @@ CLASS_HDRS:= AliHLTCaloRawAnalyzerComponentv3.h \
 AliHLTCaloUtilities.h \
 AliHLTCaloMapper.h \
 AliHLTCaloDefinitions.h \
+AliHLTCaloConstants.h \
 AliHLTCaloSanityInspector.h \
 AliHLTCaloSharedMemoryInterfacev2.h \
 AliHLTCaloFourier.h \
