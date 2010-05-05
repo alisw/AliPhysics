@@ -31,7 +31,7 @@ public TObject
   AliTOFRunParams &operator=(const AliTOFRunParams &source); // operator=
 
   Int_t GetNPoints() const {return fNPoints;}; // getter
-  UInt_t GetTimestamp(Int_t i) const {return fTimestamp && i < fNPoints ? fTimestamp[i] : 0.;}; // getter
+  UInt_t GetTimestamp(Int_t i) const {return fTimestamp && i < fNPoints ? fTimestamp[i] : 0;}; // getter
   Float_t GetT0(Int_t i) const {return fT0 && i < fNPoints ? fT0[i] : 0.;}; // getter
   Float_t GetTOFResolution(Int_t i) const {return fTOFResolution && i < fNPoints ? fTOFResolution[i] : 0.;}; // getter
   Float_t GetT0Spread(Int_t i) const {return fT0Spread && i < fNPoints ? fT0Spread[i] : 0.;}; // getter
