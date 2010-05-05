@@ -23,10 +23,13 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   
   AliAnaOmegaToPi0Gamma() ; // default ctor
   AliAnaOmegaToPi0Gamma(const char *name) ; // default ctor
-  AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & g) ; // cpy ctor
-  AliAnaOmegaToPi0Gamma & operator = (const AliAnaOmegaToPi0Gamma & api0) ;//cpy assignment
+  AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) ; // cpy ctor
   virtual ~AliAnaOmegaToPi0Gamma() ;//virtual dtor
- 
+
+  private:
+  AliAnaOmegaToPi0Gamma & operator = (const AliAnaOmegaToPi0Gamma & ex) ;//cpy assignment
+
+  public: 
   TList * GetCreateOutputObjects(); 
   void Print(const Option_t * opt) const;
   
@@ -35,7 +38,7 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   void Terminate(TList * outList);
 
   TString GetInputAODPhotonName() const {return fInputAODGammaName;}
-  void SetInputAODPhotonName(TString name) {fInputAODGammaName=name;}
+  void SetInputAODPhotonName(TString name) { fInputAODGammaName = name; }
   Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
 
   void SetNEventsMixed(Int_t nevents) { fNmaxMixEv=nevents;} //events to be mixed
@@ -50,41 +53,40 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
 
   private:
 
-  TClonesArray * fInputAODGamma; //!Input AOD gamma array 
-  TClonesArray * fInputAODPi0;   //!Input AOD pi0 array
-  TString fInputAODGammaName;    //!Input AOD gamma name
-  TList ** fEventsList;          //!event list for mixing 
+  TClonesArray * fInputAODPi0;   //Input AOD pi0 array
+  TString fInputAODGammaName;    //Input AOD gamma name
+  TList ** fEventsList;          //event list for mixing 
  
-  Int_t fNVtxZBin;               //!Number of vertex z cut
-  Int_t fNCentBin;               //!Number of centrality cut
-  Int_t fNRpBin;                 //!Number of reaction plane cut
-  Int_t fNBadChDistBin;          //!Number of bad channel dist cut
-  Int_t fNpid;                   //!Number of PID cut
-  Int_t fNmaxMixEv;              //!buffer size events to be mixed
+  Int_t fNVtxZBin;               //Number of vertex z cut
+  Int_t fNCentBin;               //Number of centrality cut
+  Int_t fNRpBin;                 //Number of reaction plane cut
+  Int_t fNBadChDistBin;          //Number of bad channel dist cut
+  Int_t fNpid;                   //Number of PID cut
+  Int_t fNmaxMixEv;              //buffer size events to be mixed
 
   Double_t *fVtxZCut;            //![fNVtxZBin] vtertx z cut
   Double_t *fCent;               //![fNCentBin] centrality cut
   Double_t *fRp;                 //![fNRpBin] reaction plane cut
   
-  Double_t fPi0Mass;             //!nominal pi0 mass
-  Double_t fPi0MassWindow;       //!pi0 mass windows
-  Double_t fPi0OverOmegaPtCut;   //!pi0 Pt over omega pt cut
-  Double_t fGammaOverOmegaPtCut; //!gamma pt over omega pt cut
+  Double_t fPi0Mass;             //nominal pi0 mass
+  Double_t fPi0MassWindow;       //pi0 mass windows
+  Double_t fPi0OverOmegaPtCut;   //pi0 Pt over omega pt cut
+  Double_t fGammaOverOmegaPtCut; //gamma pt over omega pt cut
 
-  TH2F * fhEtalon;               //!an etalon of 3D histograms
-  TH2F **fRealOmega0;             //!real omega IVM(asy, pt, m), with Asy_pi0<1 
-  TH2F **fMixAOmega0;             //!mixA omega IVM(asy, pt, m) 
-  TH2F **fMixBOmega0;             //!mixB omega IVM(asy, pt, m) 
-  TH2F **fMixCOmega0;             //!mixC omega IVM(asy, pt, m) 
-  TH2F **fRealOmega1;            //!real omega IVM(asy, pt, m), with Asy_pi0<0.7
-  TH2F **fMixAOmega1;            //!mixA omega IVM(asy, pt, m)
-  TH2F **fMixBOmega1;            //!mixB omega IVM(asy, pt, m)
-  TH2F **fMixCOmega1;            //!mixC omega IVM(asy, pt, m)
-  TH2F **fRealOmega2;            //!real omega IVM(asy, pt, m), with Asy_pi0<0.8
-  TH2F **fMixAOmega2;            //!mixA omega IVM(asy, pt, m)
-  TH2F **fMixBOmega2;            //!mixB omega IVM(asy, pt, m)
-  TH2F **fMixCOmega2;            //!mixC omega IVM(asy, pt, m)
-  TH1F *fhOmegaPriPt;            //!MC primary omega pt in 2pi and |y|<0.5
+  TH2F * fhEtalon;               //an etalon of 3D histograms
+  TH2F **fRealOmega0;             //real omega IVM(asy, pt, m), with Asy_pi0<1 
+  TH2F **fMixAOmega0;             //mixA omega IVM(asy, pt, m) 
+  TH2F **fMixBOmega0;             //mixB omega IVM(asy, pt, m) 
+  TH2F **fMixCOmega0;             //mixC omega IVM(asy, pt, m) 
+  TH2F **fRealOmega1;            //real omega IVM(asy, pt, m), with Asy_pi0<0.7
+  TH2F **fMixAOmega1;            //mixA omega IVM(asy, pt, m)
+  TH2F **fMixBOmega1;            //mixB omega IVM(asy, pt, m)
+  TH2F **fMixCOmega1;            //mixC omega IVM(asy, pt, m)
+  TH2F **fRealOmega2;            //real omega IVM(asy, pt, m), with Asy_pi0<0.8
+  TH2F **fMixAOmega2;            //mixA omega IVM(asy, pt, m)
+  TH2F **fMixBOmega2;            //mixB omega IVM(asy, pt, m)
+  TH2F **fMixCOmega2;            //mixC omega IVM(asy, pt, m)
+  TH1F *fhOmegaPriPt;            //MC primary omega pt in 2pi and |y|<0.5
 
   ClassDef(AliAnaOmegaToPi0Gamma,2)
 } ;

@@ -42,11 +42,11 @@ ClassImp(AliAnaOmegaToPi0Gamma)
 
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaPartCorrBaseClass(),
-fInputAODGamma(0),fInputAODPi0(0), fInputAODGammaName(""),
-fEventsList(0),fNVtxZBin(1), fNCentBin(1), fNRpBin(1), fNBadChDistBin(3), fNpid(3),
-fNmaxMixEv(4), fVtxZCut(0), fCent(0), fRp(0), 
-fPi0Mass(0.13498),fPi0MassWindow(0.015),fPi0OverOmegaPtCut(0.8),
-fGammaOverOmegaPtCut(0.3),
+fInputAODPi0(0), fInputAODGammaName(""),
+fEventsList(0),fNVtxZBin(0), fNCentBin(0), fNRpBin(0), fNBadChDistBin(0), fNpid(0),
+fNmaxMixEv(0), fVtxZCut(0), fCent(0), fRp(0), 
+fPi0Mass(0),fPi0MassWindow(0),fPi0OverOmegaPtCut(0),
+fGammaOverOmegaPtCut(0),
 fhEtalon(0),
 fRealOmega0(0), fMixAOmega0(0),
 fMixBOmega0(0), fMixCOmega0(0),
@@ -57,11 +57,11 @@ fMixBOmega2(0), fMixCOmega2(0),
 fhOmegaPriPt(0)
 {
  //Default Ctor
+ InitParameters();
 }
 
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) : AliAnaPartCorrBaseClass(ex),
-fInputAODGamma(new TClonesArray (*ex.fInputAODGamma)), 
 fInputAODPi0(new TClonesArray (*ex.fInputAODPi0)),
 fInputAODGammaName(ex.fInputAODGammaName),
 fEventsList(ex.fEventsList), 
@@ -93,10 +93,7 @@ AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi
   
  if(this == &ex)return *this;
    ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
-   fInputAODGamma = new TClonesArray(*ex.fInputAODGamma);
    fInputAODPi0 = new TClonesArray(*ex.fInputAODPi0);
-//   fInputAODGamma=ex.fInputAODGamma;
-//   fInputAODPi0=ex.fInputAODPi0;
    fInputAODGammaName = ex.fInputAODGammaName;
    fEventsList = ex.fEventsList;
 
@@ -134,14 +131,11 @@ AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi
 	
 }
 
+
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma() {
 
   //dtor
-  if(fInputAODGamma){
-    fInputAODGamma->Clear();
-    delete fInputAODGamma;
-  }
   
   if(fInputAODPi0){
     fInputAODPi0->Clear();
@@ -172,6 +166,25 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
 {
 //Init parameters when first called the analysis
 //Set default parameters
+ fInputAODGammaName="PhotonsDetector";  
+ fNVtxZBin=1;              
+ fNCentBin=1;               
+ fNRpBin=1;                 
+ fNBadChDistBin=3;          
+ fNpid=9;                   
+ fNmaxMixEv=8;              
+ 
+ fPi0Mass=0.1348;             
+ fPi0MassWindow=0.015;       
+ fPi0OverOmegaPtCut=0.8;   
+ fGammaOverOmegaPtCut=0.2; 
+}
+
+
+//______________________________________________________________________________
+TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
+{
+  //
   fVtxZCut = new Double_t [fNVtxZBin];
   for(Int_t i=0;i<fNVtxZBin;i++) fVtxZCut[i]=10*(i+1);
 
@@ -180,15 +193,7 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
 
   fRp=new Double_t[fNRpBin];
   for(int i = 0;i<fNRpBin;i++)fRp[i]=0;
-
-}
-
-
-//______________________________________________________________________________
-TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
-{
-  InitParameters();
-
+  //
   Int_t nptbins   = GetHistoPtBins();
   Float_t ptmax   = GetHistoPtMax();
   Float_t ptmin  = GetHistoPtMin();
@@ -210,7 +215,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
          }
      }
  }
-
 	
  TList * outputContainer = new TList() ; 
  outputContainer->SetName(GetName());
@@ -451,14 +455,17 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
 
  if(ivtxzbin==-1) return; 
  curEventBin = ivtxzbin*fNCentBin*fNRpBin + icentbin*fNRpBin + irpbin;
-
-  fInputAODGamma = GetAODBranch(fInputAODGammaName); //photon array
- //fInputAODGamma = (TClonesArray *) GetReader()->GetOutputEvent()->FindListObject(fInputAODGammaName); //photon array
- Int_t nphotons = fInputAODGamma->GetEntries();
+  TClonesArray *aodGamma = (TClonesArray*) GetAODBranch(fInputAODGammaName); //photon array
+//  TClonesArray *aodGamma = (TClonesArray *) GetReader()->GetOutputEvent()->FindListObject(fInputAODGammaName); //photon array
+ Int_t nphotons =0;
+ if(aodGamma) nphotons= aodGamma->GetEntries(); 
+ else return;
 
  fInputAODPi0 = (TClonesArray*)GetInputAODBranch();  //pi0 array
- Int_t npi0s = fInputAODPi0 ->GetEntries();
- 
+ Int_t npi0s = 0;
+ if(fInputAODPi0) npi0s= fInputAODPi0 ->GetEntries();
+ else return;
+
  if(nphotons<3 || npi0s<1)return; //for pi0, eta and omega->pi0+gamma->3gamma reconstruction
 
  //reconstruction of omega(782)->pi0+gamma->3gamma
@@ -475,8 +482,8 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
      AliAODPWG4Particle * photon2 =0;
      for(Int_t d1=0;d1<nphotons;d1++){
          for(Int_t d2=0;d2<nphotons;d2++){
-             AliAODPWG4Particle * dp1 = (AliAODPWG4Particle*) (fInputAODGamma->At(d1));
-             AliAODPWG4Particle * dp2 = (AliAODPWG4Particle*) (fInputAODGamma->At(d2));
+             AliAODPWG4Particle * dp1 = (AliAODPWG4Particle*) (aodGamma->At(d1));
+             AliAODPWG4Particle * dp2 = (AliAODPWG4Particle*) (aodGamma->At(d2));
              Int_t dlab1=dp1->GetCaloLabel(0);
              Int_t dlab2=dp2->GetCaloLabel(0);
              if(dlab1==lab1 && dlab2==lab2){
@@ -516,7 +523,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
 
 	 //loop the pi0 with third gamma
   	 for(Int_t j=0;j<nphotons;j++){
-             AliAODPWG4Particle *photon3 = (AliAODPWG4Particle*) (fInputAODGamma->At(j));
+             AliAODPWG4Particle *photon3 = (AliAODPWG4Particle*) (aodGamma->At(j));
 	     TLorentzVector dph3(photon3->Px(),photon3->Py(),photon3->Pz(),photon3->E());
 	     Int_t lab3=photon3->GetCaloLabel(0);
              Double_t pi0gammapt=(vpi0+dph3).Pt();
@@ -602,7 +609,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
  //
  if(GetDebug() >0)printf("MixB:  (r1_event1+r2_event2)+r3_event2 \n");
  for(Int_t i=0;i<nphotons;i++){
-     AliAODPWG4Particle *ph1 = (AliAODPWG4Particle*) (fInputAODGamma->At(i)); 
+     AliAODPWG4Particle *ph1 = (AliAODPWG4Particle*) (aodGamma->At(i)); 
      TLorentzVector vph1(ph1->Px(),ph1->Py(),ph1->Pz(),ph1->E());
 
      Int_t nMixed = fEventsList[curEventBin]->GetSize();
@@ -692,7 +699,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
 
 
  //event buffer 
- TClonesArray *currentEvent = new TClonesArray(*fInputAODGamma);
+ TClonesArray *currentEvent = new TClonesArray(*aodGamma);
  if(currentEvent->GetEntriesFast()>0){
         fEventsList[curEventBin]->AddFirst(currentEvent) ;
         currentEvent=0 ; 
@@ -706,6 +713,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
        delete currentEvent ;
        currentEvent=0 ;
  }
+ aodGamma->Clear();
 }
 
 //______________________________________________________________________________
