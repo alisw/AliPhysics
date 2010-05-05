@@ -31,7 +31,6 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
-		  AliHLTPHOSConstant.h \
 		  AliHLTPHOSCoordinate.h 
 
 ##Left empty for auto generation:
