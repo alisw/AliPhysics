@@ -28,6 +28,7 @@ class AliHLTCaloConstants;
 class AliHLTEMCALConstants : public AliHLTCaloConstants
 {
 
+
 public:
   
   AliHLTEMCALConstants();

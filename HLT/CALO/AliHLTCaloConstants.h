@@ -43,6 +43,10 @@ public:
   static  Int_t GetHIGHGAIN()  { return fgkHIGHGAIN; };
   static  Int_t GetLOWGAIN()   { return fgkLOWGAIN; }; 
   static  Int_t GetMAXBINVALUE() {return fkMAXBINVALUE; }; 	
+
+  // virtual Int_t GetNZROWSMOD() const { return fgkNZROWSMOD;} 
+  virtual Int_t GetNZROWSMOD() const = 0;
+
   virtual Int_t GetNZROWSRCU() const = 0;
   virtual Int_t GetNXCOLUMNSRCU() const = 0;
   virtual Int_t GetNXCOLUMNSMOD() const = 0; 			     	
@@ -89,29 +93,10 @@ public:
   virtual Int_t GetNRCUSPERSECTOR() const = 0; 					
   virtual Int_t GetDDLOFFSET() const = 0;
   virtual TString GetDETNAME() const = 0;
-  // private:
+  
  public:
-
- 
-  /* static const Int_t fgkALTROMAXSAMPLES; /\**<The maximum number of samples of the ALTRO*\/  */
-  /* static const Int_t fgkALTROMAXPRESAMPLES; //Constant */
-  /* static const Int_t fgkNGAINS; */
-  /* static const Int_t fgkHIGHGAIN;          //Constan */
-  /* static const Int_t fgkLOWGAIN;          //Constant */
-  /* static const Int_t fkMAXBINVALUE;//Constant  */
-
-
   ClassDef(AliHLTCaloConstants, 1);
 };
-
-
-/* const Int_t AliHLTCaloConstants::fgkALTROMAXSAMPLES = 1008; /\**<The maximum number of samples of the ALTRO*\/  */
-/* const Int_t AliHLTCaloConstants::fgkALTROMAXPRESAMPLES = 15; //Constant */
-/* const Int_t AliHLTCaloConstants::fgkNGAINS = 2; */
-/* const Int_t AliHLTCaloConstants::fgkHIGHGAIN = 1; */
-/* const Int_t AliHLTCaloConstants::fgkLOWGAIN =0; */
-/* const Int_t AliHLTCaloConstants::fkMAXBINVALUE = 1023;//Constant */
-
 
 
 
