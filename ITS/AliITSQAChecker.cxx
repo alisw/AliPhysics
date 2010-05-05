@@ -30,6 +30,7 @@
 #include "AliITSQASPDChecker.h"
 #include "AliITSQASDDChecker.h"
 #include "AliITSQASSDChecker.h"
+#include "AliITSQADataMakerRec.h"
 
 ClassImp(AliITSQAChecker)
 
@@ -270,41 +271,45 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
 	      fSPDChecker->SetTaskOffset(fSPDOffset);
 	      //printf("spdoffset = %i \n",fSPDOffset );
 	      Double_t histoSPD=double(GetSPDHisto());
-
-	      Double_t *stepSPD=new Double_t[AliQAv1::kNBIT];
-	      CreateStepForBit(histoSPD,stepSPD);
-	      fSPDChecker->SetStepBit(stepSPD);
-	      spdCheck[specie] = fSPDChecker->Check(index, list[specie], recoParam);
-	      if(spdCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||spdCheck[specie]<0.)
-		{
-		  AliInfo(Form("SPD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
-		  spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
-		}
-	      //if(spdCheck[specie]<0.5)AliInfo(Form("SPD check result  for %s (%s) is < 0.5 .The result is %f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),spdCheck[specie]) );
-	      delete []stepSPD;
+	      if(AliITSQADataMakerRec::AreEqual(histoSPD,0)==kFALSE){
+		Double_t *stepSPD=new Double_t[AliQAv1::kNBIT];
+		CreateStepForBit(histoSPD,stepSPD);
+		fSPDChecker->SetStepBit(stepSPD);
+		spdCheck[specie] = fSPDChecker->Check(index, list[specie], recoParam);
+		if(spdCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||spdCheck[specie]<0.)
+		  {
+		    AliInfo(Form("SPD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
+		    spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
+		  }
+		delete []stepSPD;
+	      }//end check SPD entries
+	      else{spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
 	      rv[specie]=spdCheck[specie];
-	    }
+	    }//end SPD check
 	    //drift
 	    if(fDet == 0 || fDet == 2) {
 	      fSDDChecker->SetTaskOffset(fSDDOffset);
 	      Double_t histoSDD=double(GetSDDHisto());
-	      Double_t *stepSDD=new Double_t[AliQAv1::kNBIT];
-	      CreateStepForBit(histoSDD,stepSDD);
-	      fSDDChecker->SetStepBit(stepSDD);
-	      sddCheck[specie] = fSDDChecker->Check(index, list[specie], recoParam);
-	      if(sddCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||sddCheck[specie]<0.)
-		{
-		  AliInfo(Form("SDD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),sddCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
-		  sddCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
-		}
-	      //if(sddCheck[specie]<0.5)AliInfo(Form("SDD check result  for %s (%s) is < 0.5 .The result is %f\f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),sddCheck[specie]) );
-	      delete []stepSDD;
+	      if(AliITSQADataMakerRec::AreEqual(histoSDD,0)==kFALSE){
+		Double_t *stepSDD=new Double_t[AliQAv1::kNBIT];
+		CreateStepForBit(histoSDD,stepSDD);
+		fSDDChecker->SetStepBit(stepSDD);
+		sddCheck[specie] = fSDDChecker->Check(index, list[specie], recoParam);	
+		if(sddCheck[specie]>fUpTestValue[AliQAv1::kFATAL]||sddCheck[specie]<0.)
+		  {
+		    AliInfo(Form("SDD check result for %s  is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),sddCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
+		    sddCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
+		  }
+		delete []stepSDD;
+	      }//end check SDD entries
+	      else{spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
 	      if(sddCheck[specie]>rv[specie])rv[specie]=sddCheck[specie];  
-	    }
+	    }//end SDD
 	    //strip
 	    if(fDet == 0 || fDet == 3) {
 	      fSSDChecker->SetTaskOffset(fSSDOffset);
 	      Double_t histoSSD=double(GetSSDHisto());
+	      if(AliITSQADataMakerRec::AreEqual(histoSSD,0)==kFALSE){
 	      Double_t *stepSSD=new Double_t[AliQAv1::kNBIT];
 	      CreateStepForBit(histoSSD,stepSSD);
 	      fSSDChecker->SetStepBit(stepSSD);
@@ -314,10 +319,11 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
 		  AliInfo(Form("SSD check result for %s is out of range (%f)!!! Retval of specie %s is sit to -1\n ",AliQAv1::GetAliTaskName(index),ssdCheck[specie],AliRecoParam::GetEventSpecieName(specie)));
 		  ssdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];
 		}
-	      //if(ssdCheck[specie]<0.5)AliInfo(Form("SSD check result  for %s (%s) is < 0.5 . The result is %f ",AliQAv1::GetAliTaskName(index),AliRecoParam::GetEventSpecieName(specie),ssdCheck[specie]) );
 	      delete [] stepSSD;
+	      }//end check SSD entries
+	      else{spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
 	      if(ssdCheck[specie]>rv[specie])rv[specie]=ssdCheck[specie];
-	    }
+	    }//end SSD
 	    
 	    AliInfo(Form("Check result for %s: \n\t  SPD %f \n\t  SDD %f \n\t  SSD %f \n Check result %f \n ",AliQAv1::GetAliTaskName(index),spdCheck[specie],sddCheck[specie],ssdCheck[specie],rv[specie]));
 	    // here merging part for common ITS QA result
