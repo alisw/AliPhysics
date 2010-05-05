@@ -31,11 +31,13 @@ public:
   Int_t GetNZROWSMOD() const { return fkNZROWSMOD;} 				
   Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD;} 			
   Int_t GetNDATATYPES() const { return fkNDATATYPES;} 				
-  Int_t GetPFMAXPATHLENGTH() const { return fkPFMAXPATHLENGTH;} 		
-  Int_t GetPFDEFAULTNSAMPLES() const{ return fkPFDEFAULTNSAMPLES;} 		
-  Int_t GetPFDEFAULTSTARTINDEX() const { return fkPFDEFAULTSTARTINDEX;} 	
-  Double_t GetDEFAULTTAU() const { return fkDEFAULTTAU;} 			
-  Int_t GetDEFAULTFS() const { return fkDEFAULTFS;} 				
+
+  //  Int_t GetPFMAXPATHLENGTH() const { return fkPFMAXPATHLENGTH;} 		
+  // Int_t GetPFDEFAULTNSAMPLES() const{ return fkPFDEFAULTNSAMPLES;} 		
+  //  Int_t GetPFDEFAULTSTARTINDEX() const { return fkPFDEFAULTSTARTINDEX;} 	
+  //  Double_t GetDEFAULTTAU() const { return fkDEFAULTTAU;} 			
+  //   Int_t GetDEFAULTFS() const { return fkDEFAULTFS;} 				
+
   Int_t GetMODULE0() const { return fkMODULE0;} 				
   Int_t GetMODULE1() const { return fkMODULE1;} 				
   Int_t GetMODULE2() const { return fkMODULE2;} 				
@@ -58,7 +60,7 @@ public:
   Int_t GetNALTROS() const { return fkNALTROS;} 				
   Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS;} 			
   Int_t GetNBRANCHES() const { return fkNBRANCHES;} 				
-  Float_t GetCELLSTEP() const { return fkCELLSTEP; } 				  Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 			  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
+  Float_t GetCELLSTEP() const { return fkCELLSTEP; } 				//   Int_t GetNRCUSPERSECTOR() const { return fkNRCUSPERSECTOR; } 			  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
   TString GetDETNAME() const { return fkDETNAME; }
 
 private:
@@ -70,11 +72,17 @@ private:
   const Int_t fkNZROWSMOD;  /**<Number of rows per module*/ 
   const Int_t fkNXCOLUMNSMOD;  /**<Number of columns per module*/ 
   const Int_t fkNDATATYPES;          //Constant
-  const Int_t fkPFMAXPATHLENGTH;          //Constant
-  const Int_t fkPFDEFAULTNSAMPLES;          //Constant
-  const Int_t fkPFDEFAULTSTARTINDEX;          //Constant
-  const Double_t fkDEFAULTTAU; /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/
-  const Int_t fkDEFAULTFS; /**<Assume that the signal is samples with 10 MHZ samle rate*/
+
+  //  const Int_t fkPFMAXPATHLENGTH;          //Constant
+
+  // const Int_t fkPFDEFAULTNSAMPLES;          //Constant
+  //  const Int_t fkPFDEFAULTSTARTINDEX;          //Constant
+
+  //  const Double_t fkDEFAULTTAU; /**<Assume that the signal rise time of the altrp
+
+  // pulses is 2 us (nominal value of the electronics)*/
+
+  //  const Int_t fkDEFAULTFS; /**<Assume that the signal is samples with 10 MHZ samle rate*/
   const Int_t fkMODULE0;          //Constant
   const Int_t fkMODULE1;          //Constant
   const Int_t fkMODULE2;          //Constant
@@ -103,7 +111,7 @@ private:
   const Int_t fkNBRANCHES; //Constant
 
   const Float_t fkCELLSTEP;  //Constant
-  const Int_t fkNRCUSPERSECTOR;  //Constant
+  //  const Int_t fkNRCUSPERSECTOR;  //Constant
   const Int_t fkDDLOFFSET;  //Constant
   const TString fkDETNAME;  //Constant
    

@@ -25,15 +25,6 @@
 #include "AliHLTCaloConstants.h"
 
 
-//const Int_t AliHLTCaloConstants::fgkALTROMAXSAMPLES = 1008; /**<The maximum number of samples of the ALTRO*/
-//const Int_t AliHLTCaloConstants::fgkALTROMAXPRESAMPLES = 15; //Constant
-//const Int_t AliHLTCaloConstants::fgkNGAINS = 2;
-//const Int_t AliHLTCaloConstants::fgkHIGHGAIN = 1;
-//const Int_t AliHLTCaloConstants::fgkLOWGAIN =0;
-
-
-
-
 
 ClassImp(AliHLTCaloConstants);
 
