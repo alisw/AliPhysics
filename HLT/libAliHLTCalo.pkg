@@ -21,7 +21,6 @@ AliHLTCaloClusterizerComponent.h \
 AliHLTCaloDigitMaker.h \
 AliHLTCaloClusterAnalyser.h \
 AliHLTCaloRcuProcessor.h \
-AliHLTCaloConstants.h \
 AliHLTCaloProcessor.h \
 AliHLTCaloGeometry.h \
 AliHLTCaloRecoParamHandler.h
