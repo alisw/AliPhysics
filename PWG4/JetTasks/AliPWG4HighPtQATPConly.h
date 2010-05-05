@@ -73,6 +73,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH1F *fPtAll;                                 //! Pt spectrum all charged particles
   TH1F *fPtSel;                                 //! Pt spectrum all selected charged particles by fTrackCuts
   TH2F *fPtAllminPtTPCvsPtAll;                  //! Momentum resolution (global vs TPConly)
+  TH3F *fPtAllminPtTPCvsPtAllEtaPos;            //! Momentum resolution (global vs TPConly) vs Eta for positive particles
+  TH3F *fPtAllminPtTPCvsPtAllEtaNeg;            //! Momentum resolution (global vs TPConly) vs Eta for negative particles
   TH3F *fPtAllminPtTPCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
   TH3F *fPtAllminPtTPCvsPtAllNPointTPCS;        //! Momentum resolution vs NPointTPCShared/NPointTPC
   TH3F *fPtAllminPtTPCvsPtAllDCAR;              //! Momentum resolution vs DCAR
@@ -93,6 +95,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
  
   TH1F *fPtSelITSouter;                         //! Pt at ITS outer wall for all selected charged particles by fTrackCuts
   TH2F *fPtITSouterminPtTPCvsPtAll;                  //! Momentum resolution (global vs ITSouter-TPCinner)
+  TH3F *fPtITSouterminPtTPCvsPtAllEtaPos;            //! Momentum resolution (global vs ITSouter-TPCinner) vs Eta for positive particles
+  TH3F *fPtITSouterminPtTPCvsPtAllEtaNeg;            //! Momentum resolution (global vs ITSouter-TPCinner) vs Eta for negative particles
   TH3F *fPtITSouterminPtTPCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
   TH3F *fPtITSouterminPtTPCvsPtAllNPointTPCS;        //! Momentum resolution vs NPointTPCS
   TH3F *fPtITSouterminPtTPCvsPtAllDCAR;              //! Momentum resolution vs DCAR
@@ -136,6 +140,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   
   TH1F *fPtSelITS;                              //! Pt spectrum all selected charged particles by fTrackCutsITS
   TH2F *fPtITSminPtTPCvsPtITS;                  //! Momentum resolution (global with ITSrefit vs TPConly)
+  TH3F *fPtITSminPtTPCvsPtITSEtaPos;            //! Momentum resolution (global with ITSrefit vs TPConly) vs Eta for positive particles
+  TH3F *fPtITSminPtTPCvsPtITSEtaNeg;            //! Momentum resolution (global with ITSrefit vs TPConly) vs Eta for negative particles
   TH3F *fPtITSminPtTPCvsPtITSNPointTPC;         //! Momentum resolution vs NPointTPC 
   TH3F *fPtITSminPtTPCvsPtITSNPointTPCS;        //! Momentum resolution vs NPointTPCS 
   TH3F *fPtITSminPtTPCvsPtITSDCAR;              //! Momentum resolution vs DCAR
