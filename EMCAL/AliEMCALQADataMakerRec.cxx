@@ -770,7 +770,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   Int_t nTotalTRU = 0;
   Int_t nTotalHGLEDMon = 0;
   Int_t nTotalLGLEDMon = 0;
-  for (Int_t iSM=0; iSM<fSuperModules; iSM++) {  
+  for (iSM=0; iSM<fSuperModules; iSM++) {  
     nTotalLG += nTotalSMLG[iSM]; 
     nTotalHG += nTotalSMHG[iSM]; 
     nTotalTRU += nTotalSMTRU[iSM]; 

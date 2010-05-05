@@ -69,8 +69,8 @@ protected:
 	//virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 	
   void CheckRaws(Double_t* test, TObjArray ** list);
-	void CheckRecPoints(Double_t* test, TObjArray** /*list*/){;}
-	void CheckESD(Double_t* test, TObjArray** /*list*/){;}
+  void CheckRecPoints(Double_t* /*test*/, TObjArray** /*list*/){;}
+  void CheckESD(Double_t* /*test*/, TObjArray** /*list*/){;}
 	TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
 	Double_t MarkHisto(TH1& histo, Double_t value) const;
 	
