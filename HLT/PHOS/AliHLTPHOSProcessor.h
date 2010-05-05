@@ -10,9 +10,10 @@
 //#include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSDefinitions.h"
 #include "AliHLTDataTypes.h"
-#include "AliHLTPHOSConstant.h"
 
-using namespace PhosHLTConst;
+// #include "AliHLTPHOSConstant.h"
+
+// using namespace PhosHLTConst;
 
 //class AliHLTPHOSProcessor:public AliHLTProcessor, public AliHLTPHOSBase
 class AliHLTPHOSProcessor:public AliHLTProcessor

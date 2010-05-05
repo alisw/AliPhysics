@@ -7,29 +7,10 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 
-
-//#include "AliHLTHOMERData.h"
-//#include "AliHLTHOMERReader.h"
-//#include "AliHLTHOMERWriter.h"
 #include "Rtypes.h"
 #include <TGFrame.h>
 #include "TH2.h"
-//#include "AliHLTPHOSGetEventButton.h" 
-//#include "TGTab.h"
-//#include <TRootEmbeddedCanvas.h>
-//#include <TCanvas.h>
-//#include "TGFrame.h"
-//#include "AliHLTPHOSOnlineDisplayEventTab.h"
-//#include "AliHLTPHOSOnlineDisplayCalibTab.h"
-
 #include "AliHLTPHOSConstants.h"
-
-//#include "AliHLTPHOSOnlineDisplayEventTab.h"
-//#include "AliHLTPHOSOnlineDisplayFourierTab.h"
-//#include "AliHLTPHOSBase.h"
-
-//#include "TSystem.h"
-//#include "TStyle.h"
 
 
 class TStyle;
@@ -51,12 +32,15 @@ class AliHLTHOMERWriter;
 class AliHLTHOMERReader;
 class AliHLTHOMERData;
 
-using namespace PhosHLTConst;
+// using namespace PhosHLTConst;
 
 //#define N_SAMPLES 70
 //#define N_SAMPLES 140
 //#define MAX_HISTOGRAMS 25
+
+
 #define MAXHISTOGRAMS 320
+#define MAXHOSTS 20
 
 class TCanvas;
 

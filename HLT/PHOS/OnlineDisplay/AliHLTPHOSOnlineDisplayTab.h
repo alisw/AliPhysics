@@ -24,7 +24,8 @@ using namespace std;
 #define XRANGEEND  XRANGESTART + XRANGELENGTH
 
 
-using namespace PhosHLTConst;
+// using namespace PhosHLTConst;
+
 
 class AliHLTHOMERReader;
 
@@ -43,8 +44,7 @@ class AliHLTPHOSOnlineDisplayTab : public TGTab
   
   void SetRunNumber(const int runnumber) 
   {
-    
-   fRunNumber = runnumber ;
+    fRunNumber = runnumber ;
    cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
   };
   

@@ -20,7 +20,8 @@
 #include "AliHLTPHOSSharedMemoryInterfacev2.h"
 #include "AliHLTPHOSRcuDAComponent.h"
 #include "AliHLTPHOSDefinitions.h"
-#include "AliHLTPHOSConstant.h"
+
+// #include "AliHLTPHOSConstant.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TObjArray.h"
 #include "AliHLTPHOSUtilities.h"
@@ -226,6 +227,8 @@ AliHLTPHOSRcuDAComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtDa
 }  
 
 
+
+/*
 void
 AliHLTPHOSRcuDAComponent::ResetArrays(Float_t e[NXCOLUMNSMOD][NZROWSMOD][NGAINS], Float_t t[NXCOLUMNSMOD][NZROWSMOD][NGAINS])
 {
@@ -241,3 +244,4 @@ AliHLTPHOSRcuDAComponent::ResetArrays(Float_t e[NXCOLUMNSMOD][NZROWSMOD][NGAINS]
 	}
     }
 }
+*/

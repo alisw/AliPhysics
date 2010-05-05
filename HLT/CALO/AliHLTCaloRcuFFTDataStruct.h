@@ -18,8 +18,11 @@ struct AliHLTCaloRcuFFTDataStruct
   //  Double_t fGlobalLastPSD[NGAINS][ALTROMAXSAMPLES];
     
 
-  Double_t fGlobalAccumulatedPSD[fgkNGAINS][fgkALTROMAXSAMPLES];
-  Double_t fGlobalLastPSD[fgkNGAINS][fgkALTROMAXSAMPLES];
+  //  Double_t fGlobalAccumulatedPSD[fgkNGAINS][fgkALTROMAXSAMPLES];
+  //  Double_t fGlobalLastPSD[fgkNGAINS][fgkALTROMAXSAMPLES];
+  
+  Double_t fGlobalAccumulatedPSD[NGAINS][ALTROMAXSAMPLES];
+  Double_t fGlobalLastPSD[NGAINS][ALTROMAXSAMPLES];
 
   //  Double_t fGlobalAccumulatedPSD[AliHLTCaloConstants::fgkNGAINS][AliHLTCaloConstants::fgkALTROMAXSAMPLES];
   // Double_t fGlobalLastPSD[AliHLTCaloConstants::fgkNGAINS][AliHLTCaloConstants::fgkALTROMAXSAMPLES]; 

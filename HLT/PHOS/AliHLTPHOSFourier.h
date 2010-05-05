@@ -25,12 +25,13 @@
 #include "Rtypes.h"
 #include "TVirtualFFT.h"
 #include "TMath.h"
-#include "AliHLTPHOSConstant.h"
+// #include "AliHLTPHOSConstant.h"
 #include <iostream>
 
 #include "AliHLTPHOSRcuFFTDataStruct.h"
 
-using namespace PhosHLTConst;
+// using namespace PhosHLTConst;
+
 using namespace std;
 
 #define SAMPLING_FREQUENCY 10 

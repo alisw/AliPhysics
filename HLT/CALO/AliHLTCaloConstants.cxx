@@ -26,28 +26,40 @@
 
 
 
-ClassImp(AliHLTCaloConstants);
+//ClassImp(AliHLTCaloConstants);
 
-AliHLTCaloConstants::AliHLTCaloConstants() : fkNALTROS(4),
-					     fkNALTROCHANNELS(16),
-					     fkNBRANCHES(2),
-					     fkCSPSPERFEE(32),
-					     fkNDATATYPES(10),
-					     fkMAXHOSTS(20),
-					     fkDEFAULTEVENTPORT(42001), 
-					     fkCELLSTEP(-1),
-					     fkMAXCELLSTEPETA(-1),
-					     fkMINCELLSTEPETA(-1),
-					     fkCELLSTEPPHI(-1),
-					     fkCELLHEIGHT(-1),
-					     fkCELLANGLE(-1)
-					     fkRADLENGTH(-1),
-					     fkCRITICENERGY(-1),
-					     fkCJ(-1),
-					     fkDDLOFFSET(-1)
+AliHLTCaloConstants::AliHLTCaloConstants() :   fkCELLSTEP(-1),
+					       fkMAXCELLSTEPETA(-1),
+					       fkMINCELLSTEPETA(-1),
+					       fkCELLSTEPPHI(-1),
+					       fkCELLHEIGHT(-1),
+					       fkCELLANGLE(-1)
+					       fkRADLENGTH(-1),
+					       fkCRITICENERGY(-1),
+					       fkCJ(-1),
+					       fkDDLOFFSET(-1),
+					       fkNZROWSRCU(-1),
+					       fkNXCOLUMNSRCU(-1),
+					       fkNZROWSMOD(-1)
+					       fkNXCOLUMNSMOD(-1),
+					       fkNMODULES(-1),  
+					       fkNRCUS(-1),  
+					       fkNRCUSPERMODULE(-1),
+					       fkNRCUSPERTOTAL(-1), 
+					       fkNFEECS(-1), 
+					       fkNALTROS(4),
+					       fkNALTROCHANNELS(16),
+					       fkNBRANCHES(2),
+					       fkCSPSPERFEE(32),
+					       fkNDATATYPES(10),
+					       fkMAXHOSTS(20),
+					       fkDEFAULTEVENTPORT(42001),
+					       
+					
 {
   //Default constructor
 }
+
 
 AliHLTCaloConstants::~AliHLTCaloConstants()
 {

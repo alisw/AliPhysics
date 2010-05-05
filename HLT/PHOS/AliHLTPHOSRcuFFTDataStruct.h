@@ -6,9 +6,11 @@
 
 
 #include "Rtypes.h"
-#include "AliHLTPHOSConstant.h"
 
-using namespace PhosHLTConst;
+//#include "AliHLTPHOSConstant.h"
+#include "AliHLTPHOSConstants.h"
+
+//using namespace PhosHLTConst;
 
 struct AliHLTPHOSRcuFFTDataStruct
 {

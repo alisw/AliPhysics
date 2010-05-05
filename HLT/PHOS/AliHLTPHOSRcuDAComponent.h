@@ -36,7 +36,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCalibrationProcessor.h"
-#include "AliHLTPHOSConstant.h"
+
+// #include "AliHLTPHOSConstant.h"
 //#include "AliHLTPHOSRcuProperties.h"
 
 using namespace PhosHLTConst;
@@ -91,7 +92,7 @@ protected:
   Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
   /** Reset the energy and timing arrays */
-  void ResetArrays(Float_t e[NXCOLUMNSMOD][NZROWSMOD][NGAINS], Float_t t[NXCOLUMNSMOD][NZROWSMOD][NGAINS]);
+  //   void ResetArrays(Float_t e[NXCOLUMNSMOD][NZROWSMOD][NGAINS], Float_t t[NXCOLUMNSMOD][NZROWSMOD][NGAINS]);
 
   //  int fCnt; ///TODO, remove this
 

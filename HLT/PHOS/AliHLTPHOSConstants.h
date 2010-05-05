@@ -12,20 +12,24 @@
 
 #ifndef ALIHLTPHOSCONSTANTS_H
 #define ALIHLTPHOSCONSTANTS_H
-#include <TString.h>
 
-class AliHLTCaloConstants;
+
+#include <TString.h>
+#include "Rtypes.h"
+
+#include "AliHLTCaloConstants.h"
+
+//class AliHLTCaloConstants;
+
 
 class AliHLTPHOSConstants : public AliHLTCaloConstants
 {
-
 public:
   AliHLTPHOSConstants();
   ~AliHLTPHOSConstants();
-
-private:
-  ClassDef(AliHLTPHOSConstants, 1);
-
+  // private:
+  ClassDef(AliHLTPHOSConstants, 1)
 };
 
 #endif
+

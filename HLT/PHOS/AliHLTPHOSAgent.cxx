@@ -28,7 +28,12 @@
 #include "AliRunLoader.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliHLTPHOSConstant.h"
+
+
+// #include "AliHLTPHOSConstant.h"
+#include "AliHLTPHOSConstants.h"
+
+
 #include "AliHLTPHOSMapper.h"
 
 /** global instance for agent registration */
@@ -94,10 +99,13 @@ int AliHLTPHOSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
 
       int moduleStart = 0;
-      int moduleEnd = PhosHLTConst::NMODULES - 1;
+      //   int moduleEnd = PhosHLTConst::NMODULES - 1;
+      int moduleEnd = 5 - 1;
+
       int rcuStart = 0;
-      int rcuEnd = PhosHLTConst::NRCUSPERMODULE - 1;
-    
+      //   int rcuEnd = PhosHLTConst::NRCUSPERMODULE - 1;
+      int rcuEnd = PhosHLTConst::4 - 1;
+
       TString mergerInput;
       TString sinkClusterInput;
       TString emInput;
@@ -111,7 +119,9 @@ int AliHLTPHOSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	      // raw data publisher components
 	      publisher.Form("PHOS-RP_%02d_%d", module, rcu);
 	
-	      arg.Form("-datatype 'DDL_RAW ' 'PHOS'  -dataspec 0x ", 0x1 << (module*PhosHLTConst::NRCUSPERMODULE + rcu));
+	      //     arg.Form("-datatype 'DDL_RAW ' 'PHOS'  -dataspec 0x ", 0x1 << (module*PhosHLTConst::NRCUSPERMODULE + rcu));
+	      arg.Form("-datatype 'DDL_RAW ' 'PHOS'  -dataspec 0x ", 0x1 << (module*4 + rcu));
+
 	      handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
 
 	      // Raw analyzer

@@ -22,17 +22,16 @@
 /// @brief  Class containing constants for PHOS
 ///         loaded libraries
 
-#include "AliHLTCaloConstants.h"
+
+// #include "AliHLTCaloConstants.h"
+
 #include "AliHLTPHOSConstants.h"
 
 ClassImp(AliHLTPHOSConstants);
 
-AliHLTPHOSConstants::AliHLTPHOSConstants() :
-  AliHLTCaloConstants()
+AliHLTPHOSConstants::AliHLTPHOSConstants() : AliHLTCaloConstants()
 {
   //Default constructor
-
-  
   fkNZROWSRCU = 56;
   fkNXCOLUMNSRCU = 16;
   fkNZROWSMOD = 56;
@@ -42,7 +41,6 @@ AliHLTPHOSConstants::AliHLTPHOSConstants() :
   fkNRCUSPERMODULE = 4;
   fkNRCUSPERTOTAL = fkNMODULES*fkNRCUSPERMODULE;
   fkNFEECS = 14;
-
   fkDETNAME = "PHOS";
   fkCELLSTEP = 2.255;
   fkDDLOFFSET = 1792;

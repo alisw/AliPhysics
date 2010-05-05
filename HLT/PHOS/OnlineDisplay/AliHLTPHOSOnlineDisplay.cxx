@@ -37,7 +37,10 @@
 #include <errno.h>
 #include "TH2.h"
 #include "TCanvas.h"
-#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
+
+//#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
+#include "AliHLTCaloRcuCellAccumulatedEnergyDataStruct.h"
+
 #include "AliHLTPHOSCommonDefs.h"
 #include <iostream>
 #include "AliHLTPHOSOnlineDisplayEventTab.h"

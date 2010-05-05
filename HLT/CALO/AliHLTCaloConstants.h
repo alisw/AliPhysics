@@ -11,21 +11,27 @@
 /// @brief  Class containing constants for PHOS and EMCAL
 ///         loaded libraries
 
+
 #include "Rtypes.h"
 #include "TString.h"
-
 #ifndef ALIHLTCALOCONSTANTS_H
 #define ALIHLTCALOCONSTANTS_H
 
+// #define  fgkALTROMAXSAMPLES   1008  /**<The maximum number of samples of the ALTRO*/ 
+// #define  fgkALTROMAXPRESAMPLES  15  //Constant 
+// #define  fgkNGAINS  2
+// #define  fgkHIGHGAIN  1
+// #define  fgkLOWGAIN  0
+// #define  fkMAXBINVALUE  1023 //Constant
 
-
-#define  fgkALTROMAXSAMPLES   1008  /**<The maximum number of samples of the ALTRO*/ 
-#define  fgkALTROMAXPRESAMPLES  15  //Constant 
-#define  fgkNGAINS  2
-#define  fgkHIGHGAIN  1
-#define  fgkLOWGAIN  0
-#define  fkMAXBINVALUE  1023 //Constant
-
+#define  ALTROMAXSAMPLES   1008  /**<The maximum number of samples of the ALTRO*/ 
+#define  ALTROMAXPRESAMPLES  15  //Constant 
+#define  NGAINS  2
+#define  HIGHGAIN  1
+#define  LOWGAIN  0
+#define  MAXBINVALUE  1023 //Constant
+#define  MAXHOSTS 20 // For the onlinedisplay
+#define  DEFAULTEVENTPORT 42001
 
 
 class AliHLTCaloConstants
@@ -35,20 +41,17 @@ public:
 
   AliHLTCaloConstants();
   virtual ~AliHLTCaloConstants();
-  virtual Int_t GetMAXHOSTS() const  { return fkMAXHOSTS; } ; 				       	
-  virtual Int_t GetDEFAULTEVENTPORT()  const { return fkDEFAULTEVENTPORT; }; 			       
-  static  Int_t GetALTROMAXSAMPLES()    { return fgkALTROMAXSAMPLES; }; 
-  static  Int_t GetALTROMAXPRESAMPLES()  { return fgkALTROMAXPRESAMPLES; } ; 
+  //   Int_t GetMAXHOSTS() const  { return fkMAXHOSTS; } ; 				       	
+  //   Int_t GetDEFAULTEVENTPORT()  const { return fkDEFAULTEVENTPORT; }; 			       
+  static  Int_t GetALTROMAXSAMPLES()    { return  ALTROMAXSAMPLES; }; 
+  //   static  Int_t GetALTROMAXPRESAMPLES()  { return ALTROMAXPRESAMPLES; } ; 
+  static  Int_t GetNGAINS()       { return NGAINS; }; 	
+  static  Int_t GetHIGHGAIN()     { return HIGHGAIN; };
+  static  Int_t GetLOWGAIN()      { return LOWGAIN; }; 
+  static  Int_t GetMAXBINVALUE()  { return MAXBINVALUE; }; 	
   
-  static  Int_t GetNGAINS()     {  return fgkNGAINS; }; 	
-  static  Int_t GetHIGHGAIN()   { return fgkHIGHGAIN; };
-  static  Int_t GetLOWGAIN()    { return fgkLOWGAIN; }; 
-  static  Int_t GetMAXBINVALUE()  {return fkMAXBINVALUE; }; 	
-
   Int_t GetNDATATYPES() const { return fkNDATATYPES; } ; 				       	
   Int_t GetCSPSPERFEE() const {  return fkCSPSPERFEE; }; 			       		
- 
-  
   
   Int_t GetNZROWSRCU() const { return fkNZROWSRCU;}
   Int_t GetNXCOLUMNSRCU() const { return fkNXCOLUMNSRCU;} 
@@ -60,8 +63,6 @@ public:
   Int_t GetNRCUSPERTOTAL() const { return fkNRCUSPERTOTAL;} 
   Int_t GetNFEECS() const { return fkNFEECS;} 
   Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
-
-
   Int_t GetNALTROS() {  return fkNALTROS; }; 					
   Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS; }; 					
   Int_t GetNBRANCHES() const { return fkNBRANCHES; }; 					

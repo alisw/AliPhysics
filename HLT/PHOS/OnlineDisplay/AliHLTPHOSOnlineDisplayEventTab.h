@@ -20,13 +20,7 @@
 #ifndef ALIHLTPHOSONLINEDISPLAYEVENTTAB_H
 #define ALIHLTPHOSONLINEDISPLAYEVENTTAB_H
 
-//#include <TGTab.h>
-// #include <TRootEmbeddedCanvas.h>
 #include "AliHLTPHOSOnlineDisplayTab.h"
-// #include <TCanvas.h>
-// #include <TH2D.h>
-// #include <TH1D.h>
-// #include "AliHLTPHOSOnlineDisplayTH2D.h"
 #include "AliHLTPHOSConstants.h"
 
 #include "AliHLTPHOSMapper.h"
@@ -34,7 +28,8 @@
 #define NZRCUCOORD 2
 #define NXRCUCOORD 2
 
-using namespace PhosHLTConst;
+// using namespace PhosHLTConst;
+
 
 class TGTab;
 class TRootEmbeddedCanvas;
@@ -61,24 +56,6 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 				  AliHLTHOMERReader * homerSyncPtr, 
 				  AliHLTHOMERReader * homerPtrs[MAXHOSTS], 
 				  int nHosts,  int runnumber = -1);
-//   AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, 
-// 				  AliHLTHOMERReader *fgHomerReaderPtr, 
-// 				  AliHLTHOMERReader *fgHomerReadersPtr[MAXHOSTS], 
-// 				  int nHosts, const int runnumber = -1);
-    //    {
-
- 
-  
- 
-
-/* 
-  void SetRunNumber(const int runnumber) 
-  {
-    
-    fRunNumber = runnumber ;
-    cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
-  };
-  */
 
   Int_t GetRawData(TH1D *histPtr, int x, int z, int gain);
 
@@ -94,40 +71,28 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
   TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3; //!
   TCanvas *fgCanvasPtr[NGAINS]; //!
   AliHLTPHOSOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS]; //!
+  
+  //  int *fChannelData[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
+  static AliHLTPHOSConstants c;
+  int *fChannelData2[c.GetNMODULES()][c.GetNZROWSMOD() ][ c.GetNXCOLUMNSMOD()][c.GetNGAINS()];
 
-  /*
-  int *fChannelData[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  Int_t fNChannelSamples[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  Int_t fChannelEnergy[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  */  
+  int *fChannelData[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS]; 
 
-  int *fChannelData[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
   Int_t fNChannelSamples[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
   Int_t fChannelEnergy[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
+  
 
-  //protected:
-  //  Bool_t fgAccumulate;
-
- private:
+private:
   AliHLTPHOSOnlineDisplayEventTab();
   AliHLTPHOSOnlineDisplayEventTab(const AliHLTPHOSOnlineDisplayEventTab&);
   AliHLTPHOSOnlineDisplayEventTab& operator=(const AliHLTPHOSOnlineDisplayEventTab&);
-
   void FillRawData(const AliHLTPHOSChannelRawDataStruct &rawStr);
-  
-  // void ChannelId2Coordinates(const UShort_t chid) const ;
-
   AliHLTPHOSGetEventButton* fgEventButtPtr; 
   void InitDisplay(TGTab *tabPtr){};
   void InitDisplay(TGTab * tabPtr, int runnumber);
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
-  // AliHLTPHOSSharedMemoryInterface *fShmPtr;   
   AliHLTPHOSSharedMemoryInterfacev2 *fShmPtr;   
-//   AliHLTPHOSOnlineDisplayEventTab(const AliHLTPHOSOnlineDisplayEventTab& v);
-//   AliHLTPHOSOnlineDisplayEventTab & operator=(const AliHLTPHOSOnlineDisplayEventTab v){}
-
-
-  ///int fEvent
+  
 
 };
 
