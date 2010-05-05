@@ -15,7 +15,7 @@
 
   Usage:
   .L AliTrackerTest.C+g
-  AliTrackerTest(10000)
+  AliTrackerTest(1000)
   TFile f("fit.root");
 
   Make a simple plots:
@@ -64,12 +64,15 @@
 #include "AliTrackPointArray.h" 
 #include "AliTrackerBase.h"
 #include "AliTracker.h"
+#include "TMatrixD.h"
 
 //
 // 
-#include "refitTrack.C" 
+//#include "refitTrack.C" 
 
 void TestRotateMI(AliExternalTrackParam *paramIn, TTreeSRedirector *pcstream);
+void AliTrackerBaseUpdateTrack(AliExternalTrackParam &track1, const AliExternalTrackParam &track2);
+void TestUpdate(AliExternalTrackParam &param0, const AliExternalTrackParam &param1);
 
 
 Int_t simulateCosmicTrack(AliExternalTrackParam &paramU, AliExternalTrackParam &paramD,
@@ -146,7 +149,7 @@ Int_t simulateCosmicTrack(AliExternalTrackParam &paramU, AliExternalTrackParam &
   AliTrackerBase::PropagateTrackTo(&lparamU,rTPC1,kMuon,3,kTRUE,kMaxSnp);
   paramU=lparamU;
   for (Double_t r=rTPC1; r>0; r-=1){
-    Bool_t status =	 AliTrackerBase::PropagateTrackTo(&lparamU,r,kMuon,3,kTRUE,kMaxSnp);
+    Bool_t status =	 AliTrackerBase::PropagateTrackToBxByBz(&lparamU,r,kMuon,3,kTRUE,kMaxSnp);
     if (!status) break;
     if (TMath::Abs(lparamU.GetSnp())>kMaxSnp) break;
     if (r<rTPC0) continue;
@@ -182,7 +185,7 @@ Int_t simulateCosmicTrack(AliExternalTrackParam &paramU, AliExternalTrackParam &
   Double_t radius0=TMath::Sqrt(xyzdw[1]*xyzdw[1]+xyzdw[0]*xyzdw[0]);
   Int_t npointsDown=0;
   for (Double_t r=radius0; r<rTPC1; r+=1){ 
-    Bool_t status =  AliTrackerBase::PropagateTrackTo(&lparamD,r,kMuon,3,kTRUE,0.99); 
+    Bool_t status =  AliTrackerBase::PropagateTrackToBxByBz(&lparamD,r,kMuon,3,kTRUE,0.99); 
     if (!status) continue;
     if (TMath::Abs(lparamD.GetSnp())>kMaxSnp) continue;
     if(r>rTPC0){
@@ -210,7 +213,7 @@ Int_t simulateCosmicTrack(AliExternalTrackParam &paramU, AliExternalTrackParam &
     lpointsD.AddPoint(i,point);
   }
   // export points
-  AliTrackerBase::PropagateTrackTo(&lparamD,rTPC1,kMuon,3,kTRUE,kMaxSnp);
+  AliTrackerBase::PropagateTrackToBxByBz(&lparamD,rTPC1,kMuon,3,kTRUE,kMaxSnp);
   paramD=lparamD;
   //
   pointsU=lpointsU;
@@ -334,7 +337,13 @@ void AliTrackerTest(Int_t ntracks) {
     AliTrackerBase::FitTrack(trackD0, pointsD0,kMuon,3);
     AliTrackerBase::FitTrack(trackF02, pointsF02,kMuon,3);
     AliTrackerBase::FitTrack(trackD02, pointsD02,kMuon,3);
-    AliTrackerBase::FitTrack(trackU02, pointsU02,kMuon,3);    
+    AliTrackerBase::FitTrack(trackU02, pointsU02,kMuon,3);  
+    //
+    // test update of 2 track params
+    AliExternalTrackParam utrackU0(*trackU0);
+    TestUpdate(utrackU0,*trackD0);
+    //
+    
     //
     TestRotateMI(trackF0, pcstream);
     if (trackF0&&trackD0&&trackU0){
@@ -361,6 +370,7 @@ void AliTrackerTest(Int_t ntracks) {
 	"trackF0.="<<trackF0<<       //full track
 	"trackD0.="<<trackD0<<       //down track
 	"trackU0.="<<trackU0<<       //up track
+	"utrackU0.="<<&utrackU0<<       //up track - updated
 	// track fit  - 0.2 cm  misalignemnt
 	"trackF02.="<<trackF02<<       //full track
 	"trackD02.="<<trackD02<<       //down track
@@ -395,3 +405,102 @@ void TestRotateMI(AliExternalTrackParam *paramIn, TTreeSRedirector *pcstream){
     
    */
 }
+
+
+void TestUpdate(AliExternalTrackParam &param0, const AliExternalTrackParam &param1){
+  //
+  // Test function of update
+  // 
+  // fit->Draw("(utrackU0.fP[4]-mcU.fP[4])/sqrt(utrackU0.fC[14])","abs(utrackU0.fP[0]-trackU0.fP[0])<1")
+  // fit->Draw("(trackU0.fP[4]-mcU.fP[4])/sqrt(utrackU0.fC[14])","abs(utrackU0.fP[0]-trackU0.fP[0])<1")
+
+
+  //
+  Double_t kMuon = TDatabasePDG::Instance()->GetParticle("mu+")->Mass();
+  Double_t kMaxSnp = 0.85;  
+  //
+  AliExternalTrackParam track1(param1);  // make a local copy of param1
+  track1.Rotate(param0.GetAlpha());
+  AliTrackerBase::PropagateTrackToBxByBz(&track1,param0.GetX(),kMuon,3,kFALSE,kMaxSnp);
+  AliTrackerBaseUpdateTrack(param0,track1);
+}
+
+
+
+
+void AliTrackerBaseUpdateTrack(AliExternalTrackParam &track1, const AliExternalTrackParam &track2){
+  //
+  // Update track 1 with track 2
+  //
+  //
+  //
+  TMatrixD vecXk(5,1);    // X vector
+  TMatrixD covXk(5,5);    // X covariance 
+  TMatrixD matHk(5,5);    // vector to mesurement
+  TMatrixD measR(5,5);    // measurement error 
+  TMatrixD vecZk(5,1);    // measurement
+  //
+  TMatrixD vecYk(5,1);    // Innovation or measurement residual
+  TMatrixD matHkT(5,5);
+  TMatrixD matSk(5,5);    // Innovation (or residual) covariance
+  TMatrixD matKk(5,5);    // Optimal Kalman gain
+  TMatrixD mat1(5,5);     // update covariance matrix
+  TMatrixD covXk2(5,5);   // 
+  TMatrixD covOut(5,5);
+  //
+  Double_t *param1=(Double_t*) track1.GetParameter();
+  Double_t *covar1=(Double_t*) track1.GetCovariance();
+  Double_t *param2=(Double_t*) track2.GetParameter();
+  Double_t *covar2=(Double_t*) track2.GetCovariance();
+  //
+  // copy data to the matrix
+  for (Int_t ipar=0; ipar<5; ipar++){
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covXk(ipar,jpar) = covar1[track1.GetIndex(ipar, jpar)];
+      measR(ipar,jpar) = covar2[track2.GetIndex(ipar, jpar)];
+      matHk(ipar,jpar)=0;
+      mat1(ipar,jpar)=0;
+    }
+    vecXk(ipar,0) = param1[ipar];
+    vecZk(ipar,0) = param2[ipar];
+    matHk(ipar,ipar)=1;
+    mat1(ipar,ipar)=1;
+  }
+  //
+  //
+  //
+  //
+  //
+  vecYk = vecZk-matHk*vecXk;                 // Innovation or measurement residual
+  matHkT=matHk.T(); matHk.T();
+  matSk = (matHk*(covXk*matHkT))+measR;      // Innovation (or residual) covariance
+  matSk.Invert();
+  matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
+  vecXk += matKk*vecYk;                      //  updated vector 
+  covXk2 = (mat1-(matKk*matHk));
+  covOut =  covXk2*covXk; 
+  //
+  //
+  //
+  // copy from matrix to parameters
+  if (0) {
+    vecXk.Print();
+    vecZk.Print();
+    //
+    measR.Print();
+    covXk.Print();
+    covOut.Print();
+    //
+    track1.Print();
+    track2.Print();
+  }
+
+  for (Int_t ipar=0; ipar<5; ipar++){
+    param1[ipar]= vecXk(ipar,0) ;
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covar1[track1.GetIndex(ipar, jpar)]=covOut(ipar,jpar);
+    }
+  }
+}
+
+
