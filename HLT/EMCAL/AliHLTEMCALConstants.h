@@ -27,15 +27,12 @@ class AliHLTCaloConstants;
 
 class AliHLTEMCALConstants : public AliHLTCaloConstants
 {
-
-
+  
 public:
   AliHLTEMCALConstants();
   ~AliHLTEMCALConstants();
- 
   virtual void InitConstants(); 
-
   ClassDef(AliHLTEMCALConstants, 1)
-
 };
+
 #endif

@@ -25,8 +25,8 @@
 #include "AliHLTCaloConstants.h"
 
 
+ClassImp(AliHLTCaloConstants);
 
-//ClassImp(AliHLTCaloConstants);
 
 AliHLTCaloConstants::AliHLTCaloConstants() :   fkCELLSTEP(-1),
 					       fkMAXCELLSTEPETA(-1),
