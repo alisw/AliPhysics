@@ -30,6 +30,7 @@ class AliTRDCalibraVector : public TObject {
   AliTRDCalibraVector();
   AliTRDCalibraVector(const AliTRDCalibraVector &c);
   virtual ~AliTRDCalibraVector();
+  virtual Long64_t Merge(const TCollection* list);
 
   AliTRDCalibraVector& operator = (const  AliTRDCalibraVector &source);
 

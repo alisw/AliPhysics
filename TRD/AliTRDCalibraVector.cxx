@@ -180,6 +180,33 @@ AliTRDCalibraVector::~AliTRDCalibraVector()
 
 }
 //_____________________________________________________________________________
+Long64_t AliTRDCalibraVector::Merge(const TCollection* list) 
+{
+  // Merge list of objects (needed by PROOF)
+
+  if (!list)
+    return 0;
+  
+  if (list->IsEmpty())
+    return 1;
+  
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+  
+  // collection of generated histograms
+  Int_t count=0;
+  while((obj = iter->Next()) != 0) 
+    {
+      AliTRDCalibraVector* entry = dynamic_cast<AliTRDCalibraVector*>(obj);
+      if (entry == 0) continue; 
+      
+      if(this->Add(entry)) count++;
+    
+    }
+  
+  return count;
+}
+//_____________________________________________________________________________
 void AliTRDCalibraVector::TestInit(Int_t i, Int_t detmax)
 {
   //
@@ -1422,3 +1449,4 @@ void AliTRDCalibraVector::SetNzNrphi(Int_t i, Int_t nz, Int_t nrphi)
   }
   
 }
+
