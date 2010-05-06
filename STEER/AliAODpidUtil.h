@@ -24,7 +24,7 @@ class AliAODEvent;
 
 class AliAODpidUtil {
 public:
-  AliAODpidUtil(): fRange(5.), fTPCResponse(), fITSResponse(), fTOFResponse(){;}
+  AliAODpidUtil(): fRange(5.), fTPCResponse(), fITSResponse(), fTOFResponse(), fTRDResponse() {;}
   virtual ~AliAODpidUtil() {;}
 
 
@@ -48,8 +48,7 @@ private:
   AliTPCPIDResponse fTPCResponse;
   AliITSPIDResponse fITSResponse;
   AliTOFPIDResponse fTOFResponse;
-  // AliHMPIDPIDResponse fHMPIDResponse;
- // AliTRDPIDResponse fTRDResponse;
+  AliTRDPIDResponse fTRDResponse;
 
   ClassDef(AliAODpidUtil,1)  // PID calculation class
 };

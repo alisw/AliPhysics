@@ -197,7 +197,6 @@ void AliAODpidUtil::MakeTRDPID(AliAODTrack *track,Double_t *p) const
   Float_t *mom=pidObj->GetTRDmomentum();
   Double_t *dedx=pidObj->GetTRDsignal();
   Bool_t norm=kTRUE;
-  AliTRDPIDResponse *trdResponse;
-  trdResponse->GetResponse(pidObj->GetTRDnSlices(),dedx,mom,p,norm);
+  fTRDResponse.GetResponse(pidObj->GetTRDnSlices(),dedx,mom,p,norm);
   return;
 }
