@@ -275,7 +275,7 @@ AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, do
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
-
+   
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;

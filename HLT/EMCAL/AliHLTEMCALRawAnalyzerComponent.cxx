@@ -135,6 +135,12 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
 
+   if(!IsDataEvent())
+   {
+      size = 0;
+      return 0;
+   }
+
   static int evntcnt = 0;
   static double wlast = -1;
   static double wcurrent = 0;
