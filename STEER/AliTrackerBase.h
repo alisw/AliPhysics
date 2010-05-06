@@ -39,6 +39,8 @@ public:
   static Double_t GetTrackPredictedChi2(AliExternalTrackParam *track,
                                         Double_t mass, Double_t step, 
 			          const AliExternalTrackParam *backup);
+  static void UpdateTrack(AliExternalTrackParam&, 
+                          const AliExternalTrackParam&);
   static 
   Double_t MeanMaterialBudget(const Double_t *start, const Double_t *end, 
   Double_t *mparam);

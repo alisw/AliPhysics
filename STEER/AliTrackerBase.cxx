@@ -28,6 +28,7 @@
 #include "AliTrackerBase.h"
 #include "AliExternalTrackParam.h"
 #include "AliTrackPointArray.h"
+#include "TVectorD.h"
 
 extern TGeoManager *gGeoManager;
 
@@ -605,3 +606,82 @@ Double_t  AliTrackerBase::FitTrack(AliExternalTrackParam * trackParam, AliTrackP
   }
   return 0;
 }
+
+
+
+void AliTrackerBase::UpdateTrack(AliExternalTrackParam &track1, const AliExternalTrackParam &track2){
+  //
+  // Update track 1 with track 2
+  //
+  //
+  //
+  TMatrixD vecXk(5,1);    // X vector
+  TMatrixD covXk(5,5);    // X covariance 
+  TMatrixD matHk(5,5);    // vector to mesurement
+  TMatrixD measR(5,5);    // measurement error 
+  TMatrixD vecZk(5,1);    // measurement
+  //
+  TMatrixD vecYk(5,1);    // Innovation or measurement residual
+  TMatrixD matHkT(5,5);
+  TMatrixD matSk(5,5);    // Innovation (or residual) covariance
+  TMatrixD matKk(5,5);    // Optimal Kalman gain
+  TMatrixD mat1(5,5);     // update covariance matrix
+  TMatrixD covXk2(5,5);   // 
+  TMatrixD covOut(5,5);
+  //
+  Double_t *param1=(Double_t*) track1.GetParameter();
+  Double_t *covar1=(Double_t*) track1.GetCovariance();
+  Double_t *param2=(Double_t*) track2.GetParameter();
+  Double_t *covar2=(Double_t*) track2.GetCovariance();
+  //
+  // copy data to the matrix
+  for (Int_t ipar=0; ipar<5; ipar++){
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covXk(ipar,jpar) = covar1[track1.GetIndex(ipar, jpar)];
+      measR(ipar,jpar) = covar2[track2.GetIndex(ipar, jpar)];
+      matHk(ipar,jpar)=0;
+      mat1(ipar,jpar)=0;
+    }
+    vecXk(ipar,0) = param1[ipar];
+    vecZk(ipar,0) = param2[ipar];
+    matHk(ipar,ipar)=1;
+    mat1(ipar,ipar)=1;
+  }
+  //
+  //
+  //
+  //
+  //
+  vecYk = vecZk-matHk*vecXk;                 // Innovation or measurement residual
+  matHkT=matHk.T(); matHk.T();
+  matSk = (matHk*(covXk*matHkT))+measR;      // Innovation (or residual) covariance
+  matSk.Invert();
+  matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
+  vecXk += matKk*vecYk;                      //  updated vector 
+  covXk2 = (mat1-(matKk*matHk));
+  covOut =  covXk2*covXk; 
+  //
+  //
+  //
+  // copy from matrix to parameters
+  if (0) {
+    vecXk.Print();
+    vecZk.Print();
+    //
+    measR.Print();
+    covXk.Print();
+    covOut.Print();
+    //
+    track1.Print();
+    track2.Print();
+  }
+
+  for (Int_t ipar=0; ipar<5; ipar++){
+    param1[ipar]= vecXk(ipar,0) ;
+    for (Int_t jpar=0; jpar<5; jpar++){
+      covar1[track1.GetIndex(ipar, jpar)]=covOut(ipar,jpar);
+    }
+  }
+}
+
+
