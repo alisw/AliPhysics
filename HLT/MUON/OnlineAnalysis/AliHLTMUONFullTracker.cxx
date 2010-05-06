@@ -135,7 +135,10 @@ AliHLTMUONFullTracker::AliHLTMUONFullTracker() :
   fNofTracks(0),
   fDetElemList(),
   fFastTracking(kFALSE),
-  fNofInputs(0)
+  fNofInputs(0),
+  fNofTriggerInputs(0),
+  fNofTrackerInputs(0),
+  fIsMagfield(kFALSE)
 {
 
   /// Constructor of the class
@@ -302,6 +305,8 @@ Bool_t AliHLTMUONFullTracker::Clear(){
   
 
   fNofInputs = 0;
+  fNofTriggerInputs = 0;
+  fNofTrackerInputs = 0;
 
   for( Int_t ich=0;ich<fgkMaxNofCh;ich++)
     fNofPoints[ich] = 0;
@@ -341,8 +346,15 @@ Bool_t AliHLTMUONFullTracker::Init()
   //The following condition is based on the fact that at the middle of the dipole the field cannot be zero
   if(TMath::AreEqualAbs(b[0],0.0,1.0e-5) and TMath::AreEqualAbs(b[1],0.0,1.0e-5) and TMath::AreEqualAbs(b[2],0.0,1.0e-5)){
     HLTWarning("Magnetic field is not set by GRP");
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
-    TGeoGlobalMagField::Instance()->Field(x,b);
+    if(not TGeoGlobalMagField::Instance()->IsLocked()){
+      TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
+      TGeoGlobalMagField::Instance()->Field(x,b);
+      fIsMagfield = kTRUE;
+    }else{
+      HLTWarning("Magnetic field is not set and cannot be set since it is locked");
+    }
+  }else{
+    fIsMagfield = kTRUE;
   }
   
   
@@ -406,6 +418,7 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONRe
     data++;
   }
   fNofInputs++;
+  fNofTrackerInputs++;
   return true;
 }
 
@@ -448,6 +461,7 @@ Bool_t AliHLTMUONFullTracker::SetInput(AliHLTInt32_t /*ddl*/, const AliHLTMUONTr
     data++;
   }///ipoint
     fNofInputs++;
+  fNofTriggerInputs++;
   return true;
 }
 
@@ -460,7 +474,9 @@ Bool_t AliHLTMUONFullTracker::CheckInput(AliHLTEventID_t iEvent)
 
   bool resultOk = true;
   
-  if(fNofInputs > 22){ //if more than 22 inputs, do not do anything
+  //if more than expected inputs or no input from one detector, do not do anything
+  if((fNofInputs > 22) or  (fNofTrackerInputs > 20) or  (fNofTriggerInputs > 2) 
+     or (fNofTrackerInputs == 0) or  (fNofTriggerInputs == 0)){ 
     
     resultOk = false;
     return resultOk;
@@ -477,8 +493,8 @@ Bool_t AliHLTMUONFullTracker::CheckInput(AliHLTEventID_t iEvent)
 					TMath::AreEqualAbs(fChPoint[ich][ipt]->fY,0.0,1.0e-5) and 
 					TMath::AreEqualAbs(fChPoint[ich][ipt]->fZ,0.0,1.0e-5))){
 	  resultOk = false;
-	  HLTError("iEvent : 0x%x, fNofInputs : %d, Nof tracker point for chamber %d, is not equal to nof valid tracker pointer",
-		   iEvent,fNofInputs,ich);
+	  HLTError("iEvent : 0x%x, fNofTrackerInputs : %d, Nof tracker point for chamber %d, is not equal to nof valid tracker pointer",
+		   iEvent,fNofTrackerInputs,ich);
 	  return resultOk;
 	}
       }// tracker ch loop
@@ -493,8 +509,8 @@ Bool_t AliHLTMUONFullTracker::CheckInput(AliHLTEventID_t iEvent)
     for(int ipt=0;ipt<fNofPoints[10];ipt++){
       if(not fChPoint11[ipt]){
 	resultOk = false;
-	HLTError("iEvent : 0x%x, fNofInputs : %d, Nof trigger points, is not equal to nof valid tracker pointer",
-		 iEvent,fNofInputs);
+	HLTError("iEvent : 0x%x, fNofTriggerInputs : %d, Nof trigger points, is not equal to nof valid tracker pointer",
+		 iEvent,fNofTriggerInputs);
 	return resultOk;
 	
       }
@@ -521,6 +537,9 @@ Bool_t AliHLTMUONFullTracker::Run( AliHLTEventID_t iEvent,AliHLTMUONTrackStruct 
 //     HLTDebug("\tNof hits in ich [%d] : %d\t",ich,fNofPoints[ich]);
   
   resultOk = CheckInput(iEvent);
+  
+  if((not fIsMagfield) and resultOk)
+    resultOk = false;
   
   if(resultOk){
     resultOk = SlatTrackSeg();

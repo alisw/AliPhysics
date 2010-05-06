@@ -153,7 +153,10 @@ class AliHLTMUONFullTracker : public AliHLTLogging
   DetElemList fDetElemList; ///Map for valid detelem
   Bool_t fFastTracking ; ///flag for fast tracking avoiding kalman
   Int_t   fNofInputs; /// Nof inputs
-  
+  Int_t   fNofTriggerInputs; /// Nof inputs
+  Int_t   fNofTrackerInputs; /// Nof inputs
+  Bool_t  fIsMagfield ; /// checks the status of magfield
+
   ///  Cross Check the inputs
   Bool_t CheckInput(AliHLTEventID_t iEvent);
   /// Slat Track segments 

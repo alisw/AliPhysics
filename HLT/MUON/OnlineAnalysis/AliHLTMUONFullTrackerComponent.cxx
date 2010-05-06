@@ -182,6 +182,7 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
   
   if (! IsDataEvent()){
     size = totalSize;
+    resultOk = false;
     return 0;
   }
   
@@ -205,14 +206,12 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
   
   for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++){
 
-    //if(evtData.fBlockCnt==3) continue;
-
     HLTDebug("Handling block: %u, with fDataType = '%s', fPtr = %p and fSize = %u bytes.",
   	     n, DataType2Text(blocks[n].fDataType).c_str(), blocks[n].fPtr, blocks[n].fSize
   	     );
 
-    if (not resultOk) continue;
-
+    if (not resultOk) break;
+    
     if (blocks[n].fDataType == AliHLTMUONConstants::RecHitsBlockDataType()){
       specification |= blocks[n].fSpecification;
 			
@@ -220,11 +219,13 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
       if (not BlockStructureOk(inblock)){
   	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 	resultOk = false;
-  	continue;
+      }
+      
+      if(resultOk){
+	resultOk = fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), 
+				      inblock.GetArray(), inblock.Nentries());	
       }
 
-      resultOk = fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(), inblock.Nentries());	
-      
 
     }else if (blocks[n].fDataType == AliHLTMUONConstants::TriggerRecordsBlockDataType()){
       specification |= blocks[n].fSpecification;
@@ -232,19 +233,20 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
       if (not BlockStructureOk(inblock)){
   	if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
 	resultOk = false;
-  	continue;
       }
       
-      resultOk = fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), inblock.GetArray(),inblock.Nentries());	
+      if(resultOk){
+	resultOk = fTracker->SetInput(AliHLTMUONUtils::SpecToDDLNumber(blocks[n].fSpecification), 
+				      inblock.GetArray(),inblock.Nentries());	
+      }
 
     }//check if trigger block
   }//loop over blocks array of rechit and trigrecs
 
   AliHLTUInt32_t nofTracks = 0;
-  if( resultOk ){
-    
+  AliHLTUInt32_t emptyTrackBlockSize = block.BytesUsed(); 
+  if( resultOk ){  
     nofTracks   = block.MaxNumberOfEntries();
-    //  if (evtData.fBlockCnt!=3){
     resultOk  = fTracker->Run(evtData.fEventID,block.GetArray(), nofTracks);
   }
 
@@ -252,31 +254,52 @@ int AliHLTMUONFullTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     assert( nofTracks <= block.MaxNumberOfEntries() );
     block.SetNumberOfEntries(nofTracks);
     
-    HLTDebug("Number of reconstructed tracks found is %d\n", nofTracks);
-    HLTDebug("sizeof  %d\n", sizeof(AliHLTMUONMansoTrackStruct));
-    HLTDebug("Bytes Used  is %d\n",block.BytesUsed());    
-    HLTDebug("specification is %d\n", specification);
+    HLTDebug("Number of reconstructed tracks found is %d, resultOk : %d, emptyTrackBlockSize : %d", 
+		 nofTracks,resultOk,emptyTrackBlockSize);
+    HLTDebug("sizeof  %d", sizeof(AliHLTMUONTrackStruct));
+    HLTDebug("Bytes Used  is %d",block.BytesUsed());    
+    HLTDebug("Specification is %d", specification);
     
     AliHLTComponentBlockData bd;
     FillBlockData(bd);
     bd.fPtr = outputPtr;
     bd.fOffset = 0;
     bd.fSize = block.BytesUsed();
-    bd.fDataType = AliHLTMUONConstants::TracksBlockDataType() ;
-      
+    bd.fDataType = AliHLTMUONConstants::TracksBlockDataType() ;      
     bd.fSpecification = specification;
+
     outputBlocks.push_back(bd);
+
     totalSize = block.BytesUsed();
+    
   }else{
+    
     HLTDebug("Error while processing the full tracker algorithm.");
     if (DumpDataOnError()) DumpEvent(evtData, blocks, trigData, outputPtr, size, outputBlocks);
-    size = totalSize; // Must tell the framework how much buffer space was used.
+
+    HLTDebug("Number of reconstructed tracks found is %d, resultOk : %d, emptyTrackBlockSize : %d", 
+		 nofTracks,resultOk,emptyTrackBlockSize);
+    HLTDebug("sizeof  %d", sizeof(AliHLTMUONTrackStruct));
+    HLTDebug("Bytes Used  is %d",block.BytesUsed());    
+    HLTDebug("Specification is %d", specification);
+    
+    AliHLTComponentBlockData bd;
+    FillBlockData(bd);
+    bd.fPtr = outputPtr;
+    bd.fOffset = 0;
+    bd.fSize = emptyTrackBlockSize;
+    bd.fDataType = AliHLTMUONConstants::TracksBlockDataType() ;      
+    bd.fSpecification = specification;
+    
+    outputBlocks.push_back(bd);
+    
+    totalSize = emptyTrackBlockSize;
+
     //return -EIO;
-    return 0;
   }
 
   // Finally we set the total size of output memory we consumed.
-  size = totalSize;
+  size = totalSize;  // Must tell the framework how much buffer space was used.
   return 0;
 
 }
