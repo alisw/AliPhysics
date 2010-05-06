@@ -100,6 +100,7 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   AliAnalysisManager *mgr  = new AliAnalysisManager("TestManager");
   AliESDInputHandler *esdH = new AliESDInputHandler;
   esdH->SetReadHLT();
+  esdH->SetReadFriends(kFALSE);
   mgr->SetInputEventHandler(esdH);  
   mgr->SetNSysInfo(1000);
  

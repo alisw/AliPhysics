@@ -366,14 +366,20 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler);
   AliESDEvent *esdHLT = NULL;   
-  if(esdH) esdHLT = esdH->GetHLTEvent();
-    
-  if(!esdHLT){
-    Printf("ERROR: HLTesd not available");
-    return;
+  
+  if(esdH){
+     esdHLT = esdH->GetHLTEvent();
+  }
+  else{
+     Printf("ERROR: HLTesd not available");
+     return;
   }
 
-  
+  if(esdHLT->GetNumberOfTracks()==0){
+     Printf("No tracks in the HLTesdTree for event %d", esdHLT->GetEventNumberInFile());
+     return;
+  }  
+
   //Fill CTP Trigger stuff
   //fHistTrigger->Fill(esdOFF->GetTriggerMask());
   
