@@ -264,15 +264,15 @@ void* AliHLTDimServer::ServerLoop()
       size=sizeof(float);
       break;
     case kDataTypeString:
-      log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "ignoring dim service %s: type 'string' not yet implemented", name);
+      log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "ignoring dim service %s: type 'string' not yet implemented", name.Data());
       break;
     default:
-      log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "ignoring dim service %s: unknown type %d", name, pService->GetType());
+      log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "ignoring dim service %s: unknown type %d", name.Data(), pService->GetType());
     }
     if (type[0]!=0) {
       int id=Interface()->DisAddService(name.Data(), type, buffer, size);
       if (id<0) {
-	 log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "failed to add dim service %s: error %d", name, id);
+	log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "failed to add dim service %s: error %d", name.Data(), id);
       } else {
 	 pService->SetId(id);
       }
