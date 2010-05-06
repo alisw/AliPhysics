@@ -77,7 +77,9 @@ Double_t AliEMCALRawUtils::fgFEENoise = 3.;          // 3 ADC channels of noise 
 AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
     fNPedSamples(0), fGeom(0), fOption(""),
-    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),fUseFALTRO(kFALSE),fRawAnalyzer(0)
+    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),  
+    fTimeMin(-1.),fTimeMax(1.),
+    fUseFALTRO(kFALSE),fRawAnalyzer(0)
 {
 
   //These are default parameters.  
@@ -118,7 +120,9 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
 AliEMCALRawUtils::AliEMCALRawUtils(AliEMCALGeometry *pGeometry, fitAlgorithm fitAlgo)
   : fHighLowGainFactor(0.), fOrder(0), fTau(0.), fNoiseThreshold(0),
     fNPedSamples(0), fGeom(pGeometry), fOption(""),
-    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),fUseFALTRO(kFALSE),fRawAnalyzer()
+    fRemoveBadChannels(kTRUE),fFittingAlgorithm(0),
+    fTimeMin(-1.),fTimeMax(1.),
+    fUseFALTRO(kFALSE),fRawAnalyzer()
 {
   //
   // Initialize with the given geometry - constructor required by HLT
@@ -163,6 +167,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(const AliEMCALRawUtils& rawU)
     fOption(rawU.fOption),
     fRemoveBadChannels(rawU.fRemoveBadChannels),
     fFittingAlgorithm(rawU.fFittingAlgorithm),
+    fTimeMin(rawU.fTimeMin),fTimeMax(rawU.fTimeMax),
 	fUseFALTRO(rawU.fUseFALTRO),
     fRawAnalyzer(rawU.fRawAnalyzer)
 {
@@ -188,6 +193,8 @@ AliEMCALRawUtils& AliEMCALRawUtils::operator =(const AliEMCALRawUtils &rawU)
     fOption            = rawU.fOption;
     fRemoveBadChannels = rawU.fRemoveBadChannels;
     fFittingAlgorithm  = rawU.fFittingAlgorithm;
+	fTimeMin           = rawU.fTimeMin;
+	fTimeMax           = rawU.fTimeMax;
     fUseFALTRO         = rawU.fUseFALTRO;
     fRawAnalyzer       = rawU.fRawAnalyzer;
     fMapping[0]        = rawU.fMapping[0];
@@ -502,16 +509,19 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
    } // end while over channel   
   } //end while over DDL's, of input stream 
 
+  TrimDigits(digitsArr);
+	
   return ; 
 }
 
 //____________________________________________________________________________ 
 void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSamples[], Int_t nSamples) 
 {
-	new((*digitsArr)[digitsArr->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);	
-	
-	//	Int_t idx = digitsArr->GetEntriesFast()-1;
-	//	AliEMCALRawDigit* d = (AliEMCALRawDigit*)digitsArr->At(idx);
+  //Add raw sample to raw digit 
+  new((*digitsArr)[digitsArr->GetEntriesFast()]) AliEMCALRawDigit(id, timeSamples, nSamples);	
+  
+  //	Int_t idx = digitsArr->GetEntriesFast()-1;
+  //	AliEMCALRawDigit* d = (AliEMCALRawDigit*)digitsArr->At(idx);
 }
 
 //____________________________________________________________________________ 
@@ -526,31 +536,78 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
   AliEMCALDigit *digit = 0, *tmpdigit = 0;
   TIter nextdigit(digitsArr);
   while (digit == 0 && (tmpdigit = (AliEMCALDigit*) nextdigit())) {
-    if (tmpdigit->GetId() == id)
-      digit = tmpdigit;
+    if (tmpdigit->GetId() == id) digit = tmpdigit;
   }
 
   if (!digit) { // no digit existed for this tower; create one
-    if (lowGain && amp > fgkOverflowCut) 
-      amp *= fHighLowGainFactor; 
-    Int_t idigit = digitsArr->GetEntries();
-    new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, kFALSE, idigit) ;	
-  }
+		Int_t type = AliEMCALDigit::kHG; // use enum in AliEMCALDigit
+		if (lowGain) { 
+			amp *= fHighLowGainFactor;
+			type = AliEMCALDigit::kLGnoHG;
+		} 
+		Int_t idigit = digitsArr->GetEntries();
+		new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit) ; 
+		AliDebug(2,Form("Add digit Id %d for the first time, type %d", id, type));
+  }//digit added first time
   else { // a digit already exists, check range 
-         // (use high gain if signal < cut value, otherwise low gain)
-    if (lowGain) { // new digit is low gain
-      if (digit->GetAmplitude() > fgkOverflowCut) {  // use if stored digit is out of range
-	digit->SetAmplitude(fHighLowGainFactor * amp);
-	digit->SetTime(time);
-      }
-    }
-    else if (amp < fgkOverflowCut) { // new digit is high gain; use if not out of range
-      digit->SetAmplitude(amp);
-      digit->SetTime(time);
-    }
-  }
+		// (use high gain if signal < cut value, otherwise low gain)
+		if (lowGain) { // new digit is low gain
+			if (digit->GetAmplitude() > fgkOverflowCut) {  // use if previously stored (HG) digit is out of range
+				digit->SetAmplitude(fHighLowGainFactor * amp);
+				digit->SetTime(time);
+				digit->SetType(AliEMCALDigit::kLG);
+				AliDebug(2,Form("Add LG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
+			}
+		}//new low gain digit
+		else { // new digit is high gain 
+			if (amp < fgkOverflowCut) { // new digit is high gain; use if not out of range
+				digit->SetAmplitude(amp);
+				digit->SetTime(time);
+				digit->SetType(AliEMCALDigit::kHG);
+				AliDebug(2,Form("Add HG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
+			}
+			else { // HG out of range, just change flag value to show that HG did exist
+				digit->SetType(AliEMCALDigit::kLG);
+				AliDebug(2,Form("Change LG digit to HG, ID %d, type %d", digit->GetId(), digit->GetType()));
+			}
+		}//new high gain digit
+  }//digit existed replace it
+  
 }
 
+//____________________________________________________________________________ 
+void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr) 
+{
+  // Remove digits with only low gain and large time
+  
+  AliEMCALDigit *digit = 0;
+  Int_t n = 0;
+  Int_t nDigits = digitsArr->GetEntriesFast();
+  TIter nextdigit(digitsArr);
+  while ((digit = (AliEMCALDigit*) nextdigit())) {
+    
+    //Check if only LG existed, remove if so
+    if (digit->GetType() == AliEMCALDigit::kLGnoHG) {
+      AliDebug(1,Form("Remove digit with id %d, LGnoHG",digit->GetId()));
+      digitsArr->Remove(digit);
+    }
+    //Check if time if too large or too small, remove if so
+    else if(fTimeMin > digit->GetTime() || fTimeMax < digit->GetTime()) {
+      digitsArr->Remove(digit);
+      AliDebug(1,Form("Remove digit with id %d, Bad Time %e",digit->GetId(), digit->GetTime()));
+    }
+    //Good digit, just reassign the index of the digit in case there was a previous removal
+    else {
+      digit->SetIndexInList(n);	
+      n++;
+    }    
+  }//while
+  
+  digitsArr->Compress();
+  AliDebug(1,Form("N Digits before trimming : %d; after array compression %d",nDigits,digitsArr->GetEntriesFast()));
+	   
+}
+	
 //____________________________________________________________________________ 
 void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Bool_t & fitDone) const 
 { // Fits the raw signal time distribution

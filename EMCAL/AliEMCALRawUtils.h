@@ -45,6 +45,7 @@ class AliEMCALRawUtils : public TObject {
 
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time);
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSamples[], Int_t nSamples);
+  void TrimDigits(TClonesArray *digitsArr);
 
   // Signal shape parameters
   Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ;}
@@ -52,14 +53,17 @@ class AliEMCALRawUtils : public TObject {
   Double_t GetRawFormatTau()               const { return fTau ; }    
   Int_t    GetNoiseThreshold()             const { return fNoiseThreshold; }
   Int_t    GetNPedSamples()                const { return fNPedSamples; }
+	
   // get methods for fast fit simulation
   Int_t    GetPedestalValue()     const {return fgPedestalValue;}
   Double_t GetFEENoise()          const {return fgFEENoise;}
 
   Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
   Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
+  Float_t  GetTimeMax()           const {return fTimeMax ;}
+  Float_t  GetTimeMin()           const {return fTimeMin ;}
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
-	
+
   void SetRawFormatHighLowGainFactor(Double_t val) {fHighLowGainFactor=val;}
   void SetRawFormatOrder(Int_t val)                {fOrder=val; }   
   void SetRawFormatTau(Double_t val)               {fTau=val; }    
@@ -67,6 +71,8 @@ class AliEMCALRawUtils : public TObject {
   void SetNPedSamples(Int_t val)                   {fNPedSamples=val; }
   void SetRemoveBadChannels(Bool_t val)            {fRemoveBadChannels=val; }
   void SetFittingAlgorithm(Int_t val) ;             
+  void SetTimeMin(Float_t t)                       {fTimeMin   = t          ;}
+  void SetTimeMax(Float_t t)                       {fTimeMax   = t          ;}
   void SetFALTROUsage(Bool_t val)                  {fUseFALTRO=val; }
 	
   // set methods for fast fit simulation
@@ -104,7 +110,7 @@ class AliEMCALRawUtils : public TObject {
   Double_t fTau ;                       // tau parameter of gamma function for the RO signal
   Int_t fNoiseThreshold;                // threshold to consider signal or noise
   Int_t fNPedSamples;                   // number of samples to use in pedestal calculation
-
+	
   static const Int_t fgkOverflowCut = 950;  // cut to discriminate overflowed channels
   static const Int_t fgkRawSignalOverflow = 0x3FF; // maximum signal (10 bits)
   static Int_t fgTimeBins; // number of sampling bins of the raw RO signal
@@ -116,18 +122,20 @@ class AliEMCALRawUtils : public TObject {
   static Int_t fgPedestalValue;         // pedestal value for Digits2Raw
   static Double_t fgFEENoise;           // electronics noise in ADC units
 
-  AliEMCALGeometry* fGeom;              //geometry
-  AliAltroMapping*  fMapping[4];        //only two for now
+  AliEMCALGeometry* fGeom;              // geometry
+  AliAltroMapping*  fMapping[4];        // only two for now
 
   TString fOption;                      //! option passed from Reconstructor
 
-  Bool_t fRemoveBadChannels;            // select if bad channels are removed before fitting
-  Int_t  fFittingAlgorithm;             // select the fitting algorithm
-  Bool_t fUseFALTRO;					// use FALTRO and pass it to the digits
+  Bool_t  fRemoveBadChannels;           // select if bad channels are removed before fitting
+  Int_t   fFittingAlgorithm;            // select the fitting algorithm
+  Float_t fTimeMin;                     // minimum threshold for the time of the signal
+  Float_t fTimeMax;                     // maximum threshold for the time of the signal
+  Bool_t  fUseFALTRO;			// use FALTRO and pass it to the digits
 	
   AliCaloRawAnalyzer *fRawAnalyzer;     // e.g. for sample selection for fits
 
-  ClassDef(AliEMCALRawUtils,6)          // utilities for raw signal fitting
+  ClassDef(AliEMCALRawUtils,7)          // utilities for raw signal fitting
 };
 
 #endif

@@ -237,6 +237,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
   fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
   fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
+  fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());
+  fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
 	
   fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData,digitsTrg);
 
