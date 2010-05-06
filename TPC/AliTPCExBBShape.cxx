@@ -34,6 +34,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <AliMagF.h>
+#include "TGeoGlobalMagField.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCParam.h"
+#include "AliLog.h"
 
 #include "AliTPCExBBShape.h"
 
@@ -55,27 +59,20 @@ AliTPCExBBShape::~AliTPCExBBShape() {
 
 void AliTPCExBBShape::Init() {
   //
-  // Initialization funtion (not used at the moment)
+  // Initialization funtion
   //
   
-  // Set default parameters
-  // FIXME: Ask the database for these entries
-  
-
-  AliMagF * mag = new AliMagF("mag","mag"); // from database (GRP?)
-  SetBField(mag);
-
-  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
-
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!magF) AliError("Magneticd field - not initialized");
+  Double_t bzField = magF->SolenoidField()/10.; //field in T
+  SetBField(magF);
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  if (!param) AliError("Parameters - not initialized");
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
-  Double_t t1 = 0.9;   // ideally from database
-  Double_t t2 = 1.5;   // ideally from database
-
-  SetOmegaTauT1T2(wt,t1,t2);
+  SetOmegaTauT1T2(wt,fT1,fT2);
 
 
 }
@@ -84,18 +81,17 @@ void AliTPCExBBShape::Update(const TTimeStamp &/*timeStamp*/) {
   //
   // Update function 
   //
-
-  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
-
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!magF) AliError("Magneticd field - not initialized");
+  Double_t bzField = magF->SolenoidField()/10.; //field in T
+  SetBField(magF);
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  if (!param) AliError("Parameters - not initialized");
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
-  Double_t t1 = 0.9;   // ideally from database
-  Double_t t2 = 1.5;   // ideally from database
-
-  SetOmegaTauT1T2(wt,t1,t2);
+  SetOmegaTauT1T2(wt,fT1,fT2);
 
 
 }
@@ -166,11 +162,11 @@ void AliTPCExBBShape::Print(Option_t* option) const {
   // C0 and C1 coefficents (for calibration purposes)
   //
   TString opt = option; opt.ToLower();
-  printf("%s\n - B field settings:\n",GetTitle());
+  printf("%s\t%s\n - B field settings:\n",GetTitle(),GetName());
   fBField->Print(option);
   //  printf(" - B field: X-Twist: %1.5lf rad, Y-Twist: %1.5lf rad \n",fBField->Print(option));
-  if (opt.Contains("a")) { // Print all details
+  if (opt.Contains("a")) { // Print all details  
+    printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);
     printf(" - C1: %1.4f, C2: %1.4f \n",fC1,fC2);
   }    
- 
 }

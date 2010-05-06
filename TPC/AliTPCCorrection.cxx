@@ -116,7 +116,7 @@ const Double_t AliTPCCorrection::fgkZList[AliTPCCorrection::kNZ]     =   {
 
 
 AliTPCCorrection::AliTPCCorrection() 
-  : TNamed("correction_unity","unity"),fJLow(0),fKLow(0)
+  : TNamed("correction_unity","unity"),fJLow(0),fKLow(0), fT1(1), fT2(1)
 {
   //
   // default constructor
@@ -124,7 +124,7 @@ AliTPCCorrection::AliTPCCorrection()
 }
 
 AliTPCCorrection::AliTPCCorrection(const char *name,const char *title)
-  : TNamed(name,title),fJLow(0),fKLow(0)
+: TNamed(name,title),fJLow(0),fKLow(0), fT1(1), fT2(1)
 {
   //
   // default constructor, that set the name and title
@@ -220,13 +220,15 @@ void AliTPCCorrection::Print(Option_t* /*option*/) const {
   printf("TPC spacepoint correction: \"%s\"\n",GetTitle());
 }
 
-void AliTPCCorrection:: SetOmegaTauT1T2(Float_t /*omegaTau*/,Float_t /*t1*/,Float_t /*t2*/) {
+void AliTPCCorrection:: SetOmegaTauT1T2(Float_t /*omegaTau*/,Float_t t1,Float_t t2) {
   //
   // Virtual funtion to pass the wt values (might become event dependent) to the inherited classes
   // t1 and t2 represent the "effective omegaTau" corrections and were measured in a dedicated
   // calibration run
   //
-  // SetOmegaTauT1T2(omegaTau, t1, t2);
+  fT1=t1;
+  fT2=t2;
+  //SetOmegaTauT1T2(omegaTau, t1, t2);
 }
 
 TH2F* AliTPCCorrection::CreateHistoDRinXY(Float_t z,Int_t nx,Int_t ny) {

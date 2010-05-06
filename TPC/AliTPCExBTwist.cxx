@@ -30,6 +30,11 @@
 //  // plot dRPhi distortions ...                                         //
 //  twist.CreateHistoDRPhiinZR(1.,100,100)->Draw("surf2");                //
 ////////////////////////////////////////////////////////////////////////////
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCParam.h"
+#include "AliLog.h"
 
 #include "AliTPCExBTwist.h"
 
@@ -49,46 +54,43 @@ AliTPCExBTwist::~AliTPCExBTwist() {
   //
 }
 
+
+
 void AliTPCExBTwist::Init() {
   //
-  // Initialization funtion (not used at the moment)
+  // Initialization funtion
   //
   
-  // Set default parameters
-  // FIXME: Ask the database for these entries
-  
-  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
-
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!magF) AliError("Magneticd field - not initialized");
+  Double_t bzField = magF->SolenoidField()/10.; //field in T
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  if (!param) AliError("Parameters - not initialized");
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
-  Double_t t1 = 0.9;   // ideally from database
-  Double_t t2 = 1.5;   // ideally from database
+  SetOmegaTauT1T2(wt,fT1,fT2);
 
-  SetOmegaTauT1T2(wt,t1,t2);
 
-  SetXTwist(0.0);//  ideally from the database
-  SetYTwist(0.0);//  ideally from the database
 }
 
 void AliTPCExBTwist::Update(const TTimeStamp &/*timeStamp*/) {
   //
   // Update function 
   //
-
-  Double_t vdrift = 2.6; // [cm/us]   // From dataBase: to be updated: per second (ideally)
-  Double_t bzField = -0.5; // [Tesla] // From dataBase: to be updated: per run
-
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!magF) AliError("Magneticd field - not initialized");
+  Double_t bzField = magF->SolenoidField()/10.; //field in T
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  if (!param) AliError("Parameters - not initialized");
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-
   // Correction Terms for effective omegaTau; obtained by a laser calibration run
-  Double_t t1 = 0.9;   // ideally from database
-  Double_t t2 = 1.5;   // ideally from database
+  SetOmegaTauT1T2(wt,fT1,fT2);
 
- SetOmegaTauT1T2(wt,t1,t2); 
+
 }
 
 
@@ -118,6 +120,7 @@ void AliTPCExBTwist::Print(Option_t* option) const {
   
   printf(" - Twist settings: X-Twist: %1.5f rad, Y-Twist: %1.5f rad \n",fXTwist,fYTwist);
   if (opt.Contains("a")) { // Print all details
+    printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);
     printf(" - C1: %1.4f, C2: %1.4f \n",fC1,fC2);
   }    
  

@@ -29,6 +29,7 @@ public:
 
   // common setters and getters for ExB
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
+    fT1=t1; fT2=t2;
     const Float_t wt1=t1*omegaTau;
     fC1=wt1/(1.+wt1*wt1);
     const Float_t wt2=t2*omegaTau;

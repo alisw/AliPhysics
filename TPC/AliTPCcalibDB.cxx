@@ -208,6 +208,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   // constructor
   //  
   //
+  fgInstance=this;
   Update();    // temporary
 }
 
@@ -350,7 +351,7 @@ void AliTPCcalibDB::Update(){
     AliFatal("TPC - Missing calibration entry")
   }
 
-  entry          = GetCDBEntry("TPC/Calib/Distortion TPC/Calib/PadTime0");
+  entry          = GetCDBEntry("TPC/Calib/PadTime0");
   if (entry){
     //if (fPadTime0) delete fPadTime0;
     entry->SetOwner(kTRUE);

@@ -103,9 +103,11 @@ protected:
 			const Int_t order, const Double_t x );
   void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
   
+protected:
+  Double_t fT1;         // tensor term of wt - T1
+  Double_t fT2;         // tensor term of wt - T2
 
-
-  ClassDef(AliTPCCorrection,1);
+  ClassDef(AliTPCCorrection,2);
 };
 
 #endif
