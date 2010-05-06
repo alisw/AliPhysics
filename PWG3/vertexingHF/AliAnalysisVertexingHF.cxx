@@ -495,6 +495,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    rd = new(aodLikeSign2ProngRef[iLikeSign2Prong++])AliAODRecoDecayHF2Prong(*io2Prong);
 	    rd->SetSecondaryVtx(v2Prong);
 	    v2Prong->SetParent(rd);
+	    AddRefs(v2Prong,rd,event,twoTrackArray1);
 	  }
 	}
 	// D* candidates
