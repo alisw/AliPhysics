@@ -21,8 +21,6 @@
 
 #include <TVectorT.h>
 #include <TString.h>
-#include <RooFit.h>
-#include <RooAddPdf.h>
 
 #include "AliDielectronSignalBase.h"
 
@@ -58,7 +56,6 @@ private:
   TF1 *fSignal;                // Function for the signal description
   TF1 *fBackground;            // Function for the background description
   TF1 *fSigBack;               // Combined function signal plus background
-  RooAddPdf fFitFunc;          // RooFit fit function
   TVectorD fVInitParam;        // initial fit parameters
   TString fFitOpt;             // fit option used
 
