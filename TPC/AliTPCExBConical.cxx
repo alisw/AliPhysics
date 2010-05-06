@@ -127,7 +127,7 @@ void AliTPCExBConical::GetCorrection(const Float_t x[],const Short_t roc,Float_t
   Double_t dr   =fC2*corr;
   dx[0]= TMath::Cos(phi)*dr-TMath::Sin(phi)*drphi;
   dx[1]= TMath::Sin(phi)*dr+TMath::Cos(phi)*drphi;
-  dx[2]= 0.001*dTheta*(r-rmiddle); // dtheta in mrad
+  dx[2]= -0.001*dTheta*(r-rmiddle); // dtheta in mrad
 
 }
 

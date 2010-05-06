@@ -1219,7 +1219,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
   const Double_t kMinPt   = 0.3;   // minimal pt
-  const  Int_t     kN=500;         // deepnes of history
+  const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
   /*
@@ -1246,7 +1246,9 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   AliExternalTrackParam pITS(*(friendTrack->GetITSOut()));   // ITS standalone if possible
   AliExternalTrackParam pITS2(*(friendTrack->GetITSOut()));  //TPC-ITS track
   pITS2.Rotate(pTPC.GetAlpha());
-  pITS2.PropagateTo(pTPC.GetX(),fMagF);
+  //  pITS2.PropagateTo(pTPC.GetX(),fMagF);
+  AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
+
   AliESDfriendTrack *itsfriendTrack=0;
   //
   // try to find standalone ITS track corresponing to the TPC if possible
@@ -1263,7 +1265,8 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
     pITS=(*(itsfriendTrack->GetITSOut()));
     //
     pITS.Rotate(pTPC.GetAlpha());
-    pITS.PropagateTo(pTPC.GetX(),fMagF);
+    //pITS.PropagateTo(pTPC.GetX(),fMagF);
+    AliTracker::PropagateTrackToBxByBz(&pITS,pTPC.GetX(),0.1,0.1,kFALSE);
     if (TMath::Abs(pITS2.GetY()-pITS.GetY())> kMaxDy) continue;
     hasAlone=kTRUE;
   }
@@ -1414,7 +1417,8 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
   const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
-  const  Int_t     kN=500;         // deepnes of history
+  const Double_t kRefX    = 275;   // reference X
+  const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
   //
@@ -1424,16 +1428,21 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   if (track->GetTRDclusters(dummycl)<kMinTRD) return;  // minimal amount of clusters
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
   if (!friendTrack->GetTRDIn()) return;  
+  if (!track->IsOn(AliESDtrack::kTRDrefit)) return;  
+  if (!track->IsOn(AliESDtrack::kTRDout)) return;  
   if (!track->GetInnerParam())   return;
-  if (!track->GetOuterParam())   return;
+  if (!friendTrack->GetTPCOut())   return;
   // exclude crossing track
-  if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
+  if (friendTrack->GetTPCOut()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
   if (TMath::Abs(track->GetInnerParam()->GetZ())<kMinZ)   return;
   //
-  AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(track->GetOuterParam()));
+  AliExternalTrackParam &pTPC=(AliExternalTrackParam &)(*(friendTrack->GetTPCOut()));
+  AliTracker::PropagateTrackToBxByBz(&pTPC,kRefX,0.1,0.1,kFALSE);
   AliExternalTrackParam pTRD(*(friendTrack->GetTRDIn()));
   pTRD.Rotate(pTPC.GetAlpha());
-  pTRD.PropagateTo(pTPC.GetX(),fMagF);
+  //  pTRD.PropagateTo(pTPC.GetX(),fMagF);
+  AliTracker::PropagateTrackToBxByBz(&pTRD,pTPC.GetX(),0.1,0.1,kFALSE);
+
   ((Double_t*)pTRD.GetCovariance())[2]+=3.*3.;   // increas sys errors
   ((Double_t*)pTRD.GetCovariance())[9]+=0.1*0.1; // increse sys errors
 
@@ -1455,6 +1464,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   Int_t entries=(kglast<kN)?kglast:kN;
   for (Int_t i=0;i<4;i++){
     vecMedian[i] = TMath::Median(entries,kgdP[i]);
+
     vecRMS[i]    = TMath::RMS(entries,kgdP[i]);
     vecDeltaN[i] = 0;
     if (vecRMS[i]>0.){
@@ -1573,7 +1583,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   const Double_t   kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
 
   const Double_t   kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
-  const  Int_t     kN=1000;         // deepnes of history
+  const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
   //
@@ -1583,10 +1593,10 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   if (track->GetTOFsignal()<=0)  return;
   if (!friendTrack->GetTPCOut()) return;
   if (!track->GetInnerParam())   return;
-  if (!track->GetOuterParam())   return;
+  if (!friendTrack->GetTPCOut())   return;
   const AliTrackPointArray *points=friendTrack->GetTrackPointArray();
   if (!points) return;
-  AliExternalTrackParam pTPC(*(track->GetOuterParam()));
+  AliExternalTrackParam pTPC(*(friendTrack->GetTPCOut()));
   AliExternalTrackParam pTOF(pTPC);
   Double_t mass = TDatabasePDG::Instance()->GetParticle("mu+")->Mass();
   Int_t npoints = points->GetNPoints();
@@ -1619,7 +1629,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   //
   if (track->GetTPCNcls()<kMinTPC) return;  // minimal amount of clusters cut
   // exclude crossing track
-  if (track->GetOuterParam()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
+  if (friendTrack->GetTPCOut()->GetZ()*track->GetInnerParam()->GetZ()<0)   return;
   //
   if (TMath::Abs(pTOF.GetY()-pTPC.GetY())    >kMaxDy)    return;
   if (TMath::Abs(pTOF.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
@@ -1768,10 +1778,10 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   axisName[3]  ="snp";
   //
   // delta y
-  xminTrack[0] =-1.0; xmaxTrack[0]=1.0;  // 
+  xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
   fResHistoTPCITS[0] = new THnSparseS("TPCITS#Delta_{Y} (cm)","#Delta_{Y} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[0]    = new THnSparseS("TPCVertex#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
-  xminTrack[0] =-1.0; xmaxTrack[0]=1.0;  // 
+  xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
   fResHistoTPCTRD[0] = new THnSparseS("TPCTRD#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta z
@@ -1841,11 +1851,14 @@ void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
   //
   Double_t histoX[4];
   const AliExternalTrackParam * pTPCIn = pTrack->GetInnerParam();
-  const AliExternalTrackParam * pTPCvertex  = pTrack->GetTPCInnerParam();
+  AliExternalTrackParam pTPCvertex(*(pTrack->GetInnerParam()));
   //
   AliExternalTrackParam lits(*pTrack);
-  lits.Rotate(pTPCvertex->GetAlpha());
-  lits.PropagateTo(pTPCvertex->GetX(),fMagF);
+  if (TMath::Abs(pTrack->GetY())>3) return;  // beam pipe
+  pTPCvertex.Rotate(lits.GetAlpha());
+  //pTPCvertex.PropagateTo(pTPCvertex->GetX(),fMagF);
+  AliTracker::PropagateTrackToBxByBz(&pTPCvertex,lits.GetX(),0.1,2,kFALSE);
+  AliTracker::PropagateTrackToBxByBz(&pTPCvertex,lits.GetX(),0.1,0.1,kFALSE);
   Double_t xyz[3];
   pTPCIn->GetXYZ(xyz);
   Double_t phi= TMath::ATan2(xyz[1],xyz[0]);
@@ -1856,8 +1869,8 @@ void        AliTPCcalibTime::FillResHistoTPC(const AliESDtrack * pTrack){
   Float_t dca[2], cov[3];
   pTrack->GetImpactParametersTPC(dca,cov);
   for (Int_t ihisto=0; ihisto<5; ihisto++){
-    histoX[0]=pTPCvertex->GetParameter()[ihisto]-lits.GetParameter()[ihisto];
-    if (ihisto<2) histoX[0]=dca[ihisto];
+    histoX[0]=pTPCvertex.GetParameter()[ihisto]-lits.GetParameter()[ihisto];
+    //    if (ihisto<2) histoX[0]=dca[ihisto];
     fResHistoTPCvertex[ihisto]->Fill(histoX);
   }
 }
@@ -1877,7 +1890,8 @@ void        AliTPCcalibTime::FillResHistoTPCTRD(const AliExternalTrackParam * pT
   //
   AliExternalTrackParam ltrd(*pTRDIn);
   ltrd.Rotate(pTPCOut->GetAlpha());
-  ltrd.PropagateTo(pTPCOut->GetX(),fMagF);
+  //  ltrd.PropagateTo(pTPCOut->GetX(),fMagF);
+  AliTracker::PropagateTrackToBxByBz(&ltrd,pTPCOut->GetX(),0.1,0.1,kFALSE);
 
   for (Int_t ihisto=0; ihisto<5; ihisto++){
     histoX[0]=pTPCOut->GetParameter()[ihisto]-ltrd.GetParameter()[ihisto];

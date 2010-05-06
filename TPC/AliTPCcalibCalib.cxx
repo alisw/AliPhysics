@@ -65,7 +65,7 @@
 #include "AliTPCPointCorrection.h"
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
-
+#include "TDatabasePDG.h"
 ClassImp(AliTPCcalibCalib)
 
 AliTPCcalibCalib::AliTPCcalibCalib():
@@ -321,6 +321,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   AliExternalTrackParam * trackInOld  = (AliExternalTrackParam*)track->GetInnerParam();
   AliExternalTrackParam * trackOuter = (AliExternalTrackParam*)track->GetOuterParam();
   AliExternalTrackParam * trackOutOld   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
+  Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+
     
 
   AliExternalTrackParam trackIn  = *trackOutOld;
@@ -336,7 +338,6 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // Refit in
   //
-
   for (Int_t irow=159; irow>0; irow--){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
@@ -352,9 +353,11 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     cov[0]*=cov[0];
     cov[2]*=cov[2];
     trackIn.GetXYZ(xyz);
-    Double_t bz = AliTracker::GetBz(xyz);
+    //    Double_t bz = AliTracker::GetBz(xyz);
 
-    if (!trackIn.PropagateTo(r[0],bz)) continue;
+    //    if (!trackIn.PropagateTo(r[0],bz)) continue;
+    if (!AliTracker::PropagateTrackToBxByBz(&trackIn, r[0],mass,0.1,kFALSE)) continue;
+
     if (RejectCluster(cl,&trackIn)) continue;
     nclIn++;
     trackIn.Update(&r[1],cov);    
@@ -389,8 +392,10 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     cov[0]*=cov[0];
     cov[2]*=cov[2];
     trackOut.GetXYZ(xyz);
-    Double_t bz = AliTracker::GetBz(xyz);
-    if (!trackOut.PropagateTo(r[0],bz)) continue;
+    //Double_t bz = AliTracker::GetBz(xyz);
+    //    if (!trackOut.PropagateTo(r[0],bz)) continue;
+    if (!AliTracker::PropagateTrackToBxByBz(&trackOut, r[0],mass,0.1,kFALSE)) continue;
+
     if (RejectCluster(cl,&trackOut)) continue;
     nclOut++;
     trackOut.Update(&r[1],cov);    	
@@ -425,9 +430,11 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     cov[0]*=cov[0];
     cov[2]*=cov[2];
     trackIn.GetXYZ(xyz);
-    Double_t bz = AliTracker::GetBz(xyz);
+    //Double_t bz = AliTracker::GetBz(xyz);
 
-    if (!trackIn.PropagateTo(r[0],bz)) continue;
+    //    if (!trackIn.PropagateTo(r[0],bz)) continue;
+    if (!AliTracker::PropagateTrackToBxByBz(&trackIn, r[0],mass,0.1,kFALSE)) continue;
+
     if (RejectCluster(cl,&trackIn)) continue;
     nclIn++;
     trackIn.Update(&r[1],cov);    

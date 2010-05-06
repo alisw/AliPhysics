@@ -321,7 +321,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fPadGainFactor = (AliTPCCalPad*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/PadGainFactor")
   }
   //
   entry          = GetCDBEntry("TPC/Calib/TimeGain");
@@ -330,7 +330,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fTimeGainSplines = (TObjArray*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/Timegain")
   }
   //
   entry          = GetCDBEntry("TPC/Calib/GainFactorDedx");
@@ -338,7 +338,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fDedxGainFactor = (AliTPCCalPad*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/gainFactordEdx")
   }
   //
   entry          = GetCDBEntry("TPC/Calib/PadTime0");
@@ -350,7 +350,7 @@ void AliTPCcalibDB::Update(){
     AliFatal("TPC - Missing calibration entry")
   }
 
-  entry          = GetCDBEntry("TPC/Calib/Distortion");
+  entry          = GetCDBEntry("TPC/Calib/Distortion TPC/Calib/PadTime0");
   if (entry){
     //if (fPadTime0) delete fPadTime0;
     entry->SetOwner(kTRUE);
@@ -391,7 +391,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/Parameters")
   }
 
   entry          = GetCDBEntry("TPC/Calib/ClusterParam");
@@ -448,6 +448,16 @@ void AliTPCcalibDB::Update(){
   }else{
     AliError("TPC - Missing calibration entry")
   }  
+  //TPC space point correction data
+  entry          = GetCDBEntry("TPC/Calib/Correction");
+  if (entry){
+    //entry->SetOwner(kTRUE);
+    fComposedCorrection=dynamic_cast<AliTPCCorrection*>(entry->GetObject());
+    fComposedCorrection->Init();
+  }else{
+    AliError("TPC - Missing calibration entry-  TPC/Calib/Correction")
+  }  
+
   //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 

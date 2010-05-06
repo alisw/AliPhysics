@@ -73,8 +73,9 @@ public:
 
   // normally called directly in the correction classes which inherit from this class
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
-  AliExternalTrackParam * FitDistortedTrack(const AliExternalTrackParam * trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);
+  AliExternalTrackParam * FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);
   void StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment=0);
+  static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
 		   const char *xlabel,const char *ylabel,const char *zlabel,

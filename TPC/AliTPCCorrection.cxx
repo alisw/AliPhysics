@@ -38,6 +38,7 @@
 // date: 27/04/2010                                                           //
 // Authors: Magnus Mager, Stefan Rossegger, Jim Thomas                        //
 ////////////////////////////////////////////////////////////////////////////////
+#include "Riostream.h"
 
 #include <TH2F.h>
 #include <TMath.h>
@@ -478,7 +479,7 @@ void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Dou
 }
 
 
-AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTrackParam * trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream){
+AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream){
   //
   // Fit the track parameters - without and with distortion
   // 1. Space points in the TPC are simulated along the trajectory  
@@ -507,7 +508,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
   const Double_t kSigmaZ=0.1;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
 
-  AliExternalTrackParam  track(*trackIn); // 
+  AliExternalTrackParam  track(trackIn); // 
   // generate points
   AliTrackPointArray pointArray0(npoints0);
   AliTrackPointArray pointArray1(npoints0);
@@ -596,7 +597,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
 
   AliTrackerBase::PropagateTrackTo(track0,refX,kMass,2.,kTRUE,kMaxSnp);
   track1->Rotate(track0->GetAlpha());
-  AliTrackerBase::PropagateTrackTo(track1,refX,kMass,2.,kFALSE,kMaxSnp);
+  track1->PropagateTo(track0->GetX(),AliTrackerBase::GetBz());
 
   if (pcstream) (*pcstream)<<Form("fitDistort%s",GetName())<<
     "point0.="<<&pointArray0<<   //  points
@@ -605,6 +606,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(const AliExternalTra
     "track0.="<<track0<<         //  fitted track
     "track1.="<<track1<<         //  fitted distorted track
     "\n";
+  new(&trackIn) AliExternalTrackParam(*track0);
   delete track0;
   return track1;
 }
@@ -672,6 +674,96 @@ TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
   delete tree;
   return tree2;
 }
+
+
+
+
+void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, TObjArray * corrArray, Int_t step, Bool_t debug ){
+  //
+  // Make a fit tree:
+  // For each partial correction (specified in array) and given track topology (phi, theta, snp, refX)
+  // calculates partial distortions
+  // Partial distortion is stored in the resulting tree
+  // Output is storred in the file distortion_<dettype>_<partype>.root
+  // Partial  distortion is stored with the name given by correction name
+  //
+  //
+  // Parameters of function:
+  // input     - input tree
+  // dtype     - distortion type 0 - ITSTPC,  1 -TPCTRD, 2 - TPCvertex 
+  // ppype     - parameter type
+  // corrArray - array with partial corrections
+  // step      - skipe entries  - if 1 all entries processed - it is slow
+  // debug     0 if debug on also space points dumped - it is slow
+  const Int_t kMinEntries=50;
+  Double_t phi,theta, snp, mean,rms, entries;
+  tinput->SetBranchAddress("theta",&theta);
+  tinput->SetBranchAddress("phi", &phi);
+  tinput->SetBranchAddress("snp",&snp);
+  tinput->SetBranchAddress("mean",&mean);
+  tinput->SetBranchAddress("rms",&rms);
+  tinput->SetBranchAddress("entries",&entries);
+  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("distortion%d_%d.root",dtype,ptype));
+  //
+  Int_t nentries=tinput->GetEntries();
+  Int_t ncorr=corrArray->GetEntries();
+  Double_t corrections[100]; //
+  Double_t tPar[5];
+  Double_t cov[15]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Double_t refX=0;
+  Int_t dir=0;
+  if (dtype==0) {refX=85; dir=-1;}
+  if (dtype==1) {refX=245; dir=1;}
+  if (dtype==2) {refX=0; dir=-1;}
+  //
+  for (Int_t ientry=0; ientry<nentries; ientry+=step){
+    tinput->GetEntry(ientry);
+    tPar[0]=0;
+    tPar[1]=theta*refX;
+    tPar[2]=snp;
+    tPar[3]=theta;
+    tPar[4]=0.00001;  // should be calculated - non equal to 0
+    cout<<endl<<endl;
+    cout<<"Entry\n\n"<<ientry<<endl;
+    cout<<"dtype="<<dtype<<   // detector match type
+      "ptype="<<ptype<<   // parameter type
+      "theta="<<theta<<   // theta
+      "phi="<<phi<<       // phi 
+      "snp="<<phi<<       // snp
+      "mean="<<mean<<     // mean dist value
+      "rms="<<rms<<       // rms
+      "entries="<<entries<<endl; // number of entries in bin      
+    
+    if (TMath::Abs(snp)>0.251) continue;
+    (*pcstream)<<"fit"<<
+      "dtype="<<dtype<<   // detector match type
+      "ptype="<<ptype<<   // parameter type
+      "theta="<<theta<<   // theta
+      "phi="<<phi<<       // phi 
+      "snp="<<snp<<       // snp
+      "mean="<<mean<<     // mean dist value
+      "rms="<<rms<<       // rms
+      "entries="<<entries;// number of entries in bin
+    //
+    for (Int_t icorr=0; icorr<ncorr; icorr++) {
+      AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
+      corrections[icorr]=0;
+      if (entries>kMinEntries){
+	AliExternalTrackParam trackIn(refX,phi,tPar,cov);
+	AliExternalTrackParam *trackOut = 0;
+	if (debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,pcstream);
+	if (!debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,0);
+	corrections[icorr]= trackOut->GetParameter()[ptype]-trackIn.GetParameter()[ptype];
+	delete trackOut;      
+      }      
+      (*pcstream)<<"fit"<<
+	Form("%s=",corr->GetName())<<corrections[icorr];   // dump correction value
+    }
+    (*pcstream)<<"fit"<<"\n";
+  }
+  delete pcstream;
+}
+
 
 
 
