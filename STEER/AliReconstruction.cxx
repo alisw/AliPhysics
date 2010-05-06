@@ -2318,7 +2318,7 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
   AliVertexer *vertexer = CreateVertexer();
   if (!vertexer) return kFALSE;
 
-  AliInfo("running the ITS vertex finder");
+  AliInfo(Form("running the ITS vertex finder: %s",vertexer->ClassName()));
   AliESDVertex* vertex = NULL;
   if (fLoader[0]) {
     fLoader[0]->LoadRecPoints();
