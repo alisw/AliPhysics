@@ -323,8 +323,7 @@ AliMUONPainterHelper::ColorFromValue(Double_t value, Double_t min, Double_t max)
   else if (value <= min) rv = 0;
   else
   {
-//    if  ( TMath::AreEqualRel(max,min,1E-6) ) return gStyle->GetColorPalette(1);
-    if ( TMath::Abs(max-min) < 0.5*1E-6*TMath::Abs(max)+TMath::Abs(min) ) return gStyle->GetColorPalette(1);
+    if  ( TMath::AreEqualRel(max,min,1E-6) ) return gStyle->GetColorPalette(1);
     Double_t range = max - min;
     Double_t offset = value - min;
     rv = gStyle->GetColorPalette( 1 + int( offset*(gStyle->GetNumberOfColors()-2)/range - 0.5 ) );
