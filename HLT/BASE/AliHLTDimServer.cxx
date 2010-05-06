@@ -250,7 +250,7 @@ void* AliHLTDimServer::ServerLoop()
   while ((obj=next())!=NULL) {
     AliHLTDimService* pService=dynamic_cast<AliHLTDimService*>(obj);
     if (!pService) continue;
-    const char* name=pService->GetName();
+    TString name=GetName(); name+="_"; name+=pService->GetName();
     const char* type="";
     void* buffer=pService->GetLocation();
     int size=0;
@@ -270,7 +270,7 @@ void* AliHLTDimServer::ServerLoop()
       log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "ignoring dim service %s: unknown type %d", name, pService->GetType());
     }
     if (type[0]!=0) {
-      int id=Interface()->DisAddService(name, type, buffer, size);
+      int id=Interface()->DisAddService(name.Data(), type, buffer, size);
       if (id<0) {
 	 log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "failed to add dim service %s: error %d", name, id);
       } else {
@@ -280,8 +280,8 @@ void* AliHLTDimServer::ServerLoop()
   }
 
   SetState(kStateRunning);
+  Interface()->DisStartServing(GetName());
   while (GetState()==kStateRunning) {
-    cout << "test" << endl;
     gSystem->Sleep(fUpdatePeriod);
   }
 
@@ -348,6 +348,8 @@ void AliHLTDimServer::AliHLTDimService::Update(AliHLTDimServicePoint_t& sp)
     if (bWarning) log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "Update" , __FILE__ , __LINE__ , "Failed to update dim service %s: unknown type %d", GetName(), fType);
     bWarning=false;
   };
+
+  AliHLTDimServer::Interface()->DisUpdateService(fId);
 }
 
 AliHLTDimServer::AliHLTDimInterface::AliHLTDimInterface()

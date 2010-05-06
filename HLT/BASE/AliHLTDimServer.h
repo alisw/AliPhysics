@@ -80,6 +80,19 @@ public:
     }
   };
 
+  /** @class AliHLTDimServiceInt
+   * DIM service for a int value
+   */
+  class AliHLTDimServiceInt : public AliHLTDimService {
+  public:
+    AliHLTDimServiceInt();
+    ~AliHLTDimServiceInt();
+
+    void Update(int i) {
+      AliHLTDimServicePoint_t sp; sp.iVal=i; AliHLTDimService::Update(sp);
+    }
+  };
+
   /**
    * Register a service.
    * @param pService    the service to be registered
