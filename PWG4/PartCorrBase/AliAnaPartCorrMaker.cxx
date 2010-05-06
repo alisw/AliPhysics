@@ -56,7 +56,7 @@ fhNEvents(0x0)
   if(!fReader)
     fReader    = new AliCaloTrackReader();
   if(!fCaloUtils)
-	fCaloUtils = new AliCalorimeterUtils();
+    fCaloUtils = new AliCalorimeterUtils();
 	
   InitParameters();
 }
@@ -155,8 +155,8 @@ TList *AliAnaPartCorrMaker::GetOutputContainer()
   }
 
   //Initialize the geometry pointers
-  //GetCaloUtils()->InitPHOSGeometry();
-  //GetCaloUtils()->InitEMCALGeometry();
+  GetCaloUtils()->InitPHOSGeometry();
+  GetCaloUtils()->InitEMCALGeometry();
 		
   char newname[128];
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++){
@@ -199,8 +199,8 @@ void AliAnaPartCorrMaker::Init()
   }
 
   //Initialize the geometry pointers
-  GetCaloUtils()->InitPHOSGeometry();
-  GetCaloUtils()->InitEMCALGeometry();
+  //GetCaloUtils()->InitPHOSGeometry();
+  //GetCaloUtils()->InitEMCALGeometry();
 	
   //Initialize reader
   fReader->Init();
