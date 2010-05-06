@@ -370,7 +370,8 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   if(esdH){
      esdHLT = esdH->GetHLTEvent();
   }
-  else{
+    
+  if(!esdHLT){
      Printf("ERROR: HLTesd not available");
      return;
   }
