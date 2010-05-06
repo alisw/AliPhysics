@@ -12,6 +12,9 @@ Float_t fRmsPed[kNSM][kNRCU][kNBranch][kNFEC][kNChip][kNChan];
 const int kNStrips = 24; // per SM
 Int_t fHWAddrLEDRef[kNStrips][2]; // [2] is for Low/High gain
 
+const Bool_t kDebug = kFALSE;
+const Float_t kBadRMS = 20;
+
 // help methods
 void GetPedVal(const Int_t iSM, const Int_t igain, const TProfile2D *h2);
 void GetPedValLEDRef(const Int_t iSM, const Int_t igain, const TProfile *h);
@@ -25,11 +28,15 @@ void CreateMappingLEDRef();
 
 // main method
 void 
-GeneratePedestalScript(const char * filename = "alien/Run113790_113790_v1_s0.root")
+//GeneratePedestalScript(const char * filename = "alien/Run113790_113790_v1_s0.root") // 1st set
+GeneratePedestalScript(const char * filename = "Run117756_117756_v1_s0.root") // 2nd set
 {
   // get the DA info/object
   TFile *file = TFile::Open(filename); 
-  AliCaloCalibPedestal *emcCalibPedestal = AliCDBEntry->GetObject();
+  //TMP  AliCaloCalibPedestal *emcCalibPedestal = AliCDBEntry->GetObject();
+  if (kDebug) {
+    file->ls();
+  }
 
   // Get mapping file info, and clear arrays
   Clear();
@@ -56,10 +63,10 @@ GetPedVal(const Int_t iSM, const Int_t igain, const TProfile2D *h2)
   Int_t iside = iSM % 2; // A or C side
   Int_t nCols = h2->GetNbinsX();
   Int_t nRows = h2->GetNbinsY();
-  // debug print
-  printf("GetPedVal: iSM %d isect %d iside %d igain %d nRows %d nCols %d\n",
-	 iSM, isect, iside, igain, nRows, nCols);
-
+  if (kDebug) {
+    printf("GetPedVal: iSM %d isect %d iside %d igain %d nRows %d nCols %d\n",
+	   iSM, isect, iside, igain, nRows, nCols);
+  }
   Int_t hwAddress = 0;
   Int_t iRCU = 0;
   Int_t branch = 0;
@@ -81,6 +88,13 @@ GetPedVal(const Int_t iSM, const Int_t igain, const TProfile2D *h2)
       // store the values
       fMeanPed[iSM][iRCU][branch][FEC][chip][chan] = h2->GetBinContent(bin);
       fRmsPed[iSM][iRCU][branch][FEC][chip][chan] = h2->GetBinError(bin);
+
+      // report bad RMS channels:
+      if (h2->GetBinError(bin) > kBadRMS) {
+	printf(" bad pedestal RMS: iSM %d icol %d irow %d igain %d iRCU %d branch %d FEC %d chip %d chan %d - mean %4.1f rms %4.1f\n", 
+	       iSM, icol, irow, igain, iRCU, branch, FEC, chip, chan,
+	       h2->GetBinContent(bin), h2->GetBinError(bin));
+      }
     }
   }
 
@@ -95,10 +109,10 @@ GetPedValLEDRef(const Int_t iSM, const Int_t igain, const TProfile *h)
   Int_t iside = iSM % 2; // A or C side
   Int_t nStrips = h->GetNbinsX();
 
-  // debug print
-  printf("GetPedValLEDRef: iSM %d isect %d iside %d igain %d nStrips %d\n",
-	 iSM, isect, iside, igain, nStrips);
-
+  if (kDebug) {
+    printf("GetPedValLEDRef: iSM %d isect %d iside %d igain %d nStrips %d\n",
+	   iSM, isect, iside, igain, nStrips);
+  }
   Int_t hwAddress = 0;
   Int_t iRCU = 0; // always true for LED Ref FEE
   Int_t branch = 0;
@@ -166,6 +180,12 @@ PrintScript()
 		if (iFEC!=0 || (ichan<8 || ichan>11)) {
 
 		  Ped = TMath::Nint(fMeanPed[iSM][iRCU][ibranch][iFEC][ichip][ichan]);
+		  // raise Ped value to max for channels with exceptionally large RMS
+		  if (fRmsPed[iSM][iRCU][ibranch][iFEC][ichip][ichan] > kBadRMS) {
+		    printf(" bad pedestal RMS: iSM %d iRCU %d ibranch %d iFEC %d ichip %d ichan %d - raising from %d to 0x3ff\n", 
+			   iSM, iRCU, ibranch, iFEC, ichip, ichan, Ped);
+		    Ped = 0x3ff;
+		  }
 		  // 
 		  int writeAddr = (ibranch << 16) | (iFEC << 12) | (ichip << 9) |
 		    (ichan << 5) | VFPED | RCUWrite;  
@@ -293,7 +313,7 @@ GetMapping()
       path2 += i;
       path2 += sides[j];
       path2 += ".data";
-      printf("Mapping file: %s\n",path2.Data());
+      if (kDebug) { printf("Mapping file: %s\n",path2.Data()); }
       fMapping[j*2 + i] = new AliCaloAltroMapping(path2.Data());
     }
   }
@@ -330,5 +350,5 @@ CreateMappingLEDRef()
     }
   }
 
-  cout << " nLEDRefFEEChan " << nLEDRefFEEChan << endl;
+  if (kDebug) { cout << " nLEDRefFEEChan " << nLEDRefFEEChan << endl; }
 }
