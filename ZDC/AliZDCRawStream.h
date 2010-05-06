@@ -25,7 +25,12 @@ class AliZDCRawStream: public TObject {
   public :
     
     // Module type codes
-    enum{kV965=1, kV830=2, kTRG=3, kTRGI=4, kPU=5, KV1290=6, kV775N=7}; 
+    enum ZDCModules{kV965=1, kV830=2, kTRG=3, kTRGI=4, kPU=5, KV1290=6, kV775N=7}; 
+    
+    // Module type codes
+    enum ZDCGeoAddr{kFirstADCGeo=0, kLastADCGeo=3, kADDADCGeo=5,
+  	 kTDCFakeGeo=8, kZDCTDCGeo=4, kADDTDCGeo=6,
+	 kScalerGeo=16, kPUGeo=29, kTrigScales=30, kTrigHistory=31};
     
     // Signal codes for ZDC 
     // Same codes used in DAQ configuration file
@@ -48,10 +53,10 @@ class AliZDCRawStream: public TObject {
 	 kL1MBI=50, kL1CNI=51, kL1SCI=52, kL1EMDI=53, kL0I=54, 
 	 kL1MBO=55, kL1CNO=56, kL1SCO=57, kL1EMDO=58, 
 	 kHMBCN=59, kHSCEMD=60,
-	 kZNACD=61, kZNA1CD=62, kZNA2D=63, kZNA3D=64, kZNA4D=65,
-	 kZPACD=66, kZPA1CD=67, kZPA2D=68, kZPA3D=69, kZPA4D=70,
-	 kZNCCD=71, kZNC1CD=72, kZNC2D=73, kZNC3D=74, kZNC4D=75,
-	 kZPCCD=76, kZPC1CD=77, kZPC2D=78, kZPC3D=79, kZPC4D=80,
+	 kZNACD=61, kZNA1D=62, kZNA2D=63, kZNA3D=64, kZNA4D=65,
+	 kZPACD=66, kZPA1D=67, kZPA2D=68, kZPA3D=69, kZPA4D=70,
+	 kZNCCD=71, kZNC1D=72, kZNC2D=73, kZNC3D=74, kZNC4D=75,
+	 kZPCCD=76, kZPC1D=77, kZPC2D=78, kZPC3D=79, kZPC4D=80,
 	 kZEM1D=81, kZEM2D=82,
 	 kZDCAMonD=83, kZDCCMonD=84,
 	 kZNAD=85, kZPAD=86, kZNCD=87, kZPCD=88, kZEMD=89,
@@ -79,12 +84,6 @@ class AliZDCRawStream: public TObject {
 
     virtual void ReadCDHHeader();
 
-    Bool_t IsZDCTDCHeader() const {return fIsZDCTDCHeader;}
-    
-    Bool_t IsAddChannel()   const {return fIsADDChannel;}
-    Bool_t IsADDTDCHeader() const {return fIsADDTDCHeader;}
-    Bool_t IsAddTDCdatum()  const {return fIsADDTDCdatum;}
-
     UInt_t GetRawBuffer()      const {return fBuffer;}
     Int_t  GetReadOutCard()    const {return fReadOutCard;}
     
@@ -99,6 +98,18 @@ class AliZDCRawStream: public TObject {
     Int_t  GetADCChannel()    const {return fADCChannel;}
     Int_t  GetADCValue()      const {return fADCValue;}
     Int_t  GetADCGain()       const {return fADCGain;}
+
+    Int_t  GetModuleGEO()     const {return fADCModule;}
+    Int_t  GetChannel()       const {return fADCChannel;}
+    
+    Bool_t IsZDCTDCHeader()   const {return fIsZDCTDCHeader;}
+    Bool_t IsZDCTDCDatum()    const {return fIsZDCTDCdatum;}
+    Int_t  GetZDCTDCDatum()   const {return fZDCTDCdatum;}
+    
+    Bool_t IsADDADCChannel()  const {return fIsADDChannel;}
+    Int_t  GetADDADCDatum()   const {return fADDADCdatum;}
+    Bool_t IsADDTDCdatum()    const {return fIsADDTDCdatum;}
+    Int_t  GetADDTDCDatum()   const {return fADDTDCdatum;}
     
     AliCDBStorage *SetStorage(const char* uri);
 
@@ -258,17 +269,23 @@ class AliZDCRawStream: public TObject {
     Bool_t fIsL0BitSet;     // true if L0 bit in history words = 1 
     Bool_t fIsPileUpEvent;  // true if pile up bits in history words = 0
     
-    // ZDC TDC
-    Bool_t fIsZDCTDCHeader;  // true if datum is a ZDC TDC header
-    Bool_t fIsTDCHeaderRead; // true when streaming TDC data
-    Int_t  fTDCStartCounter; // counts after TDC header
-    
-    // ADD part
+    // ADD ADC
     Bool_t fIsADDChannel;   // true if datum is an ADD ADC channel
-    Bool_t fIsADDTDCHeader; // true if datum is an ADD TDC channel
-    Bool_t fIsADDTDCdatum;  // true if datum is an ADD TDC channel
+    Int_t  fADDADCdatum;    // ADD ADC datum
+    
+    // TDCs
+    Bool_t fIsTDCHeaderRead; // true when streaming one of the 2 TDCs
+    Int_t  fTDCStartCounter; // counts after a TDC header
+    //
+    Bool_t fIsZDCTDCHeader;  // true if datum is a ZDC TDC header
+    Bool_t fIsZDCTDCdatum;   // true if the current is a TDC datum
+    Int_t  fZDCTDCdatum;     // datum for ZDC TDC
+    //
+    Bool_t fIsADDTDCHeader;  // true if datum is an ADD TDC channel
+    Bool_t fIsADDTDCdatum;   // true when streaming ADD TDC data
+    Int_t  fADDTDCdatum;     // datum for ADD TDC
    
-    ClassDef(AliZDCRawStream, 18)    // class for reading ZDC raw data
+    ClassDef(AliZDCRawStream, 19)    // class for reading ZDC raw data
 };
 
 #endif

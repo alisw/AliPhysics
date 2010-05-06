@@ -103,12 +103,16 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fIsADCEventGood(kTRUE),
   fIsL0BitSet(kTRUE),
   fIsPileUpEvent(kFALSE),
-  fIsZDCTDCHeader(kFALSE),
+  fIsADDChannel(kFALSE),
+  fADDADCdatum(0),
   fIsTDCHeaderRead(kFALSE),
   fTDCStartCounter(0),
-  fIsADDChannel(kFALSE),
+  fIsZDCTDCHeader(kFALSE),
+  fIsZDCTDCdatum(kFALSE),
+  fZDCTDCdatum(0),
   fIsADDTDCHeader(kFALSE),
-  fIsADDTDCdatum(kFALSE)
+  fIsADDTDCdatum(kFALSE),
+  fADDTDCdatum(0)
 {
   // Create an object to read ZDC raw digits
   fRawReader->Reset();
@@ -194,13 +198,16 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fIsADCEventGood(stream.fIsADCEventGood),
   fIsL0BitSet(stream.fIsL0BitSet),
   fIsPileUpEvent(stream.fIsPileUpEvent),
-  fIsZDCTDCHeader(stream.fIsZDCTDCHeader),
+  fIsADDChannel(stream.fIsADDChannel),
+  fADDADCdatum(stream.fADDADCdatum),
   fIsTDCHeaderRead(stream.fIsTDCHeaderRead),
   fTDCStartCounter(stream.fTDCStartCounter),
-  fIsADDChannel(stream.fIsADDChannel),
+  fIsZDCTDCHeader(stream.fIsZDCTDCHeader),
+  fIsZDCTDCdatum(stream.fIsZDCTDCdatum),
+  fZDCTDCdatum(stream.fZDCTDCdatum),
   fIsADDTDCHeader(stream.fIsADDTDCHeader),
-  fIsADDTDCdatum(stream.fIsADDTDCdatum)
-
+  fIsADDTDCdatum(stream.fIsADDTDCdatum),
+  fADDTDCdatum(stream.fADDTDCdatum)
 {
   // Copy constructor
   const int kNch = 48;
@@ -365,10 +372,6 @@ Bool_t AliZDCRawStream::Next()
 
   if(!fRawReader->ReadNextInt((UInt_t&) fBuffer)) return kFALSE;
   const int kNch = 48;
-  Int_t kFirstADCGeo=0, kLastADCGeo=3;
-  Int_t kADDADCGeo=5, kADDTDCGeo=6;
-  Int_t kZDCTDCGeo=8, kScalerGeo=16;
-  Int_t kPUGeo=29, kTrigScales=30, kTrigHistory=31;
   //
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
@@ -471,47 +474,47 @@ Bool_t AliZDCRawStream::Next()
 	      || fCabledSignal==24 || fCabledSignal==48){
 	      fMapADC[fCurrentCh][3] = 4; //ZNA
 	      //
-	      if(fCabledSignal==kZNAC || fCabledSignal==kZNACoot)   fMapADC[fCurrentCh][4]=0;
-	      else if(fCabledSignal==3 || fCabledSignal==27)  fMapADC[fCurrentCh][4]=1;
-	      else if(fCabledSignal==4 || fCabledSignal==28)  fMapADC[fCurrentCh][4]=2;
-	      else if(fCabledSignal==5 || fCabledSignal==29)  fMapADC[fCurrentCh][4]=3;
-	      else if(fCabledSignal==6 || fCabledSignal==30)  fMapADC[fCurrentCh][4]=4;
-	      else if(fCabledSignal==24 || fCabledSignal==48) fMapADC[fCurrentCh][4]=5; //Reference PTM
+	      if(fCabledSignal==kZNAC || fCabledSignal==kZNACoot)       fMapADC[fCurrentCh][4]=0;
+	      else if(fCabledSignal==kZNA1 || fCabledSignal==kZNA1oot)  fMapADC[fCurrentCh][4]=1;
+	      else if(fCabledSignal==kZNA2 || fCabledSignal==kZNA2oot)  fMapADC[fCurrentCh][4]=2;
+	      else if(fCabledSignal==kZNA3 || fCabledSignal==kZNA3oot)  fMapADC[fCurrentCh][4]=3;
+	      else if(fCabledSignal==kZNA4 || fCabledSignal==kZNA4oot)  fMapADC[fCurrentCh][4]=4;
+	      else if(fCabledSignal==kZDCAMon || fCabledSignal==kZDCAMonoot) fMapADC[fCurrentCh][4]=5; //Reference PTM
 	    }
 	    else if((fCabledSignal>=7 && fCabledSignal<=11) || (fCabledSignal>=31 && fCabledSignal<=35)){
 	      fMapADC[fCurrentCh][3] = 5; //ZPA
 	      //
-	      if(fCabledSignal==7 || fCabledSignal==31)       fMapADC[fCurrentCh][4]=0;
-	      else if(fCabledSignal==8 || fCabledSignal==32)  fMapADC[fCurrentCh][4]=1;
-	      else if(fCabledSignal==9 || fCabledSignal==33)  fMapADC[fCurrentCh][4]=2;
-	      else if(fCabledSignal==10 || fCabledSignal==34) fMapADC[fCurrentCh][4]=3;
-	      else if(fCabledSignal==11 || fCabledSignal==35) fMapADC[fCurrentCh][4]=4;
+	      if(fCabledSignal==kZPAC || fCabledSignal==kZPACoot)      fMapADC[fCurrentCh][4]=0;
+	      else if(fCabledSignal==kZPA1 || fCabledSignal==kZPA1oot) fMapADC[fCurrentCh][4]=1;
+	      else if(fCabledSignal==kZPA2 || fCabledSignal==kZPA2oot) fMapADC[fCurrentCh][4]=2;
+	      else if(fCabledSignal==kZPA3 || fCabledSignal==kZPA3oot) fMapADC[fCurrentCh][4]=3;
+	      else if(fCabledSignal==kZPA4 || fCabledSignal==kZPA4oot) fMapADC[fCurrentCh][4]=4;
 	    }
 	    else if((fCabledSignal>=12 && fCabledSignal<=16) || (fCabledSignal>=36 && fCabledSignal<=40)
 	       || fCabledSignal==25 || fCabledSignal==49){
 	      fMapADC[fCurrentCh][3] = 1; //ZNC
 	      //
-	      if(fCabledSignal==12 || fCabledSignal==36)      fMapADC[fCurrentCh][4]=0;
-	      else if(fCabledSignal==13 || fCabledSignal==37) fMapADC[fCurrentCh][4]=1;
-	      else if(fCabledSignal==14 || fCabledSignal==38) fMapADC[fCurrentCh][4]=2;
-	      else if(fCabledSignal==15 || fCabledSignal==39) fMapADC[fCurrentCh][4]=3;
-	      else if(fCabledSignal==16 || fCabledSignal==40) fMapADC[fCurrentCh][4]=4;
-	      else if(fCabledSignal==25 || fCabledSignal==49) fMapADC[fCurrentCh][4]=5; //Reference PTM
+	      if(fCabledSignal==kZNCC || fCabledSignal==kZNCCoot)      fMapADC[fCurrentCh][4]=0;
+	      else if(fCabledSignal==kZNC1 || fCabledSignal==kZNC1oot) fMapADC[fCurrentCh][4]=1;
+	      else if(fCabledSignal==kZNC2 || fCabledSignal==kZNC2oot) fMapADC[fCurrentCh][4]=2;
+	      else if(fCabledSignal==kZNC3 || fCabledSignal==kZNC3oot) fMapADC[fCurrentCh][4]=3;
+	      else if(fCabledSignal==kZNC4 || fCabledSignal==kZNC4oot) fMapADC[fCurrentCh][4]=4;
+	      else if(fCabledSignal==kZDCCMon || fCabledSignal==kZDCCMonoot) fMapADC[fCurrentCh][4]=5; //Reference PTM
 	    }
 	    else if((fCabledSignal>=17 && fCabledSignal<=21) || (fCabledSignal>=41 && fCabledSignal<=45)){
 	      fMapADC[fCurrentCh][3] = 2; //ZPC
 	      //
-	      if(fCabledSignal==17 || fCabledSignal==41)      fMapADC[fCurrentCh][4]=0;
-	      else if(fCabledSignal==18 || fCabledSignal==42) fMapADC[fCurrentCh][4]=1;
-	      else if(fCabledSignal==19 || fCabledSignal==43) fMapADC[fCurrentCh][4]=2;
-	      else if(fCabledSignal==20 || fCabledSignal==44) fMapADC[fCurrentCh][4]=3;
-	      else if(fCabledSignal==21 || fCabledSignal==45) fMapADC[fCurrentCh][4]=4;
+	      if(fCabledSignal==kZPCC || fCabledSignal==kZPCCoot)   fMapADC[fCurrentCh][4]=0;
+	      else if(fCabledSignal==kZPC1 || fCabledSignal==kZPC1oot) fMapADC[fCurrentCh][4]=1;
+	      else if(fCabledSignal==kZPC2 || fCabledSignal==kZPC2oot) fMapADC[fCurrentCh][4]=2;
+	      else if(fCabledSignal==kZPC3 || fCabledSignal==kZPC3oot) fMapADC[fCurrentCh][4]=3;
+	      else if(fCabledSignal==kZPC4 || fCabledSignal==kZPC4oot) fMapADC[fCurrentCh][4]=4;
 	    }
 	    else if(fCabledSignal==22 || fCabledSignal==23 || fCabledSignal==46 || fCabledSignal==47){
 	      fMapADC[fCurrentCh][3] = 3; // ZEM
 	      //
-	      if(fCabledSignal==22 || fCabledSignal==46)      fMapADC[fCurrentCh][4]=1;
-	      else if(fCabledSignal==23 || fCabledSignal==47) fMapADC[fCurrentCh][4]=2;
+	      if(fCabledSignal==kZEM1 || fCabledSignal==kZEM1oot)      fMapADC[fCurrentCh][4]=1;
+	      else if(fCabledSignal==kZEM2 || fCabledSignal==kZEM2oot) fMapADC[fCurrentCh][4]=2;
 	    }
 	    //Ch. debug
       	    //printf("\tADC mod. %d ch. %d signal %d ",fADCModule,fADCChannel,fCabledSignal);
@@ -537,48 +540,48 @@ Bool_t AliZDCRawStream::Next()
 	     (fCabledSignal>=61 && fCabledSignal<=65)){
 	    fScalerMap[fCurrScCh][3] = 4; //ZNA
 	    //
-	    if(fCabledSignal==2 || fCabledSignal==61)      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==3 || fCabledSignal==62)  fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==4 || fCabledSignal==63)  fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==5 || fCabledSignal==64)  fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==6 || fCabledSignal==65)  fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==kZNAC || fCabledSignal==kZNACD)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==kZNA1 || fCabledSignal==kZNA1D) fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==kZNA2 || fCabledSignal==kZNA2D) fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==kZNA3 || fCabledSignal==kZNA3D) fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==kZNA4 || fCabledSignal==kZNA4D) fScalerMap[fCurrScCh][4]=4;
 	  }
 	  else if((fCabledSignal>=7 && fCabledSignal<=11) ||
 	     (fCabledSignal>=66 && fCabledSignal<=70)){
 	    fScalerMap[fCurrScCh][3] = 5; //ZPA
 	    //
-	    if(fCabledSignal==7 || fCabledSignal==66)      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==8 || fCabledSignal==67)  fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==9 || fCabledSignal==68)  fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==10 || fCabledSignal==69) fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==11 || fCabledSignal==70) fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==kZPAC || fCabledSignal==kZPACD)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==kZPA1 || fCabledSignal==kZPA1D) fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==kZPA2 || fCabledSignal==kZPA2D) fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==kZPA3 || fCabledSignal==kZPA3D) fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==kZPA4 || fCabledSignal==kZPA4D) fScalerMap[fCurrScCh][4]=4;
 	  }
 	  else if((fCabledSignal>=12 && fCabledSignal<=16) ||
 	     (fCabledSignal>=71 && fCabledSignal<=75)){
 	    fScalerMap[fCurrScCh][3] = 1; //ZNC
 	    //
-	    if(fCabledSignal==12 || fCabledSignal==71)      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==13 || fCabledSignal==72) fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==14 || fCabledSignal==73) fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==15 || fCabledSignal==74) fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==16 || fCabledSignal==75) fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==kZNCC || fCabledSignal==kZNCCD)      fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==kZNC1 || fCabledSignal==kZNC1D) fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==kZNC2 || fCabledSignal==kZNC2D) fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==kZNC3 || fCabledSignal==kZNC3D) fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==kZNC4 || fCabledSignal==kZNC4D) fScalerMap[fCurrScCh][4]=4;
 	  }
 	  else if((fCabledSignal>=17 && fCabledSignal<=21) ||
 	     (fCabledSignal>=76 && fCabledSignal<=80)){
 	    fScalerMap[fCurrScCh][3] = 2; //ZPC
 	    //
-	    if(fCabledSignal==17 || fCabledSignal==76)      fScalerMap[fCurrScCh][4]=0;
-	    else if(fCabledSignal==18 || fCabledSignal==77) fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==19 || fCabledSignal==78) fScalerMap[fCurrScCh][4]=2;
-	    else if(fCabledSignal==20 || fCabledSignal==79) fScalerMap[fCurrScCh][4]=3;
-	    else if(fCabledSignal==21 || fCabledSignal==80) fScalerMap[fCurrScCh][4]=4;
+	    if(fCabledSignal==kZPCC || fCabledSignal==kZPCCD) fScalerMap[fCurrScCh][4]=0;
+	    else if(fCabledSignal==kZPC1 || fCabledSignal==kZPC1D)  fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==kZPC2 || fCabledSignal==kZPC2D)  fScalerMap[fCurrScCh][4]=2;
+	    else if(fCabledSignal==kZPC3 || fCabledSignal==kZPC3D)  fScalerMap[fCurrScCh][4]=3;
+	    else if(fCabledSignal==kZPC4 || fCabledSignal==kZPC4D)  fScalerMap[fCurrScCh][4]=4;
 	  }
 	  else if(fCabledSignal==22 || fCabledSignal==23 ||
 	          fCabledSignal==81 || fCabledSignal==82){
 	    fScalerMap[fCurrScCh][3] = 3; // ZEM
 	    //
-	    if(fCabledSignal==22 || fCabledSignal==81)     fScalerMap[fCurrScCh][4]=1;
-	    else if(fCabledSignal==23 || fCabledSignal==82) fScalerMap[fCurrScCh][4]=2;
+	    if(fCabledSignal==kZEM1 || fCabledSignal==kZEM1D)      fScalerMap[fCurrScCh][4]=1;
+	    else if(fCabledSignal==kZEM2 || fCabledSignal==kZEM2D) fScalerMap[fCurrScCh][4]=2;
 	  }
       	  // Ch debug.
 	  //printf("\t VME scaler mod. %d ch. %d, signal %d",fScalerMap[fCurrScCh][0],fADCChannel,fCabledSignal);
@@ -674,8 +677,9 @@ Bool_t AliZDCRawStream::Next()
     }
      
     // Get geo address of current word
-    fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
-    if(fIsTDCHeaderRead)fADCModule = kZDCTDCGeo;
+    if(fIsTDCHeaderRead && fIsZDCTDCHeader) fADCModule = kZDCTDCGeo;
+    else if(fIsTDCHeaderRead && fIsADDTDCHeader) fADCModule = kADDTDCGeo;
+    else fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
     
     // ************************************ ADC MODULES ************************************
     if(fADCModule>=kFirstADCGeo && fADCModule<=kLastADCGeo){
@@ -777,32 +781,24 @@ Bool_t AliZDCRawStream::Next()
     	//printf("  AliZDCRawStream -> EOB --------------------------\n");
       }
     }
-    // ********************************* ZDC TDC *********************************
-    else if(fADCModule==kZDCTDCGeo && fIsTDCHeaderRead==kFALSE){
-      fIsZDCTDCHeader = kTRUE;
+    // ********************************* TDC *********************************
+    else if(fADCModule==kTDCFakeGeo && fIsTDCHeaderRead==kFALSE){
+      // *** TDC header
       fIsTDCHeaderRead = kTRUE;
       fTDCStartCounter = fPosition;
-      //Ch. debug
-      //printf("  AliZDCRawStream -> ZDC TDC: mod.%d\n",fADCModule);
-    }
-    // ********************************* ADD TDC *********************************
-    else if(fADCModule == kADDTDCGeo){
-      // *** TDC header
-      if((fBuffer & 0x07000000) == 0x02000000){
+      // GEO address from TDC header
+      fADCModule = (Int_t) (fBuffer & 0x1f);
+      if(fADCModule==kZDCTDCGeo){ // *** ZDC TDC
+        fIsZDCTDCHeader = kTRUE;
+        //Ch. debug
+        //printf("  AliZDCRawStream -> ZDC TDC: mod.%d\n",fADCModule);
+      }
+      else if (fADCModule==kADDTDCGeo){ // *** ADD TDC
         fIsADDTDCHeader = kTRUE;
-    	fADCNChannels = ((fBuffer & 0x00003f00)>>8);
-        //printf("  AliZDCRawStream -> ADD TDC: mod.%d has %d ch. \n",fADCModule,fADCNChannels);
+        //Ch. debug
+        //printf("  AliZDCRawStream -> ADD TDC: mod.%d\n",fADCModule);
       }
-      // *** TDC  word
-      else if((fBuffer & 0x07000000) == 0x00000000){
-        fIsADDTDCdatum = kTRUE;
-      }
-      // *** TDC  EOB
-      if((fBuffer & 0x07000000) == 0x04000000){
-        fIsADCEOB = kTRUE;
-    	//printf("  AliZDCRawStream -> ADD TDC EOB\n");
-      }
-   }
+    }
     // ********************************* VME SCALER HEADER *********************************
     else if(fADCModule == kScalerGeo){
       if(fBuffer & 0x04000000 && fIsScHeaderRead==kFALSE){ // *** Scaler header
@@ -861,14 +857,36 @@ Bool_t AliZDCRawStream::Next()
     }
     // ********************************** ZDC TDC DATA **********************************
     //  ZDC TDC data
-    if(fIsTDCHeaderRead && fPosition>=fTDCStartCounter+1){ 
+    if(fIsTDCHeaderRead && fIsZDCTDCHeader && fPosition>=fTDCStartCounter+1){ 
       fIsADCDataWord=kFALSE; fIsScalerWord=kFALSE;
-      //printf("  AliZDCRawStream -> ...skipping ZDC TDC datum\n");
-      // For the moment we skip the TDC data
+      if(((fBuffer & 0xf0000000)==0x00000000) && (((fBuffer & 0x08000000) >> 27) == 0)){ // TDC datum
+        fADCChannel = (Int_t) ((fBuffer & 0x3e00000) >> 21);
+	fZDCTDCdatum = (Int_t) (fBuffer & 0x1fffff);
+        // Ch. debug
+        //printf("  AliZDCRawStream -> ZDC TDC mod. %d ch. %d datum %d\n",fADCModule,fADCChannel,fZDCTDCdatum);
+      }
       if(((fBuffer & 0xf0000000) == 0x80000000) && ((fBuffer & 0x08000000) >> 27) == 0){
+	// Trailer
 	fIsTDCHeaderRead = kFALSE;
         // Ch. debug
-        //printf("  AliZDCRawStream -> ZDC TDC trailer\n");
+        //printf("  AliZDCRawStream -> ZDC TDC global trailer\n");
+      }
+    }
+    // ********************************** ADD TDC DATA **********************************
+    //  ADD TDC data
+    if(fIsTDCHeaderRead && fIsADDTDCHeader && fPosition>=fTDCStartCounter+1){ 
+      fIsADCDataWord=kFALSE; fIsScalerWord=kFALSE;
+      if(((fBuffer & 0xf0000000)==0x00000000) && (((fBuffer & 0x08000000) >> 27) == 0)){ // TDC datum
+        fADCChannel = (Int_t) ((fBuffer & 0x3e00000) >> 21);
+	fADDTDCdatum = (Int_t) (fBuffer & 0x1fffff);
+        // Ch. debug
+        //printf("  AliZDCRawStream -> ADD TDC mod. %d ch. %d datum %d\n",fADCModule,fADCChannel,fADDTDCdatum);
+      }
+      if(((fBuffer & 0xf0000000) == 0x80000000) && ((fBuffer & 0x08000000) >> 27) == 0){
+	// Trailer
+	fIsTDCHeaderRead = kFALSE;
+        // Ch. debug
+        //printf("  AliZDCRawStream -> ADD TDC global trailer\n");
       }
     }
     // ******************************** TRIGGER SCALER DATA ********************************
