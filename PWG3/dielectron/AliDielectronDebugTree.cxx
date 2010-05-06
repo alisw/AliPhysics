@@ -28,10 +28,15 @@ NOTE: Please use with extream care! Only for debugging and test purposes!!!
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TFile.h>
+#include <TTree.h>
 #include <TTreeStream.h>
+#include <TObjString.h>
 #include <TString.h>
 
 #include <AliAnalysisManager.h>
+#include <AliESDInputHandler.h>
+#include <AliESDEvent.h>
+#include <AliVTrack.h>
 
 #include "AliDielectronPair.h"
 
@@ -98,8 +103,33 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if (man && man->GetAnalysisType()!=AliAnalysisManager::kLocalAnalysis) return;
   
-  if (!fStreamer) fStreamer=new TTreeSRedirector(fFileName.Data());
+  //Get File and event information
+  TObjString fName;
+  Int_t eventInFile=-1;
+  
+  TTree *t=man->GetTree();
+  if (t) {
+    TFile *file=t->GetCurrentFile();
+    if (file) fName.SetString(file->GetName());
+  }
 
+  AliESDInputHandler *han=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler());
+  if (han){
+    AliESDEvent *ev=dynamic_cast<AliESDEvent*>(han->GetEvent());
+    eventInFile=ev->GetEventNumberInFile();
+  }
+  
+  if (!fStreamer) fStreamer=new TTreeSRedirector(fFileName.Data());
+  Int_t id1=static_cast<AliVTrack*>(pair->GetFirstDaughter())->GetID();
+  Int_t id2=static_cast<AliVTrack*>(pair->GetSecondDaughter())->GetID();
+  //Fill Event information
+  (*fStreamer) << "Pair"
+    << "File.="       << &fName
+    << "EventInFile=" << eventInFile
+    << "Leg1_ID="     << id1
+    << "Leg2_ID="     << id2;
+  
+  
   Int_t var=0;
   Double_t values[AliDielectronVarManager::kNMaxValues];
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];

@@ -34,9 +34,6 @@ can be used.
 #include <TMath.h>
 #include <TString.h>
 #include <TPaveText.h>
-#include <RooRealVar.h>
-#include <RooCBShape.h>
-#include <RooExponential.h>
 
 #include <AliLog.h>
 
@@ -49,7 +46,6 @@ AliDielectronSignalFunc::AliDielectronSignalFunc() :
   fSignal(0x0),
   fBackground(0x0),
   fSigBack(0x0),
-  fFitFunc(0x0),
   fVInitParam(0),
   fFitOpt("MNQE"),
   fUseIntegral(kFALSE),
@@ -70,7 +66,6 @@ AliDielectronSignalFunc::AliDielectronSignalFunc(const char* name, const char* t
   fSignal(0x0),
   fBackground(0x0),
   fSigBack(0x0),
-  fFitFunc(0x0),
   fVInitParam(0),
   fFitOpt("MNQ"),
   fUseIntegral(kFALSE),
@@ -260,40 +255,8 @@ void AliDielectronSignalFunc::SetDefaults(Int_t type)
     fSigBack->FixParameter(7,0);
     SetFunctions(fSignal,fBackground,fSigBack,1,2);
 
-  } else if (type==3){
-    // Crystal-Ball function
-    RooRealVar m("m","Invariant mass",2.5,3.8);
-    RooRealVar alpha("alpha","alpha",0.5,0,10);
-    RooRealVar n("n","n",1,0,10);
-    RooRealVar m0("m0","m0",3.1,1,5);
-    RooRealVar sigma("sigma","sigma",0.3,0,3);
-    RooCBShape jpsi("jpsi","jpsi",m,m0,sigma,alpha,n);
-
-    //RooAddPdf model("model","jpsi fitting function", RooArgList(jpsi,expo), fsig);
-    RooRealVar fsig("fsig","signal fraction",0.5,0.,1.);
-    RooAddPdf model("model","jpsi fitting function", RooArgList(jpsi),fsig);
- 
-    model.Clone("fFitFunc");
-
-  } else if (type==4){
-    // Crystal-Ball function
-    RooRealVar m("m","Invariant mass",2.5,3.8);
-    RooRealVar alpha("alpha","alpha",0.5,0,10);
-    RooRealVar n("n","n",1,0,10);
-    RooRealVar m0("m0","m0",3.1,1,5);
-    RooRealVar sigma("sigma","sigma",0.3,0,3);
-    RooCBShape jpsi("jpsi","jpsi",m,m0,sigma,alpha,n);
-
-    // Expoenetial function
-    RooRealVar al("al","al",0.5);             
-    RooExponential expo("expo","exponential", m, al);
-
-    // add two functions
-    RooRealVar fsig("fsig","signal fraction",0.5,0.,1.);
-    RooAddPdf model("model","jpsi fitting function", RooArgList(jpsi,expo), fsig);
-
-    model.Clone("fFitFunc");
   }
+  
 }
 
 
