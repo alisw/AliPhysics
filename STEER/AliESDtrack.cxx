@@ -1805,11 +1805,11 @@ Double_t AliESDtrack::GetTRDmomentum(Int_t plane, Double_t *sp) const
 // in TRD layer "plane".
 
   if (!fTRDnSlices) {
-    AliError("No TRD info allocated for this track !");
+    AliDebug(2, "No TRD info allocated for this track.");
     return -1.;
   }
   if ((plane<0) || (plane>=kTRDnPlanes)) {
-    AliError("Info for TRD plane not available!");
+    AliWarning(Form("Request for TRD plane[%d] outside range.", plane)); 
     return -1.;
   }
 
