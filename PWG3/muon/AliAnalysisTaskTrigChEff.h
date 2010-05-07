@@ -49,7 +49,7 @@ private:
     kHchamberEff,    ///< Counts per cathode histogram index
     kHslatEff,       ///< Counts per slat histogram index
     kHboardEff,      ///< Counts per board histogram index
-    kHcheckBoard,    ///< Check rejected tracks per board
+    kHcheckBoard    ///< Check rejected tracks per board
   };
   
   Int_t GetHistoIndex(Int_t histoType, Int_t countType=-1, 
