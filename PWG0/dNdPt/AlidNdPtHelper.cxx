@@ -984,6 +984,7 @@ Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEven
      continue;
 
      // only charged particles
+     if(!particle->GetPDG()) continue;
      Double_t charge = particle->GetPDG()->Charge()/3.;
      if (TMath::Abs(charge) < 0.001)
      continue;
