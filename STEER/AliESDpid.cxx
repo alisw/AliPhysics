@@ -54,7 +54,7 @@ Int_t AliESDpid::MakePID(AliESDEvent *event, Bool_t TPConly, Float_t TimeZeroTOF
       MakeITSPID(track);
       MakeTOFPID(track, TimeZeroTOF);
       //MakeHMPIDPID(track);
-      MakeTRDPID(track);
+      //MakeTRDPID(track);
     }
     CombinePID(track);
   }

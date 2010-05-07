@@ -26,8 +26,10 @@
 #include <TAxis.h>
 #include <TFile.h>
 #include <TH1.h>
+#include <TKey.h>
 #include <TObjArray.h>
 #include <TString.h>
+#include <TROOT.h> 
 #include <TSystem.h>
 
 #include "AliLog.h"
@@ -42,20 +44,25 @@ const Double_t AliTRDPIDResponse::fgkPBins[kNPBins] = {1, 2, 3, 4, 5, 6};
 AliTRDPIDResponse::AliTRDPIDResponse(const Char_t * filename):
  TObject()
  ,fReferences(NULL)
+ ,fGainNormalisationFactor(1.)
  ,fPIDmethod(2)
 {
  //
  // Default constructor
  //
-  Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
- memset(fMapRefHists, 0, sizeof(Int_t) * size);
- Load(filename);
+  Int_t size  = (AliPID::kSPECIES)*(kNPBins);
+  //memset(fMapRefHists, 0, sizeof(Int_t) * size);
+  for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++)
+    for(Int_t ipbin = 0; ipbin < kNPBins; ipbin++)
+      fMapRefHists[ispec][ipbin] = -1;
+  Load(filename);
 }
 
 //____________________________________________________________
 AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
  TObject(ref)
  ,fReferences(ref.fReferences)
+ ,fGainNormalisationFactor(ref.fGainNormalisationFactor)
  ,fPIDmethod(ref.fPIDmethod)
 {
  //
@@ -63,7 +70,7 @@ AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
  // Flat copy of the reference histos
  // For creating a deep copy call SetOwner
  //
-  Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
+  Int_t size  = (AliPID::kSPECIES)*(kNPBins);
  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
 }
 
@@ -85,7 +92,7 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
    SetBit(kIsOwner, kFALSE);
  } else if(fReferences) delete fReferences;
  fReferences = ref.fReferences;
- Int_t size  = (AliPID::kSPECIES+1)*(kNPBins+1);
+ Int_t size  = (AliPID::kSPECIES)*(kNPBins);
  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
  fPIDmethod = ref.fPIDmethod;
 
@@ -117,14 +124,17 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
    return kFALSE;
  }
 
+ gROOT->cd();
  fReferences = new TObjArray();
  fReferences->SetOwner();
  TIter iter(in->GetListOfKeys());
+ TKey *histkey = NULL;
  TObject *tmp = NULL;
  Int_t arrayPos = 0, pbin = 0; 
  AliPID::EParticleType species;
  TString histname;
- while((tmp = iter())){
+ while((histkey = dynamic_cast<TKey *>(iter()))){
+   tmp = histkey->ReadObj();
    histname = tmp->GetName();
    if(histname.BeginsWith("fHQel")){ // Electron histogram
      histname.ReplaceAll("fHQel_p","");
@@ -133,9 +143,9 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
      histname.ReplaceAll("fHQpi_p","");
      species = AliPID::kPion;
    }
-   pbin = histname.Atoi();
+   pbin = histname.Atoi() - 1;
    fMapRefHists[species][pbin] = arrayPos;
-   fReferences->AddAt(tmp->Clone(), arrayPos);
+   fReferences->AddAt(new TH1F(*dynamic_cast<TH1F *>(tmp)), arrayPos);
    arrayPos++;
  } 
  in->Close();
@@ -182,6 +192,7 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Doubl
    s=0.;
    for(Int_t is(AliPID::kSPECIES); is--;){
      prLayer[is] = GetProbabilitySingleLayer(is, p[il], DE[0]);
+     AliDebug(3, Form("Probability for Species %d in Layer %d: %f", is, il, prLayer[is]));
      s+=prLayer[is];
    }
    if(s<1.e-30){
@@ -213,13 +224,16 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
  // from the reference histogram
  // Interpolation between momentum bins
  //
+ AliDebug(1, Form("Make Probability for Species %d with Momentum %f", species, plocal));
  Int_t pbin = GetLowerMomentumBin(plocal);
  Double_t pLayer = 0.;
  // Do Interpolation exept for underflow and overflow
  if(pbin >= 0 && pbin < kNPBins-1){
    TH1 *refHistUpper = NULL, *refHistLower = NULL;
-   refHistLower = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin]));
-   refHistUpper = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin+1]));
+   if(fMapRefHists[species][pbin] > 0)
+    refHistLower = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin]));
+   if(fMapRefHists[species][pbin+1] > 0)
+    refHistUpper = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin+1]));
 
    if (refHistLower && refHistUpper ) {
      Double_t pLower = refHistLower->GetBinContent(refHistLower->GetXaxis()->FindBin(dEdx));
@@ -232,14 +246,18 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
    TH1 *refHist = NULL;
    if(pbin < 0){
      // underflow
-     refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[0][0])); 
+     if(fMapRefHists[species][0] >= 0){
+       refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][0])); 
+     }
    } else {
      // overflow
-     refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][kNPBins])); 
+     if(fMapRefHists[species][kNPBins-1] > 0)
+       refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][kNPBins-1])); 
    }
    if (refHist)
      pLayer = refHist->GetBinContent(refHist->GetXaxis()->FindBin(dEdx));
  }
+ AliDebug(1, Form("Probability %f", pLayer));
  return pLayer;
 }
 
@@ -283,7 +301,7 @@ Bool_t AliTRDPIDResponse::CookdEdx(Double_t *in, Double_t *out) const
    break;
  case 2: // 1D LQ 
    out[0]= 0.;
-   for(Int_t islice = 0; islice < 8; islice++) out[0] += in[islice];
+   for(Int_t islice = 0; islice < 8; islice++) out[0] += in[islice] * fGainNormalisationFactor;
    if(out[0] < 1e-6) return kFALSE;
    break;
  default:

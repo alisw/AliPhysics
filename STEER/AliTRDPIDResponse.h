@@ -51,6 +51,7 @@ public:
 
  void      SetOwner();
  void      SetPIDmethod(Int_t m) {fPIDmethod=m;}
+ void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
 
 private:
@@ -63,6 +64,7 @@ private:
  TObjArray *fReferences; // Container for reference distributions
  Int_t     fMapRefHists[AliPID::kSPECIES+1][kNPBins+1];     
                          // Map for the position of a given historgam in the container 
+ Double_t  fGainNormalisationFactor;  // Gain normalisation factor
  UChar_t   fPIDmethod;   // PID method selector  
 
  ClassDef(AliTRDPIDResponse, 1)    // Tool for TRD PID
