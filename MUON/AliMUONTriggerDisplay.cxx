@@ -32,6 +32,7 @@
 // --- ROOT system ---
 #include <TH1.h> 
 #include <TH2.h>
+#include <TGraph.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONTriggerDisplay
@@ -127,6 +128,23 @@ TH2* AliMUONTriggerDisplay::GetDisplayHistogram(TH1* inputHisto, TString display
 }
 
 //____________________________________________________________________________ 
+TH2* AliMUONTriggerDisplay::GetDisplayHistogram(TGraph* inputGraph, TString displayHistoName,
+						EDisplayType displayType, Int_t cathode,
+						Int_t chamber, TString displayHistoTitle,
+						EDisplayOption displayOpt)
+{
+  //
+  /// Get histogram displaying the information contained in the input graph
+  //
+  TH2* displayHisto = GetEmptyDisplayHisto(displayHistoName, displayType,
+					   cathode, chamber, displayHistoTitle);
+
+  FillDisplayHistogram(inputGraph, displayHisto, displayType, cathode, chamber, displayOpt);
+
+  return displayHisto;
+}
+
+//____________________________________________________________________________ 
 Bool_t AliMUONTriggerDisplay::FillDisplayHistogram(TH1* inputHisto, TH2* displayHisto,
 						   EDisplayType displayType, Int_t cathode,
 						   Int_t chamber, EDisplayOption displayOpt)
@@ -141,7 +159,21 @@ Bool_t AliMUONTriggerDisplay::FillDisplayHistogram(TH1* inputHisto, TH2* display
 }
 
 //____________________________________________________________________________ 
-Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* displayHisto,
+Bool_t AliMUONTriggerDisplay::FillDisplayHistogram(TGraph* inputGraph, TH2* displayHisto,
+						   EDisplayType displayType, Int_t cathode,
+						   Int_t chamber, EDisplayOption displayOpt)
+{
+  //
+  /// Fill a previously initialized display histogram 
+  /// with the information contained in inputGraph.
+  /// To get initialized display, please use GetEmptyDisplayHisto method
+  //
+  return InitOrDisplayTriggerInfo(inputGraph, displayHisto, displayType,
+				  cathode, chamber, "", "",displayOpt);
+}
+
+//____________________________________________________________________________ 
+Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2* displayHisto,
 						       EDisplayType displayType,
 						       Int_t cathode, Int_t chamber,
 						       TString displayHistoName, TString displayHistoTitle,
@@ -175,7 +207,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 
   const Float_t kResetValue=1234567.;
 
-  if(!inputHisto){
+  if(!inputObject){
     xAxisBoard.Set(55);
     xAxisBoard.Reset(kResetValue);
     yAxisBoard.Set(50);
@@ -190,8 +222,19 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
       AliWarning("Display histogram not initialized. Please initialize it first!");
       return kFALSE;
   }
-  else if ( inputHisto->GetEntries() == 0 ) {
-    return kTRUE;
+  else {
+    TH1* inputHisto = dynamic_cast<TH1*>(inputObject);    
+    if ( inputHisto ) {
+      if ( inputHisto->GetEntries() == 0 ) {
+	return kTRUE;
+      }
+    }
+    else {
+      TGraph* inputGraph = dynamic_cast<TGraph*>(inputObject);
+      if ( inputGraph->GetN() == 0 ){
+	return kTRUE;
+      }
+    }
   }
 
   Float_t xWidth, yWidth, yWidthSlat=0., xWidthCol=0.;
@@ -272,7 +315,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 	  x2 = xcPad + xWidth - kShiftX;
 	  y2 = ycPad + yWidth - kShiftY;
 
-	  if(!inputHisto){
+	  if(!inputObject){
 	    AddSortedPoint(x1, xAxisStrip, kResetValue);
 	    AddSortedPoint(x2, xAxisStrip, kResetValue);
 
@@ -280,7 +323,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
 	    AddSortedPoint(y2, yAxisStrip, kResetValue);
 	  }
 	  else if(displayType==kDisplayStrips) 
-	    FillBins(inputHisto, displayHisto, iBoard, iStrip, x1, x2, y1, y2, kShiftX, kShiftY, displayOpt);
+	    FillBins(inputObject, displayHisto, iBoard, iStrip, x1, x2, y1, y2, kShiftX, kShiftY, displayOpt);
 	}
 
 	if(cath==0){
@@ -298,7 +341,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
       if(iCath==0) break;
     } // loop on cathodes
 
-    if(!inputHisto){
+    if(!inputObject){
       // Per board
       AddSortedPoint(x1b, xAxisBoard, kResetValue);
       AddSortedPoint(x2b, xAxisBoard, kResetValue);
@@ -307,12 +350,12 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TH1* inputHisto, TH2* dis
       AddSortedPoint(y2b, yAxisBoard, kResetValue);
     }
     else if(displayType==kDisplayBoards) 
-      FillBins(inputHisto, displayHisto, iBoard, -1, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
+      FillBins(inputObject, displayHisto, iBoard, -1, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
     else if(displayType==kDisplaySlats) 
-      FillBins(inputHisto, displayHisto, slat, -1, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
+      FillBins(inputObject, displayHisto, slat, -1, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
   } // loop on local boards
 
-  if(inputHisto) return kTRUE;
+  if ( inputObject ) return kTRUE;
 
   displayHisto->Reset();
 
@@ -385,7 +428,7 @@ Bool_t AliMUONTriggerDisplay::AddSortedPoint(Float_t currVal, TArrayD& position,
 
 
 //____________________________________________________________________________ 
-void AliMUONTriggerDisplay::FillBins(TH1* inputHisto, TH2* displayHisto,
+void AliMUONTriggerDisplay::FillBins(TObject* inputObject, TH2* displayHisto,
 				     Int_t iElement1, Int_t iElement2,
 				     Float_t x1, Float_t x2, Float_t y1, Float_t y2,
 				     const Float_t kShiftX, const Float_t kShiftY,
@@ -395,15 +438,29 @@ void AliMUONTriggerDisplay::FillBins(TH1* inputHisto, TH2* displayHisto,
   /// Given the bin in inputHisto, search the corresponding bins
   /// in display histo and fill it.
   //
-  TString className = inputHisto->ClassName();
+  TString className = inputObject->ClassName();
   Int_t binY=0;
   Float_t binContent=0;
-  Int_t binX = inputHisto->GetXaxis()->FindBin(iElement1);
-  if(className.Contains("2")) {
-    binY = inputHisto->GetYaxis()->FindBin(iElement2);
-    binContent = inputHisto->GetBinContent(binX, binY);
+  if ( className.Contains("TH") ) {
+    TH1* inputHisto = dynamic_cast<TH1*>(inputObject);
+    Int_t binX = inputHisto->GetXaxis()->FindBin(iElement1);
+    if(className.Contains("TH2")) {
+      binY = inputHisto->GetYaxis()->FindBin(iElement2);
+      binContent = inputHisto->GetBinContent(binX, binY);
+    }
+    else binContent = inputHisto->GetBinContent(binX);
   }
-  else binContent = inputHisto->GetBinContent(binX);
+  else {
+    TGraph* inputGraph = dynamic_cast<TGraph*>(inputObject);
+    Double_t xpt, ypt;
+    for ( Int_t ipt=0; ipt<inputGraph->GetN(); ipt++){
+      inputGraph->GetPoint(ipt, xpt, ypt);
+      if ( TMath::Abs(xpt - iElement1) < 0.1 ) {
+	binContent = ypt;
+	break;
+      }
+    }
+  }
 
   if(binContent==0) {
     if(displayOpt==kShowZeroes) binContent = 1e-5;

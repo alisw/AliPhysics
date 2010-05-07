@@ -24,6 +24,7 @@
 #include "AliMUONCDB.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONTriggerEfficiencyCells.h"
+#include "AliMUONTriggerChamberEfficiency.h"
 #include "AliCDBManager.h"
 #include "AliCDBRunRange.h"
 #include "Riostream.h"
@@ -37,12 +38,11 @@
 ///
 /// Efficiency map can be made available for next simulation.
 ///
-/// \author Diego Stocco, INFN Torino
+/// \author Diego Stocco, Subatech, Nantes
 
-void MUONTriggerChamberEfficiency(Char_t* inputFile="./MUON.TriggerEfficiencyMap.root",
+void MUONTriggerChamberEfficiency(const Char_t* inputFile="./MUON.TriggerEfficiencyMap.root",
 				  Bool_t addMapInLocalOCDB = kFALSE,
-				  Int_t firstRun=0, Int_t lastRun = AliCDBRunRange::Infinity(),
-				  Bool_t useMeanValues = kFALSE)
+				  Int_t firstRun=0, Int_t lastRun = AliCDBRunRange::Infinity())
 {
 /// \param inputFile (default "./MUON.TriggerEfficiencyMaps.root")
 ///     File with the numerator and denominator histos for efficiency calculation
@@ -53,21 +53,15 @@ void MUONTriggerChamberEfficiency(Char_t* inputFile="./MUON.TriggerEfficiencyMap
 ///     first run of validity for CDB object
 /// \param lastRun (default AliCDBRunRange::Infinity())
 ///     last run of validity for CDB Object
-/// \param useMeanValues (default kFALSE)
-///     Fill local board maps with the average RPC efficiency
-///    (useful when the statistics is low (i.e. for cosmic runs))
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(inputFile);
-  if ( useMeanValues ){
+  if ( ! addMapInLocalOCDB ){
     AliCDBManager::Instance()->SetRun(firstRun);
-    effMap->LowStatisticsSettings();
-  }
-
-  if ( !addMapInLocalOCDB ){
-    AliCDBManager::Instance()->SetRun(firstRun);
-    effMap->DisplayEfficiency();
+    AliMUONTriggerChamberEfficiency trigChEff(effMap);
+ 
+    trigChEff.DisplayEfficiency();
   }
   else
     AliMUONCDB::WriteToCDB("MUON/Calib/TriggerEfficiency", effMap, firstRun, lastRun,true);
@@ -87,6 +81,7 @@ void ShowOCDBmap(Int_t runNumber = 0, TString ocdbPath="local://$ALICE_ROOT/OCDB
   AliCDBManager::Instance()->SetRun(runNumber);
   AliMUONCalibrationData calib(runNumber);
 
-  calib.TriggerEfficiency()->DisplayEfficiency();
+  AliMUONTriggerChamberEfficiency trigChEff(calib.TriggerEfficiency());
+  trigChEff.DisplayEfficiency();
 }
 

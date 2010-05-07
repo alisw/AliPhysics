@@ -13,73 +13,62 @@
 #define ALIMUONTRIGGEREFFICIENCYCELLS_H
 
 #include "TObject.h"
-#include "TArrayI.h"
-#include "TH1F.h"
-#include "TList.h"
+class TH1F;
+class TList;
 
 class AliMUONTriggerEfficiencyCells : public TObject
 {
 public:
   AliMUONTriggerEfficiencyCells();
   AliMUONTriggerEfficiencyCells(const Char_t* filename, const Char_t* listname="triggerChamberEff");
-  AliMUONTriggerEfficiencyCells(TList *countHistoList, TList *noCountHistoList);
+  AliMUONTriggerEfficiencyCells(TList *countHistoList);
 
   AliMUONTriggerEfficiencyCells(const AliMUONTriggerEfficiencyCells& other); // copy constructor
   AliMUONTriggerEfficiencyCells& operator=(const AliMUONTriggerEfficiencyCells& other); // assignment operator
 
   virtual ~AliMUONTriggerEfficiencyCells();
 
-  void GetCellEfficiency(Int_t detElemId, Int_t localBoard, Float_t &eff1, Float_t &eff2) const;
-    
-  void IsTriggered(Int_t detElemId, Int_t localBoard, Bool_t &trig1, Bool_t &trig2) const;
+  enum {
+    kBendingEff,     ///< Bending plane fired
+    kNonBendingEff,  ///< Non-bending plane fired
+    kBothPlanesEff,  ///< Both planes fired
+    kAllTracks,      ///< tracks used for calculation
+    kNcounts         ///< Number of count type
+  };
 
-  Bool_t SumRunEfficiency(const AliMUONTriggerEfficiencyCells &other);
+  enum {
+    kHboardCount,   ///< Counts per board index 
+    kHslatCount,    ///< Counts per slat index
+    kHchamberCount  ///< Counts per chamber index
+  };
 
-  Bool_t LowStatisticsSettings(Bool_t useMeanValues=kTRUE);
+  const Char_t* GetHistoName(Int_t histoType, Int_t countType, 
+			     Int_t chamber = -1);
 
-  // Methods for display
-  void DisplayEfficiency(Bool_t perSlat=kFALSE);
+  /// Get list of histograms
+  TList* GetHistoList() { return fCountHistoList; }
 
-  // Methods for efficiency check
-  /// Set the list of fired strips
-  void SetFiredStrips(TList *firedStrips){fFiredStrips = firedStrips;}
-  void CheckFiredStrips(); // Check for strips with lower counts than others:
-                           // syntomatic of possible read-out problems in boards
+  TH1F* GetOldEffHisto(Int_t hType, Int_t ich, Int_t icath); // obsolete
+
 protected:
-    void Reset(Bool_t resetAll = kTRUE);
-    void ReadFile(const Char_t* filename="$ALICE_ROOT/MUON/data/efficiencyCells.dat", const Char_t* listname="");
-    void CalculateEfficiency(Int_t trigger44, Int_t trigger34,
-			     Float_t &efficiency, Float_t &error,
-			     Bool_t failuresAsInput);
+    void ResetHistos(Bool_t deleteObjects = kFALSE);
 
+    void ReadFile(const Char_t* filename, 
+		  const Char_t* listname);
 
 private:
     void CheckConstants() const;
-    Int_t FindChamberIndex(Int_t detElemId) const;
-    void ReadFileBoards(ifstream &file);
-    void ReadHistoBoards(const Char_t* filename="MUON.TriggerEfficiencyMap.root", const Char_t* listname="triggerChamberEff");
-    void InitHistos();
-    void FillHistosFromList(Bool_t useMeanValues = kFALSE);
-    Bool_t GetListsForCheck();
 
     static const Int_t fgkNcathodes=2; ///<Number of cathodes
     static const Int_t fgkNchambers=4; ///<Number of chambers
     static const Int_t fgkNplanes=8;   ///<Number of planes
-
-    /// Return the current plane
-    Int_t GetPlane(Int_t chamber, Int_t cathode){ return fgkNchambers * cathode + chamber; }
     
-    TH1F *fBoardEfficiency[fgkNplanes];///< the boards content
-    TH1F *fSlatEfficiency[fgkNplanes];///< the slats content
+    TH1F *fBoardEfficiency[fgkNplanes];///< the boards content (obsolete)
+    TH1F *fSlatEfficiency[fgkNplanes];///< the slats content (obsolete)
 
-    TList *fCountHistoList; ///<list of efficiency numerators
-    TList *fNoCountHistoList; ///<list of efficiency denominators
-    TList *fFiredStrips; ///<list of fired strips for efficiency check
-
-    TList *fDisplayHistoList; //!< list of efficiency histograms for display
-    TList *fBoardLabelList; //!< list of board labels for display
-    TList *fFiredFitHistoList; //!< list of fired strips for checks
-    TList *fFiredDisplayHistoList; //!< list of fired strips for display
+    TList *fCountHistoList; ///< list of histograms for efficiency calculation
+    TList *fNoCountHistoList; ///<list of efficiency denominators (obsolete)
+    TList *fFiredStrips; ///<list of fired strips for efficiency check (obsolete)
 
     ClassDef(AliMUONTriggerEfficiencyCells,6) // Trigger efficiency store
 };

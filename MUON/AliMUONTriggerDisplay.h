@@ -17,6 +17,7 @@
 
 class TArrayD;
 class TString;
+class TGraph;
 
 class AliMUONTriggerDisplay: public TObject {
 
@@ -50,8 +51,17 @@ public:
 			   EDisplayType displayType, Int_t cathode,
 			   Int_t chamber=11, TString displayHistoTitle="",
 			   EDisplayOption displayOpt=kDefaultDisplay);
+
+  TH2* GetDisplayHistogram(TGraph* inputGraph, TString displayHistoName,
+			   EDisplayType displayType, Int_t cathode,
+			   Int_t chamber=11, TString displayHistoTitle="",
+			   EDisplayOption displayOpt=kDefaultDisplay);
   
   Bool_t FillDisplayHistogram(TH1* inputHisto, TH2* displayHisto,
+			      EDisplayType displayType, Int_t cathode,
+			      Int_t chamber=11,EDisplayOption displayOpt=kDefaultDisplay);
+  
+  Bool_t FillDisplayHistogram(TGraph* inputGraph, TH2* displayHisto,
 			      EDisplayType displayType, Int_t cathode,
 			      Int_t chamber=11,EDisplayOption displayOpt=kDefaultDisplay);
   
@@ -60,13 +70,13 @@ private:
   /// Return index
   Int_t GetIndex(Int_t chamber, Int_t cathode) { return 2*chamber + cathode;}
 
-  Bool_t InitOrDisplayTriggerInfo(TH1* inoutHisto, TH2* displayHisto,
+  Bool_t InitOrDisplayTriggerInfo(TObject* inputHisto, TH2* displayHisto,
 				  EDisplayType displayType,
 				  Int_t cathode, Int_t chamber,
 				  TString displayHistoName, TString displayHistoTitle,
 				  EDisplayOption displayOpt=kDefaultDisplay);
 
-  void FillBins(TH1* inputHisto, TH2* displayHisto,
+  void FillBins(TObject* inputHisto, TH2* displayHisto,
 		Int_t iElement1, Int_t iElement2,
 		Float_t x1, Float_t x2, Float_t y1, Float_t y2,
 		const Float_t kShiftX, const Float_t kShiftY,

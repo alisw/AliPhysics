@@ -8,6 +8,7 @@ SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONCalibParamNI.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
+	AliMUONTriggerChamberEfficiency.cxx \
         AliMUON2DStoreValidator.cxx \
         AliMUONTriggerIO.cxx \
         AliMUONTrackerIO.cxx \

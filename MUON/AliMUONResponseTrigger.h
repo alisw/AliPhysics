@@ -12,6 +12,7 @@
 
 #include "AliMUONResponse.h"
 #include "AliMUONTriggerEfficiencyCells.h"
+#include "AliMUONTriggerChamberEfficiency.h"
 
 class AliMUONResponseTrigger : public AliMUONResponse
 {
@@ -27,7 +28,7 @@ class AliMUONResponseTrigger : public AliMUONResponse
   virtual void InitTriggerEfficiency(AliMUONTriggerEfficiencyCells* triggerEfficiency);
 
  protected:
-  AliMUONTriggerEfficiencyCells* fTriggerEfficiency; //!< trigger efficiency map
+  AliMUONTriggerChamberEfficiency* fTriggerEfficiency; //!< trigger efficiency map
   
  private:
   /// Not implemented
@@ -36,7 +37,7 @@ class AliMUONResponseTrigger : public AliMUONResponse
   AliMUONResponseTrigger& operator=(const AliMUONResponseTrigger& other); // assignment operator
   
 
-  ClassDef(AliMUONResponseTrigger,2) // Implementation of RPC response
+  ClassDef(AliMUONResponseTrigger,3) // Implementation of RPC response
     
 };
 #endif

@@ -31,6 +31,7 @@
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTriggerEfficiencyCells.h"
+#include "AliMUONTriggerChamberEfficiency.h"
 
 #include "AliMpPad.h"
 #include "AliMpCathodType.h"
@@ -157,8 +158,7 @@ AliMUONResponseTrigger::InitTriggerEfficiency(AliMUONTriggerEfficiencyCells *tri
 {
 /// Initialize trigger chamber efficiency (on demand)
 
-  fTriggerEfficiency = triggerEfficiency;
-  if ( fTriggerEfficiency )
+  if ( triggerEfficiency )
   {
     AliDebug(1, "Will apply trigger efficiency");
   }
@@ -167,4 +167,6 @@ AliMUONResponseTrigger::InitTriggerEfficiency(AliMUONTriggerEfficiencyCells *tri
     AliFatal("I was requested to apply trigger efficiency, but I could "
 	     "not get it !");
   }
+  fTriggerEfficiency = new AliMUONTriggerChamberEfficiency(triggerEfficiency);
+  
 }
