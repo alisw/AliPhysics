@@ -143,13 +143,7 @@ Bool_t AliESDInputHandler::Notify(const char* path)
       TString esdTreeFName, esdFriendTreeFName;    
       esdTreeFName = (fTree->GetCurrentFile())->GetName();
       esdFriendTreeFName = esdTreeFName;
-      if(esdFriendTreeFName.Contains("#AliESDs.root")) {
-	  TString name =  fFriendFileName;
-	  name.Prepend("#");
-	  esdFriendTreeFName.ReplaceAll("#AliESDs.root", name.Data());
-      } else {
-	  esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
-      }
+      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
       
       TTree* cTree = fTree->GetTree();
       if (!cTree) cTree = fTree;
