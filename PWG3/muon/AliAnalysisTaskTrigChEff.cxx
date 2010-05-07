@@ -32,6 +32,7 @@
 
 // ROOT includes
 #include "TH1.h"
+#include "TH2.h"
 #include "TCanvas.h"
 #include "TROOT.h"
 #include "TString.h"
@@ -70,15 +71,14 @@ AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
 }
 
 
-//___________________________________________________________________________
+//_________________________________________________________________________
 void AliAnalysisTaskTrigChEff::UserCreateOutputObjects() {
   //
   /// Create histograms
   /// Called once
   //
 
-  TString cathCode[2] = {"bendPlane", "nonBendPlane"};
-  TString countTypeName[2] = {"CountInCh", "NonCountInCh"};
+  TString countTypeName[kNcounts] = {"bendPlane", "nonBendPlane","bothPlanes", "allTracks"};
 
   const Char_t* yAxisTitle = "counts";
 
@@ -97,87 +97,57 @@ void AliAnalysisTaskTrigChEff::UserCreateOutputObjects() {
   Float_t boardLow = 1-0.5, boardHigh = kNboards+1.-0.5;
   const Char_t* boardName = "board";
 
-  Int_t angleBins = 280;
-  Float_t angleLow = -70., angleHigh = 70.;
-  const Char_t* angleNameX = "#theta_{x} (deg)";
-  const Char_t* angleNameY = "#theta_{y} (deg)";
-
-  TString baseName, histoName;
+  TString baseName, histoName, histoTitle;
   fList = new TList();
 
   TH1F* histo;
+  TH2F* histo2D;
 
-  histo = new TH1F("nTracksInSlat", "Num. of tracks used for efficiency calculation", 
-		   slatBins, slatLow, slatHigh);
-  histo->GetXaxis()->SetTitle(slatName);
-  histo->GetYaxis()->SetTitle("num of used tracks");
+  Int_t histoIndex = -1;
 
-  fList->AddAt(histo, kHtracksInSlat);
+  for(Int_t icount=0; icount<kNcounts; icount++){
+    histoName = Form("%sCountChamber", countTypeName[icount].Data());
+    histo = new TH1F(histoName, histoName,
+		     chamberBins, chamberLow, chamberHigh);
+    histo->GetXaxis()->SetTitle(chamberName);
+    histo->GetYaxis()->SetTitle(yAxisTitle);
+    histoIndex = GetHistoIndex(kHchamberEff, icount);
+    fList->AddAt(histo, histoIndex);
+  } // loop on counts
 
-  histo = new TH1F("nTracksInBoard", "Num. of tracks used for efficiency calculation", 
-		   boardBins, boardLow, boardHigh);
-  histo->GetXaxis()->SetTitle(boardName);
-  histo->GetYaxis()->SetTitle("num of used tracks");
-
-  fList->AddAt(histo, kHtracksInBoard);
-
-  for(Int_t hType=0; hType<kNcounts; hType++){
-    Int_t hindex = (hType==0) ? kHchamberEff : kHchamberNonEff;
-    for(Int_t cath=0; cath<kNcathodes; cath++){
-      histoName = Form("%sChamber%s", cathCode[cath].Data(), countTypeName[hType].Data());
+  for(Int_t icount=0; icount<kNcounts; icount++){
+    for(Int_t ch=0; ch<kNchambers; ch++){
+      histoName = Form("%sCountSlatCh%i", countTypeName[icount].Data(), kFirstTrigCh+ch);
       histo = new TH1F(histoName, histoName,
-		       chamberBins, chamberLow, chamberHigh);
-      histo->GetXaxis()->SetTitle(chamberName);
+		       slatBins, slatLow, slatHigh);
+      histo->GetXaxis()->SetTitle(slatName);
       histo->GetYaxis()->SetTitle(yAxisTitle);
-	
-      fList->AddAt(histo, hindex + cath);
-    } // loop on cath
+      histoIndex = GetHistoIndex(kHslatEff, icount, ch);
+      fList->AddAt(histo, histoIndex);
+    } // loop on chamber
   } // loop on counts
 
-  for(Int_t hType=0; hType<kNcounts; hType++){
-    Int_t hindex = (hType==0) ? kHslatEff : kHslatNonEff;
-    for(Int_t cath=0; cath<kNcathodes; cath++){
-      for(Int_t ch=0; ch<kNchambers; ch++){
-	Int_t chCath = GetPlane(cath, ch);
-	histoName = Form("%sSlat%s%i", cathCode[cath].Data(), countTypeName[hType].Data(), kFirstTrigCh+ch);
-	histo = new TH1F(histoName, histoName,
-			 slatBins, slatLow, slatHigh);
-	histo->GetXaxis()->SetTitle(slatName);
-	histo->GetYaxis()->SetTitle(yAxisTitle);
-
-	fList->AddAt(histo, hindex + chCath);
-      } // loop on chamber
-    } // loop on cath
+  for(Int_t icount=0; icount<kNcounts; icount++){
+    for(Int_t ch=0; ch<kNchambers; ch++){
+      histoName = Form("%sCountBoardCh%i", countTypeName[icount].Data(), kFirstTrigCh+ch);
+      histo = new TH1F(histoName, histoName,
+		       boardBins, boardLow, boardHigh);
+      histo->GetXaxis()->SetTitle(boardName);
+      histo->GetYaxis()->SetTitle(yAxisTitle);
+      histoIndex = GetHistoIndex(kHboardEff, icount, ch);
+      fList->AddAt(histo, histoIndex);
+    } // loop on chamber
   } // loop on counts
 
-  for(Int_t hType=0; hType<kNcounts; hType++){
-    Int_t hindex = (hType==0) ? kHboardEff : kHboardNonEff;
-    for(Int_t cath=0; cath<kNcathodes; cath++){
-      for(Int_t ch=0; ch<kNchambers; ch++){
-	Int_t chCath = GetPlane(cath, ch);
-	histoName = Form("%sBoard%s%i", cathCode[cath].Data(), countTypeName[hType].Data(), kFirstTrigCh+ch);
-	histo = new TH1F(histoName, histoName,
-			 boardBins, boardLow, boardHigh);
-	histo->GetXaxis()->SetTitle(boardName);
-	histo->GetYaxis()->SetTitle(yAxisTitle);
-
-	fList->AddAt(histo, hindex + chCath);
-      } // loop on chamber
-    } // loop on cath
-  } // loop on counts
-
-  histo = new TH1F("thetaX", "Angular distribution",
-		   angleBins, angleLow, angleHigh);
-  histo->GetXaxis()->SetTitle(angleNameX);
-  histo->GetYaxis()->SetTitle("entries");
-  fList->AddAt(histo, kHthetaX);
-
-  histo = new TH1F("thetaY", "Angular distribution",
-		   angleBins, angleLow, angleHigh);
-  histo->GetXaxis()->SetTitle(angleNameY);
-  histo->GetYaxis()->SetTitle("entries");
-  fList->AddAt(histo, kHthetaY);
-
+  histo2D = new TH2F("checkRejectedBoard", "Rejected tracks motivation", 
+		     4, 20.5, 24.5, boardBins, boardLow, boardHigh);
+  histo2D->GetXaxis()->SetBinLabel(1,"Many pads");
+  histo2D->GetXaxis()->SetBinLabel(2,"Few pads");
+  histo2D->GetXaxis()->SetBinLabel(3,"Outside geom");
+  histo2D->GetXaxis()->SetBinLabel(4,"Tracker track");
+  histo2D->GetYaxis()->SetTitle(boardName);
+  histoIndex = GetHistoIndex(kHcheckBoard);
+  fList->AddAt(histo2D, histoIndex);
 }
 
 //________________________________________________________________________
@@ -202,6 +172,7 @@ void AliAnalysisTaskTrigChEff::UserExec(Option_t *) {
   const Int_t kFirstTrigCh = 11; //AliMpConstants::NofTrackingChambers()+1;
 
   TArrayI othersEfficient(kNchambers);
+  Int_t histoIndex = -1;
 
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
     esdTrack = esdEvent->GetMuonTrack(itrack);
@@ -211,10 +182,13 @@ void AliAnalysisTaskTrigChEff::UserExec(Option_t *) {
     pattern =  esdTrack->GetHitsPatternInTrigCh();
     Int_t effFlag = AliESDMuonTrack::GetEffFlag(pattern);
 
-    if(effFlag < AliESDMuonTrack::kChEff) continue; // Track not good for efficiency calculation
+    board = esdTrack->LoCircuit();
 
-    ((TH1F*)fList->At(kHthetaX))->Fill(esdTrack->GetThetaXUncorrected() * TMath::RadToDeg());
-    ((TH1F*)fList->At(kHthetaY))->Fill(esdTrack->GetThetaYUncorrected() * TMath::RadToDeg());
+    if(effFlag < AliESDMuonTrack::kChEff) {
+      histoIndex = GetHistoIndex(kHcheckBoard);
+      ((TH2F*)fList->At(histoIndex))->Fill(AliESDMuonTrack::GetSlatOrInfo(pattern), board);
+      continue; // Track not good for efficiency calculation
+    }
 
     othersEfficient.Reset(1);
     for(Int_t cath=0; cath<kNcathodes; cath++){
@@ -223,7 +197,6 @@ void AliAnalysisTaskTrigChEff::UserExec(Option_t *) {
 	  for(Int_t jch=0; jch<kNchambers; jch++){
 	    if ( jch != ich) {
 	      othersEfficient[jch] = 0;
-	      //AliInfo(Form("%s ch %i by New", baseOutString.Data(), jch));
 	    }
 	  } // loop on other chambers
 	  break;
@@ -242,33 +215,39 @@ void AliAnalysisTaskTrigChEff::UserExec(Option_t *) {
     if ( rejectTrack ) continue;
 
     slat = AliESDMuonTrack::GetSlatOrInfo(pattern);
-    board = esdTrack->LoCircuit();
 
-    if(effFlag >= AliESDMuonTrack::kSlatEff) ((TH1F*)fList->At(kHtracksInSlat))->Fill(slat);
-    if(effFlag >= AliESDMuonTrack::kBoardEff) ((TH1F*)fList->At(kHtracksInBoard))->Fill(board);
+    for(Int_t ch=0; ch<kNchambers; ch++){
+      if ( ! othersEfficient[ch] )
+	continue; // Reject track if the info of the chamber under study 
+                  // is necessary to create the track itself
 
-    for(Int_t cath=0; cath<kNcathodes; cath++){
-      for(Int_t ch=0; ch<kNchambers; ch++){
-	if ( ! othersEfficient[ch] )
-	  continue; // Reject track if the info of the chamber under study 
-	            // is necessary to create the track itself
+      Int_t iChamber = kFirstTrigCh + ch;
 
-	Int_t whichType = AliESDMuonTrack::IsChamberHit(pattern, cath, ch) ? kChHit : kChNonHit;
+      Bool_t hitsBend = AliESDMuonTrack::IsChamberHit(pattern, 0, ch);
+      Bool_t hitsNonBend = AliESDMuonTrack::IsChamberHit(pattern, 1, ch);
 
-	Int_t iChamber = kFirstTrigCh + ch;
-	Int_t hindex = ( whichType == kChHit ) ? kHchamberEff : kHchamberNonEff;
-	((TH1F*)fList->At(hindex + cath))->Fill(iChamber);
+      Bool_t fillHisto[kNcounts] = {
+	hitsBend,
+	hitsNonBend,
+	( hitsBend && hitsNonBend ),
+	kTRUE
+      };
+
+      for (Int_t icount=0; icount<kNcounts; icount++){
+	if ( ! fillHisto[icount] ) continue;
+
+	histoIndex = GetHistoIndex(kHchamberEff, icount);
+	((TH1F*)fList->At(histoIndex))->Fill(iChamber);
 
 	if(effFlag < AliESDMuonTrack::kSlatEff) continue; // Track crossed different slats
-	Int_t chCath = GetPlane(cath, ch);
-	hindex = ( whichType == kChHit ) ? kHslatEff : kHslatNonEff;
-	((TH1F*)fList->At(hindex + chCath))->Fill(slat);
+	histoIndex = GetHistoIndex(kHslatEff, icount, ch);
+	((TH1F*)fList->At(histoIndex))->Fill(slat);
 
 	if(effFlag < AliESDMuonTrack::kBoardEff) continue; // Track crossed different boards
-	hindex = ( whichType == kChHit ) ? kHboardEff : kHboardNonEff;
-	((TH1F*)fList->At(hindex + chCath))->Fill(board);
+	histoIndex = GetHistoIndex(kHboardEff, icount, ch);
+	((TH1F*)fList->At(histoIndex))->Fill(board);
       } // loop on chambers
-    } // loop on cathodes
+    } // loop on count types
   } // loop on tracks
 
   // Post final data. It will be written to a file with option "RECREATE"
@@ -284,28 +263,30 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *) {
   if ( gROOT->IsBatch() ) return;
   fList = dynamic_cast<TList*> (GetOutputData(1));
 
+  if (!fList) return;
+
   TCanvas *can;
   TH1F *num = 0x0;
   TH1F *den = 0x0;
   TGraphAsymmErrors* effGraph = 0x0;
   TString baseName[3] = {"Chamber", "RPC", "Board"};
-  Int_t baseIndex1[3] = {kHchamberEff, kHslatEff, kHboardEff};
-  Int_t baseIndex2[3] = {kHchamberNonEff, kHslatNonEff, kHboardNonEff};
-  TString cathName[2] = {"BendPlane", "NonBendPlane"};
+  Int_t baseIndex[3] = {kHchamberEff, kHslatEff, kHboardEff};
+  TString effName[kNcounts-1] = {"BendPlane", "NonBendPlane", "BothPlanes"};
+  Int_t histoIndexNum = -1, histoIndexDen = -1;
   for (Int_t itype=0; itype<3; itype++) {
-    for(Int_t cath=0; cath<kNcathodes; cath++){
-      TString canName = Form("efficiencyPer%s_%s",baseName[itype].Data(),cathName[cath].Data());
-      can = new TCanvas(canName.Data(),canName.Data(),10*(1+2*itype+cath),10*(1+2*itype+cath),310,310);
+    for(Int_t icount=0; icount<kNcounts; icount++){
+      TString canName = Form("efficiencyPer%s_%s",baseName[itype].Data(),effName[icount].Data());
+      can = new TCanvas(canName.Data(),canName.Data(),10*(1+kNcounts*itype+icount),10*(1+kNcounts*itype+icount),310,310);
       can->SetFillColor(10); can->SetHighLightColor(10);
       can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);  
       if ( itype > 0 )
 	can->Divide(2,2);
 
       for(Int_t ch=0; ch<kNchambers; ch++){
-	Int_t chCath = ( itype == 0 ) ? cath : GetPlane(cath, ch);
-	num = (TH1F*)(fList->At(baseIndex1[itype] + chCath)->Clone());
-	den = (TH1F*)(fList->At(baseIndex2[itype] + chCath)->Clone());
-	den->Add(num);
+	histoIndexNum = GetHistoIndex(baseIndex[itype], icount, ch);
+	histoIndexDen = GetHistoIndex(baseIndex[itype], kAllTracks, ch);
+	num = (TH1F*)(fList->At(histoIndexNum));
+	den = (TH1F*)(fList->At(histoIndexDen));
 	effGraph = new TGraphAsymmErrors(num, den);
 	effGraph->GetYaxis()->SetRangeUser(0., 1.1);
 	effGraph->GetYaxis()->SetTitle("Efficiency");
@@ -314,6 +295,51 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *) {
 	effGraph->Draw("AP");
 	if ( itype == 0 ) break;
       } // loop on chamber
-    } // loop on cathode
+    } // loop on count types
   } // loop on histo
+}
+
+//________________________________________________________________________
+Int_t
+AliAnalysisTaskTrigChEff::GetHistoIndex(Int_t histoType, Int_t countType, 
+					Int_t chamber)
+{
+  //
+  /// Return the index of the histogram in the list
+  //
+  switch ( histoType ) {
+  case kHchamberEff:
+    return 0 + countType;
+  case kHslatEff:
+    return 4 + kNchambers*countType + chamber;
+  case kHboardEff:
+    return 20 + kNchambers*countType + chamber;
+  case kHcheckBoard:
+    return 36;
+  }
+
+  /*
+  const Int_t kNhistosPlaneCorr = 38;
+
+  switch ( histoType ){
+  case kHtracksInSlat:
+    return 0 + planeCorrelation*kNhistosPlaneCorr;
+  case kHtracksInBoard:
+    return 1 + planeCorrelation*kNhistosPlaneCorr;
+  case kHchamberEff:
+    return 2 + kNcathodes*countType + cathode
+      + planeCorrelation*kNhistosPlaneCorr;
+  case kHslatEff:
+    return 6 + kNchambers*kNcathodes*countType 
+      + kNchambers*cathode + chamber
+      + planeCorrelation*kNhistosPlaneCorr;
+  case kHboardEff:
+    return 22 + kNchambers*kNcathodes*countType 
+      + kNchambers*cathode + chamber
+      + planeCorrelation*kNhistosPlaneCorr;
+  case kHcheckBoard:
+    return 0 + 2*kNhistosPlaneCorr;
+  }
+  */
+  return -1;
 }
