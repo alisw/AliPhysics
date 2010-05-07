@@ -34,27 +34,26 @@ private:
   enum {
     kNcathodes = 2,  ///< Number of cathodes
     kNchambers = 4,  ///< Number of chambers
-    kNplanes   = 8,  ///< Number of planes
     kNslats    = 18 ///< Number of slats
   };
 
-  enum {kChHit, kChNonHit, kNcounts};
+  enum {
+    kBendingEff,     ///< Bending plane fired
+    kNonBendingEff,  ///< Non-bending plane fired
+    kBothPlanesEff,  ///< Both planes fired
+    kAllTracks,      ///< tracks used for calculation
+    kNcounts         ///< Number of count type
+  };
 
   enum {
-    kHtracksInSlat  = 0,  ///< Tracks in slat histogram index
-    kHtracksInBoard = 1,  ///< Tracks in board histogram index
-    kHchamberEff    = 2,  ///< N44 per cathode histogram index
-    kHchamberNonEff = 4,  ///< N33 per cathode histogram index
-    kHslatEff       = 6,  ///< N44 per slat histogram index
-    kHslatNonEff    = 14, ///< N33 per slat histogram index
-    kHboardEff      = 22, ///< N44 per board histogram index
-    kHboardNonEff   = 30, ///< N33 per board histogram index
-    kHthetaX        = 38, ///< Angular distribution theta_x
-    kHthetaY        = 39  ///< Angular distribution theta_y
+    kHchamberEff,    ///< Counts per cathode histogram index
+    kHslatEff,       ///< Counts per slat histogram index
+    kHboardEff,      ///< Counts per board histogram index
+    kHcheckBoard,    ///< Check rejected tracks per board
   };
   
-  /// Given cathode and chamber, return plane number
-  Int_t GetPlane(Int_t cathode, Int_t chamber) { return kNchambers*cathode + chamber; }
+  Int_t GetHistoIndex(Int_t histoType, Int_t countType=-1, 
+		      Int_t chamber=-1);
 
   ClassDef(AliAnalysisTaskTrigChEff, 1); // Trigger chamber efficiency analysis
 };
