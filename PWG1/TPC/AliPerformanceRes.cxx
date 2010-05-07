@@ -295,6 +295,7 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
+  if(!particle->GetPDG()) return;
   if(particle->GetPDG()->Charge()==0) return;
   //printf("charge %d \n",particle->GetPDG()->Charge());
 
@@ -402,6 +403,7 @@ void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *c
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
+  if(!particle->GetPDG()) return;
   if(particle->GetPDG()->Charge()==0) return;
   //printf("charge %d \n",particle->GetPDG()->Charge());
 

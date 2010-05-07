@@ -6,6 +6,8 @@ void ProofEnableAliRoot(const char* location = "/usr/local/grid/AliRoot/v4-05-Re
 
   gProof->AddIncludePath(Form("%s/include", location));
   gProof->AddIncludePath(Form("%s/TPC", location));
+  gProof->AddIncludePath(Form("%s/TRD", location));
+  gProof->AddIncludePath(Form("%s/TRD/Cal", location));
   gProof->AddIncludePath(Form("%s/PWG1", location));
   gProof->AddIncludePath(Form("%s/ANALYSIS", location));
 

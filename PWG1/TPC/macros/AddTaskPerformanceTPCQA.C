@@ -81,7 +81,7 @@ AliPerformanceTask* AddTaskPerformanceTPCQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUs
     pRecInfoCutsTPC->SetRequireSigmaToVertex(kFALSE);
     pRecInfoCutsTPC->SetRequireTPCRefit(kFALSE);
     pRecInfoCutsTPC->SetAcceptKinkDaughters(kTRUE);
-    pRecInfoCutsTPC->SetMinNClustersTPC(50);
+    pRecInfoCutsTPC->SetMinNClustersTPC(70);
     pRecInfoCutsTPC->SetMaxChi2PerClusterTPC(1000000.);
     pRecInfoCutsTPC->SetDCAToVertex2D(kFALSE);
 
