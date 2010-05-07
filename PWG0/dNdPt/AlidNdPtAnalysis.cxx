@@ -329,7 +329,7 @@ void AlidNdPtAnalysis::Init(){
   //
 
   const Int_t multNbins = 27;
-  const Int_t ptNbinsTrackEventCorr = 37;
+  const Int_t ptNbinsTrackEventCorr = 38;
   //const Int_t ptNbins = 56;
   const Int_t ptNbins = 55;
   const Int_t etaNbins = 30;
@@ -340,7 +340,7 @@ void AlidNdPtAnalysis::Init(){
                                      9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
 				     19.5,20.5, 21.5, 22.5, 23.5, 24.5, 29.5, 149.5};
 
-  Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,4.0,6.0,10.0,16.0};
+  Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,6.0,10.0,16.0};
 
   Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
 
@@ -1342,6 +1342,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	         if(!particle) return;
 
 	         Bool_t prim = stack->IsPhysicalPrimary(label);
+                 if(!particle->GetPDG()) continue;
 	         if((particle->GetPDG()->Charge()/3.) != 0 && multRec > 3) 
 		 {
                    printf("zero true mult event: %d \n", esdEvent->GetEventNumberInFile());
@@ -1445,6 +1446,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        continue;
 
        // only charged particles
+       if(!particle->GetPDG()) continue;
        Double_t charge = particle->GetPDG()->Charge()/3.;
        if ( TMath::Abs(charge) < 0.001 )
         continue;
@@ -1551,6 +1553,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	 }
 
          // only charged particles
+         if(!particle->GetPDG()) continue;
          Double_t charge = particle->GetPDG()->Charge()/3.;
          if (TMath::Abs(charge) < 0.001)
          continue;
@@ -1730,6 +1733,7 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
   //Int_t mech = particle->GetUniqueID(); // production mechanism
 
+  if(!particle->GetPDG()) return;
   Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3 
   if(TMath::Abs(gq)<0.001) return;
   Float_t gpt = particle->Pt();
@@ -1771,6 +1775,7 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
   if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
   Int_t mech = particle->GetUniqueID(); // production mechanism
 
+  if(!particle->GetPDG()) return;
   Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3 
   if(TMath::Abs(gq) < 0.001) return;
 

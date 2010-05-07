@@ -1529,6 +1529,8 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         continue;
 
         // only charged particles
+	  
+        if(!particle->GetPDG()) continue;
         Double_t charge = particle->GetPDG()->Charge()/3.;
         if (TMath::Abs(charge) < 0.001)
           continue;
@@ -1695,6 +1697,7 @@ void AlidNdPtCorrection::FillHistograms(AliESDtrack * const esdTrack, AliStack *
     TParticle* particle = stack->Particle(label);
     if(!particle) return;
    
+    if(!particle->GetPDG()) return;
     Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3
     if(TMath::Abs(gq)<0.001) return;
     Float_t gpt = particle->Pt();
@@ -1781,6 +1784,7 @@ void AlidNdPtCorrection::FillHistograms(AliStack * const stack, Int_t /*label*/,
   if(mother) mother_pdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
   Int_t mech = particle->GetUniqueID(); // production mechanism
 
+  if(!particle->GetPDG()) return;
   Double_t gq = particle->GetPDG()->Charge()/3.0; // Charge units |e|/3 
   Float_t gpt = particle->Pt();
   Float_t qgpt = particle->Pt() * gq;
