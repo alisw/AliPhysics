@@ -47,7 +47,8 @@ EINCLUDE := HLT/BASE HLT/shuttle HLT/EVE EVE/EveHLT EVE/EveBase EVE/EveDet \
 	    HLT/BASE/util HLT/BASE/HOMER  HLT/TPCLib \
 	    ITS PHOS TRIGGER VZERO EMCAL \
 	    STEER TRD HLT/TRD  \
-	    HLT/MUON MUON 
+	    HLT/MUON MUON \
+            HLT/rec
 
 
 LIBRARY_DEP := -lHLTbase -lCDB -lSTEERBase -AliHLTTPC -lMUONbase -lAliHLTMUON -lEveDet
