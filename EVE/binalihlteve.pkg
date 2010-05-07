@@ -9,7 +9,7 @@ EINCLUDE :=
 ELIBSDIR :=
 
 ELIBS    := EveBase EveHLT EveDet \
-  HLTbase AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON \
+  HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON \
   TPCbase TPCsim TPCrec \
   ITSbase ITSrec \
   TRDbase TRDrec AliHLTTRD \

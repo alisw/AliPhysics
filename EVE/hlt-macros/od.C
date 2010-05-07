@@ -32,6 +32,11 @@
 
 #include "geom_gentle_hlt.C"
 
+//***************************************************************
+#include "HLT/rec/AliHLTReconstructor.h"
+
+
+
 #endif
 
 
@@ -179,6 +184,8 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   AliCDBManager::Instance()->SetRun(run);
   AliGeomManager::LoadGeometry();
 
+  AliHLTReconstructor * rec = new AliHLTReconstructor();
+  rec->InitStreamerInfos();
 
   // Get the pointer to gGeoManager before it's broken (bug in alieve)
   fGeoManager = gGeoManager;
