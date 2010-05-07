@@ -74,7 +74,7 @@ void AliTPCGGVoltError::Init() {
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
   //
   SetOmegaTauT1T2(wt,fT1,fT2);
-
+  InitGGVoltErrorDistortion();
   //SetDeltaVGGA(0.0);//  ideally from the database
   //SetDeltaVGGC(0.0);//  ideally from the database
 }
@@ -92,8 +92,8 @@ void AliTPCGGVoltError::Update(const TTimeStamp &/*timeStamp*/) {
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
 
- 
   SetOmegaTauT1T2(wt,fT1,fT2);
+  InitGGVoltErrorDistortion();
 }
 
 

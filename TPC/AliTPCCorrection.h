@@ -38,6 +38,7 @@ class TCollection;
 class TTreeSRedirector;
 class AliExternalTrackParam;
 class TTree;
+class THnSparse;
 
 class AliTPCCorrection : public TNamed {
 public:
@@ -70,7 +71,7 @@ public:
   TH2F* CreateHistoDRinZR   (Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
   TH2F* CreateHistoDRPhiinZR(Float_t phi=0.,Int_t nZ=100,Int_t nR=100);
   TTree* CreateDistortionTree(Double_t step=5);
-
+  static void  MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run);
   // normally called directly in the correction classes which inherit from this class
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
   AliExternalTrackParam * FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);

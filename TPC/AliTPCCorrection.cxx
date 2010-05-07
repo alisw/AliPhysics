@@ -56,6 +56,7 @@
 #include  "TDatabasePDG.h"
 #include  "AliTrackerBase.h"
 #include  "AliTPCROC.h"
+#include  "THnSparse.h"
 
 
 #include "AliTPCCorrection.h"
@@ -515,13 +516,13 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   AliTrackPointArray pointArray0(npoints0);
   AliTrackPointArray pointArray1(npoints0);
   Double_t xyz[3];
-  AliTrackerBase::PropagateTrackTo(&track,kRTPC0,kMass,3,kTRUE,kMaxSnp);
+  AliTrackerBase::PropagateTrackToBxByBz(&track,kRTPC0,kMass,3,kTRUE,kMaxSnp);
   //
   // simulate the track
   Int_t npoints=0;
   Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
   for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
-    AliTrackerBase::PropagateTrackTo(&track,radius,kMass,3,kTRUE,kMaxSnp);
+    AliTrackerBase::PropagateTrackToBxByBz(&track,radius,kMass,3,kTRUE,kMaxSnp);
     track.GetXYZ(xyz);
     AliTrackPoint pIn0;                               // space point          
     AliTrackPoint pIn1;
@@ -567,7 +568,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
 
 
   for (Int_t jpoint=0; jpoint<npoints; jpoint++){
-    Int_t ipoint= (dir>0) ? ipoint: npoints-1-jpoint;
+    Int_t ipoint= (dir>0) ? jpoint: npoints-1-jpoint;
     //
     AliTrackPoint pIn0;
     AliTrackPoint pIn1;
@@ -576,9 +577,9 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     AliTrackPoint prot0 = pIn0.Rotate(track0->GetAlpha());   // rotate to the local frame - non distoted  point
     AliTrackPoint prot1 = pIn1.Rotate(track1->GetAlpha());   // rotate to the local frame -     distorted point
     //
-    AliTrackerBase::PropagateTrackTo(track0,prot0.GetX(),kMass,1,kFALSE,kMaxSnp);
-    AliTrackerBase::PropagateTrackTo(track1,prot1.GetX(),kMass,1,kFALSE,kMaxSnp);
-    track.GetXYZ(xyz);
+    AliTrackerBase::PropagateTrackToBxByBz(track0,prot0.GetX(),kMass,1,kFALSE,kMaxSnp);
+    AliTrackerBase::PropagateTrackToBxByBz(track1,prot0.GetX(),kMass,1,kFALSE,kMaxSnp);
+    track.GetXYZ(xyz);  // distorted track also propagated to the same reference radius
     //
     Double_t pointPos[2]={0,0};
     Double_t pointCov[3]={0,0,0};
@@ -589,15 +590,19 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointCov[2]=prot0.GetCov()[5];//sigmaz^2
     track0->Update(pointPos,pointCov);
     //
-    pointPos[0]=prot1.GetY();//local y
-    pointPos[1]=prot1.GetZ();//local z
+    Double_t deltaX=prot1.GetX()-prot0.GetX();   // delta X 
+    Double_t deltaYX=deltaX*TMath::Tan(TMath::ASin(track1->GetSnp()));  // deltaY due  delta X
+    Double_t deltaZX=deltaX*track1->GetTgl();                           // deltaZ due  delta X
+
+    pointPos[0]=prot1.GetY()-deltaYX;//local y
+    pointPos[1]=prot1.GetZ()-deltaZX;//local z
     pointCov[0]=prot1.GetCov()[3];//simay^2
     pointCov[1]=prot1.GetCov()[4];//sigmayz
     pointCov[2]=prot1.GetCov()[5];//sigmaz^2
     track1->Update(pointPos,pointCov);
   }
 
-  AliTrackerBase::PropagateTrackTo(track0,refX,kMass,2.,kTRUE,kMaxSnp);
+  AliTrackerBase::PropagateTrackToBxByBz(track0,refX,kMass,2.,kTRUE,kMaxSnp);
   track1->Rotate(track0->GetAlpha());
   track1->PropagateTo(track0->GetX(),AliTrackerBase::GetBz());
 
@@ -697,6 +702,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   // corrArray - array with partial corrections
   // step      - skipe entries  - if 1 all entries processed - it is slow
   // debug     0 if debug on also space points dumped - it is slow
+  const Double_t kB2C=-0.299792458e-3;
   const Int_t kMinEntries=50;
   Double_t phi,theta, snp, mean,rms, entries;
   tinput->SetBranchAddress("theta",&theta);
@@ -715,7 +721,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   Double_t refX=0;
   Int_t dir=0;
   if (dtype==0) {refX=85; dir=-1;}
-  if (dtype==1) {refX=245; dir=1;}
+  if (dtype==1) {refX=275; dir=1;}
   if (dtype==2) {refX=0; dir=-1;}
   //
   for (Int_t ientry=0; ientry<nentries; ientry+=step){
@@ -724,20 +730,25 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
     tPar[1]=theta*refX;
     tPar[2]=snp;
     tPar[3]=theta;
-    tPar[4]=0.00001;  // should be calculated - non equal to 0
-    cout<<endl<<endl;
-    cout<<"Entry\n\n"<<ientry<<endl;
-    cout<<"dtype="<<dtype<<   // detector match type
-      "ptype="<<ptype<<   // parameter type
-      "theta="<<theta<<   // theta
-      "phi="<<phi<<       // phi 
-      "snp="<<phi<<       // snp
-      "mean="<<mean<<     // mean dist value
-      "rms="<<rms<<       // rms
-      "entries="<<entries<<endl; // number of entries in bin      
-    
+    tPar[4]=0.001;  // should be calculated - non equal to 0
+    Double_t bz=AliTrackerBase::GetBz();
+    if (refX>10.) tPar[4]=snp/(refX*bz*kB2C*2);
+    tPar[4]+=0.001;
+  //   if (gRandom->Rndm()<0.1) {
+//       cout<<endl<<endl;
+//       cout<<"Entry\n\n"<<ientry<<endl;
+//       cout<<"dtype="<<dtype<<   // detector match type
+// 	"ptype="<<ptype<<   // parameter type
+// 	"theta="<<theta<<   // theta
+// 	"phi="<<phi<<       // phi 
+// 	"snp="<<phi<<       // snp
+// 	"mean="<<mean<<     // mean dist value
+// 	"rms="<<rms<<       // rms
+// 	"entries="<<entries<<endl; // number of entries in bin      
+//     }
     if (TMath::Abs(snp)>0.251) continue;
     (*pcstream)<<"fit"<<
+      "bz="<<bz<<         // magnetic filed used
       "dtype="<<dtype<<   // detector match type
       "ptype="<<ptype<<   // parameter type
       "theta="<<theta<<   // theta
@@ -765,6 +776,78 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   }
   delete pcstream;
 }
+
+
+
+
+void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run){
+  //
+  // make a distortion map out ou fthe residual histogram
+  // Results are written to the debug streamer - pcstream
+  // Parameters:
+  //   his0       - input (4D) residual histogram
+  //   pcstream   - file to write the tree
+  //   run        - run number
+  // marian.ivanov@cern.ch
+  const Int_t kMinEntries=50;
+  Int_t nbins1=his0->GetAxis(1)->GetNbins();
+  Int_t first1=his0->GetAxis(1)->GetFirst();
+  Int_t last1 =his0->GetAxis(1)->GetLast();
+  //
+  Double_t bz=AliTrackerBase::GetBz();
+  Int_t idim[4]={0,1,2,3};
+  for (Int_t ibin1=first1; ibin1<last1; ibin1++){   //axis 1 - theta
+    //
+    his0->GetAxis(1)->SetRange(TMath::Max(ibin1,1),TMath::Min(ibin1,nbins1));
+    Double_t       x1= his0->GetAxis(1)->GetBinCenter(ibin1);
+    THnSparse * his1 = his0->Projection(4,idim);  // projected histogram according range1
+    Int_t nbins3     = his1->GetAxis(3)->GetNbins();
+    Int_t first3     = his1->GetAxis(3)->GetFirst();
+    Int_t last3      = his1->GetAxis(3)->GetLast();
+    //
+
+    for (Int_t ibin3=first3-1; ibin3<last3; ibin3+=1){   // axis 3 - local angle
+      his1->GetAxis(3)->SetRange(TMath::Max(ibin3-1,1),TMath::Min(ibin3+1,nbins3));
+      Double_t      x3= his1->GetAxis(3)->GetBinCenter(ibin3);
+      if (ibin3<first3) {
+	his1->GetAxis(3)->SetRangeUser(-1,1);
+	x3=0;
+      }
+      THnSparse * his3= his1->Projection(4,idim);         //projected histogram according selection 3
+      Int_t nbins2    = his3->GetAxis(2)->GetNbins();
+      Int_t first2    = his3->GetAxis(2)->GetFirst();
+      Int_t last2     = his3->GetAxis(2)->GetLast();
+      //
+      for (Int_t ibin2=first2; ibin2<last2; ibin2+=1){
+	his3->GetAxis(2)->SetRange(TMath::Max(ibin2-1,1),TMath::Min(ibin2+1,nbins2));
+	Double_t x2= his3->GetAxis(2)->GetBinCenter(ibin2);
+	TH1 * hisDelta = his3->Projection(0);
+	//
+	Double_t entries = hisDelta->GetEntries();
+	Double_t mean=0, rms=0;
+	if (entries>kMinEntries){
+	  mean    = hisDelta->GetMean(); 
+	  rms = hisDelta->GetRMS(); 
+	}
+	(*pcstream)<<hname<<
+	  "run="<<run<<
+	  "bz="<<bz<<
+	  "theta="<<x1<<
+	  "phi="<<x2<<
+	  "snp="<<x3<<
+	  "entries="<<entries<<
+	  "mean="<<mean<<
+	  "rms="<<rms<<
+	  "\n";
+	delete hisDelta;
+	printf("%f\t%f\t%f\t%f\t%f\n",x1,x3,x2, entries,mean);
+      }
+      delete his3;
+    }
+    delete his1;
+  }
+}
+
 
 
 

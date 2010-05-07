@@ -271,7 +271,12 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   
 }
-
+AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
+  //
+  // get distortion map - due E field distortions
+  //
+  return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;
+}
 
 //_____________________________________________________________________________
 AliCDBEntry* AliTPCcalibDB::GetCDBEntry(const char* cdbPath)
@@ -351,11 +356,11 @@ void AliTPCcalibDB::Update(){
     AliFatal("TPC - Missing calibration entry")
   }
 
-  entry          = GetCDBEntry("TPC/Calib/PadTime0");
+  entry          = GetCDBEntry("TPC/Calib/Distortion");
   if (entry){
     //if (fPadTime0) delete fPadTime0;
     entry->SetOwner(kTRUE);
-    fDistortionMap =(TObjArray*)entry->GetObject();
+    fDistortionMap =dynamic_cast<TObjArray*>(entry->GetObject());
   }else{
     //AliFatal("TPC - Missing calibration entry")
   }

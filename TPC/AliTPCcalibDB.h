@@ -64,7 +64,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadGainFactor() const {return fPadGainFactor;}
   AliTPCCalPad* GetDedxGainFactor() const {return fDedxGainFactor;}
   AliTPCCalPad* GetPadTime0() const {return fPadTime0;}
-  AliTPCCalPad* GetDistortionMap(Int_t i) const {return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;}
+  AliTPCCalPad* GetDistortionMap(Int_t i) const;
   AliTPCCorrection * GetTPCComposedCorrection() const { return fComposedCorrection;}
   void          SetTPCComposedCorrection(AliTPCCorrection *compCorr) { fComposedCorrection=compCorr;}
   AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
