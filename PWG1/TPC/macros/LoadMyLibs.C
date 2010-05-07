@@ -10,7 +10,6 @@ void LoadMyLibs() {
   
   // Load AliRoot libraries
   
-  
   CheckLoadLibrary("libSTEERBase");
   CheckLoadLibrary("libESD");
   CheckLoadLibrary("libCDB");
@@ -19,24 +18,27 @@ void LoadMyLibs() {
   CheckLoadLibrary("libSTEER");
   CheckLoadLibrary("libRAWDatasim");
 
-  CheckLoadLibrary("libTPCbase");
-  CheckLoadLibrary("libTPCrec");
-  CheckLoadLibrary("libTPCsim");
-  CheckLoadLibrary("libITSbase");
-  CheckLoadLibrary("libITSsim");
-  CheckLoadLibrary("libITSrec");
-  CheckLoadLibrary("libTRDbase");
-  CheckLoadLibrary("libTRDsim");
-  CheckLoadLibrary("libTRDrec");
-  CheckLoadLibrary("libTOFbase");
-  CheckLoadLibrary("libTOFrec");
-  CheckLoadLibrary("libTOFsim");
-
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libAOD");
   CheckLoadLibrary("libANALYSISalice");
   CheckLoadLibrary("libTENDER");
+  CheckLoadLibrary("libSTAT");
+
+  CheckLoadLibrary("libTPCbase");
+  CheckLoadLibrary("libTPCsim");
+  CheckLoadLibrary("libTPCrec");
   CheckLoadLibrary("libTPCcalib");
+  CheckLoadLibrary("libITSbase");
+  CheckLoadLibrary("libITSsim");
+  CheckLoadLibrary("libITSrec");
+  CheckLoadLibrary("libTRDcalib");
+  CheckLoadLibrary("libTRDbase");
+  CheckLoadLibrary("libTRDrec");
+  CheckLoadLibrary("libTRDsim");
+  CheckLoadLibrary("libTOFbase");
+  CheckLoadLibrary("libTOFrec");
+  CheckLoadLibrary("libTOFsim");
+
   CheckLoadLibrary("libPWG1");
 }
 

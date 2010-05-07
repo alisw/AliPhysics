@@ -226,6 +226,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
   {
     TParticle* particle = stack->Particle(iMc);
     if (!particle) continue;
+    if (!particle->GetPDG()) continue; 
     if (particle->GetPDG()->Charge() == 0.0) continue;
       
     // physical primary
@@ -323,6 +324,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
   {
     TParticle* particle = stack->Particle(iMc);
     if (!particle) continue;
+    if (!particle->GetPDG()) continue; 
     if (particle->GetPDG()->Charge() == 0.0) continue;
       
     // physical primary
@@ -437,6 +439,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
   {
     TParticle* particle = stack->Particle(iMc);
     if (!particle) continue;
+    if (!particle->GetPDG()) continue; 
     if (particle->GetPDG()->Charge() == 0.0) continue;
       
     // physical primary
@@ -530,6 +533,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
   {
     TParticle* particle = stack->Particle(iMc);
     if (!particle) continue;
+    if (!particle->GetPDG()) continue; 
     if (particle->GetPDG()->Charge() == 0.0) continue;
       
     // physical primary

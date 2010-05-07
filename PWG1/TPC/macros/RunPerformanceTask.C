@@ -5,23 +5,24 @@
 //
 
 /*
+ 
   //1. Run locally e.g.
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/LoadMyLibs.C");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("list_flatP_JB.txt",10, 0);
+  TChain* chain = CreateESDChain("esds_test.txt",10, 0);
   chain->Lookup();
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/RunPerformanceTask.C");
-  RunPerformanceTask(chain, kTRUE, kTRUE, kFALSE);
+  RunPerformanceTask(chain, kFALSE, kTRUE, kFALSE);
 
   //2. Run on PROOF Lite e.g.
 
   TProof::Open(""); 
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/ProofEnableAliRoot.C");
-  ProofEnableAliRoot("/d/alice11/jacek/alice/x86_64/AliRoot/trunkJB/");
+  ProofEnableAliRoot("/u/jacek/alice/AliRoot/trunk");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
   TChain* chain = CreateESDChain("list_flatP_JB.txt",20, 0);
@@ -112,8 +113,9 @@ void RunPerformanceTask(TChain *chain, Bool_t bUseMCInfo=kTRUE, Bool_t bUseESDfr
   //
   // Add task to AliAnalysisManager
   //
-  gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceTPC.C");
-  AliPerformanceTask *tpcQA = AddTaskPerformanceTPC(bUseMCInfo,bUseESDfriend);
+  //gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceTPC.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
+  AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(bUseMCInfo,bUseESDfriend);
   if(!tpcQA) { 
       Error("runTPCQA","TaskPerformanceTPC not created!");
       return;
