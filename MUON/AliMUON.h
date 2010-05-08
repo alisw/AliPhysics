@@ -112,12 +112,15 @@ class AliMUON : public  AliDetector
 	{ fTriggerEffCells = trigEffCells; }
     virtual Bool_t GetTriggerEffCells() const;
                  /// Set off generation of noisy digits
-    virtual void SetDigitizerWithNoise(Int_t digitizerWithNoise)
-        { fDigitizerWithNoise = digitizerWithNoise; }
+  virtual void SetDigitizerWithNoise(Int_t digitizerWithNoise, Double_t nsigmas=4.0)
+  { fDigitizerWithNoise = digitizerWithNoise; fDigitizerNSigmas = nsigmas; }
+  
     virtual Int_t GetDigitizerWithNoise() const; 
-    
-                 /// Parametrised tail effect in resolution histogram
-    virtual void SetTailEffect(Bool_t isTailEffect) { fIsTailEffect=isTailEffect; }
+  
+  virtual Double_t GetDigitizerNSigmas() const { return fDigitizerNSigmas; }
+
+  /// Parametrised tail effect in resolution histogram
+  virtual void SetTailEffect(Bool_t isTailEffect) { fIsTailEffect=isTailEffect; }
     
     // For pileup studies
     //
@@ -176,6 +179,7 @@ class AliMUON : public  AliDetector
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
     Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
+    Double_t fDigitizerNSigmas; ///< nsigma cut for noise generation
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
 
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
@@ -191,7 +195,7 @@ class AliMUON : public  AliDetector
     Float_t fTimeMin;           ///< minimum time(*10^9) for an sdigit to be digitized
     Float_t fTimeMax;           ///< maximum time(*10^9) for an sdigit to be digitized
   
-    ClassDef(AliMUON,19)  // MUON Detector base class
+    ClassDef(AliMUON,20)  // MUON Detector base class
 };
 #endif
 

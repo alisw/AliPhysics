@@ -33,6 +33,7 @@ class AliMUONDigitizerV3 : public AliDigitizer
 public:
   AliMUONDigitizerV3(AliRunDigitizer* manager=0, 
                      Int_t generateNoisyDigits=1);
+  
   virtual ~AliMUONDigitizerV3();
 
   virtual void Exec(Option_t* opt="");
@@ -49,7 +50,10 @@ public:
   /// Set calibration data
   void SetCalibrationData(AliMUONCalibrationData* calibrationData) 
                           {fCalibrationData = calibrationData;}
-  
+
+  /// Set the number of sigmas for pedestal cut
+  static void SetNSigmas(Double_t nsigmas=4.0) { fgNSigmas = nsigmas; }
+
 private:
   /// Not implemented
   AliMUONDigitizerV3(const AliMUONDigitizerV3& other);
@@ -83,7 +87,7 @@ private:
   AliMUONTriggerElectronics* fTriggerProcessor; ///< pointer to the trigger part of the job
   TF1* fNoiseFunctionTrig; //!< function to get noise disribution on trig. chambers
   Int_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker (1) and trigger (2)
-  static const Double_t fgkNSigmas; ///< \brief number of sigmas above ped to use 
+  static Double_t fgNSigmas; ///< \brief number of sigmas above ped to use 
   /// for noise-only digit generation and zero-suppression
   AliMUONLogger* fLogger; //!< to keep track of messages
   AliMUONVTriggerStore* fTriggerStore; //!< trigger objects
@@ -91,7 +95,7 @@ private:
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
   AliMUONVDigitStore* fInputDigitStore; //!< input digit store
   
-  ClassDef(AliMUONDigitizerV3,8) // MUON Digitizer V3-8
+  ClassDef(AliMUONDigitizerV3,9) // MUON Digitizer V3-9
 };
 
 #endif

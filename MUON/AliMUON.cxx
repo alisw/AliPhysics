@@ -97,6 +97,7 @@ AliMUON::AliMUON()
     fTriggerCoinc44(0),
     fTriggerEffCells(0),
     fDigitizerWithNoise(1),
+    fDigitizerNSigmas(4.0),
     fIsTailEffect(kTRUE),
     fRawWriter(0x0),
     fDigitMaker(0x0),
@@ -134,6 +135,7 @@ AliMUON::AliMUON(const char *name, const char* title)
     fTriggerCoinc44(0),
     fTriggerEffCells(0),
     fDigitizerWithNoise(1),
+    fDigitizerNSigmas(4.0),
     fIsTailEffect(kTRUE),
     fRawWriter(0x0),
     fDigitMaker(new AliMUONDigitMaker),
@@ -434,6 +436,7 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 /// Return digitizer
   
   AliMUONDigitizerV3* digitizer = new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
+  AliMUONDigitizerV3::SetNSigmas(fDigitizerNSigmas);
   digitizer->SetCalibrationData(fCalibrationData);
   return digitizer;
 }
