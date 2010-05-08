@@ -50,6 +50,7 @@ fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
 fCharm4ProngTClArr(0),
 fDstarTClArr(0),
+fCascadesTClArr(0),
 fLikeSign2ProngTClArr(0),
 fLikeSign3ProngTClArr(0)
 {
@@ -68,6 +69,7 @@ fJPSItoEleTClArr(0),
 fCharm3ProngTClArr(0),
 fCharm4ProngTClArr(0),
 fDstarTClArr(0),
+fCascadesTClArr(0),
 fLikeSign2ProngTClArr(0),
 fLikeSign3ProngTClArr(0)
 {
@@ -171,6 +173,12 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
     AddAODBranch("TClonesArray", &fDstarTClArr, filename);
   }
 
+  if(fVHF->GetCascades()){
+    fCascadesTClArr = new TClonesArray("AliAODRecoCascadeHF", 0);
+    fCascadesTClArr->SetName("CascadesHF");
+    AddAODBranch("TClonesArray", &fCascadesTClArr, filename);
+  }
+
   if(fVHF->GetLikeSign()) {                      
     fLikeSign2ProngTClArr = new TClonesArray("AliAODRecoDecayHF2Prong", 0);
     fLikeSign2ProngTClArr->SetName("LikeSign2Prong");
@@ -205,6 +213,7 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
 		       fCharm3ProngTClArr,
 		       fCharm4ProngTClArr,
 		       fDstarTClArr,
+		       fCascadesTClArr,
                        fLikeSign2ProngTClArr,
                        fLikeSign3ProngTClArr);
   
