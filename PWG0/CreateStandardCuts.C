@@ -1,68 +1,44 @@
 /* $Id: CreateCuts.C,v 1.5 2008/01/11 08:28:52 jgrosseo Exp $ */
 
-// this macro creates the track and event cuts used in this analysis
+// this macro creates the track cuts used in this analysis
 
 AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode, Bool_t hists = kTRUE)
 {
-  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+  AliESDtrackCuts* esdTrackCuts = 0;
+  
+  // see https://twiki.cern.ch/twiki/bin/view/ALICE/SelectionOfPrimaryTracksForPp2009DataAnalysis
+  
+  if (analysisMode & AliPWG0Helper::kTPC)
+  {
+    esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+
+    TString tag("TPC-only tracking");
+
+    esdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    esdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+  
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetMinNClustersTPC(70);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  }
+
+  if (analysisMode & AliPWG0Helper::kTPCITS)
+  {
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
+  
+    TString tag("Global tracking");
+  }
 
   if (hists)
     esdTrackCuts->DefineHistograms(1);
 
-  // default cuts for ITS+TPC
-  Double_t cov1 = 2;
-  Double_t cov2 = 2;
-  Double_t cov3 = 0.5;
-  Double_t cov4 = 0.5;
-  Double_t cov5 = 2;
-  Double_t nSigma = 4;
-
-  Bool_t tpcRefit = kTRUE;
-  Bool_t sigmaToVertex = kTRUE;
-
-  TString tag("Global tracking");
-
-  // TPC-only cuts
-  if (analysisMode & AliPWG0Helper::kTPC)
-  {
-    cov1 = 1e10;
-    cov2 = 1e10;
-    cov3 = 1e10;
-    cov4 = 1e10;
-    cov5 = 1e10;
-    
-    tpcRefit = kFALSE;
-    sigmaToVertex = kFALSE;
-    
-    tag = "TPC-only tracking";
-  }
-  
   // cuts for data without field
   if (!(analysisMode & AliPWG0Helper::kFieldOn))
   {
-    cov5 = 1e10;
     tag += " without field";
   }
-
-  esdTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
-
-  esdTrackCuts->SetRequireSigmaToVertex(sigmaToVertex);
-
-  if (sigmaToVertex) {
-    esdTrackCuts->SetMaxNsigmaToVertex(nSigma);
-  }
-  else
-  {
-    esdTrackCuts->SetMaxDCAToVertexZ(3.2);
-    esdTrackCuts->SetMaxDCAToVertexXY(2.4);
-    esdTrackCuts->SetDCAToVertex2D(kTRUE);
-  }
-
-  esdTrackCuts->SetRequireTPCRefit(tpcRefit);
-  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-
-  esdTrackCuts->SetMinNClustersTPC(50);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
 
   Printf("Created track cuts for: %s", tag.Data());
 
