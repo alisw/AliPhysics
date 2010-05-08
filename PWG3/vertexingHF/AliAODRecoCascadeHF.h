@@ -68,6 +68,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   Double_t InvMassD0() const {return (Charge()>0 ? Get2Prong()->InvMassD0() : Get2Prong()->InvMassD0bar());}
   Double_t InvMassDstarKpipi() const;
   Double_t DeltaInvMass() const {return (InvMassDstarKpipi()-InvMassD0());}
+  Double_t AngleD0dkpPisoft() const;
 
   // Lc invariant mass
   Double_t InvMassLctoK0sP() const {

@@ -199,33 +199,11 @@ Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
   Double_t mD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   if(TMath::Abs((mDstar-mD0)-DeltaInvMass())>cutsDstar[1]) return kFALSE;
 
-  TVector3 p3Trk0(Get2Prong()->PxProng(0),Get2Prong()->PyProng(0),Get2Prong()->PzProng(0)); // from D0
-  TVector3 p3Trk1(Get2Prong()->PxProng(1),Get2Prong()->PyProng(1),Get2Prong()->PzProng(1)); // from D0
-  TVector3 p3Trk2(PxProng(0),PyProng(0),PzProng(0)); // pi_s
-
-  TVector3 perp = p3Trk0.Cross(p3Trk1);
-  Double_t theta = p3Trk2.Angle(perp);
-  if(theta>(TMath::Pi()-theta)) theta = TMath::Pi() - theta;
-  theta = TMath::Pi()/2. - theta;
-
+  Double_t theta = AngleD0dkpPisoft(); 
   if(theta>cutsDstar[4]) return kFALSE;
-
-  Double_t alpha = p3Trk0.Angle(p3Trk2);
-  Double_t belta = p3Trk1.Angle(p3Trk2);
-
-  Double_t cosphi01 = TMath::Cos(alpha) / TMath::Cos(theta);
-  Double_t cosphi02 = TMath::Cos(belta) / TMath::Cos(theta);
-
-  Double_t phi01 = TMath::ACos(cosphi01);
-  Double_t phi02 = TMath::ACos(cosphi02);
-  Double_t phi00 = p3Trk0.Angle(p3Trk1);
-
-  if((phi01>phi00) || (phi02>phi00)) return kFALSE;
   
   return kTRUE;
 }
-//-----------------------------------------------------------------------------
-
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0, 
 					 Bool_t okLck0sp, Bool_t okLcLpi) const 
@@ -291,3 +269,19 @@ Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
 
 }
 //-----------------------------------------------------------------------------
+Double_t AliAODRecoCascadeHF::AngleD0dkpPisoft() const {
+  //
+  // Angle of soft pion to D0 decay plane
+  // 
+
+  TVector3 p3Trk0(Get2Prong()->PxProng(0),Get2Prong()->PyProng(0),Get2Prong()->PzProng(0)); // from D0
+  TVector3 p3Trk1(Get2Prong()->PxProng(1),Get2Prong()->PyProng(1),Get2Prong()->PzProng(1)); // from D0
+  TVector3 p3Trk2(PxProng(0),PyProng(0),PzProng(0)); // pi_s
+
+  TVector3 perp = p3Trk0.Cross(p3Trk1);
+  Double_t theta = p3Trk2.Angle(perp);
+  if(theta>(TMath::Pi()-theta)) theta = TMath::Pi() - theta;
+  theta = TMath::Pi()/2. - theta;
+
+  return theta;
+}
