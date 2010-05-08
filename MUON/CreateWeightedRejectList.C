@@ -30,6 +30,19 @@
 /// where runlist.txt has 2 integers per line = "run nevents"
 /// where nevents is the number of events where there's (for instance) a CMUS1B trigger
 ///
+///
+/// Assuming the file coming from the Export feature of the logbook is runlist.logbook.txt =>
+///
+/// 115521;PHYSICS_1;1357;0.9
+/// 115516;PHYSICS_1;944;0.9
+///
+/// The awk command below will output the needed format for this macro :
+///
+/// awk '{split ($0,a,";"); print a[1] " " a[3];}' runlist.logbook.txt =>
+///
+/// 115521 1357
+/// 115516 944
+///
 /// \author Matthieu Lenhardt, Subatech
 ///
 
@@ -404,13 +417,6 @@ bool CreateXMLCollectionFromRunList(const char* collectionName,
   {
     return 0x0;
   }
-  
-  //  gEnv->SetValue("XNet.ConnaectTimeout",5);
-  //  gEnv->SetValue("XNet.RequestTimeout",5);
-  //  gEnv->SetValue("XNet.MaxRedirectCount",2);
-  //  gEnv->SetValue("XNet.ReconnectTimeout",5);
-  //  gEnv->SetValue("XNet.FirstConnectMaxCnt",1);
-  //  TFile::SetOpenTimeout(60);
   
   TString stype(type);
   stype.ToUpper();
