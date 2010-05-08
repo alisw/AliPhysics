@@ -19,6 +19,7 @@
 #pragma link C++ class AliRDHFCutsLctopKpi+;
 #pragma link C++ class AliRDHFCutsLctoV0+;
 #pragma link C++ class AliRDHFCutsD0toKpipipi+;
+#pragma link C++ class AliRDHFCutsDStartoKpipi+;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;
