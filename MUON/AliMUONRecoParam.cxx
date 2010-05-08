@@ -507,7 +507,7 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout<<Form("maximum number of track candidates above which the tracking is abandonned = %d",fMaxTrackCandidates)<<endl;
 
   cout << Form("The average noise pad charge is assumed to be %7.2f fC",AverageNoisePadCharge()) << endl;
-  cout << Form("and clusters above %5.2f times this noise charge (i.e. %7.2f fC) are discarded",
+  cout << Form("and clusters below %5.2f times this noise charge (i.e. %7.2f fC) are discarded",
                ClusterChargeCut(),ClusterChargeCut()*AverageNoisePadCharge()) << endl;
   cout << Form("Note that LowestPadCharge is then %7.2f fC",LowestPadCharge()) << endl;
   
