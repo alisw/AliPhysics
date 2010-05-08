@@ -100,7 +100,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
     TH1* hAnalyzedEvents = AliQAv1::GetData(list,AliMUONQAIndices::kTriggerRawNAnalyzedEvents,AliRecoParam::ConvertIndex(specie));
     Int_t nAnalyzedEvents = 0;
     if ( hAnalyzedEvents ) 
-      nAnalyzedEvents = hAnalyzedEvents->GetBinContent(1);
+      nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(1));
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
       currHisto = AliQAv1::GetData(list,histoRawsPercentIndex[ihisto],AliRecoParam::ConvertIndex(specie));
       if ( currHisto ){
