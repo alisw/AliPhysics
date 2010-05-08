@@ -466,6 +466,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.04");
+  rn->AddLine("");
+  rn->AddLine("Changed the default OCDB to 2010 version");
+  rn->AddLine("");
+  
   rn->AddLine("1.03");
   rn->AddLine("");
   rn->AddLine("Add Print buttons");
