@@ -25,6 +25,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   hDeltaMassDstar->SetXTitle("M(Kpipi)-M(Kpi) [GeV]");
   hDeltaMassDstar->SetYTitle("Entries");
 
+
   // open input file and get the TTree
   TFile inFile(aodFileName,"READ");
   if (!inFile.IsOpen()) return;
@@ -51,6 +52,10 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   // load D* candidates
   TClonesArray *arrayDstar = 
     (TClonesArray*)aod->GetList()->FindObject("Dstar"); 
+    
+  // load cascade (V0+track) candidates
+  TClonesArray *arrayCascades = 
+    (TClonesArray*)aod->GetList()->FindObject("CascadesHF"); 
     
 
   Double_t cutsD0[9]=
@@ -85,8 +90,20 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
 		      1.0, 
 		      0.5};
 
+  Double_t cutsLctoV0[9]=// cuts on Lambdac candidates to V0+bachelor
+                        // (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
+                        // 0 = inv. mass half width in K0s hypothesis [GeV]   
+                        // 1 = inv. mass half width in Lambda hypothesis [GeV]   
+                        // 2 = inv. mass V0 in K0s hypothesis half width [GeV]   
+                        // 3 = inv. mass V0 in Lambda hypothesis half width [GeV]   
+                        // 4 = pT min Bachelor track [GeV/c]
+                        // 5 = pT min V0-Positive track [GeV/c]
+                        // 6 = pT min V0-Negative track [GeV/c]
+                        // 7 = dca cut on the V0 (cm)
+                        // 8 = dca cut on the cascade (cm)
+    {2.0,2.0,1.0,1.0,0.0,0.0,0.0,1000.,1000.};
 
-  Int_t nTotHF=0,nTotD0toKpi=0,nTotDstar=0,nTot3Prong=0;
+  Int_t nTotHF=0,nTotD0toKpi=0,nTotDstar=0,nTot3Prong=0,nTotCasc=0;
   AliAODVertex *vtx1=0;
 
   // loop over events
@@ -201,6 +218,14 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
       // print info
       //cout << iVtx << ": vertex z position: " << vtxHF->GetZ() << endl;
     }
+
+
+    // count cascade candidates
+    if (arrayCascades){
+      Int_t nCasc = arrayCascades->GetEntriesFast();
+      nTotCasc+=nCasc;
+      cout << "Number of Cascades: "<<nCasc<<endl;
+    }
     
   }
   
@@ -208,6 +233,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   printf("\n Total D0->Kpi: %d\n",nTotD0toKpi);
   printf("\n Total D*->D0pi: %d\n",nTotDstar);
   printf("\n Total Charm->3Prong: %d\n",nTot3Prong);
+  if (arrayCascades) printf("\n Total Cascades: %d\n",nTotCasc);
 
   TCanvas *c1 = new TCanvas("c1","c1",0,0,800,700);
   c1->Divide(2,2);

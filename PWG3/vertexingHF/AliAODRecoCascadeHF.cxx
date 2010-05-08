@@ -225,3 +225,69 @@ Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
   return kTRUE;
 }
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0, 
+					 Bool_t okLck0sp, Bool_t okLcLpi) const 
+{
+  // cuts on Lambdac candidates to V0+bachelor
+  // (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
+  // 0 = inv. mass half width in K0s hypothesis [GeV]   
+  // 1 = inv. mass half width in Lambda hypothesis [GeV]   
+  // 2 = inv. mass V0 in K0s hypothesis half width [GeV]   
+  // 3 = inv. mass V0 in Lambda hypothesis half width [GeV]   
+  // 4 = pT min Bachelor track [GeV/c]
+  // 5 = pT min V0-Positive track [GeV/c]
+  // 6 = pT min V0-Negative track [GeV/c]
+  // 7 = dca cut on the V0 (cm)
+  // 8 = dca cut on the cascade (cm)
+
+//   if ( !Getv0() || !Getv0PositiveTrack() || !Getv0NegativeTrack() ) 
+//     { AliInfo(Form("Not adapted for ESDv0s, return true...")); return false; }
+
+  Double_t mLck0sp,mLcLpi;
+  okLck0sp=1; okLcLpi=1;
+  
+  Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Double_t mLPDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+
+  // k0s + p
+  double mk0s = Getv0()->MassK0Short();
+  mLck0sp = InvMassLctoK0sP();
+
+  // lambda + pi 
+  double mlambda = Getv0()->MassLambda();
+  double malambda = Getv0()->MassAntiLambda();
+  mLcLpi = InvMassLctoLambdaPi();
+
+  // cut on Lc mass
+  //   with k0s p hypothesis
+  if(TMath::Abs(mLck0sp-mLcPDG)>cutsLctoV0[0]) okLck0sp = 0;
+  //   with Lambda pi hypothesis
+  if(TMath::Abs(mLcLpi-mLcPDG)>cutsLctoV0[1]) okLcLpi = 0;
+  
+  // cuts on the v0 mass
+  if(TMath::Abs(mk0s-mk0sPDG)>cutsLctoV0[2]) okLck0sp = 0;
+  if( TMath::Abs(mlambda-mLPDG)>cutsLctoV0[3] && 
+      TMath::Abs(malambda-mLPDG)>cutsLctoV0[3] ) okLcLpi = 0;
+  
+  if(!okLck0sp && !okLcLpi) return 0;
+  
+  // cuts on the minimum pt of the tracks 
+  if(TMath::Abs(GetBachelor()->Pt()) < cutsLctoV0[4]) return 0;
+  if(TMath::Abs(Getv0PositiveTrack()->Pt()) < cutsLctoV0[5]) return 0;
+  if(TMath::Abs(Getv0NegativeTrack()->Pt()) < cutsLctoV0[6]) return 0;
+  
+  // cut on the v0 dca
+  if(TMath::Abs(Getv0()->DcaV0Daughters()) > cutsLctoV0[7]) return 0;
+  
+  // cut on the cascade dca
+  if( TMath::Abs(GetDCA(0))>cutsLctoV0[8] ||
+      TMath::Abs(Getv0()->DcaPosToPrimVertex())>cutsLctoV0[8] ||
+      TMath::Abs(Getv0()->DcaNegToPrimVertex())>cutsLctoV0[8] ) return 0;
+  
+  return true; 
+
+}
+//-----------------------------------------------------------------------------

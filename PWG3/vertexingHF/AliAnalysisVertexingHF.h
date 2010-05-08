@@ -26,10 +26,13 @@ class AliRDHFCutsJpsitoee;
 class AliRDHFCutsDplustoKpipi;
 class AliRDHFCutsDstoKKpi;
 class AliRDHFCutsLctopKpi;
+class AliRDHFCutsLctoV0;
 class AliRDHFCutsD0toKpipipi;
 class AliESDtrack;
 class AliVEvent;
 class AliAODVertex;
+class AliESDv0; 
+class AliAODv0; 
 
 //-----------------------------------------------------------------------------
 class AliAnalysisVertexingHF : public TNamed {
@@ -47,6 +50,7 @@ class AliAnalysisVertexingHF : public TNamed {
 		      TClonesArray *aodCharm3ProngTClArr,
 		      TClonesArray *aodCharm4ProngTClArr,
 		      TClonesArray *aodDstarTClArr,
+		      TClonesArray *aodCascadesTClArr,
 		      TClonesArray *aodLikeSign2ProngTClArr,
 		      TClonesArray *aodLikeSign3ProngTClArr);
 
@@ -63,6 +67,8 @@ class AliAnalysisVertexingHF : public TNamed {
   void Set4ProngOff() { f4Prong=kFALSE; }
   void SetDstarOn() { fDstar=kTRUE; }
   void SetDstarOff() { fDstar=kFALSE; }
+  void SetCascadesOn() { fCascades=kTRUE; }
+  void SetCascadesOff() { fCascades=kFALSE; }
   void SetLikeSignOn() { fLikeSign=kTRUE; }
   void SetLikeSignOff() { fLikeSign=kFALSE; }
   void SetMixEventOn() { fMixEvent=kTRUE; }
@@ -73,12 +79,14 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t Get3Prong() const { return f3Prong; }
   Bool_t Get4Prong() const { return f4Prong; }
   Bool_t GetDstar()  const { return fDstar; }
+  Bool_t GetCascades() const { return fCascades; }
   Bool_t GetLikeSign() const { return fLikeSign; }
   Bool_t GetMixEvent() const { return fMixEvent; }
   Bool_t GetInputAOD() const { return fInputAOD; }
   Bool_t GetRecoPrimVtxSkippingTrks() const {return fRecoPrimVtxSkippingTrks;}
   Bool_t GetRmTrksFromPrimVtx() const {return fRmTrksFromPrimVtx;}
   void SetFindVertexForDstar(Bool_t vtx=kTRUE) { fFindVertexForDstar=vtx; }
+  void SetFindVertexForCascades(Bool_t vtx=kTRUE) { fFindVertexForCascades=vtx; }
   void SetRecoPrimVtxSkippingTrks() 
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void UnsetRecoPrimVtxSkippingTrks()
@@ -99,6 +107,8 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsDstoKKpi* GetCutsDstoKKpi() const { return fCutsDstoKKpi; }
   void SetCutsLctopKpi(AliRDHFCutsLctopKpi* cuts) { fCutsLctopKpi = cuts; }
   AliRDHFCutsLctopKpi* GetCutsLctopKpi() const { return fCutsLctopKpi; }
+  void SetCutsLctoV0(AliRDHFCutsLctoV0* cuts) { fCutsLctoV0 = cuts; }
+  AliRDHFCutsLctoV0* GetCutsLctoV0() const { return fCutsLctoV0; }
   void SetCutsD0toKpipipi(AliRDHFCutsD0toKpipipi* cuts) { fCutsD0toKpipipi = cuts; }
   AliRDHFCutsD0toKpipipi* GetCutsD0toKpipipi() const { return fCutsD0toKpipipi; }
   void SetCutsD0fromDstar(AliRDHFCutsD0toKpi* cuts) { fCutsD0fromDstar = cuts; }
@@ -140,6 +150,11 @@ class AliAnalysisVertexingHF : public TNamed {
 		 Double_t cut9=-1.1,Double_t cut10=0.,
 		 Double_t cut11=10000000000.); 
   void SetLcCuts(const Double_t cuts[12]); 
+  void SetLctoV0Cuts(Double_t cut0=1000.,Double_t cut1=1000., 
+		     Double_t cut2=1000., Double_t cut3=1000.,
+		     Double_t cut4=0., Double_t cut5=0.,Double_t cut6=0.,
+		     Double_t cut7=0.,Double_t cut8=0.); 
+  void SetLctoV0Cuts(const Double_t cuts[9]); 
   void SetDstarCuts(Double_t cut0=1000., Double_t cut1=1000.,
                       Double_t cut2=-1., Double_t cut3=1000.,
                       Double_t cut4=1.6); 
@@ -155,6 +170,7 @@ class AliAnalysisVertexingHF : public TNamed {
   const Double_t *GetDplusCuts() const {return fDplusCuts;}
   const Double_t *GetDsCuts() const {return fDsCuts;}
   const Double_t *GetLcCuts() const {return fLcCuts;}
+  const Double_t *GetLctoV0Cuts() const {return fLctoV0Cuts;}
   const Double_t *GetDstarCuts() const {return fDstarCuts;}
   const Double_t *GetD0to4ProngsCuts() const {return fD0to4ProngsCuts;}
 
@@ -184,6 +200,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t f3Prong;    // D+,Ds,Lc
   Bool_t f4Prong;    // D0->Kpipipi
   Bool_t fDstar;     // D*->D0pi
+  Bool_t fCascades;  // cascades, Lc --> v0+track
   Bool_t fLikeSign;  // Like-sign pairs
   Bool_t fMixEvent; // event mixing
 
@@ -196,6 +213,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi; // D+->Kpipi cuts
   AliRDHFCutsDstoKKpi *fCutsDstoKKpi; // Ds->KKpi cuts
   AliRDHFCutsLctopKpi *fCutsLctopKpi; // Lc->pKpi cuts
+  AliRDHFCutsLctoV0 *fCutsLctoV0; // Lc --> v0 + bachelor cuts
   AliRDHFCutsD0toKpipipi *fCutsD0toKpipipi; // D0->Kpipipi cuts
   AliRDHFCutsD0toKpi *fCutsD0fromDstar; // D0 from Dstar cuts
 
@@ -276,6 +294,19 @@ class AliAnalysisVertexingHF : public TNamed {
                         // 9 = cosThetaPoint
                         // 10 = Sum d0^2 (cm^2)
                         // 11 = dca cut (cm)
+
+   Double_t fLctoV0Cuts[9]; // cuts on Lambdac candidates to V0+bachelor
+                        // (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
+                        // 0 = inv. mass half width in K0s hypothesis [GeV]   
+                        // 1 = inv. mass half width in Lambda hypothesis [GeV]   
+                        // 2 = inv. mass V0 in K0s hypothesis half width [GeV]   
+                        // 3 = inv. mass V0 in Lambda hypothesis half width [GeV]   
+                        // 4 = pT min Bachelor track [GeV/c]
+                        // 5 = pT min V0-Positive track [GeV/c]
+                        // 6 = pT min V0-Negative track [GeV/c]
+                        // 7 = dca cut on the V0 (cm)
+                        // 8 = dca cut on the cascade (cm)
+
   Double_t fDstarCuts[5]; // cuts on D* candidates
                         // (to be passed to AliAODRecoCascadeHF::SelectDstar())
                         // 0 = inv. mass half width of D* [GeV]
@@ -298,6 +329,7 @@ class AliAnalysisVertexingHF : public TNamed {
 
   TList *fListOfCuts;    // pointer to list of cuts for output file
   Bool_t fFindVertexForDstar; // reconstruct a secondary vertex or assume it's from the primary vertex
+  Bool_t fFindVertexForCascades;  // reconstruct a secondary vertex or assume it's from the primary vertex
   //
   void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,const AliVEvent *event,
 	       const TObjArray *trkArray) const;
@@ -325,6 +357,11 @@ class AliAnalysisVertexingHF : public TNamed {
 				   AliAODRecoDecayHF2Prong *rd2Prong,
 				   Double_t dca,
 				   Bool_t &okDstar) const;
+  AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray,AliVEvent *event,
+				   AliAODVertex *secVert,
+				   AliAODv0 *v0,
+				   Double_t dca,
+				   Bool_t &okCascades) const;
 
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray=0x0,AliVEvent *event=0x0) const;
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
@@ -334,8 +371,12 @@ class AliAnalysisVertexingHF : public TNamed {
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
+
+  AliAODv0* TransformESDv0toAODv0(AliESDv0 *esdv0, 
+				  TObjArray *twoTrackArrayV0);
+
   //
-  ClassDef(AliAnalysisVertexingHF,16);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,17);  // Reconstruction of HF decay candidates
 };
 
 

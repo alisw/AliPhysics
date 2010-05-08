@@ -13,6 +13,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
+  //  vHF->SetCascadesOff();
+  vHF->SetFindVertexForCascades(kFALSE);
 
   //--- set cuts for single-track selection  
   //     displaced tracks
@@ -69,6 +71,11 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0fromDstar->SetCuts(9,cutsArrayD0fromDstar);
   cutsD0fromDstar->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0fromDstar(cutsD0fromDstar);
+  AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
+  Float_t cutsArrayLctoV0[9]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.};
+  cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
+  cutsLctoV0->AddTrackCuts(esdTrackCuts);
+  vHF->SetCutsLctoV0(cutsLctoV0);
   // 
   // to be removed:
   vHF->SetD0toKpiCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
@@ -79,6 +86,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetD0to4ProngsCuts(0.2,0.04,0.00,0.01,0.02,0.8,0.,0.1,0.);
   vHF->SetDstarCuts(0.3, 0.1, 0.05, 100000000000.0, 0.5);
   vHF->SetD0fromDstarCuts(0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.);
+  vHF->SetLctoV0Cuts(4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000,1000);
   //--- set this if you want to reconstruct primary vertex candidate by
   //    candidate using other tracks in the event (for pp, broad 
   //    interaction region)
@@ -90,7 +98,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- check the settings
   vHF->PrintStatus();
   //--- verbose
-  //AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",2);
+  //  AliLog::SetClassDebugLevel("AliAnalysisVertexingHF",2);
 
  
   return vHF;

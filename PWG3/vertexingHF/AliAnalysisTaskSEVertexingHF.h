@@ -50,6 +50,7 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   TClonesArray *fCharm3ProngTClArr;    // Array of D+,Ds,Lc
   TClonesArray *fCharm4ProngTClArr;    // Array of D0->Kpipipi
   TClonesArray *fDstarTClArr;          // Array of D*->D0pi
+  TClonesArray *fCascadesTClArr;       // Array of Cascades : V0 + track (lambda_c)
   TClonesArray *fLikeSign2ProngTClArr; // Array of LikeSign2Prong
   TClonesArray *fLikeSign3ProngTClArr; // Array of LikeSign3Prong 
   
