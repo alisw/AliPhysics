@@ -79,7 +79,7 @@ AliHLTEMCALRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, dou
 void 
 AliHLTEMCALRawAnalyzerComponent::DoInit() 
 {
-  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
+  //  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
 
   //  fgWatch.Start();
  
@@ -156,10 +156,11 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
       wlast =  wcurrent;
       wcurrent = fgWatch.RealTime();
       ////cout << wlast << ":" << wcurrent << endl;
-      cout << __FILE__ << __LINE__ << "The event rate is " <<  1000/( wcurrent  -  wlast ) << "  Hz" << endl; 
+      //     cout << __FILE__ << __LINE__ << "The event rate is " <<  1000/( wcurrent  -  wlast ) << "  Hz" << endl; 
       fgWatch.Start(kFALSE); 
       //     wlast =  fgWatch.RealTime(); 
     }
+
   
   /*
   if( evntcnt %100 == 0  )
