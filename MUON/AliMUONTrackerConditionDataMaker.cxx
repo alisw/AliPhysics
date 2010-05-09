@@ -57,6 +57,15 @@ ClassImp(AliMUONTrackerConditionDataMaker)
 #include "TSystem.h"
 
 //_____________________________________________________________________________
+AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker():
+AliMUONVTrackerDataMaker(),
+fData(0x0),
+fSource("")
+{
+  /// default ctor to be able to stream
+}
+
+//_____________________________________________________________________________
 AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker(Int_t runNumber, const char* ocdbPath, const char* type):
 AliMUONVTrackerDataMaker(),
 fData(0x0),

@@ -25,6 +25,7 @@ class TMap;
 class AliMUONTrackerConditionDataMaker : public AliMUONVTrackerDataMaker
 {
 public:
+  AliMUONTrackerConditionDataMaker();
   AliMUONTrackerConditionDataMaker(Int_t runNumber, const char* ocdbPath, const char* type);
   AliMUONTrackerConditionDataMaker(const char* filename, const char* type);
   AliMUONTrackerConditionDataMaker(const char* data, const char* type, Bool_t);
