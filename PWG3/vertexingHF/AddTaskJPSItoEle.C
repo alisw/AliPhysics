@@ -1,4 +1,4 @@
-AliAnalysisTaskSEJPSItoEle *AddTaskJPSItoEle(char* fileout = "AliAODjpsi.root") 
+AliAnalysisTaskSEJPSItoEle *AddTaskJPSItoEle(char* fileout = "AliAOD.Jpsitoele.root") 
 {
   //***********************************************************************************************
   // Test macro for the AliAnalysisTaskSEJPSItoEle 
@@ -27,7 +27,7 @@ AliAnalysisTaskSEJPSItoEle *AddTaskJPSItoEle(char* fileout = "AliAODjpsi.root")
   AliAnalysisTaskSEJPSItoEle *hJPSItoEleTask = new AliAnalysisTaskSEJPSItoEle("AOD_JPSItoEle_filter");
   hJPSItoEleTask->SetDebugLevel(2);
 
-  Double_t ptCuts[2] = {1.,500.}; // the cut is on the J/psi pT (--> change this)  
+  Double_t ptCuts[2] = {0.,500.}; // the cut is on the J/psi pT (--> change this)  
   hJPSItoEleTask->SetPtCuts(ptCuts);
   hJPSItoEleTask->SetAODMCInfo(kFALSE); // only for sim 
 

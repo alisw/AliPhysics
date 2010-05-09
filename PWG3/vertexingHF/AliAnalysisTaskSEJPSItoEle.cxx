@@ -42,6 +42,7 @@ class TROOT;
 #include "TDatabasePDG.h"
 #include "TROOT.h"
 #include "TCanvas.h"
+#include "TBits.h" //**********************
 
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
@@ -63,6 +64,7 @@ fhDecayTimeMCjpsifromB(0),
 fhDecayTime(0),                         
 fhDecayTimeOut(0),
 fhInvMass(0),                           
+fhdEdxTPC(0),
 fhD0(0),                                
 fhD0D0(0),                              
 fhCosThetaStar(0),                      
@@ -86,7 +88,6 @@ fVerticesHFTClArr(0),
 fJpsiToEleTClArr(0),
 fLikeSignTClArr(0),
 fTracksTClArr(0),
-fChain(0),
 fOrigAOD(0),
 fNewAOD(0)
 {
@@ -100,6 +101,7 @@ fhDecayTimeMCjpsifromB(0),
 fhDecayTime(0),
 fhDecayTimeOut(0),
 fhInvMass(0),                           
+fhdEdxTPC(0),
 fhD0(0),                                
 fhD0D0(0),                              
 fhCosThetaStar(0),                      
@@ -123,7 +125,6 @@ fVerticesHFTClArr(0),
 fJpsiToEleTClArr(0),
 fLikeSignTClArr(0),
 fTracksTClArr(0),
-fChain(0),
 fOrigAOD(0),
 fNewAOD(0)
 {
@@ -216,15 +217,21 @@ void AliAnalysisTaskSEJPSItoEle::UserCreateOutputObjects()
   }
 
   // Invariant mass
-  fhInvMass = new TH1F("fhInvMass", "J/#Psi invariant mass; M [GeV]; Entries",100,0.,3.2);
+  fhInvMass = new TH1F("fhInvMass", "J/#Psi invariant mass; Inv. mass [GeV]; Entries/5 MeV",100,2.75,3.25);
   fhInvMass->Sumw2();
   fhInvMass->SetMinimum(0);
   fOutput->Add(fhInvMass);
 
-  fHistMassLS = new TH1F("fHistMassLS", "Like sign pairs invariant mass; M [GeV]; Entries",200,2.8,3.25);
+  fHistMassLS = new TH1F("fHistMassLS", "Like sign pairs invariant mass; Inv. mass [GeV]; Entries/5 MeV",100,2.75,3.25);
   fHistMassLS->Sumw2();
   fHistMassLS->SetMinimum(0);
   fOutput->Add(fHistMassLS);
+
+  // TPC signal (only for candidate tracks)
+  fhdEdxTPC = new TH2F("fhdEdxTPC","TPC signal (dE/dx)",100,0.,10.,1000,0.,100.);
+  fhdEdxTPC->SetXTitle("p_{T} [GeV]");
+  fhdEdxTPC->SetYTitle("TPC signal (arb. units)");
+  fOutput->Add(fhdEdxTPC);
 
   // Pseudo proper decay time
   fhDecayTime = new TH1F("fhDecayTime", "J/#Psi pseudo proper decay time; X [#mu m]; Entries",200,-2000.,2000.);
@@ -332,32 +339,44 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
 
       // load tracks from AOD event   
       arrayTracks=(TClonesArray*)aod->GetList()->FindObject("tracks");
-      //Int_t totTracks = arrayTracks->GetEntriesFast();
+      Int_t totTracks = arrayTracks->GetEntriesFast();
+      if(fDebug>1) printf("Number of tracks === %d \n",totTracks);
 
       // load Jpsi candidates from AOD friend  
       arrayJPSItoEle=(TClonesArray*)aodFromExt->GetList()->FindObject("JPSItoEle");
-      //Int_t totJPSItoEleCand = arrayJPSItoEle->GetEntriesFast();
-
+      Int_t totJPSItoEleCand = arrayJPSItoEle->GetEntriesFast();
+      if(fDebug>1) printf("Number of J/psi->ee candidates  === %d \n",totJPSItoEleCand);
+  
       // load like sign candidates from AOD friend
       arrayLikeSign=(TClonesArray*)aodFromExt->GetList()->FindObject("LikeSign2Prong");
-      //Int_t totLikeSignCand = arrayLikeSign->GetEntriesFast();
-
+      Int_t totLikeSignCand = arrayLikeSign->GetEntriesFast();
+      if(fDebug>1) printf("Number of like sign candidates  === %d \n",totLikeSignCand);
     }
 
   } else {
+    // load tracks from AOD event
+    arrayTracks=(TClonesArray*)aod->GetList()->FindObject("tracks");
+    Int_t totTracks = arrayTracks->GetEntriesFast();
+    if(fDebug>1) printf("Number of tracks === %d \n",totTracks);
+
     // load Jpsi candidates                                                   
     arrayJPSItoEle=(TClonesArray*)aod->GetList()->FindObject("JPSItoEle");
-    //Int_t totJPSItoEleCand = arrayJPSItoEle->GetEntriesFast();
+    Int_t totJPSItoEleCand = arrayJPSItoEle->GetEntriesFast();
+    if(fDebug>1) printf("Number of J/psi->ee candidates  === %d \n",totJPSItoEleCand);
+
     // load like sign candidates
     arrayLikeSign=(TClonesArray*)aod->GetList()->FindObject("LikeSign2Prong");
-    //Int_t totLikeSignCand = arrayLikeSign->GetEntriesFast();
+    Int_t totLikeSignCand = arrayLikeSign->GetEntriesFast();
+    if(fDebug>1) printf("Number of like sign candidates  === %d \n",totLikeSignCand);
   }
 
   fOrigAOD = aod; // copy pointer to the current AliAODEvent in the data member fOrigAOD
   if (!aod) return;
-  Int_t nTracks = fOrigAOD->GetNumberOfTracks();
-  printf("+++\n+++ Number of tracks in Event---> %d\n+++\n",nTracks);
 
+  if(!arrayTracks) {
+    printf("AliAnalysisTaskSEJPSItoEle::UserExec: Tracks branch not found!\n");
+    return;
+  }
   if(!arrayJPSItoEle) {
     printf("AliAnalysisTaskSEJPSItoEle::UserExec: JPSItoEle branch not found!\n");
     return;
@@ -368,10 +387,12 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
   }
 
   // load MC particles and read MC info (for sim only)
-  TClonesArray* mcArray =  dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
-     //AliInfo(Form("+++\n+++ MC particles found in mcArray ---> %d \n+++\n",mcArray->GetEntriesFast()));
-  if(fOkAODMC) ReadAODMCInfo(aod,arrayJPSItoEle);
+  TClonesArray* mcArray=0;
+  if(fOkAODMC){
+     mcArray =  dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+     if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
+     ReadAODMCInfo(aod,arrayJPSItoEle);
+     }
 
   // retrieve AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -399,15 +420,33 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
   //
 
   // Access to the new AOD container of tracks
+
   Int_t trkIDtoEntry[100000];
+  AliAODTrack* trackin=0;
   for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
-    AliAODTrack *track = aod->GetTrack(it);
-    trkIDtoEntry[track->GetID()]=it;
+    trackin = aod->GetTrack(it);
+    trkIDtoEntry[trackin->GetID()]=it;
+    }
+/*
+  for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
+    vtx1->AddDaughter(trackout = new(arrayTrackRef[iOutTracks++]) AliAODTrack((*(aod->GetTrack(trkIDtoEntry[it])))));
+    trackin = (AliAODTrack*)arrayTracks->UncheckedAt(ntracks);
+    printf("trackin ==== %d \n", trackin);
+    AliAODTrack* trackout = new(arrayTrackRef[iOutTracks++]) AliAODTrack(*trackin);
+    }
+  const AliAODTrack* trackin;  
+  Int_t numTracks = arrayTracks->GetEntriesFast();
+  for(Int_t ntracks=0; ntracks<numTracks; ntracks++){
+  trackin = (AliAODTrack*)arrayTracks->UncheckedAt(ntracks);
+  printf("trackin ==== %d \n", trackin);
+    AliAODTrack* trackout = new(arrayTrackRef[iOutTracks++]) AliAODTrack(*trackin);
   }
+*/
 
   Int_t nPosPairs=0,nNegPairs=0;
   Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
-  if(fDebug>1) printf("+++\n+++ Number of total like sign pairs (before cuts)---> %d \n+++\n", nLikeSign);
+  AliAODRecoDecayHF2Prong* dlsout = 0;
+  //if(fDebug>1) printf("+++\n+++ Number of total like sign pairs (before cuts)---> %d \n+++\n", nLikeSign);
 
   for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
     AliAODRecoDecayHF2Prong *dlsin = (AliAODRecoDecayHF2Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
@@ -416,8 +455,9 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
         dlsin->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
         unsetvtx=kTRUE;
     }
-    Int_t okBtoJPSIls=0;
-    if(dlsin->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
+    //Int_t okBtoJPSIls=0;
+    //if(dlsin->Pt() < fPtCuts[1] && dlsin->Pt() > fPtCuts[0]){ // apply pt cut only
+    //if(dlsin->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSIls)) {
        AliAODTrack *trk0 = (AliAODTrack*)dlsin->GetDaughter(0);
        fHistMassLS->Fill(dlsin->InvMassJPSIee());
        fHistCPtaLS->Fill(dlsin->CosPointingAngle());
@@ -438,15 +478,15 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
         }
        PostData(1,fOutput);
      
-       // Clone like sign candidate for output AOD
-       new(arrayLikeSignRef[iOutLikeSign++]) AliAODRecoDecayHF2Prong(*dlsin);
+    // Clone like sign candidate for output AOD
+    dlsout = new(arrayLikeSignRef[iOutLikeSign++]) AliAODRecoDecayHF2Prong(*dlsin);
 
-    }
+    //}
     if(unsetvtx) dlsin->UnsetOwnPrimaryVtx();
   }
 
-  if(fDebug>1) printf("+++\n+++ N. of positive pairs passing cuts in Event ----- %d \n+++\n", nPosPairs);
-  if(fDebug>1) printf("+++\n+++ N. of negative pairs passing cuts in Event ----- %d \n+++\n", nNegPairs);
+  //if(fDebug>1) printf("+++\n+++ N. of positive pairs passing cuts in Event ----- %d \n+++\n", nPosPairs);
+  //if(fDebug>1) printf("+++\n+++ N. of negative pairs passing cuts in Event ----- %d \n+++\n", nNegPairs);
 
   fTotPosPairs += nPosPairs;
   fTotNegPairs += nNegPairs;
@@ -456,9 +496,10 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
   //
 
   Int_t nInJPSItoEle = arrayJPSItoEle->GetEntriesFast();
-  if(fDebug>1) printf("+++\n+++ Number of total like JPSI -> ee candidates (before cuts)---> %d \n+++\n", nInJPSItoEle);
+  //if(fDebug>1) printf("+++\n+++ Number of total like JPSI -> ee candidates (before cuts)---> %d \n+++\n", nInJPSItoEle);
 
   //totJPSIin +=  nInJPSItoEle;
+  Bool_t isOkEle[2] = {kFALSE,kFALSE};
 
   for (Int_t iJPSItoEle = 0; iJPSItoEle < nInJPSItoEle; iJPSItoEle++) {
 
@@ -478,11 +519,12 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
       unsetvtx=kTRUE;
     }
 
-    Int_t okBtoJPSI=0;
-    if(dIn->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSI)) {
+    //Int_t okBtoJPSI=0;
+    //if(dIn->Pt() < fPtCuts[1] && dIn->Pt() > fPtCuts[0]){ // apply pt cut only
+    //if(dIn->SelectBtoJPSI(fVHF->GetBtoJPSICuts(),okBtoJPSI)) {
       if ( fOkAODMC && mcLabel == -1){AliDebug(2,"No MC particle found");} else {
 
-         fhInvMass->Fill(dIn->InvMassJPSIee()); 
+         //fhInvMass->Fill(dIn->InvMassJPSIee()); 
          fhD0->Fill(10000*dIn->ImpParXY());
          fhD0D0->Fill(1e8*dIn->Prodd0d0());
          fhCosThetaStar->Fill(dIn->CosThetaStarJPSI());      
@@ -499,6 +541,28 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
          Double_t pseudoProperDecayTime = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/dIn->Pt();
          fhDecayTime->Fill(10000*pseudoProperDecayTime);
   
+         // retrieve daughter tracks 
+         AliAODTrack *trk0 = (AliAODTrack*)dIn->GetDaughter(0);
+         TBits clusterMap0 = trk0->GetTPCClusterMap();
+         Int_t npoints0 = clusterMap0.CountBits(0); 
+         AliAODPid *pid0 = trk0->GetDetPid();
+         if(GetNumberOfSigmas(trk0->P(),pid0->GetTPCsignal(),npoints0,AliPID::kElectron) < 3.) isOkEle[0]=kTRUE;
+
+         AliAODTrack *trk1 = (AliAODTrack*)dIn->GetDaughter(1);
+         TBits clusterMap1 = trk1->GetTPCClusterMap();
+         Int_t npoints1 = clusterMap1.CountBits(0);
+         AliAODPid *pid1 = trk1->GetDetPid();
+         if(GetNumberOfSigmas(trk1->P(),pid1->GetTPCsignal(),npoints1,AliPID::kElectron) < 3.) isOkEle[1]=kTRUE;
+
+         if(isOkEle[0] && isOkEle[1]) {
+           fhInvMass->Fill(dIn->InvMassJPSIee()); 
+           fhdEdxTPC->Fill(pid0->GetTPCmomentum(),pid0->GetTPCsignal());
+           fhdEdxTPC->Fill(pid1->GetTPCmomentum(),pid1->GetTPCsignal());
+         } 
+
+         //printf("TPC momentum %f\n", pid0->GetTPCmomentum());
+         //printf("TPC signal %f\n", pid0->GetTPCsignal());
+
          // clone candidate for output AOD
          AliAODVertex *v = new(verticesHFRef[iOutVerticesHF++]) 
            AliAODVertex(*(dIn->GetSecondaryVtx()));
@@ -518,15 +582,12 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
          Double_t pseudoProperDecayTimeOut = lxyOut*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/dOut->Pt();
          fhDecayTimeOut->Fill(10000*pseudoProperDecayTimeOut);
 
-         // retrieve tracks using the clone J/psi-->e+e- candidate stored in the output AOD
-         //AliAODTrack* daugh0Out = (AliAODTrack*)dOut->GetSecondaryVtx()->GetDaughter(0);
-         //AliAODTrack* daugh1Out= (AliAODTrack*)dOut->GetSecondaryVtx()->GetDaughter(1);
-         //printf("pt of positive track: %f\n",daugh0Out->Pt());
-         //printf("pt of negative track: %f\n",daugh1Out->Pt());
+         //AliAODTrack*  trk0 = (AliAODTrack*)dOut->GetDaughter(0);
+         //printf("+++ Pt first daughter = %d \n +++ \n", trk0->Pt());
 
         }
 
-     } // end of JPSItoEle candidates selection according to cuts
+     //} // end of JPSItoEle candidates selection according to cuts
 
     if(unsetvtx) dIn->UnsetOwnPrimaryVtx();
 
@@ -534,7 +595,7 @@ void AliAnalysisTaskSEJPSItoEle::UserExec(Option_t */*option*/)
 
  }// end loop on JPSI to ele candidates
 
- printf("+++\n+++ Number of selected J/psi->e+e-: %d\n+++\n",iOutJPSItoEle);
+ //printf("+++\n+++ Number of selected J/psi->e+e-: %d\n+++\n",iOutJPSItoEle);
  
  //totJPSIout += iOutJPSItoEle;
 
@@ -562,6 +623,7 @@ void AliAnalysisTaskSEJPSItoEle::Terminate(Option_t */*option*/)
   fhDecayTime = dynamic_cast<TH1F*>(fOutput->FindObject("fhDecayTime"));
   fhDecayTimeOut = dynamic_cast<TH1F*>(fOutput->FindObject("fhDecayTimeOut"));
   fhInvMass = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMass"));
+  fhdEdxTPC = dynamic_cast<TH2F*>(fOutput->FindObject("fhdEdxTPC"));
   fhD0 = dynamic_cast<TH1F*>(fOutput->FindObject("fhD0"));
   fhD0D0 = dynamic_cast<TH1F*>(fOutput->FindObject("fhD0D0"));
   fhCosThetaStar = dynamic_cast<TH1F*>(fOutput->FindObject("fhCosThetaStar"));
