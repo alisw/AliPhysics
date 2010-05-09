@@ -10,7 +10,6 @@ include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSDefinitions.h \
-		  AliHLTPHOSProcessor.h \
 		  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSRawAnalyzerChiSquareFit.h \
 		  AliHLTPHOSRawAnalyzerComponentv3.h \
