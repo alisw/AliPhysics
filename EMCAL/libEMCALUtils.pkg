@@ -15,9 +15,10 @@ AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \
 AliCaloRawAnalyzerPeakFinder.cxx \
 AliCaloRawAnalyzerNN.cxx \
+AliCaloPeakFinderVectors.cxx \
 AliEMCALHistoUtilities.cxx
 
-HDRS:= $(SRCS:.cxx=.h) 
+HDRS:= $(SRCS:.cxx=.h)  AliCaloPeakFinderConstants.h 
 
 DHDR= EMCALUtilsLinkDef.h
 

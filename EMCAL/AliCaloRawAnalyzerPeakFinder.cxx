@@ -5,7 +5,7 @@
  * Primary Author: Per Thomas Hille  <perthomas.hille@yale.edu>           *
  *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to p.t.hille@fys.uio.no                             *
+ * Please report bugs to   perthomas.hille@yale.edu                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -15,6 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 
 // The Peak-Finder algorithm
 // The amplitude is extracted  as a
@@ -32,28 +33,48 @@
 #include "unistd.h"
 #include "TMath.h"
 #include "AliLog.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "TFile.h"
+#include "AliCaloPeakFinderVectors.h"
 
 using namespace std;
 
+
 ClassImp( AliCaloRawAnalyzerPeakFinder )
 
-AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder", "PF")
-//    fTof(0), 
-//							      fAmp(0)
+
+AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder", "PF"),  
+							      fAmp(0),
+  fPeakFinderVectors(0),
+  fRunOnAlien(false)
 {
-  //comment
+  InitOCDB(fRunOnAlien);
+  fPeakFinderVectors = new AliCaloPeakFinderVectors() ;
+  ResetVectors();
+  LoadVectorsOCDB();
+  //  cout << "*********** OCDB VECTORS ************" << endl;
+  // fPeakFinderVectors->PrintVectors();
+  //  PrintVectors();
+}
 
-  fNsampleCut = 5;
 
+void 
+AliCaloRawAnalyzerPeakFinder::InitOCDB(bool alien) const
+{
+  // Setting the default OCDB pathe depending on wether we work locally or on the GRID.
+  AliCDBManager::Instance()->SetDefaultStorage(  alien == true ? "alien://$ALICE_ROOT/OCDB" : "local://$ALICE_ROOT/OCDB");
+  AliCDBManager::Instance()->SetRun(100);
+}
+
+
+void  
+AliCaloRawAnalyzerPeakFinder::ResetVectors()
+{
   for(int i=0; i < MAXSTART; i++)
     {
       for(int j=0; j < SAMPLERANGE; j++ )
 	{
-	  fPFAmpVectors[i][j] = new double[100];
-	  fPFTofVectors[i][j] = new double[100];
-	  fPFAmpVectorsCoarse[i][j] = new double[100];
-	  fPFTofVectorsCoarse[i][j] = new double[100];
-
 	  for(int k=0; k < 100; k++ )
 	    {
 	      fPFAmpVectors[i][j][k] = 0; 
@@ -63,9 +84,6 @@ AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer
 	    }
 	}
     }
-
-  LoadVectors();
-
 }
 
 
@@ -85,9 +103,14 @@ AliCaloRawAnalyzerPeakFinder::~AliCaloRawAnalyzerPeakFinder()
 }
 
 
+
 Double_t  
 AliCaloRawAnalyzerPeakFinder::ScanCoarse(const Double_t *const array, const int length ) const
 {
+  // Fisrt (coarce) estimate of Amplitude using the Peak-Finder.
+  // The output of the first iteration is sued to select vectors 
+  // for the second iteration.
+
   Double_t tmpTof = 0;
   Double_t tmpAmp= 0;
 
@@ -111,16 +134,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 
   short maxampindex; //index of maximum amplitude
   short maxamp; //Maximum amplitude
-  //  fAmp = 0;
-
-  
-  fAmpA[0] = 0;
-  fAmpA[1] = 0;
-  fAmpA[2] = 0;
-  
-  
-  //  cout << __FILE__ << __LINE__ << "\tendbin = " << bunchvector.at(index).GetEndBin()  <<  "\tstartbin = " << bunchvector.at(index).GetStartBin()  << endl;
-  
+  fAmp = 0;
   int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
 
   if( index >= 0)
@@ -132,7 +146,6 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	     
       if(  maxf < fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
 	{
-	  //	  cout << __FILE__ << __LINE__ <<":, maxamp = " << maxamp << ", ped = "<< ped  << ",. maxf = "<< maxf << ", maxampindex = "<< maxampindex  << endl;
 	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
  	}
       
@@ -151,36 +164,8 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      pfindex = pfindex > SAMPLERANGE ? SAMPLERANGE : pfindex;
 
 	      int dt =  maxampindex - startbin -2; 
-
-	      //    cout << __FILE__ << __LINE__ <<"\t The coarse estimated t0 is " << ScanCoarse( &fReversed[dt] , n ) << endl;
-	    
-	 
-	      //     Float_t tmptof = ScanCoarse( &fReversed[dt] , n );
-	      
-	      //	      cout << __FILE__ << __LINE__ << ",  dt = " << dt << ",\tmaxamindex = " << maxampindex << "\tstartbin = "<< startbin << endl;
-
-	      for( int i=0; i < SAMPLERANGE; i++ )
-		{
-		  for( int j = 0; j < 3; j++ )
-		    {
-		      //    fAmpA[j] += fPFAmpVectors[0][pfindex][i]*tmp[j]; 
-		      fAmpA[j] += fPFAmpVectors[0][pfindex][i]*fReversed[ dt  +i +j -1 ];
-		    }
-		}
-	      
-	      double diff = 9999;
 	      int tmpindex = 0;
 
-	      for(int k=0; k < 3; k ++)
-		{
-		  //		  cout << __FILE__ << __LINE__ << "amp[="<< k <<"] = " << fAmpA[k] << endl;
-		  if(  TMath::Abs(fAmpA[k] - ( maxamp - ped) )  < diff)
-		    {
-		      diff = TMath::Abs(fAmpA[k] - ( maxamp - ped));
-		      tmpindex = k; 
-		    }
-		}
-	      
 	      Float_t tmptof = ScanCoarse( &fReversed[dt] , n );
 	      
 	      if( tmptof < -1 )
@@ -190,38 +175,36 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      else
 		if( tmptof  > -1 && tmptof < 100 )
 		  {
-		    tmpindex =1;
+		    tmpindex = 1;
 		  }
 		else
 		  {
 		    tmpindex = 2;
 		  }
+
 	      double tof = 0;
 	      
 	      for(int k=0; k < SAMPLERANGE; k++   )
 		{
 		  tof +=  fPFTofVectors[0][pfindex][k]*fReversed[ dt  +k + tmpindex -1 ];   
 		}
-	      
-	      //	      cout << __FILE__ << __LINE__ <<  "tofRaw =   "<< tof /  fAmpA[tmpindex]  << endl;
-	      
-	      // tof = tof /  fAmpA[tmpindex] +  (dt + startbin)*100;
-	      
-	      if( TMath::Abs(  (maxf - fAmpA[tmpindex])/maxf )  >   0.1 )
+	    
+	      for( int i=0; i < SAMPLERANGE; i++ )
 		{
-		  fAmpA[tmpindex] = maxf;
+		  {
+		    fAmp += fPFAmpVectors[0][pfindex][i]*fReversed[ dt  +i  +tmpindex -1 ];
+		  }
 		}
-
-	      //	      timebinOffset
-
-		//      tof = (dt + startbin + tmpindex )*100 - tof/fAmpA[tmpindex];
-		// tof = ( timebinOffset )*100 - tof/fAmpA[tmpindex]; // ns
-	      tof = timebinOffset - 0.01*tof/fAmpA[tmpindex]; // clock ticks
 	      
-	      //      tof = tof/fAmpA[tmpindex];
-
+	      if( TMath::Abs(  (maxf - fAmp  )/maxf )  >   0.1 )
+		{
+		  fAmp = maxf;
+		}
 	      
-	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, fAmpA[tmpindex], tof, timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
+	      tof = timebinOffset - 0.01*tof/fAmp; // clock ticks
+	      
+	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, fAmp, tof, 
+					timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
 					AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );  
 	    }
 	  else
@@ -234,30 +217,75 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
 	}
     }
-   //  cout << __FILE__ << __LINE__ <<  "WARNING, returning amp = -1 "  <<  endl;
   return  AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid);
 }
 
 
-void 
-AliCaloRawAnalyzerPeakFinder::LoadVectors()
+void   
+AliCaloRawAnalyzerPeakFinder::CopyVectors(const AliCaloPeakFinderVectors *const pfv )
 {
-  //Read in the Peak finder vecors from file
+  // As name implies
+
+  if ( pfv != 0)
+    {
+      for(int i = 0;  i < MAXSTART ; i++)
+	{
+	  for( int j=0; j < SAMPLERANGE; j++)  
+	    {
+	      pfv->GetVector( i, j, fPFAmpVectors[i][j] ,  fPFTofVectors[i][j],    
+			      fPFAmpVectorsCoarse[i][j] , fPFTofVectorsCoarse[i][j]  ); 
+	      fPeakFinderVectors->SetVector( i, j, fPFAmpVectors[i][j], fPFTofVectors[i][j],    
+					     fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
+	    }
+	}
+    }
+  else
+    {
+      AliFatal( "pfv = ZERO !!!!!!!");
+      //      cout << __FILE__ << __LINE__ << __FUNCTION__ << "   ERROR, pfv = ZERO !!!!!!!" << endl;
+    } 
+}
+
+
+
+void   
+AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
+{
+  //Loading of Peak-Finder  vectors from the 
+  //Offline Condition Database  (OCDB)
+
+  //  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");   
+  //  AliCDBManager::Instance()->SetRun(100);
+
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/PeakFinder/");
+  //  AliCaloPeakFinderVectors *pfv ;
+  
+  if( entry != 0 )
+    {
+      AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
+      CopyVectors( pfv );
+      
+    }
+  //  CopyVectors( pfv );
+}
+
+
+void 
+AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
+{
+  //Read in the Peak finder vecors from ASCI files
   for(int i = 0;  i < MAXSTART ; i++)
     {
       for( int j=0; j < SAMPLERANGE; j++)
 	{
 	  char filenameCoarse[256];
 	  char filename[256];
-	  
 	  int n = j+fNsampleCut;
-
-	  //	  double start = (double)i+0.5;
 	  double start = (double)i+0;
-
+	  
 	  sprintf(filename,        "%s/EMCAL/vectors-emcal/start%.1fN%dtau0.235fs10dt1.0.txt", getenv("ALICE_ROOT"), start, n);
 	  sprintf(filenameCoarse,  "%s/EMCAL/vectors-emcal/start%.1fN%dtau0.235fs10dt3.0.txt", getenv("ALICE_ROOT"), start, n);
-
+	  
 	  FILE *fp  =  fopen(filename, "r");
 	  FILE *fpc =  fopen(filenameCoarse, "r");
 
@@ -274,26 +302,20 @@ AliCaloRawAnalyzerPeakFinder::LoadVectors()
 	    {
 	      for(int m = 0; m < n ; m++ )
 		{
-		  // cout << __FILE__ << __LINE__ << "i="<<i <<"\tj=" <<j << "\tm=" << m << endl;
- 
-		  fscanf(fp, "%lf\t", &fPFAmpVectors[i][j][m] );
-		  //		  fPFAmpVectorsCoarse[i][j][m] = 1;
+ 		  fscanf(fp, "%lf\t", &fPFAmpVectors[i][j][m] );
 		  fscanf(fpc, "%lf\t", &fPFAmpVectorsCoarse[i][j][m] );
 		}
-	      
 	      fscanf(fp,   "\n" );
 	      fscanf(fpc,  "\n" );
-	      
 	      for(int m = 0; m < n ; m++ )
 		{
-		  //  fPFTofVectors[i][j][m] = 1;
-
 		  fscanf(fp, "%lf\t",   &fPFTofVectors[i][j][m]  );
 		  fscanf(fpc, "%lf\t",  &fPFTofVectorsCoarse[i][j][m]  );  
-		  //  fPFTofVectorsCoarse[i][j][m] = 1;  
 		}
 	      
-	     
+	      fPeakFinderVectors->SetVector( i, j, fPFAmpVectors[i][j], fPFTofVectors[i][j],    
+					     fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
+	      					     
 	      fclose (fp);
 	      fclose (fpc);
 	    }
@@ -302,17 +324,17 @@ AliCaloRawAnalyzerPeakFinder::LoadVectors()
 }
 
 
-
-/*
-void
-AliCaloRawAnalyzerPeakFinder::PolTof( const double rectof ) const
-//
+void   
+AliCaloRawAnalyzerPeakFinder::WriteRootFile() const
 {
-  static Double_t p0 = -55.69;
-  static Double_t p1 = 3.178;
-  static Double_t p2 = -0.05587;
-  static Double_t p3 = 0.0003185;
-  static Double_t p4 = -7.91E-7;
-  static Double_t p5 = 7.576E-10;
+  // Utility function to write Peak-Finder vectors to an root file
+  // The output is used to create an OCDB entry.
+
+  cout << "**** Peakfinder vectors before writing to file **********" << endl;
+  fPeakFinderVectors->PrintVectors();
+  cout << "****************** END ***********************" << endl;
+  TFile *f = new TFile("peakfindervectors2.root",  "recreate" );
+  fPeakFinderVectors->Write();
+  f->Close();
+  delete f;
 }
-*/

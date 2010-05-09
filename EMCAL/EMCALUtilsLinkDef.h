@@ -18,6 +18,7 @@
 #pragma link C++ class AliCaloRawAnalyzerNN+;
 #pragma link C++ class AliCaloRawAnalyzerLMS+;
 #pragma link C++ class AliCaloRawAnalyzerPeakFinder+;
+#pragma link C++ class AliCaloPeakFinderVectors+;
 #pragma link C++ class AliEMCALHistoUtilities+;
 
 #endif

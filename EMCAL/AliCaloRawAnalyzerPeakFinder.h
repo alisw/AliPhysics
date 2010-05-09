@@ -9,7 +9,7 @@
  * Primary Author: Per Thomas Hille  <perthomas.hille@yale.edu>           *
  *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
- * Please report bugs to p.t.hille@fys.uio.no                             *
+ * Please report bugs to perthomas.hille@yale.edu                         *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -20,20 +20,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 // The Peak-Finder algorithm
 // The amplitude is extracted  as a
 // weighted sum of the samples using the 
 // best possible weights.
 
-
 #include "AliCaloRawAnalyzer.h"
+#include "AliCaloPeakFinderConstants.h"
 
-#define MAXSTART 3
-#define SAMPLERANGE 15
-#define SHIF 0.5
+using namespace PeakFinderConstants;
 
 class AliCaloBunchInfo;
+class AliCaloPeakFinderVectors;
 
 
 class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
@@ -41,32 +39,32 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
  public:
   AliCaloRawAnalyzerPeakFinder();
   virtual ~AliCaloRawAnalyzerPeakFinder();
-  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
+				      const UInt_t altrocfg1,  const UInt_t altrocfg2 );
 
  private:
   AliCaloRawAnalyzerPeakFinder( const AliCaloRawAnalyzerPeakFinder   & );
   AliCaloRawAnalyzerPeakFinder   & operator = ( const  AliCaloRawAnalyzerPeakFinder  & );
+  void   LoadVectorsASCII();
+  void   LoadVectorsOCDB();
+  void   CopyVectors(const AliCaloPeakFinderVectors *const pfvectors );
+  void   ResetVectors();
+  void InitOCDB(bool alien) const;
+  //  void PrintVectors() const;
+  void   WriteRootFile() const;
+  Double_t ScanCoarse(const Double_t *const array, const int length ) const ; // Find a rough estimate of peak position and t0
 
-  void     LoadVectors();
-  Double_t  ScanCoarse(const Double_t *const array, const int length ) const ; // Find a rough estimate of peak position and t0
-
-  //  void PolTof( const double rectof ) const;
+  Double_t fPFAmpVectorsCoarse[MAXSTART][SAMPLERANGE][100];  // Vectors for Amplitude extraction, first iteration
+  Double_t fPFTofVectorsCoarse[MAXSTART][SAMPLERANGE][100];  // Vectors for TOF extraction, first iteration
+  Double_t fPFAmpVectors[MAXSTART][SAMPLERANGE][100];        // Vectors for Amplitude extraction, second iteration
+  Double_t fPFTofVectors[MAXSTART][SAMPLERANGE][100];        // Vectors for TOF extraction, second iteration
+  Double_t fAmp; 
+  AliCaloPeakFinderVectors  *fPeakFinderVectors; // Collection of Peak-Fincer vectors
   
-  double *fPFAmpVectorsCoarse[MAXSTART][SAMPLERANGE]; // Vectors for Amplitude extraction, first iteration 
-  double *fPFTofVectorsCoarse[MAXSTART][SAMPLERANGE]; // Vectors for TOF extraction, first iteration
-
-  double *fPFAmpVectors[MAXSTART][SAMPLERANGE]; // Vectors for Amplitude extraction, second iteration 
-  double *fPFTofVectors[MAXSTART][SAMPLERANGE]; // Vectors for TOF extraction, second iteration
-
-  //  double fTof; 
-  //  double fAmp;
-
-  double fAmpA[3]; // The  amplitude of the signal (eveluate 3 times using 3 differtnt phase shifts of the input samples )
-  // double fAmp2;
-  // double fAmp3;
+  bool fRunOnAlien; // Wether or not we are running on the GRID
 
   ClassDef( AliCaloRawAnalyzerPeakFinder, 1 )
-
 };
+
 
 #endif
