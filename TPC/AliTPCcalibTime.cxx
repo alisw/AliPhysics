@@ -1278,7 +1278,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   //
   // 1. Update median and RMS info
   //
-  TVectorD vecDelta(4),vecMedian(4), vecRMS(4);
+  TVectorD vecDelta(5),vecMedian(5), vecRMS(5);
   TVectorD vecDeltaN(5);
   Double_t sign=(pITS.GetParameter()[1]>0)? 1.:-1.;
   vecDelta[4]=0;
@@ -1452,7 +1452,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   //
   // 1. Update median and RMS info
   //
-  TVectorD vecDelta(4),vecMedian(4), vecRMS(4);
+  TVectorD vecDelta(5),vecMedian(5), vecRMS(5);
   TVectorD vecDeltaN(5);
   Double_t sign=(pTRD.GetParameter()[1]>0)? 1.:-1.;
   vecDelta[4]=0;
@@ -1637,7 +1637,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   //
   // 1. Update median and RMS info
   //
-  TVectorD vecDelta(4),vecMedian(4), vecRMS(4);
+  TVectorD vecDelta(5),vecMedian(5), vecRMS(5);
   TVectorD vecDeltaN(5);
   Double_t sign=(pTOF.GetParameter()[1]>0)? 1.:-1.;
   vecDelta[4]=0;

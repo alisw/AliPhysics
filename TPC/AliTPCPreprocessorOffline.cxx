@@ -25,7 +25,11 @@
    gSystem->Load("libTPCcalib");
 
    AliTPCPreprocessorOffline proces;
-  process.CalibTimeGain("CalibObjects.root",run0,run1,ocdbPath);
+   TString ocdbPath="local:////"
+   ocdbPath+=gSystem->GetFromPipe("pwd");
+
+   proces.CalibTimeGain("CalibObjects.root",run0,run1,ocdbPath);
+   proces.CalibTimeVdrift("CalibObjects.root",run0,run1,ocdbPath);
   // take the raw calibration data from the file CalibObjects.root 
   // and make a OCDB entry with run  validity run0-run1
   // results are stored at the ocdbPath - local or alien ...

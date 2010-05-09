@@ -970,8 +970,8 @@ void AliTPCcalibAlign::ProcessAlign(Double_t * t1,
   //
   // Do intersector alignment
   //
-  Process12(t1,t2,GetOrMakeFitter12(s1,s2));
-  Process9(t1,t2,GetOrMakeFitter9(s1,s2));
+  //Process12(t1,t2,GetOrMakeFitter12(s1,s2));
+  //Process9(t1,t2,GetOrMakeFitter9(s1,s2));
   Process6(t1,t2,GetOrMakeFitter6(s1,s2));
   ++fPoints[GetIndex(s1,s2)];
 }
@@ -1540,7 +1540,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter12(Int_t s1,Int_t s2) {
   fitter->StoreData(kFALSE);
   fFitterArray12.AddAt(fitter,GetIndex(s1,s2));	
   counter12++;
-  if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter12<<endl;
+  //  if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter12<<endl;
   return fitter;
 }
 
@@ -1557,7 +1557,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter9(Int_t s1,Int_t s2) {
   fitter->StoreData(kFALSE);
   fFitterArray9.AddAt(fitter,GetIndex(s1,s2));
   counter9++;
-  if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter9<<endl;
+  //  if (GetDebugLevel()>0) cerr<<"Creating fitter12 "<<s1<<","<<s2<<"  :  "<<counter9<<endl;
   return fitter;
 }
 
@@ -1576,7 +1576,7 @@ TLinearFitter* AliTPCcalibAlign::GetOrMakeFitter6(Int_t s1,Int_t s2) {
   fitter->StoreData(kFALSE);
   fFitterArray6.AddAt(fitter,GetIndex(s1,s2));
   counter6++;
-  if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
+  //  if (GetDebugLevel()>0) cerr<<"Creating fitter6 "<<s1<<","<<s2<<"  :  "<<counter6<<endl;
   return fitter;
 }
 
@@ -2582,9 +2582,9 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   //
   //
-  TVectorD vecX(nf+kdrow0Fit+kdrow1Fit+5);          // x         vector
-  TVectorD vecY(nf+kdrow0Fit+kdrow1Fit+5);          // residuals vector
-  TVectorD vecZ(nf+kdrow0Fit+kdrow1Fit+5);                              // residuals vector
+  TVectorD vecX(2*nf+kdrow0Fit+kdrow1Fit+5);          // x         vector
+  TVectorD vecY(2*nf+kdrow0Fit+kdrow1Fit+5);          // residuals vector
+  TVectorD vecZ(2*nf+kdrow0Fit+kdrow1Fit+5);                              // residuals vector
   TVectorD vPosG(3);                  //vertex position
   TVectorD vPosL(3);                 // vertex position in the TPC local system
   TVectorF vImpact(2);               //track impact parameter

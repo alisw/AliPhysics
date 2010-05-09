@@ -577,8 +577,8 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     AliTrackPoint prot0 = pIn0.Rotate(track0->GetAlpha());   // rotate to the local frame - non distoted  point
     AliTrackPoint prot1 = pIn1.Rotate(track1->GetAlpha());   // rotate to the local frame -     distorted point
     //
-    AliTrackerBase::PropagateTrackToBxByBz(track0,prot0.GetX(),kMass,1,kFALSE,kMaxSnp);
-    AliTrackerBase::PropagateTrackToBxByBz(track1,prot0.GetX(),kMass,1,kFALSE,kMaxSnp);
+    AliTrackerBase::PropagateTrackToBxByBz(track0,prot0.GetX(),kMass,3,kFALSE,kMaxSnp);
+    AliTrackerBase::PropagateTrackToBxByBz(track1,prot0.GetX(),kMass,3,kFALSE,kMaxSnp);
     track.GetXYZ(xyz);  // distorted track also propagated to the same reference radius
     //
     Double_t pointPos[2]={0,0};
@@ -702,7 +702,9 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   // corrArray - array with partial corrections
   // step      - skipe entries  - if 1 all entries processed - it is slow
   // debug     0 if debug on also space points dumped - it is slow
-  const Double_t kB2C=-0.299792458e-3;
+  const Double_t kMaxSnp = 0.85;  
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  //  const Double_t kB2C=-0.299792458e-3;
   const Int_t kMinEntries=50;
   Double_t phi,theta, snp, mean,rms, entries;
   tinput->SetBranchAddress("theta",&theta);
@@ -722,7 +724,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   Int_t dir=0;
   if (dtype==0) {refX=85; dir=-1;}
   if (dtype==1) {refX=275; dir=1;}
-  if (dtype==2) {refX=0; dir=-1;}
+  if (dtype==2) {refX=85; dir=-1;}
   //
   for (Int_t ientry=0; ientry<nentries; ientry+=step){
     tinput->GetEntry(ientry);
@@ -734,18 +736,6 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
     Double_t bz=AliTrackerBase::GetBz();
     if (refX>10.) tPar[4]=snp/(refX*bz*kB2C*2);
     tPar[4]+=0.001;
-  //   if (gRandom->Rndm()<0.1) {
-//       cout<<endl<<endl;
-//       cout<<"Entry\n\n"<<ientry<<endl;
-//       cout<<"dtype="<<dtype<<   // detector match type
-// 	"ptype="<<ptype<<   // parameter type
-// 	"theta="<<theta<<   // theta
-// 	"phi="<<phi<<       // phi 
-// 	"snp="<<phi<<       // snp
-// 	"mean="<<mean<<     // mean dist value
-// 	"rms="<<rms<<       // rms
-// 	"entries="<<entries<<endl; // number of entries in bin      
-//     }
     if (TMath::Abs(snp)>0.251) continue;
     (*pcstream)<<"fit"<<
       "bz="<<bz<<         // magnetic filed used
@@ -766,6 +756,13 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 	AliExternalTrackParam *trackOut = 0;
 	if (debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,pcstream);
 	if (!debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,0);
+	if (dtype==0) {refX=85; dir=-1;}
+	if (dtype==1) {refX=275; dir=1;}
+	if (dtype==2) {refX=0; dir=-1;}
+	//
+	AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kTRUE,kMaxSnp);
+	AliTrackerBase::PropagateTrackToBxByBz(trackOut,refX,kMass,3,kTRUE,kMaxSnp);
+	//
 	corrections[icorr]= trackOut->GetParameter()[ptype]-trackIn.GetParameter()[ptype];
 	delete trackOut;      
       }      
