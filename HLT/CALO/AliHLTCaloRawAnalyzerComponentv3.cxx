@@ -33,7 +33,8 @@
 
 //#include "AliHLTCaloConstants.h"
 
-#include "AliHLTCaloRcuProcessor.h"
+//#include "AliHLTCaloRcuProcessor.h"
+
 #include "AliHLTCaloCrazynessDefinitions.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliHLTCaloCoordinate.h"
@@ -47,9 +48,9 @@ using namespace std;
 
 ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 
-AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
+AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):AliHLTCaloProcessor(),
   AliHLTCaloConstantsHandler(det),
-  AliHLTCaloRcuProcessor(),
+  //  AliHLTCaloRcuProcessor(),
   //  fCaloEventCount(0),
   fAnalyzerPtr(0),
   fMapperPtr(0),     

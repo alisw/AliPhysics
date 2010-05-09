@@ -25,7 +25,7 @@
  * @file   AliHLTCaloRawAnalyzerComponentv3.h
  * @author Oystein Djuvsland
  * @date   
- * @brief  A clusterizer component for PHOS HLT
+ * @brief Extraction of Amplitude and Peak position for PHOS/EMCAL HLT
 */
 
 // see below for class documentation
@@ -100,14 +100,19 @@ class AliAltroRawStreamV3;
 #include "AliHLTProcessor.h"
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTCaloConstantsHandler.h"
-#include "AliHLTCaloRcuProcessor.h"
+
+//#include "AliHLTCaloRcuProcessor.h"
 
 //#include "TObject.h"
+//#include "AliHLTProcessor.h"
+#include "AliHLTCaloProcessor.h"
 
 class AliHLTCaloMapper;
 
 
-class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTCaloRcuProcessor
+//class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTCaloRcuProcessor
+//class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler
+class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected AliHLTCaloConstantsHandler
 {
  public:
 
@@ -148,7 +153,7 @@ class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, publ
   //virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   /** interface function, see @ref AliHLTComponent for description */
 
-  using AliHLTCaloRcuProcessor::DoEvent;
+  //  using AliHLTCaloRcuProcessor::DoEvent;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
