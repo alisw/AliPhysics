@@ -30,7 +30,9 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSProcessor.h"
+
+#include "AliHLTPHOSDefinitions.h" // PTH
+#include "AliHLTCaloProcessor.h"
 #include "AliHLTCaloConstantsHandler.h"
 
 
@@ -85,7 +87,7 @@ class AliPHOSEmcCalibData;
  * @ingroup alihlt_phos
  */ 
 
-class AliHLTPHOSDigitMakerComponent : public AliHLTPHOSProcessor, public AliHLTCaloConstantsHandler
+class AliHLTPHOSDigitMakerComponent : public AliHLTCaloProcessor, public AliHLTCaloConstantsHandler
 {
 public:
 
@@ -120,7 +122,7 @@ protected:
   /** interface function, see @ref AliHLTComponent for description */
   int DoInit(int argc, const char** argv);
 
-  using AliHLTPHOSProcessor::DoEvent;
+  using AliHLTCaloProcessor::DoEvent;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor

@@ -108,7 +108,7 @@
  */ 
 
 class AliHLTPHOSClusterizerComponent : public AliHLTCaloClusterizerComponent
-//class AliHLTPHOSClusterizerComponent : public AliHLTPHOSProcessor
+//class AliHLTPHOSClusterizerComponent : public AliHLTCaloProcessor
 {
   
  public:

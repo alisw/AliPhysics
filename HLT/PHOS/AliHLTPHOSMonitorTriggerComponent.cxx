@@ -15,7 +15,7 @@
  **************************************************************************/
 
 #include <iostream>
-
+#include "AliHLTPHOSDefinitions.h" // PTH
 #include "AliHLTPHOSMonitorTriggerComponent.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTDataTypes.h"
@@ -45,7 +45,7 @@ AliHLTPHOSMonitorTriggerComponent gAliHLTPHOSMonitorTriggerComponent;
 
 
 AliHLTPHOSMonitorTriggerComponent::AliHLTPHOSMonitorTriggerComponent(): 
-  AliHLTPHOSProcessor(), 
+  AliHLTCaloProcessor(), 
   fCheckClusterEnergy(false),
   fCheckClusterMultiplicities(false),
   fClusterEnergyThreshold(1),

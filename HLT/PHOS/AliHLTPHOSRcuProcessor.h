@@ -7,11 +7,11 @@
  * See cxx source for full Copyright notice                               */
 
 
-#include "AliHLTPHOSProcessor.h"
+#include "AliHLTCaloProcessor.h"
 //#include "AliHLTPHOSRcuProperties.h"
 
-//class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor, public AliHLTPHOSRcuProperties
-class  AliHLTPHOSRcuProcessor : public AliHLTPHOSProcessor
+//class  AliHLTPHOSRcuProcessor : public AliHLTCaloProcessor, public AliHLTPHOSRcuProperties
+class  AliHLTPHOSRcuProcessor : public AliHLTCaloProcessor
 
 {
  public:

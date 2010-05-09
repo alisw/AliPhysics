@@ -34,7 +34,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTPHOSProcessor.h"
+#include "AliHLTCaloProcessor.h"
 
 class AliHLTCaloClusterHeaderStruct;
 
@@ -44,7 +44,7 @@ class AliHLTCaloClusterHeaderStruct;
  * @ingroup alihlt_phos
  */
 
-class AliHLTPHOSMonitorTriggerComponent: public AliHLTPHOSProcessor
+class AliHLTPHOSMonitorTriggerComponent: public AliHLTCaloProcessor
 {
  public:
 
@@ -56,7 +56,7 @@ class AliHLTPHOSMonitorTriggerComponent: public AliHLTPHOSProcessor
 
   /** Copy constructor */  
   AliHLTPHOSMonitorTriggerComponent(const AliHLTPHOSMonitorTriggerComponent &) : 
-    AliHLTPHOSProcessor(),
+    AliHLTCaloProcessor(),
     fCheckClusterEnergy(false),
     fCheckClusterMultiplicities(false),
     fClusterEnergyThreshold(1),
@@ -91,7 +91,7 @@ class AliHLTPHOSMonitorTriggerComponent: public AliHLTPHOSProcessor
 
   /** interface function, see @ref AliHLTComponent for description */
   
-  using  AliHLTPHOSProcessor::DoEvent;
+  using  AliHLTCaloProcessor::DoEvent;
   int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks);

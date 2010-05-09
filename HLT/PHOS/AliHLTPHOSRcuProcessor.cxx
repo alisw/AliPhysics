@@ -19,7 +19,7 @@
  **************************************************************************/
 #include "AliHLTPHOSRcuProcessor.h"
 
-AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor():AliHLTPHOSProcessor()
+AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor():AliHLTCaloProcessor()
 						 //				 AliHLTPHOSRcuProperties()
 {
 

@@ -48,7 +48,7 @@
 AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
-  AliHLTPHOSProcessor(),
+  AliHLTCaloProcessor(),
   AliHLTCaloConstantsHandler("PHOS"),
   fDigitMakerPtr(0),
   fDigitContainerPtr(0),
