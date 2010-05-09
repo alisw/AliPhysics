@@ -135,7 +135,7 @@ AliHLTCaloRawAnalyzerComponentv3::~AliHLTCaloRawAnalyzerComponentv3()
 int
 AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 { 
-
+  
   //See base class for documentation
   //  fPrintInfo = kFALSE;
 
@@ -229,53 +229,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 }
 
 
-/*
-const char* 
-AliHLTCaloRawAnalyzerComponentv3::GetComponentID()
-{
-  //comment
-  return "CaloRawAnalyzerv3";
-}
-*/
-
- /* 
-
-void
-AliHLTCaloRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
-{
-  //comment
-  list.clear();
-  list.push_back( AliHLTCaloDefinitions::fgkDDLPackedRawDataType | kAliHLTDataOriginPHOS);
-}
- */ 
-
-
-  /*
-AliHLTComponentDataType
-AliHLTCaloRawAnalyzerComponentv3::GetOutputDataType()
-{
-  //comment
-  return AliHLTCaloDefinitions::fgkChannelDataType;
-}
-  */
-
-
-   /*
-void
-AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-{
-  //comment
-  constBase = sizeof(AliHLTCaloChannelDataHeaderStruct);
-  inputMultiplier = 0.5;
-}
-   */
-
-
 
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
-   
+  
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
@@ -283,18 +241,17 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   AliHLTCaloChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(outputPtr); 
   AliHLTCaloChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(outputPtr+sizeof(AliHLTCaloChannelDataHeaderStruct)); 
- 
   totSize += sizeof( AliHLTCaloChannelDataHeaderStruct );
   fRawReaderMemoryPtr->SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
   fRawReaderMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
   fRawReaderMemoryPtr->Reset();
   fRawReaderMemoryPtr->NextEvent();
- 
+
   if( fDoPushRawData == true)
     {
      fRawDataWriter->NewEvent( );
     }
-
+  
   if(fAltroRawStreamPtr->NextDDL())
   {
     int cnt = 0;
@@ -313,21 +270,26 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	    UShort_t* firstBunchPtr = 0;
 	    int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    //	    HLTError("Channel HW address: %d", fAltroRawStreamPtr->GetHWAddress());
+	    
+	    
 	    if( fDoPushRawData == true)
 	      {
 		fRawDataWriter->SetChannelId( chId );
 	      }
-
+	    
 	    //	    return 1;
 	    vector <AliCaloBunchInfo> bvctr;
 	    while( fAltroRawStreamPtr->NextBunch() == true )
 	      {
-		bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(), fAltroRawStreamPtr->GetBunchLength(), fAltroRawStreamPtr->GetSignals() ) );	
+		bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(), 
+						   fAltroRawStreamPtr->GetBunchLength(),
+						   fAltroRawStreamPtr->GetSignals() ) );	
 
 		nSamples = fAltroRawStreamPtr->GetBunchLength();
 		if( fDoPushRawData == true)
 		  {
-		    fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
+		    fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), 
+						    nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
 		  }
 		firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
 	      }
@@ -397,11 +359,11 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
 	*/
 	  }
-
-	if( fDoPushRawData == true)
-         { 
-	   fRawDataWriter->NewChannel();
-	 }
+    
+    if( fDoPushRawData == true)
+      { 
+	fRawDataWriter->NewChannel();
+      }
 
   }
 
