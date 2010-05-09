@@ -6,7 +6,7 @@ SRCS = AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain
 	AliTPCCalibKrTask.cxx AliTPCcalibLaser.cxx AliTPCcalibCosmic.cxx  \
 	AliTPCcalibCalib.cxx   AliTPCcalibTime.cxx AliTPCcalibUnlinearity.cxx \
 	AliTPCcalibPID.cxx AliTPCcalibTimeGain.cxx AliTPCMisAligner.cxx \
-        AliTPCcalibTrigger.cxx AliTPCcalibMaterial.cxx AliTPCPreprocessorOffline.cxx 
+        AliTPCcalibTrigger.cxx AliTPCcalibMaterial.cxx AliTPCPreprocessorOffline.cxx  AliTPCkalmanAlign.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
