@@ -39,7 +39,7 @@ TStopwatch  fgWatch; //CRAP PTH
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
 {
   
-  
+   cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
 }
 
 
@@ -79,6 +79,8 @@ AliHLTEMCALRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, dou
 void 
 AliHLTEMCALRawAnalyzerComponent::DoInit() 
 {
+  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
+
   //  fgWatch.Start();
  
 }
@@ -134,7 +136,9 @@ int
 AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-
+  
+  //  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
+  
    if(!IsDataEvent())
    {
       size = 0;
@@ -152,7 +156,7 @@ AliHLTEMCALRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtDat
       wlast =  wcurrent;
       wcurrent = fgWatch.RealTime();
       ////cout << wlast << ":" << wcurrent << endl;
-      ////cout << __FILE__ << __LINE__ << "The event rate is " <<  1000/( wcurrent  -  wlast ) << "  Hz" << endl; 
+      cout << __FILE__ << __LINE__ << "The event rate is " <<  1000/( wcurrent  -  wlast ) << "  Hz" << endl; 
       fgWatch.Start(kFALSE); 
       //     wlast =  fgWatch.RealTime(); 
     }

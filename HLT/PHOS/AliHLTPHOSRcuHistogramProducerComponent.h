@@ -7,7 +7,7 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
 
-#include "AliHLTPHOSRcuProcessor.h"
+#include "AliHLTCaloProcessor.h"
 #include "AliHLTPHOSUtilities.h"
 
 //
@@ -22,7 +22,7 @@ class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 class AliHLTPHOSSharedMemoryInterfacev2;
 class AliHLTPHOSChannelDataHeaderStruct;
 
-class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
+class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTCaloProcessor
 {
  public:
   AliHLTPHOSRcuHistogramProducerComponent();
@@ -40,7 +40,7 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
   virtual const char* GetComponentID();
 
  protected:
-  using AliHLTPHOSRcuProcessor::DoEvent;
+  //  using AliHLTPHOSRcuProcessor::DoEvent;
 
  private:
   AliHLTPHOSRcuHistogramProducerComponent(const AliHLTPHOSRcuHistogramProducerComponent &);

@@ -18,7 +18,7 @@
 #include "TH2D.h"
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 //#include "AliHLTPHOSBase.h"
-#include "AliHLTPHOSRcuProcessor.h"
+//#include "AliHLTPHOSRcuProcessor.h"
 
 class TH1;
 class TH2D;
