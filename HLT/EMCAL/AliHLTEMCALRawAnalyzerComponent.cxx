@@ -39,7 +39,7 @@ TStopwatch  fgWatch; //CRAP PTH
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
 {
   
-   cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
+  //  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
 }
 
 
