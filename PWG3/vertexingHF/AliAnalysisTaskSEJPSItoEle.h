@@ -21,6 +21,9 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliPID.h" //************
+#include "AliAODPid.h"
+#include "AliExternalTrackParam.h"//***************
 
 class AliAnalysisTaskSEJPSItoEle : public AliAnalysisTaskSE
 {
@@ -38,9 +41,39 @@ class AliAnalysisTaskSEJPSItoEle : public AliAnalysisTaskSE
 
   void SetCutsJPSI(const Double_t cutsJPSI[9]);
   void SetPtCuts(const Double_t ptcuts[2]);
-  void SetAODMCInfo(Bool_t okMCInfo) { fOkAODMC = okMCInfo;}
+  void SetAODMCInfo(Bool_t OkMCInfo) { fOkAODMC = OkMCInfo;}
   void ReadAODMCInfo(AliAODEvent* aodEv, const TClonesArray* inArray);
+  //
+  //
+  //
+  Double_t GetExpectedSignal(const Float_t mom,
+                     AliPID::EParticleType n=AliPID::kKaon) const {
 
+    Double_t mass=AliPID::ParticleMass(n);
+    Double_t betaGamma = mom/mass;
+    Double_t bb = AliExternalTrackParam::BetheBlochAleph(betaGamma,0.0283086,2.63394e+01,5.04114e-11,2.12543,4.88663);
+    return bb*50.; //bb*fMIP;
+  }
+
+  Double_t GetExpectedSigma(const Float_t mom, const Int_t nPoints,
+                     AliPID::EParticleType n=AliPID::kKaon) const {
+    if (nPoints != 0) 
+      return GetExpectedSignal(mom,n)*0.07*sqrt(1. + 0./nPoints);
+    else
+      return GetExpectedSignal(mom,n)*0.07;
+  }
+
+  Float_t  GetNumberOfSigmas(const Float_t mom, const Float_t dEdx, 
+                             const Int_t nPoints,
+                     AliPID::EParticleType n=AliPID::kKaon) const {
+
+    Double_t bethe=GetExpectedSignal(mom,n);
+    Double_t sigma=GetExpectedSigma(mom,nPoints,n);
+    return (dEdx-bethe)/sigma;
+  }
+  //
+  //
+  //
  private:
 
   AliAnalysisTaskSEJPSItoEle(const AliAnalysisTaskSEJPSItoEle &source);
@@ -53,6 +86,7 @@ class AliAnalysisTaskSEJPSItoEle : public AliAnalysisTaskSE
   TH1F *fhDecayTime;                         //! Pseudo-proper decay time distribution
   TH1F *fhDecayTimeOut;                      //! Pseudo-proper decay time distribution (stand-alone AOD)
   TH1F *fhInvMass;                           //! Invariant mass distribution
+  TH2F *fhdEdxTPC;
   TH1F *fhD0;                                //! Impact parameter distribution
   TH1F *fhD0D0;                              //! Product of impact parameters distributions
   TH1F *fhCosThetaStar;                      //! Cosine of decay angle distribution
@@ -90,10 +124,11 @@ class AliAnalysisTaskSEJPSItoEle : public AliAnalysisTaskSE
   TClonesArray    *fJpsiToEleTClArr;         // Array of J/psi->e+e- candidates to be replicated in stand-alone AOD
   TClonesArray    *fLikeSignTClArr;          // Array of like sign candidates to be replicated in stand-alone AOD
   TClonesArray    *fTracksTClArr;            // Array of tracks belonging to J/psi->e+e- candidates to be replicated in stand-alone AOD 
-  TChain          *fChain; 
   AliAODEvent     *fOrigAOD;                 // original AOD event
   AliAODEvent     *fNewAOD;                  // new AOD event with only JPSItoEle candidates stored
 
   ClassDef(AliAnalysisTaskSEJPSItoEle,1); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
+
+
 #endif
