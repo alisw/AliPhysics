@@ -23,7 +23,7 @@ class AliHLTCaloProcessor:public AliHLTProcessor
   AliHLTCaloProcessor();
   virtual ~AliHLTCaloProcessor();
   virtual int DoInit(int argc, const char** argv) = 0;
-  virtual int DoDeinit() = 0;
+  //  virtual int DoDeinit() = 0;
   virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list) =0;
   virtual AliHLTComponentDataType GetOutputDataType() =0;
