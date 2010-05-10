@@ -84,7 +84,7 @@ AliEMCALTriggerTRU::~AliEMCALTriggerTRU()
 {
    // delete TRU digits only used as transient containers 
    // to compute FastOR from energy deposit
-
+	delete [] fADC;
 }
 
 //________________
@@ -128,8 +128,8 @@ Int_t AliEMCALTriggerTRU::L0()
 	// and then move the space window
 
 	AliDebug(1,"=== Running TRU L0 algorithm ===");
-	
-	Int_t buffer[int(fRegionSize->X())][int(fRegionSize->X())][kNup+kNdown];
+	const Int_t xsize    = Int_t(fRegionSize->X());
+	Int_t buffer[xsize][xsize][kNup+kNdown];
 	
 	for (Int_t i=0; i<fRegionSize->X(); i++) for (Int_t j=0; j<fRegionSize->Y(); j++) 
 		for (Int_t k=0; k<kNup+kNdown; k++)	buffer[i][j][k] = 0;
@@ -179,7 +179,7 @@ Int_t AliEMCALTriggerTRU::L0()
 			continue; 
 		}
 		
-		Int_t peaks[int(fRegionSize->X())][int(fRegionSize->X())];
+		Int_t peaks[xsize][xsize];
 		
 		for (Int_t j=0; j<fRegionSize->X(); j++) for (Int_t k=0; k<fRegionSize->Y(); k++) peaks[j][k] = 0;
 		
@@ -282,7 +282,7 @@ Int_t AliEMCALTriggerTRU::L0()
 	}
 	
 //	cout << "Nof patches: " << fPatches->GetEntriesFast() << endl;
-	
+		
 	return fPatches->GetEntriesFast();
 }
 
