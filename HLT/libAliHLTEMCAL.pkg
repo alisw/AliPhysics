@@ -29,8 +29,9 @@ MODULE_SRCS= \
 # the CLASS_HDRS variable. So we just use the content of this. You
 # can simply add more header files which don't contain classes with
 # ROOT dictionary support
-MODULE_HDRS:= 	$(CLASS_HDRS) \
-	AliHLTEMCALConstant.h
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+
 
 
 # The LinkDef file required by the ROOT dictionary generation can be
