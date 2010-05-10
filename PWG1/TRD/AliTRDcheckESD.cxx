@@ -355,20 +355,26 @@ void AliTRDcheckESD::UserExec(Option_t *){
         selected = kFALSE;
       }
     }
+    Float_t theta=esdTrack->Theta();
+    Float_t phi=esdTrack->Phi();
+    Int_t nClustersTPC = esdTrack->GetTPCNcls();
+    Float_t eta=-TMath::Log(TMath::Tan(theta/2.));
     if(selected) {
       nTracksAcc++;   // number of tracks in acceptance and DCA cut
-      if(esdTrack->GetTPCNcls()>=10) {
       // fill pt distribution at this stage
       h = (TH1F*)fHistos->At(kPt2); h->Fill(esdTrack->Pt());
       // TPC nclusters distribution
-        h = (TH1I*)fHistos->At(kNTPCCl); h->Fill(esdTrack->GetTPCNcls());
-        if(esdTrack->GetTPCNcls()>1.0) {
-          h = (TH1I*)fHistos->At(kNTPCCl2); h->Fill(esdTrack->GetTPCNcls());
-        }
+      h = (TH1I*)fHistos->At(kNTPCCl); h->Fill(nClustersTPC);
+      if(esdTrack->Pt()>1.0) {
+        h = (TH1I*)fHistos->At(kNTPCCl2); h->Fill(nClustersTPC);
       }
+      // (eta,nclustersTPC) distrib of TPC ref. tracks
+      h = (TH2F*)fHistos->At(kEtaNclsTPC); h->Fill(eta, nClustersTPC);
+      // (phi,nclustersTPC) distrib of TPC ref. tracks
+      h = (TH2F*)fHistos->At(kPhiNclsTPC); h->Fill(phi, nClustersTPC);
+      
     }
       
-    Int_t nClustersTPC = esdTrack->GetTPCNcls();
     if(nClustersTPC < fgkNclTPC){ 
       AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] NclTPC[%d]", fESD->GetEventNumberInFile(), itrk, nClustersTPC));
       selected = kFALSE;
@@ -383,9 +389,6 @@ void AliTRDcheckESD::UserExec(Option_t *){
     Double_t p[AliPID::kSPECIES]; esdTrack->GetTRDpid(p);
     // pid quality
     Bool_t kBarrel = Bool_t(status & AliESDtrack::kTRDin);
-    Float_t theta=esdTrack->Theta();
-    Float_t phi=esdTrack->Phi();
-    Float_t eta=-TMath::Log(TMath::Tan(theta/2.));
 
     TH3F *hhh;
     // find position and momentum of the track at entrance in TRD
@@ -419,10 +422,6 @@ void AliTRDcheckESD::UserExec(Option_t *){
     h = (TH2F*)fHistos->At(kTPCDedx); h->Fill(esdTrack->GetP(), esdTrack->GetTPCsignal());
     // (eta,phi) distrib of TPC ref. tracks
     h = (TH2F*)fHistos->At(kEtaPhi); h->Fill(eta, phi);
-    // (eta,nclustersTPC) distrib of TPC ref. tracks
-    h = (TH2F*)fHistos->At(kEtaNclsTPC); h->Fill(eta, nClustersTPC);
-    // (phi,nclustersTPC) distrib of TPC ref. tracks
-    h = (TH2F*)fHistos->At(kPhiNclsTPC); h->Fill(phi, nClustersTPC);
         
     Int_t nTRDtrkl = esdTrack->GetTRDntracklets();
     // TRD reference tracks
@@ -430,15 +429,15 @@ void AliTRDcheckESD::UserExec(Option_t *){
       // fill pt distribution at this stage
       if(esdTrack->Charge()>0) {
         h = (TH1F*)fHistos->At(kPt4pos); h->Fill(pt);
-        // fill eta-phi map of TRD positive ref. tracks
-        if(localCoordGood && localMomGood) {
+	// fill eta-phi map of TRD positive ref. tracks
+	if(localCoordGood && localMomGood) {
           hhh = (TH3F*)fHistos->At(kTRDRefTracksPos); hhh->Fill(eta, localSagitaPhi, pt);
         }
       }
       if(esdTrack->Charge()<0) {
         h = (TH1F*)fHistos->At(kPt4neg); h->Fill(pt);
-        // fill eta-phi map of TRD negative ref. tracks
-        if(localCoordGood && localMomGood) {
+	// fill eta-phi map of TRD negative ref. tracks
+	if(localCoordGood && localMomGood) {
           hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg); hhh->Fill(eta, localSagitaPhi, pt);
         }
       }
@@ -446,7 +445,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
       // fill eta-phi map of TRD negative ref. tracks
       if(localCoordGood && localMomGood) {
         h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvNtrkl); h2d->Fill(eta, localSagitaPhi, (Float_t)nTRDtrkl);
-        h2d = (TProfile2D*)fHistos->At(kTRDEtaDeltaPhiAvNtrkl); h2d->Fill(eta, localPhi-localSagitaPhi, (Float_t)nTRDtrkl);
+	h2d = (TProfile2D*)fHistos->At(kTRDEtaDeltaPhiAvNtrkl); h2d->Fill(eta, localPhi-localSagitaPhi, (Float_t)nTRDtrkl);
       }
       // ntracklets/track vs P
       h = (TH2F*)fHistos->At(kNTrackletsTRD); h->Fill(esdTrack->GetP(), nTRDtrkl);
@@ -456,10 +455,10 @@ void AliTRDcheckESD::UserExec(Option_t *){
       for(Int_t iPlane=0; iPlane<6; iPlane++) {
         Float_t Qtot=0;
         for(Int_t iSlice=0; iSlice<8; iSlice++) {
-        if(esdTrack->GetTRDslice(iPlane, iSlice)>20.) {
-          h = (TH2F*)fHistos->At(kPHSlice); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
-          Qtot += esdTrack->GetTRDslice(iPlane, iSlice);
-        }
+	  if(esdTrack->GetTRDslice(iPlane, iSlice)>20.) {
+	    h = (TH2F*)fHistos->At(kPHSlice); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
+	    Qtot += esdTrack->GetTRDslice(iPlane, iSlice);
+	  }
         }
         h = (TH2F*)fHistos->At(kQtotP); h->Fill(esdTrack->GetTRDmomentum(iPlane), fgkQs*Qtot);
       }
@@ -758,17 +757,17 @@ TObjArray* AliTRDcheckESD::Histos()
   } else h->Reset();
   fHistos->AddAt(h, kEtaPhi);
   
-  // Nclusters vs eta distribution for TPC reference tracks
+  // Nclusters vs eta distribution for TPC tracks
   if(!(h = (TH2F*)gROOT->FindObject("hEtaNclsTPC"))){
-    h = new TH2F("hEtaNclsTPC", Form("TPC Nclusters vs. #eta, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, -1, 1, 160, 0, 160.);
+    h = new TH2F("hEtaNclsTPC", Form("TPC Nclusters vs. #eta, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f",
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz), 50, -1, 1, 160, 0, 160.);
   } else h->Reset();
   fHistos->AddAt(h, kEtaNclsTPC);
   
   // Nclusters vs phi distribution for TPC reference tracks
   if(!(h = (TH2F*)gROOT->FindObject("hPhiNclsTPC"))){
-    h = new TH2F("hPhiNclsTPC", Form("TPC Nclusters vs. #varphi, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 157, 0, 6.28, 160, 0, 160.);
+    h = new TH2F("hPhiNclsTPC", Form("TPC Nclusters vs. #varphi, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f",
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz), 157, 0, 6.28, 160, 0, 160.);
   } else h->Reset();
   fHistos->AddAt(h, kPhiNclsTPC);
   
@@ -816,49 +815,49 @@ TObjArray* AliTRDcheckESD::Histos()
   } else h->Reset();
   fHistos->AddAt(h, kPropagRZvsP);
   
-  Float_t etaBinLimits[51];	
-  for(Int_t i=0; i<51; i++) etaBinLimits[i] = -1.0 + i*2.0/50.;
+  Float_t etaBinLimits[101];	
+  for(Int_t i=0; i<101; i++) etaBinLimits[i] = -1.0 + i*2.0/100.;
   Float_t phiBinLimits[151];
   for(Int_t i=0; i<151; i++) phiBinLimits[i] = -1.1*TMath::Pi() + i*2.2*TMath::Pi()/150.;
   // (eta,detector phi,P) distribution of reference TPC positive tracks
   if(!(h = (TH3F*)gROOT->FindObject("hTPCRefTracksPos"))){
     h = new TH3F("hTPCRefTracksPos", Form("(#eta,detector #varphi,p) for TPC positive reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
   } else h->Reset();
   fHistos->AddAt(h, kTPCRefTracksPos);
   
   // (eta,detector phi,P) distribution of reference TPC negative tracks
   if(!(h = (TH3F*)gROOT->FindObject("hTPCRefTracksNeg"))){
     h = new TH3F("hTPCRefTracksNeg", Form("(#eta,detector #varphi,p) for TPC negative reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
   } else h->Reset();
   fHistos->AddAt(h, kTPCRefTracksNeg);
   
   // (eta,detector phi,P) distribution of reference TRD positive tracks
   if(!(h = (TH3F*)gROOT->FindObject("hTRDRefTracksPos"))){
     h = new TH3F("hTRDRefTracksPos", Form("(#eta,detector #varphi,p) for TRD positive reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
   } else h->Reset();
   fHistos->AddAt(h, kTRDRefTracksPos);
   
   // (eta,detector phi,P) distribution of reference TRD negative tracks
   if(!(h = (TH3F*)gROOT->FindObject("hTRDRefTracksNeg"))){
     h = new TH3F("hTRDRefTracksNeg", Form("(#eta,detector #varphi,p) for TRD negative reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
   } else h->Reset();
   fHistos->AddAt(h, kTRDRefTracksNeg);
   
   // (eta,detector phi) profile of average number of TRD tracklets/track
   if(!(h = (TProfile2D*)gROOT->FindObject("hTRDEtaPhiAvNtrkl"))){
     h = new TProfile2D("hTRDEtaPhiAvNtrkl", Form("<Ntracklets/track> vs (#eta,detector #varphi) for TRD reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
   } else h->Reset();
   fHistos->AddAt(h, kTRDEtaPhiAvNtrkl);
 
   // (eta,delta phi) profile of average number of TRD tracklets/track
   if(!(h = (TProfile2D*)gROOT->FindObject("hTRDEtaDeltaPhiAvNtrkl"))){
     h = new TProfile2D("hTRDEtaDeltaPhiAvNtrkl", Form("<Ntracklets/track> vs (#eta, #Delta#varphi) for TRD reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 50, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
   } else h->Reset();
   fHistos->AddAt(h, kTRDEtaDeltaPhiAvNtrkl);
   
