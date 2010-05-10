@@ -20,6 +20,7 @@
 #include "AliHLTCaloConstants.h"
 #include "TString.h"
 
+
 class AliHLTCaloConstantsHandler
 {
 public:
@@ -32,6 +33,7 @@ protected:
   
 private:
   
+
 
   /** Keep the standard constructor private, since we must alway initialize by specific calorimeter**/
   AliHLTCaloConstantsHandler();

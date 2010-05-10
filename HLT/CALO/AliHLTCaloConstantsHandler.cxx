@@ -28,12 +28,14 @@
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloConstants.h"
 #include "AliHLTMisc.h"
+#include "AliHLTLogging.h"
+
 
 ClassImp(AliHLTCaloConstantsHandler)
 
 
 AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
-  fCaloConstants(NULL)
+  fCaloConstants(0)
 {
   if (det.CompareTo("PHOS") == 0) {
     fCaloConstants = AliHLTMisc::LoadInstance( ( AliHLTCaloConstants*  ) NULL, 
@@ -44,9 +46,14 @@ AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
       fCaloConstants = AliHLTMisc::LoadInstance( ( AliHLTCaloConstants* ) NULL, 
 						 "AliHLTEMCALConstants" , "libAliHLTEMCAL.so");
     }
+  
+  if( fCaloConstants == 0 )
+    {
+      AliHLTLogging *log = new AliHLTLogging();
+      log->Logging(kHLTLogFatal, __FILE__, "fCaloConstants == ZERO ",  "fCaloConstants == ZERO " ); 
+      delete log;
+    }
 }
-
-
 
 
 AliHLTCaloConstantsHandler::~AliHLTCaloConstantsHandler()
