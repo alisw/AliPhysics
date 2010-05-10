@@ -46,9 +46,9 @@ public:
   // Cuts Setters & Getters
   void SetCutParameters(Float_t a,Float_t b) {fACut = a; fBCut =b;}
   void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut;}
-  const Float_t GetCutParameterA() const {return fACut;}
-  const Float_t GetCutParameterB() const {return fBCut;}
-  const Float_t GetDeltaPhiCut()   const {return fDeltaPhiCut;}
+  Float_t GetCutParameterA() const {return fACut;}
+  Float_t GetCutParameterB() const {return fBCut;}
+  Float_t GetDeltaPhiCut()   const {return fDeltaPhiCut;}
 
   // TODO: implement cut on global vertex DCA?
 

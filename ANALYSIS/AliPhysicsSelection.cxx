@@ -1040,8 +1040,8 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) const
 
   fHistStatistics[0]->Write();
   fHistStatistics[1]->Write();
-  fHistBunchCrossing->Write();
-  fHistTriggerPattern->Write();
+  if(fHistBunchCrossing ) fHistBunchCrossing ->Write();
+  if(fHistTriggerPattern) fHistTriggerPattern->Write();
   
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
   for (Int_t i=0; i < count; i++)
