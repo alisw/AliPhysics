@@ -23,8 +23,8 @@ namespace CaloHLTConst
   //Constants related to the ALTRO chip (Common to EMCAL / PHOS )
   const int MAXBINVALUE = 1023;
   const int NGAINS         =   2;    
-  const int HIGHGAIN    =   0;
-  const int LOWGAIN     =   1;
+  const int HIGHGAIN    =   1;
+  const int LOWGAIN     =   0;
   const int ALTROMAXSAMPLES = 1008;    /**<The maximum number of samples of the ALTRO*/
   const int ALTROMAXPRESAMPLES = 15;        
   const int NALTROS        =   4;      /**<Number of ALTROs per frontend card*/
