@@ -14,11 +14,14 @@
  **************************************************************************/
 
 /* $Id$ */
- 
+
+#include <Riostream.h>
+
 #include <TChain.h>
 #include <TTree.h>
 #include <TString.h>
 #include <TFile.h>
+#include <TSystem.h>
 
 #include "AliAnalysisTaskTagCreator.h"
 #include "AliAnalysisManager.h"
@@ -31,6 +34,7 @@
 #include "AliAODTagCreator.h"
 #include "AliLog.h"
 
+
 ClassImp(AliAnalysisTaskTagCreator)
 
 ////////////////////////////////////////////////////////////////////////
@@ -41,7 +45,8 @@ AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator():
     fFirstFile(kTRUE),
     fRunTag(0), 
     fTreeT(0),
-    fTagCreator(0)
+    fTagCreator(0),
+    fAODFileName("")
 {
   // Default constructor
 }
@@ -52,7 +57,8 @@ AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator(const char* name):
     fFirstFile(kTRUE),
     fRunTag(0), 
     fTreeT(0),
-    fTagCreator(0)
+    fTagCreator(0),
+    fAODFileName("")
 {
   // Constructor
     DefineOutput(1, TTree::Class()); 	
@@ -71,14 +77,23 @@ void AliAnalysisTaskTagCreator::UserCreateOutputObjects()
 
 void AliAnalysisTaskTagCreator::Init()
 {
-    // Initialization
-    if (fDebug > 1) AliInfo("Init() \n");
-    // Call configuration file
+
 }
 
+void AliAnalysisTaskTagCreator::ConnectInputData(Option_t * /*option*/)
+{
+    // Initialization
+    const char* turl = gSystem->Getenv("ALIEN_JDL_OUTPUTDIR");
+    if (turl != "") {
+      fAODFileName = "alien://";
+      fAODFileName += turl;
+      fAODFileName += "/AliAOD.root";
+    }  
+}
 
 void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
 {
+
     // Create Tags for the current event
     AliEventTag* evtTag = new AliEventTag();
     fTagCreator->FillEventTag(AODEvent(), evtTag);
@@ -91,14 +106,15 @@ void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
     TFile *file = OutputTree()->GetCurrentFile();
     const TUrl *url = file->GetEndpointUrl();
     fguid = file->GetUUID().AsString();
-    if (opt.Contains("grid")) {
-	fturltemp = "alien://"; fturltemp += url->GetFile();
-	fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+    if (fAODFileName.Length() != 0) {
+	fturl = fAODFileName;
+	GetGUID(fguid);
     } else {
 	fturl = url->GetFile();
     }
+
     evtTag->SetGUID(fguid);
-    if(opt.Contains("grid")) {
+    if(fAODFileName.Length() != 0) {
 	evtTag->SetMD5("");
 	evtTag->SetTURL(fturl);
 	evtTag->SetSize(0);
@@ -122,6 +138,9 @@ void AliAnalysisTaskTagCreator::FinishTaskOutput()
 Bool_t AliAnalysisTaskTagCreator::Notify()
 {
     // Notify file change
+    fInputHandler = (AliInputEventHandler*) 
+      ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+
     if (!fFirstFile) {
 	if (fInputHandler->GetRunTag()) fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
 	fTreeT->Fill();
@@ -133,10 +152,29 @@ Bool_t AliAnalysisTaskTagCreator::Notify()
 }
 
 
+void AliAnalysisTaskTagCreator::GetGUID(TString &guid) {
+    // Get the guid of the AliAOD.root file
+    ofstream myfile ("guid.txt");
+    if (myfile.is_open()) {
+	TFile *f = TFile::Open("AliAOD.root","read");
+	if(f->IsOpen()) {
+	    guid = f->GetUUID().AsString();
+	    myfile << "AliAOD.root \t"<<f->GetUUID().AsString();
+	    cout<<guid.Data()<<endl;
+	    myfile.close();
+	}
+	else cout<<"Input file not found"<<endl;
+    }
+    else cout<<"Output file can't be created..."<<endl;
+}
+
+
+
 void AliAnalysisTaskTagCreator::Terminate(Option_t */*option*/)
 {
 // Terminate analysis
 //
     if (fDebug > 1) printf("AnalysisTagCreator: Terminate() \n");
 }
+
 

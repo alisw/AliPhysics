@@ -19,6 +19,7 @@ class AliAnalysisTaskTagCreator : public AliAnalysisTaskSE
     AliAnalysisTaskTagCreator(const char* name);
     virtual ~AliAnalysisTaskTagCreator() {;}
     // Implementation of interface methods
+    virtual void   ConnectInputData(Option_t *option = "");
     virtual void   UserCreateOutputObjects();
     virtual void   Init();
     virtual void   LocalInit() {Init();}
@@ -29,11 +30,15 @@ class AliAnalysisTaskTagCreator : public AliAnalysisTaskSE
  private:
     AliAnalysisTaskTagCreator(const AliAnalysisTaskTagCreator&);
     AliAnalysisTaskTagCreator& operator=(const AliAnalysisTaskTagCreator&);
+    void GetGUID(TString &guid);
+    
+ private:
     Bool_t                   fCreateTags;             //  Flag for tag creation
     Bool_t                   fFirstFile;              //! To flag the first file   
     AliRunTag               *fRunTag;                 //! Pointer to run tag
     TTree                   *fTreeT;                  //! tree for  aod tags
     AliAODTagCreator        *fTagCreator;             //! The tag creator
+    TString                  fAODFileName;            //! Name of the AOD file
     
     ClassDef(AliAnalysisTaskTagCreator, 1); // Analysis task for standard ESD filtering
 };
