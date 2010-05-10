@@ -328,10 +328,10 @@ Int_t AliHLTCaloHistoComponent::ProcessBlocks(const AliHLTComponentBlockData * p
   while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
     cutCluster = false;
       if(fCutOnCentrality){
-	 if(clusterStruct->fEnergy > 0.5) {
+	 if(clusterStruct->fEnergy > fCentralityCutEnergy) {
 	    for(UInt_t i = 0; i < clusterStruct->fNCells; i++) {
 	       fClusterReader->GetCell(clusterStruct, cellId, ampFrac, i);
-	       if(ampFrac > 0.9) {
+	       if(ampFrac > fCentralityCut) {
 		  cutCluster = true;
 		  break;
 	       }
