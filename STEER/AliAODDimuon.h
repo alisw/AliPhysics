@@ -76,6 +76,8 @@ public:
   Double_t XF();     // Feynman x
   Double_t CostCS(); // Cosinus of the Collins-Soper polar decay angle
   Double_t CostHe(); // Cosinus of the Helicity polar decay angle
+  Double_t PhiCS();  // Azimuthal angle in the Collins-Soper frame
+  Double_t PhiHe();  // Azimuthal angle in the Helicity frame
   Int_t AnyPt();
   Int_t LowPt();
   Int_t HighPt();

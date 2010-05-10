@@ -233,7 +233,7 @@ Int_t AliAODDimuon::CheckPointers() const{
     return -999;
   }
   if((fMu[0].GetObject())==0||(fMu[1].GetObject())==0){
-    printf("Can not get objects. Got: %p %p\n",fMu[0].GetObject(),fMu[1].GetObject());
+    printf("Can not get objects\n");
     return -999;
   }
   return 0;
@@ -271,9 +271,8 @@ Double_t AliAODDimuon::XF() {
 }
 
 //______________________________________________________________________________
-// Calculation the Collins-Soper angle (adapted from code by R. Arnaldi)
 Double_t AliAODDimuon::CostCS(){
-  // Cosinus of the Collins-Soper polar decay angle
+  // Calculation the Collins-Soper angle (adapted from code by R. Arnaldi)
   if(CheckPointers())return -999999999;
   Double_t ebeam=3500.;  //temporary
   if(ebeam<=0){
@@ -296,25 +295,25 @@ Double_t AliAODDimuon::CostCS(){
   // Fill the Lorentz vector for projectile and target
   // For the moment we do not consider the crossing angle
   // Projectile runs towards the MUON arm
-  TLorentzVector pProjLab(0.,0.,-pbeam,ebeam); // projectile
-  TLorentzVector pTargLab(0.,0., pbeam,ebeam); // target
+  TLorentzVector pProjCM(0.,0.,-pbeam,ebeam); // projectile
+  TLorentzVector pTargCM(0.,0., pbeam,ebeam); // target
   //
-  // --- Get the muons parameters in the LAB frame
+  // --- Get the muons parameters in the CM frame
   //
-  TLorentzVector pMu1Lab(pla10,pla11,pla12,e1);
-  TLorentzVector pMu2Lab(pla20,pla21,pla22,e2);
+  TLorentzVector pMu1CM(pla10,pla11,pla12,e1);
+  TLorentzVector pMu2CM(pla20,pla21,pla22,e2);
   //
-  // --- Obtain the dimuon parameters in the LAB frame
+  // --- Obtain the dimuon parameters in the CM frame
   //
-  TLorentzVector pDimuLab=pMu1Lab+pMu2Lab;
+  TLorentzVector pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
-  TVector3 beta=(-1./pDimuLab.E())*pDimuLab.Vect();
-  TLorentzVector pMu1Dimu=pMu1Lab;
-  TLorentzVector pMu2Dimu=pMu2Lab;
-  TLorentzVector pProjDimu=pProjLab;
-  TLorentzVector pTargDimu=pTargLab;
+  TVector3 beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  TLorentzVector pMu1Dimu=pMu1CM;
+  TLorentzVector pMu2Dimu=pMu2CM;
+  TLorentzVector pProjDimu=pProjCM;
+  TLorentzVector pTargDimu=pTargCM;
   pMu1Dimu.Boost(beta);
   pMu2Dimu.Boost(beta);
   pProjDimu.Boost(beta);
@@ -340,16 +339,14 @@ Double_t AliAODDimuon::CostCS(){
 }
 
 //______________________________________________________________________________
-// Calculation the Helicity polarization angle (adapted from code by R. Arnaldi)
 Double_t AliAODDimuon::CostHe(){
-  // Cosinus of the polar decay angle in the Helicity reference frame
+  // Calculation the Helicity polarization angle (adapted from code by R. Arnaldi)
   if(CheckPointers())return -999999999;
   Double_t ebeam=3500; //temporary
   if(ebeam<=0){
     printf("Can not compute costCS with EBeam=%f\n",ebeam);
     return -999999999;
   }
-  Double_t pbeam=TMath::Sqrt(ebeam*ebeam-fMProton*fMProton);
   Double_t pla10=((AliAODTrack*)fMu[0].GetObject())->Px();
   Double_t pla11=((AliAODTrack*)fMu[0].GetObject())->Py();
   Double_t pla12=((AliAODTrack*)fMu[0].GetObject())->Pz();
@@ -360,37 +357,23 @@ Double_t AliAODDimuon::CostHe(){
   Double_t pla22=((AliAODTrack*)fMu[1].GetObject())->Pz();
   Double_t e2=((AliAODTrack*)fMu[1].GetObject())->E();
   Double_t mu2Charge=((AliAODTrack*)fMu[1].GetObject())->Charge();
-
-  // Fill the Lorentz vector for projectile and target
-  // For the moment we consider no crossing angle
-  // Projectile runs towards the MUON arm
-  TLorentzVector pProjLab(0.,0.,-pbeam,ebeam); // projectile
-  TLorentzVector pTargLab(0.,0., pbeam,ebeam); // target
   //
-  // --- Get the muons parameters in the LAB frame
+  // --- Get the muons parameters in the CM frame
   //
-  TLorentzVector pMu1Lab(pla10,pla11,pla12,e1);
-  TLorentzVector pMu2Lab(pla20,pla21,pla22,e2);
+  TLorentzVector pMu1CM(pla10,pla11,pla12,e1);
+  TLorentzVector pMu2CM(pla20,pla21,pla22,e2);
   //
-  // --- Obtain the dimuon parameters in the LAB frame
+  // --- Obtain the dimuon parameters in the CM frame
   //
-  TLorentzVector pDimuLab=pMu1Lab+pMu2Lab;
+  TLorentzVector pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
-  TVector3 beta=(-1./pDimuLab.E())*pDimuLab.Vect();
-  TLorentzVector pMu1Dimu=pMu1Lab;
-  TLorentzVector pMu2Dimu=pMu2Lab;
+  TVector3 beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  TLorentzVector pMu1Dimu=pMu1CM;
+  TLorentzVector pMu2Dimu=pMu2CM;
   pMu1Dimu.Boost(beta);
   pMu2Dimu.Boost(beta);
-  //
-  // --- Translate the dimuon parameters in the CM frame
-  //
-  TLorentzVector pDimuCM; //CM frame
-  TVector3 beta2;
-  beta2=(-1./(fMProton+pProjLab.E()))*pProjLab.Vect();
-  pDimuCM=pDimuLab;
-  pDimuCM.Boost(beta2);
   //
   // --- Determine the z axis for the calculation of the polarization angle
   // (i.e. the direction of the dimuon in the CM system)
@@ -412,6 +395,134 @@ Double_t AliAODDimuon::CostHe(){
     if(mu2Charge < 0 && cost<0) cost=-cost;
   }  
   return cost;
+}
+
+//________________________________________________________________________
+Double_t AliAODDimuon::PhiCS(){
+  // Cosinus of the Collins-Soper polar decay angle
+  if(CheckPointers())return -999999999;
+  Double_t ebeam=3500.;  //temporary
+  if(ebeam<=0){
+    printf("Can not compute phiCS with EBeam=%f\n",ebeam);
+    return -999999999;
+  }
+  Double_t mp=fMProton;
+  Double_t pbeam=TMath::Sqrt(ebeam*ebeam-mp*mp);
+  Double_t pla10=((AliAODTrack*)fMu[0].GetObject())->Px();
+  Double_t pla11=((AliAODTrack*)fMu[0].GetObject())->Py();
+  Double_t pla12=((AliAODTrack*)fMu[0].GetObject())->Pz();
+  Double_t e1=((AliAODTrack*)fMu[0].GetObject())->E();
+  Double_t mu1Charge=((AliAODTrack*)fMu[0].GetObject())->Charge();
+  Double_t pla20=((AliAODTrack*)fMu[1].GetObject())->Px();
+  Double_t pla21=((AliAODTrack*)fMu[1].GetObject())->Py();
+  Double_t pla22=((AliAODTrack*)fMu[1].GetObject())->Pz();
+  Double_t e2=((AliAODTrack*)fMu[1].GetObject())->E();
+
+  // Fill the Lorentz vector for projectile and target
+  // For the moment we do not consider the crossing angle
+  // Projectile runs towards the MUON arm
+  TLorentzVector pProjCM(0.,0.,-pbeam,ebeam); // projectile
+  TLorentzVector pTargCM(0.,0., pbeam,ebeam); // target
+  //
+  // --- Get the muons parameters in the CM frame
+  //
+  TLorentzVector pMu1CM(pla10,pla11,pla12,e1);
+  TLorentzVector pMu2CM(pla20,pla21,pla22,e2);
+  //
+  // --- Obtain the dimuon parameters in the CM frame
+  //
+  TLorentzVector pDimuCM=pMu1CM+pMu2CM;
+  //
+  // --- Translate the dimuon parameters in the dimuon rest frame
+  //
+  TVector3 beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  TLorentzVector pMu1Dimu=pMu1CM;
+  TLorentzVector pMu2Dimu=pMu2CM;
+  TLorentzVector pProjDimu=pProjCM;
+  TLorentzVector pTargDimu=pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+  //
+  // --- Determine the z axis for the CS angle 
+  //
+  TVector3 zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+  //
+  // --- Determine the CS angle (angle between mu+ and the z axis defined above)
+  //
+   TVector3 yaxisCS=(((pProjDimu.Vect()).Unit()).Cross((pTargDimu.Vect()).Unit())).Unit();
+   TVector3 xaxisCS=(yaxisCS.Cross(zaxisCS)).Unit();
+ 
+   Double_t phi;
+   if(mu1Charge>0) phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxisCS),((pMu1Dimu.Vect()).Dot(xaxisCS)));
+   else phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxisCS),((pMu2Dimu.Vect()).Dot(xaxisCS)));
+     
+   return phi;
+}
+
+//______________________________________________________________________________
+Double_t AliAODDimuon::PhiHe(){
+  // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
+  if(CheckPointers())return -999999999;
+  Double_t ebeam=3500; //temporary
+  if(ebeam<=0){
+    printf("Can not compute phiHE with EBeam=%f\n",ebeam);
+    return -999999999;
+  }
+  Double_t pbeam=TMath::Sqrt(ebeam*ebeam-fMProton*fMProton);
+  Double_t pla10=((AliAODTrack*)fMu[0].GetObject())->Px();
+  Double_t pla11=((AliAODTrack*)fMu[0].GetObject())->Py();
+  Double_t pla12=((AliAODTrack*)fMu[0].GetObject())->Pz();
+  Double_t e1=((AliAODTrack*)fMu[0].GetObject())->E();
+  Double_t mu1Charge=((AliAODTrack*)fMu[0].GetObject())->Charge();
+  Double_t pla20=((AliAODTrack*)fMu[1].GetObject())->Px();
+  Double_t pla21=((AliAODTrack*)fMu[1].GetObject())->Py();
+  Double_t pla22=((AliAODTrack*)fMu[1].GetObject())->Pz();
+  Double_t e2=((AliAODTrack*)fMu[1].GetObject())->E();
+
+  // Fill the Lorentz vector for projectile and target
+  // For the moment we consider no crossing angle
+  // Projectile runs towards the MUON arm
+  TLorentzVector pProjCM(0.,0.,-pbeam,ebeam); // projectile
+  TLorentzVector pTargCM(0.,0., pbeam,ebeam); // target
+  //
+  // --- Get the muons parameters in the CM frame
+  //
+  TLorentzVector pMu1CM(pla10,pla11,pla12,e1);
+  TLorentzVector pMu2CM(pla20,pla21,pla22,e2);
+  //
+  // --- Obtain the dimuon parameters in the CM frame
+  //
+  TLorentzVector pDimuCM=pMu1CM+pMu2CM;
+  //
+  // --- Translate the muon parameters in the dimuon rest frame
+  // 
+  TVector3 zaxis=(pDimuCM.Vect()).Unit(); 
+  //
+  // --- Translate the dimuon parameters in the dimuon rest frame
+  //
+  TVector3 beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  TLorentzVector pMu1Dimu=pMu1CM;
+  TLorentzVector pMu2Dimu=pMu2CM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  
+  TLorentzVector pProjDimu=pProjCM;
+  TLorentzVector pTargDimu=pTargCM; 
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
+
+  TVector3 yaxis=((pProjDimu.Vect()).Cross(pTargDimu.Vect())).Unit();
+  TVector3 xaxis=(yaxis.Cross(zaxis)).Unit();
+  //
+  // --- Calculation of the azimuthal angle (Helicity)
+  //
+   Double_t phi;
+   if(mu1Charge>0) phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
+   else phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxis),(pMu2Dimu.Vect()).Dot(xaxis));
+   
+   return phi;
 }
 
 //______________________________________________________________________________
