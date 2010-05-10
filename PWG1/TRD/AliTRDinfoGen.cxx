@@ -332,6 +332,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
       fTrackInfo->SetMC();
       fTrackInfo->SetPDG(fPdg);
       fTrackInfo->SetPrimary(mcParticle->Particle()->IsPrimary());
+      fTrackInfo->SetLabel(label);
       Int_t jref = iref;//, kref = 0;
       while(jref<nRefs){
         ref = mcParticle->GetTrackReference(jref);
@@ -357,7 +358,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
         dedx[in++]=esdTrack->GetTRDslice(il, is);
     for(Int_t il=0; il<AliTRDgeometry::kNlayer; il++) dedx[in++]=esdTrack->GetTRDmomentum(il);
     fTrackInfo->SetSlices(in, dedx);
-    fTrackInfo->SetLabel(label);
     fTrackInfo->SetNumberOfClustersRefit(esdTrack->GetNcls(2));
     // some other Informations which we may wish to store in order to find problematic cases
     fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
