@@ -39,6 +39,7 @@
 #include "AliHLTCaloDigitDataStruct.h"
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTLogging.h"
 #include "TString.h"
 
 /**
@@ -60,7 +61,7 @@ class TString;
 
 
 
-class AliHLTCaloDigitMaker : AliHLTCaloConstantsHandler
+class AliHLTCaloDigitMaker : AliHLTCaloConstantsHandler, public AliHLTLogging
 {
 
 public:
