@@ -16,30 +16,27 @@
 
 #include "AliHLTEMCALGeometry.h"
 #include "AliHLTEMCALConstants.h"
-// #include "AliHLTEMCALConstant.h"
-#include "assert.h"
-#include "AliHLTCaloConstantsHandler.h"
-#include "AliHLTEMCALSharedMemoryInterface.h" 
-#include "TVector3.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
 
-// using namespace EmcalHLTConst;
 
 ClassImp(AliHLTEMCALGeometry);
 TGeoManager *gGeoManager = 0;
 
 AliHLTEMCALGeometry::AliHLTEMCALGeometry() :
 	AliHLTCaloGeometry ("EMCAL"),
-	fShmPtr(0),
 	fGeo(0),
 	fEMCALGeometry(0)
 {
-	//fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+
+  //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	//fGeo = new AliEMCALGeometry("EMCAL_COMPLETE","EMCAL");
 	//fGeo =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
 	//TGeoManager::Import("/home/fedro/work/AliRoot/test/QA/geometry.root");
 	//fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
-	fShmPtr = new AliHLTEMCALSharedMemoryInterface();
-	GetGeometryFromCDB();
+
+  GetGeometryFromCDB();
 }
 
 Int_t AliHLTEMCALGeometry::InitialiseGeometry()

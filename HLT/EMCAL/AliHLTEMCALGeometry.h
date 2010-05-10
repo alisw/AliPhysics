@@ -17,14 +17,12 @@
  **************************************************************************/
 
 #include "AliHLTCaloGeometry.h"
-#include "AliHLTEMCALSharedMemoryInterface.h" 
 #include "AliEMCALGeoUtils.h"
-#include "AliEMCALGeometry.h"
-#include "TGeoManager.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "AliCDBPath.h"
-#include "AliHLTEMCALRecPointDataStruct.h"
+
+class TGeoManager;
+class AliCDBManager;
+class AliCDBPath;
+class AliHLTEMCALRecPointDataStruct;
 
 class AliEMCALGeoUtils;
 
@@ -38,19 +36,18 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry, public AliHLTLogging
 	virtual void ConvertRecPointCoordinates(Double_t &x, Double_t &y, Double_t &z) const;
 	virtual Int_t InitialiseGeometry();
 
+
 protected:
 	int GetGeometryFromCDB();
-private:
 
-	AliHLTEMCALSharedMemoryInterface* fShmPtr;  
-	//AliEMCALGeometry *fGeo;
+private:
+	AliHLTEMCALGeometry(const AliHLTEMCALGeometry & );
+	AliHLTEMCALGeometry & operator = (const AliHLTEMCALGeometry &);	
 	AliEMCALGeoUtils *fGeo;
+	
 	/** The EMCAL geometry */
 	AliEMCALGeoUtils *fEMCALGeometry;                  //!transient
-	AliHLTEMCALGeometry(const AliHLTEMCALGeometry & );
-	AliHLTEMCALGeometry & operator = (const AliHLTEMCALGeometry &);
-	//	static TGeoManager *fgGeoManager;
-
 
 };
+
 #endif
