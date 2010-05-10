@@ -385,7 +385,7 @@ void AliQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
     TIter next(list[spec]) ; 
     TH1 * histo = NULL ; 
     while ( (histo = dynamic_cast<TH1*> (next())) ) {
-      histo->Reset() ;
+      histo->Reset("ICE") ;
     }
   }
 }
