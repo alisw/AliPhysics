@@ -2,7 +2,8 @@ void SETUP()
 {
 
    // Load library
-   gSystem->Load("libEMCALUtils");
+   TString ocwd = gSystem->WorkingDirectory();
+   gSystem->Load(ocwd+"/libEMCALUtils.so");
 
    // Set the Include paths
 //   gSystem->SetIncludePath("-I$ROOTSYS/include -IEMCAL");
