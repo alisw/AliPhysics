@@ -112,9 +112,9 @@ public:
   TString GetDETNAME() { return fkDETNAME; };
 
 protected:
-  TString fkDETNAME;
-  Float_t fkCELLSTEP; //Constant
-  Int_t fkDDLOFFSET;   //Constant
+  //  TString fkDETNAME;
+  //  Float_t fkCELLSTEP; //Constant
+  //  Int_t fkDDLOFFSET;   //Constant
   
   //EMCAL specific, !! Move somewhere else, PTH
   // @todo: These variables should be declared constant, doesnt work right now
@@ -126,8 +126,10 @@ protected:
   Float_t fkCELLANGLE;
   Float_t fkRADLENGTH;
   Float_t fkCRITICENERGY;
+  Float_t fkCELLSTEP; //Constant
   Float_t fkCJ;
-  
+  Int_t fkDDLOFFSET;   //Constant
+  TString fkDETNAME;
 private:
   
   ClassDef(AliHLTCaloConstants, 1)

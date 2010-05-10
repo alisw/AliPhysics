@@ -134,22 +134,18 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   virtual const char* GetComponentID() = 0;
 
   /** interface function, see @ref AliHLTComponent for description */
-  //  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list) = 0; 
 
   /** interface function, see @ref AliHLTComponent for description */
-  //  virtual AliHLTComponentDataType GetOutputDataType();
   virtual AliHLTComponentDataType GetOutputDataType() = 0;
 
   /** interface function, see @ref AliHLTComponent for description */
-  //  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) = 0 ;
 
   /** interface function, see @ref AliHLTComponent for description */
   virtual AliHLTComponent* Spawn() = 0; 
 
  protected:
-
   //virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   /** interface function, see @ref AliHLTComponent for description */
 
@@ -169,7 +165,6 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
    * @return the size output size used
    */
   virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize); 
-
 
   // unsigned long fCaloEventCount;
 
@@ -196,9 +191,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   
   /** Mapping from harware address to geometrical address */
   //  AliHLTCaloMapper *fMapperPtr;                       //!transient 
-
-
-
+  
   /** Pointer to object which may check the integrity of the data */
   AliHLTCaloSanityInspector *fSanityInspectorPtr;     //!transient
 
@@ -244,9 +237,8 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
     //void CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
     int CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
     void NewEvent();
-   
-  private:
     
+  private:
     //Default constructor, should not be used. 
     RawDataWriter();    
     RawDataWriter (const RawDataWriter  & );

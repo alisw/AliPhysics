@@ -37,7 +37,8 @@ AliHLTCaloConstants::AliHLTCaloConstants() :  fkMAXCELLSTEPETA(-1),
 					      fkCRITICENERGY(-1),
 					      fkCJ(-1),
 					      fkCELLSTEP(-1),
-					      fkDDLOFFSET(-1)
+					      fkDDLOFFSET(-1),
+					      fkDETNAME("")
 {
   //Default constructor
 }
