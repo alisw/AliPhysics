@@ -110,6 +110,10 @@ protected:
   
   Bool_t fDoEmcal;  //Fill EMCAL histos?
   Bool_t fDoPhos;   //Fill PHOS histos?
+  
+  Bool_t fCutOnCentrality; // Cut on centrality on cluters with high energy
+  Float_t fCentralityCut; //How large fraction of the energy do we want in the central tower to make the cut?
+  Float_t fCentralityCutEnergy; //The minimum energy of the cluster to make the cut.
 
   ClassDef(AliHLTCaloHistoComponent, 0);
 

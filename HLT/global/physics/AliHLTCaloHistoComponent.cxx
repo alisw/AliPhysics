@@ -57,8 +57,10 @@ AliHLTCaloHistoComponent::AliHLTCaloHistoComponent() :
   fPhosHistogramArray(NULL),
   fEmcalHistogramArray(NULL),
   fDoEmcal(kFALSE),
-  fDoPhos(kFALSE)
-  
+  fDoPhos(kFALSE),
+  fCutOnCentrality(kFALSE),
+  fCentralityCut(0.9),
+  fCentralityCutEnergy(0.5)
 {
   //see header file for documentation
 }
@@ -158,7 +160,14 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
 	HLTImportant("Adding PHOS track-matching histograms");
       }
     } 
-
+    
+      else if(!strcmp("-cutoncentrality", argv[i])) {
+	 fCentralityCut = kTRUE;
+	 HLTImportant("Cutting on centrality");
+	  
+      }
+   
+     
     else {
       HLTError("Unknown argument \"%s\"", argv[i]);
     }
@@ -318,16 +327,17 @@ Int_t AliHLTCaloHistoComponent::ProcessBlocks(const AliHLTComponentBlockData * p
   Bool_t cutCluster = false;
   while( (clusterStruct = fClusterReader->NextCluster()) != 0) {
     cutCluster = false;
-
-    if(clusterStruct->fEnergy > 0.5) {
-      for(UInt_t i = 0; i < clusterStruct->fNCells; i++) {
-	fClusterReader->GetCell(clusterStruct, cellId, ampFrac, i);
-	if(ampFrac > 0.9) {
-	  cutCluster = true;
-	  break;
-	}
+      if(fCutOnCentrality){
+	 if(clusterStruct->fEnergy > 0.5) {
+	    for(UInt_t i = 0; i < clusterStruct->fNCells; i++) {
+	       fClusterReader->GetCell(clusterStruct, cellId, ampFrac, i);
+	       if(ampFrac > 0.9) {
+		  cutCluster = true;
+		  break;
+	       }
+	    }
+	 }
       }
-    }
     
     if(!cutCluster) {
       clustersVector.push_back(clusterStruct);  
