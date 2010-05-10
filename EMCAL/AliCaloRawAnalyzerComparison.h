@@ -46,6 +46,9 @@ class  AliCaloRawAnalyzerComparison
   void WriteHistograms();
 
  private:
+  AliCaloRawAnalyzerComparison( const AliCaloRawAnalyzerComparison   & );
+  AliCaloRawAnalyzerComparison   & operator = ( const  AliCaloRawAnalyzerComparison  & );
+
   void IntiHistograms( std::vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref );
 
   TH1D *fAmpHistograms[NANALYZERS][NZCOLSSMOD][NXROWSSMOD];

@@ -29,8 +29,6 @@
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
-#include <iostream>
-#include "unistd.h"
 #include "TMath.h"
 #include "AliLog.h"
 #include "AliCDBEntry.h"
@@ -46,16 +44,14 @@ ClassImp( AliCaloRawAnalyzerPeakFinder )
 
 AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder", "PF"),  
 							      fAmp(0),
-  fPeakFinderVectors(0),
-  fRunOnAlien(false)
+							      fPeakFinderVectors(0),
+							      fRunOnAlien(false)
 {
+  //Comment
   InitOCDB(fRunOnAlien);
   fPeakFinderVectors = new AliCaloPeakFinderVectors() ;
   ResetVectors();
   LoadVectorsOCDB();
-  //  cout << "*********** OCDB VECTORS ************" << endl;
-  // fPeakFinderVectors->PrintVectors();
-  //  PrintVectors();
 }
 
 
@@ -71,6 +67,7 @@ AliCaloRawAnalyzerPeakFinder::InitOCDB(bool alien) const
 void  
 AliCaloRawAnalyzerPeakFinder::ResetVectors()
 {
+  //As name implies
   for(int i=0; i < MAXSTART; i++)
     {
       for(int j=0; j < SAMPLERANGE; j++ )
@@ -195,7 +192,6 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		    fAmp += fPFAmpVectors[0][pfindex][i]*fReversed[ dt  +i  +tmpindex -1 ];
 		  }
 		}
-	      
 	      if( TMath::Abs(  (maxf - fAmp  )/maxf )  >   0.1 )
 		{
 		  fAmp = maxf;
@@ -242,7 +238,6 @@ AliCaloRawAnalyzerPeakFinder::CopyVectors(const AliCaloPeakFinderVectors *const 
   else
     {
       AliFatal( "pfv = ZERO !!!!!!!");
-      //      cout << __FILE__ << __LINE__ << __FUNCTION__ << "   ERROR, pfv = ZERO !!!!!!!" << endl;
     } 
 }
 
@@ -253,20 +248,13 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
 {
   //Loading of Peak-Finder  vectors from the 
   //Offline Condition Database  (OCDB)
-
-  //  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");   
-  //  AliCDBManager::Instance()->SetRun(100);
-
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/PeakFinder/");
-  //  AliCaloPeakFinderVectors *pfv ;
   
   if( entry != 0 )
     {
       AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
       CopyVectors( pfv );
-      
-    }
-  //  CopyVectors( pfv );
+     }
 }
 
 
@@ -329,10 +317,7 @@ AliCaloRawAnalyzerPeakFinder::WriteRootFile() const
 {
   // Utility function to write Peak-Finder vectors to an root file
   // The output is used to create an OCDB entry.
-
-  cout << "**** Peakfinder vectors before writing to file **********" << endl;
   fPeakFinderVectors->PrintVectors();
-  cout << "****************** END ***********************" << endl;
   TFile *f = new TFile("peakfindervectors2.root",  "recreate" );
   fPeakFinderVectors->Write();
   f->Close();

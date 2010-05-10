@@ -37,15 +37,15 @@ class  AliCaloPeakFinderVectors : public TObject
 		 const Double_t *const ac, const Double_t *const tc );
   void GetVector(const int i, const int j, Double_t *const a, Double_t *const  t,  
 		 Double_t *const ac, Double_t *const tc ) const;
+  void PrintVectors() const;
   void ResetVectors();
 
+ private:
   Double_t fPFAmpVC[MAXSTART][SAMPLERANGE][100]; // Vectors for Amplitude extraction, first iteration 
   Double_t fPFTofVC[MAXSTART][SAMPLERANGE][100]; // Vectors for TOF extraction, first iteration
   Double_t fPFAmpV[MAXSTART][SAMPLERANGE][100];  // Vectors for Amplitude extraction, second iteration 
   Double_t fPFTofV[MAXSTART][SAMPLERANGE][100];  // Vectors for TOF extraction, second iteration  
  
-  void PrintVectors() const;
-  
   ClassDef( AliCaloPeakFinderVectors, 1 )
     
 };

@@ -45,20 +45,19 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
  private:
   AliCaloRawAnalyzerPeakFinder( const AliCaloRawAnalyzerPeakFinder   & );
   AliCaloRawAnalyzerPeakFinder   & operator = ( const  AliCaloRawAnalyzerPeakFinder  & );
-  void   LoadVectorsASCII();
-  void   LoadVectorsOCDB();
-  void   CopyVectors(const AliCaloPeakFinderVectors *const pfvectors );
-  void   ResetVectors();
-  void InitOCDB(bool alien) const;
-  //  void PrintVectors() const;
-  void   WriteRootFile() const;
+  void     LoadVectorsASCII();
+  void     LoadVectorsOCDB();
+  void     CopyVectors(const AliCaloPeakFinderVectors *const pfvectors );
+  void     ResetVectors();
+  void     InitOCDB(bool alien) const;
+  void     WriteRootFile() const;
   Double_t ScanCoarse(const Double_t *const array, const int length ) const ; // Find a rough estimate of peak position and t0
 
   Double_t fPFAmpVectorsCoarse[MAXSTART][SAMPLERANGE][100];  // Vectors for Amplitude extraction, first iteration
   Double_t fPFTofVectorsCoarse[MAXSTART][SAMPLERANGE][100];  // Vectors for TOF extraction, first iteration
   Double_t fPFAmpVectors[MAXSTART][SAMPLERANGE][100];        // Vectors for Amplitude extraction, second iteration
   Double_t fPFTofVectors[MAXSTART][SAMPLERANGE][100];        // Vectors for TOF extraction, second iteration
-  Double_t fAmp; 
+  Double_t fAmp; // The amplitude in entities of ADC counts
   AliCaloPeakFinderVectors  *fPeakFinderVectors; // Collection of Peak-Fincer vectors
   
   bool fRunOnAlien; // Wether or not we are running on the GRID
