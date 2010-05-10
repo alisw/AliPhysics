@@ -76,6 +76,8 @@ class AliHMPIDRawStream: public TObject {
     void   DumpData(Int_t nw);                           // Dump Data
     void   StorePosition();                              //Debug purpose
     
+    Double_t GetDdlDataSize()      { return 4.0*fRawDataSize;} //returns the data size for the DDL which is decoded in Next(); fRawDataSize = Bytes/4  
+    
 //    inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                              //digit->(w32,ddl,r,d,a)
 //    inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                              //raw->abs pad number
 //    inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                       //(w32,ddl)->digit
@@ -136,7 +138,8 @@ enum Ebits {kbit0,kbit1 , kbit2, kbit3, kbit4, kbit5, kbit6, kbit7, kbit8,
     Int_t           *fPos;                                               // for debug purposes
     Int_t            fiPos;                                              // counter for debug
     Bool_t           fTurbo;                                             // kTRUE = Turbo decoding is called. DEFAULT: kFALSE = normal decoding is called
-    ClassDef(AliHMPIDRawStream, 3)                                       // base class for reading HMPID raw digits
+    Int_t            fRawDataSize;
+    ClassDef(AliHMPIDRawStream, 4)                                       // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     /*

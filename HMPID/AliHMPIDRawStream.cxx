@@ -45,7 +45,8 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
   fZeroSup(kTRUE),
   fPos(0x0),
   fiPos(0),
-  fTurbo(kFALSE)
+  fTurbo(kFALSE),
+  fRawDataSize(0)
 {
   //
   // Constructor
@@ -85,7 +86,8 @@ AliHMPIDRawStream::AliHMPIDRawStream() :
   fZeroSup(kTRUE),
   fPos(0x0),
   fiPos(0),
-  fTurbo(kFALSE) 
+  fTurbo(kFALSE) ,
+  fRawDataSize(0)
 {
   //
   // Constructor
@@ -119,6 +121,7 @@ AliHMPIDRawStream::~AliHMPIDRawStream()
   fWord=0;
   fZeroSup=0;
   fTurbo=0;
+  fRawDataSize=0;
   for(Int_t i=0;i<kNDDL;i++) delete [] fNumOfErr[i]; 
   delete [] fNumOfErr; 
 
@@ -200,7 +203,7 @@ Bool_t AliHMPIDRawStream::Next()
 
   fPosition = 0;
   Bool_t status=kFALSE;
-  Int_t  rawDataSize=0;        
+  fRawDataSize=0;        
   fDDLNumber = fRawReader->GetDDLID();
   if(fRawReader->GetType() == 7 || fRawReader->GetType() == 8 )  {           //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
     fnDDLInStream[fDDLNumber]=1; fnDDLOutStream[fDDLNumber]=0;
@@ -209,9 +212,9 @@ Bool_t AliHMPIDRawStream::Next()
     fTimeStamp = fRawReader->GetTimestamp();
     
     AliDebug(1,Form("DDL %i started to be decoded!",fDDLNumber));
-    rawDataSize=fRawReader->GetDataSize()/4;
-    DelVars();                                        //We have to delete the variables initialized in the InitVars before recall IntiVars!!!
-    InitVars(rawDataSize);                            //To read the charge and pads we cannot delete before the status return
+    fRawDataSize=fRawReader->GetDataSize()/4;
+    DelVars();                                         //We have to delete the variables initialized in the InitVars before recall IntiVars!!!
+    InitVars(fRawDataSize);                            //To read the charge and pads we cannot delete before the status return
     
     if(fTurbo==kTRUE) status=Turbo();
     else status = ReadHMPIDRawData();
