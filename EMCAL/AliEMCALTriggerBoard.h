@@ -12,7 +12,6 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "TVector2.h"
 
 class TClonesArray;
-class AliEMCALCalibData;
 
 typedef enum { kGamma, kJet } L1TriggerType_t;
 
@@ -21,7 +20,7 @@ class AliEMCALTriggerBoard : public TObject
 	
 public:
 	         AliEMCALTriggerBoard();
-	         AliEMCALTriggerBoard(const AliEMCALCalibData *calibData, const TVector2& RegionSize);
+	         AliEMCALTriggerBoard(const TVector2& RegionSize);
 	virtual ~AliEMCALTriggerBoard();
 	
 	virtual void SlidingWindow(L1TriggerType_t type, Int_t Threshold);

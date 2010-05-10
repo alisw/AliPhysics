@@ -82,6 +82,14 @@ void AliEMCALTriggerSTURawStream::Reset()
 {
 	//
 	if (fRawReader) fRawReader->Reset();
+
+	fNL0GammaPatch = 0;
+	fNL1GammaPatch = 0;
+	fNL1JetPatch   = 0;	
+	
+	delete fL0GammaPatchIndex; fL0GammaPatchIndex = 0x0;
+	delete fL1GammaPatchIndex; fL1GammaPatchIndex = 0x0;
+	delete fL1JetPatchIndex;   fL1JetPatchIndex   = 0x0;	
 }
 
 //_____________________________________________________________________________
@@ -93,6 +101,14 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	UInt_t word32[1772]; // 32b words
 
 	Int_t iword = 0;
+	
+	fNL0GammaPatch = 0;
+	fNL1GammaPatch = 0;
+	fNL1JetPatch   = 0;
+	
+	delete fL0GammaPatchIndex; fL0GammaPatchIndex = 0x0;
+	delete fL1GammaPatchIndex; fL1GammaPatchIndex = 0x0;
+	delete fL1JetPatchIndex;   fL1JetPatchIndex   = 0x0;
 	
 	UInt_t w32;
 	while (fRawReader->ReadNextInt(w32)) word32[iword++] = w32;

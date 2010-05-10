@@ -24,7 +24,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerSTU.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliEMCALCalibData.h"
+#include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliVZEROCalibData.h"
 #include "AliVZEROdigit.h"
 #include "AliEMCALTriggerPatch.h"
@@ -45,14 +45,19 @@ ClassImp(AliEMCALTriggerSTU)
 
 //_______________
 AliEMCALTriggerSTU::AliEMCALTriggerSTU() : AliEMCALTriggerBoard()
+,fGammaTh(0)
+,fJetTh(0)
+,fDCSConfig(0x0)
 {
 	//
 	fV0M[0] = fV0M[1] = 0;
 }
 
 //_______________
-AliEMCALTriggerSTU::AliEMCALTriggerSTU(AliEMCALCalibData *calibData, const TVector2& RS) : 
-AliEMCALTriggerBoard(calibData, RS)
+AliEMCALTriggerSTU::AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, const TVector2& RS) : AliEMCALTriggerBoard(RS)
+,fGammaTh(0)
+,fJetTh(0)
+,fDCSConfig(dcsConf)
 {
 	//
 	fV0M[0] = fV0M[1] = 0;
@@ -92,7 +97,7 @@ void AliEMCALTriggerSTU::BuildMap( Int_t iTRU, Int_t** M, const TVector2* rSize 
 void AliEMCALTriggerSTU::L1( L1TriggerType_t type )
 {
 	//
-	SlidingWindow( type, int(ThresholdFromV0( type )) );	
+	SlidingWindow( type, GetThreshold( type ) );	
 }
 
 //________________
@@ -173,53 +178,6 @@ void AliEMCALTriggerSTU::PrintADC( L1TriggerType_t type, TVector2& pos, TVector2
 		break;
 		default:
 			AliError("AliEMCALTriggerSTU::PrintADC(): Undefined trigger type, pls check!");
-	}
-}
-
-//________________
-void AliEMCALTriggerSTU::V0Multiplicity( TTree& treeV0 )
-{  
-	//
-    AliCDBManager *man = AliCDBManager::Instance();
-    AliCDBEntry *entry = man->Get("VZERO/Calib/Data");
-    AliVZEROCalibData *calibdata = (AliVZEROCalibData*)entry->GetObject();
-	
-    TClonesArray* digitsArray = 0x0;
-    treeV0.SetBranchAddress("VZERODigit",&digitsArray);
-
-	Float_t mult[64];
-	Short_t  adc[64];
-   
-	for (Int_t i=0; i<64; i++)
-	{
-		adc[i]    = 0;
-		mult[i]   = 0.0;
-	}
-
-	Int_t nEntries = (Int_t)treeV0.GetEntries();
-
-	for (Int_t e=0; e<nEntries; e++) 
-	{
-		treeV0.GetEvent(e);
-
-		Int_t nDigits = digitsArray->GetEntriesFast();
-          
-		for (Int_t d=0; d<nDigits; d++) 
-		{    
-			AliVZEROdigit* digit = (AliVZEROdigit*)digitsArray->At(d);      
-			Int_t  pmNumber      = digit->PMNumber();
-			
-			if (adc[pmNumber] > (int(1.0/calibdata->GetMIPperADC(pmNumber)) /2) ) 
-				mult[pmNumber] += float(adc[pmNumber])*calibdata->GetMIPperADC(pmNumber);
-		}
-	}
-  
-	//  0..31 V0C 
-	// 32..63 V0A
-	for (Int_t j=0; j<32; j++) 
-	{
-		fV0M[0] += short(mult[j   ]+0.5); 
-		fV0M[1] += short(mult[j+32]+0.5); 
 	}
 }
 
@@ -322,7 +280,22 @@ void AliEMCALTriggerSTU::PatchGenerator(const TClonesArray* lpos, Int_t val)
 }
 
 //___________
-Float_t AliEMCALTriggerSTU::ThresholdFromV0( L1TriggerType_t type )
+void AliEMCALTriggerSTU::SetV0Multiplicity(const Int_t M[], Int_t n)
+{
+	//
+	for (Int_t i=0;i<n;i++) fV0M[i] = M[i]; 
+
+	Int_t sumV0 = fV0M[0] + fV0M[1];
+	
+	if (!sumV0) AliWarning("V0A + V0C is null!");
+	
+	fGammaTh = fDCSConfig->GetGA()*sumV0*sumV0+fDCSConfig->GetGB()*sumV0+fDCSConfig->GetGC();
+	
+	fJetTh   = fDCSConfig->GetJA()*sumV0*sumV0+fDCSConfig->GetJB()*sumV0+fDCSConfig->GetJC();
+}
+
+//___________
+Int_t AliEMCALTriggerSTU::GetThreshold( L1TriggerType_t type )
 {	
 	// Compute threshold FIXME: need an access to the OCDB
 	// to get f(V0) parameters depending on trigger type
@@ -330,15 +303,16 @@ Float_t AliEMCALTriggerSTU::ThresholdFromV0( L1TriggerType_t type )
 	switch ( type )
 	{
 		case kGamma:
+			return fGammaTh;
 			break;
 		case kJet:
-//			return 15.;
+			return fJetTh;		
 			break;
 		default:
-			AliError("AliEMCALTriggerSTU::ThresholdFromV0(): Undefined trigger type, pls check!");
+			AliError("AliEMCALTriggerSTU::GetThreshold(): Undefined trigger type, pls check!");
 	}
 	
-	return 0.;
+	return 0;
 }
 
 //__________

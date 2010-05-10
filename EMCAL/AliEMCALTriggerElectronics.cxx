@@ -28,17 +28,16 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliRunLoader.h"
 #include "AliEMCAL.h" 
 #include "AliRun.h" 
+#include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerData.h"
 #include "AliEMCALDigit.h"
 #include "AliCaloRawStreamV3.h"
-//#include "AliVZERORawStream.h"
 #include "AliEMCALTriggerSTURawStream.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRawDigit.h"
 
 #include <TVector2.h>
 #include <TClonesArray.h>
-//#include <Riostream.h>
 
 namespace
 {
@@ -48,7 +47,7 @@ namespace
 ClassImp(AliEMCALTriggerElectronics)
 
 //__________________
-AliEMCALTriggerElectronics::AliEMCALTriggerElectronics(AliEMCALCalibData *calibData) : TObject(),
+AliEMCALTriggerElectronics::AliEMCALTriggerElectronics(const AliEMCALTriggerDCSConfig *dcsConf) : TObject(),
 fTRU(new TClonesArray("AliEMCALTriggerTRU",32)),
 fSTU(0x0)
 {
@@ -57,12 +56,17 @@ fSTU(0x0)
 	rSize.Set( 24.,  4. );
 
 	// 32 TRUs
-	for (Int_t i=0;i<kNTRU;i++) new ((*fTRU)[i]) AliEMCALTriggerTRU(calibData, rSize, int(i/3) % 2);
-   
+	for (Int_t i=0;i<kNTRU;i++) 
+	{
+		AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(i);
+		new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, int(i/3) % 2);
+	}
+	
 	rSize.Set( 48., 64. );
 	
 	// 1 STU
-	fSTU = new AliEMCALTriggerSTU(calibData, rSize);
+	AliEMCALTriggerSTUDCSConfig* stuConf = dcsConf->GetSTUDCSConfig();
+	fSTU = new AliEMCALTriggerSTU(stuConf, rSize);
 	
 	for (Int_t i=0;i<kNTRU;i++) fSTU->BuildMap( i, 
 											  (static_cast<AliEMCALTriggerTRU*>(fTRU->At(i)))->Map(), 
@@ -79,7 +83,7 @@ AliEMCALTriggerElectronics::~AliEMCALTriggerElectronics()
 }
 
 //__________________
-void AliEMCALTriggerElectronics::Digits2Trigger(const TClonesArray* digits, const TTree* treeV0, AliEMCALTriggerData* data)
+void AliEMCALTriggerElectronics::Digits2Trigger(const TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data)
 {
 	//
 	AliEMCALGeometry* geom = 0x0;
@@ -132,12 +136,12 @@ void AliEMCALTriggerElectronics::Digits2Trigger(const TClonesArray* digits, cons
 		
 		AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
 
-	  	iL0 += iTRU->L0v1();
+	  	iL0 += iTRU->L0();
 
-		Int_t vL0Peaks[96][2]; iTRU->Peaks( vL0Peaks );
+//		Int_t vL0Peaks[96][2]; iTRU->Peaks( vL0Peaks );
 			
 	   	data->SetL0Patches( i , iTRU->Patches() );			
-		data->SetL0Peaks(   i , vL0Peaks );
+//		data->SetL0Peaks(   i , vL0Peaks );
 
 		if ( !i ) // do it once since identical for all TRU 
 		{
@@ -166,11 +170,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(const TClonesArray* digits, cons
 												    (static_cast<AliEMCALTriggerTRU*>(fTRU->At(i)))->Region(), 
 												    (static_cast<AliEMCALTriggerTRU*>(fTRU->At(i)))->RegionSize() 
 												    );
-
-//		fSTU->Scan();
 		
-		TTree* tr = const_cast<TTree*>(treeV0);
-		if ( tr ) fSTU->V0Multiplicity( *tr );
+		fSTU->SetV0Multiplicity( V0M , 2 ); // C/A
 
 		TVector2 size;
 

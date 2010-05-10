@@ -46,7 +46,7 @@ fPatches( new TClonesArray("AliEMCALTriggerPatch",10) )
 }	
 
 //_______________
-AliEMCALTriggerBoard::AliEMCALTriggerBoard(const AliEMCALCalibData */*calibData*/, const TVector2& RS) : TObject(),
+AliEMCALTriggerBoard::AliEMCALTriggerBoard(const TVector2& RS) : TObject(),
 fRegion(0x0),
 fMap(0x0),
 fRegionSize(    new TVector2( RS ) ),

@@ -59,7 +59,8 @@
 #include "AliRun.h"
 #include "AliEMCALTriggerData.h"
 #include "AliEMCALTriggerElectronics.h"
-//#include "AliVZEROLoader.h"
+#include "AliEMCALTriggerDCSConfigDB.h"
+#include "AliEMCALTriggerDCSConfig.h"
 
 ClassImp(AliEMCALReconstructor) 
 
@@ -114,7 +115,12 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 	
   if(!fGeom) AliFatal(Form("Could not get geometry!"));
 
-  fgTriggerProcessor = new AliEMCALTriggerElectronics();
+  AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
+
+  const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
+
+  if (!dcsConfig) AliFatal("No Trigger DCS Configuration from OCDB!");
+  fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
 } 
 
 //____________________________________________________________________________
@@ -160,16 +166,6 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   else
 	  clustersTree->Branch("EMTRG","AliEMCALTriggerData",&trgData,bufferSize);
 
-//  AliVZEROLoader* vzeroLoader = dynamic_cast<AliVZEROLoader*>(AliRunLoader::Instance()->GetDetectorLoader("VZERO"));
-//  
-//  TTree* treeV0 = 0x0;
-//	
-//  if (vzeroLoader) 
-//  {
-//	  vzeroLoader->LoadDigits("READ");
-//      treeV0 = vzeroLoader->TreeD();
-//  }
-//
   TClonesArray *trgDigits = new TClonesArray("AliEMCALRawDigit",1000);
   TBranch *branchdig = digitsTree->GetBranch("EMTRG");
   if (!branchdig) 
@@ -181,10 +177,11 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   branchdig->SetAddress(&trgDigits);
   branchdig->GetEntry(0);
 
-  fgTriggerProcessor->Digits2Trigger(trgDigits, NULL, trgData);
+  Int_t v0M[2] = {0,0};
+  fgTriggerProcessor->Digits2Trigger(trgDigits, v0M, trgData);
 	
   trgDigits->Delete();
-  delete	trgDigits;
+  delete trgDigits; trgDigits = 0x0;
 
   if(fgDigitsArr && fgDigitsArr->GetEntries()) {
 
@@ -199,14 +196,9 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   }
 
-//  if (vzeroLoader) 
-//  {
-//	  vzeroLoader->UnloadDigits();
-//  }
-//
   clustersTree->Fill();	
 
-  delete trgData;
+  delete trgData; trgData = 0x0;
 }
 
 //____________________________________________________________________________
@@ -260,89 +252,6 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Works on the current event
   //  printf(" ## AliEMCALReconstructor::FillESD() is started ### \n ");
   //return;
-
-  //######################################################
-  //#########Calculate trigger and set trigger info###########
-  //######################################################
-  // Obsolete, to be changed with new trigger emulator when consensus is achieved about what is stored in ESDs.
-  AliEMCALTrigger tr;
-  //   tr.SetPatchSize(1);  // create 4x4 patches
-  tr.SetSimulation(kFALSE); // Reconstruction mode
-  tr.SetDigitsList(fgDigitsArr);
-  // Get VZERO total multiplicity for jet trigger simulation 
-  // The simulation of jey trigger will be incorrect if no VZERO data 
-  // at ESD
-  AliESDVZERO* vZero = esd->GetVZEROData();
-  if(vZero) {
-    tr.SetVZER0Multiplicity(vZero->GetMTotV0A() + vZero->GetMTotV0C());
-  }
-  //
-  tr.Trigger();
-
-  Float_t maxAmp2x2  = tr.Get2x2MaxAmplitude();
-  Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
-  Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
-  Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
-
-  Int_t iSM2x2      = tr.Get2x2SuperModule();
-  Int_t iSMnxn      = tr.GetnxnSuperModule();
-  Int_t iModulePhi2x2 = tr.Get2x2ModulePhi();
-  Int_t iModulePhinxn = tr.GetnxnModulePhi();
-  Int_t iModuleEta2x2 = tr.Get2x2ModuleEta();
-  Int_t iModuleEtanxn = tr.GetnxnModuleEta();
-
-  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iModulePhi2x2, iModuleEta2x2));
-  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",  maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iModulePhinxn, iModuleEtanxn));
-
-  TVector3    pos2x2(-1,-1,-1);
-  TVector3    posnxn(-1,-1,-1);
-
-  Int_t iAbsId2x2 = fGeom->GetAbsCellIdFromCellIndexes( iSM2x2, iModulePhi2x2, iModuleEta2x2) ; // should be changed to Module
-  Int_t iAbsIdnxn = fGeom->GetAbsCellIdFromCellIndexes( iSMnxn, iModulePhinxn, iModuleEtanxn) ;
-  fGeom->GetGlobal(iAbsId2x2, pos2x2);
-  fGeom->GetGlobal(iAbsIdnxn, posnxn);
-  //printf(" iAbsId2x2 %i iAbsIdnxn %i \n", iAbsId2x2, iAbsIdnxn);
-  
-  TArrayF triggerPosition(6);
-  triggerPosition[0] = pos2x2(0) ;   
-  triggerPosition[1] = pos2x2(1) ;   
-  triggerPosition[2] = pos2x2(2) ;  
-  triggerPosition[3] = posnxn(0) ;   
-  triggerPosition[4] = posnxn(1) ;   
-  triggerPosition[5] = posnxn(2) ;
-  //printf(" triggerPosition ");
-  //for(int i=0; i<6; i++) printf(" %i %f : ", i, triggerPosition[i]);
-
-  TArrayF triggerAmplitudes(4);
-  triggerAmplitudes[0] = maxAmp2x2 ;   
-  triggerAmplitudes[1] = ampOutOfPatch2x2 ;    
-  triggerAmplitudes[2] = maxAmpnxn ;   
-  triggerAmplitudes[3] = ampOutOfPatchnxn ;   
-  //printf("\n triggerAmplitudes ");
-  //for(int i=0; i<4; i++) printf(" %i %f : ", i, triggerAmplitudes[i]);
-  //printf("\n");
-  //tr.Print("");
-  //
-  // Trigger jet staff
-  //
-  if(tr.GetNJetThreshold()>0) {
-    // Jet phi/eta
-    Int_t n0 = triggerPosition.GetSize();
-    const TH2F *hpatch = tr.GetJetMatrixE();
-    triggerPosition.Set(n0 + 2);
-    for(Int_t i=0; i<2; i++) triggerPosition[n0+i] = hpatch->GetMean(i+1);   
-    // Add jet ampitudes
-    n0 = triggerAmplitudes.GetSize();
-    triggerAmplitudes.Set(n0 + tr.GetNJetThreshold());
-    Double_t *ampJet = tr.GetL1JetThresholds();
-    for(Int_t i=0; i<tr.GetNJetThreshold(); i++){
-      triggerAmplitudes[n0 + i] = Float_t(ampJet[i]);
-    }
-  }
-  esd->AddEMCALTriggerPosition(triggerPosition);
-  esd->AddEMCALTriggerAmplitudes(triggerAmplitudes);
-  // Fill trigger hists
-  //  AliEMCALHistoUtilities::FillTriggersListOfHists(fList,&triggerPosition,&triggerAmplitudes);
 
   //########################################
   //##############Fill CaloCells###############

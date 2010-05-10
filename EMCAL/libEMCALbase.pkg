@@ -33,7 +33,11 @@ AliEMCALTrigger.cxx \
 AliEMCALTriggerSTURawStream.cxx \
 AliEMCAL.cxx \
 AliEMCALRawUtils.cxx \
-AliCaloRawAnalyzerFastFit.cxx
+AliCaloRawAnalyzerFastFit.cxx \
+AliEMCALTriggerDCSConfig.cxx \
+AliEMCALTriggerTRUDCSConfig.cxx \
+AliEMCALTriggerSTUDCSConfig.cxx \
+AliEMCALTriggerDCSConfigDB.cxx
 
 
 

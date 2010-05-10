@@ -12,13 +12,14 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include <AliEMCALTriggerBoard.h>
 
 class TTree;
+class AliEMCALTriggerSTUDCSConfig;
 
 class AliEMCALTriggerSTU : public AliEMCALTriggerBoard 
 {
 public:
 	
 	              AliEMCALTriggerSTU();
-	              AliEMCALTriggerSTU(AliEMCALCalibData *calibData, const TVector2& rsize);
+	              AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, const TVector2& rsize);
 	virtual      ~AliEMCALTriggerSTU();
 	
 	virtual void  FetchFOR(Int_t i, Int_t** Region, const TVector2* rSize);
@@ -27,9 +28,9 @@ public:
 	virtual void  L1(L1TriggerType_t type);//, TTree& treeV0);
 	virtual void  PatchGenerator(const TClonesArray* lpos, Int_t val);
 	virtual const Int_t* V0() const {return fV0M;}
-	virtual void  SetV0Multiplicity(Int_t M[], Int_t n) { for (Int_t i=0;i<n;i++) fV0M[i] = M[i]; } // for raw data rec
-	virtual void  V0Multiplicity(TTree& treeV0);
+	virtual void  SetV0Multiplicity(const Int_t M[], Int_t n);
 	virtual void  Reset();
+	virtual Int_t GetThreshold(L1TriggerType_t type);
 	
 protected:
 		            AliEMCALTriggerSTU(const AliEMCALTriggerSTU& rhs);
@@ -37,9 +38,11 @@ protected:
 
 private:
 	
-	virtual Float_t ThresholdFromV0(L1TriggerType_t type);
-	
 	        Int_t   fV0M[2]; //! 0/1: V0C/V0A
+		  Int_t   fGammaTh;
+		  Int_t   fJetTh;
+	
+	AliEMCALTriggerSTUDCSConfig* fDCSConfig;
 
 	ClassDef(AliEMCALTriggerSTU,1)
 };

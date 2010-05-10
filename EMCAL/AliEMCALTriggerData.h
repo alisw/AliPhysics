@@ -28,7 +28,6 @@ public:
 	virtual void SetL0RegionSize(       TVector2 size ) {    fL0RegionSize = size; }
 	virtual void SetL0SubRegionSize(    TVector2 size ) { fL0SubRegionSize = size; }
 	virtual void SetL0PatchSize(        TVector2 size ) {     fL0PatchSize = size; }
-	virtual void SetL0Peaks(Int_t v, Int_t arr[96][2] ) { for (Int_t i=0;i<96;i++) for (Int_t j=0;j<2;j++) fL0Peaks[v][i][j] = arr[i][j]; }
 	
 	virtual void SetL1GammaPatches(const TClonesArray& patches);
 	virtual void SetL1JetPatches(const TClonesArray& patches);
@@ -51,8 +50,6 @@ public:
 	virtual void          L0SubRegionSize(     TVector2 size     ) const { size =      fL0SubRegionSize;      }
 	virtual TVector2      L0SubRegionSize(                       ) const {     return  fL0SubRegionSize;      }
 	virtual void          L0NPatches( Int_t arr[32]              ) const { for (Int_t i=0;i<32;i++) arr[i] = fL0NPatches[i]; }
-	virtual void          L0Peaks(    Int_t arr[32][96][2]       ) const { 
-		for (Int_t i=0;i<32;i++) for (Int_t j=0;j<96;j++) for (Int_t k=0;k<2;k++) arr[i][j][k] = fL0Peaks[i][j][k]; }
 
 	virtual void          L1GammaPatches(  TClonesArray& patches ) const { patches =  *fL1GammaPatches;       }
 	virtual TClonesArray* L1GammaPatches(                        ) const {     return  fL1GammaPatches;       }
@@ -85,7 +82,6 @@ private:
 	TVector2       fL0RegionSize;         // region size in units of fast or
 	TVector2       fL0SubRegionSize;      // subregion size in units of fast or
 	TVector2       fL0PatchSize;          // patch size in units of subregion
-	Int_t          fL0Peaks[32][96][2];   // max & pos of the max for ADC channels
 	
 	TClonesArray*  fL1GammaPatches;       // array of patches  
 	TClonesArray*  fL1JetPatches;         // array of patches  
