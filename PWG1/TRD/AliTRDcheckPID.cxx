@@ -64,6 +64,7 @@ AliTRDcheckPID::AliTRDcheckPID()
   ,fUtil(NULL)
   ,fGraph(NULL)
   ,fPID(NULL)
+  ,fV0s(NULL)
   ,fMomentumAxis(NULL)
   ,fMinNTracklets(AliTRDgeometry::kNlayer)
   ,fMaxNTracklets(AliTRDgeometry::kNlayer)
@@ -82,6 +83,7 @@ AliTRDcheckPID::AliTRDcheckPID(char* name )
   ,fUtil(NULL)
   ,fGraph(NULL)
   ,fPID(NULL)
+  ,fV0s(NULL)
   ,fMomentumAxis(NULL)
   ,fMinNTracklets(AliTRDgeometry::kNlayer)
   ,fMaxNTracklets(AliTRDgeometry::kNlayer)
@@ -147,6 +149,7 @@ void AliTRDcheckPID::UserExec(Option_t *opt)
   //
 
   fPID->Delete();
+  fV0s = dynamic_cast<TObjArray *>(GetInputData(2));
 
   AliTRDrecoTask::UserExec(opt);
 

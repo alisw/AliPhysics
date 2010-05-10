@@ -30,6 +30,7 @@ class TTree;
 class TObjArray;
 class AliTRDReconstructor;
 class AliTRDseedV1;
+class AliTRDtrackInfo;
 class AliTRDpidRefMaker : public AliTRDrecoTask
 {
 public:
@@ -87,7 +88,7 @@ public:
 
   void    SetAbundance(Float_t train);
   void    SetPthreshold(Float_t t) { fPthreshold = t;}
-  void    SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid);
+  void    SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo *t, Float_t *pid);
   void    SetSource(ETRDpidRefMakerSource pid, ETRDpidRefMakerSource momentum) {fRefPID = pid; fRefP = momentum;}
 
 

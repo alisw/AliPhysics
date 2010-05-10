@@ -53,6 +53,7 @@
 #include "AliESDfriendTrack.h"
 #include "AliESDHeader.h"
 #include "AliESDtrack.h"
+#include "AliESDv0.h"
 #include "AliESDtrackCuts.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
@@ -99,6 +100,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fMCev(NULL)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
+  ,fV0Cut(NULL)
   ,fTrackInfo(NULL)
   ,fEventInfo(NULL)
   ,fV0Info(NULL)
@@ -122,6 +124,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fMCev(NULL)
   ,fEventCut(NULL)
   ,fTrackCut(NULL)
+  ,fV0Cut(NULL)
   ,fTrackInfo(NULL)
   ,fEventInfo(NULL)
   ,fV0Info(NULL)
@@ -149,6 +152,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
   
   if(fDebugStream) delete fDebugStream;
   if(fEvTrigger) delete fEvTrigger;
+  if(fV0Cut) delete fV0Cut;
   if(fTrackCut) delete fTrackCut;
   if(fEventCut) delete fEventCut;
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = NULL;
@@ -167,7 +171,8 @@ AliTRDinfoGen::~AliTRDinfoGen()
     fTracksKink = NULL;
   }
   if(fV0List){ 
-    fV0List->Delete(); delete fV0List;
+    fV0List->Delete(); 
+    delete fV0List;
     fV0List = NULL;
   }
 }
@@ -278,6 +283,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliTRDtrackV1 *track = NULL;
   AliTRDseedV1 *tracklet = NULL;
   AliTRDcluster *cl = NULL;
+  // LOOP 0 - over ESD tracks
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
@@ -437,13 +443,38 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fTrackInfo->Delete("");
   }
 
-//   AliESDv0 *v0 = NULL;
-//   for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s(); iv0++){
-//     if(!(v0 = fESD->GetV0(iv0))) continue;
-//     fV0List->Add(new AliTRDv0Info(v0));
-//   }
+  // LOOP 1 - over ESD v0s
+  Bool_t kFOUND(kFALSE);
+  Float_t bField(fESDev->GetMagneticField());
+  AliESDv0 *v0(NULL);
+  for(Int_t iv0(0); iv0<fESDev->GetNumberOfV0s(); iv0++){
+    if(!(v0 = fESDev->GetV0(iv0))) continue;
 
-  // Insert also MC tracks which are passing TRD where the track is not reconstructed
+    if(fV0Cut) new(fV0Info) AliTRDv0Info(*fV0Cut);
+    else new(fV0Info) AliTRDv0Info();
+    fV0Info->SetMagField(bField);
+    fV0Info->SetV0tracks(fESDev->GetTrack(v0->GetPindex()), fESDev->GetTrack(v0->GetNindex()));
+    fV0Info->SetV0Info(v0);
+    // purge V0 irelevant for TRD
+    for(Int_t ib(0); ib<nBarrel; ib++){ 
+      if(fV0Info->HasTrack((AliTRDtrackInfo*)fTracksBarrel->At(ib))){
+        kFOUND=kTRUE;
+        break;
+      }
+    }
+    if(!kFOUND){
+      for(Int_t ik(0); ik<nKink; ik++){ 
+        if(fV0Info->HasTrack((AliTRDtrackInfo*)fTracksKink->At(ik))){
+          kFOUND=kTRUE;
+          break;
+        }
+      }
+    }
+    if(!kFOUND) continue;
+    fV0List->Add(new AliTRDv0Info(*fV0Info));
+  }
+
+  // LOOP 2 - over MC tracks which are passing TRD where the track is not reconstructed
   if(HasMCdata()){
     AliDebug(10, "Output of the MC track map:");
     for(Int_t itk = 0; itk < nTracksMC;  itk++) AliDebug(10, Form("trackMap[%d] = %s", itk, trackMap[itk] == kTRUE ? "TRUE" : "kFALSE"));
@@ -501,10 +532,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
     delete[] trackMap;
   }
   AliDebug(2, Form(
-    "\nEv[%3d] Tracks: ESD[%d] MC[%d]\n"
+    "\nEv[%3d] Tracks: ESD[%d] MC[%d] V0[%d]\n"
     "        TPCout[%d] TRDin[%d] TRDout[%d]\n"
     "        Barrel[%3d+%3d=%3d] SA[%2d+%2d=%2d] Kink[%2d+%2d=%2d]"
-    ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC
+    ,(Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry(), nTracksESD, nTracksMC, fV0List->GetEntries()
     , nTPC, nTRDin, nTRDout
     ,nBarrel, nBarrelMC, fTracksBarrel->GetEntries()
     ,nSA, nSAMC, fTracksSA->GetEntries()
@@ -516,6 +547,15 @@ void AliTRDinfoGen::UserExec(Option_t *){
   PostData(kTracksKink, fTracksKink);
   PostData(kEventInfo, fEventInfo);
   PostData(kV0List, fV0List);
+}
+
+//____________________________________________________________________
+void AliTRDinfoGen::SetLocalV0Selection(AliTRDv0Info *v0)
+{
+// Set V0 cuts from outside
+
+  if(!fV0Cut) fV0Cut = new AliTRDv0Info(*v0);
+  else new(fV0Cut) AliTRDv0Info(*v0);
 }
 
 //____________________________________________________________________

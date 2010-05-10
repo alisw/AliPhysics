@@ -89,6 +89,7 @@ private:
   AliTRDpidUtil       *fUtil;              // utility class for PID calculations
   TObjArray           *fGraph;             //! array of graphs filled in PostProcess
   TObjArray           *fPID;               //! array of PID info/track for calibration
+  TObjArray           *fV0s;               //! array of V0 info
   TObjArray           *fEfficiency[AliPID::kSPECIES];      //! array of histograms with efficiency
   TAxis               *fMomentumAxis;      // helper mementum binning
   Int_t                fMinNTracklets;     // minimum number of required Tracklets (for systematic studies)
