@@ -75,7 +75,7 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fDndeta.CreateOutputObjects();
   fBFCorrelation.CreateOutputObjects();
   
-  
+  PostData(1, fListOfHistos);
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::Init()
@@ -119,45 +119,50 @@ void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
   
   TList* outputList = (TList*)GetOutputData(1);
   
+  if(outputList) {
+    fSharing.SetOutputList(outputList);
+    fBackground.SetHitList(outputList);
+    fDndeta.SetOutputList(outputList); 
+    fBFCorrelation.SetOutputList(outputList); 
+    fSharing.Terminate("");
+    fBackground.Terminate("");
+    fDndeta.Terminate("");
+    fBFCorrelation.Terminate("");
+    
+    AliFMDDndeta t;
+    t.SetNbinsToCut(2);
+    t.Init(outputList);
+    t.GenerateMult(AliFMDDndeta::kMult);
+    
+    TList* dNdetalist = t.GetMultList(AliFMDDndeta::kMult);
+    TList* cloneList = (TList*)dNdetalist->Clone("dNdeta");
+    cloneList->SetName("dNdeta");
+    outputList->Add(cloneList);
+    
+    t.GenerateMult(AliFMDDndeta::kMultTrVtx);
+    TList* dNdetalist2 = t.GetMultList(AliFMDDndeta::kMultTrVtx);
+    TList* cloneList2 = (TList*)dNdetalist2->Clone("dNdetaTrVtx");
+    cloneList2->SetName("dNdetaTrVtx");
+    outputList->Add(cloneList2);
   
-  fSharing.SetOutputList(outputList);
-  fBackground.SetHitList(outputList);
-  fDndeta.SetOutputList(outputList); 
-  fBFCorrelation.SetOutputList(outputList); 
-  fSharing.Terminate("");
-  fBackground.Terminate("");
-  fDndeta.Terminate("");
-  fBFCorrelation.Terminate("");
+    t.GenerateMult(AliFMDDndeta::kHits);
+    TList* dNdetalist3 = t.GetMultList(AliFMDDndeta::kHits);
+    TList* cloneList3 = (TList*)dNdetalist3->Clone("Hits");
+    cloneList3->SetName("Hits");
+    outputList->Add(cloneList3);
+    t.GenerateMult(AliFMDDndeta::kHitsTrVtx);
+    TList* dNdetalist4 = t.GetMultList(AliFMDDndeta::kHits);
+    TList* cloneList4 = (TList*)dNdetalist4->Clone("HitsTrVtx");
+    cloneList4->SetName("HitsTrVtx");
+    outputList->Add(cloneList4);
+    // TFile file("fmd_ana_histos_tmp.root","RECREATE");
+    //  fListOfHistos->Write();
+    // file.Close();
+  }
+  else
+    AliWarning("no merged output from manager");
   
-  AliFMDDndeta t;
-  t.SetNbinsToCut(2);
-  t.Init(outputList);
-  t.GenerateMult(AliFMDDndeta::kMult);
   
-  TList* dNdetalist = t.GetMultList(AliFMDDndeta::kMult);
-  TList* cloneList = (TList*)dNdetalist->Clone("dNdeta");
-  cloneList->SetName("dNdeta");
-  outputList->Add(cloneList);
-  
-  t.GenerateMult(AliFMDDndeta::kMultTrVtx);
-  TList* dNdetalist2 = t.GetMultList(AliFMDDndeta::kMultTrVtx);
-  TList* cloneList2 = (TList*)dNdetalist2->Clone("dNdetaTrVtx");
-  cloneList2->SetName("dNdetaTrVtx");
-  outputList->Add(cloneList2);
-  
-  t.GenerateMult(AliFMDDndeta::kHits);
-  TList* dNdetalist3 = t.GetMultList(AliFMDDndeta::kHits);
-  TList* cloneList3 = (TList*)dNdetalist3->Clone("Hits");
-  cloneList3->SetName("Hits");
-  outputList->Add(cloneList3);
-  t.GenerateMult(AliFMDDndeta::kHitsTrVtx);
-  TList* dNdetalist4 = t.GetMultList(AliFMDDndeta::kHits);
-  TList* cloneList4 = (TList*)dNdetalist4->Clone("HitsTrVtx");
-  cloneList4->SetName("HitsTrVtx");
-  outputList->Add(cloneList4);
-  // TFile file("fmd_ana_histos_tmp.root","RECREATE");
-  //  fListOfHistos->Write();
-  // file.Close();
 }
 
 //_____________________________________________________________________
