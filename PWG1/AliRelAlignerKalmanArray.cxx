@@ -24,10 +24,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
+#include <TGraphErrors.h>
+#include <TAxis.h>
+#include <TTree.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TCollection.h>
-#include "AliESDEvent.h"
+#include <AliESDEvent.h>
 #include "AliRelAlignerKalman.h"
 #include "AliRelAlignerKalmanArray.h"
 
@@ -35,240 +38,391 @@ ClassImp(AliRelAlignerKalmanArray)
 
 //______________________________________________________________________________
 AliRelAlignerKalmanArray::AliRelAlignerKalmanArray():
-    TNamed(),
-    fArray(new TObjArray()),
-    fSaveInterval(600), //default every 10minutes
-    fTimeMatchingTolerance(20),
-    fCurrentTimeBin(0),
-    fAligner(new AliRelAlignerKalman())
+    TNamed("alignerArray","array of aligners"),
+    fT0(0),
+    fTimebinWidth(0),
+    fSize(0),
+    fOutRejSigmaOnMerge(10.),
+    fOutRejSigmaOnSmooth(1.),
+    fPArray(NULL)
 {
   //ctor
 }
 
 //______________________________________________________________________________
-AliRelAlignerKalmanArray::AliRelAlignerKalmanArray(const char* name):
-    TNamed(name, name),
-    fArray(new TObjArray()),
-    fSaveInterval(600), //default every 10 minutes
-    fTimeMatchingTolerance(60),
-    fCurrentTimeBin(0),
-    fAligner(new AliRelAlignerKalman())
+AliRelAlignerKalmanArray::AliRelAlignerKalmanArray(Int_t t0, Int_t tend, Int_t slotwidth):
+    TNamed("alignerArray","array of aligners"),
+    fT0(t0),
+    fTimebinWidth(slotwidth),
+    fSize(0),
+    fOutRejSigmaOnMerge(10.),
+    fOutRejSigmaOnSmooth(1.),
+    fPArray(NULL)
 {
   //ctor
+  if (slotwidth==0) fSize = 1;
+  else fSize = (tend-t0)/slotwidth;
+  fPArray = new AliRelAlignerKalman* [fSize];
+  if (fPArray) for (Int_t i=0;i<fSize;i++){fPArray[i]=NULL;}//fill with zeros
+  else fSize=0;
+}
+
+//______________________________________________________________________________
+AliRelAlignerKalmanArray::AliRelAlignerKalmanArray( const AliRelAlignerKalmanArray& in):
+    TNamed(in.GetName(), in.GetTitle()),
+    fT0(in.fT0),
+    fTimebinWidth(in.fTimebinWidth),
+    fSize(in.fSize),
+    fOutRejSigmaOnMerge(in.fOutRejSigmaOnMerge),
+    fOutRejSigmaOnSmooth(in.fOutRejSigmaOnSmooth),
+    fPArray(NULL)
+{
+  //copy ctor
+  fAlignerTemplate = in.fAlignerTemplate;
+  fPArray = new AliRelAlignerKalman* [fSize];
+  if (!fPArray) {fSize=0;return;} //if fail
+  for (Int_t i=0;i<fSize;i++)
+  {
+    if (in.fPArray[i]) fPArray[i]=new AliRelAlignerKalman(*(in.fPArray[i]));
+    else fPArray[i]=NULL;
+  }
 }
 
 //______________________________________________________________________________
 AliRelAlignerKalmanArray::~AliRelAlignerKalmanArray()
 {
   //dtor
-  fArray->SetOwner();
-  delete fArray;
-  delete fAligner;
+  ClearContents();
+  delete [] fPArray;
+}
+
+//______________________________________________________________________________
+void AliRelAlignerKalmanArray::SetupArray(Int_t t0, Int_t tend, Int_t slotwidth)
+{
+  //setup array - clears old content
+  ClearContents();
+  fT0=t0;
+  fTimebinWidth=slotwidth;
+  Int_t tmpsize;
+  if (slotwidth==0) tmpsize = 1;
+  else tmpsize = (tend-t0)/slotwidth;
+  if (tmpsize!=fSize)
+  {
+    delete [] fPArray;
+    fPArray=new AliRelAlignerKalman* [tmpsize];
+    if (fPArray) fSize=tmpsize;
+    else fSize=0;
+  }
+  for (Int_t i=0;i<fSize;i++){fPArray[i]=NULL;}//fill with zeros
+}
+
+//______________________________________________________________________________
+AliRelAlignerKalman* AliRelAlignerKalmanArray::GetAlignerTemplate()
+{
+  return fAlignerTemplate;
 }
 
 //______________________________________________________________________________
 Long64_t AliRelAlignerKalmanArray::Merge( TCollection* list )
 {
   //Merge all the arrays
-  //the merge is vertical, meaning matching entries in tree are merged
+  //tlihe merge is vertical, meaning matching entries in tree are merged
 
   AliRelAlignerKalmanArray *arrayFromList;
   if (!list) return 0;
   TIter next(list);
   while ( (arrayFromList = dynamic_cast<AliRelAlignerKalmanArray*>(next())) )
   {
-    if (arrayFromList==this) continue;
+    if (fT0 != arrayFromList->fT0) continue;
+    if (fTimebinWidth != arrayFromList->fTimebinWidth) continue;
+    if (fSize != arrayFromList->fSize) continue;
 
-    fArray->AddAll(arrayFromList->fArray); //put all objects in one array
-
-    //do the merge
-    fArray->Sort();
-    TObjArray* tmpArray = SortedMerge(fArray);
-    tmpArray->SetOwner(kTRUE);
-
-    TObjArray* newArray = dynamic_cast<TObjArray*>(tmpArray->Clone());
-    delete fArray; //takes care of all loaded objects
-    fArray = newArray;
-
-    fArray->AddLast(arrayFromList->fAligner); //add the endofrun aligner
-  }
-
-  //TODO: this can be done better!
-  //Add own endofrun aligner and clean up
-  fArray->AddLast(fAligner);
-  fArray->Sort();
-  //TObjArray* tmpArray = SortedMerge(fArray);
-  //tmpArray->SetOwner(kTRUE);
-  //TObjArray* newArray = dynamic_cast<TObjArray*>(tmpArray->Clone());
-  //delete fArray; //takes care of all loaded objects
-  //fArray = newArray;
-
-  return fArray->GetEntriesFast();
-}
-
-//______________________________________________________________________________
-TObjArray* AliRelAlignerKalmanArray::SortedMerge( TObjArray* input )
-{
-  //Merges the adjacent aligners if close enough
-  //input needs to be already sorted
-
-  UInt_t timeStampIn;
-  AliRelAlignerKalman* alignerIn;
-  AliRelAlignerKalman* alignerOut = dynamic_cast<AliRelAlignerKalman*>(input->At(0));
-  TObjArray* output = new TObjArray();  //empty array
-  output->AddLast(alignerOut);        //first object in: copy of first input element
-
-  timeStampIn = alignerOut->GetTimeStamp();
-  SetCurrentTimeBin( timeStampIn );
-  TIter next(input);
-  while ( (alignerIn = dynamic_cast<AliRelAlignerKalman*>(next())) )
-  {
-    timeStampIn = alignerIn->GetTimeStamp();
-    if ( IsInCurrentTimeBin(timeStampIn) )
+    for (Int_t i=0; i<GetSize(); i++)
     {
-      alignerOut->Merge(alignerIn);
+      AliRelAlignerKalman* a1 = fPArray[i];
+      AliRelAlignerKalman* a2 = arrayFromList->fPArray[i];
+      if (a1 && a2)
+      {
+        a1->SetRejectOutliers(kFALSE);
+        a1->SetOutRejSigma(fOutRejSigmaOnMerge); a1->Merge(a2);
+      }
+      else
+        if (!a1 && a2) fPArray[i] = new AliRelAlignerKalman(*a2);
     }
-    else
-    {
-      alignerOut = alignerIn;
-      output->AddLast(alignerOut);
-    }//if
-    SetCurrentTimeBin( timeStampIn );
   }
-  return output;
+  return 0;
 }
 
 //______________________________________________________________________________
-void AliRelAlignerKalmanArray::SetCurrentTimeBin( UInt_t timestamp )
+Int_t AliRelAlignerKalmanArray::Timebin( UInt_t timestamp ) const
 {
-  //set the current timebin
-  fCurrentTimeBin = TimeBin(timestamp);
+  //calculate binnumber for given timestamp
+  if (fTimebinWidth==0) return 0;
+  Int_t slot = (timestamp-fT0)/fTimebinWidth; //it's all integers!
+  return slot;
 }
 
 //______________________________________________________________________________
-UInt_t AliRelAlignerKalmanArray::TimeBin( UInt_t timestamp ) const
+AliRelAlignerKalman* AliRelAlignerKalmanArray::GetAligner(UInt_t ts)
 {
-  return (timestamp+(fSaveInterval/2))/fSaveInterval*fSaveInterval; //it's all integers!
-}
-
-//______________________________________________________________________________
-Bool_t AliRelAlignerKalmanArray::IsInCurrentTimeBin( UInt_t timestamp ) const
-{
-  //check if timestamp is within the current timebin
-  UInt_t timeDiff = (timestamp>=fCurrentTimeBin)?timestamp-fCurrentTimeBin:
-                    fCurrentTimeBin-timestamp;
-  return (timeDiff < fTimeMatchingTolerance);
-}
-
-////______________________________________________________________________________
-//void AliRelAlignerKalmanArray::AddESDEvent( AliESDEvent* event )
-//{
-//  //add an AliESDEvent, take care of bookkeeping
-//  if (!fAligner) return;
-//  if (event->GetRunNumber() != fAligner->GetRunNumber())
-//  {
-//    //what to do when a new run starts
-//  }
-//
-//}
-//
-////______________________________________________________________________________
-Bool_t AliRelAlignerKalmanArray::AddCosmicEvent( AliESDEvent* event )
-{
-  if (!fAligner->AddCosmicEvent(event)) return kFALSE;
-
-  UInt_t currentTimeStamp = event->GetTimeStamp();
-  UInt_t timeFromLastBinCentre = currentTimeStamp - fCurrentTimeBin;
-  UInt_t binCentre = TimeBin(currentTimeStamp);
-  UInt_t timeFromBinCentre = currentTimeStamp-binCentre;
-  UInt_t nIntervals = timeFromLastBinCentre/fSaveInterval;
-
-  //////////////////////////////////////////////////////////////////////////////
-  //only ONE SAVE PER TIMEBIN!!!!, as close as possible to the bin center
-  //////////////////////////////////////////////////////////////////////////////
-  if ( (nIntervals == 1) &&                      //is in next time bin passed centre
-       (timeFromBinCentre < fTimeMatchingTolerance) )     //and close to it
+  //get the aligner for specified timestamp
+  Int_t tb = Timebin(ts);
+  if (tb<0) return NULL;
+  if (tb>=fSize) return NULL;
+  if (!fPArray) return NULL;
+  if (!fPArray[tb])
   {
-    AddLast(new AliRelAlignerKalman(*fAligner));
+    fPArray[tb] = new AliRelAlignerKalman( *fAlignerTemplate );
+    fPArray[tb]->SetTimeStamp(fT0+tb*fTimebinWidth);
   }
-  else if ( (nIntervals > 2) ) //TODO: don't hardwire stuff!
-  {
-    //if missed a few windows save anyway at current bin centre
-    fAligner->SetTimeStamp(binCentre);
-    AddLast(new AliRelAlignerKalman(*fAligner));
-  }
-  //////////////////////////////////////////////////////////////////////////////
-
-  return kTRUE;
+  return fPArray[tb];
 }
 
 //______________________________________________________________________________
-AliRelAlignerKalmanArray::AliRelAlignerKalmanArray( const AliRelAlignerKalmanArray& in):
-    TNamed(in.GetName(), in.GetTitle()),
-    fArray(NULL),
-    fSaveInterval(in.fSaveInterval),
-    fTimeMatchingTolerance(in.fTimeMatchingTolerance),
-    fCurrentTimeBin(in.fCurrentTimeBin),
-    fAligner(new AliRelAlignerKalman(*in.fAligner))
+AliRelAlignerKalman* AliRelAlignerKalmanArray::GetAligner(AliESDEvent* event)
 {
-  //copy ctor
-  fArray = static_cast<TObjArray*>(in.Clone());
+  //get the aligner for this event and set relevant info
+  AliRelAlignerKalman* a = GetAligner(event->GetTimeStamp());
+  if (a) a->SetRunNumber(event->GetRunNumber());
+  if (a) a->SetMagField(event->GetMagneticField());
+  return a;
 }
 
 //______________________________________________________________________________
 AliRelAlignerKalmanArray& AliRelAlignerKalmanArray::operator=(const AliRelAlignerKalmanArray& in)
 {
   //assignment operator
-  fArray = static_cast<TObjArray*>(in.Clone());
-  fSaveInterval = in.fSaveInterval;
-  fTimeMatchingTolerance = in.fTimeMatchingTolerance;
+  if (fSize!=in.fSize)
+  {
+    //if sizes different, delete curent and make a new one with new size
+    ClearContents();
+    delete [] fPArray;
+    fPArray = new AliRelAlignerKalman* [in.fSize];
+  }
+
+  fOutRejSigmaOnMerge=in.fOutRejSigmaOnMerge;
+  fOutRejSigmaOnSmooth=in.fOutRejSigmaOnSmooth;
+
+  if (!fPArray) fSize=0;
+  else fSize = in.fSize;
+  fTimebinWidth = in.fTimebinWidth;
+  fT0 = in.fT0;
+  for (Int_t i=0;i<fSize;i++)
+  {
+    if (in.fPArray[i]) fPArray[i] = new AliRelAlignerKalman(*(in.fPArray[i]));
+    else fPArray[i]=NULL;
+  }
   return *this;
 }
 
 //______________________________________________________________________________
-Bool_t AliRelAlignerKalmanArray::SetSaveInterval( const UInt_t s )
+void AliRelAlignerKalmanArray::ClearContents()
 {
-  //only set if array empty
-  if (fArray->GetEntriesFast()) return kFALSE;
-  fSaveInterval = s;
-  return kTRUE;
-}
-
-//______________________________________________________________________________
-Bool_t AliRelAlignerKalmanArray::SetTimeMatchingTolerance( const UInt_t m )
-{
-  //only set if array empty
-  if (fArray->GetEntriesFast()) return kFALSE;
-  fTimeMatchingTolerance = m;
-  return kTRUE;
+  //clear contents of array
+  for (Int_t i=0;i<fSize;i++)
+  {
+    if (fPArray[i]) delete fPArray[i];
+  }
 }
 
 //______________________________________________________________________________
 AliRelAlignerKalman* AliRelAlignerKalmanArray::At( Int_t i ) const
 {
   //mimic TObjArray::At( Int_t i )
-  return dynamic_cast<AliRelAlignerKalman*>(fArray->At(i));
-}
-
-//______________________________________________________________________________
-void AliRelAlignerKalmanArray::AddLast( AliRelAlignerKalman* al )
-{
-  //mimic TObjArray::AddLast( TObject* obj )
-  fArray->AddLast( al );
-  SetCurrentTimeBin(al->GetTimeStamp());
-}
-
-//______________________________________________________________________________
-AliRelAlignerKalman* AliRelAlignerKalmanArray::Last() const
-{
-  //mimic TObjArray::Last()
-  return dynamic_cast<AliRelAlignerKalman*>(fArray->Last());
+  if (i>=fSize) {printf("AliRelAlignerKalmanArray::At index %i out of bounds, size=%i\n",i,fSize); return NULL;}
+  if (i<0) return NULL;
+  return fPArray[i];
 }
 
 //______________________________________________________________________________
 AliRelAlignerKalman* AliRelAlignerKalmanArray::operator[](Int_t i) const
 {
   //mimic TObjArray::operator[](Int_t)
-  return dynamic_cast<AliRelAlignerKalman*>(fArray->At(i));
+  if (i>=fSize) {printf("AliRelAlignerKalmanArray::operator[] index %i out of bounds, size=%i\n",i,fSize); return NULL;}
+  if (i<0) return NULL;
+  return fPArray[i];
+}
+
+//______________________________________________________________________________
+AliRelAlignerKalman*& AliRelAlignerKalmanArray::operator[](Int_t i)
+{
+  //mimic TObjArray::operator[](Int_t) can be used as lvalue
+  if (i>=fSize||i<0) {Error("operator[]", "index %i out of bounds, size=%i\n",i,fSize); return fPArray[0];}
+  return fPArray[i];
+}
+
+//______________________________________________________________________________
+AliRelAlignerKalman* AliRelAlignerKalmanArray::Last() const
+{
+  //return aligner in last filled slot
+  if (fSize==0) return NULL;
+  return fPArray[fSize-1];
+}
+
+//______________________________________________________________________________
+void AliRelAlignerKalmanArray::Print(Option_t* option) const
+{
+  // print some info
+  TString optionStr(option);
+  printf( "%s: t0: %i, tend: %i, width: %i, size: %i, entries: %i\n",
+          GetName(),
+          fT0, (fT0+(fSize)*fTimebinWidth), fTimebinWidth,
+          fSize, GetEntries() );
+  if (optionStr.Contains("a"))
+    for (Int_t i=0; i<fSize; i++)
+    {
+      AliRelAlignerKalman* al = fPArray[i];
+      if (!al) continue;
+      al->Print();
+    }
+}
+
+//______________________________________________________________________________
+Int_t AliRelAlignerKalmanArray::GetEntries() const
+{
+  //get number of filled slots
+  if (!fPArray) return 0;
+  Int_t entries=0;
+  for (Int_t i=0; i<fSize; i++)
+  {
+    if (fPArray[i]) entries++;
+  }
+  return entries;
+}
+
+//______________________________________________________________________________
+void AliRelAlignerKalmanArray::FillTree( TTree* tree ) const
+{
+  AliRelAlignerKalman* al = NULL;
+  tree->Branch("aligner","AliRelAlignerKalman",&al);
+  //fill a tree with filled slots
+  for (Int_t i=0; i<fSize; i++)
+  {
+    al = fPArray[i];
+    if (al) tree->Fill();
+  }
+}
+
+//______________________________________________________________________________
+TGraphErrors* AliRelAlignerKalmanArray::MakeGraph(Int_t iparam) const
+{
+  //return a graph for the iparam-th parameter
+  if (iparam>8 || iparam<0)
+  {
+    printf("wrong parameter number. must be from 0-8");
+    return NULL;
+  }
+
+  TVectorD vx(GetEntries());
+  TVectorD vy(GetEntries());
+  TVectorD vex(GetEntries());
+  TVectorD vey(GetEntries());
+  Int_t entry=0;
+  for (Int_t i=0; i<fSize; i++)
+  {
+    AliRelAlignerKalman* al = fPArray[i];
+    if (!al) continue;
+    vx(entry) = al->GetTimeStamp();
+    vy(entry) = al->GetStateArr()[iparam];
+    TMatrixDSym* cm = al->GetStateCov();
+    vey(entry) = TMath::Sqrt((*cm)(iparam,iparam));
+    entry++;
+  }
+
+  TGraphErrors* graph = new TGraphErrors(vx,vy,vex,vey);
+  TString graphtitle;
+  TString graphtitley;
+  switch (iparam)
+  {
+  case 0:
+    graphtitle="rotation \\psi";
+    graphtitley="\\psi [rad]";
+    break;
+  case 1:
+    graphtitle="rotation \\theta";
+    graphtitley="\\theta [rad]";
+    break;
+  case 2:
+    graphtitle="rotation \\phi";
+    graphtitley="\\phi [rad]";
+    break;
+  case 3:
+    graphtitle="shift x";
+    graphtitley="x [cm]";
+    break;
+  case 4:
+    graphtitle="shift y";
+    graphtitley="y [cm]";
+    break;
+  case 5:
+    graphtitle="shift z";
+    graphtitley="z [cm]";
+    break;
+  case 6:
+    graphtitle="TPC vd correction";
+    graphtitley="correction factor []";
+    break;
+  case 7:
+    graphtitle="TPC t0 correction";
+    graphtitley="t0 correction [\\micros]";
+    break;
+  case 8:
+    graphtitle="TPC dv/dy";
+    graphtitley="dv/dy [cm/\\micros/m]";
+    break;
+  }
+  graph->SetTitle(graphtitle);
+  TAxis* xas = graph->GetXaxis();
+  TAxis* yas = graph->GetYaxis();
+  xas->SetTitle("time");
+  xas->SetTimeDisplay(1);
+  yas->SetTitle(graphtitley);
+  return graph;
+}
+
+//______________________________________________________________________________
+AliRelAlignerKalmanArray* AliRelAlignerKalmanArray::MakeSmoothArray() const
+{
+  //return a smoothed version of the data
+  AliRelAlignerKalmanArray* outputarr = new AliRelAlignerKalmanArray(fT0,
+                                        fT0+fSize*fTimebinWidth,fTimebinWidth);
+
+  AliRelAlignerKalman* tmpaligner = outputarr->GetAlignerTemplate();
+  tmpaligner->SetOutRejSigma(fOutRejSigmaOnSmooth);
+  //copy the first filled slot
+  Int_t n=0;
+  while (!fPArray[n]) {n++;}
+  if (n==fSize) return NULL;
+  *tmpaligner   = *fPArray[n];
+  if (fPArray[n]->GetNUpdates()>10)
+  (*outputarr)[n] = new AliRelAlignerKalman(*(fPArray[n]));
+  //for the rest of slots use merge
+  for (Int_t i=n+1;i<fSize;i++)
+  {
+    if (!fPArray[i]) continue;
+    PropagateToTime(tmpaligner, fPArray[i]->GetTimeStamp());
+    if (tmpaligner->Merge(fPArray[i]))
+    (*outputarr)[i] = new AliRelAlignerKalman(*tmpaligner);
+    else
+    (*outputarr)[i] = new AliRelAlignerKalman(*(fPArray[i]));
+  }
+  
+  tmpaligner->Reset(); //clean up
+
+  return outputarr;
+}
+
+//______________________________________________________________________________
+void AliRelAlignerKalmanArray::PropagateToTime(AliRelAlignerKalman* al, UInt_t timestamp ) const
+{
+  //propagate an aligner in time
+  TMatrixDSym* cov = al->GetStateCov();
+  TMatrixDSym corr(TMatrixDSym::kZero,*cov);
+  UInt_t dt = (timestamp>al->GetTimeStamp())?
+    timestamp-al->GetTimeStamp():al->GetTimeStamp()-timestamp;
+  //the propagation matrix
+  //to be added to the covariance matrix of kalman filter
+  corr(6,6) = dt*1e-8;  //vdrift
+  (*cov) += corr;
 }
 
