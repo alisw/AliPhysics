@@ -114,7 +114,7 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
   //------------------------------------------------------------
   // Actual SSD cluster finder for raw data
   //------------------------------------------------------------
-
+  
   fRawReader->Reset();  
 
   const Int_t kNADC = 12;
@@ -207,7 +207,7 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
 	  Float_t q = 0.;
 	  Float_t y = 0.;
 	  Int_t nDigits = 0;
-	  Int_t ostrip = -1;
+	  Int_t ostrip = -2;
 	  Bool_t snFlag = 0;
 	  
 	  Int_t n = nStrips[adc][side];
@@ -232,7 +232,7 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
 	      }
 	    } else stripOK = 0; // end of data
 
-	    bool newCluster = ( strip!=ostrip+1 || !stripOK );	  
+	    bool newCluster = ( TMath::Abs(strip-ostrip)>1 || !stripOK );	  
 	        
 	    if( newCluster ){
 
@@ -345,11 +345,6 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
     int &n = nStrips[adc][side];
     if( n >0 ){
       Int_t oldStrip = strips[adc][side][n-1][0];
-      if( strip < oldStrip ){
-	AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: reverse order of SSD signals: ddl %d ad %d adc %d side %d",
-			ddl, ad, adc, side ));
-	continue;
-      }
       if( strip==oldStrip ){
 	AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: duplicated signal: ddl %d ad %d adc %d, side %d, strip %d", 
 			ddl, ad, adc, side, strip ));
