@@ -32,7 +32,8 @@
 #include <TGraph.h>
 #include <TVirtualFitter.h>
 #include <TMinuit.h>
-
+#include <TStyle.h>
+#include <TPaveText.h>
 
 #include "AliHFMassFitter.h"
 
@@ -57,6 +58,7 @@ AliHFMassFitter::AliHFMassFitter() :
   fMass(1.85),
   fSigmaSgn(0.012),
   fSideBands(0),
+  fFixPar(0),
   fSideBandl(0),
   fSideBandr(0),
   fcounter(0),
@@ -86,6 +88,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fMass(1.85),
  fSigmaSgn(0.012),
  fSideBands(0),
+ fFixPar(0),
  fSideBandl(0),
  fSideBandr(0),
  fcounter(0),
@@ -108,7 +111,11 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
 
   ComputeParSize();
   fFitPars=new Float_t[fParsSize];
-
+  fFixPar=new Bool_t[fParsSize];
+  fFixPar[0]=kTRUE; //default: IntTot fixed
+  for(Int_t i=1;i<fParsSize;i++){
+    fFixPar[i]=kFALSE;
+  }
   fContourGraph=new TList();
   fContourGraph->SetOwner();
 
@@ -131,6 +138,7 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fMass(mfit.fMass),
   fSigmaSgn(mfit.fSigmaSgn),
   fSideBands(mfit.fSideBands),
+  fFixPar(0),
   fSideBandl(mfit.fSideBandl),
   fSideBandr(mfit.fSideBandr),
   fcounter(mfit.fcounter),
@@ -140,7 +148,9 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   
   if(mfit.fParsSize > 0){
     fFitPars=new Float_t[fParsSize];
+    fFixPar=new Bool_t[fParsSize];
     memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
+    memcpy(fFixPar,mfit.fFixPar,mfit.fParsSize*sizeof(Bool_t));
   }
   //for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
 }
@@ -168,6 +178,12 @@ AliHFMassFitter::~AliHFMassFitter() {
     delete[] fFitPars;
     cout<<"deleting parameter array..."<<endl;
     fFitPars=NULL;
+  }
+
+  if(fFixPar) {
+    delete[] fFixPar;
+    cout<<"deleting bool array..."<<endl;
+    fFixPar=NULL;
   }
 
   fcounter = 0;
@@ -205,6 +221,13 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
     }
     fFitPars=new Float_t[fParsSize];
     memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
+
+    if(fFixPar) {
+      delete[] fFixPar;
+      fFixPar=NULL;
+    }
+    fFixPar=new Bool_t[fParsSize];
+    memcpy(fFixPar,mfit.fFixPar,mfit.fParsSize*sizeof(Float_t));
   }
 // fFitPars=new Float_t[fParsSize];
 //   for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
@@ -243,6 +266,33 @@ void AliHFMassFitter::ComputeParSize() {
 
   fParsSize*=2;   // add errors
   cout<<"Parameters array size "<<fParsSize<<endl;
+}
+
+//___________________________________________________________________________
+Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
+
+  //set the value (kFALSE or kTRUE) of one element of fFixPar
+  //return kFALSE if something wrong
+
+  if(thispar>=fParsSize) {
+    cout<<"Error! Parameter out of bounds! Max is "<<fParsSize-1<<endl;
+    return kFALSE;
+  }
+  if(!fFixPar) return kFALSE;
+  fFixPar[thispar]=fixpar;
+  return kTRUE;
+}
+
+//___________________________________________________________________________
+Bool_t AliHFMassFitter::GetFixThisParam(Int_t thispar)const{
+  //return the value of fFixPar[thispar]
+  if(thispar>=fParsSize) {
+    cout<<"Error! Parameter out of bounds! Max is "<<fParsSize-1<<endl;
+    return kFALSE;
+  }
+  if(!fFixPar) return kFALSE;
+  return fFixPar[thispar];
+ 
 }
 
 //___________________________________________________________________________
@@ -425,6 +475,10 @@ TNtuple* AliHFMassFitter::NtuParamOneShot(char *ntuname){
 void AliHFMassFitter::RebinMass(Int_t bingroup){
   // Rebin invariant mass histogram
 
+  if(!fhistoInvMass){
+    cout<<"Histogram not set"<<endl;
+    return;
+  }
   if(bingroup<1){
     cout<<"Error! Cannot group "<<bingroup<<" bins\n";
     fNbin=fhistoInvMass->GetNbinsX();
@@ -878,27 +932,42 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   if(nFitPars==5){
     funcmass->SetParNames("TotInt","Slope","SgnInt","Mean","Sigma");
     funcmass->SetParameters(totInt,slope1,sgnInt,fMass,fSigmaSgn);
+
     //cout<<"Parameters set to: "<<totInt<<"\t"<<slope1<<"\t"<<sgnInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
     //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<nFitPars<<"\tgsidebands = "<<fSideBands<<endl;
-    funcmass->FixParameter(0,totInt);
+    if(fFixPar[0])funcmass->FixParameter(0,totInt);
+    if(fFixPar[1])funcmass->FixParameter(1,slope1);
+    if(fFixPar[2])funcmass->FixParameter(2,sgnInt);
+    if(fFixPar[3])funcmass->FixParameter(3,fMass);
+    if(fFixPar[4])funcmass->FixParameter(4,fSigmaSgn);
   }
   if (nFitPars==6){
     funcmass->SetParNames("TotInt","Coef1","Coef2","SgnInt","Mean","Sigma");
     funcmass->SetParameters(totInt,slope1,conc1,sgnInt,fMass,fSigmaSgn);
+ 
     //cout<<"Parameters set to: "<<totInt<<"\t"<<slope1<<"\t"<<conc1<<"\t"<<sgnInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
     //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<nFitPars<<"\tgsidebands = "<<fSideBands<<endl;
-    funcmass->FixParameter(0,totInt);
+    if(fFixPar[0])funcmass->FixParameter(0,totInt);
+    if(fFixPar[1])funcmass->FixParameter(1,slope1);
+    if(fFixPar[2])funcmass->FixParameter(2,conc1);
+    if(fFixPar[3])funcmass->FixParameter(3,sgnInt);
+    if(fFixPar[4])funcmass->FixParameter(4,fMass);
+    if(fFixPar[5])funcmass->FixParameter(5,fSigmaSgn);
+    //
+    //funcmass->FixParameter(2,sgnInt);
   }
   if(nFitPars==4){
     funcmass->SetParNames("Const","SgnInt","Mean","Sigma");
     if(ftypeOfFit4Sgn == 1) funcmass->SetParameters(0.,0.5*totInt,fMass,fSigmaSgn);
     else funcmass->SetParameters(0.,totInt,fMass,fSigmaSgn);
-    funcmass->FixParameter(0,0.);
+    if(fFixPar[0]) funcmass->FixParameter(0,0.);
     //cout<<"Parameters set to: "<<0.5*totInt<<"\t"<<fMass<<"\t"<<fSigmaSgn<<"\t"<<endl;
     //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<nFitPars<<"\tgsidebands = "<<fSideBands<<endl;
 
   }
-
+  //funcmass->FixParameter(nFitPars-2,fMass);
+  //funcmass->SetParLimits(nFitPars-1,0.007,0.05);
+    //funcmass->SetParLimits(nFitPars-2,fMass-0.01,fMass+0.01);
   Int_t status;
 
   status = fhistoInvMass->Fit(massname.Data(),"R,L,E,+,0");
@@ -1214,6 +1283,7 @@ void AliHFMassFitter::WriteNtuple(TString path) const{
 void AliHFMassFitter::DrawFit() const{
 
   //draws histogram together with fit functions with default nice colors
+  gStyle->SetOptStat(0);
 
   TString cvtitle="fit of ";
   cvtitle+=fhistoInvMass->GetName();
@@ -1222,12 +1292,40 @@ void AliHFMassFitter::DrawFit() const{
 
   TCanvas *c=new TCanvas(cvname,cvtitle);
   c->cd();
-  GetHistoClone()->Draw("hist");
-  GetHistoClone()->GetFunction("funcbkgFullRange")->Draw("same");
-  GetHistoClone()->GetFunction("funcbkgRecalc")->Draw("same");
-  GetHistoClone()->GetFunction("funcmass")->Draw("same");
+  TH1F* hdraw=GetHistoClone();
+  hdraw->SetMarkerStyle(20);
+  hdraw->Draw("PE");
+  hdraw->GetFunction("funcbkgFullRange")->Draw("same");
+  hdraw->GetFunction("funcbkgRecalc")->Draw("same");
+  hdraw->GetFunction("funcmass")->Draw("same");
+  TPaveText *pinfo=new TPaveText(0.6,0.7,1.,1.,"NDC");
+  pinfo->SetBorderSize(0);
+  pinfo->SetFillStyle(0);
 
+  Int_t np=0;
+  switch (ftypeOfFit4Bkg){
+  case 0: //expo
+    np=2;
+    break;
+  case 1: //linear
+    np=2;
+    break;
+  case 2: //pol2
+    np=3;
+    break;
+  case 3: //no bkg
+    np=1;
+    break;
+  }
+  np+=3;
 
+  TF1* ff=fhistoInvMass->GetFunction("funcmass");
+  for (Int_t i=0;i<np;i++){
+    TString str=Form("%s = %f +/- %f",ff->GetParName(np-(i+1)),ff->GetParameter(np-(i+1)),ff->GetParError(np-i));
+    pinfo->AddText(str);
+  }
+  c->cd();
+  pinfo->Draw();
 }
 
 

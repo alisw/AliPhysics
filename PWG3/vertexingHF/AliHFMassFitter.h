@@ -41,6 +41,8 @@ class AliHFMassFitter : public TNamed {
   void     SetInitialGaussianMean(Double_t mean) {fMass=mean;} // change the default value of the mean
   void     SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;} // change the default value of the sigma
   void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;} // consider only side bands
+  void     SetFixParam(Bool_t *fixpar){fFixPar=fixpar;}
+  Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
 
   //getters
   TH1F*    GetHistoClone() const; //return the histogram
@@ -56,6 +58,8 @@ class AliHFMassFitter : public TNamed {
   Double_t GetChiSquare() const;
   Double_t GetReducedChiSquare() const;
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
+  Bool_t*  GetFixParam()const {return fFixPar;}
+  Bool_t   GetFixThisParam(Int_t thispar)const;
 
   void     PrintParTitles() const;
 
@@ -104,6 +108,7 @@ class AliHFMassFitter : public TNamed {
   Double_t fMass;          // signal gaussian mean value
   Double_t fSigmaSgn;      // signal gaussian sigma
   Bool_t   fSideBands;     // kTRUE = only side bands considered
+  Bool_t*  fFixPar;        //[fParSize] for each par if kTRUE it is fixed in fit
   Int_t    fSideBandl;     // left side band limit (bin number)
   Int_t    fSideBandr;     // right side band limit (bin number)
   Int_t    fcounter;       // internal counter
