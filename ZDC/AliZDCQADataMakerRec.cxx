@@ -522,29 +522,29 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	  }
         }
        }
+       //
+      if(isZNCFired){
+        GetRawsData(0)->Fill(zncSignal);
+        GetRawsData(6)->Fill(zncSumQ);
+        GetRawsData(10)->Fill(zncpmC); 
+      }
+      if(isZPCFired){
+        GetRawsData(2)->Fill(zpcSignal);
+        GetRawsData(8)->Fill(zncSumQ);
+        GetRawsData(11)->Fill(zpcpmC); 
+      }
+      if(isZNAFired){ 
+        GetRawsData(1)->Fill(znaSignal);
+        GetRawsData(7)->Fill(znaSumQ);
+        GetRawsData(12)->Fill(znapmC); 
+      }
+      if(isZPAFired){ 
+        GetRawsData(3)->Fill(zpaSignal);
+        GetRawsData(9)->Fill(znaSumQ);
+        GetRawsData(13)->Fill(zpapmC); 
+      }
        
-    } //IsADCDataWord
-    //
-    if(isZNCFired){
-      GetRawsData(0)->Fill(zncSignal);
-      GetRawsData(6)->Fill(zncSumQ);
-      GetRawsData(10)->Fill(zncpmC); 
-    }
-    if(isZPCFired){
-      GetRawsData(2)->Fill(zpcSignal);
-      GetRawsData(8)->Fill(zncSumQ);
-      GetRawsData(11)->Fill(zpcpmC); 
-    }
-    if(isZNAFired){ 
-      GetRawsData(1)->Fill(znaSignal);
-      GetRawsData(7)->Fill(znaSumQ);
-      GetRawsData(12)->Fill(znapmC); 
-    }
-    if(isZPAFired){ 
-      GetRawsData(3)->Fill(zpaSignal);
-      GetRawsData(9)->Fill(znaSumQ);
-      GetRawsData(13)->Fill(zpapmC); 
-    }
+    } //IsADCDataWord && signal ADCs
     
   } //stream.Next()
 
