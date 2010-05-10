@@ -80,7 +80,7 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fProcessPrimary(kFALSE),
   fProcessHits(kFALSE),
   fTrigger(kMB1),
-  fEnergy(k10000),
+  fEnergy(k900),
   fMagField(k5G),
   fSpecies(kPP),
   fPhysicsSelection(0),

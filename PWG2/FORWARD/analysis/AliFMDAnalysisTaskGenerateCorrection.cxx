@@ -364,6 +364,8 @@ void AliFMDAnalysisTaskGenerateCorrection::GenerateCorrection() {
   for(Int_t vertexBin=0;vertexBin<fNvtxBins  ;vertexBin++) {
     TH2F* hPrimary  = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",'I',vertexBin));
     TH2F* hSPDMult = (TH2F*)fListOfHits.FindObject(Form("hSPDhits_vtx%d", vertexBin));
+    if(!hSPDMult) continue;
+    
     TH2F* hCorrection = (TH2F*)hSPDMult->Clone(Form("SPD_vtxbin_%d_correction",vertexBin));
     hCorrection->SetTitle(hCorrection->GetName());
     fListOfCorrection.Add(hCorrection);
