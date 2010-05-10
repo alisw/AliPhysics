@@ -131,7 +131,16 @@ Int_t AliEMCALTriggerTRU::L0()
 	const Int_t ysize    = Int_t(fRegionSize->Y());
 	const Int_t zsize    = kNup+kNdown;
 
-	Int_t buffer[xsize][ysize][zsize];
+	Int_t ***buffer = new Int_t**[xsize];
+	for (Int_t x = 0; x < xsize; x++)
+	{
+		buffer[x] = new Int_t*[ysize];
+		
+		for (Int_t y = 0; y < ysize; y++)
+		{
+			buffer[x][y] = new Int_t[zsize];
+		}
+	}
 	
 	for (Int_t i=0; i<fRegionSize->X(); i++) for (Int_t j=0; j<fRegionSize->Y(); j++) 
 		for (Int_t k=0; k<kNup+kNdown; k++)	buffer[i][j][k] = 0;
@@ -181,7 +190,11 @@ Int_t AliEMCALTriggerTRU::L0()
 			continue; 
 		}
 		
-		Int_t peaks[xsize][ysize];
+		Int_t **peaks = new Int_t*[xsize];
+		for (Int_t x = 0; x < xsize; x++)
+		{
+			peaks[x] = new Int_t[ysize];
+		}
 		
 		for (Int_t j=0; j<fRegionSize->X(); j++) for (Int_t k=0; k<fRegionSize->Y(); k++) peaks[j][k] = 0;
 		
@@ -280,10 +293,28 @@ Int_t AliEMCALTriggerTRU::L0()
 			break;     // Stop the algo when at least one patch is found ( thres & max )
 		}
 		
-		ZeroRegion();  // Clear fRegion for this time window before computing the next one		
+		ZeroRegion();  // Clear fRegion for this time window before computing the next one	
+		
+		//Delete, avoid leak
+		for (Int_t x = 0; x < xsize; x++)
+		{
+			delete [] peaks[x];
+		}
+		delete [] peaks;
+		
 	}
 	
 //	cout << "Nof patches: " << fPatches->GetEntriesFast() << endl;
+	//Delete, avoid leak
+	for (Int_t x = 0; x < xsize; x++)
+	{
+		for (Int_t y = 0; y < ysize; y++)
+		{
+			delete [] buffer[x][y];
+		}
+		delete [] buffer[x];
+	}
+	delete [] buffer;
 	
 	return fPatches->GetEntriesFast();
 }
