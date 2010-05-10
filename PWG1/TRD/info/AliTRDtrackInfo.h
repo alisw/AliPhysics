@@ -117,10 +117,10 @@ public:
   Bool_t             HasMCinfo() const { return (Bool_t)fMC; }
 
   void               SetCurved(Bool_t curv = kTRUE) {SetBit(kCurv, curv);}
-  void               SetLabel(Int_t lab) {fMC->fLabel = lab; }
+  void               SetLabel(Int_t lab) {if(fMC) fMC->fLabel = lab; }
   void               SetNumberOfClustersRefit(Int_t n) {fNClusters = n;}
   inline void        SetMC();
-  void               SetPDG(Int_t pdg) {fMC->fPDG = pdg; }
+  void               SetPDG(Int_t pdg) {if(fMC) fMC->fPDG = pdg; }
   void               SetPrimary(Bool_t prim = kTRUE) {SetBit(kPrim, prim);}
   void               SetOuterParam(const AliExternalTrackParam *op);
   void               SetStatus(ULong_t stat) {fESD.fStatus = stat;}
