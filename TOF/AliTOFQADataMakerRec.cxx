@@ -21,7 +21,11 @@
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-/* Modified by fbellini on 22/04/2010
+/*
+  Modified by fbellini on 10/05/2010
+  - Fixed EndOfDetectorCycle() memory corruption bug
+
+  Modified by fbellini on 22/04/2010
    - Added filter for physics events
 
    Modified by fbellini on 16/04/2010
@@ -691,8 +695,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-    
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
 	if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
 	    continue ; 
 	
@@ -729,54 +732,44 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    lineExpTotMax->SetLineColor(kGreen);
 	    lineExpTotMax->SetLineWidth(2);
 	    
-	    for(Int_t j=0;j<5;j++){
-		//make up for hits count
+	    ((TH1F*)GetRawsData(5))->GetListOfFunctions()->Add(lineExpTimeMin);
+	    ((TH1F*)GetRawsData(5))->GetListOfFunctions()->Add(lineExpTimeMax);
+	    ((TH1F*)GetRawsData(10))->GetListOfFunctions()->Add(lineExpTotMin);
+	    ((TH1F*)GetRawsData(10))->GetListOfFunctions()->Add(lineExpTotMax);
+			    
+	    //make up for all bistos 
+	    for(Int_t j=0;j<20;j++){
+	      if (j<5) {
 		GetRawsData(j)->SetMarkerColor(kRed);
 		GetRawsData(j)->SetMarkerStyle(7);
-		//make up for time spectra
-		((TH1F*)GetRawsData(j+5))->GetListOfFunctions()->Add(lineExpTimeMin);
-		((TH1F*)GetRawsData(j+5))->GetListOfFunctions()->Add(lineExpTimeMax);
-		GetRawsData(j+5)->SetLineColor(kBlue+1);
-		GetRawsData(j+5)->SetMarkerColor(kBlue+1);
-		
-		//make up for tot spectra
-		((TH1F*)GetRawsData(j+10))->GetListOfFunctions()->Add(lineExpTotMin);
-		((TH1F*)GetRawsData(j+10))->GetListOfFunctions()->Add(lineExpTotMax);
-		GetRawsData(j+10)->SetLineColor(kBlue+1);
-		GetRawsData(j+10)->SetMarkerColor(kBlue+1);
-	    }
-	    
-	    //make up for equipment hits count 
-	    for(Int_t j=15;j<18;j++){
-	      GetRawsData(j)->SetLineColor(kBlue+1);
-	      GetRawsData(j)->SetLineWidth(1);
-
-	      if (j==15) {
-		GetRawsData(j)->SetMarkerStyle(8);
-		GetRawsData(j)->SetMarkerSize(0.7);
-		GetRawsData(j)->SetMarkerColor(kBlue+2);
-	   
 	      } else {
-		Int_t ySMmax=GetRawsData(j)->GetMaximum();
-		TLine* lineSMid[10];
-		
-		for (Int_t sm=0;sm<10;sm++){
-		  lineSMid[sm] = new TLine( 40*sm+360*(j%16), 0, 40*sm+360*(j%16), ySMmax);
-		  lineSMid[sm]->SetLineColor(kMagenta);
-		  lineSMid[sm]->SetLineWidth(2);
-		  GetRawsData(j)->GetListOfFunctions()->Add(lineSMid[sm]);
-		  GetRawsData(j)->SetFillColor(kBlue+1);
-		}
+		GetRawsData(j)->SetLineColor(kBlue+1);
+		GetRawsData(j)->SetLineWidth(1);
+		GetRawsData(j)->SetMarkerColor(kBlue+1);
 	      }
 	    }
-	    GetRawsData(18)->SetLineColor(kBlue+1);
-	    GetRawsData(18)->SetMarkerColor(kBlue+1);
+	    Int_t ySMmax035=GetRawsData(16)->GetMaximum();
+	    TLine* lineSMid035[10];
+	    Int_t ySMmax3671=GetRawsData(17)->GetMaximum();
+	    TLine* lineSMid3671[10];
 	    
-	    //make up for orphans histo
-	    GetRawsData(19)->SetLineColor(kBlue+1);
-	    GetRawsData(19)->SetMarkerColor(kBlue+1);
-	    ((TH1F*)GetRawsData(19))->GetListOfFunctions()->Add(lineExpTimeMin);
-	    ((TH1F*)GetRawsData(19))->GetListOfFunctions()->Add(lineExpTimeMax);
+	    for (Int_t sm=0;sm<10;sm++){
+	      lineSMid035[sm] = new TLine( 40*sm, 0, 40*sm, ySMmax035);
+	      lineSMid035[sm]->SetLineColor(kMagenta);
+	      lineSMid035[sm]->SetLineWidth(2);
+	      GetRawsData(16)->GetListOfFunctions()->Add(lineSMid035[sm]);
+	      
+	      lineSMid3671[sm] = new TLine( 40*sm+360, 0, 40*sm+360, ySMmax3671);
+	      lineSMid3671[sm]->SetLineColor(kMagenta);
+	      lineSMid3671[sm]->SetLineWidth(2);
+	      GetRawsData(17)->GetListOfFunctions()->Add(lineSMid3671[sm]);
+	    }
+	    
+	    for (Int_t j=15;j<19;j++){
+	      GetRawsData(j)->SetFillColor(kGray+1);
+	      GetRawsData(j)->SetOption("bar");
+	    }
+	    
 	}
     }
     AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
