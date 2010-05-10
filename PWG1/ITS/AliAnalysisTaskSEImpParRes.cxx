@@ -1348,7 +1348,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
       //Double_t pi=TMath::Pi();
       Int_t phibin=PhiBin(phi);
       if(phibin<0) {delete vtxESDSkip;continue;}
-      if(pt>0.4 && pt<0.5){
+      if(pt>0.34 && pt<0.5){
 	char *named0PhiallpointrphiSkip =Form("d0phiallpointrphiSkip_%d",phibin);
 	char *named0PhiallpointzSkip = Form("d0phiallpointzSkip_%d",phibin);
 	char *named0PhipostvtracrphiSkip =Form("d0phipostvtracrphiSkip_%d",phibin);
@@ -1468,7 +1468,7 @@ Int_t AliAnalysisTaskSEImpParRes::PtBin(Double_t pt) const {
 
   if (pt>0.22 && pt<0.23) return 1;
   if (pt>0.26 && pt<0.27) return 2; 
-  if (pt>0.35 && pt<0.36) return 3;
+  if (pt>0.345 && pt<0.355) return 3;
   if (pt>0.45 && pt<0.46) return 4; 
   if (pt>0.55 && pt<0.56) return 5;
   if (pt>0.65 && pt<0.66) return 6; 
