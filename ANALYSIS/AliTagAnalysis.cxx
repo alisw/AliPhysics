@@ -230,8 +230,8 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
 	  }//event loop
 	  if ((ientry == cEntries-1) || !aod) {
 	      iAccepted += localList->GetN();
-	      if(path != "") esdChain->AddFile(path);
-	      else if(turl != "") esdChain->AddFile(turl);
+	      if(turl != "") esdChain->AddFile(turl);
+	      else if(path != "") esdChain->AddFile(path);
 	      fGlobalList->Add(localList);
 	  }
 	}//detector tag cuts
