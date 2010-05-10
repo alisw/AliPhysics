@@ -32,12 +32,46 @@ public:
     ,kCollision = BIT(1)  // 
   };
   enum ETRDcheckESDhistos {
-    kNCl  = 0    // number of clusters per track
-   ,kTRDstat     // TRD tracks status
-   ,kTRDmom      // TRD track momentum
-   ,kPtRes       // Pt resolution @ vertex for TRD
-   ,kNhistos = 4 // number of histograms
-   ,kNrefs   = 4 // number of reference plots
+    kNCl = 0                // number of clusters per track
+   ,kTRDstat                // TRD tracks status
+   ,kTRDmom                 // TRD track momentum
+   ,kPtRes                  // Pt resolution @ vertex for TRD
+   ,kTPCVertex              // event vertex from TPC
+   ,kEventVertex            // event vertex
+   ,kNTracksAll             // ntracks - all
+   ,kNTracksAcc             // ntracks - inside acc. and DCA cut
+   ,kNTracksTPC             // additional cut on number of TPC clusters
+   ,kDCAxy                  // transverse DCA 
+   ,kDCAz                   // z - DCA
+   ,kPt1                    // Pt distribution, eta and ptmin cuts
+   ,kPt2                    // Pt distribution, cuts from kPt1 and DCA cuts
+   ,kPt3pos                 // Pt distribution, cuts from kPt2 and cut on TPC clusters for positives (>100)
+   ,kPt3neg                 // Pt distribution, cuts from kPt2 and cut on TPC clusters for negatives (>100)
+   ,kPt4pos                 // Pt distribution, cuts from kPt3pos and at least one TRD tracklet
+   ,kPt4neg                 // Pt distribution, cuts from kPt3neg and at least one TRD tracklet
+   ,kTheta                  // distribution of theta for tracks passing the cuts from kPt4pos and kPt4neg
+   ,kPhi                    // distribution of phi for tracks passing the cuts from kPt4pos and kPt4neg
+   ,kNTPCCl                 // number of TPC clusters, cuts from kPt2
+   ,kNTPCCl2                // number of TPC clusters, cuts from kPt2 + pt>1 GeV/c
+   ,kTPCDedx                // TPC dE/dx, cuts from kPt3pos or kPt3neg
+   ,kEtaPhi                 // (eta,phi) distrib. for tracks after the cuts from kPt3pos or kPt3neg
+   ,kEtaNclsTPC             // (TPC_Ncls,eta) distrib. for tracks after the cuts from kPt3pos or kPt3neg
+   ,kPhiNclsTPC             // (TPC_Ncls,phi) distrib. for tracks after the cuts from kPt3pos or kPt3neg
+   ,kNTrackletsTRD          // (TRD tracklets per track, P) distribution, after cuts from kPt4pos or kPt4neg
+   ,kNClsTrackTRD           // (TRD clusters per track, P) distribution, after cuts from kPt4pos or kPt4neg
+   ,kPHSlice                // (slicePH,sliceNo) distribution, after cuts from kPt4pos or kPt4neg
+   ,kQtotP                  // (total Q from slices, momentum) distribution, after cuts from kPt4pos or kPt4neg
+   ,kPropagXYvsP            // (X,Y,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
+   ,kPropagRZvsP            // (R,Z,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
+   ,kTPCRefTracksPos        // (eta,detector phi,P) distribution of reference TPC positive tracks (fulfill cuts from kPt3pos)
+   ,kTPCRefTracksNeg        // (eta,detector phi,P) distribution of reference TPC negative tracks (fulfill cuts from kPt3neg)
+   ,kTRDRefTracksPos        // (eta,detector phi,P) distribution of reference TRD positive tracks (fulfill cuts from kPt4pos)
+   ,kTRDRefTracksNeg        // (eta,detector phi,P) distribution of reference TRD negative tracks (fulfill cuts from kPt4neg)
+   ,kTRDEtaPhiAvNtrkl       // (eta, detector phi) profile of average number of tracklets
+   ,kTRDEtaDeltaPhiAvNtrkl  // (eta, delta-phi) profile of average number of tracklets
+                            // delta-phi is the angle made by the track with the normal to the chamber entrance plane
+   ,kNhistos = 37 // number of histograms
+   ,kNrefs   = 37 // number of reference plots
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -92,6 +126,8 @@ private:
   static const Int_t   fgkNclTPC;   // N clusters TPC
   static const Float_t fgkPt;       // min. pt
   static const Float_t fgkEta;      // eta range
+  
+  static const Float_t fgkQs;      // scale for the total charge
 
   ClassDef(AliTRDcheckESD, 5)          // user oriented TRD analysis based on ESD-MC data
 };
