@@ -101,6 +101,8 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   // 
   // Fills in vars the values of the variables 
   //
+  if(pdgdaughters[0]==-9999) return; // dummy
+
 
   if(nvars!=fnVarsForOpt) {
     printf("AliRDHFCutsLctoV0::GetCutsVarsForOpt: wrong number of variables\n");
