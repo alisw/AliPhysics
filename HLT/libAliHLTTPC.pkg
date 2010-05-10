@@ -81,6 +81,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		tracking-ca/AliHLTTPCCATrackerFramework.h \
                 tracking-ca/AliHLTTPCCAInputDataCompressorComponent.h \
                 tracking-ca/AliHLTTPCCAGPUTracker.h \
+                tracking-ca/AliHLTTPCCATrackerOutputConverter.h \
 		comp/AliHLTTPCCompDataCompressorHelper.h \
 		comp/AliHLTTPCCompDumpComponent.h \
 		comp/AliHLTTPCCompModelAnalysis.h \
