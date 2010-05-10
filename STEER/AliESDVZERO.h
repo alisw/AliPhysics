@@ -1,5 +1,5 @@
-#ifndef AliESDVZERO_H
-#define AliESDVZERO_H
+#ifndef ALIESDVZERO_H
+#define ALIESDVZERO_H
 
 #include <TObject.h>
 
@@ -7,7 +7,7 @@ class AliESDVZERO : public TObject
 {
 public:
   AliESDVZERO();
-  AliESDVZERO(const AliESDVZERO&);
+  AliESDVZERO(const AliESDVZERO&o);
   AliESDVZERO(UInt_t BBtriggerV0A,   UInt_t BGtriggerV0A,
 	      UInt_t BBtriggerV0C,   UInt_t BGtriggerV0C,
 	      Float_t *Multiplicity, Float_t *Adc, 
@@ -49,33 +49,33 @@ public:
   void SetV0CDecision(Decision des) {fV0CDecision = des;}
          
   // Getters  
-  Short_t  GetNbPMV0A();
-  Short_t  GetNbPMV0C();
-  Float_t  GetMTotV0A();
-  Float_t  GetMTotV0C(); 
-  Float_t* GetMRingV0A();
-  Float_t* GetMRingV0C();
-  Float_t  GetMRingV0A(Int_t ring);
-  Float_t  GetMRingV0C(Int_t ring);
+  Short_t  GetNbPMV0A() const;
+  Short_t  GetNbPMV0C() const;
+  Float_t  GetMTotV0A() const;
+  Float_t  GetMTotV0C() const; 
+  Float_t* GetMRingV0A() const;
+  Float_t* GetMRingV0C() const;
+  Float_t  GetMRingV0A(Int_t ring) const;
+  Float_t  GetMRingV0C(Int_t ring) const;
 
-  Float_t  GetMultiplicity(Int_t i);
-  Float_t  GetMultiplicityV0A(Int_t i);
-  Float_t  GetMultiplicityV0C(Int_t i);    
-  Float_t  GetAdc(Int_t i);
-  Float_t  GetAdcV0A(Int_t i); 
-  Float_t  GetAdcV0C(Int_t i);   
-  Float_t  GetTime(Int_t i);
-  Float_t  GetTimeV0A(Int_t i);   
-  Float_t  GetTimeV0C(Int_t i);    
-  Float_t  GetWidth(Int_t i);
-  Float_t  GetWidthV0A(Int_t i);
-  Float_t  GetWidthV0C(Int_t i);
-  Bool_t   BBTriggerV0A(Int_t i);
-  Bool_t   BGTriggerV0A(Int_t i);
-  Bool_t   BBTriggerV0C(Int_t i);
-  Bool_t   BGTriggerV0C(Int_t i);  
-  Bool_t   GetBBFlag(Int_t i);
-  Bool_t   GetBGFlag(Int_t i);
+  Float_t  GetMultiplicity(Int_t i) const;
+  Float_t  GetMultiplicityV0A(Int_t i) const;
+  Float_t  GetMultiplicityV0C(Int_t i) const;    
+  Float_t  GetAdc(Int_t i) const;
+  Float_t  GetAdcV0A(Int_t i) const; 
+  Float_t  GetAdcV0C(Int_t i) const;   
+  Float_t  GetTime(Int_t i) const;
+  Float_t  GetTimeV0A(Int_t i) const;   
+  Float_t  GetTimeV0C(Int_t i) const;    
+  Float_t  GetWidth(Int_t i) const;
+  Float_t  GetWidthV0A(Int_t i) const;
+  Float_t  GetWidthV0C(Int_t i) const;
+  Bool_t   BBTriggerV0A(Int_t i) const;
+  Bool_t   BGTriggerV0A(Int_t i) const;
+  Bool_t   BBTriggerV0C(Int_t i) const;
+  Bool_t   BGTriggerV0C(Int_t i) const;  
+  Bool_t   GetBBFlag(Int_t i) const;
+  Bool_t   GetBGFlag(Int_t i) const;
 
   Float_t  GetV0ATime() const { return fV0ATime; }
   Float_t  GetV0CTime() const { return fV0CTime; }

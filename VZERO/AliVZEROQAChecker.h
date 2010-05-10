@@ -5,10 +5,10 @@
 
 
 /*
-  Checks the quality assurance. 
-  By comparing with reference data
+  Checks the quality of the data
+  by comparing with reference data
+  which should be loaded from QA ref DB
 */
-
 
 // --- ROOT system ---
 class TFile ; 

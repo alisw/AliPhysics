@@ -112,8 +112,10 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
 }
 
 //__________________________________________________________________________
-Short_t AliESDVZERO::GetNbPMV0A()
+Short_t AliESDVZERO::GetNbPMV0A() const
 {
+  // Returns the number of
+  // fired PM in V0A
   Short_t n=0;
   for(Int_t i=32;i<64;i++) 
     if (fMultiplicity[i]>0) n++;
@@ -121,8 +123,10 @@ Short_t AliESDVZERO::GetNbPMV0A()
 }
 
 //__________________________________________________________________________
-Short_t AliESDVZERO::GetNbPMV0C()
+Short_t AliESDVZERO::GetNbPMV0C() const
 {
+  // Returns the number of
+  // fired PM in V0C
   Short_t n=0;
   for(Int_t i=0;i<32;i++) 
     if (fMultiplicity[i]>0) n++;
@@ -130,8 +134,10 @@ Short_t AliESDVZERO::GetNbPMV0C()
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMTotV0A()
+Float_t AliESDVZERO::GetMTotV0A() const
 {
+  // returns total multiplicity
+  // in V0A
   Float_t mul=0.0;
   for(Int_t i=32;i<64;i++) 
     mul+=  fMultiplicity[i];
@@ -139,8 +145,10 @@ Float_t AliESDVZERO::GetMTotV0A()
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMTotV0C()
+Float_t AliESDVZERO::GetMTotV0C() const
 {
+  // returns total multiplicity
+  // in V0C
   Float_t mul=0.0;
   for(Int_t i=0;i<32;i++) 
     mul+=  fMultiplicity[i];
@@ -148,7 +156,7 @@ Float_t AliESDVZERO::GetMTotV0C()
 }
 
 //__________________________________________________________________________
-Float_t* AliESDVZERO::GetMRingV0A()
+Float_t* AliESDVZERO::GetMRingV0A() const
 {
 //  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
 //  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
@@ -158,7 +166,7 @@ Float_t* AliESDVZERO::GetMRingV0A()
 }
 
 //__________________________________________________________________________
-Float_t* AliESDVZERO::GetMRingV0C()
+Float_t* AliESDVZERO::GetMRingV0C() const
 {
 //  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
 //  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
@@ -168,8 +176,10 @@ Float_t* AliESDVZERO::GetMRingV0C()
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMRingV0A(Int_t ring)
+Float_t AliESDVZERO::GetMRingV0A(Int_t ring) const
 { 
+  // returns multiplicity in a
+  // given ring of V0A
   if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0A",4)) return -1;
   Float_t mul =0.0;
 
@@ -181,8 +191,10 @@ Float_t AliESDVZERO::GetMRingV0A(Int_t ring)
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMRingV0C(Int_t ring)
+Float_t AliESDVZERO::GetMRingV0C(Int_t ring) const
 { 
+  // returns multiplicity in a
+  // given ring of V0C
   if (OutOfRange(ring, "AliESDVZERO:::GetMRingV0C",4)) return -1;
   Float_t mul =0.0;
 
@@ -194,145 +206,181 @@ Float_t AliESDVZERO::GetMRingV0C(Int_t ring)
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMultiplicity(Int_t i)
+Float_t AliESDVZERO::GetMultiplicity(Int_t i) const
 
 {
+  // returns multiplicity in a
+  // given cell of V0
   if (OutOfRange(i, "AliESDVZERO::GetMultiplicity:",64)) return -1;
   return fMultiplicity[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMultiplicityV0A(Int_t i)
+Float_t AliESDVZERO::GetMultiplicityV0A(Int_t i) const
 
 {
+  // returns multiplicity in a
+  // given cell of V0A
   if (OutOfRange(i, "AliESDVZERO::GetMultiplicityV0A:",32)) return -1;
   return fMultiplicity[32+i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetMultiplicityV0C(Int_t i)
+Float_t AliESDVZERO::GetMultiplicityV0C(Int_t i) const
 
 {
+  // returns multiplicity in a
+  // given cell of V0C
   if (OutOfRange(i, "AliESDVZERO::GetMultiplicityV0C:",32)) return -1;
   return fMultiplicity[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetAdc(Int_t i)
+Float_t AliESDVZERO::GetAdc(Int_t i) const
 
 {
+  // returns ADC charge in a
+  // given cell of V0
   if (OutOfRange(i, "AliESDVZERO::GetAdc:",64)) return -1;
   return fAdc[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetAdcV0A(Int_t i)
+Float_t AliESDVZERO::GetAdcV0A(Int_t i) const
 
 {
+  // returns ADC charge in a
+  // given cell of V0A
   if (OutOfRange(i, "AliESDVZERO::GetAdcV0A:",32)) return -1;
   return fAdc[32+i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetAdcV0C(Int_t i)
+Float_t AliESDVZERO::GetAdcV0C(Int_t i) const
 
 {
+  // returns ADC charge in a
+  // given cell of V0C
   if (OutOfRange(i, "AliESDVZERO::GetAdcV0C:",32)) return -1;
   return fAdc[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetTime(Int_t i)
+Float_t AliESDVZERO::GetTime(Int_t i) const
 
 {
+  // returns leading time measured by TDC
+  // in a given cell of V0
   if (OutOfRange(i, "AliESDVZERO::GetTime:",64)) return -1;
   return fTime[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetTimeV0A(Int_t i)
+Float_t AliESDVZERO::GetTimeV0A(Int_t i) const
 
 {
+  // returns leading time measured by TDC
+  // in a given cell of V0A
   if (OutOfRange(i, "AliESDVZERO::GetTimeV0A:",32)) return -1;
   return fTime[32+i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetTimeV0C(Int_t i)
+Float_t AliESDVZERO::GetTimeV0C(Int_t i) const
 
 {
+  // returns leading time measured by TDC
+  // in a given cell of V0C
   if (OutOfRange(i, "AliESDVZERO::GetTimeV0C:",32)) return -1;
   return fTime[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetWidth(Int_t i)
+Float_t AliESDVZERO::GetWidth(Int_t i) const
 
 {
+  // returns time signal width
+  // in a given cell of V0
   if (OutOfRange(i, "AliESDVZERO::GetWidth:",64)) return -1;
   return fWidth[i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetWidthV0A(Int_t i)
+Float_t AliESDVZERO::GetWidthV0A(Int_t i) const
 
 {
+  // returns time signal width
+  // in a given cell of V0A
   if (OutOfRange(i, "AliESDVZERO::GetWidthV0A:",32)) return -1;
   return fWidth[32+i];
 }
 
 //__________________________________________________________________________
-Float_t AliESDVZERO::GetWidthV0C(Int_t i)
+Float_t AliESDVZERO::GetWidthV0C(Int_t i) const
 
 {
+  // returns time signal width
+  // in a given cell of V0C
   if (OutOfRange(i, "AliESDVZERO::GetWidthV0C:",32)) return -1;
   return fWidth[i];
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::BBTriggerV0A(Int_t i)
+Bool_t AliESDVZERO::BBTriggerV0A(Int_t i) const
 {
+  // returns offline beam-beam flags in V0A
+  // one bit per cell
   if (OutOfRange(i, "AliESDVZERO:::BBTriggerV0A",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBBtriggerV0A & (test << i) ? kTRUE : kFALSE );
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::BGTriggerV0A(Int_t i)
+Bool_t AliESDVZERO::BGTriggerV0A(Int_t i) const
 {
+  // returns offline beam-gas flags in V0A
+  // one bit per cell
   if (OutOfRange(i, "AliESDVZERO:::BGTriggerV0A",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBGtriggerV0A & (test << i) ? kTRUE : kFALSE );
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::BBTriggerV0C(Int_t i)
+Bool_t AliESDVZERO::BBTriggerV0C(Int_t i) const
 {
+  // returns offline beam-beam flags in V0C
+  // one bit per cell
   if (OutOfRange(i, "AliESDVZERO:::BBTriggerV0C",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBBtriggerV0C & (test << i) ? kTRUE : kFALSE );
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::BGTriggerV0C(Int_t i)
+Bool_t AliESDVZERO::BGTriggerV0C(Int_t i) const
 {
+  // returns offline beam-gasflags in V0C
+  // one bit per cell
   if (OutOfRange(i, "AliESDVZERO:::BGTriggerV0C",32)) return kFALSE;
   UInt_t test = 1;
   return ( fBGtriggerV0C & (test << i) ? kTRUE : kFALSE );
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::GetBBFlag(Int_t i)
+Bool_t AliESDVZERO::GetBBFlag(Int_t i) const
 
 {
+  // returns online beam-beam flag in V0
+  // one boolean per cell
   if (OutOfRange(i, "AliESDVZERO::GetBBFlag:",64)) return kFALSE;
   return fBBFlag[i];
 }
 
 //__________________________________________________________________________
-Bool_t AliESDVZERO::GetBGFlag(Int_t i)
+Bool_t AliESDVZERO::GetBGFlag(Int_t i) const
 
 {
+  // returns online beam-gas flag in V0
+  // one boolean per cell
   if (OutOfRange(i, "AliESDVZERO::GetBGFlag:",64)) return kFALSE;
   return fBGFlag[i];
 }
@@ -340,7 +388,8 @@ Bool_t AliESDVZERO::GetBGFlag(Int_t i)
 //__________________________________________________________________________
 Bool_t AliESDVZERO::OutOfRange(Int_t i, const char* /*s*/, Int_t upper) const
 {
-  // checks if i is a valid index. s = name of calling method
+  // checks if i is a valid index.
+  // s = name of calling method
   if (i > upper || i < 0) {
 //    cout << s << " Index " << i << " out of range" << endl;
      AliInfo(Form("Index %d out of range",i));

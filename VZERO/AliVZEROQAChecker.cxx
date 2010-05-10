@@ -119,56 +119,56 @@ Double_t AliVZEROQAChecker::CheckEsds(TObjArray * list) const
 //  list->Print();
 
   Double_t test     = 1.0;     // initialisation to OK
-  Int_t    histo_nb =   0; 
-  Double_t Mult_V0A = 0.0;
-  Double_t Mult_V0C = 0.0;
-  Double_t V0A_BB_Ring[4], V0C_BB_Ring[4];
-  Double_t V0A_BG_Ring[4], V0C_BG_Ring[4];
+  Int_t    histonb =   0; 
+  Double_t multV0A = 0.0;
+  Double_t multV0C = 0.0;
+  Double_t v0ABBRing[4], v0CBBRing[4];
+  Double_t v0ABGRing[4], v0CBGRing[4];
   for (Int_t i=0; i<4; i++) { 
-       V0A_BB_Ring[i]= V0C_BB_Ring[i]= 0.0;
-       V0A_BG_Ring[i]= V0C_BG_Ring[i]= 0.0;
+       v0ABBRing[i]= v0CBBRing[i]= 0.0;
+       v0ABGRing[i]= v0CBGRing[i]= 0.0;
   }  
   TIter next(list) ; 
   TH1 * hdata ;
   
   while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
 	  if (hdata) {
-		  switch (histo_nb) {
+		  switch (histonb) {
 		  case AliVZEROQADataMakerRec::kCellMultiV0A:
-			  Mult_V0A  = hdata->GetMean();
+			  multV0A  = hdata->GetMean();
 			  break;
 		  case AliVZEROQADataMakerRec::kCellMultiV0C:
-			  Mult_V0C  = hdata->GetMean();
+			  multV0C  = hdata->GetMean();
 			  break;
 		  case AliVZEROQADataMakerRec::kBBFlag:
 	          for (Int_t i=0; i<8; i++) {         
-				  if(i<4) V0C_BB_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
-				  else V0A_BB_Ring[i-4]  = hdata->Integral((i*8)+1, (i*8) +8);
+				  if(i<4) v0CBBRing[i]  = hdata->Integral((i*8)+1, (i*8) +8);
+				  else v0ABBRing[i-4]  = hdata->Integral((i*8)+1, (i*8) +8);
 			  }	      
 			  break;
 		  case AliVZEROQADataMakerRec::kBGFlag:
 	          for (Int_t i=0; i<8; i++) {         
-				  if(i<4) V0C_BG_Ring[i]  = hdata->Integral((i*8)+1, (i*8) +8);
-				  else V0A_BG_Ring[i-4]  = hdata->Integral((i*8)+1, (i*8) +8);
+				  if(i<4) v0CBGRing[i]  = hdata->Integral((i*8)+1, (i*8) +8);
+				  else v0ABGRing[i-4]  = hdata->Integral((i*8)+1, (i*8) +8);
 			  }	      
 			  break;
 		  }
 	  }
-	  histo_nb++;
+	  histonb++;
   }
   
-  if(Mult_V0A == 0.0 || Mult_V0C == 0.0) {
+  if(multV0A == 0.0 || multV0C == 0.0) {
      AliWarning(Form("One of the two disks is missing !") );
      test = 0.0; // bit FATAL set
   }
-  if( V0A_BB_Ring[0]+V0A_BG_Ring[0] == 0.0 || 
-      V0A_BB_Ring[1]+V0A_BG_Ring[1] == 0.0 || 
-      V0A_BB_Ring[2]+V0A_BG_Ring[2] == 0.0 || 
-      V0A_BB_Ring[3]+V0A_BG_Ring[3] == 0.0 || 
-      V0C_BB_Ring[0]+V0C_BG_Ring[0] == 0.0 || 
-      V0C_BB_Ring[1]+V0C_BG_Ring[1] == 0.0 || 
-      V0C_BB_Ring[2]+V0C_BG_Ring[2] == 0.0 || 
-      V0C_BB_Ring[3]+V0C_BG_Ring[3] == 0.0  ){    
+  if( v0ABBRing[0]+v0ABGRing[0] == 0.0 || 
+      v0ABBRing[1]+v0ABGRing[1] == 0.0 || 
+      v0ABBRing[2]+v0ABGRing[2] == 0.0 || 
+      v0ABBRing[3]+v0ABGRing[3] == 0.0 || 
+      v0CBBRing[0]+v0CBGRing[0] == 0.0 || 
+      v0CBBRing[1]+v0CBGRing[1] == 0.0 || 
+      v0CBBRing[2]+v0CBGRing[2] == 0.0 || 
+      v0CBBRing[3]+v0CBGRing[3] == 0.0  ){    
       AliWarning(Form("One ring is missing !") );
       test = 0.1;   // bit ERROR set
   }
