@@ -479,15 +479,15 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   }
  
 
-  int hz = ( int ) ( (fRecoTime+fLoadTime) > 1.e-4 ? fNEvents / (fRecoTime+fLoadTime) : 0 );
-  int hz1 = ( int ) ( fRecoTime > 1.e-4 ? fNEvents / fRecoTime : 0 );
-  int hz2 = ( int ) ( fLoadTime > 1.e-4 ? fNEvents / fLoadTime : 0 );
+  //int hz = ( int ) ( (fRecoTime+fLoadTime) > 1.e-4 ? fNEvents / (fRecoTime+fLoadTime) : 0 );
+  //int hz1 = ( int ) ( fRecoTime > 1.e-4 ? fNEvents / fRecoTime : 0 );
+  //int hz2 = ( int ) ( fLoadTime > 1.e-4 ? fNEvents / fLoadTime : 0 );
 
   //std::cout<<"\n\nSG: ITS tracker time = "<<hz2<<" Hz load / "<<hz1<<" Hz reco ="
   //<<hz<<
   //" Hz ("
   //<<fLoadTime/fNEvents*1000<<"+"<<fRecoTime/fNEvents*1000.
-  //<<" = "<<(fLoadTime + fRecoTime)/fNEvents*1000.
+  //<<" = "<<(fLoadTime + fRecoTime)/fNEvents*1000. 
   //<<" ms/ev), "<<fNEvents<<" events processed\n\n "<<std::endl;
   return 0;
 }
