@@ -894,7 +894,7 @@ void AliQAv1::ShowASCIIStatus(AliRecoParam::EventSpecie_t es, DETECTORINDEX_t de
   const QABIT_t bit = GetQAStatusBit(es, det, tsk) ; 
   if ( bit != kNULLBit ) {
           AliInfoClass(Form("           %8s %8s %4s  \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk))) ; 
-      //    AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, GetBitName(bit))) ; 
+          AliInfoClass(Form("           %8s %8s %4s 0x%4lx, Problem signalled: %8s \n", AliRecoParam::GetEventSpecieName(es), GetDetName(det).Data(), GetAliTaskName(tsk), status, GetBitName(bit))) ; 
   }
 }
 
