@@ -68,22 +68,17 @@ public:
   virtual void InitConstants() = 0; 
 
   // Common PHOS / EMCAL stuff
-  static  Int_t GetALTROMAXSAMPLES()    { return CALO::ALTROMAXSAMPLES; }; 
-  static  Int_t GetNGAINS()             { return CALO::NGAINS; }; 	
+  static  Int_t GetALTROMAXSAMPLES()    { return CALO::ALTROMAXSAMPLES; };
+  static  Int_t GetNGAINS()             { return CALO::NGAINS; };
   static  Int_t GetHIGHGAIN()           { return CALO::HIGHGAIN; };
-  static  Int_t GetLOWGAIN()          { return CALO::LOWGAIN; }; 
-  static  Int_t GetMAXBINVALUE()      { return CALO::MAXBINVALUE; }; 	
-  static  Int_t GetCSPSPERFEE()       { return CALO::CSPSPERFEE; }; 			       		
-  static  Int_t GetNALTROS()           { return CALO::NALTROS; }; 					
-  static  Int_t GetNALTROCHANNELS()    { return CALO::NALTROCHANNELS; }; 					
+  static  Int_t GetLOWGAIN()          { return CALO::LOWGAIN; };
+  static  Int_t GetMAXBINVALUE()      { return CALO::MAXBINVALUE; };
+  static  Int_t GetCSPSPERFEE()       { return CALO::CSPSPERFEE; };
+  static  Int_t GetNALTROS()           { return CALO::NALTROS; };
+  static  Int_t GetNALTROCHANNELS()    { return CALO::NALTROCHANNELS; };
   static  Int_t GetNBRANCHES()         { return CALO::NBRANCHES; }; 	
 
   // Detector specific stuff
-
- 
-  //  virtual Int_t GetNZROWSRCU() const      = 0; 
-  // virtual Int_t GetNXCOLUMNSRCU() const   = 0;
-  
   // PHOS Only, bad move somewher else, PTH
   virtual Int_t GetNZROWSRCU() const  { return   56 ; } ; 
   virtual Int_t GetNXCOLUMNSRCU() const { return 16; } ;
@@ -92,9 +87,7 @@ public:
   virtual Int_t GetNZROWSMOD() const      = 0; 
   virtual Int_t GetNXCOLUMNSMOD() const   = 0; 
   virtual Int_t GetNMODULES() const       = 0; 
-  //  virtual Int_t GetNRCUS() const          = 0;
   virtual Int_t GetNRCUSPERMODULE() const = 0;
-  //  virtual Int_t GetNRCUSPERTOTAL() const  = 0;
   virtual Int_t GetNFEECS() const         = 0;
   
   Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
@@ -112,10 +105,6 @@ public:
   TString GetDETNAME() { return fkDETNAME; };
 
 protected:
-  //  TString fkDETNAME;
-  //  Float_t fkCELLSTEP; //Constant
-  //  Int_t fkDDLOFFSET;   //Constant
-  
   //EMCAL specific, !! Move somewhere else, PTH
   // @todo: These variables should be declared constant, doesnt work right now
   // because the default copy contructor is called somewhere.
@@ -130,8 +119,11 @@ protected:
   Float_t fkCJ;
   Int_t fkDDLOFFSET;   //Constant
   TString fkDETNAME;
+
 private:
-  
+  AliHLTCaloConstants(const AliHLTCaloConstants & );
+  AliHLTCaloConstants & operator = (const AliHLTCaloConstants &); 
+
   ClassDef(AliHLTCaloConstants, 1)
 };
 
