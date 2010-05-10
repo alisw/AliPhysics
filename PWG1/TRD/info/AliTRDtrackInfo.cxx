@@ -62,7 +62,7 @@ AliTRDtrackInfo::AliTRDtrackInfo(const AliTRDtrackInfo &trdInfo):
   TObject((const TObject&)trdInfo)  
   ,fNClusters(trdInfo.fNClusters)
   ,fTRDtrack(NULL)
-  ,fMC(new AliMCinfo(*trdInfo.fMC))
+  ,fMC(NULL)
   ,fESD(trdInfo.fESD)
 {
   //
