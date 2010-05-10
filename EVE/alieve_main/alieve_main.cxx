@@ -23,6 +23,7 @@
 #include <TEveManager.h>
 #include <TEveSelection.h>
 #include <TEveBrowser.h>
+#include <TEveViewer.h>
 
 #include <Getline.h>
 
@@ -75,6 +76,7 @@ int main(int argc, char **argv)
 #endif
 
   TEveManager::Create();
+  gEve->GetDefaultViewer()->SetElementName("3D View");
   gEve->GetSelection()->SetPickToSelect(TEveSelection::kPS_PableCompound);
   gEve->GetHighlight()->SetPickToSelect(TEveSelection::kPS_PableCompound);
 
