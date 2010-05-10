@@ -391,7 +391,7 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
       static ULong64_t prevL2   = 0; // L2 counts in the previous event
 
       static ULong64_t oldTime = 0;  // time stamp at the beginning of this bin
-      static ULong64_t previousTime; // timestamp in the previous event
+      //      static ULong64_t previousTime; // timestamp in the previous event
 
       static Int_t prevbin = -1; // bin in the previous event
 
@@ -406,21 +406,16 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
       } else if (prevbin != bin) {
 	// New bin: let's fill the previous one
 	Double_t dL0 = Double_t(prevL0 - oldL0);
-	Double_t eL0 = TMath::Sqrt(dL0);
-
 	Double_t dL2 = Double_t(prevL2 - oldL2);
-	Double_t eL2 = TMath::Sqrt(dL2);
 
 	//	Double_t deadtime  =  Double_t(1 - dL2/dL0); // interested in relative fraction of dead time
 	Double_t deadtime  =  Double_t(dL2/dL0); // interested in relative fraction of dead time
-	Double_t edeadtime = TMath::Sqrt(eL2*eL2/dL2/dL2 + eL0*eL0/dL0/dL0)*deadtime;
+	Double_t edeadtime = TMath::Sqrt(dL2*(dL0-dL2)/dL0/dL0/dL0); // Binomial error
 
-	cout << "DEADTIME " << endl;
-	cout << L0 << " " << dL0 << " " << oldL0 << " " << prevL0 << endl;
-	cout << L2 << " " << dL2 << " " << oldL2 << " " << prevL2 << endl;
-	cout << deadtime << endl;
-	
-	
+// 	cout << "DEADTIME " << endl;
+// 	cout << L0 << " " << dL0 << " " << oldL0 << " " << prevL0 << endl;
+// 	cout << L2 << " " << dL2 << " " << oldL2 << " " << prevL2 << endl;
+// 	cout << deadtime << endl;
 	
 
 	GetDeadTimeHisto(trg.Data())->SetBinContent(prevbin, deadtime );
@@ -469,18 +464,9 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
     //------- TPC track selection --------
     // Selection by andrea.dainese@pd.infn.it
     // 15.03.2010
-
-    Int_t    minclsTPC=70;
-    Double_t maxchi2perTPCcl=4.;
-    static AliESDtrackCuts* esdtrackCutsITSTPC = new AliESDtrackCuts("esdtrackCutsITSTPC");
-    esdtrackCutsITSTPC->SetRequireITSRefit(kTRUE);
-    esdtrackCutsITSTPC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-						 AliESDtrackCuts::kAny);
-    esdtrackCutsITSTPC->SetAcceptKinkDaughters(kFALSE);
-    esdtrackCutsITSTPC->SetMinNClustersTPC(minclsTPC);
-    esdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
-    //esdtrackCutsITSTPC->SetEtaRange(-0.8,0.8); // normally, |eta|<0.8
-
+    
+    Bool_t selectPrimaries=kTRUE;
+    static AliESDtrackCuts* esdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
 
     // loop on tracks
     Int_t ntracks = fESD->GetNumberOfTracks();
@@ -527,6 +513,26 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
 	}
       }
     }
+
+    // TEMPORARY LOOP: FILL DISTRIBUTION OF PT FOR 2 CLASSES OF EVENTS
+    for (Int_t iTrack = 0; iTrack<ntracks; iTrack++) {    
+      AliESDtrack * track = dynamic_cast<AliESDtrack*>(fESD->GetTrack(iTrack));
+      // for each track
+      
+      // track quality cuts
+      if(!esdtrackCutsITSTPC->AcceptTrack(track)) continue;
+      
+      // bring it to the primary vertex and compute impact parameters
+      if(!track->RelateToVertex(vertex,fESD->GetMagneticField(),kVeryBig)) continue; // this is already done in AliReconstruction...
+      
+      // track-to-vertex cut (see below)
+      if(!SelectOnImpPar(track)) continue;
+      if (TMath::Abs(track->Eta()) < etaCut){
+	if (atLeastPt05) GetDistributionHisto(trg.Data(),kDistPt, "_atLeast05")->Fill(track->Pt());
+	if (atLeastPt1)  GetDistributionHisto(trg.Data(),kDistPt, "_atLeast1" )->Fill(track->Pt());
+      }
+    }
+    // END OF TEMPORARY LOOP
 
     // Fill histos for luminosity: rate of events with at least one
     // track in the pseudo rapidity region |eta| < 0.8 and pt > 0.5 or
