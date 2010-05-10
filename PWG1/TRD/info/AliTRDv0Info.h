@@ -26,8 +26,7 @@
 
 class AliESDv0;
 class AliESDtrack;
-class AliESDEvent;
-class AliTRDtrackV1;
+//class AliTRDtrackV1;
 class AliTRDtrackInfo;
 class AliTRDv0Info : public TObject
 {
@@ -61,22 +60,22 @@ public:
 
 
   AliTRDv0Info();
+  AliTRDv0Info(const AliTRDv0Info &ref);
   virtual ~AliTRDv0Info(){}
+  
+  Int_t  GetPID(Int_t ipart, AliTRDtrackInfo *track);
+  Bool_t HasTrack(AliTRDtrackInfo * const track);
 
-/*   Float_t Pplus[2*kNlayer];       // Positives */
-/*   Float_t Pminus[2*kNlayer];      // Negatives */
+  void   Print(Option_t *opt=0x0) const;
 
- 
-  void Print(Option_t *opt=0x0) const;
- 
-  Bool_t GetV0PID(Int_t ipart, AliTRDtrackInfo *track);//decides if a track is accepted for one of the reference samples!!
+  void   SetMagField(Float_t b) {fMagField = b;}
+  void   SetV0tracks(AliESDtrack *p, AliESDtrack *n) {fTrackP = p; fTrackN = n;}
 
   //Set values of measured/calculated variables:
   void SetQuality(Int_t SQuality){fQuality = SQuality;}
   void SetPplus(Int_t iLayer, Float_t SPplus){fPplus[iLayer] = SPplus;}
   void SetPminus(Int_t iLayer, Float_t SPminus){fPminus[iLayer] = SPminus;}
   void SetDCA(Float_t SDCA){fDCA = SDCA;}
-  void SetMomentum(Float_t SMomentum){fMomentum = SMomentum;}
   void SetPointingAngle(Float_t SPointingAngle){fPointingAngle = SPointingAngle;}
   void SetOpenAngle(Float_t SOpenAngle){fOpenAngle = SOpenAngle;}
   void SetPsiPair(Float_t SPsiPair){fPsiPair = SPsiPair;}
@@ -88,29 +87,28 @@ public:
 //____________________________________________________________
  //Set cut values:
 
- void SetUpDCA(Int_t iDecay, Float_t UpDCA){fUpDCA[iDecay] = UpDCA;}
- void SetUpPointingAngle(Int_t iDecay, Float_t UpPointingAngle){fUpPointingAngle[iDecay] = UpPointingAngle;}
- void SetUpOpenAngle(Int_t iDecay, Float_t UpOpenAngle){fUpOpenAngle[iDecay] = UpOpenAngle;}
- void SetDownOpenAngle(Int_t iDecay, Float_t DownOpenAngle){fDownOpenAngle[iDecay] = DownOpenAngle;}
- void SetUpPsiPair(Int_t iDecay, Float_t UpPsiPair){fUpPsiPair[iDecay] = UpPsiPair;}
- void SetDownPsiPair(Int_t iDecay, Float_t DownPsiPair){fDownPsiPair[iDecay] = DownPsiPair;}
- void SetUpRadius(Int_t iDecay, Float_t UpRadius){fUpRadius[iDecay] = UpRadius;}
- void SetDownRadius(Int_t iDecay, Float_t DownRadius){fDownRadius[iDecay] = DownRadius;}
- void SetUpInvMass(Int_t iDecay, Int_t iMomentum, Double_t UpInvMass){fUpInvMass[iDecay][iMomentum] = UpInvMass;}
- void SetDownInvMass(Int_t iDecay, Double_t DownInvMass){fDownInvMass[iDecay] = DownInvMass;}
- void SetDownTPCPIDneg(Int_t iPart, Double_t DownTPCPIDneg){fDownTPCPIDneg[iPart] = DownTPCPIDneg;}
- void SetDownTPCPIDpos(Int_t iPart, Double_t DownTPCPIDpos){fDownTPCPIDpos[iPart] = DownTPCPIDpos;}
- void SetDownComPIDneg(Int_t iPart, Double_t DownComPIDneg){fDownComPIDneg[iPart] = DownComPIDneg;}
- void SetDownComPIDpos(Int_t iPart, Double_t DownComPIDpos){fDownComPIDpos[iPart] = DownComPIDpos;}
- void SetDownComPIDnegPart(Int_t iPart, Double_t DownComPIDnegPart){fDownComPIDnegPart[iPart] = DownComPIDnegPart;}
- void SetDownComPIDposPart(Int_t iPart, Double_t DownComPIDposPart){fDownComPIDposPart[iPart] = DownComPIDposPart;}
+  void SetUpDCA(Int_t iDecay, Float_t UpDCA){fUpDCA[iDecay] = UpDCA;}
+  void SetUpPointingAngle(Int_t iDecay, Float_t UpPointingAngle){fUpPointingAngle[iDecay] = UpPointingAngle;}
+  void SetUpOpenAngle(Int_t iDecay, Float_t UpOpenAngle){fUpOpenAngle[iDecay] = UpOpenAngle;}
+  void SetDownOpenAngle(Int_t iDecay, Float_t DownOpenAngle){fDownOpenAngle[iDecay] = DownOpenAngle;}
+  void SetUpPsiPair(Int_t iDecay, Float_t UpPsiPair){fUpPsiPair[iDecay] = UpPsiPair;}
+  void SetDownPsiPair(Int_t iDecay, Float_t DownPsiPair){fDownPsiPair[iDecay] = DownPsiPair;}
+  void SetUpRadius(Int_t iDecay, Float_t UpRadius){fUpRadius[iDecay] = UpRadius;}
+  void SetDownRadius(Int_t iDecay, Float_t DownRadius){fDownRadius[iDecay] = DownRadius;}
+  void SetUpInvMass(Int_t iDecay, Int_t iMomentum, Double_t UpInvMass){fUpInvMass[iDecay][iMomentum] = UpInvMass;}
+  void SetDownInvMass(Int_t iDecay, Double_t DownInvMass){fDownInvMass[iDecay] = DownInvMass;}
+  void SetDownTPCPIDneg(Int_t iPart, Double_t DownTPCPIDneg){fDownTPCPIDneg[iPart] = DownTPCPIDneg;}
+  void SetDownTPCPIDpos(Int_t iPart, Double_t DownTPCPIDpos){fDownTPCPIDpos[iPart] = DownTPCPIDpos;}
+  void SetDownComPIDneg(Int_t iPart, Double_t DownComPIDneg){fDownComPIDneg[iPart] = DownComPIDneg;}
+  void SetDownComPIDpos(Int_t iPart, Double_t DownComPIDpos){fDownComPIDpos[iPart] = DownComPIDpos;}
+  void SetDownComPIDnegPart(Int_t iPart, Double_t DownComPIDnegPart){fDownComPIDnegPart[iPart] = DownComPIDnegPart;}
+  void SetDownComPIDposPart(Int_t iPart, Double_t DownComPIDposPart){fDownComPIDposPart[iPart] = DownComPIDposPart;}
 
+  void SetV0Info(AliESDv0 *v0);//gets most of the variables below
 
 private:
-  AliTRDv0Info(const AliTRDv0Info&);
   AliTRDv0Info& operator=(const AliTRDv0Info&);
 
-  void GetESDv0Info(AliESDv0 *esdv0);//gets most of the variables below
   void GetDetectorPID();//operating with likelihood values of different detectors
   void CombinePID();//Bayesian combination of TPC and TOF likelihoods
   Int_t Quality(AliESDv0 * const esdv0);//checks for track/vertex quality criteria
@@ -121,12 +119,6 @@ private:
   Float_t DCA() const {return fDCA;}//distance of closest approach between supposed daughter tracks
   Float_t PointingAngle() const {return fPointingAngle;}//pointing angle: between vector from primary to secondary vertex and reconstructed momentum of V0 mother particle
   Float_t V0Momentum(AliESDv0 *esdv0) const;//reconstructed momentum of V0 mother particle
-  void V0fromTrack(AliTRDtrackInfo * const track, Int_t ivertex);//checks if a track belongs to a vertex found by V0 finder
-  
-  AliESDEvent *fESD; // ESD event
-
-  Bool_t fHasV0; //Does this track belong to a vertex from a V0 finder?
- 
   Int_t fQuality;              // track quality status for both V0 daughters; OnFly, TPCrefit, Kinks, TPC clusters
  
   Float_t fPplus[2*kNlayer];    // momentum and variance for the positive daughter  
@@ -134,25 +126,13 @@ private:
   Double_t fDetPID[kNDaughters][kNDetectors][AliPID::kSPECIES]; // PID provided by TPC, TOF and ITS
   Double_t fComPID[kNDaughters][AliPID::kSPECIES];//Combined PID, momentarily from TPC and TOF only
 
-  Float_t fMomentum;  // Momentum of track at the vertex
-
   Float_t fDCA;  // Distance of closest approach of daughter tracks
-  
   Float_t fPointingAngle;// = TMath::ACos(esdv0->GetV0CosineOfPointingAngle()); // Cosine of pointing angle
-  
   Float_t fOpenAngle;  // opening angle between daughters
-  
   Float_t fPsiPair; // /Angle between daughter momentum plane and plane perpendicular to magnetic field
-  
   Double_t fInvMass[kNDecays];  // invariant mass for different decay scenarios (conversions, K0s, Lambda->p+pi-, Lambda->p-pi+)
-
   Double_t fMagField; //magnetic field strength
-
   Float_t fRadius; //distance of decay/conversion from primary vertex in x-y plane
-
-  Int_t fTrackID;//track index
-
-
   Float_t fV0Momentum; //V0 mother's momentum
 
   //____________________________________________________________
@@ -175,16 +155,14 @@ private:
   Float_t fDownComPIDnegPart[AliPID::kSPECIES]; // Combined PID positive partner daughters (NOT the daughter track that would go into the reference data; here: pion daughters from Lambda decays; lower limit
   Float_t fDownComPIDposPart[AliPID::kSPECIES]; // Combined PID positive partner daughters (NOT the daughter track that would go into the reference data; here: pion daughters from Lambda decays; lower limit
  
-  AliESDtrack *fTrackP; //positive daughter
-  AliESDtrack *fTrackN; //negative daughter
-  AliESDtrack *fTrack; //the current track in the ESDtrack loop (either positive or negative)
+  AliESDtrack *fTrackP; //!positive daughter
+  AliESDtrack *fTrackN; //!negative daughter
 
-
-  Int_t fNindex; //indices of positive and negative daughter track
-  Int_t fPindex; //indices of positive and negative daughter track
+  Int_t       fNindex; //indices of positive and negative daughter track
+  Int_t       fPindex; //indices of positive and negative daughter track
   
   
-  ClassDef(AliTRDv0Info, 0) // extracted V0 MC information
+  ClassDef(AliTRDv0Info, 1) // extracted V0 MC information
 };
 
 

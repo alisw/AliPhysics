@@ -54,6 +54,7 @@ public:
   void    SetLocalEvSelection(Bool_t use=kTRUE) {SetBit(kUseLocalEvSelection, use);}
   void    SetLocalTrkSelection(AliESDtrackCuts */*cut*/){;} 
   void    SetLocalTrkSelection(Bool_t use=kTRUE) {SetBit(kUseLocalTrkSelection, use);}
+  void    SetLocalV0Selection(AliTRDv0Info *v0);
   void    SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   void    SetTrigger(const Char_t *trigger);
 
@@ -89,6 +90,7 @@ private:
   // event/track cuts OO - to be used
   AliTRDeventCuts  *fEventCut;       // event cut
   AliESDtrackCuts  *fTrackCut;       // track cut
+  AliTRDv0Info     *fV0Cut;          // v0 cut
   AliTRDtrackInfo  *fTrackInfo;      //! Track info
   AliTRDeventInfo  *fEventInfo;	     //! Event info
   AliTRDv0Info     *fV0Info;         //! V0 info

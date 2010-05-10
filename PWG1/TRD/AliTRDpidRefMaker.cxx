@@ -292,7 +292,7 @@ void AliTRDpidRefMaker::LinkPIDdata()
 }
 
 //________________________________________________________________________
-void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Float_t *pid) 
+void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, AliTRDtrackInfo *track, Float_t *pid) 
 {
 // Fill the reference PID values "pid" from "source" object
 // according to the option "select". Possible options are
@@ -300,20 +300,22 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
 // - kMC  - MC truth [default]
 // - kRec - outside detectors
 
-
+  if(!track){
+    AliError("No trackInfo found");
+    return;
+  }
   memset(fPID, 0, AliPID::kSPECIES*sizeof(Float_t));
   switch(select){ 
   case kV0:
     {
-      AliTRDtrackInfo *track = static_cast<AliTRDtrackInfo*>(source);
-      if(!track){
-        AliError("No trackInfo found");
-        return;
-      }
-
       //Get V0 PID decisions from the AliTRDv0Info for all particle species (implemented so far : electrons from conversions, pions from K0s and protons from Lambdas) :
-      AliTRDv0Info v0;
-      for(Int_t is=AliPID::kSPECIES; is--;) fPID[is] = v0.GetV0PID(is, track);
+      AliTRDv0Info *v0(NULL);
+      for(Int_t iv(0); iv<fV0s->GetEntriesFast(); iv++){
+        if(!(v0 = (AliTRDv0Info*)fV0s->At(iv))) continue;
+        if(!v0->HasTrack(track)) continue;
+        for(Int_t is=AliPID::kSPECIES; is--;) fPID[is] = v0->GetPID(is, track);
+        break;
+      }
     }
     break;
   case kMC:
@@ -321,35 +323,31 @@ void AliTRDpidRefMaker::SetRefPID(ETRDpidRefMakerSource select, void *source, Fl
       AliError("Could not retrive reference PID from MC");
       return;
     }
-    {
-      AliTRDtrackInfo *track = static_cast<AliTRDtrackInfo*>(source);
-      switch(track->GetPDG()){
-      case kElectron:
-      case kPositron:
-        fPID[AliPID::kElectron] = 1.;
-        break;
-      case kMuonPlus:
-      case kMuonMinus:
-        fPID[AliPID::kMuon] = 1.;
-        break;
-      case kPiPlus:
-      case kPiMinus:
-        fPID[AliPID::kPion] = 1.;
-        break;
-      case kKPlus:
-      case kKMinus:
-        fPID[AliPID::kKaon] = 1.;
-        break;
-      case kProton:
-      case kProtonBar:
-        fPID[AliPID::kProton] = 1.;
-        break;
-      }
+    switch(track->GetPDG()){
+    case kElectron:
+    case kPositron:
+      fPID[AliPID::kElectron] = 1.;
+      break;
+    case kMuonPlus:
+    case kMuonMinus:
+      fPID[AliPID::kMuon] = 1.;
+      break;
+    case kPiPlus:
+    case kPiMinus:
+      fPID[AliPID::kPion] = 1.;
+      break;
+    case kKPlus:
+    case kKMinus:
+      fPID[AliPID::kKaon] = 1.;
+      break;
+    case kProton:
+    case kProtonBar:
+      fPID[AliPID::kProton] = 1.;
+      break;
     }
     break;
   case kRec:
     { 
-      AliTRDtrackInfo *track = static_cast<AliTRDtrackInfo*>(source);
       AliTRDtrackV1 *trackTRD = track->GetTrack();
       trackTRD -> SetReconstructor(fReconstructor);
       //fReconstructor -> SetOption("nn");
