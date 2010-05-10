@@ -8,15 +8,19 @@
 /*
  
   //1. Run locally 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/LoadMyLibs.C");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWG1");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  TChain* chain = CreateESDChain("/u/jacek/alice/dNdPt7TeV/scripts/lists/1668.list",10, 0);
+  TChain* chain = CreateESDChain("esds.txt",10, 0);
   //TChain* chain = CreateESDChain("/u/jacek/alice/dNdPt/input/LHC10a8/esds_104867_MC_LHC10a8.txt",3, 0);
   chain->Lookup();
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/RunPerformanceTaskResEffMC.C");
-  RunPerformanceTaskResEffMC(chain, kTRUE, kTRUE, kFALSE);
+  RunPerformanceTaskResEffMC(chain, kTRUE, kFALSE, kFALSE);
 
   //2. Make final spectra and store them in the
   // output folder and generate control pictures
