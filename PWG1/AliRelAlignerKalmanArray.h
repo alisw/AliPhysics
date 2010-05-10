@@ -10,58 +10,57 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef AliRelAlignerKalmanArray_h
-#define AliRelAlignerKalmanArray_h
-
-
-class TString;
-class TCollection;
-class AliESDEvent;
 class TObjArray;
+class TGraphErrors;
 class AliRelAlignerKalman;
 class TNamed;
+class TTree;
+class TCollection;
+class AliESDEvent;
 
 class AliRelAlignerKalmanArray:public TNamed
 {
 public:
   AliRelAlignerKalmanArray();
-  AliRelAlignerKalmanArray(const char* name);
+  AliRelAlignerKalmanArray(Int_t t0, Int_t tend, Int_t slotwidth);
   virtual ~AliRelAlignerKalmanArray();
   AliRelAlignerKalmanArray& operator=(const AliRelAlignerKalmanArray& a );
   AliRelAlignerKalmanArray(const AliRelAlignerKalmanArray& a);
+  void SetupArray(Int_t t0, Int_t tend, Int_t slotwidth);
   
+  AliRelAlignerKalman* GetAligner(UInt_t timestamp);
+  AliRelAlignerKalman* GetAligner(AliESDEvent* event);
+  AliRelAlignerKalman* GetAlignerTemplate();
   Long64_t Merge( TCollection* list );
-  //Bool_t AddESDEvent( AliESDEvent* event );
-  Bool_t AddCosmicEvent( AliESDEvent* event );
-  void AddLast( AliRelAlignerKalman* al );
   AliRelAlignerKalman* At( Int_t i ) const;
-  AliRelAlignerKalman* Last() const;
-  Int_t GetEntries() const {return fArray->GetEntriesFast();}
   AliRelAlignerKalman* operator[](Int_t i) const;
-  Bool_t SetTimeMatchingTolerance( const UInt_t m );
-  Bool_t SetSaveInterval( const UInt_t s );
-  UInt_t GetTimeMatchingTolerance() const {return fTimeMatchingTolerance;}
-  UInt_t GetSaveInterval() const {return fSaveInterval;}
-  UInt_t TimeBin( UInt_t timebin ) const;
-  void SetCurrentTimeBin( UInt_t timestamp );
-  UInt_t GetCurrentTimeBin() const {return fCurrentTimeBin;}
-  Bool_t IsInCurrentTimeBin( UInt_t timestamp ) const;
-  AliRelAlignerKalman* GetAligner() const {return fAligner;}
-  TObjArray* SortedMerge ( TObjArray* input ); 
-  //void SetResetAllAtNewRun( Bool_t s ) {fResetAllAtNewRun = s;}
-  //void SetResetTPCAtNewRun( Bool_t s ) {fResetTPCAtNewRun = s;}
+  AliRelAlignerKalman*& operator[](Int_t i);
+  Int_t GetEntries() const;
+  Int_t GetSize() const {return fSize;}
+  AliRelAlignerKalman* Last() const;
+  UInt_t GetT0() const {return fT0;}
+  UInt_t GetTimebinWidth() const {return fTimebinWidth;}
+  Int_t Timebin( UInt_t timestamp ) const;
+  virtual void Print(Option_t* option="") const;
+  void FillTree( TTree* tree )const ;
+  TGraphErrors* MakeGraph(Int_t iparam) const;
+  AliRelAlignerKalmanArray* MakeSmoothArray() const;
+  void SetOutRejSigmaOnMerge(Double_t s) {fOutRejSigmaOnMerge=s;}
+  void SetOutRejSigmaOnSmooth(Double_t s) {fOutRejSigmaOnSmooth=s;}
 
 private:
-  TObjArray* fArray; //an array of aligners
-  UInt_t fSaveInterval; //how often to save (in seconds)
-  UInt_t fTimeMatchingTolerance; //tolerance for matching timestamps
-  UInt_t fCurrentTimeBin; //current timebin
-  AliRelAlignerKalman* fAligner;  //aligner object
-  //Bool_t fResetAllAtNewRun;
-  //Bool_t fResetTPCAtNewRun;
+  void ClearContents();
+  void PropagateToTime(AliRelAlignerKalman* al, UInt_t timestamp ) const;
+
+  UInt_t fT0;                            //time of first time slot
+  Int_t fTimebinWidth;                   //width of the time bin in seconds
+  Int_t fSize;                           //size
+  Double_t fOutRejSigmaOnMerge;          //how much outlier rejection on merge
+  Double_t fOutRejSigmaOnSmooth;          //how much outlier rejection on Smooth
+  AliRelAlignerKalman* fAlignerTemplate;  //template
+  AliRelAlignerKalman** fPArray;         //[fSize] an array of aligners
   
-  ClassDef(AliRelAlignerKalmanArray,1)     //AliRelAlignerKalman class
+  ClassDef(AliRelAlignerKalmanArray,4);   //AliRelAlignerKalman class
 };
 
-#endif
 
