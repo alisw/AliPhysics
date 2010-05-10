@@ -360,6 +360,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // first read MC information (if present)
   std::map<int,int> mcLabels;
+  std::map<int,int> mcLabelsITS;
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
@@ -378,6 +379,25 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 		 dataPtr->fCount, pBlock->fSize);
     }
   }
+ 
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+
+    fBenchmark.AddInput(pBlock->fSize);
+
+    AliHLTTrackMCData* dataPtr = reinterpret_cast<AliHLTTrackMCData*>( pBlock->fPtr );
+    if (sizeof(AliHLTTrackMCData)+dataPtr->fCount*sizeof(AliHLTTrackMCLabel)==pBlock->fSize) {
+      for( unsigned int il=0; il<dataPtr->fCount; il++ ){
+	AliHLTTrackMCLabel &lab = dataPtr->fLabels[il];
+	mcLabelsITS[lab.fTrackID] = lab.fMCLabel;
+      }
+    } else {
+      HLTWarning("data mismatch in block %s (0x%08x): count %d, size %d -> ignoring track MC information", 
+		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, 
+		 dataPtr->fCount, pBlock->fSize);
+    }
+  }
+
 
   // read dEdx information (if present)
 
@@ -493,6 +513,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// the ITS tracker assigns the TPC track used as seed for a certain track to
 	// the trackID
 	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
+	Int_t mcLabel = -1;
+	if( mcLabelsITS.find(element->TrackID())!=mcLabelsITS.end() )
+	  mcLabel = mcLabelsITS[element->TrackID()];
+	element->SetLabel( mcLabel );
 	AliESDtrack *tESD = pESD->GetTrack( tpcID );
 	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
       }

@@ -160,6 +160,10 @@ int AliHLTITSAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
       // add the TPC tracking if available
       trackerInput+=" TPC-globalmerger";
     }
+    if (handler->FindConfiguration("TPC-mcTrackMarker")) {
+      // add the TPC tracking if available
+      trackerInput+=" TPC-mcTrackMarker";
+    }
     handler->CreateConfiguration("ITS-tracker","ITSTracker",trackerInput.Data(),"");
   }
 

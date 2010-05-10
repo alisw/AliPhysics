@@ -611,7 +611,7 @@ int AliHLTITSVertexerSPDComponent::DoEvent
 	maxW = fSumN[i];
       }
     }
-    if( bestBin<0 || fSumN[bestBin] < 5 ){
+    if( bestBin<0 || fSumN[bestBin] < 3 ){
       bestBin = -1;
       break;
     }

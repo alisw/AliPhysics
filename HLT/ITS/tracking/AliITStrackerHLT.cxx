@@ -355,7 +355,7 @@ void AliITStrackerHLT::UnloadClusters() {
 
 
 
-void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTracks )
+void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int *tracksTPCLab, int nTPCTracks )
 {
 
   //--------------------------------------------------------------------
@@ -395,18 +395,19 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTr
   fITSOutTracks = new AliHLTITSTrack[nTPCTracks];
   fNTracks = 0;
   fNITSOutTracks = 0;
-  for( int itr=0; itr<nTPCTracks; itr++ ){
+  for( int itr=0; itr<nTPCTracks; itr++ ){    
 
     AliHLTITSTrack tMI( tracksTPC[itr] );
     AliHLTITSTrack *t = &tMI;
     t->SetTPCtrackId( itr );
     t->SetMass(pimass); 
     t->SetExpQ(0);
+    t->SetLabel(tracksTPCLab[itr]);
 
     //if (!CorrectForTPCtoITSDeadZoneMaterial(t))  continue;
       
-    //Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
-      
+    Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
+    
     FollowProlongationTree(t); 
     int nclu=0;
     for(Int_t i=0; i<6; i++) {
@@ -415,16 +416,18 @@ void AliITStrackerHLT::Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTr
     //cout<<"N assigned ITS clusters = "<<nclu<<std::endl;
     t->SetLabel(-1);
     if( nclu>0 ){
-      t->SetLabel(-1);//tpcLabel);
+      t->SetLabel(tpcLabel);
       t->SetFakeRatio(1.);
       CookLabel(t,.99); //For comparison only
-      //cout<<"label = "<<t->GetLabel()<<" / "<<tpcLabel<<endl;
+      //cout<<"SG: label = "<<t->GetLabel()<<" / "<<tpcLabel<<endl;
     }
 
-    //CorrectForPipeMaterial(t);
+    CorrectForPipeMaterial(t);
    
     TransportToX(t, 0 );
     fTracks[fNTracks++] = *t;  
+    //cout<<"SG: ITS: Bz = "<<t->GetBz()<<endl;
+
     if(  nclu>0 ){ // construct ITSOut track
       AliHLTITSTrack tOut(*t);
       if( FitOutward( &tOut ) ){
@@ -448,6 +451,7 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   
   
   std::vector<AliExternalTrackParam> tracksTPC;
+  std::vector<int> tracksTPCLab;
   tracksTPC.reserve(event->GetNumberOfTracks());
 
   for( int itr=0; itr<event->GetNumberOfTracks(); itr++ ){
@@ -462,9 +466,10 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
     AliHLTITSTrack t(*esdTrack);
     t.SetTPCtrackId( itr );
     tracksTPC.push_back( t );
+    tracksTPCLab.push_back(esdTrack->GetLabel());
   }
   //for( int iter=0; iter<100; iter++){
-  Reconstruct( &(tracksTPC[0]), tracksTPC.size() );
+  Reconstruct( &(tracksTPC[0]), &(tracksTPCLab[0]), tracksTPC.size() );
   //}
 
   for( int itr=0; itr<fNTracks; itr++ ){
@@ -478,12 +483,12 @@ Int_t AliITStrackerHLT::Clusters2Tracks(AliESDEvent *event) {
   int hz1 = ( int ) ( fRecoTime > 1.e-4 ? fNEvents / fRecoTime : 0 );
   int hz2 = ( int ) ( fLoadTime > 1.e-4 ? fNEvents / fLoadTime : 0 );
 
-  std::cout<<"\n\n ITS tracker time = "<<hz2<<" Hz load / "<<hz1<<" Hz reco ="
-	   <<hz<<
-    " Hz ("
-	   <<fLoadTime/fNEvents*1000<<"+"<<fRecoTime/fNEvents*1000.
-	   <<" = "<<(fLoadTime + fRecoTime)/fNEvents*1000.
-	   <<" ms/ev), "<<fNEvents<<" events processed\n\n "<<std::endl;
+  //std::cout<<"\n\nSG: ITS tracker time = "<<hz2<<" Hz load / "<<hz1<<" Hz reco ="
+  //<<hz<<
+  //" Hz ("
+  //<<fLoadTime/fNEvents*1000<<"+"<<fRecoTime/fNEvents*1000.
+  //<<" = "<<(fLoadTime + fRecoTime)/fNEvents*1000.
+  //<<" ms/ev), "<<fNEvents<<" events processed\n\n "<<std::endl;
   return 0;
 }
 
@@ -659,18 +664,20 @@ void AliITStrackerHLT::CookLabel(AliHLTITSTrack *track,Float_t wrong) const
   
   vector<int> labels;
   Int_t nClusters = track->GetNumberOfClusters();
-
+  Int_t nClustersEff = 0;
   for (Int_t i=0; i<nClusters; i++){
     Int_t cindex = track->GetClusterIndex(i);
     //Int_t l=(cindex & 0xf0000000) >> 28;
     AliITSRecPoint *cl = (AliITSRecPoint*)GetCluster(cindex);    
-    if ( cl->GetLabel(0) >= 0 ) labels.push_back(cl->GetLabel(0)) ;
+    if ( cl->GetLabel(0) >= 0 ){ labels.push_back(cl->GetLabel(0)) ; nClustersEff++; }
     if ( cl->GetLabel(1) >= 0 ) labels.push_back(cl->GetLabel(1)) ;
     if ( cl->GetLabel(2) >= 0 ) labels.push_back(cl->GetLabel(2)) ;
   }
-  std::sort( labels.begin(), labels.end() );	  
+  std::sort( labels.begin(), labels.end() );
+
   labels.push_back( -1 ); // put -1 to the end	  
   int labelMax = -1, labelCur = -1, nLabelsMax = 0, nLabelsCurr = 0;
+
   for ( unsigned int iLab = 0; iLab < labels.size(); iLab++ ) {
     if ( labels[iLab] != labelCur ) {	      
       if ( labelCur >= 0 && nLabelsMax< nLabelsCurr ) {
@@ -682,8 +689,8 @@ void AliITStrackerHLT::CookLabel(AliHLTITSTrack *track,Float_t wrong) const
     }
     nLabelsCurr++;
   }
-	  
-  if( labelMax>=0 && nLabelsMax < wrong * nClusters ) labelMax = -labelMax;
+
+  if( labelMax>=0 && nLabelsMax < wrong * nClustersEff ) labelMax = -labelMax;
   
   mcLabel = labelMax;
 		

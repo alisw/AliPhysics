@@ -29,7 +29,7 @@ public:
   
   void StartLoadClusters( Int_t NClusters );
   void LoadCluster( const AliITSRecPoint &cluster);
-  void Reconstruct( AliExternalTrackParam *tracksTPC, int nTPCTracks );
+  void Reconstruct( AliExternalTrackParam *tracksTPC, int *tracksTPCLab, int nTPCTracks );
 
   AliHLTITSTrack *Tracks() const { return fTracks;}
   Int_t NTracks() const { return fNTracks;}

@@ -50,7 +50,7 @@ using namespace std;
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliGeomManager.h"
-
+#include "AliHLTTrackMCLabel.h"
 
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -108,6 +108,7 @@ void AliHLTITSTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
   // see header file for class documentation
   list.clear();
   list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
+  list.push_back( kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSSD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSPD );
   list.push_back( kAliHLTDataTypeClusters|kAliHLTDataOriginITSSDD );
@@ -126,6 +127,7 @@ int AliHLTITSTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& t
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
+  tgtList.push_back( kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS );
   return tgtList.size();
 }
 
@@ -355,6 +357,7 @@ int AliHLTITSTrackerComponent::DoEvent
 
   
   vector< AliExternalTrackParam > tracksTPC;
+  vector< int > tracksTPCLab;
   vector< int > tracksTPCId;
 
   int nClustersTotal = 0;
@@ -376,10 +379,34 @@ int AliHLTITSTrackerComponent::DoEvent
 
   fTracker->StartLoadClusters(nClustersTotal);
 
+  // first read MC information (if present)
+  
+  std::map<int,int> mcLabels;
+
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC);
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    
+    fBenchmark.AddInput(pBlock->fSize);
+    
+    AliHLTTrackMCData* dataPtr = reinterpret_cast<AliHLTTrackMCData*>( pBlock->fPtr );
+    if (sizeof(AliHLTTrackMCData)+dataPtr->fCount*sizeof(AliHLTTrackMCLabel)==pBlock->fSize) {
+      for( unsigned int il=0; il<dataPtr->fCount; il++ ){
+	AliHLTTrackMCLabel &lab = dataPtr->fLabels[il];
+	mcLabels[lab.fTrackID] = lab.fMCLabel;
+      }
+    } else {
+      HLTWarning("data mismatch in block %s (0x%08x): count %d, size %d -> ignoring track MC information", 
+		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, 
+		 dataPtr->fCount, pBlock->fSize);
+    }
+  }
+  
+  
+  
   for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 
     const AliHLTComponentBlockData* iter = blocks+ndx;
- 
+    
     // Read TPC tracks
     
     if( iter->fDataType == ( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC ) ){	  
@@ -389,7 +416,12 @@ int AliHLTITSTrackerComponent::DoEvent
       AliHLTExternalTrackParam* currOutTrack = dataPtr->fTracklets;
       for( int itr=0; itr<nTracks; itr++ ){
 	AliHLTGlobalBarrelTrack t(*currOutTrack);
+	Int_t mcLabel = -1;
+	if( mcLabels.find(currOutTrack->fTrackID)!=mcLabels.end() )
+	  mcLabel = mcLabels[currOutTrack->fTrackID];
+	
 	tracksTPC.push_back( t );
+	tracksTPCLab.push_back(mcLabel);
 	tracksTPCId.push_back( currOutTrack->fTrackID );
 	unsigned int dSize = sizeof( AliHLTExternalTrackParam ) + currOutTrack->fNPoints * sizeof( unsigned int );
 	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
@@ -417,6 +449,7 @@ int AliHLTITSTrackerComponent::DoEvent
 	Float_t hit[6] = { d.fY, d.fZ, d.fSigmaY2, d.fSigmaZ2, d.fQ, d.fSigmaYZ };
 	if( d.fLayer==4 ) hit[5] = -hit[5];
 	fTracker->LoadCluster( AliITSRecPoint( lab, hit, info ) );
+	//cout<<"SG "<<d.fLayer<<" "<<d.fTracks[0]<<endl;
       }   
     }
     
@@ -425,7 +458,7 @@ int AliHLTITSTrackerComponent::DoEvent
   // Reconstruct the event
 
     fBenchmark.Start(1);
-    fTracker->Reconstruct( &(tracksTPC[0]), tracksTPC.size() );
+    fTracker->Reconstruct( &(tracksTPC[0]), &(tracksTPCLab[0]), tracksTPC.size() );
     fBenchmark.Stop(1);
 
   
@@ -496,7 +529,7 @@ int AliHLTITSTrackerComponent::DoEvent
 
       AliHLTComponentBlockData resultData;
       FillBlockData( resultData );
-      resultData.fOffset = 0;
+      resultData.fOffset = size;
       resultData.fSize = blockSize;
       if( iOut==0 ){
 	resultData.fDataType = kAliHLTDataTypeTrack|kAliHLTDataOriginITS;
@@ -506,10 +539,51 @@ int AliHLTITSTrackerComponent::DoEvent
       fBenchmark.AddOutput(resultData.fSize);
       outputBlocks.push_back( resultData );
       size += resultData.fSize;       
-    }  
+    }
+  }  
+
+  {// fill MC labels
+
+    unsigned int blockSize = 0;
+      
+    AliHLTTrackMCData* outPtr = ( AliHLTTrackMCData* )( outputPtr +size );
+    AliHLTTrackMCLabel* currOutLabel = outPtr->fLabels;
+    
+    blockSize =   ( ( AliHLTUInt8_t * )currOutLabel ) -  ( ( AliHLTUInt8_t * )outPtr );
+    
+    outPtr->fCount = 0;
+    
+    AliHLTITSTrack *tracks= fTracker->Tracks();
+    int nTracks = fTracker->NTracks();
+    
+    for ( int itr = 0; itr < nTracks; itr++ ) {
+      AliHLTITSTrack &t = tracks[itr];
+      //cout<<"SG out:"<<tracksTPCId[t.TPCtrackId()]<<" "<<t.GetLabel()<<endl;
+      if( t.GetLabel()<0 ) continue;
+      int id =  tracksTPCId[t.TPCtrackId()];
+      
+      if ( blockSize + sizeof(AliHLTTrackMCLabel) > maxBufferSize ) {
+	HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d mc labels are not stored", maxBufferSize, blockSize, nTracks - itr + 1 );
+	iResult = -ENOSPC;
+	break;
+      }
+      currOutLabel->fTrackID = id;
+      currOutLabel->fMCLabel = t.GetLabel();
+      blockSize += sizeof(AliHLTTrackMCLabel);
+      currOutLabel++;
+      outPtr->fCount++;
+    }        
+    
+    AliHLTComponentBlockData resultData;
+    FillBlockData( resultData );
+    resultData.fOffset = size;
+    resultData.fSize = blockSize;
+    resultData.fDataType = kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS;
+    outputBlocks.push_back( resultData );
+    size+= resultData.fSize;
   }
   
-   fBenchmark.Stop(0);
+  fBenchmark.Stop(0);
 
   // Set log level to "Warning" for on-line system monitoring
   HLTInfo( "ITS Tracker: output %d tracks;  input %d clusters, %d tracks",
