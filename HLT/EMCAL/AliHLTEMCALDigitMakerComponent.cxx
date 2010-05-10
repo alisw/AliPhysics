@@ -31,6 +31,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+//#include "AliHLTEMCALConstant.h"
+#include "AliHLTCaloConstants.h"
+
+using EMCAL::NZROWSMOD;
+using EMCAL::NXCOLUMNSMOD;  
+
 
 /** 
  * @file   AliHLTEMCALDigitMakerComponent.cxx
@@ -52,7 +58,7 @@ AliHLTEMCALDigitMakerComponent gAliHLTEMCALDigitMakerComponent;
 
 AliHLTEMCALDigitMakerComponent::AliHLTEMCALDigitMakerComponent() :
   AliHLTCaloProcessor(),
-  AliHLTCaloConstantsHandler("EMCAL"),
+  //  AliHLTCaloConstantsHandler("EMCAL"),
   fDigitMakerPtr(0),
   fDigitContainerPtr(0),
   fPedestalData(0),
@@ -60,6 +66,7 @@ AliHLTEMCALDigitMakerComponent::AliHLTEMCALDigitMakerComponent() :
   fBCMInitialised(true),
   fGainsInitialised(true)
 {
+  
   //see header file for documentation
 }
 
@@ -145,14 +152,17 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	{
 	  continue;
 	}
+      
       if(!fBCMInitialised)
       {
 	 AliHLTEMCALMapper mapper(iter->fSpecification);
 	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 //	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
 	 {
-	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
-	    {
+	   //   for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	   for(Int_t z = 0; z <  NZROWSMOD ; z++) // PTH
+	      {
 	       fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
 	    }
 	 }
@@ -163,10 +173,12 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       {
 	 AliHLTEMCALMapper mapper(iter->fSpecification);;
 	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	 {
-	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
-	    {
+	 //	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	 for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
+	   {
+	     //	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	     for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
+	       {
 	       module = 0; //removing warning
 		//fDigitMakerPtr->SetGain(x, z, fCalibData->GE(module, z+1, x+1), fCalibData->GetADCchannelEmc(module, z+1, x+1));
 	    }
@@ -235,14 +247,12 @@ AliHLTEMCALDigitMakerComponent::DoInit(int argc, const char** argv )
   return 0;
 }
 
+
 int AliHLTEMCALDigitMakerComponent::GetBCMFromCDB()
 {
    // See header file for class documentation
-   
-     fBCMInitialised = false;
-   
-//   HLTInfo("Getting bad channel map...");
-
+  fBCMInitialised = false;
+  //   HLTInfo("Getting bad channel map...");
   AliCDBPath path("EMCAL","Calib","Pedestals");
   if(path.GetPath())
     {
@@ -266,13 +276,12 @@ int AliHLTEMCALDigitMakerComponent::GetBCMFromCDB()
    return 0;
 }
 
+
 int AliHLTEMCALDigitMakerComponent::GetGainsFromCDB()
 {
    // See header file for class documentation
-   
-     fGainsInitialised = false;
-   
-//   HLTInfo("Getting bad channel map...");
+  fGainsInitialised = false;
+  //  HLTInfo("Getting bad channel map...");
 
   AliCDBPath path("EMCAL","Calib","Data");
   if(path.GetPath())
@@ -290,12 +299,8 @@ int AliHLTEMCALDigitMakerComponent::GetGainsFromCDB()
 	}
     }
    if(!fCalibData) return -1;
-
-
-
    return 0;
 }
-
 
 
 AliHLTComponent*

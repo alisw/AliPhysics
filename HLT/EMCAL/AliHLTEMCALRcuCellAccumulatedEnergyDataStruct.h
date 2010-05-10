@@ -19,10 +19,15 @@
  * provided "as is" without express or implied warranty.                   *
  **************************************************************************/
 
+//#include "AliHLTEMCALConstant.h"
+//using namespace EmcalHLTConst;
 
-#include "AliHLTEMCALConstant.h"
 
-using namespace EmcalHLTConst;
+#include "AliHLTCaloConstant.h"
+
+using EMCAL::NXCOLUMNSMOD;
+using EMCAL::NZROWSMOD;
+using EMCAL::NGAINS;
 
 struct AliHLTCaloRcuCellAccumulatedEnergyDataStruct
 {
@@ -32,16 +37,6 @@ struct AliHLTCaloRcuCellAccumulatedEnergyDataStruct
   float fAccumulatedEnergies[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
   AliHLTUInt32_t fHits[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
   AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSMOD][NZROWSMOD][NGAINS]; 
-  
-  /*
-  AliHLTUInt8_t fModuleID;
-  AliHLTUInt8_t fRcuX;
-  AliHLTUInt8_t fRcuZ; 
-  float fAccumulatedEnergies[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
-  AliHLTUInt32_t fHits[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
-  AliHLTUInt32_t fDeadChannelMap[NXCOLUMNSMOD][NZROWSMOD][NGAINS];
-  */  
-
 };
 
 

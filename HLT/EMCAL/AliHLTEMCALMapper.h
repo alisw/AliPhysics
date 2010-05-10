@@ -20,7 +20,6 @@
  **************************************************************************/
 
 
-//#include  "AliHLTCaloMapper.h"
 #include  "AliHLTCaloMapper.h"
 
 
@@ -32,14 +31,7 @@ class  AliHLTEMCALMapper : public AliHLTCaloMapper
   virtual Bool_t InitAltroMapping( const unsigned long specification ); 
   virtual void InitDDLSpecificationMapping();
   virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
-  //  static  const int GlobalX2ModuleId(const int globalX);
-  //  static  const int GlobalZ2ModuleId(const int globalZ);
-
-  // static  const int Global2ModuleId( const int globalZ,  const int globalX );
-
-  //  const virtual int GetDDLFromSpec( const AliHLTUInt32_t spec );
-  //  const virtual int GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd);
-
+  
  private:
   AliHLTEMCALMapper();
   AliHLTEMCALMapper(const AliHLTEMCALMapper & );

@@ -15,16 +15,23 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 #include "AliHLTEMCALMapper.h"
 
-#include "AliHLTEMCALConstant.h"
+//#include "AliHLTEMCALConstant.h"
+// #include "AliHLTCaloConstant.h"
 
 #include "assert.h"
 
-using namespace EmcalHLTConst;
+//using namespace EmcalHLTConst;
 
+#include "AliHLTCaloConstants.h"
 
-
+using EMCAL::NXCOLUMNSMOD;
+using EMCAL::NZROWSMOD;
+using EMCAL::NMODULES;
+using EMCAL::NRCUSPERMODULE;
+using EMCAL::NRCUSPERSECTOR;
 
 AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification, "EMCAL")
 {
@@ -110,11 +117,11 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 void 
 AliHLTEMCALMapper::InitDDLSpecificationMapping()
 {
-  fSpecificationMapPtr = new fDDLSpecificationMap[EmcalHLTConst::NMODULES*EmcalHLTConst::NRCUSPERMODULE];
+  fSpecificationMapPtr = new fDDLSpecificationMap[NMODULES*NRCUSPERMODULE];
   
-  for(Int_t ddl = 0; ddl < EmcalHLTConst::NMODULES*EmcalHLTConst::NRCUSPERMODULE; ddl++)
+  for(Int_t ddl = 0; ddl < NMODULES*NRCUSPERMODULE; ddl++)
     {
-      fSpecificationMapPtr[ddl].fModId = ddl/(EmcalHLTConst::NRCUSPERMODULE);
+      fSpecificationMapPtr[ddl].fModId = ddl/( NRCUSPERMODULE );
     }
 }
 

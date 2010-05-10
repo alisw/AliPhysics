@@ -17,71 +17,90 @@
 #ifndef ALIHLTCALOCONSTANTS_H
 #define ALIHLTCALOCONSTANTS_H
 
-// #define  ALTROMAXSAMPLES   1008  /**<The maximum number of samples of the ALTRO*/ 
-// #define  ALTROMAXPRESAMPLES  15  //Constant 
-// #define  NGAINS  2
-// #define  HIGHGAIN  1
-// #define  LOWGAIN  0
-// #define  MAXBINVALUE  1023 //Constant
-// #define  MAXHOSTS 20 // For the onlinedisplay
-// #define  DEFAULTEVENTPORT 42001
+
+namespace CaloHLTConst
+{
+  //Constants related to the ALTRO chip (Common to EMCAL / PHOS )
+  const int MAXBINVALUE = 1023;
+  const int NGAINS         =   2;    
+  const int HIGHGAIN    =   0;
+  const int LOWGAIN     =   1;
+  const int ALTROMAXSAMPLES = 1008;    /**<The maximum number of samples of the ALTRO*/
+  const int ALTROMAXPRESAMPLES = 15;        
+  const int NALTROS        =   4;      /**<Number of ALTROs per frontend card*/
+  const int NALTROCHANNELS =  16;
+
+  //FEE constants common to PHOS EMCAL
+  const int CSPSPERFEE    = 32;
+  const int NBRANCHES      =   2;   
+  
+  namespace EmcalHLTConst
+  {
+    const int NZROWSMOD      =  48;   /**<Number of rows per module*/       
+    const int NXCOLUMNSMOD   =  24;   /**<Number of columns per module*/ 
+    const int NRCUSPERSECTOR = 4;
+    const int NMODULES    =    10;    /**<Number of modules of the EMCAL detector*/
+    const int NRCUSPERMODULE =  2 ;   /**<Number of RCUs per Module*/
+    const int NFEECS         =  9; 
+  };
+
+  namespace PhosHLTConst
+  {
+    const int NZROWSMOD      =  56;   /**<Number of rows per module*/       
+    const int NXCOLUMNSMOD   =  64;   /**<Number of columns per module*/ 
+    const int NMODULES    =    5;     /**<Number of modules of the EMCAL detector*/
+    const int NRCUSPERMODULE =  4 ;   /**<Number of RCUs per Module*/
+    const int NFEECS         =  14;   /**<Number of Frontend cards per branch*/
+  };
+};
 
 
-// #define TEST  AliHLTCaloConstants::GetTEST()
+namespace CALO  =  CaloHLTConst; // just for easier notation
+namespace EMCAL =  CaloHLTConst::EmcalHLTConst;
+namespace PHOS  =  CaloHLTConst::PhosHLTConst;
 
 
 class AliHLTCaloConstants
 {
-
-private:
-  // extern static int TEST;
-  //  const static int TEST = 10;
-  // const int TEST = 10;
-  // int GetTEST() const {  return TEST; };
 public:
-  // const static int fgkTEST = 10;
-  const static int  fgkALTROMAXSAMPLES    =  1008;    /**<The maximum number of samples of the ALTRO*/   
-  const static int  fgkALTROMAXPRESAMPLES =  15;  //Constant 
-  const static int  fgkNGAINS = 2;
-  const static int  fgkHIGHGAIN = 1;
-  const static int  fgkLOWGAIN = 0;
-  const static int  fgkMAXBINVALUE = 1023; //Constant
-  const static int  fgkMAXHOSTS = 20; // For the onlinedisplay
-  const static int  fgkDEFAULTEVENTPORT = 42001;
-
-  //  const static int GetTEST()  {  return fgkTEST; }; 
   AliHLTCaloConstants();
   virtual ~AliHLTCaloConstants();
-   // virtual void InitConstants() = 0; 
+  virtual void InitConstants() = 0; 
 
-  static  Int_t GetALTROMAXSAMPLES()    { return  fgkALTROMAXSAMPLES; }; 
-  static  Int_t GetNGAINS()       { return fgkNGAINS; }; 	
-  static  Int_t GetHIGHGAIN()     { return fgkHIGHGAIN; };
-  static  Int_t GetLOWGAIN()      { return fgkLOWGAIN; }; 
-  static  Int_t GetMAXBINVALUE()  { return fgkMAXBINVALUE; }; 	
+  // Common PHOS / EMCAL stuff
+  static  Int_t GetALTROMAXSAMPLES()    { return CALO::ALTROMAXSAMPLES; }; 
+  static  Int_t GetNGAINS()             { return CALO::NGAINS; }; 	
+  static  Int_t GetHIGHGAIN()           { return CALO::HIGHGAIN; };
+  static  Int_t GetLOWGAIN()          { return CALO::LOWGAIN; }; 
+  static  Int_t GetMAXBINVALUE()      { return CALO::MAXBINVALUE; }; 	
+  static  Int_t GetCSPSPERFEE()       { return CALO::CSPSPERFEE; }; 			       		
+  static  Int_t GetNALTROS()           { return CALO::NALTROS; }; 					
+  static  Int_t GetNALTROCHANNELS()    { return CALO::NALTROCHANNELS; }; 					
+  static  Int_t GetNBRANCHES()         { return CALO::NBRANCHES; }; 	
 
-  
-  Int_t GetNDATATYPES() const { return fkNDATATYPES; } ; 				       	
-  Int_t GetCSPSPERFEE() const {  return fkCSPSPERFEE; }; 			       		
-  
-  Int_t GetNZROWSRCU() const { return fkNZROWSRCU;}
-  Int_t GetNXCOLUMNSRCU() const { return fkNXCOLUMNSRCU;} 
-  Int_t GetNZROWSMOD() const { return fkNZROWSMOD;} 
-  Int_t GetNXCOLUMNSMOD() const { return fkNXCOLUMNSMOD;} 
-  Int_t GetNMODULES() const { return fkNMODULES;} 
-  Int_t GetNRCUS() const { return fkNRCUS;} 
-  Int_t GetNRCUSPERMODULE() const { return fkNRCUSPERMODULE;} 
-  Int_t GetNRCUSPERTOTAL() const { return fkNRCUSPERTOTAL;} 
-  Int_t GetNFEECS() const { return fkNFEECS;} 
-  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
-  Int_t GetNALTROS() {  return fkNALTROS; }; 					
-  Int_t GetNALTROCHANNELS() const { return fkNALTROCHANNELS; }; 					
-  Int_t GetNBRANCHES() const { return fkNBRANCHES; }; 					
+  // Detector specific stuff
+
  
-  //   static AliHLTCaloConstants* Instance();
+  //  virtual Int_t GetNZROWSRCU() const      = 0; 
+  // virtual Int_t GetNXCOLUMNSRCU() const   = 0;
+  
+  // PHOS Only, bad move somewher else, PTH
+  virtual Int_t GetNZROWSRCU() const  { return   56 ; } ; 
+  virtual Int_t GetNXCOLUMNSRCU() const { return 16; } ;
+  // END PHOS Only
 
-   // EMCAL specific
+  virtual Int_t GetNZROWSMOD() const      = 0; 
+  virtual Int_t GetNXCOLUMNSMOD() const   = 0; 
+  virtual Int_t GetNMODULES() const       = 0; 
+  //  virtual Int_t GetNRCUS() const          = 0;
+  virtual Int_t GetNRCUSPERMODULE() const = 0;
+  //  virtual Int_t GetNRCUSPERTOTAL() const  = 0;
+  virtual Int_t GetNFEECS() const         = 0;
+  
+  Int_t GetDDLOFFSET() const { return fkDDLOFFSET; }
   Float_t GetCELLSTEP() const { return fkCELLSTEP; }
+  
+  //EMCAL specific, !! Move somewhere else, PTH
   Float_t GetMAXCELLSTEPETA() const { return fkMAXCELLSTEPETA; }  //FR
   Float_t GetMINCELLSTEPETA() const { return fkMINCELLSTEPETA; }  //FR
   Float_t GetCELLSTEPPHI() const { return fkCELLSTEPPHI; }        //FR
@@ -90,19 +109,16 @@ public:
   Float_t GetRADLENGTH() const { return fkRADLENGTH; }        //FR
   Float_t GetCRITICENERGY() const { return fkCRITICENERGY; }        //FR
   Float_t GetCJ() const { return fkCJ;} //FR
-  //  virtual Int_t GetDDLOFFSET() const = 0;
   TString GetDETNAME() { return fkDETNAME; };
-  
-  //  static AliHLTCaloConstants *fgInstance;
-
-  // AliHLTCaloConstants *fgInstance;
-
 
 protected:
-  
-
   TString fkDETNAME;
   Float_t fkCELLSTEP; //Constant
+  Int_t fkDDLOFFSET;   //Constant
+  
+  //EMCAL specific, !! Move somewhere else, PTH
+  // @todo: These variables should be declared constant, doesnt work right now
+  // because the default copy contructor is called somewhere.
   Float_t fkMAXCELLSTEPETA;
   Float_t fkMINCELLSTEPETA;
   Float_t fkCELLSTEPPHI;
@@ -111,41 +127,11 @@ protected:
   Float_t fkRADLENGTH;
   Float_t fkCRITICENERGY;
   Float_t fkCJ;
-  Int_t fkDDLOFFSET;   //Constant
-
-  Int_t fkNZROWSRCU; /**<Number of rows per module*/ 
-  Int_t fkNXCOLUMNSRCU;//Constant
-  Int_t fkNZROWSMOD;  /**<Number of rows per module*/ 
-  Int_t fkNXCOLUMNSMOD;  /**<Number of columns per module*/ 
-  Int_t fkNMODULES;   /**<Number of modules of the EMCAL detector*/
-  Int_t fkNRCUS;   /**<Number of RCUs per Module*/
-  Int_t fkNRCUSPERMODULE;   /**<Number of RCUs per Module*/
-  Int_t fkNRCUSPERTOTAL; /**<Total number of RCUs for EMCAL*/
-  Int_t fkNFEECS;  /**<Number of Frontend cards per branch*/
-
+  
 private:
-  const Int_t fkNALTROS;  /**<Number of ALTROs per frontend card*/
-  const Int_t fkNALTROCHANNELS;  //Constant
-  const Int_t fkNBRANCHES; //Constant
-  const Int_t fkCSPSPERFEE; //Constant
-  const Int_t fkNDATATYPES;          //Constant
-  const Int_t fkMAXHOSTS;                  //Constant
-  const Int_t fkDEFAULTEVENTPORT;          //Constant
-  ClassDef(AliHLTCaloConstants, 1);
+  
+  ClassDef(AliHLTCaloConstants, 1)
 };
-
-
-#define  ALTROMAXSAMPLES    AliHLTCaloConstants::fgkALTROMAXSAMPLES    /**<The maximum number of samples of the ALTRO*/   
-#define  ALTROMAXPRESAMPLES AliHLTCaloConstants::fgkALTROMAXPRESAMPLES  //Constant 
-#define  NGAINS             AliHLTCaloConstants::fgkNGAINS
-#define  HIGHGAIN           AliHLTCaloConstants::fgkHIGHGAIN
-#define  LOWGAIN            AliHLTCaloConstants::fgkLOWGAIN
-#define  MAXBINVALUE        AliHLTCaloConstants::fgkMAXBINVALUE //Constant
-#define  MAXHOSTS           AliHLTCaloConstants::fgkMAXHOSTS // For the onlinedisplay
-#define  DEFAULTEVENTPORT   AliHLTCaloConstants::fgkDEFAULTEVENTPORT
-
-//#define TEST  AliHLTCaloConstants::GetTEST()
-//#define TEST  AliHLTCaloConstants::TEST
 
 
 

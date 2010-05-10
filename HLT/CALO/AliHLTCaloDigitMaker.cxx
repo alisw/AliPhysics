@@ -167,6 +167,7 @@ AliHLTCaloDigitMaker::SetGlobalHighGainFactor(Float_t factor)
     }
 }
 
+
 void
 AliHLTCaloDigitMaker::SetGlobalLowGainFactor(Float_t factor)
 {
@@ -179,6 +180,7 @@ AliHLTCaloDigitMaker::SetGlobalLowGainFactor(Float_t factor)
 	}
     }
 }
+
 
 void
 AliHLTCaloDigitMaker::SetBadChannelMask(TH2F* badChannelHGHist, TH2F* badChannelLGHist, Float_t qCut)

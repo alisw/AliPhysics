@@ -22,7 +22,8 @@
 #ifndef ALIHLTEMCALCONSTANTS_H
 #define ALIHLTEMCALCONSTANTS_H
 
-class AliHLTCaloConstants;
+
+#include "AliHLTCaloConstants.h"
 
 
 class AliHLTEMCALConstants : public AliHLTCaloConstants
@@ -31,7 +32,15 @@ class AliHLTEMCALConstants : public AliHLTCaloConstants
 public:
   AliHLTEMCALConstants();
   ~AliHLTEMCALConstants();
+  virtual Int_t GetNZROWSMOD() const      { return EMCAL::NZROWSMOD;} 
+  virtual Int_t GetNXCOLUMNSMOD() const   { return EMCAL::NXCOLUMNSMOD;}; 
+  virtual Int_t GetNMODULES() const       { return EMCAL::NMODULES; }; 
+  virtual Int_t GetNRCUSPERMODULE() const { return EMCAL::NRCUSPERMODULE;};
+  virtual Int_t GetNFEECS() const         { return EMCAL::NFEECS; } ;
   virtual void InitConstants(); 
+ 
+private:
+  
   ClassDef(AliHLTEMCALConstants, 1)
 };
 

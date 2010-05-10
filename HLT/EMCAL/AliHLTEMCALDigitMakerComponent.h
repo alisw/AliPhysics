@@ -31,7 +31,8 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTCaloProcessor.h"
-#include "AliHLTCaloConstantsHandler.h"
+
+//#include "AliHLTCaloConstantsHandler.h"
 
 class AliEMCALCalibData;
 class AliCaloCalibPedestal;
@@ -86,7 +87,8 @@ class AliHLTCaloDigitContainerDataStruct;
  * @ingroup alihlt_emcal
  */ 
 
-class AliHLTEMCALDigitMakerComponent : public AliHLTCaloProcessor, public AliHLTCaloConstantsHandler
+//class AliHLTEMCALDigitMakerComponent : public AliHLTCaloProcessor, public AliHLTCaloConstantsHandler
+class AliHLTEMCALDigitMakerComponent : public AliHLTCaloProcessor
 {
 public:
 
