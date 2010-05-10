@@ -213,7 +213,8 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
   {
     AliMUONPad* pad = cluster.Pad(j);
     //if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
-    if ( pad->Status() != AliMUONClusterFinderMLEM::GetUseForFitFlag()) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::GetUseForFitFlag() ||
+         pad->Charge() == 0 ) continue;
     if (iflag == 0) {
       if ( pad->IsReal() ) npads++; // exclude virtual pads
       qTot += pad->Charge(); 
