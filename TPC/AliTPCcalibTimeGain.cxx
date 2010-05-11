@@ -314,9 +314,10 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
-        
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    if (!friendTrack) continue;        
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = track->GetOuterParam();
+    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
     if (!trackIn) continue;
     if (!trackOut) continue;
 
@@ -331,8 +332,6 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
     if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
     
     // Get seeds
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
-    if (!friendTrack) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
@@ -378,9 +377,11 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    if (!friendTrack) continue;
         
     const AliExternalTrackParam * trackIn = track->GetInnerParam();
-    const AliExternalTrackParam * trackOut = track->GetOuterParam();
+    const AliExternalTrackParam * trackOut = friendTrack->GetTPCOut();
     if (!trackIn) continue;
     if (!trackOut) continue;
 
@@ -395,8 +396,6 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
     
     // Get seeds
-    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
-    if (!friendTrack) continue;
     TObject *calibObject;
     AliTPCseed *seed = 0;
     for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {

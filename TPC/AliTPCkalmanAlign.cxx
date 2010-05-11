@@ -49,7 +49,8 @@
 #include "TVectorD.h"
 #include "TClonesArray.h"
 
-
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalROC.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBManager.h"
@@ -57,6 +58,7 @@
 #include "AliCDBEntry.h"
 #include "AliAlignObjParams.h"
 #include "AliTPCROC.h"
+#include "AliTracker.h"
 #include "TFile.h"
 #include "TLinearFitter.h"
 #include "AliTPCcalibAlign.h"
@@ -181,6 +183,22 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
   //
   AliTPCkalmanAlign &kalmanAlign=*this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("AliTPCkalmanAlign.root");
+  //
+  // get ce info
+  //
+  AliTPCCalPad *padTime0 = AliTPCcalibDB::Instance()->GetPadTime0();
+  TVectorD paramCE[72];
+  TMatrixD covarCE[72];
+  Float_t chi2;
+  for (Int_t isec=0; isec<72; isec++){
+    AliTPCCalROC * roc0  = padTime0->GetCalROC(isec);
+    roc0->GlobalFit(0,kFALSE,paramCE[isec],covarCE[isec],chi2,0);
+    (*pcstream)<<"ceFit"<<
+      "isec="<<isec<<
+      "p0.="<<&paramCE[isec]<<
+      "\n";
+  }
+
   DumpOldAlignment(pcstream);
   const Int_t kMinEntries=400;
   TMatrixD vec[5];
@@ -192,6 +210,7 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
   //
   TVectorD delta(5);
   TVectorD rms(5);
+  TVectorD stat(5);
   TH1 * his=0;
   for (Int_t is0=0;is0<72;is0++)
     for (Int_t is1=0;is1<72;is1++){
@@ -201,57 +220,32 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
       if (!his) continue;
       if (his->GetEntries()<kMinEntries) continue;
       delta[0]=his->GetMean();
+      rms[0]=his->GetRMS();
+      stat[0]=his->GetEntries();
       kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[0],cov[0]);
       //     
       his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kZ,is0,is1);
       if (!his) continue;
       delta[1]=his->GetMean();
+      rms[1]=his->GetRMS();
+      stat[1]=his->GetEntries();
       kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[1],cov[1]);
       //
       his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kPhi,is0,is1);
       if (!his) continue;
       delta[2] = his->GetMean();
+      rms[2]=his->GetRMS();
+      stat[2]=his->GetEntries();
       kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[2],cov[2]);
       //
       his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kTheta,is0,is1);
       if (!his) continue;
       delta[3] = his->GetMean();       
+      rms[3]=his->GetRMS();
+      stat[3]=his->GetEntries();
       kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[3],cov[3]);
     }  
-  for (Int_t is0=0;is0<72;is0++)
-    for (Int_t is1=0;is1<72;is1++){
-      //
-      //
-      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kY,is0,is1);
-      if (!his) continue;
-      if (his->GetEntries()<kMinEntries) continue;
-      delta[0]=his->GetMean();
-      kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[0],cov[0]);
-      //     
-      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kZ,is0,is1);
-      if (!his) continue;
-      delta[1]=his->GetMean();
-      kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[1],cov[1]);
-      //
-      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kPhi,is0,is1);
-      if (!his) continue;
-      delta[2] = his->GetMean();
-      kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[2],cov[2]);
-      //
-      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kTheta,is0,is1);
-      if (!his) continue;
-      delta[3] = his->GetMean();       
-      kalmanAlign.UpdateAlign1D(his->GetMean(),his->GetRMS(),is0,is1, vec[3],cov[3]);
-      (*pcstream)<<"kalmanAlignDebug"<<
-	"is0="<<is0<<
-	"is1="<<is1<<
-	"delta.="<<&delta<<
-	"vec0.="<<&vec[0]<<
-	"vec1.="<<&vec[1]<<
-	"vec2.="<<&vec[2]<<
-	"vec3.="<<&vec[3]<<
-	"\n";
-    }
+
   fDelta1D[0] = (TMatrixD*)vec[0].Clone();
   fDelta1D[1] = (TMatrixD*)vec[1].Clone();
   fDelta1D[2] = (TMatrixD*)vec[2].Clone();
@@ -261,6 +255,65 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
   fCovar1D[1] = (TMatrixD*)cov[1].Clone();
   fCovar1D[2] = (TMatrixD*)cov[2].Clone();
   fCovar1D[3] = (TMatrixD*)cov[3].Clone();
+
+  MakeNewAlignment(kTRUE);
+
+  for (Int_t is0=0;is0<72;is0++)
+    for (Int_t is1=0;is1<72;is1++){
+      Bool_t isPair=kFALSE;
+      if (TMath::Abs(is0%18-is1%18)<2) isPair=kTRUE;
+      if (TMath::Abs(is0%18-is1%18)==17) isPair=kTRUE;
+      if (!isPair) continue;
+      stat[0]=0; stat[1]=0; stat[2]=0; stat[3]=0; 
+      //
+      //
+      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kY,is0,is1);
+      if (his){
+	delta[0]=his->GetMean();
+	rms[0]=his->GetRMS();
+	stat[0]=his->GetEntries();
+      }
+      //     
+      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kZ,is0,is1);
+      if (his) {
+	delta[1]=his->GetMean();
+	rms[1]=his->GetRMS();
+	stat[1]=his->GetEntries();
+      }
+      //
+      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kPhi,is0,is1);
+      if (his){
+	delta[2] = his->GetMean();
+	rms[2]=his->GetRMS();
+	stat[2]=his->GetEntries();
+      }
+      //
+      his = kalmanAlign.fCalibAlign->GetHisto(AliTPCcalibAlign::kTheta,is0,is1);
+      if (his){
+	delta[3] = his->GetMean();       
+	rms[3]=his->GetRMS();
+	stat[3]=his->GetEntries();
+      }
+      Int_t run = AliCDBManager::Instance()->GetRun();
+      Float_t bz = AliTracker::GetBz();
+      (*pcstream)<<"kalmanAlignDebug"<<
+	"run="<<run<<
+	"bz="<<bz<<
+	"is0="<<is0<<
+	"is1="<<is1<<
+	"delta.="<<&delta<<
+	"rms.="<<&rms<<
+	"stat.="<<&stat<<
+	"vec0.="<<&vec[0]<<
+	"vec1.="<<&vec[1]<<
+	"vec2.="<<&vec[2]<<
+	"vec3.="<<&vec[3]<<
+	"pceIn0.="<<&paramCE[is0%36]<<
+	"pceOut0.="<<&paramCE[is0%36+36]<<
+	"pceIn1.="<<&paramCE[is1%36]<<
+	"pceOut1.="<<&paramCE[is1%36+36]<<
+	"\n";
+    }
   delete pcstream;
 }
 
@@ -529,7 +582,7 @@ void AliTPCkalmanAlign::MakeNewAlignment(Bool_t badd, TTreeSRedirector * pcstrea
   fNewAlign = (TClonesArray*)fOriginalAlign->Clone();
   for (Int_t i=0; i<fOriginalAlign->GetEntries();i++){
     AliAlignObjParams *params = (AliAlignObjParams*)fOriginalAlign->At(i);
-    AliAlignObjParams *paramsNew = (AliAlignObjParams*)fNewAlign->At(i);
+    //AliAlignObjParams *paramsNew = (AliAlignObjParams*)fNewAlign->At(i);
     params->GetVolUID(idLayer,idModule);
     Int_t sector=(Int_t)idModule;
     if (idLayer>7) sector+=36;
@@ -544,17 +597,21 @@ void AliTPCkalmanAlign::MakeNewAlignment(Bool_t badd, TTreeSRedirector * pcstrea
       localTransNew=localTrans;
       localRotNew=localRot;
     }
-//     localTrans[1]=localTrans[1]-(*fDelta1D[0])[sector];
-//     localRot[0]  =localRot[0]-(*fDelta1D[0])[sector];
+    localTransNew[1]=localTransNew[1]-((*fDelta1D[0])(sector,0));
+    localRot[0]  =localRot[0]-(*fDelta1D[2])(sector,0);
     //
-    if (pcstream) (*pcstream)<<"newAlign"<<
+    if (pcstream) (*pcstream)<<"alignParams"<<
       //"idLayer="<<idLayer<<
       "idModule="<<idModule<<
       "sector="<<sector<<
       "olT.="<<&localTrans<<
-      "ogT.="<<&localTrans<<
       "olR.="<<&localRot<<
+      "ogT.="<<&localTrans<<
       "ogR.="<<&globalRot<<
+      "nlT.="<<&localTransNew<<
+      "nlR.="<<&localRotNew<<
+      "ngT.="<<&localTransNew<<
+      "ngR.="<<&globalRotNew<<
       "\n";
   }
   

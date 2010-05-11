@@ -351,13 +351,13 @@ void AliXRDPROOFtoolkit::CheckFiles (const char*fileIn, Int_t checkLevel, const 
 
       if(checkLevel>0 && !f->IsZombie()){
 	level=2;
-	if(checkLevel>1 && treeToRetrieve!="" && (getTree=(TTree*)f->Get(treeToRetrieve))!=0x0){
+	if(checkLevel>1 && (getTree=(TTree*)f->Get(treeToRetrieve))!=0x0){
 	  level=3;
 	  Int_t tentries = getTree->GetEntries();
 	  if (tentries>=0) level=4;
 	  cout<<"Number of entries :"<<getTree->GetEntries()<<endl;  
 	  
-	  if(checkLevel>3 && varexp!="" &&tentries>0) {
+	  if(checkLevel>3  &&tentries>0) {
 	    getTree->SetBranchStatus("*",1);	    
 	    try{
 	      TH1F his("his","his",100,-1,1);
