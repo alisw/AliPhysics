@@ -450,28 +450,32 @@ void AliTRDinfoGen::UserExec(Option_t *){
   for(Int_t iv0(0); iv0<fESDev->GetNumberOfV0s(); iv0++){
     if(!(v0 = fESDev->GetV0(iv0))) continue;
 
+    // purge V0 irelevant for TRD
+    Int_t jb(0); AliTRDtrackInfo *ti(NULL);
+    for(Int_t ib(0); ib<nBarrel; ib++){ 
+      ti =   (AliTRDtrackInfo*)fTracksBarrel->At(ib);
+      Int_t id(ti->GetTrackId());
+      if(id!=v0->GetPindex() && id!=v0->GetNindex()) continue; 
+      kFOUND=kTRUE; ti->SetV0(); jb=ib+1;
+      break;
+    }
+    if(!kFOUND) continue;
+
+    // register v0
     if(fV0Cut) new(fV0Info) AliTRDv0Info(*fV0Cut);
     else new(fV0Info) AliTRDv0Info();
     fV0Info->SetMagField(bField);
     fV0Info->SetV0tracks(fESDev->GetTrack(v0->GetPindex()), fESDev->GetTrack(v0->GetNindex()));
     fV0Info->SetV0Info(v0);
-    // purge V0 irelevant for TRD
-    for(Int_t ib(0); ib<nBarrel; ib++){ 
-      if(fV0Info->HasTrack((AliTRDtrackInfo*)fTracksBarrel->At(ib))){
-        kFOUND=kTRUE;
-        break;
-      }
+    // mark the other leg too 
+    for(Int_t ib(jb); ib<nBarrel; ib++){ 
+      ti =   (AliTRDtrackInfo*)fTracksBarrel->At(ib);
+      if(!fV0Info->HasTrack(ti)) continue;
+      ti->SetV0();
+      break;
     }
-    if(!kFOUND){
-      for(Int_t ik(0); ik<nKink; ik++){ 
-        if(fV0Info->HasTrack((AliTRDtrackInfo*)fTracksKink->At(ik))){
-          kFOUND=kTRUE;
-          break;
-        }
-      }
-    }
-    if(!kFOUND) continue;
-    fV0List->Add(new AliTRDv0Info(*fV0Info));
+    //fV0Info->Print("a");
+    fV0List->Add(new AliTRDv0Info(*fV0Info)); kFOUND=kFALSE;
   }
 
   // LOOP 2 - over MC tracks which are passing TRD where the track is not reconstructed
@@ -531,7 +535,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
     delete[] trackMap;
   }
-  AliDebug(2, Form(
+  AliDebug(1, Form(
     "\nEv[%3d] Tracks: ESD[%d] MC[%d] V0[%d]\n"
     "        TPCout[%d] TRDin[%d] TRDout[%d]\n"
     "        Barrel[%3d+%3d=%3d] SA[%2d+%2d=%2d] Kink[%2d+%2d=%2d]"

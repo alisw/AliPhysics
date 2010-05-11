@@ -375,7 +375,7 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(2))->cd();
     h1 = h2->ProjectionX("hdx_pxx"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
     h1->SetYTitle("<#deltax> [#mum]");
-    h1->SetXTitle("t_{drift} [#mus]");
+    h1->SetXTitle("t_{drift} [tb]");
     //h1->GetXaxis()->SetRange(2, AliTRDseedV1::kNtb-1); 
     h1->Draw("pc");
 
@@ -397,7 +397,7 @@ Bool_t AliTRDclusterResolution::GetRefFigure(Int_t ifig)
     ((TVirtualPad*)l->At(3))->cd();
     h1 = h2->ProjectionX("hdy_pxx"); h1->Scale(1.e4/kND); h1->SetMarkerStyle(24);
     h1->SetYTitle("<#deltay> [#mum]");
-    h1->SetXTitle("t_{drift} [#mus]");
+    h1->SetXTitle("t_{drift} [tb]");
     //h1->GetXaxis()->SetRange(2, AliTRDseedV1::kNtb-1); 
     h1->Draw("pc");
 
@@ -1193,7 +1193,7 @@ void AliTRDclusterResolution::ProcessMean()
 
         h1 = (TH1D*)h3->Project3D("z");
         Int_t entries = (Int_t)h1->Integral();
-        if(entries < 150) continue;
+        if(entries < 50) continue;
         //Adjust(&f, h1);
         h1->Fit(&f, "QN");
 

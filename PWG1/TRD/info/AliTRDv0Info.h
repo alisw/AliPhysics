@@ -64,12 +64,13 @@ public:
   virtual ~AliTRDv0Info(){}
   
   Int_t  GetPID(Int_t ipart, AliTRDtrackInfo *track);
-  Bool_t HasTrack(AliTRDtrackInfo * const track);
+  Int_t  HasTrack(AliTRDtrackInfo * const track);
+  Int_t  HasTrack(Int_t ti);
 
-  void   Print(Option_t *opt=0x0) const;
+  void   Print(Option_t *opt="") const;
 
   void   SetMagField(Float_t b) {fMagField = b;}
-  void   SetV0tracks(AliESDtrack *p, AliESDtrack *n) {fTrackP = p; fTrackN = n;}
+  void   SetV0tracks(AliESDtrack *p, AliESDtrack *n);
 
   //Set values of measured/calculated variables:
   void SetQuality(Int_t SQuality){fQuality = SQuality;}

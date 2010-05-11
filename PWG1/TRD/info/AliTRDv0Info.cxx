@@ -384,15 +384,21 @@ Float_t AliTRDv0Info::PsiPair(AliESDv0 *esdv0)
 }
 
 //_________________________________________________
-Bool_t AliTRDv0Info::HasTrack(AliTRDtrackInfo * const track)
+Int_t AliTRDv0Info::HasTrack(AliTRDtrackInfo * const track)
 {
 //Checks if track is a secondary vertex daughter (due to V0 finder)
   
   Int_t trackID(track->GetTrackId());//index of the track
+  return HasTrack(trackID);
+}
 
+//_________________________________________________
+Int_t AliTRDv0Info::HasTrack(Int_t trackID)
+{
   //comparing index of track with indices of pos./neg. V0 daughter :
-  if((fNindex == trackID)||(fPindex == trackID)) return kTRUE;
-  return kFALSE;
+  if(fNindex==trackID) return -1;
+  else if(fPindex==trackID) return 1;
+  else return 0;
 }
 
 //_________________________________________________
@@ -518,13 +524,12 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
   
   if(!(track)) {
     AliError("No track info");
-    return 0;
+    return -1;
   }
   if(!HasTrack(track)){
     AliDebug(2, "Track not attached to v0.");
-    return 0;
+    return -1;
   }
-  Int_t trackID(track->GetTrackId());
 
   //translate ipart to decay (Anti-Lambda will be treated separately)
   Int_t iDecay = -1;
@@ -534,27 +539,28 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
   case AliPID::kProton: iDecay = kLambda; break;
   default:
     AliWarning(Form("Hypothesis \"ipart=%d\" not handled", ipart));
-    return 0;
+    return -1;
   }
 
   //... it fulfills our quality criteria
-  if(!(fQuality == 1)) return 0;
+  if(!(fQuality == 1)) return -1;
   //... distance of closest approach between daughters is reasonably small
-  if((fDCA > fUpDCA[iDecay])) return 0;
+  if((fDCA > fUpDCA[iDecay])) return -1;
   //... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
-  if((fPointingAngle > fUpPointingAngle[iDecay])) return 0;
+  if((fPointingAngle > fUpPointingAngle[iDecay])) return -1;
   //... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
-  if((fRadius < fDownRadius[iDecay])) return 0;
+  if((fRadius < fDownRadius[iDecay])) return -1;
   //...or smaller than a maximum value (for K0s)
-  if((fRadius > fUpRadius[iDecay])) return 0;
+  if((fRadius > fUpRadius[iDecay])) return -1;
   //... opening angle is close enough to zero (for conversions)
-  if((fOpenAngle > fUpOpenAngle[iDecay])) return 0;
+  if((fOpenAngle > fUpOpenAngle[iDecay])) return -1;
   //... Psi-pair angle is close enough to zero(for conversions)
-  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay])) return 0;
+  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay])) return -1;
 
 
   //Mother momentum slots above/below 2.5 GeV
   Int_t iPSlot(fV0Momentum > 2.5);
+  Int_t trackID(track->GetTrackId());
 
   //specific cut criteria :
   if(ipart == AliPID::kProton) {
@@ -605,7 +611,31 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
 
 
 //_________________________________________________
-void AliTRDv0Info::Print(Option_t */*opt*/) const
+void AliTRDv0Info::Print(Option_t *opt) const
 {
-
+  printf("V0 P[%d] N[%d]\n", fPindex, fNindex);
+  printf("  DCA[%5.3f] Radius[%5.3f]\n", fDCA, fRadius);
+  printf("  Angles : Pointing[%5.3f] Open[%5.3f] Psi[%5.3f]\n", fPointingAngle, fOpenAngle, fPsiPair);
+  if(strcmp(opt, "a")!=0) return;
+  printf("  Reconstructed PID\n"
+         "  sgn spec   ITS   TPC   TOF   COM\n");
+  for(Int_t idt=0; idt<kNDaughters; idt++){
+    printf("   %c", idt?'-':'+');
+    for(Int_t is(0); is<AliPID::kSPECIES; is++){ 
+      printf("%s%s%s", is==0?"   ":"       ", AliPID::ParticleShortName(is), (is==1||is==2)?"  ":"   ");
+      for(Int_t id(0); id<kNDetectors; id++){
+        printf("%5.1f ", 1.e2*fDetPID[idt][id][is]);
+      }
+      printf("%5.1f\n", 1.e2*fComPID[idt][is]);
+    }
+  }
 }
+
+//_________________________________________________
+void AliTRDv0Info::SetV0tracks(AliESDtrack *p, AliESDtrack *n) 
+{
+  fTrackP = p; fPindex = p->GetID();
+  fTrackN = n; fNindex = n->GetID();
+}
+
+

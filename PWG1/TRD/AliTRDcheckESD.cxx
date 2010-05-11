@@ -1101,11 +1101,16 @@ void AliTRDcheckESD::Terminate(Option_t *)
 Int_t AliTRDcheckESD::Pdg2Idx(Int_t pdg)
 {
   switch(pdg){
-  case kElectron: return AliPID::kElectron;  
+  case kElectron: 
+  case kPositron: return AliPID::kElectron;  
+  case kMuonPlus:
   case kMuonMinus: return AliPID::kMuon;  
-  case kPiPlus: return AliPID::kPion;  
-  case kKPlus: return AliPID::kKaon;
-  case kProton: return AliPID::kProton;
+  case kPiPlus: 
+  case kPiMinus: return AliPID::kPion;  
+  case kKPlus: 
+  case kKMinus: return AliPID::kKaon;
+  case kProton: 
+  case kProtonBar: return AliPID::kProton;
   } 
   return -1;
 }

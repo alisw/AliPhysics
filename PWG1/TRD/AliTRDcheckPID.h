@@ -42,7 +42,8 @@ public:
     ,kEfficiencyPi     =  9     // pi Efficiency plot
     ,kEfficiencyKa     =  10    // K Efficiency plot
     ,kEfficiencyPr     =  11    // pr Efficiency plot
-    ,kNPlots           =  12    // Number of plots for this tasks 
+    ,kV0               =  12    // V0 performance
+    ,kNPlots           =  13    // Number of plots for this tasks 
   };
   AliTRDcheckPID();
   AliTRDcheckPID(char* name);
@@ -63,6 +64,7 @@ public:
   TH1 *PlotNTracklets(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMom(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotMomBin(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotV0(const AliTRDtrackV1 *track = 0x0);
 
   void SetRequireMinNTracklets(Int_t mintracklets) { fMinNTracklets = mintracklets; }
   void SetRequireMaxNTracklets(Int_t maxtracklets) { fMaxNTracklets = maxtracklets; }
