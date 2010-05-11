@@ -11,8 +11,8 @@ AliAnalysisGrid* CreateAlienHandler() {
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-2");
-  plugin->SetAliROOTVersion("v4-19-10-AN");
+  plugin->SetROOTVersion("v5-26-00b-5");
+  plugin->SetAliROOTVersion("v4-19-12-AN");
 
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -39,7 +39,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   //plugin->AddDataFile("hijingWithoutFlow10000Evts.xml");
   //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  plugin->SetGridWorkingDir("realData/900GeV");
+  plugin->SetGridWorkingDir("realData");
   // Declare alien output directory. Relative to working directory.
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
