@@ -610,13 +610,10 @@ void AliCumulantsFunctions::Calculate()
        //cout<<"v'_2/2{2} = "<<v2ptRP[b]<<"%, "<<" "<<"sd{2} = "<<100.*sdRPDiff2pt[b]<<"%"<<endl;
        fdfr2->SetBinContent(b+1,v2ptRP[b]);
        fdfr2->SetBinError(b+1,sdRPDiff2pt[b]);
-       //common histogram:
+       //common histogram (to be removed):
        fchr2nd->FillDifferentialFlow(b+1,v2ptRP[b],sdRPDiff2pt[b]);
-       
-  
-       //abTempDeleteMe
-       fchr2nd->FillDifferentialFlowPtRP(b+1,v2ptRP[b],sdRPDiff2pt[b]);      
-       //abTempDeleteMe
+       // Fill common result histogram:
+       if(TMath::Abs(v2ptRP[b])>1.e-44) fchr2nd->FillDifferentialFlowPtRP(b+1,v2ptRP[b],sdRPDiff2pt[b]);      
        
       } else {
          //cout<<"v'_2/2{2} = Im"<<endl;
@@ -638,16 +635,10 @@ void AliCumulantsFunctions::Calculate()
        //cout<<"v'_2/2{4} = "<<v4ptRP[b]<<"%, "<<" "<<"sd{4} = "<<100.*sdRPDiff4pt[b]<<"%"<<endl;
        fdfr4->SetBinContent(b+1,v4ptRP[b]);
        fdfr4->SetBinError(b+1,sdRPDiff4pt[b]);
-       //common histogram:
+       //common histogram (to be removed):
        fchr4th->FillDifferentialFlow(b+1,v4ptRP[b],sdRPDiff4pt[b]);
-       
-       
-       
-       //abTempDeleteMe
-       fchr4th->FillDifferentialFlowPtRP(b+1,v4ptRP[b],sdRPDiff4pt[b]);
-       //abTempDeleteMe
-       
-       
+       // Fill common result histogram:
+       if(TMath::Abs(v4ptRP[b])>1.e-44) fchr4th->FillDifferentialFlowPtRP(b+1,v4ptRP[b],sdRPDiff4pt[b]);
        
       } else {
          //cout<<"v'_2/2{4} = Im"<<endl;
@@ -661,17 +652,10 @@ void AliCumulantsFunctions::Calculate()
       //cout<<"v'_2/2{6} = "<<100.*ptRPDiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)))<<"%"<<endl;
       v6ptRP[b]=ptRPDiffCumulant6[b]/(4.*pow((1./4.)*cumulant[2],(5./6.)));
       fdfr6->SetBinContent(b+1,v6ptRP[b]);
-      //common histogram:
+      //common histogram (to be removed):
       fchr6th->FillDifferentialFlow(b+1,v6ptRP[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr6th->FillDifferentialFlowPtRP(b+1,v6ptRP[b],0.);
-      //abTempDeleteMe
-      
-      
-      
+      // Fill common result histogram:
+      if(TMath::Abs(v6ptRP[b])>1.e-44) fchr6th->FillDifferentialFlowPtRP(b+1,v6ptRP[b],0.);
       
     }else{
       //cout<<"v'_2/2{6} = Im"<<endl;
@@ -682,16 +666,10 @@ void AliCumulantsFunctions::Calculate()
       //cout<<"v'_2/2{8} = "<<-100.*ptRPDiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.)))<<"%"<<endl;
       v8ptRP[b]=-ptRPDiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.))); 
       fdfr8->SetBinContent(b+1,v8ptRP[b]);
-      //common histogram:
+      //common histogram (to be removed):
       fchr8th->FillDifferentialFlow(b+1,v8ptRP[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr8th->FillDifferentialFlowPtRP(b+1,v8ptRP[b],0.);
-      //abTempDeleteMe
-      
-      
+      // Fill common result histogram:
+      if(TMath::Abs(v8ptRP[b])>1.e-44) fchr8th->FillDifferentialFlowPtRP(b+1,v8ptRP[b],0.);
       
     }else{
       //cout<<"v'_2/2{8} = Im"<<endl;
@@ -861,13 +839,9 @@ void AliCumulantsFunctions::Calculate()
        //fdfr2->SetBinContent(b+1,v2etaRP[b]);
        //fdfr2->SetBinError(b+1,sdDiff2eta[b]);
        //common histogram:
-       //fchr2nd->FillDifferentialFlow(b+1,v2etaRP[b],sdDiff2eta[b]);
-       
-       
-       //abTempDeleteMe
-       fchr2nd->FillDifferentialFlowEtaRP(b+1,v2etaRP[b],sdRPDiff2eta[b]);       
-       //abTempDeleteMe
-       
+       //fchr2nd->FillDifferentialFlow(b+1,v2etaRP[b],sdDiff2eta[b])
+       // Fill common result histogram:
+       if(TMath::Abs(v2etaRP[b])>1.e-44) fchr2nd->FillDifferentialFlowEtaRP(b+1,v2etaRP[b],sdRPDiff2eta[b]);       
        
       } else {
          //cout<<"v'_2/2{2} = Im"<<endl;
@@ -891,14 +865,8 @@ void AliCumulantsFunctions::Calculate()
        //fdfr4->SetBinError(b+1,sdDiff4eta[b]);
        //common histogram:
        //fchr4th->FillDifferentialFlow(b+1,v4eta[b],sdDiff4eta[b]);
-       
-       
-       
-       //abTempDeleteMe
-       fchr4th->FillDifferentialFlowEtaRP(b+1,v4etaRP[b],sdRPDiff4eta[b]);
-       //abTempDeleteMe
-       
-       
+       // Fill common result histogram:
+       if(TMath::Abs(v4etaRP[b])>1.e-44) fchr4th->FillDifferentialFlowEtaRP(b+1,v4etaRP[b],sdRPDiff4eta[b]);
        
       } else {
          //cout<<"v'_2/2{4} = Im"<<endl;
@@ -914,16 +882,9 @@ void AliCumulantsFunctions::Calculate()
       //fdfr6->SetBinContent(b+1,v6eta[b]);
       //common histogram:
       //fchr6th->FillDifferentialFlow(b+1,v6eta[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr6th->FillDifferentialFlowEtaRP(b+1,v6etaRP[b],0.);
-      //abTempDeleteMe
-      
-      
-      
-      
+      // Fill common result histogram:
+      if(TMath::Abs(v6etaRP[b])>1.e-44) fchr6th->FillDifferentialFlowEtaRP(b+1,v6etaRP[b],0.);
+    
     }else{
       //cout<<"v'_2/2{6} = Im"<<endl;
     }     
@@ -934,15 +895,9 @@ void AliCumulantsFunctions::Calculate()
       v8etaRP[b]=-etaRPDiffCumulant8[b]/(33.*pow(-(1./33.)*cumulant[3],(7./8.))); 
       //fdfr8->SetBinContent(b+1,v8eta[b]);
       //common histogram:
-      //fchr8th->FillDifferentialFlow(b+1,v8eta[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr8th->FillDifferentialFlowEtaRP(b+1,v8etaRP[b],0.);
-      //abTempDeleteMe
-      
-      
+      //fchr8th->FillDifferentialFlow(b+1,v8eta[b],0.);      
+      // Fill common result histogram:
+      if(TMath::Abs(v8etaRP[b])>1.e-44) fchr8th->FillDifferentialFlowEtaRP(b+1,v8etaRP[b],0.);
       
     }else{
       //cout<<"v'_2/2{8} = Im"<<endl;
@@ -1157,14 +1112,10 @@ void AliCumulantsFunctions::Calculate()
        fdfr2->SetBinContent(b+1,v2pt[b]);
        fdfr2->SetBinError(b+1,sdDiff2pt[b]);
        //common histogram:
-       fchr2nd->FillDifferentialFlow(b+1,v2pt[b],sdDiff2pt[b]);
-       
-       
-       //abTempDeleteMe
-       fchr2nd->FillDifferentialFlowPtPOI(b+1,v2pt[b],sdDiff2pt[b]);        
-       //abTempDeleteMe
-       
-       
+       fchr2nd->FillDifferentialFlow(b+1,v2pt[b],sdDiff2pt[b]);       
+       // Fill common result histogram:
+       if(TMath::Abs(v2pt[b])>1.e-44) fchr2nd->FillDifferentialFlowPtPOI(b+1,v2pt[b],sdDiff2pt[b]);        
+      
       } else {
         //cout<<"v'_2/2{2} = Im"<<endl;
       }
@@ -1187,15 +1138,9 @@ void AliCumulantsFunctions::Calculate()
        fdfr4->SetBinError(b+1,sdDiff4pt[b]);
        //common histogram:
        fchr4th->FillDifferentialFlow(b+1,v4pt[b],sdDiff4pt[b]);
-       
-       
-       
-       //abTempDeleteMe
-       fchr4th->FillDifferentialFlowPtPOI(b+1,v4pt[b],sdDiff4pt[b]);
-       //abTempDeleteMe
-       
-       
-       
+       // Fill common result histogram:
+       if(TMath::Abs(v4pt[b])>1.e-44) fchr4th->FillDifferentialFlowPtPOI(b+1,v4pt[b],sdDiff4pt[b]);
+          
       } else {
          //cout<<"v'_2/2{4} = Im"<<endl;
       } 
@@ -1210,15 +1155,8 @@ void AliCumulantsFunctions::Calculate()
       fdfr6->SetBinContent(b+1,v6pt[b]);
       //common histogram:
       fchr6th->FillDifferentialFlow(b+1,v6pt[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr6th->FillDifferentialFlowPtPOI(b+1,v6pt[b],0.);
-      //abTempDeleteMe
-      
-      
-      
+      // Fill common result histogram:
+      if(TMath::Abs(v6pt[b])>1.e-44) fchr6th->FillDifferentialFlowPtPOI(b+1,v6pt[b],0.);
       
     }else{
       //cout<<"v'_2/2{6} = Im"<<endl;
@@ -1231,14 +1169,8 @@ void AliCumulantsFunctions::Calculate()
       fdfr8->SetBinContent(b+1,v8pt[b]);
       //common histogram:
       fchr8th->FillDifferentialFlow(b+1,v8pt[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr8th->FillDifferentialFlowPtPOI(b+1,v8pt[b],0.);
-      //abTempDeleteMe
-      
-      
+      // Fill common result histogram:
+       if(TMath::Abs(v8pt[b])>1.e-44) fchr8th->FillDifferentialFlowPtPOI(b+1,v8pt[b],0.);
       
     }else{
       //cout<<"v'_2/2{8} = Im"<<endl;
@@ -1382,13 +1314,9 @@ void AliCumulantsFunctions::Calculate()
        fdfr2->SetBinContent(b+1,v2eta[b]);
        fdfr2->SetBinError(b+1,sdDiff2eta[b]);
        //common histogram:
-       //fchr2nd->FillDifferentialFlow(b+1,v2eta[b],sdDiff2eta[b]);
-       
-       
-       //abTempDeleteMe
-       fchr2nd->FillDifferentialFlowEtaPOI(b+1,v2eta[b],sdDiff2eta[b]);       
-       //abTempDeleteMe
-       
+       //fchr2nd->FillDifferentialFlow(b+1,v2eta[b],sdDiff2eta[b]);        
+       // Fill common result histogram:
+       if(TMath::Abs(v2eta[b])>1.e-44) fchr2nd->FillDifferentialFlowEtaPOI(b+1,v2eta[b],sdDiff2eta[b]);       
        
       } else {
          //cout<<"v'_2/2{2} = Im"<<endl;
@@ -1412,14 +1340,8 @@ void AliCumulantsFunctions::Calculate()
        fdfr4->SetBinError(b+1,sdDiff4eta[b]);
        //common histogram:
        //fchr4th->FillDifferentialFlow(b+1,v4eta[b],sdDiff4eta[b]);
-       
-       
-       
-       //abTempDeleteMe
-       fchr4th->FillDifferentialFlowEtaPOI(b+1,v4eta[b],sdDiff4eta[b]);
-       //abTempDeleteMe
-       
-       
+       // Fill common result histogram:
+       if(TMath::Abs(v4eta[b])>1.e-44) fchr4th->FillDifferentialFlowEtaPOI(b+1,v4eta[b],sdDiff4eta[b]);
        
       } else {
          //cout<<"v'_2/2{4} = Im"<<endl;
@@ -1435,15 +1357,8 @@ void AliCumulantsFunctions::Calculate()
       //fdfr6->SetBinContent(b+1,v6eta[b]);
       //common histogram:
       //fchr6th->FillDifferentialFlow(b+1,v6eta[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr6th->FillDifferentialFlowEtaPOI(b+1,v6eta[b],0.);
-      //abTempDeleteMe
-      
-      
-      
+      // Fill common result histogram:
+      if(TMath::Abs(v6eta[b])>1.e-44) fchr6th->FillDifferentialFlowEtaPOI(b+1,v6eta[b],0.);
       
     }else{
       //cout<<"v'_2/2{6} = Im"<<endl;
@@ -1456,14 +1371,8 @@ void AliCumulantsFunctions::Calculate()
       //fdfr8->SetBinContent(b+1,v8eta[b]);
       //common histogram:
       //fchr8th->FillDifferentialFlow(b+1,v8eta[b],0.);
-      
-      
-      
-      //abTempDeleteMe
-      fchr8th->FillDifferentialFlowEtaPOI(b+1,v8eta[b],0.);
-      //abTempDeleteMe
-      
-      
+      // Fill common result histogram:
+      if(TMath::Abs(v8eta[b])>1.e-44) fchr8th->FillDifferentialFlowEtaPOI(b+1,v8eta[b],0.);
       
     }else{
       //cout<<"v'_2/2{8} = Im"<<endl;

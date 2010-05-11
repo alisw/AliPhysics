@@ -6730,7 +6730,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
                                                             
    if(v2PrimeErrorSquared>0.) v2PrimeError = pow(v2PrimeErrorSquared,0.5);
    fDiffFlow[t][pe][0]->SetBinContent(b,v2Prime); 
-   fDiffFlow[t][pe][0]->SetBinError(b,v2PrimeError);     
+   if(TMath::Abs(v2Prime)>1.e-44)fDiffFlow[t][pe][0]->SetBinError(b,v2PrimeError);     
   }
   // differential flow:
   // v'{4}
@@ -6753,7 +6753,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
                           - 4.*two*pow(2.*pow(two,2.)-four,2.)*wCovTwoReducedFourReduced);  
    if(v4PrimeErrorSquared>0.) v4PrimeError = pow(v4PrimeErrorSquared,0.5);        
    fDiffFlow[t][pe][1]->SetBinContent(b,v4Prime);
-   fDiffFlow[t][pe][1]->SetBinError(b,v4PrimeError);     
+   if(TMath::Abs(v4Prime)>1.e-44)fDiffFlow[t][pe][1]->SetBinError(b,v4PrimeError);     
   }
   
  } // end of for(Int_t b=1;b<=fnBinsPtEta[pe];b++)
