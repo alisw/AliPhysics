@@ -101,25 +101,42 @@ AliCaloRawAnalyzer::SelectSubarray( const Double_t *fData, const int length, con
   //Until the ADC value is less that fFitArrayCut, or derivative changes sign (data jump)
   int tmpfirst =  maxindex;
   int tmplast  =  maxindex;
-  Double_t valFirst =  fData[maxindex];
-  Double_t valLast  =  fData[maxindex];
-  
-  while( (tmpfirst >= 0) && (fData[tmpfirst] >= fFitArrayCut) &&
-	 (fData[tmpfirst]<valFirst || tmpfirst==maxindex) )  
+  Double_t prevFirst =  fData[maxindex];
+  Double_t prevLast  =  fData[maxindex];  
+  bool firstJump = false;
+  bool lastJump = false;
+
+  while( (tmpfirst >= 0) && (fData[tmpfirst] >= fFitArrayCut) && (!firstJump) ) 
     {
-      valFirst = fData[tmpfirst];
+      // jump check:
+      if (tmpfirst != maxindex) { // neighbor to maxindex can share peak with maxindex
+	if (fData[tmpfirst] >= prevFirst) {
+	  firstJump = true;
+	}
+      }
+      prevFirst = fData[tmpfirst];
       tmpfirst -- ;
     }
   
-  while( (tmplast < length) && (fData[tmplast] >= fFitArrayCut) &&
-	 (fData[tmplast]<valLast || tmplast==maxindex) )  
+  while( (tmplast < length) && (fData[tmplast] >= fFitArrayCut) && (!lastJump) ) 
     {
-      valLast = fData[tmplast];
+      // jump check:
+      if (tmplast != maxindex) { // neighbor to maxindex can share peak with maxindex
+	if (fData[tmplast] >= prevLast) {
+	  lastJump = true;
+	}
+      }
+      prevLast = fData[tmplast];
       tmplast ++;
     }
 
-  *first = tmpfirst +1;
-  *last =  tmplast -1;
+  // we keep one pre- or post- sample if we can (as in online)
+  // check though if we ended up on a 'jump', or out of bounds: if so, back up
+  if (firstJump || tmpfirst<0) tmpfirst ++;
+  if (lastJump || tmplast>=length) tmplast --;
+
+  *first = tmpfirst;
+  *last =  tmplast;
   return;
 }
 
@@ -295,6 +312,93 @@ AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch ) const
   cout << endl; 
 }
 
+
+Double_t
+AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
+				  const Int_t first, const Int_t last,
+				  const Double_t adcErr, 
+				  const Double_t tau)
+{
+  //   Input:
+  //   amp   - max amplitude;
+  //   time    - time of max amplitude; 
+  //   first, last - sample array indices to be used
+  //   adcErr   - nominal error of amplitude measurement (one value for all channels)
+  //           if adcErr<0 that mean adcErr=1.
+  //   tau   - filter time response (in timebin units)
+  // Output:
+  //   chi2 - chi2
+
+  if (first == last || first<0 ) { // signal consists of single sample, chi2 estimate (0) not too well defined.. 
+    // or, first is negative, the indices are not valid
+    return AliCaloFitResults::kDummy;
+  }
+
+  int nsamples =  last - first + 1;
+  //  printf(" AliCaloRawAnalyzer::CalculateChi2 : first %i last %i : nsamples %i \n", first, last, nsamples); 
+
+  Int_t x = 0;
+  Double_t chi2 = 0;
+  Double_t dy = 0.0, xx = 0.0, f=0.0;
+
+  for (Int_t i=0; i<nsamples; i++) {
+    x     = first + i; // timebin
+    xx    = (x - time + tau) / tau; // help variable
+    f     = 0;
+    if (xx > 0) {
+      f = amp * xx*xx * TMath::Exp(2 * (1 - xx )) ;
+    }
+    dy    = fReversed[x] - f; 
+    chi2 += dy*dy;
+    //    printf(" AliCaloRawAnalyzer::CalculateChi2 : %i : y %f -> f %f : dy %f \n", i, fReversed[first+i], f, dy); 
+  }
+
+  if (adcErr>0.0) { // weight chi2
+    chi2 /= (adcErr*adcErr);
+  }
+  return chi2;
+}
+
+
+void
+AliCaloRawAnalyzer::CalculateMeanAndRMS(const Int_t first, const Int_t last,
+					Double_t & mean, Double_t & rms)
+{
+  //   Input:
+  //   first, last - sample array indices to be used
+  // Output:
+  //   mean and RMS of samples 
+  //
+  // To possibly be used to differentiate good signals from bad before fitting
+  // 
+  mean = AliCaloFitResults::kDummy;
+  rms = AliCaloFitResults::kDummy;
+
+  if (first == last || first<0 ) { // signal consists of single sample, chi2 estimate (0) not too well defined.. 
+    // or, first is negative, the indices are not valid
+    return;
+  }
+
+  int nsamples =  last - first + 1;
+  //  printf(" AliCaloRawAnalyzer::CalculateMeanAndRMS : first %i last %i : nsamples %i \n", first, last, nsamples); 
+
+  int x = 0;
+  Double_t sampleSum = 0; // sum of samples
+  Double_t squaredSampleSum = 0; // sum of samples squared
+
+  for (Int_t i=0; i<nsamples; i++) {
+    x = first + i;
+    sampleSum += fReversed[x];
+    squaredSampleSum += (fReversed[x] * fReversed[x]);
+  }
+
+  mean = sampleSum / nsamples; 	 
+  Double_t squaredMean = squaredSampleSum / nsamples; 	 
+  // The variance (rms squared) is equal to the mean of the squares minus the square of the mean.. 	 
+  rms = sqrt(squaredMean - mean*mean);
+
+  return;
+}
 
 AliCaloFitResults
 AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)

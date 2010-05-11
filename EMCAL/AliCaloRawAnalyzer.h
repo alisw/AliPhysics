@@ -67,6 +67,14 @@ class  AliCaloRawAnalyzer : public TObject
   const char * GetAlgoName() const { return fName;  };
   const char * GetAlgoAbbr() const { return fNameShort;  };
 
+  Double_t CalculateChi2(const Double_t amp, const Double_t time,
+			 const Int_t first, const Int_t last,
+			 const Double_t adcErr=1, 
+			 const Double_t tau=2.35);
+
+  void CalculateMeanAndRMS(const Int_t first, const Int_t last,
+			   Double_t & mean, Double_t & rms);
+
  protected:
   short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
   UShort_t Max(const UShort_t *data, const int length ) const;

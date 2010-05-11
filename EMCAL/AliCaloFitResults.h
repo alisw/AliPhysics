@@ -76,7 +76,7 @@ class  AliCaloFitResults
   Float_t   GetTof() const {  return fTime; }; 
   Float_t   GetTime() const {  return fTime; };
   Int_t   GetMaxTimebin() const {  return fMaxTimebin; };
-  Float_t   GetChisSquare() const { return fChi2Sig;};
+  Float_t   GetChi2() const { return fChi2Sig;};
   Int_t  GetNdf() const { return fNdfSig; };
   AliCaloFitSubarray  GetFitSubarray() const { return fFitSubarray; };
   
