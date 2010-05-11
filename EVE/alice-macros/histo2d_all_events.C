@@ -5,16 +5,16 @@
  **************************************************************************/
 
 double pi = TMath::Pi();
-TEveViewer *v_0   = 0;
-TEveViewer *v_1   = 0;
-TEveViewer *v_2   = 0;
-TEveViewer *v_3   = 0;
-TEveScene  *s_0   = 0;
-TEveScene  *s_1   = 0;
-TEveScene  *s_2   = 0;
-TEveScene  *s_3   = 0;
-TEveCaloLegoOverlay* lego_overlay_t = 0;
-TEveWindowSlot* slot_t = 0;
+TEveViewer *g_histo2d_all_events_v0 = 0;
+TEveViewer *g_histo2d_all_events_v1 = 0;
+TEveViewer *g_histo2d_all_events_v2 = 0;
+TEveViewer *g_histo2d_all_events_v3 = 0;
+TEveScene  *g_histo2d_all_events_s0 = 0;
+TEveScene  *g_histo2d_all_events_s1 = 0;
+TEveScene  *g_histo2d_all_events_s2 = 0;
+TEveScene  *g_histo2d_all_events_s3 = 0;
+TEveCaloLegoOverlay* g_histo2d_all_events_lego_overlay = 0;
+TEveWindowSlot* g_histo2d_all_events_slot = 0;
 
 
 TEveCaloDataHist* histo2d_all_events()
@@ -22,7 +22,7 @@ TEveCaloDataHist* histo2d_all_events()
 
    TEveCaloDataHist* data_t;
    
-   if(slot_t == 0){
+   if(g_histo2d_all_events_slot == 0){
       cout<<"Filling histogram..."<<endl;
    
       // Access to esdTree
@@ -64,20 +64,20 @@ TEveCaloDataHist* histo2d_all_events()
       data_t->IncDenyDestroy();
 
       // Creating frames
-      slot_t = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-      TEveWindowPack* packH = slot_t->MakePack();
+      g_histo2d_all_events_slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+      TEveWindowPack* packH = g_histo2d_all_events_slot->MakePack();
       packH->SetElementName("Projections");
       packH->SetHorizontal();
       packH->SetShowTitleBar(kFALSE);
 
-      slot_t = packH->NewSlot();
-      TEveWindowPack* pack0 = slot_t->MakePack();
+      g_histo2d_all_events_slot = packH->NewSlot();
+      TEveWindowPack* pack0 = g_histo2d_all_events_slot->MakePack();
       pack0->SetShowTitleBar(kFALSE);
       TEveWindowSlot*  slotLeftTop   = pack0->NewSlot();
       TEveWindowSlot* slotLeftBottom = pack0->NewSlot();
 
-      slot_t = packH->NewSlot();
-      TEveWindowPack* pack1 = slot_t->MakePack();
+      g_histo2d_all_events_slot = packH->NewSlot();
+      TEveWindowPack* pack1 = g_histo2d_all_events_slot->MakePack();
       pack1->SetShowTitleBar(kFALSE);
       TEveWindowSlot* slotRightTop    = pack1->NewSlot();
       TEveWindowSlot* slotRightBottom = pack1->NewSlot();
@@ -110,24 +110,24 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data, TEveWindowSlot* slot){
    TEveCaloLego* lego;
 
    // Viewer initialization, tab creation
-   if (v_0 == 0) {
+   if (g_histo2d_all_events_v0 == 0) {
 
       TEveBrowser *browser = gEve->GetBrowser();
       slot->MakeCurrent();
-      v_0 = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
-      s_0 = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
-      v_0->AddScene(s_0);
-      v_0->SetElementName("2D Lego Viewer");
-      s_0->SetElementName("2D Lego Scene");
+      g_histo2d_all_events_v0 = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
+      g_histo2d_all_events_s0 = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
+      g_histo2d_all_events_v0->AddScene(g_histo2d_all_events_s0);
+      g_histo2d_all_events_v0->SetElementName("2D Lego Viewer");
+      g_histo2d_all_events_s0->SetElementName("2D Lego Scene");
 
-      TGLViewer* glv = v_0->GetGLViewer();
-      lego_overlay_t = new TEveCaloLegoOverlay();
-      glv->AddOverlayElement(lego_overlay_t);
+      TGLViewer* glv = g_histo2d_all_events_v0->GetGLViewer();
+      g_histo2d_all_events_lego_overlay = new TEveCaloLegoOverlay();
+      glv->AddOverlayElement(g_histo2d_all_events_lego_overlay);
       glv->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
 
       // Plotting histogram lego
       lego = new TEveCaloLego(data);
-      s_0->AddElement(lego);
+      g_histo2d_all_events_s0->AddElement(lego);
 
       // Move to real world coordinates
       lego->InitMainTrans();
@@ -137,7 +137,7 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data, TEveWindowSlot* slot){
       // Set event handler to move from perspective to orthographic view.
       glv->SetEventHandler(new TEveLegoEventHandler(glv->GetGLWidget(), glv, lego));
 
-      lego_overlay_t->SetCaloLego(lego);
+      g_histo2d_all_events_lego_overlay->SetCaloLego(lego);
    }
 
    return lego;
@@ -148,21 +148,21 @@ TEveCalo3D* Create_3D_view(TEveCaloData* data, TEveWindowSlot* slot){
 
    TEveCalo3D* calo3d;
 
-   if (v_1 == 0) {
+   if (g_histo2d_all_events_v1 == 0) {
       
       TEveBrowser *browser = gEve->GetBrowser();
       slot->MakeCurrent();
-      v_1 = gEve->SpawnNewViewer("3D Histogram", "3D Histogram");
-      s_1 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
-      v_1->AddScene(s_1);
-      v_1->SetElementName("3D Histogram Viewer");
-      s_1->SetElementName("3D Histogram Scene");
+      g_histo2d_all_events_v1 = gEve->SpawnNewViewer("3D Histogram", "3D Histogram");
+      g_histo2d_all_events_s1 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
+      g_histo2d_all_events_v1->AddScene(g_histo2d_all_events_s1);
+      g_histo2d_all_events_v1->SetElementName("3D Histogram Viewer");
+      g_histo2d_all_events_s1->SetElementName("3D Histogram Scene");
 
       calo3d = new TEveCalo3D(data);
    
       calo3d->SetBarrelRadius(550);
       calo3d->SetEndCapPos(550);
-      s_1->AddElement(calo3d);
+      g_histo2d_all_events_s1->AddElement(calo3d);
    } 
 
    return calo3d;
@@ -171,46 +171,46 @@ TEveCalo3D* Create_3D_view(TEveCaloData* data, TEveWindowSlot* slot){
 //______________________________________________________________________________
 void Create_projections(TEveCaloData* data, TEveCalo3D *calo3d, TEveWindowSlot* slot1, TEveWindowSlot* slot2){
 
-   if (v_2 == 0) {
+   if (g_histo2d_all_events_v2 == 0) {
       
       TEveBrowser *browser = gEve->GetBrowser();
       slot1->MakeCurrent();
-      v_2 = gEve->SpawnNewViewer("RPhi projection", "RPhi projection");
-      s_2 = gEve->SpawnNewScene("RPhi projection", "RPhi projection");
-      v_2->AddScene(s_2);
-      v_2->SetElementName("RPhi Projection Viewer");
-      s_2->SetElementName("RPhi Projection Scene");
+      g_histo2d_all_events_v2 = gEve->SpawnNewViewer("RPhi projection", "RPhi projection");
+      g_histo2d_all_events_s2 = gEve->SpawnNewScene("RPhi projection", "RPhi projection");
+      g_histo2d_all_events_v2->AddScene(g_histo2d_all_events_s2);
+      g_histo2d_all_events_v2->SetElementName("RPhi Projection Viewer");
+      g_histo2d_all_events_s2->SetElementName("RPhi Projection Scene");
 
       TEveProjectionManager* mng1 = new TEveProjectionManager();
       mng1->SetProjection(TEveProjection::kPT_RPhi);
 
-      TEveProjectionAxes* axes_1 = new TEveProjectionAxes(mng1);
-      s_2->AddElement(axes_1);
+      TEveProjectionAxes* axeg_histo2d_all_events_s1 = new TEveProjectionAxes(mng1);
+      g_histo2d_all_events_s2->AddElement(axeg_histo2d_all_events_s1);
       TEveCalo2D* calo2d1 = (TEveCalo2D*) mng1->ImportElements(calo3d);
-      s_2->AddElement(calo2d1);
+      g_histo2d_all_events_s2->AddElement(calo2d1);
 
-      v_2->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+      g_histo2d_all_events_v2->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    } 
 
-   if (v_3 == 0) {
+   if (g_histo2d_all_events_v3 == 0) {
       
       TEveBrowser *browser = gEve->GetBrowser();
       slot2->MakeCurrent();
-      v_3 = gEve->SpawnNewViewer("RhoZ projection", "RhoZ projection");
-      s_3 = gEve->SpawnNewScene("RhoZ projection", "RhoZ projection");
-      v_3->AddScene(s_3);
-      v_3->SetElementName("RhoZ Projection Viewer");
-      s_3->SetElementName("RhoZ Projection Viewer");
+      g_histo2d_all_events_v3 = gEve->SpawnNewViewer("RhoZ projection", "RhoZ projection");
+      g_histo2d_all_events_s3 = gEve->SpawnNewScene("RhoZ projection", "RhoZ projection");
+      g_histo2d_all_events_v3->AddScene(g_histo2d_all_events_s3);
+      g_histo2d_all_events_v3->SetElementName("RhoZ Projection Viewer");
+      g_histo2d_all_events_s3->SetElementName("RhoZ Projection Viewer");
 
       TEveProjectionManager* mng2 = new TEveProjectionManager();
       mng2->SetProjection(TEveProjection::kPT_RhoZ);
 
-      TEveProjectionAxes* axes_2 = new TEveProjectionAxes(mng2);
-      s_3->AddElement(axes_2);
+      TEveProjectionAxes* axeg_histo2d_all_events_s2 = new TEveProjectionAxes(mng2);
+      g_histo2d_all_events_s3->AddElement(axeg_histo2d_all_events_s2);
       TEveCalo2D* calo2d2 = (TEveCalo2D*) mng2->ImportElements(calo3d);
-      s_3->AddElement(calo2d2);
+      g_histo2d_all_events_s3->AddElement(calo2d2);
 
-      v_3->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+      g_histo2d_all_events_v3->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    } 
 
    return;

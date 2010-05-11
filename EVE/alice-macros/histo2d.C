@@ -5,14 +5,14 @@
  **************************************************************************/
 
 double pi = TMath::Pi();
-TEveViewer *v   = 0;
-TEveScene  *s   = 0;
-TEveScene  *s2  = 0;
-TEveCaloLegoOverlay* lego_overlay = 0;
+TEveViewer *g_histo2d_v   = 0;
+TEveScene  *g_histo2d_s   = 0;
+TEveScene  *g_histo2d_s2  = 0;
+TEveCaloLegoOverlay* g_histo2d_lego_overlay = 0;
 
 
 TEveCaloDataHist* histo2d()
-{
+{ 
 
    // Access to esdTree
    AliESDEvent* esd = AliEveEventManager::AssertESD();
@@ -80,29 +80,29 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data){
    TGLViewer* glv;
 
    // Viewer initialization, tab creation
-   if (v == 0) {
+   if (g_histo2d_v == 0) {
       TEveWindowSlot *slot    = 0;
       TEveBrowser    *browser = gEve->GetBrowser();
 
       slot = TEveWindow::CreateWindowInTab(browser->GetTabRight());
       slot->MakeCurrent();
-      v = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
-      s = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
-      v->AddScene(s);
-      v->SetElementName("2D Lego Viewer");
-      s->SetElementName("2D Lego Scene");
+      g_histo2d_v = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
+      g_histo2d_s = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
+      g_histo2d_v->AddScene(g_histo2d_s);
+      g_histo2d_v->SetElementName("2D Lego Viewer");
+      g_histo2d_s->SetElementName("2D Lego Scene");
 
-      glv = v->GetGLViewer();
-      lego_overlay = new TEveCaloLegoOverlay();
-      glv->AddOverlayElement(lego_overlay);
+      glv = g_histo2d_v->GetGLViewer();
+      g_histo2d_lego_overlay = new TEveCaloLegoOverlay();
+      glv->AddOverlayElement(g_histo2d_lego_overlay);
       glv->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
    } else {
-      glv = v->GetGLViewer(); 
+      glv = g_histo2d_v->GetGLViewer(); 
    }
    
    //plotting histo
    TEveCaloLego* lego = new TEveCaloLego(data);
-   s->AddElement(lego);
+   g_histo2d_s->AddElement(lego);
    AliEveEventManager::RegisterTransient(lego);
 
    // move to real world coordinates
@@ -113,7 +113,7 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data){
    // set event handler to move from perspective to orthographic view.
    glv->SetEventHandler(new TEveLegoEventHandler(glv->GetGLWidget(), glv, lego));
 
-   lego_overlay->SetCaloLego(lego);
+   g_histo2d_lego_overlay->SetCaloLego(lego);
 
    return lego;
 }
@@ -122,10 +122,10 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data){
 TEveCalo3D* Create_3D_view(TEveCaloData* data){
   
    //initialization
-   if (s2 == 0) {
-      s2 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
-      gEve->GetDefaultViewer()->AddScene(s2);
-      s2->SetElementName("3D Histogram Scene");
+   if (g_histo2d_s2 == 0) {
+      g_histo2d_s2 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
+      gEve->GetDefaultViewer()->AddScene(g_histo2d_s2);
+      g_histo2d_s2->SetElementName("3D Histogram Scene");
    }
  
    TEveCalo3D* calo3d = new TEveCalo3D(data);
@@ -133,7 +133,7 @@ TEveCalo3D* Create_3D_view(TEveCaloData* data){
    
    calo3d->SetBarrelRadius(550);
    calo3d->SetEndCapPos(550);
-   s2->AddElement(calo3d);
+   g_histo2d_s2->AddElement(calo3d);
  
    return calo3d;
 }
