@@ -84,7 +84,9 @@ void AliAnalysisTaskTagCreator::ConnectInputData(Option_t * /*option*/)
 {
     // Initialization
     const char* turl = gSystem->Getenv("ALIEN_JDL_OUTPUTDIR");
-    if (turl != "") {
+    TString sturl = turl;
+    
+    if (sturl.Length() != 0) {
       fAODFileName = "alien://";
       fAODFileName += turl;
       fAODFileName += "/AliAOD.root";
