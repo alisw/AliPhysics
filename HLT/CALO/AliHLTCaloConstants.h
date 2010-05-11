@@ -115,8 +115,10 @@ protected:
   Float_t fkCELLANGLE;
   Float_t fkRADLENGTH;
   Float_t fkCRITICENERGY;
-  Float_t fkCELLSTEP; //Constant
+ 
   Float_t fkCJ;
+  Float_t fkCELLSTEP; //Constant
+
   Int_t fkDDLOFFSET;   //Constant
   TString fkDETNAME;
 
