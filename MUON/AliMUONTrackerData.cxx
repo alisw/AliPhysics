@@ -37,6 +37,7 @@
 #include "AliMpDCSNamer.h"
 #include "AliMpManuIterator.h"
 #include "AliMpEncodePair.h"
+#include "AliMpSegmentation.h"
 #include <Riostream.h>
 #include <TClass.h>
 #include <TMath.h>
@@ -402,6 +403,8 @@ AliMUONTrackerData::Add(const AliMUONTrackerData& data)
       }
     }
   }
+  
+  fNevents =  TMath::Max(fNevents,data.fNevents);
   
   return kTRUE;
 }
@@ -1257,8 +1260,8 @@ AliMUONTrackerData::GetDEManu(const AliMUONVCalibParam& param,
     manuId = AliMp::PairSecond(pair);
     if ( !detElemId ) 
     {
-      AliError(Form("DE %d manuId %d from serial %d is not correct !",
-                    detElemId,manuId,serial));
+      AliDebug(1,Form("DE %d manuId %d from serial %d is not correct !",
+                      detElemId,manuId,serial));
     }
   }
   else
@@ -1293,9 +1296,17 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
   
   GetDEManu(*external,detElemId,manuId);
   
-  mpde = ddlStore->GetDetElement(detElemId);
+  mpde = ddlStore->GetDetElement(detElemId,kFALSE);
 
   if (!mpde) // can happen if reading e.g. capacitances store where we have data for non-connected manus
+  {
+    return -1;
+  }
+  
+  // explicitely check that de,manu is correct
+  const AliMpVSegmentation* mpseg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId, manuId,kFALSE);
+  
+  if (!mpseg)
   {
     return -1;
   }
@@ -1303,6 +1314,11 @@ AliMUONTrackerData::GetParts(AliMUONVCalibParam* external,
   Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
     
   Int_t busPatchId = ddlStore->GetBusPatchId(detElemId,manuId);
+  
+  if ( busPatchId <= 0 )
+  {
+    return -1;
+  }
   
   Int_t pcbIndex = -1;
   
@@ -1629,7 +1645,9 @@ AliMUONTrackerData::SetDimensionName(Int_t index, const char* name)
 
   if ( index >= fExternalDimension ) 
   {
-    AliError(Form("Index out of bounds : %d / %d",index,fExternalDimension));
+    AliError(Form("%s : dimension %s : Index out of bounds : %d / %d",
+                  GetName(),
+                  name,index,fExternalDimension));
     return;
   }
   
