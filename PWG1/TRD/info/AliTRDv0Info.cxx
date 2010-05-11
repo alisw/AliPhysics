@@ -495,25 +495,24 @@ Int_t AliTRDv0Info::Quality(AliESDv0 *const esdv0)
   Float_t clsRatioN; 
   Float_t clsRatioP;
 
-  if((nClsFN == 0) || (nClsFP == 0))
-    return 2;
+  if((nClsFN == 0) || (nClsFP == 0)) return -2;
     
   clsRatioN = nClsN/nClsFN; //ratios of found to findable clusters in TPC 
   clsRatioP = nClsP/nClsFP;
     
   if (!(esdv0->GetOnFlyStatus()))//accept only vertices from online V0 finder
-    return 3;
+    return -3;
   if (!((fTrackP->GetStatus() &
   AliESDtrack::kTPCrefit)))//accept only vertices in which both tracks have TPC refit
-    return 4;
+    return -4;
   if (!((fTrackN->GetStatus() &
   AliESDtrack::kTPCrefit)))
-    return 5;	
+    return -5;	
   if (fTrackP->GetKinkIndex(0)>0  ||
       fTrackN->GetKinkIndex(0)>0 )//exclude tracks with kinks
-    return 6;
+    return -6;
   if((clsRatioN < 0.6)||(clsRatioP < 0.6))//exclude tracks with low ratio of found to findable TPC clusters
-    return 7;
+    return -7;
   fQuality = 1;
   return fQuality;
 }
@@ -543,19 +542,19 @@ Int_t AliTRDv0Info::GetPID(Int_t ipart, AliTRDtrackInfo *track)
   }
 
   //... it fulfills our quality criteria
-  if(!(fQuality == 1)) return -1;
+  if(!(fQuality == 1)) return 0;
   //... distance of closest approach between daughters is reasonably small
-  if((fDCA > fUpDCA[iDecay])) return -1;
+  if((fDCA > fUpDCA[iDecay])) return 0;
   //... pointing angle between momentum of mother particle and vector from prim. to sec. vertex is small
-  if((fPointingAngle > fUpPointingAngle[iDecay])) return -1;
+  if((fPointingAngle > fUpPointingAngle[iDecay])) return 0;
   //... x-y plane distance of decay point to prim. vertex is bigger than a certain minimum value (for conversions)
-  if((fRadius < fDownRadius[iDecay])) return -1;
+  if((fRadius < fDownRadius[iDecay])) return 0;
   //...or smaller than a maximum value (for K0s)
-  if((fRadius > fUpRadius[iDecay])) return -1;
+  if((fRadius > fUpRadius[iDecay])) return 0;
   //... opening angle is close enough to zero (for conversions)
-  if((fOpenAngle > fUpOpenAngle[iDecay])) return -1;
+  if((fOpenAngle > fUpOpenAngle[iDecay])) return 0;
   //... Psi-pair angle is close enough to zero(for conversions)
-  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay])) return -1;
+  if((TMath::Abs(fPsiPair) > fUpPsiPair[iDecay])) return 0;
 
 
   //Mother momentum slots above/below 2.5 GeV
