@@ -151,10 +151,10 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH2F        *fRecPtPosPhiEtaNeg;  //pt-phi for pos tracks and neg eta
   TH2F        *fRecPtNegPhiEtaNeg;  //pt-phi for neg tracks and neg eta
 
-  TH3F        *fRecDcaPhiPtPosEtaPos; //dca-pt-phi for pos tracks and pos eta
-  TH3F        *fRecDcaPhiPtNegEtaPos; //dca-pt-phi for neg tracks and pos eta
-  TH3F        *fRecDcaPhiPtPosEtaNeg; //dca-pt-phi for pos tracks and neg eta
-  TH3F        *fRecDcaPhiPtNegEtaNeg; //dca-pt-phi for neg tracks and neg eta
+  //  TH3F        *fRecDcaPhiPtPosEtaPos; //dca-pt-phi for pos tracks and pos eta
+  //  TH3F        *fRecDcaPhiPtNegEtaPos; //dca-pt-phi for neg tracks and pos eta
+  //  TH3F        *fRecDcaPhiPtPosEtaNeg; //dca-pt-phi for pos tracks and neg eta
+  //  TH3F        *fRecDcaPhiPtNegEtaNeg; //dca-pt-phi for neg tracks and neg eta
 
   TH2F        *fEtavPt;
   TH2F        *fCompareTPCparam;
