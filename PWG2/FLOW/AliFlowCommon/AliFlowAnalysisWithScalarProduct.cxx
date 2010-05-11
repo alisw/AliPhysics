@@ -615,7 +615,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //Calculate the event plane resolution
   //----------------------------------
   Double_t dCos2phi = fHistResolution->GetMean();
-  if (dCos2phi !=0.0){
+  if (dCos2phi > 0.0){
     Double_t dResolution = TMath::Sqrt(2*dCos2phi); 
     cout<<"An estimate of the event plane resolution is: "<<dResolution<<endl;
     cout<<endl;
