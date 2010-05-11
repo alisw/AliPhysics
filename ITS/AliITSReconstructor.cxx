@@ -27,7 +27,6 @@
 #include "AliRawReader.h"
 #include "AliESDEvent.h"
 #include "AliESDpid.h"
-#include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
 #include "AliITSLoader.h"
 #include "AliITStrackerMI.h"

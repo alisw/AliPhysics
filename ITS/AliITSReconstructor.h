@@ -12,12 +12,11 @@
 
 #include "AliReconstructor.h"
 #include "AliITSRecoParam.h"
-
+#include "AliITSDetTypeRec.h"
 class AliESDpid;
 class AliITSgeom;
 class AliTracker;
 class AliITStrackerMI;
-class AliITSDetTypeRec;
 
 class AliITSReconstructor: public AliReconstructor {
 public:
@@ -37,6 +36,7 @@ public:
   virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, 
 			       AliESDEvent* esd) const
   {FillESD((TTree*)NULL, clustersTree, esd);}
+  void ResetRecPoints() {fDetTypeRec->ResetRecPoints();}
 
   static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 
