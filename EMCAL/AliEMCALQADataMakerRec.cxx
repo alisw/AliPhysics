@@ -744,8 +744,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
  }
   //Now for LED monitor system, to calculate the ratio as well
   if(fLEDMonRefHistoPro){
-  GetRawsData(kLEDMonRatio)->Reset();	
-  GetRawsData(kLEDMonRatioDist)->Reset();
+  GetRawsData(kLEDMonRatio)->Reset("ICE");	
+  GetRawsData(kLEDMonRatioDist)->Reset("ICE");
   
   Double_t binError = 0. ;
   
