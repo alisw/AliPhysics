@@ -676,6 +676,24 @@ Bool_t AliCaloCalibPedestal::LoadReferenceCalib(TString fileName, TString object
   return kTRUE;//We succesfully loaded the object
 }
 
+
+//_____________________________________________________________________
+Bool_t AliCaloCalibPedestal::SetReference(AliCaloCalibPedestal *ref)
+{
+  if (fReference) delete fReference;//Delete the reference object, if it already exists
+  fReference = 0;
+  
+  fReference = ref;
+ 
+  if (!fReference || (fReference->GetDetectorType() != fDetType)) {
+    if (fReference) delete fReference;//Delete the object, in case we had an object of the wrong type
+    fReference = 0;
+    return kFALSE;
+  }
+
+  return kTRUE;//We succesfully loaded the object
+}
+
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ValidateComparisonProfiles()
 {
@@ -758,7 +776,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
 					      fRows, fRowMin, fRowMax,"s"));
 
     //LED Ref/Mon pedestals, low gain
-    name = "hPedestalLEDReflowgain";
+    name = "hPedestalLEDReflowgainRatio";
     name += i;
     title = "Pedestal ratio LEDRef, low gain, module ";
     title += i; 

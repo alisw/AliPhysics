@@ -153,6 +153,7 @@ class AliCaloCalibPedestal : public TObject {
   Bool_t LoadReferenceCalib(TString fileName, TString objectName); //Loads another AliCaloCalibPedestal by name "objectName" from the file "fileName", for reference
   void ComputeDiffAndRatio();//Actually computes the difference and ratio into the histo's in memory
   AliCaloCalibPedestal * GetReference() const {return fReference;}; //Get the reference object. Needed for debug, will probably be removed later
+  Bool_t SetReference(AliCaloCalibPedestal *ref);
   void ComputeDeadTowers(const char * deadMapFile = 0);//Computes the dead tower values
   void ComputeHotAndWarningTowers(const char * hotMapFile = 0);//Computes the hot tower values
 
