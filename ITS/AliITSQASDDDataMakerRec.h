@@ -64,6 +64,8 @@ private:
   Int_t   fSDDhRawsTask;                       // number of histo booked for each the Raws Task SDD
   Int_t   fSDDhDigitsTask;                     // number of histo booked for each the RecPoints Task SDD
   Int_t   fSDDhRecPointsTask;                  // number of histo booked for each the RecPoints Task SDD
+  Int_t   fOnlineOffsetRaws;					// index for starting online histograms for Raws
+  Int_t   fOnlineOffsetRecPoints;					// index for starting online histograms for RecPoints
   Int_t   *fGenRawsOffset;                     // QAchecking Raws offset       
   Int_t   *fGenDigitsOffset;                   // QAchecking RecPoints offset       
   Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset       
@@ -74,7 +76,7 @@ private:
   TObjArray *fCalibration;                     //Array of Calibration Object
   TObjArray *fHistoCalibration;                //Array of the Calibration histograms for the normalization
 
-  ClassDef(AliITSQASDDDataMakerRec,12)         // description 
+  ClassDef(AliITSQASDDDataMakerRec,13)         // description 
 
 };
 

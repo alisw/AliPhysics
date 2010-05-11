@@ -31,12 +31,8 @@
 #include "AliLog.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-//#include "AliQAManager.h"
-//#include "AliQACheckerBase.h"
-//#include "TSystem.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSgeomTGeo.h"
-//#include "AliITSQAChecker.h"
 
 
 ClassImp(AliITSQASDDChecker)
@@ -83,7 +79,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
 
-  Double_t test = 0.;
+  Double_t SDDQACheckerValue = 0.;
   TH1 *hdata=NULL;
   Double_t entries=0.;
   Double_t entries2[2];
@@ -96,7 +92,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       {
 	AliError("Calibration object retrieval failed! SDD will not be processed");
 	fCalibration = NULL;
-	test= fHighSDDValue[AliQAv1::kWARNING];
+	SDDQACheckerValue= fHighSDDValue[AliQAv1::kWARNING];
       }
     fCalibration = (TObjArray *)calibSDD->GetObject();
     
@@ -108,413 +104,366 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       }
   }
 
-      AliInfo("Calib SDD Created\n ");
+  AliInfo("Calib SDD Created\n ");
 
-  switch(index)
+  TIter next(list);
+  TH1 *hmodule=NULL;
+  TH2 *hlayer[2];
+
+  switch(index) 
     {
 
     case AliQAv1::kRAW:
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index)));
-      
-      if (list->GetEntries() == 0){ //check if the list is empty
-	//printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-	test=test+fHighSDDValue[AliQAv1::kFATAL];
+      if(fRawModulePattern) { delete fRawModulePattern; fRawModulePattern = 0; }
+      if(fRawL3Pattern) { delete fRawL3Pattern; fRawL3Pattern = 0; }
+      if(fRawL4Pattern) { delete fRawL4Pattern; fRawL4Pattern = 0; }
+      if (list->GetEntries() == 0){ 
+	SDDQACheckerValue += fHighSDDValue[AliQAv1::kFATAL];
 	break;
-      }//end if getentries
-      else{
-	TIter next(list);
-	Int_t offset = 0;
-	for(offset =0;offset < fSubDetOffset; offset++){hdata = dynamic_cast<TH1*>(next());}//end for
-	Int_t emptymodules[2];
-	Int_t filledmodules[2];
-	Int_t emptyladders[2];
-	Int_t filledladders[2];
-	for(Int_t i=0;i<2;i++){
-	  emptymodules[i]=0;
-	  filledmodules[i]=0;
-	  emptyladders[i]=0;
-	  filledladders[i]=0;
-	}
-	TH1 *hmodule=NULL;
-	TH2 *hlayer[2];
-	for(Int_t i=0;i<2;i++)hlayer[i]=NULL;    
-	while( (hdata = dynamic_cast<TH1* >(next())) ){
-	  if (hdata){
-	    TString hname=hdata->GetName();
-	    if(hname.Contains("SDDchargeMap"))continue;
-	    if(hname.Contains("SDDModPattern")){
-	      if(hname.Contains("NORM")) continue;
+      }
+      Int_t emptymodules[2];
+      Int_t filledmodules[2];
+      Int_t emptyladders[2];
+      Int_t filledladders[2];
+      for(Int_t i=0;i<2;i++){
+	emptymodules[i]=0;
+	filledmodules[i]=0;
+	emptyladders[i]=0;
+	filledladders[i]=0;
+      }
+      for(Int_t i=0;i<2;i++)hlayer[i]=NULL;    
+      while( (hdata = dynamic_cast<TH1* >(next())) ){
+	if (hdata){
+	  TString hname=hdata->GetName();
+	  if(hname.Contains("SDDchargeMap"))continue;
+	  if(hname.Contains("SDDModPattern")){
+	    if(hname.Contains("NORM")) {
+					
+	      hmodule=hdata;
+	      entries= hdata->GetEntries();
+	      if(AliITSQADataMakerRec::AreEqual(entries,0.)){
+		AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
+		SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+	      }//endif entries
 	      else{
-		hmodule=hdata;
-		entries= hdata->GetEntries();
-		if(AliITSQADataMakerRec::AreEqual(entries,0.)){
-		  AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
-		  //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-		  test=test+fStepBitSDD[AliQAv1::kFATAL];
-		}//endif entries
-		else{
-		  int modmax=hdata->GetNbinsX();
-		  Int_t empty=0;
-		  Int_t filled=0;
-		  Double_t content=0;
-		  for(Int_t i=1;i<=modmax;i++){
-		    content=hdata->GetBinContent(i);
-		    if(AliITSQADataMakerRec::AreEqual(content,0.)){empty++;}
-		    else if((AliITSQADataMakerRec::AreEqual(content,0.)==kFALSE)){filled++;}
-		  }//end for
-		  AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
-		}//end else pattern entries !=0
-	      }//end if norm	      
-	    }//end if modpattern
-	    else if(hname.Contains("SDDphizL3")||hname.Contains("SDDphizL4")){
-	      if(hname.Contains("NORM")) continue;
-	      else{
-		Int_t layer=0;
-		if(hname.Contains("3"))layer=0;
-		else  if(hname.Contains("4"))layer=1;
-		entries2[layer]=hdata->GetEntries();
-		if(entries2[layer]==0){
-		  AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
-		  //printf("test = %f \t value %f\n",test,fStepBitSDD[AliQAv1::kFATAL]);
-		  test=test+fStepBitSDD[AliQAv1::kFATAL];
-		  if(AliITSQADataMakerRec::AreEqual(entries,0.)){ 
-		    //return test; 
-		    //break;
-		  }
-		}//end if getentries
-		else{
-		  Int_t layer1=0;
-		  if(hname.Contains("3"))layer1=0;
-		  else  if(hname.Contains("4"))layer1=1;
-		  TH2* htemp=dynamic_cast<TH2*>(hdata);
-		  hlayer[layer1]=(TH2*)htemp->Clone();
-		  char newname[50];
-		  sprintf(newname,"%s_copy",hname.Data());
-		  hlayer[layer1]->SetName(newname);
-		  hlayer[layer1]->RebinX(2);
-		  int modmay=hlayer[layer1]->GetNbinsY();
-		  TH1D* hproj= hlayer[layer1]->ProjectionY();
-		  Double_t ladcontent=0;
-		  for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
-		    ladcontent=hproj->GetBinContent(i);
-		    if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)){emptyladders[layer1]++;}
-		    else {filledladders[layer1]++;} 
-		  }//end for
-		  AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
-		  delete hproj;
-		  hproj=NULL;	
-		  //delete htemp;
-		  //htemp=NULL;
-		}//end else entries !=0
-	      }//end check on norm	      
-	    }//end if layer 3
-	  }//end if hdata	
-	}//end while
-	if(AliITSQADataMakerRec::AreEqual(entries,0.)&&AliITSQADataMakerRec::AreEqual(entries2[0],0.)&&AliITSQADataMakerRec::AreEqual(entries2[1],0.)) break;
-	else{
-	  if(hmodule||(hlayer[0]&&hlayer[1])){
-	    Int_t excluded=0;
-	    Int_t active=0;
-	    Int_t exactive=0;//excluded but taking data
-	    //AliITSCalibrationSDD *cal;
-	    for(Int_t imod=0;imod<fgknSDDmodules;imod++){
-	      Int_t lay=0;
-	      Int_t lad=0;
-	      Int_t det=0;
-	      Int_t module=0;
-	      module=imod+fgkmodoffset;
-	      AliITSCalibrationSDD * cal=(AliITSCalibrationSDD*)fCalibration->At(imod);
-	      if(cal==0) { delete cal; continue;}
-	      AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
-	      if (cal->IsBad()){
-		excluded++;
-		Double_t content=0.;
-		Double_t contentlayer[2];
-		for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
-		if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram has been created 
-		contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
-		if(AliITSQADataMakerRec::AreEqual(content,0.)==kFALSE||AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.)==kFALSE)
-		  {
-		    filledmodules[lay-3]++;
-		    AliWarning(Form("The module %d (layer %i, ladder %i det %i ) excluded from the acquisition, took data \n ",module,lay,lad,det));
-		    exactive++;
-		  }
-		else if(AliITSQADataMakerRec::AreEqual(content,0.)&&AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.))emptymodules[lay-3]++;
-		//AliInfo(Form("The module %d (layer %i, ladder %i det %i ) is bad, content %f content layer %f  filled modules position %d ",module,lay,lad,det,contentlayer[lay-3],content,lay-3) );
-	      }//end if bad
-	      else
-		{
-		  Double_t contentgood=0.;
-		  active++;
-		  //printf("lay: %i\t det %i \t lad %i \n",lay,det,lad );
-		  contentgood=hlayer[lay-3]->GetBinContent(det,lad);
-		  if(AliITSQADataMakerRec::AreEqual(contentgood,0.)){emptymodules[lay-3]++;}
-		  else {filledmodules[lay-3]++;}
-		}
-	      
-	      //delete cal;
-	      //cal=NULL;
-	    }//end for
-	    for(Int_t i=0;i<2;i++){AliInfo(Form("Layer %i \tempty modules %i \t filled modules %i\n", i+3,emptymodules[i], filledmodules[i]));}//end else layers
-	    if(exactive==0){
-	      AliInfo(Form("All the active modules (%i) are in acquisition. The number of excluded modules are %i \n",active,excluded));
-	      test=fHighSDDValue[AliQAv1::kINFO];}
-	    if(exactive!=0){
-	      AliWarning(Form("%i modules excluded from the acquisition took data. Active modules%i \n ",exactive,active));
-	      test=fHighSDDValue[AliQAv1::kWARNING];
+		int modmax=hdata->GetNbinsX();
+		Int_t empty=0;
+		Int_t filled=0;
+		Double_t content=0;
+		for(Int_t i=1;i<=modmax;i++){
+		  content=hdata->GetBinContent(i);
+		  if(AliITSQADataMakerRec::AreEqual(content,0.)) empty++;
+		  else filled++;
+		}//end for
+		AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
+	      }//end else pattern entries !=0
+	    } 
+	  }
+
+	  if(hname.Contains("_RelativeOccupancy")) {
+	    fRawModulePattern = (TH1F *) hdata;
+	    Float_t threshold = fRawModulePattern->GetMean() + 4*fRawModulePattern->GetRMS();
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 1: L3 mean: %f, rms: ,%f",fRawModulePattern->GetMean(),fRawModulePattern->GetRMS()));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 2: L4 mean: %f, rms: ,%f",fRawModulePattern->GetMean(),fRawModulePattern->GetRMS()));
+	    Int_t aboveThreshold = 0;
+	    for(Int_t k=0; k<= fRawModulePattern->GetNbinsX(); k++) {
+	      if(fRawModulePattern->GetBinLowEdge(k) > threshold) aboveThreshold += (int)(fRawModulePattern->GetBinContent(k));
 	    }
-	    if(excluded==exactive){
-	      AliWarning(Form("All the modules exluded from the acquisition (%d) took data!  Active modules %i\n",excluded,active));
-	      test=fHighSDDValue[AliQAv1::kWARNING];
+	    Float_t fractionAboveThreshold = ((Float_t) aboveThreshold)/fRawModulePattern->GetEntries();
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 1, L3: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 2, L4: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
+	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) { 
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 1: Set Warning (L3 Raw)"));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 2: Set Warning (L4 Raw)"));
 	    }
-	    if(active==0){
-	      AliWarning(Form("No modules took data: excluded %i \t exactive %i \n", excluded, exactive)); 
-	      test=fHighSDDValue[AliQAv1::kFATAL];
-	    }
-	    for(Int_t i=0;i<2;i++)
-	      {
-		delete hlayer[i];
-		hlayer[i]=NULL;
+	  }
+					
+	  if(hname.Contains("SDDphizL3") || hname.Contains("SDDphizL4")){
+	    if(!hname.Contains("NORM")) {
+	      if(hname.Contains("L3")) {
+		fRawL3Pattern = (TH2F *) hdata;
 	      }
-	  }//end else 
+	      if(hname.Contains("L4")) {
+		fRawL4Pattern = (TH2F *) hdata;
+	      }
+	    } else{
+	      Int_t layer=0;
+	      if(hname.Contains("3"))layer=0;
+	      else  if(hname.Contains("4"))layer=1;
+	      entries2[layer]=hdata->GetEntries();
+	      if(entries2[layer]==0){
+		AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
+		SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+		if(AliITSQADataMakerRec::AreEqual(entries,0.)){ 
+		}
+	      }//end if getentries
+	      else{
+		Int_t layer1=0;
+		if(hname.Contains("3"))layer1=0;
+		else  if(hname.Contains("4"))layer1=1;
+		TH2* htemp=dynamic_cast<TH2*>(hdata);
+		hlayer[layer1]=(TH2*)htemp->Clone();
+		char newname[50];
+		sprintf(newname,"%s_copy",hname.Data());
+		hlayer[layer1]->SetName(newname);
+		hlayer[layer1]->RebinX(2);
+		int modmay=hlayer[layer1]->GetNbinsY();
+		TH1D* hproj= hlayer[layer1]->ProjectionY();
+		Double_t ladcontent=0;
+		for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
+		  ladcontent=hproj->GetBinContent(i);
+		  if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
+		  else filledladders[layer1]++; 
+		}//end for
+		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
+		delete hproj;
+		hproj=NULL;	
+	      }//end else entries !=0
+	    }//end check on norm	      
+	  }//end if layer 3
+	}//end if hdata	
+      }//end while
+      if(AliITSQADataMakerRec::AreEqual(entries,0.)&&AliITSQADataMakerRec::AreEqual(entries2[0],0.)&&AliITSQADataMakerRec::AreEqual(entries2[1],0.)) break;
+      //else{
+      if(hmodule || (hlayer[0] && hlayer[1])){
+	Int_t excluded=0;
+	Int_t active=0;
+	Int_t exactive=0;//excluded but taking data
+	for(Int_t imod=0;imod<fgknSDDmodules;imod++){
+	  Int_t lay=0;
+	  Int_t lad=0;
+	  Int_t det=0;
+	  Int_t module=0;
+	  module=imod+fgkmodoffset;
+	  AliITSCalibrationSDD * cal=(AliITSCalibrationSDD*)fCalibration->At(imod);
+	  if(cal==0) { delete cal; continue;}
+	  AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
+	  if (cal->IsBad()){
+	    excluded++;
+	    Double_t content=0.;
+	    Double_t contentlayer[2];
+	    for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
+	    if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram has been created 
+	    contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
+	    if(AliITSQADataMakerRec::AreEqual(content,0.)== kFALSE || AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.)==kFALSE) {
+	      filledmodules[lay-3]++;
+	      AliWarning(Form("The module %d (layer %i, ladder %i det %i ) excluded from the acquisition, took data \n ",module,lay,lad,det));
+	      exactive++;
+	    } else if(AliITSQADataMakerRec::AreEqual(content,0.) && AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.)) 
+	      emptymodules[lay-3]++;
+	  } else {
+	    Double_t contentgood=0.;
+	    active++;
+	    contentgood=hlayer[lay-3]->GetBinContent(det,lad);
+	    if(AliITSQADataMakerRec::AreEqual(contentgood,0.)) 
+	      emptymodules[lay-3]++;
+	    else 
+	      filledmodules[lay-3]++;
+	  }
+	}//end for
+	for(Int_t i=0;i<2;i++){AliInfo(Form("Layer %i \tempty modules %i \t filled modules %i\n", i+3,emptymodules[i], filledmodules[i]));}//end else layers
+	if(exactive==0){
+	  AliInfo(Form("All the active modules (%i) are in acquisition. The number of excluded modules are %i \n",active,excluded));
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
 	}
-      }//end getentries !=0
-      //delete calSDD;
+	if(exactive!=0){
+	  AliWarning(Form("%i modules excluded from the acquisition took data. Active modules%i \n ",exactive,active));
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	}
+	if(excluded==exactive){
+	  AliWarning(Form("All the modules excluded from the acquisition (%d) took data!  Active modules %i\n",excluded,active));
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	}
+	if(active==0){
+	  AliWarning(Form("No modules took data: excluded %i \t exactive %i \n", excluded, exactive)); 
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	}
+	for(Int_t i=0;i<2;i++) {
+	  delete hlayer[i];
+	  hlayer[i]=NULL;
+	}
+      }//end else 
+      //}
       
-      //delete calibSDD;
-      //delete calSDD;
-   
       break;
+
     case AliQAv1::kNULLTASK:
       AliInfo(Form("No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-      test=1.;
+      SDDQACheckerValue=1.;
       break;
+		
     case AliQAv1::kREC:
-      /*
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-      //TH1*hdata=NULL;
-      if(list->GetUniqueID()==40){
-	if (list->GetEntries() == 0){ //check if the list is empty
-	  //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-	  test=fHighSDDValue[AliQAv1::kFATAL];
+      if(fRecModulePattern) { delete fRecModulePattern; fRecModulePattern = 0; }
+      if(fRecL3Pattern) { delete fRecL3Pattern; fRecL3Pattern = 0; }
+      if(fRecL4Pattern) { delete fRecL4Pattern; fRecL4Pattern = 0; }
+      if(fModulePatternRatio) { delete fModulePatternRatio; fModulePatternRatio = 0; }
+      if (list->GetEntries() == 0){ //check if the list is empty
+	//printf("SDDQACheckerValue = %f \t value %f\n",SDDQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
+	SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+				
+      }//end if getentries
 	  
-	}//end if getentries
-	else{
-	  
-	  TIter next(list);
-	
-	  while( hdata = dynamic_cast<TH1* >(next()) ){
-	    if (hdata){
-	      if(AliITSQADataMakerRec::AreEqual(hdata->GetEntries(),0.))test=test+fStepBitSDD[AliQAv1::kFATAL];
-	      else
-		{
-		  TString hname=hdata->GetName();
-		  if(hname.Contains("FSE"))continue;
-		  else if(hname.Contains("SDDLay3TotCh")||hname.Contains("SDDLay4TotCh")){
-		    Double_t meancharge=hdata->GetMean();
-		    Double_t rmscharge=hdata->GetRMS();
-		    AliInfo(Form("%s : Mean value:%f RMS value%f \n ",hname.Data(),meancharge,rmscharge));
-		    test=test+fStepBitSDD[AliQAv1::kINFO];    
-		  }//end if name charge
-		  else if(hname.Contains("SDDGlobalCoordDistribYX" ))
-		    {
-		      test=test+fStepBitSDD[AliQAv1::kINFO];    
-		    }//end xy
-		  else if(hname.Contains("SDDGlobalCoordDistribRZ"))
-		    {
-		      
-		      test=test+fStepBitSDD[AliQAv1::kINFO];    
-		    } //end rz
-		  else if(hname.Contains("SDDGlobalCoordDistribL3PHIZ" )||hname.Contains("SDDGlobalCoordDistribL3PHIZ"))
-		    {    
-
-		    }//end phiz
-		  else if(hname.Contains("SDDModPatternRP"))
-		    {
-		      
-		      //to do :se raws
-
-		    }//modpattern
-		  else if(hname.Contains("SDDModPatternL3RP")||hname.Contains("SDDModPatternL4RP") )
-		    {
-		      //to do: see raws
-		    }//end ladpattern
-		  else if(hname.Contains("SDDLocalCoordDistrib"))
-		    {
-		      test=test+fStepBitSDD[AliQAv1::kINFO];    
-		    }//end local coord
-		  else if(hname.Contains("SDDrdistrib_Layer3")||hname.Contains("SDDrdistrib_Layer4"))
-		    {
-		      
-		    }//end r distribution
-		  else if(hname.Contains("SDDphidistrib_Layer3")||hname.Contains("SDDphidistrib_Layer4"))
-		    {
-		      
-		    }//end phi distribution
-		  else if(hname.Contains("SDDdrifttime_Layer3")||hname.Contains("SDDdrifttime_Layer4"))
-		    {
-		      
-		    }//end drift time
-		}
-	    }//end if hdata
-	    
-	  }//end while
-	}//end else geentries
-      }//end uniqueid
-      */
-      test=1.;
+      while((hdata=dynamic_cast<TH1* >(next()))){
+	if (hdata){
+	  TString hname=hdata->GetName();
+	  if(hname.Contains("_RelativeOccupancy")) {
+	    fRecModulePattern = (TH1F *) hdata;
+	    Float_t threshold = fRecModulePattern->GetMean() + 4*fRecModulePattern->GetRMS();
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: L3 mean: %f, rms: ,%f",fRecModulePattern->GetMean(),fRecModulePattern->GetRMS()));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: L4 mean: %f, rms: ,%f",fRecModulePattern->GetMean(),fRecModulePattern->GetRMS()));
+	    Int_t aboveThreshold = 0;
+	    for(Int_t k=0; k<= ((Int_t)fRecModulePattern->GetNbinsX()); k++) {
+	      if(fRecModulePattern->GetBinLowEdge(k) > threshold) aboveThreshold += (Int_t)(fRecModulePattern->GetBinContent(k));
+	    }
+	    Float_t fractionAboveThreshold = ((Float_t) aboveThreshold)/fRecModulePattern->GetEntries();
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 3, L3: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 4, L4: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
+	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) { 
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: Set Warning (L3 RecPoints)"));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: Set Warning (L4 RecPoints)"));
+	    }
+	  }
+	  if(hname.Contains("Rec2Raw") && !hname.Contains("2D")) {
+	    //Float_t threshold = 0.;
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: L3 R2R mean: %f, rms: ,%f",((TH1F *) hdata)->GetMean(),((TH1F *) hdata)->GetRMS()));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: L4 R2R mean: %f, rms: ,%f",((TH1F *) hdata)->GetMean(),((TH1F *) hdata)->GetRMS()));
+	    Int_t belowThreshold = 0;
+	    for(Int_t k=0; k<=((TH1F *)hdata)->GetNbinsX(); k++) {
+	      if(((TH1F *) hdata)->GetBinLowEdge(k) < fThresholdForRecToRawRatio) belowThreshold += ((Int_t)((TH1F *) hdata)->GetBinContent(k));
+	    }
+	    Double_t fractionBelowThreshold =0.;
+	    Double_t entries=((TH1F *)hdata)->GetEntries();
+	    if(entries!=0.)fractionBelowThreshold = ((Double_t)(belowThreshold))/entries;
+	    else{ AliWarning(Form("No entries on %s. The check will retuns zero.\n",hdata->GetName() )); }
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 5, L3: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 6, L4: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
+	    if(fractionBelowThreshold > fThresholdForRelativeOccupancy) { 
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: Set Warning (L3 RecPoints2Raws)"));
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: Set Warning (L4 RecPoints2Raws)"));
+	    }
+	  }
+	  if(hname.Contains("dedx")) {
+	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 7: L3 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
+	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 8: L4 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
+	  }
+	}
+      }				
+			       
+      SDDQACheckerValue=1.;
       break;
     case AliQAv1::kANA:
       AliInfo(Form("===================> No Check on %s\n",AliQAv1::GetAliTaskName(index)));
-      test=1.; 
+      SDDQACheckerValue=1.; 
       break;
     case AliQAv1::kESD:
       AliInfo(Form("==================>  No Check on %s\n",AliQAv1::GetAliTaskName(index)));
-      test=1.; 
+      SDDQACheckerValue=1.; 
       break;
     case AliQAv1::kNTASK:
       AliInfo(Form("==================>  No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-      test=1.;
+      SDDQACheckerValue=1.;
       break;
     case AliQAv1::kSIM:
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
       Int_t uid=list->GetUniqueID();
-      if(uid==60)
-	{
-	  //digits
-	  if (list->GetEntries() == 0){ //check if the list is empty
-	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-	    test=fHighSDDValue[AliQAv1::kFATAL];
+      if(uid==60) {
+	//digits
+	if (list->GetEntries() == 0){ 
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	    
-	  }//end if getentries
-	  else{
+	} else{
 	    
-	    TIter next(list);
-	    
-	    while( (hdata = dynamic_cast<TH1* >(next())) ){
-	      if (hdata){
-		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
-		else
-		  {
-		    TString hname=hdata->GetName();
-		    if(hname.Contains("SDDDIGITSModulePattern"))
-		      {
-			//see raws
+	  while( (hdata = dynamic_cast<TH1* >(next())) ){
+	    if (hdata){
+	      if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+	      else {
+		TString hname=hdata->GetName();
+		if(hname.Contains("SDDDIGITSModulePattern")) {
+		  //see raws
 
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end modpattern
-		    else if(hname.Contains("SDDAnodeDistribution"))
-		      {
-		       
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end anode distribution
-		    else if(hname.Contains("SDDTbinDistribution"))
-		      {
+		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		} else if(hname.Contains("SDDAnodeDistribution")) {
+		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		} else if(hname.Contains("SDDTbinDistribution")) {
+		  //to do as rp
+		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		} else if(hname.Contains("SDDADCCountsDistribution")) {
+		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		}//end adc counts
 
-			//to do as rp
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end timebindistribution
-		    else if(hname.Contains("SDDADCCountsDistribution"))
-		      {
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end adc counts
-
-		  }//end entries !=0
-	      }//end hdata
-	    }//end while
-	  }//end else
-	}//end digits
-      else if(uid==50)
+	      }//end entries !=0
+	    }//end hdata
+	  }//end while
+	}//end else
+      } else if(uid==50) 
 	{
 	  //hits
-	  if (list->GetEntries() == 0){ //check if the list is empty
-	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-	    test=fHighSDDValue[AliQAv1::kFATAL];
-	    
-	  }//end if getentries
+	  if (list->GetEntries() == 0){ 
+	    SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  } 
 	  else{
-	    
-	    TIter next(list);
 	    
 	    while( (hdata = dynamic_cast<TH1* >(next())) ){
 	      if (hdata){
-		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
-		else
-		  {
-		    TString hname=hdata->GetName();
-		    if(hname.Contains("SDDHITSModulePattern"))
-		      {
-			//to do as raws
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end modpattern
-		    else if(hname.Contains("SDDHITlenghtalonglocalYCoord"))
-		      {
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end hit lenght
-		    else if(hname.Contains("SDDHITlenghtalonglocalYCoordZoom"))
-		      {
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end hit lenght
-		    else if(hname.Contains("SDDDepositedEnergyDistribution"))
-		      {
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end deposited energy
+		if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+		else {
+		  TString hname=hdata->GetName();
+		  if(hname.Contains("SDDHITSModulePattern")) {
+		    //to do as raws
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDDHITlenghtalonglocalYCoord")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDDHITlenghtalonglocalYCoordZoom")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDDDepositedEnergyDistribution")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  }//end deposited energy
 
-		  }//end entries !=0
+		}//end entries !=0
 	      }//end hdata
 	    }//end while
 	  }//end else
-	}//end hits
-      else if(uid==70)
+	} else if(uid==70) 
 	{
 	  //sdigits
-	  if (list->GetEntries() == 0){ //check if the list is empty
-	    //printf("test = %f \t value %f\n",test,fHighSDDValue[AliQAv1::kFATAL]);
-	    test=fHighSDDValue[AliQAv1::kFATAL];
-	    
-	  }//end if getentries
-	  else{
-	    
-	    TIter next(list);
+	  if (list->GetEntries() == 0){ 
+	    SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  } else{
 	    
 	    while( (hdata = dynamic_cast<TH1* >(next())) ){
 	      if (hdata){
-		if(hdata->GetEntries()==0)test=test+fStepBitSDD[AliQAv1::kFATAL];
-		else
-		  {
-		    TString hname=hdata->GetName();
-		    if(hname.Contains("SDDSDIGITSModulePattern"))
-		      {
-			//to do as raws
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end modpattern
-		    else if(hname.Contains("SDDAnodeDistribution"))
-		      {
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end anode bindistribution
-		    else if(hname.Contains("SDDTbinDistribution"))
-		      {
-			//to do as rp
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end timebindistribution
-		    else if(hname.Contains("SDDADCCountsDistribution"))
-		      {
-			test=test+fStepBitSDD[AliQAv1::kINFO];    
-		      }//end adc counts bindistribution
-
-		  }//end entries !=0
+		if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+		else {
+		  TString hname=hdata->GetName();
+		  if(hname.Contains("SDDSDIGITSModulePattern")) {
+		    //to do as raws
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDDAnodeDistribution")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDDTbinDistribution")) {
+		    //to do as rp
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  } else if(hname.Contains("SDDADCCountsDistribution")) {
+		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  }//end adc counts bindistribution
+		}//end entries !=0
 	      }//end hdata
 	    }//end while
 	  }//end else
 	}//end sdigits
-      test=1.;
+      SDDQACheckerValue=1.;
       break;
       
     }//end switch
 
   fCalibration=NULL;
   delete hdata;
-  return test;	
+  return SDDQACheckerValue;	
 }
  
 //__________________________________________________________________
@@ -550,5 +499,4 @@ void  AliITSQASDDChecker::SetSDDLimits(const Float_t *lowvalue, const Float_t * 
     }
 
 }
-
 
