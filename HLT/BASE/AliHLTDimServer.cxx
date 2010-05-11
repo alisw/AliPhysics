@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTDimServer.cxx
-    @author Matthias Richter
-    @date   2010-03-10
-    @brief  HLT DIM server implementation
-*/
+//  @file   AliHLTDimServer.cxx
+//  @author Matthias Richter
+//  @date   2010-03-10
+//  @brief  HLT DIM server implementation and dynamic access
+//          to DIM library
 
 #include "AliHLTDimServer.h"
 #include "TObjArray.h"
@@ -90,6 +90,7 @@ AliHLTDimServer::AliHLTDimService* AliHLTDimServer::CreateService(enum AliHLTDim
 
 TObjArray* AliHLTDimServer::CreateServiceGroup(enum AliHLTDimServer::AliHLTDimServiceDataType type, const char* basename, int count)
 {
+  // see header file for class documentation
   int iResult=0;
   TObjArray* pServices=new TObjArray;
   AliHLTLogging log;
@@ -143,6 +144,7 @@ int AliHLTDimServer::UpdateServices()
 
 AliHLTDimServer::AliHLTDimInterface* AliHLTDimServer::Interface()
 {
+  // get instance of the interface
   if (!fgpInterface) {
     fgpInterface=new AliHLTDimInterface;
     if (fgpInterface) {
@@ -154,6 +156,8 @@ AliHLTDimServer::AliHLTDimInterface* AliHLTDimServer::Interface()
 
 int AliHLTDimServer::Init(const char* dimNameServer)
 {
+  // init the dim server, check if the interface is available and set the
+  // DIM DNS node name
   AliHLTLogging log;
   const char* myname=GetName();
   if (myname==NULL || myname[0]==0) {
@@ -169,6 +173,7 @@ int AliHLTDimServer::Init(const char* dimNameServer)
 
 int AliHLTDimServer::Reset()
 {
+  // reset the DIM server, functionality needs to be clarified
   return 0;
 }
 
@@ -332,7 +337,7 @@ AliHLTDimServer::AliHLTDimService::AliHLTDimService(enum AliHLTDimServiceDataTyp
   };
 }
 
-void AliHLTDimServer::AliHLTDimService::Update(AliHLTDimServicePoint_t& sp)
+void AliHLTDimServer::AliHLTDimService::Update(const AliHLTDimServicePoint_t& sp)
 {
   // see header file for class documentation
   static bool bWarning=true;

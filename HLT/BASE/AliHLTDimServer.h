@@ -8,11 +8,12 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTDimServer.h
-    @author Matthias Richter
-    @date   20010-03-10
-    @brief  HLT DIM server
-*/
+//  @file   AliHLTDimServer.h
+//  @author Matthias Richter
+//  @date   20010-03-10
+//  @brief  HLT DIM server implementation and dynamic access
+//          to DIM library
+
 #include "AliHLTLogging.h"
 #include "TNamed.h"
 #include "TObjArray.h"
@@ -55,7 +56,7 @@ public:
     AliHLTDimService();
     AliHLTDimService(AliHLTDimServiceDataType type, const char* servicename);
     
-    void Update(AliHLTDimServicePoint_t& sp);
+    void Update(const AliHLTDimServicePoint_t& sp);
     AliHLTDimServiceDataType GetType() const {return fType;}
     void* GetLocation() {return &fData.iVal;}
     int GetId() const {return fId;}
@@ -96,7 +97,6 @@ public:
   /**
    * Register a service.
    * @param pService    the service to be registered
-   * @ingroup rcu_ce_base_services
    */
   int RegisterService(AliHLTDimService* pService);
 
@@ -105,7 +105,6 @@ public:
    * @param type        type of the channel, see @ref ceServiceDataType
    * @param name        unique name of the service
    * @return dim service object, needs to be cleaned by the caller
-   * @ingroup rcu_ce_base_services
    */
   AliHLTDimService* CreateService(AliHLTDimServiceDataType type, const char* name);
 
@@ -117,7 +116,6 @@ public:
    *                    replaced by the number, number is appended if no '%d' provided
    * @param count       number of services in this group, passed to the <i>update</i> and <i>set</i> function as parameter major
    * @return            TObjArray of AliHLTDimService objects, the array needs to be cleaned by the caller
-   * @ingroup rcu_ce_base_services
    */
   TObjArray* CreateServiceGroup(AliHLTDimServiceDataType type, const char* basename, int count);
 
@@ -154,7 +152,7 @@ protected:
 
   int SetState(int state) {fState=state; return fState;}
 
-  int GetState() {return fState;}
+  int GetState() const {return fState;}
 
   typedef void (*fctVoid)();
   typedef int (*fctDisServiceCallback)( const char*);
@@ -182,37 +180,37 @@ protected:
     int Init();
 
     int DisAddService(const char* service, const char* type, void* buffer, 
-		      int size, fctDisServiceCallback cb, long int tag) {
+		      int size, fctDisServiceCallback cb, long int tag) const {
       if (fpDisAddService) return (*fpDisAddService)(service, type, buffer, size, cb, tag);
       return -ENODEV;
     }
 
-    int DisAddService(const char* service, const char* type, void* buffer, int size) {
+    int DisAddService(const char* service, const char* type, void* buffer, int size) const {
       if (fpDisAddService) return (*fpDisAddService)(service, type, buffer, size, NULL, 0);
       return -ENODEV;
     }
 
-    int DisRemoveService(unsigned int id) {
+    int DisRemoveService(unsigned int id) const {
       if (fpDisRemoveService) return (*fpDisRemoveService)(id);
       return -ENODEV;
     }
 
-    int DisUpdateService(unsigned int id) {
+    int DisUpdateService(unsigned int id) const {
       if (fpDisUpdateService) return (*fpDisUpdateService)(id);
       return -ENODEV;
     }
 
-    int DisStartServing(const char *server) {
+    int DisStartServing(const char *server) const {
       if (fpDisStartServing) return (*fpDisStartServing)(server);
       return -ENODEV;
     }
 
-    int DisStopServing() {
+    int DisStopServing() const {
       if (fpDisStopServing) return (*fpDisStopServing)();
       return -ENODEV;
     }
 
-    int DisSetDnsNode(const char *server) {
+    int DisSetDnsNode(const char *server) const {
       if (fpDisSetDnsNode) return (*fpDisSetDnsNode)(server);
       return -ENODEV;
     }
