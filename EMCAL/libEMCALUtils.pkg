@@ -13,7 +13,6 @@ AliCaloFitResults.cxx \
 AliCaloFitSubarray.cxx \
 AliCaloRawAnalyzerCrude.cxx \
 AliCaloRawAnalyzerLMS.cxx \
-AliCaloRawAnalyzerPeakFinder.cxx \
 AliCaloRawAnalyzerNN.cxx \
 AliCaloPeakFinderVectors.cxx \
 AliEMCALHistoUtilities.cxx
