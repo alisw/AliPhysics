@@ -202,6 +202,8 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     HLTError("AliTPCcalibDB does not exist");
     return -ENOENT;
   }
+  calib->SetRun(GetRunNo());
+  calib->UpdateRunInformations(GetRunNo());
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
   if(!time0TPC){
     HLTError("OCDB entry TPC/Calib/PadTime0 (AliTPCcalibDB::GetPadTime0()) is not available.");
