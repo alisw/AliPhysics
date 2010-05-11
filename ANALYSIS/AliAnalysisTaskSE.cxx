@@ -490,8 +490,16 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     }
 
 // Call the user analysis    
-    if (!fSelectCollisions || isSelected) 
-	UserExec(option);
+    AliMCEventHandler*    mcH = 0;
+    mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+
+    if (!mcH) {
+	if (!fSelectCollisions || isSelected) 
+	    UserExec(option);
+    } else {
+	if ((!fSelectCollisions || isSelected) && (mcH->InitOk())) 
+	    UserExec(option);
+    }
     
 // Added protection in case the derived task is not an AOD producer.
     AliAnalysisDataSlot *out0 = GetOutputSlot(0);

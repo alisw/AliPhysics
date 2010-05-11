@@ -187,7 +187,7 @@ void AliMCEvent::FinishEvent()
 {
   // Clean-up after event
   //    
-    fStack->Reset(0);
+    if (fStack) fStack->Reset(0);
     fMCParticles->Delete();
     fMCParticleMap->Clear();
     if (fTRBuffer)
