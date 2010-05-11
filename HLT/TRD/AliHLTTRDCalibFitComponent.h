@@ -79,9 +79,10 @@ private:
 
   AliHLTUInt32_t fOutputSize;    // output size
   TObjArray* fOutArray;          // array containing the output
-  TObjArray* fTempArray;          // array containing the output
   TObjArray* fAfterRunArray;     // array with after run processing output 
-  Bool_t fIncSM[18];            // array for telling which super module was already added
+  Bool_t fIncSM[18];             // array for telling which super module was already added
+  Int_t fNoOfSM;                 // number of known SM
+  Int_t fNoOfIncSM;              // number of SM already added
   
   ClassDef(AliHLTTRDCalibFitComponent, 2)
 

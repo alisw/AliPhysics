@@ -63,8 +63,9 @@ AliHLTTRDCalibFitComponent::AliHLTTRDCalibFitComponent()
   : AliHLTCalibrationProcessor(),
     fOutputSize(500000),
     fOutArray(NULL),
-    fTempArray(NULL),
-    fAfterRunArray(NULL)
+    fAfterRunArray(NULL),
+    fNoOfSM(0),
+    fNoOfIncSM(0)
 {
   // Default constructor
 }
@@ -135,9 +136,6 @@ Int_t AliHLTTRDCalibFitComponent::DeinitCalibration()
   
   HLTDebug("DeinitCalibration");
   //fOutArray->Delete();
-  if(fTempArray){
-    delete fTempArray; fTempArray=0;
-  }
   delete fOutArray; fOutArray=0;
   fAfterRunArray->Delete();
   delete fAfterRunArray; fAfterRunArray=0;
@@ -170,37 +168,41 @@ Int_t AliHLTTRDCalibFitComponent::ProcessCalibration(const AliHLTComponent_Event
 
     if(SM!=lastSM){
       if(fIncSM[SM]){
-	PushBack(fTempArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
+	if(fNoOfIncSM<fNoOfSM)
+	  return 0;
+	fNoOfSM=fNoOfIncSM;
+	PushBack(fOutArray, AliHLTTRDDefinitions::fgkCalibrationDataType);
 	fOutArray->Delete();
 	delete fOutArray;
-	fOutArray = fTempArray;
-	fTempArray = NULL;
+	fOutArray = NULL;
 	for(int i=0; i<18; i++)
     	  fIncSM[i]=kFALSE;
+	fNoOfIncSM=0;
       }
       lastSM = SM;
       fIncSM[SM]=kTRUE;
+      fNoOfIncSM++;
     }
 
-    if(!fTempArray) fTempArray = (TObjArray*)iter->Clone();
+    if(!fOutArray) fOutArray = (TObjArray*)iter->Clone();
     else{
       TObjArray* inArr = (TObjArray*)iter;
       for(int i = inArr->GetEntriesFast(); i--;){
 	const TH1* histo = dynamic_cast<const TH1*>(inArr->At(i));
 	if(histo){
-	  if(fTempArray->At(i)){
-	    ((TH1*)fTempArray->At(i))->Add(histo);
+	  if(fOutArray->At(i)){
+	    ((TH1*)fOutArray->At(i))->Add(histo);
 	  }else{
-	    fTempArray->AddAt(histo->Clone(), i);
+	    fOutArray->AddAt(histo->Clone(), i);
 	  }
 	  continue;
 	}
 	AliTRDCalibraVdriftLinearFit* obj = dynamic_cast<AliTRDCalibraVdriftLinearFit*>(inArr->At(i));
 	if(obj){
-	  if(fTempArray->At(i)){
-	    ((AliTRDCalibraVdriftLinearFit*)fTempArray->At(i))->Add(obj);
+	  if(fOutArray->At(i)){
+	    ((AliTRDCalibraVdriftLinearFit*)fOutArray->At(i))->Add(obj);
 	  }else{
-	    fTempArray->AddAt(new AliTRDCalibraVdriftLinearFit(*obj), i);
+	    fOutArray->AddAt(new AliTRDCalibraVdriftLinearFit(*obj), i);
 	  }
 	}
       }

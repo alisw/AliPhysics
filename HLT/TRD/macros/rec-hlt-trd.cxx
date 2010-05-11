@@ -69,7 +69,7 @@ int rec_hlt_trd(const TString filename, TString outPath)
   // If not use these SMs:
   Int_t TRDmodules[18] = {0,1,7,8,9,10,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
 
-  // Use custom arguments for components?
+  // Use custom arguments for components? i.e.: not reading OCDB arguments
   Bool_t customArgs=kFALSE;
 
   // Disable HLT flag?
@@ -144,11 +144,11 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
   TString option="libAliHLTUtil.so libAliHLTTRD.so libAliHLTMUON.so libAliHLTGlobal.so libAliHLTTrigger.so loglevel=0x7f chains=";
   option+=chains;
-  TString afterTr, afterTrOff, afterCf;
+  TString afterTr, afterTrOff, afterCf, afterCal;
 
   for (int module = 0; module < usedModules; module++) 
     {
-      TString arg, publisher, cf, tr, trOff;
+      TString arg, publisher, cf, tr, trOff, cal;
       // raw data publisher components
       publisher.Form("TRD-RP_%02d", TRDmodules[module]);
       arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i -verbose", TRDmodules[module]+1024, (int)TMath::Power(2,TRDmodules[module]));
@@ -198,6 +198,15 @@ int rec_hlt_trd(const TString filename, TString outPath)
 
       if (afterTrOff.Length()>0) afterTrOff+=" ";
       afterTrOff+=trOff;
+
+      // new SM wise calibration
+      arg="-takeAllEvents";
+
+      cal.Form("TRD-CalHist_%02d", TRDmodules[module]);
+      AliHLTConfiguration calConf(cal.Data(), "TRDCalibHisto", tr.Data(), arg.Data());
+      
+      if (afterCal.Length()>0) afterCal+=" ";
+      afterCal+=cal;
       
     }
 
@@ -205,8 +214,12 @@ int rec_hlt_trd(const TString filename, TString outPath)
   AliHLTConfiguration histoConf("TRD-ClHisto", "TRDClusterHisto", afterCf.Data(), "");
   AliHLTConfiguration writerHistoConf( "TRD-ClHistoFile", "ROOTFileWriter", "TRD-ClHisto", "-directory hlt-trd-histo/ -datafile histo.root -concatenate-events -concatenate-blocks");
 
-  // calibration (you may use tr or trOff here)
-  AliHLTConfiguration calibConf("TRD-Calib", "TRDCalibration", afterTr.Data(), "-TrgStr hi -rejectTrgStr");
+  // new calibration (SM wise)
+  AliHLTConfiguration calibFitConf("TRD-CalibFit", "TRDCalibFit", afterCal.Data(), "");
+  AliHLTConfiguration writerCalibFitConf( "TRD-CalibFitFile", "ROOTFileWriter", "TRD-CalibFit", "-directory hlt-trd-calib/ -datafile calibFit.root -concatenate-events -concatenate-blocks -write-all-events");
+
+  // old calibration (you may use tr or trOff here)
+  AliHLTConfiguration calibConf("TRD-Calib", "TRDCalibration", afterTr.Data(), "-takeAllEvents");
   AliHLTConfiguration writerCalibConf( "TRD-CalibFile", "ROOTFileWriter", "TRD-Calib", "-directory hlt-trd-calib/ -datafile calib.root -concatenate-events -concatenate-blocks -write-all-events");
 
   // esd converter
