@@ -809,7 +809,8 @@ Int_t AliMpDDLStore::GetBusPatchId(Int_t detElemId, Int_t manuId) const {
     AliMpDetElement* detElement = GetDetElement(detElemId);
     Int_t pos = GetBusPatchIndex(detElemId, manuId);
 
-    if ( pos > detElement->GetNofBusPatches() ) {
+    if ( pos >= detElement->GetNofBusPatches() ) 
+    {
         AliErrorStream()
         << "Pos = " << pos
         << " greater than the size = " <<  detElement->GetNofBusPatches()

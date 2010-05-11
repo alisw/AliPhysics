@@ -207,7 +207,7 @@ Int_t AliMpDetElement::GetBusPatchId(Int_t index) const
 {
 /// Return the index-th bus patch
 
-  if ( index < 0 || index > GetNofBusPatches() ) {
+  if ( index < 0 || index >= GetNofBusPatches() ) {
     AliErrorStream()
       << "In DE = " << fId << ": Index " << index << " outside limits." << endl;
     return 0;
