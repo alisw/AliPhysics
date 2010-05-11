@@ -45,7 +45,11 @@ fClusters(0),
 fMap(0),
 fNPeaks(-1),
 fNModules(AliITSgeomTGeo::GetNModules()),
-fEvent(0){
+fEvent(0),
+fZmin(0),
+fZmax(0),
+fXmin(0),
+fXmax(0){
     // default cluster finder
     // Input:
     //   none.
@@ -65,7 +69,11 @@ fClusters(0),
 fMap(0),
 fNPeaks(-1),
 fNModules(AliITSgeomTGeo::GetNModules()),
-fEvent(0){
+fEvent(0),
+fZmin(0),
+fZmax(0),
+fXmin(0),
+fXmax(0){
     // default cluster finder
     // Standard constructor for cluster finder
     // Input:
@@ -89,7 +97,11 @@ fClusters(0),
 fMap(0),
 fNPeaks(-1),
 fNModules(AliITSgeomTGeo::GetNModules()),
-fEvent(0){
+fEvent(0),
+fZmin(0),
+fZmax(0),
+fXmin(0),
+fXmax(0){
     // default cluster finder
     // Standard + cluster finder constructor
     // Input:
@@ -105,16 +117,22 @@ fEvent(0){
 }
 
 //______________________________________________________________________
-AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : TObject(source),
-fModule(source.fModule),
-fDigits(),
-fNdigits(source.fNdigits),
-fDetTypeRec(),
-fClusters(),
-fMap(),
-fNPeaks(source.fNPeaks),
-fNModules(source.fNModules),
-fEvent(source.fEvent) {
+AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : 
+  TObject(source),
+  fModule(source.fModule),
+  fDigits(),
+  fNdigits(source.fNdigits),
+  fDetTypeRec(),
+  fClusters(),
+  fMap(),
+  fNPeaks(source.fNPeaks),
+  fNModules(source.fNModules),
+  fEvent(source.fEvent),
+  fZmin(source.fZmin),
+  fZmax(source.fZmax),
+  fXmin(source.fXmin),
+  fXmax(source.fXmax) 
+{
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   AliError("Copy constructor not allowed\n");
@@ -449,7 +467,17 @@ MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSRecPoint &c) {
   //------------------------------------------------------------
   Float_t q=(Float_t)bins[k].GetQ();
   Int_t i=k/max, j=k-i*max;
-
+  if(c.GetQ()<0.01){ // first entry in cluster
+    fXmin=i;
+    fXmax=i;
+    fZmin=j;
+    fZmax=j;
+  }else{  // check cluster extension
+    if(i<fXmin) fXmin=i;
+    if(i>fXmax) fXmax=i;
+    if(j<fZmin) fZmin=j;
+    if(j>fZmax) fZmax=j;
+  }
   c.SetQ(c.GetQ()+q);
   c.SetY(c.GetY()+i*q);
   c.SetZ(c.GetZ()+j*q);

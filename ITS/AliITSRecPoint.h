@@ -79,6 +79,7 @@ class AliITSRecPoint : public AliCluster {
   Int_t GetSPDclusterType() const; // for SPD returns cluster type according to conventional numbering (-1 for SDD and SSD)
   Int_t GetSDDclusterType() const; 
   Int_t GetSSDclusterType() const; 
+  static void DecodeSDDclusterType(Int_t cluType, Int_t &cluSizAn, Int_t& cluSizTb, Int_t &drSide);
 
   Int_t GetClusterType() const {
     if(fLayer<=1) return GetSPDclusterType();

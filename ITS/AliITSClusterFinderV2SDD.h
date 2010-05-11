@@ -25,6 +25,11 @@ public:
   virtual ~AliITSClusterFinderV2SDD();
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
+  void SetPeakSelection(Float_t looseCut=15., Float_t tightCut=30., Float_t maxTime=2000.){
+    fCutOnPeakLoose=looseCut;
+    fCutOnPeakTight=tightCut;
+    fMaxDrTimeForTightCut=maxTime;
+  }
 
   enum {kHybridsPerDDL = 24};   // number of hybrids in each DDL 
   enum {kModulesPerDDL = 12};   // number of modules in each DDL 
@@ -49,8 +54,11 @@ public:
   Int_t fNZbins;                    // number of cells along anodes
   Int_t fNXbins;                    // number of cells along time
   AliBin* fDDLBins[kHybridsPerDDL]; // container for digits for 1 DDL
+  Float_t fCutOnPeakLoose;          // loose cut on peak (for all drift times)
+  Float_t fCutOnPeakTight;          // tight cut on peak (for small drift times)
+  Float_t fMaxDrTimeForTightCut;    // max. drift time for fCutOnPeakTight
 
-  ClassDef(AliITSClusterFinderV2SDD,5)  // ITS cluster finder V2 for SDD
+  ClassDef(AliITSClusterFinderV2SDD,6)  // ITS cluster finder V2 for SDD
 };
 
 #endif

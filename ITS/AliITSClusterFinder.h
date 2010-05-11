@@ -141,13 +141,17 @@ class AliITSClusterFinder :public TObject{
   
   Int_t fNModules;             // total number of modules    
   Int_t fEvent;                //event number
+  Int_t fZmin;   // minimum channel in Zloc
+  Int_t fZmax;   // maximum channel in Zloc
+  Int_t fXmin;   // minimum channel in Xloc
+  Int_t fXmax;   // maximum channel in Xloc 
   
   AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
   // assignment operator
   AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
   
 
-  ClassDef(AliITSClusterFinder,9) //Class for clustering and reconstruction of space points
+  ClassDef(AliITSClusterFinder,10) //Class for clustering and reconstruction of space points
 };
 // Input and output functions for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSClusterFinder &source);

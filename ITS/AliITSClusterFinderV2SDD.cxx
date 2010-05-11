@@ -46,7 +46,10 @@ AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):Ali
   fNAnodes(0),
   fNTimeBins(0),
   fNZbins(0),
-  fNXbins(0)
+  fNXbins(0),
+  fCutOnPeakLoose(0.),
+  fCutOnPeakTight(0.),
+  fMaxDrTimeForTightCut(0.)
 {
   //Default constructor
 
@@ -59,6 +62,7 @@ AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):Ali
   for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++){
    fDDLBins[iHyb]=new AliBin[kMaxBin];
   }
+  SetPeakSelection(15.,30.,2000.);
 }
  
 
@@ -185,32 +189,40 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	if (npeaks==0) continue;
 
 	Int_t k,l;
-	for (k=0; k<npeaks-1; k++){//mark adjacent peaks
-	  if (idx[k] < 0) continue; //this peak is already removed
-	  for (l=k+1; l<npeaks; l++) {
-	    if (idx[l] < 0) continue; //this peak is already removed
-	    Int_t ki=idx[k]/fNZbins, kj=idx[k] - ki*fNZbins;
-	    Int_t li=idx[l]/fNZbins, lj=idx[l] - li*fNZbins;
-	    Int_t di=TMath::Abs(ki - li);
-	    Int_t dj=TMath::Abs(kj - lj);
-	    if (di>1 || dj>1) continue;
-	    if (bins[s][idx[k]].GetQ() > bins[s][idx[l]].GetQ()) {
-	      msk[l]=msk[k];
-	      idx[l]*=-1;
-	    } else {
-	      msk[k]=msk[l];
-	      idx[k]*=-1;
-	      break;
-	    } 
+	Int_t nClust;
+	if(repa->GetUseUnfoldingInClusterFinderSDD()){
+	  for (k=0; k<npeaks-1; k++){//mark adjacent peaks	    
+	    if (idx[k] < 0) continue; //this peak is already removed
+	    for (l=k+1; l<npeaks; l++) {
+	      if (idx[l] < 0) continue; //this peak is already removed
+	      Int_t ki=idx[k]/fNZbins, kj=idx[k] - ki*fNZbins;
+	      Int_t li=idx[l]/fNZbins, lj=idx[l] - li*fNZbins;
+	      Int_t di=TMath::Abs(ki - li);
+	      Int_t dj=TMath::Abs(kj - lj);
+	      if (di>1 || dj>1) continue;
+	      if (bins[s][idx[k]].GetQ() > bins[s][idx[l]].GetQ()) {
+		msk[l]=msk[k];
+		idx[l]*=-1;
+	      } else {
+		msk[k]=msk[l];
+		idx[k]*=-1;
+		break;
+	      } 
+	    }
 	  }
+	  nClust=npeaks;
+	}else{
+	  for (k=1; k<npeaks; k++) msk[k]=msk[0];
+	  nClust=1;
 	}
-
+	Float_t maxADC=0;
 	for (k=0; k<npeaks; k++) {
-	  if(repa->GetUseUnfoldingInClusterFinderSDD()==kFALSE) msk[k]=msk[0];
+	  if(idx[k]>0. && bins[s][idx[k]].GetQ() > maxADC) maxADC=bins[s][idx[k]].GetQ();
 	  MarkPeak(TMath::Abs(idx[k]), fNZbins, bins[s], msk[k]);
 	}
-        
-	for (k=0; k<npeaks; k++) {
+	if(maxADC<fCutOnPeakLoose) continue;
+
+	for (k=0; k<nClust; k++) {
 	  if (idx[k] < 0) continue; //removed peak
 	  AliITSRecPoint c;
 	  MakeCluster(idx[k], fNZbins, bins[s], msk[k], c);
@@ -219,42 +231,33 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  for (Int_t ilab=0;ilab<10;ilab++){
 	    milab[ilab]=-2;
 	  }
-	  Int_t maxi=0,mini=0,maxj=0,minj=0;
 	  
-	  for (Int_t di=-5; di<=5;di++){
-	    for (Int_t dj=-10;dj<=10;dj++){
-	      index = idx[k]+di+dj*fNZbins;
-	      if (index<0) continue;
-	      if (index>=kMaxBin) continue;
-	      AliBin *b=&bins[s][index];
-	      Int_t jAnode=index%fNZbins-1;
-	      Int_t adcSignal=b->GetQ();
-	      if(adcSignal>cal->GetThresholdAnode(jAnode)){
-		if (di>maxi) maxi=di;
-		if (di<mini) mini=di;
-		if (dj>maxj) maxj=dj;
-		if (dj<minj) minj=dj;
-	      }
-	      //
-	      if(digits) {
-		if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
-		  AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
-		  for (Int_t itrack=0;itrack<10;itrack++){
-		    Int_t track = (d->GetTracks())[itrack];
-		    if (track>=0) {
-		      AddLabel(milab, track); 
-		    }
+	  if(digits) {
+	    for (Int_t di=-2; di<=2;di++){
+	      for (Int_t dj=-2;dj<=2;dj++){
+		index = idx[k]+di+dj*fNZbins;
+		if (index<0) continue;
+		if (index>=kMaxBin) continue;
+		AliBin *b=&bins[s][index];
+		AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
+		for (Int_t itrack=0;itrack<10;itrack++){
+		  Int_t track = (d->GetTracks())[itrack];
+		  if (track>=0) {
+		    AddLabel(milab, track); 
 		  }
 		}
 	      }
 	    }
 	  }
-	  Int_t clSizAnode=maxi-mini+1;
-	  Int_t clSizTb=maxj-minj+1;
+	  
+
+	  Int_t clSizAnode=fZmax-fZmin+1;
+	  Int_t clSizTb=fXmax-fXmin+1;	  
 	  if(repa->GetUseSDDClusterSizeSelection()){
 	    if(clSizTb==1) continue; // cut common mode noise spikes
 	    if(clSizAnode>5)  continue; // cut common mode noise spikes
 	    if(clSizTb>10)  continue; // cut clusters on noisy anodes
+	    if(cal-> IsAMAt20MHz() && clSizTb>8)  continue; // cut clusters on noisy anodes
 	  }
 	  
 	  AliITSresponseSDD* rsdd = fDetTypeRec->GetResponseSDD();
@@ -266,6 +269,8 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  Float_t zdet = GetSeg()->GetLocalZFromAnode(zAnode);
 	  Float_t driftTimeUncorr = GetSeg()->GetDriftTimeFromTb(timebin)+jitter*rsdd->GetCarlosRXClockPeriod();
 	  Float_t driftTime=driftTimeUncorr-rsdd->GetTimeZero(fModule);
+	  if(driftTime<fMaxDrTimeForTightCut && maxADC<fCutOnPeakTight) continue;
+
 	  Float_t driftSpeed = cal->GetDriftSpeedAtAnode(zAnode) + rsdd->GetDeltaVDrift(fModule,zAnode>255);
 	  Float_t driftPathMicron = driftTime*driftSpeed;
 	  const Double_t kMicronTocm = 1.0e-4; 
@@ -294,9 +299,10 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  if (digits) CheckLabels2(milab);
 	  milab[3]=fNdet[fModule];
 	  AliITSRecPoint cc(milab,hit,info);
-	  cc.SetType(npeaks);
+	  cc.SetType(nClust*100+npeaks);
 	  cc.SetDriftTime(driftTimeUncorr);
 	  cc.SetDriftSide(s);
+	  cc.SetChargeRatio(maxADC);
 	  if(clusters) new (cl[ncl]) AliITSRecPoint(cc); 
 	  else {
 	    fDetTypeRec->AddRecPoint(cc);
@@ -306,7 +312,8 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
       }
     }
   }
- 
+  AliDebug(2,Form("Clusters found on SDD module %d (unfolding %d) = %d\n",fModule,repa->GetUseUnfoldingInClusterFinderSDD(),ncl));
+
 } 
 //______________________________________________________________________
 void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters){

@@ -248,7 +248,14 @@ Int_t AliITSRecPoint::GetSDDclusterType() const {
   if(fDriftSide==1) typ+=1<<16;
   return typ;
 }
-
+//----------------------------------------------------------------------
+void  AliITSRecPoint::DecodeSDDclusterType(Int_t cluType, Int_t &cluSizAn, Int_t& cluSizTb, Int_t &drSide){
+// Extract cluster sizes and drift side from cluster type 
+  cluSizTb=cluType&0xFF;
+  cluSizAn=(cluType>>8)&0xFF;
+  drSide=(cluType>>16);
+  return;
+}
 //----------------------------------------------------------------------
 Int_t AliITSRecPoint::GetSSDclusterType() const {
 // returns an Int_t with encoded information on cluster size
