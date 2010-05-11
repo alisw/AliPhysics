@@ -58,7 +58,8 @@ public:
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
-	
+  void GetOCDBObjectDescription(TMap* const targetMap);
+
 protected:
   // Protected functions to implement AliHLTComponent's interface.
   // These functions provide initialization as well as the actual processing

@@ -620,3 +620,23 @@ int AliHLTTRDTrackerV1Component::ReadPreprocessorValues(const char* modules)
   }  
   return iResult;
 }
+
+void AliHLTTRDTrackerV1Component::GetOCDBObjectDescription(TMap* const targetMap){
+  // Get a list of OCDB object description needed for the particular component
+  if (!targetMap) return;
+  targetMap->Add(new TObjString("HLT/ConfigTRD/TrackerV1Component"), new TObjString("component arguments"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberGainFactor"), new TObjString("gain factor of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberT0"), new TObjString("T0 of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberVdrift"), new TObjString("drift velocity of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/DetNoise"), new TObjString("noise of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/LocalGainFactor"), new TObjString("per pad gain factor"));
+  targetMap->Add(new TObjString("TRD/Calib/LocalT0"), new TObjString("per pad T0"));
+  targetMap->Add(new TObjString("TRD/Calib/LocalVdrift"), new TObjString("per pad drift velocity"));
+  targetMap->Add(new TObjString("TRD/Calib/PadNoise"), new TObjString("per pad noise"));
+  targetMap->Add(new TObjString("TRD/Calib/PadStatus"), new TObjString("pad status"));
+  targetMap->Add(new TObjString("TRD/Calib/PRFWidth"), new TObjString("pad response function"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberStatus"), new TObjString("status of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/PIDLQ"), new TObjString("likelyhood PID"));
+  targetMap->Add(new TObjString("TRD/Calib/PIDNN"), new TObjString("neuronal network PID"));
+  targetMap->Add(new TObjString("TRD/Calib/PIDThresholds"), new TObjString("threshold for PID"));
+}

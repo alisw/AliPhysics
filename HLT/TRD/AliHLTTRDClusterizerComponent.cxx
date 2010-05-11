@@ -210,6 +210,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtD
   if (evtData.fEventID == 10)
     CALLGRIND_START_INSTRUMENTATION;
 
+  if(!IsDataEvent())return 0;
+
   HLTDebug( "NofBlocks %i", evtData.fBlockCnt );
   // Process an event
   AliHLTUInt32_t totalSize = 0, offset = 0;
@@ -682,4 +684,20 @@ int AliHLTTRDClusterizerComponent::Reconfigure(const char* cdbEntry, const char*
   }
 
   return iResult;
+}
+
+void AliHLTTRDClusterizerComponent::GetOCDBObjectDescription(TMap* const targetMap){
+  // Get a list of OCDB object description needed for the particular component
+  if (!targetMap) return;
+  targetMap->Add(new TObjString("HLT/ConfigTRD/ClusterizerComponent"), new TObjString("component arguments"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberGainFactor"), new TObjString("gain factor of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberT0"), new TObjString("T0 of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/ChamberVdrift"), new TObjString("drift velocity of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/DetNoise"), new TObjString("noise of chambers"));
+  targetMap->Add(new TObjString("TRD/Calib/LocalGainFactor"), new TObjString("per pad gain factor"));
+  targetMap->Add(new TObjString("TRD/Calib/LocalT0"), new TObjString("per pad T0"));
+  targetMap->Add(new TObjString("TRD/Calib/LocalVdrift"), new TObjString("per pad drift velocity"));
+  targetMap->Add(new TObjString("TRD/Calib/PadNoise"), new TObjString("per pad noise"));
+  targetMap->Add(new TObjString("TRD/Calib/PadStatus"), new TObjString("pad status"));
+  targetMap->Add(new TObjString("TRD/Calib/PRFWidth"), new TObjString("pad response function"));
 }

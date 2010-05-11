@@ -45,6 +45,7 @@ public:
   int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
+  void GetOCDBObjectDescription(TMap* const targetMap);
 	
 protected:
 	
