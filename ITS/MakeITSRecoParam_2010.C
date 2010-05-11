@@ -86,6 +86,9 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     // Removal of tracklets reconstructed in the SPD overlaps 
     itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
   
+    // V0 finder (A. Marin)
+    itsRecoParam->GetESDV0Params()->SetMaxPidProbPionForb(0.9);
+
     //******************************************************************
 
     itsRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
