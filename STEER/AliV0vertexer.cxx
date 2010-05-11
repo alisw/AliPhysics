@@ -35,7 +35,7 @@ Double_t AliV0vertexer::fgDPmin=0.05;  //min imp parameter for the 2nd daughter
 Double_t AliV0vertexer::fgDCAmax=1.5;  //max DCA between the daughter tracks
 Double_t AliV0vertexer::fgCPAmin=0.9;  //min cosine of V0's pointing angle
 Double_t AliV0vertexer::fgRmin=0.2;    //min radius of the fiducial volume
-Double_t AliV0vertexer::fgRmax=100.;   //max radius of the fiducial volume
+Double_t AliV0vertexer::fgRmax=200.;   //max radius of the fiducial volume
 
 Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
