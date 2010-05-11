@@ -248,16 +248,18 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
       AliInfo(Form("ESD - Tested %d histograms, Return value %f \n",tested,rv[specie]));
     }
   }  // end of ESD QA
-  
-  //____________________________________________________________________________
+  else{
+    
+    //____________________________________________________________________________
 
-  Double_t spdCheck[AliRecoParam::kNSpecies] ;
-  Double_t sddCheck[AliRecoParam::kNSpecies] ;
-  Double_t ssdCheck[AliRecoParam::kNSpecies] ;
+    Double_t spdCheck[AliRecoParam::kNSpecies] ;
+    Double_t sddCheck[AliRecoParam::kNSpecies] ;
+    Double_t ssdCheck[AliRecoParam::kNSpecies] ;
 
 
 
     for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+      if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) continue; 
       if ( AliQAv1::Instance()->IsEventSpecieSet(specie) ) {
 	Double_t histotot=list[specie]->GetEntries();
 	if(histotot!=0)
@@ -302,7 +304,7 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
 		  }
 		delete []stepSDD;
 	      }//end check SDD entries
-	      else{spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
+	      else{ssdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
 	      if(sddCheck[specie]>rv[specie])rv[specie]=sddCheck[specie];  
 	    }//end SDD
 	    //strip
@@ -321,7 +323,7 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
 		}
 	      delete [] stepSSD;
 	      }//end check SSD entries
-	      else{spdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
+	      else{ssdCheck[specie]=fUpTestValue[AliQAv1::kFATAL];}
 	      if(ssdCheck[specie]>rv[specie])rv[specie]=ssdCheck[specie];
 	    }//end SSD
 	    
@@ -331,8 +333,8 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
 	  }//end entries
       }//end if event specie
     }//end for
+  }
 }
-
 
 //____________________________________________________________________________
 void AliITSQAChecker::SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset)
