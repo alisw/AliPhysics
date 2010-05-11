@@ -30,10 +30,10 @@
 #include <TSystem.h>
 #endif
 
-void runDataReconstruction(const char* input = "raw://run86102",
+void runDataReconstruction(const char* input = "raw://run117099",
                            const char* ocdbPath = "raw://",
                            const char* recoptions="SAVEDIGITS",
-                           Int_t numberOfEvents=-1)
+                           Int_t numberOfEvents=10000)
 { 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbPath);
@@ -46,7 +46,7 @@ void runDataReconstruction(const char* input = "raw://run86102",
   MuonRec.SetRunTracking("MUON");
   MuonRec.SetFillESD(" ");
   MuonRec.SetLoadAlignData("MUON");
-  MuonRec.SetNumberOfEventsPerFile(0);
+  MuonRec.SetNumberOfEventsPerFile(500); // must set a limit otherwise time per event increases with event number (this is a "bug" of the loaders)
   MuonRec.SetOption("MUON",recoptions);  
   MuonRec.SetRunQA("MUON:ALL");
   MuonRec.SetQAWriteExpert(AliQAv1::kMUON);
