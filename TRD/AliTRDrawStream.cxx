@@ -817,7 +817,7 @@ Int_t AliTRDrawStream::ReadZSData()
       }
       while (channelcountExp < channelcountMax && channelcountExp < 21 && 
 	     fPayloadCurr - fPayloadStart < fPayloadSize - 10 * channelcountExp - 1) {
-	AliError(MCMError(kAdcMaskInconsistent,
+	AliDebug(1, MCMError(kAdcMaskInconsistent,
 			  Form("Possible MCM-H: 0x%08x, possible ADC-mask: 0x%08x", 
 			       *(fPayloadCurr + 10 * channelcountExp), 
 			       *(fPayloadCurr + 10 * channelcountExp + 1) ) ));
