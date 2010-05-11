@@ -263,7 +263,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 
     	   Float_t xyz[3]; xyz[0] = xyz[1] = xyz[2] = -99.;
     	  	   
-	   HLTDebug("padrow: %d, charge: %f, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (Float_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
+	   HLTDebug("padrow: %d, charge: %d, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (UInt_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
 	   
 	   //fOfflineTransform=NULL;
 	   
@@ -292,7 +292,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     cluster.fZ = x[2];		     
  	   }	   
 
-	   HLTDebug("cluster X: %f, Y: %f, Z: %f \n", cluster.fX, cluster.fY, cluster.fZ);
+	   HLTDebug("cluster X: %f, Y: %f, Z: %f, charge: %d \n", cluster.fX, cluster.fY, cluster.fZ, (UInt_t)cluster.fCharge);
 	   spacePoints[nAddedClusters] = cluster;
 	   	   
            nAddedClusters++; 
