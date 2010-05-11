@@ -52,6 +52,7 @@
 #include "AliTRDcheckPID.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDpidInfo.h"
+#include "info/AliTRDv0Info.h"
 
 Char_t const * AliTRDcheckPID::fgMethod[3] = {"LQ", "NN", "ESD"};
 
@@ -148,8 +149,8 @@ void AliTRDcheckPID::UserExec(Option_t *opt)
   // Execution part
   //
 
-  fPID->Delete();
   fV0s = dynamic_cast<TObjArray *>(GetInputData(2));
+  fPID->Delete();
 
   AliTRDrecoTask::UserExec(opt);
 
@@ -248,6 +249,13 @@ TObjArray * AliTRDcheckPID::Histos(){
       AliTRDgeometry::kNlayer, 0.5, AliTRDgeometry::kNlayer+.5);
   } else h->Reset();
   fContainer->AddAt(h, kNTracklets);
+
+  // V0 performance
+  if(!(h = (TH1F*)gROOT->FindObject("nV0"))){
+    h = new TH1F("nV0", "V0s/track;v0/track;entries", 
+      6, -0.5, 5.5);
+  } else h->Reset();
+  fContainer->AddAt(h, kV0);
 
   return fContainer;
 }
@@ -818,6 +826,42 @@ TH1 *AliTRDcheckPID::PlotMomBin(const AliTRDtrackV1 *track)
   return hMomBin;
 }
 
+//_______________________________________________________
+TH1 *AliTRDcheckPID::PlotV0(const AliTRDtrackV1 *track)
+{
+  //
+  // Plot the V0 performance against MC
+  //
+
+  if(track) fkTrack = track;
+  if(!fkTrack){
+    AliDebug(2, "No Track defined.");
+    return NULL;
+  }  
+  if(!fkESD->HasV0()) return NULL;
+  if(!HasMCdata()){ 
+    AliDebug(1, "No MC defined.");
+    return NULL;
+  }
+  if(!fContainer){
+    AliWarning("No output container defined.");
+    return NULL;
+  }
+  AliDebug(2, Form("TRACK[%d] species[%s][%d]\n", fkESD->GetId(), AliPID::ParticleShortName(fkMC->GetPID()), fkMC->GetPDG()));
+
+  TH1 *h=dynamic_cast<TH1F*>(fContainer->At(kV0));
+  Int_t sgn(0), n(0); AliTRDv0Info *v0(NULL);
+  for(Int_t iv0(fV0s->GetEntriesFast()); iv0--;){
+    if(!(v0=(AliTRDv0Info*)fV0s->At(iv0))) continue;
+    if(!(sgn = v0->HasTrack(fkESD->GetId()))) continue;
+    //for(Int_t is=AliPID::kSPECIES; is--;) v0->GetPID(is, track);
+    //v0->Print();
+    n++;
+    //break;
+  }
+  h->Fill(n);
+  return h;
+}
 
 //________________________________________________________
 Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)

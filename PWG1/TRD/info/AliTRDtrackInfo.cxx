@@ -26,6 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TDatabasePDG.h"
+#include "TPDGCode.h"
 #include "TVectorT.h"
 
 #include "AliTrackReference.h"
@@ -104,9 +105,28 @@ AliTRDtrackInfo::AliMCinfo::AliMCinfo(const AliMCinfo &mc)
   }
 }
 
+//________________________________________________________
+Int_t AliTRDtrackInfo::AliMCinfo::GetPID() const
+{
+  switch(fPDG){
+  case kElectron: 
+  case kPositron: return AliPID::kElectron;  
+  case kMuonPlus:
+  case kMuonMinus: return AliPID::kMuon;  
+  case kPiPlus: 
+  case kPiMinus: return AliPID::kPion;  
+  case kKPlus: 
+  case kKMinus: return AliPID::kKaon;
+  case kProton: 
+  case kProtonBar: return AliPID::kProton;
+  } 
+  return -1;
+}
+
 //___________________________________________________
 AliTRDtrackInfo::AliESDinfo::AliESDinfo()
-  :fId(-1)
+  :fHasV0(0)
+  ,fId(-1)
   ,fStatus(0)
   ,fKinkIndex(0)
   ,fTPCncls(0)
@@ -124,7 +144,8 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
 
 //___________________________________________________
 AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
-  :fId(esd.fId)
+  :fHasV0(esd.fHasV0)
+  ,fId(esd.fId)
   ,fStatus(esd.fStatus)
   ,fKinkIndex(esd.fKinkIndex)
   ,fTPCncls(esd.fTPCncls)

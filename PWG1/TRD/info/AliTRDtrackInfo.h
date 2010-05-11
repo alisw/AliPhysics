@@ -34,7 +34,7 @@ public:
     AliESDinfo(const AliESDinfo &esd);
     virtual ~AliESDinfo();
     AliESDinfo& operator=(const AliESDinfo &esd);
-
+    Bool_t      HasV0() const {return fHasV0;}
     Int_t       GetId() const {return fId;}
     ULong_t     GetStatus() const {return fStatus;}
     Int_t       GetKinkIndex() const {return fKinkIndex;}
@@ -46,6 +46,7 @@ public:
     AliExternalTrackParam* GetOuterParam() const { return fOP;}
 
   protected:
+    UChar_t     fHasV0;         // v0 bit
     Int_t       fId;            // ESD track id
     ULong_t     fStatus;        // ESD track status
     Int_t       fKinkIndex;     // ESD kink index
@@ -70,6 +71,7 @@ public:
     Int_t   GetLabel() const {return fLabel;}
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
+    Int_t   GetPID() const ;
     Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
     static Double_t GetKalmanStep() {return fgKalmanStep;}
@@ -106,6 +108,7 @@ public:
   Int_t              GetKinkIndex() const { return fESD.fKinkIndex;}
   UShort_t           GetTPCncls() const { return fESD.fTPCncls;}
   Int_t              GetPDG() const { return fMC ? fMC->fPDG : 0; }
+  Int_t              GetPID() const { return fMC ? fMC->GetPID() : -1; }
   ULong_t            GetStatus() const {return fESD.fStatus;}
   AliTRDtrackV1*     GetTrack() const { return fTRDtrack; }
   AliTrackReference* GetTrackRef(Int_t entry) const;
@@ -131,6 +134,7 @@ public:
   void               SetESDpidQuality(UChar_t q) { fESD.fTRDpidQuality = q;}
   void               SetSlices(Int_t n, Double32_t *s);
   inline void        SetESDpid(Double_t *);
+  void               SetV0(Bool_t v0=kTRUE) {fESD.fHasV0 = v0;}
   
 private:
     enum{
