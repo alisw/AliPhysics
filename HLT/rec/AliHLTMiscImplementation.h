@@ -42,6 +42,9 @@ class AliHLTMiscImplementation : public AliHLTMisc
   const TClass* IsAliESDHLTDecision() const;
   int Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* pESDHLTDecision) const;
 
+  int InitStreamerInfos(const char* ocdbEntry) const;
+  int InitStreamerInfos(TObjArray* pSchemas) const;
+
  private:
 
   ClassDef(AliHLTMiscImplementation, 0)

@@ -23,6 +23,7 @@
 
 #include "AliHLTMiscImplementation.h"
 #include "AliHLTLogging.h"
+#include "AliLog.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -34,6 +35,9 @@
 #endif //HAVE_NOT_ALIESDHLTDECISION
 #include "TGeoGlobalMagField.h"
 #include "AliHLTGlobalTriggerDecision.h"
+#include "TClass.h"
+#include "TStreamerInfo.h"
+#include "TObjArray.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTMiscImplementation);
@@ -245,5 +249,79 @@ int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision,
   new (pESDHLTDecision) AliESDHLTDecision(pDecision->Result(), pDecision->GetTitle());
 
 #endif // HAVE_NOT_ALIESDHLTDECISION
+  return 0;
+}
+
+int AliHLTMiscImplementation::InitStreamerInfos(const char* ocdbEntry) const
+{
+  // init streamer infos for HLT reconstruction
+  // Root schema evolution is not enabled for AliHLTMessage and all streamed objects.
+  // Objects in the raw data payload rely on the availability of the correct stream info.
+  // The relevant streamer info for a specific run is stored in the OCDB.
+  int iResult=0;
+
+  AliCDBEntry* pEntry=LoadOCDBEntry(ocdbEntry);
+  TObject* pObject=NULL;
+  if (pEntry && (pObject=ExtractObject(pEntry))!=NULL)
+    {
+    TObjArray* pSchemas=dynamic_cast<TObjArray*>(pObject);
+    if (pSchemas) {
+      iResult=InitStreamerInfos(pSchemas);
+    } else {
+      AliError(Form("internal mismatch in OCDB entry %s: wrong class type", ocdbEntry));
+    }
+  } else {
+    AliWarning(Form("missing HLT reco data (%s), skipping initialization of streamer info for TObjects in HLT raw data payload", ocdbEntry));
+  }
+  return iResult;
+}
+
+int AliHLTMiscImplementation::InitStreamerInfos(TObjArray* pSchemas) const
+{
+  // init streamer infos for HLT reconstruction from an array of TStreamerInfo objects
+
+  for (int i=0; i<pSchemas->GetEntriesFast(); i++) {
+    if (pSchemas->At(i)) {
+      TStreamerInfo* pSchema=dynamic_cast<TStreamerInfo*>(pSchemas->At(i));
+      if (pSchema) {
+	int version=pSchema->GetClassVersion();
+	TClass* pClass=TClass::GetClass(pSchema->GetName());
+	if (pClass) {
+	  if (pClass->GetClassVersion()==version) {
+	    AliDebug(0,Form("skipping schema definition %d version %d to class %s as this is the native version", i, version, pSchema->GetName()));
+	    continue;
+	  }
+	  TObjArray* pInfos=pClass->GetStreamerInfos();
+	  if (pInfos /*&& version<pInfos->GetEntriesFast()*/) {
+	    if (pInfos->At(version)==NULL) {
+	      TStreamerInfo* pClone=(TStreamerInfo*)pSchema->Clone();
+	      if (pClone) {
+		pClone->SetClass(pClass);
+		pClone->BuildOld();
+		pInfos->AddAtAndExpand(pClone, version);
+		AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
+	      } else {
+		AliError(Form("skipping schema definition %d (%s), unable to create clone object", i, pSchema->GetName()));
+	      }
+	    } else {
+	      TStreamerInfo* pInfo=dynamic_cast<TStreamerInfo*>(pInfos->At(version));
+	      if (pInfo && pInfo->GetClassVersion()==version) {
+		AliDebug(0,Form("schema definition %d version %d already available in class %s, skipping ...", i, version, pSchema->GetName()));
+	      } else {
+		AliError(Form("can not verify version for already existing schema definition %d (%s) version %d: version of existing definition is %d", i, pSchema->GetName(), version, pInfo?pInfo->GetClassVersion():-1));
+	      }
+	    }
+	  } else {
+	    AliError(Form("skipping schema definition %d (%s), unable to set version %d in info array of size %d", i, pSchema->GetName(), version, pInfos?pInfos->GetEntriesFast():-1));
+	  }
+	} else {
+	  AliError(Form("skipping schema definition %d (%s), unable to find class", i, pSchema->GetName()));
+	}
+      } else {
+	AliError(Form("skipping schema definition %d, not of TStreamerInfo", i));
+      }
+    }
+  }
+
   return 0;
 }

@@ -64,6 +64,12 @@ class AliHLTMisc : public TObject {
   virtual const TClass* IsAliESDHLTDecision() const;
   virtual int Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* pESDHLTDecision) const;
 
+  /// Init streamer info from ocdb entry
+  virtual int InitStreamerInfos(const char* ocdbEntry) const;
+
+  /// Init streamer info for a collection of classes
+  virtual int InitStreamerInfos(TObjArray* pSchemas) const;
+
  private:
   static AliHLTMisc* fgInstance;
 

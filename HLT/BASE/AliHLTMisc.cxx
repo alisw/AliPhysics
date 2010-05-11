@@ -132,6 +132,18 @@ int AliHLTMisc::Copy(const AliHLTGlobalTriggerDecision* /*pDecision*/, TObject* 
   return -EFAULT;
 }
 
+int AliHLTMisc::InitStreamerInfos(const char* /*ocdbEntry*/) const
+{
+  // default method, functionality is implemented in the child class
+  return -EFAULT;
+}
+
+int AliHLTMisc::InitStreamerInfos(TObjArray* /*pSchemas*/) const
+{
+  // default method, functionality is implemented in the child class
+  return -EFAULT;
+}
+
 ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)
 {
   // printout of AliHLTComponentDataType struct
