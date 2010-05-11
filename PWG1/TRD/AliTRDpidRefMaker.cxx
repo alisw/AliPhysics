@@ -271,6 +271,10 @@ void AliTRDpidRefMaker::Fill()
 // Fill data tree
 
   if(!fPIDdataArray->fNtracklets) return;
+  const Float_t kAlmostZero(1.e-3);
+  Float_t unity(0.); for(Int_t is(AliPID::kSPECIES); is--;) unity+=fPID[is];
+  if(TMath::Abs(unity-1.)>kAlmostZero) return;
+
   fPIDbin = TMath::LocMax(AliPID::kSPECIES, fPID); // get particle type
   // Fill data tree
   fData->Fill();
