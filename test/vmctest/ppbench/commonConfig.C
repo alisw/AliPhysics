@@ -16,6 +16,11 @@ const char * pprTrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
+enum ConfigVersion_t {
+    kConfigV0,  // default configuration  
+    kConfigV1   // configuration for LHC production
+};
+
 // Options 
 static AliMagF::BMap_t smag = AliMagF::k5kG;
 static PprTrigConf_t strig = kDefaultPPTrig; // default PP trigger configuration
@@ -24,7 +29,8 @@ static TString comment;
 // Functions
 void  LoadPythia();
 
-void commonConfig(Bool_t setRootGeometry = kFALSE)
+void commonConfig(Bool_t setRootGeometry = kFALSE,
+                  ConfigVersion_t configVersion = kConfigV1)
 {
   cout << "Running commonConfig.C ... " << endl;
 
@@ -224,6 +230,22 @@ void commonConfig(Bool_t setRootGeometry = kFALSE)
       //=================== TRD parameters ============================
 
       AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+      if ( configVersion == kConfigV1 ) {
+        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+        // Partial geometry: modules at 0,1,7,8,9,16,17
+        // starting at 3h in positive direction
+        geoTRD->SetSMstatus(2,0);
+        geoTRD->SetSMstatus(3,0);
+        geoTRD->SetSMstatus(4,0);
+        geoTRD->SetSMstatus(5,0);
+        geoTRD->SetSMstatus(6,0);
+        geoTRD->SetSMstatus(11,0);
+        geoTRD->SetSMstatus(12,0);
+        geoTRD->SetSMstatus(13,0);
+        geoTRD->SetSMstatus(14,0);
+        geoTRD->SetSMstatus(15,0);
+        geoTRD->SetSMstatus(16,0);
+      }
   }
 
   if (iFMD)
@@ -242,7 +264,10 @@ void commonConfig(Bool_t setRootGeometry = kFALSE)
 
   if (iPHOS)
   {
-      AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+     if ( configVersion == kConfigV0 ) 
+       AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+     else if ( configVersion == kConfigV1 )  
+       AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123"); 
   }
 
 
@@ -261,7 +286,10 @@ void commonConfig(Bool_t setRootGeometry = kFALSE)
   if (iEMCAL)
   {
       //=================== EMCAL parameters ============================
+    if ( configVersion == kConfigV0 ) 
       AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
+    else if ( configVersion == kConfigV1 )  
+      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEAR");
   }
 
    if (iACORDE)
@@ -272,7 +300,7 @@ void commonConfig(Bool_t setRootGeometry = kFALSE)
 
    if (iVZERO)
   {
-      //=================== ACORDE parameters ============================
+      //=================== VZERO parameters ============================
       AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
   }
 
