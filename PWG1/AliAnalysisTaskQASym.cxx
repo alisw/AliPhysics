@@ -146,10 +146,11 @@ ClassImp(AliAnalysisTaskQASym)
     ,fRecPtNegPhiEtaNeg(0) 
 
 
-    ,fRecDcaPhiPtPosEtaPos(0)
-    ,fRecDcaPhiPtNegEtaPos(0)
-    ,fRecDcaPhiPtPosEtaNeg(0)  
-    ,fRecDcaPhiPtNegEtaNeg(0)  
+//    ,fRecDcaPhiPtPosEtaPos(0)
+//    ,fRecDcaPhiPtNegEtaPos(0)
+//    ,fRecDcaPhiPtPosEtaNeg(0)  
+//    ,fRecDcaPhiPtNegEtaNeg(0)  
+
     ,fEtavPt(0)  
     ,fCompareTPCparam(0)
 
@@ -205,7 +206,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  Double_t range = 1.0;
+  Double_t range = 0.3;
   Double_t pt = 20.;
 
   fHists = new TList();
@@ -790,41 +791,41 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 
 
 
-  fRecDcaPhiPtPosEtaPos = new TH3F("fRecDcaPhiPtPosEtaPos",
-				   "#phi- p_{T} - DCA",
-				   180,0,2*TMath::Pi(),
-				   100,0,pt,
-				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
-  fRecDcaPhiPtPosEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
-  fRecDcaPhiPtPosEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-  fRecDcaPhiPtPosEtaPos->GetZaxis()->SetTitle("dca (cm)");
+//   fRecDcaPhiPtPosEtaPos = new TH3F("fRecDcaPhiPtPosEtaPos",
+// 				   "#phi- p_{T} - DCA",
+// 				   180,0,2*TMath::Pi(),
+// 				   100,0,pt,
+// 				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+//   fRecDcaPhiPtPosEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
+//   fRecDcaPhiPtPosEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+//   fRecDcaPhiPtPosEtaPos->GetZaxis()->SetTitle("dca (cm)");
 
-  fRecDcaPhiPtPosEtaNeg = new TH3F("fRecDcaPhiPtPosEtaNeg",
-				   "#phi- p_{T} - DCA",
-				   180,0,2*TMath::Pi(),
-				   100,0,pt,
-				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
-  fRecDcaPhiPtPosEtaNeg->GetZaxis()->SetTitle("dca (cm)");
-  fRecDcaPhiPtPosEtaNeg->GetXaxis()->SetTitle("#phi (rad.)");
-  fRecDcaPhiPtPosEtaNeg->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+//   fRecDcaPhiPtPosEtaNeg = new TH3F("fRecDcaPhiPtPosEtaNeg",
+// 				   "#phi- p_{T} - DCA",
+// 				   180,0,2*TMath::Pi(),
+// 				   100,0,pt,
+// 				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+//   fRecDcaPhiPtPosEtaNeg->GetZaxis()->SetTitle("dca (cm)");
+//   fRecDcaPhiPtPosEtaNeg->GetXaxis()->SetTitle("#phi (rad.)");
+//   fRecDcaPhiPtPosEtaNeg->GetYaxis()->SetTitle("p_{T} (GeV/c)");
 
-  fRecDcaPhiPtNegEtaPos = new TH3F("fRecDcaPhiPtNegEtaPos",
-				   "#phi- p_{T} - DCA",
-				   180,0,2*TMath::Pi(),
-				   100,0,pt,
-				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
-  fRecDcaPhiPtNegEtaPos->GetZaxis()->SetTitle("dca (cm)");
-  fRecDcaPhiPtNegEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
-  fRecDcaPhiPtNegEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+//   fRecDcaPhiPtNegEtaPos = new TH3F("fRecDcaPhiPtNegEtaPos",
+// 				   "#phi- p_{T} - DCA",
+// 				   180,0,2*TMath::Pi(),
+// 				   100,0,pt,
+// 				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+//   fRecDcaPhiPtNegEtaPos->GetZaxis()->SetTitle("dca (cm)");
+//   fRecDcaPhiPtNegEtaPos->GetXaxis()->SetTitle("#phi (rad.)");
+//   fRecDcaPhiPtNegEtaPos->GetYaxis()->SetTitle("p_{T} (GeV/c)");
 
-  fRecDcaPhiPtNegEtaNeg = new TH3F("fRecDcaPhiPtNegEtaNeg",
-				   "#phi- p_{T} - DCA",
-				   180,0,2*TMath::Pi(),
-				   100,0,pt,
-				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
-  fRecDcaPhiPtNegEtaNeg->GetZaxis()->SetTitle("dca (cm)");
-  fRecDcaPhiPtNegEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
-  fRecDcaPhiPtNegEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+//   fRecDcaPhiPtNegEtaNeg = new TH3F("fRecDcaPhiPtNegEtaNeg",
+// 				   "#phi- p_{T} - DCA",
+// 				   180,0,2*TMath::Pi(),
+// 				   100,0,pt,
+// 				   100, -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
+//   fRecDcaPhiPtNegEtaNeg->GetZaxis()->SetTitle("dca (cm)");
+//   fRecDcaPhiPtNegEtaNeg->GetYaxis()->SetTitle("#phi (rad.)");
+//   fRecDcaPhiPtNegEtaNeg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 
 
 
@@ -970,10 +971,10 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fRecDcaPosPtEtaNeg);
   fHists->Add(fRecDcaNegPtEtaNeg);
 
-  fHists->Add(fRecDcaPhiPtPosEtaPos); 
-  fHists->Add(fRecDcaPhiPtPosEtaNeg); 
-  fHists->Add(fRecDcaPhiPtNegEtaPos); 
-  fHists->Add(fRecDcaPhiPtNegEtaNeg); 
+  //  fHists->Add(fRecDcaPhiPtPosEtaPos); 
+  //  fHists->Add(fRecDcaPhiPtPosEtaNeg); 
+  //  fHists->Add(fRecDcaPhiPtNegEtaPos); 
+  //  fHists->Add(fRecDcaPhiPtNegEtaNeg); 
 
 
 
@@ -1023,6 +1024,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   if(event->GetNumberOfTracks()!=0) fNumber->Fill(event->GetNumberOfTracks());
 
   const AliVVertex* vertex = event->GetPrimaryVertex();
+  if(vertex->GetNContributors()==0) return;
   Float_t vx = vertex->GetX();
   Float_t vy = vertex->GetY();
   Float_t vz = vertex->GetZ();
@@ -1215,7 +1217,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 	fRecDcaPosPhiEtaPos->Fill(sdca, phiIn);
 	fRecDcaPosPtEtaPos->Fill(sdca, TMath::Log10(tpcP->Pt()));
 	fRecPtPosPhiEtaPos->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	fRecDcaPhiPtPosEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtPosEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
       }
       //neg eta
       else{
@@ -1225,7 +1227,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 	fRecDcaPosPhiEtaNeg->Fill(sdca, phiIn);
 	fRecDcaPosPtEtaNeg->Fill(sdca, TMath::Log10(tpcP->Pt()));
 	fRecPtPosPhiEtaNeg->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	fRecDcaPhiPtPosEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtPosEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
       }
       
     }
@@ -1269,7 +1271,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 	fRecDcaNegPhiEtaPos->Fill(sdca, phiIn);
 	fRecDcaNegPtEtaPos->Fill(sdca, TMath::Log10(tpcP->Pt()));
 	fRecPtNegPhiEtaPos->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	fRecDcaPhiPtNegEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtNegEtaPos->Fill(phiIn, tpcP->Pt(), sdca);
       }
       //neg eta
       else{
@@ -1279,7 +1281,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 	fRecDcaNegPhiEtaNeg->Fill(sdca, phiIn);
 	fRecDcaNegPtEtaNeg->Fill(sdca, TMath::Log10(tpcP->Pt()));
 	fRecPtNegPhiEtaNeg->Fill(TMath::Log10(tpcP->Pt()), phiIn);
-	fRecDcaPhiPtNegEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
+	//fRecDcaPhiPtNegEtaNeg->Fill(phiIn, tpcP->Pt(), sdca);
       }
 
     }
