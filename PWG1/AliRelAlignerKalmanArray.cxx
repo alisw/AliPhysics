@@ -31,7 +31,7 @@
 #include <TObjArray.h>
 #include <TCollection.h>
 #include <AliESDEvent.h>
-#include "AliRelAlignerKalman.h"
+#include <AliRelAlignerKalman.h>
 #include "AliRelAlignerKalmanArray.h"
 
 ClassImp(AliRelAlignerKalmanArray)
@@ -44,6 +44,7 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray():
     fSize(0),
     fOutRejSigmaOnMerge(10.),
     fOutRejSigmaOnSmooth(1.),
+    fAlignerTemplate(),
     fPArray(NULL)
 {
   //ctor
@@ -57,6 +58,7 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray(Int_t t0, Int_t tend, Int_t s
     fSize(0),
     fOutRejSigmaOnMerge(10.),
     fOutRejSigmaOnSmooth(1.),
+    fAlignerTemplate(),
     fPArray(NULL)
 {
   //ctor
@@ -75,10 +77,10 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray( const AliRelAlignerKalmanArr
     fSize(in.fSize),
     fOutRejSigmaOnMerge(in.fOutRejSigmaOnMerge),
     fOutRejSigmaOnSmooth(in.fOutRejSigmaOnSmooth),
+    fAlignerTemplate(in.fAlignerTemplate),
     fPArray(NULL)
 {
   //copy ctor
-  fAlignerTemplate = in.fAlignerTemplate;
   fPArray = new AliRelAlignerKalman* [fSize];
   if (!fPArray) {fSize=0;return;} //if fail
   for (Int_t i=0;i<fSize;i++)
@@ -119,7 +121,8 @@ void AliRelAlignerKalmanArray::SetupArray(Int_t t0, Int_t tend, Int_t slotwidth)
 //______________________________________________________________________________
 AliRelAlignerKalman* AliRelAlignerKalmanArray::GetAlignerTemplate()
 {
-  return fAlignerTemplate;
+  //get aligner template
+  return &fAlignerTemplate;
 }
 
 //______________________________________________________________________________
@@ -172,7 +175,7 @@ AliRelAlignerKalman* AliRelAlignerKalmanArray::GetAligner(UInt_t ts)
   if (!fPArray) return NULL;
   if (!fPArray[tb])
   {
-    fPArray[tb] = new AliRelAlignerKalman( *fAlignerTemplate );
+    fPArray[tb] = new AliRelAlignerKalman( fAlignerTemplate );
     fPArray[tb]->SetTimeStamp(fT0+tb*fTimebinWidth);
   }
   return fPArray[tb];

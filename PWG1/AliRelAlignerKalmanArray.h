@@ -12,11 +12,11 @@
 
 class TObjArray;
 class TGraphErrors;
-class AliRelAlignerKalman;
 class TNamed;
 class TTree;
 class TCollection;
 class AliESDEvent;
+#include <AliRelAlignerKalman.h>
 
 class AliRelAlignerKalmanArray:public TNamed
 {
@@ -57,7 +57,7 @@ private:
   Int_t fSize;                           //size
   Double_t fOutRejSigmaOnMerge;          //how much outlier rejection on merge
   Double_t fOutRejSigmaOnSmooth;          //how much outlier rejection on Smooth
-  AliRelAlignerKalman* fAlignerTemplate;  //template
+  AliRelAlignerKalman fAlignerTemplate;  //template
   AliRelAlignerKalman** fPArray;         //[fSize] an array of aligners
   
   ClassDef(AliRelAlignerKalmanArray,4);   //AliRelAlignerKalman class
