@@ -39,8 +39,8 @@ enum particleType   {kHadron, kPion, kKaon, kProton, kPhoton, kDecayphoton, kPiz
 const char* const kParticleTypeStrName[kNumberOfParticleTypes] =
                     {"hadron", "pion", "kaon", "proton", "photon", "decayphoton", "pizero", "eta", "none"};
 const char* const kParticleProtoType[kNumberOfExperiments][kNumberOfParticleTypes] =
-                    {{"PhJCgl",    "PhJCgl",    "PhJCgl",    "PhJCgl",    "PhJPhoton",  "PhJPhoton",  "JPiZero", "JPiZero", "None"},
-                     {"AliJTrack", "AliJTrack", "AliJTrack", "AliJTrack", "AliJPhoton", "AliJPhoton", "JPiZero", "JPiZero", "None"}};
+                    {{"PhJCgl",    "PhJCgl",    "PhJCgl",    "PhJCgl",    "PhJPhoton",  "PhJPhoton",  "AliPhJPiZero", "AliPhJPiZero", "None"},
+                     {"AliJTrack", "AliJTrack", "AliJTrack", "AliJTrack", "AliJPhoton", "AliJPhoton", "AliPhJPiZero", "AliPhJPiZero", "None"}};
 
 
 //=======================JCorran trigger table definition===========================
@@ -50,7 +50,7 @@ const int kRangeTriggerTableJCorran = 16;
 
 //==================================================================================
 enum fillType { kReal, kMixed, kRotated };
-enum corrType { kTriggType, kAssocType, kXeType, kCentrType, kNoType }; 
+enum corrType { kTriggType, kAssocType, kXeType, kCentrType, kMassType, kNoType }; 
 
 
 // PHENIX  constants

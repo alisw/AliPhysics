@@ -43,11 +43,16 @@ const int kMaxDimBuffer = 300;//max length of a line read to a buffe
 class TH1D;
 class TH2D;
 class TNtuple;
+class TList;
+class TTree;
+
 class AliMCEvent; 
 class AliESDEvent; 
 class AliAODEvent; 
 class AliPHOSGeoUtils; 
 class AliEMCALGeoUtils; 
+class AliESDtrackCuts;
+
 class AliJRunHeader;
 class AliMCEvent;
 class AliJCORRANSetup;
@@ -56,8 +61,6 @@ class AliPhJHeaderList;
 class AliPhJPhotonList;
 class AliPhJMCTrackList;
 class AliPhJTrackList;               
-class TList;
-class TTree;
 
 
 
@@ -65,7 +68,7 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
 
 public:
   AliJCORRANTask() ;
-  AliJCORRANTask(const char *name, TString inputformat);
+  AliJCORRANTask(const char *name, TString inputformat, AliESDtrackCuts* esdTrackCuts, Int_t downSc, Double_t lowLPmom, Double_t lowCaloE); //FK//
   AliJCORRANTask(const AliJCORRANTask& ap);   
   AliJCORRANTask& operator = (const AliJCORRANTask& ap);
   virtual ~AliJCORRANTask();
@@ -94,7 +97,19 @@ private:
 
   UInt_t ConvertTriggerMask(/*Long64_t alicetriggermask*/);//Converts alice trigger mask to JCorran trigger mask
 
+  bool StoreDownscaledMinBiasEvent();
+  bool ContainsESDHighPtTrack(const AliESDEvent* esd);
+  bool ContainsESDHighECaloClusters(const AliESDEvent* esd);
+
   TString fInputFormat; // specify the input data format (ESD or AOD)
+
+  AliESDtrackCuts* fEsdTrackCuts; //FK//
+
+  Int_t fDownscaling; //FK//
+
+  Double_t fLowerCutOnLPMom; //FK//
+
+  Double_t fLowerCutOnLeadingCaloClusterE;//FK//
 
   TString fActiveTriggers[kRangeTriggerTableAlice];//alice table mapping trigger bit to trigger name
 

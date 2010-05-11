@@ -58,6 +58,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeoUtils.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliPhJTrackList.h"
 #include "AliPhJMCTrackList.h"
@@ -77,6 +78,10 @@
 AliJCORRANTask::AliJCORRANTask() :   
   AliAnalysisTaskSE("PWG4JCORRAN"),
   fInputFormat(0),
+  fEsdTrackCuts(0), //FK//
+  fDownscaling(0),//FK//
+  fLowerCutOnLPMom(0),//FK//
+  fLowerCutOnLeadingCaloClusterE(0),//FK//
   fTree(0x0),
   fTrackList(0x0),
   //fMCTrackList(0),
@@ -100,9 +105,13 @@ AliJCORRANTask::AliJCORRANTask() :
 }
 
 //______________________________________________________________________________
-AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat) : 
+AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat, AliESDtrackCuts* esdTrackCuts, Int_t downSc, Double_t lowLPmom, Double_t lowCaloE) : 
   AliAnalysisTaskSE(name), 
   fInputFormat(inputformat),  
+  fEsdTrackCuts(esdTrackCuts), //FK//
+  fDownscaling(downSc),//FK//
+  fLowerCutOnLPMom(lowLPmom),//FK//
+  fLowerCutOnLeadingCaloClusterE(lowCaloE),//FK//
   fTree(0x0),
   fTrackList(0x0),
   //fMCTrackList(0),
@@ -142,7 +151,11 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat) :
 //____________________________________________________________________________
 AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
   AliAnalysisTaskSE(ap.GetName()), 
-  fInputFormat(ap.fInputFormat), 
+  fInputFormat(ap.fInputFormat),
+  fEsdTrackCuts(ap.fEsdTrackCuts), //FK// 
+  fDownscaling(ap.fDownscaling),  //FK// 
+  fLowerCutOnLPMom(ap.fLowerCutOnLPMom), //FK// 
+  fLowerCutOnLeadingCaloClusterE(ap.fLowerCutOnLeadingCaloClusterE),  //FK// 
   fTree(ap.fTree),
   fTrackList(ap.fTrackList),
   //fMCTrackList(ap.fMCTrackList),
@@ -245,13 +258,7 @@ void AliJCORRANTask::UserExec(Option_t */*option*/)
       AliInfo(Form(" Processing event # %lld",  Entry())); 
 
    
-  //-------------- reset all the arrays -------------
-  fTrackList->Reset();
-  //fMCTrackList->Reset();
-  fPhotonList->Reset();
-  fHeaderList->Reset();
  
-
   static int runId=-1;
  
   if(fInputFormat=="ESD"){
@@ -262,7 +269,7 @@ void AliJCORRANTask::UserExec(Option_t */*option*/)
      //ReadMCTracks(fmcEvent);
 
 
-     //=========== FILL AND STORE RUN HEADER  =============
+     //=========== FILL AND STORE RUN HEADER   (ONLY ONCE PER RUN) =============
      if(esd->GetRunNumber() != runId){ //new run has started
  
        const AliESDRun* esdRun = esd->GetESDRun();
@@ -287,14 +294,28 @@ void AliJCORRANTask::UserExec(Option_t */*option*/)
        fAliRunHeader->SetActiveTriggersJCorran(fTriggerTableJCorran,kRangeTriggerTableJCorran);
 
       //Store Run header
-      (fTree->GetUserInfo())->Add(fAliRunHeader);  
-      
+      (fTree->GetUserInfo())->Add(fAliRunHeader);   
     }
+
+
+    if( StoreDownscaledMinBiasEvent() || ContainsESDHighPtTrack(esd) || ContainsESDHighECaloClusters(esd) ){ //FK//
+      //-------------- reset all the arrays -------------
+      fTrackList->Reset();
+      //fMCTrackList->Reset();
+      fPhotonList->Reset();
+      fHeaderList->Reset();
  
-    ReadESDTracks(esd);
-    ReadESDCaloClusters(esd);
-    ReadESDHeader(esd);
-  
+      //store event only when it is downscaled min bias
+      // or contais high pt hadron
+      // or contains high energy cluster in EMCAL or PHOS
+        ReadESDTracks(esd);
+        ReadESDCaloClusters(esd);
+        ReadESDHeader(esd);
+
+        fTree->Fill(); // fill the TTree
+ 
+        PostData(1, fTree);
+    }
   }else{
   
        AliAODEvent* aod;
@@ -311,13 +332,14 @@ void AliJCORRANTask::UserExec(Option_t */*option*/)
      ReadAODTracks(aod);
      ReadAODCaloClusters(aod);
      ReadAODHeader(aod);
-     
+ 
+     fTree->Fill(); // fill the TTree
+ 
+     PostData(1, fTree);
+    
   }
 
   
-  fTree->Fill(); // fill the TTree
- 
-  PostData(1, fTree);
 }
 
 //______________________________________________________________________________
@@ -337,6 +359,7 @@ void AliJCORRANTask::Terminate(Option_t *)
 
   ((AliJRunHeader *) (fTree->GetUserInfo())->First())->PrintOut();  
 
+  cout<<"PWG4JCORRAN Analysis DONE !!"<<endl; 
 }
 
 //______________________________________________________________________________
@@ -355,6 +378,8 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
     for(Int_t it = 0; it < nt; it++) { 
 
         AliESDtrack *track = esd->GetTrack(it);
+        if(! fEsdTrackCuts->IsSelected(track)) continue; //FK// apply loose selection criteria
+
         UInt_t status = track->GetStatus();
 	    
 	Float_t impactXY, impactZ;
@@ -368,7 +393,6 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
 
 	Int_t nClust         = track->GetTPCclusters(0);
 	Int_t nFindableClust = track->GetTPCNclsF();
-
 	Float_t tpcChi2PerCluster = 0.;
 	if(nClust>0.) tpcChi2PerCluster = track->GetTPCchi2()/Float_t(nClust);
 
@@ -441,7 +465,7 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
 
         AliAODTrack *track = aod->GetTrack(it);
         if(track->GetType() != AliAODTrack::kPrimary) continue; // only primaries 
-
+        if(! fEsdTrackCuts->IsSelected(track)) continue; //apply loose selection criteria
         //create a new AliJTrack and fill the track info
 	fTrackList->AddAliJTrack(ntrk);
         AliJTrack *ctrack = fTrackList->GetAliJTrack(ntrk);
@@ -473,7 +497,7 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
     AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
     if(!caloCluster) continue;
     if(caloCluster->GetTrackMatched()==-1){
-     
+      if(caloCluster->E()<0.2) continue;                  //FK//
       // we will not implement any PID cut here      
       fPhotonList->AddAliJPhoton(nPhotons);
       AliJPhoton *pht = fPhotonList->GetAliJPhoton(nPhotons);
@@ -506,6 +530,7 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
       fPhotonList->SetNPhotons(++nPhotons);
     } // end if 
   } //PHOS and EMCAL clusters
+
 }
 
 //______________________________________________________________________________
@@ -519,13 +544,12 @@ void AliJCORRANTask::ReadAODCaloClusters(const AliAODEvent* aod)
        AliAODCaloCluster * caloCluster = aod->GetCaloCluster(icluster) ;
        if(!caloCluster) continue; 
        if(caloCluster->GetNTracksMatched() > 0) continue;
-      
       // we will not implement any PID cut here      
       fPhotonList->AddAliJPhoton(nPhotons);
       AliJPhoton *pht = fPhotonList->GetAliJPhoton(nPhotons);
       
-      pht->SetFlavor(kPhoton);
       pht->SetE(caloCluster->E());
+      pht->SetFlavor(kPhoton);
       pht->SetChi2(caloCluster->Chi2());
       pht->SetPID((Double_t*)caloCluster->PID());
       Float_t pos[3]; caloCluster->GetPosition(pos) ;
@@ -681,6 +705,60 @@ UInt_t AliJCORRANTask::ConvertTriggerMask(/*Long64_t alicetriggermask*/){
 
 
 //______________________________________________________________________________
+bool AliJCORRANTask::StoreDownscaledMinBiasEvent(){
+  
+  bool isThisEventToBeStored = kFALSE;
+  static Long_t evtNumber=0;
+
+  if( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() ){
+    //collision candidate
+
+    if(evtNumber% fDownscaling ==0){ isThisEventToBeStored = kTRUE;  } //store every 50th collision candidate event
+    evtNumber++;
+  }
+  return isThisEventToBeStored;
+}
+//______________________________________________________________________________
+bool AliJCORRANTask::ContainsESDHighPtTrack(const AliESDEvent* esd){
+  bool isThisEventToBeStored = kFALSE;
+
+  Int_t nt = esd->GetNumberOfTracks();
+
+  for(Int_t it = 0; it < nt; it++) {
+    AliESDtrack *track = esd->GetTrack(it);
+    //Does event contain high pt particle above 2 GeV 
+    //which fulfills loose track selection criteria 
+    if(track->Pt() > fLowerCutOnLPMom && fEsdTrackCuts->IsSelected(track)){
+      isThisEventToBeStored = kTRUE;
+      break; 
+    }
+  }
+
+  return isThisEventToBeStored;
+}
+
+//______________________________________________________________________________
+bool AliJCORRANTask::ContainsESDHighECaloClusters(const AliESDEvent* esd){
+  bool isThisEventToBeStored = kFALSE;
+
+  Int_t numberOfCaloClusters = esd->GetNumberOfCaloClusters() ;
+  // loop over all the Calo Clusters
+  for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
+    AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
+    if(!caloCluster) continue;
+    if(caloCluster->GetTrackMatched()==-1){
+      //sotre calo clusters above 2 GeV
+      if( caloCluster->E() > fLowerCutOnLeadingCaloClusterE){
+        isThisEventToBeStored = kTRUE;
+        break; 
+      }
+    }
+  }
+  return isThisEventToBeStored;
+}
+
+
+
 
 
 
