@@ -104,13 +104,13 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   if (man && man->GetAnalysisType()!=AliAnalysisManager::kLocalAnalysis) return;
   
   //Get File and event information
-  TObjString fName;
+  TObjString fileName;
   Int_t eventInFile=-1;
   
   TTree *t=man->GetTree();
   if (t) {
     TFile *file=t->GetCurrentFile();
-    if (file) fName.SetString(file->GetName());
+    if (file) fileName.SetString(file->GetName());
   }
 
   AliESDInputHandler *han=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler());
@@ -124,7 +124,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   Int_t id2=static_cast<AliVTrack*>(pair->GetSecondDaughter())->GetID();
   //Fill Event information
   (*fStreamer) << "Pair"
-    << "File.="       << &fName
+    << "File.="       << &fileName
     << "EventInFile=" << eventInFile
     << "Leg1_ID="     << id1
     << "Leg2_ID="     << id2;
