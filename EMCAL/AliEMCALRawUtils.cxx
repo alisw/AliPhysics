@@ -108,7 +108,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(fitAlgorithm fitAlgo)
   if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL")) {
     fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   } else {
-    AliInfo(Form("Using default geometry in raw reco"));
+    AliDebug(1, Form("Using default geometry in raw reco"));
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
   }
 

@@ -156,15 +156,15 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   ReadDigitsArrayFromTree(digitsTree);
   fgClusterizer->InitParameters();
   fgClusterizer->SetOutput(clustersTree);
-
+ 
   AliEMCALTriggerData* trgData = new AliEMCALTriggerData();
 	
   Int_t bufferSize = 32000;
 
   if (TBranch* triggerBranch = clustersTree->GetBranch("EMTRG"))
-	  triggerBranch->SetAddress(&trgData);
-  else
-	  clustersTree->Branch("EMTRG","AliEMCALTriggerData",&trgData,bufferSize);
+		triggerBranch->SetAddress(&trgData);
+	else
+		clustersTree->Branch("EMTRG","AliEMCALTriggerData",&trgData,bufferSize);
 
   TClonesArray *trgDigits = new TClonesArray("AliEMCALRawDigit",1000);
   TBranch *branchdig = digitsTree->GetBranch("EMTRG");
@@ -176,29 +176,33 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
 
   branchdig->SetAddress(&trgDigits);
   branchdig->GetEntry(0);
-
-  Int_t v0M[2] = {0,0};
-  fgTriggerProcessor->Digits2Trigger(trgDigits, v0M, trgData);
 	
+  //Skip clusterization of LED events
+  if (GetRecParam()->GetEventSpecie()!=AliRecoParam::kCalib){
+
+	  Int_t v0M[2] = {0,0};
+	  fgTriggerProcessor->Digits2Trigger(trgDigits, v0M, trgData);
+	
+ 
+	  if(fgDigitsArr && fgDigitsArr->GetEntries()) {
+
+		  fgClusterizer->SetInput(digitsTree);
+    
+		  if(Debug())
+			  fgClusterizer->Digits2Clusters("deb all") ;
+		  else
+			  fgClusterizer->Digits2Clusters("");
+    
+		  fgClusterizer->Clear();
+
+	  }//digits array exists and has somethind
+  }//not a LED event
+	
+  clustersTree->Fill();	
   trgDigits->Delete();
   delete trgDigits; trgDigits = 0x0;
+  delete trgData;   trgData   = 0x0;
 
-  if(fgDigitsArr && fgDigitsArr->GetEntries()) {
-
-    fgClusterizer->SetInput(digitsTree);
-    
-    if(Debug())
-      fgClusterizer->Digits2Clusters("deb all") ;
-    else
-      fgClusterizer->Digits2Clusters("");
-    
-    fgClusterizer->Clear();
-
-  }
-
-  clustersTree->Fill();	
-
-  delete trgData; trgData = 0x0;
 }
 
 //____________________________________________________________________________
@@ -217,23 +221,32 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   Int_t bufsize = 32000;
   digitsTree->Branch("EMCAL", &digitsArr, bufsize);
   digitsTree->Branch("EMTRG", &digitsTrg, bufsize);
-
-  //must be done here because, in constructor, option is not yet known
-  fgRawUtils->SetOption(GetOption());
-
-  fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
-  fgRawUtils->SetRawFormatOrder(GetRecParam()->GetOrderParameter());
-  fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
-  fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
-  fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
-  fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
-  fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
-  fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
-  fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());
-  fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
 	
-  fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData,digitsTrg);
+  //Skip calibration events do the rest
+  Bool_t doFit = kTRUE;
+  if ( !(GetRecParam()->FitLEDEvents()) && GetRecParam()->GetEventSpecie()==AliRecoParam::kCalib) doFit = kFALSE;
+  if (doFit){
+	  //must be done here because, in constructor, option is not yet known
+	  fgRawUtils->SetOption(GetOption());
 
+	  fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
+	  fgRawUtils->SetRawFormatOrder(GetRecParam()->GetOrderParameter());
+	  fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
+	  fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
+	  fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
+	  fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
+	  fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
+	  fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
+	  fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());
+	  fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
+	
+	  fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData,digitsTrg);
+  }
+  else{
+	AliDebug(1," Calibration Event, skip!");
+	printf("**** AliEMCALReconstructor::ConvertDigits() Calibration Event, skip!!\n");
+  }
+	
   digitsTree->Fill();
   digitsArr->Delete();
   digitsTrg->Delete();

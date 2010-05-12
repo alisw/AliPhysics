@@ -62,7 +62,8 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fNPedSamples(5), 
   fRemoveBadChannels(kFALSE),
   fFittingAlgorithm(0), 
-  fUseFALTRO(kTRUE)//raw signal
+  fUseFALTRO(kTRUE), 
+  fFitLEDEvents(kFALSE)//raw signal
 {
   // default reco values
   
@@ -254,7 +255,8 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fNPedSamples(rp.fNPedSamples), 	
   fRemoveBadChannels(rp.fRemoveBadChannels),
   fFittingAlgorithm(rp.fFittingAlgorithm),  
-  fUseFALTRO(fUseFALTRO) //raw signal
+  fUseFALTRO(rp.fUseFALTRO),
+  fFitLEDEvents(rp.fFitLEDEvents) //raw signal
 {
   //copy constructor
   
@@ -306,7 +308,8 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fNPedSamples       = rp.fNPedSamples; 
     fRemoveBadChannels = rp.fRemoveBadChannels;
     fFittingAlgorithm  = rp.fFittingAlgorithm;
-    fUseFALTRO         = rp.fUseFALTRO;//raw signal
+    fUseFALTRO         = rp.fUseFALTRO;
+	fFitLEDEvents      = rp.fFitLEDEvents;//raw signal
 	  
     //PID values
     Int_t i, j;

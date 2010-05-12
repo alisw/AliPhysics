@@ -99,6 +99,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetRemoveBadChannels(Bool_t val)     {fRemoveBadChannels=val; }
   void SetFittingAlgorithm(Int_t val)       {fFittingAlgorithm=val; }
   void SetFALTROUsage(Bool_t val)           {fUseFALTRO=val; }
+  void SetLEDFit(Bool_t val)                {fFitLEDEvents=val; }
+
 	
   /* raw signal getters */
   Double_t GetHighLowGainFactor() const {return fHighLowGainFactor;}
@@ -109,7 +111,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
   Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
-	
+  Bool_t   FitLEDEvents()         const {return fFitLEDEvents; }
+
 	virtual void Print(Option_t * option="") const ;
   
   static AliEMCALRecParam* GetDefaultParameters();
@@ -162,10 +165,11 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   fRemoveBadChannels;     // select if bad channels are removed before fitting
   Int_t    fFittingAlgorithm;      // select the fitting algorithm
   Bool_t   fUseFALTRO;             // get FALTRO (trigger) and put it on trigger digits.
-		
+  Bool_t   fFitLEDEvents;          // fit LED events or not
+	
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,11)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,12)     // Reconstruction parameters
     
     } ;
 
