@@ -449,13 +449,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	{
 	  AliHLTGlobalBarrelTrack outPar(*element);	  
 	  outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
+	  outPar.SetLabel(element->GetLabel());
 	  iotrack.UpdateTrackParams(&outPar,AliESDtrack::kTPCout);
 	}
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
-	// 2010-05-12: investigations ongoing to find out what needs to be set in
-	// the ESD track in order to get the tracks correctly displayed by the offline
-	// macro.
-	//iotrack.SetStatus(AliESDtrack::kTPCrefit);
 	iotrack.SetTPCPoints(points);
 	if( element->TrackID()<ndEdxTPC ){
 	  iotrack.SetTPCsignal( dEdxTPC[element->TrackID()], 0, 0 ); 
@@ -468,6 +465,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	} else {
 	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
 	}
+	iotrack.SetLabel(mcLabel);
 	pESD->AddTrack(&iotrack);
 	if (fVerbosity>0) element->Print();
       }
@@ -503,6 +501,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// the trackID
 	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
 	AliESDtrack *tESD = pESD->GetTrack( tpcID );
+	element->SetLabel(tESD->GetLabel());
 	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSout );
       }
     }
@@ -523,9 +522,21 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	Int_t mcLabel = -1;
 	if( mcLabelsITS.find(element->TrackID())!=mcLabelsITS.end() )
 	  mcLabel = mcLabelsITS[element->TrackID()];
-	element->SetLabel( mcLabel );
 	AliESDtrack *tESD = pESD->GetTrack( tpcID );
-	if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
+	if (!tESD) continue;
+	if (mcLabel>=0 && tESD->GetLabel()>=0 && mcLabel!=tESD->GetLabel()) {
+	  // label should be equal at this point
+	  HLTWarning("mismatch in TPC and ITS MC label: %d vs. %d, ignoring ITS label", tESD->GetLabel(), mcLabel);
+	  mcLabel=tESD->GetLabel();
+	} else if (mcLabel<0 && tESD->GetLabel()>=0) {
+	  // keep the TPC label
+	  mcLabel=tESD->GetLabel();
+	}
+	element->SetLabel( mcLabel );
+	tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
+
+	// TODO: add a proper refit
+	//tESD->UpdateTrackParams( &(*element), AliESDtrack::kTPCrefit );
       }
     }
   }
@@ -538,6 +549,22 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     AliHLTGlobalVertexerComponent::FillESD( pESD, reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData* >(pBlock->fPtr) );
   }
 
+  // loop over all tracks and set the TPC refit flag by updating with the
+  // original TPC inner parameter if not yet set
+  // TODO: replace this by a proper refit
+  // code is comented for the moment as it does not fully solve the problems with
+  // the display
+  /*
+  for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
+    if (!pESD->GetTrack(i) || 
+	!pESD->GetTrack(i)->GetTPCInnerParam() ||
+	pESD->GetTrack(i)->IsOn(AliESDtrack::kTPCrefit)) continue;
+    AliESDtrack* tESD=pESD->GetTrack(i);
+    AliHLTGlobalBarrelTrack inner(*tESD->GetTPCInnerParam());
+    inner.SetLabel(tESD->GetLabel());
+    tESD->UpdateTrackParams(&inner, AliESDtrack::kTPCrefit);
+  }
+  */
 
   // convert the HLT TRD tracks to ESD tracks                        
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
