@@ -90,50 +90,21 @@ class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
-
-  /** Standard constructor */
-  AliHLTPHOSRawAnalyzerComponentv3();
-
-  /** Destructor */
+  AliHLTPHOSRawAnalyzerComponentv3(); /** Standard constructor */
   virtual ~AliHLTPHOSRawAnalyzerComponentv3();
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual const char* GetComponentID() = 0;
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual AliHLTComponentDataType GetOutputDataType();
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual AliHLTComponent* Spawn() = 0; 
-
-  //virtual void InitMapping(const AliHLTUInt32_t specification);
-  
+  virtual const char* GetComponentID() = 0; 
+  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);/** interface function, see @ref AliHLTComponent for description */
+  virtual AliHLTComponentDataType GetOutputDataType();/** interface function, see @ref AliHLTComponent for description */
+  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);/** interface function, see @ref AliHLTComponent for description */
+  virtual AliHLTComponent* Spawn() = 0; /** interface function, see @ref AliHLTComponent for description */
+ 
  protected:
-
-  /** interface function, see @ref AliHLTComponent for description */
-  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
+  virtual void InitMapping(const int specification);
   
-   virtual void InitMapping(const int specification);
-
  private:
-
-  /** Keep the copy constructor private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3(const AliHLTPHOSRawAnalyzerComponentv3 & );
-
-  /** Keep the assignement operator private since it should not be used */
   AliHLTPHOSRawAnalyzerComponentv3 & operator = (const AliHLTPHOSRawAnalyzerComponentv3 &);
-
-  /** The current specification for which the mapping is loaded */
-  AliHLTUInt32_t fCurrentSpec;
-
+  
 };
 
 #endif

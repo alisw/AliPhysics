@@ -100,18 +100,11 @@ class AliAltroRawStreamV3;
 #include "AliHLTProcessor.h"
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTCaloConstantsHandler.h"
-
-//#include "AliHLTCaloRcuProcessor.h"
-
-//#include "TObject.h"
-//#include "AliHLTProcessor.h"
 #include "AliHLTCaloProcessor.h"
 
 class AliHLTCaloMapper;
 
 
-//class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler, public AliHLTCaloRcuProcessor
-//class AliHLTCaloRawAnalyzerComponentv3 : public AliHLTCaloConstantsHandler
 class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected AliHLTCaloConstantsHandler
 {
  public:
@@ -146,6 +139,9 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   virtual AliHLTComponent* Spawn() = 0; 
 
  protected:
+  bool CheckInputDataType(const AliHLTComponentDataType &datatype);
+  
+
   //virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype) = 0;
   /** interface function, see @ref AliHLTComponent for description */
 
@@ -154,7 +150,8 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   /** interface function, see @ref AliHLTComponent for description */
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ) = 0;  
+		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
+
 
   /** 
    * Do the real processing in the component 
@@ -164,17 +161,21 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
    * @param totSize is the total size used for output
    * @return the size output size used
    */
-  virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize); 
+  virtual Int_t DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, 
+		     const AliHLTUInt32_t size, UInt_t& totSize); 
 
+  
+ protected:
+  virtual void InitMapping(const int specification ) = 0;
+  void PrintDebugInfo();
   // unsigned long fCaloEventCount;
-
   /** Pointer to an analyzer object used for raw data anlysis */ 
   AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
-
   //** Pointer to a mapper opbject */
   AliHLTCaloMapper *fMapperPtr;          //COMMENT
-
-  virtual void InitMapping(const int specification ) = 0;
+  AliHLTUInt32_t fCurrentSpec;
+  
+  bool fDebug;
 
  private:
 
@@ -223,13 +224,20 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
       
   /** Should we push all raw data (using the raw data writer) */
   Bool_t fDoPushRawData;                              //COMMENT
+  
+  //  AliHLTUInt32_t fCurrentSpec;
+
+
 
   class RawDataWriter 
   {
   public:
     RawDataWriter(AliHLTCaloConstants* cConst);
-    ~RawDataWriter();
+    virtual ~RawDataWriter();
     //   void WriteChannelId(const UShort_t channeldid );
+
+    //   virtual bool CheckDataType() = 0;
+    
     void NewChannel( );
     void WriteBunchData(const UShort_t *bunchdata,  const int length,   const UInt_t starttimebin );
     void ResetBuffer();
@@ -237,7 +245,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
     //void CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
     int CopyBufferToSharedMemory(UShort_t *memPtr, const int sizetotal, const int sizeused );
     void NewEvent();
-    
+ 
   private:
     //Default constructor, should not be used. 
     RawDataWriter();    
@@ -253,10 +261,11 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
     UShort_t *fCurrentChannelSizePtr; 
     UShort_t *fCurrentChannelDataPtr; 
     int fTotalSize;
+    //  bool fDebug;
   };
 
   RawDataWriter *fRawDataWriter; 
-
+  // bool fDebug;
   ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
 
 };

@@ -27,31 +27,25 @@
 
 #include "AliHLTCaloRawAnalyzerComponentv3.h"
  
-//class AliHLTCaloMapper;
 
 class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
   AliHLTEMCALRawAnalyzerComponent();
   virtual ~AliHLTEMCALRawAnalyzerComponent();
-  virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
-  virtual AliHLTComponentDataType GetOutputDataType();
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-  virtual void DoInit();
+  void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
+  AliHLTComponentDataType GetOutputDataType();
+  void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  void DoInit();
 
   virtual const char* GetComponentID() = 0;
   virtual AliHLTComponent* Spawn() = 0; 
-
- protected:
-  virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );  
-
-  virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype);
- 
+  
+  
  private:
   AliHLTEMCALRawAnalyzerComponent(const AliHLTEMCALRawAnalyzerComponent & );
   AliHLTEMCALRawAnalyzerComponent & operator = (const AliHLTEMCALRawAnalyzerComponent  &);
+  //  virtual bool CheckInputDataType(const AliHLTComponentDataType &datatype);
   virtual void InitMapping( const int specification );
 };
 
