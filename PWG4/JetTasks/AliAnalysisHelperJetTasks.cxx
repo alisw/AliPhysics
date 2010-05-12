@@ -1,5 +1,6 @@
 
 #include "TROOT.h"
+#include "TDirectory.h"
 #include "TKey.h"
 #include "TList.h"
 #include "TSystem.h"
@@ -214,7 +215,7 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
 
 
 
-void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
+void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cDir, char *cList,char *cOutFile,Bool_t bUpdate){
 
   // This is used to merge the analysis-output from different 
   // data samples/pt_hard bins
@@ -232,6 +233,7 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
   Float_t nTrials[nMaxBins];
   Float_t sf[nMaxBins];
   TList *lIn[nMaxBins];
+  TDirectory *dIn[nMaxBins];
   TFile *fIn[nMaxBins];
 
   ifstream in1;
@@ -241,8 +243,15 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
   Int_t ibTotal = 0;
   while(in1>>cFile){
     fIn[ibTotal] = TFile::Open(cFile);
-    lIn[ibTotal] = (TList*)fIn[ibTotal]->Get(cList);
-    Printf("Merging file %s",cFile);
+    dIn[ibTotal] = (TDirectory*)fIn[ibTotal]->Get(cDir);
+    if(!dIn[ibTotal]){
+      Printf("%s:%d No directory %s found, exiting...",__FILE__,__LINE__,cDir);
+      fIn[ibTotal]->ls();
+      return;
+    }
+
+    lIn[ibTotal] = (TList*)dIn[ibTotal]->Get(cList);
+    Printf("Merging file %s %s",cFile, cDir);
     if(!lIn[ibTotal]){
       Printf("%s:%d No list %s found, exiting...",__FILE__,__LINE__,cList);
       fIn[ibTotal]->ls();
@@ -269,9 +278,14 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
     return;
   }
 
-  TFile *fOut = new TFile("allpt.root","RECREATE");
+  TFile *fOut = 0;
+  if(bUpdate)fOut = new TFile(cOutFile,"UPDATE");
+  else fOut = new TFile(cOutFile,"RECREATE");
+  TDirectory *dOut = fOut->mkdir(dIn[0]->GetName());
+  dOut->cd();
   TList *lOut = new TList();
   lOut->SetName(lIn[0]->GetName());
+
   // for the start scale all...
   for(int ie = 0; ie < lIn[0]->GetEntries();++ie){
     TH1 *h1Add = 0;
@@ -305,7 +319,7 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cList){
     if(h1Add)lOut->Add(h1Add);
     else if(hnAdd)lOut->Add(hnAdd);
   }
-  fOut->cd();
+  dOut->cd();
   lOut->Write(lOut->GetName(),TObject::kSingleKey);
   fOut->Close();
 }
@@ -375,6 +389,43 @@ Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_
   }
   return kTRUE;
 }
+
+Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
+
+  TFile *fIn = TFile::Open(currFile);
+  if(!fIn){
+    // not a severe condition but inciate that we have no information
+    return kFALSE;
+  }
+  // find the tlists we want to be independtent of the name so use the Tkey
+  TList* keyList = fIn->GetListOfKeys();
+
+  for(int i = 0;i < keyList->GetEntries();i++){
+    TKey* ikey = (TKey*)keyList->At(i); 
+    
+    //    TList *list = dynamic_cast<TList*>(key->ReadObj());
+    //    TNamed *name = dynamic_cast<TNamed*>(ikey->ReadObj());
+    TDirectory *dir =  dynamic_cast<TDirectory*>(ikey->ReadObj());
+    
+
+    if(dir){
+      Printf("%03d    : %60s %8d %8d ",i,dir->GetName(),ikey->GetObjlen(),ikey->GetNbytes());
+      TList * dirKeyList = dir->GetListOfKeys();
+      for(int j = 0;j<dirKeyList->GetEntries();j++){
+	TKey* jkey = (TKey*)dirKeyList->At(j); 
+	TList *list =  dynamic_cast<TList*>(jkey->ReadObj());
+	if(list){
+	  Printf("%03d/%03d: %60s %5.2f MB %5.2f MB",i,j,list->GetName(),(Float_t)jkey->GetObjlen()/1024./1024.,(Float_t)jkey->GetNbytes()/1024./1024.);
+	}
+	else{
+	  Printf("%03d/%03d: %60s %5.2f MB %5.2f MB",i,j,jkey->GetName(),(Float_t)jkey->GetObjlen()/1024./1024.,(Float_t)jkey->GetNbytes()/1024./1024.);
+	}
+      }
+    }
+  }
+  return kTRUE;
+}
+
 
 Bool_t  AliAnalysisHelperJetTasks::Selected(Bool_t bSet,Bool_t bNew){
   static Bool_t bSelected = kTRUE; // if service task is not run we acccpet all
