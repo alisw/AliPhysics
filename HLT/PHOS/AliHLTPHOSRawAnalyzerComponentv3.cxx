@@ -15,12 +15,9 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzerComponentv3.h"
-//#include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTPHOSDefinitions.h"
-//#include "AliHLTPHOSUtilities.h"
 #include "AliHLTPHOSMapper.h"
-// #include "AliLog.h"
 
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :

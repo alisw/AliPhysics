@@ -14,11 +14,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//#include "AliHLTCaloRawAnalyzer.h"
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
-
 #include "AliHLTCaloRawAnalyzerComponentv3.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTCaloChannelDataStruct.h"
@@ -26,18 +24,15 @@
 #include "AliHLTCaloSanityInspector.h"
 #include "AliAltroRawStreamV3.h"
 #include "AliRawReaderMemory.h"
-#include "AliAltroRawStreamV3.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliHLTCaloConstantsHandler.h"
-#include "AliHLTCaloCrazynessDefinitions.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
-#include "AliHLTCaloCoordinate.h"
 #include "AliLog.h"
 
 #include <vector>
 using namespace std;
 
-//ClassImp(AliHLTCaloRawAnalyzerComponentv3);
+ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 
 
 #include  "TStopwatch.h"
@@ -152,10 +147,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 void 
 AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 {
-  //  static int evntcnt = 0;
   static double wlast = -1;
   static double wcurrent = 0;
-  // evntcnt  ++;
   
   if( true == fDebug )
     {
@@ -169,7 +162,6 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 	}
     }
 }
-
 
 
 bool 
@@ -201,46 +193,30 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
      size = 0;
      return 0;
    }
-
-  if( true == fDebug ) { PrintDebugInfo(); };
-   
+  if( true == fDebug ) 
+    { PrintDebugInfo(); 
+    };
   
-   Int_t blockSize          = -1;
-   UInt_t totSize           = 0;
-   const AliHLTComponentBlockData* iter = NULL; 
-   unsigned long ndx;
-
-   
+  Int_t blockSize          = -1;
+  UInt_t totSize           = 0;
+  const AliHLTComponentBlockData* iter = NULL; 
+  unsigned long ndx;
   
-   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
+  for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
       if(  ! CheckInputDataType(iter->fDataType) )
-	//          CheckInputDataType	
 	{
 	  continue;
 	}
 
-      //    else
-      //  {
-      //     InitMapping( iter->fSpecification); 
-   
-      // blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
-      
-      // if(blockSize == -1) // If the processing returns -1 we are out of buffer and return an error msg.
-      // 	{
-      // 	  return -ENOBUFS;
-      // 	}
-
       if(iter->fSpecification != fCurrentSpec)
-      {
-	fCurrentSpec = iter->fSpecification;
-	InitMapping(iter->fSpecification);
-      }
-  
-      blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
+	{
+	  fCurrentSpec = iter->fSpecification;
+	  InitMapping(iter->fSpecification);
+	}
       
-   
+      blockSize = DoIt(iter, outputPtr, size, totSize); // Processing the block
       totSize += blockSize; //Keeping track of the used size
       AliHLTComponentBlockData bdChannelData;
       FillBlockData( bdChannelData );
@@ -250,14 +226,12 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
       bdChannelData.fSpecification = iter->fSpecification;
       outputBlocks.push_back(bdChannelData);
       outputPtr += blockSize; //Updating position of the output buffer
-      //      fCaloEventCount++; 
-      //     size = totSize; //telling the framework how much buffer space we have used.
     }
 
-   fCaloEventCount++; 
-   size = totSize; //telling the framework how much buffer space we have used.
+  fCaloEventCount++; 
+  size = totSize; //telling the framework how much buffer space we have used.
    
-   return 0;
+  return 0;
    
 }//end DoEvent
 
@@ -266,7 +240,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
-  
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
@@ -282,119 +255,75 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
   if( fDoPushRawData == true)
     {
-     fRawDataWriter->NewEvent( );
+      fRawDataWriter->NewEvent( );
     }
   
   if(fAltroRawStreamPtr->NextDDL())
-  {
-    int cnt = 0;
-    //    fOffset = ( fAltroRawStreamPtr->GetAltroCFG1() >> 10 ) & 0xf;
-    fOffset = 0;
-    while( fAltroRawStreamPtr->NextChannel()  )
-      { 
-	if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
-	  {
-	    continue; 
-	  }
-	else
-	  {
-	    ++ cnt;
-	    UShort_t* firstBunchPtr = 0;
-	    int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
-	    
-	    if( fDoPushRawData == true)
-	      {
-		fRawDataWriter->SetChannelId( chId );
-	      }
-	    
-	    vector <AliCaloBunchInfo> bvctr;
-	    while( fAltroRawStreamPtr->NextBunch() == true )
-	      {
-		bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(), 
-						   fAltroRawStreamPtr->GetBunchLength(),
-						   fAltroRawStreamPtr->GetSignals() ) );	
-
-		nSamples = fAltroRawStreamPtr->GetBunchLength();
-		if( fDoPushRawData == true)
-		  {
-		    fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), 
-						    nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
-		  }
-		firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
-	      }
-	     
-	    //return 1;
-	  
-	    totSize += sizeof( AliHLTCaloChannelDataStruct );
-	    if(totSize > size)
-	      {
-		//HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
-		return -1;
-	      }
-
-	    //    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-	    AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(), fAltroRawStreamPtr->GetAltroCFG2() );  
- 
-	    HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(), 
-		     (chId >> 12)&0x1, chId&0x3f, (chId >> 6)&0x3f);
-	    
-	    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
+    {
+      int cnt = 0;
+      fOffset = 0;
+      while( fAltroRawStreamPtr->NextChannel()  )
+	{ 
+	  if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 ) 
 	    {
-	      channelDataPtr->fChannelID =  chId;
-	      channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
-	      channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
-	      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-	      channelCount++;
-	      channelDataPtr++; // Updating position of the free output.
-	    }   
-	  }
-
-	// This should be the functionality for pushing the raw data for the bad channels
-
-	/*		  
-            if ( bad )
-	      {
-                crazyness |= AliHLTCaloCrazynessDefinitions::fgkBadEstBit;
-              }
-
-	    channelDataPtr->fChannelID =  chId;
-	    channelDataPtr->fEnergy = static_cast<Float_t>(fAnalyzerPtr->GetEnergy()) - fOffset;
-	    AliHLTCaloCoordinate c;
-	    fMapperPtr->ChannelId2Coordinate(chId, c); 
-	    HLTDebug("Got channel, x: %d, z: %d, gain: %d, energy: %f", c.fX, c.fZ, c.fGain, channelDataPtr->fEnergy);
-	    channelDataPtr->fTime = static_cast<Float_t>(fAnalyzerPtr->GetTiming());
-	    channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-	    channelCount++;
-	    channelDataPtr++; // Updating position of the free output.
+	      continue; 
+	    }
+	  else
+	    {
+	      ++ cnt;
+	      UShort_t* firstBunchPtr = 0;
+	      int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
 	    
-	                     // Push the raw data if we have crazyness and feature to push raw data for bad channels
-            if (crazyness && fDoPushBadRawData)
+	      if( fDoPushRawData == true)
+		{
+		  fRawDataWriter->SetChannelId( chId );
+		}
+	    
+	      vector <AliCaloBunchInfo> bvctr;
+	      while( fAltroRawStreamPtr->NextBunch() == true )
+		{
+		  bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(), 
+						     fAltroRawStreamPtr->GetBunchLength(),
+						     fAltroRawStreamPtr->GetSignals() ) );	
 
-              {
-		channelDataPtr->fCrazyness = crazyness | AliHLTCaloCrazynessDefinitions::fgkRawDataBit;
-		UShort_t extraSize = sizeof ( AliHLTCaloChannelRawDataStruct ) + ( nSamples-1 ) *sizeof ( UShort_t );
-		totSize += extraSize;
-		
-		if ( totSize > size )
-		  {
-		    HLTError ( "Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size );
-                    return -1;
-                  }
+		  nSamples = fAltroRawStreamPtr->GetBunchLength();
+		  if( fDoPushRawData == true)
+		    {
+		      fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), 
+						      nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
+		    }
+		  firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
+		}
+	    
+	      totSize += sizeof( AliHLTCaloChannelDataStruct );
+	      if(totSize > size)
+		{
+		  HLTError("Buffer overflow: Trying to write data of size: %d bytes. Output buffer available: %d bytes.", totSize, size);
+		  return -1;
+		}
 
-		AliHLTCaloChannelRawDataStruct *tmpChannel = reinterpret_cast<AliHLTCaloChannelRawDataStruct*> ( channelDataPtr );
-                memcpy ( & ( tmpChannel->fData ), firstBunchPtr, nSamples*sizeof ( UShort_t ) );
-                channelDataPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*> ( reinterpret_cast<UChar_t*> ( channelDataPtr ) + extraSize );
-              }
+	      AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(), 
+							      fAltroRawStreamPtr->GetAltroCFG2() );  
+ 
+	      HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(), 
+		       (chId >> 12)&0x1, chId&0x3f, (chId >> 6)&0x3f);
+	      {
+		channelDataPtr->fChannelID =  chId;
+		channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
+		channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
+		channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
+		channelCount++;
+		channelDataPtr++; // Updating position of the free output.
+	      }   
+	    }
+	}
+      if( fDoPushRawData == true)
+	{ 
+	  fRawDataWriter->NewChannel();
+	}
+    }
 
-	*/
-      }
-    if( fDoPushRawData == true)
-      { 
-	fRawDataWriter->NewChannel();
-      }
-  }
-
-//Writing the header
+  
   channelDataHeaderPtr->fNChannels   =  channelCount;
   channelDataHeaderPtr->fAlgorithm   = fAlgorithm;
   channelDataHeaderPtr->fInfo        = 0;
@@ -414,14 +343,14 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 
 
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter(AliHLTCaloConstants* cConst) : 
-								    fRawDataBuffer(0),
-								    fCurrentChannelSize(0),
-								    fBufferIndex(0),
-								    fBufferSize( 64*56*cConst->GetNGAINS()*cConst->GetALTROMAXSAMPLES() +1000 ),
-								    fCurrentChannelIdPtr(0),
-								    fCurrentChannelSizePtr(0),
-								    fCurrentChannelDataPtr(0),
-								    fTotalSize(0)
+  fRawDataBuffer(0),
+  fCurrentChannelSize(0),
+  fBufferIndex(0),
+  fBufferSize( 64*56*cConst->GetNGAINS()*cConst->GetALTROMAXSAMPLES() +1000 ),
+  fCurrentChannelIdPtr(0),
+  fCurrentChannelSizePtr(0),
+  fCurrentChannelDataPtr(0),
+  fTotalSize(0)
 {
   fRawDataBuffer = new UShort_t[fBufferSize];
   Init();

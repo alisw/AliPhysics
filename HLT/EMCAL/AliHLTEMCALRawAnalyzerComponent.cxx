@@ -29,7 +29,6 @@
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
-//#include "unistd.h"
 
 
 #include  "TStopwatch.h"
@@ -40,7 +39,6 @@ TStopwatch  fgWatch; //CRAP PTH
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
 {
   fDebug = true;
-   //  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
 }
 
 
@@ -76,14 +74,11 @@ AliHLTEMCALRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, dou
 }
 
 
-void 
-AliHLTEMCALRawAnalyzerComponent::DoInit() 
-{
-  //  cout << __FILE__ << __FUNCTION__ << __LINE__ <<  endl;
-
-  //  fgWatch.Start();
- 
-}
+// void 
+// AliHLTEMCALRawAnalyzerComponent::DoInit() 
+// {
+//   //  fgWatch.Start();
+// }
 
 
 void 
