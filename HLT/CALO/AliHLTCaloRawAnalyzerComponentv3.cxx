@@ -22,7 +22,7 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTCaloMapper.h"
 #include "AliHLTCaloSanityInspector.h"
-#include "AliAltroRawStreamV3.h"
+// #include "AliAltroRawStreamV3.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliHLTCaloConstantsHandler.h"
@@ -58,9 +58,6 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
 										fRawDataWriter(0)
 									
 {
-  //comment
-  fRawReaderMemoryPtr = new AliRawReaderMemory();
-  fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawReaderMemoryPtr);
   fSanityInspectorPtr = new AliHLTCaloSanityInspector();
   
   if( fDoPushRawData == true  )
@@ -68,6 +65,7 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
     fRawDataWriter  = new RawDataWriter(fCaloConstants); 
   }
   
+  fRawReaderMemoryPtr = new AliRawReaderMemory();
   fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, det);  
 }
 

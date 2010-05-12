@@ -94,8 +94,9 @@ class AliAltroRawStreamV3;
  */ 
 
 
-#include "AliHLTProcessor.h"
-#include "AliHLTCaloDefinitions.h"
+// #include "AliHLTProcessor.h"
+// #include "AliHLTCaloDefinitions.h"
+
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloProcessor.h"
 

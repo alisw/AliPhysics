@@ -94,7 +94,6 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
   virtual ~AliHLTPHOSRawAnalyzerComponentv3();
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);/** interface function, see @ref AliHLTComponent for description */
   virtual AliHLTComponentDataType GetOutputDataType();/** interface function, see @ref AliHLTComponent for description */
-  
   virtual const char* GetComponentID() = 0; 
   virtual AliHLTComponent* Spawn() = 0; /** interface function, see @ref AliHLTComponent for description */
  

@@ -28,11 +28,7 @@
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
-#include "AliHLTCaloChannelDataHeaderStruct.h"
-
-
-//#include  "TStopwatch.h"
-//TStopwatch  fgWatch; //CRAP PTH
+//#include "AliHLTCaloChannelDataHeaderStruct.h"
 
 
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
