@@ -135,8 +135,6 @@ private:
   TNtuple *fClusters;                             //! transient  
   TNtuple *fTracks;                               //! transient
 
-  vector<UInt_t> fTrackClusterID[36][6];          //! transient
-
   AliHLTTPCSpacePointData *fClustersArray[36][6]; //! transient
   UInt_t                   fNSpacePoints[36][6];  //! transient
   
