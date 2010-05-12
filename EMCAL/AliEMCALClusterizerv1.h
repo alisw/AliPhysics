@@ -42,24 +42,24 @@ public:
 	
   virtual ~AliEMCALClusterizerv1()  ;
 
-  virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
+  virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2, Bool_t & shared)const ; 
                                // Checks if digits are in neighbour cells 
 
   virtual Float_t Calibrate(const Float_t amp, const Float_t time, const Int_t cellId) ;  // Tranforms Amp to energy 
 
-  virtual void    GetNumberOfClustersFound(int numb )const{ numb = fNumberOfECAClusters ;} 
-  virtual Float_t GetECAClusteringThreshold()const{ return fECAClusteringThreshold;}  
-  virtual Float_t GetECALocalMaxCut()const       { return fECALocMaxCut;} 
-  virtual Float_t GetECALogWeight()const         { return fECAW0;}
-  virtual Float_t GetMinECut()const              { return fMinECut;}
+  virtual void    GetNumberOfClustersFound(int numb )const { numb = fNumberOfECAClusters ;} 
+  virtual Float_t GetECAClusteringThreshold()        const { return fECAClusteringThreshold;}  
+  virtual Float_t GetECALocalMaxCut()                const { return fECALocMaxCut;} 
+  virtual Float_t GetECALogWeight()                  const { return fECAW0;}
+  virtual Float_t GetMinECut()                       const { return fMinECut;}
 
-  virtual Float_t GetTimeCut() const            { return fTimeCut ; }
-  virtual Float_t GetTimeMin() const            { return fTimeMin ; }
-  virtual Float_t GetTimeMax() const            { return fTimeMax ; }
+  virtual Float_t GetTimeCut()                       const { return fTimeCut ; }
+  virtual Float_t GetTimeMin()                       const { return fTimeMin ; }
+  virtual Float_t GetTimeMax()                       const { return fTimeMax ; }
 
   virtual void    Digits2Clusters(Option_t *option);                // Does the job
 
-  virtual void Print(Option_t * option)const ;
+  virtual void    Print(Option_t * option)const ;
 
   virtual void SetECAClusteringThreshold(Float_t cluth)  { fECAClusteringThreshold = cluth ; }
   virtual void SetMinECut(Float_t mine)                  { fMinECut = mine; }
