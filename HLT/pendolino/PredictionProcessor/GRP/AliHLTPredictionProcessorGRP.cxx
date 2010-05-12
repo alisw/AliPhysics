@@ -211,7 +211,7 @@ TMap* AliHLTPredictionProcessorGRP::produceTestData(TString /*aliasName*/)
   return resultMap;
 }
 
-bool AliHLTPredictionProcessorGRP::CreateInitialGRPEntry(int runno, const char* beamtype, const char* runtype, const char* detectorList)
+bool AliHLTPredictionProcessorGRP::CreateInitialGRPEntry(int runno, const char* beamtype, const char* runtype, const char* /*detectorList*/)
 {
   // Create the initial GRP entry.
   // The beam type and run type parameters are propagated form the ECS to
