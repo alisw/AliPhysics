@@ -441,14 +441,21 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	//   pid signal
 	// The first one can be updated already at that stage here, while the two others
 	// eventually require to update from the ITS tracks before. The exact scheme
-	// needs to be checked 
+	// needs to be checked
+	// 2010-05-12 TODO: the outer parameter is set when updating with kTPCout but
+	// also when updated with kITSout. So the value from here is overwritten further
+	// down. Comes along with the necessity to check the full sequence.
 	iotrack.SetID( element->TrackID() );
-	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
 	{
 	  AliHLTGlobalBarrelTrack outPar(*element);	  
 	  outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
 	  iotrack.UpdateTrackParams(&outPar,AliESDtrack::kTPCout);
 	}
+	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCin);
+	// 2010-05-12: investigations ongoing to find out what needs to be set in
+	// the ESD track in order to get the tracks correctly displayed by the offline
+	// macro.
+	//iotrack.SetStatus(AliESDtrack::kTPCrefit);
 	iotrack.SetTPCPoints(points);
 	if( element->TrackID()<ndEdxTPC ){
 	  iotrack.SetTPCsignal( dEdxTPC[element->TrackID()], 0, 0 ); 
