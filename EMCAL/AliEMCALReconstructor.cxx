@@ -241,10 +241,9 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	  fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
 	
 	  fgRawUtils->Raw2Digits(rawReader,digitsArr,fPedestalData,digitsTrg);
-  }
+  }//skip calibration event
   else{
 	AliDebug(1," Calibration Event, skip!");
-	printf("**** AliEMCALReconstructor::ConvertDigits() Calibration Event, skip!!\n");
   }
 	
   digitsTree->Fill();
