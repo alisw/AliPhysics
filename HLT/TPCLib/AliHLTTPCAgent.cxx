@@ -74,6 +74,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCTrackDumpComponent.h"
 #include "AliHLTTPCHWCFDataReverterComponent.h"
 #include "AliHLTTPCHWClusterTransformComponent.h"
+#include "AliHLTTPCCFComparisonComponent.h"
 // #include "AliHLTTPCCalibSeedMakerComponent.h"
 // #include "AliHLTTPCCalibTimeComponent.h"
 // #include "AliHLTTPCCalibTimeGainComponent.h"
@@ -298,6 +299,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCTrackDumpComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFDataReverterComponent);
   pHandler->AddComponent(new AliHLTTPCHWClusterTransformComponent);
+  pHandler->AddComponent(new AliHLTTPCCFComparisonComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibSeedMakerComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibTimeComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibTimeGainComponent);

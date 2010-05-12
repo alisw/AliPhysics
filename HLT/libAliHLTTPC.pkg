@@ -45,6 +45,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCRawDataUnpackerComponent.h \
 		AliHLTTPCClusterFinderComponent.h \
 		AliHLTTPCHWClusterTransformComponent.h \
+		AliHLTTPCCFComparisonComponent.h \
 		AliHLTTPCVertexFinderComponent.h \
 		AliHLTTPCSliceTrackerComponent.h \
 		AliHLTTPCGlobalMergerComponent.h \
