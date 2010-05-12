@@ -31,16 +31,14 @@
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 
 
-#include  "TStopwatch.h"
-TStopwatch  fgWatch; //CRAP PTH
-
+//#include  "TStopwatch.h"
+//TStopwatch  fgWatch; //CRAP PTH
 
 
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
 {
   fDebug = true;
 }
-
 
 
 AliHLTEMCALRawAnalyzerComponent::~AliHLTEMCALRawAnalyzerComponent()
@@ -63,22 +61,6 @@ AliHLTEMCALRawAnalyzerComponent::GetOutputDataType()
   //comment
   return AliHLTEMCALDefinitions::fgkChannelDataType;
 }
-
-
-void
-AliHLTEMCALRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-{
-  //comment
-  constBase = sizeof(AliHLTCaloChannelDataHeaderStruct);
-  inputMultiplier = 0.5;
-}
-
-
-// void 
-// AliHLTEMCALRawAnalyzerComponent::DoInit() 
-// {
-//   //  fgWatch.Start();
-// }
 
 
 void 

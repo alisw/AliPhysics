@@ -27,6 +27,7 @@ AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :
    InitMapping(0x1); //using 0x1 to avoid error message
 }
 
+
 AliHLTPHOSRawAnalyzerComponentv3::~AliHLTPHOSRawAnalyzerComponentv3()
 {
   //comment
@@ -41,19 +42,12 @@ AliHLTPHOSRawAnalyzerComponentv3::GetInputDataTypes( vector<AliHLTComponentDataT
   list.push_back( AliHLTPHOSDefinitions::fgkDDLPackedRawDataType);
 }
 
+
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponentv3::GetOutputDataType()
 {
   //comment
   return AliHLTPHOSDefinitions::fgkChannelDataType;
-}
-
-void
-AliHLTPHOSRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-{
-  //comment
-  constBase = sizeof(AliHLTCaloChannelDataHeaderStruct);
-  inputMultiplier = 1.5;
 }
 
 

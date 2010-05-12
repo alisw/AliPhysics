@@ -164,6 +164,15 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 }
 
 
+void
+AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
+{
+  //comment
+  constBase = sizeof(AliHLTCaloChannelDataHeaderStruct);
+  inputMultiplier = 1.5;
+}
+
+
 bool 
 AliHLTCaloRawAnalyzerComponentv3::CheckInputDataType(const AliHLTComponentDataType &datatype)
 {

@@ -115,7 +115,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list) = 0; 
   virtual AliHLTComponentDataType GetOutputDataType() = 0;
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) = 0 ;
+  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual AliHLTComponent* Spawn() = 0; 
 
  protected:
@@ -140,9 +140,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
  protected:
   virtual void InitMapping(const int specification ) = 0;
   void PrintDebugInfo();
-  /** Pointer to an analyzer object used for raw data anlysis */ 
   AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
-  //** Pointer to a mapper opbject */
   AliHLTCaloMapper *fMapperPtr;          //COMMENT
   AliHLTUInt32_t fCurrentSpec;
   bool fDebug;

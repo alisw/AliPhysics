@@ -35,7 +35,6 @@ class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
   virtual ~AliHLTEMCALRawAnalyzerComponent();
   void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   AliHLTComponentDataType GetOutputDataType();
-  void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   virtual const char* GetComponentID() = 0;
   virtual AliHLTComponent* Spawn() = 0; 
   
