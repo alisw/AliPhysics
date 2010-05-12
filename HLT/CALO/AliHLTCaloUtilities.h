@@ -26,16 +26,12 @@
 
 using namespace std;
 
-//      AliHLTCaloUtilities
 class  AliHLTCaloUtilities
 {
  public:
   AliHLTCaloUtilities();
   virtual ~AliHLTCaloUtilities();
- 
   static bool CheckFile(const char *fileName, const char *opt);
-
-  //  static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value)
   static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
   static bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
   static bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
@@ -44,18 +40,15 @@ class  AliHLTCaloUtilities
   template<typename T> 
     static void  DumpData(T *array, int N, int nPerLine)
     {
-      //   cout <<   "DumpData N=  " << N <<endl;
       for(int i= 0; i< N; i++)
 	{
 	  if((i%nPerLine == 0)  &&  (i != 0))
 	    {
-	      //printf("\n");
 	      cout << endl;
 	    }
 
 	  cout << array[i]<< "\t";
 	}
-      //     printf("\n");
       cout << endl;
     }
 
@@ -82,11 +75,9 @@ class  AliHLTCaloUtilities
 	}
       return tmpMax;
     }
-
-
-
   
- private:
+  
+private:
   static int DoExistArgument(const int argc, const char** argv, const char *argument);
 
 };

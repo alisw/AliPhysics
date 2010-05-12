@@ -33,13 +33,9 @@ AliHLTCaloUtilities::~AliHLTCaloUtilities()
 }
 
 
-
-
-
 bool 
 AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value)
 {
-  //  cout << "AliHLTCaloUtilities::ScanSingleIntArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl;  
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
   if( tmpIndex  >= 0)
@@ -48,7 +44,6 @@ AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const ch
 	{
 	  return true;
 	}
-	    
       else
 	{
 	  if(tmpIndex +1 < argc)
@@ -65,12 +60,11 @@ AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const ch
     }
   return false;
 }
+
  
 bool 
 AliHLTCaloUtilities::ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value)
 {
-  //  cout << "AliHLTCaloUtilities::ScanSingleFloatArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
-
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
   if( tmpIndex  >= 0)
@@ -79,7 +73,6 @@ AliHLTCaloUtilities::ScanSingleFloatArgument(int argc, const char** argv, const 
 	{
 	  return true;
 	}
-	    
       else
 	{
 	  if(tmpIndex +1 < argc)
@@ -96,13 +89,10 @@ AliHLTCaloUtilities::ScanSingleFloatArgument(int argc, const char** argv, const 
   return false;
 }
  
-
  
 bool 
 AliHLTCaloUtilities::ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname)
 {
-  //  cout << "AliHLTCaloUtilities::ScanSingleNameArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
-
   int tmpIndex =  DoExistArgument(argc, argv, name);
 
   if( tmpIndex  >= 0)
@@ -111,14 +101,11 @@ AliHLTCaloUtilities::ScanSingleNameArgument(int argc, const char** argv, const c
 	{
 	  return true;
 	}
-	    
       else
 	{
 	  if(tmpIndex +1 < argc)
 	    {
-	      //    *value =  atoi(argv[tmpIndex +1]);
 	      sprintf(outname, "%s", argv[tmpIndex +1] );
-
 	      return true;
 	    }
 	}
@@ -134,21 +121,16 @@ AliHLTCaloUtilities::ScanSingleNameArgument(int argc, const char** argv, const c
 bool 
 AliHLTCaloUtilities::ScanSingleArgument(int argc, const char** argv, const char *name)
 {
-  //  cout << "AliHLTCaloUtilities::ScanSingleArgument " << name <<" =  " << DoExistArgument(argc, argv, name) <<endl; 
-
   if( DoExistArgument(argc, argv, name) >=0)
     {
-      //     cout << "AliHLTCaloUtilities::ScanSingleArgument " << name <<" > 0" <<endl;
       return true;
     }
   else
     {
-      //    cout << "AliHLTCaloUtilities::ScanSingleArgument " << name <<" > 0" <<endl;
       return false;
     }
 
 }
-
 
 
 bool
@@ -183,13 +165,8 @@ AliHLTCaloUtilities::DoExistArgument(const int argc, const char** argv, const ch
       
       if(s1 == name)
 	{
-	  //	  cout << "AliHLTCaloUtilities::DoExistArgumen , argument = " << name << "  Exists" <<endl;
 	  return i;
 	}
     }
-  
-  // cout << "AliHLTCaloUtilities::DoExistArgumen , argument = " << name << "  does not exist " <<endl;
   return -1;
-
-
 }
