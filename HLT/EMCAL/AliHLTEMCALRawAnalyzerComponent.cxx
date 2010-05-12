@@ -28,7 +28,7 @@
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
-//#include "AliHLTCaloChannelDataHeaderStruct.h"
+
 
 
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
