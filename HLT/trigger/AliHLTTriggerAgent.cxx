@@ -216,7 +216,7 @@ const char* AliHLTTriggerAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
 
-  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTITS.so libAliHLTGlobal.so libAliHLTMUON.so";
+  return "";
 }
 
 int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
