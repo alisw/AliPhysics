@@ -305,14 +305,17 @@ void AliPWG4HighPtQATPConly::ConnectInputData(Option_t *)
 //   tree->SetBranchStatus("ESDfriend*", kTRUE);
   //  fESD->ReadFromTree(tree);
 
-  fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
-  if (!fESDfriend)
-    {
-      // works for both, we just want to avoid setting the branch adress twice
-      // in case of the new ESD
-      tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-    }
+  //old
+//   fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
+//   if (!fESDfriend)
+//     {
+//       // works for both, we just want to avoid setting the branch adress twice
+//       // in case of the new ESD
+//       tree->SetBranchAddress("ESDfriend.",&fESDfriend);
+//     }
   
+  fESDfriend = esdH->GetESDfriend();
+
 }
 
 //________________________________________________________________________
@@ -816,16 +819,16 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
     return;
   }
 
-  fESD->SetESDfriend(fESDfriend); //Attach the friend to the ESD
-  if (!fESDfriend) {
-    AliDebug(2,Form("ERROR: fESDfriend not available"));
-    // Post output data
-     PostData(0, fHistList);
-     PostData(1, fHistListTPC);
-     PostData(2, fHistListITS);
-     PostData(3, fHistListCosmics);
-    return;
-  }
+//   fESD->SetESDfriend(fESDfriend); //Attach the friend to the ESD
+//   if (!fESDfriend) {
+//     AliDebug(2,Form("ERROR: fESDfriend not available"));
+//     // Post output data
+//      PostData(0, fHistList);
+//      PostData(1, fHistListTPC);
+//      PostData(2, fHistListITS);
+//      PostData(3, fHistListCosmics);
+//     return;
+//   }
 
   Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!isSelected) { //Select collison candidates
@@ -978,8 +981,8 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 	fPtSelITSouter->Fill(ptITSouter);
 	fPtITSouterminPtTPCvsPtAll->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter) );
 
-	if(trackITSouter.GetSign()>0.) fPtAllminPtTPCvsPtAllEtaPos->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),trackITSouter.Eta());
-	if(trackITSouter.GetSign()<0.) fPtAllminPtTPCvsPtAllEtaNeg->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),trackITSouter.Eta());
+	if(trackITSouter.GetSign()>0.) fPtITSouterminPtTPCvsPtAllEtaPos->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),trackITSouter.Eta());
+	if(trackITSouter.GetSign()<0.) fPtITSouterminPtTPCvsPtAllEtaNeg->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),trackITSouter.Eta());
 
 	fPtITSouterminPtTPCvsPtAllNPointTPC->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),nClustersTPC);
 	if(nClustersTPC>0.) fPtITSouterminPtTPCvsPtAllNPointTPCS->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetTPCnclsS()/nClustersTPC);
