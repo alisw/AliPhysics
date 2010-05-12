@@ -70,11 +70,22 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam&
 
   // the 5 track parameters are named in the AliHLTExternalTrackParam
   // while AliExternalTrackParam just uses an array[5]
-  // the members have the some order, fY is the first one
+  // the members have the same order, fY is the first one
   Set(p.fX, p.fAlpha, &p.fY, p.fC);
   SetPoints(p.fPointIDs, p.fNPoints);
   SetNumberOfClusters(p.fNPoints);
   //SetIntegratedLength(GetPathLengthTo( GetLastPointX(), b);
+}
+
+AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliExternalTrackParam& p )
+  : AliKalmanTrack()
+  , fPoints()
+  , fLastX(0)
+  , fLastY(0)
+  , fTrackID(0)
+{
+  // see header file for class documentation
+  *(dynamic_cast<AliExternalTrackParam*>(this))=p;
 }
 
 template <class c>

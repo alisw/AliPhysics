@@ -33,6 +33,8 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& t);
   /** copy constructor */
   AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam& p);
+  /** copy constructor */
+  AliHLTGlobalBarrelTrack(const AliExternalTrackParam& p);
 
   /** assignment operator */
   template <class c>
