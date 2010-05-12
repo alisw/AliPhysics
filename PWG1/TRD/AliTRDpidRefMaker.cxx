@@ -14,6 +14,7 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDpidRefMaker.h"
 #include "info/AliTRDv0Info.h"
+#include "info/AliTRDpidInfo.h"
 
 
 // Defines and implements basic functionality for building reference data for TRD PID. 
@@ -30,46 +31,6 @@
 // 
 
 ClassImp(AliTRDpidRefMaker)
-ClassImp(AliTRDpidRefMaker::AliTRDpidRefData)
-ClassImp(AliTRDpidRefMaker::AliTRDpidRefDataArray)
-
-//________________________________________________________________________
-AliTRDpidRefMaker::AliTRDpidRefDataArray::AliTRDpidRefDataArray() :
-  fNtracklets(0)
-  ,fData(NULL)
-{
-  // Constructor of data array
-  fData = new AliTRDpidRefData[AliTRDgeometry::kNlayer];
-}
-
-//________________________________________________________________________
-AliTRDpidRefMaker::AliTRDpidRefDataArray::~AliTRDpidRefDataArray()
-{
-  // Destructor
-  delete [] fData;
-}
-
-//________________________________________________________________________
-void AliTRDpidRefMaker::AliTRDpidRefDataArray::PushBack(Int_t ly, Int_t p, Float_t *dedx)
-{
-// Add PID data to the end of the array 
-  fData[fNtracklets].fPLbin= (ly<<4) | (p&0xf);
-  memcpy(fData[fNtracklets].fdEdx, dedx, 8*sizeof(Float_t));
-  fNtracklets++;
-}
-
-//________________________________________________________________________
-void AliTRDpidRefMaker::AliTRDpidRefDataArray::Reset()
-{
-// Reset content
-
-  if(!fNtracklets) return;
-  while(fNtracklets--){
-    fData[fNtracklets].fPLbin = 0xff;
-    memset(fData[fNtracklets].fdEdx, 0, 8*sizeof(Float_t));
-  }
-  fNtracklets=0;
-}
 
 //________________________________________________________________________
 AliTRDpidRefMaker::AliTRDpidRefMaker() 
@@ -81,7 +42,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker()
   ,fPIDdataArray(NULL)
   ,fRefPID(kMC)
   ,fRefP(kMC)
-  ,fPIDbin(0xff)
   ,fFreq(1.)
   ,fP(-1.)
   ,fPthreshold(0.)
@@ -102,7 +62,6 @@ AliTRDpidRefMaker::AliTRDpidRefMaker(const char *name, const char *title)
   ,fPIDdataArray(NULL)
   ,fRefPID(kMC)
   ,fRefP(kMC)
-  ,fPIDbin(0xff)
   ,fFreq(1.)
   ,fP(-1.)
   ,fPthreshold(0.5)
@@ -162,11 +121,9 @@ void AliTRDpidRefMaker::UserCreateOutputObjects()
   for(Int_t is=AliPID::kSPECIES; is--;) ax->SetBinLabel(is+1, AliPID::ParticleShortName(is));
   h2->GetYaxis()->SetTitle("P bins");
   h2->GetYaxis()->SetNdivisions(511);
-
   fContainer->AddAt(h2, 0);
 
-  fData = new TTree(GetName(), Form("Reference data for %s", GetName()));
-  fData->Branch("s", &fPIDbin, "s/b");
+  fData = new TTree("RefPID", "Reference data for PID");
   fData->Branch("data", &fPIDdataArray);
 }
 
@@ -180,7 +137,7 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
   if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;
   if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
 
-  AliDebug(1, Form("Analyse N[%d] tracks", fTracks->GetEntriesFast()));
+  AliDebug(1, Form("Entries: Tracks[%d] V0[%d] PID[%d]", fTracks->GetEntriesFast(), fV0s->GetEntriesFast(), fInfo->GetEntriesFast()));
   AliTRDtrackInfo     *track = NULL;
   AliTRDtrackV1    *trackTRD = NULL;
   AliTrackReference     *ref = NULL;
@@ -204,11 +161,15 @@ void AliTRDpidRefMaker::UserExec(Option_t *)
 
     // fill the pid information
     SetRefPID(fRefPID, track, fPID);
+    // get particle type
+    Int_t idx(TMath::LocMax(AliPID::kSPECIES, fPID)); 
+    if(idx == 0 && fPID[0]<1.e-5) continue;
 
     // prepare PID data array
     if(!fPIDdataArray){ 
-      fPIDdataArray = new AliTRDpidRefDataArray();
+      fPIDdataArray = new AliTRDpidInfo();
     } else fPIDdataArray->Reset();
+    fPIDdataArray->SetPID(idx);
 
     // fill PID information
     for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
@@ -270,17 +231,15 @@ void AliTRDpidRefMaker::Fill()
 {
 // Fill data tree
 
-  if(!fPIDdataArray->fNtracklets) return;
-  fPIDbin = TMath::LocMax(AliPID::kSPECIES, fPID); // get particle type
-  if(fPIDbin == 0 && fPID[0]<1.e-5) return;
+  if(!fPIDdataArray->GetNtracklets()) return;
   // Fill data tree
   fData->Fill();
 
   
   // fill monitor
-  for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
-    Int_t pBin = fPIDdataArray->fData[ily].fPLbin & 0xf;
-    ((TH2*)fContainer->At(0))->Fill(fPIDbin, pBin);
+  for(Int_t itrklt=fPIDdataArray->GetNtracklets(); itrklt--;){
+    Int_t pBin = fPIDdataArray->GetData(itrklt)->Momentum();
+    ((TH2*)fContainer->At(0))->Fill(fPIDdataArray->GetPID(), pBin);
   }
 }
 
@@ -288,7 +247,6 @@ void AliTRDpidRefMaker::Fill()
 void AliTRDpidRefMaker::LinkPIDdata() 
 {
 // Link data tree to data members
-  fData->SetBranchAddress("s", &fPIDbin);
   fData->SetBranchAddress("data", &fPIDdataArray);
 }
 

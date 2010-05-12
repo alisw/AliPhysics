@@ -487,8 +487,6 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
       return NULL;
     }
 
-    AliTRDpidInfo *pid = new AliTRDpidInfo();
-    fPID->Add(pid);
     hPID->Fill(FindBin(species, momentum), pidESD[is]);
   }
   return hPID;
@@ -529,25 +527,33 @@ TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)
     momentum = cTrack.GetMomentum(0);
     pdg = CalcPDG(&cTrack);
   }
-  Int_t species = AliTRDpidUtil::Pdg2Pid(pdg);
   if(!IsInRange(momentum)) return NULL;
 
+  // Init exchange container
+  Int_t s(AliTRDpidUtil::Pdg2Pid(pdg));
+  AliTRDpidInfo *pid = new AliTRDpidInfo(s);
+
   (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kTRUE);
-//   (const_cast<AliTRDrecoParam*>(fReconstructor->GetRecoParam()))->SetPIDNeuralNetwork(kFALSE);
-  Float_t sumdEdx = 0;
-  Int_t iBin = FindBin(species, momentum);
+
+  Float_t sumdEdx(0.);
+  Int_t iBin = FindBin(s, momentum);
   AliTRDseedV1 *tracklet = NULL;
-  for(Int_t iChamb = 0; iChamb < AliTRDgeometry::kNlayer; iChamb++){
-    sumdEdx = 0;
-    tracklet = cTrack.GetTracklet(iChamb);
+  for(Int_t ily = 0; ily < AliTRDgeometry::kNlayer; ily++){
+    tracklet = cTrack.GetTracklet(ily);
     if(!tracklet) continue;
     tracklet -> CookdEdx(AliTRDpidUtil::kNNslices);
+
+    // fill exchange container
+    pid->PushBack(tracklet->GetPlane(), 
+                  AliTRDpidUtil::GetMomentumBin(tracklet->GetMomentum()), tracklet->GetdEdx());
+
+    sumdEdx = 0.;
     for(Int_t i = AliTRDpidUtil::kNNslices; i--;) sumdEdx += tracklet->GetdEdx()[i];
-//     tracklet -> CookdEdx(AliTRDpidUtil::kLQslices);
-//     for(Int_t i = 3; i--;) sumdEdx += tracklet->GetdEdx()[i];
     sumdEdx /= AliTRDCalPIDNN::kMLPscale;
     hdEdx -> Fill(iBin, sumdEdx);
   }
+  fPID->Add(pid);
+
   return hdEdx;
 }
 

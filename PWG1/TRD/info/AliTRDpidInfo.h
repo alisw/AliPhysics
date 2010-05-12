@@ -11,7 +11,8 @@
 class AliTRDpidInfo : public TObject
 {
 public:
-  struct AliTRDpidData {
+  class AliTRDpidData {
+  public:
     AliTRDpidData();
     virtual ~AliTRDpidData(){}
     Int_t   Layer() const    { return (fPLbin&0xf0)>>4;}
@@ -23,13 +24,15 @@ public:
   };
 
   AliTRDpidInfo();
+  AliTRDpidInfo(Int_t idx);
   virtual ~AliTRDpidInfo();
   inline AliTRDpidData const* GetData(Int_t itrklt) const;
   AliTRDpidData const* GetDataInLayer(Int_t ily) const;
   Int_t   GetNtracklets() const        { return fNtracklets;}
   Char_t  GetPID() const               { return fPID;}
-  void    PushBack(Int_t ly, Int_t p, Float_t *dedx);
+  void    PushBack(Int_t ly, Int_t p, const Float_t *dedx);
   void    Reset();
+  void    SetPID(Int_t idx)             { fPID = idx;}
 
 private:
   Char_t        fPID;         // reference PID

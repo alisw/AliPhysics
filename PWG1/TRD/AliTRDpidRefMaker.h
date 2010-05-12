@@ -31,6 +31,7 @@ class TObjArray;
 class AliTRDReconstructor;
 class AliTRDseedV1;
 class AliTRDtrackInfo;
+class AliTRDpidInfo;
 class AliTRDpidRefMaker : public AliTRDrecoTask
 {
 public:
@@ -52,29 +53,6 @@ public:
     kV0 = 0 // use V0 as reference
    ,kMC = 1 // use MC as reference
    ,kRec= 2 // use Reconstructed PID as reference
-  };
-
-  struct AliTRDpidRefData {
-    AliTRDpidRefData() : fPLbin(0xff) {
-      memset(fdEdx, 0, 8*sizeof(Float_t));
-    }
-    virtual ~AliTRDpidRefData(){}
-    UChar_t fPLbin;   // momentum / layer bin
-    Float_t fdEdx[8]; // dEdx array
-    ClassDef(AliTRDpidRefData, 1)  // PID data representation
-  };
-  struct AliTRDpidRefDataArray {
-    AliTRDpidRefDataArray();
-    virtual ~AliTRDpidRefDataArray();
-    void    PushBack(Int_t ly, Int_t p, Float_t *dedx);
-    void    Reset();
-
-    Int_t   fNtracklets;     // number of tracklets
-    AliTRDpidRefData *fData; //[fNtracklets] PID data array
-  private:
-    AliTRDpidRefDataArray(const AliTRDpidRefMaker::AliTRDpidRefDataArray& ref);
-    AliTRDpidRefDataArray& operator=(const AliTRDpidRefMaker::AliTRDpidRefDataArray& ref);
-    ClassDef(AliTRDpidRefDataArray, 1)  // track PID data representation
   };
 
   AliTRDpidRefMaker();
@@ -102,10 +80,9 @@ protected:
   TObjArray     *fV0s;                  //! v0 array
   TTree         *fData;                 //! dEdx-P data
   TObjArray     *fInfo;                 //! list of PID info
-  AliTRDpidRefDataArray *fPIDdataArray; //! pid data array
+  AliTRDpidInfo *fPIDdataArray;         //! pid data array
   ETRDpidRefMakerSource  fRefPID;       // reference PID source
   ETRDpidRefMakerSource  fRefP;         // reference momentum source
-  UChar_t       fPIDbin;                // species bin
   Float_t       fFreq;                  // training sample relative abundance
   Float_t       fP;                     // momentum
   Float_t       fdEdx[8];               // dEdx array

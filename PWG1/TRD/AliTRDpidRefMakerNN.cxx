@@ -46,6 +46,7 @@
 #include "Cal/AliTRDCalPIDNN.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDv0Info.h"
+#include "info/AliTRDpidInfo.h"
 
 ClassImp(AliTRDpidRefMakerNN)
 
@@ -172,14 +173,14 @@ Bool_t AliTRDpidRefMakerNN::PostProcess()
 	Int_t n(0); // index of data
 	for(Int_t itrk = 0; itrk<fData->GetEntries() && n<kMaxStat; itrk++){
 	  if(!(fData->GetEntry(itrk))) continue;
-	  if(fPIDbin!=is) continue;
-	  for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
+	  if(fPIDdataArray->GetPID()!=is) continue;
+    fNtrkl = fPIDdataArray->GetNtracklets();
+	  for(Int_t ily=fPIDdataArray->GetNtracklets(); ily--;){
 	    fLy = ily;
-	    fNtrkl = fPIDdataArray->fNtracklets;
-	    if((fPIDdataArray->fData[ily].fPLbin & 0xf)!= ip) continue;
+	    if(fPIDdataArray->GetData(ily)->Momentum()!= ip) continue;
 	    memset(fdEdx, 0, AliTRDpidUtil::kNNslices*sizeof(Float_t));
 	    for(Int_t islice=AliTRDCalPID::kNSlicesNN; islice--;){
-	      fdEdx[islice]+=fPIDdataArray->fData[ily].fdEdx[islice];
+	      fdEdx[islice]+=fPIDdataArray->GetData(ily)->fdEdx[islice];
 	      fdEdx[islice]/=fScale;
 	    }
 	    fTrainData[ip] -> Fill();

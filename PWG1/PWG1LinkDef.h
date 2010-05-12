@@ -103,8 +103,6 @@
 #pragma link C++ class  AliTRDalignmentTask+;
 #pragma link C++ class  AliTRDcalibration+;
 #pragma link C++ class  AliTRDpidRefMaker+;
-#pragma link C++ class  AliTRDpidRefMaker::AliTRDpidRefData+;
-#pragma link C++ class  AliTRDpidRefMaker::AliTRDpidRefDataArray+;
 #pragma link C++ class  AliTRDpidRefMakerLQ+;
 #pragma link C++ class  AliTRDpidRefMakerNN+;
 // Cosmics QA

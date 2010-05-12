@@ -24,6 +24,17 @@ AliTRDpidInfo::AliTRDpidInfo()
 }
 
 //________________________________________________________________________
+AliTRDpidInfo::AliTRDpidInfo(Int_t idx)
+  :TObject()
+  ,fPID(idx)
+  ,fNtracklets(0)
+  ,fData(0x0)
+{
+  // Constructor of data array
+  fData = new AliTRDpidData[AliTRDgeometry::kNlayer];
+}
+
+//________________________________________________________________________
 AliTRDpidInfo::~AliTRDpidInfo()
 {
   // Destructor
@@ -45,7 +56,7 @@ AliTRDpidInfo::AliTRDpidData const* AliTRDpidInfo::GetDataInLayer(Int_t ily) con
 }
 
 //________________________________________________________________________
-void AliTRDpidInfo::PushBack(Int_t ly, Int_t p, Float_t *dedx)
+void AliTRDpidInfo::PushBack(Int_t ly, Int_t p, const Float_t *dedx)
 {
 // Add PID data to the end of the array 
   fData[fNtracklets].fPLbin= (ly<<4) | (p&0xf);
