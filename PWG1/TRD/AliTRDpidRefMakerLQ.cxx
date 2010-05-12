@@ -53,7 +53,7 @@ ClassImp(AliTRDpidRefMakerLQ)
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ() 
   : AliTRDpidRefMaker()
-  , fPDF(NULL)
+  ,fPDF(NULL)
 {
   //
   // AliTRDpidRefMakerLQ default constructor
@@ -64,7 +64,7 @@ AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ()
 //__________________________________________________________________
 AliTRDpidRefMakerLQ::AliTRDpidRefMakerLQ(const char *name)
   : AliTRDpidRefMaker(name, "PID(LQ) Reference Maker")
-  , fPDF(NULL)
+  ,fPDF(NULL)
 {
   //
   // AliTRDpidRefMakerLQ default constructor
@@ -91,10 +91,9 @@ void AliTRDpidRefMakerLQ::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  AliTRDpidRefMaker::UserCreateOutputObjects();
   fContainer = Histos();
 
-  OpenFile(2, "RECREATE");
+  //OpenFile(2, "RECREATE");
   fPDF = new TObjArray(AliTRDCalPIDLQ::GetNrefs());
   fPDF->SetOwner();fPDF->SetName("PDF_LQ");
 }
@@ -105,11 +104,8 @@ TObjArray* AliTRDpidRefMakerLQ::Histos()
 {
   // Create histograms
 
-  if(!fContainer){
-    AliError("Monitor histograms missing.");
-    return NULL;
-  }
-  Int_t n(fContainer->GetEntriesFast());
+  if(fContainer) return fContainer;
+  fContainer  = new TObjArray(AliTRDCalPID::kNMom);
 
   // save dE/dx references
   TH1 *h(NULL);
@@ -130,9 +126,9 @@ TObjArray* AliTRDpidRefMakerLQ::Histos()
       h->GetZaxis()->SetTitle("#");
       arr->AddAt(h, AliPID::kSPECIES+is);
     }
-    fContainer->AddAt(arr, n+ip);
+    fContainer->AddAt(arr, ip);
   }
-  fNRefFigures+=AliTRDCalPID::kNMom;
+  fNRefFigures=AliTRDCalPID::kNMom;
   return fContainer;
 }
 
@@ -244,10 +240,11 @@ void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
 {
 // Load PID data into local data storage
 
-  if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
-  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;
+/*  if(!(fTracks = dynamic_cast<TObjArray*>(GetInputData(1)))) return;
+  if(!(fV0s    = dynamic_cast<TObjArray*>(GetInputData(2)))) return;*/
   if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
 
+  AliDebug(2, Form("ENTRIES pid[%d]\n", fInfo->GetEntriesFast()));
   AliTRDpidInfo *pid(NULL);
   const AliTRDpidInfo::AliTRDpidData *data(NULL);
   Char_t s(-1);
@@ -257,13 +254,12 @@ void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
     for(Int_t itrklt=pid->GetNtracklets();itrklt--;){
       data=pid->GetData(itrklt);
       Int_t ip(data->Momentum());
-      
 
       Double_t dedx[] = {0., 0.};
       if(!AliTRDCalPIDLQ::CookdEdx(data->fdEdx, dedx)) continue;
       ((TH2*)((TObjArray*)fContainer->At(ip))->At(s+Int_t(AliPID::kSPECIES)))->Fill(dedx[0], dedx[1]);
       AliTRDCalPIDLQ::CookdEdx(data->fdEdx, dedx, kFALSE);
-      ((TH1*)((TObjArray*)fContainer->At(ip))->At(s))->Fill(dedx[0]);
+      ((TH1*)((TObjArray*)fContainer->At(ip))->At(s))->Fill(dedx[0]+dedx[1]);
     }
   }
 
@@ -297,14 +293,14 @@ Bool_t AliTRDpidRefMakerLQ::PostProcess()
   AliDebug(1, Form("Loading data[%d]", fData->GetEntries()));
   for(Int_t itrk=0; itrk < fData->GetEntries(); itrk++){
     if(!(fData->GetEntry(itrk))) continue;
-    Int_t sbin(fPIDbin);
-    for(Int_t ily=fPIDdataArray->fNtracklets; ily--;){
-      Int_t pbin(fPIDdataArray->fData[ily].fPLbin & 0xf);
+    Int_t sbin(fPIDdataArray->GetPID());
+    for(Int_t itrklt=fPIDdataArray->GetNtracklets(); itrklt--;){
+      Int_t pbin(fPIDdataArray->GetData(itrklt)->Momentum());
       
       Double_t dedx[] = {0., 0.}, 
                dedx1D[] = {0., 0.};
-      if(!AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->fData[ily].fdEdx, dedx)) continue;
-      AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->fData[ily].fdEdx, dedx1D, kFALSE);
+      if(!AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->GetData(itrklt)->fdEdx, dedx)) continue;
+      AliTRDCalPIDLQ::CookdEdx(fPIDdataArray->GetData(itrklt)->fdEdx, dedx1D, kFALSE);
       Int_t idx=AliTRDCalPIDLQ::GetModelID(pbin,sbin);
       if(ndata[idx]==kMaxStat) continue;
 
