@@ -1,9 +1,3 @@
-#ifndef RANDARRAYFUNCTION_INCLUDED
-#define RANDARRAYFUNCTION_INCLUDED
-
-#include <vector>
-
-#include <TRandom.h>
 /*                                                                            
                                                                             
         Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
@@ -68,6 +62,12 @@
 
 //========================================================================================
 
+#ifndef RANDARRAYFUNCTION_H
+#define RANDARRAYFUNCTION_H
+
+#include <vector>
+#include <TRandom.h>
+
 class RandArrayFunction {
  public:
   RandArrayFunction(const Double_t *aProbFunc, Int_t theProbSize, Int_t interpolationType = 0);
@@ -86,10 +86,10 @@ class RandArrayFunction {
   Double_t MapRandom(Double_t rand)const;
   Double_t StandardRand()const;
 
-  std::vector<Double_t> fIntegralPdf;
-  Int_t                 fNBins;
-  Double_t              fOneOverNbins;
-  Int_t                 fInterpolationType;
+  std::vector<Double_t> fIntegralPdf;         //
+  Int_t                 fNBins;               //
+  Double_t              fOneOverNbins;        //
+  Int_t                 fInterpolationType;   //
 
 };
 

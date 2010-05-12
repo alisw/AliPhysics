@@ -1,25 +1,22 @@
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
+//                                                                            
+//                                                                            
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
+//                           November. 2, 2005                                
+//
+//
 
-*/
-
-#ifndef PARTICLE_INCLUDED
-#define PARTICLE_INCLUDED
+#ifndef PARTICLE_H
+#define PARTICLE_H
 
 #include <list>
+#include <iostream>
+using namespace std;
 
 #include <TLorentzRotation.h>
 #include <TLorentzVector.h>
 #include <TVector3.h>
-#ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
-#endif
-#include <iostream>
-using namespace std;
-//class ParticlePDG;
 
 class Particle {
  public:
@@ -77,8 +74,8 @@ class Particle {
 
   Int_t Encoding() const;
   Double_t TableMass() const;
-  ParticlePDG *Def() const {return fParticleProperties;}
-  ParticlePDG *Def(ParticlePDG *newProp) {return fParticleProperties = newProp;}
+  ParticlePDG* Def() const {return fParticleProperties;}
+  void Def(ParticlePDG *newProp) {fParticleProperties = newProp;}
   //mother   
   void SetLastMotherPdg(Int_t value){fLastMotherPdg = value;}
   Int_t GetLastMotherPdg() const {return fLastMotherPdg;}
@@ -86,13 +83,13 @@ class Particle {
   // aic(2008/08/08): functions added in order to enable tracking of mother/daughter particles by a unique index
   // The index coincides with the position of the particle in the secondaries list.
   Int_t SetIndex() {
-    fIndex = ++fLastIndex; 
+    fIndex = ++fgLastIndex; 
     return fIndex;
   }
   Int_t GetIndex() const {return fIndex;}
-  static Int_t GetLastIndex() {return fLastIndex;}
+  static Int_t GetLastIndex() {return fgLastIndex;}
   static void InitIndexing() {
-    fLastIndex = -1;
+    fgLastIndex = -1;
   }
   void SetMother(Int_t value) {fMotherIndex = value;}
   Int_t GetMother() const {return fMotherIndex;}
@@ -101,12 +98,9 @@ class Particle {
   void SetPythiaStatusCode(Int_t code) {fPythiaStatusCode = code;}
   Int_t GetPythiaStatusCode() const {return fPythiaStatusCode;}
 
-  //  Int_t GetNDaughters() const {return fNDaughters;}
   Int_t GetNDaughters() const {
-    if(fFirstDaughterIndex==-1 || fLastDaughterIndex==-1) 
-      return 0;
-    else
-      return fLastDaughterIndex-fFirstDaughterIndex+1;
+    if(fFirstDaughterIndex==-1 || fLastDaughterIndex==-1) return 0;
+    else return fLastDaughterIndex-fFirstDaughterIndex+1;
   }
   Int_t GetFirstDaughterIndex() const {return fFirstDaughterIndex;}
   Int_t GetLastDaughterIndex() const {return fLastDaughterIndex;}
@@ -126,23 +120,23 @@ class Particle {
   Int_t GetType()const{return fType;}
 
  protected:
-  TLorentzVector   fPosition;
-  TLorentzVector   fMomentum;
-  TLorentzVector   fLastMotherDecayCoor;
-  TLorentzVector   fLastMotherDecayMom;
-  ParticlePDG     *fParticleProperties;
-  Double_t         fLastInteractionTime;
-  Int_t            fInteractionNumber;
-  Int_t            fPythiaStatusCode;
-  Int_t            fLastMotherPdg;
-  Int_t            fType; //0-hydro, 1-jets
+  TLorentzVector   fPosition;               // 4-position vector
+  TLorentzVector   fMomentum;               // 4-momentum vector
+  TLorentzVector   fLastMotherDecayCoor;    // 4-position vector of mother 
+  TLorentzVector   fLastMotherDecayMom;     // 4-momentum vector of mother
+  ParticlePDG     *fParticleProperties;     // particle PDG properties
+  Double_t         fLastInteractionTime;    // last interaction time
+  Int_t            fInteractionNumber;      // interaction number
+  Int_t            fPythiaStatusCode;       // PYTHIA status code
+  Int_t            fLastMotherPdg;          // mother's PDG code
+  Int_t            fType;                   // particle type: 0-hydro, 1-jets
   Int_t            fIndex;                    // index (0 based) of particle in the final particle list which will contain both primaries and secondaries
   Int_t            fMotherIndex;              // index of the mother (-1 if its a primary particle)
   Int_t            fNDaughters;               // number of daughter particles (0 if the particle had not decayed)
   Int_t            fFirstDaughterIndex;       // index for the first daughter particle (-1 if non-existing)
   Int_t            fLastDaughterIndex;        // index for the last daughter particle (-1 if non-existing)
   Bool_t           fDecayed;                  // true if the decay procedure already applied
-  static Int_t     fLastIndex;                // the last index assigned
+  static Int_t     fgLastIndex;                // the last index assigned
 };
 
 Double_t S(const TLorentzVector &, const TLorentzVector &);
@@ -159,7 +153,7 @@ class ParticleAllocator {
   void FreeList(List_t & list);
 
  private:
-  List_t fFreeNodes;
+  List_t fFreeNodes;          // list
 };
 
 #endif

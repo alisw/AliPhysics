@@ -1,16 +1,19 @@
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2006                                
+//                                                                          
+//                                                                            
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
+//                           November. 2, 2006                                
+//
+//
 
-*/
-
-#ifndef NAStrangePotential_h
+#include <TMath.h>
 #include "StrangePotential.h"
-#endif
 
-Double_t NAStrangePotential::CalculateStrangePotential() {
+//_____________________________________________________________________
+Double_t StrangePotential::CalculateStrangePotential() {
+  //
+  // compute strange potential
+  //
   Double_t minFunction = this->operator()(fMinStrangePotential);
   Double_t maxFunction = this->operator()(fMaxStrangePotential); 
   
@@ -22,7 +25,7 @@ Double_t NAStrangePotential::CalculateStrangePotential() {
    
   iter = 0;  
   while(minFunction*maxFunction > 0.0 && iter++ < fNIteration) {
-    fMaxStrangePotential += 1.5*Abs(fMaxStrangePotential-fMinStrangePotential);
+    fMaxStrangePotential += 1.5*TMath::Abs(fMaxStrangePotential-fMinStrangePotential);
     maxFunction = this->operator()(fMaxStrangePotential);
   }
 	
@@ -31,8 +34,8 @@ Double_t NAStrangePotential::CalculateStrangePotential() {
     return 0.;
   }
 
-  NAEquationSolver<NAStrangePotential> * theSolver = 
-    new NAEquationSolver<NAStrangePotential>(fNSolverIteration, fTolerance);
+  EquationSolver<StrangePotential> * theSolver = 
+    new EquationSolver<StrangePotential>(fNSolverIteration, fTolerance);
 
   theSolver->SetIntervalLimits(fMinStrangePotential, fMaxStrangePotential);
   
@@ -44,9 +47,12 @@ Double_t NAStrangePotential::CalculateStrangePotential() {
   return strangePotential;
 }
 
-//calculate hadron system strange density
-Double_t NAStrangePotential::CalculateStrangeDensity(const Double_t strangePotential)
+//_____________________________________________________________________
+Double_t StrangePotential::CalculateStrangeDensity(const Double_t strangePotential)
 {
+  //
+  //calculate hadron system strange density
+  //
   fGc.SetStrangePotential(strangePotential);
   fGc.SetTemperature(fTemperature);
   fGc.SetBaryonPotential(fBaryonPotential);

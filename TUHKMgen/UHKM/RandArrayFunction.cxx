@@ -1,14 +1,14 @@
+//                                                                            
+//                                                                            
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
+//                           November. 2, 2005                                
+//
+//
+//      This class is taken from the GEANT4 tool kit  and changed!!!!!
+
 #include <TError.h>
-
 #include "RandArrayFunction.h"
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
-
-*/
-//This class is taken from the GEANT4 tool kit  and changed!!!!!
 
 
 RandArrayFunction::RandArrayFunction(const Double_t *aProbFunc, Int_t theProbSize, Int_t intType):

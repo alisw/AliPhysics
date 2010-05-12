@@ -1,10 +1,10 @@
-/*                                                                        
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
-
-*/
+//////////////////////////////////////////////////////////////////////////////////       
+//                                                                              //
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna     //
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru  //
+//                           November. 2, 2005                                  //
+//                                                                              //
+//////////////////////////////////////////////////////////////////////////////////
 
 #ifndef GRANDCANONICAL_H
 #define GRANDCANONICAL_H
@@ -46,15 +46,13 @@ class GrandCanonical {
 
  private:
 
-  Double_t    fTemperature;     
-  Double_t    fBaryonPotential;	
-  Double_t    fStrangePotential;
-  Double_t    fElectroPotential;
-
-  //  Number of terms for summation, if fNMax = 1 then 
-  //  Maxwell-Boltzmann distribution will be recovered
-  Int_t       fNMax;
-  Bool_t fInitialized;
+  Double_t    fTemperature;        // temperature
+  Double_t    fBaryonPotential;	   // baryon chemical potential
+  Double_t    fStrangePotential;   // strangeness chemical potential
+  Double_t    fElectroPotential;   // electro chemical potential
+  
+  Int_t       fNMax;               //  Number of terms for summation, if fNMax = 1 then
+  Bool_t fInitialized;             // flag
 };
 
 #endif

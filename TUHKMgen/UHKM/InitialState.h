@@ -1,20 +1,17 @@
-/*
-  Ludmila Malinina  malinina@lav01.sinp.msu.ru,   SINP MSU/Moscow and JINR/Dubna
-  Ionut Arsene  i.c.arsene@fys.uio.no,            Oslo University and ISS-Bucharest
-  Date        : 2007/05/30
-  Updated     : 2008/08/11
-*/
-
-#ifndef INITIAL_STATE
-#define INITIAL_STATE
+//
+//  Ludmila Malinina  malinina@lav01.sinp.msu.ru,   SINP MSU/Moscow and JINR/Dubna
+//  Ionut Arsene  i.c.arsene@fys.uio.no,            Oslo University and ISS-Bucharest
+//  Date        : 2007/05/30
+//  Updated     : 2008/08/11
+//
 // Virtual class for the initial state classes
 // Include here common methods, but always declare them as virtual
-#ifndef PARTICLE_INCLUDED
+
+#ifndef INITIALSTATE_H
+#define INITIALSTATE_H
+
 #include "Particle.h"
-#endif
-#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
-#endif
 
 class InitialState {
  public:
@@ -54,7 +51,7 @@ class InitialState {
   //  virtual void Evolve(List_t &source, List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit);
   virtual void Evolve(List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit);
  protected:
-   DatabasePDG *fDatabase;
+   DatabasePDG *fDatabase;        // PDG database
  private:
    InitialState(const InitialState&);
    InitialState& operator=(const InitialState&);

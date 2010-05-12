@@ -14,6 +14,9 @@
 //                                                                         //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <string>
+
 #include "TUHKMgen.h"
 #ifndef DATABASE_PDG
 #include "DatabasePDG.h"
@@ -26,8 +29,8 @@
 #include <TParticle.h>
 #include <TClonesArray.h>
 #include <TMCProcess.h>
-#include "TDatabasePDG.h"
-#include "TSystem.h"
+#include <TDatabasePDG.h>
+#include <TSystem.h>
 
 #include "AliGenUHKM.h"
 #include "AliRun.h"
@@ -37,8 +40,6 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliLog.h"
 
-#include <iostream>
-#include <string>
 using namespace std;
 
 

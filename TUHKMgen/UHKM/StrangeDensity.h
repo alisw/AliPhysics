@@ -1,38 +1,25 @@
-/*
-
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru
-                           November. 2, 2005
-
-*/
-
+//
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru
+//                           November. 2, 2005
+//
+//
 //This class is used to obtain grand canonical description  of strange density
 //by means of the temperature and chemical potentials (input). As for output
 //we get  strange density.
 
-#ifndef NAStrangeDensity_h
-#define NAStrangeDensity_h 1
+#ifndef STRANGEDENSITY_H
+#define STRANGEDENSITY_H
 
-#ifndef NAMathUtil_h
-#include "MathUtil.h"
-#endif
-#ifndef HANKELFUNCTION_INCLUDED
 #include "HankelFunction.h"
-#endif
-#ifndef PARTICLE_INCLUDED
-#include "Particle.h"
-#endif
-#ifndef DATABASEPDG_H
-#include "DatabasePDG.h"
-#endif
-#ifndef PARTICLE_PDG
-#include "ParticlePDG.h"
-#endif
 
-class NAStrangeDensity {
+class DatabasePDG;
+class ParticlePDG;
+
+class StrangeDensity {
  public:
-  NAStrangeDensity();
-  ~NAStrangeDensity(){};
+  StrangeDensity();
+  ~StrangeDensity(){};
 
   //for input
   void SetTemperature(Double_t value) {fTemperature = value;}
@@ -43,13 +30,13 @@ class NAStrangeDensity {
     if(fNMax < 1) fNMax = 1;
   }
   // compute hadron system strangeness density
-  Double_t StrangenessDensity(DatabasePDG* database);
+  Double_t StrangenessDensity(const DatabasePDG* database);
 
  private:
   //input
-  Double_t fTemperature;
-  Double_t fBaryonPotential;	
-  Double_t fStrangePotential;
+  Double_t fTemperature;             // temperature
+  Double_t fBaryonPotential;	     // baryon potential
+  Double_t fStrangePotential;        // strange potential
   Int_t fNMax;   //number of terms for summation, if nMax = 1 then
                 //Maxwell-Boltzmann distribution will be recovered	
 

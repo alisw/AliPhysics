@@ -1,13 +1,12 @@
-/*
-
-       July 2008 BW mass is limited by "PYTHIA method", by I. Lokhtin and L. Malinina
-                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
-
-*/
+///////////////////////////////////////////////////////////////////////////////////// 
+//                                                                                 //
+//  July 2008 BW mass is limited by "PYTHIA method", by I. Lokhtin and L. Malinina //
+//                                                                                 //
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna        //
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru     //
+//                           November. 2, 2005                                     //
+//                                                                                 //
+/////////////////////////////////////////////////////////////////////////////////////
 
 #include <functional>
 #include <algorithm>
@@ -17,25 +16,13 @@
 #include <TError.h>
 #include <TMath.h>
 
-#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
-#endif
-#ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
-#endif
-#ifndef DECAY_CHANNEL
 #include "DecayChannel.h"
-#endif
-#ifndef HADRONDECAYER_INCLUDED
-#include "HadronDecayer.h"
-#endif
-#ifndef UKUTILITY_INCLUDED
 #include "UKUtility.h"
-#endif
-#ifndef PARTICLE_INCLUDED
 #include "Particle.h"
-#endif
 #include "HYJET_COMMONS.h"
+#include "HadronDecayer.h"
 
 //calculates decay time in fm/c
 //calculates 1,2 and 3 body decays
@@ -44,6 +31,10 @@ using std::cout;
 using std::endl;
 
 Double_t GetDecayTime(const Particle &parent, Double_t weakDecayLimit) {
+  //
+  // return a random decay time according to the particle's width
+  //
+  
   ParticlePDG *pDef = parent.Def(); 
   Double_t width = pDef->GetWidth(); //GeV
 
@@ -63,8 +54,11 @@ Double_t GetDecayTime(const Particle &parent, Double_t weakDecayLimit) {
 extern "C" void mydelta_();
 extern SERVICEEVCommon SERVICEEV;
 
-void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, DatabasePDG* database) {
-
+void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, const DatabasePDG* database) {
+  //
+  // perform the decay
+  //
+  
   // Get the PDG properties of the particle
   ParticlePDG *pDef = parent.Def();
 
@@ -79,9 +73,9 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     return;
 
   // get the PDG mass of the specie  
-  Double_t PDGmass = pDef->GetMass();
-  Int_t ComprCodePyth=0;
-  Float_t Delta =0;
+  Double_t pdgMass = pDef->GetMass();
+  Int_t comprCodePyth=0;
+  Float_t delta =0;
 
   Bool_t success = kFALSE;
   Int_t iterations = 0;
@@ -96,42 +90,42 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     }
     
     // get a random mass using the Breit Wigner distribution 
-    Double_t BWmass = gRandom->BreitWigner(PDGmass, pDef->GetWidth());     
-    //      BWmass = PDGmass;
+    Double_t bwMass = gRandom->BreitWigner(pdgMass, pDef->GetWidth());     
+    //      bwMass = pdgMass;
     // Try to cut the Breit Wigner tail of the particle using the cuts from pythia
-    // The Delta variable is obtained from pythia based on the specie
+    // The delta variable is obtained from pythia based on the specie
     int encoding =pDef->GetPDG();
     SERVICEEV.ipdg = encoding;
     mydelta_();      
-    ComprCodePyth=SERVICEEV.KC;
-    Delta = SERVICEEV.delta;// PYDAT2.PMAS[KC][3];
+    comprCodePyth=SERVICEEV.KC;
+    delta = SERVICEEV.delta;// PYDAT2.PMAS[KC][3];
 
-    //if there are no such particle in PYTHIA particle table, we take Delta=0.4
-    if(ComprCodePyth==0){
-      BWmass=PDGmass; 
-      Delta=0.0;
+    //if there are no such particle in PYTHIA particle table, we take delta=0.4
+    if(comprCodePyth==0){
+      bwMass=pdgMass; 
+      delta=0.0;
     } 
 
     //bad delta - an exception
-    if(ComprCodePyth==254){
-      BWmass=PDGmass; 
-      Delta=0.0;
+    if(comprCodePyth==254){
+      bwMass=pdgMass; 
+      delta=0.0;
     } 
       
     // K0 decay into K0s or K0l
     if(TMath::Abs(encoding)==311) {
-      BWmass=PDGmass;
-      Delta=0.0;
+      bwMass=pdgMass;
+      delta=0.0;
     }
 
     //for particles from PYTHIA table only, if the BW mass is outside the cut range then quit this iteration and generate another BW mass
-    if(ComprCodePyth!=0 && Delta>0 && (BWmass<PDGmass-Delta || BWmass>PDGmass+Delta)){
+    if(comprCodePyth!=0 && delta>0 && (bwMass<pdgMass-delta || bwMass>pdgMass+delta)){
       iterations++;
       continue;
     }    
     
     // check how many decay channels are allowed with the generated mass
-    Int_t nAllowedChannels = database->GetNAllowedChannels(pDef, BWmass);
+    Int_t nAllowedChannels = database->GetNAllowedChannels(pDef, bwMass);
     // if no decay channels are posible with this mass, then generate another BW mass
     if(nAllowedChannels==0) {    
       iterations++;
@@ -153,7 +147,7 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     while(!found) {
       for(Int_t nChannel = 0; nChannel < nDecayChannel; nChannel++) {
 	randValue -= pDef->GetDecayChannel(nChannel)->GetBranching();
-	if(randValue <= 0. && database->IsChannelAllowed(pDef->GetDecayChannel(nChannel), BWmass)) {
+	if(randValue <= 0. && database->IsChannelAllowed(pDef->GetDecayChannel(nChannel), bwMass)) {
 	  chosenChannel = nChannel;
 	  found = kTRUE;
 	  break;
@@ -169,14 +163,14 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
     // Adjust the parent momentum four-vector for the MC generated Breit-Wigner mass
     Particle parentBW(database->GetPDGParticle(parent.Encoding()));
     parentBW.Pos(parent.Pos());
-    Double_t BWenergy = TMath::Sqrt(parent.Mom().X()*parent.Mom().X() + 
+    Double_t bwEnergy = TMath::Sqrt(parent.Mom().X()*parent.Mom().X() + 
 				    parent.Mom().Y()*parent.Mom().Y() +
 				    parent.Mom().Z()*parent.Mom().Z() +
-				    BWmass*BWmass);
+				    bwMass*bwMass);
 
-    Int_t NB = (Int_t)parent.GetType(); //particle from jets
+    Int_t nb = (Int_t)parent.GetType(); //particle from jets
 
-    TLorentzVector MomparentBW(parent.Mom().X(), parent.Mom().Y(), parent.Mom().Z(), BWenergy); 
+    TLorentzVector MomparentBW(parent.Mom().X(), parent.Mom().Y(), parent.Mom().Z(), bwEnergy); 
     parentBW.Mom(MomparentBW);
     // take into account BW when calculating boost velocity (for wide resonances it matters)
     TVector3 velocityBW(parentBW.Mom().BoostVector());
@@ -191,7 +185,7 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p1.SetLastMotherPdg(parentBW.Encoding());
       p1.SetLastMotherDecayCoor(parentBW.Pos());
       p1.SetLastMotherDecayMom(parentBW.Mom());
-      p1.SetType(NB);
+      p1.SetType(nb);
 
       // add the daughter to the list of secondaries
       Int_t parentIndex = parent.GetIndex();
@@ -211,7 +205,7 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p2.Pos(parentBW.Pos());
       
       // calculate the momenta in rest frame of mother for the two particles (theta and phi are isotropic)
-      MomAntiMom(p1.Mom(), p1.TableMass(), p2.Mom(), p2.TableMass(), BWmass);
+      MomAntiMom(p1.Mom(), p1.TableMass(), p2.Mom(), p2.TableMass(), bwMass);
     
       // boost to the laboratory system (to the mother velocity)
       p1.Mom().Boost(velocityBW);
@@ -225,8 +219,8 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p2.SetLastMotherDecayCoor(parentBW.Pos());
       p2.SetLastMotherDecayMom(parentBW.Mom());
       //set to daughters the same type as has mother
-      p1.SetType(NB);
-      p2.SetType(NB);
+      p1.SetType(nb);
+      p2.SetType(nb);
 
 
       // check the kinematics in the lab system
@@ -267,7 +261,7 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       Double_t pAbs1 = 0., pAbs2 = 0., pAbs3 = 0., sumPabs = 0., maxPabs = 0.;
       Double_t mass1 = p1.TableMass(), mass2 = p2.TableMass(), mass3 = p3.TableMass();
       TLorentzVector &mom1 = p1.Mom(), &mom2 = p2.Mom(), &mom3 = p3.Mom(); 
-      Double_t deltaMass = BWmass - mass1 - mass2 - mass3;
+      Double_t deltaMass = bwMass - mass1 - mass2 - mass3;
 
       do {
 	Double_t rd1 = gRandom->Rndm();
@@ -342,9 +336,9 @@ void Decay(List_t &output, Particle &parent, ParticleAllocator &allocator, Datab
       p3.SetLastMotherDecayMom(parentBW.Mom());
 
       //set to daughters the same type as has mother  
-      p1.SetType(NB);
-      p2.SetType(NB);
-      p3.SetType(NB);
+      p1.SetType(nb);
+      p2.SetType(nb);
+      p3.SetType(nb);
 
       // energy conservation check in the lab system
       Double_t deltaS = TMath::Sqrt((parentBW.Mom().X()-p1.Mom().X()-p2.Mom().X()-p3.Mom().X())*(parentBW.Mom().X()-p1.Mom().X()-p2.Mom().X()-p3.Mom().X()) +

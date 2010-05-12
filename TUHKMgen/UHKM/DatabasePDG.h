@@ -17,7 +17,7 @@
 #ifndef DATABASEPDG_H
 #define DATABASEPDG_H
 
-#include "Rtypes.h"
+#include <Rtypes.h>
 #ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
 #endif
@@ -56,8 +56,8 @@ class DatabasePDG {
   // calling all the width, mass and charmness criteria functions.
   void UseThisListOfParticles(Char_t *filename, Bool_t exclusive = kTRUE);
   
-  Char_t* GetParticleFilename() {return fParticleFilename;}
-  Char_t* GetDecayFilename() {return fDecayFilename;}
+  const Char_t* GetParticleFilename() const {return fParticleFilename;}
+  const Char_t* GetDecayFilename() const {return fDecayFilename;}
   Int_t GetNParticles(Bool_t all = kFALSE) const;      // true - no. of all particles; false - no. of good status particles
   ParticlePDG* GetPDGParticleByIndex(Int_t index) const;
   Bool_t GetPDGParticleStatusByIndex(Int_t index) const;

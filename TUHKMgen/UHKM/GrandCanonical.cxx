@@ -1,30 +1,22 @@
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
-
-*/
+//////////////////////////////////////////////////////////////////////////////////       
+//                                                                              //
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna     //
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru  //
+//                           November. 2, 2005                                  //
+//                                                                              //
+//////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 
 #include <TError.h>
 #include <TMath.h>
-#ifndef GRANDCANONICAL_INCLUDED
 #include "GrandCanonical.h"
-#endif
-#ifndef HANKELFUNCTION_INCLUDED
 #include "HankelFunction.h"
-#endif
-#ifndef UKUTILITY_INCLUDED
 #include "UKUtility.h"
-#endif
-#ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
-#endif
-#ifndef DATABASEPDG_H
 #include "DatabasePDG.h"
-#endif
 
+
+//_______________________________________________________________________________
 GrandCanonical::GrandCanonical():
   fTemperature(-1111),
   fBaryonPotential(-1111),
@@ -33,8 +25,12 @@ GrandCanonical::GrandCanonical():
   fNMax(-1111),
   fInitialized(kFALSE)
 {
+  //
+  // default constructor
+  //
 }
 
+//_______________________________________________________________________________
 GrandCanonical::GrandCanonical(Int_t nmax, Double_t temperature, Double_t baryonPotential, Double_t strangePotential, Double_t electroPotential):
   fTemperature(temperature),
   fBaryonPotential(baryonPotential),
@@ -43,42 +39,79 @@ GrandCanonical::GrandCanonical(Int_t nmax, Double_t temperature, Double_t baryon
   fNMax(nmax),
   fInitialized(kTRUE)
 {
+  //
+  // constructor
+  //
 }
 
-GrandCanonical::~GrandCanonical() {}
+//_______________________________________________________________________________
+GrandCanonical::~GrandCanonical() {
+//
+// destructor
+//
+}
 
-
+//_______________________________________________________________________________
 void GrandCanonical::Temperature(Double_t value) {
+  //
+  // set temperature
+  //
   fTemperature = value;
-  if(fNMax!=-1111 && fBaryonPotential!=-1111 && fStrangePotential!=-1111 && fElectroPotential!=-1111)
+  if(fNMax!=-1111 && TMath::Abs(fBaryonPotential+1111)>1.e-10 && 
+    TMath::Abs(fStrangePotential+1111)>1.e-10 && TMath::Abs(fElectroPotential+1111)>1.e-10)
     fInitialized = kTRUE;
 }
 
+//_______________________________________________________________________________
 void GrandCanonical::BaryonPotential(Double_t value) {
+  //
+  // set baryo chemical potential
+  //
   fBaryonPotential = value;
-  if(fNMax!=-1111 && fTemperature!=-1111 && fStrangePotential!=-1111 && fElectroPotential!=-1111)
+  if(fNMax!=-1111 && TMath::Abs(fTemperature+1111)>1.e-10 && 
+    TMath::Abs(fStrangePotential+1111)>1.e-10 && TMath::Abs(fElectroPotential+1111)>1.e-10)
     fInitialized = kTRUE;
 }
 
+//_______________________________________________________________________________
 void GrandCanonical::StrangePotential(Double_t value) {
+  //
+  // set strange potential
+  //
   fStrangePotential = value;
-  if(fNMax!=-1111 && fTemperature!=-1111 && fBaryonPotential!=-1111 && fElectroPotential!=-1111)
+  if(fNMax!=-1111 && TMath::Abs(fTemperature+1111)>1.e-10 &&
+     TMath::Abs(fBaryonPotential+1111)>1.e-10 && TMath::Abs(fElectroPotential+1111)>1.e-10)
     fInitialized = kTRUE;
 }
 
+//_______________________________________________________________________________
 void GrandCanonical::ElectroPotential(Double_t value) {
+  //
+  // set electro chemical potential
+  //
   fElectroPotential = value;
-  if(fNMax!=-1111 && fTemperature!=-1111 && fBaryonPotential!=-1111 && fStrangePotential!=-1111)
+  if(fNMax!=-1111 && TMath::Abs(fTemperature+1111)>1.e-10 &&
+     TMath::Abs(fBaryonPotential+1111)>1.e-10 && TMath::Abs(fStrangePotential+1111)>1.e-10)
     fInitialized = kTRUE;
 }
 
+//_______________________________________________________________________________
 void GrandCanonical::NMax(Int_t value) {
+  //
+  // set the number of iterations
+  //
   fNMax = value;
   if(fTemperature!=-1111 && fBaryonPotential!=-1111 && fStrangePotential!=-1111 && fElectroPotential!=-1111)
+    if(fNMax!=-1111 && TMath::Abs(fBaryonPotential+1111)>1.e-10 && 
+    TMath::Abs(fStrangePotential+1111)>1.e-10 && TMath::Abs(fElectroPotential+1111)>1.e-10)
     fInitialized = kTRUE;
 }
 
+//_______________________________________________________________________________
 Double_t GrandCanonical::ParticleEnergyDensity(ParticlePDG *const particle) {
+  //
+  // compute the energy density for a given particle
+  //
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::ParticleEnergyDensity", "GrandCanonical object not fully initialized!!");
@@ -87,7 +120,7 @@ Double_t GrandCanonical::ParticleEnergyDensity(ParticlePDG *const particle) {
   Double_t degFactor = 2.*particle->GetSpin() + 1.;                                    // degeneracy factor
   Double_t mass = particle->GetMass();                                                // PDG table mass
   Double_t d = Int_t(2.*particle->GetSpin()) & 1 ? 1. : -1;                                   // Bose-Einstein/Fermi-Dirac factor
-  Double_t preFactor = (degFactor*mass*mass*fTemperature*fTemperature/hbarc/hbarc/hbarc)/(2.*TMath::Pi()*TMath::Pi()); 
+  Double_t preFactor = (degFactor*mass*mass*fTemperature*fTemperature/kHbarc/kHbarc/kHbarc)/(2.*TMath::Pi()*TMath::Pi()); 
 
   Double_t postFactor = 0.;
   //compute chemical potential
@@ -103,7 +136,11 @@ Double_t GrandCanonical::ParticleEnergyDensity(ParticlePDG *const particle) {
   return preFactor * postFactor;
 }
 
+//_______________________________________________________________________________
 Double_t GrandCanonical::ParticleNumberDensity(ParticlePDG *const particle) {
+  //
+  // compute the particle number density
+  //
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::ParticleNumberDensity", "GrandCanonical object not fully initialized!!");
@@ -111,7 +148,7 @@ Double_t GrandCanonical::ParticleNumberDensity(ParticlePDG *const particle) {
   Double_t degFactor = 2.*particle->GetSpin() + 1.;
   Double_t mass = particle->GetMass();     
   Double_t d = Int_t(2*particle->GetSpin()) & 1 ? 1. : -1.;
-  Double_t preFactor = (degFactor*mass*mass*fTemperature/hbarc/hbarc/hbarc)/(2.*TMath::Pi()*TMath::Pi());
+  Double_t preFactor = (degFactor*mass*mass*fTemperature/kHbarc/kHbarc/kHbarc)/(2.*TMath::Pi()*TMath::Pi());
 
   Double_t postFactor = 0.;
   Double_t potential = fBaryonPotential * particle->GetBaryonNumber() + 
@@ -126,8 +163,11 @@ Double_t GrandCanonical::ParticleNumberDensity(ParticlePDG *const particle) {
   return preFactor * postFactor;
 }
 
-
+//_______________________________________________________________________________
 Double_t GrandCanonical::EnergyDensity(DatabasePDG *const database) {
+  //
+  // compute the total energy density
+  //
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::EnergyDensity", "GrandCanonical object not fully initialized!!");
@@ -142,7 +182,11 @@ Double_t GrandCanonical::EnergyDensity(DatabasePDG *const database) {
   return meanEnergyDensity;
 }
 
+//_______________________________________________________________________________
 Double_t GrandCanonical::BaryonDensity(DatabasePDG *const database) {
+  //
+  // compute the baryon density
+  //
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::BaryonDensity", "GrandCanonical object not fully initialized!!");
@@ -156,7 +200,11 @@ Double_t GrandCanonical::BaryonDensity(DatabasePDG *const database) {
   return meanBaryonDensity;
 }
 
+//_______________________________________________________________________________
 Double_t GrandCanonical::StrangeDensity(DatabasePDG *const database) {
+  //
+  // compute the strangeness density
+  //
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::StrangeDensity", "GrandCanonical object not fully initialized!!");
@@ -171,7 +219,11 @@ Double_t GrandCanonical::StrangeDensity(DatabasePDG *const database) {
   return meanStrangeDensity;
 }
 
+//_______________________________________________________________________________
 Double_t GrandCanonical::ElectroDensity(DatabasePDG *const database) {
+  //
+  // compute the electro number density
+  //
   // Check if all the thermodinamic parameters are set
   if(!fInitialized)
     Fatal("GrandCanonical::ElectroDensity", "GrandCanonical object not fully initialized!!");

@@ -1,55 +1,44 @@
 //expanding localy equilibated fireball with volume hadron radiation
 //thermal part: Blast wave model, Bjorken-like parametrization
 //hyght-pt: PYTHIA + jet quenching model PYQUEN
-
-/*                                                                           
-         HYDJET++ 
-         version 1.0:  
-         InitialStateHydjet is the modified InitialStateBjorken 
-         The high-pt part related with PYTHIA-PYQUEN is included       
-         InitialStateBjorken (FASTMC) was used.
-
-
-         
-         InitialStateBjorken           
-         version 2.0: 
-         Ludmila Malinina  malinina@lav01.sinp.msu.ru,   SINP MSU/Moscow and JINR/Dubna
-         Ionut Arsene  i.c.arsene@fys.uio.no,            Oslo University                                                
-                     June 2007
-        
-         version 1.0:                                                               
-         Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-         amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005 
+//                                                                           
+//         HYDJET++ 
+//         version 1.0:  
+//         InitialStateHydjet is the modified InitialStateBjorken 
+//         The high-pt part related with PYTHIA-PYQUEN is included       
+//         InitialStateBjorken (FASTMC) was used.
+//
+//
+//         
+//         InitialStateBjorken           
+//         version 2.0: 
+//         Ludmila Malinina  malinina@lav01.sinp.msu.ru,   SINP MSU/Moscow and JINR/Dubna
+//         Ionut Arsene  i.c.arsene@fys.uio.no,            Oslo University                                                
+//                     June 2007
+//        
+//         version 1.0:                                                               
+//         Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+//         amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
+//                           November. 2, 2005 
 
                      
-*/
+
+
+#include <iostream> 
+#include <fstream>
 
 #include <TLorentzVector.h>
 #include <TVector3.h>
 #include <TMath.h>
 
-#ifndef INITIALSTATEHYDJET_H
 #include "InitialStateHydjet.h"
-#endif
-#ifndef RANDARRAYFUNCTION_INCLUDED
 #include "RandArrayFunction.h"
-#endif
-#ifndef GRANDCANONICAL_INCLUDED
 #include "GrandCanonical.h"
-#endif
-#ifndef NAStrangePotential_h
 #include "StrangePotential.h"
-#endif
-#ifndef PARTICLE_INCLUDED
 #include "Particle.h"
-#endif
-#ifndef PARTICLE_PDG
 #include "ParticlePDG.h"
-#endif
-#include <iostream> 
-#include <fstream>
 #include "HYJET_COMMONS.h"
+
 extern "C" void  hyevnt_();
 extern "C" void  myini_();
 extern HYIPARCommon HYIPAR;
@@ -65,8 +54,9 @@ class ParticleAllocator;
 class TRandom3;
 
 // declaration of the static member fLastIndex
-Int_t Particle::fLastIndex;
+Int_t Particle::fgLastIndex;
 
+//_________________________________________________________________________________
 void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocator) {
   // Generate initial particles from the soft and hard components
 
@@ -153,7 +143,7 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
 	  continue;
 	}
 	//no charm now !
-	if(partDef->GetCharmQNumber()!=0 || partDef->GetCharmAQNumber()!=0){
+	if(TMath::Abs(partDef->GetCharmQNumber())>0 || TMath::Abs(partDef->GetCharmAQNumber())>0){
 	  continue;
 	}
 
@@ -267,6 +257,7 @@ void InitialStateHydjet::Initialize(List_t &source, ParticleAllocator & allocato
   
 }
 
+//_________________________________________________________________________________
 Bool_t InitialStateHydjet::ReadParams() {     
   // Read parameters from an input file in ascii 
  
@@ -377,6 +368,7 @@ Bool_t InitialStateHydjet::ReadParams() {
   return kTRUE; 
 }
 
+//_________________________________________________________________________________
 Bool_t InitialStateHydjet::MultIni() {
   // Calculate average multiplicities, chemical potentials (if necessary),
   // initialize pyquen 
@@ -396,7 +388,7 @@ Bool_t InitialStateHydjet::MultIni() {
     fParams.fMuI3 = 0.;
     fParams.fMuS = 0.;
     //create strange potential object and set strangeness density 0
-    NAStrangePotential* psp = new NAStrangePotential(0., fDatabase);
+    StrangePotential* psp = new StrangePotential(0., fDatabase);
     psp->SetBaryonPotential(fParams.fMuB);
     psp->SetTemperature(fParams.fT);
     //compute strangeness potential
@@ -521,6 +513,7 @@ Bool_t InitialStateHydjet::MultIni() {
   return kTRUE;
 }
 
+//_________________________________________________________________________________
 Double_t InitialStateHydjet::SimpsonIntegrator2(Double_t a, Double_t b) {
   // Simpson integration
   Int_t nsubIntervals=10000;
@@ -539,19 +532,20 @@ Double_t InitialStateHydjet::SimpsonIntegrator2(Double_t a, Double_t b) {
   
 }
 
+//_________________________________________________________________________________
 Double_t InitialStateHydjet::SimpsonIntegrator(Double_t a, Double_t b, Double_t phi) {
   // Simpson integration
   Int_t nsubIntervals=100;
   Double_t h = (b - a)/nsubIntervals;
-  Double_t s = f2(phi,a + 0.5*h);
-  Double_t t = 0.5*(f2(phi,a) + f2(phi,b));
+  Double_t s = F2(phi,a + 0.5*h);
+  Double_t t = 0.5*(F2(phi,a) + F2(phi,b));
   Double_t x = a;
   Double_t y = a + 0.5*h;
   for(Int_t i = 1; i < nsubIntervals; i++) {
     x += h;
     y += h;
-    s += f2(phi,y);
-    t += f2(phi,x);
+    s += F2(phi,y);
+    t += F2(phi,x);
   }	
   t += 2.0*s;
   return t*h/3.0;
@@ -559,7 +553,8 @@ Double_t InitialStateHydjet::SimpsonIntegrator(Double_t a, Double_t b, Double_t 
 
 
 //f2=f(phi,r)
-Double_t InitialStateHydjet::f2(Double_t x, Double_t y) {
+//_________________________________________________________________________________
+Double_t InitialStateHydjet::F2(Double_t x, Double_t y) {
   // formula
   Double_t rSB = fParams.fR; //test: podstavit' *coefff_RB
   Double_t rhou =  fParams.fUmax * y / rSB;
@@ -569,7 +564,7 @@ Double_t InitialStateHydjet::f2(Double_t x, Double_t y) {
   return ff;
 }
 
-
+//_________________________________________________________________________________
 Double_t InitialStateHydjet::MidpointIntegrator2(Double_t a, Double_t b) {
   // Perform integration through the mid-point method
   Int_t nsubIntervals=2000; 
@@ -578,7 +573,7 @@ Double_t InitialStateHydjet::MidpointIntegrator2(Double_t a, Double_t b) {
   Double_t h2 = (fParams.fR)/nsubIntervals; //0-R maximal rB ?
   Double_t x = a + 0.5*h;
   Double_t y = 0;
-  Double_t t = f2(x,y);                    
+  Double_t t = F2(x,y);                    
   Double_t e = fParams.fEpsilon;
   for(Int_t j = 1; j < nsubIntervals; j++) {
     x += h; // integr  phi
@@ -588,7 +583,7 @@ Double_t InitialStateHydjet::MidpointIntegrator2(Double_t a, Double_t b) {
     // integr R 
     y=0;
     for(Int_t i = 1; i < nsubIntervals2; i++) 
-      t += f2(x,(y += h2));
+      t += F2(x,(y += h2));
   }
   return t*h*h2;
 }

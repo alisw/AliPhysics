@@ -97,12 +97,12 @@ extern "C" {
   //  common /hyfpar/ bgen,nbcol,npart,npyt,nhyd,npart0        
   typedef struct // for HYFPAR common block
   {
-    Double_t bgen;
-    Int_t nbcol;
-    Double_t npart;
-    Double_t npart0;
-    Int_t npyt;
-    Int_t nhyd;
+    Double_t bgen;        // impact parameter 
+    Int_t nbcol;          // number of binary collisions
+    Double_t npart;       // n participants
+    Double_t npart0;      // n participants
+    Int_t npyt;           // number of pythia particles
+    Int_t nhyd;           // number of hydjet particles
   }HYFPARCommon;
   
 #define HYFPAR COMMON_BLOCK(HYFPAR,hyfpar)
@@ -112,9 +112,9 @@ extern "C" {
   typedef struct //for HYPART common block
   {
     Double_t ppart[50000][10];   // particle information
-    Double_t bmin;
-    Double_t bmax;
-    Int_t njp;
+    Double_t bmin;               // min impact parameter
+    Double_t bmax;               // max impact parameter
+    Int_t njp;                   // 
   }HYPARTCommon;
   
 #define HYPART COMMON_BLOCK(HYPART,hypart)

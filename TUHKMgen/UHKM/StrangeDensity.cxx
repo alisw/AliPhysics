@@ -1,16 +1,35 @@
-#ifndef NAStrangeDensity_h
-#include "StrangeDensity.h"
-#endif
+//
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru
+//                           November. 2, 2005
+//
+//
+//This class is used to obtain grand canonical description  of strange density
+//by means of the temperature and chemical potentials (input). As for output
 
-NAStrangeDensity::NAStrangeDensity():
-  fTemperature(0.*GeV),
-  fBaryonPotential(0.*GeV),
-  fStrangePotential(0.*GeV),
+#include <TMath.h>
+#include "StrangeDensity.h"
+#include "DatabasePDG.h"
+#include "ParticlePDG.h"
+#include "UKUtility.h"
+
+//__________________________________________________________
+StrangeDensity::StrangeDensity():
+  fTemperature(0.*kGeV),
+  fBaryonPotential(0.*kGeV),
+  fStrangePotential(0.*kGeV),
   fNMax(5)
 {
+  //
+  // constructor
+  //
 }
-// compute hadron system strangeness density
-Double_t NAStrangeDensity::StrangenessDensity(DatabasePDG* database) {
+
+//__________________________________________________________
+Double_t StrangeDensity::StrangenessDensity(const DatabasePDG* database) {
+  //
+  // compute hadron system strangeness density
+  //
   Double_t meanStrangenessDensity = 0.;
   for(Int_t particleIndex = 0; particleIndex < database->GetNParticles(); particleIndex++) {
     ParticlePDG *particle = database->GetPDGParticleByIndex(particleIndex);
@@ -20,8 +39,11 @@ Double_t NAStrangeDensity::StrangenessDensity(DatabasePDG* database) {
   return meanStrangenessDensity;
 }
 
-// compute hadron number density
-Double_t NAStrangeDensity::ParticleNumberDensity(ParticlePDG* pDef) {
+//__________________________________________________________
+Double_t StrangeDensity::ParticleNumberDensity(ParticlePDG* pDef) {
+  //
+  // compute hadron number density
+  //
   Double_t particleMass = pDef->GetMass();
   Int_t particleStrangeness = Int_t(pDef->GetStrangeness());
   Double_t particleBaryon = pDef->GetBaryonNumber();
@@ -37,7 +59,7 @@ Double_t NAStrangeDensity::ParticleNumberDensity(ParticlePDG* pDef) {
   Double_t prefactor;
   Double_t postfactor;
   prefactor = (particleDegFactor*particleMass*particleMass*
-	       fTemperature/hbarc/hbarc/hbarc)/(2.*N_PI*N_PI);  
+	       fTemperature/kHbarc/kHbarc/kHbarc)/(2.*TMath::Pi()*TMath::Pi());  
   postfactor = 0.;
  
   for(Int_t n = 1; n <= fNMax; n++) {

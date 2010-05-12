@@ -1,18 +1,16 @@
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2006                                
+//////////////////////////////////////////////////////////////////////////////////       
+//                                                                              //
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna     //
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru  //
+//                           November. 2, 2005                                  //
+//                                                                              //
+//           This equation solver class is taken from GEANT4 and modified!!     //
+//////////////////////////////////////////////////////////////////////////////////
 
-*/
-//This equation solver class is taken from GEANT4 and modified!!
-
-#ifndef NAEquationSolver_h
 #include "EquationSolver.h"
-#endif
 
 template <class Function> 
-NAEquationSolver<Function>::NAEquationSolver(const NAEquationSolver & right) {
+EquationSolver<Function>::EquationSolver(const EquationSolver & right) {
   fMaxIter = right.GetMaxIterations();
   fTolerance = right.GetTolerance();
   fA = right.GetIntervalLowerLimit();
@@ -22,7 +20,7 @@ NAEquationSolver<Function>::NAEquationSolver(const NAEquationSolver & right) {
 
 // operators
 template <class Function> 
-NAEquationSolver<Function> & NAEquationSolver<Function>::operator=(const NAEquationSolver & right) {
+EquationSolver<Function> & EquationSolver<Function>::operator=(const EquationSolver & right) {
   fMaxIter = right.GetMaxIterations();
   fTolerance = right.GetTolerance();
   fA = right.GetIntervalLowerLimit();
@@ -32,13 +30,13 @@ NAEquationSolver<Function> & NAEquationSolver<Function>::operator=(const NAEquat
 }
 
 template <class Function> 
-Bool_t NAEquationSolver<Function>::operator==(const NAEquationSolver & right) const {
+Bool_t EquationSolver<Function>::operator==(const EquationSolver & right) const {
   if (this == &right) return true;
   else return false;
 }
 
 template <class Function> 
-Bool_t NAEquationSolver<Function>::operator!=(const NAEquationSolver & right) const {
+Bool_t EquationSolver<Function>::operator!=(const EquationSolver & right) const {
   return !operator==(right);
 }
 

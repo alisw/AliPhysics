@@ -16,15 +16,7 @@
 #ifndef INITIALSTATEHYDJET_H
 #define INITIALSTATEHYDJET_H
 
-//#ifndef DATABASE_PDG
-//#include "DatabasePDG.h"
-//#endif
-//#ifndef PARTICLE_INCLUDED
-//#include "Particle.h"
-//#endif
-#ifndef INITIAL_STATE
 #include "InitialState.h"
-#endif
 
 class ParticleAllocator;
 
@@ -116,11 +108,7 @@ struct InitialParamsHydjet_t {
 
 class InitialStateHydjet : public InitialState {
  public:
-  InitialParamsHydjet_t fParams;             // the list of initial state parameters
- private:
-  Double_t fVolEff;                           // the effective volume
-
- public:
+   
   InitialStateHydjet() : fParams(), fVolEff(0){};
   ~InitialStateHydjet() {};
   
@@ -135,13 +123,16 @@ class InitialStateHydjet : public InitialState {
   virtual Bool_t ReadParams();
   virtual Bool_t MultIni();
   Bool_t IniOfThFreezeoutParameters();
- 
-  Double_t f(Double_t x);
-  Double_t f2(Double_t x, Double_t y);
+  
+  InitialParamsHydjet_t fParams;             // the list of initial state parameters
+  
+  private:
+   Double_t fVolEff;                           // the effective volume
+   Double_t F2(Double_t x, Double_t y);
    
-  Double_t SimpsonIntegrator(Double_t a, Double_t b, Double_t phi);
-  Double_t SimpsonIntegrator2(Double_t a, Double_t b);
-  Double_t MidpointIntegrator2(Double_t a, Double_t b);
+   Double_t SimpsonIntegrator(Double_t a, Double_t b, Double_t phi);
+   Double_t SimpsonIntegrator2(Double_t a, Double_t b);
+   Double_t MidpointIntegrator2(Double_t a, Double_t b);
 };
 
 #endif

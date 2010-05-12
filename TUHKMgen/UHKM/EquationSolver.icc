@@ -6,21 +6,23 @@
 
 */ 
 //This equation solver class is taken from GEANT4 and modified!!
- 
+
+#include <iostream>
+#include <TMath.h>
 
 template <class Function>
-Bool_t NAEquationSolver<Function>::Brent(Function& theFunction) {
+Bool_t EquationSolver<Function>::Brent(Function& theFunction) {
   const Double_t precision = 3.0e-8;
 
   // Check the interval before start
-  if(fA > fB || Abs(fA-fB) <= fTolerance) {
-    std::cerr << "NAEquationSolver::Brent: The interval must be properly set." << std::endl;
+  if(fA > fB || TMath::Abs(fA-fB) <= fTolerance) {
+    std::cerr << "EquationSolver::Brent: The interval must be properly set." << std::endl;
     return false;
   }
   Double_t fa = theFunction(fA);
   Double_t fb = theFunction(fB);
   if(fa*fb > 0.0) {
-    std::cerr << "NAEquationSolver::Brent: The interval must include a root." << std::endl;
+    std::cerr << "EquationSolver::Brent: The interval must include a root." << std::endl;
     return false;
   }
     
@@ -39,7 +41,7 @@ Bool_t NAEquationSolver<Function>::Brent(Function& theFunction) {
       d = fB - fA;
       e = d;
     }
-    if(Abs(fc) < Abs(fb)) {
+    if(TMath::Abs(fc) < TMath::Abs(fb)) {
       fA = fB;
       fB = c;
       c = fA;
@@ -47,14 +49,14 @@ Bool_t NAEquationSolver<Function>::Brent(Function& theFunction) {
       fb = fc;
       fc = fa;
     }
-    Double_t Tol1 = 2.0*precision*Abs(fB) + 0.5*fTolerance;
+    Double_t Tol1 = 2.0*precision*TMath::Abs(fB) + 0.5*fTolerance;
     Double_t xm = 0.5*(c-fB);
-    if(Abs(xm) <= Tol1 || fb == 0.0) {
+    if(TMath::Abs(xm) <= Tol1 || fb == 0.0) {
       fRoot = fB;
       return true;
     }
     // Inverse quadratic interpolation
-    if(Abs(e) >= Tol1 && Abs(fa) > Abs(fb)) {
+    if(TMath::Abs(e) >= Tol1 && TMath::Abs(fa) > TMath::Abs(fb)) {
       Double_t s = fb/fa;
       Double_t p = 0.0;
       Double_t q = 0.0;
@@ -70,10 +72,10 @@ Bool_t NAEquationSolver<Function>::Brent(Function& theFunction) {
       }
       // Check bounds
       if(p > 0.0) q = -q;
-      p = Abs(p);
-      Double_t min1 = 3.0*xm*q-Abs(Tol1*q);
-      Double_t min2 = Abs(e*q);
-      if (2.0*p < Min(min1,min2)) {
+      p = TMath::Abs(p);
+      Double_t min1 = 3.0*xm*q-TMath::Abs(Tol1*q);
+      Double_t min2 = TMath::Abs(e*q);
+      if (2.0*p < TMath::Min(min1,min2)) {
         // Interpolation
         e = d;
         d = p/q;
@@ -92,21 +94,21 @@ Bool_t NAEquationSolver<Function>::Brent(Function& theFunction) {
     // Move last guess to a 
     fA = fB;
     fa = fb;
-    if (Abs(d) > Tol1) fB += d;
+    if (TMath::Abs(d) > Tol1) fB += d;
     else {
-      if (xm >= 0.0) fB += Abs(Tol1);
-      else fB -= Abs(Tol1);
+      if (xm >= 0.0) fB += TMath::Abs(Tol1);
+      else fB -= TMath::Abs(Tol1);
     }
     fb = theFunction(fB);
   }
-  std::cerr << "NAEquationSolver::Brent: Number of iterations exceeded." << std::endl;
+  std::cerr << "EquationSolver::Brent: Number of iterations exceeded." << std::endl;
   return false;
 }
 
 template <class Function>   
-void NAEquationSolver<Function>::SetIntervalLimits(const Double_t Limit1, const Double_t Limit2) {
-  if(Abs(Limit1-Limit2) <= fTolerance) {
-    std::cerr << "NAEquationSolver::SetIntervalLimits: Interval must be wider than tolerance." << std::endl;
+void EquationSolver<Function>::SetIntervalLimits(const Double_t Limit1, const Double_t Limit2) {
+  if(TMath::Abs(Limit1-Limit2) <= fTolerance) {
+    std::cerr << "EquationSolver::SetIntervalLimits: Interval must be wider than tolerance." << std::endl;
     return;
   }
   if(Limit1 < Limit2) {

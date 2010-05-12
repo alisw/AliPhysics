@@ -1,22 +1,15 @@
-/*
-  Ludmila Malinina  malinina@lav01.sinp.msu.ru,   SINP MSU/Moscow and JINR/Dubna
-  Ionut Arsene  i.c.arsene@fys.uio.no,            Oslo University and ISS-Bucharest
-  Date        : 2007/05/30
-*/
-
-#include "TVector3.h"
-#ifndef INITIAL_STATE
-#include "InitialState.h"
-#endif
-#ifndef HADRONDECAYER_INCLUDED
-#include "HadronDecayer.h"
-#endif
+//
+//  Ludmila Malinina  malinina@lav01.sinp.msu.ru,   SINP MSU/Moscow and JINR/Dubna
+//  Ionut Arsene  i.c.arsene@fys.uio.no,            Oslo University and ISS-Bucharest
+//  Date        : 2007/05/30
+//
 #include <iostream> 
 #include <fstream>
 using namespace std;
 
-// aic(2008/08/08): define the fLastIndex static variable 
-//Int_t Particle::fLastIndex;
+#include <TVector3.h>
+#include "HadronDecayer.h"
+#include "InitialState.h"
 
 void InitialState::Evolve(List_t &secondaries, ParticleAllocator &allocator, Double_t weakDecayLimit) {
   // Particle indexes are set for primaries already from InitialStateHydjet::Initialize()

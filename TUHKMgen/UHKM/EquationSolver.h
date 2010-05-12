@@ -1,55 +1,40 @@
-
-#ifndef NAEquationSolver_h
-#define NAEquationSolver_h 1
+//////////////////////////////////////////////////////////////////////////////////       
+//                                                                              //
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna     //
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru  //
+//                           November. 2, 2005                                  //
+//                                                                              //
+//           This equation solver class is taken from GEANT4 and modified!!     //
+//////////////////////////////////////////////////////////////////////////////////
+#ifndef EQUATIONSOLVER_H
+#define EQUATIONSOLVER_H
 #include <Rtypes.h>
-#include "MathUtil.h"
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
-
-*/
-//This equation solver class is taken from GEANT4 and modified!!
-
 
 #define DefaultTolerance 5.0e-14
 
 template <class Function> 
-class NAEquationSolver {
+class EquationSolver {
 
  public:
-  enum {DefaultMaxIter = 100};
-	
- private:
-  // Maximum number of iterations
-  Int_t fMaxIter;
-  Double_t fTolerance;
-  // interval limits [a,b] which should bracket the root
-  Double_t fA;
-  Double_t fB;
-  // root
-  Double_t fRoot;
-
- public:    
+  enum {kDefaultMaxIter = 100};  
   // default constructor
-  NAEquationSolver() : fMaxIter(DefaultMaxIter), fTolerance(DefaultTolerance),
+  EquationSolver() : fMaxIter(kDefaultMaxIter), fTolerance(DefaultTolerance),
     fA(0.0), fB(0.0), fRoot(0.0) {};
 	
-  NAEquationSolver(const Int_t iterations, const Double_t tol) :
+  EquationSolver(const Int_t iterations, const Double_t tol) :
     fMaxIter(iterations), fTolerance(tol),
     fA(0.0), fB(0.0), fRoot(0.0) {};
 
   // copy constructor	
-  NAEquationSolver(const NAEquationSolver & right);
+  EquationSolver(const EquationSolver & right);
 
   // destructor
-  ~NAEquationSolver() {};
+  ~EquationSolver() {};
 	
   // operators
-  NAEquationSolver & operator=(const NAEquationSolver & right);
-  Bool_t operator==(const NAEquationSolver & right) const;
-  Bool_t operator!=(const NAEquationSolver & right) const;
+  EquationSolver & operator=(const EquationSolver & right);
+  Bool_t operator==(const EquationSolver & right) const;
+  Bool_t operator!=(const EquationSolver & right) const;
 		
   Int_t GetMaxIterations(void) const {return fMaxIter;}
   void SetMaxIterations(const Int_t iterations) {fMaxIter=iterations;}
@@ -66,6 +51,13 @@ class NAEquationSolver {
 	
   // Calculates the root by the Brent's method
   Bool_t Brent(Function& theFunction);
+
+ private:
+  Int_t fMaxIter;         // Maximum number of iterations
+  Double_t fTolerance;    // tolerance (precision)
+  Double_t fA;            // interval limits [a,b] which should bracket the root
+  Double_t fB;            // interval limits [a,b] which should bracket the root
+  Double_t fRoot;         // the equation's root
 };
 
 #include "EquationSolver.icc"

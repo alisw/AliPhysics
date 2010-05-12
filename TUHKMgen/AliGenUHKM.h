@@ -6,40 +6,23 @@
 #ifndef ALIGENUHKM_H
 #define ALIGENUHKM_H
 
+#include <string>
+
+//#include <TString.h>
+//#include <TParticle.h>
+
 #include "AliGenMC.h"
-#include <TString.h>
 #include "TUHKMgen.h"
 #ifndef INITIALSTATEHYDJET_H
 #include "InitialStateHydjet.h"
 #endif
-#include "TParticle.h"
 
-#include <string>
 using namespace std;
 
 
 class AliGenUHKM : public AliGenMC
 {
- protected:
-  Int_t       fTrials;         // Number of trials
-  TUHKMgen    *fUHKMgen;       // UHKM
-  
-  InitialParamsHydjet_t fHydjetParams;    // list of parameters for the initial state
-  // details for the PDG database
-  Char_t fParticleFilename[256];            // particle list filename
-  Char_t fDecayFilename[256];               // decay table filename
-  Int_t fStableFlagPDG[500];                // array of PDG codes flagged
-  Bool_t fStableFlagStatus[500];            // array of decay flag status
-  Int_t fStableFlagged;                     // number of toggled decay flags
-
-  void SetAllParameters();
-  void CheckPDGTable();
-  
- private:
-  void Copy(TObject &rhs) const;
-  AliGenUHKM(const AliGenUHKM&);
-  AliGenUHKM & operator = (const AliGenUHKM &);
-  
+   
  public:
   AliGenUHKM();
   AliGenUHKM(Int_t npart);
@@ -141,6 +124,26 @@ class AliGenUHKM : public AliGenMC
   Double_t GetPyquenIanglu() const {return fHydjetParams.fIanglu;}
   const Char_t*  GetPDGParticleFile() const {return fParticleFilename;}
   const Char_t*  GetPDGDecayFile() const {return fDecayFilename;}
+
+ protected:
+  Int_t       fTrials;         // Number of trials
+  TUHKMgen    *fUHKMgen;       // UHKM
+  
+  InitialParamsHydjet_t fHydjetParams;    // list of parameters for the initial state
+  // details for the PDG database
+  Char_t fParticleFilename[256];            // particle list filename
+  Char_t fDecayFilename[256];               // decay table filename
+  Int_t fStableFlagPDG[500];                // array of PDG codes flagged
+  Bool_t fStableFlagStatus[500];            // array of decay flag status
+  Int_t fStableFlagged;                     // number of toggled decay flags
+
+  void SetAllParameters();
+  void CheckPDGTable();
+  
+ private:
+  void Copy(TObject &rhs) const;
+  AliGenUHKM(const AliGenUHKM&);
+  AliGenUHKM & operator = (const AliGenUHKM &);
 
   ClassDef(AliGenUHKM, 6) // AliGenerator interface to UHKM
 };

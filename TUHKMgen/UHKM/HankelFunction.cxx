@@ -1,16 +1,14 @@
-/*                                                                            
-                                                                            
-        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna
-      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru 
-                           November. 2, 2005                                
-
-*/
+//////////////////////////////////////////////////////////////////////////////////       
+//                                                                              //
+//        Nikolai Amelin, Ludmila Malinina, Timur Pocheptsov (C) JINR/Dubna     //
+//      amelin@sunhe.jinr.ru, malinina@sunhe.jinr.ru, pocheptsov@sunhe.jinr.ru  //
+//                           November. 2, 2005                                  //
+//                                                                              //
+//////////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
 
-#ifndef HANKELFUNCTION_INCLUDED
 #include "HankelFunction.h"
-#endif
 
 //compute Hankel function of zeroth order
 enum {kNe = 2, kNCoeff = 9};
@@ -147,6 +145,8 @@ Double_t BesselI1(Double_t x) {
 }
 
 Double_t HankelK0(Double_t x) { 
+  //  (C) Copr. 1986-92 Numerical Recipes Software +7.
+  // compute modified Hankel function of the first order
   const Double_t p1 = k0Coefficient[0][0];
   const Double_t p2 = k0Coefficient[1][0];
   const Double_t p3 = k0Coefficient[2][0];

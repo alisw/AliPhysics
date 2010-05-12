@@ -24,31 +24,7 @@ using namespace std;
 //class DatabasePDG;
 
 class TUHKMgen : public TGenerator {
- protected:
-  InitialStateHydjet *fInitialState;     // HYDJET++ main class which handles the entire Monte-Carlo simulation
-  ParticleAllocator fAllocator;       // object which allocates/deallocates memory for the lists of particles
-  List_t fSecondariesList; // list holding the initial particles and the final state particles generated in resonance decays
-  Int_t  fNPprim;          // number of primary particles
-  Int_t  fNPsec;           // secondary particles
-  InitialParamsHydjet_t fHydjetParams;  // struct holding the list of parameters for the initial state
-  // details for the PDG database
-  Char_t fParticleFilename[256];               // particle list filename
-  Char_t fDecayFilename[256];                  // decay table filename
-  Int_t fStableFlagPDG[500];                   // array of PDG codes flagged to be stable
-  Bool_t fStableFlagStatus[500];               // array of decay flag status
-  Int_t fStableFlagged;                        // number of toggled decay flags
-  //  Bool_t fUseCharmParticles;               // flag to turn on/off the use of charm particles
-  //  Double_t fMinWidth;                      // minimum decay width for the particles to be used from the PDG database
-  //  Double_t fMaxWidth;                          // maximum ----
-  //  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
-  //  Double_t fMaxMass;                           // maximum ----
-
-  void SetAllParameters();
-
- private:
-  TUHKMgen(const TUHKMgen&);
-  TUHKMgen& operator=(const TUHKMgen&);
-
+ 
  public:   
   TUHKMgen();
   virtual      ~TUHKMgen();
@@ -186,6 +162,31 @@ class TUHKMgen : public TGenerator {
   
   void Print(const Option_t* opt="") const;
 
+ protected:
+  InitialStateHydjet *fInitialState;     // HYDJET++ main class which handles the entire Monte-Carlo simulation
+  ParticleAllocator fAllocator;       // object which allocates/deallocates memory for the lists of particles
+  List_t fSecondariesList; // list holding the initial particles and the final state particles generated in resonance decays
+  Int_t  fNPprim;          // number of primary particles
+  Int_t  fNPsec;           // secondary particles
+  InitialParamsHydjet_t fHydjetParams;  // struct holding the list of parameters for the initial state
+  // details for the PDG database
+  Char_t fParticleFilename[256];               // particle list filename
+  Char_t fDecayFilename[256];                  // decay table filename
+  Int_t fStableFlagPDG[500];                   // array of PDG codes flagged to be stable
+  Bool_t fStableFlagStatus[500];               // array of decay flag status
+  Int_t fStableFlagged;                        // number of toggled decay flags
+  //  Bool_t fUseCharmParticles;               // flag to turn on/off the use of charm particles
+  //  Double_t fMinWidth;                      // minimum decay width for the particles to be used from the PDG database
+  //  Double_t fMaxWidth;                          // maximum ----
+  //  Double_t fMinMass;                           // minimum mass for the particles to be used from the PDG database
+  //  Double_t fMaxMass;                           // maximum ----
+
+  void SetAllParameters();
+
+ private:
+  TUHKMgen(const TUHKMgen&);
+  TUHKMgen& operator=(const TUHKMgen&);
+  
   ClassDef(TUHKMgen, 3)  //Interface to FASTMC Event Generator
 };
 #endif
