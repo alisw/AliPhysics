@@ -15,19 +15,18 @@
  **************************************************************************/
 
 #include "AliHLTPHOSRawAnalyzerComponentv3.h"
-#include "AliHLTPHOSRawAnalyzer.h"
+//#include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTPHOSDefinitions.h"
-#include "AliHLTPHOSUtilities.h"
+//#include "AliHLTPHOSUtilities.h"
 #include "AliHLTPHOSMapper.h"
-#include "AliLog.h"
+// #include "AliLog.h"
 
 
 AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :
    AliHLTCaloRawAnalyzerComponentv3("PHOS")
-   // ,fCurrentSpec(-1)
 {
-   // See header file for class documentation
+  // See header file for class documentation
    InitMapping(0x1); //using 0x1 to avoid error message
 }
 

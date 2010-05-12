@@ -91,10 +91,8 @@ int
 AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 { 
   //See base class for documentation
-  //  fPrintInfo = kFALSE;
   int iResult=0;
-  //  fMapperPtr = new AliHLTCaloMapper();
-  
+
   for(int i = 0; i < argc; i++)
     {
       if(!strcmp("-offset", argv[i]))
@@ -140,19 +138,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 int 
 AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 {
-  //comment
-  // if(fMapperPtr)
-  //   {
-  //     delete  fMapperPtr;
-  //     fMapperPtr = 0;
-  //   }
-
-  // if(fRawReaderMemoryPtr)
-  //   {
-  //     delete fRawReaderMemoryPtr;
-  //     fRawReaderMemoryPtr = 0;
-  //   }
-
   if(fAltroRawStreamPtr)
     {
       delete fAltroRawStreamPtr;
@@ -179,10 +164,8 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 	  cout << __FILE__ << __LINE__ << " : Processing event "  << fCaloEventCount << endl; 
 	  wlast =  wcurrent;
 	  wcurrent = fgWatch.RealTime();
-	  ////cout << wlast << ":" << wcurrent << endl;
 	  cout << __FILE__ << __LINE__ << "The event rate is " <<  
 	    1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  fgWatch.Start(kFALSE); 
-	  //     wlast =  fgWatch.RealTime(); 
 	}
     }
 }
@@ -195,12 +178,6 @@ AliHLTCaloRawAnalyzerComponentv3::CheckInputDataType(const AliHLTComponentDataTy
   vector <AliHLTComponentDataType> validTypes;
   GetInputDataTypes(validTypes);
   
-  // if( true == fDebug)
-  // 	{
-  // 	  cout << __FILE__ << __LINE__ << "  :  fID  = " << datatype.fID <<  " : fOrigin = " 
-  // 	       <<  datatype.fOrigin << endl;
-  // 	}
-
   for(int i=0; i < validTypes.size(); i++ )
     {
       if ( datatype  ==  validTypes.at(i) )
