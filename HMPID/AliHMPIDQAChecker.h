@@ -37,7 +37,7 @@ public:
   Double_t CheckSim(TObjArray *listsim, TObjArray *listref) const ;
 
 private:
-
+  AliHMPIDQAChecker& operator= (const AliHMPIDQAChecker&); // Not implemented
   Bool_t        fNoReference ; //! flag telling if reference data hqve been found or not  
   TObjArray *   fQARefRec ;    //! Reference data from OCDB 
       
