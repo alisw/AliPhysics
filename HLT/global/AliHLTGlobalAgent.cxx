@@ -190,7 +190,7 @@ const char* AliHLTGlobalAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
 
-  return "libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTITS.so";
+  return "";
 }
 
 int AliHLTGlobalAgent::GetHandlerDescription(AliHLTComponentDataType /*dt*/,
