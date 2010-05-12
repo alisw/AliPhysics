@@ -17,8 +17,7 @@
 #include "TH1.h"
 #include "TH2D.h"
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
-//#include "AliHLTPHOSBase.h"
-//#include "AliHLTPHOSRcuProcessor.h"
+
 
 class TH1;
 class TH2D;
@@ -29,8 +28,7 @@ class AliHLTPHOSUtilities;
 #define XBINUP   1023
 #define NBINS    1023
 
-//class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSBase
-//class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSRcuProcessor
+
 class AliHLTPHOSRcuHistogramProducer 
 {
  public:
@@ -39,9 +37,6 @@ class AliHLTPHOSRcuHistogramProducer
   virtual ~AliHLTPHOSRcuHistogramProducer();
   const AliHLTPHOSRcuCellAccumulatedEnergyDataStruct& GetCellAccumulatedEnergies(); 
   void Init();
-  //void SetRcuX(AliHLTUInt8_t X);
-  // void SetRcuZ(AliHLTUInt8_t Z);
-  //void SetModuleID(AliHLTUInt8_t moduleID); 
   void SetHistoOutDir(char *outDir);
   void FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy);
   void FillTime(AliHLTUInt8_t x,   AliHLTUInt8_t z,  AliHLTUInt8_t gain, float time); 

@@ -24,7 +24,7 @@
 // #include "AliHLTPHOSConstant.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TObjArray.h"
-#include "AliHLTPHOSUtilities.h"
+#include "AliHLTCaloUtilities.h"
 #include "AliHLTReadoutList.h"
 
 //#include <iostream>

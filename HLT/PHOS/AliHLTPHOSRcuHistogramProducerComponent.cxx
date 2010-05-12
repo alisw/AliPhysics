@@ -21,10 +21,8 @@
 #include "AliHLTPHOSRcuHistogramProducerComponent.h"
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 #include "AliHLTPHOSSharedMemoryInterfacev2.h"
-//#include "AliHLTPHOSValidCellDataStruct.h" 
 #include "AliHLTPHOSChannelDataHeaderStruct.h"
 #include "AliHLTPHOSChannelDataStruct.h"
-//#include "AliHLTPHOSUtilities.h"
 
 
 AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent;

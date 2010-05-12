@@ -14,6 +14,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
@@ -22,22 +23,19 @@
 #include "AliHLTCaloChannelDataStruct.h"
 #include "AliHLTCaloMapper.h"
 #include "AliHLTCaloSanityInspector.h"
-// #include "AliAltroRawStreamV3.h"
 #include "AliRawReaderMemory.h"
 #include "AliCaloRawStreamV3.h"
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliLog.h"
+#include "TStopwatch.h"
+
 
 #include <vector>
 using namespace std;
 
 ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 
-
-#include  "TStopwatch.h"
-
-//TStopwatch  fgWatch; //CRAP PTH
 
 
 AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):AliHLTCaloProcessor(),
@@ -62,10 +60,9 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
   fSanityInspectorPtr = new AliHLTCaloSanityInspector();
   
   if( fDoPushRawData == true  )
-  {
-    fRawDataWriter  = new RawDataWriter(fCaloConstants); 
-  }
-  
+    {
+      fRawDataWriter  = new RawDataWriter(fCaloConstants); 
+    }
   fRawReaderMemoryPtr = new AliRawReaderMemory();
   fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, det);  
 }
@@ -78,7 +75,6 @@ AliHLTCaloRawAnalyzerComponentv3::~AliHLTCaloRawAnalyzerComponentv3()
   delete fRawDataWriter;
   delete fSanityInspectorPtr;
 }
-
 
 
 int

@@ -17,7 +17,7 @@
 
 
 #include "AliHLTPHOSRawAnalyzer.h"
-#include "AliHLTPHOSUtilities.h" 
+#include "AliHLTCaloUtilities.h" 
 
 AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): //AliHLTPHOSBase(),   
 						 //	 fDoCorrectBaselineUsingFirstFiveSamples(false),
@@ -39,7 +39,9 @@ AliHLTPHOSRawAnalyzer:: AliHLTPHOSRawAnalyzer(): //AliHLTPHOSBase(),
   //  fIntDataPtr = new UInt_t[1008];
 
   //  fDoubleDataPtr;   
-  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
+
+  //   fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
+
 }
 
 AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()

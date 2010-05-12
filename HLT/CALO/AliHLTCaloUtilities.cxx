@@ -33,6 +33,9 @@ AliHLTCaloUtilities::~AliHLTCaloUtilities()
 }
 
 
+
+
+
 bool 
 AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value)
 {
@@ -149,7 +152,7 @@ AliHLTCaloUtilities::ScanSingleArgument(int argc, const char** argv, const char 
 
 
 bool
-AliHLTCaloUtilities::CheckFile(const char *fileName, const char *opt) const
+AliHLTCaloUtilities::CheckFile(const char *fileName, const char *opt)
 {
   //returns true if the file specified by "fileName exists  and has acceees rights specified  by "opt", 
   //returns false if it doesnt exist, or it exists, but doesnt have the access right specified by "opt"
@@ -170,7 +173,7 @@ AliHLTCaloUtilities::CheckFile(const char *fileName, const char *opt) const
 // returns the index if the argument if it exists
 // returns a negative value if it doesnt exist
 int 
-AliHLTCaloUtilities::DoExistArgument(const int argc, const char** argv, const char *name) const
+AliHLTCaloUtilities::DoExistArgument(const int argc, const char** argv, const char *name)
 {
   string s1;
 

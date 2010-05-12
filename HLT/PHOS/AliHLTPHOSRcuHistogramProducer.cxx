@@ -22,7 +22,7 @@
 #include "TFile.h"
 #include "unistd.h"
 #include <time.h>
-#include "AliHLTPHOSUtilities.h" 
+#include "AliHLTCaloUtilities.h" 
 
 #define THRESHOLD 30
 

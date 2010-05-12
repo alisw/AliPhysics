@@ -8,7 +8,7 @@
  * See cxx source for full Copyright notice  */ 
 
 #include "AliHLTCaloProcessor.h"
-#include "AliHLTPHOSUtilities.h"
+#include "AliHLTCalotilities.h"
 
 //
 // Class tp produce calibration data

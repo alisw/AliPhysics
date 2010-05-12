@@ -24,7 +24,7 @@
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
 //#include <iostream>
 #include <cmath>
-#include "AliHLTPHOSUtilities.h" 
+#include "AliHLTCaloUtilities.h" 
 
 using std::cout;
 using std::endl;

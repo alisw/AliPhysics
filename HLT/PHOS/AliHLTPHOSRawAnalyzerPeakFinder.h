@@ -6,22 +6,13 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                          */
 
-//#include <Rtypes.h>
-//#include "TObject.h"
 #include "AliHLTPHOSRawAnalyzer.h"
-//#include "AliHLTPHOSBase.h"
-//class AliHLTPHOSUtilities;
+
 
 class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 {
  public:
   AliHLTPHOSRawAnalyzerPeakFinder();
-  //  AliHLTPHOSRawAnalyzerPeakFinder(const AliHLTPHOSRawAnalyzerPeakFinder & );
-  //  AliHLTPHOSRawAnalyzerPeakFinder & operator = (const AliHLTPHOSRawAnalyzerPeakFinder &)
-  //    {
-  //     return *this; 
-  //    }
-
   virtual ~AliHLTPHOSRawAnalyzerPeakFinder();
 
 

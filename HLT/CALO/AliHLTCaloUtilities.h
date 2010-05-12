@@ -33,15 +33,16 @@ class  AliHLTCaloUtilities
   AliHLTCaloUtilities();
   virtual ~AliHLTCaloUtilities();
  
-  bool CheckFile(const char *fileName, const char *opt) const;
+  static bool CheckFile(const char *fileName, const char *opt);
 
-  bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
-  bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
-  bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
-  bool ScanSingleArgument(int argc, const char** argv, const char *name);
+  //  static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value)
+  static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
+  static bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
+  static bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
+  static bool ScanSingleArgument(int argc, const char** argv, const char *name);
 
   template<typename T> 
-    void  DumpData(T *array, int N, int nPerLine)
+    static void  DumpData(T *array, int N, int nPerLine)
     {
       //   cout <<   "DumpData N=  " << N <<endl;
       for(int i= 0; i< N; i++)
@@ -59,7 +60,7 @@ class  AliHLTCaloUtilities
     }
 
   template<typename T> 
-    void  ResetArray(T *array, int N) const
+    static void  ResetArray(T *array, int N)
     {
       for(int i= 0; i< N; i++)
 	{
@@ -68,7 +69,7 @@ class  AliHLTCaloUtilities
     }
  
   template<typename T> 
-    T  MaxValue(T *array, int N) const
+    static T  MaxValue(T *array, int N)
     {
       T tmpMax = 0;
 
@@ -86,7 +87,7 @@ class  AliHLTCaloUtilities
 
   
  private:
-  int DoExistArgument(const int argc, const char** argv, const char *argument) const;
+  static int DoExistArgument(const int argc, const char** argv, const char *argument);
 
 };
 

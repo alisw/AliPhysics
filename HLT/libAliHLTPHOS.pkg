@@ -18,7 +18,6 @@ CLASS_HDRS:=  AliHLTPHOSClusterizerComponent.h \
 		  AliHLTPHOSMapper.h \
 		  AliHLTPHOSRawAnalyzerPeakFinder.h \
 		  AliHLTPHOSSanityInspector.h \
-		  AliHLTPHOSUtilities.h \
 		  AliHLTPHOSMonitorTriggerComponent.h \
 		  AliHLTPHOSConstants.h \
 		  AliHLTPHOSGeometry.h \
