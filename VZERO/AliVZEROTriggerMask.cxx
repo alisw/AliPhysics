@@ -176,7 +176,7 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
   esdV0->SetV0ATime(timeAW);
   esdV0->SetV0CTime(timeCW);
   esdV0->SetV0ATimeError((weightA > 0) ? (1./TMath::Sqrt(weightA)) : 0);
-  esdV0->SetV0ATimeError((weightC > 0) ? (1./TMath::Sqrt(weightC)) : 0);
+  esdV0->SetV0CTimeError((weightC > 0) ? (1./TMath::Sqrt(weightC)) : 0);
 
   esdV0->SetV0ADecision(AliESDVZERO::kV0Empty);
   esdV0->SetV0CDecision(AliESDVZERO::kV0Empty);
