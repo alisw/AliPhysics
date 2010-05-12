@@ -36,7 +36,8 @@ ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 
 
 #include  "TStopwatch.h"
-TStopwatch  fgWatch; //CRAP PTH
+
+//TStopwatch  fgWatch; //CRAP PTH
 
 
 AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):AliHLTCaloProcessor(),
@@ -85,7 +86,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 { 
   //See base class for documentation
   int iResult=0;
-
+  
   for(int i = 0; i < argc; i++)
     {
       if(!strcmp("-offset", argv[i]))
@@ -127,7 +128,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 }
 
 
-
 int 
 AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 {
@@ -136,7 +136,6 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
       delete fAltroRawStreamPtr;
       fAltroRawStreamPtr = 0;
     }
-
   return 0;
 }
 
@@ -145,6 +144,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 void 
 AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 {
+  static TStopwatch  Watch; //CRAP PTH
   static double wlast = -1;
   static double wcurrent = 0;
   
@@ -154,9 +154,9 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 	{
 	  cout << __FILE__ << __LINE__ << " : Processing event "  << fCaloEventCount << endl; 
 	  wlast =  wcurrent;
-	  wcurrent = fgWatch.RealTime();
+	  wcurrent =  Watch.RealTime();
 	  cout << __FILE__ << __LINE__ << "The event rate is " <<  
-	    1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  fgWatch.Start(kFALSE); 
+	    1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  Watch.Start(kFALSE); 
 	}
     }
 }
