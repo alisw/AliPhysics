@@ -996,7 +996,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     tt.SetZref(0, z0 - (x0-xAnode)*dzdx0);
     tt.SetZref(1, dzdx0); 
     tt.SetReconstructor(&rec);
-    tt.Fit(kTRUE, kTRUE);
+    tt.Fit(1);
     x= tt.GetX();y= tt.GetY();z= tt.GetZ();
     dydx = tt.GetYfit(1);
     dx = x0 - x;
