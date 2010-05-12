@@ -46,7 +46,8 @@ AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator():
     fRunTag(0), 
     fTreeT(0),
     fTagCreator(0),
-    fAODFileName("")
+    fAODFileName(""),
+    fGUID(0)
 {
   // Default constructor
 }
@@ -58,7 +59,8 @@ AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator(const char* name):
     fRunTag(0), 
     fTreeT(0),
     fTagCreator(0),
-    fAODFileName("")
+    fAODFileName(""),
+    fGUID(0)
 {
   // Constructor
     DefineOutput(1, TTree::Class()); 	
@@ -100,22 +102,22 @@ void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
     AliEventTag* evtTag = new AliEventTag();
     fTagCreator->FillEventTag(AODEvent(), evtTag);
     // Reference to the input file
-    TString fturl, fturltemp, fguid;
+    TString fturl, fturltemp, guid;
     
     TString opt(fInputHandler->GetAnalysisType());
     opt.ToLower();
     
     TFile *file = OutputTree()->GetCurrentFile();
     const TUrl *url = file->GetEndpointUrl();
-    fguid = file->GetUUID().AsString();
+    guid = file->GetUUID().AsString();
     if (fAODFileName.Length() != 0) {
 	fturl = fAODFileName;
-	GetGUID(fguid);
+	guid  = fGUID;
     } else {
 	fturl = url->GetFile();
     }
 
-    evtTag->SetGUID(fguid);
+    evtTag->SetGUID(guid);
     if(fAODFileName.Length() != 0) {
 	evtTag->SetMD5("");
 	evtTag->SetTURL(fturl);
@@ -142,14 +144,6 @@ Bool_t AliAnalysisTaskTagCreator::Notify()
     // Notify file change
     fInputHandler = (AliInputEventHandler*) 
       ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-
-    if (!fFirstFile) {
-	if (fInputHandler->GetRunTag()) fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
-	fTreeT->Fill();
-	fRunTag->Clear();
-    } else {
-	fFirstFile = kFALSE;
-    }
     return kTRUE;
 }
 
@@ -166,6 +160,7 @@ void AliAnalysisTaskTagCreator::GetGUID(TString &guid) {
 	    myfile.close();
 	}
 	else cout<<"Input file not found"<<endl;
+	f->Close();
     }
     else cout<<"Output file can't be created..."<<endl;
 }

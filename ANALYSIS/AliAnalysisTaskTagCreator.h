@@ -39,7 +39,7 @@ class AliAnalysisTaskTagCreator : public AliAnalysisTaskSE
     TTree                   *fTreeT;                  //! tree for  aod tags
     AliAODTagCreator        *fTagCreator;             //! The tag creator
     TString                  fAODFileName;            //! Name of the AOD file
-    
+    TString                  fGUID;                   //! GUID of the AOD file
     ClassDef(AliAnalysisTaskTagCreator, 1); // Analysis task for standard ESD filtering
 };
  
