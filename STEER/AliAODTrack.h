@@ -103,7 +103,8 @@ class AliAODTrack : public AliVTrack {
   virtual Double_t Zv() const { return GetProdVertex() ? GetProdVertex()->GetZ() : -999.; }
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
-  Double_t Chi2perNDF() const { return fChi2perNDF; }
+  Double_t Chi2perNDF()  const { return fChi2perNDF; }
+  UShort_t GetTPCNcls()  const { return fTPCClusterMap.CountBits();}
   
   virtual Double_t M() const { return M(GetMostProbablePID()); }
   Double_t M(AODTrkPID_t pid) const;
