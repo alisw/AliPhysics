@@ -68,15 +68,18 @@ public:
    ,kCalib      = BIT(17) // calibrated tracklet
    ,kKink       = BIT(18) // kink prolongation tracklet
    ,kStandAlone = BIT(19) // tracklet build during stand alone track finding
+   ,kPrimary    = BIT(20) // tracklet from a primary track candidate
   };
-  enum ETRDtrackletError {
-    kAttachClFound = 1  // not enough clusters found
-   ,kAttachRowGap       // found gap attached rows
-   ,kAttachRow          // found 3 rows
-   ,kAttachMultipleCl   // multiple clusters attached to time bin
-   ,kAttachClAttach     // not enough clusters attached
-   ,kFitFailed          // fit failed det=0
-   ,kFitOutside         // ref radial position outside chamber - wrong covariance
+
+  enum ETRDtrackletError { // up to 8 bits
+    kAttachClFound = 0  // not enough clusters found
+    ,kAttachRowGap  = 1  // found gap attached rows
+    ,kAttachRow     = 2  // found 3 rows
+    ,kAttachMultipleCl= 3// multiple clusters attached to time bin
+    ,kAttachClAttach= 4  // not enough clusters attached
+    ,kFitCl         = 5  // not enough clusters for fit
+    ,kFitFailedY    = 6  // fit failed in XY plane failed
+    ,kFitFailedZ    = 7  // fit in the QZ plane failed
   };
 
   AliTRDseedV1(Int_t det = -1);
@@ -90,19 +93,23 @@ public:
   void      CookdEdx(Int_t nslices);
   void      CookLabels();
   Bool_t    CookPID();
-  Bool_t    Fit(Bool_t tilt=kFALSE, Bool_t zcorr=kFALSE);
+  Bool_t    Fit(UChar_t opt=0);
   Bool_t    Init(AliTRDtrackV1 *track);
   inline void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
   Bool_t    IsKink() const           { return TestBit(kKink);}
+  Bool_t    IsPrimary() const        { return TestBit(kPrimary);}
   Bool_t    HasPID() const           { return TestBit(kPID);}
+  Bool_t    HasError(ETRDtrackletError err) const
+                                     { return TESTBIT(fErrorMsg, err);}
   Bool_t    IsOK() const             { return GetN() > 4 && GetNUsed() < 4;}
   Bool_t    IsRowCross() const       { return TestBit(kRowCross);}
   Bool_t    IsUsable(Int_t i) const  { return fClusters[i] && !fClusters[i]->IsUsed();}
   Bool_t    IsStandAlone() const     { return TestBit(kStandAlone);}
 
+  Float_t   GetAnodeWireOffset(Float_t zt);
   Float_t   GetC(Int_t typ=0) const    { return fC[typ]; }
   Float_t   GetChi2() const          { return fChi2; }
   inline Float_t   GetChi2Z() const;
@@ -117,8 +124,8 @@ public:
   Float_t   GetdX() const            { return fdX;}
   const Float_t*  GetdEdx() const    { return &fdEdx[0];}
   Float_t   GetdQdl(Int_t ic, Float_t *dx=NULL) const;
-  Float_t   GetdYdX() const          { return fYfit[1]; } 
-  Float_t   GetdZdX() const          { return fZref[1]; }
+  Float_t   GetdYdX() const          { return fYfit[1];}
+  Float_t   GetdZdX() const          { return fZfit[1];}
   Int_t     GetdY() const            { return Int_t(GetY()/0.014);}
   Int_t     GetDetector() const      { return fDet;}
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
@@ -170,10 +177,11 @@ public:
   void      SetC(Float_t c, Int_t typ=0) { fC[typ] = c;}
   void      SetChi2(Float_t chi2)    { fChi2 = chi2;}
   inline void SetCovRef(const Double_t *cov);
-  void      SetErrorMsg(Int_t err)   { fErrorMsg = err;}
+  void      SetErrorMsg(ETRDtrackletError err)  { SETBIT(fErrorMsg, err);}
   void      SetIndexes(Int_t i, Int_t idx) { fIndexes[i]  = idx; }
   void      SetLabels(Int_t *lbls)   { memcpy(fLabels, lbls, 3*sizeof(Int_t)); }
   void      SetKink(Bool_t k = kTRUE){ SetBit(kKink, k);}
+  void      SetPrimary(Bool_t k = kTRUE){ SetBit(kPrimary, k);}  
   void      SetPID(Bool_t k = kTRUE) { SetBit(kPID, k);}
   void      SetStandAlone(Bool_t st) { SetBit(kStandAlone, st); }
   void      SetPt(Double_t pt)       { fPt = pt;}
@@ -217,7 +225,7 @@ private:
   UInt_t           fN;                      // number of clusters attached/used/shared
   Short_t          fDet;                    // TRD detector
   AliTRDcluster   *fClusters[kNclusters];   // Clusters
-  Float_t          fPad[3];                 // local pad definition : length/width/tilt 
+  Float_t          fPad[4];                 // local pad definition : length/width/tilt/anode wire offset 
   Float_t          fYref[2];                //  Reference y, dydx
   Float_t          fZref[2];                //  Reference z, dz/dx
   Float_t          fYfit[2];                //  Fit y, dy/dx

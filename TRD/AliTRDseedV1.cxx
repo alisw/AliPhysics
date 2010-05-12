@@ -90,7 +90,7 @@ AliTRDseedV1::AliTRDseedV1(Int_t det)
   //
   memset(fIndexes,0xFF,kNclusters*sizeof(fIndexes[0]));
   memset(fClusters, 0, kNclusters*sizeof(AliTRDcluster*));
-  memset(fPad, 0, 3*sizeof(Float_t));
+  memset(fPad, 0, 4*sizeof(Float_t));
   fYref[0] = 0.; fYref[1] = 0.; 
   fZref[0] = 0.; fZref[1] = 0.; 
   fYfit[0] = 0.; fYfit[1] = 0.; 
@@ -212,7 +212,7 @@ void AliTRDseedV1::Copy(TObject &ref) const
   
   memcpy(target.fIndexes, fIndexes, kNclusters*sizeof(Int_t));
   memcpy(target.fClusters, fClusters, kNclusters*sizeof(AliTRDcluster*));
-  memcpy(target.fPad, fPad, 3*sizeof(Float_t));
+  memcpy(target.fPad, fPad, 4*sizeof(Float_t));
   target.fYref[0] = fYref[0]; target.fYref[1] = fYref[1]; 
   target.fZref[0] = fZref[0]; target.fZref[1] = fZref[1]; 
   target.fYfit[0] = fYfit[0]; target.fYfit[1] = fYfit[1]; 
@@ -274,7 +274,7 @@ void AliTRDseedV1::Reset(Option_t *opt)
   fC[0]=0.; fC[1]=0.; 
   fChi2 = 0.;
 
-  memset(fPad, 0, 3*sizeof(Float_t));
+  memset(fPad, 0, 4*sizeof(Float_t));
   fYref[0] = 0.; fYref[1] = 0.; 
   fZref[0] = 0.; fZref[1] = 0.; 
   fYfit[0] = 0.; fYfit[1] = 0.; 
@@ -439,6 +439,19 @@ void AliTRDseedV1::CookLabels()
   fLabels[2] = AliMathBase::Freq(nlab,labels,out,kTRUE);
   fLabels[0] = out[0];
   if ((fLabels[2]  > 1) && (out[3] > 1)) fLabels[1] = out[2];
+}
+
+//____________________________________________________________
+Float_t AliTRDseedV1::GetAnodeWireOffset(Float_t zt)
+{
+  Float_t d = fPad[3] - zt;
+  if(d<0.){
+    AliError(Form("Fail AnodeWireOffset calculation z0[%+7.2f] zt[%+7.2f] d[%+7.2f].", fPad[3], zt, d));
+    return 0.125;
+  } 
+  d -= ((Int_t)(2 * d)) / 2.0;
+  if(d > 0.25) d = 0.5 - d;
+  return d;
 }
 
 
@@ -682,14 +695,19 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
     sy2 += sys[0];
     sz2 += sys[1];
   }
-  // rotate covariance matrix
-  Double_t t2 = GetTilt()*GetTilt();
-  Double_t correction = 1./(1. + t2);
-  cov[0] = (sy2+t2*sz2)*correction;
-  cov[1] = GetTilt()*(sz2 - sy2)*correction;
-  cov[2] = (t2*sy2+sz2)*correction;
 
-  //printf("C(%6.1f %+6.3f %6.1f)  [%s]\n", 1.e4*TMath::Sqrt(cov[0]), cov[1], 1.e4*TMath::Sqrt(cov[2]), IsRowCross()?" RC ":"-");
+  // rotate covariance matrix if no RC
+  if(!IsRowCross()){
+    Double_t t2 = GetTilt()*GetTilt();
+    Double_t correction = 1./(1. + t2);
+    cov[0] = (sy2+t2*sz2)*correction;
+    cov[1] = GetTilt()*(sz2 - sy2)*correction;
+    cov[2] = (t2*sy2+sz2)*correction;
+  } else {
+    cov[0] = sy2; cov[1] = 0.; cov[2] = sy2;
+  }
+
+  AliDebug(4, Form("C(%6.1f %+6.3f %6.1f)  RC[%c]", 1.e4*TMath::Sqrt(cov[0]), cov[1], 1.e4*TMath::Sqrt(cov[2]), IsRowCross()?'y':'n'));
 }
 
 //____________________________________________________________
@@ -853,10 +871,10 @@ void AliTRDseedV1::SetOwner()
 void AliTRDseedV1::SetPadPlane(AliTRDpadPlane *p)
 {
 // Shortcut method to initialize pad geometry.
-  if(!p) return;
-  SetTilt(TMath::Tan(TMath::DegToRad()*p->GetTiltingAngle()));
-  SetPadLength(p->GetLengthIPad());
-  SetPadWidth(p->GetWidthIPad());
+  fPad[0] = p->GetLengthIPad();
+  fPad[1] = p->GetWidthIPad();
+  fPad[2] = TMath::Tan(TMath::DegToRad()*p->GetTiltingAngle());
+  fPad[3] = p->GetRow0() + p->GetAnodeWireOffset();
 }
 
 
@@ -1179,10 +1197,8 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
 //
   fkReconstructor = rec;
   AliTRDgeometry g;
-  AliTRDpadPlane *pp = g.GetPadPlane(fDet);
-  fPad[0] = pp->GetLengthIPad();
-  fPad[1] = pp->GetWidthIPad();
-  fPad[2] = TMath::Tan(TMath::DegToRad()*pp->GetTiltingAngle());
+  SetPadPlane(g.GetPadPlane(fDet));
+
   //fSnp = fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);
   //fTgl = fZref[1];
   Int_t n = 0, nshare = 0, nused = 0;
@@ -1201,16 +1217,17 @@ void AliTRDseedV1::Bootstrap(const AliTRDReconstructor *rec)
 
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
+Bool_t AliTRDseedV1::Fit(UChar_t opt)
 {
 //
 // Linear fit of the clusters attached to the tracklet
 //
 // Parameters :
-//   - tilt : switch for tilt pad correction of cluster y position based on 
-//            the z, dzdx info from outside [default false].
-//   - zcorr : switch for using z information to correct for anisochronity 
-//            and a finner error parameterization estimation [default false]  
+//   - opt : switch for tilt pad correction of cluster y position. Options are
+//           0 no correction [default]
+//           1 full tilt correction [dz/dx and z0]
+//           2 pseudo tilt correction [dz/dx from pad-chamber geometry]
+//
 // Output :
 //  True if successful
 //
@@ -1300,15 +1317,18 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     return kFALSE;
   }
   if(!IsCalibrated()) Calibrate();
+  if(opt>2){
+    AliWarning(Form("Option [%d] outside range [0, 2]. Using default"));
+    opt=0;
+  }
 
   const Int_t kClmin = 8;
-
+  const Float_t kScalePulls = 10.; // factor to scale y pulls - NOT UNDERSTOOD
   // get track direction
   Double_t y0   = fYref[0];
   Double_t dydx = fYref[1]; 
   Double_t z0   = fZref[0];
   Double_t dzdx = fZref[1];
-  Double_t yt, zt;
 
   AliTRDtrackerV1::AliTRDLeastSquare fitterY;
   AliTRDtrackerV1::AliTRDLeastSquare fitterZ;
@@ -1316,16 +1336,39 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   // book cluster information
   Double_t qc[kNclusters], xc[kNclusters], yc[kNclusters], zc[kNclusters], sy[kNclusters];
 
-  Int_t n = 0;
-  AliTRDcluster *c=NULL, **jc = &fClusters[0];
+  Bool_t tilt(opt==1)       // full tilt correction
+        ,pseudo(opt==2)     // pseudo tilt correction
+        ,rc(IsRowCross())   // row cross candidate 
+        ,kDZDX(IsPrimary());// switch dzdx calculation for barrel primary tracks
+  Int_t n(0);   // clusters used in fit 
+  AliTRDcluster *c(NULL), *cc(NULL), **jc = &fClusters[0];
   const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam(); //the dynamic cast in GetRecoParam is slow, so caching the pointer to it
-  for (Int_t ic=0; ic<kNtb; ic++, ++jc) {
-    xc[ic]  = -1.;
-    yc[ic]  = 999.;
-    zc[ic]  = 999.;
-    sy[ic]  = 0.;
+
+  const Char_t *tcName[]={"NONE", "FULL", "HALF"};
+  AliDebug(2, Form("Options : TC[%s] dzdx[%c]", tcName[opt], kDZDX?'Y':'N'));
+
+  for (Int_t ic=0; ic<kNclusters; ic++, ++jc) {
+    xc[ic]  = -1.; yc[ic]  = 999.; zc[ic]  = 999.; sy[ic]  = 0.;
     if(!(c = (*jc))) continue;
     if(!c->IsInChamber()) continue;
+    // compute pseudo tilt correction
+    if(kDZDX){ 
+      fZfit[0] = c->GetZ();
+      if(rc){
+        for(Int_t kc=AliTRDseedV1::kNtb; kc<AliTRDseedV1::kNclusters; kc++){
+          if(!(cc=fClusters[kc])) continue;
+          if(!cc->IsInChamber()) continue;
+          fZfit[0] += cc->GetZ(); fZfit[0] *= 0.5;
+          break;
+        }
+      }
+      fZfit[1] = fZfit[0]/fX0;
+      if(rc){
+        fZfit[0] += fZfit[1]*0.5*AliTRDgeometry::CdrHght();
+        fZfit[1] = fZfit[0]/fX0;
+      }
+      kDZDX=kFALSE;
+    }
 
     Float_t w = 1.;
     if(c->GetNPads()>4) w = .5;
@@ -1335,41 +1378,40 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     qc[n]   = TMath::Abs(c->GetQ());
     // pad row of leading 
 
-    // Radial cluster position
-    //Int_t jc = TMath::Max(fN-3, 0);
-    //xc[fN]   = c->GetXloc(fT0, fVD, &qc[jc], &xc[jc]/*, z0 - c->GetX()*dzdx*/);
     xc[n]   = fX0 - c->GetX();
 
-    // extrapolated track to cluster position
-    yt = y0 - xc[n]*dydx; 
-    zt = z0 - xc[n]*dzdx; 
-
     // Recalculate cluster error based on tracking information
-    c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?zt:-1., dydx);
+    c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], -1./*zcorr?zt:-1.*/, dydx);
     c->SetSigmaZ2(fPad[0]*fPad[0]/12.); // for HLT
     sy[n]  = TMath::Sqrt(c->GetSigmaY2());
 
     yc[n]  = recoParam->UseGAUS() ? 
       c->GetYloc(y0, sy[n], GetPadWidth()): c->GetY();
     zc[n]   = c->GetZ();
-    //optional tilt correction
-    if(tilt) yc[n] -= (GetTilt()*(zc[n] - zt)); 
+
+    //optional r-phi correction
+    //printf("   n[%2d] yc[%7.5f] ", n, yc[n]);
+    Float_t correction(0.);
+    if(tilt) correction = fPad[2]*(xc[n]*dzdx + zc[n] - z0);
+    else if(pseudo) correction = fPad[2]*(xc[n]*fZfit[1] + zc[n]-fZfit[0]);
+    yc[n]-=correction;
+    //printf("corr(%s%s)[%7.5f] yc1[%7.5f]\n", (tilt?"TC":""), (zcorr?"PC":""), correction, yc[n]);
 
     AliDebug(5, Form("  tb[%2d] dx[%6.3f] y[%6.2f+-%6.3f]", c->GetLocalTimeBin(), xc[n], yc[n], sy[n]));
     fitterY.AddPoint(&xc[n], yc[n], sy[n]);
-    if(IsRowCross()) fitterZ.AddPoint(&xc[n], qc[n], 1.);
+    if(rc) fitterZ.AddPoint(&xc[n], qc[n]*(ic<kNtb?1.:-1.), 1.);
     n++;
   }
 
   // to few clusters
   if (n < kClmin){ 
-    SetErrorMsg(kFitFailed);
+    SetErrorMsg(kFitCl);
     return kFALSE; 
   }
 
   // fit XY
   if(!fitterY.Eval()){
-    SetErrorMsg(kFitFailed);
+    SetErrorMsg(kFitFailedY);
     return kFALSE;
   }
   fYfit[0] = fitterY.GetFunctionParameter(0);
@@ -1377,23 +1419,22 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
   // store covariance
   Double_t p[3];
   fitterY.GetCovarianceMatrix(p);
-  fCov[0] = p[1]; // variance of y0
-  fCov[1] = p[2]; // covariance of y0, dydx
-  fCov[2] = p[0]; // variance of dydx
+  fCov[0] = kScalePulls*p[1]; // variance of y0
+  fCov[1] = kScalePulls*p[2]; // covariance of y0, dydx
+  fCov[2] = kScalePulls*p[0]; // variance of dydx
   // the ref radial position is set at the minimum of 
   // the y variance of the tracklet
   fX   = -fCov[1]/fCov[2];
+  fS2Y = fCov[0] +2.*fX*fCov[1] + fX*fX*fCov[2];
+
   Float_t xs=fX+.5*AliTRDgeometry::CamHght();
   if(xs < 0. || xs > AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()){
     AliDebug(1, Form("Ref radial position ouside chamber x[%5.2f].", fX));
-    SetErrorMsg(kFitOutside);
+    SetErrorMsg(kFitFailedY);
     return kFALSE;
   }
 
-  // collect second row clusters
-  Int_t m(0);
-  if(IsRowCross()){
-/*    // THE LEADING CLUSTER METHOD
+/*    // THE LEADING CLUSTER METHOD for z fit
     Float_t xMin = fX0;
     Int_t ic=n=kNclusters-1; jc = &fClusters[ic];
     AliTRDcluster *c0 =0x0, **kc = &fClusters[kNtb-1];
@@ -1409,45 +1450,26 @@ Bool_t AliTRDseedV1::Fit(Bool_t tilt, Bool_t zcorr)
     fS2Z     = fdX*fZref[1];
     fS2Z    *= fS2Z; fS2Z    *= 0.2887; //  1/sqrt(12)*/
 
-    // THE FIT X-Q PLANE METHOD 
-    Int_t ic=n=kNclusters-1; jc = &fClusters[ic];
-    for(; ic>kNtb; ic--, --jc){
-      if(!(c = (*jc))) continue;
-      if(!c->IsInChamber()) continue;
-      qc[n]   = TMath::Abs(c->GetQ());
-      xc[n]   = fX0 - c->GetX();
-      zc[n]   = c->GetZ();
-      // Recalculate cluster error based on tracking information
-      c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], zcorr?(z0 - xc[n]*dzdx):-1., dydx);
-      c->SetSigmaZ2(fPad[0]*fPad[0]/12.); // for HLT
-      fitterZ.AddPoint(&xc[n], -qc[n], 1.);
-      n--;m++;
+  // fit QZ
+  if(opt!=1 && IsRowCross()){
+    if(!fitterZ.Eval()) SetErrorMsg(kFitFailedZ);
+    if(!HasError(kFitFailedZ) && fitterZ.GetFunctionParameter(1)!=0.){ 
+      // TODO - one has to recalculate xy fit based on
+      // better knowledge of z position
+//       Double_t x = -fitterZ.GetFunctionParameter(0)/fitterZ.GetFunctionParameter(1);
+//       Double_t z0 = .5*(zc[0]+zc[n-1]);
+//       fZfit[0] = z0 + fZfit[1]*x; 
+//       fZfit[1] = fZfit[0]/fX0; 
+//       redo fit on xy plane
     }
-  }
-  // fit XZ
-  if(m && IsRowCross()){
-    fitterZ.Eval();
-    if(fitterZ.GetFunctionParameter(1)!=0.){ 
-      fX = -fitterZ.GetFunctionParameter(0)/fitterZ.GetFunctionParameter(1);
-      fX=(fX<0.)?0.:fX;
-      Float_t dl = .5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght();
-      fX=(fX> dl)?dl:fX;
-      fX-=.055; // TODO to be understood
-    }
-
-    fZfit[0] = .5*(zc[0]+zc[kNclusters-1]); fZfit[1] = 0.;
     // temporary external error parameterization
     fS2Z     = 0.05+0.4*TMath::Abs(fZref[1]); fS2Z *= fS2Z;
     // TODO correct formula
     //fS2Z     = sigma_x*TMath::Abs(fZref[1]);
   } else {
-    if(IsRowCross() && !m){
-      AliDebug(1, "Tracklet crossed row but no clusters found in neighbor row.");
-    }
-    fZfit[0] = zc[0]; fZfit[1] = 0.;
+    //fZfit[0] = zc[0] + dzdx*0.5*AliTRDgeometry::CdrHght();
     fS2Z     = GetPadLength()*GetPadLength()/12.;
   }
-  fS2Y = fCov[0] +2.*fX*fCov[1] + fX*fX*fCov[2];
   return kTRUE;
 }
 

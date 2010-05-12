@@ -340,6 +340,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     // prepare track and do propagation in the TRD
     track.SetReconstructor(fkReconstructor);
     track.SetKink(Bool_t(seed->GetKinkIndex(0)));
+    track.SetPrimary(status & AliESDtrack::kTPCin);
     expectedClr = FollowBackProlongation(track);
     // check if track entered the TRD fiducial volume
     if(track.GetTrackIn()){ 
@@ -866,6 +867,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       ptrTracklet = new(&tracklet) AliTRDseedV1(det);
       ptrTracklet->SetReconstructor(fkReconstructor);
       ptrTracklet->SetKink(t.IsKink());
+      ptrTracklet->SetPrimary(t.IsPrimary());
       ptrTracklet->SetPadPlane(fGeom->GetPadPlane(ily, stk));
       ptrTracklet->SetX0(glb[0]+driftLength);
       if(!tracklet.Init(&t)){
@@ -905,8 +907,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     } else AliDebug(2, Form("Use external tracklet ly[%d]", ily));
     // propagate track to the radial position of the tracklet
 
-    // fit tracklet no tilt correction
-    if(!ptrTracklet->Fit(kFALSE)){
+    // fit tracklet 
+    // tilt correction options
+    // 0 : no correction
+    // 2 : pseudo tilt correction
+    if(!ptrTracklet->Fit(2)){
       t.SetStatus(AliTRDtrackV1::kNoFit, ily);
       AliDebug(4, "Failed Tracklet Fit");
       continue;
@@ -2802,7 +2807,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
         chi2Vals[0] = FitTiltedRieman(&cseed[0], kTRUE);
         for(int iLayer=0; iLayer<kNSeedPlanes; iLayer++){
           Int_t jLayer = planes[iLayer];
-          cseed[jLayer].Fit(kTRUE);
+          cseed[jLayer].Fit(1);
         }
         Double_t like = CookLikelihood(&cseed[0], planes); // to be checked
       
@@ -2828,10 +2833,10 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
           if ((jLayer == 5) && !(cseed[4].IsOK())) continue;
           AliTRDseedV1 pseed = cseed[jLayer];
           if(!pseed.AttachClusters(chamber, kTRUE)) continue;
-          pseed.Fit(kTRUE);
+          pseed.Fit(1);
           cseed[jLayer] = pseed;
           chi2Vals[0] = FitTiltedRieman(cseed,  kTRUE);
-          cseed[jLayer].Fit(kTRUE);
+          cseed[jLayer].Fit(1);
           elayers++;
         }
       
@@ -3129,7 +3134,7 @@ Bool_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRD
       bseed[bLayer].Reset("c");
       if(!(chamber = stack[bLayer])) continue;
       if(!bseed[bLayer].AttachClusters(chamber, kTRUE)) continue;
-      bseed[bLayer].Fit(kTRUE);
+      bseed[bLayer].Fit(1);
       if(!bseed[bLayer].IsOK()) continue;
       nLayers++;
       lQuality[jLayer] = bseed[jLayer].GetQuality(kTRUE);

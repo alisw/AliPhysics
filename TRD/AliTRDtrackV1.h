@@ -42,6 +42,7 @@ public:
     kOwner     = BIT(14)
    ,kStopped   = BIT(15) 
    ,kKink      = BIT(16) 
+   ,kPrimary   = BIT(17) 
   };
 
   // propagation/update error codes (up to 4 bits)
@@ -103,6 +104,7 @@ public:
   Bool_t         IsEqual(const TObject *inTrack) const;
   Bool_t         IsKink() const    { return TestBit(kKink);}
   Bool_t         IsOwner() const   { return TestBit(kOwner);};
+  Bool_t         IsPrimary() const   { return TestBit(kPrimary);};
   Bool_t         IsStopped() const { return TestBit(kStopped);};
   Bool_t         IsElectron() const;
   inline static Bool_t IsTrackError(ETRDtrackError error, UInt_t status);
@@ -118,6 +120,7 @@ public:
   void           SetEdep(Double32_t inDE){fDE = inDE;};
   void           SetESDid(Int_t id) {fESDid = id;}
   void           SetKink(Bool_t k)        { SetBit(kKink, k);}
+  void           SetPrimary(Bool_t k)     { SetBit(kPrimary, k);}
   void           SetNumberOfClusters();
   UChar_t        SetNumberOfTrackletsPID(Bool_t recalc);
   void           SetOwner();
