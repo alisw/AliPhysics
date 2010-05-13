@@ -44,4 +44,8 @@
 #pragma link C++ class  TTreeStream+;
 #pragma link C++ class  TTreeSRedirector+;
 
+#pragma link C++ class  AliBaseCalibViewer+;
+#pragma link C++ class  AliBaseCalibViewerGUI+;
+#pragma link C++ class  AliCalibViewerGUItime+;
+
 #endif
