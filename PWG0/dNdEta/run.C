@@ -19,7 +19,7 @@ void Load(const char* taskName, Bool_t debug)
     AliLog::SetClassDebugLevel(taskName, AliLog::kWarning);
 }
 
-void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Int_t requiredData = 1, const char* option = "", const char* requireClass = "", const char* rejectClass = "")
+void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Int_t aProof = kFALSE, Int_t requiredData = 1, const char* option = "")
 {
   // runWhat options: 0 = AlidNdEtaTask
   //                  1 = AlidNdEtaCorrectionTask
@@ -260,10 +260,6 @@ void run(Int_t runWhat, const Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
     task->SetTrackCuts(esdTrackCuts);
     //task->SetDeltaPhiCut(0.064);
     task->SetDiffTreatment(diffTreatment);
-
-    //if (requiredData == 2)
-    //  task->SetCheckEventType();
-    //task->SetTriggerClasses(requireClass, rejectClass);
 
     mgr->AddTask(task);
 
