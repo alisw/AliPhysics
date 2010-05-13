@@ -32,10 +32,12 @@ class AliEMCALTriggerSTURawStream: public TObject
 	virtual Int_t     GetNL0GammaPatch() const {return fNL0GammaPatch;}
 	virtual Int_t     GetNL1GammaPatch() const {return fNL1GammaPatch;}
 	virtual Int_t       GetNL1JetPatch() const {return fNL1JetPatch;}
+	virtual Int_t          GetRawData() const {return fGetRawData;}
 	
 	virtual Bool_t     GetL0GammaPatch(const Int_t i, Int_t& x, Int_t& y, Int_t& z) const;
 	virtual Bool_t     GetL1GammaPatch(const Int_t i, Int_t& x, Int_t& y, Int_t& z) const;
 	virtual Bool_t       GetL1JetPatch(const Int_t i, Int_t& x, Int_t& y) const;
+	
 	
 	virtual UInt_t L0() {return fL0;}
 	
@@ -56,8 +58,10 @@ private:
 	Int_t                                    fNL1JetPatch;
 	Int_t                                  fNL1GammaPatch;
 	
+	Int_t                                     fGetRawData;
+	
 	UInt_t                                           fADC[32][96];
-	UInt_t											  fL0;
+	UInt_t				                 fL0;
 	
     ClassDef(AliEMCALTriggerSTURawStream,1)   // class for reading EMCAL STU DDL raw data
 };

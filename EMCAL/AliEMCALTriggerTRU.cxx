@@ -246,8 +246,6 @@ Int_t AliEMCALTriggerTRU::L0()
 //		for(Int_t j=0; j<fRegionSize->X(); j++)
 //			for (Int_t k=0; k<fRegionSize->Y(); k++) fRegion[j][k] = fRegion[j][k]>>2; // go to 12b before shipping to STU
 		
-		Int_t nP = 0;
-		
 		for (Int_t j=0; j<fPatches->GetEntriesFast(); j++)
 		{
 			AliEMCALTriggerPatch* p = (AliEMCALTriggerPatch*)fPatches->At( j );
@@ -262,6 +260,8 @@ Int_t AliEMCALTriggerTRU::L0()
 			
 			const Int_t psize =  sizeX * sizeY; // Number of FastOR in the patch
 			
+			Int_t foundPeak = 0;
+			
 			Int_t* idx = new Int_t[psize];
 			
 			for (Int_t xx=0;xx<sizeX;xx++) 
@@ -272,28 +272,18 @@ Int_t AliEMCALTriggerTRU::L0()
 					
 					idx[index] = fMap[int(v.X()*fSubRegionSize->X())+xx][int(v.Y()*fSubRegionSize->Y())+yy]; // Get current patch FastOR ADC channels 
 					
-					if (peaks[int(v.X()*fSubRegionSize->X())+xx][int(v.Y()*fSubRegionSize->Y())+yy]) nP++;
+					if (peaks[int(v.X()*fSubRegionSize->X())+xx][int(v.Y()*fSubRegionSize->Y())+yy]) foundPeak++;
 					
 					if ( AliDebugLevel() ) ShowFastOR(i,idx[index]);
 				}
 			}
 			
-			if ( nP ) 
+			if ( !foundPeak ) 
 			{
-//				cout << "break patch loop" << endl;
-				break;
-			}
+				fPatches->RemoveAt( j );
+				fPatches->Compress();
+			}				
 		}
-		
-		if ( !nP ) 
-			fPatches->Delete();
-		else
-		{
-//			cout << "break time loop" << endl;
-			break;     // Stop the algo when at least one patch is found ( thres & max )
-		}
-		
-		ZeroRegion();  // Clear fRegion for this time window before computing the next one	
 		
 		//Delete, avoid leak
 		for (Int_t x = 0; x < xsize; x++)
@@ -301,10 +291,15 @@ Int_t AliEMCALTriggerTRU::L0()
 			delete [] peaks[x];
 		}
 		delete [] peaks;
-		
+
+		if ( !fPatches->GetEntriesFast() ) // No patch left
+			ZeroRegion();
+		else
+		{
+			break;     // Stop the algo when at least one patch is found ( thres & max )
+		}
 	}
 	
-//	cout << "Nof patches: " << fPatches->GetEntriesFast() << endl;
 	//Delete, avoid leak
 	for (Int_t x = 0; x < xsize; x++)
 	{

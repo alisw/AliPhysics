@@ -48,6 +48,7 @@ fL1JetPatchIndex(0x0),
 fNL0GammaPatch(0),
 fNL1JetPatch(0),
 fNL1GammaPatch(0),
+fGetRawData(0),
 fL0(0)
 {
 	//
@@ -63,7 +64,8 @@ fL1GammaPatchIndex(0x0),
 fL1JetPatchIndex(0x0),
 fNL0GammaPatch(0),
 fNL1JetPatch(0),
-fNL1GammaPatch(0),
+fNL1GammaPatch(0),  
+fGetRawData(0),								       
 fL0(0)
 {
 	//
@@ -242,7 +244,13 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	// raw output                                           //
 	//////////////////////////////////////////////////////////
 	
-	if ( iword <= kPayLoadSize ) return kFALSE;
+	if ( iword <= kPayLoadSize ) 
+	{
+		fGetRawData = 0;
+		return kFALSE;
+	}
+	
+	fGetRawData = 1;
 	
 	// extraction from stream
 	for (Int_t index=0;index<96;index++)
@@ -348,7 +356,9 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 		}
 	}
 	
-	if (op.Contains("ADC") || op.Contains("ALL"))
+	cout << "> RawData: " << fGetRawData << endl;
+	
+	if ( (op.Contains("ADC") || op.Contains("ALL")) && fGetRawData )
 	{
 		for (Int_t i=0;i<32;i++)
 		{

@@ -204,6 +204,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(const TClonesArray* digits, cons
 		data->SetL1V0(          mv0         );
 	}
 
+	if ( AliDebugLevel() ) data->Scan();
+	
 	// Now reset the electronics for a fresh start with next event
 	Reset();
 }
