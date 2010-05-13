@@ -306,7 +306,7 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	// Mark the DARC header, but check that we do not overrun the buffer.
 	const UInt_t* darcHeader = reinterpret_cast<const UInt_t*>(current);
 	current += sizeof(UInt_t);
-	if (current > end)
+	if (current > end or current < start)
 	{
 		// Indicate we had an error and stop the decoding because we
 		// hit the end of the buffer already.
@@ -331,6 +331,7 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 		// DARC header set to 01b. Everything else is a software trigger
 		// of some sort.
 		if (reinterpret_cast<const UChar_t*>(expectedEndOfDarc+1) <= end and
+		    reinterpret_cast<const UChar_t*>(expectedEndOfDarc+1) > start and
 		    EventHandler::GetDarcEventType(*darcHeader) != 0x1
 		    and *expectedEndOfDarc == fgkEndOfDarc
 		   )
@@ -392,8 +393,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	{
 		darcScalars = reinterpret_cast<const AliMUONDarcScalarsStruct*>(current);
 		current += sizeof(AliMUONDarcScalarsStruct);
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return;
+			
 			// Indicate we had an error and stop the decoding because we
 			// hit the end of the buffer already.
 			fHandler.OnError(EventHandler::kNoDarcScalars, darcScalars);
@@ -405,8 +410,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	// Now check that the end of DARC header marker is OK.
 	const UInt_t* endOfDarc = reinterpret_cast<const UInt_t*>(current);
 	current += sizeof(UInt_t);
-	if (current > end)
+	if (current > end or current < start)
 	{
+		// If we overflowed the pointer and already had an error then
+		// we are clearly lost so just stop decoding before we segfault.
+		if (current < start and fHadError) return;
+		
 		// Indicate we had an error and stop the decoding because we
 		// hit the end of the buffer already.
 		fHandler.OnError(EventHandler::kNoEndOfDarc, endOfDarc);
@@ -444,8 +453,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	const AliMUONGlobalHeaderStruct* globalHeader =
 		reinterpret_cast<const AliMUONGlobalHeaderStruct*>(current);
 	current += sizeof(AliMUONGlobalHeaderStruct);
-	if (current > end)
+	if (current > end or current < start)
 	{
+		// If we overflowed the pointer and already had an error then
+		// we are clearly lost so just stop decoding before we segfault.
+		if (current < start and fHadError) return;
+		
 		// Indicate we had an error and stop the decoding because we
 		// hit the end of the buffer already.
 		fHandler.OnError(EventHandler::kNoGlobalHeader, globalHeader);
@@ -459,8 +472,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	{
 		globalScalars = reinterpret_cast<const AliMUONGlobalScalarsStruct*>(current);
 		current += sizeof(AliMUONGlobalScalarsStruct);
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return;
+			
 			// Indicate we had an error and stop the decoding because we
 			// hit the end of the buffer already.
 			fHandler.OnError(EventHandler::kNoGlobalScalars, globalScalars);
@@ -472,8 +489,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeBuffer(
 	// Now check that the end of global header marker is OK.
 	const UInt_t* endOfGlobal = reinterpret_cast<const UInt_t*>(current);
 	current += sizeof(UInt_t);
-	if (current > end)
+	if (current > end or current < start)
 	{
+		// If we overflowed the pointer and already had an error then
+		// we are clearly lost so just stop decoding before we segfault.
+		if (current < start and fHadError) return;
+		
 		// Indicate we had an error and stop the decoding because we
 		// hit the end of the buffer already.
 		fHandler.OnError(EventHandler::kNoEndOfGlobal, endOfGlobal);
@@ -541,8 +562,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeRegionalStructs(
 			reinterpret_cast<const AliMUONRegionalHeaderStruct*>(current);
 		current += sizeof(AliMUONRegionalHeaderStruct);
 		
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return;
+			
 			// So we only got part of a regional header, nothing to do but
 			// report the error and exit.
 			fHandler.OnError(EventHandler::kNoRegionalHeader, regionalHeader);
@@ -573,8 +598,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeRegionalStructs(
 		{
 			regionalScalars = reinterpret_cast<const AliMUONRegionalScalarsStruct*>(current);
 			current += sizeof(AliMUONRegionalScalarsStruct);
-			if (current > end)
+			if (current > end or current < start)
 			{
+				// If we overflowed the pointer and already had an error then
+				// we are clearly lost so just stop decoding before we segfault.
+				if (current < start and fHadError) return;
+				
 				// Indicate we had an error and stop the decoding because we
 				// hit the end of the buffer already.
 				fHandler.OnError(EventHandler::kNoRegionalScalars, regionalScalars);
@@ -586,8 +615,12 @@ void AliMUONTriggerDDLDecoder<EventHandler>::DecodeRegionalStructs(
 		// Now check that the end of regional header marker is OK.
 		const UInt_t* endOfRegional = reinterpret_cast<const UInt_t*>(current);
 		current += sizeof(UInt_t);
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return;
+			
 			// Indicate we had an error and stop the decoding because we
 			// hit the end of the buffer already.
 			fHandler.OnError(EventHandler::kNoEndOfRegional, endOfRegional);
@@ -682,8 +715,12 @@ const UChar_t* AliMUONTriggerDDLDecoder<EventHandler>::DecodeLocalStructs(
 			reinterpret_cast<const AliMUONLocalInfoStruct*>(current);
 		current += sizeof(AliMUONLocalInfoStruct);
 		
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return end;
+			
 			// So we only got part of a local structure, nothing to do but
 			// report the error and exit.
 			fHandler.OnError(EventHandler::kNoLocalStruct, localStruct);
@@ -712,8 +749,12 @@ const UChar_t* AliMUONTriggerDDLDecoder<EventHandler>::DecodeLocalStructs(
 		{
 			localScalars = reinterpret_cast<const AliMUONLocalScalarsStruct*>(current);
 			current += sizeof(AliMUONLocalScalarsStruct);
-			if (current > end)
+			if (current > end or current < start)
 			{
+				// If we overflowed the pointer and already had an error then
+				// we are clearly lost so just stop decoding before we segfault.
+				if (current < start and fHadError) return end;
+				
 				// Indicate we had an error and stop the decoding because we
 				// hit the end of the buffer already.
 				fHandler.OnError(EventHandler::kNoLocalScalars, localScalars);
@@ -725,8 +766,12 @@ const UChar_t* AliMUONTriggerDDLDecoder<EventHandler>::DecodeLocalStructs(
 		// Now check that the end of regional header marker is OK.
 		const UInt_t* endOfLocal = reinterpret_cast<const UInt_t*>(current);
 		current += sizeof(UInt_t);
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return end;
+			
 			// Indicate we had an error and stop the decoding because we
 			// hit the end of the buffer already. We can however signal that
 			// we got a local structure, because the buffer contains enough
@@ -814,6 +859,7 @@ const UChar_t* AliMUONTriggerDDLDecoder<EventHandler>::FindKey(
 	/// \returns  The location of the first occurance of key in the buffer,
 	///           otherwise NULL is returned if nothing was found.
  
+	if (end + sizeof(UInt_t) < start) return NULL;  // check for pointer overflow.
 	const UChar_t* current = start;
 	while (current + sizeof(UInt_t) <= end)
 	{

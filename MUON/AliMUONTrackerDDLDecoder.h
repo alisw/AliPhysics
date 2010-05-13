@@ -347,8 +347,8 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 	const UInt_t* trailerWords = reinterpret_cast<const UInt_t*>(end) - 2;
 	if (fAutoDetectTrailer)
 	{
-		if (trailerWords >= bufferStart and *trailerWords == fgkEndOfDDL
-		    and *(trailerWords+1) == fgkEndOfDDL
+		if (trailerWords >= bufferStart and trailerWords < bufferEnd
+		    and *trailerWords == fgkEndOfDDL and *(trailerWords+1) == fgkEndOfDDL
 		   )
 		{
 			// Found the trailer so reposition the end of blocks marker.
@@ -358,8 +358,8 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 	}
 	else if (fCheckForTrailer)
 	{
-		if (trailerWords >= bufferStart and *trailerWords == fgkEndOfDDL
-		    and *(trailerWords+1) == fgkEndOfDDL
+		if (trailerWords >= bufferStart and trailerWords < bufferEnd
+		    and *trailerWords == fgkEndOfDDL and *(trailerWords+1) == fgkEndOfDDL
 		   )
 		{
 			// Found the trailer so reposition the end of blocks marker.
@@ -367,9 +367,9 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 		}
 		else
 		{
-			if (trailerWords+1 >= bufferStart and *(trailerWords+1) == fgkEndOfDDL)
+			if (trailerWords+1 >= bufferStart and trailerWords+1 < bufferEnd and *(trailerWords+1) == fgkEndOfDDL)
 				fHandler.OnError(EventHandler::kTooFewDDLTrailerWords, trailerWords+1);
-			else if (trailerWords >= bufferStart and *(trailerWords) == fgkEndOfDDL)
+			else if (trailerWords >= bufferStart and trailerWords < bufferEnd and *(trailerWords) == fgkEndOfDDL)
 				fHandler.OnError(EventHandler::kTooFewDDLTrailerWords, trailerWords);
 			else
 				fHandler.OnError(EventHandler::kNoDDLTrailerWords, end);
@@ -391,10 +391,10 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 			{
 				trailerWords = bufferEnd;
 				// There should only be a max of 2 trailer words.
-				if (*(trailerWords-1) == fgkEndOfDDL)
-					trailerWords--;
-				else if (*(trailerWords-1) == fgkEndOfDDL)
-					trailerWords--;
+				if (trailerWords-2 >= bufferStart and trailerWords-2 < bufferEnd and *(trailerWords-2) == fgkEndOfDDL)
+					trailerWords -= 2;
+				else if (trailerWords-1 >= bufferStart and trailerWords-1 < bufferEnd and *(trailerWords-1) == fgkEndOfDDL)
+					trailerWords -= 1;
 				endOfBlocks = reinterpret_cast<const UChar_t*>(trailerWords);
 			}
 		}
@@ -411,8 +411,12 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 		const AliMUONBlockHeaderStruct* blockHeader
 			= reinterpret_cast<const AliMUONBlockHeaderStruct*>(blockStart);
 		current += sizeof(AliMUONBlockHeaderStruct);
-		if (current > endOfBlocks)
+		if (current > endOfBlocks or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return;
+			
 			// We first check if we actually hit the end of DDL markers
 			// If we did then either we did not/could not recover from
 			// a corrupt trailer or we did not detect a correct trailer
@@ -465,7 +469,9 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 		// If any of the above fail then we know there is a problem with
 		// the block header. It must be corrupted somehow.
 		if (blockHeader->fDataKey != fgkBlockDataKey
-		    or dataEnd > endOfBlocks or blockEnd > endOfBlocks or dataEnd != blockEnd)
+		    or dataEnd > endOfBlocks or dataEnd < start
+		    or blockEnd > endOfBlocks or blockEnd < start
+		    or dataEnd != blockEnd)
 		{
 			// So let us see what exactly is wrong and report this.
 			if (blockCount == fMaxBlocks)
@@ -479,9 +485,9 @@ void AliMUONTrackerDDLDecoder<EventHandler>::DecodeBuffer(
 			}
 			if (blockHeader->fDataKey != fgkBlockDataKey)
 				fHandler.OnError(EventHandler::kBadBlockKey, &blockHeader->fDataKey);
-			if (blockEnd > endOfBlocks)
+			if (blockEnd > endOfBlocks or blockEnd < start)
 				fHandler.OnError(EventHandler::kBadBlockLength, &blockHeader->fLength);
-			if (dataEnd > endOfBlocks)
+			if (dataEnd > endOfBlocks or dataEnd < start)
 				fHandler.OnError(EventHandler::kBadBlockTotalLength, &blockHeader->fTotalLength);
 			if (dataEnd != blockEnd)
 				fHandler.OnError(EventHandler::kBlockLengthMismatch, blockHeader);
@@ -567,8 +573,12 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBlockData(
 		const AliMUONDSPHeaderStruct* dspHeader
 			= reinterpret_cast<const AliMUONDSPHeaderStruct*>(dspStart);
 		current += sizeof(AliMUONDSPHeaderStruct);
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return false;
+			
 			// So we only got part of a DSP header at the very end of
 			// the block structure buffer. Nothing to do but report the
 			// error and exit. Set fHadError in case of further decoding.
@@ -592,14 +602,16 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeBlockData(
 		// If any of the above fail then we know there is a problem with
 		// the DSP header. It must be corrupted somehow.
 		if (dspHeader->fDataKey != fgkDSPDataKey
-		    or dataEnd > end or dspEnd > end or dataEnd != dspEnd)
+		    or dataEnd > end or dataEnd < start
+		    or dspEnd > end or dspEnd < start
+		    or dataEnd != dspEnd)
 		{
 			// So let us see what exactly is wrong and report this.
 			if (dspHeader->fDataKey != fgkDSPDataKey)
 				fHandler.OnError(EventHandler::kBadDSPKey, &dspHeader->fDataKey);
-			if (dspEnd > end)
+			if (dspEnd > end or dspEnd < start)
 				fHandler.OnError(EventHandler::kBadDSPLength, &dspHeader->fLength);
-			if (dataEnd > end)
+			if (dataEnd > end or dataEnd < start)
 				fHandler.OnError(EventHandler::kBadDSPTotalLength, &dspHeader->fTotalLength);
 			if (dataEnd != dspEnd)
 				fHandler.OnError(EventHandler::kDSPLengthMismatch, dspHeader);
@@ -745,8 +757,12 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeDSPData(
 		const AliMUONBusPatchHeaderStruct* busPatchHeader
 			= reinterpret_cast<const AliMUONBusPatchHeaderStruct*>(busPatchStart);
 		current += sizeof(AliMUONBusPatchHeaderStruct);
-		if (current > end)
+		if (current > end or current < start)
 		{
+			// If we overflowed the pointer and already had an error then
+			// we are clearly lost so just stop decoding before we segfault.
+			if (current < start and fHadError) return false;
+			
 			// So we only got part of a bus patch header at the very
 			// end of the DSP structure buffer. Nothing to do but
 			// report the error and exit. Set fHadError in case of
@@ -773,14 +789,16 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::DecodeDSPData(
 		// If any of the above fail then we know there is a problem with
 		// the bus patch header. It must be corrupted somehow.
 		if (busPatchHeader->fDataKey != fgkBusPatchDataKey
-		    or dataEnd > end or busPatchEnd > end or dataEnd != busPatchEnd)
+		    or dataEnd > end or dataEnd < start
+		    or busPatchEnd > end or busPatchEnd < start
+		    or dataEnd != busPatchEnd)
 		{
 			// So let us see what exactly is wrong and report this.
 			if (busPatchHeader->fDataKey != fgkBusPatchDataKey)
 				fHandler.OnError(EventHandler::kBadBusPatchKey, &busPatchHeader->fDataKey);
-			if (busPatchEnd > end)
+			if (busPatchEnd > end or busPatchEnd < start)
 				fHandler.OnError(EventHandler::kBadBusPatchLength, &busPatchHeader->fLength);
-			if (dataEnd > end)
+			if (dataEnd > end or dataEnd < start)
 				fHandler.OnError(EventHandler::kBadBusPatchTotalLength, &busPatchHeader->fTotalLength);
 			if (dataEnd != busPatchEnd)
 				fHandler.OnError(EventHandler::kBusPatchLengthMismatch, busPatchHeader);
@@ -1003,7 +1021,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 		{
 			// Must check that we can read another 4 bytes before
 			// checking the key at dataEnd.
-			if (dataEnd + sizeof(UInt_t) <= bufferEnd)
+			if (dataEnd + sizeof(UInt_t) <= bufferEnd and dataEnd + sizeof(UInt_t) > structStart)
 			{
 				if (*keyAtDataEnd == fgkBlockDataKey)
 					lengthIsCorrect = true;
@@ -1019,7 +1037,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 		{
 			// Must check that we can read another 4 bytes before
 			// checking the key at structEnd.
-			if (structEnd + sizeof(UInt_t) <= bufferEnd)
+			if (structEnd + sizeof(UInt_t) <= bufferEnd and structEnd + sizeof(UInt_t) > structStart)
 			{
 				if (*keyAtStructEnd == fgkBlockDataKey)
 					totalLengthIsCorrect = true;
@@ -1038,7 +1056,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 		{
 			// Must check that we can read another 4 bytes before
 			// checking the key at dataEnd.
-			if (dataEnd + sizeof(UInt_t) <= bufferEnd)
+			if (dataEnd + sizeof(UInt_t) <= bufferEnd and dataEnd + sizeof(UInt_t) > structStart)
 			{
 				if (*keyAtDataEnd == fgkBlockDataKey
 				    or *keyAtDataEnd == fgkDSPDataKey)
@@ -1055,7 +1073,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 		{
 			// Must check that we can read another 4 bytes before
 			// checking the key at structEnd.
-			if (structEnd + sizeof(UInt_t) <= bufferEnd)
+			if (structEnd + sizeof(UInt_t) <= bufferEnd and structEnd + sizeof(UInt_t) > structStart)
 			{
 				if (*keyAtStructEnd == fgkBlockDataKey
 				    or *keyAtStructEnd == fgkDSPDataKey)
@@ -1074,7 +1092,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 		{
 			// Must check that we can read another 4 bytes before
 			// checking the key at dataEnd.
-			if (dataEnd + sizeof(UInt_t) <= bufferEnd)
+			if (dataEnd + sizeof(UInt_t) <= bufferEnd and dataEnd + sizeof(UInt_t) > structStart)
 			{
 				if (*keyAtDataEnd == fgkDSPDataKey
 				    or *keyAtDataEnd == fgkBusPatchDataKey)
@@ -1091,7 +1109,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 		{
 			// Must check that we can read another 4 bytes before
 			// checking the key at structEnd.
-			if (structEnd + sizeof(UInt_t) <= bufferEnd)
+			if (structEnd + sizeof(UInt_t) <= bufferEnd and structEnd + sizeof(UInt_t) > structStart)
 			{
 				if (*keyAtStructEnd == fgkDSPDataKey
 				    or *keyAtStructEnd == fgkBusPatchDataKey)
@@ -1146,7 +1164,8 @@ const UChar_t* AliMUONTrackerDDLDecoder<EventHandler>::FindKey(
 	/// should point to 'start + bufferSize', i.e. just past the last byte of the
 	/// buffer. If the key was found then the pointer to that location is returned
 	/// otherwise NULL is returned.
- 
+	
+	if (end + sizeof(UInt_t) < start) return NULL;  // check for pointer overflow.
 	const UChar_t* current = start;
 	while (current + sizeof(UInt_t) <= end)
 	{
