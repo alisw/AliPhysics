@@ -33,7 +33,8 @@
 
 AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
 {
-  fDebug = true;
+  //fDebug = true;
+  fDebug = false;
 }
 
 
