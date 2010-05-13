@@ -59,15 +59,12 @@ AlidNdEtaTask::AlidNdEtaTask(const char* opt) :
   fOption(opt),
   fAnalysisMode((AliPWG0Helper::AnalysisMode) (AliPWG0Helper::kTPC | AliPWG0Helper::kFieldOn)),
   fTrigger(AliTriggerAnalysis::kMB1),
-  fRequireTriggerClass(),
-  fRejectTriggerClass(),
   fFillPhi(kFALSE),
   fDeltaPhiCut(-1),
   fReadMC(kFALSE),
   fUseMCVertex(kFALSE),
   fOnlyPrimaries(kFALSE),
   fUseMCKine(kFALSE),
-  fCheckEventType(kFALSE),
   fSymmetrize(kFALSE),
   fMultAxisEta1(kFALSE),
   fDiffTreatment(AliPWG0Helper::kMCFlags),
@@ -171,10 +168,8 @@ void AlidNdEtaTask::ConnectInputData(Option_t *opt)
   AliLog::SetClassDebugLevel("AliMCEvent", AliLog::kWarning - AliLog::kDebug + 1);
   
   #ifdef FULLALIROOT
-    if (fCheckEventType)
-      AliCDBManager::Instance()->SetDefaultStorage("raw://");
-    else
-      AliCDBManager::Instance()->SetDefaultStorage("MC", "Residual");
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+    //AliCDBManager::Instance()->SetDefaultStorage("MC", "Residual");
     AliCDBManager::Instance()->SetRun(0);
     
     AliCDBManager* mgr = AliCDBManager::Instance();
@@ -600,17 +595,7 @@ isManager()->GetInputEventHandler());
 
           // vertex stats
           if (strcmp(vtxESD->GetTitle(), "vertexer: 3D") == 0)
-          {
             fStats->Fill(1);
-            if (fCheckEventType && TMath::Abs(vtx[0]) > 0.3)
-            {
-              Printf("Suspicious x-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
-            }
-            if (fCheckEventType && (vtx[1] < 0.05 || vtx[1] > 0.5))
-            {
-              Printf("Suspicious y-vertex x=%f y=%f z=%f (period: %d orbit %x)", vtx[0], vtx[1], vtx[2], fESD->GetPeriodNumber(), fESD->GetOrbitNumber());
-            }
-          }
           
           if (strcmp(vtxESD->GetTitle(), "vertexer: Z") == 0)
             fStats->Fill(2);

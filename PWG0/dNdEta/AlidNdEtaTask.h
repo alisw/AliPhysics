@@ -36,10 +36,8 @@ class AlidNdEtaTask : public AliAnalysisTaskSE {
     void SetOnlyPrimaries(Bool_t flag = kTRUE) { fOnlyPrimaries = flag; }
     void SetUseMCKine(Bool_t flag = kTRUE) { fUseMCKine = flag; }
     void SetTrigger(AliTriggerAnalysis::Trigger trigger) { fTrigger = trigger; }
-    void SetTriggerClasses(const char* require, const char* reject) { fRequireTriggerClass = require; fRejectTriggerClass = reject; }
     void SetFillPhi(Bool_t flag = kTRUE) { fFillPhi = flag; }
     void SetDeltaPhiCut(Float_t cut) { fDeltaPhiCut = cut; }
-    void SetCheckEventType(Bool_t flag = kTRUE) { fCheckEventType = flag; }
     void SetSymmetrize(Bool_t flag = kTRUE) { fSymmetrize = flag; }
     void SetMultAxisEta1(Bool_t flag = kTRUE) { fMultAxisEta1 = flag; }
     void SetDiffTreatment(AliPWG0Helper::DiffTreatment diffTreatment) { fDiffTreatment = diffTreatment; }
@@ -53,8 +51,6 @@ class AlidNdEtaTask : public AliAnalysisTaskSE {
     TString fOption;                           // option string
     AliPWG0Helper::AnalysisMode fAnalysisMode; // detector that is used for analysis
     AliTriggerAnalysis::Trigger fTrigger;      // trigger that is used
-    TString fRequireTriggerClass;              // trigger class that is required
-    TString fRejectTriggerClass;               // trigger class that is rejected
     Bool_t fFillPhi;                           // if true phi is filled as 3rd coordinate in all maps
     Float_t fDeltaPhiCut;                      // cut in delta phi (only SPD)
 
@@ -62,7 +58,6 @@ class AlidNdEtaTask : public AliAnalysisTaskSE {
     Bool_t  fUseMCVertex;     // the MC vtx is used instead of the ESD vertex (for syst. check)
     Bool_t  fOnlyPrimaries;   // Process only primaries by using the MC information (for syst. check)
     Bool_t  fUseMCKine;       // use the MC values for each found track/tracklet (for syst. check)
-    Bool_t  fCheckEventType;  // check if event type is physics (for real data)
     Bool_t  fSymmetrize;      // move all negative to positive eta
     Bool_t  fMultAxisEta1;    // restrict multiplicity count to |eta| < 1
     AliPWG0Helper::DiffTreatment  fDiffTreatment;  // how to identify SD events (see AliPWG0Helper::GetEventProcessType)
