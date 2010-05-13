@@ -12,6 +12,7 @@
 #include "AliTracker.h"
 #include "AliHeader.h"
 #include "AliITSLoader.h"
+#include "AliITSsegmentationSPD.h"
 #include "AliVertexerTracks.h"
 #include "AliCDBManager.h"
 #include "AliGeomManager.h"
@@ -42,6 +43,7 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   if (!man->IsDefaultStorageSet()) {
     printf("Setting a local default storage and run number 0\n");
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    //    man->SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
     man->SetRun(0);
   }
   else {
@@ -93,6 +95,9 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   printf("Magnetic field set to %f T\n",AliTracker::GetBz()/10.);
 
   AliITSDetTypeRec* detTypeRec = new AliITSDetTypeRec();
+  AliITSsegmentation* seg = new AliITSsegmentationSPD();  
+  detTypeRec->SetSegmentationModel(0,seg);
+
   Double_t xnom=0.,ynom=0.;
   AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
   vertz->Init("default");
