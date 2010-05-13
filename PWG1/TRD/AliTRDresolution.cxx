@@ -398,7 +398,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       else AliDebug(1, "Cl exchange container missing. Activate by calling \"InitExchangeContainers()\"");
 
       if(DebugLevel()>=1){
-        if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
+        if(!clInfoArr){ 
+          clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
+          clInfoArr->SetOwner(kFALSE);
+        }
         clInfoArr->Add(clInfo);
       }
     }
@@ -407,8 +410,10 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
         <<"status="  << status
         <<"clInfo.=" << clInfoArr
         << "\n";
+      clInfoArr->Clear();
     }
   }
+  if(clInfoArr) delete clInfoArr;
   return (TH3S*)arr->At(0);
 }
 
@@ -1068,7 +1073,10 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
       if(fMCcl) fMCcl->Add(clInfo);
       else AliDebug(1, "MCcl exchange container missing. Activate by calling \"InitExchangeContainers()\"");
       if(DebugLevel()>=5){ 
-        if(!clInfoArr) clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
+        if(!clInfoArr){ 
+          clInfoArr=new TObjArray(AliTRDseedV1::kNclusters);
+          clInfoArr->SetOwner(kFALSE);
+        }
         clInfoArr->Add(clInfo);
       }
     }
