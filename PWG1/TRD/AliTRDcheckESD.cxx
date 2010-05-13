@@ -299,9 +299,9 @@ void AliTRDcheckESD::UserExec(Option_t *){
   
   // fill event vertex histos
   h = (TH1F*)fHistos->At(kTPCVertex);
-  h->Fill(fESD->GetPrimaryVertexTPC()->GetZv());
+  if(fESD->GetPrimaryVertexTPC()) h->Fill(fESD->GetPrimaryVertexTPC()->GetZv());
   h = (TH1F*)fHistos->At(kEventVertex);
-  h->Fill(fESD->GetPrimaryVertex()->GetZv());
+  if(fESD->GetPrimaryVertex()) h->Fill(fESD->GetPrimaryVertex()->GetZv());
   // fill the uncutted number of tracks
   h = (TH1I*)fHistos->At(kNTracksAll);
   h->Fill(fESD->GetNumberOfTracks());
@@ -611,7 +611,7 @@ TObjArray* AliTRDcheckESD::Histos()
     h = new TH2I("hTRDmom", "TRD energy loss;p_{inner} - p_{ly} [GeV/c];ly;entries", 100, -1., 2., 6, -0.5, 5.5);
   } else h->Reset();
   fHistos->AddAt(h, kTRDmom);
-  if(!HasMC()) return fHistos;
+  //if(!HasMC()) return fHistos;
 
   // pt resolution
   const Int_t kNdpt(100), kNspec(4*AliPID::kSPECIES);
