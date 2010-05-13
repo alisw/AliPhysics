@@ -79,8 +79,23 @@ void WriteDDLs(AliRawReader* rawReader, const TString& dir, const char* detector
 		filename += ".ddl";
 		
 		fstream file(filename.Data(), fstream::out | fstream::binary);
+		if (! file)
+		{
+			cerr << "ERROR: Could not create file: " << filename.Data() << endl;
+			delete [] buffer;
+			continue;
+		}
 		file.write((char*)buffer, bufferSize);
+		if (! file)
+		{
+			cerr << "ERROR: Failed to write to file: " << filename.Data() << endl;
+			file.close();
+			delete [] buffer;
+			continue;
+		}
 		file.close();
+		
+		delete [] buffer;
 	}
 }
 
@@ -119,13 +134,17 @@ void ExtractDDLs(
 		TString dir = outputDir;
 		dir += "/raw";
 		dir += num;
-		gSystem->MakeDirectory(dir.Data());
-		
-		rawReader->Select("MUONTRK", 0, 19);
-		WriteDDLs(rawReader, dir, "MUONTRK");
-		rawReader->Select("MUONTRG", 0, 1);
-		WriteDDLs(rawReader, dir, "MUONTRG");
-		
+		if (gSystem->MakeDirectory(dir.Data()) != 0)
+		{
+			cerr << "ERROR: Could not create directory: " << dir.Data() << endl;
+		}
+		else
+		{
+			rawReader->Select("MUONTRK", 0, 19);
+			WriteDDLs(rawReader, dir, "MUONTRK");
+			rawReader->Select("MUONTRG", 0, 1);
+			WriteDDLs(rawReader, dir, "MUONTRG");
+		}
 		++count;
 		++event;
 		rawReader->NextEvent();
