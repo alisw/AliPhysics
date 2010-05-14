@@ -74,6 +74,7 @@ AliESDfriend::~AliESDfriend() {
   //
   fTracks.Delete();
   delete fESDVZEROfriend;
+  delete fESDTZEROfriend;
 }
 
 
