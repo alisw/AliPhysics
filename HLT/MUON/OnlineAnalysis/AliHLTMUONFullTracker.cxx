@@ -77,7 +77,6 @@ class	TMap;
 
 //#define PRINT_FULL 1
 
-
 #ifdef PRINT_FULL
 #define PRINT_POINTS 1
 #define PRINT_BACK 1
@@ -596,9 +595,9 @@ Bool_t AliHLTMUONFullTracker::Run( AliHLTEventID_t iEvent,AliHLTMUONTrackStruct 
   
   if(!resultOk)
     size = 0;
-
-  HLTDebug("iEvent: 0x%X, has tracks : %d, triggers : %d, nof slat tracks : %d, quad tracks : %d, connected : %d\n",
-	   iEvent,size,fNofPoints[10],fNofbackTrackSeg,fNoffrontTrackSeg,fNofConnected);
+  
+  HLTDebug("iEvent: %llu, has tracks : %d, triggers : %d, nof slat tracks : %d, quad tracks : %d, connected : %d\n",
+	     iEvent,size,fNofPoints[10],fNofbackTrackSeg,fNoffrontTrackSeg,fNofConnected);
   Clear();
   
   return resultOk;
@@ -688,9 +687,19 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 	if(ipoint >= 6 and ipoint <= 9 and fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]!=-1 ){
 	    track->fHit[ipoint] = *(fChPoint[ipoint][fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]]);
 	    hitset[ipoint] = true;
+#ifdef PRINT_OUTPUT
+	    AliHLTUInt8_t chamber; AliHLTUInt16_t detElemID;
+	    AliHLTMUONUtils::UnpackRecHitFlags((track->fHit[ipoint]).fFlags,chamber,detElemID);
+	    HLTImportant("(X,Y,Z) : (%lf,%lf,%lf)",(track->fHit[ipoint]).fX,(track->fHit[ipoint]).fY,(track->fHit[ipoint]).fZ);
+#endif
 	}else if(ipoint <= 3 and fFrontTrackSeg[fBackToFront[ibackTrackSeg][0]].fIndex[ipoint]!=-1 ){
 	    track->fHit[ipoint] = *(fChPoint[ipoint][fFrontTrackSeg[fBackToFront[ibackTrackSeg][0]].fIndex[ipoint]]);
 	    hitset[ipoint] = true;
+#ifdef PRINT_OUTPUT
+	    AliHLTUInt8_t chamber; AliHLTUInt16_t detElemID;
+	    AliHLTMUONUtils::UnpackRecHitFlags((track->fHit[ipoint]).fFlags,chamber,detElemID);
+	    HLTImportant("(X,Y,Z) : (%lf,%lf,%lf)",(track->fHit[ipoint]).fX,(track->fHit[ipoint]).fY,(track->fHit[ipoint]).fZ);
+#endif
 	}
       }
       AliHLTMUONParticleSign sign = AliHLTMUONParticleSign(Int_t(TMath::Sign(1.,fTrackParam[ibackTrackSeg].GetInverseBendingMomentum())));
@@ -735,6 +744,11 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 	  
 	  track->fHit[ipoint] = *(fChPoint[ipoint][fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]]);
 	  hitset[ipoint] = true;
+#ifdef PRINT_OUTPUT
+	  AliHLTUInt8_t chamber; AliHLTUInt16_t detElemID;
+	  AliHLTMUONUtils::UnpackRecHitFlags((track->fHit[ipoint]).fFlags,chamber,detElemID);
+	  HLTImportant("(X,Y,Z) : (%lf,%lf,%lf)",(track->fHit[ipoint]).fX,(track->fHit[ipoint]).fY,(track->fHit[ipoint]).fZ);
+#endif
 	}
       }
       AliHLTMUONParticleSign sign = AliHLTMUONParticleSign(fHalfTrack[ibackTrackSeg].fCharge);
@@ -1666,10 +1680,10 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
     }///frontch
   }///backch
 
-  if(nofSt2Cells==0){
-    HLTDebug("No Hits found in Stn2");
-    return false;
-  }
+  // if(nofSt2Cells==0){
+  //   HLTDebug("No Hits found in Stn2");
+  //   return false;
+  // }
   
   for( Int_t ibackpoint=0;ibackpoint<fNofPoints[1];ibackpoint++){
     for( Int_t ifrontpoint=0;ifrontpoint<fNofPoints[0];ifrontpoint++){
@@ -1697,8 +1711,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       }///if point found
     }///frontch
   }///backch
-  if(nofSt1Cells==0){
-    HLTDebug("No Hits found in Stn1");
+  if(nofSt1Cells==0 and nofSt2Cells==0){
+    HLTDebug("No Hit pair found in Stn1 and St2");
     return false;
   }
   

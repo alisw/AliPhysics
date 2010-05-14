@@ -902,7 +902,7 @@ void AliHLTMUONHitReconstructor::RecXRecY()
       fNofNBChannel[nb]++ ;
     if(fPadData[idRight].fCharge>0.0)
       fNofNBChannel[nb]++ ;
-
+    
     HLTDebug("detelem : %d, X charge left : %f, middle : %f, right : %f",fPadData[idCentral].fDetElemId,fPadData[idLeft].fCharge,
 	    fPadData[idCentral].fCharge,fPadData[idRight].fCharge);
 
@@ -950,7 +950,7 @@ void AliHLTMUONHitReconstructor::RecXRecY()
 	idRight = fGetIdTotalData[fPadData[idUpper].fIX+1][fPadData[idUpper].fIY][1];
       
       fTotChargeX[nb] += (fPadData[idUpper].fCharge + fPadData[idRight].fCharge + fPadData[idLeft].fCharge);
-
+      
       if(fPadData[idLeft].fCharge>0.0)
 	fNofNBChannel[nb]++ ;
       if(fPadData[idRight].fCharge>0.0)
@@ -991,15 +991,16 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
   float halfPadLengthX,halfPadLengthY;
   bool *isMergedY = new bool[fCentralCountB];
   bool *isMergedX = new bool[fCentralCountNB];
+  float outsideSpacePoint = 1000000.0 ; /// A space point outside the detector
 
   // MERGE Bending Plane hits, which are placed side by side
   for(int i=0;i<fCentralCountB-1;i++){
     isMergedY[i] = false;
-    if(fRecY[i] != 0.0){
+    if(fRecY[i] != outsideSpacePoint){
       for(int j=i+1;j<fCentralCountB;j++){
 		 
 	if(fCentralChargeB[i]==fCentralChargeB[j]){
-	  fRecY[j] = 0.0;
+	  fRecY[j] = outsideSpacePoint;
 	  continue;
 	}
 	else if(
@@ -1013,36 +1014,36 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	    fPadData[fCentralChargeB[i]].fIX == fPadData[fCentralChargeB[j]].fIX - 1
 	    )
  	   &&
- 	   fRecY[j] != 0.0
+ 	   fRecY[j] != outsideSpacePoint
 	   &&
-	   fRecY[i] != 0.0
+	   fRecY[i] != outsideSpacePoint
 	   ){
 
 	  if(fAvgChargeY[i] > fAvgChargeY[j]){
 	    fRecY[i] = (fRecY[i]*fAvgChargeY[i] + fRecY[j]*fAvgChargeY[j]
 			)/(fAvgChargeY[i] + fAvgChargeY[j]);
-	    fRecY[j] = 0.0;
+	    fRecY[j] = outsideSpacePoint;
 	  }
 	  else{
 	    fRecY[j] = (fRecY[i]*fAvgChargeY[i] + fRecY[j]*fAvgChargeY[j]
 			)/(fAvgChargeY[i] + fAvgChargeY[j]);
-	    fRecY[i] = 0.0;
+	    fRecY[i] = outsideSpacePoint;
 
 	  }// search for higher charge
 	}//pad position
       }//j for loop
-    }//if fRecY[i] != 0.0
+    }//if fRecY[i] != outsideSpacePoint
   }// i for loop
   isMergedY[fCentralCountB-1] = false;
-
+  
   // MERGE Non Bending Plane hits, which are placed side by side
   for(int i=0;i<fCentralCountNB-1;i++){
     isMergedX[i] = false;
-    if(fRecX[i] != 0.0){
+    if(fRecX[i] != outsideSpacePoint){
       for(int j=i+1;j<fCentralCountNB;j++){
 
 	if(fCentralChargeNB[i]==fCentralChargeNB[j]){
-	  fRecX[j] = 0.0;
+	  fRecX[j] = outsideSpacePoint;
 	  continue;
 	}
 	else if(
@@ -1056,37 +1057,37 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
 	    fPadData[fCentralChargeNB[i]].fIY == fPadData[fCentralChargeNB[j]].fIY - 1
 	    )
 	   &&
-	   fRecX[j] != 0.0
+	   fRecX[j] != outsideSpacePoint
 	   &&
-	   fRecX[i] != 0.0
+	   fRecX[i] != outsideSpacePoint
 	   ){
 
 	  if(fAvgChargeX[i] > fAvgChargeX[j]){
 	    fRecX[i] = (fRecX[i]*fAvgChargeX[i] + fRecX[j]*fAvgChargeX[j]
 		       )/(fAvgChargeX[i] + fAvgChargeX[j]);
-	    fRecX[j] = 0.0;
+	    fRecX[j] = outsideSpacePoint;
 	  }
 	  else{
 	    fRecX[j] = (fRecX[i]*fAvgChargeX[i] + fRecX[j]*fAvgChargeX[j]
 		       )/(fAvgChargeX[i] + fAvgChargeX[j]);
-	    fRecX[i] = 0.0;
+	    fRecX[i] = outsideSpacePoint;
 	  }// search for higher charge
 	}//pad position
       }//j for loop
-    }//if fRecX[i] != 0.0
+    }//if fRecX[i] != outsideSpacePoint
   }// i for loop
   isMergedX[fCentralCountNB-1] = false;
   
   // Merge bending Plane hits with Non Bending
   for(int b=0;b<fCentralCountB;b++){
-    if(fRecY[b]!=0.0){
+    if(fRecY[b]!=outsideSpacePoint){
       idCentralB = fCentralChargeB[b];
       padCenterXB = fPadData[idCentralB].fRealX; 
       
-      halfPadLengthX = fPadData[idCentralB].fIY ;
+      halfPadLengthX = fPadData[idCentralB].fHalfPadSize ;
 
       for(int nb=0;nb<fCentralCountNB;nb++){
-	if(fRecX[nb]!=0.0){
+	if(fRecX[nb]!=outsideSpacePoint){
 	  idCentralNB = fCentralChargeNB[nb];
 
 	  padCenterYNB = fPadData[idCentralNB].fRealY;
@@ -1266,10 +1267,10 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
       }// loop over NB side
     }// condn on fRecY[b] !=  0.0
   }// loop over B side;
-
+  
   //Hit only in bending plane and in zone 1 which has not merged and which has number of channels > 2 are considered as valid hits
   for(int b=0;b<fCentralCountB;b++){
-    if(fRecY[b]!=0.0 and !isMergedY[b] and fNofBChannel[b]>2){
+    if(fRecY[b]!=outsideSpacePoint and !isMergedY[b] and fNofBChannel[b]>2){
       idCentralB = fCentralChargeB[b];
       
       minPadArea = (fPadData[idCentralB].fDetElemId < 204) ? 10.0*2.0*0.315*10.0*2.0*0.21 : 10.0*2.0*0.375*10.0*2.0*0.25 ;
@@ -1286,10 +1287,10 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
       }
       
       padCenterXB = fPadData[idCentralB].fRealX; 
-      if(fPadData[idCentralB].fDetElemId<204)
-	padCenterXB += 0.095*sin(10.5*(padCenterXB - fPadData[idCentralB].fRealX)) ;
-      else //if(fPadData[idCentralNB].fDetElemId>=300 && fPadData[idCentralNB].fDetElemId<404)
-	padCenterXB += 0.085*sin(9.0*(padCenterXB - fPadData[idCentralB].fRealX)) ;
+      // if(fPadData[idCentralB].fDetElemId<204)
+      // 	padCenterXB += 0.095*sin(10.5*(padCenterXB - fPadData[idCentralB].fRealX)) ;
+      // else //if(fPadData[idCentralNB].fDetElemId>=300 && fPadData[idCentralNB].fDetElemId<404)
+      // 	padCenterXB += 0.085*sin(9.0*(padCenterXB - fPadData[idCentralB].fRealX)) ;
       	    
       // First check that we have not overflowed the buffer.
       if((*fRecPointsCount) == fMaxRecPointsCount){
@@ -1417,14 +1418,11 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
   }// loop over B side;
 
 
-
-
-
   //Hit only in non-bending plane and in zone 1 which has not merged and which has number of channels > 2 are considered as valid hits
   for(int nb=0;nb<fCentralCountNB;nb++){
 
     idCentralNB = fCentralChargeNB[nb];
-    if(fRecX[nb]!=0.0 and !isMergedX[nb] and fNofNBChannel[nb]>2){
+    if(fRecX[nb]!=outsideSpacePoint and !isMergedX[nb] and fNofNBChannel[nb]>2){
       
       minPadArea = (fPadData[idCentralNB].fDetElemId < 204) ? 10.0*2.0*0.315*10.0*2.0*0.21 : 10.0*2.0*0.375*10.0*2.0*0.25 ;
 
@@ -1433,12 +1431,12 @@ bool AliHLTMUONHitReconstructor::MergeQuadRecHits()
       padCenterYNB = fPadData[idCentralNB].fRealY;
       
       
-      if(fPadData[idCentralNB].fDetElemId<104)
-	padCenterYNB += 0.02*sin(14.5*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
-      else if(fPadData[idCentralNB].fDetElemId>=200 && fPadData[idCentralNB].fDetElemId<204)
-	padCenterYNB += 0.02*sin(14.0*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
-      else
-	padCenterYNB += 0.025*sin(12.0*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
+      // if(fPadData[idCentralNB].fDetElemId<104)
+      // 	padCenterYNB += 0.02*sin(14.5*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
+      // else if(fPadData[idCentralNB].fDetElemId>=200 && fPadData[idCentralNB].fDetElemId<204)
+      // 	padCenterYNB += 0.02*sin(14.0*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
+      // else
+      // 	padCenterYNB += 0.025*sin(12.0*(padCenterYNB - fPadData[idCentralNB].fRealY)) ;
       
       
       if(fPadData[idCentralNB].fDetElemId<204)
@@ -1598,14 +1596,18 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
   float padCenterYNB;
   float diffX,diffY;
   float halfPadLengthX,halfPadLengthY;
+  bool *isMergedY = new bool[fCentralCountB];
+  bool *isMergedX = new bool[fCentralCountNB];
+  float outsideSpacePoint = 1000000.0 ; /// A space point outside the detector
 
   // MERGE Bending Plane hits, which are placed side by side
   for(int i=0;i<fCentralCountB-1;i++){
-    if(fRecY[i] != 0.0){
+    isMergedY[i] = false;
+    if(fRecY[i] != outsideSpacePoint){
       for(int j=i+1;j<fCentralCountB;j++){
 		 
 	if(fCentralChargeB[i]==fCentralChargeB[j]){
-	  fRecY[j] = 0.0;
+	  fRecY[j] = outsideSpacePoint;
 	  continue;
 	}
 	else if(
@@ -1619,34 +1621,36 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
 	    fPadData[fCentralChargeB[i]].fIX == fPadData[fCentralChargeB[j]].fIX - 1
 	    )
  	   &&
- 	   fRecY[j] != 0.0
+ 	   fRecY[j] != outsideSpacePoint
 	   &&
-	   fRecY[i] != 0.0
+	   fRecY[i] != outsideSpacePoint
 	   ){
 
 	  if(fAvgChargeY[i] > fAvgChargeY[j]){
 	    fRecY[i] = (fRecY[i]*fAvgChargeY[i] + fRecY[j]*fAvgChargeY[j]
 			)/(fAvgChargeY[i] + fAvgChargeY[j]);
-	    fRecY[j] = 0.0;
+	    fRecY[j] = outsideSpacePoint;
 	  }
 	  else{
 	    fRecY[j] = (fRecY[i]*fAvgChargeY[i] + fRecY[j]*fAvgChargeY[j]
 			)/(fAvgChargeY[i] + fAvgChargeY[j]);
-	    fRecY[i] = 0.0;
+	    fRecY[i] = outsideSpacePoint;
 
 	  }// search for higher charge
 	}//pad position
       }//j for loop
-    }//if fRecY[i] != 0.0
+    }//if fRecY[i] != outsideSpacePoint
   }// i for loop
+  isMergedY[fCentralCountB-1] = false;
   
   // MERGE Non Bending Plane hits, which are placed side by side
   for(int i=0;i<fCentralCountNB-1;i++){
+    isMergedX[i] = false;
     if(fRecX[i] != 0.0){
       for(int j=i+1;j<fCentralCountNB;j++){
 
 	if(fCentralChargeNB[i]==fCentralChargeNB[j]){
-	  fRecX[j] = 0.0;
+	  fRecX[j] = outsideSpacePoint;
 	  continue;
 	}
 	else if(
@@ -1660,36 +1664,37 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
 	    fPadData[fCentralChargeNB[i]].fIY == fPadData[fCentralChargeNB[j]].fIY - 1
 	    )
 	   &&
-	   fRecX[j] != 0.0
+	   fRecX[j] != outsideSpacePoint
 	   &&
-	   fRecX[i] != 0.0
+	   fRecX[i] != outsideSpacePoint
 	   ){
 
 	  if(fAvgChargeX[i] > fAvgChargeX[j]){
 	    fRecX[i] = (fRecX[i]*fAvgChargeX[i] + fRecX[j]*fAvgChargeX[j]
 		       )/(fAvgChargeX[i] + fAvgChargeX[j]);
-	    fRecX[j] = 0.0;
+	    fRecX[j] = outsideSpacePoint;
 	  }
 	  else{
 	    fRecX[j] = (fRecX[i]*fAvgChargeX[i] + fRecX[j]*fAvgChargeX[j]
 		       )/(fAvgChargeX[i] + fAvgChargeX[j]);
-	    fRecX[i] = 0.0;
+	    fRecX[i] = outsideSpacePoint;
 	  }// search for higher charge
 	}//pad position
       }//j for loop
-    }//if fRecX[i] != 0.0
+    }//if fRecX[i] != outsideSpacePoint
   }// i for loop
+  isMergedX[fCentralCountNB-1] = false;
 
   // Merge bending Plane hits with Non Bending
   for(int b=0;b<fCentralCountB;b++){
-    if(fRecY[b]!=0.0){
+    if(fRecY[b]!=outsideSpacePoint){
       idCentralB = fCentralChargeB[b];
       padCenterXB = fPadData[idCentralB].fRealX; 
       
-      halfPadLengthX = fPadData[idCentralB].fIY ;
+      halfPadLengthX = fPadData[idCentralB].fHalfPadSize ;
 
       for(int nb=0;nb<fCentralCountNB;nb++){
-	if(fRecX[nb]!=0.0){
+	if(fRecX[nb]!=outsideSpacePoint){
 	  idCentralNB = fCentralChargeNB[nb];
 
 	  padCenterYNB = fPadData[idCentralNB].fRealY;
@@ -1708,21 +1713,14 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
 
 	  if(diffX < halfPadLengthX && diffY < halfPadLengthY ){//&& fPadData[idCentralB].fIY != 0){
 	    
+	    isMergedY[b] = true;
+	    isMergedX[nb] = true;
+	    
 	    if(fNofYNeighbour[b]==2){
-	      if(fPadData[idCentralB].fDetElemId<104)
-		fRecY[b] += 0.02*sin(14.5*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
-	      else if(fPadData[idCentralB].fDetElemId>=200 && fPadData[idCentralB].fDetElemId<204)
-		fRecY[b] += 0.02*sin(14.0*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
-	      else
-		fRecY[b] += 0.025*sin(12.0*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
+	      fRecY[b] += 0.025*sin(12.0*(fRecY[b] - fPadData[idCentralB].fRealY)) ;
 	    }
 	    
-	    if(fPadData[idCentralNB].fDetElemId<204)
-	      fRecX[nb] += 0.095*sin(10.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
-	    else if(fPadData[idCentralNB].fDetElemId>=300 && fPadData[idCentralNB].fDetElemId<404)
-	      fRecX[nb] += 0.085*sin(9.0*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
-	    else
-	      fRecX[nb] += 0.075*sin(9.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
+	    fRecX[nb] += 0.075*sin(9.5*(fRecX[nb] - fPadData[idCentralNB].fRealX)) ;
 	    
 	    
 	    // First check that we have not overflowed the buffer.
@@ -1731,6 +1729,8 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
 	                " Output buffer is too small.",
 	               (*fRecPointsCount),fMaxRecPointsCount
 	      );
+	      delete [] isMergedY;
+	      delete [] isMergedX;
 	      return true;
 	    }
 
@@ -1748,6 +1748,8 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
  	      if (fClusterCount >= fMaxClusters)
  	      {
 	        HLTError("Ran out of space in internal cluster array of size %d.", fMaxClusters);
+		delete [] isMergedY;
+		delete [] isMergedX;
 	        return false;
 	      }
 	      
@@ -1865,6 +1867,9 @@ bool AliHLTMUONHitReconstructor::MergeSlatRecHits()
     }// condn on fRecY[b] !=  0.0
   }// loop over B side;
   
+  
+  delete [] isMergedY;
+  delete [] isMergedX;
   return true;
 }
 
