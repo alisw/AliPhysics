@@ -60,7 +60,7 @@ private:
 
 inline Float_t AliESDpid::NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EParticleType type) const {
   Double_t mom = track->GetP();
-  const AliExternalTrackParam *in = track->GetTPCInnerParam();
+  const AliExternalTrackParam *in = track->GetInnerParam();
   if (in)
     mom = in->GetP();
   return fTPCResponse.GetNumberOfSigmas(mom,track->GetTPCsignal(),track->GetTPCsignalN(),type); 
