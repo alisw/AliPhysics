@@ -16,6 +16,8 @@
 class TEveElementList;
 class TEveBoxSet;
 class AliHLTHOMERBlockDesc;
+class TH1F;
+
 
 class AliHLTEveCalo : public AliHLTEveBase {
 
@@ -69,8 +71,6 @@ protected :
 
   const Int_t fNModules;          //Number of modules in calorimeter
 
-
-
 private:
   
   /** default constructor prohibited */
@@ -80,9 +80,15 @@ private:
   /** assignment operator prohibited */
   AliHLTEveCalo& operator = (const AliHLTEveCalo &);
 
+  void DrawInvMassHistogram(TH1F * histo);
+
   TString fName;  //PHOS or EMCAL
  
   TString * fPadTitles;
+
+
+  TCanvas * fInvMassCanvas;
+
 
   ClassDef(AliHLTEveCalo, 0);
 };
