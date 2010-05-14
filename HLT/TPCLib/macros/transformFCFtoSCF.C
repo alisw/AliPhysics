@@ -1,6 +1,6 @@
-
+// $Id$
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors Kalliopi Kanaki <Kalliopi.Kanaki@ift.uib.no>           *
@@ -15,15 +15,15 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** 
+/**
  * @file   transformFCFtoSFC.C
  * @author Kalliopi.Kanaki@ift.uib.no
- * @date   
+ * @date
  * @brief  Test macro for the AliHLTTPCHWClusterTransformComponent.cxx
- * 
  *
- * This macro tests the component that does the tranformation from the HW 
- * cluster format to the software cluster structure. 
+ *
+ * This macro tests the component that does the tranformation from the HW
+ * cluster format to the software cluster structure.
  * For the macro to work, the user needs to use the FilePublisher component
  * to make the input files available. The data specification has to be given
  * and the input files have to be present.
@@ -32,8 +32,8 @@
  * a directory has to be specified as the input argument of the function
  * and an empty raw0 folder will be created if not present.
  *
- * The macro looks for a folder called FCFFiles by default, where the produced FCF files 
- * should be (format TPC_ddlnumber.fcf). Argument number 2 can be set to look in a different
+ * The macro looks for a folder called FCFFiles by default, where the produced FCF files
+ * should be (format TPC_ddlnumber.fcf or .bin). Argument number 2 can be set to look in a different
  * folder if wanted.
  *
  * In addition, since the $ALICE_ROOT/OCDB/GRP/GRP/Data entry has been removed as obsolete,
@@ -43,13 +43,13 @@
  * rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
  *
  * The component runs without arguments, except for the case when we want to differentiate
- * between the FCF and the SFC output. Then the argument -change-dataId will change the 
+ * between the FCF and the SFC output. Then the argument -change-dataId will change the
  * data Id of the FCF output.
  *
  */
-
-void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
+void transformFCFtoSCF(const char* input="./",const char* dirName="./"){
   
+  gSystem->Exec("rm galice.root");  
   
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "Please delete file galice.root or run at a different place." << endl;
@@ -95,17 +95,17 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   // init the HLT system in order to define the analysis chain below
   //
   gSystem->Load("libHLTrec.so");
-  AliHLTSystem* gHLT=AliHLTReconstructorBase::GetInstance();
+  AliHLTSystem *gHLT = AliHLTReconstructorBase::GetInstance();
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // define the analysis chain to be run
   //
     
-  int iMinSlice = 0; 
+  int iMinSlice =  0; 
   int iMaxSlice = 35;
-  int iMinPart  = 0;
-  int iMaxPart  = 5;
+  int iMinPart  =  0;
+  int iMaxPart  =  5;
 
   TString dumpOutput;
   TString FCFInput;
@@ -115,7 +115,6 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   for(int slice=iMinSlice; slice<=iMaxSlice; slice++){ 
       
       TString trackerInput;
-
       for(int part=iMinPart; part<=iMaxPart; part++){
 
           int ddlno=768;
@@ -123,7 +122,7 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
           else ddlno+=2*slice+part;
 
           TString file;
-          file.Form("raw0/TPC_%d.fcf",ddlno);
+          file.Form("raw0/TPC_%d.bin",ddlno);
           
 	  if(gSystem->AccessPathName(file)){
       	    cerr << "Input file does not exist: "<< file.Data() << endl;
@@ -167,7 +166,7 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   
   AliHLTConfiguration mergerconf("globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
   AliHLTConfiguration esdconf("ESD","GlobalEsdConverter","globalmerger","");
-  AliHLTConfiguration sink("esdfile", "EsdCollector", "ESD", "-directory hlt-tpc-esd"); 
+  AliHLTConfiguration sink("esdfile", "EsdCollector", "ESD", "-directory FCF-hlt-tpc-esd"); 
 
   TString histoInput; 
   if(histoInput.Length()>0) histoInput+=" ";
@@ -176,19 +175,16 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   histoInput+="globalmerger";
   
   AliHLTConfiguration histconf("histo","TPCTrackHisto",histoInput.Data(),"");
+  
+  AliHLTConfiguration cfcompconf("comparison","TPCCFComparison",allclusters.Data(),"");
+  
   AliHLTConfiguration rfwconf("RFW","ROOTFileWriter","histo","-datafile FCF_trackhisto -overwrite -concatenate-events");
 
   
-  //USED  AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "");  
-  //AliHLTConfiguration hwconf("FCF", "TPCHWClusterTransform", FCFInput.Data(), "-change-dataId");  
-  //USED  AliHLTConfiguration clusDumpconf("sink1", "TPCClusterDump", "FCF", "-directory FCFClusterDump -subdir=raw -datafile %s -specfmt= -blcknofmt= -idfmt= -skip-datatype");
-  
-   
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Init and run the reconstruction
   // All but HLT reconstruction is switched off
-  //
 
   AliReconstruction rec;
   rec.SetInput(input);
@@ -200,7 +196,7 @@ void transformFCFtoSCF(const char* input="./",const char* dirName="FCFFiles"){
   rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");  
   rec.SetSpecificStorage("GRP/GRP/Data", Form("local://%s",gSystem->pwd()));
   TString option;
-  option.Form("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=RFW,ESD,esdfile,%s",dumpOutput.Data());
+  option.Form("libAliHLTUtil.so libAliHLTRCU.so libAliHLTTPC.so libAliHLTGlobal.so loglevel=0x7c chains=comparison,RFW,esdfile,%s",dumpOutput.Data());
   rec.SetOption("HLT", option);
   rec.Run();
 
