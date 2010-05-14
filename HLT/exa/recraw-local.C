@@ -82,17 +82,22 @@ void recraw_local(const char *filename,
     rec.SetEventRange(minEvent,maxEvent);
   }
 
+  TString strModules=modules;
   if (modules)
     rec.SetRunReconstruction(modules);
   else
     rec.SetRunReconstruction("ALL");
 
   // QA options
-  rec.SetRunQA("HLT TPC:ALL") ;
+  TString qaOptions="HLT TPC";
+  if (!strModules.Contains("TPC")) qaOptions.ReplaceAll("TPC", "");
+  qaOptions+=":ALL";
+  rec.SetRunQA(qaOptions) ;
   //rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
 
   // AliReconstruction settings
   rec.SetWriteESDfriend(kTRUE);
+  rec.SetRunVertexFinder(strModules.Contains("ITS"));
   rec.SetInput(filename);
   rec.SetOption("HLT", hltOptions);
 
