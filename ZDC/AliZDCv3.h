@@ -27,10 +27,16 @@ public:
   virtual void  InitTables();
   virtual void  StepManager();
   
-  void SetVCollAperture(Float_t aperture)
-  	{if(aperture<3.5) fVCollAperture = aperture; 
-	 else printf("\n\n AliZDCv3: WARNING! TCTVB aperture set to max.: 3.5 cm\n\n");}
-  void SetVCollCentre(Float_t centre) {fVCollCentreY = centre;}
+  void SetVCollSideCAperture(Float_t aperture)
+  	{if(aperture<3.5) fVCollSideCAperture = aperture; 
+	 else printf("\n\n AliZDCv3: WARNING! SideA TCTVB aperture set to max.: 3.5 cm\n\n");}
+  void SetVCollSideCCentre(Float_t centre) {fVCollSideCCentreY = centre;}
+  
+  void SetVCollSideAAperture(Float_t aperture)
+  	{if(aperture<3.5) fVCollSideAAperture = aperture; 
+	 else printf("\n\n AliZDCv3: WARNING! SideA TCTVB aperture set to max.: 3.5 cm\n\n");}
+  void SetVCollSideACentre(Float_t centre) {fVCollSideACentreY = centre;}
+  
   void SetLumiLength(Float_t length) {fLumiLength = length;}
   
   void SetYZNC(Float_t yZNC) {fPosZNC[1] = yZNC;}
@@ -85,12 +91,14 @@ protected:
   Int_t fpLostITA, fpLostD1A, fpLostTDI, fpcVCollA, fpDetectedA, fnDetectedA; // Side A
   
   // Parameters to describe vertical collimator aperture
-  Float_t fVCollAperture; // Semi-aperture of TCTVB jaws
-  Float_t fVCollCentreY;  // Centre of TCTVB jaw apertures
+  Float_t fVCollSideCAperture; // Semi-aperture of TCTVB jaws
+  Float_t fVCollSideCCentreY;  // Centre of TCTVB jaw apertures
+  Float_t fVCollSideAAperture; // Semi-aperture of TCTVB jaws
+  Float_t fVCollSideACentreY;  // Centre of TCTVB jaw apertures
   
   Float_t fLumiLength;  // Luminometer length
   
-  ClassDef(AliZDCv3,6)  // Zero Degree Calorimeter version 1
+  ClassDef(AliZDCv3,7)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif

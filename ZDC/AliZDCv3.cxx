@@ -81,8 +81,10 @@ AliZDCv3::AliZDCv3() :
   fpcVCollA(0),
   fpDetectedA(0),
   fnDetectedA(0),
-  fVCollAperture(7./2.),
-  fVCollCentreY(0.),
+  fVCollSideCAperture(7./2.),
+  fVCollSideCCentreY(0.),
+  fVCollSideAAperture(7./2.),
+  fVCollSideACentreY(0.),
   fLumiLength(15.)
 {
   //
@@ -120,8 +122,10 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fpcVCollA(0),
   fpDetectedA(0),
   fnDetectedA(0),
-  fVCollAperture(7./2.),
-  fVCollCentreY(0.),
+  fVCollSideCAperture(7./2.),
+  fVCollSideCCentreY(0.),
+  fVCollSideAAperture(7./2.),
+  fVCollSideACentreY(0.),
   fLumiLength(15.)  
 {
   //
@@ -319,16 +323,16 @@ void AliZDCv3::CreateBeamLine()
   //printf("	QE01 ELTU from z = %1.2f to z= %1.2f\n",-zd1,-2*tubpar[2]-zd1);
   
   // Vertical collimator jaws (defined ONLY if fVCollAperture<3.5!)
-  if(fVCollAperture<3.5){
+  if(fVCollSideCAperture<3.5){
     boxpar[0] = 5.4/2.;
-    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.7)/2.;
+    boxpar[1] = (3.5-fVCollSideCAperture-fVCollSideCCentreY-0.7)/2.;
     if(boxpar[1]<0.) boxpar[1]=0.;
     boxpar[2] = 124.4/2.;
-    printf("\n  AliZDCv3 -> Setting VCollimator jaw: aperture %1.2f center %1.2f mod.thickness %1.3f\n\n", 
-    	2*fVCollAperture,fVCollCentreY,2*boxpar[1]);
+    printf("\n  AliZDCv3 -> Setting SideC VCollimator jaw: aperture %1.2f center %1.2f mod.thickness %1.3f\n\n", 
+    	2*fVCollSideCAperture,fVCollSideCCentreY,2*boxpar[1]);
     gMC->Gsvolu("QCVC" , "BOX ", idtmed[13], boxpar, 3); 
-    gMC->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollAperture+fVCollCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
-    gMC->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollAperture+fVCollCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollSideCAperture+fVCollSideCCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollSideCAperture+fVCollSideCCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
   }
   
   zd1 += tubpar[2] * 2.;
@@ -944,14 +948,14 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("QA07", 1, "QA06", 0., 0., 0., 0, "ONLY");  
   
   // Vertical collimator jaws (defined ONLY if fVCollAperture<3.5!)
-  if(fVCollAperture<3.5){
+  if(fVCollSideAAperture<3.5){
     boxpar[0] = 5.4/2.;
-    boxpar[1] = (3.5-fVCollAperture-fVCollCentreY-0.7)/2.;
+    boxpar[1] = (3.5-fVCollSideAAperture-fVCollSideACentreY-0.7)/2.;
     if(boxpar[1]<0.) boxpar[1]=0.;
     boxpar[2] = 124.4/2.;
     gMC->Gsvolu("QCVA" , "BOX ", idtmed[13], boxpar, 3); 
-    gMC->Gspos("QCVA", 1, "QA07", -boxpar[0], fVCollAperture+fVCollCentreY+boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
-    gMC->Gspos("QCVA", 2, "QA07", -boxpar[0], -fVCollAperture+fVCollCentreY-boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVA", 1, "QA07", -boxpar[0], fVCollSideAAperture+fVCollSideACentreY+boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVA", 2, "QA07", -boxpar[0], -fVCollSideAAperture+fVCollSideACentreY-boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
   }
   
   zd2 += 2.*tubpar[2];

@@ -47,8 +47,12 @@ public:
   void  NoShower(){fNoShower=1;}
   void  Shower()  {fNoShower=0;}
   
-  virtual void SetVCollAperture(Float_t /*aperture*/) {}
-  virtual void SetVCollCentre(Float_t /*centre*/) {}
+  virtual void SetVCollSideCAperture(Float_t /*aperture*/) {}
+  virtual void SetVCollSideCCentre(Float_t /*centre*/) {}
+  
+  virtual void SetVCollSideAAperture(Float_t /*aperture*/) {}
+  virtual void SetVCollSideACentre(Float_t /*centre*/) {}
+  
   virtual void SetLumiLength(Float_t /*length*/) {}
 
   //Calibration methods 
