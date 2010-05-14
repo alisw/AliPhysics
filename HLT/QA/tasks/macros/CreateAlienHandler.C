@@ -15,7 +15,7 @@ AliAnalysisGrid *CreateAlienHandler(TString runNumber, TString dataDir, TString 
   // One can always follow the standard procedure of calling alien-token-init then
   // source /tmp/gclient_env_$UID in the current shell.
   
-  if(!AliAnalysisGrid::CreateToken()) return NULL;
+  //if(!AliAnalysisGrid::CreateToken()) return NULL;
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
 
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
@@ -32,6 +32,7 @@ AliAnalysisGrid *CreateAlienHandler(TString runNumber, TString dataDir, TString 
   
   // Set data search pattern
   plugin->SetDataPattern("*ESDs.root");
+  //plugin->SetDataPattern("pass1/*tags.root");
   
   //plugin->AddRunNumber(115322); 
   plugin->AddRunNumber(runNumber); 

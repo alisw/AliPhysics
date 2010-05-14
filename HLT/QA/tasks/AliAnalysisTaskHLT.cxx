@@ -103,7 +103,7 @@ AliAnalysisTaskSE()
   // DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
 
-  DefineOutput(1, TList::Class());
+  //DefineOutput(1, TList::Class());
 }
  
 AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
