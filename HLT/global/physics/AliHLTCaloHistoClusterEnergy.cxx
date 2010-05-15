@@ -68,8 +68,8 @@ AliHLTCaloHistoClusterEnergy::AliHLTCaloHistoClusterEnergy(TString det) :
   }
   
   fHistClusterEnergyDepositEtaPhi = new TH2F(Form("%s fHistClusterEnergyDepositedEtaPhi", det.Data()), Form("%s Amount of energy deposited in Phi vs Eta", det.Data()), 200, phiMin, phiMax, 50, etaMin , etaMax);
-  fHistClusterEnergyVsNCells->GetXaxis()->SetTitle("#phi");
-  fHistClusterEnergyVsNCells->GetYaxis()->SetTitle("#eta");
+  fHistClusterEnergyDepositEtaPhi->GetXaxis()->SetTitle("#phi");
+  fHistClusterEnergyDepositEtaPhi->GetYaxis()->SetTitle("#eta");
   fHistArray->AddLast(fHistClusterEnergyDepositEtaPhi);
 
 }
@@ -115,7 +115,9 @@ Int_t AliHLTCaloHistoClusterEnergy::FillClusterEnergyHistos(T* cluster) {
   cluster->GetPosition(pos);
   TVector3 vec(pos);
   
-  fHistClusterEnergyDepositEtaPhi->Fill(vec.Phi(), vec.Eta(), cluster->E());
+  // Stupid hack, too tired to fix
+  if(vec.Phi() < 0)  fHistClusterEnergyDepositEtaPhi->Fill(2*TMath::Pi() + vec.Phi(), vec.Eta(), cluster->E());
+  else fHistClusterEnergyDepositEtaPhi->Fill(vec.Phi(), vec.Eta(), cluster->E());
   
   return 0;
 }
