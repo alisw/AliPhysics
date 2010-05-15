@@ -2190,3 +2190,13 @@ void AliTOFGeometry::PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT)
   for (Int_t ii=0; ii<3; ii++) differenceT[ii] = (Float_t)(posT[ii]-padCentreT[ii]);
 
 }
+//-------------------------------------------------------------------------
+
+Int_t AliTOFGeometry::GetTOFsupermodule(const Int_t index)
+{
+  // Return the TOF supermodule where TOF channel index is located
+
+  if (index<0 || index>=NPadXSector()*NSectors()) return -1;
+  else return index/NpadXStrip()/NStripXSector();
+
+}

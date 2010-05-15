@@ -119,6 +119,7 @@ class AliTOFGeometry: public TObject{
   static void GetStripAndModule(Int_t iStripPerSM, Int_t &iplate, Int_t &istrip); // Return the module and strip per module corresponding to the strip number per SM
   void PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT); // Convert the track coordinates from pad RF to tracking RF
 
+  static Int_t GetTOFsupermodule(const Int_t index); // Return the TOF supermodule where TOF channel index is located
 
   private:
 
