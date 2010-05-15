@@ -582,11 +582,11 @@ void AliTOFtrackerV1::MatchTracks( ){
     if (cov[0]>=0.)
       fHRecSigYVsP->Fill(mom,TMath::Sqrt(cov[0]));
     else
-      fHRecSigYVsP->Fill(mom,TMath::Sqrt(-cov[0]));
+      fHRecSigYVsP->Fill(mom,-TMath::Sqrt(-cov[0]));
     if (cov[2]>=0.)
       fHRecSigZVsP->Fill(mom,TMath::Sqrt(cov[2]));
     else
-      fHRecSigZVsP->Fill(mom,TMath::Sqrt(-cov[2]));
+      fHRecSigZVsP->Fill(mom,-TMath::Sqrt(-cov[2]));
     fHRecSigYVsPWin->Fill(mom,dphi*sensRadius);
     fHRecSigZVsPWin->Fill(mom,dz);
 
