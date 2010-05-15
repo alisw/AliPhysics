@@ -477,7 +477,8 @@ void AliT0v1::CreateMaterials()
    Float_t zAir[4]={6.,7.,8.,18.};
    Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
    Float_t dAir = 1.20479E-3;
-                                                                                
+   Float_t dAir1 = 1.20479E-11;
+                                                                               
 // Scintillator CH
    Float_t ascin[2]={1.01,12.01};
    Float_t zscin[2]={1,6};
@@ -519,7 +520,7 @@ void AliT0v1::CreateMaterials()
     
 //*** Definition Of avaible T0 materials ***
    AliMaterial(0, "Steel$", 55.850,26.,7.87,1.76,999);
-   AliMaterial(1, "Vacuum$", 1.e-16,1.e-16,1.e-16,1.e16,999);
+   AliMixture(1, "Vacuum$", aAir, zAir, dAir1,4,wAir);
    AliMixture(2, "Air$", aAir, zAir, dAir,4,wAir);
    AliMaterial(10, "CarbonPlastic$", 12.01, 6.0, 2.26, 18.8,999); 
    AliMaterial(11, "Aliminium$", 26.98, 13.0, 2.7, 8.9,999); 
