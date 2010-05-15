@@ -748,9 +748,9 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 		GetRawsData(j)->SetMarkerColor(kBlue+1);
 	      }
 	    }
-	    Int_t ySMmax035=GetRawsData(16)->GetMaximum();
+	    Float_t ySMmax035=GetRawsData(16)->GetMaximum();
 	    TLine* lineSMid035[10];
-	    Int_t ySMmax3671=GetRawsData(17)->GetMaximum();
+	    Float_t ySMmax3671=GetRawsData(17)->GetMaximum();
 	    TLine* lineSMid3671[10];
 	    
 	    for (Int_t sm=0;sm<10;sm++){
