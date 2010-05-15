@@ -7,6 +7,7 @@ class Simulator():
    
    def __init__(self):
       self.pwd = os.getenv("PWD")
+      print "SIMULATOR"
       
    def mkDirStructure(self):
 	 os.system("mkdir -p simulations/single")
@@ -15,81 +16,71 @@ class Simulator():
    def copyFiles(self):
 	 os.system("cp ConfigSingle.C simulations/single/Config.C")
 	 os.system("cp ConfigPi0.C simulations/pi0/Config.C")
-	 os.system("cp sim.C simulations/single/.")
-	 os.system("cp sim.C simulations/pi0/.")
+	 os.system("cp sim.C simulations/single/sim.C")
+	 os.system("cp sim.C simulations/pi0/sim.C")
    
    def cleanFiles(self):
 	 os.system("rm simulations/single/ -rf")
 	 os.system("rm simulations/pi0/ -rf")
    
    def initSimulation(self):
-
       self.cleanFiles()
       self.mkDirStructure()
       self.copyFiles()
 
-   def runSimulation(self):
-      
-      os.system("cd simulations/single/ && aliroot -b -q sim.C\(100\)")
+   def runSimulation(self, nevents, dophos, doemcal, dotm):
+      simargs = str(nevents) + ", " + str(int(dophos)) + ", " + str(int(doemcal)) + ", " + str(int(dotm))
+      command = "cd simulations/single/ && aliroot -b -q sim.C\'(" + simargs + ")\'"
+      os.system(command)
       os.system("cd " + self.pwd)
-   
 
-class Test(object):
+class Tester():
    def __init__(self):
-      print "Test"
-
-class PhosTest(Test):
-   def __init__(self):
-      super(PhosTest, self).__init__()
+      print "TESTER"
 
    def initTest(self):
-      
       self.pwd = os.getenv("PWD")
-      os.system("rm -rf tests/phos/")
-      os.system("mkdir -p tests/phos/single")
-      os.system("cp rec_hlt_calo_phos.C tests/phos/single/.")
-      os.system("cp runPhos.C tests/phos/single/.")
-      os.system("cp read_HLT_ESDs.C tests/phos/single/.")
+      os.system("rm -rf tests/all/")
+      os.system("mkdir -p tests/all/single")
+      os.system("cp rec_hlt_calo.C tests/all/single/.")
+      os.system("cp runAll.C tests/all/single/.")
+      os.system("cp read_HLT_ESDs.C tests/all/single/.")
+
+   def run(self, dophos, doemcal, dotm):
       
-   def run(self):
-      
+      runargs = "\"./\", \"./\", " + str(int(dophos)) + ", " + str(int(doemcal)) + ", " + str(int(dotm))
       path = self.pwd + "/simulations/single/."
-      os.system("cd tests/phos/single/;  ln -s " + path + "/raw* .; ln -s " + path + "/GRP . ; aliroot runPhos.C;")
-      
+      command = "cd tests/all/single/;  ln -s " + path + "/raw* .; ln -s " + path + "/GRP . ; aliroot runAll.C\'(" + runargs + ")\'"
+      os.system(command)
       os.system("cd " + self.pwd)
-      
 
-
-class EmcalTest(Test):
-   def __init__(self):
-      super(EmcalTest, self).__init__()
-      print "EmcalTest"
-      
 from optparse import OptionParser
 
 parser = OptionParser()
 
 parser.add_option("-s", "--simulatedata", action="store_true", dest="simulatedata",
 				 default=False, help="Simulate data for the tests")
-parser.add_option("", "--nophos", action="store_false", dest="runphos", 
-				 default=True, help="Don't run PHOS tests")
-parser.add_option("", "--noemcal", action="store_false", dest="runemcal",
-				 default=True, help="Don't run EMCAL tests")
+parser.add_option("-n", "--nevents", dest="nevents",
+				 default=100, help="Specify the number of events to simulate. If you change this the reference histograms will be useless")
+parser.add_option("", "--no-phos", action="store_false", dest="runphos", 
+				 default=True, help="Testing: Don't run PHOS tests. Simulation: Don't simulate for PHOS")
+parser.add_option("", "--no-emcal", action="store_false", dest="runemcal",
+				 default=True, help="Testing: Don't run EMCAL tests. Simulation: Don't simulate for EMCAL")
+parser.add_option("", "--no-trackmatching", action="store_false", dest="runtm",
+				 default=True, help="Testing: Don't run the track matcher, Simulation: Don't simulate TPC")
 
 (options, args) = parser.parse_args()
 
 if options.simulatedata:
    simulator = Simulator()
    simulator.initSimulation()
-   simulator.runSimulation()
-   
-if options.runphos:
-   phostest = PhosTest()
-   phostest.initTest()
-   phostest.run()
-   
-if options.runemcal:
-   emcalTest = EmcalTest()
-   #emcalTest.run()
-   
+   simulator.runSimulation(options.nevents, options.runphos, options.runemcal, options.runtm)
+   exit(0)
+
+else:
+   tester = Tester()
+   tester.initTest()
+   tester.run(options.runphos, options.runemcal, options.runtm)
+   exit(0)
+    
    

@@ -174,7 +174,7 @@ void Config()
     gemcal->SetMomentumRange(10.,10.);
     gemcal->SetPhiRange(95.,100.);
     gemcal->SetThetaRange(EtaToTheta(0.10),EtaToTheta(0.20));
-    gemcal->SetPart(kGamma);
+    gemcal->SetPart(kElectron);
     gener->AddGenerator(gemcal,"GENBOX GAMMA for EMCAL",1);
     
     gener->Init();
@@ -203,7 +203,7 @@ void Config()
     Int_t   iSHIL  =  0;
     Int_t   iT0 =  0;
     Int_t   iTOF   =  0;
-    Int_t   iTPC   =  0;
+    Int_t   iTPC   =  1;
     Int_t   iTRD   =  0;
     Int_t   iZDC   =  0;
     Int_t   iEMCAL =  1;

@@ -206,7 +206,7 @@ void Config()
     Int_t   iTPC   =  0;
     Int_t   iTRD   =  0;
     Int_t   iZDC   =  0;
-    Int_t   iEMCAL =  0;
+    Int_t   iEMCAL =  1;
     Int_t   iACORDE   =  0;
     Int_t   iVZERO =  0;
     rl->CdGAFile();
