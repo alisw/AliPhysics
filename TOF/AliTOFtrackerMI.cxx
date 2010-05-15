@@ -792,8 +792,8 @@ void AliTOFtrackerMI::GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov,
 
   
   Float_t normwidth, normd, p0,p1;  
-  Float_t sigmay = TMath::Max(TMath::Sqrt(cov[0]+kMeanSigmaY*kMeanSigmaY),kMaxSigmaY);
-  Float_t sigmaz = TMath::Max(TMath::Sqrt(cov[2]+kMeanSigmaZ*kMeanSigmaZ),kMaxSigmaZ);
+  Float_t sigmay = TMath::Max(TMath::Sqrt(TMath::Abs(cov[0])+kMeanSigmaY*kMeanSigmaY),kMaxSigmaY);
+  Float_t sigmaz = TMath::Max(TMath::Sqrt(TMath::Abs(cov[2])+kMeanSigmaZ*kMeanSigmaZ),kMaxSigmaZ);
 
   py=0;
   pz=0;  
