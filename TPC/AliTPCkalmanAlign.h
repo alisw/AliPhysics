@@ -10,6 +10,9 @@ class TTreeSRedirector;
 class TObjArray;
 class AliTPCcalibAlign;
 class TTreeSRedirector;
+class TTree;
+class AliTPCCalPad;
+
 
 class AliTPCkalmanAlign: public TNamed{
 public:
@@ -23,10 +26,19 @@ public:
   static void BookAlign1D(TMatrixD &param, TMatrixD &covar, Double_t sigma, Double_t mean);
   void DumpOldAlignment(TTreeSRedirector *pcstream);
   void MakeNewAlignment(Bool_t add,TTreeSRedirector *pcstream=0);
+  void DrawAlignmentTrends();
+  void FitCE();
+  static void MakeAliasCE(TTree * chain);
 public:
   AliTPCcalibAlign * fCalibAlign;    // kalman alignemnt
   TClonesArray     *fOriginalAlign;  // original alignment objects
   TClonesArray     *fNewAlign;       // new alignment objects
+  //
+  AliTPCCalPad     *fPadTime0;       // pad time0 - for z alignment
+  //                                 // time offset parameterization
+  TObjArray       *fFitCEGlobal;    // vector of parameter of the CE fits
+  TObjArray       *fFitCELocal;     // vector of parameter delta to global
+  //
   TMatrixD * fDelta1D[4];            // deltas
   TMatrixD * fCovar1D[4];            // covariance
 private:

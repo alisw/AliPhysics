@@ -76,6 +76,7 @@ AliTPCcalibBase::AliTPCcalibBase():
     fTriggerClass(),
     fCurrentEvent(0),           //! current event
     fCurrentTrack(0),           //! current esd track
+    fCurrentFriendTrack(0),           //! current esd track
     fCurrentSeed(0),            //! current seed
     fDebugLevel(0)
 {
@@ -100,6 +101,7 @@ AliTPCcalibBase::AliTPCcalibBase(const char * name, const char * title):
   fTriggerClass(),
   fCurrentEvent(0),           //! current event
   fCurrentTrack(0),           //! current esd track
+  fCurrentFriendTrack(0),           //! current esd track
   fCurrentSeed(0),            //! current seed
   fDebugLevel(0)
 {
@@ -124,6 +126,7 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
   fTriggerClass(calib.fTriggerClass),
   fCurrentEvent(0),           //! current event
   fCurrentTrack(0),           //! current esd track
+  fCurrentFriendTrack(0),           //! current esd track
   fCurrentSeed(0),            //! current seed
   fDebugLevel(calib.fDebugLevel)
 {
@@ -134,7 +137,7 @@ AliTPCcalibBase::AliTPCcalibBase(const AliTPCcalibBase&calib):
 
 AliTPCcalibBase &AliTPCcalibBase::operator=(const AliTPCcalibBase&calib){
   //
-  //
+  // operator=
   //
   ((TNamed *)this)->operator=(calib);
   fDebugStreamer=0;

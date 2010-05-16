@@ -51,6 +51,7 @@
 #include <AliCDBId.h>
 #include <AliCDBMetaData.h>
 
+#include  "TRandom.h"
 #include  "AliExternalTrackParam.h"
 #include  "AliTrackPointArray.h"
 #include  "TDatabasePDG.h"
@@ -524,6 +525,8 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
     AliTrackerBase::PropagateTrackToBxByBz(&track,radius,kMass,3,kTRUE,kMaxSnp);
     track.GetXYZ(xyz);
+    xyz[0]+=gRandom->Gaus(0,0.001);
+    xyz[1]+=gRandom->Gaus(0,0.001);
     AliTrackPoint pIn0;                               // space point          
     AliTrackPoint pIn1;
     Int_t sector= (xyz[2]>0)? 0:18;
@@ -555,12 +558,12 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   AliTrackPoint   point1,point2,point3;
   if (dir==1) {  //make seed inner
     pointArray0.GetPoint(point1,1);
-    pointArray0.GetPoint(point2,10);
-    pointArray0.GetPoint(point3,20);
+    pointArray0.GetPoint(point2,30);
+    pointArray0.GetPoint(point3,60);
   }
   if (dir==-1){ //make seed outer
-    pointArray0.GetPoint(point1,npoints-20);
-    pointArray0.GetPoint(point2,npoints-10);
+    pointArray0.GetPoint(point1,npoints-60);
+    pointArray0.GetPoint(point2,npoints-30);
     pointArray0.GetPoint(point3,npoints-1);
   }  
   track0 = AliTrackerBase::MakeSeed(point1, point2, point3);
@@ -732,10 +735,10 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
     tPar[1]=theta*refX;
     tPar[2]=snp;
     tPar[3]=theta;
-    tPar[4]=0.001;  // should be calculated - non equal to 0
+    tPar[4]=(gRandom->Rndm()-0.5)*0.02;  // should be calculated - non equal to 0
     Double_t bz=AliTrackerBase::GetBz();
-    if (refX>10.) tPar[4]=snp/(refX*bz*kB2C*2);
-    tPar[4]+=0.001;
+    if (refX>10. && TMath::Abs(bz)>0.1 )  tPar[4]=snp/(refX*bz*kB2C*2);
+    tPar[4]+=(gRandom->Rndm()-0.5)*0.02;
     if (TMath::Abs(snp)>0.251) continue;
     (*pcstream)<<"fit"<<
       "bz="<<bz<<         // magnetic filed used

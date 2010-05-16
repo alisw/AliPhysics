@@ -793,7 +793,7 @@ void AliTPCcalibAlign::ProcessSeed(AliTPCseed *seed) {
       AliTPCTracklet *t2=static_cast<AliTPCTracklet*>(tracklets[i2]);
       AliExternalTrackParam *common1=0,*common2=0;
       if (AliTPCTracklet::PropagateToMeanX(*t1,*t2,common1,common2)){
-	ProcessTracklets(*common1,*common2,seed, t1->GetSector(),t2->GetSector());
+	ProcessTracklets(*common1,*common2,seed, t1->GetSector(),t2->GetSector());	
 	UpdateAlignSector(seed,t1->GetSector());
       }
       delete common1;
@@ -947,7 +947,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
       if (TMath::Abs(parLine1[2])<0.8 &&TMath::Abs(parLine1[2])<0.8 ){ //angular cut
 	FillHisto(parLine1,parLine2,s1,s2);  
 	ProcessAlign(parLine1,parLine2,s1,s2);
-	UpdateKalman(s1,s2,par1, cov1, par2, cov2);
+	//UpdateKalman(s1,s2,par1, cov1, par2, cov2); - OBSOLETE to be removed - 50 % of time here
       }
     }
   }
@@ -1665,7 +1665,7 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   binsTrack[2]=53;       xminTrack[2]=85.;        xmaxTrack[2]=245.; 
   //
   axisName[3]="kY";      axisTitle[3]="dy/dx"; 
-  binsTrack[3]=32;       xminTrack[3]=-0.16;        xmaxTrack[3]=0.16; 
+  binsTrack[3]=8;       xminTrack[3]=-0.16;        xmaxTrack[3]=0.16; 
   //
   axisName[4]="kZ";      axisTitle[4]="dz/dx"; 
   binsTrack[4]=10;       xminTrack[4]=-1.5;        xmaxTrack[4]=1.5; 
@@ -2109,8 +2109,17 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
     UpdateKalman(*fSectorParamA,*fSectorCovarA,*align->fSectorParamA,*align->fSectorCovarA);
     UpdateKalman(*fSectorParamC,*fSectorCovarC,*align->fSectorParamC,*align->fSectorCovarC);
   }
-  if (!fClusterDelta[0]) MakeResidualHistos();
+  if (!fClusterDelta[1]) MakeResidualHistos();
+
   for (Int_t i=0; i<6; i++){
+    if (i==0 || i==3){
+      delete fClusterDelta[i];   // memory problem do not fit into memory
+      fClusterDelta[i]=0;        // 
+      delete align->fClusterDelta[i];   // memory problem do not fit into memory
+      align->fClusterDelta[i]=0;        // 
+    }
+    if (i==3) continue;  // skip constrained histo z
+    if (i==0) continue;  // skip non constrained histo y
     if (align->fClusterDelta[i]) fClusterDelta[i]->Add(align->fClusterDelta[i]);
   }
 }
@@ -2406,8 +2415,8 @@ void AliTPCcalibAlign::GlobalAlign6(Int_t minPoints, Float_t sysError, Int_t nit
   //
   // full track fit parameters
   // 
-  TLinearFitter fyf(2,"pol1");
-  TLinearFitter fzf(2,"pol1");
+  static TLinearFitter fyf(2,"pol1");   // change to static - suggestion of calgrind - 30 % of time
+  static TLinearFitter fzf(2,"pol1");   // relative to time of given class
   TVectorD pyf(2), peyf(2),pzf(2), pezf(2);
   TMatrixD covY(4,4),covZ(4,4);
   Double_t chi2FacY =1;
@@ -2537,8 +2546,8 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   // full track fit parameters
   // 
-  TLinearFitter fyf(2,"pol1");
-  TLinearFitter fzf(2,"pol1");
+  static TLinearFitter fyf(2,"pol1");   // make it static - too much time for comiling of formula
+  static TLinearFitter fzf(2,"pol1");   // calgrind recomendation
   TVectorD pyf(2), peyf(2),pzf(2), pezf(2);
   TVectorD pyfc(2),pzfc(2);
   Int_t nf=0;
@@ -2547,6 +2556,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   for (Int_t iter=0; iter<2; iter++){
     fyf.ClearPoints();
+    fzf.ClearPoints();
     for (Int_t irow=kdrow0Fit;irow<159-kdrow1Fit;irow++) {
       AliTPCclusterMI *c=track->GetClusterPointer(irow);
       if (!c) continue;
@@ -2625,8 +2635,15 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   // 1-4 OROC quadrants 
   //   0 IROC
   //
-  TLinearFitter *fittersY[5];
-  TLinearFitter *fittersZ[5];
+  static TLinearFitter *fittersY[5]={0,0,0,0,0};   // calgrind recomendation - fater to clear points
+  static TLinearFitter *fittersZ[5]={0,0,0,0,0};   // than create the fitter
+  if (fittersY[0]==0){
+    for (Int_t i=0;i<5;i++) {
+      fittersY[i] = new TLinearFitter(2,"pol1");
+      fittersZ[i] = new TLinearFitter(2,"pol1");
+    }
+  }
+  //
   Int_t npoints[5];
   TVectorD paramsY[5];
   TVectorD errorsY[5];
@@ -2638,14 +2655,14 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   Double_t chi2CZ[5];
   for (Int_t i=0;i<5;i++) {
     npoints[i]=0;
-    fittersY[i] = new TLinearFitter(2,"pol1");
     paramsY[i].ResizeTo(2);
     errorsY[i].ResizeTo(2);
     covY[i].ResizeTo(2,2);
-    fittersZ[i] = new TLinearFitter(2,"pol1");
     paramsZ[i].ResizeTo(2);
     errorsZ[i].ResizeTo(2);
     covZ[i].ResizeTo(2,2);
+    fittersY[i]->ClearPoints();
+    fittersZ[i]->ClearPoints();
   }
   //
   // Update fitters
@@ -2685,14 +2702,14 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
       resVector[4]= c->GetZ()/c->GetX();
       //
       resVector[0]= c->GetY()-yfit;
-      fClusterDelta[0]->Fill(resVector);
+      //fClusterDelta[0]->Fill(resVector);
       resVector[0]= c->GetZ()-zfit;
       fClusterDelta[1]->Fill(resVector);
       //
       resVector[0]= c->GetY()-yfitC;
       fClusterDelta[2]->Fill(resVector);
       resVector[0]= c->GetZ()-zfitC;
-      fClusterDelta[3]->Fill(resVector);
+      //fClusterDelta[3]->Fill(resVector);
 
     }
     if (c->GetRow()<kdrow0Fit) continue;      
@@ -2754,11 +2771,6 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
       covZ[i](1,1)*=chi2FacZ*chi2FacZ;      
     }
   }
-  for (Int_t i=0;i<5;i++){
-    delete fittersY[i];
-    delete fittersZ[i];
-  }
-
   //
   // void UpdateSectorKalman
   //

@@ -406,36 +406,12 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       TTimeStamp tstamp(fTime);
-      Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
-      Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
-      Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-      Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-      Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
-      Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
-      Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
-      TVectorD vecGoofie(20);
-      AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
-      if (goofieArray){
-	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
-	}
-      }
       (*cstream)<<"laserInfo"<<
 	"run="<<fRun<<              //  run number
 	"event="<<fEvent<<          //  event number
 	"time="<<fTime<<            //  time stamp of event
 	"trigger="<<fTrigger<<      //  trigger
 	"mag="<<fMagF<<             //  magnetic field
-	// Environment values
-	"press0="<<valuePressure0<<
-	"press1="<<valuePressure1<<
-	"pt0="<<ptrelative0<<
-	"pt1="<<ptrelative1<<
-	"temp0="<<temp0<<
-	"temp1="<<temp1<<
-	"vecGoofie.="<<&vecGoofie<<
-	"vdcorr="<<vdcorr<<
 	//laser
 	"rejectA="<<isReject[0]<<
 	"rejectC="<<isReject[1]<<
@@ -743,22 +719,6 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
   if (fStreamLevel>0){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
-      TTimeStamp tstamp(fTime);
-      Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
-      Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
-      Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-      Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-      Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
-      Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
-      Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
-      TVectorD vecGoofie(20);
-      AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
-      if (goofieArray){
-	for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-	  AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-	  if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
-	}
-      }
       (*cstream)<<"timeInfo"<<
 	"run="<<fRun<<              //  run number
 	"event="<<fEvent<<          //  event number
@@ -766,14 +726,6 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
 	"trigger="<<fTrigger<<      //  trigger
 	"mag="<<fMagF<<             //  magnetic field
 	// Environment values
-	"press0="<<valuePressure0<<
-	"press1="<<valuePressure1<<
-	"pt0="<<ptrelative0<<
-	"pt1="<<ptrelative1<<
-	"temp0="<<temp0<<
-	"temp1="<<temp1<<
-	"vecGoofie.=<<"<<&vecGoofie<<
-	"vdcorr="<<vdcorr<<
 	//
 	// accumulated values
 	//
@@ -1146,18 +1098,12 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
     TVectorD gxyz(3);
     trackIn.GetXYZ(gxyz.GetMatrixArray());
     TTimeStamp tstamp(fTime);
-    Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-    Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"tpctpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
       "time="<<fTime<<            //  time stamp of event
       "trigger="<<fTrigger<<      //  trigger
       "mag="<<fMagF<<             //  magnetic field
-      "ptrel0.="<<ptrelative0<<
-      "ptrel1.="<<ptrelative1<<
-      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "xyz.="<<&gxyz<<             // global position
       "tIn.="<<&trackIn<<         // refitterd track in 
@@ -1306,7 +1252,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   // 3. Update alignment
   //
   Int_t htime = fTime/3600; //time in hours
-  if (fAlignITSTPC->GetEntries()<htime){
+  if (fAlignITSTPC->GetEntriesFast()<htime){
     fAlignITSTPC->Expand(htime*2+20);
   }
   AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignITSTPC->At(htime);
@@ -1338,43 +1284,18 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
   align->SetRejectOutliers(kFALSE);
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
-    TTimeStamp tstamp(fTime);
-    Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
-    Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
-    Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-    Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
-    Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
-    TVectorD vecGoofie(20);
-    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
-    if (goofieArray){
-      for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-	AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-	if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
-      }
-    }
     TVectorD gpTPC(3), gdTPC(3);
     TVectorD gpITS(3), gdITS(3);
     pTPC.GetXYZ(gpTPC.GetMatrixArray());
     pTPC.GetDirection(gdTPC.GetMatrixArray());
     pITS.GetXYZ(gpITS.GetMatrixArray());
     pITS.GetDirection(gdITS.GetMatrixArray());
-    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"itstpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
       "time="<<fTime<<            //  time stamp of event
       "trigger="<<fTrigger<<      //  trigger
       "mag="<<fMagF<<             //  magnetic field
-      // Environment values
-      "press0="<<valuePressure0<<
-      "press1="<<valuePressure1<<
-      "pt0="<<ptrelative0<<
-      "pt1="<<ptrelative1<<
-      "temp0="<<temp0<<
-      "temp1="<<temp1<<
-      "vecGoofie.="<<&vecGoofie<<
-      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "hasAlone="<<hasAlone<<    // has ITS standalone ?
       "track.="<<track<<  // track info
@@ -1481,7 +1402,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   // 3. Update alignment
   //
   Int_t htime = fTime/3600; //time in hours
-  if (fAlignTRDTPC->GetEntries()<htime){
+  if (fAlignTRDTPC->GetEntriesFast()<htime){
     fAlignTRDTPC->Expand(htime*2+20);
   }
   AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignTRDTPC->At(htime);
@@ -1507,43 +1428,18 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   align->SetRejectOutliers(kFALSE);
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
-    TTimeStamp tstamp(fTime);
-    Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
-    Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
-    Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-    Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
-    Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
-    TVectorD vecGoofie(20);
-    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
-    if (goofieArray){
-      for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-	AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-	if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
-      }
-    }
     TVectorD gpTPC(3), gdTPC(3);
     TVectorD gpTRD(3), gdTRD(3);
     pTPC.GetXYZ(gpTPC.GetMatrixArray());
     pTPC.GetDirection(gdTPC.GetMatrixArray());
     pTRD.GetXYZ(gpTRD.GetMatrixArray());
     pTRD.GetDirection(gdTRD.GetMatrixArray());
-    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"trdtpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
       "time="<<fTime<<            //  time stamp of event
       "trigger="<<fTrigger<<      //  trigger
       "mag="<<fMagF<<             //  magnetic field
-      // Environment values
-      "press0="<<valuePressure0<<
-      "press1="<<valuePressure1<<
-      "pt0="<<ptrelative0<<
-      "pt1="<<ptrelative1<<
-      "temp0="<<temp0<<
-      "temp1="<<temp1<<
-      "vecGoofie.="<<&vecGoofie<<
-      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "nmed="<<kglast<<        // number of entries to define median and RMS
       "vMed.="<<&vecMedian<<    // median of deltas
@@ -1667,7 +1563,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   // 3. Update alignment
   //
   Int_t htime = fTime/3600; //time in hours
-  if (fAlignTOFTPC->GetEntries()<htime){
+  if (fAlignTOFTPC->GetEntriesFast()<htime){
     fAlignTOFTPC->Expand(htime*2+20);
   }
   AliRelAlignerKalman* align =  (AliRelAlignerKalman*)fAlignTOFTPC->At(htime);
@@ -1692,43 +1588,18 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
   align->SetRejectOutliers(kFALSE);
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
-    TTimeStamp tstamp(fTime);
-    Float_t valuePressure0 = AliTPCcalibDB::GetPressure(tstamp,fRun,0);
-    Float_t valuePressure1 = AliTPCcalibDB::GetPressure(tstamp,fRun,1);
-    Double_t ptrelative0   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
-    Double_t ptrelative1   = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t temp0         = AliTPCcalibDB::GetTemperature(tstamp,fRun,0);
-    Double_t temp1         = AliTPCcalibDB::GetTemperature(tstamp,fRun,1);
-    TVectorD vecGoofie(20);
-    AliDCSSensorArray* goofieArray = AliTPCcalibDB::Instance()->GetGoofieSensors(fRun);
-    if (goofieArray){
-      for (Int_t isensor=0; isensor<goofieArray->NumSensors();isensor++){
-	AliDCSSensor *gsensor = goofieArray->GetSensor(isensor);
-	if (gsensor) vecGoofie[isensor]=gsensor->GetValue(tstamp);
-      }
-    }
     TVectorD gpTPC(3), gdTPC(3);
     TVectorD gpTOF(3), gdTOF(3);
     pTPC.GetXYZ(gpTPC.GetMatrixArray());
     pTPC.GetDirection(gdTPC.GetMatrixArray());
     pTOF.GetXYZ(gpTOF.GetMatrixArray());
     pTOF.GetDirection(gdTOF.GetMatrixArray());
-    Double_t vdcorr        = AliTPCcalibDB::Instance()->GetVDriftCorrectionTime(tstamp,fRun,0,1);
     (*cstream)<<"toftpc"<<
       "run="<<fRun<<              //  run number
       "event="<<fEvent<<          //  event number
       "time="<<fTime<<            //  time stamp of event
       "trigger="<<fTrigger<<      //  trigger
       "mag="<<fMagF<<             //  magnetic field
-      // Environment values
-      "press0="<<valuePressure0<<
-      "press1="<<valuePressure1<<
-      "pt0="<<ptrelative0<<
-      "pt1="<<ptrelative1<<
-      "temp0="<<temp0<<
-      "temp1="<<temp1<<
-      "vecGoofie.="<<&vecGoofie<<
-      "vdcorr="<<vdcorr<<        // drift correction applied
       //
       "nmed="<<kglast<<        // number of entries to define median and RMS
       "vMed.="<<&vecMedian<<    // median of deltas

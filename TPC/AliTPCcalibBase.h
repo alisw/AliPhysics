@@ -13,6 +13,7 @@
 class AliTPCseed;
 class AliESDEvent;
 class AliESDtrack;
+class AliESDfriendTrack;
 class TCollection;
 class TTreeSRedirector;
 class TGraph;
@@ -64,6 +65,7 @@ protected:
   TObjString fTriggerClass;             // trigger class
   AliESDEvent  *fCurrentEvent;          //! current event
   AliESDtrack *fCurrentTrack;           //! current esd track
+  AliESDfriendTrack *fCurrentFriendTrack;     //! current friend track
   AliTPCseed   *fCurrentSeed;           //! current seed
 private:
   Int_t  fDebugLevel;                   //  debug level

@@ -146,6 +146,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
   AliTPCCalPad * distortionMapY = calib->GetDistortionMap(0); 
   AliTPCCalPad * distortionMapZ = calib->GetDistortionMap(1); 
+  AliTPCCalPad * distortionMapR = calib->GetDistortionMap(2); 
   AliTPCParam  * param    = calib->GetParameters(); 
   AliTPCCorrection * correction = calib->GetTPCComposedCorrection();
   if (!time0TPC){
@@ -231,12 +232,17 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   if (distortionMapY ){
     //can be switch on for each dimension separatelly
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x2) 
-      xx[1]-=distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+    if (fCurrentRecoParam->GetUseFieldCorrection()&0x2)
+      if (distortionMapY) 
+	xx[1]-=distortionMapY->GetCalROC(sector)->GetValue(row,pad);
     if (fCurrentRecoParam->GetUseFieldCorrection()&0x4) 
-      xx[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
+      if (distortionMapZ)
+	xx[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
+    if (fCurrentRecoParam->GetUseFieldCorrection()&0x8) 
+      if (distortionMapR)
+	xx[0]-=distortionMapR->GetCalROC(sector)->GetValue(row,pad);
   }
-
+  //
 
   //
   x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];

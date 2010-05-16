@@ -153,7 +153,8 @@ void     AliTPCcalibCalib::Process(AliESDEvent *event){
     AliESDtrack *track = event->GetTrack(i);     
     AliESDfriendTrack *friendTrack = (AliESDfriendTrack*) ESDfriend->GetTrack(i);
     if (!friendTrack) continue;
-    track->SetFriendTrack(friendTrack);
+    //track->SetFriendTrack(friendTrack);
+    fCurrentFriendTrack=friendTrack;
     const AliExternalTrackParam * trackIn  = track->GetInnerParam();
     const AliExternalTrackParam * trackOut = track->GetOuterParam();
     AliExternalTrackParam * tpcOut   = (AliExternalTrackParam *)friendTrack->GetTPCOut();
@@ -180,7 +181,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // 0 - Setup transform object
   //
-  AliESDfriendTrack *friendTrack = (AliESDfriendTrack *)track->GetFriendTrack();
+  static Int_t streamCounter=0;
+  streamCounter++;
+  AliESDfriendTrack *friendTrack = fCurrentFriendTrack;
 
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
@@ -239,7 +242,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 
 
 
-    if (fStreamLevel>2){
+    if (fStreamLevel>2 && streamCounter<20*fStreamLevel ){
+      // dump debug info if required
       TTreeSRedirector *cstream = GetDebugStreamer();
       if (cstream){
 	(*cstream)<<"Clusters"<<
@@ -253,8 +257,6 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
 	  "cl.="<<cluster<<
 	  "cy="<<dy<<
 	  "cz="<<dz<<
-	  //	  "cY="<<corrclY<<
-	  //	  "cR="<<corrR<<
 	  "\n";
       }
     }
@@ -413,7 +415,7 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   trackOut.PropagateTo(trackOutOld->GetX(),bz);
   
 
-  if (fStreamLevel>0){
+  if (fStreamLevel>0 && streamCounter<100*fStreamLevel){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       (*cstream)<<"Tracks"<<

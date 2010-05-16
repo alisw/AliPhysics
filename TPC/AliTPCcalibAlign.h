@@ -132,7 +132,7 @@ public:
   //
   //
   void MakeResidualHistos();
-
+  THnSparse * GetClusterDelta(Int_t index) const  { return fClusterDelta[index];}
 public:
   
   void FillHisto(const Double_t *t1,

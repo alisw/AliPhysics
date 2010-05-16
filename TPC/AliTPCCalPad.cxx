@@ -38,6 +38,15 @@
 #include <iostream>
 #include <AliLog.h>
 
+//graphic includes
+#include <TTree.h>
+#include <TH1.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TCut.h>
+#include <TVirtualPad.h>
+
+
 ClassImp(AliTPCCalPad)
 
 //_____________________________________________________________________________
@@ -371,7 +380,7 @@ Double_t AliTPCCalPad::GetLTM(Double_t *sigma, Double_t fraction, AliTPCCalPad* 
 }
 
 //_____________________________________________________________________________
-TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type){
+TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type, Int_t side){
   //
   // make 1D histo
   // type -1 = user defined range
@@ -408,6 +417,8 @@ TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type){
   sprintf(name,"%s Pad 1D",GetTitle());
   TH1F * his = new TH1F(name,name,100, min,max);
     for (Int_t isec = 0; isec < kNsec; isec++) {
+      if (side==1 && isec%36>18) continue;
+      if (side==-1 && isec%36<18) continue;
 	if (fROC[isec]){
 	    for (UInt_t irow=0; irow<fROC[isec]->GetNrows(); irow++){
 		UInt_t npads = (Int_t)fROC[isec]->GetNPads(irow);
@@ -677,144 +688,173 @@ AliTPCCalPad *AliTPCCalPad::CreateCalPadFit(const char* fitFormula, const TVecto
   delete arrFitFormulas;
   return pad;
 }
-/*
-void AliTPCCalPad::GlobalSidesFit(const AliTPCCalPad* PadOutliers, TVectorD &fitParamSideA, TVectorD &fitParamSideC,TMatrixD &covMatrixSideA, TMatrixD &covMatrixSideC, Float_t & chi2SideA, Float_t & chi2SideC, Int_t fitType, Bool_t robust, Double_t chi2Threshold, Double_t robustFraction){
-  //
-  // Makes a  GlobalFit over each side and return fit-parameters, covariance and chi2 for each side
-  // fitType == 0: fit plane function
-  // fitType == 1: fit parabolic function
-  // PadOutliers - pads with value !=0 are not used in fitting procedure
-  // chi2Threshold: Threshold for chi2 when EvalRobust is called
-  // robustFraction: Fraction of data that will be used in EvalRobust
-  //
-  TLinearFitter* fitterGA = 0;
-  TLinearFitter* fitterGC = 0;
-  
-  if (fitType  == 1) {
-    fitterGA = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
-    fitterGC = new TLinearFitter (6,"x0++x1++x2++x3++x4++x5");
-  }
-  else {
-    fitterGA = new TLinearFitter(3,"x0++x1++x2");
-    fitterGC = new TLinearFitter(3,"x0++x1++x2");
-  }
-  fitterGA->StoreData(kTRUE);   
-  fitterGC->StoreData(kTRUE);   
-  fitterGA->ClearPoints();
-  fitterGC->ClearPoints();
-  Double_t xx[6];  
-  Int_t    npointsA=0;
-  Int_t    npointsC=0;
-  
-  Float_t localXY[3] = {0}; // pad's position, needed to get the pad's position
-  Float_t lx, ly;  // pads position
-  
-  AliTPCROC* tpcROCinstance = AliTPCROC::Instance();  // to calculate the pad's position
-  
-  // loop over all sectors and pads and read data into fitterGA and fitterGC 
-  if (fitType == 1) {  
-  // parabolic fit
-    fitParamSideA.ResizeTo(6);
-    fitParamSideC.ResizeTo(6);
-    covMatrixSideA.ResizeTo(6,6);
-    covMatrixSideC.ResizeTo(6,6);
-    for (UInt_t isec = 0; isec<72; isec++){
-      for (UInt_t irow = 0; irow < GetCalROC(isec)->GetNrows(); irow++) {
-         for (UInt_t ipad = 0; ipad < GetCalROC(isec)->GetNPads(irow); ipad++) {
-            // fill fitterG
-            tpcROCinstance->GetPositionLocal(isec, irow, ipad, localXY);   // calculate position localXY by sector, pad and row number
-            lx = localXY[0];
-            ly = localXY[1];
-            xx[0] = 1;
-            xx[1] = lx;
-            xx[2] = ly;
-            xx[3] = lx*lx;
-            xx[4] = ly*ly;
-            xx[5] = lx*ly;
-            if (!PadOutliers || PadOutliers->GetCalROC(isec)->GetValue(irow, ipad) != 1) {
-            // if given pad is no outlier, add it to TLinearFitter, decide to which of both
-//                sector  0 - 17: IROC, A
-//                sector 18 - 35: IROC, C
-//                sector 36 - 53: OROC, A
-//                sector 54 - 71: CROC, C
-               if (isec <= 17 || (isec >= 36 && isec <= 53)) { // Side A
-                  npointsA++;
-                  fitterGA->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
-               }
-               else { // side C
-                  npointsC++;
-                  fitterGC->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
-               }
-            }
-         }
-      }
-    }
-  }
-  else {   
-  // linear fit
-    fitParamSideA.ResizeTo(3);
-    fitParamSideC.ResizeTo(3);
-    covMatrixSideA.ResizeTo(3,3);
-    covMatrixSideC.ResizeTo(3,3);
-    
-    for (UInt_t isec = 0; isec<72; isec++){
-      for (UInt_t irow = 0; irow < GetCalROC(isec)->GetNrows(); irow++) {
-         for (UInt_t ipad = 0; ipad < GetCalROC(isec)->GetNPads(irow); ipad++) {
-            // fill fitterG
-            tpcROCinstance->GetPositionLocal(isec, irow, ipad, localXY);   // calculate position localXY by sector, pad and row number
-            lx = localXY[0];
-            ly = localXY[1];
-            xx[0] = 1;
-            xx[1] = lx;
-            xx[2] = ly;
-            if (!PadOutliers || PadOutliers->GetCalROC(isec)->GetValue(irow, ipad) != 1) {
-            // if given pad is no outlier, add it to TLinearFitter, decide to which of both
-//                sector  0 - 17: IROC, A
-//                sector 18 - 35: IROC, C
-//                sector 36 - 53: OROC, A
-//                sector 54 - 71: CROC, C
-               if (isec <= 17 || (isec >= 36 && isec <= 53)) { 
-               // Side A
-                  npointsA++;
-                  fitterGA->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
-               }
-               else { 
-               // side C
-                  npointsC++;
-                  fitterGC->AddPoint(xx, GetCalROC(isec)->GetValue(irow, ipad), 1);  
-               }
-            }
-         }
-      }
-    }
-  }    
-  
-  fitterGA->Eval();
-  fitterGC->Eval();
-  fitterGA->GetParameters(fitParamSideA);
-  fitterGC->GetParameters(fitParamSideC);
-  fitterGA->GetCovarianceMatrix(covMatrixSideA);
-  fitterGC->GetCovarianceMatrix(covMatrixSideC);
-  if (fitType == 1){
-    chi2SideA = fitterGA->GetChisquare()/(npointsA-6.);
-    chi2SideC = fitterGC->GetChisquare()/(npointsC-6.);
-  }
-  else {
-   chi2SideA = fitterGA->GetChisquare()/(npointsA-3.);
-   chi2SideC = fitterGC->GetChisquare()/(npointsC-3.);
-  }
-  if (robust && chi2SideA > chi2Threshold) {
-    //    std::cout << "robust fitter called... " << std::endl;
-    fitterGA->EvalRobust(robustFraction);
-    fitterGA->GetParameters(fitParamSideA);
-  }
-  if (robust && chi2SideC > chi2Threshold) {
-    //    std::cout << "robust fitter called... " << std::endl;
-    fitterGC->EvalRobust(robustFraction);
-    fitterGC->GetParameters(fitParamSideC);
-  }
-  delete fitterGA;
-  delete fitterGC;
-}
-*/
 
+
+
+TCanvas * AliTPCCalPad::MakeReportPadSector(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser){
+  //
+  // Make a report - cal pads per sector
+  // mean valeus per sector and local X
+  //
+  TH1* his=0; 
+  TLegend *legend = 0;
+  TCanvas *canvas = new TCanvas(Form("Sector: %s",varTitle),Form("Sector: %s",varTitle),1500,1100);
+
+  canvas->Divide(2);
+  chain->SetAlias("lX","lx.fElements"); 
+  //
+  canvas->cd(1);
+  TString strDraw=varName;
+  strDraw+=":lX";
+  legend = new TLegend(0.5,0.50,0.9,0.9, Form("%s TPC A side", varTitle));
+  for (Int_t isec=-1; isec<18; isec+=1){
+    TCut cutSec=Form("sector%36==%d",isec);
+    cutSec+=cutUser;
+    if (isec==-1) cutSec="sector%36<18";
+    chain->SetMarkerColor(1+(isec+2)%5);
+    chain->SetLineColor(1+(isec+2)%5);
+    chain->SetMarkerStyle(25+(isec+2)%4);
+    //
+    chain->Draw(strDraw.Data(),cutSec,"profgoff");
+    his=(TH1*)chain->GetHistogram()->Clone();
+    delete chain->GetHistogram();
+    his->SetMaximum(max);
+    his->SetMinimum(min);
+    his->GetXaxis()->SetTitle("R (cm)");
+    his->GetYaxis()->SetTitle(axisTitle);
+    his->SetTitle(Form("%s- sector %d",varTitle, isec));
+    his->SetName(Form("%s- sector %d",varTitle, isec));
+    if (isec==-1) his->SetTitle(Form("%s A side",varTitle));
+    if (isec==-1) his->Draw();
+    his->Draw("same");
+    legend->AddEntry(his);
+  }
+  legend->Draw();
+  canvas->cd(2);
+  //
+  legend = new TLegend(0.5,0.50,0.9,0.9, Form("%s TPC C side", varTitle));
+  for (Int_t isec=-1; isec<18; isec+=1){
+    TCut cutSec=Form("(sector+18)%36==%d",isec);
+    cutSec+=cutUser;
+    if (isec==-1) cutSec="sector%36>18";
+    chain->SetMarkerColor(1+(isec+2)%5);
+    chain->SetLineColor(1+(isec+2)%5);
+    chain->SetMarkerStyle(25+isec%4);
+    //
+    chain->Draw(strDraw.Data(),cutSec,"profgoff");
+    his=(TH1*)chain->GetHistogram()->Clone();
+    delete chain->GetHistogram();
+    his->SetMaximum(max);
+    his->SetMinimum(min);
+    his->GetXaxis()->SetTitle("R (cm)");
+    his->GetYaxis()->SetTitle(axisTitle);
+    his->SetTitle(Form("%s- sector %d",varTitle,isec));
+    his->SetName(Form("%s- sector %d",varTitle,isec));
+    if (isec==-1) his->SetTitle(Form("%s C side",varTitle));
+    if (isec==-1) his->Draw();
+    his->Draw("same");
+    legend->AddEntry(his);
+  }
+  legend->Draw();
+  //
+  //
+  return canvas;
+}
+
+
+TCanvas * AliTPCCalPad::MakeReportPadSector2D(TTree *chain, const char* varName, const char*varTitle, const char *axisTitle, Float_t min, Float_t max, const char *cutUser){
+  //
+  // Make a report - cal pads per sector
+  // 2D view
+  // Input tree should be created using AliPreprocesorOnline before
+  // 
+  TH1* his=0; 
+  TCanvas *canvas = new TCanvas(Form("%s2D",varTitle),Form("%s2D",varTitle),1500,1100);
+  canvas->Divide(2);
+  //
+  TString strDraw=varName;
+  strDraw+=":gy.fElements:gx.fElements>>his(250,-250,250,250,-250,250)";
+  //
+  TVirtualPad * pad=0;
+  pad=canvas->cd(1);
+  pad->SetMargin(0.15,0.15,0.15,0.15);
+  TCut cut=cutUser;
+  chain->Draw(strDraw.Data(),"sector%36<18"+cut,"profgoffcolz2");
+  his=(TH1*)chain->GetHistogram()->Clone();
+  delete chain->GetHistogram();
+  his->SetMaximum(max);
+  his->SetMinimum(min);
+  his->GetXaxis()->SetTitle("x (cm)");
+  his->GetYaxis()->SetTitle("y (cm)");
+  his->GetZaxis()->SetTitle(axisTitle);
+  his->SetTitle(Form("%s A side",varTitle));
+  his->SetName(Form("%s A side",varTitle));
+  his->Draw("colz2");
+  //
+  pad=canvas->cd(2);
+  pad->SetMargin(0.15,0.15,0.15,0.15);
+
+  chain->Draw(strDraw.Data(),"sector%36>=18"+cut,"profgoffcolz2");
+  his=(TH1*)chain->GetHistogram()->Clone();
+  delete chain->GetHistogram();
+  his->SetMaximum(max);
+  his->SetMinimum(min);
+  his->GetXaxis()->SetTitle("x (cm)");
+  his->GetYaxis()->SetTitle("y (cm)");
+  his->GetZaxis()->SetTitle(axisTitle);
+  his->SetTitle(Form("%s C side",varTitle));
+  his->SetName(Form("%s C side",varTitle));
+  his->Draw("colz2");
+  //
+  //
+  return canvas;
+}
+
+void  AliTPCCalPad::Draw(Option_t* option){
+  // 
+  // Draw function - standard 2D view
+  //
+  TH1* his=0; 
+  TCanvas *canvas = new TCanvas(Form("%s2D",GetTitle()),Form("%s2D",GetTitle()),900,900);
+  canvas->Divide(2,2);
+  //
+  //
+  TVirtualPad * pad=0;
+  pad=canvas->cd(1);
+  pad->SetMargin(0.15,0.15,0.15,0.15);
+  his=MakeHisto2D(0);
+  his->GetXaxis()->SetTitle("x (cm)");
+  his->GetYaxis()->SetTitle("y (cm)");
+  his->GetZaxis()->SetTitle(GetTitle());
+  his->SetTitle(Form("%s A side",GetTitle()));
+  his->SetName(Form("%s A side",GetTitle()));
+  his->Draw(option);
+  //
+  pad=canvas->cd(2);
+  pad->SetMargin(0.15,0.15,0.15,0.15);
+  his=MakeHisto2D(1);
+  his->GetXaxis()->SetTitle("x (cm)");
+  his->GetYaxis()->SetTitle("y (cm)");
+  his->GetZaxis()->SetTitle(GetTitle());
+  his->SetTitle(Form("%s C side",GetTitle()));
+  his->SetName(Form("%s C side",GetTitle()));
+  his->Draw(option);
+  //
+  pad=canvas->cd(3);
+  pad->SetMargin(0.15,0.15,0.15,0.15);
+  his=MakeHisto1D(-8,8,0,1);
+  his->GetXaxis()->SetTitle(GetTitle());
+  his->SetTitle(Form("%s A side",GetTitle()));
+  his->SetName(Form("%s A side",GetTitle()));
+  his->Draw("err");
+  //
+  pad=canvas->cd(4);
+  pad->SetMargin(0.15,0.15,0.15,0.15);
+  his=MakeHisto1D(-8,8,0,-1);
+  his->GetXaxis()->SetTitle(GetTitle());
+  his->SetTitle(Form("%s C side",GetTitle()));
+  his->SetName(Form("%s C side",GetTitle()));
+  his->Draw("err");
+
+
+}
