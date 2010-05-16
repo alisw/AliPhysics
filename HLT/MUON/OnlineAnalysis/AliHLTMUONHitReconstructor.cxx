@@ -271,7 +271,7 @@ void AliHLTMUONHitReconstructor::TryRecover(ERecoveryMode mode)
 
 
 bool AliHLTMUONHitReconstructor::Run(
-		const AliHLTUInt32_t* rawData,
+		AliHLTUInt32_t* rawData,
 		AliHLTUInt32_t rawDataSize,
 		AliHLTMUONRecHitStruct* const recHit,
 		AliHLTUInt32_t& nofHit
@@ -369,7 +369,7 @@ bool AliHLTMUONHitReconstructor::FillChannelData(
 }
 
 
-bool AliHLTMUONHitReconstructor::DecodeDDL(const AliHLTUInt32_t* rawData,AliHLTUInt32_t rawDataSize)
+bool AliHLTMUONHitReconstructor::DecodeDDL(AliHLTUInt32_t* rawData,AliHLTUInt32_t rawDataSize)
 {
   //function to decode Raw Data 
 

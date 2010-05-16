@@ -49,7 +49,7 @@ public:
 	AliHLTInt32_t GetDCCut() const { return fDCCut; }
 	
 	bool Run(
-			const AliHLTUInt32_t* rawData,
+			AliHLTUInt32_t* rawData,
 			AliHLTUInt32_t rawDataSize,
 			AliHLTMUONRecHitStruct* const recHit,
 			AliHLTUInt32_t& nofHit
@@ -338,7 +338,7 @@ private:
 	
 	ERecoveryMode fRecoveryMode;  ///< The recovery mode for the decoder.
 	
-	bool DecodeDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
+	bool DecodeDDL(AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
 	void FindCentralHits(AliHLTInt32_t iDet);
 	bool FindRecHits();
 	void RecXRecY();

@@ -1168,14 +1168,13 @@ int DumpRawDataHeader(
 
 
 int DumpTrackerDDLRawStream(
-		const char* buffer, unsigned long bufferSize,
-		bool continueParse
+		char* buffer, unsigned long bufferSize,
+		bool continueParse, bool tryrecover
 	)
 {
 	// Dumps a tracker DDL raw stream data.
 	
-	const AliRawDataHeader* header =
-		reinterpret_cast<const AliRawDataHeader*>(buffer);
+	AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(buffer);
 	int result = DumpRawDataHeader(buffer, bufferSize, header, continueParse);
 	if (result != EXIT_SUCCESS) return result;
 
@@ -1183,10 +1182,10 @@ int DumpTrackerDDLRawStream(
 	AliMUONTrackerDDLDecoder<AliTrackerDecoderHandler> decoder;
 	decoder.ExitOnError(not continueParse);
 	decoder.SendDataOnParityError(true);
-	decoder.TryRecover(false);
+	decoder.TryRecover(tryrecover);
 	decoder.AutoDetectTrailer(true);
 	decoder.CheckForTrailer(true);
-	const char* payload = buffer + sizeof(AliRawDataHeader);
+	char* payload = buffer + sizeof(AliRawDataHeader);
 	UInt_t payloadSize = bufferSize - sizeof(AliRawDataHeader);
 	if (decoder.Decode(payload, payloadSize))
 	{
@@ -1201,7 +1200,7 @@ int DumpTrackerDDLRawStream(
 
 int DumpTriggerDDLRawStream(
 		const char* buffer, unsigned long bufferSize,
-		bool continueParse
+		bool continueParse, bool tryrecover
 	)
 {
 	// Dumps a trigger DDL raw stream data.
@@ -1214,7 +1213,7 @@ int DumpTriggerDDLRawStream(
 	
 	AliMUONTriggerDDLDecoder<AliTriggerDecoderHandler> decoder;
 	decoder.ExitOnError(not continueParse);
-	decoder.TryRecover(false);
+	decoder.TryRecover(tryrecover);
 	decoder.AutoDetectScalars(false);
 	const char* payload = buffer + sizeof(AliRawDataHeader);
 	UInt_t payloadSize = bufferSize - sizeof(AliRawDataHeader);
@@ -2348,6 +2347,8 @@ int CheckIfDDLStream(const char* buffer, unsigned long bufferSize)
  * [in] \param bufferSize  The size of the buffer in bytes.
  * [in] \param continueParse  If specified then the we try to continue parsing the
  *           buffer as much as possible.
+ * [in] \param tryrecover Indicates if the DDL decoders should have special
+ *           recovery logic enabled.
  * [in/out] \param type  Initialy this should indicate the type of the data block
  *           or kUnknownDataBlock if not known. On exit it will be filled with
  *           the type of the data block as discovered by this routine if type
@@ -2356,8 +2357,8 @@ int CheckIfDDLStream(const char* buffer, unsigned long bufferSize)
  *           on success.
  */
 int ParseBuffer(
-		const char* buffer, unsigned long bufferSize,
-		bool continueParse, int& type
+		char* buffer, unsigned long bufferSize,
+		bool continueParse, bool tryrecover, int& type
 	)
 {
 	assert( buffer != NULL );
@@ -2433,11 +2434,11 @@ int ParseBuffer(
 	switch (type)
 	{
 	case kTrackerDDLRawData:
-		subResult = DumpTrackerDDLRawStream(buffer, bufferSize, continueParse);
+		subResult = DumpTrackerDDLRawStream(buffer, bufferSize, continueParse, tryrecover);
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
 	case kTriggerDDLRawData:
-		subResult = DumpTriggerDDLRawStream(buffer, bufferSize, continueParse);
+		subResult = DumpTriggerDDLRawStream(buffer, bufferSize, continueParse, tryrecover);
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
 	case kTriggerRecordsDataBlock:
@@ -2740,6 +2741,9 @@ void PrintUsage(bool asError = true)
 	os << " -continue | -c" << endl;
 	os << "       If specified, the program will try to continue parsing the data block" << endl;
 	os << "       as much as possible rather than stopping at the first error." << endl;
+	os << " -recover | -e" << endl;
+	os << "       If specified, special DDL decoder recovery logic is enabled to handle" << endl;
+	os << "       corrupt DDL data." << endl;
 	os << " -type | -t <typename>" << endl;
 	os << "       Forces the contents of the subsequent files specified on the command" << endl;
 	os << "       line to be interpreted as a specific type of data block." << endl;
@@ -2786,6 +2790,7 @@ void PrintUsage(bool asError = true)
  *                    and added to 'filenames'.
  * @param continueParse  Set to true if the user requested to continue to parse
  *                      after errors.
+ * @param tryrecover Set to true if the user wants DDL decoder recovery logic enabled.
  * @param checkData  Set to true if data integrity checking was requested.
  * @param maxLogging  Set to true if maximal logging was requested.
  * @return  A status flag suitable for returning from main(), containing either
@@ -2799,12 +2804,14 @@ int ParseCommandLine(
 		const char** dataspecs,
 		int& numOfFiles,
 		bool& continueParse,
+		bool& tryrecover,
 		bool& checkData,
 		bool& maxLogging
 	)
 {
 	numOfFiles = 0;
 	continueParse = false;
+	tryrecover = false;
 	maxLogging = false;
 	checkData = false;
 	int currentType = kUnknownDataBlock;
@@ -2823,6 +2830,10 @@ int ParseCommandLine(
 		else if (strcmp(argv[i], "-continue") == 0 or strcmp(argv[i], "-c") == 0)
 		{
 			continueParse = true;
+		}
+		else if (strcmp(argv[i], "-recover") == 0 or strcmp(argv[i], "-e") == 0)
+		{
+			tryrecover = true;
 		}
 		else if (strcmp(argv[i], "-type") == 0 or strcmp(argv[i], "-t") == 0)
 		{
@@ -2987,6 +2998,7 @@ int main(int argc, const char** argv)
 
 	int numOfFiles = 0;
 	bool continueParse = false;
+	bool tryrecover = false;
 	bool checkData = false;
 	bool maxLogging = false;
 	int returnCode = EXIT_SUCCESS;
@@ -3009,7 +3021,7 @@ int main(int argc, const char** argv)
 		
 		returnCode = ParseCommandLine(
 				argc, argv, filename, filetype, dataspec, numOfFiles,
-				continueParse, checkData, maxLogging
+				continueParse, tryrecover, checkData, maxLogging
 			);
 
 		if (returnCode == EXIT_SUCCESS)
@@ -3024,7 +3036,7 @@ int main(int argc, const char** argv)
 					cout << "########## Start of dump for file: "
 						<< filename[i] << " ##########" << endl;
 				}
-				int result = ParseBuffer(buffer, bufferSize, continueParse, filetype[i]);
+				int result = ParseBuffer(buffer, bufferSize, continueParse, tryrecover, filetype[i]);
 				if (buffer != NULL) delete [] buffer;
 				if (result != EXIT_SUCCESS)
 				{
