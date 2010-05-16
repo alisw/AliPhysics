@@ -61,6 +61,9 @@ public:
   /// Get our accumulated data
   AliMUONVTrackerData* Data() const { return fAccumulatedData; }
   
+  /// Whether or not we're the owner of our fAccumulatedData
+  void SetOwnerOfData(Bool_t flag) { fIsOwnerOfAccumulatedData = flag; }
+
   /// Whether we're only handling event-by-event data (i.e. no accumulation)
   Bool_t IsEventByEvent() const { return fIsEventByEvent; }
   
@@ -92,13 +95,22 @@ public:
   
   /// Number of events seen
   Int_t NumberOfEvents() const { return fNumberOfEvents; }
-  
+
+  /// Number of physics events seen
+  Int_t NumberOfPhysicsEvents() const { return fNumberOfPhysicsEvents; }
+
+  /// Number of good physics events seen
+  Int_t NumberOfGoodPhysicsEvents() const { return fNumberOfGoodPhysicsEvents; }
+
   Long64_t Merge(TCollection* li);
   
   void SetRawReader(AliRawReader* rawReader);
   
   /// Set the error logger
   void EnableErrorLogger(AliMUONLogger* logger) { fLogger = logger; }
+  
+  /// Whether last decoded event was empty
+  Bool_t LastEventWasEmpty() const { return fLastEventWasEmpty; }
   
 private:
   /// not implemented
@@ -115,7 +127,8 @@ private:
   
 private:
   AliRawReader* fRawReader; //!< reader of the data (owner or not)
-  AliMUONVTrackerData* fAccumulatedData; ///< data (owner)
+  AliMUONVTrackerData* fAccumulatedData; ///< data (owner or not)
+  Bool_t fIsOwnerOfAccumulatedData; ///< owner or not of fAccumulatedData
   AliMUONVStore* fOneEventData; ///< data for a single event (owner)
   AliMUONDigitCalibrator* fDigitCalibrator; //!< digit calibrator (if calibrating)
   AliMUONCalibrationData* fCalibrationData; ///< calibration data (if calibrating)
@@ -128,8 +141,11 @@ private:
   Bool_t fIsEventByEvent; ///< we only keep one event's data (no accumulation)
   static Int_t fgkCounter; ///< to count the number of instances
   AliMUONLogger* fLogger; ///< error logger (not owner)
+  Bool_t fLastEventWasEmpty; ///< whether last decoded event was empty
+  Int_t fNumberOfPhysicsEvents; ///< number of physics events seen
+  Int_t fNumberOfGoodPhysicsEvents; ///< number of errors with no (fatal) readout error
   
-  ClassDef(AliMUONTrackerDataMaker,2) // Producer of AliMUONVTrackerData from raw
+  ClassDef(AliMUONTrackerDataMaker,4) // Producer of AliMUONVTrackerData from raw
 };
 
 #endif

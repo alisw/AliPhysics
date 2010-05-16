@@ -15,20 +15,25 @@
 
 namespace AliMUONQAIndices
 {
-  /// Raw histograms indices
+  /// Raw/digits histograms indices
   enum ERaw { 
-    kTrackerData              = 3,  ///< Accumulated data
-    kTrackerBusPatchOccupancy = 4, ///< Bus patch occupancies
-    kTrackerBusPatchNofPads   = 5, ///< Number of pads per bus patch
-    kTrackerBusPatchNofManus  = 6, ///< Number of manus per bus patch
-    kTrackerBusPatchConfig    = 7, ///< Configuration of the tracker
-    kTrackerBusPatchParityErrors    =  8, ///< Parity errors during readout of the tracker
-    kTrackerBusPatchTokenLostErrors =  9, ///< Token lost errors during readout of the tracker
-    kTrackerBusPatchPaddingErrors   = 10, ///< Padding errors during readout of the tracker
-    kTrackerNofRawEventSeen         = 11, ///< Number of events seen (and used)
-    kTrackerReadoutErrors           = 12,  ///< Integrated number of errors (and events for 1st bin)
-    kTrackerDDLOccupancy            = 13, ///< DDL occupancy in percent
-    kTrackerDDLNofEvents            = 14, ///< nof of events per DDL
+    
+    kTrackerData                      =  3,  ///< Accumulated data
+    kTrackerBusPatchOccupancy         =  4, ///< Bus patch occupancies
+    kTrackerReadoutStatusPerEvent     =  6, ///< as kTrackerReadoutStatus but normalized by the number of events
+    kTrackerBusPatchConfig            =  7, ///< Configuration of the tracker
+    kTrackerBusPatchParityErrors      =  8, ///< Parity errors during readout of the tracker
+    kTrackerBusPatchTokenLostErrors   =  9, ///< Token lost errors during readout of the tracker
+    kTrackerBusPatchPaddingErrors     = 10, ///< Padding errors during readout of the tracker
+    kTrackerNofPhysicsEventsSeen      = 11, ///< Number of events seen 
+    kTrackerReadoutStatus             = 12,  ///< Status of readout (errors, missing pads, etc...)
+    kTrackerDDLOccupancy              = 13, ///< DDL occupancy in percent
+    kTrackerDDLNofEventsSeen          = 14, ///< nof of events per DDL (seen)
+    kTrackerDDLEventSize             = 300, ///< event size per DDL
+    kTrackerDDLEventSizePerEvent     =  15, ///< event size per DDL per event
+    kTrackerNofGoodPhysicsEventsUsed = 401, ///< Number of good physics events seen (and used) *WARNING* let 401 be unique in all levels, i.e. Raws,Digits,RecPoints
+    kTrackerDDLNofEventsUsed         = 402, ///< nof of events per DDL (used)
+
     kTriggerScalersTime       = 22, ///< Trigger scalers acquisition time index
     kTriggerScalers           = 23, ///< Trigger scalers histogram per plane index
     kTriggerScalersDisplay    = 31, ///< Trigger scalers display histogram per plane index
@@ -66,6 +71,7 @@ namespace AliMUONQAIndices
     kTriggerRatio4434SinceLastUpdate = 103,  ///< Ratio 44/34 for the last kUpdateRatio4434 events vs Event Number
     kTriggerNumberOf34Dec            = 104,  ///< Number of Decision in coincidence 3/4 vs Local Board
     kTriggerNumberOf44Dec            = 105   ///< Number of Decision in coincidence 4/4 vs Local Board
+    
   };
   
   /// Rec points histograms indices
@@ -189,12 +195,15 @@ namespace AliMUONQAIndices
   };
     
   // Bins for tracker readout errors
-  enum ETrackerReadoutErrors
+  enum ETrackerReadoutStatus
   {
     kTrackerRawNofGlitchErrors = 0, ///< Bin for number of glitch errors
     kTrackerRawNofTokenLostErrors = 1, ///< Bin for number of token lost errors
     kTrackerRawNofParityErrors = 2, ///< Bin for number of parity errors
-    kTrackerRawNofPaddingErrors = 3 ///< Bin for number of padding errors
+    kTrackerRawNofPaddingErrors = 3, ///< Bin for number of padding errors
+    kTrackerRawNofEmptyEvents = 4, ///< Bin for number of empty events
+    kTrackerRawNofMissingBusPatchesFromConfig = 5 , ///< Bin for number of missing bus patches (in config)
+    kTrackerRawNofMissingBusPatchesFromDataStream = 6 ///< Bin for number of missing bus patches (in actual data)
   };
   
 }

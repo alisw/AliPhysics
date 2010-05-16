@@ -34,15 +34,14 @@
 #include "AliMpBusPatch.h"
 #include "AliMpDDLStore.h"
 #include "AliQAv1.h"
-#include "AliQAv1.h"
 #include "Riostream.h"
 #include "TAxis.h"
 #include "TDirectory.h"
+#include "TGaxis.h"
 #include "TH1.h"
 #include "TLine.h"
 #include "TMath.h"
 #include "TPaveText.h"
-#include "TGaxis.h"
 #include "TVirtualPad.h"
 
 /// \cond CLASSIMP
@@ -138,19 +137,72 @@ namespace {
     
     return 0;
   }
+
+  //___________________________________________________________________________  
+  Int_t GetColorFromCheckCode(AliMUONVQAChecker::ECheckCode code)
+  {
+    const Int_t INFOCOLOR(kGreen);  // green = INFO
+    const Int_t WARNINGCOLOR(kYellow); // yellow = WARNING
+    const Int_t ERRORCOLOR(kOrange); // orange = ERROR
+    const Int_t FATALCOLOR(kRed); // red = FATAL
+    
+    if ( code == AliMUONVQAChecker::kInfo ) return INFOCOLOR;
+    else if ( code == AliMUONVQAChecker::kWarning ) return WARNINGCOLOR;
+    else if ( code ==  AliMUONVQAChecker::kFatal) return FATALCOLOR;
+    else return ERRORCOLOR;
+  }
+  
+  const char* NOTENOUGHEVENTMESSAGE = "Not enough event to judge. Please wait a bit";
+  const char* NOTIFYEXPERTMESSAGE = "PLEASE NOTIFY EXPERT !";
+  const char* ALLISFINEMESSAGE = "All is fine. Just enjoy.";
+  
+  const int NOTENOUGHEVENTLIMIT = 50;
   
   //___________________________________________________________________________  
-  void SetPaveColor(TPaveText& text, AliMUONVQAChecker::ECheckCode code)
+  void SetupHisto(Int_t neventsseen, Int_t neventsused, const TObjArray& messages, TH1& histo, AliMUONVQAChecker::ECheckCode code, const char* extraopt="")
   {
-    const Int_t INFOCOLOR(3);  // green = INFO
-    const Int_t WARNINGCOLOR(5); // yellow = WARNING
-    const Int_t ERRORCOLOR(6); // pink = ERROR
-    const Int_t FATALCOLOR(2); // red = FATAL
+    Bool_t allIsFine(kFALSE);
     
-    if ( code == AliMUONVQAChecker::kInfo ) text.SetFillColor(INFOCOLOR);
-    else if ( code == AliMUONVQAChecker::kWarning ) text.SetFillColor(WARNINGCOLOR);
-    else if ( code ==  AliMUONVQAChecker::kFatal) text.SetFillColor(FATALCOLOR);
-    else text.SetFillColor(ERRORCOLOR);
+    if ( code == AliMUONVQAChecker::kInfo ) 
+    {
+      allIsFine = kTRUE;
+    }    
+    
+    Double_t y1 = 0.99 - (messages.GetLast()+(allIsFine?1:0)+2)*0.075;
+    
+    TPaveText* text = new TPaveText(0.5,y1,0.99,0.99,"NDC");
+    
+    text->AddText(Form("MCH RUN %d - %d events seen - %d events used",AliCDBManager::Instance()->GetRun(),neventsseen,neventsused));
+    
+    TIter next(&messages);
+    TObjString* str;
+    
+    while ( ( str = static_cast<TObjString*>(next()) ) )
+    {
+      text->AddText(str->String());
+    }
+    
+    if ( allIsFine )
+    {
+      text->AddText(ALLISFINEMESSAGE);
+    }
+                    
+    text->SetFillColor(GetColorFromCheckCode(code));
+                      
+    Int_t color = GetColorFromCheckCode(code);
+    
+    histo.SetFillStyle(1001);
+    histo.SetFillColor(color);    
+    TString sopt("BAR");
+    sopt += extraopt;
+    histo.SetOption(sopt.Data());
+    
+    histo.SetTitle(kFALSE);
+    
+    TObject* title = histo.GetListOfFunctions()->FindObject("title");
+    if (title) title->Delete();
+
+    histo.GetListOfFunctions()->Add(text);
   }
   
 }
@@ -261,28 +313,81 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
   {
-    TH1* hbp = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchOccupancy,AliRecoParam::ConvertIndex(specie));    
+    TH1* hneventsseen = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNofPhysicsEventsSeen,AliRecoParam::ConvertIndex(specie));
+    TH1* hneventsused = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNofGoodPhysicsEventsUsed,AliRecoParam::ConvertIndex(specie));
 
-    TH1* hnpads = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchNofPads,AliRecoParam::ConvertIndex(specie));
-
-    TH1* hbpconfig = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchConfig,AliRecoParam::ConvertIndex(specie));
-
-    TH1* hnevents = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerNofRawEventSeen,AliRecoParam::ConvertIndex(specie));
-
-    TH1* hddl = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerDDLOccupancy,AliRecoParam::ConvertIndex(specie));
-
-    TH1* hroe = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerReadoutErrors,AliRecoParam::ConvertIndex(specie));
-
-    TH1* hbuspatchtokenerrors = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchTokenLostErrors,AliRecoParam::ConvertIndex(specie));
+    if (!hneventsseen || !hneventsused ) continue;
     
-    if ( !hbp || !hnpads || !hnevents || !hddl || !hroe || ! hbuspatchtokenerrors ) 
+    Int_t neventsseen = TMath::Nint(hneventsseen->GetBinContent(1));
+    Int_t neventsused = TMath::Nint(hneventsused->GetBinContent(1));
+        
+    if ( !hneventsseen || !hneventsused )
     {
       continue;
     }
     
-    Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
-        
-    rv[specie] = BeautifyHistograms(*hddl,*hbp,*hroe,hbpconfig,*hnpads,*hbuspatchtokenerrors,nevents,*recoParam);    
+    AliMUONVQAChecker::ECheckCode c1 = AliMUONVQAChecker::kInfo;
+    AliMUONVQAChecker::ECheckCode c2 = AliMUONVQAChecker::kInfo;
+    AliMUONVQAChecker::ECheckCode c3 = AliMUONVQAChecker::kInfo;
+    
+    TH1* hbp = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchOccupancy,AliRecoParam::ConvertIndex(specie));    
+    TH1* hbpconfig = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchConfig,AliRecoParam::ConvertIndex(specie));
+    TH1* hddl = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerDDLOccupancy,AliRecoParam::ConvertIndex(specie));    
+
+    if ( hbp && hbpconfig && hddl ) 
+    {
+      c1 = BeautifyOccupancyHistograms(*hddl,*hbp,hbpconfig,neventsseen,neventsused,*recoParam);  
+    }
+    else
+    {
+      AliError(Form("Could not BeautifyOccupancyHistograms : hddl=%p hbpconfig=%p hbp=%p",hddl,hbpconfig,hbp));
+    }
+    
+    TH1* hbuspatchtokenerrors = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerBusPatchTokenLostErrors,AliRecoParam::ConvertIndex(specie));
+    TH1* hrostatus = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerReadoutStatus,AliRecoParam::ConvertIndex(specie));    
+    TH1* hrostatusnorm = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerReadoutStatusPerEvent,AliRecoParam::ConvertIndex(specie));
+    
+    if ( hrostatus && hrostatusnorm && hbuspatchtokenerrors )
+    {
+      c2 = BeautifyReadoutHistograms(*hrostatus,*hrostatusnorm,*hbuspatchtokenerrors,
+                                     neventsseen,neventsused,*recoParam);
+    }
+    else
+    {
+      AliError(Form("Could not BeautifyReadoutHistograms : hrostatus=%p hrostatusnorm=%p hbuspatchtokenerrors=%p",
+                    hrostatus,hrostatusnorm,hbuspatchtokenerrors));
+    }
+    
+    
+    TH1* heventsize = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerDDLEventSize,AliRecoParam::ConvertIndex(specie));    
+    TH1* heventsizeperevent = AliQAv1::GetData(list,AliMUONQAIndices::kTrackerDDLEventSizePerEvent,AliRecoParam::ConvertIndex(specie));
+    
+    if ( heventsize && heventsizeperevent ) 
+    {
+      c3 = BeautifyEventsizeHistograms(*heventsize,*heventsizeperevent,
+                                       neventsseen,neventsused,*recoParam);
+    }
+    else
+    {
+      AliError(Form("Could not BeautifyEventsizeHistograms heventsize=%p heventsizeperevent=%p",heventsize,heventsizeperevent));
+    }
+    
+    if ( c1 == AliMUONVQAChecker::kFatal || c2 == AliMUONVQAChecker::kFatal || c3 == AliMUONVQAChecker::kFatal )
+    {
+      rv[specie] = AliMUONVQAChecker::kFatal;
+    }
+    else if ( c1 == AliMUONVQAChecker::kError || c2 == AliMUONVQAChecker::kError || c3 == AliMUONVQAChecker::kError )
+    {
+      rv[specie] = AliMUONVQAChecker::kError;
+    }
+    else if ( c1 == AliMUONVQAChecker::kWarning || c2 == AliMUONVQAChecker::kWarning || c3 == AliMUONVQAChecker::kWarning )
+    {
+      rv[specie] = AliMUONVQAChecker::kWarning;
+    }
+    else
+    {
+      rv[specie] = AliMUONVQAChecker::kInfo;
+    }
   }
   
   return rv;
@@ -290,16 +395,14 @@ AliMUONTrackerQAChecker::CheckRaws(TObjArray ** list, const AliMUONRecoParam* re
 
 //____________________________________________________________________________ 
 AliMUONVQAChecker::ECheckCode
-AliMUONTrackerQAChecker::BeautifyHistograms(TH1& hddl,
-                                            TH1& hbp, 
-                                            TH1& hroe,
-                                            const TH1* hbuspatchconfig, 
-                                            const TH1& hnpads, 
-                                            const TH1& hbuspatchtokenerrors,
-                                            Int_t nevents,
-                                            const AliMUONRecoParam& recoParam)
+AliMUONTrackerQAChecker::BeautifyOccupancyHistograms(TH1& hddl,
+                                                     TH1& hbp, 
+                                                     const TH1* hbuspatchconfig, 
+                                                     Int_t neventsseen,
+                                                     Int_t neventsused,
+                                                     const AliMUONRecoParam& recoParam)
 {
-  /// Put labels, limits and so on on the TrackerBusPatchOccupancy and TrackerReadoutErrors histograms
+  /// Put labels, limits and so on on the TrackerBusPatchOccupancy histograms
   /// hbuspatchconfig and hbp must have the same bin definitions
   
   if ( hbuspatchconfig )
@@ -313,6 +416,9 @@ AliMUONTrackerQAChecker::BeautifyHistograms(TH1& hddl,
     }
   }
   
+  hbp.GetListOfFunctions()->Delete();
+  hddl.GetListOfFunctions()->Delete();
+  hddl.SetStats(kFALSE);
   hbp.SetXTitle("Absolute Bus Patch Id");
   hbp.SetYTitle("Occupancy (percent)");
   hbp.SetStats(kFALSE);
@@ -337,23 +443,17 @@ AliMUONTrackerQAChecker::BeautifyHistograms(TH1& hddl,
   TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
   AliMpBusPatch* bp(0x0);
 
-  Int_t nMissingPads(0);
-  Int_t nPads(0);
   Int_t nBusPatches(0);
   Int_t nMissingBusPatches(0);
   
   while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
   {
-    Int_t bin = hbp.FindBin(bp->GetId());
-    Int_t n = TMath::Nint(hnpads.GetBinContent(bin));
-    
     ++nBusPatches;
     
-    nPads += n;
+    Int_t bin = hbp.FindBin(bp->GetId());
     
-    if ( hbp.GetBinContent(bin) <= 0 ) 
+    if ( hbp.GetBinContent(bin) <= 0.0 ) 
     {
-      nMissingPads += n;
       ++nMissingBusPatches;
     }
   }
@@ -367,7 +467,6 @@ AliMUONTrackerQAChecker::BeautifyHistograms(TH1& hddl,
   Double_t alpha(0.1); // trim 10% of data
   Double_t tmean(0.0),tvar(0.0);
   Double_t ymin(0.0),ymax(0.0);
-  AliMUONVQAChecker::ECheckCode rv(AliMUONVQAChecker::kFatal); // default value = serious problem
   
   if ( nBusPatches ) 
   {
@@ -416,115 +515,199 @@ AliMUONTrackerQAChecker::BeautifyHistograms(TH1& hddl,
   
   hbp.SetMaximum(ymax*1.4);
   
-  TPaveText* text = new TPaveText(0.30,0.50,0.99,0.99,"NDC");
+  AliMUONVQAChecker::ECheckCode rv(AliMUONVQAChecker::kInfo);
+
+  TObjArray messages;
+  messages.SetOwner(kTRUE);
   
-  text->AddText(Form("MCH RUN %d - %d events",AliCDBManager::Instance()->GetRun(),nevents));
-  
-  if ( ok < 0 ) 
+  if ( neventsseen < NOTENOUGHEVENTLIMIT ) 
   {
-    text->AddText("Could not compute truncated mean. Not enough events ?");
-    text->AddText(Form("nBusPatches=%d n=%d",nBusPatches,n));
-  }
-  else if (!nPads || !nBusPatches)
-  {
-    text->AddText(Form("Could not get the total number of pads (%d) or total number of buspatches (%d). ERROR !!!",
-                       nPads,nBusPatches));
+    messages.Add(new TObjString(NOTENOUGHEVENTMESSAGE));
   }
   else
   {
-    Float_t missingPadFraction = nMissingPads*100.0/nPads;
-    Float_t missingBusPatchFraction = nMissingBusPatches*100.0/nBusPatches;
-    Float_t aboveLimitFraction = nBusPatchesAboveLimit*100.0/nBusPatches;
-    Float_t belowLimitFraction = nBusPatchesBelowLimit*100.0/nBusPatches;
-    
-    text->AddText(Form("%5.2f %% of missing buspatches (%d out of %d)",missingBusPatchFraction,nMissingBusPatches,nBusPatches));
-    text->AddText(Form("%5.2f %% of missing pads (%d out of %d)",missingPadFraction,nMissingPads,nPads));
-    text->AddText(Form("%5.2f %% bus patches above the %5.2f %% limit",aboveLimitFraction,maxToleratedOccupancy));
-    text->AddText(Form("%5.2f %% bus patches below the %e %% limit",belowLimitFraction,minToleratedOccupancy));
-    text->AddText(Form("Bus patch mean occupancy (truncated at %2d %%) is %7.2f %%",(Int_t)(alpha*100),tmean));
-    
-    if ( missingPadFraction >= 100.0 ) 
+    if ( ok < 0 ) 
     {
-      rv = AliMUONVQAChecker::kFatal;       
+      messages.Add(new TObjString("Could not compute truncated mean. Not enough events ?"));
+      
+      if ( neventsused < TMath::Nint(0.1*neventsseen) )
+      {
+        messages.Add(new TObjString(Form("We've actually seen %d events, but used only %d !",neventsseen,neventsused)));
+        messages.Add(new TObjString("For a normal physics run, this is highly suspect !"));
+        messages.Add(new TObjString(NOTIFYEXPERTMESSAGE));
+        rv = AliMUONVQAChecker::kFatal;
+      }
     }
-    
-    else if ( missingPadFraction > recoParam.MissingPadFractionLimit()*100.0 || 
-             aboveLimitFraction > recoParam.FractionOfBuspatchOutsideOccupancyLimit()*100.0 || 
-             belowLimitFraction > recoParam.FractionOfBuspatchOutsideOccupancyLimit()*100.0 ) 
+    else if (!nBusPatches)
     {
-      rv = AliMUONVQAChecker::kError;
+      messages.Add(new TObjString(Form("Could not get the total number of buspatches (%d). ERROR !!!",
+                         nBusPatches)));
+      messages.Add(new TObjString("Please check with expert !"));
+      rv = AliMUONVQAChecker::kFatal;
     }
     else
     {
-      rv = AliMUONVQAChecker::kInfo;
-    }
-  }
-  
-  hbp.GetListOfFunctions()->Add(text);
-  
-  
-  SetPaveColor(*text,rv);
-
-  /// Make as well a version for DDL occupancy, that'll be used by the shifter
-  
-  hddl.GetListOfFunctions()->Add(text->Clone());
-  
-  Bool_t aboveOnePercent(kFALSE);
-  Bool_t aboveTwoPercent(kFALSE);
-  
-  for ( Int_t i = 1; i <= hddl.GetXaxis()->GetNbins(); ++i )
-  {
-    Double_t b = hddl.GetBinContent(i);
-    if ( b > 1.0 ) aboveOnePercent = kTRUE;
-    if ( b > 2.0 ) aboveTwoPercent = kTRUE;
-    
-  }
-  
-  hddl.SetMaximum(2);
-  hddl.SetFillStyle(0);
-  if ( aboveOnePercent ) 
-  {
-    hddl.SetFillStyle(1001);
-    hddl.SetFillColor(kOrange);    
-  }
-  if ( aboveTwoPercent ) 
-  {
-    hddl.SetFillStyle(1001);
-    hddl.SetFillColor(kRed);
-  }
-  hddl.SetLineWidth(3);
-  hddl.SetStats(kFALSE);
-  
-  /// Finally make another pavetext for readout errors, in particular TokenLost ones !
-  
-  Double_t tokenLost = hroe.GetBinContent(hroe.FindBin(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors));
-  
-  AliInfo(Form("tokenLost=%e",tokenLost));
-  
-  if ( tokenLost > 0 )
-  {
-    TPaveText* errText = new TPaveText(0.30,0.50,0.9,0.9,"NDC");
-    
-    errText->AddText(Form("MCH RUN %d - %d events",AliCDBManager::Instance()->GetRun(),nevents));
-    errText->AddText("There are some token lost errors !");
-    errText->AddText("PLEASE CHECK THE BUSY TIME FOR MUON !");
-    errText->AddText("If above 5 ms please have the MUON expert");
-    errText->AddText("check the following bus patches :");
-    
-    for ( Int_t i = 1; i <= hbuspatchtokenerrors.GetNbinsX(); ++i ) 
-    {
-      if ( hbuspatchtokenerrors.GetBinContent(i) > 0 ) 
+      Float_t missingBusPatchFraction = nMissingBusPatches*100.0/nBusPatches;
+      Float_t aboveLimitFraction = nBusPatchesAboveLimit*100.0/nBusPatches;
+      Float_t belowLimitFraction = nBusPatchesBelowLimit*100.0/nBusPatches;
+      
+      messages.Add(new TObjString(Form("%5.2f %% of missing buspatches (%d out of %d)",missingBusPatchFraction,nMissingBusPatches,nBusPatches)));
+      messages.Add(new TObjString(Form("%5.2f %% bus patches above the %5.2f %% limit",aboveLimitFraction,maxToleratedOccupancy)));
+      messages.Add(new TObjString(Form("%5.2f %% bus patches below the %e %% limit",belowLimitFraction,minToleratedOccupancy)));
+      messages.Add(new TObjString(Form("Bus patch mean occupancy (truncated at %2d %%) is %7.2f %%",(Int_t)(alpha*100),tmean)));
+      
+      if ( aboveLimitFraction > recoParam.FractionOfBuspatchOutsideOccupancyLimit()*100.0 || 
+          belowLimitFraction > recoParam.FractionOfBuspatchOutsideOccupancyLimit()*100.0 ) 
       {
-        errText->AddText(Form("BP %4d",i));
+        rv = AliMUONVQAChecker::kError;
+      }
+      else
+      {
+        rv = AliMUONVQAChecker::kInfo;
       }
     }
-    
-    hroe.GetListOfFunctions()->Add(errText);
-
-    rv = AliMUONVQAChecker::kFatal;
-    
-    SetPaveColor(*errText,rv);
   }
+  
+  SetupHisto(neventsseen,neventsused,messages,hbp,rv);
+  
+  /// Make as well a version for DDL occupancy, that'll be used by the shifter
+  SetupHisto(neventsseen,neventsused,messages,hddl,rv);
+  
+  
+  hddl.SetStats(kFALSE);
   
   return rv;
 }
+
+//______________________________________________________________________________
+AliMUONVQAChecker::ECheckCode 
+AliMUONTrackerQAChecker::BeautifyReadoutHistograms(TH1& hrostatus,
+                                                   TH1& hrostatusnorm,
+                                                   const TH1& hbuspatchtokenerrors,
+                                                   Int_t neventsseen,
+                                                   Int_t neventsused,
+                                                   const AliMUONRecoParam& recoParam)
+{
+  /// Normalize and put some text on the readout error histogram
+  /// Note in particular the treatment of tokenlost errors !
+  
+  hrostatus.GetListOfFunctions()->Delete();
+  hrostatusnorm.GetListOfFunctions()->Delete();
+  hrostatusnorm.Reset();
+  hrostatusnorm.SetFillStyle(0);
+  
+  AliMUONVQAChecker::ECheckCode rv(AliMUONVQAChecker::kInfo);
+  
+  TObjArray messages;
+  messages.SetOwner(kTRUE);
+  
+  if ( neventsseen < NOTENOUGHEVENTLIMIT )
+  {
+    messages.Add(new TObjString(NOTENOUGHEVENTMESSAGE));
+  }
+  else
+  {
+    hrostatusnorm.Add(&hrostatus,100.0/neventsseen);
+    hrostatusnorm.SetOption("TEXT45"); // note : cannot use HIST option, otherwise the associated function (i.e. the tpavetext) is not drawn...
+    hrostatusnorm.SetMinimum(0.0);
+    
+    Double_t tokenLost = hrostatusnorm.GetBinContent(hrostatusnorm.FindBin(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors));
+    
+    if ( tokenLost > recoParam.TokenLostLimit() )
+    {
+      rv = AliMUONVQAChecker::kError;
+      
+      messages.Add(new TObjString("There are some token lost errors !"));
+      messages.Add(new TObjString("PLEASE CHECK THE BUSY TIME FOR MUON !"));
+      messages.Add(new TObjString("If above 5 ms please have the MUON expert"));
+      messages.Add(new TObjString("check the following bus patches :"));
+      
+      for ( Int_t i = 1; i <= hbuspatchtokenerrors.GetNbinsX(); ++i ) 
+      {
+        if ( hbuspatchtokenerrors.GetBinContent(i) > 0 ) 
+        {
+          messages.Add(new TObjString(Form("BP %4d",i)));
+        }
+      }
+    }
+    
+    if ( hrostatusnorm.GetBinContent(hrostatusnorm.FindBin(AliMUONQAIndices::kTrackerRawNofEmptyEvents)) > 25.0 )
+    {
+      messages.Add(new TObjString("Too many empty events !"));
+      messages.Add(new TObjString(NOTIFYEXPERTMESSAGE));
+      rv = AliMUONVQAChecker::kFatal;
+      
+    }
+  }
+   
+  SetupHisto(neventsseen,neventsused,messages,hrostatusnorm,rv,"text45");
+  
+  return rv;
+}
+
+//______________________________________________________________________________
+AliMUONVQAChecker::ECheckCode 
+AliMUONTrackerQAChecker::BeautifyEventsizeHistograms(TH1& heventsize,
+                                                     TH1& heventsizeperevent,
+                                                     Int_t neventsseen,
+                                                     Int_t neventsused,
+                                                     const AliMUONRecoParam& recoParam)
+{
+  /// Normalize and put some text on the event size histogram
+
+  AliMUONVQAChecker::ECheckCode rv(AliMUONVQAChecker::kInfo);
+
+  heventsizeperevent.GetListOfFunctions()->Delete();
+ 
+  heventsizeperevent.Reset();
+
+  TObjArray messages;
+  messages.SetOwner(kTRUE);
+  
+  if ( neventsseen < NOTENOUGHEVENTLIMIT )
+  {
+    messages.Add(new TObjString(NOTENOUGHEVENTMESSAGE));
+  }
+  else
+  {
+    heventsizeperevent.Add(&heventsize);
+    heventsizeperevent.Scale(1.0/neventsseen/1024.0);
+    heventsizeperevent.SetMinimum(0);
+    
+    Double_t totalEventSizePerEvent = heventsizeperevent.Integral();
+    
+    TString msg;
+    TString action;
+    
+    if ( totalEventSizePerEvent > recoParam.EventSizeHardLimit() ) 
+    {
+      rv = AliMUONVQAChecker::kFatal;
+      msg = "That is really too high.";
+      action = NOTIFYEXPERTMESSAGE;
+    }
+    else if ( totalEventSizePerEvent > recoParam.EventSizeSoftLimit() ) 
+    {
+      msg = "That is a bit high.";
+      action = "Please keep an eye on it.";
+      rv = AliMUONVQAChecker::kError;
+    }
+    else 
+    {
+      rv = AliMUONVQAChecker::kInfo;
+    }
+    
+    messages.Add(new TObjString(Form("<MCH event size> %5.1f KB/event\n",totalEventSizePerEvent)));
+    if (msg.Length()>0)
+    {
+      messages.Add(new TObjString(msg));
+      messages.Add(new TObjString(action));
+    }
+  }
+  
+  SetupHisto(neventsseen,neventsused,messages,heventsizeperevent,rv);
+  
+  return rv;
+}
+
+
+

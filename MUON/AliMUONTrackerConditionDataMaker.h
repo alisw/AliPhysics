@@ -35,6 +35,8 @@ public:
   
   static AliMUONVTrackerData* CreateData(const char* type, AliMUONVStore& source, Int_t startOfValidity);
     
+  virtual void SetOwnerOfData(Bool_t flag) { fIsOwnerOfData = flag; }
+
   /// Whether we've been properly initialized or not
   Bool_t IsValid() const { return (fData != 0x0); }
   
@@ -82,8 +84,9 @@ private:
 private:
   AliMUONVTrackerData* fData; ///< our data
   TString fSource; ///< source name
+  Bool_t fIsOwnerOfData; ///< is fData ours or not
   
-  ClassDef(AliMUONTrackerConditionDataMaker,1) // Producer of AliMUONVTrackerData from condition data (either OCDB or ascii files)
+  ClassDef(AliMUONTrackerConditionDataMaker,2) // Producer of AliMUONVTrackerData from condition data (either OCDB or ascii files)
 };
 
 #endif

@@ -29,7 +29,7 @@ public:
 
 protected:
 
-  virtual Double_t* Check(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam); 
+  virtual void Check(Double_t* test, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam); 
 
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;	
 

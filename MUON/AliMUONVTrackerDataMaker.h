@@ -31,6 +31,9 @@ public:
   /// Our data
   virtual AliMUONVTrackerData* Data() const = 0;
 
+  /// Whether or not we're the owner of our AliMUONVTrackerData
+  virtual void SetOwnerOfData(Bool_t /*flag*/) { }
+  
   /// Whether we can be run
   virtual Bool_t IsRunnable() const = 0;
 

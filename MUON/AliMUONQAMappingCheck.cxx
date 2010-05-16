@@ -31,6 +31,7 @@
 #include "AliMUONQAMappingCheck.h"
 
 #include "AliCDBManager.h"
+#include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONDigitCalibrator.h"
@@ -65,6 +66,8 @@ fNumberOfMonoCathodeClusters(0),
 fNumberOfLegitimateMonoCathodeClusters(0)
 {
   /// Ctor
+  
+  AliCodeTimerAuto(Form("RUN %d",runNumber),0);
   
   fGeometryTransformer->LoadGeometryData();
   

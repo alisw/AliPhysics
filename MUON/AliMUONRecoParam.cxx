@@ -73,10 +73,13 @@ AliMUONRecoParam::AliMUONRecoParam()
   fMaxTriggerTracks(0),
   fMaxTrackCandidates(0),
   fSelectTrackOnSlope(kFALSE),
-  fMissingPadFractionLimit(0),
+  fMissingPadFractionLimit(-1),
   fFractionOfBuspatchOutsideOccupancyLimit(0),
   fAverageNoisePadCharge(0.22875),
-  fClusterChargeCut(2.0)
+  fClusterChargeCut(2.0),
+  fEventSizeSoftLimit(35.0),
+  fEventSizeHardLimit(45.0),
+  fTokenLostLimit(0.0)
 {  
   /// Constructor
   
@@ -302,9 +305,8 @@ void AliMUONRecoParam::SetCosmicParam()
   SetPedMeanLimits(20, 700);
   SetManuOccupancyLimits(-1.,0.01); // reject manu above occ=1%
 
-  SetBuspatchOccupancyLimits(-1,0.01);  
-  SetMissingPadFractionLimit(0.1); // 10 %   
-  SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %   
+  SetBuspatchOccupancyLimits(-1,0.05);  
+  SetFractionOfBuspatchOutsideOccupancyLimit(0.10); // 10 %
 }
 
 
@@ -494,8 +496,16 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout << Form("%e <= DE occupancy < %7.2f",DEOccupancyLowLimit(),DEOccupancyHighLimit()) << endl;
   
   cout << "'QAChecker' limits" << endl;  
-  cout << Form("MissingPadFractionLimit = %5.2f %%",MissingPadFractionLimit()*100.0) << endl;  
   cout << Form("FractionOfBuspatchOutsideOccupancyLimit = %5.2f %%",FractionOfBuspatchOutsideOccupancyLimit()*100.0) << endl;
+  cout << Form("Event size limit = %5.2f KB/event (soft) and %5.2f KB/event (hard)",fEventSizeSoftLimit,fEventSizeHardLimit) << endl;
+  if ( fTokenLostLimit > 0 )
+  {
+    cout << Form("We tolerate up to %5.2f %% token lost errors per event",fTokenLostLimit) << endl;
+  }
+  else
+  {
+    cout << "We dot not tolerate any token lost error !" << endl;
+  }
   
   cout << "chamber non bending resolution = |";
   for (Int_t iCh = 0; iCh < 10; iCh++) cout << Form(" %6.3f |",fDefaultNonBendingReso[iCh]);
@@ -553,13 +563,17 @@ AliMUONRecoParam::SetDefaultLimits()
   fDEOccupancyLimits[0] = -1.0; 
   fDEOccupancyLimits[1] = 1.0;
 
-  fMissingPadFractionLimit = 0.1; // 10 % 
-  fFractionOfBuspatchOutsideOccupancyLimit = 0.05; // 5 % 
+  fMissingPadFractionLimit = -1; // DEPRECATED
+  fFractionOfBuspatchOutsideOccupancyLimit = 0.10; // 10 % 
 
   ChargeSigmaCut(4.0); // pad with charge < 4.0 x sigma will be removed (where sigma is the actual noise of that very pad, i.e. not the average)
   
   AverageNoisePadCharge(0.22875); // 0.22875 coulombs ~ 1.5 ADC channels
 
   ClusterChargeCut(2.0); // will cut cluster below 2.0 x LowestPadCharge()
+  
+  SetEventSizeLimits(35.0,45.0);
+  
+  SetTokenLostLimit(0.0);
 }
 

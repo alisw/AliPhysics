@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -18,52 +18,60 @@
 // --- MUON header files ---
 #include "AliMUONTrackerQADataMakerRec.h"
 
+#include "AliCDBManager.h"
+#include "AliCodeTimer.h"
 #include "AliDAQ.h"
-#include "AliQAv1.h"
-#include "AliMpDDL.h"
+#include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
+#include "AliLog.h"
+#include "AliMUON2DMap.h"
+#include "AliMUONCalibParamND.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONConstants.h"  
 #include "AliMUONDigitMaker.h"
+#include "AliMUONESDInterface.h"
+#include "AliMUONLogger.h"
+#include "AliMUONQADataMakerRec.h"
 #include "AliMUONQAIndices.h"
 #include "AliMUONQAMappingCheck.h"
-#include "AliMUONLogger.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONTrackerData.h"
 #include "AliMUONTrackerDataMaker.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigit.h"
+#include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
-#include "AliMUONVTrackerData.h"
-#include "AliMUONTrack.h"
-#include "AliMUONTrackParam.h"
-#include "AliMUONESDInterface.h"
-#include "AliMUONCalibrationData.h"
 #include "AliMpBusPatch.h"
 #include "AliMpConstants.h"
+#include "AliMpDDL.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
-
-// --- AliRoot header files ---
-#include "AliCDBManager.h"
-#include "AliESDEvent.h"
-#include "AliESDMuonTrack.h"
-#include "AliLog.h"
+#include "AliMpManuIterator.h"
+#include "AliQAv1.h"
+#include "AliRawEquipment.h"
+#include "AliRawEquipmentHeader.h"
+#include "AliRawEventHeaderBase.h"
 #include "AliRawReader.h"
-#include "AliCodeTimer.h"
-#include "AliMUONVDigit.h"
-
-// --- ROOT system ---
+#include "AliRawVEvent.h"
+#include <Riostream.h>
 #include <TH1F.h> 
 #include <TH1I.h> 
 #include <TH2F.h>
-#include <Riostream.h>
 #include <TMath.h>
+#include <TObjArray.h>
 #include <TPaveText.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONTrackerQADataMakerRec
 ///
-/// MUON base class for quality assurance data (histo) maker
+/// Quality assurance data (histo) maker for MUON tracker
+///
+///
+/// Note that all the methods of this class shoud not be called when eventSpecie is AliRecoParam::kCalib !
 ///
 /// \author C. Finck, D. Stocco, L. Aphecetche
 
@@ -77,17 +85,25 @@ namespace
   {
     return ( x > 0.0 ? TMath::Sqrt(x) : 0.0 );
   }
+  
 }
+
 //____________________________________________________________________________ 
 AliMUONTrackerQADataMakerRec::AliMUONTrackerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
-fDigitStore(AliMUONVDigitStore::Create("AliMUONDigitStoreV1")),
+fDigitStore(0x0),
 fDigitMaker(new AliMUONDigitMaker(kTRUE)),
 fClusterStore(0x0),
-fTrackerDataMaker(0x0),
-fMappingCheckRecPoints(0x0),
 fCalibrationData(new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun())),
-fLogger(0x0)
+fLogger(0x0),
+fBusPatchConfig(0x0),
+fBPxmin(0),
+fBPxmax(0),
+fBPnbins(0),
+fTrackerDataMakerArray(0x0),
+fTrackerCalDataArray(0x0),
+fTrackerRecDataArray(0x0),
+fMappingCheckRecPointsArray(0x0)
 {
   /// ctor
 }
@@ -100,7 +116,7 @@ AliMUONTrackerQADataMakerRec::~AliMUONTrackerQADataMakerRec()
   delete fDigitMaker;
   delete fClusterStore;
   delete fCalibrationData;
-  delete fMappingCheckRecPoints;
+  delete fMappingCheckRecPointsArray;
   if (fLogger)
   {
     if ( fLogger->NumberOfEntries() != 0 ) 
@@ -109,11 +125,17 @@ AliMUONTrackerQADataMakerRec::~AliMUONTrackerQADataMakerRec()
     }
     delete fLogger;    
   }
+  delete fTrackerDataMakerArray;
+  delete fTrackerCalDataArray;
+  delete fTrackerRecDataArray;
+  delete fBusPatchConfig;  
 }
 
 //____________________________________________________________________________ 
-void AliMUONTrackerQADataMakerRec::InsertTrackerData(Int_t specie, TObjArray** list,
-                                                     TObject* object, Int_t indexNumber,
+void AliMUONTrackerQADataMakerRec::InsertTrackerData(Int_t specie, 
+                                                     TObjArray** list,
+                                                     TObject* object, 
+                                                     Int_t indexNumber,
                                                      Bool_t replace)
 {
   /// Insert an object to a given list
@@ -122,13 +144,17 @@ void AliMUONTrackerQADataMakerRec::InsertTrackerData(Int_t specie, TObjArray** l
   TObject* o;
   TObject* old(0x0);
   Bool_t alreadyThere(kFALSE);
+  
   while ( ( o = next() ) && !alreadyThere )
   {
     TString classname(o->ClassName());
     if ( classname.Contains("TrackerData") ) 
     {
-      alreadyThere = kTRUE;
-      old = o;
+      if ( !strcmp(object->GetName(),o->GetName()) ) 
+      {
+        alreadyThere = kTRUE;
+        old = o;
+      }
     }
   }
   if ( (!alreadyThere && object) || (alreadyThere && replace) )
@@ -148,6 +174,8 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleESDs(Int_t, TObjArray**)
   /// Normalize ESD histograms
   
   if (!GetESDsData(AliMUONQAIndices::kESDnClustersPerTrack)) return;
+  
+  AliCodeTimerAuto("",0);
   
   Double_t nTracks = GetESDsData(AliMUONQAIndices::kESDnClustersPerTrack)->GetEntries();
   if (nTracks <= 0) return;
@@ -325,6 +353,8 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRecPoints(Int_t specie, TOb
   
   if (!GetRecPointsData(AliMUONQAIndices::kTrackerClusterChargePerChMean)) return;
   
+  AliCodeTimerAuto("",0);
+  
   TH1* hTrackerClusterChargePerChMean = GetRecPointsData(AliMUONQAIndices::kTrackerClusterChargePerChMean);
   TH1* hTrackerClusterChargePerChSigma = GetRecPointsData(AliMUONQAIndices::kTrackerClusterChargePerChSigma);
   TH1* hTrackerClusterMultiplicityPerChMean = GetRecPointsData(AliMUONQAIndices::kTrackerClusterMultiplicityPerChMean);
@@ -372,71 +402,130 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRecPoints(Int_t specie, TOb
     }
   }
   
-  if ( fMappingCheckRecPoints ) InsertTrackerData(specie,list,fMappingCheckRecPoints->CreateData("RecPoints"),AliMUONQAIndices::kTrackerRecPoints,kTRUE);
-}
-
-
-//____________________________________________________________________________ 
-void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArray** list)
-{
-  /// create Raws histograms in Raws subdir
+  if ( MappingCheckRecPoints(specie) ) 
+  {
+    InsertTrackerData(specie,list,MappingCheckRecPoints(specie)->CreateData("RecPoints"),AliMUONQAIndices::kTrackerRecPoints,kTRUE);    
+  }
   
-  if ( !GetRawsData(AliMUONQAIndices::kTrackerBusPatchOccupancy) ) return;
-
-  if ( fTrackerDataMaker ) 
+  if ( TrackerRecData(specie) )
   {
     /// put the trackerdata in the pipeline
-    InsertTrackerData(specie,list,fTrackerDataMaker->Data(),AliMUONQAIndices::kTrackerData);
-
-    /// project the tracerdata into buspatch occupancies (for the experts)
-    TH1* hbp = GetRawsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
-    hbp->Reset();
-    TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
-    AliMpBusPatch* bp(0x0);
-    AliMUONVTrackerData* data = fTrackerDataMaker->Data();
-    Int_t occDim = 2;
+    InsertTrackerData(specie,list,TrackerRecData(specie),AliMUONQAIndices::kTrackerData);
     
-    while ( ( bp = static_cast<AliMpBusPatch*>(nextBP())) )
+    TH1* hbp = GetRecPointsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
+    TH1* hnevents = GetRecPointsData(AliMUONQAIndices::kTrackerNofGoodPhysicsEventsUsed);
+    TH1* hddl = GetRecPointsData(AliMUONQAIndices::kTrackerDDLOccupancy);
+    TH1* hddlevents = GetRecPointsData(AliMUONQAIndices::kTrackerDDLNofEventsUsed);
+    
+    if ( !hbp || !hnevents || !hddl || !hddlevents)
     {
-      Int_t busPatchId = bp->GetId();
-      Int_t bin = hbp->FindBin(busPatchId);
-      hbp->SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
+      AliError(Form("Missing some histograms : cannot work : hbp=%p hnevents=%p hddl=%p hddlevents=%p",hbp,hnevents,hddl,hddlevents));
+      return;
     }
     
-    /// log the readout errors (for the shifter)
-    TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofRawEventSeen);
-    hnevents->Reset();
-    hnevents->Fill(0.0,fTrackerDataMaker->Data()->NumberOfEvents(-1));
-    
-    if ( fLogger->NumberOfEntries() > 0 )
-    {
-      // readout errors      
-      FillErrors(*fLogger);      
-      fLogger->Clear();
-    }
+    ProjectTrackerData(TrackerRecData(specie),
+                       *hbp,*hnevents,*hddl,*hddlevents);    
+  }
+  else
+  {
+    AliError(Form("TrackerRecData is null for specie %s",AliRecoParam::GetEventSpecieName(specie)));
+  }
+  
+}
 
-    /// project tracker data into DDL occupancies (for the shifter)
-    TH1* hddl = GetRawsData(AliMUONQAIndices::kTrackerDDLOccupancy);
-    hddl->Reset();
-    TH1* hddlevents = GetRawsData(AliMUONQAIndices::kTrackerDDLNofEvents);
-    hddlevents->Reset();
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleDigits(Int_t specie, TObjArray** list)
+{
+  /// create digits histograms in digits subdir
+  
+  if ( TrackerCalData(specie) )
+  {
+    AliCodeTimerAuto("",0);
     
-    const Int_t nddls = AliDAQ::NumberOfDdls("MUONTRK");
-    const Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
+    /// put the trackerdata in the pipeline
+    InsertTrackerData(specie,list,TrackerCalData(specie),AliMUONQAIndices::kTrackerData);
     
-    for ( Int_t iddl = 0; iddl < nddls; ++iddl )
+    TH1* hbp = GetDigitsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
+    TH1* hnevents = GetDigitsData(AliMUONQAIndices::kTrackerNofGoodPhysicsEventsUsed);
+    TH1* hddl = GetDigitsData(AliMUONQAIndices::kTrackerDDLOccupancy);
+    TH1* hddlevents = GetDigitsData(AliMUONQAIndices::kTrackerDDLNofEventsUsed);
+    
+    if ( !hbp || !hnevents || !hddl || !hddlevents)
     {
-      AliMpDDL* ddl = AliMpDDLStore::Instance()->GetDDL(iddl);
-      
-      Int_t ddlId = offset + ddl->GetId();
-      Int_t npads = 0;
-      
-      Int_t nevents = data->NumberOfEvents(iddl);
-      
-      hddlevents->Fill(ddlId,nevents);
-      
-      Double_t occ(0.0);
-      
+      AliError(Form("Missing some histograms : cannot work : hbp=%p hnevents=%p hddl=%p hddlevents=%p",hbp,hnevents,hddl,hddlevents));
+      return;
+    }
+    
+    ProjectTrackerData(TrackerCalData(specie),
+                       *hbp,*hnevents,*hddl,*hddlevents);    
+  }
+}
+
+//____________________________________________________________________________ 
+AliMUONQADataMakerRec* AliMUONTrackerQADataMakerRec::Master() const
+{
+  /// Get our master
+  return static_cast<AliMUONQADataMakerRec*>(fMaster); 
+}
+
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::ProjectTrackerData(AliMUONVTrackerData* data, 
+                                                      TH1& hbp,
+                                                      TH1& hnevents,
+                                                      TH1& hddl,
+                                                      TH1& hddlevents)
+{
+  /// Project tracker data into shifter-friendly histograms
+  
+  AliCodeTimerAuto(Form("%s",data->Name()),0);
+  
+  /// project the tracerdata into buspatch occupancies (for the experts)
+  hbp.Reset();
+  hbp.SetStats(kFALSE);
+  
+  TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+  AliMpBusPatch* bp(0x0);
+  Int_t occDim = 2;
+  
+  while ( ( bp = static_cast<AliMpBusPatch*>(nextBP())) )
+  {
+    Int_t busPatchId = bp->GetId();
+    Int_t bin = hbp.FindBin(busPatchId);
+    if ( data->HasBusPatch(busPatchId) )
+    {
+      hbp.SetBinContent(bin,data->BusPatch(busPatchId,occDim)*100.0); // occupancy, in percent
+    }
+  }
+  
+  /// log the readout errors (for the shifter)
+  hnevents.Reset();
+  hnevents.SetStats(kFALSE);
+  hnevents.SetBinContent(1,data->NumberOfEvents(-1));
+  
+  /// project tracker data into DDL occupancies (for the shifter)
+  hddl.Reset();
+  hddl.SetStats(kFALSE);
+  hddlevents.Reset();
+  hddlevents.SetStats(kFALSE);
+  
+  const Int_t nddls = AliDAQ::NumberOfDdls("MUONTRK");
+  const Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
+  
+  for ( Int_t iddl = 0; iddl < nddls; ++iddl )
+  {
+    AliMpDDL* ddl = AliMpDDLStore::Instance()->GetDDL(iddl);
+    
+    Int_t ddlId = offset + ddl->GetId();
+    Int_t npads = 0;
+    
+    Int_t nevents = data->NumberOfEvents(iddl);
+    
+    hddlevents.Fill(ddlId,nevents);
+    
+    Double_t occ(0.0);
+    
+    if ( nevents > 0 )
+    {
       for ( Int_t ide = 0; ide < ddl->GetNofDEs(); ++ide )
       {
         Int_t de = ddl->GetDEId(ide);
@@ -446,18 +535,64 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArra
         occ +=  data->DetectionElement(de,4);
       }
       
-      if ( nevents > 0 && npads > 0 )
+      if ( npads > 0 )
       {
         occ = occ/npads/nevents;
       }
-
-      hddl->Fill(ddlId,100.0*occ); // occ in percent
+      else 
+      {
+        occ = 0.0;
+      }
     }
+    
+    hddl.Fill(ddlId,100.0*occ); // occ in percent
   }
+  
+  TPaveText* text = new TPaveText(0.50,0.8,0.9,0.9,"NDC");
+  
+  text->AddText(Form("MCH RUN %d - %d events",AliCDBManager::Instance()->GetRun(),data->NumberOfEvents(-1)));
+
+  hddl.GetListOfFunctions()->Add(text);
 }
 
 //____________________________________________________________________________ 
-void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
+void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArray** list)
+{
+  /// create Raws histograms in Raws subdir
+  
+  if ( TrackerDataMaker(specie) && TrackerDataMaker(specie)->Data() ) 
+  {
+    AliCodeTimerAuto("",0);
+    
+    /// put the trackerdata in the pipeline
+    InsertTrackerData(specie,list,TrackerDataMaker(specie)->Data(),AliMUONQAIndices::kTrackerData);
+    TrackerDataMaker(specie)->SetOwnerOfData(kFALSE); // now that it's attached to list, list will take care of the deletion
+    
+    TH1* hbp = GetRawsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
+    TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofGoodPhysicsEventsUsed);
+    TH1* hddl = GetRawsData(AliMUONQAIndices::kTrackerDDLOccupancy);
+    TH1* hddlevents = GetRawsData(AliMUONQAIndices::kTrackerDDLNofEventsUsed);
+
+    if ( !hbp || !hnevents || !hddl || !hddlevents)
+    {
+      AliError(Form("Missing some histograms : cannot work : hbp=%p hnevents=%p hddl=%p hddlevents=%p",hbp,hnevents,hddl,hddlevents));
+      return;
+    }
+    
+    ProjectTrackerData(TrackerDataMaker(specie)->Data(),
+                       *hbp,*hnevents,*hddl,*hddlevents);
+    
+    if ( fLogger->NumberOfEntries() > 0 )
+    {
+      // readout errors      
+      FillReadoutStatus(*fLogger,TrackerDataMaker(specie)->Data());      
+      fLogger->Clear();
+    }
+  }    
+}
+
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUONVTrackerData* data)
 {
   log.ResetItr();
 
@@ -470,9 +605,9 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
 
   TH1* hpadding = GetRawsData(AliMUONQAIndices::kTrackerBusPatchPaddingErrors);
   
-  TH1* hroe = GetRawsData(AliMUONQAIndices::kTrackerReadoutErrors);
+  TH1* hrostatus = GetRawsData(AliMUONQAIndices::kTrackerReadoutStatus);
     
-  TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofRawEventSeen);
+  TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofPhysicsEventsSeen);
   
   Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
   
@@ -481,9 +616,13 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
     TPaveText* text = new TPaveText(0,0,0.99,0.99,"NDC");
     text->AddText("FATAL : 0 event seen ? That's NOT normal...");
     text->SetFillColor(2); // red = FATAL
-    hroe->GetListOfFunctions()->Add(text);
+    hrostatus->GetListOfFunctions()->Add(text);
     return;
   }
+  
+  /////////////////////////////////////////////////////////////////
+  /// Start by counting the number of errors
+  /////////////////////////////////////////////////////////////////
   
   while ( log.Next(msg,occurence) )
   {
@@ -501,33 +640,34 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
       // Let's try to get all the suspected bus patches (i.e. one full FRT, as currently
       // we don't have more precise information to locate the faulty bus patch(es)).
       
-      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(buspatch);
-      Int_t frt = bp->GetFrtId();
-      AliMpDDL* ddl = AliMpDDLStore::Instance()->GetDDL(bp->GetDdlId());
-      Int_t* b = new Int_t[ddl->GetMaxDsp()];
-      ddl->GetBusPerDsp(b);
-      Int_t nbus(0);
-      for ( Int_t i = 0; i < ddl->GetNofFrts() && !nbus; ++i ) 
+      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(buspatch,kFALSE);
+      if (bp)
       {
-        if ( ddl->GetFrtId(i) == frt ) 
+        Int_t frt = bp->GetFrtId();
+        AliMpDDL* ddl = AliMpDDLStore::Instance()->GetDDL(bp->GetDdlId());
+        Int_t* b = new Int_t[ddl->GetMaxDsp()];
+        ddl->GetBusPerDsp(b);
+        Int_t nbus(0);
+        for ( Int_t i = 0; i < ddl->GetNofFrts() && !nbus; ++i ) 
         {
-          nbus = b[i];
+          if ( ddl->GetFrtId(i) == frt ) 
+          {
+            nbus = b[i];
+          }
+        }
+        if (nbus<=0) 
+        {
+          AliError("GOT NBUS<=0 ! THAT IS BAD ! CHECK !");
+          nbus=1;
+        }
+        delete[] b;
+      
+        while (nbus) {
+          htoken->Fill(buspatch+nbus-1,occurence);
+          --nbus;
         }
       }
-      if (nbus<=0) 
-      {
-        AliError("GOT NBUS<=0 ! THAT IS BAD ! CHECK !");
-        nbus=1;
-      }
-      
-      delete[] b;
-      
-      while (nbus) {
-        htoken->Fill(buspatch+nbus-1,occurence);
-        --nbus;
-      }
-      
-      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors,occurence);
+      hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors,occurence);
     }
     
     if ( msg.Contains("Parity") )
@@ -535,12 +675,12 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
       Int_t buspatch;
       sscanf(msg.Data(),"Parity error in buspatch %d (0x%X).",&buspatch,&buspatch);
       hparity->Fill(buspatch,occurence);      
-      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofParityErrors,occurence);
+      hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofParityErrors,occurence);
     }
     
     if ( msg.Contains("Glitch") ) 
     {
-      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofGlitchErrors,occurence);      
+      hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofGlitchErrors,occurence);      
     }
     
     if ( msg.Contains("Padding") )
@@ -548,163 +688,305 @@ void AliMUONTrackerQADataMakerRec::FillErrors(AliMUONLogger& log)
       Int_t block, dsp, buspatch;      
       sscanf(msg.Data(),"Padding word error for iBlock %d, iDsp %d, iBus %d.",&block,&dsp,&buspatch);
       hpadding->Fill(buspatch,occurence);
-      hroe->Fill(1.0*AliMUONQAIndices::kTrackerRawNofPaddingErrors,occurence);      
+      hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofPaddingErrors,occurence);      
     }
   }
   
-  /// Finally we normalize to the number of events, for the shifter plot only
-  hroe->Scale(100.0/nevents);
+  /////////////////////////////////////////////////////////////////
+  ///
+  /// Then make the status about number of missing bus patches
+  ///
+  /////////////////////////////////////////////////////////////////
+
+  Int_t nofBusPatchesNotInConfig(0);
+    
+  for ( int i = 1; i <= fBusPatchConfig->GetNbinsX(); ++i )
+  {
+    Double_t buspatchId = fBusPatchConfig->GetBinCenter(i);
+    if ( TMath::Nint(buspatchId) != i ) 
+    {
+      AliError(Form("buspathId=%e i=%d",buspatchId,i));
+    }
+    Double_t content = fBusPatchConfig->GetBinContent(i);
+    
+    if ( content <= 0. /* no content */
+        && 
+        AliMpDDLStore::Instance()->GetBusPatch(i,kFALSE) /* but a valid bus patch */ )
+    {
+      ++nofBusPatchesNotInConfig;
+    }    
+  }
+  
+  Double_t nbuspatches = fBusPatchConfig->GetEntries();
+  
+  hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromConfig,nofBusPatchesNotInConfig*nevents/nbuspatches);
+  
+  Double_t nofBusPatchesNotInData(0);
+  
+  TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+  AliMpBusPatch* bp;
+  
+  while ( ( bp = static_cast<AliMpBusPatch*>(next()) ) )
+  {
+    if ( !data->HasBusPatch(bp->GetId()) ) ++nofBusPatchesNotInData;
+  }
+  
+  hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromDataStream,nofBusPatchesNotInData*nevents/nbuspatches);
 }
 
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::FillEventSize(const AliRawVEvent* cevent)
+{
+  /// Fill event size histogram(s)
+  
+  if (!cevent)
+  {
+    AliError("Got a null cevent...");
+    return;
+  }
+  
+  AliRawVEvent* event = const_cast<AliRawVEvent*>(cevent); // not good, but the Get*Event() methods are not const...
+  
+  TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofPhysicsEventsSeen);
+
+  TH1* hddlevents = GetRawsData(AliMUONQAIndices::kTrackerDDLNofEventsSeen);
+  
+  TH1* hDDLEventSize = GetRawsData(AliMUONQAIndices::kTrackerDDLEventSize);
+  
+  Double_t eventSize = 0;
+  
+  hnevents->Fill(0.0);
+  
+  for ( int i = 0; i < event->GetNSubEvents(); ++i ) 
+  {
+    AliRawVEvent* sub = event->GetSubEvent(i);
+    
+    for ( int j = 0; j < sub->GetNEquipments(); ++j ) 
+    {
+      AliRawVEquipment* eq = sub->GetEquipment(j);
+      
+      AliRawEquipmentHeader* equipmentHeader = eq->GetEquipmentHeader();
+      
+      UInt_t uid = equipmentHeader->GetId();
+      
+      int index;
+      
+      TString det(AliDAQ::DetectorNameFromDdlID(uid,index));
+      
+      if (det=="MUONTRK")     
+      {
+        UInt_t ddlsize = equipmentHeader->GetEquipmentSize();
+        hDDLEventSize->Fill(uid,ddlsize);
+        hddlevents->Fill(uid);
+        eventSize += ddlsize;
+      }
+    }
+  }  
+}
 
 //____________________________________________________________________________ 
-void AliMUONTrackerQADataMakerRec::InitRaws()
+void AliMUONTrackerQADataMakerRec::InitCommon()
+{  
+  if (!fBusPatchConfig)
+  {
+    Int_t bpmin(999999);
+    Int_t bpmax(0);
+    
+    TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+    AliMpBusPatch* bp(0x0);
+    while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+    {
+      bpmin = TMath::Min(bpmin,bp->GetId());
+      bpmax = TMath::Max(bpmax,bp->GetId());
+    }
+    
+    fBPxmin = bpmin-0.5;
+    fBPxmax = bpmax+0.5;
+    fBPnbins = TMath::Nint(fBPxmax-fBPxmin);
+        
+    AliMUONVStore* config = fCalibrationData->Config();
+    
+    if (config)
+    {
+      fBusPatchConfig = new TH1F("hTrackerBusPatchConfig","Configuration of bus patches",fBPnbins,fBPxmin,fBPxmax);
+      fBusPatchConfig->SetDirectory(0);
+    }
+    else
+    {
+      AliWarning("Tracker configuration not found. Will not be able to cut on low occupancies");
+    }
+    
+    next.Reset();
+    while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+    {
+      if ( config ) 
+      {
+        Int_t nofManusInConfig(0);
+      
+        for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu )
+        {
+          Int_t manuId = bp->GetManuId(imanu);
+          if ( config->FindObject(bp->GetDEId(),manuId)) ++nofManusInConfig;
+        }
+        
+        if ( nofManusInConfig > 0 )
+        {
+          fBusPatchConfig->Fill(bp->GetId(),1.0);
+        }
+        else
+        {
+          fBusPatchConfig->Fill(bp->GetId(),0.0);          
+        }
+      }      
+      else // no config, we assume all is there...
+      {
+        fBusPatchConfig->Fill(bp->GetId());
+      }
+    }
+  }
+}
+
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::BookHistograms(AliQAv1::TASKINDEX_t task)
 {
-    /// create Raws histograms in Raws subdir
-	
   AliCodeTimerAuto("",0);
+
+  InitCommon();
   
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
- 
-  Int_t bpmin(999999);
-  Int_t bpmax(0);
   
-  TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
-  AliMpBusPatch* bp(0x0);
-  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
+  TH1* hbp = new TH1F("hTrackerBusPatchOccupancy","Occupancy of bus patches",fBPnbins,fBPxmin,fBPxmax);
+  
+  Master()->Add2List(hbp,AliMUONQAIndices::kTrackerBusPatchOccupancy, task, expert, !image, !saveCorr);
+  
+  TH1* h = new TH1F("hTrackerBusPatchParityErrors","Number of parity errors per bus patch",fBPnbins,fBPxmin,fBPxmax);
+  
+  Master()->Add2List(h,AliMUONQAIndices::kTrackerBusPatchParityErrors,task,expert,!image,!saveCorr);
+  
+  h = new TH1F("hTrackerBusPatchTokenLostErrors","Number of token lost errors per bus patch",fBPnbins,fBPxmin,fBPxmax);
+  Master()->Add2List(h,AliMUONQAIndices::kTrackerBusPatchTokenLostErrors,task,expert,!image,!saveCorr);
+  
+  h = new TH1F("hTrackerBusPatchPaddingErrors","Number of padding errors per bus patch",fBPnbins,fBPxmin,fBPxmax);
+  
+  Master()->Add2List(h,AliMUONQAIndices::kTrackerBusPatchPaddingErrors,task,expert,!image,!saveCorr);
+  
+  
+  TH1* hnevents(0x0);
+  
+  if ( task == AliQAv1::kRAWS )
   {
-    bpmin = TMath::Min(bpmin,bp->GetId());
-    bpmax = TMath::Max(bpmax,bp->GetId());
+    // for raw data, we differentiate events seen from events used to be able to detect
+    // severe decoder errors that lead to no event decoded (i.e. zero event used) even if
+    // events are there (i.e non-zero event seen).
+    hnevents = new TH1F("kTrackerNofPhysicsEventsSeen","Number of physics events seen",1,-0.5,0.5);
+    // this one will count the number of physics event the rawdatamaker is *seeing*
+    TAxis* a = hnevents->GetXaxis();
+    a->SetBinLabel(1,"NPhysicsEvents");
+    hnevents->SetStats(kFALSE);
+    Master()->Add2List(hnevents,AliMUONQAIndices::kTrackerNofPhysicsEventsSeen,task,expert,!image,!saveCorr);
   }
   
-  Double_t xmin = bpmin-0.5;
-  Double_t xmax = bpmax+0.5;
-  Int_t nbins = bpmax-bpmin+1;
+  hnevents = new TH1F("kTrackerNofGoodPhysicsEventsUsed","Number of good physics events used",1,-0.5,0.5);
+  // this one will get its content from the TrackerData, i.e. it will count the number of *good* physics events *used*
+  // (i.e. not empty and with no fatal readout error)
+  TAxis* a = hnevents->GetXaxis();
+  a->SetBinLabel(1,"NGoodPhysicsEvents");
+  hnevents->SetStats(kFALSE);  
+
+  Master()->Add2List(hnevents,AliMUONQAIndices::kTrackerNofGoodPhysicsEventsUsed,task,expert,!image,!saveCorr);
+
+  Master()->Add2List(static_cast<TH1*>(fBusPatchConfig->Clone()),AliMUONQAIndices::kTrackerBusPatchConfig, task,expert, !image, !saveCorr);
+
+  Int_t nbins = AliDAQ::NumberOfDdls("MUONTRK");
+  const Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
   
-  TH1* hbp = new TH1F("hTrackerBusPatchOccupancy","Occupancy of bus patches",nbins,xmin,xmax);
+  Double_t xmin = offset - 0.5;
+  Double_t xmax  = offset + nbins - 0.5;
+  
+  TString what(AliQAv1::GetTaskName(task));
+  
+  h = new TH1F(Form("hTrackerDDL%sOccupancy",what.Data()),Form(";DDLId;DDL Occupancy in %% (from %s)",what.Data()),nbins,xmin,xmax);
+  
+  Master()->Add2List(h,AliMUONQAIndices::kTrackerDDLOccupancy,task,expert,!image,!saveCorr);
 
-  TH1* hbpnpads = new TH1F("hTrackerBusPatchNofPads","Number of pads per bus patch",nbins,xmin,xmax);
+  if ( task == AliQAv1::kRAWS )
+  {
+    // see above the comment about why we have event seen vs used for raw data.
+    h = new TH1F("hTrackerDDLNofEventsSeen","Number of events seen by DDL;DDLId",nbins,xmin,xmax);
+    Master()->Add2List(h,AliMUONQAIndices::kTrackerDDLNofEventsSeen,task,expert,!image,!saveCorr);
+  }
+  
+  h = new TH1F("hTrackerDDLNofEventsUsed","Number of events used by DDL;DDLId",nbins,xmin,xmax);
+  Master()->Add2List(h,AliMUONQAIndices::kTrackerDDLNofEventsUsed,task,expert,!image,!saveCorr);
+  
+}
 
-  TH1* hbpnmanus = new TH1F("hTrackerBusPatchNofManus","Number of manus per bus patch",nbins,xmin,xmax);
-
-  Add2RawsList(hbp,AliMUONQAIndices::kTrackerBusPatchOccupancy, expert, image, !saveCorr);
-  Add2RawsList(hbpnpads,AliMUONQAIndices::kTrackerBusPatchNofPads, expert, !image, !saveCorr);
-  Add2RawsList(hbpnmanus,AliMUONQAIndices::kTrackerBusPatchNofManus, expert, !image, !saveCorr);
-
-  Add2RawsList(new TH1F("hTrackerBusPatchParityErrors","Number of parity errors per bus patch",nbins,xmin,xmax),
-               AliMUONQAIndices::kTrackerBusPatchParityErrors,expert,!image,!saveCorr);
-
-  Add2RawsList(new TH1F("hTrackerBusPatchTokenLostErrors","Number of token lost errors per bus patch",nbins,xmin,xmax),
-               AliMUONQAIndices::kTrackerBusPatchTokenLostErrors,expert,!image,!saveCorr);
-
-  Add2RawsList(new TH1F("hTrackerBusPatchPaddingErrors","Number of padding errors per bus patch",nbins,xmin,xmax),
-               AliMUONQAIndices::kTrackerBusPatchPaddingErrors,expert,!image,!saveCorr);
-
-  TH1* h = new TH1F("hTrackerReadoutErrors","Number of readout errors per event;;Error rate in %",4,-0.5,3.5);
+//____________________________________________________________________________ 
+void AliMUONTrackerQADataMakerRec::InitRaws()
+{
+  /// create monitor objects for RAWS
+	
+  TrackerDataMaker(AliRecoParam::AConvert(Master()->GetEventSpecie()),kTRUE);
+  
+  /// Book histograms that are common to Raws and Digits
+  BookHistograms(AliQAv1::kRAWS);
+  
+  /// Now the Raws specific parts
+  TH1* h = new TH1F("hTrackerReadoutStatus","Readout status (x events)",7,-0.5,6.5);
   h->SetStats(kFALSE);
   
-  // The QA shifter will only see the summary plot below
   TAxis* a = h->GetXaxis();
   
   a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofGlitchErrors),"Glitch errors");
   a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors),"Token lost errors");
   a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofParityErrors),"Parity errors");
   a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofPaddingErrors),"Padding errors");
-
-  Add2RawsList(h,AliMUONQAIndices::kTrackerReadoutErrors,!expert,image,!saveCorr);
-
-  TH1* hnevents = new TH1F("hTrackerNofRawEventSeen","Number of events seen",1,-0.5,0.5);
-  a = hnevents->GetXaxis();
-  a->SetBinLabel(1,"Nevents");
-  hnevents->SetStats(kFALSE);
   
-  Add2RawsList(hnevents,AliMUONQAIndices::kTrackerNofRawEventSeen,expert,!image,!saveCorr);
-
-  const Bool_t histogram(kFALSE);
-
-  if(!fTrackerDataMaker) 
-  {
-    
-    AliMUONTrackerDataMaker* dm = new AliMUONTrackerDataMaker(GetRecoParam(),
-                                                    AliCDBManager::Instance()->GetRun(),
-                                                    0x0,
-                                                    "",
-                                                    "NOGAIN",
-                                                    histogram,
-                                                    0.0,0.0);
-
-    fLogger = new AliMUONLogger(-1);
-    dm->EnableErrorLogger(fLogger);
-    fTrackerDataMaker = dm;
-  }
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofEmptyEvents),"Empty events");
   
-  fTrackerDataMaker->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromConfig),"Not readout bus patches");
+  a->SetBinLabel(h->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromDataStream),"Missing bus patches");
 
-  fTrackerDataMaker->SetRunning(kTRUE);
+  TH1* h1 = static_cast<TH1*>(h->Clone("hTrackerReadoutStatusPerEvent"));
+  h1->SetTitle("Readout status per event");
+  h1->GetYaxis()->SetTitle("Percentage");
   
-  next.Reset();
+  // The QA shifter will only see the summary plot below
 
-  AliMUONVStore* config = fCalibrationData->Config();
+  Add2RawsList(h,AliMUONQAIndices::kTrackerReadoutStatus,kTRUE,kFALSE,kFALSE);    
+  Add2RawsList(h1,AliMUONQAIndices::kTrackerReadoutStatusPerEvent,kFALSE,kTRUE,kFALSE);  
 
-  TH1* hbpconfig(0x0);
+  // Lastly the event size histograms
   
-  if (config)
-  {
-    hbpconfig = new TH1F("hTrackerBusPatchConfig","Configuration of bus patches",nbins,xmin,xmax);
-    Add2RawsList(hbpconfig,AliMUONQAIndices::kTrackerBusPatchConfig, expert, !image, !saveCorr);
-  }
-  else
-  {
-    AliWarning("Tracker configuration not found. Will not be able to cut on low occupancies");
-  }
-  
-  while ( ( bp = static_cast<AliMpBusPatch*>(next())) )
-  {
-    Int_t n(0);
-    Bool_t inConfig(kTRUE);
-    
-    for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu )
-    {
-      Int_t manuId = bp->GetManuId(imanu);
-      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(bp->GetDEId());      
-      n += de->NofChannelsInManu(manuId);
-      if ( config && !config->FindObject(de->GetId(),manuId)) inConfig=kFALSE;
-    }
-    hbpnpads->Fill(bp->GetId(),n*1.0);
-    hbpnmanus->Fill(bp->GetId(),bp->GetNofManus()*1.0);
-    if ( hbpconfig && inConfig ) 
-    {
-      hbpconfig->Fill(bp->GetId());
-    }
-  }
-  
-  nbins = AliDAQ::NumberOfDdls("MUONTRK");
+  Int_t nbins = AliDAQ::NumberOfDdls("MUONTRK");
   const Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
   
-  xmin = offset - 0.5;
-  xmax  = offset + nbins - 0.5;
+  Double_t xmin = offset - 0.5;
+  Double_t xmax  = offset + nbins - 0.5;
   
-  Add2RawsList(new TH1F("hTrackerDDLOccupancy",";DDLId;DDL Occupancy in %",nbins,xmin,xmax),
-               AliMUONQAIndices::kTrackerDDLOccupancy,!expert,image,!saveCorr);
-  Add2RawsList(new TH1F("hTrackerDDLNofEvents","Number of events seen by DDL;DDLId",nbins,xmin,xmax),
-               AliMUONQAIndices::kTrackerDDLNofEvents,expert,!image,!saveCorr);
-  
+  h = new TH1F("hTrackerDDLEventSize","DDL event size (bytes);DDL Id;Data size (bytes)",nbins,xmin,xmax);  
+  h->SetStats(kFALSE);
+  Add2RawsList(h,AliMUONQAIndices::kTrackerDDLEventSize,kTRUE,kFALSE,kFALSE);
+
+  h = new TH1F("hTrackerDDLMeanEventSize","DDL mean event size (KB) per event;DDL Id;Mean Event size (KB)",nbins,xmin,xmax);  
+  h->SetStats(kFALSE);
+  Add2RawsList(h,AliMUONQAIndices::kTrackerDDLEventSizePerEvent,kFALSE,kTRUE,kFALSE);
+    
 }
 
 //__________________________________________________________________
 void AliMUONTrackerQADataMakerRec::InitDigits() 
 {
-  /// Initialized Digits spectra 
-  const Bool_t expert   = kTRUE ; 
-  const Bool_t image    = kTRUE ; 
+  /// create monitor objects for DIGITS
   
-  TH1I* h0 = new TH1I("hDigitsDetElem", "Detection element distribution in Digits;Detection element Id;Counts",  1400, 100, 1500); 
-  Add2DigitsList(h0, 0, !expert, image);
+  AliCodeTimerAuto("",0);
+
+  TrackerCalData(AliRecoParam::AConvert(Master()->GetEventSpecie()),kTRUE);
   
-  TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits;ACD value;Counts", 4096, 0, 4095); 
-  Add2DigitsList(h1, 1, !expert, image);    
+  /// Book histograms that are common to Raws and Digits
+  BookHistograms(AliQAv1::kDIGITSR);
 } 
 
 //____________________________________________________________________________ 
@@ -716,6 +998,10 @@ void AliMUONTrackerQADataMakerRec::InitRecPoints()
   const Bool_t image    = kTRUE ; 
   
   AliCodeTimerAuto("",0);
+
+  TrackerRecData(AliRecoParam::AConvert(Master()->GetEventSpecie()),kTRUE);
+  
+  BookHistograms(AliQAv1::kRECPOINTS);
   
   TH1I *h1I;
   TH1F *h1F;
@@ -802,7 +1088,7 @@ void AliMUONTrackerQADataMakerRec::InitRecPoints()
   h1F->SetMarkerColor(kRed);
   Add2RecPointsList(h1F, AliMUONQAIndices::kTrackerClusterChargePerDEMean, !expert, image);
   
-  if (!fMappingCheckRecPoints) fMappingCheckRecPoints = new AliMUONQAMappingCheck(RunNumber());  
+  MappingCheckRecPoints(AliRecoParam::AConvert(Master()->GetEventSpecie()),kTRUE);
 }
 
 //____________________________________________________________________________ 
@@ -1043,27 +1329,43 @@ void AliMUONTrackerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
 	/// make QA for rawdata tracker
   	
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAuto(Form("%s",AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(Master()->GetEventSpecie()))),0);
 
+  AliInfo(Form("rawReader class=%s",rawReader->ClassName()));
+  
   /// forces init
   GetRawsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
   
-	((AliMUONTrackerDataMaker*)fTrackerDataMaker)->SetRawReader(rawReader);
+  AliMUONTrackerDataMaker* dm = static_cast<AliMUONTrackerDataMaker*>(TrackerDataMaker(AliRecoParam::AConvert(Master()->GetEventSpecie())));
+
+	dm->SetRawReader(rawReader);
 	
-	fTrackerDataMaker->ProcessEvent();
+  Int_t eventType = rawReader->GetType();
   
-  
+  if (eventType == AliRawEventHeaderBase::kPhysicsEvent ) 
+  {
+    dm->ProcessEvent();
+    
+    FillEventSize(rawReader->GetEvent());
+    
+    if ( dm->LastEventWasEmpty() )
+    {
+      TH1* hrostatus = GetRawsData(AliMUONQAIndices::kTrackerReadoutStatus);
+
+      if (hrostatus) hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofEmptyEvents);
+    }
+  }
 }
 
 //__________________________________________________________________
 void AliMUONTrackerQADataMakerRec::MakeDigits(TTree* digitsTree)         
 {
   /// makes data from Digits
-
-  AliCodeTimerAuto("",0);
+  AliCodeTimerAuto(Form("%s",AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(Master()->GetEventSpecie()))),0);
   
-  // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  /// forces init
+
+  GetDigitsData(AliMUONQAIndices::kTrackerBusPatchOccupancy);
 
   if (!fDigitStore)
     fDigitStore = AliMUONVDigitStore::Create(*digitsTree);
@@ -1074,13 +1376,32 @@ void AliMUONTrackerQADataMakerRec::MakeDigits(TTree* digitsTree)
   
   AliMUONVDigit* dig = 0x0;
   
+  AliMUON2DMap oneEventData(true);
+  
   while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
+  {
+    if ( dig->IsTracker() )
     {
-    GetDigitsData(0)->Fill(dig->DetElemId());
-    GetDigitsData(1)->Fill(dig->ADC());
+      if ( dig->Charge() > 0.0 )
+      {
+        
+        Int_t detElemId = dig->DetElemId();
+        Int_t manuId = dig->ManuId();
+        
+        AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(oneEventData.FindObject(detElemId,manuId));
+        if (!param)
+        {
+          param = new AliMUONCalibParamND(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,
+                                          AliMUONVCalibParam::InvalidFloatValue());
+          oneEventData.Add(param);
+        }
+        param->SetValueAsDouble(dig->ManuChannel(),0,dig->Charge());
+      }
     }
+  }
+  
+  TrackerCalData(AliRecoParam::AConvert(Master()->GetEventSpecie()))->Add(oneEventData);
 }
-
 
 //____________________________________________________________________________
 void AliMUONTrackerQADataMakerRec::MakeRecPoints(TTree* clustersTree)
@@ -1094,10 +1415,9 @@ void AliMUONTrackerQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 	// then we have clusters in TreeR, so let's take that opportunity
 	// to QA them...
 	
-  AliCodeTimerAuto("",0);
-
-  // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  AliCodeTimerAuto(Form("%s",AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(Master()->GetEventSpecie()))),0);
+  // Forces init by requesting an histogram
+  GetRecPointsData(AliMUONQAIndices::kTrackerBusPatchOccupancy); 
 
 	if (!fClusterStore)
 	{
@@ -1115,7 +1435,11 @@ void AliMUONTrackerQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 	TIter next(fClusterStore->CreateIterator());
 	AliMUONVCluster* cluster;
 	
-  if ( fMappingCheckRecPoints ) fMappingCheckRecPoints->NewEvent();
+  AliMUONQAMappingCheck* mcr = MappingCheckRecPoints(AliRecoParam::AConvert(Master()->GetEventSpecie()));
+  
+  if ( mcr ) mcr->NewEvent();
+  
+  AliMUON2DMap oneEventData(true);
   
 	while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) )
 	{
@@ -1129,12 +1453,29 @@ void AliMUONTrackerQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 		GetRecPointsData(AliMUONQAIndices::kTrackerNumberOfClustersPerChamber)->Fill(chamberId);
 		GetRecPointsData(AliMUONQAIndices::kTrackerClusterChargePerChamber+chamberId)->Fill(cluster->GetCharge());
 		GetRecPointsData(AliMUONQAIndices::kTrackerClusterMultiplicityPerChamber+chamberId)->Fill(cluster->GetNDigits());
-	        GetRecPointsData(AliMUONQAIndices::kTrackerClusterHitMapPerChamber+chamberId)->Fill(cluster->GetX(),cluster->GetY());
+    GetRecPointsData(AliMUONQAIndices::kTrackerClusterHitMapPerChamber+chamberId)->Fill(cluster->GetX(),cluster->GetY());
 		
-    if ( fMappingCheckRecPoints ) fMappingCheckRecPoints->Store(*cluster);
+    if ( mcr ) mcr->Store(*cluster);
     
+    for ( int i = 0; i < cluster->GetNDigits(); ++i ) 
+    {
+      UInt_t digitId = cluster->GetDigitId(i);
+      
+      Int_t manuId = AliMUONVDigit::ManuId(digitId);
+      Int_t manuChannel = AliMUONVDigit::ManuChannel(digitId);
+      
+      AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(oneEventData.FindObject(detElemId,manuId));
+      if (!param)
+      {
+        param = new AliMUONCalibParamND(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,AliMUONVCalibParam::InvalidFloatValue());
+        oneEventData.Add(param);
+      }
+      param->SetValueAsDouble(manuChannel,0,1.0);
+    }
 	}
 	
+  TrackerRecData(AliRecoParam::AConvert(Master()->GetEventSpecie()))->Add(oneEventData);    
+
 	fClusterStore->Clear();
 }
 
@@ -1143,11 +1484,8 @@ void AliMUONTrackerQADataMakerRec::MakeESDs(AliESDEvent* esd)
 {
   /// make QA data from ESDs
 
-  AliCodeTimerAuto("",0);
-  
-  // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
-  
+  AliCodeTimerAuto(Form("%s",AliRecoParam::GetEventSpecieName(AliRecoParam::AConvert(Master()->GetEventSpecie()))),0);
+   
   // load ESD event in the interface
   AliMUONESDInterface esdInterface;
   if (GetRecoParam()) AliMUONESDInterface::ResetTracker(GetRecoParam(), kFALSE);
@@ -1236,10 +1574,9 @@ void AliMUONTrackerQADataMakerRec::MakeESDs(AliESDEvent* esd)
 //____________________________________________________________________________ 
 AliMUONVTrackerData* AliMUONTrackerQADataMakerRec::GetTrackerData() const
 { 
-/// Return tracker data
+  /// Return tracker data
   
-  return fTrackerDataMaker->Data(); 
-  
+  return TrackerDataMaker(AliRecoParam::AConvert(Master()->GetEventSpecie()))->Data(); 
 }
 
 //____________________________________________________________________________ 
@@ -1261,7 +1598,6 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
       if ( hn.Contains("Tracker") )
       {
         if ( !hn.Contains("hTrackerBusPatchNofPads") && 
-            !hn.Contains("hTrackerBusPatchNofManus") &&
             !hn.Contains("hTrackerBusPatchConfig" ) )
         {
           AliDebug(1,Form("Resetting %s",hn.Data()));
@@ -1287,4 +1623,136 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
       }
     }
   }
+}
+
+//____________________________________________________________________________ 
+TObjArray* AliMUONTrackerQADataMakerRec::GetArray(TObjArray*& array, Bool_t create)
+{
+  /// Get (or create) the array
+
+  if ( ! array ) 
+  {
+    if ( create ) 
+    {
+      array = new TObjArray(AliRecoParam::kNSpecies);
+    }
+  }
+  
+  return array;
+}
+
+//____________________________________________________________________________ 
+AliMUONVTrackerDataMaker* 
+AliMUONTrackerQADataMakerRec::TrackerDataMaker(Int_t specieIndex)  const
+{
+  /// const version of the getter
+  if ( fTrackerDataMakerArray )
+  {
+    return static_cast<AliMUONVTrackerDataMaker*>(fTrackerDataMakerArray->At(specieIndex));
+  }
+  return 0x0;
+}
+
+//____________________________________________________________________________ 
+AliMUONVTrackerDataMaker* 
+AliMUONTrackerQADataMakerRec::TrackerDataMaker(Int_t specieIndex, Bool_t create)
+{
+  /// Get (or create) TrackerDataMaker object for a given specie
+  
+  TObjArray* array = GetArray(fTrackerDataMakerArray,create);
+  TObject* o(0x0);
+  
+  if ( array ) 
+  {
+    array->SetOwner(kTRUE);
+    o = array->At(specieIndex);
+    if (!o && create)
+    {
+      
+      AliMUONTrackerDataMaker* dm = new AliMUONTrackerDataMaker(0x0,
+                                                                AliCDBManager::Instance()->GetRun(),
+                                                                0x0,
+                                                                "",
+                                                                "",
+                                                                kFALSE,
+                                                                0.0,0.0);
+      
+      if (!fLogger) fLogger = new AliMUONLogger(-1); // note that we share the logger between species... should not be a big deal though
+      dm->EnableErrorLogger(fLogger);
+      dm->Data()->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level    
+      dm->Data()->SetName("RawCharges");
+      dm->SetRunning(kTRUE);
+
+      o = dm;
+      array->AddAt(o,specieIndex);      
+    }
+  }
+  return static_cast<AliMUONVTrackerDataMaker*>(o);
+}
+
+//____________________________________________________________________________ 
+AliMUONVTrackerData* 
+AliMUONTrackerQADataMakerRec::TrackerCalData(Int_t specieIndex, Bool_t create)
+{
+  TObjArray* array = GetArray(fTrackerCalDataArray,create);
+  TObject* o(0x0);
+  
+  if (array)
+  {
+    array->SetOwner(kFALSE); // as the tracker data will be attached to fQADigitsList which will become the owner
+    o = array->At(specieIndex);
+    if (!o && create)
+    {
+      AliMUONTrackerData* data = new AliMUONTrackerData("CalCharges",Form("Calibrated charges (fC) %s",GetRecoParam()->GetCalibrationMode()),1);
+      data->SetDimensionName(0,"charge");
+      data->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
+      o=data;
+      array->AddAt(o,specieIndex);
+    }
+  }
+  return static_cast<AliMUONVTrackerData*>(o);
+}
+
+//____________________________________________________________________________ 
+AliMUONVTrackerData* 
+AliMUONTrackerQADataMakerRec::TrackerRecData(Int_t specieIndex, Bool_t create)
+{
+  TObjArray* array = GetArray(fTrackerRecDataArray,create);
+  TObject* o(0x0);
+  
+  if (array)
+  {
+    array->SetOwner(kFALSE); // as the tracker data will be attached to fQARecPointsList which will become the owner
+    o = array->At(specieIndex);
+    if (!o && create)
+    {
+      AliMUONTrackerData* data = new AliMUONTrackerData("RecCharges",Form("Calibrated charges (fC) %s for digits belonging to a reconstructed cluster",GetRecoParam()->GetCalibrationMode()),1);
+      data->SetDimensionName(0,"one");
+      data->DisableChannelLevel(); // to save up disk space, we only store starting at the manu level
+      o=data;
+      array->AddAt(o,specieIndex);
+    }
+  }
+  return static_cast<AliMUONVTrackerData*>(o);
+}
+
+//____________________________________________________________________________ 
+AliMUONQAMappingCheck* 
+AliMUONTrackerQADataMakerRec::MappingCheckRecPoints(Int_t specieIndex, Bool_t create)
+{
+  TObjArray* array = GetArray(fMappingCheckRecPointsArray,create);
+  TObject* o(0x0);
+  
+  if (array)
+  {
+    array->SetOwner(kTRUE);
+    o = array->At(specieIndex);
+    if (!o && create)
+    {
+      AliMUONQAMappingCheck* mcheck = new AliMUONQAMappingCheck(RunNumber()); 
+      o=mcheck;
+      array->AddAt(o,specieIndex);
+    }
+  }
+  return static_cast<AliMUONQAMappingCheck*>(o);
 }

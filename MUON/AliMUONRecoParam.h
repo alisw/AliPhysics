@@ -300,11 +300,6 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// Retrieve high value of DE occupancy limit
   Float_t DEOccupancyHighLimit() const { return fDEOccupancyLimits[1]; }
   
-  /// Set the missing pad fraction limit
-  void SetMissingPadFractionLimit(float v) { fMissingPadFractionLimit = v; }
-  /// Get the missing pad fraction limit
-  Float_t MissingPadFractionLimit() const { return fMissingPadFractionLimit; }
-  
   /// Set the fraction of buspatches outside the occupancy limits
   void SetFractionOfBuspatchOutsideOccupancyLimit(float v) { fFractionOfBuspatchOutsideOccupancyLimit = v; }
   /// Get the fraction of buspatches outside the occupancy limits
@@ -312,7 +307,22 @@ class AliMUONRecoParam : public AliDetectorRecoParam
 
   virtual void Print(Option_t *option = "") const;
   
- private:
+  /// Get the max event size (soft limit)
+  virtual Double_t EventSizeSoftLimit() const { return fEventSizeSoftLimit; }
+  
+  /// Get the max event size (hard limit)
+  virtual Double_t EventSizeHardLimit() const { return fEventSizeHardLimit; }
+
+  /// Set the max event size limits
+  virtual void SetEventSizeLimits(Double_t soft, Double_t hard) { fEventSizeSoftLimit=soft; fEventSizeHardLimit=hard; }
+  
+  /// Get the percentage of token lost error we allow
+  virtual Double_t TokenLostLimit() const { return fTokenLostLimit; }
+
+  /// Set the percentage of token lost error we allo
+  virtual void SetTokenLostLimit(Double_t limit) { fTokenLostLimit = limit; }
+
+private:
   
   void SetDefaultLimits();
   
@@ -403,11 +413,16 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   Double32_t fBuspatchOccupancyLimits[2]; ///< low and high thresholds for bus patch occupancy cut
   Double32_t fDEOccupancyLimits[2]; ///< low and high thresholds for DE occupancy cut
 
-  Double32_t fMissingPadFractionLimit; ///< above this fraction, we consider we have too few pads alive...
+  Double32_t fMissingPadFractionLimit; ///< DEPRECATED
   Double32_t fFractionOfBuspatchOutsideOccupancyLimit; ///< above this limit, we consider we have too many buspatches out of the allowed occupancy range
 
   Double32_t fAverageNoisePadCharge; ///< the (truncated, typically at 10%) mean of the sigma of the pedestals, in femto-coulomb
   Double32_t fClusterChargeCut; ///< the cluster is cut if its charge is below fClusterChargeCut*LowestPadCharge()
+  
+  Double32_t fEventSizeSoftLimit; ///< (soft) limit on mean event size per event (KB)
+  Double32_t fEventSizeHardLimit; ///< (hard) limit on mean event size per event (KB)
+  
+  Double32_t fTokenLostLimit; ///< limit on the fraction of token lost error per event we allow
   
   // functions
   void SetLowFluxParam();
@@ -415,7 +430,9 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,166) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,167) // MUON reco parameters
+  // we're at 167 not because we had that many versions, but because at some point (version 15->16)
+  // 166 was committed by error, and we did not to go reverse afterwards...
 };
 
 #endif

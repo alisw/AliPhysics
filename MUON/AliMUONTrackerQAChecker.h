@@ -30,15 +30,26 @@ private:
   
   AliMUONVQAChecker::ECheckCode MarkHisto(TH1& histo, AliMUONVQAChecker::ECheckCode value) const;
   
-  AliMUONVQAChecker::ECheckCode BeautifyHistograms(TH1& hddl,
-                                                   TH1& hbp, 
-                                                   TH1& hroe,
-                                                   const TH1* hbuspatchconfig, 
-                                                   const TH1& hnpads, 
-                                                   const TH1& hbuspatchtokenerrors,
-                                                   Int_t nevents,
-                                                   const AliMUONRecoParam& recoParam);
+  AliMUONVQAChecker::ECheckCode BeautifyOccupancyHistograms(TH1& hddl,
+                                                            TH1& hbp, 
+                                                            const TH1* hbuspatchconfig, 
+                                                            Int_t neventsseen,
+                                                            Int_t neventsused,
+                                                            const AliMUONRecoParam& recoParam);
 
+  AliMUONVQAChecker::ECheckCode BeautifyReadoutHistograms(TH1& hroe,
+                                                          TH1& hroenorm,
+                                                          const TH1& hbuspatchtokenerrors,
+                                                          Int_t neventsseen,
+                                                          Int_t neventsused,
+                                                          const AliMUONRecoParam& recoParam);
+
+  AliMUONVQAChecker::ECheckCode BeautifyEventsizeHistograms(TH1& heventsize,
+                                                            TH1& heventsizeperevent,
+                                                            Int_t neventsseen,
+                                                            Int_t neventsused,
+                                                            const AliMUONRecoParam& recoParam);
+  
   ClassDef(AliMUONTrackerQAChecker,1)  // MUON quality assurance checker
 
 };

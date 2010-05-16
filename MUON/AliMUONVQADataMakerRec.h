@@ -20,6 +20,10 @@
 #  include "AliRecoParam.h"
 #endif
 
+#ifndef ALIQAv1_H
+#  include "AliQAv1.h"
+#endif
+
 class AliESDEvent;
 class AliQADataMakerRec;
 class AliMUONRecoParam;
@@ -96,6 +100,7 @@ private:
   /// Not implemented
   AliMUONVQADataMakerRec& operator=(const AliMUONVQADataMakerRec& rhs);
   
+protected:
   AliQADataMakerRec* fMaster; ///< master to get access to its methods
   
   ClassDef(AliMUONVQADataMakerRec,1) // Interface for a MUON QADataMakerRec

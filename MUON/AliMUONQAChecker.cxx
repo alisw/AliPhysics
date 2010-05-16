@@ -51,8 +51,8 @@ AliMUONQAChecker::~AliMUONQAChecker()
 }
 
 //______________________________________________________________________________
-Double_t *
-AliMUONQAChecker::Check(AliQAv1::ALITASK_t index, 
+void
+AliMUONQAChecker::Check(Double_t* rv, AliQAv1::ALITASK_t index, 
                         TObjArray** list, 
                         const AliDetectorRecoParam * recoParam)
 {
@@ -64,7 +64,7 @@ AliMUONQAChecker::Check(AliQAv1::ALITASK_t index,
   AliMUONVQAChecker* qac;
   const AliMUONRecoParam* muonRecoParam = static_cast<const AliMUONRecoParam*>(recoParam);
   AliMUONVQAChecker::ECheckCode* ecc(0x0);
-  Double_t* rv = new Double_t[AliRecoParam::kNSpecies];
+
   for ( Int_t i = 0; i < AliRecoParam::kNSpecies; ++i ) 
   {
     rv[i] = -1.0;
@@ -114,9 +114,6 @@ AliMUONQAChecker::Check(AliQAv1::ALITASK_t index,
 
     delete[] ecc;
   }
-  
-  
-  return rv;
 }
 
 //______________________________________________________________________________

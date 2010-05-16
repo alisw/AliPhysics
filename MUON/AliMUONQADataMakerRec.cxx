@@ -56,6 +56,17 @@ AliMUONQADataMakerRec::~AliMUONQADataMakerRec()
 }
 
 //____________________________________________________________________________ 
+Int_t AliMUONQADataMakerRec::Add2List(TH1 * hist, const Int_t index, AliQAv1::TASKINDEX_t task, const Bool_t expert, const Bool_t image, const Bool_t saveForCorr)
+{
+  TObjArray** list = GetList(task);
+  if (list)
+  {
+    return Add2List(hist,index,list,expert,image,saveForCorr);
+  }
+  return -1;
+}
+
+//____________________________________________________________________________ 
 void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
   /// Detector specific actions at end of cycle
@@ -64,31 +75,70 @@ void AliMUONQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
   {
     if (! IsValidEventSpecie(specie, list)  ) continue;
     
-    SetEventSpecie(AliRecoParam::ConvertIndex(specie));
-        
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie)); // needed by the GetXXXData methods
+    
     if ( task == AliQAv1::kRAWS ) 
     {
-      if (fTracker) fTracker->EndOfDetectorCycleRaws(specie,list);
-      if (fTrigger) fTrigger->EndOfDetectorCycleRaws(specie,list);
-    }
-    
-    if ( task == AliQAv1::kRECPOINTS )
+      if ( fTracker ) fTracker->EndOfDetectorCycleRaws(specie,list);
+      if ( fTrigger ) fTrigger->EndOfDetectorCycleRaws(specie,list);
+    }  
+    else if ( task == AliQAv1::kRECPOINTS )
     {
       // normalize recpoints histograms
-      if (fTracker) fTracker->EndOfDetectorCycleRecPoints(specie,list);
-      if (fTrigger) fTrigger->EndOfDetectorCycleRecPoints(specie,list);
+      if ( fTracker ) fTracker->EndOfDetectorCycleRecPoints(specie,list);
+      if ( fTrigger ) fTrigger->EndOfDetectorCycleRecPoints(specie,list);
     }
-    
-    if ( task == AliQAv1::kESDS ) 
+    else if ( task == AliQAv1::kESDS ) 
     {
       // normalize esds histograms
-      if (fTracker) fTracker->EndOfDetectorCycleESDs(specie,list);
-      if (fTrigger) fTrigger->EndOfDetectorCycleESDs(specie,list);
+      if ( fTracker ) fTracker->EndOfDetectorCycleESDs(specie,list);
+      if ( fTrigger ) fTrigger->EndOfDetectorCycleESDs(specie,list);
     }
-   } // loop on specie
+    else if ( task == AliQAv1::kDIGITSR ) 
+    {
+      if ( fTracker ) fTracker->EndOfDetectorCycleDigits(specie,list);        
+      if ( fTrigger ) fTrigger->EndOfDetectorCycleDigits(specie,list);
+    }
+    else
+    {
+      AliFatal(Form("Not implemented for task %s",AliQAv1::GetTaskName(task).Data()));
+    }
+  } // loop on specie
     
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kMUON,task,list,const_cast<AliDetectorRecoParam*>(GetRecoParam()));
+}
+
+//____________________________________________________________________________ 
+TObject* AliMUONQADataMakerRec::GetData(AliQAv1::TASKINDEX_t task, const Int_t index)
+{
+  TObjArray** list = GetList(task);
+  if (list) return GetData(list,index);
+  return 0x0;
+}
+
+//____________________________________________________________________________ 
+TObjArray** AliMUONQADataMakerRec::GetList(AliQAv1::TASKINDEX_t task)
+{
+  //  enum TASKINDEX_t {
+  //    kNULLTASKINDEX=-1, kRAWS, kHITS, kSDIGITS, kDIGITS, kDIGITSR, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS, kNTASKINDEX };
+  if ( task == AliQAv1::kRAWS ) 
+  {
+      return fRawsQAList;
+  }
+  else if ( task == AliQAv1::kDIGITS || task == AliQAv1::kDIGITSR )
+  {
+    return fDigitsQAList;
+  }
+  else if ( task == AliQAv1::kRECPOINTS ) 
+  {
+    return fRecPointsQAList;
+  }
+  else
+  {
+      AliFatal(Form("task %s not supported here yet",AliQAv1::GetTaskName(task).Data()));
+  }
+  return 0x0;
 }
 
 //____________________________________________________________________________ 
@@ -151,7 +201,7 @@ void AliMUONQADataMakerRec::MakeDigits()
 {
   /// makes data from Digits
   
-  AliError("Not implemented");
+  AliFatal("Not implemented");
 }
 
 //__________________________________________________________________
@@ -160,7 +210,7 @@ void AliMUONQADataMakerRec::MakeDigits(TTree* digitsTree)
   /// makes data from Digits
 
   // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  if ( GetEventSpecie() == AliRecoParam::kCalib ) return;
 
   if ( fTracker ) fTracker->MakeDigits(digitsTree);
   if ( fTrigger ) fTrigger->MakeDigits(digitsTree);  
@@ -172,7 +222,7 @@ void AliMUONQADataMakerRec::MakeRecPoints(TTree* clustersTree)
 	/// Fill histograms from treeR
 
   // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  if ( GetEventSpecie() == AliRecoParam::kCalib ) return;
 	
   if ( fTracker ) fTracker->MakeRecPoints(clustersTree);
   if ( fTrigger ) fTrigger->MakeRecPoints(clustersTree);  
@@ -184,7 +234,7 @@ void AliMUONQADataMakerRec::MakeESDs(AliESDEvent* esd)
   /// make QA data from ESDs
 
   // Do nothing in case of calibration event
-  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) return;
+  if ( GetEventSpecie() == AliRecoParam::kCalib ) return;
   
   if ( fTracker ) fTracker->MakeESDs(esd);
   if ( fTrigger ) fTrigger->MakeESDs(esd);  
@@ -223,7 +273,7 @@ void AliMUONQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
     }
     else
     {
-      AliError("Not implemented");
+      AliFatal(Form("Not implemented for task %s",AliQAv1::GetTaskName(task).Data()));
     }
   }
 }

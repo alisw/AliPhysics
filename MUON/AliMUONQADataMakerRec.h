@@ -44,12 +44,22 @@ public:
 
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
   
+  using AliQADataMakerRec::Add2List;
+  using AliQADataMakerRec::GetData;
+  
+  Int_t Add2List(TH1 * hist, const Int_t index, AliQAv1::TASKINDEX_t task, const Bool_t expert, const Bool_t image, const Bool_t saveForCorr);
+
+	TObject* GetData(AliQAv1::TASKINDEX_t task, const Int_t index) ;
+
 private:
   /// Not implemented
   AliMUONQADataMakerRec(const AliMUONQADataMakerRec& qadm);   
   /// Not implemented
   AliMUONQADataMakerRec& operator=(const AliMUONQADataMakerRec& qadm);
 
+  TObjArray** GetList(AliQAv1::TASKINDEX_t taks);
+  
+private:
   AliMUONVQADataMakerRec* fTracker; ///< tracker sub-qadatamaker
   AliMUONVQADataMakerRec* fTrigger; ///< trigger sub-qadatamaker
   

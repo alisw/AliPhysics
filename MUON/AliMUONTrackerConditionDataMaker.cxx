@@ -60,7 +60,8 @@ ClassImp(AliMUONTrackerConditionDataMaker)
 AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker():
 AliMUONVTrackerDataMaker(),
 fData(0x0),
-fSource("")
+fSource(""),
+fIsOwnerOfData(kTRUE)
 {
   /// default ctor to be able to stream
 }
@@ -69,7 +70,8 @@ fSource("")
 AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker(Int_t runNumber, const char* ocdbPath, const char* type):
 AliMUONVTrackerDataMaker(),
 fData(0x0),
-fSource(Form("%s-%010d-%s",ocdbPath,runNumber,type))
+fSource(Form("%s-%010d-%s",ocdbPath,runNumber,type)),
+fIsOwnerOfData(kTRUE)
 {
   /// ctor from OCDB
 
@@ -95,7 +97,8 @@ fSource(Form("%s-%010d-%s",ocdbPath,runNumber,type))
 AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker(const char* filename, const char* type):
 AliMUONVTrackerDataMaker(),
 fData(0x0),
-fSource(Form("%s-%s",filename,type))
+fSource(Form("%s-%s",filename,type)),
+fIsOwnerOfData(kTRUE)
 {
   /// ctor from an ASCII file
   
@@ -129,7 +132,9 @@ fSource(Form("%s-%s",filename,type))
 AliMUONTrackerConditionDataMaker::AliMUONTrackerConditionDataMaker(const char* data, const char* type, Bool_t) :
 AliMUONVTrackerDataMaker(),
 fData(0x0),
-fSource(Form("direct-%s",type))
+fSource(Form("direct-%s",type)),
+fIsOwnerOfData(kTRUE)
+
 {
   /// ctor from a string containing the ASCII data
   /// the last parameter is there just to distinguish this ctor from the previous one
@@ -150,7 +155,7 @@ fSource(Form("direct-%s",type))
 AliMUONTrackerConditionDataMaker::~AliMUONTrackerConditionDataMaker()
 {
   /// dtor
-  delete fData;
+  if ( fIsOwnerOfData ) delete fData;
 }
 
 
