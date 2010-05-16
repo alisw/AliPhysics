@@ -444,11 +444,18 @@ void PlotDiffFlowRelativeToMC(Int_t nMethods, TString *method, Int_t *methodMark
                               Int_t *methodMarkerColor, TString ptEta, TString rpPoi)
 {
  // Make plot for differential flow.
-
+ 
+ TString title = Form("Differential Flow vs %s (%s) relative to MCEP",ptEta.Data(),rpPoi.Data()); 
+ // MCEP:
+ TH1D *mcep = GetResultHistogram("MCEP",rpPoi.Data(),ptEta.Data()); // MCEP result and error:
+ if(!mcep)
+ {
+  cout<<"WARNING: MCEP histogram not available in making the plot for "<<title.Data()<<" !!!!"<<endl;   
+  return;    
+ } 
  TCanvas *c = NULL;
  Int_t sizeX = 1000; // canvas size in pixels along x
  Int_t sizeY = 600; // canvas size in pixels along y
- TString title = Form("Differential Flow vs %s (%s) relative to MCEP",ptEta.Data(),rpPoi.Data()); 
  if(!showLegendDiffFlow) sizeX = 0.75*sizeX;
  c = new TCanvas(title.Data(),title.Data(),sizeX,sizeY);
  if(showLegendDiffFlow)
@@ -466,7 +473,6 @@ void PlotDiffFlowRelativeToMC(Int_t nMethods, TString *method, Int_t *methodMark
  styleHist->SetTitle(title.Data());
  styleHist->Draw();
  // Methods:
- TH1D *mcep = GetResultHistogram("MCEP",rpPoi.Data(),ptEta.Data()); // MCEP result and error:
  for(Int_t nm=0;nm<nMethods;nm++)
  {
   TH1D *hist = NULL;
@@ -729,8 +735,17 @@ void PlotRelativeToMC(const Int_t nMethods, TString *method, Int_t *methodMarker
  Double_t errors[nMethods] = {0.};
  // MCEP result and error:
  TH1D *mcep = GetResultHistogram("MCEP","RF");
- Double_t mcepResult = mcep->GetBinContent(1);
- Double_t mcepError = mcep->GetBinError(1);
+ Double_t mcepResult = 0.;
+ Double_t mcepError = 0.;
+ if(mcep)
+ {
+  mcepResult = mcep->GetBinContent(1);
+  mcepError = mcep->GetBinError(1);
+ } else
+   {
+    cout<<"WARNING: MCEP histogram not available in making the plot for "<<title.Data()<<" !!!!"<<endl;   
+    return;    
+   }
  if(TMath::Abs(mcepResult) < 1.e-44 || TMath::Abs(mcepError) < 1.e-44) 
  {
   cout<<"WARNING: Result or error for v{MCEP} is zero in making the plot for "<<title.Data()<<" !!!!"<<endl;   
