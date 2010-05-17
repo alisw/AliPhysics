@@ -66,6 +66,11 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fHistCorrectionForCrossSectionYPtProtons(0),
   fHistCorrectionForCrossSectionYPtAntiProtons(0),
   fHistCorrectionForCrossSectionFlag(kFALSE),
+  fHistYPtCorrectionForCutsProtons(0), fHistYPtCorrectionForCutsAntiProtons(0),
+  fCorrectForCutsFlag(kFALSE),
+  fHistYPtCorrectionForFeedDownProtons(0), 
+  fHistYPtCorrectionForFeedDownAntiProtons(0),
+  fCorrectForFeedDownFlag(kFALSE),
   fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
@@ -95,6 +100,11 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fHistCorrectionForCrossSectionYPtProtons(0),
   fHistCorrectionForCrossSectionYPtAntiProtons(0),
   fHistCorrectionForCrossSectionFlag(kFALSE),
+  fHistYPtCorrectionForCutsProtons(0), fHistYPtCorrectionForCutsAntiProtons(0),
+  fCorrectForCutsFlag(kFALSE),
+  fHistYPtCorrectionForFeedDownProtons(0), 
+  fHistYPtCorrectionForFeedDownAntiProtons(0),
+  fCorrectForFeedDownFlag(kFALSE),
   fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
@@ -196,6 +206,11 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fHistCorrectionForCrossSectionYPtProtons(0),
   fHistCorrectionForCrossSectionYPtAntiProtons(0),
   fHistCorrectionForCrossSectionFlag(kFALSE),
+  fHistYPtCorrectionForCutsProtons(0), fHistYPtCorrectionForCutsAntiProtons(0),
+  fCorrectForCutsFlag(kFALSE),
+  fHistYPtCorrectionForFeedDownProtons(0), 
+  fHistYPtCorrectionForFeedDownAntiProtons(0),
+  fCorrectForFeedDownFlag(kFALSE),
   fHistYPtCorrectionForSecondaries(0), fCorrectForSecondariesFlag(kFALSE),
   fGlobalQAList(0), fQA2DList(0),
   fQAProtonsAcceptedList(0), fQAProtonsRejectedList(0),
@@ -298,6 +313,10 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fHistEfficiencyYPtAntiProtons) delete fHistEfficiencyYPtAntiProtons;
   if(fHistCorrectionForCrossSectionYPtProtons) delete fHistCorrectionForCrossSectionYPtProtons;
   if(fHistCorrectionForCrossSectionYPtAntiProtons) delete fHistCorrectionForCrossSectionYPtAntiProtons;
+  if(fHistYPtCorrectionForCutsProtons) delete fHistYPtCorrectionForCutsProtons;
+  if(fHistYPtCorrectionForCutsAntiProtons) delete fHistYPtCorrectionForCutsAntiProtons;
+  if(fHistYPtCorrectionForFeedDownProtons) delete fHistYPtCorrectionForFeedDownProtons;
+  if(fHistYPtCorrectionForFeedDownAntiProtons) delete fHistYPtCorrectionForFeedDownAntiProtons;
   if(fHistYPtCorrectionForSecondaries) delete fHistYPtCorrectionForSecondaries;
 
   //QA lists
@@ -1518,6 +1537,40 @@ Bool_t AliProtonAnalysis::PrintYields(TH1 *hist, Double_t edge) {
 }
 
 //____________________________________________________________________//
+void AliProtonAnalysis::SetCorrectionMapForCuts(const char* filename) {
+  //Reads the file with the correction maps for the cut efficiency
+  TFile *gCorrectionForCuts = TFile::Open(filename);
+  if(!gCorrectionForCuts) {
+    Printf("The TFile object is not valid!!!");
+    return;
+  }
+  if(!gCorrectionForCuts->IsOpen()) {
+    Printf("The file is not found!!!");
+    return;
+  }
+  fHistYPtCorrectionForCutsProtons = dynamic_cast<TH2D *>(gCorrectionForCuts->Get("gHistCorrectionForCutsProtons"));
+  fHistYPtCorrectionForCutsAntiProtons = dynamic_cast<TH2D *>(gCorrectionForCuts->Get("gHistCorrectionForCutsAntiProtons"));
+  fCorrectForCutsFlag = kTRUE;
+}
+
+//____________________________________________________________________//
+void AliProtonAnalysis::SetCorrectionMapForFeedDown(const char* filename) {
+  //Reads the file with the correction maps for the feed-down contamination
+  TFile *gCorrectionForFeedDown = TFile::Open(filename);
+  if(!gCorrectionForFeedDown) {
+    Printf("The TFile object is not valid!!!");
+    return;
+  }
+  if(!gCorrectionForFeedDown->IsOpen()) {
+    Printf("The file is not found!!!");
+    return;
+  }
+  fHistYPtCorrectionForFeedDownProtons = dynamic_cast<TH2D *>(gCorrectionForFeedDown->Get("gHistCorrectionForFeedDownProtons"));
+  fHistYPtCorrectionForFeedDownAntiProtons = dynamic_cast<TH2D *>(gCorrectionForFeedDown->Get("gHistCorrectionForFeedDownAntiProtons"));
+  fCorrectForFeedDownFlag = kTRUE;
+}
+
+//____________________________________________________________________//
 void AliProtonAnalysis::SetCorrectionMapForSecondaries(const char* filename) {
   //Reads the file with the correction maps for the secondaries
   TFile *gCorrectionForSecondaries = TFile::Open(filename);
@@ -1564,13 +1617,25 @@ void AliProtonAnalysis::Correct() {
   //Correct the protons for secondaries
   if(fCorrectForSecondariesFlag)
     fHistYPtProtonsCorrected->Divide(fHistYPtCorrectionForSecondaries);
-
+  //Correct the protons for feed-down
+  if(fCorrectForFeedDownFlag)
+    fHistYPtProtonsCorrected->Divide(fHistYPtCorrectionForFeedDownProtons);
+  //Correct the protons for the cut efficiency
+  if(fCorrectForCutsFlag)
+    fHistYPtProtonsCorrected->Multiply(fHistYPtCorrectionForCutsProtons);
+ 
   //Correct the antiprotons for the efficiency
   fHistYPtAntiProtonsCorrected = fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
   fHistYPtAntiProtonsCorrected->Divide(fHistEfficiencyYPtAntiProtons);
   //Correct the antiprotons for proper cross-section
   if(fHistCorrectionForCrossSectionFlag)
     fHistYPtAntiProtonsCorrected->Multiply(fHistCorrectionForCrossSectionYPtAntiProtons);
+  //Correct the antiprotons for feed-down
+  if(fCorrectForFeedDownFlag)
+    fHistYPtAntiProtonsCorrected->Divide(fHistYPtCorrectionForFeedDownAntiProtons);
+  //Correct the antiprotons for the cut efficiency
+   if(fCorrectForCutsFlag)
+     fHistYPtAntiProtonsCorrected->Multiply(fHistYPtCorrectionForCutsAntiProtons);
 }
 
 //____________________________________________________________________//
@@ -1946,12 +2011,44 @@ void AliProtonAnalysis::InitQA() {
   gHistAntiProtonsEtaPhi->SetStats(kTRUE);
   fQA2DList->Add(gHistAntiProtonsEtaPhi);
 
+  const Int_t nBinsdca = 290;
+  Double_t dcaBins[nBinsdca+1];
+  Double_t dcamin = -10., dcamax = 10.;
+  Double_t dca = -10.;
+  Double_t dcaStepLarge = 0.1;
+  Double_t dcaStepSmall = 0.01;
+  Int_t iCounter = 0;
+  while(dca <= -0.6) {
+    dcaBins[iCounter] = dcamin;
+    dcamax = dcamin + dcaStepLarge;
+    dca = dcamax;
+    dcamin = dcamax;
+    iCounter += 1;
+  }
+  while(dca <= 0.49) {
+    dcaBins[iCounter] = dcamin;
+    dcamax = dcamin + dcaStepSmall;
+    dca = dcamax;
+    dcamin = dcamax;
+    iCounter += 1;
+  }
+  while(dca <= 10.) {
+    dcaBins[iCounter] = dcamin;
+    dcamax = dcamin + dcaStepLarge;
+    dca = dcamax;
+    dcamin = dcamax;
+    iCounter += 1;
+  }
+  const Int_t nBinsY = 9;
+  const Int_t nBinsPt = 6;
+  Double_t gY[nBinsY+1] = {-0.9,-0.7,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.7,0.9};
+  Double_t gPt[nBinsPt+1] = {0.45,0.55,0.65,0.75,0.85,0.95,1.05};
+
   //dca vs pT for protons & antiprotons
   TH3F *gHistProtonsDCAxyEtaPt = new TH3F("gHistProtonsDCAxyEtaPt",
 					  ";P_{T} [GeV/c];dca_{xy} [cm]",
-					  fNBinsY,fMinY,fMaxY,
-					  fNBinsPt,fMinPt,fMaxPt,
-					  400,-10.,10.);
+					  nBinsY,gY,nBinsPt,gPt,
+					  nBinsdca,dcaBins);
   if(fProtonAnalysisBase->GetEtaMode())
     gHistProtonsDCAxyEtaPt->GetXaxis()->SetTitle("#eta");
   else
@@ -1960,9 +2057,8 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList->Add(gHistProtonsDCAxyEtaPt);
   TH3F *gHistProtonsDCAzEtaPt = new TH3F("gHistProtonsDCAzEtaPt",
 					 ";P_{T} [GeV/c];dca_{z} [cm]",
-					 fNBinsY,fMinY,fMaxY,
-					 fNBinsPt,fMinPt,fMaxPt,
-					 400,-10.,10.);
+					 nBinsY,gY,nBinsPt,gPt,
+					 nBinsdca,dcaBins);
   if(fProtonAnalysisBase->GetEtaMode())
     gHistProtonsDCAzEtaPt->GetXaxis()->SetTitle("#eta");
   else
@@ -1971,9 +2067,8 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList->Add(gHistProtonsDCAzEtaPt);
   TH3F *gHistAntiProtonsDCAxyEtaPt = new TH3F("gHistAntiProtonsDCAxyEtaPt",
 					      ";P_{T} [GeV/c];dca_{xy} [cm]",
-					      fNBinsY,fMinY,fMaxY,
-					      fNBinsPt,fMinPt,fMaxPt,
-					      400,-10.,10.);
+					      nBinsY,gY,nBinsPt,gPt,
+					      nBinsdca,dcaBins);
   if(fProtonAnalysisBase->GetEtaMode())
     gHistAntiProtonsDCAxyEtaPt->GetXaxis()->SetTitle("#eta");
   else
@@ -1982,9 +2077,8 @@ void AliProtonAnalysis::InitQA() {
   fQA2DList->Add(gHistAntiProtonsDCAxyEtaPt);
   TH3F *gHistAntiProtonsDCAzEtaPt = new TH3F("gHistAntiProtonsDCAzEtaPt",
 					     ";P_{T} [GeV/c];dca_{z} [cm]",
-					     fNBinsY,fMinY,fMaxY,
-					     fNBinsPt,fMinPt,fMaxPt,
-					     400,-10.,10.);
+					     nBinsY,gY,nBinsPt,gPt,
+					     nBinsdca,dcaBins);
   if(fProtonAnalysisBase->GetEtaMode())
     gHistAntiProtonsDCAzEtaPt->GetXaxis()->SetTitle("#eta");
   else
