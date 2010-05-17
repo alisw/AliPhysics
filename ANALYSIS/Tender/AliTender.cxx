@@ -40,7 +40,8 @@ AliTender::AliTender():
            fCDB(NULL),
            fESDhandler(NULL),
            fESD(NULL),
-           fSupplies(NULL)
+           fSupplies(NULL),
+           fCDBSettings(NULL)
 {
 // Dummy constructor
 }
@@ -56,7 +57,8 @@ AliTender::AliTender(const char* name):
            fCDB(NULL),
            fESDhandler(NULL),
            fESD(NULL),
-           fSupplies(NULL)
+           fSupplies(NULL),
+           fCDBSettings(NULL)
 {
 // Default constructor
   DefineInput (0, TChain::Class());
