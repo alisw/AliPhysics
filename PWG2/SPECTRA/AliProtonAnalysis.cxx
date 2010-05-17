@@ -711,7 +711,8 @@ TH1D *AliProtonAnalysis::GetProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for protons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionY("fPtProtons",2,fHistYPtProtons->GetXaxis()->GetNbins()-1,"e");
+  //TH1D *fPtProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionY("fPtProtons",2,fHistYPtProtons->GetXaxis()->GetNbins()-1,"e");
+  TH1D *fPtProtons = (TH1D *)fHistYPtProtonsCorrected->ProjectionY("fPtProtons",3,7,"e"); //3,7: |y| < 0.5
   //TH1D *fPtProtons = fCorrectProtons->Project(0); //0: rapidity
    
   fPtProtons->SetStats(kFALSE);
@@ -731,7 +732,8 @@ TH1D *AliProtonAnalysis::GetAntiProtonCorrectedPtHistogram() {
   //Get the corrected Pt histogram for antiprotons
   Int_t nAnalyzedEvents = GetNumberOfAnalyzedEvents();
 
-  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionY("fPtAntiProtons",2,fHistYPtAntiProtons->GetXaxis()->GetNbins()-1,"e");
+  //TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionY("fPtAntiProtons",2,fHistYPtAntiProtons->GetXaxis()->GetNbins()-1,"e");
+  TH1D *fPtAntiProtons = (TH1D *)fHistYPtAntiProtonsCorrected->ProjectionY("fPtAntiProtons",3,7,"e"); //3,7: |y| < 0.5
 //TH1D *fPtAntiProtons = fCorrectAntiProtons->Project(0); //0: rapidity
    
   fPtAntiProtons->SetStats(kFALSE);
