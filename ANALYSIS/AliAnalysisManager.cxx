@@ -425,9 +425,12 @@ void AliAnalysisManager::PackOutput(TList *target)
       Error("PackOutput", "No target. Exiting.");
       return;
    }
+   TDirectory *cdir = gDirectory;
+   gROOT->cd();
    if (fInputEventHandler)   fInputEventHandler  ->Terminate();
    if (fOutputEventHandler)  fOutputEventHandler ->Terminate();
    if (fMCtruthEventHandler) fMCtruthEventHandler->Terminate();
+   gROOT->cd();
 
    // Call FinishTaskOutput() for each event loop task (not called for 
    // post-event loop tasks - use Terminate() fo those)
@@ -437,6 +440,7 @@ void AliAnalysisManager::PackOutput(TList *target)
       if (!task->IsPostEventLoop()) {
          if (fDebug > 0) printf("->FinishTaskOutput: task %s\n", task->GetName());
          task->FinishTaskOutput();
+         gROOT->cd();
          if (fDebug > 0) printf("<-FinishTaskOutput: task %s\n", task->GetName());
       }
    }      
@@ -482,7 +486,8 @@ void AliAnalysisManager::PackOutput(TList *target)
                } else {
                   if (output->GetData()->InheritsFrom(TTree::Class())) {
                      TTree *tree = (TTree*)output->GetData();
-                     // tree->SetDirectory(file);
+                     // Check if tree is in memory
+                     if (tree->GetDirectory()==gROOT) tree->SetDirectory(gDirectory);
                      tree->AutoSave();
                   } else {
                      output->GetData()->Write();
@@ -608,6 +613,7 @@ void AliAnalysisManager::PackOutput(TList *target)
          }      
       }
    } 
+   cdir->cd();
    if (fDebug > 0) printf("<-AliAnalysisManager::PackOutput: output list contains %d containers\n", target->GetSize());
 }
 
@@ -731,6 +737,8 @@ void AliAnalysisManager::Terminate()
   // a query. It always runs on the client, it can be used to present
   // the results graphically.
    if (fDebug > 0) printf("->AliAnalysisManager::Terminate()\n");
+   TDirectory *cdir = gDirectory;
+   gROOT->cd();
    AliAnalysisTask *task;
    AliAnalysisDataContainer *output;
    TIter next(fTasks);
@@ -742,6 +750,7 @@ void AliAnalysisManager::Terminate()
       // Save all the canvases produced by the Terminate
       TString pictname = Form("%s_%s", task->GetName(), task->ClassName());
       task->Terminate();
+      gROOT->cd();
       if (getsysInfo) 
          AliSysInfo::AddStamp(Form("%s_TERMINATE",task->ClassName()),0, itask, 2);
       itask++;   
@@ -769,6 +778,7 @@ void AliAnalysisManager::Terminate()
    if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
    if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
    if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
+   gROOT->cd();
    TObjArray *allOutputs = new TObjArray();
    Int_t icont;
    for (icont=0; icont<fOutputs->GetEntriesFast(); icont++) allOutputs->Add(fOutputs->At(icont));
@@ -830,7 +840,8 @@ void AliAnalysisManager::Terminate()
          }   
       }      
       if (opwd) opwd->cd();
-   }   
+   }
+   gROOT->cd();
    next1.Reset();
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Close all files at output
@@ -946,7 +957,8 @@ void AliAnalysisManager::Terminate()
       ofstream out;
       out.open("outputs_valid", ios::out);
       out.close();
-   }      
+   }
+   cdir->cd();      
    if (fDebug > 0) printf("<-AliAnalysisManager::Terminate()\n");
 }
 //______________________________________________________________________________
@@ -1266,8 +1278,12 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
 // Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
 // MIX. Process nentries starting from firstentry
    Long64_t retv = 0;
+   // Backup current directory and make sure gDirectory points to gROOT
+   TDirectory *cdir = gDirectory;
+   gROOT->cd();
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
+      cdir->cd();
       return -1;
    }
    if (fDebug > 0) printf("StartAnalysis %s\n",GetName());
@@ -1287,6 +1303,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          if (!fGridHandler) {
             Error("StartAnalysis", "Cannot start grid analysis without a grid handler.");
             Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
+            cdir->cd();
             return -1;
          }
          // Write analysis manager in the analysis file
@@ -1296,25 +1313,29 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          AliAnalysisTask *task;
          while ((task=(AliAnalysisTask*)nextTask())) {
             task->LocalInit();
+            gROOT->cd();
          }
          if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
             Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
+            cdir->cd();
             return -1;
          }   
 
          // Terminate grid analysis
-         if (fSelector && fSelector->GetStatus() == -1) return -1;
-         if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) return 0;
+         if (fSelector && fSelector->GetStatus() == -1) {cdir->cd(); return -1;}
+         if (fGridHandler->GetRunMode() == AliAnalysisGrid::kOffline) {cdir->cd(); return 0;}
          cout << "===== MERGING OUTPUTS REGISTERED BY YOUR ANALYSIS JOB: " << GetName() << endl;
          if (!fGridHandler->MergeOutputs()) {
             // Return if outputs could not be merged or if it alien handler
             // was configured for offline mode or local testing.
+            cdir->cd();
             return 0;
          }
       }   
       cout << "===== TERMINATING GRID ANALYSIS JOB: " << GetName() << endl;
       ImportWrappers(NULL);
       Terminate();
+      cdir->cd();
       return 0;
    }
    char line[256];
@@ -1328,6 +1349,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       chain = (TChain*)tree;
       if (!chain || !chain->GetListOfFiles()->First()) {
          Error("StartAnalysis", "Cannot process null or empty chain...");
+         cdir->cd();
          return -1;
       }   
       ttype = "TChain";
@@ -1341,6 +1363,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    if (runlocalinit) {
       while ((task=(AliAnalysisTask*)next())) {
          task->LocalInit();
+         gROOT->cd();
       }
       if (getsysInfo) AliSysInfo::AddStamp("LocalInit_all", 0);
    }   
@@ -1352,17 +1375,16 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             // Call CreateOutputObjects for all tasks
             Int_t itask = 0;
             while ((task=(AliAnalysisTask*)nextT())) {
-               TDirectory *curdir = gDirectory;
                task->CreateOutputObjects();
                if (getsysInfo) AliSysInfo::AddStamp(Form("%s_CREATEOUTOBJ",task->ClassName()), 0, itask, 0);
-               if (curdir) curdir->cd();
+               gROOT->cd();
                itask++;
             }   
             if (IsExternalLoop()) {
                Info("StartAnalysis", "Initialization done. Event loop is controlled externally.\
                      \nSetData for top container, call ExecAnalysis in a loop and then Terminate manually");
                return 0;
-            }         
+            }
             ExecAnalysis();
             Terminate();
             return 0;
@@ -1375,6 +1397,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       case kProofAnalysis:
          if (!gROOT->GetListOfProofs() || !gROOT->GetListOfProofs()->GetEntries()) {
             Error("StartAnalysis", "No PROOF!!! Exiting.");
+            cdir->cd();
             return -1;
          }   
          sprintf(line, "gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
@@ -1385,6 +1408,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             retv = chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
             Error("StartAnalysis", "No chain!!! Exiting.");
+            cdir->cd();
             return -1;
          }      
          break;
@@ -1395,6 +1419,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          // Run event mixing analysis
          if (!fEventPool) {
             Error("StartAnalysis", "Cannot run event mixing without event pool");
+            cdir->cd();
             return -1;
          }
          cout << "===== RUNNING EVENT MIXING ANALYSIS " << GetName() << endl;
@@ -1407,12 +1432,14 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             retv = chain->Process(fSelector);
             if (retv < 0) {
                Error("StartAnalysis", "Mixing analysis failed");
+               cdir->cd();
                return retv;
             }   
          }
          PackOutput(fSelector->GetOutputList());
          Terminate();
    }
+   cdir->cd();
    return retv;
 }   
 
@@ -1617,13 +1644,16 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 // Execute analysis.
    static Long64_t ncalls = 0;
    if (fDebug > 0) printf("MGR: Processing event #%lld\n", ncalls);
+   TDirectory *cdir = gDirectory;
+   gROOT->cd();
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    if (getsysInfo && ((ncalls%fNSysInfo)==0)) AliSysInfo::AddStamp("Exec_start", (Int_t)ncalls);
    ncalls++;
    if (!fInitOK) {
-     Error("ExecAnalysis", "Analysis manager was not initialized !");
+      Error("ExecAnalysis", "Analysis manager was not initialized !");
+      cdir->cd();
       return;
-   }   
+   }
    AliAnalysisTask *task;
    // Check if the top tree is active.
    if (fTree) {
@@ -1636,16 +1666,17 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (!cont) cont = (AliAnalysisDataContainer*)fInputs->At(0);
       if (!cont) {
 	      Error("ExecAnalysis","Cannot execute analysis in TSelector mode without at least one top container");
+         cdir->cd();
          return;
       }   
       cont->SetData(fTree); // This will notify all consumers
-      Long64_t entry = fTree->GetTree()->GetReadEntry();
-      
+      Long64_t entry = fTree->GetTree()->GetReadEntry();      
 //
 //    Call BeginEvent() for optional input/output and MC services 
       if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
       if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
       if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
+      gROOT->cd();
       if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
          AliSysInfo::AddStamp("Handlers_BeginEvent",(Int_t)ncalls, 1000, 0);
 //
@@ -1658,6 +1689,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
             cout << "    Executing task " << task->GetName() << endl;
          }   	 
          task->ExecuteTask(option);
+         gROOT->cd();
          if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
             AliSysInfo::AddStamp(task->ClassName(),(Int_t)ncalls, itask, 1);
          itask++;   
@@ -1670,6 +1702,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       // Gather system information if requested
       if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
          AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1001, 1);
+      cdir->cd();   
       return;
    }   
    // The event loop is not controlled by TSelector   
@@ -1678,6 +1711,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(-1);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(-1);
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(-1);
+   gROOT->cd();
    if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
       AliSysInfo::AddStamp("Handlers_BeginEvent",(Int_t)ncalls, 1000, 0);
    TIter next2(fTopTasks);
@@ -1687,6 +1721,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          cout << "    Executing task " << task->GetName() << endl;
       }   
       task->ExecuteTask(option);
+      gROOT->cd();
    }   
 //
 // Call FinishEvent() for optional output and MC services 
@@ -1695,6 +1730,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
    if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
       AliSysInfo::AddStamp("Handlers_FinishEvent",(Int_t)ncalls, 1000, 1);
+   cdir->cd();   
 }
 
 //______________________________________________________________________________
