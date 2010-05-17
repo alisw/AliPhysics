@@ -112,6 +112,16 @@ class AliProtonAnalysis : public TObject {
   void Correct();
   void Correct(Int_t step);
   Bool_t ReadCorrectionContainer(const char* filename);
+  void SetCorrectionMapForFeedDown(const char* filename);
+  TH2D *GetCorrectionMapForFeedDownProtons() {
+    return fHistYPtCorrectionForFeedDownProtons;}
+  TH2D *GetCorrectionMapForFeedDownAntiProtons() {
+    return fHistYPtCorrectionForFeedDownAntiProtons;}
+  void SetCorrectionMapForCuts(const char* filename);
+  TH2D *GetCorrectionMapForCutsProtons() {
+    return fHistYPtCorrectionForCutsProtons;}
+  TH2D *GetCorrectionMapForCutsAntiProtons() {
+    return fHistYPtCorrectionForCutsAntiProtons;}
   void SetCorrectionMapForSecondaries(const char* filename);
   TH2D *GetCorrectionMapForSecondaries() {
     return fHistYPtCorrectionForSecondaries;}
@@ -165,7 +175,13 @@ class AliProtonAnalysis : public TObject {
   TH2D *fHistCorrectionForCrossSectionYPtProtons;//correction for the proper cross-section - 2D protons
   TH2D *fHistCorrectionForCrossSectionYPtAntiProtons;//correction for the proper cross-section - 2D antiprotons
   Bool_t fHistCorrectionForCrossSectionFlag;//correct for cross-section
-  TH2D *fHistYPtCorrectionForSecondaries;//correction factors for the corrections (secondary protons)
+  TH2D *fHistYPtCorrectionForCutsProtons;//correction factors for the cut efficiency (protons)
+  TH2D *fHistYPtCorrectionForCutsAntiProtons;//correction factors for the cut efficiency (antiprotons)
+  Bool_t fCorrectForCutsFlag;//correct for the cut efficiency
+  TH2D *fHistYPtCorrectionForFeedDownProtons;//correction factors for the feed-down contamination (protons)
+  TH2D *fHistYPtCorrectionForFeedDownAntiProtons;//correction factors for the feed-down contamination (antiprotons)
+  Bool_t fCorrectForFeedDownFlag;//correct for cut efficiency
+  TH2D *fHistYPtCorrectionForSecondaries;//correction factors for the background protons
   Bool_t fCorrectForSecondariesFlag;//correct for secondaries
 
   //QA lists
