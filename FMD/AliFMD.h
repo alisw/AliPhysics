@@ -334,6 +334,7 @@ public:
       -	@c FMD @c Plastic$ Plastic (Support legs for the hybrid cards)
   */
   virtual void   CreateMaterials(); 
+#if 0
   /** 
    * Declare tracking parameters for a medium 
    * 
@@ -383,6 +384,7 @@ public:
 			     Int_t   pair_production, 
 			     Int_t   photon_production, 
 			     Int_t   rayleigh_scattering);
+#endif
   /** Initialize this detector */
   virtual void   Init();
   /** This member function is called when ever a track deposites
