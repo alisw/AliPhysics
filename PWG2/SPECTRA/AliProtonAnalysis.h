@@ -104,7 +104,7 @@ class AliProtonAnalysis : public TObject {
 
   TH1I *GetEventHistogram() const {return fHistEvents;}
 
-  Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEvents->GetEntries();} 
+  Int_t   GetNumberOfAnalyzedEvents() {return (Int_t)fHistEventStats->GetBinContent(5);}
   Bool_t  PrintMean(TH1 *hist, Double_t edge);
   Bool_t  PrintYields(TH1 *hist, Double_t edge); 
 
