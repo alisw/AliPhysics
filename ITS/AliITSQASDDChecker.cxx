@@ -336,8 +336,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(((TH1F *) hdata)->GetBinLowEdge(k) < fThresholdForRecToRawRatio) belowThreshold += ((Int_t)((TH1F *) hdata)->GetBinContent(k));
 	    }
 	    Double_t fractionBelowThreshold =0.;
-	    Double_t entries=((TH1F *)hdata)->GetEntries();
-	    if(entries!=0.)fractionBelowThreshold = ((Double_t)(belowThreshold))/entries;
+	    Double_t entries3=((TH1F *)hdata)->GetEntries();
+	    if(entries3>0.001)fractionBelowThreshold = ((Double_t)(belowThreshold))/entries;
 	    else{ AliWarning(Form("No entries on %s. The check will retuns zero.\n",hdata->GetName() )); }
 	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 5, L3: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
 	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 6, L4: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
