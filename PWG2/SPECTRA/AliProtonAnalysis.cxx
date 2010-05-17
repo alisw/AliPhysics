@@ -968,6 +968,10 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  ((TH3F *)(fQA2DList->At(10)))->Fill(gPt,
 					     tpcTrack->Phi()*180./TMath::Pi(),
 					     nClustersTPC);	
+	  if(track->Charge() > 0)
+	    ((TH2F *)(fQA2DList->At(20)))->Fill(gP,track->GetTPCsignal());
+	  if(track->Charge() < 0)
+	    ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());
 	}//quality cuts
       }//primary cuts
       
@@ -1126,6 +1130,10 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  ((TH3F *)(fQA2DList->At(10)))->Fill(gPt,
 					     tpcTrack->Phi()*180./TMath::Pi(),
 					     nClustersTPC);	
+	  if(track->Charge() > 0)
+	    ((TH2F *)(fQA2DList->At(20)))->Fill(gP,track->GetTPCsignal());
+	  if(track->Charge() < 0)
+	    ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());
 	}//quality cuts
       }//primary cuts
       
@@ -1274,6 +1282,10 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 	  ((TH3F *)(fQA2DList->At(10)))->Fill(gPt,
 					     track->Phi()*180./TMath::Pi(),
 					     nClustersTPC);	
+	  if(track->Charge() > 0)
+	    ((TH2F *)(fQA2DList->At(20)))->Fill(gP,track->GetTPCsignal());
+	  if(track->Charge() < 0)
+	    ((TH2F *)(fQA2DList->At(21)))->Fill(gP,track->GetTPCsignal());
 	}//quality cuts
       }//primary cuts
       
@@ -2013,34 +2025,20 @@ void AliProtonAnalysis::InitQA() {
   gHistAntiProtonsEtaPhi->SetStats(kTRUE);
   fQA2DList->Add(gHistAntiProtonsEtaPhi);
 
-  const Int_t nBinsdca = 290;
+  const Int_t nBinsdca = 1000;
   Double_t dcaBins[nBinsdca+1];
-  Double_t dcamin = -10., dcamax = 10.;
-  Double_t dca = -10.;
-  Double_t dcaStepLarge = 0.1;
+  Double_t dcamin = -5., dcamax = 5.;
+  Double_t dca = -5.;
   Double_t dcaStepSmall = 0.01;
   Int_t iCounter = 0;
-  while(dca <= -0.6) {
-    dcaBins[iCounter] = dcamin;
-    dcamax = dcamin + dcaStepLarge;
-    dca = dcamax;
-    dcamin = dcamax;
-    iCounter += 1;
-  }
-  while(dca <= 0.49) {
+  while(dca <= 5.) {
     dcaBins[iCounter] = dcamin;
     dcamax = dcamin + dcaStepSmall;
     dca = dcamax;
     dcamin = dcamax;
     iCounter += 1;
   }
-  while(dca <= 10.) {
-    dcaBins[iCounter] = dcamin;
-    dcamax = dcamin + dcaStepLarge;
-    dca = dcamax;
-    dcamin = dcamax;
-    iCounter += 1;
-  }
+
   const Int_t nBinsY = 9;
   const Int_t nBinsPt = 6;
   Double_t gY[nBinsY+1] = {-0.9,-0.7,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.7,0.9};
@@ -2110,6 +2108,11 @@ void AliProtonAnalysis::InitQA() {
     gHistAntiProtonsDCA3DEtaPt->GetXaxis()->SetTitle("y");
   gHistAntiProtonsDCA3DEtaPt->SetStats(kTRUE);
   fQA2DList->Add(gHistAntiProtonsDCA3DEtaPt);
+
+  TH2F *gHistPosdEdxP = new TH2F("gHistPosdEdxP","dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",1000,0.05,20.05,600,0,600);
+  fQA2DList->Add(gHistPosdEdxP);
+  TH2F *gHistNegdEdxP = new TH2F("gHistNegdEdxP","dE/dx (TPC); P [GeV/c]; dE/dx [a.u]",1000,0.05,20.05,600,0,600);
+  fQA2DList->Add(gHistNegdEdxP);
 
   //========================================================//
   fQAProtonsAcceptedList = new TList();
