@@ -1,3 +1,5 @@
+// Author: Stefano Carrazza 2010
+
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
@@ -25,15 +27,15 @@ TEveCaloDataHist* histo2d()
        <<", Number of tracks: "<<esd->GetNumberOfTracks()<<endl;
 
    // Getting current tracks, filling histograms 
-   for (int n = 0; n < esd->GetNumberOfTracks(); ++n) {    
+   for ( int n = 0; n < esd->GetNumberOfTracks(); ++n ) {    
   
       if (esd->GetTrack(n)->GetSign() > 0) {
          histopos->Fill(esd->GetTrack(n)->Eta(),
-	      	        getphi(esd->GetTrack(n)->Phi()),
+	      	        GetPhi(esd->GetTrack(n)->Phi()),
                         fabs(esd->GetTrack(n)->Pt()));
       } else {
          histoneg->Fill(esd->GetTrack(n)->Eta(),
-                        getphi(esd->GetTrack(n)->Phi()),
+                        GetPhi(esd->GetTrack(n)->Phi()),
                         fabs(esd->GetTrack(n)->Pt()));
       }
    }
@@ -52,13 +54,13 @@ TEveCaloDataHist* histo2d()
    data->IncDenyDestroy();
 
    // Plotting the lego histogram in a new tab
-   Create_histo_lego(data);
+   CreateHistoLego(data);
    
    // Plotting the 3D histogram
-   TEveCalo3D *calo3d = Create_3D_view(data);
+   TEveCalo3D *calo3d = Create3DView(data);
 
    // Plotting projections RPhi and RhoZ
-   Create_projections(data, calo3d);
+   CreateProjections(data, calo3d);
    
    gEve->Redraw3D(kTRUE);
 
@@ -66,7 +68,7 @@ TEveCaloDataHist* histo2d()
 }
 
 //______________________________________________________________________________
-Double_t getphi(Double_t phi)
+Double_t GetPhi(Double_t phi)
 {
    if (phi > pi) {
       phi -= 2*pi;
@@ -75,12 +77,12 @@ Double_t getphi(Double_t phi)
 }
 
 //______________________________________________________________________________
-TEveCaloLego* Create_histo_lego(TEveCaloData* data){
+TEveCaloLego* CreateHistoLego(TEveCaloData* data){
 
    TGLViewer* glv;
 
    // Viewer initialization, tab creation
-   if (g_histo2d_v == 0) {
+   if ( g_histo2d_v == 0 ) {
       TEveWindowSlot *slot    = 0;
       TEveBrowser    *browser = gEve->GetBrowser();
 
@@ -119,10 +121,10 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data){
 }
 
 //______________________________________________________________________________
-TEveCalo3D* Create_3D_view(TEveCaloData* data){
+TEveCalo3D* Create3DView(TEveCaloData* data){
   
    //initialization
-   if (g_histo2d_s2 == 0) {
+   if ( g_histo2d_s2 == 0 ) {
       g_histo2d_s2 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
       gEve->GetDefaultViewer()->AddScene(g_histo2d_s2);
       g_histo2d_s2->SetElementName("3D Histogram Scene");
@@ -139,7 +141,7 @@ TEveCalo3D* Create_3D_view(TEveCaloData* data){
 }
 
 //______________________________________________________________________________
-AliEveMultiView* Create_projections(TEveCaloData* data, TEveCalo3D *calo3d){
+AliEveMultiView* CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d){
 
    AliEveMultiView *al = AliEveMultiView::Instance();
    al->ImportEventRPhi(calo3d);

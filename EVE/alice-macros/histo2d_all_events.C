@@ -1,3 +1,5 @@
+// Author: Stefano Carrazza 2010
+
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, all rights reserved. *
  * See http://aliceinfo.cern.ch/Offline/AliRoot/License.html for          *
@@ -22,7 +24,7 @@ TEveCaloDataHist* histo2d_all_events()
 
    TEveCaloDataHist* data_t;
    
-   if(g_histo2d_all_events_slot == 0){
+   if ( g_histo2d_all_events_slot == 0 ) {
       cout<<"Filling histogram..."<<endl;
    
       // Access to esdTree
@@ -36,17 +38,17 @@ TEveCaloDataHist* histo2d_all_events()
                                  100,-1.5,1.5,80,-pi,pi);
 
          // Getting current tracks for each event, filling histograms 
-         for (int event = 0; event < t->GetEntries(); event++) {	
+         for ( int event = 0; event < t->GetEntries(); event++ ) {	
             t->GetEntry(event);
-               for (int n = 0; n < esd->GetNumberOfTracks(); ++n) {    
+               for ( int n = 0; n < esd->GetNumberOfTracks(); ++n ) {    
   
-                  if (esd->GetTrack(n)->GetSign() > 0) {
+                  if ( esd->GetTrack(n)->GetSign() > 0 ) {
                      histopos_t->Fill(esd->GetTrack(n)->Eta(),
-	      	                      getphi(esd->GetTrack(n)->Phi()),
+	      	                      GetPhi(esd->GetTrack(n)->Phi()),
                                       fabs(esd->GetTrack(n)->Pt()));
                   } else {
                      histoneg_t->Fill(esd->GetTrack(n)->Eta(),
-                                      getphi(esd->GetTrack(n)->Phi()),
+                                      GetPhi(esd->GetTrack(n)->Phi()),
                                       fabs(esd->GetTrack(n)->Pt()));
                   }
                }
@@ -83,9 +85,9 @@ TEveCaloDataHist* histo2d_all_events()
       TEveWindowSlot* slotRightBottom = pack1->NewSlot();
 
       // Creating viewers and scenes   
-      TEveCalo3D* calo3d = Create_3D_view(data_t, slotLeftTop);
-      Create_histo_lego(data_t, slotLeftBottom);
-      Create_projections(data_t, calo3d, slotRightTop, slotRightBottom);
+      TEveCalo3D* calo3d = Create3DView(data_t, slotLeftTop);
+      CreateHistoLego(data_t, slotLeftBottom);
+      CreateProjections(data_t, calo3d, slotRightTop, slotRightBottom);
 
       gEve->Redraw3D(kTRUE);
 
@@ -96,7 +98,7 @@ TEveCaloDataHist* histo2d_all_events()
 }
 
 //______________________________________________________________________________
-Double_t getphi(Double_t phi)
+Double_t GetPhi(Double_t phi)
 {
    if (phi > pi) {
       phi -= 2*pi;
@@ -105,12 +107,12 @@ Double_t getphi(Double_t phi)
 }
 
 //______________________________________________________________________________
-TEveCaloLego* Create_histo_lego(TEveCaloData* data, TEveWindowSlot* slot){
+TEveCaloLego* CreateHistoLego(TEveCaloData* data, TEveWindowSlot* slot){
 
    TEveCaloLego* lego;
 
    // Viewer initialization, tab creation
-   if (g_histo2d_all_events_v0 == 0) {
+   if ( g_histo2d_all_events_v0 == 0 ) {
 
       TEveBrowser *browser = gEve->GetBrowser();
       slot->MakeCurrent();
@@ -144,11 +146,11 @@ TEveCaloLego* Create_histo_lego(TEveCaloData* data, TEveWindowSlot* slot){
 }
 
 //______________________________________________________________________________
-TEveCalo3D* Create_3D_view(TEveCaloData* data, TEveWindowSlot* slot){
+TEveCalo3D* Create3DView(TEveCaloData* data, TEveWindowSlot* slot){
 
    TEveCalo3D* calo3d;
 
-   if (g_histo2d_all_events_v1 == 0) {
+   if ( g_histo2d_all_events_v1 == 0 ) {
       
       TEveBrowser *browser = gEve->GetBrowser();
       slot->MakeCurrent();
@@ -169,9 +171,9 @@ TEveCalo3D* Create_3D_view(TEveCaloData* data, TEveWindowSlot* slot){
 }
 
 //______________________________________________________________________________
-void Create_projections(TEveCaloData* data, TEveCalo3D *calo3d, TEveWindowSlot* slot1, TEveWindowSlot* slot2){
+void CreateProjections(TEveCaloData* data, TEveCalo3D *calo3d, TEveWindowSlot* slot1, TEveWindowSlot* slot2){
 
-   if (g_histo2d_all_events_v2 == 0) {
+   if ( g_histo2d_all_events_v2 == 0 ) {
       
       TEveBrowser *browser = gEve->GetBrowser();
       slot1->MakeCurrent();
@@ -192,7 +194,7 @@ void Create_projections(TEveCaloData* data, TEveCalo3D *calo3d, TEveWindowSlot* 
       g_histo2d_all_events_v2->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    } 
 
-   if (g_histo2d_all_events_v3 == 0) {
+   if ( g_histo2d_all_events_v3 == 0 ) {
       
       TEveBrowser *browser = gEve->GetBrowser();
       slot2->MakeCurrent();
