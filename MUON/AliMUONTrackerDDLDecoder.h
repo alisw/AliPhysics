@@ -37,6 +37,7 @@
 /// must be checked before any proposed modification is made to this file.
 ///
 
+#include <string.h>
 #include "AliMUONTrackerDDLDecoderEventHandler.h"
 
 /// \ingroup raw
