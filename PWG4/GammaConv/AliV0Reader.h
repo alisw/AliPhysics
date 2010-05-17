@@ -62,11 +62,13 @@ class AliV0Reader : public TObject {
     kStepR = 10,
     kStepLine = 11,
     kStepZ = 12,
-    kStepNDF = 13,
-    kStepChi2 = 14,
-    kStepEta = 15,
-    kStepPt = 16,
-    kStepTrueGamma = 17
+    kStepMinClsTPC = 13,
+    kStepSinglePt= 14,  
+    kStepNDF = 15,
+    kStepChi2 = 16,
+    kStepEta = 17,
+    kStepPt = 18,
+    kStepTrueGamma = 19
   };
 	
   AliV0Reader();                                        //constructor
@@ -78,7 +80,12 @@ class AliV0Reader : public TObject {
    *Initialize the reader
    */
   void Initialize();
-	
+  void SetInputAndMCEvent(AliVEvent* esd, AliMCEvent* mc) ;
+
+
+  virtual void SetInputEvent(AliVEvent* const input)  {fESDEvent  = dynamic_cast<AliESDEvent*>(input);}
+  virtual void SetMC(AliMCEvent* const mc)            {fMCEvent = mc;}
+
 	
   // for CF
   void SetCFManager(AliCFManager * const io){fCFManager = io;};
@@ -190,7 +197,7 @@ class AliV0Reader : public TObject {
   /*
    * Setup  AliMCEventHandler
    */			
-  AliMCEventHandler* GetMCTruth() const{return fMCTruth;}	// for CF
+  //  AliMCEventHandler* GetMCTruth() const{return fMCTruth;}	// for CF
 	
 	
   /*
@@ -444,6 +451,12 @@ class AliV0Reader : public TObject {
 	
 	
   /*
+   * Gets the MinClsTPC value.
+   */
+  Double_t GetMinClsTPCCut() const{return fMinClsTPC;}
+	
+
+  /*
    * Gets the line cut values.
    */
   Double_t GetLineCutZRSlope() const{return fLineCutZRSlope;}
@@ -480,12 +493,21 @@ class AliV0Reader : public TObject {
    */
   void SetPtCut(Double_t ptCut){fPtCut=ptCut;}
 	
+  /*
+   * Sets the PtCut value.
+   */
+  void SetSinglePtCut(Double_t singleptCut){fSinglePtCut=singleptCut;}
+	
     
   /*
    * Sets the MaxZCut value.
    */
   void SetMaxZCut(Double_t maxZ){fMaxZ=maxZ;}
 	
+ /*
+   * Sets the MinClsTPC value.
+   */
+  void SetMinClsTPCCut(Double_t minClsTPC){fMinClsTPC=minClsTPC;}
 	
   /*
    * Sets the LineCut values.
@@ -614,6 +636,8 @@ class AliV0Reader : public TObject {
 	
   Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b);
 
+  Bool_t GetArmenterosQtAlfa(AliKFParticle * posKFparticle,AliKFParticle * negKFparticle,AliKFParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
+
   void SetDoCF(Bool_t flag){fDoCF = flag;}
 
   Bool_t CheckV0FinderStatus(Int_t index);
@@ -640,11 +664,11 @@ class AliV0Reader : public TObject {
 
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
-  AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
+  //  AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
   AliMCEvent *fMCEvent;			//  for CF      pointer to MC event
   TChain * fChain;               // pointer to the TChain
 	
-  AliESDInputHandler* fESDHandler;      //! pointer to esd object
+  //  AliESDInputHandler* fESDHandler;      //! pointer to esd object
   AliESDEvent *fESDEvent;               //! pointer to esd object
 	
 	
@@ -692,7 +716,9 @@ class AliV0Reader : public TObject {
   Double_t fMaxR; //r cut
   Double_t fEtaCut; //eta cut
   Double_t fPtCut; // pt cut
-  Double_t fMaxZ; //z cut  
+  Double_t fSinglePtCut; // pt cut for electron/positron
+  Double_t fMaxZ; //z cut
+  Double_t fMinClsTPC;
   Double_t fLineCutZRSlope; //linecut
   Double_t fLineCutZValue; //linecut
   Double_t fChi2CutConversion; //chi2cut
