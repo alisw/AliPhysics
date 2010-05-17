@@ -143,8 +143,8 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   void PrintDebugInfo();
   AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
   AliHLTCaloMapper *fMapperPtr;          //COMMENT
-  AliHLTUInt32_t fCurrentSpec;
-  bool fDebug;
+  AliHLTUInt32_t fCurrentSpec;    // Data specification (RCU)
+  bool fDebug;    // Turn on to enable debug info
 
  private:
   AliHLTCaloRawAnalyzerComponentv3();
@@ -179,7 +179,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   /** Should we push all raw data (using the raw data writer) */
   Bool_t fDoPushRawData; //COMMENT 
   
-  class RawDataWriter 
+  class RawDataWriter  
   {
   public:
     RawDataWriter(AliHLTCaloConstants* cConst);
@@ -196,14 +196,14 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
     RawDataWriter (const RawDataWriter  & );
     RawDataWriter & operator = (const RawDataWriter &);
     void Init();
-    UShort_t* fRawDataBuffer;
-    int fCurrentChannelSize;
-    int fBufferIndex;
-    int fBufferSize;
-    UShort_t *fCurrentChannelIdPtr;
-    UShort_t *fCurrentChannelSizePtr; 
-    UShort_t *fCurrentChannelDataPtr; 
-    int fTotalSize;
+    UShort_t* fRawDataBuffer; // Buffer for storing of rawdata
+    int fCurrentChannelSize;  //Comment
+    int fBufferIndex;         //Position in buffer
+    int fBufferSize;          //Comment
+    UShort_t *fCurrentChannelIdPtr; //Channel ID (module, row, column)
+    UShort_t *fCurrentChannelSizePtr;  //Comment
+    UShort_t *fCurrentChannelDataPtr; //Comment 
+    int fTotalSize; //Comment
   };
 
   RawDataWriter *fRawDataWriter; 

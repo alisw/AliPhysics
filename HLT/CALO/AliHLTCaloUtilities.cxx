@@ -53,7 +53,6 @@ AliHLTCaloUtilities::ScanSingleIntArgument(int argc, const char** argv, const ch
 	    }
 	}
     }
- 
   else
     {
       return false;

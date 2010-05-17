@@ -57,6 +57,7 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
 										fRawDataWriter(0)
 									
 {
+  //Constructor
   fSanityInspectorPtr = new AliHLTCaloSanityInspector();
   
   if( fDoPushRawData == true  )
@@ -70,6 +71,7 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):
 
 AliHLTCaloRawAnalyzerComponentv3::~AliHLTCaloRawAnalyzerComponentv3()
 {
+  //destructor
   delete fRawReaderMemoryPtr;
   delete fAltroRawStreamPtr;
   delete fRawDataWriter;
@@ -127,6 +129,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 int 
 AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 {
+  //comment
   if(fAltroRawStreamPtr)
     {
       delete fAltroRawStreamPtr;
@@ -140,7 +143,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
 void 
 AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 {
-  static TStopwatch  Watch; //CRAP PTH
+  //comment
+  static TStopwatch  watch; //CRAP PTH
   static double wlast = -1;
   static double wcurrent = 0;
   
@@ -150,9 +154,9 @@ AliHLTCaloRawAnalyzerComponentv3::PrintDebugInfo()
 	{
 	  cout << __FILE__ << __LINE__ << " : Processing event "  << fCaloEventCount << endl; 
 	  wlast =  wcurrent;
-	  wcurrent =  Watch.RealTime();
+	  wcurrent =  watch.RealTime();
 	  cout << __FILE__ << __LINE__ << "The event rate is " <<  
-	    1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  Watch.Start(kFALSE); 
+	    1000/( wcurrent  -  wlast ) << "  Hz" << endl; 	  watch.Start(kFALSE); 
 	}
     }
 }
@@ -170,6 +174,7 @@ AliHLTCaloRawAnalyzerComponentv3::GetOutputDataSize(unsigned long& constBase, do
 bool 
 AliHLTCaloRawAnalyzerComponentv3::CheckInputDataType(const AliHLTComponentDataType &datatype)
 {
+  //comment
   vector <AliHLTComponentDataType> validTypes;
   GetInputDataTypes(validTypes);
   
@@ -191,6 +196,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 					  AliHLTComponentTriggerData& /*trigData*/, 
 					  AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  //comment
   if(!IsDataEvent())
    {
      size = 0;
@@ -243,6 +249,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoEvent( const AliHLTComponentEventData& evtDa
 Int_t
 AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr, const AliHLTUInt32_t size, UInt_t& totSize)
 {
+  //comment
   int tmpsize=  0;
   Int_t crazyness          = 0;
   Int_t nSamples           = 0;
@@ -355,6 +362,7 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter(AliHLTCaloConstan
   fCurrentChannelDataPtr(0),
   fTotalSize(0)
 {
+  //comment
   fRawDataBuffer = new UShort_t[fBufferSize];
   Init();
 }
@@ -369,6 +377,7 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::~RawDataWriter()
 void  
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::Init()
 {
+  //comment
   fCurrentChannelIdPtr = fRawDataBuffer;
   fCurrentChannelSizePtr = fRawDataBuffer +1;
   fCurrentChannelDataPtr = fRawDataBuffer +2;
@@ -379,6 +388,7 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::Init()
 void
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewEvent()
 {
+  //comment
   Init();
   fTotalSize = 0;
 }
@@ -387,6 +397,7 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewEvent()
 void
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::NewChannel( )
 {
+  //comment
   *fCurrentChannelSizePtr   = fCurrentChannelSize;
   fCurrentChannelIdPtr     += fCurrentChannelSize;
   fCurrentChannelSizePtr    += fCurrentChannelSize;
