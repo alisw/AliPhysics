@@ -27,7 +27,7 @@ ClassImp(AliAnalysisGrid)
 
 //______________________________________________________________________________
 AliAnalysisGrid::AliAnalysisGrid(const AliAnalysisGrid& other)
-                :TNamed(other)
+                :TNamed(other), fSpecialBits(0)
 {
 // Copy ctor.
 }
@@ -38,6 +38,7 @@ AliAnalysisGrid &AliAnalysisGrid::operator=(const AliAnalysisGrid& other)
 // Assignment.
    if (this != &other) {
       TNamed::operator=(other);
+      fSpecialBits = other.fSpecialBits;
    }
    return *this;
 }
@@ -143,6 +144,8 @@ void AliAnalysisGrid::SetRunMode(const char *mode)
    }
    if (smode.Contains("offline")) {
       TObject::SetBit(kOffline, kTRUE);
+      SetUseCopy(kFALSE);
+      SetCheckCopy(kFALSE);
       return;
    }
    if (smode.Contains("submit")) {

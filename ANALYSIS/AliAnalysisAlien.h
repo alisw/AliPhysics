@@ -82,6 +82,7 @@ public:
    TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
    const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
 //Utilities
+   Bool_t              CheckFileCopy(const char *alienpath);
    virtual Bool_t      CreateDataset(const char *pattern);
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);

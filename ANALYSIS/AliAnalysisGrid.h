@@ -31,9 +31,14 @@ enum EPluginRunMode {
    kUsePars  = BIT(22),
    kDefaultOutputs = BIT(23)
 };   
+enum EPluginBits {
+   kBitMask32  = 0xffffffff,
+   kUseCopy    = BIT(0),
+   kCheckCopy  = BIT(1)
+};
 
-   AliAnalysisGrid() {}
-   AliAnalysisGrid(const char *name) : TNamed(name,"") {}
+   AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
+   AliAnalysisGrid(const char *name) : TNamed(name,""), fSpecialBits(0) {}
    virtual ~AliAnalysisGrid() {}
    AliAnalysisGrid(const AliAnalysisGrid& other); 
    AliAnalysisGrid& operator=(const AliAnalysisGrid& other);
@@ -94,9 +99,27 @@ enum EPluginRunMode {
    virtual void        WriteExecutable()                                 = 0;
    virtual void        WriteValidationScript(Bool_t merge=kFALSE)        = 0;
 
+// Flags
+   Bool_t              IsUseCopy() const {return TestSpecialBit(kUseCopy);}
+   void                SetUseCopy(Bool_t flag=kTRUE) {SetSpecialBit(kUseCopy,flag);}
+   Bool_t              IsCheckCopy() const {return TestSpecialBit(kCheckCopy);}
+   void                SetCheckCopy(Bool_t flag=kTRUE) {SetSpecialBit(kCheckCopy,flag);}
+
 protected:
+// Methods
    virtual Bool_t      Connect()                                         = 0;
-   virtual void        SetDefaults()                                     = 0;   
-   ClassDef(AliAnalysisGrid, 1)   // Base class for GRID utilities
+   virtual void        SetDefaults()                                     = 0;
+   void     SetSpecialBit(UInt_t f) { fSpecialBits |= f & kBitMask32; }
+   void     ResetSpecialBit(UInt_t f) { fSpecialBits &= ~(f & kBitMask32); }
+   void     SetSpecialBit(UInt_t f, Bool_t set) {(set)?SetSpecialBit(f):ResetSpecialBit(f);}
+   Bool_t   TestSpecialBit(UInt_t f) const { return (Bool_t) ((fSpecialBits & f) != 0); }
+   Int_t    TestSpecialBits(UInt_t f) const { return (Int_t) (fSpecialBits & f); }
+   void     InvertSpecialBit(UInt_t f) { fSpecialBits ^= f & kBitMask32; }
+
+protected:
+   UInt_t              fSpecialBits; // special bits
+  
+
+   ClassDef(AliAnalysisGrid, 2)   // Base class for GRID utilities
 };
 #endif

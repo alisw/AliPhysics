@@ -358,11 +358,6 @@ Bool_t AliAnalysisAlien::Connect()
 {
 // Try to connect to AliEn. User needs a valid token and /tmp/gclient_env_$UID sourced.
    if (gGrid && gGrid->IsConnected()) return kTRUE;
-   if (!gSystem->Getenv("alien_API_USER")) {
-      Error("Connect", "Make sure you:\n 1. Have called: alien-token-init <username> today\n 2. Have sourced /tmp/gclient_env_%s",
-            gSystem->Getenv("UID"));
-      return kFALSE;
-   }         
    if (!gGrid) {
       Info("Connect", "Trying to connect to AliEn ...");
       TGrid::Connect("alien://");
@@ -401,6 +396,52 @@ void AliAnalysisAlien::CdWork()
       fGridWorkingDir = "";
    }          
 }
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
+{
+// Check if file copying is possible.
+   if (!Connect()) {
+      Error("CheckFileCopy", "Not connected to AliEn. File copying cannot be tested.");
+      return kFALSE;
+   }
+   // Check if alien_CLOSE_SE is defined
+   TString closeSE = gSystem->Getenv("alien_CLOSE_SE");
+   if (!closeSE.IsNull()) {
+      Info("CheckFileCopy", "Your current close storage is pointing to: \
+           \n      alien_CLOSE_SE = \"%s\"", closeSE.Data());
+   } else {
+      Warning("CheckFileCopy", "Your current close storage is empty ! Depending on your location, file copying may fail.");
+   }        
+   // Check if grid directory exists.
+   if (!DirectoryExists(alienpath)) {
+      Error("CheckFileCopy", "Alien path %s does not seem to exist", alienpath);
+      return kFALSE;
+   }
+   TFile f("plugin_test_copy.root", "RECREATE");
+   // User may not have write permissions to current directory 
+   if (f.IsZombie()) {
+      Error("CheckFileCopy", "Cannot create local test file. Do you have write access to current directory: <%s> ?",
+            gSystem->WorkingDirectory());
+      return kFALSE;
+   }
+   f.Close();
+   TString s = f.GetUUID().AsString();
+   s.ReplaceAll("-",""); // AliEn copy does not like too many '-'
+   if (!TFile::Cp(f.GetName(), Form("alien://%s/%s",alienpath, s.Data()))) {
+      Error("CheckFileCopy", "Cannot copy files to Alien destination: %s \
+           \n# 1. Make sure you have write permissions there. If this is the case: \
+           \n# 2. Check the storage availability at: http://alimonitor.cern.ch/stats?page=SE/table \
+           \n#    Do:           export alien_CLOSE_SE=\"working_disk_SE\" \
+           \n#    To make this permanent put in in your .bashrc (in .alienshrc is not enough) \
+           \n#    Redo token:   rm /tmp/x509up_u$UID then: alien-token-init <username>", alienpath);
+      gSystem->Unlink(f.GetName());
+      return kFALSE;
+   }   
+   gSystem->Unlink(f.GetName());
+   gGrid->Rm(Form("%s%s",alienpath,s.Data()));
+   return kTRUE;
+}   
 
 //______________________________________________________________________________
 Bool_t AliAnalysisAlien::CheckInputData()
@@ -1399,6 +1440,8 @@ void AliAnalysisAlien::Print(Option_t *) const
 {
 // Print current plugin settings.
    printf("### AliEn analysis plugin current settings ###\n");
+   printf("=   Copy files to grid: __________________________ %s\n", (IsUseCopy())?"YES":"NO");
+   printf("=   Check if files can be copied to grid: ________ %s\n", (IsCheckCopy())?"YES":"NO");
    printf("=   Production mode:______________________________ %d\n", fProductionMode);
    printf("=   Version of API requested: ____________________ %s\n", fAPIVersion.Data());
    printf("=   Version of ROOT requested: ___________________ %s\n", fROOTVersion.Data());
@@ -1507,6 +1550,8 @@ void AliAnalysisAlien::SetDefaults()
    fJobTag                     = "Automatically generated analysis JDL";
    fMergeExcludes              = "";
    fMergeViaJDL                = 0;
+   SetUseCopy(kTRUE);
+   SetCheckCopy(kTRUE);
 }   
 
 //______________________________________________________________________________
@@ -1744,11 +1789,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       Info("StartAnalysis","\n##### FULL ANALYSIS MODE ##### Producing needed files and submitting your analysis job...");   
    }   
       
+   Print();   
    if (!Connect()) {
       Error("StartAnalysis", "Cannot start grid analysis without grid connection");
       return kFALSE;
    }
-   Print();   
+   if (IsCheckCopy()) CheckFileCopy(gGrid->GetHomeDirectory());
    if (!CheckInputData()) {
       Error("StartAnalysis", "There was an error in preprocessing your requested input data");
       return kFALSE;
