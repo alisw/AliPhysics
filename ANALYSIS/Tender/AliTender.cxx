@@ -106,9 +106,9 @@ void AliTender::ConnectInputData(Option_t* /*option*/)
   // SetDefault storage. Specific storages must be set by AliTenderSupply::Init()
   fCDB->SetDefaultStorage(fDefaultStorage);
   fRun = fESD->GetRunNumber();
-  fCDB->SetRun(fRun);
   // Unlock CDB
   fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);
+  fCDB->SetRun(fRun);
   TIter next(fSupplies);
   AliTenderSupply *supply;
   while ((supply=(AliTenderSupply*)next())) supply->Init();

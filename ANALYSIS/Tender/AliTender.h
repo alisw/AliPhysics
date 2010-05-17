@@ -26,14 +26,15 @@ class AliTender : public AliAnalysisTask {
 
 private:
   Int_t                     fDebug;          // Debug level
-  Int_t                     fRun;            // Current run
-  Bool_t                    fRunChanged;     // Flag for run change.
-  ULong_t                   fCDBkey;         // Key to unlock CDB manager
+  Int_t                     fRun;            //! Current run
+  Bool_t                    fRunChanged;     //! Flag for run change.
+  ULong_t                   fCDBkey;         //! Key to unlock CDB manager
   TString                   fDefaultStorage; // Default CDB storage
-  AliCDBManager            *fCDB;            // Pointer to CDB manager
-  AliESDInputHandler       *fESDhandler;     // Pointer to ESD input handler
-  AliESDEvent              *fESD;            // Pointer to current ESD event
+  AliCDBManager            *fCDB;            //! Pointer to CDB manager
+  AliESDInputHandler       *fESDhandler;     //! Pointer to ESD input handler
+  AliESDEvent              *fESD;            //! Pointer to current ESD event
   TObjArray                *fSupplies;       // Array of tender supplies
+  TObjArray                *fCDBSettings;    // Array with CDB configuration
   
   AliTender(const AliTender &other);
   AliTender& operator=(const AliTender &other);
@@ -52,6 +53,7 @@ public:
   Bool_t                    RunChanged() const {return fRunChanged;}
   // Configuration
   void                      SetDefaultCDBStorage(const char *dbString="local://$ALICE_ROOT/OCDB");
+  void                      SetDebugLevel(Int_t debug) {fDebug = debug;}
 
   // Run control
   virtual void              ConnectInputData(Option_t *option = "");
@@ -59,6 +61,6 @@ public:
   virtual Bool_t            Notify() {return kTRUE;}
   virtual void              Exec(Option_t *option);
     
-  ClassDef(AliTender,1)  // Class describing the tender car for ESD analysis
+  ClassDef(AliTender,2)  // Class describing the tender car for ESD analysis
 };
 #endif
