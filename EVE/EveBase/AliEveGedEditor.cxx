@@ -68,7 +68,7 @@ AliEveGedEditor::AliEveGedEditor() :
   TGedFrame* nf = CreateNameFrame(fTabContainer, "Style");
   nf->SetGedEditor(this);
   nf->SetModelClass(0);
-  fTabContainer->AddFrame(nf, nf->GetLayoutHints());
+  fTabContainer->AddFrame(nf, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 2, 2, 2));
 }
 
 //______________________________________________________________________________
