@@ -40,10 +40,11 @@ using namespace std;
 #include <TMath.h>
 #include "AliHLTEMCALOnlineDisplayTH2D.h"
 
-#include <TEveManager.h>
-#include <TEveBoxSet.h>
 
-TEveBoxSet* gAliEveBoxSet = 0;
+//#include <TEveManager.h>
+//#include <TEveBoxSet.h>
+//TEveBoxSet* gAliEveBoxSet = 0;
+
 
 //gEve = new TEveManager(300, 300);
 
@@ -132,7 +133,6 @@ AliHLTEMCALOnlineDisplayEventTab::~AliHLTEMCALOnlineDisplayEventTab()
 Int_t
 AliHLTEMCALOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int x, int z, int gain)
 {
-  
   //  int tmpModID = x/64;
   
   int tmpModID = (x*z)/(NZROWSMOD*NXCOLUMNSMOD);

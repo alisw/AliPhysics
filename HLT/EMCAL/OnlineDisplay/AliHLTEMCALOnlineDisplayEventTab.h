@@ -42,25 +42,9 @@ class TH1D;
 class AliHLTEMCALOnlineDisplayTH2D;
 class AliHLTEMCALGetEventButton;
 class AliHLTHOMERReader;
-
-//class AliHLTEMCALRcuCellEnergyDataStruct;
-
 class AliHLTCaloRcuCellEnergyDataStruct;
-
-
 class AliHLTEMCALOnlineDisplay;
-//class AliHLTEMCALSharedMemoryInterface;
-
-//class AliHLTEMCALSharedMemoryInterfacev2;
- 
-//class  AliHLTCaloSharedMemoryInterfacev2;
-
-class  AliHLTEMCALSharedMemoryInterface;
-
-
-//class AliHLTEMCALChannelRawDataStruct;
-
-
+class AliHLTEMCALSharedMemoryInterface;
 class AliHLTCaloChannelRawDataStruct;
 
 
@@ -75,25 +59,7 @@ class AliHLTEMCALOnlineDisplayEventTab : public AliHLTEMCALOnlineDisplayTab
 				  AliHLTHOMERReader * homerSyncPtr, 
 				  AliHLTHOMERReader * homerPtrs[MAXHOSTS], 
 				  int nHosts,  int runnumber = -1);
-//   AliHLTEMCALOnlineDisplayEventTab(AliHLTEMCALOnlineDisplay *onlineDisplayPtr, TGTab *tabPtr, 
-// 				  AliHLTHOMERReader *fgHomerReaderPtr, 
-// 				  AliHLTHOMERReader *fgHomerReadersPtr[MAXHOSTS], 
-// 				  int nHosts, const int runnumber = -1);
-    //    {
-
- 
   
- 
-
-/* 
-  void SetRunNumber(const int runnumber) 
-  {
-    
-    fRunNumber = runnumber ;
-    cout << __FILE__ <<":"<< __LINE__ << "RunNumber was set to "<< fRunNumber  <<endl; ;
-  };
-  */
-
   Int_t GetRawData(TH1D *histPtr, int x, int z, int gain);
 
   void UpdateDisplay();
@@ -102,34 +68,26 @@ class AliHLTEMCALOnlineDisplayEventTab : public AliHLTEMCALOnlineDisplayTab
   void FindFourierBlocks(AliHLTHOMERReader *homeReaderPtr) const;
 
   void ResetDisplay();
-  TGTab               *fTab;
+  TGTab               *fTab; // Tab for onlinedisplay
   TGTab               *fSubTab1;
-  TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6;
-  TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3;
-  TCanvas *fgCanvasPtr[NGAINS];
-  AliHLTEMCALOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS];
-
-  /*
-  int *fChannelData[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  Int_t fNChannelSamples[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  Int_t fChannelEnergy[NMODULES][NXRCUCOORD][NZRCUCOORD][NXCOLUMNSRCU][NZROWSRCU][NGAINS];
-  */  
-
-  int *fChannelData[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
-  Int_t fNChannelSamples[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
-  Int_t fChannelEnergy[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];
+  TRootEmbeddedCanvas *fEc1, *fEc2, *fEc3, *fEc4, *fEc5, *fEc6;// Embedded canvas for tower energies etc..
+  TGCompositeFrame    *fSubF1, *fSubF2, *fSubF3; // comment
+  TCanvas *fgCanvasPtr[NGAINS]; // Comment
+  AliHLTEMCALOnlineDisplayTH2D *fgLegoPlotPtr[NGAINS];  // Legoplot with tower energies
+  
+  int *fChannelData[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS]; // Arrays to hold tower energies
+  Int_t fNChannelSamples[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS]; // Arrays to holdrwa data
+  Int_t fChannelEnergy[NMODULES][NZROWSMOD][NXCOLUMNSMOD][NGAINS];   // Arrays to hold tower energies
   
  private:
+  AliHLTEMCALOnlineDisplayEventTab (const AliHLTEMCALOnlineDisplayEventTab & );
+  AliHLTEMCALOnlineDisplayEventTabb & operator = (const AliHLTEMCALOnlineDisplayEventTab  &);
   AliHLTEMCALOnlineDisplayEventTab();
-  
-  
-  // void FillRawData(const AliHLTEMCALChannelRawDataStruct &rawStr);
   void FillRawData(const AliHLTCaloChannelRawDataStruct &rawStr);
   AliHLTEMCALGetEventButton* fgEventButtPtr; 
   void InitDisplay(TGTab *tabPtr){};
   void InitDisplay(TGTab * tabPtr, int runnumber);
   AliHLTEMCALOnlineDisplay *fOnlineDisplayPtr;
-  // AliHLTCaloSharedMemoryInterfacev2  *fShmPtr;   
   AliHLTEMCALSharedMemoryInterface  *fShmPtr;   
 
 };
