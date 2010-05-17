@@ -50,10 +50,10 @@ ClassImp(AliV0Reader)
 AliV0Reader::AliV0Reader() :
   TObject(),
   fMCStack(NULL),
-  fMCTruth(NULL),
+  // fMCTruth(NULL),
   fMCEvent(NULL),    // for CF
   fChain(NULL),
-  fESDHandler(NULL),
+  // fESDHandler(NULL),
   fESDEvent(NULL),
   fCFManager(NULL),
   fESDpid(NULL),
@@ -84,7 +84,9 @@ AliV0Reader::AliV0Reader() :
   fMaxR(10000),// 100 meter(outside of ALICE)
   fEtaCut(0.),
   fPtCut(0.),
+  fSinglePtCut(0.),
   fMaxZ(0.),
+  fMinClsTPC(0.),
   fLineCutZRSlope(0.),
   fLineCutZValue(0.),
   fChi2CutConversion(0.),
@@ -120,10 +122,10 @@ AliV0Reader::AliV0Reader() :
 AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   TObject(original),
   fMCStack(original.fMCStack),
-  fMCTruth(original.fMCTruth),
+  // fMCTruth(original.fMCTruth),
   fMCEvent(original.fMCEvent),  // for CF
   fChain(original.fChain),
-  fESDHandler(original.fESDHandler),
+  //  fESDHandler(original.fESDHandler),
   fESDEvent(original.fESDEvent),
   fCFManager(original.fCFManager),
   fESDpid(original.fESDpid),
@@ -154,7 +156,9 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fMaxR(original.fMaxR),
   fEtaCut(original.fEtaCut),
   fPtCut(original.fPtCut),
+  fSinglePtCut(original.fSinglePtCut),
   fMaxZ(original.fMaxZ),
+  fMinClsTPC(original.fMinClsTPC),
   fLineCutZRSlope(original.fLineCutZRSlope),
   fLineCutZValue(original.fLineCutZValue),
   fChi2CutConversion(original.fChi2CutConversion),
@@ -199,32 +203,58 @@ AliV0Reader::~AliV0Reader()
   }
 }
 
+//____________________________________________________________________________
+void AliV0Reader::SetInputAndMCEvent(AliVEvent* esd, AliMCEvent* mc) {
+  // Connect the data pointers
+
+  SetInputEvent(esd);
+  SetMC(mc);
+
+}
+
+
 void AliV0Reader::Initialize(){
   //see header file for documentation
 
   fUpdateV0AlreadyCalled = kFALSE;	
+
+  /*
   // Get the input handler from the manager
   fESDHandler = (AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(fESDHandler == NULL){
     //print warning here
   }
-	
+
   // Get pointer to esd event from input handler
   fESDEvent = fESDHandler->GetEvent();
   if(fESDEvent == NULL){
     //print warning here
   }
-	
+
   //Get pointer to MCTruth
   fMCTruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-  if(fMCTruth == NULL){
+  */
+
+
+
+  //  fMCTruth = mcH->MCEvent();
+  //  fMC = mcH->MCEvent();
+  // stack = fMC->Stack();
+
+
+  //if(fMCTruth == NULL){
     //print warning here
-    fDoMC = kFALSE;
+  // fDoMC = kFALSE;
+  //}
+
+  if(fMCEvent == NULL){
+   fDoMC = kFALSE;
   }
-	
+
   //Get pointer to the mc stack
-  if(fMCTruth){
-    fMCStack = fMCTruth->MCEvent()->Stack();
+  //  if(fMCTruth){
+  if(fMCEvent){
+    fMCStack = fMCEvent->Stack();
     if(fMCStack == NULL){
       //print warning here
     }
@@ -247,7 +277,7 @@ void AliV0Reader::Initialize(){
   // for CF
   //Get pointer to the mc event
   if(fDoCF && fDoMC){
-    fMCEvent = fMCTruth->MCEvent();
+    //fMCEvent = fMCTruth->MCEvent();
     if(fMCEvent == NULL){
       //print warning here
       fDoCF = kFALSE;
@@ -281,8 +311,8 @@ void AliV0Reader::Initialize(){
       multiplicityBinLimitsArray[2] = 16.5;
       multiplicityBinLimitsArray[3] = 27.5;
       multiplicityBinLimitsArray[4] = 41.5;
-            
-      fBGEventHandler = new AliGammaConversionBGHandler(8,4,10);
+          
+      fBGEventHandler = new AliGammaConversionBGHandler(8,5,10);
       
       /*
       // ---------------------------------
@@ -382,7 +412,16 @@ Bool_t AliV0Reader::NextV0(){
     if(fHistograms != NULL){
       fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_InvMass",GetMotherCandidateMass());
     }
-    
+ 
+    Double_t armenterosQtAlfa[2];
+    GetArmenterosQtAlfa(GetNegativeKFParticle(), 
+			GetPositiveKFParticle(), 
+			GetMotherCandidateKFCombination(),
+			armenterosQtAlfa);
+   
+    fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+ 
+   
     if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){             // avoid like sign
       //  iResult=kFALSE;
       if(fHistograms != NULL ){
@@ -557,9 +596,33 @@ Bool_t AliV0Reader::NextV0(){
        continue;
        }
     */
+    if(fCurrentNegativeESDTrack->GetNcls(1) < fMinClsTPC ||  fCurrentPositiveESDTrack->GetNcls(1) < fMinClsTPC ){
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutMinNClsTPC_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepMinClsTPC);		// for CF	
+    }
 
 		
     if(fUseKFParticle){
+
+
+      if( fCurrentNegativeKFParticle->GetPt()< fSinglePtCut ||  fCurrentPositiveKFParticle->GetPt()< fSinglePtCut){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutSinglePt_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+      if(fDoCF){
+	fCFManager->GetParticleContainer()->Fill(containerInput,kStepSinglePt);		// for CF	
+      }
+
+
       if(fCurrentMotherKFCandidate->GetNDF()<=0){
 	if(fHistograms != NULL){
 	  fHistograms->FillHistogram("ESD_CutNDF_InvMass",GetMotherCandidateMass());
@@ -1228,3 +1291,29 @@ Bool_t AliV0Reader::CheckIfPi0IsMother(Int_t label){
   }
   return iResult;
 }
+
+
+Bool_t AliV0Reader::GetArmenterosQtAlfa(AliKFParticle* positiveKFParticle, AliKFParticle * negativeKFParticle, AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlfa[2] ){
+  //see header file for documentation
+
+  TVector3 momentumVectorPositiveKF(positiveKFParticle->GetPx(),positiveKFParticle->GetPy(),positiveKFParticle->GetPz());
+  TVector3 momentumVectorNegativeKF(negativeKFParticle->GetPx(),negativeKFParticle->GetPy(),negativeKFParticle->GetPz());
+  TVector3 vecV0(gammaKFCandidate->GetPx(),gammaKFCandidate->GetPy(),gammaKFCandidate->GetPz());
+
+  Float_t thetaV0pos=TMath::ACos(( momentumVectorPositiveKF* vecV0)/(momentumVectorPositiveKF.Mag() * vecV0.Mag()));
+  Float_t thetaV0neg=TMath::ACos(( momentumVectorNegativeKF* vecV0)/(momentumVectorNegativeKF.Mag() * vecV0.Mag()));
+  
+  Float_t alfa =((momentumVectorPositiveKF.Mag())*TMath::Cos(thetaV0pos)-(momentumVectorNegativeKF.Mag())*TMath::Cos(thetaV0neg))/
+    ((momentumVectorPositiveKF.Mag())*TMath::Cos(thetaV0pos)+(momentumVectorNegativeKF.Mag())*TMath::Cos(thetaV0neg)) ;
+  
+
+  Float_t qt = momentumVectorPositiveKF.Mag()*TMath::Sin(thetaV0pos);
+      
+  armenterosQtAlfa[0]=qt;
+  armenterosQtAlfa[1]=alfa;
+
+  return 1;
+
+}
+
+

@@ -45,7 +45,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-  virtual void ConnectInputData(Option_t * option);
+  //virtual void ConnectInputData(Option_t * option);
 		
   void ProcessMCData();
   void ProcessV0sNoCut();
@@ -145,11 +145,13 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
     kStepR = 10,
     kStepLine = 11,
     kStepZ = 12,
-    kStepNDF = 13,
-    kStepChi2 = 14,
-    kStepEta = 15,
-    kStepPt = 16,
-    kStepTrueGamma = 17
+    kStepMinClsTPC = 13,
+    kStepSinglePt = 14,
+    kStepNDF = 15,
+    kStepChi2 = 16,
+    kStepEta = 17,
+    kStepPt = 18,
+    kStepTrueGamma = 19
   };
   
   AliV0Reader* fV0Reader; // The V0 reader object 

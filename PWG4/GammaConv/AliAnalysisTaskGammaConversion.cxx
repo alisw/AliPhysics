@@ -301,9 +301,20 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
 
-  if(fDoMCTruth){
-    ConnectInputData("");
+
+  if(fV0Reader == NULL){
+    // Write warning here cuts and so on are default if this ever happens
   }
+
+  fV0Reader->SetInputAndMCEvent(InputEvent(), MCEvent());
+
+  fV0Reader->Initialize();
+  fDoMCTruth = fV0Reader->GetDoMCTruth();
+
+
+  //  if(fDoMCTruth){
+  //ConnectInputData("");
+    //}
   //Each event needs an empty branch
   //  fAODBranch->Clear();
   fAODBranch->Delete();
@@ -385,12 +396,9 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   // Process reconstructed gammas
   if(fDoNeutralMeson == kTRUE){
     ProcessGammasForNeutralMesonAnalysis();
-    ProcessConvPHOSGammasForNeutralMesonAnalysis();
-    if(fDoOmegaMeson == kTRUE){
-      ProcessGammasForOmegaMesonAnalysis();
-    }
-  }
 
+  }
+  
   if(fDoMCTruth == kTRUE){
     CheckV0Efficiency();
   }
@@ -407,7 +415,14 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   if(fCalculateBackground){
     CalculateBackground();
   }
-	
+
+   if(fDoNeutralMeson == kTRUE){
+//     ProcessConvPHOSGammasForNeutralMesonAnalysis();
+     if(fDoOmegaMeson == kTRUE){
+       ProcessGammasForOmegaMesonAnalysis();
+     }
+   }
+
   //Clear the data in the v0Reader
   fV0Reader->UpdateEventByEventData();
 
@@ -416,27 +431,31 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	
 }
 
-void AliAnalysisTaskGammaConversion::ConnectInputData(Option_t *option){
-  // see header file for documentation
+// void AliAnalysisTaskGammaConversion::ConnectInputData(Option_t *option){
+//   // see header file for documentation
+//   //  printf("   ConnectInputData %s\n", GetName());
 
-  AliAnalysisTaskSE::ConnectInputData(option);
+//   AliAnalysisTaskSE::ConnectInputData(option);
 
-  if(fV0Reader == NULL){
-    // Write warning here cuts and so on are default if this ever happens
-  }
-  fV0Reader->Initialize();
-  fDoMCTruth = fV0Reader->GetDoMCTruth();
-}
+//   if(fV0Reader == NULL){
+//     // Write warning here cuts and so on are default if this ever happens
+//   }
+//   fV0Reader->Initialize();
+//   fDoMCTruth = fV0Reader->GetDoMCTruth();
+// }
 
 
 
 void AliAnalysisTaskGammaConversion::ProcessMCData(){
   // see header file for documentation
-	
+  //InputEvent(), MCEvent());
+  /* TestAnaMarin
   fStack = fV0Reader->GetMCStack();
   fMCTruth = fV0Reader->GetMCTruth();  // for CF
   fGCMCEvent = fV0Reader->GetMCEvent();  // for CF
-	
+  */
+  fStack= MCEvent()->Stack();
+  fGCMCEvent=MCEvent();
 	
   // for CF
   Double_t containerInput[3];
@@ -877,7 +896,13 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	      fHistograms->FillHistogram("MC_Pi0_Pt_Eta_ConvGamma_withinAcceptance", particle->Pt(),particle->Eta());
 	      fHistograms->FillHistogram("MC_Pi0_Pt_Rapid_ConvGamma_withinAcceptance", particle->Pt(),rapidity);
 	      fHistograms->FillHistogram("MC_Pi0_ZR_ConvGamma_withinAcceptance", particle->Vz(),particle->R());
-	      if(TMath::Abs(particle->Eta())<0.9)fHistograms->FillHistogram("MC_Pi0_Pt_ConvGamma_withinAcceptance_Fiducial", particle->Pt());
+	      Double_t alfa=0.;
+	      if((daughter0->Energy()+daughter1->Energy())!= 0.){
+		alfa= TMath::Abs((daughter0->Energy()-daughter1->Energy())/(daughter0->Energy()+daughter1->Energy()));
+	      }
+	      fHistograms->FillHistogram("MC_Pi0_alpha",alfa);
+              if(TMath::Abs(particle->Eta())<0.9)fHistograms->FillHistogram("MC_Pi0_Pt_ConvGamma_withinAcceptance_Fiducial", particle->Pt());
+
 	    }
 	  }
 	}
@@ -1142,6 +1167,14 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fHistograms->FillHistogram("ESD_ConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
     fHistograms->FillHistogram("ESD_ConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
     
+    Double_t armenterosQtAlfa[2];
+    fV0Reader->GetArmenterosQtAlfa(fV0Reader-> GetNegativeKFParticle(), 
+				   fV0Reader-> GetPositiveKFParticle(), 
+				   fV0Reader->GetMotherCandidateKFCombination(),
+				   armenterosQtAlfa);
+   
+    fHistograms->FillHistogram("ESD_ConvGamma_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+ 
 
     // begin mapping
     Int_t rBin    = fHistograms->GetRBin(fV0Reader->GetXYRadius());
@@ -1285,7 +1318,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("ESD_TrueConvGamma_MC_Pt_Eta", fV0Reader->GetMotherMCParticle()->Pt(),fV0Reader->GetMotherMCParticle()->Eta());
 	fHistograms->FillHistogram("ESD_TrueConversion_MC_ZR", negativeMC->Vz(),negativeMC->R());
 	fHistograms->FillHistogram("ESD_TrueConversion_MC_XY", negativeMC->Vx(),negativeMC->Vy());
-				
+	
 	//resolution
 	Double_t mcpt   = fV0Reader->GetMotherMCParticle()->Pt();
 	Double_t esdpt  = fV0Reader->GetMotherCandidatePt();
@@ -1339,7 +1372,6 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
   fHistograms->FillHistogram("ESD_NumberOfContributorsVtx", fV0Reader->GetNumberOfContributorsVtx());
 
   fV0Reader->ResetV0IndexNumber();
-
 }
 
 void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
@@ -1381,24 +1413,82 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
 void AliAnalysisTaskGammaConversion::ProcessGammasForOmegaMesonAnalysis(){
   // omega meson analysis pi0+gamma decay
   for(Int_t firstPi0Index=0;firstPi0Index<fKFReconstructedPi0sTClone->GetEntriesFast();firstPi0Index++){
+    AliKFParticle * omegaCandidatePi0Daughter = (AliKFParticle *)fKFReconstructedPi0sTClone->At(firstPi0Index);
     for(Int_t firstGammaIndex=0;firstGammaIndex<fKFReconstructedGammasTClone->GetEntriesFast();firstGammaIndex++){
-      AliKFParticle * omegaCandidatePi0Daughter = (AliKFParticle *)fKFReconstructedPi0sTClone->At(firstPi0Index);
+
       AliKFParticle * omegaCandidateGammaDaughter = (AliKFParticle *)fKFReconstructedGammasTClone->At(firstGammaIndex);
       if(fGammav1[firstPi0Index]==firstGammaIndex || fGammav2[firstPi0Index]==firstGammaIndex){
         continue;
       }
 
-      AliKFParticle * omegaCandidate = new AliKFParticle(*omegaCandidatePi0Daughter,*omegaCandidateGammaDaughter);
+      AliKFParticle omegaCandidate(*omegaCandidatePi0Daughter,*omegaCandidateGammaDaughter);
       Double_t massOmegaCandidate = 0.;
       Double_t widthOmegaCandidate = 0.;
 
-      omegaCandidate->GetMass(massOmegaCandidate,widthOmegaCandidate);
+      omegaCandidate.GetMass(massOmegaCandidate,widthOmegaCandidate);
 
-      fHistograms->FillHistogram("ESD_Omega_InvMass_vs_Pt",massOmegaCandidate ,omegaCandidate->GetPt());
+      fHistograms->FillHistogram("ESD_Omega_InvMass_vs_Pt",massOmegaCandidate ,omegaCandidate.GetPt());
       fHistograms->FillHistogram("ESD_Omega_InvMass",massOmegaCandidate);
+ 
+      //delete omegaCandidate;
 
-     }
+    }// end of omega reconstruction in pi0+gamma channel
+
+    if(fDoJet == kTRUE){
+      AliKFParticle* negPiKF=NULL;
+      AliKFParticle* posPiKF=NULL;
+      
+      // look at the pi+pi+pi0 channel 
+      for(Int_t iCh=0;iCh<fChargedParticles->GetEntriesFast();iCh++){
+	AliESDtrack* posTrack = (AliESDtrack*)(fChargedParticles->At(iCh));
+	if (posTrack->GetSign()<0) continue;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	posPiKF = new AliKFParticle( *(posTrack) ,211);
+	
+	for(Int_t jCh=0;jCh<fChargedParticles->GetEntriesFast();jCh++){
+	  AliESDtrack* negTrack = (AliESDtrack*)(fChargedParticles->At(jCh));
+	  if( negTrack->GetSign()>0) continue;
+	  if (negPiKF) delete negPiKF; negPiKF=NULL;
+	  negPiKF = new AliKFParticle( *(negTrack) ,-211);
+	  AliKFParticle omegaCandidatePipPinPi0(*omegaCandidatePi0Daughter,*posPiKF,*negPiKF);
+	  Double_t massOmegaCandidatePipPinPi0 = 0.;
+	  Double_t widthOmegaCandidatePipPinPi0 = 0.;
+	  
+	  omegaCandidatePipPinPi0.GetMass(massOmegaCandidatePipPinPi0,widthOmegaCandidatePipPinPi0);
+	  
+	  fHistograms->FillHistogram("ESD_OmegaPipPinPi0_InvMass_vs_Pt",massOmegaCandidatePipPinPi0 ,omegaCandidatePipPinPi0.GetPt());
+	  fHistograms->FillHistogram("ESD_OmegaPipPinPi0_InvMass",massOmegaCandidatePipPinPi0);
+
+	  //  delete omegaCandidatePipPinPi0;
+	}
+      }
+    } // checking ig gammajet because in that case the chargedparticle list is created
+
+
+
   }
+
+  if(fCalculateBackground){
+    // Background calculation for the omega
+    for(Int_t nEventsInBG=0;nEventsInBG <fV0Reader->GetNBGEvents();nEventsInBG++){
+      AliGammaConversionKFVector * previousEventV0s = fV0Reader->GetBGGoodV0s(nEventsInBG);
+      for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+	AliKFParticle previousGoodV0 = (AliKFParticle)(*(previousEventV0s->at(iPrevious)));
+	for(Int_t firstPi0Index=0;firstPi0Index<fKFReconstructedPi0sTClone->GetEntriesFast();firstPi0Index++){
+	  AliKFParticle * omegaCandidatePi0Daughter = (AliKFParticle *)fKFReconstructedPi0sTClone->At(firstPi0Index);
+	  AliKFParticle * omegaBckCandidate = new AliKFParticle(*omegaCandidatePi0Daughter,previousGoodV0);
+	  Double_t massOmegaBckCandidate = 0.;
+	  Double_t widthOmegaBckCandidate = 0.;
+	  
+	  omegaBckCandidate->GetMass(massOmegaBckCandidate,widthOmegaBckCandidate);
+	  fHistograms->FillHistogram("ESD_Omega_Bck_InvMass_vs_Pt",massOmegaBckCandidate ,omegaBckCandidate->GetPt());
+	  fHistograms->FillHistogram("ESD_Omega_Bck_InvMass",massOmegaBckCandidate);
+
+	  delete omegaBckCandidate;
+	}
+      }
+    }
+  } // end of checking if background calculation is available
 }
 
 void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
@@ -1449,6 +1539,11 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  else{
 	    rapidity = 0.5*(TMath::Log((twoGammaCandidate->GetE() +twoGammaCandidate->GetPz()) / (twoGammaCandidate->GetE()-twoGammaCandidate->GetPz())));
 	  }
+	  Double_t alfa=0.0;
+	  if( (twoGammaDecayCandidateDaughter0->GetE()+twoGammaDecayCandidateDaughter1->GetE()) != 0){
+	    alfa=TMath::Abs((twoGammaDecayCandidateDaughter0->GetE()-twoGammaDecayCandidateDaughter1->GetE())
+	      /(twoGammaDecayCandidateDaughter0->GetE()+twoGammaDecayCandidateDaughter1->GetE()));
+	  }
 					
 	  if(openingAngleTwoGammaCandidate < fMinOpeningAngleGhostCut){
 	    delete twoGammaCandidate;
@@ -1462,6 +1557,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	  fHistograms->FillHistogram("ESD_Mother_Rapid", rapidity);					
 	  fHistograms->FillHistogram("ESD_Mother_Phi", spaceVectorTwoGammaCandidate.Phi());
 	  fHistograms->FillHistogram("ESD_Mother_Mass", massTwoGammaCandidate);
+	  fHistograms->FillHistogram("ESD_Mother_alfa", alfa);
 	  fHistograms->FillHistogram("ESD_Mother_R", spaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
 	  fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
 	  fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
@@ -1583,6 +1679,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 }
 
 void AliAnalysisTaskGammaConversion::ProcessConvPHOSGammasForNeutralMesonAnalysis(){
+/*
   // see header file for documentation
   // Analyse Pi0 with one photon from Phos and 1 photon from conversions
 	
@@ -1665,27 +1762,26 @@ void AliAnalysisTaskGammaConversion::ProcessConvPHOSGammasForNeutralMesonAnalysi
       }
 
     }
-
-    for(Int_t nEventsInBG=0;nEventsInBG <fV0Reader->GetNBGEvents();nEventsInBG++){
-      AliGammaConversionKFVector * previousEventV0s = fV0Reader->GetBGGoodV0s(nEventsInBG);
-      for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-	AliKFParticle previousGoodV0 = (AliKFParticle)(*(previousEventV0s->at(iPrevious)));
-	gammaGammaConvBck.SetXYZM(previousGoodV0.Px(),
-				  previousGoodV0.Py(),
-				  previousGoodV0.Pz(),0.);
-	pi0GammaConvEMCALBck=gammaGammaConvBck+gammaEMCAL;
-	fHistograms->FillHistogram("ESD_Mother_InvMass_GammaConvEMCAL_Bck",pi0GammaConvEMCALBck.M());
-	fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_GammaConvEMCAL_Bck",pi0GammaConvEMCALBck.M(),
-				   pi0GammaConvEMCALBck.Pt());
+    if(fCalculateBackground){
+      for(Int_t nEventsInBG=0;nEventsInBG <fV0Reader->GetNBGEvents();nEventsInBG++){
+	AliGammaConversionKFVector * previousEventV0s = fV0Reader->GetBGGoodV0s(nEventsInBG);
+	for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+	  AliKFParticle previousGoodV0 = (AliKFParticle)(*(previousEventV0s->at(iPrevious)));
+	  gammaGammaConvBck.SetXYZM(previousGoodV0.Px(),
+				    previousGoodV0.Py(),
+				    previousGoodV0.Pz(),0.);
+	  pi0GammaConvEMCALBck=gammaGammaConvBck+gammaEMCAL;
+	  fHistograms->FillHistogram("ESD_Mother_InvMass_GammaConvEMCAL_Bck",pi0GammaConvEMCALBck.M());
+	  fHistograms->FillHistogram("ESD_Mother_InvMass_vs_Pt_GammaConvEMCAL_Bck",pi0GammaConvEMCALBck.M(),
+				     pi0GammaConvEMCALBck.Pt());
+	}
       }
-    }
-
-    //  Now the LorentVector pPHOS is obtained and can be paired with the converted proton
-  }
+      
+      //  Now the LorentVector pEMCAL is obtained and can be paired with the converted proton
+    } // end of checking if background photons are available
+   }
   //==== End of the PHOS cluster selection ============
-
-
-
+*/
 }
 
 void AliAnalysisTaskGammaConversion::CalculateBackground(){

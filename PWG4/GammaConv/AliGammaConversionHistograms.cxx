@@ -365,7 +365,12 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
   // Initializing the valuse for the mapping
 	
   fNPhiIndex = nPhiIndex;
-  fNRIndex   = nRIndex;
+  if(nRIndex<=14){
+    fNRIndex   = nRIndex;
+  }else{
+    fNRIndex=14;
+  }
+
   fNZIndex = 13;
 
   //  fRBinLimits= new Double_t[8];   Kenneth: moved from pointer to fixed array
