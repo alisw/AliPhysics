@@ -430,6 +430,7 @@ void AliFMD::CreateMaterials()
 
 }
 
+#if 0
 //____________________________________________________________________
 void  
 AliFMD::SetTrackingParameters(Int_t imed, 
@@ -455,7 +456,7 @@ AliFMD::SetTrackingParameters(Int_t imed,
 			      Int_t   photon_production, 
 			      Int_t   rayleigh_scattering)
 {
-#if 0 // Disabled by request of FCA, kept for reference only
+  // Disabled by request of FCA, kept for reference only
   if (!gMC) return;
   TArrayI& idtmed = *(GetIdtmed());
   Int_t    iimed  = idtmed[imed];
@@ -480,8 +481,8 @@ AliFMD::SetTrackingParameters(Int_t imed,
   // gMC->Gstpar(iimed, "PAIR",	Float_t(pair_production));
   // gMC->Gstpar(iimed, "PHOT",	Float_t(photon_production));
   // gMC->Gstpar(iimed, "RAYL",	Float_t(rayleigh_scattering));
-#endif
 }
+#endif
 
 //____________________________________________________________________
 void  
