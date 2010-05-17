@@ -181,6 +181,9 @@ public:
 	/// This method decodes the DDL payload contained in the buffer.
 	bool Decode(const void* buffer, UInt_t bufferSize);
 	
+	/// First try fix data corruption and then decode the DDL payload.
+	bool Decode(void* buffer, UInt_t bufferSize);
+	
 	/// Returns the block marker key.
 	static UInt_t BlockDataKeyWord() { return fgkBlockDataKey; }
 	
@@ -315,6 +318,43 @@ bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(const void* buffer, UInt_t b
 	DecodeBuffer(start, end);
 	fHandler.OnEndOfBuffer(buffer, bufferSize);
 	return not fHadError;
+}
+
+
+template <class EventHandler>
+bool AliMUONTrackerDDLDecoder<EventHandler>::Decode(void* buffer, UInt_t bufferSize)
+{
+	/// This decoding method performs a special checks to see if the DDL
+	/// corruption is fixable and then fixes the buffer by modifying it directly.
+	/// The fixes only apply if the fTryRecover flag is enabled.
+	/// \note buffer might be modified.
+	
+	assert( buffer != NULL );
+	if (fTryRecover)
+	{
+		///////////////////////////////////////////////////////
+		// Trick to recover B off data Runs : 119041, 119047, 119055, 119057
+		// A. Baldisseri May 2010
+		// Check if 16 32-bit words from a buspatch have been inserted
+		// incorrectly immediately at the beginning of the DDL payload.
+		UChar_t* bufferChar = reinterpret_cast<UChar_t*>(buffer);
+		UInt_t* bufferInt = reinterpret_cast<UInt_t*>(buffer);
+		if (bufferSize > 18*4 // is the buffer large enough to check the header.
+		    and bufferInt[0] != fgkBlockDataKey and bufferInt[16] == fgkBlockDataKey // was the header incorrectly moved.
+		    and bufferSize > bufferInt[17]*4 + sizeof(AliMUONBlockHeaderStruct) // is the buffer large enough for the second block header.
+		    and bufferInt[bufferInt[17]] == fgkBlockDataKey  // Check that the second header is in the correct location.
+		    and bufferInt[17] == bufferInt[18] + 8  // Make sure that both lengths are correct.
+		    and (bufferInt[17] + bufferInt[bufferInt[17]+1]+2)*4 == bufferSize // Check that both blocks will have the correct size if we make the fix.
+		   )
+		{
+			UChar_t tmpbuf[16*4];
+			memcpy(tmpbuf, bufferChar, 16*4);
+			size_t sizeToMove = bufferInt[17]*4-16*4;
+			memmove(bufferChar, bufferChar+16*4, sizeToMove);
+			memcpy(bufferChar + sizeToMove, tmpbuf, 16*4);
+		}
+	}
+	return Decode(reinterpret_cast<const void*>(buffer), bufferSize);
 }
 
 
