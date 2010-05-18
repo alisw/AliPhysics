@@ -22,13 +22,27 @@ class Simulator():
    def cleanFiles(self):
 	 os.system("rm simulations/single/ -rf")
 	 os.system("rm simulations/pi0/ -rf")
-   
+
+   def editConfigFiles(self, dophos, doemcal, dotm):
+
+      if dophos == True:
+         command = "sed -i \'s/Int_t   iPHOS  =  0/Int_t   iPHOS  =  1/g\' simulations/single/Config.C"
+         os.system(command)
+      if doemcal == True:
+         command = "sed -i \'s/Int_t   iEMCAL =  0/Int_t   iEMCAL =  1/g\' simulations/single/Config.C"
+         os.system(command)
+
+      if dotm == True:
+         command = "sed -i \'s/Int_t   iTPC   =  0/Int_t   iTPC   =  1/g\' simulations/single/Config.C"
+         os.system(command)
+
    def initSimulation(self):
       self.cleanFiles()
       self.mkDirStructure()
       self.copyFiles()
 
    def runSimulation(self, nevents, dophos, doemcal, dotm):
+      self.editConfigFiles(dophos, doemcal, dotm)
       simargs = str(nevents) + ", " + str(int(dophos)) + ", " + str(int(doemcal)) + ", " + str(int(dotm))
       command = "cd simulations/single/ && aliroot -b -q sim.C\'(" + simargs + ")\'"
       os.system(command)
