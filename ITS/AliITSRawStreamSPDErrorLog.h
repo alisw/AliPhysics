@@ -81,7 +81,7 @@ class AliITSRawStreamSPDErrorLog : public TObject {
   TGText  *fTextTmpGeneral;                     // text buffer for this event (general errors)
 
   void    InitHistograms();
-  void    DeleteHistograms() const;
+  void    DeleteHistograms() ;
 
   ClassDef(AliITSRawStreamSPDErrorLog, 2);
 };

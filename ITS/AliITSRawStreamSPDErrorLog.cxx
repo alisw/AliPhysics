@@ -75,7 +75,9 @@ AliITSRawStreamSPDErrorLog& AliITSRawStreamSPDErrorLog::operator=(const AliITSRa
   if (this!=&logger) {
     delete fText;
     delete fTextTmpGeneral;
-    delete[] fTextTmp;
+    for(Int_t eq=0; eq<20;eq++){
+    delete fTextTmp[eq];
+    }
     this->DeleteHistograms();
 
     for (UInt_t eq=0; eq<20; eq++) {
@@ -117,7 +119,9 @@ AliITSRawStreamSPDErrorLog::~AliITSRawStreamSPDErrorLog() {
   DeleteHistograms();
   delete fText;
   delete fTextTmpGeneral;
-  delete[] fTextTmp;
+  for(Int_t eq=0; eq<20; eq++){
+  delete fTextTmp[eq];
+  }
 }
 //________________________________________________________________________________________________
 void AliITSRawStreamSPDErrorLog::InitHistograms() {
@@ -147,7 +151,7 @@ void AliITSRawStreamSPDErrorLog::InitHistograms() {
   }
 }
 //________________________________________________________________________________________________
-void AliITSRawStreamSPDErrorLog::DeleteHistograms() const {
+void AliITSRawStreamSPDErrorLog::DeleteHistograms() {
   // delete histograms
   for (UInt_t eq=0; eq<20; eq++) {
     delete fConsErrType[eq];

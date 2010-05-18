@@ -1,5 +1,5 @@
-#ifndef ALI_ITS_ONLINESPDSCAN_H
-#define ALI_ITS_ONLINESPDSCAN_H
+#ifndef ALIITSONLINESPDSCAN_H
+#define ALIITSONLINESPDSCAN_H
 
 ////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                 //
@@ -68,17 +68,17 @@ class AliITSOnlineSPDscan {
   UInt_t   GetDacStep() const;
   UInt_t   GetDCSVersion() const;
 
-  UInt_t   GetHits(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi);
-  Float_t  GetHitsEfficiency(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi);
+  UInt_t   GetHits(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi) ;
+  Float_t  GetHitsEfficiency(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi) ;
   Float_t  GetHitsEfficiencyError(UInt_t nsi, UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi);
-  UInt_t   GetHitEvents(UInt_t nsi, UInt_t hs, UInt_t chipi);
-  UInt_t   GetHitEventsTot(UInt_t nsi, UInt_t hs);
-  Float_t  GetHitEventsEfficiency(UInt_t nsi, UInt_t hs, UInt_t chipi);
-  Float_t  GetHitEventsTotEfficiency(UInt_t nsi, UInt_t hs);
-  Float_t  GetHitEventsEfficiencyError(UInt_t nsi, UInt_t hs, UInt_t chipi);
-  Float_t  GetHitEventsTotEfficiencyError(UInt_t nsi, UInt_t hs);
-  Float_t  GetAverageMultiplicity(UInt_t nsi, UInt_t hs, UInt_t chipi);
-  Float_t  GetAverageMultiplicityTot(UInt_t nsi, UInt_t hs);
+  UInt_t   GetHitEvents(UInt_t nsi, UInt_t hs, UInt_t chipi) ;
+  UInt_t   GetHitEventsTot(UInt_t nsi, UInt_t hs) ;
+  Float_t  GetHitEventsEfficiency(UInt_t nsi, UInt_t hs, UInt_t chipi) ;
+  Float_t  GetHitEventsTotEfficiency(UInt_t nsi, UInt_t hs) ;
+  Float_t  GetHitEventsEfficiencyError(UInt_t nsi, UInt_t hs, UInt_t chipi) ;
+  Float_t  GetHitEventsTotEfficiencyError(UInt_t nsi, UInt_t hs) ;
+  Float_t  GetAverageMultiplicity(UInt_t nsi, UInt_t hs, UInt_t chipi) ;
+  Float_t  GetAverageMultiplicityTot(UInt_t nsi, UInt_t hs) ;
 
  protected:
   TFile    *fFile;                  // file to read and write from
@@ -93,7 +93,7 @@ class AliITSOnlineSPDscan {
 
   void     Init();
   void     CreateNewStep();
-  void     SwitchToStep(UInt_t nsi);
+  void     SwitchToStep(UInt_t nsi) ;
   void     FillGap(UInt_t nsi);
   void     ReadCurrentStep();
   void     SaveCurrentStep();
