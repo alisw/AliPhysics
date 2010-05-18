@@ -71,13 +71,11 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
     
     if(!list[specie]) continue;
     
-    TIter next1(list[specie]);
-    TH1F*  hist = 0;
-    
-    for(Int_t i= 0; i<list[specie]->GetEntriesFast(); i++) {
+    TH1F* hist  = 0;
+    Int_t nHist = list[specie]->GetEntriesFast();
+    for(Int_t i= 0; i< nHist; i++) {
       
-      hist = (TH1F*)list[specie]->At(i);
-      if(!hist) continue;
+      if (!(hist = static_cast<TH1F*>(list[specie]->At(i)))) continue;
       
       if(what == AliQAv1::kESD) 
 	rv[specie] += (hist->GetMean() > 0 ? 1 : 0);
