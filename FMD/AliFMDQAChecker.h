@@ -21,6 +21,15 @@ public:
   {}          
   /** Destructor */
   virtual ~AliFMDQAChecker() {}
+  /** 
+   * Member function called to do the actual checking
+   * 
+   * @param rv   Array of return values. 
+   * @param what What to check 
+   * @param list Array of arrays of histograms.  There's one arrat for
+   *             each 'specie'
+   * @param t    Reconstruction parameters - not used. 
+   */
   void Check(Double_t* rv, AliQAv1::ALITASK_t what, TObjArray** list, const AliDetectorRecoParam* t);
 private:
   ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
