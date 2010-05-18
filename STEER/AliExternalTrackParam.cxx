@@ -408,6 +408,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
      //cP4 = (1.- e/p2*dE);
+     if ( (1.+ dE/p2*(dE + 2*e)) < 0. ) return kFALSE;
      cP4 = 1./TMath::Sqrt(1.+ dE/p2*(dE + 2*e));  //A precise formula by Ruben !
      if (TMath::Abs(fP4*cP4)>100.) return kFALSE; //Do not track below 10 MeV/c
 
