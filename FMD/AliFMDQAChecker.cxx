@@ -45,11 +45,27 @@ ClassImp(AliFMDQAChecker)
 ; // This is for Emacs! - do not delete
 #endif
 //__________________________________________________________________
-Double_t* AliFMDQAChecker::Check(AliQAv1::ALITASK_t what, TObjArray ** list, const AliDetectorRecoParam* /*t*/) {
+void AliFMDQAChecker::Check(Double_t*                   rv, 
+			    AliQAv1::ALITASK_t          what, 
+			    TObjArray**                 list, 
+			    const AliDetectorRecoParam* /*t*/) 
+{
+  // 
+  // Member function called to do the actual checking
+  //
+  // Parameters: 
+  //    rv   Array of return values. 
+  //    what What to check 
+  //    list Array of arrays of histograms.  There's one arrat for
+  //         each 'specie'
+  //    t    Reconstruction parameters - not used. 
+  //
   
-  Double_t* rv = new Double_t[AliRecoParam::kNSpecies] ; 
+  // Double_t* rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    rv[specie] = 0.0 ; 
+    Int_t count   = 0;
+    rv[specie]    = 0.; 
+
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ;
     
@@ -63,32 +79,18 @@ Double_t* AliFMDQAChecker::Check(AliQAv1::ALITASK_t what, TObjArray ** list, con
       hist = (TH1F*)list[specie]->At(i);
       if(!hist) continue;
       
-      if(what == AliQAv1::kESD) {
-	if(hist->GetMean() > 0)
-	  rv[specie] = 1.;
-	else rv[specie] = 0.;
-      }
-      if(what == AliQAv1::kRAW) {
-	if(hist->GetMean() > 0)
-	  rv[specie] = 1.;
-	else rv[specie] = 0.;
-      }
-      if(what == AliQAv1::kSIM) {
-	if(hist->GetMean() > 0)
-	  rv[specie] = 1.;
-	else rv[specie] = 0.;
-      }
-      if(what == AliQAv1::kREC) {
-	if(hist->GetMean() > 0)
-	  rv[specie] = 1.;
-	else rv[specie] = 0.;
-      }
-      
-    }
+      if(what == AliQAv1::kESD) 
+	rv[specie] += (hist->GetMean() > 0 ? 1 : 0);
+      if(what == AliQAv1::kRAW) 
+	rv[specie] += (hist->GetMean() > 0 ? 1 : 0);
+      if(what == AliQAv1::kSIM) 
+	rv[specie] += (hist->GetMean() > 0 ? 1 : 0);
+      if(what == AliQAv1::kREC) 
+	rv[specie] += (hist->GetMean() > 0 ? 1 : 0);
+    } // for (int i ...)
+    if (count != 0) rv[specie] /= count;
   }
-  
-  return rv;
-  
+  // return rv;
 }
 
 
