@@ -92,8 +92,7 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
 	if((runType == "STANDALONE")||
-	   (runType == "PHYSICS") 
-	   || (runType == "AMPLITUDE_CALIBRATION")){
+	   (runType == "PHYSICS") ){
 
 	  //	  return kFALSE;
 	  	return kTRUE;
