@@ -27,7 +27,7 @@ class AliTRDptrgParam : public TObject {
   struct AliTRDptrgPTmasks {
     Bool_t fCBA[2]; // contribute CB-A look up results to pretrigger decision?
     Bool_t fCBC[2]; // contribute CB-C look up results to pretrigger decision?
-    Bool_t fLUTs[2]; // CB-B look up results contribution to pretrigger decision
+    Bool_t fLUTs[3]; // CB-B look up results contribution to pretrigger decision
     Bool_t fTLMU[8]; // TLMU output signal contribution to pretrigger decisions
 
     AliTRDptrgPTmasks() {
@@ -37,6 +37,7 @@ class AliTRDptrgParam : public TObject {
       fCBC[1] = kFALSE;
       fLUTs[0] = kFALSE;
       fLUTs[1] = kFALSE;
+      fLUTs[2] = kFALSE;
       for (Int_t i = 0; i < 8; i++) {
         fTLMU[i] = kFALSE;
       } 
@@ -190,27 +191,19 @@ class AliTRDptrgParam : public TObject {
   Int_t*** fCBLUTs; // control box look up tables
 
   // CB-A ----------------------------------------------------------------------
-  TString fCBALUTequX; // logical equation used for generation of LUT X of CB-A
-  TString fCBALUTequY; // logical equation used for generation of LUT Y of CB-A
+  TString fCBALUTequ[2]; // logical equations used for LUT generation for CB-A
 
   // CB-C ----------------------------------------------------------------------
-  TString fCBCLUTequX; // logical equation used for generation of LUT X of CB-C
-  TString fCBCLUTequY; // logical equation used for generation of LUT Y of CB-C
+  TString fCBCLUTequ[2]; // logical equations used for LUT generation for CB-C
 
   // CBB -----------------------------------------------------------------------
-  TString fCBBLUTequX; // logical equation used for generation of LUT X of CB-B 
-  TString fCBBLUTequY; // logical equation used for generation of LUT Y of CB-B
+  TString fCBBLUTequ[3]; // logical equations used for LUT generation for CB-B
 
   // CTP -----------------------------------------------------------------------
   // PT mask
   AliTRDptrgPTmasks fPTmasks; 
   // masks usage of internal signals for the pretrigger wake up signal
                               
-
-  // CBB-LUT to TriggerInput assignment
-  
-  // class state ---------------------------------------------------------------
-
  private:
   AliTRDptrgParam();			     // instance only via Instance()
   AliTRDptrgParam(const AliTRDptrgParam &rhs); // not implemented

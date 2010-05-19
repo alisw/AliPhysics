@@ -58,12 +58,6 @@ AliTRDptrgParam::AliTRDptrgParam()
     fFEBV0Multiplicities(0x0),
     fFEBV0LUTs(0x0),
     fCBLUTs(0x0),
-    fCBALUTequX(TString()),
-    fCBALUTequY(TString()),
-    fCBCLUTequX(TString()),
-    fCBCLUTequY(TString()),
-    fCBBLUTequX(TString()),
-    fCBBLUTequY(TString()),
     fPTmasks(AliTRDptrgPTmasks())
 {
   // ctor
@@ -332,6 +326,13 @@ AliTRDptrgParam::~AliTRDptrgParam()
             this->fCBLUTs[iCB][iLUT] = 0x0;
           }
 	}
+        if (iCB == kB) {
+          // CB-B has 3 LUTs!
+          if (this->fCBLUTs[iCB][2] != 0x0) {
+            delete[] this->fCBLUTs[iCB][2];
+            this->fCBLUTs[iCB][2] = 0x0;
+          }
+        }
         delete[] this->fCBLUTs[iCB];
 	this->fCBLUTs[iCB] = 0x0;
       }
@@ -382,7 +383,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
     return -6;
   }
 
-  // delete T0 FEB thresholds
+  // check T0 FEB thresholds
   if (this->fFEBT0Thresholds != 0x0) {
     if (this->fFEBT0Thresholds[0] == 0x0) {
       return -7;
@@ -395,7 +396,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
     return -9;
   }
 
-  // delete T0 multiplicities
+  // check T0 multiplicities
   if (this->fFEBT0Multiplicities != 0x0) {
     for (UInt_t iPosition = 0; iPosition < 2; iPosition++) {
       if (this->fFEBT0Multiplicities[iPosition] != 0x0) {
@@ -415,7 +416,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
   }
   
 
-  // delete T0 LUTs
+  // check T0 LUTs
   if (this->fFEBT0LUTs != 0x0) {
     for (UInt_t iPosition = 0; iPosition < 2; iPosition++) {
       if (this->fFEBT0LUTs[iPosition] != 0x0) {
@@ -434,7 +435,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
     return -15;
   }
 
-  // delete V0 FEB thresholds
+  // check V0 FEB thresholds
   if (this->fFEBV0Thresholds != 0x0) {
     for (UInt_t iPosition = 0; iPosition < 2; iPosition++) {
       if (this->fFEBV0Thresholds[iPosition] != 0x0) {
@@ -453,7 +454,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
     return -18;
   }
 
-  // delete V0 multiplicities
+  // check V0 multiplicities
   if (this->fFEBV0Multiplicities != 0x0) {
     for (UInt_t iPosition = 0; iPosition < 2; iPosition++) {
       if (this->fFEBV0Multiplicities[iPosition] != 0x0) {
@@ -479,7 +480,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
     return -22;
   }
 
-  // delete V0 LUTs
+  // check V0 LUTs
   if (this->fFEBV0LUTs != 0x0) {
     for (UInt_t iPosition = 0; iPosition < 2; iPosition++) {
       if (this->fFEBV0LUTs[iPosition] != 0x0) {
@@ -505,7 +506,7 @@ Int_t AliTRDptrgParam::CheckVariables() const
     return -26;
   }
 
-  // delete CB LUTs
+  // check CB LUTs
   if (this->fCBLUTs != 0x0) {
     for (UInt_t iCB = 0; iCB < 3; iCB++) {
       if (this->fCBLUTs[iCB] != 0x0) {
@@ -514,14 +515,19 @@ Int_t AliTRDptrgParam::CheckVariables() const
             return -27;
           }
 	}
+        if (iCB == kB) {
+          if (this->fCBLUTs[iCB][2] == 0x0) {
+            return -28;
+          }
+        }
       }
       else {
-        return -28;
+        return -29;
       }
     }
   }  
   else {
-    return -29;
+    return -30;
   }
   return 0;
 }
@@ -636,7 +642,7 @@ void AliTRDptrgParam::LoadStandardConfiguration() {
   this->fTLMUmultiplicity[6][1] = 400;
   this->fTLMUmultiplicity[7][0] = 400;
   this->fTLMUmultiplicity[7][1] = 576;
-  this->fTLMUmultiplicity[8][0] = 100;
+  this->fTLMUmultiplicity[8][0] = 1;
   this->fTLMUmultiplicity[8][1] = 576;
  
   // TLMU output
@@ -693,23 +699,25 @@ void AliTRDptrgParam::LoadStandardConfiguration() {
   }
 
   // CB-A LUT equations
-  this->fCBALUTequX = "T0_0 || (V0-0_0 || V0-1_0 || V0-2_0 || V0-3_0)";
-  this->fCBALUTequY = "!T0_1 && !V0-0_1 && !V0-1_1 && !V0-2_1 && !V0-3_1";
+  this->fCBALUTequ[0] = "T0_0 || (V0-0_0 || V0-1_0 || V0-2_0 || V0-3_0)";
+  this->fCBALUTequ[1] = "!T0_1 && !V0-0_1 && !V0-1_1 && !V0-2_1 && !V0-3_1";
 
   // CB-C LUT equations
-  this->fCBCLUTequX = "T0_0 || ( V0-0_0 || V0-1_0 || V0-2_0 || V0-3_0 )";
-  this->fCBCLUTequY = "!T0_1 && !V0-0_1 && !V0-1_1 && !V0-2_1 && !V0-3_1";
+  this->fCBCLUTequ[0] = "T0_0 || ( V0-0_0 || V0-1_0 || V0-2_0 || V0-3_0 )";
+  this->fCBCLUTequ[1] = "!T0_1 && !V0-0_1 && !V0-1_1 && !V0-2_1 && !V0-3_1";
 
   // CB-B LUT equations
-  this->fCBBLUTequX = "( CB-A_1 || CB-C_1 ) && TLMU_7";
-  this->fCBBLUTequY = "( CB-A_1 || CB-C_1 ) && TLMU_7";
+  this->fCBBLUTequ[0] = "CB-A_1 && !CB-C_1 && TLMU_7";
+  this->fCBBLUTequ[1] = "!CB-A_1 && CB-C_1 && TLMU_7";
+  this->fCBBLUTequ[2] = "CB-A_1 && CB-C_1 && TLMU_7";
 
   // PT output mask
   this->fPTmasks.fLUTs[0] = kTRUE;
   this->fPTmasks.fLUTs[1] = kTRUE;
+  this->fPTmasks.fLUTs[2] = kTRUE;
   this->fPTmasks.fCBA[0] = kTRUE;
   this->fPTmasks.fCBC[0] = kTRUE;
-  for (Int_t i = 1; i < 8; i++) {
+  for (Int_t i = 1; i < 7; i++) {
     this->fPTmasks.fTLMU[i] = kTRUE;
   }
 
@@ -858,46 +866,47 @@ Int_t AliTRDptrgParam::GenerateLUTs() {
   // initialize LUTs
   this->fCBLUTs = new Int_t**[3];
   for (Int_t iCB = 0; iCB < 3; iCB++) {
-    this->fCBLUTs[iCB] = new Int_t*[2];
-    this->fCBLUTs[iCB][0] = 0x0;
-    this->fCBLUTs[iCB][1] = 0x0;
+    if (iCB == kB) { // B
+      fCBLUTs[iCB] = new Int_t*[3];
+      this->fCBLUTs[iCB][0] = 0x0;
+      this->fCBLUTs[iCB][1] = 0x0;
+      this->fCBLUTs[iCB][2] = 0x0;
+    }
+    else { // A + C
+      fCBLUTs[iCB] = new Int_t*[2];
+      this->fCBLUTs[iCB][0] = 0x0;
+      this->fCBLUTs[iCB][1] = 0x0;
+    }
   }
   
   // CB-A (CB = 1 / kA)
-  this->fCBLUTs[1][0] = this->GenerateLUTbasedOnEq(this->fCBALUTequX, 10, 1);
-  for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@A][0][0x%x]=%d", iEntry,
-                      this->fCBLUTs[1][0][iEntry]));
-  }
-  this->fCBLUTs[1][1] = this->GenerateLUTbasedOnEq(this->fCBALUTequY, 10, 1);
-  for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@A][1][0x%x]=%d", iEntry,
-                      this->fCBLUTs[1][1][iEntry]));
+  for (Int_t iLUT = 0; iLUT < 2; iLUT++) {
+    this->fCBLUTs[1][iLUT] = this->GenerateLUTbasedOnEq(this->fCBALUTequ[iLUT],
+                                                        10,1);
+    for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
+      AliDebug(10, Form("fCBLUTs[@A][%d][0x%x]=%d", iLUT, iEntry,
+                        this->fCBLUTs[1][iLUT][iEntry]));
+    }
   }
 
   // CB-C (CB = 2 / kC)
-  this->fCBLUTs[2][0] = this->GenerateLUTbasedOnEq(this->fCBCLUTequX, 10, 1);
-  for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(6, Form("fCBLUTs[@C][0][0x%x]=%d", iEntry,
-                     this->fCBLUTs[2][0][iEntry]));
-  }
-  this->fCBLUTs[2][1] = this->GenerateLUTbasedOnEq(this->fCBCLUTequY, 10, 1);
-  for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@C][1][0x%x]=%d", iEntry,
-                       this->fCBLUTs[2][0][iEntry]));
-  }
+  for (Int_t iLUT = 0; iLUT < 2; iLUT++) {
+    this->fCBLUTs[2][iLUT] = this->GenerateLUTbasedOnEq(this->fCBCLUTequ[iLUT],
+                                                        10,1);
+    for (Int_t iEntry = 0; iEntry < 1024; iEntry++) {
+      AliDebug(6, Form("fCBLUTs[@C][%d][0x%x]=%d", iLUT, iEntry,
+                       this->fCBLUTs[2][iLUT][iEntry]));
+    }
+  }  
  
   // CB-B (CB = 0 / kB)
-  this->fCBLUTs[0][0] = this->GenerateLUTbasedOnEq(this->fCBBLUTequX, 12, 1);
-  for (Int_t iEntry = 0; iEntry < 4096; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@B][0][0x%x]=%d", iEntry,
-                      this->fCBLUTs[0][0][iEntry]));
-  }
-  this->fCBLUTs[0][1] = this->GenerateLUTbasedOnEq(this->fCBBLUTequY, 12, 1);
-  
-  for (Int_t iEntry = 0; iEntry < 4096; iEntry++) {
-    AliDebug(10, Form("fCBLUTs[@B][1][0x%x]=%d", iEntry,
-                      this->fCBLUTs[0][1][iEntry]));
+  for (Int_t iLUT = 0; iLUT < 3; iLUT++) {
+    this->fCBLUTs[0][iLUT] = this->GenerateLUTbasedOnEq(this->fCBBLUTequ[iLUT], 
+                                                        12,1);
+    for (Int_t iEntry = 0; iEntry < 4096; iEntry++) {
+      AliDebug(10, Form("fCBLUTs[@B][%d][0x%x]=%d", iLUT, iEntry,
+                        this->fCBLUTs[0][iLUT][iEntry]));
+    }
   }
 
   AliDebug(5, "LUTs were generated!");
@@ -1278,13 +1287,9 @@ Bool_t AliTRDptrgParam::ParseCBAC(TString identifier, TString value) {
     TString eqIDstr = identifier(8, 1);
     Int_t eqID = eqIDstr.Atoi();
    
-    if (eqID == 0) {
-      this->fCBALUTequX = this->CleanTString(value);
-      AliDebug(5, Form("fCBALUTequX=%s", this->fCBALUTequX.Data())); 
-    }
-    else if(eqID == 1) {
-      this->fCBALUTequY= this->CleanTString(value);
-      AliDebug(5, Form("fCBALUTequY=%s", this->fCBALUTequY.Data()));
+    if ((eqID == 0) || (eqID == 1)) {
+      this->fCBALUTequ[eqID] = this->CleanTString(value);
+      AliDebug(5, Form("fCBALUTequ[%d]=%s", eqID, this->fCBALUTequ[eqID].Data())); 
     }
     return kTRUE;    
   }
@@ -1295,14 +1300,11 @@ Bool_t AliTRDptrgParam::ParseCBAC(TString identifier, TString value) {
     TString eqIDstr = identifier(8, 1);
     Int_t eqID = eqIDstr.Atoi();
    
-    if (eqID == 0) {
-      this->fCBCLUTequX = this->CleanTString(value);
-      AliDebug(5, Form("fCBCLUTequX=%s", this->fCBCLUTequX.Data()));
+    if ((eqID == 0) || (eqID == 1)) {
+      this->fCBCLUTequ[eqID] = this->CleanTString(value);
+      AliDebug(5, Form("fCBCLUTequ[%d]=%s", eqID, this->fCBCLUTequ[eqID].Data()));
     }
-    else if(eqID == 1) {
-      this->fCBCLUTequY= this->CleanTString(value);
-      AliDebug(5, Form("fCBCLUTequY=%s", this->fCBCLUTequY.Data()));
-    }    
+    return kTRUE;
   }
 
   return kTRUE;
@@ -1318,14 +1320,10 @@ Bool_t AliTRDptrgParam::ParseCBB(TString identifier, TString value) {
     TString eqIDstr = identifier(8, 1);
     Int_t eqID = eqIDstr.Atoi();
    
-    if (eqID == 0) {
-      this->fCBBLUTequX = this->CleanTString(value);
-      AliDebug(5, Form("fCBBLUTequX=%s", this->fCBBLUTequX.Data()));
+    if ((eqID == 0) || (eqID == 1) || (eqID == 2)) {
+      this->fCBBLUTequ[eqID] = this->CleanTString(value);
+      AliDebug(5, Form("fCBBLUTequ[%d]=%s", eqID, this->fCBBLUTequ[eqID].Data()));
     }
-    else if(eqID == 1) {
-      this->fCBBLUTequY= this->CleanTString(value);
-      AliDebug(5, Form("fCBBLUTequY=%s", this->fCBBLUTequY.Data()));
-    }    
     return kTRUE;
   }
   
@@ -1388,6 +1386,16 @@ Bool_t AliTRDptrgParam::ParseCBB(TString identifier, TString value) {
       this->fPTmasks.fLUTs[1] = kFALSE;
     }
     AliDebug(5, Form("CBB/PT/MASK/CB-B_1/=%d", this->fPTmasks.fLUTs[1]));
+    return kTRUE;
+  }
+  else if (identifier.Index("CBB/PT/MASK/CB-B_2") == 0) { // CB-B_2
+    if (value.Index("YES") == 0) {
+      this->fPTmasks.fLUTs[2] = kTRUE;     
+    }
+    else {
+      this->fPTmasks.fLUTs[2] = kFALSE;
+    }
+    AliDebug(5, Form("CBB/PT/MASK/CB-B_2/=%d", this->fPTmasks.fLUTs[2]));
     return kTRUE;
   }
   else if (identifier.Index("BB/PT/MASK/TLMU_") == 0) {

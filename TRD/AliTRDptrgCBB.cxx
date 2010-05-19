@@ -113,7 +113,13 @@ Bool_t AliTRDptrgCBB::LoadParams()
     // 1
     LUT = new AliTRDptrgLUT();
     LUT->InitTable(12, 12, this->fParam->GetCBLUT(0, 1), kFALSE);
-    // get CB-B_0 and do not copy lut content
+    // get CB-B_1 and do not copy lut content
+    this->fLUTArray.AddLast(LUT);
+
+    // 2
+    LUT = new AliTRDptrgLUT();
+    LUT->InitTable(12, 12, this->fParam->GetCBLUT(0, 2), kFALSE);
+    // get CB-B_2 and do not copy lut content
     this->fLUTArray.AddLast(LUT);
 
     // masks
@@ -126,9 +132,16 @@ Bool_t AliTRDptrgCBB::LoadParams()
     this->fLUTArray.AddLast(LUT);
     LUT = new AliTRDptrgLUT(); // this->fRunLoader
     this->fLUTArray.AddLast(LUT);
+    LUT = new AliTRDptrgLUT(); // this->fRunLoader
+    this->fLUTArray.AddLast(LUT);
     // the following lines are only needed for test reasons
     LUT = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
     Int_t* initData = new Int_t[4096]; // 2^12
+    for (Int_t i = 0; i < 4096; i++ ) {
+      initData[i] = i;
+    }
+    LUT->InitTable(12, 12, initData, kTRUE); // make a copy
+    LUT = dynamic_cast<AliTRDptrgLUT*>(this->fLUTArray.At(0));
     for (Int_t i = 0; i < 4096; i++ ) {
       initData[i] = i;
     }
@@ -143,6 +156,7 @@ Bool_t AliTRDptrgCBB::LoadParams()
       new AliTRDptrgParam::AliTRDptrgPTmasks();  
     masks->fLUTs[0] = kTRUE;
     masks->fLUTs[1] = kTRUE;
+    masks->fLUTs[2] = kTRUE;
     this->fPTmasks = masks;
   }  
   return false;
@@ -212,6 +226,10 @@ Int_t* AliTRDptrgCBB::Simulate()
       result[nLUTs + 1]++;
     }       
   }
+  if (this->fPTmasks->fLUTs[2] && result[3]) { // CB-B (third own LUT)
+    result[nLUTs + 1]++;
+  }
+
   // TLMU
   for (Int_t i = 0; i < 8; i++) {
     if (this->fPTmasks->fTLMU[i] && partResults[2][i + 1]) {

@@ -73,16 +73,17 @@ void AliTRDTriggerL0::Trigger()
   for (Int_t iResult = 1; iResult <= simulationResult[0]; iResult++) {
     AliDebug(5, Form("Result[%d]=0x%x\n",iResult,simulationResult[iResult]));
   }
-  if (simulationResult[0] > 0) { 
+  if ((simulationResult[0] > 0) || (simulationResult[1] > 0)) { 
     AliInfo("Fired single gap trigger");
     SetInput("0HSG");
   }
 
-  if (simulationResult[1] > 0) {
+  if (simulationResult[2] > 0) {
     AliInfo("Fired  double gap trigger");
     SetInput("0HDG");
   }
-  if (simulationResult[2] > 0) {
+
+  if (simulationResult[3] > 0) {
     AliInfo("Fired TRD wake up call trigger");
     SetInput("0HWU");
   }
