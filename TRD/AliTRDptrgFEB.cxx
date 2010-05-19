@@ -34,6 +34,7 @@
 #include "AliLog.h"
 
 #include "../VZERO/AliVZEROdigit.h" 
+#include "../VZERO/AliVZEROCalibData.h"
 #include "../T0/AliT0digit.h"
 
 #include "AliTRDptrgParam.h"
@@ -102,7 +103,8 @@ Int_t AliTRDptrgFEB::LoadDigits()
  
   if (this->fType == kVZERO) {
     // load V0's digits --------------------------------------------------------
-    
+    // behavior adapted for AliVZERODigitizer.cxx 40613 2010-04-22 09:57:15Z   
+ 
     // get V0 run loader
     AliLoader* loader = this->fRunLoader->GetLoader( "VZEROLoader" );
 
@@ -137,9 +139,28 @@ Int_t AliTRDptrgFEB::LoadDigits()
       AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(iDigit);
 			      
       Int_t pmNumber   = digit->PMNumber();
-      Int_t board   = pmNumber / 8;
+      //      Int_t board   = pmNumber / 8; // changed in Version 40613
+      Int_t feeBoard = AliVZEROCalibData::GetBoardNumber(pmNumber);
+      Int_t board = feeBoard % 4; // feeBoard V0-A: 1-4; V0-C: 5-8 => board: 1-4
+
       Int_t channel = pmNumber % 8;
-      Int_t position = pmNumber / 32 + 1;
+
+      Int_t position = -1;
+      if ((pmNumber >= 32) && (pmNumber <= 63)) { // V0-A (matched v40613)
+        position = 1; // kA
+      } 
+      else if ((pmNumber >= 0) && (pmNumber <= 31)) { // V0-C (matched v40613)
+        position = 2; // kB
+      }
+
+      AliDebug(5, 
+        Form("pmNumber: %d; feeBoard: %d; board: %d; channel: %d; position %d",
+             pmNumber, feeBoard, board, channel, position));  
+
+      if (position == -1)   {
+        AliError("Wrong VZERO pmt position found");
+        return -1;
+      }
 
       // check whether the digits belongs to the current FEB, otherwise omit it
       if ((position == this->fPosition) && (board == this->fID)) {
