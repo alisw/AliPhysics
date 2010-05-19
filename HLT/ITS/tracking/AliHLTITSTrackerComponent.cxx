@@ -51,7 +51,7 @@ using namespace std;
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliGeomManager.h"
 #include "AliHLTTrackMCLabel.h"
-
+#include <map>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTITSTrackerComponent )
