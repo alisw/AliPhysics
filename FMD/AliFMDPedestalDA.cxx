@@ -37,20 +37,27 @@
 #include "TMath.h"
 #include <TSystem.h>
 #include <TDatime.h>
+#include <TH2.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDPedestalDA)
 
 //_____________________________________________________________________
-AliFMDPedestalDA::AliFMDPedestalDA() : AliFMDBaseDA(),
-  fCurrentChannel(1),
-  fPedSummary("PedestalSummary","pedestals",51200,0,51200),
-  fNoiseSummary("NoiseSummary","noise",51200,0,51200),
-  fZSfileFMD1(),
-  fZSfileFMD2(),
-  fZSfileFMD3(), 
-  fMinTimebin(3 * 4 * 3 * 16), // 3 ddls, 4 FECs, 3 Altros, 16 channels
-  fMaxTimebin(3 * 4 * 3 * 16)  // 3 ddls, 4 FECs, 3 Altros, 16 channels
+AliFMDPedestalDA::AliFMDPedestalDA() 
+  : AliFMDBaseDA(),
+    fCurrentChannel(1),
+    fPedSummary("PedestalSummary","pedestals",51200,0,51200),
+    fNoiseSummary("NoiseSummary","noise",51200,0,51200),
+    fZSfileFMD1(),
+    fZSfileFMD2(),
+    fZSfileFMD3(), 
+    fMinTimebin(3 * 4 * 3 * 16), // 3 ddls, 4 FECs, 3 Altros, 16 channels
+    fMaxTimebin(3 * 4 * 3 * 16), // 3 ddls, 4 FECs, 3 Altros, 16 channels
+    fSummaryFMD1i(0),
+    fSummaryFMD2i(0),
+    fSummaryFMD2o(0),
+    fSummaryFMD3i(0),
+    fSummaryFMD3o(0)
 {
   // Default constructor 
   Rotate("peds.csv", 3);
@@ -73,7 +80,12 @@ AliFMDPedestalDA::AliFMDPedestalDA(const AliFMDPedestalDA & pedDA) :
   fZSfileFMD2(),
   fZSfileFMD3(),
   fMinTimebin(pedDA.fMinTimebin),
-  fMaxTimebin(pedDA.fMaxTimebin)
+  fMaxTimebin(pedDA.fMaxTimebin),
+  fSummaryFMD1i(pedDA.fSummaryFMD1i),
+  fSummaryFMD2i(pedDA.fSummaryFMD2i),
+  fSummaryFMD2o(pedDA.fSummaryFMD2o),
+  fSummaryFMD3i(pedDA.fSummaryFMD3i),
+  fSummaryFMD3o(pedDA.fSummaryFMD3o)
 {
   // Copy constructor 
 }
@@ -91,6 +103,8 @@ void AliFMDPedestalDA::Init()
   SetRequiredEvents(1000);
   fMinTimebin.Reset(1024);
   fMaxTimebin.Reset(-1);
+
+
 }
 
 //_____________________________________________________________________
@@ -148,6 +162,37 @@ void AliFMDPedestalDA::FillChannels(AliFMDDigit* digit)
 }
 
 //_____________________________________________________________________
+void AliFMDPedestalDA::MakeSummary(UShort_t det, Char_t ring)
+{
+  std::cout << "Making summary for FMD" << det << ring << " ..." << std::endl;
+  switch (det) { 
+  case 1: 
+    fSummaryFMD1i = MakeSummaryHistogram("ped", "Pedestals", det, ring);
+    break;
+  case 2:
+    switch (ring) { 
+    case 'I': case 'i':
+      fSummaryFMD2i = MakeSummaryHistogram("ped", "Pedestals", det, ring);
+      break;
+    case 'O': case 'o':
+      fSummaryFMD2o = MakeSummaryHistogram("ped", "Pedestals", det, ring);
+      break;
+    }
+    break;
+  case 3:
+    switch (ring) { 
+    case 'I': case 'i':
+      fSummaryFMD3i = MakeSummaryHistogram("ped", "Pedestals", det, ring);
+      break;
+    case 'O': case 'o':
+      fSummaryFMD3o = MakeSummaryHistogram("ped", "Pedestals", det, ring);
+      break;
+    }
+    break;
+  }
+}
+
+//_____________________________________________________________________
 void AliFMDPedestalDA::Analyse(UShort_t det, 
 			       Char_t   ring, 
 			       UShort_t sec, 
@@ -162,6 +207,28 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
   //     sec   Sector 
   //     strip Strip.
   AliFMDParameters* pars     = AliFMDParameters::Instance();
+  TH2* summary = 0;
+  switch (det) { 
+  case 1: summary = fSummaryFMD1i; break;
+  case 2: 
+    switch (ring) { 
+    case 'I':  summary = fSummaryFMD2i; break;
+    case 'O':  summary = fSummaryFMD2o; break;
+    }
+    break;
+  case 3:
+    switch (ring) { 
+    case 'I':  summary = fSummaryFMD3i; break;
+    case 'O':  summary = fSummaryFMD3o; break;
+    }
+    break;
+  }
+  static bool first = true;
+  if (summary && first) { 
+    std::cout << "Filling summary " << summary->GetName() << std::endl;
+    first = false;
+  }
+
   // Float_t           factor   = pars->GetPedestalFactor();
   UInt_t            samples  = pars->GetSampleRate(det, ring, sec, strip);
   for (UShort_t sample = 0; sample < samples; sample++) {
@@ -239,7 +306,13 @@ void AliFMDPedestalDA::Analyse(UShort_t det,
 		<< fitFunc.GetParameter(1)     << ','
 		<< fitFunc.GetParameter(2)     << ','
 		<< chi2ndf                     <<"\n";
-    
+
+    if (summary) { 
+      Int_t bin = summary->FindBin(sec, strip);
+      summary->SetBinContent(bin, mean);
+      summary->SetBinError(bin, rms);
+    }
+
     if(fSaveHistograms  ) {
       gDirectory->cd(GetSectorPath(det, ring, sec, kTRUE));
       TH1F* sumPed   = dynamic_cast<TH1F*>(gDirectory->Get("Pedestals"));

@@ -23,6 +23,10 @@
 #include "daqDA.h"
 #include "TROOT.h"
 #include "TPluginManager.h"
+#ifdef ALI_AMORE
+# include <AmoreDA.h>
+# include <TH2.h>
+#endif
 
 
 
@@ -109,21 +113,54 @@ int main(int argc, char **argv)
   timer.Start();
   AliFMDGainDA gainDA;
   gainDA.SetSaveDiagnostics(diagnostics);
+#ifdef ALI_AMORE
+  gainDA.SetMakeSummaries(kTRUE);
+#endif
   gainDA.Run(reader);
   
   timer.Stop();
   timer.Print();
   
-  Int_t  retvalConditions = daqDA_FES_storeFile("conditions.csv", AliFMDParameters::Instance()->GetConditionsShuttleID());
-  Int_t  retvalGain = daqDA_FES_storeFile("gains.csv", AliFMDParameters::Instance()->GetGainShuttleID());
+  Int_t  retvalConditions = 
+    daqDA_FES_storeFile("conditions.csv", 
+			AliFMDParameters::Instance()->GetConditionsShuttleID());
+  Int_t  retvalGain = 
+    daqDA_FES_storeFile("gains.csv", 
+			AliFMDParameters::Instance()->GetGainShuttleID());
 
   if(retvalConditions!=0 || retvalGain!=0)
     std::cerr << "Pedestal DA failed" << std::endl;
   
+#ifdef ALI_AMORE
+  try { 
+    amore::da::AmoreDA myAmore(amore::da::AmoreDA::kSender);
+
+    UShort_t det = 0;
+    for (det = 1; det <= 3; det++) 
+      if (gainDA.HasSeenDetector(det)) break;
+    if (det >= 1 && det <= 3) { 
+      TObject* runNo = new TObject;
+      runNo->SetUniqueID(reader->GetRunNumber());
+      myAmore.Send(Form("gainRunNoFMD%d", det), runNo);
+    }
+		   
+    TIter     next(&gainDA.GetSummaries());
+    TObject*  obj = 0;
+    while ((obj = next())) 
+      myAmore.Send(obj->GetName(), obj);
+    
+  }
+  catch (std::exception& e) {
+    std::cerr << "Failed to make AMORE instance: " << e.what() << std::endl;
+  }
+			       
+#endif
+
   if(retvalGain != 0) return retvalGain;
-  else return retvalConditions;
-  
-  
-  
-  
+  return retvalConditions;
+
 }
+//
+// EOF
+//
+

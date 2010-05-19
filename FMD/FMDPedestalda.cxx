@@ -24,7 +24,10 @@
 #include "TROOT.h"
 #include "TPluginManager.h"
 #include <AliLog.h>
-
+#ifdef ALI_AMORE
+# include <AmoreDA.h>
+# include <TH2.h>
+#endif
 
 int main(int argc, char **argv) 
 {
@@ -116,6 +119,9 @@ int main(int argc, char **argv)
   timer.Start();
   AliFMDPedestalDA pedDA;
   pedDA.SetSaveDiagnostics(diagnostics);
+#ifdef ALI_AMORE
+  pedDA.SetMakeSummaries(kTRUE);
+#endif
   pedDA.Run(reader);
   
   timer.Stop();
@@ -131,7 +137,30 @@ int main(int argc, char **argv)
   if(retvalConditions!=0 || retvalPeds!=0)
     std::cerr << "Pedestal DA failed" << std::endl;
   
+#ifdef ALI_AMORE
+  try { 
+    amore::da::AmoreDA myAmore(amore::da::AmoreDA::kSender);
+
+    UShort_t det = 0;
+    for (det = 1; det <= 3; det++) 
+      if (pedDA.HasSeenDetector(det)) break;
+    if (det >= 1 && det <= 3) { 
+      TObject* runNo = new TObject;
+      runNo->SetUniqueID(reader->GetRunNumber());
+      myAmore.Send(Form("pedRunNoFMD%d", det), runNo);
+    }
+
+    TIter     next(&pedDA.GetSummaries());
+    TObject*  obj = 0;
+    while ((obj = next())) 
+      myAmore.Send(obj->GetName(), obj);
+  }
+  catch (std::exception& e) {
+    std::cerr << "Failed to make AMORE instance: " << e.what() << std::endl;
+  }
+			       
+#endif
   if(retvalPeds != 0) return retvalPeds;
-  else return retvalConditions;
-  
+  return retvalConditions;
+
 }

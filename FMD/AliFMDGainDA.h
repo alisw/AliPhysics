@@ -76,10 +76,11 @@ protected:
   /** 
    * Analyse the result
    * 
-   * @param det         Detector # 
-   * @param ring        Ring identifier 
-   * @param sec         Sector number
-   * @param strip       Strip number
+   * @param det   Detector # 
+   * @param ring  Ring identifier 
+   * @param sec   Sector number
+   * @param strip Strip number
+   * @param h     Summary histogram with bins for sector and strip
    */
   void Analyse(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
   /**
@@ -114,7 +115,7 @@ protected:
    * @param dummy Not used
    */
   void Terminate(TFile* dummy);
-  
+
 private:
   /** 
    * Get the channel histogram
@@ -149,6 +150,19 @@ private:
   
   TH1F      fSummaryGains;         // Summary histogram 
   Int_t     fCurrentSummaryStrip;  // Current strip for summary
+
+  void  MakeSummary(UShort_t det, Char_t ring);
+
+  TH2* fGainFMD1i;
+  TH2* fGainFMD2i;
+  TH2* fGainFMD2o;
+  TH2* fGainFMD3i;
+  TH2* fGainFMD3o;
+  TH2* fChi2FMD1i;
+  TH2* fChi2FMD2i;
+  TH2* fChi2FMD2o;
+  TH2* fChi2FMD3i;
+  TH2* fChi2FMD3o;
   
   ClassDef(AliFMDGainDA,0) // Detector algorithm for gain runs
 

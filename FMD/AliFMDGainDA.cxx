@@ -39,6 +39,7 @@
 #include "AliFMDParameters.h"
 #include "AliFMDAltroMapping.h"
 #include <TDatime.h>
+#include <TH2.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDGainDA)
@@ -56,7 +57,17 @@ AliFMDGainDA::AliFMDGainDA()
     fCurrentChannel(10),
     fNumberOfStripsPerChip(128),
     fSummaryGains("GainsSummary","Summary of gains",51200,0,51200),
-    fCurrentSummaryStrip(1)
+    fCurrentSummaryStrip(1),
+    fGainFMD1i(0),
+    fGainFMD2i(0),
+    fGainFMD2o(0),
+    fGainFMD3i(0),
+    fGainFMD3o(0),
+    fChi2FMD1i(0),
+    fChi2FMD2i(0),
+    fChi2FMD2o(0),
+    fChi2FMD3i(0),
+    fChi2FMD3o(0)
 {
   // Constructor 
   // 
@@ -70,15 +81,25 @@ AliFMDGainDA::AliFMDGainDA()
 
 //_____________________________________________________________________
 AliFMDGainDA::AliFMDGainDA(const AliFMDGainDA & gainDA) 
-  :  AliFMDBaseDA(gainDA),
-     fGainArray(gainDA.fGainArray),
-     fHighPulse(gainDA.fHighPulse),
-     fEventsPerChannel(gainDA.fEventsPerChannel),
-     fCurrentPulse(gainDA.fCurrentPulse),
-     fCurrentChannel(gainDA.fCurrentChannel),
-     fNumberOfStripsPerChip(gainDA.fNumberOfStripsPerChip),
-     fSummaryGains(gainDA.fSummaryGains),
-     fCurrentSummaryStrip(gainDA.fCurrentSummaryStrip)
+  : AliFMDBaseDA(gainDA),
+    fGainArray(gainDA.fGainArray),
+    fHighPulse(gainDA.fHighPulse),
+    fEventsPerChannel(gainDA.fEventsPerChannel),
+    fCurrentPulse(gainDA.fCurrentPulse),
+    fCurrentChannel(gainDA.fCurrentChannel),
+    fNumberOfStripsPerChip(gainDA.fNumberOfStripsPerChip),
+    fSummaryGains(gainDA.fSummaryGains),
+    fCurrentSummaryStrip(gainDA.fCurrentSummaryStrip),
+    fGainFMD1i(gainDA.fGainFMD1i),
+    fGainFMD2i(gainDA.fGainFMD2i),
+    fGainFMD2o(gainDA.fGainFMD2o),
+    fGainFMD3i(gainDA.fGainFMD3i),
+    fGainFMD3o(gainDA.fGainFMD3o),
+    fChi2FMD1i(gainDA.fChi2FMD1i),
+    fChi2FMD2i(gainDA.fChi2FMD2i),
+    fChi2FMD2o(gainDA.fChi2FMD2o),
+    fChi2FMD3i(gainDA.fChi2FMD3i),
+    fChi2FMD3o(gainDA.fChi2FMD3o)
 {  
   // Copy Constructor 
   // 
@@ -197,6 +218,41 @@ void AliFMDGainDA::FillChannels(AliFMDDigit* digit)
 }
 
 //_____________________________________________________________________
+void AliFMDGainDA::MakeSummary(UShort_t det, Char_t ring)
+{
+  switch (det) { 
+  case 1: 
+    fGainFMD1i = MakeSummaryHistogram("gain", "Gains", det, ring);
+    fChi2FMD1i = MakeSummaryHistogram("chi2", "#Chi^{2}/NDF", det, ring);
+    break;
+  case 2:
+    switch (ring) { 
+    case 'I': case 'i':
+      fGainFMD2i = MakeSummaryHistogram("gain", "Gains", det, ring);
+      fChi2FMD2i = MakeSummaryHistogram("chi2", "#Chi^{2}/NDF", det, ring);
+      break;
+    case 'O': case 'o':
+      fGainFMD2o = MakeSummaryHistogram("gain", "Gains", det, ring);
+      fChi2FMD2o = MakeSummaryHistogram("chi2", "#Chi^{2}/NDF", det, ring);
+      break;
+    }
+    break;
+  case 3:
+    switch (ring) { 
+    case 'I': case 'i':
+      fGainFMD3i = MakeSummaryHistogram("gain", "Gains", det, ring);
+      fChi2FMD3i = MakeSummaryHistogram("chi2", "#Chi^{2}/NDF", det, ring);
+      break;
+    case 'O': case 'o':
+      fGainFMD3o = MakeSummaryHistogram("gain", "Gains", det, ring);
+      fChi2FMD3o = MakeSummaryHistogram("chi2", "#Chi^{2}/NDF", det, ring);
+      break;
+    }
+    break;
+  }
+}
+
+//_____________________________________________________________________
 void AliFMDGainDA::Analyse(UShort_t det, 
 			   Char_t   ring, 
 			   UShort_t sec, 
@@ -244,6 +300,31 @@ void AliFMDGainDA::Analyse(UShort_t det,
   fSummaryGains.SetBinError(fCurrentSummaryStrip,fitFunc.GetParError(1));
   
   fCurrentSummaryStrip++;
+
+  TH2* hGain = 0;
+  TH2* hChi2 = 0;
+  switch (det) { 
+  case 1: hGain = fGainFMD1i; hChi2 = fChi2FMD1i; break;
+  case 2: 
+    switch (ring) { 
+    case 'I':  hGain = fGainFMD2i; hChi2 = fChi2FMD2i; break;
+    case 'O':  hGain = fGainFMD2o; hChi2 = fChi2FMD2o; break;
+    }
+    break;
+  case 3:
+    switch (ring) { 
+    case 'I':  hGain = fGainFMD3i; hChi2 = fChi2FMD3i; break;
+    case 'O':  hGain = fGainFMD3o; hChi2 = fChi2FMD3o; break;
+    }
+    break;
+  }
+  if (hGain && hChi2) {
+    Int_t bin = hGain->FindBin(sec, strip);
+    hGain->SetBinContent(bin, gain);
+    hGain->SetBinError(bin, error);
+    hChi2->SetBinContent(bin, chi2ndf);
+  }
+
     // }
   if(fSaveHistograms) {
     gDirectory->cd(GetSectorPath(det,ring, sec, kTRUE));

@@ -15,6 +15,7 @@
 #include "AliFMDBaseDA.h"
 #include "TH1.h"
 #include "TObjArray.h"
+class TH2;
 
 class AliFMDPedestalDA: public AliFMDBaseDA 
 {
@@ -68,6 +69,7 @@ protected:
    * @param ring  Ring
    * @param sec   Sector 
    * @param strip Strip.
+   * @param h     Summary histogram with bins for sector and strip
    */
   void Analyse(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip);
   /** 
@@ -130,6 +132,13 @@ private:
   /** The maximum timebin seen for all channels */
   TArrayS fMaxTimebin;
   
+  void  MakeSummary(UShort_t det, Char_t ring);
+
+  TH2* fSummaryFMD1i;
+  TH2* fSummaryFMD2i;
+  TH2* fSummaryFMD2o;
+  TH2* fSummaryFMD3i;
+  TH2* fSummaryFMD3o;
   
   ClassDef(AliFMDPedestalDA,0)
 };

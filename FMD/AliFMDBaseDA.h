@@ -33,6 +33,7 @@
 #include "TArrayS.h"
 class TDirectory;
 class AliFMDRawReader;
+class TH2;
 
 class AliFMDBaseDA: public TNamed 
 {
@@ -67,6 +68,12 @@ public:
    */
   void SetSaveDiagnostics(Bool_t save) {fSaveHistograms = save;}
   /** 
+   * Set whether to make summary histograms to be published to AMORE
+   * 
+   * @param save If true, will generate summary QA histograms
+   */
+  void SetMakeSummaries(Bool_t save) {fMakeSummaries = save;}
+  /** 
    * Set the number of requried events
    * 
    * @param nEvents Number of event we need
@@ -79,6 +86,19 @@ public:
    * @return number of required events
    */
   Int_t GetRequiredEvents() const {return fRequiredEvents ;}
+  /** 
+   * Get list of summary histograms 
+   *
+   * @return Array of summary histograms or null if not defined 
+   */
+  const TObjArray& GetSummaries() const { return fSummaries; }
+  /** 
+   * Check if we saw data for detector 
+   * 
+   * @param det Detector number to check 
+   * @return true if the code has seen data from the detector 
+   */
+  bool HasSeenDetector(UShort_t d) { return (d == 0 || d > 3) ? false : fSeenDetectors[d-1]; }
 protected:
   /** 
    * Initialize 
@@ -94,7 +114,7 @@ protected:
    * Analyse a single strip result
    * 
    */
-  virtual void Analyse(UShort_t, Char_t, UShort_t, UShort_t )  {};
+  virtual void Analyse(UShort_t, Char_t, UShort_t, UShort_t)  {};
   /** 
    * Write header to output file
    * 
@@ -140,6 +160,7 @@ protected:
   std::ofstream fOutputFile;               // output file
   std::ofstream fConditionsFile;           // conditions file
   Bool_t fSaveHistograms;                  // save hists or not
+  Bool_t fMakeSummaries;                   // save hists or not
   TObjArray fDetectorArray;                // array indiced by detector
   /** 
    * Ge the half-ring index 
@@ -256,7 +277,18 @@ private:
   Int_t fCurrentEvent;              // the current event       
 protected:
   UInt_t fRunno;                    // Current run number 
-  
+  /** 
+   * Utility function for defining summary histograms 
+   *
+   * @param det    Detector 
+   * @param ring   Ring identifier 
+   * @param prefix Histogram prefix 
+   * @param title  Histogram title 
+   */
+  TH2* MakeSummaryHistogram(const char* prefix, const char* title, 
+			    UShort_t det, Char_t ring);
+  virtual void  MakeSummary(UShort_t, Char_t) { }
+  TObjArray fSummaries;
   
   ClassDef(AliFMDBaseDA,0) // Base Detector algorithm for all run types
 

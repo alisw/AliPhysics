@@ -35,6 +35,7 @@
 #include "AliRawEventHeaderBase.h"
 #include <TDatime.h>
 #include <TSystem.h>
+#include <TH2F.h>
 
 //_____________________________________________________________________
 ClassImp(AliFMDBaseDA)
@@ -136,12 +137,14 @@ AliFMDBaseDA::AliFMDBaseDA() :
   fOutputFile(),
   fConditionsFile(),
   fSaveHistograms(kFALSE),
+  fMakeSummaries(kFALSE),
   fDetectorArray(),
   fPulseSize(10),
   fPulseLength(10),
   fRequiredEvents(0),
   fCurrentEvent(0), 
-  fRunno(0)
+  fRunno(0),
+  fSummaries(0)
 {
   //Constructor
   fSeenDetectors[0] = fSeenDetectors[1] = fSeenDetectors[2] = kFALSE;
@@ -156,12 +159,14 @@ AliFMDBaseDA::AliFMDBaseDA(const AliFMDBaseDA & baseDA) :
   fOutputFile(),
   fConditionsFile(),
   fSaveHistograms(baseDA.fSaveHistograms),
+  fMakeSummaries(baseDA.fMakeSummaries),
   fDetectorArray(baseDA.fDetectorArray),
   fPulseSize(baseDA.fPulseSize),
   fPulseLength(baseDA.fPulseLength),
   fRequiredEvents(baseDA.fRequiredEvents),
   fCurrentEvent(baseDA.fCurrentEvent),
-  fRunno(baseDA.fRunno)
+  fRunno(baseDA.fRunno),
+  fSummaries(0)
 {
   //Copy constructor
   fSeenDetectors[0] = baseDA.fSeenDetectors[0];
@@ -255,6 +260,9 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
       Char_t   ring = (ir == 0 ? 'O' : 'I');
       UShort_t nsec = (ir == 0 ? 40  : 20);
       UShort_t nstr = (ir == 0 ? 256 : 512);
+
+      if (fMakeSummaries) MakeSummary(det, ring);
+
       std::cout << " Ring " << ring << ": " << std::flush;
       for(UShort_t sec =0; sec < nsec;  sec++)  {
   	for(UShort_t strip = 0; strip < nstr; strip++) {
@@ -482,6 +490,24 @@ void AliFMDBaseDA::Rotate(const char* base, int max) const
   }
 }
 
+//_____________________________________________________________________ 
+TH2*
+AliFMDBaseDA::MakeSummaryHistogram(const char* prefix, const char* title, 
+				   UShort_t d, Char_t r) 
+{
+  Int_t nX = ((d == 1 || r == 'I' || r == 'i') ?  20 :  40);
+  Int_t nY = ((d == 1 || r == 'I' || r == 'i') ? 512 : 256);
+  
+  TH2* ret = new TH2F(Form("%sFMD%d%c", prefix, d, r), 
+		      Form("%s for FMD%d%c", title, d, r), 
+		      nX, -0.5, nX-0.5, nY, -0.5, nY-0.5);
+  ret->SetXTitle("Sector #");
+  ret->SetYTitle("Strip #");
+
+  // if (!fSummaries) fSummaries = new TObjArray;
+  fSummaries.Add(ret);
+  return ret;
+}
 
 //_____________________________________________________________________ 
 //
