@@ -31,6 +31,7 @@
 #include <TString.h>
 #include <TROOT.h> 
 #include <TSystem.h>
+#include <TDirectory.h>
 
 #include "AliLog.h"
 
@@ -116,6 +117,9 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
  //
  // Load References into the toolkit
  //
+
+  TDirectory *owd = gDirectory;// store old working directory
+
  if(!filename)
    filename = Form("%s/STEER/LQ1dRef_v1.root",gSystem->ExpandPathName("$ALICE_ROOT"));
  TFile *in = TFile::Open(filename);
@@ -149,7 +153,7 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
    arrayPos++;
  } 
  in->Close();
-
+ owd->cd();
  AliDebug(2, Form("Successfully loaded %d Reference Histograms", arrayPos));
  SetBit(kIsOwner, kTRUE);
  delete in;
