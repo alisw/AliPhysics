@@ -24,8 +24,8 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     // Set the GenerCluster parameter       
     virtual Int_t SetGenerCluster();
     
-    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
-
+    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif);
+    
   protected:
     Float_t fGenerCluster;   ///< Random number  
     Float_t fA;              ///< first parameter  of the cluster-size param

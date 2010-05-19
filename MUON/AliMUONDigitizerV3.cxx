@@ -783,14 +783,8 @@ AliMUONDigitizerV3::MergeWithSDigits(AliMUONVDigitStore*& outputStore,
   TIter next(input.CreateIterator());
   AliMUONVDigit* sdigit;
   
-  const float kTime1 = muon()->GetTimeMin();
-  const float kTime2 = muon()->GetTimeMax();
-
   while ( ( sdigit = static_cast<AliMUONVDigit*>(next()) ) )
   {
-    float time = sdigit->Time()*1E9;
-    if (time<kTime1 || time>kTime2) continue;
-    
     // Update the track references using the mask.
     // FIXME: this is dirty, for backward compatibility only.
     // Should re-design all this way of keeping track of MC information...

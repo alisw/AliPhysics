@@ -44,7 +44,7 @@ AliMUONResponse::~AliMUONResponse()
 
 //_____________________________________________________________________________
 void
-AliMUONResponse::DisIntegrate(const AliMUONHit&, TList& digits)
+AliMUONResponse::DisIntegrate(const AliMUONHit&, TList& digits, Float_t timeDif)
 {
 /// Not implemented disintegration
 

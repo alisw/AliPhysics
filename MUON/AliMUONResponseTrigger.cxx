@@ -84,7 +84,7 @@ AliMUONResponseTrigger::~AliMUONResponseTrigger()
 
 //_____________________________________________________________________________
 void 
-AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
+AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif)
 {
   /// Generate 2 digits (one on each cathode) from 1 hit, i.e. no cluster-size
   /// generation (simplest response case).

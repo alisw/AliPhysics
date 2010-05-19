@@ -28,6 +28,7 @@
 #include "AliMUONDigit.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
+#include "AliMUONConstants.h"
 
 #include "AliMpArea.h"
 #include "AliMpDEManager.h"
@@ -201,7 +202,7 @@ AliMUONResponseV0::GetAnod(Float_t x) const
 
 //______________________________________________________________________________
 void 
-AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
+AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif)
 {
   /// Go from 1 hit to a list of digits.
   /// The energy deposition of that hit is first converted into charge
@@ -264,6 +265,11 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits)
   
   // Get pulse height from energy loss.
   Float_t qtot = IntPH(hit.Eloss());
+  
+  // If from a pileup event we apply a reduction factor to the charge
+  if (timeDif!=0){
+    qtot = AliMUONConstants::ReducedQTot(qtot,timeDif);
+  }
   
   // Get the charge correlation between cathodes.
   Float_t currentCorrel = TMath::Exp(gRandom->Gaus(0.0,ChargeCorrel()/2.0));

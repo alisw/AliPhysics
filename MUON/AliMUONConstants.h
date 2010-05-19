@@ -96,7 +96,12 @@ class AliMUONConstants : public TObject {
     static Double_t MuonFilterX0() {return fgkMuonFilterX0;}
 
     /// Return the most probable bending momentum (GeV/c) (used when B = 0)
-  static Double_t GetMostProbBendingMomentum() { return fgkMostProbBendingMomentum; }
+    static Double_t GetMostProbBendingMomentum() { return fgkMostProbBendingMomentum; }
+      
+    /// Return average arrival time to chamber i
+    static Float_t  AverageChamberT(Int_t i) {return fgAverageChamberT[i];}
+    /// Return a reduced total charge
+    static Float_t  ReducedQTot(Float_t qtot, Float_t timeDif);
   
  protected:
     /// Default constructor
@@ -151,8 +156,9 @@ class AliMUONConstants : public TObject {
     static const Double_t fgkMuonFilterZEnd; ///< z-position of the end of the muon filter
     static const Double_t fgkMuonFilterX0; ///< x0 of the muon filter
     
-  static const Double_t fgkMostProbBendingMomentum; ///< most probable value (GeV/c) of muon momentum in bending plane (used when B = 0) needed to get some "reasonable" corrections for MCS and E loss even if B = 0
+    static const Double_t fgkMostProbBendingMomentum; ///< most probable value (GeV/c) of muon momentum in bending plane (used when B = 0) needed to get some "reasonable" corrections for MCS and E loss even if B = 0
 
+    static Float_t fgAverageChamberT[14]; ///<average arrival time to chamber
   
     ClassDef(AliMUONConstants, 0) // MUON global constants 
 };

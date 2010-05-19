@@ -28,6 +28,7 @@
 #include "AliMUONVHitStore.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONResponseTrigger.h"
+#include "AliMUONConstants.h"
 
 #include "AliMpCDB.h"
 #include "AliMpDEManager.h"
@@ -58,6 +59,11 @@
 //-----------------------------------------------------------------------------
 
 ClassImp(AliMUONSDigitizerV2)
+
+Float_t  AliMUONSDigitizerV2::fgkMaxIntTime = 10.0;
+Float_t  AliMUONSDigitizerV2::fgkMaxPosTimeDif = 1.22E-6;
+Float_t  AliMUONSDigitizerV2::fgkMaxNegTimeDif = -3.5E-6;
+Float_t  AliMUONSDigitizerV2::fgkMinTimeDif = 25E-9;
 
 //_____________________________________________________________________________
 AliMUONSDigitizerV2::AliMUONSDigitizerV2() 
@@ -126,6 +132,8 @@ AliMUONSDigitizerV2::Exec(Option_t*)
   
   AliDebug(1,Form("Will use digitStore of type %s",sDigitStore->ClassName()));
           
+  // average arrival time to chambers, for pileup studies
+
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
     // Loop over events.
@@ -136,7 +144,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     runLoader->GetEvent(iEvent);
   
     // for pile up studies
-    float T0=10;
+    float T0=fgkMaxIntTime;  int AA=0;
     AliHeader* header = runLoader->GetHeader();   
     AliGenCocktailEventHeader* cocktailHeader =
       dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
@@ -148,12 +156,14 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       while((entry = (AliGenEventHeader*)nextH())) {
 	float t = entry->InteractionTime();	
 	if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;      
+	AA++;
       }
     } else {
       AliGenEventHeader* evtHeader = 
 	(AliGenEventHeader*)(header->GenEventHeader());
       float t = evtHeader->InteractionTime();		
       if (TMath::Abs(t)<TMath::Abs(T0)) T0 = t;           
+      AA++;
     }
 
     loader->MakeSDigitsContainer();
@@ -185,7 +195,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
       
       while ( ( hit = static_cast<AliMUONHit*>(next()) ) )       
       {
-        Int_t chamberId = hit->Chamber()-1;
+	Int_t chamberId = hit->Chamber()-1;
  	Float_t age = hit->Age()-T0;
 
         AliMUONChamber& chamber = muon->Chamber(chamberId);
@@ -193,7 +203,22 @@ AliMUONSDigitizerV2::Exec(Option_t*)
         
         // This is the heart of this method : the dis-integration
         TList digits;        
-        response->DisIntegrate(*hit,digits);
+	if (AA>1){  // if there are pileup events
+	  Float_t chamberTime = AliMUONConstants::AverageChamberT(chamberId);
+	  Float_t timeDif=age-chamberTime;	  
+	  if (timeDif>fgkMaxPosTimeDif || timeDif<fgkMaxNegTimeDif) {
+	    continue;
+	  }
+	  if(TMath::Abs(timeDif)>fgkMinTimeDif){
+	    response->DisIntegrate(*hit,digits,timeDif);
+	  }
+	  else{
+	    response->DisIntegrate(*hit,digits,0.);
+	  }
+ 	}
+ 	else{
+	  response->DisIntegrate(*hit,digits,0.);
+	}
         
         TIter nextd(&digits);
         AliMUONVDigit* d;

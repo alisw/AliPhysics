@@ -71,8 +71,8 @@ class AliMUONResponse : public TObject
     virtual Float_t IntXY(Int_t, AliMUONGeometrySegmentation*) const {return 1.;}
     
     //// Go from one hit to several digits, applying charge spreading.
-    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
-
+    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif);
+    
     // 
     ClassDef(AliMUONResponse,1) // Chamber response virtual base class 
 };

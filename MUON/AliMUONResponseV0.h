@@ -91,7 +91,7 @@ class AliMUONResponseV0 : public AliMUONResponse
     
     virtual Float_t GetAnod(Float_t x) const;
     
-    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
+    virtual void DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif);
     
     virtual void Print(Option_t* opt="") const;
   
