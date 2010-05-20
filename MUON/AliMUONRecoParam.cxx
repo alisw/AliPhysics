@@ -630,7 +630,7 @@ AliMUONRecoParam::Create(const char* settings)
     // set default lowFlux parameters
     param = AliMUONRecoParam::GetLowFluxParam();
   }
-  else if ( stype == "ppreal" || stype == "pprealsim" || "pprealnofield" ) 
+  else if ( stype == "ppreal" || stype == "pprealsim" || stype == "pprealnofield" ) 
   {      
     // common parameters for p-p data and realistic p-p simu
     param = AliMUONRecoParam::GetLowFluxParam();
