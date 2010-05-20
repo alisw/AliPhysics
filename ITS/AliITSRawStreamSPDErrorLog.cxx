@@ -65,7 +65,9 @@ AliITSRawStreamSPDErrorLog::AliITSRawStreamSPDErrorLog(const AliITSRawStreamSPDE
       fConsErrPos[err][eq] = new TGraph(*logger.fConsErrPos[err][eq]);
     }
     fConsErrType[eq] = new TH1F(*logger.fConsErrType[eq]);
+    fConsErrType[eq]->SetDirectory(0);
     fConsErrFraction[eq] = new TH1F(*logger.fConsErrFraction[eq]);
+    fConsErrFraction[eq]->SetDirectory(0);
   }
   
 }
@@ -106,7 +108,9 @@ AliITSRawStreamSPDErrorLog& AliITSRawStreamSPDErrorLog::operator=(const AliITSRa
 	fConsErrPos[err][eq] = new TGraph(*logger.fConsErrPos[err][eq]);
       }
       fConsErrType[eq] = new TH1F(*logger.fConsErrType[eq]);
+      fConsErrType[eq]->SetDirectory(0);
       fConsErrFraction[eq] = new TH1F(*logger.fConsErrFraction[eq]);
+      fConsErrFraction[eq]->SetDirectory(0);
     }
 
   }
@@ -131,12 +135,14 @@ void AliITSRawStreamSPDErrorLog::InitHistograms() {
     histName = Form("ConsErrType %d",eq);
     histTitle = Form("Distribution of errors, eq %d",eq);
     fConsErrType[eq]=new TH1F(histName.Data(),histTitle.Data(),kNrErrorCodes,-0.5,kNrErrorCodes-0.5);
+    fConsErrType[eq]->SetDirectory(0);
     fConsErrType[eq]->SetXTitle("Error Code");
     fConsErrType[eq]->SetYTitle("Nr Errors");
     
     histName = Form("ConsErrFraction %d",eq);
     histTitle = Form("Fraction of events with errors, eq %d",eq);
     fConsErrFraction[eq]=new TH1F(histName.Data(),histTitle.Data(),kNrErrorCodes,-0.5,kNrErrorCodes-0.5);
+    fConsErrFraction[eq]->SetDirectory(0);
     fConsErrFraction[eq]->SetXTitle("Error Code");
     fConsErrFraction[eq]->SetYTitle("Fraction");
     
