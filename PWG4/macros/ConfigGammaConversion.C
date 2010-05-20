@@ -820,6 +820,11 @@ Bool_t scanArguments(TString arguments){
       }
       else if (argument.CompareTo("-run-on-train") == 0){
 	cout<<"Running on train"<<endl;
+	kGCWriteStandardAOD=kTRUE;
+	kGCrunOnTrain = kTRUE;
+      }
+      else if (argument.CompareTo("-run-on-gsi-train") == 0){
+	cout<<"Running on gsi train"<<endl;
 	kGCWriteStandardAOD=kFALSE;
 	kGCrunOnTrain = kTRUE;
       }
