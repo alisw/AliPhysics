@@ -56,6 +56,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
+    virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
     // use for the CF
 
 
@@ -111,6 +112,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
+    Float_t       fDeltaPhiWindow;        // minium angle between dijets
+
 
     TProfile*     fh1Xsec;   // pythia cross section and trials
     TH1F*         fh1Trials; // trials are added
@@ -149,6 +152,16 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     TH2F*         fh2FragGen[kMaxJets];     // fragmentation function
     TH2F*         fh2FragLnGen[kMaxJets];   // fragmetation in xi
+
+    // Dijet histos
+    TH2F*   fh2DijetDeltaPhiPt;      // dijet delta phi vs pt
+    TH2F*   fh2DijetAsymPt;          // dijet asym vs pt
+    TH2F*   fh2DijetAsymPtCut;       // dijet asym vs pt after delta phi cut
+    TH2F*   fh2DijetDeltaPhiDeltaEta; // dijet delta phi delta eta
+    TH2F*   fh2DijetPt2vsPt1;          // dijet pt2 vs pt1 
+    TH2F*   fh2DijetDifvsSum;          // dijet dif vs sum
+    TH1F*   fh1DijetMinv;            // dijet inv mass
+    TH1F*   fh1DijetMinvCut;         // dijet inv after delta phi cut
 
 
     TList *fHistList; // Output list
