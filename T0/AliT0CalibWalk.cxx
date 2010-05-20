@@ -141,7 +141,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	    {	      
 	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
 	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
-	      TString led = Form("hLED%i_%i",i+1,im+1);
+	      TString led = Form("hLEDminCFD%i_%i",i+1,im+1);
 	      
 	      TH1F *hCFD = (TH1F*) gFile->Get(cfd.Data()) ;
 	      TH1F *hLED = (TH1F*) gFile->Get(led.Data());
@@ -157,6 +157,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	      	AliWarning(Form(" no LED correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
       	      
 	      if(hCFD )	{
+		hCFD->GetXaxis()->SetRangeUser(32200,32450);
 		TSpectrum *s = new TSpectrum(2*npeaks,1);
 		nfound = s->Search(hCFD,sigma," ",0.1);
 		if(nfound!=0){
