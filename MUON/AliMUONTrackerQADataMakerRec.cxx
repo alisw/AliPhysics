@@ -52,11 +52,8 @@
 #include "AliMpDetElement.h"
 #include "AliMpManuIterator.h"
 #include "AliQAv1.h"
-#include "AliRawEquipment.h"
-#include "AliRawEquipmentHeader.h"
-#include "AliRawEventHeaderBase.h"
 #include "AliRawReader.h"
-#include "AliRawVEvent.h"
+#include "AliRawEventHeaderBase.h"
 #include <Riostream.h>
 #include <TH1F.h> 
 #include <TH1I.h> 
@@ -719,7 +716,8 @@ void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUON
   
   Double_t nbuspatches = fBusPatchConfig->GetEntries();
   
-  hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromConfig,nofBusPatchesNotInConfig*nevents/nbuspatches);
+  Int_t bin = hrostatus->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromConfig);
+  hrostatus->SetBinContent(bin,nofBusPatchesNotInConfig*nevents/nbuspatches);
   
   Double_t nofBusPatchesNotInData(0);
   
@@ -731,21 +729,14 @@ void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUON
     if ( !data->HasBusPatch(bp->GetId()) ) ++nofBusPatchesNotInData;
   }
   
-  hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromDataStream,nofBusPatchesNotInData*nevents/nbuspatches);
+  bin = hrostatus->FindBin(1.0*AliMUONQAIndices::kTrackerRawNofMissingBusPatchesFromDataStream);
+  hrostatus->SetBinContent(bin,nofBusPatchesNotInData*nevents/nbuspatches);
 }
 
 //____________________________________________________________________________ 
-void AliMUONTrackerQADataMakerRec::FillEventSize(const AliRawVEvent* cevent)
+void AliMUONTrackerQADataMakerRec::FillEventSize(AliRawReader* rawReader)
 {
   /// Fill event size histogram(s)
-  
-  if (!cevent)
-  {
-    AliError("Got a null cevent...");
-    return;
-  }
-  
-  AliRawVEvent* event = const_cast<AliRawVEvent*>(cevent); // not good, but the Get*Event() methods are not const...
   
   TH1* hnevents = GetRawsData(AliMUONQAIndices::kTrackerNofPhysicsEventsSeen);
 
@@ -753,35 +744,22 @@ void AliMUONTrackerQADataMakerRec::FillEventSize(const AliRawVEvent* cevent)
   
   TH1* hDDLEventSize = GetRawsData(AliMUONQAIndices::kTrackerDDLEventSize);
   
-  Double_t eventSize = 0;
-  
   hnevents->Fill(0.0);
   
-  for ( int i = 0; i < event->GetNSubEvents(); ++i ) 
+  Int_t offset = AliDAQ::DdlIDOffset("MUONTRK");
+  
+  for ( int i = 0; i < AliDAQ::NumberOfDdls("MUONTRK"); ++i )
   {
-    AliRawVEvent* sub = event->GetSubEvent(i);
-    
-    for ( int j = 0; j < sub->GetNEquipments(); ++j ) 
+    rawReader->Reset();
+    rawReader->Select("MUONTRK",i,i);
+    if (rawReader->ReadHeader() )
     {
-      AliRawVEquipment* eq = sub->GetEquipment(j);
-      
-      AliRawEquipmentHeader* equipmentHeader = eq->GetEquipmentHeader();
-      
-      UInt_t uid = equipmentHeader->GetId();
-      
-      int index;
-      
-      TString det(AliDAQ::DetectorNameFromDdlID(uid,index));
-      
-      if (det=="MUONTRK")     
-      {
-        UInt_t ddlsize = equipmentHeader->GetEquipmentSize();
-        hDDLEventSize->Fill(uid,ddlsize);
-        hddlevents->Fill(uid);
-        eventSize += ddlsize;
-      }
-    }
-  }  
+      UInt_t ddlsize = rawReader->GetEquipmentSize();
+      hDDLEventSize->Fill(i+offset,ddlsize);
+      hddlevents->Fill(i+offset);
+    }      
+  }
+  rawReader->Reset();
 }
 
 //____________________________________________________________________________ 
@@ -983,6 +961,15 @@ void AliMUONTrackerQADataMakerRec::InitDigits()
   
   AliCodeTimerAuto("",0);
 
+  if ( GetRecoParam()->TryRecover() )
+  {
+    fDigitMaker->SetTryRecover(kTRUE);
+  }
+  else
+  {
+    fDigitMaker->SetTryRecover(kFALSE);    
+  }
+  
   TrackerCalData(AliRecoParam::AConvert(Master()->GetEventSpecie()),kTRUE);
   
   /// Book histograms that are common to Raws and Digits
@@ -1346,8 +1333,8 @@ void AliMUONTrackerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   {
     dm->ProcessEvent();
     
-    FillEventSize(rawReader->GetEvent());
-    
+    FillEventSize(rawReader);
+        
     if ( dm->LastEventWasEmpty() )
     {
       TH1* hrostatus = GetRawsData(AliMUONQAIndices::kTrackerReadoutStatus);
@@ -1586,6 +1573,8 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
   /// Reset those histograms that must be reset (and only those), plus
   /// the trackerdata itself.
   
+  AliInfo("");
+  
   TIter next(list);
   TObject* o;
   while ( ( o = next() ) )
@@ -1595,18 +1584,30 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
     {
       TString hn(h->GetName());
       
-      if ( hn.Contains("Tracker") )
+      if ( !hn.Contains("TrackerBusPatchConfig") )
       {
-        if ( !hn.Contains("hTrackerBusPatchNofPads") && 
-            !hn.Contains("hTrackerBusPatchConfig" ) )
+        AliInfo(Form("Resetting %s",hn.Data()));
+
+        if ( hn.Contains("DDLMeanEventSize") )
         {
-          AliDebug(1,Form("Resetting %s",hn.Data()));
-          h->Reset();                  
-        }
+          h->Print();
+          h->GetListOfFunctions()->ls();
+          cout << ">>>>>" << endl;
+        }          
+
+        h->Reset();
+        
+        if ( hn.Contains("DDLMeanEventSize") )
+        {
+          h->Print();
+          h->GetListOfFunctions()->ls();
+          cout << "<<<<<<" << endl;
+        }          
       }
       else
       {
-        AliDebug(1,Form("Will not reset histogram %s",hn.Data()));
+        //        AliDebug(1,Form("Will not reset histogram %s",hn.Data()));
+        AliInfo(Form("Will not reset histogram %s",hn.Data()));          
       }
     }
     else
@@ -1635,6 +1636,7 @@ TObjArray* AliMUONTrackerQADataMakerRec::GetArray(TObjArray*& array, Bool_t crea
     if ( create ) 
     {
       array = new TObjArray(AliRecoParam::kNSpecies);
+      array->SetOwner(kTRUE);
     }
   }
   
@@ -1699,7 +1701,6 @@ AliMUONTrackerQADataMakerRec::TrackerCalData(Int_t specieIndex, Bool_t create)
   
   if (array)
   {
-    array->SetOwner(kFALSE); // as the tracker data will be attached to fQADigitsList which will become the owner
     o = array->At(specieIndex);
     if (!o && create)
     {
@@ -1722,7 +1723,6 @@ AliMUONTrackerQADataMakerRec::TrackerRecData(Int_t specieIndex, Bool_t create)
   
   if (array)
   {
-    array->SetOwner(kFALSE); // as the tracker data will be attached to fQARecPointsList which will become the owner
     o = array->At(specieIndex);
     if (!o && create)
     {
@@ -1745,7 +1745,6 @@ AliMUONTrackerQADataMakerRec::MappingCheckRecPoints(Int_t specieIndex, Bool_t cr
   
   if (array)
   {
-    array->SetOwner(kTRUE);
     o = array->At(specieIndex);
     if (!o && create)
     {

@@ -83,8 +83,7 @@ fRawStreamTracker(new AliMUONRawStreamTrackerHP),
 fRawStreamTrigger(new AliMUONRawStreamTriggerHP),
 fDigitStore(0x0),
 fTriggerStore(0x0),
-fLogger(new AliMUONLogger(10000))
-{
+fLogger(new AliMUONLogger(10000)){
   /// ctor 
   
   if  ( !a || !b ) AliFatal("no longer supported");
@@ -488,4 +487,13 @@ AliMUONDigitMaker::TriggerToDigitsStore(const AliMUONVTriggerStore& triggerStore
     TriggerDigits(nBoard, xyPattern, digitStore);
   }
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void 
+AliMUONDigitMaker::SetTryRecover(Bool_t flag) 
+{
+  /// Instruct the decoder to try to recover corrupted raw data.
+  /// Only use for specific cases for which you know it will work...
+  fRawStreamTracker->TryRecover(flag);
 }

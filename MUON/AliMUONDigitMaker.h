@@ -71,6 +71,8 @@ class AliMUONDigitMaker : public TObject
 
   void Print(Option_t* opt="") const;
 
+  void SetTryRecover(Bool_t flag);
+
 private:
     
   /// Not implemented

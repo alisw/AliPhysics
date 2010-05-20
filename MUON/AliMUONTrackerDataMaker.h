@@ -112,6 +112,12 @@ public:
   /// Whether last decoded event was empty
   Bool_t LastEventWasEmpty() const { return fLastEventWasEmpty; }
   
+  /// Whether or not we should try to recover corrupted raw data
+  void SetTryRecover(Bool_t flag) { fTryRecover = flag; }
+  
+  /// Set the event range to consider
+  void SetEventRange(Int_t first, Int_t last) { fFirstEvent=first; fLastEvent=last; }
+
 private:
   /// not implemented
   AliMUONTrackerDataMaker(const AliMUONTrackerDataMaker& rhs);
@@ -144,8 +150,11 @@ private:
   Bool_t fLastEventWasEmpty; ///< whether last decoded event was empty
   Int_t fNumberOfPhysicsEvents; ///< number of physics events seen
   Int_t fNumberOfGoodPhysicsEvents; ///< number of errors with no (fatal) readout error
-  
-  ClassDef(AliMUONTrackerDataMaker,4) // Producer of AliMUONVTrackerData from raw
+  Bool_t fTryRecover; ///< whether we should try to recover corrupted raw data
+  Int_t fFirstEvent; ///< first event to consider
+  Int_t fLastEvent; ///< last event to consider
+
+  ClassDef(AliMUONTrackerDataMaker,5) // Producer of AliMUONVTrackerData from raw
 };
 
 #endif

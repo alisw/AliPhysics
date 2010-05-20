@@ -416,8 +416,6 @@ AliMUONTrackerQAChecker::BeautifyOccupancyHistograms(TH1& hddl,
     }
   }
   
-  hbp.GetListOfFunctions()->Delete();
-  hddl.GetListOfFunctions()->Delete();
   hddl.SetStats(kFALSE);
   hbp.SetXTitle("Absolute Bus Patch Id");
   hbp.SetYTitle("Occupancy (percent)");
@@ -591,10 +589,7 @@ AliMUONTrackerQAChecker::BeautifyReadoutHistograms(TH1& hrostatus,
   /// Normalize and put some text on the readout error histogram
   /// Note in particular the treatment of tokenlost errors !
   
-  hrostatus.GetListOfFunctions()->Delete();
-  hrostatusnorm.GetListOfFunctions()->Delete();
   hrostatusnorm.Reset();
-  hrostatusnorm.SetFillStyle(0);
   
   AliMUONVQAChecker::ECheckCode rv(AliMUONVQAChecker::kInfo);
   
@@ -657,8 +652,6 @@ AliMUONTrackerQAChecker::BeautifyEventsizeHistograms(TH1& heventsize,
 
   AliMUONVQAChecker::ECheckCode rv(AliMUONVQAChecker::kInfo);
 
-  heventsizeperevent.GetListOfFunctions()->Delete();
- 
   heventsizeperevent.Reset();
 
   TObjArray messages;
@@ -670,8 +663,7 @@ AliMUONTrackerQAChecker::BeautifyEventsizeHistograms(TH1& heventsize,
   }
   else
   {
-    heventsizeperevent.Add(&heventsize);
-    heventsizeperevent.Scale(1.0/neventsseen/1024.0);
+    heventsizeperevent.Add(&heventsize,1.0/neventsseen/1024.0);
     heventsizeperevent.SetMinimum(0);
     
     Double_t totalEventSizePerEvent = heventsizeperevent.Integral();

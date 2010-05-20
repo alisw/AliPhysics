@@ -67,7 +67,10 @@ fIsEventByEvent(kFALSE),
 fLogger(0x0),
 fLastEventWasEmpty(kFALSE),
 fNumberOfPhysicsEvents(0),
-fNumberOfGoodPhysicsEvents(0)
+fNumberOfGoodPhysicsEvents(0),
+fTryRecover(kFALSE),
+fFirstEvent(-1),
+fLastEvent(-1)
 {
 /// Root IO ctor
 }
@@ -99,7 +102,10 @@ fIsEventByEvent(kFALSE),
 fLogger(0x0),
 fLastEventWasEmpty(kFALSE),
 fNumberOfPhysicsEvents(0),
-fNumberOfGoodPhysicsEvents(0)
+fNumberOfGoodPhysicsEvents(0),
+fTryRecover(kFALSE),
+fFirstEvent(-1),
+fLastEvent(-1)
 {
   /// Ctor in which this object will NOT be the owner of the reader
   /// and can NOT apply rewind to it, nor use Next on it. 
@@ -133,7 +139,10 @@ fIsEventByEvent(kFALSE),
 fLogger(0x0),
 fLastEventWasEmpty(kFALSE),
 fNumberOfPhysicsEvents(0),
-fNumberOfGoodPhysicsEvents(0)
+fNumberOfGoodPhysicsEvents(0),
+fTryRecover(kFALSE),
+fFirstEvent(-1),
+fLastEvent(-1)
 {
   /// Ctor in which we take the ownership of the rawReader, so we can rewind
   /// and advance it as we wish
@@ -168,7 +177,10 @@ fIsEventByEvent(kFALSE),
 fLogger(0x0),
 fLastEventWasEmpty(kFALSE),
 fNumberOfPhysicsEvents(0),
-fNumberOfGoodPhysicsEvents(0)
+fNumberOfGoodPhysicsEvents(0),
+fTryRecover(kFALSE),
+fFirstEvent(-1),
+fLastEvent(-1)
 {
   /// Ctor from raw data reader
   if (fRawReader) 
@@ -322,7 +334,32 @@ AliMUONTrackerDataMaker::NextEvent()
   
   if ( !IsRunning() ) return kTRUE;
   
-  Bool_t ok = fRawReader->NextEvent();
+  Bool_t ok(kTRUE);
+  
+  if ( fLastEvent >= fFirstEvent && fLastEvent > 0 ) // do we have an event range to consider ?
+  {
+    // skip up to first event
+    
+    while ( (fNumberOfEvents-1) < fFirstEvent && ( ok = fRawReader->NextEvent() ) ) 
+    {
+      ++fNumberOfEvents; 
+    }
+    
+    if ( ok && (fNumberOfEvents-1) <= fLastEvent ) 
+    {
+      ok = fRawReader->NextEvent();
+    }
+    else
+    {
+      fNumberOfEvents=fLastEvent+1;
+      return kFALSE;
+    }
+  }
+  else
+  {
+    // no event range, just proceed...
+    ok = fRawReader->NextEvent();
+  }
   
   if (!ok) 
   {
@@ -367,6 +404,15 @@ Bool_t AliMUONTrackerDataMaker::ProcessEvent()
   stream.DisableWarnings();
   stream.DisableRawReaderErrorLogger();
   stream.DisableMUONErrorLogger();
+
+  if ( fTryRecover ) 
+  {
+    stream.TryRecover(kTRUE);
+  }
+  else
+  {
+    stream.TryRecover(kFALSE);
+  }
   
   if (fLogger)
   {

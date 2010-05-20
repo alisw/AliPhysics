@@ -31,6 +31,9 @@
 #include "AliRecoParam.h"
 #include "AliLog.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
 #include <Riostream.h>
 
 ClassImp(AliMUONRecoParam)
@@ -79,7 +82,8 @@ AliMUONRecoParam::AliMUONRecoParam()
   fClusterChargeCut(2.0),
   fEventSizeSoftLimit(35.0),
   fEventSizeHardLimit(45.0),
-  fTokenLostLimit(0.0)
+  fTokenLostLimit(0.0),
+  fTryRecover(kFALSE)
 {  
   /// Constructor
   
@@ -521,6 +525,12 @@ void AliMUONRecoParam::Print(Option_t *option) const
                ClusterChargeCut(),ClusterChargeCut()*AverageNoisePadCharge()) << endl;
   cout << Form("Note that LowestPadCharge is then %7.2f fC",LowestPadCharge()) << endl;
   
+  if (TryRecover())
+  {
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    cout << "!!! WILL TRY TO RECOVER CORRUPTED RAW DATA !!!" << endl;
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;    
+  }
   cout<<"\t-----------------------------------------------------"<<endl<<endl;
   
 }
@@ -575,5 +585,161 @@ AliMUONRecoParam::SetDefaultLimits()
   SetEventSizeLimits(35.0,45.0);
   
   SetTokenLostLimit(0.0);
+  
+  fTryRecover = kFALSE;
 }
 
+
+//-----------------------------------------------------------------------
+TObjArray* 
+AliMUONRecoParam::Create(const char* settings)
+{
+  /// Create pre-defined recoparam array, according to settings.
+  /// settings is case-insensitive.
+  ///
+  /// Currently defined are :
+  ///
+  /// "cosmics" :
+  ///      Cosmic (default)
+  ///      Calibration
+  /// "ppideal"
+  ///      LowFlux (default)
+  ///      Calibration
+  /// "ppreal"
+  ///      LowFlux (modified to reconstruct real p-p data)
+  ///      Calibration
+  /// "pprealsim"
+  ///      LowFlux (modified to reconstruct realistic p-p simulation)
+  ///      Calibration
+  
+  AliMUONRecoParam* param(0x0);
+  
+  AliRecoParam::EventSpecie_t defaultParam = AliRecoParam::kLowMult;
+  
+  TString stype(settings);
+  stype.ToLower();
+  
+  if ( stype == "cosmics" )
+  {
+    // set parameters for cosmic runs
+    param = AliMUONRecoParam::GetCosmicParam();
+    defaultParam = AliRecoParam::kCosmic;
+  }
+  else if ( stype == "ppideal" ) 
+  {
+    // set default lowFlux parameters
+    param = AliMUONRecoParam::GetLowFluxParam();
+  }
+  else if ( stype == "ppreal" || stype == "pprealsim" || "pprealnofield" ) 
+  {      
+    // common parameters for p-p data and realistic p-p simu
+    param = AliMUONRecoParam::GetLowFluxParam();
+    param->SaveFullClusterInESD(kTRUE, 100.);
+    for (Int_t iCh=0; iCh<10; iCh++) 
+    {
+      param->SetDefaultNonBendingReso(iCh,0.4);
+      param->SetDefaultBendingReso(iCh,0.4);
+    }
+    param->SetSigmaCutForTracking(7.);
+    param->SetStripCutForTrigger(1.5);
+    param->SetSigmaCutForTrigger(6.);
+    param->ImproveTracks(kTRUE, 6.);
+    param->SetPedMeanLimits(20, 700);
+    param->SetManuOccupancyLimits(-1.,0.01);
+    param->SetBuspatchOccupancyLimits(-1.,0.01);  
+    param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
+    
+    // specific parameters for p-p data or realistic p-p simu
+    if ( stype == "ppreal" || stype == "pprealnofield" )
+    {
+      param->SetPadGoodnessMask(0x400BE80);
+    }
+    else
+    {
+      param->SetPadGoodnessMask(0x8080);      
+    }
+    
+    if ( stype == "pprealnofield" )
+    {
+      param->TryRecover(kTRUE);
+    }
+  }
+  else
+  {
+    AliErrorClass("Unknown settings !");
+    return 0x0;
+  }
+
+  TObjArray* recoParams = new TObjArray;
+
+  recoParams->AddLast(param);
+  
+  // set (dummy) parameters for calibration runs
+  param = AliMUONRecoParam::GetCalibrationParam();
+  recoParams->AddLast(param);
+  
+  // set parameters for Pb-Pb runs
+  // param = AliMUONRecoParam::GetHighFluxParam();
+  // recoParams.AddLast(param);
+  
+  // identify default parameters (exit if identification failed)
+  Bool_t defaultIsSet = kFALSE;
+  TIter next(recoParams);
+  while ( (param = static_cast<AliMUONRecoParam*>(next())) ) 
+  {
+    if (param->GetEventSpecie() == defaultParam) 
+    {
+      param->SetAsDefault();
+      defaultIsSet = kTRUE;
+    }
+    param->Print("FULL");
+  }
+  
+  if (!defaultIsSet) 
+  {
+    AliErrorClass("The default reconstruction parameters are not set! Exiting...");
+    return 0x0;
+  }  
+  
+  return recoParams;
+}
+
+//______________________________________________________________________________
+void 
+AliMUONRecoParam::Show(Int_t runNumber, const char* ocdb)
+{
+  /// Show what we have in the designated OCDB for that run, as far as RecoParams are concerned
+  
+  AliCDBManager::Instance()->SetDefaultStorage(ocdb);
+  AliCDBManager::Instance()->SetRun(runNumber);
+  
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
+  
+  if (!entry) return;
+  
+  TObject* o = entry->GetObject();
+  
+  if ( o->IsA() == TObjArray::Class() ) 
+  {
+    TObjArray* array = static_cast<TObjArray*>(o);
+    for ( Int_t i = 0; i <= array->GetLast(); ++i ) 
+    {
+      AliDetectorRecoParam* p = static_cast<AliDetectorRecoParam*>(array->At(i));
+      cout << Form("array[%d]=%s %s %s",i,
+                   p ? p->ClassName() : "",
+                   p ? AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(p->GetEventSpecie())) :"",
+                   p ? ( p->IsDefault() ? "default" : "") : "" ) << endl;
+    }
+    cout << "=========== dumps below ====== " << endl;
+    
+    for ( Int_t i = 0; i <= array->GetLast(); ++i ) 
+    {
+      AliDetectorRecoParam* p = static_cast<AliDetectorRecoParam*>(array->At(i));
+      if ( p ) p->Print("");
+    }
+  }
+  else
+  {
+    o->Print();
+  }
+}

@@ -280,6 +280,14 @@ AliMUONReconstructor::CreateDigitMaker() const
     {
       fDigitMaker->SetMakeTriggerDigits(kTRUE);
     }
+  if ( GetRecoParam()->TryRecover() )
+  {
+    fDigitMaker->SetTryRecover(kTRUE);
+  }
+  else
+  {
+    fDigitMaker->SetTryRecover(kFALSE);    
+  }
 }
 
 //_____________________________________________________________________________
@@ -567,11 +575,9 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
                                 TTree& clustersTree) const
 {
   /// Write the trigger and cluster information into TreeR
-  
+
   AliCodeTimerAuto("",0)
 
-  AliDebug(1,"");
-  
   Bool_t ok(kFALSE);
   Bool_t alone(kTRUE); // is trigger the only info in TreeR ?
   

@@ -319,9 +319,21 @@ class AliMUONRecoParam : public AliDetectorRecoParam
   /// Get the percentage of token lost error we allow
   virtual Double_t TokenLostLimit() const { return fTokenLostLimit; }
 
-  /// Set the percentage of token lost error we allo
+  /// Set the percentage of token lost error we allow
   virtual void SetTokenLostLimit(Double_t limit) { fTokenLostLimit = limit; }
 
+  /// Whether or not we try to recover corrupted raw data
+  virtual Bool_t TryRecover() const { return fTryRecover; }
+
+  /// Set the try recover corrupted raw data (use kTRUE only if you know what you are doing. Should be left to kFALSE by default)
+  virtual void TryRecover(Bool_t flag) { fTryRecover = flag; }
+
+  /// Create object ready to be put in OCDB
+  static TObjArray* Create(const char* settings);
+  
+  /// Show what is the OCDB for that run
+  static void Show(Int_t runNumber, const char* ocdbPath="raw://");
+  
 private:
   
   void SetDefaultLimits();
@@ -424,13 +436,15 @@ private:
   
   Double32_t fTokenLostLimit; ///< limit on the fraction of token lost error per event we allow
   
+  Bool_t     fTryRecover; ///< try to recover corrupted raw data
+  
   // functions
   void SetLowFluxParam();
   void SetHighFluxParam();
   void SetCosmicParam();
   void SetCalibrationParam();
   
-  ClassDef(AliMUONRecoParam,167) // MUON reco parameters
+  ClassDef(AliMUONRecoParam,168) // MUON reco parameters
   // we're at 167 not because we had that many versions, but because at some point (version 15->16)
   // 166 was committed by error, and we did not to go reverse afterwards...
 };

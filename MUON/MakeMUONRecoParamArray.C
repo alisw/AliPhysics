@@ -24,82 +24,44 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include "AliMUONRecoParam.h"
-#include "AliMUONCDB.h"
-
 #include "AliCDBManager.h"
-#include "AliRecoParam.h"
-
-#include <TObjArray.h>
-#include <TIterator.h>
+#include "AliMUONCDB.h"
 
 #include <Riostream.h>
 
 #endif
 
 
-
 //-----------------------------------------------------------------------
-void MakeMUONRecoParamArray(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity(),
-			    Int_t settingsForCosmicRun = kFALSE)
+void MakeMUONRecoParamArray(Int_t startRun = 0, 
+                            Int_t endRun = AliCDBRunRange::Infinity(),
+                            const char* settings="ppIdeal")
 {
   /// set the reconstruction parameters and store them in the OCDB ($ALICE_ROOT/OCDB/MUON/Calib/RecoParam/).
+  ///
   /// - make a CDB entry for the run range [startRun, endRun]
-  /// - the choice between two possible configurations:
-  ///   -  settingsForCosmicRun = kFALSE (default), i.e.
-  ///      LowFlux (default)
-  ///      Calibration
-  ///   - settingsForCosmicRun = kTRUE, i.e.
-  ///      Cosmic (default)
-  ///      Calibration
+  ///
+  /// for the possible values of settings, please see AliMUONRecoParam::Create
   
   // init CDB
   AliCDBManager* man = AliCDBManager::Instance();
-  if(!man->IsDefaultStorageSet()) man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  
+  if (!man->IsDefaultStorageSet()) 
+  {
+    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");    
+  }
+  
   man->SetRun(startRun);
   
-  // set RecoParams
-  AliMUONRecoParam *param;
-  TObjArray recoParams;
-
-  AliRecoParam::EventSpecie_t defaultParam = AliRecoParam::kLowMult;
-
-  if(!settingsForCosmicRun) {
-    // set parameters for p-p runs
-    param = AliMUONRecoParam::GetLowFluxParam();
-    recoParams.AddLast(param);
-  }
-  else {
-    // set parameters for cosmic runs
-    param = AliMUONRecoParam::GetCosmicParam();
-    recoParams.AddLast(param);
-    defaultParam = AliRecoParam::kCosmic;
-  }
-
-  // set (dummy) parameters for calibration runs
-  param = AliMUONRecoParam::GetCalibrationParam();
-  recoParams.AddLast(param);
-
-  // set parameters for Pb-Pb runs
-  // param = AliMUONRecoParam::GetHighFluxParam();
-  // recoParams.AddLast(param);
-
-  // identify default parameters (exit if identification failed)
-  Bool_t defaultIsSet = kFALSE;
-  TIter next(recoParams.MakeIterator());
-  while ( (param = static_cast<AliMUONRecoParam*>(next())) ) {
-    if (param->GetEventSpecie() == defaultParam) {
-      param->SetAsDefault();
-      defaultIsSet = kTRUE;
-    }
-    param->Print("FULL");
-  }
-  if (!defaultIsSet) {
-    cout<<"The default reconstruction parameters are not set! Exiting..."<<endl;
-    return;
+  TObjArray* recoParams = AliMUONRecoParam::Create(settings);
+  
+  if (recoParams)
+  {
+    // save RecoParam in CDB
+    AliMUONCDB::WriteToCDB(recoParams, "MUON/Calib/RecoParam", startRun, endRun, 
+                           "reconstruction parameters for MUON", "MakeMUONRecoParamArray $Id$");
   }
   
-  // save RecoParam in CDB
-  AliMUONCDB::WriteToCDB(&recoParams, "MUON/Calib/RecoParam", startRun, endRun, "reconstruction parameters for MUON", "Philippe Pillot");
-  
+  delete recoParams;
 }
 

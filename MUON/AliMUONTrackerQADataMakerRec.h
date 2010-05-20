@@ -25,7 +25,6 @@ class AliMUONCalibrationData;
 class AliMUONQAMappingCheck;
 class AliMUONLogger;
 class AliMUONQADataMakerRec;
-class AliRawVEvent;
 
 class AliMUONTrackerQADataMakerRec: public AliMUONVQADataMakerRec {
 
@@ -60,7 +59,7 @@ private:
 
   void FillReadoutStatus(AliMUONLogger& log, AliMUONVTrackerData* data);
   
-  void FillEventSize(const AliRawVEvent* event);
+  void FillEventSize(AliRawReader* rawReader);
   
   void InitCommon();
 
