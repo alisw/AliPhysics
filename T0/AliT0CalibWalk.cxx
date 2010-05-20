@@ -141,7 +141,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	    {	      
 	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
 	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
-	      TString led = Form("hLEDminCFD%i_%i",i+1,im+1);
+	      TString led = Form("hLED%i_%i",i+1,im+1);
 	      
 	      TH1F *hCFD = (TH1F*) gFile->Get(cfd.Data()) ;
 	      TH1F *hLED = (TH1F*) gFile->Get(led.Data());
