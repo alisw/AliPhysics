@@ -755,16 +755,22 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
       AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
       corrections[icorr]=0;
       if (entries>kMinEntries){
+	if (dtype==0) {
+	  refX=85; dir=-1;
+	}
+	if (dtype==1) {
+	  refX=275; dir=1;
+	}
+	if (dtype==2) {
+	  refX=0; dir=-1;
+	}
+	//
 	AliExternalTrackParam trackIn(refX,phi,tPar,cov);
 	AliExternalTrackParam *trackOut = 0;
 	if (debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,pcstream);
 	if (!debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,0);
-	if (dtype==0) {refX=85; dir=-1;}
-	if (dtype==1) {refX=275; dir=1;}
-	if (dtype==2) {refX=0; dir=-1;}
-	//
-	AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kTRUE,kMaxSnp);
-	AliTrackerBase::PropagateTrackToBxByBz(trackOut,refX,kMass,3,kTRUE,kMaxSnp);
+	AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kFALSE,kMaxSnp);
+	AliTrackerBase::PropagateTrackToBxByBz(trackOut,refX,kMass,3,kFALSE,kMaxSnp);
 	//
 	corrections[icorr]= trackOut->GetParameter()[ptype]-trackIn.GetParameter()[ptype];
 	delete trackOut;      
