@@ -197,10 +197,10 @@ bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
 
   fBin++;
 
-  if ( fBin >= (Int_t)fActRowData->fNDigit ){
+  while ( fBin >= (Int_t)fActRowData->fNDigit ){
     fRow++;
     if ((fRow >= fFirstRow) && (fRow <= fLastRow)){
-
+      
       //new row 
       if (GetNextRowData(fActRowData)<0) {
 	rreadvalue = false;
@@ -212,14 +212,14 @@ bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
       rreadvalue = false;
       return rreadvalue;
     }
-  if(!fActRowData){
-    return false;
-  }
+    if(!fActRowData){
+      return false;
+    }
     if ((Int_t)fActRowData->fRow != fRow){
       HLTWarning("Row number should match! fActRowData->fRow=%d fRow=%d", fActRowData->fRow, fRow);
     }
   }
-
+  
   fData = fActRowData->fDigitData;
 
   if(fBin==0){
