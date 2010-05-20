@@ -63,25 +63,26 @@
 ClassImp(AliAnalysisTaskJetSpectrum2)
 
 AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
-  fJetHeaderRec(0x0),
-  fJetHeaderGen(0x0),
-  fAOD(0x0),
-  fhnCorrelation(0x0),
-  fBranchRec("jets"),
-  fBranchGen(""),
-  fUseAODJetInput(kFALSE),
-  fUseAODTrackInput(kFALSE),
-  fUseAODMCInput(kFALSE),
-  fUseGlobalSelection(kFALSE),
-  fUseExternalWeightOnly(kFALSE),
-  fLimitGenJetEta(kFALSE),
-  fFilterMask(0),
-  fAnalysisType(0),
+							    fJetHeaderRec(0x0),
+							    fJetHeaderGen(0x0),
+							    fAOD(0x0),
+							    fhnCorrelation(0x0),
+							    fBranchRec("jets"),
+							    fBranchGen(""),
+							    fUseAODJetInput(kFALSE),
+							    fUseAODTrackInput(kFALSE),
+							    fUseAODMCInput(kFALSE),
+							    fUseGlobalSelection(kFALSE),
+							    fUseExternalWeightOnly(kFALSE),
+							    fLimitGenJetEta(kFALSE),
+							    fFilterMask(0),
+							    fAnalysisType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fAvgTrials(1),
   fExternalWeight(1),    
-  fRecEtaWindow(0.5),
+							    fRecEtaWindow(0.5),
+							    fDeltaPhiWindow(20./180.*TMath::Pi()),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -104,6 +105,14 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh2TracksLeadingPhiEta(0x0),
   fh2TracksLeadingPhiPt(0x0),
   fh2TracksLeadingJetPhiPt(0x0),
+  fh2DijetDeltaPhiPt(0x0),      
+  fh2DijetAsymPt(0x0),          
+  fh2DijetAsymPtCut(0x0),       
+  fh2DijetDeltaPhiDeltaEta(0x0),
+  fh2DijetPt2vsPt1(0x0),        
+  fh2DijetDifvsSum(0x0),        
+  fh1DijetMinv(0x0),            
+  fh1DijetMinvCut(0x0),         
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -137,6 +146,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
+							    fDeltaPhiWindow(20./180.*TMath::Pi()),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -159,6 +169,14 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2TracksLeadingPhiEta(0x0),
   fh2TracksLeadingPhiPt(0x0),
   fh2TracksLeadingJetPhiPt(0x0),
+  fh2DijetDeltaPhiPt(0x0),      
+  fh2DijetAsymPt(0x0),          
+  fh2DijetAsymPtCut(0x0),       
+  fh2DijetDeltaPhiDeltaEta(0x0),
+  fh2DijetPt2vsPt1(0x0),        
+  fh2DijetDifvsSum(0x0),        
+  fh1DijetMinv(0x0),            
+  fh1DijetMinvCut(0x0),         
   fHistList(0x0)
 {
 
@@ -326,6 +344,19 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 			     nBinFrag,0.,10.,nBinPt,binLimitsPt);
   }
 
+  // Dijet histograms
+
+  fh2DijetDeltaPhiPt       = new TH2F("fh2DeltaPhiPt","Difference in the azimuthal angle;#Delta#phi;p_{T,1};Entries",180,0.,TMath::Pi(),nBinPt,binLimitsPt);
+  fh2DijetAsymPt            = new TH2F("fh2DijetAsym","Pt asymmetry;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
+  fh2DijetAsymPtCut         = new TH2F("fh2DijetAsymCut","Pt asymmetry after delta phi cut;#Deltap_{T}/(p_{T,1}+p_{T,2});p_{T,1};Entries",50,0.,1.,nBinPt,binLimitsPt);
+  fh2DijetDeltaPhiDeltaEta = new TH2F("fh2DijetDeltaPhiDeltaEta","Difference in the azimuthal angle;#Delta#phi;Entries",180,0.,TMath::Pi(),20,-2.,2.);
+  fh2DijetPt2vsPt1          = new TH2F("fh2DijetPt2vsPt1","Pt2 versus Pt1;p_{T,1} (GeV/c);p_{T,2} (GeV/c)",250,0.,250.,250,0.,250.);
+  fh2DijetDifvsSum          = new TH2F("fh2DijetDifvsSum","Pt difference vs Pt sum;p_{T,1}+p_{T,2} (GeV/c);#Deltap_{T} (GeV/c)",400,0.,400.,150,0.,150.);
+  fh1DijetMinv               = new TH1F("fh1DijetMinv","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
+  fh1DijetMinvCut           = new TH1F("fh1DijetMinvCut","Dijet invariant mass;m_{JJ}",nBinPt,binLimitsPt);
+
+
+
 
   const Int_t saveLevel = 3; // large save level more histos
   if(saveLevel>0){
@@ -366,6 +397,16 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       fHistList->Add( fh2FragLnRec[ij]);
     }
     fHistList->Add(fhnCorrelation);
+
+
+    fHistList->Add(fh2DijetDeltaPhiPt);       
+    fHistList->Add(fh2DijetAsymPt);       
+    fHistList->Add(fh2DijetAsymPtCut);               
+    fHistList->Add(fh2DijetDeltaPhiDeltaEta);        
+    fHistList->Add(fh2DijetPt2vsPt1);                
+    fHistList->Add(fh2DijetDifvsSum);                
+    fHistList->Add(fh1DijetMinv);                    
+    fHistList->Add(fh1DijetMinvCut);                 
   }
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -793,6 +834,46 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     Double_t ptRec = recJets[ir].Pt();
     Double_t phiRec = recJets[ir].Phi();
     if(phiRec<0)phiRec+=TMath::Pi()*2.;    
+
+
+  // do something with dijets...
+  if(ir==1){
+    Double_t etaRec1 = recJets[0].Eta();
+    Double_t ptRec1 = recJets[0].Pt();
+    Double_t phiRec1 = recJets[0].Phi();
+    if(phiRec1<0)phiRec1+=TMath::Pi()*2.;    
+    
+  
+    if(TMath::Abs(etaRec1)<fRecEtaWindow
+      &&TMath::Abs(etaRec)<fRecEtaWindow){
+  
+      Float_t deltaPhi = phiRec1 - phiRec;
+      
+      if(deltaPhi>TMath::Pi())deltaPhi = deltaPhi - 2.*TMath::Pi();
+      if(deltaPhi<(-1.*TMath::Pi()))deltaPhi = deltaPhi + 2.*TMath::Pi();      
+      deltaPhi = TMath::Abs(deltaPhi);
+      fh2DijetDeltaPhiPt->Fill(deltaPhi,ptRec1);      
+      Float_t asym = (ptRec1-ptRec)/(ptRec1+ptRec);
+      fh2DijetAsymPt->Fill(asym,ptRec1);
+      fh2DijetDeltaPhiDeltaEta->Fill(deltaPhi,etaRec1-etaRec);
+      fh2DijetPt2vsPt1->Fill(ptRec1,ptRec);        
+      fh2DijetDifvsSum->Fill(ptRec1+ptRec,ptRec1-ptRec);        
+      Float_t minv = 2.*(recJets[0].P()*recJets[1].P()-
+			 recJets[0].Px()*recJets[1].Px()- 
+			 recJets[0].Py()*recJets[1].Py()- 
+			 recJets[0].Pz()*recJets[1].Py());
+      minv = TMath::Sqrt(minv);
+      // with mass == 0;
+      
+      fh1DijetMinv->Fill(minv);            
+      if((TMath::Pi()-deltaPhi)<fDeltaPhiWindow){
+	fh1DijetMinvCut->Fill(minv);         
+	fh2DijetAsymPtCut->Fill(asym,ptRec1);      
+      }
+    }
+  }
+
+
     container[0] = ptRec;
     container[1] = etaRec;
     container[2] = phiRec;
@@ -833,7 +914,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	  if(phi<0)phi+=TMath::Pi()*2.;    
 	  Float_t dPhi = phi - phiRec;
 	  Float_t dEta = eta - etaRec;
-	  if(dPhi<(-1.*TMath::Pi()))phiRec+=TMath::Pi()*2.;    
+	  if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
+	  if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();      
 	  fh2PhiPt[ir]->Fill(dPhi,ptRec,eventW);
 	  fh2PhiEta[ir]->Fill(dPhi,dEta,eventW);
 	}
