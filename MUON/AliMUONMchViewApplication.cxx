@@ -466,6 +466,12 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.05");
+  rn->AddLine("");
+  rn->AddLine("Added the possibility to select an event range when reading raw data");
+  rn->AddLine("Usefull e.g. to look at a single suspect event...");
+  rn->AddLine("");
+  
   rn->AddLine("1.04");
   rn->AddLine("");
   rn->AddLine("Changed the default OCDB to 2010 version");

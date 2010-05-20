@@ -47,7 +47,9 @@ public:
   void DataMakerWasUnregistered(AliMUONVTrackerDataMaker* reader);
 
   void HistogramButtonClicked();
-  
+
+  void EventRangeButtonClicked();
+
   void OpenFileDialog();
   
   void OpenFileDialogACF();
@@ -100,9 +102,12 @@ private:
   TGCheckButton* fCalibrateGainConstantCapa; ///< to trig calibration of raw data (0-supp and gain w/ constant capacitance)
   TGCheckButton* fCalibrateGain; ///< to trig calibration of raw data (full blown calibration)
   TGCheckButton* fCalibrateEmelecGain; ///< to trig calibration of raw data (full blown calibration but with factory gains)
-  TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data
+  TGCheckButton* fHistogramButton; ///< to trig histogramming of raw data  
   TGNumberEntry* fHistoMin; ///< xmin of histo to make
   TGNumberEntry* fHistoMax; ///< xmax of histo to make
+  TGCheckButton* fEventRangeButton; ///< to trig limitation of event range
+  TGNumberEntry* fEventMin; ///< min event number to consider
+  TGNumberEntry* fEventMax; ///< max event number to consider  
   TGTextEntry* fRawOCDBPath; ///< OCDB path for raw data calibration
   
   TGGroupFrame* fOCDBSelector; ///< to select a new OCDB data source
@@ -121,7 +126,7 @@ private:
   static const char* fgkNumberOfDataSourcesKey; ///< key used to store the # of data sources in the resource file
   static const char* fgkDataSourceURIKey; ///< key usde to store the data source URIs in the resource file
 
-  ClassDef(AliMUONPainterDataSourceFrame,4) // Data source selection frame
+  ClassDef(AliMUONPainterDataSourceFrame,5) // Data source selection frame
 };
 
 #endif

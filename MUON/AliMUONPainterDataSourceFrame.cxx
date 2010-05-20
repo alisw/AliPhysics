@@ -76,12 +76,15 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fHistogramButton(new TGCheckButton(fRawSelector23,"Histogram")),
   fHistoMin(new TGNumberEntry(fRawSelector23,0)),
   fHistoMax(new TGNumberEntry(fRawSelector23,4096)),
+  fEventRangeButton(new TGCheckButton(fRawSelector23,"Event range")),
+  fEventMin(new TGNumberEntry(fRawSelector23,-1,10)),
+  fEventMax(new TGNumberEntry(fRawSelector23,-1,10)),
   fRawOCDBPath(new TGTextEntry(fRawSelector22,"")),
   fOCDBSelector(new TGGroupFrame(this,"OCDB Path",kHorizontalFrame)),
   fDataReaders(new TGGroupFrame(this,"Data sources")),
   fFilePath(new TGTextEntry(fRawSelector21,"")),
   fOCDBPath(new TGTextEntry(fOCDBSelector,"alien://folder=/alice/data/2010/OCDB")),
-  fRunSelector(new TGNumberEntry(fOCDBSelector,0)),
+  fRunSelector(new TGNumberEntry(fOCDBSelector,0,10)),
   fOCDBTypes(new TGComboBox(fOCDBSelector)),
   fRecentSources(new TGComboBox(fRecentSourceSelector)),
   fItems(new TObjArray),
@@ -147,16 +150,25 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     fRawSelector22->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
     fRawOCDBPath->SetEnabled(kFALSE);
     
-    fRawSelector23->AddFrame(fHistogramButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
-    
+    fRawSelector23->AddFrame(fHistogramButton,new TGLayoutHints(kLHintsTop,5,5,5,5));    
     fHistogramButton->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"HistogramButtonClicked()");
-    
     fHistoMin->SetState(kFALSE);
-    fHistoMax->SetState(kFALSE);
-    
+    fHistoMax->SetState(kFALSE);    
     fRawSelector23->AddFrame(fHistoMin,new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector23->AddFrame(fHistoMax,new TGLayoutHints(kLHintsTop,5,5,5,5));
     
+
+  fRawSelector23->AddFrame(fEventRangeButton,new TGLayoutHints(kLHintsTop,5,5,5,5));    
+  fEventRangeButton->Connect("Clicked()","AliMUONPainterDataSourceFrame",this,"EventRangeButtonClicked()");
+  fEventMin->SetState(kFALSE);
+  fEventMax->SetState(kFALSE);      
+  
+  fEventMin->SetFormat(TGNumberFormat::kNESInteger);
+  fEventMax->SetFormat(TGNumberFormat::kNESInteger);
+
+  fRawSelector23->AddFrame(fEventMin,new TGLayoutHints(kLHintsTop,5,5,5,5));
+  fRawSelector23->AddFrame(fEventMax,new TGLayoutHints(kLHintsTop,5,5,5,5));
+  
     TGButton* createRawButton = new TGTextButton(fRawSelector,"Create data source");
     
     fRawSelector->AddFrame(fRawSelector2, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
@@ -188,7 +200,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fOCDBTypes->AddEntry("Status",6);
   fOCDBTypes->AddEntry("Capacitances",2);
   fOCDBTypes->Select(0);
-  fOCDBTypes->Resize(100,20);
+  fOCDBTypes->Resize(80,20);
     
     TGButton* createOCDBButton = new TGTextButton(fOCDBSelector,"Create data source");
     createOCDBButton->Connect("Clicked()",
@@ -318,6 +330,26 @@ AliMUONPainterDataSourceFrame::HistogramButtonClicked()
   {
     fHistoMin->SetState(kFALSE);
     fHistoMax->SetState(kFALSE);
+  }
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPainterDataSourceFrame::EventRangeButtonClicked()
+{
+  /// EventRange button was clicked.
+  
+  if ( fEventRangeButton->IsOn() )
+  {
+    fEventMin->SetState(kTRUE);
+    fEventMax->SetState(kTRUE);
+  }
+  else
+  {
+    fEventMin->SetIntNumber(-1);
+    fEventMax->SetIntNumber(-1);
+    fEventMin->SetState(kFALSE);
+    fEventMax->SetState(kFALSE);
   }
 }
 
@@ -583,14 +615,16 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource()
     name = "CALZ";
   }
   
-  uri = Form("%s%s%s;%s;%s;%s;%s;%s",
+  uri = Form("%s%s%s;%s;%s;%s;%s;%s;%s;%s",
              ( fHistogramButton->IsOn() ? "H":""),
              ( fromMemory ? "M" : ""),
              name.Data(),uri.Data(),
              ( strlen(fRawOCDBPath->GetText()) > 0 ? fRawOCDBPath->GetText() : " "),
              ( calibMode.Length() > 0 ? calibMode.Data() : " "),
              Form("%e",fHistoMin->GetNumber()),
-             Form("%e",fHistoMax->GetNumber()));
+             Form("%e",fHistoMax->GetNumber()),
+             Form("%d",(Int_t)(fEventMin->GetIntNumber())),
+             Form("%d",(Int_t)(fEventMax->GetIntNumber())));
   
   if ( CreateRawDataSource(uri) )
   {
@@ -610,6 +644,8 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   TString calibMode;
   TString sxmin("0.0");
   TString sxmax("4096.0");
+  TString emin("-1");
+  TString emax("-1");
   
   TObjArray* a = uri.Tokenize(";");
   
@@ -635,6 +671,16 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   if ( a->GetLast() > 4 ) 
   {
     sxmax = static_cast<TObjString*>(a->At(5))->String();
+  }
+  
+  if ( a->GetLast() > 5 )
+  {
+    emin = static_cast<TObjString*>(a->At(6))->String();
+  }
+
+  if ( a->GetLast() > 6 )
+  {
+    emax = static_cast<TObjString*>(a->At(7))->String();
   }
   
   AliRawReader* rawReader = 0x0;
@@ -692,9 +738,26 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
     reader = new AliMUONTrackerDataMaker(rawReader,histogram);
   }
 
+  reader->SetEventRange(emin.Atoi(),emax.Atoi());
+  
   reader->SetSource(filename.Data());
 
-  RegisterDataSource(reader,uri.Data());
+  TString dsName(uri);
+  
+  if ( emin.Atoi() <= emax.Atoi() )
+  {
+    // we have an event range
+    if ( emin.Atoi() == emax.Atoi())
+    {
+      dsName += Form("[%d]",emin.Atoi());
+    }
+    else
+    {
+      dsName += Form("[%d,%d]",emin.Atoi(),emax.Atoi());
+    }
+  }
+  
+  RegisterDataSource(reader,dsName.Data());
                        
   return kTRUE;
 }

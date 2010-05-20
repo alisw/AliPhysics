@@ -70,6 +70,9 @@ public:
   /// Merge
   virtual Long64_t Merge(TCollection* list) = 0;
   
+  /// Set event range (if not event by event)
+  virtual void SetEventRange(Int_t /* firstevent */, Int_t /* lastevent */) {}
+  
   ClassDef(AliMUONVTrackerDataMaker,1) // Producer of AliMUONVTrackerData
 };
 
