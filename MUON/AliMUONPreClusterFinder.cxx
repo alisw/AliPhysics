@@ -17,6 +17,8 @@
 
 #include "AliMUONPreClusterFinder.h"
 
+#include "AliCodeTimer.h"
+
 #include "AliMUONCluster.h"
 #include "AliMUONPad.h"
 #include "AliMUONVDigit.h"
@@ -104,8 +106,12 @@ AliMUONPreClusterFinder::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
 {
   /// Add a pad to a cluster
   
-  if ( cluster.Multiplicity() > 500 ) 
+  if ( cluster.IsMonoCathode() && cluster.Multiplicity() > 199 ) 
   {
+    /// FIXME : we should at that point really find a better way to remove "bad" preclusters,
+    /// like e.g. computing the charge dispersion (the lower, the most probably we have noise cluster)
+    /// and/or mean charge per pad (if too close to LowestPadCharge, again that's a noise cluster...
+    /// *BUT* this needs carefull testing !
     fShouldAbort = kTRUE;
     return;
   }
@@ -203,6 +209,7 @@ void
 AliMUONPreClusterFinder::RemoveCluster(AliMUONCluster* cluster)
 {
   /// Remove a cluster
+  /// Note that we are *not* releasing the pads, so they won't be used further on
   fClusters.Remove(cluster);
   fClusters.Compress();
 }
@@ -212,7 +219,6 @@ AliMUONCluster*
 AliMUONPreClusterFinder::NextCluster()
 {
   /// Builds the next cluster, and returns it.
-//  AliCodeTimerAuto("pre-clustering",0)
   
   // Start a new cluster
   
@@ -261,9 +267,9 @@ AliMUONPreClusterFinder::NextCluster()
   
   if ( ShouldAbort() ) 
   {
-    AliError(Form("Aborting clustering of DE %d because we've got too many pads",fDetElemId));
+    AliCodeTimerAuto(Form("Aborting a precluster in DE %d because it got too many pads",fDetElemId),0);
     RemoveCluster(cluster);
-    return 0x0;
+    return NextCluster();
   }
   
   if ( cluster->Multiplicity() <= 1 )

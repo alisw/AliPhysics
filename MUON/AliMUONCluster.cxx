@@ -313,6 +313,14 @@ AliMUONCluster::Area(Int_t cathode) const
 }
 
 //_____________________________________________________________________________
+Bool_t
+AliMUONCluster::IsMonoCathode() const
+{
+  /// Whether we have signals only in one of the two cathodes
+  return (Cathode()<2);
+}
+
+//_____________________________________________________________________________
 Int_t
 AliMUONCluster::Cathode() const
 {

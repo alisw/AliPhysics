@@ -153,7 +153,9 @@ public:
 
   void Clear(Option_t* opt="");
   
-private:
+  Bool_t IsMonoCathode() const;
+
+//private:
     void DumpMe() const;
   
 private:
