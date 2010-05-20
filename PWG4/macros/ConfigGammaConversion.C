@@ -155,8 +155,8 @@ Bool_t kGCplotMCMotherEnergy				= kTRUE;
 Bool_t kGCplotMCMotherMass					= kTRUE;
 Bool_t kGCplotMCMotherOpeningAngle				= kTRUE;
 Bool_t kGCplotMCMotherR					= kTRUE;
-Bool_t kGCplotMCMotherZR					= kTRUE;
-Bool_t kGCplotMCMotherXY	       				= kTRUE;
+Bool_t kGCplotMCMotherZR					= kFALSE;
+Bool_t kGCplotMCMotherXY	       				= kFALSE;
 Bool_t kGCplotMCMotherPtvsEtaWithinAcceptance              = kTRUE;
 Bool_t kGCplotMCMotherPtvsRapidWithinAcceptance            = kTRUE;
 Bool_t kGCplotMCMotherPtvsEtaConvGammaWithinAcceptance     = kTRUE;
@@ -325,8 +325,8 @@ Bool_t kGCplotESDMotherEta               = kTRUE;
 Bool_t kGCplotESDMotherPhi               = kTRUE;
 Bool_t kGCplotESDMotherMass              = kTRUE;
 Bool_t kGCplotESDMotherR                 = kTRUE;
-Bool_t kGCplotESDMotherZR                = kTRUE;
-Bool_t kGCplotESDMotherXY                = kTRUE;
+Bool_t kGCplotESDMotherZR                = kFALSE;
+Bool_t kGCplotESDMotherXY                = kFALSE;
 Bool_t kGCplotESDMotherRapid             = kTRUE;
 
 Bool_t kGCplotESDBackgroundOpeningAngleGamma = kTRUE;
@@ -336,8 +336,8 @@ Bool_t kGCplotESDBackgroundEta               = kTRUE;
 Bool_t kGCplotESDBackgroundPhi               = kTRUE;
 Bool_t kGCplotESDBackgroundMass              = kTRUE;
 Bool_t kGCplotESDBackgroundR                 = kTRUE;
-Bool_t kGCplotESDBackgroundZR                = kTRUE;
-Bool_t kGCplotESDBackgroundXY                = kTRUE;
+Bool_t kGCplotESDBackgroundZR                = kFALSE;
+Bool_t kGCplotESDBackgroundXY                = kFALSE;
 Bool_t kGCplotESDBackgroundRapid             = kTRUE;
 
 Bool_t kGCplotMapping = kTRUE;       
@@ -389,8 +389,8 @@ Bool_t kGCplotESDCutNDF           = kTRUE;
 Bool_t kGCplotESDCutChi2          = kTRUE;
 Bool_t kGCplotESDCutEta           = kTRUE;
 Bool_t kGCplotESDCutPt            = kTRUE;
-Bool_t kGCplotESDTrueConvGammaTrackLength =kTRUE;
-Bool_t kGCplotESDTrueConvGammaTrackLengthVSInvMass =kTRUE;
+Bool_t kGCplotESDTrueConvGammaTrackLength =kFALSE;
+Bool_t kGCplotESDTrueConvGammaTrackLengthVSInvMass =kFALSE;
 
 Bool_t kGCplotPi0Spectra = kTRUE;
 Bool_t kGCplotEtaSpectra = kTRUE;
@@ -820,7 +820,7 @@ Bool_t scanArguments(TString arguments){
       }
       else if (argument.CompareTo("-run-on-train") == 0){
 	cout<<"Running on train"<<endl;
-	kGCWriteStandardAOD=kTRUE;
+	kGCWriteStandardAOD=kFALSE;
 	kGCrunOnTrain = kTRUE;
       }
       else if (argument.CompareTo("-run-jet") == 0){
@@ -991,9 +991,20 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     //how many selection steps 
     UInt_t nstep = 20;
     const Int_t nvar = 3;
-    const Int_t nbin0 = kGCnXBinsPt; 
-    const Int_t nbin1 = kGCnXBinsEta;
-    const Int_t nbin2 = kGCnXBinsPi0Mass;	 	
+
+    Int_t kGCnXBinsPtCF=40;
+    Int_t kGCnXBinsEtaCF=8;
+    Int_t kGCnXBinsPi0MassCF=10;
+
+    if(!kGCrunCF){
+      nstep=0;
+      kGCnXBinsPtCF=0;
+      kGCnXBinsEtaCF=0;
+      kGCnXBinsPi0MassCF=0;
+    }
+    const Int_t nbin0 = kGCnXBinsPtCF;  // do not use same variable for CF than for histogram
+    const Int_t nbin1 = kGCnXBinsEtaCF; // do not use same variable for CF than for histogram
+    const Int_t nbin2 = kGCnXBinsPi0MassCF; // do not use same variable for CF than for histogram	 	
 		
     //arrays for the number of bins in each dimension
     Int_t iBin[nvar];
@@ -1128,9 +1139,9 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   outputfile += Form(":PWG4_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
 
   cout<<"Ouput file::"<<  outputfile <<endl;
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histogramsAliGammaConversion", TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("histogramsAliGammaConversion_%s",kGCAnalysisCutSelectionId.Data()), TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
   // for CF
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("GammaConvccontainer0",AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("GammaConvccontainer0_%s",kGCAnalysisCutSelectionId.Data()),AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 	
   //------------------------ END: Define input/output handlers ---------------------------------------------------
 	
@@ -1874,8 +1885,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 	  
 	  histograms->AddHistogram(Form("%d%dESD_Background_InvMass",z,m),"Invariant mass background",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass BG [GeV]","Counts");
 
-	  // gives problems
-	  //	  cout<<"name-3::"<<Form("%d%dESD_Background_InvMass_vs_Pt_Fiducial",z,m) <<endl;
+
 	  histograms->AddHistogram(Form("%d%dESD_Background_InvMassvsPtFid",z,m) ,"Background Invariant Mass vs Pt |eta|<0.9" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
 
 	 
