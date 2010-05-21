@@ -179,7 +179,7 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
 }
  
 void 
-AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, Double_t x, Double_t z, Int_t& AbsId)
+AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, Int_t x, Int_t z, Int_t& AbsId)
 {
 
   if(!fGeo)
