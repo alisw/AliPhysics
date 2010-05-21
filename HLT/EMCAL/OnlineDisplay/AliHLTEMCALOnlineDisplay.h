@@ -12,6 +12,8 @@
 #include "TH2.h"
 #include "AliHLTCaloConstants.h"
 
+using CALO::MAXHOSTS;
+#define DEFAULTEVENTPORT 42001
 
 class TStyle;
 class TSystem;

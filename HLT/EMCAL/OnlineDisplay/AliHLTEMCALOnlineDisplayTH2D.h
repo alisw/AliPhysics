@@ -28,20 +28,23 @@
 
 #include <TH2D.h>
 #include <TCanvas.h>
-
 #include <iostream>
 
 //#include "AliHLTEMCALBase.h"
 //#include   "AliHLTEMCALOnlineDisplayTH2D.h"
 
-#include  "AliHLTCaloConstants.h" 
-#include  "AliHLTEMCALConstants.h" 
+//#include  "AliHLTCaloConstants.h" 
+//#include  "AliHLTEMCALConstants.h" 
 
+#include "AliHLTCaloConstants.h"
 
-using namespace EmcalHLTConst;
-using namespace CaloHLTConst;
+//using namespace EmcalHLTConst;
+//using namespace CaloHLTConst;
 
-using namespace std;
+using std::cout;
+using std::endl;
+
+using CALO::NGAINS; 
 
 class AliHLTEMCALOnlineDisplay;
 

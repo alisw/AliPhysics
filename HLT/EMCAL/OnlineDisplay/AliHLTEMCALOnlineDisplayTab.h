@@ -8,7 +8,7 @@
 #include "TGTab.h"
 #include "AliHLTHOMERReader.h"
 //#include "AliHLTEMCALCommonDefs.h"
-#include "AliHLTEMCALConstants.h"
+//#include "AliHLTEMCALConstants.h"
 #include "AliHLTCaloConstants.h"
 
 
@@ -29,11 +29,13 @@ using namespace std;
 #define XRANGEEND  XRANGESTART + XRANGELENGTH
 
 
-using namespace EmcalHLTConst;
-using namespace CaloHLTConst;
+//using namespace EmcalHLTConst;
+//using namespace CaloHLTConst;
 
 
 class AliHLTHOMERReader;
+
+using CALO::MAXHOSTS;
 
 
 //class AliHLTEMCALOnlineDisplayTab : public TGTab, public AliHLTEMCALBase
