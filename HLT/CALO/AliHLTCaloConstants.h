@@ -20,6 +20,8 @@
 
 namespace CaloHLTConst
 {
+  const int MAXHOSTS=20;
+
   //Constants related to the ALTRO chip (Common to EMCAL / PHOS )
   const int MAXBINVALUE = 1023;
   const int NGAINS         =   2;    
