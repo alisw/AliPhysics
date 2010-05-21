@@ -111,7 +111,7 @@ void AliFMDAnalysisTaskSharing::CreateOutputObjects()
   fDiagList->Add(hPrimary);
   TH1F* hXvtx = new TH1F("hXvtx","x vertex distribution",100,-2,2);
   TH1F* hYvtx = new TH1F("hYvtx","y vertex distribution",100,-2,2);
-  TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",pars->GetNvtxBins(),-1*pars->GetVtxCutZ(),pars->GetVtxCutZ());
+  TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",4*pars->GetNvtxBins(),-4*pars->GetVtxCutZ(),4*pars->GetVtxCutZ());
   
   fDiagList->Add(hXvtx);
   fDiagList->Add(hYvtx);
@@ -714,24 +714,27 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   AliHeader* header            = mcEvent->Header();
   AliGenEventHeader* genHeader = header->GenEventHeader();
   
-  //  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
   
-  // if (!pythiaGenHeader) {
-    //  std::cout<<" no pythia header!"<<std::endl;
-  //   return; 
-  // }
-
+  if (!pythiaGenHeader) {
+    std::cout<<" no pythia header!"<<std::endl;
+    return; 
+  }
+  
 	
-  //Int_t pythiaType = pythiaGenHeader->ProcessType();
+  Int_t pythiaType = pythiaGenHeader->ProcessType();
   
-  //if(pythiaType==92||pythiaType==93){
-    //  std::cout<<"single diffractive"<<std::endl;
-    //  return;
-    // }
-  // if(pythiaType==94){
-  //  std::cout<<"double diffractive"<<std::endl;
-  //  return;
-  // }
+  /*if(pythiaType==92||pythiaType==93){
+      std::cout<<"single diffractive"<<std::endl;
+      return;
+     }
+  if(pythiaType==94){
+    std::cout<<"double diffractive"<<std::endl;
+    return;
+  }
+  */
+  std::cout<<pythiaType<<"   "<<stack->GetNprimary()<<std::endl;
+  
   
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);

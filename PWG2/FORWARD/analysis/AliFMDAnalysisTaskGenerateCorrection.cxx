@@ -125,11 +125,15 @@ void AliFMDAnalysisTaskGenerateCorrection::UserCreateOutputObjects()
   TH1F* hEventsAll    = new TH1F("EventsAll","EventsAll",fNvtxBins,0,fNvtxBins);
   TH1F* hEventsSelectedVtx  = new TH1F("EventsSelectedVtx","EventsSelectedVtx",fNvtxBins,0,fNvtxBins);  
   TH1F* hEventsSelectedTrigger  = new TH1F("EventsSelectedTrigger","EventsSelectedTrigger",fNvtxBins,0,fNvtxBins);
-
   
+  TH1F* hXvtx = new TH1F("hXvtx","x vertex distribution",100,-2,2);
+  TH1F* hYvtx = new TH1F("hYvtx","y vertex distribution",100,-2,2);
+  TH1F* hZvtx = new TH1F("hZvtx","z vertex distribution",4*fNvtxBins,-4*fZvtxCut,4*fZvtxCut);
   
-  //  TH1F* hTriggered    = new TH1F("Triggered","Triggered",fNvtxBins,0,fNvtxBins);
-  // TH1F* hTriggeredAll = new TH1F("TriggeredAll","TriggeredAll",fNvtxBins,0,fNvtxBins);
+  fListOfPrimaries.Add(hXvtx);
+  fListOfPrimaries.Add(hYvtx);
+  fListOfPrimaries.Add(hZvtx);
+  
   hEventsSelected->Sumw2();
   hEventsAll->Sumw2();
   fListOfHits.Add(hEventsSelected);
@@ -178,6 +182,14 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
   
   TArrayF vertex;
   genHeader->PrimaryVertex(vertex);
+  
+  TH1F* hXvtx = (TH1F*)fListOfPrimaries.FindObject("hXvtx");
+  hXvtx->Fill(vertex.At(0));
+  TH1F* hYvtx = (TH1F*)fListOfPrimaries.FindObject("hYvtx");
+  hYvtx->Fill(vertex.At(1));
+  TH1F* hZvtx = (TH1F*)fListOfPrimaries.FindObject("hZvtx");
+  hZvtx->Fill(vertex.At(2));
+
   
   if(TMath::Abs(vertex.At(2)) > fZvtxCut)
     return;
@@ -419,6 +431,13 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   fListOfHits.Add(hEventsSelectedTrigger);
   fListOfPrimaries.Add(hEventsAll);
   
+  TH1F* hXvtx = (TH1F*)listOfPrim->FindObject("hXvtx");
+  TH1F* hYvtx = (TH1F*)listOfPrim->FindObject("hYvtx");
+  TH1F* hZvtx = (TH1F*)listOfPrim->FindObject("hZvtx");
+  fListOfPrimaries.Add(hXvtx);
+  fListOfPrimaries.Add(hYvtx);
+  fListOfPrimaries.Add(hZvtx);  
+
   for(Int_t det =1; det<=3;det++)
       {
 	Int_t nRings = (det==1 ? 1 : 2);
