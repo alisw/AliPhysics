@@ -67,9 +67,10 @@ private:
 
 
 template <class T>
-Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*> &emcalClustersVector,  Double_t bz ) {
+Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, 
+				       vector<T*> &emcalClustersVector,  Double_t bz ) 
+{
   //See above for documentation
-
 
   Int_t nTracks = trackArray->GetEntriesFast();
   Int_t nPhosClusters = phosClustersVector.size();
@@ -85,7 +86,6 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
     return 0;
   }
 
-
   Float_t bestMatchPhos[nPhosClusters];   
   for(int ic = 0; ic < nPhosClusters; ic++) {
     bestMatchPhos[ic] = 999999;
@@ -100,18 +100,18 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
   for (int it = 0; it < nTracks; it++ ) {
     AliExternalTrackParam * track = static_cast<AliExternalTrackParam*>(trackArray->At(it));
 
-    if ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) {
-      MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
-
-    } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
-      MatchTrackToClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
-    } 
-
+    if ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) 
+      {
+	MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
+      } 
+    else 
+      if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) 
+	{
+	  MatchTrackToClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
+	} 
   }   
-    
   return 0;
 } 
-
 
 
 template <class T>
@@ -119,59 +119,63 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
   
   //See header file for documentation
   Int_t iResult = 0;
- 
   Float_t clusterPosition[3];
   Double_t trackPosition[3];
- 
   
-  for(int ic = 0; ic < nClusters; ic++) {
+  for(int ic = 0; ic < nClusters; ic++) 
+    {
+      T * cluster = clustersVector.at(ic);
+      //Get cluster global coordinates
+      cluster->GetPosition(clusterPosition);
+      Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] 
+				      + clusterPosition[1]*clusterPosition[1]);      
+      //Rotate tracking system to the angle of the cluster
+      TVector3 cVec(clusterPosition);
+      
+      if (! (track->Rotate(cVec.Phi())) ) 
+	{
+	  continue;
+	}
     
-    T * cluster = clustersVector.at(ic);
-    
-    //Get cluster global coordinates
-    cluster->GetPosition(clusterPosition);
-
-    Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1]);      
-
-    //Rotate tracking system to the angle of the cluster
-    TVector3 cVec(clusterPosition);
-    if (! (track->Rotate(cVec.Phi())) ) {
-      continue;
-    }
-   
-    if(! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
-      continue;
-    }
+      if(! (track->GetXYZAt(rCluster, bz, trackPosition)) ) 
+	{
+	  continue;
+	}
     
     //Get residual in z= 0 plane (squared)
-    Double_t dxy = 0;
-    for(int i = 0; i < 2; i++) {
-      Double_t dd = trackPosition[i] - clusterPosition[i];
-      dxy += dd*dd;
-    }
+      Double_t dxy = 0;
+      for(int i = 0; i < 2; i++) 
+	{
+	  Double_t dd = trackPosition[i] - clusterPosition[i];
+	  dxy += dd*dd;
+	}
 
-    //Get z residual (squared)
-    Double_t dd = trackPosition[2] - clusterPosition[2];
-    Double_t dz = dd*dd;
-  
-    Double_t match = dz + dxy;
+      //Get z residual (squared)
+      Double_t dd = trackPosition[2] - clusterPosition[2];
+      Double_t dz = dd*dd;
+      Double_t match = dz + dxy;
+      
+      if( match > fMatchDistance  )  
+	{     
+	  continue;
+	}
+      if (match < bestMatch[ic]) 
+	{
+	  bestMatch[ic] = match;
+	  cluster->SetEmcCpvDistance(TMath::Sqrt(match));
+	  cluster->SetTrackDistance(TMath::Sqrt(dxy), TMath::Sqrt(dz));
+	}
     
-    if( match > fMatchDistance  )  {     
-      continue;
+      //Add track to cluster's array of matching tracks
+      Int_t nTracksMatched = cluster->GetNTracksMatched();
+      iResult = AddTrackToCluster(track->GetID(), cluster->GetTracksMatched(), 
+				  match < bestMatch[ic], nTracksMatched);
     }
-
-    if (match < bestMatch[ic]) {
-      bestMatch[ic] = match;
-      cluster->SetEmcCpvDistance(TMath::Sqrt(match));
-      cluster->SetTrackDistance(TMath::Sqrt(dxy), TMath::Sqrt(dz));
-    }
-    
-    //Add track to cluster's array of matching tracks
-    Int_t nTracksMatched = cluster->GetNTracksMatched();
-    iResult = AddTrackToCluster(track->GetID(), cluster->GetTracksMatched(), match < bestMatch[ic], nTracksMatched);
-  }
   
   return iResult;
 }
 
+
 #endif
+
+

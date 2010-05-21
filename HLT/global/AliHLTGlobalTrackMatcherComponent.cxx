@@ -176,13 +176,16 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
    for (const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC); pBlock!=NULL; pBlock=GetNextInputBlock()) {
 
      if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
-       for(UInt_t it = 0; it < tracks.size(); it++) {
-	 AliHLTGlobalBarrelTrack track = tracks.at(it);
- 	fTrackArray->AddLast(dynamic_cast<TObject*>(&(tracks.at(it))));
-	       }
-     } else {
-	      HLTWarning("Converting tracks to vector failed");
-     }
+       for(UInt_t it = 0; it < tracks.size(); it++) 
+	 {
+	   AliHLTGlobalBarrelTrack track = tracks.at(it);
+	   fTrackArray->AddLast(dynamic_cast<TObject*>(&(tracks.at(it))));
+	 }
+     } 
+     else 
+       {
+	 HLTWarning("Converting tracks to vector failed");
+       }
     
      //     //Push the TPC block on, without any changes
      PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
@@ -193,19 +196,23 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
    //Get the PHOS Clusters
    vector<AliHLTCaloClusterDataStruct*> phosClustersVector;
    
-   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS); pBlock!=NULL; pBlock=GetNextInputBlock()) {
-     AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
-     fClusterReader->SetMemory(caloClusterHeader);
-     if ( (caloClusterHeader->fNClusters) < 0) {
-       HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
-       continue;
-     } else {    
-       phosClustersVector.reserve( (int) (caloClusterHeader->fNClusters) + phosClustersVector.size() ); 
-       while( (caloClusterStruct = fClusterReader->NextCluster()) != 0) {
-	 phosClustersVector.push_back(caloClusterStruct);  
-       }
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginPHOS); pBlock!=NULL; pBlock=GetNextInputBlock()) 
+     {
+       AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
+       fClusterReader->SetMemory(caloClusterHeader);
+       
+       if ( (caloClusterHeader->fNClusters) < 0) 
+	 {
+	   HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
+	   continue;
+	 } else 
+	 {    
+	   phosClustersVector.reserve( (int) (caloClusterHeader->fNClusters) + phosClustersVector.size() ); 
+	   while( (caloClusterStruct = fClusterReader->NextCluster()) != 0) {
+	     phosClustersVector.push_back(caloClusterStruct);  
+	   }
+	 }
      }
-   }
    
 
    //Get the EMCAL Clusters
@@ -213,26 +220,31 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL); pBlock!=NULL; pBlock=GetNextInputBlock()) {
      AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
      fClusterReader->SetMemory(caloClusterHeader);
-     if ( (caloClusterHeader->fNClusters) < 0) {
-       HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
-       continue;
-     } else {    
-       emcalClustersVector.reserve( (int) (caloClusterHeader->fNClusters) + emcalClustersVector.size() ); 
-       while( (caloClusterStruct = fClusterReader->NextCluster()) != 0) {
-	 emcalClustersVector.push_back(caloClusterStruct);  
+     if ( (caloClusterHeader->fNClusters) < 0) 
+       {
+	 HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
+	 continue;
+     } else 
+       {    
+	 emcalClustersVector.reserve( (int) (caloClusterHeader->fNClusters) + emcalClustersVector.size() ); 
+	 
+	 while( (caloClusterStruct = fClusterReader->NextCluster()) != 0  ) 
+	   {
+	     emcalClustersVector.push_back(caloClusterStruct);  
+	   }
+      
        }
-     }
    }
    
    iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, emcalClustersVector, fBz);
 
    //Push the blocks on
-   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) {
-     PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
-   }
-
-   fTrackArray->Clear();
+   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) 
+     {
+       PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+     }
    
+   fTrackArray->Clear();
    return iResult;
 }
 

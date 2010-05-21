@@ -3,7 +3,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
- * Primary Authors: Svein Lindal (slindal@fys.uio.no)                 *
+ * Primary Authors: Svein Lindal (slindal@fys.uio.no)                     *
  *                  for The ALICE HLT Project.                            *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -53,21 +53,18 @@ AliHLTGlobalTrackMatcher::~AliHLTGlobalTrackMatcher()
 
 }
 
-void AliHLTGlobalTrackMatcher::DoInit( ) {
+void AliHLTGlobalTrackMatcher::DoInit( ) 
+{
   //See header file for documentation
-  //BALLE TODO: Change hardcoded values to something that is initialised through command line or something!!!
-
-
+  //BALLE TODO: Change hardcoded values to something that is initialised through 
+  //command line or something!!!
   fMatchDistance = 40*40;
-
   fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
   fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
-
   fEmcalMaxZ = 350 + TMath::Sqrt(fMatchDistance) + 30;
   fEmcalMaxX = 3000;
-
-
 }
+
 
 Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, TArrayI* matchedTracksArray, Bool_t bestMatch, Int_t nMatches){
   //See header file for documentation
