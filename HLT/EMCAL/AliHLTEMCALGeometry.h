@@ -43,11 +43,9 @@ protected:
 private:
 	AliHLTEMCALGeometry(const AliHLTEMCALGeometry & );
 	AliHLTEMCALGeometry & operator = (const AliHLTEMCALGeometry &);	
-	AliEMCALGeoUtils *fGeo;
-	
-	/** The EMCAL geometry */
-	AliEMCALGeoUtils *fGeo;
 
+	// EMCal Geometry
+	AliEMCALGeoUtils *fGeo;
 
 };
 
