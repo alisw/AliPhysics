@@ -141,7 +141,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
       short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
       short timebinOffset = maxampindex - (bunchvector.at( index ).GetLength()-1); 
 	     
-      if(  maxf < fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
+      if(  maxf <= fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
 	{
 	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
  	}
@@ -149,7 +149,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
       int first;
       int last;
       
-      if ( maxf > fAmpCut )
+      if ( maxf >= fAmpCut )
 	{	  
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev, &first, &last);
 	  int nsamples =  last - first;

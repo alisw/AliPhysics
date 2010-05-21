@@ -422,7 +422,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	//
 	int nsamples = fRawAnalyzer->PreFitEvaluateSamples( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2(), bunchIndex, ampEstimate, maxADC, timeEstimate, pedEstimate, first, last); 
 	
-	if (ampEstimate > fNoiseThreshold) { // something worth looking at
+	if (ampEstimate >= fNoiseThreshold) { // something worth looking at
 	  
 	  time = timeEstimate; // maxrev in AliCaloRawAnalyzer speak; comes with an offset w.r.t. real timebin
 	  Int_t timebinOffset = bunchlist.at(bunchIndex).GetStartBin() - (bunchlist.at(bunchIndex).GetLength()-1); 
@@ -450,7 +450,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	} 
       } // fitDone
     
-      if (amp > fNoiseThreshold  && amp<fgkRawSignalOverflow) { // something to be stored
+      if (amp >= fNoiseThreshold  && amp<fgkRawSignalOverflow) { // something to be stored
 	if ( ! fitDone) { // smear ADC with +- 0.5 uniform (avoid discrete effects)
 	  amp += (0.5 - gRandom->Rndm()); // Rndm generates a number in ]0,1]
 	}

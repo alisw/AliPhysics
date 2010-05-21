@@ -90,7 +90,7 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
       short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
       // timebinOffset is timebin value at maximum (maxrev)
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-      if ( maxf > fAmpCut )
+      if ( maxf >= fAmpCut )
 	{
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
 	  int nsamples =  last - first + 1;

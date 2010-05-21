@@ -69,7 +69,7 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
       Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-      if ( maxf > fAmpCut )
+      if ( maxf >= fAmpCut )
 	{
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
 	  int nsamples =  last - first + 1;

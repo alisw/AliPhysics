@@ -416,13 +416,13 @@ AliCaloRawAnalyzer::PreFitEvaluateSamples( const vector<AliCaloBunchInfo>  &bunc
   index = SelectBunch( bunchvector,  &maxampindex,  &maxamp ); // select the bunch with the highest amplitude unless any time constraints is set
 
   
-  if( index >= 0 && maxamp > fAmpCut) // something valid was found, and non-zero amplitude
+  if( index >= 0 && maxamp >= fAmpCut) // something valid was found, and non-zero amplitude
     {
       // use more convenient numbering and possibly subtract pedestal
       ped  = ReverseAndSubtractPed( &(bunchvector.at(index)),  altrocfg1, altrocfg2, fReversed  );
       maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       
-      if ( maxf > fAmpCut ) // possibly significant signal
+      if ( maxf >= fAmpCut ) // possibly significant signal
 	{
 	  // select array around max to possibly be used in fit
 	  maxrev = maxampindex - bunchvector.at(index).GetStartBin(); 
