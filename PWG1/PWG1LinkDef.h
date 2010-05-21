@@ -55,6 +55,7 @@
 #pragma link C++ class AliPerformancePtCalib+;
 #pragma link C++ class AliPerformancePtCalibMC+;
 #pragma link C++ class AliPerfAnalyzeInvPt+;
+#pragma link C++ class AliTPCPerformanceSummary+;
 
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
