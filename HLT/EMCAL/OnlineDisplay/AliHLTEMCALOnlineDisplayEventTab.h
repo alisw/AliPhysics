@@ -23,7 +23,7 @@
 
 
 #include "AliHLTEMCALOnlineDisplayTab.h"
-#include "AliHLTEMCALConstants.h"
+#include "AliHLTCaloConstants.h"
 #include "AliHLTEMCALMapper.h"
 
 
@@ -31,8 +31,8 @@
 #define NXRCUCOORD 2
 
 
-using namespace EmcalHLTConst;
-
+//using namespace EmcalHLTConst;
+using CALO::MAXHOSTS;
 
 class TGTab;
 class TRootEmbeddedCanvas;
@@ -81,7 +81,7 @@ class AliHLTEMCALOnlineDisplayEventTab : public AliHLTEMCALOnlineDisplayTab
   
  private:
   AliHLTEMCALOnlineDisplayEventTab (const AliHLTEMCALOnlineDisplayEventTab & );
-  AliHLTEMCALOnlineDisplayEventTabb & operator = (const AliHLTEMCALOnlineDisplayEventTab  &);
+  AliHLTEMCALOnlineDisplayEventTab & operator = (const AliHLTEMCALOnlineDisplayEventTab  &);
   AliHLTEMCALOnlineDisplayEventTab();
   void FillRawData(const AliHLTCaloChannelRawDataStruct &rawStr);
   AliHLTEMCALGetEventButton* fgEventButtPtr; 
