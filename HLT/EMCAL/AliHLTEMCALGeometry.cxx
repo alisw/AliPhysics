@@ -26,15 +26,13 @@ TGeoManager *gGeoManager = 0;
 
 AliHLTEMCALGeometry::AliHLTEMCALGeometry() :
 	AliHLTCaloGeometry ("EMCAL"),
-	fGeo(0),
-	fEMCALGeometry(0)
+	fGeo(0)
 {
 
   //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	//fGeo = new AliEMCALGeometry("EMCAL_COMPLETE","EMCAL");
 	//fGeo =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
 	//TGeoManager::Import("/home/fedro/work/AliRoot/test/QA/geometry.root");
-	//fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 
   GetGeometryFromCDB();
 }
@@ -54,6 +52,7 @@ AliHLTEMCALGeometry::~AliHLTEMCALGeometry()
 void 
 AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord)
 {
+	// Working variables
   Int_t istrip = 0;
   Float_t z0 = 0;
   Float_t zb = 0;
@@ -66,23 +65,26 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
   // parameters for shower depth calculation
   Float_t X0 = fCaloConstants->GetRADLENGTH();
   Float_t Ecr = fCaloConstants->GetCRITICENERGY();
-  Float_t Cj;
+  Float_t Cj = fCaloConstants->GetCJ();
+
+  // tapering angles
   Float_t teta0 = fCaloConstants->GetCELLANGLE(); //tapering angle (deg)
   Float_t teta1; //working angle
   Float_t L = fCaloConstants->GetCELLHEIGHT();
+
   // converting to MEV
   Float_t E = recPoint.fAmp * 1000;
-  //TVector3 v1;
+
   Double_t glob[3] ={0,0,0};
   Double_t loc[3] = {0,0,0};
   
   if (recPoint.fZ >= 47.51 || recPoint.fZ< -0.51) {
-    Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid Z: %f from recpoint ", recPoint.fZ);
+    //Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid Z: %f from recpoint ", recPoint.fZ);
     return;
   }
   
   if (recPoint.fX >= 23.51 || recPoint.fX< -0.51) {
-    Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid X: % from recpoint ", recPoint.fX);
+    //Logging(kHLTLogError, "HLT", "EMCAL", "AliHLTEMCALGeometry::GetGlobalCoordinates: invalid X: % from recpoint ", recPoint.fX);
     return;
   }
   
@@ -134,7 +136,6 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
   //	   cout << "----> z0: "<< z0 << endl;
   //	   cout << "----> zb: "<< zb << endl;
   //	   cout << "----> corner z: "<< z_is << endl;
-
   //	   cout << "----> teta1: "<< TMath::RadToDeg()*teta1 << endl;
 
   y = d/TMath::Cos(teta1) + zb*TMath::Sin(teta1);
@@ -154,17 +155,31 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
       return;
     }
 
-  ConvertRecPointCoordinates(loc[1], loc[2], loc[3]);
+  //cout << "recpoint Particle " << recPoint.fParticle << endl;
+  // cout << "recpoint Module " << recPoint.fModule << endl;
 
-  fGeo->GetGlobal(loc, glob, recPoint.fModule);
+	 fGeo->GetGlobal(loc, glob, recPoint.fModule);
 
-  globalCoord.fX = glob[0];
-  globalCoord.fY = glob[1];
-  globalCoord.fZ = glob[2];
+
+	 // cout << "recpoint Amp " << recPoint.fAmp << endl;
+
+	 ConvertRecPointCoordinates(loc[0], loc[1], loc[2]);
+
+	 //cout << "after conversion ";
+	 //cout << "x: " << loc[0] << " y: "<< loc[1] << " z " << loc[2] << endl;
+
+ 	 fGeo->GetGlobal(&loc[0], &glob[0], recPoint.fModule);
+
+	 //cout << "global cooordinates after call:";
+	 //cout << "x: " << glob[0] << " y: "<< glob[1] << " z " << glob[2] << endl;
+
+	 globalCoord.fX = glob[0];
+	 globalCoord.fY = glob[1];
+	 globalCoord.fZ = glob[2];
 }
  
 void 
-AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, UInt_t y, UInt_t z, Int_t& AbsId)
+AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, Double_t x, Double_t z, Int_t& AbsId)
 {
 
   if(!fGeo)
@@ -173,20 +188,25 @@ AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, UInt_t y, UInt_t z, Int_t& AbsI
       return;
 
     }
-	
-  AbsId = fGeo->GetAbsCellIdFromCellIndexes(module, y, z);
+	AbsId = fGeo->GetAbsCellIdFromCellIndexes(module, (Int_t) x, (Int_t) z);
+
+
 	
 }
 
 void AliHLTEMCALGeometry::ConvertRecPointCoordinates(Double_t &x, Double_t &y, Double_t &z) const
 {
-  Double_t DX = 13.869008;
-  Double_t DY = 72.559998;
-  Double_t DZ = 175.00000;
 
-  x = y - DX;  //fixme
-  y = -x + DY; //fixme
-  z = z - DZ;  //fixme
+	//FIXME
+	// this should be read from GEANT box dimensions
+	Double_t DX = 13.869008;
+	Double_t DY = 72.559998;
+	Double_t DZ = 175.00000;
+
+	// from our local frame to GEANT local frame
+	x = y - DX;  //FIXME
+	y = -x + DY; //FIXME
+	z = z - DZ;  //FIXME
 
 }
 
@@ -204,10 +224,10 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
       if (pEntry)
 	{
-	  if(!fEMCALGeometry)
+	  if(!fGeo)
 	    {
-	      delete fEMCALGeometry;
-	      fEMCALGeometry = 0;
+	      delete fGeo;
+	      fGeo = 0;
 	    }
 
 	  gGeoManager = (TGeoManager*) pEntry->GetObject();
@@ -215,13 +235,14 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	  if(gGeoManager)
 	    {
 	      fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
-	      //fClusterAnalyserPtr->SetGeometry(fEMCALGeometry);
 	    }
 
 	}
       else
 	{
-	  //HLTError("can not fetch object \"%s\" from OCDB", path);
+    	  //HLTError("can not fetch object \"%s\" from OCDB", path);
+    	  Logging(kHLTLogError, "HLT", "EMCAL", "can not fetch object from OCDB");
+
 	}
     }
   return 0;
