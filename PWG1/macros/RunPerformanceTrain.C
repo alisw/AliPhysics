@@ -239,7 +239,13 @@ void RunPerformanceTrain(Char_t *file="esd.root", Int_t runNumber = 2, const cha
   // Muon Efficiency
   //
   if(iPWG1perfMuonEff) {
-  //
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/muondep/AddTaskMUONTrackingEfficiency.C");
+  AliAnalysisTaskMuonTrackingEff *taskMuonTrackEff = AliAnalysisTaskMuonTrackingEff();
+  if(!taskMuonTrackEff) { 
+     Error("RunPerformanceTrain","AliAnalysisTaskMuonTrackingEff not created!");
+     return;
+  }
+  mgr->AddTask(taskMuonTrackEff);
   } 
   else {
     Printf("RunPerformanceTrain: Muon Efficiency - EXCLUDED!");

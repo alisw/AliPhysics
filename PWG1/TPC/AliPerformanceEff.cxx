@@ -205,8 +205,10 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     labelsAllRec[iTrack]=label;
 
     // TPC only
-    if(IsRecTPC(track) != 0) 
+    if(IsRecTPC(track) != 0) { 
       labelsRec[iTrack]=label;
+    }
+
   }
 
   // 
@@ -220,8 +222,8 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     return;
   }
 
-  //Int_t nPart  = stack->GetNtrack();
-  Int_t nPart  = stack->GetNprimary();
+  Int_t nPart  = stack->GetNtrack();
+  //Int_t nPart  = stack->GetNprimary();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
   {
     TParticle* particle = stack->Particle(iMc);
@@ -824,10 +826,12 @@ void AliPerformanceEff::Analyse()
 
   if(GetAnalysisMode() != 5) {
 
-  fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.9); // eta range
-  fEffHisto->GetAxis(2)->SetRangeUser(0.1,10.); // pt range
+  fEffHisto->GetAxis(0)->SetRangeUser(-0.9,0.89); // eta range
+  fEffHisto->GetAxis(2)->SetRangeUser(0.1,10.);   // pt range
+
 
   // rec efficiency vs pt
+  fEffHisto->GetAxis(3)->SetRangeUser(0.,3.99);  // reconstructed 
   TH1D *ptAll = fEffHisto->Projection(2);
 
   fEffHisto->GetAxis(4)->SetRangeUser(1.,1.);  // reconstructed 
