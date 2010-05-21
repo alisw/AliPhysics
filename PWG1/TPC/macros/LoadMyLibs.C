@@ -7,6 +7,7 @@ void LoadMyLibs() {
   CheckLoadLibrary("libTree");
   CheckLoadLibrary("libGui");
   CheckLoadLibrary("libMinuit");
+  CheckLoadLibrary("libSTAT");
   
   // Load AliRoot libraries
   
@@ -18,11 +19,31 @@ void LoadMyLibs() {
   CheckLoadLibrary("libSTEER");
   CheckLoadLibrary("libRAWDatasim");
 
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+
+  gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
+  gSystem->Load("libPWG0selectors");
+
+  gSystem->Load("libTPCcalib.so");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libPWG1");
+  
+  gSystem->Load("libPHOSUtils");
+  gSystem->Load("libEMCALUtils");
+  gSystem->Load("libPWG4PartCorrBase");
+  gSystem->Load("libPWG4PartCorrDep");
+
+  /*
   CheckLoadLibrary("libANALYSIS");
   CheckLoadLibrary("libAOD");
   CheckLoadLibrary("libANALYSISalice");
   CheckLoadLibrary("libTENDER");
   CheckLoadLibrary("libSTAT");
+  */
 
   CheckLoadLibrary("libTPCbase");
   CheckLoadLibrary("libTPCsim");
