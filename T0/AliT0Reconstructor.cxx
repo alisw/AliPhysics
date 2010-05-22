@@ -333,7 +333,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 			    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 	   Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
 	   Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
-	   AliDebug(0,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
+	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %i\n ",ampMip,qtMip, adc[ipmt]));
 	   //bad peak removing
 	   if(sl<540) {
 	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
@@ -352,7 +352,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
 	 if(time[ipmt] > 1 
-	    && (timeLED[ipmt] - timeCFD[ipmt])<550 )
+	    && (timeLED[ipmt] - timeCFD[ipmt])<540 )
 	   {
 	     if(time[ipmt]<besttimeC){
 	       besttimeC=time[ipmt]; //timeC
@@ -363,7 +363,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
 	   if(time[ipmt] > 1 
-	      && (timeLED[ipmt] - timeCFD[ipmt])<550 )
+	      && (timeLED[ipmt] - timeCFD[ipmt])<540 )
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 besttimeA=time[ipmt]; //timeA
@@ -415,7 +415,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   AliDebug(1,Form("Start FillESD T0"));
   Float_t channelWidth = fParam->GetChannelWidth() ;  
-  Float_t c = 29.9792458; // cm/ns
+  Float_t c = 0.0299792458; // cm/ps
   Float_t currentVertex=0, shift=0;
   Int_t ncont=0;
   const AliESDVertex* vertex = pESD->GetPrimaryVertex();
@@ -493,8 +493,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	tcorr = fESDTZEROfriend->GetT0timeCorr();
 	for ( Int_t i=0; i<24; i++) {
           timecorr[i]=tcorr[i];
-	  if(i<12 && time[i]>1) timecorr[i] -=  shift*channelWidth;
-	  if(i>11 && time[i]>1) timecorr[i] +=  shift*channelWidth;
+	  if(i<12 && time[i]>1) timecorr[i] -=  shift/channelWidth;
+	  if(i>11 && time[i]>1) timecorr[i] +=  shift/channelWidth;
 	}
 	fESDTZEROfriend->SetT0timeCorr( timecorr) ;
 	fESDTZEROfriend->SetT0ampLEDminCFD(amp);
