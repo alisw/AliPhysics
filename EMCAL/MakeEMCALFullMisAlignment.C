@@ -1,4 +1,6 @@
-void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEAR",TString surveyFilename = "emcal_survey_edms1014917.txt"){
+enum SurveyDataType_t { kSurvey = 0, kDummy = 1};
+
+void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEAR",TString surveyFilename = "emcal_survey_FIRSTYEAR.txt",SurveyDataType_t type = kSurvey){
   // Create TClonesArray of full misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALFullMisAlignment.C";
@@ -41,7 +43,7 @@ void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEAR",TString surve
   }    
 
 
-  AliEMCALSurvey emcalSurvey(surveyFilename);
+  AliEMCALSurvey emcalSurvey(surveyFilename,type);
   emcalSurvey.CreateAliAlignObjParams(alobj);
 
   // *************************    2nd step    ***************
@@ -62,7 +64,8 @@ void MakeEMCALFullMisAlignment(TString geoname = "EMCAL_FIRSTYEAR",TString surve
     // save in CDB storage
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Jennifer Klay");
-    md->SetComment("Full misalignment for EMCAL");
+    md->SetComment("Full misalignment for EMCAL_FIRSTYEAR based on survey information");
+    md->AddDateToComment();
     md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
     AliCDBId id("EMCAL/Align/Data",0,AliCDBRunRange::Infinity());
     storage->Put(array,id,md);
