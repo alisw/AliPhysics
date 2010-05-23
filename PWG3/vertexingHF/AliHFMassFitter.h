@@ -19,6 +19,7 @@ class TNtuple;
 class TFile;
 class TList;
 class TH1F;
+class TVirtualPad;
 
 class AliHFMassFitter : public TNamed {
 
@@ -60,6 +61,7 @@ class AliHFMassFitter : public TNamed {
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
   Bool_t*  GetFixParam()const {return fFixPar;}
   Bool_t   GetFixThisParam(Int_t thispar)const;
+  TVirtualPad* GetPad(Bool_t writeFitInfo=kTRUE,Double_t nsigma=2)const;
 
   void     PrintParTitles() const;
 
@@ -69,7 +71,8 @@ class AliHFMassFitter : public TNamed {
   TNtuple* NtuParamOneShot(char *ntuname="ntupar"); // the three functions above all together
   void     WriteHisto(TString path="./") const; // write the histogram
   void     WriteNtuple(TString path="./") const; // write the TNtuple
-  void     DrawFit() const;
+  void     DrawHere(TVirtualPad* pd,Bool_t writeFitInfo=kTRUE,Double_t nsigma=2) const;
+  void     DrawFit(Double_t nsigma=2) const;
   void     Reset();
 
   void     IntS(Float_t *valuewitherror) const;    // integral of signal given my the fit with error
@@ -89,6 +92,8 @@ class AliHFMassFitter : public TNamed {
   
 
  private:
+
+  void     PlotFit(TVirtualPad* pd,Bool_t writeFitInfo=kTRUE,Double_t nsigma=2)const;
 
   void     ComputeParSize();
   Bool_t   SideBandsBounds();
