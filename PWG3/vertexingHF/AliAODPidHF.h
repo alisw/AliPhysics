@@ -31,8 +31,10 @@ class AliAODPidHF : public AliAODPid{
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector);
  Bool_t IsPionRaw (AliAODTrack *track, TString detector);
  Bool_t IsProtonRaw (AliAODTrack *track, TString detector);
+ Bool_t IsElectronRaw (AliAODTrack *track, TString detector);
  void BayesianProbability(AliAODTrack *track,TString detectors,Double_t *pid);
  void CombinedProbability(AliAODTrack *track,Bool_t *type); //0 = pion, 1 = kaon, 2 = proton
+ Bool_t CheckStatus(AliAODTrack *track,TString detectors);
 
  protected:
 
@@ -42,6 +44,7 @@ class AliAODPidHF : public AliAODPid{
  void BayesianProbabilityITS(AliAODTrack *track,Double_t *prob);
  void BayesianProbabilityTPC(AliAODTrack *track,Double_t *prob);
  void BayesianProbabilityTOF(AliAODTrack *track,Double_t *prob);
+ void BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob);
 
  private:
  Double_t fSigma; // sigma for the raw signal PID 
