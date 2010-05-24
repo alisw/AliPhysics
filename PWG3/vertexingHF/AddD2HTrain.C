@@ -95,9 +95,9 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   }  
 
   if(addDStar) {
-    taskName="AddTaskDStar.C"; taskName.Prepend(loadMacroPath.Data());
+    taskName="AddTaskDStarSpectra.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
-    AliAnalysisTaskSEDStar *dstarTask = AddTaskDStar(readMC);
+    AliAnalysisTaskSEDStarSpectra *dstarTask = AddTaskDStarSpectra(readMC);
     ntasks++;
   }  
 
