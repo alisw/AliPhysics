@@ -29,10 +29,11 @@
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 #include "AliTRDPIDResponse.h"
+#include "AliESDtrack.h"
 
 ClassImp(AliAODpidUtil)
 
-  Int_t AliAODpidUtil::MakePID(AliAODTrack *track,Float_t TimeZeroTOF,Double_t *p) const {
+  Int_t AliAODpidUtil::MakePID(AliAODTrack *track,Double_t *p) const {
   //
   //  Calculate probabilities for all detectors, except if TPConly==kTRUE
   //  and combine PID
@@ -54,7 +55,7 @@ ClassImp(AliAODpidUtil)
   Double_t tofPid[AliPID::kSPECIES];
   Double_t trdPid[AliPID::kSPECIES];
   MakeITSPID(track,itsPid);
-  MakeTOFPID(track, TimeZeroTOF,tofPid);
+  MakeTOFPID(track,tofPid);
   //MakeHMPIDPID(track);
   MakeTRDPID(track,trdPid);
   for (Int_t j=0; j<ns; j++) {
@@ -70,6 +71,9 @@ void AliAODpidUtil::MakeTPCPID(AliAODTrack *track,Double_t *p) const
   //  TPC pid using bethe-bloch and gaussian response
   //
 
+  if ((track->GetStatus()&AliESDtrack::kTPCin )==0) return;
+  UShort_t nTPCClus=track->GetTPCNcls();
+
   Double_t mom = track->P();
   AliAODPid *pidObj = track->GetDetPid();
   if (pidObj) mom = pidObj->GetTPCmomentum();
@@ -80,7 +84,7 @@ void AliAODpidUtil::MakeTPCPID(AliAODTrack *track,Double_t *p) const
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
     Double_t bethe=fTPCResponse.GetExpectedSignal(mom,type); 
-    Double_t sigma=fTPCResponse.GetExpectedSigma(mom,50,type);
+    Double_t sigma=fTPCResponse.GetExpectedSigma(mom,nTPCClus,type);
     if (TMath::Abs(dedx-bethe) > fRange*sigma) {
       p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
     } else {
@@ -104,6 +108,14 @@ void AliAODpidUtil::MakeITSPID(AliAODTrack *track,Double_t *p) const
   //  1) Truncated mean method
   //
 
+
+  if ((track->GetStatus()&AliESDtrack::kITSin)==0) return;
+  UChar_t clumap=track->GetITSClusterMap();
+  Int_t nPointsForPid=0;
+  for(Int_t i=2; i<6; i++){
+   if(clumap&(1<<i)) ++nPointsForPid;
+  }
+  if(nPointsForPid<3) return;// track not to be used for PID purposes
 
   Double_t mom=track->P();  
   AliAODPid *pidObj = track->GetDetPid();
@@ -132,11 +144,14 @@ void AliAODpidUtil::MakeITSPID(AliAODTrack *track,Double_t *p) const
 
 }
 //_________________________________________________________________________
-void AliAODpidUtil::MakeTOFPID(AliAODTrack *track, Float_t TimeZeroTOF,Double_t *p) const
+void AliAODpidUtil::MakeTOFPID(AliAODTrack *track, Double_t *p) const
 {
   //
   //   TOF PID using gaussian response
   //
+  if ((track->GetStatus()&AliESDtrack::kTOFout )==0)    return;
+  if ((track->GetStatus()&AliESDtrack::kTIME )==0)     return;
+  if ((track->GetStatus()&AliESDtrack::kTOFpid )==0)   return;
 
   Double_t time[AliPID::kSPECIESN];
   Double_t sigma[AliPID::kSPECIESN];
@@ -164,7 +179,7 @@ void AliAODpidUtil::MakeTOFPID(AliAODTrack *track, Float_t TimeZeroTOF,Double_t 
 		       sigma[AliPID::kProton]
 		       ));
 
-  Double_t tof = pidObj->GetTOFsignal() - TimeZeroTOF;
+  Double_t tof = pidObj->GetTOFsignal();
 
   Bool_t mismatch = kTRUE;
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {
@@ -193,9 +208,17 @@ void AliAODpidUtil::MakeTRDPID(AliAODTrack *track,Double_t *p) const
 {
   
   // Method to recalculate the TRD PID probabilities
+  if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return;
+
   AliAODPid *pidObj = track->GetDetPid();
   Float_t *mom=pidObj->GetTRDmomentum();
-  Double_t *dedx=pidObj->GetTRDsignal();
+  Int_t ntracklets=0;
+  for(Int_t iPl=0;iPl<6;iPl++){
+   if(mom[iPl]>0.) ntracklets++;
+  }
+   if(ntracklets<4) return;
+
+  Double_t* dedx=pidObj->GetTRDsignal();
   Bool_t norm=kTRUE;
   fTRDResponse.GetResponse(pidObj->GetTRDnSlices(),dedx,mom,p,norm);
   return;

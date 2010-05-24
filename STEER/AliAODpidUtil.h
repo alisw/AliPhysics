@@ -28,15 +28,15 @@ public:
   virtual ~AliAODpidUtil() {;}
 
 
-  Int_t MakePID(AliAODTrack *track,Float_t TimeZeroTOF,Double_t *p) const;
+  Int_t MakePID(AliAODTrack *track,Double_t *p) const;
   void MakeTPCPID(AliAODTrack *track,Double_t *p) const;
   void MakeITSPID(AliAODTrack *track,Double_t *p) const;
-  void MakeTOFPID(AliAODTrack *track, Float_t TimeZeroTOF,Double_t *p) const;
+  void MakeTOFPID(AliAODTrack *track,Double_t *p) const;
   //  void MakeHMPIDPID(AliESDtrack *track);
   void MakeTRDPID(AliAODTrack *track,Double_t *p) const;
 
   Float_t NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type, const Float_t TimeZeroTOF) const;
+  Float_t NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const;
   Float_t NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const;
 
   AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
@@ -62,11 +62,11 @@ inline Float_t AliAODpidUtil::NumberOfSigmasTPC(const AliAODTrack *track, AliPID
   return fTPCResponse.GetNumberOfSigmas(mom,pidObj->GetTPCsignal(),0,type); 
 }
 
-inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type, const Float_t TimeZeroTOF) const {
+inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const {
   Double_t times[AliPID::kSPECIES];
   AliAODPid *pidObj = track->GetDetPid();
   pidObj->GetIntegratedTimes(times);
-  return (pidObj->GetTOFsignal() - TimeZeroTOF - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
+  return (pidObj->GetTOFsignal() - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
 }
 
 inline Float_t AliAODpidUtil::NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const {
