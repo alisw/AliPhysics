@@ -10,6 +10,8 @@
 //comparison of heavy-flavour decay candidates
 // to MC truth (kinematics stored in the AOD)
 // Renu Bala, bala@to.infn.it
+// F. Prino, prino@to.infn.it
+// G. Ortona, ortona@to.infn.it
 //*************************************************************************
 
 #include <TROOT.h>
@@ -35,11 +37,14 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
+  void SetBinWidth(Float_t w);
   
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
   Int_t GetNBinsPt(){return fNPtBins;}
   Double_t GetPtBinLimit(Int_t ibin);
+  Float_t GetBinWidth(){return fBinWidth;}
+  Int_t GetNBinsHistos();
   
   void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
 
@@ -83,6 +88,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
   Int_t fNPtBins; //Number of Pt Bins
+  Float_t fBinWidth;//width of one bin in output histos
   TList *fListCuts; //list of cuts
   AliRDHFCutsDplustoKpipi *fRDCutsProduction; //Production D+ Cuts
   AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; //Cuts for Analysis
@@ -91,8 +97,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,6); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
-

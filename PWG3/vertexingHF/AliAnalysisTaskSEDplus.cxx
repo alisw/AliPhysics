@@ -13,10 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/////////////////////////////////////////////////////////////
-//
-// AliAnalysisTaskSE for the extraction of signal(e.g D+) of heavy flavor
-// decay candidates with the MC truth.
+//*************************************************************************
+// Class AliAnalysisTaskSEDplus
+// AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and 
+//comparison of heavy-flavour decay candidates
+// to MC truth (kinematics stored in the AOD)
 // Authors: Renu Bala, bala@to.infn.it
 // F. Prino, prino@to.infn.it
 // G. Ortona, ortona@to.infn.it
@@ -55,6 +56,7 @@ fNtupleDplus(0),
 fUpmasslimit(1.965),
 fLowmasslimit(1.765),
 fNPtBins(0),
+fBinWidth(0.002),
 fListCuts(0),
 fRDCutsProduction(0),
 fRDCutsAnalysis(0),
@@ -74,6 +76,7 @@ fNtupleDplus(0),
 fUpmasslimit(1.965),
 fLowmasslimit(1.765),
 fNPtBins(0),
+fBinWidth(0.002),
 fListCuts(0),
 fRDCutsProduction(dpluscutsprod),
 fRDCutsAnalysis(dpluscutsana),
@@ -129,16 +132,20 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t range){
   // set invariant mass limits
+  Float_t bw=GetBinWidth();
   fUpmasslimit = 1.865+range;
   fLowmasslimit = 1.865-range;
+  SetBinWidth(bw);
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t lowlimit, Float_t uplimit){
   // set invariant mass limits
   if(uplimit>lowlimit)
     {
+      Float_t bw=GetBinWidth();
       fUpmasslimit = lowlimit;
       fLowmasslimit = uplimit;
+      SetBinWidth(bw);
     }
 }
 //________________________________________________________________________
@@ -169,13 +176,31 @@ void AliAnalysisTaskSEDplus::SetPtBinLimit(Int_t n, Float_t* lim){
     for(Int_t i=0; i<fNPtBins+1; i++) printf(" Bin%d = %8.2f-%8.2f\n",i,fArrayBinLimits[i],fArrayBinLimits[i+1]);    
   }
 }
+//________________________________________________________________
+void AliAnalysisTaskSEDplus::SetBinWidth(Float_t w){
+  Float_t width=w;
+  Int_t nbins=(Int_t)((fUpmasslimit-fLowmasslimit)/width+0.5);
+  Int_t missingbins=4-nbins%4;
+  nbins=nbins+missingbins;
+  width=(fUpmasslimit-fLowmasslimit)/nbins;
+  if(missingbins!=0){
+    printf("AliAnalysisTaskSEDplus::SetBinWidth: W-bin width of %f will produce histograms not rebinnable by 4. New width set to %f\n",w,width);
+  }
+  else{
+    if(fDebug>1) printf("AliAnalysisTaskSEDplus::SetBinWidth: width set to %f\n",width);
+  }
+  fBinWidth=width;
+}
 //_________________________________________________________________
 Double_t  AliAnalysisTaskSEDplus::GetPtBinLimit(Int_t ibin){
   // get pt bin limit
   if(ibin>fNPtBins)return -1;
   return fArrayBinLimits[ibin];
 } 
-
+//_________________________________________________________________
+Int_t AliAnalysisTaskSEDplus::GetNBinsHistos(){
+  return (Int_t)((fUpmasslimit-fLowmasslimit)/fBinWidth+0.5);
+}
 //_________________________________________________________________
 void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS){
   //
@@ -346,38 +371,39 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   TString hisname;
   Int_t index=0;
   Int_t indexLS=0;
+  Int_t nbins=GetNBinsHistos();
   for(Int_t i=0;i<fNPtBins;i++){
 
     index=GetHistoIndex(i);
     indexLS=GetLSHistoIndex(i);
 
     hisname.Form("hMassPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
     hisname.Form("hCosPAllPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
     fCosPHist[index]->Sumw2();
     hisname.Form("hDLenAllPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.5);
     fDLenHist[index]->Sumw2();
     hisname.Form("hSumd02AllPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,1.);
     fSumd02Hist[index]->Sumw2();
     hisname.Form("hSigVertAllPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fSigVertHist[index]->Sumw2();
     hisname.Form("hPtMaxAllPt%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
+    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,5.);
     fPtMaxHist[index]->Sumw2();
 
     hisname.Form("hDCAAllPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHist[index]->Sumw2();
 
 
 
     hisname.Form("hMassPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
 
 
@@ -385,31 +411,31 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
     
     hisname.Form("hCosPAllPt%dLS",i);
-    fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+    fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
     fCosPHistLS[index]->Sumw2();
     hisname.Form("hDLenAllPt%dLS",i);
-    fDLenHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+    fDLenHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.5);
     fDLenHistLS[index]->Sumw2();
     hisname.Form("hSumd02AllPt%dLS",i);
-    fSumd02HistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+    fSumd02HistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,1.);
     fSumd02HistLS[index]->Sumw2();
     hisname.Form("hSigVertAllPt%dLS",i);
-    fSigVertHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fSigVertHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fSigVertHistLS[index]->Sumw2();
     hisname.Form("hPtMaxAllPt%dLS",i);
-    fPtMaxHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
+    fPtMaxHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,5.);
     fPtMaxHistLS[index]->Sumw2();
     
     hisname.Form("hDCAAllPt%dLS",i);
-    fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHistLS[index]->Sumw2();
     
     hisname.Form("hLSPt%dLC",i);
-    fMassHistLS[indexLS] = new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLS[indexLS] = new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
     
     hisname.Form("hLSPt%dTC",i);
-    fMassHistLSTC[indexLS] = new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLSTC[indexLS] = new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLSTC[indexLS]->Sumw2();
 
 
@@ -417,60 +443,60 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     index=GetSignalHistoIndex(i);    
     indexLS++;
     hisname.Form("hSigPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
     hisname.Form("hCosPSigPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
     fCosPHist[index]->Sumw2();
     hisname.Form("hDLenSigPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.5);
     fDLenHist[index]->Sumw2();
     hisname.Form("hSumd02SigPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,1.);
     fSumd02Hist[index]->Sumw2();
     hisname.Form("hSigVertSigPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fSigVertHist[index]->Sumw2();
     hisname.Form("hPtMaxSigPt%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
+    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,5.);
     fPtMaxHist[index]->Sumw2();    
 
     hisname.Form("hDCASigPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHist[index]->Sumw2();    
 
 
     hisname.Form("hSigPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
 
     hisname.Form("hLSPt%dLCnw",i);
-    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
     hisname.Form("hLSPt%dTCnw",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLSTC[indexLS]->Sumw2();
 
 
     
     hisname.Form("hCosPSigPt%dLS",i);
-    fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+    fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
     fCosPHistLS[index]->Sumw2();
     hisname.Form("hDLenSigPt%dLS",i);
-    fDLenHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+    fDLenHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.5);
     fDLenHistLS[index]->Sumw2();
     hisname.Form("hSumd02SigPt%dLS",i);
-    fSumd02HistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+    fSumd02HistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,1.);
     fSumd02HistLS[index]->Sumw2();
     hisname.Form("hSigVertSigPt%dLS",i);
-    fSigVertHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fSigVertHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fSigVertHistLS[index]->Sumw2();
     hisname.Form("hPtMaxSigPt%dLS",i);
-    fPtMaxHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
+    fPtMaxHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,5.);
     fPtMaxHistLS[index]->Sumw2();
 
     hisname.Form("hDCASigPt%dLS",i);
-    fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHistLS[index]->Sumw2();
     
 
@@ -478,75 +504,75 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     index=GetBackgroundHistoIndex(i); 
     indexLS++;
     hisname.Form("hBkgPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
     hisname.Form("hCosPBkgPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
     fCosPHist[index]->Sumw2();
     hisname.Form("hDLenBkgPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.5);
     fDLenHist[index]->Sumw2();
     hisname.Form("hSumd02BkgPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,1.);
     fSumd02Hist[index]->Sumw2();
     hisname.Form("hSigVertBkgPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fSigVertHist[index]->Sumw2();
     hisname.Form("hPtMaxBkgPt%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
+    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,5.);
     fPtMaxHist[index]->Sumw2();
 
     hisname.Form("hDCABkgPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHist[index]->Sumw2();
 
 
     hisname.Form("hBkgPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
 
     hisname.Form("hLSPt%dLCntrip",i);
-    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
     hisname.Form("hLSPt%dTCntrip",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLSTC[indexLS]->Sumw2();
 
     
     hisname.Form("hCosPBkgPt%dLS",i);
-    fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+    fCosPHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,1.);
     fCosPHistLS[index]->Sumw2();
     hisname.Form("hDLenBkgPt%dLS",i);
-    fDLenHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+    fDLenHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.5);
     fDLenHistLS[index]->Sumw2();
     hisname.Form("hSumd02BkgPt%dLS",i);
-    fSumd02HistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+    fSumd02HistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,1.);
     fSumd02HistLS[index]->Sumw2();
     hisname.Form("hSigVertBkgPt%dLS",i);
-    fSigVertHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fSigVertHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fSigVertHistLS[index]->Sumw2();
     hisname.Form("hPtMaxBkgPt%dLS",i);
-    fPtMaxHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
+    fPtMaxHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.5,5.);
     fPtMaxHistLS[index]->Sumw2();
     hisname.Form("hDCABkgPt%dLS",i);
-    fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+    fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHistLS[index]->Sumw2();
     
 
     indexLS++;
     hisname.Form("hLSPt%dLCntripsinglecut",i);
-    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
     hisname.Form("hLSPt%dTCntripsinglecut",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLSTC[indexLS]->Sumw2();
 
     indexLS++;
     hisname.Form("hLSPt%dLCspc",i);
-    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
     hisname.Form("hLSPt%dTCspc",i);
-    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLSTC[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLSTC[indexLS]->Sumw2();
   }
   
