@@ -2258,14 +2258,27 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
     index[k]=clusters[k]; 
   }
 
-  // special for cosmics: check which the innermost layer crossed
-  // by the track
-  Int_t innermostlayer=5;
-  Double_t drphi = TMath::Abs(track->GetD(0.,0.));
-  for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++) {
-    if(drphi < fgLayers[innermostlayer].GetR()) break;
+  // special for cosmics and TPC prolonged tracks: 
+  // check which the innermost layer crossed by the track
+  static AliITSRecoParam *repa = NULL;
+  if(!repa){
+    repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
+    if(!repa){
+      repa = AliITSRecoParam::GetHighFluxParam();
+      AliWarning("Using default AliITSRecoParam class");
+    }
   }
-  AliDebug(2,Form(" drphi  %f  innermost %d",drphi,innermostlayer));
+  Int_t evsp=repa->GetEventSpecie();
+
+  Int_t innermostlayer=0;
+  if((evsp&AliRecoParam::kCosmic) || (track->GetStatus()&AliESDtrack::kTPCin))  {
+    innermostlayer=5;
+    Double_t drphi = TMath::Abs(track->GetD(0.,0.));
+    for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++) {
+      if(drphi < (fgLayers[innermostlayer].GetR()+1.)) break;
+    }
+    AliDebug(2,Form(" drphi  %f  innermost %d",drphi,innermostlayer));
+  }
 
   Int_t modstatus=1; // found
   Float_t xloc,zloc;
@@ -4804,3 +4817,4 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
+
