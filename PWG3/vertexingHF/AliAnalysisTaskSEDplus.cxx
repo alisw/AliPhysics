@@ -297,6 +297,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       Double_t cosp=d->CosPointingAngle();
       Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
      Double_t dca=d->GetDCA();   
+     Double_t sigvert=d->GetSigmaVert();   
      Double_t ptmax=0;
      for(Int_t i=0;i<3;i++){
        if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
@@ -313,6 +314,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       fCosPHistLS[indexcut]->Fill(cosp);
       fDLenHistLS[indexcut]->Fill(dlen);
       fSumd02HistLS[indexcut]->Fill(sumD02);
+      fSigVertHistLS[indexcut]->Fill(sigvert);
       fPtMaxHistLS[indexcut]->Fill(ptmax);
       fDCAHistLS[indexcut]->Fill(dca);
       
@@ -772,8 +774,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Double_t dlen=d->DecayLength();
       Double_t cosp=d->CosPointingAngle();
       Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-      Double_t dca=d->GetDCA();      
-Double_t ptmax=0;
+      Double_t dca=d->GetDCA();
+      Double_t sigvert=d->GetSigmaVert();         
+      Double_t ptmax=0;
       for(Int_t i=0;i<3;i++){
 	if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
       }
@@ -784,6 +787,7 @@ Double_t ptmax=0;
 	fCosPHist[index]->Fill(cosp);
 	fDLenHist[index]->Fill(dlen);
 	fSumd02Hist[index]->Fill(sumD02);
+	fSigVertHist[index]->Fill(sigvert);
 	fPtMaxHist[index]->Fill(ptmax);
 	fDCAHist[index]->Fill(dca);
 	
@@ -798,6 +802,7 @@ Double_t ptmax=0;
 	    fCosPHist[index]->Fill(cosp);
 	    fDLenHist[index]->Fill(dlen);
 	    fSumd02Hist[index]->Fill(sumD02);
+	    fSigVertHist[index]->Fill(sigvert);
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
 	    if(passTightCuts==1){
@@ -811,6 +816,7 @@ Double_t ptmax=0;
 	    fCosPHist[index]->Fill(cosp);
 	    fDLenHist[index]->Fill(dlen);
 	    fSumd02Hist[index]->Fill(sumD02);
+	    fSigVertHist[index]->Fill(sigvert);
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
 	    if(passTightCuts==1){
