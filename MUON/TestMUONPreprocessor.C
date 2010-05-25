@@ -238,6 +238,8 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   // In real life the parameters will be retrieved automatically from the run logbook;
   shuttle->SetInputRunType(runType);
   
+  shuttle->AddInputRunParameter("totalEvents","20");
+                                
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   new AliMUONTrackerPreprocessor(shuttle);
   new AliMUONTriggerPreprocessor(shuttle);

@@ -157,10 +157,24 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   if (!n)
   {
     Master()->Log("Failed to read any pedestals");
+
     delete fPedestals;
     fPedestals = 0;
     delete fConfig;
     fConfig = 0;
+
+    // OK, we did not get our pedestals. Check if the ped run itself
+    // was bad, i.e. too few events
+    TString nevents(Master()->GetRunParameter("totalEvents"));
+    
+    if ( nevents.Atoi() < 50 ) 
+    {
+      Master()->Log(Form("The run had only %d events, so the failure to read pedestals is normal",nevents.Atoi()));
+      // too few events, failure is normal, returns OK.
+      return kTRUE;
+    }
+    
+    // no ped, but run looks clean, that's an error
     return kFALSE;
   }
   

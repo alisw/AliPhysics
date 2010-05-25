@@ -45,6 +45,12 @@ public:
                                   validityStart,validityInfinite);
   }
   
+  /// Publish AliPreprocessor::GetRunParameter
+  const char* GetRunParameter(const char* param)
+  {
+    return AliPreprocessor::GetRunParameter(param);
+  }
+  
   /// Publish AliPreprocessor::GetFile function
   const char* GetFile(Int_t system, const char* id, const char* source)
   {
