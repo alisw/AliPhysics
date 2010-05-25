@@ -182,6 +182,10 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fOutputs) delete fOutputs;
    if (fParamCont) delete fParamCont;
    if (fGridHandler) delete fGridHandler;
+   if (fInputEventHandler) delete fInputEventHandler;
+   if (fOutputEventHandler) delete fOutputEventHandler;
+   if (fMCtruthEventHandler) delete fMCtruthEventHandler;
+   if (fEventPool) delete fEventPool;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
    TObject::SetObjectStat(kTRUE);
 }
@@ -474,8 +478,6 @@ void AliAnalysisManager::PackOutput(TList *target)
                TString openoption = "RECREATE";
                if (!gSystem->AccessPathName(output->GetFileName())) openoption = "UPDATE";
                TFile *file = AliAnalysisManager::OpenFile(output, openoption, kTRUE);
-               // Clear file list to release object ownership to user.
-               file->Clear();
                // Save data to file, then close.
                if (output->GetData()->InheritsFrom(TCollection::Class())) {
                   // If data is a collection, we set the name of the collection 
@@ -498,6 +500,8 @@ void AliAnalysisManager::PackOutput(TList *target)
                   printf("   file %s listing content:\n", filename);
                   file->ls();
                }   
+               // Clear file list to release object ownership to user.
+               file->Clear();
                file->Close();
                output->SetFile(NULL);
                // Restore current directory
@@ -560,6 +564,8 @@ void AliAnalysisManager::PackOutput(TList *target)
                   printf("   file %s listing content:\n", output->GetFileName());
                   file->ls();
                }
+               // Clear file list to release object ownership to user.
+               file->Clear();
                file->Close();
                output->SetFile(NULL);
             }
@@ -630,7 +636,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    TDirectory *cdir = gDirectory;
    while ((cont=(AliAnalysisDataContainer*)next())) {
       wrap = 0;
-      if (cont->GetProducer()->IsPostEventLoop() && !inGrid) continue;
+      if (cont->GetProducer() && cont->GetProducer()->IsPostEventLoop() && !inGrid) continue;
       if (cont->IsRegisterDataset()) continue;
       const char *filename = cont->GetFileName();
       Bool_t isManagedByHandler = kFALSE;
@@ -847,6 +853,8 @@ void AliAnalysisManager::Terminate()
       // Close all files at output
       TDirectory *opwd = gDirectory;
       if (output->GetFile()) {
+         // Clear file list to release object ownership to user.
+         output->GetFile()->Clear();
          output->GetFile()->Close();
          output->SetFile(NULL);
          // Copy merged outputs in alien if requested
@@ -1839,6 +1847,8 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
       TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
       if (file) {
          Warning("ValidateOutputs", "File %s was not closed. Closing.", filename.Data());
+         // Clear file list to release object ownership to user.
+         file->Clear();
          file->Close();
       }
       file = TFile::Open(filename);
