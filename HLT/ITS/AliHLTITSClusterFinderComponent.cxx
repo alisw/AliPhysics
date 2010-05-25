@@ -276,8 +276,8 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
     AliGeomManager::LoadGeometry();
   }
 
- //fgeomInit = new AliITSInitGeometry(kvSPD02,2);
-  fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
+  fgeomInit = new AliITSInitGeometry();
+  //fgeomInit = new AliITSInitGeometry(kvPPRasymmFMD,2);
   //fgeomInit->InitAliITSgeom(fgeom);
   fgeom = fgeomInit->CreateAliITSgeom();
  
@@ -414,7 +414,7 @@ int AliHLTITSClusterFinderComponent::DoEvent
       fDettype->SetTreeAddressR(tR);
       Option_t *opt="All";
       fBenchmark.Start(1);
-      fDettype->DigitsToRecPoints(tD,tR,0,opt,kTRUE);
+      fDettype->DigitsToRecPoints(tD,tR,0,opt,0);
       fBenchmark.Stop(1);
       TClonesArray * fRecPoints = NULL;
       tR->SetBranchAddress("ITSRecPoints",&fRecPoints);
