@@ -1,3 +1,46 @@
+/*
+ gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STAT");
+
+ */
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "THnSparse.h"
+#include "TLatex.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TSystem.h"
+#include "TFile.h"
+#include "TChain.h"
+#include "TCut.h"
+#include "TH3.h"
+#include "TH2F.h"
+#include "TProfile3D.h"
+#include "TMath.h" 
+#include "TVectorD.h"
+#include "TMatrixD.h"
+#include "TStatToolkit.h"
+#include "TTreeStream.h"
+#include "AliExternalTrackParam.h"
+#include "AliESDfriend.h"
+#include "AliTPCcalibTime.h"
+#include "TROOT.h"
+#include "AliXRDPROOFtoolkit.h"
+#include "AliTPCCorrection.h"
+#include "AliTPCExBTwist.h"
+#include "AliTPCGGVoltError.h"
+#include "AliTPCComposedCorrection.h"
+#include "AliTPCExBConical.h"
+#include "TPostScript.h"
+#include "TStyle.h"
+#include "AliTrackerBase.h"
+#include "TGraph.h"
+#include "AliCDBManager.h"
+#include "AliTPCExBBShape.h"
+#include "TRandom.h"
+#include "AliGeomManager.h"
+
+#endif
+
+
 void AliTPCCorrectionDemo() {
 
   //
@@ -48,7 +91,7 @@ void AliTPCCorrectionDemo() {
   AliTPCComposedCorrection cc;
   cc.SetCorrections(&cs);
   cc.SetOmegaTauT1T2(wt,T1,T2);
-  cc.SetMode(1);
+  //cc.SetMode(1);
 
   cc.Print("DA"); // Print used correction classes
 
@@ -118,10 +161,10 @@ void MakeDistortionMap(){
       par[4]=(gRandom->Rndm()-0.5);
       AliExternalTrackParam trackIn(85,alpha,par,cov);
       //FitDistortedTrack(&trackIn, cc, 85, -1,pcstream);
-      twist.FitDistortedTrack(&trackIn, 85, -1,pcstream);
-      GGerror.FitDistortedTrack(&trackIn, 85, -1,pcstream);
-      exb.FitDistortedTrack(&trackIn, 85, -1,pcstream);
-      cc->FitDistortedTrack(&trackIn, 85, -1,pcstream);      
+      twist.FitDistortedTrack(trackIn, 85, -1,pcstream);
+      GGerror.FitDistortedTrack(trackIn, 85, -1,pcstream);
+      exb.FitDistortedTrack(trackIn, 85, -1,pcstream);
+      cc->FitDistortedTrack(trackIn, 85, -1,pcstream);      
     }
   }
   delete pcstream;
