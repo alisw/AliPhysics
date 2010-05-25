@@ -158,6 +158,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
 
   TH2F        *fEtavPt;
   TH2F        *fCompareTPCparam;
+  TH1F        *fITSlayer;
 
   Double_t  sdca;
   Float_t xy, z, xvertexcor, yvertexcor;

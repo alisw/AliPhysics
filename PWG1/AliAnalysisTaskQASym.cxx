@@ -153,7 +153,7 @@ ClassImp(AliAnalysisTaskQASym)
 
     ,fEtavPt(0)  
     ,fCompareTPCparam(0)
-
+    ,fITSlayer(0)
     
     ,sdca(0)
     ,xy(0)
@@ -225,6 +225,10 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fCompareTPCparam   = new TH2F("fCompareTPCparam", 
 				"fCompareTPCparam",
 				100, -1., 1.,100,-5, 5);
+
+  fITSlayer   = new TH1F("fITslayer", 
+			 "fITslayer",
+			 8, -1.5, 6.5);
   
   fEtaPhi   = new TH2F("fEtaPhi", 
 		       " #eta - #phi",
@@ -248,7 +252,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fVz   = new TH1F("fVz", 
 		   "Z of first track point",
 		   200, -50., 50.);
-  fVertexX   = new TH1F("fVerteX", 
+  fVertexX   = new TH1F("fVertexX", 
 			"X of vertex",
 			100, -1., 1.);
   fVertexY   = new TH1F("fVertexY", 
@@ -836,6 +840,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fEta);
   fHists->Add(fEtavPt);
   fHists->Add(fCompareTPCparam);
+  fHists->Add(fITSlayer);
   fHists->Add(fEtaPhi);
   fHists->Add(fThetaRec);
   fHists->Add(fPhiRec);
@@ -1177,16 +1182,24 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     fDiffDcaD->Fill(sdca+xy);
 
     if(fTrackType==2) fCompareTPCparam->Fill(z,tpcPin->GetTgl());
-    
-    //for positive particles
 
+    if(fTrackType!=2){//for global and ITS tracks
+      for(Int_t itsLayer=0;itsLayer<6;itsLayer++){
+	if(tpcP->HasPointOnITSLayer(itsLayer)){
+	  fITSlayer->Fill(itsLayer);
+	}
+      }    
+    }
+
+    //for positive particles
+    
     if(tpcP->Charge()>0){
       fRecPtPos->Fill(tpcP->Pt());
       fRecPtPosLadder[cas]->Fill(tpcP->Pt());
       fRecPtPosVz->Fill(TMath::Log10(tpcP->Pt()),tpcP->Zv());
       fRecPhiPos->Fill(TMath::RadToDeg()*phiIn);
-    
-     
+      
+      
       fRecPhiPosLadder[cas]->Fill(TMath::RadToDeg()*phiIn);
       fRecPhiPosVz->Fill(TMath::RadToDeg()*phiIn,tpcP->Zv());
       fSignedDcaPosVz->Fill(sdca,tpcP->Zv());
