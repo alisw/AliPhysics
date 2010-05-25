@@ -81,7 +81,7 @@ AliMpManuStore* AliMpManuStore::ReadData(const AliMpDataStreams& dataStreams,
 
     if ( fgInstance ) {
         if ( warn )
-            AliWarningClass("DDL Store has been already loaded");
+            AliWarningClass("Manu Store has been already loaded");
         return fgInstance;
     }
 
@@ -142,6 +142,8 @@ AliMpManuStore::~AliMpManuStore()
 /// Destructor
 
   AliDebug(1,"");
+  
+  fgInstance = 0;
 }
 
 //

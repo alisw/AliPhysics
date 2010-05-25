@@ -217,7 +217,8 @@ Bool_t AliMpCDB::LoadManuStore(Bool_t warn)
       << "Loading Manu store from MUON/Calib/MappingRunData" << endl;
   
     // Load segmentation
-    LoadMpSegmentation(warn); 
+    if ( ! AliMpSegmentation::Instance(false) ) 
+      LoadMpSegmentation(warn); 
 
     TObject* cdbEntryObject = GetCDBEntryObject("MUON/Calib/MappingRunData");
     if ( ! cdbEntryObject ) return kFALSE;
