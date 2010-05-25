@@ -45,7 +45,10 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const c
  fListHistos(NULL),
  fUseWeights(useWeights),
  fUsePhiWeights(kFALSE),
- fListWeights(NULL)
+ fListWeights(NULL),
+ fqMin(0.),
+ fqMax(1000.),
+ fqNbins(10000)
  {
   //constructor
   cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution(const char *name, Bool_t useWeights)"<<endl;
@@ -71,7 +74,10 @@ AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution():
  fListHistos(NULL),  
  fUseWeights(kFALSE),
  fUsePhiWeights(kFALSE),
- fListWeights(NULL)
+ fListWeights(NULL),
+ fqMin(0.),
+ fqMax(0.),
+ fqNbins(0)
  {
   // Dummy constructor
   cout<<"AliAnalysisTaskFittingQDistribution::AliAnalysisTaskFittingQDistribution()"<<endl;
@@ -100,7 +106,11 @@ void AliAnalysisTaskFittingQDistribution::UserCreateOutputObjects()
    // Pass the list with weights to class:
    if(fListWeights) fFQD->SetWeightsList(fListWeights);
   }
-  
+  // Settings for q-distribution:
+  fFQD->SetqMin(fqMin);
+  fFQD->SetqMax(fqMax);
+  fFQD->SetqNbins(fqNbins); 
+
   fFQD->Init();
   
   if(fFQD->GetHistList()) 
