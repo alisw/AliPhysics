@@ -40,6 +40,13 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
+  // q-distribution:
+  void SetqMin(Double_t const qmin) {this->fqMin = qmin;};
+  Double_t GetqMin() const {return this->fqMin;};
+  void SetqMax(Double_t const qmax) {this->fqMax = qmax;};
+  Double_t GetqMax() const {return this->fqMax;};
+  void SetqNbins(Int_t const qNbins) {this->fqNbins = qNbins;};
+  Int_t GetqNbins() const {return this->fqNbins;};  
  
  private:
   AliAnalysisTaskFittingQDistribution(const AliAnalysisTaskFittingQDistribution& aatfqd);
@@ -49,11 +56,14 @@ class AliAnalysisTaskFittingQDistribution : public AliAnalysisTaskSE{
   AliFlowAnalysisWithFittingQDistribution* fFQD; // Fitting q-distribution (FQD) object
   TList *fListHistos;                            // collection of output 
      
-  Bool_t fUseWeights;                            // use any weights
-  Bool_t fUsePhiWeights;                         // phi weights
-  TList* fListWeights;                           // list with weights                                               
+  Bool_t fUseWeights;    // use any weights
+  Bool_t fUsePhiWeights; // phi weights
+  TList* fListWeights;   // list with weights  
+  Double_t fqMin;        // lower boundary of TH1D *fqDistribution
+  Double_t fqMax;        // upper boundary of TH1D *fqDistribution
+  Int_t fqNbins;         // number of bins of TH1D *fqDistribution                                             
                                                            
-  ClassDef(AliAnalysisTaskFittingQDistribution, 0); 
+  ClassDef(AliAnalysisTaskFittingQDistribution, 1); 
 };
 
 //================================================================================================================

@@ -705,6 +705,9 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
   if (FQD){
     AliAnalysisTaskFittingQDistribution *taskFQD = new AliAnalysisTaskFittingQDistribution("TaskFittingQDistribution",kFALSE);
     taskFQD->SetUsePhiWeights(WEIGHTS[0]); 
+    taskFQD->SetqMin(0.);
+    taskFQD->SetqMax(1000.);
+    taskFQD->SetqNbins(10000);
     mgr->AddTask(taskFQD);
   }
   if (MCEP){

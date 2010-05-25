@@ -5,11 +5,11 @@
  */
 
 /******************************** 
- * integrated flow estimate by  *
+ * estimating reference flow by *
  *   fitting q-distribution     * 
  *                              *
  * author: Ante Bilandzic       * 
- *          (anteb@nikhef.nl)   *
+ *       (abilandzic@gmail.com) *
  *                              *  
  *  based on the macro written  *
  *     by Sergei Voloshin       *
@@ -27,8 +27,8 @@ class TDirectoryFile;
 
 class TH1F;
 class TH1D;
-class TLegend;
 class TProfile;
+class TF1;
 
 class AliFlowEventSimple;
 class AliFlowTrackSimple;
@@ -54,11 +54,13 @@ class AliFlowAnalysisWithFittingQDistribution{
    virtual void AccessFittingParameters();
   // 2.) method Make() and methods called within Make(): 
   virtual void Make(AliFlowEventSimple* anEvent);
+   virtual void CheckPointersUsedInMake();
   // 3.) method Finish() and methods called within Finish(): 
   virtual void Finish(Bool_t doFit = kTRUE);
-   virtual void DoFit(Bool_t useParticleWeights, Bool_t sigma2Fitted);
-   virtual void FillCommonHistResultsIntFlow(Bool_t useParticleWeights, Bool_t sigma2Fitted);
-   virtual void PrintFinalResultsForIntegratedFlow();
+   virtual void CheckPointersUsedInFinish();
+   virtual void DoFit(Bool_t sigma2Fitted);
+   virtual void FillCommonHistResults(Bool_t sigma2Fitted);
+   virtual void PrintOnTheScreen();
   // 4.) other methods:
   virtual void GetOutputHistograms(TList *outputListHistos); 
   virtual void WriteHistograms(TString *outputFileName);
@@ -96,17 +98,25 @@ class AliFlowAnalysisWithFittingQDistribution{
   void SetEtaWeights(TH1D* const histEtaWeights) {this->fEtaWeights = histEtaWeights;};
   TH1D* GetEtaWeights() const {return this->fEtaWeights;};
   // 3.) distributions:
-  void SetSumOfParticleWeights(TH1D* const sopW, Int_t pW) {this->fSumOfParticleWeights[pW] = sopW;};
-  TH1D* GetSumOfParticleWeights(Int_t pW) const {return this->fSumOfParticleWeights[pW];};
-  void SetqDistribution(TH1D* const qd, Int_t pW) {this->fqDistribution[pW] = qd;};
-  TH1D* GetqDistribution(Int_t pW) const {return this->fqDistribution[pW];};
+  void SetSumOfParticleWeights(TH1D* const sopW) {this->fSumOfParticleWeights = sopW;};
+  TH1D* GetSumOfParticleWeights() const {return this->fSumOfParticleWeights;};
+  void SetqDistribution(TH1D* const qd) {this->fqDistribution = qd;};
+  TH1D* GetqDistribution() const {return this->fqDistribution;};
+  void SetqMin(Double_t const qmin) {this->fqMin = qmin;};
+  Double_t GetqMin() const {return this->fqMin;};
+  void SetqMax(Double_t const qmax) {this->fqMax = qmax;};
+  Double_t GetqMax() const {return this->fqMax;};
+  void SetqNbins(Int_t const qNbins) {this->fqNbins = qNbins;};
+  Int_t GetqNbins() const {return this->fqNbins;};  
   // 4.) final results of fitting:
-  void SetIntFlow(TH1D* const intFlow, Int_t pW, Int_t sigmaFitted) {this->fIntFlow[pW][sigmaFitted] = intFlow;};
-  TH1D* GetIntFlow(Int_t pW, Int_t sigmaFitted) const {return this->fIntFlow[pW][sigmaFitted];};
-  void SetSigma2(TH1D* const sigma2, Int_t pW, Int_t sigmaFitted) {this->fSigma2[pW][sigmaFitted] = sigma2;};
-  TH1D* GetSigma2(Int_t pW, Int_t sigmaFitted) const {return this->fSigma2[pW][sigmaFitted];};
-  void SetChi2(TH1D* const chi2, Int_t pW, Int_t sigmaFitted) {this->fChi2[pW][sigmaFitted] = chi2;};
-  TH1D* GetChi2(Int_t pW, Int_t sigmaFitted) const {return this->fChi2[pW][sigmaFitted];};
+  void SetIntFlow(TH1D* const intFlow, Int_t sigmaFitted) {this->fIntFlow[sigmaFitted] = intFlow;};
+  TH1D* GetIntFlow(Int_t sigmaFitted) const {return this->fIntFlow[sigmaFitted];};
+  void SetSigma2(TH1D* const sigma2, Int_t sigmaFitted) {this->fSigma2[sigmaFitted] = sigma2;};
+  TH1D* GetSigma2(Int_t sigmaFitted) const {return this->fSigma2[sigmaFitted];};
+  void SetChi2(TH1D* const chi2, Int_t sigmaFitted) {this->fChi2[sigmaFitted] = chi2;};
+  TH1D* GetChi2(Int_t sigmaFitted) const {return this->fChi2[sigmaFitted];};
+  void SetFittingFunction(TF1* const ff, Int_t sigmaFitted) {this->fFittingFunction[sigmaFitted] = ff;};
+  TF1* GetFittingFunction(Int_t sigmaFitted) const {return this->fFittingFunction[sigmaFitted];};
   // 5.) fitting parameters:
   void SetFittingParameters(TProfile* const fp) {this->fFittingParameters = fp;};
   TProfile* GetFittingParameters() const {return this->fFittingParameters;};
@@ -124,8 +134,10 @@ class AliFlowAnalysisWithFittingQDistribution{
   Double_t GetSigma2Min() const {return this->fSigma2Min;};
   void SetSigma2Max(Double_t const Sigma2Max) {this->fSigma2Max = Sigma2Max;};
   Double_t GetSigma2Max() const {return this->fSigma2Max;};
-  void SetPlotResults(Bool_t const pr) {this->fPlotResults = pr;};
-  Double_t GetPlotResults() const {return this->fPlotResults;};
+  void SetFinalResultIsFromSigma2Fitted(Bool_t frifs2f) {this->fFinalResultIsFromSigma2Fitted = frifs2f;};
+  Bool_t GetFinalResultIsFromSigma2Fitted() const {return this->fFinalResultIsFromSigma2Fitted;};  
+  void SetPrintOnTheScreen(Bool_t pots) {this->fPrintOnTheScreen = pots;};
+  Bool_t GetPrintOnTheScreen() const {return this->fPrintOnTheScreen;};  
   
  private:
   AliFlowAnalysisWithFittingQDistribution(const AliFlowAnalysisWithFittingQDistribution &afawfqd);
@@ -159,12 +171,16 @@ class AliFlowAnalysisWithFittingQDistribution{
   TH1D *fPtWeights; // histogram holding pt weights
   TH1D *fEtaWeights; // histogram holding eta weights 
   // 3.) distributions:
-  TH1D *fSumOfParticleWeights[2]; // [0=particle weights are unit (not used), 1=particle weights are used]
-  TH1D *fqDistribution[2]; // distribution of Q/sqrt{sum of particle weights} [0=particle weights are unit (not used), 1=particle weights are used]
+  TH1D *fSumOfParticleWeights; // distribution of sum of particle weights (for unit weights this equals to multiplicity)
+  TH1D *fqDistribution; // distribution of Q/sqrt{sum of phi weights}
+  Double_t fqMin; // lower boundary of TH1D *fqDistribution
+  Double_t fqMax; // upper boundary of TH1D *fqDistribution
+  Int_t fqNbins; // number of bins of TH1D *fqDistribution
   // 4.) final results of fitting:
-  TH1D *fIntFlow[2][2]; // final result for integrated flow [0=pWeights are unit (not used), 1=pWeights are used][0=sigma^2 not fitted, 1=sigma^2 fitted]  
-  TH1D *fSigma2[2][2]; // final results for sigma^2 [0=pWeights are unit (not used), 1=pWeights are used][0=sigma^2 not fitted, 1=sigma^2 fitted]
-  TH1D *fChi2[2][2]; // final results for chi^2 from Minuit [0=pWeights are unit (not used), 1=pWeights are used][0=sigma^2 not fitted, 1=sigma^2 fitted]
+  TH1D *fIntFlow[2]; // final result for integrated flow [0=sigma^2 not fitted, 1=sigma^2 fitted]  
+  TH1D *fSigma2[2]; // final results for sigma^2 [0=sigma^2 not fitted, 1=sigma^2 fitted]
+  TH1D *fChi2[2]; // final results for chi^2 from Minuit [0=sigma^2 not fitted, 1=sigma^2 fitted]
+  TF1 *fFittingFunction[2]; // resulting fitting function of q-distribution [0=sigma^2 not fitted, 1=sigma^2 fitted]
   // 5.) fitting parameters:
   TProfile *fFittingParameters; // profile to hold all fitting parameters
   Double_t fTreshold; // the first bin taken for the fitting is the first bin with nEntries >= fTreshold (analogously for the last bin)
@@ -174,9 +190,8 @@ class AliFlowAnalysisWithFittingQDistribution{
   Double_t fSigma2Start; // fitting of sigma2 will start from this point
   Double_t fSigma2Min; // sigma2 range, lower boundary (this should be kept above 0.5 according to theorists...)
   Double_t fSigma2Max; // sigma2 range, upper boundary
-  Bool_t fPlotResults; // plot or not q-distribution and resulting fitting function
-  // 6.) rest:
-  TLegend *fLegend; // legend // to be improved (do I need this as data member?)
+  Bool_t fFinalResultIsFromSigma2Fitted; // the result obtained with sigma^2 fitted or sigma^2 fixed is being stored
+  Bool_t fPrintOnTheScreen; // print or not the final results on the screen
   
   ClassDef(AliFlowAnalysisWithFittingQDistribution, 0);
 };
