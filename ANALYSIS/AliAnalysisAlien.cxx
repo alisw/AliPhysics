@@ -405,6 +405,8 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
       Error("CheckFileCopy", "Not connected to AliEn. File copying cannot be tested.");
       return kFALSE;
    }
+   Info("CheckFileCopy", "Checking possibility to copy files to your AliEn home directory... \
+        \n +++ NOTE: You can disable this via: plugin->SetCheckCopy(kFALSE);");
    // Check if alien_CLOSE_SE is defined
    TString closeSE = gSystem->Getenv("alien_CLOSE_SE");
    if (!closeSE.IsNull()) {
@@ -418,7 +420,7 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
       Error("CheckFileCopy", "Alien path %s does not seem to exist", alienpath);
       return kFALSE;
    }
-   TFile f("plugin_test_copy.root", "RECREATE");
+   TFile f("plugin_test_copy", "RECREATE");
    // User may not have write permissions to current directory 
    if (f.IsZombie()) {
       Error("CheckFileCopy", "Cannot create local test file. Do you have write access to current directory: <%s> ?",
@@ -426,10 +428,9 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
       return kFALSE;
    }
    f.Close();
-   TString s = f.GetUUID().AsString();
-   s.ReplaceAll("-",""); // AliEn copy does not like too many '-'
-   if (!TFile::Cp(f.GetName(), Form("alien://%s/%s",alienpath, s.Data()))) {
-      Error("CheckFileCopy", "Cannot copy files to Alien destination: %s \
+   if (FileExists(Form("alien://%s/%s",alienpath, f.GetName()))) gGrid->Rm(Form("alien://%s/%s",alienpath, f.GetName()));
+   if (!TFile::Cp(f.GetName(), Form("alien://%s/%s",alienpath, f.GetName()))) {
+      Error("CheckFileCopy", "Cannot copy files to Alien destination: <%s> This may be temporary, or: \
            \n# 1. Make sure you have write permissions there. If this is the case: \
            \n# 2. Check the storage availability at: http://alimonitor.cern.ch/stats?page=SE/table \
            \n#    Do:           export alien_CLOSE_SE=\"working_disk_SE\" \
@@ -439,7 +440,8 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
       return kFALSE;
    }   
    gSystem->Unlink(f.GetName());
-   gGrid->Rm(Form("%s%s",alienpath,s.Data()));
+   gGrid->Rm(Form("%s%s",alienpath,f.GetName()));
+   Info("CheckFileCopy", "### ...SUCCESS ###");
    return kTRUE;
 }   
 
@@ -647,6 +649,15 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
          if (res) delete res;
          // Write standard output to file
          gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
+         Bool_t has_grep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+         Bool_t null_file = kFALSE;
+         if (!has_grep) {
+            Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
+         } else {
+            null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
+            Error("CreateDataset","Dataset %s produced by the previous find command is empty !", file.Data());
+            return kFALSE;
+         }         
       }
       Bool_t fileExists = FileExists(file);
       if (!TestBit(AliAnalysisGrid::kTest) && (!fileExists || fOverwriteMode)) {
@@ -663,6 +674,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       return kTRUE;
    }   
    // Several runs
+   Bool_t null_result = kTRUE;
    if (fRunNumbers.Length()) {
       TObjArray *arr = fRunNumbers.Tokenize(" ");
       TObjString *os;
@@ -674,7 +686,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
          else file = Form("%s.xml", os->GetString().Data());
          // If local collection file does not exist, create it via 'find' command.
-         if (gSystem->AccessPathName(file)) {
+         if (gSystem->AccessPathName(file) || TestBit(AliAnalysisGrid::kTest) || fOverwriteMode) {
             command = "find ";
             command += options;
             command += path;
@@ -684,7 +696,18 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             if (res) delete res;
             // Write standard output to file
             gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
-         }   
+            Bool_t has_grep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+            Bool_t null_file = kFALSE;
+            if (!has_grep) {
+               Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
+            } else {
+               null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
+               Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
+               fRunNumbers.ReplaceAll(os->GetString().Data(), "");
+               continue;
+            }
+            null_result = kFALSE;         
+         }
          if (TestBit(AliAnalysisGrid::kTest)) break;
          // Check if there is one run per master job.
          if (fNrunsPerMaster<2) {
@@ -732,9 +755,13 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                delete arr;
                return kFALSE;
             }
-         }   
+         }
       }   
       delete arr;
+      if (null_result) {
+         Error("CreateDataset", "No valid dataset corresponding to the query!");
+         return kFALSE;
+      }
    } else {
       // Process a full run range.
       for (Int_t irun=fRunRange[0]; irun<=fRunRange[1]; irun++) {
@@ -751,7 +778,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }   
          }
          // If local collection file does not exist, create it via 'find' command.
-         if (gSystem->AccessPathName(file) || fOverwriteMode) {
+         if (gSystem->AccessPathName(file) || TestBit(AliAnalysisGrid::kTest) || fOverwriteMode) {
             command = "find ";
             command += options;
             command += path;
@@ -761,6 +788,16 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             if (res) delete res;
             // Write standard output to file
             gROOT->ProcessLine(Form("gGrid->Stdout(); > %s", file.Data()));
+            Bool_t has_grep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
+            Bool_t null_file = kFALSE;
+            if (!has_grep) {
+               Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
+            } else {
+               null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
+               Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
+               continue;
+            }
+            null_result = kFALSE;         
          }   
          if (TestBit(AliAnalysisGrid::kTest)) break;
          // Check if there is one run per master job.
@@ -823,6 +860,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             }
          }   
       }
+      if (null_result) {
+         Error("CreateDataset", "No valid dataset corresponding to the query!");
+         return kFALSE;
+      }      
    }      
    return kTRUE;
 }
@@ -1695,11 +1736,12 @@ Bool_t AliAnalysisAlien::MergeOutputs()
    }
    // Check if fast read option was requested
    if (fFastReadOption) {
-      Warning("MergeOutputs", "You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !");
-      gEnv->SetValue("XNet.ConnectTimeout",5);
-      gEnv->SetValue("XNet.RequestTimeout",5);
+      Warning("MergeOutputs", "You requested FastRead option. Using xrootd flags to reduce timeouts. This may skip some files that could be accessed ! \
+             \n+++ NOTE: To disable this option, use: plugin->SetFastReadOption(kFALSE)");
+      gEnv->SetValue("XNet.ConnectTimeout",10);
+      gEnv->SetValue("XNet.RequestTimeout",10);
       gEnv->SetValue("XNet.MaxRedirectCount",2);
-      gEnv->SetValue("XNet.ReconnectTimeout",5);
+      gEnv->SetValue("XNet.ReconnectTimeout",10);
       gEnv->SetValue("XNet.FirstConnectMaxCnt",1);
    }   
    TObjArray *list = fOutputFiles.Tokenize(" ");
@@ -1799,7 +1841,15 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       Error("StartAnalysis", "There was an error in preprocessing your requested input data");
       return kFALSE;
    }   
-   CreateDataset(fDataPattern);
+   if (!CreateDataset(fDataPattern)) {
+      TString serror;
+      if (!fRunNumbers.Length() && !fRunRange[0]) serror = Form("path to data directory: <%s>", fGridDataDir.Data());
+      if (fRunNumbers.Length()) serror = "run numbers";
+      if (fRunRange[0]) serror = Form("run range [%d, %d]", fRunRange[0], fRunRange[1]);
+      serror += Form("\n   or data pattern <%s>", fDataPattern.Data());
+      Error("StartAnalysis", "No data to process. Please fix %s in your plugin configuration.", serror.Data());
+      return kFALSE;
+   }   
    WriteAnalysisFile();   
    WriteAnalysisMacro();
    WriteExecutable();
@@ -2206,13 +2256,14 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       }
       out << endl;
       if (fFastReadOption) {
-         Warning("WriteAnalysisMacro", "!!! You requested FastRead option. Using xrootd flags to reduce timeouts in the grid jobs. Note that this may skip some files that could be accessed !!!");
+         Warning("WriteAnalysisMacro", "!!! You requested FastRead option. Using xrootd flags to reduce timeouts in the grid jobs. This may skip some files that could be accessed !!! \
+                \n+++ NOTE: To disable this option, use: plugin->SetFastReadOption(kFALSE)");
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
-         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",5);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",5);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",5);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
       out << "// connect to AliEn and make the chain" << endl;
@@ -2541,10 +2592,10 @@ void AliAnalysisAlien::WriteMergingMacro()
          Warning("WriteMergingMacro", "!!! You requested FastRead option. Using xrootd flags to reduce timeouts in the grid merging jobs. Note that this may skip some files that could be accessed !!!");
          out << "// fast xrootd reading enabled" << endl;
          out << "   printf(\"!!! You requested FastRead option. Using xrootd flags to reduce timeouts. Note that this may skip some files that could be accessed !!!\");" << endl;
-         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",5);" << endl;
-         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",5);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ConnectTimeout\",10);" << endl;
+         out << "   gEnv->SetValue(\"XNet.RequestTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
-         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",5);" << endl;
+         out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",10);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
       }   
       out << "// Connect to AliEn" << endl;
