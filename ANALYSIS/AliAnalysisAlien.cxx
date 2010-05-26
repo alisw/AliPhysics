@@ -604,7 +604,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
 Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
 {
 // Create dataset for the grid data directory + run number.
-   if (TestBit(AliAnalysisGrid::kOffline)) return kFALSE;
+   if (TestBit(AliAnalysisGrid::kOffline)) return kTRUE;
    if (!Connect()) {
       Error("CreateDataset", "Cannot create dataset with no grid connection");
       return kFALSE;
