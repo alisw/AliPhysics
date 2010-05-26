@@ -40,8 +40,10 @@
 #include "TProfile2D.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH2I.h"
 #include "TObjArray.h"
 #include "TString.h"
+
 
 
 class AliHLTEMCALConstants;
@@ -55,6 +57,7 @@ class AliCaloRawStreamV3;
 class AliCaloRawAnalyzer;
 class TString;
 class TH2F;
+class TH2I;
 
 
 class AliHLTEMCALRawHistoMaker : AliHLTCaloConstantsHandler
@@ -90,6 +93,10 @@ private:
   TProfile2D **fChannelEMap;
   TProfile2D **fChannelTMap;
   TH2F **fChannelETMap;
+
+  TH2I* h2DTRU;
+  TH2I* h2DSTU;
+
   TObjArray *hList;
 
   /** Pointer to shared memory interface */
