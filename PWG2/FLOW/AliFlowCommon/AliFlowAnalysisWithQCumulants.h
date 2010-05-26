@@ -216,6 +216,12 @@ class AliFlowAnalysisWithQCumulants{
   TProfile* GetIntFlowFlags() const {return this->fIntFlowFlags;};
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;};
+  void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
+  Int_t GetnBinsMult() const {return this->fnBinsMult;};  
+  void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
+  Double_t GetMinMult() const {return this->fMinMult;};
+  void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
+  Double_t GetMaxMult() const {return this->fMaxMult;};
   // integrated flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
   TProfile* GetAvMultiplicity() const {return this->fAvMultiplicity;};
@@ -408,7 +414,10 @@ class AliFlowAnalysisWithQCumulants{
   TList *fIntFlowResults; // list to hold all histograms with final results relevant for integrated flow  
   //  3b.) flags:
   TProfile *fIntFlowFlags; // profile to hold all flags for integrated flow
-  Bool_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance  
+  Bool_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance 
+  Int_t fnBinsMult; // number of multiplicity bins for flow analysis versus multiplicity  
+  Double_t fMinMult; // minimal multiplicity for flow analysis versus multiplicity  
+  Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; // fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; // fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
