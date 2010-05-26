@@ -501,7 +501,7 @@ void AliAnalysisManager::PackOutput(TList *target)
                   file->ls();
                }   
                // Clear file list to release object ownership to user.
-               file->Clear();
+//               file->Clear();
                file->Close();
                output->SetFile(NULL);
                // Restore current directory
@@ -559,13 +559,12 @@ void AliAnalysisManager::PackOutput(TList *target)
                      output->GetData()->Write();
                   }   
                }      
-               file->Clear();
                if (fDebug > 2) {
                   printf("   file %s listing content:\n", output->GetFileName());
                   file->ls();
                }
                // Clear file list to release object ownership to user.
-               file->Clear();
+//               file->Clear();
                file->Close();
                output->SetFile(NULL);
             }
@@ -854,7 +853,7 @@ void AliAnalysisManager::Terminate()
       TDirectory *opwd = gDirectory;
       if (output->GetFile()) {
          // Clear file list to release object ownership to user.
-         output->GetFile()->Clear();
+//         output->GetFile()->Clear();
          output->GetFile()->Close();
          output->SetFile(NULL);
          // Copy merged outputs in alien if requested
@@ -1848,7 +1847,7 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
       if (file) {
          Warning("ValidateOutputs", "File %s was not closed. Closing.", filename.Data());
          // Clear file list to release object ownership to user.
-         file->Clear();
+//         file->Clear();
          file->Close();
       }
       file = TFile::Open(filename);
