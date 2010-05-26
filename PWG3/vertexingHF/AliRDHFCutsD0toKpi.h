@@ -30,7 +30,10 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
 
-  Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
+
+  virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd) const;
+
 
  protected:
 

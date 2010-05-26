@@ -201,7 +201,18 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
   }
 
 
-  Int_t returnvalue=1;
+  // returnvalue: 0 not sel, 1 only D0, 2 only D0bar, 3 both
+  Int_t returnvaluePID=3;
+  Int_t returnvalueCuts=3;
+  Int_t returnvalue=3;
+
+  // selection on PID 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(d);
+  }
+
+
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -245,9 +256,29 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel) {
     
     if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
     
-    if (okD0) returnvalue=1; //cuts passed as D0
-    if (okD0bar) returnvalue=2; //cuts passed as D0bar
-    if (okD0 && okD0bar) returnvalue=3; //cuts passed as D0 and D0bar
+    if (okD0) returnvalueCuts=1; //cuts passed as D0
+    if (okD0bar) returnvalueCuts=2; //cuts passed as D0bar
+    if (okD0 && okD0bar) returnvalueCuts=3; //cuts passed as D0 and D0bar
+  }
+
+
+  // combine PID and Cuts results
+  switch(returnvaluePID) {
+  case 0:
+    returnvalue=0;
+    break;
+  case 1:
+    returnvalue=((returnvalueCuts==1 || returnvalueCuts==3) ? 1 : 0);
+    break;
+  case 2:
+    returnvalue=((returnvalueCuts==2 || returnvalueCuts==3) ? 2 : 0);
+    break;
+  case 3:
+    returnvalue=returnvalueCuts;
+    break;
+  default:
+    returnvalue=0;
+    break;
   }
 
   return returnvalue;
@@ -259,7 +290,7 @@ Bool_t AliRDHFCutsD0toKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
   // Checking if D0 is in fiducial acceptance region 
   //
 
-  if(pt > 5){
+  if(pt > 5.) {
     // applying cut for pt > 5 GeV
     AliInfo(Form("pt of D0 = %f (> 5), cutting at |y| < 0.8\n",pt)); 
     if (TMath::Abs(y) > 0.8){
@@ -274,7 +305,22 @@ Bool_t AliRDHFCutsD0toKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
       return kFALSE;
     }
   }
-  return kTRUE;
-  
-}
 
+  return kTRUE;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* rd) const {
+  //
+  // Apply PID selection
+  // (return: 0 not sel, 1 only D0, 2 only D0bar, 3 both)
+  //
+
+  if(!fUsePID) return 3;
+
+  Int_t returnvalue=0;
+
+  // HERE LOOP ON DAUGHTERS, USE AliAODpidHF CLASS, ETC...
+
+
+  return returnvalue;
+}
