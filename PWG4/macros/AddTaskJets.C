@@ -52,8 +52,6 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
 
   TString outFile(nonStdFile);
 
-  TString type = mgr->GetInputEventHandler()->GetDataType();
-
   AliAnalysisTaskJets *jetana = 0;
   Int_t iCount = 0;
 
@@ -135,8 +133,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    if(radius>0)cRadius = Form("%02d",(int)((radius+0.01)*10.));
 
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
-   TString type = mgr->GetInputEventHandler()->GetDataType();
-   if (type == "AOD") jetana->SetNonStdBranch(Form("jets%s",jf));
+   if (jr == "AOD") jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
    
    TString c_jr(jr);
    c_jr.ToLower();
