@@ -42,6 +42,7 @@ class AliGenerator : public TNamed, public AliRndm
     virtual void SetOrigin(Float_t ox, Float_t oy, Float_t oz);
     virtual void SetOrigin(const TLorentzVector &o);
     virtual void SetSigma(Float_t sx, Float_t sy, Float_t sz);
+    virtual void SetSigmaZ(Float_t sz) {fOsigma[2] = sz;}
     virtual void SetMomentumRange(Float_t pmin=0, Float_t pmax=1.e10);
     virtual void SetPtRange(Float_t ptmin=0, Float_t ptmax=1.e10);
     virtual void SetPhiRange(Float_t phimin = 0., Float_t phimax = 360.);
