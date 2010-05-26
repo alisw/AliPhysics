@@ -67,14 +67,17 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation(const cha
 AliAnalysisTaskParticleCorrelation::~AliAnalysisTaskParticleCorrelation() 
 {
   // Remove all pointers
-  
-  if(fOutputContainer){
-    fOutputContainer->Clear() ; 
-    delete fOutputContainer ;
-  }
+	
+//	printf("********** Delete Task\n");
+//  // Do not delete it here, already done somewhere else, need to understand where.
+//  if(fOutputContainer){
+//    fOutputContainer->Clear() ; 
+//    delete fOutputContainer ;
+//  }
 
   if(fAna) delete fAna;
-	
+
+//  printf("********** Task deleted \n");
 }
 
 //_____________________________________________________

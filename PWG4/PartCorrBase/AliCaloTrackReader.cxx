@@ -186,19 +186,21 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     fPHOSCells->Clear() ; 
     delete fPHOSCells ;
   }
-
-  if(fInputEvent)  delete fInputEvent ;
-  if(fOutputEvent) delete fOutputEvent ;
-  if(fMC)          delete fMC ;  
 	
-  if(fSecondInputAODTree){
-    fSecondInputAODTree->Clear();
-    delete fSecondInputAODTree;
-  }
+//  Pointers not owned, done by the analysis frame
+//  if(fInputEvent)  delete fInputEvent ;
+//  if(fOutputEvent) delete fOutputEvent ;
+//  if(fMC)          delete fMC ;  
 	
-  if(fSecondInputAODEvent) delete fSecondInputAODEvent ;
+//  if(fSecondInputAODTree){
+//    fSecondInputAODTree->Clear();
+//    delete fSecondInputAODTree;
+//  }
+//	
+//  if(fSecondInputAODEvent) delete fSecondInputAODEvent ;
 	
-  if (fCaloUtils) delete fCaloUtils ;
+  //  Pointer not owned, deleted by maker
+  //if (fCaloUtils) delete fCaloUtils ;
 
 }
 

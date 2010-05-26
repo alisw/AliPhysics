@@ -279,9 +279,9 @@ AliAnaParticleIsolation::~AliAnaParticleIsolation()
   //dtor
   //do not delete histograms
   
-  delete [] fConeSizes ; 
-  delete [] fPtThresholds ; 
-  delete [] fPtFractions ; 
+  //delete [] fConeSizes ; 
+  //delete [] fPtThresholds ; 
+  //delete [] fPtFractions ; 
 
 }
 

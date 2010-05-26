@@ -112,18 +112,18 @@ AliNeutralMesonSelection::~AliNeutralMesonSelection()
 {
   //dtor
 
-  if(!fKeepNeutralMesonHistos){
-    //Histograms initialized and filled but not passed to output container
-    //delete here, I am not sure this is correct
-    
-    if(fhAnglePairNoCut) delete fhAnglePairNoCut;
-    if(fhAnglePairOpeningAngleCut) delete fhAnglePairOpeningAngleCut; 
-    if(fhAnglePairAllCut) delete fhAnglePairAllCut;
-    if(fhInvMassPairNoCut) delete fhInvMassPairNoCut;
-    if(fhInvMassPairOpeningAngleCut) delete fhInvMassPairOpeningAngleCut;
-    if(fhInvMassPairAllCut) delete fhInvMassPairAllCut; 
-
-  }
+//  if(!fKeepNeutralMesonHistos){
+//    //Histograms initialized and filled but not passed to output container
+//    //delete here, I am not sure this is correct
+//    
+//    if(fhAnglePairNoCut) delete fhAnglePairNoCut;
+//    if(fhAnglePairOpeningAngleCut) delete fhAnglePairOpeningAngleCut; 
+//    if(fhAnglePairAllCut) delete fhAnglePairAllCut;
+//    if(fhInvMassPairNoCut) delete fhInvMassPairNoCut;
+//    if(fhInvMassPairOpeningAngleCut) delete fhInvMassPairOpeningAngleCut;
+//    if(fhInvMassPairAllCut) delete fhInvMassPairAllCut; 
+//
+//  }
   
 }
 //________________________________________________________________________

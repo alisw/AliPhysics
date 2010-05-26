@@ -136,11 +136,11 @@ AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi
 AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma() {
 
   //dtor
-  
-  if(fInputAODPi0){
-    fInputAODPi0->Clear();
-    delete fInputAODPi0;
-  }  
+//  Done by the maker  
+//  if(fInputAODPi0){
+//    fInputAODPi0->Clear();
+//    delete fInputAODPi0;
+//  }  
 
   if(fEventsList){
      for(Int_t i=0;i<fNVtxZBin;i++){

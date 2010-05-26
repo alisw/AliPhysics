@@ -107,8 +107,8 @@ void AliIsolationCut::InitParameters()
 {
   //Initialize the parameters of the analysis.
   
-  fConeSize             = 0.4 ; 
-  fPtThreshold         = 1. ; 
+  fConeSize          = 0.4 ; 
+  fPtThreshold       = 1. ; 
   fPtFraction        = 0.1 ; 
   
   fICMethod = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
