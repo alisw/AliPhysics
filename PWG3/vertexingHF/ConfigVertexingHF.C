@@ -66,11 +66,12 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpipipi->SetCuts(9,cutsArrayD0toKpipipi);
   cutsD0toKpipipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0toKpipipi(cutsD0toKpipipi);
-  AliRDHFCutsD0toKpi *cutsD0fromDstar = new AliRDHFCutsD0toKpi("CutsD0fromDstar");
-  Float_t cutsArrayD0fromDstar[9]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
-  cutsD0fromDstar->SetCuts(9,cutsArrayD0fromDstar);
-  cutsD0fromDstar->AddTrackCuts(esdTrackCuts);
-  vHF->SetCutsD0fromDstar(cutsD0fromDstar);
+  AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+  Float_t cutsArrayDStartoKpipi[14]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.,0.3, 0.1, 0.05, 100000000000.0, 0.5}; // first 9 for D0 from D*, last 5 for D*
+  cutsDStartoKpipi->SetCuts(14,cutsArrayDStartoKpipi);
+  cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
+  cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
+  vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
   Float_t cutsArrayLctoV0[9]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.};
   cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
