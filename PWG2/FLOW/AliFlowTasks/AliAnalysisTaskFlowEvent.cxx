@@ -221,7 +221,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
 
     //check the offline trigger (check if the event has the correct trigger)
-    AliInfo(Form("There are %d tracks in this event", fInputEvent->GetNumberOfTracks()));
+    AliInfo(Form("ESD has %d tracks", fInputEvent->GetNumberOfTracks()));
 
     //check multiplicity
     if (!fCFManager1->CheckEventCuts(AliCFManager::kEvtRecCuts,myESD))
@@ -280,13 +280,14 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       AliError("ERROR: AOD not available");
       return;
     }
-    AliInfo(Form("There are %d tracks in this event", myAOD->GetNumberOfTracks()));
+    AliInfo(Form("AOD has %d tracks", myAOD->GetNumberOfTracks()));
     flowEvent = new AliFlowEvent(myAOD);
   }
 
   //check final event cuts
   Int_t mult = flowEvent->NumberOfTracks();
-  if (mult<fMinMult && mult>fMaxMult)
+  AliInfo(Form("FlowEvent has %i tracks",mult));
+  if (mult<fMinMult || mult>fMaxMult)
   {
     AliWarning("FlowEvent cut on multiplicity"); return;
   }
