@@ -143,16 +143,17 @@ AliAnaPartCorrBaseClass & AliAnaPartCorrBaseClass::operator = (const AliAnaPartC
 AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass() 
 {
   // Remove all pointers except analysis output pointers.
-  	
-  if(fOutputAODBranch){
-    fOutputAODBranch->Clear() ; 
-    delete fOutputAODBranch ;
-  }
-  
-  if(fInputAODBranch){
-    fInputAODBranch->Clear() ; 
-    delete fInputAODBranch ;
-  }
+//printf("---Delete analysis %s\n", fAODObjArrayName.Data());
+  // Not sure if it should be me who deletes the delta AOD branches.
+//  if(fOutputAODBranch){
+//    fOutputAODBranch->Clear() ; 
+//    delete fOutputAODBranch ;
+//  }
+//  
+//  if(fInputAODBranch){
+//    fInputAODBranch->Clear() ; 
+//    delete fInputAODBranch ;
+//  }
   
 //	if(fAODCaloClusters){
 //		fAODCaloClusters->Clear() ; 
@@ -163,20 +164,22 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
     fAODCaloCells->Clear() ; 
     delete fAODCaloCells ;
   }
-  
+	
+  //Already deleted in maker
 //  if(fAnaOutContainer){
 //	fAnaOutContainer->Clear() ; 
 //	delete fAnaOutContainer ;
 //  }
 		
-  if(fReader)    delete fCaloUtils ;
-  if(fCaloUtils) delete fReader ;
+  //if(fCaloUtils)    delete fCaloUtils ; //Already deleted in maker
+  //if(fReader)       delete fReader ;    //Already deleted in maker
+	
   if(fCaloPID)   delete fCaloPID ;
   if(fFidCut)    delete fFidCut ;
   if(fIC)        delete fIC ;
   if(fMCUtils)   delete fMCUtils ;
   if(fNMS)       delete fNMS ;
-  
+//   printf("--- analysis deleted \n");
 }
 
 ////____________________________________________________________________________

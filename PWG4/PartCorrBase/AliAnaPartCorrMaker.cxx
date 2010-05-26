@@ -45,7 +45,7 @@ ClassImp(AliAnaPartCorrMaker)
 AliAnaPartCorrMaker::AliAnaPartCorrMaker() : 
 TObject(),
 fOutputContainer(new TList ), fAnalysisContainer(new TList ),
-fMakeHisto(0), fMakeAOD(0), fAnaDebug(0), 
+fMakeHisto(kFALSE), fMakeAOD(kFALSE), fMakeMixing(kFALSE), fAnaDebug(0), 
 fReader(0x0), fCaloUtils(0x0), fAODBranchList(new TList ), 
 fhNEvents(0x0)
 {
@@ -65,7 +65,8 @@ fhNEvents(0x0)
 AliAnaPartCorrMaker::AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) :   
 TObject(),
 fOutputContainer(new TList()), fAnalysisContainer(new TList()), 
-fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fAnaDebug(maker.fAnaDebug),
+fMakeHisto(maker.fMakeHisto), fMakeAOD(maker.fMakeAOD), fMakeMixing(maker.fMakeMixing), 
+fAnaDebug(maker.fAnaDebug),
 fReader(new AliCaloTrackReader(*maker.fReader)), 
 fCaloUtils(new AliCalorimeterUtils(*maker.fCaloUtils)),
 fAODBranchList(new TList()), 
@@ -99,21 +100,21 @@ fhNEvents(maker.fhNEvents)
 //____________________________________________________________________________
 AliAnaPartCorrMaker::~AliAnaPartCorrMaker() 
 {
-  // Remove all pointers.
-  
-  // Protection added in case of NULL pointers (MG)
-  if (fOutputContainer) {
-    fOutputContainer->Clear();
-    delete fOutputContainer ;
-  }   
+  // Remove all owned pointers.
+//printf("======Delete Maker \n");
+
+//  Do not delete it here, already done somewhere else, need to understand where.	
+//  if (fOutputContainer) {
+//    fOutputContainer->Clear();
+//    delete fOutputContainer ;
+//  }   
   
   if (fAnalysisContainer) {
-    fAnalysisContainer->Clear();
+    fAnalysisContainer->Delete();
     delete fAnalysisContainer ;
   }   
   
-  if (fReader) delete fReader ;
-  
+  if (fReader)    delete fReader ;
   if (fCaloUtils) delete fCaloUtils ;
 
 	
@@ -121,10 +122,11 @@ AliAnaPartCorrMaker::~AliAnaPartCorrMaker()
 //		for(Int_t iaod = 0; iaod < fAODBranchList->GetEntries(); iaod++)
 //			fAODBranchList->At(iaod)->Clear();
 	
-    fAODBranchList->Clear();
+    fAODBranchList->Delete();
     delete fAODBranchList ;
   }
   
+//	printf("====== Maker deleted \n");
 }
 
 //________________________________________________________________________
@@ -223,9 +225,10 @@ void AliAnaPartCorrMaker::InitParameters()
 {	
   //Init data members
   
-  fMakeHisto = kTRUE;
-  fMakeAOD   = kTRUE; 
-  fAnaDebug  = 0; // No debugging info displayed by default
+  fMakeHisto  = kTRUE;
+  fMakeAOD    = kTRUE; 
+  fMakeMixing = kFALSE;
+  fAnaDebug   = 0; // No debugging info displayed by default
 	
 }
 
@@ -241,6 +244,7 @@ void AliAnaPartCorrMaker::Print(const Option_t * opt) const
   printf("Debug level                =     %d\n", fAnaDebug) ;
   printf("Produce Histo              =     %d\n", fMakeHisto) ;
   printf("Produce AOD                =     %d\n", fMakeAOD) ;
+  printf("Mixing Analysis            =     %d\n", fMakeMixing) ;
   printf("Number of analysis tasks   =     %d\n", fAnalysisContainer->GetEntries()) ;
   if(!strcmp("all",opt)){
 	  printf("Print analysis Tasks settings :\n") ;
@@ -299,10 +303,12 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
     
 	ana->ConnectInputOutputAODBranches(); //Sets branches for each analysis
     //Make analysis, create aods in aod branch or AODCaloClusters
-    if(fMakeAOD)   ana->MakeAnalysisFillAOD()  ;
+	if(fMakeAOD   && !fMakeMixing)  ana->MakeAnalysisFillAOD()  ;
     //Make further analysis with aod branch and fill histograms
-    if(fMakeHisto) ana->MakeAnalysisFillHistograms()  ;
-    
+    if(fMakeHisto && !fMakeMixing)  ana->MakeAnalysisFillHistograms()  ;
+    //Make analysis with delta AODs of different events
+	if(fMakeMixing)                 ana->MakeMixingAnalysisFillHistograms()  ;
+
   }
 	
   fhNEvents->Fill(0); //Event analyzed

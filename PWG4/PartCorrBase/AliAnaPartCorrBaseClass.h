@@ -66,6 +66,8 @@ public:
   
   virtual void MakeAnalysisFillHistograms() {;}
   
+  virtual void MakeMixingAnalysisFillHistograms() {;}
+	
   virtual Int_t GetDebug() const  { return fDebug ; }
   virtual void SetDebug(Int_t d)   { fDebug = d ; }
   
