@@ -112,7 +112,10 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowProfiles(NULL),
  fIntFlowResults(NULL),
  fIntFlowFlags(NULL),
- fApplyCorrectionForNUA(kTRUE), 
+ fApplyCorrectionForNUA(kTRUE),  
+ fnBinsMult(10000),
+ fMinMult(0),  
+ fMaxMult(10000), 
  fReQ(NULL),
  fImQ(NULL),
  fSMpk(NULL),
@@ -1552,15 +1555,13 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowProfiles->Add(fIntFlowCorrelationsPro);
  // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity for all events (error is biased estimator):
  TString correlationFlag[4] = {"<<2>>","<<4>>","<<6>>","<<8>>"};
- Int_t fMinMultiplicity = 0; // to be improved (setter to this?)
- Int_t fMaxMultiplicity = 100; // to be improved (setter to this?)
  for(Int_t ci=0;ci<4;ci++) // correlation index
  {
   TString intFlowCorrelationsVsMProName = "fIntFlowCorrelationsVsMPro";
   intFlowCorrelationsVsMProName += fAnalysisLabel->Data();
   fIntFlowCorrelationsVsMPro[ci] = new TProfile(Form("%s, %s",intFlowCorrelationsVsMProName.Data(),correlationFlag[ci].Data()),
                                                 Form("%s vs multiplicity",correlationFlag[ci].Data()),
-                                                fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity,"s");                                            
+                                                fnBinsMult,fMinMult,fMaxMult,"s");                                            
   fIntFlowCorrelationsVsMPro[ci]->GetYaxis()->SetTitle(correlationFlag[ci].Data());
   fIntFlowCorrelationsVsMPro[ci]->GetXaxis()->SetTitle("M");
   fIntFlowProfiles->Add(fIntFlowCorrelationsVsMPro[ci]);
@@ -1645,7 +1646,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  { 
   fIntFlowProductOfCorrelationsVsMPro[pi] = new TProfile(Form("%s, %s",intFlowProductOfCorrelationsVsMProName.Data(),productFlag[pi].Data()),
                                                      Form("%s versus multiplicity",productFlag[pi].Data()),
-                                                     fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity);             
+                                                     fnBinsMult,fMinMult,fMaxMult);             
   fIntFlowProductOfCorrelationsVsMPro[pi]->GetXaxis()->SetTitle("M");
   fIntFlowProfiles->Add(fIntFlowProductOfCorrelationsVsMPro[pi]);
  } // end of for(Int_t pi=0;pi<6;pi++)
@@ -1723,7 +1724,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   intFlowCorrelationsVsMHistName += fAnalysisLabel->Data();
   fIntFlowCorrelationsVsMHist[ci] = new TH1D(Form("%s, %s",intFlowCorrelationsVsMHistName.Data(),correlationFlag[ci].Data()),
                                              Form("%s vs multiplicity",correlationFlag[ci].Data()),
-                                             fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity);                                            
+                                             fnBinsMult,fMinMult,fMaxMult);                                            
   fIntFlowCorrelationsVsMHist[ci]->GetYaxis()->SetTitle(correlationFlag[ci].Data());
   fIntFlowCorrelationsVsMHist[ci]->GetXaxis()->SetTitle("M");
   fIntFlowResults->Add(fIntFlowCorrelationsVsMHist[ci]);
@@ -1846,7 +1847,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  {
   fIntFlowCovariancesVsM[ci] = new TH1D(Form("%s, %s",intFlowCovariancesVsMName.Data(),covarianceFlag[ci].Data()),
                                         Form("%s vs multiplicity",covarianceFlag[ci].Data()),
-                                        fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity);
+                                        fnBinsMult,fMinMult,fMaxMult);
   fIntFlowCovariancesVsM[ci]->GetYaxis()->SetTitle(covarianceFlag[ci].Data());
   fIntFlowCovariancesVsM[ci]->GetXaxis()->SetTitle("M");
   fIntFlowResults->Add(fIntFlowCovariancesVsM[ci]);
@@ -1863,7 +1864,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
   {
    fIntFlowSumOfEventWeightsVsM[si][power] = new TH1D(Form("%s, %s",intFlowSumOfEventWeightsVsMName.Data(),sumFlag[power][si].Data()),
                           Form("%s vs multiplicity",sumFlag[power][si].Data()),
-                          fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity);    
+                          fnBinsMult,fMinMult,fMaxMult);    
    fIntFlowSumOfEventWeightsVsM[si][power]->GetYaxis()->SetTitle(sumFlag[power][si].Data());  
    fIntFlowSumOfEventWeightsVsM[si][power]->GetXaxis()->SetTitle("M");  
    fIntFlowResults->Add(fIntFlowSumOfEventWeightsVsM[si][power]);
@@ -1880,7 +1881,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  {
   fIntFlowSumOfProductOfEventWeightsVsM[pi] = new TH1D(Form("%s, %s",intFlowSumOfProductOfEventWeightsVsMName.Data(),sopowFlag[pi].Data()),
                   Form("%s versus multiplicity",sopowFlag[pi].Data()),
-                  fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity); 
+                  fnBinsMult,fMinMult,fMaxMult); 
   fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetXaxis()->SetTitle("M");
   fIntFlowSumOfProductOfEventWeightsVsM[pi]->GetYaxis()->SetTitle(sopowFlag[pi].Data()); 
   fIntFlowResults->Add(fIntFlowSumOfProductOfEventWeightsVsM[pi]);
@@ -1976,7 +1977,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  {
   fIntFlowQcumulantsVsM[co] = new TH1D(Form("%s, %s",intFlowQcumulantsVsMName.Data(),cumulantFlag[co].Data()),
                                        Form("%s vs multipicity",cumulantFlag[co].Data()),
-                                       fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity);
+                                       fnBinsMult,fMinMult,fMaxMult);
   fIntFlowQcumulantsVsM[co]->GetXaxis()->SetTitle("M");                                     
   fIntFlowQcumulantsVsM[co]->GetYaxis()->SetTitle(cumulantFlag[co].Data());  
   fIntFlowResults->Add(fIntFlowQcumulantsVsM[co]);                                    
@@ -2001,7 +2002,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  {
   fIntFlowVsM[co] = new TH1D(Form("%s, %s",intFlowVsMName.Data(),flowFlag[co].Data()),
                                        Form("%s vs multipicity",flowFlag[co].Data()),
-                                       fMaxMultiplicity-fMinMultiplicity,fMinMultiplicity,fMaxMultiplicity);
+                                       fnBinsMult,fMinMult,fMaxMult);
   fIntFlowVsM[co]->GetXaxis()->SetTitle("M");                                     
   fIntFlowVsM[co]->GetYaxis()->SetTitle(flowFlag[co].Data());  
   fIntFlowResults->Add(fIntFlowVsM[co]);                                    
@@ -3091,11 +3092,69 @@ void AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
   }
  }
  
+ // versus multiplicity: 
+ Int_t nBins = fIntFlowCorrelationsVsMPro[0]->GetNbinsX(); // to be improved (hardwired 0) 
+ for(Int_t b=1;b<=nBins;b++)
+ {
+  // average 2-, 4-, 6- and 8-particle correlations for all events:
+  Double_t correlationVsM[4] = {0.};
+  for(Int_t ci=0;ci<4;ci++)
+  {
+   correlationVsM[ci] = fIntFlowCorrelationsVsMPro[ci]->GetBinContent(b);
+  } // end of for(Int_t ci=0;ci<4;ci++)
+  // average products of 2-, 4-, 6- and 8-particle correlations: 
+  Double_t productOfCorrelationsVsM[4][4] = {{0.}};
+  Int_t productOfCorrelationsLabelVsM = 1;
+  // denominators in the expressions for the unbiased estimator for covariance:
+  Double_t denominatorVsM[4][4] = {{0.}};
+  Int_t sumOfProductOfEventWeightsLabel1VsM = 1;
+  // weight dependent prefactor which multiply unbiased estimators for covariances:
+  Double_t wPrefactorVsM[4][4] = {{0.}}; 
+  Int_t sumOfProductOfEventWeightsLabel2VsM = 1;
+  for(Int_t c1=0;c1<4;c1++)
+  {
+   for(Int_t c2=c1+1;c2<4;c2++)
+   {
+    productOfCorrelationsVsM[c1][c2] = fIntFlowProductOfCorrelationsVsMPro[productOfCorrelationsLabelVsM-1]->GetBinContent(b);
+    if(fIntFlowSumOfEventWeightsVsM[c1][0]->GetBinContent(b) && fIntFlowSumOfEventWeightsVsM[c2][0]->GetBinContent(b))
+    {
+     denominatorVsM[c1][c2] = 1.-(fIntFlowSumOfProductOfEventWeightsVsM[sumOfProductOfEventWeightsLabel1VsM-1]->GetBinContent(b))/
+                              (fIntFlowSumOfEventWeightsVsM[c1][0]->GetBinContent(b) 
+                               * fIntFlowSumOfEventWeightsVsM[c2][0]->GetBinContent(b));
+                              
+     wPrefactorVsM[c1][c2] = fIntFlowSumOfProductOfEventWeightsVsM[sumOfProductOfEventWeightsLabel2VsM-1]->GetBinContent(b)/ 
+                             (fIntFlowSumOfEventWeightsVsM[c1][0]->GetBinContent(b)
+                              * fIntFlowSumOfEventWeightsVsM[c2][0]->GetBinContent(b));
+                          
+                              
+    }
+    productOfCorrelationsLabelVsM++;
+    sumOfProductOfEventWeightsLabel1VsM++;
+    sumOfProductOfEventWeightsLabel2VsM++;  
+   } // end of for(Int_t c1=0;c1<4;c1++) 
+  } // end of for(Int_t c2=c1+1;c2<4;c2++)
+  // covariance label:
+  Int_t covarianceLabelVsM = 1;
+  for(Int_t c1=0;c1<4;c1++)
+  {
+   for(Int_t c2=c1+1;c2<4;c2++)
+   {
+    if(denominatorVsM[c1][c2])
+    {
+     // covariances:
+     Double_t covVsM = (productOfCorrelationsVsM[c1][c2]-correlationVsM[c1]*correlationVsM[c2])/denominatorVsM[c1][c2]; 
+     // covarianced multiplied with weight dependent prefactor:
+     Double_t wCovVsM = covVsM * wPrefactorVsM[c1][c2];
+     fIntFlowCovariancesVsM[covarianceLabelVsM-1]->SetBinContent(b,wCovVsM);
+    }
+    covarianceLabelVsM++;
+   }
+  }
+ } // end of for(Int_t b=1;b<=nBins;b++)
+  
 } // end of AliFlowAnalysisWithQCumulants::CalculateCovariancesIntFlow()
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::CalculateCovariancesNUAIntFlow()
 {
@@ -3672,16 +3731,16 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrelationsIntFlow()
     termAVsM = pow(sumOfQuadraticEventWeightsVsM,0.5)/sumOfLinearEventWeightsVsM;
    } else
      {
-      cout<<"WARNING: sumOfLinearEventWeightsVsM == 0 in AFAWQC::FCIF() !!!!"<<endl;
-      cout<<"         (for "<<2*ci<<"-particle correlation versus multiplicity)"<<endl;
+      //cout<<"WARNING: sumOfLinearEventWeightsVsM == 0 in AFAWQC::FCIF() !!!!"<<endl;
+      //cout<<"         (for "<<2*(ci+1)<<"-particle correlation versus multiplicity)"<<endl;
      }
    if(1.-pow(termAVsM,2.) > 0.)
    {
     termBVsM = 1./pow(1-pow(termAVsM,2.),0.5);
    } else
      {
-      cout<<"WARNING: 1.-pow(termAVsM,2.) <= 0 in AFAWQC::FCIF() !!!!"<<endl;   
-      cout<<"         (for "<<2*ci<<"-particle correlation versus multiplicity)"<<endl;
+      //cout<<"WARNING: 1.-pow(termAVsM,2.) <= 0 in AFAWQC::FCIF() !!!!"<<endl;   
+      //cout<<"         (for "<<2*(ci+1)<<"-particle correlation versus multiplicity)"<<endl;
      }     
    Double_t statisticalErrorVsM = termAVsM * spreadVsM * termBVsM;
    fIntFlowCorrelationsVsMHist[ci]->SetBinContent(b,correlationVsM);
@@ -3852,12 +3911,116 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
  fIntFlowQcumulants->SetBinError(3,qc6Error);
  fIntFlowQcumulants->SetBinContent(4,qc8); 
  fIntFlowQcumulants->SetBinError(4,qc8Error); 
+ 
+ // versus multiplicity: 
+ Int_t nBins = fIntFlowCorrelationsVsMPro[0]->GetNbinsX(); // to be improved (hardwired 0) 
+ for(Int_t b=1;b<=nBins;b++)
+ {
+  // correlations:
+  two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>> 
+  four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>>  
+  six = fIntFlowCorrelationsVsMHist[2]->GetBinContent(b); // <<6>> 
+  eight = fIntFlowCorrelationsVsMHist[3]->GetBinContent(b); // <<8>>  
+ 
+  // statistical errors of average 2-, 4-, 6- and 8-particle azimuthal correlations:
+  twoError = fIntFlowCorrelationsVsMHist[0]->GetBinError(b); // statistical error of <2>  
+  fourError = fIntFlowCorrelationsVsMHist[1]->GetBinError(b); // statistical error of <4>   
+  sixError = fIntFlowCorrelationsVsMHist[2]->GetBinError(b); // statistical error of <6> 
+  eightError = fIntFlowCorrelationsVsMHist[3]->GetBinError(b); // statistical error of <8> 
+ 
+  // covariances (multiplied by prefactor depending on weights - see comments in CalculateCovariancesIntFlow()):
+  wCov24 = fIntFlowCovariancesVsM[0]->GetBinContent(b); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+  wCov26 = fIntFlowCovariancesVsM[1]->GetBinContent(b); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
+  wCov28 = fIntFlowCovariancesVsM[2]->GetBinContent(b); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
+  wCov46 = fIntFlowCovariancesVsM[3]->GetBinContent(b); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
+  wCov48 = fIntFlowCovariancesVsM[4]->GetBinContent(b); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
+  wCov68 = fIntFlowCovariancesVsM[5]->GetBinContent(b); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>)
+ 
+  // Q-cumulants: 
+  qc2 = 0.; // QC{2}
+  qc4 = 0.; // QC{4}
+  qc6 = 0.; // QC{6}
+  qc8 = 0.; // QC{8}
+  if(two) qc2 = two; 
+  if(four) qc4 = four-2.*pow(two,2.); 
+  if(six) qc6 = six-9.*two*four+12.*pow(two,3.); 
+  if(eight) qc8 = eight-16.*two*six-18.*pow(four,2.)+144.*pow(two,2.)*four-144.*pow(two,4.); 
+ 
+  // statistical errors of Q-cumulants:       
+  qc2Error = 0.;
+  qc4Error = 0.;
+  qc6Error = 0.;
+  qc8Error = 0.;
+ 
+  // squared statistical errors of Q-cumulants:       
+  //Double_t qc2ErrorSquared = 0.;
+  qc4ErrorSquared = 0.;
+  qc6ErrorSquared = 0.;
+  qc8ErrorSquared = 0.;
+        
+  // statistical error of QC{2}:              
+  qc2Error = twoError;                     
+                             
+  // statistical error of QC{4}:              
+  qc4ErrorSquared = 16.*pow(two,2.)*pow(twoError,2)+pow(fourError,2.)
+                  - 8.*two*wCov24;                     
+  if(qc4ErrorSquared>0.)
+  {
+   qc4Error = pow(qc4ErrorSquared,0.5);
+  } else 
+    {
+     // cout<<"WARNING: Statistical error of QC{4} is imaginary in multiplicity bin "<<b<<" !!!!"<<endl;
+    }
+                                           
+  // statistical error of QC{6}:              
+  qc6ErrorSquared = 81.*pow(4.*pow(two,2.)-four,2.)*pow(twoError,2.)
+                  + 81.*pow(two,2.)*pow(fourError,2.)
+                  + pow(sixError,2.)
+                  - 162.*two*(4.*pow(two,2.)-four)*wCov24
+                  + 18.*(4.*pow(two,2.)-four)*wCov26
+                  - 18.*two*wCov46; 
+                    
+  if(qc6ErrorSquared>0.)
+  {
+   qc6Error = pow(qc6ErrorSquared,0.5);
+  } else 
+    {
+     // cout<<"WARNING: Statistical error of QC{6} is imaginary in multiplicity bin "<<b<<" !!!!"<<endl;
+    }
+                            
+  // statistical error of QC{8}:              
+  qc8ErrorSquared = 256.*pow(36.*pow(two,3.)-18.*four*two+six,2.)*pow(twoError,2.)
+                  + 1296.*pow(4.*pow(two,2.)-four,2.)*pow(fourError,2.)
+                  + 256.*pow(two,2.)*pow(sixError,2.)
+                  + pow(eightError,2.)
+                  - 1152.*(36.*pow(two,3.)-18.*four*two+six)*(4.*pow(two,2.)-four)*wCov24
+                  + 512.*two*(36.*pow(two,3.)-18.*four*two+six)*wCov26
+                  - 32.*(36.*pow(two,3.)-18.*four*two+six)*wCov28
+                  - 1152.*two*(4.*pow(two,2.)-four)*wCov46
+                  + 72.*(4.*pow(two,2.)-four)*wCov48
+                  - 32.*two*wCov68;      
+  if(qc8ErrorSquared>0.)
+  {
+   qc8Error = pow(qc8ErrorSquared,0.5);
+  } else 
+    {
+     // cout<<"WARNING: Statistical error of QC{8} is imaginary in multiplicity bin "<<b<<" !!!!"<<endl;
+    }
+
+  // store the results and statistical errors for Q-cumulants:
+  fIntFlowQcumulantsVsM[0]->SetBinContent(b,qc2);
+  fIntFlowQcumulantsVsM[0]->SetBinError(b,qc2Error);
+  fIntFlowQcumulantsVsM[1]->SetBinContent(b,qc4);
+  fIntFlowQcumulantsVsM[1]->SetBinError(b,qc4Error);
+  fIntFlowQcumulantsVsM[2]->SetBinContent(b,qc6);
+  fIntFlowQcumulantsVsM[2]->SetBinError(b,qc6Error);
+  fIntFlowQcumulantsVsM[3]->SetBinContent(b,qc8); 
+  fIntFlowQcumulantsVsM[3]->SetBinError(b,qc8Error);  
+ } // end of for(Int_t b=1;b<=nBins;b++)
   
 } // end of AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
 
-
 //================================================================================================================================ 
-
 
 void AliFlowAnalysisWithQCumulants::CalculateIntFlow()
 {
@@ -3998,12 +4161,137 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlow()
  fIntFlow->SetBinError(3,v6Error);
  fIntFlow->SetBinContent(4,v8);
  fIntFlow->SetBinError(4,v8Error);
+ 
+ // versus multiplicity: 
+ Int_t nBins = fIntFlowCorrelationsVsMPro[0]->GetNbinsX(); // to be improved (hardwired 0) 
+ for(Int_t b=1;b<=nBins;b++)
+ {
+  // Q-cumulants:
+  qc2 = fIntFlowQcumulantsVsM[0]->GetBinContent(b); // QC{2}  
+  qc4 = fIntFlowQcumulantsVsM[1]->GetBinContent(b); // QC{4}  
+  qc6 = fIntFlowQcumulantsVsM[2]->GetBinContent(b); // QC{6}  
+  qc8 = fIntFlowQcumulantsVsM[3]->GetBinContent(b); // QC{8}
+  
+  // correlations:
+  two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>> 
+  four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>>  
+  six = fIntFlowCorrelationsVsMHist[2]->GetBinContent(b); // <<6>> 
+  eight = fIntFlowCorrelationsVsMHist[3]->GetBinContent(b); // <<8>>  
+ 
+  // statistical errors of average 2-, 4-, 6- and 8-particle azimuthal correlations:
+  twoError = fIntFlowCorrelationsVsMHist[0]->GetBinError(b); // statistical error of <2>  
+  fourError = fIntFlowCorrelationsVsMHist[1]->GetBinError(b); // statistical error of <4>   
+  sixError = fIntFlowCorrelationsVsMHist[2]->GetBinError(b); // statistical error of <6> 
+  eightError = fIntFlowCorrelationsVsMHist[3]->GetBinError(b); // statistical error of <8> 
+ 
+  // covariances (multiplied by prefactor depending on weights - see comments in CalculateCovariancesIntFlow()):
+  wCov24 = fIntFlowCovariancesVsM[0]->GetBinContent(b); // Cov(<2>,<4>) * prefactor(w_<2>,w_<4>)
+  wCov26 = fIntFlowCovariancesVsM[1]->GetBinContent(b); // Cov(<2>,<6>) * prefactor(w_<2>,w_<6>)
+  wCov28 = fIntFlowCovariancesVsM[2]->GetBinContent(b); // Cov(<2>,<8>) * prefactor(w_<2>,w_<8>)
+  wCov46 = fIntFlowCovariancesVsM[3]->GetBinContent(b); // Cov(<4>,<6>) * prefactor(w_<4>,w_<6>)
+  wCov48 = fIntFlowCovariancesVsM[4]->GetBinContent(b); // Cov(<4>,<8>) * prefactor(w_<4>,w_<8>)
+  wCov68 = fIntFlowCovariancesVsM[5]->GetBinContent(b); // Cov(<6>,<8>) * prefactor(w_<6>,w_<8>)
+  
+  // integrated flow estimates:
+  v2 = 0.; // v{2,QC}  
+  v4 = 0.; // v{4,QC}  
+  v6 = 0.; // v{6,QC}  
+  v8 = 0.; // v{8,QC}
+ 
+  // calculate integrated flow estimates from Q-cumulants: 
+  if(qc2>=0.) v2 = pow(qc2,1./2.); 
+  if(qc4<=0.) v4 = pow(-1.*qc4,1./4.); 
+  if(qc6>=0.) v6 = pow((1./4.)*qc6,1./6.); 
+  if(qc8<=0.) v8 = pow((-1./33.)*qc8,1./8.); 
+   
+  // statistical errors of integrated flow estimates:
+  v2Error = 0.; // statistical error of v{2,QC}  
+  v4Error = 0.; // statistical error of v{4,QC}  
+  v6Error = 0.; // statistical error of v{6,QC}  
+  v8Error = 0.; // statistical error of v{8,QC}
+   
+  // squares of statistical errors of integrated flow estimates:
+  v2ErrorSquared = 0.; // squared statistical error of v{2,QC} 
+  v4ErrorSquared = 0.; // squared statistical error of v{4,QC}   
+  v6ErrorSquared = 0.; // squared statistical error of v{6,QC}   
+  v8ErrorSquared = 0.; // squared statistical error of v{8,QC} 
+ 
+  // calculate squared statistical errors of integrated flow estimates:
+  if(two > 0.) 
+  { 
+   v2ErrorSquared = (1./(4.*two))*pow(twoError,2.);
+  } 
+  if(2.*pow(two,2.)-four > 0.)
+  {
+   v4ErrorSquared = (1./pow(2.*pow(two,2.)-four,3./2.))*
+                    (pow(two,2.)*pow(twoError,2.)+(1./16.)*pow(fourError,2.)-(1./2.)*two*wCov24);
+  }
+  if(six-9.*four*two+12.*pow(two,3.) > 0.) 
+  {
+   v6ErrorSquared = ((1./2.)*(1./pow(2.,2./3.))*(1./pow(six-9.*four*two+12.*pow(two,3.),5./3.)))*
+                    ((9./2.)*pow(4.*pow(two,2.)-four,2.)*pow(twoError,2.) 
+                     + (9./2.)*pow(two,2.)*pow(fourError,2.)+(1./18.)*pow(sixError,2.)
+                     - 9.*two*(4.*pow(two,2.)-four)*wCov24+(4.*pow(two,2.)-four)*wCov26-two*wCov46); 
+  }
+  if(-1.*eight+16.*six*two+18.*pow(four,2.)-144.*four*pow(two,2.)+144.*pow(two,4.) > 0.) 
+  {
+   v8ErrorSquared = (4./pow(33,1./4.))*(1./pow(-1.*eight+16.*six*two+18.*pow(four,2.)-144.*four*pow(two,2.)+144.*pow(two,4.),7./4.))*
+                    (pow(36.*pow(two,3.)-18.*four*two+six,2.)*pow(twoError,2.)
+                     + (81./16.)*pow(4.*pow(two,2.)-four,2.)*pow(fourError,2.)
+                     + pow(two,2.)*pow(sixError,2.)
+                     + (1./256.)*pow(eightError,2.)
+                     - (9./2.)*(36.*pow(two,3.)-18.*four*two+six)*(4.*pow(two,2.)-four)*wCov24
+                     + 2.*two*(36.*pow(two,3.)-18.*four*two+six)*wCov26
+                     - (1./8.)*(36.*pow(two,3.)-18.*four*two+six)*wCov28                    
+                     - (9./2.)*two*(4.*pow(two,2.)-four)*wCov46                   
+                      + (9./32.)*(4.*pow(two,2.)-four)*wCov48                    
+                     - (1./8.)*two*wCov68);
+  } 
+
+  // calculate statistical errors of integrated flow estimates: 
+  if(v2ErrorSquared > 0.)
+  {
+   v2Error = pow(v2ErrorSquared,0.5);
+  } else
+    {
+     // cout<<"WARNING: Statistical error of v{2,QC} is imaginary !!!!"<<endl;
+    }     
+  if(v4ErrorSquared > 0.)
+  {
+   v4Error = pow(v4ErrorSquared,0.5);
+  } else
+    {
+     // cout<<"WARNING: Statistical error of v{4,QC} is imaginary !!!!"<<endl;
+    }     
+  if(v6ErrorSquared > 0.)
+  {
+   v6Error = pow(v6ErrorSquared,0.5);
+  } else
+    {
+     // cout<<"WARNING: Statistical error of v{6,QC} is imaginary !!!!"<<endl;
+    }     
+  if(v8ErrorSquared > 0.)
+  {
+   v8Error = pow(v8ErrorSquared,0.5);
+  } else
+    {
+     // cout<<"WARNING: Statistical error of v{8,QC} is imaginary !!!!"<<endl;
+    }    
+                     
+  // store the results and statistical errors of integrated flow estimates:
+  fIntFlowVsM[0]->SetBinContent(b,v2);
+  fIntFlowVsM[0]->SetBinError(b,v2Error);
+  fIntFlowVsM[1]->SetBinContent(b,v4);
+  fIntFlowVsM[1]->SetBinError(b,v4Error);
+  fIntFlowVsM[2]->SetBinContent(b,v6);
+  fIntFlowVsM[2]->SetBinError(b,v6Error);
+  fIntFlowVsM[3]->SetBinContent(b,v8);
+  fIntFlowVsM[3]->SetBinError(b,v8Error);
+  } // end of for(Int_t b=1;b<=nBins;b++) 
        
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlow()
 
-
 //================================================================================================================================ 
-
 
 void AliFlowAnalysisWithQCumulants::FillCommonHistResultsIntFlow()
 {
