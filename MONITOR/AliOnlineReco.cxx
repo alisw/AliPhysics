@@ -220,6 +220,8 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
 		   "-q",
 		   Form("%s(\"mem://@*:\")", gSystem->ExpandPathName(recMacroPath.Data())),
 		   (char*) 0);
+
+	gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,(Int_t)procPID));
       }
 
       if (s == -1)
