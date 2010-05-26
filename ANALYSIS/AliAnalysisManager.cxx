@@ -838,7 +838,7 @@ void AliAnalysisManager::Terminate()
       } else {
          if (output->GetData()->InheritsFrom(TTree::Class())) {
             TTree *tree = (TTree*)output->GetData();
-            tree->SetDirectory(file);
+            tree->SetDirectory(gDirectory);
             tree->AutoSave();
          } else {
             output->GetData()->Write();
