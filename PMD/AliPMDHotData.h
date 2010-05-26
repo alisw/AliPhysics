@@ -6,7 +6,6 @@
 
 class TNamed;
 class AliCDBEntry;
-class AliPMD;
 
 class AliPMDHotData: public TNamed
 {
@@ -32,6 +31,6 @@ class AliPMDHotData: public TNamed
       };
   Float_t fHotChannel[kDet][kModule][kRow][kCol];
 
-  ClassDef(AliPMDHotData,0) // calibration class for gainfactors
+  ClassDef(AliPMDHotData,1) // class for hot cells in PMD
 };
 #endif

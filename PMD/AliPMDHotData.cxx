@@ -17,7 +17,6 @@
 //
 #include "TNamed.h"
 #include "AliCDBEntry.h"
-#include "AliPMD.h"
 #include "AliPMDHotData.h"
 
 
