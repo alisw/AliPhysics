@@ -31,11 +31,11 @@ Bool_t QA = kTRUE;
 Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 
-void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
-		 Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
-                 //Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
+//void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1, 
+//Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
+                //Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
-//void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 5000000, 
+void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
                  //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
@@ -43,6 +43,7 @@ void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 1,
 		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/PWG0/jgrosseo/run000104867_90_92_pass4", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/ALICE/pp010000/MC_LHC09a4_81xxx", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC10a8_run104867_8", Int_t offset=0)
+		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10b_000115322_p1", Int_t offset=0)
 //void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
   TStopwatch timer;
@@ -213,16 +214,19 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Reset("proof://snelling@alicecaf.cern.ch");     
     // Connect to proof
     printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy", "2");
+    gEnv->SetValue("XSec.GSI.DelegProxy","2");
     // Put appropriate username here
     //TProof::Open("abilandz@alicecaf.cern.ch");
     //TProof::Open("nkolk@alicecaf.cern.ch");
-    TProof::Open("snelling@localhost");
+    //TProof::Open("snelling@localhost");
+    TProof::Open("alice-caf.cern.ch");
     //TProof::Open("skaf.saske.sk");
     //TProof::Open("prf000-iep-grid.saske.sk");
     //Info("runSKAF.C","Loading libs on proof (may take while, around 1 min) ...");
     // list the data available
-    //gProof->ShowDataSets("/*/*");  
+    //gProof->ShowDataSets("/*/*"); 
+    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
+    //gProof->ShowDataSets("/alice/data/"); //for REAL Data 
  
     // Clear the Packages
     
