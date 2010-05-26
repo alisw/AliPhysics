@@ -135,7 +135,7 @@ void AliTPCExBConical::GetCorrection(const Float_t x[],const Short_t roc,Float_t
 
 }
 
-void AliTPCExBConical::Print(Option_t* option) const {
+void AliTPCExBConical::Print(const Option_t* option) const {
   //
   // Print function to check the settings (e.g. the conical in the X direction)
   // option=="a" prints the C0 and C1 coefficents for calibration purposes

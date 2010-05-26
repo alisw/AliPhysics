@@ -26,10 +26,8 @@ public:
   // common setters and getters for ExB
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
     fT1=t1; fT2=t2;
-    const Float_t wt1=t1*omegaTau;
-    fC1=wt1/(1.+wt1*wt1);
-    const Float_t wt2=t2*omegaTau;
-    fC2=wt2*wt2/(1.+wt2*wt2);
+    const Float_t wt1=t1*omegaTau;    fC1=wt1/(1.+wt1*wt1);
+    const Float_t wt2=t2*omegaTau;    fC2=wt2*wt2/(1.+wt2*wt2);
   };
   void SetC1C2(Float_t c1,Float_t c2) {fC1=c1;fC2=c2;} // CAUTION: USE WITH CARE
   Float_t GetC1() const {return fC1;}
@@ -44,7 +42,7 @@ public:
   Float_t GetConicalC(Int_t i) const {return fConicalC[i];}
   Float_t GetConicalFactor() const {return fConicalFactor;}
 
-  virtual void Print(Option_t* option="") const;
+  virtual void Print(const Option_t* option="") const;
 
 protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);

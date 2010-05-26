@@ -101,7 +101,7 @@ void AliTPCExBTwist::GetCorrection(const Float_t x[],const Short_t roc,Float_t d
   // 
   
   const Float_t zstart=x[2];
-  const Float_t zend  =(roc%36<18?fgkTPC_Z0:-fgkTPC_Z0);
+  const Float_t zend  =(roc%36<18?fgkTPCZ0:-fgkTPCZ0);
   const Float_t zdrift=zstart-zend;
   
   dx[0]=(fC2*fXTwist-fC1*fYTwist)*zdrift;
@@ -109,7 +109,7 @@ void AliTPCExBTwist::GetCorrection(const Float_t x[],const Short_t roc,Float_t d
   dx[2]=0.;
 }
 
-void AliTPCExBTwist::Print(Option_t* option) const {
+void AliTPCExBTwist::Print(const Option_t* option) const {
   //
   // Print function to check the settings (e.g. the twist in the X direction)
   // option=="a" prints the C0 and C1 coefficents for calibration purposes

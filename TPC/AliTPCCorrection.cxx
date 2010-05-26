@@ -65,7 +65,7 @@
 ClassImp(AliTPCCorrection)
 
 // FIXME: the following values should come from the database
-const Double_t AliTPCCorrection::fgkTPC_Z0   =249.7;     // nominal gating grid position 
+const Double_t AliTPCCorrection::fgkTPCZ0    =249.7;     // nominal gating grid position 
 const Double_t AliTPCCorrection::fgkIFCRadius= 83.06;    // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
 const Double_t AliTPCCorrection::fgkOFCRadius=254.5;     // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
 const Double_t AliTPCCorrection::fgkZOffSet  = 0.2;      // Offset from CE: calculate all distortions closer to CE as if at this point
@@ -391,12 +391,11 @@ TH2F* AliTPCCorrection::CreateTH2F(const char *name,const char *title,
 // Simple Interpolation functions: e.g. with bi(tri)cubic interpolations (not yet in TH2 and TH3)
 
 void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
-						  const Double_t er[kNZ][kNR], Double_t &er_value )
-{
+						  const Double_t er[kNZ][kNR], Double_t &erValue ) {
   //
   // Interpolate table - 2D interpolation
   //
-  Double_t save_er[10] ;
+  Double_t saveEr[10] ;
 
   Search( kNZ,   fgkZList,  z,   fJLow   ) ;
   Search( kNR,   fgkRList,  r,   fKLow   ) ;
@@ -406,16 +405,15 @@ void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double
   if ( fKLow + order  >=    kNR - 1 ) fKLow =   kNR - 1 - order ;
 
   for ( Int_t j = fJLow ; j < fJLow + order + 1 ; j++ ) {
-      save_er[j-fJLow]     = Interpolate( &fgkRList[fKLow], &er[j][fKLow], order, r )   ;
+      saveEr[j-fJLow]     = Interpolate( &fgkRList[fKLow], &er[j][fKLow], order, r )   ;
   }
-  er_value = Interpolate( &fgkZList[fJLow], save_er, order, z )   ;
+  erValue = Interpolate( &fgkZList[fJLow], saveEr, order, z )   ;
 
 }
 
 
 Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t yArray[], 
-				       const Int_t order, const Double_t x )
-{
+				       const Int_t order, const Double_t x ) {
   //
   // Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
   //
@@ -434,8 +432,7 @@ Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t 
 }
 
 
-void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low )
-{
+void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low ) {
   //
   // Search an ordered table by starting at the most recently used point
   //
@@ -483,7 +480,7 @@ void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Dou
 }
 
 
-AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream){
+AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir, TTreeSRedirector * const pcstream){
   //
   // Fit the track parameters - without and with distortion
   // 1. Space points in the TPC are simulated along the trajectory  
@@ -688,7 +685,7 @@ TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
 
 
 
-void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, TObjArray * corrArray, Int_t step, Bool_t debug ){
+void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step, Bool_t debug ){
   //
   // Make a fit tree:
   // For each partial correction (specified in array) and given track topology (phi, theta, snp, refX)
@@ -755,22 +752,16 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
       AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
       corrections[icorr]=0;
       if (entries>kMinEntries){
-	if (dtype==0) {
-	  refX=85; dir=-1;
-	}
-	if (dtype==1) {
-	  refX=275; dir=1;
-	}
-	if (dtype==2) {
-	  refX=0; dir=-1;
-	}
-	//
 	AliExternalTrackParam trackIn(refX,phi,tPar,cov);
 	AliExternalTrackParam *trackOut = 0;
 	if (debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,pcstream);
 	if (!debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,0);
-	AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kFALSE,kMaxSnp);
-	AliTrackerBase::PropagateTrackToBxByBz(trackOut,refX,kMass,3,kFALSE,kMaxSnp);
+	if (dtype==0) {refX=85; dir=-1;}
+	if (dtype==1) {refX=275; dir=1;}
+	if (dtype==2) {refX=0; dir=-1;}
+	//
+	AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kTRUE,kMaxSnp);
+	AliTrackerBase::PropagateTrackToBxByBz(trackOut,refX,kMass,3,kTRUE,kMaxSnp);
 	//
 	corrections[icorr]= trackOut->GetParameter()[ptype]-trackIn.GetParameter()[ptype];
 	delete trackOut;      
@@ -786,7 +777,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 
 
 
-void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector *pcstream, const char* hname, Int_t run){
+void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector * const pcstream, const char* hname, Int_t run){
   //
   // make a distortion map out ou fthe residual histogram
   // Results are written to the debug streamer - pcstream

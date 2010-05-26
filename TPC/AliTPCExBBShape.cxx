@@ -109,7 +109,7 @@ void AliTPCExBBShape::GetCorrection(const Float_t x[],const Short_t roc,Float_t 
   }
 
   const Double_t xStart[3]={ x[0], x[1], x[2] };
-  const Double_t xEnd[3]={ x[0],  x[1],  roc%36<18?fgkTPC_Z0:-fgkTPC_Z0 };
+  const Double_t xEnd[3]={ x[0],  x[1],  roc%36<18?fgkTPCZ0:-fgkTPCZ0 };
 
   Double_t intBStart[3];
   Double_t intBEnd[3];
@@ -139,7 +139,7 @@ void AliTPCExBBShape::GetBxAndByOverBz(const Float_t x[],const Short_t roc,Float
   }
 
   const Double_t xStart[3]={ x[0], x[1], x[2] };
-  const Double_t xEnd[3]={ x[0],  x[1],  roc%36<18?fgkTPC_Z0:-fgkTPC_Z0 };
+  const Double_t xEnd[3]={ x[0],  x[1],  roc%36<18?fgkTPCZ0:-fgkTPCZ0 };
 
   Double_t intBStart[3];
   Double_t intBEnd[3];

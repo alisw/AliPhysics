@@ -28,8 +28,8 @@ public:
   AliTPCInverseCorrection(AliTPCCorrection *correction);
   virtual ~AliTPCInverseCorrection();
 
-  void SetCorrection(AliTPCCorrection *correction) {fCorrection=correction;}
-  AliTPCCorrection* GetCorrection() const {return fCorrection;}
+  void SetCorrection(const AliTPCCorrection *correction) {fCorrection=(AliTPCCorrection*) correction;}
+  const AliTPCCorrection* GetCorrection() const {return fCorrection;}
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
 

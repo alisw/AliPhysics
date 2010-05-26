@@ -62,7 +62,7 @@ AliTPCGGVoltError::~AliTPCGGVoltError() {
 
 void AliTPCGGVoltError::Init() {
   //
-  //
+  // Init function
   //
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!magF) AliError("Magneticd field - not initialized");
@@ -199,7 +199,7 @@ void AliTPCGGVoltError::InitGGVoltErrorDistortion() {
       fGGVoltErrorER[i][j] = 0.0 ; 	    
       Double_t intz = 0.0 ;
       for ( Int_t n = 1 ; n < nterms ; ++n ) {
-	Double_t k    =  n * TMath::Pi() / fgkTPC_Z0 ;
+	Double_t k    =  n * TMath::Pi() / fgkTPCZ0 ;
 	Double_t ein  =  0 ;                    // Error potential on the IFC
 	Double_t eout =  0 ;                    // Error potential on the OFC
 	if ( z < 0 ) {
@@ -218,7 +218,7 @@ void AliTPCGGVoltError::InitGGVoltErrorDistortion() {
 	Double_t denominator =
 	  TMath::BesselK0( k*fgkOFCRadius ) * TMath::BesselI0( k*fgkIFCRadius ) -
 	  TMath::BesselK0( k*fgkIFCRadius ) * TMath::BesselI0( k*fgkOFCRadius ) ;
-	Double_t zterm = TMath::Cos( k*(fgkTPC_Z0-TMath::Abs(z)) ) - 1 ;
+	Double_t zterm = TMath::Cos( k*(fgkTPCZ0-TMath::Abs(z)) ) - 1 ;
 	intz += zterm * numerator / denominator ;
 	// Assume series converges, break if small terms
 	if ( n>10 && TMath::Abs(intz)*1.e-10 > TMath::Abs(numerator/denominator) ) break;   
@@ -231,7 +231,7 @@ void AliTPCGGVoltError::InitGGVoltErrorDistortion() {
 
 
 
-void AliTPCGGVoltError::Print(Option_t* option) const {
+void AliTPCGGVoltError::Print(const Option_t* option) const {
   //
   // Print function to check the settings (e.g. voltage offsets)
   // option=="a" prints the C0 and C1 coefficents for calibration purposes

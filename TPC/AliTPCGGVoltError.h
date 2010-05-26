@@ -1,5 +1,5 @@
-#ifndef ALI_TPC_GG_VOLT_ERROR_H
-#define ALI_TPC_GG_VOLT_ERROR_H
+#ifndef ALI_TPCGG_VOLT_ERROR_H
+#define ALI_TPCGG_VOLT_ERROR_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -30,10 +30,8 @@ public:
   // common setters and getters for ExB
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
     fT1=t1; fT2=t2;
-    const Double_t wt0=t2*omegaTau;
-    fC0=1./(1.+wt0*wt0);
-    const Double_t wt1=t1*omegaTau;
-    fC1=wt1/(1.+wt1*wt1);
+    const Double_t wt0=t2*omegaTau;     fC0=1./(1.+wt0*wt0);
+    const Double_t wt1=t1*omegaTau;     fC1=wt1/(1.+wt1*wt1);
   };
 
   void SetC0C1(Double_t c0,Double_t c1) {fC0=c0;fC1=c1;} // CAUTION: USE WITH CARE
@@ -50,7 +48,7 @@ public:
 
   Float_t GetIntErOverEz(const Float_t x[],const Short_t roc);
 
-  virtual void Print(Option_t* option="") const;
+  virtual void Print(const Option_t* option="") const;
 
 protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc, Float_t dx[]);

@@ -29,6 +29,7 @@
 #include "AliTPCCorrection.h"
 
 class TCollection;
+class TTimeStamp;
 
 class AliTPCComposedCorrection : public AliTPCCorrection {
 public:
@@ -41,7 +42,7 @@ public:
   void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
 
   TCollection* GetCorrections() const {return fCorrections;}
-  void SetCorrections(TCollection *corrections) {fCorrections=corrections;}
+  void SetCorrections(const TCollection *corrections) {fCorrections=(TCollection*)corrections;}
   CompositionType GetMode() const {return fMode;}
   void SetMode(CompositionType mode) {fMode=mode;}
 

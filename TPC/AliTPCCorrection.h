@@ -76,14 +76,14 @@ public:
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
   AliExternalTrackParam * FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);
   void StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment=0);
-  static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
+  static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
 		   const char *xlabel,const char *ylabel,const char *zlabel,
 		   Int_t nbinsx,Double_t xlow,Double_t xup,
 		   Int_t nbinsy,Double_t ylow,Double_t yup);
  
-  static const Double_t fgkTPC_Z0;      // nominal gating grid position 
+  static const Double_t fgkTPCZ0;      // nominal gating grid position 
   static const Double_t fgkIFCRadius;   // Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
   static const Double_t fgkOFCRadius;   // Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
   static const Double_t fgkZOffSet;     // Offset from CE: calculate all distortions closer to CE as if at this point
@@ -92,14 +92,14 @@ protected:
 
   enum {kNR=   92};              // Number of R points in the table for interpolating distortion data
   enum {kNZ=  270};              // Number of Z points in the table for interpolating distortion data
-  static const Double_t fgkRList[kNR];
-  static const Double_t fgkZList[kNZ];
+  static const Double_t fgkRList[kNR]; // points in the radial direction (for the lookup table)
+  static const Double_t fgkZList[kNZ]; // points in the z direction (for the lookup table)
 
   // Simple Interpolation functions: e.g. with tricubic interpolation (not yet in TH3)
-  Int_t fJLow; 
-  Int_t fKLow;
+  Int_t fJLow;         // variable to help in the interpolation 
+  Int_t fKLow;         // variable to help in the interpolation 
   void Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
-				 const Double_t er[kNZ][kNR], Double_t &er_value );
+				 const Double_t er[kNZ][kNR], Double_t &erValue );
   Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
 			const Int_t order, const Double_t x );
   void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
