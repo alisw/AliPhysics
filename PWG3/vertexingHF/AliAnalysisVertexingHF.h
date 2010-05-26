@@ -28,6 +28,7 @@ class AliRDHFCutsDstoKKpi;
 class AliRDHFCutsLctopKpi;
 class AliRDHFCutsLctoV0;
 class AliRDHFCutsD0toKpipipi;
+class AliRDHFCutsDStartoKpipi;
 class AliESDtrack;
 class AliVEvent;
 class AliAODVertex;
@@ -111,8 +112,9 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsLctoV0* GetCutsLctoV0() const { return fCutsLctoV0; }
   void SetCutsD0toKpipipi(AliRDHFCutsD0toKpipipi* cuts) { fCutsD0toKpipipi = cuts; }
   AliRDHFCutsD0toKpipipi* GetCutsD0toKpipipi() const { return fCutsD0toKpipipi; }
-  void SetCutsD0fromDstar(AliRDHFCutsD0toKpi* cuts) { fCutsD0fromDstar = cuts; }
-  AliRDHFCutsD0toKpi* GetCutsD0fromDstar() const { return fCutsD0fromDstar; }
+  void SetCutsDStartoKpipi(AliRDHFCutsDStartoKpipi* cuts) { fCutsDStartoKpipi = cuts; }
+  AliRDHFCutsDStartoKpipi* GetCutsDStartoKpipi() const { return fCutsDStartoKpipi; }
+
   void SetD0toKpiCuts(Double_t cut0=1000.,Double_t cut1=100000.,
 		      Double_t cut2=1.1,Double_t cut3=0.,Double_t cut4=0.,
 		      Double_t cut5=100000.,Double_t cut6=100000.,
@@ -215,7 +217,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsLctopKpi *fCutsLctopKpi; // Lc->pKpi cuts
   AliRDHFCutsLctoV0 *fCutsLctoV0; // Lc --> v0 + bachelor cuts
   AliRDHFCutsD0toKpipipi *fCutsD0toKpipipi; // D0->Kpipipi cuts
-  AliRDHFCutsD0toKpi *fCutsD0fromDstar; // D0 from Dstar cuts
+  AliRDHFCutsDStartoKpipi *fCutsDStartoKpipi; // Dstar->D0pi cuts
 
   Double_t fD0toKpiCuts[9]; // cuts on D0->Kpi candidates
                   // (to be passed to AliAODRecoDecayHF2Prong::SelectD0())
@@ -376,7 +378,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,17);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,18);  // Reconstruction of HF decay candidates
 };
 
 

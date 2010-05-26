@@ -167,12 +167,11 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
   if(!fTrackCuts) return kTRUE;
 
   Int_t ndaughters = d->GetNDaughters();
-  AliESDtrack* esdTrack=0;
   AliAODVertex *vAOD = d->GetPrimaryVtx();
   Double_t pos[3],cov[6];
   vAOD->GetXYZ(pos);
   vAOD->GetCovarianceMatrix(cov);
-  const AliESDVertex *vESD = new AliESDVertex(pos,cov,100.,100);
+  const AliESDVertex vESD(pos,cov,100.,100);
 
   Bool_t retval=kTRUE;
 
@@ -181,17 +180,28 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
     if(!dgTrack) retval = kFALSE;
     //printf("charge %d\n",dgTrack->Charge());
     if(dgTrack->Charge()==0) continue; // it's not a track, but a V0
-    // convert to ESD track here
-    esdTrack=new AliESDtrack(dgTrack);
-    // needed to calculate the impact parameters
-    esdTrack->RelateToVertex(vESD,0.,3.); 
-    if(!fTrackCuts->IsSelected(esdTrack)) retval = kFALSE;
-    delete esdTrack; esdTrack=0;
+
+    if(!IsDaughterSelected(dgTrack,&vESD,fTrackCuts)) retval = kFALSE;
   }
 
-  delete vESD; vESD=0;
-
   return retval;
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const {
+  //
+  // Convert to ESDtrack, relate to vertex and check cuts
+  //
+  if(!cuts) return kTRUE;
+
+  Bool_t retval=kTRUE;
+
+  // convert to ESD track here
+  AliESDtrack esdTrack(track);
+  // needed to calculate the impact parameters
+  esdTrack.RelateToVertex(primary,0.,3.); 
+  if(!cuts->IsSelected(&esdTrack)) retval = kFALSE;
+ 
+  return retval; 
 }
 //---------------------------------------------------------------------------
 void AliRDHFCuts::SetPtBins(Int_t nPtBinLimits,Float_t *ptBinLimits) {

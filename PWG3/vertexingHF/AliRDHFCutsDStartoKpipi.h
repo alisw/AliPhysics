@@ -15,7 +15,7 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 {
  public:
 
-  AliRDHFCutsDStartoKpipi();
+  AliRDHFCutsDStartoKpipi(const char* name="CutsDStartoKpipi");
   
   virtual ~AliRDHFCutsDStartoKpipi(){}
 
@@ -26,15 +26,20 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
-  virtual Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel); 
+  Int_t IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const; 
   
-  Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
-  Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
+  Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(9,iPtBin)] : 1.e6);} // for the Dstar
+  Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);} // for the D0
+
+  void AddTrackCutsSoftPi(const AliESDtrackCuts *cuts) 
+     {fTrackCutsSoftPi=new AliESDtrackCuts(*cuts); return;}
+  AliESDtrackCuts *GetTrackCutsSoftPi() const {return fTrackCutsSoftPi;}
 
  protected:
 
+  AliESDtrackCuts *fTrackCutsSoftPi; // cuts for soft pion (AOD converted to ESD on the flight!)
 
-  ClassDef(AliRDHFCutsDStartoKpipi,1);  // class for cuts on AOD reconstructed D0->Kpipi
+  ClassDef(AliRDHFCutsDStartoKpipi,2);  // class for cuts on AOD reconstructed D0->Kpipi
 };
 
 #endif

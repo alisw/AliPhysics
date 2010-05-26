@@ -29,12 +29,15 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
+#include "AliAODVertex.h"
+#include "AliESDVertex.h"
 
 ClassImp(AliRDHFCutsDStartoKpipi)
 
 //--------------------------------------------------------------------------
-AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi() : 
-AliRDHFCuts()
+AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) : 
+AliRDHFCuts(name),
+fTrackCutsSoftPi(0)
 {
   //
   // Default Constructor
@@ -94,11 +97,14 @@ AliRDHFCuts()
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &source) :
-  AliRDHFCuts(source)
+  AliRDHFCuts(source),
+  fTrackCutsSoftPi(0)
 {
   //
   // Copy constructor
   //
+
+  if(source.GetTrackCutsSoftPi()) AddTrackCutsSoftPi(source.GetTrackCutsSoftPi());
 
 }
 //--------------------------------------------------------------------------
@@ -111,6 +117,7 @@ AliRDHFCutsDStartoKpipi &AliRDHFCutsDStartoKpipi::operator=(const AliRDHFCutsDSt
 
   AliRDHFCuts::operator=(source);
 
+  if(source.GetTrackCutsSoftPi()) AddTrackCutsSoftPi(source.GetTrackCutsSoftPi());
   return *this;
 }
 
@@ -247,7 +254,15 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
+    if(!AreDaughtersSelected(dd)) return 0;
+    if(fTrackCutsSoftPi) {
+      AliAODVertex *vAOD = d->GetPrimaryVtx();
+      Double_t pos[3],cov[6];
+      vAOD->GetXYZ(pos);
+      vAOD->GetCovarianceMatrix(cov);
+      const AliESDVertex vESD(pos,cov,100.,100);
+      if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi)) return 0;
+    }
   }
   
   Int_t returnvalue=1;
@@ -294,7 +309,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   return returnvalue;
 }
 //_________________________________________________________________________________________________
-Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) {
+Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,Int_t selectionLevel) const {
   //
   // Apply selection for D0 from D*. The selection in on D0 prongs
   //
@@ -311,11 +326,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,I
     return 0;
   }
 
-  // selection on daughter tracks 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(dd)) return 0;
-  }
+  // selection on daughter tracks is done in IsSelected()
   
   Int_t returnvalue=1;
   
