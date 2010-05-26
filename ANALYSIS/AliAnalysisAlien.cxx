@@ -655,8 +655,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
          } else {
             null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
-            Error("CreateDataset","Dataset %s produced by the previous find command is empty !", file.Data());
-            return kFALSE;
+            if (null_file) {
+               Error("CreateDataset","Dataset %s produced by the previous find command is empty !", file.Data());
+               return kFALSE;
+            }   
          }         
       }
       Bool_t fileExists = FileExists(file);
@@ -702,9 +704,11 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
             } else {
                null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
-               Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
-               fRunNumbers.ReplaceAll(os->GetString().Data(), "");
-               continue;
+               if (null_file) {
+                  Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
+                  fRunNumbers.ReplaceAll(os->GetString().Data(), "");
+                  continue;
+               }   
             }
             null_result = kFALSE;         
          }
@@ -794,8 +798,10 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                Warning("CreateDataset", "'grep' command not available on this system - cannot validate the result of the grid 'find' command");
             } else {
                null_file = (gSystem->Exec(Form("grep /event %s 2>/dev/null > /dev/null",file.Data()))==0)?kFALSE:kTRUE;
-               Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
-               continue;
+               if (null_file) {
+                  Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
+                  continue;
+               }   
             }
             null_result = kFALSE;         
          }   
