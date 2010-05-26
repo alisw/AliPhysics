@@ -56,17 +56,17 @@ public:
   void SetLambda(double guess);
 
 private:
-  // here are a whole bunch of histos that get filled if we do resolution correction
-  TH3D* fIDNumHisto;        // true pairs numerator  
-  TH3D* fIDDenHisto;        // true pairs denominator
-  TH3D* fIDRatHisto;        // true pairs ratio      
-  // 
-  TH3D* fSMNumHisto;        // mixed pairs numerator  
-  TH3D* fSMDenHisto;	    // mixed pairs denominator
-  TH3D* fSMRatHisto;	    // mixed pairs ratio      
-  //
-  TH3D* fCorrectionHisto;   // correction histogram
-  TH3D* fCorrCFHisto;       // Corrected CF
+/*   // here are a whole bunch of histos that get filled if we do resolution correction */
+/*   TH3D* fIDNumHisto;        // true pairs numerator   */
+/*   TH3D* fIDDenHisto;        // true pairs denominator */
+/*   TH3D* fIDRatHisto;        // true pairs ratio       */
+/*   //  */
+/*   TH3D* fSMNumHisto;        // mixed pairs numerator   */
+/*   TH3D* fSMDenHisto;	    // mixed pairs denominator */
+/*   TH3D* fSMRatHisto;	    // mixed pairs ratio       */
+/*   // */
+/*   TH3D* fCorrectionHisto;   // correction histogram */
+/*   TH3D* fCorrCFHisto;       // Corrected CF */
 
   TH3D* fNumerator;         // numerator
   TH3D* fDenominator;       // denominator

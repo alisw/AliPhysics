@@ -24,14 +24,14 @@ ClassImp(AliFemtoBPLCMS3DCorrFctn)
 AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi)
   :
   AliFemtoCorrFctn(),
-  fIDNumHisto(0),
-  fIDDenHisto(0),
-  fIDRatHisto(0),
-  fSMNumHisto(0),
-  fSMDenHisto(0),
-  fSMRatHisto(0),
-  fCorrectionHisto(0),
-  fCorrCFHisto(0),
+//   fIDNumHisto(0),
+//   fIDDenHisto(0),
+//   fIDRatHisto(0),
+//   fSMNumHisto(0),
+//   fSMDenHisto(0),
+//   fSMRatHisto(0),
+//   fCorrectionHisto(0),
+//   fCorrCFHisto(0),
   fNumerator(0),
   fDenominator(0),
   fRatio(0),
@@ -83,49 +83,49 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   //  fUncorrectedDenominator->Sumw2();
   fRatio->Sumw2();
 
-  // Following histos are for the momentum resolution correction
-  // they are filled only if a AliFemtoSmear object is plugged in
-  // here comes the "idea" numerator and denominator and ratio...
-  char tTitNumID[100] = "IDNum";
-  strcat(tTitNumID,title);
-  fIDNumHisto = new TH3D(tTitNumID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-  char tTitDenID[100] = "IDDen";
-  strcat(tTitDenID,title);
-  fIDDenHisto = new TH3D(tTitDenID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-  char tTitRatID[100] = "IDRat";
-  strcat(tTitRatID,title);
-  fIDRatHisto = new TH3D(tTitRatID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   // Following histos are for the momentum resolution correction
+//   // they are filled only if a AliFemtoSmear object is plugged in
+//   // here comes the "idea" numerator and denominator and ratio...
+//   char tTitNumID[100] = "IDNum";
+//   strcat(tTitNumID,title);
+//   fIDNumHisto = new TH3D(tTitNumID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   char tTitDenID[100] = "IDDen";
+//   strcat(tTitDenID,title);
+//   fIDDenHisto = new TH3D(tTitDenID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   char tTitRatID[100] = "IDRat";
+//   strcat(tTitRatID,title);
+//   fIDRatHisto = new TH3D(tTitRatID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
-  fIDNumHisto->Sumw2();
-  fIDDenHisto->Sumw2();
-  fIDRatHisto->Sumw2();
+//   fIDNumHisto->Sumw2();
+//   fIDDenHisto->Sumw2();
+//   fIDRatHisto->Sumw2();
 
-  //
-  // here comes the "smeared" numerator and denominator...
-  char tTitNumSM[100] = "SMNum";
-  strcat(tTitNumSM,title);
-  fSMNumHisto = new TH3D(tTitNumSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-  char tTitDenSM[100] = "SMDen";
-  strcat(tTitDenSM,title);
-  fSMDenHisto = new TH3D(tTitDenSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-  char tTitRatSM[100] = "SMRat";
-  strcat(tTitRatSM,title);
-  fSMRatHisto = new TH3D(tTitRatSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-  //
-  fSMNumHisto->Sumw2();
-  fSMDenHisto->Sumw2();
-  fSMRatHisto->Sumw2();
-  //
-  // here comes the correction factor (which is just ratio of ideal ratio to smeared ratio)
-  char tTitCorrection[100] = "CorrectionFactor";
-  strcat(tTitCorrection,title);
-  fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  
-  fCorrectionHisto->Sumw2();
-  // here comes the fully corrected correlation function
-  char tTitCorrCF[100] = "CorrectedCF";
-  strcat(tTitCorrCF,title);
-  fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-  fCorrCFHisto->Sumw2();
+//   //
+//   // here comes the "smeared" numerator and denominator...
+//   char tTitNumSM[100] = "SMNum";
+//   strcat(tTitNumSM,title);
+//   fSMNumHisto = new TH3D(tTitNumSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   char tTitDenSM[100] = "SMDen";
+//   strcat(tTitDenSM,title);
+//   fSMDenHisto = new TH3D(tTitDenSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   char tTitRatSM[100] = "SMRat";
+//   strcat(tTitRatSM,title);
+//   fSMRatHisto = new TH3D(tTitRatSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   //
+//   fSMNumHisto->Sumw2();
+//   fSMDenHisto->Sumw2();
+//   fSMRatHisto->Sumw2();
+//   //
+//   // here comes the correction factor (which is just ratio of ideal ratio to smeared ratio)
+//   char tTitCorrection[100] = "CorrectionFactor";
+//   strcat(tTitCorrection,title);
+//   fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  
+//   fCorrectionHisto->Sumw2();
+//   // here comes the fully corrected correlation function
+//   char tTitCorrCF[100] = "CorrectedCF";
+//   strcat(tTitCorrCF,title);
+//   fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//   fCorrCFHisto->Sumw2();
 
   // user can (and should) override these defaults...
   fLambda = 0.6;
@@ -137,14 +137,14 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 
 AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn) :
   AliFemtoCorrFctn(aCorrFctn),
-  fIDNumHisto(0),
-  fIDDenHisto(0),
-  fIDRatHisto(0),
-  fSMNumHisto(0),
-  fSMDenHisto(0),
-  fSMRatHisto(0),
-  fCorrectionHisto(0),
-  fCorrCFHisto(0),
+//   fIDNumHisto(0),
+//   fIDDenHisto(0),
+//   fIDRatHisto(0),
+//   fSMNumHisto(0),
+//   fSMDenHisto(0),
+//   fSMRatHisto(0),
+//   fCorrectionHisto(0),
+//   fCorrCFHisto(0),
   fNumerator(0),
   fDenominator(0),
   fRatio(0),
@@ -160,14 +160,14 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(const AliFemtoBPLCMS3DCorrFct
   fUseRPSelection(0)
 {
   // Copy constructor
-  fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
-  fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
-  fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
-  fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
-  fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
-  fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
-  fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
-  fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
+//   fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
+//   fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
+//   fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
+//   fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
+//   fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
+//   fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
+//   fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
+//   fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
   fRatio = new TH3D(*aCorrFctn.fRatio);
@@ -189,14 +189,14 @@ AliFemtoBPLCMS3DCorrFctn::~AliFemtoBPLCMS3DCorrFctn(){
   delete fDenominator;
   delete fRatio;
   delete fQinvHisto;
-  delete fIDNumHisto;
-  delete fIDDenHisto;
-  delete fIDRatHisto;
-  delete fSMNumHisto;
-  delete fSMDenHisto;
-  delete fSMRatHisto;
-  delete fCorrectionHisto;
-  delete fCorrCFHisto;
+//   delete fIDNumHisto;
+//   delete fIDDenHisto;
+//   delete fIDRatHisto;
+//   delete fSMNumHisto;
+//   delete fSMDenHisto;
+//   delete fSMRatHisto;
+//   delete fCorrectionHisto;
+//   delete fCorrCFHisto;
 }
 //_________________________
 AliFemtoBPLCMS3DCorrFctn& AliFemtoBPLCMS3DCorrFctn::operator=(const AliFemtoBPLCMS3DCorrFctn& aCorrFctn)
@@ -204,23 +204,23 @@ AliFemtoBPLCMS3DCorrFctn& AliFemtoBPLCMS3DCorrFctn::operator=(const AliFemtoBPLC
   // assignment operator
   if (this == &aCorrFctn)
     return *this;
-  if (fIDNumHisto) delete fIDNumHisto;
-  fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
-  if (fIDDenHisto) delete fIDDenHisto;
-  fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
-  if (fIDRatHisto) delete fIDRatHisto;
-  fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
-  if (fSMNumHisto) delete fSMNumHisto;
-  fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
-  if (fSMDenHisto) delete fSMDenHisto;
-  fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
-  if (fSMRatHisto) delete fSMRatHisto;
-  fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
+//   if (fIDNumHisto) delete fIDNumHisto;
+//   fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
+//   if (fIDDenHisto) delete fIDDenHisto;
+//   fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
+//   if (fIDRatHisto) delete fIDRatHisto;
+//   fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
+//   if (fSMNumHisto) delete fSMNumHisto;
+//   fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
+//   if (fSMDenHisto) delete fSMDenHisto;
+//   fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
+//   if (fSMRatHisto) delete fSMRatHisto;
+//   fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
 
-  if (fCorrectionHisto) delete fCorrectionHisto;
-  fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
-  if (fCorrCFHisto) delete fCorrCFHisto;
-  fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
+//   if (fCorrectionHisto) delete fCorrectionHisto;
+//   fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
+//   if (fCorrCFHisto) delete fCorrCFHisto;
+//   fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
   if (fNumerator) delete fNumerator;
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   if (fDenominator) delete fDenominator;
