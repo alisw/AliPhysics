@@ -694,10 +694,10 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
 	TObjArray object      = calibra->GetVectorFit();
 	AliTRDCalDet *objdriftvelocitydet = calibra->CreateDetObjectVdrift(&object,kTRUE);
-	TObject *objdriftvelocitypad = calibra->CreatePadObjectVdrift();
+	//TObject *objdriftvelocitypad = calibra->CreatePadObjectVdrift();
 	object              = calibra->GetVectorFit2();
 	AliTRDCalDet *objtime0det         = calibra->CreateDetObjectT0(&object,kTRUE);
-	TObject *objtime0pad         = calibra->CreatePadObjectT0();
+	//TObject *objtime0pad         = calibra->CreatePadObjectT0();
 	calibra->ResetVectorFit();
 	// store
 	if(!Store("Calib","ChamberVdrift"    ,(TObject *) objdriftvelocitydet,&md1,0,kTRUE)){
@@ -708,14 +708,14 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
 	  Log("Error storing the calibration object for the chamber t0 (DAQ)");
 	  error = kTRUE;
 	}
-	if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
-	  Log("Error storing the calibration object for the local drift velocity (DAQ)");
-	  error = kTRUE;
-	}
-	if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
-	  Log("Error storing the calibration object for the local time0 (DAQ)");
-	  error = kTRUE;
-	}
+	//if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
+	//  Log("Error storing the calibration object for the local drift velocity (DAQ)");
+	//  error = kTRUE;
+	//}
+	//if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
+	//  Log("Error storing the calibration object for the local time0 (DAQ)");
+	//  error = kTRUE;
+	//}
       }
       else{
 	Log("Not enough statistics for the average pulse height (DAQ)");
@@ -806,16 +806,16 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	calibra->PutMeanValueOtherVectorFit(1,kTRUE);
 	TObjArray object           = calibra->GetVectorFit();
 	AliTRDCalDet *objgaindet   = calibra->CreateDetObjectGain(&object);
-	TObject *objgainpad        = calibra->CreatePadObjectGain();
+	//TObject *objgainpad        = calibra->CreatePadObjectGain();
 	// store them
 	if(!Store("Calib","ChamberGainFactor",(TObject *) objgaindet         ,&md1,0,kTRUE)){
 	  Log("Error storing the calibration object for the chamber gain");
 	  error = kTRUE;
 	}
-	if(!Store("Calib","LocalGainFactor"  ,(TObject *) objgainpad         ,&md2,0,kTRUE)){
-	  Log("Error storing the calibration object for the local gain factor");
-	  error = kTRUE;
-	}
+	//if(!Store("Calib","LocalGainFactor"  ,(TObject *) objgainpad         ,&md2,0,kTRUE)){
+	//  Log("Error storing the calibration object for the local gain factor");
+	//  error = kTRUE;
+	//}
       }
       calibra->ResetVectorFit();
     }// if histogain
@@ -849,10 +849,10 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
 	TObjArray object  = calibra->GetVectorFit();
 	AliTRDCalDet *objdriftvelocitydet = calibra->CreateDetObjectVdrift(&object,kTRUE);
-	TObject *objdriftvelocitypad      = calibra->CreatePadObjectVdrift();
+	//TObject *objdriftvelocitypad      = calibra->CreatePadObjectVdrift();
 	object              = calibra->GetVectorFit2();
 	AliTRDCalDet *objtime0det  = calibra->CreateDetObjectT0(&object,kTRUE);
-	TObject *objtime0pad       = calibra->CreatePadObjectT0();
+	//TObject *objtime0pad       = calibra->CreatePadObjectT0();
 	// store them
 	if(!Store("Calib","ChamberVdrift"    ,(TObject *) objdriftvelocitydet,&md1,0,kTRUE)){
 	  Log("Error storing the calibration object for the chamber vdrift (HLT)");
@@ -862,14 +862,14 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 	  Log("Error storing the calibration object for the chamber t0 (HLT)");
 	  error = kTRUE;
 	}
-	if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
-	  Log("Error storing the calibration object for the local drift velocity (HLT)");
-	  error = kTRUE;
-	}
-	if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
-	  Log("Error storing the calibration object for the local time0 (HLT)");
-	  error = kTRUE;
-	}
+	//if(!Store("Calib","LocalVdrift"      ,(TObject *) objdriftvelocitypad,&md2,0,kTRUE)){
+	//  Log("Error storing the calibration object for the local drift velocity (HLT)");
+	//  error = kTRUE;
+	//}
+	//if(!Store("Calib","LocalT0"          ,(TObject *) objtime0pad        ,&md2,0,kTRUE)){
+	//  Log("Error storing the calibration object for the local time0 (HLT)");
+	//  error = kTRUE;
+	//}
 	fVdriftHLT = kTRUE;
       }
       calibra->ResetVectorFit();
