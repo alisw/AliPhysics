@@ -33,7 +33,7 @@ class AliHFMassFitter : public TNamed {
 
   //setters
   void     SetHisto(const TH1F *histoToFit);
-  void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue;}
+  void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue; CheckRangeFit();}
   void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;}
   void     SetMaxRangeFit(Double_t maxvalue){fmaxMass=maxvalue;}
   void     SetBinN(Int_t newbinN){fNbin=newbinN;}
@@ -44,6 +44,8 @@ class AliHFMassFitter : public TNamed {
   void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;} // consider only side bands
   void     SetFixParam(Bool_t *fixpar){fFixPar=fixpar;}
   Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
+  Bool_t   SetFixGaussianMean(Bool_t fixpar=kTRUE){return SetFixThisParam(fNFinalPars-2,fixpar);}
+  Bool_t   SetFixGaussianSigma(Bool_t fixpar=kTRUE){return SetFixThisParam(fNFinalPars-1,fixpar);}
 
   //getters
   TH1F*    GetHistoClone() const; //return the histogram
@@ -61,7 +63,7 @@ class AliHFMassFitter : public TNamed {
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
   Bool_t*  GetFixParam()const {return fFixPar;}
   Bool_t   GetFixThisParam(Int_t thispar)const;
-  TVirtualPad* GetPad(Bool_t writeFitInfo=kTRUE,Double_t nsigma=2)const;
+  TVirtualPad* GetPad(Double_t nsigma=2,Int_t writeFitInfo=1)const;
 
   void     PrintParTitles() const;
 
@@ -71,7 +73,8 @@ class AliHFMassFitter : public TNamed {
   TNtuple* NtuParamOneShot(char *ntuname="ntupar"); // the three functions above all together
   void     WriteHisto(TString path="./") const; // write the histogram
   void     WriteNtuple(TString path="./") const; // write the TNtuple
-  void     DrawHere(TVirtualPad* pd,Bool_t writeFitInfo=kTRUE,Double_t nsigma=2) const;
+  void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=2,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
+  void     DrawHere(TVirtualPad* pd,Double_t nsigma=2,Int_t writeFitInfo=1) const;
   void     DrawFit(Double_t nsigma=2) const;
   void     Reset();
 
@@ -88,36 +91,39 @@ class AliHFMassFitter : public TNamed {
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Bool_t   MassFitter(Bool_t draw=kTRUE);
-  void     RebinMass(Int_t binground=1);
+  void     RebinMass(Int_t bingroup=1);
   
 
  private:
 
-  void     PlotFit(TVirtualPad* pd,Bool_t writeFitInfo=kTRUE,Double_t nsigma=2)const;
+  void     PlotFit(TVirtualPad* pd,Double_t nsigma=2,Int_t writeFitInfo=1)const;
 
   void     ComputeParSize();
+  void     ComputeNFinalPars();
   Bool_t   SideBandsBounds();
+  Bool_t   CheckRangeFit();
   void     AddFunctionsToHisto();
 
-  TH1F    *fhistoInvMass;  // histogram to fit
-  Double_t fminMass;       // lower mass limit
-  Double_t fmaxMass;       // upper mass limit
-  Int_t    fNbin;          // number of bins
-  Int_t    fParsSize;      // size of fFitPars array
-  Float_t *fFitPars;       //[fParsSize] array of fit parameters
-  Bool_t   fWithBkg;       // signal+background (kTRUE) or signal only (kFALSE)
-  Int_t    ftypeOfFit4Bkg; // 0 = exponential; 1 = linear; 2 = pol2
-  Int_t    ftypeOfFit4Sgn; // 0 = gaus; 1 = gaus+gaus broadened
-  Int_t    ffactor;         // number to multiply to the sigma of the signal to obtain the reflected gaussian
-  TNtuple *fntuParam;      // contains fit parameters
-  Double_t fMass;          // signal gaussian mean value
-  Double_t fSigmaSgn;      // signal gaussian sigma
-  Bool_t   fSideBands;     // kTRUE = only side bands considered
-  Bool_t*  fFixPar;        //[fParSize] for each par if kTRUE it is fixed in fit
-  Int_t    fSideBandl;     // left side band limit (bin number)
-  Int_t    fSideBandr;     // right side band limit (bin number)
-  Int_t    fcounter;       // internal counter
-  TList   *fContourGraph;  // TList of TGraph containing contour plots
+  TH1F*     fhistoInvMass;     // histogram to fit
+  Double_t  fminMass;          // lower mass limit
+  Double_t  fmaxMass;          // upper mass limit
+  Int_t     fNbin;             // number of bins
+  Int_t     fParsSize;         // size of fFitPars array
+  Int_t     fNFinalPars;       // number of parameters of the final function
+  Float_t*  fFitPars;          //[fParsSize] array of fit parameters
+  Bool_t    fWithBkg;          // signal+background (kTRUE) or signal only (kFALSE)
+  Int_t     ftypeOfFit4Bkg;    // 0 = exponential; 1 = linear; 2 = pol2
+  Int_t     ftypeOfFit4Sgn;    // 0 = gaus; 1 = gaus+gaus broadened
+  Int_t     ffactor;           // number to multiply to the sigma of the signal to obtain the reflected gaussian
+  TNtuple*  fntuParam;         // contains fit parameters
+  Double_t  fMass;             // signal gaussian mean value
+  Double_t  fSigmaSgn;         // signal gaussian sigma
+  Bool_t    fSideBands;        // kTRUE = only side bands considered
+  Bool_t*   fFixPar;           //[fParSize] for each par if kTRUE it is fixed in fit
+  Int_t     fSideBandl;        // left side band limit (bin number)
+  Int_t     fSideBandr;        // right side band limit (bin number)
+  Int_t     fcounter;          // internal counter
+  TList*    fContourGraph;     // TList of TGraph containing contour plots
   ClassDef(AliHFMassFitter,3); // class for invariant mass fit
 };
 

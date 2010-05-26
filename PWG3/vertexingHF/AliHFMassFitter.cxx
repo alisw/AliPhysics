@@ -50,6 +50,7 @@ AliHFMassFitter::AliHFMassFitter() :
   fmaxMass(0),
   fNbin(0),
   fParsSize(1),
+  fNFinalPars(1),
   fFitPars(0),
   fWithBkg(0),
   ftypeOfFit4Bkg(0),
@@ -81,6 +82,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fmaxMass(0),
  fNbin(0),
  fParsSize(1),
+ fNFinalPars(1),
  fFitPars(0),
  fWithBkg(0),
  ftypeOfFit4Bkg(0),
@@ -104,6 +106,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
   fmaxMass=maxvalue;
   if(rebin!=1) RebinMass(rebin); 
   else fNbin=(Int_t)fhistoInvMass->GetNbinsX();
+  CheckRangeFit();
   ftypeOfFit4Bkg=fittypeb;
   ftypeOfFit4Sgn=fittypes;
   if(ftypeOfFit4Bkg!=0 && ftypeOfFit4Bkg!=1 && ftypeOfFit4Bkg!=2) fWithBkg=kFALSE;
@@ -113,11 +116,12 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
 
   ComputeParSize();
   fFitPars=new Float_t[fParsSize];
-  fFixPar=new Bool_t[fParsSize];
+  ComputeNFinalPars();
+  fFixPar=new Bool_t[fNFinalPars];
 
   fFixPar[0]=kTRUE; //default: IntTot fixed
   cout<<"Parameter 0 is fixed"<<endl;
-  for(Int_t i=1;i<fParsSize;i++){
+  for(Int_t i=1;i<fNFinalPars;i++){
     fFixPar[i]=kFALSE;
   }
 
@@ -134,6 +138,7 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fmaxMass(mfit.fmaxMass),
   fNbin(mfit.fNbin),
   fParsSize(mfit.fParsSize),
+  fNFinalPars(mfit.fNFinalPars),
   fFitPars(0),
   fWithBkg(mfit.fWithBkg),
   ftypeOfFit4Bkg(mfit.ftypeOfFit4Bkg),
@@ -231,8 +236,8 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
       delete[] fFixPar;
       fFixPar=NULL;
     }
-    fFixPar=new Bool_t[fParsSize];
-    memcpy(fFixPar,mfit.fFixPar,mfit.fParsSize*sizeof(Float_t));
+    fFixPar=new Bool_t[fNFinalPars];
+    memcpy(fFixPar,mfit.fFixPar,mfit.fNFinalPars*sizeof(Float_t));
   }
 // fFitPars=new Float_t[fParsSize];
 //   for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
@@ -244,11 +249,34 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
 
 //__________________________________________________________________________
 
+void AliHFMassFitter::ComputeNFinalPars() {
+  switch (ftypeOfFit4Bkg) {//npar background func
+  case 0:
+    fNFinalPars=2;
+    break;
+  case 1:
+    fNFinalPars=2;
+    break;
+  case 2:
+    fNFinalPars=3;
+    break;
+  case 3:
+    fNFinalPars=1;
+    break;
+  default:
+    cout<<"Error in computing fNFinalPars: check ftypeOfFit4Bkg"<<endl;
+    break;
+  }
+
+  fNFinalPars+=3; //gaussian signal
+}
+//__________________________________________________________________________
+
 void AliHFMassFitter::ComputeParSize() {
 
   //compute the size of the parameter array and set the data member
 
-  switch (ftypeOfFit4Bkg) {//npar backround func
+  switch (ftypeOfFit4Bkg) {//npar background func
   case 0:
     fParsSize = 2*3;
     break;
@@ -279,11 +307,21 @@ Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
   //set the value (kFALSE or kTRUE) of one element of fFixPar
   //return kFALSE if something wrong
 
-  if(thispar>=fParsSize) {
-    cout<<"Error! Parameter out of bounds! Max is "<<fParsSize-1<<endl;
+  if(thispar>=fNFinalPars) {
+    cout<<"Error! Parameter out of bounds! Max is "<<fNFinalPars-1<<endl;
     return kFALSE;
   }
-  if(!fFixPar) return kFALSE;
+  if(!fFixPar){
+    cout<<"Initializing fFixPar...";
+    ComputeNFinalPars();
+    fFixPar=new Bool_t[fNFinalPars];
+    fFixPar[0]=kTRUE;
+    for(Int_t i=1;i<fNFinalPars;i++){
+      fFixPar[i]=kFALSE;
+    }
+    cout<<" done."<<endl;
+  }
+
   fFixPar[thispar]=fixpar;
   cout<<"Parameter "<<thispar<<" is now fixed"<<endl;
   return kTRUE;
@@ -292,8 +330,8 @@ Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
 //___________________________________________________________________________
 Bool_t AliHFMassFitter::GetFixThisParam(Int_t thispar)const{
   //return the value of fFixPar[thispar]
-  if(thispar>=fParsSize) {
-    cout<<"Error! Parameter out of bounds! Max is "<<fParsSize-1<<endl;
+  if(thispar>=fNFinalPars) {
+    cout<<"Error! Parameter out of bounds! Max is "<<fNFinalPars-1<<endl;
     return kFALSE;
   }
   if(!fFixPar) return kFALSE;
@@ -485,16 +523,17 @@ void AliHFMassFitter::RebinMass(Int_t bingroup){
     cout<<"Histogram not set"<<endl;
     return;
   }
+  Int_t nbinshisto=fhistoInvMass->GetNbinsX();
   if(bingroup<1){
     cout<<"Error! Cannot group "<<bingroup<<" bins\n";
-    fNbin=fhistoInvMass->GetNbinsX();
+    fNbin=nbinshisto;
     cout<<"Kept original number of bins: "<<fNbin<<endl;
   } else{
     fhistoInvMass->Rebin(bingroup);
+    if(nbinshisto%bingroup != 0) CheckRangeFit();
     fNbin = fhistoInvMass->GetNbinsX();
     cout<<"New number of bins: "<<fNbin<<endl;
   } 
-  
        
 }
 
@@ -715,6 +754,55 @@ void AliHFMassFitter::GetSideBandsBounds(Int_t &left, Int_t &right) const{
 }
 
 //__________________________________________________________________________
+Bool_t AliHFMassFitter::CheckRangeFit(){
+  //check if the limit of the range correspond to the limit of bins. If not reset the limit to the nearer value which satisfy this condition
+
+  if (!fhistoInvMass) {
+    cout<<"No histogram to fit! SetHisto(TH1F* h) before! "<<endl;
+    return kFALSE;
+  }
+  Bool_t leftok=kFALSE, rightok=kFALSE;
+  Int_t nbins=fhistoInvMass->GetNbinsX();
+  Double_t width=fhistoInvMass->GetBinWidth(1);
+  Double_t minhisto=fhistoInvMass->GetBinLowEdge(1), maxhisto=fhistoInvMass->GetBinLowEdge(nbins)+width;
+
+  //check if limits are inside histogram range
+  if( fminMass-minhisto < 0. ) {
+    cout<<"Out of histogram left bound!"<<endl;
+    fminMass=minhisto;
+  }
+  if( fmaxMass-maxhisto > 0. ) {
+    cout<<"Out of histogram right bound!"<<endl;
+    fmaxMass=maxhisto;
+  }
+
+  Int_t binl,binr;
+  Double_t tmp=0.;
+  tmp=fminMass;
+  //calculate bin corresponding to fminMass
+  binl=fhistoInvMass->FindBin(fminMass);
+  if (fminMass > fhistoInvMass->GetBinCenter(binl)) binl++;
+  fminMass=fhistoInvMass->GetBinLowEdge(binl);
+  if(TMath::Abs(tmp-fminMass) > 1e-6){
+    cout<<"Left bound "<<tmp<<" is not allowed, changing it to the nearest value allowed: "<<fminMass<<endl;
+    leftok=kTRUE;
+  }
+ 
+  tmp=fmaxMass;
+  //calculate bin corresponding to fmaxMass
+  binr=fhistoInvMass->FindBin(fmaxMass);
+  if (fmaxMass < fhistoInvMass->GetBinCenter(binr)) binr--;
+  fmaxMass=fhistoInvMass->GetBinLowEdge(binr)+width;
+  if(TMath::Abs(tmp-fmaxMass) > 1e-6){
+    cout<<"Right bound "<<tmp<<" is not allowed, changing it to the nearest value allowed: "<<fmaxMass<<endl;
+    rightok=kTRUE;
+  }
+
+  return (leftok && rightok);
+ 
+}
+
+//__________________________________________________________________________
 
 Bool_t AliHFMassFitter::MassFitter(Bool_t draw){  
   // Main method of the class: performs the fit of the histogram
@@ -759,15 +847,14 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   TString massname="funcmass";
 
   //Total integral
-  Double_t totInt = fhistoInvMass->Integral("width");
-  cout<<"Integral"<<endl;
+  Double_t totInt = fhistoInvMass->Integral(fhistoInvMass->FindBin(fminMass), fhistoInvMass->FindBin(fmaxMass), "width");
 
   fSideBands = kTRUE;
   Double_t width=fhistoInvMass->GetBinWidth(8);
   cout<<"fNbin"<<fNbin<<endl;
   if (fNbin==0) fNbin=fhistoInvMass->GetNbinsX();
-  Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
-  Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin)+width;
+  //Double_t minHisto=fhistoInvMass->GetBinLowEdge(1);
+  //Double_t maxHisto=fhistoInvMass->GetBinLowEdge(fNbin)+width;
   Bool_t ok=SideBandsBounds();
   if(!ok) return kFALSE;
   
@@ -783,7 +870,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
   /*Fit Bkg*/
 
 
-  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,minHisto,maxHisto,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
+  TF1 *funcbkg = new TF1(bkgname.Data(),this,&AliHFMassFitter::FitFunction4Bkg,fminMass,fmaxMass,bkgPar,"AliHFMassFitter","FitFunction4Bkg");
   cout<<"Function name = "<<funcbkg->GetName()<<endl<<endl;
 
   funcbkg->SetLineColor(2); //red
@@ -1303,8 +1390,48 @@ void AliHFMassFitter::WriteNtuple(TString path) const{
 }
 
 //_________________________________________________________________________
+void AliHFMassFitter::WriteCanvas(TString userIDstring,TString path,Double_t nsigma,Int_t writeFitInfo,Bool_t draw) const{
 
-TVirtualPad* AliHFMassFitter::GetPad(Bool_t writeFitInfo,Double_t nsigma)const{
+ //write the canvas in a root file
+
+  gStyle->SetOptStat(0);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetFrameFillColor(0);
+
+  TString type="";
+
+  switch (ftypeOfFit4Bkg){
+  case 0:
+    type="Exp"; //3+2
+    break;
+  case 1:
+    type="Lin"; //3+2
+    break;
+  case 2:
+    type="Pl2"; //3+3
+    break;
+  case 3:
+    type="noB"; //3+1
+    break;
+  }
+
+  TString filename=Form("%sMassFit.root",type.Data());
+  filename.Prepend(userIDstring);
+  path.Append(filename);
+
+  TFile* outputcv=new TFile(path.Data(),"update");
+
+  TCanvas* c=(TCanvas*)GetPad(nsigma,writeFitInfo);
+  c->SetName(Form("%s%s%s",c->GetName(),userIDstring.Data(),type.Data()));
+  if(draw)c->DrawClone();
+  outputcv->cd();
+  c->Write();
+  outputcv->Close();
+}
+
+//_________________________________________________________________________
+
+TVirtualPad* AliHFMassFitter::GetPad(Double_t nsigma,Int_t writeFitInfo)const{
   //return a TVirtualPad with the fitted histograms and info
 
   TString cvtitle="fit of ";
@@ -1312,20 +1439,24 @@ TVirtualPad* AliHFMassFitter::GetPad(Bool_t writeFitInfo,Double_t nsigma)const{
   TString cvname="c";
   cvname+=fcounter;
 
-  TCanvas *c=new TCanvas(cvtitle,cvname);
-  PlotFit(c->cd(),writeFitInfo,nsigma);
+  TCanvas *c=new TCanvas(cvname,cvtitle);
+  PlotFit(c->cd(),nsigma,writeFitInfo);
   return c->cd();
 }
 //_________________________________________________________________________
 
-void AliHFMassFitter::PlotFit(TVirtualPad* pd,Bool_t writeFitInfo,Double_t nsigma)const{
+void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo)const{
+  //plot histogram, fit functions and write parameters according to verbosity level (0,1,>1)
   gStyle->SetOptStat(0);
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
+
   cout<<"nsigma = "<<nsigma<<endl;
+  cout<<"Verbosity = "<<writeFitInfo<<endl;
 
   TH1F* hdraw=GetHistoClone();
   hdraw->SetMinimum(0);
+  hdraw->GetXaxis()->SetRangeUser(fminMass,fmaxMass);
   pd->cd();
   hdraw->SetMarkerStyle(20);
   hdraw->DrawClone("PE");
@@ -1333,16 +1464,22 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Bool_t writeFitInfo,Double_t nsigm
   hdraw->GetFunction("funcbkgRecalc")->DrawClone("same");
   hdraw->GetFunction("funcmass")->DrawClone("same");
 
-  if(writeFitInfo){
-    TPaveText *pinfo=new TPaveText(0.6,0.7,1.,1.,"NDC");
-    pinfo->SetBorderSize(0);
-    pinfo->SetFillStyle(0);
+  if(writeFitInfo > 0){
+    TPaveText *pinfob=new TPaveText(0.6,0.86,1.,1.,"NDC");
+    TPaveText *pinfom=new TPaveText(0.6,0.7,1.,.87,"NDC");
+    pinfob->SetBorderSize(0);
+    pinfob->SetFillStyle(0);
+    pinfom->SetBorderSize(0);
+    pinfom->SetFillStyle(0);
     TF1* ff=fhistoInvMass->GetFunction("funcmass");
-    Int_t np =ff->GetNpar();
-    for (Int_t i=0;i<np;i++){
+
+    for (Int_t i=fNFinalPars-3;i<fNFinalPars;i++){
+      pinfom->SetTextColor(kBlue);
       TString str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
-      pinfo->AddText(str);
+      if(!(writeFitInfo==1 && i==fNFinalPars-3)) pinfom->AddText(str);
     }
+    pd->cd();
+    pinfom->DrawClone();
 
     TPaveText *pinfo2=new TPaveText(0.1,0.1,0.6,0.4,"NDC");
     pinfo2->SetBorderSize(0);
@@ -1358,16 +1495,26 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Bool_t writeFitInfo,Double_t nsigm
       Signal(1.828,1.892,signal,errsignal);
       Background(1.828,1.892,bkg, errbkg);
     */
-    TString str=Form("Significance (%.0f#sigma) %f #pm %f ",nsigma,signif,errsignif);
+    TString str=Form("Significance (%.0f#sigma) %.1f #pm %.1f ",nsigma,signif,errsignif);
     pinfo2->AddText(str);
-    str=Form("S (%.0f#sigma) %f #pm %f ",nsigma,signal,errsignal);
+    str=Form("S (%.0f#sigma) %.0f #pm %.0f ",nsigma,signal,errsignal);
     pinfo2->AddText(str);
-    str=Form("B (%.0f#sigma) %f #pm %f",nsigma,bkg,errbkg);
+    str=Form("B (%.0f#sigma) %.0f #pm %.0f",nsigma,bkg,errbkg);
     pinfo2->AddText(str);
 
     pd->cd();
-    pinfo->Draw();
     pinfo2->Draw();
+
+    if(writeFitInfo > 1){
+      for (Int_t i=0;i<fNFinalPars-3;i++){
+	pinfob->SetTextColor(kRed);
+	TString str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+	pinfob->AddText(str);
+      }
+      pd->cd();
+      pinfob->DrawClone();
+    }
+
 
   }
   return;
@@ -1375,9 +1522,9 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Bool_t writeFitInfo,Double_t nsigm
 
 //_________________________________________________________________________
 
-void AliHFMassFitter::DrawHere(TVirtualPad* pd,Bool_t writeFitInfo,Double_t nsigma) const {
+void AliHFMassFitter::DrawHere(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo) const {
   //draws histogram together with fit functions with default nice colors in user canvas
-  PlotFit(pd,writeFitInfo,nsigma);
+  PlotFit(pd,nsigma,writeFitInfo);
 
   pd->Draw();
  
@@ -1391,7 +1538,7 @@ void AliHFMassFitter::DrawFit(Double_t nsigma) const{
   gStyle->SetFrameFillColor(0);
 
 
-  TCanvas* c=(TCanvas*)GetPad(kTRUE,nsigma);
+  TCanvas* c=(TCanvas*)GetPad(nsigma,1);
   c->Draw();
   
 }
