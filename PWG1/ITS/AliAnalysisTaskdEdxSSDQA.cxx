@@ -37,7 +37,7 @@ AliAnalysisTaskdEdxSSDQA::AliAnalysisTaskdEdxSSDQA(const char *name)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskdEdxSSDQA::CreateOutputObjects()
+void AliAnalysisTaskdEdxSSDQA::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -57,7 +57,7 @@ void AliAnalysisTaskdEdxSSDQA::LocalInit()
 
 //________________________________________________________________________
 
-void AliAnalysisTaskdEdxSSDQA::Exec(Option_t *) 
+void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *) 
 {
     // Main loop
     // Called for each event
