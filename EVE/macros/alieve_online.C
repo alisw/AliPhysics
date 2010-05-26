@@ -10,7 +10,6 @@ class TEveUtil;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
-
 void alieve_online_init()
 {
   
@@ -71,7 +70,7 @@ void alieve_online_init()
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW TOF",     "tof_raw.C",     "tof_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW VZERO",   "vzero_raw.C",   "vzero_raw"));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW ACORDE",  "acorde_raw.C",  "acorde_raw"));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON",    "muon_raw.C++",  "muon_raw", "", kFALSE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kRawReader, "RAW MUON",    "muon_raw.C++",  "muon_raw"));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks",             "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Track", "esd_tracks.C", "esd_tracks_MI",          "", kFALSE));
@@ -128,9 +127,10 @@ void alieve_online_init()
   glv->DoDraw();
 }
 
+//   multiView->Get3DView()->GetGLViewer()->CurrentCamera().RotateRad(-1, 1)
 
 Int_t      g_pic_id  = 0;
-Int_t      g_pic_max = 10;
+Int_t      g_pic_max = 100;
 TTimeStamp g_pic_prev(0, 0);
 
 void alieve_online_on_new_event()
@@ -142,6 +142,38 @@ void alieve_online_on_new_event()
   TEveElement* top = gEve->GetCurrentEvent();
 
   AliEveMultiView *multiView = AliEveMultiView::Instance();
+
+  TGLViewer *glv = (dynamic_cast<TEveViewer*>(gEve->GetViewers()->FindChild("3D View")))->GetGLViewer();
+  
+  if(gEve->GetScenes()->FirstChild()->FindChild("Gentle MUON"))
+  {
+    if (esd->GetNumberOfMuonTracks() == 0 && !gEve->GetKeepEmptyCont())
+    {
+      gEve->GetScenes()->FirstChild()->FindChild("Gentle MUON")->SetRnrChildren(kFALSE);
+      
+      if(gEve->GetEventScene()->FirstChild()->FindChild("MUON Clusters"))
+        gEve->GetEventScene()->FirstChild()->FindChild("MUON Clusters")->SetRnrSelf(kFALSE);
+      if(gEve->GetEventScene()->FirstChild()->FindChild("MUON Raw digits"))
+        gEve->GetEventScene()->FirstChild()->FindChild("MUON Raw digits")->SetRnrChildren(kFALSE);
+
+      gEve->FullRedraw3D(kTRUE);
+      glv->CurrentCamera().RotateRad(-0.4, -1.8);
+    }
+    else
+    {
+      gEve->GetScenes()->FirstChild()->FindChild("Gentle MUON")->SetRnrChildren(kTRUE);
+
+      if(gEve->GetEventScene()->FirstChild()->FindChild("MUON Clusters"))
+        gEve->GetEventScene()->FirstChild()->FindChild("MUON Clusters")->SetRnrSelf(kTRUE);
+      if(gEve->GetEventScene()->FirstChild()->FindChild("MUON Raw digits"))
+        gEve->GetEventScene()->FirstChild()->FindChild("MUON Raw digits")->SetRnrChildren(kTRUE);
+
+      gEve->FullRedraw3D(kTRUE);
+      glv->CurrentCamera().RotateRad(-0.4, 1);
+    }
+  }
+
+  glv->DoDraw();
 
   multiView->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
