@@ -39,6 +39,7 @@ ClassImp(AliAnalysisTaskQASym)
   AliAnalysisTaskQASym::AliAnalysisTaskQASym(const char *name) 
     : AliAnalysisTaskSE(name) 
     ,fTrackType(0)
+    ,fStandAlone(0)
     ,fFieldOn(kTRUE)
     ,fHists(0)
     ,fHistRECpt(0)
@@ -1077,6 +1078,9 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       phiIn = tpcP->Phi();
       if (!tpcP) continue;
       if (!fCuts->AcceptTrack(tpcP)) continue;
+      if(fStandAlone==kTRUE) {
+	if(!(tpcP->GetStatus()&AliESDtrack::kITSpureSA))continue;
+      }
     }
     else if(fTrackType==2){     
       //Fill all histograms with TPC track information

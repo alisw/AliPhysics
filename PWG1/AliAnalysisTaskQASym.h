@@ -26,6 +26,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual void   SetTrackType(Int_t type) {fTrackType = type;}  
+  virtual void   SetStandAloneTrack(Bool_t standAlone = kFALSE) {fStandAlone = standAlone;}  //needed for ITS tracks
   
   
   virtual void   SetCuts(AliESDtrackCuts* cuts)
@@ -37,6 +38,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
  private:
 
   Int_t       fTrackType;
+  Int_t       fStandAlone; // needed for ITS tracks
   Bool_t      fFieldOn;
 
   TList       *fHists;          // List of histos
