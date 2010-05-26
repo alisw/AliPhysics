@@ -31,6 +31,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassRange(Double_t rang=0.2){fMassRange=rang;}
+  void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetProductionCuts(AliRDHFCutsDstoKKpi* cuts){fProdCuts=cuts;}
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
@@ -65,10 +66,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    //  limits for pt bins
   Double_t fMassRange;                // range for mass histogram 
-  AliRDHFCutsDstoKKpi *fProdCuts;     //Cuts for Analysis
-  AliRDHFCutsDstoKKpi *fAnalysisCuts; //Cuts for Analysis
+  Double_t fMassBinSize;              // bin size for inv. mass histo
+
+  AliRDHFCutsDstoKKpi *fProdCuts;     // Cuts for Analysis
+  AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,2);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,3);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif

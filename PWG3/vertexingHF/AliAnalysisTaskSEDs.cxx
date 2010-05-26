@@ -55,6 +55,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fNPtBins(0),
   fListCuts(0),
   fMassRange(0.2),
+  fMassBinSize(0.002),
   fProdCuts(0),
   fAnalysisCuts(0)
 {
@@ -70,6 +71,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   fNPtBins(0),
   fListCuts(0),
   fMassRange(0.2),
+  fMassBinSize(0.002),
   fProdCuts(productioncuts),
   fAnalysisCuts(analysiscuts)
 {
@@ -161,17 +163,20 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->SetName("OutputHistos");
 
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
-  Double_t minMass=massDs-0.5*fMassRange;
-  Double_t maxMass=massDs+0.5*fMassRange;
+  Int_t nInvMassBins=(Int_t)(fMassRange/fMassBinSize+0.5);
+  if(nInvMassBins%2==1) nInvMassBins++;
+  Double_t minMass=massDs-0.5*nInvMassBins*fMassBinSize;
+  Double_t maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
+
   TString hisname;
   Int_t index;
   for(Int_t i=0;i<fNPtBins;i++){
     index=GetHistoIndex(i);
     hisname.Form("hMassAllPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
     fMassHist[index]->Sumw2();
     hisname.Form("hMassAllPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
     fMassHistCuts[index]->Sumw2();
     hisname.Form("hCosPAllPt%d",i);
     fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
@@ -185,10 +190,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 
     index=GetSignalHistoIndex(i);    
     hisname.Form("hMassSigPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
     fMassHist[index]->Sumw2();
     hisname.Form("hMassSigPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
     fMassHistCuts[index]->Sumw2();
     hisname.Form("hCosPSigPt%d",i);
     fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
@@ -202,10 +207,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 
     hisname.Form("hMassBkgPt%d",i);
     index=GetBackgroundHistoIndex(i);    
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
     fMassHist[index]->Sumw2();
     hisname.Form("hMassBkgPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
     fMassHistCuts[index]->Sumw2();
     hisname.Form("hCosPBkgPt%d",i);
     fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
