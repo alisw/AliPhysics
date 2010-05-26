@@ -53,7 +53,8 @@ fnVarsForOpt(0),
 fVarsForOpt(0),
 fGlobalIndex(1),
 fCutsRD(0),
-fIsUpperCut(0)
+fIsUpperCut(0),
+fUsePID(kFALSE)
 {
   //
   // Default Constructor
@@ -77,7 +78,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fVarsForOpt(0),
   fGlobalIndex(source.fGlobalIndex),
   fCutsRD(0),
-  fIsUpperCut(0)
+  fIsUpperCut(0),
+  fUsePID(source.fUsePID)
 {
   //
   // Copy constructor
@@ -110,6 +112,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fnVars=source.fnVars;
   fGlobalIndex=source.fGlobalIndex;
   fnVarsForOpt=source.fnVarsForOpt;
+  fUsePID=source.fUsePID;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);

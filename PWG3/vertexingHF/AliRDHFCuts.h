@@ -40,6 +40,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetCuts(Int_t glIndex, Float_t* cutsRDGlob);
   void AddTrackCuts(const AliESDtrackCuts *cuts) 
          {fTrackCuts=new AliESDtrackCuts(*cuts); return;}
+  void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
 
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
   Int_t   GetNPtBins() const {return fnPtBins;}
@@ -60,13 +61,16 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Bool_t IsEventSelected(AliVEvent *event) const;
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
+  virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) const {return 1;}
 
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) = 0;
 
   Int_t PtBin(Double_t pt) const;
   void PrintAll()const;
 
-  enum{kAll,kTracks,kCandidate};
+  virtual Bool_t IsInFiducialAcceptance(Double_t /*pt*/,Double_t /*y*/) const {return kTRUE;}
+
+  enum{kAll,kTracks,kPID,kCandidate};
 
  protected:
 
@@ -92,8 +96,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fGlobalIndex; // fnVars*fnPtBins
   Float_t *fCutsRD; //[fGlobalIndex] the cuts values
   Bool_t  *fIsUpperCut; //[fnVars] use > or < to select
+  Bool_t fUsePID; // enable PID usage (off by default)
 
-  ClassDef(AliRDHFCuts,1);  // base class for cuts on AOD reconstructed 
+  ClassDef(AliRDHFCuts,2);  // base class for cuts on AOD reconstructed 
                             // heavy-flavour decays
 };
 
