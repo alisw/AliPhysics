@@ -607,7 +607,8 @@ void AliT0v1::DefineOpticalProperties()
    const Int_t kNbins=31;
    
    Float_t rindexSiO2[kNbins],  efficAll[kNbins], rindexAir[kNbins], absorAir[kNbins],rindexCathodeNext[kNbins], absorbCathodeNext[kNbins];
-            
+   Double_t efficMet[kNbins], aReflMet[kNbins];
+           
    // quartz 20mm
    Float_t aAbsSiO2[kNbins]={29.0, 28.6, 28.3, 27.7, 27.3, 26.7, 26.4, 
 			     25.9, 25.3, 24.9, 24.5, 23.7, 
@@ -622,6 +623,13 @@ void AliT0v1::DefineOpticalProperties()
 			     5.8,  5.97, 6.16, 6.36, 6.57, 
 			     6.8,  7.04, 7.3,  7.58, 7.89, 
 			     8.22, 8.57, 8.97, 9.39 };  
+  Double_t dPckov[kNbins]  ={3.87, 3.94, 4.02, 4.11, 4.19, 4.29, 4.38,
+                             4.48, 4.58, 4.69, 4.81, 4.93,
+                             5.05, 5.19, 5.33, 5.48, 5.63,
+                             5.8,  5.97, 6.16, 6.36, 6.57,
+                             6.8,  7.04, 7.3,  7.58, 7.89,
+                             8.22, 8.57, 8.97, 9.39 };
+
    /*     
    Float_t effCathode[kNbins]={0.11, 0.13, 0.15, 0.16, 0.18, 0.19, 0.20,
 			      0.21, 0.22, 0.23, 0.24, 0.26, 
@@ -631,14 +639,15 @@ void AliT0v1::DefineOpticalProperties()
 			      0.17, 0.17, 0.2, 0.23};
    */     
    //  Float_t aAbsSiO2[kNbins]; //quartz 30mm
-  for(i=0;i<kNbins;i++)
+ for(i=0;i<kNbins;i++)
     {
       aPckov[i]=aPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV   
-      rindexAir[i]=0;
+      rindexAir[i]=0.0001;
       rindexSiO2[i]=1.458; //refractive index for qwarts
       rindexCathodeNext[i]=0;
       efficAll[i]=1.;
-
+      efficMet[i]=0.;
+      aReflMet[i]=1.;
       //      aAbsSiO2[i]=28.5; //quartz 30mm
       absorAir[i]=0.3;      
       absorbCathodeNext[i]=0;
@@ -651,6 +660,14 @@ void AliT0v1::DefineOpticalProperties()
    gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
   gMC->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
    gMC->SetCerenkov (idtmed[kOpAirNext], kNbins, aPckov,absorbCathodeNext , efficAll, rindexCathodeNext);
+
+   //Define a boarder for radiator optical properties
+   gMC->DefineOpSurface("surfRd", kUnified /*kGlisur*/,kDielectric_metal,kPolished, 0.);
+   gMC->SetMaterialProperty("surfRd", "EFFICIENCY", kNbins, dPckov, efficMet);
+   gMC->SetMaterialProperty("surfRd", "REFLECTIVITY", kNbins, dPckov, aReflMet);
+   gMC->SetBorderSurface("0TOPborder", "0TOP",1,"0TOO",1, "surfRd");
+
+
 }
 
 //-------------------------------------------------------------------
