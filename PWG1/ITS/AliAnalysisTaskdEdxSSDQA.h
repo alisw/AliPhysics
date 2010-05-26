@@ -13,8 +13,8 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
   AliAnalysisTaskdEdxSSDQA(const char *name = "AliAnalysisTaskdEdxSSDQA");
   virtual ~AliAnalysisTaskdEdxSSDQA() {}
   
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual void   LocalInit();
   
