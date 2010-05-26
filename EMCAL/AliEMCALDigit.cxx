@@ -82,7 +82,7 @@ AliDigitNew(),
 }
 
 //____________________________________________________________________________
-AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, Float_t time, Int_t type, Int_t index, Float_t dE) 
+AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, Float_t time, Int_t type, Int_t index, Float_t chi2, Int_t ndf, Float_t dE) 
   : AliDigitNew(),
     fAmpFloat(digEnergy),
     fNSamples(0),
@@ -100,8 +100,8 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t dig
     fMaxIter(5),
     fTime(time),
     fTimeR(time),
-    fChi2(0.),
-    fNDF(0),
+    fChi2(chi2),
+    fNDF(ndf),
     fDigitType(type)
 {  
   // ctor with all data 

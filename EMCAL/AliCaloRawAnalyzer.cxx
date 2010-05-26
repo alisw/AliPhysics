@@ -40,6 +40,7 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
 										   fFitArrayCut(5),
 										   fAmpCut(4),
 										   fNsampleCut(5),
+										   fOverflowCut(950),
 										   fNsamplePed(3),
 										   fIsZerosupressed( false ),
 										   fVerbose( false )
@@ -335,7 +336,7 @@ AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
   }
 
   int nsamples =  last - first + 1;
-  //  printf(" AliCaloRawAnalyzer::CalculateChi2 : first %i last %i : nsamples %i \n", first, last, nsamples); 
+  // printf(" AliCaloRawAnalyzer::CalculateChi2 : first %i last %i : nsamples %i : amp %3.2f time %3.2f \n", first, last, nsamples, amp, time); 
 
   Int_t x = 0;
   Double_t chi2 = 0;
@@ -350,7 +351,7 @@ AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
     }
     dy    = fReversed[x] - f; 
     chi2 += dy*dy;
-    //    printf(" AliCaloRawAnalyzer::CalculateChi2 : %i : y %f -> f %f : dy %f \n", i, fReversed[first+i], f, dy); 
+    // printf(" AliCaloRawAnalyzer::CalculateChi2 : %i : y %f -> f %f : dy %f \n", i, fReversed[first+i], f, dy); 
   }
 
   if (adcErr>0.0) { // weight chi2

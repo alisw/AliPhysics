@@ -75,22 +75,30 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
       return AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid);
     }
   
-  int first = 0;
-  int last = 0;
- 
-  Float_t ped = ReverseAndSubtractPed( &(bunchvector.at( index ) )  ,  altrocfg1, altrocfg2, fReversed  );
-  
-  short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
+  Float_t ped = ReverseAndSubtractPed( &(bunchvector.at( index ) )  ,  altrocfg1, altrocfg2, fReversed  );  
   short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
   double maxf =  maxamp - ped;
 
+  if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
+    {
+      return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
+    }
+
+  int first = 0;
+  int last = 0; 
+  short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
   SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev , &first, &last);
 
+  Float_t chi2 = 0;
+  Int_t ndf = 0;
   if(maxrev  < 1000 )
     {
       if (  ( maxrev   - first) < 2  &&  (last -   maxrev ) < 2)
 	{
-	  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
+	  chi2 = CalculateChi2(maxf, maxrev, first, last);
+	  ndf = last - first - 1; // nsamples - 2
+	  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
+				    timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	}
       else
 	{
@@ -104,12 +112,19 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 	  double amp = (maxamp - ped)*fNeuralNet->Value( 0,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]);
 	  double tof = (fNeuralNet->Value( 1,  fNNInput[0],  fNNInput[1], fNNInput[2], fNNInput[3], fNNInput[4]) + timebinOffset ) ;
 
-	  return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, amp , tof, timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
+	  // use local-array time for chi2 estimate
+	  chi2 = CalculateChi2(amp, tof-timebinOffset+maxrev, first, last);
+	  ndf = last - first - 1; // nsamples - 2
+	  return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, amp , tof, timebinOffset, chi2, ndf,
 				    AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 
 	}
     }
-  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
+  chi2 = CalculateChi2(maxf, maxrev, first, last);
+  ndf = last - first - 1; // nsamples - 2
+  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
+			    timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+
 }
 
 

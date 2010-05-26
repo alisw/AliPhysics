@@ -340,7 +340,8 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   reader->Select("EMCAL",0,43); // 43 = AliEMCALGeoParams::fgkLastAltroDDL
 
   // fRawAnalyzer setup
-  fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done
+  fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done, for the new methods
+  fRawAnalyzer->SetOverflowCut(fgkOverflowCut);
   fRawAnalyzer->SetAmpCut(fNoiseThreshold);
   fRawAnalyzer->SetFitArrayCut(fNoiseThreshold);
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
@@ -356,16 +357,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 
     while (in.NextChannel()) {
 
-/*
-	  Int_t    hhwAdd    = in.GetHWAddress();
-	  UShort_t iiBranch  = ( hhwAdd >> 11 ) & 0x1; // 0/1
-	  UShort_t iiFEC     = ( hhwAdd >>  7 ) & 0xF;
-	  UShort_t iiChip    = ( hhwAdd >>  4 ) & 0x7;
-	  UShort_t iiChannel =   hhwAdd         & 0xF;
-		 
-	  if ( !( iiBranch == 0 && iiFEC == 1 && iiChip == 3 && ( iiChannel >= 8 && iiChannel <= 15 ) ) && !( iiBranch == 1 && iiFEC == 0 && in.GetColumn() == 0 ) ) continue;
-*/
-		
       //Check if the signal  is high or low gain and then do the fit, 
       //if it  is from TRU or LEDMon do not fit
       caloFlag = in.GetCaloFlag();
@@ -391,7 +382,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	short timeEstimate  = 0;
 	Float_t ampEstimate = 0;
 	Bool_t fitDone = kFALSE;
-		
+	Float_t chi2 = 0;
+	Int_t ndf = 0;
+
       if ( fFittingAlgorithm == kFastFit || fFittingAlgorithm == kNeuralNet || fFittingAlgorithm == kLMS || fFittingAlgorithm == kPeakFinder || fFittingAlgorithm == kCrude) {
 	// all functionality to determine amp and time etc is encapsulated inside the Evaluate call for these methods 
 	AliCaloFitResults fitResults = fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2()); 
@@ -400,9 +393,11 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	time         = fitResults.GetTime();
 	timeEstimate = fitResults.GetMaxTimebin();
 	ampEstimate  = fitResults.GetMaxSig();
+	chi2 = fitResults.GetChi2();
+	ndf = fitResults.GetNdf();
 	if (fitResults.GetStatus() == AliCaloFitResults::kFitPar) {
 	  fitDone = kTRUE;
-	} 
+	}
       }
       else { // for the other methods we for now use the functionality of 
 	// AliCaloRawAnalyzer as well, to select samples and prepare for fits, 
@@ -428,10 +423,11 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	  Int_t timebinOffset = bunchlist.at(bunchIndex).GetStartBin() - (bunchlist.at(bunchIndex).GetLength()-1); 
 	  amp = ampEstimate; 
 	  
-	  if ( nsamples > 1 ) { // possibly something to fit
-	    FitRaw(first, last, amp, time, fitDone);
+	  if ( nsamples > 1 && maxADC<fgkOverflowCut ) { // possibly something to fit
+	    FitRaw(first, last, amp, time, chi2, fitDone);
 	    time += timebinOffset;
 	    timeEstimate += timebinOffset;
+	    ndf = nsamples - 2;
 	  }
 	  
 	} // ampEstimate check
@@ -450,7 +446,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	} 
       } // fitDone
     
-      if (amp >= fNoiseThreshold  && amp<fgkRawSignalOverflow) { // something to be stored
+      if (amp >= fNoiseThreshold) { // something to be stored
 	if ( ! fitDone) { // smear ADC with +- 0.5 uniform (avoid discrete effects)
 	  amp += (0.5 - gRandom->Rndm()); // Rndm generates a number in ]0,1]
 	}
@@ -465,7 +461,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 
 	AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
 	// printf("Added tower: SM %d, row %d, column %d, amp %3.2f\n",in.GetModule(), in.GetRow(), in.GetColumn(),amp);
-	AddDigit(digitsArr, id, lowGain, amp, time); 
+	AddDigit(digitsArr, id, lowGain, amp, time, chi2, ndf); 
       }
       
 	}//ALTRO
@@ -525,7 +521,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSam
 }
 
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time) {
+void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf) {
   //
   // Add a new digit. 
   // This routine checks whether a digit exists already for this tower 
@@ -546,7 +542,7 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 			type = AliEMCALDigit::kLGnoHG;
 		} 
 		Int_t idigit = digitsArr->GetEntries();
-		new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit) ; 
+		new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit, chi2, ndf); 
 		AliDebug(2,Form("Add digit Id %d for the first time, type %d", id, type));
   }//digit added first time
   else { // a digit already exists, check range 
@@ -591,10 +587,15 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
       AliDebug(1,Form("Remove digit with id %d, LGnoHG",digit->GetId()));
       digitsArr->Remove(digit);
     }
-    //Check if time if too large or too small, remove if so
+    //Check if time is too large or too small, remove if so
     else if(fTimeMin > digit->GetTime() || fTimeMax < digit->GetTime()) {
       digitsArr->Remove(digit);
       AliDebug(1,Form("Remove digit with id %d, Bad Time %e",digit->GetId(), digit->GetTime()));
+    }
+    // Check if Chi2 is undefined
+    else if (0 > digit->GetChi2()) {
+      digitsArr->Remove(digit);
+      AliDebug(1,Form("Remove digit with id %d, Bad Chi2 %e",digit->GetId(), digit->GetChi2()));
     }
     //Good digit, just reassign the index of the digit in case there was a previous removal
     else {
@@ -609,7 +610,7 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
 }
 	
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Bool_t & fitDone) const 
+void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const 
 { // Fits the raw signal time distribution
   
   //--------------------------------------------------
@@ -648,9 +649,7 @@ void AliEMCALRawUtils::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin,
 	// assign fit results
 	amp  = signalF->GetParameter(0); 
 	time = signalF->GetParameter(1);
-
-	// cross-check with ParabolaFit to see if the results make sense
-	FitParabola(gSig, amp); // amp is possibly updated
+	chi2 = signalF->GetChisquare();
 	fitDone = kTRUE;
       }
       catch (const std::exception & e) {

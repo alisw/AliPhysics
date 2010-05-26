@@ -138,22 +138,21 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
     {
       Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
       Float_t maxf = TMath::MaxElement(   bunchvector.at(index).GetLength(),  fReversed );
-      short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
       short timebinOffset = maxampindex - (bunchvector.at( index ).GetLength()-1); 
 	     
-      if(  maxf <= fAmpCut  ||  ( maxamp - ped) > 900  )	 // (maxamp - ped) > 900 = Close to saturation (use low gain then)
+      if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
 	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
- 	}
-      
-      int first;
-      int last;
-      
-      if ( maxf >= fAmpCut )
-	{	  
+ 	}            
+      else if ( maxf >= fAmpCut )
+	{
+	  int first = 0;
+	  int last = 0;
+	  short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();	  
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev, &first, &last);
 	  int nsamples =  last - first;
-	  if( ( nsamples  )  >= fNsampleCut )
+
+	  if( ( nsamples  )  >= fNsampleCut ) // no if statement needed really; keep for readability
 	    {
 	      int startbin = bunchvector.at(index).GetStartBin();  
 	      int n = last - first;  
@@ -199,19 +198,21 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      
 	      tof = timebinOffset - 0.01*tof/fAmp; // clock ticks
 	      
+	      // use local-array time for chi2 estimate
+	      Float_t chi2 = CalculateChi2(fAmp, tof-timebinOffset+maxrev, first, last);
+	      Int_t ndf = last - first - 1; // nsamples - 2
 	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kFitPar, fAmp, tof, 
-					timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy,
+					timebinOffset, chi2, ndf,
 					AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );  
 	    }
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kCrude, maxf, timebinOffset); 
+	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
+	      Int_t ndf = last - first - 1; // nsamples - 2
+	      return AliCaloFitResults( maxamp, ped , AliCaloFitResults::kCrude, maxf, timebinOffset,
+					timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
-	}
-      else 
-	{
-	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
-	}
+	} // ampcut
     }
   return  AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid);
 }

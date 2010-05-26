@@ -31,7 +31,7 @@ class AliEMCALDigit : public AliDigitNew {
  public:
   
   AliEMCALDigit() ;
-  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, Float_t time, Int_t type,Int_t index = -1, Float_t dE = 0) ;
+  AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t digEnergy, Float_t time, Int_t type,Int_t index = -1, Float_t chi2=0, Int_t ndf=0, Float_t dE = 0) ;
   AliEMCALDigit(const AliEMCALDigit & digit) ;
   virtual ~AliEMCALDigit() ;
 

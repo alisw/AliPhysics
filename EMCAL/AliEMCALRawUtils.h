@@ -43,7 +43,7 @@ class AliEMCALRawUtils : public TObject {
   void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
 				  TClonesArray *digitsTRG=0x0);
 
-  void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time);
+  void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf);
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t timeSamples[], Int_t nSamples);
   void TrimDigits(TClonesArray *digitsArr);
 
@@ -95,7 +95,7 @@ class AliEMCALRawUtils : public TObject {
 
   // Signal shape functions
 	
-  void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Bool_t & fitDone) const ;
+  void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const ;
   void FitParabola(const TGraph *gSig, Float_t & amp) const ; 
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   static Double_t RawResponseFunctionLog(Double_t *x, Double_t *par); 

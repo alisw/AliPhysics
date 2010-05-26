@@ -84,14 +84,18 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
   if( index >= 0)
     {
       Float_t  ped  = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
-      int first;
-      int last;
       Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
       short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
       // timebinOffset is timebin value at maximum (maxrev)
       short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
-      if ( maxf >= fAmpCut )
+      if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
 	{
+	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
+ 	}            
+      else if ( maxf >= fAmpCut )
+	{
+	  int first = 0;
+	  int last = 0;
 	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
 	  int nsamples =  last - first + 1;
 	  
@@ -119,7 +123,8 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	      }
 	      catch (const std::exception & e) {
 		AliError( Form("TGraph Fit exception %s", e.what()) ); 
-		return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, timebinOffset); 
+		return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kNoFit, maxf, timebinOffset,
+					  timebinOffset, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 	      }
 
 	      if( fVerbose == true )
@@ -145,15 +150,13 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	    }
 	  else
 	    {
-	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset); 
+	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
+	      Int_t ndf = last - first - 1; // nsamples - 2
+	      return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
+					timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	    }
-	}
-      else
-	{
-	  return AliCaloFitResults( maxamp , ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
-	}       
+        } // ampcut
     }
-
   return AliCaloFitResults( AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid );
   
 }

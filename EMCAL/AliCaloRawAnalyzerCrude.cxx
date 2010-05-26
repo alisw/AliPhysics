@@ -25,6 +25,7 @@
 #include "AliCaloRawAnalyzerCrude.h"
 #include "AliCaloFitResults.h"
 #include "AliCaloBunchInfo.h"
+#include "TMath.h"
 
 using namespace std;
 
@@ -44,37 +45,39 @@ AliCaloRawAnalyzerCrude::~AliCaloRawAnalyzerCrude()
 
 
 AliCaloFitResults
-AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
+AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2)
 {
   // Evaluation of signal parameters
-  if( bunchvector.size()  <=  0 )
+  short maxampindex; //index of maximum amplitude
+  short maxamp; //Maximum amplitude
+  int index = SelectBunch( bunchvector,  &maxampindex,  &maxamp );
+ 
+  if( index >= 0)
     {
-      return AliCaloFitResults(AliCaloFitResults::kInvalid, AliCaloFitResults::kInvalid);
-    }
+      Float_t ped = ReverseAndSubtractPed( &(bunchvector.at(index))  ,  altrocfg1, altrocfg2, fReversed  );
+      Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
+      short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
 
-  Int_t amp = 0;
-  Int_t tof = -99;
-  const UShort_t *sig;
-  
-  double ped = EvaluatePedestal( bunchvector.at(0).GetData(), bunchvector.at(0).GetLength() ) ;
+      if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
+	{
+	  return  AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset);
+	}
+      else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
+	{
+	  int first = 0;
+	  int last = 0;
+	  int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
 
-  for( unsigned int i= 0; i < bunchvector.size(); ++i)
-    {
-      sig = bunchvector.at(i).GetData();
-      int length = bunchvector.at(i).GetLength(); 
-      
-      for(int j = 0; j < length; j ++)
-	if( sig[j] > amp  )
-	  {
-	    amp   = sig[j];
-	    tof   = bunchvector.at(i).GetStartBin() - j;		     
-	  }
-    }
+	  Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
+	  Int_t ndf = last - first - 1; // nsamples - 2
+	  return AliCaloFitResults( maxamp, ped, AliCaloFitResults::kCrude, maxf, timebinOffset,
+				    timebinOffset, chi2, ndf, AliCaloFitResults::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
+	} // ampcut
+    } // bunch index    
 
-  //:EvaluatePedestal(const UShort_t * const data, const int length )
-  //  double ped = EvaluatePedestal(sig, length) ;
-  return  AliCaloFitResults(amp, ped, AliCaloFitResults::kCrude, amp - ped, tof);
-  
+  return AliCaloFitResults(AliCaloFitResults::kInvalid , AliCaloFitResults::kInvalid);
+
 } //end Crude
 
 
