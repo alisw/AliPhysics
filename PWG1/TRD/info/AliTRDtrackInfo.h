@@ -34,6 +34,7 @@ public:
     AliESDinfo(const AliESDinfo &esd);
     virtual ~AliESDinfo();
     AliESDinfo& operator=(const AliESDinfo &esd);
+    void Delete(const Option_t *);
     Bool_t      HasV0() const {return fHasV0;}
     Int_t       GetId() const {return fId;}
     ULong_t     GetStatus() const {return fStatus;}

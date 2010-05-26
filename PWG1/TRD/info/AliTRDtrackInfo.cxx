@@ -208,6 +208,19 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
   if(fOP) delete fOP; fOP = NULL;
 }
 
+//___________________________________________________
+void AliTRDtrackInfo::AliESDinfo::Delete(const Option_t *){
+  //
+  // Delete Pointer members 
+  // 
+  if(fTRDnSlices){
+    delete [] fTRDslices;
+    fTRDslices = NULL;
+    fTRDnSlices = 0;
+  }
+  if(fOP) delete fOP; fOP = NULL;
+}
+
 
 //___________________________________________________
 AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
@@ -295,6 +308,7 @@ void AliTRDtrackInfo::Delete(const Option_t *)
 
   fNClusters  = 0;
   if(fMC) delete fMC; fMC = NULL;
+  fESD.Delete(NULL);
   if(fTRDtrack) delete fTRDtrack; fTRDtrack = NULL;
 }
 
