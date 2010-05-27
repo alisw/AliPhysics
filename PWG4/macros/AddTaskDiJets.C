@@ -1,4 +1,4 @@
-AliAnalysisTaskDiJets *AddTaskDiJets(Char_t *jb="dijets")
+AliAnalysisTaskDiJets *AddTaskDiJets(Char_t *jb="jets")
 {
 // Creates a dijet task, configures it and adds it to the analysis manager.
 
@@ -27,7 +27,7 @@ AliAnalysisTaskDiJets *AddTaskDiJets(Char_t *jb="dijets")
    mgr->AddTask(dijetana);
    
    TString jbOut(jb);
-   if (jbOut.Sizeof() > 6) jbOut = jbOut(4,jbOut.Sizeof());
+   jbOut = jbOut(4,jbOut.Sizeof());
    jbOut.ToLower();
 
    AliAnalysisDataContainer *cout_dijet = mgr->CreateContainer(Form("dijets_%s",jbOut.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,
