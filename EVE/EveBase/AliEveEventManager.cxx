@@ -311,6 +311,7 @@ void AliEveEventManager::Open()
   // Open ESD and ESDfriends
 
   TString esdPath(Form("%s/%s", fPath.Data(), fgESDFileName.Data()));
+  if (fPath.EndsWith(".zip")) esdPath.Form("%s#%s",fPath.Data(),fgESDFileName.Data());
   if ((fESDFile = TFile::Open(esdPath)))
   {
     fESD = new AliESDEvent();
@@ -322,6 +323,7 @@ void AliEveEventManager::Open()
       // as it seems to work better when attachine alieve to a
       // running reconstruction process with auto-save on.
       TString p(Form("%s/AliESDfriends.root", fPath.Data()));
+      if (fPath.EndsWith(".zip")) p.Form("%s#AliESDfriends.root",fPath.Data());
       TFile *esdFriendFile = TFile::Open(p);
       if (esdFriendFile)
       {
@@ -381,6 +383,7 @@ void AliEveEventManager::Open()
   // Open AOD and registered friends
 
   TString aodPath(Form("%s/%s", fPath.Data(), fgAODFileName.Data()));
+  if (fPath.EndsWith(".zip")) aodPath.Form("%s#%s",fPath.Data(),fgAODFileName.Data());
   if ((fAODFile = TFile::Open(aodPath)))
   {
     fAOD = new AliAODEvent();
@@ -393,6 +396,7 @@ void AliEveEventManager::Open()
       while ((name = (TObjString*) friends()) != 0)
       {
 	TString p(Form("%s/%s", fPath.Data(), name->GetName()));
+        if (fPath.EndsWith(".zip")) p.Form("%s#%s",fPath.Data(),name->GetName());
 	if (gSystem->AccessPathName(p, kReadPermission) == kFALSE)
 	{
 	  fAODTree->AddFriend("aodTree", name->GetName());
@@ -437,6 +441,7 @@ void AliEveEventManager::Open()
   // Open RunLoader from galice.root
 
   TString gaPath(Form("%s/galice.root", fPath.Data()));
+  if (fPath.EndsWith(".zip")) gaPath.Form("%s#%s",fPath.Data(),"galice.root");
   // If i use open directly, we get fatal.
   // Is AccessPathName check ok for xrootd / alien? Yes, not for http.
   // Seems not to work for alien anymore.
