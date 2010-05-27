@@ -869,7 +869,7 @@ void AliAnalysisManager::Terminate()
    delete allOutputs;
 
    if (getsysInfo) {
-      TDirectory *cdir = gDirectory;
+      TDirectory *crtdir = gDirectory;
       TFile f("syswatch.root", "RECREATE");
       TH1 *hist;
       TString cut;
@@ -957,7 +957,7 @@ void AliAnalysisManager::Terminate()
          f.Close();
          delete tree;
       }
-      if (cdir) cdir->cd();
+      if (crtdir) crtdir->cd();
    }
    // Validate the output files
    if (ValidateOutputFiles()) {
