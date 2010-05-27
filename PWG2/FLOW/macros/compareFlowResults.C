@@ -13,17 +13,19 @@ Bool_t plotDiffFlowEtaPOI = kTRUE; // differential flow v(eta) for POIs
 Bool_t plotIntFlowRP = kTRUE; // integrated flow of RPs
 Bool_t plotDiffFlowPtRP = kTRUE; // differential flow v(pt) for RPs
 Bool_t plotDiffFlowEtaRP = kTRUE; // differential flow v(eta) for RPs
-// Results relative to MC |(v{MC}-v{method})/v{MC}|:
-Bool_t plotReferenceFlowRelativeToMC = kTRUE; // plot |(v{MC}-v{method})/v{MC}| for reference flow
-Bool_t plotIntFlowRelativeToMCPOI = kTRUE; // plot |(v{MC}-v{method})/v{MC}| for integrated flow of POIs   
-Bool_t plotDiffFlowPtRelativeToMCPOI = kTRUE; // plot |(v{MC}-v{method})/v{MC}| as a function of pt for POIs 
-Bool_t plotDiffFlowEtaRelativeToMCPOI = kTRUE; // plot |(v{MC}-v{method})/v{MC}| as a function of eta for POIs
-Bool_t plotIntFlowRelativeToMCRP = kTRUE; // plot |(v{MC}-v{method})/v{MC}| for integrated flow of RPs
-Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE; // plot |(v{MC}-v{method})/v{MC}| as a function of pt for RPs   
-Bool_t plotDiffFlowEtaRelativeToMCRP = kTRUE; // plot |(v{MC}-v{method})/v{MC}| as a function of eta for RPs   
+// Results relative to MC:
+Bool_t plotReferenceFlowRelativeToMC = kTRUE; // plot (v{MC}-v{method})/v{MC} for reference flow
+Bool_t plotIntFlowRelativeToMCPOI = kTRUE; // plot (v{MC}-v{method})/v{MC} for integrated flow of POIs   
+Bool_t plotDiffFlowPtRelativeToMCPOI = kTRUE; // plot (v{MC}-v{method})/v{MC} as a function of pt for POIs 
+Bool_t plotDiffFlowEtaRelativeToMCPOI = kTRUE; // plot (v{MC}-v{method})/v{MC} as a function of eta for POIs
+Bool_t plotIntFlowRelativeToMCRP = kTRUE; // plot (v{MC}-v{method})/v{MC} for integrated flow of RPs
+Bool_t plotDiffFlowPtRelativeToMCRP = kTRUE; // plot (v{MC}-v{method})/v{MC} as a function of pt for RPs   
+Bool_t plotDiffFlowEtaRelativeToMCRP = kTRUE; // plot (v{MC}-v{method})/v{MC} as a function of eta for RPs   
 // Set here if the legends will be shown on the plots:
 Bool_t showLegend = kTRUE; 
 Bool_t showLegendDiffFlow = kTRUE;
+// Set here if both the error mesh and markers will be shown for specified method in the plots for differential flow:
+Bool_t showBothErrorMeshAndMarkers = kFALSE; 
 // Some quick settings:
 Bool_t showOnlyReferenceFlow = kFALSE;
 Bool_t showResultsRelativeToMC = kTRUE;
@@ -208,7 +210,7 @@ void PlotDiffFlowPtRP()
  const Int_t nMethods = 10;
  TString method[nMethods] = {"MCEP","SP","2,GFC","2,QC","4,GFC","4,QC","6,GFC","8,GFC","LYZ2SUM","LYZ2PROD"};
  Int_t methodMarkerStyle[nMethods] = {20,3,21,21,20,20,25,24,22,22}; // see available marker styles in TAttMarker
- Int_t methodMarkerColor[nMethods] = {kRed,kViolet-6,kAzure-7,kOrange-7,kAzure+3,kOrange+3,kAzure-7,kAzure+3,kYellow+3,kGreen+3};
+ Int_t methodMarkerColor[nMethods] = {kBlue,kViolet-6,kAzure-7,kOrange-7,kAzure+3,kOrange+3,kAzure-7,kAzure+3,kYellow+3,kGreen+3};
  // Settings for error mesh:
  TString methodUsedToMakeErrorMesh = "MCEP";
  Int_t meshStyle = 1001;
@@ -229,7 +231,7 @@ void PlotDiffFlowEtaRP()
  const Int_t nMethods = 10;
  TString method[nMethods] = {"MCEP","SP","2,GFC","2,QC","4,GFC","4,QC","6,GFC","8,GFC","LYZ2SUM","LYZ2PROD"};
  Int_t methodMarkerStyle[nMethods] = {20,3,21,21,20,20,25,24,22,22}; // see available marker styles in TAttMarker
- Int_t methodMarkerColor[nMethods] = {kRed,kViolet-6,kAzure-7,kOrange-7,kAzure+3,kOrange+3,kAzure-7,kAzure+3,kYellow+3,kGreen+3};
+ Int_t methodMarkerColor[nMethods] = {kBlue,kViolet-6,kAzure-7,kOrange-7,kAzure+3,kOrange+3,kAzure-7,kAzure+3,kYellow+3,kGreen+3};
  // Settings for error mesh:
  TString methodUsedToMakeErrorMesh = "MCEP";
  Int_t meshStyle = 1001;
@@ -244,7 +246,7 @@ void PlotDiffFlowEtaRP()
 
 void PlotReferenceFlowRelativeToMC()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for reference flow.
+ // Make a plot (v{MC}-v{method})/v{MC} for reference flow.
   
  // Settings for methods:
  const Int_t nMethods = 12;
@@ -260,7 +262,7 @@ void PlotReferenceFlowRelativeToMC()
 
 void PlotIntFlowRelativeToMCPOI()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for integrated flow of POIs.
+ // Make a plot (v{MC}-v{method})/v{MC} for integrated flow of POIs.
   
  // Settings for methods:
  const Int_t nMethods = 9;
@@ -276,7 +278,7 @@ void PlotIntFlowRelativeToMCPOI()
 
 void PlotIntFlowRelativeToMCRP()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for integrated flow of RPs.
+ // Make a plot (v{MC}-v{method})/v{MC} for integrated flow of RPs.
   
  // Settings for methods:
  const Int_t nMethods = 9;
@@ -292,7 +294,7 @@ void PlotIntFlowRelativeToMCRP()
 
 void PlotDiffFlowPtRelativeToMCPOI()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for differential flow of POIs vs pt.
+ // Make a plot (v{MC}-v{method})/v{MC} for differential flow of POIs vs pt.
 
  // Settings for methods:
  const Int_t nMethods = 9;
@@ -308,7 +310,7 @@ void PlotDiffFlowPtRelativeToMCPOI()
   
 void PlotDiffFlowEtaRelativeToMCPOI()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for differential flow of POIs vs eta.
+ // Make a plot (v{MC}-v{method})/v{MC} for differential flow of POIs vs eta.
 
  // Settings for methods:
  const Int_t nMethods = 9;
@@ -324,7 +326,7 @@ void PlotDiffFlowEtaRelativeToMCPOI()
   
 void PlotDiffFlowPtRelativeToMCRP()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for differential flow of RPs vs pt.
+ // Make a plot (v{MC}-v{method})/v{MC} for differential flow of RPs vs pt.
 
  // Settings for methods:
  const Int_t nMethods = 9;
@@ -340,7 +342,7 @@ void PlotDiffFlowPtRelativeToMCRP()
   
 void PlotDiffFlowEtaRelativeToMCRP()
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for differential flow of RPs vs eta.
+ // Make a plot (v{MC}-v{method})/v{MC} for differential flow of RPs vs eta.
 
  // Settings for methods:
  const Int_t nMethods = 9;
@@ -420,7 +422,7 @@ void PlotDiffFlow(Int_t nMethods, TString *method, Int_t *methodMarkerStyle, Int
  // Results of methods:
  for(Int_t b=0;b<nMethods;b++)
  {
-  if(method[b]==methodUsedToMakeErrorMesh) continue;
+  if(method[b]==methodUsedToMakeErrorMesh && !showBothErrorMeshAndMarkers) continue;
   TH1D *hist = GetResultHistogram(method[b].Data(),rpPoi.Data(),ptEta.Data());
   if(hist)
   {
@@ -716,7 +718,7 @@ void Plot(const Int_t nMethods,TString *method,Int_t *methodMarkerStyle,Int_t *m
 void PlotRelativeToMC(const Int_t nMethods, TString *method, Int_t *methodMarkerStyle,
                       Int_t *methodMarkerColor, TString rfRpPoi)
 {
- // Make a plot |(v{MC}-v{method})/v{MC}| for reference and integrated flow.
+ // Make a plot (v{MC}-v{method})/v{MC} for reference and integrated flow.
 
  TString title = "";
  if(rfRpPoi == "RF")
