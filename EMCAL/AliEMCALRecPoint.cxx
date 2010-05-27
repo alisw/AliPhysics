@@ -1266,7 +1266,7 @@ Int_t AliEMCALRecPoint::GetMaximalEnergyIndex(void) const
   // Finds the maximum energy in the cluster
   
   Float_t menergy = 0. ;
-  Float_t mid     = 0. ;
+  Int_t mid       = 0  ;
   Int_t iDigit;
   
   for(iDigit=0; iDigit<fMulDigit; iDigit++) {
