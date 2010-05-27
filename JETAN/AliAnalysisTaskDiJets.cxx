@@ -138,18 +138,19 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
 
     if(fUseAODInput){
       AliAODEvent* fAOD   = dynamic_cast<AliAODEvent*> (InputEvent());
-      if(!fAOD && fDebug){
+      if(!fAOD){
         // We do not have an input AOD, look in the output
-        printf("%s:%d No AOD event in the input\n",(char*)__FILE__,__LINE__);
+        if (fDebug) printf("%s:%d No AOD event in the input\n",(char*)__FILE__,__LINE__);
         return;
       }
     } else {
       fAOD = AODEvent();
-      if(!fAOD && fDebug){
-        printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
+      if(!fAOD){
+        if (fDebug) printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
         return;
       }
     }
+
     TClonesArray* jets = (TClonesArray*) fAOD->FindListObject(fJetBranch.Data());
     // N.B. if we take the aod from the output this is always
     // empty and since it is the same as fDiJets 
