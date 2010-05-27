@@ -4,6 +4,9 @@ void AddAnalysisTasks();
 class AliAnalysisAlien;                                                                                                                    
 AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
+Int_t runNumbers[5] = {119934};
+
+Bool_t doAOD          = 0;   
 Bool_t doQAsym        = 1;   // output ok
 Bool_t doVZERO        = 1;   // output ok but there is a 2nd file
 Bool_t doVertex       = 1;   // output ok
@@ -12,6 +15,7 @@ Bool_t doFMD          = 1;   // output ok
 Bool_t doTPC          = 1;   // output ok
 Bool_t doEventStat    = 1;   // output ok
 Bool_t doSDD          = 1;   // outout ok needs RP
+Bool_t doSSDdEdx      = 1;   // testing
 // new 
 Bool_t doTRD          = 1;   // TRD 
 Bool_t doITS          = 1;   // ITS
@@ -20,17 +24,25 @@ Bool_t doMUONTrig     = 1;   // MUON trigger
 Bool_t doMUONEff      = 0;   // MUON efficiency  NEEDS geometry
 Bool_t doV0           = 0;   // V0 recosntruction performance NEEDS MCtruth 
 
-
-TString     train_name         = "testQA003_PASS4";
-TString     job_tag            = "testQA003: PWG1 QA train";
-TString     root_version       = "v5-26-00b";
-TString     aliroot_version    = "v4-19-06-AN";
-TString     grid_datadir       = "/alice/data/2009/LHC09d";
-TString     data_pattern       = "*ESDs/pass4/*ESDs.root";
+TString     train_name         = "QAtest";
+//TString     train_name         = "TR019_PASS6";
+TString     job_tag            = "QA4_LHC10c: PWG1 QA train";
+//TString     job_tag            = "TR019: LHC09d-Pass6 ESD filtering w. PhysSelection -> AOD (including muon deltas)";
+TString     root_version       = "v5-26-00b-5";
+TString     aliroot_version    = "v4-19-13-AN";
+TString     grid_datadir       = "/alice/data/2010/LHC10c";
+//TString     grid_datadir       = "/alice/data/2009/LHC09d";
+TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
 TString     alien_outdir       = "";
-//TString     alien_outdir       = "/alice/data/2009/LHC09d/analysis/QA001_PASS4";
+//TString     alien_outdir       = "/alice/cern.ch/user/m/mgheata/analysisDATA/output_QA007_PASS1_7TeV/000114917";
+//TString     alien_outdir       = "/alice/data/2009/LHC09d/analysis/PASS6/AOD";
+TString     mergeExcludes;
 
-Bool_t useProductionMode       = kFALSE;
+Bool_t useProductionMode       = kTRUE;
+Bool_t useMergeViaJDL          = kTRUE;
+Bool_t useFastReadOption       = kTRUE;
+Bool_t useOverwriteMode        = kTRUE;
+Bool_t useDevelopmentVersion   = kFALSE;
 
 void PilotAnalysis(const char *plugin_mode = "full")
 {
@@ -52,11 +64,13 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   grid_datadir   = " << "\"" << grid_datadir.Data() << "\";" << endl;
   if (!alien_outdir.Length()) alien_outdir = Form("output_%s",train_name.Data());
   out << "   alien_outdir    = " << "\"" << alien_outdir.Data() << "\";" << endl;
+  out << "   doAOD           = " << doAOD << ";" << endl;
   out << "   doQAsim         = " << doQAsym << ";" << endl;
   out << "   doVZERO         = " << doVZERO << ";" << endl;
   out << "   doVertex        = " << doVertex << ";" << endl;
   out << "   doSPD           = " << doSPD << ";" << endl;
   out << "   doSDD           = " << doSDD << ";" << endl;
+  out << "   doSSDdEdx       = " << doSSDdEdx << ";" << endl;
   out << "   doFMD           = " << doFMD << ";" << endl;
   out << "   doTPC           = " << doTPC << ";" << endl;
   out << "   doEventStat     = " << doEventStat << ";" << endl;
@@ -64,17 +78,26 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out.close();
   
   // Load libraries
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT");
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");
   LoadLibraries();
   // Create manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("PilotAnalysis", "Production train");
-  mgr->SetNSysInfo(1);
+  mgr->SetNSysInfo(100);
   // Input handler
   AliESDInputHandlerRP *esdHandler = new AliESDInputHandlerRP();
+  esdHandler->SetReadFriends(kTRUE);
   esdHandler->SetActiveBranches("ESDfriend");
   mgr->SetInputEventHandler(esdHandler);
+  if (doAOD) {
+     // AOD output handler
+     AliAODHandler* aodHandler   = new AliAODHandler();
+     aodHandler->SetOutputFileName("AliAOD.root");
+     if (!mergeExcludes.IsNull()) mergeExcludes += " ";
+     mergeExcludes += "AliAOD.root";
+     mgr->SetOutputEventHandler(aodHandler);
+  }   
 
-  mgr->SetDebugLevel(0);
+  mgr->SetDebugLevel(1);
   mgr->SetSaveCanvases(kTRUE);
   
   // AnalysisTasks
@@ -109,19 +132,12 @@ void LoadLibraries()
   gSystem->Load("libPWG2.so");
   gSystem->Load("libPWG2forward.so");
 
-  if (doSDD) {
-    TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSDDRP.cxx"), "AliAnalysisTaskSDDRP.cxx");
-    TFile::Cp(gSystem->ExpandPathName("$ALICE_ROOT/PWG1/ITS/AliAnalysisTaskSDDRP.h"), "AliAnalysisTaskSDDRP.h");
-//    gROOT->LoadMacro("AliAnalysisTaskSDDRP.cxx++g");
-  }
-  
-
   if (doCALO) {
      gSystem->Load("libEMCALUtils");
      gSystem->Load("libPWG4PartCorrBase");
      gSystem->Load("libPWG4PartCorrDep");
   }  
-  if(doMUONTrig) {
+  if(doMUONTrig || doAOD) {
      gSystem->Load("libPWG3base");
      gSystem->Load("libPWG3muon");
      gSystem->Load("libPWG3muondep");
@@ -130,9 +146,26 @@ void LoadLibraries()
 
 void AddAnalysisTasks()
 {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  mgr->SetCommonFileName("QAresults.root");
+  // AOD creation with collision events
+  if (doAOD) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+    mgr->RegisterExtraFile("AliAOD.Muons.root");
+    mgr->RegisterExtraFile("AliAOD.Dimuons.root");
+    AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kFALSE, kTRUE, kTRUE, doEventStat);
+  }   
+  //
+  // Event Statistics (Jan Fiete)
+  //
+
+  if (doEventStat) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      mgr->RegisterExtraFile("event_stat.root");
+  }
   // Vertexing (A. Dainese)
   // 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (doVertex) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskVertexESD.C");
     AliAnalysisTaskVertexESD* taskvertexesd =  AddTaskVertexESD();
@@ -143,7 +176,7 @@ void AddAnalysisTasks()
   //
   if (doQAsym) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
-    AliAnalysisTaskSE * taskqasim = AddTaskQAsym();
+    AliAnalysisTaskSE * taskqasim = AddTaskQAsym(0);
     taskqasim->SelectCollisionCandidates();
   }  
   //
@@ -154,13 +187,6 @@ void AddAnalysisTasks()
     AliAnalysisTaskSE * taskv0qa = AddTaskVZEROQA(0);
 //  taskv0qa->SelectCollisionCandidates();
   }
-  // FMD (Hans Hjersing Dalsgaard)
-  //
-  if (doFMD) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskFMD.C");
-    AliAnalysisTaskSE* taskfmd = AddTaskFMD();
-    taskfmd->SelectCollisionCandidates();
-  }  
   //
   // TPC (Jacek Otwinowski)
   //
@@ -174,6 +200,7 @@ void AddAnalysisTasks()
   if (doSPD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSE* taskspdqa = AddTaskSPDQA();
+    taskspdqa->SelectCollisionCandidates();
   }  
   //
   // SDD (F. Prino)
@@ -183,6 +210,14 @@ void AddAnalysisTasks()
     AliAnalysisTaskSE* tasksdd = AddSDDPoints();
     tasksdd->SelectCollisionCandidates();
   }
+  //
+  // SSD dEdx (Marek Chojnacki)
+  //
+  if (doSSDdEdx) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskdEdxSSDQA.C");
+    AliAnalysisTaskSE* taskssddedx = AddTaskdEdxSSDQA();
+    taskssddedx->SelectCollisionCandidates();
+  }
 
   //
   // ITS
@@ -191,19 +226,6 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceITS.C");
       AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(kFALSE);
   }
-
-
-  //
-  // Event Statistics (Jan Fiete)
-  //
-
-  if (doEventStat) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-      mgr->RegisterExtraFile("event_stat.root");
-  }
-   
-
   //
   // TRD (Alex Bercuci, M. Fasel) 
   //
@@ -248,6 +270,13 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
+  // FMD (Hans Hjersing Dalsgaard)
+  //
+  if (doFMD) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskFMD.C");
+    AliAnalysisTaskSE* taskfmd = AddTaskFMD();
+    taskfmd->SelectCollisionCandidates();
+  }  
 }
 
 //______________________________________________________________________________
@@ -276,39 +305,46 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // ...then add run numbers to be considered
 //   if (!iAODanalysis) plugin->SetRunRange(run_range[0], run_range[1]);
    plugin->SetRunPrefix("000");
-   plugin->SetOutputSingleFolder("output");
+//   plugin->SetOutputSingleFolder("output");
    plugin->SetOutputToRunNo();
-   Int_t run_numbers[30] = {104065, 104155, 104157, 104159, 104160, 104315, 104316, 104320, 104321, 104439, 
-                            104792, 104793, 104799, 104800, 104801, 104802, 104803, 104821, 104824, 104825,
-                            104841, 104845, 104849, 104852, 104865, 104867, 104876, 104892, 105143, 105160};
-   for (Int_t i=0; i<30; i++) {
-      plugin->AddRunNumber(run_numbers[i]);
+//   Int_t run_numbers[30] = {104065, 104155, 104157, 104159, 104160, 104315, 104316, 104320, 104321, 104439, 
+//                            104792, 104793, 104799, 104800, 104801, 104802, 104803, 104821, 104824, 104825,
+//                            104841, 104845, 104849, 104852, 104865, 104867, 104876, 104892, 105143, 105160};
+//   Int_t run_numbers[8] = {114785, 114778, 114757, 114753, 114745, 114744, 114743, 114737};
+//   Int_t run_numbers[2] = {114785, 114917};
+   for (Int_t i=0; i<2; i++) {
+      if (!runNumbers[i]) break;
+      plugin->AddRunNumber(runNumbers[i]);
    }   
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir("analysisDATA");
+   plugin->SetGridWorkingDir(train_name);
 // Declare alien output directory. Relative to working directory.
    if (alien_outdir.IsNull()) alien_outdir = Form("output_%s",train_name.Data());
    plugin->SetGridOutputDir(alien_outdir);
 
-//   plugin->EnablePackage("");
+   if (useDevelopmentVersion) {
+     plugin->EnablePackage("STEERBase");
+     plugin->EnablePackage("ESD");
+     plugin->EnablePackage("AOD");
+     plugin->EnablePackage("ANALYSIS");
+     plugin->EnablePackage("ANALYSISalice");
+   }
 
 // Declare the analysis source files names separated by blancs. To be compiled runtime
 // using ACLiC on the worker nodes.
 // Declare all libraries (other than the default ones for the framework. These will be
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include  -I$ALICE_ROOT/ITS");
-   plugin->SetAnalysisSource("AliAnalysisTaskSPD.cxx AliAnalysisTaskSDDRP.cxx");
-  //
+   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");
+   
    plugin->SetAdditionalLibs("libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so libPWG2.so \
-                              libPWG2forward.so AliAnalysisTaskSPD.h AliAnalysisTaskSPD.cxx AliAnalysisTaskSDDRP.h \
-                              AliAnalysisTaskSDDRP.cxx libEMCALUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
+                              libPWG2forward.so libEMCALUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
                               libPWG3base.so libPWG3muon.so libPWG3muondep.so");
      
 // Declare the output file names separated by blancs.
 // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs();
 //   plugin->SetMergeExcludes(mergeExclude);
-   plugin->SetMaxMergeFiles(100);
+   plugin->SetMaxMergeFiles(20);
    plugin->SetNrunsPerMaster(1);
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
@@ -353,6 +389,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       outputArchive += listhists;
       outputArchive += "@disk=4";
    }   
+   if (!mergeExcludes.IsNull()) plugin->SetMergeExcludes(mergeExcludes);
 // Set friends
 //   if (iAODanalysis && iPWG3d2h) 
 //      plugin->SetFriendChainName("AliAOD.VertexingHF.root");
@@ -360,7 +397,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", train_name.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(1000);
+   plugin->SetSplitMaxInputFileNumber(1);
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
 //   plugin->SetMaxInitFailed(5);
 // Optionally resubmit threshold.
@@ -378,5 +415,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally modify split mode (default 'se')    
    plugin->SetSplitMode("se");
    plugin->SetExecutableCommand("aliroot -b -q");
+// Merge via JDL
+   plugin->SetMergeViaJDL(useMergeViaJDL);
+// Use fastread option
+   plugin->SetFastReadOption(useFastReadOption);
+// UseOverwrite mode
+   plugin->SetOverwriteMode(useOverwriteMode);   
    return plugin;
 }
