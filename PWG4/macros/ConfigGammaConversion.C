@@ -77,7 +77,7 @@ Double_t kGCetaWidth   = 0.01;
 // define the probability of track being an electron
 Double_t kGCprobElectron = 0.000;
 
-Double_t kGCminOpeningAngleGhostCut = 0.01;
+Double_t kGCminOpeningAngleGhostCut = 0.005;
 
 /** ----------------------------------end define cuts here----------------------------------*/
 
@@ -107,41 +107,41 @@ Bool_t kGCplotMCConvGammaEAsymmetryP    = kTRUE;
 Bool_t kGCplotMCConvGammaPAsymmetryP    = kTRUE;
 
 
-Bool_t kGCplotMCEEnergy  = kTRUE;
+Bool_t kGCplotMCEEnergy  = kFALSE;
 Bool_t kGCplotMCEPt      = kTRUE;
 Bool_t kGCplotMCEEta     = kTRUE;
 Bool_t kGCplotMCEPhi     = kTRUE;
 Bool_t kGCplotMCENTPCClusters = kTRUE;
 Bool_t kGCplotMCENITSClusters = kTRUE;
 
-Bool_t kGCplotMCPEnergy  = kTRUE;
+Bool_t kGCplotMCPEnergy  = kFALSE;
 Bool_t kGCplotMCPPt      = kTRUE;
 Bool_t kGCplotMCPEta     = kTRUE;
 Bool_t kGCplotMCPPhi     = kTRUE;
 Bool_t kGCplotMCPNTPCClusters = kTRUE;
 Bool_t kGCplotMCPNITSClusters = kTRUE;
 
-Bool_t kGCplotMCallGammaEnergy = kTRUE;
+Bool_t kGCplotMCallGammaEnergy = kFALSE;
 Bool_t kGCplotMCallGammaPt     = kTRUE;
 Bool_t kGCplotMCallGammaEta    = kTRUE;
 Bool_t kGCplotMCallGammaPhi    = kTRUE;
 Bool_t kGCplotMCallGammaRapid  = kTRUE;
 
 
-Bool_t kGCplotMCConvGammaEnergy  = kTRUE;
+Bool_t kGCplotMCConvGammaEnergy  = kFALSE;
 Bool_t kGCplotMCConvGammaPt      = kTRUE;
 Bool_t kGCplotMCConvGammaEta     = kTRUE;
 Bool_t kGCplotMCConvGammaPhi     = kTRUE;
 Bool_t kGCplotMCConvGammaRapid   = kTRUE;
 Bool_t kGCplotMCConvGammaPtvsEta = kTRUE;
 
-Bool_t kGCplotMCallDirectGammaEnergy  = kTRUE;
+Bool_t kGCplotMCallDirectGammaEnergy  = kFALSE;
 Bool_t kGCplotMCallDirectGammaPt      = kTRUE;
 Bool_t kGCplotMCallDirectGammaEta     = kTRUE;
 Bool_t kGCplotMCallDirectGammaPhi     = kTRUE;
 Bool_t kGCplotMCallDirectGammaRapid   = kTRUE;
 
-Bool_t kGCplotMCConvDirectGammaEnergy  = kTRUE;
+Bool_t kGCplotMCConvDirectGammaEnergy  = kFALSE;
 Bool_t kGCplotMCConvDirectGammaPt      = kTRUE;
 Bool_t kGCplotMCConvDirectGammaEta     = kTRUE;
 Bool_t kGCplotMCConvDirectGammaPhi     = kTRUE;
@@ -151,7 +151,7 @@ Bool_t kGCplotMCMotherEta					= kTRUE;
 Bool_t kGCplotMCMotherRapid                                = kTRUE;
 Bool_t kGCplotMCMotherPhi					= kTRUE;
 Bool_t kGCplotMCMotherPt					= kTRUE;
-Bool_t kGCplotMCMotherEnergy				= kTRUE;
+Bool_t kGCplotMCMotherEnergy				= kFALSE;
 Bool_t kGCplotMCMotherMass					= kTRUE;
 Bool_t kGCplotMCMotherOpeningAngle				= kTRUE;
 Bool_t kGCplotMCMotherR					= kTRUE;
@@ -170,13 +170,13 @@ Bool_t kGCplotMCPi0Pt                                      = kTRUE;
 Bool_t kGCplotMCPi0PtFiducial                              = kTRUE;
 Bool_t kGCplotMCPi0PtWithinAcceptanceFiducial              = kTRUE;
 Bool_t kGCplotMCPi0PtConvGammaWithinAcceptanceFiducial     = kTRUE;
-Bool_t kGCplotMCPi0Energy                                  = kTRUE;
+Bool_t kGCplotMCPi0Energy                                  = kFALSE;
 Bool_t kGCplotMCPi0Mass                                    = kTRUE;
 Bool_t kGCplotMCPi0Alpha                                   = kTRUE;
 Bool_t kGCplotMCPi0OpeningAngle                            = kTRUE;
 Bool_t kGCplotMCPi0R                                       = kTRUE;
-Bool_t kGCplotMCPi0ZR                                      = kTRUE;
-Bool_t kGCplotMCPi0XY                                      = kTRUE;
+Bool_t kGCplotMCPi0ZR                                      = kFALSE;
+Bool_t kGCplotMCPi0XY                                      = kFALSE;
 Bool_t kGCplotMCPi0PtvsEtaWithinAcceptance                 = kTRUE;
 Bool_t kGCplotMCPi0PtvsRapidWithinAcceptance               = kTRUE;
 Bool_t kGCplotMCPi0PtvsEtaConvGammaWithinAcceptance        = kTRUE;
@@ -187,12 +187,12 @@ Bool_t kGCplotMCPi0SecondaryEta                                = kTRUE;
 Bool_t kGCplotMCPi0SecondaryRapid                              = kTRUE;
 Bool_t kGCplotMCPi0SecondaryPhi                                = kTRUE;
 Bool_t kGCplotMCPi0SecondaryPt                                 = kTRUE;
-Bool_t kGCplotMCPi0SecondaryEnergy                             = kTRUE;
+Bool_t kGCplotMCPi0SecondaryEnergy                             = kFALSE;
 Bool_t kGCplotMCPi0SecondaryMass                               = kTRUE;
 Bool_t kGCplotMCPi0SecondaryOpeningAngle                       = kTRUE;
 Bool_t kGCplotMCPi0SecondaryR                                  = kTRUE;
-Bool_t kGCplotMCPi0SecondaryZR                                 = kTRUE;
-Bool_t kGCplotMCPi0SecondaryXY                                 = kTRUE;
+Bool_t kGCplotMCPi0SecondaryZR                                 = kFALSE;
+Bool_t kGCplotMCPi0SecondaryXY                                 = kFALSE;
 Bool_t kGCplotMCPi0SecondaryPtvsEtaWithinAcceptance            = kTRUE;
 Bool_t kGCplotMCPi0SecondaryPtvsRapidWithinAcceptance          = kTRUE;
 Bool_t kGCplotMCPi0SecondaryPtvsEtaConvGammaWithinAcceptance   = kTRUE;
@@ -202,12 +202,12 @@ Bool_t kGCplotMCEtaEta                                = kTRUE;
 Bool_t kGCplotMCEtaRapid                              = kTRUE;
 Bool_t kGCplotMCEtaPhi                                = kTRUE;
 Bool_t kGCplotMCEtaPt                                 = kTRUE;
-Bool_t kGCplotMCEtaEnergy                             = kTRUE;
+Bool_t kGCplotMCEtaEnergy                             = kFALSE;
 Bool_t kGCplotMCEtaMass                               = kTRUE;
 Bool_t kGCplotMCEtaOpeningAngleGamma                  = kTRUE;
 Bool_t kGCplotMCEtaR                                  = kTRUE;
-Bool_t kGCplotMCEtaZR                                 = kTRUE;
-Bool_t kGCplotMCEtaXY                                 = kTRUE;
+Bool_t kGCplotMCEtaZR                                 = kFALSE;
+Bool_t kGCplotMCEtaXY                                 = kFALSE;
 Bool_t kGCplotMCEtaPtvsEtaWithinAcceptance		   = kTRUE;
 Bool_t kGCplotMCEtaPtvsRapidWithinAcceptance	   = kTRUE;
 Bool_t kGCplotMCEtaPtvsEtaConvGammaWithinAcceptance   = kTRUE;
@@ -230,21 +230,21 @@ Bool_t kGCplotESDConvGammaPdEdxP         = kTRUE;
 Bool_t kGCplotESDConvGammaQtAlfa         = kTRUE;
 
 
-Bool_t kGCplotESDEEnergy = kTRUE;
+Bool_t kGCplotESDEEnergy = kFALSE;
 Bool_t kGCplotESDEPt     = kTRUE;
 Bool_t kGCplotESDEEta    = kTRUE;
 Bool_t kGCplotESDEPhi    = kTRUE;
 Bool_t kGCplotESDENTPCClusters = kTRUE;
 Bool_t kGCplotESDENITSClusters = kTRUE;
 
-Bool_t kGCplotESDPEnergy = kTRUE;
+Bool_t kGCplotESDPEnergy = kFALSE;
 Bool_t kGCplotESDPPt     = kTRUE;
 Bool_t kGCplotESDPEta    = kTRUE;
 Bool_t kGCplotESDPPhi    = kTRUE;
 Bool_t kGCplotESDPNTPCClusters = kTRUE;
 Bool_t kGCplotESDPNITSClusters = kTRUE;
 
-Bool_t kGCplotESDConvGammaEnergy = kTRUE;
+Bool_t kGCplotESDConvGammaEnergy = kFALSE;
 Bool_t kGCplotESDConvGammaPt     = kTRUE;
 Bool_t kGCplotESDConvGammaEta    = kTRUE;
 Bool_t kGCplotESDConvGammaPhi    = kTRUE;
@@ -259,7 +259,7 @@ Bool_t kGCplotESDConvGammaEtavsChi2 = kTRUE;
 
 
 Bool_t kGCplotESDTrueDalitzContaminationR    = kTRUE;
-Bool_t kGCplotESDTrueConvGammaEnergy         = kTRUE;
+Bool_t kGCplotESDTrueConvGammaEnergy         = kFALSE;
 Bool_t kGCplotESDTrueConvGammaPt             = kTRUE;
 Bool_t kGCplotESDTrueConvGammaEta            = kTRUE;
 Bool_t kGCplotESDTrueConvGammaPhi            = kTRUE;
@@ -270,8 +270,8 @@ Bool_t kGCplotESDTrueConvGammaNDF            = kTRUE;
 Bool_t kGCplotESDTrueConvGammaRapid          = kTRUE;
 Bool_t kGCplotESDTrueConvGammaPtvsEta        = kTRUE;
 Bool_t kGCplotESDTrueConversionR             = kTRUE;
-Bool_t kGCplotESDTrueConversionZR            = kTRUE;
-Bool_t kGCplotESDTrueConversionXY            = kTRUE;
+Bool_t kGCplotESDTrueConversionZR            = kFALSE;
+Bool_t kGCplotESDTrueConversionXY            = kFALSE;
 Bool_t kGCplotESDTrueConversionOpeningAngle  = kTRUE;
 Bool_t kGCplotESDTrueConvGammaCosPointingAngle     = kTRUE;
 Bool_t kGCplotESDTrueConvGammaDcaDaugthers         = kTRUE;
@@ -286,10 +286,10 @@ Bool_t kGCplotESDTrueConvGammaPdEdxP         = kTRUE;
 Bool_t kGCplotESDTrueConvGammaPtvsChi2       = kTRUE;
 Bool_t kGCplotESDTrueConvGammaEtavsChi2      = kTRUE;
 Bool_t kGCplotESDTrueConvGammaMCPtEta        = kTRUE;
-Bool_t kGCplotESDTrueConversionMCZR          = kTRUE;
-Bool_t kGCplotESDTrueConversionMCXY          = kTRUE;
+Bool_t kGCplotESDTrueConversionMCZR          = kFALSE;
+Bool_t kGCplotESDTrueConversionMCXY          = kFALSE;
 
-Bool_t kGCplotESDNoCutConvGammaEnergy         = kTRUE;
+Bool_t kGCplotESDNoCutConvGammaEnergy         = kFALSE;
 Bool_t kGCplotESDNoCutConvGammaPt             = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaEta            = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaPhi            = kTRUE;
@@ -300,8 +300,8 @@ Bool_t kGCplotESDNoCutConvGammaNDF            = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaRapid          = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaPtvsEta        = kTRUE;
 Bool_t kGCplotESDNoCutConversionR             = kTRUE;
-Bool_t kGCplotESDNoCutConversionZR            = kTRUE;
-Bool_t kGCplotESDNoCutConversionXY            = kTRUE;
+Bool_t kGCplotESDNoCutConversionZR            = kFALSE;
+Bool_t kGCplotESDNoCutConversionXY            = kFALSE;
 Bool_t kGCplotESDNoCutConversionOpeningAngle  = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaCosPointingAngle     = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaDcaDaugthers         = kTRUE;
@@ -315,30 +315,30 @@ Bool_t kGCplotESDNoCutConvGammaPdEdxP         = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaPtvsChi2       = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaEtavsChi2      = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaMCPtEta        = kTRUE;
-Bool_t kGCplotESDNoCutConversionMCZR          = kTRUE;
-Bool_t kGCplotESDNoCutConversionMCXY          = kTRUE;
+Bool_t kGCplotESDNoCutConversionMCZR          = kFALSE;
+Bool_t kGCplotESDNoCutConversionMCXY          = kFALSE;
 
 Bool_t kGCplotESDMotherOpeningAngleGamma = kTRUE;
-Bool_t kGCplotESDMotherEnergy            = kTRUE;
-Bool_t kGCplotESDMotherPt                = kTRUE;
+Bool_t kGCplotESDMotherEnergy            = kFALSE;
+Bool_t kGCplotESDMotherPt                = kFALSE;
 Bool_t kGCplotESDMotherEta               = kTRUE;
-Bool_t kGCplotESDMotherPhi               = kTRUE;
-Bool_t kGCplotESDMotherMass              = kTRUE;
-Bool_t kGCplotESDMotherR                 = kTRUE;
+Bool_t kGCplotESDMotherPhi               = kFALSE;
+Bool_t kGCplotESDMotherMass              = kFALSE;
+Bool_t kGCplotESDMotherR                 = kFALSE;
 Bool_t kGCplotESDMotherZR                = kFALSE;
 Bool_t kGCplotESDMotherXY                = kFALSE;
 Bool_t kGCplotESDMotherRapid             = kTRUE;
 
 Bool_t kGCplotESDBackgroundOpeningAngleGamma = kTRUE;
-Bool_t kGCplotESDBackgroundEnergy            = kTRUE;
-Bool_t kGCplotESDBackgroundPt                = kTRUE;
-Bool_t kGCplotESDBackgroundEta               = kTRUE;
-Bool_t kGCplotESDBackgroundPhi               = kTRUE;
-Bool_t kGCplotESDBackgroundMass              = kTRUE;
-Bool_t kGCplotESDBackgroundR                 = kTRUE;
+Bool_t kGCplotESDBackgroundEnergy            = kFALSE;
+Bool_t kGCplotESDBackgroundPt                = kFALSE;
+Bool_t kGCplotESDBackgroundEta               = kFALSE;
+Bool_t kGCplotESDBackgroundPhi               = kFALSE;
+Bool_t kGCplotESDBackgroundMass              = kFALSE;
+Bool_t kGCplotESDBackgroundR                 = kFALSE;
 Bool_t kGCplotESDBackgroundZR                = kFALSE;
 Bool_t kGCplotESDBackgroundXY                = kFALSE;
-Bool_t kGCplotESDBackgroundRapid             = kTRUE;
+Bool_t kGCplotESDBackgroundRapid             = kFALSE;
 
 Bool_t kGCplotMapping = kTRUE;       
 
@@ -350,7 +350,7 @@ Bool_t kGCplotResolutiondRAbs  = kTRUE;
 Bool_t kGCplotResolutiondZAbs  = kTRUE;
 Bool_t kGCplotResolutiondPhiAbs  = kTRUE;
 
-Bool_t kGCplotResolutiondRdPt = kTRUE;
+Bool_t kGCplotResolutiondRdPt = kFALSE;
 
 Bool_t kGCplotResolutionMCPt = kTRUE;
 Bool_t kGCplotResolutionMCR  = kTRUE;
@@ -438,25 +438,25 @@ Bool_t kGCplotImbalanceHdrGam       = kTRUE;
 
 /** ----------- Define the binning for the different plot types here -------------------------*/
 //R-plots
-Int_t kGCnXBinsR = 500;
+Int_t kGCnXBinsR = 400;
 Double_t kGCfirstXBinR = 0.;
-Double_t kGClastXBinR = 250.;
+Double_t kGClastXBinR = 200.;
 
 //ZR-plots
-Int_t kGCnXBinsZR = 1200;
-Double_t kGCfirstXBinZR = -300.;
-Double_t kGClastXBinZR = 300.;
-Int_t kGCnYBinsZR = 500;
+Int_t kGCnXBinsZR = 1000;
+Double_t kGCfirstXBinZR = -250.;
+Double_t kGClastXBinZR = 250.;
+Int_t kGCnYBinsZR = 400;
 Double_t kGCfirstYBinZR = 0.;
-Double_t kGClastYBinZR = 250.;
+Double_t kGClastYBinZR = 200.;
 
 //XY-plots
-Int_t kGCnXBinsXY = 1000;
-Double_t kGCfirstXBinXY = -250.;
-Double_t kGClastXBinXY = 250.;
-Int_t kGCnYBinsXY = 1000;
-Double_t kGCfirstYBinXY = -250.;
-Double_t kGClastYBinXY = 250.;
+Int_t kGCnXBinsXY = 800;
+Double_t kGCfirstXBinXY = -200.;
+Double_t kGClastXBinXY = 200.;
+Int_t kGCnYBinsXY = 800;
+Double_t kGCfirstYBinXY = -200.;
+Double_t kGClastYBinXY = 200.;
 
 //OpenAngle-plots
 Int_t kGCnXBinsOpeningAngle = 400;
@@ -495,14 +495,14 @@ Double_t kGCfirstXBinP = 0.;
 Double_t kGClastXBinP = 50.;
 
 //dEdx-plots
-Int_t kGCnYBinsdEdx = 400;
+Int_t kGCnYBinsdEdx = 200;
 Double_t kGCfirstYBindEdx = 0.;
-Double_t kGClastYBindEdx = 400.;
+Double_t kGClastYBindEdx = 200.;
 
 //Qt-plots
-Int_t kGCnYBinsQt = 500;
+Int_t kGCnYBinsQt = 250;
 Double_t kGCfirstYBinQt = 0.;
-Double_t kGClastYBinQt = 0.5;
+Double_t kGClastYBinQt = 0.25;
 
 
 
@@ -840,6 +840,10 @@ Bool_t scanArguments(TString arguments){
 	cout<<"Running neutral meson analysis"<<endl;
 	kGCrunNeutralMeson = kTRUE;
       }
+      else if (argument.CompareTo("-run-omega-meson") == 0){
+	cout<<"Running omega meson analysis"<<endl;
+	kGCrunOmegaMeson = kTRUE;
+      }
       else if (argument.CompareTo("-run-chic") == 0){
 	cout<<"Running Chi_c analysis"<<endl;
 	kGCrunChic = kTRUE;
@@ -1002,10 +1006,10 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     Int_t kGCnXBinsPi0MassCF=10;
 
     if(!kGCrunCF){
-      nstep=0;
-      kGCnXBinsPtCF=0;
-      kGCnXBinsEtaCF=0;
-      kGCnXBinsPi0MassCF=0;
+      nstep=1;
+      kGCnXBinsPtCF=1;
+      kGCnXBinsEtaCF=1;
+      kGCnXBinsPi0MassCF=1;
     }
     const Int_t nbin0 = kGCnXBinsPtCF;  // do not use same variable for CF than for histogram
     const Int_t nbin1 = kGCnXBinsEtaCF; // do not use same variable for CF than for histogram
@@ -1917,8 +1921,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 
   if(kGCcalculateBackground==kTRUE){
     histograms->AddHistogram("ESD_Z_distribution" ,"Z primary vertex" , 2000, -30, 30,"Z[cm]","counts");
-    histograms->AddHistogram("ESD_multiplicity_distribution" ,"multiplicity distribution" , 300, 0, 300,"counts","Multiplicity");
-    histograms->AddHistogram("ESD_ZvsMultiplicity" ,"Z vs Multiplicity" , 1000, -10, 10,300,0,300,"Z[cm]","Multiplicity");
+    histograms->AddHistogram("ESD_multiplicity_distribution" ,"multiplicity distribution" , 200, 0, 200,"counts","Multiplicity");
+    histograms->AddHistogram("ESD_ZvsMultiplicity" ,"Z vs Multiplicity" , 1000, -10, 10,200,0,200,"Z[cm]","Multiplicity");
   }
 }
 
