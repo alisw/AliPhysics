@@ -106,7 +106,7 @@ void AliZDCReconstructor::Init()
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
     fRecoMode=1;
   }
-  else if((beamType.CompareTo("A-A")) == 0){
+  else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
     fRecoMode=2;
   }
     
@@ -114,7 +114,8 @@ void AliZDCReconstructor::Init()
   if(fBeamEnergy<0.01) AliWarning(" Beam energy value missing -> E_beam = 0");
     
   if(fIsCalibrationMB==kFALSE)  
-    printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f GeV *****\n\n",beamType.Data(), fBeamEnergy);
+    printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
+    	beamType.Data(), fBeamEnergy, fBeamEnergy);
   
 }
 
@@ -924,9 +925,10 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   
   if(fIsCalibrationMB == kFALSE){
     // ******	Reconstruction parameters ------------------ 
-    if (!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
     if(!fgMBCalibData) fgMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
- 
+    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam()); 
+    fgRecoParam->SetGlauberMCDist(fBeamEnergy);
+     
     TH2F *hZDCvsZEM  = fgMBCalibData->GethZDCvsZEM();
     TH2F *hZDCCvsZEM = fgMBCalibData->GethZDCCvsZEM();
     TH2F *hZDCAvsZEM = fgMBCalibData->GethZDCAvsZEM();
@@ -1309,36 +1311,4 @@ AliZDCMBCalib* AliZDCReconstructor::GetMBCalibData() const
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;
-}
-
-//_____________________________________________________________________________
-AliZDCRecoParampp* AliZDCReconstructor::GetppRecoParamFromOCDB() const
-{
-
-  // Getting reconstruction parameters from OCDB
-
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/RecoParampp");
-  if(!entry) AliFatal("No RecoParam data found in OCDB!");  
-  
-  AliZDCRecoParampp *param = dynamic_cast<AliZDCRecoParampp*> (entry->GetObject());
-  if(!param)  AliFatal("No RecoParam object in OCDB entry!");
-  
-  return param;
-
-}
-
-//_____________________________________________________________________________
-AliZDCRecoParamPbPb* AliZDCReconstructor::GetPbPbRecoParamFromOCDB() const
-{
-
-  // Getting reconstruction parameters from OCDB
-
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/RecoParamPbPb");
-  if(!entry) AliFatal("No RecoParam data found in OCDB!");  
-  
-  AliZDCRecoParamPbPb *param = dynamic_cast<AliZDCRecoParamPbPb*> (entry->GetObject());
-  if(!param)  AliFatal("No RecoParam object in OCDB entry!");
-  
-  return param;
-
 }

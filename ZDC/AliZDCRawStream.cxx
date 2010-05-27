@@ -375,7 +375,7 @@ Bool_t AliZDCRawStream::Next()
   //
   fIsHeaderMapping = kFALSE; fIsChMapping = kFALSE; 
   fIsADCHeader = kFALSE; fIsADCDataWord = kFALSE; fIsADCEOB = kFALSE;
-  fIsADDChannel = kFALSE; fIsADDTDCHeader= kFALSE; fIsADDTDCdatum=kFALSE;
+  fIsZDCTDCdatum = kFALSE; fIsADDChannel = kFALSE; fIsADDTDCdatum=kFALSE;
   fIsUnderflow = kFALSE; fIsOverflow = kFALSE; fIsScalerWord = kFALSE;
   fSector[0] = fSector[1] = -1;
   for(Int_t kl=0; kl<4; kl++) fCPTInput[kl] = 0;
@@ -861,6 +861,7 @@ Bool_t AliZDCRawStream::Next()
       fIsADCDataWord=kFALSE; fIsScalerWord=kFALSE;
       if(((fBuffer & 0xf0000000)==0x00000000) && (((fBuffer & 0x08000000) >> 27) == 0)){ // TDC datum
         fADCChannel = (Int_t) ((fBuffer & 0x3e00000) >> 21);
+	fIsZDCTDCdatum = kTRUE;
 	fZDCTDCdatum = (Int_t) (fBuffer & 0x1fffff);
         // Ch. debug
         //printf("  AliZDCRawStream -> ZDC TDC mod. %d ch. %d datum %d\n",fADCModule,fADCChannel,fZDCTDCdatum);
@@ -878,6 +879,7 @@ Bool_t AliZDCRawStream::Next()
       fIsADCDataWord=kFALSE; fIsScalerWord=kFALSE;
       if(((fBuffer & 0xf0000000)==0x00000000) && (((fBuffer & 0x08000000) >> 27) == 0)){ // TDC datum
         fADCChannel = (Int_t) ((fBuffer & 0x3e00000) >> 21);
+	fIsADDTDCdatum = kTRUE;
 	fADDTDCdatum = (Int_t) (fBuffer & 0x1fffff);
         // Ch. debug
         //printf("  AliZDCRawStream -> ADD TDC mod. %d ch. %d datum %d\n",fADCModule,fADCChannel,fADDTDCdatum);

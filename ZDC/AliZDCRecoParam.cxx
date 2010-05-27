@@ -29,14 +29,24 @@ ClassImp(AliZDCRecoParam)
 
 //_____________________________________________________________________________
 AliZDCRecoParam::AliZDCRecoParam() :
-  AliDetectorRecoParam()
+  AliDetectorRecoParam(),
+  fBeamEnergy(0)
 {
   //
   //Default constructor
 }
+
 //_____________________________________________________________________________
 AliZDCRecoParam::~AliZDCRecoParam()
 {
   // destructor
 
+}
+
+//_____________________________________________________________________________
+void AliZDCRecoParam::SetGlauberMCDist(Float_t beamEnergy)
+{
+  // Implemented in AliZDCRecoParamPbPb
+  fBeamEnergy = beamEnergy;
+  printf("Setting beam energy = %1.0f\n");
 }

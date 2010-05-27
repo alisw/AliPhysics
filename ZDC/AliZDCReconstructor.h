@@ -65,8 +65,6 @@ public:
   AliZDCEnCalib       *GetEnergyCalibData() const; 
   AliZDCTowerCalib    *GetTowerCalibData() const; 
   AliZDCMBCalib       *GetMBCalibData() const; 
-  AliZDCRecoParampp   *GetppRecoParamFromOCDB() const;  
-  AliZDCRecoParamPbPb *GetPbPbRecoParamFromOCDB() const;  
   
 private:
   AliZDCReconstructor(const AliZDCReconstructor&); //Not implemented

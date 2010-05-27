@@ -47,8 +47,6 @@
 
 class AliCDBStorage;
 class AliZDCPedestals;
-class AliZDCEnCalib;
-class AliZDCTowerCalib;
 
 ClassImp(AliZDCDigitizer)
 
@@ -59,9 +57,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(0), 
-  fEnCalibData(0),
-  fTowCalibData(0),
-  fSpectators2Track(kFALSE)
+  fSpectators2Track(kFALSE),
+  fBeamEnergy(0.)
 {
   // Default constructor    
 
@@ -74,9 +71,8 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
   fPedData(GetPedData()), 
-  fEnCalibData(GetEnCalibData()),
-  fTowCalibData(GetTowCalibData()),
-  fSpectators2Track(kFALSE)
+  fSpectators2Track(kFALSE),
+  fBeamEnergy(0.)
 {
   // Get calibration data
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
@@ -101,9 +97,8 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   fIsSignalInADCGate(digitizer.fIsSignalInADCGate),
   fFracLostSignal(digitizer.fFracLostSignal),
   fPedData(digitizer.fPedData),
-  fEnCalibData(digitizer.fEnCalibData),
-  fTowCalibData(digitizer.fTowCalibData),
-  fSpectators2Track(digitizer.fSpectators2Track)
+  fSpectators2Track(digitizer.fSpectators2Track),
+  fBeamEnergy(digitizer.fBeamEnergy)
 {
   // Copy constructor
 
@@ -144,37 +139,41 @@ Bool_t AliZDCDigitizer::Init()
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
   }
   
-  Float_t beamEnergy = grpData->GetBeamEnergy();
-  if(beamEnergy==AliGRPObject::GetInvalidFloat()){
+  fBeamEnergy = grpData->GetBeamEnergy();
+  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
     AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
-    beamEnergy = 0.;
+    fBeamEnergy = 0.;
   }
 
-  if((beamType.CompareTo("P-P")) == 0){
+  if((beamType.CompareTo("P-P")) == 0 || (beamType.CompareTo("p-p")) == 0){
     //PTM gains rescaled to beam energy for p-p
-    if(beamEnergy != 0){
+    if(fBeamEnergy != 0){
       for(Int_t j = 0; j < 5; j++){
-        fPMGain[0][j] = (661.444/beamEnergy+0.000740671)*10000000;
-        fPMGain[1][j] = (864.350/beamEnergy+0.002344)*10000000;
-        fPMGain[2][j] = (1.32312-0.000101515*beamEnergy)*10000000;
+        fPMGain[0][j] = (661.444/fBeamEnergy+0.000740671)*10000000;
+        fPMGain[1][j] = (864.350/fBeamEnergy+0.002344)*10000000;
+        fPMGain[2][j] = (1.32312-0.000101515*fBeamEnergy)*10000000;
         fPMGain[3][j] = fPMGain[0][j];
         fPMGain[4][j] = fPMGain[1][j] ;
       }
-      AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	beamEnergy, beamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
+      AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
     }
   }
   else if((beamType.CompareTo("A-A")) == 0){
-    // PTM gains for Pb-Pb @ 2.7_2.7 A TeV ***************
+    // PTM gains for Pb-Pb @ 2.7+2.7 A TeV ***************
+    // rescaled for Pb-Pb @ 1.38+1.38 A TeV ***************
+    Float_t scalGainFactor = fBeamEnergy/2760.;
     for(Int_t j = 0; j < 5; j++){
-      fPMGain[0][j] = 50000.;
-      fPMGain[1][j] = 100000.;
-      fPMGain[2][j] = 100000.;
-      fPMGain[3][j] = 50000.;
-      fPMGain[4][j] = 100000.;
-      fPMGain[5][j] = 100000.;
+      fPMGain[0][j] = 50000./scalGainFactor;
+      fPMGain[1][j] = 100000./scalGainFactor;
+      fPMGain[2][j] = 100000./scalGainFactor;
+      fPMGain[3][j] = 50000./scalGainFactor;
+      fPMGain[4][j] = 100000./scalGainFactor;
+      fPMGain[5][j] = 100000./scalGainFactor;
     }
+    AliInfo(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][0]));
   }
     
   // ADC Caen V965
@@ -450,27 +449,57 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
 {
 // add signal of the spectators
   
-  TString hfn; 
-  if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
-    hfn = "$ALICE_ROOT/ZDC/ZNCSignal.root";
-  } 
-  else if(SpecType == 2) { // --- Signal for projectile spectator protons
-    hfn = "$ALICE_ROOT/ZDC/ZPCSignal.root";
-  }
-  else if(SpecType == 3) { // --- Signal for target spectator neutrons
-    hfn = "$ALICE_ROOT/ZDC/ZNASignal.root";
-  }
-  else if(SpecType == 4) { // --- Signal for target spectator protons
-    hfn = "$ALICE_ROOT/ZDC/ZPASignal.root";
-  }
-  
-  TFile* file = TFile::Open(hfn);
-  if(!file || !file->IsOpen()) {
-    AliError((Form(" Opening file %s failed\n",hfn.Data())));
+  TFile *specSignalFile = TFile::Open("$ALICE_ROOT/ZDC/SpectatorSignal.root");
+  if(!specSignalFile || !specSignalFile->IsOpen()) {
+    AliError((" Opening file $ALICE_ROOT/ZDC/SpectatorSignal.root failed\n"));
     return;
   }
 
-  TNtuple* zdcSignal = (TNtuple*) file->Get("ZDCSignal");
+  TNtuple* zdcSignal;
+  
+  Float_t sqrtS = 2*fBeamEnergy;
+  //
+  if(TMath::Abs(sqrtS-5500) < 100.){
+    specSignalFile->cd("energy5500");
+    //
+    if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
+      specSignalFile->GetObject("energy5500/ZNCSignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
+    } 
+    else if(SpecType == 2) { // --- Signal for projectile spectator protons
+      specSignalFile->GetObject("energy5500/ZPCSignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
+    }
+    else if(SpecType == 3) { // --- Signal for target spectator neutrons
+      specSignalFile->GetObject("energy5500/ZNASignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNASignal from SpectatorSignal.root file");
+    }
+    else if(SpecType == 4) { // --- Signal for target spectator protons
+      specSignalFile->GetObject("energy5500/ZPASignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
+    }
+  }
+  else if(TMath::Abs(sqrtS-2760) < 100.){
+    specSignalFile->cd("energy2760");
+    //
+    if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
+      specSignalFile->GetObject("energy2760/ZNCSignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
+    } 
+    else if(SpecType == 2) { // --- Signal for projectile spectator protons
+      specSignalFile->GetObject("energy2760/ZPCSignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
+    }
+    else if(SpecType == 3) { // --- Signal for target spectator neutrons
+      specSignalFile->GetObject("energy2760/ZNASignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNASignal from SpectatorSignal.root file");
+    }
+    else if(SpecType == 4) { // --- Signal for target spectator protons
+      specSignalFile->GetObject("energy2760/ZPASignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
+    }
+  }
+  
   Int_t nentries = (Int_t) zdcSignal->GetEntries();
   
   Float_t *entry;
@@ -516,8 +545,8 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
      }
   }while(iev<numEvents);
   
-  file->Close();
-  delete file;
+  specSignalFile->Close();
+  delete specSignalFile;
 }
 
 
@@ -609,32 +638,3 @@ AliZDCPedestals* AliZDCDigitizer::GetPedData() const
   return calibdata;
 }
 
-//_____________________________________________________________________________
-AliZDCEnCalib* AliZDCDigitizer::GetEnCalibData() const
-{
-
-  // Getting calibration object for ZDC set
-
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/EnergyCalib");
-  if(!entry) AliFatal("No calibration data loaded!");  
-
-  AliZDCEnCalib *calibdata = dynamic_cast<AliZDCEnCalib*>  (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
-  return calibdata;
-}
-
-//_____________________________________________________________________________
-AliZDCTowerCalib* AliZDCDigitizer::GetTowCalibData() const
-{
-
-  // Getting calibration object for ZDC set
-
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TowerCalib");
-  if(!entry) AliFatal("No calibration data loaded!");  
-
-  AliZDCTowerCalib *calibdata = dynamic_cast<AliZDCTowerCalib*>  (entry->GetObject());
-  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
-
-  return calibdata;
-}

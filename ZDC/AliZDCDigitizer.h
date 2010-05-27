@@ -13,8 +13,6 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliZDCPedestals.h"
-#include "AliZDCEnCalib.h"
-#include "AliZDCTowerCalib.h"
 
 class AliRunDigitizer;
 
@@ -46,8 +44,6 @@ public:
   void	  SetCalibrationOn() {fIsCalibration=1;}  
   AliCDBStorage    *SetStorage(const char* uri);
   AliZDCPedestals  *GetPedData() const; 
-  AliZDCEnCalib    *GetEnCalibData() const; 
-  AliZDCTowerCalib *GetTowCalibData() const; 
   
   void    SetSpectators2Track() {fSpectators2Track=kTRUE;}
 
@@ -72,11 +68,10 @@ private:
   Float_t fFracLostSignal;      // fraction of lost signal
   
   AliZDCPedestals  *fPedData; 	   //! pedestal calibration data
-  AliZDCEnCalib    *fEnCalibData;  //! energy and equalization calibration data
-  AliZDCTowerCalib *fTowCalibData; //! energy and equalization calibration data
   
   Bool_t  fSpectators2Track;    // should digitizer track spectators
+  Float_t fBeamEnergy;          // beam energy taken from GRP object
        
-  ClassDef(AliZDCDigitizer, 10)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 11)     // digitizer for ZDC
 };    
 #endif

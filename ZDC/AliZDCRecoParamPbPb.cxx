@@ -89,39 +89,78 @@ AliZDCRecoParamPbPb::~AliZDCRecoParamPbPb()
 }
 
 //_____________________________________________________________________________
-void AliZDCRecoParamPbPb::SetGlauberMCDist()
+void AliZDCRecoParamPbPb::SetGlauberMCDist(Float_t beamEnergy)
 {
   // Setting Glauber MC distributions
   // from histos file stored in $ALICE_ROOT/ZDC
-  TFile * fileHistos = TFile::Open("$ALICE_ROOT/ZDC/GlauberMCHistos.root");
+  TH1::AddDirectory(0);
+  TH2::AddDirectory(0);
+  
+  TFile *fileGlauberMC =  TFile::Open("$ALICE_ROOT/ZDC/GlauberMCDist.root");
+  if(!fileGlauberMC) {
+    AliError((" Opening file $ALICE_ROOT/ZDC/SpectatorSignal.root failed\n"));
+    return;
+  }
+  
+  Float_t sqrtS = 2*beamEnergy;
   //
-  fhNpartDist = (TH1D*) fileHistos->Get("hDist");
+  if(TMath::Abs(sqrtS-5500) < 100.){
+    AliDebug(2, " ZDC -> Looking for energy5500 in file $ALICE_ROOT/ZDC/GlauberMCDist.root");
+    fileGlauberMC->cd("energy5500");
+    fileGlauberMC->GetObject("energy5500/hNpartGlauber;1", fhNpartDist);
+    if(!fhNpartDist) AliError("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
+    fileGlauberMC->GetObject("energy5500/hbGlauber;1", fhbDist);
+    if(!fhbDist) AliError("  PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
+  }
+  else if(TMath::Abs(sqrtS-2760) < 100.){
+    AliDebug(2, " ZDC -> Looking for energy2760 in file $ALICE_ROOT/ZDC/GlauberMCDist.root");
+    fileGlauberMC->cd("energy2760");
+    fileGlauberMC->GetObject("energy2760/hNpartGlauber;1", fhNpartDist);
+    if(!fhNpartDist) AliError("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
+    fileGlauberMC->GetObject("energy2760/hbGlauber;1", fhbDist);
+    if(!fhbDist) AliError("  PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
+  }
+  else AliError(Form(" No AliZDCRecoParam provided for Pb-Pb @ sqrt(s) = %1.0f GeV\n", sqrtS));
+  //
   fhNpartDist->SetDirectory(0);
-  fhbDist = (TH1D*) fileHistos->Get("hbDist");
   fhbDist->SetDirectory(0);
   
-  fileHistos->Close();
+  fileGlauberMC->Close();
 }
 
 //_____________________________________________________________________________
-AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam() 
+AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam(Float_t beamEnergy) 
 {
   // Create high flux reco parameter
   TH1::AddDirectory(0);
   TH2::AddDirectory(0);
   //
-  TFile * fileHistos = TFile::Open("$ALICE_ROOT/ZDC/GlauberMCHistos.root");
-  fileHistos->cd();
-  //
-  TH1D* hDist = (TH1D*) fileHistos->Get("hDist");
-  hDist->SetDirectory(0);
-  //
-  TH1D* hbDist = (TH1D*) fileHistos->Get("hbDist");
-  hbDist->SetDirectory(0);
+  TFile *fileGlauberMC =  TFile::Open("$ALICE_ROOT/ZDC/GlauberMCDist.root");
+  if(!fileGlauberMC) printf(" AliZDCRecoParamPbPb::GetHighFluxParam() ERROR opening file $ALICE_ROOT/ZDC/SpectatorSignal.root\n");
   
-  AliZDCRecoParamPbPb* zdcRecoParam = new AliZDCRecoParamPbPb(hDist, hbDist, 0.1);
+  TH1D *hNpartDist, *hbDist;
+  if(TMath::Abs(beamEnergy-5500)<100.){
+    fileGlauberMC->cd("energy5500");
+    fileGlauberMC->GetObject("energy5500/hNpartGlauber;1", hNpartDist);
+    if(!hNpartDist) printf("  AliZDCRecoParamPbPb::GetHighFluxParam() PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
+    fileGlauberMC->GetObject("energy5500/hbGlauber;1", hbDist);
+    if(!hbDist) printf("  AliZDCRecoParamPbPb::GetHighFluxParam() PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
+  }
+  else if(TMath::Abs(beamEnergy-2760)<100.){
+    fileGlauberMC->cd("energy2760");
+    fileGlauberMC->GetObject("energy2760/hNpartGlauber;1", hNpartDist);
+    if(!hNpartDist) printf("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
+    fileGlauberMC->GetObject("energy2760/hbGlauber;1", hbDist);
+    if(!hbDist) printf("  AliZDCRecoParamPbPb::GetHighFluxParam() PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
+  }
+  else printf(" No AliZDCRecoParam provided for Pb-Pb @ sqrt(s) = %1.0f GeV\n", beamEnergy);
   //
-  fileHistos->Close();
+  hNpartDist->SetDirectory(0);
+  hbDist->SetDirectory(0);
+
+  AliZDCRecoParamPbPb* zdcRecoParam = new AliZDCRecoParamPbPb(hNpartDist, hbDist, 0.1);
+  //
+  fileGlauberMC->Close();
 	      
   return zdcRecoParam;
   

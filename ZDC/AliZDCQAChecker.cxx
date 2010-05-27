@@ -34,7 +34,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
   // Checks the QA histograms on the input list: 
   //
   const char* taskName = AliQAv1::GetAliTaskName(index);
-  printf("\n\tAliZDCQAChecker -> checking QA histos for task %s\n",taskName);
+  //printf("\n\tAliZDCQAChecker -> checking QA histos for task %s\n",taskName);
   //
   for(Int_t specie = 0; specie<AliRecoParam::kNSpecies; specie++){
     Int_t count = 0; 

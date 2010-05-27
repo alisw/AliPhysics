@@ -26,16 +26,16 @@ class AliZDCRecoParamPbPb : public AliZDCRecoParam {
 
 
   // make reco parameters for A-A collisions
-  static AliZDCRecoParamPbPb *GetHighFluxParam();
+  static AliZDCRecoParamPbPb *GetHighFluxParam(Float_t beamEnergy);
   
   TH1D* GethNpartDist()  const {return fhNpartDist;} 
   TH1D* GethbDist() 	 const {return fhbDist;}
   Float_t GetClkCenter() const {return fClkCenter;}
- 
+  
   void SetNpartDist(TH1D *hDist) {fhNpartDist = hDist;}    
   void SetbDist(TH1D *hbDist) {fhbDist = hbDist;}    
   void SetClkCenter(Float_t xValue) {fClkCenter = xValue;}    
-  void SetGlauberMCDist(); 
+  void SetGlauberMCDist(Float_t beamEnergy); 
     
   //void Print(Option_t *) const; 
   
@@ -43,9 +43,9 @@ class AliZDCRecoParamPbPb : public AliZDCRecoParam {
   
   // *** PARAMETERS FOR Pb-Pb COLLISIONS
   // --- Correlation E_ZDC vs. E_ZEM
-  TH1D *  fhNpartDist;  // Npart distribution from Glauber MC
-  TH1D *  fhbDist;	// b distribution from Glauber MC
-  Float_t fClkCenter;   // clock center: value of x-axis 
+  TH1D *  fhNpartDist;    // Npart distribution from Glauber MC
+  TH1D *  fhbDist;	  // b distribution from Glauber MC
+  Float_t fClkCenter;     // clock center: value of x-axis 
  
  ClassDef(AliZDCRecoParamPbPb, 3)
 

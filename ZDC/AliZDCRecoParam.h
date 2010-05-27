@@ -20,19 +20,25 @@ class AliZDCRecoParam : public AliDetectorRecoParam {
  public:
   AliZDCRecoParam();
   virtual ~AliZDCRecoParam();
-
+  
+  virtual Float_t GetBeamEnergy() {return fBeamEnergy;}
   virtual TH1D*   GethNpartDist() const = 0;	
   virtual TH1D*   GethbDist()     const = 0;	
   virtual Float_t GetClkCenter()  const = 0;
       
   virtual void PrintParameters() const {;} 
   
+  virtual void SetGlauberMCDist(Float_t beamEnergy);
+  virtual void SetBeamEnergy(Float_t beamEnergy) {fBeamEnergy = beamEnergy;}
+  
  protected:
   
   AliZDCRecoParam(const AliZDCRecoParam&);
   AliZDCRecoParam& operator =(const AliZDCRecoParam&);
+  
+  Float_t fBeamEnergy;    // beam energy
    
- ClassDef(AliZDCRecoParam, 2)
+ ClassDef(AliZDCRecoParam, 3)
 
 };
 
