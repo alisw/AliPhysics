@@ -201,19 +201,19 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhDeltaPhiCharged  = new TH2F
       ("DeltaPhiCharged","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}",
-       nptbins,ptmin,ptmax,700,-2.,5.); 
+       nptbins,ptmin,ptmax,140,-2.,5.); 
     fhDeltaPhiCharged->SetYTitle("#Delta #phi");
     fhDeltaPhiCharged->SetXTitle("p_{T trigger} (GeV/c)");
     
     fhDeltaPhiChargedPt  = new TH2F
       ("DeltaPhiChargedPt","#phi_{trigger} - #phi_{#h^{#pm}} vs p_{T h^{#pm}}",
-       nptbins,ptmin,ptmax,700,-2.,5.);
+       nptbins,ptmin,ptmax,140,-2.,5.);
     fhDeltaPhiChargedPt->SetYTitle("#Delta #phi");
     fhDeltaPhiChargedPt->SetXTitle("p_{T h^{#pm}} (GeV/c)");
 
     fhDeltaPhiUeChargedPt  = new TH2F
       ("DeltaPhiUeChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}}",
-       nptbins,ptmin,ptmax,700,-2.,5.);
+       nptbins,ptmin,ptmax,140,-2.,5.);
     fhDeltaPhiUeChargedPt->SetYTitle("#Delta #phi");
     fhDeltaPhiUeChargedPt->SetXTitle("p_{T h^{#pm}} (GeV/c)");
     
@@ -225,25 +225,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhPtImbalanceCharged  = 
       new TH2F("CorrelationCharged","z_{trigger h^{#pm}} = p_{T h^{#pm}} / p_{T trigger}",
-	       nptbins,ptmin,ptmax,1000,0.,2.); 
+	       nptbins,ptmin,ptmax,200,0.,2.); 
     fhPtImbalanceCharged->SetYTitle("z_{trigger h^{#pm}}");
     fhPtImbalanceCharged->SetXTitle("p_{T trigger}");
     
     fhPtImbalanceUeCharged  = 
       new TH2F("CorrelationUeCharged","z_{trigger h^{#pm}} = p_{T Ueh^{#pm}} / p_{T trigger}",
-	       nptbins,ptmin,ptmax,1000,0.,2.); 
+	       nptbins,ptmin,ptmax,200,0.,2.); 
     fhPtImbalanceUeCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
     fhPtImbalanceUeCharged->SetXTitle("p_{T trigger}");
 
    fhPtHbpCharged  = 
       new TH2F("HbpCharged","#xi = ln(1/x_{E}) with charged hadrons",
-	       nptbins,ptmin,ptmax,1000,0.,10.); 
+	       nptbins,ptmin,ptmax,200,0.,10.); 
     fhPtHbpCharged->SetYTitle("ln(1/x_{E})");
     fhPtHbpCharged->SetXTitle("p_{T trigger}");
     
     fhPtHbpUeCharged  = 
       new TH2F("HbpUeCharged","#xi = ln(1/x_{E}) with charged hadrons",
-	       nptbins,ptmin,ptmax,1000,0.,10.); 
+	       nptbins,ptmin,ptmax,200,0.,10.); 
     fhPtHbpUeCharged->SetYTitle("ln(1/x_{E})");
     fhPtHbpUeCharged->SetXTitle("p_{T trigger}");
 
@@ -260,42 +260,42 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     if(fMakeSeveralUE){ 
       fhDeltaPhiUeLeftCharged  = new TH2F
 	("DeltaPhiUeLeftChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE left side range of trigger particles",
-	 nptbins,ptmin,ptmax,700,-2.,5.);
+	 nptbins,ptmin,ptmax,140,-2.,5.);
       fhDeltaPhiUeLeftCharged->SetYTitle("#Delta #phi");
       fhDeltaPhiUeLeftCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
       outputContainer->Add(fhDeltaPhiUeLeftCharged) ;
 
       fhDeltaPhiUeRightCharged  = new TH2F
 	("DeltaPhiUeRightChargedPt","#phi_{trigger} - #phi_{#Ueh^{#pm}} vs p_{T Ueh^{#pm}} with UE right side range of trigger particles",
-	 nptbins,ptmin,ptmax,700,-2.,5.);
+	 nptbins,ptmin,ptmax,140,-2.,5.);
       fhDeltaPhiUeRightCharged->SetYTitle("#Delta #phi");
       fhDeltaPhiUeRightCharged->SetXTitle("p_{T h^{#pm}} (GeV/c)");
       outputContainer->Add(fhDeltaPhiUeRightCharged) ;
       
       fhPtImbalanceUeLeftCharged  = 
 	new TH2F("CorrelationUeChargedLeft","z_{trigger h^{#pm}} = p_{T Ueh^{#pm}} / p_{T trigger} with UE left side of trigger",
-		 nptbins,ptmin,ptmax,1000,0.,2.); 
+		 nptbins,ptmin,ptmax,200,0.,2.); 
       fhPtImbalanceUeLeftCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
       fhPtImbalanceUeLeftCharged->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhPtImbalanceUeLeftCharged) ;
       
       fhPtImbalanceUeRightCharged  = 
 	new TH2F("CorrelationUeChargedRight","z_{trigger h^{#pm}} = p_{T Ueh^{#pm}} / p_{T trigger} with UE right side of trigger",
-		 nptbins,ptmin,ptmax,1000,0.,2.); 
+		 nptbins,ptmin,ptmax,200,0.,2.); 
       fhPtImbalanceUeRightCharged->SetYTitle("z_{trigger Ueh^{#pm}}");
       fhPtImbalanceUeRightCharged->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhPtImbalanceUeRightCharged) ;
 		
 		fhPtHbpUeLeftCharged  = 
 		new TH2F("HbpUeChargedLeft","#xi = ln(1/x_{E}) with charged UE left side of trigger",
-				 nptbins,ptmin,ptmax,1000,0.,10.); 
+				 nptbins,ptmin,ptmax,200,0.,10.); 
 		fhPtHbpUeLeftCharged->SetYTitle("ln(1/x_{E})");
 		fhPtHbpUeLeftCharged->SetXTitle("p_{T trigger}");
 		outputContainer->Add(fhPtHbpUeLeftCharged) ;
 		
 		fhPtHbpUeRightCharged  = 
 		new TH2F("HbpUeChargedRight","#xi = ln(1/x_{E}) with charged UE right side of trigger",
-				 nptbins,ptmin,ptmax,1000,0.,10.); 
+				 nptbins,ptmin,ptmax,200,0.,10.); 
 		fhPtHbpUeRightCharged->SetYTitle("ln(1/x_{E})");
 		fhPtHbpUeRightCharged->SetXTitle("p_{T trigger}");
 		outputContainer->Add(fhPtHbpUeRightCharged) ;
@@ -326,13 +326,13 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhDeltaPhiNeutralPt  = new TH2F
       ("DeltaPhiNeutralPt","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T #pi^{0}}}",
-       nptbins,ptmin,ptmax,700,-2.,5.); 
+       nptbins,ptmin,ptmax,140,-2.,5.); 
     fhDeltaPhiNeutralPt->SetYTitle("#Delta #phi");
     fhDeltaPhiNeutralPt->SetXTitle("p_{T h^{0}} (GeV/c)");
 
     fhDeltaPhiUeNeutralPt  = new TH2F
       ("DeltaPhiUeNeutralPt","#phi_{trigger} - #phi_{#pi^{0}} vs p_{T #pi^{0}}}",
-       nptbins,ptmin,ptmax,700,-2.,5.); 
+       nptbins,ptmin,ptmax,140,-2.,5.); 
     fhDeltaPhiUeNeutralPt->SetYTitle("#Delta #phi");
     fhDeltaPhiUeNeutralPt->SetXTitle("p_{T h^{0}} (GeV/c)");
     
@@ -344,25 +344,25 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     fhPtImbalanceNeutral  = 
       new TH2F("CorrelationNeutral","z_{trigger #pi} = p_{T #pi^{0}} / p_{T trigger}",
-	       nptbins,ptmin,ptmax,1000,0.,2.); 
+	       nptbins,ptmin,ptmax,200,0.,2.); 
     fhPtImbalanceNeutral->SetYTitle("z_{trigger #pi^{0}}");
     fhPtImbalanceNeutral->SetXTitle("p_{T trigger}");
  
     fhPtImbalanceUeNeutral  = 
       new TH2F("CorrelationUeNeutral","z_{trigger #pi} = p_{T #pi^{0}} / p_{T trigger}",
-	       nptbins,ptmin,ptmax,1000,0.,2.); 
+	       nptbins,ptmin,ptmax,200,0.,2.); 
     fhPtImbalanceUeNeutral->SetYTitle("z_{trigger #pi^{0}}");
     fhPtImbalanceUeNeutral->SetXTitle("p_{T trigger}");
 	  
 	fhPtHbpNeutral  = 
       new TH2F("HbpNeutral","#xi = ln(1/x_{E}) with neutral particles",
-			   nptbins,ptmin,ptmax,1000,0.,10.); 
+			   nptbins,ptmin,ptmax,200,0.,10.); 
 	fhPtHbpNeutral->SetYTitle("ln(1/x_{E})");
 	fhPtHbpNeutral->SetXTitle("p_{T trigger}");
 	  
 	fhPtHbpUeNeutral  = 
       new TH2F("HbpUeNeutral","#xi = ln(1/x_{E}) with neutral particles",
-			   nptbins,ptmin,ptmax,1000,0.,10.); 
+			   nptbins,ptmin,ptmax,200,0.,10.); 
 	fhPtHbpUeNeutral->SetYTitle("ln(1/x_{E})");
 	fhPtHbpUeNeutral->SetXTitle("p_{T trigger}");
 	  
@@ -382,42 +382,42 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     if(fMakeSeveralUE){ 
       fhDeltaPhiUeLeftNeutral  = new TH2F
 	("DeltaPhiUeLeftNeutralPt","#phi_{trigger} - #phi_{#Ueh^{0}} vs p_{T h^{0}} with neutral UE left side range of trigger particles",
-	 nptbins,ptmin,ptmax,700,-2.,5.);
+	 nptbins,ptmin,ptmax,140,-2.,5.);
       fhDeltaPhiUeLeftNeutral->SetYTitle("#Delta #phi");
       fhDeltaPhiUeLeftNeutral->SetXTitle("p_{T h^{0}} (GeV/c)");
       outputContainer->Add(fhDeltaPhiUeLeftNeutral) ;
 
       fhDeltaPhiUeRightNeutral  = new TH2F
 	("DeltaPhiUeRightNeutralPt","#phi_{trigger} - #phi_{#Ueh^{0}} vs p_{T Ueh^{0}} with neutral UE right side range of trigger particles",
-	 nptbins,ptmin,ptmax,700,-2.,5.);
+	 nptbins,ptmin,ptmax,140,-2.,5.);
       fhDeltaPhiUeRightNeutral->SetYTitle("#Delta #phi");
       fhDeltaPhiUeRightNeutral->SetXTitle("p_{T h^{0}} (GeV/c)");
       outputContainer->Add(fhDeltaPhiUeRightNeutral) ;
       
       fhPtImbalanceUeLeftNeutral  = 
 	new TH2F("CorrelationUeNeutralLeft","z_{trigger h^{0}} = p_{T Ueh^{0}} / p_{T trigger} with neutral UE left side of trigger",
-		 nptbins,ptmin,ptmax,1000,0.,2.); 
+		 nptbins,ptmin,ptmax,140,0.,2.); 
       fhPtImbalanceUeLeftNeutral->SetYTitle("z_{trigger Ueh^{0}}");
       fhPtImbalanceUeLeftNeutral->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhPtImbalanceUeLeftNeutral) ;
       
       fhPtImbalanceUeRightNeutral  = 
 	new TH2F("CorrelationUeNeutralRight","z_{trigger h^{0}} = p_{T Ueh^{0}} / p_{T trigger} with neutral UE right side of trigger",
-		 nptbins,ptmin,ptmax,1000,0.,2.); 
+		 nptbins,ptmin,ptmax,200,0.,2.); 
       fhPtImbalanceUeRightNeutral->SetYTitle("z_{trigger Ueh^{0}}");
       fhPtImbalanceUeRightNeutral->SetXTitle("p_{T trigger}");
       outputContainer->Add(fhPtImbalanceUeRightNeutral) ;
 		
 	fhPtHbpUeLeftNeutral  = 
 	new TH2F("HbpUeNeutralLeft","#xi = ln(1/x_{E}) with neutral UE left side of trigger",
-			nptbins,ptmin,ptmax,1000,0.,10.); 
+			nptbins,ptmin,ptmax,200,0.,10.); 
 	fhPtHbpUeLeftNeutral->SetYTitle("ln(1/x_{E})");
 	fhPtHbpUeLeftNeutral->SetXTitle("p_{T trigger}");
 	outputContainer->Add(fhPtHbpUeLeftNeutral) ;
 		
 	fhPtHbpUeRightNeutral  = 
 	new TH2F("HbpUeNeutralRight","#xi = ln(1/x_{E}) with neutral UE right side of trigger",
-			nptbins,ptmin,ptmax,1000,0.,10.); 
+			nptbins,ptmin,ptmax,200,0.,10.); 
 	fhPtHbpUeRightNeutral->SetYTitle("ln(1/x_{E})");
 	fhPtHbpUeRightNeutral->SetXTitle("p_{T trigger}");
 	outputContainer->Add(fhPtHbpUeRightNeutral) ;

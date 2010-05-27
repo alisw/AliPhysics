@@ -311,13 +311,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     
     fhPrimOpeningAngle  = new TH2D
-      ("hPrimOpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.5); 
+      ("hPrimOpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5); 
     fhPrimOpeningAngle->SetYTitle("#theta(rad)");
     fhPrimOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
     outputContainer->Add(fhPrimOpeningAngle) ;
     
     fhPrimCosOpeningAngle  = new TH2D
-      ("hPrimCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,-1,1); 
+      ("hPrimCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1); 
     fhPrimCosOpeningAngle->SetYTitle("cos (#theta) ");
     fhPrimCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
     outputContainer->Add(fhPrimCosOpeningAngle) ;
