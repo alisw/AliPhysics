@@ -138,6 +138,7 @@ Bool_t AliPHOSRawFitterv0::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   // Time is the first time bin
   // Signal overflows is there are at least 3 samples of the same amplitude above 900
 
+  fOverflow= kFALSE ;
   fEnergy  = 0;
   if (fNBunches > 1) {
     fQuality = 1000;
