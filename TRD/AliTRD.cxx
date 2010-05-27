@@ -48,6 +48,7 @@ AliTRD::AliTRD()
   ,fGasDensity(0)
   ,fFoilDensity(0)
   ,fGasNobleFraction(0)
+  ,fPrimaryIonisation(0)
 {
   //
   // Default constructor
@@ -62,6 +63,7 @@ AliTRD::AliTRD(const char *name, const char *title)
   ,fGasDensity(0)
   ,fFoilDensity(0)
   ,fGasNobleFraction(0)
+  ,fPrimaryIonisation(0)
 {
   //
   // Standard constructor for the TRD

@@ -415,7 +415,7 @@ void AliTRDv1::StepManager()
 
   // Set the maximum step size to a very large number for all 
   // neutral particles and those outside the driftvolume
-  gMC->SetMaxStep(kBig); 
+  if (!fPrimaryIonisation) gMC->SetMaxStep(kBig); 
 
   // If not charged track or already stopped or disappeared, just return.
   if ((!gMC->TrackCharge()) || 
@@ -512,6 +512,6 @@ void AliTRDv1::StepManager()
   if ((gMC->Etot() - gMC->TrackMass()) < kEkinMinStep) {
     return;
   }
-  gMC->SetMaxStep(fStepSize);
+  if (!fPrimaryIonisation) gMC->SetMaxStep(fStepSize);
 
 }

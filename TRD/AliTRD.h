@@ -59,7 +59,7 @@ class AliTRD : public AliDetector {
   virtual AliDigitizer       *CreateDigitizer(AliRunDigitizer *manager) const; 
   virtual AliLoader          *MakeLoader(const char* topfoldername);
   virtual AliTriggerDetector *CreateTriggerDetector() const { return new AliTRDTrigger(); }
-
+  void    SetPrimaryIonisation(Bool_t flag = kTRUE) {fPrimaryIonisation = flag;}  
  protected:
 
   AliTRDgeometry       *fGeometry;             //  The TRD geometry
@@ -67,7 +67,7 @@ class AliTRD : public AliDetector {
   Float_t               fGasDensity;           //  The density of the drift gas
   Float_t               fFoilDensity;          //  The density of the entrance window foil
   Float_t               fGasNobleFraction;     //  The fraction of noble gas in the mixture
-
+  Bool_t                fPrimaryIonisation;    //  switch between Fluka(true) and geant3(false)
  private:
 
   AliTRD(const AliTRD &trd);
