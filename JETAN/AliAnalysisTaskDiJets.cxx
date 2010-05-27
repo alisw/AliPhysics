@@ -32,7 +32,10 @@ AliAnalysisTaskDiJets::AliAnalysisTaskDiJets():
     AliAnalysisTaskSE(),
     fDiJets(0),
     fDiJetsIn(0),
+    fUseAODInput(kFALSE),
     fFillAOD(kFALSE),
+    fJetBranch("jets"),
+    fAOD(0),
     fHistList(0),
     fH1DeltaPt(0),
     fH1DeltaPhi(0),
@@ -49,7 +52,10 @@ AliAnalysisTaskDiJets::AliAnalysisTaskDiJets(const char* name):
     AliAnalysisTaskSE(name),
     fDiJets(0),
     fDiJetsIn(0),
+    fUseAODInput(kFALSE),
     fFillAOD(kFALSE),
+    fJetBranch("jets"),
+    fAOD(0),
     fHistList(0),
     fH1DeltaPt(0),
     fH1DeltaPhi(0),
@@ -67,10 +73,10 @@ void AliAnalysisTaskDiJets::UserCreateOutputObjects()
 {
 // Create the output container
 //
-    if (fDebug > 1) printf("AnalysisTaskDiJets::CreateOutPutData() \n");
+    if (fDebug) printf("AnalysisTaskDiJets::CreateOutPutData() \n");
     fDiJets = new TClonesArray("AliAODDiJet", 0);
     if (fFillAOD){
-      fDiJets->SetName("dijets");
+      fDiJets->SetName(Form("dijets_%s",fJetBranch.Data()));
       AddAODBranch("TClonesArray", &fDiJets);
 	}
 
@@ -120,7 +126,7 @@ void AliAnalysisTaskDiJets::UserCreateOutputObjects()
 void AliAnalysisTaskDiJets::Init()
 {
     // Initialization
-    if (fDebug > 1) printf("AnalysisTaskDiJets::Init() \n");
+    if (fDebug) printf("AnalysisTaskDiJets::Init() \n");
 }
 
 //----------------------------------------------------------------------
@@ -128,26 +134,29 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
 {
 // Execute analysis for current event
 //
-    fDiJets->Delete();
-    AliAODEvent* aod   = dynamic_cast<AliAODEvent*> (InputEvent());
+    if (fDiJets) fDiJets->Delete();
 
-    if(!aod){
-      // We do not have an input AOD, look in the output
-      aod = AODEvent();
-      if(!aod){
-        if (fDebug >1) printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
+    if(fUseAODInput){
+      AliAODEvent* fAOD   = dynamic_cast<AliAODEvent*> (InputEvent());
+      if(!fAOD && fDebug){
+        // We do not have an input AOD, look in the output
+        printf("%s:%d No AOD event in the input\n",(char*)__FILE__,__LINE__);
+        return;
+      }
+    } else {
+      fAOD = AODEvent();
+      if(!fAOD && fDebug){
+        printf("%s:%d AODEvent not found in the Output",(char*)__FILE__,__LINE__);
         return;
       }
     }
-
-    TClonesArray* jets = aod->GetJets();
-
+    TClonesArray* jets = (TClonesArray*) fAOD->FindListObject(fJetBranch.Data());
     // N.B. if we take the aod from the output this is always
     // empty and since it is the same as fDiJets 
-    fDiJetsIn = (TClonesArray*) (aod->GetList()->FindObject("dijets"));
+    fDiJetsIn = (TClonesArray*) (fAOD->GetList()->FindObject("dijets"));
 
     if (fDiJetsIn) {
-      if (fDebug >1) printf("Found %d dijets in old list \n", fDiJetsIn->GetEntries());
+      if (fDebug) printf("Found %d dijets in old list \n", fDiJetsIn->GetEntries());
       AliAODJet* jj1, *jj2;
       AliAODDiJet* testJ;
 
@@ -161,7 +170,7 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
     }
 
     Int_t nj = jets->GetEntriesFast();
-    if (fDebug >1) printf("There are %5d jets in the event \n", nj);
+    if (fDebug) printf("There are %5d jets in the event \n", nj);
 
     if (nj < 2){
       PostData(1, fHistList);
@@ -194,6 +203,6 @@ void AliAnalysisTaskDiJets::Terminate(Option_t */*option*/)
 {
 // Terminate analysis
 //
-    if (fDebug > 1) printf("AnalysisDiJets: Terminate() \n");
+    if (fDebug) printf("AnalysisDiJets: Terminate() \n");
 }
 

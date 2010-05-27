@@ -1,4 +1,4 @@
-AliAnalysisTaskDiJets *AddTaskDiJets()
+AliAnalysisTaskDiJets *AddTaskDiJets(Char_t *jb="dijets")
 {
 // Creates a dijet task, configures it and adds it to the analysis manager.
 
@@ -20,12 +20,18 @@ AliAnalysisTaskDiJets *AddTaskDiJets()
    // Create the task and configure it.
    //===========================================================================
 
-   AliAnalysisTaskDiJets *dijetana = new AliAnalysisTaskDiJets("DiJetAnalysis");
-   dijetana->SetDebugLevel(0);
+   AliAnalysisTaskDiJets *dijetana = new AliAnalysisTaskDiJets(Form("DiJetAnalysis_%s",jb));
+   dijetana->SetDebugLevel(1);
+   dijetana->SetFillAOD(kTRUE);
+   dijetana->SetJetBranch(jb);
    mgr->AddTask(dijetana);
+   
+   TString jbOut(jb);
+   if (jbOut.Sizeof() > 6) jbOut = jbOut(4,jbOut.Sizeof());
+   jbOut.ToLower();
 
-   AliAnalysisDataContainer *cout_dijet = mgr->CreateContainer("DiJet", TList::Class(),AliAnalysisManager::kOutputContainer,
-     Form("%s:PWG4_DiJet",AliAnalysisManager::GetCommonFileName()));
+   AliAnalysisDataContainer *cout_dijet = mgr->CreateContainer(Form("dijets_%s",jbOut.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,
+     Form("%s:PWG4_DiJets_%s",AliAnalysisManager::GetCommonFileName(),jbOut.Data()));
 
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below

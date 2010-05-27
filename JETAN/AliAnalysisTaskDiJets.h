@@ -23,7 +23,9 @@ class AliAnalysisTaskDiJets : public AliAnalysisTaskSE
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
 
+    void SetAODInput(Bool_t b)   {fUseAODInput = b;}
     void SetFillAOD(Bool_t fill) { fFillAOD=fill; }
+    void SetJetBranch(const Char_t *br){ fJetBranch=br; }
 
  private:
   AliAnalysisTaskDiJets(const AliAnalysisTaskDiJets &det);
@@ -33,8 +35,11 @@ class AliAnalysisTaskDiJets : public AliAnalysisTaskSE
   TClonesArray* fDiJets;    // Array of dijets
   TClonesArray* fDiJetsIn;  // Array of dijets
 
+  Bool_t        fUseAODInput; // read jets from input AOD
   Bool_t        fFillAOD;   // option to fill AOD branch
+  TString       fJetBranch; // jet branch to read
 
+  AliAODEvent  *fAOD;       // AOD event
   TList        *fHistList;  // Output list
 
   TH1F         *fH1DeltaPt;  // Pt difference
