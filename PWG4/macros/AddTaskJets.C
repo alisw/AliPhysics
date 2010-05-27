@@ -133,6 +133,7 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    if(radius>0)cRadius = Form("%02d",(int)((radius+0.01)*10.));
 
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
+
    if (jr == "AOD") jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
    
    TString c_jr(jr);
@@ -173,6 +174,7 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     jh->SetRadius(0.7);
     if(radius>0)jh->SetRadius(radius);    
     jh->SetAODwrite(kTRUE);
+    jh->SetAODtracksWrite(kTRUE);
     //    jh->SetDebugCDF(1);
     jetFinder = new AliCdfJetFinder();
     if (jh) jetFinder->SetJetHeader(jh);
