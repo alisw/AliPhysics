@@ -79,17 +79,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SetHistoEtaRangeAndNBins(-0.8, 0.8, 80) ;
   emcalQA->SetNumberOfModules(4); //EMCAL first year
   emcalQA->SetHistoMassRangeAndNBins(0., 0.6, 200) ;
-  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 25) ;
+  emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
   emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
   emcalQA->SetHistodEdxRangeAndNBins(0.,400.,200);
-  emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
-  emcalQA->SetHistoTimeRangeAndNBins(0.,1000,1000);
+  emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+  emcalQA->SetHistoTimeRangeAndNBins(400.,800,200);
   emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
   emcalQA->SetHistoNClusterCellRangeAndNBins(0,300,300);
   emcalQA->SetHistoXRangeAndNBins(-230,90,160);
   emcalQA->SetHistoYRangeAndNBins(370,450,35);
-  emcalQA->SetHistoZRangeAndNBins(-400,400,200);
+  emcalQA->SetHistoZRangeAndNBins(-400,400,100);
   emcalQA->SetHistoRRangeAndNBins(400,450,25);
 
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
@@ -115,12 +115,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
    phosQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 25) ;
    phosQA->SetHistoPOverERangeAndNBins(0,10.,100);
    phosQA->SetHistodEdxRangeAndNBins(0.,400.,200);
-   phosQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),300);
-   phosQA->SetHistoTimeRangeAndNBins(0.,1000,1000);
+   phosQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+   phosQA->SetHistoTimeRangeAndNBins(0.,400,200);
    phosQA->SetHistoRatioRangeAndNBins(0.,2.,100);
    phosQA->SetHistoVertexDistRangeAndNBins(0.,500.,100);
    phosQA->SetHistoNClusterCellRangeAndNBins(0,300,300);
-   phosQA->SetHistoXRangeAndNBins(-100,400,250);
+   phosQA->SetHistoXRangeAndNBins(-100,400,150);
    phosQA->SetHistoYRangeAndNBins(-490,-290,100);
    phosQA->SetHistoZRangeAndNBins(-80,80,80);
    phosQA->SetHistoRRangeAndNBins(440,480,40);

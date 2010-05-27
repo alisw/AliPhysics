@@ -208,19 +208,19 @@ void AliNeutralMesonSelection::InitParameters()
   
  //Histogrammes settings
   fHistoNEBins = 100 ;
-  fHistoEMax   = 50 ;
+  fHistoEMax   = 20 ;
   fHistoEMin   = 0.  ;  
   
-  fHistoNPtBins = 240 ;
-  fHistoPtMax   = 120 ;
+  fHistoNPtBins = 100 ;
+  fHistoPtMax   = 20 ;
   fHistoPtMin   = 0.  ;
 
-  fHistoNAngleBins = 200 ;
+  fHistoNAngleBins = 100 ;
   fHistoAngleMax   = 0.2;
   fHistoAngleMin   = 0.  ;
 
-  fHistoNIMBins = 300 ;
-  fHistoIMMax   = 0.5   ;
+  fHistoNIMBins = 100 ;
+  fHistoIMMax   = 0.3   ;
   fHistoIMMin   = 0.  ;  
 }
 

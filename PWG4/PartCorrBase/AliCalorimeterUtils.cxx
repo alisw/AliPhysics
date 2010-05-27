@@ -80,7 +80,7 @@ AliCalorimeterUtils::AliCalorimeterUtils(const AliCalorimeterUtils & calo) :
 AliCalorimeterUtils::~AliCalorimeterUtils() {
   //Dtor
   
-  if(fPHOSGeo)  delete fPHOSGeo  ;
+  //if(fPHOSGeo)  delete fPHOSGeo  ;
   if(fEMCALGeo) delete fEMCALGeo ;
 	
   if(fEMCALBadChannelMap) { 

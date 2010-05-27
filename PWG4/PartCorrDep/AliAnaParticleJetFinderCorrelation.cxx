@@ -130,17 +130,17 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   //	Float_t phimin = GetHistoPhiMin();
 //	Float_t etamin = GetHistoEtaMin();	
   
-  fhDeltaPhi  = new TH2F("DeltaPhi","#phi_{jet} - #phi_{trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,200,-4,4); 
+  fhDeltaPhi  = new TH2F("DeltaPhi","#phi_{jet} - #phi_{trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,100,-4,4); 
   fhDeltaPhi->SetYTitle("#Delta #phi");
   fhDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)");
   outputContainer->Add(fhDeltaPhi);
   
-  fhDeltaEta  = new TH2F("DeltaEta","#eta_{jet} - #eta_{trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,200,-5,5); 
+  fhDeltaEta  = new TH2F("DeltaEta","#eta_{jet} - #eta_{trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,100,-5,5); 
   fhDeltaEta->SetYTitle("#Delta #eta");
   fhDeltaEta->SetXTitle("p_{T trigger} (GeV/c)");
   outputContainer->Add(fhDeltaEta);
   
-  fhDeltaPt  = new TH2F("DeltaPt","p_{T trigger} - #p_{T jet} vs p_{T trigger}",nptbins,ptmin,ptmax,200,-100,100); 
+  fhDeltaPt  = new TH2F("DeltaPt","p_{T trigger} - #p_{T jet} vs p_{T trigger}",nptbins,ptmin,ptmax,100,-50,50); 
   fhDeltaPt->SetYTitle("#Delta #p_{T}");
   fhDeltaPt->SetXTitle("p_{T trigger} (GeV/c)"); 
   outputContainer->Add(fhDeltaPt);
@@ -165,12 +165,12 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   fhFFxi->SetXTitle("p_{T trigger}");
   outputContainer->Add(fhFFxi) ;
   
-  fhFFpt  = new TH2F("FFpt","#xi = p_{T i charged}) vs p_{T trigger}", nptbins,ptmin,ptmax,200,0.,50.); 
+  fhFFpt  = new TH2F("FFpt","#xi = p_{T i charged}) vs p_{T trigger}", nptbins,ptmin,ptmax,100,0.,50.); 
   fhFFpt->SetYTitle("p_{T charged hadron}");
   fhFFpt->SetXTitle("p_{T trigger}");
   outputContainer->Add(fhFFpt) ;
   
-  fhNTracksInCone  = new TH2F("NTracksInCone","#xi = p_{T i charged}) vs p_{T trigger}", nptbins,ptmin,ptmax,200,0.,50.); 
+  fhNTracksInCone  = new TH2F("NTracksInCone","#xi = p_{T i charged}) vs p_{T trigger}", nptbins,ptmin,ptmax,100,0.,50.); 
   fhNTracksInCone->SetYTitle("p_{T charged hadron}");
   fhNTracksInCone->SetXTitle("p_{T trigger}");
   outputContainer->Add(fhNTracksInCone) ;
