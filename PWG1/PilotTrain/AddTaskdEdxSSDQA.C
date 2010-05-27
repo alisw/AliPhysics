@@ -27,7 +27,7 @@ AliAnalysisTaskdEdxSSDQA* AddTaskdEdxSSDQA (Float_t pcut=1.2)
 	TString outputFileName = AliAnalysisManager::GetCommonFileName();
 	outputFileName+=":PWG1dEdxSSDQA";
 	AliAnalysisDataContainer *cinput1  = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
- 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("output", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
+ 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("SSDdEdxQA", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
   
   //________________________________________________//
 	mgr->ConnectInput(taskdEdxSSDQA,0,mgr->GetCommonInputContainer());
