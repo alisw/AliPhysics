@@ -1667,7 +1667,7 @@ void AliTPCv2::StepManager()
   
   vol[1]=0; // preset row number to 0
   //
-  if (fPrimaryIonisation) gMC->SetMaxStep(kbig);
+  if (!fPrimaryIonisation) gMC->SetMaxStep(kbig);
   
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
   
