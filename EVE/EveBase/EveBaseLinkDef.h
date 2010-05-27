@@ -84,3 +84,7 @@
 #pragma link C++ class AliEveHFList+;
 #pragma link C++ class AliEveHFEditor+;
 #pragma link C++ class AliEveHFListEditor+;
+
+// AliEveLego
+#pragma link C++ class AliEveLego+;
+#pragma link C++ class AliEveLegoEditor+;

@@ -139,7 +139,7 @@ void visscan_init(const TString& cdburi = "",
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks MI",           "esd_tracks.C+", "esd_tracks_MI",           "", kFALSE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by category",  "esd_tracks.C+", "esd_tracks_by_category",  "", kTRUE));
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks by anal cuts", "esd_tracks.C+", "esd_tracks_by_anal_cuts", "", kFALSE));
-  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks Lego", "histo2d.C", "histo2d", "", kTRUE));
+  exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracks Lego", "lego.C", "lego", "", kTRUE));
 
   exec->AddMacro(new AliEveMacro(AliEveMacro::kESD, "REC Tracklets SPD", "esd_spd_tracklets.C", "esd_spd_tracklets", "", kTRUE));
 
@@ -234,11 +234,6 @@ void visscan_init(const TString& cdburi = "",
   gEve->EditElement(g_trkcnt);
 
   gEve->Redraw3D(kTRUE);
-
-  // Assure 3D view rotates around the origin.
-  gSystem->ProcessEvents();
-  AliEveMultiView::Instance()->Get3DView()->GetGLViewer()->CurrentCamera().SetCenterVec(0,0,0);
-  AliEveMultiView::Instance()->Get3DView()->GetGLViewer()->RequestDraw();
 }
 
 /******************************************************************************/
@@ -264,12 +259,12 @@ void on_new_event()
 
   AliEveMultiView *mv = AliEveMultiView::Instance();
 
-  // mv->DestroyEventRPhi();
+  //mv->DestroyEventRPhi();
   if (gCenterProjectionsAtPrimaryVertex)
     mv->SetCenterRPhi(x[0], x[1], x[2]);
   mv->ImportEventRPhi(top);
 
-  // mv->DestroyEventRhoZ();
+  //mv->DestroyEventRhoZ();
   if (gCenterProjectionsAtPrimaryVertex)
     mv->SetCenterRhoZ(x[0], x[1], x[2]);
   mv->ImportEventRhoZ(top);

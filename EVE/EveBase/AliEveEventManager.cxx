@@ -10,6 +10,7 @@
 #include "AliEveEventManager.h"
 #include "AliEveEventSelector.h"
 #include "AliEveMacroExecutor.h"
+#include <TEveElement.h>
 #include <TEveManager.h>
 #include <TEveViewer.h>
 
@@ -43,6 +44,8 @@
 #include <TPRegexp.h>
 #include <TError.h>
 #include <TEnv.h>
+#include <TString.h>
+#include <TMap.h>
 
 //==============================================================================
 //==============================================================================
@@ -129,6 +132,8 @@ void AliEveEventManager::InitInternals()
   gEve->AddToListTree(fTransientLists, kFALSE);
 
   fPEventSelector = new AliEveEventSelector(this);
+
+  fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
 }
 
 AliEveEventManager::AliEveEventManager(const TString& name) :
@@ -142,6 +147,7 @@ AliEveEventManager::AliEveEventManager(const TString& name) :
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5.),     fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
+  fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
   fExecutor    (0), fTransients(0), fTransientLists(0),
   fPEventSelector(0),
   fSubManagers (0),
@@ -163,6 +169,7 @@ AliEveEventManager::AliEveEventManager(const TString& name, const TString& path,
   fRawReader (0),
   fAutoLoad  (kFALSE), fAutoLoadTime (5),      fAutoLoadTimer(0),
   fIsOpen    (kFALSE), fHasEvent     (kFALSE), fExternalCtrl (kFALSE),
+  fGlobal    (0), fGlobalReplace (kTRUE), fGlobalUpdate (kTRUE),
   fExecutor    (0), fTransients(0), fTransientLists(0),
   fPEventSelector(0),
   fSubManagers (0),
@@ -1525,3 +1532,59 @@ Bool_t AliEveEventManager::InitGRP()
 
   return kTRUE;
 } 
+
+//------------------------------------
+// Global variables management
+//------------------------------------
+
+Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model)
+{
+   // Insert a new visualization-parameter database entry with the default
+   return InsertGlobal(tag, model, fGlobalReplace, fGlobalUpdate);
+}
+
+Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model,
+                    Bool_t replace, Bool_t update)
+{
+   TPair* pair = (TPair*) fGlobal->FindObject(tag);
+   if (pair)
+   {
+      if (replace)
+      {
+         model->IncDenyDestroy();
+         model->SetRnrChildren(kFALSE);
+
+         TEveElement* old_model = dynamic_cast<TEveElement*>(pair->Value());
+         while (old_model->HasChildren())
+         {
+            TEveElement *el = old_model->FirstChild();
+            el->SetVizModel(model);
+            if (update)
+            {
+               el->CopyVizParams(model);
+               el->PropagateVizParamsToProjecteds();
+            }
+         }
+         old_model->DecDenyDestroy();
+
+         pair->SetValue(dynamic_cast<TObject*>(model));
+         return kTRUE;
+      }
+      else
+      {
+         return kFALSE;
+      }
+   }
+   else
+   {
+      model->IncDenyDestroy();
+      model->SetRnrChildren(kFALSE);
+      fGlobal->Add(new TObjString(tag), dynamic_cast<TObject*>(model));
+      return kTRUE;
+   }
+}
+
+TEveElement* AliEveEventManager::FindGlobal(const TString& tag)
+{
+   return dynamic_cast<TEveElement*>(fGlobal->GetValue(tag));
+}

@@ -15,7 +15,7 @@
 #include <TObjArray.h>
 
 class AliEveMacroExecutor;
-class AliEveEventSelector;
+class AliEveEventSelector; 
 
 class AliRunLoader;
 class AliESDEvent;
@@ -26,9 +26,12 @@ class AliRawReader;
 class AliGRPObject;
 class AliMagF;
 
+class TEveElement;
 class TFile;
 class TTree;
 class TGeoManager;
+class TString;
+class TMap;
 
 //==============================================================================
 //
@@ -116,6 +119,11 @@ public:
   Bool_t        AreEventFilesOpened()    const { return fIsOpen;       }
   Bool_t        IsEventAvailable()       const { return fHasEvent;     }
   Bool_t        IsUnderExternalControl() const { return fExternalCtrl; }
+  
+  Bool_t        InsertGlobal(const TString& tag, TEveElement* model);
+  Bool_t        InsertGlobal(const TString& tag, TEveElement* model,
+                             Bool_t replace, Bool_t update);
+  TEveElement*  FindGlobal(const TString& tag);
 
   virtual void  AfterNewEventLoaded();
   void          NewEventDataLoaded();  // *SIGNAL*
@@ -147,6 +155,10 @@ protected:
   Bool_t        fIsOpen;                // Are event-files opened.
   Bool_t        fHasEvent;              // Is an event available.
   Bool_t        fExternalCtrl;          // Are we under external event-loop.
+
+  TMap*         fGlobal;
+  Bool_t        fGlobalReplace;         // Are global replace
+  Bool_t        fGlobalUpdate;          // Are global updates
 
   AliEveMacroExecutor *fExecutor;       // Executor for std macros
 
