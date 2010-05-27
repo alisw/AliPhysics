@@ -119,6 +119,7 @@
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliCDBStorage.h"
 #include "AliCTPRawData.h"
 #include "AliCentralTrigger.h"
@@ -191,6 +192,10 @@ AliSimulation::AliSimulation(const char* configFileName,
   fSetRunNumberFromDataCalled(kFALSE),
   fEmbeddingFlag(kFALSE),
   fLego(NULL),
+  fKey(0),
+  fUseVertexFromCDB(0),
+  fUseMagFieldFromGRP(0),
+  fGRPWriteLocation(Form("local://%s", gSystem->pwd())),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
   fRunQA(kTRUE), 
@@ -362,7 +367,8 @@ void AliSimulation::SetCDBLock() {
   // Set CDB lock: from now on it is forbidden to reset the run number
   // or the default storage or to activate any further storage!
   
-  AliCDBManager::Instance()->SetLock(1);
+  ULong_t key = AliCDBManager::Instance()->SetLock(1);
+  if (key) fKey = key;
 }
 
 //_____________________________________________________________________________
@@ -983,13 +989,44 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   //
   // Initialize ALICE Simulation run
   //
-
   gAlice->Announce();
 
+  //
+  // If requested set the mag. field from the GRP entry.
+  // After this the field is loccked and cannot be changed by Config.C
+  if (fUseMagFieldFromGRP) {
+      AliGRPManager grpM;
+      grpM.ReadGRPEntry();
+      grpM.SetMagField();
+      AliInfo("Field is locked now. It cannot be changed in Config.C");
+  }
+//
+// Execute Config.C
   gROOT->LoadMacro(fConfigFileName.Data());
   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
   AliSysInfo::AddStamp("RunSimulation_Config");
 
+//
+// If requested obtain the vertex position and vertex sigma_z from the CDB
+// This overwrites the settings from the Config.C  
+  if (fUseVertexFromCDB) {
+      Double_t vtxPos[3] = {0., 0., 0.}; 
+      Double_t vtxSig[3] = {0., 0., 0.};
+      AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
+      AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+      if (vertex) {
+	  vertex->GetXYZ(vtxPos);
+	  vertex->GetSigmaXYZ(vtxSig);
+	  AliInfo("Overwriting Config.C vertex settings !");
+	  AliInfo(Form("Vertex position from OCDB entry: x = %13.3f, y = %13.3f, z = %13.3f (sigma = %13.3f)\n",
+		 vtxPos[0], vtxPos[1], vtxPos[2], vtxSig[2]));
+
+	  AliGenerator *gen = gAlice->GetMCApp()->Generator();
+	  gen->SetOrigin(vtxPos[0], vtxPos[1], vtxPos[2]);   // vertex position
+	  gen->SetSigmaZ(vtxSig[2]);
+      }
+  }
+  
   if(AliCDBManager::Instance()->GetRun() >= 0) { 
     AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
     AliRunLoader::Instance()->SetNumberOfEventsPerRun(fNEvents);
@@ -998,7 +1035,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
   
    AliRunLoader::Instance()->CdGAFile();
-    
+   
+
    AliPDG::AddParticlesToPdgDataBase();  
 
    gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
@@ -2293,6 +2331,11 @@ void AliSimulation::WriteGRPEntry()
 
   // Now store the entry in OCDB
   AliCDBManager* man = AliCDBManager::Instance();
+  
+  man->SetLock(0, fKey);
+  
+  AliCDBStorage* sto = man->GetStorage(fGRPWriteLocation.Data());
+  
 
   AliCDBId id("GRP/GRP/Data", man->GetRun(), man->GetRun(), 1, 1);
   AliCDBMetaData *metadata= new AliCDBMetaData();
@@ -2300,7 +2343,8 @@ void AliSimulation::WriteGRPEntry()
   metadata->SetResponsible("alice-off@cern.ch");
   metadata->SetComment("Automatically produced GRP entry for Monte Carlo");
  
-  man->Put(grpObj,id,metadata);
+  sto->Put(grpObj,id,metadata);
+  man->SetLock(1, fKey);
 }
 
 

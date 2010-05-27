@@ -131,6 +131,9 @@ public:
 
   void SetWriteGRPEntry(Bool_t flag = kTRUE) { fWriteGRPEntry = flag; }
   void WriteGRPEntry();
+  void UseVertexFromCDB()   {fUseVertexFromCDB   = kTRUE;}
+  void UseMagFieldFromGRP() {fUseMagFieldFromGRP = kTRUE;} 
+  void SetGRPWriteLocation(char* loc) {fGRPWriteLocation = loc;}
 
 private:
 
@@ -167,21 +170,26 @@ private:
   TObjArray      fEventsPerFile;      // number of events per file for given detectors and data types
 
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
-  TObjArray* 	   fAlignObjArray;      // array with the alignment objects to be applied to the geometry
+  TObjArray*     fAlignObjArray;      // array with the alignment objects to be applied to the geometry
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
   TString 	 fCDBUri;	                     //! Uri of the default CDB storage
-  TString 	 fQARefUri;	                   //! Uri of the default QA reference storage
-  TObjArray  fSpecCDBUri;                  //! Array with detector specific CDB storages
+  TString 	 fQARefUri;	                     //! Uri of the default QA reference storage
+  TObjArray      fSpecCDBUri;                        //! Array with detector specific CDB storages
   Int_t 	   fRun; 		                     //! Run number, will be passed to CDB and gAlice!!
   Int_t 	   fSeed;                        //! Seed for random number generator 
   Bool_t 	   fInitCDBCalled;               //! flag to check if CDB storages are already initialized
   Bool_t 	   fInitRunNumberCalled;         //! flag to check if run number is already initialized
   Bool_t 	   fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
   
-  Bool_t     fEmbeddingFlag;      // Flag for embedding
-  AliLego       *fLego;              //! Pointer to aliLego object if it exists
+  Bool_t         fEmbeddingFlag;       // Flag for embedding
+  AliLego       *fLego;                //! Pointer to aliLego object if it exists
+  // OCDB
+  ULong_t         fKey;                //! current CDB key
+  Bool_t          fUseVertexFromCDB;   // Flag to use Vertex from CDB
+  Bool_t          fUseMagFieldFromGRP; // Use magnetic field settings from GRP
+  TString         fGRPWriteLocation;   // Location to write the GRP entry from simulation
   
   //QA stuff
   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
