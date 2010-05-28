@@ -74,14 +74,14 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts
   taskPWG4QA->SetCuts(trackCuts);
   taskPWG4QA->SetCutsITS(trackCutsITS);
   taskPWG4QA->SetMaxCosmicAngle(0.008);
-  
+  taskPWG4QA->SetCutType(cuts);
+
  
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
 
   //------ input data ------
-  //  AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
   TString outputfile = "";
   outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += Form(":PWG4_HighPtQATPConly%d",cuts);
@@ -90,27 +90,29 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts
   AliAnalysisDataContainer *cout_hist1;
   AliAnalysisDataContainer *cout_hist2;
   AliAnalysisDataContainer *cout_hist3;
+  AliAnalysisDataContainer *cout_cuts0;
+  AliAnalysisDataContainer *cout_cuts1;
 
-  if(cuts==1) {
-    cout_hist0 = mgr->CreateContainer("qa_histsCuts1", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-    cout_hist1 = mgr->CreateContainer("qa_histsTPCCuts1", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-    cout_hist2 = mgr->CreateContainer("qa_histsITSCuts1", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
-    cout_hist3 = mgr->CreateContainer("qa_histsCosmicsCuts1", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
-  }
-  else if(cuts==2) {
-    cout_hist0 = mgr->CreateContainer("qa_histsCuts2", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-    cout_hist1 = mgr->CreateContainer("qa_histsTPCCuts2", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
-    cout_hist2 = mgr->CreateContainer("qa_histsITSCuts2", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
-    cout_hist3 = mgr->CreateContainer("qa_histsCosmicsCuts2", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
-  }
- 
+  cout_hist0 = mgr->CreateContainer(Form("qa_histsCuts%d",cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
+  cout_hist1 = mgr->CreateContainer(Form("qa_histsTPCCuts%d",cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);
+  cout_hist2 = mgr->CreateContainer(Form("qa_histsITSCuts%d",cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
+  cout_hist3 = mgr->CreateContainer(Form("qa_histsCosmicsCuts%d",cuts), TList::Class(), AliAnalysisManager::kOutputContainer,outputfile);  
+  cout_cuts0 = mgr->CreateContainer(Form("qa_trackCuts%d",cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+  cout_cuts1 = mgr->CreateContainer(Form("qa_trackCutsITS%d",cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+
+  //Add task to manager
   mgr->AddTask(taskPWG4QA);
 
+  //Connect input containter to manager
   mgr->ConnectInput(taskPWG4QA,0,mgr->GetCommonInputContainer());
+
+  //Connect output containers to manager
   mgr->ConnectOutput(taskPWG4QA,0,cout_hist0);
   mgr->ConnectOutput(taskPWG4QA,1,cout_hist1);
   mgr->ConnectOutput(taskPWG4QA,2,cout_hist2);
   mgr->ConnectOutput(taskPWG4QA,3,cout_hist3);
+  mgr->ConnectOutput(taskPWG4QA,4,cout_cuts0);
+  mgr->ConnectOutput(taskPWG4QA,5,cout_cuts1);
 
   // Return task pointer at the end
   return taskPWG4QA;
