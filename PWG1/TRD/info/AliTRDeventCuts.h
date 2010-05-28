@@ -29,8 +29,8 @@ public:
   Bool_t IsSelected(AliESDEvent *event, Bool_t col=kTRUE);
 
   void AddTrigger(const Char_t *name);
-  void SetVertexN(Int_t n);
-  void SetVertexZ(Double_t z);
+  void SetVertexN(Int_t n) { fVertexN = n; };
+  void SetVertexZ(Double_t z) { fVertexZ = z; };
 
 protected:
   Bool_t CheckTrigger(const Char_t *name);

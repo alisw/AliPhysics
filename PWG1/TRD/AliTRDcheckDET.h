@@ -81,14 +81,14 @@ public:
 
 private:
   enum{
-    kUseClustersOutsideChamber
+    kUseClustersOutsideChamber = 0 
   };
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c);
   TH1* MakePlotChi2();
   TH1* MakePlotNTracklets();
-  TH1* MakePlotPulseHeight();
+  Bool_t MakePlotPulseHeight();
   void MakePlotnTrackletsVsP();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
 
