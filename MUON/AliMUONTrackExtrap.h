@@ -73,7 +73,7 @@ class AliMUONTrackExtrap : public TObject
   static Double_t GetMCSAngle2(const AliMUONTrackParam& param, Double_t dZ, Double_t x0);
   static void     AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
   
-  static void ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout);
+  static Bool_t ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout);
   
   
  private:

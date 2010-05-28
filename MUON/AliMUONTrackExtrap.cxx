@@ -59,7 +59,7 @@ void AliMUONTrackExtrap::SetField()
   Double_t b[3] = {0.,0.,0.};
   TGeoGlobalMagField::Instance()->Field(x,b);
   fgSimpleBValue = b[0];
-  fgFieldON = fgSimpleBValue ? kTRUE : kFALSE;
+  fgFieldON = (TMath::Abs(fgSimpleBValue) > 1.e-10) ? kTRUE : kFALSE;
   
 }
 
@@ -239,6 +239,7 @@ Bool_t AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Do
   // Extrapolation loop (until within tolerance or the track turn around)
   Double_t residue = zEnd - trackParam->GetZ();
   Bool_t uturn = kFALSE;
+  Bool_t trackingFailed = kFALSE;
   Bool_t tooManyStep = kFALSE;
   while (TMath::Abs(residue) > fgkRungeKuttaMaxResidue && stepNumber <= fgkMaxStepNumber) {
     
@@ -256,12 +257,16 @@ Bool_t AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Do
       }
       stepNumber ++;
       step = TMath::Abs(step);
-      AliMUONTrackExtrap::ExtrapOneStepRungekutta(chargeExtrap,step,v3,v3New);
+      if (!AliMUONTrackExtrap::ExtrapOneStepRungekutta(chargeExtrap,step,v3,v3New)) {
+	trackingFailed = kTRUE;
+	break;
+      }
       residue = zEnd - v3New[2];
       step *= dZ/(v3New[2]-trackParam->GetZ());
     } while (residue*dZ < 0 && TMath::Abs(residue) > fgkRungeKuttaMaxResidue);
     
-    if (v3New[5]*v3[5] < 0) { // the track turned around
+    if (trackingFailed) break;
+    else if (v3New[5]*v3[5] < 0) { // the track turned around
       cout<<"W-AliMUONTrackExtrap::ExtrapToZRungekutta: The track turned around"<<endl;
       uturn = kTRUE;
       break;
@@ -270,7 +275,7 @@ Bool_t AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Do
   }
   
   // terminate the extropolation with a straight line up to the exact "zEnd" value
-  if (uturn) {
+  if (trackingFailed || uturn) {
     
     // track ends +-100 meters away in the bending direction
     dZ = zEnd - v3[2];
@@ -1218,7 +1223,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Doub
 }
 
  //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout)
+Bool_t AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout)
 {
 /// <pre>
 ///	******************************************************************
@@ -1416,16 +1421,22 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
       vout[5] = cba*c;
       rest = step - tl;
       if (step < 0.) rest = -rest;
-      if (rest < 1.e-5*TMath::Abs(step)) return;
+      if (rest < 1.e-5*TMath::Abs(step)) return kTRUE;
 
     } while(1);
 
     // angle too big, use helix
+    cout<<"W-AliMUONTrackExtrap::ExtrapOneStepRungekutta: Ruge-Kutta failed: switch to helix"<<endl;
 
     f1  = f[0];
     f2  = f[1];
     f3  = f[2];
     f4  = TMath::Sqrt(f1*f1+f2*f2+f3*f3);
+    if (f4 < 1.e-10) {
+      cout<<"E-AliMUONTrackExtrap::ExtrapOneStepRungekutta: magnetic field at (";
+      cout<<xyzt[0]<<", "<<xyzt[1]<<", "<<xyzt[2]<<") = "<<f4<<": giving up"<<endl;
+      return kFALSE;
+    }
     rho = -f4*pinv;
     tet = rho * step;
  
@@ -1459,6 +1470,6 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
     vout[kipy] = vect[kipy] + g4*vect[kipy] + g5*hxp[1] + g6*f2;
     vout[kipz] = vect[kipz] + g4*vect[kipz] + g5*hxp[2] + g6*f3;
 
-    return;
+    return kTRUE;
 }
 
