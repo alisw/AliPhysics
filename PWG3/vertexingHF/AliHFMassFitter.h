@@ -43,6 +43,7 @@ class AliHFMassFitter : public TNamed {
   void     SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;} // change the default value of the sigma
   void     SetSideBands(Bool_t onlysidebands=kTRUE) {fSideBands=onlysidebands;} // consider only side bands
   void     SetFixParam(Bool_t *fixpar){fFixPar=fixpar;}
+  void     SetDefaultFixParam();
   Bool_t   SetFixThisParam(Int_t thispar,Bool_t fixpar);
   Bool_t   SetFixGaussianMean(Bool_t fixpar=kTRUE){return SetFixThisParam(fNFinalPars-2,fixpar);}
   Bool_t   SetFixGaussianSigma(Bool_t fixpar=kTRUE){return SetFixThisParam(fNFinalPars-1,fixpar);}
@@ -54,6 +55,7 @@ class AliHFMassFitter : public TNamed {
   Double_t GetMaxRangeFit()const {return fmaxMass;}
   Int_t    GetBinN()       const {return fNbin;}
   void     GetFitPars(Float_t* pars) const;
+  Int_t    GetNFinalPars() const {return fNFinalPars;}
   void     GetTypeOfFit(Bool_t &background, Int_t &typeb) const {background = fWithBkg; typeb = ftypeOfFit4Bkg;}
   Int_t    GetReflectionSigmaFactor() const {return ffactor;} 
   Double_t GetMean() const {return fMass;}
@@ -119,7 +121,7 @@ class AliHFMassFitter : public TNamed {
   Double_t  fMass;             // signal gaussian mean value
   Double_t  fSigmaSgn;         // signal gaussian sigma
   Bool_t    fSideBands;        // kTRUE = only side bands considered
-  Bool_t*   fFixPar;           //[fParSize] for each par if kTRUE it is fixed in fit
+  Bool_t*   fFixPar;           //[fNFinalPars] for each par if kTRUE it is fixed in fit
   Int_t     fSideBandl;        // left side band limit (bin number)
   Int_t     fSideBandr;        // right side band limit (bin number)
   Int_t     fcounter;          // internal counter
