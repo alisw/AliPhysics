@@ -21,7 +21,7 @@ AliAnalysisTaskDiJets *AddTaskDiJets(Char_t *jb="jets")
    //===========================================================================
 
    AliAnalysisTaskDiJets *dijetana = new AliAnalysisTaskDiJets(Form("DiJetAnalysis_%s",jb));
-   dijetana->SetDebugLevel(1);
+   dijetana->SetDebugLevel(0);
 //   dijetana->SetFillAOD(kTRUE);
    dijetana->SetJetBranch(jb);
    mgr->AddTask(dijetana);
