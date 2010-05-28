@@ -47,9 +47,9 @@ public:
   void SetITSOut(const AliExternalTrackParam &param);
   void SetTRDIn(const AliExternalTrackParam  &param);
   //
-  const AliExternalTrackParam * GetTPCOut(){return  fTPCOut;} 
-  const AliExternalTrackParam * GetITSOut() { return fITSOut;} 
-  const AliExternalTrackParam * GetTRDIn() { return fTRDIn;} 
+  const AliExternalTrackParam * GetTPCOut() const {return  fTPCOut;} 
+  const AliExternalTrackParam * GetITSOut() const {return fITSOut;} 
+  const AliExternalTrackParam * GetTRDIn()  const {return fTRDIn;} 
 
   void SetITSIndices(Int_t* indices, Int_t n);
   void SetTPCIndices(Int_t* indices, Int_t n);
