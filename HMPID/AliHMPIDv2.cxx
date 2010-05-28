@@ -129,12 +129,12 @@ void AliHMPIDv2::CreateMaterials()
     AliMaterial(++matId,"Al"  ,aAl  ,zAl  ,dAl  ,radAl  ,absAl  );  AliMedium(kAl  ,"Al"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     AliMaterial(++matId,"Ar"  ,aAr  ,zAr  ,dAr  ,radAr  ,absAr  );  AliMedium(kAr  ,"Ar"  , matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 
-    InitProperties();
+    //InitProperties();
         
 }//void AliHMPID::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDv2::InitProperties()
-{
+//void AliHMPIDv2::InitProperties()
+//{
 /*
 * HMPID
 * ====
@@ -152,7 +152,7 @@ HMPID  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1  
 HMPID  6  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * PCB backplane   (>  50 keV delta-electrons)
 HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
-*/
+
     Int_t *idtmed = fIdtmed->GetArray();
     Int_t imed;
     
@@ -233,7 +233,7 @@ HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1  
     gMC->Gstpar(idtmed[imed], "DRAY",1);    
     gMC->Gstpar(idtmed[imed], "LOSS",1);    
     
-}
+}*/
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::CreateGeometry()
 {

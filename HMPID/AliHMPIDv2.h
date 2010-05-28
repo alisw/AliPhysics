@@ -26,7 +26,7 @@ static    void    IdealPosition(Int_t iCh,TGeoHMatrix *m);                      
   AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
   virtual void    DefineOpticalProperties(                           );                                        //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
-          void    InitProperties   (                                 );                                        //define the phys processes on/off (dray,eloss...)                                                 
+          //void    InitProperties   (                                 );                                        //define the phys processes on/off (dray,eloss...)                                                 
           void    Hits2SDigits     (                                 );                                        //from AliModule invoked from AliSimulation::RunSDigitization()
           void    Init             (                                 );                                        //from AliModule invoked from AliMC::InitGeometry()
           Int_t   IsVersion        (                                 )const{return 1;                      }   //from AliModule not used

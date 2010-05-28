@@ -135,8 +135,8 @@ void AliHMPIDv3::CreateMaterials()
         
 }//void AliHMPID::CreateMaterials()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDv3::InitProperties()
-{
+//void AliHMPIDv3::InitProperties()
+//{
 /*
 * HMPID
 * ====
@@ -154,7 +154,7 @@ HMPID  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1  
 HMPID  6  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
 * PCB backplane   (>  50 keV delta-electrons)
 HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
-*/
+
     Int_t *idtmed = fIdtmed->GetArray();
     Int_t imed;
     
@@ -235,7 +235,7 @@ HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1  
     gMC->Gstpar(idtmed[imed], "DRAY",1);    
     gMC->Gstpar(idtmed[imed], "LOSS",1);    
     
-}
+}*/
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv3::CreateGeometry()
 {
@@ -507,7 +507,7 @@ void AliHMPIDv3::Init()
 // Arguments: none
 //   Returns: none      
   AliDebug(1,"Start v2 HMPID.");    
-  InitProperties();
+  //InitProperties();
   AliDebug(1,"Stop v2 HMPID.");    
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
