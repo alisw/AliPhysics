@@ -115,9 +115,14 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     Bool_t IsTrackFromK0(const Int_t indexTrackCheck);
 
     Bool_t IsQuarkHardScatteringEvent(const Int_t PID);
+    Bool_t IsGluonHardScatteringEvent(const Int_t PID);
     Bool_t IsDiffractiveEvent(const Int_t PID);
     Int_t  GetPythiaProcessID();
 
+    void GetJetTracksResum(TList* list, AliAODJet* jet, const Double_t radius);
+    void GetJetTracksTrackrefs(TList* list, AliAODJet* jet);
+    void FillReferenceFF(AliAODJet* jet);
+    void FillReferencePlotsTracks(); 
 
     Int_t   fDebug;                 //  Debug flag
 
@@ -168,11 +173,14 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     
 
     // Histograms    ( are owned by fListOfHistos TList )
+    TH1F*  fhPrimVertexNCont;        //!
     TH1F*  fhPrimVertexRho;          //!
     TH1F*  fhPrimVertexZ;            //!
     TH1F*  fhNJets;                  //!
     TH1F*  fhNJetsMC;                //!
     TH1F*  fhLeadingEta;             //!
+    TH2F*  fhLeadingNTracksVsEta;    //!
+    TH2F*  fhLeadingPtVsEta;         //!
     TH1F*  fhLeadingPhi;             //!  
     TH1F*  fhLeadingPt;              //!
     TH1F*  fhLeadingPtDiffr;         //!
@@ -180,9 +188,12 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     TH1F*  fhLeadingPhiMC;           //!  
     TH1F*  fhLeadingPtMC;            //!
     TH1F*  fhLeadingPtMCDiffr;       //!
-    TH1F*  fhEtaTracks;              //!
-    TH1F*  fhPhiTracks;              //!
+    TH2F*  fhPhiEtaTracksNoCut;      //!
+    TH1F*  fhPtTracksNoCut;          //!
+    TH2F*  fhPhiEtaTracks;           //!
     TH1F*  fhPtTracks;               //!
+    TH1F*  fhTrackMult;              //!
+
     TH1F*  fhEtaMCTracks;            //!
     TH1F*  fhPhiMCTracks;            //!
     TH1F*  fhPtMCTracks;             //!
@@ -242,8 +253,18 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     TH1F* fhV0InvMassK0Lambda;       //!
 
     TH1F* fhdNdptK0JetEvt;           //!
-    TH1F* fhdNdzK0;                  //!
+
+    TH1F* fhdNdzK0;                   //!
+    TH1F* fhdNdzK05to10;              //!
+    TH1F* fhdNdzK010to20;             //!
+    TH1F* fhdNdzK020to30;             //!
+    TH1F* fhdNdzK030to40;             //!
+    TH1F* fhdNdzK040to60;             //!
+
     TH1F* fhdNdxiK0;                 //!
+
+    TH1F* fhdNdzLambda;              //!
+    TH1F* fhdNdzAntiLambda;          //!
 
     TH1F* fhdNdzK0Max;               //!
     TH1F* fhdNdxiK0Max;              //!
@@ -275,34 +296,50 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
 
     TH1F* fhdPhiJetK0MC;             //!
     TH1F* fhdRJetK0MC;               //!
-    
-    TH1F* fhdNdptK0MCMax;            //!
-    TH1F* fhdNdptLambdaLambdaBarMCMax;    //!
+    TH1F* fhdRV0MC;                  //!
 
-    TH1F* fhdNdptK0MCMin;                 //!
-    TH1F* fhdNdptLambdaLambdaBarMCMin;    //!
-    TH1F* fhdNdptOmegaMCMin;              //!
-    TH1F* fhdNdptOmegaBarMCMin;           //!
+    TH1F* fhdNdptchPiMCMax;               //!
+    TH1F* fhdNdptK0MCMax;                 //!
+    TH1F* fhdNdptchKMCMax;                //!
+    TH1F* fhdNdptpMCMax;                  //!
+    TH1F* fhdNdptpBarMCMax;               //!
+    TH1F* fhdNdptLambdaMCMax;             //!
+    TH1F* fhdNdptLambdaBarMCMax;          //!
 
     TH1F* fhdNdptchPiMCMin;               //!
+    TH1F* fhdNdptK0MCMin;                 //!
     TH1F* fhdNdptchKMCMin;                //!
     TH1F* fhdNdptpMCMin;                  //!
     TH1F* fhdNdptpBarMCMin;               //!
+    TH1F* fhdNdptLambdaMCMin;             //!
+    TH1F* fhdNdptLambdaBarMCMin;          //!
+    TH1F* fhdNdptOmegaMCMin;              //!
+    TH1F* fhdNdptOmegaBarMCMin;           //!
 
-    TH1F* fhdNdptK0MCJet;                 //!
-    TH1F* fhdNdptLambdaLambdaBarMCJet;    //!
     TH1F* fhdNdptchPiMCJet;               //!
+    TH1F* fhdNdptK0MCJet;                 //!
     TH1F* fhdNdptchKMCJet;                //!
     TH1F* fhdNdptpMCJet;                  //!
     TH1F* fhdNdptpBarMCJet;               //!
-    TH1F* fhdRV0MC;                       //!
+    TH1F* fhdNdptLambdaMCJet;             //!
+    TH1F* fhdNdptLambdaBarMCJet;          //!
+
 
     // kine tree 
     TH1F* fhPIDMC;                    //!
+    TH1F* fhPIDMC_quarkEv;            //!
+    TH1F* fhPIDMC_gluonEv;            //!
     TH1F* fhPIDMCAll;                 //!
     TH1F* fhPIDMCMin;                 //!
     TH1F* fhPIDMCJet;                 //!
  
+    TH1F* fhPIDMCMotherK0;            //!
+    TH1F* fhPIDMCGrandMotherK0;       //!
+    TH1F* fhPIDMCMotherChK;           //!
+    TH1F* fhPIDMCMotherK0Trans;       //!
+    TH1F* fhPIDMCGrandMotherK0Trans;  //!
+    TH1F* fhPIDMCMotherChKTrans;      //!
+
     TH1F* fhdNdptgammaMC;             //!
     TH1F* fhdNdptchPiMC;              //!
     TH1F* fhdNdptpi0MC;               //!
@@ -310,7 +347,8 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     TH1F* fhdNdptchKMC;               //!
     TH1F* fhdNdptpMC;                 //!
     TH1F* fhdNdptpBarMC;              //!
-    TH1F* fhdNdptLambdaLambdaBarMC;   //!
+    TH1F* fhdNdptLambdaMC;            //!
+    TH1F* fhdNdptLambdaBarMC;         //!
     TH1F* fhdNdptOmegaMC;             //!
     TH1F* fhdNdptOmegaBarMC;          //!
 
@@ -355,6 +393,25 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     TH1F* fhPythiaProcessp;          //!
     TH1F* fhPythiaProcesspbar;       //!
 
+    TH1F* fhdNdzJets5to10;  //!
+    TH1F* fhdNdzJets10to20; //!
+    TH1F* fhdNdzJets20to30; //!
+    TH1F* fhdNdzJets30to40; //!
+    TH1F* fhdNdzJets40to60; //!
+
+    TH1F* fhdNdxiJets5to10;  //!
+    TH1F* fhdNdxiJets10to20; //!
+    TH1F* fhdNdxiJets20to30; //!
+    TH1F* fhdNdxiJets30to40; //!
+    TH1F* fhdNdxiJets40to60; //!
+
+    TH1F* fhdNdptTracksJetPt5to10;  //!
+    TH1F* fhdNdptTracksJetPt10to20; //!
+    TH1F* fhdNdptTracksJetPt20to30; //!
+    TH1F* fhdNdptTracksJetPt30to40; //!
+    TH1F* fhdNdptTracksJetPt40to60; //!
+
+
     TProfile* fh1Xsec;               //!
     TH1F*  fh1Trials;                //!
     
@@ -363,10 +420,14 @@ class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
     TDatabasePDG* fpdgdb;            //!
 
     enum PythiaPIDHistoBin{kPythiaPIDP11Bin=1, kPythiaPIDP12Bin=3, kPythiaPIDP13Bin=5, kPythiaPIDP28Bin=7, 
-			   kPythiaPIDP53Bin=9, kPythiaPIDP68Bin=11}; 
-    
+			   kPythiaPIDP53Bin=9, kPythiaPIDP68Bin=11, kPythiaPIDP92Bin=13, kPythiaPIDP93Bin=15, 
+			   kPythiaPIDP94Bin=17,kPythiaPIDP95Bin=19, kPythiaPIDPOtherBin=21}; 
 
-    ClassDef( AliAnalysisTaskJetChem, 1); // Analysis task for jet chemistry analysis
+
+    enum PIDHistoBin{kPDGpm311Bin=48,kPDG333Bin=49,kPDGpm313Bin=50,kPDGp323Bin=51,kPDGm323Bin=52,
+		     kPDGNeutrinoBin=53,kPDGCharmedBaryonBin=54,kPDGQuarkBin=55,kPDGDiQuarkBin=56};
+   
+    ClassDef( AliAnalysisTaskJetChem, 1); // Analysis task for jet chemistry analysis 
   };
 
 #endif
