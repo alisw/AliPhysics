@@ -52,6 +52,7 @@ Bool_t      kSkipTerminate      = kTRUE; // Do not call Teminate
 Bool_t      kUseDate            = kFALSE; // use date in train name
 Bool_t      kUseDebug           = kTRUE; // activate debugging
 Int_t       kUseSysInfo         = 0; // activate debugging
+Long_t      kNumberOfEvents     = 1234567890; // number of events to process from the chain
 Bool_t      kUseMC              = kTRUE;  // use MC info
 Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseAODMC           = kTRUE;  // use MC infA
@@ -116,8 +117,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-2";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-19-04-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-26-00b-6";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-19-13-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
 Bool_t      kPluginOverwriteMode    = kTRUE;  // overwrite existing collections
@@ -350,8 +351,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (iDIJETAN) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskDiJets.C");
       AliAnalysisTaskDiJets *taskdijets = 0;
-      taskdijets = AddTaskDiJets(); 
+      if(iDIJETAN&1)taskdijets = AddTaskDiJets(); 
       if (!taskdijets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
+      if(iDIJETAN&2){
+	taskdijets = AddTaskDiJets("jetsAOD_CDF07"); 
+	taskdijets = AddTaskDiJets("jetsAOD_DA07"); 
+	taskdijets = AddTaskDiJets("jetsAOD_FASTJET07"); 
+	taskdijets = AddTaskDiJets("jetsAOD_FASTKT07"); 
+	taskdijets = AddTaskDiJets("jetsAOD_SISCONE07"); 
+	taskdijets = AddTaskDiJets("jetsAOD_UA107");
+      }
    }
 
    if(iPWG1QASym){
@@ -539,7 +548,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
-      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz -bg-off";
+      TString gcArguments = "-run-on-train -run-jet -run-omega-meson -run-neutralmeson";
+      TString kGCAnalysisCutSelectionId="9002111000";
+      gcArguments.Append(Form("-set-cut-selection  %s ",kGCAnalysisCutSelectionId.Data()));
       if(!kIsMC)gcArguments += " -mc-off";
       AliAnalysisTaskGammaConversion * taskGammaConversion = AddTaskGammaConversion(gcArguments,mgr->GetCommonInputContainer());
       gSystem->ChangeDirectory(cdir);
@@ -637,7 +648,7 @@ void StartAnalysis(const char *mode, TChain *chain) {
             ::Error("AnalysisTrainPWG4Jets.C::StartAnalysis", "Cannot create the chain");
             return;
          }   
-         mgr->StartAnalysis(mode, chain);
+         mgr->StartAnalysis(mode, chain,kNumberOfEvents);
          return;
       case 1:
          if (!kProofDataSet.Length()) {

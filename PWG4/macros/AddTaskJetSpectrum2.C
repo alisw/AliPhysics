@@ -70,6 +70,8 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    pwg4spec->SetFilterMask(filterMask); 
    pwg4spec->SetUseGlobalSelection(kTRUE); 
+   pwg4spec->SetMinJetPt(5.);
+
 
    if(type == "AOD"){
      // Assume all jet are produced already
