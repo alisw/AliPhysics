@@ -23,7 +23,7 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   // andrea.dainese@pd.infn.it
   //
 
-  TString taskName="",loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
+  TString taskName="",loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/macros/";
   Int_t ntasks=0;
 
   //taskName="AddTaskCompareHF.C"; taskName.Prepend(loadMacroPath.Data());
