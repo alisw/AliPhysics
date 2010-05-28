@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
-class TArrayI;
+#include <TArrayI.h>
 #include <TVectorDfwd.h>
 #include <TVectorFfwd.h>
 #include <TMatrixDfwd.h>
