@@ -17,7 +17,7 @@ Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (seco
 Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
 Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
 Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+Bool_t NL       = kTRUE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
 Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
 
@@ -37,13 +37,11 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 
 void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
-                 //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC09a4_run8101X", Int_t offset = 0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
-		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/PWG0/jgrosseo/run000104892_pass4", Int_t offset=0)
-		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/PWG0/jgrosseo/run000104867_90_92_pass4", Int_t offset=0)
-		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/ALICE/pp010000/MC_LHC09a4_81xxx", Int_t offset=0)
-		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/COMMON/COMMON/LHC10a8_run104867_8", Int_t offset=0)
-		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10b_000115322_p1", Int_t offset=0)
+		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10b_000115322_p1", Int_t offset=0) // data 7 TeV
+		 Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a18_140012", Int_t offset=0) //perugia0 7 TeV
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a20_140514", Int_t offset=0) //phojet 7 TeV
+
 //void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
   TStopwatch timer;
@@ -194,8 +192,7 @@ void LoadLibraries(const anaModes mode) {
     SetupPar("AOD");
     SetupPar("ANALYSIS");
     SetupPar("ANALYSISalice");
-    SetupPar("PWG2AOD");
-    SetupPar("CORRFW");
+        SetupPar("CORRFW");
     SetupPar("PWG2flowCommon");
     cerr<<"PWG2flowCommon.par loaded..."<<endl;
     SetupPar("PWG2flowTasks");
@@ -229,23 +226,21 @@ void LoadLibraries(const anaModes mode) {
     //gProof->ShowDataSets("/alice/data/"); //for REAL Data 
  
     // Clear the Packages
-    
+    /*
     gProof->ClearPackage("STEERBase.par");
     gProof->ClearPackage("ESD.par");
     gProof->ClearPackage("AOD.par");
-    gProof->ClearPackage("PWG2AOD.par");
     gProof->ClearPackage("ANALYSIS.par");
     gProof->ClearPackage("ANALYSISalice.par");
     gProof->ClearPackage("CORRFW.par");
     
     gProof->ClearPackage("PWG2flowCommon");
     gProof->ClearPackage("PWG2flowTasks");
-    
+    */
     // Upload the Packages
     gProof->UploadPackage("STEERBase.par");
     gProof->UploadPackage("ESD.par");    
     gProof->UploadPackage("AOD.par");
-    gProof->UploadPackage("PWG2AOD.par");
        
     gProof->UploadPackage("ANALYSIS.par"); 
     gProof->UploadPackage("ANALYSISalice.par");
@@ -261,7 +256,6 @@ void LoadLibraries(const anaModes mode) {
     gProof->EnablePackage("STEERBase");
     gProof->EnablePackage("ESD");
     gProof->EnablePackage("AOD");
-    gProof->EnablePackage("PWG2AOD");
     
     // Always needed
     gProof->EnablePackage("ANALYSIS");
