@@ -471,7 +471,7 @@ TObjArray *AliTRDcheckDET::Histos(){
   }
 
   // <PH> histos
-  arr = new TObjArray(2);
+  arr = new TObjArray(3);
   arr->SetOwner(kTRUE);  arr->SetName("<PH>");
   fContainer->AddAt(arr, kPH);
   if(!(h = (TH1F *)gROOT->FindObject("hPHt"))){
@@ -484,6 +484,12 @@ TObjArray *AliTRDcheckDET::Histos(){
     h = new TProfile("hPHx", "<PH>", 31, -0.08, 4.88);
   else h->Reset();
   arr->AddAt(h, 1);
+  if(!(h = (TH2F *)gROOT->FindObject("hPH2D"))){
+    h = new TH2F("hPH2D", "Charge Distribution / time", 31, -0.5, 30.5, 100, 0, 1024);
+    h->GetXaxis()->SetTitle("Time / 100ns");
+    h->GetYaxis()->SetTitle("Charge / a.u.");
+  } else h->Reset();
+  arr->AddAt(h, 2);
 
   // Chi2 histos
   if(!(h = (TH2S*)gROOT->FindObject("hChi2"))){
@@ -949,10 +955,13 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
     AliWarning("No Track defined.");
     return NULL;
   }
-  TProfile *h = NULL;
+  TProfile *h = NULL; TH2F *phs2D = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(0)))){
     AliWarning("No Histogram defined.");
     return NULL;
+  }
+  if(!(phs2D = dynamic_cast<TH2F *>(((TObjArray*)(fContainer->At(kPH)))->At(2)))){
+    AliWarning("2D Pulse Height histogram not defined. Histogramm cannot be filled");
   }
   AliTRDseedV1 *tracklet = NULL;
   AliTRDcluster *c = NULL;
@@ -966,6 +975,7 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
       Int_t localtime        = c->GetLocalTimeBin();
       Double_t absoluteCharge = TMath::Abs(c->GetQ());
       h->Fill(localtime, absoluteCharge);
+      phs2D->Fill(localtime, absoluteCharge); 
       if(DebugLevel() > 3){
         Double_t distance[2];
         GetDistanceToTracklet(distance, tracklet, c);
@@ -1187,8 +1197,11 @@ TH1* AliTRDcheckDET::MakePlotChi2()
 // 
 // Alex Bercuci <A.Bercuci@gsi.de>
 
+  return NULL;
+
   TH2S *h2 = (TH2S*)fContainer->At(kChi2);
   TF1 f("fChi2", "[0]*pow(x, [1]-1)*exp(-0.5*x)", 0., 50.);
+  f.SetParLimits(1,1, 1e100);
   TLegend *leg = new TLegend(.7,.7,.95,.95);
   leg->SetBorderSize(1); leg->SetHeader("Tracklets per Track");
   TH1D *h1 = NULL;
@@ -1320,10 +1333,13 @@ void AliTRDcheckDET::MakePlotnTrackletsVsP(){
 }
 
 //________________________________________________________
-TH1* AliTRDcheckDET::MakePlotPulseHeight(){
+Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
   //
   // Create Plot of the Pluse Height Spectrum
   //
+  TCanvas *output = gPad->GetCanvas();
+  output->Divide(2);
+  output->cd(1);
   TH1 *h, *h1, *h2;
   TObjArray *arr = (TObjArray*)fContainer->FindObject("<PH>");
   h = (TH1F*)arr->At(0);
@@ -1366,7 +1382,12 @@ TH1* AliTRDcheckDET::MakePlotPulseHeight(){
   axis->SetTextColor(kBlue);
   axis->SetTitle("x_{0}-x_{c} [cm]");
   axis->Draw();
-  return h1;
+
+  output->cd(2);
+  TH2 *ph2d = (TH2F *)arr->At(2);
+  ph2d->SetStats(kFALSE);
+  ph2d->Draw("colz");
+  return kTRUE;
 }
 
 //________________________________________________________
