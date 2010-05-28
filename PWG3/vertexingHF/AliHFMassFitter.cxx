@@ -116,14 +116,8 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
 
   ComputeParSize();
   fFitPars=new Float_t[fParsSize];
-  ComputeNFinalPars();
-  fFixPar=new Bool_t[fNFinalPars];
 
-  fFixPar[0]=kTRUE; //default: IntTot fixed
-  cout<<"Parameter 0 is fixed"<<endl;
-  for(Int_t i=1;i<fNFinalPars;i++){
-    fFixPar[i]=kFALSE;
-  }
+  SetDefaultFixParam();
 
   fContourGraph=new TList();
   fContourGraph->SetOwner();
@@ -158,9 +152,9 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   
   if(mfit.fParsSize > 0){
     fFitPars=new Float_t[fParsSize];
-    fFixPar=new Bool_t[fParsSize];
+    fFixPar=new Bool_t[fNFinalPars];
     memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
-    memcpy(fFixPar,mfit.fFixPar,mfit.fParsSize*sizeof(Bool_t));
+    memcpy(fFixPar,mfit.fFixPar,mfit.fNFinalPars*sizeof(Bool_t));
   }
   //for(Int_t i=0;i<fParsSize;i++) fFitPars[i]=mfit.fFitPars[i];
 }
@@ -250,6 +244,9 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
 //__________________________________________________________________________
 
 void AliHFMassFitter::ComputeNFinalPars() {
+
+  //compute the number of parameters of the total (signal+bgk) function
+  cout<<"Info:ComputeNFinalPars... ";
   switch (ftypeOfFit4Bkg) {//npar background func
   case 0:
     fNFinalPars=2;
@@ -269,6 +266,7 @@ void AliHFMassFitter::ComputeNFinalPars() {
   }
 
   fNFinalPars+=3; //gaussian signal
+  cout<<": "<<fNFinalPars<<endl;
 }
 //__________________________________________________________________________
 
@@ -302,6 +300,22 @@ void AliHFMassFitter::ComputeParSize() {
 }
 
 //___________________________________________________________________________
+void AliHFMassFitter::SetDefaultFixParam(){
+
+  //Set default values for fFixPar (only total integral fixed)
+
+  ComputeNFinalPars();
+  fFixPar=new Bool_t[fNFinalPars];
+
+  fFixPar[0]=kTRUE; //default: IntTot fixed
+  cout<<"Parameter 0 is fixed"<<endl;
+  for(Int_t i=1;i<fNFinalPars;i++){
+    fFixPar[i]=kFALSE;
+  }
+
+}
+
+//___________________________________________________________________________
 Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
 
   //set the value (kFALSE or kTRUE) of one element of fFixPar
@@ -313,12 +327,7 @@ Bool_t AliHFMassFitter::SetFixThisParam(Int_t thispar,Bool_t fixpar){
   }
   if(!fFixPar){
     cout<<"Initializing fFixPar...";
-    ComputeNFinalPars();
-    fFixPar=new Bool_t[fNFinalPars];
-    fFixPar[0]=kTRUE;
-    for(Int_t i=1;i<fNFinalPars;i++){
-      fFixPar[i]=kFALSE;
-    }
+    SetDefaultFixParam();
     cout<<" done."<<endl;
   }
 
@@ -334,7 +343,11 @@ Bool_t AliHFMassFitter::GetFixThisParam(Int_t thispar)const{
     cout<<"Error! Parameter out of bounds! Max is "<<fNFinalPars-1<<endl;
     return kFALSE;
   }
-  if(!fFixPar) return kFALSE;
+  if(!fFixPar) {
+    cout<<"Error! Parameters to be fixed still not set"<<endl;
+    return kFALSE;
+
+  }
   return fFixPar[thispar];
  
 }
@@ -355,9 +368,24 @@ void AliHFMassFitter::SetHisto(const TH1F *histoToFit){
 
     ftypeOfFit4Bkg = fittypeb; 
     ftypeOfFit4Sgn = fittypes; 
+
+    /*
+    if(fFitPars) {
+      delete[] fFitPars;
+      fFitPars=NULL;
+    }
+    */
     ComputeParSize();
     fFitPars = new Float_t[fParsSize];
-
+    /*
+    if(fFixPar){
+      delete[] fFixPar;
+      fFixPar=NULL;
+    }
+    */
+    SetDefaultFixParam();
+ 
+ 
 }
 
 //___________________________________________________________________________
@@ -378,6 +406,7 @@ void AliHFMassFitter::Reset() {
   }
   else cout<<"histogram doesn't exist, do not delete"<<endl;
   
+
 }
 
 //_________________________________________________________________________
