@@ -42,15 +42,19 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   AliPWG4HighPtQATPConly(const char *name);
   ~AliPWG4HighPtQATPConly() {;}
 
+  virtual void   LocalInit();
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   Bool_t IsCosmic(const AliESDtrack* track1 = 0x0, Int_t trackNumber = 0, Double_t ptMin = 6.);
   virtual void   Terminate(Option_t *);
 
+  void SetCutType(Int_t ctype) {fCutType = ctype;}
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
   void SetMaxCosmicAngle(Double_t angle) {fMaxCosmicAngle = angle;}
+
+  Int_t GetCutType() {return fCutType;}
 
  protected:
 
@@ -63,6 +67,7 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   AliESDEvent *fESD;              //! ESD object
   AliESDfriend *fESDfriend;       //! ESD friend object
   AliMCEvent *fMC;                //! MC event object
+  Int_t fCutType;                 // Cut Type set in AddTask*
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global vs TPConly comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
   
@@ -165,10 +170,11 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
 
   TList *fHistListITS; //! List of Histograms
 
-  TH1F *fPtCosmicCandidates;                    //! Cosmic Candidates
+  TH1F *fPtSignedCosmicCandidates;              //! Cosmic Candidates
   TH1F *fDeltaPtCosmicCandidates;               //! Cosmic Candidates Delta Pt
-  TH1F *fDeltaPhi;                              //! Cosmic Candidates Delta Phi
-  TH1F *fDeltaEta;                              //! Cosmic Candidates Delta Eta
+  TH2F *fDeltaPhiSumEta;                        //! Cosmic Candidates Delta Phi vs Sum Eta
+  TH2F *fDCAZCosmicCandidates;                  //! Cosmic Candidates DCAZ track1 vs track2
+  TH2F *fDCARCosmicCandidates;                  //! Cosmic Candidates DCAR track1 vs track2
 
   TList *fHistListCosmics;                      //! List of Histograms for cosmic candidates
 
