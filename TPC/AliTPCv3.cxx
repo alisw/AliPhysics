@@ -1060,7 +1060,7 @@ void AliTPCv3::Init()
 
   gMC->SetMaxNStep(-30000); // max. number of steps increased
 
-  gMC->Gstpar(idtmed[2],"LOSS",5);
+  // specific energy loss is now set in galice.cuts
 
   printf("%s: *** TPC version 3 initialized***\n",ClassName());
 

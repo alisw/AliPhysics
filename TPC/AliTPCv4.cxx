@@ -1220,7 +1220,7 @@ void AliTPCv4::Init()
 
   gMC->SetMaxNStep(-30000); // max. number of steps increased
 
-  gMC->Gstpar(idtmed[20],"LOSS",6); // specific energy loss
+  // specific energy loss set in galice.cuts
 
   AliInfo("*** TPC version 4 initialized ***");
   AliInfo(Form("Maximum number of steps = %d",gMC->GetMaxNStep()));

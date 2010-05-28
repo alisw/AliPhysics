@@ -1626,14 +1626,14 @@ void AliTPCv2::Init()
   gMC->SetMaxNStep(-30000); // max. number of steps increased
 
   if (fPrimaryIonisation) {
+    // for FLUKA
       gMC->Gstpar(idtmed[2],"PRIMIO_E", 20.77); // 1st ionisation potential
  
       gMC->Gstpar(idtmed[2],"PRIMIO_N", 14.35);
       gMC->Gstpar(idtmed[2],"LOSS", 14); // specific energy loss
       gMC->Gstpar(idtmed[2],"STRA",4);
-  } else {
-      gMC->Gstpar(idtmed[2],"LOSS", 5); // specific energy loss
-  }
+  } 
+  // specific energy loss for geant3 is now defined in galice.cuts
 
 
   AliDebug(1,"*** TPC version 2 initialized ***");
