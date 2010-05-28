@@ -27,7 +27,7 @@ void RunAnalysisAODVertexingHF()
   TString pluginmode="test";
   Bool_t saveProofToAlien=kFALSE;
   TString proofOutdir = "";
-  TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/";
+  TString loadMacroPath="$ALICE_ROOT/PWG3/vertexingHF/macros/";
   //TString loadMacroPath="./"; // this is normally needed for CAF
   //
 
