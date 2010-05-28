@@ -28,6 +28,7 @@ SRCS:=   vertexingHF/AliAODRecoDecayHF.cxx \
        vertexingHF/AliCFTaskForDStarAnalysis.cxx \
        vertexingHF/AliAnalysisTaskSEDStarJets.cxx \
        vertexingHF/AliAnalysisTaskSEDStarSpectra.cxx \
+       vertexingHF/AliAnalysisTaskSESignificance.cxx \
        vertexingHF/AliMultiDimVector.cxx vertexingHF/AliSignificanceCalculator.cxx \
        vertexingHF/AliHFMassFitter.cxx \
        vertexingHF/AliAnalysisTaskSEBkgLikeSignJPSI.cxx \
