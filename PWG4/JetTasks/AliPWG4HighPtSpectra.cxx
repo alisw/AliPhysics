@@ -297,7 +297,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       containerInputTPConly[0] = trackTPC->Pt();
       containerInputTPConly[1] = trackTPC->Phi();
       containerInputTPConly[2] = trackTPC->Eta();
-      containerInputTPConly[3] = dca2DTPC/10.; //Divide by 10 in order to store in same containter. Should be corrected back when looking at output.
+      containerInputTPConly[3] = dca2DTPC/10.; //Divide by 10 in order to store in same container. Should be corrected back when looking at output.
       containerInputTPConly[4] = chi2PerClusterTPCIter1;//TPC;
 
       if (fTrackCuts->AcceptTrack(track)) {

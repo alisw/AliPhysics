@@ -153,6 +153,8 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fDeltaPhiSumEta(0),
   fDCAZCosmicCandidates(0),
   fDCARCosmicCandidates(0),
+  fTheta(0),
+  fThetaZoom(0),
   fHistListCosmics(0)
   
 {
@@ -255,6 +257,8 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fDeltaPhiSumEta(0),
   fDCAZCosmicCandidates(0),
   fDCARCosmicCandidates(0),
+  fTheta(0),
+  fThetaZoom(0),
   fHistListCosmics(0)
 {
   //
@@ -747,7 +751,7 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
 
 
   //ITSrefit
-  fPtSelITS = new TH1F("fPtSelITSrefit","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSelITS = new TH1F("fPtSelITSrefit","PtSel",fgkNPtBins, binsPt);
   fHistListITS->Add(fPtSelITS);
   
   fPtITSminPtTPCvsPtITS = new TH2F("fPtITSminPtTPCvsPtITS","PtITSminPtTPCvsPtITS",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt);
@@ -872,12 +876,12 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetYTitle("Rel1PtUncertainty");
   fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetZTitle("#chi^{2}/(2*N_{clusters}^{TPC}-5)");
   fHistListITS->Add(fPtRel1PtUncertaintyChi2PerClusTPCSharedSel);
-
-  fPtAllTPC = new TH1F("fPtAllTPC","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
+  
+  fPtAllTPC = new TH1F("fPtAllTPC","PtAll",fgkNPtBins,binsPt);
   fHistListTPC->Add(fPtAllTPC);
-  fPtSelTPC = new TH1F("fPtSelTPC","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSelTPC = new TH1F("fPtSelTPC","PtSel",fgkNPtBins,binsPt);
   fHistListTPC->Add(fPtSelTPC);
-  fPtSelTPCITS = new TH1F("fPtSelTPCITS","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSelTPCITS = new TH1F("fPtSelTPCITS","PtSel",fgkNPtBins,binsPt);
   fHistListTPC->Add(fPtSelTPCITS);
 
   //****************************************************************************************************************//
@@ -887,12 +891,16 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fHistListCosmics->Add(fPtSignedCosmicCandidates);  
   fDeltaPtCosmicCandidates = new TH1F("fDeltaPtCosmicCandidates","fDeltaPtCosmicCandidates",fgkNPtBins, -50., 50.);
   fHistListCosmics->Add(fDeltaPtCosmicCandidates);  
-  fDeltaPhiSumEta = new TH2F("fDeltaPhiSumEta","fDeltaPhiSumEta",fgkNPhiBins*2,-1*kMaxPhi,kMaxPhi,40, -2.,2.);
+  fDeltaPhiSumEta = new TH2F("fDeltaPhiSumEta","fDeltaPhiSumEta",fgkNPhiBins*4,0.,kMaxPhi,40, -2.,2.);
   fHistListCosmics->Add(fDeltaPhiSumEta);  
   fDCAZCosmicCandidates = new TH2F("fDCAZCosmicCandidates","fDCAZCosmicCandidates",fgkNDCAZBins,binsDCAZ,fgkNDCAZBins,binsDCAZ);
   fHistListCosmics->Add(fDCAZCosmicCandidates);
   fDCARCosmicCandidates = new TH2F("fDCARCosmicCandidates","fDCARCosmicCandidates",fgkNDCARBins,binsDCAR,fgkNDCARBins,binsDCAR);
   fHistListCosmics->Add(fDCARCosmicCandidates);
+  fTheta = new TH1F("fTheta","fTheta",fgkNPhiBins*8,-1.*kMaxPhi,kMaxPhi);
+  fHistListCosmics->Add(fTheta);
+  fThetaZoom = new TH1F("fThetaZoom","fThetaZoom",100,TMath::Pi()-1.,TMath::Pi()+1.);
+  fHistListCosmics->Add(fThetaZoom);
 
   TH1::AddDirectory(oldStatus);   
 
@@ -963,15 +971,27 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
   }
   
 
+ const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
+ if(vertex->GetNContributors()<1) {
+   // SPD vertex
+   vertex = fESD->GetPrimaryVertexSPD();
+   if(vertex->GetNContributors()<1) vertex = 0x0;
+ }
+
   const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
   // Need vertex cut
   if (vtx->GetNContributors() < 2) {
-    // Post output data
-    PostData(0, fHistList);
-    PostData(1, fHistListTPC);
-    PostData(2, fHistListITS);
-    PostData(3, fHistListCosmics);
-    return;
+    // SPD vertex
+    vtx = fESD->GetPrimaryVertexSPD();
+    if(vtx->GetNContributors()<2) {
+      vertex = 0x0;
+      // Post output data
+      PostData(0, fHistList);
+      PostData(1, fHistListTPC);
+      PostData(2, fHistListITS);
+      PostData(3, fHistListCosmics);
+      return;
+    }
   }
 
   AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
@@ -1049,7 +1069,7 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
     fPtAllTPC->Fill(ptTPC);
 
     Bool_t cosmic = kFALSE;    
-    if(GetCutType()==2) {   if(pt>6.) { cosmic = IsCosmic(track,iTrack,4.); } }
+    if(GetCutType()==2) { if(pt>6.) { cosmic = IsCosmic(track,iTrack,4.); } }
 
     if (fTrackCuts->AcceptTrack(track)) {
       if(GetCutType()==1) {   if(pt>6.) { cosmic = IsCosmic(track,iTrack,4.); } }
@@ -1195,11 +1215,11 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
   Float_t dcaR[2] = {0.,0.};
   Float_t dcaZ[2] = {0.,0.};
  
-  for (Int_t iTrack = trackNumber+1; iTrack < nTracks; iTrack++) {
+  for (Int_t iTrack2 = trackNumber+1; iTrack2 < nTracks; iTrack2++) {
     candidate2 = kFALSE;
-    AliESDtrack *track2 = fESD->GetTrack(iTrack);
+    AliESDtrack *track2 = fESD->GetTrack(iTrack2);
     if(!track2) continue;
-    if(!(fTrackCuts->AcceptTrack(track2))) continue;
+    if(GetCutType()==1 && !(fTrackCuts->AcceptTrack(track2))) { continue; }
     if(track2->Pt()<ptMin) continue;
     
     //Check if same charge. If not same charge, pair is cosmic candidate
@@ -1211,18 +1231,25 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
     track1->GetPxPyPz(mom1);
     track2->GetPxPyPz(mom2);
     Double_t cosTheta = (mom1[0]*mom2[0]+mom1[1]*mom2[1]+mom1[2]*mom2[2])/( TMath::Sqrt(mom1[0]*mom1[0]+mom1[1]*mom1[1]+mom1[2]*mom1[2])*TMath::Sqrt(mom2[0]*mom2[0]+mom2[1]*mom2[1]+mom2[2]*mom2[2]) );
-    //Double_t theta = TMath::ACos(cosTheta);
-    //if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
+    Double_t theta = TMath::ACos(cosTheta);
+   
+//if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
+    
     Double_t cosMaxCosmicAngle[2] = {TMath::Cos(TMath::Pi()-fMaxCosmicAngle),TMath::Cos(TMath::Pi()+fMaxCosmicAngle)};
-    if(cosTheta >= cosMaxCosmicAngle[0] && cosTheta <= cosMaxCosmicAngle[1]) { candidate1 = kTRUE; candidate2 = kTRUE;}
+//    if(cosTheta >= cosMaxCosmicAngle[0] && cosTheta <= cosMaxCosmicAngle[1]) { 
+    candidate1 = kTRUE; candidate2 = kTRUE;//}
     if(candidate2) {
       fDeltaPtCosmicCandidates->Fill(track1->Pt()-track2->Pt());
-      fDeltaPhiSumEta->Fill(track1->Phi()-track2->Phi(),track1->Eta()+track2->Eta());
+      Float_t deltaPhi = track1->Phi()-track2->Phi();
+      if(deltaPhi<0.) deltaPhi+=2.*TMath::Pi();
+      fDeltaPhiSumEta->Fill(deltaPhi,track1->Eta()+track2->Eta());
 
       track1->GetImpactParameters(dcaR[0],dcaZ[0]);
       track2->GetImpactParameters(dcaR[1],dcaZ[1]);
       fDCAZCosmicCandidates->Fill(dcaZ[0],dcaZ[1]);
       fDCARCosmicCandidates->Fill(dcaR[0],dcaR[1]);
+      fTheta->Fill(theta);
+      fThetaZoom->Fill(theta);
     }
 
   }

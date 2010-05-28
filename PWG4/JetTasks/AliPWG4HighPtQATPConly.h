@@ -175,6 +175,8 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH2F *fDeltaPhiSumEta;                        //! Cosmic Candidates Delta Phi vs Sum Eta
   TH2F *fDCAZCosmicCandidates;                  //! Cosmic Candidates DCAZ track1 vs track2
   TH2F *fDCARCosmicCandidates;                  //! Cosmic Candidates DCAR track1 vs track2
+  TH1F *fTheta;                                 //! Angle between cosmic candidates in 3D space
+  TH1F *fThetaZoom;                             //! Angle between cosmic candidates in 3D space zoomed into back-to-back region
 
   TList *fHistListCosmics;                      //! List of Histograms for cosmic candidates
 
