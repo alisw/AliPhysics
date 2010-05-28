@@ -399,6 +399,8 @@ Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
   }
   // find the tlists we want to be independtent of the name so use the Tkey
   TList* keyList = fIn->GetListOfKeys();
+  Float_t memorySize = 0;
+  Float_t diskSize = 0;
 
   for(int i = 0;i < keyList->GetEntries();i++){
     TKey* ikey = (TKey*)keyList->At(i); 
@@ -408,12 +410,17 @@ Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
     TDirectory *dir =  dynamic_cast<TDirectory*>(ikey->ReadObj());
     
 
+
+
     if(dir){
       Printf("%03d    : %60s %8d %8d ",i,dir->GetName(),ikey->GetObjlen(),ikey->GetNbytes());
       TList * dirKeyList = dir->GetListOfKeys();
       for(int j = 0;j<dirKeyList->GetEntries();j++){
 	TKey* jkey = (TKey*)dirKeyList->At(j); 
 	TList *list =  dynamic_cast<TList*>(jkey->ReadObj());
+
+	memorySize += (Float_t)jkey->GetObjlen()/1024./1024.;
+	diskSize +=  (Float_t)jkey->GetNbytes()/1024./1024.;
 	if(list){
 	  Printf("%03d/%03d: %60s %5.2f MB %5.2f MB",i,j,list->GetName(),(Float_t)jkey->GetObjlen()/1024./1024.,(Float_t)jkey->GetNbytes()/1024./1024.);
 	}
@@ -423,6 +430,7 @@ Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
       }
     }
   }
+  Printf("Total %5.2f MB %5.2f MB",memorySize,diskSize);
   return kTRUE;
 }
 

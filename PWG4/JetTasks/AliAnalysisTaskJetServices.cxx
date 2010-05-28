@@ -356,9 +356,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       if(vtxESD->GetNContributors()>0&&!vtxName.Contains("TPCVertex")){
 	if(esdTrig)fh2ESDTriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxESD->GetZ();
-	fh2ESDTriggerVtx->Fill(it,zvtx);
 	if(esdEventSelected&&esdTrig){
 	  fh2ESDTriggerCount->Fill(it,kTriggeredVertexIn);
+	  fh2ESDTriggerVtx->Fill(it,zvtx);
 	}
       }
       if(cand&&esdEventSelected){
@@ -380,8 +380,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       if(vtxAOD->GetNContributors()>0&&!vtxTitle.Contains("TPCVertex")){
 	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxAOD->GetZ();
-	fh2TriggerVtx->Fill(it,zvtx);
 	if(aodTrig&&aodEventSelected){
+	  fh2TriggerVtx->Fill(it,zvtx);
 	  fh2TriggerCount->Fill(it,kTriggeredVertexIn);
 	}
       }
@@ -436,7 +436,7 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedESD(AliESDEvent* esd){
   
 
 
-  if(vtx->GetNContributors()<1)return kFALSE;
+  if(vtx->GetNContributors()<2)return kFALSE;
 
   // do not want tpc only primary vertex
   TString vtxName(vtx->GetName());
@@ -470,7 +470,7 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedAOD(AliAODEvent* aod){
   
 
 
-  if(vtx->GetNContributors()<1)return kFALSE;
+  if(vtx->GetNContributors()<2)return kFALSE;
 
   // do not want tpc only primary vertex
   TString vtxName(vtx->GetName());
