@@ -50,13 +50,14 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetLimitGenJetEta(Bool_t b){fLimitGenJetEta = b;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
+    virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
+    virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
     virtual void SetBranchGen(const char* c){fBranchGen = c;}
     virtual void SetBranchRec(const char* c){fBranchRec = c;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
-    virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
     // use for the CF
 
 
@@ -112,6 +113,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
+    Float_t       fMinJetPt;              // limits the jet p_T in addition to what already is done in the jet finder, this is important for jet matching for JF with lo threshold
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
 
 
@@ -167,7 +169,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 1) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 2) // Analysis task for standard jet analysis
 };
  
 #endif

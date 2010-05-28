@@ -82,6 +82,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fAvgTrials(1),
   fExternalWeight(1),    
 							    fRecEtaWindow(0.5),
+  fMinJetPt(0),
 							    fDeltaPhiWindow(20./180.*TMath::Pi()),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -146,7 +147,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fAvgTrials(1),
   fExternalWeight(1),    
   fRecEtaWindow(0.5),
-							    fDeltaPhiWindow(20./180.*TMath::Pi()),
+  fMinJetPt(0),
+  fDeltaPhiWindow(20./180.*TMath::Pi()),
   fh1Xsec(0x0),
   fh1Trials(0x0),
   fh1PtHard(0x0),
@@ -540,19 +542,19 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	pythiaGenHeader->TriggerJet(ip,p);
 	pythiaGenJets[iCount].SetPxPyPzE(p[0],p[1],p[2],p[3]);
 	
-	/*
-	if(fLimitGenJetEta){
-	  if(pythiaGenJets[iCount].Eta()>fJetHeaderRec->GetJetEtaMax()||
-	     pythiaGenJets[iCount].Eta()<fJetHeaderRec->GetJetEtaMin())continue;
-	}
-	*/
-
 	if(fBranchGen.Length()==0){
+	  /*	
+	  if(fLimitGenJetEta){
+	    if(pythiaGenJets[iCount].Eta()>fJetHeaderRec->GetJetEtaMax()||
+	       pythiaGenJets[iCount].Eta()<fJetHeaderRec->GetJetEtaMin())continue;
+	  }
+	  */
+	  if(fMinJetPt>0&&pythiaGenJets[iCount].Pt()<fMinJetPt)continue;
 	  // if we have MC particles and we do not read from the aod branch
 	  // use the pythia jets
 	  genJets[iCount].SetPxPyPzE(p[0],p[1],p[2],p[3]);
+	  iCount++;
 	}
-	iCount++;
       }
     }
     if(fBranchGen.Length()==0)nGenJets = iCount;    
@@ -593,6 +595,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	     tmp->Eta()<fJetHeaderRec->GetJetEtaMin())continue;
 	}
 	*/
+	if(fMinJetPt>0&&tmp->Pt()<fMinJetPt)continue;
 	genJets[iCount] = *tmp;
 	iCount++;
       }
@@ -735,12 +738,16 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
   }
   
   nRecJets = TMath::Min(nRecJets,kMaxJets);
-
+  
+  Int_t iCountRec = 0;
   for(int ir = 0;ir < nRecJets;++ir){
     AliAODJet *tmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ir));
     if(!tmp)continue;
+    if(tmp->Pt()<fMinJetPt)continue;
     recJets[ir] = *tmp;
+    iCountRec++;
   }
+  nRecJets = iCountRec;
 
 
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
