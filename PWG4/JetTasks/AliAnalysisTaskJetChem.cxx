@@ -42,6 +42,9 @@
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
 
+//#include <iostream> // TEST!!!
+
+
 //
 // Analysis class for jet chemistry studies
 // based on AliAnalysisTaskUE by Arian Abrahantes Quintana and Enesto Lopez
@@ -98,11 +101,14 @@ fCutnSigdEdx(0.),
 fUseAODMCTracksForUE(kFALSE),
 fAreaReg(1.0), 
 fAvgTrials(1),
+fhPrimVertexNCont(0x0),
 fhPrimVertexRho(0x0),
 fhPrimVertexZ(0x0),
 fhNJets(0x0),
 fhNJetsMC(0x0),
-fhLeadingEta(0x0), 
+fhLeadingEta(0x0),
+fhLeadingNTracksVsEta(0x0),
+fhLeadingPtVsEta(0x0),
 fhLeadingPhi(0x0), 
 fhLeadingPt(0x0),
 fhLeadingPtDiffr(0x0),
@@ -110,9 +116,11 @@ fhLeadingEtaMC(0x0),
 fhLeadingPhiMC(0x0), 
 fhLeadingPtMC(0x0),
 fhLeadingPtMCDiffr(0x0),
-fhEtaTracks(0x0),              
-fhPhiTracks(0x0),              
-fhPtTracks(0x0),               
+fhPhiEtaTracksNoCut(0x0),
+fhPtTracksNoCut(0x0),
+fhPhiEtaTracks(0x0),
+fhPtTracks(0x0),
+fhTrackMult(0x0),
 fhEtaMCTracks(0x0),            
 fhPhiMCTracks(0x0),            
 fhPtMCTracks(0x0),
@@ -159,8 +167,15 @@ fhV0InvMassLambdaJet(0x0),
 fhV0InvMassAntiLambdaJet(0x0),
 fhV0InvMassK0Lambda(0x0), 
 fhdNdptK0JetEvt(0x0),
-fhdNdzK0(0x0),
+fhdNdzK0(0x0),  
+fhdNdzK05to10(0x0),  
+fhdNdzK010to20(0x0), 
+fhdNdzK020to30(0x0), 
+fhdNdzK030to40(0x0), 
+fhdNdzK040to60(0x0), 
 fhdNdxiK0(0x0),
+fhdNdzLambda(0x0),
+fhdNdzAntiLambda(0x0),
 fhdNdzK0Max(0x0),     
 fhdNdxiK0Max(0x0),    
 fhdNdzLambdaMax(0x0), 
@@ -184,27 +199,42 @@ fhdEdxVsMomV0pidEdx(0x0),
 fhdEdxVsMomV0piPID(0x0),
 fhdPhiJetK0MC(0x0),
 fhdRJetK0MC(0x0),
-fhdNdptK0MCMax(0x0),
-fhdNdptLambdaLambdaBarMCMax(0x0),
-fhdNdptK0MCMin(0x0),
-fhdNdptLambdaLambdaBarMCMin(0x0),
-fhdNdptOmegaMCMin(0x0),
-fhdNdptOmegaBarMCMin(0x0),
-fhdNdptchPiMCMin(0x0),
-fhdNdptchKMCMin(0x0),
-fhdNdptpMCMin(0x0),
-fhdNdptpBarMCMin(0x0),
-fhdNdptK0MCJet(0x0),
-fhdNdptLambdaLambdaBarMCJet(0x0),
-fhdNdptchPiMCJet(0x0),
-fhdNdptchKMCJet(0x0),
-fhdNdptpMCJet(0x0),
-fhdNdptpBarMCJet(0x0),
 fhdRV0MC(0x0),
+fhdNdptchPiMCMax(0x0),    
+fhdNdptK0MCMax(0x0),      
+fhdNdptchKMCMax(0x0),     
+fhdNdptpMCMax(0x0),       
+fhdNdptpBarMCMax(0x0),    
+fhdNdptLambdaMCMax(0x0),  
+fhdNdptLambdaBarMCMax(0x0),
+fhdNdptchPiMCMin(0x0),    
+fhdNdptK0MCMin(0x0),      
+fhdNdptchKMCMin(0x0),     
+fhdNdptpMCMin(0x0),       
+fhdNdptpBarMCMin(0x0),    
+fhdNdptLambdaMCMin(0x0),  
+fhdNdptLambdaBarMCMin(0x0),
+fhdNdptOmegaMCMin(0x0),   
+fhdNdptOmegaBarMCMin(0x0),
+fhdNdptchPiMCJet(0x0),    
+fhdNdptK0MCJet(0x0),      
+fhdNdptchKMCJet(0x0),     
+fhdNdptpMCJet(0x0),       
+fhdNdptpBarMCJet(0x0),    
+fhdNdptLambdaMCJet(0x0),  
+fhdNdptLambdaBarMCJet(0x0),
 fhPIDMC(0x0),
+fhPIDMC_quarkEv(0x0),
+fhPIDMC_gluonEv(0x0),
 fhPIDMCAll(0x0),
 fhPIDMCMin(0x0),
 fhPIDMCJet(0x0),
+fhPIDMCMotherK0(0x0),
+fhPIDMCGrandMotherK0(0x0),
+fhPIDMCMotherChK(0x0),
+fhPIDMCMotherK0Trans(0x0),
+fhPIDMCGrandMotherK0Trans(0x0),
+fhPIDMCMotherChKTrans(0x0),
 fhdNdptgammaMC(0x0),
 fhdNdptchPiMC(0x0),
 fhdNdptpi0MC(0x0),
@@ -212,7 +242,8 @@ fhdNdptK0MC(0x0),
 fhdNdptchKMC(0x0),
 fhdNdptpMC(0x0),
 fhdNdptpBarMC(0x0),
-fhdNdptLambdaLambdaBarMC(0x0),
+fhdNdptLambdaMC(0x0),
+fhdNdptLambdaBarMC(0x0),
 fhdNdptOmegaMC(0x0),
 fhdNdptOmegaBarMC(0x0),
 fhdNdxiMC(0x0),
@@ -248,6 +279,21 @@ fhPythiaProcessK0(0x0),
 fhPythiaProcessKch(0x0),
 fhPythiaProcessp(0x0),
 fhPythiaProcesspbar(0x0),
+fhdNdzJets5to10(0x0),   
+fhdNdzJets10to20(0x0),  
+fhdNdzJets20to30(0x0),  
+fhdNdzJets30to40(0x0),  
+fhdNdzJets40to60(0x0),  
+fhdNdxiJets5to10(0x0),  
+fhdNdxiJets10to20(0x0),
+fhdNdxiJets20to30(0x0), 
+fhdNdxiJets30to40(0x0), 
+fhdNdxiJets40to60(0x0), 
+fhdNdptTracksJetPt5to10(0x0),
+fhdNdptTracksJetPt10to20(0x0),
+fhdNdptTracksJetPt20to30(0x0),
+fhdNdptTracksJetPt30to40(0x0),
+fhdNdptTracksJetPt40to60(0x0),
 fh1Xsec(0x0),
 fh1Trials(0x0),
 fpdgdb(0x0){
@@ -255,7 +301,6 @@ fpdgdb(0x0){
 
   fAreaReg = 2*TMath::Pi()/6.0 * 2*fTrackEtaCut;
   fpdgdb = TDatabasePDG::Instance(); 
-
 
   // Output slot #1 writes into a TList container, 0 reserved for std AOD output
   DefineOutput(1, TList::Class());
@@ -373,33 +418,50 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
 {
   // check Trigger 
 
-  TString firedTriggerClasses = fAOD->GetFiredTriggerClasses(); 
+  // TString firedTriggerClasses = fAOD->GetFiredTriggerClasses(); 
   // AliInfo(Form("firedTriggerClasses %s",firedTriggerClasses.Data()));
   // if(firedTriggerClasses.Length() > 0 && !firedTriggerClasses.Contains("CINT1B")) return;  
 
   AliAODVertex *primVertex = fAOD->GetPrimaryVertex();  // is this from tracks or from SPD ? SPD should only be used if no track vertex
   if(!primVertex){
-    AliInfo(Form("no primVertex found - skip event"));
+    AliInfo("no prim Vertex found - skip event");
+    fhPrimVertexNCont->Fill(-1);
     return; 
+    
+    
+    if(primVertex->GetName() == "TPCVertex"){
+      AliInfo("found TPC prim Vertex  - skip event");
+      fhPrimVertexNCont->Fill(-1);
+      return; 
+    }
+    
+    Int_t nVertContributors = primVertex->GetNContributors();
+    fhPrimVertexNCont->Fill(nVertContributors);
+    
+    //cout<<" prim vertex name "<<primVertex->GetName()<<" nCont "<<nVertContributors<<endl;
+    
+    if(nVertContributors<1){ // eventually check if not SPD vertex ??? 
+      AliInfo("prim vertex no contributors - skip event");
+      return;
+    }
+    
+    Double_t vertX = primVertex->GetX();
+    Double_t vertY = primVertex->GetY();
+    Double_t vertZ = primVertex->GetZ();
+    
+    Double_t vertRho = TMath::Sqrt(vertX*vertX+vertY*vertY);
+    
+    fhPrimVertexRho->Fill(vertRho);
+    fhPrimVertexZ->Fill(vertZ);
+    
+    if(TMath::Abs(vertZ)>10){
+      AliInfo(Form("prim vertex z=%f - skip event",vertZ));
+      return; 
+    }
   }
-
-  Double_t vertX = primVertex->GetX();
-  Double_t vertY = primVertex->GetY();
-  Double_t vertZ = primVertex->GetZ();
   
-  Double_t vertRho = TMath::Sqrt(vertX*vertX+vertY*vertY);
-  
-  Int_t nVertContributors = primVertex->GetNContributors();
-  if(nVertContributors <1){
-    AliInfo(Form("prim vertex no contributors - skip event"));
-    return;
-  }
-  
-  fhPrimVertexRho->Fill(vertRho);
-  fhPrimVertexZ->Fill(vertZ);
-
   Int_t pythiaPID = GetPythiaProcessID();
-
+  
   // ------------------------------------------------
   // Find Leading Jets 1,2,3 
   // (could be skipped if Jets are sort by Pt...)
@@ -408,7 +470,7 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
   //Int_t nTracksLeading = 0;
 
   Int_t nJetsAOD = 0;
-  AliAODJet* leadingJetAOD = NULL; // non-zero if leading jet survives acc, pt cut 
+  AliAODJet* leadingJetAOD = NULL; // non-zero if any jet in acc and leading jet survives pt cut 
   Int_t indexLeadingAOD   = -1;
   Double_t ptLeadingAOD   = 0.; 
   Int_t indexMaxRegionAOD = 0; // initialize with '0', '+-1' transverse regions 
@@ -419,7 +481,9 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
   Double_t ptLeadingMC   = 0.; 
   Int_t indexMaxRegionMC = 0; // initialize with '0', '+-1' transverse regions 
 
-
+  Double_t   ptLeadingAODAllEta  = 0; 
+  AliAODJet* leadingJetAODAllEta = NULL; 
+  
   if(fUseLOConeJets)   fArrayJetsAOD  = FindChargedParticleJets(); 
   else{ // Use jets on AOD/DeltaAOD
 
@@ -472,6 +536,25 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
   if(fDebug>1) AliInfo(Form("AOD %d jets",nJetsAOD)); 
 
 
+  // for xcheck: find leading jet in large eta range
+  for(Int_t i=0; i<nJetsAOD; i++){
+
+    AliAODJet* jet  = (AliAODJet*) fArrayJetsAOD->At(i);
+    Double_t jetPt  = jet->Pt();
+    
+    if(jetPt > ptLeadingAODAllEta){ 
+      ptLeadingAODAllEta  = jetPt;
+      leadingJetAODAllEta = jet;
+    }
+  }
+
+  if(leadingJetAODAllEta){
+    //cout<<" trackRefs entries "<<leadingJetAODAllEta->GetRefTracks()->GetEntriesFast()<<endl;
+    fhLeadingNTracksVsEta->Fill(leadingJetAODAllEta->Eta(),leadingJetAODAllEta->GetRefTracks()->GetEntriesFast());
+    fhLeadingPtVsEta->Fill(leadingJetAODAllEta->Eta(),leadingJetAODAllEta->Pt()); 
+    
+  }
+
   // find leading jet AOD
   for(Int_t i=0; i<nJetsAOD; ++i){
 
@@ -510,7 +593,7 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
     if(fDebug>1) AliInfo(Form("\n Pt Leading AOD Jet = %6.1f eta=%5.3f, nTracks %d",ptLeadingAOD,etaLeadingAOD,nTracksLeadingAOD));
 
     fhLeadingEta->Fill(etaLeadingAOD);
-  
+ 
     if(TMath::Abs(etaLeadingAOD)<fJetEtaCut){ // leading jet eta cut
 
       fhnTracksVsPtLeading->Fill(ptLeadingAOD,nTracksLeadingAOD);
@@ -521,7 +604,7 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
 	
 	leadingJetAOD = (AliAODJet*) fArrayJetsAOD->At(indexLeadingAOD);
 	
-	fhLeadingPhi->Fill(TMath::ATan2(TMath::Sin(phiLeadingAOD),TMath::Cos(phiLeadingAOD))); // -pi to pi
+	fhLeadingPhi->Fill(phiLeadingAOD);
 	
 	// ----------------------------------------------
 	// Find max and min regions
@@ -601,7 +684,7 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
 	
 	leadingJetMC = (AliAODJet*) fArrayJetsMC->At(indexLeadingMC);
    
-	fhLeadingPhiMC->Fill(TMath::ATan2(TMath::Sin(phiLeadingMC),TMath::Cos(phiLeadingMC))); // -pi to pi
+	fhLeadingPhiMC->Fill(phiLeadingMC); // -pi to pi
 
 	// ----------------------------------------------
 	// Find max and min regions
@@ -660,6 +743,9 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
   CheckV0s(leadingJetAOD,indexMaxRegionAOD,foundK0AOD); // here leadingJetAOD/MC nonzero if jet passes eta & pt cut
   CheckMCParticles(leadingJetMC,indexMaxRegionMC,foundK0MC);
   CompLeadingJets(leadingJetAOD,leadingJetMC,pythiaPID,foundK0AOD,foundK0MC);
+  FillReferencePlotsTracks();
+  FillReferenceFF(leadingJetAOD);
+  
 
   if(fUseLOConeJets && fArrayJetsAOD){
     fArrayJetsAOD->Delete(); // no 'Clear': AliAODjet contains TMomentum and TRefArray
@@ -766,7 +852,6 @@ Int_t AliAnalysisTaskJetChem::IsTrackInsideRegion(const AliAODJet* aodjetVect,co
   TLorentzVector* jetVectLorentz = aodjetVect->MomentumVector(); 
   TVector3 jetVect = jetVectLorentz->Vect();
 
-
   static const Double_t k60rad  = 60.*TMath::Pi()/180.;
   static const Double_t k120rad = 120.*TMath::Pi()/180.;
   
@@ -807,14 +892,14 @@ TClonesArray* AliAnalysisTaskJetChem::FindChargedParticleJetsMC()
     Int_t   pdg  = TMath::Abs(part->GetPdgCode());
     if((pdg == 12 || pdg == 14 || pdg == 16)) return kFALSE;
 
-    if( !part->Charge() ) continue;
+    if( !part->Charge() ) continue; // comment / uncomment here
     fhEtaMCTracks->Fill(part->Eta());
 
     if(TMath::Abs(part->Eta()) > fTrackEtaCut) continue; 
     fhPtMCTracks->Fill(part->Pt());
 
     if( part->Pt() < fTrackPtCutJF ) continue;
-    fhPhiMCTracks->Fill(TMath::ATan2(TMath::Sin(part->Phi()),TMath::Cos(part->Phi())));
+    fhPhiMCTracks->Fill(part->Phi());
 
     tracks.AddLast(part);
   
@@ -983,17 +1068,12 @@ TClonesArray*  AliAnalysisTaskJetChem::FindChargedParticleJets()
     if(fRequireITSRefitJF &&  ((status&AliESDtrack::kITSrefit)==0)) continue;  
 
     if(!part->Charge() ) continue;
-    fhEtaTracks->Fill(part->Eta());
 
     if(TMath::Abs(part->Eta()) > fTrackEtaCut) continue; 
     
     if(fRejectK0TracksJF && IsTrackFromK0(ipart)) continue; 
 
-    fhPtTracks->Fill(part->Pt());
-
     if( part->Pt() < fTrackPtCutJF ) continue;
-
-    fhPhiTracks->Fill(TMath::ATan2(TMath::Sin(part->Phi()),TMath::Cos(part->Phi())));
 
     tracks.AddLast(part);
   }
@@ -1193,7 +1273,7 @@ TH1F* AliAnalysisTaskJetChem::CreatePIDhisto(const char* name){
   
   // create histogram
   
-  TH1F* result = new TH1F(name,"",50,0,50);
+  TH1F* result = new TH1F(name,"",60,0,60);
   result->SetOption("E");
 
   // bin equal Geant ID
@@ -1246,8 +1326,15 @@ TH1F* AliAnalysisTaskJetChem::CreatePIDhisto(const char* name){
   result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(46),"t");
   result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(47),"alpha");
   result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(48),"G_nu");
-
-
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGpm311Bin),"K0/#bar{K0}");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDG333Bin),"phi");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGpm313Bin),"K*(892)0");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGp323Bin),"K*(892)+");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGm323Bin),"K*(892)-");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGNeutrinoBin),"nu");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGCharmedBaryonBin),"charmed baryon");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGQuarkBin),"q/#bar{q}");
+  result->GetXaxis()->SetBinLabel(result->GetXaxis()->FindBin(kPDGDiQuarkBin),"q #bar{q}");
   result->GetXaxis()->LabelsOption("v"); // "u" ?
   
   return result;
@@ -1255,11 +1342,11 @@ TH1F* AliAnalysisTaskJetChem::CreatePIDhisto(const char* name){
 
 //------------------------------------------------------------------
 
-TH1F* AliAnalysisTaskJetChem::CreatePythiaIDhisto(const char* name){
+TH1F*  AliAnalysisTaskJetChem::CreatePythiaIDhisto(const char* name){
   
   // create histogram
   
-  TH1F* result = new TH1F(name,"",12,0,12);
+  TH1F* result = new TH1F(name,"",22,0,22);
   result->SetOption("E");
 
   result->GetXaxis()->SetBinLabel(kPythiaPIDP11Bin,"qq #rightarrow qq");             // ISUB = 11 
@@ -1268,6 +1355,11 @@ TH1F* AliAnalysisTaskJetChem::CreatePythiaIDhisto(const char* name){
   result->GetXaxis()->SetBinLabel(kPythiaPIDP28Bin,"qg #rightarrow qg ");            // ISUB = 28 
   result->GetXaxis()->SetBinLabel(kPythiaPIDP53Bin,"gg #rightarrow q#bar{q}");       // ISUB = 53
   result->GetXaxis()->SetBinLabel(kPythiaPIDP68Bin,"gg #rightarrow gg");             // ISUB = 68
+  result->GetXaxis()->SetBinLabel(kPythiaPIDP92Bin,"SD");                            // ISUB = 92
+  result->GetXaxis()->SetBinLabel(kPythiaPIDP93Bin,"SD");                            // ISUB = 93
+  result->GetXaxis()->SetBinLabel(kPythiaPIDP94Bin,"DD");                            // ISUB = 94
+  result->GetXaxis()->SetBinLabel(kPythiaPIDP95Bin,"low pt (MPI)");                  // ISUB = 95
+  result->GetXaxis()->SetBinLabel(kPythiaPIDPOtherBin,"other");                      // ISUB = XX
 
   result->GetXaxis()->LabelsOption("v"); // "u" ?
   
@@ -1289,6 +1381,10 @@ void AliAnalysisTaskJetChem::FillPythiaIDhisto(TH1F* h, const Int_t PID){
   else if(PID == 28) bin = kPythiaPIDP28Bin;
   else if(PID == 53) bin = kPythiaPIDP53Bin;
   else if(PID == 68) bin = kPythiaPIDP68Bin;
+  else if(PID == 92) bin = kPythiaPIDP92Bin;
+  else if(PID == 93) bin = kPythiaPIDP93Bin;
+  else if(PID == 94) bin = kPythiaPIDP94Bin;
+  else if(PID == 95) bin = kPythiaPIDP95Bin;
   else{ 
     if(PID != -1) AliInfo(Form("unknown PID %d",PID));
     return;
@@ -1307,7 +1403,28 @@ void  AliAnalysisTaskJetChem::FillPIDhisto(TH1F* hist, Int_t pdg, Float_t weight
 
   Int_t fGID = fpdgdb->ConvertPdgToGeant3(pdg);
 
-  //cout<<" pdg "<<pdg<<" GID "<<GID<<endl;
+  //cout<<" pdg "<<pdg<<" fGID "<<fGID<<endl;
+
+  if(TMath::Abs(pdg) == 311) fGID = kPDGpm311Bin; 
+  if(pdg == 333)             fGID = kPDG333Bin; 
+  if(TMath::Abs(pdg) == 313) fGID = kPDGpm313Bin; 
+  if(pdg == 323)             fGID = kPDGp323Bin; 
+  if(pdg == -323)            fGID = kPDGm323Bin; 
+
+  if(TMath::Abs(pdg)==12 || TMath::Abs(pdg)==14 || TMath::Abs(pdg)==16) fGID = kPDGNeutrinoBin;
+
+  if(TMath::Abs(pdg)==4122) fGID = kPDGCharmedBaryonBin;
+
+  if(1<=TMath::Abs(pdg) && TMath::Abs(pdg)<=6) fGID = kPDGQuarkBin; 
+
+  if(TMath::Abs(pdg)==1103 || TMath::Abs(pdg)==2101 || TMath::Abs(pdg)==2103 || TMath::Abs(pdg)==2203 || 
+     TMath::Abs(pdg)==3101 || TMath::Abs(pdg)==3103 || TMath::Abs(pdg)==3201 || TMath::Abs(pdg)==3203 || 
+     TMath::Abs(pdg)==3303 || TMath::Abs(pdg)==4101 || TMath::Abs(pdg)==4103 || TMath::Abs(pdg)==4201 || 
+     TMath::Abs(pdg)==4203 || TMath::Abs(pdg)==4301 || TMath::Abs(pdg)==4303 || TMath::Abs(pdg)==4403 || 
+     TMath::Abs(pdg)==5101 || TMath::Abs(pdg)==5103 || TMath::Abs(pdg)==5201 || TMath::Abs(pdg)==5203 || 
+     TMath::Abs(pdg)==5301 || TMath::Abs(pdg)==5303 || TMath::Abs(pdg)==5401 || TMath::Abs(pdg)==5403 || 
+     TMath::Abs(pdg)==5503)  fGID = kPDGDiQuarkBin;
+    
 
   hist->Fill(fGID,weight);
 
@@ -1318,7 +1435,7 @@ void  AliAnalysisTaskJetChem::FillPIDhisto(TH1F* hist, Int_t pdg, Float_t weight
   }
 
   if(fGID == 0){
-    //AliError(Form("fGID 0 for pdg %d ",pdg));
+    AliInfo(Form("fGID 0 for pdg %d ",pdg));
   }
 
 }
@@ -1331,12 +1448,17 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fListOfHistos = new TList();
   fListOfHistos->SetOwner(kTRUE);  
 
+  fhPrimVertexNCont = new TH1F("hPrimVertexNCont","",52,-2,50);
+  fhPrimVertexNCont->SetXTitle("");
+  fhPrimVertexNCont->Sumw2();
+  fListOfHistos->Add( fhPrimVertexNCont ); 
+
   fhPrimVertexRho = new TH1F("hPrimVertexRho","",100,0,1);
   fhPrimVertexRho->SetXTitle("");
   fhPrimVertexRho->Sumw2();
   fListOfHistos->Add( fhPrimVertexRho ); 
 
-  fhPrimVertexZ = new TH1F("hPrimVertexZ","",200,0,20);
+  fhPrimVertexZ = new TH1F("hPrimVertexZ","",40,-20,20);
   fhPrimVertexZ->SetXTitle("");
   fhPrimVertexZ->Sumw2();
   fListOfHistos->Add( fhPrimVertexZ ); 
@@ -1351,17 +1473,31 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhNJetsMC->Sumw2();
   fListOfHistos->Add( fhNJetsMC ); 
 
-  fhLeadingEta = new TH1F("hLeadingEta","Leading Jet eta",30,-1.5,1.5);
+  fhLeadingEta = new TH1F("hLeadingEta","Leading Jet eta",12,-0.6,0.6);
   fhLeadingEta->SetXTitle("eta");
   fhLeadingEta->SetYTitle("dN/deta");
   fhLeadingEta->Sumw2();
   fListOfHistos->Add(fhLeadingEta); 
 
-  fhLeadingPhi = new TH1F("hLeadingPhi","Leading Jet phi",64,-3.2,3.2);
+  fhLeadingNTracksVsEta = new TH2F("hLeadingNTracksVsEta","",20,-1.0,1.0,20,0,20);
+  fhLeadingNTracksVsEta->SetXTitle("eta");
+  fhLeadingNTracksVsEta->SetYTitle("# of tracks");
+  fhLeadingNTracksVsEta->Sumw2();
+  fListOfHistos->Add(fhLeadingNTracksVsEta); 
+
+  fhLeadingPtVsEta = new TH2F("hLeadingPtVsEta","",20,-1.0,1.0,50,0,50);
+  fhLeadingPtVsEta->SetXTitle("eta");
+  fhLeadingPtVsEta->SetYTitle("# of tracks");
+  fhLeadingPtVsEta->Sumw2();
+  fListOfHistos->Add(fhLeadingPtVsEta); 
+
+
+  fhLeadingPhi = new TH1F("hLeadingPhi","Leading Jet phi",63,0,6.3);
   fhLeadingPhi->SetXTitle("phi");
   fhLeadingPhi->SetYTitle("dN/dphi");
   fhLeadingPhi->Sumw2();
   fListOfHistos->Add(fhLeadingPhi);
+
 
   fhLeadingPt  = new TH1F("hLeadingPt","leading Jet p_{T}",50,0,50);
   fhLeadingPt->SetXTitle("p_{T} (GeV/c)");
@@ -1370,18 +1506,18 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fListOfHistos->Add( fhLeadingPt ); 
 
   fhLeadingPtDiffr  = new TH1F("hLeadingPtDiffr","leading Jet p_{T}",50,0,50);
-  fhLeadingPtDiffr->SetXTitle("P{T} (GeV/c)");
+  fhLeadingPtDiffr->SetXTitle("P_{T} (GeV/c)");
   fhLeadingPtDiffr->SetYTitle("dN/dp_{T} (1/GeV)");
   fhLeadingPtDiffr->Sumw2();
   fListOfHistos->Add( fhLeadingPtDiffr ); 
 
-  fhLeadingEtaMC = new TH1F("hLeadingEtaMC","Leading Jet eta",30,-1.5,1.5);
+  fhLeadingEtaMC = new TH1F("hLeadingEtaMC","Leading Jet eta",12,-0.6,0.6);
   fhLeadingEtaMC->SetXTitle("eta");
   fhLeadingEtaMC->SetYTitle("dN/deta");
   fhLeadingEtaMC->Sumw2();
   fListOfHistos->Add(fhLeadingEtaMC); 
 
-  fhLeadingPhiMC = new TH1F("hLeadingPhiMC","Leading Jet phi",64,-3.2,3.2);
+  fhLeadingPhiMC = new TH1F("hLeadingPhiMC","Leading Jet phi",63,0,6.3);
   fhLeadingPhiMC->SetXTitle("phi");
   fhLeadingPhiMC->SetYTitle("dN/dphi");
   fhLeadingPhiMC->Sumw2();
@@ -1399,23 +1535,35 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhLeadingPtMCDiffr->Sumw2();
   fListOfHistos->Add( fhLeadingPtMCDiffr ); 
 
-  fhEtaTracks = new TH1F("hEtaTracks","eta tracks",30,-1.5,1.5);
-  fhEtaTracks->SetXTitle("eta");
-  fhEtaTracks->SetYTitle("dN/deta");
-  fhEtaTracks->Sumw2();
-  fListOfHistos->Add(fhEtaTracks);
+  fhPhiEtaTracksNoCut = new TH2F("hPhiEtaTracksNoCut","phi vs eta tracks",20,-1.0,1.0,63,0,6.3);
+  fhPhiEtaTracksNoCut->SetXTitle("eta");
+  fhPhiEtaTracksNoCut->SetYTitle("phi");
+  fhPhiEtaTracksNoCut->Sumw2();
+  fListOfHistos->Add(fhPhiEtaTracksNoCut);
 
-  fhPhiTracks = new TH1F("hPhiTracks","phi tracks",64,-3.2,3.2);
-  fhPhiTracks->SetXTitle("phi");
-  fhPhiTracks->SetYTitle("dN/dphi");
-  fhPhiTracks->Sumw2();
-  fListOfHistos->Add(fhPhiTracks);
+  fhPtTracksNoCut = new TH1F("hPtTracksNoCut","p_{T} tracks",150,0,150);
+  fhPtTracksNoCut->SetXTitle("p_{T} (GeV)");
+  fhPtTracksNoCut->SetYTitle("dN/dp_{T} (1/GeV)");
+  fhPtTracksNoCut->Sumw2();
+  fListOfHistos->Add(fhPtTracksNoCut);
 
-  fhPtTracks = new TH1F("hPtTracks","p_{T} tracks",50,0,50);
+  fhPhiEtaTracks = new TH2F("hPhiEtaTracks","phi vs eta tracks",20,-1.0,1.0,63,0,6.3);
+  fhPhiEtaTracks->SetXTitle("eta");
+  fhPhiEtaTracks->SetYTitle("phi");
+  fhPhiEtaTracks->Sumw2();
+  fListOfHistos->Add(fhPhiEtaTracks);
+
+  fhPtTracks = new TH1F("hPtTracks","p_{T} tracks",150,0,150);
   fhPtTracks->SetXTitle("P{T} (GeV)");
   fhPtTracks->SetYTitle("dN/dp_{T} (1/GeV)");
   fhPtTracks->Sumw2();
   fListOfHistos->Add(fhPtTracks);
+
+  fhTrackMult = new TH1F("hTrackMult","",150,0,150);
+  fhTrackMult->SetXTitle("n Tracks");
+  fhTrackMult->SetYTitle("counts");
+  fhTrackMult->Sumw2();
+  fListOfHistos->Add(fhTrackMult);
 
   fhEtaMCTracks = new TH1F("hEtaMCTracks","eta tracks",30,-1.5,1.5);
   fhEtaMCTracks->SetXTitle("eta");
@@ -1423,7 +1571,7 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhEtaMCTracks->Sumw2();
   fListOfHistos->Add(fhEtaMCTracks);
 
-  fhPhiMCTracks = new TH1F("hPhiMCTracks","phi tracks",64,-3.2,3.2);
+  fhPhiMCTracks = new TH1F("hPhiMCTracks","phi tracks",63,0,6.3);
   fhPhiMCTracks->SetXTitle("phi");
   fhPhiMCTracks->SetYTitle("dN/dphi");
   fhPhiMCTracks->Sumw2();
@@ -1546,19 +1694,19 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
 
   fhdRJetK0 = new TH1F("hdRJetK0","dN/dR K0-jet",500,0,5);
   fhdRJetK0->SetXTitle("#Delta R K0 - jet");
-  fhdRJetK0->SetYTitle("1/N{jet} dN/dR");
+  fhdRJetK0->SetYTitle("1/N_{jet} dN/dR");
   fhdRJetK0->Sumw2();
   fListOfHistos->Add(fhdRJetK0); 
 
   fhdNdptV0 = new TH1F("hdNdptV0","dN/dpt V0",100,0,10);
   fhdNdptV0->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptV0->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptV0->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptV0->Sumw2();
   fListOfHistos->Add(fhdNdptV0);
 
   fhdNdptK0 = new TH1F("hdNdptK0","",100,0,10);
   fhdNdptK0->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0->Sumw2();
   fListOfHistos->Add(fhdNdptK0); 
 
@@ -1595,13 +1743,13 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
 
   fhdNdptK0DCA = new TH1F("hdNdptK0DCA","",100,0,10);
   fhdNdptK0DCA->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0DCA->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0DCA->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0DCA->Sumw2();
   fListOfHistos->Add(fhdNdptK0DCA); 
 
   fhdNdptK0DCAdEdx = new TH1F("hdNdptK0DCAdEdx","",100,0,10);
   fhdNdptK0DCAdEdx->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0DCAdEdx->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0DCAdEdx->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0DCAdEdx->Sumw2();
   fListOfHistos->Add(fhdNdptK0DCAdEdx); 
 
@@ -1657,127 +1805,169 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
 
   fhdNdptK0JetEvt = new TH1F("hdNdptK0JetEvt","",100,0,10);
   fhdNdptK0JetEvt->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0JetEvt->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0JetEvt->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0JetEvt->Sumw2();
   fListOfHistos->Add(fhdNdptK0JetEvt); 
   
   fhdNdzK0 = new TH1F("hdNdzK0","",150,0,1.5);
   fhdNdzK0->SetXTitle("z");
-  fhdNdzK0->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzK0->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzK0->Sumw2();
   fListOfHistos->Add(fhdNdzK0);
 
+  fhdNdzK05to10 = new TH1F("hdNdzK05to10","",150,0,1.5);
+  fhdNdzK05to10->SetXTitle("z");
+  fhdNdzK05to10->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzK05to10->Sumw2();
+  fListOfHistos->Add(fhdNdzK05to10);
+
+  fhdNdzK010to20 = new TH1F("hdNdzK010to20","",150,0,1.5);
+  fhdNdzK010to20->SetXTitle("z");
+  fhdNdzK010to20->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzK010to20->Sumw2();
+  fListOfHistos->Add(fhdNdzK010to20);
+
+  fhdNdzK020to30 = new TH1F("hdNdzK020to30","",150,0,1.5);
+  fhdNdzK020to30->SetXTitle("z");
+  fhdNdzK020to30->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzK020to30->Sumw2();
+  fListOfHistos->Add(fhdNdzK020to30);
+
+  fhdNdzK030to40 = new TH1F("hdNdzK030to40","",150,0,1.5);
+  fhdNdzK030to40->SetXTitle("z");
+  fhdNdzK030to40->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzK030to40->Sumw2();
+  fListOfHistos->Add(fhdNdzK030to40);
+
+  fhdNdzK040to60 = new TH1F("hdNdzK040to60","",150,0,1.5);
+  fhdNdzK040to60->SetXTitle("z");
+  fhdNdzK040to60->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzK040to60->Sumw2();
+  fListOfHistos->Add(fhdNdzK040to60);
+
   fhdNdxiK0 = new TH1F("hdNdxiK0","",100,0,10);
   fhdNdxiK0->SetXTitle("xi");
-  fhdNdxiK0->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiK0->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiK0->Sumw2();
   fListOfHistos->Add(fhdNdxiK0);
   
+  fhdNdzLambda = new TH1F("hdNdzLambda","",150,0,1.5);
+  fhdNdzLambda->SetXTitle("z");
+  fhdNdzLambda->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzLambda->Sumw2();
+  fListOfHistos->Add(fhdNdzLambda);
+
+  fhdNdzAntiLambda = new TH1F("hdNdzAntiLambda","",150,0,1.5);
+  fhdNdzAntiLambda->SetXTitle("z");
+  fhdNdzAntiLambda->SetYTitle("1/N_{jet} dN/dz");
+  fhdNdzAntiLambda->Sumw2();
+  fListOfHistos->Add(fhdNdzAntiLambda);
+
   fhdNdzK0Max = new TH1F("hdNdzK0Max","",150,0,1.5);
   fhdNdzK0Max->SetXTitle("z");
-  fhdNdzK0Max->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzK0Max->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzK0Max->Sumw2();
   fListOfHistos->Add(fhdNdzK0Max);
 
   fhdNdxiK0Max = new TH1F("hdNdxiK0Max","",100,0,10);
   fhdNdxiK0Max->SetXTitle("xi");
-  fhdNdxiK0Max->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiK0Max->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiK0Max->Sumw2();
   fListOfHistos->Add(fhdNdxiK0Max);
 
   fhdNdzLambdaMax = new TH1F("hdNdzLambdaMax","",150,0,1.5);
   fhdNdzLambdaMax->SetXTitle("z");
-  fhdNdzLambdaMax->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzLambdaMax->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzLambdaMax->Sumw2();
   fListOfHistos->Add(fhdNdzLambdaMax); 
 
   fhdNdxiLambdaMax = new TH1F("hdNdxiLambdaMax","",700,0,7);
   fhdNdxiLambdaMax->SetXTitle("xi");
-  fhdNdxiLambdaMax->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiLambdaMax->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiLambdaMax->Sumw2();
   fListOfHistos->Add(fhdNdxiLambdaMax); 
 
   fhdNdptK0Max = new TH1F("hdNdptK0Max","",100,0,10);
   fhdNdptK0Max->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0Max->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0Max->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0Max->Sumw2();
   fListOfHistos->Add(fhdNdptK0Max); 
 
   fhdNdptLambdaMax = new TH1F("hdNdptLambdaMax","",100,0,10);
   fhdNdptLambdaMax->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaMax->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptLambdaMax->Sumw2();
   fListOfHistos->Add(fhdNdptLambdaMax); 
 
   fhdNdzK0Min = new TH1F("hdNdzK0Min","",150,0,1.5);
   fhdNdzK0Min->SetXTitle("z");
-  fhdNdzK0Min->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzK0Min->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzK0Min->Sumw2();
   fListOfHistos->Add(fhdNdzK0Min); 
 
   fhdNdxiK0Min = new TH1F("hdNdxiK0Min","",100,0,10);
   fhdNdxiK0Min->SetXTitle("xi");
-  fhdNdxiK0Min->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiK0Min->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiK0Min->Sumw2();
   fListOfHistos->Add(fhdNdxiK0Min); 
 
   fhdNdzLambdaMin = new TH1F("hdNdzLambdaMin","",150,0,1.5);
   fhdNdzLambdaMin->SetXTitle("z");
-  fhdNdzLambdaMin->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzLambdaMin->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzLambdaMin->Sumw2();
   fListOfHistos->Add(fhdNdzLambdaMin); 
 
   fhdNdxiLambdaMin = new TH1F("hdNdxiLambdaMin","",700,0,7);
   fhdNdxiLambdaMin->SetXTitle("xi");
-  fhdNdxiLambdaMin->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiLambdaMin->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiLambdaMin->Sumw2();
   fListOfHistos->Add(fhdNdxiLambdaMin); 
 
   fhdNdptK0Min = new TH1F("hdNdptK0Min","",100,0,10);
   fhdNdptK0Min->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0Min->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0Min->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0Min->Sumw2();
   fListOfHistos->Add(fhdNdptK0Min); 
 
   fhdNdptLambdaMin = new TH1F("hdNdptLambdaMin","",100,0,10);
   fhdNdptLambdaMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptLambdaMin->Sumw2();
   fListOfHistos->Add(fhdNdptLambdaMin); 
 
   fhdNdzK0Jet = new TH1F("hdNdzK0Jet","",150,0,1.5);
   fhdNdzK0Jet->SetXTitle("z");
-  fhdNdzK0Jet->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzK0Jet->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzK0Jet->Sumw2();
   fListOfHistos->Add(fhdNdzK0Jet);
 
   fhdNdxiK0Jet = new TH1F("hdNdxiK0Jet","",100,0,10);
   fhdNdxiK0Jet->SetXTitle("xi");
-  fhdNdxiK0Jet->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiK0Jet->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiK0Jet->Sumw2();
   fListOfHistos->Add(fhdNdxiK0Jet); 
 
   fhdNdzLambdaJet = new TH1F("hdNdzLambdaJet","",150,0,1.5);
   fhdNdzLambdaJet->SetXTitle("z");
-  fhdNdzLambdaJet->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzLambdaJet->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzLambdaJet->Sumw2();
   fListOfHistos->Add(fhdNdzLambdaJet); 
 
   fhdNdxiLambdaJet = new TH1F("hdNdxiLambdaJet","",700,0,7);
   fhdNdxiLambdaJet->SetXTitle("xi");
-  fhdNdxiLambdaJet->SetYTitle("1/N{jet} dN/dxi");
+  fhdNdxiLambdaJet->SetYTitle("1/N_{jet} dN/dxi");
   fhdNdxiLambdaJet->Sumw2();
   fListOfHistos->Add(fhdNdxiLambdaJet); 
 
   fhdNdptK0Jet = new TH1F("hdNdptK0Jet","",100,0,10);
   fhdNdptK0Jet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0Jet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptK0Jet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptK0Jet->Sumw2();
   fListOfHistos->Add(fhdNdptK0Jet); 
 
   fhdNdptLambdaJet = new TH1F("hdNdptLambdaJet","",100,0,10);
   fhdNdptLambdaJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
   fhdNdptLambdaJet->Sumw2();
   fListOfHistos->Add(fhdNdptLambdaJet); 
 
@@ -1801,111 +1991,15 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
 
   fhdPhiJetK0MC = new TH1F("hdPhiJetK0MC","",640,-3.2,3.2);
   fhdPhiJetK0MC->SetXTitle("#Delta #phi K0 - jet");
-  fhdPhiJetK0MC->SetYTitle("1/N{jet} dN/dphi");
+  fhdPhiJetK0MC->SetYTitle("1/N_{jet} dN/dphi");
   fhdPhiJetK0MC->Sumw2();
   fListOfHistos->Add(fhdPhiJetK0MC); 
 
   fhdRJetK0MC   = new TH1F("hdRJetK0MC","dN/R K0-jet",500,0,5);
   fhdRJetK0MC->SetXTitle("#Delta R K0 - jet");
-  fhdRJetK0MC->SetYTitle("1/N{jet} dN/dR");
+  fhdRJetK0MC->SetYTitle("1/N_{jet} dN/dR");
   fhdRJetK0MC->Sumw2();
   fListOfHistos->Add(fhdRJetK0MC); 
-
-  fhdNdptK0MCMax = new TH1F("hdNdptK0MCMax","",100,0,10);
-  fhdNdptK0MCMax->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0MCMax->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptK0MCMax->Sumw2();
-  fListOfHistos->Add(fhdNdptK0MCMax); 
-
-  fhdNdptLambdaLambdaBarMCMax = new TH1F("hdNdptLambdaLambdaBarMCMax","",100,0,10);
-  fhdNdptLambdaLambdaBarMCMax->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaLambdaBarMCMax->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptLambdaLambdaBarMCMax->Sumw2();
-  fListOfHistos->Add(fhdNdptLambdaLambdaBarMCMax); 
- 
-  fhdNdptK0MCMin = new TH1F("hdNdptK0MCMin","",100,0,10);
-  fhdNdptK0MCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0MCMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptK0MCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptK0MCMin); 
-
-  fhdNdptLambdaLambdaBarMCMin = new TH1F("hdNdptLambdaLambdaBarMCMin","",100,0,10);
-  fhdNdptLambdaLambdaBarMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaLambdaBarMCMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptLambdaLambdaBarMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptLambdaLambdaBarMCMin); 
-
-  fhdNdptOmegaMCMin = new TH1F("hdNdptOmegaMCMin","",100,0,10);;
-  fhdNdptOmegaMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptOmegaMCMin->SetYTitle("1/N{event} dN/dpt (1/GeV)");
-  fhdNdptOmegaMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptOmegaMCMin); 
-
-  fhdNdptOmegaBarMCMin = new TH1F("hdNdptOmegaBarMCMin","",100,0,10);;
-  fhdNdptOmegaBarMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptOmegaBarMCMin->SetYTitle("1/N{event} dN/dpt (1/GeV)");
-  fhdNdptOmegaBarMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptOmegaBarMCMin); 
-
-  fhdNdptchPiMCMin = new TH1F("hdNdptchPiMCMin","",100,0,10);
-  fhdNdptchPiMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptchPiMCMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptchPiMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptchPiMCMin); 
-
-  fhdNdptchKMCMin = new TH1F("hdNdptchKMCMin","",100,0,10);
-  fhdNdptchKMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptchKMCMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptchKMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptchKMCMin); 
-
-  fhdNdptpMCMin = new TH1F("hdNdptpMCMin","",100,0,10);
-  fhdNdptpMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpMCMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptpMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptpMCMin); 
-
-  fhdNdptpBarMCMin = new TH1F("hdNdptpBarMCMin","",100,0,10);
-  fhdNdptpBarMCMin->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpBarMCMin->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptpBarMCMin->Sumw2();
-  fListOfHistos->Add(fhdNdptpBarMCMin); 
-
-  fhdNdptK0MCJet = new TH1F("hdNdptK0MCJet","",100,0,10);
-  fhdNdptK0MCJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0MCJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptK0MCJet->Sumw2();
-  fListOfHistos->Add(fhdNdptK0MCJet); 
-
-  fhdNdptLambdaLambdaBarMCJet = new TH1F("hdNdptLambdaLambdaBarMCJet","",100,0,10);
-  fhdNdptLambdaLambdaBarMCJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaLambdaBarMCJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptLambdaLambdaBarMCJet->Sumw2();
-  fListOfHistos->Add(fhdNdptLambdaLambdaBarMCJet); 
- 
-  fhdNdptchPiMCJet = new TH1F("hdNdptchPiMCJet","",100,0,10);
-  fhdNdptchPiMCJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptchPiMCJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptchPiMCJet->Sumw2();
-  fListOfHistos->Add(fhdNdptchPiMCJet); 
-
-  fhdNdptchKMCJet = new TH1F("hdNdptchKMCJet","",100,0,10);
-  fhdNdptchKMCJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptchKMCJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptchKMCJet->Sumw2();
-  fListOfHistos->Add(fhdNdptchKMCJet);
-
-  fhdNdptpMCJet = new TH1F("hdNdptpMCJet","",100,0,10);
-  fhdNdptpMCJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpMCJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptpMCJet->Sumw2();
-  fListOfHistos->Add(fhdNdptpMCJet); 
-
-  fhdNdptpBarMCJet = new TH1F("hdNdptpBarMCJet","",100,0,10);
-  fhdNdptpBarMCJet->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpBarMCJet->SetYTitle("1/N{jet} dN/dpt (1/GeV)");
-  fhdNdptpBarMCJet->Sumw2();
-  fListOfHistos->Add(fhdNdptpBarMCJet);
 
   fhdRV0MC =  new TH1F("hdRV0MC","",500,0.,1.);
   fhdRV0MC->SetXTitle("#Delta R");
@@ -1913,10 +2007,156 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhdRV0MC->Sumw2();
   fListOfHistos->Add(fhdRV0MC); 
 
+  fhdNdptchPiMCMax = new TH1F("hdNdptchPiMCMax","",100,0,10);
+  fhdNdptchPiMCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptchPiMCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptchPiMCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptchPiMCMax); 
+
+  fhdNdptK0MCMax = new TH1F("hdNdptK0MCMax","",100,0,10);
+  fhdNdptK0MCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptK0MCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptK0MCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptK0MCMax); 
+
+  fhdNdptchKMCMax = new TH1F("hdNdptchKMCMax","",100,0,10);
+  fhdNdptchKMCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptchKMCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptchKMCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptchKMCMax); 
+
+  fhdNdptpMCMax = new TH1F("hdNdptpMCMax","",100,0,10);
+  fhdNdptpMCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptpMCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptpMCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptpMCMax); 
+
+  fhdNdptpBarMCMax = new TH1F("hdNdptpBarMCMax","",100,0,10);
+  fhdNdptpBarMCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptpBarMCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptpBarMCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptpBarMCMax); 
+
+  fhdNdptLambdaMCMax = new TH1F("hdNdptLambdaMCMax","",100,0,10);
+  fhdNdptLambdaMCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaMCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaMCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaMCMax); 
+
+  fhdNdptLambdaBarMCMax = new TH1F("hdNdptLambdaBarMCMax","",100,0,10);
+  fhdNdptLambdaBarMCMax->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaBarMCMax->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaBarMCMax->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaBarMCMax); 
+
+
+  fhdNdptchPiMCMin = new TH1F("hdNdptchPiMCMin","",100,0,10);
+  fhdNdptchPiMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptchPiMCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptchPiMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptchPiMCMin); 
+ 
+  fhdNdptK0MCMin = new TH1F("hdNdptK0MCMin","",100,0,10);
+  fhdNdptK0MCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptK0MCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptK0MCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptK0MCMin); 
+
+  fhdNdptchKMCMin = new TH1F("hdNdptchKMCMin","",100,0,10);
+  fhdNdptchKMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptchKMCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptchKMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptchKMCMin); 
+
+  fhdNdptpMCMin = new TH1F("hdNdptpMCMin","",100,0,10);
+  fhdNdptpMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptpMCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptpMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptpMCMin); 
+
+  fhdNdptpBarMCMin = new TH1F("hdNdptpBarMCMin","",100,0,10);
+  fhdNdptpBarMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptpBarMCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptpBarMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptpBarMCMin); 
+
+  fhdNdptLambdaMCMin = new TH1F("hdNdptLambdaMCMin","",100,0,10);
+  fhdNdptLambdaMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaMCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaMCMin); 
+
+  fhdNdptLambdaBarMCMin = new TH1F("hdNdptLambdaBarMCMin","",100,0,10);
+  fhdNdptLambdaBarMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaBarMCMin->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaBarMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaBarMCMin); 
+
+  fhdNdptOmegaMCMin = new TH1F("hdNdptOmegaMCMin","",100,0,10);;
+  fhdNdptOmegaMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptOmegaMCMin->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
+  fhdNdptOmegaMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptOmegaMCMin); 
+
+  fhdNdptOmegaBarMCMin = new TH1F("hdNdptOmegaBarMCMin","",100,0,10);;
+  fhdNdptOmegaBarMCMin->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptOmegaBarMCMin->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
+  fhdNdptOmegaBarMCMin->Sumw2();
+  fListOfHistos->Add(fhdNdptOmegaBarMCMin); 
+
+  fhdNdptchPiMCJet = new TH1F("hdNdptchPiMCJet","",100,0,10);
+  fhdNdptchPiMCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptchPiMCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptchPiMCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptchPiMCJet); 
+
+  fhdNdptK0MCJet = new TH1F("hdNdptK0MCJet","",100,0,10);
+  fhdNdptK0MCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptK0MCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptK0MCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptK0MCJet); 
+
+  fhdNdptchKMCJet = new TH1F("hdNdptchKMCJet","",100,0,10);
+  fhdNdptchKMCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptchKMCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptchKMCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptchKMCJet);
+
+  fhdNdptpMCJet = new TH1F("hdNdptpMCJet","",100,0,10);
+  fhdNdptpMCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptpMCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptpMCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptpMCJet); 
+
+  fhdNdptpBarMCJet = new TH1F("hdNdptpBarMCJet","",100,0,10);
+  fhdNdptpBarMCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptpBarMCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptpBarMCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptpBarMCJet);
+
+  fhdNdptLambdaMCJet = new TH1F("hdNdptLambdaMCJet","",100,0,10);
+  fhdNdptLambdaMCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaMCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaMCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaMCJet); 
+
+  fhdNdptLambdaBarMCJet = new TH1F("hdNdptLambdaBarMCJet","",100,0,10);
+  fhdNdptLambdaBarMCJet->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaBarMCJet->SetYTitle("1/N_{jet} dN/dpt (1/GeV)");
+  fhdNdptLambdaBarMCJet->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaBarMCJet); 
 
   fhPIDMC = CreatePIDhisto("hPIDMC");
   fhPIDMC->Sumw2();
   fListOfHistos->Add(fhPIDMC); 
+
+  fhPIDMC_quarkEv = CreatePIDhisto("hPIDMC_quarkEv");
+  fhPIDMC_quarkEv->Sumw2();
+  fListOfHistos->Add(fhPIDMC_quarkEv); 
+
+  fhPIDMC_gluonEv = CreatePIDhisto("hPIDMC_gluonEv");
+  fhPIDMC_gluonEv->Sumw2();
+  fListOfHistos->Add(fhPIDMC_gluonEv); 
 
   fhPIDMCAll = CreatePIDhisto("hPIDMCAll");
   fhPIDMCAll->Sumw2();
@@ -1929,64 +2169,94 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   fhPIDMCJet = CreatePIDhisto("hPIDMCJet");
   fhPIDMCJet->Sumw2();
   fListOfHistos->Add(fhPIDMCJet); 
- 
+
+  fhPIDMCMotherK0 = CreatePIDhisto("hPIDMCMotherK0"); 
+  fhPIDMCMotherK0->Sumw2();
+  fListOfHistos->Add(fhPIDMCMotherK0); 
+
+  fhPIDMCGrandMotherK0 = CreatePIDhisto("hPIDMCGrandMotherK0"); 
+  fhPIDMCGrandMotherK0->Sumw2();
+  fListOfHistos->Add(fhPIDMCGrandMotherK0); 
+
+  fhPIDMCMotherChK = CreatePIDhisto("hPIDMCMotherChK"); 
+  fhPIDMCMotherChK->Sumw2();
+  fListOfHistos->Add(fhPIDMCMotherChK); 
+
+  fhPIDMCMotherK0Trans = CreatePIDhisto("hPIDMCMotherK0Trans"); 
+  fhPIDMCMotherK0Trans->Sumw2();
+  fListOfHistos->Add(fhPIDMCMotherK0Trans); 
+
+  fhPIDMCGrandMotherK0Trans = CreatePIDhisto("hPIDMCGrandMotherK0Trans"); 
+  fhPIDMCGrandMotherK0Trans->Sumw2();
+  fListOfHistos->Add(fhPIDMCGrandMotherK0Trans); 
+
+  fhPIDMCMotherChKTrans = CreatePIDhisto("hPIDMCMotherChKTrans"); 
+  fhPIDMCMotherChKTrans->Sumw2();
+  fListOfHistos->Add(fhPIDMCMotherChKTrans); 
+
   fhdNdptgammaMC = new TH1F("hdNdptgammaMC","",100,0,10);
   fhdNdptgammaMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptgammaMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptgammaMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptgammaMC->Sumw2();
   fListOfHistos->Add(fhdNdptgammaMC); 
 
   fhdNdptchPiMC  = new TH1F("hdNdptchPiMC","",100,0,10);;
   fhdNdptchPiMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptchPiMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptchPiMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptchPiMC->Sumw2();
   fListOfHistos->Add(fhdNdptchPiMC); 
 
   fhdNdptpi0MC    = new TH1F("hdNdptpi0MC","",100,0,10);;
   fhdNdptpi0MC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpi0MC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptpi0MC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptpi0MC->Sumw2();
   fListOfHistos->Add(fhdNdptpi0MC); 
 
   fhdNdptK0MC = new TH1F("hdNdptK0MC","",100,0,10);;
   fhdNdptK0MC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0MC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptK0MC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptK0MC->Sumw2();
   fListOfHistos->Add(fhdNdptK0MC); 
 
   fhdNdptchKMC    = new TH1F("hdNdptchKMC","",100,0,10);;
   fhdNdptchKMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptchKMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptchKMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptchKMC->Sumw2();
   fListOfHistos->Add(fhdNdptchKMC); 
 
   fhdNdptpMC    = new TH1F("hdNdptpMC","",100,0,10);;
   fhdNdptpMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptpMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptpMC->Sumw2();
   fListOfHistos->Add(fhdNdptpMC); 
 
   fhdNdptpBarMC    = new TH1F("hdNdptpBarMC","",100,0,10);;
   fhdNdptpBarMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptpBarMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptpBarMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptpBarMC->Sumw2();
   fListOfHistos->Add(fhdNdptpBarMC); 
 
-  fhdNdptLambdaLambdaBarMC    = new TH1F("hdNdptLambdaLambdaBarMC","",100,0,10);;
-  fhdNdptLambdaLambdaBarMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptLambdaLambdaBarMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
-  fhdNdptLambdaLambdaBarMC->Sumw2();
-  fListOfHistos->Add(fhdNdptLambdaLambdaBarMC); 
+  fhdNdptLambdaMC    = new TH1F("hdNdptLambdaMC","",100,0,10);;
+  fhdNdptLambdaMC->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
+  fhdNdptLambdaMC->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaMC); 
+
+  fhdNdptLambdaBarMC    = new TH1F("hdNdptLambdaBarMC","",100,0,10);;
+  fhdNdptLambdaBarMC->SetXTitle("p_{T} (GeV/c)");
+  fhdNdptLambdaBarMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
+  fhdNdptLambdaBarMC->Sumw2();
+  fListOfHistos->Add(fhdNdptLambdaBarMC); 
 
   fhdNdptOmegaMC = new TH1F("hdNdptOmegaMC","",100,0,10);;
   fhdNdptOmegaMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptOmegaMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptOmegaMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptOmegaMC->Sumw2();
   fListOfHistos->Add(fhdNdptOmegaMC); 
 
   fhdNdptOmegaBarMC = new TH1F("hdNdptOmegaBarMC","",100,0,10);;
   fhdNdptOmegaBarMC->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptOmegaBarMC->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptOmegaBarMC->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptOmegaBarMC->Sumw2();
   fListOfHistos->Add(fhdNdptOmegaBarMC); 
 
@@ -2007,19 +2277,19 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
 
   fhdNdzK0MC = new TH1F("hdNdzK0MC","",150,0,1.5);
   fhdNdzK0MC->SetXTitle("z");
-  fhdNdzK0MC->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzK0MC->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzK0MC->Sumw2();
   fListOfHistos->Add(fhdNdzK0MC);
 
   fhdNdzK0MCJet = new TH1F("hdNdzK0MCJet","",150,0,1.5);
   fhdNdzK0MCJet->SetXTitle("z");
-  fhdNdzK0MCJet->SetYTitle("1/N{jet} dN/dz");
+  fhdNdzK0MCJet->SetYTitle("1/N_{jet} dN/dz");
   fhdNdzK0MCJet->Sumw2();
   fListOfHistos->Add(fhdNdzK0MCJet);
 
   fhdNdptK0MCJetEvt = new TH1F("hdNdptK0MCJetEvt","",100,0,10);;
   fhdNdptK0MCJetEvt->SetXTitle("p_{T} (GeV/c)");
-  fhdNdptK0MCJetEvt->SetYTitle("1/N{event} dN/dpt (1/GeV)");
+  fhdNdptK0MCJetEvt->SetYTitle("1/N_{event} dN/dpt (1/GeV)");
   fhdNdptK0MCJetEvt->Sumw2();
   fListOfHistos->Add(fhdNdptK0MCJetEvt);
 
@@ -2172,7 +2442,99 @@ void  AliAnalysisTaskJetChem::CreateHistos(){
   
   fhPythiaProcesspbar = CreatePythiaIDhisto("hPythiaProcesspbar");
   fListOfHistos->Add(fhPythiaProcesspbar);  
+ 
+  fhdNdzJets5to10 = new TH1F("hdNdzJets5to10","",25,0,1.25);
+  fhdNdzJets5to10->SetXTitle("z");
+  fhdNdzJets5to10->SetYTitle("dN/dz");
+  fhdNdzJets5to10->Sumw2();
+  fListOfHistos->Add(fhdNdzJets5to10);
+
+  fhdNdzJets10to20 = new TH1F("hdNdzJets10to20","",25,0,1.25);
+  fhdNdzJets10to20->SetXTitle("z");
+  fhdNdzJets10to20->SetYTitle("dN/dz");
+  fhdNdzJets10to20->Sumw2();
+  fListOfHistos->Add(fhdNdzJets10to20);
+
+  fhdNdzJets20to30 = new TH1F("hdNdzJets20to30","",25,0,1.25);
+  fhdNdzJets20to30->SetXTitle("z");
+  fhdNdzJets20to30->SetYTitle("dN/dz");
+  fhdNdzJets20to30->Sumw2();
+  fListOfHistos->Add(fhdNdzJets20to30);
+
+  fhdNdzJets30to40 = new TH1F("hdNdzJets30to40","",25,0,1.25);
+  fhdNdzJets30to40->SetXTitle("z");
+  fhdNdzJets30to40->SetYTitle("dN/dz");
+  fhdNdzJets30to40->Sumw2();
+  fListOfHistos->Add(fhdNdzJets30to40);
+
+  fhdNdzJets40to60 = new TH1F("hdNdzJets40to60","",25,0,1.25);
+  fhdNdzJets40to60->SetXTitle("z");
+  fhdNdzJets40to60->SetYTitle("dN/dz");
+  fhdNdzJets40to60->Sumw2();
+  fListOfHistos->Add(fhdNdzJets40to60);
   
+
+  fhdNdxiJets5to10 = new TH1F("hdNdxiJets5to10","",70,0,7);
+  fhdNdxiJets5to10->SetXTitle("z");
+  fhdNdxiJets5to10->SetYTitle("dN/dz");
+  fhdNdxiJets5to10->Sumw2();
+  fListOfHistos->Add(fhdNdxiJets5to10);
+
+  fhdNdxiJets10to20 = new TH1F("hdNdxiJets10to20","",70,0,7);
+  fhdNdxiJets10to20->SetXTitle("z");
+  fhdNdxiJets10to20->SetYTitle("dN/dz");
+  fhdNdxiJets10to20->Sumw2();
+  fListOfHistos->Add(fhdNdxiJets10to20);
+
+  fhdNdxiJets20to30 = new TH1F("hdNdxiJets20to30","",70,0,7);
+  fhdNdxiJets20to30->SetXTitle("z");
+  fhdNdxiJets20to30->SetYTitle("dN/dz");
+  fhdNdxiJets20to30->Sumw2();
+  fListOfHistos->Add(fhdNdxiJets20to30);
+
+  fhdNdxiJets30to40 = new TH1F("hdNdxiJets30to40","",70,0,7);
+  fhdNdxiJets30to40->SetXTitle("z");
+  fhdNdxiJets30to40->SetYTitle("dN/dz");
+  fhdNdxiJets30to40->Sumw2();
+  fListOfHistos->Add(fhdNdxiJets30to40);
+
+  fhdNdxiJets40to60 = new TH1F("hdNdxiJets40to60","",70,0,7);
+  fhdNdxiJets40to60->SetXTitle("z");
+  fhdNdxiJets40to60->SetYTitle("dN/dz");
+  fhdNdxiJets40to60->Sumw2();
+  fListOfHistos->Add(fhdNdxiJets40to60);
+
+  fhdNdptTracksJetPt5to10 = new TH1F("hdNdptTracksJetPt5to10","",250,0,25);
+  fhdNdptTracksJetPt5to10->SetXTitle("p_{T} (GeV)");
+  fhdNdptTracksJetPt5to10->SetYTitle("dN/dp_{T} 1/GeV");
+  fhdNdptTracksJetPt5to10->Sumw2();
+  fListOfHistos->Add(fhdNdptTracksJetPt5to10);
+
+  fhdNdptTracksJetPt10to20 = new TH1F("hdNdptTracksJetPt10to20","",25,0,25);
+  fhdNdptTracksJetPt10to20->SetXTitle("p_{T} (GeV)");
+  fhdNdptTracksJetPt10to20->SetYTitle("dN/dp_{T} 1/GeV");
+  fhdNdptTracksJetPt10to20->Sumw2();
+  fListOfHistos->Add(fhdNdptTracksJetPt10to20);
+
+  fhdNdptTracksJetPt20to30 = new TH1F("hdNdptTracksJetPt20to30","",25,0,25);
+  fhdNdptTracksJetPt20to30->SetXTitle("p_{T} (GeV)");
+  fhdNdptTracksJetPt20to30->SetYTitle("dN/dp_{T} 1/GeV");
+  fhdNdptTracksJetPt20to30->Sumw2();
+  fListOfHistos->Add(fhdNdptTracksJetPt20to30);
+
+  fhdNdptTracksJetPt30to40 = new TH1F("hdNdptTracksJetPt30to40","",25,0,25);
+  fhdNdptTracksJetPt30to40->SetXTitle("p_{T} (GeV)");
+  fhdNdptTracksJetPt30to40->SetYTitle("dN/dp_{T} 1/GeV");
+  fhdNdptTracksJetPt30to40->Sumw2();
+  fListOfHistos->Add(fhdNdptTracksJetPt30to40);
+
+  fhdNdptTracksJetPt40to60 = new TH1F("hdNdptTracksJetPt40to60","",25,0,25);
+  fhdNdptTracksJetPt40to60->SetXTitle("p_{T} (GeV)");
+  fhdNdptTracksJetPt40to60->SetYTitle("dN/dp_{T} 1/GeV");
+  fhdNdptTracksJetPt40to60->Sumw2();
+  fListOfHistos->Add(fhdNdptTracksJetPt40to60);
+
+
   fh1Xsec = new TProfile("h1Xsec","xsec from pyxsec.root",1,0,1); 
   fh1Xsec->SetXTitle("<#sigma>");
   fh1Xsec->Sumw2();
@@ -2351,7 +2713,7 @@ Bool_t AliAnalysisTaskJetChem::IsAccepteddEdx(const Double_t mom,const Double_t 
 // ----------------------------------------------------------------------------
 
 void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex,Bool_t& foundK0){
-  
+
   // loop over AOD V0s, fill masses etc
 
   Int_t nV0 = fAOD->GetNumberOfV0s();
@@ -2370,6 +2732,7 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
       Double_t massLambda     = v0->MassLambda();
       Double_t massAntiLambda = v0->MassAntiLambda();
       Double_t radiusV0       = v0->RadiusV0();
+
       Double_t etaV0          = v0->Eta();
       Double_t fDCAV0ToVertex = v0->DcaV0ToPrimVertex();
       Double_t fDCADaughters  = v0->DcaV0Daughters();
@@ -2517,14 +2880,20 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 
 	  if(IsK0InvMass(massK0)){
 	    fhdNdptK0JetEvt->Fill(ptV0);
-	    fhdNdzK0->Fill(z);
+	    fhdNdzK0->Fill(z); 
 	    fhdNdxiK0->Fill(xi);
 
 	    fhdPhiJetK0->Fill(dPhiJetV0);
 	    fhdRJetK0->Fill(dRJetV0);
+
+	    if(5<jetpt && jetpt<=10)       fhdNdzK05to10->Fill(z);
+ 	    else if(10<jetpt && jetpt<=20) fhdNdzK010to20->Fill(z);
+ 	    else if(20<jetpt && jetpt<=30) fhdNdzK020to30->Fill(z);
+ 	    else if(30<jetpt && jetpt<=40) fhdNdzK030to40->Fill(z);
+ 	    else if(40<jetpt && jetpt<=60) fhdNdzK040to60->Fill(z);
 	  }
 	}
-
+	
 
 	// Lambda
 	
@@ -2533,6 +2902,10 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	   IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)){
 	  
 	  fhV0InvMassLambdaJetEvt->Fill(massLambda);
+
+	  if(IsLambdaInvMass(massLambda)){
+	    fhdNdzLambda->Fill(z); 
+	  }
 	}
 	
 	if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
@@ -2540,6 +2913,10 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	   IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)){
 	  
 	  fhV0InvMassAntiLambdaJetEvt->Fill(massAntiLambda);
+
+	  if(IsLambdaInvMass(massAntiLambda)){
+	    fhdNdzAntiLambda->Fill(z); 
+	  }
 	}
 	
 	// fill histos max region 
@@ -2579,10 +2956,10 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	  
 	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     ((IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
-	      IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
-	     (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
-	      IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
-
+	       IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
+	      (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
+	       IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
+	       
 	    if(IsLambdaInvMass(massLambda) || (IsLambdaInvMass(massAntiLambda))){
 	      fhdNdzLambdaMax->Fill(z);
 	      fhdNdxiLambdaMax->Fill(xi);
@@ -2630,9 +3007,9 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	  
 	  if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	     ((IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
-	      IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
-	     (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
-	      IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
+	       IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
+	      (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
+	       IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
 	    
 	    if(IsLambdaInvMass(massLambda) || (IsLambdaInvMass(massAntiLambda))){
 	      fhdNdzLambdaMin->Fill(z);
@@ -2686,9 +3063,9 @@ void AliAnalysisTaskJetChem::CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex
 	    
 	    if(IsAcceptedDCALambda(/*fDCAV0ToVertex*/) && 
 	       ((IsAccepteddEdx(momPos,dEdxPos,AliPID::kProton,fCutnSigdEdx) && 
-		IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
-	       (IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
-		IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
+		 IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kPion,fCutnSigdEdx)) ||
+		(IsAccepteddEdx(momNeg,dEdxNeg,AliPID::kProton,fCutnSigdEdx) && 
+		 IsAccepteddEdx(momPos,dEdxPos,AliPID::kPion,fCutnSigdEdx)))){
 	      
 	      if(IsLambdaInvMass(massLambda) || (IsLambdaInvMass(massAntiLambda))){
 		fhdNdzLambdaJet->Fill(z);
@@ -2726,37 +3103,91 @@ void AliAnalysisTaskJetChem::CheckMCParticles(AliAODJet* jetVect,Int_t maxPtRegi
   Bool_t ispBarEvent = kFALSE;
   Bool_t isKchEvent  = kFALSE;
 
+  Bool_t isQuarkHardScatteringEvent = IsQuarkHardScatteringEvent(pythiaPID);
+  Bool_t isGluonHardScatteringEvent = IsGluonHardScatteringEvent(pythiaPID);
+
   for(Int_t i =0 ; i<ntrks; i++){ // mc tracks loop
 
     AliAODMCParticle* mctrk = (AliAODMCParticle*)farray->At(i);
     
+    Double_t trackPt = mctrk->Pt(); 
+
     //Cuts
     if (!(mctrk->IsPhysicalPrimary())) continue;
  
-    if ((mctrk->Pt() < fTrackPtCut) || (TMath::Abs(mctrk->Eta()) > fTrackEtaCut )) continue; 
+    if ((trackPt < fTrackPtCut) || (TMath::Abs(mctrk->Eta()) > fTrackEtaCut)) continue; 
 
     // OB PID histo
     Int_t pdg = mctrk->GetPdgCode();
     
-    FillPIDhisto(fhPIDMC,pdg);
-    
-    if(pdg == 111)        fhdNdptpi0MC->Fill(mctrk->Pt());
-    if(pdg == 22)         fhdNdptgammaMC->Fill(mctrk->Pt());
-    if(TMath::Abs(pdg) == 211)  fhdNdptchPiMC->Fill(mctrk->Pt());
-    if(pdg == 310)        fhdNdptK0MC->Fill(mctrk->Pt());
-    if(TMath::Abs(pdg) == 321)  fhdNdptchKMC->Fill(mctrk->Pt());
-    if(pdg == 2212)       fhdNdptpMC->Fill(mctrk->Pt());
-    if(pdg == -2212)      fhdNdptpBarMC->Fill(mctrk->Pt());
-    if(TMath::Abs(pdg) == 3122) fhdNdptLambdaLambdaBarMC->Fill(mctrk->Pt());
-    if(pdg == 3332)       fhdNdptOmegaMC->Fill(mctrk->Pt());
-    if(pdg == -3332)      fhdNdptOmegaBarMC->Fill(mctrk->Pt());
-    
-    if(pdg == 310)   isK0Event      = kTRUE;
-    if(TMath::Abs(pdg) == 321) isKchEvent = kTRUE;
-    if(pdg == 2212)  ispEvent       = kTRUE;
-    if(pdg == -2212) ispBarEvent    = kTRUE;
-    
 
+    FillPIDhisto(fhPIDMC,pdg);
+    if(isQuarkHardScatteringEvent) FillPIDhisto(fhPIDMC_quarkEv,pdg);
+    if(isGluonHardScatteringEvent) FillPIDhisto(fhPIDMC_gluonEv,pdg);
+
+    if(pdg == 111)              fhdNdptpi0MC->Fill(trackPt);
+    if(pdg == 22)               fhdNdptgammaMC->Fill(trackPt);
+    if(TMath::Abs(pdg) == 211)  fhdNdptchPiMC->Fill(trackPt);
+    if(pdg == 310)              fhdNdptK0MC->Fill(trackPt);
+    if(TMath::Abs(pdg) == 321)  fhdNdptchKMC->Fill(trackPt);
+    if(pdg == 2212)             fhdNdptpMC->Fill(trackPt);
+    if(pdg == -2212)            fhdNdptpBarMC->Fill(trackPt);
+    if(pdg == 3122)             fhdNdptLambdaMC->Fill(trackPt);
+    if(pdg == -3122)            fhdNdptLambdaBarMC->Fill(trackPt);
+    if(pdg == 3332)             fhdNdptOmegaMC->Fill(trackPt);
+    if(pdg == -3332)            fhdNdptOmegaBarMC->Fill(trackPt);
+    
+    if(pdg == 310)             isK0Event   = kTRUE;
+    if(TMath::Abs(pdg) == 321) isKchEvent  = kTRUE;
+    if(pdg == 2212)            ispEvent    = kTRUE;
+    if(pdg == -2212)           ispBarEvent = kTRUE;
+    
+    
+    Int_t pdgMotherChK = -1;
+    Int_t pdgMotherK0  = -1;
+    Int_t pdgGrandMotherK0 = -1;
+
+    if(TMath::Abs(pdg) == 321){ // chK
+      Int_t labelMother = mctrk->GetMother();
+      AliAODMCParticle* mctrkMother    = NULL;
+      
+      for(Int_t k=0 ; k<ntrks; k++){
+      
+	AliAODMCParticle* mctrk2 = (AliAODMCParticle*)farray->At(k);
+	if(mctrk2->GetLabel() == labelMother) mctrkMother = mctrk2;
+      }
+      
+      if(mctrkMother) pdgMotherChK = mctrkMother->GetPdgCode();
+      FillPIDhisto(fhPIDMCMotherChK,pdgMotherChK);
+
+      //printf("pdgMotherChK %d \n",pdgMotherChK);
+    }
+    
+    if(pdg == 310){ // K0
+      Int_t labelMother = mctrk->GetMother();
+      AliAODMCParticle* mctrkMother = NULL;
+      
+      for(Int_t k=0 ; k<ntrks; k++){
+	AliAODMCParticle* mctrk2 = (AliAODMCParticle*)farray->At(k);
+	if(mctrk2->GetLabel() == labelMother) mctrkMother = mctrk2;
+      }
+      
+      if(mctrkMother) pdgMotherK0 = mctrkMother->GetPdgCode();
+      FillPIDhisto(fhPIDMCMotherK0,pdgMotherK0);
+
+      Int_t labelGrandMother = -1; 
+      if(mctrkMother) mctrkMother->GetMother();
+      AliAODMCParticle* mctrkGrandMother = NULL;
+      
+      for(Int_t k=0 ; k<ntrks; k++){
+	AliAODMCParticle* mctrk2 = (AliAODMCParticle*)farray->At(k);
+	if(mctrk2->GetLabel() == labelGrandMother) mctrkGrandMother = mctrk2;
+      }
+      
+      if(mctrkGrandMother) pdgGrandMotherK0 = mctrkGrandMother->GetPdgCode();
+      FillPIDhisto(fhPIDMCGrandMotherK0,pdgGrandMotherK0);
+    }
+    
     if(jetVect){ // jet event 
 
       FillPIDhisto(fhPIDMCAll,pdg);
@@ -2771,73 +3202,62 @@ void AliAnalysisTaskJetChem::CheckMCParticles(AliAODJet* jetVect,Int_t maxPtRegi
       //Double_t deltaR = jetVect->DeltaR(partVect); //+k270rad;
       Double_t deltaR = (jetVect->MomentumVector()->Vect()).DeltaR(partVect);
 
-      
       // calc xi 
       Double_t jetpt = jetVect->Pt(); 
-      Double_t pV0   = partVect.Mag(); 
-      Double_t ptV0  = partVect.Pt();
-    
-      Double_t z  = pV0 / jetpt;
+      //Double_t pV0   = partVect.Mag(); 
+      //Double_t ptV0  = partVect.Pt();
+   
+
+      Double_t z  = trackPt / jetpt;
       Double_t xi = TMath::Log(1/z);
 
       if(!(mctrk->Charge() == 0 || mctrk->Charge()==-99)) fhdNdxiMC->Fill(xi);
 
-      if(TMath::Abs(pdg) == 310){ // K0
+      if(pdg == 310){ // K0
 	fhdPhiJetK0MC->Fill(deltaPhi);
 	fhdRJetK0MC->Fill(deltaR);
-	
 	fhdNdxiK0MC->Fill(xi);
 	fhdNdzK0MC->Fill(z);
-	fhdNdptK0MCJetEvt->Fill(ptV0);
+	fhdNdptK0MCJetEvt->Fill(trackPt);
       }
 
       
       if(region != 0 && region == maxPtRegionIndex){ // max region
 	
-	if(TMath::Abs(pdg) == 310){ // K0
-	  
-	  fhdNdptK0MCMax->Fill(ptV0);
-	}
-	if(TMath::Abs(pdg) == 3122){ // lambda / anti-lambda
-	  
-	  fhdNdptLambdaLambdaBarMCMax->Fill(ptV0);
-	}
-
+	if(TMath::Abs(pdg) == 211)  fhdNdptchPiMCMax->Fill(trackPt);
+	if(pdg == 310)              fhdNdptK0MCMax->Fill(trackPt);
+	if(TMath::Abs(pdg) == 321)  fhdNdptchKMCMax->Fill(trackPt);
+	if(pdg == 2212)             fhdNdptpMCMax->Fill(trackPt);
+	if(pdg == -2212)            fhdNdptpBarMCMax->Fill(trackPt);
+	if(pdg == 3122)             fhdNdptLambdaMCMax->Fill(trackPt);
+	if(pdg == -3122)            fhdNdptLambdaBarMCMax->Fill(trackPt);
       }
       
       if(region != 0 && region != maxPtRegionIndex){ // min region
 	
 	FillPIDhisto(fhPIDMCMin,pdg);
 	
-	if(TMath::Abs(pdg) == 310){ // K0
-	  
-	  fhdNdptK0MCMin->Fill(ptV0);
-	}
-	if(TMath::Abs(pdg) == 3122){ // lambda / anti-lambda
-	  
-	  fhdNdptLambdaLambdaBarMCMin->Fill(ptV0);
-	}
-	if(TMath::Abs(pdg) == 211){ // ch pi
-	  
-	  fhdNdptchPiMCMin->Fill(ptV0);
-	}
-	if(TMath::Abs(pdg) == 321){ // ch K
-	  
-	  fhdNdptchKMCMin->Fill(ptV0);
-	}
-	if(pdg == 2212){ // p 	  
+	if(TMath::Abs(pdg) == 211)  fhdNdptchPiMCMin->Fill(trackPt);
+	if(pdg == 310)              fhdNdptK0MCMin->Fill(trackPt);
+	if(TMath::Abs(pdg) == 321)  fhdNdptchKMCMin->Fill(trackPt);
+	if(pdg == 2212)             fhdNdptpMCMin->Fill(trackPt);
+	if(pdg == -2212)            fhdNdptpBarMCMin->Fill(trackPt);
+	if(pdg == 3122)             fhdNdptLambdaMCMin->Fill(trackPt);
+	if(pdg == -3122)            fhdNdptLambdaBarMCMin->Fill(trackPt);
 
-	  fhdNdptpMCMin->Fill(ptV0);
-	}
-	if(pdg == -2212){ // p 	  
-
-	  fhdNdptpBarMCMin->Fill(ptV0);
-	}
-
-	if(pdg == 3332)  fhdNdptOmegaMCMin->Fill(mctrk->Pt());
-	if(pdg == -3332) fhdNdptOmegaBarMCMin->Fill(mctrk->Pt());
+	if(pdg == 3332)  fhdNdptOmegaMCMin->Fill(trackPt);
+	if(pdg == -3332) fhdNdptOmegaBarMCMin->Fill(trackPt);
       }
-      
+
+      // trans region
+      if(region != 0){
+	if(TMath::Abs(pdg) == 321) FillPIDhisto(fhPIDMCMotherChKTrans,pdgMotherChK);
+	if(pdg == 310){
+	  FillPIDhisto(fhPIDMCMotherK0Trans,pdgMotherK0);
+	  FillPIDhisto(fhPIDMCGrandMotherK0Trans,pdgGrandMotherK0);
+	}
+      }
+   
       if(region == 0){ //  jet region ?
 	
 	FillPIDhisto(fhPIDMCJet,pdg);
@@ -2847,32 +3267,19 @@ void AliAnalysisTaskJetChem::CheckMCParticles(AliAODJet* jetVect,Int_t maxPtRegi
 	
 	if(dRJetV0 <= fConeRadius){ 
 	  
-	  if(TMath::Abs(pdg) == 310){ // K0
+	  if(pdg == 310){ // K0
 	    
-	    fhdNdptK0MCJet->Fill(ptV0);
+	    fhdNdptK0MCJet->Fill(trackPt);
 	    fhdNdxiK0MCJet->Fill(xi);
 	    fhdNdzK0MCJet->Fill(z);
 	  }
-	  if(TMath::Abs(pdg) == 3122){ // lambda / anti-lambda
-	    
-	    fhdNdptLambdaLambdaBarMCJet->Fill(ptV0);
-	  }
-	  if(TMath::Abs(pdg) == 211){ // ch pi
-
-	    fhdNdptchPiMCJet->Fill(ptV0);
-	  }
-	  if(TMath::Abs(pdg) == 321){ // ch K
-
-	    fhdNdptchKMCJet->Fill(ptV0);
-	  }
-	  if(pdg == 2212){ // p/pbar
-	    
-	    fhdNdptpMCJet->Fill(ptV0);
-	  }
-	  if(pdg == -2212){ // p/pbar
-	    
-	    fhdNdptpBarMCJet->Fill(ptV0);
-	  }
+	
+	  if(TMath::Abs(pdg) == 211)  fhdNdptchPiMCJet->Fill(trackPt);
+	  if(TMath::Abs(pdg) == 321)  fhdNdptchKMCJet->Fill(trackPt);
+	  if(pdg == 2212)             fhdNdptpMCJet->Fill(trackPt);
+	  if(pdg == -2212)            fhdNdptpBarMCJet->Fill(trackPt);
+	  if(pdg == 3122)             fhdNdptLambdaMCJet->Fill(trackPt);
+	  if(pdg == -3122)            fhdNdptLambdaBarMCJet->Fill(trackPt);  
 	}
       }
     }
@@ -3181,10 +3588,32 @@ Bool_t  AliAnalysisTaskJetChem::IsQuarkHardScatteringEvent(const Int_t PID){
   // if Pythia PID = 13, 28, 68 hard scattering products are gg, qg 
   // if Pythia PID = 11, 12, 53 hard scattering products are qq,  q\bar{q}  
 
-
-  if(PID == 92 || PID == 93 || PID == 94) return kFALSE;
+  if(PID == 92 || PID == 93 || PID == 94 || PID==95) return kFALSE;
   else if(PID == 13 || PID == 28 || PID == 68) return kFALSE;
   else if(PID == 11 || PID == 12 || PID == 53) return kTRUE;
+  else{
+    AliInfo(Form("unknown Pythia PID %d",PID));
+  }
+
+  return kFALSE;
+}
+
+
+// ---------------------------------------------------------------------------------
+
+Bool_t  AliAnalysisTaskJetChem::IsGluonHardScatteringEvent(const Int_t PID){
+
+  // Pythia Manual sec. 8.2.1 : 
+  // if Pythia PID = 92,93,94   event is diffractive 
+  // if Pythia PID = 95: low pt event (MPI) 
+  // if Pythia PID = 13, 28, 68 hard scattering products are gg, qg 
+  // if Pythia PID = 11, 12, 53 hard scattering products are qq,  q\bar{q}  
+
+
+  if(PID == 92 || PID == 93 || PID == 94 || PID == 95) return kFALSE;
+  else if(PID == 13 || PID == 68) return kTRUE;
+  else if(PID == 28) return kFALSE; // mixed gq final state
+  else if(PID == 11 || PID == 12 || PID == 53) return kFALSE;
   else{
     AliInfo(Form("unknown Pythia PID %d",PID));
   }
@@ -3205,7 +3634,7 @@ Bool_t  AliAnalysisTaskJetChem::IsDiffractiveEvent(const Int_t PID){
 
   if(PID == 13 || PID == 28 || PID == 68) return kFALSE;
   else if(PID == 11 || PID == 12 || PID == 53) return kFALSE;
-  else if(PID == 92 || PID == 93 || PID == 94) return kTRUE;
+  else if(PID == 92 || PID == 93 || PID == 94 || PID==95) return kTRUE;
   else{
     AliInfo(Form("unknown Pythia PID %d",PID));
   }
@@ -3245,3 +3674,179 @@ Int_t AliAnalysisTaskJetChem::GetPythiaProcessID(){
   return pid;
 
 }
+
+// ----------------------------------------------------------------------------------
+
+void AliAnalysisTaskJetChem::GetJetTracksResum(TList* list, AliAODJet* jet, const Double_t radius){
+  
+
+  if(!jet) return; // no jet in acc in event
+
+  // list of AOD tracks in jet cone, using cone axis and distance axis-track (and not trackrefs)
+
+  Int_t nTracks = fAOD->GetNTracks();
+
+  if(!nTracks) return;
+
+  Double_t jetMom[3];
+  jet->PxPyPz(jetMom);
+  TVector3 jet3mom(jetMom);
+    
+  
+  // standard cuts + ITS refit = stdrd PWG4 cut (compose them for productions with old ESDFilter task) 
+
+  for (Int_t itrack=0; itrack<nTracks; itrack++) {
+
+    AliAODTrack* track = fAOD->GetTrack(itrack);
+    
+    UInt_t status = track->GetStatus();
+
+    if(!track->TestFilterBit(fFilterBitJF)) continue; // track cut selection
+    if(fRequireITSRefitJF &&  ((status&AliESDtrack::kITSrefit)==0)) continue;  
+
+    if(TMath::Abs(track->Eta()) > fTrackEtaCut) continue; 
+    if( track->Pt() < fTrackPtCutJF ) continue;
+
+    Double_t trackMom[3];
+    track->PxPyPz(trackMom);
+    TVector3 track3mom(trackMom);
+
+    Double_t dR = jet3mom.DeltaR(track3mom);
+
+    if(dR<radius){
+
+      list->Add(track);
+      
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------------
+
+void AliAnalysisTaskJetChem::GetJetTracksTrackrefs(TList* list, AliAODJet* jet){
+  
+  if(!jet) return; // no jet in acc in event
+
+  // list of AOD tracks in jet cone, using trackrefs
+  
+  Int_t nTracks = jet->GetRefTracks()->GetEntriesFast();
+
+  if(!nTracks) return;
+  
+  // standard cuts + ITS refit = stdrd PWG4 cut (compose them for productions with old ESDFilter task) 
+
+  for (Int_t itrack=0; itrack<nTracks; itrack++) {
+
+    AliAODTrack* track = (AliAODTrack*) jet->GetRefTracks()->At(itrack);
+
+    UInt_t status = track->GetStatus();
+
+    if(!track->TestFilterBit(fFilterBitJF)) continue; // track cut selection
+    if(fRequireITSRefitJF &&  ((status&AliESDtrack::kITSrefit)==0)) continue;  
+
+    if(TMath::Abs(track->Eta()) > fTrackEtaCut) continue; 
+    if( track->Pt() < fTrackPtCutJF ) continue;
+        
+    list->Add(track);
+  }
+
+  //cout<<" trackrefs Size "<<nTracks<<" acc track list size "<<list->GetEntries()<<endl;
+
+}
+
+
+// ----------------------------------------------------------------------------------
+
+void AliAnalysisTaskJetChem::FillReferenceFF(AliAODJet* jet){
+  
+
+  if(!jet) return;
+
+  TList* jetTracks = new TList(); // FIXME - avoid new/delete
+  //GetJetTracksResum(jetTracks,jet,0.7); 
+  GetJetTracksTrackrefs(jetTracks,jet); 
+
+  Double_t jetpt = jet->Pt();
+
+  TIter next(jetTracks);
+  while(AliAODTrack* track = static_cast<AliAODTrack*>(next())){
+    
+    Double_t trackpt = track->Pt();
+    Double_t z       = trackpt/jetpt;
+    Double_t xi      = TMath::Log(1/z);
+    
+    //cout<<" trackpt "<<trackpt<<" jetpt "<<jetpt<<" z "<<z<<" xi "<<xi<<endl;
+
+    if(5<jetpt && jetpt<=10){
+      fhdNdptTracksJetPt5to10->Fill(trackpt);
+      fhdNdzJets5to10->Fill(z);
+      fhdNdxiJets5to10->Fill(xi);
+    }
+    else if(10<jetpt && jetpt<=20){
+      fhdNdptTracksJetPt10to20->Fill(trackpt);
+      fhdNdzJets10to20->Fill(z);
+      fhdNdxiJets10to20->Fill(xi);
+    }
+    else if(20<jetpt && jetpt<=30){
+      fhdNdptTracksJetPt20to30->Fill(trackpt);
+      fhdNdzJets20to30->Fill(z);
+      fhdNdxiJets20to30->Fill(xi);
+    }
+    else if(30<jetpt && jetpt<=40){
+      fhdNdptTracksJetPt30to40->Fill(trackpt);
+      fhdNdzJets30to40->Fill(z);
+      fhdNdxiJets30to40->Fill(xi);
+    }
+    else if(40<jetpt && jetpt<=60){
+      fhdNdptTracksJetPt40to60->Fill(trackpt);
+      fhdNdzJets40to60->Fill(z);
+      fhdNdxiJets40to60->Fill(xi);
+    }
+  }
+
+  
+  delete jetTracks;
+  
+}
+
+// -------------------------------------------------------------
+
+void AliAnalysisTaskJetChem::FillReferencePlotsTracks(){
+
+  // eta/phi & pt tracks before/after cuts
+  // track multiplicity / evt
+
+  Int_t nTracks     = fAOD->GetNTracks();
+  Int_t countTracks = 0;
+
+  // standard cuts + ITS refit = stdrd PWG4 cut (compose them for productions with old ESDFilter task) 
+
+  for(Int_t itrack=0; itrack<nTracks; itrack++){
+    
+    AliAODTrack* track = fAOD->GetTrack(itrack);
+    
+    Double_t trackPt  = track->Pt();
+    Double_t trackPhi = track->Phi();
+    Double_t trackEta = track->Eta();
+
+    fhPhiEtaTracksNoCut->Fill(trackEta,trackPhi);
+    fhPtTracksNoCut->Fill(trackPt);
+    
+    UInt_t status = track->GetStatus();
+    
+    if(!track->TestFilterBit(fFilterBitJF)) continue; // track cut selection
+    if(fRequireITSRefitJF &&  ((status&AliESDtrack::kITSrefit)==0)) continue;  
+
+    fhPhiEtaTracks->Fill(trackEta,trackPhi);
+    fhPtTracks->Fill(trackPt);
+
+    if(TMath::Abs(track->Eta()) > fTrackEtaCut) continue; 
+    if( track->Pt() < fTrackPtCutJF ) continue;
+
+    countTracks++;
+    
+  }
+
+  fhTrackMult->Fill(countTracks);
+}
+
