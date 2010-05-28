@@ -239,7 +239,10 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 // Filling Raws QA histos
 //
     rawReader->Reset() ; 
-   // rawReader->Select("HMPID",1536,1549);
+    Int_t hmpDaqId = AliDAQ::DetectorID("HMPID");                               // shoudl be number 6
+    const UInt_t *detPattern = rawReader->GetDetectorPattern(); 
+    UInt_t isHmpInRawData = ( ((1 << hmpDaqId) & detPattern[0]) >> hmpDaqId);   // check the 6th bit if HMP is there or not
+    if (! isHmpInRawData ) return;                                              // if HMP is not in the event then skip it
     
     AliHMPIDRawStream stream(rawReader);
     Int_t ddlOcc[14]={0};  
@@ -303,7 +306,7 @@ void AliHMPIDQADataMakerRec::MakeDigits()
 }  
   
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDQADataMakerRec::MakeDigits(TTree * data)
+void AliHMPIDQADataMakerRec::MakeDigits(TTree * digTree)
 {
   //
   //Opening the Digit Tree
@@ -317,8 +320,9 @@ void AliHMPIDQADataMakerRec::MakeDigits(TTree * data)
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
     fChannel = iCh ; 
     fDigitsArray->Clear() ; 
-    data->SetBranchAddress(Form("HMPID%i",iCh),&fDigitsArray);
-    data->GetEntry(0);
+    TBranch *branch = digTree->GetBranch(Form("HMPID%d",iCh));
+    branch->SetAddress(&fDigitsArray);
+    branch->GetEntry(0); 
     MakeDigits();
   }
 }
