@@ -71,6 +71,7 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetUseSDDCorrectionMaps(kTRUE); // changed 30.04.2010
     itsRecoParam->SetUseSDDClusterSizeSelection(kTRUE);
     itsRecoParam->SetMinClusterChargeSDD(30.);
+    itsRecoParam->SetUseUnfoldingInClusterFinderSDD(kFALSE);
 
     // Plane Efficiency evaluation with tracklets Method
     itsRecoParam->SetIPlanePlaneEff(-1);
