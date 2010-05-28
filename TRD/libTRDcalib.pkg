@@ -1,6 +1,7 @@
 #-*- Mode: Makefile -*-
 
-SRCS = AliTRDCalibTask.cxx 
+SRCS = AliTRDCalibTask.cxx \
+       AliTRDPreprocessorOffline.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

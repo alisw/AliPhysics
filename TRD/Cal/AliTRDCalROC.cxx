@@ -229,10 +229,10 @@ Double_t AliTRDCalROC::GetMean(AliTRDCalROC* const outlierROC) const
    Int_t nPoints = 0;
    for (Int_t i=0;i<fNchannels;i++) {
       if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
-	if(fData[i] > 0.000000000000001){
+	//if(fData[i] > 0.000000000000001){
          ddata[nPoints]= (Double_t) fData[i]/10000;
          nPoints++;
-	}
+	 //}
       }
    }
    Double_t mean = TMath::Mean(nPoints,ddata);
@@ -273,10 +273,10 @@ Double_t AliTRDCalROC::GetRMS(AliTRDCalROC* const outlierROC) const
   Int_t nPoints = 0;
   for (Int_t i=0;i<fNchannels;i++) {
     if ((!outlierROC) || (!(outlierROC->GetValue(i)))) {
-       if(fData[i] > 0.000000000000001){
+      //if(fData[i] > 0.000000000000001){
          ddata[nPoints]= (Double_t)fData[i]/10000;
          nPoints++;
-       }
+	 //}
     }
   }
   Double_t mean = TMath::RMS(nPoints,ddata);
