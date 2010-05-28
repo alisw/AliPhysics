@@ -13,7 +13,7 @@
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
 
-class AliAODPidHF : public AliAODPid{
+class AliAODPidHF : public AliAODPid {
 
  public:
 
