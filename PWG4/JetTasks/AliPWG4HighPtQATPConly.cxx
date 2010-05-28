@@ -62,6 +62,7 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fESD(0), 
   fESDfriend(0), 
   fMC(0),
+  fCutType(1),
   fTrackCuts(0), 
   fTrackCutsITS(0),
   fMaxCosmicAngle(0.002),
@@ -166,6 +167,7 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fESD(0),
   fESDfriend(0), 
   fMC(0),
+  fCutType(1),  
   fTrackCuts(),
   fTrackCutsITS(),
   fMaxCosmicAngle(0.002),
@@ -1235,7 +1237,7 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
    
 //if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
     
-    Double_t cosMaxCosmicAngle[2] = {TMath::Cos(TMath::Pi()-fMaxCosmicAngle),TMath::Cos(TMath::Pi()+fMaxCosmicAngle)};
+//    Double_t cosMaxCosmicAngle[2] = {TMath::Cos(TMath::Pi()-fMaxCosmicAngle),TMath::Cos(TMath::Pi()+fMaxCosmicAngle)};
 //    if(cosTheta >= cosMaxCosmicAngle[0] && cosTheta <= cosMaxCosmicAngle[1]) { 
     candidate1 = kTRUE; candidate2 = kTRUE;//}
     if(candidate2) {

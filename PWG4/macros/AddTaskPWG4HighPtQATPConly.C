@@ -73,9 +73,8 @@ AliPWG4HighPtQATPConly* AddTaskPWG4HighPtQATPConly(int cuts=1)//1: Standard Cuts
   AliPWG4HighPtQATPConly *taskPWG4QA = new AliPWG4HighPtQATPConly(Form("AliPWG4HighPtQATPConly%d",cuts));
   taskPWG4QA->SetCuts(trackCuts);
   taskPWG4QA->SetCutsITS(trackCutsITS);
-  taskPWG4QA->SetMaxCosmicAngle(0.008);
+  taskPWG4QA->SetMaxCosmicAngle(1.);//0.008);
   taskPWG4QA->SetCutType(cuts);
-
  
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
