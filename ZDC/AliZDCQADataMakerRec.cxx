@@ -26,6 +26,7 @@
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH2F.h>
+#include <TLine.h>
 #include <TProfile.h>
 #include <Riostream.h>
 // --- Standard library ---
@@ -168,18 +169,17 @@ void AliZDCQADataMakerRec::InitRaws()
   // create Digits histograms in Digits subdir
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  
-  // **************************** NON EXPERT HISTOS ****************************
+
   TH1F * hZNCSpectrum = new TH1F("hZNCSpectrum","ZNC spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZPCSpectrum = new TH1F("hZPCSpectrum","ZPC spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZNASpectrum = new TH1F("hZNASpectrum","ZNA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZPASpectrum = new TH1F("hZPASpectrum","ZPA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
-  Add2RawsList(hZNCSpectrum, 0, !expert, image);
-  Add2RawsList(hZNASpectrum, 1, !expert, image);
-  Add2RawsList(hZPCSpectrum, 2, !expert, image);
-  Add2RawsList(hZPASpectrum, 3, !expert, image);
+  Add2RawsList(hZNCSpectrum, 0, expert, !image);
+  Add2RawsList(hZNASpectrum, 1, expert, !image);
+  Add2RawsList(hZPCSpectrum, 2, expert, !image);
+  Add2RawsList(hZPASpectrum, 3, expert, !image);
   Add2RawsList(hZEM1Spectrum, 4, !expert, image);
   Add2RawsList(hZEM2Spectrum, 5, !expert, image);
   //
@@ -192,15 +192,14 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hZNApmCvsPMq, 8, !expert, image);
   Add2RawsList(hZPApmCvsPMq, 9, !expert, image);
     
-  // **************************** EXPERT HISTOS ****************************
   TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawPMCZNA = new TH1F("hRawPMCZNA", "Raw ZNA PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawPMCZPC = new TH1F("hRawPMCZPC", "Raw ZPC PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawPMCZPA = new TH1F("hRawPMCZPA", "Raw ZPA PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
-  Add2RawsList(hRawPMCZNC, 10, expert, !image);
-  Add2RawsList(hRawPMCZNA, 11, expert, !image);
-  Add2RawsList(hRawPMCZPC, 12, expert, !image);
-  Add2RawsList(hRawPMCZPA, 13, expert, !image);
+  Add2RawsList(hRawPMCZNC, 10, !expert, image);
+  Add2RawsList(hRawPMCZNA, 11, !expert, image);
+  Add2RawsList(hRawPMCZPC, 12, !expert, image);
+  Add2RawsList(hRawPMCZPA, 13, !expert, image);
   TH1F * hRawSumQZNC = new TH1F("hRawSumQZNC", "Raw sumQ ZNC;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawSumQZNA = new TH1F("hRawSumQZNA", "Raw sumQ ZNA;Amplitude [ADC counts];Counts",100, 0., 1200.);
   TH1F * hRawSumQZPC = new TH1F("hRawSumQZPC", "Raw sumQ ZPC;Amplitude [ADC counts];Counts",100, 0., 1200.);
@@ -701,6 +700,46 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  for(Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+     if( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue; 
+     
+    if (!GetRawsData(4) || !GetRawsData(5) || !GetRawsData(6) || !GetRawsData(7) || 
+        !GetRawsData(8) || !GetRawsData(9) || !GetRawsData(10) || !GetRawsData(11) || 
+	!GetRawsData(12) || !GetRawsData(13)) {
+	 printf("  WARNING!!! AliZDCQADataMaker Rec -> No histogram for DQM found!\n") ; 
+	 continue;
+     }
+     
+     TLine* diag = new TLine(7., 7., 1407., 1407.);
+     diag->SetLineColor(kRed);
+     diag->SetLineWidth(2);
+     
+     ((TH2F*)GetRawsData(6))->GetListOfFunctions()->Add(diag);
+     ((TH2F*)GetRawsData(7))->GetListOfFunctions()->Add(diag);
+     ((TH2F*)GetRawsData(8))->GetListOfFunctions()->Add(diag);
+     ((TH2F*)GetRawsData(9))->GetListOfFunctions()->Add(diag);
+
+     GetRawsData(6)->SetOption("colz");
+     GetRawsData(7)->SetOption("colz");
+     GetRawsData(8)->SetOption("colz");
+     GetRawsData(9)->SetOption("colz");  
+     
+     GetRawsData(4)->SetLineColor(kBlue+1);  GetRawsData(4)->SetLineWidth(2);
+     GetRawsData(5)->SetLineColor(kBlue+2);  GetRawsData(5)->SetLineWidth(2);
+     GetRawsData(10)->SetLineColor(kBlue+3); GetRawsData(10)->SetLineWidth(2);
+     GetRawsData(11)->SetLineColor(kBlue+4); GetRawsData(11)->SetLineWidth(2);
+     GetRawsData(12)->SetLineColor(kBlue+5); GetRawsData(12)->SetLineWidth(2);
+     GetRawsData(13)->SetLineColor(kBlue+6); GetRawsData(13)->SetLineWidth(2);
+     
+     GetRawsData(4)->SetDrawOption("LOGY");
+     GetRawsData(5)->SetDrawOption("LOGY");
+     GetRawsData(10)->SetDrawOption("LOGY");
+     GetRawsData(11)->SetDrawOption("LOGY");
+     GetRawsData(12)->SetDrawOption("LOGY");
+     GetRawsData(13)->SetDrawOption("LOGY");
+
+  }
+	
   AliQAChecker::Instance()->Run(AliQAv1::kZDC, task, list) ;  
 }
 
