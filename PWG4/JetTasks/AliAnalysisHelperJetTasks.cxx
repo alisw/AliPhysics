@@ -243,7 +243,12 @@ void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cDir, char *cLi
   Int_t ibTotal = 0;
   while(in1>>cFile){
     fIn[ibTotal] = TFile::Open(cFile);
-    dIn[ibTotal] = (TDirectory*)fIn[ibTotal]->Get(cDir);
+    if(strlen(cDir)==0){
+      dIn[ibTotal] = gDirectory;
+    }
+    else{
+      dIn[ibTotal] = (TDirectory*)fIn[ibTotal]->Get(cDir);
+    }
     if(!dIn[ibTotal]){
       Printf("%s:%d No directory %s found, exiting...",__FILE__,__LINE__,cDir);
       fIn[ibTotal]->ls();
