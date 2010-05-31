@@ -198,29 +198,28 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use debugging     %d\n", (UInt_t)kUseDebug);
    printf(":: use PAR files     %d\n", (UInt_t)kUsePAR);
    printf(":: use AliEn plugin  %d\n", (UInt_t)kPluginUse);
-   printf(":: use PWG1 QA sym       %d\n", iPWG1QASym);
-   printf(":: use PWG4 Source Sara  %d\n",iPWG4TmpSourceSara);
-   printf(":: use PWG4 Source BB    %d\n",iPWG4TmpSourceFrag);
-   printf(":: use PWG4 Jet Chem     %d\n",iPWG4JetChem);
-   printf(":: use PWG4 Jet tasks    %d\n",iPWG4JetTasks);
-   printf(":: use PWG4 Jet Services %d\n",iPWG4JetServices);     
-   printf(":: use PWG4 Jet Spectrum %d\n",iPWG4JetSpectrum);
-   printf(":: use PWG4 JCORRAN %d\n",iPWG4JCORRAN);
-   printf(":: use PWG4 UE           %d \n",iPWG4UE); 
-   printf(":: use PWG4 Pt QA MC     %d\n",iPWG4PtQAMC);
-   printf(":: use PWG4 Pt Spectra   %d\n",iPWG4PtSpectra);
-   printf(":: use PWG4 Pt QA TPC    %d\n",iPWG4PtQATPC);     
-   printf(":: use PWG4 Three Jets   %d\n",iPWG4ThreeJets);
-   printf(":: use PWG4 KMeans       %d\n",iPWG4KMeans);
-   printf(":: use PWG4 Cluster       %d\n",iPWG4Cluster);
-   printf(":: use PWG4 Part Corr    %d\n",iPWG4PartCorr);
-   printf(":: use PWG4 Calo QA    %d\n",iPWG4CaloQA);
-   printf(":: use PWG4 Jet Corr    %d\n",iPWG4JetCorr);
-   printf(":: use PWG4 Tagged       %d\n",iPWG4Tagged);
-   printf(":: use PWG4 omega to 3 pions %d\n",iPWG4omega3pi);
-
-   printf(":: use PWG4 Gamma Conv   %d\n",iPWG4GammaConv);
-   printf(":: use HighPt FilterMask %d\n",kHighPtFilterMask);    
+   printf(":: use PWG1 QA sym         %d\n", iPWG1QASym);
+   printf(":: use PWG4 Source Sara    %d\n",iPWG4TmpSourceSara);
+   printf(":: use PWG4 Source BB      %d\n",iPWG4TmpSourceFrag);
+   printf(":: use PWG4 Jet Chem       %d\n",iPWG4JetChem);
+   printf(":: use PWG4 Jet tasks      %d\n",iPWG4JetTasks);
+   printf(":: use PWG4 Jet Services   %d\n",iPWG4JetServices);     
+   printf(":: use PWG4 Jet Spectrum   %d\n",iPWG4JetSpectrum);
+   printf(":: use PWG4 JCORRAN        %d\n",iPWG4JCORRAN);
+   printf(":: use PWG4 UE             %d \n",iPWG4UE); 
+   printf(":: use PWG4 Pt QA MC       %d\n",iPWG4PtQAMC);
+   printf(":: use PWG4 Pt Spectra     %d\n",iPWG4PtSpectra);
+   printf(":: use PWG4 Pt QA TPC      %d\n",iPWG4PtQATPC);     
+   printf(":: use PWG4 Three Jets     %d\n",iPWG4ThreeJets);
+   printf(":: use PWG4 KMeans         %d\n",iPWG4KMeans);
+   printf(":: use PWG4 Cluster        %d\n",iPWG4Cluster);
+   printf(":: use PWG4 Part Corr      %d\n",iPWG4PartCorr);
+   printf(":: use PWG4 Calo QA        %d\n",iPWG4CaloQA);
+   printf(":: use PWG4 Jet Corr       %d\n",iPWG4JetCorr);
+   printf(":: use PWG4 Tagged         %d\n",iPWG4Tagged);
+   printf(":: use PWG4 omega to 3 pi  %d\n",iPWG4omega3pi);
+   printf(":: use PWG4 Gamma Conv     %d\n",iPWG4GammaConv);
+   printf(":: use HighPt FilterMask   %d\n",kHighPtFilterMask);    
    
    //==========================================================================
    // Connect to back-end system
@@ -730,7 +729,7 @@ void CheckModuleFlags(const char *mode) {
       }
       // Disable tasks that do not work yet on AOD data
       if(iPWG4JCORRAN)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 JCORRAN disabled in analysis on AOD's");
-      iPWG$JCORRAN = 0;
+      iPWG4JCORRAN = 0;
       if( iPWG4PtQAMC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtQAMC disabled in analysis on AOD's");
       iPWG4PtQAMC        = 0;
       if( iPWG4PtQATPC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtTPC disabled in analysis on AOD's");
@@ -1103,7 +1102,7 @@ Bool_t LoadSource(const char *source, const char *mode, Bool_t rec=kFALSE)
       ::Error("AnalysisTrainPWG4Jets.C::LoadSource", "Empty task name");
       return kFALSE;
    }   
-    // we have a source code so compile it
+   // we have a source code so compile it
    if (ssource.EndsWith(".cxx")) {
      // need to copy it here other wise the path is also used on grid...
      ssource.Remove(ssource.Index(".cxx"));
