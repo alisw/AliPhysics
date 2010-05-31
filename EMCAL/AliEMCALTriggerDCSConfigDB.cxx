@@ -153,7 +153,7 @@ const TObject *AliEMCALTriggerDCSConfigDB::GetCachedCDBObject(Int_t id)
 	{
 		// Parameters defined per pad and chamber
 		case kIDTriggerConfig : 
-			return CacheCDBEntry(kIDTriggerConfig, "EMCAL/Config/Trigger"); 
+			return CacheCDBEntry(kIDTriggerConfig, "EMCAL/Calib/Trigger"); 
 			break;
 		default:			
 			AliError("Object not found!");
