@@ -749,9 +749,11 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
 
   if(fUseLOConeJets && fArrayJetsAOD){
     fArrayJetsAOD->Delete(); // no 'Clear': AliAODjet contains TMomentum and TRefArray
+    delete fArrayJetsAOD;
   }
   if(fUseLOConeMCJets && fArrayJetsMC){
     fArrayJetsMC->Delete(); // no 'Clear': AliAODjet contains TMomentum and TRefArray
+    delete fArrayJetsMC;
   }
 }
 
