@@ -354,7 +354,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   OpenFile(3);
   fHistListCosmics = new TList();
 
-
   Int_t fgkNPhiBins=18;
   Float_t kMinPhi = 0.;
   Float_t kMaxPhi = 2.*TMath::Pi();
@@ -905,6 +904,21 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fHistListCosmics->Add(fThetaZoom);
 
   TH1::AddDirectory(oldStatus);   
+
+  if(binsPhi) delete [] binsPhi;
+  if(binsChi2PerClus) delete [] binsChi2PerClus;
+  if(binsPt) delete [] binsPt;
+  if(binsResPt) delete [] binsResPt;
+  if(binsNPointTPC) delete [] binsNPointTPC;
+  if(binsNPointTPCS) delete [] binsNPointTPCS;
+  if(binsDCAR) delete [] binsDCAR;
+  if(binsDCAZ) delete [] binsDCAZ;
+  if(binsNPointITS) delete [] binsNPointITS;
+  if(binsNSigmaToVertex) delete [] binsNSigmaToVertex;
+  if(binsChi2C) delete [] binsChi2C;
+  if(binsEta) delete [] binsEta;
+  if(binsRel1PtUncertainty) delete [] binsRel1PtUncertainty;
+
 
 }
 //________________________________________________________________________

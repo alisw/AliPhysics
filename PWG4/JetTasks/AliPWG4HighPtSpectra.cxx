@@ -362,10 +362,12 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	int counter;
 	Float_t trackLengthTPC = 0.;
 	if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(3,mcPart)) {
+	  fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance) ;
 	  trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
 	  if(trackLengthTPC > (float)fTrackCuts->GetMinNClusterTPC()) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
 	}
 	if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(3,mcPart)) {
+	  fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance) ;
 	  trackLengthTPC = mcPart->GetTPCTrackLength(fESD->GetMagneticField(),0.1,counter,3.0);
 	  if(trackLengthTPC > (float)fTrackCuts->GetMinNClusterTPC()) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCtrackable) ;
 	}

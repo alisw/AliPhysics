@@ -39,7 +39,8 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
     kStepReconstructedTPCOnly = 1,
     kStepSecondaries          = 2,
     kStepMCtrackable          = 3,
-    kStepReconstructedMC      = 4
+    kStepReconstructedMC      = 4,
+    kStepMCAcceptance         = 5
   };
 
   AliPWG4HighPtSpectra();
