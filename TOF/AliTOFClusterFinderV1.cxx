@@ -63,6 +63,7 @@ ClassImp(AliTOFClusterFinderV1)
 
 //_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
+  TTask("AliTOFClusterFinderV1",""),
   fRunLoader(0),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
@@ -101,6 +102,7 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
 
 //_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcalib *calib):
+  TTask("AliTOFClusterFinderV1",""),
   fRunLoader(runLoader),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
@@ -139,7 +141,7 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
 //_____________________________________________________________________________
 
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source)
-  :TObject(source),
+  :TTask(source),
    fRunLoader(0),
    fDigits(source.fDigits),
    fRecPoints(source.fRecPoints),
@@ -237,6 +239,7 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
 
   Int_t inholes = 0;
 
+  fDigits->Clear();
   TClonesArray &aDigits = *fDigits;
 
   if (digitsTree == 0x0)
@@ -558,73 +561,92 @@ void AliTOFClusterFinderV1::FillRecPoint()
       for (Int_t iSector=0; iSector<AliTOFGeometry::NSectors(); iSector++) {
 
 
-	if (fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip)) AliDebug(1,Form(" Number of TOF digits in (%2d,%1d,%2d) -> %d",iSector,iPlate,iStrip,fTOFdigitMap->FilledCellsInStrip(iSector,iPlate,iStrip)));
+	if (fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))
+	  AliDebug(1,Form(" Number of TOF digits in (%2d,%1d,%2d) -> %d",
+			  iSector,iPlate,iStrip,fTOFdigitMap->FilledCellsInStrip(iSector,iPlate,iStrip)));
 
 	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 	FindClustersWithoutTOT(iSector, iPlate, iStrip); // clusters coming from digits without TOT measurement
 
+	if (fMaxDeltaTime>0) {
 
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	//if (fTOFdigitMap->FilledCellsInStrip(iSector,iPlate,iStrip)>=4)
-	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  //if (fTOFdigitMap->FilledCellsInStrip(iSector,iPlate,iStrip)>=4)
+	  FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
-	dummy4 = fNumberOfTofClusters;
-	FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
-	if (fNumberOfTofClusters!=dummy4)
-	  AliDebug(2, Form(" (4): n1= %5d, n2 = %5", dummy4, fNumberOfTofClusters));
-
-
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-
-	dummy3 = fNumberOfTofClusters;
-	FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
-	if (fNumberOfTofClusters!=dummy3)
-	  AliDebug(2, Form(" (3): n1= %5d, n2 = %5", dummy3, fNumberOfTofClusters));
+	  dummy4 = fNumberOfTofClusters;
+	  FindClustersPerStrip(iSector, iPlate, iStrip, 4); // 4 pads clusters
+	  if (fNumberOfTofClusters!=dummy4)
+	    AliDebug(2, Form(" (4): n1= %5d, n2 = %5", dummy4, fNumberOfTofClusters));
 
 
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
-	dummy2 = fNumberOfTofClusters;
-	FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
-	if (fNumberOfTofClusters!=dummy2)
-	  AliDebug(2, Form(" (2): n1= %5d, n2 =%5", dummy2, fNumberOfTofClusters));
-
-
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	dummy = fNumberOfTofClusters;
-	FindClusters34(iSector, iPlate, iStrip); // 3 pads clusters between 4 hit pads
-	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2, Form(" (3 between 4): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+	  dummy3 = fNumberOfTofClusters;
+	  FindClustersPerStrip(iSector, iPlate, iStrip, 3); // 3 pads clusters
+	  if (fNumberOfTofClusters!=dummy3)
+	    AliDebug(2, Form(" (3): n1= %5d, n2 = %5", dummy3, fNumberOfTofClusters));
 
 
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	dummy = fNumberOfTofClusters;
-	FindClusters23(iSector, iPlate, iStrip); // 2 pads clusters between 3 hit pads
-	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2, Form(" (2 between 3): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
 
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	dummy = fNumberOfTofClusters;
-	FindClusters24(iSector, iPlate, iStrip); // 2 pads clusters between 4 hit pads
-	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2, Form(" (2 between 4): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+	  dummy2 = fNumberOfTofClusters;
+	  FindClustersPerStrip(iSector, iPlate, iStrip, 2); // 2 pads clusters
+	  if (fNumberOfTofClusters!=dummy2)
+	    AliDebug(2, Form(" (2): n1= %5d, n2 =%5", dummy2, fNumberOfTofClusters));
 
 
-	if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
-	dummy = fNumberOfTofClusters;
-	FindOnePadClusterPerStrip(iSector, iPlate, iStrip); // 1 pad clusters
-	if (fNumberOfTofClusters!=dummy)
-	  AliDebug(2,Form(" (1): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  dummy = fNumberOfTofClusters;
+	  FindClusters34(iSector, iPlate, iStrip); // 3 pads clusters between 4 hit pads
+	  if (fNumberOfTofClusters!=dummy)
+	    AliDebug(2, Form(" (3 between 4): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
 
-	if (fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip)>0)
-	  AliDebug(2, Form(" (1): number of clusters = %5d (remaining digit %2d), -%2d %1d %2d-",
-			   fNumberOfTofClusters, fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip),
-			   iSector, iPlate, iStrip));
+
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  dummy = fNumberOfTofClusters;
+	  FindClusters23(iSector, iPlate, iStrip); // 2 pads clusters between 3 hit pads
+	  if (fNumberOfTofClusters!=dummy)
+	    AliDebug(2, Form(" (2 between 3): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  dummy = fNumberOfTofClusters;
+	  FindClusters24(iSector, iPlate, iStrip); // 2 pads clusters between 4 hit pads
+	  if (fNumberOfTofClusters!=dummy)
+	    AliDebug(2, Form(" (2 between 4): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+
+
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  dummy = fNumberOfTofClusters;
+	  FindOnePadClusterPerStrip(iSector, iPlate, iStrip); // 1 pad clusters
+	  if (fNumberOfTofClusters!=dummy)
+	    AliDebug(2,Form(" (1): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+
+	  if (fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip)>0)
+	    AliDebug(2, Form(" (1): number of clusters = %5d (remaining digit %2d), -%2d %1d %2d-",
+			     fNumberOfTofClusters, fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip),
+			     iSector, iPlate, iStrip));
+
+	}
+	else {
+	  if (!(fTOFdigitMap->StripDigitCheck(iSector,iPlate,iStrip))) continue;
+	  dummy = fNumberOfTofClusters;
+	  FindOnePadClusterPerStrip(iSector, iPlate, iStrip); // 1 pad clusters
+	  if (fNumberOfTofClusters!=dummy)
+	    AliDebug(2,Form(" (1): n1 = %5d, n2 = %5d", fNumberOfTofClusters, dummy));
+
+	  if (fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip)>0)
+	    AliDebug(2, Form(" (1): number of clusters = %5d (remaining digit %2d), -%2d %1d %2d-",
+			     fNumberOfTofClusters, fTOFdigitMap->DigitInStrip(iSector,iPlate,iStrip),
+			     iSector, iPlate, iStrip));
+
+	}
+
 
       }
     }
@@ -743,7 +765,7 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
   Bool_t status = kTRUE; //assume all sim channels ok in the beginning...
 
   Int_t tracks[kMaxNumberOfTracksPerDigit];
-  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+  for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
 
   Int_t dummyCounter=-1;
 
@@ -863,7 +885,7 @@ void AliTOFClusterFinderV1::FindClustersWithoutTOT(Int_t nSector,
 
   Bool_t status = kTRUE; //assume all sim channels ok in the beginning...
   Int_t tracks[kMaxNumberOfTracksPerDigit];
-  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+  for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
 
   Int_t dummyCounter=-1;
 
@@ -1026,7 +1048,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
   Double_t covClus[6];
   for (jj=0; jj<6; jj++) covClus[jj] = 0.;
   Int_t tracks[kMaxNumberOfTracksPerDigit];
-  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+  for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
   Int_t dummyCounter=-1;
   Bool_t alreadyStored = kFALSE;
 
@@ -1400,12 +1422,16 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 
   } // loop on iPad
 
-  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++)
+  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++) {
     for (jj=0; jj<kMaxNumberOfDigitsPerVolume; jj++) {
-      delete selectedDigit[ii][jj];
+      delete [] selectedDigit[ii][jj];
       selectedDigit[ii][jj] = 0x0;
     }
-
+    delete [] selectedDigit[ii];
+    selectedDigit[ii] = 0x0;
+  }
+  delete selectedDigit;
+  selectedDigit = 0x0;
 
 }
 //_____________________________________________________________________________
@@ -1486,7 +1512,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
   Double_t covClus[6];
   for (jj=0; jj<6; jj++) covClus[jj] = 0.;
   Int_t tracks[kMaxNumberOfTracksPerDigit];
-  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+  for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
   Int_t dummyCounter=-1;
   Bool_t alreadyStored = kFALSE;
 
@@ -1802,12 +1828,16 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 
   } // loop on iPad
 
-  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++)
+  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++) {
     for (jj=0; jj<kMaxNumberOfDigitsPerVolume; jj++) {
-      delete selectedDigit[ii][jj];
+      delete [] selectedDigit[ii][jj];
       selectedDigit[ii][jj] = 0x0;
     }
-
+    delete [] selectedDigit[ii];
+    selectedDigit[ii] = 0x0;
+  }
+  delete selectedDigit;
+  selectedDigit = 0x0;
 
 }
 //_____________________________________________________________________________
@@ -1888,7 +1918,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
   Double_t covClus[6];
   for (jj=0; jj<6; jj++) covClus[jj] = 0.;
   Int_t tracks[kMaxNumberOfTracksPerDigit];
-  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+  for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
   Int_t dummyCounter=-1;
   Bool_t alreadyStored = kFALSE;
 
@@ -2205,12 +2235,16 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 
   } // loop on iPad
 
-  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++)
+  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++) {
     for (jj=0; jj<kMaxNumberOfDigitsPerVolume; jj++) {
-      delete selectedDigit[ii][jj];
+      delete [] selectedDigit[ii][jj];
       selectedDigit[ii][jj] = 0x0;
     }
-
+    delete [] selectedDigit[ii];
+    selectedDigit[ii] = 0x0;
+  }
+  delete selectedDigit;
+  selectedDigit = 0x0;
 
 }
 //_____________________________________________________________________________
@@ -2301,7 +2335,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
   Double_t covClus[6];
   for (jj=0; jj<6; jj++) covClus[jj] = 0.;
   Int_t tracks[kMaxNumberOfTracksPerDigit];
-  for (jj=0; jj<3; jj++) tracks[jj] = -1;
+  for (jj=0; jj<kMaxNumberOfTracksPerDigit; jj++) tracks[jj] = -1;
   Int_t dummyCounter=-1;
   Bool_t alreadyStored = kFALSE;
 
@@ -2509,8 +2543,8 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
 	      if (TMath::Abs(selectedDigit[adesso1][firstIndex]->GetTDC()-selectedDigit[adesso2][secondIndex]->GetTDC())>fMaxDeltaTime) {
 		AliDebug(1,Form(" selD1[%d][%d]->GetTDC()=%d selD2[%d][%d]->GetTDC()=%d -- %d ",
-				adesso1,firstIndex,selectedDigit[adesso1][firstIndex]->GetTDC(),
-				adesso2,secondIndex,selectedDigit[adesso2][secondIndex]->GetTDC(),
+				adesso1,firstIndex,(Int_t)selectedDigit[adesso1][firstIndex]->GetTDC(),
+				adesso2,secondIndex,(Int_t)selectedDigit[adesso2][secondIndex]->GetTDC(),
 				fMaxDeltaTime));
 		continue;
 	      }
@@ -3082,11 +3116,16 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 
   } // loop on iPad
 
-  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++)
+  for (ii=0; ii<kMaxNumberOfInterestingPads; ii++) {
     for (jj=0; jj<kMaxNumberOfDigitsPerVolume; jj++) {
-      delete selectedDigit[ii][jj];
+      delete [] selectedDigit[ii][jj];
       selectedDigit[ii][jj] = 0x0;
     }
+    delete [] selectedDigit[ii];
+    selectedDigit[ii] = 0x0;
+  }
+  delete selectedDigit;
+  selectedDigit = 0x0;
 
 }
 //_____________________________________________________________________________

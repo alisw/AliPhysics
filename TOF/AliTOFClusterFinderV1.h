@@ -7,6 +7,7 @@
 // and feed TOF tracking 
 
 #include "TObject.h"
+#include "TTask.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
@@ -22,45 +23,59 @@ class AliTOFcalib;
 class AliTOFDigitMap;
 class AliTOFRecoParam;
 
-class AliTOFClusterFinderV1 : public TObject
+class  AliTOFselectedDigit : public TObject { 
+ public:
+  AliTOFselectedDigit() :
+    fTDC(0.),fADC(0.),fTOT(0.),fWeight(0.),fIndex(-1) {
+    for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=-1;
+    for (Int_t ii=0; ii<3; ii++) fTrackLabel[ii]=-1;
+  };
+  AliTOFselectedDigit(Int_t * const ind, Double_t h1, Double_t h2, Double_t h3, Double_t h4, Int_t idx, Int_t * const l):
+    TObject(),
+    fTDC(h1),fADC(h2),fTOT(h3),fWeight(h4),fIndex(idx) {
+    for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=ind[ii];
+    for (Int_t ii=0; ii<3; ii++) fTrackLabel[ii]=l[ii];
+  };
+  AliTOFselectedDigit(const AliTOFselectedDigit & source) :
+    TObject(source),
+    fTDC(source.fTDC),fADC(source.fADC),fTOT(source.fTOT),fWeight(source.fWeight),fIndex(source.fIndex)
+    {
+      for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=source.fDetectorIndex[ii];
+      for (Int_t ii=0; ii<3; ii++) fTrackLabel[ii]=source.fTrackLabel[ii];
+    };
+  AliTOFselectedDigit & operator=(const AliTOFselectedDigit & source)
+    { if (this == &source) return *this;
+      TObject::operator=(source);
+      for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=source.fDetectorIndex[ii];
+      fTDC=source.fTDC;fADC=source.fADC;fTOT=source.fTOT;fWeight=source.fWeight;fIndex=source.fIndex;
+      for (Int_t ii=0; ii<3; ii++) fTrackLabel[ii]=source.fTrackLabel[ii];
+      return *this; };
+
+  Double_t GetTDC()    const {return fTDC;} // digit TOF
+  Double_t GetADC()    const {return fADC;} // digit ADC
+  Double_t GetTOT()    const {return fTOT;} // digit TOT
+  Double_t GetWeight() const {return fWeight;} // digit weight
+  Int_t GetTrackLabel(Int_t n)    const {return fTrackLabel[n];} // Labels of tracks in digit
+  Int_t GetDetectorIndex(Int_t n) const {return fDetectorIndex[n];} // Digit Detector Index n
+  Int_t GetIndex()     const {return fIndex;} // Digit Index
+
+ private: 
+
+  Int_t fDetectorIndex[5]; //digit detector indices (sector, plate, strip, padX, padZ) 
+  Double_t fTDC; //TDC count
+  Double_t fADC; //ADC count
+  Double_t fTOT; //TOT count
+  Double_t fWeight; //weight
+  Int_t fIndex; //index of the digit in the TOF digit tree
+  Int_t fTrackLabel[3]; //track labels
+
+}; 
+
+
+class AliTOFClusterFinderV1 : public TTask
 {
 
   enum {kTofMaxCluster=77777}; //maximal number of the TOF clusters
-
-
-  class AliTOFselectedDigit { 
-    friend class AliTOFClusterFinderV1; // to define AliTOFClusterFinderV1 friend object
-   public:
-   AliTOFselectedDigit() :
-     fTDC(0.),fADC(0.),fTOT(0.),fWeight(0.),fIndex(-1) {
-       for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=-1;
-       for (Int_t ii=0; ii<3; ii++) fTrackLabel[ii]=-1;
-   };
-   AliTOFselectedDigit(Int_t * const ind, Double_t h1, Double_t h2, Double_t h3, Double_t h4, Int_t idx, Int_t * const l):
-     fTDC(h1),fADC(h2),fTOT(h3),fWeight(h4),fIndex(idx) {
-     for (Int_t ii=0; ii<5; ii++) fDetectorIndex[ii]=ind[ii];
-     for (Int_t ii=0; ii<5; ii++) fTrackLabel[ii]=l[ii];
-   };
-
-
-   Double_t GetTDC()    const {return fTDC;} // digit TOF
-   Double_t GetADC()    const {return fADC;} // digit ADC
-   Double_t GetTOT()    const {return fTOT;} // digit TOT
-   Double_t GetWeight() const {return fWeight;} // digit weight
-   Int_t GetTrackLabel(Int_t n)    const {return fTrackLabel[n];} // Labels of tracks in digit
-   Int_t GetDetectorIndex(Int_t n) const {return fDetectorIndex[n];} // Digit Detector Index n
-   Int_t GetIndex()     const {return fIndex;} // Digit Index
-
-   private: 
-
-   Int_t fDetectorIndex[5]; //digit detector indices (sector, plate, strip, padX, padZ) 
-   Double_t fTDC; //TDC count
-   Double_t fADC; //ADC count
-   Double_t fTOT; //TOT count
-   Double_t fWeight; //weight
-   Int_t fIndex; //index of the digit in the TOF digit tree
-   Int_t fTrackLabel[3]; //track labels
-   }; 
 
  public:
 
@@ -147,7 +162,7 @@ class AliTOFClusterFinderV1 : public TObject
 
   Bool_t fCalibrateTOFtimes;     // used for check
 
-  ClassDef(AliTOFClusterFinderV1,3) // To run TOF clustering
+  ClassDef(AliTOFClusterFinderV1,4) // To run TOF clustering
 };
 #endif
 
