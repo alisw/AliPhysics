@@ -8,7 +8,7 @@ const Float_t etamax = 0.9;
 const Float_t dcarmin = -0.2;
 const Float_t dcarmax = 0.2;
 const Float_t chi2TPCmin = 0.0;
-const Float_t chi2TPCmax = 3.5;
+const Float_t chi2TPCmax = 4.;
 
 const Float_t ptmin1 =  ptmin ;
 const Float_t ptmax1 =  10.0 ;
@@ -61,6 +61,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   Int_t kStepSecondaries = 2;
   Int_t kStepMCtrackable = 3;
   Int_t kStepReconstructedMC = 4;
+  Int_t kStepMCAcceptance = 5;
   
   const Int_t nvar   = 5; //number of variables on the grid:pt
   const Int_t nbin11 = (int)(ptmax1-ptmin1);
@@ -70,7 +71,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   const Int_t nbin2  =  18;//36; //bins in phi
   const Int_t nbin3  =  9; //bins in eta
   const Int_t nbin4  =  40; //bins in DCAR
-  const Int_t nbin5  =  35; //bins in Chi2/#NclusTPC
+  const Int_t nbin5  =  20; //bins in Chi2/#NclusTPC
 
   //arrays for the number of bins in each dimension
   Int_t iBin[nvar];
