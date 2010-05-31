@@ -291,6 +291,7 @@ void Config()
     {
         //============================ TPC parameters ===================
         AliTPC *TPC = new AliTPCv2("TPC", "Default");
+	TPC->SetPrimaryIonisation();
     }
 
 
