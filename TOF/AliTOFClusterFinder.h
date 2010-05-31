@@ -6,7 +6,7 @@
 // Task: Transform digits/raw data to TOF Clusters, to fill TOF RecPoints
 // and feed TOF tracking 
 
-#include "TObject.h"
+#include "TTask.h"
 
 #include "AliTOFRawStream.h"
 
@@ -22,7 +22,7 @@ class AliTOFGeometry;
 class AliTOFcluster;
 class AliTOFcalib;
 
-class AliTOFClusterFinder : public TObject
+class AliTOFClusterFinder : public TTask
 {
 
   enum {kTofMaxCluster=77777}; //maximal number of the TOF clusters
@@ -83,7 +83,7 @@ class AliTOFClusterFinder : public TObject
   AliTOFcalib *fTOFcalib;         // pointer to the TOF calibration info
   AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
 
-  ClassDef(AliTOFClusterFinder,5) // To run TOF clustering
+  ClassDef(AliTOFClusterFinder,6) // To run TOF clustering
 };
 #endif
 

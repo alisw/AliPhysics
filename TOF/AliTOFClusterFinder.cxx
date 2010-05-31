@@ -140,6 +140,7 @@ Revision 0.01  2005/07/25 A. De Caro
 ClassImp(AliTOFClusterFinder)
 
 AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
+  TTask("AliTOFClusterFinder",""),
   fRunLoader(0),
   fTOFLoader(0),
   fTreeD(0),
@@ -168,6 +169,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
 //______________________________________________________________________________
 
 AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *calib):
+  TTask("AliTOFClusterFinder",""),
   fRunLoader(runLoader),
   fTOFLoader(runLoader->GetLoader("TOFLoader")),
   fTreeD(0),
@@ -195,7 +197,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
 
 //------------------------------------------------------------------------
 AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
-  :TObject(source),
+  :TTask(source),
   fRunLoader(0),
   fTOFLoader(0),
   fTreeD(0),
@@ -219,7 +221,7 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   if (this == &source)
     return *this;
 
-  TObject::operator=(source);  
+  TTask::operator=(source);  
   fDigits=source.fDigits;
   fRecPoints=source.fRecPoints;
   fVerbose=source.fVerbose;
