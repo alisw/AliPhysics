@@ -20,8 +20,6 @@ ClassImp(AliVZEROdigit)
 //__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit()
    :AliDigit(),
-    fTrack(0),
-    fEvent(0),
     fPMNumber(0),
     fADC(0.),
     fTime(0.),
@@ -31,70 +29,34 @@ AliVZEROdigit::AliVZEROdigit()
     fIntegrator(0)
 
 {
-  // Standard default constructor 
-}
-
-//__________________________________________________________________________
-AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits)
-   :AliDigit(tracks),
-   fTrack(0),
-   fEvent(0),
-   fPMNumber(0),
-   fADC(0.),
-   fTime(0.),
-   fWidth(0.),
-   fBBFlag(0),
-   fBGFlag(0),
-   fIntegrator(0)
-  
-{
-  // Creates VZERO digits  
-  // Fills the AliVZEROdigit data members from the array digits. 
-    
-  fTrack      =  tracks[0];
-  fEvent      =  digits[0];  
+  // Standard default
+  // constructor 
+  for(Int_t iClock = 0; iClock < kNClocks; ++iClock) fChargeADC[iClock] = 0;
 }
 
 //__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Float_t adc, Float_t time)
    :AliDigit(),
-   fTrack(0),
-   fEvent(0),
-   fPMNumber(0),
-   fADC(0.),
-   fTime(0.),
+   fPMNumber(PMnumber),
+   fADC(adc),
+   fTime(time),
    fWidth(0.),
    fBBFlag(0),
    fBGFlag(0),
    fIntegrator(0)
 {  
-   fPMNumber   = PMnumber;
-   fADC        = adc;
-   fTime       = time;
+  // Constructor
+  // so far used in raw->sdigits
+  for(Int_t iClock = 0; iClock < kNClocks; ++iClock) fChargeADC[iClock] = 0;
 }
 
-//__________________________________________________________________________
-AliVZEROdigit::AliVZEROdigit(Int_t  PMnumber, Float_t adc, Float_t time, 
-                             Float_t width, Bool_t BeamBeamFlag, Bool_t BeamGasFlag)
-   :AliDigit(),
-   fTrack(0),
-   fEvent(0),
-   fPMNumber(PMnumber),
-   fADC(adc),
-   fTime(time),
-   fWidth(width),
-   fBBFlag(BeamBeamFlag),
-   fBGFlag(BeamGasFlag),
-   fIntegrator(0)
-{  
-
-}
 //__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit(Int_t   PMnumber, Float_t adc, Float_t time, 
-                             Float_t width, Bool_t BeamBeamFlag, Bool_t BeamGasFlag, Bool_t integrator)
+                             Float_t width, Bool_t BeamBeamFlag, Bool_t BeamGasFlag,
+			     Bool_t integrator,
+			     Short_t *chargeADC,
+			     Int_t *labels)
 :AliDigit(),
-fTrack(0),
-fEvent(0),
 fPMNumber(PMnumber),
 fADC(adc),
 fTime(time),
@@ -103,15 +65,24 @@ fBBFlag(BeamBeamFlag),
 fBGFlag(BeamGasFlag),
 fIntegrator(integrator)
 {  
-	
+  // Constructor
+  // Used in the digitizer
+  if (chargeADC) {
+    for(Int_t iClock = 0; iClock < kNClocks; ++iClock)
+      fChargeADC[iClock] = chargeADC[iClock];
+  }
+  else {
+    for(Int_t iClock = 0; iClock < kNClocks; ++iClock)
+      fChargeADC[iClock] = 0;
+  }
+
+  if (labels)
+    for(Int_t iTrack = 0; iTrack < 3; ++iTrack) fTracks[iTrack] = labels[iTrack];
 }
 
 //__________________________________________________________________________
 void AliVZEROdigit::Print(const Option_t*) const
 {
     // Dumps digit object
-    
     Dump();
 }
-
-

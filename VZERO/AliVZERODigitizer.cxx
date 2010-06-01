@@ -237,10 +237,12 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   // Creates digits from hits
   fNdigits     =    0;  
 
+  Int_t labels[64][3];
   for(Int_t i = 0 ; i < 64; ++i) {
     memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
     for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
     fLeadingTime[i] = fTimeWidth[i] = 0;
+    labels[i][0] = labels[i][1] = labels[i][2] = -1;
   }
   Float_t integral = fPMResponse->Integral(-kPMRespTime,2.*kPMRespTime);
   Float_t meansPhE = fSinglePhESpectrum->Mean(0,20);
@@ -306,6 +308,13 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	   Int_t nPhot = hit->Nphot();
 	   Int_t cell  = hit->Cell();                          
 	   Int_t pmt = Cell2Pmt(cell);
+	   Int_t trackLabel = hit->GetTrack();
+	   for(Int_t l = 0; l < 3; ++l) {
+	     if (labels[pmt][l] < 0) {
+	       labels[pmt][l] = trackLabel;
+	       break;
+	     }
+	   }
 	   Float_t dt_scintillator = gRandom->Gaus(0,kIntTimeRes);
 	   Float_t t = dt_scintillator + 1e9*hit->Tof();
 	   if (pmt < 32) t += kV0CDelayCables;
@@ -380,22 +389,23 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	
   // Now add digits to the digit Tree 
 
+  Short_t *chargeADC = new Short_t[kNClocks];
   for (Int_t i=0; i<64; i++) {      
-    //    printf(" cell %d adc ",i);
-    //    for (Int_t j = 0; j < kNClocks; ++j)
-    //      printf("%d ", Int_t(fAdc[i][j]));
-    //    printf("\n");
     Float_t totADC = 0;
-    for (Int_t j = 8; j <= 11; ++j) {
+    for (Int_t j = 0; j < kNClocks; ++j) {
       Int_t tempadc = Int_t(fAdc[i][j]);
       if (tempadc > 1023) tempadc = 1023;
-      Int_t integrator = (j + evenOrOdd) % 2;
-      if ((Float_t(tempadc) - fAdcPedestal[i][integrator]) > (2.*fAdcSigma[i][integrator]))
-	totADC += (Float_t(tempadc) - fAdcPedestal[i][integrator]);
+      chargeADC[j] = tempadc;
+      if (j >= 8 && j <= 11) {
+	Int_t integrator = (j + evenOrOdd) % 2;
+	if ((Float_t(tempadc) - fAdcPedestal[i][integrator]) > (2.*fAdcSigma[i][integrator]))
+	  totADC += (Float_t(tempadc) - fAdcPedestal[i][integrator]);
+      }
     }
     totADC += fAdcPedestal[i][(10+evenOrOdd)%2];
-    AddDigit(i, totADC, fLeadingTime[i], fTimeWidth[i], Bool_t((10+evenOrOdd)%2));
+    AddDigit(i, totADC, fLeadingTime[i], fTimeWidth[i], Bool_t((10+evenOrOdd)%2), chargeADC, labels[i]);
   }
+  delete [] chargeADC;
 
   treeD->Fill();
   outLoader->WriteDigits("OVERWRITE");  
@@ -404,14 +414,14 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Float_t width, Bool_t integrator) 
+void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
 	 
-  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,width,kFALSE,kFALSE,integrator);
+  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,width,kFALSE,kFALSE,integrator,chargeADC,labels);
 	 
 }
 //____________________________________________________________________________

@@ -12,15 +12,17 @@ class AliVZEROdigit: public AliDigit  {
 
  public:
     AliVZEROdigit();
-    AliVZEROdigit(Int_t* tracks, Int_t* digits);
-    AliVZEROdigit(Int_t   /* PMnumber */, Float_t  /* ADC */, Float_t /* Time */);
-    AliVZEROdigit(Int_t   /* PMnumber */, Float_t  /* ADC */, Float_t /* Time */, 
-                  Float_t /* TimeWidth*/, Bool_t /* BBFlag */, Bool_t /* BGFlag */);
-    AliVZEROdigit(Int_t   /* PMnumber */, Float_t  /* ADC */, Float_t /* Time */, 
-                  Float_t /* TimeWidth*/, Bool_t /* BBFlag */, Bool_t /* BGFlag */, Bool_t /* Integrator */);
+    AliVZEROdigit(Int_t   PMnumber, Float_t  adc, Float_t time);
+    AliVZEROdigit(Int_t   PMnumber, Float_t  adc, Float_t time, 
+                  Float_t TimeWidth, Bool_t BBFlag, Bool_t BGFlag,
+		  Bool_t  Integrator,
+		  Short_t *chargeADC = 0,
+		  Int_t *labels = 0);
     virtual ~AliVZEROdigit() {};
     virtual void Print(const Option_t* option="") const;
-    
+
+    enum {kNClocks = 21};
+
     Int_t   PMNumber()   const {return fPMNumber;}    
     Float_t ADC()        const {return fADC;}
     Float_t Time()       const {return fTime;}
@@ -28,12 +30,9 @@ class AliVZEROdigit: public AliDigit  {
     Bool_t  BBFlag()     const {return fBBFlag;} 
     Bool_t  BGFlag()     const {return fBGFlag;}
     Bool_t  Integrator() const {return fIntegrator;}
-       
-  private:
-    Int_t  fTrack;         // Track number
+    Short_t ChargeADC(Int_t clock) const {return (clock >= 0 && clock < kNClocks) ? fChargeADC[clock] : 0;}
     
   protected:
-    Int_t   fEvent;         // Event number  
     Int_t   fPMNumber;      // PhotoMultiplier number (0 to 63)
     Float_t fADC;           // ADC response
     Float_t fTime;          // Time of Flight
@@ -41,8 +40,9 @@ class AliVZEROdigit: public AliDigit  {
     Bool_t  fBBFlag;        // Beam-Beam Flag given by Yannick in Raw Data only
     Bool_t  fBGFlag;        // Beam-Gas  Flag given by Yannick in Raw Data only
     Bool_t  fIntegrator;    // Integrator used
-    
-    ClassDef(AliVZEROdigit,3)  //Digit (Header) object for set : VZERO
+    Short_t fChargeADC[kNClocks]; // ADC samples as present in raw data
+
+    ClassDef(AliVZEROdigit,4)  // VZERO Digit class
 };
 
 #endif
