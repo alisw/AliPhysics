@@ -99,6 +99,7 @@
 #pragma link C++ class AliTPCExBConical+;
 #pragma link C++ class AliTPCGGVoltError+;
 #pragma link C++ class AliTPCCalibGlobalMisalignment+;
+#pragma link C++ class AliTPCExBEffective+;
 
 #endif
 
