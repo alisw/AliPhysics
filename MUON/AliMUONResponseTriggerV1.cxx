@@ -127,7 +127,7 @@ const
 }
 
 //------------------------------------------------------------------  
-void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif)
+void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t /*timeDif*/)
 {
   /// Generate digits (on each cathode) from 1 hit, with cluster-size
   /// generation.
