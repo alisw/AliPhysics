@@ -76,6 +76,7 @@ public:
   inline void SetSectStatus(Int_t ch,Int_t sect,Bool_t status); 
   inline void SetPcStatus(Int_t ch,Int_t pc,Bool_t status); 
   inline void PrintChStatus(Int_t ch);
+  inline void SetGeomAccept();
   
   inline static Int_t  InHVSector(           Float_t y     );                                                           //find HV sector
   static Int_t  Radiator(          Float_t y               )       {if (InHVSector(y)<0) return -1; return InHVSector(y)/2;}
@@ -346,5 +347,17 @@ void AliHMPIDParam::PrintChStatus(Int_t ch)
      if(pady%48==0) Printf("");
    }
    Printf("");
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDParam::SetGeomAccept()
+{
+//Set the real acceptance of the modules, due to ineficciency or hardware problems (up tp 1/6/2010)
+//Arguments: none
+//Returns: none
+  SetSectStatus(0,3,kFALSE);
+  SetSectStatus(4,0,kFALSE);
+  SetSectStatus(5,1,kFALSE);
+  SetSectStatus(6,2,kFALSE);
+  SetSectStatus(6,3,kFALSE);
 }
 #endif
