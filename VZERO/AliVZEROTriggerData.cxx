@@ -62,7 +62,14 @@ AliVZEROTriggerData::AliVZEROTriggerData() :
 		fLatchWin1[i] = fLatchWin2[i] = 0;
 		fResetWin1[i] = fResetWin2[i] = 0;
 		fPedestalSubtraction[i] = kFALSE;
+		for(Int_t j = 0; j < kNChannels; ++j) {
+		  fEnableCharge[i][j] = fEnableTiming[i][j] = kFALSE;
+		  fDiscriThr[i][j] = fDelayHit[i][j] = 0;
+		  fPedestalOdd[i][j] = fPedestalEven[i][j] = 0;
+		  fPedestalCutOdd[i][j] = fPedestalCutEven[i][j] = 0;
+		}
 	}
+	for(Int_t i = 0; i < kNTriggerOutputs; ++i) fTriggerSelected[i];
 }
 //________________________________________________________________
 AliVZEROTriggerData::AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t endTime) :
@@ -95,7 +102,15 @@ AliVZEROTriggerData::AliVZEROTriggerData(Int_t nRun, UInt_t startTime, UInt_t en
 		fLatchWin1[i] = fLatchWin2[i] = 0;
 		fResetWin1[i] = fResetWin2[i] = 0;
 		fPedestalSubtraction[i] = kFALSE;
+		for(Int_t j = 0; j < kNChannels; ++j) {
+		  fEnableCharge[i][j] = fEnableTiming[i][j] = kFALSE;
+		  fDiscriThr[i][j] = fDelayHit[i][j] = 0;
+		  fPedestalOdd[i][j] = fPedestalEven[i][j] = 0;
+		  fPedestalCutOdd[i][j] = fPedestalCutEven[i][j] = 0;
+		}
 	}
+	for(Int_t i = 0; i < kNTriggerOutputs; ++i) fTriggerSelected[i];
+
 	TString namst = "VZERO_Trigger_FEE";
 	SetName(namst.Data());
 	SetTitle(namst.Data());
