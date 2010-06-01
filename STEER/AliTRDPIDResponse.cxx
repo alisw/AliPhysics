@@ -51,8 +51,6 @@ AliTRDPIDResponse::AliTRDPIDResponse(const Char_t * filename):
  //
  // Default constructor
  //
-  Int_t size  = (AliPID::kSPECIES)*(kNPBins);
-  //memset(fMapRefHists, 0, sizeof(Int_t) * size);
   for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++)
     for(Int_t ipbin = 0; ipbin < kNPBins; ipbin++)
       fMapRefHists[ispec][ipbin] = -1;
@@ -148,6 +146,7 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
      species = AliPID::kPion;
    }
    pbin = histname.Atoi() - 1;
+   AliDebug(1, Form("Species %d, Histname %s, Pbin %d, Position in container %d", species, histname.Data(), pbin, arrayPos));
    fMapRefHists[species][pbin] = arrayPos;
    fReferences->AddAt(new TH1F(*dynamic_cast<TH1F *>(tmp)), arrayPos);
    arrayPos++;
@@ -188,14 +187,14 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Doubl
 
  for(Int_t is(AliPID::kSPECIES); is--;) prob[is]=.2;
  Double_t prLayer[AliPID::kSPECIES];
- memset(prLayer, 0, AliPID::kSPECIES*sizeof(Double_t));
  Double_t DE[10], s(0.);
  for(Int_t il(kNlayer); il--;){
+   memset(prLayer, 0, AliPID::kSPECIES*sizeof(Double_t));
    if(!CookdEdx(&dedx[il*n], &DE[0])) continue;
 
    s=0.;
    for(Int_t is(AliPID::kSPECIES); is--;){
-     prLayer[is] = GetProbabilitySingleLayer(is, p[il], DE[0]);
+     if((DE[0] > 0.) && (p[il] > 0.)) prLayer[is] = GetProbabilitySingleLayer(is, p[il], DE[0]);
      AliDebug(3, Form("Probability for Species %d in Layer %d: %f", is, il, prLayer[is]));
      s+=prLayer[is];
    }
@@ -229,15 +228,17 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
  // Interpolation between momentum bins
  //
  AliDebug(1, Form("Make Probability for Species %d with Momentum %f", species, plocal));
- Int_t pbin = GetLowerMomentumBin(plocal);
+ Int_t pbin = GetLowerMomentumBin(plocal);  
+ AliDebug(1, Form("Bin %d", pbin));
  Double_t pLayer = 0.;
  // Do Interpolation exept for underflow and overflow
  if(pbin >= 0 && pbin < kNPBins-1){
    TH1 *refHistUpper = NULL, *refHistLower = NULL;
-   if(fMapRefHists[species][pbin] > 0)
+   if(fMapRefHists[species][pbin] >= 0)
     refHistLower = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin]));
-   if(fMapRefHists[species][pbin+1] > 0)
+   if(fMapRefHists[species][pbin+1] >= 0)
     refHistUpper = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin+1]));
+   AliDebug(1, Form("Reference Histos (Upper/Lower): [%p|%p]", refHistUpper, refHistLower));
 
    if (refHistLower && refHistUpper ) {
      Double_t pLower = refHistLower->GetBinContent(refHistLower->GetXaxis()->FindBin(dEdx));

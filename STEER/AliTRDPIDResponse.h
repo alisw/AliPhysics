@@ -53,21 +53,20 @@ public:
  void      SetPIDmethod(Int_t m) {fPIDmethod=m;}
  void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
-
 private:
  Bool_t    CookdEdx(Double_t *in, Double_t *out) const;
  Int_t     GetLowerMomentumBin(Double_t p) const;
- Double_t  GetProbabilitySingleLayer(Int_t species, Double_t dEdx, Double_t p) const;
+ Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx) const;
  Bool_t    Load(const Char_t *filename = NULL);
 
  static const Double_t fgkPBins[kNPBins];
  TObjArray *fReferences; // Container for reference distributions
- Int_t     fMapRefHists[AliPID::kSPECIES+1][kNPBins+1];     
+ Int_t     fMapRefHists[AliPID::kSPECIES][kNPBins];     
                          // Map for the position of a given historgam in the container 
  Double_t  fGainNormalisationFactor;  // Gain normalisation factor
  UChar_t   fPIDmethod;   // PID method selector  
 
- ClassDef(AliTRDPIDResponse, 1)    // Tool for TRD PID
+ ClassDef(AliTRDPIDResponse, 2)    // Tool for TRD PID
 };
 #endif
 
