@@ -178,7 +178,7 @@ void AliMUONTriggerEfficiencyCells::ReadFile(const Char_t* filename, const Char_
     TList* listInFile = 0x0;
     TString listNameString(listname);
     if ( ! listNameString.IsNull() )
-      listInFile = (TList*)file->Get(listname);
+      listInFile = (TList*)file->FindObjectAny(listname);
 
     for ( Int_t ide=0; ide<=kHchamberCount; ide++){
       for(Int_t ich=0; ich<fgkNchambers; ich++){
