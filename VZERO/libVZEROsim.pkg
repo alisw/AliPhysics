@@ -3,7 +3,6 @@
 
 SRCS= \
 AliVZERO.cxx \
-AliVZEROv6.cxx \
 AliVZEROv7.cxx \
 AliVZEROhit.cxx \
 AliVZERODigitizer.cxx \

@@ -7,7 +7,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliVZERO+;
-#pragma link C++ class  AliVZEROv6+;
 #pragma link C++ class  AliVZEROv7+;
 #pragma link C++ class  AliVZEROhit+;
 #pragma link C++ class  AliVZERODigitizer+;
