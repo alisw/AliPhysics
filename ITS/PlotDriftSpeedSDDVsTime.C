@@ -108,12 +108,13 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
       if(anode>256) iAn=anode-256;
       Float_t vdrift=vdriftarr->GetDriftSpeed(0,iAn);
       if(vdrift<4. || vdrift > 8.) continue;
-      UInt_t timest=vdriftarr->GetTimestamp(0);
-      if(timest==0) continue;
+      if(statusInj0==0) continue;
       Int_t npt=gvdrvsrun[iMod]->GetN();
       gvdrvsrun[iMod]->SetPoint(npt,(Float_t)nrun,vdrift);
       gvdrvsrun[iMod]->SetPointError(npt,0,errSpeed[iMod]);
       
+      UInt_t timest=vdriftarr->GetTimestamp(0);
+      if(timest==0) continue;
       Float_t timeZero;
       if(year==2009) timeZero=1247762992;
       else timeZero=1262300400;
@@ -136,12 +137,12 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
 	
     printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
     printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
-	f->Close();
+    f->Close();
   }
 
   Int_t mod1=244-240;
   Int_t mod2=277-240;
-//   Int_t mod1=268-240;
+  //  Int_t mod2=259-240;
 //   Int_t mod2=274-240;
   Int_t mod3=327-240;
    Int_t mod4=453-240;

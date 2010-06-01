@@ -66,6 +66,7 @@ void PlotCalibSDDVsTime(Int_t year=2010, Int_t firstRun=77677,
     sscanf(filnam,"/alice/data/%d/OCDB/ITS/Calib/CalibSDD/Run%d_%d_v%d_s%d.root",&year,&nrun,&nrun2,&nv,&ns);
     if(year==2009 && (nrun<85639 && nrun2> 85639)) continue; // protection for files with swapped ladders 4-5 of layer 3 
     if(year==2009 && (nrun>100000 && nv< 184)) continue; // protection for files with swapped ladder 0-1 of layer 4
+    if(year==2010 && (nrun>=114603 && nv< 98)) continue; // protection for files without treatment of masked hybrids 
     if(nrun<firstRun) continue;
     if(nrun>lastRun) continue;
     sprintf(filnamalien,"alien://%s",filnam);
