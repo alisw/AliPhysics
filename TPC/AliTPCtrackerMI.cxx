@@ -6860,7 +6860,7 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
         TMath::Abs(c->GetLabel(2)) == lab ) max++;
   }
 
-  if ((1.- Float_t(max)/noc) > wrong) lab=-lab;
+  if ((1.- Float_t(max+1)/(noc+1)) > wrong) lab=-lab;
 
   else {
      Int_t tail=Int_t(0.10*noc);
@@ -6944,7 +6944,7 @@ Int_t AliTPCtrackerMI::CookLabel(AliTPCseed *const t, Float_t wrong,Int_t first,
         TMath::Abs(c->GetLabel(2)) == lab ) max++;
   }
 
-  if ((1.- Float_t(max)/noc) > wrong) lab=-lab;
+  if ((1.- Float_t(max+1)/(noc+1)) > wrong) lab=-lab;
 
   else {
      Int_t tail=Int_t(0.10*noc);
