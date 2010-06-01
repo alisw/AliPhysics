@@ -60,7 +60,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fOutputToRunNo(0),
                   fMergeViaJDL(0),
                   fFastReadOption(0),
-                  fOverwriteMode(0),
+                  fOverwriteMode(1),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -117,7 +117,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fOutputToRunNo(0),
                   fMergeViaJDL(0),
                   fFastReadOption(0),
-                  fOverwriteMode(0),
+                  fOverwriteMode(1),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -1487,6 +1487,11 @@ void AliAnalysisAlien::Print(Option_t *) const
 {
 // Print current plugin settings.
    printf("### AliEn analysis plugin current settings ###\n");
+   printf("=   OverwriteMode:________________________________ %d\n", fOverwriteMode);
+   if (fOverwriteMode) {
+      printf("***** NOTE: Overwrite mode will overwrite the input generated datasets and partial results from previous analysis. \
+            \n*****       To disable, use: plugin->SetOverwriteMode(kFALSE);\n");
+   }
    printf("=   Copy files to grid: __________________________ %s\n", (IsUseCopy())?"YES":"NO");
    printf("=   Check if files can be copied to grid: ________ %s\n", (IsCheckCopy())?"YES":"NO");
    printf("=   Production mode:______________________________ %d\n", fProductionMode);
@@ -1599,6 +1604,7 @@ void AliAnalysisAlien::SetDefaults()
    fMergeViaJDL                = 0;
    SetUseCopy(kTRUE);
    SetCheckCopy(kTRUE);
+   fOverwriteMode              = 1;
 }   
 
 //______________________________________________________________________________
@@ -1629,7 +1635,8 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    output_chunk = output_file;
    output_chunk.ReplaceAll(".root", "_*.root");
    // Check for existent temporary merge files
-   if (!gSystem->Exec(Form("ls %s", output_chunk.Data()))) {
+   // Check overwrite mode and remove previous partial results if needed
+   if (!gSystem->Exec(Form("ls %s 2>/dev/null", output_chunk.Data()))) {
       while (1) {
          // Skip as many input files as in a chunk
          for (Int_t counter=0; counter<nmaxmerge; counter++) map = (TMap*)nextmap();
@@ -1741,6 +1748,8 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       return kFALSE;
    }
    // Check if fast read option was requested
+   Info("MergeOutputs", "Started local merging of output files from: alien://%s \
+        \n======= overwrite mode = %d", fGridOutputDir.Data(), (Int_t)fOverwriteMode);
    if (fFastReadOption) {
       Warning("MergeOutputs", "You requested FastRead option. Using xrootd flags to reduce timeouts. This may skip some files that could be accessed ! \
              \n+++ NOTE: To disable this option, use: plugin->SetFastReadOption(kFALSE)");
@@ -1759,11 +1768,29 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       output_file = str->GetString();
       Int_t index = output_file.Index("@");
       if (index > 0) output_file.Remove(index);
+      TString output_chunk = output_file;
+      output_chunk.ReplaceAll(".root", "_*.root");
       // Skip already merged outputs
       if (!gSystem->AccessPathName(output_file)) {
-         Info("MergeOutputs", "Output file <%s> found. Not merging again.", output_file.Data());
-         continue;
-      }   
+         if (fOverwriteMode) {
+            Info("MergeOutputs", "Overwrite mode. Existing file %s was deleted.", output_file.Data());
+            gSystem->Unlink(output_file);
+            if (!gSystem->Exec(Form("ls %s 2>/dev/null", output_chunk.Data()))) {
+               Info("MergeOutput", "Overwrite mode: partial merged files %s will removed",
+                     output_chunk.Data());
+               gSystem->Exec(Form("rm -f %s", output_chunk.Data()));
+            }
+         } else {   
+            Info("MergeOutputs", "Output file <%s> found. Not merging again.", output_file.Data());
+            continue;
+         }   
+      } else {
+         if (!gSystem->Exec(Form("ls %s 2>/dev/null", output_chunk.Data()))) {
+            Info("MergeOutput", "Overwrite mode: partial merged files %s will removed",
+                  output_chunk.Data());
+            gSystem->Exec(Form("rm -f %s", output_chunk.Data()));
+         }   
+      }
       if (fMergeExcludes.Length() &&
           fMergeExcludes.Contains(output_file.Data())) continue;
       // Perform a 'find' command in the output directory, looking for registered outputs    
