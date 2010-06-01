@@ -23,7 +23,6 @@ public:
   AliVZEROv7(const char *name, const char *title);
   virtual       ~AliVZEROv7() {};
   virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits); 
-  virtual void   AddDigits(Int_t *tracks, Int_t *digits);
   virtual void   CreateGeometry();
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateMaterials();

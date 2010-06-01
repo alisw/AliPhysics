@@ -34,8 +34,7 @@ public:
   AliVZERO();
   AliVZERO(const char *name, const char *title);
   virtual       ~AliVZERO();
-//  virtual void   AddHit(Int_t track , Int_t *vol, Float_t *hits)=0; 
-//  virtual void   AddDigits(Int_t* tracks, Int_t* digits)=0;
+
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
   virtual void   AddAlignableVolumes() const {}

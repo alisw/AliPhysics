@@ -3169,15 +3169,6 @@ void AliVZEROv7::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 }
 
 //_____________________________________________________________________________
-void AliVZEROv7::AddDigits(Int_t *tracks, Int_t* digits) 
-{
-//  Adds a VZERO digit
-
-   TClonesArray  &ldigits = *fDigits;
-   new(ldigits[fNdigits++]) AliVZEROdigit(tracks, digits);
-}
-
-//_____________________________________________________________________________
 void AliVZEROv7::MakeBranch(Option_t *option)
 {
 // Creates new branches in the current Root Tree
