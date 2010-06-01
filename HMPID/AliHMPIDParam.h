@@ -5,6 +5,7 @@
 
 /* $Id$ */
 
+#include "stdio.h"
 #include <TMath.h>
 #include <TNamed.h>        //base class
 #include <TGeoManager.h>   //Instance()
@@ -69,6 +70,13 @@ public:
   Bool_t  GetInstType        (                               )const{return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
   
   inline static Bool_t IsInDead(Float_t x,Float_t y        );                                                           //is the point in dead area?
+  inline static Bool_t IsDeadPad(Int_t padx,Int_t pady,Int_t ch);                                                       //is a dead pad?
+  
+  inline void SetChStatus(Int_t ch,Bool_t status=kTRUE);
+  inline void SetSectStatus(Int_t ch,Int_t sect,Bool_t status); 
+  inline void SetPcStatus(Int_t ch,Int_t pc,Bool_t status); 
+  inline void PrintChStatus(Int_t ch);
+  
   inline static Int_t  InHVSector(           Float_t y     );                                                           //find HV sector
   static Int_t  Radiator(          Float_t y               )       {if (InHVSector(y)<0) return -1; return InHVSector(y)/2;}
   static Bool_t  IsInside    (Float_t x,Float_t y,Float_t d=0)     {return  x>-d&&y>-d&&x<fgkMaxPcX[kMaxPc]+d&&y<fgkMaxPcY[kMaxPc]+d; } //is point inside chamber boundaries?
@@ -154,6 +162,8 @@ protected:
   static /*const*/ Float_t fgkMaxPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMaxPcY[6]; 
   
+  static Bool_t fgMapPad[160][144][7];                                                                   //map of pads to evaluate if they are active or dead (160,144) pads for 7 chambers
+  
 // Mathieson constants
 // For HMPID --> x direction means parallel      to the wires: K3 = 0.66  (NIM A270 (1988) 602-603) fig.1  
 // For HMPID --> y direction means perpendicular to the wires: K3 = 0.90  (NIM A270 (1988) 602-603) fig.2  
@@ -216,6 +226,17 @@ Bool_t AliHMPIDParam::IsInDead(Float_t x,Float_t y)
   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t AliHMPIDParam::IsDeadPad(Int_t padx,Int_t pady,Int_t ch)
+{
+// Check is the current pad is active or not
+// Arguments: padx,pady pad integer coord
+//   Returns: kTRUE if dead, kFALSE if active
+
+    if(fgMapPad[padx-1][pady-1][ch]) return kFALSE; //current pad active
+  
+  return kTRUE;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDParam::Lors2Pad(Float_t x,Float_t y,Int_t &pc,Int_t &px,Int_t &py)
 {
 // Check the pad of given position
@@ -259,4 +280,71 @@ Double_t AliHMPIDParam::FindTemp(Double_t tLow,Double_t tHigh,Double_t y)
   return tLow + TMath::Power(y/halfPadSize,1./gradT);  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDParam::SetChStatus(Int_t ch,Bool_t status)
+{
+//Set a chamber on or off depending on the status
+//Arguments: ch=chamber,status=kTRUE = active, kFALSE=off
+//Returns: none
+  for(Int_t padx=0;padx<kMaxPcx+1;padx++) {
+     for(Int_t pady=0;pady<kMaxPcy+1;pady++) {
+       fgMapPad[padx][pady][ch] = status;
+     }
+   }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDParam::SetSectStatus(Int_t ch,Int_t sect,Bool_t status)
+{
+//Set a given sector sect for a chamber ch on or off depending on the status
+//Sector=0,5 (6 sectors)
+//Arguments: ch=chamber,sect=sector,status: kTRUE = active, kFALSE=off
+//Returns: none
+  
+  Int_t npadsect = (kMaxPcy+1)/6;
+  Int_t padSectMin = npadsect*sect;
+  Int_t padSectMax = padSectMin+npadsect;
+  
+  for(Int_t padx=0;padx<kMaxPcx+1;padx++) {
+     for(Int_t pady=padSectMin;pady<padSectMax;pady++) {
+       fgMapPad[padx][pady][ch] = status;
+     }
+   }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDParam::SetPcStatus(Int_t ch,Int_t pc,Bool_t status)
+{
+//Set a given PC pc for a chamber ch on or off depending on the status
+//Arguments: ch=chamber,pc=PC,status: kTRUE = active, kFALSE=off
+//Returns: none
+  
+  Int_t deltaX = pc%2;
+  Int_t deltaY = pc/2;
+  Int_t padPcXMin = deltaX*kPadPcX;
+  Int_t padPcXMax = padPcXMin+kPadPcX;
+  Int_t padPcYMin = deltaY*kPadPcY;
+  Int_t padPcYMax = padPcYMin+kPadPcY;
+  
+  for(Int_t padx=padPcXMin;padx<padPcXMax;padx++) {
+     for(Int_t pady=padPcYMin;pady<padPcYMax;pady++) {
+       fgMapPad[padx][pady][ch] = status;
+     }
+   }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDParam::PrintChStatus(Int_t ch)
+{
+//Print the map status of a chamber on or off depending on the status
+//Arguments: ch=chamber
+//Returns: none
+  Printf(" ");
+  Printf(" --------- C H A M B E R  %d   ---------------",ch);
+  for(Int_t pady=kMaxPcy;pady>=0;pady--) {
+     for(Int_t padx=0;padx<kMaxPcx+1;padx++) {
+       if(padx==80) printf(" ");
+       printf("%d",fgMapPad[padx][pady][ch]);
+     }
+     printf(" %d \n",pady+1);
+     if(pady%48==0) Printf("");
+   }
+   Printf("");
+}
 #endif

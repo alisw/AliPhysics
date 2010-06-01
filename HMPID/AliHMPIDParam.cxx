@@ -51,6 +51,8 @@ Float_t AliHMPIDParam::fgkMaxPcX[]={0.,0.,0.,0.,0.,0.};
 Float_t AliHMPIDParam::fgkMinPcY[]={0.,0.,0.,0.,0.,0.};
 Float_t AliHMPIDParam::fgkMaxPcY[]={0.,0.,0.,0.,0.,0.};
 
+Bool_t AliHMPIDParam::fgMapPad[160][144][7];
+
 Float_t AliHMPIDParam::fgCellX=0.;
 Float_t AliHMPIDParam::fgCellY=0.;
 
@@ -134,7 +136,17 @@ AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):
   fX=0.5*SizeAllX();
   fY=0.5*SizeAllY();
   
-  for(Int_t i=kMinCh;i<=kMaxCh;i++) 
+      
+  for(Int_t ich=kMinCh;ich<=kMaxCh;ich++) {
+    for(Int_t padx=0;padx<160;padx++) {
+       for(Int_t pady=0;pady<144;pady++) {
+         fgMapPad[padx][pady][ich] = kTRUE;             //init all the pads are active at the beginning....
+       }
+     }
+   }
+     
+
+  for(Int_t i=kMinCh;i<=kMaxCh;i++)
     if(gGeoManager && gGeoManager->IsClosed()) {
       TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("/HMPID/Chamber%i",i));
       if (!pne) {

@@ -474,7 +474,7 @@ Double_t AliHMPIDRecon::HoughResponse()
   return (Double_t)(locMax*fDTheta+0.5*fDTheta); //final most probable track theta ckov   
 }//HoughResponse()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  Double_t AliHMPIDRecon::FindRingExt(Double_t ckov,Double_t xPc,Double_t yPc,Double_t thRa,Double_t phRa)
+  Double_t AliHMPIDRecon::FindRingExt(Double_t ckov,Int_t ch,Double_t xPc,Double_t yPc,Double_t thRa,Double_t phRa)
 {
 // To find the acceptance of the ring even from external inputs. 
 //    
@@ -484,12 +484,16 @@ Double_t AliHMPIDRecon::HoughResponse()
   
   Int_t nStep = 500;
   Int_t nPhi = 0;  
-  
+
+  Int_t ipc,ipadx,ipady;
+    
   if(ckov>0){
     SetTrack(xRa,yRa,thRa,phRa);
     for(Int_t j=0;j<nStep;j++){
       TVector2 pos; pos=TracePhot(ckov,j*TMath::TwoPi()/(Double_t)(nStep-1));
       if(fParam->IsInDead(pos.X(),pos.Y())) continue;
+      fParam->Lors2Pad(pos.X(),pos.Y(),ipc,ipadx,ipady);
+      if(fParam->IsDeadPad(ipadx,ipady,ch)) continue;
       nPhi++;
     }//point loop
   return ((Double_t)nPhi/(Double_t)nStep); 
