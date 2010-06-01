@@ -493,6 +493,8 @@ Double_t AliHMPIDRecon::HoughResponse()
       TVector2 pos; pos=TracePhot(ckov,j*TMath::TwoPi()/(Double_t)(nStep-1));
       if(fParam->IsInDead(pos.X(),pos.Y())) continue;
       fParam->Lors2Pad(pos.X(),pos.Y(),ipc,ipadx,ipady);
+      ipadx+=(ipc%2)*fParam->kPadPcX;
+      ipady+=(ipc/2)*fParam->kPadPcY;
       if(fParam->IsDeadPad(ipadx,ipady,ch)) continue;
       nPhi++;
     }//point loop
