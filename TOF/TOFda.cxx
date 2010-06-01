@@ -24,6 +24,7 @@ Event types used: PHYSICS_EVENT
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 //AliRoot
 #include "TROOT.h"
@@ -102,7 +103,7 @@ main(int argc, char **argv)
   /* constants */
   const Int_t nChannels = 157248;
   Int_t noiseCheckTrigger = 10; /* first noise check after 10 events */
-	 Float_t meanChannelRate = (Float_t)meanMultiplicity / (Float_t)nChannels; /* average expected channel rate (hits/event) */
+  Float_t meanChannelRate = (Float_t)meanMultiplicity / (Float_t)nChannels; /* average expected channel rate (hits/event) */
   Float_t noiseThreshold = 10. * meanChannelRate; /* noise threshold (hits/event) */
   Int_t minNoiseHits = 10; /* min number of channel hits to check noise */
   /* counters and flags */
@@ -218,7 +219,7 @@ main(int argc, char **argv)
       break; /* end of monitoring file has been reached */
     }
     if (ret != 0) {
-      printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(ret));
+      printf("monitorGetEventDynamic() failed (ret=%d errno=%d): %s\n", ret, errno, monitorDecodeError(ret));
       break;
     }
     /* retry if got no event */
@@ -366,8 +367,10 @@ main(int argc, char **argv)
     return -2;
 
   /* scale calib hit histo by number of calib events */
+  printf("found %d calibration events\n", nCalibEvents);
   hCalibHit->Sumw2();
-  hCalibHit->Scale(1. / nCalibEvents);
+  if (nCalibEvents > 0)
+    hCalibHit->Scale(1. / nCalibEvents);
   
   /* write calib hit histo on CALIB file */
   fileOutCalib->cd();
