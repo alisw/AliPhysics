@@ -20,16 +20,16 @@
 //
 // Motivation:
 //   ExB correction: 
-//      dx =  c0* integral(Ex/Ez) + c1* integral(Ey/Ex)
-//      dy = -c1* integral(Ex/Ez) + c0* integral(Ex/Ex)
+//      dr    =  c0* integral(Er/Ez) + c1* integral(Erphi/Ez)
+//      drphi = -c1* integral(Er/Ez) + c0* integral(Erphi/Ez)
 //   Where:      
 //   wt = Bz*(k*vdrift/E)           ~ 0.3 at B=0.5 T 
 //   c0 = 1/(1+T2*T2*wt*wt) 
 //   c1 = T1*wt/(1+T1*T1*wt*wt)
 //   
-// Residual integral(Ex/Ez,Ey/Ez) obtained comparing the B field 0 and B field +-0.5 T setting
+// Residual integral(Er/Ez,Erphi/Ez) obtained comparing the B field 0 and B field +-0.5 T setting
 // minimizing track matching residuals 
-// delta(Ex/Ez) ~ sum[ poln(r) * polm(z) * cos(n,phi)] 
+// delta(Er/Ez) ~ sum[ poln(r) * polm(z) * cos(n,phi)] 
 //  
 ////////////////////////////////////////////////////////////////////////////
 #include "AliMagF.h"
@@ -118,15 +118,15 @@ void AliTPCExBEffective::GetCorrection(const Float_t x[],const Short_t roc,Float
   Double_t driftN   = 1.-TMath::Abs(x[2])/calROC->GetZLength(0);  // drift from 0 to 1
   Double_t localxN  = 2*(r-rmiddle)/(kRTPC1-kRTPC0);         // normalize local x position
   //
-  Double_t exez = 0;
-  Double_t eyez = 0;
-  if (roc%36<18)  exez= GetSum(*fPolynomA, *fPolynomValA, localxN, driftN, phi,0);
-  if (roc%36>=18) exez= GetSum(*fPolynomC, *fPolynomValC, localxN, driftN, phi,0);
-  if (roc%36<18)  eyez= GetSum(*fPolynomA, *fPolynomValA, localxN, driftN, phi,1);
-  if (roc%36>=18) eyez= GetSum(*fPolynomC, *fPolynomValC, localxN, driftN, phi,1);
+  Double_t erez = 0;
+  Double_t erphiez = 0;
+  if (roc%36<18)  erez= GetSum(*fPolynomA, *fPolynomValA, localxN, driftN, phi,0);
+  if (roc%36>=18) erez= GetSum(*fPolynomC, *fPolynomValC, localxN, driftN, phi,0);
+  if (roc%36<18)  erphiez= GetSum(*fPolynomA, *fPolynomValA, localxN, driftN, phi,1);
+  if (roc%36>=18) erphiez= GetSum(*fPolynomC, *fPolynomValC, localxN, driftN, phi,1);
 
-  Double_t drphi =  -fC1 * exez;
-  Double_t dr    =  fC1  * eyez;
+  Double_t dr    =   fC0 * erez + fC1 * erphiez;
+  Double_t drphi =  -fC1 * erez + fC0 * erphiez;
   //
   dx[0]= TMath::Cos(phi)*dr-TMath::Sin(phi)*drphi;
   dx[1]= TMath::Sin(phi)*dr+TMath::Cos(phi)*drphi;
