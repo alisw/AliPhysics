@@ -143,8 +143,9 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
 
-  fNtupleBeamSpot = new TNtuple("fNtupleBeamSpot", "beamSpot", "run:tstamp:triggered:ntrklets:xTRKnc:yTRKnc:zTRKnc:ntrksTRKnc");
+  fNtupleBeamSpot = new TNtuple("fNtupleBeamSpot", "beamSpot", "run:cetTime1h:bx:triggered:ntrklets:xTRKnc:yTRKnc:zTRKnc:ntrksTRKnc");
   fOutput->Add(fNtupleBeamSpot);
+
   PostData(1, fOutput);
 
   return;
@@ -260,8 +261,10 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   }
 
 
-  Float_t tstamp = esdE->GetTimeStamp();
-  Float_t cetTime = tstamp-1262307600.;
+  Double_t tstamp = esdE->GetTimeStamp();
+  Float_t cetTime =(tstamp-1262304000.)+7200.;
+
+  Float_t cetTime1h =(tstamp-1262304000.)+3600.;
 
   Int_t ntracks = esdE->GetNumberOfTracks();
   Int_t nITS5or6=0,nTPCin=0,nTPCinEta09=0;
@@ -335,8 +338,8 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   Int_t isize=82;
   Float_t xnt[82]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
 
-  Int_t isizeSecNt=8;
-  Float_t secnt[8]; for(Int_t iii=0;iii<isizeSecNt;iii++) secnt[iii]=0.;
+  Int_t isizeSecNt=9;
+  Float_t secnt[9]; for(Int_t iii=0;iii<isizeSecNt;iii++) secnt[iii]=0.;
 
   Int_t index=0;
   Int_t indexSecNt=0;
@@ -345,9 +348,12 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   secnt[indexSecNt++]=(Float_t)esdE->GetRunNumber();
 
   xnt[index++]=cetTime; //(Float_t)esdE->GetTimeStamp();
-  secnt[indexSecNt++]=cetTime;
+  //secnt[indexSecNt++]=cetTime;
+  secnt[indexSecNt++]=cetTime1h;
 
   xnt[index++]=(Float_t)esdE->GetBunchCrossNumber();
+ secnt[indexSecNt++]=(Float_t)esdE->GetBunchCrossNumber();
+
 
   xnt[index++]=(eventTriggered ? 1. : 0.);
   secnt[indexSecNt++]=(eventTriggered ? 1. : 0.);
