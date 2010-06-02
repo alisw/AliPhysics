@@ -142,6 +142,14 @@ public:
       fLocalMasksDA->Add(localBoard);
     }
     
+    // Create a default pattern store
+    for (Int_t i = 1; i <= AliMpConstants::TotalNofLocalBoards(); i++) {
+      AliMUONVCalibParam *patN = new AliMUONCalibParamND(2, 64, i, 0, 0.);
+      AliMUONVCalibParam *patD = new AliMUONCalibParamND(2, 64, i, 0, 0.);
+      fPatternStoreN->Add(patN);	
+      fPatternStoreD->Add(patD);	
+    }
+
   }
 
   virtual ~AliDAConfig()
@@ -434,8 +442,8 @@ private:
 	 kGlobalInputLength = 32    //!< length in bits of a global input word
   };
 
-  AliMUONVStore *fPatternStoreN; //!< store for local strips patterns
-  AliMUONVStore *fPatternStoreD; //!< store for local strips patterns
+  AliMUONVStore *fPatternStoreN; //! store for local strips patterns
+  AliMUONVStore *fPatternStoreD; //! store for local strips patterns
 
   Int_t fAccGlobalInputN[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (PHYSICS events)
   Int_t fAccGlobalInputD[kGlobalInputs][kGlobalInputLength]; //!< storage for global input (CALIBRATION events)
@@ -1206,7 +1214,7 @@ void MakePatternStore(AliDAConfig& cfg)
     
     // don't change the file version ("-x.dat")
     
-    cfg.GetTriggerIO()->WriteLocalMasks(cfg.GetLocalMaskFileName(),*cfg.GetLocalMasksDA(),cfg.GetRegionalMasks());
+    cfg.GetTriggerIO()->WriteLocalMasks(cfg.GetLocalMaskFileName(),*cfg.GetLocalMasksDA());
 
     // write last current file
     WriteLastCurrentFile(cfg,cfg.GetCurrentFileName());
