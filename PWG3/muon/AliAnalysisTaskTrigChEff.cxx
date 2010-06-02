@@ -70,7 +70,6 @@ AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
   delete fList;
 }
 
-
 //_________________________________________________________________________
 void AliAnalysisTaskTrigChEff::UserCreateOutputObjects() {
   //
@@ -274,7 +273,7 @@ void AliAnalysisTaskTrigChEff::Terminate(Option_t *) {
   TString effName[kNcounts-1] = {"BendPlane", "NonBendPlane", "BothPlanes"};
   Int_t histoIndexNum = -1, histoIndexDen = -1;
   for (Int_t itype=0; itype<3; itype++) {
-    for(Int_t icount=0; icount<kNcounts; icount++){
+    for(Int_t icount=0; icount<kNcounts-1; icount++){
       TString canName = Form("efficiencyPer%s_%s",baseName[itype].Data(),effName[icount].Data());
       can = new TCanvas(canName.Data(),canName.Data(),10*(1+kNcounts*itype+icount),10*(1+kNcounts*itype+icount),310,310);
       can->SetFillColor(10); can->SetHighLightColor(10);
