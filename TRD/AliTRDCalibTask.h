@@ -28,17 +28,17 @@ class AliESDtrackCuts;
 class AliTRDCalDet;
 
 #include "TObjString.h"
-#include "AliAnalysisTask.h" 
+#include "AliAnalysisTaskSE.h" 
 #include "TMath.h"
 
-class AliTRDCalibTask : public AliAnalysisTask {
+class AliTRDCalibTask : public AliAnalysisTaskSE {
  public:
   AliTRDCalibTask(const char *name = "AliTRDCalibTask");
   virtual ~AliTRDCalibTask();
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *);
+  //  virtual void   ConnectInputData(Option_t *);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Load(const Char_t *filename);
   virtual Bool_t Load(TList *lister);
@@ -157,3 +157,4 @@ class AliTRDCalibTask : public AliAnalysisTask {
 };
 
 #endif
+

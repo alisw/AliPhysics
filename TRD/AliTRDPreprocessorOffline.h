@@ -12,11 +12,13 @@
 
 #include "TNamed.h"
 class TObjArray;
+class AliTRDCalDet;
 class TH2I;
 class TProfile2D;
 class AliTRDCalibraVdriftLinearFit;
 class TH1I;
 class TH2F;
+class TString;
 
 
 class AliTRDPreprocessorOffline:public TNamed { 
@@ -37,6 +39,10 @@ public:
 
   void SetLinearFitForVdrift(Bool_t methodsecond) { fMethodSecond = methodsecond;};
   Bool_t GetLinearFitForVdrift() const { return fMethodSecond;};
+  void SetNameList(TString nameList) { fNameList = nameList;};
+  TString GetNameList() const { return fNameList;}; 
+  void SetCalDetGain(AliTRDCalDet *calDetGainUsed) {fCalDetGainUsed = calDetGainUsed;};
+  AliTRDCalDet *GetCalDetGain() const { return fCalDetGainUsed;};
 
   void CalibVdriftT0(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage="");
   void CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber,  TString  ocdbStorage="");
@@ -52,6 +58,8 @@ public:
   Bool_t AnalyzeVdriftLinearFit(); 
   Bool_t AnalyzePRF(); 
   
+  void CorrectFromDetGainUsed();
+
   void UpdateOCDBT0(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
@@ -60,6 +68,8 @@ public:
   
 private:
   Bool_t fMethodSecond;                   // Second Method for drift velocity   
+  TString fNameList;                      // Name of the list
+  AliTRDCalDet *fCalDetGainUsed;          // CalDet used and to be corrected for
   TH2I *fCH2d;                            // Gain
   TProfile2D *fPH2d;                      // Drift velocity first method
   TProfile2D *fPRF2d;                     // PRF
@@ -79,3 +89,4 @@ private:
 };
 
 #endif
+

@@ -17,12 +17,12 @@
 
 /*
   Responsible: marian.ivanov@cern.ch 
-  Code to analyze the TRD calibration and to produce OCDB entries  
+  Code to analyze the TPC calibration and to produce OCDB entries  
 
 
    .x ~/rootlogon.C
    gSystem->Load("libANALYSIS");
-   gSystem->Load("libTRDcalib");
+   gSystem->Load("libTPCcalib");
 
    AliTRDPreprocessorOffline proces;
    TString ocdbPath="local:////"
@@ -61,8 +61,10 @@
 ClassImp(AliTRDPreprocessorOffline)
 
 AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
-  TNamed("TRDPreprocessorOffline","TRDPreprocessorOffline"),
+  TNamed("TPCPreprocessorOffline","TPCPreprocessorOffline"),
   fMethodSecond(kTRUE),
+  fNameList("TRDCalib"),
+  fCalDetGainUsed(0x0),
   fCH2d(0x0),
   fPH2d(0x0),
   fPRF2d(0x0),
@@ -82,6 +84,7 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   // Destructor
   //
 
+  if(fCalDetGainUsed) delete fCalDetGainUsed;
   if(fCH2d) delete fCH2d;
   if(fPH2d) delete fPH2d;
   if(fPRF2d) delete fPRF2d;
@@ -142,6 +145,7 @@ void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumb
   // 2. extraction of the information
   //
   AnalyzeGain();
+  if(fCalDetGainUsed) CorrectFromDetGainUsed();
   //
   // 3. Append QA plots
   //
@@ -192,7 +196,7 @@ Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   // read calibration entries from file
   // 
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get("TRDCalib");
+  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
     TH2I *ch2d = (TH2I *) array->FindObject("CH2d");
     if(!ch2d) return kFALSE;
@@ -218,7 +222,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
   // read calibration entries from file
   // 
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get("TRDCalib");
+  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
     TProfile2D *ph2d = (TProfile2D *) array->FindObject("PH2d");
     if(!ph2d) return kFALSE;
@@ -242,7 +246,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   // read calibration entries from file
   // 
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get("TRDCalib");
+  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
     fAliTRDCalibraVdriftLinearFit = (AliTRDCalibraVdriftLinearFit *) array->FindObject("AliTRDCalibraVdriftLinearFit");
     //fNEvents = (TH1I *) array->FindObject("NEvents");
@@ -263,7 +267,7 @@ Bool_t AliTRDPreprocessorOffline::ReadPRFGlobal(const Char_t* fileName){
   // read calibration entries from file
   // 
   TFile fcalib(fileName);
-  TObjArray * array = (TObjArray*)fcalib.Get("TRDCalib");
+  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
     TProfile2D *prf2d = (TProfile2D *) array->FindObject("PRF2d");
     if(!prf2d) return kFALSE;
@@ -343,10 +347,11 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
       (nbfit        >= 0.5*nbE) && (nbE > 30) && (nbfitSuccess > 30)) {
     //printf("Pass the cut for VdriftT0\n");
     // create the cal objects
-    calibra->RemoveOutliers(1,kTRUE);
-    calibra->PutMeanValueOtherVectorFit(1,kTRUE);
-    calibra->RemoveOutliers2(kTRUE);
-    calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
+    calibra->RemoveOutliers(1,kFALSE);
+    calibra->PutMeanValueOtherVectorFit(1,kFALSE);
+    calibra->RemoveOutliers2(kFALSE);
+    calibra->PutMeanValueOtherVectorFit2(1,kFALSE);
+    //
     TObjArray object = calibra->GetVectorFit();
     AliTRDCalDet *calDetVdrift = calibra->CreateDetObjectVdrift(&object);
     TH1F *coefVdriftPH  = calDetVdrift->MakeHisto1DAsFunctionOfDet();
@@ -382,6 +387,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetMinEntries(800); // If there is less than 1000 entries in the histo: no fit
+  fAliTRDCalibraVdriftLinearFit->FillPEArray();
   calibra->AnalyseLinearFitters(fAliTRDCalibraVdriftLinearFit);
 
   //Int_t nbtg        = 540;
@@ -393,6 +399,11 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   // enough statistics
   if ((nbfit        >= 0.5*nbE) && (nbE > 30)) {
     // create the cal objects
+    //calibra->RemoveOutliers(1,kTRUE);
+    calibra->PutMeanValueOtherVectorFit(1,kTRUE);
+    //calibra->RemoveOutliers2(kTRUE);
+    calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
+    //
     TObjArray object  = calibra->GetVectorFit();
     AliTRDCalDet *calDetVdrift = calibra->CreateDetObjectVdrift(&object,kTRUE);
     TH1F *coefDriftLinear      = calDetVdrift->MakeHisto1DAsFunctionOfDet();
@@ -451,6 +462,22 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
   
 }
 
+void AliTRDPreprocessorOffline::CorrectFromDetGainUsed() {
+
+  AliTRDCalDet *calDetGain = (AliTRDCalDet *) fCalibObjects->At(kGain);
+  if(!calDetGain) return;
+
+  for(Int_t det = 0; det < 540; det++) {
+    
+    Float_t gaininit = fCalDetGainUsed->GetValue(det);
+    Float_t gainout = calDetGain->GetValue(det);
+    
+    calDetGain->SetValue(det,gaininit*gainout);
+
+  }
+
+
+}
 
 void AliTRDPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //
@@ -573,3 +600,4 @@ void AliTRDPreprocessorOffline::UpdateOCDBPRF(Int_t startRunNumber, Int_t endRun
  
 
 }
+

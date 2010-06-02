@@ -126,6 +126,7 @@ void AliTRDCalibraFillHisto::Terminate()
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   :TObject()
   ,fGeo(0)
+  ,fCalibDB(0)
   ,fIsHLT(kFALSE)
   ,fCH2dOn(kFALSE)
   ,fPH2dOn(kFALSE)
@@ -191,13 +192,14 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   fNumberUsedPh[1]       = 0;
   
   fGeo = new AliTRDgeometry();
-
+  fCalibDB = AliTRDcalibDB::Instance();
 }
 
 //______________________________________________________________________________________
 AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   :TObject(c)
   ,fGeo(0)
+  ,fCalibDB(0)
   ,fIsHLT(c.fIsHLT)
   ,fCH2dOn(c.fCH2dOn)
   ,fPH2dOn(c.fPH2dOn)
@@ -277,6 +279,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
     delete fGeo;
   }
   fGeo = new AliTRDgeometry();
+  fCalibDB = AliTRDcalibDB::Instance();
 }
 
 //____________________________________________________________________________________
@@ -649,11 +652,18 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
   Bool_t         newtr   = kTRUE;              // new track
   
   // Get cal
-  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  //  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+  /*
   if (!cal) {
     AliInfo("Could not get calibDB");
     return kFALSE;
   }
+*/
+  if (!fCalibDB) {
+    AliInfo("Could not get calibDB");
+    return kFALSE;
+  }
+
   
   ///////////////////////////
   // loop over the tracklet
@@ -687,9 +697,9 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
       if( fCalROCGain ){ 
 	if(!fIsHLT){	
 	  fCalROCGain->~AliTRDCalROC();
-	  new(fCalROCGain) AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+	  new(fCalROCGain) AliTRDCalROC(*(fCalibDB->GetGainFactorROC(detector)));
 	}
-      }else fCalROCGain = new AliTRDCalROC(*(cal->GetGainFactorROC(detector)));
+      }else fCalROCGain = new AliTRDCalROC(*(fCalibDB->GetGainFactorROC(detector)));
       
       // reset
       fDetectorPreviousTrack = detector;

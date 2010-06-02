@@ -42,6 +42,7 @@ class AliTRDseedV1;
 class AliTRDgeometry;
 class AliTRDCalDet;
 class AliTRDCalROC;
+class AliTRDcalibDB;
 
 class AliTRDrawFastStream;
 class AliTRDdigitsManager;
@@ -173,6 +174,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 
   // Geometry
   AliTRDgeometry  *fGeo;                    //! The TRD geometry
+  // calibration DB
+  AliTRDcalibDB   *fCalibDB;                //! The pointer to the TRDcalibDB instance
 
   // Is HLT
           Bool_t   fIsHLT;                  // Now if HLT, the per detector

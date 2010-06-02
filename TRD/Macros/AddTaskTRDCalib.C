@@ -29,7 +29,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   /////////////////////////
   AliTRDCalibTask *calibTask = new AliTRDCalibTask();
   calibTask->SetHisto2d(kTRUE);
-  calibTask->SetVector2d(kTRUE);
+  calibTask->SetVector2d(kFALSE);
   calibTask->SetVdriftLinear(kTRUE);
   calibTask->SetNz(0,0);
   calibTask->SetNrphi(0,0);
@@ -39,7 +39,9 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetNrphi(0,2);
   calibTask->SetLow(0);
   calibTask->SetHigh(30);
-  calibTask->SetFillZero(kFALSE);
+  calibTask->SetFillZero(kTRUE);
+  calibTask->AddSelectedTriggerClass("CINT1B-ABCE-NOPF-ALL");
+  calibTask->SetReject(kFALSE);
   //calibTask->SetDebug(3);
   calibTask->SetNbTimeBins(30);
   //calibTask->SetMaxEvent(20);
@@ -78,7 +80,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
 
 
   mgr->ConnectInput(calibTask,0,cinput);
-  mgr->ConnectOutput(calibTask,0,coutput);
+  mgr->ConnectOutput(calibTask,1,coutput);
   return calibTask;
 
 }
@@ -98,3 +100,4 @@ const AliTRDCalDet *GetCalDet(Int_t runNumber){
   return calDet;
 
 }
+

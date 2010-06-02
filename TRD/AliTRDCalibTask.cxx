@@ -25,8 +25,8 @@
 //                            
 //////////////////////////////////////////////////////////////////////////////////////
 
-
-
+#include <iostream>
+using namespace std;
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -77,7 +77,7 @@ ClassImp(AliTRDCalibTask)
 
 //________________________________________________________________________
   AliTRDCalibTask::AliTRDCalibTask(const char *name) 
-    : AliAnalysisTask(name,""), fESD(0),
+    : AliAnalysisTaskSE(name), fESD(0),
       fESDfriend(0),
       fkEsdTrack(0),
       fFriendTrack(0),
@@ -148,7 +148,7 @@ ClassImp(AliTRDCalibTask)
   DefineInput(0, TChain::Class());
         
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
   
    
 }
@@ -190,37 +190,48 @@ AliTRDCalibTask::~AliTRDCalibTask()
   }
   
 }
+
+/*
 //________________________________________________________________________
 void AliTRDCalibTask::ConnectInputData(Option_t *) 
 {
   // Connect ESD or AOD here
-  // Called once
+  // Called once per event
   
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0)); //pointer wird "umgecastet" auf anderen Variablentyp
-  if (!tree) {
+  cout << "AliTRDCalibTask::ConnectInputData() IN" << endl;
+
+
+  //  TTree* tree = dynamic_cast<TTree*> (GetInputData(0)); //pointer wird "umgecastet" auf anderen Variablentyp
+  //  if (!tree) {
     //Printf("ERROR: Could not read chain from input slot 0");
+  //  } else {
+    
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  
+  if (!esdH) {
+    //Printf("ERROR: Could not get ESDInputHandler");
   } else {
-    
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
-    if (!esdH) {
-      //Printf("ERROR: Could not get ESDInputHandler");
-    } else {
-      fESD = esdH->GetEvent();
-      esdH->SetActiveBranches("ESDfriend*");
-      if ((esdH->GetTree())->GetBranch("ESDfriend.")) fESDfriend = esdH->GetESDfriend();
-      //else printf("No friend ESD\n");
-      //Printf("*** CONNECTED NEW EVENT ****");
-    }
-    
+    fESD = esdH->GetEvent();
+    //    esdH->SetActiveBranches("ESDfriend*");
+    if ((esdH->GetTree())->GetBranch("ESDfriend.")) fESDfriend = esdH->GetESDfriend();
+    //else printf("No friend ESD\n");
+    //Printf("*** CONNECTED NEW EVENT ****");
   }
+    
+
+    //  }
+  //cout << "AliTRDCalibTask::ConnectInputData() OUT" << endl;
+
 }
+*/
+
 //________________________________________________________________________
-void AliTRDCalibTask::CreateOutputObjects() 
+void AliTRDCalibTask::UserCreateOutputObjects() 
 {
   //
   // Create the histos
   //
+  //cout << "AliTRDCalibTask::CreateOutputObjects() IN" << endl;
 
   // Number of time bins
   if(fNbTimeBins==0) {
@@ -398,119 +409,134 @@ void AliTRDCalibTask::CreateOutputObjects()
     fListHist->Add(fNbTrackletsStandalone);
     
   }
+  //cout << "AliTRDCalibTask::UserCreateOutputObjects() OUT" << endl;
+}
+
+
+//________________________________________________________________________
+void AliTRDCalibTask::UserExec(Option_t *) 
+{
+  //
+  // Filling of the histos
+  //
+  //cout << "AliTRDCalibTask::Exec() IN" << endl;
   
- }
- //________________________________________________________________________
- void AliTRDCalibTask::Exec(Option_t *) 
- {
-   //
-   // Filling of the histos
-   //
-
-   AliLog::SetGlobalLogLevel(AliLog::kError);
-   
-   if (!fESD) {
-     //Printf("ERROR: fESD not available");
-     return;
-   }
-
-   if (!fESDfriend) {
-     fESDfriend = (AliESDfriend*)(fESD->FindListObject("AliESDfriend"));
-     if(!fESDfriend) Printf("ERROR: fESDfriend not available");
-     //Printf("ERROR: fESDfriend not available");
-     return;
-   }
-
-   //printf("Counter %d\n",fCounter);
-
-   fCounter++;
-   if((fMaxEvent != 0) && (fMaxEvent < fCounter)) return;
-
-   //printf("Counter %d\n",fCounter);
-
-   ///////////////////
-   // Check trigger
-   ///////////////////
-   Bool_t pass = kTRUE;
-   Int_t numberOfTriggerSelected = fSelectedTrigger->GetEntriesFast();
-   //printf("numberofTriggerSelected %d\n",numberOfTriggerSelected);
-   if(fRejected) {
-     pass = kTRUE;
-     for(Int_t k = 0; k < numberOfTriggerSelected; k++){
-       const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
-       const TString tString=obString->GetString();
-       if(fESD->IsTriggerClassFired((const char*)tString)) {
-	 pass = kFALSE;
-       }
-     }
-   }
-   else {
-     pass = kFALSE;
-     for(Int_t k = 0; k < numberOfTriggerSelected; k++){
-       const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
-       const TString tString=obString->GetString();
-       if(fESD->IsTriggerClassFired((const char*)tString)) {
-	 pass = kTRUE;
-       }
-     }
-   }
-   if(!pass) return;   
-   //printf("Class Fired %s\n",(const char*)fESD->GetFiredTriggerClasses());
-   //printf("Trigger passed\n");
+  //  AliLog::SetGlobalLogLevel(AliLog::kError);
+  //  cout << "AliTRDCalibTask::Exec() 1" << endl;
+  fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if(!fESD){
+    AliError("ESD Event missing");
+    PostData(1, fListHist);
+    return;
+  }
   
-   ///////////////////////////////
-   // Require a primary vertex
-   //////////////////////////////
-   if(fRequirePrimaryVertex) {
-     const AliESDVertex* vtxESD = 0x0;
-     if      (fVtxTPC) vtxESD = fESD->GetPrimaryVertexTPC() ;
-     else if (fVtxSPD) vtxESD = fESD->GetPrimaryVertexSPD() ;
-     else              vtxESD = fESD->GetPrimaryVertexTracks() ;
-     if(!vtxESD){
-       return;
-     }
-     Int_t nCtrb = vtxESD->GetNContributors();
-     if(nCtrb < fMinNbContributors) return;
-     Double_t zPosition = vtxESD->GetZ();
-     if(TMath::Abs(zPosition) > fRangePrimaryVertexZ) return;     
+  //printf("Counter %d\n",fCounter);
+  
+  fCounter++;
+  //cout << "maxEvent = " << fMaxEvent << endl;
+  //if(fCounter%100==0) cout << "fCounter = " << fCounter << endl;
+  if((fMaxEvent != 0) && (fMaxEvent < fCounter)) return;
+  //if(fCounter%100==0) cout << "fCounter1 = " << fCounter << endl;
+  //cout << "event = " << fCounter << endl;
+  
+  //printf("Counter %d\n",fCounter);
+  
+  ///////////////////
+  // Check trigger
+  ///////////////////
+  Bool_t pass = kTRUE;
+  Int_t numberOfTriggerSelected = fSelectedTrigger->GetEntriesFast();
+  //printf("numberofTriggerSelected %d\n",numberOfTriggerSelected);
+  if(fRejected) {
+    pass = kTRUE;
+    for(Int_t k = 0; k < numberOfTriggerSelected; k++){
+      const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
+      const TString tString=obString->GetString();
+      if(fESD->IsTriggerClassFired((const char*)tString)) {
+	pass = kFALSE;
+      }
+    }
+  }
+  else {
+    pass = kFALSE;
+    for(Int_t k = 0; k < numberOfTriggerSelected; k++){
+      const TObjString *const obString=(TObjString*)fSelectedTrigger->At(k);
+      const TString tString=obString->GetString();
+      if(fESD->IsTriggerClassFired((const char*)tString)) {
+	pass = kTRUE;
+      }
+    }
+  }
+  if(!pass) {
+    PostData(1, fListHist);
+    return;
+  }   
+  //printf("Class Fired %s\n",(const char*)fESD->GetFiredTriggerClasses());
+  //printf("Trigger passed\n");
+  
+  ///////////////////////////////
+  // Require a primary vertex
+  //////////////////////////////
+  if(fRequirePrimaryVertex) {
+    const AliESDVertex* vtxESD = 0x0;
+    if      (fVtxTPC) vtxESD = fESD->GetPrimaryVertexTPC() ;
+    else if (fVtxSPD) vtxESD = fESD->GetPrimaryVertexSPD() ;
+    else              vtxESD = fESD->GetPrimaryVertexTracks() ;
+    if(!vtxESD){
+      PostData(1, fListHist);
+      return;
+    }
+    Int_t nCtrb = vtxESD->GetNContributors();
+    if(nCtrb < fMinNbContributors) {
+      PostData(1, fListHist);     
+      return;
+    }
+    Double_t zPosition = vtxESD->GetZ();
+    if(TMath::Abs(zPosition) > fRangePrimaryVertexZ) {
+      PostData(1, fListHist);
+      return;
+    }     
+    
+  }
+  
+  //printf("Primary vertex passed\n");
+  
+  fNEvents->Fill(1);
+  
+  // In total
+  Int_t nbTrdTracks = 0;
+  // standalone
+  Int_t nbTrdTracksStandalone = 0;
+  // offline
+  Int_t nbTrdTracksOffline = 0;
+  // TPC
+  Int_t nbtrackTPC = 0;
+  
+  Double_t nbTracks = fESD->GetNumberOfTracks();
+  //printf("Number of tracks %f\n",nbTracks);  
+  
+  if (nbTracks <= 0.0) {
+    
+    if(fDebug > 1) {
+      fNbTRDTrack->Fill(nbTrdTracks);
+      fNbTRDTrackStandalone->Fill(nbTrdTracksStandalone);
+      fNbTRDTrackOffline->Fill(nbTrdTracksOffline);
+    }
+    PostData(1, fListHist);
+    return;
+  }
+  
+  fESDfriend = dynamic_cast<AliESDfriend*> (fESD->FindListObject("AliESDfriend"));
+  if(!fESDfriend){
+    AliError("fESDfriend not available");
+    PostData(1, fListHist);
+    return;
+  }
+  
+  //printf("has friends\n");
 
-   }
-
-   //printf("Primary vertex passed\n");
-
-   fNEvents->Fill(1);
-
-   // In total
-   Int_t nbTrdTracks = 0;
-   // standalone
-   Int_t nbTrdTracksStandalone = 0;
-   // offline
-   Int_t nbTrdTracksOffline = 0;
-   // TPC
-   Int_t nbtrackTPC = 0;
-
-   Double_t nbTracks = fESD->GetNumberOfTracks();
-   //printf("Number of tracks %f\n",nbTracks);  
-
-   if (nbTracks <= 0.0) {
-     
-     if(fDebug > 1) {
-       fNbTRDTrack->Fill(nbTrdTracks);
-       fNbTRDTrackStandalone->Fill(nbTrdTracksStandalone);
-       fNbTRDTrackOffline->Fill(nbTrdTracksOffline);
-     }
-     PostData(0, fListHist);
-     return;
-   }
-
-   //fESDfriend = (AliESDfriend *)fESD->FindListObject("AliESDfriend");
-   fESDfriend = (AliESDfriend *)fESD->FindListObject("AliESDfriend");
-   fESD->SetESDfriend(fESDfriend);
-   //if(!fESDfriend) return;   
-   
-   //printf("has friends\n");
-
-   ////////////////////////////////////
+  /*
+  ////////////////////////////////////
    // Check the number of TPC tracks
    ///////////////////////////////////
    //printf("Nb of tracks %f\n",nbTracks);
@@ -519,31 +545,16 @@ void AliTRDCalibTask::CreateOutputObjects()
      fkEsdTrack = fESD->GetTrack(itrk);
      ULong_t status = fkEsdTrack->GetStatus(); 
      if(status&(AliESDtrack::kTPCout)) nbtrackTPC++;
-     // Check that the calibration object is here
-     if(fESDfriend && (fESDfriend->GetTrack(itrk))) {
-       fFriendTrack = new AliESDfriendTrack(*(fESDfriend->GetTrack(itrk)));
-       Int_t counteer = 0;
-       Int_t icalib=0;
-       //printf("Found friend track %d\n",itrk);
-       while((fCalibObject = (TObject *)(fFriendTrack->GetCalibObject(icalib++)))){
-	 //printf("Name %s\n",fCalibObject->IsA()->GetName());
-       	 if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
-	 counteer++;
-       }
-       //printf("TRDntracklets %d, TRDntrackletsPID %d\n",fkEsdTrack->GetTRDntracklets(),fkEsdTrack->GetTRDntrackletsPID());
-       if(counteer > 0) {
-	 nbTrdTracks++;      
-	 if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
-	   nbTrdTracksStandalone++;
-	 }
-	 if((status&(AliESDtrack::kTRDin))) {
-	   nbTrdTracksOffline++;
-	 }
-       }
-       if(fFriendTrack) delete fFriendTrack;
+     if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
+       nbTrdTracks++;    
+       nbTrdTracksStandalone++;
+     }
+     if((status&(AliESDtrack::kTRDin))) {
+       nbTrdTracks++;    
+       nbTrdTracksOffline++;
      }
    }
-   //printf("Number of TPC tracks %d, TRD %d\n",nbtrackTPC,nbTrdTracks);
+   
    if((nbtrackTPC>0) && (nbTrdTracks > (3.0*nbtrackTPC))) pass = kFALSE;
    
    if(fDebug > 1) {
@@ -556,200 +567,229 @@ void AliTRDCalibTask::CreateOutputObjects()
    }
 
    if(!pass) {
-     PostData(0, fListHist);
+     PostData(1, fListHist);
      return;
    }
-   //printf("Pass\n");  
-
-   /////////////////////////////////////
-   // Loop on AliESDtrack
-   ////////////////////////////////////
-   //printf("Nb of tracks %f\n",nbTracks);      
-   for(int itrk=0; itrk < nbTracks; itrk++){
-
-     // Get ESD track
-     fkEsdTrack = fESD->GetTrack(itrk);
-     if(!fkEsdTrack) continue;
-
-     // Quality cuts on the AliESDtrack
-     if((fEsdTrackCuts) && (!fEsdTrackCuts->IsSelected((AliVParticle *)fkEsdTrack))) {
-       //printf("Not a good track\n");
-       continue;
-     }
-
-     // First Absolute gain calibration
-     Int_t trdNTracklets = (Int_t) fkEsdTrack->GetTRDntracklets();
-     Int_t trdNTrackletsPID = (Int_t) fkEsdTrack->GetTRDntrackletsPID(); 
-     if((trdNTracklets > 0) && (trdNTrackletsPID > 0)) {
-       for(Int_t iPlane = 0; iPlane < 6; iPlane++){
-	 Double_t slide = fkEsdTrack->GetTRDslice(iPlane);
-	 //printf("Number of slide %d\n",fkEsdTrack->GetNumberOfTRDslices());
-	 Double_t momentum = fkEsdTrack->GetTRDmomentum(iPlane);
-	 //printf("momentum %f, slide %f\n",momentum,slide);
-	 if(slide > 0.0) fAbsoluteGain->Fill(slide*8.0/100.0,momentum); 
-       }
-     }     
-     
-     // Other cuts
-     Bool_t good = kTRUE;
-     Bool_t standalonetrack = kFALSE;
-     Bool_t offlinetrack = kFALSE;
-     ULong_t status = fkEsdTrack->GetStatus();
-     
-     if(!(fESDfriend->GetTrack(itrk)))  continue;   
-     
-     fFriendTrack = new AliESDfriendTrack(*(fESDfriend->GetTrack(itrk)));
-     
-     //////////////////////////////////////
-     // Loop on calibration objects
-     //////////////////////////////////////
-     Int_t icalib=0;
-     while((fCalibObject = (TObject *)(fFriendTrack->GetCalibObject(icalib++)))){
-       if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
-       //printf("Find the calibration object\n");
-
-       if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
-	 standalonetrack = kTRUE;
-       }
-       if((status&(AliESDtrack::kTRDin))) {
-	 offlinetrack = kTRUE;
-       }
-       if(fOfflineTracks){
-	 if(!offlinetrack){
-	   good = kFALSE;
-	 }
-       }
-       else if(fStandaloneTracks){
-	 if(!standalonetrack){
-	   good = kFALSE;
-	 }
-       }
-       
-       fTrdTrack = (AliTRDtrackV1 *)fCalibObject;
-       if(good) {
-	 fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack);
-	 //printf("Fill fTRDCalibraFillHisto\n");
-       }
-       
-       //////////////////////////////////
-       // Debug 
-       ////////////////////////////////
-
-       if(fDebug > 0) {
-	 
-	 //printf("Enter debug\n");
-	 
-	 Int_t nbtracklets = 0;
-	 
-	 // Check some stuff
-	 Bool_t standalonetracklet = kFALSE;  
-	 const AliTRDseedV1 *tracklet = 0x0;
-	 //////////////////////////////////////
-	 // Loop tracklets
-	 ///////////////////////////////////// 
-	 for(Int_t itr = 0; itr < 6; itr++){
-	   
-	   if(!(tracklet = fTrdTrack->GetTracklet(itr))) continue;
-	   if(!tracklet->IsOK()) continue;
-	   nbtracklets++;
-	   standalonetracklet = kFALSE; 
-	   if(tracklet->IsStandAlone()) standalonetracklet = kTRUE;
-
-	   Int_t nbclusters = 0;
-	   Double_t phtb[AliTRDseedV1::kNtb];
-	   memset(phtb, 0, AliTRDseedV1::kNtb*sizeof(Double_t));
-	   Double_t sum = 0.0;
-	   Float_t normalisation = 6.67;
-	   Int_t detector = 0;
-	   Int_t sector = 0;
-	   //Int_t crossrow = 0;
-	   
-	   // Check no shared clusters
-	   //for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
-	   //  if((fcl = tracklet->GetClusters(icc)))  crossrow = 1;
-	   // }
-	   
-	   // Loop on clusters
-	   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
-	     
-	     if(!(fCl = tracklet->GetClusters(ic))) continue;
-	     nbclusters++;
-	     Int_t time = fCl->GetPadTime();
-	     Float_t ch =  tracklet->GetdQdl(ic);
-	     Float_t qcl = TMath::Abs(fCl->GetQ());
-	     detector = fCl->GetDetector();	  
-	     // Add the charge if shared cluster
-	     if((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) {
-	       if((fCl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) {
-		 qcl += TMath::Abs(fCl->GetQ());
-		 //printf("Add the cluster charge\n");
-	       }
-	     }
-	     if((time>-1) && (time<fNbTimeBins)) phtb[time]=qcl;
-	     if((fCalDetGain) && (fCalDetGain->GetValue(detector) > 0.0)) sum += ch*fCalDetGain->GetValue(detector)/normalisation;	
-	     else sum += ch/normalisation;
-	     
-	     if(fDebug > 1) {
-	       fNbTimeBin->Fill(time);
-	       if(tracklet->IsStandAlone()) fNbTimeBinStandalone->Fill(time);
-	       else fNbTimeBinOffline->Fill(time);
-	     }
-	   }
-	   sector = AliTRDgeometry::GetSector(detector);
-	   
-	   if(fDebug > 1) {
-	     fNbTracklets->Fill(detector);
-	     if(tracklet->IsStandAlone()) fNbTrackletsStandalone->Fill(detector);
-	     else fNbTrackletsOffline->Fill(detector);
-	   
-	     fNbClusters->Fill(nbclusters);
-	     if(tracklet->IsStandAlone())  fNbClustersStandalone->Fill(nbclusters);
-	     else  fNbClustersOffline->Fill(nbclusters);
-	   }	   
-
-	   if(fDebug > 0) {
-	     if((nbclusters > fLow) && (nbclusters < fHigh)){
-	       if(fRelativeScale > 0.0) sum = sum/fRelativeScale;	       
-	       fCH2dSM->Fill(sum,sector+0.5);
-	       fCH2dSum->Fill(sum,0.5);
-	       Bool_t checknoise = kTRUE;
-	       if(fMaxCluster > 0) {
-		 if(phtb[0] > fMaxCluster) checknoise = kFALSE;
-		 if(fNbTimeBins > fNbMaxCluster) {
-		   for(Int_t k = (fNbTimeBins-fNbMaxCluster); k < fNbTimeBins; k++){
-		     if(phtb[k] > fMaxCluster) checknoise = kFALSE;
-		   }
-		 }
-	       }
-	       if(checknoise) {	       
-		 for(int ic=0; ic<fNbTimeBins; ic++){
-		   if(fFillZero) {
-		     fPH2dSum->Fill((Double_t)(ic/10.0),0.5,(Double_t)phtb[ic]);
-		     fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
-		   }
-		   else {
-		     if(phtb[ic] > 0.0) {
-		       fPH2dSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
-		       fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
-		     }
-		   }
-		 }
-	       }
-	     }
-	   }
-	 } // loop on tracklets
+  */
+  
+  /////////////////////////////////////
+  // Loop on AliESDtrack
+  ////////////////////////////////////
+  //printf("Nb of tracks %f\n",nbTracks);      
+  for(int itrk=0; itrk < nbTracks; ++itrk){
     
-       } // debug
-       
-     }// while calibration objects
+    // Get ESD track
+    fkEsdTrack = fESD->GetTrack(itrk);
+    if(!fkEsdTrack) continue;
+    ULong_t status = fkEsdTrack->GetStatus(); 
+    if(status&(AliESDtrack::kTPCout)) ++nbtrackTPC;
+    
+    // Quality cuts on the AliESDtrack
+    if((fEsdTrackCuts) && (!fEsdTrackCuts->IsSelected((AliVParticle *)fkEsdTrack))) {
+      //printf("Not a good track\n");
+      continue;
+    }
+    
+    // First Absolute gain calibration
+    Int_t trdNTracklets = (Int_t) fkEsdTrack->GetTRDntracklets();
+    Int_t trdNTrackletsPID = (Int_t) fkEsdTrack->GetTRDntrackletsPID(); 
+    if((trdNTracklets > 0) && (trdNTrackletsPID > 0)) {
+      for(Int_t iPlane = 0; iPlane < 6; ++iPlane){
+	//Double_t slide = fkEsdTrack->GetTRDslice(iPlane);
+	//printf("Number of slide %d\n",fkEsdTrack->GetNumberOfTRDslices());
+	//Double_t momentum = fkEsdTrack->GetTRDmomentum(iPlane);
+	//printf("momentum %f, slide %f\n",momentum,slide);
+	if(fkEsdTrack->GetTRDslice(iPlane) > 0.0) 
+	  fAbsoluteGain->Fill(fkEsdTrack->GetTRDslice(iPlane)*8.0/100.0,
+			      fkEsdTrack->GetTRDmomentum(iPlane)); 
+      }
+    }     
+    
+    // Other cuts
+    Bool_t good = kTRUE;
+    Bool_t standalonetrack = kFALSE;
+    Bool_t offlinetrack = kFALSE;
+    //ULong_t status = fkEsdTrack->GetStatus();
+    
+    fFriendTrack = fESDfriend->GetTrack(itrk);
+    if(!fFriendTrack)  continue;
+    //////////////////////////////////////
+    // Loop on calibration objects
+    //////////////////////////////////////
+    Int_t icalib=0;
+    Int_t nTRDtrackV1=0;
+    while((fCalibObject = (TObject *)(fFriendTrack->GetCalibObject(icalib++)))){
+      if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
+      //printf("Find the calibration object\n");
+      ++nTRDtrackV1;
+      
+      if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
+	standalonetrack = kTRUE;
+      }
+      if((status&(AliESDtrack::kTRDin))) {
+	offlinetrack = kTRUE;
+      }
+      if(fOfflineTracks){
+	if(!offlinetrack){
+	  good = kFALSE;
+	}
+      }
+      else if(fStandaloneTracks){
+	if(!standalonetrack){
+	  good = kFALSE;
+	}
+      }
+      
+      fTrdTrack = (AliTRDtrackV1 *)fCalibObject;
+      if(good) {
+	//cout << "good" << endl;
+	fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack);
+	//printf("Fill fTRDCalibraFillHisto\n");
+      }
+      
+      //////////////////////////////////
+      // Debug 
+      ////////////////////////////////
+      
+      if(fDebug > 0) {
+	
+	//printf("Enter debug\n");
+	
+	Int_t nbtracklets = 0;
+	
+	// Check some stuff
+	Bool_t standalonetracklet = kFALSE;  
+	const AliTRDseedV1 *tracklet = 0x0;
+	//////////////////////////////////////
+	// Loop tracklets
+	///////////////////////////////////// 
+	Int_t nbclusters=0;
+	Double_t phtb[AliTRDseedV1::kNtb];
+        memset(phtb, 0, AliTRDseedV1::kNtb*sizeof(Double_t));
+	Double_t sum = 0.0;
+	Float_t normalisation = 6.67;
+	Int_t detector = 0;
+	Int_t sector = 0;
+	for(Int_t itr = 0; itr < 6; ++itr){
+	  
+	  if(!(tracklet = fTrdTrack->GetTracklet(itr))) continue;
+	  if(!tracklet->IsOK()) continue;
+	  ++nbtracklets;
+	  standalonetracklet = kFALSE; 
+	  if(tracklet->IsStandAlone()) standalonetracklet = kTRUE;
+	  
+	  nbclusters = 0;
+	  memset(phtb, 0, AliTRDseedV1::kNtb*sizeof(Double_t));
+	  sum = 0.0;
+	  detector = 0;
+	  sector = 0;
+	  //Int_t crossrow = 0;
+	  
+	  // Check no shared clusters
+	  //for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
+	  //  if((fcl = tracklet->GetClusters(icc)))  crossrow = 1;
+	  // }
+	  
+	  // Loop on clusters
+	  Int_t time = 0;
+	  Float_t ch = 0;
+	  Float_t qcl = 0;
+	  for(int ic=0; ic<AliTRDseedV1::kNtb; ++ic){
+	    
+	    if(!(fCl = tracklet->GetClusters(ic))) continue;
+	    ++nbclusters;
+	    time = fCl->GetPadTime();
+	    ch =  tracklet->GetdQdl(ic);
+	    qcl = TMath::Abs(fCl->GetQ());
+	    detector = fCl->GetDetector();	  
+	    // Add the charge if shared cluster
+	    if((ic+AliTRDseedV1::kNtb) < AliTRDseedV1::kNclusters) {
+	      if((fCl = tracklet->GetClusters(ic+AliTRDseedV1::kNtb))) {
+		qcl += TMath::Abs(fCl->GetQ());
+		//printf("Add the cluster charge\n");
+	      }
+	    }
+	    if((time>-1) && (time<fNbTimeBins)) phtb[time]=qcl;
+	    if((fCalDetGain) && (fCalDetGain->GetValue(detector) > 0.0)) sum += ch*fCalDetGain->GetValue(detector)/normalisation;	
+	    else sum += ch/normalisation;
+	    
+	    if(fDebug > 1) {
+	      fNbTimeBin->Fill(time);
+	      if(tracklet->IsStandAlone()) fNbTimeBinStandalone->Fill(time);
+	      else fNbTimeBinOffline->Fill(time);
+	    }
+	  }
+	  sector = AliTRDgeometry::GetSector(detector);
+	  
+	  if(fDebug > 1) {
+	    fNbTracklets->Fill(detector);
+	    if(tracklet->IsStandAlone()) fNbTrackletsStandalone->Fill(detector);
+	    else fNbTrackletsOffline->Fill(detector);
+	    
+	    fNbClusters->Fill(nbclusters);
+	    if(tracklet->IsStandAlone())  fNbClustersStandalone->Fill(nbclusters);
+	    else  fNbClustersOffline->Fill(nbclusters);
+	  }	   
+	  
+	  if(fDebug > 0) {
+	    if((nbclusters > fLow) && (nbclusters < fHigh)){
+	      if(fRelativeScale > 0.0) sum = sum/fRelativeScale;	       
+	      fCH2dSM->Fill(sum,sector+0.5);
+	      fCH2dSum->Fill(sum,0.5);
+	      Bool_t checknoise = kTRUE;
+	      if(fMaxCluster > 0) {
+		if(phtb[0] > fMaxCluster) checknoise = kFALSE;
+		if(fNbTimeBins > fNbMaxCluster) {
+		  for(Int_t k = (fNbTimeBins-fNbMaxCluster); k < fNbTimeBins; k++){
+		    if(phtb[k] > fMaxCluster) checknoise = kFALSE;
+		  }
+		}
+	      }
+	      if(checknoise) {	       
+		for(int ic=0; ic<fNbTimeBins; ic++){
+		  if(fFillZero) {
+		    fPH2dSum->Fill((Double_t)(ic/10.0),0.5,(Double_t)phtb[ic]);
+		    fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
+		  }
+		  else {
+		    if(phtb[ic] > 0.0) {
+		      fPH2dSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
+		      fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	} // loop on tracklets
+	
+      } // debug
+      
+    }// while calibration objects
+    if(nTRDtrackV1 > 0) {
+      ++nbTrdTracks;      
+      if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
+	++nbTrdTracksStandalone;
+      }
+      if((status&(AliESDtrack::kTRDin))) {
+	++nbTrdTracksOffline;
+      }
+    }
+    //delete fFriendTrack;
+  } // loop ESD track
+  
+  if(fDebug > 1) {
+    fNbTRDTrack->Fill(nbTrdTracks);
+    fNbTRDTrackStandalone->Fill(nbTrdTracksStandalone);
+    fNbTRDTrackOffline->Fill(nbTrdTracksOffline);
+    fNbTPCTRDtrack->Fill(nbTrdTracks,nbtrackTPC);
+  }
+  
+  // Post output data
+  PostData(1, fListHist);
+  //cout << "AliTRDCalibTask::Exec() OUT" << endl;
+}
      
-     delete fFriendTrack;
-     
-   } // loop ESD track
-   
-   // Post output data
-   PostData(0, fListHist);
- }     
 //________________________________________________________________________
 void AliTRDCalibTask::Terminate(Option_t *) 
 {
@@ -1288,3 +1328,4 @@ Long64_t AliTRDCalibTask::Merge(TCollection *li) {
   return 0;
   
 }
+
