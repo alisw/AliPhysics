@@ -46,6 +46,13 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetCalculate2DFlow() const {return this->fCalculate2DFlow;};
   void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
   Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
+  // multiparticle correlations vs multiplicity:
+  void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
+  Int_t GetnBinsMult() const {return this->fnBinsMult;};  
+  void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
+  Double_t GetMinMult() const {return this->fMinMult;};
+  void SetMaxMult(Double_t const maxm) {this->fMaxMult = maxm;};
+  Double_t GetMaxMult() const {return this->fMaxMult;};
   // particle weights:
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -68,6 +75,10 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fApplyCorrectionForNUA;      // apply correction for non-uniform acceptance 
   Bool_t fCalculate2DFlow;            // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
   Bool_t fStoreDistributions;         // store or not distributions of correlations
+  // multiparticle correlations vs multiplicity:
+  Int_t fnBinsMult;                   // number of multiplicity bins for flow analysis versus multiplicity  
+  Double_t fMinMult;                  // minimal multiplicity for flow analysis versus multiplicity  
+  Double_t fMaxMult;                  // maximal multiplicity for flow analysis versus multiplicity    
   // particle weights:
   Bool_t fUseParticleWeights;         // use any particle weights
   Bool_t fUsePhiWeights;              // use phi weights

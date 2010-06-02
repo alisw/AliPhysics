@@ -114,8 +114,8 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowFlags(NULL),
  fApplyCorrectionForNUA(kTRUE),  
  fnBinsMult(10000),
- fMinMult(0),  
- fMaxMult(10000), 
+ fMinMult(0.),  
+ fMaxMult(10000.), 
  fReQ(NULL),
  fImQ(NULL),
  fSMpk(NULL),
@@ -777,7 +777,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  if(fApplyCorrectionForNUA) // to be improved (reorganized, etc)
  {
   this->FinalizeCorrectionTermsForNUAIntFlow();
-  this->CalculateCovariancesNUAIntFlow();
+  // this->CalculateCovariancesNUAIntFlow(); // to be improved (enabled eventually)
   this->CalculateQcumulantsCorrectedForNUAIntFlow();   
   this->CalculateIntFlowCorrectedForNUA(); 
  }

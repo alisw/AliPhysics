@@ -46,6 +46,9 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fApplyCorrectionForNUA(kTRUE), 
  fCalculate2DFlow(kFALSE),
  fStoreDistributions(kFALSE),
+ fnBinsMult(10000),
+ fMinMult(0.),  
+ fMaxMult(10000.), 
  fUseParticleWeights(useParticleWeights),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
@@ -81,6 +84,9 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fApplyCorrectionForNUA(kFALSE), 
  fCalculate2DFlow(kFALSE),
  fStoreDistributions(kFALSE),
+ fnBinsMult(0),
+ fMinMult(0.),  
+ fMaxMult(0.), 
  fUseParticleWeights(kFALSE),
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
@@ -107,6 +113,10 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
  fQC->SetCalculate2DFlow(fCalculate2DFlow);
  fQC->SetStoreDistributions(fStoreDistributions);
+ // multiparticle correlations vs multiplicity:
+ fQC->SetnBinsMult(fnBinsMult);
+ fQC->SetMinMult(fMinMult);
+ fQC->SetMaxMult(fMaxMult);
  // Particle weights:
  if(fUseParticleWeights)
  {
