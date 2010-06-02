@@ -31,6 +31,7 @@ extern "C" {
 #include <TStopwatch.h>
 #include "TROOT.h"
 #include "TPluginManager.h"
+#include "TSystem.h"
 //
 // AliRoot includes
 //
@@ -52,7 +53,7 @@ extern "C" {
 #include "AliTRDCalibChamberStatus.h"
 
 //functios, implementation below
-//void SendToAmoreDB(TObject *o, unsigned long32 runNb);
+void SendToAmoreDB(TObject *o, unsigned long32 runNb);
 
 /* Main routine
       Arguments: list of DATE raw data files
@@ -109,7 +110,7 @@ int main(int argc, char **argv) {
   // AliTRDCalibPadStatus object
   AliTRDCalibChamberStatus calipad = AliTRDCalibChamberStatus();
   calipad.Init();
-  //unsigned long32 runNb=0;      //run number
+  unsigned long32 runNb=0;      //run number
 
   // setting
   AliTRDrawFastStream::DisableSkipData();
@@ -156,7 +157,7 @@ int main(int argc, char **argv) {
     nevents_total++;
     
     // get the run number
-    //runNb = event->eventRunNb;
+    runNb = event->eventRunNb;
     
     /* free resources */
     free(event);
@@ -177,6 +178,9 @@ int main(int argc, char **argv) {
   calipad.AnalyseHisto();
   calipad.Write("calibchamberstatus");
   fileTRD->Close();   
+
+  /* Send to amore */
+  SendToAmoreDB(&calipad,runNb);
      
   /* store the result file on FES */
   status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
@@ -188,4 +192,31 @@ int main(int argc, char **argv) {
   
   return status;
 
+}
+void SendToAmoreDB(TObject *o, unsigned long32 runNb)
+{
+  //AMORE
+  const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+  //cheet a little -- temporary solution (hopefully)
+  //
+  //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
+  //table in which the calib objects are stored. This table is dropped each time AmoreDA
+  //is initialised. This of course makes a problem if we would like to store different
+  //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
+  //the AMORE_DA_NAME env variable is overwritten.
+  
+  gSystem->Setenv("AMORE_DA_NAME","TRD-dataHALFCHAMBERSTATUS");
+  //
+  // end cheet
+  TDatime time;
+  TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
+  
+  amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+  Int_t statusDA=0;
+  statusDA+=amoreDA.Send("DataHalfChamberStatus",o);
+  statusDA+=amoreDA.Send("Info",&info);
+  if ( statusDA!=0 )
+    printf("TRDQAda: Waring: Failed to write one of the calib objects to the AMORE database\n");
+  // reset env var
+  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 }
