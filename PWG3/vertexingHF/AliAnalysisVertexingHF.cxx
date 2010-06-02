@@ -1443,7 +1443,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   Double_t dca[3]={dcap1n1,dcap2n1,dcap1p2};
   Double_t dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
   Double_t dist23=TMath::Sqrt((vertexp2n1->GetX()-pos[0])*(vertexp2n1->GetX()-pos[0])+(vertexp2n1->GetY()-pos[1])*(vertexp2n1->GetY()-pos[1])+(vertexp2n1->GetZ()-pos[2])*(vertexp2n1->GetZ()-pos[2]));
-  Short_t charge=(Short_t)(postrack1->Charge()*postrack2->Charge()*negtrack->Charge());
+  Short_t charge=(Short_t)(postrack1->Charge()+postrack2->Charge()+negtrack->Charge());
   AliAODRecoDecayHF3Prong *the3Prong = new AliAODRecoDecayHF3Prong(secVert,px,py,pz,d0,d0err,dca,dispersion,dist12,dist23,charge);
   the3Prong->SetOwnPrimaryVtx(primVertexAOD);
   UShort_t id[3]={(UShort_t)postrack1->GetID(),(UShort_t)negtrack->GetID(),(UShort_t)postrack2->GetID()};
