@@ -35,14 +35,14 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/data/alice2/kolk/PP/data/LHC09d/104892/test", Int_t offset = 0)
                 //Bool_t DATA = kFALSE, const Char_t* dataDir="/data/alice2/kolk/PP/LHC09d10/104873", Int_t offset = 0)
 
-void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
+//void runFlowTask(Int_t mode = mPROOF, Int_t nRuns = 50000000, 
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/Therminator_midcentral_ESD", Int_t offset=0)
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/PWG2/akisiel/LHC10d6_0.9TeV_EPOS_12502X", Int_t offset=0)
 		 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10b_000115322_p1", Int_t offset=0) // data 7 TeV
-		 Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a18_140012", Int_t offset=0) //perugia0 7 TeV
+		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a18_140012", Int_t offset=0) //perugia0 7 TeV
 		 //Bool_t DATA = kFALSE, const Char_t* dataDir="/alice/sim/LHC10a20_140514", Int_t offset=0) //phojet 7 TeV
 
-//void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
+void runFlowTask(Int_t mode = mGRID, Bool_t DATA = kTRUE)
 {
   TStopwatch timer;
   timer.Start();
@@ -177,10 +177,18 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
     cerr<<"libCORRFW loaded..."<<endl;
-    gSystem->Load("libPWG2flowCommon");
-    cerr<<"libPWG2flowCommon loaded..."<<endl;
-    gSystem->Load("libPWG2flowTasks");
-    cerr<<"libPWG2flowTasks loaded..."<<endl;
+    if (mode==mLocal) {
+      gSystem->Load("libPWG2flowCommon");
+      cerr<<"libPWG2flowCommon loaded..."<<endl;
+      gSystem->Load("libPWG2flowTasks");
+      cerr<<"libPWG2flowTasks loaded..."<<endl;
+    }
+    if (mode==mGRID) {
+      SetupPar("PWG2flowCommon");
+      cerr<<"PWG2flowCommon.par loaded..."<<endl;
+      SetupPar("PWG2flowTasks");
+      cerr<<"PWG2flowTasks.par loaded..."<<endl;
+    }
   }
   
   else if (mode == mLocalPAR) {
