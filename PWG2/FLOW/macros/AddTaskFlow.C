@@ -700,6 +700,9 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     taskQC->SetUsePhiWeights(WEIGHTS[0]); 
     taskQC->SetUsePtWeights(WEIGHTS[1]);
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
+    taskQC->SetnBinsMult(10000);
+    taskQC->SetMinMult(0.);
+    taskQC->SetMaxMult(10000.);
     mgr->AddTask(taskQC);
   }
   if (FQD){
