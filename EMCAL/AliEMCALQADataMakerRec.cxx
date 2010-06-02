@@ -528,8 +528,6 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     SetEventSpecie(AliRecoParam::kCalib) ;
   }
  
-  fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
-
   const Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
   const Int_t nRows        = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
   const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
@@ -548,6 +546,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // start loop over input stream  
   while (in.NextDDL()) {
     Int_t iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
+    fRawAnalyzer->SetIsZeroSuppressed( in.GetZeroSupp() ); 
 
     while (in.NextChannel()) {
       iSM = in.GetModule(); // SuperModule
