@@ -15,6 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+const int c_array_size = 10;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -637,9 +638,9 @@ Double_t kGClastXBinGammaNDF = 10.;
 Int_t kGCnXBinsSpectra = 1000;
 Double_t kGCfirstXBinSpectra = 0.;
 Double_t kGClastXBinSpectra = 1.;
-Int_t kGCnYBinsSpectra = 500;
+Int_t kGCnYBinsSpectra = 250;
 Double_t kGCfirstYBinSpectra = 0.;
-Double_t kGClastYBinSpectra = 50.;
+Double_t kGClastYBinSpectra = 25.;
 
 Double_t kGCfirstXBinAlpha = -1.;
 Double_t kGClastXBinAlpha = 1.;
@@ -1934,44 +1935,29 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   
   // set the cuts depending on the Cut Selection Id
   // first number is dummy always set to 9 
-  const char* cutSelection = analysisCutSelection.Data(); 
-  
-  cout<<"cutSelection is: "<<cutSelection<<endl;
-  
+  //  const char* cutSelection = analysisCutSelection.Data(); 
   if(analysisCutSelection.Length()!=10){
     cout<<"Cut selection has the wrong length!"<<endl;
     return 0;
   }
-  char tmp = cutSelection[0];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t goodId=atoi(&tmp);
-  tmp = cutSelection[1];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t v0FinderType=atoi(&tmp);
-  tmp = cutSelection[2];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t eProbCut=atoi(&tmp);
-  tmp = cutSelection[3];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t ededxSigmaCut=atoi(&tmp);
-  tmp = cutSelection[4];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t pidedxSigmaCut=atoi(&tmp);
-  tmp = cutSelection[5];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t piMomdedxSigmaCut=atoi(&tmp);
-  tmp = cutSelection[6];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t chi2GammaCut=atoi(&tmp);
-  tmp = cutSelection[7];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t singlePtCut=atoi(&tmp);
-  tmp = cutSelection[8];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t clsTPCCut=atoi(&tmp);
-  tmp = cutSelection[9];
-  //  cout<<"reading: "<<tmp<<endl;
-  Int_t etaCut=atoi(&tmp);
+
+  char cutSelection[] = analysisCutSelection.Data();
+  int array[c_array_size];
+  const int N = sizeof(array) / sizeof(int);
+  string2array( cutSelection, array );
+
+
+
+  Int_t goodId=array[0];
+  Int_t v0FinderType=array[1];
+  Int_t eProbCut=array[2];
+  Int_t ededxSigmaCut=array[3];
+  Int_t pidedxSigmaCut=array[4];
+  Int_t piMomdedxSigmaCut=array[5];
+  Int_t chi2GammaCut=array[6];
+  Int_t singlePtCut=array[7];
+  Int_t clsTPCCut=array[8];
+  Int_t etaCut=array[9];
 
 
 
