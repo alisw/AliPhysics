@@ -24,11 +24,31 @@ AliAnalysisGrid* CreateAlienHandler() {
   // plugin->SetOutputToRunNo();  
   // ============================================================================
   //  Example 2: Real data (set in macro runFlowTask.C: DATA = kTRUE, MCEP = kFALSE)
-  plugin->SetGridDataDir("/alice/data/2010/LHC10b");
+  plugin->SetGridDataDir("/alice/data/2009/LHC09d");
   plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
   plugin->SetRunPrefix("000");
-  plugin->AddRunNumber(117099); 
-  //plugin->AddRunNumber(104892); // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
+  //plugin->AddRunNumber(117099); 
+  plugin->AddRunNumber(104157); 
+  plugin->AddRunNumber(104159);
+  plugin->AddRunNumber(104160);
+  plugin->AddRunNumber(104316);
+  plugin->AddRunNumber(104320);
+  plugin->AddRunNumber(104321);
+  plugin->AddRunNumber(104792);
+  plugin->AddRunNumber(104793);
+  plugin->AddRunNumber(104799);
+  plugin->AddRunNumber(104800);
+  plugin->AddRunNumber(104801);
+  plugin->AddRunNumber(104802);
+  plugin->AddRunNumber(104803);
+  plugin->AddRunNumber(104824);
+  plugin->AddRunNumber(104825);
+  plugin->AddRunNumber(104845);
+  plugin->AddRunNumber(104852);
+  plugin->AddRunNumber(104867);
+  plugin->AddRunNumber(104876);
+  plugin->AddRunNumber(104892);
+  // Alternatively use e.g. plugin->SetRunRange(104044,106044); to add more runs in one go 
   plugin->SetOutputToRunNo();  
   // ============================================================================
  
@@ -41,7 +61,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
   plugin->SetGridWorkingDir("realData");
   // Declare alien output directory. Relative to working directory.
-  plugin->SetGridOutputDir("output3"); // In this case will be $HOME/work/output
+  plugin->SetGridOutputDir("output900GeVpass5"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes:
   // ... (if this is needed see in official tutorial example how to do it!)
@@ -51,7 +71,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   //plugin->SetAdditionalLibs("libPWG2flowCommon.so libPWG2flowTasks.so");
   // load libs via par files
   plugin->EnablePackage("PWG2flowCommon.par");
-  plugin->EnablePackage("PWG2flowTasks");
+  plugin->EnablePackage("PWG2flowTasks.par");
   // Declare the output file names separated by blancs.
   // (can be like: file.root or file.root@ALICE::Niham::File)
   plugin->SetOutputFiles("AnalysisResults.root ");
