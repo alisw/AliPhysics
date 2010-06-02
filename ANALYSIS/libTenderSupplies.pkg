@@ -1,0 +1,23 @@
+#-*- Mode: Makefile -*-
+
+SRCS= TenderSupplies/AliTOFcalibESD.cxx \
+      TenderSupplies/AliTOFT0makerANA.cxx \
+      TenderSupplies/AliTOFT0v2.cxx \
+      TenderSupplies/AliPIDTenderSupply.cxx \
+      TenderSupplies/AliTOFTenderSupply.cxx \
+      TenderSupplies/AliTPCTenderSupply.cxx \
+      TenderSupplies/AliTRDTenderSupply.cxx \
+      TenderSupplies/AliVtxTenderSupply.cxx
+
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR= TenderSuppliesLinkDef.h
+
+EINCLUDE:= ANALYSIS ANALYSIS/Tender STEER TOF
+
+ifeq (win32gcc,$(ALICE_TARGET))
+PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \
+-lESD -lSTEER -lANALYSISalice -lANALYSIS -lCORRFW -lTENDER -lTOFbase
+endif
+
+
