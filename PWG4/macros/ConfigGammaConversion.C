@@ -1164,6 +1164,10 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
     ::Error("ConfigGammaConversion","Both kGCuseKFParticle and kGCuseESDTracks can be false at the same time")
       }
 	
+
+  if(!SetAnalysisCutSelection(kGCAnalysisCutSelectionId)){
+    return 0;
+  }
 	
   //Create the V0Reader
   AliV0Reader * v0Reader = new AliV0Reader();
@@ -1206,9 +1210,6 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetOnFlyFlag(kGCUseOnFlyV0Finder);
   v0Reader->SetCalculateBackground(kGCcalculateBackground);
 
-  if(!SetAnalysisCutSelection(kGCAnalysisCutSelectionId)){
-    return 0;
-  }
 
   // Create the GammaConversionTask
 
