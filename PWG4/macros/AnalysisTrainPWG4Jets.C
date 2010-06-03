@@ -363,7 +363,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG1QASym){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PWG1macros/AddTaskQAsym.C");
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
      AliAnalysisTaskQASym *taskQASym = AddTaskQAsym(-1);
      if (!taskQASym) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQASym cannot run for this train conditions - EXCLUDED");
    }
