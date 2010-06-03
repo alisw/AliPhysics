@@ -44,6 +44,8 @@ class AliGenHijing : public AliGenMC
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll  = flag;}
     virtual void    SetRadiation(Int_t flag=3)        {fRadiation  = flag;}    
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
+    virtual void    SetPtHardMin(Float_t ptmin)       {fPtHardMin  = ptmin;}
+    virtual void    SetPtHardMax(Float_t ptmax)       {fPtHardMax  = ptmax;}
     virtual void    SetPtJet(Float_t ptmin)           {fPtMinJet   = ptmin;}
     virtual void    SetSimpleJets(Int_t flag=0)       {fSimpleJet  = flag;}
     virtual void    SetNoGammas(Int_t flag=0)         {fNoGammas   = flag;}
@@ -67,6 +69,8 @@ class AliGenHijing : public AliGenMC
     virtual Int_t   GetFlavor()                          const {return fFlavor;}
     virtual Int_t   GetRadiation()                       const {return fRadiation;}    
     virtual Int_t   GetSpectators()                      const {return fSpectators;}
+    virtual Float_t GetPtHardMin()                       const {return fPtHardMin;}
+    virtual Float_t GetPtHardMax()                       const {return fPtHardMax;}
     virtual Float_t GetPtJet()                           const {return fPtMinJet;}
     virtual void    GetJetEtaRange(Float_t& etamin, Float_t& etamax)      const 
 	{etamin = fEtaMinJet; etamax = fEtaMaxJet;}

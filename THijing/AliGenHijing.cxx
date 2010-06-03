@@ -54,8 +54,8 @@ AliGenHijing::AliGenHijing()
      fTrials(0),
      fXsection(0.),
      fHijing(0),
-     fPtHardMin(0.),
-     fPtHardMax(1.e4),
+     fPtHardMin(2.0),
+     fPtHardMax(-1),
      fSpectators(1),
      fDsigmaDb(0),
      fDnDb(0),
@@ -98,8 +98,8 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fTrials(0),
      fXsection(0.),
      fHijing(0),
-     fPtHardMin(0.),
-     fPtHardMax(1.e4),
+     fPtHardMin(2.0),
+     fPtHardMax(-1),
      fSpectators(1),
      fDsigmaDb(0),
      fDnDb(0),
@@ -155,6 +155,8 @@ void AliGenHijing::Init()
     fHijing->SetIHPR2(6,  fShadowing);
     fHijing->SetIHPR2(12, fDecaysOff);    
     fHijing->SetIHPR2(21, fKeep);
+    fHijing->SetHIPR1(8,  fPtHardMin); 	
+    fHijing->SetHIPR1(9,  fPtHardMax); 	
     fHijing->SetHIPR1(10, fPtMinJet); 	
     fHijing->SetHIPR1(50, fSimpleJet);
 //
