@@ -156,6 +156,10 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fDCARCosmicCandidates(0),
   fTheta(0),
   fThetaZoom(0),
+  fThetaPt1Pt2(0),
+  fDeltaPhiSumEtaPt1(0),
+  fDeltaPhiSumEtaPt2(0),
+  fThetaDCAZ1DCAZ2(0),
   fHistListCosmics(0)
   
 {
@@ -261,6 +265,10 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fDCARCosmicCandidates(0),
   fTheta(0),
   fThetaZoom(0),
+  fThetaPt1Pt2(0),
+  fDeltaPhiSumEtaPt1(0),
+  fDeltaPhiSumEtaPt2(0),
+  fThetaDCAZ1DCAZ2(0),
   fHistListCosmics(0)
 {
   //
@@ -284,7 +292,9 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
 //________________________________________________________________________
 void AliPWG4HighPtQATPConly::LocalInit()
 {
-  // Post Data (!!!)
+  //
+  // Only called once at beginning
+  //
   PostData(4,fTrackCuts);
   PostData(5,fTrackCutsITS);
 }
@@ -380,8 +390,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
     if(i<=nbin12 && i>nbin11) binsPt[i]=(Double_t)ptmin2 + (ptmax2-ptmin2)/(nbin12-nbin11)*((Double_t)i-(Double_t)nbin11) ;  
     if(i<=nbin13 && i>nbin12) binsPt[i]=(Double_t)ptmin3 + (ptmax3-ptmin3)/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ;  
   }
-
-
 
   Float_t fgkChi2PerClusMin = 0.;
   Float_t fgkChi2PerClusMax = 4.;
@@ -892,16 +900,24 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fHistListCosmics->Add(fPtSignedCosmicCandidates);  
   fDeltaPtCosmicCandidates = new TH1F("fDeltaPtCosmicCandidates","fDeltaPtCosmicCandidates",fgkNPtBins, -50., 50.);
   fHistListCosmics->Add(fDeltaPtCosmicCandidates);  
-  fDeltaPhiSumEta = new TH2F("fDeltaPhiSumEta","fDeltaPhiSumEta",fgkNPhiBins*4,0.,kMaxPhi,40, -2.,2.);
+  fDeltaPhiSumEta = new TH2F("fDeltaPhiSumEta","fDeltaPhiSumEta",fgkNPhiBins*4,0.,kMaxPhi,80, -2.,2.);
   fHistListCosmics->Add(fDeltaPhiSumEta);  
   fDCAZCosmicCandidates = new TH2F("fDCAZCosmicCandidates","fDCAZCosmicCandidates",fgkNDCAZBins,binsDCAZ,fgkNDCAZBins,binsDCAZ);
   fHistListCosmics->Add(fDCAZCosmicCandidates);
   fDCARCosmicCandidates = new TH2F("fDCARCosmicCandidates","fDCARCosmicCandidates",fgkNDCARBins,binsDCAR,fgkNDCARBins,binsDCAR);
   fHistListCosmics->Add(fDCARCosmicCandidates);
-  fTheta = new TH1F("fTheta","fTheta",fgkNPhiBins*8,-1.*kMaxPhi,kMaxPhi);
+  fTheta = new TH1F("fTheta","fTheta",fgkNPhiBins*8,0.,kMaxPhi);
   fHistListCosmics->Add(fTheta);
   fThetaZoom = new TH1F("fThetaZoom","fThetaZoom",100,TMath::Pi()-1.,TMath::Pi()+1.);
   fHistListCosmics->Add(fThetaZoom);
+  fThetaPt1Pt2 = new TH3F("fThetaPt1Pt2","fThetaPt1Pt2",fgkNPhiBins*8,0.,kMaxPhi,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fHistListCosmics->Add(fThetaPt1Pt2);
+  fDeltaPhiSumEtaPt1 = new TH3F("fDeltaPhiSumEtaPt1","fDeltaPhiSumEtaPt1",fgkNPhiBins*4,0.,kMaxPhi,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fHistListCosmics->Add(fDeltaPhiSumEtaPt1);
+  fDeltaPhiSumEtaPt2 = new TH3F("fDeltaPhiSumEtaPt2","fDeltaPhiSumEtaPt2",fgkNPhiBins*4,0.,kMaxPhi,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fHistListCosmics->Add(fDeltaPhiSumEtaPt2);
+  fThetaDCAZ1DCAZ2 = new TH3F("fThetaDCAZ1DCAZ2","fThetaDCAZ1DCAZ2",fgkNPhiBins*8,0.,kMaxPhi,fgkNDCAZBins,-2.,2.,fgkNDCAZBins,-2.,2.);
+  fHistListCosmics->Add(fThetaDCAZ1DCAZ2);
 
   TH1::AddDirectory(oldStatus);   
 
@@ -1248,8 +1264,8 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
     track2->GetPxPyPz(mom2);
     Double_t cosTheta = (mom1[0]*mom2[0]+mom1[1]*mom2[1]+mom1[2]*mom2[2])/( TMath::Sqrt(mom1[0]*mom1[0]+mom1[1]*mom1[1]+mom1[2]*mom1[2])*TMath::Sqrt(mom2[0]*mom2[0]+mom2[1]*mom2[1]+mom2[2]*mom2[2]) );
     Double_t theta = TMath::ACos(cosTheta);
-   
-//if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
+    if(cosTheta<0.) theta+=TMath::Pi();
+   //if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
     
 //    Double_t cosMaxCosmicAngle[2] = {TMath::Cos(TMath::Pi()-fMaxCosmicAngle),TMath::Cos(TMath::Pi()+fMaxCosmicAngle)};
 //    if(cosTheta >= cosMaxCosmicAngle[0] && cosTheta <= cosMaxCosmicAngle[1]) { 
@@ -1266,6 +1282,10 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
       fDCARCosmicCandidates->Fill(dcaR[0],dcaR[1]);
       fTheta->Fill(theta);
       fThetaZoom->Fill(theta);
+      fThetaPt1Pt2->Fill(theta,track1->Pt(),track2->Pt());
+      fDeltaPhiSumEtaPt1->Fill(deltaPhi,track1->Eta()+track2->Eta(),track1->Pt());
+      fDeltaPhiSumEtaPt2->Fill(deltaPhi,track1->Eta()+track2->Eta(),track2->Pt());
+      fThetaDCAZ1DCAZ2->Fill(theta,dcaZ[0],dcaZ[1]);
     }
 
   }

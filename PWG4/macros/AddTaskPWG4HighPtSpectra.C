@@ -55,7 +55,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   UInt_t ichi2TPC = 4;
 
   //Setting up the container grid... 
-  UInt_t nstep = 5; //Steps/Modes for containers
+  UInt_t nstep = 6; //Steps/Modes for containers
   Int_t kStepReconstructed = 0;
   Int_t kStepReconstructedTPCOnly = 1;
   Int_t kStepSecondaries = 2;
@@ -197,14 +197,15 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra()
   AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("chist0HighPtSpectra", TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("ccontainer0HighPtSpectra", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ccontainer1HighPtSpectra", AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  
+  AliAnalysisDataContainer *cout_cuts0 = mgr->CreateContainer("qa_trackCuts", AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+ 
   mgr->AddTask(taskPWG4HighPtSpectra);
 
   mgr->ConnectInput(taskPWG4HighPtSpectra,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskPWG4HighPtSpectra,0,coutput0);
   mgr->ConnectOutput(taskPWG4HighPtSpectra,1,coutput1);
   mgr->ConnectOutput(taskPWG4HighPtSpectra,2,coutput2);
-
+  mgr->ConnectOutput(taskPWG4HighPtSpectra,3,cout_cuts0);
 
   // Return task pointer at the end
   return taskPWG4HighPtSpectra;
