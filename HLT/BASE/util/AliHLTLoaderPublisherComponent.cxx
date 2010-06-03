@@ -152,7 +152,7 @@ int AliHLTLoaderPublisherComponent::DoInit( int argc, const char** argv )
   AliRunLoader* pRunLoader=GetRunLoader();
   if (pRunLoader) {
 
-    // get the TPC loader
+    // get the specific loader for the module
     fpLoader=pRunLoader->GetLoader(fLoaderType.Data());
     if (fpLoader) {
       // prepare the loader
@@ -177,7 +177,12 @@ int AliHLTLoaderPublisherComponent::DoInit( int argc, const char** argv )
     } else {
       AliErrorStream() << "can not get loader of type " << fLoaderType << endl;
       iResult=-EFAULT;
-    }    
+    }
+
+    // prepare the RunLoader to provide the kinematics tree, some components
+    // (e.g. the offline ITS Clusterfinder) need the kinematics tree to
+    // propagate the mc information
+    pRunLoader->LoadKinematics("READ");
   } else {
     AliErrorStream() << "can not get runLoader" << endl;
     iResult=-EFAULT;
