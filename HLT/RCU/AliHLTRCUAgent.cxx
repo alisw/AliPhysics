@@ -24,7 +24,6 @@
 
 #include <cassert>
 #include "AliHLTRCUAgent.h"
-#include "AliHLTConfiguration.h"
 
 // header files of library components
 #include "AliHLTAltroChannelSelectorComponent.h"
