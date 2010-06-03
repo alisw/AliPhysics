@@ -185,6 +185,7 @@ void AliT0::MakeBranch(Option_t* option)
   const char *cH = strstr(option,"H");
   const char *cD = strstr(option,"D");
   const char *cR = strstr(option,"R");
+  const char *cS = strstr(option,"S");
 
     if (cH && fLoader->TreeH())
   {
@@ -206,6 +207,14 @@ void AliT0::MakeBranch(Option_t* option)
       if (fRecPoints == 0x0) fRecPoints  = new AliT0RecPoint();
       MakeBranchInTree(fLoader->TreeR(), branchname,
 		       &fRecPoints, 405, 0);
+    } 
+  if (cS && fLoader->TreeS())
+    {
+      if (fDigits == 0x0) fDigits  = new AliT0digit();
+      //     MakeBranchInTree(fLoader->TreeD(), branchname,
+      //		       &fDigits, 405, 0);
+      fLoader->TreeS()->Branch(branchname,"AliT0digit",&fDigits,405,1);
+      //   fLoader->TreeD()->Print();
     } 
   
 }    
@@ -252,6 +261,13 @@ void AliT0::SetTreeAddress()
     if (fRecPoints == 0x0) fRecPoints  = new  AliT0RecPoint()  ;
     TBranch* branch = treeR->GetBranch ("T0");
     if (branch) branch->SetAddress(&fRecPoints);
+  }
+  // SDigitizer for Federico
+  TTree *treeS = fLoader->TreeS();
+  if (treeS) {
+    if (fDigits == 0x0)  fDigits  = new AliT0digit();
+    TBranch* branch = treeS->GetBranch ("T0");
+    if (branch) branch->SetAddress(&fDigits);
   }
  
 }
