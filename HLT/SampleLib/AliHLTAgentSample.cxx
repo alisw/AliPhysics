@@ -24,7 +24,6 @@
 
 #include <cassert>
 #include "AliHLTAgentSample.h"
-#include "AliHLTConfiguration.h"
 #include "TSystem.h"
 
 // header files of library components
