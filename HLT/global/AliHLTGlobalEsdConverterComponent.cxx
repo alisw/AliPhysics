@@ -359,7 +359,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // second step from the ITS tracks
 
   // first read MC information (if present)
-  std::map<int,int> mcLabels;
+  std::map<int,int> mcLabelsTPC;
   std::map<int,int> mcLabelsITS;
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrackMC|kAliHLTDataOriginTPC);
@@ -371,7 +371,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     if (sizeof(AliHLTTrackMCData)+dataPtr->fCount*sizeof(AliHLTTrackMCLabel)==pBlock->fSize) {
       for( unsigned int il=0; il<dataPtr->fCount; il++ ){
 	AliHLTTrackMCLabel &lab = dataPtr->fLabels[il];
-	mcLabels[lab.fTrackID] = lab.fMCLabel;
+	mcLabelsTPC[lab.fTrackID] = lab.fMCLabel;
       }
     } else {
       HLTWarning("data mismatch in block %s (0x%08x): count %d, size %d -> ignoring track MC information", 
@@ -427,8 +427,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	};
 
 	Int_t mcLabel = -1;
-	if( mcLabels.find(element->TrackID())!=mcLabels.end() )
-	  mcLabel = mcLabels[element->TrackID()];
+	if( mcLabelsTPC.find(element->TrackID())!=mcLabelsTPC.end() )
+	  mcLabel = mcLabelsTPC[element->TrackID()];
 	element->SetLabel( mcLabel );
 
 	AliESDtrack iotrack;
@@ -524,15 +524,13 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  mcLabel = mcLabelsITS[element->TrackID()];
 	AliESDtrack *tESD = pESD->GetTrack( tpcID );
 	if (!tESD) continue;
-	if (mcLabel>=0 && tESD->GetLabel()>=0 && mcLabel!=tESD->GetLabel()) {
-	  // label should be equal at this point
-	  HLTWarning("mismatch in TPC and ITS MC label: %d vs. %d, ignoring ITS label", tESD->GetLabel(), mcLabel);
-	  mcLabel=tESD->GetLabel();
-	} else if (mcLabel<0 && tESD->GetLabel()>=0) {
-	  // keep the TPC label
-	  mcLabel=tESD->GetLabel();
+	// the labels for the TPC and ITS tracking params can be different, e.g.
+	// there can be a decay. The ITS label should then be the better one, the
+	// TPC label is saved in a member of AliESDtrack
+	if (mcLabel>=0) {
+	  // upadte only if the ITS label is available, otherwise keep TPC label
+	  element->SetLabel( mcLabel );
 	}
-	element->SetLabel( mcLabel );
 	tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
 
 	// TODO: add a proper refit
