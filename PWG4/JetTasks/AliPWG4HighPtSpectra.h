@@ -50,6 +50,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   ~AliPWG4HighPtSpectra() {;};
 
   // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
+  virtual void   LocalInit();
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);

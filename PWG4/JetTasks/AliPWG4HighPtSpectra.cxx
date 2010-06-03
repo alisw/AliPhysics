@@ -93,9 +93,22 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   AliDebug(2,Form("AliPWG4HighPtSpectra","Calling Constructor"));
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
+  // Output slot #0 writes into a TList
   DefineOutput(0,TList::Class());
+  // Output slot #1, #2 writes into a AliCFContainer
   DefineOutput(1,AliCFContainer::Class());
   DefineOutput(2,AliCFContainer::Class());
+  // Output slot #3 writes into a AliESDtrackCuts
+  DefineOutput(3, AliESDtrackCuts::Class());
+}
+
+//________________________________________________________________________
+void AliPWG4HighPtSpectra::LocalInit()
+{
+  //
+  // Only called once at beginning
+  //
+  PostData(3,fTrackCuts);
 }
 
 // //___________________________________________________________________________
