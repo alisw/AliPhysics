@@ -31,7 +31,6 @@
 #include <cassert>
 #include <cerrno>
 #include "AliHLTCompAgent.h"
-#include "AliHLTConfiguration.h"
 
 // header files of library components
 #include "AliHLTCOMPHuffmanAltroComponent.h"
