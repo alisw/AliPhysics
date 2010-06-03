@@ -22,13 +22,13 @@ void SETUP()
   CheckLoadLibrary("libSTEER");
   CheckLoadLibrary("libTOFbase");
 
-  CheckLoadLibrary("libTenderSupplies");
+  CheckLoadLibrary("libTENDERSupplies");
   
   // Set the include paths
-  gROOT->ProcessLine(".include TenderSupplies");
+  gROOT->ProcessLine(".include TENDERSupplies/TenderSupplies");
     
   // Set our location, so that other packages can find us
-  gSystem->Setenv("TenderSupplies_INCLUDE", "TenderSupplies");
+  gSystem->Setenv("TenderSupplies_INCLUDE", "TENDERSupplies/TenderSupplies");
 }
 
 
