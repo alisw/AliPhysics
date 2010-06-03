@@ -76,7 +76,7 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
 	if(jetana){
 	  char *cRadius = "";
 	  if(radius[i]>0)cRadius = Form("%02d",(int)((radius[i]+0.01)*10.)); // add an offset beacuse of precision
-	  jetana->SetNonStdBranch(Form("jets%s_%s%s",cReader[ib],cJF[i],cRadius));
+	  //	  jetana->SetNonStdBranch(Form("jets%s_%s%s",cReader[ib],cJF[i],cRadius)); // done in addtask jets
 	  if(outFile.Length()>0)jetana->SetNonStdOutputFile(outFile.Data());
 	  iCount++;
 	}
@@ -134,12 +134,22 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
 
    jetana = new AliAnalysisTaskJets(Form("JetAnalysis%s_%s%s",jr,jf,cRadius));
 
-   if (jr == "AOD") jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
-   
+
+
    TString c_jr(jr);
    c_jr.ToLower();
    TString c_jf(jf);
    c_jf.ToLower();
+
+
+   if (jr == "AOD"){
+     if(c_jf.Contains("ua1") && TMath::Abs(radius-0.4) < 0.01){
+       // do nothing
+     }
+     else{
+       jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
+     }
+   }
 
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
 							     AliAnalysisManager::kOutputContainer, Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
