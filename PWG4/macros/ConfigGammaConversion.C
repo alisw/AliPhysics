@@ -32,6 +32,7 @@ Bool_t kGCrunCF           = kFALSE;
 Bool_t kGCcalculateBackground = kTRUE;
 Bool_t kGCdoNeutralMesonV0MCCheck =kFALSE;
 Bool_t kGCrunOmegaMeson = kFALSE;
+Bool_t kGCrunRES = kFALSE;
 
 /** ---------------------------------- define cuts here ------------------------------------*/
 
@@ -351,7 +352,7 @@ Bool_t kGCplotResolutiondRAbs  = kTRUE;
 Bool_t kGCplotResolutiondZAbs  = kTRUE;
 Bool_t kGCplotResolutiondPhiAbs  = kTRUE;
 
-Bool_t kGCplotResolutiondRdPt = kFALSE;
+Bool_t kGCplotResolutiondRdPt = kTRUE;
 
 Bool_t kGCplotResolutionMCPt = kTRUE;
 Bool_t kGCplotResolutionMCR  = kTRUE;
@@ -558,9 +559,9 @@ Double_t kGClastYBinMapping = 2;
 Int_t kGCnXBinsResdPt=1000;
 Int_t kGCfirstXBinResdPt= 0;
 Int_t kGClastXBinResdPt=100;
-Int_t kGCnYBinsResdPt=1000;
-Int_t kGCfirstYBinResdPt= -5;
-Int_t kGClastYBinResdPt=5;
+Int_t kGCnYBinsResdPt=500;
+Int_t kGCfirstYBinResdPt= -10;
+Int_t kGClastYBinResdPt=10;
 
 //RESdR
 Int_t kGCnXBinsResdR=500;
@@ -579,15 +580,12 @@ Int_t kGCfirstYBinResdZ= -20;
 Int_t kGClastYBinResdZ=20;
 
 //RESdRdPt
-Int_t kGCnXBinsResdRdPt=440;
-Int_t kGCfirstXBinResdRdPt= -22;
-Int_t kGClastXBinResdRdPt=22;
-Int_t kGCnYBinsResdRdPt=100;
-Int_t kGCfirstYBinResdRdPt= -5;
-Int_t kGClastYBinResdRdPt=5;
+Int_t kGCnYBinsResdRdPt=400;
+Int_t kGCfirstYBinResdRdPt= -10;
+Int_t kGClastYBinResdRdPt=10;
 
 //RESMCPt
-Int_t kGCnXBinsResPt=1000;
+Int_t kGCnXBinsResPt=500;
 Int_t kGCfirstXBinResPt= 0;
 Int_t kGClastXBinResPt=100;
 
@@ -853,7 +851,10 @@ Bool_t scanArguments(TString arguments){
 	cout<<"Running CF"<<endl;
 	kGCrunCF = kTRUE;
       }
-
+      else if (argument.CompareTo("-run-resolution") == 0){
+	cout<<"Running Resolution"<<endl;
+	kGCrunRES = kTRUE;
+      }
       else if (argument.CompareTo("-jet-off") == 0){
 	cout<<"Skipping jet analysis"<<endl;
 	kGCrunJet = kFALSE;
@@ -1145,8 +1146,26 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   cout<<"Analyis cut selection ID is: "<<kGCAnalysisCutSelectionId.Data()<<endl;
-  //  outputfile += Form(":PWG4_GammaConversion_%llu",(ULong_t)kGCAnalysisCutSelectionId);
-  outputfile += Form(":PWG4_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
+  //  outputfile += Form(":PWG4_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
+  outputfile += Form(":PWG4_GammaConversion_");
+
+  if(kGCrunNeutralMeson==kTRUE) outputfile +="1";  else outputfile +="0";
+
+  if(kGCrunJet==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  if(kGCrunChic==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  if(kGCrunCF==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  if(kGCcalculateBackground==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  if(kGCdoNeutralMesonV0MCCheck==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  if(kGCrunOmegaMeson==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  if(kGCrunRES==kTRUE) outputfile +="1"; else outputfile +="0";
+
+  outputfile += Form("_%s",kGCAnalysisCutSelectionId.Data());
 
   cout<<"Ouput file::"<<  outputfile <<endl;
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("histogramsAliGammaConversion_%s",kGCAnalysisCutSelectionId.Data()), TList::Class(),AliAnalysisManager::kOutputContainer, outputfile);
@@ -1642,34 +1661,90 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
       histograms->AddMappingHistograms(kGCnPhiIndex,kGCnRIndex,kGCnXBinsMapping,kGCfirstXBinMapping,kGClastXBinMapping,kGCnYBinsMapping,kGCfirstYBinMapping,kGClastYBinMapping);
       //      histograms->AddMappingHistograms(kGCnPhiIndex,kGCnRIndex,kGCnXBinsMapping,kGCminRadius,kGCmaxRadius,kGCnYBinsMapping,kGCminPhi,kGCmaxPhi);
     }
-		
-    if(kGCplotResolutiondRAbs== kTRUE){histograms->AddHistogram("Resolution_dRAbs_VS_R","" ,kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR,kGCnYBinsResdR,kGCfirstYBinResdR, kGClastYBinResdR, "", "");}
-    if(kGCplotResolutiondZAbs== kTRUE){histograms->AddHistogram("Resolution_dZAbs_VS_R","" ,kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR,kGCnYBinsResdR,kGCfirstYBinResdR, kGClastYBinResdR, "", "");}
 
-    if(kGCplotResolutiondPhiAbs== kTRUE){histograms->AddHistogram("Resolution_dPhiAbs_VS_R","" ,kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR,kGCnYBinsResdR, -TMath::Pi()/30., TMath::Pi()/30., "", "");}
+    //
+    //************************************* Defining Resolution histograms *******************************************************/
+    //
+    // written by Friederike Bock 
+    // contact: Friederike.Bock@cern.ch
+    //
 
-    if(kGCplotResolutiondPt == kTRUE){histograms->AddHistogram("Resolution_dPt" ,"" , kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");}
-    if(kGCplotResolutiondR == kTRUE){histograms->AddHistogram("Resolution_dR" ,"" , kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR, kGCnYBinsResdR, kGCfirstYBinResdR, kGClastYBinResdR, "", "");}
-    if(kGCplotResolutiondZ == kTRUE){histograms->AddHistogram("Resolution_dZ" ,"" , kGCnXBinsResdZ, kGCfirstXBinResdZ, kGClastXBinResdZ, kGCnYBinsResdZ, kGCfirstYBinResdZ, kGClastYBinResdZ, "", "");}
+    if(kGCrunRES == kTRUE){
+	//------------------------------------------ Absolute Resolutions --------------------------------------------------------
+    if(kGCplotResolutiondRAbs== kTRUE){
+		histograms->AddHistogram("Resolution_dRAbs_VS_R","" ,kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR,kGCnYBinsResdR,kGCfirstYBinResdR, kGClastYBinResdR, "", "");}
+    if(kGCplotResolutiondZAbs== kTRUE){
+		histograms->AddHistogram("Resolution_dZAbs_VS_R","" ,kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR,kGCnYBinsResdR,kGCfirstYBinResdR, kGClastYBinResdR, "", "");}
+    if(kGCplotResolutiondPhiAbs== kTRUE){
+		histograms->AddHistogram("Resolution_dPhiAbs_VS_R","" ,kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR,kGCnYBinsResdR, -TMath::Pi()/30., TMath::Pi()/30., "", "");}
+
+	//------------------------------------------ Relative Resolutions --------------------------------------------------------
+    if(kGCplotResolutiondR == kTRUE){
+		histograms->AddHistogram("Resolution_dR" ,"" , kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR, kGCnYBinsResdR, kGCfirstYBinResdR, kGClastYBinResdR, "", "");}
+    if(kGCplotResolutiondZ == kTRUE){
+		histograms->AddHistogram("Resolution_dZ" ,"" , kGCnXBinsResdZ, kGCfirstXBinResdZ, kGClastXBinResdZ, kGCnYBinsResdZ, kGCfirstYBinResdZ, kGClastYBinResdZ, "", "");}
+
+	//------------------------------------------- Pt vs R ---------------------------------------------------------------------		
+    if(kGCplotResolutiondRdPt == kTRUE){
+		histograms->AddHistogram("Resolution_R_dPt" ,"" , kGCnXBinsResdR, kGCfirstXBinResdR, kGClastXBinResdR, kGCnYBinsResdRdPt, kGCfirstYBinResdRdPt, kGClastYBinResdRdPt, "", "");}
+
+
+	// ------------------------------------------- Reconstruction Plots for Resolution ----------------------------------------		
+    if(kGCplotResolutionMCPt == kTRUE){
+		histograms->AddHistogram("Resolution_MC_Pt" ,"" , kGCnXBinsResPt, kGCfirstXBinResPt, kGClastXBinResPt,"","");}
+    if(kGCplotResolutionMCR == kTRUE){
+		histograms->AddHistogram("Resolution_MC_R" ,"" , kGCnXBinsResR, kGCfirstXBinResR, kGClastXBinResR,"","");}
+    if(kGCplotResolutionMCZ == kTRUE){
+		histograms->AddHistogram("Resolution_MC_Z" ,"" , kGCnXBinsResZ, kGCfirstXBinResZ, kGClastXBinResZ,"","");}
 		
-    if(kGCplotResolutiondRdPt == kTRUE){histograms->AddHistogram("Resolution_dR_dPt" ,"" , kGCnXBinsResdRdPt, kGCfirstXBinResdRdPt, kGClastXBinResdRdPt, kGCnYBinsResdRdPt, kGCfirstYBinResdRdPt, kGClastYBinResdRdPt, "", "");}
-		
-    if(kGCplotResolutionMCPt == kTRUE){histograms->AddHistogram("Resolution_MC_Pt" ,"" , kGCnXBinsResPt, kGCfirstXBinResPt, kGClastXBinResPt,"","");}
-    if(kGCplotResolutionMCR == kTRUE){histograms->AddHistogram("Resolution_MC_R" ,"" , kGCnXBinsResR, kGCfirstXBinResR, kGClastXBinResR,"","");}
-    if(kGCplotResolutionMCZ == kTRUE){histograms->AddHistogram("Resolution_MC_Z" ,"" , kGCnXBinsResZ, kGCfirstXBinResZ, kGClastXBinResZ,"","");}
-		
-    if(kGCplotResolutionESDPt == kTRUE){histograms->AddHistogram("Resolution_ESD_Pt" ,"" , kGCnXBinsResPt, kGCfirstXBinResPt, kGClastXBinResPt,"","");}
-    if(kGCplotResolutionESDR == kTRUE){histograms->AddHistogram("Resolution_ESD_R" ,"" , kGCnXBinsResR, kGCfirstXBinResR, kGClastXBinResR,"","");}
-    if(kGCplotResolutionESDZ == kTRUE){histograms->AddHistogram("Resolution_ESD_Z" ,"" , kGCnXBinsResZ, kGCfirstXBinResZ, kGClastXBinResZ,"","");}
-	
+    if(kGCplotResolutionESDPt == kTRUE){
+		histograms->AddHistogram("Resolution_ESD_Pt" ,"" , kGCnXBinsResPt, kGCfirstXBinResPt, kGClastXBinResPt,"","");}
+    if(kGCplotResolutionESDR == kTRUE){
+		histograms->AddHistogram("Resolution_ESD_R" ,"" , kGCnXBinsResR, kGCfirstXBinResR, kGClastXBinResR,"","");}
+    if(kGCplotResolutionESDZ == kTRUE){
+		histograms->AddHistogram("Resolution_ESD_Z" ,"" , kGCnXBinsResZ, kGCfirstXBinResZ, kGClastXBinResZ,"","");}
+
+	// ------------------------------------------- Plots for specific Gamma Trigger Studies -----------------------------------	
     if(kGCplotResolutionPtdPt = kTRUE){
-	histograms->AddHistogram("Resolution_Gamma_dPt_Pt" ,"" , kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-	histograms->AddHistogram("Resolution_E_dPt_Pt" ,"" , kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-	histograms->AddHistogram("Resolution_P_dPt_Pt" ,"" , kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-	histograms->AddHistogram("Resolution_Gamma_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-	//	histograms->AddHistogram("Resolution_E_dPt_Pt" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-	histograms->AddHistogram("Resolution_P_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-    }
+		// ::::::::::::::::::::::::::::::::::::::: histograms for gammas ::::::::::::::::::::::::::::::::::::::::::::::::::::::
+		histograms->AddHistogram("Resolution_Gamma_dPt_Pt" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_Gamma_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		
+		// ::::::::::::::::::::::::::::::::::::::: histograms for electrons :::::::::::::::::::::::::::::::::::::::::::::::::::
+		histograms->AddHistogram("Resolution_E_dPt_Pt" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS0" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS1" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS2" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS3" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS4" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS5" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS6" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_E_nTRDtracklets_ESDPt" ,"" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");
+		histograms->AddHistogram("Resolution_E_nTRDtracklets_MCPt","" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");	
+		histograms->AddHistogram("Resolution_E_nTRDclusters_ESDPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5, -0.5, 201,"", "");
+		histograms->AddHistogram("Resolution_E_nTRDclusters_MCPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5, -0.5, 201.,"", "");
+		//		histograms->AddHistogram("Resolution_E_TRDsignal_ESDPt","", fV0Reader->GetNegativeTrackPt(), fV0Reader->GetNegativeESDTrack()->GetTRDsignal());
+		
+		// :::::::::::::::::::::::::::::::::::::::: histograms for positrons :::::::::::::::::::::::::::::::::::::::::::::::::::
+		histograms->AddHistogram("Resolution_P_dPt_Pt" ,"" , kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS0" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS1" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS2" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS3" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS4" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS5" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS6" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
+		histograms->AddHistogram("Resolution_P_nTRDtracklets_ESDPt" ,"" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");   
+		histograms->AddHistogram("Resolution_P_nTRDtracklets_MCPt","", kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");
+		histograms->AddHistogram("Resolution_P_nTRDclusters_ESDPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5, -0.5, 201.,"", "");
+		histograms->AddHistogram("Resolution_P_nTRDclusters_MCPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5,-0.5, 201.0,"", "");
+		//		histograms->AddHistogram("Resolution_P_TRDsignal_ESDPt", "",fV0Reader->GetPositiveTrackPt(), fV0Reader->GetPositiveESDTrack()->GetTRDsignal());
+    } //end of specific trigger study resolution plots
+    } //end if(kGCrunRES=true)
+    
+    // ___________________________________________________________________________________________________________________________________________________
 
     if(kGCplotESDNumberOfV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfV0s","Number of v0s",100, -0.5, 99.5,"","");}
     if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",100, -0.5, 99.5,"","");}
@@ -2116,6 +2191,22 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
 }
 
 
+void string2array(const std::string& number, int a[c_array_size]) 
+{
+    if (number.size() == c_array_size) {
+#define ASSIGNARRAY(i)  a[i] = number[i] - '0'
+        ASSIGNARRAY(0);
+        ASSIGNARRAY(1);
+        ASSIGNARRAY(2);
+        ASSIGNARRAY(3);
+        ASSIGNARRAY(4);
+        ASSIGNARRAY(5);
+        ASSIGNARRAY(6);
+        ASSIGNARRAY(7);
+        ASSIGNARRAY(8);
+        ASSIGNARRAY(9);
+  }
+}
 
 
 
