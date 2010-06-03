@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -24,7 +24,6 @@
 
 #include <cassert>
 #include "AliHLTAgentUtil.h"
-#include "AliHLTConfiguration.h"
 #include "AliHLTOUTHandlerChain.h"
 
 // header files of library components
