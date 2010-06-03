@@ -1330,9 +1330,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	  cout<<"Pt of MC particle is negative, this will cause wrong calculation of resPt"<<endl; 
 	}
 				
-	fHistograms->FillHistogram("Resolution_dPt", mcpt, resdPt);
+	fHistograms->FillHistogram("Resolution_Gamma_dPt_Pt", mcpt, resdPt);
 	fHistograms->FillHistogram("Resolution_MC_Pt", mcpt);
 	fHistograms->FillHistogram("Resolution_ESD_Pt", esdpt);
+	fHistograms->FillHistogram("Resolution_Gamma_dPt_Phi", fV0Reader->GetMotherCandidatePhi(), resdPt);
 				
 	Double_t resdZ = 0;
 	if(fV0Reader->GetNegativeMCParticle()->Vz() != 0){
@@ -1345,7 +1346,100 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("Resolution_dZ", fV0Reader->GetNegativeMCParticle()->Vz(), resdZ);
 	fHistograms->FillHistogram("Resolution_MC_Z", fV0Reader->GetNegativeMCParticle()->Vz());
 	fHistograms->FillHistogram("Resolution_ESD_Z", fV0Reader->GetZ());
-				
+		
+	// new for dPt_Pt-histograms for Electron and Positron
+	Double_t mcEpt = fV0Reader->GetNegativeMCParticle()->Pt();
+	Double_t resEdPt = 0;
+	if (mcEpt > 0){ 
+		resEdPt = ((fV0Reader->GetNegativeTrackPt()-mcEpt)/mcEpt)*100;
+	}
+	UInt_t statusN = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
+ //    AliESDtrack * negTrk = fV0Reader->GetNegativeESDTrack();
+	UInt_t kTRDoutN =  (statusN & AliESDtrack::kTRDout);
+
+	Int_t ITSclsE= fV0Reader->GetNegativeTracknITSClusters();
+	// filling Resolution_Pt_dPt with respect to the Number of ITS clusters for Positrons
+	 switch(ITSclsE){
+	  case 0: // 0 ITS clusters
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS0", mcEpt, resEdPt);
+	    break;
+	  case 1:  // 1 ITS cluster
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS1", mcEpt, resEdPt);
+	    break;
+	  case 2:  // 2 ITS clusters
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS2", mcEpt, resEdPt);
+	    break;
+	  case 3: // 3 ITS clusters
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS3", mcEpt, resEdPt);
+	    break;
+	  case 4: // 4 ITS clusters
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS4", mcEpt, resEdPt);
+	    break;
+	  case 5: // 5 ITS clusters
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS5", mcEpt, resEdPt);
+	    break;
+	  case 6: // 6 ITS clusters
+		fHistograms->FillHistogram("Resolution_E_dPt_Pt_ITS6", mcEpt, resEdPt);
+	    break;
+	  }
+	//Filling histograms with respect to Electron resolution
+	fHistograms->FillHistogram("Resolution_E_dPt_Pt", mcEpt, resEdPt);
+	fHistograms->FillHistogram("Resolution_E_dPt_Phi", fV0Reader->GetNegativeTrackPhi(), resEdPt);
+	if(kTRDoutN){
+	fHistograms->FillHistogram("Resolution_E_nTRDtracklets_ESDPt", fV0Reader->GetNegativeTrackPt(), fV0Reader->GetNegativeESDTrack()->GetTRDntracklets());
+	fHistograms->FillHistogram("Resolution_E_nTRDtracklets_MCPt", mcEpt, fV0Reader->GetNegativeESDTrack()->GetTRDntracklets());	
+	fHistograms->FillHistogram("Resolution_E_nTRDclusters_ESDPt",fV0Reader->GetNegativeTrackPt(), fV0Reader->GetNegativeESDTrack()->GetTRDncls());
+	fHistograms->FillHistogram("Resolution_E_nTRDclusters_MCPt",mcEpt, fV0Reader->GetNegativeESDTrack()->GetTRDncls());
+	fHistograms->FillHistogram("Resolution_E_TRDsignal_ESDPt", fV0Reader->GetNegativeTrackPt(), fV0Reader->GetNegativeESDTrack()->GetTRDsignal());
+	}
+
+	Double_t mcPpt = fV0Reader->GetPositiveMCParticle()->Pt();
+	Double_t resPdPt = 0;
+	if (mcPpt > 0){ 
+		resPdPt = ((fV0Reader->GetPositiveTrackPt()-mcPpt)/mcPpt)*100;
+	}
+
+	UInt_t statusP = fV0Reader->GetPositiveESDTrack()->GetStatus(); 
+//     AliESDtrack * posTr= fV0Reader->GetPositiveESDTrack();
+	UInt_t kTRDoutP =  (statusP & AliESDtrack::kTRDout);
+	
+	Int_t ITSclsP = fV0Reader->GetPositiveTracknITSClusters();
+	// filling Resolution_Pt_dPt with respect to the Number of ITS clusters for Positrons
+	 switch(ITSclsP){
+	  case 0: // 0 ITS clusters
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS0", mcPpt, resPdPt);
+	    break;
+	  case 1:  // 1 ITS cluster
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS1", mcPpt, resPdPt);
+	    break;
+	  case 2:  // 2 ITS clusters
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS2", mcPpt, resPdPt);
+	    break;
+	  case 3: // 3 ITS clusters
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS3", mcPpt, resPdPt);
+	    break;
+	  case 4: // 4 ITS clusters
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS4", mcPpt, resPdPt);
+	    break;
+	  case 5: // 5 ITS clusters
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS5", mcPpt, resPdPt);
+	    break;
+	  case 6: // 6 ITS clusters
+		fHistograms->FillHistogram("Resolution_P_dPt_Pt_ITS6", mcPpt, resPdPt);
+	    break;
+	  }
+	//Filling histograms with respect to Positron resolution
+	fHistograms->FillHistogram("Resolution_P_dPt_Pt", mcPpt, resPdPt);
+	fHistograms->FillHistogram("Resolution_P_dPt_Phi", fV0Reader->GetPositiveTrackPhi(), resPdPt);
+	if(kTRDoutP){
+	fHistograms->FillHistogram("Resolution_P_nTRDtracklets_ESDPt", fV0Reader->GetPositiveTrackPt(), fV0Reader->GetPositiveESDTrack()->GetTRDntracklets());
+	fHistograms->FillHistogram("Resolution_P_nTRDtracklets_MCPt", mcPpt, fV0Reader->GetPositiveESDTrack()->GetTRDntracklets());
+	fHistograms->FillHistogram("Resolution_P_nTRDclusters_ESDPt",fV0Reader->GetPositiveTrackPt(), fV0Reader->GetPositiveESDTrack()->GetTRDncls());
+	fHistograms->FillHistogram("Resolution_P_nTRDclusters_MCPt",mcPpt, fV0Reader->GetPositiveESDTrack()->GetTRDncls());
+	fHistograms->FillHistogram("Resolution_P_TRDsignal_ESDPt", fV0Reader->GetPositiveTrackPt(), fV0Reader->GetPositiveESDTrack()->GetTRDsignal());
+	}
+
+		
 	Double_t resdR = 0;
 	if(fV0Reader->GetNegativeMCParticle()->R() != 0){
 	  resdR = ((fV0Reader->GetXYRadius() - fV0Reader->GetNegativeMCParticle()->R())/fV0Reader->GetNegativeMCParticle()->R())*100;
@@ -1357,8 +1451,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("Resolution_dR", fV0Reader->GetNegativeMCParticle()->R(), resdR);
 	fHistograms->FillHistogram("Resolution_MC_R", fV0Reader->GetNegativeMCParticle()->R());
 	fHistograms->FillHistogram("Resolution_ESD_R", fV0Reader->GetXYRadius());
-	fHistograms->FillHistogram("Resolution_dR_dPt", resdR, resdPt);
-
+	fHistograms->FillHistogram("Resolution_R_dPt", fV0Reader->GetNegativeMCParticle()->R(), resdPt);
+ 
 	Double_t resdPhiAbs=0;
 	resdPhiAbs=0;
 	resdPhiAbs= (fV0Reader->GetMotherCandidatePhi()-fV0Reader->GetNegativeMCParticle()->Phi());
