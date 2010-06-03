@@ -31,6 +31,9 @@
 #pragma link C++ class  AliAnalysisFilter+;
 #pragma link C++ class  AliAnalysisCuts+;
 
+#pragma link C++ class AliCollisionNormalization+;
+#pragma link C++ class AliCollisionNormalizationTask+;
+
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;

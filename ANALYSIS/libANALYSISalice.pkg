@@ -9,7 +9,8 @@ SRCS = 	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx \
 	AliTriggerAnalysis.cxx \
         AliPhysicsSelection.cxx AliBackgroundSelection.cxx \
         AliPhysicsSelectionTask.cxx \
-        AliAnalysisFilter.cxx AliAnalysisCuts.cxx 
+        AliAnalysisFilter.cxx AliAnalysisCuts.cxx \
+	AliCollisionNormalization.cxx AliCollisionNormalizationTask.cxx
 
 
 ifeq (yes,$(CHECKALIEN))

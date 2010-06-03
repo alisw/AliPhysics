@@ -31,6 +31,7 @@ class AliAnalysisTaskSE;
 
 class AliPhysicsSelection : public AliAnalysisCuts
 {
+public:
 
   enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatV0A,kStatV0C,kStatSSD1,kStatFO1AndV0,kStatV0,kStatAny2Hits,kStatOffline,kStatBG,kStatAccepted};
 
@@ -43,7 +44,6 @@ class AliPhysicsSelection : public AliAnalysisCuts
   enum {kStatIdxAll=0,kStatIdxBin0=1};
 
 
-public:
   typedef Bool_t (*Bin0Callback_t)(const AliESDEvent *);
 
   AliPhysicsSelection();
