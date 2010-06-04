@@ -24,7 +24,6 @@ CLASS_HDRS:= \
                 AliHLTEventSummaryProducerComponent.h       \
                 AliHLTRunSummary.h                          \
                 AliHLTRunSummaryProducerComponent.h         \
-                AliHLTTriggerSelectiveReadoutComponent.h    \
                 AliHLTTriggerMonitoringComponent.h          \
 		AliHLTTriggerCaloClusterEnergy.h            \
 		AliHLTTriggerPhosClusterEnergy.h            \
