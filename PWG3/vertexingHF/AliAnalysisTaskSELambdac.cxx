@@ -55,12 +55,42 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac():
 AliAnalysisTaskSE(),
 fOutput(0), 
 fHistNEvents(0),
+fWellIDProt3sig(0),
+fWellIDProt2sig(0),
+fWellIDProt3sigSe(0),
+fWellIDProt2sigSe(0),
+fWellIDProt3sigRe(0),
+fWellIDProt2sigRe(0),
+fWellIDKaon3sig(0),
+fWellIDKaon3sigSe(0),
+fWellIDKaon3sigRe(0),
+fWellIDKaon2sig(0),
+fWellIDKaon2sigSe(0),
+fWellIDKaon2sigRe(0),
+fRealProt(0),
+fRealKaon(0),
+fFakeProt3sig(0),
+fFakeProt2sig(0),
+fFakeProt3sigSe(0),
+fFakeProt2sigSe(0),
+fFakeProt3sigRe(0),
+fFakeProt2sigRe(0),
+fFakeKaon3sig(0),
+fFakeKaon3sigSe(0),
+fFakeKaon3sigRe(0),
+fFakeKaon2sig(0),
+fFakeKaon2sigSe(0),
+fFakeKaon2sigRe(0),
 fTPCSignal3Sigma(0),
 fTPCSignal3SigmaReK(0),
+fTPCSignal3SigmaSedK(0),
 fTPCSignal3SigmaRep(0),
+fTPCSignal3SigmaSedp(0),
 fTPCSignal2Sigma(0),
 fTPCSignal2SigmaReK(0),
+fTPCSignal2SigmaSedK(0),
 fTPCSignal2SigmaRep(0),
+fTPCSignal2SigmaSedp(0),
 fNtupleLambdac(0),
 fUpmasslimit(2.486),
 fLowmasslimit(2.086),
@@ -84,12 +114,42 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac(const char *name,Bool_t fillN
 AliAnalysisTaskSE(name),
 fOutput(0),
 fHistNEvents(0),
+fWellIDProt3sig(0),
+fWellIDProt2sig(0),
+fWellIDProt3sigSe(0),
+fWellIDProt2sigSe(0),
+fWellIDProt3sigRe(0),
+fWellIDProt2sigRe(0),
+fWellIDKaon3sig(0),
+fWellIDKaon3sigSe(0),
+fWellIDKaon3sigRe(0),
+fWellIDKaon2sig(0),
+fWellIDKaon2sigSe(0),
+fWellIDKaon2sigRe(0),
+fRealProt(0),
+fRealKaon(0),
+fFakeProt3sig(0),
+fFakeProt2sig(0),
+fFakeProt3sigSe(0),
+fFakeProt2sigSe(0),
+fFakeProt3sigRe(0),
+fFakeProt2sigRe(0),
+fFakeKaon3sig(0),
+fFakeKaon3sigSe(0),
+fFakeKaon3sigRe(0),
+fFakeKaon2sig(0),
+fFakeKaon2sigSe(0),
+fFakeKaon2sigRe(0),
 fTPCSignal3Sigma(0),
 fTPCSignal3SigmaReK(0),
+fTPCSignal3SigmaSedK(0),
 fTPCSignal3SigmaRep(0),
+fTPCSignal3SigmaSedp(0),
 fTPCSignal2Sigma(0),
 fTPCSignal2SigmaReK(0),
+fTPCSignal2SigmaSedK(0),
 fTPCSignal2SigmaRep(0),
+fTPCSignal2SigmaSedp(0),
 fNtupleLambdac(0),
 fUpmasslimit(2.486),
 fLowmasslimit(2.086),
@@ -434,12 +494,42 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
     fMassHistLSTC[indexLS]->Sumw2();
   }
 
+  fRealProt=new TH1F("fRealProt","fRealProt",100,0, 10);
+  fRealKaon=new TH1F("fRealKaon","fRealKaon",100,0, 10);
+  fWellIDProt3sig=new TH1F("fWellIDProt3sig","fWellIDProt3sig",100,0, 10);
+  fWellIDProt2sig=new TH1F("fWellIDProt2sig","fWellIDProt2sig",100,0, 10);
+  fWellIDProt3sigSe=new TH1F("fWellIDProt3sigSe","fWellIDProt3sigSe",100,0, 10);
+  fWellIDProt2sigSe=new TH1F("fWellIDProt2sigSe","fWellIDProt2sigSe",100,0, 10);
+  fWellIDProt3sigRe=new TH1F("fWellIDProt3sigRe","fWellIDProt3sigRe",100,0, 10);
+  fWellIDProt2sigRe=new TH1F("fWellIDProt2sigRe","fWellIDProt2sigRe",100,0, 10);
+  fWellIDKaon3sig=new TH1F("fWellIDKaon3sig","fWellIDKaon3sig",100,0, 10);
+  fWellIDKaon2sig=new TH1F("fWellIDKaon2sig","fWellIDKaon2sig",100,0, 10);
+  fWellIDKaon3sigSe=new TH1F("fWellIDKaon3sigSe","fWellIDKaon3sigSe",100,0, 10);
+  fWellIDKaon2sigSe=new TH1F("fWellIDKaon2sigSe","fWellIDKaon2sigSe",100,0, 10);
+  fWellIDKaon3sigRe=new TH1F("fWellIDKaon3sigRe","fWellIDKaon3sigRe",100,0, 10);
+  fWellIDKaon2sigRe=new TH1F("fWellIDKaon2sigRe","fWellIDKaon2sigRe",100,0, 10);
   fTPCSignal3Sigma=new TH2F("fTPCSignal3Sigma","fTPCSignal3Sigma",100,0, 10, 100, 0, 100);
-  fTPCSignal3SigmaReK=new TH2F("fTPCSignal3SigmaReK","fTPCSignal3SigmaRe",100,0, 10, 100, 0, 100);
-  fTPCSignal3SigmaRep=new TH2F("fTPCSignal3SigmaRep","fTPCSignal3SigmaRe",100,0, 10, 100, 0, 100);
+  fTPCSignal3SigmaReK=new TH2F("fTPCSignal3SigmaReK","fTPCSignal3SigmaReK",100,0, 10, 100, 0, 100);
+  fTPCSignal3SigmaSedK=new TH2F("fTPCSignal3SigmaSedK","fTPCSignal3SigmaSedK",100,0, 10, 100, 0, 100);
+  fTPCSignal3SigmaRep=new TH2F("fTPCSignal3SigmaRep","fTPCSignal3SigmaRep",100,0, 10, 100, 0, 100);
+  fTPCSignal3SigmaSedp=new TH2F("fTPCSignal3SigmaSedp","fTPCSignal3SigmaSedp",100,0, 10, 100, 0, 100);
   fTPCSignal2Sigma=new TH2F("fTPCSignal2Sigma","fTPCSignal2Sigma",100,0, 10, 100, 0, 100);
-  fTPCSignal2SigmaReK=new TH2F("fTPCSignal2SigmaReK","fTPCSignal2SigmaRe",100,0, 10, 100, 0, 100);
-  fTPCSignal2SigmaRep=new TH2F("fTPCSignal2SigmaRep","fTPCSignal2SigmaRe",100,0, 10, 100, 0, 100);
+  fTPCSignal2SigmaReK=new TH2F("fTPCSignal2SigmaReK","fTPCSignal2SigmaReK",100,0, 10, 100, 0, 100);
+  fTPCSignal2SigmaSedK=new TH2F("fTPCSignal2SigmaSedK","fTPCSignal2SigmaSedK",100,0, 10, 100, 0, 100);
+  fTPCSignal2SigmaRep=new TH2F("fTPCSignal2SigmaRep","fTPCSignal2SigmaRep",100,0, 10, 100, 0, 100);
+  fTPCSignal2SigmaSedp=new TH2F("fTPCSignal2SigmaSedp","fTPCSignal2SigmaSedp",100,0, 10, 100, 0, 100);
+  fFakeProt3sig=new TH1F("fFakeProt3sig","fFakeProt3sig",100,0, 10);
+  fFakeProt2sig=new TH1F("fFakeProt2sig","fFakeProt2sig",100,0, 10);
+  fFakeProt3sigSe=new TH1F("fFakeProt3sigSe","fFakeProt3sigSe",100,0, 10);
+  fFakeProt2sigSe=new TH1F("fFakeProt2sigSe","fFakeProt2sigSe",100,0, 10);
+  fFakeProt3sigRe=new TH1F("fFakeProt3sigRe","fFakeProt3sigRe",100,0, 10);
+  fFakeProt2sigRe=new TH1F("fFakeProt2sigRe","fFakeProt2sigRe",100,0, 10);
+  fFakeKaon3sig=new TH1F("fFakeKaon3sig","fFakeKaon3sig",100,0, 10);
+  fFakeKaon2sig=new TH1F("fFakeKaon2sig","fFakeKaon2sig",100,0, 10);
+  fFakeKaon3sigSe=new TH1F("fFakeKaon3sigSe","fFakeKaon3sigSe",100,0, 10);
+  fFakeKaon2sigSe=new TH1F("fFakeKaon2sigSe","fFakeKaon2sigSe",100,0, 10);
+  fFakeKaon3sigRe=new TH1F("fFakeKaon3sigRe","fFakeKaon3sigRe",100,0, 10);
+  fFakeKaon2sigRe=new TH1F("fFakeKaon2sigRe","fFakeKaon2sigRe",100,0, 10);
   
   for(Int_t i=0; i<3*fNPtBins; i++){
     fOutput->Add(fMassHist[i]);
@@ -454,12 +544,41 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
 
     fOutput->Add(fTPCSignal3Sigma);
     fOutput->Add(fTPCSignal3SigmaReK);
+    fOutput->Add(fTPCSignal3SigmaSedK);
     fOutput->Add(fTPCSignal3SigmaRep);
+    fOutput->Add(fTPCSignal3SigmaSedp);
     fOutput->Add(fTPCSignal2Sigma);
     fOutput->Add(fTPCSignal2SigmaReK);
+    fOutput->Add(fTPCSignal2SigmaSedK);
     fOutput->Add(fTPCSignal2SigmaRep);
-  
+    fOutput->Add(fTPCSignal2SigmaSedp);
+    fOutput->Add(fWellIDProt3sig);
+    fOutput->Add(fWellIDProt2sig);
+    fOutput->Add(fWellIDProt3sigSe);
+    fOutput->Add(fWellIDProt2sigSe);
+    fOutput->Add(fWellIDProt3sigRe);
+    fOutput->Add(fWellIDProt2sigRe);
+    fOutput->Add(fWellIDKaon3sig);
+    fOutput->Add(fWellIDKaon2sig);
+    fOutput->Add(fWellIDKaon3sigSe);
+    fOutput->Add(fWellIDKaon2sigSe);
+    fOutput->Add(fWellIDKaon3sigRe);
+    fOutput->Add(fWellIDKaon2sigRe);
 
+    fOutput->Add(fRealProt);
+    fOutput->Add(fRealKaon);
+    fOutput->Add(fFakeProt3sig);
+    fOutput->Add(fFakeProt2sig);
+    fOutput->Add(fFakeProt3sigSe);
+    fOutput->Add(fFakeProt2sigSe);
+    fOutput->Add(fFakeProt3sigRe);
+    fOutput->Add(fFakeProt2sigRe);
+    fOutput->Add(fFakeKaon3sig);
+    fOutput->Add(fFakeKaon2sig);
+    fOutput->Add(fFakeKaon3sigSe);
+    fOutput->Add(fFakeKaon2sigSe);
+    fOutput->Add(fFakeKaon3sigRe);
+    fOutput->Add(fFakeKaon2sigRe);
   fHistNEvents = new TH1F("fHistNEvents", "Number of processed events; ; Events",3,-1.5,1.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
@@ -601,15 +720,13 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       Double_t field=aod->GetMagneticField();
       if(fReadMC && fMCPid){
        
-       if(IspKpiMC(d,arrayMC)) {
+       if(IspKpiMC(d,arrayMC,pdgs)) {
         invMasspKpi=d->InvMassLcpKpi();
 	if(fUseKF){
 	 pdgs[0]=2212;pdgs[1]=321;pdgs[2]=211;
 	 if(!VertexingKF(d,pdgs,field)) invMasspKpi=-1.;
 	}
        }
-       IspiKpReal(d);
-       IspiKpResonant(d,field);
        if(IspiKpMC(d,arrayMC)) {
         invMasspiKp=d->InvMassLcpiKp();
 	if(fUseKF){
@@ -626,7 +743,8 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 	 if(!VertexingKF(d,pdgs,field)) invMasspKpi=-1.;
 	}
        }
-       if(IspiKpReal(d)) {
+       if(fReadMC) IspKpiMC(d,arrayMC,pdgs);
+       if(IspiKpReal(d,pdgs)) {
         invMasspiKp=d->InvMassLcpiKp();
 	if(fUseKF){
 	 pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
@@ -815,7 +933,7 @@ void AliAnalysisTaskSELambdac::Terminate(Option_t */*option*/)
  Int_t index=0;
  
 
- //Int_t indexLS=0;
+ Int_t indexLS=0;
  for(Int_t i=0;i<fNPtBins;i++){
     index=GetHistoIndex(i);
     hisname.Form("hMassPt%d",i);
@@ -873,21 +991,52 @@ void AliAnalysisTaskSELambdac::Terminate(Option_t */*option*/)
     fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
  
  }
+    fWellIDProt3sig=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDProt3sig));
+    fWellIDProt2sig=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDProt2sig));
+    fWellIDProt3sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDProt3sigSe));
+    fWellIDProt2sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDProt2sigSe));
+    fWellIDProt2sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDProt2sigRe));
+    fWellIDProt3sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDProt3sigRe));
+    fWellIDKaon3sig=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDKaon3sig));
+    fWellIDKaon2sig=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDKaon2sig));
+    fWellIDKaon3sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDKaon3sigSe));
+    fWellIDKaon2sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDKaon2sigSe));
+    fWellIDKaon2sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDKaon2sigRe));
+    fWellIDKaon3sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fWellIDKaon3sigRe));
     fTPCSignal3Sigma=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal3Sigma));
     fTPCSignal3SigmaReK=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal3SigmaReK));
+    fTPCSignal3SigmaSedK=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal3SigmaSedK));
     fTPCSignal3SigmaRep=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal3SigmaRep));
+    fTPCSignal3SigmaSedp=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal3SigmaSedp));
     fTPCSignal2Sigma=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal2Sigma));
     fTPCSignal2SigmaReK=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal2SigmaReK));
+    fTPCSignal2SigmaSedK=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal2SigmaSedK));
+    fTPCSignal2SigmaSedp=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal2SigmaSedp));
     fTPCSignal2SigmaRep=dynamic_cast<TH2F*>(fOutput->FindObject(fTPCSignal2SigmaRep));
+    fFakeProt3sig=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeProt3sig));
+    fFakeProt2sig=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeProt2sig));
+    fFakeProt3sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeProt3sigSe));
+    fFakeProt2sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeProt2sigSe));
+    fFakeProt2sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeProt2sigRe));
+    fFakeProt3sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeProt3sigRe));
+    fFakeKaon3sig=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeKaon3sig));
+    fFakeKaon2sig=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeKaon2sig));
+    fFakeKaon3sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeKaon3sigSe));
+    fFakeKaon2sigSe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeKaon2sigSe));
+    fFakeKaon2sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeKaon2sigRe));
+    fFakeKaon3sigRe=dynamic_cast<TH1F*>(fOutput->FindObject(fFakeKaon3sigRe));
+
+    fRealProt=dynamic_cast<TH1F*>(fOutput->FindObject(fRealProt));
+    fRealKaon=dynamic_cast<TH1F*>(fOutput->FindObject(fRealKaon));
 
   if(fFillNtuple){
     fNtupleLambdac = dynamic_cast<TNtuple*>(GetOutputData(3));
   }
 
-  //TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
+  TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
   //c1->cd();
   //TH1F *hMassPt=(TH1F*)fOutput->FindObject("hMassPt3TC");
-  //hMassPt->Draw();
+ fRealProt->Draw();
  
  return;
 }
@@ -1038,9 +1187,9 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
          return kFALSE;
 }
 //-----------------------------
-Bool_t AliAnalysisTaskSELambdac::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC){
+Bool_t AliAnalysisTaskSELambdac::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC,Int_t *pdgs){
 
-   Int_t lab[3]={0,0,0},pdgs[3]={0,0,0};
+   Int_t lab[3]={0,0,0};//,pdgs[3]={0,0,0};
    for(Int_t i=0;i<3;i++){
     AliAODTrack *daugh=(AliAODTrack*)d->GetDaughter(i);
     lab[i]=daugh->GetLabel();
@@ -1072,61 +1221,22 @@ Bool_t AliAnalysisTaskSELambdac::IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArra
    return kFALSE;
 }
 //--------------------------------------
-Bool_t AliAnalysisTaskSELambdac::IspiKpReal(AliAODRecoDecayHF3Prong *d){
+Bool_t AliAnalysisTaskSELambdac::IspiKpReal(AliAODRecoDecayHF3Prong *d,Int_t *pdgs){
 
   AliAODPidHF* pidObj=new AliAODPidHF();
   Bool_t type[2]={kFALSE,kFALSE};
   for(Int_t i=0;i<3;i++){
 //   Bool_t pid[3]={kFALSE,kFALSE,kFALSE};
-   AliAODTrack *track=(AliAODTrack*)d->GetDaughter(i);
-   AliAODPid *pidObjtrk=track->GetDetPid();
-//   pidObj->CombinedProbability(track,pid);
+  AliAODTrack *track=(AliAODTrack*)d->GetDaughter(i);
+   //test asymmetric TPC PID
+     Double_t plim[2]={0.6,2.};
+     Double_t sigmas[5]={2.,1.,2.,3.,0.};
+     pidObj->SetPLimit(plim);
+     pidObj->SetSigma(sigmas);
+     if(i==1) type[i]=pidObj->MatchTPCTOF(track,2,3,kFALSE);
+     if(i==2) type[i]=pidObj->MatchTPCTOF(track,2,4,kFALSE);
+     //pidinfo=pidObj->MatchTPCTOF(track,3,3,kFALSE);
 
-//   Int_t i2=i-1;
-//   type[i2]=pid[i];
-   Double_t dedx=pidObjtrk->GetTPCsignal();
-   Double_t mom = pidObjtrk->GetTPCmomentum();
-   //printf("TPC mom= %f\n",mom);
-    pidObj->SetSigma(3.);
-   if(pidObj->IsProtonRaw(track,"TPC")){ 
-    fTPCSignal3Sigma->Fill(mom,dedx);
- //   if(i==2) type[1]=kTRUE;
-    pidObj->SetSigma(1.);
-    //if(!pidObj->IsPionRaw(track,"TPC") && !pidObj->IsKaonRaw(track,"TPC"))
-    if(!pidObj->IsKaonRaw(track,"TPC")){
-     fTPCSignal3SigmaRep->Fill(mom,dedx);
-    }
-   }
-    pidObj->SetSigma(3.);
-   if(pidObj->IsKaonRaw(track,"TPC")) {
-    fTPCSignal3Sigma->Fill(mom,dedx);
- //   if(i==1) type[0]=kTRUE;
-    pidObj->SetSigma(1.);
-    //if(!pidObj->IsPionRaw(track,"TPC") && !pidObj->IsProtonRaw(track,"TPC"))
-    if(!pidObj->IsPionRaw(track,"TPC")){
-     fTPCSignal3SigmaReK->Fill(mom,dedx);
-    }
-   }
-
-    pidObj->SetSigma(2.);
-   if(pidObj->IsProtonRaw(track,"TPC")){ 
-    if(i==2) type[1]=kTRUE;
-    fTPCSignal2Sigma->Fill(mom,dedx);
-    pidObj->SetSigma(1.);
-    //if(!pidObj->IsPionRaw(track,"TPC") && !pidObj->IsKaonRaw(track,"TPC"))
-    if(!pidObj->IsKaonRaw(track,"TPC")){
-     fTPCSignal2SigmaRep->Fill(mom,dedx);
-    }
-   }
-   if(pidObj->IsKaonRaw(track,"TPC")) {
-    if(i==1) type[0]=kTRUE;
-    fTPCSignal2Sigma->Fill(mom,dedx);
-    pidObj->SetSigma(1.);
-    //if(!pidObj->IsPionRaw(track,"TPC") && !pidObj->IsProtonRaw(track,"TPC"))
-    if(!pidObj->IsPionRaw(track,"TPC")){
-     fTPCSignal2SigmaReK->Fill(mom,dedx);
-    }
-   }
   }
 
   if(type[0] && type[1]) {delete pidObj;return kTRUE;}
@@ -1138,15 +1248,15 @@ Bool_t AliAnalysisTaskSELambdac::IspKpiReal(AliAODRecoDecayHF3Prong *d){
 
   AliAODPidHF* pidObj=new AliAODPidHF();
   Bool_t type[2]={kFALSE,kFALSE};
-    pidObj->SetSigma(2.);
   for(Int_t i=0;i<2;i++){
    //Bool_t pid[3]={kFALSE,kFALSE,kFALSE};
    AliAODTrack *track=(AliAODTrack*)d->GetDaughter(i);
-  // pidObj->CombinedProbability(track,pid);
-  // if(i==0) type[i]=pid[2];
-  // if(i==1) type[i]=pid[i];
-   if(pidObj->IsProtonRaw(track,"TPC") && i==0) type[1]=kTRUE;
-   if(pidObj->IsKaonRaw(track,"TPC") && i==1) type[0]=kTRUE;
+     Double_t plim[2]={0.6,2.};
+     Double_t sigmas[5]={2.,1.,2.,3.,0.};
+     pidObj->SetPLimit(plim);
+     pidObj->SetSigma(sigmas);
+     if(i==1) type[i]=pidObj->MatchTPCTOF(track,2,3,kFALSE);
+     if(i==0) type[i]=pidObj->MatchTPCTOF(track,2,4,kFALSE);
   }
   if(type[0] && type[1]) {delete pidObj;return kTRUE;}
   delete pidObj;
