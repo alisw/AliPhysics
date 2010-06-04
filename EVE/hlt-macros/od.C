@@ -175,7 +175,7 @@ void writeToFile();
 // #################################################################
 
 // -----------------------------------------------------------------
-void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
+void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kTRUE ) {
 
   // -- Loading Geometry
   // ---------------------
@@ -183,6 +183,12 @@ void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(run);
   AliGeomManager::LoadGeometry();
+  // The default in the simulation is the following line
+  // TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
+  // However for the current setting of +ve L3 and +ve Dipole magnetic field
+  // the following setting creates the field close to real field with currect polarity
+  if(showMuon)
+    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", 1., 1, AliMagF::k5kG));
 
   AliHLTReconstructor * rec = new AliHLTReconstructor();
   rec->InitStreamerInfos();
@@ -951,4 +957,3 @@ Int_t processTRDBlock (AliHLTHOMERBlockDesc * block) {
 
 
         
-
