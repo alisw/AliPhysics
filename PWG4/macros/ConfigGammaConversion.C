@@ -1750,7 +1750,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDNumberOfSurvivingV0s == kTRUE){histograms->AddHistogram("ESD_NumberOfSurvivingV0s","Number of surviving v0s",100, -0.5, 99.5,"","");}
     if(kGCplotESDNumberOfContributorsVtx == kTRUE){histograms->AddHistogram("ESD_NumberOfContributorsVtx","Number of contributors to vertex",100, -0.5, 99.5,"","");}
     if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracks","Number of Good ESD tracks",100, -0.5, 99.5,"","");}
-		
+    if(kGCplotESDNumberOfGoodESDTracks == kTRUE){histograms->AddHistogram("ESD_NumberOfGoodESDTracksVtx","Number of Good ESD tracks",100, -0.5, 99.5,"","");}	
+	
     //  debug histograms
     if(kGCplotESDCutGetOnFly == kTRUE){histograms->AddHistogram("ESD_CutGetOnFly_InvMass" ,"Not GetOnFly" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutNContributors == kTRUE){histograms->AddHistogram("ESD_CutNContributors_InvMass" ,"NContributors <= 0" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
