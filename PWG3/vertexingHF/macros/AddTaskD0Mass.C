@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE)
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(TString finname="D0toKpiCuts.root",Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -63,154 +63,42 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     inname="cinputmassD0_1";
     if(cutOnDistr) inname+="C"; 
   }
-  TString cutobjname="mycuts";
-  cutobjname+=flag;
 
-  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
-  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  //default
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersITS(4); // default is 5
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kAny); 
- // default is kBoth, otherwise kAny
-  esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
+   //setting my cut values
+
+    //cuts order
+    //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
+    //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
+    //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
+    //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
+    //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
+    //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
+    //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
+    //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
+    //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
+
+
+  TFile* filecuts=new TFile(finname.Data());
+  if(!filecuts->IsOpen()){
+    cout<<"Input file not found: exit"<<endl;
+    return;
+  }
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
-  RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
+  RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
+  RDHFD0toKpi->SetName(Form("D0toKpiCuts%d",flag));
 
-  //cout<<"nvars = "<<RDHFD0toKpi->GetNVars()<<endl;
-  const Int_t nvars=9;
-  //nvars=RDHFD0toKpi->GetNVars();  
-  //cout<<"Nvars = "<<nvars<<"\t"<<RDHFD0toKpi->GetNVars()<<endl;
-  RDHFD0toKpi->SetName(cutobjname);
-  RDHFD0toKpi->SetTitle(cutobjname);
-
-  const Int_t nptbins=5;
-  Float_t* ptbins;
-  ptbins=new Float_t[nptbins+1];
-  ptbins[0]=0.;
-  ptbins[1]=1.;
-  ptbins[2]=2.;
-  ptbins[3]=3.;
-  ptbins[4]=5.;
-  ptbins[5]=10.;
-  
-  RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
-  
-
-  Float_t** rdcutsvalmine;
-  rdcutsvalmine=new Float_t*[nvars];
-  for(Int_t iv=0;iv<nvars;iv++){
-    rdcutsvalmine[iv]=new Float_t[nptbins];
+  if(!RDHFD0toKpi){
+    cout<<"Specific AliRDHFCuts not found"<<endl;
+    return;
   }
-  //cout<<"\tnptbins = "<<nptbins<<endl;
-  /*
-  //setting PPR cut values
-  rdcutsvalPPR[0][0]=0.7;
-  rdcutsvalPPR[1][0]=0.04;
-  rdcutsvalPPR[2][0]=0.8;
-  rdcutsvalPPR[3][0]=0.5;
-  rdcutsvalPPR[4][0]=0.5;
-  rdcutsvalPPR[5][0]=0.05;
-  rdcutsvalPPR[6][0]=0.05;
-  rdcutsvalPPR[7][0]=-0.0002;
-  rdcutsvalPPR[8][0]=0.5;
-
-  rdcutsvalPPR[0][1]=rdcutsvalPPR[0][2]=0.7;
-  rdcutsvalPPR[1][1]=rdcutsvalPPR[1][2]=0.02;
-  rdcutsvalPPR[2][1]=rdcutsvalPPR[2][2]=0.8;
-  rdcutsvalPPR[3][1]=rdcutsvalPPR[3][2]=0.7;
-  rdcutsvalPPR[4][1]=rdcutsvalPPR[4][2]=0.7;
-  rdcutsvalPPR[5][1]=rdcutsvalPPR[5][2]=0.05;
-  rdcutsvalPPR[6][1]=rdcutsvalPPR[6][2]=0.05;
-  rdcutsvalPPR[7][1]=rdcutsvalPPR[7][2]=-0.0002;
-  rdcutsvalPPR[8][1]=rdcutsvalPPR[8][2]=0.6;
-
-  rdcutsvalPPR[0][3]=0.7;
-  rdcutsvalPPR[1][3]=0.02;
-  rdcutsvalPPR[2][3]=0.8;
-  rdcutsvalPPR[3][3]=0.7;
-  rdcutsvalPPR[4][3]=0.7;
-  rdcutsvalPPR[5][3]=0.05;
-  rdcutsvalPPR[6][3]=0.05;
-  rdcutsvalPPR[7][3]=-0.0001;
-  rdcutsvalPPR[8][3]=0.8;
-
-  rdcutsvalPPR[0][4]=0.7;
-  rdcutsvalPPR[1][4]=0.02;
-  rdcutsvalPPR[2][4]=0.8;
-  rdcutsvalPPR[3][4]=0.7;
-  rdcutsvalPPR[4][4]=0.7;
-  rdcutsvalPPR[5][4]=0.05;
-  rdcutsvalPPR[6][4]=0.05;
-  rdcutsvalPPR[7][4]=-0.00005;
-  rdcutsvalPPR[8][4]=0.8;
-  */
-  //setting my cut values
-
-  rdcutsvalmine[0][0]=0.7;
-  rdcutsvalmine[1][0]=0.04;
-  rdcutsvalmine[2][0]=0.8;
-  rdcutsvalmine[3][0]=0.5;
-  rdcutsvalmine[4][0]=0.5;
-  rdcutsvalmine[5][0]=0.05;
-  rdcutsvalmine[6][0]=0.05;
-  rdcutsvalmine[7][0]=-0.00025;
-  rdcutsvalmine[8][0]=0.7;
-
-  rdcutsvalmine[0][1]=rdcutsvalmine[0][2]=0.7;
-  rdcutsvalmine[1][1]=rdcutsvalmine[1][2]=0.02;
-  rdcutsvalmine[2][1]=rdcutsvalmine[2][2]=0.8;
-  rdcutsvalmine[3][1]=rdcutsvalmine[3][2]=0.7;
-  rdcutsvalmine[4][1]=rdcutsvalmine[4][2]=0.7;
-  rdcutsvalmine[5][1]=rdcutsvalmine[5][2]=1.;
-  rdcutsvalmine[6][1]=rdcutsvalmine[6][2]=1.;
-  rdcutsvalmine[7][1]=rdcutsvalmine[7][2]=-0.00025;
-  rdcutsvalmine[8][1]=rdcutsvalmine[8][2]=0.8;
-
-  rdcutsvalmine[0][3]=0.7;
-  rdcutsvalmine[1][3]=0.02;
-  rdcutsvalmine[2][3]=0.8;
-  rdcutsvalmine[3][3]=0.7;
-  rdcutsvalmine[4][3]=0.7;
-  rdcutsvalmine[5][3]=0.05;
-  rdcutsvalmine[6][3]=0.05;
-  rdcutsvalmine[7][3]=-0.00015;
-  rdcutsvalmine[8][3]=0.8;
-
-  rdcutsvalmine[0][4]=0.7;
-  rdcutsvalmine[1][4]=0.02;
-  rdcutsvalmine[2][4]=0.8;
-  rdcutsvalmine[3][4]=0.7;
-  rdcutsvalmine[4][4]=0.7;
-  rdcutsvalmine[5][4]=0.05;
-  rdcutsvalmine[6][4]=0.05;
-  rdcutsvalmine[7][4]=-0.00015;
-  rdcutsvalmine[8][4]=0.9;
-
-  cout<<"Filled array ("<<nvars<<","<<nptbins<<")"<<endl;
-  /*
-  for(Int_t j=0;j<nvars;j++){
-    for(Int_t k=0;k<nptbins;k++){
-      cout<<rdcutsvalmine[j][k]<<"\t";
-    }
-    cout<<endl;
-  }
-  */
-
-  //cout<<"\tbefore SetCuts : npt = "<<RDHFD0toKpi->GetNPtBins()<<endl;
-  RDHFD0toKpi->SetCuts(nvars,nptbins,rdcutsvalmine);
-  //  RDHFD0toKpi->PrintAll();
 
   // Aanalysis task    
   TString taskname="MassAndDistrAnalysis";
   if (flag==0)taskname.Prepend("D0");
   else taskname.Prepend("LS");
   AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass(taskname.Data(),RDHFD0toKpi);
-  massD0Task->SetDebugLevel(0);
+  massD0Task->SetDebugLevel(2);
   massD0Task->SetArray(flag);
   massD0Task->SetReadMC(readMC);
   massD0Task->SetCutOnDistr(cutOnDistr);
@@ -225,12 +113,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliAnalysisDataContainer *coutputmassD02 = mgr->CreateContainer(out2name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //distr
   AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer(out3name,TH1F::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //nev
   AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //check
-  //AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kParamContainer, filename.Data()); //cuts
-AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
-  //AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kParamContainer, filename.Data()); //cuts
-  //AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
-   
-
+  AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
+  
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
   mgr->ConnectOutput(massD0Task,1,coutputmassD01);
