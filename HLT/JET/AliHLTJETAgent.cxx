@@ -26,7 +26,6 @@
 
 #include <cassert>
 #include "AliHLTJETAgent.h"
-#include "AliHLTConfiguration.h"
 #include "AliHLTOUT.h"
 
 // component header file
