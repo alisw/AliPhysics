@@ -493,9 +493,28 @@ AliFMD::Init()
   AliFMDDebug(1, ("Initialising FMD detector object"));
   TVirtualMC*      mc     = TVirtualMC::GetMC();
   AliFMDGeometry*  fmd    = AliFMDGeometry::Instance();
-  const TArrayI&   actGeo = fmd->ActiveIds();
+  TArrayI          actGeo = fmd->ActiveIds();
+  bool             valid  = true;
+  if (actGeo.fN <= 0) valid = false;
+  else { 
+    for (int i = 0; i < actGeo.fN; i++) {
+      if (actGeo[i] < 0) { 
+	valid = false;
+	break;
+      }
+    }
+  }
+  if (!valid) { 
+    AliFMDDebug(1, ("Extracting geometry info from loaded geometry"));
+    fmd->ExtractGeomInfo();
+    actGeo = fmd->ActiveIds();
+  }
   TArrayI          actVmc(actGeo.fN);
   for (Int_t i = 0; i < actGeo.fN; i++) {
+    if (actGeo[i] < 0) { 
+      AliError(Form("Invalid id: %d", actGeo[i]));
+      continue;
+    }
     TGeoVolume *sens = gGeoManager->GetVolume(actGeo[i]);
     if (!sens) {
       AliError(Form("No TGeo volume for sensitive volume ID=%d",actGeo[i]));

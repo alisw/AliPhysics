@@ -428,10 +428,11 @@ AliFMDGeometry::ExtractGeomInfo()
   // and so on - that is, all the geometric information we need for
   // futher processing, such as simulation, digitization,
   // reconstruction, etc. 
-  Int_t detectorDepth = FindNodeDepth("FMD1_1", "ALIC");
-  Int_t ringDepth     = FindNodeDepth(Form("FMDI_%d", Int_t('I')), "ALIC");
-  Int_t moduleDepth   = FindNodeDepth("FIFV_0", "ALIC");
-  Int_t sectorDepth   = FindNodeDepth("FISE_1", "ALIC");
+  Int_t detectorDepth = FindNodeDepth("F1MT_1", "ALIC");
+  Int_t ringDepth     = FindNodeDepth(Form("FITV_%d", int('I')), "ALIC");
+  Int_t moduleDepth   = FindNodeDepth("FIBH_0", "ALIC");
+  Int_t sectorDepth   = FindNodeDepth("FISC_1", "ALIC");
+  fActive.Set(0);
   fActive.Reset(-1);
   AliFMDDebug(1, ("Geometry depths:\n"
 		   "   Sector:     %d\n"
@@ -521,6 +522,20 @@ FindNodeDepth(const char* name, const char* volname)
     std::cerr << "No top volume defined" << std::endl;
     return -1;
   }
+
+  TGeoIterator next(vol);
+  TGeoNode*    node = 0;
+  TString      sName(name);
+  while ((node = next())) { 
+    // std::cout << "Checking node " << node->GetName() << std::endl;
+    if (sName == node->GetName()) { 
+      std::cout << "Found node " << node->GetName() << " at level " 
+		<< next.GetLevel() << std::endl;
+      return next.GetLevel();
+    }
+  }
+  return -1;
+#if 0
   TObjArray* nodes = vol->GetNodes();
   if (!nodes) { 
     std::cerr << "No nodes in top volume" << std::endl;
@@ -532,6 +547,7 @@ FindNodeDepth(const char* name, const char* volname)
   while ((node = static_cast<TGeoNode*>(next()))) 
     if (CheckNodes(node, name, lvl) >= 0) return lvl;
   return -1;
+#endif
 }
 
 //____________________________________________________________________
