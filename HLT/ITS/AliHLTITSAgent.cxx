@@ -24,7 +24,6 @@
 
 #include <cassert>
 #include "AliHLTITSAgent.h"
-#include "AliHLTConfiguration.h"
 #include "AliHLTOUT.h"
 #include "AliHLTDAQ.h"
 
