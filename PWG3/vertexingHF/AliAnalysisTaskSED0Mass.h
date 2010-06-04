@@ -21,6 +21,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
 
+class AliAODEvent;
 
 class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 {
@@ -43,13 +44,15 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;}
-
+  
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
-  void     FillVarHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
+  void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
+  AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d);
+
   TList    *fOutputMass; //! list send on output slot 1
   TList    *fDistr;       //! list send on output slot 2
   TH1F     *fNentries;    //! histogram with number of events on output slot 3
