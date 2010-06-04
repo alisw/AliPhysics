@@ -26,7 +26,6 @@
 
 #include "AliHLTTPCCalibrationAgent.h"
 
-#include "AliHLTConfiguration.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandlerChain.h"
