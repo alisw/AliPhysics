@@ -292,7 +292,7 @@ Bool_t AliRDHFCutsD0toKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
 
   if(pt > 5.) {
     // applying cut for pt > 5 GeV
-    AliInfo(Form("pt of D0 = %f (> 5), cutting at |y| < 0.8\n",pt)); 
+    AliDebug(4,Form("pt of D0 = %f (> 5), cutting at |y| < 0.8\n",pt)); 
     if (TMath::Abs(y) > 0.8){
       return kFALSE;
     }
@@ -300,7 +300,7 @@ Bool_t AliRDHFCutsD0toKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
     // appliying smooth cut for pt < 5 GeV
     Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5; 
     Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;		
-    AliInfo(Form("pt of D0 = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
+    AliDebug(4,Form("pt of D0 = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
     if (y < minFiducialY || y > maxFiducialY){
       return kFALSE;
     }
