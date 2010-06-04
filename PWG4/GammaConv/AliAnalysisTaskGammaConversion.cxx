@@ -2035,6 +2035,10 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
     }
   }
   fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",numberOfESDTracks);
+
+  if (fV0Reader->GetNumberOfContributorsVtx()>=1){
+    fHistograms->FillHistogram("ESD_NumberOfGoodESDTracksVtx",numberOfESDTracks);
+  } 
 }
 void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex){
   // CaculateJetCone
