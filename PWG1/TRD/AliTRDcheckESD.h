@@ -17,11 +17,15 @@
 #ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTaskSE.h"
 #endif
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
 
 class AliESDEvent;
 class AliMCEvent;
 class TH1;
 class TH2;
+class TH3;
 class TObjArray;
 class TGraph;
 class TGraphErrors;
@@ -63,15 +67,16 @@ public:
    ,kQtotP                  // (total Q from slices, momentum) distribution, after cuts from kPt4pos or kPt4neg
    ,kPropagXYvsP            // (X,Y,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
    ,kPropagRZvsP            // (R,Z,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
-   ,kTPCRefTracksPos        // (eta,detector phi,P) distribution of reference TPC positive tracks (fulfill cuts from kPt3pos)
-   ,kTPCRefTracksNeg        // (eta,detector phi,P) distribution of reference TPC negative tracks (fulfill cuts from kPt3neg)
-   ,kTRDRefTracksPos        // (eta,detector phi,P) distribution of reference TRD positive tracks (fulfill cuts from kPt4pos)
-   ,kTRDRefTracksNeg        // (eta,detector phi,P) distribution of reference TRD negative tracks (fulfill cuts from kPt4neg)
+   ,kTPCRefTracksPos        // (eta,detector phi,Pt) distribution of reference TPC positive tracks (fulfill cuts from kPt3pos)
+   ,kTPCRefTracksNeg        // (eta,detector phi,Pt) distribution of reference TPC negative tracks (fulfill cuts from kPt3neg)
+   ,kTRDRefTracksPos        // (eta,detector phi,Pt) distribution of reference TRD positive tracks (fulfill cuts from kPt4pos)
+   ,kTRDRefTracksNeg        // (eta,detector phi,Pt) distribution of reference TRD negative tracks (fulfill cuts from kPt4neg)
    ,kTRDEtaPhiAvNtrkl       // (eta, detector phi) profile of average number of tracklets
    ,kTRDEtaDeltaPhiAvNtrkl  // (eta, delta-phi) profile of average number of tracklets
                             // delta-phi is the angle made by the track with the normal to the chamber entrance plane
-   ,kNhistos = 37 // number of histograms
-   ,kNrefs   = 37 // number of reference plots
+   ,kTRDEtaPhiAvQtot        // (eta, detector phi) profile of total tracklet charge from slices			    
+   ,kNhistos = 43 // number of histograms
+   ,kNrefs   = 6  // number of reference plots
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -109,7 +114,9 @@ private:
   void          Process(TH1 **h, TGraphErrors *g);
   void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
-
+  TH2F*         Proj3D(TH3F* hist, TH2F* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
+  TH1F*         TRDEfficiency(Short_t positives=+1);
+  
   Int_t            fStatus;            // bit mask for controlling the task
   Int_t            fNRefFigures;       // number of current ref plots
   AliESDEvent      *fESD;              //! ESD event
