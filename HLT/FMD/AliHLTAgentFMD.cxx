@@ -23,7 +23,6 @@
 
 #include <cassert>
 #include "AliHLTAgentFMD.h"
-#include "AliHLTConfiguration.h"
 #include "TSystem.h"
 
 #include "AliHLTFMDReconstructionComponent.h"
