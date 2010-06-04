@@ -22,6 +22,7 @@
 
 #include <TTree.h>
 #include <TClonesArray.h>
+#include <TParameter.h>
 
 #include "AliLog.h"
 #include "AliCDBManager.h"
@@ -32,6 +33,8 @@
 #include "AliVZEROLogicalSignal.h"
 #include "AliVZEROTriggerSimulator.h"
 #include "AliVZEROdigit.h"
+#include "AliVZEROCalibData.h"
+#include "AliVZEROConst.h"
 
 ClassImp(AliVZEROTriggerSimulator)
 
@@ -153,11 +156,11 @@ void AliVZEROTriggerSimulator::Run() {
 			
 			Int_t integrator = digit->Integrator();
 			Int_t pmNumber   = digit->PMNumber();
-			Int_t board   = pmNumber / 8;
-			Int_t channel = pmNumber % 8;
+			Int_t board   = AliVZEROCalibData::GetBoardNumber(pmNumber);
+			Int_t channel = AliVZEROCalibData::GetFEEChannelNumber(pmNumber);
 			
 			if(fTriggerData->GetEnableCharge(board,channel)) {
-				fCharges[pmNumber] = digit->ADC();
+				fCharges[pmNumber] = digit->ChargeADC(AliVZEROdigit::kNClocks/2);
 				if(fTriggerData->GetPedestalSubtraction(board)) {
 					if(fCharges[pmNumber]>=(Float_t) fTriggerData->GetPedestalCut(integrator,board,channel)){ 
 						fCharges[pmNumber] -= (Float_t) fTriggerData->GetPedestal(integrator,board,channel);
@@ -169,10 +172,17 @@ void AliVZEROTriggerSimulator::Run() {
 				fCharges[pmNumber] = 0.;
 			}
 			
-			Float_t time = digit->Time(); 
-			time += fTriggerData->GetDelayHit(board,channel);
-			
-			//AliInfo(Form(" PM nb : %d ; ADC= %d ; TDC= %f  Enable Time %d charge %d",pmNumber,digit->ADC(),time,fTriggerData->GetEnableTiming(board,channel),fTriggerData->GetEnableCharge(board,channel)));
+			Float_t time = digit->Time();
+			time -= kClockOffset;
+
+			AliDebug(10,Form(" Digit: %f %d %d %d %d %d %d %d %d",digit->Time(),
+					 digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
+					 digit->ChargeADC(11),digit->ChargeADC(12),digit->ChargeADC(13),
+					 digit->ChargeADC(14),digit->ChargeADC(15)));
+			AliDebug(10,Form(" PM nb : %d ; ADC= %f ; TDC= %f(%f)  Enable Time %d charge %d inCoin %d charge %f",
+					 pmNumber,digit->ADC(),time,digit->Time(),
+					 fTriggerData->GetEnableTiming(board,channel),fTriggerData->GetEnableCharge(board,channel),
+					 fBBGate[board]->IsInCoincidence(time),fCharges[pmNumber]));
 			fBBFlags[pmNumber] = fTriggerData->GetEnableTiming(board,channel) && fBBGate[board]->IsInCoincidence(time);
 			fBGFlags[pmNumber] = fTriggerData->GetEnableTiming(board,channel) && fBGGate[board]->IsInCoincidence(time);
 			
@@ -185,19 +195,33 @@ void AliVZEROTriggerSimulator::Run() {
 	Int_t nBGflagsV0C = 0;
 	Float_t chargeV0A   = 0.;
 	Float_t chargeV0C   = 0.;
+	Int_t aBBflagsV0A = 0;
+	Int_t aBBflagsV0C = 0;
+	Int_t aBGflagsV0A = 0;
+	Int_t aBGflagsV0C = 0;
 
 	for(int i=0;i<64;i++) {
 		if(i<32) {
 			nBBflagsV0C += fBBFlags[i]; 
 			nBGflagsV0C += fBGFlags[i];
 			chargeV0C += fCharges[i];
+			if (fBBFlags[i]) aBBflagsV0C |= (1 << i);
+			if (fBGFlags[i]) aBGflagsV0C |= (1 << i);
 		} else {
 			nBBflagsV0A += fBBFlags[i]; 
 			nBGflagsV0A += fBGFlags[i];
 			chargeV0A += fCharges[i];
+			if (fBBFlags[i]) aBBflagsV0A |= (1 << (i-32));
+			if (fBGFlags[i]) aBGflagsV0A |= (1 << (i-32));
 		}
 		//AliInfo(Form("Ch %d BB=%d BG=%d",i,fBBFlags[i],fBGFlags[i] )); 
 	}
+
+	// Store the BB and BG flags in the digits tree (user info)
+	fDigitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0A",aBBflagsV0A));
+	fDigitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0C",aBBflagsV0C));
+	fDigitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0A",aBGflagsV0A));
+	fDigitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0C",aBGflagsV0C));
 	
 	// BBA
 	if(nBBflagsV0A>=fTriggerData->GetBBAThreshold())  SetBBA();

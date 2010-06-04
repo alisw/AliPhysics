@@ -83,7 +83,7 @@ void AliVZEROTrigger::Trigger()
 		AliError("Can not get VZERO loader");
 		return;
 	}
-	loader->LoadDigits("READ");
+	loader->LoadDigits("update");
 	TTree* vzeroDigitsTree = loader->TreeD();
 
 	if (!vzeroDigitsTree) {
@@ -96,8 +96,12 @@ void AliVZEROTrigger::Trigger()
 
 	AliVZEROTriggerSimulator * triggerSimulator = new AliVZEROTriggerSimulator(vzeroDigitsTree,vzeroDigits);
 	
+
 	triggerSimulator->Run();
 	
+	loader->WriteDigits("OVERWRITE");  
+	loader->UnloadDigits();     
+
 	if(triggerSimulator->GetBBAandBBC())	SetInput( "VZERO_BBA_AND_BBC" );
 	if(triggerSimulator->GetBBAorBBC())		SetInput( "VZERO_BBA_OR_BBC" );
 	if(triggerSimulator->GetBGAandBBC())	SetInput( "VZERO_BGA_AND_BBC" );

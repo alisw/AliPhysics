@@ -322,8 +322,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	   Int_t nPhE;
 	   Float_t prob = lightYieldCorr[pmt]*fPhotoCathodeEfficiency; // Optical losses included!
 	   if (nPhot > 100)
-	     nPhE =gRandom->Gaus(prob*Float_t(nPhot)+0.5,
-				 sqrt(Float_t(nPhot)*prob*(1.-prob)));
+	     nPhE = (Int_t)gRandom->Gaus(prob*Float_t(nPhot)+0.5,
+					 sqrt(Float_t(nPhot)*prob*(1.-prob)));
 	   else
 	     nPhE = gRandom->Binomial(nPhot,prob);
 	   Float_t charge = TMath::Qe()*fPmGain[pmt]*fBinSize[pmt]/integral;
@@ -363,8 +363,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	  }
 	}
       }
-      Float_t tadc = t - kADCTimeOffset;
-      Int_t clock = kNClocks - Int_t(tadc/25.0) - 1;
+      Float_t tadc = t - kClockOffset - fCalibData->GetTimeOffset(ipmt);
+      Int_t clock = kNClocks/2 - Int_t(tadc/25.0);
       if (clock >= 0 && clock < kNClocks)
 	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
     }

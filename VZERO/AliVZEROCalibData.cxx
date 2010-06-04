@@ -612,3 +612,13 @@ Int_t AliVZEROCalibData::GetBoardNumber(Int_t channel)
   AliErrorClass(Form("Wrong channel index: %d",channel));
   return -1;
 }
+
+Int_t AliVZEROCalibData::GetFEEChannelNumber(Int_t channel)
+{
+  // Get FEE channel number
+  // from offline channel index
+  if (channel >= 0 && channel < 64) return (7 - (channel % 8));
+
+  AliErrorClass(Form("Wrong channel index: %d",channel));
+  return -1;
+}

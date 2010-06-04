@@ -108,6 +108,7 @@ class AliVZEROCalibData: public TNamed {
 
   static Int_t GetOfflineChannelNumber(Int_t board, Int_t channel);
   static Int_t GetBoardNumber(Int_t channel);
+  static Int_t GetFEEChannelNumber(Int_t channel);
 
  protected:
   Float_t  fPedestal[128];     // Mean pedestal values
