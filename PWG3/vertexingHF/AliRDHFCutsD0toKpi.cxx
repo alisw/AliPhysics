@@ -315,7 +315,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* rd) const {
   // (return: 0 not sel, 1 only D0, 2 only D0bar, 3 both)
   //
 
-  if(!fUsePID) return 3;
+  if(!fUsePID || !rd) return 3;
 
   Int_t returnvalue=0;
 
