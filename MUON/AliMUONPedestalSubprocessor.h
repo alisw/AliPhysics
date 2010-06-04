@@ -44,8 +44,9 @@ private:
   AliMUONVStore* fPedestals; //!< Pedestals for the MUON TRK
   AliMUONVStore* fConfig; //!< Configuration (i.e. list of (buspatch,manu)) for the MUON TRK
   Bool_t fConfigChanged; //!< flag to trigger the saving of the configuration
+  Bool_t fTooFewEvents; //!< whether the current run was a failed ped run, basically
   
-  ClassDef(AliMUONPedestalSubprocessor,2) // A shuttle preprocessor for MUON TRK pedestals
+  ClassDef(AliMUONPedestalSubprocessor,3) // A shuttle preprocessor for MUON TRK pedestals
 };
 
 #endif

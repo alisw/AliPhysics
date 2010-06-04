@@ -59,7 +59,8 @@ AliMUONPedestalSubprocessor::AliMUONPedestalSubprocessor(AliMUONPreprocessor* ma
                        "Upload MUON Tracker pedestals to OCDB"),
 fPedestals(0x0),
 fConfig(0x0),
-fConfigChanged(kFALSE)
+fConfigChanged(kFALSE),
+fTooFewEvents(kFALSE)
 {
   /// default ctor
 }
@@ -132,6 +133,8 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
   delete fConfig;
   fConfig = new AliMUON2DMap(kTRUE);
   
+  fTooFewEvents = kFALSE;
+  
   Master()->Log(Form("Reading pedestal files for Run %d startTime %ld endTime %ld",
                      run,startTime,endTime));
   
@@ -171,6 +174,7 @@ AliMUONPedestalSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endT
     {
       Master()->Log(Form("The run had only %d events, so the failure to read pedestals is normal",nevents.Atoi()));
       // too few events, failure is normal, returns OK.
+      fTooFewEvents = kTRUE;
       return kTRUE;
     }
     
@@ -221,9 +225,18 @@ AliMUONPedestalSubprocessor::Process(TMap* /*dcsAliasMap*/)
   
   if (!fPedestals || !fConfig) 
   {
-    // this is the only reason to fail for the moment : getting no pedestal or no config
-    // at all.
-    return 1;
+    if ( fTooFewEvents ) 
+    {
+      // ped run was too short, no reason to complain about that, it's "normal" 
+      // not to have pedestals in that case.
+      return 0;
+    }
+    else
+    {
+      // this is the only reason to fail for the moment : getting no pedestal or no config
+      // at all.
+      return 1;
+    }
   }
     
   AliMUON2DStoreValidator validator;
