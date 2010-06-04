@@ -4,18 +4,171 @@
 #include <TClonesArray.h>
 #include <TParameter.h>
 
-//macro to make a .root file which contains an AliRDHFCutsD0toKpi with loose set of cuts (for significance maximization) and TParameter with the tighest value of these cuts
-//Needed for AliAnalysisTaskSESignificance
 
 //Use:
 //Set hard coded commentet with //set this!!
-//.x makeTFile4CutsD0toKpi.C++
-
+// root[] .L makeInputD0tasks.C++
+// root[] makeInputAliAnalysisTaskSED0Mass()
+// root[] makeInputAliAnalysisTaskSESignificanceMaximization()
 //similar macros for the other D mesons
 
 //Author: Chiara Bianchin, cbianchi@pd.infn.it
 
-void makeTFile4CutsD0toKpi(){
+
+//macro to make a .root file which contains an AliRDHFCutsD0toKpi for AliAnalysisTaskSED0Mass task
+
+void makeInputAliAnalysisTaskSED0Mass(){
+
+  AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+  RDHFD0toKpi->SetName("D0toKpiCuts");
+  RDHFD0toKpi->SetTitle("Cuts for D0 analysis");
+
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetMinNClustersITS(4); // default is 5
+  //esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny); 
+ // default is kBoth, otherwise kAny
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+
+
+  RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
+
+  const Int_t nvars=9;
+
+  const Int_t nptbins=5;
+  Float_t* ptbins;
+  ptbins=new Float_t[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=1.;
+  ptbins[2]=2.;
+  ptbins[3]=3.;
+  ptbins[4]=5.;
+  ptbins[5]=10.;
+  
+  RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
+  
+
+  Float_t** rdcutsvalmine;
+  rdcutsvalmine=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++){
+    rdcutsvalmine[iv]=new Float_t[nptbins];
+  }
+
+  //setting my cut values
+    //cuts order
+    //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
+    //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
+    //     printf("    cosThetaStar     < %f\n",fD0toKpiCuts[2]);
+    //     printf("    pTK     [GeV/c]    > %f\n",fD0toKpiCuts[3]);
+    //     printf("    pTpi    [GeV/c]    > %f\n",fD0toKpiCuts[4]);
+    //     printf("    |d0K|  [cm]  < %f\n",fD0toKpiCuts[5]);
+    //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
+    //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
+    //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
+
+  /*
+  //setting PPR cut values
+  rdcutsvalPPR[0][0]=0.7;
+  rdcutsvalPPR[1][0]=0.04;
+  rdcutsvalPPR[2][0]=0.8;
+  rdcutsvalPPR[3][0]=0.5;
+  rdcutsvalPPR[4][0]=0.5;
+  rdcutsvalPPR[5][0]=0.05;
+  rdcutsvalPPR[6][0]=0.05;
+  rdcutsvalPPR[7][0]=-0.0002;
+  rdcutsvalPPR[8][0]=0.5;
+
+  rdcutsvalPPR[0][1]=rdcutsvalPPR[0][2]=0.7;
+  rdcutsvalPPR[1][1]=rdcutsvalPPR[1][2]=0.02;
+  rdcutsvalPPR[2][1]=rdcutsvalPPR[2][2]=0.8;
+  rdcutsvalPPR[3][1]=rdcutsvalPPR[3][2]=0.7;
+  rdcutsvalPPR[4][1]=rdcutsvalPPR[4][2]=0.7;
+  rdcutsvalPPR[5][1]=rdcutsvalPPR[5][2]=0.05;
+  rdcutsvalPPR[6][1]=rdcutsvalPPR[6][2]=0.05;
+  rdcutsvalPPR[7][1]=rdcutsvalPPR[7][2]=-0.0002;
+  rdcutsvalPPR[8][1]=rdcutsvalPPR[8][2]=0.6;
+
+  rdcutsvalPPR[0][3]=0.7;
+  rdcutsvalPPR[1][3]=0.02;
+  rdcutsvalPPR[2][3]=0.8;
+  rdcutsvalPPR[3][3]=0.7;
+  rdcutsvalPPR[4][3]=0.7;
+  rdcutsvalPPR[5][3]=0.05;
+  rdcutsvalPPR[6][3]=0.05;
+  rdcutsvalPPR[7][3]=-0.0001;
+  rdcutsvalPPR[8][3]=0.8;
+
+  rdcutsvalPPR[0][4]=0.7;
+  rdcutsvalPPR[1][4]=0.02;
+  rdcutsvalPPR[2][4]=0.8;
+  rdcutsvalPPR[3][4]=0.7;
+  rdcutsvalPPR[4][4]=0.7;
+  rdcutsvalPPR[5][4]=0.05;
+  rdcutsvalPPR[6][4]=0.05;
+  rdcutsvalPPR[7][4]=-0.00005;
+  rdcutsvalPPR[8][4]=0.8;
+  */
+
+  //setting my cut values
+  rdcutsvalmine[0][0]=0.7;
+  rdcutsvalmine[1][0]=0.04;
+  rdcutsvalmine[2][0]=0.8;
+  rdcutsvalmine[3][0]=0.5;
+  rdcutsvalmine[4][0]=0.5;
+  rdcutsvalmine[5][0]=0.05;
+  rdcutsvalmine[6][0]=0.05;
+  rdcutsvalmine[7][0]=-0.00025;
+  rdcutsvalmine[8][0]=0.7;
+
+  rdcutsvalmine[0][1]=rdcutsvalmine[0][2]=0.7;
+  rdcutsvalmine[1][1]=rdcutsvalmine[1][2]=0.02;
+  rdcutsvalmine[2][1]=rdcutsvalmine[2][2]=0.8;
+  rdcutsvalmine[3][1]=rdcutsvalmine[3][2]=0.7;
+  rdcutsvalmine[4][1]=rdcutsvalmine[4][2]=0.7;
+  rdcutsvalmine[5][1]=rdcutsvalmine[5][2]=1.;
+  rdcutsvalmine[6][1]=rdcutsvalmine[6][2]=1.;
+  rdcutsvalmine[7][1]=rdcutsvalmine[7][2]=-0.00025;
+  rdcutsvalmine[8][1]=rdcutsvalmine[8][2]=0.8;
+
+  rdcutsvalmine[0][3]=0.7;
+  rdcutsvalmine[1][3]=0.02;
+  rdcutsvalmine[2][3]=0.8;
+  rdcutsvalmine[3][3]=0.7;
+  rdcutsvalmine[4][3]=0.7;
+  rdcutsvalmine[5][3]=0.05;
+  rdcutsvalmine[6][3]=0.05;
+  rdcutsvalmine[7][3]=-0.00015;
+  rdcutsvalmine[8][3]=0.8;
+
+  rdcutsvalmine[0][4]=0.7;
+  rdcutsvalmine[1][4]=0.02;
+  rdcutsvalmine[2][4]=0.8;
+  rdcutsvalmine[3][4]=0.7;
+  rdcutsvalmine[4][4]=0.7;
+  rdcutsvalmine[5][4]=0.05;
+  rdcutsvalmine[6][4]=0.05;
+  rdcutsvalmine[7][4]=-0.00015;
+  rdcutsvalmine[8][4]=0.9;
+
+  RDHFD0toKpi->SetCuts(nvars,nptbins,rdcutsvalmine);
+  cout<<"This is the odject I'm going to save:"<<endl;
+  RDHFD0toKpi->PrintAll();
+  TFile* fout=new TFile("D0toKpiCuts.root","recreate");   //set this!! 
+  fout->cd();
+  RDHFD0toKpi->Write();
+  fout->Close();
+
+}
+
+//macro to make a .root file (for significance maximization) which contains an AliRDHFCutsD0toKpi with loose set of cuts  and TParameter with the tighest value of these cuts
+
+void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   RDHFD0toKpi->SetName("loosercuts");
@@ -237,11 +390,11 @@ void makeTFile4CutsD0toKpi(){
   Int_t arrdim=dim*nptbins;
   cout<<"Will save "<<arrdim<<" TParameter<float>"<<endl;
   TClonesArray max("TParameter<float>",arrdim);
-  for(Int_t i=0;i<dim;i++){
-    for(Int_t j=0;j<nptbins;j++){
-      name=Form("par%dptbin%d",i,j);
-      cout<<"Setting "<<name.Data()<<" to "<<tighterval[i][j]<<endl;
-      new(max[i*nptbins+j])TParameter<float>(name.Data(),tighterval[i][j]);
+  for(Int_t ival=0;ival<dim;ival++){
+    for(Int_t jpt=0;jpt<nptbins;jpt++){
+      name=Form("par%dptbin%d",ival,jpt);
+      cout<<"Setting "<<name.Data()<<" to "<<tighterval[ival][jpt]<<endl;
+      new(max[jpt*dim+ival])TParameter<float>(name.Data(),tighterval[ival][jpt]);
     }
   }
  
@@ -252,3 +405,4 @@ void makeTFile4CutsD0toKpi(){
   fout->Close();
  
 }
+
