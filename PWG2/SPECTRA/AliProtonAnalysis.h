@@ -112,19 +112,30 @@ class AliProtonAnalysis : public TObject {
   void Correct();
   void Correct(Int_t step);
   Bool_t ReadCorrectionContainer(const char* filename);
+
   void SetCorrectionMapForFeedDown(const char* filename);
   TH2D *GetCorrectionMapForFeedDownProtons() {
     return fHistYPtCorrectionForFeedDownProtons;}
   TH2D *GetCorrectionMapForFeedDownAntiProtons() {
     return fHistYPtCorrectionForFeedDownAntiProtons;}
+
   void SetCorrectionMapForCuts(const char* filename);
   TH2D *GetCorrectionMapForCutsProtons() {
     return fHistYPtCorrectionForCutsProtons;}
   TH2D *GetCorrectionMapForCutsAntiProtons() {
     return fHistYPtCorrectionForCutsAntiProtons;}
+
+  void SetCorrectionMapForTracking(const char* filename);
+  TH2D *GetCorrectionMapForTrackingProtons() {
+    return fHistYPtCorrectionForTrackingProtons;}
+  TH2D *GetCorrectionMapForTrackingAntiProtons() {
+    return fHistYPtCorrectionForTrackingAntiProtons;}
+
+
   void SetCorrectionMapForSecondaries(const char* filename);
   TH2D *GetCorrectionMapForSecondaries() {
     return fHistYPtCorrectionForSecondaries;}
+
   void SetCorrectionMapForCrossSection(const char* filename);
   TH2D *GetProtonsCorrectionMapForCrossSection() {
     return fHistCorrectionForCrossSectionYPtProtons;}
@@ -178,6 +189,9 @@ class AliProtonAnalysis : public TObject {
   TH2D *fHistYPtCorrectionForCutsProtons;//correction factors for the cut efficiency (protons)
   TH2D *fHistYPtCorrectionForCutsAntiProtons;//correction factors for the cut efficiency (antiprotons)
   Bool_t fCorrectForCutsFlag;//correct for the cut efficiency
+  TH2D *fHistYPtCorrectionForTrackingProtons;//correction factors for the tracking efficiency (protons)
+  TH2D *fHistYPtCorrectionForTrackingAntiProtons;//correction factors for the tracking efficiency (antiprotons)
+  Bool_t fCorrectForTrackingFlag;//correct for the tracking efficiency
   TH2D *fHistYPtCorrectionForFeedDownProtons;//correction factors for the feed-down contamination (protons)
   TH2D *fHistYPtCorrectionForFeedDownAntiProtons;//correction factors for the feed-down contamination (antiprotons)
   Bool_t fCorrectForFeedDownFlag;//correct for cut efficiency
