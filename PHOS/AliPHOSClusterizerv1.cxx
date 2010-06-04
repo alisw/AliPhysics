@@ -621,7 +621,7 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
-	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digit->GetId()),CalibrateT(digitN->GetTime(),digit->GetId())) ;
+	    clu->AddDigit(*digitN, Calibrate(digitN->GetEnergy(),digitN->GetId()),CalibrateT(digitN->GetTime(),digitN->GetId())) ;
             clusterdigitslist[iDigitInCluster] = j ; 
             iDigitInCluster++ ; 
             fDigitsUsed[j]=kTRUE ;
