@@ -68,6 +68,9 @@ AliProtonAnalysis::AliProtonAnalysis() :
   fHistCorrectionForCrossSectionFlag(kFALSE),
   fHistYPtCorrectionForCutsProtons(0), fHistYPtCorrectionForCutsAntiProtons(0),
   fCorrectForCutsFlag(kFALSE),
+  fHistYPtCorrectionForTrackingProtons(0), 
+  fHistYPtCorrectionForTrackingAntiProtons(0),
+  fCorrectForTrackingFlag(kFALSE),
   fHistYPtCorrectionForFeedDownProtons(0), 
   fHistYPtCorrectionForFeedDownAntiProtons(0),
   fCorrectForFeedDownFlag(kFALSE),
@@ -102,6 +105,9 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fHistCorrectionForCrossSectionFlag(kFALSE),
   fHistYPtCorrectionForCutsProtons(0), fHistYPtCorrectionForCutsAntiProtons(0),
   fCorrectForCutsFlag(kFALSE),
+  fHistYPtCorrectionForTrackingProtons(0), 
+  fHistYPtCorrectionForTrackingAntiProtons(0),
+  fCorrectForTrackingFlag(kFALSE),
   fHistYPtCorrectionForFeedDownProtons(0), 
   fHistYPtCorrectionForFeedDownAntiProtons(0),
   fCorrectForFeedDownFlag(kFALSE),
@@ -208,6 +214,9 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fHistCorrectionForCrossSectionFlag(kFALSE),
   fHistYPtCorrectionForCutsProtons(0), fHistYPtCorrectionForCutsAntiProtons(0),
   fCorrectForCutsFlag(kFALSE),
+  fHistYPtCorrectionForTrackingProtons(0), 
+  fHistYPtCorrectionForTrackingAntiProtons(0),
+  fCorrectForTrackingFlag(kFALSE),
   fHistYPtCorrectionForFeedDownProtons(0), 
   fHistYPtCorrectionForFeedDownAntiProtons(0),
   fCorrectForFeedDownFlag(kFALSE),
@@ -315,6 +324,8 @@ AliProtonAnalysis::~AliProtonAnalysis() {
   if(fHistCorrectionForCrossSectionYPtAntiProtons) delete fHistCorrectionForCrossSectionYPtAntiProtons;
   if(fHistYPtCorrectionForCutsProtons) delete fHistYPtCorrectionForCutsProtons;
   if(fHistYPtCorrectionForCutsAntiProtons) delete fHistYPtCorrectionForCutsAntiProtons;
+  if(fHistYPtCorrectionForTrackingProtons) delete fHistYPtCorrectionForTrackingProtons;
+  if(fHistYPtCorrectionForTrackingAntiProtons) delete fHistYPtCorrectionForTrackingAntiProtons;
   if(fHistYPtCorrectionForFeedDownProtons) delete fHistYPtCorrectionForFeedDownProtons;
   if(fHistYPtCorrectionForFeedDownAntiProtons) delete fHistYPtCorrectionForFeedDownAntiProtons;
   if(fHistYPtCorrectionForSecondaries) delete fHistYPtCorrectionForSecondaries;
@@ -1568,6 +1579,23 @@ void AliProtonAnalysis::SetCorrectionMapForCuts(const char* filename) {
 }
 
 //____________________________________________________________________//
+void AliProtonAnalysis::SetCorrectionMapForTracking(const char* filename) {
+  //Reads the file with the correction maps for the tracking efficiency
+  TFile *gCorrectionForTracking = TFile::Open(filename);
+  if(!gCorrectionForTracking) {
+    Printf("The TFile object is not valid!!!");
+    return;
+  }
+  if(!gCorrectionForTracking->IsOpen()) {
+    Printf("The file is not found!!!");
+    return;
+  }
+  fHistYPtCorrectionForTrackingProtons = dynamic_cast<TH2D *>(gCorrectionForTracking->Get("gHistCorrectionForTrackingProtons"));
+  fHistYPtCorrectionForTrackingAntiProtons = dynamic_cast<TH2D *>(gCorrectionForTracking->Get("gHistCorrectionForTrackingAntiProtons"));
+  fCorrectForTrackingFlag = kTRUE;
+}
+
+//____________________________________________________________________//
 void AliProtonAnalysis::SetCorrectionMapForFeedDown(const char* filename) {
   //Reads the file with the correction maps for the feed-down contamination
   TFile *gCorrectionForFeedDown = TFile::Open(filename);
@@ -1637,6 +1665,9 @@ void AliProtonAnalysis::Correct() {
   //Correct the protons for the cut efficiency
   if(fCorrectForCutsFlag)
     fHistYPtProtonsCorrected->Multiply(fHistYPtCorrectionForCutsProtons);
+  //Correct the protons for the tracking efficiency
+  if(fCorrectForTrackingFlag)
+    fHistYPtProtonsCorrected->Multiply(fHistYPtCorrectionForTrackingProtons);
  
   //Correct the antiprotons for the efficiency
   fHistYPtAntiProtonsCorrected = fAntiProtonContainer->ShowProjection(0,1,kStepInPhaseSpace);
@@ -1650,6 +1681,9 @@ void AliProtonAnalysis::Correct() {
   //Correct the antiprotons for the cut efficiency
    if(fCorrectForCutsFlag)
      fHistYPtAntiProtonsCorrected->Multiply(fHistYPtCorrectionForCutsAntiProtons);
+  //Correct the antiprotons for the tracking efficiency
+   if(fCorrectForTrackingFlag)
+     fHistYPtAntiProtonsCorrected->Multiply(fHistYPtCorrectionForTrackingAntiProtons);
 }
 
 //____________________________________________________________________//
