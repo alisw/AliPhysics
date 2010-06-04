@@ -30,9 +30,10 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
   AliAODRecoDecayHF3Prong(const AliAODRecoDecayHF3Prong& source);
   AliAODRecoDecayHF3Prong& operator=(const AliAODRecoDecayHF3Prong& source); 
-
   virtual ~AliAODRecoDecayHF3Prong() {}  
- 
+  //Temporary fix: overload Charge() and GetCharge()
+  Short_t Charge() const; 
+  Short_t GetCharge()const {return Charge();}
   void GetDCAs(Double_t dca[3]) const 
     {for(Int_t i=0;i<3;i++) dca[i]=GetDCA(i);}
   Double_t GetSigmaVert() const { return fSigmaVert; }
