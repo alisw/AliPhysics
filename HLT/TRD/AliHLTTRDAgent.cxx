@@ -21,7 +21,6 @@
 */
 
 #include "AliHLTTRDAgent.h"
-#include "AliHLTConfiguration.h"
 #include "AliHLTTRDDefinitions.h"
 
 // #include "AliHLTOUT.h"
