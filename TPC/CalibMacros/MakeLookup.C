@@ -20,14 +20,16 @@
  
 /* 
   Example usage:
- 
+  gROOT->Macro("~/rootlogon.C")
   gSystem->AddIncludePath("-I$ALICE_ROOT/STAT")
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC")
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros")
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
   .L  $ALICE_ROOT/TPC/CalibMacros/MakeLookup.C+
-  Int_t run=11111
+  Int_t run=115888
+  //     .x $ALICE_ROOT/ANALYSIS/CalibMacros/Pass0/ConfigCalibTrain.C(run,"local:///lustre/alice/alien/alice/data/2010/OCDB")
+
   MakeLookup(run,0);
 
   //Local check of procedure
@@ -70,35 +72,53 @@
 #include "AliTPCGGVoltError.h"
 #include "AliTPCComposedCorrection.h"
 #include "AliTPCExBConical.h"
+#include "TPostScript.h"
+#include "TStyle.h"
 #include "AliTrackerBase.h"
+#include "AliTPCCalibGlobalMisalignment.h"
+#include  "AliTPCExBEffective.h"
+#include  "AliTPCExBBShape.h"
 #endif
 
 TChain * chain=0;
-void MakeLookup(Int_t run, Int_t mode=0);
+void MakeLookup(Int_t run, Int_t mode);
 //void MakeLookupHisto(THnSparse * his, TTreeSRedirector *pcstream, const char* hname, Int_t run);
 void FitLookup(TChain *chainIn, const char *prefix, TVectorD &vecA, TVectorD &vecC, TVectorD& vecStatA, TVectorD &vecStatD, TCut cut, TObjArray *picArray);
 void MakeFits(Int_t run);
 void MakeFitTree();
 void DrawDistortionDy(TCut cutUser="", Double_t ymin=-0.6, Double_t ymax=0.6);
 void DrawDistortionMaps(const char *fname="mean.root");
-
+TCanvas *  DrawDistortionMaps(TTree * treedy, TTree * treedsnp, TTree* treed1Pt, const char * name, const char *title);
+AliTPCComposedCorrection * MakeComposedCorrection();
+void MakeLaserTree();
+void AddEffectiveCorrection(AliTPCComposedCorrection* comp);
 
 void MakeLookup(Int_t run, Int_t mode){
   //
   // make a lookup tree with mean values
-  //
+  // 5. make laser tree
+  // 4. 
   gSystem->AddIncludePath("-I$ALICE_ROOT/STAT");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libTPCcalib");
+  if (mode==5) {MakeLaserTree();return;};     
+  if (mode==4) {DrawDistortionMaps();return;}
   if (mode==1){
     DrawDistortionDy("abs(snp)<0.25"); 
     DrawDistortionMaps();
     return;
   }
   if (mode==2) return  MakeFitTree();
-
-  TFile f("CalibObjects.root");
+  TFile f("TPCTimeObjects.root");
   AliTPCcalibTime  *calibTime= (AliTPCcalibTime*)f.Get("calibTime");
+  if (!calibTime){
+     TFile*  f2 = new TFile("CalibObjects.root");
+     calibTime= (AliTPCcalibTime*)f2->Get("calibTime");
+     if (!calibTime){
+       TFile*  f3 = new TFile("../CalibObjects.root");
+       calibTime= (AliTPCcalibTime*)f3->Get("calibTime");
+     }
+  }
   //
   TTreeSRedirector * pcstream  = new TTreeSRedirector("mean.root");
   THnSparse * his = 0;
@@ -122,6 +142,13 @@ void MakeLookup(Int_t run, Int_t mode){
       his->GetAxis(2)->SetRange(0,1000000);
       his->GetAxis(3)->SetRangeUser(-0.5,0.5);
       AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TRD%s",hname[ihis]),run);
+      his = calibTime->GetResHistoTPCTOF(ihis);
+      if (his){
+	his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+	his->GetAxis(2)->SetRange(0,1000000);
+	his->GetAxis(3)->SetRangeUser(-0.5,0.5);
+	AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TOF%s",hname[ihis]),run);
+      }
     }
   }
   delete pcstream;
@@ -427,71 +454,8 @@ void DrawDistortionDy(TCut cutUser, Double_t ymin, Double_t ymax){
 }
 
 
-void DrawDistortionMaps(const char *fname){
-  //
-  //
-  //
-  TFile f(fname);
-  TTree *ITSdy=(TTree*)f.Get("ITSdy");
-  TTree *ITSdsnp=(TTree*)f.Get("ITSdsnp");
-  TTree *ITSd1pt=(TTree*)f.Get("ITSd1pt");
-  TCanvas *cdist = new TCanvas("distITS","distITS",1200,800); 
-  cdist->Divide(3,2);
-  cdist->Draw("");
-  TH1 * his=0;
 
-  cdist->cd(1);
-  ITSdy->Draw("10*mean","rms>0&&abs(snp)<0.25&&entries>100","");
-  his = (TH1*)ITSdy->GetHistogram()->Clone();
-  his->SetName("dY"); his->SetXTitle("#Delta_{r#phi} (cm)");
-  his->Draw();
-  //
-  cdist->cd(2);
-  ITSdsnp->Draw("1000*mean","rms>0&&abs(snp)<0.25&&entries>200","");
-  his = (TH1*)ITSdsnp->GetHistogram()->Clone();
-  his->SetName("dsnp"); his->SetXTitle("#Delta_{sin(#phi)}");
-  his->Draw();
-  //
-  cdist->cd(3);
-  ITSd1pt->Draw("mean","rms>0&&abs(snp)<0.15&&entries>400","");
-  his = (TH1*)ITSd1pt->GetHistogram()->Clone();
-  his->SetName("d1pt"); his->SetXTitle("#Delta_{1/pt} (1/GeV)");
-  his->Draw();
-  //
-  ITSdy->SetMarkerSize(0.3);
-  ITSdsnp->SetMarkerSize(0.3);
-  ITSd1pt->SetMarkerSize(0.3);
-  {for (Int_t type=0; type<3; type++){
-      cdist->cd(4+type);
-      TTree * tree =ITSdy;
-      if (type==1) tree=ITSdsnp;
-      if (type==2) tree=ITSd1pt;
-      Int_t counter=0;
-      for (Double_t theta=-1; theta<=1; theta+=0.2){
-	TCut cut=Form("rms>0&&abs(snp)<0.25&&entries>20&&abs(theta-%f)<0.05",theta);
-	tree->SetMarkerStyle(20+counter);
-	Option_t *option=(counter==0)? "prof": "profsame";
-	if (theta>0) tree->SetMarkerColor(2);
-	if (theta<0) tree->SetMarkerColor(4);
-	if (type==0) tree->Draw("10*mean:phi>>his(45,-pi,pi)",cut,option);      
-	if (type==1) tree->Draw("1000*mean:phi>>his(45,-pi,pi)",cut,option);      
-	if (type==2) tree->Draw("mean:phi>>his(45,-pi,pi)",cut,option);      
-	his = (TH1*)tree->GetHistogram()->Clone();
-	his->SetName(Form("%d_%d",counter,type));
-	his->SetXTitle("#phi");
-	his->SetMaximum(4);
-	his->SetMinimum(-4);
-	if (type==2){
-	  his->SetMaximum(0.06);
-	  his->SetMinimum(-0.06);	  
-	}
-	his->Draw(option);
-	counter++;
-      }
-    }
-  }
-  cdist->SaveAs("itstpcdistrotion.pdf");
-}
+
 
 
 void MakeFitTree(){
@@ -501,112 +465,63 @@ void MakeFitTree(){
   //     .x $ALICE_ROOT/ANALYSIS/CalibMacros/Pass0/ConfigCalibTrain.C(114972,"local:///lustre/alice/alien/alice/data/2010/OCDB")
   //
   //
-  Double_t bzField=AliTrackerBase::GetBz();  
-  Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
-  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
-  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-  Double_t T1 = 0.9;
-  Double_t T2 = 1.5;
-  //
-  AliTPCExBTwist *twistX1= new AliTPCExBTwist;
-  twistX1->SetXTwist(0.001);  // 1 mrad twist in x
-  twistX1->SetName("tX1");
-  //
-  AliTPCExBTwist *twistY1= new AliTPCExBTwist;
-  twistY1->SetYTwist(0.001);   // 1 mrad twist in Y
-  twistY1->SetName("tY1");
-  //
-  AliTPCGGVoltError* ggErrorA = new AliTPCGGVoltError;
-  ggErrorA->SetDeltaVGGA(40.);  // delta GG - 1 mm
-  ggErrorA->SetName("ggA");
-  //
-  AliTPCGGVoltError* ggErrorC = new AliTPCGGVoltError;
-  ggErrorC->SetDeltaVGGC(40.);  // delta GG - 1 mm
-  ggErrorC->SetName("ggC");
-  // conical free param
-  //
-  AliTPCExBConical *exbConA = new AliTPCExBConical;
-  Float_t conicalAA[3]={1., 0.0,0.00};
-  Float_t conicalCA[3]={0., 0.0,0.00};
-  exbConA->SetConicalA(conicalAA);
-  exbConA->SetConicalC(conicalCA);
-  exbConA->SetConicalFactor(0.25);
-  exbConA->SetName("ExBConA");          // conical factor - A side
 
-  //conical free param
-  AliTPCExBConical *exbConC = new AliTPCExBConical;
-  Float_t conicalAC[3]={0., 0.0,0.00};
-  Float_t conicalCC[3]={1., 0.0,0.00};
-  exbConC->SetConicalA(conicalAC);
-  exbConC->SetConicalC(conicalCC);
-  exbConC->SetConicalFactor(0.25);
-  exbConC->SetName("ExBConC");          // conical factor - c side
-  // conical as measured
-  AliTPCExBConical *exbCon = new AliTPCExBConical;
-  Float_t conicalC[3]={1., 0.6,-0.08};
-  Float_t conicalA[3]={0.9, 0.3,0.04};
-  exbCon->SetConicalA(conicalA);
-  exbCon->SetConicalC(conicalC);
-  exbCon->SetConicalFactor(0.25);
-  exbCon->SetName("ExBCon");          // conical factor
-
-
-  TObjArray * corr = new TObjArray;
-  corr->AddLast(twistX1);
-  corr->AddLast(twistY1);
-  corr->AddLast(ggErrorA);
-  corr->AddLast(ggErrorC);
-  corr->AddLast(exbConA);
-  corr->AddLast(exbConC);
-  corr->AddLast(exbCon);
-  //
-  AliTPCComposedCorrection *cc= new AliTPCComposedCorrection ;
-  cc->SetCorrections(corr);
-  cc->SetOmegaTauT1T2(wt,T1,T2);
-  cc->Init();
-  //  cc->SetMode(1);
-  cc->Print("DA"); // Print used correction classes
-  cc->SetName("Comp");
-  //corr->AddLast(cc);
+  AliTPCComposedCorrection *cc= MakeComposedCorrection();
+  TObjArray * corr = (TObjArray*)(cc->GetCorrections());
+  //  corr->AddLast(cc);
+  const Int_t kskip=3;
   //
   TFile f("mean.root");
   TTree * tree= 0;
   tree = (TTree*)f.Get("ITSdy");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,0,0,corr,7);
+  printf("ITSdy\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,0,0,corr,kskip);
   tree = (TTree*)f.Get("TRDdy");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,1,0,corr,7);
+  printf("TRDdy\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,1,0,corr,kskip);
   tree = (TTree*)f.Get("Vertexdy");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,2,0,corr,7);
+  printf("Vertexdy\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,2,0,corr,kskip);
+  tree = (TTree*)f.Get("TOFdy");
+  printf("TOFdy\n");
+  if (tree) AliTPCCorrection::MakeTrackDistortionTree(tree,3,0,corr,kskip);
+
   //
   tree = (TTree*)f.Get("ITSdsnp");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,0,2,corr,7);
+  printf("ITSdsnp\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,0,2,corr,kskip);
   tree = (TTree*)f.Get("TRDdsnp");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,1,2,corr,7);
+  printf("TRDdsnp\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,1,2,corr,kskip);
   tree = (TTree*)f.Get("Vertexdsnp");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,2,2,corr,7);
+  printf("Vertexdsnp\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,2,2,corr,kskip);
   //
+ 
+  tree = (TTree*)f.Get("ITSd1pt");
+  printf("ITSd1pt\n");
+  if (tree) AliTPCCorrection::MakeTrackDistortionTree(tree,0,4,corr,kskip);
+
+  tree = (TTree*)f.Get("TOFdz");
+  printf("TOFdz\n");
+  if (tree) AliTPCCorrection::MakeTrackDistortionTree(tree,3,0,corr,kskip);
+
+
   tree = (TTree*)f.Get("ITSdz");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,0,1,corr,7);
-  //tree = (TTree*)f.Get("TRDdz");
-  //AliTPCCorrection::MakeTrackDistortionTree(tree,1,1,corr,3);
+  printf("ITSdz\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,0,1,corr,kskip);
   tree = (TTree*)f.Get("Vertexdz");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,2,1,corr,7);
+  printf("Vertexdz\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,2,1,corr,kskip);
 
   //
   tree = (TTree*)f.Get("ITSdtheta");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,0,3,corr,7);
-  //tree = (TTree*)f.Get("TRDdtheta");
-  //  AliTPCCorrection::MakeTrackDistortionTree(tree,1,3,corr,3);
+  printf("ITSdtheta\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,0,3,corr,kskip);
   //
   tree = (TTree*)f.Get("Vertexdtheta");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,2,3,corr,7);
-
-  tree = (TTree*)f.Get("ITSd1pt");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,0,4,corr,7);
-  tree = (TTree*)f.Get("TRDd1pt");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,1,4,corr,7);
-  tree = (TTree*)f.Get("Vertexd1pt");
-  AliTPCCorrection::MakeTrackDistortionTree(tree,2,4,corr,7);
+  printf("Vertexdtheta\n");
+  AliTPCCorrection::MakeTrackDistortionTree(tree,2,3,corr,kskip);
 
 
 }
@@ -658,10 +573,13 @@ void MakeGlobalFitRelative(Int_t highFrequency=0){
   //    
 
   AliXRDPROOFtoolkit tool;
-  TChain *chain         = tool.MakeChain("distortion.txt","fit",0,100000);
+  //  TChain *chain         = tool.MakeChain("distortion.txt","fit",0,100000);
   TChain *chainPlus     = tool.MakeChain("distortionPlus.txt","fit",0,100000);
   TChain *chainMinus    = tool.MakeChain("distortionMinus.txt","fit",0,100000);
+  TChain *chain0        = tool.MakeChain("distortionField0.txt","fit",0,100000);
+
   chainPlus->AddFriend(chainMinus,"M");
+  chainPlus->AddFriend(chain0,"F0");
 
   TCut cut="rms>0&&M.rms>0&&entries>100&&dtype==0&&(ptype==0||ptype==2||ptype==4)";
   chainPlus->SetAlias("deltaM","mean-M.mean");
@@ -817,4 +735,241 @@ void MakeGlobalFitRelative(Int_t highFrequency=0){
   canvasdY->SaveAs(Form("fitdy%d.pdf",highFrequency));
   canvasdSnp->SaveAs(Form("fitdsnp%d.pdf",highFrequency));
   delete fpic;
+}
+
+void DrawDistortionMaps(const char *fname){
+  TFile f(fname);
+  TTree *ITSdy=(TTree*)f.Get("ITSdy");
+  TTree *ITSdsnp=(TTree*)f.Get("ITSdsnp");
+  TTree *ITSd1pt=(TTree*)f.Get("ITSd1pt");
+  TTree *TRDdy=(TTree*)f.Get("TRDdy");
+  TTree *TRDdsnp=(TTree*)f.Get("TRDdsnp");
+  TTree *TRDd1pt=(TTree*)f.Get("TRDd1pt");
+  TTree *Vertexdy=(TTree*)f.Get("Vertexdy");
+  TTree *Vertexdsnp=(TTree*)f.Get("Vertexdsnp");
+  TTree *Vertexd1pt=(TTree*)f.Get("Vertexd1pt");
+  TCanvas *cits = DrawDistortionMaps(ITSdy,ITSdsnp,ITSd1pt,"ITS","ITS");
+  cits->SaveAs("matchingITS.pdf");
+  TCanvas *ctrd = DrawDistortionMaps(TRDdy,TRDdsnp,TRDd1pt,"TRD","TRD");
+  ctrd->SaveAs("matchingTRD.pdf");
+  TCanvas *cvertex = DrawDistortionMaps(Vertexdy,Vertexdsnp,Vertexd1pt,"Vertex","Vertex");
+  cvertex->SaveAs("matchingVertex.pdf");
+  //
+  //
+  TPostScript *ps = new TPostScript("matching.ps", 112); 
+  gStyle->SetOptTitle(1);
+  gStyle->SetOptStat(0);
+  ps->NewPage();
+  cits->Draw();
+  ps->NewPage();
+  ctrd->Draw();
+  ps->NewPage();
+  cvertex->Draw();
+  ps->Close();
+  delete ps;
+}
+
+
+TCanvas * DrawDistortionMaps(TTree * treedy, TTree * treedsnp, TTree* treed1pt, const char * name, const char *title){
+  //
+  //
+  //
+  TH1::AddDirectory(0);
+  TCanvas *cdist = new TCanvas(name,name,1200,800); 
+  cdist->Divide(3,2);
+  cdist->Draw("");
+  TH1 * his=0;
+
+  cdist->cd(1);
+  treedy->Draw("10*mean","rms>0&&abs(snp)<0.25&&entries>100","");
+  his = (TH1*)treedy->GetHistogram()->Clone();
+  his->SetName("dY"); his->SetXTitle("#Delta_{r#phi} (cm)");
+  his->Draw();
+  //
+  cdist->cd(2);
+  treedsnp->Draw("1000*mean","rms>0&&abs(snp)<0.25&&entries>200","");
+  his = (TH1*)treedsnp->GetHistogram()->Clone();
+  his->SetName("dsnp"); his->SetXTitle("#Delta_{sin(#phi)}");
+  his->Draw();
+  //
+  cdist->cd(3);
+  treed1pt->Draw("mean","rms>0&&abs(snp)<0.15&&entries>400","");
+  his = (TH1*)treed1pt->GetHistogram()->Clone();
+  his->SetName("d1pt"); his->SetXTitle("#Delta_{1/pt} (1/GeV)");
+  his->Draw();
+  //
+  treedy->SetMarkerSize(1);
+  treedsnp->SetMarkerSize(1);
+  treed1pt->SetMarkerSize(1);
+  {for (Int_t type=0; type<3; type++){
+      cdist->cd(4+type);
+      TTree * tree =treedy;
+      if (type==1) tree=treedsnp;
+      if (type==2) tree=treed1pt;
+      Int_t counter=0;
+      for (Double_t theta=-1; theta<=1; theta+=0.2){
+	if (TMath::Abs(theta)<0.11) continue;
+	TCut cut=Form("rms>0&&abs(snp)<0.25&&entries>20&&abs(theta-%f)<0.1",theta);
+	tree->SetMarkerStyle(20+counter);
+	Option_t *option=(counter==0)? "": "same";
+	if (theta>0) tree->SetMarkerColor(2);
+	if (theta<0) tree->SetMarkerColor(4);
+	if (type==0) tree->Draw("10*mean:phi>>his(45,-pi,pi)",cut,"profgoff");      
+	if (type==1) tree->Draw("1000*mean:phi>>his(45,-pi,pi)",cut,"profgoff");      
+	if (type==2) tree->Draw("mean:phi>>his(45,-pi,pi)",cut,"profgoff");      
+	his = (TH1*)tree->GetHistogram()->Clone();
+	his->SetName(Form("%d_%d",counter,type));
+	his->SetXTitle("#phi");
+	his->SetMaximum(4);
+	his->SetMinimum(-4);
+	if (type==2){
+	  his->SetMaximum(0.06);
+	  his->SetMinimum(-0.06);	  
+	}
+	his->Draw(option);
+	counter++;
+      }
+    }
+  }
+  //  cdist->SaveAs(Form("%s.pdf"),name);
+  return cdist;
+}
+
+
+
+
+
+AliTPCComposedCorrection * MakeComposedCorrection(){
+
+  //
+  Double_t bzField=AliTrackerBase::GetBz();    
+  AliMagF* magF= (AliMagF*)(TGeoGlobalMagField::Instance()->GetField());
+  Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
+  Double_t T1 = 0.9;
+  Double_t T2 = 1.5;
+  //
+  //
+  
+
+  AliTPCExBTwist *twistX1= new AliTPCExBTwist;
+  twistX1->SetXTwist(0.001);  // 1 mrad twist in x
+  twistX1->SetName("tX1");
+  //
+  AliTPCExBTwist *twistY1= new AliTPCExBTwist;
+  twistY1->SetYTwist(0.001);   // 1 mrad twist in Y
+  twistY1->SetName("tY1");
+  //
+  AliTPCGGVoltError* ggErrorA = new AliTPCGGVoltError;
+  ggErrorA->SetDeltaVGGA(40.);  // delta GG - 1 mm
+  ggErrorA->SetName("ggA");
+  //
+  AliTPCGGVoltError* ggErrorC = new AliTPCGGVoltError;
+  ggErrorC->SetDeltaVGGC(40.);  // delta GG - 1 mm
+  ggErrorC->SetName("ggC");
+  // conical free param
+  //
+  AliTPCCalibGlobalMisalignment *shiftX=new  AliTPCCalibGlobalMisalignment;
+  shiftX->SetXShift(0.1);
+  shiftX->SetName("shiftX");
+  AliTPCCalibGlobalMisalignment *shiftY=new  AliTPCCalibGlobalMisalignment;
+  shiftY->SetYShift(0.1);
+  shiftY->SetName("shiftY");
+
+  AliTPCExBBShape *exb11 = new AliTPCExBBShape;
+  exb11->SetBField(magF);
+  exb11->SetName("exb11");
+  AliTPCExBBShape *exbT1 = new AliTPCExBBShape;
+  exbT1->SetBField(magF);
+  exbT1->SetName("exbT1");
+  AliTPCExBBShape *exbT2 = new AliTPCExBBShape;
+  exbT2->SetBField(magF);
+  exbT2->SetName("exbT2");
+
+  TObjArray * corr = new TObjArray;
+  corr->AddLast(twistX1);
+  corr->AddLast(twistY1);
+  corr->AddLast(ggErrorA);
+  corr->AddLast(ggErrorC);
+  corr->AddLast(shiftX);
+  corr->AddLast(shiftY);
+  corr->AddLast(exb11);
+  corr->AddLast(exbT1);
+  corr->AddLast(exbT2);
+  //
+  AliTPCComposedCorrection *cc= new AliTPCComposedCorrection ;
+  cc->SetCorrections((TObjArray*)(corr));
+  AddEffectiveCorrection(cc);
+  cc->SetOmegaTauT1T2(wt,T1,T2);
+  exbT1->SetOmegaTauT1T2(wt,T1+0.1,T2);
+  exbT2->SetOmegaTauT1T2(wt,T1,T2+0.1);
+  cc->Init();
+  //  cc->SetMode(1);
+  cc->Print("DA"); // Print used correction classes
+  cc->SetName("Comp");
+  return cc;
+}
+
+
+
+void AddEffectiveCorrection(AliTPCComposedCorrection* comp){
+  //
+  //
+  //
+  TMatrixD polA(18,4);
+  TMatrixD polC(18,4);
+  TMatrixD valA(18,1);
+  TMatrixD valC(18,1);
+  Int_t counter=0;
+  { for (Int_t iside=0; iside<=1; iside++){
+      {for (Int_t ir=0; ir<3; ir++)  
+	  for (Int_t id=0; id<3; id++) {
+	    polA(counter,0)=0;
+	    polA(counter,1)=ir;
+	    polA(counter,2)=id;
+	    polC(counter,0)=0;
+	    polC(counter,1)=ir;
+	    polC(counter,2)=id;
+	    valA(counter,0)=0;
+	    valC(counter,0)=0;
+	    counter++;
+	  }
+      }
+    }
+  }
+  counter=0;
+  TObjArray * array = (TObjArray*) comp->GetCorrections();
+  { for (Int_t iside=0; iside<=1; iside++)
+      for (Int_t ir=0; ir<3; ir++)  
+	for (Int_t id=0; id<3; id++) {
+	  AliTPCExBEffective *eff=new AliTPCExBEffective;
+	  valA*=0;
+	  valC*=0;
+	  eff->SetName(Form("eff%d_%d_%d",iside,ir,id));
+	  if (iside==0) valA(counter,0)=0.1;
+	  if (iside==1) valC(counter,0)=0.1;
+	  eff->SetPolynoms(&polA,&polC);
+	  eff->SetCoeficients(&valA,&valC);
+	  valA.Print();
+	  valC.Print();
+	  array->AddLast(eff);
+	  counter++;	
+	}
+  }
+}
+
+
+
+void MakeLaserTree(){
+  //
+  //
+  //
+  AliTPCComposedCorrection *cc= MakeComposedCorrection();
+  TObjArray * corr = (TObjArray*)(cc->GetCorrections());
+  //  corr->AddLast(cc);
+  TFile f("laserMean.root");
+  TTree* tree =(TTree*)f.Get("Mean"); 
+  AliTPCCorrection::MakeLaserDistortionTree(tree,corr,0);
+
 }

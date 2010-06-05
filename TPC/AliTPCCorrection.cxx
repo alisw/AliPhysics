@@ -50,15 +50,22 @@
 #include <AliCDBStorage.h>
 #include <AliCDBId.h>
 #include <AliCDBMetaData.h>
+#include  "TVectorD.h"
 
-#include  "TRandom.h"
+#include "TRandom.h"
+#include "AliTPCTransform.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCExB.h"
+#include "AliTPCCorrection.h"
+#include "AliTPCRecoParam.h"
+
 #include  "AliExternalTrackParam.h"
 #include  "AliTrackPointArray.h"
 #include  "TDatabasePDG.h"
 #include  "AliTrackerBase.h"
 #include  "AliTPCROC.h"
 #include  "THnSparse.h"
-
+#include  "AliTPCLaserTrack.h"
 
 #include "AliTPCCorrection.h"
 
@@ -522,8 +529,9 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
     AliTrackerBase::PropagateTrackToBxByBz(&track,radius,kMass,3,kTRUE,kMaxSnp);
     track.GetXYZ(xyz);
-    xyz[0]+=gRandom->Gaus(0,0.001);
-    xyz[1]+=gRandom->Gaus(0,0.001);
+    xyz[0]+=gRandom->Gaus(0,0.005);
+    xyz[1]+=gRandom->Gaus(0,0.005);
+    xyz[2]+=gRandom->Gaus(0,0.005);
     AliTrackPoint pIn0;                               // space point          
     AliTrackPoint pIn1;
     Int_t sector= (xyz[2]>0)? 0:18;
@@ -547,6 +555,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     npoints++;
     if (npoints>=npoints0) break;
   }
+  if (npoints<npoints0/2) return 0;
   //
   // refit track
   //
@@ -565,7 +574,6 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   }  
   track0 = AliTrackerBase::MakeSeed(point1, point2, point3);
   track1 = AliTrackerBase::MakeSeed(point1, point2, point3);
-
 
   for (Int_t jpoint=0; jpoint<npoints; jpoint++){
     Int_t ipoint= (dir>0) ? jpoint: npoints-1-jpoint;
@@ -594,8 +602,8 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     Double_t deltaYX=deltaX*TMath::Tan(TMath::ASin(track1->GetSnp()));  // deltaY due  delta X
     Double_t deltaZX=deltaX*track1->GetTgl();                           // deltaZ due  delta X
 
-    pointPos[0]=prot1.GetY()-deltaYX;//local y
-    pointPos[1]=prot1.GetZ()-deltaZX;//local z
+    pointPos[0]=prot1.GetY()+deltaYX;//local y is sign correct?
+    pointPos[1]=prot1.GetZ()+deltaZX;//local z is sign correct?
     pointCov[0]=prot1.GetCov()[3];//simay^2
     pointCov[1]=prot1.GetCov()[4];//sigmayz
     pointCov[2]=prot1.GetCov()[5];//sigmaz^2
@@ -705,7 +713,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   const Double_t kMaxSnp = 0.85;  
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   //  const Double_t kB2C=-0.299792458e-3;
-  const Int_t kMinEntries=50;
+  const Int_t kMinEntries=50; 
   Double_t phi,theta, snp, mean,rms, entries;
   tinput->SetBranchAddress("theta",&theta);
   tinput->SetBranchAddress("phi", &phi);
@@ -717,17 +725,19 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   //
   Int_t nentries=tinput->GetEntries();
   Int_t ncorr=corrArray->GetEntries();
-  Double_t corrections[100]; //
+  Double_t corrections[100]={0}; //
   Double_t tPar[5];
   Double_t cov[15]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   Double_t refX=0;
   Int_t dir=0;
-  if (dtype==0) {refX=85; dir=-1;}
-  if (dtype==1) {refX=275; dir=1;}
-  if (dtype==2) {refX=85; dir=-1;}
+  if (dtype==0) {refX=85.; dir=-1;}
+  if (dtype==1) {refX=275.; dir=1;}
+  if (dtype==2) {refX=85.; dir=-1;}
+  if (dtype==3) {refX=360.; dir=-1;}
   //
   for (Int_t ientry=0; ientry<nentries; ientry+=step){
     tinput->GetEntry(ientry);
+    if (TMath::Abs(snp)>kMaxSnp) continue;
     tPar[0]=0;
     tPar[1]=theta*refX;
     tPar[2]=snp;
@@ -736,7 +746,12 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
     Double_t bz=AliTrackerBase::GetBz();
     if (refX>10. && TMath::Abs(bz)>0.1 )  tPar[4]=snp/(refX*bz*kB2C*2);
     tPar[4]+=(gRandom->Rndm()-0.5)*0.02;
-    if (TMath::Abs(snp)>0.251) continue;
+    AliExternalTrackParam track(refX,phi,tPar,cov);
+    Double_t xyz[3];
+    track.GetXYZ(xyz);
+    Int_t id=0;
+    Double_t dRrec=0; // dummy value - needed for points - e.g for laser
+    
     (*pcstream)<<"fit"<<
       "bz="<<bz<<         // magnetic filed used
       "dtype="<<dtype<<   // detector match type
@@ -746,6 +761,11 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
       "snp="<<snp<<       // snp
       "mean="<<mean<<     // mean dist value
       "rms="<<rms<<       // rms
+      "gx="<<xyz[0]<<         // global position at reference
+      "gy="<<xyz[1]<<         // global position at reference
+      "gz="<<xyz[2]<<         // global position at reference	
+      "dRrec="<<dRrec<<      // delta Radius in reconstruction
+      "id="<<id<<             // track id
       "entries="<<entries;// number of entries in bin
     //
     for (Int_t icorr=0; icorr<ncorr; icorr++) {
@@ -756,24 +776,155 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 	AliExternalTrackParam *trackOut = 0;
 	if (debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,pcstream);
 	if (!debug) trackOut=corr->FitDistortedTrack(trackIn, refX, dir,0);
-	if (dtype==0) {refX=85; dir=-1;}
-	if (dtype==1) {refX=275; dir=1;}
+	if (dtype==0) {refX=85.; dir=-1;}
+	if (dtype==1) {refX=275.; dir=1;}
 	if (dtype==2) {refX=0; dir=-1;}
+	if (dtype==3) {refX=360.; dir=-1;}
 	//
-	AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kTRUE,kMaxSnp);
-	AliTrackerBase::PropagateTrackToBxByBz(trackOut,refX,kMass,3,kTRUE,kMaxSnp);
-	//
-	corrections[icorr]= trackOut->GetParameter()[ptype]-trackIn.GetParameter()[ptype];
-	delete trackOut;      
+	if (trackOut){
+	  AliTrackerBase::PropagateTrackToBxByBz(&trackIn,refX,kMass,3,kTRUE,kMaxSnp);
+	  trackOut->Rotate(trackIn.GetAlpha());
+	  trackOut->PropagateTo(trackIn.GetX(),AliTrackerBase::GetBz());
+	  //
+	  corrections[icorr]= trackOut->GetParameter()[ptype]-trackIn.GetParameter()[ptype];
+	  delete trackOut;      
+	}else{
+	  corrections[icorr]=0;
+	}
       }      
+      Double_t dRdummy=0;
       (*pcstream)<<"fit"<<
-	Form("%s=",corr->GetName())<<corrections[icorr];   // dump correction value
+	Form("%s=",corr->GetName())<<corrections[icorr]<<   // dump correction value
+	Form("dR%s=",corr->GetName())<<dRdummy;   // dump dummy correction value not needed for tracks 
+                                                  // for points it is neccessary
     }
     (*pcstream)<<"fit"<<"\n";
   }
   delete pcstream;
 }
 
+
+
+void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype){
+  //
+  // Make a laser fit tree for global minimization
+  //
+  const Double_t cutErrY=0.1;
+  const Double_t cutErrZ=0.1;
+  const Double_t kEpsilon=0.00000001;
+  TVectorD *vecdY=0;
+  TVectorD *vecdZ=0;
+  TVectorD *veceY=0;
+  TVectorD *veceZ=0;
+  AliTPCLaserTrack *ltr=0;
+  AliTPCLaserTrack::LoadTracks();
+  tree->SetBranchAddress("dY.",&vecdY);
+  tree->SetBranchAddress("dZ.",&vecdZ);
+  tree->SetBranchAddress("eY.",&veceY);
+  tree->SetBranchAddress("eZ.",&veceZ);
+  tree->SetBranchAddress("LTr.",&ltr);
+  Int_t entries= tree->GetEntries();
+  TTreeSRedirector *pcstream= new TTreeSRedirector("distortion4_0.root");
+  Double_t bz=AliTrackerBase::GetBz();
+  // 
+
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    tree->GetEntry(ientry);
+    if (!ltr->GetVecGX()){
+      ltr->UpdatePoints();
+    }
+    TVectorD * delta= (itype==0)? vecdY:vecdZ;
+    TVectorD * err= (itype==0)? veceY:veceZ;
+    
+    for (Int_t irow=0; irow<159; irow++){
+      Int_t nentries = 1000;
+      if (veceY->GetMatrixArray()[irow]>cutErrY||veceZ->GetMatrixArray()[irow]>cutErrZ) nentries=0;
+      if (veceY->GetMatrixArray()[irow]<kEpsilon||veceZ->GetMatrixArray()[irow]<kEpsilon) nentries=0;
+      Int_t dtype=4;
+      Double_t phi   =(*ltr->GetVecPhi())[irow];
+      Double_t theta =ltr->GetTgl();
+      Double_t mean=delta->GetMatrixArray()[irow];
+      Double_t gx=0,gy=0,gz=0;
+      Double_t snp = (*ltr->GetVecP2())[irow];
+      Double_t rms = 0.1+err->GetMatrixArray()[irow];
+      gx = (*ltr->GetVecGX())[irow];
+      gy = (*ltr->GetVecGY())[irow];
+      gz = (*ltr->GetVecGZ())[irow];
+      Int_t bundle= ltr->GetBundle();
+      Double_t dRrec=0;
+      //
+      // get delta R used in reconstruction
+      AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
+      AliTPCCorrection * correction = calib->GetTPCComposedCorrection();
+      const AliTPCRecoParam * recoParam = calib->GetTransform()->GetCurrentRecoParam();
+      Double_t xyz0[3]={gx,gy,gz};
+      Double_t oldR=TMath::Sqrt(gx*gx+gy*gy);
+      //
+      // old ExB correction 
+      //      
+      if(recoParam&&recoParam->GetUseExBCorrection()) {	
+	Double_t xyz1[3]={gx,gy,gz};
+	calib->GetExB()->Correct(xyz0,xyz1);
+	Double_t newR=TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
+	dRrec=oldR-newR;
+      } 
+      if(recoParam&&recoParam->GetUseComposedCorrection()&&correction) {
+	Float_t xyz1[3]={gx,gy,gz};
+	Int_t sector=(gz>0)?0:18;
+	correction->CorrectPoint(xyz1, sector);
+	Double_t newR=TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
+	dRrec=oldR-newR;
+      } 
+
+
+      (*pcstream)<<"fit"<<
+	"bz="<<bz<<         // magnetic filed used
+	"dtype="<<dtype<<   // detector match type
+	"ptype="<<itype<<   // parameter type
+	"theta="<<theta<<   // theta
+	"phi="<<phi<<       // phi 
+	"snp="<<snp<<       // snp
+	"mean="<<mean<<     // mean dist value
+	"rms="<<rms<<       // rms
+	"gx="<<gx<<         // global position
+	"gy="<<gy<<         // global position
+	"gz="<<gz<<         // global position
+	"dRrec="<<dRrec<<      // delta Radius in reconstruction
+	"id="<<bundle<<     //bundle
+	"entries="<<nentries;// number of entries in bin
+      //
+      //    
+      Double_t ky = TMath::Tan(TMath::ASin(snp));
+      Int_t ncorr = corrArray->GetEntries();
+      Double_t r0   = TMath::Sqrt(gx*gx+gy*gy);
+      Double_t phi0 = TMath::ATan2(gy,gx);
+      Double_t distortions[1000]={0};
+      Double_t distortionsR[1000]={0};
+      for (Int_t icorr=0; icorr<ncorr; icorr++) {
+	AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
+	Float_t distPoint[3]={gx,gy,gz}; 
+	Int_t sector= (gz>0)? 0:18;
+	if (r0>80){
+	  corr->DistortPoint(distPoint, sector);
+	}
+	Double_t value=distPoint[2]-gz;
+	if (itype==0){
+	  Double_t r1   = TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
+	  Double_t phi1 = TMath::ATan2(distPoint[1],distPoint[0]);
+	  Double_t drphi= r0*(phi1-phi0);
+	  Double_t dr   = r1-r0;
+	  distortions[icorr]  = drphi-ky*dr;
+	  distortionsR[icorr] = dr;
+	}
+	(*pcstream)<<"fit"<<
+	  Form("%s=",corr->GetName())<<distortions[icorr]<<    // dump correction value
+	  Form("dR%s=",corr->GetName())<<distortionsR[icorr];   // dump correction R  value
+      }
+      (*pcstream)<<"fit"<<"\n";
+    }
+  }
+  delete pcstream;
+}
 
 
 

@@ -77,6 +77,7 @@ public:
   AliExternalTrackParam * FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);
   void StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment=0);
   static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
+  static void MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype);
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
 		   const char *xlabel,const char *ylabel,const char *zlabel,
@@ -107,7 +108,7 @@ protected:
 protected:
   Double_t fT1;         // tensor term of wt - T1
   Double_t fT2;         // tensor term of wt - T2
-
+private:
   ClassDef(AliTPCCorrection,2);
 };
 
