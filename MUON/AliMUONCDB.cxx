@@ -1423,3 +1423,72 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteConfig(startRun,endRun);
 }
 
+//_____________________________________________________________________________
+void 
+AliMUONCDB::ShowConfig()
+{  
+  /// Dumps the current tracker configuration, i.e. number and identity of missing buspatches
+  if (!AliMUONCDB::CheckOCDB()) return;
+  
+  AliMUONCDB::LoadMapping();
+  
+  if (!AliMUONCDB::CheckMapping()) return;
+  
+  AliCDBEntry* e = AliCDBManager::Instance()->Get("MUON/Calib/Config");
+  
+  if (!e) return ;
+  
+  AliMUONVStore* config = static_cast<AliMUONVStore*>(e->GetObject());
+  
+  TIter nextManu(config->CreateIterator());
+  AliMUONVCalibParam* param;
+  
+  AliMpExMap buspatches;
+  
+  while ( ( param = static_cast<AliMUONVCalibParam*>(nextManu()) ) )
+  {
+    Int_t detElemId = param->ID0();
+    Int_t manuId = param->ID1();
+    Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+    if ( buspatches.GetValue(busPatchId) == 0x0 ) 
+    {      
+      buspatches.Add(busPatchId,new TObjString(Form("BP%04d",busPatchId)));
+    }
+  }
+
+  TArrayI removed(buspatches.GetSize());
+
+  TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+  AliMpBusPatch* bp;
+  Int_t n(0);
+  Int_t nok(0);
+  Int_t nremoved(0);
+  
+  while ( ( bp = static_cast<AliMpBusPatch*>(next())))
+  {
+    if ( buspatches.GetValue(bp->GetId()) )
+    {
+      ++nok;
+    }
+    else
+    {
+      removed.SetAt(bp->GetId(),nremoved++);
+    }
+    ++n;
+  }
+  
+  cout << Form("n=%d nok=%d nremoved=%d",n,nok,nremoved) << endl;
+  
+  Int_t* indices = new Int_t[nremoved];
+  
+  TMath::Sort(nremoved,removed.GetArray(),indices,kFALSE);
+  
+  for ( Int_t i = 0; i < nremoved; ++i ) 
+  {
+    Int_t busPatchId = removed[indices[i]];
+    bp = AliMpDDLStore::Instance()->GetBusPatch(busPatchId);
+    bp->Print();
+  }
+  
+  delete[] indices;  
+}
