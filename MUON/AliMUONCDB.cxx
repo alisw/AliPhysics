@@ -40,17 +40,21 @@
 #include "AliMUONCalibParamND.h"
 #include "AliMUONCalibParamNF.h"
 #include "AliMUONCalibParamNI.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONConstants.h"
+#include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONPadStatusMaker.h"
+#include "AliMUONPadStatusMapMaker.h"
+#include "AliMUONRecoParam.h"
+#include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONRejectList.h"
 #include "AliMUONTrackerIO.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
+#include "AliMUONVCalibParam.h"
+#include "AliMUONVCalibParam.h"
 #include "AliMUONVStore.h"
-#include "AliMUONVCalibParam.h"
-#include "AliMUONVCalibParam.h"
-#include "AliMUONGlobalCrateConfig.h"
-#include "AliMUONRegionalTriggerConfig.h"
-#include "AliMUONRecoParam.h"
+
 
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
@@ -1425,9 +1429,12 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 
 //_____________________________________________________________________________
 void 
-AliMUONCDB::ShowConfig()
+AliMUONCDB::ShowConfig(Bool_t withStatusMap)
 {  
   /// Dumps the current tracker configuration, i.e. number and identity of missing buspatches
+  /// If statusMap is true, will also take into account the status map to report the number
+  /// of good channels
+  
   if (!AliMUONCDB::CheckOCDB()) return;
   
   AliMUONCDB::LoadMapping();
@@ -1439,6 +1446,29 @@ AliMUONCDB::ShowConfig()
   if (!e) return ;
   
   AliMUONVStore* config = static_cast<AliMUONVStore*>(e->GetObject());
+  
+  AliMUONPadStatusMapMaker* statusMapMaker(0x0);
+  AliMUONCalibrationData* cd(0x0);
+  AliMUONPadStatusMaker* statusMaker(0x0);
+
+  if ( withStatusMap ) 
+  {
+    cd = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
+  
+    statusMaker = new AliMUONPadStatusMaker(*cd);
+
+    AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  
+    statusMaker->SetLimits(*recoParam);
+  
+    delete recoParam;
+  
+    UInt_t mask = recoParam->PadGoodnessMask();
+  
+    const Bool_t deferredInitialization = kFALSE;
+  
+    statusMapMaker = new AliMUONPadStatusMapMaker(*cd,mask,deferredInitialization);
+  }
   
   TIter nextManu(config->CreateIterator());
   AliMUONVCalibParam* param;
@@ -1464,6 +1494,8 @@ AliMUONCDB::ShowConfig()
   Int_t nok(0);
   Int_t nremoved(0);
   
+  // accounting of bus patches first
+  
   while ( ( bp = static_cast<AliMpBusPatch*>(next())))
   {
     if ( buspatches.GetValue(bp->GetId()) )
@@ -1474,10 +1506,45 @@ AliMUONCDB::ShowConfig()
     {
       removed.SetAt(bp->GetId(),nremoved++);
     }
-    ++n;
   }
   
-  cout << Form("n=%d nok=%d nremoved=%d",n,nok,nremoved) << endl;
+  // accounting of channels
+  
+  AliMpManuIterator it;
+
+  Int_t totalNumberOfChannels(0);
+  Int_t removedChannels(0);
+  Int_t badChannels(0);
+  Int_t badAndRemovedChannels(0);
+  Int_t badOrRemovedChannels(0);
+  
+  Int_t detElemId, manuId;
+  
+  while ( it.Next(detElemId,manuId) )
+  {
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i )
+    {
+      Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+      
+      if ( de->IsConnectedChannel(manuId,i) )
+      {
+        ++totalNumberOfChannels;
+        Bool_t badBusPatch = ( buspatches.GetValue(busPatchId) == 0x0 );
+        
+        if ( withStatusMap ) 
+        {
+          Bool_t badChannel = ( statusMapMaker->StatusMap(detElemId,manuId,i) & AliMUONPadStatusMapMaker::SelfDeadMask() != 0);
+          if ( badChannel ) ++badChannels;
+          if ( badBusPatch && badChannel ) ++badAndRemovedChannels;
+          if ( badBusPatch || badChannel ) ++badOrRemovedChannels;          
+        }
+      
+        if ( badBusPatch) ++removedChannels;
+      }
+    }
+  }
+  
   
   Int_t* indices = new Int_t[nremoved];
   
@@ -1491,4 +1558,25 @@ AliMUONCDB::ShowConfig()
   }
   
   delete[] indices;  
+  
+  cout << endl;
+  cout << Form("Bus patches n=%3d nok=%3d nremoved=%3d",n,nok,nremoved) << endl;
+
+  cout << Form("Channels n=%6d nremoved=%6d bad=%6d bad and removed=%6d bad or removed=%6d",
+               totalNumberOfChannels,removedChannels,badChannels,badAndRemovedChannels,badOrRemovedChannels) << endl;
+  
+  if (totalNumberOfChannels>0)
+  {
+    cout << Form("Percentage of readout channels %5.1f %%",removedChannels*100.0/totalNumberOfChannels) << endl;
+    if ( withStatusMap )
+    {
+      cout << Form("Percentage of non useable channels (bad or removed) %5.1f %%",
+                   badOrRemovedChannels*100.0/totalNumberOfChannels) << endl;
+    }
+  }
+  
+  
+  delete statusMapMaker;
+  delete cd;
+  delete statusMaker;  
 }

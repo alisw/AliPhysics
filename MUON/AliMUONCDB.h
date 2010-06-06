@@ -57,7 +57,7 @@ namespace AliMUONCDB
   
   void Plot(const AliMUONVStore& store, const char* name, Int_t nbins=512);
 
-  void ShowConfig();
+  void ShowConfig(Bool_t withStatusMap=kFALSE);
   
   void WriteToCDB(const char* calibpath, TObject* object,
                   Int_t startRun, Int_t endRun, Bool_t defaultValues);
