@@ -31,7 +31,9 @@ public:
   Double_t GetSum(const TMatrixD& pol, const TMatrixD&coef, Double_t r, Double_t drift, Double_t phi, Int_t coord=0) const;
   void SetPolynoms(const TMatrixD *polA, const TMatrixD *polC);
   void SetCoeficients(const TMatrixD *valA,const TMatrixD *valC);
-protected:
+  void Print(const Option_t* option) const;
+
+public:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
   Double_t fC0;                // wt - matrix elements   
   Double_t fC1;                //

@@ -176,3 +176,24 @@ void AliTPCExBEffective::SetCoeficients(const TMatrixD *valA,const TMatrixD *val
   fPolynomValC = new TMatrixD(*valC);
 }
 
+
+
+
+void AliTPCExBEffective::Print(const Option_t* option) const {
+  //
+  // Print function to check the settings (e.g. the twist in the X direction)
+  // option=="a" prints the C0 and C1 coefficents for calibration purposes
+  //
+
+  TString opt = option; opt.ToLower();
+  printf("%s\t%s\n",GetName(),GetTitle());
+  
+  if (opt.Contains("a")) { // Print all details
+    printf(" - T1: %1.4f, T2: %1.4f \n",fT1,fT2);
+    printf(" - C0: %1.4f, C1: %1.4f \n",fC0,fC1);
+    fPolynomValA->Print();
+    fPolynomValC->Print();
+  }    
+ 
+ 
+}
