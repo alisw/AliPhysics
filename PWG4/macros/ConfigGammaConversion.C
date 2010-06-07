@@ -1147,8 +1147,9 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   cout<<"Analyis cut selection ID is: "<<kGCAnalysisCutSelectionId.Data()<<endl;
   //  outputfile += Form(":PWG4_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
-  outputfile += Form(":PWG4_GammaConversion_");
-
+  outputfile += Form(":PWG4_GammaConversion");
+  /*  
+  // this is not really needed
   if(kGCrunNeutralMeson==kTRUE) outputfile +="1";  else outputfile +="0";
 
   if(kGCrunJet==kTRUE) outputfile +="1"; else outputfile +="0";
@@ -1164,7 +1165,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   if(kGCrunOmegaMeson==kTRUE) outputfile +="1"; else outputfile +="0";
 
   if(kGCrunRES==kTRUE) outputfile +="1"; else outputfile +="0";
-
+  */
   outputfile += Form("_%s",kGCAnalysisCutSelectionId.Data());
 
   cout<<"Ouput file::"<<  outputfile <<endl;
