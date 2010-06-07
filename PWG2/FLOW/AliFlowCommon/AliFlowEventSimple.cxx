@@ -498,13 +498,13 @@ void AliFlowEventSimple::TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, D
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddFlow(Double_t flow)
+void AliFlowEventSimple::AddV2(Double_t v2)
 {
-  //add flow to all tracks wrt the reaction plane angle
+  //add v2 to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddFlow(flow, fMCReactionPlaneAngle);
+    if (track) track->AddV2(v2, fMCReactionPlaneAngle, 0.001);
   }
 }
 

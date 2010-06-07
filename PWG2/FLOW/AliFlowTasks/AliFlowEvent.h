@@ -18,6 +18,7 @@ class AliMCEvent;
 class AliESDEvent;
 class AliMCEvent;
 class AliAODEvent;
+class AliMultiplicity;
 
 #include "AliFlowEventSimple.h"
 
@@ -45,6 +46,9 @@ public:
                 KineSource anOption=kNoKine,
                 const AliCFManager* rpCFManager=NULL, 
                 const AliCFManager* poiCFManager=NULL );  //use CF(2x)
+  AliFlowEvent( const AliESDEvent* anInput,
+                const AliMultiplicity* anInputTracklets,
+                const AliCFManager* poiCFManager ){}
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
 

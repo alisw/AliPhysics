@@ -46,7 +46,7 @@ class AliFlowEventSimple: public TObject {
   void ResolutionPt(Double_t res);
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
   void CloneTracks(Int_t n);
-  void AddFlow( Double_t flow );
+  void AddV2( Double_t v2 );
  
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 

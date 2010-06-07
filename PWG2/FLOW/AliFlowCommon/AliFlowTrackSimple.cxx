@@ -26,15 +26,26 @@
 #include "TParticle.h"
 #include "AliFlowTrackSimple.h"
 #include "TRandom.h"
+#include "AliLog.h"
 
 ClassImp(AliFlowTrackSimple)
 
 //-----------------------------------------------------------------------
-
 AliFlowTrackSimple::AliFlowTrackSimple():
   fEta(0),
   fPt(0),
   fPhi(0),
+  fFlowBits(0),
+  fSubEventBits(0)
+{
+  //constructor 
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrackSimple::AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt):
+  fEta(eta),
+  fPt(pt),
+  fPhi(phi),
   fFlowBits(0),
   fSubEventBits(0)
 {
@@ -79,7 +90,6 @@ AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTra
 
 
 //----------------------------------------------------------------------- 
-
 AliFlowTrackSimple::~AliFlowTrackSimple()
 {
   //destructor
@@ -87,15 +97,27 @@ AliFlowTrackSimple::~AliFlowTrackSimple()
 }
 
 //----------------------------------------------------------------------- 
-void AliFlowTrackSimple::AddFlow( Double_t flow, Double_t reactionPlaneAngle )
-{
-  //add flow wrt the eventplane
-  fPhi -= flow*TMath::Sin(2*(fPhi-reactionPlaneAngle));
-}
-
-//----------------------------------------------------------------------- 
 void AliFlowTrackSimple::ResolutionPt(Double_t res)
 {
   //smear the pt by a gaussian with sigma=res
   fPt += gRandom->Gaus(0.,res);
+}
+
+//----------------------------------------------------------------------- 
+void AliFlowTrackSimple::AddV2( Double_t v2, Double_t reactionPlaneAngle, Double_t precisionPhi, Int_t maxNumberOfIterations )
+{
+  //afterburner, adds v2, uses Newton-Raphson iteration
+  Double_t phi0=fPhi;
+  Double_t f,fp,v2sin,v2cos,phiprev;
+
+  for (Int_t i=0; i<maxNumberOfIterations; i++)
+  {
+    phiprev=fPhi; //store last value for comparison
+    v2sin = v2*TMath::Sin(2.*(fPhi-reactionPlaneAngle));
+    v2cos = v2*TMath::Cos(2.*(fPhi-reactionPlaneAngle));
+    f = fPhi-phi0+v2sin;
+    fp = 1.+2.*v2cos; //first derivative
+    fPhi -= f/fp;
+    if (TMath::AreEqualAbs(phiprev,fPhi,precisionPhi)) break;
+  }
 }
