@@ -13,7 +13,10 @@
 // Author - B.K. Nandi
 //
 #include "Rtypes.h"
-class AliPMDUtility
+
+class TClonesArray;
+
+class AliPMDUtility:public TObject
 {
  public:
   AliPMDUtility();
@@ -27,6 +30,9 @@ class AliPMDUtility
 		       Float_t & xpos, Float_t & ypos);
   void RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad,
 		       Float_t & xpos, Float_t & ypos);
+
+  void RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad,
+		       Float_t & xpos, Float_t & ypos, Float_t & zpos);
 
   void GenerateBoundaryPoints(Int_t ism, Float_t &x1ism, Float_t &y1ism
 			      , Float_t &x2ism, Float_t &y2ism);
@@ -49,17 +55,25 @@ class AliPMDUtility
   Float_t GetX() const;
   Float_t GetY() const;
   Float_t GetZ() const;
+
+  TClonesArray *GetAlignObj() const;
+
+
   
  protected:
+
+  TClonesArray *fAlObj;     // Alignable objects
+
   Float_t fPx;     // Momentum along x
   Float_t fPy;     // Momentum along y
   Float_t fPz;     // Momentum along z
   Float_t fTheta;  // Polar angle in radian
   Float_t fEta;    // Pseudo-rapidity
   Float_t fPhi;    // Azimuthal angle in radian
+  Float_t fSecTr[4][3]; // Sector alignement (translation)
   Int_t   fWriteModule;  // Module number writing 
   
-  ClassDef(AliPMDUtility,5) // Utility class for the detector set:PMD
+  ClassDef(AliPMDUtility,6) // Utility class for the detector set:PMD
 };
 
 #endif

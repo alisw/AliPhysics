@@ -252,6 +252,7 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
   Float_t xglobal = 0., yglobal = 0., zglobal = 0;
   Float_t pid;
 
+  fPMDutil->ApplyAlignment();
 
   Int_t nentries2 = fPMDcontout->GetEntries();
   AliDebug(1,Form("Number of clusters coming after discrimination = %d"
@@ -308,16 +309,17 @@ void AliPMDtracker::Clusters2Tracks(AliESDEvent *event)
        **********************************************************************/
       //
 
-      fPMDutil->RectGeomCellPos(smn,xpos,ypos,xglobal,yglobal);
 
       if (det == 0)
 	{
-	  zglobal = kzpos + 1.6; // PREshower plane
+	  zglobal = kzpos + 1.65; // PREshower plane
 	}
       else if (det == 1)
 	{
-	  zglobal = kzpos - 1.7; // CPV plane
+	  zglobal = kzpos - 1.65; // CPV plane
 	}
+
+      fPMDutil->RectGeomCellPos(smn,xpos,ypos,xglobal,yglobal,zglobal);
 
       // Fill ESD
 

@@ -25,16 +25,22 @@
 #include "TMath.h"
 #include "TText.h"
 #include "TLine.h"
+#include <TClonesArray.h>
 
 #include <stdio.h>
 #include <math.h>
 
 #include "AliPMDUtility.h"
+#include "AliAlignObjMatrix.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliLog.h"
 
 
 ClassImp(AliPMDUtility)
 
 AliPMDUtility::AliPMDUtility():
+  fAlObj(GetAlignObj()),
   fPx(0.),
   fPy(0.),
   fPz(0.),
@@ -44,9 +50,18 @@ AliPMDUtility::AliPMDUtility():
   fWriteModule(1)
 {
   // Default constructor
+  for (Int_t i = 0; i < 4; i++)
+    {
+      for (Int_t j = 0; j < 3; j++)
+	{
+	  fSecTr[i][j] = 0.;
+	}
+    }
+
 }
 
 AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz):
+  fAlObj(GetAlignObj()),
   fPx(px),
   fPy(py),
   fPz(pz),
@@ -56,8 +71,18 @@ AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz):
   fWriteModule(1)
 {
   // Constructor
+  for (Int_t i = 0; i < 4; i++)
+    {
+      for (Int_t j = 0; j < 3; j++)
+	{
+	  fSecTr[i][j] = 0.;
+	}
+    }
+
 }
 AliPMDUtility::AliPMDUtility(const AliPMDUtility &pmdutil):
+  TObject(pmdutil),
+  fAlObj(pmdutil.GetAlignObj()),
   fPx(pmdutil.fPx),
   fPy(pmdutil.fPy),
   fPz(pmdutil.fPz),
@@ -67,6 +92,14 @@ AliPMDUtility::AliPMDUtility(const AliPMDUtility &pmdutil):
   fWriteModule(pmdutil.fWriteModule)
 {
   // copy constructor
+    for (Int_t i = 0; i < 4; i++)
+    {
+      for (Int_t j = 0; j < 3; j++)
+	{
+	  fSecTr[i][j] = pmdutil.fSecTr[i][j];
+	}
+    }
+
 }
 AliPMDUtility & AliPMDUtility::operator=(const AliPMDUtility &pmdutil)
 {
@@ -80,6 +113,14 @@ AliPMDUtility & AliPMDUtility::operator=(const AliPMDUtility &pmdutil)
       fEta = pmdutil.fEta;
       fPhi = pmdutil.fPhi;
       fWriteModule = pmdutil.fWriteModule;
+      for (Int_t i = 0; i < 4; i++)
+	{
+	  for (Int_t j = 0; j < 3; j++)
+	    {
+	      fSecTr[i][j] = pmdutil.fSecTr[i][j];
+	    }
+	}
+
     }
   return *this;
 }
@@ -174,9 +215,30 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad, Float_t &
       ypos = ycorner[ism] + (Float_t) xpad*kCellRadius*2.0 + shift;
       xpos = xcorner[ism] + (Float_t) ypad*kSqroot3*kCellRadius;
     }
+  // Apply the alignment here to the x, y values
+  if(ism < 6)
+    {
+      xpos += fSecTr[0][0];
+      ypos += fSecTr[0][1];
+    }
+  else if(ism >= 6 && ism < 12)
+    {
+      xpos += fSecTr[1][0];
+      ypos += fSecTr[1][1];
+    }
+  else if(ism >=12 && ism < 18)
+    {
+      xpos += fSecTr[2][0];
+      ypos += fSecTr[2][1];
+    }
+  else if(ism >= 18 && ism < 24)
+    {
+      xpos += fSecTr[3][0];
+      ypos += fSecTr[3][1];
+    }
 
 }
-
+// ---------------------------------------------------------- 
 void AliPMDUtility::RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad, Float_t &xpos, Float_t &ypos)
 {
   // If the xpad and ypad inputs are float, then 0.5 is added to it
@@ -265,6 +327,151 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad, Float
       ypos = ycorner[ism] + xpad*kCellRadius*2.0 + shift;
       xpos = xcorner[ism] + ypad*kSqroot3*kCellRadius;
     }
+
+  // Apply the alignment here to the x, y values
+  if(ism < 6)
+    {
+      xpos += fSecTr[0][0];
+      ypos += fSecTr[0][1];
+    }
+  else if(ism >= 6 && ism < 12)
+    {
+      xpos += fSecTr[1][0];
+      ypos += fSecTr[1][1];
+    }
+  else if(ism >=12 && ism < 18)
+    {
+      xpos += fSecTr[2][0];
+      ypos += fSecTr[2][1];
+    }
+  else if(ism >= 18 && ism < 24)
+    {
+      xpos += fSecTr[3][0];
+      ypos += fSecTr[3][1];
+    }
+
+}
+
+// -------------------------------------------------------- //
+
+void AliPMDUtility::RectGeomCellPos(Int_t ism, Float_t xpad,
+				    Float_t ypad, Float_t &xpos,
+				    Float_t &ypos, Float_t & zpos)
+{
+  // If the xpad and ypad inputs are float, then 0.5 is added to it
+  // to find the layer which is shifted.
+  // This routine finds the cell eta,phi for the new PMD rectangular 
+  // geometry in ALICE
+  // Authors : Bedanga Mohanty and Dipak Mishra - 29.4.2003
+  // modified by B. K. Nnadi for change of coordinate sys
+  //
+  // SMA  ---> Supermodule Type A           ( SM - 0)
+  // SMAR ---> Supermodule Type A ROTATED   ( SM - 1)
+  // SMB  ---> Supermodule Type B           ( SM - 2)
+  // SMBR ---> Supermodule Type B ROTATED   ( SM - 3)
+  //
+  // ism   : Serial Module number from 0 to 23 for each plane
+
+  // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
+
+  double xcorner[24] =
+    {
+      74.8833,  53.0045, 31.1255,    //Type-A
+      74.8833,  53.0045, 31.1255,    //Type-A
+      -74.8833, -53.0044, -31.1255,  //Type-AR
+      -74.8833, -53.0044, -31.1255,  //Type-AR
+      8.9165, -33.7471,            //Type-B
+      8.9165, -33.7471,            //Type-B
+      8.9165, -33.7471,            //Type-B
+      -8.9165, 33.7471,            //Type-BR
+      -8.9165, 33.7471,            //Type-BR
+      -8.9165, 33.7471,            //Type-BR
+    };
+
+  
+
+  double ycorner[24] =
+    {
+      86.225,  86.225,  86.225,      //Type-A
+      37.075,  37.075,  37.075,      //Type-A
+      -86.225, -86.225, -86.225,     //Type-AR
+      -37.075, -37.075, -37.075,     //Type-AR
+      86.225,  86.225,               //Type-B
+      61.075,  61.075,               //Type-B
+      35.925,  35.925,               //Type-B
+      -86.225, -86.225,              //Type-BR
+      -61.075, -61.075,              //Type-BR
+      -35.925, -35.925               //Type-BR
+    };
+
+
+  const Float_t kSqroot3    = 1.73205;  // sqrt(3.);
+  const Float_t kCellRadius = 0.25;
+  
+  //
+  //Every even row of cells is shifted and placed
+  //in geant so this condition
+  //
+  Float_t cellRadius = 0.25;
+  Float_t shift = 0.0;
+  Int_t iirow = (Int_t) (xpad+0.5);
+  if(iirow%2 == 0)
+    {
+      shift = -cellRadius/2.0;
+    }
+  else
+    {
+      shift = 0.0;
+    }
+
+  if(ism < 6)
+    {
+      ypos = ycorner[ism] - xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] - ypad*kSqroot3*kCellRadius;
+    }
+  else if(ism >=6 && ism < 12)
+    {
+      ypos = ycorner[ism] + xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] + ypad*kSqroot3*kCellRadius;
+    }
+  else if(ism >= 12 && ism < 18)
+    {
+      ypos = ycorner[ism] - xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] - ypad*kSqroot3*kCellRadius;
+    }
+  else if(ism >= 18 && ism < 24)
+    {
+      ypos = ycorner[ism] + xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] + ypad*kSqroot3*kCellRadius;
+    }
+
+  // Apply the alignment here to the x, y, and z values
+  if(ism < 6)
+    {
+      xpos += fSecTr[0][0];
+      ypos += fSecTr[0][1];
+      zpos += fSecTr[0][2];
+    }
+  else if(ism >= 6 && ism < 12)
+    {
+      xpos += fSecTr[1][0];
+      ypos += fSecTr[1][1];
+      zpos += fSecTr[1][2];
+    }
+  else if(ism >=12 && ism < 18)
+    {
+      xpos += fSecTr[2][0];
+      ypos += fSecTr[2][1];
+      zpos += fSecTr[2][2];
+    }
+  else if(ism >= 18 && ism < 24)
+    {
+      xpos += fSecTr[3][0];
+      ypos += fSecTr[3][1];
+      zpos += fSecTr[3][2];
+    }
+
+
 
 }
 // -------------------------------------------------------- //
@@ -409,7 +616,22 @@ void AliPMDUtility::ApplyVertexCorrection(Float_t vertex[], Float_t xpos,
 }
 void AliPMDUtility::ApplyAlignment()
 {
-  // Not implemented
+  // Get the alignment stuff here
+
+  AliAlignObjMatrix * aam;
+  Double_t tr[3];
+  //Double_t secTr[4][3];
+
+  for (Int_t isector=0; isector<4; isector++)
+    {
+      aam = (AliAlignObjMatrix*)fAlObj->UncheckedAt(isector);
+      aam->GetTranslation(tr);
+      
+      for(Int_t ixyz=0; ixyz < 3; ixyz++)
+	{
+	  fSecTr[isector][ixyz] = (Float_t) tr[ixyz];
+	}
+    }
 }
 
 void AliPMDUtility::SetPxPyPz(Float_t px, Float_t py, Float_t pz)
@@ -535,6 +757,22 @@ Float_t AliPMDUtility::GetY() const
 Float_t AliPMDUtility::GetZ() const
 {
   return fPz;
+}
+//--------------------------------------------------------------------//
+TClonesArray* AliPMDUtility::GetAlignObj() const
+{
+  // The run number will be centralized in AliCDBManager,
+  // you don't need to set it here!
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("PMD/Align/Data");
+  
+  if(!entry) AliFatal("Alignment object retrieval failed!");
+  
+  TClonesArray *alobj = 0;
+  if (entry) alobj = (TClonesArray*) entry->GetObject();
+  
+  if (!alobj)  AliFatal("No alignment data from  database !");
+  
+  return alobj;
 }
 
 
