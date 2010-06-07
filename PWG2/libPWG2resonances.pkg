@@ -16,6 +16,8 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnPIDDefESD.cxx \
       RESONANCES/AliRsnEvent.cxx \
       RESONANCES/AliRsnPairDef.cxx \
+      RESONANCES/AliRsnValue.cxx \
+      RESONANCES/AliRsnValueList.cxx \
       RESONANCES/AliRsnFunction.cxx \
       RESONANCES/AliRsnFunctionAxis.cxx \
       RESONANCES/AliRsnPair.cxx \
@@ -29,6 +31,8 @@ SRCS= RESONANCES/AliRsnDaughter.cxx \
       RESONANCES/AliRsnAnalysisME.cxx \
       RESONANCES/AliRsnAnalysisEffSE.cxx \
       RESONANCES/AliRsnAnalysisTrackEffSE.cxx \
+      RESONANCES/AliRsnTOFT0maker.cxx \
+      RESONANCES/AliRsnAnalysisPhi900GeV.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
@@ -36,7 +40,7 @@ DHDR:=PWG2resonancesLinkDef.h
 
 EXPORT:=
 
-EINCLUDE:= PYTHIA6 PWG2/RESONANCES CORRFW
+EINCLUDE:= PYTHIA6 PWG2/RESONANCES CORRFW TOF
 
 ifeq (win32gcc,$(ALICE_TARGET))
 PACKSOFLAGS:= $(SOFLAGS) -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lSTEERBase \

@@ -22,6 +22,8 @@
 
 #pragma link C++ class AliRsnPairDef+;
 
+#pragma link C++ class AliRsnValue+;
+#pragma link C++ class AliRsnValueList+;
 #pragma link C++ class AliRsnFunction+;
 #pragma link C++ class AliRsnFunctionAxis+;
 
@@ -38,5 +40,8 @@
 #pragma link C++ class AliRsnAnalysisME+;
 #pragma link C++ class AliRsnAnalysisEffSE+;
 #pragma link C++ class AliRsnAnalysisTrackEffSE+;
+
+#pragma link C++ class AliRsnTOFT0maker+;
+#pragma link C++ class AliRsnAnalysisPhi900GeV+;
 
 #endif
