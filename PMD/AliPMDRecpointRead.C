@@ -37,8 +37,17 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
     }
   
   pmdloader->LoadRecPoints("READ");
+
+
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  man->SetRun(0);
+  
   TClonesArray *fRecpoints;
   AliPMDUtility *cc = new AliPMDUtility();
+
+  cc->ApplyAlignment();
+
   TH2F *h2 = new TH2F("h2"," ",100,-100.,100.,100,-100.,100.);
 
   FILE *fpw = fopen("junk_rec.dat","w");
@@ -102,10 +111,9 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
 	      // Plot the cluster centroid to see the PMD geometry
 	      // using the PMD Utility class
 	      //
-	      if (det == 0)
+	      if (det == 1)
 		{
 		  // Draw only for PRE plane
-		  //cc->RectGeomCellPos(ism,xpad,ypad,xx,yy);
 		  cc->RectGeomCellPos(smn,xpos,ypos,xx,yy);
 		  h2->Fill(xx,yy);
 		}
