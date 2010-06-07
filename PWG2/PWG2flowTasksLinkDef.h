@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliFlowEvent+;
+#pragma link C++ class AliFlowTrack+;
 #pragma link C++ class AliFlowEventSimpleMaker+;
 
 #pragma link C++ class AliAnalysisTaskScalarProduct+;

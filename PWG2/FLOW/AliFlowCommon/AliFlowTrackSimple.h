@@ -16,10 +16,11 @@ class TParticle;
 
 class AliFlowTrackSimple: public TNamed {
 
- public:
+public:
   AliFlowTrackSimple();
   AliFlowTrackSimple(const TParticle* p);
   AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
+  AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt);
   AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
   
@@ -34,7 +35,7 @@ class AliFlowTrackSimple: public TNamed {
   TBits    GetFlowBits() const;
   Bool_t   InRPSelection() const; 
   Bool_t   InPOISelection() const; 
-  Bool_t   InSubevent(Int_t i) const; 
+  Bool_t   InSubevent(Int_t i) const;
       
   void SetEta(Double_t eta);
   void SetPt(Double_t pt); 
@@ -45,7 +46,8 @@ class AliFlowTrackSimple: public TNamed {
   
   void ResolutionPt(Double_t resolution);
 
-  void AddFlow( Double_t flow, Double_t reactionPlaneAngle);
+  void AddV2( Double_t v2, Double_t reactionPlaneAngle,
+                Double_t precision, Int_t maxNumberOfIterations=100 );
     
  private:
   Double_t fEta;    // eta
@@ -53,7 +55,6 @@ class AliFlowTrackSimple: public TNamed {
   Double_t fPhi;    // phi
   TBits fFlowBits;  // bits to set if track is selected
   TBits fSubEventBits;  // bits to set if track is selected for a subevent
-  
 
   ClassDef(AliFlowTrackSimple,1)                 // macro for rootcint
 
