@@ -527,10 +527,9 @@ FindNodeDepth(const char* name, const char* volname)
   TGeoNode*    node = 0;
   TString      sName(name);
   while ((node = next())) { 
-    // std::cout << "Checking node " << node->GetName() << std::endl;
     if (sName == node->GetName()) { 
-      std::cout << "Found node " << node->GetName() << " at level " 
-		<< next.GetLevel() << std::endl;
+      //std::cout << "Found node " << node->GetName() << " at level " 
+      //		<< next.GetLevel() << std::endl;
       return next.GetLevel();
     }
   }
