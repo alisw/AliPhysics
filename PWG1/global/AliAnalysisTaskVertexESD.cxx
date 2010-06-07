@@ -70,7 +70,7 @@ fRecoVtxITSTPCHalfEvent(kFALSE),
 fOnlyITSTPCTracks(kFALSE),
 fOnlyITSSATracks(kFALSE),
 fFillNtuple(kFALSE),
-fFillNtupleBeamSpot(kFALSE),
+fFillTreeBeamSpot(kFALSE),
 fESD(0), 
 fOutput(0), 
 fNtupleVertexESD(0),
@@ -84,7 +84,7 @@ fhTPCVertexX(0),
 fhTPCVertexY(0),
 fhTPCVertexZ(0),
 fhTrackRefs(0),
-fNtupleBeamSpot(0)
+fTreeBeamSpot(0)
 {
   // Constructor
 
@@ -143,8 +143,20 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
 
-  fNtupleBeamSpot = new TNtuple("fNtupleBeamSpot", "beamSpot", "run:cetTime1h:bx:triggered:ntrklets:xTRKnc:yTRKnc:zTRKnc:ntrksTRKnc");
-  fOutput->Add(fNtupleBeamSpot);
+  fTreeBeamSpot = new TTree("fTreeBeamSpot", "BeamSpotTree");
+  UShort_t triggered, ntrkletsS, ntrksTRKnc;
+  UInt_t run, bx;
+  Float_t cetTimeLHC,xTRKnc, yTRKnc, zTRKnc;
+  fTreeBeamSpot->Branch("run", &run, "run/i");
+  fTreeBeamSpot->Branch("cetTimeLHC", &cetTimeLHC, "cetTimeLHC/F");
+  fTreeBeamSpot->Branch("bx", &bx, "bx/i");
+  fTreeBeamSpot->Branch("triggered", &triggered, "triggered/s");
+  fTreeBeamSpot->Branch("ntrkletsS", &ntrkletsS, "ntrkletsS/s");
+  fTreeBeamSpot->Branch("xTRKnc", &xTRKnc, "xTRKnc/F");
+  fTreeBeamSpot->Branch("yTRKnc", &yTRKnc, "yTRKnc/F");
+  fTreeBeamSpot->Branch("zTRKnc", &zTRKnc, "zTRKnc/F");
+  fTreeBeamSpot->Branch("ntrksTRKnc", &ntrksTRKnc, "ntrksTRKnc/s");
+  fOutput->Add(fTreeBeamSpot);
 
   PostData(1, fOutput);
 
@@ -247,12 +259,13 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   // use response of AliPhysicsSelection
   eventTriggered = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+
+  Int_t nInFile = esdE->GetEventNumberInFile();
+
  const AliMultiplicity *alimult = esdE->GetMultiplicity();
   Int_t ntrklets=0,spd0cls=0;
   if(alimult) {
     ntrklets = alimult->GetNumberOfTracklets();
-
-    // if (ntrklets<10) return;
 
     for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
       if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
@@ -261,10 +274,26 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   }
 
 
+  UShort_t triggered, ntrkletsS, ntrksTRKnc;
+  UInt_t run, bx;
+  Float_t cetTimeLHC,xTRKnc, yTRKnc, zTRKnc;
+  fTreeBeamSpot->SetBranchAddress("run", &run);
+  fTreeBeamSpot->SetBranchAddress("cetTimeLHC", &cetTimeLHC);
+  fTreeBeamSpot->SetBranchAddress("bx", &bx);
+  fTreeBeamSpot->SetBranchAddress("triggered", &triggered);
+  fTreeBeamSpot->SetBranchAddress("ntrkletsS", &ntrkletsS);
+  fTreeBeamSpot->SetBranchAddress("xTRKnc", &xTRKnc);
+  fTreeBeamSpot->SetBranchAddress("yTRKnc", &yTRKnc);
+  fTreeBeamSpot->SetBranchAddress("zTRKnc", &zTRKnc);
+  fTreeBeamSpot->SetBranchAddress("ntrksTRKnc", &ntrksTRKnc);
+
+
   Double_t tstamp = esdE->GetTimeStamp();
   Float_t cetTime =(tstamp-1262304000.)+7200.;
 
   Float_t cetTime1h =(tstamp-1262304000.)+3600.;
+
+  cetTimeLHC = (Float_t)cetTime1h;
 
   Int_t ntracks = esdE->GetNumberOfTracks();
   Int_t nITS5or6=0,nTPCin=0,nTPCinEta09=0;
@@ -279,13 +308,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     }
   }
 
-    
+
   const AliESDVertex *spdv=esdE->GetPrimaryVertexSPD();
   const AliESDVertex *spdvp=esdE->GetPileupVertexSPD(0);
   const AliESDVertex *tpcv=esdE->GetPrimaryVertexTPC();
   const AliESDVertex *trkv=esdE->GetPrimaryVertexTracks();
-
- 
   
   // fill histos
   
@@ -346,18 +373,20 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
   xnt[index++]=(Float_t)esdE->GetRunNumber();
   secnt[indexSecNt++]=(Float_t)esdE->GetRunNumber();
+  run = (Int_t)esdE->GetRunNumber();
 
   xnt[index++]=cetTime; //(Float_t)esdE->GetTimeStamp();
   //secnt[indexSecNt++]=cetTime;
   secnt[indexSecNt++]=cetTime1h;
 
   xnt[index++]=(Float_t)esdE->GetBunchCrossNumber();
- secnt[indexSecNt++]=(Float_t)esdE->GetBunchCrossNumber();
-
+  secnt[indexSecNt++]=(Float_t)esdE->GetBunchCrossNumber();
+  bx = (Int_t)esdE->GetBunchCrossNumber();
 
   xnt[index++]=(eventTriggered ? 1. : 0.);
   secnt[indexSecNt++]=(eventTriggered ? 1. : 0.);
-  
+  triggered = (UShort_t)(eventTriggered ? 1 : 0);
+
   xnt[index++]=(Float_t)dNchdy;
   
   xnt[index++]=mcVertex[0];
@@ -397,6 +426,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
 
   xnt[index++]=float(ntrklets);
   secnt[indexSecNt++]=float(ntrklets);
+  ntrkletsS = (UShort_t)ntrklets;
 
   xnt[index++]=float(ntracks);
   xnt[index++]=float(nITS5or6);
@@ -454,7 +484,12 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     secnt[indexSecNt++]=trkvnc->GetYv();
     secnt[indexSecNt++]=trkvnc->GetZv();
     secnt[indexSecNt++]=trkvnc->GetNContributors();
-    
+
+    xTRKnc = (Float_t)trkvnc->GetXv();
+    yTRKnc = (Float_t)trkvnc->GetYv();
+    zTRKnc = (Float_t)trkvnc->GetZv();
+    ntrksTRKnc = (UShort_t)trkvnc->GetNContributors();
+
     delete trkvnc; trkvnc=0;
 
 
@@ -501,7 +536,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   if(fFillNtuple) fNtupleVertexESD->Fill(xnt);
 
   if(indexSecNt>isizeSecNt) printf("AliAnalysisTaskVertexESD: ERROR, indexSecNt!=isizeSecNt\n");
-  if(fFillNtupleBeamSpot) fNtupleBeamSpot->Fill(secnt);
+
+  // if(indexTree>isizeTree) printf("AliAnalysisTaskVertexESD: ERROR, indexTree!=isizeTree\n");
+  // only every second event (to reduce output size)
+  if(fFillTreeBeamSpot && (nInFile%2 == 0)) fTreeBeamSpot->Fill();
+
   
   // Post the data already here
   PostData(1, fOutput);
@@ -527,7 +566,6 @@ void AliAnalysisTaskVertexESD::Terminate(Option_t *)
   
   fNtupleVertexESD = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleVertexESD"));
 
-  fNtupleBeamSpot = dynamic_cast<TNtuple*>(fOutput->FindObject("fNtupleBeamSpot"));
 
   return;
 }
