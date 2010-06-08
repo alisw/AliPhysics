@@ -1119,7 +1119,7 @@ Int_t AliMillePede2::PrintGlobalParameters() const
 Bool_t AliMillePede2::IsRecordAcceptable() const
 {
   // validate record according run lists set by the user
-  static Long_t prevRunID = 0xffffffffff;
+  static Long_t prevRunID = kMaxInt;
   static Bool_t prevAns   = kTRUE;
   Long_t runID = fRecord->GetRunID();
   if (runID!=prevRunID) {
