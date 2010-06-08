@@ -2341,11 +2341,15 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
       hisP3->Fit(&fg,"","",hisP3->GetMean()-4*hisP3->GetRMS(),hisP3->GetMean()+4*hisP3->GetRMS());
     Double_t gp31 = fg.GetParameter(1);
     Double_t gp32 = fg.GetParameter(2);
+    Double_t meanp3 = hisP3->GetMean();
+    Double_t rmsp3  = hisP3->GetRMS();
     //
     if (hisP4->GetRMS()>hisP4->GetBinWidth(1))
       hisP4->Fit(&fg,"","",hisP4->GetMean()-4*hisP4->GetRMS(),hisP4->GetMean()+4*hisP4->GetRMS());
     Double_t gp41 = fg.GetParameter(1);
     Double_t gp42 = fg.GetParameter(2);
+    Double_t meanp4 = hisP4->GetMean();
+    Double_t rmsp4  = hisP4->GetRMS();
     //
     Float_t meanS=hisS->GetMean();
     //
@@ -2928,8 +2932,12 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
       //
       "gp31="<<gp31<<            //gaus mean - tgl
       "gp32="<<gp32<<            //gaus rms  -tgl
+      "meanp3="<<meanp3<<            //mean - tgl
+      "rmsp3="<<rmsp3<<            //rms  -tgl
       "gp41="<<gp41<<            //gaus mean - P4
       "gp42="<<gp42<<            //gaus rms  - P4
+      "meanp4="<<meanp4<<            //mean - P4
+      "rmsp4="<<rmsp4<<            //rms  - P4
       // Parameters from abs res analysis
       "SecIn="<<secInner<<              // inner sector
       "SecOut="<<secOuter<<             // outer sector

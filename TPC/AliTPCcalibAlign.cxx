@@ -1659,16 +1659,16 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
   //
   axisName[1]="sector";   axisTitle[1]="Sector Number"; 
-  binsTrack[1]=360;       xminTrack[1]=0;        xmaxTrack[1]=18; 
+  binsTrack[1]=180;       xminTrack[1]=0;        xmaxTrack[1]=18; 
   //
   axisName[2]="localX";   axisTitle[2]="x (cm)"; 
   binsTrack[2]=53;       xminTrack[2]=85.;        xmaxTrack[2]=245.; 
   //
   axisName[3]="kY";      axisTitle[3]="dy/dx"; 
-  binsTrack[3]=8;       xminTrack[3]=-0.16;        xmaxTrack[3]=0.16; 
+  binsTrack[3]=1;       xminTrack[3]=-0.16;        xmaxTrack[3]=0.16; 
   //
   axisName[4]="kZ";      axisTitle[4]="dz/dx"; 
-  binsTrack[4]=10;       xminTrack[4]=-1.5;        xmaxTrack[4]=1.5; 
+  binsTrack[4]=22;       xminTrack[4]=-1.1;        xmaxTrack[4]=1.1; 
   //
   fClusterDelta[0] = new THnSparseF("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 5, binsTrack,xminTrack, xmaxTrack);
   fClusterDelta[1] = new THnSparseF("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 5, binsTrack,xminTrack, xmaxTrack);
@@ -1901,34 +1901,34 @@ void  AliTPCcalibAlign::MakeTree(const char *fname, Int_t minPoints){
       Double_t sy=0, sz=0, sphi=0,stheta=0;
       Double_t ny=0, nz=0, nphi=0,ntheta=0;
       Double_t chi2v12=0, chi2v9=0, chi2v6=0;
-      Int_t npoints=0;
-      TLinearFitter * fitter = 0;      
+      //      Int_t npoints=0;
+      // TLinearFitter * fitter = 0;      
       if (fPoints[GetIndex(s1,s2)]>minPoints){
 	//
 	//
 	//
-	fitter = GetFitter12(s1,s2);
-	npoints = fitter->GetNpoints();
-	chi2v12 = TMath::Sqrt(fitter->GetChisquare()/npoints);
+// 	fitter = GetFitter12(s1,s2);
+// 	npoints = fitter->GetNpoints();
+// 	chi2v12 = TMath::Sqrt(fitter->GetChisquare()/npoints);
 	
-	//
-	fitter = GetFitter9(s1,s2);
-	npoints = fitter->GetNpoints();
-	chi2v9 = TMath::Sqrt(fitter->GetChisquare()/npoints);
-	//
-	fitter = GetFitter6(s1,s2);
-	npoints = fitter->GetNpoints();
-	chi2v6 = TMath::Sqrt(fitter->GetChisquare()/npoints);
-	fitter->GetParameters(param6Diff);
-	//
-	GetTransformation6(s1,s2,m6);
-	GetTransformation9(s1,s2,m9);
-	GetTransformation12(s1,s2,m12);
-	//
-	fitter = GetFitter6(s1,s2);
-	//fitter->FixParameter(3,0);
-	//fitter->Eval();
-	GetTransformation6(s1,s2,m6FX);
+// 	//
+// 	fitter = GetFitter9(s1,s2);
+// 	npoints = fitter->GetNpoints();
+// 	chi2v9 = TMath::Sqrt(fitter->GetChisquare()/npoints);
+// 	//
+// 	fitter = GetFitter6(s1,s2);
+// 	npoints = fitter->GetNpoints();
+// 	chi2v6 = TMath::Sqrt(fitter->GetChisquare()/npoints);
+// 	fitter->GetParameters(param6Diff);
+// 	//
+// 	GetTransformation6(s1,s2,m6);
+// 	GetTransformation9(s1,s2,m9);
+// 	GetTransformation12(s1,s2,m12);
+// 	//
+// 	fitter = GetFitter6(s1,s2);
+// 	//fitter->FixParameter(3,0);
+// 	//fitter->Eval();
+// 	GetTransformation6(s1,s2,m6FX);
 	//
 	TH1 * his=0;
 	his = GetHisto(kY,s1,s2);
@@ -1942,28 +1942,13 @@ void  AliTPCcalibAlign::MakeTree(const char *fname, Int_t minPoints){
 	//
 
       }
+      AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+      if (!magF) AliError("Magneticd field - not initialized");
+      Double_t bz = magF->SolenoidField()/10.; //field in T
 
-      // x2    =  a00*x1 + a01*y1 + a02*z1 + a03
-      // y2    =  a10*x1 + a11*y1 + a12*z1 + a13
-      // z2    =  a20*x1 + a21*y1 + a22*z1 + a23
-      // dydx2 = (a10    + a11*dydx1 + a12*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
-      // dzdx2 = (a20    + a21*dydx1 + a22*dzdx1)/(a00    + a01*dydx1 + a02*dzdx1)
-      //
-      //                     a00  a01 a02  a03     p[0]   p[1]  p[2]  p[9]
-      //                     a10  a11 a12  a13 ==> p[3]   p[4]  p[5]  p[10]
-      //                     a20  a21 a22  a23     p[6]   p[7]  p[8]  p[11] 
-      
-      //
-      // 
-      // dy:-(fXIO*m6.fElements[4]+m6.fElements[7])
-      // 
-      // dphi:-(m6.fElements[4])
-      //
-      // dz:fXIO*m6.fElements[8]+m6.fElements[11]
-      //
-      // dtheta:m6.fElements[8]
-      //
       cstream<<"Align"<<
+	"run="<<fRun<<  // run
+	"bz="<<bz<<
 	"s1="<<s1<<     // reference sector
 	"s2="<<s2<<     // sector to align
 	"m6FX.="<<&m6FX<<   // tranformation matrix

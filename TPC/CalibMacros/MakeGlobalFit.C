@@ -47,12 +47,17 @@
 #include "AliTPCCalibGlobalMisalignment.h"
 #include "AliTPCExBEffective.h"
 #include "TEntryList.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBId.h"
+#include "AliCDBManager.h" 
+#include "AliCDBStorage.h"
+#include "AliTPCcalibDB.h"
 #endif
 
 const char* chDetName[5]={"ITS","TRD", "Vertex", "TOF","Laser"};
 const char* chParName[5]={"rphi","z", "snp", "tan","1/pt"};
 const char* chSideName[2]={"A side","C side"};
-Bool_t enableDet[5]={1,1,1,1,1};      // detector  for fit  ITS=0, TRD=1, Vertex=2, Laser=4
+Bool_t enableDet[5]={1,1,1,0,1};      // detector  for fit  ITS=0, TRD=1, Vertex=2, Laser=4
 Bool_t enableParam[5]={1,0,1,0,1};    //
 Bool_t enableSign=kFALSE;  
 Bool_t useEff0=kFALSE;
@@ -73,6 +78,7 @@ void MakeChain();
 void MakeAliases();
 void MakeCuts();
 void MakeFit(TCut cutCustom);
+void MakeOCDBEntry(Int_t refRun);
 TCanvas* DrawFitITS(const char *name);
 TCanvas* DrawFitVertex(const char *name);
 TCanvas*  DrawFitLaser(const char *cname);
@@ -103,7 +109,7 @@ void MakeGlobalFit(){
   //
   //
   gROOT->Macro("~/rootlogon.C");
-  gROOT->Macro("NimStyle.C");
+  //gROOT->Macro("NimStyle.C");
   gSystem->AddIncludePath("-I$ALICE_ROOT/STAT");
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
@@ -111,25 +117,41 @@ void MakeGlobalFit(){
   gSystem->Load("libTPCcalib");
 
   MakeChain();  
-  PrintMatch();
-  TPostScript *ps = new TPostScript("matching.ps", 112); 
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
-
-  useEff0=kFALSE; useEffD=kFALSE; useEffR=kFALSE;
+  TPostScript *ps = new TPostScript("exbFit.eps", 112); 
+  ps->NewPage();
+  TCanvas *c=0;
+  useEff0=kFALSE; useEffD=kFALSE; useEffR=kFALSE; 
+  ps->NewPage();
   MakeFit("1");  
+  //
   ps->NewPage();
-  DrawFitdY("dY-Physical")->Draw();
+  c=DrawFitdY("dY-Physical"); 
+  c->Update();
   ps->NewPage();
-  DrawFitdSnp("dSnp-Physical")->Draw();
+  c->Update();
+
   ps->NewPage();
-  DrawFitITS("ITS Physical")->Draw();
+  c=DrawFitdSnp("dSnp-Physical");
+  c->Update();
+  
   ps->NewPage();
-  DrawFitVertex("Vertex Physical")->Draw();
+  c=DrawFitITS("ITS Physical");
+  c->Update();
+  
   ps->NewPage();
-  DrawFitLaser("Laser Physical")->Draw();
+  c=DrawFitVertex("Vertex Physical");
+  c->Update();
+  
   ps->NewPage();
-  MakeComposedCorrection("Correction physical")->Draw();
+  c=DrawFitLaser("Laser Physical");
+  c->Update();
+  
+  ps->NewPage();
+  c=MakeComposedCorrection("Correction physical");
+  c->Update();  
+
   //
   //
   //
@@ -138,101 +160,102 @@ void MakeGlobalFit(){
   ps->NewPage();
   MakeFit("1");
   ps->NewPage();
-  DrawFitdY("dY-Physical+Effective ")->Draw();
+  c=DrawFitdY("dY-Physical+Effective ");
+  c->Update();  
+  
   ps->NewPage();
-  DrawFitdSnp("dSnp-Physical+Effective ")->Draw();
+  c=DrawFitdSnp("dSnp-Physical+Effective ");
+  c->Update();  
+
   ps->NewPage();
-  DrawFitITS("ITS Physical+Effective")->Draw();
+  c=DrawFitITS("ITS Physical+Effective");
+  c->Update();  
+
   ps->NewPage();
-  DrawFitVertex("Vertex Physical+Effective")->Draw();
+  c=DrawFitVertex("Vertex Physical+Effective");
+  c->Update();  
+
   ps->NewPage();
-  DrawFitLaser("Laser Physical +Effective ")->Draw();
+  c=DrawFitLaser("Laser Physical +Effective ");
+  c->Update();  
+
   ps->NewPage();
-  MakeComposedCorrection("Correction physical+Effective")->Draw();
+  c=MakeComposedCorrection("Correction physical+Effective");
+  c->Update();  
   //
-  useEff0=kTRUE; useEffD=kTRUE; useEffR=kTRUE; enableSign=kTRUE;
+  useEff0=kTRUE; useEffD=kTRUE; useEffR=kTRUE; enableSign=kTRUE; 
   ps->NewPage();
   MakeFit("1");
-  ps->NewPage();
-  DrawFitdY("dY-Physical+Effective Sign")->Draw();
-  ps->NewPage();
-  DrawFitdSnp("dSnp-Physical+Effective Sign")->Draw();
-  ps->NewPage();
-  DrawFitITS("ITS Physical+Effective Sign")->Draw();
-  ps->NewPage();
-  DrawFitVertex("Vertex Physical+Effective Sign")->Draw();
-  ps->NewPage();
-  DrawFitLaser("Laser Physical +Effective Sign")->Draw();
-  ps->NewPage();
-  MakeComposedCorrection("Correction physical+Effective Sign")->Draw();
   //
+  ps->NewPage();
+  c=DrawFitdY("dY-Physical+Effective Sign");
+  c->Update();  
+
+  ps->NewPage();
+  c=DrawFitdSnp("dSnp-Physical+Effective Sign");
+  c->Update();  
+
+  ps->NewPage();
+  c=DrawFitITS("ITS Physical+Effective Sign");
+  c->Update();  
+
+  ps->NewPage();
+  c=DrawFitVertex("Vertex Physical+Effective Sign");
+  c->Update();  
+  
+  ps->NewPage();
+  c=DrawFitLaser("Laser Physical +Effective Sign");
+  c->Update();  
+ 
+  ps->NewPage();
+  c=MakeComposedCorrection("Correction physical+Effective Sign");
+  c->Update();  
+  
   ps->Close();
   delete ps;
 
+  //
 }
 
 void MakeChain(){
   //
   //
   TH1::AddDirectory(0);
-  TFile * f =0;
-  TTree * tree=0;
-  TTree * treeF=0;
+  TFile * f0 =0;      // file 0 field
+  TFile * fp =0;      // file plus
+  TFile * fm =0;      // file minus
+  TTree * tree0=0;
+  TTree * treeP=0;
+  TTree * treeM=0;
   //
   chain    = new TChain("fit","fit");
   chainRef = new TChain("fit","fit");
+  //
+  //
+  //
   for (Int_t idet=0; idet<5; idet++){
     for (Int_t ipar=0; ipar<5; ipar++){
-      char fname[1000];      
-      f= TFile::Open(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
-      if (f){
-	tree = (TTree*)f->Get("fit");
-	f= TFile::Open(Form("../mergeField0/distortion%d_%d.root",idet,ipar));
-	if (f && ipar!=4 &&ipar!=3 &&ipar!=1){
-	  treeF = (TTree*)f->Get("fit");
-	  if (tree && treeF) 
-	    if (tree->GetEntries()>0 &&(tree->GetEntries()==treeF->GetEntries())){
-	      printf("%d\t%d\n",Int_t(tree->GetEntries()),Int_t(treeF->GetEntries()));
-	      chain->Add(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
-	      chainRef->Add(Form("../mergeField0/distortion%d_%d.root",idet,ipar));
-	    }
-	}else{
-	  f= TFile::Open(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
-	  if (f){
-	    treeF = (TTree*)f->Get("fit");
-	    if (tree && treeF) 
-	      if (tree->GetEntries()>0 &&(tree->GetEntries()==treeF->GetEntries())){
-		printf("%d\t%d\n",Int_t(tree->GetEntries()),Int_t(treeF->GetEntries()));
-		chain->Add(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
-		chainRef->Add(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
-	    }	    
-	  }
+      f0= TFile::Open(Form("../mergeField0/distortion%d_%d.root",idet,ipar));
+      fp= TFile::Open(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
+      fm= TFile::Open(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
+      tree0 = (f0) ? (TTree*)f0->Get("fit"):0;
+      treeP = (fp) ? (TTree*)fp->Get("fit"):0;
+      treeM = (fm) ? (TTree*)fm->Get("fit"):0;
+      //
+      if ( ipar==0 || ipar==2){
+	if (tree0 && treeP){
+	  chain->Add(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
+	  chainRef->Add(Form("../mergeField0/distortion%d_%d.root",idet,ipar));	
+	}
+	if (tree0 && treeM){
+	  chain->Add(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
+	  chainRef->Add(Form("../mergeField0/distortion%d_%d.root",idet,ipar));	
 	}
       }
-      f= TFile::Open(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
-      if (f){
-	tree = (TTree*)f->Get("fit");
-	f= TFile::Open(Form("../mergeField0/distortion%d_%d.root",idet,ipar));
-	if (f){
-	  treeF = (TTree*)f->Get("fit");
-	  if (tree && treeF) 
-	    if (tree->GetEntries()>0 &&(tree->GetEntries()==treeF->GetEntries())){
-	      printf("%d\t%d\n",Int_t(tree->GetEntries()),Int_t(treeF->GetEntries()));
-	      chain->Add(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
-	      chainRef->Add(Form("../mergeField0/distortion%d_%d.root",idet,ipar));
-	    }
-	}
-	else{
-	  f= TFile::Open(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
-	  if (f && ipar!=4&&ipar!=3 &&ipar!=1){
-	    treeF = (TTree*)f->Get("fit");
-	    if (tree && treeF) 
-	      if (tree->GetEntries()>0 &&(tree->GetEntries()==treeF->GetEntries())){
-		printf("%d\t%d\n",Int_t(tree->GetEntries()),Int_t(treeF->GetEntries()));
-		chain->Add(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
-		chainRef->Add(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));
-	      }	    
-	  }
+      if ( ipar==1 || ipar==3 || ipar==4){
+	if (treeP && treeM){
+	  chain->Add(Form("../mergePlus/distortion%d_%d.root",idet,ipar));
+	  chainRef->Add(Form("../mergeMinus/distortion%d_%d.root",idet,ipar));	
 	}
       }
     }
@@ -292,8 +315,6 @@ void MakeFit(TCut cutCustom){
   fstring+="(tY1-R.tY1)++";                   // twist Y
   fstring+="(sign(bz)*(tX1-R.tX1))++";       // twist X
   fstring+="(sign(bz)*(tY1-R.tY1))++";       // twist Y
-  fstring+="(exbT1-exb11-(R.exbT1-R.exb11))++";                // T1 adjustment
-  fstring+="(exbT2-exb11-(R.exbT2-R.exb11))++";                // T2 adjustment
 
   {if (enableDet[0]){
     fstring+="(isITS*shiftX)++";             // shift X - ITS
@@ -312,6 +333,8 @@ void MakeFit(TCut cutCustom){
   }
   TString fstringCustom="";
   if (useEff0){
+    fstring+="(exbT1-exb11-(R.exbT1-R.exb11))++";                // T1 adjustment
+    fstring+="(exbT2-exb11-(R.exbT2-R.exb11))++";                // T2 adjustment
     fstringCustom+="(eff0_0_0-R.eff0_0_0)++";                  // effective correction constant part 
     fstringCustom+="(eff1_0_0-R.eff1_0_0)++";                  // 
   }
@@ -383,14 +406,14 @@ void PrintMatch(){
   for (Int_t ipar=0; ipar<5; ipar++){      
     for (Int_t idet=0; idet<5; idet++){
       Double_t mean0,rms0,mean1,rms1;
-      Int_t entries = chain->Draw("delta-mdelta",cut+Form("dtype==%d&&ptype==%d",idet,ipar),"");
+      Int_t entries = chain->Draw("delta-mdelta>>rhis",cut+Form("dtype==%d&&ptype==%d",idet,ipar),"goff");
       if (entries==0) continue;
       TH1 * his = (TH1*)(chain->GetHistogram()->Clone());
       mean1=his->GetMean();
       rms1 =his->GetRMS();
       delete his;
       //
-      entries = chain->Draw("mdelta",cut+Form("dtype==%d&&ptype==%d",idet,ipar),"");
+      entries = chain->Draw("mdelta>>rhis",cut+Form("dtype==%d&&ptype==%d",idet,ipar),"goff");
       if (entries==0) continue;
       his = (TH1*)(chain->GetHistogram()->Clone());
       //
@@ -850,14 +873,19 @@ TCanvas * DrawFitdSnp(const char *name){
   return canvas;
 }
 
+
+
+
+
+
 TCanvas * MakeComposedCorrection(const char *name){
   
   TString  fit = chain->GetAlias("delta");
   TObjArray * array = fit.Tokenize("++");
   Int_t nfun=array->GetEntries();
   Double_t wt = 0.3 ; 
-  Double_t T1 = 0.9;
-  Double_t T2 = 1.5;
+  Double_t T1 = 1.0;
+  Double_t T2 = 1.0;
   //
   // sign independent correction
   //
@@ -875,8 +903,12 @@ TCanvas * MakeComposedCorrection(const char *name){
   TMatrixD polC(100,4);
   TMatrixD valA(100,1);
   TMatrixD valC(100,1);
+  TMatrixD valAS(100,1);
+  TMatrixD valCS(100,1);
   Int_t counterA=0;
   Int_t counterC=0;
+  Int_t counterAS=0;
+  Int_t counterCS=0;
 
   {
     for (Int_t i=1; i<nfun;i++){
@@ -937,8 +969,8 @@ TCanvas * MakeComposedCorrection(const char *name){
   //
   //
   {
-    counterA=0;
-    counterC=0;
+    counterAS=0;
+    counterCS=0;
     for (Int_t i=1; i<nfun;i++){
       TObjString fitName=array->At(i)->GetName();
       TObjString fitVal= &(fitName.String()[1+fitName.String().Last('(')]);
@@ -966,20 +998,20 @@ TCanvas * MakeComposedCorrection(const char *name){
 	Int_t pp  =0;
 	//printf("%s\t%d\t%d\t%d\t%d\t%f\n",fitName.GetName(),side,px,pd,pp, value);
 	if (side==0){
-	  polA(counterA,0)=0;
-	  polA(counterA,1)=px;
-	  polA(counterA,2)=pd;
-	  polA(counterA,3)=pp;
-	  valA(counterA,0)=value*0.1;
-	  counterA++;
+	  polA(counterAS,0)=0;
+	  polA(counterAS,1)=px;
+	  polA(counterAS,2)=pd;
+	  polA(counterAS,3)=pp;
+	  valAS(counterAS,0)=value*0.1;
+	  counterAS++;
 	}
 	if (side==1){
-	  polC(counterC,0)=0;
-	  polC(counterC,1)=px;
-	  polC(counterC,2)=pd;
-	  polC(counterC,3)=pp;
-	  valC(counterC,0)=value*0.1;
-	  counterC++;
+	  polC(counterCS,0)=0;
+	  polC(counterCS,1)=px;
+	  polC(counterCS,2)=pd;
+	  polC(counterCS,3)=pp;
+	  valCS(counterCS,0)=value*0.1;
+	  counterCS++;
 	}
       }
     }
@@ -989,29 +1021,168 @@ TCanvas * MakeComposedCorrection(const char *name){
   valA.ResizeTo(counterA,1);
   valC.ResizeTo(counterC,1);
   effS->SetPolynoms(&polA,&polC);
-  effS->SetCoeficients(&valA,&valC);
+  effS->SetCoeficients(&valAS,&valCS);
   effS->SetOmegaTauT1T2(wt,T1,T2);
   shiftITSS->SetOmegaTauT1T2(wt,T1,T2);
   twistS->SetOmegaTauT1T2(wt,T1,T2);
+  //
+  // Make combined correction
+  //
 
+  TObjArray * corr0 = new TObjArray;
+  TObjArray * corrP = new TObjArray;
+  TObjArray * corrM = new TObjArray;
+  AliTPCExBEffective            *eff0      = new  AliTPCExBEffective;
+  AliTPCCalibGlobalMisalignment *shiftITSP = new  AliTPCCalibGlobalMisalignment;
+  AliTPCExBTwist                *twistP    = new  AliTPCExBTwist;
+  AliTPCExBEffective            *effP      = new  AliTPCExBEffective;
+  AliTPCCalibGlobalMisalignment *shiftITSM = new  AliTPCCalibGlobalMisalignment;
+  AliTPCExBTwist                *twistM    = new  AliTPCExBTwist;
+  AliTPCExBEffective            *effM      = new  AliTPCExBEffective;
+  //
+  shiftITSP->SetXShift(shiftITS->GetXShift()+shiftITSS->GetXShift());    // shift due to the B field
+  shiftITSP->SetYShift(shiftITS->GetXShift()+shiftITSS->GetYShift());                  
+  shiftITSM->SetXShift(shiftITS->GetXShift()-shiftITSS->GetXShift());
+  shiftITSM->SetYShift(shiftITS->GetXShift()-shiftITSS->GetYShift());
+  //
+  twistP->SetXTwist(twist->GetXTwist()+twistS->GetXTwist());     // twist between field  - both used
+  twistP->SetYTwist(twist->GetYTwist()+twistS->GetYTwist());     //
+  twistM->SetXTwist(twist->GetXTwist()-twistS->GetXTwist());
+  twistM->SetYTwist(twist->GetYTwist()-twistS->GetYTwist());
+  //
+  effP->SetPolynoms(&polA,&polC);                                // effective correction
+  effP->SetCoeficients(&valA,&valC);
+  effM->SetPolynoms(&polA,&polC);
+  effM->SetCoeficients(&valA,&valC);
+  //
+  eff0->SetPolynoms((TMatrixD*)&polA,(TMatrixD*)&polC);
+  eff0->SetCoeficients((TMatrixD*)&valA,(TMatrixD*)&valC);
+  //
+  //
+  //
+  
+  //
+  corrP->AddLast(shiftITSP);
+  corrP->AddLast(twistP);
+  corrP->AddLast(effP);
+  corrM->AddLast(shiftITSM);
+  corrM->AddLast(twistM);
+  corrM->AddLast(effM);
+  corr0->AddLast(eff0);
+  //
 
+  AliTPCComposedCorrection *comp0= new AliTPCComposedCorrection ;
+  AliTPCComposedCorrection *compP= new AliTPCComposedCorrection ;
+  AliTPCComposedCorrection *compM= new AliTPCComposedCorrection ;
+  comp0->SetCorrections((TObjArray*)(corr0));
+  compP->SetCorrections((TObjArray*)(corrP));
+  compM->SetCorrections((TObjArray*)(corrM));
+  //
+  comp0->SetOmegaTauT1T2(0*wt,T1,T2);
+  compP->SetOmegaTauT1T2(wt,T1,T2);
+  compM->SetOmegaTauT1T2(-wt,T1,T2);
 
+  TFile f("correctionsExB.root","update");
+  f.mkdir(name);
+  f.cd(name);  
+  printf("\nDump correction B=+0.5T:\n");
+  compP->Print("da");
+  printf("\nDump correction B=-0.5T:\n");
+  compM->Print("da");
+  //
+  comp0->Write("ExB-Field0");  
+  compP->Write("ExB-Bplus");
+  compM->Write("ExB-Bminus");
+  //
   //
   TCanvas *c = new TCanvas(name,name,800,800);
-  c->Divide(3,2);
+  c->Divide(4,2);
   c->cd(1);
   shiftITS->CreateHistoDRPhiinXY()->Draw("surf2");
   c->cd(2);
   twist->CreateHistoDRPhiinXY()->Draw("surf2");
   c->cd(3);
   eff->CreateHistoDRPhiinZR()->Draw("surf2");
-  c->cd(4);
-  shiftITSS->CreateHistoDRPhiinXY()->Draw("surf2");
   c->cd(5);
-  twistS->CreateHistoDRPhiinXY()->Draw("surf2");
+  shiftITSS->CreateHistoDRPhiinXY()->Draw("surf2");
   c->cd(6);
+  twistS->CreateHistoDRPhiinXY()->Draw("surf2");
+  c->cd(7);
   effS->CreateHistoDRPhiinZR()->Draw("surf2");
-  TObjArray * corr = new TObjArray;
+  //
+  c->cd(4);
+  compP->CreateHistoDRPhiinZR()->Draw("surf2");
+  c->cd(8);
+  compM->CreateHistoDRPhiinZR()->Draw("surf2");
+
 
   return c;
 }
+
+
+void MakeOCDBEntry(Int_t refRun){
+  //
+  // make a Correction OCDB entry
+  // take the fit values writen in config file
+  //
+  //
+  // 1. Read previous value used in calibration
+  //    OCDB has to be initialized before
+  
+  gROOT->Macro(Form("ConfigCalibTrain.C(%d)",refRun));  // configuring calib db
+  gROOT->LoadMacro("AddTaskTPCCalib.C");
+  gROOT->ProcessLine(Form("ConfigOCDB(%d);",refRun));
+  AliTPCCorrection *corr  = AliTPCcalibDB::Instance()->GetTPCComposedCorrection();
+  //
+  TFile f("correctionsExB.root");
+  AliTPCComposedCorrection * corrP0=(AliTPCComposedCorrection *)f.Get("/Correction physical/ExB-Field0");
+  AliTPCComposedCorrection * corrPP=(AliTPCComposedCorrection *)f.Get("/Correction physical/ExB-Bplus");
+  AliTPCComposedCorrection * corrPM=(AliTPCComposedCorrection *)f.Get("/Correction physical/ExB-Bminus");
+  //
+  AliTPCComposedCorrection * corrPE0=(AliTPCComposedCorrection *)f.Get("/Correction physical+Effective/ExB-Field0");
+  AliTPCComposedCorrection * corrPEP=(AliTPCComposedCorrection *)f.Get("/Correction physical+Effective/ExB-Bplus");
+  AliTPCComposedCorrection * corrPEM=(AliTPCComposedCorrection *)f.Get("/Correction physical+Effective/ExB-Bminus");
+  //
+  corrP0->SetName("Field0 correction");
+  corrPP->SetName("FieldP correction");
+  corrPM->SetName("FieldM correction");
+  corrPE0->SetName("Field0 correction");
+  corrPEP->SetName("FieldP correction");
+  corrPEM->SetName("FieldM correction");
+
+  TObjArray corrPhysical;
+  TObjArray corrPhysicalEffective;
+  //
+  // add the base correction
+  corrP0->GetCorrections()->Add(corr);
+  corrPP->GetCorrections()->Add(corr);
+  corrPM->GetCorrections()->Add(corr);
+  corrPE0->GetCorrections()->Add(corr);
+  corrPEP->GetCorrections()->Add(corr);
+  corrPEM->GetCorrections()->Add(corr);
+  //
+  corrPhysical.AddLast(corrP0);  corrPhysical.AddLast(corrPP);  corrPhysical.AddLast(corrPM); 
+  corrPhysicalEffective.AddLast(corrPE0);  corrPhysicalEffective.AddLast(corrPEP);  corrPhysicalEffective.AddLast(corrPEM); 
+  //
+  // make OCDB entries
+  TString userName=gSystem->GetFromPipe("echo $USER");
+  TString date=gSystem->GetFromPipe("date");
+  TString ocdbStorage="local:////";
+  ocdbStorage+=gSystem->GetFromPipe("pwd")+"/OCDB";
+  //
+  AliCDBMetaData *metaData= new AliCDBMetaData();
+  metaData->SetObjectClassName("TObjArray");
+  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion("05-25-01"); //root version
+  metaData->SetComment(Form("Correction calibration. User: %s\n Data%s",userName.Data(),date.Data()));
+  AliCDBId* id1=NULL;
+  id1=new AliCDBId("TPC/Calib/Correction", 0, AliCDBRunRange::Infinity());
+  AliCDBStorage* gStorage = 0;
+
+  gStorage=AliCDBManager::Instance()->GetStorage((ocdbStorage+"Physical").Data());
+  gStorage->Put(&corrPhysical, (*id1), metaData);  
+  gStorage = AliCDBManager::Instance()->GetStorage((ocdbStorage+"PhysicalEffective").Data());
+  gStorage->Put(&corrPhysicalEffective, (*id1), metaData);  
+}
+

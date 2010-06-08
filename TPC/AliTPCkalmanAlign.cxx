@@ -74,6 +74,7 @@
 #include "TStatToolkit.h"
 #include "AliTPCPreprocessorOnline.h"
 #include "TPostScript.h"
+#include "AliGRPObject.h"
 
 AliTPCkalmanAlign::AliTPCkalmanAlign():
   TNamed(),
@@ -200,8 +201,16 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
   //
   // Combine all pairs of fitters and make global alignemnt
   //
+  
   AliTPCkalmanAlign &kalmanAlign=*this;
   TTreeSRedirector *pcstream = new TTreeSRedirector("AliTPCkalmanAlign.root");
+  Int_t run = AliCDBManager::Instance()->GetRun();
+  AliGRPObject * grp = AliTPCcalibDB::Instance()->GetGRP(run);
+  Float_t bz = AliTracker::GetBz();
+  UInt_t timeS = grp->GetTimeStart();
+  UInt_t timeE = grp->GetTimeEnd();
+  UInt_t  time = (timeS+timeE)/2;
+  
   //
   // get ce info
   //
@@ -281,7 +290,7 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
   statUpDown/=36;
   statLeftRight/=36;
   MakeNewAlignment(kTRUE);
-  //FitCE();
+  FitCE();
   for (Int_t is0=0;is0<72;is0++)
     for (Int_t is1=0;is1<72;is1++){
       Bool_t isPair=kFALSE;
@@ -318,46 +327,57 @@ void AliTPCkalmanAlign::MakeGlobalAlign(){
 	rms[3]=his->GetRMS();
 	stat[3]=his->GetEntries();
       }
-      Int_t run = AliCDBManager::Instance()->GetRun();
-      Float_t bz = AliTracker::GetBz();
-      TVectorD fceG[6],fceL[6];
-      for (Int_t ipar=0; ipar<6;ipar++){
-	fceG[ipar]=*((TVectorD*)fFitCEGlobal->At(ipar));
-	fceL[ipar]=*((TVectorD*)fFitCELocal->At(ipar));
-      }
+      TVectorD fceG[8],fceL[6];
+      if (fFitCEGlobal)
+	for (Int_t ipar=0; ipar<8;ipar++){
+	  fceG[ipar].ResizeTo(36);
+	  if (ipar<6) fceL[ipar].ResizeTo(36);
+	  if (fFitCEGlobal->At(ipar)){
+	    fceG[ipar]=*((TVectorD*)fFitCEGlobal->At(ipar));
+	    if (ipar<6){
+	      fceL[ipar]=*((TVectorD*)fFitCELocal->At(ipar));
+	    }
+	  }	      
+	}
+      
       (*pcstream)<<"kalmanAlignDebug"<<
-	"run="<<run<<
+	"run="<<run<<            // runs
+	"time="<<time<<          // time
+	"timeE="<<timeE<<        // sart of tun time
+	"timeS="<<timeS<<        // end od run time
 	"bz="<<bz<<
 	"is0="<<is0<<
 	"is1="<<is1<<
-	"delta.="<<&delta<<
-	"rms.="<<&rms<<
+	"delta.="<<&delta<<      // alignment deltas
+	"rms.="<<&rms<<          // rms
 	"stat.="<<&stat<<
 	"vec0.="<<&vec[0]<<
 	"vec1.="<<&vec[1]<<
 	"vec2.="<<&vec[2]<<
 	"vec3.="<<&vec[3]<<
-	"pceIn0.="<<&paramCE[is0%36]<<
+	"pceIn0.="<<&paramCE[is0%36]<<        // default CE parameters
 	"pceOut0.="<<&paramCE[is0%36+36]<<
 	"pceIn1.="<<&paramCE[is1%36]<<
 	"pceOut1.="<<&paramCE[is1%36+36]<<
-	"fceG0.="<<&fceG[0]<<  // global fit of CE
-	"fceG1.="<<&fceG[1]<<  // global fit of CE
-	"fceG2.="<<&fceG[2]<<  // global fit of CE
-	"fceG3.="<<&fceG[3]<<  // global fit of CE
-	"fceG4.="<<&fceG[4]<<  // global fit of CE
-	"fceL5.="<<&fceG[5]<<  // global fit of CE
-	"fceL0.="<<&fceL[0]<<  // global fit of CE
-	"fceL1.="<<&fceL[1]<<  // global fit of CE
-	"fceL2.="<<&fceL[2]<<  // global fit of CE
-	"fceL3.="<<&fceL[3]<<  // global fit of CE
-	"fceL4.="<<&fceL[4]<<  // global fit of CE
-	"fceL5.="<<&fceL[5]<<  // global fit of CE
+	//                     // current CE parameters form last calibration - not used in Reco
+	"fceG0.="<<&fceG[0]<<  // global fit of CE  - offset
+	"fceG1.="<<&fceG[1]<<  // global fit of CE  - Gy gradient 
+	"fceG2.="<<&fceG[2]<<  // global fit of CE  - Gx gradient
+	"fceG3.="<<&fceG[3]<<  // global fit of CE  - IROC-OROC offset
+	"fceG4.="<<&fceG[4]<<  // global fit of CE  - commont slope LX
+	"fceG5.="<<&fceG[5]<<  // global fit of CE  - delta slope LX
+	"fceG6.="<<&fceG[6]<<  // global fit of CE  - common slope LY
+	"fceG7.="<<&fceG[7]<<  // global fit of CE  - delta slope LY
+	//
+	"fceL0.="<<&fceL[0]<<  // local fit of CE  - offset to mean
+	"fceL1.="<<&fceL[1]<<  // local fit of CE  - IROC-OROC offset
+	"fceL2.="<<&fceL[2]<<  // local fit of CE  - common slope LX
+	"fceL3.="<<&fceL[3]<<  // local fit of CE  - delta slope  LX
+	"fceL4.="<<&fceL[4]<<  // local fit of CE  - common slope LY
+	"fceL5.="<<&fceL[5]<<  // local fit of CE  - delta slope  LY
 	"\n";
     }
   
-  Int_t run = AliCDBManager::Instance()->GetRun();
-  Float_t bz = AliTracker::GetBz();
   (*pcstream)<<"runSummary"<<
     "run="<<run<<                      // run number 
     "bz="<<bz<<                        // bz field
@@ -683,6 +703,11 @@ void AliTPCkalmanAlign::DrawAlignmentTrends(){
   // Draw trends of alingment variables
   //
   /*
+    //1.  Create a list of  align data
+    //
+    //2. Filter list
+    AliXRDPROOFtoolkit::FilterList("align.list","AliTPCkalmanAlign.root kalmanAlignDebug",0);
+
   */
   AliXRDPROOFtoolkit toolkit;
   TChain * chain = toolkit.MakeChainRandom("align.list.Good","kalmanAlignDebug",0,2000);
@@ -783,14 +808,14 @@ void AliTPCkalmanAlign::FitCE(){
   AliTPCkalmanAlign::MakeAliasCE(chain);
   TString  fstringG="";              // global part
   //
-  fstringG+="Gy++";                  // par 1 - global y
-  fstringG+="Gx++";                  // par 2 - global x
+  fstringG+="Gy++";                  // 1 - global y
+  fstringG+="Gx++";                  // 2 - global x
   // 
-  fstringG+="isin++";                // delta IROC-OROC offset
-  fstringG+="Lx++";                  // common slope 
-  fstringG+="Lx*isin++";             // delta slope 
-  fstringG+="Ly++";                  // common slope 
-  fstringG+="Ly*isin++";             // delta slope 
+  fstringG+="isin++";                // 3 -delta IROC-OROC offset
+  fstringG+="Lx++";                  // 4 -common slope 
+  fstringG+="Lx*isin++";             // 5 -delta slope 
+  fstringG+="Ly++";                  // 6 -common slope 
+  fstringG+="Ly*isin++";             // 7 -delta slope 
   TVectorD vecG[2];
   TString * strFitG=0;
   TString * strFitLX=0;
@@ -830,8 +855,8 @@ void AliTPCkalmanAlign::FitCE(){
   fstringL+="isin++";                // 1. delta IROC-OROC offset
   fstringL+="Lx++";                  // 2. common slope 
   fstringL+="Lx*isin++";             // 3. delta slope 
-  fstringL+="Ly++";                  // 2. common slope 
-  fstringL+="Ly*isin++";             // 3. delta slope 
+  fstringL+="Ly++";                  // 4. common slope 
+  fstringL+="Ly*isin++";             // 5. delta slope 
   TVectorD vecL[36];
   TVectorD dummy(6);
   AliTPCCalPad *padFitLCE = new AliTPCCalPad("LocalCE","LocalCE");
@@ -853,26 +878,24 @@ void AliTPCkalmanAlign::FitCE(){
   //
   // write data to array
   //
-  fFitCEGlobal = new TObjArray(6); 
   fFitCELocal  = new TObjArray(6); 
-  for (Int_t ipar=0; ipar<6;ipar++){
+  fFitCEGlobal = new TObjArray(8); 
+  for (Int_t ipar=0; ipar<8;ipar++){
+    //
     fFitCEGlobal->AddAt(new TVectorD(36),ipar);
-    fFitCELocal->AddAt(new TVectorD(36),ipar);
-    //
     TVectorD &fvecG = *((TVectorD*)fFitCEGlobal->At(ipar));
-    TVectorD &fvecL = *((TVectorD*)fFitCELocal->At(ipar));
-    //
     for (Int_t isec=0; isec<36;isec++){      
-      fvecL[isec]=vecL[isec][ipar];
-      if (ipar>0){
-	if (isec<18)  fvecG[isec]=vecG[0][ipar+2];
-	if (isec>=18) fvecG[isec]=vecG[1][ipar+2];
+      if (isec<18)  fvecG[isec]=vecG[0][ipar];
+      if (isec>=18) fvecG[isec]=vecG[1][ipar];    
+    }
+    if (ipar<6){
+      fFitCELocal->AddAt(new TVectorD(36),ipar);
+      TVectorD &fvecL = *((TVectorD*)fFitCELocal->At(ipar));
+      for (Int_t isec=0; isec<36;isec++){      
+	fvecL[isec]=vecL[isec][ipar];
       }
     }
   }
-  //
-  // 
-  //
 }
 
 void AliTPCkalmanAlign::MakeAliasCE(TTree * chain){

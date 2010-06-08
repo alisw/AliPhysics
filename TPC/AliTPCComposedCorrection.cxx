@@ -166,10 +166,11 @@ void AliTPCComposedCorrection::Print(Option_t* option) const {
   AliTPCCorrection *c;
   while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
     if (opt.Contains("d")) {
-      printf("%d. ",in);
+      printf("\n");
+      printf("%d. %s\t%s\n",in,c->GetTitle(), c->GetName());
       c->Print(option);
     } else {
-      printf("%d. %s\n",in,c->GetTitle());
+      printf("%d. %s\t%s\n",in,c->GetTitle(), c->GetName());
     }
     ++in;
   }

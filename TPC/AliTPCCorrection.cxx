@@ -602,8 +602,8 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     Double_t deltaYX=deltaX*TMath::Tan(TMath::ASin(track1->GetSnp()));  // deltaY due  delta X
     Double_t deltaZX=deltaX*track1->GetTgl();                           // deltaZ due  delta X
 
-    pointPos[0]=prot1.GetY()+deltaYX;//local y is sign correct?
-    pointPos[1]=prot1.GetZ()+deltaZX;//local z is sign correct?
+    pointPos[0]=prot1.GetY()-deltaYX;//local y is sign correct? should be minus
+    pointPos[1]=prot1.GetZ()-deltaZX;//local z is sign correct? should be minus
     pointCov[0]=prot1.GetCov()[3];//simay^2
     pointCov[1]=prot1.GetCov()[4];//sigmayz
     pointCov[2]=prot1.GetCov()[5];//sigmaz^2
@@ -751,7 +751,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
     track.GetXYZ(xyz);
     Int_t id=0;
     Double_t dRrec=0; // dummy value - needed for points - e.g for laser
-    
+    if (ptype==4 &&bz<0) mean*=-1;  // interpret as curvature
     (*pcstream)<<"fit"<<
       "bz="<<bz<<         // magnetic filed used
       "dtype="<<dtype<<   // detector match type
@@ -791,6 +791,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 	}else{
 	  corrections[icorr]=0;
 	}
+	if (ptype==4 &&bz<0) corrections[icorr]*=-1;  // interpret as curvature
       }      
       Double_t dRdummy=0;
       (*pcstream)<<"fit"<<

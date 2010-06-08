@@ -180,6 +180,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPadTime0(0),
   fDistortionMap(0),
   fComposedCorrection(0),
+  fComposedCorrectionArray(0),
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
@@ -222,6 +223,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fPadTime0(0),
   fDistortionMap(0),
   fComposedCorrection(0),
+  fComposedCorrectionArray(0),
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
@@ -459,7 +461,14 @@ void AliTPCcalibDB::Update(){
   if (entry){
     //entry->SetOwner(kTRUE);
     fComposedCorrection=dynamic_cast<AliTPCCorrection*>(entry->GetObject());
-    fComposedCorrection->Init();
+    if (fComposedCorrection) fComposedCorrection->Init();
+    fComposedCorrectionArray=dynamic_cast<TObjArray*>(entry->GetObject());
+    if (fComposedCorrectionArray){
+      for (Int_t i=0; i<fComposedCorrectionArray->GetEntries(); i++){
+	AliTPCCorrection* composedCorrection= dynamic_cast<AliTPCCorrection*>(fComposedCorrectionArray->At(i));
+	if (composedCorrection) composedCorrection->Init();
+      }
+    }
   }else{
     AliError("TPC - Missing calibration entry-  TPC/Calib/Correction")
   }  
@@ -1924,4 +1933,16 @@ AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMapp
    return deadMap;
 }
 
+
+
+AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrection(Float_t field) const{
+  //
+  // GetComposed correction for given field setting
+  //
+  if (!fComposedCorrectionArray) return 0;
+  if (field>0.1) return (AliTPCCorrection *)fComposedCorrectionArray->At(1);
+  if (field<-0.1) return (AliTPCCorrection *)fComposedCorrectionArray->At(2);
+  return (AliTPCCorrection *)fComposedCorrectionArray->At(0);
+  
+}
 

@@ -64,11 +64,13 @@ public:
   THnSparse*  GetResHistoTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
   THnSparse*  GetResHistoTPCvertex(Int_t index)      const { return (index<5) ? fResHistoTPCvertex[index]   :0;}        //TPC vertex matching map
   THnSparse*  GetResHistoTPCTRD(Int_t index)   const { return (index<5) ? fResHistoTPCTRD[index]:0;}        //TPC-TRD    matching map
+  THnSparse*  GetResHistoTPCTOF(Int_t index)   const { return (index<5) ? fResHistoTPCTOF[index]:0;}        //TPC-TOF    matching map
 
   void        BookDistortionMaps();      // book histograms
   void        FillResHistoTPCITS(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pITSOut );       // fill residual histo
   void        FillResHistoTPC(const AliESDtrack * pTrack);
   void        FillResHistoTPCTRD(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTRDIn );
+  void        FillResHistoTPCTOF(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTOFIn );
 
 private:
   void ResetCurrent();                  // reset current values
@@ -97,6 +99,7 @@ private:
   THnSparse*  fResHistoTPCITS[5];        //TPC-ITS    matching map
   THnSparse*  fResHistoTPCvertex[5];           //TPC-ITS    vertex matching map
   THnSparse*  fResHistoTPCTRD[5];        //TPC-TRD    matching map
+  THnSparse*  fResHistoTPCTOF[5];        //TPC-TRD    matching map
   // laser histo
   THnSparse * fHistVdriftLaserA[3];	//Histograms for V drift from laser
   THnSparse * fHistVdriftLaserC[3];	//Histograms for V drift from laser
@@ -120,7 +123,7 @@ private:
   Int_t    fBinsVdrift[4];		//Bins for vdrift
   Double_t fXminVdrift[4];		//Xmax for vdrift
   Double_t fXmaxVdrift[4];		//Xmin for vdrift
-  ClassDef(AliTPCcalibTime, 3); 
+  ClassDef(AliTPCcalibTime, 4); 
 };
 
 #endif

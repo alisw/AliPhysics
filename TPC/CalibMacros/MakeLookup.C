@@ -469,7 +469,7 @@ void MakeFitTree(){
   AliTPCComposedCorrection *cc= MakeComposedCorrection();
   TObjArray * corr = (TObjArray*)(cc->GetCorrections());
   //  corr->AddLast(cc);
-  const Int_t kskip=3;
+  const Int_t kskip=23;
   //
   TFile f("mean.root");
   TTree * tree= 0;
@@ -847,8 +847,8 @@ AliTPCComposedCorrection * MakeComposedCorrection(){
   Double_t vdrift = 2.6; // [cm/us]   // to be updated: per second (ideally)
   Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
-  Double_t T1 = 0.9;
-  Double_t T2 = 1.5;
+  Double_t T1 = 1.0;
+  Double_t T2 = 1.0;
   //
   //
   

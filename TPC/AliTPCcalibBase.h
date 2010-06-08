@@ -50,6 +50,7 @@ public:
   static TGraphErrors *        FitSlices(THnSparse *h, Int_t axisDim1, Int_t axisDim2, Int_t minEntries, Int_t nmaxBin, Float_t fracLow=0.1, Float_t fracUp=0.9, Bool_t useMedian=kFALSE, TTreeSRedirector *cstream=0, Int_t ival=1);
   static void            BinLogX(THnSparse *h, Int_t axisDim);
   static void            BinLogX(TH1 *h);
+  void SetRun(Int_t run){ fRun=run;}
 protected: 
   TTreeSRedirector *fDebugStreamer;     //! debug streamer
   Int_t  fStreamLevel;                  //  debug stream level

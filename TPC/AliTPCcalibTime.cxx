@@ -141,6 +141,7 @@ AliTPCcalibTime::AliTPCcalibTime()
   for (Int_t i=0;i<5;i++) {
     fResHistoTPCITS[i]=0;
     fResHistoTPCTRD[i]=0;
+    fResHistoTPCTOF[i]=0;
     fResHistoTPCvertex[i]=0;
   }
 
@@ -186,6 +187,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   for (Int_t i=0;i<5;i++) {
     fResHistoTPCITS[i]=0;
     fResHistoTPCTRD[i]=0;
+    fResHistoTPCTOF[i]=0;
     fResHistoTPCvertex[i]=0;
   }
 
@@ -295,9 +297,11 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   for (Int_t i=0;i<5;i++) {
     delete fResHistoTPCITS[i];
     delete fResHistoTPCTRD[i];
+    delete fResHistoTPCTOF[i];
     delete fResHistoTPCvertex[i];
     fResHistoTPCITS[i]=0;
     fResHistoTPCTRD[i]=0;
+    fResHistoTPCTOF[i]=0;
     fResHistoTPCvertex[i]=0;
   }
 
@@ -860,6 +864,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
 	fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
 	fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
 	fResHistoTPCTRD[imeas]->Add(cal->fResHistoTPCTRD[imeas]);
+	fResHistoTPCTOF[imeas]->Add(cal->fResHistoTPCTOF[imeas]);
       }
     }
     TObjArray* addArray=cal->GetHistoDrift();
@@ -1421,7 +1426,11 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
   align->AddTrackParams(&pTRD,&pTPC);
   align->SetTimeStamp(fTime);
   align->SetRunNumber(fRun );
-  FillResHistoTPCTRD(&pTPC,&pTRD);
+  Float_t dca[2],cov[3];
+  track->GetImpactParameters(dca,cov);
+  if (TMath::Abs(dca[0])<kMaxDy){
+    FillResHistoTPCTRD(&pTPC,&pTRD);  //only primaries
+  }
   //
   Int_t nupdates=align->GetNUpdates();
   align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates));
@@ -1580,6 +1589,11 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTra
     fAlignTOFTPC->AddAt(align,htime);
   }
   align->AddTrackParams(&pTOF,&pTPC);
+  Float_t dca[2],cov[3];
+  track->GetImpactParameters(dca,cov);
+  if (TMath::Abs(dca[0])<kMaxDy){
+    FillResHistoTPCTOF(&pTPC,&pTOF);
+  }
   align->SetTimeStamp(fTime);
   align->SetRunNumber(fRun );
   //
@@ -1654,30 +1668,37 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   fResHistoTPCvertex[0]    = new THnSparseS("TPCVertex#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
   fResHistoTPCTRD[0] = new THnSparseS("TPCTRD#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5; xmaxTrack[0]=5;  // 
+  fResHistoTPCTOF[0] = new THnSparseS("TPCTOF#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta z
   xminTrack[0] =-3.; xmaxTrack[0]=3.;  // 
   fResHistoTPCITS[1] = new THnSparseS("TPCITS#Delta_{Z} (cm)","#Delta_{Z} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[1]    = new THnSparseS("TPCVertex#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[1] = new THnSparseS("TPCTRD#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0] =-5.; xmaxTrack[0]=5.;  // 
+  fResHistoTPCTOF[1] = new THnSparseS("TPCTOF#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta snp-P2
   xminTrack[0] =-0.015; xmaxTrack[0]=0.015;  // 
   fResHistoTPCITS[2] = new THnSparseS("TPCITS#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[2] = new THnSparseS("TPCITSv#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[2] = new THnSparseS("TPCTRD#Delta_{#phi}","#Delta_{#phi}", 4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTOF[2] = new THnSparseS("TPCTOF#Delta_{#phi}","#Delta_{#phi}", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta theta-P3
   xminTrack[0] =-0.025; xmaxTrack[0]=0.025;  // 
   fResHistoTPCITS[3] = new THnSparseS("TPCITS#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[3] = new THnSparseS("TPCITSv#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[3] = new THnSparseS("TPCTRD#Delta_{#theta}","#Delta_{#theta}", 4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTOF[3] = new THnSparseS("TPCTOF#Delta_{#theta}","#Delta_{#theta}", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta theta-P4
   xminTrack[0] =-0.2; xmaxTrack[0]=0.2;  // 
   fResHistoTPCITS[4] = new THnSparseS("TPCITS#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[4] = new THnSparseS("TPCITSv#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[4] = new THnSparseS("TPCTRD#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
+  fResHistoTPCTOF[4] = new THnSparseS("TPCTOF#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   //
   for (Int_t ivar=0;ivar<4;ivar++){
     for (Int_t ivar2=0;ivar2<4;ivar2++){      
@@ -1767,6 +1788,30 @@ void        AliTPCcalibTime::FillResHistoTPCTRD(const AliExternalTrackParam * pT
   for (Int_t ihisto=0; ihisto<5; ihisto++){
     histoX[0]=pTPCOut->GetParameter()[ihisto]-ltrd.GetParameter()[ihisto];
     fResHistoTPCTRD[ihisto]->Fill(histoX);
+  }
+
+}
+
+void        AliTPCcalibTime::FillResHistoTPCTOF(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTOFIn ){
+  //
+  // fill resuidual histogram TPCout-TOFin
+  // track propagated to the TOF position
+  Double_t histoX[4];
+  Double_t xyz[3];
+
+  AliExternalTrackParam ltpc(*pTPCOut);
+  ltpc.Rotate(pTOFIn->GetAlpha());
+  AliTracker::PropagateTrackToBxByBz(&ltpc,pTOFIn->GetX(),0.1,0.1,kFALSE);
+  //
+  ltpc.GetXYZ(xyz);
+  Double_t phi= TMath::ATan2(xyz[1],xyz[0]);
+  histoX[1]= ltpc.GetTgl();
+  histoX[2]= phi;
+  histoX[3]= ltpc.GetSnp();
+  //
+  for (Int_t ihisto=0; ihisto<2; ihisto++){
+    histoX[0]=ltpc.GetParameter()[ihisto]-pTOFIn->GetParameter()[ihisto];
+    fResHistoTPCTOF[ihisto]->Fill(histoX);
   }
 
 }

@@ -67,6 +67,8 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetDistortionMap(Int_t i) const;
   AliTPCCorrection * GetTPCComposedCorrection() const { return fComposedCorrection;}
   void          SetTPCComposedCorrection(AliTPCCorrection *compCorr) { fComposedCorrection=compCorr;}
+  AliTPCCorrection * GetTPCComposedCorrection(Float_t field) const;
+
   AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
   AliTPCCalPad* GetPedestals() const{return fPedestals;}
   //ALTRO config data
@@ -179,6 +181,7 @@ protected:
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
   TObjArray   *fDistortionMap;    // distortion map
   AliTPCCorrection *fComposedCorrection;  // general space point corrections
+  TObjArray *      fComposedCorrectionArray; //space point corrections for different field setting
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCCalibRaw *fCalibRaw;      // raw data calibration entry

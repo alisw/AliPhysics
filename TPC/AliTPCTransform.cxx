@@ -64,6 +64,9 @@
 #include "AliTPCRecoParam.h"
 #include "AliTPCCalibVdrift.h"
 #include "AliTPCTransform.h"
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
+#include "AliTracker.h"
 #include <AliCTPTimeParams.h>
 
 ClassImp(AliTPCTransform)
@@ -148,7 +151,8 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   AliTPCCalPad * distortionMapZ = calib->GetDistortionMap(1); 
   AliTPCCalPad * distortionMapR = calib->GetDistortionMap(2); 
   AliTPCParam  * param    = calib->GetParameters(); 
-  AliTPCCorrection * correction = calib->GetTPCComposedCorrection();
+  AliTPCCorrection * correction = calib->GetTPCComposedCorrection();   // first user defined correction  // if does not exist  try to get it from calibDB array
+  if (!correction) correction = calib->GetTPCComposedCorrection(AliTracker::GetBz());
   if (!time0TPC){
     AliFatal("Time unisochronity missing");
   }
@@ -231,16 +235,32 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   // Apply non linear distortion correction  
   //
   if (distortionMapY ){
+    // wt - to get it form the OCDB
+    // ignore T1 and T2
+    AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+    Double_t bzField = magF->SolenoidField()/10.; //field in T
+    Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+    Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+    if (sector%36<18) ezField*=-1;
+    Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
+    Double_t c0=1./(1.+wt*wt);
+    Double_t c1=wt/c0;
+    
     //can be switch on for each dimension separatelly
     if (fCurrentRecoParam->GetUseFieldCorrection()&0x2)
-      if (distortionMapY) 
-	xx[1]-=distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+      if (distortionMapY){
+	xx[1]-= c0*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+	xx[0]-= c1*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+      }
     if (fCurrentRecoParam->GetUseFieldCorrection()&0x4) 
       if (distortionMapZ)
 	xx[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
     if (fCurrentRecoParam->GetUseFieldCorrection()&0x8) 
-      if (distortionMapR)
-	xx[0]-=distortionMapR->GetCalROC(sector)->GetValue(row,pad);
+      if (distortionMapR){
+	xx[0]-= c0*distortionMapR->GetCalROC(sector)->GetValue(row,pad);
+	xx[1]-=-c1*distortionMapR->GetCalROC(sector)->GetValue(row,pad)*wt;
+      }
+    
   }
   //
 

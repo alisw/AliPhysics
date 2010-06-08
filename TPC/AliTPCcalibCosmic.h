@@ -54,7 +54,7 @@ public:
   void     Process(AliESDtrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *const track)  {return AliTPCcalibBase::Process(track);}
 
-protected:  
+public:  
   //
   // Performance histograms
   //
