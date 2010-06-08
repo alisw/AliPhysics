@@ -267,7 +267,7 @@ AliMUONPreClusterFinder::NextCluster()
   
   if ( ShouldAbort() ) 
   {
-    AliCodeTimerAuto(Form("Aborting a precluster in DE %d because it got too many pads",fDetElemId),0);
+    AliCodeTimerAuto(Form("Skipping a precluster in DE %d because it got too many pads",fDetElemId),0);
     RemoveCluster(cluster);
     return NextCluster();
   }
