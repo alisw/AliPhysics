@@ -66,14 +66,14 @@ void AliJetCorrelWriter::CreateGeneric(TList *histosContainer){
   // books generic histograms
   UInt_t nTypeTrigg = fMaker->NoOfTrigg();
   UInt_t nTypeAssoc = fMaker->NoOfAssoc();
-  UInt_t nBinsCentr = fSelector->NoOfBins(centr);
-  UInt_t nBinsZVert = fSelector->NoOfBins(zvert);
-  UInt_t nBinsTrigg = fSelector->NoOfBins(trigg);
-  UInt_t nBinsAssoc = fSelector->NoOfBins(assoc);
-  Float_t minTrigg  = fSelector->MinLowBin(trigg);
-  Float_t maxTrigg  = fSelector->MaxHighBin(trigg);
-  Float_t minAssoc  = fSelector->MinLowBin(assoc);
-  Float_t maxAssoc  = fSelector->MaxHighBin(assoc);
+  UInt_t nBinsCentr = fSelector->NoOfBins(t_cent);
+  UInt_t nBinsZVert = fSelector->NoOfBins(t_vert);
+  UInt_t nBinsTrigg = fSelector->NoOfBins(t_trig);
+  UInt_t nBinsAssoc = fSelector->NoOfBins(t_asso);
+  Float_t minTrigg  = fSelector->MinLowBin(t_trig);
+  Float_t maxTrigg  = fSelector->MaxHighBin(t_trig);
+  Float_t minAssoc  = fSelector->MinLowBin(t_asso);
+  Float_t maxAssoc  = fSelector->MaxHighBin(t_asso);
 
   for(UInt_t ic=0; ic<nBinsCentr; ic++){ // loop over centrality bins
     for(UInt_t tt=0; tt<nTypeTrigg; tt++){ // loop over trigger types
@@ -90,27 +90,27 @@ void AliJetCorrelWriter::CreateGeneric(TList *histosContainer){
     } // loop over trigger types
   } // centrality binning loop
 
-  fHCentr = new TH1F("fHCentr","centrality distribution",100, 0., 100.);
+  fHCentr = new TH1F("fHCentr","centrality distribution",100, 0., 200.);
   histosContainer->AddLast(fHCentr);
-  fHZVert = new TH1F("fHZVert","vertex distribution",100, -50., 50.);
+  fHZVert = new TH1F("fHZVert","vertex distribution",100, -10., 10.);
   histosContainer->AddLast(fHZVert);
 
   fHBinsCentr = new TH1F("fHBinsCentr","centrality binning", nBinsCentr+1, 0, 1); 
   histosContainer->AddLast(fHBinsCentr);
   for(UInt_t i=1;i<=nBinsCentr+1; i++)
-    fHBinsCentr->SetBinContent(i,fSelector->BinBorder(centr,i-1));
+    fHBinsCentr->SetBinContent(i,fSelector->BinBorder(t_cent,i-1));
   fHBinsZVert = new TH1F("fHBinsZVert","centrality binning", nBinsZVert+1, 0, 1); 
   histosContainer->AddLast(fHBinsZVert);
   for(UInt_t i=1;i<=nBinsZVert+1; i++)
-    fHBinsZVert->SetBinContent(i,fSelector->BinBorder(zvert,i-1));
+    fHBinsZVert->SetBinContent(i,fSelector->BinBorder(t_vert,i-1));
   fHBinsTrigg = new TH1F("fHBinsTrigg","trigger binning", nBinsTrigg+1, 0, 1); 
   histosContainer->AddLast(fHBinsTrigg);
   for(UInt_t i=1;i<=nBinsTrigg+1; i++)
-    fHBinsTrigg->SetBinContent(i,fSelector->BinBorder(trigg,i-1));
+    fHBinsTrigg->SetBinContent(i,fSelector->BinBorder(t_trig,i-1));
   fHBinsAssoc = new TH1F("fHBinsAssoc","associated binning", nBinsAssoc+1, 0, 1); 
   histosContainer->AddLast(fHBinsAssoc);
   for(UInt_t i=1;i<=nBinsAssoc+1; i++)
-    fHBinsAssoc->SetBinContent(i,fSelector->BinBorder(assoc,i-1));
+    fHBinsAssoc->SetBinContent(i,fSelector->BinBorder(t_asso,i-1));
 }
 
 void AliJetCorrelWriter::CreateQA(TList *histosContainer){
@@ -133,13 +133,13 @@ void AliJetCorrelWriter::CreateQA(TList *histosContainer){
 
   UInt_t nTypeTrigg = fMaker->NoOfTrigg();
   UInt_t nTypeAssoc = fMaker->NoOfAssoc();
-  UInt_t nBinsCentr = fSelector->NoOfBins(centr);
-  UInt_t nBinsTrigg = fSelector->NoOfBins(trigg);
-  UInt_t nBinsAssoc = fSelector->NoOfBins(assoc);
-  Float_t minTrigg  = fSelector->MinLowBin(trigg);
-  Float_t maxTrigg  = fSelector->MaxHighBin(trigg);
-  Float_t minAssoc  = fSelector->MinLowBin(assoc);
-  Float_t maxAssoc  = fSelector->MaxHighBin(assoc);
+  UInt_t nBinsCentr = fSelector->NoOfBins(t_cent);
+  UInt_t nBinsTrigg = fSelector->NoOfBins(t_trig);
+  UInt_t nBinsAssoc = fSelector->NoOfBins(t_asso);
+  Float_t minTrigg  = fSelector->MinLowBin(t_trig);
+  Float_t maxTrigg  = fSelector->MaxHighBin(t_trig);
+  Float_t minAssoc  = fSelector->MinLowBin(t_asso);
+  Float_t maxAssoc  = fSelector->MaxHighBin(t_asso);
   for(UInt_t ic=0; ic<nBinsCentr; ic++){ // centrality loop
     for(UInt_t it=0; it<2; it++){ // mixing type loop (real/mixed)
       fHname="fHTrkProx"; fHname+=it; fHname+=ic;
@@ -163,16 +163,15 @@ void AliJetCorrelWriter::CreateQA(TList *histosContainer){
 
 void AliJetCorrelWriter::CreateCorrelations(TList* histosContainer){
   // books correlation histograms
-  const Float_t lr=-TMath::Pi()/3, ur=5*TMath::Pi()/3, bwPout=0.2;
   UInt_t nTypeCorrel = fMaker->NoOfCorrel();
-  UInt_t nBinsCentr = fSelector->NoOfBins(centr);
-  UInt_t nBinsZVert = fSelector->NoOfBins(zvert);
-  UInt_t nBinsTrigg = fSelector->NoOfBins(trigg);
-  UInt_t nBinsAssoc = fSelector->NoOfBins(assoc);
-  Float_t maxAssoc  = fSelector->MaxHighBin(assoc);
+  UInt_t nBinsCentr = fSelector->NoOfBins(t_cent);
+  UInt_t nBinsZVert = fSelector->NoOfBins(t_vert);
+  UInt_t nBinsTrigg = fSelector->NoOfBins(t_trig);
+  UInt_t nBinsAssoc = fSelector->NoOfBins(t_asso);
+  Float_t maxAssoc  = fSelector->MaxHighBin(t_asso);
   UInt_t kDPhiNumBins = fSelector->DPhiNumBins();
   UInt_t kDEtaNumBins = fSelector->DEtaNumBins();
-  UInt_t nPoutBins = UInt_t(TMath::Ceil(2.2*maxAssoc/bwPout)); // since |p_out|<p_Ta
+  UInt_t nPoutBins = UInt_t(TMath::Ceil(maxAssoc/fSelector->PoutBW())); // since |p_out|<p_Ta
   if(fRecoTrigg) {  // if any correlation has reconstructed trigger, define ntuple; use id to differentiate
     fNtuParent = new TNtuple("fNtuParent","Reconstructed Parent Ntuple","id:q:m:pT:phi:eta:assym:open");
     histosContainer->AddLast(fNtuParent);
@@ -184,14 +183,12 @@ void AliJetCorrelWriter::CreateCorrelations(TList* histosContainer){
 	  for(UInt_t hia=0; hia<nBinsAssoc; hia++){ // associated loop
 	    fHtit = fMaker->Descriptor(htc); fHtit+=":"; fHtit+=hic; fHtit+=hiv; fHtit+=hit; fHtit+=hia;
 	    fHname="fHReal"; fHname+=htc; fHname+=hic; fHname+=hiv; fHname+=hit; fHname+=hia;
-	    fHReal[htc][hic][hiv][hit][hia] = new TH3F(fHname,fHtit, kDPhiNumBins,lr,ur,
-						      kDEtaNumBins,-2.,2.,
-						      nPoutBins,-1.1*maxAssoc,1.1*maxAssoc);
+	    fHReal[htc][hic][hiv][hit][hia] = new TH3F(fHname,fHtit, kDPhiNumBins,-1./3.,5./3.,
+						      kDEtaNumBins,-1.6,1.6, nPoutBins,0.,maxAssoc);
 	    histosContainer->AddLast(fHReal[htc][hic][hiv][hit][hia]);
 	    fHname="fHMix"; fHname+=htc; fHname+=hic; fHname+=hiv; fHname+=hit; fHname+=hia;
-	    fHMix[htc][hic][hiv][hit][hia] = new TH3F(fHname,fHtit, kDPhiNumBins,lr,ur,
-						      kDEtaNumBins,-2.,2.,
-						      nPoutBins,-1.1*maxAssoc,1.1*maxAssoc);
+	    fHMix[htc][hic][hiv][hit][hia] = new TH3F(fHname,fHtit, kDPhiNumBins,-1./3.,5./3.,
+						      kDEtaNumBins,-1.6,1.6, nPoutBins,0.,maxAssoc);
 	    histosContainer->AddLast(fHMix[htc][hic][hiv][hit][hia]);
 	  } // loop over associated bins
 	} // loop over trigger bins
@@ -204,10 +201,10 @@ void AliJetCorrelWriter::CreateCorrelations(TList* histosContainer){
 // METHODS FOR FILLING THE OUTPUT HISTOGRAMS
 /////////////////////////////////////////////////////////
 
-void AliJetCorrelWriter::FillGlobal(Float_t cent, Float_t zvert){
+void AliJetCorrelWriter::FillGlobal(Float_t cent, Float_t vert){
   // some global event histos
   fHCentr->Fill(cent);
-  fHZVert->Fill(zvert);
+  fHZVert->Fill(vert);
 }
 
 void AliJetCorrelWriter::FillSingleHistos(UInt_t cBin, CorrelList_t * const TriggList, UInt_t tIdx,
@@ -274,44 +271,45 @@ void AliJetCorrelWriter::FillParentNtuple(CorrelList_t * const ParentList){
   }
 }
 
-void AliJetCorrelWriter::FillCorrelations(FillType_t fTyp, UInt_t iCorr, UInt_t cBin, UInt_t vBin, 
+void AliJetCorrelWriter::FillCorrelations(UInt_t fTyp, UInt_t iCorr, UInt_t cBin, UInt_t vBin, 
 					  CorrelParticle_t * const Trigg, CorrelParticle_t * const Assoc){
   // fills the correlation (two-particle) histograms
   // trigger information (this is why the first particle has to be the trigger):
   Float_t ptt  = Trigg->Pt();
   Float_t phit = Trigg->Phi();
   Float_t etat = Trigg->Eta();
-  Int_t   tBin = fSelector->GetBin(trigg,ptt);
+  Int_t   tBin = fSelector->GetBin(t_trig,ptt);
   // associated information:
   Float_t pta  = Assoc->Pt();
   Float_t phia = Assoc->Phi();
   Float_t etaa = Assoc->Eta();
-  Int_t   aBin = fSelector->GetBin(assoc,pta);
+  Int_t   aBin = fSelector->GetBin(t_asso,pta);
   //  Short_t qprod= Trigg->Q()*Assoc->Q();
 
   if(tBin<0 || aBin<0) return;  // one of them is not in the required pT range
   if(pta>=ptt) return; // use only associated particles below the trigger
   if(fabs(ptt-pta)<1.e-6 && fabs(phit-phia)<1.e-6 && fabs(etat-etaa)<1.e-6) return; // don't auto-correlate
 
-  // store track pair proximity
-  if(Trigg->ID()==hadron && Assoc->ID()==hadron){
-    CorrelTrack_t* trk1 = dynamic_cast<CorrelTrack_t*>(Trigg);
-    CorrelTrack_t* trk2 = dynamic_cast<CorrelTrack_t*>(Assoc);
-    if(!trk1 || !trk2)
-      {std::cerr<<"AliJetCorrelWriter::FillCorrelations: failed casting!"<<std::endl; exit(-1);}
-    Float_t pairDist = trk1->Dist(trk2);
-    if(fSelector->CloseTrackPair(pairDist)) return; // proximity cut
-    if(fSelector->GenQA()) fHTrkProx[fTyp][cBin]->Fill(pairDist,ptt,pta);
-  }
+  // track pair proximity 
+  // Before uncommenting, first store CorrelTrack_t in lists see AliJetCorrelReader::FillESDTrackLists
+//   if(Trigg->ID()==hadron && Assoc->ID()==hadron){
+//     CorrelTrack_t* trk1 = dynamic_cast<CorrelTrack_t*>(Trigg);
+//     CorrelTrack_t* trk2 = dynamic_cast<CorrelTrack_t*>(Assoc);
+//     if(!trk1 || !trk2)
+//       {std::cerr<<"AliJetCorrelWriter::FillCorrelations: failed casting!"<<std::endl; exit(-1);}
+//     Float_t pairDist = trk1->Dist(trk2);
+//     if(fSelector->CloseTrackPair(pairDist)) return; // proximity cut
+//     if(fSelector->GenQA()) fHTrkProx[fTyp][cBin]->Fill(pairDist,ptt,pta);
+//   }
 
   // Fill correlation histograms:
   Float_t dphi = DeltaPhi(phit,phia);
   Float_t deta = etat-etaa;
-  Float_t pout = pta*TMath::Sin(dphi);
-  if(fTyp==real)
-    fHReal[iCorr][cBin][vBin][tBin][aBin]->Fill(dphi,deta,pout);
+  Float_t pout = TMath::Abs(pta*TMath::Sin(dphi));
+  if(fTyp==0)
+    fHReal[iCorr][cBin][vBin][tBin][aBin]->Fill(dphi/TMath::Pi(),deta,pout);
   else
-    fHMix[iCorr][cBin][vBin][tBin][aBin]->Fill(dphi,deta,pout);
+    fHMix[iCorr][cBin][vBin][tBin][aBin]->Fill(dphi/TMath::Pi(),deta,pout);
 }
 
 Float_t AliJetCorrelWriter::DeltaPhi(Float_t  phi1, Float_t phi2) {

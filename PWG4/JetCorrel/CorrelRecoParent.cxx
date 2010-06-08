@@ -57,12 +57,12 @@ CorrelRecoParent_t* CorrelRecoParent_t::Copy(){
 Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p2, Bool_t kUseAliKF){
   // main method for parent reconstruction
 
-  if(p1->ID()==photon && p2->ID()==photon) fID = diphoton;
-  else if(p1->ID()==electron && p2->ID()==electron) fID = dielectron;
-  else if(p1->ID()==jet && p2->ID()==jet) fID = dijet;
-  else fID = dihadron;
+  if(p1->ID()==t_photon && p2->ID()==t_photon) fID = t_diphoton;
+  else if(p1->ID()==t_electron && p2->ID()==t_electron) fID = t_dielectron;
+  else if(p1->ID()==t_jet && p2->ID()==t_jet) fID = t_dijet;
+  else fID = t_dihadron;
   
-  if(fID==dielectron && kUseAliKF){
+  if(fID==t_dielectron && kUseAliKF){
     // code for parent reconstruction based on AliKFParticle:
     if(!fjcESD)
       {std::cerr<<"CorrelRecoParent_t::Reconstruct - undefined event"<<std::endl; exit(-1);}
@@ -127,16 +127,16 @@ Bool_t CorrelRecoParent_t::Reconstruct(CorrelParticle_t *p1, CorrelParticle_t *p
   return kTRUE;
 }
 
-Bool_t CorrelRecoParent_t::NotInMass(PartType_t pID, Float_t mass){
+Bool_t CorrelRecoParent_t::NotInMass(cPartType_t pID, Float_t mass){
   // THE MASS RANGES SHOULD PROBABLY BE MOMENTUM AND CENTRALITY DEPENDENT!!!
-  if(pID!=dielectron && pID!=diphoton) return kFALSE;
+  if(pID!=t_dielectron && pID!=t_diphoton) return kFALSE;
 
   const Float_t kZ0MassMin = 82;    // 91-3*3
   const Float_t kZ0MassMax = 100;   // 91+3*3
   const Float_t kPi0MassMin = 0.11; // 0.14-3*0.1
   const Float_t kPi0MassMax = 0.17; // 0.14+3*0.1
-  if(pID==dielectron && mass>kZ0MassMin && mass<kZ0MassMax) return kFALSE;
-  if(pID==diphoton && mass>kPi0MassMin && mass<kPi0MassMax) return kFALSE;
+  if(pID==t_dielectron && mass>kZ0MassMin && mass<kZ0MassMax) return kFALSE;
+  if(pID==t_diphoton && mass>kPi0MassMin && mass<kPi0MassMax) return kFALSE;
 
   return kTRUE;
 }

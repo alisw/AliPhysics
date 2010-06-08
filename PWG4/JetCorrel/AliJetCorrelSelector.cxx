@@ -29,13 +29,13 @@ ClassImp(AliJetCorrelSelector)
 AliJetCorrelSelector::AliJetCorrelSelector() : 
   fGenQA(kFALSE), fDPhiNumBins(0), fDEtaNumBins(0), fNumCorrel(0), fNumEvtTriggs(0), fPoolDepth(0), 
   fCorrelType(NULL), fEvtTriggs(NULL), fITSRefit(kFALSE), fTPCRefit(kFALSE), fTRDRefit(kFALSE),
-  fRejectKinkChild(kFALSE), fMaxEta(0), fMaxNsigmaVtx(0), fMaxTrkVtx(0), fMaxITSChi2(0), fMaxTPCChi2(0),
-  fMinNClusITS(0), fMinNClusTPC(0), fTrkMinProx(0), fUseAliKF(kFALSE) {
+  fRejectKinkChild(kFALSE), fMaxEta(0), fPoutBW(0), fMaxNsigmaVtx(0), fMaxTrkVtx(0), 
+  fMaxITSChi2(0), fMaxTPCChi2(0), fMinNClusITS(0), fMinNClusTPC(0), fTrkMinProx(0), fUseAliKF(kFALSE) {
   // (default) constructor
-  fNumBins[centr] = 0; fBinning[centr] = NULL;
-  fNumBins[zvert] = 0; fBinning[zvert] = NULL;
-  fNumBins[trigg] = 0; fBinning[trigg] = NULL;
-  fNumBins[assoc] = 0; fBinning[assoc] = NULL;
+  fNumBins[t_cent] = 0; fBinning[t_cent] = NULL;
+  fNumBins[t_vert] = 0; fBinning[t_vert] = NULL;
+  fNumBins[t_trig] = 0; fBinning[t_trig] = NULL;
+  fNumBins[t_asso] = 0; fBinning[t_asso] = NULL;
 }
 
 AliJetCorrelSelector::~AliJetCorrelSelector(){
@@ -44,14 +44,14 @@ AliJetCorrelSelector::~AliJetCorrelSelector(){
   fNumCorrel = 0;
   if(fEvtTriggs) delete [] fEvtTriggs;
   fNumEvtTriggs = 0;
-  if(fBinning[centr]) delete [] fBinning[centr];
-  fNumBins[centr] = 0;
-  if(fBinning[zvert]) delete [] fBinning[zvert];
-  fNumBins[zvert] = 0;
-  if(fBinning[trigg]) delete [] fBinning[trigg];
-  fNumBins[trigg] = 0;
-  if(fBinning[assoc]) delete [] fBinning[assoc];
-  fNumBins[assoc] = 0;
+  if(fBinning[t_cent]) delete [] fBinning[t_cent];
+  fNumBins[t_cent] = 0;
+  if(fBinning[t_vert]) delete [] fBinning[t_vert];
+  fNumBins[t_vert] = 0;
+  if(fBinning[t_trig]) delete [] fBinning[t_trig];
+  fNumBins[t_trig] = 0;
+  if(fBinning[t_asso]) delete [] fBinning[t_asso];
+  fNumBins[t_asso] = 0;
 }
 
 void AliJetCorrelSelector::SetCorrelTypes(UInt_t s, UInt_t * const v){
@@ -89,14 +89,14 @@ void AliJetCorrelSelector::SetBinningCentr(UInt_t s, Float_t * const v){
   // fills array of centrality bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningCentr - empty array"<<std::endl; exit(-1);}
   if(s>kMaxCent){std::cerr<<"AliJetCorrelSelector: centrality array too big!"<<std::endl; exit(-1);}
-  fNumBins[centr] = s;
-  fBinning[centr] = new Float_t[fNumBins[centr]]; 
-  for(UInt_t k=0; k<fNumBins[centr]; k++){
+  fNumBins[t_cent] = s;
+  fBinning[t_cent] = new Float_t[fNumBins[t_cent]]; 
+  for(UInt_t k=0; k<fNumBins[t_cent]; k++){
     if(TMath::Abs(v[k])>999.){
       std::cerr<<"AliJetCorrelSelector::SetBinningCentr - read error? val["<<k<<"]="<<v[k]<<std::endl;
       exit(-1);
     }
-    else fBinning[centr][k] = v[k];
+    else fBinning[t_cent][k] = v[k];
   }
 }
 
@@ -104,14 +104,14 @@ void AliJetCorrelSelector::SetBinningZvert(UInt_t s, Float_t * const v){
   // fills array of vertex bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningZvert - empty array"<<std::endl; exit(-1);}
   if(s>kMaxVert){std::cerr<<"AliJetCorrelSelector: vertex array too big!"<<std::endl; exit(-1);}
-  fNumBins[zvert] = s;
-  fBinning[zvert] = new Float_t[fNumBins[zvert]]; 
-  for(UInt_t k=0; k<fNumBins[zvert]; k++){
+  fNumBins[t_vert] = s;
+  fBinning[t_vert] = new Float_t[fNumBins[t_vert]]; 
+  for(UInt_t k=0; k<fNumBins[t_vert]; k++){
     if(TMath::Abs(v[k])>999.){
       std::cerr<<"AliJetCorrelSelector::SetBinningZvert - read error? val["<<k<<"]="<<v[k]<<std::endl;
       exit(-1);
     }
-    else fBinning[zvert][k] = v[k];
+    else fBinning[t_vert][k] = v[k];
   }
 }
 
@@ -119,14 +119,14 @@ void AliJetCorrelSelector::SetBinningTrigg(UInt_t s, Float_t * const v){
   // fills array of trigger bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningTrigg - empty array"<<std::endl; exit(-1);}
   if(s>kMaxTrig){std::cerr<<"AliJetCorrelSelector: trigger array too big!"<<std::endl; exit(-1);}
-  fNumBins[trigg] = s;
-  fBinning[trigg] = new Float_t[fNumBins[trigg]]; 
-  for(UInt_t k=0; k<fNumBins[trigg]; k++){
+  fNumBins[t_trig] = s;
+  fBinning[t_trig] = new Float_t[fNumBins[t_trig]]; 
+  for(UInt_t k=0; k<fNumBins[t_trig]; k++){
     if(TMath::Abs(v[k])>999.){
       std::cerr<<"AliJetCorrelSelector::SetBinningTrigg - read error? val["<<k<<"]="<<v[k]<<std::endl;
       exit(-1);
     }
-    else fBinning[trigg][k] = v[k];
+    else fBinning[t_trig][k] = v[k];
   }
 }
 
@@ -134,24 +134,24 @@ void AliJetCorrelSelector::SetBinningAssoc(UInt_t s, Float_t * const v){
   // fills array of associated bins
   if(s<1){std::cerr<<"AliJetCorrelSelector::SetBinningAssoc - empty array"<<std::endl; exit(-1);}
   if(s>kMaxAsso){std::cerr<<"AliJetCorrelSelector: associated array too big!"<<std::endl; exit(-1);}
-  fNumBins[assoc] = s;
-  fBinning[assoc] = new Float_t[fNumBins[assoc]]; 
-  for(UInt_t k=0; k<fNumBins[assoc]; k++){
+  fNumBins[t_asso] = s;
+  fBinning[t_asso] = new Float_t[fNumBins[t_asso]]; 
+  for(UInt_t k=0; k<fNumBins[t_asso]; k++){
     if(TMath::Abs(v[k])>999.){
       std::cerr<<"AliJetCorrelSelector::SetBinningAssoc - read error? val["<<k<<"]="<<v[k]<<std::endl;
       exit(-1);
     }
-    else fBinning[assoc][k] = v[k];
+    else fBinning[t_asso][k] = v[k];
   }
 }
 
-Float_t AliJetCorrelSelector::BinBorder(BinType_t cType, UInt_t k) const {
+Float_t AliJetCorrelSelector::BinBorder(cBinType_t cType, UInt_t k) const {
   // returns bin margins
   if(k<=NoOfBins(cType)) return fBinning[cType][k];
   else {std::cerr<<"BinBorder Error: bin of type "<<cType<<" outside range "<<k<<std::endl; exit(0);}
 }
 
-Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val) const {
+Int_t AliJetCorrelSelector::GetBin(cBinType_t cType, Float_t val) const {
   // returns bin number
   Int_t iBin=-1; UInt_t nBins=NoOfBins(cType);
   for(UInt_t i=0; i<nBins; i++)
@@ -162,19 +162,20 @@ Int_t AliJetCorrelSelector::GetBin(BinType_t cType, Float_t val) const {
 void AliJetCorrelSelector::Show() const {
   // print out all user selections
   std::cout<<"Generic selections: "<<std::endl<<" GenQA="<<fGenQA<<" UseAliKF="<<fUseAliKF
-	   <<" nDPhiBins="<<fDPhiNumBins<<" nDEtaBins="<<fDEtaNumBins<<" PoolDepth="<<fPoolDepth;
+	   <<" nDPhiBins="<<fDPhiNumBins<<" nDEtaBins="<<fDEtaNumBins<<" PoutBinWidth="<<fPoutBW
+	   <<" PoolDepth="<<fPoolDepth;
   std::cout<<std::endl<<" Correlation Types: ";
   for(UInt_t k=0; k<fNumCorrel; k++) std::cout<<fCorrelType[k]<<" ";
   std::cout<<std::endl<<" Event Triggers: ";
   for(UInt_t k=0; k<fNumEvtTriggs; k++) std::cout<<fEvtTriggs[k]<<" ";
   std::cout<<std::endl<<" Centrality/Multiplicity binning: ";
-  for(UInt_t k=0; k<fNumBins[centr]; k++) std::cout<<fBinning[centr][k]<<" ";
+  for(UInt_t k=0; k<fNumBins[t_cent]; k++) std::cout<<fBinning[t_cent][k]<<" ";
   std::cout<<std::endl<<" Vertex binning: ";
-  for(UInt_t k=0; k<fNumBins[zvert]; k++) std::cout<<fBinning[zvert][k]<<" ";
+  for(UInt_t k=0; k<fNumBins[t_vert]; k++) std::cout<<fBinning[t_vert][k]<<" ";
   std::cout<<std::endl<<" Trigger binning: ";
-  for(UInt_t k=0; k<fNumBins[trigg]; k++) std::cout<<fBinning[trigg][k]<<" ";
+  for(UInt_t k=0; k<fNumBins[t_trig]; k++) std::cout<<fBinning[t_trig][k]<<" ";
   std::cout<<std::endl<<" Associated binning: ";
-  for(UInt_t k=0; k<fNumBins[assoc]; k++) std::cout<<fBinning[assoc][k]<<" ";
+  for(UInt_t k=0; k<fNumBins[t_asso]; k++) std::cout<<fBinning[t_asso][k]<<" ";
   std::cout<<std::endl<<"Track selections: "<<std::endl
 	   <<" MaxEta="<<fMaxEta<<" MaxTrkVtx="<<fMaxTrkVtx<<" MaxNsigmaVtx="<<fMaxNsigmaVtx<<std::endl
 	   <<" MaxITSChi2="<<fMaxITSChi2<<" MaxTPCChi2="<<fMaxTPCChi2<<std::endl
@@ -208,7 +209,7 @@ Bool_t AliJetCorrelSelector::CloseTrackPair(Float_t dist) const {
 
 Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track) const {
   // selects low quality tracks
-  if(track->Eta()>fMaxEta) return kTRUE;
+  if(TMath::Abs(track->Eta())>fMaxEta) return kTRUE;
   UInt_t status = track->GetStatus();
   if(track->Pt()>5 && fITSRefit && !(status & AliESDtrack::kITSrefit)) return kTRUE;
   if(fTPCRefit && !(status & AliESDtrack::kTPCrefit)) return kTRUE;
@@ -236,7 +237,7 @@ Bool_t AliJetCorrelSelector::LowQualityTrack(AliESDtrack* track) const {
   return kFALSE;
 }
 
-Bool_t AliJetCorrelSelector::PassPID(AliESDtrack* track, PartType_t PartType) const {
+Bool_t AliJetCorrelSelector::PassPID(AliESDtrack* track, cPartType_t PartType) const {
   // checks if a track has the required ID
   Bool_t hasReqPID = kFALSE;
   Stat_t fPid;
@@ -244,25 +245,13 @@ Bool_t AliJetCorrelSelector::PassPID(AliESDtrack* track, PartType_t PartType) co
   GetPID(track, fPid, fWeight);
   
   switch(PartType){
-    case hadron:
+    case t_hadron:
       // if(fPID!=0) hasReqPID = kTRUE;
       hasReqPID = kTRUE;
       break;
-    case electron:
+    case t_electron:
       // if(fTRDRefit && !(status & AliESDtrack::kTRDrefit)) hasReqPID = kFALSE;
       // if(fPID!=0) hasReqPID = kFALSE;
-      hasReqPID = kTRUE;
-      break;
-    case pion:
-      // if(fPID!=2) hasReqPID = kFALSE;
-      hasReqPID = kTRUE;
-      break;
-    case kaon:
-      // if(fPID!=3) hasReqPID = kFALSE;
-      hasReqPID = kTRUE;
-      break;
-    case proton:
-      // if(fPID!=4) hasReqPID = kFALSE;
       hasReqPID = kTRUE;
       break;
     default:

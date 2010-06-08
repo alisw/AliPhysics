@@ -62,22 +62,20 @@ class CorrelList_t : public TObject {
   void Push(CorrelParticle_t* p);
   UInt_t Size() const {return fSize;}
   UInt_t EvtID() const {return fEvtID;}
-  PartType_t PartID() const {return fPartID;}
-  PoolType_t PoolID() const {return fPoolID;}
+  cPartType_t PartID() const {return fPartID;}
   Bool_t Filled() const {return fFilled;}
   void SetFilled(Bool_t f) {fFilled=f;}
-  void Label(PartType_t p, PoolType_t l, UInt_t e) {fPartID=p; fPoolID=l; fEvtID=e;}
+  void Label(cPartType_t p, UInt_t e) {fPartID=p; fEvtID=e;}
   CorrelListIter_t Head() const {return CorrelListIter_t(fHead);}
   void ShowHead() const;
   void Show() const;
   
  private:
-  UInt_t fSize;             // list size
-  UInt_t fEvtID;            // event ID
-  Bool_t fFilled;           // is filled
-  PartType_t fPartID;       // particle ID
-  PoolType_t fPoolID;       // pool type
-  CorrelListNode_t* fHead;  // list head
+  UInt_t fSize;             //! list size
+  UInt_t fEvtID;            //! event ID
+  Bool_t fFilled;           //! is filled
+  cPartType_t fPartID;      //! particle ID
+  CorrelListNode_t* fHead;  //! list head
   
   CorrelList_t(const CorrelList_t& rhs);        // forbid copy constructor
   

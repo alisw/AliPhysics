@@ -9,7 +9,7 @@
 // two-particle correlations to be run in one instance of the analysis module.
 //-- Author: Paul Constantin
 
-#include "CorrelDefs.h"
+#include "AliJetCorrelSelector.h"
 
 class AliJetCorrelMaker : public TObject {
   
@@ -26,18 +26,18 @@ class AliJetCorrelMaker : public TObject {
   UInt_t NoOfAssoc()  const {return fNumAssoc;}
   UInt_t IdxTrigg(UInt_t k) const;
   UInt_t IdxAssoc(UInt_t k) const;
-  PartType_t TriggType(UInt_t k) const;
-  PartType_t AssocType(UInt_t k) const;
+  cPartType_t TriggType(UInt_t k) const;
+  cPartType_t AssocType(UInt_t k) const;
   TString Descriptor(UInt_t k) const;
   Bool_t RecoTrigger(UInt_t k) const;
   Bool_t RecoTrigger() const;
   
  private: 
-  UInt_t fNumCorrel, fNumTrigg, fNumAssoc; // counters
+  UInt_t fNumCorrel, fNumTrigg, fNumAssoc; //! counters
   UInt_t* fCorrelType;     //! array of correlation types
   TString* fCorrelStr;     //! array of correlation string descriptors
-  PartType_t* fTriggType;  //! array of trigger particle types
-  PartType_t* fAssocType;  //! array of associated particle types
+  cPartType_t* fTriggType;  //! array of trigger particle types
+  cPartType_t* fAssocType;  //! array of associated particle types
   UInt_t* fIdxTrigg;       //! array with trigger indices
   UInt_t* fIdxAssoc;       //! array with associated indices
   

@@ -11,11 +11,8 @@
 // AliJetCorrelMixer for event mixing and AliJetCorrelWriter for output histos
 //-- Author: Paul Constantin
 
-#include "AliJetCorrelMaker.h"
-#include "AliJetCorrelSelector.h"
 #include "AliJetCorrelReader.h"
 #include "AliJetCorrelMixer.h"
-#include "AliJetCorrelWriter.h"
 
 class AliAnalysisTaskJetCorrel : public AliAnalysisTaskSE {
   
@@ -31,15 +28,15 @@ class AliAnalysisTaskJetCorrel : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *option);
   
  private:
-  AliESDEvent *fjcESD;
+  AliESDEvent *fjcESD;                               //! ESD event
   TList *fOutputContainer;                           // Histogram container
-  AliJetCorrelSelector *fSelector;                   // User selection object
-  UInt_t fNumCorrel, fNumTrigg, fNumAssoc, fNumEvts; // counters
-  AliJetCorrelMaker *fMaker;                         // Correlation maker object
-  AliJetCorrelWriter *fWriter;                       // Output writer object
-  AliJetCorrelReader *fReader;                       // Input reader object
-  AliJetCorrelMixer *fMixer;                         // Event mixing object
-  CorrelList_t *fTriggList, *fAssocList;             // Trigger&Associated particle lists
+  AliJetCorrelSelector *fSelector;                   //! User selection object
+  UInt_t fNumCorrel, fNumTrigg, fNumAssoc, fNumEvts; //! counters
+  AliJetCorrelMaker *fMaker;                         //! Correlation maker object
+  AliJetCorrelWriter *fWriter;                       //! Output writer object
+  AliJetCorrelReader *fReader;                       //! Input reader object
+  AliJetCorrelMixer *fMixer;                         //! Event mixing object
+  CorrelList_t *fTriggList, *fAssocList;             //! Trigger&Associated particle lists
   
   void CrossCorrelate(CorrelList_t * const TriggList, CorrelList_t * const AssocList,
 		      UInt_t cBin, UInt_t vBin, UInt_t iCor);

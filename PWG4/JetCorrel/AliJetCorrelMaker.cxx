@@ -51,31 +51,31 @@ Bool_t AliJetCorrelMaker::Init(UInt_t s, UInt_t * const v){
   fNumCorrel = s;
   fCorrelType = new UInt_t[fNumCorrel];
   fCorrelStr  = new TString[fNumCorrel];
-  fTriggType  = new PartType_t[fNumCorrel];
-  fAssocType  = new PartType_t[fNumCorrel];
+  fTriggType  = new cPartType_t[fNumCorrel];
+  fAssocType  = new cPartType_t[fNumCorrel];
   for(UInt_t k=0; k<fNumCorrel; k++){
     fCorrelType[k] = v[k];
     switch(fCorrelType[k]){
     case 0:
-      fTriggType[k] = hadron;     fAssocType[k] = hadron; fCorrelStr[k] = "DiHadron";
+      fTriggType[k] = t_hadron;     fAssocType[k] = t_hadron; fCorrelStr[k] = "DiHadron";
       break;
     case 1:
-      fTriggType[k] = diphoton;   fAssocType[k] = hadron; fCorrelStr[k] = "Pi0Hadron";
+      fTriggType[k] = t_diphoton;   fAssocType[k] = t_hadron; fCorrelStr[k] = "Pi0Hadron";
       break;
     case 2:
-      fTriggType[k] = photon;     fAssocType[k] = hadron; fCorrelStr[k] = "PhotHadron";
+      fTriggType[k] = t_photon;     fAssocType[k] = t_hadron; fCorrelStr[k] = "PhotHadron";
       break;
     case 3:
-      fTriggType[k] = dielectron; fAssocType[k] = hadron; fCorrelStr[k] = "Z0Hadron";
+      fTriggType[k] = t_dielectron; fAssocType[k] = t_hadron; fCorrelStr[k] = "Z0Hadron";
       break;
     case 4:
-      fTriggType[k] = jet;        fAssocType[k] = jet;    fCorrelStr[k] = "JetJet";
+      fTriggType[k] = t_jet;        fAssocType[k] = t_jet;    fCorrelStr[k] = "JetJet";
       break;
     case 5:
-      fTriggType[k] = photon;     fAssocType[k] = jet;    fCorrelStr[k] = "PhotJet";
+      fTriggType[k] = t_photon;     fAssocType[k] = t_jet;    fCorrelStr[k] = "PhotJet";
       break;
     case 6:
-      fTriggType[k] = dielectron; fAssocType[k] = jet;    fCorrelStr[k] = "Z0Jet";
+      fTriggType[k] = t_dielectron; fAssocType[k] = t_jet;    fCorrelStr[k] = "Z0Jet";
       break;
     default:
       std::cerr<<"AliJetCorrelMaker::Initialize - ERROR: unknown correlation type!"<<std::endl;
@@ -86,7 +86,7 @@ Bool_t AliJetCorrelMaker::Init(UInt_t s, UInt_t * const v){
 
   Bool_t notStored;
   fIdxTrigg  = new UInt_t[fNumCorrel];
-  PartType_t *fTriggUniq = new PartType_t[fNumCorrel];
+  cPartType_t *fTriggUniq = new cPartType_t[fNumCorrel];
   for(UInt_t k=0; k<fNumCorrel; k++){
     notStored = kTRUE;
     for(UInt_t i=0; i<fNumTrigg; i++) 
@@ -99,7 +99,7 @@ Bool_t AliJetCorrelMaker::Init(UInt_t s, UInt_t * const v){
   delete [] fTriggUniq;
 
   fIdxAssoc  = new UInt_t[fNumCorrel];
-  PartType_t *fAssocUniq = new PartType_t[fNumCorrel];
+  cPartType_t *fAssocUniq = new cPartType_t[fNumCorrel];
   for(UInt_t k=0; k<fNumCorrel; k++){
     notStored = kTRUE;
     for(UInt_t i=0; i<fNumAssoc; i++) 
@@ -148,20 +148,20 @@ UInt_t AliJetCorrelMaker::IdxAssoc(UInt_t k) const {
   return fIdxAssoc[k];
 }
 
-PartType_t AliJetCorrelMaker::TriggType(UInt_t k) const {
+cPartType_t AliJetCorrelMaker::TriggType(UInt_t k) const {
   if(k>=fNumCorrel)
-    {std::cerr<<"AliJetCorrelMaker::TriggType overflow!"<<std::endl; return unknown;}
+    {std::cerr<<"AliJetCorrelMaker::TriggType overflow!"<<std::endl; return t_unknown;}
   return fTriggType[k];
 }
 
-PartType_t AliJetCorrelMaker::AssocType(UInt_t k) const {
+cPartType_t AliJetCorrelMaker::AssocType(UInt_t k) const {
   if(k>=fNumCorrel)
-    {std::cerr<<"AliJetCorrelMaker::AssocType overflow!"<<std::endl; return unknown;}
+    {std::cerr<<"AliJetCorrelMaker::AssocType overflow!"<<std::endl; return t_unknown;}
   return fAssocType[k];
 }
 
 Bool_t AliJetCorrelMaker::RecoTrigger(UInt_t k) const {
-  if(fTriggType[k]==diphoton || fTriggType[k]==dielectron)
+  if(fTriggType[k]==t_diphoton || fTriggType[k]==t_dielectron)
     return kTRUE;
   return kFALSE;
 }

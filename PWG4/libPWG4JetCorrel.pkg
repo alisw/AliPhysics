@@ -4,7 +4,7 @@ SRCS = JetCorrel/AliAnalysisTaskJetCorrel.cxx  \
        JetCorrel/AliJetCorrelMaker.cxx JetCorrel/AliJetCorrelSelector.cxx JetCorrel/AliJetCorrelReader.cxx JetCorrel/AliJetCorrelMixer.cxx JetCorrel/AliJetCorrelWriter.cxx \
        JetCorrel/CorrelList.cxx JetCorrel/CorrelParticle.cxx JetCorrel/CorrelRecoParent.cxx JetCorrel/CorrelTrack.cxx JetCorrel/CorrelKFTrack.cxx
 
-HDRS:= JetCorrel/CorrelDefs.h $(SRCS:.cxx=.h) 
+HDRS:= $(SRCS:.cxx=.h) 
 
 DHDR:= PWG4JetCorrelLinkDef.h
 

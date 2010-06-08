@@ -17,14 +17,20 @@ AliAnalysisTaskJetCorrel *AddTaskJetCorrel(){
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/ConfigJetCorrel.C");
   AliJetCorrelSelector* Selector = ConfigJetCorrel();
-  AliAnalysisTaskJetCorrel *task = new AliAnalysisTaskJetCorrel(Selector);
-  mgr->AddTask(task);
+  AliAnalysisTaskJetCorrel *jetcorrel = new AliAnalysisTaskJetCorrel(Selector);
+  mgr->AddTask(jetcorrel);
+  
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+  AliPhysicsSelection* physSele = physSelTask->GetPhysicsSelection();
+  jetcorrel->SelectCollisionCandidates(); 
 
   //create data containers
   AliAnalysisDataContainer *cinput = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("cAUTO_INPUT");
-  mgr->ConnectInput(task,0,cinput);
-  AliAnalysisDataContainer *coutput_JetCorrel = mgr->CreateContainer("JetCorrelHistos", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:JetCorrel",AliAnalysisManager::GetCommonFileName()));  
-  mgr->ConnectOutput(task,0,coutput_JetCorrel);
+  mgr->ConnectInput(jetcorrel,0,cinput);
+  AliAnalysisDataContainer *coutput_JetCorrel = mgr->CreateContainer("JetCorrelHistos", TList::Class(),
+	AliAnalysisManager::kOutputContainer, Form("%s:JetCorrel",AliAnalysisManager::GetCommonFileName()));  
+  mgr->ConnectOutput(jetcorrel,0,coutput_JetCorrel);
   
-  return task;
+  return jetcorrel;
 }

@@ -26,7 +26,7 @@ CorrelKFTrack_t::CorrelKFTrack_t() : CorrelParticle_t(), fParam(NULL), fCovar(NU
   // default constructor:
 }
 
-CorrelKFTrack_t::CorrelKFTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, PartType_t i, 
+CorrelKFTrack_t::CorrelKFTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, cPartType_t i, 
 				   Double_t* par, Double_t* cov) : 
   CorrelParticle_t(pt,p,e,m,i), fParam(par), fCovar(cov){
   // constructor:
