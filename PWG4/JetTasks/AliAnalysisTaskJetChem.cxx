@@ -427,38 +427,39 @@ void  AliAnalysisTaskJetChem::AnalyseEvent()
     AliInfo("no prim Vertex found - skip event");
     fhPrimVertexNCont->Fill(-1);
     return; 
-    
-    
-    if(primVertex->GetName() == "TPCVertex"){
-      AliInfo("found TPC prim Vertex  - skip event");
-      fhPrimVertexNCont->Fill(-1);
-      return; 
-    }
-    
-    Int_t nVertContributors = primVertex->GetNContributors();
-    fhPrimVertexNCont->Fill(nVertContributors);
-    
-    //cout<<" prim vertex name "<<primVertex->GetName()<<" nCont "<<nVertContributors<<endl;
-    
-    if(nVertContributors<1){ // eventually check if not SPD vertex ??? 
-      AliInfo("prim vertex no contributors - skip event");
-      return;
-    }
-    
-    Double_t vertX = primVertex->GetX();
-    Double_t vertY = primVertex->GetY();
-    Double_t vertZ = primVertex->GetZ();
-    
-    Double_t vertRho = TMath::Sqrt(vertX*vertX+vertY*vertY);
-    
-    fhPrimVertexRho->Fill(vertRho);
-    fhPrimVertexZ->Fill(vertZ);
-    
-    if(TMath::Abs(vertZ)>10){
-      AliInfo(Form("prim vertex z=%f - skip event",vertZ));
-      return; 
-    }
   }
+    
+    
+  if(primVertex->GetName() == "TPCVertex"){
+    AliInfo("found TPC prim Vertex  - skip event");
+    fhPrimVertexNCont->Fill(-1);
+    return; 
+  }
+    
+  Int_t nVertContributors = primVertex->GetNContributors();
+  fhPrimVertexNCont->Fill(nVertContributors);
+  
+  //cout<<" prim vertex name "<<primVertex->GetName()<<" nCont "<<nVertContributors<<endl;
+  
+  if(nVertContributors<1){ // eventually check if not SPD vertex ??? 
+    AliInfo("prim vertex no contributors - skip event");
+    return;
+  }
+    
+  Double_t vertX = primVertex->GetX();
+  Double_t vertY = primVertex->GetY();
+  Double_t vertZ = primVertex->GetZ();
+  
+  Double_t vertRho = TMath::Sqrt(vertX*vertX+vertY*vertY);
+  
+  fhPrimVertexRho->Fill(vertRho);
+  fhPrimVertexZ->Fill(vertZ);
+  
+  if(TMath::Abs(vertZ)>10){
+    AliInfo(Form("prim vertex z=%f - skip event",vertZ));
+    return; 
+  }
+  
   
   Int_t pythiaPID = GetPythiaProcessID();
   
@@ -3660,14 +3661,14 @@ Int_t AliAnalysisTaskJetChem::GetPythiaProcessID(){
   
   AliMCEvent* mcEvent = mcHandler->MCEvent();
   if (!mcEvent) {
-    Printf("ERROR: Could not retrieve MC event");
+    AliInfo("could not retrieve MC event");
     return -1;
   }
   
   AliGenPythiaEventHeader*  pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
   
-  if (!mcEvent) {
-    Printf("ERROR: Could not retrieve pythiaEventHeader");
+  if (!pythiaGenHeader) {
+    AliInfo("Could not retrieve pythiaEventHeader");
     return -1;
   }
 

@@ -272,7 +272,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     Float_t xvtx = -999;
     Float_t yvtx = -999;
 
-    if(vtxESD->GetNContributors()>0){
+    if(vtxESD->GetNContributors()>2){
       zvtx = vtxESD->GetZ();
       yvtx = vtxESD->GetY();
       xvtx = vtxESD->GetX();
@@ -303,7 +303,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     if(iTrig>=0){
       iTrig *= 3;
       fh2ESDTriggerRun->Fill(run,iTrig+1);
-      if(vtxESD->GetNContributors()>0){
+      if(vtxESD->GetNContributors()>2){
 	fh2ESDTriggerRun->Fill(run,iTrig+2);
 	fh2VtxXY->Fill(xvtx,yvtx);
       }
@@ -353,7 +353,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	fh2ESDTriggerCount->Fill(it,kSelectedALICE); 
       }
       if(!fUsePhysicsSelection)cand =  AliAnalysisHelperJetTasks::IsTriggerFired(esd,AliAnalysisHelperJetTasks::kMB1);
-      if(vtxESD->GetNContributors()>0&&!vtxName.Contains("TPCVertex")){
+      if(vtxESD->GetNContributors()>2&&!vtxName.Contains("TPCVertex")){
 	if(esdTrig)fh2ESDTriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxESD->GetZ();
 	if(esdEventSelected&&esdTrig){
@@ -377,7 +377,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       Bool_t aodTrig = kFALSE;
       aodTrig = AliAnalysisHelperJetTasks::IsTriggerFired(aod,(AliAnalysisHelperJetTasks::Trigger)it);
       if(aodTrig)fh2TriggerCount->Fill(it,kAllTriggered);
-      if(vtxAOD->GetNContributors()>0&&!vtxTitle.Contains("TPCVertex")){
+      if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	if(aodTrig)fh2TriggerCount->Fill(it,kTriggeredVertex);
 	Float_t zvtx = vtxAOD->GetZ();
 	if(aodTrig&&aodEventSelected){
@@ -436,7 +436,7 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedESD(AliESDEvent* esd){
   
 
 
-  if(vtx->GetNContributors()<2)return kFALSE;
+  if(vtx->GetNContributors()<3)return kFALSE;
 
   // do not want tpc only primary vertex
   TString vtxName(vtx->GetName());
@@ -470,7 +470,7 @@ Bool_t AliAnalysisTaskJetServices::IsEventSelectedAOD(AliAODEvent* aod){
   
 
 
-  if(vtx->GetNContributors()<2)return kFALSE;
+  if(vtx->GetNContributors()<3)return kFALSE;
 
   // do not want tpc only primary vertex
   TString vtxName(vtx->GetName());
