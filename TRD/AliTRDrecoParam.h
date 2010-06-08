@@ -80,6 +80,8 @@ public:
   Int_t    GetTCnexp() const                { return fTCnexp;          };
   Int_t    GetNumberOfPresamples()  const   { return fNumberOfPresamples;}
   Int_t    GetNumberOfPostsamples() const   { return fNumberOfPostsamples;}
+  Int_t    GetNumberOfSeedConfigs() const   { return fNumberOfConfigs;}
+  Int_t    GetRecEveryNTB() const           { return fRecEveryNTB; }
   Bool_t   IsArgon() const                  { return TESTBIT(fFlags, kDriftGas); }
   Bool_t   IsCheckTimeConsistency() const   { return kCheckTimeConsistency;}
   Bool_t   IsOverPtThreshold(Double_t pt) const {return Bool_t(pt>fkPtThreshold);}
@@ -94,7 +96,9 @@ public:
   Bool_t   UseTailCancelation() const       { return TESTBIT(fFlags, kTailCancelation); }
         
   static   AliTRDrecoParam *GetLowFluxParam();
+  static   AliTRDrecoParam *GetLowFluxHLTParam();
   static   AliTRDrecoParam *GetHighFluxParam();
+  static   AliTRDrecoParam *GetHighFluxHLTParam();
   static   AliTRDrecoParam *GetCosmicTestParam();
 
   void     SetArgon(Bool_t b = kTRUE)                         {if(b) SETBIT(fFlags, kDriftGas); else CLRBIT(fFlags, kDriftGas);}
@@ -157,7 +161,7 @@ private:
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
   Double_t  fkChi2YSlope;            // Slope of the chi2-distribution in y-direction
   Double_t  fkChi2ZSlope;            // Slope of the chi2-distribution in z-direction
-	Double_t  fkChi2YCut;							 // Cut on the Chi2 in y-direction in the likelihood filter
+  Double_t  fkChi2YCut;							 // Cut on the Chi2 in y-direction in the likelihood filter
   Double_t  fkPhiSlope;              // Slope of the distribution of the deviation between track angle and tracklet angle
   Double_t  fkNMeanClusters;         // Mean number of clusters per tracklet
   Double_t  fkNSigmaClusters;        // Sigma of the number of clusters per tracklet
@@ -167,6 +171,7 @@ private:
   
   Double_t  fSysCovMatrix[5];        // Systematic uncertainty from calibration and alignment for each tracklet
   Double_t  fPIDThreshold[AliTRDCalPID::kNMom];   // PID Thresholds for Electron candidate decision
+  Int_t     fNumberOfConfigs;        // Used number of seed configurations
 
   // Reconstruction Options for TRD reconstruction
   Int_t     fStreamLevel[kTRDreconstructionTasks]; // Stream Level
@@ -182,7 +187,8 @@ private:
   Double_t  fClusSigThresh;          // Threshold value for cluster signal
   Int_t     fTCnexp;                 // Number of exponentials, digital filter
   Double_t  fTCParams[8];            // Tail Cancellation parameters for drift gases 
-  
+  Int_t     fRecEveryNTB;            // Reconstruct each nth timebin
+
   // ADC parameter
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 

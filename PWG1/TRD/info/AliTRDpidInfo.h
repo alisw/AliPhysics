@@ -39,8 +39,8 @@ private:
   Int_t         fNtracklets;  // number of tracklets
   AliTRDpidData *fData;       //[fNtracklets] PID data array
 
-  AliTRDpidInfo(const AliTRDpidInfo::AliTRDpidInfo& ref);
-  AliTRDpidInfo& operator=(const AliTRDpidInfo::AliTRDpidInfo& ref);
+  AliTRDpidInfo(const AliTRDpidInfo& ref);
+  AliTRDpidInfo& operator=(const AliTRDpidInfo& ref);
 
   ClassDef(AliTRDpidInfo, 1)  // track PID data representation
 };

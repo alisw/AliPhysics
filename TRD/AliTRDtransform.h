@@ -42,7 +42,7 @@ class AliTRDtransform : public TObject {
 
 protected:
 
-  AliTRDgeometry     *fGeo;                 //  TRD geometry
+  static AliTRDgeometry *fgGeo;              //  TRD geometry
   Int_t               fDetector;            //  Detector number
 
   AliTRDCommonParam  *fParam;               //  TRD common parameters

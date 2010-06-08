@@ -783,6 +783,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   fSigThresh            = (Short_t)recoParam->GetClusSigThresh();
   fMinMaxCutSigma       = recoParam->GetMinMaxCutSigma();
   fMinLeftRightCutSigma = recoParam->GetMinLeftRightCutSigma();
+  const Int_t iEveryNTB = recoParam->GetRecEveryNTB();
 
   Int_t istack  = fIndexes->GetStack();
   fLayer  = fIndexes->GetLayer();
@@ -866,7 +867,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // Here the clusterfining is happening
   
-  for(curr.time = 0; curr.time < fTimeTotal; curr.time++){
+  for(curr.time = 0; curr.time < fTimeTotal; curr.time+=iEveryNTB){
     while(fIndexes->NextRCIndex(curr.row, curr.col)){
       if(fDigits->GetData(curr.row, curr.col, curr.time) > fMaxThreshTest && IsMaximum(curr, curr.padStatus, &curr.signals[0])){
         if(last.row>-1){
@@ -1028,7 +1029,7 @@ void AliTRDclusterizer::CreateCluster(const MaxStruct &Max)
   cluster.SetLabel(Max.time,2);
 
   //needed for HLT reconstruction
-  AddClusterToArray(&cluster); 
+  AddClusterToArray(&cluster);
 
   // Store the index of the first cluster in the current ROC
   if (firstClusterROC < 0) firstClusterROC = fNoOfClusters;

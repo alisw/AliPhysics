@@ -102,16 +102,16 @@ class AliTRDclusterizer : public TNamed
   Int_t            GetAddedClusters() const {return fNoOfClusters;}
   Int_t            GetNTimeBins() const {return fTimeTotal;}
 
-  Bool_t   IsClustersOwner() const {return TestBit(kClOwner);}
+  Bool_t           IsClustersOwner() const {return TestBit(kClOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
-  void     SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
+  void             SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
 
 protected:
 
   void             DeConvExp (Short_t *const arr, const Int_t nTime, const Int_t nexp);
   void             TailCancelation(const AliTRDrecoParam* const recoParam);
 
-  Float_t  Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const;
+  Float_t          Unfold(Double_t eps, Int_t layer, const Double_t *const padSignal) const;
   
   void             SetPadStatus(const UChar_t status, UChar_t &encoding) const;
   UChar_t          GetPadStatus(UChar_t encoding) const;

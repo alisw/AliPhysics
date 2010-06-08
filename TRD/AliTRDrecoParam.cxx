@@ -51,13 +51,14 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2Y(.25)
   ,fkChi2YSlope(7.73)
   ,fkChi2ZSlope(0.069)
-	,fkChi2YCut(0.5)
+  ,fkChi2YCut(0.5)
   ,fkPhiSlope(10.6)
   ,fkNMeanClusters(20.)
   ,fkNSigmaClusters(2.)
   ,fkNClusterNoise(0.)
   ,fkNMeanTracklets(5.5)
   ,fkTrackLikelihood(-15.)
+  ,fNumberOfConfigs(3)
   ,fFlags(0)
   ,fRawStreamVersion("REAL")
   ,fMinMaxCutSigma(4.)
@@ -65,6 +66,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fClusMaxThresh(4.5)
   ,fClusSigThresh(3.5)
   ,fTCnexp(1)
+  ,fRecEveryNTB(1)
   ,fNumberOfPresamples(0)
   ,fNumberOfPostsamples(0)
 {
@@ -118,13 +120,14 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkChi2Y(ref.fkChi2Y)
   ,fkChi2YSlope(ref.fkChi2YSlope)
   ,fkChi2ZSlope(ref.fkChi2ZSlope)
-	,fkChi2YCut(ref.fkChi2YCut)
+  ,fkChi2YCut(ref.fkChi2YCut)
   ,fkPhiSlope(ref.fkPhiSlope)
   ,fkNMeanClusters(ref.fkNMeanClusters)
   ,fkNSigmaClusters(ref.fkNSigmaClusters)
   ,fkNClusterNoise(ref.fkNClusterNoise)
   ,fkNMeanTracklets(ref.fkNMeanTracklets)
   ,fkTrackLikelihood(ref.fkTrackLikelihood)
+  ,fNumberOfConfigs(ref.fNumberOfConfigs)
   ,fFlags(ref.fFlags)
   ,fRawStreamVersion(ref.fRawStreamVersion)
   ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
@@ -132,6 +135,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fClusMaxThresh(ref.fClusMaxThresh)
   ,fClusSigThresh(ref.fClusSigThresh)
   ,fTCnexp(ref.fTCnexp)
+  ,fRecEveryNTB(ref.fRecEveryNTB)
   ,fNumberOfPresamples(ref.fNumberOfPresamples)
   ,fNumberOfPostsamples(ref.fNumberOfPostsamples)
 {
@@ -160,6 +164,20 @@ AliTRDrecoParam *AliTRDrecoParam::GetLowFluxParam()
 }
 
 //______________________________________________________________
+AliTRDrecoParam *AliTRDrecoParam::GetLowFluxHLTParam()
+{
+  //
+  // Parameters for the high flux environment in HLT
+  //
+
+  AliTRDrecoParam *rec = GetLowFluxParam();
+  rec->fNumberOfConfigs = 3;
+  rec->fRecEveryNTB = 1;
+  return rec;
+
+}
+
+//______________________________________________________________
 AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
 {
   //
@@ -170,6 +188,20 @@ AliTRDrecoParam *AliTRDrecoParam::GetHighFluxParam()
   rec->fkdNchdy = 4000.; // PbPb in TRD
   rec->SetVertexConstrained();
   rec->SetCheckTimeConsistency();
+  return rec;
+
+}
+
+//______________________________________________________________
+AliTRDrecoParam *AliTRDrecoParam::GetHighFluxHLTParam()
+{
+  //
+  // Parameters for the high flux environment in HLT
+  //
+
+  AliTRDrecoParam *rec = GetHighFluxParam();
+  rec->fNumberOfConfigs = 1;
+  rec->fRecEveryNTB = 2;
   return rec;
 
 }

@@ -37,10 +37,11 @@
 
 ClassImp(AliTRDtransform)
 
+AliTRDgeometry* AliTRDtransform::fgGeo = NULL;
+
 //_____________________________________________________________________________
 AliTRDtransform::AliTRDtransform()
   :TObject()
-  ,fGeo(0x0)
   ,fDetector(0)
   ,fParam(0x0)
   ,fCalibration(0x0)
@@ -60,9 +61,11 @@ AliTRDtransform::AliTRDtransform()
   // AliTRDtransform default constructor
   //
 
-  fGeo               = new AliTRDgeometry();
-  if (!fGeo->CreateClusterMatrixArray()) {
-    AliError("Could not get transformation matrices\n");
+  if(!fgGeo){
+    fgGeo = new AliTRDgeometry();
+    if (!fgGeo->CreateClusterMatrixArray()) {
+      AliError("Could not get transformation matrices\n");
+    }
   }
 
   fParam             = AliTRDCommonParam::Instance();
@@ -85,7 +88,6 @@ AliTRDtransform::AliTRDtransform()
 //_____________________________________________________________________________
 AliTRDtransform::AliTRDtransform(Int_t det)
   :TObject()
-  ,fGeo(0x0)
   ,fDetector(0)
   ,fParam(0x0)
   ,fCalibration(0x0)
@@ -105,9 +107,11 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   // AliTRDtransform constructor for a given detector
   //
 
-  fGeo               = new AliTRDgeometry();
-  if (!fGeo->CreateClusterMatrixArray()) {
-    AliError("Could not get transformation matrices\n");
+  if(!fgGeo){
+    fgGeo = new AliTRDgeometry();
+    if (!fgGeo->CreateClusterMatrixArray()) {
+      AliError("Could not get transformation matrices\n");
+    }
   }
 
   fParam             = AliTRDCommonParam::Instance();
@@ -132,7 +136,6 @@ AliTRDtransform::AliTRDtransform(Int_t det)
 //_____________________________________________________________________________
 AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   :TObject(t)
-  ,fGeo(0x0)
   ,fDetector(t.fDetector)
   ,fParam(0x0)
   ,fCalibration(0x0)
@@ -151,12 +154,6 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   //
   // AliTRDtransform copy constructor
   //
-
-  if (fGeo) {
-    delete fGeo;
-  }
-  fGeo               = new AliTRDgeometry();
-  fGeo->CreateClusterMatrixArray();
 
   fParam             = AliTRDCommonParam::Instance();
   if (!fParam) {
@@ -180,10 +177,6 @@ AliTRDtransform::~AliTRDtransform()
   // AliTRDtransform destructor
   //
 
-  if (fGeo) {
-    delete fGeo;
-  }
-
 }
 
 //_____________________________________________________________________________
@@ -206,13 +199,13 @@ void AliTRDtransform::SetDetector(Int_t det)
   fCalT0DetValue     = fkCalT0Det->GetValue(det);
 
   // Shift needed to define Z-position relative to middle of chamber
-  Int_t layer        = fGeo->GetLayer(det);
-  Int_t stack        = fGeo->GetStack(det);
-  fPadPlane          = fGeo->GetPadPlane(layer,stack);
+  Int_t layer        = fgGeo->GetLayer(det);
+  Int_t stack        = fgGeo->GetStack(det);
+  fPadPlane          = fgGeo->GetPadPlane(layer,stack);
   fZShiftIdeal       = 0.5 * (fPadPlane->GetRow0() + fPadPlane->GetRowEnd());
 
   // Get the current transformation matrix
-  fMatrix            = fGeo->GetClusterMatrix(det);
+  fMatrix            = fgGeo->GetClusterMatrix(det);
 
 }
 
