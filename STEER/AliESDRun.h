@@ -86,12 +86,20 @@ public:
   enum {kNTriggerClasses = 50};
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
-
-private:
+  //
+  Double_t   GetMeanIntensity(int beam,int btp)     const 
+  { return (beam>=0&&beam<2&&btp>=0&&btp<2) ? fMeanBeamInt[beam][btp]:0;}
+  void       SetMeanIntensity(int beam,int btp, double v=-1) 
+  { if (beam>=0&&beam<2&&btp>=0&&btp<2) fMeanBeamInt[beam][btp]=v;}  
+  Double_t   GetMeanIntensityIntecting(int beam)    const {return GetMeanIntensity(beam,0);}
+  Double_t   GetMeanIntensityNonIntecting(int beam) const {return GetMeanIntensity(beam,1);}
+  //
+ private:
   Float_t         fCurrentL3;       // signed current in the L3     (LHC convention: +current -> +Bz)
   Float_t         fCurrentDip;      // signed current in the Dipole (LHC convention: +current -> -Bx)
   Float_t         fBeamEnergy;      // beamEnergy entry from GRP
   Double32_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
+  Double32_t      fMeanBeamInt[2][2]; // mean intensity of interacting and non-intercting bunches per beam
   Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
   Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
   Double32_t      fDiamondZ;        // Interaction diamond (z) in RUN
@@ -106,7 +114,7 @@ private:
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
 
-  ClassDef(AliESDRun,8)
+  ClassDef(AliESDRun,9)
 };
 
 #endif 

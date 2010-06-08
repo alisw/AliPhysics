@@ -51,6 +51,7 @@ AliESDRun::AliESDRun() :
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
   fTriggerClasses.SetOwner(kTRUE);
+  fMeanBeamInt[0][0]=fMeanBeamInt[0][1]=fMeanBeamInt[1][0]=fMeanBeamInt[1][1]=-1;
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
 }
@@ -87,7 +88,9 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
     else
       fPHOSMatrix[m]=NULL;
   }
-	
+  
+  for (int ib=2;ib--;) for (int it=2;it--;) fMeanBeamInt[ib][it] = esd.fMeanBeamInt[ib][it];
+
   for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
 	if(esd.fEMCALMatrix[sm])
 		fEMCALMatrix[sm]=new TGeoHMatrix(*(esd.fEMCALMatrix[sm])) ;
@@ -122,6 +125,8 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
 
     fDetInDAQ   = esd.fDetInDAQ;
     fDetInReco  = esd.fDetInReco;
+
+    for (int ib=2;ib--;) for (int it=2;it--;) fMeanBeamInt[ib][it] = esd.fMeanBeamInt[ib][it];
 
     for(Int_t m=0; m<kNPHOSMatrix; m++){
       if(esd.fPHOSMatrix[m])
@@ -198,6 +203,8 @@ void AliESDRun::Print(const Option_t *) const
     TNamed *str = (TNamed *)((fTriggerClasses).At(i));
     if (str) printf("%s ",str->GetName());
   }
+  printf("Mean intenstity for interacting   : beam1:%+.3e beam2:%+.3e\n",fMeanBeamInt[0][0],fMeanBeamInt[1][0]);
+  printf("Mean intenstity for non-intecting : beam1:%+.3e beam2:%+.3e\n",fMeanBeamInt[0][1],fMeanBeamInt[1][1]);
   printf("\n");
 }
 
