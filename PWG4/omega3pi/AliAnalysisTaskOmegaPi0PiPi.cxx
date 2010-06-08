@@ -29,13 +29,15 @@
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
+#include "TString.h"
+#include "AliPHOSGeoUtils.h"
 
 ClassImp(AliAnalysisTaskOmegaPi0PiPi)
 
 AliAnalysisTaskOmegaPi0PiPi::AliAnalysisTaskOmegaPi0PiPi() :
   AliAnalysisTaskSE(),fOutputContainer(0x0),fhM2piSel(0x0),fhDxy(0x0),fhMggSel(0x0),
   fhImpXY(0x0),fhM3pi0to2(0x0),fhM3pi2to4(0x0),fhM3pi4to6(0x0),fhM3pi6to8(0x0),
-  fhM3pi8to10(0x0),fhM3pi10to12(0x0),fhM3pi12(0x0),fhM3pi0to8(0x0)
+  fhM3pi8to10(0x0),fhM3pi10to12(0x0),fhM3pi12(0x0),fhM3pi0to8(0x0),fModules("123")
 {
   //Default constructor.
 }
@@ -44,7 +46,7 @@ AliAnalysisTaskOmegaPi0PiPi::AliAnalysisTaskOmegaPi0PiPi() :
 AliAnalysisTaskOmegaPi0PiPi::AliAnalysisTaskOmegaPi0PiPi(const char* name) :
   AliAnalysisTaskSE(name),fOutputContainer(0x0),fhM2piSel(0x0),fhDxy(0x0),fhMggSel(0x0),
   fhImpXY(0x0),fhM3pi0to2(0x0),fhM3pi2to4(0x0),fhM3pi4to6(0x0),fhM3pi6to8(0x0),
-  fhM3pi8to10(0x0),fhM3pi10to12(0x0),fhM3pi12(0x0),fhM3pi0to8(0x0)
+  fhM3pi8to10(0x0),fhM3pi10to12(0x0),fhM3pi12(0x0),fhM3pi0to8(0x0),fModules("123")
 {
   //Constructor used to create a named task.
 
@@ -157,23 +159,44 @@ void AliAnalysisTaskOmegaPi0PiPi::UserExec(Option_t* /* option */)
   TLorentzVector pomega;
   Double_t etrack;
   Double_t p1,p2; // 3-momentum of tracks
+  
+  Int_t relid[4] ;
+  UShort_t *absIds;
 
+  Int_t minCells=3; //Ncells>2
   const Double_t kMpi = 0.1396;
-
+  AliPHOSGeoUtils* geom = new AliPHOSGeoUtils("IHEP","");
+  
   for(Int_t iClu=0; iClu<kNumberOfPhosClusters; iClu++) {
     AliESDCaloCluster *c1 = (AliESDCaloCluster *) caloClustersArr->At(iClu);
+    if(c1->GetNCells()<minCells) continue;
+ 
+    absIds = c1->GetCellsAbsId();
+    geom->AbsToRelNumbering(absIds[0], relid) ;
+    TString phosMod1;
+    phosMod1 += relid[0];
+
+    if(!fModules.Contains(phosMod1.Data())) continue;
     c1->GetMomentum(pc1,v);
 
     for (Int_t jClu=iClu; jClu<kNumberOfPhosClusters; jClu++) {
       AliESDCaloCluster *c2 = (AliESDCaloCluster *) caloClustersArr->At(jClu);
       if(c2->IsEqual(c1)) continue;
+      if(c2->GetNCells()<minCells) continue;
+
+      absIds = c2->GetCellsAbsId();
+      geom->AbsToRelNumbering(absIds[0], relid) ; 
+      TString phosMod2;
+      phosMod2 += relid[0];
+
+      if(!fModules.Contains(phosMod2.Data())) continue;
       c2->GetMomentum(pc2,v);
 
       pc12 = pc1+pc2;
       AliDebug(2,Form("pc12.M(): %.3f\n",pc12.M()));
 
-      if(pc12.M()<0.115 || pc12.M()>0.155) continue; //not a pi0 candidate!
-      if(pc12.Pt()<1.) continue; //pT(pi0) > 1GeV
+      if(pc12.M()<0.100 || pc12.M()>0.160) continue; //not a pi0 candidate!
+      if(pc12.Pt()<1.5) continue; //pT(pi0) > 1.5GeV
       
       fhMggSel->Fill(pc12.M());
       

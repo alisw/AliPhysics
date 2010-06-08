@@ -12,6 +12,7 @@
 
 class TH1F;
 class TH2F;
+class TString;
 
 class AliAnalysisTaskOmegaPi0PiPi : public AliAnalysisTaskSE
 {
@@ -24,6 +25,9 @@ public:
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t * opt);
+  
+  void AnalyzeModules(const char* modules="123") { fModules = modules; }
+  TString GetAnalyzedModules() const { return fModules; }
   
 private:
 
@@ -47,7 +51,9 @@ private:
   TH2F*  fhM3pi12;     // M(3pi) vs pT(3pi), ptrack > 12 GeV
   TH2F*  fhM3pi0to8;   // M(3pi) vs pT(3pi), 0 < ptrack < 8 GeV
 
-  ClassDef(AliAnalysisTaskOmegaPi0PiPi,1);
+  TString fModules;
+
+  ClassDef(AliAnalysisTaskOmegaPi0PiPi,2);
   
 };
 
