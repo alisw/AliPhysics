@@ -103,26 +103,24 @@ void AliAnalysisTaskJetCorrel::Exec(Option_t */*option*/){
   fReader->SetEvent(fjcESD);
 
   // get global event pars and apply global cuts
-  if(!fSelector->SelectedEvtTrigger(fjcESD)) return;
+  //  if(!fSelector->SelectedEvtTrigger(fjcESD)) return; // using AliPhysicsSelection
   Float_t cent = fReader->GetMultiplicity(); // use multiplicity in p-p
   Float_t zvtx = fReader->GetVertex();
-  Int_t cBin = fSelector->GetBin(centr,cent);
-  Int_t vBin = fSelector->GetBin(zvert,zvtx);
+  Int_t cBin = fSelector->GetBin(t_cent,cent);
+  Int_t vBin = fSelector->GetBin(t_vert,zvtx);
   if(cBin<0 || vBin<0 || fReader->VtxOutPipe()) return; // event fails centrality or vertex selection
   fWriter->FillGlobal(cent,zvtx);
   fNumEvts++;
-  //  std::cout<<"Event:"<<fNumEvts<<" cBin="<<cBin<<" vBin="<<vBin<<std::endl;
 
   // loop over correlations
   for(UInt_t iCor=0; iCor<fNumCorrel; iCor++){
     UInt_t idxTrigg = fMaker->IdxTrigg(iCor);
     UInt_t idxAssoc = fMaker->IdxAssoc(iCor);
-    Bool_t tFilled = fTriggList[idxTrigg].Filled();
     Bool_t aFilled = fAssocList[idxAssoc].Filled();
 
-    fTriggList[idxTrigg].Label(fMaker->TriggType(iCor),triggs,fNumEvts);
-    fAssocList[idxAssoc].Label(fMaker->AssocType(iCor),assocs,fNumEvts);
-    fReader->FillLists(&fTriggList[idxTrigg],&fAssocList[idxAssoc]);
+    fTriggList[idxTrigg].Label(fMaker->TriggType(iCor),fNumEvts);
+    fAssocList[idxAssoc].Label(fMaker->AssocType(iCor),fNumEvts);
+    fReader->FillLists(&fTriggList[idxTrigg],&fAssocList[idxAssoc]); // trigger list first!
 
     UInt_t nTriggs = fTriggList[idxTrigg].Size();
     UInt_t nAssocs = fAssocList[idxAssoc].Size();    
@@ -132,11 +130,13 @@ void AliAnalysisTaskJetCorrel::Exec(Option_t */*option*/){
     if(nTriggs<1 && nAssocs<1) continue;
     fWriter->FillSingleHistos(cBin, &fTriggList[idxTrigg], idxTrigg, &fAssocList[idxAssoc], idxAssoc);
     
-    CrossCorrelate(&fTriggList[idxTrigg], &fAssocList[idxAssoc], cBin, vBin, iCor); // same-event correlation
-    
-    if(!tFilled) fMixer->FillPool(&fTriggList[idxTrigg], idxTrigg, vBin, cBin);
     if(!aFilled) fMixer->FillPool(&fAssocList[idxAssoc], idxAssoc, vBin, cBin);
-    if(nTriggs>0) fMixer->Mix(vBin, cBin, idxTrigg, idxAssoc, iCor);
+
+    if(nTriggs>0){
+      CrossCorrelate(&fTriggList[idxTrigg], &fAssocList[idxAssoc], cBin, vBin, iCor); // same-event correlation
+      fMixer->CurrTrigList(&fTriggList[idxTrigg]);
+      fMixer->Mix(vBin, cBin, idxAssoc, iCor); // mixed-event correlation
+    }
     
     PostData(0, fOutputContainer);
   } // loop over correlations
@@ -147,9 +147,8 @@ void AliAnalysisTaskJetCorrel::Exec(Option_t */*option*/){
 }
 
 void AliAnalysisTaskJetCorrel::Terminate(Option_t */*option*/){
-  // clean pools, print stats
-  fMixer->CleanPool(triggs);
-  fMixer->CleanPool(assocs);
+  // clean pool, print stats
+  fMixer->CleanPool();
 //   std::cout<<"CorrelParticle="<<sizeof(CorrelParticle_t)
 // 	   <<" CorrelTrack="<<sizeof(CorrelTrack_t)
 // 	   <<" CorrelRecoParent="<<sizeof(CorrelRecoParent_t)<<std::endl;
@@ -164,7 +163,7 @@ void AliAnalysisTaskJetCorrel::CrossCorrelate(CorrelList_t * const TriggList, Co
   CorrelListIter_t iterAssoc = AssocList->Head();
   while(!iterTrigg.HasEnded()){
     while(!iterAssoc.HasEnded()){
-      fWriter->FillCorrelations(real,iCor,cBin,vBin,iterTrigg.Data(),iterAssoc.Data()); // trigg first!
+      fWriter->FillCorrelations(0,iCor,cBin,vBin,iterTrigg.Data(),iterAssoc.Data()); // trigg first!
       iterAssoc.Move();
     }
     iterAssoc = AssocList->Head(); // reset associated particle iterator to list head

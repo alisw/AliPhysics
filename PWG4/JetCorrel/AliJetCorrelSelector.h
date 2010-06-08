@@ -25,15 +25,16 @@ class AliJetCorrelSelector : public TObject {
   UInt_t PoolDepth() const {return fPoolDepth;}
   UInt_t NoOfCorrel() const {return fNumCorrel;}
   UInt_t* CorrelTypes() const {return fCorrelType;}
-  UInt_t NoOfBins(BinType_t cType) const {return fNumBins[cType]-1;}  
-  Float_t BinBorder(BinType_t cType, UInt_t ii) const;
-  Float_t MinLowBin(BinType_t cType) const {return fBinning[cType][0];}
-  Float_t MaxHighBin(BinType_t cType) const {return fBinning[cType][fNumBins[cType]-1];}
-  Int_t GetBin(BinType_t cType, Float_t val) const;
+  UInt_t NoOfBins(cBinType_t cType) const {return fNumBins[cType]-1;}  
+  Float_t BinBorder(cBinType_t cType, UInt_t ii) const;
+  Float_t MinLowBin(cBinType_t cType) const {return fBinning[cType][0];}
+  Float_t MaxHighBin(cBinType_t cType) const {return fBinning[cType][fNumBins[cType]-1];}
+  Int_t GetBin(cBinType_t cType, Float_t val) const;
   Bool_t GenQA() const       {return fGenQA;}
   Bool_t UseAliKF() const    {return fUseAliKF;}
   UInt_t DPhiNumBins() const {return fDPhiNumBins;}
   UInt_t DEtaNumBins() const {return fDEtaNumBins;}
+  Float_t PoutBW() const     {return fPoutBW;}
   void Show() const;
   // Selection Setters:
   void SetPoolDepth(UInt_t v)      {fPoolDepth=v;}
@@ -47,6 +48,7 @@ class AliJetCorrelSelector : public TObject {
   void SetTPCRefit(Bool_t v)    {fTPCRefit=v;}
   void SetTRDRefit(Bool_t v)    {fTRDRefit=v;}
   void SetMaxEta(Float_t v)     {fMaxEta=v;}
+  void SetPoutBinWidth(Float_t v) {fPoutBW=v;}
   void SetMaxITSChi2(Float_t v) {fMaxITSChi2=v;}
   void SetMaxTPCChi2(Float_t v) {fMaxTPCChi2=v;}
   void SetMinNClusITS(UInt_t v) {fMinNClusITS=v;}
@@ -63,34 +65,35 @@ class AliJetCorrelSelector : public TObject {
   Bool_t SelectedEvtTrigger(AliESDEvent * const jcESD) const;
   Bool_t CloseTrackPair(Float_t dist) const;
   Bool_t LowQualityTrack(AliESDtrack* t) const;
-  Bool_t PassPID(AliESDtrack* t, PartType_t pType) const;
+  Bool_t PassPID(AliESDtrack* t, cPartType_t pType) const;
   Float_t GetSigmaToVertex(AliESDtrack* trk) const;
   void GetPID(AliESDtrack* trk, Stat_t& fpid, Stat_t& fweight) const;
 
   enum {kMaxCorrel = 1};   // Maximum no of correlations
-  enum {kMaxVert = 10};    // Maximum no of vertex bins
+  enum {kMaxVert = 3};    // Maximum no of vertex bins
   enum {kMaxCent = 3};     // Maximum no of centrality bins
-  enum {kMaxTrig = 10};    // Maximum no of trigger bins
-  enum {kMaxAsso = 10};    // Maximum no of associated bins
+  enum {kMaxTrig = 13};    // Maximum no of trigger bins
+  enum {kMaxAsso = 7};    // Maximum no of associated bins
   
  private: 
   // Generic Selections:
-  Bool_t fGenQA;                 // generate QA histos
-  UInt_t fDPhiNumBins, fDEtaNumBins; // number of bins in DeltaPhi, DeltaEta histos
-  UInt_t fNumCorrel, fNumEvtTriggs, fPoolDepth; // number of correlations, event triggers, pool depth
+  Bool_t fGenQA;                     //! generate QA histos
+  UInt_t fDPhiNumBins, fDEtaNumBins; //! number of bins in DeltaPhi, DeltaEta histos
+  UInt_t fNumCorrel, fNumEvtTriggs, fPoolDepth; //! number of correlations, event triggers, pool depth
   UInt_t* fCorrelType;           //! array of correlation types
   TString* fEvtTriggs;           //! array of event triggers
-  UInt_t fNumBins[4];            // number of bins: centr, zvert, trigg, assoc
+  UInt_t fNumBins[4];            //! number of bins: centr, zvert, trigg, assoc
   Float_t* fBinning[4];          //! bin margins: centr, zvert, trigg, assoc
   // Track Selections:
-  Bool_t fITSRefit, fTPCRefit, fTRDRefit, fRejectKinkChild; // on/off cuts
-  Float_t fMaxEta;                   // single-particle eta cut
-  Float_t fMaxNsigmaVtx;             // track-primary vertex cut (sigma)
-  Float_t fMaxTrkVtx;                // track-primary vertex cut (value)
-  Float_t fMaxITSChi2, fMaxTPCChi2;  // ITS/TPC Chi2/cluster cut
-  UInt_t fMinNClusITS, fMinNClusTPC; // ITS/TPC number of clusters cut
-  Float_t fTrkMinProx;                // two-track proximity cut (dist at TPC entrance)
-  Bool_t fUseAliKF;                  // use AliKF or TLorentzVector for parent reconstruction
+  Bool_t fITSRefit, fTPCRefit, fTRDRefit, fRejectKinkChild; //! on/off cuts
+  Float_t fMaxEta;                   //! single-particle eta cut
+  Float_t fPoutBW;                   //! Pout bin width
+  Float_t fMaxNsigmaVtx;             //! track-primary vertex cut (sigma)
+  Float_t fMaxTrkVtx;                //! track-primary vertex cut (value)
+  Float_t fMaxITSChi2, fMaxTPCChi2;  //! ITS/TPC Chi2/cluster cut
+  UInt_t fMinNClusITS, fMinNClusTPC; //! ITS/TPC number of clusters cut
+  Float_t fTrkMinProx;               //! two-track proximity cut (dist at TPC entrance)
+  Bool_t fUseAliKF;                  //! use AliKF or TLorentzVector for parent reconstruction
   
   // disable (make private) copy constructor, and assignment operator:
   AliJetCorrelSelector(const AliJetCorrelSelector&);

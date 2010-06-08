@@ -15,7 +15,7 @@ class CorrelTrack_t : public CorrelParticle_t {
  public:
   
   CorrelTrack_t();
-  CorrelTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, PartType_t i, Float_t x, Float_t y, Float_t z);
+  CorrelTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, cPartType_t i, Float_t x, Float_t y, Float_t z);
   CorrelTrack_t(const CorrelTrack_t &p);
   virtual ~CorrelTrack_t() {;}
   virtual CorrelTrack_t* Copy();

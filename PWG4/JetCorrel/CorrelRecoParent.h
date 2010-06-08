@@ -6,7 +6,7 @@
 
 //______________________________________________________________________________
 // Container class for reconstructed parents. Reconstruction method uses
-// AliKFParticle or TLorentzVector as indicated by kUseAliKF set in CorrelDefs.h
+// AliKFParticle or TLorentzVector as chosen thru the selector
 //-- Author: Paul Constantin
 
 #include "CorrelParticle.h"
@@ -35,7 +35,7 @@ class CorrelRecoParent_t : public CorrelParticle_t {
   // disable (make private) the copy constructor
   CorrelRecoParent_t(const CorrelRecoParent_t &p);
   
-  Bool_t NotInMass(PartType_t ID, Float_t mass);
+  Bool_t NotInMass(cPartType_t ID, Float_t mass);
 };
 
 #endif

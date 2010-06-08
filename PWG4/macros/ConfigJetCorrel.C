@@ -4,18 +4,19 @@ AliJetCorrelSelector* ConfigJetCorrel(){
   // set correlation input parameters
   ///////////////////////////////////
   // set generic selections:
-  Bool_t kGenQA = kTRUE;       // generate QA histos
-  UInt_t kDPhiNumBins = 60;    // number of bins in DeltaPhi histos
-  UInt_t kDEtaNumBins = 40;    // number of bins in DeltaEta histos
+  Bool_t kGenQA = kFALSE;      // generate QA histos
+  UInt_t kDPhiNumBins = 30;    // number of bins in DeltaPhi
+  UInt_t kDEtaNumBins = 16;    // number of bins in DeltaEta
+  Float_t kPoutBinWidth = 0.2; // number of bins in Pout = max(assocBins)/kPoutBinWidth
   Bool_t kUseAliKF = kFALSE;   // use AliKF or TLorentzVector for parent reconstruction
-  UInt_t poolDepth = 10;
+  UInt_t poolDepth = 5;
   UInt_t correlTypes[] = {0};  // 0=dihadron, 1=pi0-hadron, 2=photon-hadron
-  Float_t centrBins[] = {1,300};
-  Float_t zVertBins[] = {-10,-7,-5,-3,3,5,7,10};
-  Float_t triggBins[] = {2,3,4,5,6,10};
-  Float_t assocBins[] = {0.5,1.5,10};
-  //TString sTrigg[] = {"ALL"}; // selects events where one of the strings is matched; "ALL"=no cut
-  TString sTrigg[] = {"CINT1B-"};
+  Float_t centrBins[] = {1,500};
+  Float_t zVertBins[] = {-5,5};
+  Float_t triggBins[] = {6,8,10,20};
+  Float_t assocBins[] = {2,10};
+  TString sTrigg[] = {"ALL"}; // selects events where one of the strings is matched; "ALL"=no cut
+  //TString sTrigg[] = {"CINT1B-"};
   // set track selections:
   Bool_t itsRefit = kTRUE;
   Bool_t tpcRefit = kTRUE;
@@ -39,6 +40,7 @@ AliJetCorrelSelector* ConfigJetCorrel(){
   selector->SetUseAliKF(kUseAliKF);
   selector->SetDPhiNumBins(kDPhiNumBins);
   selector->SetDEtaNumBins(kDEtaNumBins);
+  selector->SetPoutBinWidth(kPoutBinWidth);
   selector->SetPoolDepth(poolDepth);
   selector->SetCorrelTypes(sizeof(correlTypes)/sizeof(UInt_t),correlTypes);
   selector->SetBinningCentr(sizeof(centrBins)/sizeof(Float_t),centrBins);

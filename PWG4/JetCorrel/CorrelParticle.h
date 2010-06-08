@@ -6,14 +6,49 @@
 
 //________________________________________________
 // Main container class - stores generic particle.
+// At the top of preprocessor includes,
+// hence we add the general headers here
 //-- Author: Paul Constantin
 
-#include "CorrelDefs.h"
+// C++ headers:
+#include <iostream>
+
+// ROOT headers:
+#include <TROOT.h>
+#include <TSystem.h>
+#include <Riostream.h>
+#include <TChain.h>
+#include <TFile.h>
+#include <TLorentzVector.h>
+#include <TVector3.h>
+#include <TClonesArray.h>
+#include <TList.h>
+#include <TMath.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH3F.h>
+#include <TNtuple.h>
+#include <TString.h>
+#include <TRandom2.h>
+
+// AliRoot headers:
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
+#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
+#include "AliMultiplicity.h"
+#include "AliESDtrack.h"
+
+enum cBinType_t  {t_cent, t_vert, t_trig, t_asso}; 
+enum cPartType_t {t_unknown, t_hadron, t_photon, t_electron, t_jet, t_dihadron, t_diphoton, t_dielectron, t_dijet};
 
 class CorrelParticle_t {        
  public:
   CorrelParticle_t();
-  CorrelParticle_t(Float_t pt, Float_t p, Float_t t, Float_t m, PartType_t i);
+  CorrelParticle_t(Float_t pt, Float_t p, Float_t t, Float_t m, cPartType_t i);
   CorrelParticle_t(const CorrelParticle_t& p);
   virtual ~CorrelParticle_t() {;}
   virtual CorrelParticle_t* Copy();
@@ -23,14 +58,14 @@ class CorrelParticle_t {
   void SetPhi(Float_t v)   {fPhi=v;}
   void SetEta(Float_t v)   {fEta=v;}
   void SetMass(Float_t v)  {fMass=v;}
-  void SetID(PartType_t v) {fID=v;}
+  void SetID(cPartType_t v) {fID=v;}
   
   // data getters
   virtual Float_t Pt()    const {return TMath::Abs(fPt);}
   virtual Float_t Phi()   const {return fPhi;}
   virtual Float_t Eta()   const {return fEta;}    
   virtual Float_t M()     const {return fMass;}
-  virtual PartType_t ID() const {return fID;}
+  virtual cPartType_t ID() const {return fID;}
   
   // derived data getters
   virtual Short_t Q()     const {return (Pt()>0)?(Short_t(fPt/Pt())):(-99);}
@@ -52,7 +87,7 @@ class CorrelParticle_t {
   Float_t fPhi;   // phi
   Float_t fEta;   // eta
   Float_t fMass;  // mass
-  PartType_t fID; // ID
+  cPartType_t fID; // ID
 };
 
 #endif

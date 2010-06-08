@@ -71,7 +71,7 @@ const CorrelListIter_t& CorrelListIter_t::operator=(const CorrelListIter_t& rhs)
 }
 
 CorrelList_t::CorrelList_t() : 
-  fSize(0), fEvtID(0), fFilled(kFALSE), fPartID(unknown), fPoolID(assocs), fHead(NULL) {
+  fSize(0), fEvtID(0), fFilled(kFALSE), fPartID(t_unknown), fHead(NULL) {
   // constructor
 }
 
@@ -80,7 +80,6 @@ const CorrelList_t& CorrelList_t::operator=(const CorrelList_t& rhs){
   fEvtID  = rhs.EvtID();
   fFilled = rhs.Filled();
   fPartID = rhs.PartID();
-  fPoolID = rhs.PoolID();
   fHead   = rhs.Head().Node();
   return *this;
 }
@@ -100,7 +99,7 @@ CorrelList_t* CorrelList_t::DeepCopy(){
   // use it to store lists in memory for mixing pools 
   
   CorrelList_t *copy = new CorrelList_t;
-  copy->Label(this->PartID(), this->PoolID(), this->EvtID());
+  copy->Label(this->PartID(), this->EvtID());
   copy->SetFilled(this->Filled());
   // fHead and fSize are set by Push() below
 
@@ -132,14 +131,13 @@ void CorrelList_t::Reset(){
   }
   fEvtID = 0;
   fFilled = kFALSE;
-  fPartID = unknown;
-  fPoolID = assocs;
+  fPartID = t_unknown;
   fHead = NULL;
 }
 
 void CorrelList_t::ShowHead() const {
   // top printout
-  std::cout<<" CorrelList_t("<<this<<") head="<<fHead<<" size="<<Size()<<" filled="<<Filled()<<" evt="<<EvtID()<<" part="<<PartID()<<" pool="<<PoolID()<<std::endl;
+  std::cout<<" CorrelList_t("<<this<<") head="<<fHead<<" size="<<Size()<<" filled="<<Filled()<<" evt="<<EvtID()<<" part="<<PartID()<<std::endl;
 }
 
 void CorrelList_t::Show() const {

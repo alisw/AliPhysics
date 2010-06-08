@@ -11,7 +11,6 @@
 //-- Author: Paul Constantin
  
 #include "AliJetCorrelWriter.h"
-#include "AliJetCorrelSelector.h"
 
 class AliJetCorrelReader : public TObject {
   
@@ -28,17 +27,17 @@ class AliJetCorrelReader : public TObject {
   void FillLists(CorrelList_t* list1, CorrelList_t* list2);
   
  private:    
-  AliESDEvent *fjcESD;              // input event (ESD/AOD)
-  AliJetCorrelSelector *fSelector; // user selection object
-  AliJetCorrelWriter *fWriter;     // output writer object
+  AliESDEvent *fjcESD;              //! input event (ESD/AOD)
+  AliJetCorrelSelector *fSelector;  //! user selection object
+  AliJetCorrelWriter *fWriter;      //! output writer object
   
-  void FillList(CorrelList_t* list);
+  void FillList(CorrelList_t* list, Bool_t isTrigg);
   void FillESDTrackLists(CorrelList_t* list1,CorrelList_t* list2);
-  void FillESDTrackList(CorrelList_t* list);
-  void FillESDPhotonList(CorrelList_t* list);
-  void FillESDDiphotonList(CorrelList_t* list);
-  void FillESDDielectronList(CorrelList_t* list);
-  void FillParentList(CorrelList_t* list1, CorrelList_t* list2);
+  void FillESDTrackList(CorrelList_t* list, Bool_t isTrigg);
+  void FillESDPhotonList(CorrelList_t* list, Bool_t isTrigg);
+  void FillESDDiphotonList(CorrelList_t* list, Bool_t isTrigg);
+  void FillESDDielectronList(CorrelList_t* list, Bool_t isTrigg);
+  void FillParentList(CorrelList_t* list1, CorrelList_t* list2, Bool_t isTrigg);
   
   // disable (make private) copy constructor and assignment operator:
   AliJetCorrelReader(const AliJetCorrelReader&);

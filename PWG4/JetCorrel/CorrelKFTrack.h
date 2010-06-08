@@ -14,7 +14,7 @@ class CorrelKFTrack_t : public CorrelParticle_t {
  public:
   
   CorrelKFTrack_t();
-  CorrelKFTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, PartType_t i, 
+  CorrelKFTrack_t(Float_t pt, Float_t p, Float_t e, Float_t m, cPartType_t i, 
 		  Double_t* par, Double_t* cov);
   CorrelKFTrack_t(const CorrelKFTrack_t &p);
   virtual ~CorrelKFTrack_t() {;}

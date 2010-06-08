@@ -22,11 +22,11 @@
 
 using namespace std;
 
-CorrelParticle_t::CorrelParticle_t() : fPt(-999.), fPhi(-999.), fEta(-999.), fMass(-999.), fID(unknown){
+CorrelParticle_t::CorrelParticle_t() : fPt(-999.), fPhi(-999.), fEta(-999.), fMass(-999.), fID(t_unknown){
   // default constructor
 }
 
-CorrelParticle_t::CorrelParticle_t(Float_t pt, Float_t p, Float_t t, Float_t m, PartType_t i) : fPt(pt), fPhi(p), fEta(t), fMass(m), fID(i){
+CorrelParticle_t::CorrelParticle_t(Float_t pt, Float_t p, Float_t t, Float_t m, cPartType_t i) : fPt(pt), fPhi(p), fEta(t), fMass(m), fID(i){
   // constructor
 }
 
