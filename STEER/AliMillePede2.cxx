@@ -13,11 +13,17 @@
 #include <TFile.h>
 #include <TMath.h>
 #include <TVectorD.h>
+#include <TArrayL.h>
 #include "AliMatrixSq.h"
 #include "AliSymMatrix.h"
 #include "AliRectMatrix.h"
 #include "AliMatrixSparse.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h> 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -89,7 +95,11 @@ AliMillePede2::AliMillePede2()
   fConsRecFile(0),
   fCurrRecDataID(0),
   fCurrRecConstrID(0),
-  fLocFitAdd(kTRUE)
+  fLocFitAdd(kTRUE),
+  fSelFirst(1),
+  fSelLast(-1),
+  fRejRunList(0),
+  fAccRunList(0)
 {}
 
 //_____________________________________________________________________________________________
@@ -103,7 +113,11 @@ AliMillePede2::AliMillePede2(const AliMillePede2& src) :
   fMatCLoc(0),fMatCGlo(0),fMatCGloLoc(0),fFillIndex(0),fFillValue(0),
   fDataRecFName(0),fRecord(0),fDataRecFile(0),
   fTreeData(0),fRecFileStatus(0),fConstrRecFName(0),fTreeConstr(0),fConsRecFile(0),fCurrRecDataID(0),
-  fCurrRecConstrID(0),fLocFitAdd(kTRUE)
+  fCurrRecConstrID(0),fLocFitAdd(kTRUE),
+  fSelFirst(1),
+  fSelLast(-1),
+  fRejRunList(0),
+  fAccRunList(0)
 {printf("Dummy\n");}
 
 //_____________________________________________________________________________________________
@@ -131,6 +145,8 @@ AliMillePede2::~AliMillePede2()
   delete fMatCLoc;
   delete fMatCGlo;
   delete fMatCGloLoc;
+  delete fRejRunList;
+  delete fAccRunList;
 } 
 
 //_____________________________________________________________________________________________
@@ -323,6 +339,13 @@ void AliMillePede2::SetRecordWeight(double wgh)
 {
   if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
   fRecord->SetWeight(wgh);
+}
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetRecordRun(Int_t run)
+{
+  if (fRecFileStatus<2) InitDataRecStorage(); // create a buffer to store the data
+  fRecord->SetRunID(run);
 }
 
 //_____________________________________________________________________________________________
@@ -680,7 +703,7 @@ Int_t AliMillePede2::GlobalFit(Double_t *par, Double_t *error, Double_t *pull)
       fChi2CutFactor = TMath::Sqrt(fChi2CutFactor);
       if (fChi2CutFactor < 1.2*fChi2CutRef) {
 	fChi2CutFactor = fChi2CutRef;
-	fIter = fMaxIter - 1;     // Last iteration
+	//RRR	fIter = fMaxIter - 1;     // Last iteration
       }
     }
     fIter++;
@@ -748,13 +771,19 @@ Int_t AliMillePede2::GlobalFitIteration()
   //
   //  Process data records and build the matrices
   Long_t ndr = fTreeData->GetEntries();
-  AliInfo(Form("Building the Global matrix from %d data records",ndr));
-  if (!ndr) return 0;
+  Long_t first = fSelFirst>0  ? fSelFirst : 0;
+  Long_t last  = fSelLast<1   ? ndr : (fSelLast>=ndr ? ndr : fSelLast+Long_t(1));
+  ndr = last - first;
+  //
+  AliInfo(Form("Building the Global matrix from data records %d : %d",first,last));
+  if (ndr<1) return 0;
   //
   TStopwatch swt; swt.Start();
   fLocFitAdd = kTRUE;  // add contributions of matching tracks
   for (Long_t i=0;i<ndr;i++) {
-    ReadRecordData(i);
+    Long_t iev = i+first;
+    ReadRecordData(iev);
+    if (!IsRecordAcceptable()) continue;
     LocalFit();
     if ( (i%int(0.2*ndr)) == 0) printf("%.1f%% of local fits done\n", double(100.*i)/ndr);
   }
@@ -821,7 +850,9 @@ Int_t AliMillePede2::GlobalFitIteration()
     fLocFitAdd = kFALSE;
     //
     for (Long_t i=0;i<ndr;i++) {
-      ReadRecordData(i);
+      Long_t iev = i+first;
+      ReadRecordData(iev);
+      if (!IsRecordAcceptable()) continue;
       Bool_t suppr = kFALSE;
       for (int ifx=nFixedGroups;ifx--;)if (fRecord->IsGroupPresent(fixGroups[ifx])) suppr = kTRUE;
       if (suppr) LocalFit();
@@ -845,6 +876,7 @@ Int_t AliMillePede2::GlobalFitIteration()
       fNGloFix++; 
       fVecBGlo[i] = 0.;
       matCGlo.DiagElem(i) = 1.;//float(fNLocEquations*fNLocEquations);
+      //      matCGlo.DiagElem(i) = float(fNLocEquations*fNLocEquations);
     }
     else matCGlo.DiagElem(i) += (fgWeightSigma ? fProcPnt[i] : 1.)/(fSigmaPar[i]*fSigmaPar[i]);
   }
@@ -953,7 +985,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     }
     //
     if (((AliSymMatrix*)fMatCGlo)->SolveSpmInv(fVecBGlo, kTRUE)) return gkInvert;
-    else AliInfo("Solution of Global Dense System by Gaussian Elimiation failed, trying iterative methods");
+    else AliInfo("Solution of Global Dense System by Gaussian Elimination failed, trying iterative methods");
   }
   // try to solve by minres
   TVectorD sol(fNGloSize);
@@ -969,7 +1001,25 @@ Int_t AliMillePede2::SolveGlobalMatEq()
   else 
     AliInfo(Form("Undefined Iteritive Solver ID=%d, only %d are defined",fgIterSol,AliMinResSolve::kNSolvers));
   //
-  if (!res) return gkFailed;
+  if (!res) {
+    const char* faildump = "fgmr_failed.dat";
+    int defout = dup(1);
+    int slvDump = open(faildump, O_RDWR|O_CREAT);
+    dup2(slvDump,1);
+    //
+    printf("#Failed to solve using solver %d with PreCond: %d MaxIter: %d Tol: %e NKrylov: %d\n",
+	   fgIterSol,fgMinResCondType,fgMinResMaxIter,fgMinResTol,fgNKrylovV);
+    printf("#Dump of matrix:\n");
+    fMatCGlo->Print("10");
+    printf("#Dump of RHS:\n");
+    for (int i=0;i<fNGloSize;i++) printf("%d %+.10f\n",i,fVecBGlo[i]);
+    //
+    dup2(defout,1);
+    close(slvDump);
+    close(defout);
+    printf("#Dumped failed matrix and RHS to %s\n",faildump);
+    return gkFailed;
+  }
   for (int i=fNGloSize;i--;) fVecBGlo[i] = sol[i];
   return gkNoInversion;
   //
@@ -1063,4 +1113,55 @@ Int_t AliMillePede2::PrintGlobalParameters() const
     }
   }
   return 1;
+}
+
+//_____________________________________________________________________________________________
+Bool_t AliMillePede2::IsRecordAcceptable() const
+{
+  // validate record according run lists set by the user
+  static Long_t prevRunID = 0xffffffffff;
+  static Bool_t prevAns   = kTRUE;
+  Long_t runID = fRecord->GetRunID();
+  if (runID!=prevRunID) {
+    int n = 0;
+    prevRunID = runID;
+    // is run to be rejected?
+    if (fRejRunList && (n=fRejRunList->GetSize())) {
+      prevAns = kTRUE;
+      for (int i=n;i--;) if (runID == (*fRejRunList)[i]) {
+	  prevAns = kFALSE; 
+	  printf("New Run to reject: %ld -> %d\n",runID,prevAns);
+	  break;
+	}
+    }
+    else if (fAccRunList && (n=fAccRunList->GetSize())) {     // is run specifically selected
+      prevAns = kFALSE;
+      for (int i=n;i--;) if (runID == (*fAccRunList)[i]) {prevAns = kTRUE; break;}
+    }
+  }
+  //
+  return prevAns;
+  //
+}
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetRejRunList(const UInt_t *runs, Int_t nruns)
+{
+  // set the list of runs to be rejected
+  if (fRejRunList) delete fRejRunList; 
+  fRejRunList = 0;
+  if (nruns<1 || !runs) return;
+  fRejRunList = new TArrayL(nruns);
+  for (int i=0;i<nruns;i++) (*fRejRunList)[i] = runs[i];
+}
+
+//_____________________________________________________________________________________________
+void AliMillePede2::SetAccRunList(const UInt_t *runs, Int_t nruns)
+{
+  // set the list of runs to be selected
+  if (fAccRunList) delete fAccRunList;
+  fAccRunList = 0;
+  if (nruns<1 || !runs) return;
+  fAccRunList = new TArrayL(nruns);
+  for (int i=0;i<nruns;i++) (*fAccRunList)[i] = runs[i];
 }

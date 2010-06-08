@@ -24,11 +24,11 @@ ClassImp(AliMillePedeRecord)
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord::AliMillePedeRecord() : 
-fSize(0),fNGroups(0),fGroupID(0),fIndex(0),fValue(0),fWeight(1) {SetUniqueID(0);}
+fSize(0),fNGroups(0),fRunID(0),fGroupID(0),fIndex(0),fValue(0),fWeight(1) {SetUniqueID(0);}
 
 //_____________________________________________________________________________________________
 AliMillePedeRecord::AliMillePedeRecord(const AliMillePedeRecord& src) : 
-  TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fGroupID(0),fIndex(0),fValue(0),fWeight(src.fWeight)
+  TObject(src),fSize(src.fSize),fNGroups(src.fNGroups),fGroupID(0),fRunID(src.fRunID),fIndex(0),fValue(0),fWeight(src.fWeight)
 {
   fIndex = new Int_t[GetDtBufferSize()];
   memcpy(fIndex,src.fIndex,fSize*sizeof(Int_t));
@@ -50,6 +50,7 @@ AliMillePedeRecord& AliMillePedeRecord::operator=(const AliMillePedeRecord& rhs)
       AddIndexValue(ind,val);
     }
     fWeight = rhs.fWeight;
+    fRunID = rhs.fRunID;
     for (int i=0;i<rhs.GetNGroups();i++) MarkGroup(rhs.GetGroupID(i));
   }
   return *this;
@@ -64,6 +65,7 @@ void AliMillePedeRecord::Reset()
   fSize = 0;
   for (int i=fNGroups;i--;) fGroupID[i] = 0;
   fNGroups = 0;
+  fRunID = 0;
   fWeight = 1.;
 }
 
@@ -75,7 +77,7 @@ void AliMillePedeRecord::Print(const Option_t *) const
   //  
   if (fNGroups) printf("Groups: ");
   for (int i=0;i<fNGroups;i++) printf("%4d |",GetGroupID(i)); 
-  printf(" Weight: %+.2e\n",fWeight);
+  printf("Run: %9d Weight: %+.2e\n",fRunID,fWeight);
   while(cnt<fSize) {
     //
     Double_t resid = fValue[cnt++];

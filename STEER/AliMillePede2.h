@@ -22,7 +22,7 @@ class AliRectMatrix;
 class AliMatrixSparse;
 class AliLog;
 class TStopwatch;
-
+class TArrayL;
 
 
 class AliMillePede2: public TObject
@@ -113,6 +113,9 @@ class AliMillePede2: public TObject
   //
   Double_t             GetParError(int iPar)           const;
   Int_t                PrintGlobalParameters()         const;
+  void                 SetRejRunList(const UInt_t *runs, Int_t nruns);
+  void                 SetAccRunList(const UInt_t *runs, Int_t nruns);
+  Bool_t               IsRecordAcceptable() const;
   //
   //
   Int_t                SetIterations(double lChi2CutFac);
@@ -123,6 +126,7 @@ class AliMillePede2: public TObject
   void                 SetGlobalConstraint(const int *indgb,double *dergb, int ngb, double val, double sigma=0);
   //
   // processing of the local measurement
+  void                 SetRecordRun(Int_t run);
   void                 SetRecordWeight(double wgh);
   void                 SetLocalEquation(double *dergb, double *derlc, double lMeas, double lSigma);
   void                 SetLocalEquation(int *indgb, double *dergb, int ngb, int *indlc, 
@@ -147,6 +151,10 @@ class AliMillePede2: public TObject
   void                 SaveRecordData();
   void                 SaveRecordConstraint();
   AliMillePedeRecord*  GetRecord()                      const {return fRecord;}
+  Long_t               GetSelFirst()                    const {return fSelFirst;}
+  Long_t               GetSelLast()                     const {return fSelLast;}
+  void                 SetSelFirst(Long_t v)                  {fSelFirst = v;}
+  void                 SetSelLast(Long_t v)                   {fSelLast = v;}
   //
   Float_t              Chi2DoFLim(int nSig, int nDoF)   const;
   //
@@ -219,6 +227,10 @@ class AliMillePede2: public TObject
   Long_t                fCurrRecDataID;                  // ID of the current data record
   Long_t                fCurrRecConstrID;                // ID of the current constraint record
   Bool_t                fLocFitAdd;                      // Add contribution of carrent track (and not eliminate it)
+  Int_t                 fSelFirst;                       // event selection start
+  Int_t                 fSelLast;                        // event selection end
+  TArrayL*              fRejRunList;                     // list of runs to reject (if any)
+  TArrayL*              fAccRunList;                     // list of runs to select (if any)
   //
   static Bool_t         fgInvChol;                       // Invert global matrix in Cholesky solver
   static Bool_t         fgWeightSigma;                   // weight parameter constraint by statistics

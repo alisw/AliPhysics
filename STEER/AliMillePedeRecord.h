@@ -51,6 +51,8 @@ class AliMillePedeRecord : public TObject
   Int_t      GetNGroups()                                    const {return fNGroups;}
   Int_t      GetGroupID(Int_t i)                             const {return fGroupID[i]-1;}
   Bool_t     IsGroupPresent(Int_t id)                        const;
+  UInt_t     GetRunID()                                      const {return fRunID;}
+  void       SetRunID(UInt_t run)                                  {fRunID = run;}  
   //
  protected:
   Int_t      GetDtBufferSize()                               const {return GetUniqueID()&0x0000ffff;}
@@ -63,12 +65,13 @@ class AliMillePedeRecord : public TObject
  protected:
   Int_t      fSize;                             // size of the record
   Int_t      fNGroups;                          // number of groups (e.g. detectors) contributing
+  UInt_t     fRunID;                            // run ID  
   UShort_t*  fGroupID;                          //[fNGroups] groups id's+1 (in increasing order)
   Int_t   *  fIndex;                            //[fSize] index of variables
   Double32_t* fValue;                           //[fSize] array of values: derivs,residuals
   Double32_t  fWeight;                          //global weight for the record
   //
-  ClassDef(AliMillePedeRecord,2)                // Record of track residuals and local/global deriavtives
+  ClassDef(AliMillePedeRecord,3)                // Record of track residuals and local/global deriavtives
 };
 
 //_____________________________________________________________________________________________
