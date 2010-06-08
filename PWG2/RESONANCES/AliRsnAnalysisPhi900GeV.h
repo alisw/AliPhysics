@@ -4,10 +4,12 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRsnTOFT0maker.h"
 
+class TH1I;
 class TTree;
+
+class AliStack;
 class AliESDEvent;
 class AliESDVertex;
-class AliStack;
 
 class AliRsnAnalysisPhi900GeV : public AliAnalysisTaskSE
 {
@@ -23,9 +25,14 @@ class AliRsnAnalysisPhi900GeV : public AliAnalysisTaskSE
     void            SetMaxDCAz(Double_t v) {fDCAz = v;}
     void            SetMaxChi2(Double_t v) {fChi2 = v;}
     void            SetMinNTPC(Int_t    n) {fNTPC = n;}
+    void            SetTPCparams(Bool_t isMC);
     void            SetTPCrange(Double_t min, Double_t max) {fMinTPC = min; fMaxTPC = max;}
     void            SetTPCpar(Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4)
                     {fTPCpar[0]=p0;fTPCpar[1]=p1;fTPCpar[2]=p2;fTPCpar[3]=p3;fTPCpar[4]=p4;}
+
+    void           SetTOFESD(Bool_t yn = kTRUE) {fTOFESD = yn;}
+    void           SetTOFSigma(Double_t v) {fTOFSigma = v;}
+    void           SetTOFSettings(AliRsnTOFT0maker::ESettings set) {fTOFSettings = set;}
 
     virtual void    UserCreateOutputObjects();
     virtual void    UserExec(Option_t *option = "");
@@ -55,7 +62,9 @@ class AliRsnAnalysisPhi900GeV : public AliAnalysisTaskSE
     Double_t fMinTPC;
     Double_t fMaxTPC;
 
-    TTree   *fOutTree;
+    TTree   *fOutTree[2];
+    TList   *fOutList;
+    TH1I    *fHEvents;
 
     Bool_t                       fTOFESD;              //  TOF flag to check if ESD data should be used
     Double_t                     fTOFSigma;            //  TOF default resolution
