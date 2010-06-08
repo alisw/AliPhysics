@@ -13,6 +13,7 @@
 
 class TTree;
 class AliFlowTrackSimpleCuts;
+class AliFlowTrack;
 class AliCFManager;
 class AliMCEvent;
 class AliESDEvent;
@@ -51,6 +52,8 @@ public:
                 const AliCFManager* poiCFManager ){}
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
+
+  AliFlowTrack* GetTrack( Int_t i );
 
   ClassDef(AliFlowEvent,1)
 };
