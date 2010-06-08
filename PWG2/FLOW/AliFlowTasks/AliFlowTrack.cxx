@@ -16,19 +16,26 @@
 /* $Id$ */ 
 
 // AliFlowTrack:
-// A simple track class to the the AliFlowEventSimple for flow analysis
-//
-//
-// author: N. van der Kolk (kolk@nikhef.nl)
-// mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+// A track class for use in AliFlowEvent for flow analysis
+// origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
+#include "AliVParticle.h"
 #include "AliFlowTrack.h"
 
 ClassImp(AliFlowTrack)
 
 //-----------------------------------------------------------------------
 AliFlowTrack::AliFlowTrack():
-  AliFlowTrackSimple(0),
+  AliFlowTrackSimple(),
+  fTrackSourceBits(),
+  fFMDmultiplicity(0.)
+{
+  //constructor 
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrack::AliFlowTrack(AliVParticle* p):
+  AliFlowTrackSimple(p->Phi(),p->Eta(),p->Pt()),
   fTrackSourceBits(),
   fFMDmultiplicity(0.)
 {
@@ -45,12 +52,38 @@ AliFlowTrack::AliFlowTrack(const AliFlowTrack& aTrack):
 }
 
 //-----------------------------------------------------------------------
+AliFlowTrack* AliFlowTrack::Clone(const char* option) const
+{
+  //clone "constructor"
+  return new AliFlowTrack(*this);
+}
+
+//-----------------------------------------------------------------------
 AliFlowTrack& AliFlowTrack::operator=(const AliFlowTrack& aTrack)
 {
+  //assignment
   AliFlowTrackSimple::operator=(aTrack);
   fTrackSourceBits = aTrack.fTrackSourceBits;
   fFMDmultiplicity = aTrack.fFMDmultiplicity;
+  return *this;
+}
 
+//-----------------------------------------------------------------------
+AliFlowTrackSimple& AliFlowTrack::operator=(const AliFlowTrackSimple& aTrack)
+{
+  //polymorphic assignment
+  AliFlowTrackSimple::operator=(aTrack);
+  const AliFlowTrack* pft = dynamic_cast<const AliFlowTrack*>(&aTrack);
+  if (pft)
+  {
+    fTrackSourceBits = pft->fTrackSourceBits;
+    fFMDmultiplicity = pft->fFMDmultiplicity;
+  }
+  else
+  {
+    fTrackSourceBits.ResetAllBits();
+    fFMDmultiplicity=0.;
+  }
   return *this;
 }
 

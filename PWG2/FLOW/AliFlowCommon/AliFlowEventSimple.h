@@ -17,7 +17,9 @@
 
 #include "TObject.h"
 #include "TParameter.h"
+#include "TMath.h"
 class TTree;
+class TF1;
 class AliFlowVector;
 class AliFlowTrackSimple;
 class AliFlowTrackSimpleCuts;
@@ -27,26 +29,44 @@ class AliFlowEventSimple: public TObject {
  public:
   AliFlowEventSimple();
   AliFlowEventSimple(Int_t aLenght);
+  AliFlowEventSimple( Int_t nParticles,
+                      TF1* ptDist,
+                      Double_t phiMin=0,
+                      Double_t phiMax=TMath::TwoPi(),
+                      Double_t etaMin=-1.0,
+                      Double_t etaMax= 1.0 );
   AliFlowEventSimple(TTree* anInput, const AliFlowTrackSimpleCuts* rpCuts, const AliFlowTrackSimpleCuts* poiCuts);
   AliFlowEventSimple(const AliFlowEventSimple& anEvent);
   AliFlowEventSimple& operator=(const AliFlowEventSimple& anEvent);
   virtual  ~AliFlowEventSimple();
+
+  virtual void Generate( Int_t nParticles,
+                         TF1* ptDist,
+                         Double_t phiMin=0,
+                         Double_t phiMax=TMath::TwoPi(),
+                         Double_t etaMin=-1.0,
+                         Double_t etaMax= 1.0 );
 
   Bool_t  IsFolder() const {return kTRUE;};
   void    Browse(TBrowser *b); 
   void    Print(Option_t* option = "") const;      //method to print stats
   
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
-  Int_t    GetEventNSelTracksRP() const             { return fEventNSelTracksRP; } 
-  void     SetEventNSelTracksRP(Int_t nr)           { fEventNSelTracksRP = nr; }  
+  Int_t    GetEventNSelTracksRP() const             { return fNumberOfRPs; } 
+  void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfRPs = nr; }  
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
   void     SetMCReactionPlaneAngle(Double_t fPhiRP) { fMCReactionPlaneAngle=fPhiRP; fMCReactionPlaneAngleIsSet=kTRUE; }
   Bool_t   IsSetMCReactionPlaneAngle() const        { return fMCReactionPlaneAngleIsSet; }
+  void     SetAfterBurnerPrecision(Double_t p)      { fAfterBurnerPrecision=p; }
+  Double_t GetAfterBurnerPrecision() const          { return fAfterBurnerPrecision; }
 
   void ResolutionPt(Double_t res);
   void TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB );
   void CloneTracks(Int_t n);
+  void AddV1( Double_t v1 );
   void AddV2( Double_t v2 );
+  void AddV4( Double_t v4 );
+  void AddFlow( Double_t v1, Double_t v2, Double_t v4 );
  
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 
@@ -59,16 +79,17 @@ class AliFlowEventSimple: public TObject {
   void     SetNumberOfTracks(Int_t nr)              { fNumberOfTracks = nr; }
 
  protected:
-  TObjArray*              fTrackCollection;           // collection of tracks
+  TObjArray*              fTrackCollection;           //-> collection of tracks
   Int_t                   fNumberOfTracks;            // number of tracks
-  Int_t                   fEventNSelTracksRP;         // number of tracks that have passed the RP selection
+  Int_t                   fNumberOfRPs;               // number of tracks that have passed the RP selection
   Double_t                fMCReactionPlaneAngle;      // the angle of the reaction plane from the MC truth
   Bool_t                  fMCReactionPlaneAngleIsSet; // did we set it from MC?
+  Double_t                fAfterBurnerPrecision;      // iteration precision in afterburner
   TParameter<Int_t>*      fNumberOfTracksWrap;        //! number of tracks in TBrowser
-  TParameter<Int_t>*      fEventNSelTracksRPWrap;     //! number of tracks that have passed the RP selection in TBrowser
-  TParameter<Double_t>*   fMCReactionPlaneAngleWrap;   //! the angle of the reaction plane from the MC truth in TBrowser
+  TParameter<Int_t>*      fNumberOfRPsWrap;           //! number of tracks that have passed the RP selection in TBrowser
+  TParameter<Double_t>*   fMCReactionPlaneAngleWrap;  //! the angle of the reaction plane from the MC truth in TBrowser
 
-  ClassDef(AliFlowEventSimple,1)                       // simplified event used in flow analysis 
+  ClassDef(AliFlowEventSimple,1)
 };
 
 #endif

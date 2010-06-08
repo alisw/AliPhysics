@@ -5,7 +5,7 @@
 #ifndef ALIFLOWTRACKSIMPLE_H
 #define ALIFLOWTRACKSIMPLE_H
 
-#include "TNamed.h"
+#include "TObject.h"
 #include "TBits.h"
 class TParticle;
 
@@ -14,20 +14,20 @@ class TParticle;
 // author: N. van der Kolk (kolk@nikhef.nl)
 // mods: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 
-class AliFlowTrackSimple: public TNamed {
+class AliFlowTrackSimple: public TObject {
 
 public:
   AliFlowTrackSimple();
   AliFlowTrackSimple(const TParticle* p);
   AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
   AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt);
-  AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
+  virtual AliFlowTrackSimple& operator=(const AliFlowTrackSimple& aTrack);
   virtual  ~AliFlowTrackSimple();
+  virtual AliFlowTrackSimple* Clone(const char* option="") const;
   
   Bool_t  IsFolder() const {return kTRUE;};
   //  void Browse(TBrowser *b); 
-  //  void Print(Option_t* option = "") const;      //method to print stats
- 
+  virtual void Print(Option_t* option = "") const;
 
   Double_t Eta() const; 
   Double_t Pt()  const; 
@@ -46,8 +46,24 @@ public:
   
   void ResolutionPt(Double_t resolution);
 
-  void AddV2( Double_t v2, Double_t reactionPlaneAngle,
-                Double_t precision, Int_t maxNumberOfIterations=100 );
+  void AddV1( Double_t v1,
+              Double_t reactionPlaneAngle,
+              Double_t precision,
+              Int_t maxNumberOfIterations=100 );
+  void AddV2( Double_t v2,
+              Double_t reactionPlaneAngle,
+              Double_t precision,
+              Int_t maxNumberOfIterations=100 );
+  void AddV4( Double_t v4,
+              Double_t reactionPlaneAngle,
+              Double_t precision,
+              Int_t maxNumberOfIterations=100 );
+  void AddFlow( Double_t v1,
+                Double_t v2,
+                Double_t v4,
+                Double_t reactionPlaneAngle,
+                Double_t precision,
+                Int_t maxNumberOfIterations=100 );
     
  private:
   Double_t fEta;    // eta

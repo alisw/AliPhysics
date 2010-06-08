@@ -50,7 +50,6 @@ AliFlowEvent::AliFlowEvent():
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowEvent::AliFlowEvent(const AliFlowEvent& event):
   AliFlowEventSimple(event)
 {
@@ -58,12 +57,20 @@ AliFlowEvent::AliFlowEvent(const AliFlowEvent& event):
 }
 
 //-----------------------------------------------------------------------
-
 AliFlowEvent& AliFlowEvent::operator=(const AliFlowEvent& event)
 {
   //assignment operator
   AliFlowEventSimple::operator=(event);
   return *this;
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrack* AliFlowEvent::GetTrack(Int_t i)
+{
+  //get track i from collection
+  if (i>=fNumberOfTracks) return NULL;
+  AliFlowTrack* pTrack = static_cast<AliFlowTrack*>(fTrackCollection->At(i)) ;
+  return pTrack;
 }
 
 //-----------------------------------------------------------------------
@@ -132,16 +139,13 @@ AliFlowEvent::AliFlowEvent( const AliMCEvent* anInput,
     }
     if (!(rpOK||poiOK)) continue;
 
-    //TODO maybe make a class AliFlowTrack with a constructor from AliVParticle
-    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-    pTrack->SetEta(pParticle->Eta());
-    pTrack->SetPhi(pParticle->Phi());
-    pTrack->SetPt(pParticle->Pt());
+    AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
+    pTrack->SetSource(AliFlowTrack::kFromMC);
 
     if (rpOK && rpCFManager)
     {
       pTrack->SetForRPSelection(kTRUE);
-      fEventNSelTracksRP++;
+      fNumberOfRPs++;
     }
     if (poiOK && poiCFManager)
     {
@@ -180,17 +184,15 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     }
     if (!(rpOK || poiOK)) continue;
 
-    //make new AliFLowTrackSimple
-    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-    pTrack->SetPt(pParticle->Pt() );
-    pTrack->SetEta(pParticle->Eta() );
-    pTrack->SetPhi(pParticle->Phi() );
+    //make new AliFLowTrack
+    AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
+    pTrack->SetSource(AliFlowTrack::kFromESD);
 
     //marking the particles used for int. flow:
     if(rpOK && rpCFManager)
     {
       pTrack->SetForRPSelection(kTRUE);
-      fEventNSelTracksRP++;
+      fNumberOfRPs++;
     }
     //marking the particles used for diff. flow:
     if(poiOK && poiCFManager)
@@ -228,16 +230,14 @@ AliFlowEvent::AliFlowEvent( const AliAODEvent* anInput,
     }
     if (!(rpOK || poiOK)) continue;
 
-    //make new AliFlowTrackSimple
-    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
-    pTrack->SetPt(pParticle->Pt() );
-    pTrack->SetEta(pParticle->Eta() );
-    pTrack->SetPhi(pParticle->Phi() );
+    //make new AliFlowTrack
+    AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
+    pTrack->SetSource(AliFlowTrack::kFromAOD);
 
     if (rpOK && rpCFManager)
     {
       pTrack->SetForRPSelection(kTRUE);
-      fEventNSelTracksRP++;
+      fNumberOfRPs++;
     }
     if (poiOK && poiCFManager)
     {
@@ -335,8 +335,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
     if (!(rpOK || poiOK)) continue;
 
-    //make new AliFlowTrackSimple
-    AliFlowTrackSimple* pTrack = new AliFlowTrackSimple();
+    //make new AliFlowTrack
+    AliFlowTrack* pTrack = new AliFlowTrack();
     if(anOption == kESDkine)   //take the PID from the MC & the kinematics from the ESD
     {
       pTrack->SetPt(pParticle->Pt() );
@@ -352,7 +352,7 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
 
     if (rpOK && rpCFManager)
     {
-      fEventNSelTracksRP++;
+      fNumberOfRPs++;
       pTrack->SetForRPSelection();
     }
     if (poiOK && poiCFManager) pTrack->SetForPOISelection();
