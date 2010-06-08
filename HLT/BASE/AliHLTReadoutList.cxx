@@ -170,42 +170,59 @@ bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitInd
   Int_t detNum = ddlId >> 8;
   Int_t ddlNum = ddlId & 0xFF;
   
-  if (detNum < 3)
+  switch (detNum)
   {
+  case 0: // SPD
+  case 1: // SDD
+  case 2: // SSD
+    if (ddlNum >= 32) return false; // only have 1 32-bit word.
     // the 3 ITS detectors have one word each
     wordIndex = detNum;
-  }
-  else if (detNum == 3)
-  {
+    break;
+  case 3: // TPC
     // the TPC bitfield has in total 8 words
     wordIndex = detNum + (ddlNum >> 5);
-  }
-  else if (detNum == 4)
-  {
-    // the TRD bitfield starts at position 11 (3 ITS + 8 TPC)
-    wordIndex = detNum + 7;
-  }
-  else if (detNum == 5)
-  {
+    break;
+  case 4: // TRD
+    if (ddlNum >= 32) return false; // only have 1 32-bit word.
+    // the TRD bitfield starts at word 11 (3 words ITS + 8 words TPC)
+    wordIndex = 11;
+    break;
+  case 5: // TOF
+    if (ddlNum >= 3*32) return false; // only have 3 32-bit words.
     // TOF has 72 DDLs, the bitfield is 3 words starting at position 12
-    wordIndex = detNum + 7 + (ddlNum >> 5);
-  }
-  else if (detNum == 30)
-  {
-    // the HLT bitfield is in the last word 
-    wordIndex = 29;
-  }
-  else
-  {
+    wordIndex = 12 + (ddlNum >> 5);
+    break;
+  case 6: // HMPID
+  case 7: // PHOS
+  case 8: // CPV
+  case 9: // PMD
+  case 10: // MUONTRK (MCH)
+  case 11: // MUONTRG (MTR)
+  case 12: // FMD
+  case 13: // T0
+  case 14: // V0
+  case 15: // ZDC
+  case 16: // ACORDE
+  case 17: // TRG
+  case 18: // EMCAL
+  case 19: // DAQTEST
+    if (ddlNum >= 32) return false; // only have 1 32-bit word.
     // all other detectors fit into one word, the offset is due to
     // TPC and TOF
     wordIndex = detNum + 9;
+    break;
+  case 30: // HLT
+    if (ddlNum >= 32) return false; // only have 1 32-bit word.
+    // the HLT bitfield is in the last word
+    wordIndex = 29;
+    break;
+  default:
+    return false;
   }
   
-  if (wordIndex < 0 or gkAliHLTDDLListSize <= wordIndex) return false;
-  
   // The bit index within the word indicated by wordIndex.
-  bitIndex = (ddlId & 0xFF) % 32;
+  bitIndex = ddlNum % 32;
   return true;
 }
 
