@@ -1,3 +1,6 @@
+#include "Riostream.h"
+
+#include "TH1.h"
 #include "TTree.h"
 #include "TParticle.h"
 #include "TRandom.h"
@@ -27,7 +30,8 @@ AliRsnAnalysisPhi900GeV::AliRsnAnalysisPhi900GeV(const char *name) :
   fNTPC(0),
   fMinTPC(-1E6),
   fMaxTPC( 1E6),
-  fOutTree(0x0),
+  fOutList(0x0),
+  fHEvents(0x0),
   fTOFESD(kFALSE),
   fTOFSigma(210.0),
   fTOFmaker(0x0),
@@ -38,6 +42,8 @@ AliRsnAnalysisPhi900GeV::AliRsnAnalysisPhi900GeV(const char *name) :
 //
 
   DefineOutput(1, TTree::Class());
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TList::Class());
 }
 
 
@@ -55,7 +61,8 @@ AliRsnAnalysisPhi900GeV::AliRsnAnalysisPhi900GeV(const AliRsnAnalysisPhi900GeV& 
   fNTPC(copy.fNTPC),
   fMinTPC(copy.fMinTPC),
   fMaxTPC(copy.fMaxTPC),
-  fOutTree(0x0),
+  fOutList(0x0),
+  fHEvents(0x0),
   fTOFESD(copy.fTOFESD),
   fTOFSigma(copy.fTOFSigma),
   fTOFmaker(0x0),
@@ -97,7 +104,8 @@ AliRsnAnalysisPhi900GeV::~AliRsnAnalysisPhi900GeV()
 // Destructor
 //
 
-  if (fOutTree) delete fOutTree;
+  if (fOutTree[0]) delete fOutTree[0];
+  if (fOutTree[1]) delete fOutTree[1];
 }
 
 
@@ -125,20 +133,38 @@ void AliRsnAnalysisPhi900GeV::UserCreateOutputObjects()
 
   // create output trees
   OpenFile(1);
-  fOutTree = new TTree("rsnTree", "Pairs");
+  fOutTree[0] = new TTree("rsnTree", "Pairs");
 
-  fOutTree->Branch("pdg", &fPDG, "pdg/S");
-  fOutTree->Branch("im" , &fIM , "im/F" );
-  fOutTree->Branch("y"  , &fY  , "y/F"  );
-  fOutTree->Branch("pt" , &fPt , "pt/F" );
-  fOutTree->Branch("eta", &fEta, "eta/F");
+  fOutTree[0]->Branch("pdg", &fPDG, "pdg/S");
+  fOutTree[0]->Branch("im" , &fIM , "im/F" );
+  fOutTree[0]->Branch("y"  , &fY  , "y/F"  );
+  fOutTree[0]->Branch("pt" , &fPt , "pt/F" );
+  fOutTree[0]->Branch("eta", &fEta, "eta/F");
+
+  OpenFile(2);
+  fOutTree[1] = new TTree("rsnTrue", "True pairs");
+
+  fOutTree[1]->Branch("im" , &fIM , "im/F" );
+  fOutTree[1]->Branch("y"  , &fY  , "y/F"  );
+  fOutTree[1]->Branch("pt" , &fPt , "pt/F" );
+  fOutTree[1]->Branch("eta", &fEta, "eta/F");
+
+  OpenFile(3);
+  fOutList = new TList;
+  fHEvents = new TH1I("hEvents", "Event details", 4, 0, 4);
+  fOutList->Add(fHEvents);
 }
 
 
 void AliRsnAnalysisPhi900GeV::UserExec(Option_t *)
 {
 //
-// Main execution function
+// Main execution function.
+// Fills the fHEvents data member with the following legenda:
+// 0 -- event OK, prim vertex with tracks
+// 1 -- event OK, prim vertex with SPD
+// 2 -- event OK but vz large
+// 3 -- event bad
 //
 
   // retrieve ESD event and related stack (if available)
@@ -156,11 +182,24 @@ void AliRsnAnalysisPhi900GeV::UserExec(Option_t *)
     v = esd->GetPrimaryVertexSPD();
     
     // if this is not good skip this event
-    if (v->GetNContributors() < 1) return;
+    if (v->GetNContributors() < 1)
+    {
+      fHEvents->Fill(3);
+      PostData(3, fOutList);
+      return;
+    }
   }
 
   // if the Z position is larger than 10, skip this event
-  if (TMath::Abs(v->GetZv()) > 10.0) return;
+  if (TMath::Abs(v->GetZv()) > 10.0)
+  {
+    fHEvents->Fill(2);
+    PostData(3, fOutList);
+    return;
+  }
+
+  // use the type to fill the histogram
+  fHEvents->Fill(type);
 
   // smear TOF times in case of MC
   if (stack) RemakeTOFtimeMC(esd);
@@ -168,8 +207,10 @@ void AliRsnAnalysisPhi900GeV::UserExec(Option_t *)
   // get time zero for TOF
   Double_t *tof = fTOFmaker->RemakePID(esd);
 
-  if (!fUseMC) ProcessESD(esd, v, tof[0], stack);
-  else ProcessMC(stack);
+  ProcessESD(esd, v, tof[0], stack);
+  ProcessMC(stack);
+
+  PostData(3, fOutList);
 }
 
 
@@ -278,7 +319,7 @@ void AliRsnAnalysisPhi900GeV::ProcessESD
     else if (charge < 0)
       neg[nneg++] = i;
   }
-
+  
   // resize arrays accordingly
   pos.Set(npos);
   neg.Set(nneg);
@@ -328,9 +369,11 @@ void AliRsnAnalysisPhi900GeV::ProcessESD
       fEta = (Float_t)vsum.Eta();
       fY   = (Float_t)vref.Rapidity();
 
-      fOutTree->Fill();
+      fOutTree[0]->Fill();
     }
   }
+
+  PostData(1, fOutTree[0]);
 }
 
 
@@ -383,8 +426,35 @@ void AliRsnAnalysisPhi900GeV::ProcessMC(AliStack *stack)
       fEta = (Float_t)vsum.Eta();
       fY   = (Float_t)vref.Rapidity();
 
-      fOutTree->Fill();
+      fOutTree[1]->Fill();
     }
+  }
+
+  PostData(2, fOutTree[1]);
+}
+
+
+void AliRsnAnalysisPhi900GeV::SetTPCparams(Bool_t isMC)
+{
+//
+// Set TPC bethe-bloch parameters
+//
+
+  if (!isMC)
+  {
+    fTPCpar[0] = 1.41543;
+    fTPCpar[1] = 2.63394E1;
+    fTPCpar[2] = 5.0411E-11;
+    fTPCpar[3] = 2.12543;
+    fTPCpar[4] = 4.88663;
+  }
+  else
+  {
+    fTPCpar[0] = 2.15898;
+    fTPCpar[1] = 1.75295E1;
+    fTPCpar[2] = 3.40030E-9;
+    fTPCpar[3] = 1.96178;
+    fTPCpar[4] = 3.91720;
   }
 }
 
