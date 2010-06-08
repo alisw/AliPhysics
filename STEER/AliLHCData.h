@@ -156,6 +156,9 @@ class AliLHCData : public TObject
   //
   const TObjArray&  GetData()                             const {return fData;}
   //
+  // analysis methods
+  Int_t GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding) const;
+  //
  protected:
   //
   Bool_t                FillData(double tmin=0, double tmax=1.e20);

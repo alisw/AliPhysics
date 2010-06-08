@@ -937,3 +937,36 @@ void AliLHCData::FlagInteractingBunches(const Int_t beam1[2],const Int_t beam2[2
     }
   }
 }
+
+//___________________________________________________________________
+Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding) const
+{
+  // get average intensity for all, colliding and non-colliding bunches
+  // on success returns number of intensity records used (1 per ~10 min)
+  colliding = noncolliding = -1.;
+  if (beamID<0||beamID>1) {
+    AliError(Form("BeamID must be either 0 or 1, %d requested",beamID));
+    return -10;
+  }
+  //
+  int nrec = GetNIntensityPerBunch(beamID);
+  if (nrec<1) return -1;
+  AliLHCDipValI *conf = GetBunchConfigMeasured(beamID);
+  if (!conf) conf = GetBunchConfigDeclared(beamID);
+  if (!conf) return -2;
+  int nb = conf->GetSize();
+  //
+  for (int irec=0;irec<nrec;irec++) {
+    AliLHCDipValF* rInt = GetIntensityPerBunch(beamID,irec);
+    for (int ib=0;ib<nb;ib++) {
+      double val = rInt->GetValue(ib);
+      if (val<0) continue;
+      int bID = conf->GetValue(ib);
+      if (bID<0) colliding += val;
+      else noncolliding += val;
+    }
+  }
+  colliding /= nrec;
+  noncolliding /= nrec;
+  return nrec;
+}

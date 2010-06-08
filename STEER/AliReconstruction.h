@@ -173,6 +173,7 @@ private:
   Bool_t         LoadCDB();
   Bool_t         LoadTriggerScalersCDB();
   Bool_t         LoadCTPTimeParamsCDB();
+  Bool_t         ReadIntensityInfoCDB();
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
@@ -308,10 +309,11 @@ private:
   AliVertexerTracks*   ftVertexer;  //! Pointer to the vertexer based on ESD tracks
   Bool_t               fIsNewRunLoader; // galice.root created from scratch (real raw data case)
   Bool_t               fRunAliEVE;  // Run AliEVE or not
-
+  Double_t             fBeamInt[2][2]; //! mean beam intensities from AliLHCData
+  
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 34)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 35)      // class for running the reconstruction
 };
 
 #endif
