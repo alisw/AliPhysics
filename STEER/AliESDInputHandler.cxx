@@ -60,7 +60,7 @@ AliESDInputHandler::AliESDInputHandler() :
   fChainT(0),
   fTreeT(0),
   fRunTag(0),
-  fReadFriends(1),
+  fReadFriends(0),
   fFriendFileName("AliESDfriends.root")
 {
   // default constructor
@@ -75,7 +75,7 @@ AliESDInputHandler::~AliESDInputHandler()
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
     AliInputEventHandler(name, title), fEvent(0x0), fFriend(0x0), fESDpid(0x0), fAnalysisType(0),
-    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fReadFriends(1), fFriendFileName("AliESDfriends.root")
+    fNEvents(0),  fHLTEvent(0x0), fHLTTree(0x0), fUseHLT(kFALSE), fTagCutSumm(0x0), fUseTags(kFALSE), fChainT(0), fTreeT(0), fRunTag(0), fReadFriends(0), fFriendFileName("AliESDfriends.root")
 {
     // Constructor
 }
