@@ -6,7 +6,7 @@ PACKAGE = PWG2
 
 default-target: lib$(PACKAGE).so 
 
-ALICEINC      = -I.
+ALICEINC      = -I. -I$(ALICE_ROOT)/TOF
 
 ### define include dir for local case and par case
 ifneq ($(ESD_INCLUDE),)
