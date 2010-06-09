@@ -88,7 +88,8 @@ AliFMDAnaParameters::AliFMDAnaParameters() :
   fSPDlowLimit(0),
   fSPDhighLimit(999999999),
   fCentralSelection(kFALSE),
-  fSharingObjectPresent(kTRUE)
+  fSharingObjectPresent(kTRUE),
+  fNumberOfEtaBinsToCut(1)
 {
   // Default constructor 
   fPhysicsSelection = new AliPhysicsSelection;
@@ -160,9 +161,12 @@ void AliFMDAnaParameters::Init(Bool_t forceReInit, UInt_t what)
   if (what & kEventSelectionEfficiency)   InitEventSelectionEff();
   if (what & kSharingEfficiency)          InitSharingEff();
   
-
-  
   fIsInit = kTRUE;
+  
+  if(fBackground)
+    FindEtaLimits();
+  
+  
 }
 //____________________________________________________________________
 
@@ -176,6 +180,8 @@ void AliFMDAnaParameters::InitBackground() {
   fBackground = dynamic_cast<AliFMDAnaCalibBackgroundCorrection*>(fin->Get(fgkBackgroundID));
   if (!fBackground) AliFatal("Invalid background object from CDB");
   
+  
+
 }
 
 //____________________________________________________________________
@@ -224,6 +230,24 @@ void AliFMDAnaParameters::InitSharingEff() {
     return; 
   }
   
+}
+//____________________________________________________________________
+void AliFMDAnaParameters::FindEtaLimits() {
+
+  fEtaLowBinLimits.SetBins(3,0,3,2,0,2,GetNvtxBins(),0,GetNvtxBins());
+  fEtaHighBinLimits.SetBins(3,0,3,2,0,2,GetNvtxBins(),0,GetNvtxBins());
+  for(Int_t det=1; det<=3;det++) {
+    Int_t nRings = (det==1 ? 1 : 2);
+    for (UShort_t ir = 0; ir < nRings; ir++) {
+      Char_t ringChar = (ir == 0 ? 'I' : 'O');
+      for(Int_t v =0; v<GetNvtxBins(); v++) {
+	fEtaLowBinLimits.SetBinContent(det,ir,v,GetFirstEtaBinFromMap(v, det, ringChar));
+	fEtaHighBinLimits.SetBinContent(det,ir,v,GetLastEtaBinFromMap(v, det, ringChar));
+	
+      }
+    }
+  }
+
 }
 //____________________________________________________________________
 
@@ -803,6 +827,68 @@ AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)
   Float_t basearclength   = 0.5*basearc * radius;                // One sector   
   
   return basearclength;
+}
+//____________________________________________________________________
+Int_t    AliFMDAnaParameters::GetFirstEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring)
+{
+  TH2F* hBg = GetBackgroundCorrection(det,ring,vtxbin);
+  Int_t firstbin = -1;
+  Int_t nNonZeroFirst = 0;
+  
+  for(Int_t i=1;i<=hBg->GetNbinsX();i++) {
+    if(nNonZeroFirst == fNumberOfEtaBinsToCut && firstbin==-1) firstbin = i;
+    
+    for(Int_t j=1;j<=hBg->GetNbinsY();j++) {
+      
+      Float_t value = hBg->GetBinContent(i,j);
+      
+      if(value > 0.001 && nNonZeroFirst<fNumberOfEtaBinsToCut)
+	{nNonZeroFirst++; break;}
+      
+      
+    }
+  }
+  
+  return firstbin;
+
+}
+//____________________________________________________________________
+Int_t    AliFMDAnaParameters::GetLastEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring)
+{
+  TH2F* hBg = GetBackgroundCorrection(det,ring,vtxbin);
+  Int_t lastbin=-1;
+  Int_t nNonZeroLast = 0;
+  for(Int_t i=hBg->GetNbinsX();i>0;i--) {
+    if(nNonZeroLast == fNumberOfEtaBinsToCut && lastbin==-1) lastbin = i;
+    
+    for(Int_t j=1;j<=hBg->GetNbinsY();j++) {
+      
+      Float_t value = hBg->GetBinContent(i,j);
+      
+      if(value > 0.001 && nNonZeroLast<fNumberOfEtaBinsToCut)
+	{nNonZeroLast++; break; }
+      
+      
+    }
+  }
+  
+  return lastbin;
+}
+
+//____________________________________________________________________
+Int_t    AliFMDAnaParameters::GetFirstEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring)
+{
+  Int_t ringNumber = (ring == 'I' ? 0 : 1);
+  return fEtaLowBinLimits.GetBinContent(det,ringNumber,vtxbin);
+
+}
+
+//____________________________________________________________________
+Int_t    AliFMDAnaParameters::GetLastEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring)
+{
+  Int_t ringNumber = (ring == 'I' ? 0 : 1);
+  return fEtaHighBinLimits.GetBinContent(det,ringNumber,vtxbin);
+  
 }
 //____________________________________________________________________
 //

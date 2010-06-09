@@ -21,6 +21,7 @@
 #include "AliFMDAnaParameters.h"
 #include "AliESDInputHandler.h"
 #include "AliMultiplicity.h"
+#include "TProfile2D.h"
 //#include "AliFMDGeometry.h"
 
 ClassImp(AliFMDAnalysisTaskBackgroundCorrection)
@@ -148,6 +149,11 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
     
   }
   
+  TH2F* dNdetadphiHistogram = new TH2F("dNdetadphiHistogramTrVtx","dNdetadphiHistogramTrVtx;#eta;#Phi",pars->GetNetaBins(),-6,6,20,0,2*TMath::Pi());
+  
+  //dNdetadphiHistogram->SetErrorOption("g");
+  
+  fHitList->Add(dNdetadphiHistogram);
   
   
 }
@@ -298,6 +304,9 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
     AliWarning("No SPD background map found");
   
   //std::cout<<spdmult->GetNumberOfTracklets()<<"  "<<spdmult->GetNumberOfITSClusters(0)<<"    "<< spdmult->GetNumberOfSingleClusters()<<std::endl;
+  
+  CreatePerEventHistogram(vtxbin);
+  
   if(fStandalone) {
     PostData(0, fOutputList); 
   }
@@ -325,6 +334,69 @@ void AliFMDAnalysisTaskBackgroundCorrection::Terminate(Option_t */*option*/) {
 	fHitList->Add(hHitsNoCuts);
 	
       }
+    }
+  }
+}
+
+//_____________________________________________________________________
+void AliFMDAnalysisTaskBackgroundCorrection::CreatePerEventHistogram(Int_t vtxbin) {
+  
+  AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
+  TH2F* dNdetadphiHistogram = (TH2F*)fHitList->FindObject("dNdetadphiHistogramTrVtx");
+  dNdetadphiHistogram->Reset();
+  
+  for(Int_t det = 1; det<=3; det++) {
+    Int_t maxRing = (det == 1 ? 0 : 1);
+    for(Int_t ring = 0;ring<=maxRing;ring++) {
+      
+      Char_t ringChar = (ring == 0 ? 'I' : 'O');
+      
+      TH2F* multhistoriginal = (TH2F*)fOutputList->FindObject(Form("multTrVtx_FMD%d%c_vtxbin%d",det,ringChar,vtxbin));
+      TH2F* multhist = (TH2F*)multhistoriginal->Clone("tmp");
+      if(ringChar == 'O')
+	multhist->RebinY(2);
+      
+      for(Int_t i=pars->GetFirstEtaBinToInclude(vtxbin,det,ringChar); i<=pars->GetLastEtaBinToInclude(vtxbin,det,ringChar); i++) {
+	for(Int_t j=1; j<=multhist->GetNbinsY(); j++) {
+	  if(multhist->GetBinContent(i,j) < 0.0001) continue;
+	  
+	  Bool_t overlap = kFALSE;
+	
+	  if(det == 1 && ringChar =='I')
+	    if(i<=pars->GetLastEtaBinToInclude(vtxbin,2,'I'))
+	      overlap = kTRUE;
+		  
+	  if(det == 2 && ringChar =='O')
+	    if(i>=pars->GetFirstEtaBinToInclude(vtxbin,2,'I'))
+	      overlap = kTRUE;
+	  
+	  if(det == 2 && ringChar =='I')
+	    if(i<=pars->GetLastEtaBinToInclude(vtxbin,2,'O') || i>=pars->GetFirstEtaBinToInclude(vtxbin,1,'I'))
+	      overlap = kTRUE;
+		  
+	  if(det == 3 && ringChar =='I')
+	    if(i>=pars->GetFirstEtaBinToInclude(vtxbin,3,'O'))
+	      overlap = kTRUE;
+	  
+	  if(det == 3 && ringChar =='O')
+	    if(i<=pars->GetLastEtaBinToInclude(vtxbin,3,'I'))
+	      overlap = kTRUE;
+	  
+	  
+	  
+
+	  
+	  if(overlap) {
+	    dNdetadphiHistogram->SetBinContent(i,j,dNdetadphiHistogram->GetBinContent(i,j)+0.5*multhist->GetBinContent(i,j));
+	      dNdetadphiHistogram->SetBinError(i,j,0.5*TMath::Sqrt(TMath::Power(dNdetadphiHistogram->GetBinError(i,j),2)+TMath::Power(multhist->GetBinError(i,j),2)));
+	  }
+	    else {
+	      dNdetadphiHistogram->SetBinContent(i,j,multhist->GetBinContent(i,j));
+	      dNdetadphiHistogram->SetBinError(i,j,multhist->GetBinError(i,j));
+	    }
+	}
+      }
+      delete multhist;
     }
   }
 }

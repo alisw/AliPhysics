@@ -41,11 +41,12 @@ class AliFMDAnalysisTaskBackgroundCorrection : public AliAnalysisTask
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
-    void SetInputList(TList* inputList) {fInputList = inputList;}
-    void SetOutputVertex(TObjString* vtxString) {fOutputVertexString = vtxString;}
-    //void SetInputVtx(TObjString* vtxString) {fVertexString = vtxString;}
-    void SetOutputList(TList* outputList) {fOutputList = outputList;}
-    void SetHitList(TList* hitList) {fHitList = hitList;}
+  void SetInputList(TList* inputList) {fInputList = inputList;}
+  void SetOutputVertex(TObjString* vtxString) {fOutputVertexString = vtxString;}
+  //void SetInputVtx(TObjString* vtxString) {fVertexString = vtxString;}
+  void SetOutputList(TList* outputList) {fOutputList = outputList;}
+  void SetHitList(TList* hitList) {fHitList = hitList;}
+  void         CreatePerEventHistogram(Int_t vtxbin);
  private:
     Int_t         fDebug;        //  Debug flag
     TList*        fOutputList;

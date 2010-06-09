@@ -35,6 +35,7 @@
 #include "TH2F.h"
 #include "TAxis.h"
 #include "TH1F.h"
+#include "TH3F.h"
 #include "AliFMDAnaCalibBackgroundCorrection.h"
 #include "AliFMDAnaCalibEnergyDistribution.h"
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
@@ -141,6 +142,13 @@ public:
   void     SetHighSPDLimit(Float_t cut) {fSPDhighLimit = cut;}
   void     SetCentralTriggerSelection(Bool_t selection) {fCentralSelection = selection;}
   Bool_t   SharingEffPresent() {return fSharingObjectPresent;}
+  Int_t    GetFirstEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring) ;
+  Int_t    GetLastEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring) ;
+  
+
+  void     SetNumberOfEtaBinsToCut(Int_t nbins) {fNumberOfEtaBinsToCut = nbins;}
+  Int_t    GetNumberOfEtaBinsToCut() const {return fNumberOfEtaBinsToCut;}
+  
 protected:
   
   AliFMDAnaParameters(const AliFMDAnaParameters& o) 
@@ -167,7 +175,8 @@ protected:
       fSPDlowLimit(o.fSPDlowLimit),
       fSPDhighLimit(o.fSPDhighLimit),   
       fCentralSelection(o.fCentralSelection),
-      fSharingObjectPresent(o.fSharingObjectPresent)
+      fSharingObjectPresent(o.fSharingObjectPresent),
+      fNumberOfEtaBinsToCut(o.fNumberOfEtaBinsToCut)
   {}
   AliFMDAnaParameters& operator=(const AliFMDAnaParameters&) { return *this; }
   virtual ~AliFMDAnaParameters() {}
@@ -180,7 +189,11 @@ protected:
   void InitEventSelectionEff();
   void InitSharingEff();
   
+  void     FindEtaLimits();
+  Int_t    GetFirstEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring) ;
+  Int_t    GetLastEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring) ;
 
+  
   TObjArray* GetBackgroundArray();
   
   TAxis* GetRefAxis();
@@ -218,6 +231,9 @@ protected:
   Float_t  fSPDhighLimit ;             // high limit of SPD tracklets
   Bool_t   fCentralSelection;         //if event selection is done centrally
   Bool_t   fSharingObjectPresent ;    //Do we have a sharing object ? 
+  Int_t    fNumberOfEtaBinsToCut;     //Number of eta bins to remove from edge effects
+  TH3F     fEtaLowBinLimits;
+  TH3F     fEtaHighBinLimits;
   ClassDef(AliFMDAnaParameters,1) // Manager of parameters
 };
 
