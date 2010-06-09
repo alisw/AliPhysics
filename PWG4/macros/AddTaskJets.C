@@ -141,15 +141,13 @@ AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t f
    TString c_jf(jf);
    c_jf.ToLower();
 
-
-   if (jr == "AOD"){
-     if(c_jf.Contains("ua1") && TMath::Abs(radius-0.4) < 0.01){
-       // do nothing
-     }
-     else{
-       jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
-     }
+   if(c_jf.CompareTo("ua1")==0 && TMath::Abs(radius-0.4) < 0.01 && c_jr.CompareTo("aod") == 0){
+     // do nothing, this is the standard jet finder R = 0.4, UA1 on AOD
    }
+   else{
+     jetana->SetNonStdBranch(Form("jets%s_%s%s",jr,jf,cRadius));
+   }
+
 
    AliAnalysisDataContainer *cout_jet = mgr->CreateContainer(Form("jethist_%s_%s%s",c_jr.Data(),c_jf.Data(),cRadius), TList::Class(),
 							     AliAnalysisManager::kOutputContainer, Form("%s:PWG4_jethist_%s_%s%s",AliAnalysisManager::GetCommonFileName(),
