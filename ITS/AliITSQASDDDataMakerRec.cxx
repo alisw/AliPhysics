@@ -309,13 +309,13 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH2D *hphil3 = new TH2D("SDDphizL3","SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);//1
   hphil3->GetXaxis()->SetTitle("z[Module Number L3 ]");
   hphil3->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3,1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3,1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
   fSDDhRawsTask++;
   
   TH2D *hphil4 = new TH2D("SDDphizL4","SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); //2
   hphil4->GetXaxis()->SetTitle("z[Module Number L4]");
   hphil4->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4,2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
+   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4,2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
   fSDDhRawsTask++;
   
   //normalized histograms
@@ -329,13 +329,13 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH2D *hphil3norm = new TH2D("SDDphizL3NORM","NORM SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);//4
   hphil3norm->GetXaxis()->SetTitle("z[Module Number L3 ]");
   hphil3norm->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3norm,4+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3norm,4+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
   fSDDhRawsTask++;
   
   TH2D *hphil4norm = new TH2D("SDDphizL4NORM","NORM SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); //5
   hphil4norm->GetXaxis()->SetTitle("z[Module Number L4]");
   hphil4norm->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4norm,5+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4norm,5+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
   fSDDhRawsTask++;
 
 	
@@ -1048,14 +1048,17 @@ void AliITSQASDDDataMakerRec::InitCalibrationArray()
 {
   //create the histograms with the calibration informations. The histograms are stored in a TObjArray
     TH1D *pattern1  = new TH1D("CALSDDModPattern","Calibration HW Modules pattern",fgknSDDmodules,239.5,499.5);
+    pattern1->SetDirectory(0) ;
     TH2D *patternl3 = new TH2D("CALSDDphizL3","Calibration SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);
+    patternl3->SetDirectory(0) ;
     TH2D *patternl4 = new TH2D("CALSDDphizL4"," Calibration SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5);
+    patternl4->SetDirectory(0) ;
 
-    fHistoCalibration = new TObjArray(3); 
+    if(!fHistoCalibration)fHistoCalibration = new TObjArray(3);
     fHistoCalibration->AddAtAndExpand(pattern1,0);
     fHistoCalibration->AddAtAndExpand(patternl3,1);
     fHistoCalibration->AddAtAndExpand(patternl4,2);
-
+    fHistoCalibration->SetOwner(kTRUE); 
     //    printf("Calibration Histograms created!\n");
 }
 
@@ -1073,6 +1076,8 @@ void AliITSQASDDDataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
   ((TH1D*)(fHistoCalibration->At(0)))->Reset();
   ((TH2D*)(fHistoCalibration->At(1)))->Reset();
   ((TH2D*)(fHistoCalibration->At(2)))->Reset();
+  //delete fHistoCalibration;
+  //fHistoCalibration=NULL;
   
 }
 
