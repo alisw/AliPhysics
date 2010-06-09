@@ -427,7 +427,10 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
     AliEMCALSuperModuleDelta &t = fSuperModuleData[i];
     t.fXShift = real.fX1 - ideal.fX1;
     t.fYShift = real.fY1 - ideal.fY1;
-    t.fZShift = real.fZ1 - ideal.fZ1;
+    t.fZShift = ideal.fZ1 - real.fZ1; //due to z flip for C side
+    if(i%2==0) {
+      t.fZShift *= -1.0;  //correct shift for C side
+    }
     t.fPhi = real.fPhi - ideal.fPhi;
     t.fTheta = real.fTheta - ideal.fTheta;
     t.fPsi = real.fPsi - ideal.fPsi;
