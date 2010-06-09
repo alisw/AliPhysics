@@ -127,10 +127,16 @@ void AliTPCExBEffective::GetCorrection(const Float_t x[],const Short_t roc,Float
 
   Double_t dr    =   fC0 * erez + fC1 * erphiez;
   Double_t drphi =  -fC1 * erez + fC0 * erphiez;
-  //
-  dx[0]= TMath::Cos(phi)*dr-TMath::Sin(phi)*drphi;
-  dx[1]= TMath::Sin(phi)*dr+TMath::Cos(phi)*drphi;
-  dx[2]= 0;
+  
+  // Calculate distorted position
+  if ( r > 0.0 ) {
+    r   =  r   + dr;
+    phi =  phi + drphi/r;
+  }
+  // Calculate correction in cartesian coordinates
+  dx[0] = r * TMath::Cos(phi) - x[0];
+  dx[1] = r * TMath::Sin(phi) - x[1];
+  dx[2] = 0.; // z distortion not implemented (1st order distortions)
 
 }
 
@@ -138,7 +144,7 @@ void AliTPCExBEffective::GetCorrection(const Float_t x[],const Short_t roc,Float
 
 Double_t AliTPCExBEffective::GetSum(const TMatrixD& mpol, const TMatrixD&mcoef, Double_t r, Double_t drift, Double_t phi, Int_t coord) const {
   //
-  //
+  // Summation of the polynomials
   //
   Int_t npols=mpol.GetNrows();
   Double_t sum=0;

@@ -1,5 +1,5 @@
-#ifndef ALITPCEXBEFECTIVE_H
-#define ALITPCEXBEFECTIVE_H
+#ifndef ALITPCEXBEFFECTIVE_H
+#define ALITPCEXBEFFECTIVE_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -35,13 +35,15 @@ public:
 
 public:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
-  Double_t fC0;                // wt - matrix elements   
-  Double_t fC1;                //
+
+private:
+  Double_t fC0;                // coefficient C0 (compare Jim Thomas's notes for definitions)
+  Double_t fC1;                // coefficient C1 (compare Jim Thomas's notes for definitions)
   TMatrixD *fPolynomA;         // correction polynoms A
   TMatrixD *fPolynomC;         // correction polynoms C
   TMatrixD *fPolynomValA;      // correction polynoms coefficient A
   TMatrixD *fPolynomValC;      //  correction polynoms coefficient C
-private:
+
   AliTPCExBEffective(const AliTPCExBEffective&);
   AliTPCExBEffective &operator=(const AliTPCExBEffective&);
   ClassDef(AliTPCExBEffective,1);
