@@ -185,7 +185,7 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
      }
     
      //     //Push the TPC block on, without any changes
-     PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
+     //PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
 
    }
 
