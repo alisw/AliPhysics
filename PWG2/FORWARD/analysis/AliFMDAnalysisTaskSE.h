@@ -7,6 +7,7 @@
 #include "AliFMDAnalysisTaskBackgroundCorrection.h"
 #include "AliFMDAnalysisTaskDndeta.h"
 #include "AliFMDAnalysisTaskBFCorrelation.h"
+
 class AliFMDAnaParameters;
 
 /** @defgroup FMD_ana Analysis tasks 
@@ -51,7 +52,8 @@ public:				//
   virtual void UserExec(Option_t* /*option*/);
   void         Terminate(Option_t */*option*/);
   void         SetParams(AliFMDAnaParameters* p) { fParams = p; }
-  void         Print(Option_t* option="") const;
+  void         Print(Option_t* option="") const ;
+  
 private:
   
   TList*                                 fListOfHistos;  // Output list
@@ -61,7 +63,6 @@ private:
   AliFMDAnalysisTaskDndeta               fDndeta;        // dN/deta task
   AliFMDAnalysisTaskBFCorrelation        fBFCorrelation; // BF correlation task
   AliFMDAnaParameters*                   fParams;        // Analysis parameters
-
   
   ClassDef(AliFMDAnalysisTaskSE, 1);
 
