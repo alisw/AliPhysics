@@ -1004,7 +1004,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
   if (!res) {
     const char* faildump = "fgmr_failed.dat";
     int defout = dup(1);
-    int slvDump = open(faildump, O_RDWR|O_CREAT);
+    int slvDump = open(faildump, O_RDWR|O_CREAT, 0666);
     dup2(slvDump,1);
     //
     printf("#Failed to solve using solver %d with PreCond: %d MaxIter: %d Tol: %e NKrylov: %d\n",
