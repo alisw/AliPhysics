@@ -154,6 +154,7 @@ void AliFMDAnalysisTaskBackgroundCorrection::CreateOutputObjects()
   //dNdetadphiHistogram->SetErrorOption("g");
   
   fHitList->Add(dNdetadphiHistogram);
+  fOutputList->Add(dNdetadphiHistogram);
   
   
 }
