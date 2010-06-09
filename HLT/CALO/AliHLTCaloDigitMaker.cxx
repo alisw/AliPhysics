@@ -255,10 +255,6 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
 	  fDigitStructPtr->fOverflow = true;
 	}
       
-      
-      printf("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", 
-	     coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
-      
       HLTDebug("HG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f \n", 
 	       coord.fX, coord.fZ, channelData->fEnergy, fDigitStructPtr->fEnergy);
     }
