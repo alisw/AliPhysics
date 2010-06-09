@@ -1252,6 +1252,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
+
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
 
   if (!fESD) {
@@ -1261,6 +1262,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
 
   fHistNEvents->Fill(-1);
+
 
   Bool_t isSelected = kTRUE;
   if(fUsePhysSel) {
@@ -1653,7 +1655,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       // SKIP SDD MODULES LOW EFF
       */
     }  
-    if(skipTrack) continue;
+    if(skipTrack) {delete trackTPC; trackTPC=0; continue;}
 
     // TPC track findable in ITS
     if(tpcrefit && trackTPC) { 
@@ -1698,12 +1700,12 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     if(useTRKvtx) {
       // we need the vertex to compute the impact parameters
-      if(!vertexESD) continue;
+      if(!vertexESD) {delete trackTPC; trackTPC=0; continue;}
       if(!(vertexESD->GetStatus()) || vertexESD->GetNContributors()<mincontrTRKvtx) {
 	if(useSPDvtxifNotTRK) {
 	  vertexESD = fESD->GetPrimaryVertexSPD();
 	} else {
-	  continue;
+	  delete trackTPC; trackTPC=0; continue;
 	}
       }
     }
@@ -1766,22 +1768,23 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     }
 
     
-    if(tpcrefit && fUseITSSAforNtuples) continue; // only ITS-SA for ntuples
-    if(!tpcrefit && !fUseITSSAforNtuples) continue; // only ITS-TPC for ntuples
+    if((tpcrefit && fUseITSSAforNtuples) || // only ITS-SA for ntuples
+       (!tpcrefit && !fUseITSSAforNtuples)) // only ITS-TPC for ntuples
+      { delete trackTPC; trackTPC=0; continue; }
 
     // impact parameter to VertexTracks
     Float_t d0z0[2],covd0z0[3];
     Double_t d0z0TPC[2],covd0z0TPC[3];
     if(useTRKvtx) {
-      if(!track->RelateToVertex(vertexESD,fESD->GetMagneticField(),kVeryBig)) continue;
+      if(!track->RelateToVertex(vertexESD,fESD->GetMagneticField(),kVeryBig)) { delete trackTPC; trackTPC=0; continue; }
     } else { 
       //if(!track->RelateToVertex(vertexMC,fESD->GetMagneticField(),kVeryBig)) continue;
-      if(!track->RelateToVertex(spdv,fESD->GetMagneticField(),kVeryBig)) continue;
+      if(!track->RelateToVertex(spdv,fESD->GetMagneticField(),kVeryBig)) { delete trackTPC; trackTPC=0; continue; }
     } 
     track->GetImpactParameters(d0z0,covd0z0);
     if(trackTPC) trackTPC->PropagateToDCA(spdv,fESD->GetMagneticField(),kVeryBig,d0z0TPC,covd0z0TPC);
-    if(covd0z0[0]<0. || covd0z0[2]<0.) continue;
-    if(covd0z0TPC[0]<0. || covd0z0TPC[2]<0.) continue;
+    if(covd0z0[0]<0. || covd0z0[2]<0. || covd0z0TPC[0]<0. || covd0z0TPC[2]<0.) { delete trackTPC; trackTPC=0; continue; }
+
 
     // track that passes final ITS+TPC cuts
     if(itsfindableAcc && fESDtrackCutsITSTPC->AcceptTrack(track)) {
@@ -1933,6 +1936,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     }
 
+    if(trackTPC) { delete trackTPC; trackTPC=0; }
 
     // encode ITS cluster map, including MC info
     Int_t iITSflag=MakeITSflag(track);
