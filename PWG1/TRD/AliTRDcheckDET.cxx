@@ -654,6 +654,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   Int_t nclusters = 0;
   AliTRDseedV1 *tracklet = NULL;
   AliExternalTrackParam *par = fkTrack->GetTrackOut() ? fkTrack->GetTrackOut() : fkTrack->GetTrackIn();
+  if(!par) return NULL;
   Double_t momentumRec = par->P();
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK()) continue;
@@ -950,11 +951,15 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
   //
   // Plot the average pulse height
   //
-  if(track) fkTrack = track;
-  if(!fkTrack){
+  if(!track) {
     AliWarning("No Track defined.");
     return NULL;
   }
+  fkTrack = track;
+  /*if(!fkTrack){
+    AliWarning("No Track defined.");
+    return NULL;
+  }*/
   TProfile *h = NULL; TH2F *phs2D = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(0)))){
     AliWarning("No Histogram defined.");

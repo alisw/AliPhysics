@@ -118,7 +118,7 @@ private:
   UShort_t            fIdxPlot;         // plot counter (internal)
   UShort_t            fIdxFrame;        // frame counter (internal)
   UShort_t            fNcomp[kNprojs];  // number of projections per task
-  Char_t              *fAxTitle[kNprojs][4]; // Title for all ref histos
+  Char_t              *fAxTitle[kNprojs][4]; //! Title for all ref histos
   Float_t             fPtThreshold;     // pt threshold for some performance plots
   static Char_t const *fgPerformanceName[kNviews]; //! name of performance plot
   static UChar_t const fgNproj[kNviews]; //! number of projections per task
