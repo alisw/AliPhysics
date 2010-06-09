@@ -287,6 +287,11 @@ class AliKFParticle :public AliKFParticleBase
 
   void SubtractFromVertex( AliKFParticle &v ) const ;
 
+  //* Special method for creating gammas
+
+  void ConstructGamma( const AliKFParticle &daughter1,
+		       const AliKFParticle &daughter2  );
+
  protected: 
   
   //*
@@ -891,4 +896,11 @@ inline void AliKFParticle::Transport( Double_t dS, Double_t P[], Double_t C[] ) 
   AliKFParticleBase::TransportBz( GetFieldAlice(), dS, P, C );
 }
 
+inline void AliKFParticle::ConstructGamma( const AliKFParticle &daughter1,
+					   const AliKFParticle &daughter2  )
+{
+  AliKFParticleBase::ConstructGammaBz( daughter1, daughter2, GetFieldAlice() );
+}
+
 #endif 
+

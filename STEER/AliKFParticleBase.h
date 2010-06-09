@@ -222,7 +222,11 @@ class AliKFParticleBase :public TObject {
 
   void SubtractFromVertex( AliKFParticleBase &Vtx ) const;
 
-  
+  //* Special method for creating gammas
+
+  void ConstructGammaBz( const AliKFParticleBase &daughter1,
+			 const AliKFParticleBase &daughter2, double Bz  );
+
  protected:
 
   static Int_t IJ( Int_t i, Int_t j ){ 
@@ -234,6 +238,8 @@ class AliKFParticleBase :public TObject {
   void Convert( bool ToProduction );
   void TransportLine( Double_t S, Double_t P[], Double_t C[] ) const ;
   Double_t GetDStoPointLine( const Double_t xyz[] ) const;
+
+  static Bool_t InvertSym3( const Double_t A[], Double_t Ainv[] );
 
   static void MultQSQt( const Double_t Q[], const Double_t S[], 
 			Double_t SOut[] );
@@ -262,3 +268,4 @@ class AliKFParticleBase :public TObject {
 };
 
 #endif 
+

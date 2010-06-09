@@ -157,20 +157,19 @@ Int_t AliKFParticleBase::GetEta( Double_t &eta, Double_t &error )  const
   eta = 1.e10;
   if( b > 1.e-8 ){
     Double_t c = a/b;
-    if( c>1.e-8 ) eta = 0.5*TMath::Log(a/b);
+    if( c>1.e-8 ) eta = 0.5*TMath::Log(c);
   }
   Double_t h3 = -px*pz;
-  Double_t h4 = -py*pz;
-  Double_t p2pt2 = p2*pt2;
+  Double_t h4 = -py*pz;  
+  Double_t pt4 = pt2*pt2;
+  Double_t p2pt4 = p2*pt4;
+  error = (h3*h3*fC[9] + h4*h4*fC[14] + pt4*fC[20] + 2*( h3*(h4*fC[13] + fC[18]*pt2) + pt2*h4*fC[19] ) );
 
-  error = (h3*h3*fC[9] + h4*h4*fC[14] + pt2*fC[20] + 
-	   2*( h3*(h4*fC[13] + fC[18]) + h4*fC[19] )
-	   );
-
-  if( error>0 && p2pt2>1.e-4 ){
-    error = TMath::Sqrt(error/p2pt2);
+  if( error>0 && p2pt4>1.e-10 ){
+    error = TMath::Sqrt(error/p2pt4);
     return 0;
   }
+
   error = 1.e10;
   return 1;
 }
@@ -291,7 +290,7 @@ Double_t AliKFParticleBase::GetSCorrection( const Double_t Part[], const Double_
   
   Double_t d[3] = { XYZ[0]-Part[0], XYZ[1]-Part[1], XYZ[2]-Part[2] };
   Double_t p2 = Part[3]*Part[3]+Part[4]*Part[4]+Part[5]*Part[5];
-  Double_t sigmaS = (p2>1.e-4) ? ( .1+3.*TMath::Sqrt( d[0]*d[0]+d[1]*d[1]+d[2]*d[2]) )/TMath::Sqrt(p2) : 1.;
+  Double_t sigmaS = (p2>1.e-4) ? ( 10.1+3.*TMath::Sqrt( d[0]*d[0]+d[1]*d[1]+d[2]*d[2]) )/TMath::Sqrt(p2) : 1.;
   return sigmaS;
 }
 
@@ -532,19 +531,8 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
   }
 
   Double_t mAi[6];
-  mAi[0] = fC[2]*fC[5] - fC[4]*fC[4];
-  mAi[1] = fC[3]*fC[4] - fC[1]*fC[5];
-  mAi[3] = fC[1]*fC[4] - fC[2]*fC[3];
-  Double_t det = (fC[0]*mAi[0] + fC[1]*mAi[1] + fC[3]*mAi[3]);
-  if( det>1.e-20 ) det = 1./det;    
-  else det = 0;
 
-  mAi[0] *= det;
-  mAi[1] *= det;
-  mAi[3] *= det;
-  mAi[2] = ( fC[0]*fC[5] - fC[3]*fC[3] )*det;
-  mAi[4] = ( fC[1]*fC[3] - fC[0]*fC[4] )*det;
-  mAi[5] = ( fC[0]*fC[2] - fC[1]*fC[1] )*det;
+  InvertSym3( mAi, fC );
 
   Double_t mB[5][3];
 
@@ -571,24 +559,14 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
   Double_t z[3] = { m[0]-fP[0], m[1]-fP[1], m[2]-fP[2] };
 
   {
-    Double_t mAV[6] = { fC[0]-mV[0], fC[1]-mV[1], fC[2]-mV[2], 
+    Double_t mAVi[6] = { fC[0]-mV[0], fC[1]-mV[1], fC[2]-mV[2], 
 			fC[3]-mV[3], fC[4]-mV[4], fC[5]-mV[5] };
     
-    Double_t mAVi[6];
-    mAVi[0] = mAV[2]*mAV[5] - mAV[4]*mAV[4];
-    mAVi[1] = mAV[3]*mAV[4] - mAV[1]*mAV[5];
-    mAVi[2] = mAV[0]*mAV[5] - mAV[3]*mAV[3];
-    mAVi[3] = mAV[1]*mAV[4] - mAV[2]*mAV[3];
-    mAVi[4] = mAV[1]*mAV[3] - mAV[0]*mAV[4];
-    mAVi[5] = mAV[0]*mAV[2] - mAV[1]*mAV[1];
-
-    det = ( mAV[0]*mAVi[0] + mAV[1]*mAVi[1] + mAV[3]*mAVi[3] );
-
-    if( TMath::Abs(det) > 1.E-20 ){
+    if( !InvertSym3( mAVi, mAVi ) ){
 
       Double_t dChi2 = ( +(mAVi[0]*z[0] + mAVi[1]*z[1] + mAVi[3]*z[2])*z[0]
 			 +(mAVi[1]*z[0] + mAVi[2]*z[1] + mAVi[4]*z[2])*z[1]
-			 +(mAVi[3]*z[0] + mAVi[4]*z[1] + mAVi[5]*z[2])*z[2] )/det ;
+			 +(mAVi[3]*z[0] + mAVi[4]*z[1] + mAVi[5]*z[2])*z[2] );
       
       // Take Abs(dChi2) here. Negative value of 'det' or 'dChi2' shows that the particle 
       // was not used in the production vertex fit
@@ -1689,6 +1667,400 @@ void AliKFParticleBase::TransportLine( Double_t dS,
 }
 
 
+void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
+					  const AliKFParticleBase &daughter2, double Bz  )
+{ 
+  //* Create gamma
+  
+  const AliKFParticleBase *daughters[2] = { &daughter1, &daughter2};
+
+  double v0[3];
+  
+  if( !fIsLinearized ){
+    Double_t ds, ds1;
+    Double_t m[8];
+    Double_t mCd[36];       
+    daughter1.GetDStoParticle(daughter2, ds, ds1);      
+    daughter1.Transport( ds, m, mCd );
+    v0[0] = m[0];
+    v0[1] = m[1];
+    v0[2] = m[2];
+    daughter2.Transport( ds1, m, mCd );
+    v0[0] = .5*( v0[0] + m[0] );
+    v0[1] = .5*( v0[1] + m[1] );
+    v0[2] = .5*( v0[2] + m[2] );
+  } else {
+    v0[0] = fVtxGuess[0];
+    v0[1] = fVtxGuess[1];
+    v0[2] = fVtxGuess[2];
+  }
+
+  fAtProductionVertex = 0;
+  fSFromDecay = 0;
+  fP[0] = v0[0];
+  fP[1] = v0[1];
+  fP[2] = v0[2];
+  fP[3] = 0;
+  fP[4] = 0;
+  fP[5] = 0;
+  fP[6] = 0;
+  fP[7] = 0;
+
+  
+  // fit daughters to the vertex guess
+  
+  double daughterP[2][8], daughterC[2][36];
+  double vtxMom[2][3];
+
+  {  
+    for( int id=0; id<2; id++ ){
+    
+      double *p = daughterP[id];
+      double *mC = daughterC[id];
+      
+      daughters[id]->GetMeasurement( v0, p, mC );
+      
+      Double_t mAi[6];
+      InvertSym3(mC, mAi );
+      
+      Double_t mB[3][3];
+      
+      mB[0][0] = mC[ 6]*mAi[0] + mC[ 7]*mAi[1] + mC[ 8]*mAi[3];
+      mB[0][1] = mC[ 6]*mAi[1] + mC[ 7]*mAi[2] + mC[ 8]*mAi[4];
+      mB[0][2] = mC[ 6]*mAi[3] + mC[ 7]*mAi[4] + mC[ 8]*mAi[5];
+      
+      mB[1][0] = mC[10]*mAi[0] + mC[11]*mAi[1] + mC[12]*mAi[3];
+      mB[1][1] = mC[10]*mAi[1] + mC[11]*mAi[2] + mC[12]*mAi[4];
+      mB[1][2] = mC[10]*mAi[3] + mC[11]*mAi[4] + mC[12]*mAi[5];
+      
+      mB[2][0] = mC[15]*mAi[0] + mC[16]*mAi[1] + mC[17]*mAi[3];
+      mB[2][1] = mC[15]*mAi[1] + mC[16]*mAi[2] + mC[17]*mAi[4];
+      mB[2][2] = mC[15]*mAi[3] + mC[16]*mAi[4] + mC[17]*mAi[5];
+    
+      Double_t z[3] = { v0[0]-p[0], v0[1]-p[1], v0[2]-p[2] };
+    
+      vtxMom[id][0] = p[3] + mB[0][0]*z[0] + mB[0][1]*z[1] + mB[0][2]*z[2];
+      vtxMom[id][1] = p[4] + mB[1][0]*z[0] + mB[1][1]*z[1] + mB[1][2]*z[2];
+      vtxMom[id][2] = p[5] + mB[2][0]*z[0] + mB[2][1]*z[1] + mB[2][2]*z[2];
+                  
+      daughters[id]->Transport( daughters[id]->GetDStoPoint(v0), p, mC );
+      
+    }      
+
+  } // fit daughters to guess
+
+
+    // fit new vertex
+  {
+      
+    double mpx0 =  vtxMom[0][0]+vtxMom[1][0];
+    double mpy0 =  vtxMom[0][1]+vtxMom[1][1];
+    double mpt0 = TMath::Sqrt(mpx0*mpx0 + mpy0*mpy0);
+    // double a0 = TMath::ATan2(mpy0,mpx0);
+    
+    double ca0 = mpx0/mpt0;
+    double sa0 = mpy0/mpt0;
+    double r[3] = { v0[0], v0[1], v0[2] };
+    double mC[3][3] = {{10000., 0 ,   0  },
+		       {0,  10000.,   0  },
+		       {0,     0, 10000. } };
+    double chi2=0;
+    
+    for( int id=0; id<2; id++ ){		
+      const Double_t kCLight = 0.000299792458;
+      Double_t q = Bz*daughters[id]->GetQ()*kCLight;
+      Double_t px0 = vtxMom[id][0];
+      Double_t py0 = vtxMom[id][1];
+      Double_t pz0 = vtxMom[id][2];
+      Double_t pt0 = TMath::Sqrt(px0*px0+py0*py0);
+      Double_t mG[3][6], mB[3], mH[3][3];
+      // r = {vx,vy,vz};
+      // m = {x,y,z,Px,Py,Pz};
+      // V = daughter.C
+      // G*m + B = H*r;
+      // q*x + Py - q*vx - sin(a)*Pt = 0
+      // q*y - Px - q*vy + cos(a)*Pt = 0
+      // (Px*cos(a) + Py*sin(a) ) (vz -z) - Pz( cos(a)*(vx-x) + sin(a)*(vy-y)) = 0
+      
+      mG[0][0] = q;
+      mG[0][1] = 0;
+      mG[0][2] = 0;
+      mG[0][3] =   -sa0*px0/pt0;
+      mG[0][4] = 1 -sa0*py0/pt0;
+      mG[0][5] = 0;	
+      mH[0][0] = q;
+      mH[0][1] = 0;
+      mH[0][2] = 0;      
+      mB[0] = py0 - sa0*pt0 - mG[0][3]*px0 - mG[0][4]*py0 ;
+      
+      // q*y - Px - q*vy + cos(a)*Pt = 0
+      
+      mG[1][0] = 0;
+      mG[1][1] = q;
+      mG[1][2] = 0;
+      mG[1][3] = -1 + ca0*px0/pt0;
+      mG[1][4] =    + ca0*py0/pt0;
+      mG[1][5] = 0;      
+      mH[1][0] = 0;
+      mH[1][1] = q;
+      mH[1][2] = 0;      
+      mB[1] = -px0 + ca0*pt0 - mG[1][3]*px0 - mG[1][4]*py0 ;
+      
+      // (Px*cos(a) + Py*sin(a) ) (z -vz) - Pz( cos(a)*(x-vx) + sin(a)*(y-vy)) = 0
+      
+      mG[2][0] = -pz0*ca0;
+      mG[2][1] = -pz0*sa0;
+      mG[2][2] =  px0*ca0 + py0*sa0;
+      mG[2][3] = 0;
+      mG[2][4] = 0;
+      mG[2][5] = 0;
+      
+      mH[2][0] = mG[2][0];
+      mH[2][1] = mG[2][1];
+      mH[2][2] = mG[2][2];
+      
+      mB[2] = 0;
+      
+      // fit the vertex
+
+      // V = GVGt
+
+      double mGV[3][6];
+      double mV[6];
+      double m[3];
+      for( int i=0; i<3; i++ ){
+	m[i] = mB[i];
+	for( int k=0; k<6; k++ ) m[i]+=mG[i][k]*daughterP[id][k];
+      }
+      for( int i=0; i<3; i++ ){
+	for( int j=0; j<6; j++ ){
+	  mGV[i][j] = 0;
+	  for( int k=0; k<6; k++ ) mGV[i][j]+=mG[i][k]*daughterC[id][ IJ(k,j) ];
+	}
+      }
+      for( int i=0, k=0; i<3; i++ ){
+	for( int j=0; j<=i; j++,k++ ){
+	  mV[k] = 0;
+	  for( int l=0; l<6; l++ ) mV[k]+=mGV[i][l]*mG[j][l];
+	}
+      }
+      
+      
+      //* CHt
+      
+      Double_t mCHt[3][3];
+      Double_t mHCHt[6];
+      Double_t mHr[3];
+      for( int i=0; i<3; i++ ){	  
+	mHr[i] = 0;
+	for( int k=0; k<3; k++ ) mHr[i]+= mH[i][k]*r[k];
+      }
+      
+      for( int i=0; i<3; i++ ){
+	for( int j=0; j<3; j++){
+	  mCHt[i][j] = 0;
+	  for( int k=0; k<3; k++ ) mCHt[i][j]+= mC[i][k]*mH[j][k];
+	}
+      }
+
+      for( int i=0, k=0; i<3; i++ ){
+	for( int j=0; j<=i; j++, k++ ){
+	  mHCHt[k] = 0;
+	  for( int l=0; l<3; l++ ) mHCHt[k]+= mH[i][l]*mCHt[l][j];
+	}
+      }
+      
+      Double_t mS[6] = { mHCHt[0]+mV[0], 
+			  mHCHt[1]+mV[1], mHCHt[2]+mV[2], 
+			  mHCHt[3]+mV[3], mHCHt[4]+mV[4], mHCHt[5]+mV[5]    };	
+      
+
+      InvertSym3(mS,mS);
+	
+      //* Residual (measured - estimated)
+    
+      Double_t zeta[3] = { m[0]-mHr[0], m[1]-mHr[1], m[2]-mHr[2] };
+            
+      //* Kalman gain K = mCH'*S
+    
+      Double_t k[3][3];
+      
+      for(Int_t i=0;i<3;++i){
+	k[i][0] = mCHt[i][0]*mS[0] + mCHt[i][1]*mS[1] + mCHt[i][2]*mS[3];
+	k[i][1] = mCHt[i][0]*mS[1] + mCHt[i][1]*mS[2] + mCHt[i][2]*mS[4];
+	k[i][2] = mCHt[i][0]*mS[3] + mCHt[i][1]*mS[4] + mCHt[i][2]*mS[5];
+      }
+
+      //* New estimation of the vertex position r += K*zeta
+    
+      for(Int_t i=0;i<3;++i) 
+	r[i] = r[i] + k[i][0]*zeta[0] + k[i][1]*zeta[1] + k[i][2]*zeta[2];
+      
+      //* New covariance matrix C -= K*(mCH')'
+
+      for(Int_t i=0;i<3;++i){
+	for(Int_t j=0;j<=i;++j){
+	  mC[i][j] = mC[i][j] - (k[i][0]*mCHt[j][0] + k[i][1]*mCHt[j][1] + k[i][2]*mCHt[j][2]);
+	  mC[j][i] = mC[i][j];
+	}
+      }
+
+	
+      //* Calculate Chi^2 
+	
+      chi2 += ( ( mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2] )*zeta[0]
+		+(mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2] )*zeta[1]
+		+(mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2] )*zeta[2]  );  
+    }
+    
+    // store vertex
+    
+    fNDF  = 2;
+    fChi2 = chi2;
+    for( int i=0; i<3; i++ ) fP[i] = r[i];
+    for( int i=0,k=0; i<3; i++ ){
+      for( int j=0; j<=i; j++,k++ ){
+	fC[k] = mC[i][j];
+      }
+    }
+  }
+
+  // now fit daughters to the vertex
+  
+  fQ     =  0;
+  fSFromDecay = 0;    
+
+  for(Int_t i=3;i<8;++i) fP[i]=0.;
+  for(Int_t i=6;i<36;++i) fC[i]=0.;
+
+
+  for( int id=0; id<2; id++ ){
+
+    double *p = daughterP[id];
+    double *mC = daughterC[id];      
+    daughters[id]->GetMeasurement( v0, p, mC );
+
+    const Double_t *m = fP, *mV = fC;
+    
+    Double_t mAi[6];
+    InvertSym3(mC, mAi );
+
+    Double_t mB[4][3];
+
+    mB[0][0] = mC[ 6]*mAi[0] + mC[ 7]*mAi[1] + mC[ 8]*mAi[3];
+    mB[0][1] = mC[ 6]*mAi[1] + mC[ 7]*mAi[2] + mC[ 8]*mAi[4];
+    mB[0][2] = mC[ 6]*mAi[3] + mC[ 7]*mAi[4] + mC[ 8]*mAi[5];
+    
+    mB[1][0] = mC[10]*mAi[0] + mC[11]*mAi[1] + mC[12]*mAi[3];
+    mB[1][1] = mC[10]*mAi[1] + mC[11]*mAi[2] + mC[12]*mAi[4];
+    mB[1][2] = mC[10]*mAi[3] + mC[11]*mAi[4] + mC[12]*mAi[5];
+    
+    mB[2][0] = mC[15]*mAi[0] + mC[16]*mAi[1] + mC[17]*mAi[3];
+    mB[2][1] = mC[15]*mAi[1] + mC[16]*mAi[2] + mC[17]*mAi[4];
+    mB[2][2] = mC[15]*mAi[3] + mC[16]*mAi[4] + mC[17]*mAi[5];
+    
+    mB[3][0] = mC[21]*mAi[0] + mC[22]*mAi[1] + mC[23]*mAi[3];
+    mB[3][1] = mC[21]*mAi[1] + mC[22]*mAi[2] + mC[23]*mAi[4];
+    mB[3][2] = mC[21]*mAi[3] + mC[22]*mAi[4] + mC[23]*mAi[5];    
+
+
+    Double_t z[3] = { m[0]-p[0], m[1]-p[1], m[2]-p[2] };
+
+    {
+      Double_t mAV[6] = { mC[0]-mV[0], mC[1]-mV[1], mC[2]-mV[2], 
+			  mC[3]-mV[3], mC[4]-mV[4], mC[5]-mV[5] };
+      
+      Double_t mAVi[6];
+      if( !InvertSym3(mAV, mAVi) ){
+	Double_t dChi2 = ( +(mAVi[0]*z[0] + mAVi[1]*z[1] + mAVi[3]*z[2])*z[0]
+			   +(mAVi[1]*z[0] + mAVi[2]*z[1] + mAVi[4]*z[2])*z[1]
+			   +(mAVi[3]*z[0] + mAVi[4]*z[1] + mAVi[5]*z[2])*z[2] );
+	fChi2+= TMath::Abs( dChi2 );
+      }
+      fNDF  += 2;
+    }
+
+    //* Add the daughter momentum to the particle momentum
+ 
+    fP[3]+= p[3] + mB[0][0]*z[0] + mB[0][1]*z[1] + mB[0][2]*z[2];
+    fP[4]+= p[4] + mB[1][0]*z[0] + mB[1][1]*z[1] + mB[1][2]*z[2];
+    fP[5]+= p[5] + mB[2][0]*z[0] + mB[2][1]*z[1] + mB[2][2]*z[2];
+    fP[6]+= p[6] + mB[3][0]*z[0] + mB[3][1]*z[1] + mB[3][2]*z[2];
+  
+    Double_t d0, d1, d2;
+   
+    d0= mB[0][0]*mV[0] + mB[0][1]*mV[1] + mB[0][2]*mV[3] - mC[ 6];
+    d1= mB[0][0]*mV[1] + mB[0][1]*mV[2] + mB[0][2]*mV[4] - mC[ 7];
+    d2= mB[0][0]*mV[3] + mB[0][1]*mV[4] + mB[0][2]*mV[5] - mC[ 8];
+
+    //fC[6]+= mC[ 6] + d0;
+    //fC[7]+= mC[ 7] + d1;
+    //fC[8]+= mC[ 8] + d2;
+    fC[9]+= mC[ 9] + d0*mB[0][0] + d1*mB[0][1] + d2*mB[0][2];
+
+    d0= mB[1][0]*mV[0] + mB[1][1]*mV[1] + mB[1][2]*mV[3] - mC[10];
+    d1= mB[1][0]*mV[1] + mB[1][1]*mV[2] + mB[1][2]*mV[4] - mC[11];
+    d2= mB[1][0]*mV[3] + mB[1][1]*mV[4] + mB[1][2]*mV[5] - mC[12];
+
+    //fC[10]+= mC[10]+ d0;
+    //fC[11]+= mC[11]+ d1;
+    //fC[12]+= mC[12]+ d2;
+    fC[13]+= mC[13]+ d0*mB[0][0] + d1*mB[0][1] + d2*mB[0][2];
+    fC[14]+= mC[14]+ d0*mB[1][0] + d1*mB[1][1] + d2*mB[1][2];
+
+    d0= mB[2][0]*mV[0] + mB[2][1]*mV[1] + mB[2][2]*mV[3] - mC[15];
+    d1= mB[2][0]*mV[1] + mB[2][1]*mV[2] + mB[2][2]*mV[4] - mC[16];
+    d2= mB[2][0]*mV[3] + mB[2][1]*mV[4] + mB[2][2]*mV[5] - mC[17];
+
+    //fC[15]+= mC[15]+ d0;
+    //fC[16]+= mC[16]+ d1;
+    //fC[17]+= mC[17]+ d2;
+    fC[18]+= mC[18]+ d0*mB[0][0] + d1*mB[0][1] + d2*mB[0][2];
+    fC[19]+= mC[19]+ d0*mB[1][0] + d1*mB[1][1] + d2*mB[1][2];
+    fC[20]+= mC[20]+ d0*mB[2][0] + d1*mB[2][1] + d2*mB[2][2];
+
+    d0= mB[3][0]*mV[0] + mB[3][1]*mV[1] + mB[3][2]*mV[3] - mC[21];
+    d1= mB[3][0]*mV[1] + mB[3][1]*mV[2] + mB[3][2]*mV[4] - mC[22];
+    d2= mB[3][0]*mV[3] + mB[3][1]*mV[4] + mB[3][2]*mV[5] - mC[23];
+
+    //fC[21]+= mC[21] + d0;
+    //fC[22]+= mC[22] + d1;
+    //fC[23]+= mC[23] + d2;
+    fC[24]+= mC[24] + d0*mB[0][0] + d1*mB[0][1] + d2*mB[0][2];
+    fC[25]+= mC[25] + d0*mB[1][0] + d1*mB[1][1] + d2*mB[1][2];
+    fC[26]+= mC[26] + d0*mB[2][0] + d1*mB[2][1] + d2*mB[2][2];
+    fC[27]+= mC[27] + d0*mB[3][0] + d1*mB[3][1] + d2*mB[3][2];
+  }
+
+  SetMassConstraint(0,0);
+  
+}
+
+Bool_t AliKFParticleBase::InvertSym3( const Double_t A[], Double_t Ai[] )
+{
+  //* Invert symmetric matric stored in low-triagonal form 
+
+  bool ret = 0;
+  double a0 = A[0], a1 = A[1], a2 = A[2], a3 = A[3];
+
+  Ai[0] = a2*A[5] - A[4]*A[4];
+  Ai[1] = a3*A[4] - a1*A[5];
+  Ai[3] = a1*A[4] - a2*a3;
+  Double_t det = (a0*Ai[0] + a1*Ai[1] + a3*Ai[3]);
+  if( det>1.e-20 ) det = 1./det;    
+  else{ 
+    det = 0;
+    ret = 1;
+  }
+  Ai[0] *= det;
+  Ai[1] *= det;
+  Ai[3] *= det;
+  Ai[2] = ( a0*A[5] - a3*a3 )*det;
+  Ai[4] = ( a1*a3 - a0*A[4] )*det;
+  Ai[5] = ( a0*a2 - a1*a1 )*det;
+  return ret;
+}
+
 void AliKFParticleBase::MultQSQt( const Double_t Q[], const Double_t S[], Double_t SOut[] )
 {
   //* Matrix multiplication Q*S*Q^T, Q - square matrix, S - symmetric
@@ -1715,4 +2087,3 @@ void AliKFParticleBase::MultQSQt( const Double_t Q[], const Double_t S[], Double
 
 // 72-charachters line to define the printer border
 //3456789012345678901234567890123456789012345678901234567890123456789012
-
