@@ -93,30 +93,20 @@ Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
   //
   // 3 prong invariant mass of the D0 daughters and the soft pion
   //
+  Double_t e[3];
+  if (Charge()>0){
+    e[0]=Get2Prong()->EProng(0,211);
+    e[1]=Get2Prong()->EProng(1,321);
+  }else{
+    e[0]=Get2Prong()->EProng(0,321);
+    e[1]=Get2Prong()->EProng(1,211);
+  }
+  e[2]=EProng(0,211);
 
-  Double_t px[3],py[3],pz[3];
-  UInt_t pdg[3]={321,211,211};
-  pdg[0] = (Charge()>0 ? 211 : 321); // positive daughter of D0
-  px[0] = Get2Prong()->PxProng(0);
-  py[0] = Get2Prong()->PyProng(0);
-  pz[0] = Get2Prong()->PzProng(0);
-  pdg[1] = (Charge()>0 ? 321 : 211); // negative daughter of D0
-  px[1] = Get2Prong()->PxProng(1);
-  py[1] = Get2Prong()->PyProng(1);
-  pz[1] = Get2Prong()->PzProng(1);
-  pdg[2] = 211; // soft pion
-  px[2] = PxProng(0);
-  py[2] = PyProng(0);
-  pz[2] = PzProng(0);
-  Short_t dummycharge=0;
-  Double_t dummyd0[3]={0,0,0};
-  AliAODRecoDecay *rd = new AliAODRecoDecay(0x0,3,dummycharge,px,py,pz,dummyd0);
+  Double_t esum = e[0]+e[1]+e[2];
+  Double_t minv = TMath::Sqrt(esum*esum-P()*P());
 
-  Double_t minv = rd->InvMass(3,pdg);
-
-  delete rd; rd=NULL;
-
-  return minv;
+  return minv; 
 }
 //----------------------------------------------------------------------------
 Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
