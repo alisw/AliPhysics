@@ -84,7 +84,7 @@ public:
 
   Int_t MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDataHeader,
 		  const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr,
-		  const AliHLTUInt32_t size);
+		  const AliHLTUInt32_t size, int beverbose);
 
   TObjArray * GetHistograms();
 

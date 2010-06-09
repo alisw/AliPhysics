@@ -119,9 +119,9 @@ TObjArray* AliHLTEMCALRawHistoMaker::GetHistograms()
 Int_t
 AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDataHeader,
 		const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr,
-		const AliHLTUInt32_t size)
+		const AliHLTUInt32_t size, int beverbose)
 {
-	int tmpsize=  0;
+	//int tmpsize =  0;
 	Int_t crazyness          = 0;
 	Int_t nSamples           = 0;
 	Short_t channelCount     = 0;
@@ -135,7 +135,6 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 
 	fRawCounterMemoryPtr->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
 	fRawCounterMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
-
 	fRawCounterMemoryPtr->Reset();
 
 	//fRawCounterMemoryPtr->NextEvent();
@@ -153,7 +152,8 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 
 		UInt_t eventType = fRawCounterMemoryPtr->GetType();
 
-		//cout << "event type: " << eventType << endl;
+		if (beverbose)
+			cout << "I-RAWHISTOMAKER: event type: " << eventType << endl;
 
 //		if (eventType != AliRawEventHeaderBase::kPhysicsEvent) continue;
 

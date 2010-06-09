@@ -47,7 +47,8 @@ AliHLTEMCALRawHistoMakerComponent::AliHLTEMCALRawHistoMakerComponent() :
 				  fRawHistoMakerPtr(0),
 				  fPushFraction(10),
 				  fLocalEventCount(0),
-				  fRootFileName("histo_local_dump.root")
+				  fRootFileName("histofile_local.root"),
+				  fBeVerbose(0)
 {
 	//see header file for documentation
 }
@@ -75,7 +76,7 @@ const char*
 AliHLTEMCALRawHistoMakerComponent::GetComponentID()
 {
 	//see header file for documentation
-	return "EMCALRawHistoMaker";
+	return "EmcalRawHistoMaker";
 }
 
 
@@ -121,15 +122,23 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	UInt_t specification = 0;
 	AliHLTCaloChannelDataHeaderStruct* tmpChannelData = 0;
 
+
 	for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 		iter = blocks+ndx;
-		//cout << " into do event and into to for loop !!! " << endl;
-		//PrintComponentDataTypeInfo(iter->fDataType);
+
+		if (fBeVerbose) {
+			PrintComponentDataTypeInfo(iter->fDataType);
+			cout << "I-RAWHISTOMAKERCOMPONENT: verbose mode enabled:  " << fBeVerbose << endl;
+		}
 
 		if(iter->fDataType != AliHLTEMCALDefinitions::fgkChannelDataType)
 		{
-			HLTDebug("Data block is not of type fgkChannelDataType");
+
+			if (fBeVerbose)
+				HLTWarning("I-RAWHISTOMAKERCOMPONENT: Data block is not of type fgkChannelDataType");
+			else
+				HLTDebug("I-RAWHISTOMAKERCOMPONENT: Data block is not of type fgkChannelDataType");
 
 			continue;
 		}
@@ -137,9 +146,10 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 		specification |= iter->fSpecification;
 		tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
 
-		//HLTWarning (" channel number %d",tmpChannelData->fNChannels);
+		if (fBeVerbose)
+		HLTWarning ("I-RAWHISTOMAKERCOMPONENT: channel number %d",tmpChannelData->fNChannels);
 
-		ret = fRawHistoMakerPtr->MakeHisto(tmpChannelData, iter, outputPtr, size);
+		ret = fRawHistoMakerPtr->MakeHisto(tmpChannelData, iter, outputPtr, size, fBeVerbose);
 
 		//if(ret == -1)
 		//{
@@ -151,14 +161,14 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
 	fLocalEventCount++;
 
-	// fRawHistoMakerPtr->Reset();
-
 	TFile rootHistFile(fRootFileName,"recreate");
 
 	fRawHistoMakerPtr->GetHistograms()->Write();
 
 	if (fLocalEventCount%fPushFraction == 0) {
-		cout << "pushback done at " << fLocalEventCount << " events " << endl;
+
+		if (fBeVerbose)
+			cout << "I-RAWHISTOMAKERCOMPONENT: pushback done at " << fLocalEventCount << " events " << endl;
 
 		PushBack(fRawHistoMakerPtr->GetHistograms(), kAliHLTDataTypeTObjArray | kAliHLTDataOriginEMCAL , specification);
 	}
@@ -179,17 +189,18 @@ AliHLTEMCALRawHistoMakerComponent::DoInit(int argc, const char** argv )
 	for(int i = 0; i < argc; i++)
 	{
 		if(!strcmp("-roothistofilename", argv[i]))
-		{
 			fRootFileName = argv[i+1];
 
-		}
 		if(!strcmp("-pushfraction", argv[i]))
-		{
 			fPushFraction = atoi(argv[i+1]);
-		}
+
+		if(!strcmp("-beverbose", argv[i]))
+			fBeVerbose = atoi(argv[i+1]);
+
 	}
 
-	// cout << rootFileName << endl;
+	if (fBeVerbose)
+		cout << "I-RAWHISTOMAKERCOMPONENT: local root file name is: " << fRootFileName << endl;
 
 	return 0;
 }

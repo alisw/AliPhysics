@@ -86,6 +86,7 @@ private:
 	TString fRootFileName;
 	int fPushFraction;
 	int fLocalEventCount;
+	int fBeVerbose;
 
 	/** Pointer to the histo maker itself */
 	AliHLTEMCALRawHistoMaker *fRawHistoMakerPtr;                    //! transient
