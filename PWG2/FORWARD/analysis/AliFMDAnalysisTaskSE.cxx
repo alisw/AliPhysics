@@ -8,8 +8,16 @@
 #include "AliLog.h"
 #include "AliFMDDndeta.h"
 #include "TDirectory.h"
+#include "TProfile2D.h"
 ClassImp(AliFMDAnalysisTaskSE)
-
+//
+// This task controls the running of the FMD analysis. The current version is made for 
+// dN/deta analysis but multiplicity and correlation tasks will be added here as well.
+//
+// To get the dN/detadphi per selected event as a TH2F* object connect to the 
+// output list of this task in the analysis framework and do
+//
+// TH2F* hFMDdNdetadphi = (TH2F*)list->FindObject("dNdetadphiHistogramTrVtx");
 //_____________________________________________________________________
 AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE():
 AliAnalysisTaskSE(),
@@ -36,6 +44,7 @@ AliFMDAnalysisTaskSE::AliFMDAnalysisTaskSE(const char* name):
 {
   SetParams(AliFMDAnaParameters::Instance());
   DefineOutput(1, TList::Class());
+  // DefineOutput(2, TH2F::Class());
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
@@ -74,8 +83,10 @@ void AliFMDAnalysisTaskSE::UserCreateOutputObjects()
   fBackground.CreateOutputObjects();
   fDndeta.CreateOutputObjects();
   fBFCorrelation.CreateOutputObjects();
+ 
   
   PostData(1, fListOfHistos);
+  
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::Init()
@@ -87,9 +98,6 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
   //
-  
-  //AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  
   
   AliESDEvent* fESD = (AliESDEvent*)InputEvent();
   //std::cout<<fESD->GetBeamEnergy()<<"   "<<fESD->GetBeamType()<<"    "<<fESD->GetCurrentL3()<<std::endl;
@@ -107,11 +115,9 @@ void AliFMDAnalysisTaskSE::UserExec(Option_t */*option*/)
   }
   else return;
   
-  PostData(1, fListOfHistos);
-  
-  //fListOfHistos = fBackground.GetOutputList();
-  
  
+  PostData(1, fListOfHistos);
+     
 }
 //_____________________________________________________________________
 void AliFMDAnalysisTaskSE::Terminate(Option_t */*option*/)
