@@ -417,21 +417,21 @@ Bool_t AliITSChannelStatus::GetSSDLimits(Int_t layer, Float_t zlocmin, Float_t z
   AliDebug(5,Form("lay %d xmin, zmin p %d n %d\n",layer,p,n));
   seg.GetPadIxz(xlocmax,zlocmin,p,n);
   iPmin = TMath::Min(iPmin,p);
-  iPmax = TMath::Min(iPmax,p);
+  iPmax = TMath::Max(iPmax,p);
   iNmin = TMath::Min(iNmin,n);
-  iNmax = TMath::Min(iNmax,n);
+  iNmax = TMath::Max(iNmax,n);
   AliDebug(5,Form("lay %d xmax, zmin p %d n %d\n",layer,p,n));
   seg.GetPadIxz(xlocmax,zlocmax,p,n);
   iPmin = TMath::Min(iPmin,p);
-  iPmax = TMath::Min(iPmax,p);
+  iPmax = TMath::Max(iPmax,p);
   iNmin = TMath::Min(iNmin,n);
-  iNmax = TMath::Min(iNmax,n);
+  iNmax = TMath::Max(iNmax,n);
   AliDebug(5,Form("lay %d xmax, zmax p %d n %d\n",layer,p,n));
   seg.GetPadIxz(xlocmin,zlocmax,p,n);
   iPmin = TMath::Min(iPmin,p);
-  iPmax = TMath::Min(iPmax,p);
+  iPmax = TMath::Max(iPmax,p);
   iNmin = TMath::Min(iNmin,n);
-  iNmax = TMath::Min(iNmax,n);
+  iNmax = TMath::Max(iNmax,n);
   AliDebug(5,Form("lay %d xmin, zmax p %d n %d\n",layer,p,n));
 
   if (iPmin < 0)
