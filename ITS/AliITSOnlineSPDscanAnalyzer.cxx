@@ -754,51 +754,58 @@ Int_t AliITSOnlineSPDscanAnalyzer::GetMinTh(UInt_t hs, UInt_t chipNr) {
   }
 }
 //_________________________________________________________________________
-Int_t AliITSOnlineSPDscanAnalyzer::GetMeanTh(UInt_t hs, UInt_t chipNr) {
+TArrayI AliITSOnlineSPDscanAnalyzer::GetMeanTh(UInt_t hs, UInt_t chipNr) {
   // calculates and returns the mean threshold
-  if (hs>=6 || chipNr>10) return -1;
+  TArrayI fitresults(4);
+  if (hs>=6 || chipNr>10) return fitresults;
   if (fScanObj==NULL) {
     Error("AliITSOnlineSPDscanAnalyzer::GetMeanTh","No data!");
-    return -1;
+    return fitresults;
   }
   // should be type  kMEANTH  or  kDAC with id 39
   if (fType!=kMEANTH && (fType!=kDAC || fDacId!=105)) {
     Error("AliITSOnlineSPDscanAnalyzer::GetMeanTh","MeanTh only for scan type %d OR %d with dac_id 105.",kMEANTH,kDAC);
-    return -1;
+    return fitresults;
   }
   if (fHitEventEfficiency[hs][chipNr]==NULL) {
    printf("processing hit efficiency \n");
     if (!ProcessHitEventEfficiency()) {
       printf("...not processed!!\n");
-      return -1;
+      return fitresults;
     }
   }
   Double_t x,y;
   fHitEventEfficiency[hs][chipNr]->GetPoint(fHitEventEfficiency[hs][chipNr]->GetN()-1,x,y);
-  UInt_t min = (UInt_t)x;
+  Double_t min = x;
   fHitEventEfficiency[hs][chipNr]->GetPoint(0,x,y);
-  UInt_t max = (UInt_t)x;
+  Double_t max = x;
 
+  Double_t mean = 0.5*(min+max);
   TString funcName = Form("Fit meanth func HS%d CHIP%d",hs,chipNr);
   TF1 *minThFunc = new TF1(funcName.Data(),itsSpdScurveForMeanTh,min,max,3);
-  minThFunc->SetParameter(0,3000);
-  minThFunc->SetParameter(1,100);
+  minThFunc->SetParameter(0,mean);
+  minThFunc->SetParameter(1,264); //  4 (mV) * 66 (el)
+  minThFunc->SetParLimits(1,100,1000); // minimum value is 1 mV (-> 100 in TPAmplitude)
   minThFunc->SetParameter(2,0.4);
   minThFunc->SetParName(0,"Mean");
   minThFunc->SetParName(1,"Sigma");
   minThFunc->SetParName(2,"Half");
   minThFunc->SetLineWidth(1);
- fHitEventEfficiency[hs][chipNr]->Fit(funcName,"Q","",min,max);
 
-  Double_t value = minThFunc->GetParameter(0);
-  TLine *ly = new TLine(min,0.5,value,0.5); ly->SetLineStyle(6);
+  fHitEventEfficiency[hs][chipNr]->Fit(funcName,"Q","",min,max);
+
+  fitresults.AddAt((Int_t)minThFunc->GetParameter(0),0);
+  fitresults.AddAt((Int_t)minThFunc->GetParError(0),1);
+  fitresults.AddAt((Int_t)minThFunc->GetParameter(1),2);
+  fitresults.AddAt((Int_t)minThFunc->GetParError(1),3);
+  TLine *ly = new TLine((Double_t)min,0.5,(Double_t)fitresults.At(0),0.5); ly->SetLineStyle(6);
   ly->Draw("same");
-  TLine *lx = new TLine(value,0.,value,0.5);
+  TLine *lx = new TLine((Double_t)fitresults.At(0),0.,(Double_t)fitresults.At(0),0.5);
   lx->SetLineStyle(6);
   lx->Draw("same");
   delete minThFunc;
-
-  return (UInt_t)value;
+  
+  return fitresults;
 }
 
 //_________________________________________________________________________
@@ -860,10 +867,11 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessHitEventEfficiency() {
 	  fHitEventEfficiency[hs][chipNr] = new TGraph();
 	}
 	Float_t efficiency=fScanObj->GetHitEventsEfficiency(step,hs,chipNr);
-	if (fType==kMINTH || fType==kMEANTH || fType==kDAC || fType==kDELAY) {
+	if (fType==kMINTH || fType==kDAC || fType==kDELAY) {
 	  fHitEventEfficiency[hs][chipNr]->SetPoint(step,((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(step),efficiency);
-	}
-	else {
+	} else if(fType==kMEANTH){
+          fHitEventEfficiency[hs][chipNr]->SetPoint(step,((AliITSOnlineSPDscanMeanTh*)fScanObj)->GetTPAmp(step,hs),efficiency);
+        } else {
 	  fHitEventEfficiency[hs][chipNr]->SetPoint(step,0,efficiency);
 	}
       }
@@ -959,14 +967,51 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapTot(UInt_t step) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       for (UInt_t col=0; col<32; col++) {
 	for (UInt_t row=0; row<256; row++) {
-          if(hs<2) fHitMapTot->Fill(chipNr*32+(31-col),(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
-	  else fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
+	  fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
 	}
       }
     }
   }
   return fHitMapTot;
 }
+//_________________________________________________________________________
+TH2F* AliITSOnlineSPDscanAnalyzer::GetPhysicalHitMapTot(UInt_t step) {
+  // creates and returns a pointer to a hitmap histo (-> 1 equpment opened up)
+
+  if (fScanObj==NULL) {
+    Error("AliITSOnlineSPDscanAnalyzer::GetHitMapTot","No data!");
+    return NULL;
+  }
+  TString histoname;
+  if (fType==kMINTH || fType==kMEANTH || fType==kDAC) {
+    histoname = Form("Router %d , DAC %d",GetRouterNr(),((AliITSOnlineSPDscanMultiple*)fScanObj)->GetDacValue(step));
+  }
+  else {
+    histoname = Form("Router %d ",GetRouterNr());
+  }
+  TH2F* hPhysicalHitMapTot = new TH2F(histoname.Data(),histoname.Data(),32*10,-0.5,32*10-0.5,256*6,-0.5,256*6-0.5);
+  hPhysicalHitMapTot->SetNdivisions(-10,"X");
+  hPhysicalHitMapTot->SetNdivisions(-006,"Y");
+  hPhysicalHitMapTot->SetTickLength(0,"X");
+  hPhysicalHitMapTot->SetTickLength(0,"Y");
+  hPhysicalHitMapTot->GetXaxis()->SetLabelColor(gStyle->GetCanvasColor());
+  hPhysicalHitMapTot->GetYaxis()->SetLabelColor(gStyle->GetCanvasColor());
+  Int_t correctChip = -1;
+  for (UInt_t hs=0; hs<6; hs++) {
+    for (UInt_t chipNr=0; chipNr<10; chipNr++) {
+    if(GetRouterNr()<10) correctChip = 9-chipNr;
+    else correctChip=chipNr;
+      for (UInt_t col=0; col<32; col++) {
+	for (UInt_t row=0; row<256; row++) {
+          if(hs<2) hPhysicalHitMapTot->Fill(correctChip*32+col,(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
+	  else hPhysicalHitMapTot->Fill(correctChip*32+(31-col),(5-hs)*256+row,fScanObj->GetHits(step,hs,chipNr,col,row));
+	}
+      }
+    }
+  }
+  return hPhysicalHitMapTot;
+}
+
 //_________________________________________________________________________
 TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t chip) {
   // creates and returns a pointer to a hitmap histo (chip style a la spdmood)
@@ -978,7 +1023,7 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t 
   TString histoName;
   TString histoTitle;
   histoName = Form("fChipHisto_%d_%d_%d", GetRouterNr(), hs, chip);
-  histoTitle = Form("Eq ID %d, Half Stave %d, Chip %d", GetRouterNr(), hs, chip);
+  histoTitle = Form("Eq ID %d, Half Stave %d, Chip %d ", GetRouterNr(), hs, chip);
 
   TH2F *returnHisto = new TH2F(histoName.Data(), histoTitle.Data(), 32, -0.5, 31.5, 256, -0.5, 255.5);
   returnHisto->SetMinimum(0);

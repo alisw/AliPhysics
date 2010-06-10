@@ -45,6 +45,7 @@ class AliITSOnlineSPDphysAnalyzer {
   UInt_t     GetNrEvents() const;
 
   TH2F*      GetHitMapTot();
+  TH2F*      GetPhysicalHitMapTot();
   TH2F*      GetHitMapChip(UInt_t hs, UInt_t chip);
 
  private:
