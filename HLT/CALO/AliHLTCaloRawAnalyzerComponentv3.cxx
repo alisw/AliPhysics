@@ -178,7 +178,7 @@ AliHLTCaloRawAnalyzerComponentv3::CheckInputDataType(const AliHLTComponentDataTy
   vector <AliHLTComponentDataType> validTypes;
   GetInputDataTypes(validTypes);
   
-  for(int i=0; i < validTypes.size(); i++ )
+  for(UInt_t i=0; i < validTypes.size(); i++ )
     {
       if ( datatype  ==  validTypes.at(i) )
 	{
