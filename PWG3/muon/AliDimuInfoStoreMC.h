@@ -19,7 +19,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
  public:
 
   AliDimuInfoStoreMC();
-  AliDimuInfoStoreMC(AliMuonInfoStoreMC* const trk0, AliMuonInfoStoreMC* const trk1, Bool_t full=kFALSE);
+  AliDimuInfoStoreMC(AliMuonInfoStoreMC *trk0, AliMuonInfoStoreMC *trk1, Bool_t full=kFALSE);
   AliDimuInfoStoreMC(const AliDimuInfoStoreMC &src);
   AliDimuInfoStoreMC& operator=(const AliDimuInfoStoreMC &src);
   virtual ~AliDimuInfoStoreMC();
@@ -27,10 +27,10 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
   AliMuonInfoStoreMC* Muon(Int_t i) const { return (i<2 ? (AliMuonInfoStoreMC*)(fMuonRef[i].GetObject()) : 0x0); }
 
   TLorentzVector LorentzP() const { return fLorentzP; }
-  Int_t DimuSource() const { return fSource; }
+  Int_t Source() const { return fSource; }
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
-  static Int_t NSources()      { return fgkNSources;             }
+  static Int_t SourcesN()            { return fgkSourcesN;             }
 
 
  private:
@@ -39,7 +39,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
   void FindDimuonSourceFull();
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static const Int_t   fgkNSources;       // num. of dimuon sources
+  static const Int_t   fgkSourcesN;       // num. of dimuon sources
 
   Bool_t fIsFull;  // flag of using full analysis (for Pb-Pb)
   TLorentzVector fLorentzP;  // lorentz momentum of MC particle

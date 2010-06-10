@@ -36,7 +36,7 @@ class AliDimuInfoStoreRD : public TObject {
   Bool_t DimuSelection();
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
-  static void SetSelectionCuts(Double_t cuts[10]) { for (Int_t i=10; i--;) fgCutd[i]=cuts[i]; }
+  static void SetSelectionCuts(Double_t cuts[12]) { for (Int_t i=12; i--;) fgCutd[i]=cuts[i]; }
 
  protected:
 
@@ -46,7 +46,7 @@ class AliDimuInfoStoreRD : public TObject {
  private:
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static Double_t fgCutd[10];             // single muon cuts for dimuon selection
+  static Double_t fgCutd[12];             // single muon cuts for dimuon selection
 
   TVector3 fMomentum;  // 3-momentum of dimuon
   Short_t  fCharge;    // charge of dimuon

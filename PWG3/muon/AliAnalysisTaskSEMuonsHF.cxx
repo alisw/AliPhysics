@@ -28,12 +28,7 @@
 
 #include <TList.h>
 #include <TClonesArray.h>
-#include <TFile.h>
 
-#include "AliAnalysisManager.h"
-#include "AliMCEventHandler.h"
-#include "AliAODMCParticle.h"
-#include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDMuonTrack.h"
@@ -45,8 +40,6 @@
 #include "AliDimuInfoStoreMC.h"
 #include "AliAnalysisTaskSEMuonsHF.h"
 
-class AliAnalysisTaskSE;
-
 ClassImp(AliAnalysisTaskSEMuonsHF)
 
 //_____________________________________________________________________________
@@ -54,13 +47,11 @@ AliAnalysisTaskSEMuonsHF::AliAnalysisTaskSEMuonsHF() :
 AliAnalysisTaskSE(),
 fAnaMode(0),
 fIsOutputTree(kFALSE),
-fIsUseMC(kFALSE),
+fIsMC(kFALSE),
 fHeader(0),
 fMuonClArr(0),
 fDimuClArr(0),
-fListHisHeader(0),
-fListHisMuon(),
-fListHisDimu(0)
+fListOutput(0)
 {
   //
   // Default constructor
@@ -72,17 +63,16 @@ AliAnalysisTaskSEMuonsHF::AliAnalysisTaskSEMuonsHF(const char *name) :
 AliAnalysisTaskSE(name),
 fAnaMode(0),
 fIsOutputTree(kFALSE),
-fIsUseMC(kFALSE),
+fIsMC(kFALSE),
 fHeader(0),
 fMuonClArr(0),
 fDimuClArr(0),
-fListHisHeader(0),
-fListHisMuon(0),
-fListHisDimu(0)
+fListOutput(0)
 {
   //
   // Constructor
   //
+  DefineOutput(1, TList::Class());
 }
 
 //_____________________________________________________________________________
@@ -91,13 +81,10 @@ AliAnalysisTaskSEMuonsHF::~AliAnalysisTaskSEMuonsHF()
   //
   // Default destructor
   //
-  if (fHeader)    { delete fHeader;     fHeader    =NULL; }
-  if (fMuonClArr) { delete fMuonClArr;  fMuonClArr =NULL; }
-  if (fDimuClArr) { delete fDimuClArr;  fDimuClArr =NULL; }
-
-  if (fListHisHeader) { delete    fListHisHeader; fListHisHeader=NULL; }
-  if (fListHisMuon)   { delete [] fListHisMuon;   fListHisMuon  =NULL; }
-  if (fListHisDimu)   { delete [] fListHisDimu;   fListHisDimu  =NULL; }
+  if (fHeader)     { delete fHeader;     fHeader    =NULL; }
+  if (fMuonClArr)  { delete fMuonClArr;  fMuonClArr =NULL; }
+  if (fDimuClArr)  { delete fDimuClArr;  fDimuClArr =NULL; }
+  if (fListOutput) { delete fListOutput; fListOutput=NULL; }
 }
 
 //_____________________________________________________________________________
@@ -107,14 +94,14 @@ void AliAnalysisTaskSEMuonsHF::Init()
   // Setting and initializing the running mode and status
 
   AliMuonsHFHeader::SetAnaMode(fAnaMode);
-  AliMuonsHFHeader::SetIsMC(fIsUseMC);
+  AliMuonsHFHeader::SetIsMC(fIsMC);
   if (!fHeader) {
     fHeader = new AliMuonsHFHeader();
     fHeader->SetName(AliMuonsHFHeader::StdBranchName());
   }
 
   if (!fMuonClArr) {
-    if (fIsUseMC) { 
+    if (fIsMC) { 
       fMuonClArr = new TClonesArray("AliMuonInfoStoreMC", 0);
       fMuonClArr->SetName(AliMuonInfoStoreMC::StdBranchName());
     } else {
@@ -124,7 +111,7 @@ void AliAnalysisTaskSEMuonsHF::Init()
   }
 
   if (fAnaMode!=1 && !fDimuClArr) {
-    if (fIsUseMC) {
+    if (fIsMC) {
       fDimuClArr = new TClonesArray("AliDimuInfoStoreMC", 0);
       fDimuClArr->SetName(AliDimuInfoStoreMC::StdBranchName());
     } else {
@@ -141,16 +128,8 @@ void AliAnalysisTaskSEMuonsHF::UserCreateOutputObjects()
 {
   // Create the output container
 
-  if (!fListHisHeader) fListHisHeader = new TList();
-  if (fAnaMode!=2 && !fListHisMuon) {
-    if (fIsUseMC) fListHisMuon = new TList[AliMuonInfoStoreMC::NSources()];
-    else fListHisMuon = new TList();
-  }
-  if (fAnaMode!=1 && !fListHisDimu) {
-    if (fIsUseMC) fListHisDimu = new TList[AliDimuInfoStoreMC::NSources()];
-    else fListHisDimu = new TList();
-  }
-  fHeader->CreateHistograms(fListHisHeader, fListHisMuon, fListHisDimu);
+  if (!fListOutput) fListOutput = new TList();
+  fHeader->CreateHistograms(fListOutput);
 
   if (fIsOutputTree) {
     AddAODBranch("AliMuonsHFHeader", &fHeader);
@@ -167,39 +146,30 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
   // Execute analysis for current event:
   // muon event header & (di)muon info store
 
-  AliVEvent *event = dynamic_cast<AliVEvent*>(InputEvent());
-  //if (AODEvent() && IsStandardAOD()) event = dynamic_cast<AliVEvent*>(AODEvent());
-  TString evName = event->IsA()->GetName();
-  Bool_t isAOD = ((evName=="AliAODEvent") ? kTRUE : kFALSE);
-  event = 0x0;
+  if (fIsMC) {
+    if (MCEvent()) {
+      if (MCEvent()->GetNumberOfTracks()<=0)
+           { AliError("MC event not found. Nothing done!"); return; }
+    } else { AliError("MC event not found. Nothing done!"); return; }
+  }
+
+  fHeader->SetEvent(((AliVVertex*)InputEvent()->GetPrimaryVertex()));
+  fHeader->FillHistosEvnH(fListOutput);
 
   Int_t ntrks = 0;
   AliAODEvent *aod = 0;
   AliESDEvent *esd = 0;
-  TClonesArray *mcClArr = 0;
-  AliMCEventHandler *mcH = 0;
-  if (isAOD) {
+  if (((TString)InputEvent()->IsA()->GetName())=="AliAODEvent") {
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
-    //if (AODEvent() && IsStandardAOD()) aod = dynamic_cast<AliAODEvent*>(AODEvent());
     if (!aod) { AliError("AOD event not found. Nothing done!"); return; }
-    if (fIsUseMC) {
-      mcClArr = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-      if (!mcClArr) { AliError("MC Array not found. Nothing done!"); return; }
-    }
-    fHeader->SetEvent(aod);
     ntrks = aod->GetNTracks();
+    fHeader->SetFiredTriggerClass(aod->GetFiredTriggerClasses());
   } else {
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!esd) { AliError("ESD event not found. Nothing done!"); return; }
-    if (fIsUseMC) {
-      mcH = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-      if (!mcH) { AliError("MC Handler not found. Nothing done!"); return; }
-    }
-    fHeader->SetEvent(esd);
     ntrks = esd->GetNumberOfMuonTracks();
+    fHeader->SetFiredTriggerClass(esd->GetFiredTriggerClasses());
   }
-
-  fHeader->FillHistosEventH(fListHisHeader);
 
   fMuonClArr->Delete();
   TClonesArray &muonRef = *fMuonClArr;
@@ -207,37 +177,39 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
 
   AliAODTrack        *trkAOD = 0;
   AliESDMuonTrack    *trkESD = 0;
-  AliMuonInfoStoreRD *trkRD  = 0;
-  AliMuonInfoStoreMC *trkMC  = 0;
+  AliMuonInfoStoreRD *muonRD = 0;
+  AliMuonInfoStoreMC *muonMC = 0;
   for (Int_t itrk=0; itrk<ntrks; itrk++) {  // loop over all tracks
-    if (isAOD) {
+    if (aod) {
       trkAOD = (AliAODTrack*)aod->GetTrack(itrk);
-      if (!trkAOD->IsMuonTrack()) { trkAOD=0; trkRD=0; trkMC=0; continue; }
-      if (fIsUseMC) trkMC = new AliMuonInfoStoreMC(trkAOD, mcClArr);
-      else trkRD = new AliMuonInfoStoreRD(trkAOD);
+      if (!trkAOD->IsMuonTrack())        { trkAOD=0; continue; }
+      if (fIsMC) muonMC = new AliMuonInfoStoreMC(trkAOD, MCEvent());
+      else muonRD = new AliMuonInfoStoreRD(trkAOD);
       trkAOD = 0;
     } else {
       trkESD = (AliESDMuonTrack*)esd->GetMuonTrack(itrk);
-      if (!trkESD->ContainTrackerData()) { trkESD=0; trkRD=0; trkMC=0; continue; }
-      if (fIsUseMC) trkMC = new AliMuonInfoStoreMC(trkESD, esd, mcH);
-      else trkRD = new AliMuonInfoStoreRD(trkESD);
+      if (!trkESD->ContainTrackerData()) { trkESD=0; continue; }
+      if (fIsMC) muonMC = new AliMuonInfoStoreMC(trkESD, MCEvent());
+      else muonRD = new AliMuonInfoStoreRD(trkESD);
       trkESD = 0;
     }
 
-    if (trkRD) {
-      if (fAnaMode!=2) fHeader->FillHistosMuonRD(fListHisMuon, trkRD);
-      new(muonRef[countN++]) AliMuonInfoStoreRD(*trkRD);
+    if (muonRD) {
+      new(muonRef[countN++]) AliMuonInfoStoreRD(*muonRD);
+      if (fAnaMode!=2) fHeader->FillHistosMuon(fListOutput, muonRD);
     }
-    if (trkMC) {
-      if (fAnaMode!=2) fHeader->FillHistosMuonMC(fListHisMuon, trkMC);
-      new(muonRef[countN++]) AliMuonInfoStoreMC(*trkMC);
+    if (muonMC) {
+      new(muonRef[countN++]) AliMuonInfoStoreMC(*muonMC);
+      if (fAnaMode!=2) fHeader->FillHistosMuon(fListOutput, muonMC, muonMC->Source());
     }
 
-    if (trkRD) { delete trkRD; trkRD=0; }
-    if (trkMC) { delete trkMC; trkMC=0; }
+    if (muonRD) { delete muonRD; muonRD=0; }
+    if (muonMC) { delete muonMC; muonMC=0; }
   }  // end loop of all tracks
 
-  if (fAnaMode==1) return;
+  aod = 0; esd = 0;
+  if (fAnaMode==1) { PostData(1,fListOutput); return; }
+
   fDimuClArr->Delete();
   countN = fDimuClArr->GetEntriesFast();
   TClonesArray &dimuRef = *fDimuClArr;
@@ -247,17 +219,18 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
   ntrks = fMuonClArr->GetEntriesFast();
   for (Int_t itrk=0; itrk<ntrks-1; itrk++) {  // 1st loop over muon tracks
     for (Int_t jtrk=itrk+1; jtrk<ntrks; jtrk++) {  // 2nd loop ofver muon tracks
-      if (fIsUseMC)
+      if (fIsMC)
         dimuMC = new AliDimuInfoStoreMC((AliMuonInfoStoreMC*)fMuonClArr->At(itrk), (AliMuonInfoStoreMC*)fMuonClArr->At(jtrk));
-      else
+      else {
         dimuRD = new AliDimuInfoStoreRD((AliMuonInfoStoreRD*)fMuonClArr->At(itrk), (AliMuonInfoStoreRD*)fMuonClArr->At(jtrk));
+      }
 
       if (dimuRD) {
-        fHeader->FillHistosDimuRD(fListHisDimu, dimuRD);
+        fHeader->FillHistosDimu(fListOutput, dimuRD);
         if (fIsOutputTree) new(dimuRef[countN++]) AliDimuInfoStoreRD(*dimuRD);
       }
       if (dimuMC) {
-        fHeader->FillHistosDimuMC(fListHisDimu, dimuMC);
+        fHeader->FillHistosDimu(fListOutput, dimuMC, dimuMC->Source());
         if (fIsOutputTree) new(dimuRef[countN++]) AliDimuInfoStoreMC(*dimuMC);
       }
 
@@ -266,6 +239,7 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
     }  // end 2nd loop of muon tracks
   }  // end 1st loop of muon tracks
 
+  PostData(1, fListOutput);
   return;
 }
 
@@ -274,43 +248,7 @@ void AliAnalysisTaskSEMuonsHF::Terminate(Option_t *)
 {
   // Terminate analysis
 
-  TFile *fout = new TFile("muonsHF.root", "RECREATE");
-  gDirectory->mkdir("header");
-  gDirectory->cd("header");
-  fListHisHeader->Write();
-  gDirectory->cd("..");
+  // add the correction matrix
 
-  if (fAnaMode!=2) {
-    gDirectory->mkdir("muon");
-    gDirectory->cd("muon");
-    if (fIsUseMC) {
-      char *muonName[] = {"BottomMu", "CharmMu", "PrimaryMu", "SecondaryMu", "NotMu", "Undentified", "All"};
-      for (Int_t i=AliMuonInfoStoreMC::NSources(); i--;) {
-        gDirectory->mkdir(muonName[i]);
-        gDirectory->cd(muonName[i]);
-        fListHisMuon[i].Write();
-        gDirectory->cd("..");
-      }
-    } else fListHisMuon->Write();
-    gDirectory->cd("..");
-  }
-
-  if (fAnaMode!=1) {
-    gDirectory->mkdir("dimu");
-    gDirectory->cd("dimu");
-    if (fIsUseMC) {
-      char *dimuName[] = {"BBdiff", "Bchain", "DDdiff", "Dchain", "Resonance", "Background", "All"};
-      for (Int_t i=AliDimuInfoStoreMC::NSources(); i--;) {
-        gDirectory->mkdir(dimuName[i]);
-        gDirectory->cd(dimuName[i]);
-        fListHisDimu[i].Write();
-        gDirectory->cd("..");
-      }
-    } else fListHisDimu->Write();
-    gDirectory->cd("..");
-  }
-
-  fout->Write();
-  fout->Close();
   return;
 }

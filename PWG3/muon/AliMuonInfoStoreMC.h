@@ -23,56 +23,49 @@
 #include "AliESDMuonTrack.h"
 #include "AliAODTrack.h"
 #include "AliMuonInfoStoreRD.h"
+#include "AliMCEvent.h"
 
 class AliMuonInfoStoreMC : public AliMuonInfoStoreRD {
  public:
 
   AliMuonInfoStoreMC();
-  AliMuonInfoStoreMC(AliAODTrack *trkAOD, TClonesArray *mcClArr, Bool_t full=kFALSE);
-  AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliESDEvent *esd, AliMCEventHandler *mcH, Bool_t full=kFALSE);
-  AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliMCEventHandler *mcH, Bool_t full=kFALSE);
-  AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliStack *stack);
+  AliMuonInfoStoreMC(AliAODTrack     *trkAOD, AliMCEvent *mcEvent, Bool_t full=kFALSE);
+  AliMuonInfoStoreMC(AliESDMuonTrack *trkESD, AliMCEvent *mcEvent, Bool_t full=kFALSE);
   AliMuonInfoStoreMC(const AliMuonInfoStoreMC &src);
   AliMuonInfoStoreMC& operator=(const AliMuonInfoStoreMC &src);
   virtual ~AliMuonInfoStoreMC();
 
-  Int_t ParentFlavour(Int_t i=0) const;
+  Int_t  ParentFlavour(Int_t i=0)    const;
   Bool_t IsMotherAResonance(Int_t i) const;
-  Bool_t IsAMuon() const { return (fSource>=0 && fSource!=4); }
 
-  TLorentzVector LorentzP()      const { return fLorentzP; }
-  Int_t MuonSource()             const { return fSource; }
-  Int_t TrackIndex()             const { return fTrackIndex; }
-  Int_t TrackPDGCode()           const { return fTrackPDGCode; }
-  Int_t NParents()               const { return fNParents; }
-  Int_t ParentIndex(Int_t i=0)   const { return (i<fNParents ? fParentIndex[i] : -1); }
-  Int_t ParentPDGCode(Int_t i=0) const { return (i<fNParents ? fParentPDGCode[i] : 0); }
-  Int_t QuarkIndex(Int_t i=0)    const { return (i<4 ? fQuarkIndex[i] : -1); }
-  Int_t QuarkPDGCode(Int_t i=0)  const { return (i<4 ? fQuarkPDGCode[i] : 0); }
-  Bool_t IsOscillation()         const { return fOscillation; }
-  Double_t Weight()              const { return fWeight; }
+  TLorentzVector LorentzP()         const { return fLorentzP; }
+  Int_t    Source()                 const { return fSource; }
+  Int_t    TrackIndex()             const { return fTrackIndex; }
+  Int_t    TrackPDGCode()           const { return fTrackPDGCode; }
+  Int_t    ParentsN()               const { return fNParents; }
+  Int_t    ParentIndex(Int_t i=0)   const { return (i<fNParents ? fParentIndex[i] : -1); }
+  Int_t    ParentPDGCode(Int_t i=0) const { return (i<fNParents ? fParentPDGCode[i] : 0); }
+  Int_t    QuarkIndex(Int_t i=0)    const { return (i<4 ? fQuarkIndex[i] : -1); }
+  Int_t    QuarkPDGCode(Int_t i=0)  const { return (i<4 ? fQuarkPDGCode[i] : 0); }
+  Bool_t   IsOscillation()          const { return fOscillation; }
+  Double_t Weight()                 const { return fWeight; }
 
   static const char* StdBranchName() { return fgkStdBranchName.Data(); }
-  static Int_t NSources()      { return fgkNSources;             }
+  static Int_t SourcesN()            { return fgkSourcesN;             }
 
  private:
 
-  AliAODMCParticle* FindTrackRef(AliAODTrack*     const trkAOD, TClonesArray* const mcClArr);
-  TParticle*        FindTrackRef(AliESDMuonTrack* const trkESD, AliMCEventHandler* const mcH);
-  TParticle*        FindTrackRef(AliESDMuonTrack* const trkESD, AliESDEvent* const esd, AliMCEventHandler* const mcH);
-  void SetMCInfo(AliAODMCParticle *pMC, TClonesArray* const mcClArr);
-  void SetMCInfo(TParticle *pMC, AliMCEventHandler *mcH);
-  void FillHistoryParents(Int_t lineM, TClonesArray* const mcClArr);
-  void FillHistoryParents(Int_t lineM, AliStack* const stack);
-  void FillHistoryQuarks(Int_t lineM, TClonesArray *mcClArr);
-  void FillHistoryQuarks(Int_t lineM, AliStack *stack);
+  void SetMCInfoAOD(AliMCEvent *mcEvent, Int_t label);
+  void SetMCInfoESD(AliMCEvent *mcEvent, Int_t label);
+  void FillHistoryQuarksAOD(AliMCEvent *mcEvent, Int_t lineM);
+  void FillHistoryQuarksESD(AliMCEvent *mcEvent, Int_t lineM);
   Int_t SelectHFMuon();
 
   Bool_t IsDiquark(Int_t pdg);
   void ResetQuarkInfo();
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static const Int_t   fgkNSources;       // num. of muon sources
+  static const Int_t   fgkSourcesN;       // num. of muon sources
 
   Bool_t fIsFull;            // whether to use full mode (Pb-Pb)
   TLorentzVector fLorentzP;  // lorentz momentum of particle
