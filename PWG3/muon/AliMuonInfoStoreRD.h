@@ -29,23 +29,21 @@ class AliMuonInfoStoreRD : public TObject {
   virtual ~AliMuonInfoStoreRD();
 
   TVector3 Momentum()      const { return fMomentum; }
-  TVector3 MomentumAtDCA() const { return fMomentumAtDCA; }
 
   void XYZAtDCA(Double_t dca[3]) const { for (Int_t i=3; i--;) dca[i]=fDCA[i]; }
   Double_t DCA() const  { return TMath::Sqrt(fDCA[0]*fDCA[0]+fDCA[1]*fDCA[1]); }
 
   Short_t  Charge()           const { return fCharge;           }
   Int_t    MatchTrigger()     const { return fMatchTrigger;     }
-  Int_t    NClusters()        const { return fNClusters;        }
-  UInt_t   MUONClusterMap()   const { return fMUONClusterMap;   }
   Double_t Chi2FitMomentum()  const { return fChi2FitMomentum;  }
   Double_t Chi2MatchTrigger() const { return fChi2MatchTrigger; }
+  Double_t RabsEnd()          const { return fRabsEnd;          }
 
   Bool_t MuonSelection();
 
   static const char* StdBranchName()                  { return fgkStdBranchName.Data(); }
-  static void SelectionCust(Double_t cuts[10])  { for (Int_t i=10; i--;) cuts[i]=fgCuts[i]; }
-  static void SetSelectionCuts(Double_t cuts[10]) { for (Int_t i=10; i--;) fgCuts[i]=cuts[i]; }
+  static void SelectionCust(Double_t cuts[12])  { for (Int_t i=12; i--;) cuts[i]=fgCuts[i]; }
+  static void SetSelectionCuts(Double_t cuts[12]) { for (Int_t i=12; i--;) fgCuts[i]=cuts[i]; }
 
  private:
 
@@ -53,18 +51,16 @@ class AliMuonInfoStoreRD : public TObject {
   void FillMuonInfo(AliESDMuonTrack *trk);
 
   void SetMomentum(Double_t p[3])      { fMomentum.SetXYZ(p[0],p[1],p[2]);      }
-  void SetMomentumAtDCA(Double_t p[3]) { fMomentumAtDCA.SetXYZ(p[0],p[1],p[2]); }
 
-  void SetDCA(Double_t dca[3]) { for (Int_t i=3; i--;) fDCA[i]=dca[i]; }
-  void SetCharge(Short_t charge)           { fCharge        = charge;  }
-  void SetNClusters(Int_t ncls)            { fNClusters     = ncls;    }
-  void SetMatchTrigger(Int_t trigger)      { fMatchTrigger  = trigger; }
-  void SetMUONClusterMap(UInt_t clMap)     { fMUONClusterMap  = clMap; }
-  void SetChi2FitMomentum(Double_t chi2)   { fChi2FitMomentum  = chi2; }
-  void SetChi2MatchTrigger(Double_t chi2)  { fChi2MatchTrigger = chi2; }
+  void SetDCA(Double_t dca[3]) { for (Int_t i=3; i--;) fDCA[i]=dca[i];    }
+  void SetCharge(Short_t charge)           { fCharge           = charge;  }
+  void SetMatchTrigger(Int_t trigger)      { fMatchTrigger     = trigger; }
+  void SetChi2FitMomentum(Double_t chi2)   { fChi2FitMomentum  = chi2;    }
+  void SetChi2MatchTrigger(Double_t chi2)  { fChi2MatchTrigger = chi2;    }
+  void SetRabsEnd(Double_t rAbsEnd)        { fRabsEnd          = rAbsEnd; }
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static Double_t fgCuts[10];  // 0, min of 3-momentum
+  static Double_t fgCuts[12];  // 0, min of 3-momentum
                                // 1, max of 3-momentum
                                // 2, pt_Min
                                // 3, pt_Max
@@ -74,17 +70,17 @@ class AliMuonInfoStoreRD : public TObject {
                                // 7, dca_Max
                                // 8, about trigger matching
                                // 9, about trigger matching
+                               //10, rAbs_Min
+                               //11, rAbs_Max
 
   TVector3 fMomentum;       // momentum corrected w vtx
-  TVector3 fMomentumAtDCA;  // momentum at DCA in vtx plane
 
   Double_t fDCA[3];            // distance of closet approach
   Short_t  fCharge;            // track charge
   Int_t    fMatchTrigger;      // type of match trigger
-  Int_t    fNClusters;         // number of clusters in the track
-  UInt_t   fMUONClusterMap;    // map of MUON clusters
   Double_t fChi2FitMomentum;   // chi2/NDF of momentum fit
   Double_t fChi2MatchTrigger;  // chi2 of trigger matching
+  Double_t fRabsEnd;  // position at the end of front absorber
 
   ClassDef(AliMuonInfoStoreRD, 4);
 };

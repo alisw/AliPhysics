@@ -28,7 +28,7 @@
 ClassImp(AliDimuInfoStoreMC)
 
 const TString AliDimuInfoStoreMC::fgkStdBranchName("DimuMC");
-const Int_t   AliDimuInfoStoreMC::fgkNSources = 7;
+const Int_t   AliDimuInfoStoreMC::fgkSourcesN = 6;
 
 //-----------------------------------------------------------------------------
 AliDimuInfoStoreMC::AliDimuInfoStoreMC() :
@@ -102,23 +102,23 @@ void AliDimuInfoStoreMC::FindDimuonSourceFast()
   // find corr relation of two particles (fast for p-p)
 
   AliMuonInfoStoreMC *trk0 = (AliMuonInfoStoreMC*)fMuonRef[0].GetObject();
-  Int_t src0 = trk0->MuonSource();
+  Int_t src0 = trk0->Source();
   if (src0<0 || src0==4 || src0==3) {
     fSource=5; return;
   }
 
   AliMuonInfoStoreMC *trk1 = (AliMuonInfoStoreMC*)fMuonRef[1].GetObject();
-  Int_t src1 = trk1->MuonSource();
+  Int_t src1 = trk1->Source();
   if (src1<0 || src1==4 || src1==3) {
     fSource=5; return;
   }
 
   // Drell-Yan is expected very small at LHC, we ingore it
-  Int_t np0 = trk0->NParents() - 1;
+  Int_t np0 = trk0->ParentsN() - 1;
   if (np0<0) {
     fSource=5; return;
   }
-  Int_t np1 = trk1->NParents() - 1;
+  Int_t np1 = trk1->ParentsN() - 1;
   if (np1<0) {
     fSource=5; return;
   }

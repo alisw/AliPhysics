@@ -31,13 +31,13 @@ class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *opt);
   virtual void Terminate(Option_t *opt);
 
-  void SetAnaMode(Int_t mode) { fAnaMode = (mode<3 ? mode : 0); }
-  void SetIsOutputTree(Bool_t ist) { fIsOutputTree = ist; }
-  void SetIsUseMC(Bool_t isMC) { fIsUseMC = isMC; }
+  void SetAnaMode(Int_t mode)      { fAnaMode      = ((mode>=0 && mode<3) ? mode : 0); }
+  void SetIsOutputTree(Bool_t ist) { fIsOutputTree = ist;                              }
+  void SetUseMC(Bool_t isMC)       { fIsMC         = isMC;                             }
 
   void SetEvsHCuts(Double_t cuts[3])  const { AliMuonsHFHeader::SetSelectionCuts(cuts);   }
-  void SetMuonCuts(Double_t cuts[10]) const { AliMuonInfoStoreRD::SetSelectionCuts(cuts); }
-  void SetDimuCuts(Double_t cuts[10]) const { AliDimuInfoStoreRD::SetSelectionCuts(cuts); }
+  void SetMuonCuts(Double_t cuts[12]) const { AliMuonInfoStoreRD::SetSelectionCuts(cuts); }
+  void SetDimuCuts(Double_t cuts[12]) const { AliDimuInfoStoreRD::SetSelectionCuts(cuts); }
 
  private:
 
@@ -48,15 +48,12 @@ class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
                          // = 1, ana single muon
                          // = 2, ana dimuon
   Bool_t fIsOutputTree;  // flag used to switch on/off tree output
-  Bool_t fIsUseMC;       // flag used to switch on/off MC ana
+  Bool_t fIsMC;          // flag of whether the input is MC
 
   AliMuonsHFHeader *fHeader;  // output for info at ev level
-  TClonesArray *fMuonClArr;   // output clones array for single mu
-  TClonesArray *fDimuClArr;   // output clones array for dimu
-
-  TList *fListHisHeader;  // output list of histos at event level
-  TList *fListHisMuon;    // output list of histos for single mu
-  TList *fListHisDimu;    // output list of histos for dimuon
+  TClonesArray  *fMuonClArr;  // output clones array for single mu
+  TClonesArray  *fDimuClArr;  // output clones array for dimu
+  TList *fListOutput;         // output list of histos
 
   ClassDef(AliAnalysisTaskSEMuonsHF, 6);
 };

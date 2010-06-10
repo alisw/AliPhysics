@@ -30,7 +30,8 @@ class TObject;
 ClassImp(AliMuonInfoStoreRD)
 
 const TString AliMuonInfoStoreRD::fgkStdBranchName("MuonRD");
-Double_t      AliMuonInfoStoreRD::fgCuts[10] = {-999999., 999999.,
+Double_t      AliMuonInfoStoreRD::fgCuts[12] = {-999999., 999999.,
+                                                -999999., 999999.,
                                                 -999999., 999999.,
                                                 -999999., 999999.,
                                                 -999999., 999999.,
@@ -40,36 +41,32 @@ Double_t      AliMuonInfoStoreRD::fgCuts[10] = {-999999., 999999.,
 AliMuonInfoStoreRD::AliMuonInfoStoreRD() :
 TObject(),
 fMomentum(),
-fMomentumAtDCA(),
 fCharge(0),
 fMatchTrigger(-1),
-fNClusters(0),
-fMUONClusterMap(0),
 fChi2FitMomentum(0.),
-fChi2MatchTrigger(0.)
+fChi2MatchTrigger(0.),
+fRabsEnd(0.)
 {
   //
   // default constructor
   //
-  for (Int_t i=3; i--;) fDCA[i] = 0.;
+  for (Int_t i=3; i--;) fDCA[i]=0.;
 }
 
 //-----------------------------------------------------------------------------
 AliMuonInfoStoreRD::AliMuonInfoStoreRD(AliAODTrack *trk) :
 TObject(),
 fMomentum(),
-fMomentumAtDCA(),
 fCharge(0),
 fMatchTrigger(-1),
-fNClusters(0),
-fMUONClusterMap(0),
 fChi2FitMomentum(0.),
-fChi2MatchTrigger(0.)
+fChi2MatchTrigger(0.),
+fRabsEnd(0.)
 {
   //
   // AOD-base constructor
   //
-  for (Int_t i=3; i--;) fDCA[i] = 0.;
+  for (Int_t i=3; i--;) fDCA[i]=0.;
   this->FillMuonInfo(trk);
 }
 
@@ -77,18 +74,16 @@ fChi2MatchTrigger(0.)
 AliMuonInfoStoreRD::AliMuonInfoStoreRD(AliESDMuonTrack *trk) :
 TObject(),
 fMomentum(),
-fMomentumAtDCA(),
 fCharge(0),
 fMatchTrigger(-1),
-fNClusters(0),
-fMUONClusterMap(0),
 fChi2FitMomentum(0.),
-fChi2MatchTrigger(0.)
+fChi2MatchTrigger(0.),
+fRabsEnd(0.)
 {
   //
   // ESD-base constructor
   //
-  for (Int_t i=3; i--;) fDCA[i] = 0.;
+  for (Int_t i=3; i--;) fDCA[i]=0.;
   this->FillMuonInfo(trk);
 }
 
@@ -96,18 +91,16 @@ fChi2MatchTrigger(0.)
 AliMuonInfoStoreRD::AliMuonInfoStoreRD(const AliMuonInfoStoreRD &src) :
 TObject(src),
 fMomentum(src.fMomentum),
-fMomentumAtDCA(src.fMomentumAtDCA),
 fCharge(src.fCharge),
 fMatchTrigger(src.fMatchTrigger),
-fNClusters(src.fNClusters),
-fMUONClusterMap(src.fMUONClusterMap),
 fChi2FitMomentum(src.fChi2FitMomentum),
-fChi2MatchTrigger(src.fChi2MatchTrigger)
+fChi2MatchTrigger(src.fChi2MatchTrigger),
+fRabsEnd(src.fRabsEnd)
 {
   //
   // copy constructor
   //
-  for (Int_t i=3; i--;) fDCA[i] = src.fDCA[i];
+  for (Int_t i=3; i--;) fDCA[i]=src.fDCA[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -119,16 +112,13 @@ AliMuonInfoStoreRD& AliMuonInfoStoreRD::operator=(const AliMuonInfoStoreRD &src)
   if(&src==this) return *this;
 
   fMomentum         = src.fMomentum;
-  fMomentumAtDCA    = src.fMomentumAtDCA;
-
   fCharge           = src.fCharge;
   fMatchTrigger     = src.fMatchTrigger;
-  fNClusters        = src.fNClusters;
-  fMUONClusterMap   = src.fMUONClusterMap;
   fChi2FitMomentum  = src.fChi2FitMomentum;
   fChi2MatchTrigger = src.fChi2MatchTrigger;
+  fRabsEnd          = src.fRabsEnd;
 
-  for (Int_t i=3; i--;) fDCA[i] = src.fDCA[i];
+  for (Int_t i=3; i--;) fDCA[i]=src.fDCA[i];
 
   return *this;
 }
@@ -150,17 +140,14 @@ void AliMuonInfoStoreRD::FillMuonInfo(AliAODTrack *trk)
   trk->PxPyPz(arr);
   this->SetMomentum(arr);
 
-  trk->PxPyPzAtDCA(arr);
-  this->SetMomentumAtDCA(arr);
-
   trk->XYZAtDCA(arr);
   this->SetDCA(arr);
 
   this->SetCharge(trk->Charge());
   this->SetMatchTrigger(trk->GetMatchTrigger());
-  this->SetMUONClusterMap(trk->GetMUONClusterMap());
   this->SetChi2FitMomentum(trk->Chi2perNDF());
   this->SetChi2MatchTrigger(trk->GetChi2MatchTrigger());
+  this->SetRabsEnd(trk->GetRAtAbsorberEnd());
 
   return;
 }
@@ -170,14 +157,10 @@ void AliMuonInfoStoreRD::FillMuonInfo(AliAODTrack *trk)
 void AliMuonInfoStoreRD::FillMuonInfo(AliESDMuonTrack *trk)
 {
   // extract reco info of muon track from ESD
-  // tract params before related to vertex are extracted
 
   Double_t arr[3];
   trk->PxPyPz(arr);
   this->SetMomentum(arr);
-
-  trk->PxPyPzAtDCA(arr);
-  this->SetMomentumAtDCA(arr);
 
   arr[0] = trk->GetNonBendingCoorAtDCA();
   arr[1] = trk->GetBendingCoorAtDCA();
@@ -186,11 +169,10 @@ void AliMuonInfoStoreRD::FillMuonInfo(AliESDMuonTrack *trk)
 
   this->SetCharge(trk->Charge());
   this->SetMatchTrigger(trk->GetMatchTrigger());
-  this->SetMUONClusterMap(trk->GetMuonClusterMap());
   this->SetChi2FitMomentum(trk->GetChi2()/(2.*trk->GetNHit()-5.));
   this->SetChi2MatchTrigger(trk->GetChi2MatchTrigger());
+  this->SetRabsEnd(trk->GetRAtAbsorberEnd());
 
-  this->SetNClusters(trk->GetNClusters());
   return;
 }
 
@@ -213,6 +195,9 @@ Bool_t AliMuonInfoStoreRD::MuonSelection()
 
   Int_t trigger = this->MatchTrigger();
   if (trigger<AliMuonInfoStoreRD::fgCuts[8] || trigger>AliMuonInfoStoreRD::fgCuts[9]) return kFALSE;
+
+  Double_t rAbs = this->RabsEnd();
+  if (rAbs<AliMuonInfoStoreRD::fgCuts[10] || rAbs>AliMuonInfoStoreRD::fgCuts[11])     return kFALSE;
 
   return kTRUE;
 }
