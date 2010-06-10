@@ -146,8 +146,8 @@ void AliTriggerAnalysis::EnableHistograms()
   
   fHistBitsSPD = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", 1202, -1.5, 1200.5, 1202, -1.5, 1200.5);
   fHistFiredBitsSPD = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
-  fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 200, 0, 100);
-  fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 200, 0, 100);
+  fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 400, -100, 100);
+  fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
   
   // TODO check limits
@@ -654,6 +654,26 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
   {
     AliError("AliESDVZERO not available");
     return kV0Invalid;
+  }
+
+  if (esdV0->TestBit(AliESDVZERO::kDecisionFilled)) {
+    if (online) {
+      AliWarning("V0 online trigger analysis is not yet available!");
+      return kV0BB;
+    }
+    else {
+
+      if (fillHists) {
+	if (side == kASide && fHistV0A)
+	  fHistV0A->Fill(esdV0->GetV0ATime());
+	if (side == kCSide && fHistV0C)
+	  fHistV0C->Fill(esdV0->GetV0CTime());
+      }
+
+      if (side == kASide) return (V0Decision)esdV0->GetV0ADecision();
+      else if (side == kCSide) return (V0Decision)esdV0->GetV0CDecision();
+      else return kV0Invalid;
+    }
   }
 
   Int_t begin = -1;
