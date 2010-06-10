@@ -6,7 +6,6 @@ SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommon/AliFlowVector.cxx \
       FLOW/AliFlowCommon/AliFlowCommonConstants.cxx \
       FLOW/AliFlowCommon/AliFlowLYZConstants.cxx \
-      FLOW/AliFlowCommon/AliFlowCumuConstants.cxx \
       FLOW/AliFlowCommon/AliFlowEventSimpleMakerOnTheFly.cxx \
       FLOW/AliFlowCommon/AliFlowCommonHist.cxx \
       FLOW/AliFlowCommon/AliFlowCommonHistResults.cxx \
@@ -19,7 +18,6 @@ SRCS= FLOW/AliFlowCommon/AliFlowEventSimple.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithCumulants.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx \
-      FLOW/AliFlowCommon/AliCumulantsFunctions.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.cxx \
       FLOW/AliFlowCommon/AliFlowAnalysisWithNestedLoops.cxx
