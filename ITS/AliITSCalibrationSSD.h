@@ -90,7 +90,7 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     void SetKeVperADC(Double_t a=86.4/120.){fKeVperADC = a;}
     Double_t ADCToKeV(Double_t adc) const {return adc*fKeVperADC;}
 
-    void SetSSDADCpereV(Double_t a=120./24888.9){fSSDADCpereV = a;}
+    void SetSSDADCpereV(Double_t a=(120./24888.9)*(85.0/77.0)){fSSDADCpereV = a;}
     Double_t GetSSDDEvToADC(Double_t eV) const {return eV*fSSDADCpereV;}
     Int_t GetSSDIEvToADC(Double_t eV) const { 
                                   return ((Int_t) GetSSDDEvToADC(eV)); }
@@ -123,6 +123,6 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     AliITSCalibrationSSD(const AliITSCalibrationSSD &source); // copy constructor
     AliITSCalibrationSSD& operator=(const AliITSCalibrationSSD &source); // ass. op.
 
-    ClassDef(AliITSCalibrationSSD,5) //Response class for SSD
+    ClassDef(AliITSCalibrationSSD,6) //Response class for SSD
       };
 #endif
