@@ -438,7 +438,7 @@ void Config()
   geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
   geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
   geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
-
+  geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
 
 
 
