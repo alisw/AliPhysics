@@ -1,13 +1,13 @@
 // $Id$
 //
-// Set job and simulation variables as :
-// root.exe -b -q simrun.C  --run <x> --event <y> --process <kPythia6/kPhojet/kPythia6ATLAS_Flat/kPythia6D6T> --field <kNoField/k5kG> --energy <900/2360/10000> --physicslist <QGSP_BERT_CHIPS[_OPTICAL]/CHIPS[_OPTICAL]/QGSP_BERT_EMV[_OPTICAL]>
-//
-// By E. Sicking, CERN
-
 // #define VERBOSEARGS
 // simrun.C
-
+//
+// Set job and simulation variables as :
+// root.exe -b -q simrun.C  --run <x> --event <y> --process <kPythia6/kPhojet/kPythia6ATLAS_Flat/kPythia6D6T> --field <kNoField/k5kG> --energy <900/2360/10000> --physicslist <QGSP_BERT_CHIPS/CHIPS/QGSP_BERT_EMV>
+//
+// By E. Sicking, CERN
+{
   int nrun = 0;
   int nevent = 0;
   int seed = 0;
