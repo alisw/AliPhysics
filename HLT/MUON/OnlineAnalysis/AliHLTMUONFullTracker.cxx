@@ -716,7 +716,7 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
 	 || not TMath::Finite(fHalfTrack[ibackTrackSeg].fPz)) continue;
       
 #ifdef PRINT_OUTPUT
-      HLTImportant("\nsize : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
+      HLTImportant("\nhalftrack : size : %d, itrack  : %04d, sign : %2d, Pt : %8.3f, (Px,Py,Pz) : (%8.3f,%8.3f,%8.3f)\n",
 	     size,ibackTrackSeg,Int_t(TMath::Sign(1.,fTrackParam[ibackTrackSeg].GetInverseBendingMomentum())),
 	     TMath::Sqrt(fHalfTrack[ibackTrackSeg].fPx*fHalfTrack[ibackTrackSeg].fPx +
 			 fHalfTrack[ibackTrackSeg].fPy*fHalfTrack[ibackTrackSeg].fPy),
@@ -733,27 +733,47 @@ Bool_t AliHLTMUONFullTracker::FillOutData(AliHLTMUONTrackStruct *track, AliHLTUI
       track->fPz = fHalfTrack[ibackTrackSeg].fPz;
       
       track->fChi2 = 0;
+
+      track->fThetaY = TMath::ATan2(track->fPy, track->fPz);
+      track->fThetaX = TMath::ATan2(track->fPx, track->fPz);
       
-      
+      track->fZ = 0.0;
+      track->fY = 0.0;
+      track->fX = 0.0;
       
       for( Int_t ipoint=15;ipoint>=0;ipoint--){
 	track->fHit[ipoint] = AliHLTMUONConstants::NilRecHitStruct();
 	hitset[ipoint] = false;
+      }
+      
+      for( Int_t ipoint=9;ipoint>=6;ipoint--){
 
-	if(ipoint<=9 and ipoint>=6 and fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]!=-1 ){
+	if(fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]!=-1 ){
 	  
 	  track->fHit[ipoint] = *(fChPoint[ipoint][fBackTrackSeg[ibackTrackSeg].fIndex[ipoint-6]]);
 	  hitset[ipoint] = true;
 #ifdef PRINT_OUTPUT
 	  AliHLTUInt8_t chamber; AliHLTUInt16_t detElemID;
 	  AliHLTMUONUtils::UnpackRecHitFlags((track->fHit[ipoint]).fFlags,chamber,detElemID);
-	  HLTImportant("(X,Y,Z) : (%lf,%lf,%lf)",(track->fHit[ipoint]).fX,(track->fHit[ipoint]).fY,(track->fHit[ipoint]).fZ);
+	  HLTImportant("halftrack : (X,Y,Z) : (%lf,%lf,%lf)",(track->fHit[ipoint]).fX,(track->fHit[ipoint]).fY,(track->fHit[ipoint]).fZ);
 #endif
 	}
       }
       AliHLTMUONParticleSign sign = AliHLTMUONParticleSign(fHalfTrack[ibackTrackSeg].fCharge);
-      track->fFlags = AliHLTMUONUtils::PackMansoTrackFlags(sign,hitset);
-      
+      track->fFlags = AliHLTMUONUtils::PackTrackFlags(sign,hitset);
+      TVector3 mom(track->fPx, track->fPy, track->fPz);
+      double signVal = 0;
+      switch (sign)
+	{
+	case kSignMinus:   signVal = +1.; break;
+	case kSignUnknown: signVal =  0.; break;
+	case kSignPlus:    signVal = -1.; break;
+	}
+      if (mom.Mag() != 0)
+	track->fInverseBendingMomentum = signVal/mom.Mag();
+      else
+	track->fInverseBendingMomentum = 0 ;
+	
       track++;
       fNofTracks++;
       

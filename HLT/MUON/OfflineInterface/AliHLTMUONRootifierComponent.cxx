@@ -24,6 +24,9 @@
 ///
 /// Implements a component to convert dHLT raw data into TObjects.
 
+#include "AliHLTMessage.h"
+#include "TString.h"
+#include "AliESDEvent.h"
 #include "AliHLTMUONRootifierComponent.h"
 #include "AliHLTMUONEvent.h"
 #include "AliHLTMUONConstants.h"
@@ -207,7 +210,20 @@ int AliHLTMUONRootifierComponent::DoEvent(
 			i, DataType2Text(block->fDataType).c_str(), block->fPtr, block->fSize
 		);
 		
-		if (block->fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
+		if (block->fDataType == AliHLTMUONConstants::ESDDataType())
+		{
+			AliHLTMessage *fMessage = new AliHLTMessage( block->fPtr, block->fSize );
+			// -- Check if TMessage payload is TObject
+			if ( fMessage->What() == kMESS_OBJECT )
+			{
+				TString fClassName = fMessage->GetClass()->GetName();
+				AliESDEvent* esd = reinterpret_cast<AliESDEvent*>(fMessage->ReadObject( fMessage->GetClass() ));
+				esd->GetStdContent();
+				event.Add(esd);
+			}
+			fMessage->Reset();
+		}
+		else if (block->fDataType == AliHLTMUONConstants::RecHitsBlockDataType())
 		{
 			specification |= block->fSpecification;
 			AliHLTMUONRecHitsBlockReader inblock(block->fPtr, block->fSize);

@@ -183,6 +183,7 @@ void RunChain(
 	bool useRootWriter = false;
 	bool makeTracksOnly = false;
 	bool buildDecisionComp = false;
+	bool buildESDComp = false;
 	
 	// Parse the chainType, output, dataSource and logLevel option strings:
 	TString outOpt = output;
@@ -216,6 +217,7 @@ void RunChain(
 		buildDDLRecoComps = true;
 		buildTrackerComp = true;
 		buildDecisionComp = true;
+		buildESDComp = true;
 		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
@@ -238,6 +240,7 @@ void RunChain(
 		buildDDLRecoComps = true;
 		buildFullTrackerComp = true;
 		buildDecisionComp = true;
+		buildESDComp = true;
 		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
@@ -259,6 +262,7 @@ void RunChain(
 	{
 		buildDDLRecoComps = true;
 		buildDecisionComp = false;
+		buildESDComp = false;
 		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("file", TString::kIgnoreCase) == 0)
@@ -280,6 +284,7 @@ void RunChain(
 	{
 		buildTrackerComp = true;
 		buildDecisionComp = true;
+		buildESDComp = true;
 		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("sim", TString::kIgnoreCase) == 0)
@@ -621,6 +626,12 @@ void RunChain(
 		if (buildFullTrackerComp) decisionSource = "tracker-full";
 		AliHLTConfiguration decision("decision", "MUONDecisionComponent", decisionSource, "");
 	}
+	if (buildESDComp)
+	{
+	        const char* ESDSource = "tracker recDDL21 recDDL22 ";
+		if (buildFullTrackerComp) ESDSource = "tracker-full recDDL21 recDDL22 ";
+		AliHLTConfiguration ESD("ESD", AliHLTMUONConstants::ESDMakerId(), ESDSource, " -make_minimal_esd");
+	}
 
 	// Build the data sink to subscribe only to what has been created and
 	// to the data source we actaully want.
@@ -640,6 +651,10 @@ void RunChain(
 	{
 		// Add the trigger decision component if it was enabled.
 		sources += " decision";
+	}
+	if (buildESDComp)
+	{
+		sources += " ESD ";
 	}
 	
 	// Build the data checker component if so requested.
