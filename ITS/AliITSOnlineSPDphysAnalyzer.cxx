@@ -563,11 +563,42 @@ void AliITSOnlineSPDphysAnalyzer::Exponent(Double_t &val, Int_t &valExp) const {
     valExp--;
   }
 }
+//____________________________________________________________________________________________________
+TH2F* AliITSOnlineSPDphysAnalyzer::GetPhysicalHitMapTot() {
+  // creates and returns a pointer to a hitmap histo (equipment opened up)
+  // physical representation of the half stave hitmap.
 
-
-
+  if (fPhysObj==NULL) {
+    Error("AliITSOnlineSPDphysAnalyzer::GetPhysicalHitMapTot","No data!");
+    return NULL;
+  }
+  TString histoname = Form("Eq %d",GetEqNr());
+  TH2F* hPhysicalHitMapTot = new TH2F(histoname.Data(),histoname.Data(),32*10,-0.5,32*10-0.5,256*6,-0.5,256*6-0.5);
+  hPhysicalHitMapTot->SetNdivisions(-10,"X");
+  hPhysicalHitMapTot->SetNdivisions(-006,"Y");
+  hPhysicalHitMapTot->SetTickLength(0,"X");
+  hPhysicalHitMapTot->SetTickLength(0,"Y");
+  hPhysicalHitMapTot->GetXaxis()->SetLabelColor(gStyle->GetCanvasColor());
+  hPhysicalHitMapTot->GetYaxis()->SetLabelColor(gStyle->GetCanvasColor());
+  Int_t correctChip=-1;
+  for (UInt_t hs=0; hs<6; hs++) {
+    for (UInt_t chipNr=0; chipNr<10; chipNr++) {
+      if(GetEqNr()<10) correctChip=9-chipNr;
+      else correctChip=chipNr;
+      for (UInt_t col=0; col<32; col++) {
+        for (UInt_t row=0; row<256; row++) {
+          if(hs>1) hPhysicalHitMapTot->Fill(correctChip*32+(31-col),(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
+          else hPhysicalHitMapTot->Fill(correctChip*32+col,(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
+        }
+      }
+    }
+  }
+  return hPhysicalHitMapTot;
+}
+//_____________________________________________________________________________________________________
 TH2F* AliITSOnlineSPDphysAnalyzer::GetHitMapTot() {
   // creates and returns a pointer to a hitmap histo (half sector style a la spdmood)
+  // This histogram  shown the read out numbering pattern, it is not the physical one.
   if (fPhysObj==NULL) {
     Error("AliITSOnlineSPDphysAnalyzer::GetHitMapTot","No data!");
     return NULL;
@@ -584,15 +615,14 @@ TH2F* AliITSOnlineSPDphysAnalyzer::GetHitMapTot() {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       for (UInt_t col=0; col<32; col++) {
 	for (UInt_t row=0; row<256; row++) {
-          if(hs<2) fHitMapTot->Fill(chipNr*32+(31-col),(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
-	  else fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
+	  fHitMapTot->Fill(chipNr*32+col,(5-hs)*256+row,fPhysObj->GetHits(hs,chipNr,col,row));
 	}
       }
     }
   }
   return fHitMapTot;
 }
-
+//________________________________________________________________________________________________________
 TH2F* AliITSOnlineSPDphysAnalyzer::GetHitMapChip(UInt_t hs, UInt_t chip) {
   // creates and returns a pointer to a hitmap histo (chip style a la spdmood)
   if (fPhysObj==NULL) {

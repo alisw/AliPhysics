@@ -20,6 +20,7 @@ class AliITSOnlineSPDscan;
 class AliITSOnlineCalibrationSPDhandler;
 class TGraph;
 class TH2F;
+class TArrayI;
 
 class AliITSOnlineSPDscanAnalyzer {
 
@@ -41,7 +42,7 @@ class AliITSOnlineSPDscanAnalyzer {
   
   Int_t      GetDelay(UInt_t hs, UInt_t chipNr);
   Int_t      GetMinTh(UInt_t hs, UInt_t chipNr);
-  Int_t      GetMeanTh(UInt_t hs, UInt_t chipNr);
+  TArrayI    GetMeanTh(UInt_t hs, UInt_t chipNr);
   
   Int_t      GetNrNoisyUnima(UInt_t hs, UInt_t chipNr);
 
@@ -59,6 +60,7 @@ class AliITSOnlineSPDscanAnalyzer {
   TGraph*    GetMeanMultiplicityG(UInt_t hs, UInt_t chipNr);
   TGraph*    GetHitEventEfficiencyG(UInt_t hs, UInt_t chipNr);
   TH2F*      GetHitMapTot(UInt_t step);
+  TH2F*      GetPhysicalHitMapTot(UInt_t step);
   TH2F*      GetHitMapChip(UInt_t step, UInt_t hs, UInt_t chip);
 
   Float_t    GetTPeff() const {return fTPeff;}
