@@ -9,6 +9,7 @@ check_PROGRAMS	= testAliHLTBlockDataCollection \
 		  testAliHLTComponent \
 		  testAliHLTCTPData \
 		  testAliHLTDataBuffer \
+		  testAliHLTReadoutList \
 		  dtOperators \
 		  testDefaultDataTypes
 
@@ -35,5 +36,12 @@ testAliHLTCTPData_LDADD = $(top_builddir)/BASE/libHLTbase.la \
 
 testAliHLTDataBuffer_SOURCES = testAliHLTDataBuffer.C
 testAliHLTDataBuffer_LDADD = $(top_builddir)/BASE/libHLTbase.la
+
+testAliHLTReadoutList_SOURCES = testAliHLTReadoutList.C
+testAliHLTReadoutList_LDADD = $(top_builddir)/BASE/libHLTbase.la \
+				-L@ROOTLIBDIR@ \
+				@ROOTLIBS@ \
+				@ALIROOT_LDFLAGS@ \
+				@ALIROOT_LIBS@
 
 TESTS		= $(check_PROGRAMS)
