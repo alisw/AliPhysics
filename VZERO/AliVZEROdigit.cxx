@@ -24,8 +24,6 @@ AliVZEROdigit::AliVZEROdigit()
     fADC(0.),
     fTime(0.),
     fWidth(0.),
-    fBBFlag(0),
-    fBGFlag(0),
     fIntegrator(0)
 
 {
@@ -41,8 +39,6 @@ AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Float_t adc, Float_t time)
    fADC(adc),
    fTime(time),
    fWidth(0.),
-   fBBFlag(0),
-   fBGFlag(0),
    fIntegrator(0)
 {  
   // Constructor
@@ -52,7 +48,7 @@ AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Float_t adc, Float_t time)
 
 //__________________________________________________________________________
 AliVZEROdigit::AliVZEROdigit(Int_t   PMnumber, Float_t adc, Float_t time, 
-                             Float_t width, Bool_t BeamBeamFlag, Bool_t BeamGasFlag,
+                             Float_t width,
 			     Bool_t integrator,
 			     Short_t *chargeADC,
 			     Int_t *labels)
@@ -61,8 +57,6 @@ fPMNumber(PMnumber),
 fADC(adc),
 fTime(time),
 fWidth(width),
-fBBFlag(BeamBeamFlag),
-fBGFlag(BeamGasFlag),
 fIntegrator(integrator)
 {  
   // Constructor

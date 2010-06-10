@@ -22,18 +22,18 @@
 
 #include <Riostream.h>
 #include <TObjArray.h>
+#include <TMath.h>
+
 #include "AliLog.h"
 #include "AliRawDataHeaderSim.h"
 #include "AliVZEROBuffer.h"
-
-//#include "TFile.h"
-//#include "TTree.h"
+#include "AliVZEROdigit.h"
 
 ClassImp(AliVZEROBuffer)
 
 //_____________________________________________________________________________
 AliVZEROBuffer::AliVZEROBuffer():TObject(),
-    fVerbose(0),
+    fRemainingWord(0),
     f()
 {
   //
@@ -42,7 +42,7 @@ AliVZEROBuffer::AliVZEROBuffer():TObject(),
 }
 //_____________________________________________________________________________
 AliVZEROBuffer::AliVZEROBuffer(const char* fileName):TObject(),
-    fVerbose(0),
+    fRemainingWord(0),
     f()
 {
   // Constructor
@@ -65,26 +65,6 @@ AliVZEROBuffer::~AliVZEROBuffer(){
   delete f;
   //delete tree;
   //delete fout;
-}
-
-//_____________________________________________________________________________
-AliVZEROBuffer::AliVZEROBuffer(const AliVZEROBuffer &source):TObject(source),
-   fVerbose(0),
-   f()
-
-{
-  // Copy Constructor
-  this->fVerbose=source.fVerbose;
-  return;
-}
-
-//_____________________________________________________________________________
-AliVZEROBuffer& AliVZEROBuffer::operator=(const AliVZEROBuffer &source)
-
-{
-  //Assigment operator
-  this->fVerbose=source.fVerbose;
-  return *this;
 }
 
 //_____________________________________________________________________________
@@ -131,56 +111,80 @@ void AliVZEROBuffer::WriteBunchNumbers() {
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteChannel(Int_t cell, UInt_t ADC, Float_t /*Time*/, Bool_t integrator){
+void AliVZEROBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
   // It writes VZERO charge information into a raw data file. 
   // Being called by Digits2Raw
   
   UInt_t data = 0;
-  
-  if (/*ADC < 0 || */ ADC > 1023) {
-      AliInfo(Form("ADC saturated: %d. Truncating to 1023",ADC));
-      ADC = 1023;
+  for(Int_t i = 0; i < AliVZEROdigit::kNClocks; ++i) {
+    if (adc[i] > 1023) {
+      AliWarning(Form("ADC (channel=%d) saturated: %d. Truncating to 1023",channel,adc[i]));
+      adc[i] = 1023;
+    }
   }
+  
+  if(channel%2 == 0) {
+    for(Int_t i = 0; i < (AliVZEROdigit::kNClocks/2); ++i) {
+      data =   (adc[2*i] & 0x3ff);
+      data |= ((integrator & 0x1) << 10);
 
-  if(cell%2 == 0)  
-  // Information about previous 10 interaction 
-  // Not available in the simulation...
-  // Even cell number -- skip  5 words
-    { for(Int_t i = 0; i < 5; i++)
-         { data = 0; 
-           f->WriteBuffer((char*)&data,sizeof(data)); }      
-      data = ADC & 0x3ff;
-      data |= (integrator & 0x1) << 10; 
-      f->WriteBuffer((char*)&data,sizeof(data)); }
-  else
-  // Information about previous 10 interaction 
-  // Odd cell number -- skip 4 words and shift ADC by 16 bits 
-    { for(Int_t i = 0; i < 4; i++)
-         { data = 0;
-           f->WriteBuffer((char*)&data,sizeof(data)); }       	   
-      data = (ADC & 0x3ff) << 16;
-      data |= (integrator & 0x1) << 26;
-      f->WriteBuffer((char*)&data,sizeof(data)); }
+      data |= ((adc[2*i+1] & 0x3ff) << 16);
+      data |= ((!integrator & 0x1) << 26);
+
+      f->WriteBuffer((char*)&data,sizeof(data));
+    }
+    fRemainingWord = (adc[AliVZEROdigit::kNClocks-1] & 0x3ff);
+    fRemainingWord |= ((integrator & 0x1) << 10);
+  }
+  else {
+    data = fRemainingWord;
+    data |= ((adc[0] & 0x3ff) << 16);
+    data |= ((integrator & 0x1) << 26);
+    f->WriteBuffer((char*)&data,sizeof(data));
+
+    for(Int_t i = 1; i <= (AliVZEROdigit::kNClocks/2); ++i) {
+      data =   (adc[2*i-1] & 0x3ff);
+      data |= ((!integrator & 0x1) << 10);
+
+      data |= ((adc[2*i] & 0x3ff) << 16);
+      data |= ((integrator & 0x1) << 26);
+
+      f->WriteBuffer((char*)&data,sizeof(data));
+    }
+  }
     
-  data = 0;
-  // Information about following 10 interaction
-  // Not available in the simulation...
-  for(Int_t i = 0; i < 5; i++)
-      f->WriteBuffer((char*)&data,sizeof(data));     
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteBeamFlags() {
+void AliVZEROBuffer::WriteBeamFlags(Bool_t *bbFlag, Bool_t *bgFlag) {
   // The method writes information about
   // the Beam-Beam and Beam-Gas flags i.e. 
   // 6  words for the 4 channels 
   // of half a CIU card
 
-
-  for(Int_t i = 0; i < 6; i++) {
+  // Beam-beam and beam-gas flags are available
+  // only for the triggered event-of-interest (sample index = 10)
+  // As soon as trigger simulation would become more complex
+  // and would allow to simulate neighbouring samples, this code
+  // should be extended in order to fill all (or fraction) of the
+  // flags
+  for(Int_t i = 0; i < 2; i++) {
     UInt_t data = 0;
     f->WriteBuffer((char*)&data,sizeof(data));
   }
+  {
+    UInt_t data = 0;
+    for(Int_t iChannel = 0; iChannel < 4; ++iChannel) {
+      if (bbFlag[iChannel]) data |= (1 << (2*iChannel + 16));
+      if (bgFlag[iChannel]) data |= (1 << (2*iChannel + 17));
+    }
+    f->WriteBuffer((char*)&data,sizeof(data));
+  }  
+  for(Int_t i = 0; i < 3; i++) {
+    UInt_t data = 0;
+    f->WriteBuffer((char*)&data,sizeof(data));
+  }
+
 }
 
 
@@ -229,26 +233,12 @@ void AliVZEROBuffer::WriteBeamScalers() {
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteTiming(Int_t /*cell*/, UInt_t /* ADC*/, Float_t Time){
+void AliVZEROBuffer::WriteTiming(Float_t time, Float_t width) {
   // It writes the timing information into a raw data file. 
   // Being called by Digits2Raw
 
-  UInt_t data = 0;
-  Int_t  coarse1, coarse2, fine;
-
   // Writes the timing information
-//  data = Time & 0xfff;
-  
-  coarse1 = int( Time/25.0 );
-  coarse2 = int( (Time - 25*coarse1)/(25.0/8.0) );
-  fine    = int( (Time - 25*coarse1 -(25.0/8.0)*coarse2)/(25.0/256.0) );
-  
-  data  = (coarse1 & 0xf) << 8;
-  data |= (coarse2 & 0x7) << 5;  
-  data |= (fine & 0x1f);   
-  
-  // The signal width is not available the digits!
-  // To be added soon
-  // data |= (width & 0x7f) << 12;
+  UInt_t data = TMath::Nint(time/(25.0/256.0)) & 0xfff;
+  data |= (TMath::Nint(width/(25./64.)) & 0x7f) << 12;
   f->WriteBuffer((char*)&data,sizeof(data));
 }

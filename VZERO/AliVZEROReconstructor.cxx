@@ -23,6 +23,7 @@
 
 #include <TH1F.h>
 #include <TF1.h>
+#include <TParameter.h>
 
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
@@ -138,6 +139,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
      Float_t adc[64]; 
      Float_t time[64], width[64];  
      Bool_t BBFlag[64], BGFlag[64], integrator[64];
+     Short_t chargeADC[64][21];
      for(Int_t i=0; i<64; i++) {
        Int_t j   =  rawStream.GetOfflineChannel(i);
        adc[j]    = 0.0;
@@ -152,6 +154,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
        Int_t imax = -1;
        Float_t adcPedSub[21];
        for(Int_t iClock=0; iClock<21; iClock++){
+	 chargeADC[j][iClock] = (Short_t)rawStream.GetPedestal(i,iClock);
 	 Bool_t iIntegrator = rawStream.GetIntegratorFlag(i,iClock);
 	 Int_t k = j+64*iIntegrator;
 	 adcPedSub[iClock] = rawStream.GetPedestal(i,iClock) - fCalibData->GetPedestal(k);
@@ -223,8 +226,20 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
          fESDVZEROfriend->SetBunchNumbersMB(iBunch,rawStream.GetBunchNumbersMB(iBunch));
      
 
+     Int_t aBBflagsV0A = 0;
+     Int_t aBBflagsV0C = 0;
+     Int_t aBGflagsV0A = 0;
+     Int_t aBGflagsV0C = 0;
+
      // Channels(aliroot numbering) will be ordered in the tree
      for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
+       if(iChannel<32) {
+	 if (BBFlag[iChannel]) aBBflagsV0C |= (1 << iChannel);
+	 if (BGFlag[iChannel]) aBGflagsV0C |= (1 << iChannel);
+       } else {
+	 if (BBFlag[iChannel]) aBBflagsV0A |= (1 << (iChannel-32));
+	 if (BGFlag[iChannel]) aBGflagsV0A |= (1 << (iChannel-32));
+       }
          if(fCalibData->IsChannelDead(iChannel)){
 	    adc[iChannel]  = (Float_t) kInvalidADC; 
 	    time[iChannel] = (Float_t) kInvalidTime;	 
@@ -232,9 +247,17 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 	 if (adc[iChannel] > 0)
 	   new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()])
              AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
-	                   width[iChannel], BBFlag[iChannel], BGFlag[iChannel],integrator[iChannel]);
+	                   width[iChannel],integrator[iChannel],
+			   chargeADC[iChannel]);
         
      }          
+
+     // Store the BB and BG flags in the digits tree (user info)
+     digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0A",aBBflagsV0A));
+     digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0C",aBBflagsV0C));
+     digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0A",aBGflagsV0A));
+     digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0C",aBGflagsV0C));
+
      digitsTree->Fill();
   }
 
@@ -259,19 +282,48 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   Float_t    adc[64]; 
   Float_t   time[64]; 
   Float_t  width[64];
-  Bool_t  BBFlag[64];
-  Bool_t  BGFlag[64];
+  Bool_t aBBflag[64];
+  Bool_t aBGflag[64];
    
   for (Int_t i=0; i<64; i++){
        adc[i]    = 0.0;
        mult[i]   = 0.0;
        time[i]   = kInvalidTime;
        width[i]  = 0.0;
-       BBFlag[i] = kFALSE;
-       BGFlag[i] = kFALSE;
+       aBBflag[i] = kFALSE;
+       aBGflag[i] = kFALSE;
   }
      
-  // loop over VZERO entries to get multiplicity
+  Int_t aBBflagsV0A = 0;
+  Int_t aBBflagsV0C = 0;
+  Int_t aBGflagsV0A = 0;
+  Int_t aBGflagsV0C = 0;
+
+  if (digitsTree->GetUserInfo()->FindObject("BBflagsV0A")) {
+    aBBflagsV0A = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BBflagsV0A"))->GetVal();
+  }
+  else
+    AliWarning("V0A beam-beam flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+  if (digitsTree->GetUserInfo()->FindObject("BBflagsV0C")) {
+    aBBflagsV0C = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BBflagsV0C"))->GetVal();
+  }
+  else
+    AliWarning("V0C beam-beam flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+  if (digitsTree->GetUserInfo()->FindObject("BGflagsV0A")) {
+    aBGflagsV0A = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BGflagsV0A"))->GetVal();
+  }
+  else
+    AliWarning("V0A beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+  if (digitsTree->GetUserInfo()->FindObject("BGflagsV0C")) {
+    aBGflagsV0C = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BGflagsV0C"))->GetVal();
+  }
+  else
+    AliWarning("V0C beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+  
+
   Int_t nEntries = (Int_t)digitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
     digitsTree->GetEvent(e);
@@ -288,10 +340,22 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
         adc[pmNumber]   =  digit->ADC() - pedestal; 
         time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
 	width[pmNumber] =  digit->Width();
-	BBFlag[pmNumber]=  digit->BBFlag();
-	BGFlag[pmNumber]=  digit->BGFlag();
+	if(pmNumber < 32) {
+	  aBBflag[pmNumber] = (aBBflagsV0C >> pmNumber) & 0x1;
+	  aBGflag[pmNumber] = (aBGflagsV0C >> pmNumber) & 0x1;
+	}
+	else {
+	  aBBflag[pmNumber] = (aBBflagsV0A >> (pmNumber-32)) & 0x1;
+	  aBGflag[pmNumber] = (aBGflagsV0A >> (pmNumber-32)) & 0x1;
+	}
 
-	AliDebug(2,Form("PM = %d ADC = %f TDC %f",pmNumber, digit->ADC(),digit->Time()));
+	if (adc[pmNumber] > 0) AliDebug(1,Form("PM = %d ADC = %f TDC %f    Int %d (%d %d %d %d %d)    %f %f   %f %f    %d %d",pmNumber, adc[pmNumber],digit->Time(),
+					       integrator,
+					       digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
+					       digit->ChargeADC(11),digit->ChargeADC(12),
+					       fCalibData->GetPedestal(pmNumber),fCalibData->GetSigma(pmNumber),
+					       fCalibData->GetPedestal(pmNumber+64),fCalibData->GetSigma(pmNumber+64),
+					       aBBflag[pmNumber],aBGflag[pmNumber]));
 
 	if(adc[pmNumber] > (fCalibData->GetPedestal(k) + GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k))) {
 	    mult[pmNumber] += adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
@@ -304,8 +368,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   fESDVZERO->SetADC(adc);
   fESDVZERO->SetTime(time);
   fESDVZERO->SetWidth(width);
-  fESDVZERO->SetBBFlag(BBFlag);
-  fESDVZERO->SetBGFlag(BGFlag);
+  fESDVZERO->SetBBFlag(aBBflag);
+  fESDVZERO->SetBGFlag(aBGflag);
 
   // now fill the V0 decision and channel flags
   {

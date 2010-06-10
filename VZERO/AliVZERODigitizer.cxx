@@ -348,7 +348,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
     Float_t thr = fCalibData->GetDiscriThr(ipmt)*kChargePerADC*maximum*fBinSize[ipmt]/integral2;
     Bool_t ltFound = kFALSE, ttFound = kFALSE;
     for (Int_t iBin = 0; iBin < fNBins[ipmt]; ++iBin) {
-      Float_t t = fBinSize[ipmt]*Float_t(iBin+0.5);
+      Float_t t = fBinSize[ipmt]*Float_t(iBin);
       if (fTime[ipmt][iBin] > thr) {
 	if (!ltFound && (iBin < fNBinsLT[ipmt])) {
 	  ltFound = kTRUE;
@@ -421,7 +421,7 @@ void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Floa
  
   TClonesArray &ldigits = *fDigits;  
 	 
-  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,width,kFALSE,kFALSE,integrator,chargeADC,labels);
+  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,width,integrator,chargeADC,labels);
 	 
 }
 //____________________________________________________________________________

@@ -42,6 +42,7 @@
 #include "TBranch.h"
 #include "TClonesArray.h"
 #include "TStopwatch.h"
+#include "TParameter.h"
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -55,6 +56,7 @@
 #include "AliDAQ.h"
 #include "AliRawReader.h"
 #include "AliVZERORawStream.h"
+#include "AliVZEROCalibData.h"
 
 ClassImp(AliVZERO)
  //__________________________________________________________________
@@ -263,19 +265,6 @@ void AliVZERO::Digits2Raw()
    const char *fileName    = AliDAQ::DdlFileName("VZERO",0);
    AliVZEROBuffer* buffer  = new AliVZEROBuffer(fileName);
   
-   //  Verbose level
-   //  0: Silent
-   //  1: cout messages
-   //  2: txt files with digits 
-   //  BE CAREFUL, verbose level 2 MUST be used only for debugging and
-   //  it is highly suggested to use this mode only for debugging digits files
-   //  reasonably small, because otherwise the size of the txt files can reach
-   //  quickly several MB wasting time and disk space.
-  
-   ofstream ftxt;
-   buffer->SetVerbose(0);
-   Int_t verbose = buffer->GetVerbose();
-
    // Get Trigger information first
    // Read trigger inputs from trigger-detector object
    AliDataLoader * dataLoader = fLoader->GetDigitsDataLoader();
@@ -294,16 +283,44 @@ void AliVZERO::Digits2Raw()
    buffer->WriteTriggerScalers(); 
    buffer->WriteBunchNumbers(); 
   
-   // Now retrieve the channel information: charge+time and 
-   // dump it into ADC and Time arrays
-   // We assume here an ordered (by PMNumber) array of
-   // digits!!
+   Int_t aBBflagsV0A = 0;
+   Int_t aBBflagsV0C = 0;
+   Int_t aBGflagsV0A = 0;
+   Int_t aBGflagsV0C = 0;
 
+   if (digits->GetUserInfo()->FindObject("BBflagsV0A")) {
+     aBBflagsV0A = ((TParameter<int>*)digits->GetUserInfo()->FindObject("BBflagsV0A"))->GetVal();
+   }
+   else
+     AliWarning("V0A beam-beam flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+   if (digits->GetUserInfo()->FindObject("BBflagsV0C")) {
+     aBBflagsV0C = ((TParameter<int>*)digits->GetUserInfo()->FindObject("BBflagsV0C"))->GetVal();
+   }
+   else
+     AliWarning("V0C beam-beam flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+   if (digits->GetUserInfo()->FindObject("BGflagsV0A")) {
+     aBGflagsV0A = ((TParameter<int>*)digits->GetUserInfo()->FindObject("BGflagsV0A"))->GetVal();
+   }
+   else
+     AliWarning("V0A beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+   if (digits->GetUserInfo()->FindObject("BGflagsV0C")) {
+     aBGflagsV0C = ((TParameter<int>*)digits->GetUserInfo()->FindObject("BGflagsV0C"))->GetVal();
+   }
+   else
+     AliWarning("V0C beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+
+   // Now retrieve the channel information: charge smaples + time and 
+   // dump it into ADC and Time arrays
    Int_t nEntries = Int_t(digits->GetEntries());
-   Float_t ADC[64];
-   Int_t PMNumber[64];
-   Float_t Time[64];
-   Bool_t Integrator[64];
+   Short_t aADC[64][AliVZEROdigit::kNClocks];
+   Float_t aTime[64];
+   Float_t aWidth[64];
+   Bool_t  aIntegrator[64];
+   Bool_t  aBBflag[64];
+   Bool_t  aBGflag[64];
   
    for (Int_t i = 0; i < nEntries; i++) {
      fVZERO->ResetDigits();
@@ -311,24 +328,26 @@ void AliVZERO::Digits2Raw()
      Int_t ndig = VZEROdigits->GetEntriesFast(); 
    
      if(ndig == 0) continue;
-     if(verbose == 2) {ftxt.open("VZEROdigits.txt",ios::app);}
      for(Int_t k=0; k<ndig; k++){
          AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);
          // Convert aliroot channel k into FEE channel iChannel before writing data
-	 Int_t iChannel      = buffer->GetOnlineChannel(k);		
-	 ADC[iChannel]       = fVZERODigit->ADC();
-	 PMNumber[iChannel]  = fVZERODigit->PMNumber();
-	 Time[iChannel]      = fVZERODigit->Time();
-	 Integrator[iChannel]= fVZERODigit->Integrator(); 
-         if(verbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
-	                    <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;} 
-	 if(verbose == 2) {
-	      ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tPM number: "
-	                   <<PMNumber[k]<<"\tADC: "<< ADC[k] << "\tTime: "<< Time[k] << endl;}	      
-//	 printf("DDL: %s, channel: %d, PM: %d, ADC: %f, Time: %f \n", 
-//	            fileName,k,PMNumber[k],ADC[k],Time[k]); 
+	 Int_t iChannel       = AliVZEROCalibData::GetBoardNumber(fVZERODigit->PMNumber()) * 8 +
+	   AliVZEROCalibData::GetFEEChannelNumber(fVZERODigit->PMNumber());
+	 for(Int_t iClock = 0; iClock < AliVZEROdigit::kNClocks; ++iClock) aADC[iChannel][iClock] = fVZERODigit->ChargeADC(iClock);
+	 aTime[iChannel]      = fVZERODigit->Time();
+	 aWidth[iChannel]     = fVZERODigit->Width();
+	 aIntegrator[iChannel]= fVZERODigit->Integrator();
+	 if(fVZERODigit->PMNumber() < 32) {
+	   aBBflag[iChannel] = (aBBflagsV0C >> fVZERODigit->PMNumber()) & 0x1;
+	   aBGflag[iChannel] = (aBGflagsV0C >> fVZERODigit->PMNumber()) & 0x1;
+	 }
+	 else {
+	   aBBflag[iChannel] = (aBBflagsV0A >> (fVZERODigit->PMNumber()-32)) & 0x1;
+	   aBGflag[iChannel] = (aBGflagsV0A >> (fVZERODigit->PMNumber()-32)) & 0x1;
+	 }
+         AliDebug(1,Form("DDL: %s\tdigit number: %d\tPM number: %d\tADC: %f\tTime: %f",
+			 fileName,k,fVZERODigit->PMNumber(),aADC[k],aTime[k])); 
      }        
-   if(verbose==2) ftxt.close();
    }
 
    // Now fill raw data
@@ -339,16 +358,16 @@ void AliVZERO::Digits2Raw()
   
       for(Int_t iChannel_Offset = iCIU*8; iChannel_Offset < (iCIU*8)+8; iChannel_Offset=iChannel_Offset+4) { 
          for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
-             buffer->WriteChannel(iChannel, (Int_t) ADC[iChannel], Time[iChannel], Integrator[iChannel]);       
+             buffer->WriteChannel(iChannel, aADC[iChannel], aIntegrator[iChannel]);       
          }
-         buffer->WriteBeamFlags(); 
+         buffer->WriteBeamFlags(&aBBflag[iChannel_Offset],&aBGflag[iChannel_Offset]); 
          buffer->WriteMBInfo(); 
          buffer->WriteMBFlags();   
          buffer->WriteBeamScalers(); 
       } 
-//      for(Int_t iChannel=0; iChannel < 8; iChannel++) {
-      for(Int_t iChannel=7; iChannel >= 0; iChannel--) {
-          buffer->WriteTiming(iChannel, (Int_t) ADC[iChannel], Time[iChannel]); 
+
+      for(Int_t iChannel = iCIU*8 + 7; iChannel >= iCIU*8; iChannel--) {
+          buffer->WriteTiming(aTime[iChannel], aWidth[iChannel]); 
       }
 
     // End of decoding of one CIU card

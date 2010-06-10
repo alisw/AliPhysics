@@ -180,16 +180,14 @@ Bool_t AliVZERORawStream::Next()
 
     } 
 
-//    for(Int_t iChannel = iCIU*8; iChannel < (iCIU*8) + 8; iChannel++) { 
-//    In fact times are stored the other way around in raw data...
-      for(Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) { 
-        UInt_t time = GetNextWord();
-      	Float_t coarse1  = 25. * ((time >> 8) & 0xf );
-	Float_t coarse2  = 25. / 8. * ((time >> 5) & 0x7 );
-	Float_t fine     = 25. / 256. * (time & 0x1f);
-	// fTime[iChannel] = time & 0xfff;
-	fTime[iChannel]  = coarse1 + coarse2 + fine;
-	fWidth[iChannel] = 0.4 * ( (time >> 12) & 0x7f);   // HPTDC used in pairing mode
+    for(Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) { 
+      UInt_t time = GetNextWord();
+      Float_t coarse1  = 25. * ((time >> 8) & 0xf );
+      Float_t coarse2  = 25. / 8. * ((time >> 5) & 0x7 );
+      Float_t fine     = 25. / 256. * (time & 0x1f);
+
+      fTime[iChannel]  = coarse1 + coarse2 + fine;
+      fWidth[iChannel] = 0.4 * ( (time >> 12) & 0x7f);   // HPTDC used in pairing mode
     }
     
     // End of decoding of one CIU card
