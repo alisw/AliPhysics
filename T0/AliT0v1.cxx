@@ -640,8 +640,10 @@ void AliT0v1::DefineOpticalProperties()
    */     
    //  Float_t aAbsSiO2[kNbins]; //quartz 30mm
  for(i=0;i<kNbins;i++)
+
     {
-      aPckov[i]=aPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV   
+      aPckov[i]=aPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV
+      dPckov[i]=dPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV 
       rindexAir[i]=0.0001;
       rindexSiO2[i]=1.458; //refractive index for qwarts
       rindexCathodeNext[i]=0;
@@ -654,8 +656,7 @@ void AliT0v1::DefineOpticalProperties()
 
     }
   
-  
-   gMC->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, rindexSiO2 );
+  gMC->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, rindexSiO2 );
    // gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2, effCathode, rindexSiO2 );
    gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
   gMC->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
