@@ -162,11 +162,17 @@ Int_t AliHLTCaloHistoComponent::DoInit(int argc, const char** argv ) {
     } 
     
       else if(!strcmp("-cutoncentrality", argv[i])) {
-	 fCentralityCut = kTRUE;
+	 fCutOnCentrality = kTRUE;
 	 HLTImportant("Cutting on centrality");
-	  
       }
-   
+      else if(!strcmp("-centralityenergycut", argv[i])) {
+	 fCentralityCutEnergy = atof(argv[i+1]);
+	 HLTImportant("Cutting on centrality for clusters with energy > %f", fCentralityCutEnergy);
+      }
+      else if(!strcmp("-centralitycut", argv[i])) {
+	 fCentralityCut = atof(argv[i+1]);
+	 HLTImportant("Cutting on centrality > %f");
+      }
      
     else {
       HLTError("Unknown argument \"%s\"", argv[i]);
