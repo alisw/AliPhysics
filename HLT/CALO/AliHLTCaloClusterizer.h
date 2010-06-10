@@ -122,10 +122,23 @@ public:
   */
   AliHLTCaloRecPointDataStruct** GetRecPoints() const { return fRecPointArray; }
 
-  Int_t CheckDigits(AliHLTCaloRecPointDataStruct **recArray = 0, AliHLTCaloDigitDataStruct **digArray = 0, Int_t nRP = 0);
-
-  Int_t CheckDigits(AliHLTCaloRecPointDataStruct **recArray, AliHLTCaloDigitDataStruct *digArray, Int_t nRP = 0);
-
+  /** 
+  * Sort the digits by energy
+  */
+  void SetSortDigitsByEnergy();
+  
+  /** 
+  * Sort the digits by position
+  */
+  void SetSortDigitsByPosition();
+  
+  /** 
+  * Set the sorting function (as required by stdlib's qsort) if you don't want to use the provided ones 
+  */
+  void SetSortingFunction(Int_t (*compare)(const void*, const void*)) { fCompareFunction = compare; }
+  
+  
+  
 protected:
 
    /** 
@@ -137,7 +150,28 @@ protected:
    * Check the rec point array size and resize the array if necessary
    */
   virtual Int_t CheckArray(); //COMMENT
+  
+  /** 
+  * Sort the digits
+  */
+  void SortDigits();
 
+  /** 
+  * Compare digits by position
+  */
+  static Int_t CompareDigitsByPosition(const void *dig0, const void *dig);
+  
+  /** 
+  * Compare digits by energy
+  */
+  static Int_t CompareDigitsByEnergy(const void *dig0, const void *dig);
+  
+  /** 
+  * Pointer to the compare function for the sorting of digits
+  */
+  //Int_t (AliHLTCaloClusterizer::*fCompareFunction)(const void*, const void*);
+  Int_t (*fCompareFunction)(const void*, const void*);
+  
   /** Array of pointers to the rec point output */
   AliHLTCaloRecPointDataStruct **fRecPointArray; //COMMENT
 
@@ -185,6 +219,15 @@ protected:
 
   /** Number of digits in event */
   Int_t fNDigits;                                              //COMMENT
+  
+  /** Are we sorting digits by position? */
+  Bool_t fSortedByPosition; //COMMENT
+
+  /** Are we sorting digits by energy? */
+  Bool_t fSortedByEnergy; //COMMENT
+
+   /** Are we sorting at all? */
+   Bool_t fSortDigits; //COMMENT
 
 private:
 

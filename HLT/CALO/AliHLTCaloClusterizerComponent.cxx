@@ -125,7 +125,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       mysize += sizeof(AliHLTCaloClusterHeaderStruct);
       
       // Sort the digit pointers
-      qsort(fDigitsPointerArray, digCount, sizeof(AliHLTCaloDigitDataStruct*), CompareDigits);
+//      qsort(fDigitsPointerArray, digCount, sizeof(AliHLTCaloDigitDataStruct*), CompareDigits);
 
       // Copy the digits to the output
       fOutputDigitsArray = reinterpret_cast<AliHLTCaloDigitDataStruct*>(outBPtr);
@@ -222,6 +222,11 @@ AliHLTCaloClusterizerComponent::ScanConfigurationArgument(int argc, const char *
       fAnalyserPtr->SetCutOnSingleCellClusters(true, argument.Atof());
       return 1;
     }
+  if (argument.CompareTo("-sortbyposition") == 0)
+    {
+      fClusterizerPtr->SetSortDigitsByPosition();
+       return 1;
+    }
     
   return 0;
 }
@@ -236,6 +241,8 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
   fClusterizerPtr = new AliHLTCaloClusterizer(fCaloConstants->GetDETNAME());
 
   fClusterizerPtr->SetDigitArray(fDigitsPointerArray);
+  
+  fClusterizerPtr->SetSortDigitsByEnergy();
    
   fAnalyserPtr = new AliHLTCaloClusterAnalyser();
   
