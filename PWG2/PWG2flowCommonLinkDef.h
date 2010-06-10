@@ -6,7 +6,6 @@
 
 #pragma link C++ namespace AliFlowCommonConstants;
 #pragma link C++ namespace AliFlowLYZConstants;
-#pragma link C++ namespace AliFlowCumuConstants;
 
 #pragma link C++ class AliFlowVector+;
 #pragma link C++ class AliFlowTrackSimple+;
@@ -21,7 +20,6 @@
 #pragma link C++ class AliFlowLYZHist1+;
 #pragma link C++ class AliFlowLYZHist2+;
 
-#pragma link C++ class AliCumulantsFunctions+;
 #pragma link C++ class AliFlowLYZEventPlane+;
 
 #pragma link C++ class AliFlowAnalysisWithMCEventPlane+;
