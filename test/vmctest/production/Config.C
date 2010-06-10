@@ -1,12 +1,8 @@
+// $Id$
 //
-// Configuration for the first physics production 2008
+// Configuration for the Geant4 production 2010
+// By E. Sicking, CERN
 //
-
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
-// root [0] .x grun.C(1,"Config.C++")
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -388,9 +384,11 @@ void Config()
   // Load Geant4 + Geant4 VMC libraries
   //
   if (gClassTable->GetID("TGeant4") == -1) {
+    TString g4libsMacro = "$G4INSTALL/macro/g4libs.C";
+    //TString g4libsMacro = "$ALICE/geant4_vmc/examples/macro/g4libs.C";
     // Load Geant4 libraries 
-    if (!gInterpreter->IsLoaded("$G4INSTALL/macro/g4libs.C")) {
-      gROOT->LoadMacro("$G4INSTALL/macro/g4libs.C");
+    if (!gInterpreter->IsLoaded(g4libsMacro.Data())) {
+      gROOT->LoadMacro(g4libsMacro.Data());
       gInterpreter->ProcessLine("g4libs()");
     }
   }    
