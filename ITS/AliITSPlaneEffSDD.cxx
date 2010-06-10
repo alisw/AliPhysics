@@ -790,19 +790,19 @@ void AliITSPlaneEffSDD::InitHistos() {
   for (Int_t nhist=0;nhist<kNHisto;nhist++){
     aux=histnameResX;
     aux+=nhist;
-    fHisResX[nhist]=new TH1F("histname","histname",1500,-0.30,0.30); // +- 3000 micron; 1 bin=4 micron
+    fHisResX[nhist]=new TH1F("histname","histname",2000,-0.40,0.40); // +- 4000 micron; 1 bin=4 micron
     fHisResX[nhist]->SetName(aux.Data());
     fHisResX[nhist]->SetTitle(aux.Data());
 
     aux=histnameResZ;
     aux+=nhist;
-    fHisResZ[nhist]=new TH1F("histname","histname",500,-0.15,0.15); // +-1500 micron; 1 bin=6 micron
+    fHisResZ[nhist]=new TH1F("histname","histname",1000,-0.30,0.30); // +-3000 micron; 1 bin=6 micron
     fHisResZ[nhist]->SetName(aux.Data());
     fHisResZ[nhist]->SetTitle(aux.Data());
 
     aux=histnameResXZ;
     aux+=nhist;
-    fHisResXZ[nhist]=new TH2F("histname","histname",50,-0.2,0.2,30,-0.12,0.12); // binning:
+    fHisResXZ[nhist]=new TH2F("histname","histname",100,-0.4,0.4,60,-0.24,0.24); // binning:
                                                                                    // 80 micron in x; 
                                                                                    // 80 micron in z; 
     fHisResXZ[nhist]->SetName(aux.Data());
@@ -835,7 +835,7 @@ void AliITSPlaneEffSDD::InitHistos() {
       aux+=nhist;
       aux+="_clu_";
       aux+=clu+1; // clu=0 --> cluster size 1
-      fHisResZclu[nhist][clu]=new TH1F("histname","histname",500,-0.15,0.15); // +-1500 micron; 1 bin=6 micron
+      fHisResZclu[nhist][clu]=new TH1F("histname","histname",1000,-0.30,0.30); // +-3000 micron; 1 bin=6 micron
       fHisResZclu[nhist][clu]->SetName(aux.Data());
       fHisResZclu[nhist][clu]->SetTitle(aux.Data());
     }
@@ -866,7 +866,7 @@ void AliITSPlaneEffSDD::InitHistos() {
 
     aux=histnameTrackErrX;
     aux+=nhist;
-    fHisTrackErrX[nhist]=new TH1F("histname","histname",200,0.,0.16); // 0-1600 micron; 1 bin=8 micron
+    fHisTrackErrX[nhist]=new TH1F("histname","histname",500,0.,0.50); // 0-5000 micron; 1 bin=10 micron
     fHisTrackErrX[nhist]->SetName(aux.Data());
     fHisTrackErrX[nhist]->SetTitle(aux.Data());
 
@@ -878,13 +878,13 @@ void AliITSPlaneEffSDD::InitHistos() {
 
     aux=histnameClusErrX;
     aux+=nhist;
-    fHisClusErrX[nhist]=new TH1F("histname","histname",200,0.,0.04); //  0-400 micron; 1 bin=2 micron
+    fHisClusErrX[nhist]=new TH1F("histname","histname",400,0.,0.24); //  0-2400 micron; 1 bin=6 micron
     fHisClusErrX[nhist]->SetName(aux.Data());
     fHisClusErrX[nhist]->SetTitle(aux.Data());
 
     aux=histnameClusErrZ;
     aux+=nhist;
-    fHisClusErrZ[nhist]=new TH1F("histname","histname",200,0.,0.16); //  0-1600 micron; 1 bin=8 micron
+    fHisClusErrZ[nhist]=new TH1F("histname","histname",400,0.,0.32); //  0-3200 micron; 1 bin=8 micron
     fHisClusErrZ[nhist]->SetName(aux.Data());
     fHisClusErrZ[nhist]->SetTitle(aux.Data());
 
@@ -1312,4 +1312,3 @@ Bool_t AliITSPlaneEffSDD::ReadHistosFromFile(TString filename) {
   }
 return kTRUE;
 }
-

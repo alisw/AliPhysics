@@ -128,10 +128,13 @@ fMinContVtxPlaneEff(3),
 fIPlanePlaneEff(0),
 fReadPlaneEffFromOCDB(kFALSE),
 fMinPtPlaneEff(0),
-fMaxMissingClustersPlaneEff(0),
+fMaxMissingClustersPlaneEff(5),
+fMaxMissingClustersOutPlaneEff(5),
 fRequireClusterInOuterLayerPlaneEff(kFALSE),
 fRequireClusterInInnerLayerPlaneEff(kFALSE),
 fOnlyConstraintPlaneEff(kFALSE),
+fNSigXFromBoundaryPlaneEff(1.),
+fNSigZFromBoundaryPlaneEff(1.),
 fExtendedEtaAcceptance(kFALSE),
 fUseBadZonesFromOCDB(kTRUE),
 fUseSingleBadChannelsFromOCDB(kFALSE),
@@ -660,31 +663,71 @@ AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
   }
   if(i>=0) {  // Method using tracks (remove given plane from tracking)
     AliITSRecoParam *param;
-    param = GetHighFluxParam();
+    param = GetLowFluxParam();
+    param->SetClusterErrorsParam(2);
+    // find independently ITS SA tracks 
+    param->SetSAUseAllClusters();
+    param->SetOuterStartLayerSA(2);
+    param->SetAllowProlongationWithEmptyRoad(kTRUE);
+    // larger seach windows for SA (in case of large misalignments)
+    param->SetFactorSAWindowSizes(2);
+
+    // Misalignment syst errors decided at ITS meeting 25.03.2010
+    // additional error due to misal (B off)
+    param->SetClusterMisalErrorY(0.0010,0.0010,0.0300,0.0300,0.0020,0.0020); // [cm]
+    param->SetClusterMisalErrorZ(0.0100,0.0100,0.0100,0.0100,0.0500,0.0500); // [cm]
+    // additional error due to misal (B on)
+    param->SetClusterMisalErrorYBOn(0.0010,0.0030,0.0500,0.0500,0.0020,0.0020); // [cm]
+    param->SetClusterMisalErrorZBOn(0.0100,0.0100,0.0100,0.0100,0.0500,0.0500); // [cm]
+    //----
+
+    // SDD configuration 
+    param->SetUseSDDCorrectionMaps(kTRUE); // changed 30.04.2010
+    param->SetUseSDDClusterSizeSelection(kTRUE);
+    param->SetMinClusterChargeSDD(30.);
+    param->SetUseUnfoldingInClusterFinderSDD(kFALSE);
+    //
     param->SetComputePlaneEff();
     param->SetLayerToSkip(i);
     param->SetIPlanePlaneEff(i);
+    param->fNSigXFromBoundaryPlaneEff= 1.;
+    param->fNSigZFromBoundaryPlaneEff= 1.;
     // optimized setting for SPD0 (i==0)
-    if (i==0 || i==1) {
+    if (i==0) {
       param->fMinPtPlaneEff = 0.200; // high pt particles
-      param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
+      param->fMaxMissingClustersPlaneEff = 2; // at most 2 layers out of 5 without cluster
+      param->fMaxMissingClustersOutPlaneEff = 2; // at most 2 layers out of 5 external ones without cluster
       param->fRequireClusterInOuterLayerPlaneEff = kTRUE; // cluster on SPD1 must be
       //param->fOnlyConstraintPlaneEff = kTRUE;
     }
-    if (i==2 || i==3) {
+    if (i==1 ) {
       param->fMinPtPlaneEff = 0.200; // high pt particles
-      param->fMaxMissingClustersPlaneEff = 1; // at most 1 layer out of 5 without cluster
-      param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
+      param->fMaxMissingClustersPlaneEff = 2; // at most 2 layer out of 5 without cluster
+      param->fMaxMissingClustersOutPlaneEff = 2; // at most 2 layer out of 4 external ones without cluster
+      //param->fRequireClusterInOuterLayerPlaneEff = kTRUE; // cluster on SSD1 must be
+    }
+    if (i==2) {
+      param->fMinPtPlaneEff = 0.200; // high pt particles
+      param->fMaxMissingClustersPlaneEff = 2; // at most 2 layer out of 5 without cluster
+      param->fMaxMissingClustersOutPlaneEff = 2; // at most 2 layer out of 3 external ones without cluster
+      //param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
       //param->fOnlyConstraintPlaneEff = kTRUE;
+    }
+    if (i==3) {
+      param->fMinPtPlaneEff = 0.200; // high pt particles
+      param->fMaxMissingClustersPlaneEff = 2; // at most 2 layer out of 5 without cluster
+      param->fMaxMissingClustersOutPlaneEff = 1; // at most 1 layer out of 2 external ones without cluster
     }
     if (i==4) {
       param->fMinPtPlaneEff = 0.200; // high pt particles
-      param->fMaxMissingClustersPlaneEff = 0; // at most 1 layer out of 5 without cluster
-      param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
+      param->fMaxMissingClustersPlaneEff = 2; // at most 2 layer out of 5 without cluster
+      param->fMaxMissingClustersOutPlaneEff = 1; // at most 1 layer out of 1 external ones without cluster
+      // param->fRequireClusterInOuterLayerPlaneEff = kTRUE;
       //param->fOnlyConstraintPlaneEff = kTRUE;
     }
     if (i==5) {
       param->fMinPtPlaneEff = 0.200; // high pt particles
+      param->fMaxMissingClustersPlaneEff = 2; // at most 2 layer out of 5 without cluster
     }
     //
     return param;
@@ -708,6 +751,7 @@ AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
     return 0;
   }
 }
+
 //_____________________________________________________________________________
 void AliITSRecoParam::SetLayersParameters() 
 {
@@ -764,4 +808,3 @@ void AliITSRecoParam::PrintParameters() const
 
   return;
 }
-

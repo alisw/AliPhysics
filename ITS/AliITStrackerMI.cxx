@@ -4591,19 +4591,29 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
   AliITStrackMI tmp(*track);
 
 // require a minimal number of cluster in other layers and eventually clusters in closest layers 
-  Int_t ncl=0; 
-  for(Int_t lay=AliITSgeomTGeo::kNLayers-1;lay>ilayer;lay--) {
+  Int_t ncl_out=0; Int_t ncl_in=0;
+  for(Int_t lay=AliITSgeomTGeo::kNLayers-1;lay>ilayer;lay--) { // count n. of cluster in outermost layers
     AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
-    if (tmp.GetClIndex(lay)>=0) ncl++;
+    if (tmp.GetClIndex(lay)>=0) ncl_out++;
   }
+  for(Int_t lay=ilayer-1; lay>=0;lay--) { // count n. of cluster in innermost layers
+    AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
+                    tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
+    if (tmp.GetClIndex(lay)>=0) ncl_in++;
+  }
+  Int_t ncl=ncl_out+ncl_out;
   Bool_t nextout = kFALSE;
   if(ilayer==AliITSgeomTGeo::kNLayers-1) nextout=kTRUE; // you are already on the outermost layer
   else nextout = ((tmp.GetClIndex(ilayer+1)>=0)? kTRUE : kFALSE );
   Bool_t nextin = kFALSE;
   if(ilayer==0) nextin=kTRUE; // you are already on the innermost layer
   else nextin = ((index[ilayer-1]>=0)? kTRUE : kFALSE );
-  if(ncl<AliITSgeomTGeo::kNLayers-(ilayer+1)-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersPlaneEff()) 
+  // maximum number of missing clusters allowed in outermost layers
+  if(ncl_out<AliITSgeomTGeo::kNLayers-(ilayer+1)-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersOutPlaneEff()) 
+     return kFALSE; 
+  // maximum number of missing clusters allowed (both in innermost and in outermost layers)
+  if(ncl<AliITSgeomTGeo::kNLayers-1-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersPlaneEff()) 
      return kFALSE; 
   if(AliITSReconstructor::GetRecoParam()->GetRequireClusterInOuterLayerPlaneEff() && !nextout)  return kFALSE;
   if(AliITSReconstructor::GetRecoParam()->GetRequireClusterInInnerLayerPlaneEff() && !nextin)   return kFALSE;
@@ -4634,10 +4644,10 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
   // DEFINITION OF SEARCH ROAD FOR accepting a track
   //
   //For the time being they are hard-wired, later on from AliITSRecoParam
-  // Double_t nsigx=AliITSRecoParam::GetNSigXFarFromBoundary();
-  // Double_t nsigz=AliITSRecoParam::GetNSigZFarFromBoundary();
-  Double_t nsigz=4; 
-  Double_t nsigx=4; 
+  Double_t nsigx=AliITSReconstructor::GetRecoParam()->GetNSigXFromBoundaryPlaneEff();
+  Double_t nsigz=AliITSReconstructor::GetRecoParam()->GetNSigZFromBoundaryPlaneEff();
+  // Double_t nsigz=4; 
+  // Double_t nsigx=4; 
   Double_t dx=nsigx*TMath::Sqrt(tmp.GetSigmaY2());  // those are precisions in the tracking reference system
   Double_t dz=nsigz*TMath::Sqrt(tmp.GetSigmaZ2());  // Use it also for the module reference system, as it is
                                                 // done for RecPoints
@@ -4817,4 +4827,3 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
-

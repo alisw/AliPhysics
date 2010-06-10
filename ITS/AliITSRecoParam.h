@@ -239,12 +239,18 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Double_t GetMinPtPlaneEff() const { return fMinPtPlaneEff; }
   void   SetMaxMissingClustersPlaneEff(Int_t max=0) { fMaxMissingClustersPlaneEff=max;}
   Int_t  GetMaxMissingClustersPlaneEff() const {return fMaxMissingClustersPlaneEff;}
+  void   SetMaxMissingClustersOutPlaneEff(Int_t max=0) { fMaxMissingClustersOutPlaneEff=max;}
+  Int_t  GetMaxMissingClustersOutPlaneEff() const {return fMaxMissingClustersOutPlaneEff;}
   void   SetRequireClusterInOuterLayerPlaneEff(Bool_t out=kTRUE) { fRequireClusterInOuterLayerPlaneEff=out;}
   Bool_t GetRequireClusterInOuterLayerPlaneEff() const {return fRequireClusterInOuterLayerPlaneEff;}
   void   SetRequireClusterInInnerLayerPlaneEff(Bool_t in=kTRUE) { fRequireClusterInInnerLayerPlaneEff=in;}
   Bool_t GetRequireClusterInInnerLayerPlaneEff() const {return fRequireClusterInInnerLayerPlaneEff;}
   void   SetOnlyConstraintPlaneEff(Bool_t con=kFALSE) { fOnlyConstraintPlaneEff=con; }
   Bool_t GetOnlyConstraintPlaneEff() const { return fOnlyConstraintPlaneEff; }
+  void SetNSigXFromBoundaryPlaneEff(Double_t nsigx=1.) {fNSigXFromBoundaryPlaneEff=nsigx;}
+  Double_t GetNSigXFromBoundaryPlaneEff() const {return fNSigXFromBoundaryPlaneEff;}
+  void SetNSigZFromBoundaryPlaneEff(Double_t nsigz=1.) {fNSigZFromBoundaryPlaneEff=nsigz;}
+  Double_t GetNSigZFromBoundaryPlaneEff() const {return fNSigZFromBoundaryPlaneEff;}
   //
   void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
   Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
@@ -527,9 +533,12 @@ class AliITSRecoParam : public AliDetectorRecoParam
                                // The analized events would be used to increase the statistics
   Double_t fMinPtPlaneEff;  // minimum p_t of the track to be used for Plane Efficiency evaluation
   Int_t  fMaxMissingClustersPlaneEff;  // max n. of (other) layers without a cluster associated to the track
+  Int_t  fMaxMissingClustersOutPlaneEff;  // max n. of outermost layers without a cluster associated to the track
   Bool_t fRequireClusterInOuterLayerPlaneEff; // if kTRUE, then only tracks with an associated cluster on the closest
   Bool_t fRequireClusterInInnerLayerPlaneEff; // outer/inner layer are used. It has no effect for outermost/innermost layer
   Bool_t fOnlyConstraintPlaneEff;  // if kTRUE, use only constrained tracks at primary vertex for Plane Eff.
+  Double_t fNSigXFromBoundaryPlaneEff;  // accept one track for PlaneEff if distance from border (in loc x or z)
+  Double_t fNSigZFromBoundaryPlaneEff;  // is greater than fNSigXFromBoundaryPlaneEff * Track_precision
 
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
   Bool_t fUseBadZonesFromOCDB; // enable using OCDB info on dead modules and chips (MI)
@@ -607,7 +616,8 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,27) // ITS reco parameters
+  ClassDef(AliITSRecoParam,28) // ITS reco parameters
 };
 
 #endif
+

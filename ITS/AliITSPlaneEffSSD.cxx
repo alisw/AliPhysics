@@ -443,21 +443,21 @@ void AliITSPlaneEffSSD::InitHistos() {
   for (Int_t nhist=0;nhist<kNHisto;nhist++){
     aux=histnameResX;
     aux+=nhist;
-    fHisResX[nhist]=new TH1F("histname","histname",500,-0.05,0.05); // +- 500 micron; 1 bin=2 micron
+    fHisResX[nhist]=new TH1F("histname","histname",500,-0.10,0.10); // +- 1000 micron; 1 bin=4 micron
     fHisResX[nhist]->SetName(aux.Data());
     fHisResX[nhist]->SetTitle(aux.Data());
 
     aux=histnameResZ;
     aux+=nhist;
-    fHisResZ[nhist]=new TH1F("histname","histname",500,-0.50,0.50); // +-5000 micron; 1 bin=20 micron
+    fHisResZ[nhist]=new TH1F("histname","histname",750,-0.75,0.75); // +-5000 micron; 1 bin=20 micron
     fHisResZ[nhist]->SetName(aux.Data());
     fHisResZ[nhist]->SetTitle(aux.Data());
 
     aux=histnameResXZ;
     aux+=nhist;
-    fHisResXZ[nhist]=new TH2F("histname","histname",40,-0.02,0.02,40,-0.16,0.16); // binning:
-                                                                                   // 10 micron in x;
-                                                                                   // 80 micron in z;
+    fHisResXZ[nhist]=new TH2F("histname","histname",40,-0.04,0.04,40,-0.32,0.32); // binning:
+                                                                                   // 20 micron in x;
+                                                                                   // 160 micron in z;
     fHisResXZ[nhist]->SetName(aux.Data());
     fHisResXZ[nhist]->SetTitle(aux.Data());
 
@@ -469,25 +469,25 @@ void AliITSPlaneEffSSD::InitHistos() {
 
     aux=histnameTrackErrX;
     aux+=nhist;
-    fHisTrackErrX[nhist]=new TH1F("histname","histname",200,0.,0.08); // 0-800 micron; 1 bin=4 micron
+    fHisTrackErrX[nhist]=new TH1F("histname","histname",300,0.,0.24); // 0-2400 micron; 1 bin=8 micron
     fHisTrackErrX[nhist]->SetName(aux.Data());
     fHisTrackErrX[nhist]->SetTitle(aux.Data());
 
     aux=histnameTrackErrZ;
     aux+=nhist;
-    fHisTrackErrZ[nhist]=new TH1F("histname","histname",200,0.,0.32); // 0-3200 micron; 1 bin=16 micron
+    fHisTrackErrZ[nhist]=new TH1F("histname","histname",300,0.,0.48); // 0-4800 micron; 1 bin=16 micron
     fHisTrackErrZ[nhist]->SetName(aux.Data());
     fHisTrackErrZ[nhist]->SetTitle(aux.Data());
 
     aux=histnameClusErrX;
     aux+=nhist;
-    fHisClusErrX[nhist]=new TH1F("histname","histname",200,0.,0.08); //  0-800 micron; 1 bin=4 micron
+    fHisClusErrX[nhist]=new TH1F("histname","histname",300,0.,0.24); //  0-2400 micron; 1 bin=8 micron
     fHisClusErrX[nhist]->SetName(aux.Data());
     fHisClusErrX[nhist]->SetTitle(aux.Data());
 
     aux=histnameClusErrZ;
     aux+=nhist;
-    fHisClusErrZ[nhist]=new TH1F("histname","histname",200,0.,0.16); //  0-1600 micron; 1 bin=8 micron
+    fHisClusErrZ[nhist]=new TH1F("histname","histname",200,0.,0.32); //  0-1600 micron; 1 bin=16 micron
     fHisClusErrZ[nhist]->SetName(aux.Data());
     fHisClusErrZ[nhist]->SetTitle(aux.Data());
 
@@ -751,3 +751,4 @@ Bool_t AliITSPlaneEffSSD::ReadHistosFromFile(TString filename) {
   }
 return kTRUE;
 }
+

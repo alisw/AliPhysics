@@ -639,19 +639,19 @@ void AliITSPlaneEffSPD::InitHistos() {
   for (Int_t nhist=0;nhist<kNHisto;nhist++){
     aux=histnameResX;
     aux+=nhist;
-    fHisResX[nhist]=new TH1F("histname","histname",800,-0.16,0.16); // +- 1600 micron; 1 bin=4 micron
+    fHisResX[nhist]=new TH1F("histname","histname",1600,-0.32,0.32); // +- 3200 micron; 1 bin=4 micron
     fHisResX[nhist]->SetName(aux.Data());
     fHisResX[nhist]->SetTitle(aux.Data());
 
     aux=histnameResZ;
     aux+=nhist;
-    fHisResZ[nhist]=new TH1F("histname","histname",800,-0.32,0.32); // +-3200 micron; 1 bin=8 micron
+    fHisResZ[nhist]=new TH1F("histname","histname",1200,-0.48,0.48); // +-4800 micron; 1 bin=8 micron
     fHisResZ[nhist]->SetName(aux.Data());
     fHisResZ[nhist]->SetTitle(aux.Data());
 
     aux=histnameResXZ;
     aux+=nhist;
-    fHisResXZ[nhist]=new TH2F("histname","histname",40,-0.08,0.08,40,-0.16,0.16); // binning:
+    fHisResXZ[nhist]=new TH2F("histname","histname",80,-0.16,0.16,80,-0.32,0.32); // binning:
     fHisResXZ[nhist]->SetName(aux.Data());					   // 40 micron in x;
     fHisResXZ[nhist]->SetTitle(aux.Data());					   // 80 micron in z;
 
@@ -668,7 +668,7 @@ void AliITSPlaneEffSPD::InitHistos() {
       aux+=nhist;
       aux+="_clu_";
       aux+=clu+1; // clu=0 --> cluster size 1
-      fHisResXclu[nhist][clu]=new TH1F("histname","histname",800,-0.16,0.16); // +- 1600 micron; 1 bin=4 micron
+      fHisResXclu[nhist][clu]=new TH1F("histname","histname",1600,-0.32,0.32); // +- 3200 micron; 1 bin=4 micron
       fHisResXclu[nhist][clu]->SetName(aux.Data());
       fHisResXclu[nhist][clu]->SetTitle(aux.Data());
 
@@ -676,7 +676,7 @@ void AliITSPlaneEffSPD::InitHistos() {
       aux+=nhist;
       aux+="_clu_";
       aux+=clu+1; // clu=0 --> cluster size 1
-      fHisResZclu[nhist][clu]=new TH1F("histname","histname",800,-0.32,0.32); // +-3200 micron; 1 bin=8 micron
+      fHisResZclu[nhist][clu]=new TH1F("histname","histname",1200,-0.48,0.48); // +-4800 micron; 1 bin=8 micron
       fHisResZclu[nhist][clu]->SetName(aux.Data());
       fHisResZclu[nhist][clu]->SetTitle(aux.Data());
     }
@@ -688,7 +688,7 @@ void AliITSPlaneEffSPD::InitHistos() {
       aux+=nhist;
       aux+="_chip_";
       aux+=chip; 
-      fHisResXchip[nhist][chip]=new TH1F("histname","histname",200,-0.08,0.08); // +- 800 micron; 1 bin=8 micron
+      fHisResXchip[nhist][chip]=new TH1F("histname","histname",800,-0.32,0.32); // +- 3200 micron; 1 bin=8 micron
       fHisResXchip[nhist][chip]->SetName(aux.Data());
       fHisResXchip[nhist][chip]->SetTitle(aux.Data());
 
@@ -696,14 +696,14 @@ void AliITSPlaneEffSPD::InitHistos() {
       aux+=nhist;
       aux+="_chip_";
       aux+=chip;
-      fHisResZchip[nhist][chip]=new TH1F("histname","histname",200,-0.32,0.32); // +-3200 micron; 1 bin=32 micron
+      fHisResZchip[nhist][chip]=new TH1F("histname","histname",300,-0.48,0.48); // +-4800 micron; 1 bin=32 micron
       fHisResZchip[nhist][chip]->SetName(aux.Data());
       fHisResZchip[nhist][chip]->SetTitle(aux.Data());
     }
 
     aux=histnameTrackErrX;
     aux+=nhist;
-    fHisTrackErrX[nhist]=new TH1F("histname","histname",200,0.,0.16); // 0-1600 micron; 1 bin=8 micron
+    fHisTrackErrX[nhist]=new TH1F("histname","histname",400,0.,0.32); // 0-3200 micron; 1 bin=8 micron
     fHisTrackErrX[nhist]->SetName(aux.Data());
     fHisTrackErrX[nhist]->SetTitle(aux.Data());
 
@@ -715,13 +715,13 @@ void AliITSPlaneEffSPD::InitHistos() {
 
     aux=histnameClusErrX;
     aux+=nhist;
-    fHisClusErrX[nhist]=new TH1F("histname","histname",200,0.,0.04); //  0-400 micron; 1 bin=2 micron
+    fHisClusErrX[nhist]=new TH1F("histname","histname",400,0.,0.08); //  0-800 micron; 1 bin=2 micron
     fHisClusErrX[nhist]->SetName(aux.Data());
     fHisClusErrX[nhist]->SetTitle(aux.Data());
 
     aux=histnameClusErrZ;
     aux+=nhist;
-    fHisClusErrZ[nhist]=new TH1F("histname","histname",200,0.,0.16); //  0-1600 micron; 1 bin=8 micron
+    fHisClusErrZ[nhist]=new TH1F("histname","histname",400,0.,0.32); //  0-3200 micron; 1 bin=8 micron
     fHisClusErrZ[nhist]->SetName(aux.Data());
     fHisClusErrZ[nhist]->SetTitle(aux.Data());
 
@@ -1117,3 +1117,4 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
   }
 return kTRUE;
 }
+
