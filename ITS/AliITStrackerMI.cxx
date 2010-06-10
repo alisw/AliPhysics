@@ -2259,7 +2259,9 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
   }
 
   // special for cosmics and TPC prolonged tracks: 
-  // check which the innermost layer crossed by the track
+  // propagate to the innermost of:
+  // - innermost layer crossed by the track
+  // - innermost layer where a cluster was associated to the track
   static AliITSRecoParam *repa = NULL;
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
@@ -2275,8 +2277,10 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
     innermostlayer=5;
     Double_t drphi = TMath::Abs(track->GetD(0.,0.));
     for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++) {
-      if(drphi < (fgLayers[innermostlayer].GetR()+1.)) break;
+      if( (drphi < (fgLayers[innermostlayer].GetR()+1.)) ||
+	  index[innermostlayer] >= 0 ) break;
     }
+
     AliDebug(2,Form(" drphi  %f  innermost %d",drphi,innermostlayer));
   }
 
@@ -4827,3 +4831,4 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
   }
 return;
 }
+
