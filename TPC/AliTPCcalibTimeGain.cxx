@@ -248,8 +248,8 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   // default values for dE/dx
   fMIP = 50.;
   fUseMax = kTRUE;
-  fLowerTrunc = 0.0;
-  fUpperTrunc = 0.7;
+  fLowerTrunc = 0.02;
+  fUpperTrunc = 0.6;
   fUseShapeNorm = kTRUE;
   fUsePosNorm = kFALSE;
   fUsePadNorm = kFALSE;
