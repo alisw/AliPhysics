@@ -1,3 +1,5 @@
+//$Id$
+
 #ifndef ALIHLTGLOBALTRACKMATCHER_H
 #define ALIHLTGLOBALTRACKMATCHER_H
 
@@ -141,28 +143,27 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
     if(! (track->GetXYZAt(rCluster, bz, trackPosition)) ) {
       continue;
     }
-    
-    //Get residual in z= 0 plane (squared)
-    Double_t dxy = 0;
-    for(int i = 0; i < 2; i++) {
+
+    //Calculate track - cluster residuals
+    Double_t match = 0;
+    for(int i = 0; i < 3; i++) {
       Double_t dd = trackPosition[i] - clusterPosition[i];
-      dxy += dd*dd;
+      match += dd*dd;
     }
 
-    //Get z residual (squared)
-    Double_t dd = trackPosition[2] - clusterPosition[2];
-    Double_t dz = dd*dd;
-  
-    Double_t match = dz + dxy;
-    
     if( match > fMatchDistance  )  {     
       continue;
     }
 
     if (match < bestMatch[ic]) {
+      
       bestMatch[ic] = match;
       cluster->SetEmcCpvDistance(TMath::Sqrt(match));
-      cluster->SetTrackDistance(TMath::Sqrt(dxy), TMath::Sqrt(dz));
+      
+      Double_t dx = trackPosition[0] - clusterPosition[0];
+      Double_t dy = trackPosition[1] - clusterPosition[1];
+      Double_t dz = trackPosition[2] - clusterPosition[2];
+      cluster->SetTrackDistance( ((dx > 0) ? 1 : -1 )*TMath::Sqrt(dx*dx + dy*dy), dz);
     }
     
     //Add track to cluster's array of matching tracks

@@ -63,7 +63,7 @@ AliHLTCaloHistoMatchedTracks::AliHLTCaloHistoMatchedTracks(TString det) :
   fHistArray->AddLast(fHistUnMatchedEnergy);
 
 
-  fHistDxyDz = new TH2F( Form("%s fHist dXY dZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, 0, 50, 50, 0, 50);
+  fHistDxyDz = new TH2F( Form("%s fHist dXY dZ", det.Data()), Form("%s dXY - dZ distribution of track - cluster residuals", det.Data()), 50, -50, 50, 50, -50, 50);
   fHistDxyDz->GetXaxis()->SetTitle("sqrt(dx^2 + dy^2)  (cm)");
   fHistDxyDz->GetYaxis()->SetTitle("dz (cm)");
   //fHistDxyDz->SetMarkerStyle(21);
