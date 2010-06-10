@@ -175,7 +175,7 @@ void writeToFile();
 // #################################################################
 
 // -----------------------------------------------------------------
-void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kTRUE ) {
+void od ( Bool_t showBarrel = kTRUE, Bool_t showMuon = kFALSE ) {
 
   // -- Loading Geometry
   // ---------------------
