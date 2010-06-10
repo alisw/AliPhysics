@@ -181,6 +181,7 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Assignment */
     AliHLTCaloClusterizerComponent & operator = ( const AliHLTCaloClusterizerComponent &); // not implemented
     
+    ClassDef(AliHLTCaloClusterizerComponent, 0);
    
   };
 

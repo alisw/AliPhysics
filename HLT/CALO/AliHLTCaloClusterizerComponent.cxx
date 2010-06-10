@@ -38,6 +38,8 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+ClassImp(AliHLTCaloClusterizerComponent);
+
 AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det): 
   AliHLTCaloProcessor(),
   AliHLTCaloConstantsHandler(det),
@@ -106,6 +108,10 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  specification = specification|iter->fSpecification;
 
    	  digitDataPtr = reinterpret_cast<AliHLTCaloDigitDataStruct*>(iter->fPtr);
+	  
+	  // We copy the digits to the digit buffer used by the clusterizer
+	  // This is convinient since we want the digits from all DDLs before starting
+	  // Could be changed if this is a bottle neck. 
    	  for (Int_t i = 0; i < nDigits; i++)
    	    {
    	      fDigitsPointerArray[digCount] = digitDataPtr;
@@ -128,6 +134,9 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 //      qsort(fDigitsPointerArray, digCount, sizeof(AliHLTCaloDigitDataStruct*), CompareDigits);
 
       // Copy the digits to the output
+      // If we don't want the digits in the output we currently need to copy them to another buffer
+      // The reason is that the clusterizer sets the energy of the digits in the input buffer to 0,
+      // but we want to use the digits in the cluster analyser. 
       fOutputDigitsArray = reinterpret_cast<AliHLTCaloDigitDataStruct*>(outBPtr);
       for(Int_t n = 0; n < digCount; n++)
 	{
@@ -135,24 +144,28 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  //fOutputDigitsArray[n] = reinterpret_cast<AliHLTCaloDigitDataStruct*>(outBPtr);
 	  outBPtr = outBPtr + sizeof(AliHLTCaloDigitDataStruct);
 	}
-  
-      mysize += digCount*sizeof(AliHLTCaloDigitDataStruct);
       
-      //HLTDebug("Total number of digits: %d", digCount );
+      // Update the size of the output we have used, needs to be removed if we don't push the digits 
+      mysize += digCount*sizeof(AliHLTCaloDigitDataStruct);
 
+      // Do the clusterisation
       nRecPoints = fClusterizerPtr->ClusterizeEvent(digCount);
 
-      //HLTDebug("Number of rec points found: %d", nRecPoints);
+      // Give the cluster output to the analyser
       fAnalyserPtr->SetCaloClusterData(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr));
       
+      // Give the rec points to the analyser (input)
       fAnalyserPtr->SetRecPointArray(fClusterizerPtr->GetRecPoints(), nRecPoints);
 
+      // Give the digits to the analyser 
       fAnalyserPtr->SetDigitDataArray(fOutputDigitsArray);
       
+      // Then we create the clusters
       Int_t nClusters = fAnalyserPtr->CreateClusters(nRecPoints, size, mysize);
       
       if (nClusters < 0) 
 	{
+	   HLTError("Error in clusterisation");
 	  caloClusterHeaderPtr->fNClusters = 0;
 	} 
       else 
@@ -160,7 +173,7 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  caloClusterHeaderPtr->fNClusters = nClusters;
       	}
      
-      //HLTDebug("Number of clusters: %d", nRecPoints);
+      HLTDebug("Number of clusters: %d", nRecPoints);
       
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
