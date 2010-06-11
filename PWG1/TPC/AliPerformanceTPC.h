@@ -69,6 +69,11 @@ public :
   THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
   THnSparse *GetTPCEventHisto() const  { return fTPCEventHisto; }
   THnSparse *GetTPCTrackHisto() const  { return fTPCTrackHisto; }
+
+  // use track vertex
+  void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
+  Bool_t IsUseTrackVertex() { return fUseTrackVertex; }
+
 private:
 
   // TPC histogram
@@ -83,10 +88,13 @@ private:
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
+  // use track vertex
+  Bool_t fUseTrackVertex; // use track vertex
+
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,1);
+  ClassDef(AliPerformanceTPC,2);
 };
 
 #endif

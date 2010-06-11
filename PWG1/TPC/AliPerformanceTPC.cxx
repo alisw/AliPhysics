@@ -75,7 +75,10 @@ AliPerformanceTPC::AliPerformanceTPC():
   fCutsMC(0),  
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+
+  // select track vertex
+  fUseTrackVertex(kFALSE) 
 {
   Init();
 }
@@ -92,7 +95,10 @@ AliPerformanceTPC::AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* t
   fCutsMC(0),  
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+
+  // select track vertex
+  fUseTrackVertex(kFALSE) 
 {
   // named constructor	
   // 
@@ -230,7 +236,7 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   Double_t dcaToVertex = -1;
   if( fCutsRC->GetDCAToVertex2D() ) 
   {
-      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()                    + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
   }
   if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
@@ -309,7 +315,12 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
   }
 
   // get TPC event vertex
-  const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  const AliESDVertex *vtxESD = NULL; 
+  if(fUseTrackVertex) {
+    vtxESD = esdEvent->GetPrimaryVertexTracks();
+  } else {
+    vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
   if(!vtxESD) return;
 
   //  events with rec. vertex
@@ -325,14 +336,15 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     if(bUseESDfriend && esdFriend) 
     {
       AliESDfriendTrack *friendTrack=esdFriend->GetTrack(iTrack);
-      if(!friendTrack) continue;
-
-      TObject *calibObject=0;
-      AliTPCseed *seed=0;
-      if (!friendTrack) continue;
-        for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
-	  if ((seed=dynamic_cast<AliTPCseed*>(calibObject)))
-	  break;
+      if(friendTrack) 
+      {
+        TObject *calibObject=0;
+        AliTPCseed *seed=0;
+        if (!friendTrack) continue;
+          for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
+	    if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) {
+	    break;
+	  }
         }
 
         //AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
@@ -358,7 +370,9 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
              Double_t vTPCClust[3] = { gclf[0], gclf[1],  TPCside };
              fTPCClustHisto->Fill(vTPCClust);
          }
+       }
     }
+
     if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
