@@ -310,6 +310,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 
   // get TPC event vertex
   const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  if(!vtxESD) return;
 
   //  events with rec. vertex
   Int_t mult=0; Int_t multP=0; Int_t multN=0;
