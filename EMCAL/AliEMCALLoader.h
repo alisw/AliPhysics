@@ -6,12 +6,13 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//  A singleton that returns various objects 
-//  Should be used on the analysis stage to avoid confusing between different
-//  branches of reconstruction tree: e.g. reading RecPoints and TS made from 
-//  another set of RecPoints.
-// 
-//  The objects are retrived from folders.  
+//  The AliEMCALLoader gets the TClonesArray and TObjArray for reading
+//  Hits, Dgits, SDigits and RecPoints. Filling is managed in the GetEvent()
+//  method. The objects are retrived from  the corresponding folders.  
+//
+//  It also provides acces methods to the calibration and simulation OCDB parameters 
+//
+
 //*-- Author: Yves Schutz (SUBATECH) & Dmitri Peressounko (RRC KI & SUBATECH)
 //    
 
@@ -27,7 +28,7 @@ class TTask ;
 // --- AliRoot header files ---
 #include "AliLoader.h"
 #include "AliEMCALCalibData.h"
-#include "AliCaloCalibPedestal.h"
+//#include "AliCaloCalibPedestal.h"
 #include "AliEMCALSimParam.h"
 
 class AliLoader ;
@@ -49,93 +50,77 @@ class AliEMCALLoader : public AliLoader {
 
   virtual Int_t GetEvent();  // Overload to fill TClonesArray
 
-  virtual void    CleanHits() const 
-    { if (fHits) fHits->Clear(); AliLoader::CleanHits(); }
-  virtual void    CleanSDigits() const
-    { if (fSDigits) fSDigits->Clear(); AliLoader::CleanSDigits(); }
-  virtual void    CleanDigits() const
-    { if (fDigits) fDigits->Clear(); AliLoader::CleanDigits(); }
-  virtual void    CleanRecPoints() const
-    { if (fRecPoints) fRecPoints->Clear(); AliLoader::CleanRecPoints(); }
-
-  // This does not work due to const
-  /*
-  virtual void   MakeHitsContainer() const { AliLoader::MakeHitsContainer(); TreeH()->Branch(fDetectorName,"TClonesArray",&fHits); }
-  virtual void   MakeSDigitsContainer() const { AliLoader::MakeSDigitsContainer(); TreeS()->SetBranchAddress(fDetectorName,&fSDigits); }
-  virtual void   MakeDigitsContainer() const { AliLoader::MakeDigitsContainer(); TreeD()->SetBranchAddress(fDetectorName,&fDigits); }
-  virtual void   MakeRecPointsContainer() const { AliLoader::MakeRecPointsContainer(); TreeR()->SetBranchAddress(fgkECARecPointsBranchName,&fRecPoints); }
-  */
-
+  //Clean arrays methods
+  virtual void    CleanHits() const {GetHitsDataLoader()->Clean();}       
+  virtual void    CleanSDigits() const {GetSDigitsDataLoader()->Clean();}  
+  virtual void    CleanDigits() const {GetDigitsDataLoader()->Clean();}  
+  virtual void    CleanRecPoints() const {GetRecPointsDataLoader()->Clean();}  
+  
+  // Initialize arrays methods
+  void MakeSDigitsArray() ;
+  void MakeHitsArray() ;
+  void MakeDigitsArray() ;
+  void MakeRecPointsArray() ;
+  
   // ************    TClonesArrays Access functions
-
-  TClonesArray*  Hits(void) const { return fHits;}
-
+  
+  TClonesArray*  Hits(void) {return (TClonesArray*)GetDetectorData(fgkECAHitsBranchName);}  //{ return fHits;}
   const AliEMCALHit*    Hit(Int_t index) {
-    if (fHits)
-      return (const AliEMCALHit*) fHits->At(index);
+    if (Hits()) return (const AliEMCALHit*) Hits()->At(index);
     return 0x0; 
   }
-
-  TClonesArray*  SDigits() const { return fSDigits;}
+  
+  TClonesArray*  SDigits() {return (TClonesArray*)GetDetectorData(fgkECASDigitsBranchName);} //const { return fSDigits;}
   const AliEMCALDigit*  SDigit(Int_t index)  {
-    if (fSDigits)
-      return (const AliEMCALDigit*) fSDigits->At(index);
+    if (SDigits())return (const AliEMCALDigit*) SDigits()->At(index);
     return 0x0; 
   }
-
-  TClonesArray*   Digits() const { return fDigits;}
+  
+  TClonesArray*   Digits() {return (TClonesArray*)GetDetectorData(fgkECADigitsBranchName);}//const { return fDigits;}
   const AliEMCALDigit *  Digit(Int_t index)  {
-    if (fDigits)
-      return (const AliEMCALDigit*) fDigits->At(index);
+    if (Digits()) return (const AliEMCALDigit*) Digits()->At(index);
     return 0x0; 
   }
-
-  TObjArray * RecPoints() const { return fRecPoints;}
+  
+  TObjArray * RecPoints()  {return (TObjArray*)GetDetectorData(fgkECARecPointsBranchName);}//const { return fRecPoints;}
   const AliEMCALRecPoint * RecPoint(Int_t index)  {
-    if (fRecPoints)
-      return (const AliEMCALRecPoint*) fRecPoints->At(index);
+    if (RecPoints())return (const AliEMCALRecPoint*) RecPoints()->At(index);
     return 0x0; 
   }
-
+  
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
-
-  //Calibration
-  Int_t CalibrateRaw (Double_t energy, Int_t module, Int_t column, Int_t row);//take real calibration coefficients
-	
+  
+  //OCDB access methods
+  
   void  SetCalibData(AliEMCALCalibData* calibda)  { fgCalibData = calibda; }
   AliEMCALCalibData * CalibData(); // to get the calibration CDB object
-	
-  void  SetPedestalData(AliCaloCalibPedestal* caloped)  { fgCaloPed = caloped; }
-  AliCaloCalibPedestal* PedestalData(); // to get the pedestal CDB object
-
+  
+  //  void  SetPedestalData(AliCaloCalibPedestal* caloped)  { fgCaloPed = caloped; }
+  //  AliCaloCalibPedestal* PedestalData(); // to get the pedestal CDB object
+  
   void  SetSimParam(AliEMCALSimParam* simparam)  { fgSimParam = simparam; }
   AliEMCALSimParam* SimulationParameters(); // to get the simulation parameter CDB object
-
-	
-private:
- 
+  
+  
+ private:
+  
   // assignement operator requested by coding convention, but not needed
   AliEMCALLoader(const AliEMCALLoader &); //Not implemented
   const AliEMCALLoader & operator = (const AliEMCALLoader &); //Not implemented
-
+  
+  static const TString fgkECAHitsBranchName;      //! Name of branch with ECA Hits
+  static const TString fgkECASDigitsBranchName;   //! Name of branch with ECA SDigits
+  static const TString fgkECADigitsBranchName;    //! Name of branch with ECA Digits
   static const TString fgkECARecPointsBranchName; //! Name of branch with ECA Reconstructed Points
-
+  
   Int_t  fDebug ;             // Debug level
-
-  // All data are stored in TTrees on file. 
-  // These TCLonesArrays are temporary storage for reading or writing
-  // (connected to TTrees with SetBranchAddress)
-  TClonesArray     *fHits;         //! TClonesArray of hits (for tree reading)
-  TClonesArray     *fDigits;       //! TClonesArray of digits (for tree reading)
-  TClonesArray     *fSDigits;      //! TClonesArray of sdigits (for tree reading)
-  TObjArray        *fRecPoints;    //! TClonesArray of recpoints (for tree reading)   
   
   static AliEMCALCalibData    * fgCalibData;  //  calibration data 
-  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
+  //  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
   static AliEMCALSimParam     * fgSimParam;   //  sim param 
-
-  ClassDef(AliEMCALLoader,4)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
-   
+  
+  ClassDef(AliEMCALLoader,5)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+    
 };
 
 #endif // AliEMCALLOADER_H

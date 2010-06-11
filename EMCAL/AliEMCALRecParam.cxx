@@ -151,14 +151,11 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fHadron[1][3] = -2.368500e-03; 
   fHadron[1][4] = 0.;
   
-  
   fHadron[2][0] = 0.;
   fHadron[2][1] =  -2.463152e-02;
   fHadron[2][2] = 1.349257e-01;
   fHadron[2][3] = -1.089440e-03;
   fHadron[2][4] = 0.;
-  
-  
   
   fHadron[3][0] = 0.;
   fHadron[3][1] = 5.101560e-01;
@@ -226,8 +223,6 @@ AliEMCALRecParam::AliEMCALRecParam() :
   
 }
 
-
-
 //-----------------------------------------------------------------------------
 AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   AliDetectorRecoParam(),
@@ -289,9 +284,9 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fMinECut   = rp.fMinECut;
     fUnfold    = rp.fUnfold;
     fLocMaxCut = rp.fLocMaxCut; 
-	fTimeCut   = rp.fTimeCut;
-	fTimeMax   = rp.fTimeMax;
-	fTimeMin   = rp.fTimeMin;//clustering
+    fTimeCut   = rp.fTimeCut;
+    fTimeMax   = rp.fTimeMax;
+    fTimeMin   = rp.fTimeMin;//clustering
     fTrkCutX   = rp.fTrkCutX;
     fTrkCutY   = rp.fTrkCutY;
     fTrkCutZ   = rp.fTrkCutZ;
@@ -309,7 +304,7 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fRemoveBadChannels = rp.fRemoveBadChannels;
     fFittingAlgorithm  = rp.fFittingAlgorithm;
     fUseFALTRO         = rp.fUseFALTRO;
-	fFitLEDEvents      = rp.fFitLEDEvents;//raw signal
+    fFitLEDEvents      = rp.fFitLEDEvents;//raw signal
 	  
     //PID values
     Int_t i, j;
@@ -600,8 +595,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   if(!strcmp("",opt) || !strcmp("raw",opt)){
     AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
 		 fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
-    AliInfo(Form("Raw signal: with bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d \n",
-		 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO));
+    AliInfo(Form("Raw signal: remove bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d, Fit LED events %d \n",
+		 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO, fFitLEDEvents));
   }
 }
 

@@ -139,8 +139,8 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   //params->SetTimeMin(5e-9);//100 ns
   //params->SetTimeMax(50e-9);//100 ns
    //Real Data
-  params->SetTimeMin(550e-9);//100 ns
-  params->SetTimeMax(750e-9);//100 ns
+  params->SetTimeMin(525e-9);//100 ns
+  params->SetTimeMax(725e-9);//100 ns
 
   //Track matching
   params->SetTrkCutX(6.0);
@@ -294,7 +294,11 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetTau(2.35);
   params->SetNoiseThreshold(3);
   params->SetNPedSamples(5);
-  
+  params->SetRemoveBadChannels(kTRUE);
+  params->SetFittingAlgorithm(AliEMCALRawUtils::kStandard);  
+  params->SetFALTROUsage(kTRUE); 
+  params->SetLEDFit(kFALSE);   
+
   return params ;
 }	
 
@@ -313,8 +317,8 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   //params->SetTimeMin(5e-9);//100 ns
   //params->SetTimeMax(50e-9);//100 ns
   //Real Data
-  params->SetTimeMin(550e-9);//100 ns
-  params->SetTimeMax(750e-9);//100 ns
+  params->SetTimeMin(525e-9);//100 ns
+  params->SetTimeMax(725e-9);//100 ns
 
   //PID parameters for pp  implemented 
   // as a first step, all array elements are initialized to 0.0
@@ -452,7 +456,18 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetHadronEnergyProb(2,  2.956727e-01);
   params->SetHadronEnergyProb(3, -3.051022e+01);
   params->SetHadronEnergyProb(4, -6.036931e-02);
-  
+
+  // raw signal fitting
+  params->SetHighLowGainFactor(16.);
+  params->SetOrderParameter(2);
+  params->SetTau(2.35);
+  params->SetNoiseThreshold(3);
+  params->SetNPedSamples(5);
+  params->SetRemoveBadChannels(kTRUE);
+  params->SetFittingAlgorithm(AliEMCALRawUtils::kStandard);  
+  params->SetFALTROUsage(kTRUE); 
+  params->SetLEDFit(kFALSE);   
+
   return params;
   
 }
