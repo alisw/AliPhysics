@@ -191,12 +191,12 @@ void AliPerformanceTask::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliPerformanceTask::Terminate(Option_t *) 
 {
-  // Called one at the end 
+  // Called once at the end 
   
   // check output data
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {
-    Printf("ERROR: AliPerformanceTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
+    Printf("ERROR: AliPerformanceTask::Terminate(): fOutput data not avaiable  ..." );
     return;
   }
 }
