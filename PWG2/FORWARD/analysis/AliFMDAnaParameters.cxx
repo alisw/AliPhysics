@@ -234,16 +234,16 @@ void AliFMDAnaParameters::InitSharingEff() {
 //____________________________________________________________________
 void AliFMDAnaParameters::FindEtaLimits() {
 
-  fEtaLowBinLimits.SetBins(3,0,3,2,0,2,GetNvtxBins(),0,GetNvtxBins());
-  fEtaHighBinLimits.SetBins(3,0,3,2,0,2,GetNvtxBins(),0,GetNvtxBins());
-  for(Int_t det=1; det<=3;det++) {
-    Int_t nRings = (det==1 ? 1 : 2);
+  fEtaLowBinLimits.SetBins(4,0,4,2,0,2,GetNvtxBins(),0,GetNvtxBins());
+  fEtaHighBinLimits.SetBins(4,0,4,2,0,2,GetNvtxBins(),0,GetNvtxBins());
+  for(Int_t det=0; det<=3;det++) {
+    Int_t nRings = (det<=1 ? 1 : 2);
     for (UShort_t ir = 0; ir < nRings; ir++) {
       Char_t ringChar = (ir == 0 ? 'I' : 'O');
       for(Int_t v =0; v<GetNvtxBins(); v++) {
 	fEtaLowBinLimits.SetBinContent(det,ir,v,GetFirstEtaBinFromMap(v, det, ringChar));
 	fEtaHighBinLimits.SetBinContent(det,ir,v,GetLastEtaBinFromMap(v, det, ringChar));
-	
+	//std::cout<<det<<"   "<<ringChar<<"   "<<fEtaLowBinLimits.GetBinContent(det,ir,v)<<"   "<<fEtaHighBinLimits.GetBinContent(det,ir,v)<<std::endl;
       }
     }
   }
@@ -832,6 +832,9 @@ AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)
 Int_t    AliFMDAnaParameters::GetFirstEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring)
 {
   TH2F* hBg = GetBackgroundCorrection(det,ring,vtxbin);
+  
+  if(det == 0) return hBg->GetXaxis()->FindBin(-1.95);
+  
   Int_t firstbin = -1;
   Int_t nNonZeroFirst = 0;
   
@@ -858,6 +861,9 @@ Int_t    AliFMDAnaParameters::GetLastEtaBinFromMap(Int_t vtxbin, Int_t det, Char
   TH2F* hBg = GetBackgroundCorrection(det,ring,vtxbin);
   Int_t lastbin=-1;
   Int_t nNonZeroLast = 0;
+  
+  if(det == 0) return hBg->GetXaxis()->FindBin(1.95);
+  
   for(Int_t i=hBg->GetNbinsX();i>0;i--) {
     if(nNonZeroLast == fNumberOfEtaBinsToCut && lastbin==-1) lastbin = i;
     
