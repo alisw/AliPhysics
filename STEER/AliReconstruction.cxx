@@ -1420,6 +1420,12 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("LoadCTPTimeParamsCDB");
 
+  if (!ReadIntensityInfoCDB()) {
+    Abort("ReadIntensityInfoCDB", TSelector::kAbortProcess);
+    return;
+  }
+  AliSysInfo::AddStamp("ReadIntensityInfoCDB");
+
   // Read the reconstruction parameters from OCDB
   if (!InitRecoParams()) {
     AliWarning("Not all detectors have correct RecoParam objects initialized");
