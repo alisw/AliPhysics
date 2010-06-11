@@ -863,8 +863,18 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       if (cal->GetResHistoTPCITS(imeas) && cal->GetResHistoTPCITS(imeas)){
 	fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
 	fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
-	fResHistoTPCTRD[imeas]->Add(cal->fResHistoTPCTRD[imeas]);
-	fResHistoTPCTOF[imeas]->Add(cal->fResHistoTPCTOF[imeas]);
+      }
+      if (cal->fResHistoTPCTRD[imeas]){
+	if (fResHistoTPCTRD[imeas])
+	  fResHistoTPCTRD[imeas]->Add(cal->fResHistoTPCTRD[imeas]);
+	else
+	  fResHistoTPCTRD[imeas]=(THnSparse*)cal->fResHistoTPCTRD[imeas]->Clone();
+      }
+      if  (cal->fResHistoTPCTOF[imeas]){
+	if (fResHistoTPCTOF[imeas])
+	  fResHistoTPCTOF[imeas]->Add(cal->fResHistoTPCTOF[imeas]);
+	else
+	  fResHistoTPCTOF[imeas]=(THnSparse*)cal->fResHistoTPCTOF[imeas]->Clone();      
       }
     }
     TObjArray* addArray=cal->GetHistoDrift();
