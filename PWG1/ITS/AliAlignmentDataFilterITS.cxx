@@ -240,10 +240,12 @@ void AliAlignmentDataFilterITS::UserCreateOutputObjects()
 
   fspTree = new TTree("spTree","Tree with ITS track points");
   AliTrackPointArray *array = 0;
+  AliESDVertex *vertex = 0;
   Float_t curv=0,curverr=0,runNumber=0;
   TObjString *itsaligndata = 0;
   TObjString *itscalibrespsdd = 0;
   fspTree->Branch("SP","AliTrackPointArray",&array);
+  fspTree->Branch("vertex","AliESDVertex",&vertex);
   fspTree->Branch("curv",&curv);
   fspTree->Branch("curverr",&curverr);
   fspTree->Branch("run",&runNumber);
@@ -349,9 +351,14 @@ void AliAlignmentDataFilterITS::UserExec(Option_t */*option*/)
 
 
   // Process event as Cosmic or Collision
-  //if(esd->GetEventType()== ???? ) {
-  printf("AliAlignmentDataFilterITS::Exec(): MOVE ASAP TO esd->GetEventType() !\n");
-  if(GetRecoParam()->GetAlignFilterCosmics()) {
+  if(fESD->GetEventSpecie()<=1) {
+    printf("AliAlignmentDataFilterITS::Exec(): event specie not set !\n");
+    if(GetRecoParam()->GetAlignFilterCosmics()) {
+      FilterCosmic(fESD);
+    } else {
+      FilterCollision(fESD);
+    }
+  } else if(fESD->GetEventSpecie()==8) {
     FilterCosmic(fESD);
   } else {
     FilterCollision(fESD);
@@ -371,10 +378,12 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
 
   // Set branch addresses for space points tree
   AliTrackPointArray *arrayForTree=0;
+  AliESDVertex *vertexForTree=0;
   Float_t curv,curverr,runNumber;
   TObjString *itsaligndata=0;
   TObjString *itscalibrespsdd = 0;
   fspTree->SetBranchAddress("SP",&arrayForTree);
+  fspTree->SetBranchAddress("vertex",&vertexForTree);
   fspTree->SetBranchAddress("curv",&curv);
   fspTree->SetBranchAddress("curverr",&curverr);
   fspTree->SetBranchAddress("run",&runNumber);
@@ -565,6 +574,8 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   track1->GetDZ(0,0,0,esd->GetMagneticField(),d0z0mu);
   //printf("d0mu %f  z0mu %f\n",d0z0mu[0],d0z0mu[1]);
 
+  vertexForTree = new AliESDVertex(*(esd->GetPrimaryVertexSPD()));
+
   Float_t dzOverlap[2];
   Float_t curvArray[2],curverrArray[2];
   Double_t globExtra[3],locExtra[3];
@@ -722,10 +733,12 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
   // Set branch addresses for space points tree
   AliTrackPointArray *arrayForTree=0;
+  AliESDVertex *vertexForTree=0;
   Float_t curv,curverr,runNumber;
   TObjString *itsaligndata=0;
   TObjString *itscalibrespsdd = 0;
   fspTree->SetBranchAddress("SP",&arrayForTree);
+  fspTree->SetBranchAddress("vertex",&vertexForTree);
   fspTree->SetBranchAddress("curv",&curv);
   fspTree->SetBranchAddress("curverr",&curverr);
   fspTree->SetBranchAddress("run",&runNumber);
@@ -754,11 +767,11 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
   if(ntracks==0) return;
 
-  if(esd->GetPrimaryVertexSPD()->GetNContributors()<=0) return;
-  TString vtitle = esd->GetPrimaryVertexSPD()->GetTitle();
-  if(!vtitle.Contains("3D")) return;
+  const AliESDVertex *vertexTracks = esd->GetPrimaryVertexTracks();
+  if(!vertexTracks);
+  if(vertexTracks->GetNContributors()<=0) return;
 
-  Double_t vtxpos[3]; esd->GetPrimaryVertexSPD()->GetXYZ(vtxpos);
+  Double_t vtxpos[3]; vertexTracks->GetXYZ(vtxpos);
 
   Int_t ncls=0;
   Double_t pt=-10000.;
@@ -783,7 +796,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
     pt = track->Pt();
     ncls = track->GetNcls(0);
     Double_t maxd=10000.;
-    track->PropagateToDCA(esd->GetPrimaryVertex(),esd->GetMagneticField(),maxd,d0z0,covd0z0);
+    track->PropagateToDCA(vertexTracks,esd->GetMagneticField(),maxd,d0z0,covd0z0);
 
     // read ITS cluster map
     Int_t map[6];
@@ -888,6 +901,13 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
 
     curv = track->GetC(esd->GetMagneticField());
     curverr = TMath::Sqrt(track->GetSigma1Pt2())*track->GetC(esd->GetMagneticField())/track->OneOverPt();
+
+    vertexForTree = new AliESDVertex(*vertexTracks);
+    if(vertexTracks->UsesTrack(track->GetID())) {
+      vertexForTree->SetID(1);
+    } else {
+      vertexForTree->SetID(0);
+    }
 
     fspTree->Fill();
  
