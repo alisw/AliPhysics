@@ -222,6 +222,10 @@ void AliCaloTrackESDReader::FillInputEMCAL() {
 	  
 	  Float_t energy = clus->E();
 	  Char_t ttype= AliAODCluster::kEMCALClusterv1;
+
+	  //Recalibrate the cluster energy 
+		if(GetCaloUtils()->IsRecalibrationOn())	energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliESDCaloCells*)GetEMCALCells());
+		
 		
 	  //Put new aod object in file in AOD calo clusters array
 	  AliAODCaloCluster *caloCluster = new((*(fOutputEvent->GetCaloClusters()))[naod++]) 
@@ -320,6 +324,9 @@ void AliCaloTrackESDReader::FillInputPHOS() {
 	    pid[AliPID::kProton]+pid[AliPID::kKaon]+pid[AliPID::kPion];
 	  if( wCharged > wNeutral)  ttype= AliAODCluster::kPHOSCharged;
 	  
+	  //Recalibrate the cluster energy 
+	  if(GetCaloUtils()->IsRecalibrationOn()) energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliESDCaloCells*)GetPHOSCells());
+		
 	  //Put new aod object in file in AOD calo clusters array
 	  AliAODCaloCluster *caloCluster = new((*(fOutputEvent->GetCaloClusters()))[naod++]) 
 	    AliAODCaloCluster(id,nLabel,labels,energy, pos, NULL, ttype, 0);

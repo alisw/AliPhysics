@@ -475,12 +475,14 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
     }
     
   }
-		
+	
+  if(fFillEMCALCells) FillInputEMCALCells();
+  if(fFillPHOSCells)  FillInputPHOSCells();
+	
   if(fFillCTS)   FillInputCTS();
   if(fFillEMCAL) FillInputEMCAL();
   if(fFillPHOS)  FillInputPHOS();
-  if(fFillEMCALCells) FillInputEMCALCells();
-  if(fFillPHOSCells)  FillInputPHOSCells();
+
 	
   return kTRUE ;
 }

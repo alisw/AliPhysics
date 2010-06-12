@@ -115,24 +115,61 @@ public:
 	
   void   SwitchOnNoFiducialBorderInEMCALEta0()  {fNoEMCALBorderAtEta0 = kTRUE; }
   void   SwitchOffNoFiducialBorderInEMCALEta0() {fNoEMCALBorderAtEta0 = kFALSE; }
+	
+  // Recalibration
+  Bool_t IsRecalibrationOn()  const { return fRecalibration ; }
+  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; InitEMCALRecalibrationFactors(); InitPHOSRecalibrationFactors();}
+  void SwitchOffRecalibration()   {fRecalibration = kFALSE ; }
+	
+  void InitEMCALRecalibrationFactors() ;
+  void InitPHOSRecalibrationFactors () ;
+	
+  Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+	  if(fEMCALRecalibrationFactors->GetEntries()>0) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+	  else return 1;}
+	
+  Float_t GetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow) const { 
+	  if(fPHOSRecalibrationFactors->GetEntries()>0)return (Float_t) ((TH2F*)fPHOSRecalibrationFactors->At(imod))->GetBinContent(iCol,iRow); 
+	  else return 1;}
+	
+  void SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+	  ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}
+	
+  void SetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
+	  ((TH2F*)fPHOSRecalibrationFactors->At(imod))->SetBinContent(iCol,iRow,c);}
+    
+  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
+  void SetPHOSChannelRecalibrationFactors(Int_t imod , TH2F* h) {fPHOSRecalibrationFactors ->AddAt(h,imod);}
+	
+  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM) const {return (TH2F*)fEMCALRecalibrationFactors->At(iSM);}
+  TH2F * GetPHOSChannelRecalibrationFactors(Int_t imod) const {return (TH2F*)fPHOSRecalibrationFactors->At(imod);}
+	
+  void SetEMCALChannelRecalibrationFactors(TObjArray *map) {fEMCALRecalibrationFactors = map;}
+  void SetPHOSChannelRecalibrationFactors (TObjArray *map) {fPHOSRecalibrationFactors  = map;}
+
+  Float_t RecalibrateClusterEnergy(AliESDCaloCluster* cluster, AliESDCaloCells * cells);
+  Float_t RecalibrateClusterEnergy(AliAODCaloCluster* cluster, AliAODCaloCells * cells);
 
  private:
 
-  Int_t              fDebug;              //  Debugging level
-  TString            fEMCALGeoName;       //  Name of geometry to use for EMCAL.
-  TString            fPHOSGeoName;        //  Name of geometry to use for PHOS.	
-  AliEMCALGeoUtils * fEMCALGeo ;          //! EMCAL geometry pointer
-  AliPHOSGeoUtils  * fPHOSGeo  ;          //! PHOS  geometry pointer  
-  Bool_t             fEMCALGeoMatrixSet;  //  Check if the transformation matrix is set for EMCAL
-  Bool_t             fPHOSGeoMatrixSet ;  //  Check if the transformation matrix is set for PHOS
-  Bool_t             fRemoveBadChannels;  //  Check the channel status provided and remove clusters with bad channels
-  TObjArray        * fEMCALBadChannelMap; //! Array of histograms with map of bad channels, EMCAL
-  TObjArray        * fPHOSBadChannelMap;  //! Array of histograms with map of bad channels, PHOS
-  Int_t              fNCellsFromEMCALBorder; // Number of cells from EMCAL border the cell with maximum amplitude has to be.
-  Int_t              fNCellsFromPHOSBorder;  // Number of cells from PHOS  border the cell with maximum amplitude has to be.
-  Bool_t             fNoEMCALBorderAtEta0;//  Do fidutial cut in EMCAL region eta = 0?
+  Int_t              fDebug;                 //  Debugging level
+  TString            fEMCALGeoName;          //  Name of geometry to use for EMCAL.
+  TString            fPHOSGeoName;           //  Name of geometry to use for PHOS.	
+  AliEMCALGeoUtils * fEMCALGeo ;             //! EMCAL geometry pointer
+  AliPHOSGeoUtils  * fPHOSGeo  ;             //! PHOS  geometry pointer  
+  Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
+  Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS
+  Bool_t             fRemoveBadChannels;     //  Check the channel status provided and remove clusters with bad channels
+  TObjArray        * fEMCALBadChannelMap;    //! Array of histograms with map of bad channels, EMCAL
+  TObjArray        * fPHOSBadChannelMap;     //! Array of histograms with map of bad channels, PHOS
+  Int_t              fNCellsFromEMCALBorder; //  Number of cells from EMCAL border the cell with maximum amplitude has to be.
+  Int_t              fNCellsFromPHOSBorder;  //  Number of cells from PHOS  border the cell with maximum amplitude has to be.
+  Bool_t             fNoEMCALBorderAtEta0;   //  Do fiducial cut in EMCAL region eta = 0?
+  Bool_t             fRecalibration;         //  Switch on or off the recalibration
+  TObjArray        * fEMCALRecalibrationFactors; //! Array of histograms with map of recalibration factors, EMCAL
+  TObjArray        * fPHOSRecalibrationFactors;  //! Array of histograms with map of recalibration factors, PHOS
 
-  ClassDef(AliCalorimeterUtils,1)
+  ClassDef(AliCalorimeterUtils,2)
 } ;
 
 
