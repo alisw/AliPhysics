@@ -238,8 +238,8 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       caloClusterPtr->fNCells = 0;
       caloClusterPtr->fNExMax = 0;
       caloClusterPtr->fTOF = 0;
-      caloClusterPtr->fTrackDx = 0;
-      caloClusterPtr->fTrackDz = 0;
+      caloClusterPtr->fTrackDx = -999;
+      caloClusterPtr->fTrackDz = -999;
       
       AliHLTCaloGlobalCoordinate globalCoord;
       fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);
