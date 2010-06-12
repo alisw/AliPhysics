@@ -547,6 +547,13 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     AliHLTGlobalVertexerComponent::FillESD( pESD, reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData* >(pBlock->fPtr) );
   }
 
+  // Fill DCA parameters for TPC tracks
+  for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
+    if (!pESD->GetTrack(i) || 
+	!pESD->GetTrack(i)->GetTPCInnerParam() ) continue;
+    pESD->GetTrack(i)->RelateToVertexTPC(pESD->GetPrimaryVertexTracks(), fSolenoidBz, 1000 );    
+  }
+
   // loop over all tracks and set the TPC refit flag by updating with the
   // original TPC inner parameter if not yet set
   // TODO: replace this by a proper refit
