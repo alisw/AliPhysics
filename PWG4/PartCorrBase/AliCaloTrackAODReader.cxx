@@ -167,6 +167,12 @@ void AliCaloTrackAODReader::FillInputEMCAL() {
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
 	  
+	  //Recalibrate the cluster energy 
+	  if(GetCaloUtils()->IsRecalibrationOn()) {
+		  Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetEMCALCells());
+		  clus->SetE(energy);
+	  }
+		
 	  if(fWriteOutputStdAOD){
 		AliAODCaloCluster * newclus = new((*(fOutputEvent->GetCaloClusters()))[naod++])AliAODCaloCluster(*clus);
 		fAODEMCAL->Add(newclus);	
@@ -239,7 +245,13 @@ void AliCaloTrackAODReader::FillInputPHOS() {
 	  
 	  if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackAODReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 						     momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-
+		
+		//Recalibrate the cluster energy 
+		if(GetCaloUtils()->IsRecalibrationOn()) {
+			Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetPHOSCells());
+			clus->SetE(energy);
+		}
+		
 		if(fWriteOutputStdAOD){
 			AliAODCaloCluster * newclus = new((*(fOutputEvent->GetCaloClusters()))[naod++])AliAODCaloCluster(*clus);
 			fAODPHOS->Add(newclus);	

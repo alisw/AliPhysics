@@ -49,7 +49,8 @@ ClassImp(AliCalorimeterUtils)
     fRemoveBadChannels(kFALSE),
     fEMCALBadChannelMap(new TObjArray()),fPHOSBadChannelMap(new TObjArray()), 
     fNCellsFromEMCALBorder(0), fNCellsFromPHOSBorder(0), 
-    fNoEMCALBorderAtEta0(kFALSE)
+    fNoEMCALBorderAtEta0(kFALSE),fRecalibration(kFALSE),
+    fEMCALRecalibrationFactors(new TObjArray()), fPHOSRecalibrationFactors(new TObjArray())
 {
   //Ctor
   
@@ -70,7 +71,10 @@ AliCalorimeterUtils::AliCalorimeterUtils(const AliCalorimeterUtils & calo) :
   fPHOSBadChannelMap(new TObjArray(*calo.fPHOSBadChannelMap)),
   fNCellsFromEMCALBorder(calo.fNCellsFromEMCALBorder),
   fNCellsFromPHOSBorder(calo.fNCellsFromPHOSBorder), 
-  fNoEMCALBorderAtEta0(calo.fNoEMCALBorderAtEta0)
+  fNoEMCALBorderAtEta0(calo.fNoEMCALBorderAtEta0), 
+  fRecalibration(calo.fRecalibration),
+  fEMCALRecalibrationFactors(new TObjArray(*calo.fEMCALRecalibrationFactors)), 
+  fPHOSRecalibrationFactors(new TObjArray(*calo.fEMCALRecalibrationFactors))
 {
   // cpy ctor  
 }
@@ -90,6 +94,15 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
   if(fPHOSBadChannelMap) { 
     fPHOSBadChannelMap->Clear();
     delete  fPHOSBadChannelMap;
+  }
+	
+  if(fEMCALRecalibrationFactors) { 
+	  fEMCALRecalibrationFactors->Clear();
+	  delete  fEMCALRecalibrationFactors;
+  }
+  if(fPHOSRecalibrationFactors) { 
+	  fPHOSRecalibrationFactors->Clear();
+	  delete  fPHOSRecalibrationFactors;
   }
 	
 }
@@ -532,6 +545,54 @@ void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
 }
 
 //________________________________________________________________
+void AliCalorimeterUtils::InitEMCALRecalibrationFactors(){
+	//Init EMCAL recalibration factors
+	if(fDebug > 0 )printf("AliCalorimeterUtils::InitEMCALRecalibrationFactors()\n");
+	//In order to avoid rewriting the same histograms
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+	TH1::AddDirectory(kFALSE);
+	
+	for (int i = 0; i < 12; i++) fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
+	//Init the histograms with 1
+	for (Int_t sm = 0; sm < 12; sm++) {
+		for (Int_t i = 0; i < 48; i++) {
+			for (Int_t j = 0; j < 24; j++) {
+				SetEMCALChannelRecalibrationFactor(sm,i,j,1.);
+			}
+		}
+	}
+	fEMCALRecalibrationFactors->SetOwner(kTRUE);
+	fEMCALRecalibrationFactors->Compress();
+	
+	//In order to avoid rewriting the same histograms
+	TH1::AddDirectory(oldStatus);		
+}
+
+//________________________________________________________________
+void AliCalorimeterUtils::InitPHOSRecalibrationFactors(){
+	//Init EMCAL recalibration factors
+	if(fDebug > 0 )printf("AliCalorimeterUtils::InitPHOSRecalibrationFactors()\n");
+	//In order to avoid rewriting the same histograms
+	Bool_t oldStatus = TH1::AddDirectoryStatus();
+	TH1::AddDirectory(kFALSE);
+	for (int i = 0; i < 5; i++)fPHOSRecalibrationFactors->Add(new TH2F(Form("PHOSRecalFactors_Mod%d",i),Form("PHOSRecalFactors_Mod%d",i), 56, 0, 56, 64, 0, 64));
+	//Init the histograms with 1
+	for (Int_t m = 0; m < 5; m++) {
+		for (Int_t i = 0; i < 56; i++) {
+			for (Int_t j = 0; j < 64; j++) {
+				SetPHOSChannelRecalibrationFactor(m,i,j,1.);
+			}
+		}
+	}
+	fPHOSRecalibrationFactors->SetOwner(kTRUE);
+	fPHOSRecalibrationFactors->Compress();
+	
+	//In order to avoid rewriting the same histograms
+	TH1::AddDirectory(oldStatus);		
+}
+
+
+//________________________________________________________________
 void AliCalorimeterUtils::InitEMCALGeometry()
 {
 	//Initialize EMCAL geometry if it did not exist previously
@@ -572,9 +633,99 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("Remove Clusters with max cell at less than %d cells from EMCAL border and %d cells from PHOS border\n",
 	 fNCellsFromEMCALBorder, fNCellsFromPHOSBorder);
   if(fNoEMCALBorderAtEta0) printf("Do not remove EMCAL clusters at Eta = 0\n");
+  printf("Recalibrate Clusters? %d\n",fRecalibration);
 
   printf("    \n") ;
 } 
+
+//________________________________________________________________
+Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliESDCaloCluster * cluster, AliESDCaloCells * cells){
+	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
+	// ESD case
+
+	if(!cells) {
+		printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - Cells pointer does not exist, stop!");
+		abort();
+	}
+	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+	UShort_t * index    = cluster->GetCellsAbsId() ;
+	Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+	Int_t ncells     = cluster->GetNCells();	
+	TString calo     = "EMCAL";
+	if(cluster->IsPHOS()) calo = "PHOS";
+	//Initialize some used variables
+	Float_t energy   = 0;
+	Int_t absId      = -1;
+	Int_t icol = -1, irow = -1, iRCU = -1, module=1;
+	Float_t factor = 1, frac = 0;
+	
+	//Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+	for(Int_t icell = 0; icell < ncells; icell++){
+		absId = index[icell];
+		frac =  fraction[icell];
+		if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
+        module = GetModuleNumberCellIndexes(absId,calo,icol,irow,iRCU);
+		if(cluster->IsPHOS()) factor = GetPHOSChannelRecalibrationFactor (module,icol,irow);
+		else                  factor = GetEMCALChannelRecalibrationFactor(module,icol,irow);
+		if(fDebug>2)
+			printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f, recalibration factor %f, cell energy %f\n", 
+				calo.Data(),module,icol,irow,frac,factor,cells->GetCellAmplitude(absId));
+		
+		energy += cells->GetCellAmplitude(absId)*factor*frac;
+	}
+	
+	if(fDebug>1)
+		printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - Energy before %f, after %f\n",cluster->E(),energy);
+	
+	return energy;
+
+}
+
+//________________________________________________________________
+Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliAODCaloCluster * cluster, AliAODCaloCells * cells){
+	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
+	// AOD case
+	
+	if(!cells) {
+		printf("AliCalorimeterUtils::RecalibrateClusterEnergy(AOD) - Cells pointer does not exist, stop!");
+		abort();
+	}
+	
+	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+	UShort_t * index    = cluster->GetCellsAbsId() ;
+	Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+	Int_t ncells = cluster->GetNCells();
+	TString calo = "EMCAL";
+	if(cluster->IsPHOSCluster()) calo = "PHOS";
+	
+	//Initialize some used variables
+	Float_t energy = 0;
+	Int_t absId    = -1;
+    Int_t icol = -1, irow = -1, iRCU = -1, module=1;
+	Float_t factor = 1, frac = 0;
+	
+	//Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+	for(Int_t icell = 0; icell < ncells; icell++){
+		absId = index[icell];
+		frac =  fraction[icell];
+		if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
+        module = GetModuleNumberCellIndexes(absId,calo,icol,irow,iRCU);
+		if(cluster->IsPHOSCluster()) factor = GetPHOSChannelRecalibrationFactor (module,icol,irow);
+		else                         factor = GetEMCALChannelRecalibrationFactor(module,icol,irow);
+		if(fDebug>2)
+			printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n", 
+			   calo.Data(),module,icol,irow,frac,factor,cells->GetCellAmplitude(absId));
+		
+		energy += cells->GetCellAmplitude(absId)*factor*frac;
+	}
+	
+	if(fDebug>1)
+		printf("AliCalorimeterUtils::RecalibrateClusterEnergy(ESD) - Energy before %f, after %f\n",cluster->E(),energy);
+	
+	return energy;
+	
+}
+
 
 //________________________________________________________________
 void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEvent) 
