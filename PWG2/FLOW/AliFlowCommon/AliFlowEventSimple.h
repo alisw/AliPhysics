@@ -52,6 +52,8 @@ class AliFlowEventSimple: public TObject {
   void    Print(Option_t* option = "") const;      //method to print stats
   
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
+  Int_t    GetRefMultiplicity() const               { return fRefMultiplicity; }
+  void     SetRefMultiplicity( Int_t m )            { fRefMultiplicity = m; }
   Int_t    GetEventNSelTracksRP() const             { return fNumberOfRPs; } 
   void     SetEventNSelTracksRP(Int_t nr)           { fNumberOfRPs = nr; }  
   Double_t GetMCReactionPlaneAngle() const          { return fMCReactionPlaneAngle; }
@@ -80,6 +82,7 @@ class AliFlowEventSimple: public TObject {
 
  protected:
   TObjArray*              fTrackCollection;           //-> collection of tracks
+  Int_t                   fRefMultiplicity;           // reference multiplicity
   Int_t                   fNumberOfTracks;            // number of tracks
   Int_t                   fNumberOfRPs;               // number of tracks that have passed the RP selection
   Double_t                fMCReactionPlaneAngle;      // the angle of the reaction plane from the MC truth
