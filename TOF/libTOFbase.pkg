@@ -33,9 +33,21 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFCTPLatency.cxx \
 	AliTOFT0Fill.cxx \
 	AliTOFRunParams.cxx \
+	AliTOFResponseParams.cxx \
 	AliTOFT0FillOnlineCalib.cxx \
 	AliTOFLvHvDataPoints.cxx \
-	AliTOFDCSmaps.cxx
+	AliTOFDCSmaps.cxx\
+	AliTOFChainSummaryData.cxx\
+	AliTOFDRMSummaryData.cxx\
+	AliTOFDecoderSummaryData.cxx\
+	AliTOFLTMSummaryData.cxx\
+	AliTOFTRMSummaryData.cxx\
+	AliTOFDecoderV2.cxx\
+	AliTOFTDCError.cxx\
+	AliTOFTDCErrorBuffer.cxx\
+	AliTOFTDCHit.cxx\
+	AliTOFTDCHitBuffer.cxx\
+	AliTOFReadoutInfo.cxx	
 
 
 HDRS:= $(SRCS:.cxx=.h)

@@ -35,6 +35,7 @@ class AliTOFDRMConfig
   Int_t fPulserSection2; // pulser section 2
   Int_t fPrePulseEnable; // pre pulse enable
   Int_t fSelectMode; // select mode
+  Int_t fBLTMask; // BLT mask
 
  public:
 
@@ -53,6 +54,7 @@ class AliTOFDRMConfig
   Int_t GetPulserSection2() const {return fPulserSection2;}; // get pulser section 2
   Int_t GetPrePulserEnable() const {return fPrePulseEnable;}; // get pre pulse enable
   Int_t GetSelectMode() const {return fSelectMode;}; // get select mode
+  Int_t GetBLTMask() const {return fBLTMask;}; // get BLT mask
 
 };
 
@@ -66,6 +68,10 @@ class AliTOFLTMConfig
   Int_t fOptLinkId; // opt link id
   Int_t fVMEAddress; // VME address
   Int_t fThreshold; // threshold
+  Int_t fTriggerEnable; // trigger enable
+  Int_t fTriggerMask1; // trigger mask1
+  Int_t fTriggerMask2; // trigger mask2
+#if 0
   Int_t fDelayLine0; // delay line 0
   Int_t fDelayLine1; // delay line 1
   Int_t fDelayLine2; // delay line 2
@@ -74,6 +80,7 @@ class AliTOFLTMConfig
   Int_t fDelayLine5; // delay line 5
   Int_t fDelayLine6; // delay line 6
   Int_t fDelayLine7; // delay line 7
+#endif
 
  public:
 
@@ -82,6 +89,10 @@ class AliTOFLTMConfig
   Int_t GetOptLinkId() const {return fOptLinkId;}; // get opt link id
   Int_t GetVMEAddress() const {return fVMEAddress;}; // get VME address
   Int_t GetThreshold() const {return fThreshold;}; // get threshold
+  Int_t GetTriggerEnable() const {return fTriggerEnable;}; // get trigger enable
+  Int_t GetTriggerMask1() const {return fTriggerMask1;}; // get trigger mask1
+  Int_t GetTriggerMask2() const {return fTriggerMask2;}; // get trigger mask2
+#if 0
   Int_t GetDelayLine0() const {return fDelayLine0;}; // get delay line 0
   Int_t GetDelayLine1() const {return fDelayLine1;}; // get delay line 1
   Int_t GetDelayLine2() const {return fDelayLine2;}; // get delay line 2
@@ -90,6 +101,7 @@ class AliTOFLTMConfig
   Int_t GetDelayLine5() const {return fDelayLine5;}; // get delay line 5
   Int_t GetDelayLine6() const {return fDelayLine6;}; // get delay line 6
   Int_t GetDelayLine7() const {return fDelayLine7;}; // get delay line 7
+#endif
 
 };
 
@@ -104,10 +116,12 @@ class AliTOFTRMConfig
   Int_t fVMEAddress; // VME address
   Int_t fMatchingWindow; // matching window
   Int_t fLatencyWindow; // latency window
+  Int_t fBunchCrossingAdjust; // bunch crossing adjust
   Int_t fTriggerLevelConfig; // trigger level config
   Int_t fTriggerSubtraction; // trigger subtracion
   Int_t fEdgeDetection; // edge detection
   Int_t fPackingFlag; // packing flag
+  Int_t fLVStatus; // LV status
   Int_t fChainAFlag; // chain A flag
   Int_t fChainBFlag; // chain B flag
   Int_t fActiveChipA; // active chip A
@@ -131,10 +145,12 @@ class AliTOFTRMConfig
   Int_t GetVMEAddress() const {return fVMEAddress;}; // get VME address
   Int_t GetMatchingWindow() const {return fMatchingWindow;}; // get matching window
   Int_t GetLatencyWindow() const {return fLatencyWindow;}; // get latency window
+  Int_t GetBunchCrossingAdjust() const {return fBunchCrossingAdjust;}; // get bunch crossing adjust
   Int_t GetTriggerLevelConfig() const {return fTriggerLevelConfig;}; // get trigger level config
   Int_t GetTriggerSubtraction() const {return fTriggerSubtraction;}; // get trigger subtracion
   Int_t GetEdgeDetection() const {return fEdgeDetection;}; // get edge detection
   Int_t GetPackingFlag() const {return fPackingFlag;}; // get packing flag
+  Int_t GetLVStatus() const {return fLVStatus;}; // get LV status
   Int_t GetChainAFlag() const {return fChainAFlag;}; // get chain A flag
   Int_t GetChainBFlag() const {return fChainBFlag;}; // get chain B flag
   Int_t GetActiveChipA() const {return fActiveChipA;}; // get active chip A
@@ -201,6 +217,8 @@ class AliTOFFEEConfig
   time_t fDumpTime; // dump time
   Int_t fRunNumber; // run number
   Int_t fRunType; // run type
+  Int_t fBytes; // bytes
+  Int_t fCTTMTriggerMask[fgkNumberOfCrates]; // CTTM trigger mask
   AliTOFCrateConfig fCrateConfig[fgkNumberOfCrates]; // crate config array
 
  public:
@@ -210,6 +228,8 @@ class AliTOFFEEConfig
   time_t GetDumpTime() const {return fDumpTime;}; // get dump time
   Int_t GetRunNumber() const {return fRunNumber;}; // get run number
   Int_t GetRunType() const {return fRunType;}; // get run type
+  Int_t GetBytes() const {return fBytes;}; // get bytes
+  Int_t GetCTTMTriggerMask(UShort_t iCrate) const {return iCrate < GetNumberOfCrates() ? fCTTMTriggerMask[iCrate] : NULL;}; // get CTTM trigger mask
   AliTOFCrateConfig *GetCrateConfig(UShort_t iCrate) {return iCrate < GetNumberOfCrates() ? &fCrateConfig[iCrate] : NULL;}; // get crate config
 
 };

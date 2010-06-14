@@ -126,6 +126,8 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliRawEventHeaderBase.h"
 #include "AliRawDataHeader.h"
 
+#include "AliTOFDecoderV2.h"
+
 ClassImp(AliTOFRawStream)
 
 const Int_t AliTOFRawStream::fgkddlBCshift[72] = 
@@ -224,6 +226,7 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fRawReader(rawReader),
   fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDecoder(new AliTOFDecoder()),
+  fDecoderV2(new AliTOFDecoderV2()),
   fDDL(-1),
   fTRM(-1),
   fTRMchain(-1),
@@ -291,6 +294,7 @@ AliTOFRawStream::AliTOFRawStream():
   fRawReader(0x0),
   fTOFrawData(new TClonesArray("AliTOFrawData",1000)),
   fDecoder(new AliTOFDecoder()),
+  fDecoderV2(new AliTOFDecoderV2()),
   fDDL(-1),
   fTRM(-1),
   fTRMchain(-1),
@@ -355,6 +359,7 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fRawReader(stream.fRawReader),
   fTOFrawData(stream.fTOFrawData),
   fDecoder(new AliTOFDecoder()),
+  fDecoderV2(new AliTOFDecoderV2()),
   fDDL(stream.fDDL),
   fTRM(stream.fTRM),
   fTRMchain(stream.fTRMchain),
@@ -493,7 +498,8 @@ AliTOFRawStream::~AliTOFRawStream()
   fPackedDigits = 0;
 
   delete fDecoder;
-
+  delete fDecoderV2;
+  
   fTOFrawData->Clear();
   delete fTOFrawData;
 
@@ -1345,24 +1351,24 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   if (iPlate==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kPlateError,"plate = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number (%2d %2d %2d)!\n",
-	   nDDL, nTRM, nTDC);
+    AliWarningGeneral("AliTOFRawStream", Form("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the plate number (%2d %2d %2d)!\n",
+			 nDDL, nTRM, nTDC));
   }
 
   Int_t iStrip = Equip2VolNstrip(iDDL, nTRM, nTDC);
   if (iStrip==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kStripError,"strip = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the strip number (%2d %2d %2d)!\n",
-	   nDDL, nTRM, nTDC);
+    AliWarningGeneral("AliTOFRawStream", Form("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the strip number (%2d %2d %2d)!\n",
+			 nDDL, nTRM, nTDC));
   }
 
   Int_t iPadAlongTheStrip  = Equip2VolNpad(iDDL, iChain, nTDC, iCH);
   if (iPadAlongTheStrip==-1) {
     /*if (fRawReader)
       fRawReader->AddMajorErrorLog(kPadAlongStripError,"pad = -1");*/
-    printf("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the pad number along the strip (%2d %1d %2d %1d)!\n",
-	   nDDL, iChain, nTDC, iCH);
+    AliWarningGeneral("AliTOFRawStream", Form("Warning -> AliTOFRawStream::EquipmentId2VolumeId: Problems with the pad number along the strip (%2d %1d %2d %1d)!\n",
+			 nDDL, iChain, nTDC, iCH));
   }
   
   Int_t iPadX  = (Int_t)(iPadAlongTheStrip/(Float_t(AliTOFGeometry::NpadZ())));
@@ -1400,6 +1406,7 @@ Bool_t AliTOFRawStream::DecodeDDL(Int_t nDDLMin, Int_t nDDLMax, Int_t verbose = 
   }  
 
   //select required DDLs
+  fRawReader->Reset();
   fRawReader->Select("TOF", nDDLMin, nDDLMax);
 
   if (verbose)
@@ -1476,6 +1483,68 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
   //reset reader
   fRawReader->Reset();
 
+  if (verbose)
+    AliInfo("All done");
+    
+  return kFALSE;
+  
+}
+//-----------------------------------------------------------------------------
+Bool_t AliTOFRawStream::DecodeV2(Int_t verbose = 0) {
+  //
+  // Enhanced decoder method
+  //
+
+  Int_t currentEquipment;
+  Int_t currentDDL;
+  const AliRawDataHeader *currentCDH;
+
+  //pointers
+  UChar_t *data = 0x0;
+  
+  // read header
+  if (!fRawReader->ReadHeader()) return kTRUE;
+  
+  //get equipment infos
+  currentEquipment = fRawReader->GetEquipmentId();
+  currentDDL = fRawReader->GetDDLID();
+  currentCDH = fRawReader->GetDataHeader();
+  const Int_t kDataSize = fRawReader->GetDataSize();
+  const Int_t kDataWords = kDataSize / 4;
+  data = new UChar_t[kDataSize];
+  
+  if (verbose)
+    AliInfo(Form("Found equipment # %d header (DDL # %d): %d bytes (%d words)", currentEquipment, currentDDL, kDataSize, kDataWords));
+  
+  if (verbose)
+    AliInfo(Form("Reading equipment #%d (DDL # %d) data...", currentEquipment, currentDDL));
+  
+  //read equipment payload
+  if (!fRawReader->ReadNext(data, kDataSize))
+    {
+      fRawReader->AddMajorErrorLog(kDDLdataReading);
+      if (verbose)
+	AliWarning("Error while reading DDL data. Go to next equipment");
+      delete [] data;
+      data = 0x0;
+      return kTRUE;
+    }
+  
+  if (verbose)
+    AliInfo(Form("Equipment # %d (DDL # %d) data has been read", currentEquipment, currentDDL));
+  
+  
+  //set up the decoder
+  fDecoderV2->SetVerbose(verbose);
+  
+  //start decoding
+  if (fDecoderV2->Decode((UInt_t *)data, kDataWords) == kTRUE) {
+    fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
+    AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
+  }
+  
+  delete [] data;
+  
   if (verbose)
     AliInfo("All done");
     
@@ -1563,6 +1632,185 @@ AliTOFRawStream::LoadRawDataBuffers(Int_t indexDDL, Int_t verbose)
 
   if (verbose > 0)
     AliInfo("Done.");
+
+  return kFALSE;
+}
+
+//---------------------------------------------------------------------------
+Bool_t
+AliTOFRawStream::LoadRawDataBuffersV2(Int_t indexDDL, Int_t verbose)
+{
+  //
+  // To load the buffers
+  //
+
+  /*
+   * decode raw data and fill output array with TOF hits.
+   * decode algorithm may return with errors due to inconsistent
+   * raw data format detected during decoding process.
+   * decoder algorithm has internal recover procedure to deal with
+   * errors in a safe condition.
+   * 
+   * the following conditions will cause total hit rejection from
+   * specific boards where the condition is detected:
+   *
+   * --- within DRM payload (full DRM skipped) ---
+   * - no header/trailer detected
+   *
+   * --- within TRM payload (full TRM skippped) ---
+   * - no header/trailer detected
+   * - empty event inserted
+   * - bad event counter
+   * - bad CRC
+   * - ACQ mode off
+   *
+   * --- within chain payload (full chain skipped) ---
+   * - no header/trailer detected
+   * - bad status
+   * - bad event counter
+   *
+   * --- HPTDC (ful TDC skipped) ---
+   * - error detected
+   *
+   */
+
+  fTOFrawData->Clear();
+  fPackedDigits = 0;
+  
+  if (verbose > 0)
+    AliInfo(Form("Decoding raw data for DDL # %d ...", indexDDL));
+
+  //check and fix valid DDL range
+  if (indexDDL < 0){
+    indexDDL = 0;
+    fRawReader->AddMinorErrorLog(kDDLMinError);
+    AliWarning("Wrong DDL range: setting first DDL ID to 0");
+  }
+  if (indexDDL > 71){
+    indexDDL = 71;
+    fRawReader->AddMinorErrorLog(kDDLMaxError);
+    AliWarning("Wrong DDL range: setting last DDL ID to 71");
+  }  
+
+  //select required DDLs
+  fRawReader->Reset();
+  fRawReader->Select("TOF", indexDDL, indexDDL);
+
+  /* decode */
+  if (DecodeV2(verbose)) return kTRUE;
+
+  /* read and check CDH info */
+  const AliRawDataHeader *currentCDH = fRawReader->GetDataHeader();
+  Int_t currentMiniEventID = currentCDH->GetMiniEventID();
+  Int_t currentEventID1 = currentCDH->GetEventID1();
+
+  /* read decoder summary data */
+  AliTOFDecoderSummaryData *decodersd;
+  AliTOFDRMSummaryData *drmsd;
+  //  AliTOFLTMSummaryData *ltmsd;
+  AliTOFTRMSummaryData *trmsd;  
+  AliTOFChainSummaryData *chainsd;
+  AliTOFTDCHitBuffer *hitBuffer;
+  AliTOFTDCHit *hit;
+  AliTOFTDCErrorBuffer *errorBuffer;
+  AliTOFTDCError *error;
+  Bool_t tdcErrorFlag[15];
+  decodersd = fDecoderV2->GetDecoderSummaryData();
+
+  /* check error detected/recovered */
+  if (decodersd->GetErrorDetected()) {
+    AliWarning(Form("Error detected while decoding DDL %d (errorSlotID mask = %04x)", indexDDL, decodersd->GetErrorSlotID()));
+    if (decodersd->GetRecoveringError()) {
+      AliWarning("Couldn't recover from error");
+    }
+    else {
+      AliWarning("Error recovered, anyway something is probably lost");
+    }
+  }
+  /* check DRM header/trailer */
+  drmsd = decodersd->GetDRMSummaryData();
+  if (!drmsd->GetHeader() || !drmsd->GetTrailer()) {
+    AliWarning("DRM header/trailer missing, skip DDL");
+    return kTRUE;
+  }
+  /* check partecipating mask */
+  if (drmsd->GetPartecipatingSlotID() != drmsd->GetDecoderSlotEnableMask()) {
+    AliWarning(Form("DRM slot enable mask differs from decoder slot enable mask (%08x != %08x) in DDL %d", drmsd->GetSlotEnableMask(), drmsd->GetDecoderSlotEnableMask(), indexDDL));
+    for (Int_t ibit = 0; ibit < 11; ibit++)
+      if ((drmsd->GetPartecipatingSlotID() & (0x1 << ibit)) && !(drmsd->GetDecoderSlotEnableMask() & (0x1 << ibit)))
+	AliWarning(Form("readout slot %d data is missing in decoder", ibit + 2));
+  }
+  
+  /* get DRM data */
+  Int_t currentL0BCID = drmsd->GetL0BCID();
+
+  /* loop over TRM to get hits */
+  Int_t hitACQ, hitPS, hitSlotID, hitChain, hitTDC, hitChan, hitTimeBin, hitTOTBin, hitDeltaBC, hitL0L1Latency, hitLeading, hitTrailing, hitError;
+  Int_t currentBunchID;
+
+  /* loop over TRMs */
+  for (Int_t itrm = 0; itrm < 10; itrm++) {
+    trmsd = drmsd->GetTRMSummaryData(itrm);
+    /* check header/trailer */
+    if (!trmsd->GetHeader() || !trmsd->GetTrailer()) continue;
+    /* skip if TRM empty event detected */
+    if (trmsd->GetEBit() != 0) continue;
+    /* skip if bad TRM event counter detected */
+    if (trmsd->GetEventCounter() != drmsd->GetLocalEventCounter()) continue;
+    /* skip if bad TRM CRC detected */
+    if (trmsd->GetEventCRC() != trmsd->GetDecoderCRC()) continue;
+
+    /* loop over chains */
+    for (Int_t ichain = 0; ichain < 2; ichain++) {
+      chainsd = trmsd->GetChainSummaryData(ichain);
+    /* check header/trailer */
+      if (!chainsd->GetHeader() || !chainsd->GetTrailer()) continue;
+      /* skip if chain bad status detected */
+      if (chainsd->GetStatus() != 0) continue;
+      /* skip if bad chain event counter detected */
+      if (chainsd->GetEventCounter() != drmsd->GetLocalEventCounter()) continue;
+
+      currentBunchID = chainsd->GetBunchID();
+      hitBuffer = chainsd->GetTDCPackedHitBuffer();
+      errorBuffer = chainsd->GetTDCErrorBuffer();
+
+      /* check TDC errors and set TDC error flag */
+      for (Int_t itdc = 0; itdc < 15; itdc++) tdcErrorFlag[itdc] = kFALSE;
+      for (Int_t ierr = 0; ierr < errorBuffer->GetEntries(); ierr++) {
+	error = errorBuffer->GetError(ierr);
+	tdcErrorFlag[error->GetTDCID()] = kTRUE;
+      }
+
+      /* loop over hits */
+      for (Int_t ihit = 0; ihit < hitBuffer->GetEntries(); ihit++) {
+
+	/* get hit */
+	hit = hitBuffer->GetHit(ihit);
+	/* skip hit if coming from a TDC with error detected */
+	if (tdcErrorFlag[hit->GetTDCID()]) continue;
+
+	/* set info */
+	hitACQ = trmsd->GetACQBits();
+	hitPS = hit->GetPSBits();
+	hitSlotID = trmsd->GetSlotID();
+	hitChain = chainsd->GetChain();
+	hitTDC = hit->GetTDCID();
+	hitChan = hit->GetChan();
+	hitTimeBin = hit->GetHitTime();
+	hitTOTBin = hit->GetTOTWidth();
+	hitDeltaBC = currentBunchID - currentEventID1;
+	hitL0L1Latency = currentMiniEventID - currentL0BCID;
+	
+	hitLeading = hitTimeBin;
+	hitTrailing = -1;
+	hitError = -1;
+	
+	/* add hit */
+	TClonesArray &arrayTofRawData =  *fTOFrawData;
+	new (arrayTofRawData[fPackedDigits++]) AliTOFrawData(hitSlotID, hitChain, hitTDC, hitChan, hitTimeBin, hitTOTBin, hitLeading, hitTrailing, hitPS, hitACQ, hitError, hitDeltaBC, hitL0L1Latency);
+      }
+    }
+  }
 
   return kFALSE;
 }

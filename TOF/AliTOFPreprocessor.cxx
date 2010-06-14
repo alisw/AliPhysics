@@ -54,6 +54,7 @@
 #include "TF1.h"
 #include "TGeoManager.h"
 #include "AliGeomManager.h"
+#include "AliTOFReadoutInfo.h"
 
 // TOF preprocessor class.
 // It takes data from DCS and passes them to the class AliTOFDataDCS, which
@@ -745,21 +746,6 @@ AliTOFPreprocessor::ProcessT0Fill()
   /* get params from OCDB */
   AliCDBEntry *cdbe = NULL;
 
-  /* get T0-fill calibration params */
-  cdbe = GetFromOCDB("Calib", "T0FillOnlineCalib");
-  if (!cdbe) {
-    Log("cannot get \"T0FillOnlineCalib\" entry from OCDB");
-    return 21;
-  }
-  AliTOFT0FillOnlineCalib *t0FillOnlineCalibObject = (AliTOFT0FillOnlineCalib *)cdbe->GetObject();
-  if (!t0FillOnlineCalibObject) {
-    Log("cannot get \"T0FillOnlineCalib\" object from CDB entry");
-    return 21;
-  }
-  Float_t t0FillCalibOffset = t0FillOnlineCalibObject->GetOffset();
-  Float_t t0FillCalibCoefficient = t0FillOnlineCalibObject->GetCoefficient();
-  Log(Form("got \"T0FillOnlineCalib\" object: offset=%f coeff=%f", t0FillCalibOffset, t0FillCalibCoefficient));
-
   /* 
    * at this stage status object is not on OCDB yet
    * since it will be stored later. nevertheless we
@@ -872,6 +858,8 @@ AliTOFPreprocessor::ProcessT0Fill()
     timeps = timebin * AliTOFGeometry::TdcBinWidth();
     totns = totbin * AliTOFGeometry::ToTBinWidth() * 1.e-3;
     /* get calibration correction in ps */
+    
+
     channelOffline = (AliTOFChannelOffline *)offlineArray->At(index);
     if (totns < AliTOFGeometry::SlewTOTMin()) totns = AliTOFGeometry::SlewTOTMin();
     if (totns > AliTOFGeometry::SlewTOTMax()) totns = AliTOFGeometry::SlewTOTMax();
@@ -907,42 +895,42 @@ AliTOFPreprocessor::ProcessT0Fill()
   }
   Float_t maxBinCenter = hT0Fill->GetBinCenter(maxBin);
 
-  /* rough landau fit of the edge */
-  TF1 *landau = (TF1 *)gROOT->GetFunction("landau");
-  landau->SetParameter(1, maxBinCenter);
+  /* rough fit of the edge */
+  TF1 *gaus = (TF1 *)gROOT->GetFunction("gaus");
+  gaus->SetParameter(1, maxBinCenter);
   Float_t fitMin = maxBinCenter - 1000.; /* fit from 1 ns before max */
-  Float_t fitMax = maxBinCenter + binWidth; /* fit until a bin width above max */
-  hT0Fill->Fit("landau", "q0", "", fitMin, fitMax);
-  /* get rough landau mean and sigma to set a better fit range */
-  Float_t mean = landau->GetParameter(1);
-  Float_t sigma = landau->GetParameter(2);
-  /* better landau fit of the edge */
-  fitMin = maxBinCenter - 3. * sigma;
-  fitMax = mean;
-  hT0Fill->Fit("landau", "q0", "", fitMin, fitMax);
+  Float_t fitMax = maxBinCenter + 1000.; /* fit until 1 ns above max */
+  hT0Fill->Fit("gaus", "q0", "", fitMin, fitMax);
+  /* better fit of the edge */
+  Float_t mean, sigma;
+  for (Int_t istep = 0; istep < 10; istep++) {
+    mean = gaus->GetParameter(1);
+    sigma = gaus->GetParameter(2);
+    fitMin = mean - 3. * sigma;
+    fitMax = mean;
+    hT0Fill->Fit("gaus", "q0", "", fitMin, fitMax);
+  }
   /* print params */
-  mean = landau->GetParameter(1);
-  sigma = landau->GetParameter(2);
-  Float_t meane = landau->GetParError(1);
-  Float_t sigmae = landau->GetParError(2);
+  mean = gaus->GetParameter(1);
+  sigma = gaus->GetParameter(2);
+  Float_t meane = gaus->GetParError(1);
+  Float_t sigmae = gaus->GetParError(2);
   Log(Form("edge fit: mean  = %f +- %f ps", mean, meane));
   Log(Form("edge fit: sigma = %f +- %f ps", sigma, sigmae));
-  Float_t edge = mean - 3. * sigma;
-  Float_t edgee = TMath::Sqrt(meane * meane + 3. * sigmae * 3. * sigmae);
-  Log(Form("edge fit: edge = %f +- %f ps", edge, edgee));
-  /* apply calibration to get T0-fill from egde */
-  Float_t t0Fill = edge * t0FillCalibCoefficient + t0FillCalibOffset;
-  Log(Form("estimated T0-fill: %f ps", t0Fill));
-  /* check edge error */
-  if (edgee > 300.) {
-    Log("edge error is large: store default T0-fill value (0 ps)");
-    t0Fill = 0.;
+  /* check error */
+  if (meane > 300.) {
+    Log("error on mean is large: store default T0-fill value (0 ps)");
+    mean = 0.;
+  }
+  if (sigmae > 300.) {
+    Log("error on sigma is large: store default TOFreso value (200 ps)");
+    sigma = 200.;
   }
 
   /* create RunParams object */
   UInt_t timestamp[1] = {0};
-  Float_t t0[1] = {t0Fill};
-  Float_t tofReso[1] = {-1.};
+  Float_t t0[1] = {mean};
+  Float_t tofReso[1] = {sigma};
   Float_t t0Spread[1] = {-1.};
   AliTOFRunParams *runParamsObject = new AliTOFRunParams(1);
   runParamsObject->SetTimestamp(timestamp);
@@ -1067,7 +1055,7 @@ AliTOFPreprocessor::ProcessNoiseCalibTrg()
       }
       else Log(Form("channel %d noise status unchanged", ich));
     }
-    else {
+    else if ((rate + 3. * rate_err) < noiseThr) {
       if (fStatus->GetNoiseStatus(ich) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) {
 	Log(Form("channel %d noise status changed from Bad to Ok", ich));
 	fStatus->SetNoiseStatus(ich, AliTOFChannelOnlineStatusArray::kTOFNoiseOk);
@@ -1092,6 +1080,134 @@ AliTOFPreprocessor::ProcessNoiseCalibTrg()
   }
 
   delete hNoiseRate;
+  filein->Close();
+  return 0;
+}
+
+//_____________________________________________________________________________
+
+UInt_t 
+AliTOFPreprocessor::ProcessReadout()
+{
+  // Processing data from DAQ to compute reaodut efficiency
+
+  Log("Processing Readout");
+
+  /* get file sources from FXS */
+  TList *fileList = GetFileSources(kDAQ, "READOUT");
+  if (!fileList || fileList->GetEntries() == 0) {
+    Log("cannot get DAQ source file list or empty list");
+    return 22;
+  }
+  Log(Form("got DAQ source file list: %d files", fileList->GetEntries()));
+  fileList->Print();
+
+  /* open input file (only one expected) */
+  TObjString *str = (TObjString *)fileList->At(0);
+  TString filename = GetFile(kDAQ, "READOUT", str->GetName());
+  Log(Form("opening input file: source=%s, filename=%s", str->String().Data(), filename.Data()));
+  TFile *filein = TFile::Open(filename.Data());
+  if (!filein || !filein->IsOpen()) {
+    Log("cannot open input file");
+    return 23;
+  }
+
+  /* get histo from input file */
+  TH1F *hChainEfficiency = (TH1F *)filein->Get("hChainEfficiency");
+  if (!hChainEfficiency) {
+    Log("cannot get \"hChainEfficiency\" histo");
+    return 23;
+  }
+
+  /* fill channel efficiency histo */
+
+ /* temporarly disable warnings */
+  AliLog::EType_t logLevel = (AliLog::EType_t)AliLog::GetGlobalLogLevel();
+  AliLog::SetGlobalLogLevel(AliLog::kError);
+
+  TH1F *hChannelEfficiency = new TH1F("hChannelEfficiency", "Channel readout efficiency;index;efficiency", fNChannels, 0., fNChannels);
+  Int_t chainIndex, det[5], dummy, index;
+  Float_t effi, effi_err;
+  /* loop over DDLs */
+  for (Int_t iddl = 0; iddl < 72; iddl++) {
+    /* loop over TRMs */
+    for (Int_t itrm = 0; itrm < 10; itrm++) {
+      /* loop over chains */
+      for (Int_t ichain = 0; ichain < 2; ichain++) {
+	chainIndex = ichain + 2 * itrm + 20 * iddl;
+	effi = hChainEfficiency->GetBinContent(chainIndex + 1);
+	effi_err = hChainEfficiency->GetBinError(chainIndex + 1);
+	/* loop over TDCs */
+	for (Int_t itdc = 0; itdc < 15; itdc++) {
+	  /* loop over channels */
+	  for (Int_t ichannel = 0; ichannel < 8; ichannel++) {
+
+	    /* get channel index */
+	    AliTOFRawStream::EquipmentId2VolumeId(iddl, itrm + 3, ichain, itdc, ichannel, det);
+	    dummy = det[4];
+	    det[4] = det[3];
+	    det[3] = dummy;
+	    /* check valid index */
+	    if (det[0] < 0 || det[0] > 17 ||
+		det[1] < 0 || det[1] > 5 ||
+		det[2] < 0 || det[2] > 18 ||
+		det[3] < 0 || det[3] > 1 ||
+		det[4] < 0 || det[4] > 47) continue;
+	    index = AliTOFGeometry::GetIndex(det);
+
+	    /* set channel efficiency */
+	    hChannelEfficiency->SetBinContent(index + 1, effi);
+	    hChannelEfficiency->SetBinError(index + 1, effi_err);
+
+	  }
+	}
+      }
+    }
+  }
+
+  /* re-enable warnings */
+  AliLog::SetGlobalLogLevel(logLevel);
+
+  /* store reference data */
+  if(fStoreRefData){
+    /* setup TOF readout info object */
+    AliTOFReadoutInfo readoutInfo;
+    readoutInfo.SetChainEfficiency((TH1F *)filein->Get("hChainEfficiency"));
+    readoutInfo.SetTRMData((TH1F *)filein->Get("hTRMData"));
+    readoutInfo.SetTRMEmptyEvent((TH1F *)filein->Get("hTRMEmptyEvent"));
+    readoutInfo.SetTRMBadEventCounter((TH1F *)filein->Get("hTRMBadEventCounter"));
+    readoutInfo.SetTRMBadCRC((TH1F *)filein->Get("hTRMBadCRC"));
+    readoutInfo.SetChainData((TH1F *)filein->Get("hChainData"));
+    readoutInfo.SetChainBadStatus((TH1F *)filein->Get("hChainBadStatus"));
+    readoutInfo.SetChainBadEventCounter((TH1F *)filein->Get("hChainBadEventCounter"));
+    readoutInfo.SetTDCError((TH1F *)filein->Get("hTDCError"));
+    readoutInfo.SetTDCErrorFlags((TH2F *)filein->Get("hTDCErrorFlags"));
+
+    AliCDBMetaData metaDataHisto;
+    metaDataHisto.SetBeamPeriod(0);
+    metaDataHisto.SetResponsible("Roberto Preghenella");
+    metaDataHisto.SetComment("readout info data");
+    if (!StoreReferenceData("Calib","ReadoutInfo", &readoutInfo, &metaDataHisto)) {
+      Log("error while storing reference data");
+      filein->Close();
+      return 23;
+    }
+    Log("reference data successfully stored");
+  }
+
+  AliCDBMetaData metaData;
+  metaData.SetBeamPeriod(0);
+  metaData.SetResponsible("Roberto Preghenella");
+  metaData.SetComment("online ReadoutEfficiency measurement");
+  if (!Store("Calib", "ReadoutEfficiency", hChannelEfficiency, &metaData, 0, kFALSE)) {
+    Log("error while storing ReadoutEfficiency object");
+    delete hChannelEfficiency;
+    filein->Close();
+    return 23;
+  }
+  Log("ReadoutEfficiency object successfully stored");
+
+  delete hChannelEfficiency;
   filein->Close();
   return 0;
 }
@@ -1714,9 +1830,10 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
     //    Int_t iresultDAQ = ProcessOnlineDelays();
     Int_t iresultDAQ = ProcessT0Fill();
     Int_t iresultNoiseCalib = ProcessNoiseCalibTrg();
+    Int_t iresultReadout = ProcessReadout();
     Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
     Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
-    return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps;
+    return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps+iresultReadout;
   }
 
   // storing

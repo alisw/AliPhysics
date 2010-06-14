@@ -40,9 +40,23 @@
 #pragma link C++ class  AliTOFCTPLatency+;
 #pragma link C++ class  AliTOFT0Fill+;
 #pragma link C++ class  AliTOFRunParams+;
+#pragma link C++ class  AliTOFResponseParams+;
 #pragma link C++ class  AliTOFT0FillOnlineCalib+;
 #pragma link C++ class  AliTOFDCSmaps+;
 #pragma link C++ class  AliTOFLvHvDataPoints+;
+
+#pragma link C++ class  AliTOFChainSummaryData+;
+#pragma link C++ class  AliTOFDRMSummaryData+;
+#pragma link C++ class  AliTOFDecoderSummaryData+;
+#pragma link C++ class  AliTOFLTMSummaryData+;
+#pragma link C++ class  AliTOFTRMSummaryData+;
+#pragma link C++ class  AliTOFDecoderV2+;
+#pragma link C++ class  AliTOFTDCError+;
+#pragma link C++ class  AliTOFTDCErrorBuffer+;
+#pragma link C++ class  AliTOFTDCHit+;
+#pragma link C++ class  AliTOFTDCHitBuffer+;
+
+#pragma link C++ class  AliTOFReadoutInfo+;
 
 
 #endif

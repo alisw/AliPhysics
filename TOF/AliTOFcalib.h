@@ -44,6 +44,8 @@ class AliTOFDeltaBCOffset;
 class AliTOFCTPLatency;
 class AliTOFT0Fill;
 class AliTOFRunParams;
+class AliTOFResponseParams;
+class AliESDEvent;
 
 class AliTOFcalib:public TTask{
 public:
@@ -76,6 +78,7 @@ public:
   AliTOFCTPLatency *GetCTPLatency() const {return fCTPLatency;};
   AliTOFT0Fill *GetT0Fill() const {return fT0Fill;};
   AliTOFRunParams *GetRunParams() const {return fRunParams;};
+  AliTOFResponseParams *GetResponseParams() const {return fResponseParams;};
 
   // Methods to retrieve/write parameters from/on CDB
   // writing
@@ -142,6 +145,13 @@ public:
   Bool_t ReadT0FillFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadRunParamsFromCDB(const Char_t *sel, Int_t nrun);
 
+  Bool_t Init(Int_t run = -1); // init
+  Double_t GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l0l1, UInt_t timestamp); // get time correction
+  void CalibrateESD(AliESDEvent *event); // calibrate ESD
+  void SetRemoveMeanT0(Bool_t value) {fRemoveMeanT0 = value;}; // setter
+  void SetCorrectTExp(Bool_t value) {fCorrectTExp = value;}; // setter
+  Bool_t IsChannelEnabled(Int_t index); // is channel enabled
+
 private:
   Int_t fNChannels; // number of TOF channels
 
@@ -169,8 +179,13 @@ private:
   AliTOFCTPLatency *fCTPLatency; // CTP latency
   AliTOFT0Fill *fT0Fill; // T0 fill
   AliTOFRunParams *fRunParams; // run params
+  AliTOFResponseParams *fResponseParams; // run params
+  
+  Bool_t fInitFlag; // init flag
+  Bool_t fRemoveMeanT0; // remove mean T0
+  Bool_t fCorrectTExp; // correct expected time
 
-  ClassDef(AliTOFcalib,9);
+  ClassDef(AliTOFcalib,10);
 };
 
 #endif // AliTOFcalib_H

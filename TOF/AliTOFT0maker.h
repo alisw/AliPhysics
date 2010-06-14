@@ -18,46 +18,56 @@
 class TH1F;
 class AliESDEvent;
 
-class AliTOFcalibHisto;
+class AliESDpid;
 class AliTOFT0v1;
+class AliTOFcalib;
 
 class AliTOFT0maker : public TObject {
 public:
   
-  AliTOFT0maker() ;
+  AliTOFT0maker() ; // default constructor
+  AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib); // overloaded constructor
   virtual ~AliTOFT0maker() ; // dtor
-  AliTOFT0maker(const AliTOFT0maker & t);
-  AliTOFT0maker & operator=(const AliTOFT0maker & t);
  
-  void SetESDdata(Bool_t val=kTRUE){fESDswitch=val;};
-
   // return (fCalculated[0]=event time -- fCalculated[1]=sigma event time in ps -- fCalculated[2]=mean event time for each fill -- fCalculated[3]=number of tracks at the TOF level) if you can subtruct the event time; return NULL if there is no event time
-  Double_t *RemakePID(AliESDEvent *esd,Double_t t0time=0.,Double_t t0sigma=1000.); // t0time and t0sigma in ps
+  Double_t *ComputeT0TOF(AliESDEvent *esd,Double_t t0time=0.,Double_t t0sigma=1000.); // t0time and t0sigma in ps
+  void ApplyT0TOF(AliESDEvent *esd);
+  Float_t GetExpectedSigma(Float_t mom, Float_t tof, Float_t mass);
+  Double_t  *GetT0p(Float_t p);
 
-  void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;};// TOF timeresolution in [s] e.g. for 120 ps -> 1.2e-10
-  Double_t  GetTimeResolution() const {return fTimeResolution;}
+  void      SetTimeResolution(Double_t timeresolution){fTimeResolution=timeresolution;};// TOF timeresolution in [ps]
+  Double_t  GetTimeResolution() const {return fTimeResolution;} // Get TOF Time Resolution
+  void SetT0FillWidth(Float_t width){fT0width = width;}; // in ps
   
   void LoadChannelMap(char *filename="$ALICE_ROOT/TOF/enableMap.104892.root"); //load the enable channel map
-  void ApplyMask(AliESDEvent * const esd);
+  void ApplyMask(AliESDEvent * const esd); // Apply the channel mask
   
   void SetNoTOFT0(Bool_t status=kTRUE){fNoTOFT0=status;}; // disable the TOF T0 info
-  void SetMaskOffChannel(Bool_t status=kTRUE){fKmask=status;}; // swith for the map off channel
-  
+  void SetMaskOffChannel(Bool_t status=kTRUE){fKmask=status;}; // switch for the map off channel
+
+  Float_t  TuneForMC(AliESDEvent *esd); // set enabled channeld, add a smeared t0, add a TOF smearing, return true(smeared) T0 event
+
+
  private:
-  void TakeTimeRawCorrection(AliESDEvent * const esd);
-  void RemakeTOFpid(AliESDEvent *esd,Float_t timezero);
-  Double_t GetT0Fill() const;
-  
-  AliTOFcalibHisto *fCalib; // TOF calibration object pointer
-  
-  Int_t fnT0; // total number of T0-TOF
-  Int_t fiT0; // last T0-TOF used for T0 fill
-  Double_t fT0fill[1000];  // array for dynamical t0 fill calculation
-  Double_t fT0sigmaTOF[1000]; // array for dynamical t0 fill resolution
+
+  AliTOFT0maker(const AliTOFT0maker &);
+  AliTOFT0maker & operator=(const AliTOFT0maker &);
+
+  void SetTOFResponse();
+
+  AliTOFT0v1 *fT0TOF; // T0-TOF
+  AliESDpid *fPIDesd; // PID esd
+  Bool_t fExternalPIDFlag; // external PID flag
+  AliTOFcalib *fTOFcalib; // TOF calibration
+
+  Double_t fT0pt[10],fT0ptSigma[10]; // T0 and T0sigma in p-bins
 
   Bool_t fNoTOFT0;   // swithc to avoid T0-TOF is used
-  Bool_t fESDswitch; // if you want take the ESD time instead of the raw + time slewing correction
-  
+
+  Float_t fPtCutMin[10]; // min values for p bins
+  Float_t fPtCutMax[10]; // max values for p bins
+  Double_t fT0cur[2]; // current T0 and T0 sigma
+ 
   Double_t fCalculated[8]; // contains the parameters with the event time
   Double_t fTimeResolution;  // global time resolution used to calculate T0
   
@@ -66,10 +76,10 @@ public:
   TH1F *fHmapChannel; // histo with the channel map
   Bool_t fKmask; // switch if you want apply a channel filter
   
-  static const Int_t fgkNmaxT0step = 500; //number of steps in the t0 fill calculation
+  Float_t fT0width; // T0 FILL width
 
   ClassDef(AliTOFT0maker,2);  // Calculate the time zero using TOF detector */
   
 };
 
-#endif // ALITOFT0MAKER_H
+#endif // ALITOFT0MAKERANA_H

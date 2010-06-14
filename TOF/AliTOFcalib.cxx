@@ -117,6 +117,9 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFCTPLatency.h"
 #include "AliTOFT0Fill.h"
 #include "AliTOFRunParams.h"
+#include "AliTOFResponseParams.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 class TROOT;
 class TStyle;
@@ -148,7 +151,11 @@ AliTOFcalib::AliTOFcalib():
   fDeltaBCOffset(NULL),
   fCTPLatency(NULL),
   fT0Fill(NULL),
-  fRunParams(NULL)
+  fRunParams(NULL),
+  fResponseParams(NULL),
+  fInitFlag(kFALSE),
+  fRemoveMeanT0(kTRUE),
+  fCorrectTExp(kFALSE)
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
@@ -176,7 +183,11 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fDeltaBCOffset(NULL),
   fCTPLatency(NULL),
   fT0Fill(NULL),
-  fRunParams(NULL)
+  fRunParams(NULL),
+  fResponseParams(NULL),
+  fInitFlag(calib.fInitFlag),
+  fRemoveMeanT0(calib.fRemoveMeanT0),
+  fCorrectTExp(calib.fCorrectTExp)
 {
   //TOF Calibration Class copy ctor
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
@@ -196,6 +207,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   if (calib.fCTPLatency) fCTPLatency = new AliTOFCTPLatency(*calib.fCTPLatency);
   if (calib.fT0Fill) fT0Fill = new AliTOFT0Fill(*calib.fT0Fill);
   if (calib.fRunParams) fRunParams = new AliTOFRunParams(*calib.fRunParams);
+  if (calib.fResponseParams) fResponseParams = new AliTOFResponseParams(*calib.fResponseParams);
 }
 
 //____________________________________________________________________________ 
@@ -249,6 +261,13 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
     if (fRunParams) *fRunParams = *calib.fRunParams;
     else fRunParams = new AliTOFRunParams(*calib.fRunParams);
   }
+  if (calib.fResponseParams) {
+    if (fResponseParams) *fResponseParams = *calib.fResponseParams;
+    else fResponseParams = new AliTOFResponseParams(*calib.fResponseParams);
+  }
+  fInitFlag = calib.fInitFlag;
+  fRemoveMeanT0 = calib.fRemoveMeanT0;
+  fCorrectTExp = calib.fCorrectTExp;
 
   return *this;
 }
@@ -2069,3 +2088,191 @@ AliTOFcalib::ReadRunParamsFromCDB(const Char_t *sel , Int_t nrun)
   return kTRUE; 
 }
 
+//----------------------------------------------------------------------------
+
+Bool_t 
+AliTOFcalib::Init(Int_t run)
+{
+  /*
+   * init
+   */
+
+  if (fInitFlag) {
+    AliWarning("the class was already initialized, re-initialize it");
+    fInitFlag = kFALSE;
+  }
+  
+  /* read channel status array */
+  if (!ReadParOnlineStatusFromCDB("TOF/Calib", run)) {
+    AliError("cannot get \"Status\" object from OCDB");
+    return kFALSE;
+  }
+  /* get par offline array */
+  if (!ReadParOfflineFromCDB("TOF/Calib", run)) {
+    AliError("cannot get \"ParOffline\" object from OCDB");
+    return kFALSE;
+  }
+  /* get deltaBC offset obj */
+  if (!ReadDeltaBCOffsetFromCDB("TOF/Calib", run)) {
+    AliError("cannot get \"DeltaBCOffset\" object from OCDB");
+    return kFALSE;
+  }
+  /* get CTP latency obj */
+  if (!ReadCTPLatencyFromCDB("TOF/Calib", run)) {
+    AliError("cannot get \"CTPLatency\" object from OCDB");
+    return kFALSE;
+  }
+  /* get run params obj */
+  if (!ReadRunParamsFromCDB("TOF/Calib", run)) {
+    AliError("cannot get \"RunParams\" object from OCDB");
+    return kFALSE;
+  }
+  /* get response params */
+  if (fCorrectTExp) {
+    TFile *responseFile = TFile::Open("$ALICE_ROOT/TOF/data/AliTOFresponsePar.root");
+    if (!responseFile || !responseFile->IsOpen()) {
+      AliError("cannot open \"ResponseParams\" local file");
+      return kFALSE;
+    }
+    fResponseParams = (AliTOFResponseParams *)responseFile->Get("ResponseParams");
+    if (!fResponseParams) {
+      AliError("cannot get \"ResponseParams\" object from local file");
+      return kFALSE;
+    }
+    responseFile->Close();
+  }
+
+  /* all done */
+  fInitFlag = kTRUE;
+  return kTRUE;
+
+}
+
+//----------------------------------------------------------------------------
+
+Double_t
+AliTOFcalib::GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l0l1, UInt_t timestamp)
+{
+  /*
+   * get time correction
+   */
+
+  if (!fInitFlag) {
+    AliError("class not yet initialized. Initialize it before.");
+    return 0.;
+  }
+
+  /* get calibration params */
+  AliTOFChannelOffline *parOffline = (AliTOFChannelOffline *)fTOFCalOffline->At(index);
+  Int_t deltaBCOffset = fDeltaBCOffset->GetDeltaBCOffset();
+  Float_t ctpLatency = fCTPLatency->GetCTPLatency();
+  Float_t tdcLatencyWindow = fStatus->GetLatencyWindow(index) * 1.e3;
+  Float_t timezero = fRunParams->EvalT0(timestamp);
+  /* check whether to remove mean T0.
+   * useful when one wants to compute mean T0 */
+  if (!fRemoveMeanT0) timezero = 0.;
+
+  /* compute correction */
+  Double_t corr = 0.;
+  /* deltaBC correction */
+  deltaBC = deltaBCOffset; /* inhibit deltaBC correction for the time being */
+  corr += (deltaBC - deltaBCOffset) * AliTOFGeometry::BunchCrossingBinWidth();
+  /* L0-L1 latency correction */
+  corr -= l0l1 * AliTOFGeometry::BunchCrossingBinWidth();
+  /* CTP latency correction */
+  corr -= ctpLatency;
+  /* TDC latency window correction */
+  corr += tdcLatencyWindow;
+  /* time-zero correction */
+  corr += timezero;
+  /* time calibration correction */
+  if (tot < AliTOFGeometry::SlewTOTMin()) 
+    tot = AliTOFGeometry::SlewTOTMin();
+  if (tot > AliTOFGeometry::SlewTOTMax()) 
+    tot = AliTOFGeometry::SlewTOTMax();
+  for (Int_t islew = 0; islew < 6; islew++)
+    corr += parOffline->GetSlewPar(islew) * TMath::Power(tot, islew) * 1.e3;
+
+  /* return correction */
+  return corr;
+}
+
+//----------------------------------------------------------------------------
+
+void
+AliTOFcalib::CalibrateESD(AliESDEvent *event)
+{
+  /*
+   * calibrate ESD
+   */
+
+  if (!fInitFlag) {
+    AliError("class not yet initialized. Initialize it before.");
+    return;
+  }
+
+  /* loop over tracks */
+  AliESDtrack *track = NULL;
+  Int_t index, l0l1, deltaBC;
+  Double_t time, tot, corr, texp[AliPID::kSPECIES];
+  UInt_t timestamp = event->GetTimeStamp();
+  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+
+    /* get track */
+    track = event->GetTrack(itrk);
+    if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
+    
+    /* get info */
+    index = track->GetTOFCalChannel();
+    time = track->GetTOFsignalRaw();
+    tot = track->GetTOFsignalToT();
+    l0l1 = track->GetTOFL0L1();
+    deltaBC = track->GetTOFDeltaBC();
+
+    /* get correction */
+    corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
+    
+    /* apply correction */
+    time -= corr;
+    
+    /* set new TOF signal */
+    track->SetTOFsignal(time);
+
+    /* correct expected time */
+    if (fCorrectTExp) {
+      /* get integrated times */
+      track->GetIntegratedTimes(texp);
+      /* loop over particle types and correct expected time */
+      for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++)
+	texp[ipart] += fResponseParams->EvalTExpCorr(ipart, track->P());
+      /* set integrated times */
+      track->SetIntegratedTimes(texp);
+    }
+
+  }
+
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
+AliTOFcalib::IsChannelEnabled(Int_t index)
+{
+  /*
+   * is channel enabled
+   */
+
+  if (!fInitFlag) {
+    AliError("class not yet initialized. Initialize it before.");
+    return kTRUE;
+  }
+
+  /* check bad status */
+  if (fStatus->GetPulserStatus(index) == AliTOFChannelOnlineStatusArray::kTOFPulserBad) return kFALSE;
+  if (fStatus->GetNoiseStatus(index) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) return kFALSE;
+  if (fStatus->GetHWStatus(index) == AliTOFChannelOnlineStatusArray::kTOFHWBad) return kFALSE;
+  
+  /* good status */
+  return kTRUE;
+
+}

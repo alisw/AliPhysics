@@ -49,7 +49,7 @@ class AliTOFClusterFinder : public TTask
   void UnLoadClusters();
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
   void SetDecoderVersion(Int_t version){fDecoderVersion=version;} // To set the decoder version
-  Bool_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
+  Int_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
   UShort_t  GetClusterVolIndex(const Int_t * const ind) const; //Volume Id getter
   void GetClusterPars(Int_t *ind, Double_t *pos, Double_t *cov) const; //cluster par getter
 
@@ -77,9 +77,7 @@ class AliTOFClusterFinder : public TTask
 
   Int_t fVerbose;           // Verbose level (0:no msg,
                             //  1:msg, 2:digits in txt files)
-  Bool_t fDecoderVersion;   //setting whether to use the new decoder version 
-                            // -true -> new version
-                            // -false ->old version  (default value!!)
+  Int_t fDecoderVersion;   //setting whether to use the new decoder version 
   AliTOFcalib *fTOFcalib;         // pointer to the TOF calibration info
   AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
 

@@ -22,6 +22,10 @@
 ///////////////////////////////////////////////////////////////////////
 
 /*
+  Modified by fbellini on 14/06/2010
+  - Updated plots
+  - use LoadRawDataBuffersV2()
+
   Modified by fbellini on 10/05/2010
   - Fixed EndOfDetectorCycle() memory corruption bug
 
@@ -170,11 +174,11 @@ void AliTOFQADataMakerRec::InitRaws()
   TH1F * h13  = new TH1F("hTOFRawsToTIC", "TOF Raws - Hit ToT (ns) - I/C side;Measured Hit ToT (ns);Counts", 1000, 0., 48.8) ; 
   TH1F * h14  = new TH1F("hTOFRawsToTOC", "TOF Raws - Hit ToT (ns) - O/C side;Measured Hit ToT (ns);Counts", 1000, 0., 48.8) ; 
 
-  TH1I * h15 = new TH1I("hTOFRawsLTMHits", "LTM hits ; Crate; Counts",  72, 0., 72.);
-  TH1I * h16  = new TH1I("hTOFRawsTRMHits035", "TRM hits  - crates 0 to 35 ;TRM index = SMid(crate*10)+TRM(0-9);Hits",  361, 0., 361.) ;
-  TH1I * h17  = new TH1I("hTOFRawsTRMHits3671","TRM hits  - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Hits", 361, 360., 721.) ;
+  TH1F * h15 = new TH1F("hTOFRawsLTMHits", "LTMs OR signals; Crate; Counts",  72, 0., 72.);
+  TH1F * h16  = new TH1F("hTOFRawsTRMHits035", "TRM hits  - crates 0 to 35 ;TRM index = SMid(crate*10)+TRM(0-9);Hits",  361, 0., 361.) ;
+  TH1F * h17  = new TH1F("hTOFRawsTRMHits3671","TRM hits  - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Hits", 361, 360., 721.) ;
   
-  TH1I * h18 = new TH1I("hTOFRawChannelHits","TOF channel hits count; Channel ID; Hits", 158000, 0., 158000);
+  TH1F * h18 = new TH1F("hTOFRawChannelHits","TOF channel hits count; Channel ID; Hits", 158000, 0., 158000);
   
   TH1F * h19  = new TH1F("hTOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Counts", 25000, 0. ,610.) ; 
   TH2F * h20 = new TH2F("hTOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., 250, 0., 610.0) ;
@@ -394,7 +398,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	for (Int_t iDDL = 0; iDDL < AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); iDDL++){
 	    rawReader->Reset();
 	    
-	    tofInput.LoadRawDataBuffers(iDDL);
+	    tofInput.LoadRawDataBuffersV2(iDDL);
 	    clonesRawData = (TClonesArray*)tofInput.GetRawData();
 	    for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 		AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
@@ -700,6 +704,30 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    continue ; 
 	
 	AliInfo(Form("Processed %i physics raw events",fProcessedRawEventN));
+
+	if (fCalibData){
+	    //normalize TRM hits plots to the number of enabled channels from OCDB object
+	    TH1F * hTrmChannels035 = new TH1F("hTrmchannels035", "Active channels per TRM - crates 0 to 35;TRM index = SMid(crate*10)+TRM(0-9);Active channels",  361, 0., 361.) ;
+	    TH1F * hTrmChannels3671 = new TH1F("hTrmChannels3671","Active channels per TRM - crates 36 to 71 ;TRM index = SMid(crate*10)+TRM(0-9);Active channels", 361, 360., 721.) ;
+	    
+	    for (Int_t ch = 0; ch <  fCalibData->GetSize(); ch++) {
+		if (!(fCalibData->GetNoiseStatus(ch)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+					&& (fCalibData->GetHWStatus(ch) == AliTOFChannelOnlineStatusArray::kTOFHWOk)){
+		    Int_t geoId[5];
+		    Int_t detId[5];
+		    AliTOFGeometry::GetVolumeIndices(ch,geoId);
+		    AliTOFRawStream::Geant2EquipmentId(geoId,detId); //detID=(ddl,trm,tdc, chain,channel)
+		    if (detId[0]<36) hTrmChannels035->Fill((detId[1]-3)+detId[0]*10);
+		    else hTrmChannels3671->Fill((detId[1]-3)+detId[0]*10);
+		}
+	    }
+	    GetRawsData(16)->Divide(hTrmChannels035);
+	    GetRawsData(16)->SetTitle("TRMs average hit number per active channel - crates 0-35");
+	    GetRawsData(16)->GetYaxis()->SetTitle("hits/active channels");
+	    GetRawsData(17)->Divide(hTrmChannels3671);
+	    GetRawsData(17)->SetTitle("TRMs average hit number per active channel - crates 36-71");
+	    GetRawsData(17)->GetYaxis()->SetTitle("hits/active channels");
+	}
 
 	if (fEnableDqmShifterOpt){
 	    // Help make the raw qa histogram easier to interpret for the DQM shifter

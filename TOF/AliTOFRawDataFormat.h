@@ -12,11 +12,25 @@
 //                                                           //
 ///////////////////////////////////////////////////////////////
 
+#include "AliTOFDRMGlobalHeader.h"
+#include "AliTOFDRMGlobalTrailer.h"
+#include "AliTOFDRMStatusHeader1.h"
+#include "AliTOFDRMStatusHeader2.h"
 #include "AliTOFDRMStatusHeader3.h"
+#include "AliTOFDRMStatusHeader4.h"
+#include "AliTOFDRMEventCRC.h"
+
+#include "AliTOFLTMGlobalHeader.h"
+#include "AliTOFLTMGlobalTrailer.h"
+#include "AliTOFLTMPDLData.h"
+#include "AliTOFLTMADCData.h"
+#include "AliTOFLTMORData.h"
+
 #include "AliTOFTRMGlobalHeader.h"
 #include "AliTOFTRMGlobalTrailer.h"
 #include "AliTOFTRMChainHeader.h"
 #include "AliTOFTRMChainTrailer.h"
+
 #include "AliTOFTDCPackedHit.h"
 #include "AliTOFTDCUnpackedHit.h"
 #include "AliTOFTRMTDCError.h"

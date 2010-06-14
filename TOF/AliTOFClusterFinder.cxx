@@ -497,19 +497,32 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
-  if (fDecoderVersion)
+  if (fDecoderVersion == 1) {
     AliInfo("Using New Decoder");
+  }
+  else if (fDecoderVersion == 2) {
+    AliInfo("Using Enhanced Decoder");
+  }
+  else {
+    AliInfo("Using Old Decoder");
+  }
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion)
+    if (fDecoderVersion == 1) {
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    else fTOFRawStream.LoadRawData(indexDDL);
-
+    }
+    else if (fDecoderVersion == 2) {
+      fTOFRawStream.LoadRawDataBuffersV2(indexDDL,fVerbose);
+    }
+    else  {
+      fTOFRawStream.LoadRawData(indexDDL);
+    }
+    
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
-
+    
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
@@ -646,16 +659,29 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
-  if (fDecoderVersion)
+  if (fDecoderVersion == 1) {
     AliInfo("Using New Decoder");
+  }
+  else if (fDecoderVersion == 2) {
+    AliInfo("Using Enhanced Decoder");
+  }
+  else {
+    AliInfo("Using Old Decoder");
+  }
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion)
+    if (fDecoderVersion == 1) {
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    else fTOFRawStream.LoadRawData(indexDDL);
+    }
+    else if (fDecoderVersion == 2) {
+      fTOFRawStream.LoadRawDataBuffersV2(indexDDL,fVerbose);
+    }
+    else {
+      fTOFRawStream.LoadRawData(indexDDL);
+    }
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
@@ -800,16 +826,29 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
-  if (fDecoderVersion)
+  if (fDecoderVersion == 1) {
     AliInfo("Using New Decoder");
+  }
+  else if (fDecoderVersion == 2) {
+    AliInfo("Using Enhanced Decoder");
+  }
+  else {
+    AliInfo("Using Old Decoder");
+  }
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion)
+    if (fDecoderVersion == 1) {
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    else fTOFRawStream.LoadRawData(indexDDL);
+    }
+    else if (fDecoderVersion == 2) {
+      fTOFRawStream.LoadRawDataBuffersV2(indexDDL,fVerbose);
+    }
+    else {
+      fTOFRawStream.LoadRawData(indexDDL);
+    }
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
@@ -890,16 +929,29 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
-  if (fDecoderVersion)
+  if (fDecoderVersion == 1) {
     AliInfo("Using New Decoder");
+  }
+  else if (fDecoderVersion == 2) {
+    AliInfo("Using Enhanced Decoder");
+  }
+  else {
+    AliInfo("Using Old Decoder");
+  }
 
   Int_t indexDDL = 0;
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (fDecoderVersion)
+    if (fDecoderVersion == 1) {
       fTOFRawStream.LoadRawDataBuffers(indexDDL,fVerbose);
-    else fTOFRawStream.LoadRawData(indexDDL);
+    }
+    else if (fDecoderVersion == 2) {
+      fTOFRawStream.LoadRawDataBuffersV2(indexDDL,fVerbose);
+    }
+    else {
+      fTOFRawStream.LoadRawData(indexDDL);
+    }
 
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
 
@@ -1041,6 +1093,12 @@ void AliTOFClusterFinder::FillRecPoint()
 }
 
 //_________________________________________________________________________
+
+/*
+ * OLD CALIBRATE REC POINTS FUNCTION
+ */
+
+#if 0
 void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
 {
   //
@@ -1169,6 +1227,50 @@ void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
   } // loop on clusters
 
 }
+#endif
+
+//_________________________________________________________________________
+
+void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
+{
+  //
+  // Copy the global array of AliTOFcluster, i.e. fTofClusters (sorted
+  // in Z) in the global TClonesArray of AliTOFcluster,
+  // i.e. fRecPoints.
+  //
+
+  Int_t detectorIndex[5];
+  Double_t time, tot, corr;
+  Int_t deltaBC, l0l1, tdcBin;
+  for (Int_t ii = 0; ii < fNumberOfTofClusters; ii++) {
+    for(Int_t jj = 0; jj < 5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
+
+    Int_t index = AliTOFGeometry::GetIndex(detectorIndex);
+
+    /* check channel enabled */
+    if (!fTOFcalib->IsChannelEnabled(index)) fTofClusters[ii]->SetStatus(kFALSE);
+    
+    /* get cluster info */
+    time = fTofClusters[ii]->GetTDC() * AliTOFGeometry::TdcBinWidth(); /* ps */
+    tot = fTofClusters[ii]->GetToT() * AliTOFGeometry::ToTBinWidth() * 1.e-3; /* ns */
+    deltaBC = fTofClusters[ii]->GetDeltaBC();
+    l0l1 = fTofClusters[ii]->GetL0L1Latency();
+
+    /* get correction */
+    corr = fTOFcalib->GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp); /* ps */
+    AliDebug(2, Form("calibrate index %d: time=%f (ps) tot=%f (ns) deltaBC=%d l0l1=%d timestamp=%d corr=%f (ps)", index, time, tot, deltaBC, l0l1, timestamp, corr));
+
+    /* apply time correction */
+    time -= corr;
+
+    /* convert in TDC bins and set cluster */
+    tdcBin = (Int_t)(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+    fTofClusters[ii]->SetTDC(tdcBin);
+
+  } // loop on clusters
+
+}
+
 //______________________________________________________________________________
 
 void AliTOFClusterFinder::ResetRecpoint()

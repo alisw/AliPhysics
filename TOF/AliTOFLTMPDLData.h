@@ -1,5 +1,5 @@
-#ifndef ALITOFTRMGLOBALHEADER_H
-#define ALITOFTRMGLOBALHEADER_H
+#ifndef ALITOFLTMPDLDATA_H
+#define ALITOFLTMPDLDATA_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -14,24 +14,18 @@
 
 #include "TROOT.h"
 
-class AliTOFTRMGlobalHeader
+class AliTOFLTMPDLData
 {
  public:
-  UInt_t GetSlotID() {return fSlotID;};
-  UInt_t GetEventWords() {return fEventWords;};
-  UInt_t GetACQBits() {return fACQBits;};
-  UInt_t GetLBit() {return fLBit;};
-  UInt_t GetEBit() {return fEBit;};
-  UInt_t GetMBZ() {return fMBZ;};
-  UInt_t GetWordType() {return fWordType;};
+  UInt_t GetPDLValue1() {return fPDLValue1;};
+  UInt_t GetPDLValue2() {return fPDLValue2;};
+  UInt_t GetPDLValue3() {return fPDLValue3;};
+  UInt_t GetPDLValue4() {return fPDLValue4;};
  private:
-  UInt_t fSlotID:     4;
-  UInt_t fEventWords: 13;
-  UInt_t fACQBits:    2;
-  UInt_t fLBit:       1;
-  UInt_t fEBit:       1;
-  UInt_t fMBZ:        7;
-  UInt_t fWordType:   4;
+  UInt_t fPDLValue1: 8;
+  UInt_t fPDLValue2: 8;
+  UInt_t fPDLValue3: 8;
+  UInt_t fPDLValue4: 8;
 };
 
-#endif /* ALITOFTRMGLOBALHEADER_H */
+#endif

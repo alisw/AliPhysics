@@ -52,7 +52,10 @@ AliTOFReconstructor::AliTOFReconstructor()
 //
   
   //Retrieving the TOF calibration info  
-  fTOFcalib    = new AliTOFcalib();
+  fTOFcalib = new AliTOFcalib();
+  fTOFcalib->Init();
+
+#if 0
   fTOFcalib->CreateCalObjects();
 
   if(!fTOFcalib->ReadParOnlineDelayFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
@@ -65,6 +68,8 @@ AliTOFReconstructor::AliTOFReconstructor()
   if(!fTOFcalib->ReadCTPLatencyFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
   if(!fTOFcalib->ReadT0FillFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
   if(!fTOFcalib->ReadRunParamsFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+#endif
+
 }
 
 //_____________________________________________________________________________
@@ -85,15 +90,21 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
   //
 
   TString optionString = GetOption();
+
   // use V1 cluster finder if selected
   if (optionString.Contains("ClusterizerV1")) {
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV0"))
+    if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
-    else
+    }
+    else if (optionString.Contains("DecoderV1")) {
       tofClus.SetDecoderVersion(1);
+    }
+    else {
+      tofClus.SetDecoderVersion(2);
+    }
     
     tofClus.Digits2RecPoints(rawReader, clustersTree);
   }
@@ -101,10 +112,15 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
     static AliTOFClusterFinder tofClus(fTOFcalib);
     
     // decoder version option
-    if (optionString.Contains("DecoderV0"))
+    if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
-    else
+    }
+    else if (optionString.Contains("DecoderV1")) {
       tofClus.SetDecoderVersion(1);
+    }
+    else {
+      tofClus.SetDecoderVersion(2);
+    }
 
     tofClus.Digits2RecPoints(rawReader, clustersTree);
   }
@@ -127,10 +143,15 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV0"))
+    if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
-    else
+    }
+    else if (optionString.Contains("DecoderV1")) {
       tofClus.SetDecoderVersion(1);
+    }
+    else {
+      tofClus.SetDecoderVersion(2);
+    }
     
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
   }
@@ -138,10 +159,15 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinder tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV0"))
+    if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
-    else
+    }
+    else if (optionString.Contains("DecoderV1")) {
       tofClus.SetDecoderVersion(1);
+    }
+    else {
+      tofClus.SetDecoderVersion(2);
+    }
     
     tofClus.Digits2RecPoints(digitsTree, clustersTree);
   }
@@ -160,10 +186,15 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinderV1 tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV0"))
+    if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
-    else
+    }
+    else if (optionString.Contains("DecoderV1")) {
       tofClus.SetDecoderVersion(1);
+    }
+    else {
+      tofClus.SetDecoderVersion(2);
+    }
     
     tofClus.Raw2Digits(reader, digitsTree);
   }
@@ -171,10 +202,15 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     static AliTOFClusterFinder tofClus(fTOFcalib);
 
     // decoder version option
-    if (optionString.Contains("DecoderV0"))
+    if (optionString.Contains("DecoderV0")) {
       tofClus.SetDecoderVersion(0);
-    else
+    }
+    else if (optionString.Contains("DecoderV1")) {
       tofClus.SetDecoderVersion(1);
+    }
+    else {
+      tofClus.SetDecoderVersion(2);
+    }
     
     tofClus.Raw2Digits(reader, digitsTree);
   }

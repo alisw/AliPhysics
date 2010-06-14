@@ -45,6 +45,7 @@ class AliTOFPreprocessor : public AliPreprocessor
     UInt_t ProcessFEEData(); // dummy, for the time being
     UInt_t ProcessT0Fill();
     UInt_t ProcessNoiseCalibTrg();
+    UInt_t ProcessReadout();
 
     void FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal); // fill with cosmic calibration
     void FillWithCableLengthMap(AliTOFChannelOnlineArray *cal); // fill with cable-lenght map
