@@ -51,11 +51,11 @@ class AliVZERORawStream: public TObject {
        
 // Getters of ADC signals, ADC pedestals, time information and corresponding flags :
 
-    Float_t           GetADC(Int_t channel) const
+    Short_t           GetADC(Int_t channel) const
       { return TMath::MaxElement(kNEvOfInt, fADC[channel]); }    // maximum value instead of central clock
 //    { return fADC[channel][kNEvOfInt/2]; }
             
-    Float_t           GetPedestal(Int_t channel, Int_t event) const
+    Short_t           GetPedestal(Int_t channel, Int_t event) const
       { return fADC[channel][event]; }
     Bool_t            GetIntegratorFlag(Int_t channel, Int_t event) const
       { return fIsInt[channel][event]; }
@@ -63,9 +63,9 @@ class AliVZERORawStream: public TObject {
       { return fIsBB[channel][event]; } 
     Bool_t            GetBGFlag(Int_t channel, Int_t event) const
       { return fIsBG[channel][event]; }   
-    Float_t           GetTime(Int_t channel) const
+    Short_t           GetTime(Int_t channel) const
       { return fTime[channel]; }
-    Float_t           GetWidth(Int_t channel) const
+    Short_t           GetWidth(Int_t channel) const
       { return fWidth[channel]; }
 
     UShort_t          GetTriggerInputs() const
@@ -116,12 +116,12 @@ class AliVZERORawStream: public TObject {
     Bool_t        fIsBBMB[kNChannels][kNBunches];   // 'Beam-Beam' flag for all channels for the previous 10 MB events
     Bool_t        fIsBGMB[kNChannels][kNBunches];   // 'Beam-Gas' for all channels for the previous 10 MB events
 
-    Float_t       fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
+    Short_t       fADC[kNChannels][kNEvOfInt];   // ADC counts for all channels and all events of interest
     Bool_t        fIsInt[kNChannels][kNEvOfInt]; // 'Integrator' flag for all channels 
     Bool_t        fIsBB[kNChannels][kNEvOfInt];  // 'Beam-Beam' flag for all channels
     Bool_t        fIsBG[kNChannels][kNEvOfInt];  // 'Beam-Gas' flag for all channels
-    Float_t       fTime[kNChannels];             // leading time for all channels - from HPTDC - in nanoseconds
-    Float_t       fWidth[kNChannels];            // pulse width for all channels - from HPTDC - in nanoseconds
+    Short_t       fTime[kNChannels];             // leading time for all channels - from HPTDC - in HPTDC units
+    Short_t       fWidth[kNChannels];            // pulse width for all channels - from HPTDC - in HPTDC units
 
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask

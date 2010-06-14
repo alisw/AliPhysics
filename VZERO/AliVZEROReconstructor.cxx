@@ -136,133 +136,74 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   rawReader->Reset();
   AliVZERORawStream rawStream(rawReader);
   if (rawStream.Next()) { 
-     Float_t adc[64]; 
-     Float_t time[64], width[64];  
-     Bool_t BBFlag[64], BGFlag[64], integrator[64];
-     Short_t chargeADC[64][21];
-     for(Int_t i=0; i<64; i++) {
-       Int_t j   =  rawStream.GetOfflineChannel(i);
-       adc[j]    = 0.0;
-       time[j]   = 0.0;
-       width[j]  = 0.0;
-       BBFlag[j] = kFALSE;
-       BGFlag[j] = kFALSE;
-       integrator[j] = kFALSE;
-       // Search for the maximum charge in the train of 21 LHC clocks 
-       // regardless of the integrator which has been operated:
-       Float_t maxadc = 0;
-       Int_t imax = -1;
-       Float_t adcPedSub[21];
-       for(Int_t iClock=0; iClock<21; iClock++){
-	 chargeADC[j][iClock] = (Short_t)rawStream.GetPedestal(i,iClock);
-	 Bool_t iIntegrator = rawStream.GetIntegratorFlag(i,iClock);
-	 Int_t k = j+64*iIntegrator;
-	 adcPedSub[iClock] = rawStream.GetPedestal(i,iClock) - fCalibData->GetPedestal(k);
-	 if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
-	   adcPedSub[iClock] = 0;
-	   continue;
-	 }
-	 if(iClock < GetRecoParam()->GetStartClock() || iClock > GetRecoParam()->GetEndClock()) continue;
-	 if(adcPedSub[iClock] > maxadc) {
-	   maxadc = adcPedSub[iClock];
-	   imax   = iClock;
-	 }
-       }
 
-       AliDebug(2,Form("Channel %d (online), %d (offline)",i,j)); 
-	 if (imax != -1) {
-	   Int_t start = imax - GetRecoParam()->GetNPreClocks();
-	   if (start < 0) start = 0;
-	   Int_t end = imax + GetRecoParam()->GetNPostClocks();
-	   if (end > 20) end = 20;
-	   for(Int_t iClock = start; iClock <= end; iClock++) {
-	     if (iClock >= imax) {
-	       BBFlag[j] |= rawStream.GetBBFlag(i,iClock);
-	       BGFlag[j] |= rawStream.GetBGFlag(i,iClock);
-	     }
-	     if (iClock == imax)
-	       adc[j] += rawStream.GetPedestal(i,iClock);
-	     else 
-	       adc[j] += adcPedSub[iClock];
+    Int_t aBBflagsV0A = 0;
+    Int_t aBBflagsV0C = 0;
+    Int_t aBGflagsV0A = 0;
+    Int_t aBGflagsV0C = 0;
 
-	     AliDebug(2,Form("clock = %d adc = %f",iClock,rawStream.GetPedestal(i,iClock))); 
-	   }
-	   // Convert i (FEE channel numbering) to j (aliroot channel numbering)
+    for(Int_t iChannel=0; iChannel < 64; ++iChannel) {
+      Int_t offlineCh = rawStream.GetOfflineChannel(iChannel);
+      // ADC charge samples
+      Short_t chargeADC[AliVZEROdigit::kNClocks];
+      for(Int_t iClock=0; iClock < AliVZEROdigit::kNClocks; ++iClock) {
+	chargeADC[iClock] = rawStream.GetPedestal(iChannel,iClock);
+      }
+      // Integrator flag
+      Bool_t integrator = rawStream.GetIntegratorFlag(iChannel,AliVZEROdigit::kNClocks/2);
+      // Beam-beam and beam-gas flags
+      if(offlineCh<32) {
+	if (rawStream.GetBBFlag(iChannel,AliVZEROdigit::kNClocks/2)) aBBflagsV0C |= (1 << offlineCh);
+	if (rawStream.GetBGFlag(iChannel,AliVZEROdigit::kNClocks/2)) aBGflagsV0C |= (1 << offlineCh);
+      } else {
+	if (rawStream.GetBBFlag(iChannel,AliVZEROdigit::kNClocks/2)) aBBflagsV0A |= (1 << (offlineCh-32));
+	if (rawStream.GetBGFlag(iChannel,AliVZEROdigit::kNClocks/2)) aBGflagsV0A |= (1 << (offlineCh-32));
+      }
+      // HPTDC data (leading time and width)
+      Int_t board = AliVZEROCalibData::GetBoardNumber(offlineCh);
+      Float_t time = rawStream.GetTime(iChannel)*fCalibData->GetTimeResolution(board);
+      Float_t width = rawStream.GetWidth(iChannel)*fCalibData->GetWidthResolution(board);
+      // Add a digit
+      if(!fCalibData->IsChannelDead(iChannel)){
+	  new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()])
+	    AliVZEROdigit(offlineCh, 0.0, time,
+			  width,integrator,
+			  chargeADC);
+      }
 
-	   integrator[j] =  rawStream.GetIntegratorFlag(i,imax); 
-	 }
+      // Filling the part of esd friend object that is available only for raw data
+      fESDVZEROfriend->SetBBScalers(offlineCh,rawStream.GetBBScalers(iChannel));
+      fESDVZEROfriend->SetBGScalers(offlineCh,rawStream.GetBGScalers(iChannel));
+      for (Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++) {
+	fESDVZEROfriend->SetChargeMB(offlineCh,iBunch,rawStream.GetChargeMB(iChannel,iBunch));
+	fESDVZEROfriend->SetIntMBFlag(offlineCh,iBunch,rawStream.GetIntMBFlag(iChannel,iBunch));
+	fESDVZEROfriend->SetBBMBFlag(offlineCh,iBunch,rawStream.GetBBMBFlag(iChannel,iBunch));
+	fESDVZEROfriend->SetBGMBFlag(offlineCh,iBunch,rawStream.GetBGMBFlag(iChannel,iBunch));
+      }
 
-	 Int_t board   = j / 8;
-	 time[j]       =  rawStream.GetTime(i)/ (25./256.) * fCalibData->GetTimeResolution(board);
-	 width[j]      =  rawStream.GetWidth(i) / 0.4 * fCalibData->GetWidthResolution(board);
+    }  
 
-	 // Filling the esd friend object
-	 fESDVZEROfriend->SetBBScalers(j,rawStream.GetBBScalers(i));
-	 fESDVZEROfriend->SetBGScalers(j,rawStream.GetBGScalers(i));
-	 for (Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++) {
-	     fESDVZEROfriend->SetChargeMB(j,iBunch,rawStream.GetChargeMB(i,iBunch));
-	     fESDVZEROfriend->SetIntMBFlag(j,iBunch,rawStream.GetIntMBFlag(i,iBunch));
-	     fESDVZEROfriend->SetBBMBFlag(j,iBunch,rawStream.GetBBMBFlag(i,iBunch));
-	     fESDVZEROfriend->SetBGMBFlag(j,iBunch,rawStream.GetBGMBFlag(i,iBunch));
-	 }
-	 for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
-	     fESDVZEROfriend->SetPedestal(j,iEv,rawStream.GetPedestal(i,iEv));
-	     fESDVZEROfriend->SetIntegratorFlag(j,iEv,rawStream.GetIntegratorFlag(i,iEv));
-	     fESDVZEROfriend->SetBBFlag(j,iEv,rawStream.GetBBFlag(i,iEv));
-	     fESDVZEROfriend->SetBGFlag(j,iEv,rawStream.GetBGFlag(i,iEv));
-	 }
-	 fESDVZEROfriend->SetTime(j,time[j]);
-	 fESDVZEROfriend->SetWidth(j,width[j]);
-     }  
+    // Filling the global part of esd friend object that is available only for raw data
+    fESDVZEROfriend->SetTriggerInputs(rawStream.GetTriggerInputs());
+    fESDVZEROfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
 
-     // Filling the esd friend object
-     fESDVZEROfriend->SetTriggerInputs(rawStream.GetTriggerInputs());
-     fESDVZEROfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
+    for(Int_t iScaler = 0; iScaler < AliESDVZEROfriend::kNScalers; iScaler++)
+      fESDVZEROfriend->SetTriggerScalers(iScaler,rawStream.GetTriggerScalers(iScaler));
 
-     for(Int_t iScaler = 0; iScaler < AliESDVZEROfriend::kNScalers; iScaler++)
-         fESDVZEROfriend->SetTriggerScalers(iScaler,rawStream.GetTriggerScalers(iScaler));
-
-     for(Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++)
-         fESDVZEROfriend->SetBunchNumbersMB(iBunch,rawStream.GetBunchNumbersMB(iBunch));
+    for(Int_t iBunch = 0; iBunch < AliESDVZEROfriend::kNBunches; iBunch++)
+      fESDVZEROfriend->SetBunchNumbersMB(iBunch,rawStream.GetBunchNumbersMB(iBunch));
      
+    // Store the BB and BG flags in the digits tree (user info)
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0A",aBBflagsV0A));
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0C",aBBflagsV0C));
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0A",aBGflagsV0A));
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0C",aBGflagsV0C));
 
-     Int_t aBBflagsV0A = 0;
-     Int_t aBBflagsV0C = 0;
-     Int_t aBGflagsV0A = 0;
-     Int_t aBGflagsV0C = 0;
-
-     // Channels(aliroot numbering) will be ordered in the tree
-     for(Int_t iChannel = 0; iChannel < 64; iChannel++) {
-       if(iChannel<32) {
-	 if (BBFlag[iChannel]) aBBflagsV0C |= (1 << iChannel);
-	 if (BGFlag[iChannel]) aBGflagsV0C |= (1 << iChannel);
-       } else {
-	 if (BBFlag[iChannel]) aBBflagsV0A |= (1 << (iChannel-32));
-	 if (BGFlag[iChannel]) aBGflagsV0A |= (1 << (iChannel-32));
-       }
-         if(fCalibData->IsChannelDead(iChannel)){
-	    adc[iChannel]  = (Float_t) kInvalidADC; 
-	    time[iChannel] = (Float_t) kInvalidTime;	 
-         }
-	 if (adc[iChannel] > 0)
-	   new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()])
-             AliVZEROdigit(iChannel, adc[iChannel], time[iChannel],
-	                   width[iChannel],integrator[iChannel],
-			   chargeADC[iChannel]);
-        
-     }          
-
-     // Store the BB and BG flags in the digits tree (user info)
-     digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0A",aBBflagsV0A));
-     digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0C",aBBflagsV0C));
-     digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0A",aBGflagsV0A));
-     digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0C",aBGflagsV0C));
-
-     digitsTree->Fill();
+    digitsTree->Fill();
   }
 
   fDigitsArray->Clear();
-}
+}      
 
 //______________________________________________________________________
 void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
@@ -323,6 +264,17 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   else
     AliWarning("V0C beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
   
+  // Beam-beam and beam-gas flags (hardware)
+  for (Int_t iChannel = 0; iChannel < 64; ++iChannel) {
+    if(iChannel < 32) {
+      aBBflag[iChannel] = (aBBflagsV0C >> iChannel) & 0x1;
+      aBGflag[iChannel] = (aBGflagsV0C >> iChannel) & 0x1;
+    }
+    else {
+      aBBflag[iChannel] = (aBBflagsV0A >> (iChannel-32)) & 0x1;
+      aBGflag[iChannel] = (aBGflagsV0A >> (iChannel-32)) & 0x1;
+    }
+  }
 
   Int_t nEntries = (Int_t)digitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
@@ -332,24 +284,46 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     
     for (Int_t d=0; d<nDigits; d++) {    
         AliVZEROdigit* digit = (AliVZEROdigit*) fDigitsArray->At(d);      
-        Int_t  pmNumber      = digit->PMNumber(); 
-        // Pedestal retrieval and suppression: 
-	Bool_t   integrator  = digit->Integrator();
-	Int_t k = pmNumber+64*integrator;
-        Float_t  pedestal    = fCalibData->GetPedestal(k);
-        adc[pmNumber]   =  digit->ADC() - pedestal; 
-        time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
-	width[pmNumber] =  digit->Width();
-	if(pmNumber < 32) {
-	  aBBflag[pmNumber] = (aBBflagsV0C >> pmNumber) & 0x1;
-	  aBGflag[pmNumber] = (aBGflagsV0C >> pmNumber) & 0x1;
-	}
-	else {
-	  aBBflag[pmNumber] = (aBBflagsV0A >> (pmNumber-32)) & 0x1;
-	  aBGflag[pmNumber] = (aBGflagsV0A >> (pmNumber-32)) & 0x1;
+        Int_t  pmNumber = digit->PMNumber();
+
+        // Pedestal retrieval and suppression
+	Bool_t integrator = digit->Integrator();
+        Float_t maxadc = 0;
+        Int_t imax = -1;
+        Float_t adcPedSub[AliVZEROdigit::kNClocks];
+        for(Int_t iClock=0; iClock < AliVZEROdigit::kNClocks; ++iClock) {
+	  Short_t charge = digit->ChargeADC(iClock);
+	  Bool_t iIntegrator = (iClock%2 == 0) ? integrator : !integrator;
+	  Int_t k = pmNumber + 64*iIntegrator;
+	  adcPedSub[iClock] = (Float_t)charge - fCalibData->GetPedestal(k);
+	  if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
+	    adcPedSub[iClock] = 0;
+	    continue;
+	  }
+	  if(iClock < GetRecoParam()->GetStartClock() || iClock > GetRecoParam()->GetEndClock()) continue;
+	  if(adcPedSub[iClock] > maxadc) {
+	    maxadc = adcPedSub[iClock];
+	    imax   = iClock;
+	  }
 	}
 
-	if (adc[pmNumber] > 0) AliDebug(1,Form("PM = %d ADC = %f TDC %f    Int %d (%d %d %d %d %d)    %f %f   %f %f    %d %d",pmNumber, adc[pmNumber],digit->Time(),
+	if (imax != -1) {
+	  Int_t start = imax - GetRecoParam()->GetNPreClocks();
+	  if (start < 0) start = 0;
+	  Int_t end = imax + GetRecoParam()->GetNPostClocks();
+	  if (end > 20) end = 20;
+	  for(Int_t iClock = start; iClock <= end; iClock++) {
+	    adc[pmNumber] += adcPedSub[iClock];
+	  }
+	}
+
+	// HPTDC leading time and width
+	// Correction for slewing and various time delays
+        time[pmNumber]  =  CorrectLeadingTime(pmNumber,digit->Time(),adc[pmNumber]);
+	width[pmNumber] =  digit->Width();
+
+	if (adc[pmNumber] > 0) AliDebug(1,Form("PM = %d ADC = %f TDC %f (%f)   Int %d (%d %d %d %d %d)    %f %f   %f %f    %d %d",pmNumber, adc[pmNumber],
+					       digit->Time(),time[pmNumber],
 					       integrator,
 					       digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
 					       digit->ChargeADC(11),digit->ChargeADC(12),
@@ -357,9 +331,18 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 					       fCalibData->GetPedestal(pmNumber+64),fCalibData->GetSigma(pmNumber+64),
 					       aBBflag[pmNumber],aBGflag[pmNumber]));
 
-	if(adc[pmNumber] > (fCalibData->GetPedestal(k) + GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k))) {
-	    mult[pmNumber] += adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
-        } 	    
+	mult[pmNumber] = adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
+
+	// Fill ESD friend object
+	for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
+	  fESDVZEROfriend->SetPedestal(pmNumber,iEv,(Float_t)digit->ChargeADC(iEv));
+	  fESDVZEROfriend->SetIntegratorFlag(pmNumber,iEv,(iEv%2 == 0) ? integrator : !integrator);
+	  fESDVZEROfriend->SetBBFlag(pmNumber,iEv,aBBflag[pmNumber]);
+	  fESDVZEROfriend->SetBGFlag(pmNumber,iEv,aBGflag[pmNumber]);
+	}
+	fESDVZEROfriend->SetTime(pmNumber,digit->Time());
+	fESDVZEROfriend->SetWidth(pmNumber,digit->Width());
+
     } // end of loop over digits
   } // end of loop over events in digits tree
          

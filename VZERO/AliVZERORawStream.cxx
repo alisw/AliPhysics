@@ -46,9 +46,9 @@ AliVZERORawStream::AliVZERORawStream(AliRawReader* rawReader) :
 
   // Initalize the containers
   for(Int_t i = 0; i < kNChannels; i++) {
-    fTime[i] = fWidth[i] = 0.;
+    fTime[i] = fWidth[i] = 0;
     for(Int_t j = 0; j < kNEvOfInt; j++) {
-      fADC[i][j] = 0.;
+      fADC[i][j] = 0;
       fIsInt[i][j] = fIsBB[i][j] = fIsBG[i][j] = kFALSE;
     }
     fBBScalers[i] = fBGScalers[i] = 0;
@@ -74,9 +74,9 @@ void AliVZERORawStream::Reset()
 
   // Reinitalize the containers
   for(Int_t i = 0; i < kNChannels; i++) {
-    fTime[i] = fWidth[i] = 0.;
+    fTime[i] = fWidth[i] = 0;
     for(Int_t j = 0; j < kNEvOfInt; j++) {
-      fADC[i][j] = 0.;
+      fADC[i][j] = 0;
       fIsInt[i][j] = fIsBB[i][j] = fIsBG[i][j] = kFALSE;
     }
     fBBScalers[i] = fBGScalers[i] = 0;
@@ -131,7 +131,7 @@ Bool_t AliVZERORawStream::Next()
       for(Int_t iChannel = iChannel_Offset; iChannel < iChannel_Offset+4; iChannel++) {
         for(Int_t iEvOfInt = 0; iEvOfInt < kNEvOfInt; iEvOfInt++) {
           UShort_t data = GetNextShort();
-          fADC[iChannel][iEvOfInt] = Float_t (data & 0x3ff);
+          fADC[iChannel][iEvOfInt] = data & 0x3ff;
           fIsInt[iChannel][iEvOfInt] = (data >> 10) & 0x1;
         }
       }
@@ -182,12 +182,8 @@ Bool_t AliVZERORawStream::Next()
 
     for(Int_t iChannel = (iCIU*8) + 7; iChannel >= iCIU*8; iChannel--) { 
       UInt_t time = GetNextWord();
-      Float_t coarse1  = 25. * ((time >> 8) & 0xf );
-      Float_t coarse2  = 25. / 8. * ((time >> 5) & 0x7 );
-      Float_t fine     = 25. / 256. * (time & 0x1f);
-
-      fTime[iChannel]  = coarse1 + coarse2 + fine;
-      fWidth[iChannel] = 0.4 * ( (time >> 12) & 0x7f);   // HPTDC used in pairing mode
+      fTime[iChannel]  = time & 0xfff;
+      fWidth[iChannel] = ((time >> 12) & 0x7f); // HPTDC used in pairing mode
     }
     
     // End of decoding of one CIU card
