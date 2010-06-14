@@ -302,6 +302,9 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    // qc->SetMultiplicityWeight("combinations"); // default
    // qc->SetMultiplicityWeight("unit");
    // qc->SetMultiplicityWeight("multiplicity");  
+   qc->SetnBinsMult(10000);
+   qc->SetMinMult(0);
+   qc->SetMaxMult(10000);      
    qc->Init();  
  }
   
@@ -312,6 +315,15 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    if(usePhiWeights) gfc->SetUsePhiWeights(usePhiWeights);
    if(usePtWeights) gfc->SetUsePtWeights(usePtWeights);
    if(useEtaWeights) gfc->SetUseEtaWeights(useEtaWeights);
+   // calculation vs multiplicity:
+   gfc->SetCalculateVsMultiplicity(kFALSE);   
+   gfc->SetnBinsMult(10000);
+   gfc->SetMinMult(0);
+   gfc->SetMaxMult(10000);   
+   // tuning of interpolating parameters:
+   gfc->SetTuneParameters(kFALSE);
+   Double_t r0[10] = {1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7}; // up to 10 values allowed
+   for(Int_t r=0;r<10;r++) {gfc->SetTuningR0(r0[r],r);}
    gfc->Init();
  }
  

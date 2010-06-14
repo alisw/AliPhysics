@@ -56,14 +56,15 @@ class AliFlowAnalysisWithCumulants{
     virtual void BookEverythingForDiffFlow();
     virtual void StoreReferenceFlowFlags();
     virtual void StoreDiffFlowFlags();  
-    virtual void BookEverythingForTuning();  
+    virtual void BookEverythingForTuning(); 
+    virtual void BookEverythingForCalculationVsMultiplicity(); 
   // 2.) Method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple* anEvent);
      virtual void CheckPointersUsedInMake(); 
      virtual void FillGeneratingFunctionForReferenceFlow(AliFlowEventSimple *anEvent);
      virtual void FillQvectorComponents(AliFlowEventSimple *anEvent);    
      virtual void FillGeneratingFunctionForDiffFlow(AliFlowEventSimple *anEvent); 
-     virtual void FillGeneratingFunctionsForDifferentTuningParameters(AliFlowEventSimple *anEvent);     
+     virtual void FillGeneratingFunctionsForDifferentTuningParameters(AliFlowEventSimple *anEvent); 
   // 3.) Method Finish() and methods called within Finish():
   virtual void Finish();  
     virtual void CheckPointersUsedInFinish(); 
@@ -85,9 +86,9 @@ class AliFlowAnalysisWithCumulants{
     virtual void GetPointersForBaseHistograms();
     virtual void GetPointersForCommonControlHistograms();
     virtual void GetPointersForCommonResultsHistograms();
-    virtual void GetPointersForParticleWeightsHistograms();
     virtual void GetPointersForReferenceFlowObjects();
     virtual void GetPointersForDiffFlowObjects();
+    virtual void GetPointersForTuningObjects();
   virtual void WriteHistograms(TString *outputFileName);
   virtual void WriteHistograms(TString outputFileName);
   virtual void WriteHistograms(TDirectoryFile *outputFileName);
@@ -129,8 +130,6 @@ class AliFlowAnalysisWithCumulants{
   Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
   void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
-  void SetUseParticleWeights(TProfile* const uPW) {this->fUseParticleWeights = uPW;};
-  TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeights = histPhiWeights;};
   TH1F* GetPhiWeights() const {return this->fPhiWeights;};
   void SetPtWeights(TH1D* const histPtWeights) {this->fPtWeights = histPtWeights;};
@@ -141,7 +140,9 @@ class AliFlowAnalysisWithCumulants{
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};  
   //  6.3.) reference flow:
   void SetReferenceFlowFlags(TProfile* const rff) {this->fReferenceFlowFlags = rff;};
-  TProfile* GetReferenceFlowFlags() const {return this->fReferenceFlowFlags;};
+  TProfile* GetReferenceFlowFlags() const {return this->fReferenceFlowFlags;};  
+  void SetCalculateVsMultiplicity(Bool_t const ecvm) {this->fCalculateVsMultiplicity = ecvm;};
+  Bool_t GetCalculateVsMultiplicity() const {return this->fCalculateVsMultiplicity;};  
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
   Int_t GetnBinsMult() const {return this->fnBinsMult;};  
   void SetMinMult(Double_t const minm) {this->fMinMult = minm;};
@@ -155,6 +156,14 @@ class AliFlowAnalysisWithCumulants{
   TProfile* GetQvectorComponents() const {return this->fQvectorComponents;};
   void SetAverageOfSquaredWeight(TProfile* const aosw) {this->fAverageOfSquaredWeight = aosw;};
   TProfile* GetSumOfSquaredWeight() const {return this->fAverageOfSquaredWeight;}; 
+  void SetReferenceFlowGenFunVsM(TProfile3D* const rfgfVsM) {this->fReferenceFlowGenFunVsM = rfgfVsM;};
+  TProfile3D* GetReferenceFlowGenFunVsM() const {return this->fReferenceFlowGenFunVsM;};  
+  void SetQvectorComponentsVsM(TProfile2D* const qvcVsM) {this->fQvectorComponentsVsM = qvcVsM;};
+  TProfile2D* GetQvectorComponentsVsM() const {return this->fQvectorComponentsVsM;};
+  void SetAverageOfSquaredWeightVsM(TProfile2D* const aoswVsM) {this->fAverageOfSquaredWeightVsM = aoswVsM;};
+  TProfile2D* GetSumOfSquaredWeightVsM() const {return this->fAverageOfSquaredWeightVsM;}; 
+  void SetAvMVsM(TProfile* const amVsM) {this->fAvMVsM = amVsM;};
+  TProfile* GetAvMVsM() const {return this->fAvMVsM;}; 
   //  6.3.1.) results: 
   void SetReferenceFlowCumulants(TH1D* const rfc) {this->fReferenceFlowCumulants = rfc;};
   TH1D* GetReferenceFlowCumulants() const {return this->fReferenceFlowCumulants;}; 
@@ -162,6 +171,8 @@ class AliFlowAnalysisWithCumulants{
   TH1D* GetReferenceFlow() const {return this->fReferenceFlow;}; 
   void SetChi(TH1D* const c) {this->fChi = c;};
   TH1D* GetChi() const {return this->fChi;}; 
+  void SetReferenceFlowCumulantsVsM(TH1D* const rfcVsM, Int_t co) {this->fReferenceFlowCumulantsVsM[co] = rfcVsM;};
+  TH1D* GetReferenceFlowCumulantsVsM(Int_t co) const {return this->fReferenceFlowCumulantsVsM[co];};   
   // 6.4.) differential flow:
   void SetDiffFlowFlags(TProfile* const dff) {this->fDiffFlowFlags = dff;};
   TProfile* GetDiffFlowFlags() const {return this->fDiffFlowFlags;};
@@ -185,6 +196,8 @@ class AliFlowAnalysisWithCumulants{
   //  6.x.0.) profiles:
   void SetTuningGenFun(TProfile2D* const tgf, Int_t const r, Int_t const pq) {this->fTuningGenFun[r][pq] = tgf;};
   TProfile2D* GetTuningGenFun(Int_t const r, Int_t const pq) const {return this->fTuningGenFun[r][pq];};
+  void SetTuningAvM(TProfile* const tam) {this->fTuningAvM = tam;};
+  TProfile* GetTuningAvM() const {return this->fTuningAvM;};
   //  6.x.1.) results:  
   void SetTuningCumulants(TH1D* const tc, Int_t const r, Int_t const pq) {this->fTuningCumulants[r][pq] = tc;};
   TH1D* GetTuningCumulants(Int_t const r, Int_t const pq) const {return this->fTuningCumulants[r][pq];};
@@ -221,11 +234,10 @@ class AliFlowAnalysisWithCumulants{
   Double_t fR0; // r_{0} parameter
   Bool_t fPrintFinalResults[3]; // print on the screen the final results [0=RF,1=RP,2=POI]
   // 2a.) Particle weights:
-  TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
+  TList *fWeightsList; // list to hold all histograms with particle weights: fPhiWeights, fPtWeights and fEtaWeights
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights
-  TProfile *fUseParticleWeights; // profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
   TH1F *fPhiWeights; // histogram holding phi weights
   TH1D *fPtWeights; // histogram holding phi weights
   TH1D *fEtaWeights; // histogram holding phi weights 
@@ -238,6 +250,7 @@ class AliFlowAnalysisWithCumulants{
   TList *fReferenceFlowResults; // list to hold all histograms with final results relevant for reference flow  
   //  3b.) flags:
   TProfile *fReferenceFlowFlags; // profile to hold all flags for reference flow
+  Bool_t fCalculateVsMultiplicity; // perform flow analysis independently for each multiplicity bin 
   Int_t fnBinsMult; // number of multiplicity bins for flow analysis versus multiplicity  
   Double_t fMinMult; // minimal multiplicity for flow analysis versus multiplicity  
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
@@ -247,12 +260,17 @@ class AliFlowAnalysisWithCumulants{
   TProfile2D *fReferenceFlowGenFun; // all-event average of the generating function used to calculate reference flow 
   TProfile *fQvectorComponents; // averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>)
   TProfile *fAverageOfSquaredWeight; // <<w^2>>, where w = wPhi*wPt*wEta       
+  TProfile3D *fReferenceFlowGenFunVsM; // all-event average of the generating function used to calculate reference flow vs multiplicity
+  TProfile2D *fQvectorComponentsVsM; // averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>) vs multiplicity
+  TProfile2D *fAverageOfSquaredWeightVsM; // <<w^2>>, where w = wPhi*wPt*wEta vs multiplicity         
+  TProfile *fAvMVsM; // <M> vs multiplicity bin         
   //  3e.) results:
   Double_t fAvM; // average multiplicity
   Int_t fnEvts; // number of events
   TH1D *fReferenceFlowCumulants; // final results for isotropic cumulants for reference flow   
   TH1D *fReferenceFlow; // final results for reference flow  
   TH1D *fChi; // final results for resolution 
+  TH1D *fReferenceFlowCumulantsVsM[4]; // final results for isotropic cumulants for reference flow versus multiplicity     
   // 4.) Differential flow:       
   //  4a.) lists:
   TList *fDiffFlowList; // list to hold all histograms and profiles relevant for differential flow 
@@ -277,6 +295,7 @@ class AliFlowAnalysisWithCumulants{
   Double_t fTuningR0[10]; // different r0 values (at maximum 10 different values allowed)
   //  xc.) profiles:
   TProfile2D *fTuningGenFun[10][5]; // generating function G evaluated for 10 different r0s and 5 different sets of (pmax,qmax)
+  TProfile *fTuningAvM; // average multiplicities for events with nRPs >= cuttof 
   //  xd.) results:  
   TH1D *fTuningCumulants[10][5]; // isotropic cumulants for reference flow for 10 different r0s and 5 different sets of (pmax,qmax)
   TH1D *fTuningFlow[10][5]; // reference flow for 10 different r0s and 5 different sets of (pmax,qmax) 
