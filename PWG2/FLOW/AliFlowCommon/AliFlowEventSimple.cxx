@@ -592,3 +592,27 @@ void AliFlowEventSimple::AddFlow(Double_t v1, Double_t v2, Double_t v4)
   }
 }
 
+//_____________________________________________________________________________
+void AliFlowEventSimple::TagRP(AliFlowTrackSimpleCuts* cuts)
+{
+  //tag tracks as reference particles (RPs)
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
+    if (cuts->PassesCuts(track)) track->SetForRPSelection();
+  }
+}
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::TagPOI(AliFlowTrackSimpleCuts* cuts)
+{
+  //tag tracks as particles of interest (POIs)
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
+    if (cuts->PassesCuts(track)) track->SetForPOISelection();
+  }
+}
+
