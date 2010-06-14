@@ -259,6 +259,28 @@ Int_t AliKFParticleBase::GetDecayLength( Double_t &l, Double_t &error ) const
   return 1;
 }
 
+Int_t AliKFParticleBase::GetDecayLengthXY( Double_t &l, Double_t &error ) const 
+{
+  //* Calculate particle decay length in XY projection [cm]
+
+  Double_t x = fP[3];
+  Double_t y = fP[4];
+  Double_t t = fP[7];
+  Double_t x2 = x*x;
+  Double_t y2 = y*y;
+  Double_t pt2 = x2+y2;
+  l = t*TMath::Sqrt(pt2);
+  if( pt2>1.e-4){
+    error = pt2*fC[35] + t*t/pt2*(x2*fC[9]+y2*fC[14] + 2*x*y*fC[13] )
+      + 2*t*(x*fC[31]+y*fC[32]);
+    error = TMath::Sqrt(TMath::Abs(error));
+    return 0;
+  }
+  error = 1.e20;
+  return 1;
+}
+
+
 Int_t AliKFParticleBase::GetLifeTime( Double_t &tauC, Double_t &error ) const 
 {
   //* Calculate particle decay time [s]
@@ -532,7 +554,7 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
 
   Double_t mAi[6];
 
-  InvertSym3( mAi, fC );
+  InvertSym3( fC, mAi );
 
   Double_t mB[5][3];
 
@@ -2087,3 +2109,4 @@ void AliKFParticleBase::MultQSQt( const Double_t Q[], const Double_t S[], Double
 
 // 72-charachters line to define the printer border
 //3456789012345678901234567890123456789012345678901234567890123456789012
+

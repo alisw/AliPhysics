@@ -110,6 +110,7 @@ class AliKFParticleBase :public TObject {
   Int_t GetPhi         ( Double_t &Phi, Double_t &SigmaPhi ) const ;
   Int_t GetMass        ( Double_t &M, Double_t &SigmaM ) const ;
   Int_t GetDecayLength ( Double_t &L, Double_t &SigmaL ) const ;
+  Int_t GetDecayLengthXY ( Double_t &L, Double_t &SigmaL ) const ;
   Int_t GetLifeTime    ( Double_t &T, Double_t &SigmaT ) const ;
   Int_t GetR           ( Double_t &R, Double_t &SigmaR ) const ;
 
@@ -268,4 +269,3 @@ class AliKFParticleBase :public TObject {
 };
 
 #endif 
-

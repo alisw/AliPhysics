@@ -48,7 +48,6 @@ void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t 
   AliKFParticleBase::Initialize( Param, C, Charge, mass );
 }
 
-
 AliKFParticle::AliKFParticle( const AliVTrack &track, Int_t PID )
 {
   // Constructor from ALICE track, PID hypothesis should be provided
@@ -74,7 +73,6 @@ AliKFParticle::AliKFParticle( const AliVVertex &vertex )
   fSFromDecay = 0;
 }
 
-
 void AliKFParticle::GetExternalTrackParam( const AliKFParticleBase &p, Double_t &X, Double_t &Alpha, Double_t P[5] ) 
 {
   // Conversion to AliExternalTrackParam parameterization
@@ -99,18 +97,80 @@ void AliKFParticle::GetExternalTrackParam( const AliKFParticleBase &p, Double_t 
   P[4]= p.GetQ()*pti;
 }
 
+Bool_t AliKFParticle::GetDistanceFromVertexXY( const Double_t vtx[], const Double_t Cv[], Double_t &val, Double_t &err ) const
+{
+  //* Calculate DCA distance from vertex (transverse impact parameter) in XY
+  //* v = [xy], Cv=[Cxx,Cxy,Cyy ]-covariance matrix
 
+  Bool_t ret = 0;
+  
+  Double_t mP[8];
+  Double_t mC[36];
+  
+  Transport( GetDStoPoint(vtx), mP, mC );  
+
+  Double_t dx = mP[0] - vtx[0];
+  Double_t dy = mP[1] - vtx[1];
+  Double_t px = mP[3];
+  Double_t py = mP[4];
+  Double_t pt = TMath::Sqrt(px*px + py*py);
+  Double_t ex=0, ey=0;
+  if( pt<1.e-4 ){
+    ret = 1;
+    pt = 1.;
+    val = 1.e4;
+  } else{
+    ex = px/pt;
+    ey = ey/pt;
+    val = dy*ex - dx*ey;
+  }
+
+  Double_t h0 = -ey;
+  Double_t h1 = ex;
+  Double_t h3 = (dy*ey + dx*ex)*ey/pt;
+  Double_t h4 = -(dy*ey + dx*ex)*ex/pt;
+  
+  err = 
+    h0*(h0*GetCovariance(0,0) + h1*GetCovariance(0,1) + h3*GetCovariance(0,3) + h4*GetCovariance(0,4) ) +
+    h1*(h0*GetCovariance(1,0) + h1*GetCovariance(1,1) + h3*GetCovariance(1,3) + h4*GetCovariance(1,4) ) +
+    h3*(h0*GetCovariance(3,0) + h1*GetCovariance(3,1) + h3*GetCovariance(3,3) + h4*GetCovariance(3,4) ) +
+    h4*(h0*GetCovariance(4,0) + h1*GetCovariance(4,1) + h3*GetCovariance(4,3) + h4*GetCovariance(4,4) );
+
+  if( Cv ){
+    err+= h0*(h0*Cv[0] + h1*Cv[1] ) + h1*(h0*Cv[1] + h1*Cv[2] ); 
+  }
+
+  err = TMath::Sqrt(TMath::Abs(err));
+
+  return ret;
+}
+
+Bool_t AliKFParticle::GetDistanceFromVertexXY( const Double_t vtx[], Double_t &val, Double_t &err ) const
+{
+  return GetDistanceFromVertexXY( vtx, 0, val, err );
+}
+
+
+Bool_t AliKFParticle::GetDistanceFromVertexXY( const AliKFParticle &Vtx, Double_t &val, Double_t &err ) const 
+{
+  //* Calculate distance from vertex [cm] in XY-plane
+
+  return GetDistanceFromVertexXY( Vtx.fP, Vtx.fC, val, err );
+}
+
+Bool_t AliKFParticle::GetDistanceFromVertexXY( const AliVVertex &Vtx, Double_t &val, Double_t &err ) const 
+{
+  //* Calculate distance from vertex [cm] in XY-plane
+
+  return GetDistanceFromVertexXY( AliKFParticle(Vtx), val, err );
+}
 
 Double_t AliKFParticle::GetDistanceFromVertexXY( const Double_t vtx[] ) const
 {
   //* Calculate distance from vertex [cm] in XY-plane
-
-  Double_t mP[8], mC[36];
-  Transport( GetDStoPoint(vtx), mP, mC );
-  Double_t d[2]={ vtx[0]-mP[0], vtx[1]-mP[1] };
-  Double_t dist =  TMath::Sqrt( d[0]*d[0]+d[1]*d[1] );
-  Double_t sign = d[0]*mP[3] - d[1]*mP[4];  
-  return (sign>=0) ?dist :-dist;
+  Double_t val, err;
+  GetDistanceFromVertexXY( vtx, 0, val, err );
+  return val;
 }
 
 Double_t AliKFParticle::GetDistanceFromVertexXY( const AliKFParticle &Vtx ) const 
@@ -165,39 +225,15 @@ Double_t AliKFParticle::GetDeviationFromParticleXY( const AliKFParticle &p ) con
 }
 
 
-Double_t AliKFParticle::GetDeviationFromVertexXY( const Double_t v[], const Double_t Cv[] ) const 
+Double_t AliKFParticle::GetDeviationFromVertexXY( const Double_t vtx[], const Double_t Cv[] ) const 
 {
   //* Calculate sqrt(Chi2/ndf) deviation from vertex
   //* v = [xyz], Cv=[Cxx,Cxy,Cyy,Cxz,Cyz,Czz]-covariance matrix
 
-  Double_t mP[8];
-  Double_t mC[36];
-  
-  Transport( GetDStoPoint(v), mP, mC );  
-
-  Double_t d[2]={ v[0]-mP[0], v[1]-mP[1] };
-
-  Double_t sigmaS = .1+10.*TMath::Sqrt( (d[0]*d[0]+d[1]*d[1] )/
-					(mP[3]*mP[3]+mP[4]*mP[4] )  );
-   
-  Double_t h[2] = { mP[3]*sigmaS, mP[4]*sigmaS };       
-  
-  Double_t mSi[3] = { mC[0] +h[0]*h[0], 
-		      mC[1] +h[1]*h[0], mC[2] +h[1]*h[1] };
-
-  if( Cv ){
-    mSi[0]+=Cv[0];
-    mSi[1]+=Cv[1];
-    mSi[2]+=Cv[2];
-  }
-  Double_t s = ( mSi[0]*mSi[2] - mSi[1]*mSi[1] );
-  s = ( s > 1.E-20 )  ?1./s :0;	  
-  
-  Double_t mS[3] = { mSi[2], 
-		     -mSi[1], mSi[0] };      
-
-  return TMath::Sqrt( TMath::Abs(s*( ( mS[0]*d[0] + mS[1]*d[1] )*d[0]
-				     +(mS[1]*d[0] + mS[2]*d[1] )*d[1] ))/1);
+  Double_t val, err;
+  Bool_t problem = GetDistanceFromVertexXY( vtx, Cv, val, err );
+  if( problem || err<1.e-20 ) return 1.e4;
+  else return val/err;
 }
 
 
@@ -217,7 +253,6 @@ Double_t AliKFParticle::GetDeviationFromVertexXY( const AliVVertex &Vtx ) const
   AliKFParticle v(Vtx);
   return GetDeviationFromVertexXY( v.fP, v.fC );
 }
-
 
 Double_t AliKFParticle::GetAngle  ( const AliKFParticle &p ) const 
 {

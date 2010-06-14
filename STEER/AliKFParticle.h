@@ -107,6 +107,7 @@ class AliKFParticle :public AliKFParticleBase
   Double_t GetMomentum    () const; //* momentum (same as GetP() )
   Double_t GetMass        () const; //* mass
   Double_t GetDecayLength () const; //* decay length
+  Double_t GetDecayLengthXY () const; //* decay length in XY
   Double_t GetLifeTime    () const; //* life time
   Double_t GetR           () const; //* distance to the origin
 
@@ -127,6 +128,7 @@ class AliKFParticle :public AliKFParticleBase
   Double_t GetErrMomentum    () const ; //* momentum
   Double_t GetErrMass        () const ; //* mass
   Double_t GetErrDecayLength () const ; //* decay length
+  Double_t GetErrDecayLengthXY () const ; //* decay length in XY
   Double_t GetErrLifeTime    () const ; //* life time
   Double_t GetErrR           () const ; //* distance to the origin
 
@@ -140,7 +142,8 @@ class AliKFParticle :public AliKFParticleBase
   int GetMomentum    ( Double_t &P, Double_t &SigmaP ) const ;   //* momentum
   int GetMass        ( Double_t &M, Double_t &SigmaM ) const ;   //* mass
   int GetDecayLength ( Double_t &L, Double_t &SigmaL ) const ;   //* decay length
-  int GetLifeTime    ( Double_t &T, Double_t &SigmaT ) const ;   //* life time
+  int GetDecayLengthXY ( Double_t &L, Double_t &SigmaL ) const ;   //* decay length in XY
+   int GetLifeTime    ( Double_t &T, Double_t &SigmaT ) const ;   //* life time
   int GetR           ( Double_t &R, Double_t &SigmaR ) const ; //* R
 
 
@@ -263,6 +266,11 @@ class AliKFParticle :public AliKFParticleBase
   Double_t GetDeviationFromParticle( const AliKFParticle &p ) const ;
  
   //* Calculate distance from another object [cm] in XY-plane
+
+  Bool_t GetDistanceFromVertexXY( const Double_t vtx[], Double_t &val, Double_t &err ) const ;
+  Bool_t GetDistanceFromVertexXY( const Double_t vtx[], const Double_t Cv[], Double_t &val, Double_t &err ) const ;
+  Bool_t GetDistanceFromVertexXY( const AliKFParticle &Vtx, Double_t &val, Double_t &err ) const ;
+  Bool_t GetDistanceFromVertexXY( const AliVVertex &Vtx, Double_t &val, Double_t &err ) const ;
 
   Double_t GetDistanceFromVertexXY( const Double_t vtx[] ) const ;
   Double_t GetDistanceFromVertexXY( const AliKFParticle &Vtx ) const ;
@@ -499,6 +507,13 @@ inline Double_t AliKFParticle::GetDecayLength () const
   else return par;
 }
 
+inline Double_t AliKFParticle::GetDecayLengthXY () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetDecayLengthXY( par, err ) ) return 0;
+  else return par;
+}
+
 inline Double_t AliKFParticle::GetLifeTime    () const
 {
   Double_t par, err;
@@ -602,6 +617,13 @@ inline Double_t AliKFParticle::GetErrDecayLength () const
   else return err;
 }
 
+inline Double_t AliKFParticle::GetErrDecayLengthXY () const
+{
+  Double_t par, err;
+  if( AliKFParticleBase::GetDecayLengthXY( par, err ) ) return 1.e10;
+  else return err;
+}
+
 inline Double_t AliKFParticle::GetErrLifeTime    () const
 {
   Double_t par, err;
@@ -650,6 +672,11 @@ inline int AliKFParticle::GetMass( Double_t &M, Double_t &SigmaM ) const
 inline int AliKFParticle::GetDecayLength( Double_t &L, Double_t &SigmaL ) const 
 {
   return AliKFParticleBase::GetDecayLength( L, SigmaL );
+}
+
+inline int AliKFParticle::GetDecayLengthXY( Double_t &L, Double_t &SigmaL ) const 
+{
+  return AliKFParticleBase::GetDecayLengthXY( L, SigmaL );
 }
 
 inline int AliKFParticle::GetLifeTime( Double_t &T, Double_t &SigmaT ) const 
@@ -851,7 +878,7 @@ inline Double_t AliKFParticle::GetDeviationFromVertex( const AliVVertex &Vtx ) c
 {
   return GetDeviationFromVertex( AliKFParticle(Vtx) );
 }
-  
+ 
 inline Double_t AliKFParticle::GetDistanceFromParticle( const AliKFParticle &p ) const 
 {
   return AliKFParticleBase::GetDistanceFromParticle( p );
@@ -903,4 +930,3 @@ inline void AliKFParticle::ConstructGamma( const AliKFParticle &daughter1,
 }
 
 #endif 
-
