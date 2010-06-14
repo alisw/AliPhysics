@@ -204,18 +204,30 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   }
   if(fVarsForOpt[12]){
     iter++;
+    Double_t mPDGPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
     if(TMath::Abs(pdgdaughters[0]==321)){
-      vars[iter]=dd->InvMass2Prongs(0,1,321,321);
+      
+      Double_t phimass01=d->InvMass2Prongs(0,1,321,321);
+       vars[iter]=TMath::Abs(phimass01-mPDGPhi);
+       // vars[iter]=dd->InvMass2Prongs(0,1,321,321);
     }else{
-      vars[iter]=dd->InvMass2Prongs(1,2,321,321);      
+      Double_t phimass12=d->InvMass2Prongs(1,2,321,321);
+       vars[iter]=TMath::Abs(phimass12-mPDGPhi);
+       // vars[iter]=dd->InvMass2Prongs(1,2,321,321);      
     }
   }
   if(fVarsForOpt[13]){
     iter++;
+    Double_t mPDGK0star = TDatabasePDG::Instance()->GetParticle(313)->Mass();
     if(TMath::Abs(pdgdaughters[0]==321)){
-      vars[iter]=dd->InvMass2Prongs(1,2,321,211);
+      
+      Double_t mass12kpi=d->InvMass2Prongs(1,2,321,211);
+      vars[iter]=TMath::Abs(mass12kpi-mPDGK0star);
+      //	      vars[iter]=dd->InvMass2Prongs(1,2,321,211);
     }else{
-      vars[iter]=dd->InvMass2Prongs(0,1,211,321);      
+      Double_t mass01pik=d->InvMass2Prongs(0,1,211,321);
+      vars[iter]=TMath::Abs(mass01pik-mPDGK0star);
+      //	vars[iter]=dd->InvMass2Prongs(0,1,211,321);      
     }
   }
 
