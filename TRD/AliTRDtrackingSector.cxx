@@ -74,7 +74,7 @@ void AliTRDtrackingSector::Init(const AliTRDReconstructor *rec)
       if(!(tb = (*tc)->GetTB(itb))) continue;
       tb->SetReconstructor(rec);
     }
-    (*tc)->Build(fGeom);
+    (*tc)->Build(fGeom, rec->IsHLT());
   }
     
   Int_t nl;
@@ -129,7 +129,7 @@ AliTRDtrackingChamber* AliTRDtrackingSector::GetChamber(Int_t stack, Int_t layer
   for(Int_t ic = ch+1; ic<AliTRDgeometry::kNdets; ic++) fIndex[ic] += fIndex[ic] >= 0 ? 1 : 0;
   
   AliTRDtrackingChamber *chmb = fChamber[Int_t(fIndex[ch])] = new AliTRDtrackingChamber();
-  chmb->Init(AliTRDgeometry::GetDetector(layer, stack, fSector));
+  chmb->SetDetector(AliTRDgeometry::GetDetector(layer, stack, fSector));
   return chmb;
 }
 
