@@ -77,6 +77,12 @@ ClassImp(AliAnalysisTaskHardSoft)
     for(Int_t j=0;j<100;j++){
       fDPhiLeadingNchBin[i][j]   = 0;
     }
+
+    for(Int_t j=0;j<2;j++){
+      fNchHardSoft[i][j]   = 0;
+      fPtHardSoft[i][j]   = 0;
+      fPtAvHardSoftNch[i][j]   = 0;
+    }
   }
   DefineOutput(1,  TList::Class()); 
 }
@@ -101,8 +107,8 @@ void AliAnalysisTaskHardSoft::UserCreateOutputObjects()
 
   for(Int_t i=0;i<2;i++){
     fPt[i]                 = new TH1F(Form("fPt%s",labels[i].Data()),
-				    Form("fPt%s",labels[i].Data()) ,  
-				    500, 0., 50);
+				      Form("fPt%s",labels[i].Data()) ,  
+				      500, 0., 50);
     fEta[i]                = new TH1F (Form("fEta%s",labels[i].Data()),
 				       Form("fEta%s",labels[i].Data()) ,  
 				       100, -1., 1);
@@ -130,8 +136,8 @@ void AliAnalysisTaskHardSoft::UserCreateOutputObjects()
 					  Form("fPtSumNch%s",labels[i].Data()) ,  
 					  250, -0.5, 249.5);
     fPtAvNch[i]            = new TProfile(Form("fPtAvNch%s",labels[i].Data()),
-					   Form("fPtAvNch%s",labels[i].Data()) ,  
-					   250, -0.5, 249.5);
+					  Form("fPtAvNch%s",labels[i].Data()) ,  
+					  250, -0.5, 249.5);
     fDPhiLeading[i]        = new TH1F(Form("fDPhiLeading%s",labels[i].Data()),
 				      Form("fDPhiLeading%s",labels[i].Data()) ,  
 				      180, 0., TMath::Pi());
@@ -162,6 +168,18 @@ void AliAnalysisTaskHardSoft::UserCreateOutputObjects()
 					      180, 0., TMath::Pi());
     }
     
+    for(Int_t j=0;j<2;j++){
+      fNchHardSoft[i][j]     = new TH1F(Form("fNchHardSoft%s%d",labels[i].Data(),j),
+					Form("fNchHardSoft%s%d",labels[i].Data(),j) ,  
+					250, -0.5, 249.5);
+      fPtHardSoft[i][j]     = new TH1F(Form("fPtHardSoft%s%d",labels[i].Data(),j),
+				       Form("fPtHardSoft%s%d",labels[i].Data(),j) ,  
+				       500, 0., 50.0);
+      fPtAvHardSoftNch[i][j]     = new TProfile(Form("fPtAvHardSoftNch%s%d",labels[i].Data(),j),
+						Form("fPtAvHardSoftNch%s%d",labels[i].Data(),j) ,  
+						250, -0.5, 249.5);
+    }
+    
   }
   
  
@@ -188,6 +206,12 @@ void AliAnalysisTaskHardSoft::UserCreateOutputObjects()
 
     for(Int_t j=0;j<100;j++){
       fHists->Add(fDPhiLeadingNchBin[i][j]);
+    }
+
+    for(Int_t j=0;j<2;j++){
+      fHists->Add(fNchHardSoft[i][j]);
+      fHists->Add(fPtHardSoft[i][j]);
+      fHists->Add(fPtAvHardSoftNch[i][j]);
     }
   }
 
@@ -223,14 +247,15 @@ void AliAnalysisTaskHardSoft::UserExec(Option_t *)
   Double_t etaOthersRandom[2]    = {0.,0.}; // eta others  for random particle position (from fMap)
   Double_t phiOthersRandom[2]    = {0.,0.}; // phi others   "
 
-
-  AliStack *stack = 0x0; // needed for MC studies
-  Float_t vzMC=0.;       // MC vertex position in z
+  Int_t fEventType[2]={1,1}; //hard=0, soft=1 -> set to hard if trigger and associate particle 
+                             //are within R=0.7 
 
   //get event and vertex cut :(MC and ESD)
   //---------------------
   //MC
   //---------------------
+  AliStack *stack = 0x0; // needed for MC studies
+  Float_t vzMC=0.;       // MC vertex position in z
   if(fUseMc==true){
     stack = MCEvent()->Stack();
     AliGenEventHeader*  header = MCEvent()->GenEventHeader();
@@ -410,6 +435,7 @@ void AliAnalysisTaskHardSoft::UserExec(Option_t *)
 	    if(nTracksAll[mcesd]<100)fDPhiLeadingNchBin[mcesd][nTracksAll[mcesd]]->Fill(dPhi);
 	    
 	    if(radius<fRadiusCut){
+	      fEventType[mcesd]=0;
 	      nTracksAssociate[mcesd]++;
 	    }
 	    
@@ -439,10 +465,18 @@ void AliAnalysisTaskHardSoft::UserExec(Option_t *)
 	}
 	//fill histogram with number of tracks (pt>fAssociatePtCut) around leading track
 	fNchAssInR[mcesd]->Fill(nTracksAll[mcesd],nTracksAssociate[mcesd]);
-
+	
       }
     }
     
+    fNchHardSoft[mcesd][fEventType[mcesd]]->Fill(nTracksAll[mcesd]);
+
+    for(Int_t i=0;i<nTracksAll[mcesd];i++){
+      fPtHardSoft[mcesd][fEventType[mcesd]]->Fill(ptArray[i]);
+    }
+    
+    fPtAvHardSoftNch[mcesd][fEventType[mcesd]]->Fill(nTracksAll[mcesd],ptAv[mcesd]);
+
    
   }//double loop over mcP and ESD
 

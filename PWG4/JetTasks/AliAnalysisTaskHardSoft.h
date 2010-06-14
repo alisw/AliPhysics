@@ -88,6 +88,9 @@ class AliAnalysisTaskHardSoft : public AliAnalysisTaskSE {
   //per Nch bin of all accepted tracks
   TH1F       * fDPhiLeadingNchBin[2][100]; // delta phi of associate tracks to leading track per Nch bin
 
+  TH1F       * fNchHardSoft[2][2];         // Nch for hard and soft events (classified with CDF algorithm)
+  TH1F       * fPtHardSoft[2][2];          // Pt for hard and soft events (classified with CDF algorithm)
+  TProfile   * fPtAvHardSoftNch[2][2];     // <Pt> for hard and soft events (classified with CDF algorithm)
 
 
   AliAnalysisTaskHardSoft(const AliAnalysisTaskHardSoft&); // not implemented
