@@ -42,11 +42,18 @@ AliAnalysisTaskSE(name),
 fEvent(NULL),
 fGFC(NULL),
 fListHistos(NULL),
+fHarmonic(2),  
+fMultiple(1),
+fCalculateVsMultiplicity(kFALSE),
+fnBinsMult(10000),  
+fMinMult(0.),   
+fMaxMult(10000.),
 fUseWeights(useWeights),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
-fListWeights(NULL)
+fWeightsList(NULL),
+fTuneParameters(kFALSE)
 {
  // Constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants(const char *name, Bool_t useWeights)"<<endl;
@@ -62,22 +69,41 @@ fListWeights(NULL)
  }
  // Output slot #0 is reserved
  // Output slot #1 writes into a TList container
- DefineOutput(1, TList::Class());    
-}
+ DefineOutput(1, TList::Class());   
+ 
+ // Initilize arrays:
+ for(Int_t r=0;r<10;r++)
+ {
+  fTuningR0[r] = 0.;
+ }
+} // end of constructor
 
 AliAnalysisTaskCumulants::AliAnalysisTaskCumulants():
 AliAnalysisTaskSE(),
 fEvent(NULL),
 fGFC(NULL),
 fListHistos(NULL),
+fHarmonic(0),  
+fMultiple(0),
+fCalculateVsMultiplicity(kFALSE),
+fnBinsMult(0),  
+fMinMult(0.),   
+fMaxMult(0.),
 fUseWeights(kFALSE),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
-fListWeights(NULL)
+fWeightsList(NULL),
+fTuneParameters(kFALSE)
 {
  // Dummy constructor
  cout<<"AliAnalysisTaskCumulants::AliAnalysisTaskCumulants()"<<endl;
+
+ // Initilize arrays:
+ for(Int_t r=0;r<10;r++)
+ {
+  fTuningR0[r] = 0.;
+ }
 }
 
 //================================================================================================================
@@ -90,6 +116,15 @@ void AliAnalysisTaskCumulants::UserCreateOutputObjects()
  // Analyser:
  fGFC = new AliFlowAnalysisWithCumulants();
  
+ // Calculation vs multiplicity:
+ if(fCalculateVsMultiplicity)
+ {
+  fGFC->SetCalculateVsMultiplicity(fCalculateVsMultiplicity);
+  fGFC->SetnBinsMult(fnBinsMult);
+  fGFC->SetMinMult(fMinMult);
+  fGFC->SetMaxMult(fMaxMult);
+ }
+ 
  // Weights:
  if(fUseWeights)
  {
@@ -100,12 +135,19 @@ void AliAnalysisTaskCumulants::UserCreateOutputObjects()
   // Get data from input slot #1 which is used for weights:
   if(GetNinputs()==2) 
   {                   
-   fListWeights = (TList*)GetInputData(1); 
+   fWeightsList = (TList*)GetInputData(1); 
   }
   // Pass the list with weights to class:
-  if(fListWeights) fGFC->SetWeightsList(fListWeights);
+  if(fWeightsList) fGFC->SetWeightsList(fWeightsList);
  }
 
+ // Tuning:
+ if(fTuneParameters)
+ {
+  fGFC->SetTuneParameters(fTuneParameters); 
+  for(Int_t r=0;r<10;r++) {fGFC->SetTuningR0(fTuningR0[r],r);}
+ }
+ 
  fGFC->Init();
 
  if(fGFC->GetHistList()) 

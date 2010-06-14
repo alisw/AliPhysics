@@ -693,6 +693,15 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     taskGFC->SetUsePhiWeights(WEIGHTS[0]); 
     taskGFC->SetUsePtWeights(WEIGHTS[1]);
     taskGFC->SetUseEtaWeights(WEIGHTS[2]); 
+    // calculation vs multiplicity:
+    taskGFC->SetCalculateVsMultiplicity(kFALSE);   
+    taskGFC->SetnBinsMult(10000);
+    taskGFC->SetMinMult(0);
+    taskGFC->SetMaxMult(10000);   
+    // tuning of interpolating parameters:
+    taskGFC->SetTuneParameters(kFALSE);
+    Double_t r0[10] = {1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7}; // up to 10 values allowed
+    for(Int_t r=0;r<10;r++) {taskGFC->SetTuningR0(r0[r],r);}
     mgr->AddTask(taskGFC);
   }
   if (QC){

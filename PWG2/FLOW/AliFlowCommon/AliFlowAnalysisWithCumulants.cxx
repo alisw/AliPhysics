@@ -79,7 +79,6 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
  fUseEtaWeights(kFALSE),
- fUseParticleWeights(NULL),
  fPhiWeights(NULL),
  fPtWeights(NULL),
  fEtaWeights(NULL),
@@ -88,6 +87,7 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fReferenceFlowProfiles(NULL),
  fReferenceFlowResults(NULL),
  fReferenceFlowFlags(NULL),
+ fCalculateVsMultiplicity(kFALSE),
  fnBinsMult(10000),  
  fMinMult(0.),   
  fMaxMult(10000.),
@@ -95,6 +95,10 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fReferenceFlowGenFun(NULL),
  fQvectorComponents(NULL),
  fAverageOfSquaredWeight(NULL),
+ fReferenceFlowGenFunVsM(NULL),
+ fQvectorComponentsVsM(NULL),
+ fAverageOfSquaredWeightVsM(NULL),
+ fAvMVsM(NULL),
  fAvM(0.),
  fnEvts(0), 
  fReferenceFlowCumulants(NULL), 
@@ -108,7 +112,8 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fTuningProfiles(NULL),
  fTuningResults(NULL),
  fTuningFlags(NULL),
- fTuneParameters(kFALSE)   
+ fTuneParameters(kFALSE),
+ fTuningAvM(NULL)   
  {
   // Constructor. 
   
@@ -118,12 +123,6 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
   fHistList->SetName(fHistListName->Data());
   fHistList->SetOwner(kTRUE);
  
-  // List to hold histograms with phi, pt and eta weights:      
-  fWeightsList = new TList();
-  fWeightsList->SetName("Weights");
-  fWeightsList->SetOwner(kTRUE);   
-  fHistList->Add(fWeightsList); 
-  
   // Multiplicity weight:
   fMultiplicityWeight = new TString("unit");
    
@@ -139,7 +138,6 @@ AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants()
  // Desctructor.
  
  delete fHistList; 
- delete fWeightsList;
 
 } // end of AliFlowAnalysisWithCumulants::~AliFlowAnalysisWithCumulants()
 
@@ -157,7 +155,8 @@ void AliFlowAnalysisWithCumulants::Init()
  // f) Book common control and results histograms;
  // g) Store flags for reference flow;
  // h) Store flags for differential flow;
- // i) Book all objects needed for tuning.
+ // i) Book all objects needed for tuning;
+ // j) Book all objects needed for calculation versus multiplicity.
  
  //save old value and prevent histograms from being added to directory
  //to avoid name clashes in case multiple analaysis objects are used
@@ -167,7 +166,7 @@ void AliFlowAnalysisWithCumulants::Init()
  
  this->CrossCheckSettings();
  this->AccessConstants();
- this->BookAndFillWeightsHistograms();
+ if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights){this->BookAndFillWeightsHistograms();}
  this->BookAndNestAllLists();
  this->BookProfileHoldingSettings();
  this->BookCommonHistograms();
@@ -176,6 +175,7 @@ void AliFlowAnalysisWithCumulants::Init()
  this->StoreReferenceFlowFlags();
  this->StoreDiffFlowFlags();
  if(fTuneParameters){this->BookEverythingForTuning();}
+ if(fCalculateVsMultiplicity){this->BookEverythingForCalculationVsMultiplicity();}
  
  (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); // to be improved (moved somewhere else?)
  
@@ -198,7 +198,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  //  c4) Fill generating function for differential flow.
  
  this->CheckPointersUsedInMake();
- if(fTuneParameters) {this->FillGeneratingFunctionsForDifferentTuningParameters(anEvent);}
+ if(fTuneParameters) {this->FillGeneratingFunctionsForDifferentTuningParameters(anEvent);} 
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
  if(nRP<10) {return;} // generating function formalism make sense only for nRPs >= 10 for default settings 
  fCommonHists->FillControlHistograms(anEvent);                                                               
@@ -271,6 +271,7 @@ void AliFlowAnalysisWithCumulants::FinalizeTuning()
   {
    Int_t pMax = fTuningGenFun[r][pq]->GetXaxis()->GetNbins();
    Int_t qMax = fTuningGenFun[r][pq]->GetYaxis()->GetNbins(); 
+   fAvM = fTuningAvM->GetBinContent(pq+1);
    // <G[p][q]>
    TMatrixD dAvG(pMax,qMax); 
    dAvG.Zero();
@@ -422,7 +423,12 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionsForDifferentTuningPara
                                           // rest  = # of particles which are not niether RPs nor POIs.  
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = # of particles used to determine the reaction plane;
- 
+ for(Int_t pq=0;pq<5;pq++)
+ { 
+  if(nRP<2.*pMax[pq]) continue; // results doesn't make sense if nRP is smaller than serie's cutoff
+  fTuningAvM->Fill(pq+0.5,nRP,1.); // <M> for different classes of events }
+ }
+  
  Double_t tuningGenFunEBE[10][5][8][17] = {{{{0.}}}}; 
  for(Int_t r=0;r<10;r++)
  {
@@ -466,6 +472,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionsForDifferentTuningPara
     if(TMath::Abs(fTuningR0[r])<1.e-10) continue;
     for(Int_t pq=0;pq<5;pq++) // 5 different values for set (pMax,qMax)
     {
+     if(nRP<2.*pMax[pq]) continue; // results doesn't make sense if nRP is smaller than serie's cutoff
      for(Int_t p=0;p<pMax[pq];p++)
      {
       for(Int_t q=0;q<qMax[pq];q++)
@@ -483,6 +490,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionsForDifferentTuningPara
  {
   for(Int_t pq=0;pq<5;pq++) 
   {
+   if(nRP<2.*pMax[pq]) continue; // results doesn't make sense if nRP is smaller than serie's cutoff
    for(Int_t p=0;p<pMax[pq];p++)
    {
     for(Int_t q=0;q<qMax[pq];q++)
@@ -515,6 +523,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
                                           // rest  = # of particles which are not niether RPs nor POIs.  
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = # of particles used to determine the reaction plane;
+ if(fCalculateVsMultiplicity){fAvMVsM->Fill(nRP+0.5,nRP,1.);}
  
  // Initializing the generating function G[p][q] for reference flow for current event: 
  Int_t pMax = fGEBE->GetNrows();
@@ -592,6 +601,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
   for(Int_t q=0;q<qMax;q++)
   {
    fReferenceFlowGenFun->Fill((Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight); 
+   if(fCalculateVsMultiplicity){fReferenceFlowGenFunVsM->Fill(nRP+0.5,(Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight);}
   }
  } 
  
@@ -820,11 +830,12 @@ void AliFlowAnalysisWithCumulants::GetOutputHistograms(TList *outputListHistos)
    exit(0);
   }
   this->GetPointersForBaseHistograms();
+  this->AccessSettings();
   this->GetPointersForCommonControlHistograms();
   this->GetPointersForCommonResultsHistograms();
-  this->GetPointersForParticleWeightsHistograms();
   this->GetPointersForReferenceFlowObjects();
   this->GetPointersForDiffFlowObjects();
+  if(fTuneParameters){this->GetPointersForTuningObjects();}
  } else 
    {
     cout<<endl;
@@ -940,23 +951,129 @@ void AliFlowAnalysisWithCumulants::GetPointersForCommonResultsHistograms()
 
 //================================================================================================================
 
-void AliFlowAnalysisWithCumulants::GetPointersForParticleWeightsHistograms() 
+void AliFlowAnalysisWithCumulants::GetPointersForTuningObjects()
 {
- // Get pointers for histograms holding particle weights.
-
- TList *weightsList = dynamic_cast<TList*>(fHistList->FindObject("Weights"));
- if(weightsList) this->SetWeightsList(weightsList);
- TString fUseParticleWeightsName = "fUseParticleWeights";
- TProfile *useParticleWeights = dynamic_cast<TProfile*>(weightsList->FindObject(fUseParticleWeightsName.Data()));
- if(useParticleWeights)
- {
-  this->SetUseParticleWeights(useParticleWeights);  
-  fUsePhiWeights = (Int_t)fUseParticleWeights->GetBinContent(1); 
-  fUsePtWeights = (Int_t)fUseParticleWeights->GetBinContent(2); 
-  fUseEtaWeights = (Int_t)fUseParticleWeights->GetBinContent(3);  
- }
+ // Get pointers to all objects used for tuning.
  
-} // end of void AliFlowAnalysisWithCumulants::GetPointersForParticleWeightsHistograms(); 
+ // a) Get pointers to all lists relevant for tuning;
+ // b) Get pointer to profile holding flags for tuning;
+ // c) Get pointers to all objects in the list fTuningProfiles;
+ // d) Get pointers to all objects in the list fTuningResults.
+
+ // a) Get pointers to all lists relevant for tuning:
+ TList *tuningList = dynamic_cast<TList*>(fHistList->FindObject("Tuning"));
+ if(!tuningList) 
+ {
+  cout<<endl; 
+  cout<<"WARNING (GFC): uningList is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+  cout<<endl; 
+  exit(0); 
+ }  
+ TList *tuningProfiles = dynamic_cast<TList*>(tuningList->FindObject("Profiles"));
+ if(!tuningProfiles)  
+ {
+  cout<<endl; 
+  cout<<"WARNING (GFC): tuningProfiles is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+  cout<<endl; 
+  exit(0); 
+ }
+ TList *tuningResults = dynamic_cast<TList*>(tuningList->FindObject("Results"));
+ if(!tuningResults)  
+ {
+  cout<<endl; 
+  cout<<"WARNING (GFC): tuningResults is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+  cout<<endl; 
+  exit(0); 
+ }
+
+ // b) Get pointer to profile holding flags for tuning:
+ TString tuningFlagsName = "fTuningFlags";
+ TProfile *tuningFlags = dynamic_cast<TProfile*>(tuningList->FindObject(tuningFlagsName.Data())); 
+ if(tuningFlags)
+ {
+  this->SetTuningFlags(tuningFlags);  
+ } else 
+   {
+    cout<<endl; 
+    cout<<"WARNING (GFC): tuningFlags is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+    cout<<endl; 
+    exit(0); 
+   }
+   
+ // c) Get pointers to all objects in the list fTuningProfiles:
+ // Generating function for different tuning parameters:
+ TProfile2D *tuningGenFun[10][5] = {{NULL}};
+ for(Int_t r=0;r<10;r++)
+ { 
+  for(Int_t pq=0;pq<5;pq++)
+  {
+   tuningGenFun[r][pq] = dynamic_cast<TProfile2D*>(tuningProfiles->FindObject(Form("fTuningGenFun (r_{0,%i}, pq set %i)",r,pq)));    
+   if(tuningGenFun[r][pq])
+   {
+    this->SetTuningGenFun(tuningGenFun[r][pq],r,pq);  
+   } else 
+     {
+      cout<<endl; 
+      cout<<"WARNING (GFC): "<<Form("tuningGenFun[%i][%i]",r,pq)<<" is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+      cout<<endl; 
+      exit(0); 
+     }
+  } // end of for(Int_t pq=0;pq<5;pq++)
+ } // end of for(Int_t r=0;r<10;r++)
+ // Average multiplicities for events with nRPs >= cuttof 
+ TProfile *tuningAvM = dynamic_cast<TProfile*>(tuningProfiles->FindObject("fTuningAvM"));   
+ if(tuningAvM)
+ {
+  this->SetTuningAvM(tuningAvM);  
+ } else 
+   {
+    cout<<endl; 
+    cout<<"WARNING (GFC): tuningAvM is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+    cout<<endl; 
+    exit(0); 
+   }
+ 
+ // d) Get pointers to all objects in the list fTuningResults.
+ // Cumulants for reference flow for 10 different r0s and 5 different sets of (pmax,qmax): 
+ TH1D *tuningCumulants[10][5] = {{NULL}};
+ for(Int_t r=0;r<10;r++)
+ { 
+  for(Int_t pq=0;pq<5;pq++)
+  {
+   tuningCumulants[r][pq] = dynamic_cast<TH1D*>(tuningResults->FindObject(Form("fTuningCumulants (r_{0,%i}, pq set %i)",r,pq)));       
+   if(tuningCumulants[r][pq])
+   {
+    this->SetTuningCumulants(tuningCumulants[r][pq],r,pq);  
+   } else 
+     {
+      cout<<endl; 
+      cout<<"WARNING (GFC): "<<Form("tuningCumulants[%i][%i]",r,pq)<<" is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+      cout<<endl; 
+      exit(0); 
+     }
+  } // end of for(Int_t pq=0;pq<5;pq++)
+ } // end of for(Int_t r=0;r<10;r++)
+ // Reference flow for 10 different r0s and 5 different sets of (pmax,qmax):    
+ TH1D *tuningFlow[10][5] = {{NULL}};
+ for(Int_t r=0;r<10;r++)
+ { 
+  for(Int_t pq=0;pq<5;pq++)
+  {
+   tuningFlow[r][pq] = dynamic_cast<TH1D*>(tuningResults->FindObject(Form("fTuningFlow (r_{0,%i}, pq set %i)",r,pq))); 
+   if(tuningFlow[r][pq])
+   {
+    this->SetTuningFlow(tuningFlow[r][pq],r,pq);  
+   } else 
+     {
+      cout<<endl; 
+      cout<<"WARNING (GFC): "<<Form("tuningFlow[%i][%i]",r,pq)<<" is NULL in AFAWGFC::GPFTO() !!!!"<<endl;
+      cout<<endl; 
+      exit(0); 
+     }
+  } // end of for(Int_t pq=0;pq<5;pq++)
+ } // end of for(Int_t r=0;r<10;r++)
+
+} // end of void AliFlowAnalysisWithCumulants::GetPointersForTuningObjects()
 
 //================================================================================================================
 
@@ -967,8 +1084,9 @@ void AliFlowAnalysisWithCumulants::GetPointersForReferenceFlowObjects()
  // a) Get pointers to all lists relevant for reference flow;
  // b) Get pointer to profile holding flags;
  // c) Get pointers to all objects in the list fReferenceFlowProfiles;
- // d) Get pointers to all objects in the list fReferenceFlowResults.
-   
+ // d) Get pointers to all objects in the list fReferenceFlowResults;
+ // e) Get pointers for all objects relevant for calculation of reference flow versus multiplicity.
+
  // a) Get pointers to all lists relevant for reference flow:
  TList *referenceFlowList = dynamic_cast<TList*>(fHistList->FindObject("Reference Flow"));
  if(!referenceFlowList) 
@@ -1022,6 +1140,7 @@ void AliFlowAnalysisWithCumulants::GetPointersForReferenceFlowObjects()
     cout<<endl; 
     exit(0); 
    }
+ // Averages of various Q-vector components:
  TString qvectorComponentsName = "fQvectorComponents";
  TProfile *qvectorComponents = dynamic_cast<TProfile*>(referenceFlowProfiles->FindObject(qvectorComponentsName.Data()));
  if(qvectorComponents)
@@ -1088,8 +1207,80 @@ void AliFlowAnalysisWithCumulants::GetPointersForReferenceFlowObjects()
     cout<<endl; 
     exit(0); 
    } 
+ 
+ // e) Get pointers for all objects relevant for calculation of reference flow versus multiplicity:
+ if(!fCalculateVsMultiplicity) {return;}
+ // All-event average of the generating function used to calculate reference flow vs multiplicity:
+ TString referenceFlowGenFunVsMName = "fReferenceFlowGenFunVsM";
+ TProfile3D *referenceFlowGenFunVsM = dynamic_cast<TProfile3D*>(referenceFlowProfiles->FindObject(referenceFlowGenFunVsMName.Data())); 
+ if(referenceFlowGenFunVsM)
+ {
+  this->SetReferenceFlowGenFunVsM(referenceFlowGenFunVsM);  
+ } else 
+   {
+    cout<<endl; 
+    cout<<"WARNING (GFC): referenceFlowGenFunVsM is NULL in AFAWGFC::GPFRFO() !!!!"<<endl;
+    cout<<endl; 
+    exit(0); 
+   }
+ // Averages of various Q-vector components versus multiplicity:
+ TString qvectorComponentsVsMName = "fQvectorComponentsVsM";
+ TProfile2D *qvectorComponentsVsM = dynamic_cast<TProfile2D*>(referenceFlowProfiles->FindObject(qvectorComponentsVsMName.Data()));
+ if(qvectorComponentsVsM)
+ {
+  this->SetQvectorComponentsVsM(qvectorComponentsVsM);  
+ } else 
+   {
+    cout<<endl; 
+    cout<<"WARNING (GFC): qvectorComponentsVsM is NULL in AFAWGFC::GPFRFO() !!!!"<<endl;
+    cout<<endl; 
+    exit(0); 
+   }
+ // <<w^2>>, where w = wPhi*wPt*wEta versus multiplicity:
+ TString averageOfSquaredWeightVsMName = "fAverageOfSquaredWeightVsM";
+ TProfile2D *averageOfSquaredWeightVsM = dynamic_cast<TProfile2D*>(referenceFlowProfiles->FindObject(averageOfSquaredWeightVsMName.Data()));
+ if(averageOfSquaredWeightVsM)
+ {
+  this->SetAverageOfSquaredWeightVsM(averageOfSquaredWeightVsM);
+ } else 
+   {
+    cout<<endl; 
+    cout<<"WARNING (GFC): averageOfSquaredWeightVsM is NULL in AFAWGFC::GPFRFO() !!!!"<<endl;
+    cout<<endl; 
+    exit(0); 
+   } 
+ // Final results for reference GF-cumulants versus multiplicity:
+ TString cumulantFlag[4] = {"GFC{2}","GFC{4}","GFC{6}","GFC{8}"};
+ TString referenceFlowCumulantsVsMName = "fReferenceFlowCumulantsVsM";
+ TH1D *referenceFlowCumulantsVsM[4] = {NULL};
+ for(Int_t co=0;co<4;co++) // cumulant order
+ {
+  referenceFlowCumulantsVsM[co] = dynamic_cast<TH1D*>(referenceFlowResults->FindObject(Form("%s, %s",referenceFlowCumulantsVsMName.Data(),cumulantFlag[co].Data())));
+  if(referenceFlowCumulantsVsM[co])
+  {
+   this->SetReferenceFlowCumulantsVsM(referenceFlowCumulantsVsM[co],co);
+  } else
+    {
+     cout<<endl; 
+     cout<<"WARNING (GFC): "<<Form("referenceFlowCumulantsVsM[%i]",co)<<" is NULL in AFAWGFC::GPFRFO() !!!!"<<endl;
+     cout<<endl; 
+     exit(0); 
+    }   
+ } // end of for(Int_t co=0;co<4;co++) // cumulant order
+ // <M> vs multiplicity bin: 
+ TProfile *avMVsM = dynamic_cast<TProfile*>(referenceFlowProfiles->FindObject("fAvMVsM"));
+ if(avMVsM)
+ {
+  this->SetAvMVsM(avMVsM);
+ } else
+   {
+    cout<<endl; 
+    cout<<"WARNING (GFC): avMVsM is NULL in AFAWGFC::GPFRFO() !!!!"<<endl;
+    cout<<endl; 
+    exit(0); 
+   }   
 
-} // end of void AliFlowAnalysisWithCumulants::GetPointersForReferenceFlowObjects()
+}  // end of void AliFlowAnalysisWithCumulants::GetPointersForReferenceFlowObjects()
 
 //================================================================================================================
 
@@ -1115,7 +1306,7 @@ void AliFlowAnalysisWithCumulants::GetPointersForDiffFlowObjects()
  if(!diffFlowList)
  { 
   cout<<endl;
-  cout<<"WARNING: diffFlowList is NULL in AFAWQC::GPFDFO() !!!!"<<endl;
+  cout<<"WARNING: diffFlowList is NULL in AFAWC::GPFDFO() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
@@ -1123,7 +1314,7 @@ void AliFlowAnalysisWithCumulants::GetPointersForDiffFlowObjects()
  if(!diffFlowProfiles)
  { 
   cout<<endl;
-  cout<<"WARNING: diffFlowProfiles is NULL in AFAWQC::GPFDFO() !!!!"<<endl;
+  cout<<"WARNING: diffFlowProfiles is NULL in AFAWC::GPFDFO() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
@@ -1131,7 +1322,7 @@ void AliFlowAnalysisWithCumulants::GetPointersForDiffFlowObjects()
  if(!diffFlowResults)
  { 
   cout<<endl;
-  cout<<"WARNING: diffFlowResults is NULL in AFAWQC::GPFDFO() !!!!"<<endl;
+  cout<<"WARNING: diffFlowResults is NULL in AFAWC::GPFDFO() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
@@ -1894,25 +2085,21 @@ void AliFlowAnalysisWithCumulants::CalculateReferenceFlow()
  Double_t gfc4 = fReferenceFlowCumulants->GetBinContent(2); // GFC{4}  
  Double_t gfc6 = fReferenceFlowCumulants->GetBinContent(3); // GFC{6}  
  Double_t gfc8 = fReferenceFlowCumulants->GetBinContent(4); // GFC{8}
- // Double_t gfc10 = fReferenceFlowCumulants->GetBinContent(5); // GFC{10} overflow
  // Reference flow estimates:
  Double_t v2 = 0.; // v{2,GFC}  
  Double_t v4 = 0.; // v{4,GFC}  
  Double_t v6 = 0.; // v{6,GFC}  
  Double_t v8 = 0.; // v{8,GFC}
- // Double_t v10 = 0.; // v{10,GFC} overflow
  // Calculate reference flow estimates from Q-cumulants: 
  if(gfc2>=0.) v2 = pow(gfc2,1./2.); 
  if(gfc4<=0.) v4 = pow(-1.*gfc4,1./4.); 
  if(gfc6>=0.) v6 = pow((1./4.)*gfc6,1./6.); 
  if(gfc8<=0.) v8 = pow((-1./33.)*gfc8,1./8.); 
- // if(gfc10>=0.) v10 = pow((1./456.)*gfc10,1./10.); 
  // Store results for reference flow:
  fReferenceFlow->SetBinContent(1,v2);
  fReferenceFlow->SetBinContent(2,v4);
  fReferenceFlow->SetBinContent(3,v6);
  fReferenceFlow->SetBinContent(4,v8);
- // fReferenceFlow->SetBinContent(5,v10); // overflow
  
 } // end of void AliFlowAnalysisWithCumulants::CalculateReferenceFlow()
 
@@ -1989,6 +2176,75 @@ void AliFlowAnalysisWithCumulants::CalculateCumulantsForReferenceFlow()
   fReferenceFlowCumulants->SetBinContent(co+1,cumulant[co]);
  }
  
+ // Calculation versus multiplicity:
+ if(!fCalculateVsMultiplicity){return;}
+ for(Int_t b=0;b<fnBinsMult;b++)
+ {
+  fAvM = fAvMVsM->GetBinContent(b+1);
+  // <G[p][q]>
+  TMatrixD dAvGVsM(pMax,qMax); 
+  dAvGVsM.Zero();
+  Bool_t someAvGEntryIsNegativeVsM = kFALSE;
+  for(Int_t p=0;p<pMax;p++)
+  {
+   for(Int_t q=0;q<qMax;q++)
+   {
+    dAvGVsM(p,q) = fReferenceFlowGenFunVsM->GetBinContent(fReferenceFlowGenFunVsM->GetBin(b+1,p+1,q+1));
+    if(dAvGVsM(p,q)<0.)
+    {
+     someAvGEntryIsNegativeVsM = kTRUE;
+     cout<<endl; 
+     cout<<" WARNING: "<<Form("<G[%d][%d]> is negative !!!! GFC vs multiplicity results are meaningless.",p,q)<<endl; 
+     cout<<endl; 
+    }
+   }  
+  } 
+      
+  // C[p][q] (generating function for the cumulants)    
+  TMatrixD dCVsM(pMax,qMax);
+  dCVsM.Zero();
+  if(fAvM>0. && !someAvGEntryIsNegativeVsM)
+  {
+   for(Int_t p=0;p<pMax;p++)
+   {
+    for(Int_t q=0;q<qMax;q++)
+    {
+     dCVsM(p,q) = fAvM*(pow(dAvGVsM(p,q),(1./fAvM))-1.); 
+    }
+   }
+  }
+    
+  // Averaging the generating function for cumulants over azimuth
+  // in order to eliminate detector effects.
+  // <C[p][q]> (Remark: here <> stands for average over azimuth):
+  TVectorD dAvCVsM(pMax);
+  dAvCVsM.Zero();
+  for(Int_t p=0;p<pMax;p++)
+  {
+   Double_t tempVsM = 0.; 
+   for(Int_t q=0;q<qMax;q++)
+   {
+    tempVsM += 1.*dCVsM(p,q);
+   } 
+   dAvCVsM[p] = tempVsM/qMax;
+  }
+  
+  // Finally, the isotropic cumulants for reference flow:
+  TVectorD cumulantVsM(pMax);
+  cumulantVsM.Zero(); 
+  cumulantVsM[0] = (-1./(60*fR0*fR0))*((-300.)*dAvCVsM[0]+300.*dAvCVsM[1]-200.*dAvCVsM[2]+75.*dAvCVsM[3]-12.*dAvCVsM[4]);
+  cumulantVsM[1] = (-1./(6.*pow(fR0,4.)))*(154.*dAvCVsM[0]-214.*dAvCVsM[1]+156.*dAvCVsM[2]-61.*dAvCVsM[3]+10.*dAvCVsM[4]);
+  cumulantVsM[2] = (3./(2.*pow(fR0,6.)))*(71.*dAvCVsM[0]-118.*dAvCVsM[1]+98.*dAvCVsM[2]-41.*dAvCVsM[3]+7.*dAvCVsM[4]);
+  cumulantVsM[3] = (-24./pow(fR0,8.))*(14.*dAvCVsM[0]-26.*dAvCVsM[1]+24.*dAvCVsM[2]-11.*dAvCVsM[3]+2.*dAvCVsM[4]);
+  cumulantVsM[4] = (120./pow(fR0,10.))*(5.*dAvCVsM[0]-10.*dAvCVsM[1]+10.*dAvCVsM[2]-5.*dAvCVsM[3]+1.*dAvCVsM[4]);
+  
+  // Store cumulants:
+  for(Int_t co=0;co<pMax-1;co++) // cumulant order
+  {
+   fReferenceFlowCumulantsVsM[co]->SetBinContent(b+1,cumulantVsM[co]);
+  } 
+ } // end of for(Int_t b=0;b<fnBinsMult;b++)
+
 } // end of void AliFlowAnalysisWithCumulants::CalculateCumulantsForReferenceFlow()
 
 //================================================================================================================
@@ -2050,6 +2306,10 @@ void AliFlowAnalysisWithCumulants::InitializeArrays()
    fTuningFlow[r][pq] = NULL;
   }
  }
+ for(Int_t co=0;co<4;co++)
+ {
+  fReferenceFlowCumulantsVsM[co] = NULL;
+ }
  
 } // end of void AliFlowAnalysisWithCumulants::InitializeArrays()
 
@@ -2101,7 +2361,7 @@ void AliFlowAnalysisWithCumulants::AccessConstants()
 
 void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
 {
- // book and fill histograms which hold phi, pt and eta weights
+ // Book and fill histograms which hold phi, pt and eta weights.
 
  if(!fWeightsList)
  {
@@ -2109,16 +2369,6 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
   exit(0);  
  }
     
- TString fUseParticleWeightsName = "fUseParticleWeights";
- fUseParticleWeights = new TProfile(fUseParticleWeightsName.Data(),"0 = particle weight not used, 1 = particle weight used ",3,0,3);
- fUseParticleWeights->SetLabelSize(0.06);
- (fUseParticleWeights->GetXaxis())->SetBinLabel(1,"w_{#phi}");
- (fUseParticleWeights->GetXaxis())->SetBinLabel(2,"w_{p_{T}}");
- (fUseParticleWeights->GetXaxis())->SetBinLabel(3,"w_{#eta}");
- fUseParticleWeights->Fill(0.5,(Int_t)fUsePhiWeights);
- fUseParticleWeights->Fill(1.5,(Int_t)fUsePtWeights);
- fUseParticleWeights->Fill(2.5,(Int_t)fUseEtaWeights);
- fWeightsList->Add(fUseParticleWeights); 
  if(fUsePhiWeights)
  {
   if(fWeightsList->FindObject("phi_weights"))
@@ -2186,6 +2436,70 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
 
 //================================================================================================================
 
+void AliFlowAnalysisWithCumulants::BookEverythingForCalculationVsMultiplicity()
+{
+ // Book all objects relevant for flow analysis versus multiplicity.
+ 
+ // a) Define constants;
+ // b) Book all profiles;
+ // c) Book all results.
+ 
+ // a) Define constants and local flags:
+ Int_t pMax = 5;     
+ Int_t qMax = 11;  
+ TString cumulantFlag[4] = {"GFC{2}","GFC{4}","GFC{6}","GFC{8}"};
+
+ // b) Book all profiles:
+ // Average of the generating function for reference flow <G[p][q]> versus multiplicity:
+ fReferenceFlowGenFunVsM = new TProfile3D("fReferenceFlowGenFunVsM","#LTG[p][q]#GT vs M",fnBinsMult,fMinMult,fMaxMult,pMax,0.,(Double_t)pMax,qMax,0.,(Double_t)qMax);
+ fReferenceFlowGenFunVsM->SetXTitle("M");
+ fReferenceFlowGenFunVsM->SetYTitle("p");
+ fReferenceFlowGenFunVsM->SetZTitle("q");
+ fReferenceFlowProfiles->Add(fReferenceFlowGenFunVsM);
+ // Averages of Q-vector components versus multiplicity:
+ fQvectorComponentsVsM = new TProfile2D("fQvectorComponentsVsM","Averages of Q-vector components",fnBinsMult,fMinMult,fMaxMult,4,0.,4.);
+ //fQvectorComponentsVsM->SetLabelSize(0.06);
+ fQvectorComponentsVsM->SetMarkerStyle(25);
+ fQvectorComponentsVsM->SetXTitle("M");
+ fQvectorComponentsVsM->GetYaxis()->SetBinLabel(1,"#LTQ_{x}#GT"); // Q_{x}
+ fQvectorComponentsVsM->GetYaxis()->SetBinLabel(2,"#LTQ_{y}#GT"); // Q_{y}
+ fQvectorComponentsVsM->GetYaxis()->SetBinLabel(3,"#LTQ_{x}^{2}#GT"); // Q_{x}^{2}
+ fQvectorComponentsVsM->GetYaxis()->SetBinLabel(4,"#LTQ_{y}^{2}#GT"); // Q_{y}^{2}
+ fReferenceFlowProfiles->Add(fQvectorComponentsVsM);
+ // <<w^2>>, where w = wPhi*wPt*wEta versus multiplicity:
+ fAverageOfSquaredWeightVsM = new TProfile2D("fAverageOfSquaredWeightVsM","#LT#LTw^{2}#GT#GT",fnBinsMult,fMinMult,fMaxMult,1,0,1);
+ fAverageOfSquaredWeightVsM->SetLabelSize(0.06);
+ fAverageOfSquaredWeightVsM->SetMarkerStyle(25);
+ fAverageOfSquaredWeightVsM->SetLabelOffset(0.01);
+ fAverageOfSquaredWeightVsM->GetXaxis()->SetBinLabel(1,"#LT#LTw^{2}#GT#GT");
+ fReferenceFlowProfiles->Add(fAverageOfSquaredWeightVsM); 
+ // <M> vs multiplicity bin: 
+ fAvMVsM = new TProfile("fAvMVsM","#LTM#GT vs M",fnBinsMult,fMinMult,fMaxMult);
+ //fAvMVsM->SetLabelSize(0.06);
+ fAvMVsM->SetMarkerStyle(25);
+ fAvMVsM->SetLabelOffset(0.01);
+ fAvMVsM->SetXTitle("M");
+ fAvMVsM->SetYTitle("#LTM#GT");
+ fReferenceFlowProfiles->Add(fAvMVsM); 
+
+ // c) Book all results:
+ // Final results for reference GF-cumulants versus multiplicity:
+ TString referenceFlowCumulantsVsMName = "fReferenceFlowCumulantsVsM";
+ for(Int_t co=0;co<4;co++) // cumulant order
+ {
+  fReferenceFlowCumulantsVsM[co] = new TH1D(Form("%s, %s",referenceFlowCumulantsVsMName.Data(),cumulantFlag[co].Data()),
+                                            Form("%s vs multipicity",cumulantFlag[co].Data()),
+                                            fnBinsMult,fMinMult,fMaxMult);
+  fReferenceFlowCumulantsVsM[co]->SetMarkerStyle(25);              
+  fReferenceFlowCumulantsVsM[co]->GetXaxis()->SetTitle("M");                                     
+  fReferenceFlowCumulantsVsM[co]->GetYaxis()->SetTitle(cumulantFlag[co].Data());  
+  fReferenceFlowResults->Add(fReferenceFlowCumulantsVsM[co]);                                    
+ } // end of for(Int_t co=0;co<4;co++) // cumulant order
+ 
+} // end of void AliFlowAnalysisWithCumulants::BookEverythingForCalculationVsMultiplicity()
+
+//================================================================================================================
+
 void AliFlowAnalysisWithCumulants::BookEverythingForReferenceFlow()
 {
  // Book all objects relevant for calculation of reference flow.
@@ -2250,7 +2564,7 @@ void AliFlowAnalysisWithCumulants::BookEverythingForReferenceFlow()
  fReferenceFlowResults->Add(fReferenceFlowCumulants); 
  // Final results for reference flow:  
  fReferenceFlow = new TH1D("fReferenceFlow","Reference flow",4,0,4); // to be improved (hardwired 4)
- fReferenceFlow->SetLabelSize(0.06);
+ fReferenceFlow->SetLabelSize(0.05);
  fReferenceFlow->SetMarkerStyle(25);
  fReferenceFlow->GetXaxis()->SetBinLabel(1,"v_{n}{2,GFC}");
  fReferenceFlow->GetXaxis()->SetBinLabel(2,"v_{n}{4,GFC}");
@@ -2312,6 +2626,14 @@ void AliFlowAnalysisWithCumulants::BookEverythingForTuning()
    fTuningProfiles->Add(fTuningGenFun[r][pq]);
   }
  }
+ // Average multiplicities for events with nRPs >= cuttof:
+ fTuningAvM = new TProfile("fTuningAvM","Average multiplicity",5,0,5);
+ fTuningAvM->SetMarkerStyle(25);
+ for(Int_t b=1;b<=5;b++)
+ {
+  fTuningAvM->GetXaxis()->SetBinLabel(b,Form("nRP #geq %i",2*pMax[b-1]));
+ }
+ fTuningProfiles->Add(fTuningAvM); 
 
  // d) Book all histograms:
  // Final results for isotropic cumulants for reference flow for different tuning parameters:
@@ -2337,8 +2659,8 @@ void AliFlowAnalysisWithCumulants::BookEverythingForTuning()
   for(Int_t pq=0;pq<5;pq++)
   {
    fTuningFlow[r][pq] = new TH1D(Form("fTuningFlow (r_{0,%i}, pq set %i)",r,pq),
-                          Form("Reference flow for r_{0} = %f, p_{max} = %i, q_{max} = %i",fTuningR0[r],pMax[pq],qMax[pq]),
-                          pMax[pq],0,pMax[pq]);
+                                 Form("Reference flow for r_{0} = %f, p_{max} = %i, q_{max} = %i",fTuningR0[r],pMax[pq],qMax[pq]),
+                                 pMax[pq],0,pMax[pq]);
    // fTuningFlow[r][pq]->SetLabelSize(0.06);
    fTuningFlow[r][pq]->SetMarkerStyle(25);
    for(Int_t b=1;b<=pMax[pq];b++)
@@ -2348,7 +2670,7 @@ void AliFlowAnalysisWithCumulants::BookEverythingForTuning()
    fTuningResults->Add(fTuningFlow[r][pq]); 
   }
  }  
- 
+   
 } // end of void AliFlowAnalysisWithCumulants::BookEverythingForTuning()
 
 //================================================================================================================
@@ -2480,6 +2802,7 @@ void AliFlowAnalysisWithCumulants::StoreReferenceFlowFlags()
    {
     fReferenceFlowFlags->Fill(1.5,1.); // 1 = "multiplicity"        
    } 
+ fReferenceFlowFlags->Fill(2.5,fCalculateVsMultiplicity); // evaluate vs M?          
 
 } // end of void AliFlowAnalysisWithCumulants::StoreReferenceFlowFlags()
 
@@ -2509,7 +2832,8 @@ void AliFlowAnalysisWithCumulants::BookAndNestAllLists()
  
  // a) Book and nest lists for reference flow;
  // b) Book and nest lists for differential flow;
- // c) Book and nest lists for tuning.
+ // c) Book and nest lists for tuning;
+ // d) If used, nest list for particle weights.   
   
  // a) Book and nest all lists for reference flow:
  fReferenceFlowList = new TList();
@@ -2554,6 +2878,15 @@ void AliFlowAnalysisWithCumulants::BookAndNestAllLists()
   fTuningList->Add(fTuningResults);
  } 
   
+ // d) If used, nest list for particle weights.   
+ if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
+ {
+  // Remark: pointer to this list is coming from the macro, no need to "new" it. 
+  fWeightsList->SetName("Weights");
+  fWeightsList->SetOwner(kTRUE);
+  fHistList->Add(fWeightsList); 
+ }
+
 } // end of void AliFlowAnalysisWithCumulants::BookAndNestAllLists()
 
 //================================================================================================================
@@ -2563,20 +2896,30 @@ void AliFlowAnalysisWithCumulants::BookProfileHoldingSettings()
  // Book profile to hold all analysis settings.
 
  TString analysisSettingsName = "fAnalysisSettings";
- fAnalysisSettings = new TProfile(analysisSettingsName.Data(),"Settings for analysis with Generating Function Cumulants",6,0.,6.);
+ fAnalysisSettings = new TProfile(analysisSettingsName.Data(),"Settings for analysis with Generating Function Cumulants",11,0.,11.);
  fAnalysisSettings->GetXaxis()->SetLabelSize(0.035);
  fAnalysisSettings->GetXaxis()->SetBinLabel(1,"Harmonic");
  fAnalysisSettings->Fill(0.5,fHarmonic);
  fAnalysisSettings->GetXaxis()->SetBinLabel(2,"Multiple");
  fAnalysisSettings->Fill(1.5,fMultiple); 
  fAnalysisSettings->GetXaxis()->SetBinLabel(3,"r_{0}");
- fAnalysisSettings->Fill(2.5,fR0);  
- fAnalysisSettings->GetXaxis()->SetBinLabel(4,"Print RF results");
- fAnalysisSettings->Fill(3.5,fPrintFinalResults[0]); 
- fAnalysisSettings->GetXaxis()->SetBinLabel(5,"Print RP results");
- fAnalysisSettings->Fill(4.5,fPrintFinalResults[1]); 
- fAnalysisSettings->GetXaxis()->SetBinLabel(6,"Print POI results");
- fAnalysisSettings->Fill(5.5,fPrintFinalResults[2]);
+ fAnalysisSettings->Fill(2.5,fR0);   
+ fAnalysisSettings->GetXaxis()->SetBinLabel(4,"Use w_{#phi}?");
+ fAnalysisSettings->Fill(3.5,fUsePhiWeights);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(5,"Use w_{p_{t}}?");
+ fAnalysisSettings->Fill(4.5,fUsePtWeights);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(6,"Use w_{#eta}?");
+ fAnalysisSettings->Fill(5.5,fUsePhiWeights);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(7,"Tune parameters?");
+ fAnalysisSettings->Fill(6.5,fTuneParameters); 
+ fAnalysisSettings->GetXaxis()->SetBinLabel(8,"Print RF results");
+ fAnalysisSettings->Fill(7.5,fPrintFinalResults[0]); 
+ fAnalysisSettings->GetXaxis()->SetBinLabel(9,"Print RP results");
+ fAnalysisSettings->Fill(8.5,fPrintFinalResults[1]); 
+ fAnalysisSettings->GetXaxis()->SetBinLabel(10,"Print POI results");
+ fAnalysisSettings->Fill(9.5,fPrintFinalResults[2]);
+ fAnalysisSettings->GetXaxis()->SetBinLabel(11,"Evaluate vs M?");
+ fAnalysisSettings->Fill(10.5,fCalculateVsMultiplicity);
  fHistList->Add(fAnalysisSettings);
 
 } // end of void AliFlowAnalysisWithCumulants::BookProfileHoldingSettings()
@@ -2619,59 +2962,91 @@ void AliFlowAnalysisWithCumulants::CheckPointersUsedInMake()
  if(!fCommonHists)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fCommonHists is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fCommonHists is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(fUsePhiWeights && !fPhiWeights)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fPhiWeights is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fPhiWeights is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(fUsePtWeights && !fPtWeights)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fPtWeights is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fPtWeights is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(fUseEtaWeights && !fEtaWeights)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fEtaWeights is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fEtaWeights is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(!fAverageOfSquaredWeight)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fAverageOfSquaredWeight is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fAverageOfSquaredWeight is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(!fReferenceFlowGenFun)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fReferenceFlowGenFun is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fReferenceFlowGenFun is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(!fQvectorComponents)
  {                        
   cout<<endl;
-  cout<<" WARNING (GFC): !fQvectorComponents is NULL in CPUIM() !!!!"<<endl;
+  cout<<" WARNING (GFC): fQvectorComponents is NULL in CPUIM() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
  if(!fGEBE)
  {
   cout<<endl; 
-  cout<<"WARNING (GFC): !fGEBE is NULL in CPUIM() !!!!"<<endl;
+  cout<<"WARNING (GFC): fGEBE is NULL in CPUIM() !!!!"<<endl;
   cout<<endl; 
   exit(0);
  }
+ // Checking pointers for vs multiplicity calculation: 
+ if(fCalculateVsMultiplicity)
+ {
+  if(!fReferenceFlowGenFunVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fReferenceFlowGenFunVsM is NULL in CPUIM() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+  if(!fQvectorComponentsVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fQvectorComponentsVsM is NULL in CPUIM() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+  if(!fAverageOfSquaredWeightVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fAverageOfSquaredWeightVsM is NULL in CPUIM() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+  if(!fAvMVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fAvMVsM is NULL in CPUIM() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+ } // end of if(fCalculateVsMultiplicity) 
  
 } // end of void AliFlowAnalysisWithCumulants::CheckPointersUsedInMake()
 
@@ -2797,6 +3172,38 @@ void AliFlowAnalysisWithCumulants::CheckPointersUsedInFinish()
    } 
   }
  }  
+ // Checking pointers for vs multiplicity calculation: 
+ if(fCalculateVsMultiplicity)
+ {
+  if(!fReferenceFlowGenFunVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fReferenceFlowGenFunVsM is NULL in CPUIF() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+  if(!fQvectorComponentsVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fQvectorComponentsVsM is NULL in CPUIF() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+  if(!fAverageOfSquaredWeightVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fAverageOfSquaredWeightVsM is NULL in CPUIF() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+  if(!fAvMVsM)
+  {
+   cout<<endl; 
+   cout<<"WARNING (GFC): fAvMVsM is NULL in CPUIF() !!!!"<<endl;
+   cout<<endl; 
+   exit(0);
+  }
+ } // end of if(fCalculateVsMultiplicity) 
  
 } // end of void AliFlowAnalysisWithCumulants::CheckPointersUsedInFinish()
 
@@ -2809,10 +3216,15 @@ void AliFlowAnalysisWithCumulants::AccessSettings()
  fHarmonic = (Int_t)fAnalysisSettings->GetBinContent(1); 
  fMultiple = (Int_t)fAnalysisSettings->GetBinContent(2); 
  fR0 = (Double_t)fAnalysisSettings->GetBinContent(3); 
- fPrintFinalResults[0] = (Bool_t)fAnalysisSettings->GetBinContent(4);
- fPrintFinalResults[1] = (Bool_t)fAnalysisSettings->GetBinContent(5);
- fPrintFinalResults[2] = (Bool_t)fAnalysisSettings->GetBinContent(6);
-
+ fUsePhiWeights = (Bool_t)fAnalysisSettings->GetBinContent(4);
+ fUsePtWeights = (Bool_t)fAnalysisSettings->GetBinContent(5);
+ fUseEtaWeights = (Bool_t)fAnalysisSettings->GetBinContent(6);
+ fTuneParameters = (Bool_t)fAnalysisSettings->GetBinContent(7);
+ fPrintFinalResults[0] = (Bool_t)fAnalysisSettings->GetBinContent(8);
+ fPrintFinalResults[1] = (Bool_t)fAnalysisSettings->GetBinContent(9);
+ fPrintFinalResults[2] = (Bool_t)fAnalysisSettings->GetBinContent(10);
+ fCalculateVsMultiplicity = (Bool_t)fAnalysisSettings->GetBinContent(11);
+ 
 } // end of AliFlowAnalysisWithCumulants::AccessSettings()
 
 //================================================================================================================
