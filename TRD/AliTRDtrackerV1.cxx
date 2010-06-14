@@ -707,6 +707,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     t.UnsetTracklet(ip);
     if(tracklets[ip]->IsOK()) startLayer=ip;
     kStandAlone = kTRUE;
+    kUseTRD = kTRUE;
   } 
   AliDebug(4, Form("SA[%c] Start[%d]\n"
     "  [0]idx[%d] traklet[%p]\n"
@@ -1130,10 +1131,6 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
       if(!tracklets[ilr].IsUsable(itb)) continue;
       cl = tracklets[ilr].GetClusters(itb);
       if(!cl->IsInChamber()) continue;
-      if(cl->GetSigmaY2()<1.e-6 || cl->GetSigmaZ2()<1.e-6){
-        if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>1) printf("D-AliTRDtrackerV1::FitTiltedRiemanConstraint: Cluster error parameterization missing. This should appear only in HLT tests.");
-        continue;
-      }
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
@@ -1237,11 +1234,6 @@ Float_t AliTRDtrackerV1::FitTiltedRieman(AliTRDseedV1 *tracklets, Bool_t sigErro
       x = cl->GetX();
       y = cl->GetY();
       z = cl->GetZ();
-      if(cl->GetSigmaY2()<1.e-6 || cl->GetSigmaZ2()<1.e-6){
-        if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>1) printf("D-AliTRDtrackerV1::FitTiltedRieman: Cluster error parameterization missing. This should appear only in HLT tests.");
-        tracklets[ipl].Print("a");
-        continue;
-      }
       dx = x - xref;
       // Transformation
       t = 1./(x*x + y*y);
@@ -1982,7 +1974,7 @@ Int_t AliTRDtrackerV1::BuildTrackingContainers()
     Int_t stack          = fGeom->GetStack(detector);
     Int_t layer          = fGeom->GetLayer(detector);
     
-    fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, ncl, fkReconstructor->IsHLT());
+    fTrSec[sector].GetChamber(stack, layer, kTRUE)->InsertCluster(c, ncl);
   }
 
   for(int isector =0; isector<AliTRDgeometry::kNsector; isector++){ 
@@ -2274,7 +2266,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDtrackingChamber **stack, TClon
   do{
     // Loop over seeding configurations
     ntracks = 0; ntracks1 = 0;
-    for (Int_t iconf = 0; iconf<3; iconf++) {
+    for (Int_t iconf = 0; iconf<fkRecoParam->GetNumberOfSeedConfigs(); iconf++) {
       pars[0] = configs[iconf];
       pars[1] = ntracks;
       pars[2] = istack;
@@ -2513,7 +2505,7 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDtrackingChamber **stack, Int
   }
   
   TMath::Sort((Int_t)kNConfigs, tconfig, configs, kTRUE);
-  // 	AliInfo(Form("q[%d] = %f", configs[0], tconfig[configs[0]]));
+  //	AliInfo(Form("q[%d] = %f", configs[0], tconfig[configs[0]]));
   // 	AliInfo(Form("q[%d] = %f", configs[1], tconfig[configs[1]]));
   // 	AliInfo(Form("q[%d] = %f", configs[2], tconfig[configs[2]]));
   
@@ -2792,7 +2784,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDtrackingChamber **stack, AliTRDseedV1 * c
             if(!cseed[jLayer].AttachClusters(chamber, kTRUE)) continue;
             cseed[jLayer].Fit();
           }
-          FitTiltedRiemanConstraint(&cseed[0], GetZ());
+          //FitTiltedRiemanConstraint(&cseed[0], GetZ());
           fTrackQuality[ntracks] = 1.; // dummy value
           ntracks++;
           if(ntracks == kMaxTracksStack) return ntracks;
@@ -2968,7 +2960,7 @@ AliTRDtrackV1* AliTRDtrackerV1::MakeTrack(AliTRDseedV1 * const tracklet)
 // offline case perform a full Kalman filter on the already found tracklets (see AliTRDtrackerV1::FollowBackProlongation() 
 // for details). Do also MC label calculation and PID if propagation successfully.
 
- 
+  if(fkReconstructor->IsHLT()) FitTiltedRiemanConstraint(tracklet, 0);
   Double_t alpha = AliTRDgeometry::GetAlpha();
   Double_t shift = AliTRDgeometry::GetAlpha()/2.0;
 
