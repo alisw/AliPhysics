@@ -206,5 +206,12 @@ void AliFlowTrackSimple::AddFlow( Double_t v1,
 void AliFlowTrackSimple::Print( Option_t* option ) const
 {
   //print stuff
-  printf("Phi: %.3f, Eta: %.3f, Pt: %.3f\n",fPhi,fEta,fPt);
+  printf("Phi: %.3f, Eta: %+.3f, Pt: %.3f",fPhi,fEta,fPt);
+  if (InRPSelection()) printf(", RP");
+  if (InPOISelection()) printf(", POI");
+  for (Int_t i=0; i<2; i++)
+  {
+    if (InSubevent(i)) printf(", subevent %i",i);
+  }
+  printf("\n");
 }
