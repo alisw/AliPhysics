@@ -319,6 +319,22 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     namedistr+=i;
     TH1F *hnormdeclengthB = new TH1F(namedistr.Data(), "Normalized Decay Length distribution;Decay Length/Err ",200,0,10.);
 
+    namedistr="hdeclvS_";
+    namedistr+=i;
+    TH1F *hdeclengthvS = new TH1F(namedistr.Data(), "Decay Length distribution (vtx w/o tracks);Decay Length [cm]",200,0,0.6);
+
+    namedistr="hdeclvB_";
+    namedistr+=i;
+    TH1F *hdeclengthvB = new TH1F(namedistr.Data(), "Decay Length distribution (vtx w/o tracks);Decay Length [cm]",200,0,0.6);
+
+    namedistr="hnormdeclvS_";
+    namedistr+=i;
+    TH1F *hnormdeclengthvS = new TH1F(namedistr.Data(), "Normalized Decay Length distribution (vtx w/o tracks);Decay Length/Err ",200,0,10.);
+
+    namedistr="hnormdeclvB_";
+    namedistr+=i;
+    TH1F *hnormdeclengthvB = new TH1F(namedistr.Data(), "Normalized Decay Length distribution (vtx w/o tracks);Decay Length/Err ",200,0,10.);
+
    //  costhetapoint
     namedistr="hcosthetapointS_";
     namedistr+=i;
@@ -384,6 +400,12 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     fDistr->Add(hnormdeclengthS);
     fDistr->Add(hnormdeclengthB);
+
+    fDistr->Add(hdeclengthvS);
+    fDistr->Add(hdeclengthvB);
+
+    fDistr->Add(hnormdeclengthvS);
+    fDistr->Add(hnormdeclengthvB);
 
     fDistr->Add(hcosthpointd0S);
     fDistr->Add(hcosthpointd0B);
@@ -612,7 +634,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	 track->GetStatus()&AliESDtrack::kTOFout &&
 	 track->GetStatus()&AliESDtrack::kTIME)) continue;
     AliAODPid *pid = track->GetDetPid();
-    if(!pid)  {cout<<"No AliAODPid found"<<endl; continue;}
+    if(!pid)  {if (fDebug>1)cout<<"No AliAODPid found"<<endl; continue;}
 
     Double_t times[5];
     pid->GetIntegratedTimes(times);
@@ -638,7 +660,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	track->GetStatus()&AliESDtrack::kITSrefit &&
 	nclsTot>3 &&
 	nclsSPD>0) {//fill hist good tracks
-      //cout<<"in if"<<endl;
+     
       ((TH1F*)fChecks->FindObject("hptGoodTr"))->Fill(track->Pt());
       isGoodTrack++;
     }
@@ -681,7 +703,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       //if( TMath::Abs(eta0)<0.9 && TMath::Abs(eta1)<0.9 ){
        //apply cuts on tracks
       Int_t isSelected = fCuts->IsSelected(d,AliRDHFCuts::kTracks);
-      if(((AliAODTrack*)d->GetDaughter(0))->GetTPCNcls() < 70 || ((AliAODTrack*)d->GetDaughter(0))->GetTPCNcls() < 70) isSelected=kFALSE;
+      if(((AliAODTrack*)d->GetDaughter(0))->GetTPCNcls() < 70 || ((AliAODTrack*)d->GetDaughter(1))->GetTPCNcls() < 70) isSelected=kFALSE;
       if (!isSelected) return;
       fNentries->Fill(7);       
       if(fDebug>2) cout<<"tracks selected"<<endl;
@@ -898,8 +920,17 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	fillthis="hnormdeclS_";
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->NormalizedDecayLength());
- 
-      } //end mass cut
+
+	if(vtxProp) {
+	  fillthis="hdeclvS_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::DecayLength(vtxProp));
+
+	  fillthis="hnormdeclvS_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::NormalizedDecayLength(vtxProp));
+	}
+     } //end mass cut
     
     } else{ //Background or LS
       //cout<<"is background"<<endl;
@@ -946,6 +977,10 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	fillthis="hd0p1B_";
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(1));
+	fillthis="hd0B_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(0));
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->Getd0Prong(1));
 
 	fillthis="hd0vp0B_";
 	fillthis+=ptbin;
@@ -953,6 +988,12 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	fillthis="hd0vp1B_";
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(d0[1]);
+
+	fillthis="hd0vB_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(d0[0]);
+	((TH1F*)listout->FindObject(fillthis))->Fill(d0[1]);
+  
 
 	fillthis="hcosthpointd0B_";
 	fillthis+=ptbin;	  
@@ -973,6 +1014,12 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->Prodd0d0());
 
+	if(d0[0] != -99 && d0[1] != -99 ){
+	  fillthis="hd0d0vB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(d0[0]*d0[1]);
+	}
+
 	fillthis="hcosthetapointB_";
 	fillthis+=ptbin;
 	((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle());
@@ -980,8 +1027,25 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	fillthis="hcosthpointd0d0B_";
 	fillthis+=ptbin;
 	((TH2F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Prodd0d0());
-	
-      }//mass cut	
+
+	fillthis="hdeclB_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->DecayLength());
+
+	fillthis="hnormdeclB_";
+	fillthis+=ptbin;
+	((TH1F*)listout->FindObject(fillthis))->Fill(part->NormalizedDecayLength());
+
+	if(vtxProp) {
+	  fillthis="hdeclvB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::DecayLength(vtxProp));
+
+	  fillthis="hnormdeclvB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->AliAODRecoDecay::NormalizedDecayLength(vtxProp));
+	}
+     }//mass cut	
     }//else (background)
   }
   return;
@@ -1131,8 +1195,8 @@ AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev,A
  
   //
   vertexer->SetSkipTracks(nTrksToSkip,skipped);
-  vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(aodev); 
   vertexer->SetMinClusters(4);  
+  vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(aodev); 
   if(!vertexESD) return vertexAOD;
   if(vertexESD->GetNContributors()<=0) { 
     AliDebug(2,"vertexing failed"); 
@@ -1191,10 +1255,6 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
  
   for(Int_t ipt=0;ipt<5;ipt++){ //change 5 in GetNPtBins when sure it is written and check
 
-    //sum d0p0 and d0p1
-    TString d0Bname=Form("hd0B_%d",ipt),d0p0Bname=Form("hd0p0B_%d",ipt),d0p1Bname=Form("hd0p1B_%d",ipt);
-    ((TH1F*)fDistr->FindObject(d0Bname))->Add( ((TH1F*)fDistr->FindObject(d0p0Bname)), ((TH1F*)fDistr->FindObject(d0p1Bname)) );
-  
 
     if(fArray==1){ 
       fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[ipt]*fTotNegPairs[ipt]); 
