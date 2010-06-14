@@ -341,7 +341,7 @@ void AliT0QADataMakerRec::InitRaws()
   fhLEDcal->SetOption("COLZ");
   Add2RawsList( fhLEDcal,209, !expert, image, !saveCorr);
 
-  TH2F* fhQTCcal = new TH2F("hQTCcal","QTC laser; #PMT; QTC [#channnels]",25, 0 ,25,Int_t( high[209]-low[209]),low[209],high[209]);
+  TH2F* fhQTCcal = new TH2F("hQTCcal","QTC laser; #PMT; QTC [#channnels]",25, 0 ,25,Int_t( high[210]-low[210]),low[210],high[210]);
   fhQTCcal->SetOption("COLZ");
   Add2RawsList( fhQTCcal,210, !expert, image, !saveCorr);
 
@@ -377,16 +377,16 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",10000,-5000,5000);
   Add2RawsList( fhOrCminOrATvdcOffcal,353, expert, !image, !saveCorr);
 
-  TH1F* fhCFD1abs= new TH1F("fhCFD1abs"," CFD 1 pure ( L1) ", 20000, 25000, 45000 );
+  TH1F* fhCFD1abs= new TH1F("fhCFD1abs"," CFD 1 pure ( L1) ", 20000, 0, 50000 );
   Add2RawsList(fhCFD1abs ,354, expert, !image, !saveCorr);
 
-  TH1F* fhCFD2abs= new TH1F("fhCFD2abs"," CFD 2 pure ( L1)  ", 20000, 25000, 45000 );
+  TH1F* fhCFD2abs= new TH1F("fhCFD2abs"," CFD 2 pure ( L1)  ", 20000, 0, 50000 );
   Add2RawsList( fhCFD2abs,355, expert, !image, !saveCorr);
 
-  TH1F* fhCFD1abscal= new TH1F("fhCFD1abscal"," CFD 1 pure ( L1)laser ", 10000, 30000 ,40000 );
+  TH1F* fhCFD1abscal= new TH1F("fhCFD1abscal"," CFD 1 pure ( L1)laser ", 20000,0 ,50000 );
   Add2RawsList(fhCFD1abscal,356, expert, !image, !saveCorr);
 
-  TH1F* fhCFD2abscal= new TH1F("fhCFD2abscal"," CFD 2 pure ( L1)laser ", 10000, 30000 ,30000 );
+  TH1F* fhCFD2abscal= new TH1F("fhCFD2abscal"," CFD 2 pure ( L1)laser ", 20000, 0 ,50000 );
   Add2RawsList( fhCFD2abscal,357, expert, !image, !saveCorr);
 
  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
@@ -464,10 +464,12 @@ void AliT0QADataMakerRec::InitESDs()
   const Bool_t image    = kTRUE ; 
   
   TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean; mean time[%channels]",1000,0,1000);
-  Add2ESDsList(fhESDMean, 0, !expert, image) ;
+  Add2ESDsList(fhESDMean, 0, expert, !image) ;
   TH1F * fhESDVertex = new TH1F("hESDvertex","ESDvertex; vertex[cm];",82,-30,30);
-  Add2ESDsList(fhESDVertex, 1, !expert, image) ;
+  Add2ESDsList(fhESDVertex, 1, expert, !image) ;
   
+  TH1F * fhESDResolution = new TH1F("hESDResolution","(T0A-T0C)/2 corrected by SPD vertex; ns",400,-5,5);
+  Add2ESDsList(fhESDResolution, 2, !expert, image) ;
 
 }
 
@@ -564,9 +566,9 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    GetRawsData(shift+ik+270)->Fill(allData[2*ik+26][iHt] - refpoint);
 	    GetRawsData(shift+ik+24+270)->Fill(allData[2*ik+25][iHt] - refpoint);
 
-	    if(type == 8  && iHt==0 ) {
+	    if(type == 8   ) {
 	      feffqtc[ik]++;
-	      GetRawsData(210)->Fill(allData[2*ik+25][iHt]-allData[2*ik+26][iHt]);
+	      GetRawsData(210)->Fill(ik+1, allData[2*ik+25][iHt]-allData[2*ik+26][iHt]);
 	    }
 	  }
 	}
@@ -612,7 +614,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	      GetRawsData(shift+ik+24+270)->Fill(allData[2*ik+57][iHt]-refpoint);
 	      if(type == 8  ){
 		feffqtc[ik]++;
-		GetRawsData(210)->Fill(allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);
+		GetRawsData(210)->Fill(ik+1, allData[2*ik+57][iHt]-allData[2*ik+58][iHt]);
 	      }
 	    } 
 	  //led-cfd
@@ -806,7 +808,14 @@ void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
   
-  GetESDsData(0) -> Fill(esd->GetT0());
+  const Double32_t  *mean;
+  mean = esd->GetT0TOF();
+  Double32_t t0time= 0.001*mean[0];
+  Double32_t orA= 0.001*mean[1];
+  Double32_t orC=0.001* mean[2];
+
+  GetESDsData(0) -> Fill(t0time);
   GetESDsData(1)-> Fill(esd->GetT0zVertex());
+  GetESDsData(2)-> Fill((orA-orC)/2.);
   
 }
