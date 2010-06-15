@@ -59,19 +59,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    }   
 
    // Cuts on primary tracks
-   AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("Standard Track Cuts", "ESD Track Cuts");
-   esdTrackCutsL->SetMinNClustersTPC(50);
-   esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5);
-   esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsL->SetMaxDCAToVertexXY(2.4);
-   esdTrackCutsL->SetMaxDCAToVertexZ(3.2);
-   esdTrackCutsL->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsL->SetRequireSigmaToVertex(kFALSE);
-   esdTrackCutsL->SetAcceptKinkDaughters(kFALSE);
+   AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 
    // ITS stand-alone tracks
    AliESDtrackCuts* esdTrackCutsITSsa = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
-   esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE, kTRUE);
+   esdTrackCutsITSsa->SetRequireITSStandAlone(kTRUE);
 
    // Pixel OR necessary for the electrons
    AliESDtrackCuts *itsStrong = new AliESDtrackCuts("ITSorSPD", "pixel requirement for ITS");
