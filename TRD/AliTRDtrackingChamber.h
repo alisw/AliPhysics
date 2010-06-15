@@ -63,7 +63,7 @@ private:
   Float_t       fX0;        // radial position of the pad plane
   // Float_t       fExB;       // tg(a_L) for chamber
   // Float_t       fVD;        // drift velocity for chamber
-  Float_t       fT0;        // time 0 for chamber
+  // Float_t       fT0;        // time 0 for chamber
   // Float_t       fS2PRF;     // sigma^2 PRF for xd->0 and phi=a_L 
   // Float_t       fDiffL;     // longitudinal diffusion coefficient
   // Float_t       fDiffT;     // transversal diffusion coefficient

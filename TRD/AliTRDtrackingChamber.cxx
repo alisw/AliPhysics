@@ -50,7 +50,7 @@ AliTRDtrackingChamber::AliTRDtrackingChamber()
   ,fX0(0.)
   // ,fExB(0.)
   // ,fVD(0.)
-  ,fT0(0.)
+  // ,fT0(0.)
   // ,fS2PRF(0.)
   // ,fDiffL(0.)
   // ,fDiffT(0.)
@@ -92,10 +92,11 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, Bool_t hlt)
   if(jtb<2) return kFALSE;
 
   AliTRDcalibDB *calib = AliTRDcalibDB::Instance();
+  Float_t t0;
   if(!hlt){
-    fT0    = calib->GetT0Average(fDetector);
+    t0    = calib->GetT0Average(fDetector);
   }else{
-    fT0    = calib->GetT0Det()->GetValue(fDetector);
+    t0    = calib->GetT0Det()->GetValue(fDetector);
   }
   // fVD    = calib->GetVdriftAverage(fDetector);
   // fS2PRF = calib->GetPRFROC(fDetector)->GetMean(); fS2PRF *= fS2PRF;
@@ -103,8 +104,7 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, Bool_t hlt)
   // AliTRDCommonParam::Instance()->GetDiffCoeff(fDiffL, fDiffT, fVD);  
 
   // ESTIMATE POSITION OF PAD PLANE FOR THIS CHAMBER
-  Int_t t0 = Int_t(fT0);
-  fTB[t0].SetT0();
+  fTB[Int_t(t0)].SetT0();
   Double_t x0 = fTB[index[0]].GetX();
   Double_t x1 = fTB[index[1]].GetX();
   Double_t dx = (x0 - x1)/(index[1] - index[0]); 

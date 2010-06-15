@@ -594,12 +594,13 @@ Float_t AliTRDcalibDB::GetT0Average(Int_t det)
     return -1;
   }
 
-  Double_t mean = 0.0; 
+  Double_t sum = 0.0; 
   for (Int_t channel = 0; channel < roc->GetNchannels(); ++channel) {
-    mean += (calDet->GetValue(det) + roc->GetValue(channel)) / roc->GetNchannels();
+    sum += roc->GetValue(channel);
   }
-
-  return mean;
+  sum /= roc->GetNchannels();
+  sum += calDet->GetValue(det);
+  return sum;
 
 }
 
