@@ -190,14 +190,12 @@ Bool_t AliMagF::LoadParameterization()
   char* fname = gSystem->ExpandPathName(GetDataFileName());
   TFile* file = TFile::Open(fname);
   if (!file) {
-    AliError(Form("Failed to open magnetic field data file %s\n",fname)); 
-    return kFALSE;
+    AliFatal(Form("Failed to open magnetic field data file %s\n",fname)); 
   }
   //
   fMeasuredMap = dynamic_cast<AliMagWrapCheb*>(file->Get(GetParamName()));
   if (!fMeasuredMap) {
-    AliError(Form("Did not find field %s in %s\n",GetParamName(),fname)); 
-    return kFALSE;
+    AliFatal(Form("Did not find field %s in %s\n",GetParamName(),fname)); 
   }
   file->Close();
   delete file;
