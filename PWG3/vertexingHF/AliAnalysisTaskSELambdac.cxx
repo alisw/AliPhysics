@@ -744,7 +744,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 	}
        }
        if(fReadMC) IspKpiMC(d,arrayMC,pdgs);
-       if(IspiKpReal(d,pdgs)) {
+       if(IspiKpReal(d)) {
         invMasspiKp=d->InvMassLcpiKp();
 	if(fUseKF){
 	 pdgs[0]=211;pdgs[1]=321;pdgs[2]=2212;
@@ -933,7 +933,6 @@ void AliAnalysisTaskSELambdac::Terminate(Option_t */*option*/)
  Int_t index=0;
  
 
- Int_t indexLS=0;
  for(Int_t i=0;i<fNPtBins;i++){
     index=GetHistoIndex(i);
     hisname.Form("hMassPt%d",i);
@@ -1034,9 +1033,9 @@ void AliAnalysisTaskSELambdac::Terminate(Option_t */*option*/)
   }
 
   TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
-  //c1->cd();
+  c1->cd();
   //TH1F *hMassPt=(TH1F*)fOutput->FindObject("hMassPt3TC");
- fRealProt->Draw();
+  fRealProt->Draw();
  
  return;
 }
@@ -1221,7 +1220,7 @@ Bool_t AliAnalysisTaskSELambdac::IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArra
    return kFALSE;
 }
 //--------------------------------------
-Bool_t AliAnalysisTaskSELambdac::IspiKpReal(AliAODRecoDecayHF3Prong *d,Int_t *pdgs){
+Bool_t AliAnalysisTaskSELambdac::IspiKpReal(AliAODRecoDecayHF3Prong *d){
 
   AliAODPidHF* pidObj=new AliAODPidHF();
   Bool_t type[2]={kFALSE,kFALSE};
