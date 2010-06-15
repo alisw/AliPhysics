@@ -43,7 +43,7 @@ public:
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task) const;
   virtual void ResetDetector(AliQAv1::TASKINDEX_t){;};
 
-  enum {kAmoreFoOffset=66, kAmoreErrorsOffset=21};
+  enum {kAmoreFoOffset=10, kAmoreErrorsOffset=21};
 
 private: 
 

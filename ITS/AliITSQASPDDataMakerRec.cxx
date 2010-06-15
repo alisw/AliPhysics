@@ -130,32 +130,25 @@ void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
   AliError(" no histogram 0 at the end of detector cycle in raws");
   return;
   }
-  //((TH1I*)list->At(5+shift))->Print();
-  ((TH1I*)list->At(5+shift))->Reset(); // clean up MEB histo (needed at the first cycles for small statistics)
+  ((TH2I*)list->At(5+shift))->Reset(); // clean up MEB histo (needed at the first cycle for small statistics)
   
-  for(Int_t eq=0; eq<20; eq++){
-    for(Int_t hs=0; hs<6; hs++){
-     for(Int_t chip=0; chip<10;chip++){
-       Double_t expectedFO = ((TH1F*)list->At(0+shift))->GetBinContent(eq*60+hs*10+chip+1);// fired chips
-      if(expectedFO){
-      Float_t actualFO = ((TH1F*)list->At(1+shift))->GetBinContent(eq*60+hs*10+chip+1);
-      Float_t missingFO = ((TH1F*)list->At(2+shift))->GetBinContent(eq*60+hs*10+chip+1);
-      Float_t noisyFO = ((TH1F*)list->At(3+shift))->GetBinContent(eq*60+hs*10+chip+1);
-      ((TH1F*)list->At(7+eq+shift))->SetBinContent(hs*10+chip+1,actualFO/expectedFO); // FO eff per eq
-      ((TH1F*)list->At(27+eq+shift))->SetBinContent(hs*10+chip+1,missingFO/expectedFO);// missing FO per eq
-      ((TH1F*)list->At(47+eq+shift))->SetBinContent(hs*10+chip+1,noisyFO/expectedFO); // Noisy FO per eq
-      
-      if(noisyFO/expectedFO>0.5 && missingFO/expectedFO>0.5) {
-      // MEB problem if the missing FO and noisy FO sugnals and BOTH above some threshold
-      ((TH1I*)list->At(5+shift))->Fill(eq*60+hs*10+chip);
-       }
-      }
-     }
-    }
+   ((TH1F*)list->At(7+shift))->Divide(((TH1F*)list->At(1+shift)),((TH1F*)list->At(0+shift)));
+   ((TH1F*)list->At(8+shift))->Divide(((TH1F*)list->At(2+shift)),((TH1F*)list->At(0+shift)));
+   ((TH1F*)list->At(9+shift))->Divide(((TH1F*)list->At(3+shift)),((TH1F*)list->At(4+shift)));
+ 
+  for(Int_t i=0; i<1200; i++){
+  if(((TH1F*)list->At(8+shift))->GetBinContent(i+1)>0.5 && ((TH1F*)list->At(9+shift))->GetBinContent(i+1)>0.5){
+   Int_t eq=i/60;
+   Int_t hs=(i%60)/10;
+   Int_t chip = (i%60)%10;
+   Int_t sect = 999; 	Int_t chipbin = 999; 
+   if(eq<10) {sect = eq; chipbin = 19-chip;} 
+   else {sect = eq-10; chipbin = chip;}
+   ((TH2I*)list->At(5+shift))->Fill(sect*6+hs,chipbin);
    }
-
   }
-  ((TH1I*)list->At(5+shift))->Print();
+  
+  } // QA Task Index == RAWS
 }
 
 //____________________________________________________________________________ 
@@ -167,8 +160,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   Int_t rv = 0 ; 
-//  fGenRawsOffset = (fAliITSQADataMakerRec->fRawsQAList[AliRecoParam::kDefault])->GetEntries();
-
+  
   if(!fAdvLogger) fAdvLogger = new AliITSRawStreamSPDErrorLog();  
   AliDebug(AliQAv1::GetQADebugLevel(), "Book Offline Histograms for SPD\n ");
 
@@ -178,7 +170,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   Int_t shift = fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
   
  
-  Float_t range[2] = {-0.5,1199.};
+  Float_t range[2] = {-0.5,1199.5};
 
 // **********  online histo booking (shift is added)   *********************
 
@@ -213,57 +205,63 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrCumulative, 4+shift, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 // 5
-  TH1I *hSPDChipsMEB = new TH1I("SPDChipsMEB_OnlineSPD","Chips with MEB problem - SPD",fgkSPDchips,range[0],range[1]);
-  hSPDChipsMEB->GetXaxis()->SetTitle("chipkey");
-  hSPDChipsMEB->SetLineColor(kRed);
-  hSPDChipsMEB->GetYaxis()->SetTitle("MEB Problem (per cycle)");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hSPDChipsMEB, 5+shift, !expert, !image, !saveCorr);
-  fSPDhRawsTask++;
+  
+   TH2I *hSPDChipsMEB = new TH2I("SPDChipsMEB_OnlineSPD","Chips with MEB problem - SPD",60,-0.5,59.5,20,-0.2,19.5);
+   hSPDChipsMEB->GetXaxis()->SetTitle("Stave");
+   hSPDChipsMEB->GetXaxis()->SetNdivisions(60,kFALSE);
+   hSPDChipsMEB->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
+   hSPDChipsMEB->GetYaxis()->SetNdivisions(20,kFALSE);
+   hSPDChipsMEB->SetMarkerStyle(21);
+   hSPDChipsMEB->SetMarkerColor(kRed);
+   for(Int_t ibinx =0; ibinx< hSPDChipsMEB->GetNbinsX(); ibinx++){
+   if(ibinx%6==0) hSPDChipsMEB->GetXaxis()->SetBinLabel(ibinx+1,Form("Sector %i__%i",ibinx/6,ibinx%6));
+   else hSPDChipsMEB->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%6));
+   }
+   for(Int_t ibiny =0; ibiny< hSPDChipsMEB->GetNbinsY(); ibiny++){
+   if(ibiny < 10) hSPDChipsMEB->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",ibiny));
+   else hSPDChipsMEB->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",19-ibiny));
+   }
+   rv = fAliITSQADataMakerRec->Add2RawsList(hSPDChipsMEB, 5+shift, !expert, image, !saveCorr);
+   fSPDhRawsTask++;  
 // 6
   TH2F *hFastOrCorrelation = new TH2F("SPDFastOrCorrelation_OnlineSPD","Fast Or multiplicity correlation - SPD",100,0.,100.,100,0,100);
   hFastOrCorrelation->GetXaxis()->SetTitle("Layer 1");
   hFastOrCorrelation->GetYaxis()->SetTitle("Layer 2");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrCorrelation, 6+shift, expert, !image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrCorrelation, 6+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;
-// 7-26
-  TH1F *hFastOrEfficiency[20], *hFastOrMissingRatio[20], *hFastOrNoisyRatio[20];
-  for(Int_t eq =0; eq<20; eq++){
-  hFastOrEfficiency[eq] = new TH1F(Form("SPDFastOrEfficiencyEq%i_OnlineSPD",eq),Form("FastOr Efficiency : FastOr / fired chips (per event) - Eq %i SPD",eq),60,-0.5,59.5);
-  hFastOrEfficiency[eq]->SetFillColor(kBlue);
-  hFastOrEfficiency[eq]->SetMaximum(1.05);
-  hFastOrEfficiency[eq]->GetXaxis()->SetTitle("chip index [hs*10+chip]");
-  hFastOrEfficiency[eq]->GetYaxis()->SetTitle("FastOr Efficiency (per event)");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrEfficiency[eq], 7+shift+eq, expert, !image, !saveCorr);
+// 7
+  TH1F *hFastOrEfficiency, *hFastOrMissingRatio, *hFastOrNoisyRatio;
+  
+  hFastOrEfficiency = new TH1F("SPDFastOrEfficiency_OnlineSPD","FastOr Efficiency : FastOr / fired chips (per event) - SPD",fgkSPDchips,range[0],range[1]);
+  hFastOrEfficiency->SetFillColor(kBlue);
+  hFastOrEfficiency->SetMaximum(1.05);
+  hFastOrEfficiency->GetXaxis()->SetTitle("chip index [eq*60+hs*10+chip]");
+  hFastOrEfficiency->GetYaxis()->SetTitle("FastOr Efficiency (per event)");
+  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrEfficiency, 7+shift, expert, !image, !saveCorr);
   fSPDhRawsTask++;
-  }
-// 27-46
-  for(Int_t eq=0; eq<20; eq++){
-  hFastOrMissingRatio[eq] = new TH1F(Form("SPDFastOrMissingRatioEq%i_OnlineSPD",eq),Form(" Missing FastOr / fired chips (per event) - Eq %i - SPD)",eq),60,-0.5,59.5);
-  hFastOrMissingRatio[eq]->SetFillColor(kBlue);
-  hFastOrMissingRatio[eq]->SetMaximum(1.05);
-  hFastOrMissingRatio[eq]->GetXaxis()->SetTitle("chip index [hs*10+chip]");
-  hFastOrMissingRatio[eq]->GetYaxis()->SetTitle("ratio of Missing FastOr (per event)");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrMissingRatio[eq], 27+shift+eq, expert, !image, !saveCorr);
+// 8 
+  hFastOrMissingRatio = new TH1F("SPDFastOrMissingRatio_OnlineSPD"," Missing FastOr / fired chips (per event) - SPD)",fgkSPDchips,range[0],range[1]);
+  hFastOrMissingRatio->SetFillColor(kBlue);
+  hFastOrMissingRatio->SetMaximum(1.05);
+  hFastOrMissingRatio->GetXaxis()->SetTitle("chip index [eq*60+hs*10+chip]");
+  hFastOrMissingRatio->GetYaxis()->SetTitle("ratio of Missing FastOr (per event)");
+  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrMissingRatio, 8+shift, expert, !image, !saveCorr);
   fSPDhRawsTask++;
-  }
-// 47-66
-  for(Int_t eq=0; eq<20; eq++){
-  hFastOrNoisyRatio[eq] = new TH1F(Form("SPDFastOrNoisyRatioEq%i_OnlineSPD",eq),Form("Noisy Fast Or / fired chips (per event) - Eq %i - SPD",eq),60,-0.5,69.5);
-  hFastOrNoisyRatio[eq]->SetFillColor(kBlue);
-  hFastOrNoisyRatio[eq]->SetMaximum(1.05);
-  hFastOrNoisyRatio[eq]->GetXaxis()->SetTitle("chip index [hs*10+chip]");
-  hFastOrNoisyRatio[eq]->GetYaxis()->SetTitle("ratio of Noisy FastOr (per event)");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrNoisyRatio[eq], 47+shift+eq, expert, !image, !saveCorr);
+// 9
+  hFastOrNoisyRatio = new TH1F("SPDFastOrNoisyRatio_OnlineSPD","Noisy Fast Or / fired chips (per event) - SPD",fgkSPDchips,range[0],range[1]);
+  hFastOrNoisyRatio->SetFillColor(kBlue);
+  hFastOrNoisyRatio->SetMaximum(1.05);
+  hFastOrNoisyRatio->GetXaxis()->SetTitle("chip index [eq*60+hs*10+chip]");
+  hFastOrNoisyRatio->GetYaxis()->SetTitle("ratio of Noisy FastOr (per event)");
+  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrNoisyRatio, 9+shift, expert, !image, !saveCorr);
   fSPDhRawsTask++;
-  }
-
-// 67
-  TH1F *herrorsAll = new TH1F("SPDErrorsAll_OnlineSPD","Error codes - SPD",20,0.,20.);
+// 10
+  TH2F *herrorsAll = new TH2F("SPDErrorsAll_OnlineSPD","Error codes - SPD",20,-0.5,19.5,22,-0.5,21.5);
   herrorsAll->GetXaxis()->SetTitle("DDL");
-  herrorsAll->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RawsList(herrorsAll, 67+shift, !expert, image, !saveCorr);
+  herrorsAll->GetYaxis()->SetTitle("Error Type");
+  rv = fAliITSQADataMakerRec->Add2RawsList(herrorsAll, kAmoreFoOffset+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;
-//68-87
+//11-30
   TH1F **herrors = new TH1F*[20];
   for (Int_t iEq=0; iEq<20; iEq++) {
     sprintf(name,"SPDErrors_Eq%d_OnlineSPD",iEq+1);
@@ -271,7 +269,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
     herrors[iEq] = new TH1F (name,title,fAdvLogger->GetNrErrorCodes(),0,fAdvLogger->GetNrErrorCodes());
     herrors[iEq]->SetXTitle("Error Code");
     herrors[iEq]->SetYTitle("Nr of errors");
-    rv = fAliITSQADataMakerRec->Add2RawsList(herrors[iEq], 68+shift+iEq, expert, !image, !saveCorr);
+    rv = fAliITSQADataMakerRec->Add2RawsList(herrors[iEq], 11+shift+iEq, expert, !image, !saveCorr);
     fSPDhRawsTask++;
   }
 //   *********   offline histo booking  (offset is added) ****************************  
@@ -341,14 +339,23 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
          = new TH2F("SPDHitMultCorrelation_SPD","Hit multiplicity correlation - SPD",200,0.,200.,200,0.,200.);
   hMultSPDhits2MultSPDhits1->GetXaxis()->SetTitle("Hit multiplicity (Layer 1)");
   hMultSPDhits2MultSPDhits1->GetYaxis()->SetTitle("Hit multiplicity (Layer 2)");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, 27+offset, !expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hMultSPDhits2MultSPDhits1, 27+offset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 // 28
-  TH2F *hFastOrMapHalfStaveChip 
-         = new TH2F("SPDFastOrMapHalfStaveChip_SPD","FastOr map per HalfStave per Chip - SPD",120,0.,120.,10,0.,10.);
-  hFastOrMapHalfStaveChip->GetXaxis()->SetTitle("HalfStave");
-  hFastOrMapHalfStaveChip->GetYaxis()->SetTitle("Chip");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrMapHalfStaveChip, 28+offset, !expert, image, !saveCorr);
+  TH2F *hFastOrMapStaveChip 
+         = new TH2F("SPDFastOrMapStaveChip_SPD","FastOr map per Stave per Chip - SPD",60,-0.5,59.5,20,-0.5,19.5);
+  hFastOrMapStaveChip->GetXaxis()->SetTitle("Stave");
+  hFastOrMapStaveChip->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
+  for(Int_t ibinx =0; ibinx< hFastOrMapStaveChip->GetNbinsX(); ibinx++){
+  if(ibinx%6==0) hFastOrMapStaveChip->GetXaxis()->SetBinLabel(ibinx+1,Form("Sector %i__%i",ibinx/6,ibinx%6));
+  else hFastOrMapStaveChip->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%6));
+  }
+  for(Int_t ibiny =0; ibiny< hFastOrMapStaveChip->GetNbinsY(); ibiny++){
+  if(ibiny < 10) hFastOrMapStaveChip->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",ibiny));
+  else hFastOrMapStaveChip->GetYaxis()->SetBinLabel(ibiny+1,Form("%i",19-ibiny));
+  }
+  hFastOrMapStaveChip->SetDrawOption("colz");
+  rv = fAliITSQADataMakerRec->Add2RawsList(hFastOrMapStaveChip, 28+offset, !expert, image, !saveCorr);
   fSPDhRawsTask++;
 // 29
   TH1F *hFastOrFiredMap = new TH1F("SPDFastOrPattern_SPD","FastOrFiredChip map - SPD",1200,0.,1200.);
@@ -392,13 +399,13 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH1F *hHitMapChipInnerZ = new TH1F("SPDHitMapChipInnerZ_SPD","Hit map per ChipZ Inner - SPD",20,0.,20.);
   hHitMapChipInnerZ->GetXaxis()->SetTitle("Chip");
   hHitMapChipInnerZ->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipInnerZ, 32+offset, expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipInnerZ, 32+offset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 // 33
   TH1F *hHitMapChipOuterZ = new TH1F("SPDHitMapChipOuterZ_SPD","Hit map per ChipZ Outer - SPD",20,0.,20.);
   hHitMapChipOuterZ->GetXaxis()->SetTitle("Chip");
   hHitMapChipOuterZ->GetYaxis()->SetTitle("Entries");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipOuterZ, 33+offset, expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapChipOuterZ, 33+offset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 // 34
   TH1F *hHitMapStaveInnerPhi = new TH1F("SPDHitMapChipInnerPhi_SPD","Hit map per Stave in Phi Inner - SPD",20,0.,20.);
@@ -408,7 +415,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   if(ibinx%2==0) hHitMapStaveInnerPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i___Sector %i",ibinx%2,ibinx/2));
   else hHitMapStaveInnerPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%2));
   }
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveInnerPhi, 34+offset, expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveInnerPhi, 34+offset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
 // 35
   TH1F *hHitMapStaveOuterPhi = new TH1F("SPDHitMapChipOuterPhi_SPD","Hit map per Stave in Phi Outer - SPD",40,0.,40.);
@@ -418,7 +425,7 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   if(ibinx%4==0) hHitMapStaveOuterPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i___Sector %i ",ibinx%4+2,ibinx/4));
   else hHitMapStaveOuterPhi->GetXaxis()->SetBinLabel(ibinx+1,Form("%i",ibinx%4+2));
   }
-  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveOuterPhi, 35+offset, expert, image, !saveCorr);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hHitMapStaveOuterPhi, 35+offset, expert, !image, !saveCorr);
   fSPDhRawsTask++;
    
   //AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Raws histograms booked\n",fSPDhRawsTask));
@@ -495,14 +502,14 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 
       if(iLayer==0) {
          if(iEq<10)  { 
-            fAliITSQADataMakerRec->GetRawsData(30+offset)->Fill(19-iChip,1-iHalfStave+iEq*2);
+            fAliITSQADataMakerRec->GetRawsData(30+offset)->Fill(19-iChip,iHalfStave+iEq*2);
             fAliITSQADataMakerRec->GetRawsData(32+offset)->Fill(19-iChip);
-            fAliITSQADataMakerRec->GetRawsData(34+offset)->Fill(1-iHalfStave+iEq*2);
+            fAliITSQADataMakerRec->GetRawsData(34+offset)->Fill(iHalfStave+iEq*2);
          }
          else {
-            fAliITSQADataMakerRec->GetRawsData(30+offset)->Fill(iChip,1-iHalfStave+(iEq-10)*2);
+            fAliITSQADataMakerRec->GetRawsData(30+offset)->Fill(iChip,iHalfStave+(iEq-10)*2);
             fAliITSQADataMakerRec->GetRawsData(32+offset)->Fill(iChip);
-            fAliITSQADataMakerRec->GetRawsData(34+offset)->Fill(1-iHalfStave+(iEq-10)*2);
+            fAliITSQADataMakerRec->GetRawsData(34+offset)->Fill(iHalfStave+(iEq-10)*2);
          }
       }
       else         {   
@@ -522,19 +529,15 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   }
 
   UInt_t nErrorsDDL[20];
-  
   for (Int_t ieq=0; ieq<20; ieq++) {
     nErrorsDDL[ieq] = 0;
-     
-   
-
     for (UInt_t ierr=0; ierr<fAdvLogger->GetNrErrorCodes(); ierr++) {
       fAliITSQADataMakerRec->GetRawsData(ieq+(kAmoreFoOffset+1)+shift)->Fill(ierr,fAdvLogger->GetNrErrors(ierr,ieq));
-      if(ierr>0) nErrorsDDL[ieq] = nErrorsDDL[ieq] + fAdvLogger->GetNrErrors(ierr,ieq);
+      if(ierr>0) {
+       nErrorsDDL[ieq] = nErrorsDDL[ieq] + fAdvLogger->GetNrErrors(ierr,ieq); 
+     }
+      ((TH2F*)fAliITSQADataMakerRec->GetRawsData(kAmoreFoOffset+shift))->Fill(ieq,ierr,fAdvLogger->GetNrErrors(ierr,ieq));
     } 
-  
-   fAliITSQADataMakerRec->GetRawsData(8+offset)->Fill(ieq,nErrorsDDL[ieq]);
-
     for (Int_t ihs=0; ihs<6; ihs++) {
       for (Int_t ichip=0; ichip<10; ichip++) {
       if(isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->GetRawsData(0+shift)->Fill(ieq*60+ihs*10+ichip); // online
@@ -545,11 +548,16 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && !isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->GetRawsData(3+shift)->Fill(ieq*60+ihs*10+ichip); // online       
       
         chipKey = rawStreamSPD.GetOfflineChipKeyFromOnline(ieq,ihs,ichip);
-        
+        Int_t sect = 999;
+	Int_t chipbin = 999;
+	 
         if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip)) {
           if(ihs <2) nFastOr[0]++; // online
 	  else nFastOr[1]++;       // online
-          fAliITSQADataMakerRec->GetRawsData(28+offset)->Fill(ihs+ieq*6,ichip);
+	  if(ieq<10) {sect = ieq; chipbin = 19-ichip;} 
+	  else {sect = ieq-10; chipbin = ichip;}
+	  
+	  fAliITSQADataMakerRec->GetRawsData(28+offset)->Fill(sect*6+ihs,chipbin);
           fAliITSQADataMakerRec->GetRawsData(29+offset)->Fill(chipKey);
         }
       }
