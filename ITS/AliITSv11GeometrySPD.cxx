@@ -2908,36 +2908,64 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
 }
 
 //______________________________________________________________________
-TList* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
+TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
+					      TGeoManager *mgr) const
 {
+    //
+    // Creates all services modules and places them in a TList
+    // angrot is the rotation angle (passed as an argument to avoid
+    // defining the same quantity in two different places)
+    //
+    // Created:      ?? ??? 2008  Alberto Pulvirenti
+    // Updated:      03 May 2010  Mario Sitta
+    //
+
     TGeoMedium *medInox  = GetMedium("INOX$",mgr);
     TGeoMedium *medExt   = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
     TGeoMedium *medPlate = GetMedium("SPD C (M55J)$", mgr);
+    TGeoMedium *medFreon = GetMedium("Freon$", mgr);
+    TGeoMedium *medGas   = GetMedium("GASEOUS FREON$", mgr);
 
     Double_t extThickness = fgkmm * 0.25;
     Double_t ext1Length   = fgkmm * (26.7 - 10.0);
-    Double_t ext2Length   = fgkmm * (285.0 - ext1Length + extThickness);
+//    Double_t ext2Length   = fgkmm * (285.0 - ext1Length + extThickness);
+    Double_t ext2Length   = fgkmm * 285.0 - ext1Length + extThickness;
 
-    Double_t cableThickness = 1.5 * fgkmm;
-    Double_t cableL1 = 350.0 * fgkmm - extThickness - ext1Length - ext2Length;
-    Double_t cableL2 = 340.0 * fgkmm;
+    const Double_t kCableThickness  =   1.5  *fgkmm;
+    Double_t cableL1 = 340.0 * fgkmm - extThickness - ext1Length - ext2Length;
+    Double_t cableL2 = 300.0 * fgkmm;
     //Double_t cableL3 = 570.0 * fgkmm;
     Double_t cableL3 = 57.0 * fgkmm;
     Double_t cableW1 =  11.0 * fgkmm;
     Double_t cableW2 =  30.0 * fgkmm;
     Double_t cableW3 =  50.0 * fgkmm;
 
-    Double_t mcmThickness = 1.2 *fgkmm;
-    Double_t mcmLength = cableL1 + cableL2 + cableL3;
-    Double_t mcmWidth = cableW1;
+    const Double_t kMCMLength       =   cableL1 + cableL2 + cableL3;
+    const Double_t kMCMWidth        =   cableW1;
+    const Double_t kMCMThickness    =   1.2  *fgkmm;
 
-    Double_t plateLength    = 200.0 * fgkmm;
-    Double_t plateWidth     =  50.0 * fgkmm;
-    Double_t plateThickness =   5.0 * fgkmm;
+    const Double_t kPlateLength     = 200.0  *fgkmm;
+    const Double_t kPlateWidth      =  50.0  *fgkmm;
+    const Double_t kPlateThickness  =   5.0  *fgkmm;
+
+    const Double_t kConeTubeRmin    =   5.0  *fgkmm;
+    const Double_t kConeTubeRmax    =   6.0  *fgkmm;
+
+    const Double_t kHorizTubeLen    = 150.0  *fgkmm; //!!!TO BE CHECKED!!!
+    const Double_t kYtoHalfStave    =   6.8  *fgkmm; //!!!TO BE CHECKED!!!
 
     Double_t x[12], y[12];
+    Double_t xloc, yloc, zloc;
 
-    x[0] = 7.5;
+    Int_t kPurple = 6; // Purple (Root does not define it)
+
+    TGeoVolumeAssembly* container[3];
+    container[0] = new TGeoVolumeAssembly("ITSSPDConeModule");
+    container[1] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideA");
+    container[2] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideC");
+
+    // The extender on the cone as a Xtru
+    x[0] = 0.0;
     y[0] = 0.0 + 0.5 * cableW1;
 
     x[1] = x[0] + cableL1 - 0.5*(cableW2 - cableW1);
@@ -2960,53 +2988,139 @@ TList* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
         y[i] = -y[11 - i];
     }
 
-    TGeoVolumeAssembly* container[2];
-    container[0] = new TGeoVolumeAssembly("ITSSPDConeModule");
-    container[1] = new TGeoVolumeAssembly("ITSSPDCoolingModule");
-
     TGeoXtru *shCable = new TGeoXtru(2);
     shCable->DefinePolygon(12, x, y);
-    shCable->DefineSection(0, 0., 0., 0., 1.0);
-    shCable->DefineSection(1, cableThickness, 0., 0., 1.0);
+    shCable->DefineSection(0, 0.0);
+    shCable->DefineSection(1, kCableThickness);
 
     TGeoVolume *volCable = new TGeoVolume("ITSSPDExtender", shCable, medExt);
     volCable->SetLineColor(kGreen);
 
-    TGeoVolume *volTube = gGeoManager->MakeTube("ITSSPDCoolingTubeCone", medInox, 5.*fgkmm, 6.*fgkmm, 0.5*(x[5] - x[0]));
-    volTube->SetLineColor(kGray);
+    // The MCM extender on the cone as a Xtru
+    TGeoBBox *shMCMExt = new TGeoBBox(0.5*kMCMLength,
+				      0.5*kMCMWidth,
+				      0.5*kMCMThickness);
 
-    Double_t thickness = cableThickness + mcmThickness;
-    TGeoBBox *shOut = new TGeoBBox("ITSSPD_shape_plateout", 0.5*plateThickness, 0.5*plateLength, 0.5*plateWidth);
-    TGeoBBox *shIn = new TGeoBBox("ITSSPD_shape_platein", 0.5*thickness, 0.52*plateLength, 0.5*cableW2);
-    Char_t string[255];
-    sprintf(string, "%s-%s", shOut->GetName(), shIn->GetName());
-    TGeoCompositeShape *shPlate = new TGeoCompositeShape("ITSSPDPlate_shape", string);
-    TGeoVolume *volPlate = new TGeoVolume("ITSSPDPlate", shPlate, medPlate);
-    volPlate->SetLineColor(kRed);
-
-    TGeoVolume *volMCMExt = gGeoManager->MakeBox("ITSSPDextenderMCM", medExt, 0.5*mcmThickness, 0.5*mcmLength, 0.5*mcmWidth);
+    TGeoVolume *volMCMExt = new TGeoVolume("ITSSPDExtenderMCM",
+					   shMCMExt, medExt);
     volMCMExt->SetLineColor(kGreen+3);
 
-    TGeoRotation *rot = new TGeoRotation(*gGeoIdentity);
-    rot->RotateX(90.0);
-    rot->RotateZ(90.0);
-    container[0]->AddNode(volCable, 0, rot);
+    // The support plate on the cone as a composite shape
+    Double_t thickness = kCableThickness + kMCMThickness;
+    TGeoBBox *shOut = new TGeoBBox("ITSSPD_shape_plateout",
+				   0.5*kPlateLength,
+				   0.5*kPlateWidth,
+				   0.5*kPlateThickness);
+    TGeoBBox *shIn  = new TGeoBBox("ITSSPD_shape_platein" ,
+				   0.5*kPlateLength,
+				   0.5*cableW2,
+				   0.5*thickness);
+    Char_t string[255];
+    sprintf(string, "%s-%s", shOut->GetName(), shIn->GetName());
+    TGeoCompositeShape *shPlate = new TGeoCompositeShape("ITSSPDPlate_shape",
+				 string);
 
-    TGeoTranslation *combi = new TGeoTranslation(cableThickness + 0.5*mcmThickness, x[0] + 0.5*mcmLength, 0.0);
-    container[0]->AddNode(volMCMExt, 0, combi);
+    TGeoVolume *volPlate = new TGeoVolume("ITSSPDPlate",
+					  shPlate, medPlate);
+    volPlate->SetLineColor(kRed);
 
-    TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
-    rot1->RotateX(87.5);
-    TGeoCombiTrans *tr = new TGeoCombiTrans(1.15, x[0] + 0.5*(x[5] - x[0]), -2.95, rot1);
-    container[1]->AddNode(volTube, 0, tr);
+    // The cooling tube on the cone as a Ctub
+    Double_t tubeLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave;
+    TGeoCtub *shTube = new TGeoCtub(0, kConeTubeRmax, 0.5*tubeLength, 0, 360,
+				    0, SinD(angrot/2), -CosD(angrot/2),
+				    0,              0,              1);
 
-    TGeoTranslation *tr1 = new TGeoTranslation(0.5*plateThickness - 0.5*(plateThickness-thickness), x[3] - x[0] - 0.52*plateLength, 0.0);
-    container[0]->AddNode(volPlate, 0, tr1);
+    TGeoVolume *volTubeA = new TGeoVolume("ITSSPDCoolingTubeOnConeA",
+					  shTube, medInox);
+    volTubeA->SetLineColor(kGray);
 
+    TGeoVolume *volTubeC = new TGeoVolume("ITSSPDCoolingTubeOnConeC",
+					  shTube, medInox);
+    volTubeC->SetLineColor(kGray);
+
+    // The freon in the cooling tubes on the cone as a Ctub
+    TGeoCtub *shFreon = new TGeoCtub(0, kConeTubeRmin, 0.5*tubeLength, 0, 360,
+				     0, SinD(angrot/2), -CosD(angrot/2),
+				     0,              0,              1);
+
+    TGeoVolume *volFreon = new TGeoVolume("ITSSPDCoolingFreonOnCone",
+					  shFreon, medFreon);
+    volFreon->SetLineColor(kPurple);
+
+    TGeoVolume *volGasFr = new TGeoVolume("ITSSPDCoolingFreonGasOnCone",
+					  shFreon, medGas);
+    volGasFr->SetLineColor(kPurple);
+
+    // The cooling tube inside the cylinder as a Ctub
+    TGeoCtub *shCylTub = new TGeoCtub(0, kConeTubeRmax,
+				      0.5*kHorizTubeLen, 0, 360,
+				      0,            0,           -1,
+				      0, SinD(angrot/2), CosD(angrot/2));
+
+    TGeoVolume *volCylTubA = new TGeoVolume("ITSSPDCoolingTubeOnCylA",
+					    shCylTub, medInox);
+    volCylTubA->SetLineColor(kGray);
+
+    TGeoVolume *volCylTubC = new TGeoVolume("ITSSPDCoolingTubeOnCylC",
+					    shCylTub, medInox);
+    volCylTubC->SetLineColor(kGray);
+
+    // The freon in the cooling tubes in the cylinder as a Ctub
+    TGeoCtub *shCylFr = new TGeoCtub(0, kConeTubeRmin,
+				     0.5*kHorizTubeLen, 0, 360,
+				     0,            0,           -1,
+				     0, SinD(angrot/2), CosD(angrot/2));
+
+    TGeoVolume *volCylFr = new TGeoVolume("ITSSPDCoolingFreonOnCyl",
+					  shCylFr, medFreon);
+    volCylFr->SetLineColor(kPurple);
+
+    TGeoVolume *volCylGasFr = new TGeoVolume("ITSSPDCoolingFreonGasOnCyl",
+					     shCylFr, medGas);
+    volCylGasFr->SetLineColor(kPurple);
+
+    // Now place everything in the containers
+    volTubeA->AddNode(volGasFr, 1, 0);
+    volTubeC->AddNode(volFreon, 1, 0);
+
+    volCylTubA->AddNode(volCylGasFr, 1, 0);
+    volCylTubC->AddNode(volCylFr   , 1, 0);
+
+    container[0]->AddNode(volCable, 1, 0);
+
+    xloc = shMCMExt->GetDX();
+    zloc = shMCMExt->GetDZ();
+    container[0]->AddNode(volMCMExt, 1,
+			  new TGeoTranslation( xloc, 0.,-zloc));
+
+    xloc = shMCMExt->GetDX();
+    zloc = shCable->GetZ(1)/2 - shMCMExt->GetDZ();
+    container[0]->AddNode(volPlate, 1,
+			  new TGeoTranslation( xloc, 0., zloc));
+
+    xloc = shTube->GetRmax();
+    yloc = shTube->GetRmax();
+    zloc = shTube->GetDz() - shTube->GetRmax() - kYtoHalfStave;
+    container[1]->AddNode(volTubeA, 1,
+			  new TGeoTranslation(-xloc, -yloc, zloc));
+    container[2]->AddNode(volTubeC, 1,
+			  new TGeoTranslation(-xloc, -yloc, zloc));
+
+    xloc = shTube->GetRmax();
+    yloc = (shCylTub->GetDz())*SinD(angrot) - shTube->GetRmax();
+    zloc = (shCylTub->GetDz())*CosD(angrot) + shTube->GetRmax() +kYtoHalfStave;
+    container[1]->AddNode(volCylTubA, 1,
+			  new TGeoCombiTrans(-xloc, yloc,-zloc,
+				     new TGeoRotation("",0.,angrot,0.)));
+    container[2]->AddNode(volCylTubC, 1,
+			  new TGeoCombiTrans(-xloc, yloc,-zloc,
+				     new TGeoRotation("",0.,angrot,0.)));
+
+    // Finally create the list of assemblies and return it to the caller
     TList* conemodulelist = new TList();
-
     conemodulelist->Add(container[0]);
     conemodulelist->Add(container[1]);
+    conemodulelist->Add(container[2]);
 
     return conemodulelist;
 }
@@ -3014,54 +3128,85 @@ TList* AliITSv11GeometrySPD::CreateConeModule(TGeoManager *mgr) const
 //______________________________________________________________________
 void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 {
+    //
+    // Places all services modules in the mother reference system
+    //
+    // Created:      ?? ??? 2008  Alberto Pulvirenti
+    // Updated:      03 May 2010  Mario Sitta
+    //
 
-    TList* modulelist = CreateConeModule(gGeoManager);
+    const Int_t kNumberOfModules    =  10;
+
+    const Double_t kInnerRadius     =  80.775*fgkmm;
+    const Double_t kZTrans          = 452.000*fgkmm;
+    const Double_t kAlphaRot        =  46.500*fgkDegree;
+    const Double_t kAlphaSpaceCool  =   8.500*fgkDegree;
+
+    TList* modulelist = CreateConeModule(90-kAlphaRot);
     TGeoVolumeAssembly* module;
+
+    Double_t xloc, yloc, zloc;
 
     //Double_t angle[10] = {18., 54., 90., 126., 162., -18., -54., -90., -126., -162.};
     // angleNm for cone modules (cables), angleNc for cooling tubes
-    Double_t angle1m[10] = {23., 53., 90., 127., 157., 203.0, 233.0, 270.0, 307.0, 337.0};
-    Double_t angle2m[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
-    Double_t angle1c[10] = {23., 53., 90., 124., 157., 203.0, 233.0, 270.0, 304.0, 337.0};
-    Double_t angle2c[10] = {18., 44., 90., 126., 162., 198.0, 223.0, 270.0, 309.0, 342.0};
+    Double_t anglem[10] = {18., 54., 90., 126., 162., 198., 234., 270., 306., 342.};
+//    Double_t angle1m[10] = {23., 53., 90., 127., 157., 203.0, 233.0, 270.0, 307.0, 337.0};
+//    Double_t angle2m[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
+//    Double_t angle1c[10] = {23., 53., 90., 124., 157., 203.0, 233.0, 270.0, 304.0, 337.0};
+//    Double_t angle2c[10] = {18., 44., 90., 126., 162., 198.0, 223.0, 270.0, 309.0, 342.0};
 
     // First add the cables
     module = (TGeoVolumeAssembly*)modulelist->At(0);
-    for (Int_t i = 0; i < 10; i++) {
+    for (Int_t i = 0; i < kNumberOfModules; i++) {
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
-        rot1->RotateY(-90.0);
-        rot1->RotateX(45.0);
-	angle1m[i] -= 1.5;
-        rot1->RotateZ(90.0 - angle1m[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.0, rot1);
-        moth->AddNode(module, 2*i, tr1);
+	rot1->RotateY(-kAlphaRot);
+	rot1->RotateZ(anglem[i]);
+        xloc = kInnerRadius*CosD(anglem[i]);
+        yloc = kInnerRadius*SinD(anglem[i]);
+	zloc = kZTrans;
+        moth->AddNode(module, 2*i,
+		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
+
         TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
-        rot2->RotateY(90.0);
-        rot2->RotateX(-45.0);
-	angle2m[i] -= 1.5;
-        rot2->RotateZ(90.0 - angle2m[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -37.9, rot2);
-        moth->AddNode(module, 2*i+1, tr2);
+	rot2->RotateY(180.-kAlphaRot);
+	rot2->RotateZ(anglem[i]);
+        xloc = kInnerRadius*CosD(anglem[i]);
+        yloc = kInnerRadius*SinD(anglem[i]);
+	zloc = kZTrans;
+        moth->AddNode(module, 2*i+1,
+		      new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
     }
 
-    // Then the cooling tubes
+    // Then the cooling tubes on Side A
     module = (TGeoVolumeAssembly*)modulelist->At(1);
-    for (Int_t i = 0; i < 10; i++) {
+    Double_t anglec;
+    for (Int_t i = 0; i < kNumberOfModules; i++) {
+        anglec = anglem[i] + kAlphaSpaceCool;
         TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
-        rot1->RotateY(-90.0);
-        rot1->RotateX(45.0);
-	angle1c[i] -= 1.5;
-        rot1->RotateZ(90.0 - angle1c[i]);
-        TGeoCombiTrans *tr1 = new TGeoCombiTrans(0.0, 0.0, 38.0, rot1);
-        moth->AddNode(module, 2*i, tr1);
-        TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
-        rot2->RotateY(90.0);
-        rot2->RotateX(-45.0);
-	angle2c[i] -= 1.5;
-        rot2->RotateZ(90.0 - angle2c[i]);
-        TGeoCombiTrans *tr2 = new TGeoCombiTrans(0.0, 0.0, -37.9, rot2);
-        moth->AddNode(module, 2*i+1, tr2);
+        rot1->RotateX(-90.0+kAlphaRot);
+	rot1->RotateZ(-90+anglec);
+        xloc = kInnerRadius*CosD(anglec);
+        yloc = kInnerRadius*SinD(anglec);
+	zloc = kZTrans;
+        moth->AddNode(module, 2*i, 
+		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
     }
+
+    // Finally the cooling tubes on Side C
+    module = (TGeoVolumeAssembly*)modulelist->At(2);
+    for (Int_t i = 0; i < kNumberOfModules; i++) {
+        anglec = anglem[i] - kAlphaSpaceCool;
+        TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
+        rot2->RotateX(-90.0+kAlphaRot);
+	rot2->RotateY(180.);
+	rot2->RotateZ(90.+anglec);
+        xloc = kInnerRadius*CosD(anglec);
+        yloc = kInnerRadius*SinD(anglec);
+	zloc = kZTrans;
+        moth->AddNode(module, 2*i+1,
+		      new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
+    }
+
 }
 
 //______________________________________________________________________

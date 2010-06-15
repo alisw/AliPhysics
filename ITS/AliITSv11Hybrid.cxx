@@ -5503,6 +5503,10 @@ void AliITSv11Hybrid::CreateMaterials(){
     AliMixture(56, "SPD KAPTON(POLYCH2)", aKapton, zKapton, dKapton, 4, wKapton);
     AliMedium(56,"SPD KAPTON(POLYCH2)$",56,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
+    // Gaseous Freon has same chemical composition but air density at 1.7 atm
+    AliMixture(59,"GASEOUS FREON$",afre,zfre,1.7*dAir,-2,wfre);
+    AliMedium(59,"GASEOUS FREON$",59,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
     AliMixture(61,"EPOXY$",aEpoxy,zEpoxy,dEpoxy,-3,wEpoxy);
     AliMedium(61,"EPOXY$",61,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
@@ -5796,6 +5800,27 @@ void AliITSv11Hybrid::CreateMaterials(){
     den = 5.078866;
     AliMixture(60,"SPD_LOWCABLES$",aA,zZ,den,+3,wW);
     AliMedium(60,"SPD_LOWCABLES$",60,0,ifield,fieldm,tmaxfd,stemax,
+	      deemax,epsil,stmin);
+
+    // Mean material for high-voltage cables on SPD trays Side A & C
+    // (Copper + HD PolyEthylene (C2-H2)) (D.Elia for cable number and
+    // cross-section area, M.Sitta for elemental computation) - 10 Jun 10
+    wW[0] = 0.083766;//H
+    wW[2] = 0.417136;//Cu
+    wW[1] = 0.499098;//C
+    wW[3] = 0.000000;//O
+    wW[4] = 0.000000;//S
+    wW[5] = 0.000000;//F
+    wW[6] = 0.000000;//Sn
+    wW[7] = 0.000000;//Pb
+    wW[8] = 0.000000;//Cr
+    wW[9] = 0.000000;//Si
+    wW[10] = 0.000000;//Ni
+    wW[11] = 0.000000;//Ca
+
+    den = 1.514930;
+    AliMixture(58,"SPD_HICABLES$",aA,zZ,den,+3,wW);
+    AliMedium(58,"SPD_HICABLES$",58,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
 
     // PolyUrethane [C25-H42-N2-O6] - 07 Mar 10

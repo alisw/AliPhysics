@@ -789,6 +789,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 // Created:         ???       Bjorn S. Nilsen
 // Updated:      18 Feb 2008  Mario Sitta
 // Updated:      25 Jul 2008  Mario Sitta   SDDCarbonFiberCone simpler
+// Updated:      10 Jun 2010  Mario Sitta   Cables across cone holes added
 //
 // Technical data are taken from:  "Supporto Generale Settore SDD"
 // (technical drawings ALR-0816/1-B), "Supporto Globale Settore SDD"
@@ -829,7 +830,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kTanConeTheta       =
                                      TMath::Tan(kConeTheta*TMath::DegToRad());
   // Dimensions of the Cone Inserts
-  const Double_t kConeCFThickness       = 1.5*fgkmm; // Carbon fiber thickness
+  const Double_t kConeCFThickness    =       1.5*fgkmm;//Carbon fiber thickness
   // Dimensions of the Cone Holes
   const Double_t kHole1RMin          = (450.0/2)*fgkmm;
   const Double_t kHole1RMax          = (530.0/2)*fgkmm;
@@ -845,17 +846,24 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   const Double_t kHole4DeltaR        =        15*fgkmm;
   const Double_t kHole4Width         =        30*fgkmm;
   //  const Int_t    kNHole4             =         3      ;
+  // Fraction of materials in holes
+  const Double_t kHolePlasticFrac    =       0.55846;
+  const Double_t kHoleCuFrac         =       0.06319;
+  const Double_t kHoleGlassFrac      =       0.02652;
 
   // Local variables
   Double_t x, y, z, t, dza, rmin, rmax;
 
 
   // Recover the needed materials
-  TGeoMedium *medSDDcf  = mgr->GetMedium("ITS_SDD C (M55J)$");
-  TGeoMedium *medSDDair = mgr->GetMedium("ITS_SDD AIR$");
-  TGeoMedium *medSDDste = mgr->GetMedium("ITS_G10FR4$"); // stesalite
-  TGeoMedium *medSDDroh = mgr->GetMedium("ITS_ROHACELL$");
-  TGeoMedium *medSDDss  = mgr->GetMedium("ITS_INOX$");
+  TGeoMedium *medSDDcf    = mgr->GetMedium("ITS_SDD C (M55J)$");
+  TGeoMedium *medSDDair   = mgr->GetMedium("ITS_SDD AIR$");
+  TGeoMedium *medSDDste   = mgr->GetMedium("ITS_G10FR4$"); // stesalite
+  TGeoMedium *medSDDroh   = mgr->GetMedium("ITS_ROHACELL$");
+  TGeoMedium *medSDDss    = mgr->GetMedium("ITS_INOX$");
+  TGeoMedium *medSDDplast = mgr->GetMedium("ITS_SDDKAPTON (POLYCH2)$");
+  TGeoMedium *medSDDCu    = mgr->GetMedium("ITS_COPPER$");
+  TGeoMedium *medSDDglass = mgr->GetMedium("ITS_SDD OPTICFIB$");
 
   // First define the geometrical shapes
 
@@ -1358,6 +1366,143 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole4shape->Z(3)    = ZFromRmaxpCone(coneshape,4,kConeTheta,
 				       hole4shape->GetRmax(3));
 
+  // Cables to be put inside the holes: Pcon's
+  // (fractions are manually computed from AliITSv11GeometrySDD::SDDCables
+  TGeoPcon *hole1plastshape = new TGeoPcon(-kHole1Phi/2., kHole1Phi, 4);
+
+  hole1plastshape->Rmin(0) = hole1shape->GetRmin(0);
+  hole1plastshape->Rmax(0) = hole1shape->GetRmax(0);
+  hole1plastshape->Z(0)    = hole1shape->GetZ(0);
+
+  hole1plastshape->Rmin(1) = hole1shape->GetRmin(1);
+  hole1plastshape->Rmax(1) = hole1shape->GetRmax(1);
+  hole1plastshape->Z(1)    = hole1shape->GetZ(1);
+
+  dza = hole1plastshape->GetRmax(0) - (kHole1RMax-kHole1RMin)*kHolePlasticFrac;
+
+  hole1plastshape->Rmin(2) = dza;
+  hole1plastshape->Z(2)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
+					    hole1plastshape->GetRmin(2));
+  hole1plastshape->Rmax(2) = RmaxFromZpCone(conefoamshape,3,kConeTheta,
+					    hole1plastshape->GetZ(2));
+
+  hole1plastshape->Rmin(3) = hole1plastshape->GetRmin(2);
+  hole1plastshape->Rmax(3) = hole1plastshape->GetRmin(3);
+  hole1plastshape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
+					    hole1plastshape->GetRmax(3));
+
+  TGeoPcon *hole1Cushape = new TGeoPcon(-kHole1Phi/2., kHole1Phi, 4);
+
+  hole1Cushape->Rmin(0) = hole1plastshape->GetRmin(2);
+  hole1Cushape->Rmax(0) = hole1Cushape->GetRmin(0);
+  hole1Cushape->Z(0)    = hole1plastshape->GetZ(2);
+
+  dza = hole1Cushape->GetRmax(0) - (kHole1RMax-kHole1RMin)*kHoleCuFrac;
+
+  hole1Cushape->Rmin(1) = dza;
+  hole1Cushape->Rmax(1) = hole1Cushape->GetRmax(0);
+  hole1Cushape->Z(1)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
+					 hole1Cushape->GetRmin(1));
+
+  hole1Cushape->Rmax(2) = hole1Cushape->GetRmax(0);
+  hole1Cushape->Rmin(2) = hole1Cushape->GetRmin(1);
+  hole1Cushape->Z(2)    = hole1plastshape->GetZ(3);
+
+  hole1Cushape->Rmin(3) = hole1Cushape->GetRmin(1);
+  hole1Cushape->Rmax(3) = hole1Cushape->GetRmin(3);
+  hole1Cushape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
+					 hole1Cushape->GetRmax(3));
+
+  TGeoPcon *hole1glassshape = new TGeoPcon(-kHole1Phi/2., kHole1Phi, 4);
+
+  hole1glassshape->Rmin(0) = hole1Cushape->GetRmin(1);
+  hole1glassshape->Rmax(0) = hole1glassshape->GetRmin(0);
+  hole1glassshape->Z(0)    = hole1Cushape->GetZ(1);
+
+  dza = hole1glassshape->GetRmax(0) - (kHole1RMax-kHole1RMin)*kHoleGlassFrac;
+
+  hole1glassshape->Rmin(1) = dza;
+  hole1glassshape->Rmax(1) = hole1glassshape->GetRmax(0);
+  hole1glassshape->Z(1)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
+					    hole1glassshape->GetRmin(1));
+
+  hole1glassshape->Rmax(2) = hole1glassshape->GetRmax(0);
+  hole1glassshape->Rmin(2) = hole1glassshape->GetRmin(1);
+  hole1glassshape->Z(2)    = hole1Cushape->GetZ(3);
+
+  hole1glassshape->Rmin(3) = hole1glassshape->GetRmin(1);
+  hole1glassshape->Rmax(3) = hole1glassshape->GetRmin(3);
+  hole1glassshape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
+					    hole1glassshape->GetRmax(3));
+  //
+  TGeoPcon *hole2plastshape = new TGeoPcon(-kHole2Phi/2., kHole2Phi, 4);
+
+  hole2plastshape->Rmin(0) = hole2shape->GetRmin(0);
+  hole2plastshape->Rmax(0) = hole2shape->GetRmax(0);
+  hole2plastshape->Z(0)    = hole2shape->GetZ(0);
+
+  hole2plastshape->Rmin(1) = hole2shape->GetRmin(1);
+  hole2plastshape->Rmax(1) = hole2shape->GetRmax(1);
+  hole2plastshape->Z(1)    = hole2shape->GetZ(1);
+
+  dza = hole2plastshape->GetRmax(0) - (kHole2RMax-kHole2RMin)*kHolePlasticFrac;
+
+  hole2plastshape->Rmin(2) = dza;
+  hole2plastshape->Z(2)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
+					    hole2plastshape->GetRmin(2));
+  hole2plastshape->Rmax(2) = RmaxFromZpCone(conefoamshape,3,kConeTheta,
+					    hole2plastshape->GetZ(2));
+
+  hole2plastshape->Rmin(3) = hole2plastshape->GetRmin(2);
+  hole2plastshape->Rmax(3) = hole2plastshape->GetRmin(3);
+  hole2plastshape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
+					    hole2plastshape->GetRmax(3));
+
+  TGeoPcon *hole2Cushape = new TGeoPcon(-kHole2Phi/2., kHole2Phi, 4);
+
+  hole2Cushape->Rmin(0) = hole2plastshape->GetRmin(2);
+  hole2Cushape->Rmax(0) = hole2Cushape->GetRmin(0);
+  hole2Cushape->Z(0)    = hole2plastshape->GetZ(2);
+
+  dza = hole2Cushape->GetRmax(0) - (kHole2RMax-kHole2RMin)*kHoleCuFrac;
+
+  hole2Cushape->Rmin(1) = dza;
+  hole2Cushape->Rmax(1) = hole2Cushape->GetRmax(0);
+  hole2Cushape->Z(1)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
+					 hole2Cushape->GetRmin(1));
+
+  hole2Cushape->Rmax(2) = hole2Cushape->GetRmax(0);
+  hole2Cushape->Rmin(2) = hole2Cushape->GetRmin(1);
+  hole2Cushape->Z(2)    = hole2plastshape->GetZ(3);
+
+  hole2Cushape->Rmin(3) = hole2Cushape->GetRmin(1);
+  hole2Cushape->Rmax(3) = hole2Cushape->GetRmin(3);
+  hole2Cushape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
+					 hole2Cushape->GetRmax(3));
+
+  TGeoPcon *hole2glassshape = new TGeoPcon(-kHole2Phi/2., kHole2Phi, 4);
+
+  hole2glassshape->Rmin(0) = hole2Cushape->GetRmin(1);
+  hole2glassshape->Rmax(0) = hole2glassshape->GetRmin(0);
+  hole2glassshape->Z(0)    = hole2Cushape->GetZ(1);
+
+  dza = hole2glassshape->GetRmax(0) - (kHole2RMax-kHole2RMin)*kHoleGlassFrac;
+
+  hole2glassshape->Rmin(1) = dza;
+  hole2glassshape->Rmax(1) = hole2glassshape->GetRmax(0);
+  hole2glassshape->Z(1)    = ZFromRminpCone(conefoamshape,1,kConeTheta,
+					    hole2glassshape->GetRmin(1));
+
+  hole2glassshape->Rmax(2) = hole2glassshape->GetRmax(0);
+  hole2glassshape->Rmin(2) = hole2glassshape->GetRmin(1);
+  hole2glassshape->Z(2)    = hole2Cushape->GetZ(3);
+
+  hole2glassshape->Rmin(3) = hole2glassshape->GetRmin(1);
+  hole2glassshape->Rmax(3) = hole2glassshape->GetRmin(3);
+  hole2glassshape->Z(3)    = ZFromRmaxpCone(conefoamshape,3,kConeTheta,
+					    hole2glassshape->GetRmax(3));
+
+
   // Debug if requested
   if (GetDebug(1)) {
     coneshape->InspectShape();
@@ -1420,6 +1565,30 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole12->SetFillColor(hole12->GetLineColor());
   hole12->SetFillStyle(4090); // 90% transparent
 
+  TGeoVolume *hole1plast = new TGeoVolume("SDDCableHole1Plast",
+					  hole1plastshape,medSDDplast);
+  hole1plast->SetVisibility(kTRUE);
+  hole1plast->SetLineColor(kBlue);
+  hole1plast->SetLineWidth(1);
+  hole1plast->SetFillColor(hole1plast->GetLineColor());
+  hole1plast->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole1Cu = new TGeoVolume("SDDCableHole1Cu",
+				       hole1Cushape,medSDDCu);
+  hole1Cu->SetVisibility(kTRUE);
+  hole1Cu->SetLineColor(kRed);
+  hole1Cu->SetLineWidth(1);
+  hole1Cu->SetFillColor(hole1Cu->GetLineColor());
+  hole1Cu->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole1glass = new TGeoVolume("SDDCableHole1glass",
+					  hole1glassshape,medSDDglass);
+  hole1glass->SetVisibility(kTRUE);
+  hole1glass->SetLineColor(kGreen);
+  hole1glass->SetLineWidth(1);
+  hole1glass->SetFillColor(hole1glass->GetLineColor());
+  hole1glass->SetFillStyle(4090); // 90% transparent
+
   TGeoVolume *hole2 = new TGeoVolume("SDDCableHole2",
 				     hole2shape,medSDDair);
   hole2->SetVisibility(kTRUE);
@@ -1443,6 +1612,30 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
   hole22->SetLineWidth(1);
   hole22->SetFillColor(hole22->GetLineColor());
   hole22->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole2plast = new TGeoVolume("SDDCableHole2Plast",
+					  hole2plastshape,medSDDplast);
+  hole2plast->SetVisibility(kTRUE);
+  hole2plast->SetLineColor(kBlue);
+  hole2plast->SetLineWidth(1);
+  hole2plast->SetFillColor(hole2plast->GetLineColor());
+  hole2plast->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole2Cu = new TGeoVolume("SDDCableHole2Cu",
+				       hole2Cushape,medSDDCu);
+  hole2Cu->SetVisibility(kTRUE);
+  hole2Cu->SetLineColor(kRed);
+  hole2Cu->SetLineWidth(1);
+  hole2Cu->SetFillColor(hole2Cu->GetLineColor());
+  hole2Cu->SetFillStyle(4090); // 90% transparent
+
+  TGeoVolume *hole2glass = new TGeoVolume("SDDCableHole2glass",
+					  hole2glassshape,medSDDglass);
+  hole2glass->SetVisibility(kTRUE);
+  hole2glass->SetLineColor(kGreen);
+  hole2glass->SetLineWidth(1);
+  hole2glass->SetFillColor(hole2glass->GetLineColor());
+  hole2glass->SetFillStyle(4090); // 90% transparent
 
   TGeoVolume *hole3 = new TGeoVolume("SDDCableHole3",
 				     hole3shape,medSDDair);
@@ -1478,6 +1671,14 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 
   // Mount up a cone
   cfconeinsert->AddNode(cfconefoam,1,0);
+
+  hole1->AddNode(hole1plast, 1, 0);
+  hole1->AddNode(hole1Cu, 1, 0);
+  hole1->AddNode(hole1glass, 1, 0);
+
+  hole2->AddNode(hole2plast, 1, 0);
+  hole2->AddNode(hole2Cu, 1, 0);
+  hole2->AddNode(hole2glass, 1, 0);
 
   for (Int_t i=0; i<12; i++) {
     Double_t phiH = i*30.0;
@@ -3141,6 +3342,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 // Output:
 //
 // Created:      15 Feb 2010  Mario Sitta
+// Updated:      10 Jun 2010  Mario Sitta  Freon inside cooling pipes
 //
 // Technical data are taken from AutoCAD drawings, L.Simonetti technical
 // drawings and other (oral) information given by F.Tosello and D.Elia
@@ -3182,6 +3384,8 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 
   const Double_t kOpticalFibersSect      =    8.696*fgkmm;//!!!ESTIMATED!!!
   const Double_t kLowVoltageCableSect    =    3.412*fgkmm;//!!!ESTIMATED!!!
+  const Double_t kHiVoltageCableSect     =    1.873*fgkmm;//!!!ESTIMATED!!!
+
 
   // Local variables
   Double_t xprof[kForwardSideNpoints], yprof[kForwardSideNpoints];
@@ -3262,18 +3466,26 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 				 (kForwardTrayInterSpace-kExternalTrayThick)/2,
 				       kExternalTrayLen/2);
 
-  // The cooling tube inside the forward tray: a TubeSeg
+  // The cooling tube inside the forward tray: a Tube
   Double_t zelong = (kForwardTraySecondHigh - 2*kForwardTrayThick
 		- 2*forwTrayWall->GetDY() - kCoolingTubeRmax)*SinD(kTrayAZRot);
   Double_t zlen = (zelong + kForwardTrayTotalLen)/2;
-  TGeoTubeSeg *coolTubeForw = new TGeoTubeSeg(kCoolingTubeRmin,
-					      kCoolingTubeRmax, zlen, 0, 360);
+  TGeoTube *coolTubeForw = new TGeoTube(0, kCoolingTubeRmax, zlen);
+
+  // The freon inside the forward tray tubes: a Tube
+  TGeoTube *freonTubeForw = new TGeoTube(0, kCoolingTubeRmin, zlen);
 
   // The cooling tube inside the external tray: a Ctub
-  TGeoCtub *coolTubeExt = new TGeoCtub(kCoolingTubeRmin, kCoolingTubeRmax,
+  TGeoCtub *coolTubeExt = new TGeoCtub(0, kCoolingTubeRmax,
 				       kExternalTrayLen/2, 0, 360,
 				       0, SinD(kTrayAZRot),-CosD(kTrayAZRot),
 				       0,                0,               1);
+
+  // The freon inside the forward tray tubes: a Tube
+  TGeoCtub *freonTubeExt = new TGeoCtub(0, kCoolingTubeRmin,
+					kExternalTrayLen/2, 0, 360,
+					0, SinD(kTrayAZRot),-CosD(kTrayAZRot),
+					0,                0,               1);
 
   // The optical fibers inside the forward tray: a BBox
   TGeoBBox *optFibsForw = new TGeoBBox(kOpticalFibersSect/2,
@@ -3321,12 +3533,37 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   lowCablesExt->DefineSection(0, 0);
   lowCablesExt->DefineSection(1, kLowVoltageCableSect);
 
+  // The High Voltage cables inside the forward tray: a BBox
+  TGeoBBox *hiCablesForw = new TGeoBBox(kHiVoltageCableSect/2,
+					kHiVoltageCableSect/2,
+					kForwardTrayTotalLen/2);
+
+  // The High Voltage inside the external tray: a Xtru
+  TGeoXtru *hiCablesExt = new TGeoXtru(2);
+  hiCablesExt->SetName("ITSsuppSPDExtTrayHiVoltage");
+
+  yprof[0] = -kExternalTrayHigh + 2*kExternalTrayThick
+	   + 2*forwTrayWall->GetDY();
+  xprof[0] = yprof[0]*TanD(kTrayAZRot);
+  xprof[1] = kExternalTrayLen;
+  yprof[1] = yprof[0];
+  xprof[2] = xprof[1];
+  yprof[2] = yprof[1] + kHiVoltageCableSect;
+  yprof[3] = yprof[2];
+  xprof[3] = yprof[2]*TanD(kTrayAZRot);
+
+  hiCablesExt->DefinePolygon(4, xprof, yprof);
+  hiCablesExt->DefineSection(0, 0);
+  hiCablesExt->DefineSection(1, kHiVoltageCableSect);
+
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl   = mgr->GetMedium("ITS_ALUMINUM$");
-  TGeoMedium *medIn   = mgr->GetMedium("ITS_INOX$");
-  TGeoMedium *medFibs = mgr->GetMedium("ITS_SDD OPTICFIB$");//!!TO BE CHECKED!!
-  TGeoMedium *medLVC  = mgr->GetMedium("ITS_SPD_LOWCABLES$");
+  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALUMINUM$");
+  TGeoMedium *medIn    = mgr->GetMedium("ITS_INOX$");
+  TGeoMedium *medFreon = mgr->GetMedium("ITS_GASEOUS FREON$");
+  TGeoMedium *medFibs  = mgr->GetMedium("ITS_SDD OPTICFIB$");//!TO BE CHECKED!
+  TGeoMedium *medLVC   = mgr->GetMedium("ITS_SPD_LOWCABLES$");
+  TGeoMedium *medHVC   = mgr->GetMedium("ITS_SPD_HICABLES$");
 
   TGeoVolume *forwTrayABase = new TGeoVolume("ITSsuppSPDSideAForwTrayABase",
 					    forwTrayLowerFace, medAl);
@@ -3427,6 +3664,15 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   forwCoolTube->SetFillColor(forwCoolTube->GetLineColor());
   forwCoolTube->SetFillStyle(4000); // 0% transparent
 
+  TGeoVolume *forwCoolFreon = new TGeoVolume("ITSsuppSPDSideAForwTrayFreon",
+					     freonTubeForw, medFreon);
+
+  forwCoolFreon->SetVisibility(kTRUE);
+  forwCoolFreon->SetLineColor(kBlue); // Blue
+  forwCoolFreon->SetLineWidth(1);
+  forwCoolFreon->SetFillColor(forwCoolFreon->GetLineColor());
+  forwCoolFreon->SetFillStyle(4000); // 0% transparent
+
   TGeoVolume *extCoolTube = new TGeoVolume("ITSsuppSPDSideAExtTrayCoolTube",
 					   coolTubeExt, medIn);
 
@@ -3435,6 +3681,15 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   extCoolTube->SetLineWidth(1);
   extCoolTube->SetFillColor(extCoolTube->GetLineColor());
   extCoolTube->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *extCoolFreon = new TGeoVolume("ITSsuppSPDSideAExtTrayFreon",
+					    freonTubeExt, medFreon);
+
+  extCoolFreon->SetVisibility(kTRUE);
+  extCoolFreon->SetLineColor(kBlue); // Blue
+  extCoolFreon->SetLineWidth(1);
+  extCoolFreon->SetFillColor(extCoolFreon->GetLineColor());
+  extCoolFreon->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *forwOptFibs = new TGeoVolume("ITSsuppSPDSideAForwTrayOptFibs",
 					   optFibsForw, medFibs);
@@ -3471,6 +3726,24 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   extLowCabs->SetLineWidth(1);
   extLowCabs->SetFillColor(extLowCabs->GetLineColor());
   extLowCabs->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *forwHiCabs = new TGeoVolume("ITSsuppSPDSideAForwTrayHiCabs",
+					  hiCablesForw, medHVC);
+
+  forwHiCabs->SetVisibility(kTRUE);
+  forwHiCabs->SetLineColor(kRed); // Red
+  forwHiCabs->SetLineWidth(1);
+  forwHiCabs->SetFillColor(forwHiCabs->GetLineColor());
+  forwHiCabs->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *extHiCabs = new TGeoVolume("ITSsuppSPDSideAExtTrayHiCabs",
+					 hiCablesExt, medHVC);
+
+  extHiCabs->SetVisibility(kTRUE);
+  extHiCabs->SetLineColor(kRed); // Red
+  extHiCabs->SetLineWidth(1);
+  extHiCabs->SetFillColor(extHiCabs->GetLineColor());
+  extHiCabs->SetFillStyle(4000); // 0% transparent
 
 
   // Now build up the trays
@@ -3515,6 +3788,8 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   cableTrayAForw->AddNode(forwTrayAWall, 1,
 		      new TGeoTranslation(0, yloc, zloc));
 
+  forwCoolTube->AddNode(forwCoolFreon, 1, 0);
+
   yloc = 2*kForwardTrayThick + 2*forwTrayWall->GetDY()
        + coolTubeForw->GetRmax();
   zloc = coolTubeForw->GetDz();
@@ -3531,6 +3806,13 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   yloc = 2*kForwardTrayThick + 2*forwTrayWall->GetDY() +lowCablesForw->GetDY();
   zloc = lowCablesForw->GetDZ();
   cableTrayAForw->AddNode(forwLowCabs, 1,
+		      new TGeoTranslation(-xloc, yloc, zloc));
+
+  xloc = hiCablesForw->GetDX() + 2*lowCablesForw->GetDX()
+       + coolTubeForw->GetRmax();
+  yloc = 2*kForwardTrayThick + 2*forwTrayWall->GetDY() + hiCablesForw->GetDY();
+  zloc = hiCablesForw->GetDZ();
+  cableTrayAForw->AddNode(forwHiCabs, 1,
 		      new TGeoTranslation(-xloc, yloc, zloc));
 
   // To simplify following placement in MARS, origin is on top
@@ -3559,6 +3841,8 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
   cableTrayAExt->AddNode(extTrayAWall, 1,
 		      new TGeoTranslation( 0, yloc, zloc));
 
+  extCoolTube->AddNode(extCoolFreon, 1, 0);
+
   yloc = -kExternalTrayHigh + 2*kExternalTrayThick + 2*extTrayWall->GetDY()
        + coolTubeExt->GetRmax();
   zloc = coolTubeExt->GetDz();
@@ -3572,6 +3856,11 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 
   xloc = kLowVoltageCableSect + coolTubeExt->GetRmax();
   cableTrayAExt->AddNode(extLowCabs, 1,
+		      new TGeoCombiTrans(-xloc, 0, 0,
+					 new TGeoRotation("",90,-90,-90)));
+
+  xloc = 2*kHiVoltageCableSect + kLowVoltageCableSect + coolTubeExt->GetRmax();
+  cableTrayAExt->AddNode(extHiCabs, 1,
 		      new TGeoCombiTrans(-xloc, 0, 0,
 					 new TGeoRotation("",90,-90,-90)));
 
@@ -3712,6 +4001,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 //
 // Created:         ???       Bjorn S. Nilsen
 // Updated:      22 Apr 2010  Mario Sitta
+// Updated:      10 Jun 2010  Mario Sitta  Freon inside cooling pipes
 //
 // Technical data are taken from AutoCAD drawings and other (oral)
 // information given by D.Elia
@@ -3734,6 +4024,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   const Double_t kCoolingTubeRmax     =    6.000 *fgkmm;
   const Double_t kOpticalFibersSect   =    8.696 *fgkmm;//!!!ESTIMATED!!!
   const Double_t kLowVoltageCableSect =    3.412 *fgkmm;//!!!ESTIMATED!!!
+  const Double_t kHiVoltageCableSect  =    1.873 *fgkmm;//!!!ESTIMATED!!!
 
   // Overall position and rotation of the C-Side Cable Trays
   const Double_t kTraySideCRPos       =   45.300 *fgkcm;
@@ -3871,8 +4162,10 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
   // The horizontal part of the cooling tube inside the tray: a Tube
   delta = sideCMidFace->GetX(4) - sideCMidFace->GetX(5);
-  TGeoTube *horTube = new TGeoTube(kCoolingTubeRmin, kCoolingTubeRmax,
-				   delta/2);
+  TGeoTube *horTube = new TGeoTube(0, kCoolingTubeRmax, delta/2);
+
+  // The freon inside the horizontal part of the cooling tube: a Tube
+  TGeoTube *horFreon = new TGeoTube(0, kCoolingTubeRmin, delta/2);
 
   // The inclined part of the cooling tube inside the tray: a Ctub
   Double_t x3, y3, x4, y4;
@@ -3885,8 +4178,12 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
        (y4 + kCoolingTubeRmax - y3 - kCoolingTubeRmax*SinD(kTrayCFoldAngle))*
        (y4 + kCoolingTubeRmax - y3 - kCoolingTubeRmax*SinD(kTrayCFoldAngle)) );
 
-  TGeoCtub *incTube = new TGeoCtub(kCoolingTubeRmin, kCoolingTubeRmax,
-				   delta/2, 0, 360,
+  TGeoCtub *incTube = new TGeoCtub(0, kCoolingTubeRmax, delta/2, 0, 360,
+			       0, SinD(kTrayCFoldAngle),-CosD(kTrayCFoldAngle),
+			       0,                     0,                    1);
+
+  // The freon inside the inclined part of the cooling tube: a Ctub
+  TGeoCtub *incFreon = new TGeoCtub(0, kCoolingTubeRmin, delta/2, 0, 360,
 			       0, SinD(kTrayCFoldAngle),-CosD(kTrayCFoldAngle),
 			       0,                     0,                    1);
 
@@ -3894,7 +4191,6 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   TGeoXtru *optFibs = new TGeoXtru(2);
 
   xprof[0] = sideCMidFace->GetX(5);
-
   yprof[0] = sideCMidFace->GetY(5);
   xprof[1] = sideCMidFace->GetX(4);
   yprof[1] = sideCMidFace->GetY(4);
@@ -3931,12 +4227,34 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   lowCables->DefineSection(0, 0);
   lowCables->DefineSection(1, kLowVoltageCableSect);
 
+  // The high voltage cables inside the tray: a Xtru
+  TGeoXtru *hiCables = new TGeoXtru(2);
+
+  xprof[0] = sideCMidFace->GetX(5);
+  yprof[0] = sideCMidFace->GetY(5);
+  xprof[1] = sideCMidFace->GetX(4);
+  yprof[1] = sideCMidFace->GetY(4);
+  xprof[2] = sideCMidFace->GetX(3);
+  yprof[2] = sideCMidFace->GetY(3);
+  xprof[3] = xprof[2] - kHiVoltageCableSect*SinD(kTrayCFoldAngle);
+  yprof[3] = yprof[2] + kHiVoltageCableSect*CosD(kTrayCFoldAngle);
+  InsidePoint(xprof[0], yprof[0], xprof[1], yprof[1], xprof[2], yprof[2],
+	      kHiVoltageCableSect , xprof[4], yprof[4]);
+  xprof[5] = 0.;
+  yprof[5] = yprof[0] + kHiVoltageCableSect;
+
+  hiCables->DefinePolygon(6, xprof, yprof);
+  hiCables->DefineSection(0, 0);
+  hiCables->DefineSection(1, kHiVoltageCableSect);
+
 
   // We have all shapes: now create the real volumes
   TGeoMedium *medAl   = mgr->GetMedium("ITS_ALUMINUM$");
   TGeoMedium *medIn   = mgr->GetMedium("ITS_INOX$");
+  TGeoMedium *medFr   = mgr->GetMedium("ITS_Freon$");
   TGeoMedium *medFibs = mgr->GetMedium("ITS_SDD OPTICFIB$");//!!TO BE CHECKED!!
   TGeoMedium *medLVC  = mgr->GetMedium("ITS_SPD_LOWCABLES$");
+  TGeoMedium *medHVC  = mgr->GetMedium("ITS_SPD_HICABLES$");
 
   TGeoVolume *traySideCHorFace  = new TGeoVolume("ITSsuppSPDTraySideCHor",
 						 sideCHorFace, medAl);
@@ -4001,6 +4319,15 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   traySideCHorTube->SetFillColor(traySideCHorTube->GetLineColor());
   traySideCHorTube->SetFillStyle(4000); // 0% transparent
 
+  TGeoVolume *traySideCHorFreon = new TGeoVolume("ITSsuppSPDTraySideCHorFreon",
+						 horFreon, medFr);
+
+  traySideCHorFreon->SetVisibility(kTRUE);
+  traySideCHorFreon->SetLineColor(kBlue); // Blue
+  traySideCHorFreon->SetLineWidth(1);
+  traySideCHorFreon->SetFillColor(traySideCHorFreon->GetLineColor());
+  traySideCHorFreon->SetFillStyle(4000); // 0% transparent
+
   TGeoVolume *traySideCIncTube = new TGeoVolume("ITSsuppSPDTraySideCIncTube",
 						incTube, medIn);
 
@@ -4009,6 +4336,15 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   traySideCIncTube->SetLineWidth(1);
   traySideCIncTube->SetFillColor(traySideCIncTube->GetLineColor());
   traySideCIncTube->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *traySideCIncFreon = new TGeoVolume("ITSsuppSPDTraySideCIncFreon",
+						 incFreon, medFr);
+
+  traySideCIncFreon->SetVisibility(kTRUE);
+  traySideCIncFreon->SetLineColor(kBlue); // Blue
+  traySideCIncFreon->SetLineWidth(1);
+  traySideCIncFreon->SetFillColor(traySideCIncFreon->GetLineColor());
+  traySideCIncFreon->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *traySideCOptFibs = new TGeoVolume("ITSsuppSPDTraySideCOptFibs",
 						optFibs, medFibs);
@@ -4027,6 +4363,15 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
   traySideCLowCabs->SetLineWidth(1);
   traySideCLowCabs->SetFillColor(traySideCLowCabs->GetLineColor());
   traySideCLowCabs->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *traySideCHiCabs = new TGeoVolume("ITSsuppSPDTraySideCHiCabs",
+					       hiCables, medHVC);
+
+  traySideCHiCabs->SetVisibility(kTRUE);
+  traySideCHiCabs->SetLineColor(kRed); // Red
+  traySideCHiCabs->SetLineWidth(1);
+  traySideCHiCabs->SetFillColor(traySideCHiCabs->GetLineColor());
+  traySideCHiCabs->SetFillStyle(4000); // 0% transparent
 
 
   // Now build up the trays
@@ -4050,6 +4395,9 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
   cableTrayC->AddNode(traySideCIntWall,1,0);
 
+  traySideCHorTube->AddNode(traySideCHorFreon, 1, 0);
+  traySideCIncTube->AddNode(traySideCIncFreon, 1, 0);
+
   xloc = horTube->GetDz();
   yloc = sideCMidFace->GetY(5) + horTube->GetRmax();
   cableTrayC->AddNode(traySideCHorTube, 1,
@@ -4069,6 +4417,10 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
   zloc = kLowVoltageCableSect + horTube->GetRmax();
   cableTrayC->AddNode(traySideCLowCabs, 1,
+		      new TGeoTranslation( 0, 0,-zloc));
+
+  zloc = kHiVoltageCableSect + kLowVoltageCableSect + horTube->GetRmax();
+  cableTrayC->AddNode(traySideCHiCabs, 1,
 		      new TGeoTranslation( 0, 0,-zloc));
 
 
@@ -4356,8 +4708,13 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
 
 
   // The assembly holding the metallic structure
-  TGeoVolumeAssembly *trayStructure =
-				CreateSDDSSDTraysSideC("ITSsupportSDDTrayC");
+  // We need four of them because the content is different
+  TGeoVolumeAssembly *trayStructure[kNumTraySideC];
+  for (Int_t jt = 0; jt < kNumTraySideC; jt++) {
+    char name[20];
+    sprintf(name,"ITSsupportSDDTrayC%d",jt);
+    trayStructure[jt] = CreateSDDSSDTraysSideC(name);
+  }
 
 
   // We have all shapes: now create the real volumes
@@ -4371,7 +4728,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
     alpharot = kTraySideCAlphaRot[jt];
     xloc = kTraySideCRPos*SinD(alpharot);
     yloc = kTraySideCRPos*CosD(alpharot);
-    moth->AddNode(trayStructure,jt+1,
+    moth->AddNode(trayStructure[jt],1,
 		       new TGeoCombiTrans(-xloc, yloc, kTraySideCZPos,
 		       new TGeoRotation("",-90.+alpharot,-90.,90.+alphafold)));
   }
