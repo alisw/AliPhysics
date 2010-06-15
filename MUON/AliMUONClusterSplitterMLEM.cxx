@@ -253,7 +253,7 @@ Double_t AliMUONClusterSplitterMLEM::Param2Coef(Int_t icand, Double_t coef, Doub
 Int_t 
 AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
                                 Int_t iSimple, Int_t nfit, 
-                                Int_t *clustFit, TObjArray **clusters, 
+                                const Int_t *clustFit, TObjArray **clusters, 
                                 Double_t *parOk,
                                 TObjArray& clusterList, TH2 *mlem)
 {
@@ -1057,7 +1057,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
 void 
 AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
                                      Int_t nForFit, Int_t nCoupled, 
-                                     Int_t *clustNumb, Int_t *clustFit, 
+                                     const Int_t *clustNumb, const Int_t *clustFit, 
                                      TObjArray **clusters, 
                                      TMatrixD& aijcluclu, TMatrixD& aijclupad)
 {
@@ -1119,8 +1119,8 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
 
 //_____________________________________________________________________________
 Double_t 
-AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, 
-                                          TMatrixD& aijcluclu, Int_t *minGroup)
+AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, const Int_t *clustNumb, 
+                                          const TMatrixD& aijcluclu, Int_t *minGroup)
 {
   /// Find group of clusters with minimum coupling to all the others
   
@@ -1205,8 +1205,8 @@ AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
 Int_t 
 AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
                                           Int_t nCoupled, Int_t nForFit, 
-                                          Int_t *clustNumb, Int_t *clustFit, 
-                                          TMatrixD& aijclupad)
+                                          const Int_t *clustNumb, const Int_t *clustFit, 
+                                          const TMatrixD& aijclupad)
 {
   /// Select pads for fit. If too many coupled clusters, find pads giving 
   /// the strongest coupling with the rest of clusters and exclude them from the fit.

@@ -111,7 +111,7 @@ AliMUONPainterDataRegistry::DataSource(Int_t i) const
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterDataRegistry::DataMakerWasRegistered(AliMUONVTrackerDataMaker* data)
+AliMUONPainterDataRegistry::DataMakerWasRegistered(const AliMUONVTrackerDataMaker* data)
 {
   /// A new reader source was registered
   Long_t param[] = { (Long_t)data };
@@ -121,7 +121,7 @@ AliMUONPainterDataRegistry::DataMakerWasRegistered(AliMUONVTrackerDataMaker* dat
 
 //_____________________________________________________________________________
 void
-AliMUONPainterDataRegistry::DataMakerWasUnregistered(AliMUONVTrackerDataMaker* data)
+AliMUONPainterDataRegistry::DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* data)
 {
   /// A data reader was unregistered
   Long_t param[] = { (Long_t)data };
@@ -132,7 +132,7 @@ AliMUONPainterDataRegistry::DataMakerWasUnregistered(AliMUONVTrackerDataMaker* d
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterDataRegistry::DataSourceWasRegistered(AliMUONVTrackerData* data)
+AliMUONPainterDataRegistry::DataSourceWasRegistered(const AliMUONVTrackerData* data)
 {
   /// A new data source was registered
   Long_t param[] = { (Long_t)data };
@@ -142,7 +142,7 @@ AliMUONPainterDataRegistry::DataSourceWasRegistered(AliMUONVTrackerData* data)
 
 //_____________________________________________________________________________
 void
-AliMUONPainterDataRegistry::DataSourceWasUnregistered(AliMUONVTrackerData* data)
+AliMUONPainterDataRegistry::DataSourceWasUnregistered(const AliMUONVTrackerData* data)
 {
   /// A data source was unregistered
   Long_t param[] = { (Long_t)data };

@@ -40,10 +40,10 @@ class AliMUONTriggerElectronics : public TObject
 
       virtual void Feed(UShort_t pattern[2][4]);
       virtual void Feed(const AliMUONVDigitStore& digitStore);
-      virtual void Feed(AliMUONVTriggerStore& triggerStore);
+      virtual void Feed(const AliMUONVTriggerStore& triggerStore);
       virtual void Reset();
 
-      virtual void Scan(Option_t *option);
+      virtual void Scan(const Option_t *option);
 
       virtual void LocalResponse();
       virtual void RegionalResponse();

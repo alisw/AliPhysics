@@ -73,7 +73,7 @@ class AliMUONTrackExtrap : public TObject
   static Double_t GetMCSAngle2(const AliMUONTrackParam& param, Double_t dZ, Double_t x0);
   static void     AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0);
   
-  static Bool_t ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout);
+  static Bool_t ExtrapOneStepRungekutta(Double_t charge, Double_t step, const Double_t* vect, Double_t* vout);
   
   
  private:
@@ -120,8 +120,8 @@ class AliMUONTrackExtrap : public TObject
   static void Cov2CovP(const TMatrixD &param, TMatrixD &cov);
   static void CovP2Cov(const TMatrixD &param, TMatrixD &cov);
   
-  static void ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout);
-  static void ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout);
+  static void ExtrapOneStepHelix(Double_t charge, Double_t step, const Double_t *vect, Double_t *vout);
+  static void ExtrapOneStepHelix3(Double_t field, Double_t step, const Double_t *vect, Double_t *vout);
   
   ClassDef(AliMUONTrackExtrap, 0) // Tools for track extrapolation in ALICE dimuon spectrometer
 };

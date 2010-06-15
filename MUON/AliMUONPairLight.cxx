@@ -327,7 +327,7 @@ void AliMUONPairLight::SetMuons(AliMUONTrackLight mu0, AliMUONTrackLight mu1){
 } 
 
 //====================================
-void AliMUONPairLight::PrintInfo(Option_t* opt){
+void AliMUONPairLight::PrintInfo(const Option_t* opt){
   /// print information about muon pairs
   /// Options: 
   /// - "H" single muons' decay histories

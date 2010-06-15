@@ -295,7 +295,7 @@ void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber
 
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
+void AliMUONLocalTriggerBoard::Pattern(const Option_t *option) const
 {
 /// print bit pattern
 ///
@@ -308,7 +308,7 @@ void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
 
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::BP(Option_t *option) const
+void AliMUONLocalTriggerBoard::BP(const Option_t *option) const
 {
 /// Respect the old printout format
   

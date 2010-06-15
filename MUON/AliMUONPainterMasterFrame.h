@@ -50,7 +50,7 @@ public:
 
   void Update();
 
-  void AttributesChanged(AliMUONAttPainter* newValues);
+  void AttributesChanged(const AliMUONAttPainter* newValues);
   
   void SaveAs(const char* filename = "", Option_t* option = "") const;
   

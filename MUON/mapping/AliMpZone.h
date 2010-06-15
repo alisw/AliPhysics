@@ -33,7 +33,7 @@ class AliMpZone : public TObject
     void AddSubZone(AliMpSubZone* subZone);
 
     // find methods
-    AliMpSubZone* FindSubZone(AliMpVMotif* motif) const;
+    AliMpSubZone* FindSubZone(const AliMpVMotif* motif) const;
     
     // set methods
     void SetPadDimensions(Double_t dx, Double_t dy);

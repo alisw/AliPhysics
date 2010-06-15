@@ -504,7 +504,7 @@ AliMUONPainterMasterFrame::UpdateNavigation()
 
 //_____________________________________________________________________________
 void
-AliMUONPainterMasterFrame::AttributesChanged(AliMUONAttPainter* newValues)
+AliMUONPainterMasterFrame::AttributesChanged(const AliMUONAttPainter* newValues)
 {
   /// Attributes changed (e.g. from cath0 to cath1 or bending to nonbending, etc...)
   

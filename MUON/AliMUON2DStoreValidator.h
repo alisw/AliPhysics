@@ -59,9 +59,9 @@ private:
   AliMUONCheckItem* GetDE(Int_t detElemId);
   AliMUONCheckItem* GetManu(Int_t detElemId, Int_t manuId);
   
-  static void ReportChamber(TList& list, AliMUONCheckItem& chamber);
-  static void ReportDE(TList& list, AliMUONCheckItem& de);
-  static void ReportManu(TList& list, AliMUONCheckItem& manu);
+  static void ReportChamber(TList& list, const AliMUONCheckItem& chamber);
+  static void ReportDE(TList& list, const AliMUONCheckItem& de);
+  static void ReportManu(TList& list, const AliMUONCheckItem& manu);
   
 private:
   TObjArray* fChambers; //!< Array of AliMUONCheckItem.

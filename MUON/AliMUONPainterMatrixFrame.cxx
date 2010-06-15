@@ -410,7 +410,7 @@ AliMUONPainterMatrixFrame::MouseEnter(AliMUONVPainter* painter)
 
 //_____________________________________________________________________________
 void
-AliMUONPainterMatrixFrame::MouseLeave(AliMUONVPainter* painter)
+AliMUONPainterMatrixFrame::MouseLeave(const AliMUONVPainter* painter)
 {
   /// Emit a signal to notify that mouse pointer is leaving a given painter
   

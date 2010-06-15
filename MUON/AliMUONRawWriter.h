@@ -35,7 +35,7 @@ class AliMUONRawWriter : public TObject
   virtual ~AliMUONRawWriter(); // Destructor
     
   // write raw data
-  Int_t Digits2Raw(AliMUONVDigitStore* digitStore, AliMUONVTriggerStore* triggerStore);
+  Int_t Digits2Raw(const AliMUONVDigitStore* digitStore, const AliMUONVTriggerStore* triggerStore);
   
   void SetScalersNumbers();
 

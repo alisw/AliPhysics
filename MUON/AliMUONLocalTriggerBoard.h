@@ -36,7 +36,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       virtual void     Setbit(Int_t strip, Int_t cathode, Int_t chamber);
       virtual void     SetbitM(Int_t strip, Int_t cathode, Int_t chamber);
 
-      virtual void     Pattern(Option_t *option = "X Y") const; // default option displays X then Y bp
+      virtual void     Pattern(const Option_t *option = "X Y") const; // default option displays X then Y bp
 
       virtual void     Reset();
       virtual void     ResetResponse();
@@ -143,7 +143,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     Resp(Option_t *option) const; ///< local trigger info before ("I") and after ("F") LUT
 
-      virtual void     BP(Option_t *option) const;   ///< display X/Y bp
+      virtual void     BP(const Option_t *option) const;   ///< display X/Y bp
 
    private:
       AliMpLocalBoard*  fMpLocalBoard; ///< pointer to the local board mapping 

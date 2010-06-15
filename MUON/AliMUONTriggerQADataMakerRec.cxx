@@ -1099,8 +1099,8 @@ UChar_t AliMUONTriggerQADataMakerRec::RawTriggerInGlobal2OutGlobal(UInt_t global
 }
 
 //____________________________________________________________________________ 
-void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(AliMUONVTriggerStore& inputTriggerStore,
-							   AliMUONVTriggerStore& recoTriggerStore)
+void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(const AliMUONVTriggerStore& inputTriggerStore,
+							   const AliMUONVTriggerStore& recoTriggerStore)
 {
   //
   /// Match data and reconstructed Local Trigger decision

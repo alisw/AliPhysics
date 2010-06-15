@@ -44,7 +44,7 @@ public:
   
   void DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader);
   
-  void DataMakerWasUnregistered(AliMUONVTrackerDataMaker* reader);
+  void DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* reader);
 
   void HistogramButtonClicked();
 

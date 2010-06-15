@@ -1026,7 +1026,7 @@ void AliMUONTrackExtrap::CovP2Cov(const TMatrixD &param, TMatrixD &covP)
 }
 
  //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout)
+void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, const Double_t *vect, Double_t *vout)
 {
 /// <pre>
 ///    ******************************************************************
@@ -1145,7 +1145,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Doub
 }
 
  //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout)
+void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, const Double_t *vect, Double_t *vout)
 {
 /// <pre>
 ///	******************************************************************
@@ -1223,7 +1223,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Doub
 }
 
  //__________________________________________________________________________
-Bool_t AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step, Double_t* vect, Double_t* vout)
+Bool_t AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step, const Double_t* vect, Double_t* vout)
 {
 /// <pre>
 ///	******************************************************************

@@ -128,7 +128,7 @@ AliMUONVQADataMakerRec::GetRawsData(Int_t index) const
 
 //_____________________________________________________________________________
 void 
-AliMUONVQADataMakerRec::ResetDetector(TObjArray* list)
+AliMUONVQADataMakerRec::ResetDetector(const TObjArray* list)
 {
   /// Reset all histograms found in list, that match either trigger or tracker
 

@@ -370,7 +370,7 @@ void AliMUONTriggerElectronics::DumpOS()
 }
 
 //___________________________________________
-void AliMUONTriggerElectronics::Scan(Option_t *option)
+void AliMUONTriggerElectronics::Scan(const Option_t *option)
 {
   /// SCAN
   ///
@@ -718,7 +718,7 @@ void AliMUONTriggerElectronics::Digits2Trigger(const AliMUONVDigitStore& digitSt
 }
 
 //___________________________________________
-void AliMUONTriggerElectronics::Feed(AliMUONVTriggerStore& triggerStore)
+void AliMUONTriggerElectronics::Feed(const AliMUONVTriggerStore& triggerStore)
 {
   //
   /// Fill inputs from reconstructed local trigger store

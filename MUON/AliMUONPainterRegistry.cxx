@@ -118,7 +118,7 @@ AliMUONPainterRegistry::PainterMatrix(Int_t i) const
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWantToShow(AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWantToShow(const AliMUONPainterMatrix* group)
 {
   /// A given paintermatrix want to appear on screen
   Long_t param[] = { (Long_t)group };
@@ -172,7 +172,7 @@ AliMUONPainterRegistry::AddToHistory(AliMUONPainterMatrix* group)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWasRegistered(AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWasRegistered(const AliMUONPainterMatrix* group)
 {
   /// A new painter matrix was registered
   Long_t param[] = { (Long_t)group };
@@ -182,7 +182,7 @@ AliMUONPainterRegistry::PainterMatrixWasRegistered(AliMUONPainterMatrix* group)
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterRegistry::PainterMatrixWasUnregistered(AliMUONPainterMatrix* group)
+AliMUONPainterRegistry::PainterMatrixWasUnregistered(const AliMUONPainterMatrix* group)
 {
   /// A painter matrix was unregistered
   Long_t param[] = { (Long_t)group };

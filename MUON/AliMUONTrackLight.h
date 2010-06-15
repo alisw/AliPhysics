@@ -102,7 +102,7 @@ class AliMUONTrackLight : public TObject {
   Bool_t IsMotherAResonance(Int_t index=0) const;
   /// Return flag for oscillation 
   Bool_t GetOscillation() const {return fOscillation;}
-  virtual void PrintInfo(Option_t* opt); //"H" muon's decay history
+  virtual void PrintInfo(const Option_t* opt); //"H" muon's decay history
   //"K" muon kinematics
   //"A" all variables
   Int_t GetParentFlavour(Int_t idParent=0) const;

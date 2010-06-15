@@ -68,7 +68,7 @@ public:
   
   /// Return the trigger track from the store matched with the given track (or 0x0)
   static AliMUONTriggerTrack* FindCompatibleTrack(AliMUONTriggerTrack &track,
-                                                  AliMUONVTriggerTrackStore &triggerTrackStore,
+                                                  const AliMUONVTriggerTrackStore &triggerTrackStore,
                                                   Double_t sigmaCut = 10.);
   
 private:

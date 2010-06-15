@@ -52,7 +52,7 @@ public:
     
   static TGButton* FindButtonByName(const TGButtonGroup& bg, const TString& name);
 
-  static TGButton* FindButtonByUserData(const TGButtonGroup& bg, void* userData);
+  static TGButton* FindButtonByUserData(const TGButtonGroup& bg, const void* userData);
 
   static TGButton* FindDownButton(const TGButtonGroup& bg);
   
@@ -64,7 +64,7 @@ public:
   
   static void Unselect(TGButtonGroup& bg, const TString& buttonName, Bool_t emit=kFALSE);
     
-  static void RemoveButton(TGButtonGroup& bg, TGButton* button);
+  static void RemoveButton(TGButtonGroup& bg, const TGButton* button);
   
   ClassDef(AliMUONPainterInterfaceHelper,1) // Helper class for TGButtonGroup manipulation
 };

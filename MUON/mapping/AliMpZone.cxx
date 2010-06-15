@@ -77,7 +77,7 @@ void AliMpZone::AddSubZone(AliMpSubZone* subZone)
 }  
   
 //_____________________________________________________________________________
-AliMpSubZone* AliMpZone::FindSubZone(AliMpVMotif* motif) const
+AliMpSubZone* AliMpZone::FindSubZone(const AliMpVMotif* motif) const
 {
 /// Find a subzone with a specified motif;
 /// return 0 if not found.

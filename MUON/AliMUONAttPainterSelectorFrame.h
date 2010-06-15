@@ -29,7 +29,7 @@ public:
   
   void Update(const AliMUONAttPainter& att);
   
-  void Clicked(AliMUONAttPainter* newValues); // *SIGNAL*
+  void Clicked(const AliMUONAttPainter* newValues); // *SIGNAL*
   
   void CathodeClicked(Int_t buttonId);
   

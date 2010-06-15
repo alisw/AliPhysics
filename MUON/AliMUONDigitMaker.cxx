@@ -386,7 +386,7 @@ AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
 //____________________________________________________________________
 Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard, 
-                                       TArrayS* xyPattern,
+                                       const TArrayS* xyPattern,
                                        AliMUONVDigitStore& digitStore) const
 {
   /// make digits for trigger from pattern, and add them to digitStore

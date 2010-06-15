@@ -784,7 +784,7 @@ AliMUONTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTrack &track, AliMUON
 
 
 //_____________________________________________________________________________
-AliMUONTriggerTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTriggerTrack &track, AliMUONVTriggerTrackStore &triggerTrackStore,
+AliMUONTriggerTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTriggerTrack &track, const AliMUONVTriggerTrackStore &triggerTrackStore,
                                                            Double_t sigmaCut)
 {
   /// Return the trigger track from the store matched with the given track (or 0x0).

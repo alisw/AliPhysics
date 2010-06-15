@@ -148,8 +148,8 @@ void  AliMUONRawWriter::LocalWordPacking(UInt_t& word, UInt_t locId, UInt_t locD
 }
 
 //____________________________________________________________________
-Int_t AliMUONRawWriter::Digits2Raw(AliMUONVDigitStore* digitStore,
-                                   AliMUONVTriggerStore* triggerStore)
+Int_t AliMUONRawWriter::Digits2Raw(const AliMUONVDigitStore* digitStore,
+                                   const AliMUONVTriggerStore* triggerStore)
 {
   /// convert digits of the current event to raw data
 

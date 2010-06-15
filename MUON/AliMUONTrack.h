@@ -91,7 +91,7 @@ class AliMUONTrack : public TObject
   Int_t    GetNDF() const;
   Double_t GetNormalizedChi2() const;
 
-  Int_t  FindCompatibleClusters(AliMUONTrack &track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
+  Int_t  FindCompatibleClusters(const AliMUONTrack &track, Double_t sigma2Cut, Bool_t compatibleCluster[10]) const;
   Bool_t Match(AliMUONTrack &track, Double_t sigma2Cut, Int_t &nMatchClusters) const;
   
   /// return pointer to track parameters at vertex (can be 0x0)
@@ -183,7 +183,7 @@ class AliMUONTrack : public TObject
   
   // methods
   Bool_t ComputeClusterWeights(TMatrixD& clusterWeightsNB, TMatrixD& clusterWeightsB,
-			       TMatrixD* mcsCovariances = 0, AliMUONVCluster* discardedCluster = 0) const;
+			       TMatrixD* mcsCovariances = 0, const AliMUONVCluster* discardedCluster = 0) const;
   void   ComputeMCSCovariances(TMatrixD& mcsCovariances) const;
   
   

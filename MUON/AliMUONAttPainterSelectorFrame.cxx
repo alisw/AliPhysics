@@ -167,7 +167,7 @@ AliMUONAttPainterSelectorFrame::ViewClicked(Int_t buttonId)
 
 //_____________________________________________________________________________
 void
-AliMUONAttPainterSelectorFrame::Clicked(AliMUONAttPainter* newValues)
+AliMUONAttPainterSelectorFrame::Clicked(const AliMUONAttPainter* newValues)
 {
   /// Emit a signal
   

@@ -864,7 +864,7 @@ AliMUONTrackerData::Channel(Int_t detElemId, Int_t manuId,
 //_____________________________________________________________________________
 AliMUONVCalibParam* 
 AliMUONTrackerData::ChannelParam(Int_t detElemId, Int_t manuId,
-                                 AliMUONVCalibParam* external) const
+                                 const AliMUONVCalibParam* external) const
 {
   /// Return (if it exist) the VCalibParam for a given manu
   

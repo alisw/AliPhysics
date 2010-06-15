@@ -72,7 +72,7 @@ public:
   TLorentzVector GetPGen(){return fMu0.GetPGen()+fMu1.GetPGen();}
   Double_t GetOpeningAngle(); 
   Bool_t IsDimuonFromCorrPiK();
-  virtual void PrintInfo(Option_t* opt);//"H" single muons' decay histories
+  virtual void PrintInfo(const Option_t* opt);//"H" single muons' decay histories
                                            //"K" dimuon kinematics
                                            //"F" dimuon flags
                                            //"A" all variables

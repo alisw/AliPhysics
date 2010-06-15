@@ -826,7 +826,7 @@ Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD* mcsCovariances)
 
   //__________________________________________________________________________
 Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD& clusterWeightsNB, TMatrixD& clusterWeightsB,
-					   TMatrixD* mcsCovariances, AliMUONVCluster* discardedCluster) const
+					   TMatrixD* mcsCovariances, const AliMUONVCluster* discardedCluster) const
 {
   /// Compute the weight matrices, in non bending and bending direction,
   /// of the other attached clusters assuming the discarded one does not exist
@@ -1067,7 +1067,7 @@ Double_t AliMUONTrack::GetNormalizedChi2() const
 }
 
   //__________________________________________________________________________
-Int_t AliMUONTrack::FindCompatibleClusters(AliMUONTrack &track, Double_t sigmaCut, Bool_t compatibleCluster[10]) const
+Int_t AliMUONTrack::FindCompatibleClusters(const AliMUONTrack &track, Double_t sigmaCut, Bool_t compatibleCluster[10]) const
 {
   /// Try to match clusters from this track with clusters from the given track within the provided sigma cut:
   /// - Fill the array compatibleCluster[iCh] with kTRUE if a compatible cluster has been found in chamber iCh.

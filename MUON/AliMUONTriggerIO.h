@@ -58,7 +58,7 @@ public:
   Bool_t WriteConfig(const char* localFile,
 		    const char* regionalFile,
 		    const char* globalFile,
-		    AliMUONVStore* localMasks,
+		    const AliMUONVStore* localMasks,
                     AliMUONRegionalTriggerConfig* regionalConfig,
                     AliMUONGlobalCrateConfig* globalConfig) const;
 
@@ -73,7 +73,7 @@ public:
 
   Int_t  ReadLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
   
-  Bool_t WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
+  Bool_t WriteLocalMasks(const char* localFile, const AliMUONVStore& localMasks) const;
 
   void   ReadLocalLUT(AliMUONTriggerLut& lut, Int_t localBoardId, FILE* flut);
   

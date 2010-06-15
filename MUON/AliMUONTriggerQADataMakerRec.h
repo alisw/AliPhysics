@@ -60,7 +60,7 @@ private:
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);
   UChar_t RawTriggerInGlobal2OutGlobal(UInt_t globalInput[4]);
-  void RawTriggerMatchOutLocal(AliMUONVTriggerStore& inputTriggerStore, AliMUONVTriggerStore& recoTriggerStore);
+  void RawTriggerMatchOutLocal(const AliMUONVTriggerStore& inputTriggerStore, const AliMUONVTriggerStore& recoTriggerStore);
   //void RawTriggerMatchOutLocalInRegional();
   void RawTriggerMatchOutGlobal(AliMUONGlobalTrigger& inputLocalTrigger,
 				AliMUONGlobalTrigger& recoGlobalTrigger,

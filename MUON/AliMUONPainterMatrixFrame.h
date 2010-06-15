@@ -49,7 +49,7 @@ public:
 
   void MouseMotion(AliMUONVPainter* painter, Double_t* position); // *SIGNAL*
 
-  void MouseLeave(AliMUONVPainter* painter); // *SIGNAL*
+  void MouseLeave(const AliMUONVPainter* painter); // *SIGNAL*
   
   void ResponderButtonWasClicked(Int_t id); 
 

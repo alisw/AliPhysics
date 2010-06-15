@@ -141,7 +141,7 @@ private:
   AliMUONVCalibParam* CreateChamberParam(Int_t chamberId) const;
   
   AliMUONVCalibParam* ChannelParam(Int_t detElemId, Int_t manuId,
-                                   AliMUONVCalibParam* external=0x0) const;
+                                   const AliMUONVCalibParam* external=0x0) const;
 
   AliMUONVCalibParam* DetectionElementParam(Int_t detElemId, Bool_t create=kFALSE) const;
 

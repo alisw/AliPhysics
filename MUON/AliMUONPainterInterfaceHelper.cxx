@@ -199,7 +199,7 @@ AliMUONPainterInterfaceHelper::FindButtonByName(const TGButtonGroup& bg,
 //_____________________________________________________________________________
 TGButton* 
 AliMUONPainterInterfaceHelper::FindButtonByUserData(const TGButtonGroup& bg, 
-                                                    void* userData)
+                                                    const void* userData)
 {
   /// Find a button by userData
   
@@ -333,7 +333,7 @@ AliMUONPainterInterfaceHelper::Unselect(TGButtonGroup& bg,
 //_____________________________________________________________________________
 void
 AliMUONPainterInterfaceHelper::RemoveButton(TGButtonGroup& bg,
-                                            TGButton* button)
+                                            const TGButton* button)
 {
   /// Remove a button
   

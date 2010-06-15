@@ -43,11 +43,11 @@ public:
   
   void AddToHistory(AliMUONPainterMatrix* group);
     
-  void PainterMatrixWasRegistered(AliMUONPainterMatrix* group); // *SIGNAL*
+  void PainterMatrixWasRegistered(const AliMUONPainterMatrix* group); // *SIGNAL*
   
-  void PainterMatrixWasUnregistered(AliMUONPainterMatrix* group); // *SIGNAL*
+  void PainterMatrixWasUnregistered(const AliMUONPainterMatrix* group); // *SIGNAL*
   
-  void PainterMatrixWantToShow(AliMUONPainterMatrix* group); // *SIGNAL*
+  void PainterMatrixWantToShow(const AliMUONPainterMatrix* group); // *SIGNAL*
   
   void Print(Option_t* opt) const;
   

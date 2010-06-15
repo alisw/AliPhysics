@@ -36,13 +36,13 @@ public:
 
   AliMUONVTrackerData* InteractiveReadOutConfig() const;
   
-  void DataSourceWasRegistered(AliMUONVTrackerData* data); // *SIGNAL*
+  void DataSourceWasRegistered(const AliMUONVTrackerData* data); // *SIGNAL*
   
-  void DataSourceWasUnregistered(AliMUONVTrackerData* data); // *SIGNAL*
+  void DataSourceWasUnregistered(const AliMUONVTrackerData* data); // *SIGNAL*
 
-  void DataMakerWasRegistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
+  void DataMakerWasRegistered(const AliMUONVTrackerDataMaker* reader); // *SIGNAL*
   
-  void DataMakerWasUnregistered(AliMUONVTrackerDataMaker* reader); // *SIGNAL*
+  void DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* reader); // *SIGNAL*
     
   static AliMUONPainterDataRegistry* Instance();
   

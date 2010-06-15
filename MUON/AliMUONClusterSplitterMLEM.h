@@ -53,22 +53,22 @@ public:
   
   Int_t Fit(const AliMUONCluster& cluster,
             Int_t iSimple, Int_t nfit,
-            Int_t *clustFit, TObjArray **clusters, 
+            const Int_t *clustFit, TObjArray **clusters, 
             Double_t *parOk, TObjArray& clusterList, TH2 *mlem);
     
   void Merge(const AliMUONCluster& cluster,
              Int_t nForFit, Int_t nCoupled, 
-             Int_t *clustNumb, Int_t *clustFit, 
+             const Int_t *clustNumb, const Int_t *clustFit, 
              TObjArray **clusters, 
              TMatrixD& aijcluclu, TMatrixD& aijclupad);
     
-  Double_t MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, 
-                         TMatrixD& aijcluclu, Int_t *minGroup);
+  Double_t MinGroupCoupl(Int_t nCoupled, const Int_t *clustNumb, 
+                         const TMatrixD& aijcluclu, Int_t *minGroup);
       
   Int_t SelectPad(const AliMUONCluster& cluster,
                   Int_t nCoupled, Int_t nForFit, 
-                  Int_t *clustNumb, Int_t *clustFit, 
-                  TMatrixD& aijclupad);
+                  const Int_t *clustNumb, const Int_t *clustFit, 
+                  const TMatrixD& aijclupad);
   
   void Split(const AliMUONCluster& cluster,
                TH2* mlem,

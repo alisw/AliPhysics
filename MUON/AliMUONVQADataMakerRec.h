@@ -76,7 +76,7 @@ public:
   
 protected:
 
-  void ResetDetector(TObjArray* list);
+  void ResetDetector(const TObjArray* list);
   
   Int_t RunNumber() const;
   

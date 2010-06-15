@@ -198,7 +198,7 @@ AliMUON2DStoreValidator::AddMissingManu(Int_t detElemId, Int_t manuId)
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::ReportManu(TList& lines, AliMUONCheckItem& manu)
+AliMUON2DStoreValidator::ReportManu(TList& lines, const AliMUONCheckItem& manu)
 {  
   /// Report list of missing channels from this manu
   
@@ -215,7 +215,7 @@ AliMUON2DStoreValidator::ReportManu(TList& lines, AliMUONCheckItem& manu)
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::ReportDE(TList& lines, AliMUONCheckItem& de)
+AliMUON2DStoreValidator::ReportDE(TList& lines, const AliMUONCheckItem& de)
 {  
   /// Report list of missing manus from this de
   AliMUONCheckItem* manu(0x0);
@@ -240,7 +240,7 @@ AliMUON2DStoreValidator::ReportDE(TList& lines, AliMUONCheckItem& de)
 
 //_____________________________________________________________________________
 void
-AliMUON2DStoreValidator::ReportChamber(TList& lines, AliMUONCheckItem& chamber)
+AliMUON2DStoreValidator::ReportChamber(TList& lines, const AliMUONCheckItem& chamber)
 {  
   /// Report list of missing de from this chamber
   

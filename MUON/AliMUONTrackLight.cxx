@@ -315,7 +315,7 @@ Int_t AliMUONTrackLight::GetParentFlavour(Int_t idParent) const {
 }
 
 //====================================
-void AliMUONTrackLight::PrintInfo(Option_t* opt){
+void AliMUONTrackLight::PrintInfo(const Option_t* opt){
   /// prints information about the track: 
   /// - "H" muon's decay history
   /// - "K" muon kinematics

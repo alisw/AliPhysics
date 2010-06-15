@@ -790,7 +790,7 @@ AliMUONPainterDataSourceFrame::DataMakerWasRegistered(AliMUONVTrackerDataMaker* 
 
 //_____________________________________________________________________________
 void 
-AliMUONPainterDataSourceFrame::DataMakerWasUnregistered(AliMUONVTrackerDataMaker* maker)
+AliMUONPainterDataSourceFrame::DataMakerWasUnregistered(const AliMUONVTrackerDataMaker* maker)
 {
   /// Update ourselves as a data reader was deleted
   
