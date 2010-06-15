@@ -441,10 +441,12 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
 
 
   if(compat && TPCinfo<0){
+   Double_t sig0tmp=fnSigma[0];
    SetSigma(0,3.);
    if(specie==2 && IsPionRaw(track,"TPC")) TPCinfo=0;
    if(specie==3 && IsKaonRaw(track,"TPC")) TPCinfo=0;
    if(specie==4 && IsProtonRaw(track,"TPC")) TPCinfo=0;
+   SetSigma(0,sig0tmp);
   }
 
  }
