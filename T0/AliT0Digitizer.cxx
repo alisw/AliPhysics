@@ -313,7 +313,8 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  TGraph* gr1 = ((TGraph*)fAmpQTC.At(i));
 	  qtCh = gr1->Eval(qt);
 	  fADC0->AddAt(0,i);
-	  fADC->AddAt(qtCh,i);
+	  if(qtCh)
+	    fADC->AddAt(qtCh,i);
 	  //	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
 	  sumMult += Int_t (qtCh/sumMultCoeff)  ;
 	 
