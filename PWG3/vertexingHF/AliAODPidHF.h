@@ -56,18 +56,19 @@ class AliAODPidHF : public AliAODPid{
  void BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob) const;
 
  private:
- Int_t fnNSigma;
- Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS 
+
+ Int_t fnNSigma; // size of the nsigma array
+ Double_t *fnSigma; //[fnNSigma] sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS 
  Double_t fTOFSigma; // TOF precision 
- Int_t fnPriors;
- Double_t *fPriors; // [fnPriors], set of priors
- Int_t fnPLimit;
- Double_t *fPLimit; // [fnPLimit], limit of p intervals for asimmetric PID: fPLimit<p[0], fPLimit[0]<p<fPLimit[1], p>fPLimit[1]
+ Int_t fnPriors;    // size of the priors array
+ Double_t *fPriors; //[fnPriors] set of priors
+ Int_t fnPLimit;  // size of the plimit array
+ Double_t *fPLimit; //[fnPLimit] limit of p intervals for asimmetric PID: fPLimit<p[0], fPLimit[0]<p<fPLimit[1], p>fPLimit[1]
  Bool_t fAsym; // asimmetric PID required
  
 
 
- ClassDef(AliAODPidHF,3) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,4) // AliAODPid for heavy flavor PID
 
 };
 
