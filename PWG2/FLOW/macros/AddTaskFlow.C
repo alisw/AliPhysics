@@ -8,10 +8,10 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 // Define the range for eta subevents (for SP method)
-Double_t minA = -0.9;
+Double_t minA = -2.0;
 Double_t maxA = -0.1;
 Double_t minB = 0.1;
-Double_t maxB = 0.9;
+Double_t maxB = 2.0;
 
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
@@ -43,6 +43,10 @@ const Int_t multmax = 10000;     //used for AliFlowEventSimple (to set the centr
 
 
 //----------For RP selection----------
+// Use Global tracks ("Global") or SPD tracklets ("Tracklet") for the RP selection
+const TString rptype = "Global";
+//const TString rptype = "Tracklet";
+
 //KINEMATICS (on generated and reconstructed tracks)
 Bool_t UseKineforRP =  kTRUE;
 const Double_t ptminRP = 0.0;
@@ -103,8 +107,8 @@ const Int_t  minTrackrefsMuonRP = 0;
 Bool_t UseKineforPOI = kTRUE;
 const Double_t ptminPOI = 0.0;
 const Double_t ptmaxPOI = 10.0;
-const Double_t etaminPOI  = -0.9;
-const Double_t etamaxPOI  = 0.9;
+const Double_t etaminPOI  = -0.5;
+const Double_t etamaxPOI  = 0.5;
 const Int_t    chargePOI = 1;  //not used
 const Bool_t   isChargedPOI = kTRUE;
 
@@ -309,6 +313,7 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
       taskFE->SetEllipticFlowValue(ellipticFlow); }    //TEST
     else {taskFE = new AliAnalysisTaskFlowEvent("TaskFlowEvent",kTRUE); }
     taskFE->SetAnalysisType(type);
+    taskFE->SetRPType(rptype); //only for ESD
     if (UseMultCut) {
       taskFE->SetMinMult(multmin);
       taskFE->SetMaxMult(multmax);
@@ -693,15 +698,6 @@ AliAnalysisTaskFlowEvent* AddTaskFlow(TString type, Bool_t* METHODS, Bool_t QA, 
     taskGFC->SetUsePhiWeights(WEIGHTS[0]); 
     taskGFC->SetUsePtWeights(WEIGHTS[1]);
     taskGFC->SetUseEtaWeights(WEIGHTS[2]); 
-    // calculation vs multiplicity:
-    taskGFC->SetCalculateVsMultiplicity(kFALSE);   
-    taskGFC->SetnBinsMult(10000);
-    taskGFC->SetMinMult(0);
-    taskGFC->SetMaxMult(10000);   
-    // tuning of interpolating parameters:
-    taskGFC->SetTuneParameters(kFALSE);
-    Double_t r0[10] = {1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7}; // up to 10 values allowed
-    for(Int_t r=0;r<10;r++) {taskGFC->SetTuningR0(r0[r],r);}
     mgr->AddTask(taskGFC);
   }
   if (QC){

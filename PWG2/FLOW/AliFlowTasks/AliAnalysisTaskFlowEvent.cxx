@@ -72,6 +72,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   AliAnalysisTaskSE(),
   //  fOutputFile(NULL),
   fAnalysisType("ESD"),
+  fRPType("Global"),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
@@ -102,6 +103,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, 
   AliAnalysisTaskSE(name),
   //  fOutputFile(NULL),
   fAnalysisType("ESD"),
+  fRPType("Global"),
   fCFManager1(NULL),
   fCFManager2(NULL),
   fQAInt(NULL),
@@ -176,6 +178,9 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliMCEvent*  mcEvent = MCEvent();                              // from TaskSE
   AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(InputEvent()); // from TaskSE
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
+  AliMultiplicity* myTracklets = NULL;
+
+  /*test*/ cout<<"(AliAnalysisTaskFlowEvent::UserExec)fRPType = "<<fRPType<<endl;
 
   // Make the FlowEvent for MC input
   if (fAnalysisType == "MC")
@@ -206,6 +211,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     //make event
     flowEvent = new AliFlowEvent(mcEvent,fCFManager1,fCFManager2);
   }
+
   // Make the FlowEvent for ESD input
   else if (fAnalysisType == "ESD")
   {
@@ -230,8 +236,16 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
 
     //make event
-    flowEvent = new AliFlowEvent(myESD,fCFManager1,fCFManager2);
+    if (fRPType == "Global") {
+      flowEvent = new AliFlowEvent(myESD,fCFManager1,fCFManager2);
+    }
+    else if (fRPType == "Tracklet"){
+      flowEvent = new AliFlowEvent(myESD,myTracklets,fCFManager2);
+    }
+    // if monte carlo event get reaction plane from monte carlo (depends on generator)
+    if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
   }
+
   // Make the FlowEvent for ESD input combined with MC info
   else if (fAnalysisType == "ESDMCkineESD" || fAnalysisType == "ESDMCkineMC" )
   {
@@ -292,40 +306,11 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     AliWarning("FlowEvent cut on multiplicity"); return;
   }
 
-  //tag subevents
+  //tag subEvents
   flowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);
 
-  ////TODO afterburner
-  //if (fbAfterburnerOn && fMyTRandom3) {
-  //  // set the new value of the values using a after burner
-  //  cout << "settings for afterburner in TaskFlowEvent.cxx:" << endl;
-  //  cout << "fCount = " << fCount << endl;
-  //  cout << "fNoOfLoops = " << fNoOfLoops << endl;
-  //  cout << "fEllipticFlowValue = " << fEllipticFlowValue << endl;
-  //  cout << "fSigmaEllipticFlowValue = " << fSigmaEllipticFlowValue << endl;
-  //  cout << "fMultiplicityOflowEvent = " << fMultiplicityOflowEvent << endl;
-  //  cout << "fSigmaMultiplicityOflowEvent = " << fSigmaMultiplicityOflowEvent << endl;
-  //  Double_t xRPangle;
-  //  if (!mcEvent) { xRPangle = TMath::TwoPi()*(fMyTRandom3->Rndm()); }
-  //  else { xRPangle = fRP; }
-  //  Double_t xNewFlowValue = fMyTRandom3->Gaus(fEllipticFlowValue,fSigmaEllipticFlowValue);
-  //  Int_t nNewMultOflowEvent =  TMath::Nint(fMyTRandom3->Gaus(fMultiplicityOflowEvent,fSigmaMultiplicityOflowEvent));
-  //  cout << "xRPangle = " << xRPangle << endl;
-  //  cout << "xNewFlowValue = " << xNewFlowValue << endl;
-  //  cout << "nNewMultOflowEvent = " << nNewMultOflowEvent << endl;
-  //  cout << "settings for after burner" << endl;
-  //  flowEventMaker->SetMCReactionPlaneAngle(xRPangle);
-  //  flowEventMaker->SetNoOfLoops(fNoOfLoops);
-  //  flowEventMaker->SetEllipticFlowValue(xNewFlowValue);
-  //  flowEventMaker->SetMultiplicityOflowEvent(nNewMultOflowEvent);
-  //  //end settings afterburner
-  //}
-
-  // if monte carlo event get reaction plane from monte carlo (depends on generator)
-  if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
-
   //fListHistos->Print();
-  //  fOutputFile->WriteObject(flowEvent,"myFlowEventSimple");
+  //fOutputFile->WriteObject(flowEvent,"myFlowEventSimple");
   PostData(1,flowEvent);
   if (fQA)
   {
