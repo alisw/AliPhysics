@@ -57,10 +57,14 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void SetMinUpDownCutSigma(Float_t th)    {   fMinUpDownCutSigma=th;}  // minimal amplitude up-down - TRF 
   //
   Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
+  Int_t    GetSeedGapPrim()        const  { return fSeedGapPrim;} 
+  Int_t    GetSeedGapSec()         const  { return fSeedGapSec;} 
   void     SetDoKinks(Bool_t on)   { fBKinkFinder=on; }
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Double_t GetKinkAngleCutChi2(Int_t index) const {return fKinkAngleCutChi2[index];}
   void     SetKinkAngleCutChi2(Int_t index,Double_t value) {fKinkAngleCutChi2[index]=value;}
+  void     SetSeedGapPrim(Int_t seedGapPrim)         { fSeedGapPrim = seedGapPrim;} 
+  void     SetSeedGapSec(Int_t seedGapSec)          { fSeedGapSec  = seedGapSec;} 
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
   //
@@ -141,6 +145,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   fBKinkFinder;       // do kink finder reconstruction
   Double_t fKinkAngleCutChi2[2];   // angular cut for kinks
   Int_t    fLastSeedRowSec;     // Most Inner Row to make seeding for secondaries
+  Int_t    fSeedGapPrim;   // seeding gap for primary tracks
+  Int_t    fSeedGapSec;   // seeding gap for secondary tracks
+
   //
   // Correction switches
   //
@@ -171,7 +178,7 @@ public:
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 10)
+  ClassDef(AliTPCRecoParam, 11)
 };
 
 

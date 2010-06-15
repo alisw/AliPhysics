@@ -6309,6 +6309,9 @@ TObjArray * AliTPCtrackerMI::Tracking()
 
   TObjArray * seeds = new TObjArray;
   TObjArray * arr=0;
+  Int_t fLastSeedRowSec=AliTPCReconstructor::GetRecoParam()->GetLastSeedRowSec();
+  Int_t gapPrim = AliTPCReconstructor::GetRecoParam()->GetSeedGapPrim();
+  Int_t gapSec = AliTPCReconstructor::GetRecoParam()->GetSeedGapSec();
   
   Int_t gap =20;
   Float_t cuts[4];
@@ -6322,7 +6325,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
   //  
   //find primaries  
   cuts[0]=0.0066;
-  for (Int_t delta = 0; delta<18; delta+=6){
+  for (Int_t delta = 0; delta<18; delta+=gapPrim){
     //
     cuts[0]=0.0070;
     cuts[1] = 1.5;
@@ -6347,7 +6350,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
 
   //find primaries  
   cuts[0]=0.0077;
-  for (Int_t delta = 20; delta<120; delta+=10){
+  for (Int_t delta = 20; delta<120; delta+=gapPrim){
     //
     // seed high pt tracks
     cuts[0]=0.0060;
@@ -6400,9 +6403,22 @@ TObjArray * AliTPCtrackerMI::Tracking()
   SumTracks(seeds,arr);   
   SignClusters(seeds,fnumber,fdensity);   
   //
+  arr = Tracking(4,nup-5,nup-5-gap,cuts,-1);
+  SumTracks(seeds,arr);   
+  SignClusters(seeds,fnumber,fdensity);   
+  //
+  arr = Tracking(4,nup-7,nup-7-gap,cuts,-1);
+  SumTracks(seeds,arr);   
+  SignClusters(seeds,fnumber,fdensity);   
+  //
+  //
+  arr = Tracking(4,nup-9,nup-9-gap,cuts,-1);
+  SumTracks(seeds,arr);   
+  SignClusters(seeds,fnumber,fdensity);   
+  //
 
 
-  for (Int_t delta = 3; delta<30; delta+=5){
+  for (Int_t delta = 9; delta<30; delta+=gapSec){
     //
     cuts[0] = 0.3;
     cuts[1] = 1.5;
@@ -6425,10 +6441,9 @@ TObjArray * AliTPCtrackerMI::Tracking()
   fdensity = 2.;
   cuts[0]=0.0080;
 
-  Int_t fLastSeedRowSec=AliTPCReconstructor::GetRecoParam()->GetLastSeedRowSec();
 
   // find secondaries
-  for (Int_t delta = 30; delta<fLastSeedRowSec; delta+=10){
+  for (Int_t delta = 30; delta<fLastSeedRowSec; delta+=gapSec){
     //
     cuts[0] = 0.3;
     cuts[1] = 3.5;

@@ -83,6 +83,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMinUpDownCutSigma(8.),
   fMaxC(0.3),
   fBSpecialSeeding(kFALSE),
+  fSeedGapPrim(6),
+  fSeedGapSec(6),
   fBKinkFinder(kTRUE),
   fLastSeedRowSec(120),
   fUseFieldCorrection(2),      // use field correction
