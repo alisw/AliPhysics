@@ -896,6 +896,7 @@ AliMUONTrackerData::Clear(Option_t*)
   {
     fNofEventsPerDDL[i] = 0;
   }
+  fNevents = 0;
   NumberOfEventsChanged();
 }
 
