@@ -29,6 +29,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
  
   virtual ~AliAnalysisTaskSESignificance();
 
+  Bool_t CheckConsistency();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);

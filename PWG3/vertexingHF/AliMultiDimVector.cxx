@@ -21,7 +21,8 @@
 // and background events in bins of the cut values               //
 // Origin:       Elena Bruna (bruna@to.infn.it)                  //
 // Updated:      Sergey Senyukov (senyukov@to.infn.it)           //
-// Last updated: Francesco Prino (prino@to.infn.it)              //
+//               Francesco Prino (prino@to.infn.it)              //
+// Last Updated: Giacomo Ortona (ortona@to.infn.it)              //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
@@ -54,7 +55,18 @@ fIsIntegrated(0){
   for(Int_t i=0;i<fNVariables;i++){
     ntot*=nofcells[i];
     fNCutSteps[i]=nofcells[i];
-    if(loosecuts[i] <= tightcuts[i]){
+    if(loosecuts[i] == tightcuts[i]){
+      if(loosecuts[i]!=0){
+	printf("AliMultiDimVector::AliMultiDimVector: WARNING! same tight/loose variable for variable number %d. AliMultiDimVector with run with the following values: loose: %f; tight: %f\n",i,tightcuts[i]-0.1*tightcuts[i],tightcuts[i]);
+	fMinLimits[i]=tightcuts[i]-0.1*tightcuts[i];
+	fMaxLimits[i]=tightcuts[i];
+      }else{
+	fMinLimits[i]=0;
+	fMaxLimits[i]=0.0001;
+      }
+	fGreaterThan[i]=kTRUE;
+    }
+    if(loosecuts[i] < tightcuts[i]){
       fMinLimits[i]=loosecuts[i];
       fMaxLimits[i]=tightcuts[i];
       fGreaterThan[i]=kTRUE;
@@ -573,6 +585,28 @@ AliMultiDimVector* AliMultiDimVector:: ShrinkPtBins(Int_t firstBin, Int_t lastBi
     }
   }
   return shrinkedMV;
+}
+//_____________________________________________________________________________ 
+void AliMultiDimVector::SetNewLimits(Float_t* loose,Float_t* tight){
+  for(Int_t i=0;i<fNVariables;i++){
+    if(loose[i] < tight[i]){
+      fMinLimits[i]=loose[i];
+      fMaxLimits[i]=tight[i];
+      fGreaterThan[i]=kTRUE;
+    }else{
+      fMinLimits[i]=tight[i];
+      fMaxLimits[i]=loose[i];
+      fGreaterThan[i]=kFALSE;
+    }
+  }
+}
+//_____________________________________________________________________________ 
+void AliMultiDimVector::SwapLimits(Int_t ivar){
+  Float_t oldmin = fMinLimits[ivar];
+  fMinLimits[ivar] = fMaxLimits[ivar];
+  fMaxLimits[ivar] = oldmin;
+  if(fGreaterThan[ivar])fGreaterThan[ivar]=kFALSE;
+  else fGreaterThan[ivar]=kTRUE;
 }
 //_____________________________________________________________________________ 
 void AliMultiDimVector::PrintStatus(){
