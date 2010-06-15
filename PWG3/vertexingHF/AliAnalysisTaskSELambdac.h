@@ -50,7 +50,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Double_t GetPtBinLimit(Int_t ibin);
   Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC);
   Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC,Int_t *pdgs);
-  Bool_t IspiKpReal(AliAODRecoDecayHF3Prong *d,Int_t *pdgs);
+  Bool_t IspiKpReal(AliAODRecoDecayHF3Prong *d);
   Bool_t IspKpiReal(AliAODRecoDecayHF3Prong *d);
   Bool_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field);
   Bool_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field);
