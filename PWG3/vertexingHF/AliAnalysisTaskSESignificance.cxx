@@ -116,6 +116,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
    // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,TList::Class());
+  CheckConsistency();
 }
 
  //________________________________________________________________________
@@ -142,7 +143,47 @@ AliAnalysisTaskSESignificance::~AliAnalysisTaskSESignificance()
   } 
 */
   
-}  
+}
+//_________________________________________________________________
+Bool_t AliAnalysisTaskSESignificance::CheckConsistency(){
+
+  Bool_t result = kTRUE;
+
+  const Int_t nvars=fRDCuts->GetNVars();//ForOpt();
+  //Float_t *vars = new Float_t[nvars];
+  Bool_t *varsforopt = fRDCuts->GetVarsForOpt();
+  Bool_t *uppervars = fRDCuts->GetIsUpperCut();
+  TString *names = fRDCuts->GetVarNames();
+
+  for(Int_t i=0;i<fNPtBins;i++){
+    TString mdvname=Form("multiDimVectorPtBin%d",i);
+    Int_t ic=0;
+ 
+    for(Int_t ivar=0;ivar<nvars;ivar++){
+      if(varsforopt[ivar]){
+	Float_t min = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetMinLimit(ic);
+	Float_t max = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetMaxLimit(ic);
+	if(min==max){
+	  printf("AliAnalysisTaskSESignificance::CheckConsistency: ERROR! \n tight and loose cut for optimization variable number %d are the same in ptbin %d\n",ic,i);
+	  result = kFALSE;
+	}
+	Bool_t lowermdv = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGreaterThan(ic);
+	if(uppervars[ivar]&&lowermdv){
+	  printf("AliAnalysisTaskSESignificance::CheckConsistency: WARNING! %s is declared as uppercut, but as been given tighter cut larger then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n ",names[ivar].Data(),i);
+	  ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->SwapLimits(ic);
+	  result = kTRUE;
+	}
+	if(!uppervars[ivar]&&!lowermdv){
+	  printf("AliAnalysisTaskSESignificance::CheckConsistency: WARNING! %s is declared as lower cut, but as been given tighter cut smaller then loose cut in ptbin %d \n ---Task will use swapped Tight/Loose cuts \n",names[ivar].Data(),i);
+	  ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->SwapLimits(ic);
+	  result = kTRUE;
+	}
+	ic++;
+      }
+    }
+  }
+  return result;
+}
 //_________________________________________________________________
 void  AliAnalysisTaskSESignificance::SetMassLimits(Float_t range, Int_t pdg){
   Float_t mass=0;
@@ -423,7 +464,6 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       TString mdvname=Form("multiDimVectorPtBin%d",ptbin);
       ULong64_t *addresses = ((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetGlobalAddressesAboveCuts(vars,(Float_t)d->Pt(),nVals);
       if(fDebug>1)printf("nvals = %d\n",nVals);
-
       for(Int_t ivals=0;ivals<nVals;ivals++){
 	if(addresses[ivals]>=((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetNTotCells()){
 	  if (fDebug>1) printf("Overflow!!\n");

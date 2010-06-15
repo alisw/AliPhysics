@@ -12,7 +12,8 @@
 // in bins of cut variables                                      //
 // Origin:       Elena Bruna (bruna@to.infn.it)                  //
 // Updated:      Sergey Senyukov (senyukov@to.infn.it)           //
-// Last updated: Francesco Prino (prino@to.infn.it)              //
+//               Francesco Prino (prino@to.infn.it)              //
+// Last Updated: Giacomo Ortona (ortona@to.infn.it)              //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
@@ -75,10 +76,14 @@ class AliMultiDimVector :  public TNamed{
     else return 0x0;
   }
   ULong64_t* GetGlobalAddressesAboveCuts(const Float_t *values, Int_t ptbin, Int_t& nVals) const;
+  Bool_t    GetGreaterThan(Int_t iVar) const {return fGreaterThan[iVar];}
 
   void SetElement(ULong64_t globadd,Float_t val) {fVett[globadd]=val;}
   void SetElement(Int_t *ind, Int_t ptbin, Float_t val){
     ULong64_t elem=GetGlobalAddressFromIndices(ind,ptbin);
+    if(elem>fNTotCells){
+      printf("SetElement: indices %d %d %d  ptbin %d elem %d\n",ind[0],ind[1],ind[2],ptbin,(Int_t)elem);
+    }
     fVett[elem]=val;
   }
   void IncrementElement(Int_t *ind, Int_t ptbin){
@@ -112,14 +117,20 @@ class AliMultiDimVector :  public TNamed{
 
   void SuppressZeroBKGEffect(const AliMultiDimVector* BKG);
   AliMultiDimVector* ShrinkPtBins(Int_t firstBin, Int_t lastBin);
+
+  void SetNewLimits(Float_t* loose,Float_t* tight);
+  void SwapLimits(Int_t ilim);
+
+
   void PrintStatus();
 
  protected:
   void GetIntegrationLimits(Int_t iVar, Int_t iCell, Int_t& minbin, Int_t& maxbin) const;
   void GetFillRange(Int_t iVar, Int_t iCell, Int_t& minbin, Int_t& maxbin) const;
-  Bool_t    GetGreaterThan(Int_t iVar) const {return fGreaterThan[iVar];}
   Float_t   CountsAboveCell(ULong64_t globadd) const;
 
+  //void SetMinLimits(Int_t nvar, Float_t* minlim);
+  //void SetMaxLimits(Int_t nvar, Float_t* maxlim);
  private:
   static const Int_t fgkMaxNVariables=10;  // max. n. of selection variables
   static const Int_t fgkMaxNPtBins=10;     // max. n. of Pt bins
