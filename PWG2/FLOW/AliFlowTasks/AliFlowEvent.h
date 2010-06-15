@@ -49,7 +49,7 @@ public:
                 const AliCFManager* poiCFManager=NULL );  //use CF(2x)
   AliFlowEvent( const AliESDEvent* anInput,
                 const AliMultiplicity* anInputTracklets,
-                const AliCFManager* poiCFManager ){}
+                const AliCFManager* poiCFManager );
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
 

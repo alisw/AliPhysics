@@ -362,3 +362,73 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
   SetMCReactionPlaneAngle(anInputMc);
 }
 
+//-----------------------------------------------------------------------
+AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
+			                      const AliMultiplicity* anInputTracklets,
+			                      const AliCFManager* poiCFManager ):
+  AliFlowEventSimple(20)
+{
+
+  //Select the particles of interest from the ESD
+  Int_t iNumberOfInputTracks = anInput->GetNumberOfTracks() ;
+
+  //loop over tracks
+  for (Int_t itrkN=0; itrkN<iNumberOfInputTracks; itrkN++)
+    {
+      AliESDtrack* pParticle = anInput->GetTrack(itrkN);   //get input particle
+
+      //check if pParticle passes the cuts
+      Bool_t poiOK = kTRUE;
+      if (poiCFManager)
+	{
+	  poiOK = ( poiCFManager->CheckParticleCuts(AliCFManager::kPartRecCuts,pParticle) &&
+		    poiCFManager->CheckParticleCuts(AliCFManager::kPartSelCuts,pParticle));
+	}
+      if (!poiOK) continue;
+      
+      //make new AliFLowTrack
+      AliFlowTrack* pTrack = new AliFlowTrack();
+      pTrack->SetPt(pParticle->Pt() );
+      pTrack->SetEta(pParticle->Eta() );
+      pTrack->SetPhi(pParticle->Phi() );
+          
+      //marking the particles used for the particle of interest (POI) selection:
+      if(poiOK && poiCFManager)
+	{
+	  pTrack->SetForPOISelection(kTRUE);
+	  pTrack->SetSource(AliFlowTrack::kFromESD);
+	}
+
+      AddTrack(pTrack);
+    }//end of while (itrkN < iNumberOfInputTracks)
+
+  //Select the reference particles from the SPD tracklets
+  anInputTracklets = anInput->GetMultiplicity();
+  Int_t multSPD = anInputTracklets->GetNumberOfTracklets();
+
+  cout << "N tracklets: " << multSPD << endl; //for testing
+
+  //loop over tracklets
+  for (Int_t itracklet=0; itracklet<multSPD; ++itracklet) {
+    Float_t thetaTr= anInputTracklets->GetTheta(itracklet);
+    Float_t phiTr= anInputTracklets->GetPhi(itracklet);
+    // calculate eta
+    Float_t etaTr = -TMath::Log(TMath::Tan(thetaTr/2.));
+    
+    //make new AliFLowTrackSimple
+    AliFlowTrack* pTrack = new AliFlowTrack();
+    pTrack->SetPt(0.0);
+    pTrack->SetEta(etaTr);
+    pTrack->SetPhi(phiTr);
+    //marking the particles used for the reference particle (RP) selection:
+    fNumberOfRPs++;
+    pTrack->SetForRPSelection(kTRUE);
+    pTrack->SetSource(AliFlowTrack::kFromTracklet);
+
+    //Add the track to the flowevent
+    AddTrack(pTrack);
+  }
+
+}
+
+

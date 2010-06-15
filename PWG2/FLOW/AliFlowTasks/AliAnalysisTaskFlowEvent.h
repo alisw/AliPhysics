@@ -31,6 +31,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetAnalysisType(TString type) { this->fAnalysisType = type; }
   TString GetAnalysisType() const    { return this->fAnalysisType; }
 
+  void SetRPType(TString rptype) { this->fRPType = rptype; }
+  TString GetRPType() const    { return this->fRPType; }
+
   void    SetMinMult(Int_t multmin)    {this->fMinMult = multmin; }
   Int_t   GetMinMult() const           {return this->fMinMult; }
   void    SetMaxMult(Int_t multmax)    {this->fMaxMult = multmax; }
@@ -77,6 +80,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   //  AliESDEvent*  fESD;                   // ESD object
   //  AliAODEvent*  fAOD;                   // AOD object
   TString       fAnalysisType;          // can be MC, ESD or AOD
+  TString       fRPType;                // can be Global or Tracklet
   AliCFManager* fCFManager1;            // correction framework manager
   AliCFManager* fCFManager2;            // correction framework manager
   TList*        fQAInt;                 // QA histogram list
