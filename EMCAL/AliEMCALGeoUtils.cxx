@@ -382,6 +382,10 @@ Bool_t AliEMCALGeoUtils::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
 
   phi = TVector2::Phi_0_2pi(phi); // move phi to (0,2pi) boundaries
   for(i=0; i<6; i++) {
+	
+	//Check if it is not the complete geometry
+	if (i >= fEMCGeometry->GetNumberOfSuperModules()/2) return kFALSE;
+
     if(phi>=fPhiBoundariesOfSM[2*i] && phi<=fPhiBoundariesOfSM[2*i+1]) {
       nSupMod = 2*i;
       if(eta < 0.0) nSupMod++;
