@@ -36,6 +36,7 @@
 // ALICE Analysis Framework
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
 
 // ESD interface
 #include "AliESDEvent.h"
@@ -244,6 +245,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
     // if monte carlo event get reaction plane from monte carlo (depends on generator)
     if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
+    //set reference multiplicity, TODO: maybe move it to the constructor?
+    flowEvent->SetReferenceMultiplicity(AliESDtrackCuts::GetReferenceMultiplicity(myESD,kTRUE));
   }
 
   // Make the FlowEvent for ESD input combined with MC info
@@ -285,6 +288,10 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     {
       flowEvent = new AliFlowEvent(myESD, mcEvent, AliFlowEvent::kMCkine, fCFManager1, fCFManager2 );
     }
+    // if monte carlo event get reaction plane from monte carlo (depends on generator)
+    if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
+    //set reference multiplicity, TODO: maybe move it to the constructor?
+    flowEvent->SetReferenceMultiplicity(AliESDtrackCuts::GetReferenceMultiplicity(myESD,kTRUE));
   }
   // Make the FlowEventSimple for AOD input
   else if (fAnalysisType == "AOD")
