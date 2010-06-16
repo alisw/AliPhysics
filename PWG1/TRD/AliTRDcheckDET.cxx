@@ -1021,11 +1021,11 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
   // Plots the average pulse height vs the distance from the anode wire
   // (plus const anode wire offset)
   //
-  if(track) fkTrack = track;
-  if(!fkTrack){
+  if(!track){
     AliWarning("No Track defined.");
     return NULL;
   }
+  fkTrack = track;
   TProfile *h = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(1)))){
     AliWarning("No Histogram defined.");
