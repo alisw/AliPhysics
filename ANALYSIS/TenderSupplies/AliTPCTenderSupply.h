@@ -27,6 +27,8 @@ public:
   virtual ~AliTPCTenderSupply(){;}
 
   void SetGainCorrection(Bool_t gainCorr) {fGainCorrection=gainCorr;}
+  void SetDebugLevel(Int_t level)         {fDebugLevel=level;}
+  void SetMip(Double_t mip)               {fMip=mip;}
   
   virtual void              Init();
   virtual void              ProcessEvent();
@@ -37,6 +39,11 @@ private:
   AliSplineFit       *fGainOld;      //! Old gain correction
 
   Bool_t fGainCorrection;            //Perform gain correction
+  Bool_t fPcorrection;               //!Perform pressure correction
+
+  Int_t fDebugLevel;                 //debug level
+  Double_t fMip;                     //mip position
+  
   AliGRPObject *fGRP;                //!GRP for pressure temperature correction
   
   void SetSplines();

@@ -36,6 +36,7 @@
 #include <AliCDBId.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
+#include <AliCDBRunRange.h>
 #include <AliTender.h>
 
 #include "AliTPCTenderSupply.h"
@@ -47,6 +48,9 @@ AliTPCTenderSupply::AliTPCTenderSupply() :
   fGainNew(0x0),
   fGainOld(0x0),
   fGainCorrection(kTRUE),
+  fPcorrection(kFALSE),
+  fDebugLevel(0),
+  fMip(50),
   fGRP(0x0)
 {
   //
@@ -61,6 +65,9 @@ AliTPCTenderSupply::AliTPCTenderSupply(const char *name, const AliTender *tender
   fGainNew(0x0),
   fGainOld(0x0),
   fGainCorrection(kTRUE),
+  fPcorrection(kFALSE),
+  fDebugLevel(0),
+  fMip(50),
   fGRP(0x0)
 {
   //
@@ -111,11 +118,14 @@ void AliTPCTenderSupply::Init()
     alephParameters[3] = 2.12543e+00;
     alephParameters[4] = 4.88663e+00;
     //temporary solution
-    fESDpid->GetTPCResponse().SetMip(47.9);
+    fESDpid->GetTPCResponse().SetMip(fMip);
+    if (fDebugLevel>0) printf("AliTPCTenderSupply::Init - Use Data parametrisation, Mip set to: %.3f\n",fMip);
     //fESDpid->GetTPCResponse().SetMip(49.2);
   } else {
-    //force no gain correction in MC
+    //force no gain and P correction in MC
     fGainCorrection=kFALSE;
+    fPcorrection=kFALSE;
+    if (fDebugLevel>0) printf("AliTPCTenderSupply::Init - Use MC parametrisation\n");
   }
   
   fESDpid->GetTPCResponse().SetBetheBlochParameters(
@@ -138,6 +148,7 @@ void AliTPCTenderSupply::ProcessEvent()
   
   //load gain correction if run has changed
   if (fTender->RunChanged()){
+    if (fDebugLevel>0) printf("AliTPCTenderSupply::ProcessEvent - Run Changed (%d)\n",fTender->GetRun());
     if (fGainCorrection) SetSplines();
   }
   
@@ -172,12 +183,15 @@ void AliTPCTenderSupply::SetSplines()
   //
   // Get GPR info for pressure correction
   //
+  fPcorrection=kFALSE;
+  
   AliCDBEntry *entryGRP=fTender->GetCDBManager()->Get("GRP/GRP/Data",fTender->GetRun());
   if (!entryGRP) {
     AliError("No new GRP entry found");
   } else {
     fGRP = (AliGRPObject*)entryGRP->GetObject();
   }
+  if (fDebugLevel>1) printf("AliTPCTenderSupply::SetSplines - Used GRP entry: %s\n",entryGRP->GetId().ToString().Data());
   
   fGainNew=0x0;
   fGainOld=0x0;
@@ -215,6 +229,8 @@ void AliTPCTenderSupply::SetSplines()
       return;
     }
     
+    if (fDebugLevel>1) printf("AliTPCTenderSupply::SetSplines - Used old Gain entry: %s\n",entry->GetId().ToString().Data());
+    
     TObjArray *arr=(TObjArray *)entry->GetObject();
     if (!arr) {
       AliError("Gain Splines array not found in calibration entry");
@@ -240,6 +256,12 @@ void AliTPCTenderSupply::SetSplines()
     AliError("No new gain calibration entry found");
     return;
   }
+  if (fDebugLevel>1) printf("AliTPCTenderSupply::SetSplines - Used new Gain entry: %s\n",entryNew->GetId().ToString().Data());
+  
+  if (entryNew->GetId().GetLastRun()==AliCDBRunRange::Infinity()){
+    if (fDebugLevel>0) printf("AliTPCTenderSupply::SetSplines - Use P correction\n");
+    fPcorrection=kTRUE;
+  }
   
   TObjArray *arrSplines=(TObjArray *)entryNew->GetObject();
   if (!arrSplines) {
@@ -264,11 +286,11 @@ Double_t AliTPCTenderSupply::GetGainCorrection()
   Double_t gain = 1;
   if (fGainNew && fGainOld) gain = fGainOld->Eval(time)/fGainNew->Eval(time);
   
-  //If there is no new calibration, at least apply correction for pressure
-  if (TMath::Abs(gain-1)<1e-20){
+  //If there is only the default calibration, at least apply correction for pressure
+  if (fPcorrection){
     if (fGRP) {
       Double_t pressure=fGRP->GetCavernAtmosPressure()->GetValue(time);
-      gain=fGainOld->Eval(time)/(7.03814-0.00459798*pressure)/49.53*48.2;
+      gain=fGainOld->Eval(time)/(7.03814-0.00459798*pressure)/49.53*fMip;
     }
   }
   

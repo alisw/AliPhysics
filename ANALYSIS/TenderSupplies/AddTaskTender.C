@@ -19,6 +19,8 @@ AliAnalysisTask *AddTaskTender(){
   
   //========= Attach TPC supply ======
   AliTPCTenderSupply *tpcSupply=new AliTPCTenderSupply("TPCtender");
+  tpcSupply->SetDebugLevel(2);
+  tpcSupply->SetMip(50.);
   tender->AddSupply(tpcSupply);
 
   //========= Attach TOF supply ======
