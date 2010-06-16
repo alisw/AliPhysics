@@ -2271,9 +2271,10 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
     }
   }
   Int_t evsp=repa->GetEventSpecie();
-
+  ULong_t trStatus=0;
+  if(track->GetESDtrack()) trStatus=track->GetStatus();
   Int_t innermostlayer=0;
-  if((evsp&AliRecoParam::kCosmic) || (track->GetStatus()&AliESDtrack::kTPCin))  {
+  if((evsp&AliRecoParam::kCosmic) || (trStatus&AliESDtrack::kTPCin))  {
     innermostlayer=5;
     Double_t drphi = TMath::Abs(track->GetD(0.,0.));
     for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++) {
