@@ -36,7 +36,7 @@ class AliVZEROdigit: public AliDigit  {
     Bool_t  fIntegrator;    // Integrator used
     Short_t fChargeADC[kNClocks]; // ADC samples as present in raw data
 
-    ClassDef(AliVZEROdigit,5)  // VZERO Digit class
+    ClassDef(AliVZEROdigit,6)  // VZERO Digit class
 };
 
 #endif
