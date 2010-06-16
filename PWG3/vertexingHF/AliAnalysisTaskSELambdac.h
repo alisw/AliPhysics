@@ -6,10 +6,10 @@
 
 //*************************************************************************
 // Class AliAnalysisTaskSELambdac
-// AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and 
+// AliAnalysisTaskSE for the Lambdac candidates Invariant Mass Histogram and 
 //comparison of heavy-flavour decay candidates
 // to MC truth (kinematics stored in the AOD)
-// Renu Bala, bala@to.infn.it
+// r.romita@gsi.de
 //*************************************************************************
 
 #include <TROOT.h>
@@ -44,19 +44,19 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
   
-  Float_t GetUpperMassLimit(){return fUpmasslimit;}
-  Float_t GetLowerMassLimit(){return fLowmasslimit;}
-  Int_t GetNBinsPt(){return fNPtBins;}
-  Double_t GetPtBinLimit(Int_t ibin);
-  Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC);
-  Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC,Int_t *pdgs);
-  Bool_t IspiKpReal(AliAODRecoDecayHF3Prong *d);
-  Bool_t IspKpiReal(AliAODRecoDecayHF3Prong *d);
-  Bool_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field);
-  Bool_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field);
-  Bool_t VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field);
-  Int_t MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC);
-  Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC);
+  Float_t GetUpperMassLimit() const {return fUpmasslimit;}
+  Float_t GetLowerMassLimit() const {return fLowmasslimit;}
+  Int_t GetNBinsPt() const {return fNPtBins;}
+  Double_t GetPtBinLimit(Int_t ibin) const ;
+  Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
+  Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC,Int_t *pdgs) const ;
+  Bool_t IspiKpReal(AliAODRecoDecayHF3Prong *d) const ;
+  Bool_t IspKpiReal(AliAODRecoDecayHF3Prong *d) const ;
+  Bool_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
+  Bool_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
+  Bool_t VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const ;
+  Int_t MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
+  Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const ;
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -94,42 +94,6 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
   TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
-  TH1F *fWellIDProt3sig;
-  TH1F *fWellIDProt2sig;
-  TH1F *fWellIDProt3sigSe;
-  TH1F *fWellIDProt2sigSe;
-  TH1F *fWellIDProt3sigRe;
-  TH1F *fWellIDProt2sigRe;
-  TH1F *fWellIDKaon3sig;
-  TH1F *fWellIDKaon3sigSe;
-  TH1F *fWellIDKaon3sigRe;
-  TH1F *fWellIDKaon2sig;
-  TH1F *fWellIDKaon2sigSe;
-  TH1F *fWellIDKaon2sigRe;
-  TH1F *fRealProt;
-  TH1F *fRealKaon;
-  TH1F *fFakeProt3sig;
-  TH1F *fFakeProt2sig;
-  TH1F *fFakeProt3sigSe;
-  TH1F *fFakeProt2sigSe;
-  TH1F *fFakeProt3sigRe;
-  TH1F *fFakeProt2sigRe;
-  TH1F *fFakeKaon3sig;
-  TH1F *fFakeKaon3sigSe;
-  TH1F *fFakeKaon3sigRe;
-  TH1F *fFakeKaon2sig;
-  TH1F *fFakeKaon2sigSe;
-  TH1F *fFakeKaon2sigRe;
-  TH2F *fTPCSignal3Sigma;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal3SigmaReK;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal3SigmaSedK;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal3SigmaRep;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal3SigmaSedp;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal2Sigma;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal2SigmaReK;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal2SigmaSedK;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal2SigmaRep;//!hist. for LS inv mass (TC)
-  TH2F *fTPCSignal2SigmaSedp;//!hist. for LS inv mass (TC)
   TNtuple *fNtupleLambdac; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
@@ -147,7 +111,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t fUseKF;      //flag to do LS analysis
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   
-  ClassDef(AliAnalysisTaskSELambdac,1); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSELambdac,2); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif
