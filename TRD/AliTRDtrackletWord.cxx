@@ -25,6 +25,7 @@
 
 #include "AliTRDtrackletWord.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 #include "AliLog.h"
 
 ClassImp(AliTRDtrackletWord)
@@ -80,3 +81,16 @@ Int_t AliTRDtrackletWord::GetdY() const
     return ((fTrackletWord >> 13) & 0x7f);
   }
 }
+
+Int_t AliTRDtrackletWord::GetROB() const
+{
+  return 2 * (GetZbin() / 4) + (GetY() > 0 ? 1 : 0);
+}
+
+Int_t AliTRDtrackletWord::GetMCM() const
+{
+  AliTRDpadPlane *pp = fgGeo->GetPadPlane(GetDetector());
+  return (((Int_t) ((GetY()) / pp->GetWidthIPad()) + 72) / 18) % 4
+    + 4 * (GetZbin() % 4);
+}
+

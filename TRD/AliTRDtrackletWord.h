@@ -29,6 +29,9 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   Int_t GetZbin() const { return ((fTrackletWord >> 20) & 0xf); }
   Int_t GetPID() const { return ((fTrackletWord >> 24) & 0xff); }
 
+  Int_t GetROB() const;
+  Int_t GetMCM() const; 
+
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
   Double_t GetPID(Int_t /* is */) const { return 0; }
@@ -37,7 +40,9 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
   Float_t GetX() const { return fgGeo->GetTime0((fHCId%12)/2); }
   Float_t GetY() const { return (GetYbin() * 160e-4); }
-  Float_t GetZ() const { return fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowPos(GetZbin()); }
+  Float_t GetZ() const { return fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowPos(GetZbin()) -
+      fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowSize(GetZbin()); }
+  Float_t GetLocalZ() const { return GetZ() - fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowPos(8); }
 
   UInt_t GetTrackletWord() const { return fTrackletWord; }
   void SetTrackletWord(UInt_t trackletWord) { fTrackletWord = trackletWord; }
@@ -46,7 +51,7 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   void SetHCId(Int_t id) { fHCId = id; }
 
  protected:
-  Int_t fHCId;                  //! half-chamber ID (only transient)
+  Int_t fHCId;                  // half-chamber ID
   UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y 
 				//          bits:  12   4            7          13
   static AliTRDgeometry *fgGeo;  // pointer to TRD geometry for coordinate calculations
@@ -54,7 +59,7 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
  private:
   AliTRDtrackletWord& operator=(const AliTRDtrackletWord &rhs);   // not implemented
 
-  ClassDef(AliTRDtrackletWord, 1);
+  ClassDef(AliTRDtrackletWord, 2);
 };
 
 #endif

@@ -43,7 +43,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
   Float_t GetX() const { return fGeo->GetTime0((fHCId % 12) / 2); }
   Float_t GetY() const { return (GetYbin() * 160e-4); }
-  Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4); }
+  Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4) - 
+      fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId /12) % 5)->GetRowSize(4 * (fROB / 2) + fMCM / 4) * .5; }
+  Float_t GetLocalZ() const { return GetZ() - fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos(8); }
 
   Int_t GetQ0() const { return fQ0; }
   Int_t GetQ1() const { return fQ1; }
