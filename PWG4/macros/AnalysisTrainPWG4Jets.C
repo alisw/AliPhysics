@@ -117,8 +117,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-26-00b-6";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-19-13-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-26-00b-7";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
 Bool_t      kPluginOverwriteMode    = kTRUE;  // overwrite existing collections
@@ -409,7 +409,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(iPWG4JetSpectrum&1){
        taskjetSpectrum = AddTaskJetSpectrum2("jets","",kHighPtFilterMask,iPhysicsSelection);      
        if(!iAODanalysis){
-	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
+	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks32",32,iPhysicsSelection);       // tmp hack to give it a different name
 	 //	 taskjetSpectrum = AddTaskJetSpectrum2("jets","tracks64",64,iPhysicsSelection);      
        }
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
@@ -520,9 +520,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4JetCorr){
      //     using namespace JetCorrelHD;
-
+     TString cdir = gSystem->WorkingDirectory();
+     gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCorrel.C");
      AliAnalysisTaskJetCorrel *taskjetcorr = AddTaskJetCorrel();
+     gSystem->ChangeDirectory(cdir);
      if (!taskjetcorr) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJetCorrel  cannot run for this train conditions - EXCLUDED");
    } 
 
