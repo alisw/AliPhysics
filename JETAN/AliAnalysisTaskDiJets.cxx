@@ -137,7 +137,7 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
     if (fDiJets) fDiJets->Delete();
 
     if(fUseAODInput){
-      AliAODEvent* fAOD   = dynamic_cast<AliAODEvent*> (InputEvent());
+      fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
       if(!fAOD){
         // We do not have an input AOD, look in the output
         if (fDebug) printf("%s:%d No AOD event in the input\n",(char*)__FILE__,__LINE__);
