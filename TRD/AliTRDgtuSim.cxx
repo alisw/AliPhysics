@@ -34,6 +34,7 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliTreeLoader.h"
 #include "AliLog.h"
 #include "AliESDTrdTrack.h"
 
@@ -175,6 +176,8 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	return kFALSE;
     }
 
+    AliDebug(1, Form("running on %i tracklets", fTrackletArray->GetEntriesFast()));
+
     Int_t iStackPrev = -1;
     Int_t iSecPrev = -1;
     Int_t iSec = -1;
@@ -212,6 +215,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	    iStackPrev = iStack;
 	    iSecPrev = iSec;
 	}
+	AliDebug(1, Form("adding tracklet: 0x%08x", trkl->GetTrackletWord()));
 	fTMU->AddTracklet(trkl, iLink);
     }
     
@@ -250,69 +254,67 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
   }
 
   trackletLoader->Load();
-  
-  TTree *trackletTree = trackletLoader->Tree();
-  if (!trackletTree) {
-    AliError("No tracklet tree found");
-    return kFALSE;
-  }  
+  TTree *trackletTree = 0x0;
 
-
-  TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
-  if (trklbranch) {
+  // simulated tracklets
+  trackletTree = trackletLoader->Tree();
+  if (trackletTree) {
+    TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
+    if (trklbranch) {
       if (!fTrackletArray)
-	  fTrackletArray = new TClonesArray("AliTRDtrackletMCM", 1000);
+	fTrackletArray = new TClonesArray("AliTRDtrackletMCM", 1000);
       else if ((TClass::GetClass("AliTRDtrackletMCM"))->InheritsFrom(fTrackletArray->Class()))
-	  fTrackletArray->Delete();
+	fTrackletArray->Delete();
       else {
-	  fTrackletArray->Delete();
-	  delete fTrackletArray;
-	  fTrackletArray = new TClonesArray("AliTRDtrackletMCM", 1000);
+	fTrackletArray->Delete();
+	delete fTrackletArray;
+	fTrackletArray = new TClonesArray("AliTRDtrackletMCM", 1000);
       }
 
       AliTRDtrackletMCM *trkl = new AliTRDtrackletMCM; 
       trklbranch->SetAddress(&trkl);
       for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
-	  trklbranch->GetEntry(iTracklet);
-	  new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
+	trklbranch->GetEntry(iTracklet);
+	new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
       }
       return kTRUE;
+    }
   }
 
-  trklbranch = trackletTree->GetBranch("trkbranch");
+  // raw tracklets
+  AliTreeLoader *tl = (AliTreeLoader*) trackletLoader->GetBaseLoader("tracklets-raw");
+  trackletTree = tl ? tl->Load(), tl->Tree() : 0x0;
 
-  if (!trklbranch) {
-      AliError("Could not get trkbranch");
-      return kFALSE;
-  }
-  
-  if (!fTrackletArray)
+  if (trackletTree) {
+    if (!fTrackletArray)
       fTrackletArray = new TClonesArray("AliTRDtrackletWord", 1000);
-  else if ((TClass::GetClass("AliTRDtrackletWord"))->InheritsFrom(fTrackletArray->Class()))
+    else if ((TClass::GetClass("AliTRDtrackletWord"))->InheritsFrom(fTrackletArray->Class()))
       fTrackletArray->Delete();
-  else {
+    else {
       fTrackletArray->Delete();
       delete fTrackletArray;
       fTrackletArray = new TClonesArray("AliTRDtrackletWord", 1000);
-  }
+    }
+    
+    Int_t hc; 
+    TClonesArray *ar = 0x0;
+    trackletTree->SetBranchAddress("hc", &hc);
+    trackletTree->SetBranchAddress("trkl", &ar);
 
-  Int_t notrkl = 0;
-  UInt_t *leaves = new UInt_t[258];
-  AliDebug(1,Form("No. of entries: %i", trklbranch->GetEntries()));
-  
-  for (Int_t iEntry = 0; iEntry < trklbranch->GetEntries(); iEntry++) {
-      trklbranch->SetAddress(leaves);
-      trklbranch->GetEntry(iEntry);
-      for (Int_t iTracklet = 0; iTracklet < 256; iTracklet++) {
-	if (leaves[2 + iTracklet] == 0)
-	  break;
-	new((*fTrackletArray)[notrkl]) AliTRDtrackletWord(leaves[2 + iTracklet], 2*leaves[0] + leaves[1]);
-	notrkl++;
+    for (Int_t iEntry = 0; iEntry < trackletTree->GetEntries(); iEntry++) {
+      trackletTree->GetEntry(iEntry);
+      printf("%i tracklets in HC %i\n", ar->GetEntriesFast(), hc);
+      for (Int_t iTracklet = 0; iTracklet < ar->GetEntriesFast(); iTracklet++) {
+	AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) (*ar)[iTracklet];
+	new((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletWord(trklWord->GetTrackletWord(), hc);
       }
-      AliDebug(2,Form("Entry: %3i: Det: %3i, side: %i, 1st tracklet: 0x%08x, no: %i", iEntry, leaves[0], leaves[1], leaves[2], notrkl));
+    }
+    return kTRUE;
   }
+  
+  AliError("No raw tracklet tree found\n");
 
-  return kTRUE;
+  return kFALSE;
 }
 
 Bool_t AliTRDgtuSim::WriteTracksToDataFile(TList *listOfTracks, Int_t event) 
@@ -434,20 +436,15 @@ Bool_t AliTRDgtuSim::WriteTracksToLoader()
   }
   
   AliTRDtrackGTU *trk = 0x0;
-  TBranch *trkbranch = trackTree->GetBranch("TRDtrackGTU");
-  if (!trkbranch)
-    trkbranch = trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
+  if (!trackTree->GetBranch("TRDtrackGTU"))
+    trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
   
-  TBranch *branch = fTrackTree->GetBranch("TRDgtuTrack");
-  if (!branch)
-    return kFALSE;
+  AliDebug(1,Form("Found %i tracks", fTrackTree->GetEntries()));
 
-  AliDebug(1,Form("Found %i tracks", branch->GetEntries()));
-
-  for (Int_t iTrack = 0; iTrack < branch->GetEntries(); iTrack++) {
-    branch->SetAddress(&trk);
-    branch->GetEntry(iTrack);
-    trkbranch->SetAddress(&trk);
+  for (Int_t iTrack = 0; iTrack < fTrackTree->GetEntries(); iTrack++) {
+    fTrackTree->SetBranchAddress("TRDgtuTrack", &trk);
+    fTrackTree->GetEntry(iTrack);
+    trackTree->SetBranchAddress("TRDtrackGTU", &trk);
     trackTree->Fill();
   }
 
