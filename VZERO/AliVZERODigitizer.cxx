@@ -391,19 +391,12 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 
   Short_t *chargeADC = new Short_t[kNClocks];
   for (Int_t i=0; i<64; i++) {      
-    Float_t totADC = 0;
     for (Int_t j = 0; j < kNClocks; ++j) {
       Int_t tempadc = Int_t(fAdc[i][j]);
       if (tempadc > 1023) tempadc = 1023;
       chargeADC[j] = tempadc;
-      if (j >= 8 && j <= 11) {
-	Int_t integrator = (j + evenOrOdd) % 2;
-	if ((Float_t(tempadc) - fAdcPedestal[i][integrator]) > (2.*fAdcSigma[i][integrator]))
-	  totADC += (Float_t(tempadc) - fAdcPedestal[i][integrator]);
-      }
     }
-    totADC += fAdcPedestal[i][(10+evenOrOdd)%2];
-    AddDigit(i, totADC, fLeadingTime[i], fTimeWidth[i], Bool_t((10+evenOrOdd)%2), chargeADC, labels[i]);
+    AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+evenOrOdd)%2), chargeADC, labels[i]);
   }
   delete [] chargeADC;
 
@@ -414,14 +407,14 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels) 
+void AliVZERODigitizer::AddDigit(Int_t PMnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
 	 
-  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,adc,time,width,integrator,chargeADC,labels);
+  new(ldigits[fNdigits++]) AliVZEROdigit(PMnumber,time,width,integrator,chargeADC,labels);
 	 
 }
 //____________________________________________________________________________

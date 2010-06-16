@@ -35,7 +35,7 @@ class AliVZERODigitizer: public AliDigitizer {
    virtual Bool_t Init();
    virtual void   Exec(Option_t* option=0);
 
-   void AddDigit(Int_t PMnumber, Float_t adc, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels);
+   void AddDigit(Int_t PMnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels);
    void ResetDigit();
 						
    AliVZEROCalibData *GetCalibData() const;

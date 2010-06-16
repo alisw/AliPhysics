@@ -406,17 +406,6 @@ Bool_t AliVZERO::Raw2SDigits(AliRawReader* rawReader){
      
   if (!rawStream->Next()) return kFALSE; // No VZERO data found
   
-  for(Int_t i=0; i<64; i++) {
-      new(pdigit) AliVZEROdigit(i, rawStream->GetADC(i), rawStream->GetTime(i)); 
-      treeD->Fill();
-  }
- 
-// Checks if everything is OK by printing results 
-
-//   for(int i=0;i<64;i++) {
-// 	printf("Channel %d : %f %f \n",i,rawStream->GetADC(i),rawStream->GetTime(i)); }
-//   treeD->Print(); printf(" \n"); 
-   	
   fLoader->WriteDigits("OVERWRITE");
   fLoader->UnloadDigits();	
 	

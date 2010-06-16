@@ -12,8 +12,7 @@ class AliVZEROdigit: public AliDigit  {
 
  public:
     AliVZEROdigit();
-    AliVZEROdigit(Int_t   PMnumber, Float_t  adc, Float_t time);
-    AliVZEROdigit(Int_t   PMnumber, Float_t  adc, Float_t time, 
+    AliVZEROdigit(Int_t   PMnumber, Float_t time, 
                   Float_t TimeWidth,
 		  Bool_t  Integrator,
 		  Short_t *chargeADC = 0,
@@ -24,7 +23,7 @@ class AliVZEROdigit: public AliDigit  {
     enum {kNClocks = 21};
 
     Int_t   PMNumber()   const {return fPMNumber;}    
-    Float_t ADC()        const {return fADC;}
+    Short_t ADC()        const {return fChargeADC[kNClocks/2];}
     Float_t Time()       const {return fTime;}
     Float_t Width()      const {return fWidth;} 
     Bool_t  Integrator() const {return fIntegrator;}
@@ -32,7 +31,6 @@ class AliVZEROdigit: public AliDigit  {
     
   protected:
     Int_t   fPMNumber;      // PhotoMultiplier number (0 to 63)
-    Float_t fADC;           // ADC response
     Float_t fTime;          // Time of Flight
     Float_t fWidth;         // Width of the time distribution
     Bool_t  fIntegrator;    // Integrator used

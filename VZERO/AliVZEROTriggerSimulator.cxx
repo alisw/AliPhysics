@@ -179,8 +179,8 @@ void AliVZEROTriggerSimulator::Run() {
 					 digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
 					 digit->ChargeADC(11),digit->ChargeADC(12),digit->ChargeADC(13),
 					 digit->ChargeADC(14),digit->ChargeADC(15)));
-			AliDebug(10,Form(" PM nb : %d ; ADC= %f ; TDC= %f(%f)  Enable Time %d charge %d inCoin %d charge %f",
-					 pmNumber,digit->ADC(),time,digit->Time(),
+			AliDebug(10,Form(" PM nb : %d ; TDC= %f(%f)  Enable Time %d charge %d inCoin %d charge %f",
+					 pmNumber,time,digit->Time(),
 					 fTriggerData->GetEnableTiming(board,channel),fTriggerData->GetEnableCharge(board,channel),
 					 fBBGate[board]->IsInCoincidence(time),fCharges[pmNumber]));
 			fBBFlags[pmNumber] = fTriggerData->GetEnableTiming(board,channel) && fBBGate[board]->IsInCoincidence(time);

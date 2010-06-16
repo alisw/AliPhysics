@@ -166,7 +166,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
       // Add a digit
       if(!fCalibData->IsChannelDead(iChannel)){
 	  new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()])
-	    AliVZEROdigit(offlineCh, 0.0, time,
+	    AliVZEROdigit(offlineCh, time,
 			  width,integrator,
 			  chargeADC);
       }

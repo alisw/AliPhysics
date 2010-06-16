@@ -21,7 +21,6 @@ ClassImp(AliVZEROdigit)
 AliVZEROdigit::AliVZEROdigit()
    :AliDigit(),
     fPMNumber(0),
-    fADC(0.),
     fTime(0.),
     fWidth(0.),
     fIntegrator(0)
@@ -33,28 +32,13 @@ AliVZEROdigit::AliVZEROdigit()
 }
 
 //__________________________________________________________________________
-AliVZEROdigit::AliVZEROdigit(Int_t PMnumber, Float_t adc, Float_t time)
-   :AliDigit(),
-   fPMNumber(PMnumber),
-   fADC(adc),
-   fTime(time),
-   fWidth(0.),
-   fIntegrator(0)
-{  
-  // Constructor
-  // so far used in raw->sdigits
-  for(Int_t iClock = 0; iClock < kNClocks; ++iClock) fChargeADC[iClock] = 0;
-}
-
-//__________________________________________________________________________
-AliVZEROdigit::AliVZEROdigit(Int_t   PMnumber, Float_t adc, Float_t time, 
+AliVZEROdigit::AliVZEROdigit(Int_t   PMnumber, Float_t time, 
                              Float_t width,
 			     Bool_t integrator,
 			     Short_t *chargeADC,
 			     Int_t *labels)
 :AliDigit(),
 fPMNumber(PMnumber),
-fADC(adc),
 fTime(time),
 fWidth(width),
 fIntegrator(integrator)
