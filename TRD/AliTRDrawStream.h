@@ -74,9 +74,10 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   }; 
 
   enum ErrorBehav_t {
-    kTolerate,
-    kDiscardMCM,
-    kDiscardHC
+    kTolerate = 0,
+    kAbort = 1, 
+    kDiscardMCM = 2,
+    kDiscardHC = 4
   };
 
   TTree* GetErrorTree() const { return fErrors; }
@@ -148,6 +149,8 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t ReadZSData();
   Int_t ReadNonZSData();
 
+  Int_t SeekNextLink();
+
   // MCM header decoding
   Int_t ROB(UInt_t mcmhdr) const { return 0x7 & mcmhdr >> 28; }
   Int_t MCM(UInt_t mcmhdr) const { return 0xf & mcmhdr >> 24; }
@@ -168,14 +171,15 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   Int_t CouldBeADCmask(UInt_t adcmask) const { return ((0xf & adcmask) == 0xc && (0x3 & adcmask >> 30) == 0x1); }
       
   // error message generation
-  TString EquipmentError(ErrorCode_t err = kUnknown, TString msg = ""); 
-  TString StackError    (ErrorCode_t err = kUnknown, TString msg = "");     
-  TString LinkError     (ErrorCode_t err = kUnknown, TString msg = ""); 
-  TString ROBError      (ErrorCode_t err = kUnknown, TString msg = ""); 
-  TString MCMError      (ErrorCode_t err = kUnknown, TString msg = ""); 
+  TString EquipmentError(ErrorCode_t err = kUnknown, TString msg = "", ...); 
+  TString StackError    (ErrorCode_t err = kUnknown, TString msg = "", ...);     
+  TString LinkError     (ErrorCode_t err = kUnknown, TString msg = "", ...); 
+  TString ROBError      (ErrorCode_t err = kUnknown, TString msg = "", ...); 
+  TString MCMError      (ErrorCode_t err = kUnknown, TString msg = "", ...); 
 
-  static const char* fgErrorMessages[kLastErrorCode]; // error messages corresponding to the error codes
-  ErrorBehav_t fgErrorBehav[kLastErrorCode];          // bevhaviour in case of error of given type
+  static const char* fgErrorMessages[kLastErrorCode];     // error messages corresponding to the error codes
+  static const Int_t fgErrorDebugLevel[kLastErrorCode];   // error debug level
+  static       ErrorBehav_t fgErrorBehav[kLastErrorCode]; // bevhaviour in case of error of given type
 
   // I/O
   AliRawReader *fRawReader;                     // pointer to the raw reader to take the data from 
@@ -185,6 +189,8 @@ class AliTRDrawStream : public AliTRDrawStreamBase
   TTree *fErrors;                               // tree containing the occured error codes
   struct { Int_t fSector; Int_t fStack; Int_t fLink; Int_t fError; Int_t fRob; Int_t fMcm; } 
   fLastError;                                   // last error which occured
+  UInt_t fErrorFlags;                           // error flags used to steer subsequent reading
+  char   fErrorBuffer[100];                     // buffer for error message
 
   UInt_t *fPayloadStart;                        // pointer to start of data payload
   UInt_t *fPayloadCurr;                         // pointer to current reading position in the payload

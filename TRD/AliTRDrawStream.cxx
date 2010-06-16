@@ -22,6 +22,9 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <cstdio>
+#include <cstdarg>
+
 #include "TClonesArray.h"
 #include "TTree.h"
 
@@ -75,6 +78,48 @@ const char* AliTRDrawStream::fgErrorMessages[] = {
   "Missing MCM headers"
 };
 
+const Int_t AliTRDrawStream::fgErrorDebugLevel[] = {
+  0,
+  0,
+  2, 
+  1, 
+  0, 
+  1, 
+  1, 
+  1,
+  1, 
+  2,
+  1,
+  1,
+  1,
+  1, 
+  2, 
+  1, 
+  1, 
+  1
+};
+
+AliTRDrawStream::ErrorBehav_t AliTRDrawStream::fgErrorBehav[] = {
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kDiscardHC,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kAbort,
+  AliTRDrawStream::kAbort,
+  AliTRDrawStream::kAbort,
+  AliTRDrawStream::kAbort,
+  AliTRDrawStream::kDiscardHC,
+  AliTRDrawStream::kDiscardHC,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate,
+  AliTRDrawStream::kTolerate
+};
+
 AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
   fStats(), 
   fRawReader(rawReader),
@@ -82,6 +127,7 @@ AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
   fDigitsParam(0x0),
   fErrors(0x0),
   fLastError(),
+  fErrorFlags(0),
   fPayloadStart(0x0),
   fPayloadCurr(0x0),
   fPayloadSize(0),
@@ -193,7 +239,7 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
     AliDebug(2, Form("equipment: %i", fCurrEquipmentId));
 
     if (fCurrEquipmentId < 1024 || fCurrEquipmentId > 1041) {
-      AliError(EquipmentError(kNonTrdEq, "Skipping"));
+      EquipmentError(kNonTrdEq, "Skipping");
       continue;
     }
 
@@ -227,22 +273,16 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
 	if ((fCurrLinkMask[fCurrSlot] & (1 << fCurrLink)) == 0)
 	  continue;
 	
+	fErrorFlags = 0;
+	// check for link monitor error flag
 	if (fCurrLinkMonitorFlags[fCurrSlot*fgkNlinks + fCurrLink] != 0)
 	  LinkError(kLinkMonitor);
-	AliDebug(2, Form("Payload for S%il%i", fCurrSlot, fCurrLink));
-	for (Int_t i = 0; i < 10; i++) //???
-	  AliDebug(5, Form("%3i: 0x%08x 0x%08x 0x%08x 0x%08x", i*4,
-		 fPayloadCurr[4*i], fPayloadCurr[4*i+1], 
-		 fPayloadCurr[4*i+2], fPayloadCurr[4*i+3]));
 
 	// read the data from one HC
 	ReadLinkData();
 
 	// read all data endmarkers
-	while (fPayloadCurr - fPayloadStart < fPayloadSize &&
-	       *fPayloadCurr == fgkDataEndmarker)
-	  fPayloadCurr++;
-
+	SeekNextLink();
       }
     }
   }
@@ -269,7 +309,7 @@ Bool_t AliTRDrawStream::NextDDL()
     AliDebug(2, Form("equipment: %i", fCurrEquipmentId));
     
     if (fCurrEquipmentId < 1024 || fCurrEquipmentId > 1041) {
-      AliError(EquipmentError(kNonTrdEq, "Skipping"));
+      EquipmentError(kNonTrdEq, "Skipping");
       continue;
     }
 
@@ -305,6 +345,8 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
 
   fDigitsManager = digMgr; 
   fDigitsParam   = 0x0;
+
+  fErrorFlags = 0;
 
   // tracklet output preparation
   TTree *trklTree = 0x0;
@@ -344,9 +386,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
   ReadLinkData();
   
   // read all data endmarkers
-  while (fPayloadCurr - fPayloadStart < fPayloadSize && 
-	 *fPayloadCurr == fgkDataEndmarker) 
-    fPayloadCurr++;
+  SeekNextLink();
 
   if (fCurrLink % 2 == 0) {
     // if we just read the A-side HC then also check the B-side
@@ -354,9 +394,7 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
     fCurrHC++;
     if (fCurrLinkMask[fCurrSlot] & (1 << fCurrLink)) {
       ReadLinkData();
-      while (fPayloadCurr - fPayloadStart < fPayloadSize && 
-	     *fPayloadCurr == fgkDataEndmarker) 
-	fPayloadCurr++;
+      SeekNextLink();
     }
   }
 
@@ -381,7 +419,7 @@ Int_t AliTRDrawStream::ReadSmHeader()
   // and store the information in the corresponding variables
 
   if (fPayloadCurr - fPayloadStart >= fPayloadSize - 1) {
-    AliError(EquipmentError(kUnknown, "SM Header incomplete"));
+    EquipmentError(kUnknown, "SM Header incomplete");
     return -1;
   }
 
@@ -414,14 +452,14 @@ Int_t AliTRDrawStream::ReadStackIndexHeader(Int_t stack)
   fCurrLinkMask[stack]           = (*fPayloadCurr) & 0xfff;
 
   if (fPayloadCurr - fPayloadStart >= fPayloadSize - (Int_t) fCurrStackHeaderSize[stack]) {
-    AliError(StackError(kStackHeaderInvalid, "Stack index header aborted"));
+    StackError(kStackHeaderInvalid, "Stack index header aborted");
     return -1;
   }
 
   switch (fCurrStackHeaderVersion[stack]) {
   case 0xa: 
     if (fCurrStackHeaderSize[stack] < 8) {
-      AliError(StackError(kStackHeaderInvalid, "Stack header smaller than expected!"));
+      StackError(kStackHeaderInvalid, "Stack header smaller than expected!");
       return -1;
     }
     
@@ -442,8 +480,7 @@ Int_t AliTRDrawStream::ReadStackIndexHeader(Int_t stack)
     break;
     
   default:
-    AliError(StackError(kStackHeaderInvalid, Form("Invalid Stack Index Header version %x", 
-						  fCurrStackHeaderVersion[stack])));
+    StackError(kStackHeaderInvalid, "Invalid Stack Index Header version %x", fCurrStackHeaderVersion[stack]);
   }
   
   fPayloadCurr += fCurrStackHeaderSize[stack];
@@ -465,9 +502,16 @@ Int_t AliTRDrawStream::ReadLinkData()
 //	   fPayloadCurr[i*4+0], fPayloadCurr[i*4+1], fPayloadCurr[i*4+2], fPayloadCurr[i*4+3]);
 //  }
 
+  if (fErrorFlags & kDiscardHC)
+    return count;
+
   count += ReadTracklets();
+  if (fErrorFlags & kDiscardHC)
+    return count;
 
   count += ReadHcHeader();
+  if (fErrorFlags & kDiscardHC)
+    return count;
 
   Int_t det = fCurrSm * 30 + fCurrStack * 6 + fCurrLayer;
 
@@ -479,7 +523,7 @@ Int_t AliTRDrawStream::ReadLinkData()
 	fAdcArray->Allocate(16, 144, fCurrNtimebins);
     }
     else {
-      AliError(LinkError(kNoDigits));
+      LinkError(kNoDigits);
     }
     
     if (!fDigitsParam) {
@@ -536,7 +580,7 @@ Int_t AliTRDrawStream::ReadLinkData()
     }
   }
   else {
-    AliError(LinkError(kInvalidDetector, Form("%i", det)));
+    LinkError(kInvalidDetector, "%i", det);
     while (fPayloadCurr - fPayloadStart < fPayloadSize &&
 	   *fPayloadCurr != fgkDataEndmarker)
       fPayloadCurr++;
@@ -606,13 +650,13 @@ Int_t AliTRDrawStream::ReadHcHeader()
       fCurrStack != fCurrSlot || 
       fCurrLayer != fCurrLink / 2 || 
       fCurrSide != fCurrLink % 2) {
-    AliError(LinkError(kHCmismatch,
-		       Form("HC: %i, %i, %i, %i\n 0x%08x 0x%08x 0x%08x 0x%08x", 
-			    fCurrSm, fCurrStack, fCurrLayer, fCurrSide,
-			    fPayloadCurr[0], fPayloadCurr[1], fPayloadCurr[2], fPayloadCurr[3]) ));
+    LinkError(kHCmismatch,
+	      "HC: %i, %i, %i, %i\n 0x%08x 0x%08x 0x%08x 0x%08x", 
+	      fCurrSm, fCurrStack, fCurrLayer, fCurrSide,
+	      fPayloadCurr[0], fPayloadCurr[1], fPayloadCurr[2], fPayloadCurr[3]);;
   }
   if (fCurrCheck != 0x1) {
-    AliError(LinkError(kHCcheckFailed));
+    LinkError(kHCcheckFailed);
   }
   
   if (fCurrAddHcWords > 0) {
@@ -658,7 +702,7 @@ Int_t AliTRDrawStream::ReadTPData(Int_t mode)
       lastrobpos = GetROBReadoutPos(ROB(*fPayloadCurr) / 2);
     }
     else {
-      AliError(ROBError(kPosUnexp));
+      ROBError(kPosUnexp);
     }
     fCurrRobPos = ROB(*fPayloadCurr);
     
@@ -667,7 +711,7 @@ Int_t AliTRDrawStream::ReadTPData(Int_t mode)
       lastmcmpos = GetMCMReadoutPos(MCM(*fPayloadCurr));
     }
     else {
-      AliError(MCMError(kPosUnexp));
+      MCMError(kPosUnexp);
     }
     fCurrMcmPos = MCM(*fPayloadCurr);
     
@@ -713,14 +757,14 @@ Int_t AliTRDrawStream::ReadTPData(Int_t mode)
 	}
 	else {
 	  expword = 0;
-	  AliError(LinkError(kTPmodeInvalid, "Just reading"));
+	  LinkError(kTPmodeInvalid, "Just reading");
 	}
 
 	diff = *fPayloadCurr ^ expword;
 	if (diff != 0) {
-	  AliError(MCMError(kTPmismatch,
-			    Form("Seen 0x%08x, expected 0x%08x, diff: 0x%08x (0x%02x)", 
-				 *fPayloadCurr, expword, diff, 0xff & (diff | diff >> 8 | diff >> 16 | diff >> 24)) ));
+	  MCMError(kTPmismatch,
+		   "Seen 0x%08x, expected 0x%08x, diff: 0x%08x (0x%02x)", 
+		   *fPayloadCurr, expword, diff, 0xff & (diff | diff >> 8 | diff >> 16 | diff >> 24));;
 	}
 	fPayloadCurr++;
 	count++;
@@ -754,8 +798,8 @@ Int_t AliTRDrawStream::ReadZSData()
 
   if (fCurrNtimebins != fNtimebins) {
     if (fNtimebins > 0) 
-      AliError(LinkError(kNtimebinsChanged,
-			 Form("No. of timebins changed from %i to %i", fNtimebins, fCurrNtimebins) ));
+      LinkError(kNtimebinsChanged,
+		"No. of timebins changed from %i to %i", fNtimebins, fCurrNtimebins);
     fNtimebins = fCurrNtimebins;
   }
   
@@ -773,7 +817,7 @@ Int_t AliTRDrawStream::ReadZSData()
       lastrobpos = GetROBReadoutPos(ROB(*fPayloadCurr) / 2);
     }
     else {
-      AliError(ROBError(kPosUnexp));
+      ROBError(kPosUnexp);
     }
     fCurrRobPos = ROB(*fPayloadCurr);
     
@@ -782,7 +826,7 @@ Int_t AliTRDrawStream::ReadZSData()
       lastmcmpos = GetMCMReadoutPos(lastmcmpos);
     }
     else {
-      AliError(MCMError(kPosUnexp));
+      MCMError(kPosUnexp);
     }
     fCurrMcmPos = MCM(*fPayloadCurr);
     
@@ -790,8 +834,7 @@ Int_t AliTRDrawStream::ReadZSData()
       if (evno == -1)
 	evno = EvNo(*fPayloadCurr);
       else {
-	AliDebug(1, MCMError(kPtrgCntMismatch,
-			     Form("%i <-> %i", evno, EvNo(*fPayloadCurr)) ));
+	MCMError(kPtrgCntMismatch, "%i <-> %i", evno, EvNo(*fPayloadCurr));
       }
     }
     Int_t adccoloff = AdcColOffset(*fPayloadCurr);
@@ -818,19 +861,19 @@ Int_t AliTRDrawStream::ReadZSData()
       }
       while (channelcountExp < channelcountMax && channelcountExp < 21 && 
 	     fPayloadCurr - fPayloadStart < fPayloadSize - 10 * channelcountExp - 1) {
-	AliDebug(1, MCMError(kAdcMaskInconsistent,
-			  Form("Possible MCM-H: 0x%08x, possible ADC-mask: 0x%08x", 
-			       *(fPayloadCurr + 10 * channelcountExp), 
-			       *(fPayloadCurr + 10 * channelcountExp + 1) ) ));
+	MCMError(kAdcMaskInconsistent,
+		 "Possible MCM-H: 0x%08x, possible ADC-mask: 0x%08x", 
+		 *(fPayloadCurr + 10 * channelcountExp), 
+		 *(fPayloadCurr + 10 * channelcountExp + 1) );
 	if (!CouldBeMCMhdr( *(fPayloadCurr + 10 * channelcountExp)) && !CouldBeADCmask( *(fPayloadCurr + 10 * channelcountExp + 1))) 
 	  channelcountExp++;
 	else {
 	  break;
 	}
       }
-      AliDebug(1, MCMError(kAdcMaskInconsistent,
-			   Form("Inconsistency in no. of active channels: Counter: %i, Mask: %i, chosen: %i!", 
-				GetNActiveChannels(fPayloadCurr[-1]), GetNActiveChannelsFromMask(fPayloadCurr[-1]), channelcountExp) ));
+      MCMError(kAdcMaskInconsistent,
+	       "Inconsistency in no. of active channels: Counter: %i, Mask: %i, chosen: %i!", 
+	       GetNActiveChannels(fPayloadCurr[-1]), GetNActiveChannelsFromMask(fPayloadCurr[-1]), channelcountExp);
     }
     AliDebug(2, Form("expecting %i active channels, timebins: %i", channelcountExp, fCurrNtimebins));
     
@@ -863,16 +906,16 @@ Int_t AliTRDrawStream::ReadZSData()
 	int check = 0x3 & *fPayloadCurr;
 	if (channelno % 2 != 0)	{ // odd channel
 	  if (check != 0x2 && channelno < 21) {
-	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("%i for %2i. ADC word in odd channel %i", 
-				   check, adcwc+1, channelno) ));
+	    MCMError(kAdcCheckInvalid,
+		     "%i for %2i. ADC word in odd channel %i", 
+		     check, adcwc+1, channelno);
 	  }
 	}
 	else {			// even channel
 	  if (check != 0x3 && channelno < 21) {
-	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("%i for %2i. ADC word in even channel %i", 
-				   check, adcwc+1, channelno) ));
+	    MCMError(kAdcCheckInvalid,
+		     "%i for %2i. ADC word in even channel %i", 
+		     check, adcwc+1, channelno);
 	  }
 	}
 	
@@ -892,7 +935,7 @@ Int_t AliTRDrawStream::ReadZSData()
       }
       
       if (adcwc != timebins / 3) 
-	AliError(MCMError(kAdcDataAbort));
+	MCMError(kAdcDataAbort);
       
       // adding index 
       if (padcol > 0 && padcol < 144) {
@@ -905,14 +948,14 @@ Int_t AliTRDrawStream::ReadZSData()
     fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNChannels += channelcount;
     fStats.fStatsSector[fCurrSm].fNChannels                      += channelcount;
     if (channelcount != channelcountExp)
-      AliDebug(1, MCMError(kAdcChannelsMiss));
+      MCMError(kAdcChannelsMiss);
     
     mcmcount++;
     fStats.fStatsSector[fCurrSm].fStatsHC[fCurrHC%60].fNMCMs++;
     fStats.fStatsSector[fCurrSm].fNMCMs++;
 
     if (IsDumping() && DumpingMCM(fCurrHC/2, fCurrRobPos, fCurrMcmPos)) {
-      DumpRaw(Form("Det %3i ROB %i MCM %2i", fCurrHC/2, fCurrRobPos, fCurrMcmPos),
+      DumpRaw(Form("Event %i: Det %3i ROB %i MCM %2i", fRawReader->GetEventIndex(), fCurrHC/2, fCurrRobPos, fCurrMcmPos),
 	      startPosMCM, fPayloadCurr - startPosMCM);
     }
 
@@ -921,9 +964,9 @@ Int_t AliTRDrawStream::ReadZSData()
 
   // check for missing MCMs (if header suppression is inactive)
   if (((fCurrMajor & 0x1) == 0) && (mcmcount != mcmcountExp)) {
-    AliError(LinkError(kMissMcmHeaders,
-		       Form("No. of MCM headers %i not as expected: %i", 
-			    mcmcount, mcmcountExp) ));
+    LinkError(kMissMcmHeaders,
+	      "No. of MCM headers %i not as expected: %i", 
+	      mcmcount, mcmcountExp);
   }
 
   return (fPayloadCurr - start);
@@ -948,8 +991,8 @@ Int_t AliTRDrawStream::ReadNonZSData()
 
   if (fCurrNtimebins != fNtimebins) {
     if (fNtimebins > 0) 
-      AliError(LinkError(kNtimebinsChanged,
-			 Form("No. of timebins changed from %i to %i", fNtimebins, fCurrNtimebins) ));
+      LinkError(kNtimebinsChanged,
+		"No. of timebins changed from %i to %i", fNtimebins, fCurrNtimebins);
     fNtimebins = fCurrNtimebins;
   }
   
@@ -966,7 +1009,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
       lastrobpos = GetROBReadoutPos(ROB(*fPayloadCurr) / 2);
     }
     else {
-      AliError(ROBError(kPosUnexp));
+      ROBError(kPosUnexp);
     }
     fCurrRobPos = ROB(*fPayloadCurr);
     
@@ -975,7 +1018,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
       lastmcmpos = GetMCMReadoutPos(*fPayloadCurr);
     }
     else {
-      AliError(MCMError(kPosUnexp));
+      MCMError(kPosUnexp);
     }
     fCurrMcmPos = MCM(*fPayloadCurr);
     
@@ -983,8 +1026,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
       if (evno == -1)
 	evno = EvNo(*fPayloadCurr);
       else {
-	AliDebug(1, MCMError(kPtrgCntMismatch,
-			     Form("%i <-> %i", evno, EvNo(*fPayloadCurr)) ));
+	MCMError(kPtrgCntMismatch, "%i <-> %i", evno, EvNo(*fPayloadCurr));
       }
     }
     
@@ -1016,16 +1058,16 @@ Int_t AliTRDrawStream::ReadNonZSData()
 	int check = 0x3 & *fPayloadCurr;
 	if (channelno % 2 != 0)	{ // odd channel
 	  if (check != 0x2 && channelno < 21) {
-	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("%i for %2i. ADC word in odd channel %i", 
-				   check, adcwc+1, channelno) ));
+	    MCMError(kAdcCheckInvalid,
+		     "%i for %2i. ADC word in odd channel %i", 
+		     check, adcwc+1, channelno);
 	  }
 	}
 	else {			// even channel
 	  if (check != 0x3 && channelno < 21) {
-	    AliError(MCMError(kAdcCheckInvalid,
-			      Form("%i for %2i. ADC word in even channel %i", 
-				   check, adcwc+1, channelno) ));
+	    MCMError(kAdcCheckInvalid,
+		     "%i for %2i. ADC word in even channel %i", 
+		     check, adcwc+1, channelno);
 	  }
 	}
 	
@@ -1045,7 +1087,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
       }
 
       if (adcwc != timebins / 3) 
-	AliError(MCMError(kAdcDataAbort));
+	MCMError(kAdcDataAbort);
       
       // adding index 
       if (padcol > 0 && padcol < 144) {
@@ -1056,16 +1098,33 @@ Int_t AliTRDrawStream::ReadNonZSData()
     }
 
     if (channelcount != channelcountExp)
-      AliDebug(1, MCMError(kAdcChannelsMiss));
+      MCMError(kAdcChannelsMiss);
     mcmcount++;
     // continue with next MCM
   }
 
   // check for missing MCMs (if header suppression is inactive)
   if (mcmcount != mcmcountExp) {
-    AliError(LinkError(kMissMcmHeaders,
-		       Form("%i not as expected: %i", mcmcount, mcmcountExp) ));
+    LinkError(kMissMcmHeaders,
+	      "%i not as expected: %i", mcmcount, mcmcountExp);
   }
+
+  return (fPayloadCurr - start);
+}
+
+Int_t AliTRDrawStream::SeekNextLink()
+{
+  UInt_t *start = fPayloadCurr;
+
+  // read until data endmarkers
+  while (fPayloadCurr - fPayloadStart < fPayloadSize &&
+	 *fPayloadCurr != fgkDataEndmarker)
+    fPayloadCurr++;
+
+  // read all data endmarkers
+  while (fPayloadCurr - fPayloadStart < fPayloadSize &&
+	 *fPayloadCurr == fgkDataEndmarker)
+    fPayloadCurr++;
 
   return (fPayloadCurr - start);
 }
@@ -1090,7 +1149,7 @@ Bool_t AliTRDrawStream::ConnectTracklets(TTree *trklTree)
 }
 
 
-TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg)
+TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg, ...)
 { 
   // register error according to error code on equipment level 
   // and return the corresponding error message
@@ -1103,12 +1162,22 @@ TString AliTRDrawStream::EquipmentError(ErrorCode_t err, TString msg)
   fLastError.fError  = err;
   fErrors->Fill();
 
-  return (Form("Event %6i: Eq. %2d - %s : ", 
-	       fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err]) + msg); 
+  va_list ap;
+  if (fgErrorDebugLevel[err] > 10) 
+    AliDebug(fgErrorDebugLevel[err],
+	     Form("Event %6i: Eq. %2d - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  else 
+    AliError(Form("Event %6i: Eq. %2d - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  fErrorFlags |= fgErrorBehav[err];
+  return "";
 }										
 
 
-TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg)
+TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg, ...)
 { 
   // register error according to error code on stack level 
   // and return the corresponding error message
@@ -1121,12 +1190,22 @@ TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg)
   fLastError.fError  = err;
   fErrors->Fill();
 
-  return (Form("Event %6i: Eq. %2d S %i - %s : ", 
-	       fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err]) + msg); 
+  va_list ap;
+  if (fgErrorDebugLevel[err] > 10) 
+    AliDebug(fgErrorDebugLevel[err], 
+	     Form("Event %6i: Eq. %2d S %i - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  else 
+    AliError(Form("Event %6i: Eq. %2d S %i - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  fErrorFlags |= fgErrorBehav[err];
+  return "";
 } 
 
 
-TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg)
+TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg, ...)
 { 
   // register error according to error code on link level 
   // and return the corresponding error message
@@ -1139,12 +1218,22 @@ TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg)
   fLastError.fError  = err;
   fErrors->Fill();
 
-  return (Form("Event %6i: Eq. %2d S %i l %2i - %s : ", 
-	       fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err]) + msg); 
+  va_list ap;
+  if (fgErrorDebugLevel[err] > 10)
+    AliDebug(fgErrorDebugLevel[err], 
+	     Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  else 
+    AliError(Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  fErrorFlags |= fgErrorBehav[err];
+  return "";
 } 
 
 
-TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg)
+TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg, ...)
 { 
   // register error according to error code on ROB level 
   // and return the corresponding error message
@@ -1157,12 +1246,22 @@ TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg)
   fLastError.fError  = err;
   fErrors->Fill();
 
-  return (Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : ", 
-	       fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err]) + msg); 
+  va_list ap;
+  if (fgErrorDebugLevel[err] > 10) 
+    AliDebug(fgErrorDebugLevel[err], 
+	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err],
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  else 
+    AliError(Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err], 
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  fErrorFlags |= fgErrorBehav[err];
+  return "";
 } 
 
 
-TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg)
+TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg, ...)
 { 
   // register error according to error code on MCM level 
   // and return the corresponding error message
@@ -1175,8 +1274,18 @@ TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg)
   fLastError.fError  = err;
   fErrors->Fill();
 
-  return (Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : ", 
-	       fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err]) + msg); 
+  va_list ap;
+  if (fgErrorDebugLevel[err] > 10) 
+    AliDebug(fgErrorDebugLevel[err], 
+	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  else 
+    AliError(Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
+		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
+		  (va_start(ap, msg), vsprintf(fErrorBuffer, msg.Data(), ap), va_end(ap), fErrorBuffer) ));
+  fErrorFlags |= fgErrorBehav[err];
+  return "";
 }
 
 const char* AliTRDrawStream::GetErrorMessage(ErrorCode_t errCode)
