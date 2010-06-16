@@ -155,6 +155,7 @@ AliTOFcalib::AliTOFcalib():
   fResponseParams(NULL),
   fInitFlag(kFALSE),
   fRemoveMeanT0(kTRUE),
+  fCalibrateTOFsignal(kTRUE),
   fCorrectTExp(kFALSE)
 { 
   //TOF Calibration Class ctor
@@ -187,6 +188,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fResponseParams(NULL),
   fInitFlag(calib.fInitFlag),
   fRemoveMeanT0(calib.fRemoveMeanT0),
+  fCalibrateTOFsignal(calib.fCalibrateTOFsignal),
   fCorrectTExp(calib.fCorrectTExp)
 {
   //TOF Calibration Class copy ctor
@@ -267,6 +269,7 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
   }
   fInitFlag = calib.fInitFlag;
   fRemoveMeanT0 = calib.fRemoveMeanT0;
+  fCalibrateTOFsignal = calib.fCalibrateTOFsignal;
   fCorrectTExp = calib.fCorrectTExp;
 
   return *this;
@@ -2221,22 +2224,22 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
     /* get track */
     track = event->GetTrack(itrk);
     if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
-    
-    /* get info */
-    index = track->GetTOFCalChannel();
-    time = track->GetTOFsignalRaw();
-    tot = track->GetTOFsignalToT();
-    l0l1 = track->GetTOFL0L1();
-    deltaBC = track->GetTOFDeltaBC();
 
-    /* get correction */
-    corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
-    
-    /* apply correction */
-    time -= corr;
-    
-    /* set new TOF signal */
-    track->SetTOFsignal(time);
+    /* calibrate TOF signal */
+    if (fCalibrateTOFsignal) {
+      /* get info */
+      index = track->GetTOFCalChannel();
+      time = track->GetTOFsignalRaw();
+      tot = track->GetTOFsignalToT();
+      l0l1 = track->GetTOFL0L1();
+      deltaBC = track->GetTOFDeltaBC();
+      /* get correction */
+      corr = GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp);
+      /* apply correction */
+      time -= corr;
+      /* set new TOF signal */
+      track->SetTOFsignal(time);
+    }
 
     /* correct expected time */
     if (fCorrectTExp) {

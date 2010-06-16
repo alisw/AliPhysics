@@ -149,6 +149,7 @@ public:
   Double_t GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l0l1, UInt_t timestamp); // get time correction
   void CalibrateESD(AliESDEvent *event); // calibrate ESD
   void SetRemoveMeanT0(Bool_t value) {fRemoveMeanT0 = value;}; // setter
+  void SetCalibrateTOFsignal(Bool_t value) {fCalibrateTOFsignal = value;}; // setter
   void SetCorrectTExp(Bool_t value) {fCorrectTExp = value;}; // setter
   Bool_t IsChannelEnabled(Int_t index); // is channel enabled
 
@@ -183,6 +184,7 @@ private:
   
   Bool_t fInitFlag; // init flag
   Bool_t fRemoveMeanT0; // remove mean T0
+  Bool_t fCalibrateTOFsignal; // calibrate TOF signal
   Bool_t fCorrectTExp; // correct expected time
 
   ClassDef(AliTOFcalib,10);
