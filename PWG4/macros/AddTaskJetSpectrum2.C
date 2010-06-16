@@ -27,6 +27,18 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 16,Boo
     js = AddTaskJetSpectrum2("jetsAOD_UA107","",filterMask,iPhysicsSelection);
     js->SetRecEtaWindow(0.2);
   }
+  if(iFlag&(1<<12)){
+    js = AddTaskJetSpectrum2("jetsAOD_FASTJET07","",filterMask,iPhysicsSelection);
+    js->SetRecEtaWindow(0.2);
+  }
+  if(iFlag&(1<<13)){
+    js = AddTaskJetSpectrum2("jetsAOD_FASTKT07","",filterMask,iPhysicsSelection);
+    js->SetRecEtaWindow(0.2);
+  }
+  if(iFlag&(1<<14)){
+    js = AddTaskJetSpectrum2("jetsAOD_SISCONE07","",filterMask,iPhysicsSelection);
+    js->SetRecEtaWindow(0.2);
+  }
   return js;
 }
 
