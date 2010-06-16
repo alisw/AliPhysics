@@ -20,18 +20,21 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
   trkFilter->AddCuts(esdTrackCuts);
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCutsSoftPi->SetMinNClustersITS(4);
+  esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
