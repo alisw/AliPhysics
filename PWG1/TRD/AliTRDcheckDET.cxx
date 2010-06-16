@@ -560,7 +560,7 @@ TH1 *AliTRDcheckDET::PlotTrackStatus(const AliTRDtrackV1 *track)
 //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -592,7 +592,7 @@ TH1 *AliTRDcheckDET::PlotTrackletStatus(const AliTRDtrackV1 *track)
 //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TObjArray *arr =NULL;
@@ -619,7 +619,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTracklet(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -642,7 +642,7 @@ TH1 *AliTRDcheckDET::PlotNClustersTrack(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -699,7 +699,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsTrack(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL, *hSta = NULL; TH2 *hBarrel = NULL;
@@ -780,7 +780,7 @@ TH1 *AliTRDcheckDET::PlotNTrackletsRowCross(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -832,7 +832,7 @@ TH1 *AliTRDcheckDET::PlotFindableTracklets(const AliTRDtrackV1 *track){
  
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -930,7 +930,7 @@ TH1 *AliTRDcheckDET::PlotChi2(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -951,15 +951,11 @@ TH1 *AliTRDcheckDET::PlotPHt(const AliTRDtrackV1 *track){
   //
   // Plot the average pulse height
   //
-  if(!track) {
-    AliWarning("No Track defined.");
+  if(track) fkTrack = track;
+  if(!fkTrack){
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
-  fkTrack = track;
-  /*if(!fkTrack){
-    AliWarning("No Track defined.");
-    return NULL;
-  }*/
   TProfile *h = NULL; TH2F *phs2D = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(0)))){
     AliWarning("No Histogram defined.");
@@ -1021,36 +1017,37 @@ TH1 *AliTRDcheckDET::PlotPHx(const AliTRDtrackV1 *track){
   // Plots the average pulse height vs the distance from the anode wire
   // (plus const anode wire offset)
   //
-  if(!track){
-    AliWarning("No Track defined.");
-    return NULL;
+  if(track) fkTrack = track;
+  if(!fkTrack){
+     AliDebug(4, "No Track defined.");
+     return NULL;
   }
-  fkTrack = track;
   TProfile *h = NULL;
   if(!(h = dynamic_cast<TProfile *>(((TObjArray*)(fContainer->At(kPH)))->At(1)))){
     AliWarning("No Histogram defined.");
     return NULL;
   }
-  AliTRDseedV1 *tracklet = NULL;
-  AliTRDcluster *c = NULL;
+  AliTRDseedV1 *tracklet(NULL);
+  AliTRDcluster *c(NULL);
   Double_t xd(0.), dqdl(0.);
   TVectorD vq(AliTRDseedV1::kNtb), vxd(AliTRDseedV1::kNtb), vdqdl(AliTRDseedV1::kNtb);
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !(tracklet->IsOK())) continue;
     Int_t det(tracklet->GetDetector());
     Bool_t rc(tracklet->IsRowCross());
-    Int_t jc(0);
-    for(Int_t ic(0); ic<AliTRDseedV1::kNclusters; ic++){
-      if(!(c = tracklet->GetClusters(ic))) continue;
+    for(Int_t ic(0); ic<AliTRDseedV1::kNtb; ic++){
+      Bool_t kFIRST(kFALSE);
+      if(!(c = tracklet->GetClusters(ic))){
+         if(!(c = tracklet->GetClusters(AliTRDseedV1::kNtb+ic))) continue;
+      } else kFIRST=kTRUE;
       if(!IsUsingClustersOutsideChamber() && !c->IsInChamber()) continue;
-      jc = (ic-AliTRDseedV1::kNtb);
-      if(jc<0) jc+=AliTRDseedV1::kNtb;
-      xd = tracklet->GetX0() - c->GetX(); vxd[jc] = xd;
-      dqdl=tracklet->GetdQdl(ic); vdqdl[jc] = dqdl;
+      xd = tracklet->GetX0() - c->GetX(); vxd[ic] = xd;
+      dqdl=tracklet->GetdQdl(ic); vdqdl[ic] = dqdl;
+      vq[ic]=c->GetQ();
+      if(kFIRST && (c = tracklet->GetClusters(AliTRDseedV1::kNtb+ic))) vq[ic]+=c->GetQ();
       h->Fill(xd, dqdl);
     }
     if(DebugLevel() > 3){
-      vq[jc]+=c->GetQ();
       (*DebugStream()) << "PHx"
         << "det="  << det
         << "rc="   << rc
@@ -1070,7 +1067,7 @@ TH1 *AliTRDcheckDET::PlotChargeCluster(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -1082,9 +1079,14 @@ TH1 *AliTRDcheckDET::PlotChargeCluster(const AliTRDtrackV1 *track){
   AliTRDcluster *c = NULL;
   for(Int_t itl = 0; itl < AliTRDgeometry::kNlayer; itl++){
     if(!(tracklet = fkTrack->GetTracklet(itl)) || !tracklet->IsOK())continue;
-    for(Int_t itime = 0; itime < AliTRDtrackerV1::GetNTimeBins(); itime++){
-      if(!(c = tracklet->GetClusters(itime))) continue;
-      h->Fill(c->GetQ());
+    for(Int_t ic(0); ic < AliTRDseedV1::kNtb; ic++){
+      Bool_t kFIRST(kFALSE);
+      if(!(c = tracklet->GetClusters(ic))) {
+        if(!(c = tracklet->GetClusters(AliTRDseedV1::kNtb+ic))) continue;
+      } else kFIRST = kTRUE;
+      Float_t q(c->GetQ());
+      if(kFIRST && (c = tracklet->GetClusters(AliTRDseedV1::kNtb+ic))) q+=c->GetQ();
+      h->Fill(q);
     }
   }
   return h;
@@ -1097,7 +1099,7 @@ TH1 *AliTRDcheckDET::PlotChargeTracklet(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
@@ -1154,7 +1156,7 @@ TH1 *AliTRDcheckDET::PlotNTracksSector(const AliTRDtrackV1 *track){
   //
   if(track) fkTrack = track;
   if(!fkTrack){
-    AliWarning("No Track defined.");
+    AliDebug(4, "No Track defined.");
     return NULL;
   }
   TH1 *h = NULL;
