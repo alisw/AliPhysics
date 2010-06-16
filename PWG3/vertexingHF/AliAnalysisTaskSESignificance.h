@@ -56,7 +56,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   enum {kMaxCutVar=5};
   enum {kMaxSteps=10};
   enum {kMaxNHist=500000};
-  enum {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpipipi,kLambdactoPKpi};
+  enum {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpipipi,kLambdactopKpi};
 
   TList   *fOutput; //! list send on output slot 0
   TList *fCutList; //Multidimvector container
