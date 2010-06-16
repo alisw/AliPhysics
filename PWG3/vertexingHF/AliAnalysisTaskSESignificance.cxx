@@ -188,7 +188,7 @@ Bool_t AliAnalysisTaskSESignificance::CheckConsistency(){
 void  AliAnalysisTaskSESignificance::SetMassLimits(Float_t range, Int_t pdg){
   Float_t mass=0;
   Int_t abspdg=TMath::Abs(pdg);
-  if(abspdg==411||abspdg==421||abspdg==431)mass=TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+  mass=TDatabasePDG::Instance()->GetParticle(abspdg)->Mass();
   fUpmasslimit = mass+range;
   fLowmasslimit = mass-range;
 }
@@ -268,10 +268,11 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
     }
   }
 
-  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",3,0,3.);
+  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",4,0,4.);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nCandidatesSelected");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"nTotEntries Mass hists");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvNoSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"nTotEntries Mass hists");
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fOutput->Add(fHistNEvents);
 
@@ -443,6 +444,11 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   Int_t nProng = arrayProng->GetEntriesFast();
   if(fDebug>1) printf("Number of D2H: %d\n",nProng);
 
+  if(!fRDCuts->IsEventSelected(aod)){
+    fHistNEvents->Fill(1);
+    return;
+  }
+
   for (Int_t iProng = 0; iProng < nProng; iProng++) {
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
     Double_t invMass=d->InvMass(nprongs,(UInt_t*)pdgdaughters);
@@ -451,7 +457,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel);
     
     if(isSelected) {
-      fHistNEvents->Fill(1); // count selected with loosest cuts
+      fHistNEvents->Fill(2); // count selected with loosest cuts
       if(fDebug>1) printf("Is Selected\n");
     
       const Int_t nvars=fRDCuts->GetNVarsForOpt();
@@ -470,7 +476,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  return;
 	}
 	fMassHist[ptbin*nHistpermv+addresses[ivals]]->Fill(invMass);
-	fHistNEvents->Fill(2);
+	fHistNEvents->Fill(3);
 	if(fReadMC){
 	  Int_t lab=-1;
 	  lab = d->MatchToMC(prongpdg,arrayMC,nprongs,pdgdaughters);
