@@ -95,7 +95,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
     THnSparseF   *fhnJetContainer[kMaxStep*2];   // like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
     THnSparseF   *fhnCorrelation;           // response matrix for unfolding 
+    THnSparseF   *fhnCorrelationPhiZRec;       // response matrix for unfolding in max Z rec bins
 
+    TF1          *f1PtScale;                // correction function to correct to the average true jet energy depending on p_T,rec
 
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
@@ -127,6 +129,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtTrackRec;    // track pt
     TH1F*         fh1SumPtTrackRec; // sum over all track pT    
     TH1F*         fh1SumPtTrackAreaRec; // sum over all track pT    
+    TH1F*         fh1TmpRho;            // just temporary histo for calculation
 
 
     TH1F*         fh1PtRecIn[kMaxJets];  // Jet pt for all this info is also in the THNsparse      
@@ -137,7 +140,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtTracksRecIn;  // track pt for all tracks
     TH1F*         fh1PtTracksLeadingRecIn;  // track pt for all tracks
     TH1F*         fh1PtTracksGenIn;  // track pt for all tracks
-
+    
 
     TH2F*         fh2NRecJetsPt;            // Number of found jets above threshold
     TH2F*         fh2NRecTracksPt;          // Number of found tracks above threshold
@@ -146,12 +149,16 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2TracksLeadingPhiEta;   // track correlation with leading track
     TH2F*         fh2TracksLeadingPhiPt;    // track correlation with leading track
     TH2F*         fh2TracksLeadingJetPhiPt; // track correlation with leading track
+    TH2F*         fh2JetPtJetPhi;           // Phi distribution of accepted jets 
+    TH2F*         fh2TrackPtTrackPhi;       // phi distribution of accepted tracks
     TH2F*         fh2PhiPt[kMaxJets];    // delta phi correlation of tracks with the jet      
     TH2F*         fh2PhiEta[kMaxJets];   // eta   phi correlation of tracks with the jet      
-
+    TH2F*         fh2RhoPtRec[kMaxJets];    // jet shape variable rho
+    TH2F*         fh2PsiPtRec[kMaxJets];    // jet shape variable psi
+    TH2F*         fh2RhoPtGen[kMaxJets];    //
+    TH2F*         fh2PsiPtGen[kMaxJets];    //
     TH2F*         fh2FragRec[kMaxJets];     // fragmentation function
     TH2F*         fh2FragLnRec[kMaxJets];   // fragmetation in xi
-
     TH2F*         fh2FragGen[kMaxJets];     // fragmentation function
     TH2F*         fh2FragLnGen[kMaxJets];   // fragmetation in xi
 
@@ -169,7 +176,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList; // Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 2) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 4) // Analysis task for standard jet analysis
 };
  
 #endif
