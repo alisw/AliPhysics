@@ -18,7 +18,8 @@ public:
   enum {
     kCorrectedLeadingTime = BIT(14),
     kTriggerBitsFilled = BIT(15),
-    kDecisionFilled = BIT(16)
+    kDecisionFilled = BIT(16),
+    kOnlineBitsFilled = BIT(17)
   };
   enum Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
   

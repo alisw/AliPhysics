@@ -351,6 +351,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   fESDVZERO->SetADC(adc);
   fESDVZERO->SetTime(time);
   fESDVZERO->SetWidth(width);
+  fESDVZERO->SetBit(AliESDVZERO::kOnlineBitsFilled,kTRUE);
   fESDVZERO->SetBBFlag(aBBflag);
   fESDVZERO->SetBGFlag(aBGflag);
 
