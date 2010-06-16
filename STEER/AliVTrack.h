@@ -22,6 +22,7 @@ public:
 
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
+  virtual UShort_t GetTPCNcls() const { return 0;}
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
   virtual Double_t GetBz() const;

@@ -485,6 +485,10 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
     if(HasPointOnITSLayer(i)) fITSncls++;
   }
 
+  // Set TPC ncls 
+  fTPCncls=track->GetTPCNcls();
+
+
   // Set the combined PID
   const Double_t *pid = track->PID();
   if(pid){
