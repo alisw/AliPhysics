@@ -67,6 +67,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
 							    fJetHeaderGen(0x0),
 							    fAOD(0x0),
 							    fhnCorrelation(0x0),
+  fhnCorrelationPhiZRec(0x0),
+  f1PtScale(0x0),
 							    fBranchRec("jets"),
 							    fBranchGen(""),
 							    fUseAODJetInput(kFALSE),
@@ -94,6 +96,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh1PtTrackRec(0x0),   
   fh1SumPtTrackRec(0x0),  
   fh1SumPtTrackAreaRec(0x0),  
+  fh1TmpRho(0x0),
   fh1PtJetsRecIn(0x0),
   fh1PtJetsLeadingRecIn(0x0),
   fh1PtTracksRecIn(0x0),
@@ -106,6 +109,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
   fh2TracksLeadingPhiEta(0x0),
   fh2TracksLeadingPhiPt(0x0),
   fh2TracksLeadingJetPhiPt(0x0),
+  fh2JetPtJetPhi(0x0),
+  fh2TrackPtTrackPhi(0x0),
   fh2DijetDeltaPhiPt(0x0),      
   fh2DijetAsymPt(0x0),          
   fh2DijetAsymPtCut(0x0),       
@@ -120,7 +125,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
     fhnJetContainer[i] = 0;
   }
   for(int i = 0;i < kMaxJets;++i){
-    fh2PhiPt[i] = fh2PhiEta[i] = fh2FragRec[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
+    fh2PhiPt[i] = fh2PhiEta[i] = fh2RhoPtRec[i] = fh2PsiPtRec[i] = fh2FragRec[i] = fh2PsiPtGen[i] = fh2FragGen[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
     fh1PtRecIn[i] = fh1PtGenIn[i] = 0;
   }  
 
@@ -132,6 +137,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fJetHeaderGen(0x0),
   fAOD(0x0),
   fhnCorrelation(0x0),
+  fhnCorrelationPhiZRec(0x0),
+  f1PtScale(0x0),
   fBranchRec("jets"),
   fBranchGen(""),
   fUseAODJetInput(kFALSE),
@@ -159,6 +166,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1PtTrackRec(0x0),   
   fh1SumPtTrackRec(0x0),  
   fh1SumPtTrackAreaRec(0x0),  
+  fh1TmpRho(0x0),
   fh1PtJetsRecIn(0x0),
   fh1PtJetsLeadingRecIn(0x0),
   fh1PtTracksRecIn(0x0),
@@ -171,6 +179,8 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2TracksLeadingPhiEta(0x0),
   fh2TracksLeadingPhiPt(0x0),
   fh2TracksLeadingJetPhiPt(0x0),
+  fh2JetPtJetPhi(0x0),
+  fh2TrackPtTrackPhi(0x0),
   fh2DijetDeltaPhiPt(0x0),      
   fh2DijetAsymPt(0x0),          
   fh2DijetAsymPtCut(0x0),       
@@ -186,7 +196,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fhnJetContainer[i] = 0;
   }  
   for(int i = 0;i < kMaxJets;++i){
-    fh2PhiPt[i] = fh2PhiEta[i] = fh2FragRec[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
+    fh2PhiPt[i] = fh2PhiEta[i] = fh2RhoPtRec[i] = fh2PsiPtRec[i] = fh2FragRec[i] = fh2PsiPtGen[i] =  fh2RhoPtGen[i] = fh2FragGen[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
     fh1PtRecIn[i] = fh1PtGenIn[i] = 0;
   }
   DefineOutput(1, TList::Class());  
@@ -250,7 +260,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   //
   //  Histogram
     
-  const Int_t nBinPt = 100;
+  const Int_t nBinPt = 240;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
@@ -269,6 +279,18 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     }
     else{
       binLimitsPhi[iPhi] = binLimitsPhi[iPhi-1] + 1/(Float_t)nBinPhi * TMath::Pi()*2;
+    }
+  }
+
+
+  const Int_t nBinPhi2 = 360;
+  Double_t binLimitsPhi2[nBinPhi2+1];
+  for(Int_t iPhi2 = 0;iPhi2<=nBinPhi2;iPhi2++){
+    if(iPhi2==0){
+      binLimitsPhi2[iPhi2] = 0.;
+    }
+    else{
+      binLimitsPhi2[iPhi2] = binLimitsPhi2[iPhi2-1] + 1/(Float_t)nBinPhi2 * TMath::Pi()*2;
     }
   }
 
@@ -324,6 +346,10 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh2TracksLeadingPhiPt = new TH2F("fh2TracksLeadingPhiPt","leading p_T vs delta phi to leading jet;#Delta#phi;p_{T} (GeV/c)",
 				 nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
+  fh2JetPtJetPhi = new TH2F("fh2JetPtJetPhi","Reconstructed jet phi vs. pt",nBinPt,binLimitsPt,nBinPhi2,binLimitsPhi2);
+  fh2TrackPtTrackPhi = new TH2F("fh2TrackPtTrackPhi","Reconstructed track phi vs. pt",nBinPt,binLimitsPt,nBinPhi2,binLimitsPhi2);
+
+
   for(int ij = 0;ij < kMaxJets;++ij){
     fh1PtRecIn[ij] = new TH1F(Form("fh1PtRecIn_j%d",ij),"rec p_T input ;p_{T,rec}",nBinPt,binLimitsPt);
     fh1PtGenIn[ij] = new TH1F(Form("fh1PtGenIn_j%d",ij),"found p_T input ;p_{T,gen}",nBinPt,binLimitsPt);
@@ -334,6 +360,17 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fh2PhiEta[ij] =  new TH2F(Form("fh2PhiEtaRec_j%d",ij),"delta eta vs delta phi for jets;#Delta#phi;#Delta#eta",
 			      nBinPhi,binLimitsPhi,nBinEta,binLimitsEta);
 
+    fh2RhoPtRec[ij] =  new TH2F(Form("fh2RhoPtRec_j%d",ij),"jet shape rho for jets;r;p_{T,rec};",
+				20,0.,1.,nBinPt,binLimitsPt);
+    fh2PsiPtRec[ij] =  new TH2F(Form("fh2PsiPtRec_j%d",ij),"jet shape psi for jets;r;p_{T,rec};",
+				20,0.,1.,nBinPt,binLimitsPt);
+
+    fh2RhoPtGen[ij] =  new TH2F(Form("fh2RhoPtGen_j%d",ij),"jet shape rho for jets;r;p_{T,gen};",
+				20,0.,1.,nBinPt,binLimitsPt);
+    fh2PsiPtGen[ij] =  new TH2F(Form("fh2PsiPtGen_j%d",ij),"jet shape psi for jets;r;p_{T,gen};",
+				20,0.,1.,nBinPt,binLimitsPt);
+    if(!fh1TmpRho)fh1TmpRho = new TH1F("fh1TmpRho","tmp histo for jet shape",20,0.,1);
+
 
     fh2FragRec[ij] = new TH2F(Form("fh2FragRec_j%d",ij),"Jet Fragmentation;x=p_{T,i}/p_{T,jet};p_{T,jet};1/N_{jet}dN_{ch}/dx",
 			   nBinFrag,0.,1.,nBinPt,binLimitsPt);
@@ -341,9 +378,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 			     nBinFrag,0.,10.,nBinPt,binLimitsPt);
 
     fh2FragGen[ij] = new TH2F(Form("fh2FragGen_j%d",ij),"Jet Fragmentation;x=p_{T,i}/p_{T,jet};p_{T,jet};1/N_{jet}dN_{ch}/dx",
-			   nBinFrag,0.,1.,nBinPt,binLimitsPt);
+			      nBinFrag,0.,1.,nBinPt,binLimitsPt);
     fh2FragLnGen[ij] = new TH2F(Form("fh2FragLnGen_j%d",ij),"Jet Fragmentation Ln;#xi=ln(p_{T,jet}/p_{T,i});p_{T,jet}(GeV);1/N_{jet}dN_{ch}/d#xi",
-			     nBinFrag,0.,10.,nBinPt,binLimitsPt);
+				nBinFrag,0.,10.,nBinPt,binLimitsPt);
   }
 
   // Dijet histograms
@@ -388,18 +425,26 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
+
       if(fBranchGen.Length()>0){
 	fHistList->Add( fh1PtGenIn[ij]);
 	fHistList->Add( fh2FragGen[ij]);
 	fHistList->Add( fh2FragLnGen[ij]);
+	fHistList->Add(fh2RhoPtGen[ij]);
+	fHistList->Add(fh2PsiPtGen[ij]);
+	fHistList->Add( fh2FragGen[ij]);
       }
       fHistList->Add( fh2PhiPt[ij]);
       fHistList->Add( fh2PhiEta[ij]);
+      fHistList->Add(fh2RhoPtRec[ij]);
+      fHistList->Add(fh2PsiPtRec[ij]);
       fHistList->Add( fh2FragRec[ij]);
       fHistList->Add( fh2FragLnRec[ij]);
     }
     fHistList->Add(fhnCorrelation);
-
+    fHistList->Add(fhnCorrelationPhiZRec);
+    fHistList->Add(fh2JetPtJetPhi);
+    fHistList->Add(fh2TrackPtTrackPhi);
 
     fHistList->Add(fh2DijetDeltaPhiPt);       
     fHistList->Add(fh2DijetAsymPt);       
@@ -775,6 +820,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
 
   Double_t container[6];
+  Double_t containerPhiZ[6];
 
   // loop over generated jets
 
@@ -796,30 +842,38 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     Int_t ir = iRecIndex[ig];
 
     if(TMath::Abs(etaGen)<fRecEtaWindow){
+      fh1TmpRho->Reset();
+
       fhnJetContainer[kStep1]->Fill(&container[3],eventW);
       fh1PtGenIn[ig]->Fill(ptGen,eventW);
       // fill the fragmentation function
       for(int it = 0;it<genParticles.GetEntries();++it){
 	AliVParticle *part = (AliVParticle*)genParticles.At(it);
-	if(genJets[ig].DeltaR(part)<radiusGen){
+	Float_t deltaR = genJets[ig].DeltaR(part);
+	fh1TmpRho->Fill(deltaR,part->Pt()/ptGen);
+	if(deltaR<radiusGen){
 	  Float_t z = part->Pt()/ptGen;
 	  Float_t lnz =  -1.*TMath::Log(z);
 	  fh2FragGen[ig]->Fill(z,ptGen,eventW);
 	  fh2FragLnGen[ig]->Fill(lnz,ptGen,eventW);
 	}
-      }
-      if(ir>=0&&ir<nRecJets){
-	fhnJetContainer[kStep3]->Fill(&container[3],eventW);
-      }
-    }    
 
+      }
+      Float_t rhoSum = 0;
+      for(int ibx = 1;ibx<fh2RhoPtGen[ir]->GetNbinsX();ibx++){
+	Float_t r = fh2RhoPtGen[ir]->GetXaxis()->GetBinCenter(ibx);
+	Float_t rho = fh1TmpRho->GetBinContent(ibx);
+	rhoSum += rho;
+	fh2RhoPtGen[ig]->Fill(r,ptGen,rho);
+	fh2PsiPtGen[ig]->Fill(r,ptGen,rhoSum);
+      }
+    }
     if(ir>=0&&ir<nRecJets){   
       fhnJetContainer[kStep2]->Fill(&container[3],eventW);
       Double_t etaRec = recJets[ir].Eta();
       if(TMath::Abs(etaRec)<fRecEtaWindow)fhnJetContainer[kStep4]->Fill(&container[3],eventW);
     }
   }// loop over generated jets
-
   
   Float_t sumPt = 0;
   for(int it = 0;it<recParticles.GetEntries();++it){
@@ -828,6 +882,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     if(TMath::Abs(part->Eta())<0.9){
       Float_t pt = part->Pt();
       fh1PtTrackRec->Fill(pt,eventW);
+      fh2TrackPtTrackPhi->Fill(pt,part->Phi());
       sumPt += pt;
     }
   }
@@ -884,7 +939,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
     container[0] = ptRec;
     container[1] = etaRec;
     container[2] = phiRec;
-
+    containerPhiZ[0] = ptRec;
+    containerPhiZ[1] = phiRec;
     if(ptRec>30.&&fDebug>0){
       // need to cast to int, otherwise the printf overwrites
       Printf("Jet found in Event %d with p_T, %E",(int)Entry(),ptRec);
@@ -909,10 +965,16 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 
     fhnJetContainer[kStep0+kMaxStep]->Fill(container,eventW);
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+
+    Float_t zLeading = -1;
     if(TMath::Abs(etaRec)<fRecEtaWindow){
+      fh2JetPtJetPhi->Fill(ptRec,phiRec);
       fhnJetContainer[kStep1+kMaxStep]->Fill(container,eventW);
       fh1PtRecIn[ir]->Fill(ptRec,eventW);
       // fill the fragmentation function
+      
+      fh1TmpRho->Reset();
+
       for(int it = 0;it<recParticles.GetEntries();++it){
 	AliVParticle *part = (AliVParticle*)recParticles.At(it);
 	Float_t eta = part->Eta();
@@ -926,15 +988,32 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
 	  fh2PhiPt[ir]->Fill(dPhi,ptRec,eventW);
 	  fh2PhiEta[ir]->Fill(dPhi,dEta,eventW);
 	}
-	if(recJets[ir].DeltaR(part)<radiusRec){
+
+	Float_t deltaR = recJets[ir].DeltaR(part);
+	fh1TmpRho->Fill(deltaR,part->Pt()/ptRec);
+
+
+	if(deltaR<radiusRec){
 	  Float_t z = part->Pt()/ptRec;
+	  if(z>zLeading)zLeading=z;
 	  Float_t lnz =  -1.*TMath::Log(z);
 	  fh2FragRec[ir]->Fill(z,ptRec,eventW);
 	  fh2FragLnRec[ir]->Fill(lnz,ptRec,eventW);
 	}
       }
+      // fill the jet shapes
+      Float_t rhoSum = 0;
+      for(int ibx = 1;ibx<fh2RhoPtRec[ir]->GetNbinsX();ibx++){
+	Float_t r = fh2RhoPtRec[ir]->GetXaxis()->GetBinCenter(ibx);
+	Float_t rho = fh1TmpRho->GetBinContent(ibx);
+	rhoSum += rho;
+	fh2RhoPtRec[ir]->Fill(r,ptRec,rho);
+	fh2PsiPtRec[ir]->Fill(r,ptRec,rhoSum);
+      }
     }
 
+
+    containerPhiZ[2] = zLeading;
 
     // Fill Correlation
     Int_t ig = iGenIndex[ir];
@@ -949,7 +1028,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       container[3] = ptGen;
       container[4] = etaGen;
       container[5] = phiGen;
-
+      containerPhiZ[3] = ptGen;
       // 
       // we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
       // 
@@ -958,12 +1037,14 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/)
       if(TMath::Abs(etaRec)<fRecEtaWindow){
 	fhnJetContainer[kStep3+kMaxStep]->Fill(container,eventW);
 	fhnCorrelation->Fill(container);
+	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
+
       }// if etarec in window
 
     } 
-    ////////////////////////////////////////////////////  
     else{
-
+      containerPhiZ[3] = 0;
+      if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
     }
   }// loop over reconstructed jets
 
@@ -983,12 +1064,12 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   const Double_t kPtmin = 0.0, kPtmax = 160.; // we do not want to have empty bins at the beginning...
   const Double_t kEtamin = -3.0, kEtamax = 3.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
+  const Double_t kZmin = 0., kZmax = 1;
 
   // can we neglect migration in eta and phi?
   // phi should be no problem since we cover full phi and are phi symmetric
   // eta migration is more difficult  due to needed acceptance correction
   // in limited eta range
-
 
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
@@ -1030,13 +1111,41 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   }
   fhnCorrelation->Sumw2();
 
+  // for second correlation histogram
+
+
+  const Int_t kNvarPhiZ   = 4; 
+  //arrays for the number of bins in each dimension
+  Int_t iBinPhiZ[kNvarPhiZ];
+  iBinPhiZ[0] = 80; //bins in pt
+  iBinPhiZ[1] = 72; //bins in phi 
+  iBinPhiZ[2] = 20; // bins in Z
+  iBinPhiZ[3] = 80; //bins in ptgen
+
+  //arrays for lower bounds :
+  Double_t* binEdgesPhiZ[kNvarPhiZ];
+  for(Int_t ivar = 0; ivar < kNvarPhiZ; ivar++)
+    binEdgesPhiZ[ivar] = new Double_t[iBinPhiZ[ivar] + 1];
+
+  for(Int_t i=0; i<=iBinPhiZ[0]; i++) binEdgesPhiZ[0][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBinPhiZ[0]*(Double_t)i;
+  for(Int_t i=0; i<=iBinPhiZ[1]; i++) binEdgesPhiZ[1][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBinPhiZ[1]*(Double_t)i;
+  for(Int_t i=0; i<=iBinPhiZ[2]; i++) binEdgesPhiZ[2][i]=(Double_t)kZmin  + (kZmax-kZmin)/iBinPhiZ[2]*(Double_t)i;
+  for(Int_t i=0; i<=iBinPhiZ[3]; i++) binEdgesPhiZ[3][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBinPhiZ[3]*(Double_t)i;
+
+  fhnCorrelationPhiZRec = new THnSparseF("fhnCorrelationPhiZRec","THnSparse with correlations",kNvarPhiZ,iBinPhiZ);
+  for (int k=0; k<kNvarPhiZ; k++) {
+    fhnCorrelationPhiZRec->SetBinEdges(k,binEdgesPhiZ[k]);
+  }
+  fhnCorrelationPhiZRec->Sumw2();
+
+
   // Add a histogram for Fake jets
-  //  thnDim[3] = AliPID::kSPECIES;
-  //  fFakeElectrons = new THnSparseF("fakeEkectrons", "Output for Fake Electrons", kNvar + 1, thnDim);
-  // for(Int_t idim = 0; idim < kNvar; idim++)
-  //  fFakeElectrons->SetBinEdges(idim, binEdges[idim]);
+
   for(Int_t ivar = 0; ivar < kNvar; ivar++)
     delete [] binEdges[ivar];
+
+  for(Int_t ivar = 0; ivar < kNvarPhiZ; ivar++)
+    delete [] binEdgesPhiZ[ivar];
 
 }
 
