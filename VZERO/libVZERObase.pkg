@@ -3,6 +3,7 @@
 
 SRCS= AliVZEROLoader.cxx \
       AliVZEROdigit.cxx \
+      AliVZEROSDigit.cxx \
       AliVZEROCalibData.cxx \
       AliVZEROPreprocessor.cxx \
       AliVZERODataDCS.cxx \
