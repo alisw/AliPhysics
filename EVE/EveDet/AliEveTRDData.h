@@ -161,7 +161,6 @@ public:
   AliEveTRDTrackletOnline(AliTRDtrackletWord *tracklet);
   ~AliEveTRDTrackletOnline();
 
-//  void               Print(Option_t *o="") const; // *MENU*
   void               ShowMCM(Option_t *opt = "RHT") const; // *MENU*
 private:
   Int_t fDetector;

@@ -1,51 +1,85 @@
+#ifdef __CINT__
+class TEveLine;
+#else
+#include <TEveManager.h>
 #include "TEveLine.h"
+#include "TClonesArray.h"
+#include <EveBase/AliEveEventManager.h>
+
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include "AliDataLoader.h"
+#include "AliTreeLoader.h"
+#include "TRD/AliTRDarrayADC.h"
+#include "EveDet/AliEveTRDData.h"
+#include "TRD/AliTRDtrackletWord.h"
+#include "TRD/AliTRDtrackletMCM.h"
+#endif
 
 TEveElementList *trd_tracklets()
 {
   AliRunLoader* rl =  AliEveEventManager::AssertRunLoader();
   AliLoader *loader = rl ? rl->GetLoader("TRDLoader") : 0x0;
+
+  TTree *trklTree = 0x0;
+
   AliDataLoader *dl = loader ? loader->GetDataLoader("tracklets") : 0x0;
-  if (!dl)
-    return;
-
-  dl->Load();
-  TTree *trklTree = dl->Tree();
-
-  TBranch *trklBranch = 0x0;
+  if (!dl) {
+    printf("No tracklet loader\n");
+    return 0x0;
+  }
 
   gEve->DisableRedraw();
 
-  if (trklBranch = trklTree->GetBranch("trkbranch")) {
-    TEveElementList* listOfTracklets = new TEveElementList("Online tracklets");
-    gEve->AddElement(listOfTracklets);
-
-    UInt_t *leaves = new UInt_t[258];
-    trklBranch->SetAddress(leaves);
-
-    for (Int_t iEntry = 0; iEntry < trklBranch->GetEntries(); iEntry++) {
-      trklBranch->GetEntry(iEntry);
-      for (Int_t iTracklet = 0; iTracklet < 256; iTracklet++) {
-        if (leaves[2 + iTracklet] == 0)
-          break;
-        AliEveTRDTrackletOnline *evetrkl = new AliEveTRDTrackletOnline(new AliTRDtrackletWord(leaves[2 + iTracklet], 2*leaves[0] + leaves[1]));
-        gEve->AddElement(evetrkl, listOfTracklets);
+  // ----- simulated tracklets -----
+  dl->Load();
+  trklTree = dl->Tree();
+  
+  if (trklTree) {
+    TBranch *trklBranch = 0x0;
+    if ((trklBranch = trklTree->GetBranch("mcmtrklbranch"))) {
+      AliTRDtrackletMCM *trkl = 0x0; 
+      trklBranch->SetAddress(&trkl);
+      
+      TEveElementList* listOfTracklets = new TEveElementList("TRD tracklets (sim)");
+      gEve->AddElement(listOfTracklets);
+      
+      for (Int_t i = 0; i < trklBranch->GetEntries(); i++) {
+	trklBranch->GetEntry(i);
+	if (!trkl)
+	  continue;
+	gEve->AddElement(new AliEveTRDTrackletOnline(trkl), listOfTracklets);
       }
     }
-    delete [] leaves;
   }
 
-  if (trklBranch = trklTree->GetBranch("mcmtrklbranch")) {
-    AliTRDtrackletMCM *trkl = 0x0; //new AliTRDtrackletMCM;
-    trklBranch->SetAddress(&trkl);
+  // raw tracklets
+  AliTreeLoader *tl = (AliTreeLoader*) dl->GetBaseLoader("tracklets-raw");
+  if (tl) {
+    tl->Load();
+    trklTree = tl->Tree();
+  }
+  else 
+    trklTree = 0x0;
+  //  trklTree = tl ? tl->Load(), tl->Tree : 0x0;
 
-    TEveElementList* listOfTracklets = new TEveElementList("MCM tracklets");
+  if (trklTree) {
+    TEveElementList* listOfTracklets = new TEveElementList("TRD tracklets (raw)");
     gEve->AddElement(listOfTracklets);
+    
+    Int_t hc; 
+    TClonesArray *ar = 0x0;
+    trklTree->SetBranchAddress("hc", &hc);
+    trklTree->SetBranchAddress("trkl", &ar);
 
-    for (Int_t i = 0; i < trklBranch->GetEntries(); i++) {
-      trklBranch->GetEntry(i);
-      if (!trkl)
-	continue;
-      gEve->AddElement(new AliEveTRDTrackletOnline(trkl), listOfTracklets);
+    for (Int_t iEntry = 0; iEntry < trklTree->GetEntries(); iEntry++) {
+      trklTree->GetEntry(iEntry);
+      //      printf("%i tracklets in HC %i\n", ar->GetEntriesFast(), hc);
+      for (Int_t iTracklet = 0; iTracklet < ar->GetEntriesFast(); iTracklet++) {
+	AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) (*ar)[iTracklet];
+        AliEveTRDTrackletOnline *evetrkl = new AliEveTRDTrackletOnline(new AliTRDtrackletWord(trklWord->GetTrackletWord(), hc));
+        gEve->AddElement(evetrkl, listOfTracklets);
+      }
     }
   }
 

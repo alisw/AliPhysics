@@ -11,6 +11,7 @@
 #include "TVector.h"
 #include "TLinearFitter.h"
 #include "TCanvas.h"
+#include "TGeoMatrix.h"
 
 #include "TEveTrans.h"
 #include "TEveManager.h"
@@ -633,41 +634,38 @@ AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletMCM *tracklet) :
   fROB = trkl->GetROB();
   fMCM = trkl->GetMCM();
 
-  SetName("TRD tracklet");
+  SetName("sim. tracklet");
   SetTitle(Form("Det: %i, ROB: %i, MCM: %i, Label: %i\n0x%08x", 
                 trkl->GetDetector(), trkl->GetROB(), trkl->GetMCM(), trkl->GetLabel(),
                 trkl->GetTrackletWord()));
   SetLineColor(kGreen);
+  SetLineWidth(3);
 
-  AliTRDgeometry *geo = new AliTRDgeometry();
-//  TGeoHMatrix *matrix = geo->GetClusterMatrix(trkl->GetDetector());
+  AliTRDgeometry geo;
+  TGeoHMatrix *matrix = geo.GetClusterMatrix(trkl->GetDetector());
 
+  fDetector = trkl->GetDetector();
+  fROB = trkl->GetROB();
+  fMCM = trkl->GetMCM();
+  
   Float_t length = 3.;
   Double_t x[3];
   Double_t p[3];
-  x[0] = trkl->GetX();
+  Double_t p2[3];
+  x[0] = AliTRDgeometry::AnodePos(); 
   x[1] = trkl->GetY();
-  x[2] = trkl->GetZ();
+  x[2] = trkl->GetLocalZ();
 
-  fDetector = trkl->GetDetector();
-  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(fDetector), geo->GetStack(fDetector));
-  fROB = 2 * (trkl->GetZbin() / 4) + (trkl->GetY() > 0 ? 1 : 0);
-  fMCM = (((Int_t) ((trkl->GetY()) / pp->GetWidthIPad()) + 72) / 18) % 4 
-    + 4 * (trkl->GetZbin() % 4) ;
-  AliInfo(Form("From position/tracklet: ROB: %i/%i, MCM: %i/%i", 
-               fROB, trkl->GetROB(), fMCM, trkl->GetMCM()));  
-  
-  geo->RotateBack(trkl->GetDetector(), x, p);
-//  matrix->LocalToMaster(x, p);
-  SetPoint(0, p[0], p[1], p[2]);
+  matrix->LocalToMaster(x, p);
+  geo.RotateBack(trkl->GetDetector(), p, p2);
+  SetPoint(0, p2[0], p2[1], p2[2]);
 
   x[0] -= length;
   x[1] -= length * trkl->GetdYdX();
-  x[2] *= x[0] / (x[0] + length);
-  geo->RotateBack(trkl->GetDetector(), x, p);
-//  matrix->LocalToMaster(x, p);
-  SetPoint(1, p[0], p[1], p[2]);
-  delete geo;
+  matrix->LocalToMaster(x, p);
+  p[2] *= p[0] / (p[0] + length);
+  geo.RotateBack(trkl->GetDetector(), p, p2);
+  SetPoint(1, p2[0], p2[1], p2[2]);
 }
 
 AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletWord *tracklet) :
@@ -679,47 +677,44 @@ AliEveTRDTrackletOnline::AliEveTRDTrackletOnline(AliTRDtrackletWord *tracklet) :
   AliTRDtrackletWord *trkl = new AliTRDtrackletWord(*tracklet);
   SetUserData(trkl);
 
-  AliTRDgeometry *geo = new AliTRDgeometry();
   fDetector = trkl->GetDetector();
-  AliTRDpadPlane *pp = geo->GetPadPlane(geo->GetLayer(fDetector), geo->GetStack(fDetector));
-  fROB = 2 * (trkl->GetZbin() / 4) + (trkl->GetY() > 0 ? 1 : 0);
-  fMCM = (((Int_t) ((trkl->GetY()) / pp->GetWidthIPad()) + 72) / 18) % 4 
-    + 4 * (trkl->GetZbin() % 4) ;
+  fROB = trkl->GetROB(); 
+  fMCM = trkl->GetMCM(); 
 
-  SetName("TRD tracklet");
+  SetName("raw tracklet");
   SetTitle(Form("Det: %i, ROB: %i, MCM: %i, Label: %i\n0x%08x", 
                 trkl->GetDetector(), fROB, fMCM, -1,
                 trkl->GetTrackletWord()));
   SetLineColor(kRed);
+  SetLineWidth(3);
 
-//  AliTRDgeometry *geo = new AliTRDgeometry();
+  AliTRDgeometry geo;
+  TGeoHMatrix *matrix = geo.GetClusterMatrix(trkl->GetDetector());
 
   Float_t length = 3.;
   Double_t x[3];
   Double_t p[3];
-  x[0] = trkl->GetX();
+  Double_t p2[3];
+  x[0] = AliTRDgeometry::AnodePos();
   x[1] = trkl->GetY();
-  x[2] = trkl->GetZ();
+  x[2] = trkl->GetLocalZ();
   
-  geo->RotateBack(trkl->GetDetector(), x, p);
-  SetPoint(0, p[0], p[1], p[2]);
+  matrix->LocalToMaster(x, p);
+  geo.RotateBack(trkl->GetDetector(), p, p2);
+  SetPoint(0, p2[0], p2[1], p2[2]);
 
   x[0] -= length;
   x[1] -= length * trkl->GetdYdX();
-  x[2] *= x[0] / (x[0] + length);
-  geo->RotateBack(trkl->GetDetector(), x, p);
-  SetPoint(1, p[0], p[1], p[2]);
-  delete geo;
+  matrix->LocalToMaster(x, p);
+  p[2] *= p[0] / (p[0] + length);
+  geo.RotateBack(trkl->GetDetector(), p, p2);
+  SetPoint(1, p2[0], p2[1], p2[2]);
 }
 
 AliEveTRDTrackletOnline::~AliEveTRDTrackletOnline() 
 {
-  AliTRDtrackletMCM *trkl = dynamic_cast<AliTRDtrackletMCM*> ((AliTRDtrackletBase*) GetUserData());
-  printf("trkl: %p\n", (void*)trkl);
-//  delete trkl;
-  AliTRDtrackletWord *trklWord = dynamic_cast<AliTRDtrackletWord*> ((AliTRDtrackletBase*) GetUserData());
-  printf("trklWord: %p\n", (void*)trklWord);
-//  delete trklWord;
+  delete ((AliTRDtrackletBase*) GetUserData());
+  SetUserData(0x0);
 }
 
 void AliEveTRDTrackletOnline::ShowMCM(Option_t *opt) const
