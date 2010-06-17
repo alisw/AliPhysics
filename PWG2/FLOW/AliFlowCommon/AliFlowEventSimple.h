@@ -71,6 +71,8 @@ class AliFlowEventSimple: public TObject {
   void AddV2( Double_t v2 );
   void AddV4( Double_t v4 );
   void AddFlow( Double_t v1, Double_t v2, Double_t v4 );
+  void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
+  Int_t CleanUpDeadTracks();
  
   AliFlowTrackSimple* GetTrack(Int_t i);
   void AddTrack( AliFlowTrackSimple* track ); 
@@ -79,8 +81,8 @@ class AliFlowEventSimple: public TObject {
   void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
 
   //these should go away!!!!
-  TObjArray* TrackCollection() const                { return fTrackCollection; } //deprecated!
-  void     SetNumberOfTracks(Int_t nr)              { fNumberOfTracks = nr; }
+  TObjArray* TrackCollection() const                { return NULL; } //deprecated!
+  void     SetNumberOfTracks(Int_t nr)              {} 
 
  protected:
   TObjArray*              fTrackCollection;           //-> collection of tracks

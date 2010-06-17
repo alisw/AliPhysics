@@ -32,10 +32,11 @@ public:
   Double_t Eta() const; 
   Double_t Pt()  const; 
   Double_t Phi() const; 
-  TBits    GetFlowBits() const;
-  Bool_t   InRPSelection() const; 
-  Bool_t   InPOISelection() const; 
-  Bool_t   InSubevent(Int_t i) const;
+
+  Bool_t InRPSelection() const; 
+  Bool_t InPOISelection() const; 
+  Bool_t InSubevent(Int_t i) const;
+  Bool_t IsDead() const {return (fFlowBits.CountBits()==0);}
       
   void SetEta(Double_t eta);
   void SetPt(Double_t pt); 
@@ -43,6 +44,8 @@ public:
   void SetForRPSelection(Bool_t b=kTRUE); 
   void SetForPOISelection(Bool_t b=kTRUE); 
   void SetForSubevent(Int_t i); 
+  void ResetFlowTags() {fFlowBits.ResetAllBits();}
+  void ResetSubEventTags() {fSubEventBits.ResetAllBits();}
   
   void ResolutionPt(Double_t resolution);
 
@@ -65,6 +68,7 @@ public:
                 Double_t precision,
                 Int_t maxNumberOfIterations=100 );
     
+  const TBits* GetFlowBits() const {return &fFlowBits;}
  private:
   Double_t fEta;    // eta
   Double_t fPt;     // pt
@@ -84,8 +88,6 @@ inline Double_t AliFlowTrackSimple::Pt() const {
 inline Double_t AliFlowTrackSimple::Phi() const { 
   return this->fPhi; }
 //TBits
-inline TBits AliFlowTrackSimple::GetFlowBits() const { 
-  return this->fFlowBits; }
 inline Bool_t AliFlowTrackSimple::InRPSelection() const { 
   return this->fFlowBits.TestBitNumber(0); }
 inline Bool_t AliFlowTrackSimple::InPOISelection() const { 

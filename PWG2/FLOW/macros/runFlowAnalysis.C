@@ -28,8 +28,6 @@
 #include <AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.h>
 #include <AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.h>
 #include <AliFlowCommon/AliFlowAnalysisWithNestedLoops.h>
-#include <AliFlowTasks/AliFlowEventSimpleMaker.h>
-#include <FlowEventMakers/FlowEventSimpleMaker.h>
 
 //--------------------------------------------------------------------------------------
 // Run flow analysis on local data with custom FlowEvent maker
@@ -120,12 +118,8 @@ int runFlowAnalysis(const anaModes mode=mLocal, Int_t aRuns = 100, const char*
   random3Temp.SetSeed(sseed);
 
   if (mode == mLocal || mode == mLocalPAR) {
-    // AliFlow event in aliroot or with pars
-    AliFlowEventSimpleMaker* fEventMaker = new AliFlowEventSimpleMaker();
   }
   else if (mode == mLocalSource) {
-    // flow event in source mode
-    FlowEventSimpleMaker* fEventMaker = new FlowEventSimpleMaker(); 
   }
   else{
     cout << "No supported running mode selected!" << endl;
@@ -425,14 +419,13 @@ int runFlowAnalysis(const anaModes mode=mLocal, Int_t aRuns = 100, const char*
 		cout << "new multiplicity: " << nNewMultOfEvent << endl;
 		cout << "new flow value: " << xNewFlowValue << endl;
 	      }
-  	      fEventMaker->SetNoOfLoops(nLoops);
-	      fEventMaker->SetEllipticFlowValue(xNewFlowValue);
-	      fEventMaker->SetMultiplicityOfEvent(nNewMultOfEvent);
-	      xRPAngle=TMath::TwoPi()*random3Temp.Rndm();
-	      fEventMaker->SetMCReactionPlaneAngle(xRPAngle);
 	      */
 
-	      AliFlowEventSimple *fEvent = fEventMaker->FillTracks(kTree, cutsInt, cutsDiff); 
+	      AliFlowEventSimple *fEvent = new AliFlowEventSimple(kTree, cutsInt, cutsDiff); 
+	      //xRPAngle=random3Temp.Uniform(0.0,TMath::TwoPi());
+        //fEvent->SetMCReactionPlaneAngle(xRPAngle);
+        //fEvent->SetV2(xNewFlowValue);
+        //fEvent->CloneTracks(nLoops);
 	                    
 	      // do flow analysis for various methods
 	      if(MCEP)    mcep->Make(fEvent);
@@ -645,10 +638,6 @@ void LoadLibraries(const anaModes mode) {
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");    
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.cxx+");
     gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithNestedLoops.cxx+");
-    
-    // Class to fill the FlowEvent without aliroot dependence
-    // can be found in the directory FlowEventMakers
-    gROOT->LoadMacro("FlowEventMakers/FlowEventSimpleMaker.cxx+");   
     
     cout << "finished loading macros!" << endl;  
     
