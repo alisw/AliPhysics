@@ -31,8 +31,7 @@ ClassImp(AliTender)
 
 //______________________________________________________________________________
 AliTender::AliTender():
-           AliAnalysisTask(),
-           fDebug(0),
+           AliAnalysisTaskSE(),
            fRun(0),
            fRunChanged(kFALSE),
            fCDBkey(0),
@@ -48,8 +47,7 @@ AliTender::AliTender():
 
 //______________________________________________________________________________
 AliTender::AliTender(const char* name):
-           AliAnalysisTask(name, "ESD analysis tender car"),
-           fDebug(0),
+           AliAnalysisTaskSE(name),
            fRun(0),
            fRunChanged(kFALSE),
            fCDBkey(0),
@@ -61,8 +59,7 @@ AliTender::AliTender(const char* name):
            fCDBSettings(NULL)
 {
 // Default constructor
-  DefineInput (0, TChain::Class());
-  DefineOutput(0,  AliESDEvent::Class());
+  DefineOutput(1,  AliESDEvent::Class());
 }
 
 //______________________________________________________________________________
@@ -89,10 +86,11 @@ void AliTender::AddSupply(AliTenderSupply *supply)
 }
    
 //______________________________________________________________________________
-void AliTender::ConnectInputData(Option_t* /*option*/)
+void AliTender::ConnectInputData(Option_t* option)
 {
 // Connect the input data, create CDB manager.
   if (fDebug > 1) Printf("AliTender::ConnectInputData()\n");
+  AliAnalysisTaskSE::ConnectInputData(option);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) AliFatal("No tender without an analysis manager");
   fESDhandler = dynamic_cast<AliESDInputHandler *>(mgr->GetInputEventHandler());
@@ -119,14 +117,14 @@ void AliTender::ConnectInputData(Option_t* /*option*/)
 }
 
 //______________________________________________________________________________
-void AliTender::CreateOutputObjects()
+void AliTender::UserCreateOutputObjects()
 {
 // Nothing for the moment, but we may need ESD event replication here.
   if (fDebug > 1) Printf("AliTender::CreateOutputObjects()\n");
 }
 
 //______________________________________________________________________________
-void AliTender::Exec(Option_t* /*option*/)
+void AliTender::UserExec(Option_t* /*option*/)
 {
 //
 // Execute all supplied analysis of one event. Notify run change via RunChanged().
@@ -151,7 +149,7 @@ void AliTender::Exec(Option_t* /*option*/)
   fRunChanged = kFALSE;
   // Lock CDB
   fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
-  PostData(0, fESD);
+  PostData(1, fESD);
 }
 
 //______________________________________________________________________________

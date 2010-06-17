@@ -13,8 +13,8 @@
 //      during pass1 reconstruction.
 //==============================================================================
 
-#ifndef ALIANALYSISTASK_H
-#include "AliAnalysisTask.h"
+#ifndef ALIANALYSISTASKSE_H
+#include "AliAnalysisTaskSE.h"
 #endif
 
 class AliCDBManager;
@@ -22,10 +22,9 @@ class AliESDEvent;
 class AliESDInputHandler;
 class AliTenderSupply;
 
-class AliTender : public AliAnalysisTask {
+class AliTender : public AliAnalysisTaskSE {
 
 private:
-  Int_t                     fDebug;          // Debug level
   Int_t                     fRun;            //! Current run
   Bool_t                    fRunChanged;     //! Flag for run change.
   ULong_t                   fCDBkey;         //! Key to unlock CDB manager
@@ -53,14 +52,13 @@ public:
   Bool_t                    RunChanged() const {return fRunChanged;}
   // Configuration
   void                      SetDefaultCDBStorage(const char *dbString="local://$ALICE_ROOT/OCDB");
-  void                      SetDebugLevel(Int_t debug) {fDebug = debug;}
 
   // Run control
   virtual void              ConnectInputData(Option_t *option = "");
-  virtual void              CreateOutputObjects();
-  virtual Bool_t            Notify() {return kTRUE;}
-  virtual void              Exec(Option_t *option);
+  virtual void              UserCreateOutputObjects();
+//  virtual Bool_t            Notify() {return kTRUE;}
+  virtual void              UserExec(Option_t *option);
     
-  ClassDef(AliTender,2)  // Class describing the tender car for ESD analysis
+  ClassDef(AliTender,3)  // Class describing the tender car for ESD analysis
 };
 #endif
