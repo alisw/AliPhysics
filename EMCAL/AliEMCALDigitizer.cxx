@@ -730,6 +730,8 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
 			}
 		}
 	}
+
+	delete [] timeSamples;
 }
 
 //____________________________________________________________________________ 

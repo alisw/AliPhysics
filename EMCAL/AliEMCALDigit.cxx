@@ -175,24 +175,42 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   fIndexInList = digit.fIndexInList ; 
 
   // data members  
-  fSamples     = new Int_t[fNSamples]; 
-  for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
-  fSamplesHG   = new Int_t[fNSamplesHG]; 
-  for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
-	
-  fPrimary = new Int_t[fNMaxPrimary] ;  
-  fDEPrimary = new Float_t[fNMaxPrimary] ;
-  fIparent = new Int_t[fNMaxiparent] ;
-  fDEParent = new Float_t[fNMaxiparent] ;
-  Int_t i ;
-  for ( i = 0; i < fNMaxPrimary ; i++) {
-    fPrimary[i]  = digit.fPrimary[i] ;
-    fDEPrimary[i]  = digit.fDEPrimary[i] ;
+  if(fNSamples){
+    fSamples     = new Int_t[fNSamples]; 
+    for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
   }
-  Int_t j ;
-  for (j = 0; j< fNMaxiparent ; j++) {
+  else fNSamples = 0;
+
+  if(fNSamplesHG){
+    fSamplesHG   = new Int_t[fNSamplesHG]; 
+    for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
+  }
+  else fNSamplesHG = 0;
+
+  if(fNMaxPrimary){
+    fPrimary   = new Int_t  [fNMaxPrimary] ;  
+    fDEPrimary = new Float_t[fNMaxPrimary] ;
+    for ( Int_t i = 0; i < fNMaxPrimary ; i++) {
+      fPrimary[i]   = digit.fPrimary[i] ;
+      fDEPrimary[i] = digit.fDEPrimary[i] ;
+    }
+  }
+  else{
+    fPrimary   = 0 ;
+    fDEPrimary = 0 ;
+
+  }
+  if(fNMaxiparent){
+    fIparent  = new Int_t  [fNMaxiparent] ;
+    fDEParent = new Float_t[fNMaxiparent] ;
+    for (Int_t j = 0; j< fNMaxiparent ; j++) {
     fIparent[j]  = digit.fIparent[j] ;
-    fDEParent[j]  = digit.fDEParent[j] ;
+    fDEParent[j] = digit.fDEParent[j] ;
+    }
+  }
+  else {
+    fIparent  = 0 ;
+    fDEParent = 0 ;
   }
 }
 
@@ -204,8 +222,8 @@ AliEMCALDigit::~AliEMCALDigit()
     delete [] fDEPrimary ;
     delete [] fIparent ; 
     delete [] fDEParent ;
-	delete [] fSamples;
-	delete [] fSamplesHG;
+    delete [] fSamples;
+    delete [] fSamplesHG;
 
 }
 
