@@ -24,6 +24,9 @@
 #include <TVector3.h>
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
+#include "AliAODEvent.h"
+#include "AliVertexerTracks.h"
+#include "AliExternalTrackParam.h"
 #include "AliKFVertex.h"
 #include "AliVVertex.h"
 #include "AliESDVertex.h"
@@ -223,4 +226,88 @@ AliKFParticle *AliAODRecoDecayHF::ApplyVertexingKF(Int_t *iprongs,Int_t nprongs,
   }
   
   return vertexKF;
+}
+//---------------------------------------------------------------------------
+AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod) {
+  //
+  // This method returns a primary vertex without the daughter tracks of the 
+  // candidate and it recalculates the impact parameters and errors.
+  // 
+  // The output vertex is created with "new". The user has to 
+  // set it to the candidate with SetOwnPrimaryVtx(), unset it at the end 
+  // of processing with UnsetOwnPrimaryVtx() and delete it.
+  // If a NULL pointer is returned, the removal failed (too few tracks left).
+  //
+  // For the moment, the primary vertex is recalculated from scratch without
+  // the daughter tracks.
+  //
+
+  AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
+  if(!vtxAOD) return 0;
+  TString title=vtxAOD->GetTitle();
+  if(!title.Contains("VertexerTracks")) return 0;
+
+
+
+  AliVertexerTracks *vertexer = new AliVertexerTracks(aod->GetMagneticField());
+
+  Int_t ndg = GetNDaughters();
+
+  vertexer->SetITSMode();
+  vertexer->SetMinClusters(4);
+  vertexer->SetConstraintOff();
+
+  if(title.Contains("WithConstraint")) {
+    Float_t diamondcovxy[3];
+    aod->GetDiamondCovXY(diamondcovxy);
+    Double_t pos[3]={aod->GetDiamondX(),aod->GetDiamondY(),0.};
+    Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+    AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
+    vertexer->SetVtxStart(diamond);
+    delete diamond; diamond=NULL;
+  }
+
+  Int_t skipped[10];
+  Int_t nTrksToSkip=0,id;
+  AliAODTrack *t = 0;
+  for(Int_t i=0; i<ndg; i++) {
+    t = (AliAODTrack*)GetDaughter(i);
+    id = (Int_t)t->GetID();
+    if(id<0) continue;
+    skipped[nTrksToSkip++] = id;
+  }
+  vertexer->SetSkipTracks(nTrksToSkip,skipped);
+  AliESDVertex *vtxESDNew = vertexer->FindPrimaryVertex(aod);
+
+  delete vertexer; vertexer=NULL;
+
+  if(!vtxESDNew) return 0;
+  if(vtxESDNew->GetNContributors()<=0) { 
+    delete vtxESDNew; vtxESDNew=NULL;
+    return 0;
+  }
+
+  // convert to AliAODVertex
+  Double_t pos[3],cov[6],chi2perNDF;
+  vtxESDNew->GetXYZ(pos); // position
+  vtxESDNew->GetCovMatrix(cov); //covariance matrix
+  chi2perNDF = vtxESDNew->GetChi2toNDF();
+  delete vtxESDNew; vtxESDNew=NULL;
+
+  AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
+
+  // now recalculate the daughters impact parameters
+  AliExternalTrackParam *etp = 0;
+  Double_t dz[2],covdz[3];
+  for(Int_t i=0; i<ndg; i++) {
+    t = (AliAODTrack*)GetDaughter(i);
+    etp = new AliExternalTrackParam(t);
+    if(etp->PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
+      fd0[i]    = dz[0];
+      fd0err[i] = TMath::Sqrt(covdz[0]);
+    }
+    delete etp; etp=NULL;
+  }
+
+  return vtxAODNew;
 }

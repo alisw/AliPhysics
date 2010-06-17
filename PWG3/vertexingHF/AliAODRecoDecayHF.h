@@ -14,6 +14,7 @@
 #include "AliAODTrack.h"
 #include "AliAODRecoDecay.h"
 
+class AliAODEvent;
 class AliRDHFCuts;
 class AliKFParticle;
 
@@ -47,6 +48,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
     {CheckOwnPrimaryVtx();fOwnPrimaryVtx->GetPosition(vtx);}
   void UnsetOwnPrimaryVtx() {if(fOwnPrimaryVtx) {delete fOwnPrimaryVtx; fOwnPrimaryVtx=0;} return;}
   AliAODVertex* GetPrimaryVtx() const { return (GetOwnPrimaryVtx() ? GetOwnPrimaryVtx() : GetPrimaryVtxRef()); }
+  AliAODVertex* RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod);  
+
 
   // kinematics & topology
   Double_t DecayLength() const 
