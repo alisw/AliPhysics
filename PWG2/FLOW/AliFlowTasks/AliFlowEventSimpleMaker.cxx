@@ -106,8 +106,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks( AliMCEvent* anInput, co
       }
       
       //check if any bits are set
-      TBits bFlowBits = pTrack->GetFlowBits();
-      if (bFlowBits.CountBits() ==0) {
+      const TBits* bFlowBits = pTrack->GetFlowBits();
+      if (bFlowBits->CountBits() ==0) {
 	delete pTrack; } //track will not be used anymore
       else {
 	pEvent->TrackCollection()->Add(pTrack) ; 
@@ -288,8 +288,8 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  c
       
       
       //check if any bits are set
-      TBits bFlowBits = pTrack->GetFlowBits();
-      if (bFlowBits.CountBits() ==0) {
+      const TBits* bFlowBits = pTrack->GetFlowBits();
+      if (bFlowBits->CountBits() ==0) {
 	delete pTrack; } //track will not be used anymore
       else {
 	pEvent->TrackCollection()->Add(pTrack) ; 
@@ -408,8 +408,8 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, c
       else { cout<<"Not a valid option"<<endl; }
       
       //check if any bits are set
-      TBits bFlowBits = pTrack->GetFlowBits();
-      if (bFlowBits.CountBits() ==0) {
+      const TBits* bFlowBits = pTrack->GetFlowBits();
+      if (bFlowBits->CountBits() ==0) {
 	delete pTrack; } //track will not be used anymore
       else {
 	pEvent->TrackCollection()->Add(pTrack) ; 

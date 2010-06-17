@@ -511,6 +511,7 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
 void AliFlowEventSimple::CloneTracks(Int_t n)
 {
   //clone every track n times to add non-flow
+  if (n<=0) return; //no use to clone stuff zero or less times
   Int_t ntracks = fNumberOfTracks;
   fTrackCollection->Expand((n+1)*fNumberOfTracks);
   for (Int_t i=0; i<n; i++)
@@ -536,7 +537,10 @@ void AliFlowEventSimple::ResolutionPt(Double_t res)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, Double_t etaMinB, Double_t etaMaxB )
+void AliFlowEventSimple::TagSubeventsInEta( Double_t etaMinA,
+                                            Double_t etaMaxA,
+                                            Double_t etaMinB,
+                                            Double_t etaMaxB )
 {
   //Flag two subevents in given eta ranges
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -549,7 +553,7 @@ void AliFlowEventSimple::TagSubeventsInEta(Double_t etaMinA, Double_t etaMaxA, D
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddV1(Double_t v1)
+void AliFlowEventSimple::AddV1( Double_t v1 )
 {
   //add v2 to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -560,7 +564,7 @@ void AliFlowEventSimple::AddV1(Double_t v1)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddV2(Double_t v2)
+void AliFlowEventSimple::AddV2( Double_t v2 )
 {
   //add v2 to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -571,7 +575,7 @@ void AliFlowEventSimple::AddV2(Double_t v2)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddV4(Double_t v4)
+void AliFlowEventSimple::AddV4( Double_t v4 )
 {
   //add v4 to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -582,7 +586,7 @@ void AliFlowEventSimple::AddV4(Double_t v4)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddFlow(Double_t v1, Double_t v2, Double_t v4)
+void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v4 )
 {
   //add flow to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -593,7 +597,7 @@ void AliFlowEventSimple::AddFlow(Double_t v1, Double_t v2, Double_t v4)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::TagRP(AliFlowTrackSimpleCuts* cuts)
+void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
 {
   //tag tracks as reference particles (RPs)
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -605,7 +609,7 @@ void AliFlowEventSimple::TagRP(AliFlowTrackSimpleCuts* cuts)
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::TagPOI(AliFlowTrackSimpleCuts* cuts)
+void AliFlowEventSimple::TagPOI( AliFlowTrackSimpleCuts* cuts )
 {
   //tag tracks as particles of interest (POIs)
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -616,3 +620,32 @@ void AliFlowEventSimple::TagPOI(AliFlowTrackSimpleCuts* cuts)
   }
 }
 
+//_____________________________________________________________________________
+void AliFlowEventSimple::DefineDeadZone( Double_t etaMin,
+                                         Double_t etaMax,
+                                         Double_t phiMin,
+                                         Double_t phiMax )
+{
+  //mark tracks in given eta-phi region as dead
+  //by resetting the flow bits
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    Double_t eta = track->Eta();
+    Double_t phi = track->Phi();
+    if (eta>etaMin && eta<etaMax && phi>phiMin && phi<phiMax)
+      track->ResetFlowTags();
+  }
+}
+
+//_____________________________________________________________________________
+Int_t AliFlowEventSimple::CleanUpDeadTracks()
+{
+  //remove tracks that have no flow tags set and cleanup the container
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (track->IsDead()) delete track;
+  }
+  fTrackCollection->Compress(); //clean up empty slots
+}
