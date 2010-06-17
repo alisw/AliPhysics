@@ -127,7 +127,7 @@ AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrac
 	  iSelParticlesPOI++;
 	}
 	//adding a particles which were used either for int. or diff. flow to the list
-	pEvent->TrackCollection()->Add(pTrack);
+	pEvent->AddTrack(pTrack);
 	iGoodTracks++;
       }//end of for(Int_t d=0;d<iLoops;d++)
     }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
@@ -137,7 +137,6 @@ AliFlowEventSimple* FlowEventSimpleMaker::FillTracks(TTree* anInput, AliFlowTrac
   }//end of while (itrkN < iNumberOfInputTracks)
   
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for RP or for POI selection
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if (!fMCReactionPlaneAngle == 0) cout<<" MC Reaction Plane Angle = "<<  fMCReactionPlaneAngle << endl;

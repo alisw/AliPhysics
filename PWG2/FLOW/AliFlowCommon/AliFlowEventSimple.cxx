@@ -605,6 +605,7 @@ void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (!track) continue;
     if (cuts->PassesCuts(track)) track->SetForRPSelection();
+    fNumberOfRPs++;
   }
 }
 

@@ -80,10 +80,6 @@ class AliFlowEventSimple: public TObject {
   AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);  
 
-  //these should go away!!!!
-  TObjArray* TrackCollection() const                { return NULL; } //deprecated!
-  void     SetNumberOfTracks(Int_t nr)              {} 
-
  protected:
   TObjArray*              fTrackCollection;           //-> collection of tracks
   Int_t                   fReferenceMultiplicity;           // reference multiplicity
