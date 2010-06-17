@@ -110,7 +110,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks( AliMCEvent* anInput, co
       if (bFlowBits->CountBits() ==0) {
 	delete pTrack; } //track will not be used anymore
       else {
-	pEvent->TrackCollection()->Add(pTrack) ; 
+	pEvent->AddTrack(pTrack) ; 
 	iGoodTracks++;
 
 	if (pTrack->InRPSelection())
@@ -123,7 +123,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks( AliMCEvent* anInput, co
     }
     
     pEvent-> SetEventNSelTracksRP(iSelParticlesRP);  
-    pEvent-> SetNumberOfTracks(iGoodTracks);
     pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
         
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
@@ -214,7 +213,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, co
 	  iSelParticlesPOI++;
 	}
 	//adding particles which were used either for int. or diff. flow to the list
-	pEvent->TrackCollection()->Add(pTrack);
+	pEvent->AddTrack(pTrack);
 	iGoodTracks++;
       }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
       itrkN++; 
@@ -223,7 +222,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, co
     }//end of while (itrkN < iNumberOfInputTracks)
     
     pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
-    pEvent->SetNumberOfTracks(iGoodTracks);
     pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
     
     
@@ -292,7 +290,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  c
       if (bFlowBits->CountBits() ==0) {
 	delete pTrack; } //track will not be used anymore
       else {
-	pEvent->TrackCollection()->Add(pTrack) ; 
+	pEvent->AddTrack(pTrack) ; 
 	iGoodTracks++;
 	
 	if (pTrack->InRPSelection())
@@ -306,7 +304,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput,  c
     }
     
     pEvent-> SetEventNSelTracksRP(iSelParticlesRP);  
-    pEvent->SetNumberOfTracks(iGoodTracks);
     pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
     
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
@@ -412,7 +409,7 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, c
       if (bFlowBits->CountBits() ==0) {
 	delete pTrack; } //track will not be used anymore
       else {
-	pEvent->TrackCollection()->Add(pTrack) ; 
+	pEvent->AddTrack(pTrack) ; 
 	iGoodTracks++;  
 	
 	if (pTrack->InRPSelection())
@@ -426,7 +423,6 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, c
     }
     
     pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
-    pEvent->SetNumberOfTracks(iGoodTracks);
     pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
         
     if (iSelParticlesRP >= fMinMult && iSelParticlesRP <= fMaxMult) { 
@@ -534,7 +530,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, const Al
 	  iSelParticlesPOI++;
 	}
 	//adding a particles which were used either for int. or diff. flow to the list
-	pEvent->TrackCollection()->Add(pTrack);
+	pEvent->AddTrack(pTrack);
 	iGoodTracks++;
       }//end of for(Int_t d=0;d<iLoops;d++)
     }//end of if(bPassedIntFlowCuts || bPassedDiffFlowCuts) 
@@ -544,7 +540,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(TTree* anInput, const Al
   }//end of while (itrkN < iNumberOfInputTracks)
   
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks);//tracks used either for RP or for POI selection
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
@@ -601,7 +596,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
 	    if (pTrack->InPOISelection())
 	      { iSelParticlesPOI++; }
 	    iGoodTracks++;
-	    pEvent->TrackCollection()->Add(pTrack) ;  	     
+	    pEvent->AddTrack(pTrack) ;  	     
 	  }
 	/*	  else if(
 		  TMath::Abs(pParticle->Particle()->GetPdgCode()) == 211
@@ -619,7 +614,7 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
 	      if (pTrack->InPOISelection())
 		{ iSelParticlesPOI++; }
 	      iGoodTracks++;
-	      pEvent->TrackCollection()->Add(pTrack);  	     
+	      pEvent->AddTrack(pTrack);  	     
 	    }
 	  */
       }
@@ -628,7 +623,6 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliMCEvent* anInput)
   }
   
   pEvent-> SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks);
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
@@ -683,14 +677,13 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput)
 	if (pTrack->InPOISelection())
 	  { iSelParticlesPOI++; }
 	iGoodTracks++;
-	pEvent->TrackCollection()->Add(pTrack) ;  	     
+	pEvent->AddTrack(pTrack) ;  	     
       }
       
     itrkN++; 
   }
   
   pEvent-> SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks);
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
@@ -740,14 +733,13 @@ AliFlowEventSimple* AliFlowEventSimpleMaker::FillTracks(AliAODEvent* anInput)
 	if (pTrack->InPOISelection())
 	  { iSelParticlesPOI++; }
 	iGoodTracks++;
-	pEvent->TrackCollection()->Add(pTrack) ;  	     
+	pEvent->AddTrack(pTrack) ;  	     
       }
       
     itrkN++; 
   }
   
   pEvent-> SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks);
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {
@@ -825,14 +817,13 @@ AliFlowEventSimple*  AliFlowEventSimpleMaker::FillTracks(AliESDEvent* anInput, c
 	    if (pTrack->InPOISelection())
 	      { iSelParticlesPOI++; }
 	    iGoodTracks++;
-	    pEvent->TrackCollection()->Add(pTrack) ;  	     
+	    pEvent->AddTrack(pTrack) ;  	     
 	  }
       }
     itrkN++; 
   }
   
   pEvent-> SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks);
   pEvent->SetMCReactionPlaneAngle(fMCReactionPlaneAngle);
 
   if ( (++fCount % 100) == 0) {

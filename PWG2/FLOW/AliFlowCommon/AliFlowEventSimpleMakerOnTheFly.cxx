@@ -444,7 +444,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
 	   pTrack->SetForPOISelection(kTRUE); 
 	   iSelParticlesPOI++; 
 	  }
-	  pEvent->TrackCollection()->Add(pTrack); 
+	  pEvent->AddTrack(pTrack); 
 	  iGoodTracks++; 
     } // end of if(bUniformAcceptance) 
     // non-uniform acceptance, 1st sector:
@@ -476,7 +476,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
 	    pTrack->SetForPOISelection(kTRUE);
 	    iSelParticlesPOI++;
 	   }
-	   pEvent->TrackCollection()->Add(pTrack);
+	   pEvent->AddTrack(pTrack);
 	   iGoodTracks++;
 	  } // end of if(fMyTRandom3->Uniform(0,1) > 1 - fProbability1) 
     } // end of else if ((dTmpPhi > fPhiMin1*Pi/180) && (dTmpPhi < fPhiMax1*Pi/180)) 
@@ -509,7 +509,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
 		pTrack->SetForPOISelection(kTRUE);
 		iSelParticlesPOI++;
 	      }
-	    pEvent->TrackCollection()->Add(pTrack);
+	    pEvent->AddTrack(pTrack);
 	    iGoodTracks++;
 	  } // end of if(fMyTRandom3->Uniform(0,1) > 1 - fProbability2)
       } // end of else if ((dTmpPhi > fPhiMin2*Pi/180) && (dTmpPhi < fPhiMax2*Pi/180))
@@ -539,7 +539,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
 	      pTrack->SetForPOISelection(kTRUE);
 	      iSelParticlesPOI++;
 	  }
-	pEvent->TrackCollection()->Add(pTrack);
+	pEvent->AddTrack(pTrack);
 	iGoodTracks++;
       } // end of else
    } // end of for(Int_t d=0;d<fNoOfLoops;d++)
@@ -547,7 +547,6 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   
   // update the event quantities
   pEvent->SetEventNSelTracksRP(iSelParticlesRP);  
-  pEvent->SetNumberOfTracks(iGoodTracks); // total number of tracks (RPs + POIs + the ones that didn't pass neither RP nor POI cuts)
   pEvent->SetMCReactionPlaneAngle(dMCReactionPlaneAngle);
   
   Int_t cycle = 0;
