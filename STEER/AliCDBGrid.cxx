@@ -1122,7 +1122,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 		}
 		else if (key.Contains("cacheF",TString::kIgnoreCase)){
 			cacheFolder = value;
-   			if (!cacheFolder.EndsWith("/"))
+			if (!cacheFolder.IsNull() && !cacheFolder.EndsWith("/"))
       				cacheFolder += "/";
 		}
 		else if (key.Contains("folder",TString::kIgnoreCase)){
