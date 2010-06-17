@@ -337,6 +337,17 @@ AliCDBEntry* AliPreprocessor::GetFromOCDB(const char* pathLevel2, const char* pa
 }
 
 //______________________________________________________________________________________________
+AliCDBEntry* AliPreprocessor::GetGeometryFromOCDB()
+{
+  // Return geometry from OCDB (GRP/Geometry/Data) valid for current run
+  //
+  // The call is delegated to AliShuttleInterface
+
+  return dynamic_cast<AliCDBEntry*>
+  	(fShuttle->GetFromOCDB(GetName(), AliCDBPath("GRP", "Geometry", "Data")));
+}
+
+//______________________________________________________________________________________________
 const char* AliPreprocessor::GetRunType()
 {
   // Return run type string read from "run type" logbook

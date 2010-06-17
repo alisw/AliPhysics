@@ -52,6 +52,7 @@ class AliPreprocessor : public TNamed
     TList* GetFileIDs(Int_t system, const char* source);
     const char* GetRunParameter(const char* param);
     AliCDBEntry* GetFromOCDB(const char* pathLevel2, const char* pathLevel3);
+    AliCDBEntry* GetGeometryFromOCDB();
     const char* GetRunType();
     Bool_t GetHLTStatus();
     const char* GetTriggerConfiguration();
