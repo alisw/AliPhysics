@@ -53,6 +53,7 @@ public:
   TH2F *   GetVzMCTrg       (Int_t procType) ;
   TH2F *   GetVzData        () { return fHistVzData       ; }
   TH1F *   GetStatBin0      () { return fHistStatBin0     ; }
+  TH1F *   GetStat          () { return fHistStat         ; }
   TH1F *   GetHistProcTypes () { return fHistProcTypes    ; }
    
 
@@ -68,6 +69,8 @@ public:
   void GetRelativeFractions(Int_t origin, Float_t& ref_SD, Float_t& ref_DD, Float_t& ref_ND, Float_t& error_SD, Float_t& error_DD, Float_t& error_ND);
 
   void SetVerbose(Int_t lev) { fVerbose = lev ;}
+
+  void SetEnergy(Float_t en) { fEnergy = en; }
 
   Long64_t Merge(TCollection* list);
 
@@ -85,6 +88,8 @@ protected:
 
   Int_t fVerbose;                    // Determines the ammount of printout
 
+  Float_t fEnergy;                     // Beam energy in GeV. Defaults to 900.
+
   TH2F * fHistVzMCGen[kNProcs]    ;    // Vz distribution of generated events vs rec multiplicity
   TH2F * fHistVzMCRec[kNProcs]    ; 	// Vz distribution of reconstructed events vs rec multiplicity
   TH2F * fHistVzMCTrg[kNProcs]    ; 	// Vz distribution of triggered events vs rec multiplicity
@@ -92,10 +97,11 @@ protected:
   TH1F * fHistProcTypes           ;    // Number of evts for different Process types 
 
   TH1F * fHistStatBin0     ; // event stat histogram, created by physiscs selection; used in ComputeNint;
+  TH1F * fHistStat         ; // event stat histogram, created by physiscs selection; used in ComputeNint;
 
   static const char * fProcLabel[] ; // labels of the different process types
   
-  ClassDef(AliCollisionNormalization, 1);
+  ClassDef(AliCollisionNormalization, 3);
     
 private:
   AliCollisionNormalization(const AliCollisionNormalization&);

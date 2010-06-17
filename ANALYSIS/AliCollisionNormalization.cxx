@@ -1,3 +1,14 @@
+//-------------------------------------------------------------------------
+//                      Implementation of   Class AliCollisionNormalization
+//
+//  This class is used to store the vertex ditributions in the data
+//  and in Monte Carlo, needed to compute the real number of
+//  collisions a given sample is corresponding to.
+//  The strategy matches what described in CERN-THESIS-2009-033 p 119.
+//
+//    Author:     Michele Floris, CERN
+//-------------------------------------------------------------------------
+
 #include "AliCollisionNormalization.h"
 #include "AliPhysicsSelection.h"
 #include "AliLog.h"
@@ -21,9 +32,11 @@ AliCollisionNormalization::AliCollisionNormalization() :
   fIsMC(0),
   fReferenceXS(0),
   fVerbose(0),
+  fEnergy(900),
   fHistVzData       (0),
   fHistProcTypes    (0),
-  fHistStatBin0     (0)
+  fHistStatBin0     (0),
+  fHistStat     (0)
 {
 
   // ctor
@@ -51,9 +64,12 @@ AliCollisionNormalization::AliCollisionNormalization(Int_t nbinz, Float_t minz, 
   fIsMC(0),
   fReferenceXS(0),
   fVerbose(0),
+  fEnergy(900),
   fHistVzData       (0),
   fHistProcTypes    (0),
-  fHistStatBin0     (0)
+  fHistStatBin0     (0),
+  fHistStat     (0)
+
 {
 
   // ctor, allows setting binning
@@ -81,9 +97,12 @@ AliCollisionNormalization::AliCollisionNormalization(const char * dataFile, cons
   fIsMC(0),
   fReferenceXS(0),
   fVerbose(0),
+  fEnergy(900),
   fHistVzData       (0),
   fHistProcTypes    (0),
-  fHistStatBin0     (0)
+  fHistStatBin0     (0),
+  fHistStat     (0)
+
 {
 
   // ctor, loads histograms from file
@@ -96,6 +115,11 @@ AliCollisionNormalization::AliCollisionNormalization(const char * dataFile, cons
 
   TFile * fdata = new TFile (dataFile);
   TFile * fmc   = new TFile (mcFile  );
+  TFile * fstat = new TFile(eventStatFile);
+  
+  if (!fdata->IsOpen() || !fmc->IsOpen() || !fstat->IsOpen()) {
+    AliFatal("Cannot open input file(s)");
+  }
   
   TList * ldata = (TList*) fdata->Get(dataListName);
   TList * lmc   = (TList*) fmc  ->Get(mcListName  );
@@ -113,8 +137,8 @@ AliCollisionNormalization::AliCollisionNormalization(const char * dataFile, cons
   fHistVzData        = cndata->GetVzData();
   fHistProcTypes     = cnmc->GetHistProcTypes();
     
-  TFile * fstat = new TFile(eventStatFile);
   fHistStatBin0      =  (TH1F*) fstat->Get("fHistStatistics_Bin0");
+  fHistStat          =  (TH1F*) fstat->Get("fHistStatistics");
   
 }
 
@@ -130,6 +154,7 @@ AliCollisionNormalization::~AliCollisionNormalization(){
   
   if(fHistVzData       ) { delete fHistVzData       ; fHistVzData       =0;}
   if(fHistStatBin0     ) { delete fHistStatBin0     ; fHistStatBin0     =0;}
+  if(fHistStat         ) { delete fHistStat         ; fHistStat         =0;}
   if(fHistProcTypes    ) { delete fHistProcTypes    ; fHistProcTypes    =0;}
 
 }
@@ -241,7 +266,7 @@ TH2F *   AliCollisionNormalization::GetVzMCTrg       (Int_t procType) {
 Double_t AliCollisionNormalization::ComputeNint() {
 
   // Compute the number of collisions applying all corrections
-  // TODO: check error propagation
+  // TODO: check error propagation  
 
   TH1 * hVzData = fHistVzData->ProjectionX("_px",2,-1,"E"); // Skip zero bin 
   Int_t allEventsWithVertex = (Int_t) fHistVzData->Integral(0, fHistVzData->GetNbinsX()+1,
@@ -252,6 +277,14 @@ Double_t AliCollisionNormalization::ComputeNint() {
   TH2F * histVzMCTrg = GetVzMCTrg(-1);
   TH2F * histVzMCRec = GetVzMCRec(-1);
 
+  // Before we start: print number of input events to the physics
+  // selection: this allows to crosscheck that all runs were
+  // successfully processed (useful if running on grid: you may have a
+  // crash without noticing it).
+  AliInfo(Form("Input Events (No cuts: %d, After Phys. Sel.:%d)",
+	       Int_t(fHistStat->GetBinContent(1,1)),
+	       Int_t(fHistStat->GetBinContent(fHistStat->GetNbinsX(),1)))); // Fixme: will this change with a different trigger scheme?
+
   // Get or compute BG. This assumes the CINT1B suite
   Double_t triggeredEventsWith0MultWithBG = fHistVzData->Integral(0, fHistVzData->GetNbinsX()+1,1, 1);
   Double_t bg = 0; // This will include beam gas + accidentals
@@ -259,6 +292,10 @@ Double_t AliCollisionNormalization::ComputeNint() {
     AliInfo("Using BG computed by Physics Selection");
     bg = fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),AliPhysicsSelection::kStatRowBG);
     bg += fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),AliPhysicsSelection::kStatRowAcc);
+    Int_t cint1B = (Int_t) fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),1);	
+    if (cint1B != Int_t(triggeredEventsWith0MultWithBG)) {
+      AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, Int_t(triggeredEventsWith0MultWithBG)));
+    }
   } else {
     AliInfo("Computing BG using CINT1A/B/C/E, ignoring intensities");
     Int_t icol = fHistStatBin0->GetNbinsX();
@@ -336,7 +373,11 @@ Double_t AliCollisionNormalization::ComputeNint() {
     AliInfo(Form("Efficiency in the zero bin: %3.3f", histVzMCRec->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1) ));
   }
   
+
   AliInfo(Form("Number of collisions in full phase space: %2.2f", allEvents));
+//   effVtxTrig->Draw();
+//   new TCanvas();
+//   correctedEvents->Draw(); // FIXME: debug
 
   return allEvents;
 }
@@ -357,7 +398,7 @@ Long64_t AliCollisionNormalization::Merge(TCollection* list)
   TObject* obj;
   
   // collections of all histograms
-  const Int_t nHists = kNProcs*3+4;
+  const Int_t nHists = kNProcs*3+5;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -376,6 +417,7 @@ Long64_t AliCollisionNormalization::Merge(TCollection* list)
     if (entry->fHistVzData       ) collections[++ihist].Add(entry->fHistVzData       );
     if (entry->fHistProcTypes    ) collections[++ihist].Add(entry->fHistProcTypes    );
     if (entry->fHistStatBin0     ) collections[++ihist].Add(entry->fHistStatBin0     );
+    if (entry->fHistStat         ) collections[++ihist].Add(entry->fHistStat         );
 
     count++;
   }
@@ -390,6 +432,7 @@ Long64_t AliCollisionNormalization::Merge(TCollection* list)
   if (fHistVzData       ) fHistVzData       ->Merge(&collections[++ihist]);
   if (fHistProcTypes    ) fHistProcTypes    ->Merge(&collections[++ihist]);
   if (fHistStatBin0     ) fHistStatBin0     ->Merge(&collections[++ihist]);
+  if (fHistStat         ) fHistStat         ->Merge(&collections[++ihist]);
     
   
   delete iter;
@@ -481,8 +524,8 @@ Int_t AliCollisionNormalization::GetProcessType(AliMCEvent * mcEvt) {
 Double_t AliCollisionNormalization::GetProcessWeight(Int_t proc) {
 
   // Return a weight to be used when combining the MC histos to
-  // compute efficiency, defined as the ratio XS measured / XS in
-  // generator
+  // compute efficiency, defined as the ratio XS in generator / XS
+  // measured
 
   Float_t ref_SD,  ref_DD,  ref_ND,  error_SD,  error_DD,  error_ND;
   GetRelativeFractions(fReferenceXS,ref_SD,  ref_DD,  ref_ND,  error_SD,  error_DD,  error_ND);
@@ -533,52 +576,74 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
   //   3 = Durham
   //
 
-  switch (origin)
-  {
-    case -10: // Pythia default at 7 GeV, 50% error
-      AliInfo("PYTHIA x-sections");
-      ref_SD = 0.192637; error_SD = ref_SD * 0.5;
-      ref_DD = 0.129877; error_DD = ref_DD * 0.5;
-      ref_ND = 0.677486; error_ND = 0;
-      break;
+  Double_t epsilon = 0.0001;
+  if(TMath::Abs(fEnergy-900)<epsilon) {
 
-    case -1: // Pythia default at 900 GeV, as test
-      AliInfo("PYTHIA x-sections");
+    switch (origin)
+      {
+      case -10: // Pythia default at 7 GeV, 50% error
+	AliInfo("PYTHIA x-sections");
+	ref_SD = 0.192637; error_SD = ref_SD * 0.5;
+	ref_DD = 0.129877; error_DD = ref_DD * 0.5;
+	ref_ND = 0.677486; error_ND = 0;
+	break;
+	
+      case -1: // Pythia default at 900 GeV, as test
+	AliInfo("PYTHIA x-sections");
       ref_SD = 0.223788;
       ref_DD = 0.123315;
       ref_ND = 0.652897;
       break;
       
-    case 0: // UA5
-      AliInfo("UA5 x-sections a la first paper");
-      ref_SD = 0.153; error_SD = 0.05;
-      ref_DD = 0.080; error_DD = 0.05;
-      ref_ND = 0.767; error_ND = 0;
+      case 0: // UA5
+	AliInfo("UA5 x-sections a la first paper");
+	ref_SD = 0.153; error_SD = 0.05;
+	ref_DD = 0.080; error_DD = 0.05;
+	ref_ND = 0.767; error_ND = 0;
+	break;
+	
+      case 10: // UA5
+	AliInfo("UA5 x-sections hadron level definition for Pythia"); 
+	// Fractions in Pythia with UA5 cuts selection for SD
+	// ND: 0.688662
+	// SD: 0.188588 --> this should be 15.3
+	// DD: 0.122750
+	ref_SD = 0.224 * 0.153 / 0.189; error_SD = 0.023 * 0.224 / 0.189;
+	ref_DD = 0.095;                 error_DD = 0.06; 
+	ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+	break;
+	
+      case 11: // UA5
+	AliInfo("UA5 x-sections hadron level definition for Phojet"); 
+	// Fractions in Phojet with UA5 cuts selection for SD
+	// ND: 0.783573
+	// SD: 0.151601 --> this should be 15.3
+	// DD: 0.064827
+	ref_SD = 0.191 * 0.153 / 0.152; error_SD = 0.023 * 0.191 / 0.152;
+	ref_DD = 0.095;                 error_DD = 0.06; 
+	ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+	break;
+      case 2: // tel-aviv model
+	AliInfo("Tel-aviv model x-sections");
+	ref_SD = 0.171;
+	ref_DD = 0.094;
+	ref_ND = 1 - ref_SD - ref_DD;
+	break;
+	
+      case 3: // durham model
+	AliInfo("Durham model x-sections");
+	ref_SD = 0.190;
+	ref_DD = 0.125;
+	ref_ND = 1 - ref_SD - ref_DD;
       break;
-      
-    case 10: // UA5
-      AliInfo("UA5 x-sections hadron level definition for Pythia"); 
-      // Fractions in Pythia with UA5 cuts selection for SD
-      // ND: 0.688662
-      // SD: 0.188588 --> this should be 15.3
-      // DD: 0.122750
-      ref_SD = 0.224 * 0.153 / 0.189; error_SD = 0.023 * 0.224 / 0.189;
-      ref_DD = 0.095;                 error_DD = 0.06; 
-      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
-      break;
-    
-    case 11: // UA5
-      AliInfo("UA5 x-sections hadron level definition for Phojet"); 
-      // Fractions in Phojet with UA5 cuts selection for SD
-      // ND: 0.783573
-      // SD: 0.151601 --> this should be 15.3
-      // DD: 0.064827
-      ref_SD = 0.191 * 0.153 / 0.152; error_SD = 0.023 * 0.191 / 0.152;
-      ref_DD = 0.095;                 error_DD = 0.06; 
-      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
-      break;
-      
-    case 20: // E710, 1.8 TeV
+      default:
+	AliFatal(Form("Unknown origin %d, Energy %f", origin, fEnergy));
+      }
+  }
+  else if(TMath::Abs(fEnergy-1800)<epsilon) {     
+    switch (origin)
+      {
+      case 20: // E710, 1.8 TeV
       AliInfo("E710 x-sections hadron level definition for Pythia");
       // ND: 0.705709
       // SD: 0.166590 --> this should be 15.9
@@ -588,39 +653,30 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
       ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
       break;
     
-    case 21: // E710, 1.8 TeV
-      AliInfo("E710 x-sections hadron level definition for Phojet"); 
-      // ND: 0.817462
-      // SD: 0.125506 --> this should be 15.9
-      // DD: 0.057032
-      ref_SD = 0.161 * 0.159 / 0.126; error_SD = 0.024 * 0.161 / 0.126;
-      ref_DD = 0.075 * 1.43;         error_DD = 0.02 * 1.43;
-      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
-      break;
-    
-    case 1: // data 1.8 TeV
-      AliInfo("??? x-sections");
-      ref_SD = 0.152;
-      ref_DD = 0.092;
-      ref_ND = 1 - ref_SD - ref_DD;
-      break;
-      
-    case 2: // tel-aviv model
-      AliInfo("Tel-aviv model x-sections");
-      ref_SD = 0.171;
-      ref_DD = 0.094;
-      ref_ND = 1 - ref_SD - ref_DD;
-      break;
-    
-    case 3: // durham model
-      AliInfo("Durham model x-sections");
-      ref_SD = 0.190;
-      ref_DD = 0.125;
-      ref_ND = 1 - ref_SD - ref_DD;
-      break;
-    
-    default:
-      AliFatal(Form("Unknown origin %d", origin));
+      case 21: // E710, 1.8 TeV
+	AliInfo("E710 x-sections hadron level definition for Phojet"); 
+	// ND: 0.817462
+	// SD: 0.125506 --> this should be 15.9
+	// DD: 0.057032
+	ref_SD = 0.161 * 0.159 / 0.126; error_SD = 0.024 * 0.161 / 0.126;
+	ref_DD = 0.075 * 1.43;         error_DD = 0.02 * 1.43;
+	ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+	break;
+	
+      case 1: // data 1.8 TeV
+	AliInfo("??? x-sections");
+	ref_SD = 0.152;
+	ref_DD = 0.092;
+	ref_ND = 1 - ref_SD - ref_DD;
+	break;
+      default:
+	AliFatal(Form("Unknown origin %d, Energy %f", origin, fEnergy));
+      }    
+  } 
+  else {
+    AliFatal(Form("Unknown energy %f", origin, fEnergy));
   }
+    
 }
+
 

@@ -2,10 +2,10 @@
 void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString dataSetPath ="/PWG0/jgrosseo/",const char * filename = "LHC09b12_7TeV_0.5T_norm.root", Bool_t isMC = 1,Int_t nev =123456789) {
 
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("alicecaf");
-  
+  TProof::Open("alice-caf","workers=20");// limit the number of workers
+  //  gROOT->ProcessLine(Form(".include %s/include",gSystem->ExpandPathName("$ALICE_ROOT")));
   //  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/");
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
+  //  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
   gProof->UploadPackage("$ALICE_ROOT/STEERBase");
   gProof->EnablePackage("$ALICE_ROOT/STEERBase");
   gProof->UploadPackage("$ALICE_ROOT/ESD");
@@ -18,7 +18,18 @@ void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString 
   gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
   gProof->UploadPackage("$ALICE_ROOT/CORRFW");
   gProof->EnablePackage("$ALICE_ROOT/CORRFW");
- 
+//   gProof->UploadPackage("STEERBase.par");
+//   gProof->EnablePackage("STEERBase");
+//   gProof->UploadPackage("ESD.par");
+//   gProof->EnablePackage("ESD");
+//   gProof->UploadPackage("AOD.par");
+//   gProof->EnablePackage("AOD");
+//   gProof->UploadPackage("ANALYSIS.par");
+//   gProof->EnablePackage("ANALYSIS");
+//   gProof->UploadPackage("ANALYSISalice.par");
+//   gProof->EnablePackage("ANALYSISalice");
+//   gProof->UploadPackage("CORRFW.par");
+//   gProof->EnablePackage("CORRFW"); 
 
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
@@ -33,9 +44,6 @@ void runProofNormalization(const char * dataset = "LHC09b12_7TeV_0.5T", TString 
     mc->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(mc);
   }
-  // assign simple task
-//   gProof->Load("AliCollisionNormalization.cxx++g");   
-//   gProof->Load("AliCollisionNormalizationTask.cxx++g");   
   //____________________________________________//
   // assign simple task
   AliCollisionNormalizationTask * task = new AliCollisionNormalizationTask("TaskNormalization");

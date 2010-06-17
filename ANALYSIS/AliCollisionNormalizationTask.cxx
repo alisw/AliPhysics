@@ -136,17 +136,10 @@ void AliCollisionNormalizationTask::UserExec(Option_t*)
 
   Int_t ntracklet = mult->GetNumberOfTracklets();
   const AliESDVertex * vtxESD = aESD->GetPrimaryVertexSPD();
-  if(vtxESD) {
-    // If there is a vertex from vertexer z with delta phi > 0.02 we
-    // don't consider it rec (we keep the event in bin0). If quality
-    // is good eneough we check the number of tracklets
-    // A similar selection is applied in IsEventInBinZero
-    // If the vertex is too far away, we don't consider it reconstructed either.
-    if ((vtxESD->IsFromVertexerZ() && vtxESD->GetDispersion() > 0.02) || TMath::Abs(vtxESD->GetZ()) > 15) {
-      vtxESD = 0;
-      ntracklet = 0; // Don't trust reconstructed tracklets if you don't trust clusters
-    } 
-  } 
+  if (IsEventInBinZero()) {
+    ntracklet = 0;
+    vtxESD    = 0;
+  }
   
   if (ntracklet > 0 && !vtxESD) {
     AliError("No vertex but reconstructed tracklets?");
@@ -159,11 +152,14 @@ void AliCollisionNormalizationTask::UserExec(Option_t*)
 
   if (fIsMC) {
     // Monte Carlo:  we fill 3 histos
+    if (!isSelected || !vtxESD) ntracklet = 0; //If the event does not pass the physics selection or is not rec, it goes in the bin0
     fCollisionNormalization->FillVzMCGen(vz, ntracklet, mcEvent);      
     // If triggered == passing the physics selection
-    if (isSelected) fCollisionNormalization->FillVzMCTrg(vz, ntracklet, mcEvent);
-    // If reconstructer == good enough vertex
-    if (vtxESD) fCollisionNormalization->FillVzMCRec(vz, ntracklet, mcEvent);    
+    if (isSelected) {
+      fCollisionNormalization->FillVzMCTrg(vz, ntracklet, mcEvent);
+      // If reconstructer == good enough vertex
+      if (vtxESD) fCollisionNormalization->FillVzMCRec(vz, ntracklet, mcEvent);    
+    }
   } else {
     if (isSelected) {
       // Passing the trigger
