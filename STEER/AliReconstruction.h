@@ -28,6 +28,7 @@ class AliLoader;
 class AliTracker;
 class AliMagF;
 class AliVertexer;
+class AliTrackleter;
 class AliESDVertex;
 class AliESDEvent;
 class AliESDfriend;
@@ -179,6 +180,7 @@ private:
   Bool_t         RunHLTTracking(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
   Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
+  Bool_t         RunMultFinder(AliESDEvent*& esd);
   Bool_t         RunTracking(AliESDEvent*& esd, AliESDpid &PID);
   Bool_t         CleanESD(AliESDEvent *esd);
   Bool_t         FillESD(AliESDEvent*& esd, const TString& detectors);
@@ -190,6 +192,7 @@ private:
   Bool_t         InitRunLoader();
   AliReconstructor* GetReconstructor(Int_t iDet);
   AliVertexer*   CreateVertexer();
+  AliTrackleter* CreateMultFinder();
   void           CleanUp();
 
   Bool_t         ParseOutput();
@@ -221,6 +224,7 @@ private:
   Bool_t         fRunMuonTracking;    // run the HLT tracking
   Bool_t         fRunV0Finder;        // run the ESD V0 finder
   Bool_t         fRunCascadeFinder;   // run the ESD cascade finder
+  Bool_t         fRunMultFinder;      // run the trackleter for ITS clusters
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
@@ -313,7 +317,7 @@ private:
   
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 35)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 36)      // class for running the reconstruction
 };
 
 #endif

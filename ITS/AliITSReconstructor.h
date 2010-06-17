@@ -16,6 +16,7 @@
 class AliESDpid;
 class AliITSgeom;
 class AliTracker;
+class AliTrackleter;
 class AliITStrackerMI;
 
 class AliITSReconstructor: public AliReconstructor {
@@ -30,6 +31,7 @@ public:
   virtual AliTracker*  CreateTracker() const;
   virtual AliVertexer* CreateVertexer() const;
   virtual AliTracker*  CreateTrackleter() const;
+  virtual AliTrackleter* CreateMultFinder() const;
 
   virtual void         FillESD(TTree* /*digitsTree*/, TTree* clustersTree, 
 			       AliESDEvent* /* esd */) const; 

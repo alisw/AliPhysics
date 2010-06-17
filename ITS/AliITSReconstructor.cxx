@@ -40,7 +40,7 @@
 #include "AliITSVertexerCosmics.h"
 #include "AliITSInitGeometry.h"
 #include "AliITSTrackleterSPDEff.h"
-
+#include "AliITSMultReconstructor.h"
 
 ClassImp(AliITSReconstructor)
 
@@ -114,6 +114,17 @@ void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTr
   fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree);
 }
+
+//_____________________________________________________________________________
+AliTrackleter* AliITSReconstructor::CreateMultFinder() const
+{
+  // create the SPD trackeleter for mult. reconstruction
+  AliITSMultReconstructor* multReco = new AliITSMultReconstructor();
+  multReco->SetHistOn(kFALSE);
+  multReco->SetDetTypeRec(fDetTypeRec);
+  return multReco;
+}
+
 //_____________________________________________________________________________
 AliTracker* AliITSReconstructor::CreateTrackleter() const
 {

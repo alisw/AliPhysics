@@ -151,7 +151,8 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
     }
 
   }
-  FindMultiplicity(itsClusterTree);
+  //RS
+  //  FindMultiplicity(itsClusterTree);
   return fCurrentVertex;
 }  
 

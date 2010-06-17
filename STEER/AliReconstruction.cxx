@@ -189,6 +189,7 @@
 #include "AliTriggerConfiguration.h"
 #include "AliV0vertexer.h"
 #include "AliVertexer.h"
+#include "AliTrackleter.h"
 #include "AliVertexerTracks.h"
 #include "AliTriggerRunScalers.h"
 #include "AliCTPTimeParams.h" 
@@ -209,6 +210,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunMuonTracking(kFALSE),
   fRunV0Finder(kTRUE),
   fRunCascadeFinder(kTRUE),
+  fRunMultFinder(kTRUE),
   fStopOnError(kTRUE),
   fWriteAlignmentData(kFALSE),
   fWriteESDfriend(kFALSE),
@@ -314,6 +316,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunMuonTracking(rec.fRunMuonTracking),
   fRunV0Finder(rec.fRunV0Finder),
   fRunCascadeFinder(rec.fRunCascadeFinder),
+  fRunMultFinder(rec.fRunMultFinder),
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fWriteESDfriend(rec.fWriteESDfriend),
@@ -435,6 +438,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunMuonTracking       = rec.fRunMuonTracking;
   fRunV0Finder           = rec.fRunV0Finder;
   fRunCascadeFinder      = rec.fRunCascadeFinder;
+  fRunMultFinder         = rec.fRunMultFinder;
   fStopOnError           = rec.fStopOnError;
   fWriteAlignmentData    = rec.fWriteAlignmentData;
   fWriteESDfriend        = rec.fWriteESDfriend;
@@ -1032,8 +1036,9 @@ Bool_t AliReconstruction::InitGRP() {
 	!((detMask >> AliDAQ::DetectorID("ITSSDD")) & 0x1) &&
 	!((detMask >> AliDAQ::DetectorID("ITSSSD")) & 0x1) ) {
       // switch off the vertexer
-      AliInfo("SPD,SDD,SSD is not in the list of active detectors. Vertexer switched off.");
+      AliInfo("SPD,SDD,SSD is not in the list of active detectors. Vertexer and Trackleter are switched off.");
       fRunVertexFinder = kFALSE;
+      fRunMultFinder = kFALSE;
     }
     if (!((detMask >> AliDAQ::DetectorID("TRG")) & 0x1)) {
       // switch off the reading of CTP raw-data payload
@@ -2008,6 +2013,16 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        }
     }
  
+    // RS run updated trackleter: since we want to mark the clusters used by tracks and also mark the 
+    // tracks interpreted as primary, this step should be done in the very end, when full 
+    // ESD info is available (particulalry, V0s)
+    // vertex finder
+    if (fRunMultFinder) {
+      if (!RunMultFinder(fesd)) {
+	if (fStopOnError) {CleanUp(); return kFALSE;}
+      }
+    }
+
     // write ESD
     if (fCleanESD) CleanESD(fesd);
 
@@ -2398,16 +2413,51 @@ Bool_t AliReconstruction::RunVertexFinder(AliESDEvent*& esd)
   if(novertices>1){
     for (Int_t kk=1; kk<novertices; kk++)esd->AddPileupVertexSPD(&vpileup[kk]);
   }
+  /*
   // if SPD multiplicity has been determined, it is stored in the ESD
   AliMultiplicity *mult = vertexer->GetMultiplicity();
   if(mult)esd->SetMultiplicity(mult);
-
+  */
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
   }  
   delete vertex;
 
   delete vertexer;
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::RunMultFinder(AliESDEvent*& esd)
+{
+  // run the trackleter for multiplicity study
+
+  AliCodeTimerAuto("",0)
+
+  AliTrackleter *trackleter = CreateMultFinder();
+  if (!trackleter) return kFALSE;
+
+  AliInfo(Form("running the ITS multiplicity finder: %s",trackleter->ClassName()));
+
+  if (fLoader[0]) {
+    fLoader[0]->LoadRecPoints();
+    TTree* cltree = fLoader[0]->TreeR();
+    if (cltree) {
+      trackleter->Reconstruct(esd,cltree);
+      AliMultiplicity *mult = trackleter->GetMultiplicity();
+      if(mult) esd->SetMultiplicity(mult);
+    }
+    else {
+      AliError("Can't get the ITS cluster tree");
+    }
+    fLoader[0]->UnloadRecPoints();
+  }
+  else {
+    AliError("Can't get the ITS loader");
+  }
+
+  delete trackleter;
 
   return kTRUE;
 }
@@ -3054,6 +3104,25 @@ AliVertexer* AliReconstruction::CreateVertexer()
 }
 
 //_____________________________________________________________________________
+AliTrackleter* AliReconstruction::CreateMultFinder()
+{
+// create the ITS trackleter for mult. estimation
+// Please note that the caller is the owner of the
+// trackleter
+
+  AliTrackleter* trackleter = NULL;
+  AliReconstructor* itsReconstructor = GetReconstructor(0);
+  if (itsReconstructor && ((fRunLocalReconstruction.Contains("ITS")) || fRunTracking.Contains("ITS"))) {
+    trackleter = itsReconstructor->CreateMultFinder();
+  }
+  if (!trackleter) {
+    AliWarning("couldn't create a trackleter for ITS");
+  }
+
+  return trackleter;
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
 {
 // create the trackers
@@ -3073,7 +3142,6 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
       fRunMuonTracking = kTRUE;
       continue;
     }
-
 
     fTracker[iDet] = reconstructor->CreateTracker();
     if (!fTracker[iDet] && (iDet < 7)) {

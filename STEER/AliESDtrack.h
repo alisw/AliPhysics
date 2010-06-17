@@ -55,7 +55,8 @@ public:
     kESDpid=0x40000000,
     kTIME=0x80000000,
     kGlobalMerge=0x08000000,
-    kITSpureSA=0x10000000
+    kITSpureSA=0x10000000,
+    kMultPrimary=0x4000000 //BIT(26): assumed to be primary for multiplicity estimates
   }; 
   enum {
     kTRDnPlanes = 6,
@@ -328,7 +329,7 @@ public:
   }
   Bool_t  IsHMPID() const {return fFlags&kHMPIDpid;}
   Bool_t  IsPureITSStandalone() const {return fFlags&kITSpureSA;}
-
+  Bool_t  IsMultPrimary() const {return fFlags&kMultPrimary;}
 
   Int_t GetEMCALcluster() {return fCaloIndex;}
   void SetEMCALcluster(Int_t index) {fCaloIndex=index;}

@@ -106,6 +106,7 @@
 #pragma link C++ class  AliCluster+;
 #pragma link C++ class  AliCluster3D+;
 #pragma link C++ class  AliTracker+;
+#pragma link C++ class  AliTrackleter+;
 #pragma link C++ class  AliV0+;
 #pragma link C++ class  AliKink+;
 

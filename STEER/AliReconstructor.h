@@ -18,6 +18,7 @@ class TTree;
 class AliRawReader;
 class AliVertexer;
 class AliTracker;
+class AliTrackleter;
 class AliESDEvent;
 class AliDetectorRecoParam;
 class AliRunInfo;
@@ -44,6 +45,8 @@ public:
   virtual AliTracker*  CreateTracker() const 
     {return NULL;}
   virtual AliTracker*  CreateTrackleter() const 
+    {return NULL;}
+  virtual AliTrackleter* CreateMultFinder() const 
     {return NULL;}
 
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 

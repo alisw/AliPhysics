@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //_________________________________________________________________________
 // 
 //        Implementation of the ITS-SPD trackleter class
@@ -54,13 +52,20 @@
 //     - update to the new algorithm by Mariella and Jan Fiete
 //     - store also DeltaTheta in the ESD 
 //     - less new and delete calls when creating the needed arrays
+//
+//     - RS: to decrease the number of new/deletes the clusters data are stored 
+//           not in float[6] attached to float**, but in 1-D array.
+//     - RS: Clusters are sorted in Z in roder to have the same numbering as in the ITS reco
+//     - RS: Clusters used by ESDtrack are flagged, this information is passed to AliMulitiplicity object 
+//           when storing the tracklets and single cluster info
 //_________________________________________________________________________
 
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TTree.h>
-#include "TArrayI.h"
+#include <TBits.h>
+#include <TArrayI.h>
 
 #include "AliITSMultReconstructor.h"
 #include "AliITSReconstructor.h"
@@ -69,6 +74,11 @@
 #include "AliITSRecPointContainer.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomTGeo.h"
+#include "AliITSDetTypeRec.h"
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
+#include "AliESDtrack.h"
+#include "AliMultiplicity.h"
 #include "AliLog.h"
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
@@ -79,7 +89,7 @@ ClassImp(AliITSMultReconstructor)
 
 //____________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor():
-TObject(),
+fDetTypeRec(0),fESDEvent(0),fTreeRP(0),fUsedClusLay1(0),fUsedClusLay2(0),
 fClustersLay1(0),
 fClustersLay2(0),
 fDetectorIndexClustersLay1(0),
@@ -112,10 +122,8 @@ fhphiClustersLay1(0){
 
   fNFiredChips[0] = 0;
   fNFiredChips[1] = 0;
-
   // Method to reconstruct the charged particles multiplicity with the 
   // SPD (tracklets).
-
 
   SetHistOn();
 
@@ -135,7 +143,6 @@ fhphiClustersLay1(0){
     SetZetaOverlapCut();
   } 
   
-
   fClustersLay1              = 0;
   fClustersLay2              = 0;
   fDetectorIndexClustersLay1 = 0;
@@ -168,45 +175,50 @@ fhphiClustersLay1(0){
 }
 
 //______________________________________________________________________
-AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : TObject(mr),
-fClustersLay1(mr.fClustersLay1),
-fClustersLay2(mr.fClustersLay2),
-fDetectorIndexClustersLay1(mr.fDetectorIndexClustersLay1),
-fDetectorIndexClustersLay2(mr.fDetectorIndexClustersLay2),
-fOverlapFlagClustersLay1(mr.fOverlapFlagClustersLay1),
-fOverlapFlagClustersLay2(mr.fOverlapFlagClustersLay2),
-fTracklets(mr.fTracklets),
-fSClusters(mr.fSClusters),
-fNClustersLay1(mr.fNClustersLay1),
-fNClustersLay2(mr.fNClustersLay2),
-fNTracklets(mr.fNTracklets),
-fNSingleCluster(mr.fNSingleCluster),
-fPhiWindow(mr.fPhiWindow),
-fThetaWindow(mr.fThetaWindow),
-fPhiShift(mr.fPhiShift),
-fRemoveClustersFromOverlaps(mr.fRemoveClustersFromOverlaps),
-fPhiOverlapCut(mr.fPhiOverlapCut),
-fZetaOverlapCut(mr.fZetaOverlapCut),
-fHistOn(mr.fHistOn),
-fhClustersDPhiAcc(mr.fhClustersDPhiAcc),
-fhClustersDThetaAcc(mr.fhClustersDThetaAcc),
-fhClustersDPhiAll(mr.fhClustersDPhiAll),
-fhClustersDThetaAll(mr.fhClustersDThetaAll),
-fhDPhiVsDThetaAll(mr.fhDPhiVsDThetaAll),
-fhDPhiVsDThetaAcc(mr.fhDPhiVsDThetaAcc),
-fhetaTracklets(mr.fhetaTracklets),
-fhphiTracklets(mr.fhphiTracklets),
-fhetaClustersLay1(mr.fhetaClustersLay1),
-fhphiClustersLay1(mr.fhphiClustersLay1) {
-  // Copy constructor
-
+AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : 
+AliTrackleter(mr),
+fDetTypeRec(0),fESDEvent(0),fTreeRP(0),fUsedClusLay1(0),fUsedClusLay2(0),
+fClustersLay1(0),
+fClustersLay2(0),
+fDetectorIndexClustersLay1(0),
+fDetectorIndexClustersLay2(0),
+fOverlapFlagClustersLay1(0),
+fOverlapFlagClustersLay2(0),
+fTracklets(0),
+fSClusters(0),
+fNClustersLay1(0),
+fNClustersLay2(0),
+fNTracklets(0),
+fNSingleCluster(0),
+fPhiWindow(0),
+fThetaWindow(0),
+fPhiShift(0),
+fRemoveClustersFromOverlaps(0),
+fPhiOverlapCut(0),
+fZetaOverlapCut(0),
+fHistOn(0),
+fhClustersDPhiAcc(0),
+fhClustersDThetaAcc(0),
+fhClustersDPhiAll(0),
+fhClustersDThetaAll(0),
+fhDPhiVsDThetaAll(0),
+fhDPhiVsDThetaAcc(0),
+fhetaTracklets(0),
+fhphiTracklets(0),
+fhetaClustersLay1(0),
+fhphiClustersLay1(0)
+ {
+  // Copy constructor :!!! RS ATTENTION: old c-tor reassigned the pointers instead of creating a new copy -> would crash on delete
+   AliError("May not use");
 }
 
 //______________________________________________________________________
 AliITSMultReconstructor& AliITSMultReconstructor::operator=(const AliITSMultReconstructor& mr){
   // Assignment operator
-  this->~AliITSMultReconstructor();
-  new(this) AliITSMultReconstructor(mr);
+  if (this != &mr) {
+    this->~AliITSMultReconstructor();
+    new(this) AliITSMultReconstructor(mr);
+  }
   return *this;
 }
 
@@ -225,14 +237,9 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
   delete fhphiTracklets;
   delete fhetaClustersLay1;
   delete fhphiClustersLay1;
-
-  // delete arrays
-  for(Int_t i=0; i<fNClustersLay1; i++)
-    delete [] fClustersLay1[i];
-    
-  for(Int_t i=0; i<fNClustersLay2; i++)
-    delete [] fClustersLay2[i];
-    
+  delete[] fUsedClusLay1;
+  delete[] fUsedClusLay2;
+  // delete arrays    
   for(Int_t i=0; i<fNTracklets; i++)
     delete [] fTracklets[i];
     
@@ -250,9 +257,10 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
 }
 
 //____________________________________________________________________
-void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /* vtxRes*/) {
+void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP) 
+{
   //
-  // - calls LoadClusterArray that finds the position of the clusters
+  // - calls LoadClusterArrays that finds the position of the clusters
   //   (in global coord) 
   // - convert the cluster coordinates to theta, phi (seen from the
   //   interaction vertex). 
@@ -262,13 +270,79 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   // and the tracklets can be retrieved by calling the Get'er methods.
 
   // reset counters
+  if (fMult) delete fMult; fMult = 0;
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
   fNTracklets = 0; 
   fNSingleCluster = 0;
+  //
+  if (!treeRP) { AliError(" Invalid ITS cluster tree !\n"); return; }
+  //
+  fESDEvent = esd;
+  fTreeRP = treeRP;
+  //
+  // >>>> RS: this part is equivalent to former AliITSVertexer::FindMultiplicity
+  //
+  // see if there is a SPD vertex 
+  Bool_t isVtxOK=kTRUE, isCosmics=kFALSE;
+  AliESDVertex* vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
+  if (!vtx && vtx->GetNContributors()<0) isVtxOK = kFALSE;
+  if (vtx && strstr(vtx->GetTitle(),"cosmics")) {
+    isVtxOK = kFALSE;
+    isCosmics = kTRUE;
+  }
+  //
+  if (!isVtxOK) {
+    if (!isCosmics) {
+      AliDebug(1,"Tracklets multiplicity not determined because the primary vertex was not found");
+      AliDebug(1,"Just counting the number of cluster-fired chips on the SPD layers");
+    }
+    vtx = 0;
+  }
+  float vtxf[3] = {vtx->GetX(),vtx->GetY(),vtx->GetZ()};
+  FindTracklets(vtxf);
+  //
+  CreateMultiplicityObject();
+}
 
-  // loading the clusters 
-  LoadClusterArrays(clusterTree);
+//____________________________________________________________________
+void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* /* vtxRes*/) {
+  //
+  // RS NOTE - this is old reconstructor invocation, to be used from VertexFinder
+  //
+  // - calls LoadClusterArray that finds the position of the clusters
+  //   (in global coord) 
+  // - convert the cluster coordinates to theta, phi (seen from the
+  //   interaction vertex). 
+  // - makes an array of tracklets 
+  //   
+  // After this method has been called, the clusters of the two layers
+  // and the tracklets can be retrieved by calling the Get'er methods.
+  if (fMult) delete fMult; fMult = 0;
+  fNClustersLay1 = 0;
+  fNClustersLay2 = 0;
+  fNTracklets = 0; 
+  fNSingleCluster = 0;
+  //
+  if (!clusterTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
+  //
+  fESDEvent = 0;
+  fTreeRP = clusterTree;
+  //
+  FindTracklets(vtx);
+  //
+}
+
+//____________________________________________________________________
+void AliITSMultReconstructor::FindTracklets(const Float_t *vtx) 
+{
+  // Find tracklets converging to vertex
+  //
+  LoadClusterArrays(fTreeRP);
+  // flag clusters used by ESD tracks
+  ProcessESDTracks();
+
+  if (!vtx) return;
 
   const Double_t pi = TMath::Pi();
   
@@ -276,8 +350,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   // get average magnetic field
   Float_t bz = 0;
   AliMagF* field = 0;
-  if (TGeoGlobalMagField::Instance())
-    field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
+  if (TGeoGlobalMagField::Instance()) field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
   if (!field)
   {
     AliError("Could not retrieve magnetic field. Assuming no field. Delta Phi shift will be deactivated in AliITSMultReconstructor.")
@@ -311,34 +384,36 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   //###########################################################
   // Loop on layer 1 : finding theta, phi and z 
   for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {    
-    Float_t x = fClustersLay1[iC1][0] - vtx[0];
-    Float_t y = fClustersLay1[iC1][1] - vtx[1];
-    Float_t z = fClustersLay1[iC1][2] - vtx[2];
+    float *clPar = GetClusterLayer1(iC1);
+    Float_t x = clPar[kClTh] - vtx[0];
+    Float_t y = clPar[kClPh] - vtx[1];
+    Float_t z = clPar[kClZ]  - vtx[2];
 
     Float_t r    = TMath::Sqrt(x*x + y*y + z*z);
     
-    fClustersLay1[iC1][0] = TMath::ACos(z/r);                   // Store Theta
-    fClustersLay1[iC1][1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
+    clPar[kClTh] = TMath::ACos(z/r);                   // Store Theta
+    clPar[kClPh] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
     
     if (fHistOn) {
-      Float_t eta=fClustersLay1[iC1][0];
+      Float_t eta = clPar[kClTh];
       eta= TMath::Tan(eta/2.);
       eta=-TMath::Log(eta);
       fhetaClustersLay1->Fill(eta);    
-      fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);
+      fhphiClustersLay1->Fill(clPar[kClPh]);
     }      
   }
   
   // Loop on layer 2 : finding theta, phi and r   
   for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {    
-    Float_t x = fClustersLay2[iC2][0] - vtx[0];
-    Float_t y = fClustersLay2[iC2][1] - vtx[1];
-    Float_t z = fClustersLay2[iC2][2] - vtx[2];
+    float *clPar = GetClusterLayer2(iC2);
+    Float_t x = clPar[kClTh] - vtx[0];
+    Float_t y = clPar[kClPh] - vtx[1];
+    Float_t z = clPar[kClZ]  - vtx[2];
    
     Float_t r    = TMath::Sqrt(x*x + y*y + z*z);
-    
-    fClustersLay2[iC2][0] = TMath::ACos(z/r);                   // Store Theta
-    fClustersLay2[iC2][1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
+
+    clPar[kClTh] = TMath::ACos(z/r);                   // Store Theta
+    clPar[kClPh] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi    
   }  
   
   //###########################################################
@@ -358,16 +433,18 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
       // reset of variables for multiple candidates
       Int_t  iC2WithBestDist = -1;   // reset
       Double_t minDist       =  2;   // reset
-     
+      float* clPar1 = GetClusterLayer1(iC1);
+
       // Loop on layer 2 
       for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {      
 
         // in the overlap ?
         if (fOverlapFlagClustersLay2[iC2]) continue;
+	float* clPar2 = GetClusterLayer2(iC2);
 
         if (blacklist[iC1]) {
           Bool_t blacklisted = kFALSE;
-          for (Int_t i=0; i<blacklist[iC1]->GetSize(); i++) {
+          for (Int_t i=blacklist[iC1]->GetSize(); i--;) {
             if (blacklist[iC1]->At(i) == iC2) {
               blacklisted = kTRUE;
               break;
@@ -377,8 +454,8 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
         }
 
 	// find the difference in angles
-	Double_t dTheta = TMath::Abs(fClustersLay2[iC2][0] - fClustersLay1[iC1][0]);
-	Double_t dPhi  = TMath::Abs(fClustersLay2[iC2][1] - fClustersLay1[iC1][1]);
+	Double_t dTheta = TMath::Abs(clPar2[kClTh] - clPar1[kClTh]);
+	Double_t dPhi   = TMath::Abs(clPar2[kClPh] - clPar1[kClPh]);
         // take into account boundary condition
         if (dPhi>pi) dPhi=2.*pi-dPhi;
         
@@ -447,28 +524,29 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 
     if (fOverlapFlagClustersLay1[partners[iC2]] || fOverlapFlagClustersLay2[iC2]) continue;
 
-    fTracklets[fNTracklets] = new Float_t[6];
+    float* clPar2 = GetClusterLayer2(iC2);
+    float* clPar1 = GetClusterLayer1(partners[iC2]);
+
+    Float_t* tracklet = fTracklets[fNTracklets] = new Float_t[kTrNPar]; // RS Add also the cluster id's
   
     // use the theta from the clusters in the first layer
-    fTracklets[fNTracklets][0] = fClustersLay1[partners[iC2]][0];
+    tracklet[kTrTheta] = clPar1[kClTh];
     // use the phi from the clusters in the first layer
-    fTracklets[fNTracklets][1] = fClustersLay1[partners[iC2]][1];
+    tracklet[kTrPhi] = clPar1[kClPh];
     // store the difference between phi1 and phi2
-    fTracklets[fNTracklets][2] = fClustersLay1[partners[iC2]][1] - fClustersLay2[iC2][1];
+    tracklet[kTrDPhi] = clPar1[kClPh] - clPar2[kClPh];
 
     // define dphi in the range [0,pi] with proper sign (track charge correlated)
-    if (fTracklets[fNTracklets][2] > TMath::Pi())
-      fTracklets[fNTracklets][2] = fTracklets[fNTracklets][2]-2.*TMath::Pi();
-    if (fTracklets[fNTracklets][2] < -TMath::Pi())
-      fTracklets[fNTracklets][2] = fTracklets[fNTracklets][2]+2.*TMath::Pi();
+    if (tracklet[kTrDPhi] > TMath::Pi())   tracklet[kTrDPhi] = tracklet[kTrDPhi]-2.*TMath::Pi();
+    if (tracklet[kTrDPhi] < -TMath::Pi())  tracklet[kTrDPhi] = tracklet[kTrDPhi]+2.*TMath::Pi();
 
     // store the difference between theta1 and theta2
-    fTracklets[fNTracklets][3] = fClustersLay1[partners[iC2]][0] - fClustersLay2[iC2][0];
+    tracklet[kTrDTheta] = clPar1[kClTh] - clPar2[kClTh];
 
     if (fHistOn) {
-      fhClustersDPhiAcc->Fill(fTracklets[fNTracklets][2]); 
-      fhClustersDThetaAcc->Fill(fTracklets[fNTracklets][3]);    
-      fhDPhiVsDThetaAcc->Fill(fTracklets[fNTracklets][3],fTracklets[fNTracklets][2]);
+      fhClustersDPhiAcc->Fill(tracklet[kTrDPhi]); 
+      fhClustersDThetaAcc->Fill(tracklet[kTrDTheta]);    
+      fhDPhiVsDThetaAcc->Fill(tracklet[kTrDTheta],tracklet[kTrDPhi]);
     }
 
     // find label
@@ -477,7 +555,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
     Int_t label1 = 0;
     Int_t label2 = 0;
     while (label2 < 3) {
-      if ((Int_t) fClustersLay1[partners[iC2]][3+label1] != -2 && (Int_t) fClustersLay1[partners[iC2]][3+label1] == (Int_t) fClustersLay2[iC2][3+label2])
+      if ((Int_t) clPar1[kClMC0+label1] != -2 && (Int_t) clPar1[kClMC0+label1] == (Int_t) clPar2[kClMC0+label2])
         break;
       label1++;
       if (label1 == 3) {
@@ -486,23 +564,26 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
       }
     }
     if (label2 < 3) {
-      AliDebug(AliLog::kDebug, Form("Found label %d == %d for tracklet candidate %d\n", (Int_t) fClustersLay1[partners[iC2]][3+label1], (Int_t) fClustersLay2[iC2][3+label2], fNTracklets));
-      fTracklets[fNTracklets][4] = fClustersLay1[partners[iC2]][3+label1];
-      fTracklets[fNTracklets][5] = fClustersLay2[iC2][3+label2];
+      AliDebug(AliLog::kDebug, Form("Found label %d == %d for tracklet candidate %d\n", (Int_t) clPar1[kClMC0+label1], (Int_t) clPar1[kClMC0+label2], fNTracklets));
+      tracklet[kTrLab1] = clPar1[kClMC0+label1];
+      tracklet[kTrLab2] = clPar2[kClMC0+label2];
     } else {
-      AliDebug(AliLog::kDebug, Form("Did not find label %d %d %d %d %d %d for tracklet candidate %d\n", (Int_t) fClustersLay1[partners[iC2]][3], (Int_t) fClustersLay1[partners[iC2]][4], (Int_t) fClustersLay1[partners[iC2]][5], (Int_t) fClustersLay2[iC2][3], (Int_t) fClustersLay2[iC2][4], (Int_t) fClustersLay2[iC2][5], fNTracklets));
-      fTracklets[fNTracklets][4] = fClustersLay1[partners[iC2]][3];
-      fTracklets[fNTracklets][5] = fClustersLay2[iC2][3];
+      AliDebug(AliLog::kDebug, Form("Did not find label %d %d %d %d %d %d for tracklet candidate %d\n", (Int_t) clPar1[kClMC0], (Int_t) clPar1[kClMC1], (Int_t) clPar1[kClMC2], (Int_t) clPar2[kClMC0], (Int_t) clPar2[kClMC1], (Int_t) clPar2[kClMC2], fNTracklets));
+      tracklet[kTrLab1] = clPar1[kClMC0];
+      tracklet[kTrLab2] = clPar2[kClMC0];
     }
 
     if (fHistOn) {
-      Float_t eta=fTracklets[fNTracklets][0];
+      Float_t eta = tracklet[kTrTheta];
       eta= TMath::Tan(eta/2.);
       eta=-TMath::Log(eta);
       fhetaTracklets->Fill(eta);
-      fhphiTracklets->Fill(fTracklets[fNTracklets][1]);
+      fhphiTracklets->Fill(tracklet[kTrPhi]);
     }
-
+    //
+    tracklet[kClID1] = partners[iC2];
+    tracklet[kClID2] = iC2;
+    //
     AliDebug(1,Form(" Adding tracklet candidate %d ", fNTracklets));
     AliDebug(1,Form(" Cl. %d of Layer 1 and %d of Layer 2", partners[iC2], iC2));
     fNTracklets++;
@@ -513,10 +594,14 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
   // Delete the following else if you do not want to save Clusters! 
   // store the cluster
   for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {
+
+    float* clPar1 = GetClusterLayer1(iC1);
+
     if (associatedLay1[iC1]==2||associatedLay1[iC1]==0) { 
-      fSClusters[fNSingleCluster] = new Float_t[2];
-      fSClusters[fNSingleCluster][0] = fClustersLay1[iC1][0];
-      fSClusters[fNSingleCluster][1] = fClustersLay1[iC1][1];
+      fSClusters[fNSingleCluster] = new Float_t[kClNPar];
+      fSClusters[fNSingleCluster][kSCTh] = clPar1[kClTh];
+      fSClusters[fNSingleCluster][kSCPh] = clPar1[kClPh];
+      fSClusters[fNSingleCluster][kSCID] = iC1;
       AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)",
                 fNSingleCluster, iC1));
       fNSingleCluster++;
@@ -535,13 +620,48 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 }
 
 //____________________________________________________________________
-void
-AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
+void AliITSMultReconstructor::CreateMultiplicityObject()
+{
+  // create AliMultiplicity object and store it in the ESD event
+  //
+  TBits fastOrFiredMap,firedChipMap;
+  if (fDetTypeRec) {
+   fastOrFiredMap  = fDetTypeRec->GetFastOrFiredMap();
+   firedChipMap    = fDetTypeRec->GetFiredChipMap(fTreeRP);
+  }
+  //
+  fMult = new AliMultiplicity(fNTracklets,fNSingleCluster,fNFiredChips[0],fNFiredChips[1],fastOrFiredMap);
+  fMult->SetFiredChipMap(firedChipMap);
+  AliITSRecPointContainer* rcont = AliITSRecPointContainer::Instance();
+  fMult->SetITSClusters(0,rcont->GetNClustersInLayer(1,fTreeRP));
+  for(Int_t kk=2;kk<=6;kk++) fMult->SetITSClusters(kk-1,rcont->GetNClustersInLayerFast(kk));
+  //
+  for (int i=fNTracklets;i--;)  {
+    float* tlInfo = fTracklets[i];
+    fMult->SetTrackletData(i,tlInfo, fUsedClusLay1[int(tlInfo[kClID1])]|fUsedClusLay2[int(tlInfo[kClID2])]);
+  }
+  //  
+  for (int i=fNSingleCluster;i--;) {
+    float* clInfo = fSClusters[i];
+    fMult->SetSingleClusterData(i,clInfo,fUsedClusLay1[int(clInfo[kSCID])]);
+  }
+  fMult->CompactBits();
+  //
+}
+
+
+//____________________________________________________________________
+void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) 
+{
   // This method
   // - gets the clusters from the cluster tree 
   // - convert them into global coordinates 
   // - store them in the internal arrays
   // - count the number of cluster-fired chips
+  //
+  // RS: This method was strongly modified wrt original by Jan Fiete. In order to have the same numbering
+  // of clusters as in the ITS reco I had to introduce sorting in Z
+  // Also note that now the clusters data are stored not in float[6] attached to float**, but in 1-D array
   
   AliDebug(1,"Loading clusters and cluster-fired chips ...");
   
@@ -558,113 +678,73 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
     AliWarning("No SPD rec points found, multiplicity not calculated");
     return;
   } 
-  Float_t cluGlo[3]={0.,0.,0.};
- 
-
+  //
   // count clusters
   // loop over the SPD subdetectors
-  Int_t nSPDL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
-  for (Int_t iIts=0; iIts < nSPDL1; iIts++) {
-    itsClusters=rpcont->UncheckedGetClusters(iIts);
-    fNClustersLay1 += itsClusters->GetEntriesFast();
-  }
-  Int_t nSPDL2=AliITSgeomTGeo::GetModuleIndex(3,1,1);
-  for (Int_t iIts=nSPDL1; iIts < nSPDL2; iIts++) {
-    itsClusters=rpcont->UncheckedGetClusters(iIts);
-    fNClustersLay2 += itsClusters->GetEntriesFast();
-  }
-  
-  // create arrays
-  fClustersLay1              = new Float_t*[fNClustersLay1];
-  fDetectorIndexClustersLay1 = new Int_t[fNClustersLay1];
-  fOverlapFlagClustersLay1   = new Bool_t[fNClustersLay1];
-  
-  fClustersLay2              = new Float_t*[fNClustersLay2];
-  fDetectorIndexClustersLay2 = new Int_t[fNClustersLay2];
-  fOverlapFlagClustersLay2   = new Bool_t[fNClustersLay2];
-  
-  // no double association allowed
-  fTracklets                 = new Float_t*[TMath::Min(fNClustersLay1, fNClustersLay2)];
-  fSClusters                 = new Float_t*[fNClustersLay1];
-  
-  for (Int_t i=0; i<fNClustersLay1; i++) {
-    fClustersLay1[i]       = new Float_t[6];
-    fOverlapFlagClustersLay1[i]   = kFALSE;
-    fSClusters[i] = 0;
-  } 
- 
-  for (Int_t i=0; i<fNClustersLay2; i++) {
-    fClustersLay2[i]       = new Float_t[6];
-    fOverlapFlagClustersLay2[i]   = kFALSE;
-  } 
- 
-  for (Int_t i=0; i<TMath::Min(fNClustersLay1, fNClustersLay2); i++)
-    fTracklets[i] = 0;
-    
-  // fill clusters
-  // loop over the its subdetectors
-  fNClustersLay1 = 0; // reset to 0
-  fNClustersLay2 = 0;
-  for (Int_t iIts=0; iIts < nSPDL2; iIts++) {
-    
-    itsClusters=rpcont->UncheckedGetClusters(iIts);
-    
-    Int_t nClusters = itsClusters->GetEntriesFast();
-
-    // number of clusters in each chip of the current module
-    Int_t nClustersInChip[5] = {0,0,0,0,0};
-    Int_t layer = 0;
-    
-    // loop over clusters
-    while(nClusters--) {
-      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
-      
-      layer = cluster->GetLayer();
-      if (layer>1) continue;            
-      
-      cluster->GetGlobalXYZ(cluGlo);
-      Float_t x = cluGlo[0];
-      Float_t y = cluGlo[1];
-      Float_t z = cluGlo[2];      
-
-      // find the chip for the current cluster
-      Float_t locz = cluster->GetDetLocalZ();
-      Int_t iChip = seg.GetChipFromLocal(0,locz);
-      nClustersInChip[iChip]++; 
-      
-      if (layer==0) {
-	fClustersLay1[fNClustersLay1][0] = x;
-	fClustersLay1[fNClustersLay1][1] = y;
-	fClustersLay1[fNClustersLay1][2] = z;
- 
-        fDetectorIndexClustersLay1[fNClustersLay1]=iIts;  
-
-	for (Int_t i=0; i<3; i++)
-		fClustersLay1[fNClustersLay1][3+i] = cluster->GetLabel(i);
-	fNClustersLay1++;
+  TObjArray clArr(100);
+  for (int il=0;il<2;il++) {
+    int nclLayer = 0;
+    int detMin = AliITSgeomTGeo::GetModuleIndex(il+1,1,1);
+    int detMax = AliITSgeomTGeo::GetModuleIndex(il+2,1,1);
+    for (int idt=detMin;idt<detMax;idt++) {
+      itsClusters=rpcont->UncheckedGetClusters(idt);
+      int nClusters = itsClusters->GetEntriesFast();
+      if (!nClusters) continue;
+      Int_t nClustersInChip[5] = {0,0,0,0,0};
+      while(nClusters--) {
+	AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
+	if (!cluster) continue;
+	clArr[nclLayer++] = cluster;
+	nClustersInChip[ seg.GetChipFromLocal(0,cluster->GetDetLocalZ()) ]++; 
       }
-      if (layer==1) {
-	fClustersLay2[fNClustersLay2][0] = x;
-	fClustersLay2[fNClustersLay2][1] = y;
-	fClustersLay2[fNClustersLay2][2] = z;
-
-        fDetectorIndexClustersLay2[fNClustersLay2]=iIts;
- 
-	for (Int_t i=0; i<3; i++)
-		fClustersLay2[fNClustersLay2][3+i] = cluster->GetLabel(i);
-	fNClustersLay2++;
-      }
-      
-    }// end of cluster loop
-
-    // get number of fired chips in the current module
-
-    for(Int_t ifChip=0; ifChip<5; ifChip++) {
-      if(nClustersInChip[ifChip] >= 1)  fNFiredChips[layer]++;
+      for(Int_t ifChip=5;ifChip--;) if (nClustersInChip[ifChip]) fNFiredChips[il]++;
     }
-
-  } // end of its "subdetector" loop  
-
+    // sort the clusters in Z (to have the same numbering as in ITS reco
+    Float_t *z    = new Float_t[nclLayer];
+    Int_t * index = new Int_t[nclLayer];
+    for (int ic=0;ic<nclLayer;ic++) z[ic] = ((AliITSRecPoint*)clArr[ic])->GetZ();
+    TMath::Sort(nclLayer,z,index,kFALSE);
+    Float_t*   clustersLay              = new Float_t[nclLayer*kClNPar];
+    Int_t*     detectorIndexClustersLay = new Int_t[nclLayer];
+    Bool_t*    overlapFlagClustersLay   = new Bool_t[nclLayer];
+    Char_t*    usedClusLay              = new Char_t[nclLayer];
+    //
+    for (int ic=0;ic<nclLayer;ic++) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*)clArr[index[ic]];
+      float* clPar = &clustersLay[ic*kClNPar];
+      //      
+      cluster->GetGlobalXYZ( clPar );
+      detectorIndexClustersLay[ic] = cluster->GetDetectorIndex(); 
+      overlapFlagClustersLay[ic]   = kFALSE;
+      usedClusLay[ic]              = 0;
+      for (Int_t i=3;i--;) clPar[kClMC0+i] = cluster->GetLabel(i);
+    }
+    clArr.Clear();
+    delete[] z;
+    delete[] index;
+    //
+    if (il==0) {
+      fClustersLay1              = clustersLay;
+      fOverlapFlagClustersLay1   = overlapFlagClustersLay;
+      fDetectorIndexClustersLay1 = detectorIndexClustersLay;
+      fUsedClusLay1              = usedClusLay;
+      fNClustersLay1             = nclLayer;
+    }
+    else {
+      fClustersLay2              = clustersLay;
+      fOverlapFlagClustersLay2   = overlapFlagClustersLay;
+      fDetectorIndexClustersLay2 = detectorIndexClustersLay;
+      fUsedClusLay2              = usedClusLay;
+      fNClustersLay2             = nclLayer;
+    }
+  }
+  //
+  // no double association allowed
+  int nmaxT                  = TMath::Min(fNClustersLay1, fNClustersLay2);
+  fTracklets                 = new Float_t*[nmaxT];
+  fSClusters                 = new Float_t*[fNClustersLay1]; 
+  for (Int_t i=nmaxT;i--;) fTracklets[i] = 0;
+  //
   AliDebug(1,Form("(clusters in layer 1 : %d,  layer 2: %d)",fNClustersLay1,fNClustersLay2));
   AliDebug(1,Form("(cluster-fired chips in layer 1 : %d,  layer 2: %d)",fNFiredChips[0],fNFiredChips[1]));
 }
@@ -758,18 +838,20 @@ AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2WithB
   Float_t zproj1=0.;
   Float_t zproj2=0.;
   Float_t deZproj=0.;
-
+  Float_t* clPar1  = GetClusterLayer1(iC1);
+  Float_t* clPar2B = GetClusterLayer2(iC2WithBestDist);
   // Loop on inner layer clusters
   for (Int_t iiC1=0; iiC1<fNClustersLay1; iiC1++) {
     if (!fOverlapFlagClustersLay1[iiC1]) {
       // only for adjacent modules
       if ((TMath::Abs(fDetectorIndexClustersLay1[iC1]-fDetectorIndexClustersLay1[iiC1])==4)||
          (TMath::Abs(fDetectorIndexClustersLay1[iC1]-fDetectorIndexClustersLay1[iiC1])==76)) {
-        Float_t dePhi=TMath::Abs(fClustersLay1[iiC1][1]-fClustersLay1[iC1][1]);
+	Float_t *clPar11 = GetClusterLayer1(iiC1);
+        Float_t dePhi=TMath::Abs(clPar11[kClPh]-clPar1[kClPh]);
         if (dePhi>TMath::Pi()) dePhi=2.*TMath::Pi()-dePhi;
 
-        zproj1=meanRadiusLay1/TMath::Tan(fClustersLay1[iC1][0]);
-        zproj2=meanRadiusLay1/TMath::Tan(fClustersLay1[iiC1][0]);
+        zproj1=meanRadiusLay1/TMath::Tan(clPar1[kClTh]);
+        zproj2=meanRadiusLay1/TMath::Tan(clPar11[kClTh]);
 
         deZproj=TMath::Abs(zproj1-zproj2);
 
@@ -797,13 +879,14 @@ AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2WithB
   for (Int_t iiC2=0; iiC2<fNClustersLay2; iiC2++) {
     if (!fOverlapFlagClustersLay2[iiC2]) {
       // only for adjacent modules
+      Float_t *clPar2 = GetClusterLayer2(iiC2);
       if ((TMath::Abs(fDetectorIndexClustersLay2[iC2WithBestDist]-fDetectorIndexClustersLay2[iiC2])==4) ||
          (TMath::Abs(fDetectorIndexClustersLay2[iC2WithBestDist]-fDetectorIndexClustersLay2[iiC2])==156)) {
-        Float_t dePhi=TMath::Abs(fClustersLay2[iiC2][1]-fClustersLay2[iC2WithBestDist][1]);
+        Float_t dePhi=TMath::Abs(clPar2[kClPh]-clPar2B[kClPh]);
         if (dePhi>TMath::Pi()) dePhi=2.*TMath::Pi()-dePhi;
 
-        zproj1=meanRadiusLay2/TMath::Tan(fClustersLay2[iC2WithBestDist][0]);
-        zproj2=meanRadiusLay2/TMath::Tan(fClustersLay2[iiC2][0]);
+        zproj1=meanRadiusLay2/TMath::Tan(clPar2B[kClTh]);
+        zproj2=meanRadiusLay2/TMath::Tan(clPar2[kClTh]);
 
         deZproj=TMath::Abs(zproj1-zproj2);
         distClSameMod = TMath::Sqrt(TMath::Power(deZproj/fZetaOverlapCut,2)+TMath::Power(dePhi/fPhiOverlapCut,2));
@@ -822,4 +905,64 @@ AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2WithB
 
 //  if (distClSameModMin!=0.) fOverlapFlagClustersLay2[iClOverlap]=kTRUE;
 
+}
+
+//____________________________________________________________________
+void AliITSMultReconstructor::ProcessESDTracks()
+{
+  // Flag the clusters used by ESD tracks
+  // Flag primary tracks to be used for multiplicity counting 
+  //
+  AliESDVertex* vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
+  if (!vtx) vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
+  if (!vtx) {
+    AliDebug(1,"No primary vertex: cannot flag primary tracks");
+    return;
+  }
+  Int_t ntracks = fESDEvent->GetNumberOfTracks();
+  for(Int_t itr=0; itr<ntracks; itr++) {
+    AliESDtrack* track = fESDEvent->GetTrack(itr);
+    if (!track->IsOn(AliESDtrack::kITSin)) continue; // use only tracks propagated in ITS to vtx
+    FlagTrackClusters(track);
+    FlagIfPrimary(track,vtx);
+  }
+  //
+}
+
+//____________________________________________________________________
+void AliITSMultReconstructor::FlagTrackClusters(const AliESDtrack* track)
+{
+  // RS: flag the SPD clusters of the track if it is useful for the multiplicity estimation
+  //
+  Int_t idx[12];
+  if ( track->GetITSclusters(idx)<3 ) return; // at least 3 clusters must be used in the fit
+  //
+  char mark = track->IsOn(AliESDtrack::kITSpureSA) ? kITSSAPBit : kITSTPCBit;
+  char *uClus[2] = {fUsedClusLay1,fUsedClusLay2};
+  for (int i=AliESDfriendTrack::kMaxITScluster;i--;) {
+    // note: i>=6 is for extra clusters
+    if (idx[i]<0) continue;
+    int layID= (idx[i] & 0xf0000000) >> 28; 
+    if (layID>1) continue; // SPD only
+    int clID = (idx[i] & 0x0fffffff);
+    uClus[layID][clID] |= mark;
+  }
+  //
+}
+
+//____________________________________________________________________
+void AliITSMultReconstructor::FlagIfPrimary(AliESDtrack* track, const AliVertex* vtx)
+{
+  // RS: check if the track is primary and set the flag
+  const double kPDCASPD1 = 0.1;
+  const double kPDCASPD0 = 0.3;
+  //
+  double cut = (track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)) ? kPDCASPD1 : kPDCASPD0;
+  // in principle, the track must already have been propagated to vertex
+  /*
+  Double_t dzRec[2]={0,0}, covdzRec[3];
+  track->PropagateToDCA(vtx, fESDEvent->GetMagneticField(), 3.0, dzRec, covdzRec);
+  */
+  double dist = track->GetD(vtx->GetX(),vtx->GetY(),fESDEvent->GetMagneticField());
+  if (TMath::Abs(dist*track->P())<cut) track->SetStatus(AliESDtrack::kMultPrimary);
 }

@@ -42,6 +42,7 @@ AliExpression.cxx \
 AliCTPRawStream.cxx \
 AliMathBase.cxx AliSignalProcesor.cxx \
 AliTracker.cxx AliCluster.cxx AliCluster3D.cxx \
+AliTrackleter.cxx \
 AliHelix.cxx AliV0.cxx AliKink.cxx \
 AliSelectorRL.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
