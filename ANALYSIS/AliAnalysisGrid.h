@@ -34,7 +34,8 @@ enum EPluginRunMode {
 enum EPluginBits {
    kBitMask32  = 0xffffffff,
    kUseCopy    = BIT(0),
-   kCheckCopy  = BIT(1)
+   kCheckCopy  = BIT(1),
+   kKeepLogs   = BIT(2)
 };
 
    AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
@@ -69,7 +70,7 @@ enum EPluginBits {
    virtual void        SetDataPattern(const char *pattern)               = 0;
    virtual void        SetDefaultOutputs(Bool_t flag=kTRUE)              = 0;
    virtual void        SetGridOutputDir(const char *name="output")       = 0;
-   virtual void        SetOutputArchive(const char *list="log_archive.zip:stdout,stderr root_archive.zip:*.root") = 0;
+   virtual void        SetOutputArchive(const char *list="log_archive.zip:std*@disk=1 root_archive.zip:*.root@disk=2") = 0;
    virtual void        SetOutputFiles(const char *list)                  = 0;
    virtual void        SetInputFormat(const char *format="xml-single")   = 0;
    virtual void        SetMaxInitFailed(Int_t nfail=5)                   = 0;
@@ -104,6 +105,8 @@ enum EPluginBits {
    void                SetUseCopy(Bool_t flag=kTRUE) {SetSpecialBit(kUseCopy,flag);}
    Bool_t              IsCheckCopy() const {return TestSpecialBit(kCheckCopy);}
    void                SetCheckCopy(Bool_t flag=kTRUE) {SetSpecialBit(kCheckCopy,flag);}
+   Bool_t              IsKeepLogs() const {return TestSpecialBit(kKeepLogs);}
+   void                SetKeepLogs(Bool_t flag=kTRUE) {SetSpecialBit(kKeepLogs,flag);}   
 
 protected:
 // Methods

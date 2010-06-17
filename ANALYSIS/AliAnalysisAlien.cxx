@@ -61,6 +61,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fMergeViaJDL(0),
                   fFastReadOption(0),
                   fOverwriteMode(1),
+                  fNreplicas(2),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -118,6 +119,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fMergeViaJDL(0),
                   fFastReadOption(0),
                   fOverwriteMode(1),
+                  fNreplicas(2),
                   fRunNumbers(),
                   fExecutable(),
                   fExecutableCommand(),
@@ -175,6 +177,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fMergeViaJDL(other.fMergeViaJDL),
                   fFastReadOption(other.fFastReadOption),
                   fOverwriteMode(other.fOverwriteMode),
+                  fNreplicas(other.fNreplicas),
                   fRunNumbers(other.fRunNumbers),
                   fExecutable(other.fExecutable),
                   fExecutableCommand(other.fExecutableCommand),
@@ -262,6 +265,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fMergeViaJDL             = other.fMergeViaJDL;
       fFastReadOption          = other.fFastReadOption;
       fOverwriteMode           = other.fOverwriteMode;
+      fNreplicas               = other.fNreplicas;
       fRunNumbers              = other.fRunNumbers;
       fExecutable              = other.fExecutable;
       fExecutableCommand       = other.fExecutableCommand;
@@ -1045,7 +1049,7 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }      
          delete arr;         
       }      
-      arr = fOutputFiles.Tokenize(" ");
+      arr = fOutputFiles.Tokenize(",");
       TIter next(arr);
       Bool_t first = kTRUE;
       const char *comment = "Files to be archived";
@@ -1529,6 +1533,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   Max number of subjob fails to kill: __________ %d\n", fMaxInitFailed);
    if (fMasterResubmitThreshold>0) 
    printf("=   Resubmit master job if failed subjobs >_______ %d\n", fMasterResubmitThreshold);
+   printf("=   Number of replicas for the output files_______ %d\n", fNreplicas);
    if (fNrunsPerMaster>0)
    printf("=   Number of runs per master job: _______________ %d\n", fNrunsPerMaster);
    printf("=   Number of files in one chunk to be merged: ___ %d\n", fMaxMergeFiles);
@@ -1573,6 +1578,7 @@ void AliAnalysisAlien::SetDefaults()
    fMaxInitFailed              = 0;
    fMasterResubmitThreshold    = 0;
    fNtestFiles                 = 10;
+   fNreplicas                  = 2;
    fRunRange[0]                = 0;
    fRunRange[1]                = 0;
    fNrunsPerMaster             = 1;
@@ -1595,7 +1601,7 @@ void AliAnalysisAlien::SetDefaults()
    fDataPattern                = "*AliESDs.root";  // Can be like: *AliESDs.root, */pass1/*AliESDs.root, ...
    fFriendChainName            = "";
    fGridOutputDir              = "output";
-   fOutputArchive              = "log_archive.zip:stdout,stderr root_archive.zip:*.root";
+   fOutputArchive              = "log_archive.zip:std*@disk=1 root_archive.zip:*.root@disk=2";
    fOutputFiles                = "";  // Like "AliAODs.root histos.root"
    fInputFormat                = "xml-single";
    fJDLName                    = "analysis.jdl";
@@ -1604,6 +1610,7 @@ void AliAnalysisAlien::SetDefaults()
    fMergeViaJDL                = 0;
    SetUseCopy(kTRUE);
    SetCheckCopy(kTRUE);
+   SetDefaultOutputs(kTRUE);
    fOverwriteMode              = 1;
 }   
 
@@ -1759,7 +1766,7 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       gEnv->SetValue("XNet.ReconnectTimeout",10);
       gEnv->SetValue("XNet.FirstConnectMaxCnt",1);
    }   
-   TObjArray *list = fOutputFiles.Tokenize(" ");
+   TObjArray *list = fOutputFiles.Tokenize(",");
    TIter next(list);
    TObjString *str;
    TString output_file;
@@ -1815,6 +1822,53 @@ void AliAnalysisAlien::SetDefaultOutputs(Bool_t flag)
 }
       
 //______________________________________________________________________________
+void AliAnalysisAlien::SetOutputFiles(const char *list)
+{
+// Manually set the output files list.
+// Removes duplicates. Not allowed if default outputs are not disabled.
+   if (TObject::TestBit(AliAnalysisGrid::kDefaultOutputs)) {
+      Fatal("SetOutputFiles", "You have to explicitly call SetDefaultOutputs(kFALSE) to manually set output files.");
+      return;
+   }
+   Info("SetOutputFiles", "Output file list is set manually - you are on your own.");
+   fOutputFiles = "";
+   TString slist = list;
+   if (slist.Contains("@")) Warning("SetOutputFiles","The plugin does not allow explicit SE's. Please use: SetNumberOfReplicas() instead.");
+   TObjArray *arr = slist.Tokenize(" "); 
+   TObjString *os;
+   TIter next(arr);
+   TString sout;
+   while ((os=(TObjString*)next())) {
+      sout = os->GetString();
+      if (sout.Index("@")>0) sout.Remove(sout.Index("@"));
+      if (fOutputFiles.Contains(sout)) continue;
+      if (!fOutputFiles.IsNull()) fOutputFiles += ",";
+      fOutputFiles += sout;
+   }
+   delete arr;   
+}      
+
+//______________________________________________________________________________
+void AliAnalysisAlien::SetOutputArchive(const char *list)
+{
+// Manually set the output archive list. Free text - you are on your own...
+// Not allowed if default outputs are not disabled.
+   if (TObject::TestBit(AliAnalysisGrid::kDefaultOutputs)) {
+      Fatal("SetOutputArchive", "You have to explicitly call SetDefaultOutputs(kFALSE) to manually set the output archives.");
+      return;
+   }
+   Info("SetOutputArchive", "Output archive is set manually - you are on your own.");
+   fOutputArchive = list;
+}
+
+//______________________________________________________________________________
+void AliAnalysisAlien::SetPreferedSE(const char */*se*/)
+{
+// Setting a prefered output SE is not allowed anymore.
+   Warning("SetPreferedSE", "Setting a preferential SE is not allowed anymore via the plugin. Use SetNumberOfReplicas() and SetDefaultOutputs()");
+}
+
+//______________________________________________________________________________
 Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
 {
 // Start remote grid analysis.
@@ -1836,14 +1890,21 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             filename = mgr->GetOutputEventHandler()->GetOutputFileName();
          }
          if (fOutputFiles.Contains(filename)) continue;
-         if (fOutputFiles.Length()) fOutputFiles += " ";
+         if (fOutputFiles.Length()) fOutputFiles += ",";
          fOutputFiles += filename;
       }
       // Add extra files registered to the analysis manager
       if (mgr->GetExtraFiles().Length()) {
-         if (fOutputFiles.Length()) fOutputFiles += " ";
-         fOutputFiles += mgr->GetExtraFiles();
+         if (fOutputFiles.Length()) fOutputFiles += ",";
+         TString extra = mgr->GetExtraFiles();
+         extra.ReplaceAll(" ", ",");
+         // Protection in case extra files do not exist (will it work?)
+         extra.ReplaceAll(".root", "*.root");
+         fOutputFiles += extra;
       }
+      // Compose the output archive.
+      fOutputArchive = "log_archive.zip:std*@disk=1 ";
+      fOutputArchive += Form("root_archive.zip:%s@disk=%d",fOutputFiles.Data(),fNreplicas);
    }
 //   if (!fCloseSE.Length()) fCloseSE = gSystem->Getenv("alien_CLOSE_SE");
    if (TestBit(AliAnalysisGrid::kOffline)) {
@@ -1899,7 +1960,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       Info("StartAnalysis", "\n_______________________________________________________________________ \
       \n   Running analysis script in a daughter shell as on a worker node \
       \n_______________________________________________________________________");
-      TObjArray *list = fOutputFiles.Tokenize(" ");
+      TObjArray *list = fOutputFiles.Tokenize(",");
       TIter next(list);
       TObjString *str;
       TString output_file;
@@ -2620,7 +2681,8 @@ void AliAnalysisAlien::WriteMergingMacro()
          }   
          if (list) delete list;
       }
-      out << endl;
+      out << endl;      
+
       if (fFastReadOption) {
          Warning("WriteMergingMacro", "!!! You requested FastRead option. Using xrootd flags to reduce timeouts in the grid merging jobs. Note that this may skip some files that could be accessed !!!");
          out << "// fast xrootd reading enabled" << endl;
@@ -2818,8 +2880,6 @@ void AliAnalysisAlien::WriteExecutable()
       out << "echo \"======== " << fAnalysisMacro.Data() << " finished with exit code: $? ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;
       out << "free -m" << endl;
-      out << "echo \"############## Last 10 lines from dmesg : ##############\"" << endl;
-      out << "dmesg | tail -n 10" << endl;
    }   
    Bool_t copy = kTRUE;
    if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
@@ -2878,8 +2938,6 @@ void AliAnalysisAlien::WriteMergeExecutable()
       out << "echo \"======== " << mergeMacro.Data() << " finished with exit code: $? ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;
       out << "free -m" << endl;
-      out << "echo \"############## Last 10 lines from dmesg : ##############\"" << endl;
-      out << "dmesg | tail -n 10" << endl;
    }   
    Bool_t copy = kTRUE;
    if (TestBit(AliAnalysisGrid::kOffline) || TestBit(AliAnalysisGrid::kTest)) copy = kFALSE;
@@ -3004,7 +3062,7 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
 
       // Part dedicated to the specific analyses running into the train
 
-      TObjArray *arr = fOutputFiles.Tokenize(" ");
+      TObjArray *arr = fOutputFiles.Tokenize(",");
       TIter next1(arr);
       TString output_file;
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -3032,6 +3090,11 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       
       out << "if [ $error = 0 ] ; then" << endl;
       out << "   echo \"* ----------------   Job Validated  ------------------*\""  << out_stream << endl;
+      if (!IsKeepLogs()) {
+         out << "   echo \"* === Logs std* will be deleted === \"" << endl;
+         out_stream = "";
+         out << "   rm -f std*" << endl;
+      }            
       out << "fi" << endl;
 
       out << "echo \"* ----------------------------------------------------*\""  << out_stream << endl;
