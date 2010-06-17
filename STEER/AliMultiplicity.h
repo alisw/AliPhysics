@@ -50,8 +50,8 @@ class AliMultiplicity : public TObject {
   Int_t GetLabel(Int_t i, Int_t layer) const;
   void  SetLabel(Int_t i, Int_t layer, Int_t label);
 
-  Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const {return (mode>=0&&mode<2&&i>=0&&i<fNtracks) ? fUsedClusT[mode].TestBitNumber(i):kFALSE;}
-  Bool_t FreeSingleCluster(Int_t i, Int_t mode)    const {return (mode>=0&&mode<2&&i>=0&&i<fNsingle) ? fUsedClusS[mode].TestBitNumber(i):kFALSE;}
+  Bool_t FreeClustersTracklet(Int_t i, Int_t mode) const {return (mode>=0&&mode<2&&i>=0&&i<fNtracks) ? !fUsedClusT[mode].TestBitNumber(i):kFALSE;}
+  Bool_t FreeSingleCluster(Int_t i, Int_t mode)    const {return (mode>=0&&mode<2&&i>=0&&i<fNsingle) ? !fUsedClusS[mode].TestBitNumber(i):kFALSE;}
 
   
 // methods to access single cluster information
