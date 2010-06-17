@@ -694,7 +694,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree)
       while(nClusters--) {
 	AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
 	if (!cluster) continue;
-	clArr[nclLayer++] = cluster;
+	clArr.AddAtAndExpand(cluster,nclLayer++);
 	nClustersInChip[ seg.GetChipFromLocal(0,cluster->GetDetLocalZ()) ]++; 
       }
       for(Int_t ifChip=5;ifChip--;) if (nClustersInChip[ifChip]) fNFiredChips[il]++;
