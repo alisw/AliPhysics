@@ -114,12 +114,13 @@ class AliEMCALLoader : public AliLoader {
   static const TString fgkECARecPointsBranchName; //! Name of branch with ECA Reconstructed Points
   
   Int_t  fDebug ;             // Debug level
-  
+  TClonesArray *fTempArr;      //! Temporary array for hits
+	
   static AliEMCALCalibData    * fgCalibData;  //  calibration data 
   //  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
   static AliEMCALSimParam     * fgSimParam;   //  sim param 
   
-  ClassDef(AliEMCALLoader,5)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliEMCALLoader,6)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
     
 };
 

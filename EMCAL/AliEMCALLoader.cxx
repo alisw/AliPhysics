@@ -61,38 +61,56 @@ AliEMCALSimParam*     AliEMCALLoader::fgSimParam  = 0; //simulation parameters
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
-  : fDebug(0)
+: fDebug(0), fTempArr(0x0)
 {
   //Default constructor for EMCAL Loader Class
-  
+  fTempArr =  new TClonesArray("AliEMCALHit",0);
+
 }
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername)
-  : AliLoader(detname,eventfoldername), fDebug(0)
+  : AliLoader(detname,eventfoldername), fDebug(0), fTempArr(0x0)
 {
   //Specific constructor for EMCAL Loader class
+  fTempArr =  new TClonesArray("AliEMCALHit",0);
+
 }
 
 //____________________________________________________________________________
 AliEMCALLoader::AliEMCALLoader(const Char_t *name, TFolder *topfolder)
-  : AliLoader(name,topfolder), fDebug(0)
+  : AliLoader(name,topfolder), fDebug(0), fTempArr(0x0)
 {
   //Specific constructor for EMCAL Loader class
+  fTempArr =  new TClonesArray("AliEMCALHit",0);
+
 }
 
 //____________________________________________________________________________ 
 AliEMCALLoader::~AliEMCALLoader()
 {
   // Disconnect trees and remove arrays
-  if (TreeH())
-    TreeH()->SetBranchAddress(fDetectorName,0);
-  if (TreeD())
-    TreeD()->SetBranchAddress(fDetectorName,0);
-  if (TreeS())
-    TreeS()->SetBranchAddress(fDetectorName,0);
-  if (TreeR())
-    TreeR()->SetBranchAddress(fgkECARecPointsBranchName,0);
+//  if (TreeH())
+//    TreeH()->SetBranchAddress(fDetectorName,0);
+//  if (TreeD())
+//    TreeD()->SetBranchAddress(fDetectorName,0);
+//  if (TreeS())
+//    TreeS()->SetBranchAddress(fDetectorName,0);
+//  if (TreeR())
+//    TreeR()->SetBranchAddress(fgkECARecPointsBranchName,0);
+	
+	Clean(fgkECAHitsBranchName);
+	Clean(fgkECASDigitsBranchName);
+	Clean(fgkECADigitsBranchName);
+	Clean(fgkECARecPointsBranchName);
+	
+	AliLoader::CleanFolders();
+	
+	if (fTempArr) {
+		fTempArr->Delete();
+		delete fTempArr;
+	}
+	
 }
 
 //____________________________________________________________________________ 
@@ -173,24 +191,22 @@ Int_t AliEMCALLoader::GetEvent()
   if (treeH) {
     Int_t nEnt = treeH->GetEntries();  // TreeH has array of hits for every primary
     Int_t index = 0;
-    TClonesArray *tempArr = 0x0;
     TBranch * branchH = treeH->GetBranch(fDetectorName);
-    branchH->SetAddress(&tempArr);
+    branchH->SetAddress(&fTempArr);
     TClonesArray* hits = const_cast<AliEMCALLoader *>(this)->Hits();
     if (hits) hits->Clear();
     for (Int_t iEnt = 0; iEnt < nEnt; iEnt++) {
       branchH->GetEntry(iEnt);
-      Int_t nHit = tempArr->GetEntriesFast();
+      Int_t nHit = fTempArr->GetEntriesFast();
       for (Int_t iHit = 0; iHit < nHit; iHit++) {
-	new ((*hits)[index]) AliEMCALHit(*((AliEMCALHit*)tempArr->At(iHit)));
+	new ((*hits)[index]) AliEMCALHit(*((AliEMCALHit*)fTempArr->At(iHit)));
 	index++;
       }
     }
     branchH->ResetAddress();
-    if (tempArr) {
-      tempArr->Delete();
-      delete tempArr;
-    }
+	if (fTempArr) {
+		  fTempArr->Clear();
+	}
   }
   
   // *** SDigits ***
