@@ -488,7 +488,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     xTRKnc = (Float_t)trkvnc->GetXv();
     yTRKnc = (Float_t)trkvnc->GetYv();
     zTRKnc = (Float_t)trkvnc->GetZv();
-    ntrksTRKnc = (UShort_t)trkvnc->GetNContributors();
+    ntrksTRKnc = (trkvnc->GetNContributors()<0 ? 0 : (UShort_t)trkvnc->GetNContributors());
 
     delete trkvnc; trkvnc=0;
 
