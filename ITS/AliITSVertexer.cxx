@@ -68,6 +68,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   // Invokes AliITSMultReconstructor to determine the
   // charged multiplicity in the pixel layers
   if(fMult){delete fMult; fMult = 0;}
+
   Bool_t success=kTRUE;
   Bool_t cosmics=kFALSE; 
   if(!fCurrentVertex)success=kFALSE;

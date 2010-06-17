@@ -269,14 +269,14 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
   // After this method has been called, the clusters of the two layers
   // and the tracklets can be retrieved by calling the Get'er methods.
 
+  if (!treeRP) { AliError(" Invalid ITS cluster tree !\n"); return; }
+  if (!esd) {AliError("ESDEvent is not available, use old reconstructor"); return;}
   // reset counters
   if (fMult) delete fMult; fMult = 0;
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
   fNTracklets = 0; 
   fNSingleCluster = 0;
-  //
-  if (!treeRP) { AliError(" Invalid ITS cluster tree !\n"); return; }
   //
   fESDEvent = esd;
   fTreeRP = treeRP;
@@ -340,7 +340,7 @@ void AliITSMultReconstructor::FindTracklets(const Float_t *vtx)
   //
   LoadClusterArrays(fTreeRP);
   // flag clusters used by ESD tracks
-  ProcessESDTracks();
+  if (fESDEvent) ProcessESDTracks();
 
   if (!vtx) return;
 
@@ -913,6 +913,7 @@ void AliITSMultReconstructor::ProcessESDTracks()
   // Flag the clusters used by ESD tracks
   // Flag primary tracks to be used for multiplicity counting 
   //
+  if (!fESDEvent) return;
   AliESDVertex* vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
   if (!vtx) vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
   if (!vtx) {
