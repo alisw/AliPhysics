@@ -62,6 +62,12 @@ public:
       return AliPreprocessor::GetFromOCDB(pathLevel2,pathLevel3);      
     }
 
+  /// Publish AliPreprocessor::GetFromOCDB function
+  AliCDBEntry* GetGeometryFromOCDB()
+  {
+    return AliPreprocessor::GetGeometryFromOCDB();
+  }
+  
   /// Whether we can be used (e.g. whether we were properly initialized)
   Bool_t IsValid() const { return fIsValid; }
   
