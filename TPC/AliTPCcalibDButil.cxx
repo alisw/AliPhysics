@@ -2838,7 +2838,7 @@ TObjArray *AliTPCcalibDButil::SmoothRelKalman(TObjArray * const array, const TMa
   const Double_t kerrsTime[9]={
     0.00001,  0.00001, 0.00001,
     0.001,    0.001,   0.001,
-    0.0001,  0.001,   0.0001};
+    0.002,  0.01,   0.001};
   //
   //
   Int_t entries = array->GetEntriesFast();
