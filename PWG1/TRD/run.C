@@ -130,10 +130,6 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
     else chain = MakeChainLST(files);
   }
   if(!chain) return;
-  chain->SetBranchStatus("*FMD*",0);
-  chain->SetBranchStatus("*Calo*",0);
-  chain->SetBranchStatus("Tracks", 1);
-  chain->SetBranchStatus("ESDfriend*",1);
   chain->Lookup();
   chain->GetListOfFiles()->Print();
   Int_t nfound=(Int_t)chain->GetEntries();
@@ -142,9 +138,11 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
 
   // BUILD ANALYSIS MANAGER
   AliAnalysisManager *mgr = new AliAnalysisManager("TRD Reconstruction Performance & Calibration");
-  AliVEventHandler *esdH = 0x0, *mcH = 0x0;
-  mgr->SetInputEventHandler(esdH = new AliESDInputHandler);
-  //esdH->SetActiveBranches("ESDfriend");
+  AliESDInputHandlerRP *esdH(NULL);
+  mgr->SetInputEventHandler(esdH = new AliESDInputHandlerRP);
+  esdH->SetReadFriends(kTRUE);
+  esdH->SetActiveBranches("ESDfriend");
+  AliMCEventHandler *mcH(NULL);
   if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
 
@@ -176,7 +174,6 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
 
   if(mcH) delete mcH;
   delete esdH;
-  delete mgr;
   delete chain;
   if(MEM) delete mem;
   if(MEM) TMemStatViewerGUI::ShowGUI();

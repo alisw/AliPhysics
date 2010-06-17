@@ -123,6 +123,7 @@ void AliTRDpidRefMaker::UserCreateOutputObjects()
   h2->GetYaxis()->SetNdivisions(511);
   fContainer->AddAt(h2, 0);
 
+  OpenFile(2);
   fData = new TTree("RefPID", "Reference data for PID");
   fData->Branch("data", &fPIDdataArray);
 }
