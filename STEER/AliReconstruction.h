@@ -65,6 +65,8 @@ public:
     {fFirstEvent = firstEvent; fLastEvent = lastEvent;};
   void           SetNumberOfEventsPerFile(UInt_t nEvents)
     {fNumberOfEventsPerFile = nEvents;};
+  void           SetFractionFriends(Double32_t frac = 0.04)
+    {fFractionFriends = frac;};
   void           SetOption(const char* detector, const char* option);
   void           SetRecoParam(const char* detector, AliDetectorRecoParam *par);
 
@@ -253,6 +255,7 @@ private:
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
   UInt_t         fNumberOfEventsPerFile; // number of events per file in case of raw-data reconstruction
+  Double32_t     fFractionFriends; // fraction of ESD friends to be stored
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
   TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
@@ -317,7 +320,7 @@ private:
   
   TTree*              fChain;      //! The raw-data chain in case of AliRawReaderChain
 
-  ClassDef(AliReconstruction, 36)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 37)      // class for running the reconstruction
 };
 
 #endif

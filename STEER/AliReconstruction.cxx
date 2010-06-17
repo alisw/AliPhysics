@@ -130,6 +130,7 @@
 #include <TGrid.h>
 #include <TMessage.h>
 #include <TUrl.h>
+#include <TRandom.h>
 
 #include "AliAlignObj.h"
 #include "AliCDBEntry.h"
@@ -238,6 +239,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fFirstEvent(0),
   fLastEvent(-1),
   fNumberOfEventsPerFile((UInt_t)-1),
+  fFractionFriends(0.04),
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
   fLoadAlignData("ALL"),
@@ -344,6 +346,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
   fNumberOfEventsPerFile(rec.fNumberOfEventsPerFile),
+  fFractionFriends(rec.fFractionFriends),
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
   fLoadAlignData(rec.fLoadAlignData),
@@ -466,6 +469,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fFirstEvent                    = rec.fFirstEvent;
   fLastEvent                     = rec.fLastEvent;
   fNumberOfEventsPerFile         = rec.fNumberOfEventsPerFile;
+  fFractionFriends               = rec.fFractionFriends;
 
   for (Int_t i = 0; i < rec.fOptions.GetEntriesFast(); i++) {
     if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
@@ -2050,7 +2054,17 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fesd->GetESDfriend(fesdf);
 
     ftree->Fill();
-    if (fWriteESDfriend) ftreeF->Fill();
+    if (fWriteESDfriend) {
+      // Sampling
+      Double_t rnd = gRandom->Rndm();
+      if (fFractionFriends < rnd) {
+	fesdf->~AliESDfriend();
+	new (fesdf) AliESDfriend(); // Reset...
+	fesdf->SetSkipBit(kTRUE);
+      }
+
+      ftreeF->Fill();
+    }
 
     // Auto-save the ESD tree in case of prompt reco @P2
     if (fRawReader && fRawReader->UseAutoSaveESD()) {
