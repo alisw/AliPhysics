@@ -162,6 +162,10 @@ void AliGenMC::Init()
 	fChildSelect[0]= kProton;
         fChildSelect[1]= 211;
 	break;
+    case kPsiPrimeJpsiDiElectron:
+      fChildSelect[0]= 211;
+      fChildSelect[1]= 11;
+      break;
     case kOmega:
     case kAll:
     case kAllMuonic:
