@@ -1,8 +1,9 @@
 // Steer TRD QA train for Reconstruction (Clusterizer, Tracking and PID).
 // 
 // Usage:
-//   run.C(tasks, files)
-//   tasks : "ALL" or one/more of the following:
+//   run.C(optList, files, nev, first, runNo, ocdb_uri, grp_uri)
+//
+//   optList : "ALL" [default] or one/more of the following:
 //     "EFF"  : TRD Tracking Efficiency 
 //     "EFFC" : TRD Tracking Efficiency Combined (barrel + stand alone) - only in case of simulations
 //     "MULT"  : TRD single track selection
@@ -13,16 +14,25 @@
 //     "PID"  : TRD PID - pion efficiency 
 //     "PIDR" : TRD PID - reference data
 //     "DET"  : Basic TRD Detector checks
+//      ****** SPECIAL OPTIONS **********
 //     "NOFR" : Data set does not have AliESDfriends.root 
-//     "NOMC" : Data set does not have Monte Carlo Informations (real data), so all tasks which rely
-//              on MC information are switched off
+//     "NOMC" : Data set does not have Monte Carlo Informations (default have MC), 
 //
+//     files : the list of ESD files to be processed [default AliESds.root from cwd]
+//     nev   : number of events to be processed [default all]
+//     first : first event to process [default 0]
+//     runNo : run number [default 0]
+//     ocdb_uri : OCDB location [default local, $ALICE_ROOT]. In case of AliEn the syntax should be of the form
+//                 alien://folder=/alice/data/2010/OCDB?user=username?cacheF=yourDirectory?cacheS=yourSize
+//     grp_uri  : GRP/GRP/Data location [default cwd]. In case of AliEn the syntax should be of the form
+//                 alien://folder=/alice/data/2010/OCDB?user=username?cacheF=yourDirectory?cacheS=yourSize
 // In compiled mode : 
 // Don't forget to load first the libraries
 // gSystem->Load("libMemStat.so")
 // gSystem->Load("libMemStatGui.so")
 // gSystem->Load("libANALYSIS.so")
 // gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libTENDER.so");
 // gSystem->Load("libPWG1.so");
 // gSystem->Load("libNetx.so") ;
 // gSystem->Load("libRAliEn.so");
@@ -94,7 +104,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   timer.Start();
 
   // VERY GENERAL SETTINGS
-  AliLog::SetGlobalLogLevel(AliLog::kError);
+  //AliLog::SetGlobalLogLevel(AliLog::kError);
   if(gSystem->Load("libANALYSIS.so")<0) return;
   if(gSystem->Load("libANALYSISalice.so")<0) return;
   if(gSystem->Load("libTENDER.so")<0) return;

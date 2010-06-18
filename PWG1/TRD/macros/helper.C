@@ -21,6 +21,8 @@ Int_t ParseOptions(Char_t *trd)
     if(s.CompareTo("ALL") == 0){
       for(Int_t itask = 0; itask < NTRDQATASKS; itask++) SETBITT(fSteerTask, itask);
       continue;
+    } else if(s.CompareTo("NOMC") == 0 || s.CompareTo("NOFR") == 0){
+      continue; // taken care by special functions
     } else { 
       Bool_t foundOpt = kFALSE;  
       for(Int_t itask = 2; itask < NTRDTASKS; itask++){
