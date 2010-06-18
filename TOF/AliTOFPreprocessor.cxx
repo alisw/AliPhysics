@@ -1830,7 +1830,7 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
     //    Int_t iresultDAQ = ProcessOnlineDelays();
     Int_t iresultDAQ = ProcessT0Fill();
     Int_t iresultNoiseCalib = ProcessNoiseCalibTrg();
-    Int_t iresultReadout = ProcessReadout();
+    //    Int_t iresultReadout = ProcessReadout();
     Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
     Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
     return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps+iresultReadout;
