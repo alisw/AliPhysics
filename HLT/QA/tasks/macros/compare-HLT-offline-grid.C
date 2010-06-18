@@ -8,12 +8,14 @@
  *
  * Usage:
  * <pre>
- *   aliroot -b -q -l compare_HLT_offline_grid.C'("full","phos")' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_grid.C'("full","global")' 2>&1 | tee task.log
- *   aliroot -b -q -l compare_HLT_offline_grid.C 2>&1 | tee task.log
+ *   aliroot -q compare-HLT-offline-grid.C'("000115322","/alice/data/2010/LHC10b","ESDcomparison","output","full","global")' 2>&1 | tee log
  * </pre>
- *
- * If no argument is specified, ALL detector tasks are run. The GRID mode is by default 'full'.
+ * - run number
+ * - GRID input directory, where you define in which LHC period the run number belongs to
+ * - GRID working directory, where the .xml, .jdl and the task are uploaded (you have to create it yourself in advance)
+ * - GRID output directory with respect to the working one, where the output files of the task are located (you have to create it yourself in advance)
+ * - run in full mode, i.e. completely on the GRID with all the chunks of the run processed
+ * - specify the analysis task you want to run
  *
  * @ingroup alihlt_qa
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
