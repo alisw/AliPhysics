@@ -33,11 +33,14 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
 
   if(!TSTBIT(map, kPIDRefMaker)) return;
 
+  //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
+  //AliLog::SetClassDebugLevel("AliTRDpidRefMakerNN", 3);
+  //AliLog::SetClassDebugLevel("AliTRDpidRefMakerLQ", 3);
+
   // TRD pid reference maker NN
   AliTRDpidRefMaker *ref(NULL);
   mgr->AddTask(ref = new AliTRDpidRefMakerNN((char*)"refMakerNN"));
   ref->SetDebugLevel(3);
-  //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
   ref->SetMCdata(mgr->GetMCtruthEventHandler());
   ref->SetFriends(kTRUE);
   mgr->ConnectInput( ref, 0, mgr->GetCommonInputContainer());
@@ -50,7 +53,6 @@ void AddTRDcheckPID(AliAnalysisManager *mgr, Char_t *trd, AliAnalysisDataContain
   // TRD pid reference maker LQ 
   mgr->AddTask(ref = new AliTRDpidRefMakerLQ((char*)"refMakerLQ"));
   ref->SetDebugLevel(3);
-  //AliLog::SetClassDebugLevel("AliTRDpidRefMakerLQ", 3);
   ref->SetMCdata(mgr->GetMCtruthEventHandler());
   ref->SetFriends(kTRUE);
   mgr->ConnectInput(ref, 0, mgr->GetCommonInputContainer());

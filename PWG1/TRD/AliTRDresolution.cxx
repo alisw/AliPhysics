@@ -708,7 +708,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
   }
   AliExternalTrackParam *tout = NULL;
   if(!(tout = fkTrack->GetTrackOut())){
-    AliWarning("Track did not exit TRD.");
+    AliDebug(2, "Track did not exit TRD.");
     return NULL;
   }
   TH1 *h(NULL);
@@ -864,7 +864,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   //
 
   if(!HasMCdata()){ 
-    AliWarning("No MC defined. Results will not be available.");
+    AliDebug(2, "No MC defined. Results will not be available.");
     return NULL;
   }
   if(track) fkTrack = track;
