@@ -24,7 +24,7 @@ public:
   AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2SDD();
   virtual void FindRawClusters(Int_t mod);
-  virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
+  virtual void RawdataToClusters(AliRawReader* rawReader);
   void SetPeakSelection(Float_t looseCut=15., Float_t tightCut=30., Float_t maxTime=2000.){
     fCutOnPeakLoose=looseCut;
     fCutOnPeakTight=tightCut;
@@ -43,7 +43,7 @@ public:
   void FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 		       TClonesArray *dig, TClonesArray *clusters=0x0, Int_t jitter=0);
 
-  void FindClustersSDD(AliITSRawStream* input,TClonesArray** clusters);
+  void FindClustersSDD(AliITSRawStream* input);
   virtual AliITSCalibrationSDD* GetResp(Int_t mod)const{
     return (AliITSCalibrationSDD*) fDetTypeRec->GetCalibrationModel(mod);}
   virtual AliITSsegmentationSDD* GetSeg()const{

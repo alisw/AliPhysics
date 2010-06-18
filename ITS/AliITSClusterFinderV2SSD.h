@@ -28,7 +28,7 @@ public:
   AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2SSD(){;}
   virtual void FindRawClusters(Int_t mod);
-  virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
+  virtual void RawdataToClusters(AliRawReader* rawReader);
  protected:
   AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD& cf);
   AliITSClusterFinderV2SSD& operator=(const AliITSClusterFinderV2SSD&  cf );
@@ -37,7 +37,7 @@ public:
 		       Ali1Dcluster* pos, Int_t np,
 		       TClonesArray *clusters=0x0);
 
-  void FindClustersSSD(AliITSRawStreamSSD* input,TClonesArray** clusters);
+  void FindClustersSSD(AliITSRawStreamSSD* input);
   virtual AliITSCalibrationSSD* GetResp(Int_t mod)const{
     return (AliITSCalibrationSSD*) fDetTypeRec->GetCalibrationModel(mod);}
 

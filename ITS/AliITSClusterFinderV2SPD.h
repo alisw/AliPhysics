@@ -21,13 +21,13 @@ public:
   AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp);
   virtual ~AliITSClusterFinderV2SPD(){;}
   virtual void FindRawClusters(Int_t mod);
-  virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
+  virtual void RawdataToClusters(AliRawReader* rawReader);
   
 
  protected:
 
   void FindClustersSPD(TClonesArray *digits);
-  void FindClustersSPD(AliITSRawStreamSPD* input,TClonesArray** clusters);
+  void FindClustersSPD(AliITSRawStreamSPD* input);
   Int_t ClustersSPD(AliBin* bins, TClonesArray* digits,TClonesArray* clusters,Int_t maxBins, Int_t nzbins,Int_t iModule,Bool_t rawdata=kFALSE);
 
   Int_t fLastSPD1;       //index of the last SPD1 detector

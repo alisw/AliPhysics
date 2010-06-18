@@ -28,6 +28,7 @@
 #include <TBits.h>
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSDD.h"
@@ -316,7 +317,7 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 
 } 
 //______________________________________________________________________
-void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters){
+void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader){
     //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
@@ -343,16 +344,16 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader,TClones
       }
     }
   }
-  FindClustersSDD(inputSDD,clusters);
+  FindClustersSDD(inputSDD);
   delete inputSDD;
 }
 
-void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input, 
-					TClonesArray** clusters) 
+void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input) 
 {
   //------------------------------------------------------------
   // Actual SDD cluster finder for raw data
   //------------------------------------------------------------
+  AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
   Int_t nClustersSDD = 0;
   AliBin *bins[2];
   TBits* anodeFired[2];
@@ -385,13 +386,13 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       for(Int_t iMod=0; iMod<kModulesPerDDL; iMod++){
 	if(vectModId[iMod]>=0){
 	  fModule = vectModId[iMod];
-	  clusters[fModule] = new TClonesArray("AliITSRecPoint");
+	  TClonesArray* clusters = rpc->UncheckedGetClusters(fModule);
 	  bins[0]=fDDLBins[iMod*2];   // first hybrid of the module
 	  bins[1]=fDDLBins[iMod*2+1]; // second hybrid of the module
 	  anodeFired[0]=ddlAnodeFired[iMod*2];
 	  anodeFired[1]=ddlAnodeFired[iMod*2+1];
-	  FindClustersSDD(bins, anodeFired, NULL, clusters[fModule],jitter);
-	  Int_t nClusters = clusters[fModule]->GetEntriesFast();
+	  FindClustersSDD(bins, anodeFired, NULL, clusters,jitter);
+	  Int_t nClusters = clusters->GetEntriesFast();
 	  nClustersSDD += nClusters;
 	  vectModId[iMod]=-1;
 	}

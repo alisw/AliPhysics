@@ -932,38 +932,49 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
                         strstr(opt,"SSD")};
   
   Int_t id=0;
-
+  /*
   TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
   TBranch *branch = treeR->Branch("ITSRecPoints",&array);
   delete array;
- 
   TClonesArray** clusters = new TClonesArray*[GetITSgeom()->GetIndexMax()]; 
   for (Int_t iModule = 0; iModule < GetITSgeom()->GetIndexMax(); iModule++) {
     clusters[iModule] = NULL;
   }
-
-  DigitsToRecPoints(rawReader,clusters,opt);
+  */
+  AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
+  rpc->FullReset();
+  TClonesArray* array = rpc->UncheckedGetClusters(0);
+  TBranch *branch = treeR->Branch("ITSRecPoints",&array);
+  DigitsToRecPoints(rawReader,opt); 
 
   Int_t nClusters =0;
-  TClonesArray *emptyArray=new TClonesArray("AliITSRecPoint");
+  //  TClonesArray *emptyArray=new TClonesArray("AliITSRecPoint");
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
     id = GetITSgeom()->GetModuleType(iModule);
     if (!all && !det[id]) continue;
-    array = clusters[iModule];
+    array = rpc->UncheckedGetClusters(iModule);
     if(!array){
       AliDebug(1,Form("data for module %d missing!",iModule));
-      array = emptyArray;
+      //     array = emptyArray;
     }
     branch->SetAddress(&array);
     treeR->Fill();
     nClusters+=array->GetEntriesFast();
-
+    /*
     if (array != emptyArray) {
       array->Delete();
       delete array;
     }
+    */
   }
-  delete emptyArray;
+  //  delete emptyArray;
+  printf("===============   +++++++++++++++++ ===================\n");
+  for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
+    array = rpc->UncheckedGetClusters(iModule);
+    Int_t number = array->GetEntries();
+    if(number>0)printf("Module %d has %d clusters\n",iModule,number);
+  }
+  rpc->FullReset();
 
   AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
   Int_t nClu[6];
@@ -971,17 +982,24 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   for(Int_t iLay=2; iLay<=6; iLay++) nClu[iLay-1]=rpcont->GetNClustersInLayerFast(iLay);
   AliInfo(Form("Number of RecPoints in ITS Layers = %d %d %d %d %d %d, Total = %d",
 	       nClu[0],nClu[1],nClu[2],nClu[3],nClu[4],nClu[5],nClusters));
-  delete[] clusters;
+
+  printf("===============  SECOND   +++++++++++++++++ ===================\n");
+  for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
+    array = rpc->UncheckedGetClusters(iModule);
+    Int_t number = array->GetEntries();
+    if(number>0)printf("Module %d has %d clusters\n",iModule,number);
+  }
+
+  //  delete[] clusters;
 }
 //______________________________________________________________________
-void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TClonesArray** clusters,Option_t *opt){
+void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   // cluster finding and reconstruction of space points
   // the condition below will disappear when the geom class will be
   // initialized for all versions - for the moment it is only for v5 !
   // 7 is the SDD beam test version
   // Inputs:
   //      AliRawReader *rawReader  Pointer to the raw-data reader
-  //      TClonesArray **clusters  Clusters Array
   // Outputs:
   //      none.
   // Return:
@@ -1002,14 +1020,14 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TClonesArray** 
     if (!rec)
       AliFatal("The reconstruction class was not instantiated");
     rec->SetDetTypeRec(this);
-    rec->RawdataToClusters(rawReader,clusters);    
+    rec->RawdataToClusters(rawReader);    
   } 
    
   // Remove PIT in-active chips from Fast-OR fired map
   if (all || det[0]) { // SPD present
     RemoveFastOrFiredInActive();
     // here removing bits which have no associated clusters 
-    if(clusters) RemoveFastOrFiredFromDead(GetFiredChipMap(clusters));
+    RemoveFastOrFiredFromDead(GetFiredChipMap());
    
   }  
 }
@@ -1101,12 +1119,14 @@ void AliITSDetTypeRec::RemoveFastOrFiredInActive() {
   }
 }
 //______________________________________________________________________
-TBits AliITSDetTypeRec::GetFiredChipMap(TClonesArray **clusters) const {
+TBits AliITSDetTypeRec::GetFiredChipMap() const {
   
   //
   // TBits of the fired chips  
   //
  
+  AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
+
   TBits isfiredchip(1200);
   
    AliITSsegmentationSPD *segSPD = (AliITSsegmentationSPD*)GetSegmentationModel(0);
@@ -1117,29 +1137,29 @@ TBits AliITSDetTypeRec::GetFiredChipMap(TClonesArray **clusters) const {
    
   
   for(Int_t imod =0; imod < fgkDefaultNModulesSPD; imod++){
- TClonesArray *array = clusters[imod];
- if(!array) continue;
- Int_t nCluster = array->GetEntriesFast();
+    TClonesArray *array = rpc->UncheckedGetClusters(imod);
+    if(!array) continue;
+    Int_t nCluster = array->GetEntriesFast();
  
- while(nCluster--) {
-     AliITSRecPoint* cluster = (AliITSRecPoint*)array->UncheckedAt(nCluster);
+    while(nCluster--) {
+      AliITSRecPoint* cluster = (AliITSRecPoint*)array->UncheckedAt(nCluster);
      if (cluster->GetLayer()>1)continue;
-      Float_t local[3]={-1,-1};
-      local[1]=cluster->GetDetLocalX();
-      local[0]=cluster->GetDetLocalZ();
-      
-      Int_t eq = AliITSRawStreamSPD::GetOnlineEqIdFromOffline(imod);
-      Int_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(imod);
-      Int_t row, col;
-      segSPD->LocalToDet(0.5,local[0],row,col);
-      Int_t chip = AliITSRawStreamSPD::GetOnlineChipFromOffline(imod,col);
-      Int_t chipkey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
-      isfiredchip.SetBitNumber(chipkey,kTRUE);
-   }
+     Float_t local[3]={-1,-1};
+     local[1]=cluster->GetDetLocalX();
+     local[0]=cluster->GetDetLocalZ();
+     
+     Int_t eq = AliITSRawStreamSPD::GetOnlineEqIdFromOffline(imod);
+     Int_t hs = AliITSRawStreamSPD::GetOnlineHSFromOffline(imod);
+     Int_t row, col;
+     segSPD->LocalToDet(0.5,local[0],row,col);
+     Int_t chip = AliITSRawStreamSPD::GetOnlineChipFromOffline(imod,col);
+     Int_t chipkey = AliITSRawStreamSPD::GetOfflineChipKeyFromOnline(eq,hs,chip);
+     isfiredchip.SetBitNumber(chipkey,kTRUE);
+    }
     
- } 
+  } 
  
- return isfiredchip;
+  return isfiredchip;
   
 }
 //______________________________________________________________________

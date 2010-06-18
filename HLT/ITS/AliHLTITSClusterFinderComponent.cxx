@@ -41,6 +41,7 @@ using namespace std;
 #include "AliHLTITSClusterFinderSPD.h"
 #include "AliHLTITSClusterFinderSSD.h"
 #include "TMap.h"
+#include "AliITSRecPointContainer.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -61,7 +62,6 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fNModules(0),
   fId(0),
   fNddl(0),
-  fClusters(NULL),
   fRawReader(NULL),
   fDettype(NULL),
   fgeom(NULL),
@@ -70,6 +70,9 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fSSD(NULL),
   tD(NULL),
   tR(NULL),
+  fSPDNModules(0),
+  fSDDNModules(0),
+  fSSDNModules(0),
   fclusters(),
   fBenchmark(GetComponentID())
 { 
@@ -282,12 +285,25 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   fgeom = fgeomInit->CreateAliITSgeom();
  
   fNModules = fgeom->GetIndexMax();
-
-  fClusters = new TClonesArray*[fNModules]; 
-  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    fClusters[iModule] = NULL;
-  } 
-
+  Int_t modperlay[6];
+  for(Int_t i=0;i<6;i++)modperlay[i]=AliITSgeomTGeo::GetNDetectors(1+i)*AliITSgeomTGeo::GetNLadders(1+i);
+  fSPDNModules=modperlay[0]+modperlay[1];
+  fSDDNModules=modperlay[2]+modperlay[3];
+  fSSDNModules=modperlay[4]+modperlay[5];
+  
+  if(fModeSwitch==kClusterFinderSPD) {
+    fFirstModule=0;
+    fLastModule=fSPDNModules;
+  }
+  else if(fModeSwitch==kClusterFinderSDD) {
+     fFirstModule=fSPDNModules;
+     fLastModule=fFirstModule + fSDDNModules;
+  }
+  else if(fModeSwitch==kClusterFinderSSD) {
+    fFirstModule=fSPDNModules + fSDDNModules;
+    fLastModule=fFirstModule + fSSDNModules;
+  }
+ 
   //set dettype
   fDettype = new AliITSDetTypeRec();
   fDettype->SetITSgeom(fgeom); 
@@ -334,14 +350,6 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
   delete fSSD;
   fSSD = 0;
 
-  for (Int_t iModule = 0; iModule < fNModules; iModule++) {
-    if(fClusters[iModule] != NULL){
-      fClusters[iModule]->Delete();
-      delete fClusters[iModule];
-    }
-    fClusters[iModule] = NULL;
-  } 
-  
   fUseOfflineFinder = 0;
 
   return 0;
@@ -458,7 +466,15 @@ int AliHLTITSClusterFinderComponent::DoEvent
     }
   }
   else{
-      
+
+    AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
+
+    if(fUseOfflineFinder){
+      if(fModeSwitch==kClusterFinderSPD){rpc->ResetSPD();}
+      if(fModeSwitch==kClusterFinderSSD){rpc->ResetSSD();}
+    }
+    if(fModeSwitch==kClusterFinderSDD){rpc->ResetSDD();}
+
     // -- Loop over blocks
     for( const AliHLTComponentBlockData* iter = GetFirstInputBlock(fInputDataType); iter != NULL; iter = GetNextInputBlock() ) {
       
@@ -500,21 +516,28 @@ int AliHLTITSClusterFinderComponent::DoEvent
       if(fModeSwitch==kClusterFinderSPD && !fUseOfflineFinder){ fSPD->RawdataToClusters( fRawReader, fclusters ); }
       else if(fModeSwitch==kClusterFinderSSD && !fUseOfflineFinder){ fSSD->RawdataToClusters( fclusters ); }
       else{
-	if(fModeSwitch==kClusterFinderSPD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SPD");}
-	if(fModeSwitch==kClusterFinderSSD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SSD");}
-	if(fModeSwitch==kClusterFinderSDD) {fDettype->DigitsToRecPoints(fRawReader,fClusters,"SDD");}
-	for(int i=0;i<fNModules;i++){
-	  if(fClusters[i] != NULL){
-	    for(int j=0;j<fClusters[i]->GetEntriesFast();j++){
-	      AliITSRecPoint *recpoint = (AliITSRecPoint*) (fClusters[i]->At(j));
+	if(fModeSwitch==kClusterFinderSPD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,"SPD");}
+	if(fModeSwitch==kClusterFinderSSD && fUseOfflineFinder) {fDettype->DigitsToRecPoints(fRawReader,"SSD");}
+	if(fModeSwitch==kClusterFinderSDD) {fDettype->DigitsToRecPoints(fRawReader,"SDD");}
+	//AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
+	TClonesArray* clusters = NULL;
+	for(int i=fFirstModule;i<fLastModule;i++){
+	  clusters = rpc->UncheckedGetClusters(i);
+	  if(clusters != NULL){
+	    for(int j=0;j<clusters->GetEntriesFast();j++){
+	      AliITSRecPoint *recpoint = (AliITSRecPoint*) (clusters->At(j));
 	      fclusters.push_back(*recpoint);
 	    }
-	    fClusters[i]->Delete();
-	    delete fClusters[i];
 	  }
-	  fClusters[i] = NULL;
 	}     
       }
+  
+      if(fUseOfflineFinder){
+	if(fModeSwitch==kClusterFinderSPD){rpc->ResetSPD();}
+	if(fModeSwitch==kClusterFinderSSD){rpc->ResetSSD();}
+      }
+      if(fModeSwitch==kClusterFinderSDD){rpc->ResetSDD();}
+  
       fBenchmark.Stop(1);
       
       fRawReader->ClearBuffers();    

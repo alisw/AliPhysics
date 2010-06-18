@@ -29,6 +29,7 @@
 
 #include "AliITSClusterFinderV2SSD.h"
 #include "AliITSRecPoint.h"
+#include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
@@ -356,24 +357,24 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(TClonesArray *alldigits) {
 }
 
 
-void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters){
+void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader){
 
     //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
   AliITSRawStreamSSD inputSSD(rawReader);
-  FindClustersSSD(&inputSSD,clusters);
+  FindClustersSSD(&inputSSD);
   
 }
 
-void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, 
-					TClonesArray** clusters) 
+void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input) 
 {
   //------------------------------------------------------------
   // Actual SSD cluster finder for raw data
   //------------------------------------------------------------
 
+  AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
   static AliITSRecoParam *repa = NULL;
   if(!repa){
     repa = (AliITSRecoParam*) AliITSReconstructor::GetRecoParam();
@@ -712,13 +713,12 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       }
       
       // create recpoints
-      if((nClusters[0])&&(nClusters[1])) {
-	
-	clusters[iModule] = new TClonesArray("AliITSRecPoint");
+      if((nClusters[0])&&(nClusters[1])) {	
 	fModule = iModule;
+	TClonesArray* clusters = rpc->UncheckedGetClusters(fModule);
 	FindClustersSSD(&clusters1D[0][0], nClusters[0], 
-			&clusters1D[1][0], nClusters[1], clusters[iModule]);
-	Int_t nClustersn = clusters[iModule]->GetEntriesFast();
+			&clusters1D[1][0], nClusters[1], clusters);
+	Int_t nClustersn = clusters->GetEntriesFast();
 	nClustersSSD += nClustersn;
       }
 

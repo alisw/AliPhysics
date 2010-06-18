@@ -32,6 +32,7 @@
 #include <TClonesArray.h>
 #include "AliITSdigitSPD.h"
 #include "AliITSFOSignalsSPD.h"
+#include "AliITSRecPointContainer.h"
 
 ClassImp(AliITSClusterFinderV2SPD)
 
@@ -73,13 +74,13 @@ void AliITSClusterFinderV2SPD::FindRawClusters(Int_t mod){
 
 }
 //__________________________________________________________________________
-void AliITSClusterFinderV2SPD::RawdataToClusters(AliRawReader* rawReader, TClonesArray** clusters){
+void AliITSClusterFinderV2SPD::RawdataToClusters(AliRawReader* rawReader){
   //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
   AliITSRawStreamSPD inputSPD(rawReader);
-  FindClustersSPD(&inputSPD, clusters);
+  FindClustersSPD(&inputSPD);
 
 }
 //__________________________________________________________________________
@@ -273,14 +274,14 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   
 }
 //__________________________________________________________________________
-void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input, 
-					TClonesArray** clusters) 
+void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input) 
 {
   //------------------------------------------------------------
   // SPD cluster finder for raw data (this method is called once per event)
   // Now also fills fast-or fired map
   //------------------------------------------------------------
-  
+
+  AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();  
   Int_t nClustersSPD = 0;
   Int_t kNzBins = fNzSPD + 2;
   Int_t kNyBins = fNySPD + 2;
@@ -297,8 +298,8 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input,
 
       // when all data from a module was read, search for clusters
       if (bins) { 
-	clusters[iModule] = new TClonesArray("AliITSRecPoint");
-	Int_t nClusters = ClustersSPD(bins,0,clusters[iModule],kMaxBin,kNzBins,iModule,kTRUE);
+	TClonesArray* clusters = rpc->UncheckedGetClusters(iModule);
+	Int_t nClusters = ClustersSPD(bins,0,clusters,kMaxBin,kNzBins,iModule,kTRUE);
 	nClustersSPD += nClusters;
 	bins = NULL;
       }

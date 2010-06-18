@@ -91,12 +91,12 @@ class AliITSDetTypeRec : public TObject {
     void MakeBranchRF(TTree *treeR){MakeBranchR(treeR,"Fast");}
     void DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastEntry,Option_t *det, Int_t optCluFind=0);
     void DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Option_t *det="All");
-    void DigitsToRecPoints(AliRawReader* rawReader,TClonesArray** clusters,Option_t *opt);
+    void DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt);
 
     void   SetFastOrFiredMapOnline(UInt_t eq, UInt_t hs, UInt_t chip);
     void   SetFastOrFiredMap(UInt_t chipKey){fFastOrFiredMap.SetBitNumber(chipKey);} 
     TBits  GetFastOrFiredMap() const {return fFastOrFiredMap;}
-    TBits  GetFiredChipMap(TClonesArray **clusters) const; // (using SPD RecPoints)
+    TBits  GetFiredChipMap() const; // (using SPD RecPoints)
     TBits  GetFiredChipMap(TTree *treeR) const; // (using SPD RecPoints)
     void   ResetFastOrFiredMap(){fFastOrFiredMap.ResetAllBits();}
     void   RemoveFastOrFiredInActive(); // (using Trigger Conditions)

@@ -201,8 +201,6 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
   Int_t fId;                   // ddl offset
   Int_t fNddl;                 // number of ddl's
   
-   TClonesArray** fClusters;                                  //!transient
-  
   /** the reader object for data decoding */
 
   AliRawReaderMemory* fRawReader;                             //!transient
@@ -215,6 +213,13 @@ class AliHLTITSClusterFinderComponent : public AliHLTProcessor
 
   TTree *tD;                                                  //!transient
   TTree *tR;                                                  //!transient
+
+  Int_t fSPDNModules;                                         //!transient 
+  Int_t fSDDNModules;                                         //!transient
+  Int_t fSSDNModules;                                         //!transient 
+  
+  Int_t fFirstModule;                                         //!transient    
+  Int_t fLastModule;                                          //!transient
 
   std::vector<AliITSRecPoint> fclusters;                      //!transient
 

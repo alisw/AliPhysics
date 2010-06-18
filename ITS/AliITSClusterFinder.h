@@ -35,7 +35,7 @@ class AliITSClusterFinder :public TObject{
     //
     // Do the Reconstruction.
     virtual void FindRawClusters(Int_t /*mod*/)=0; // Finds cluster of digits.
-    virtual void RawdataToClusters(AliRawReader* /*rawReader*/,TClonesArray** /*clusters*/) {
+    virtual void RawdataToClusters(AliRawReader* /*rawReader*/) {
       AliError("Method not implemented in this class ");
     }
 

@@ -36,6 +36,10 @@ class AliITSRecPointContainer : public TObject {
   // In the following two methods: 1<=lay<=6  (i.e. layers numbered from 1) 
   UInt_t GetNClustersInLayer(Int_t lay, TTree* tR, Int_t eventN=-1);
   UInt_t GetNClustersInLayerFast(Int_t lay) const;
+  void FullReset(){fCurrentEve=-1000; Reset();}
+  void ResetSPD(); // clears only SPD parts - see implementation for usage
+  void ResetSDD(); // clears only SPD parts - see implementation for usage
+  void ResetSSD(); // clears only SPD parts - see implementation for usage
 
  private:
   // methods
@@ -45,6 +49,10 @@ class AliITSRecPointContainer : public TObject {
   Bool_t CheckBoundaries(Int_t i)const { return (i>=0 && i<fgkNModules);}
   void CookEntries();
   void Reset();
+  void ClearClus(Int_t first, Int_t lastpp){ // clears clusters for modules 
+    // ranging from first to lastpp-1 included
+    for(Int_t i=first;i<lastpp;i++)(fArray[i])->Clear();
+  }
   //Data members
   static AliITSRecPointContainer* fgInstance; //! AliITSRecPointContainer 
                                               //  singleton

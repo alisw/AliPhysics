@@ -247,9 +247,44 @@ AliITSRecPointContainer* AliITSRecPointContainer::Instance(const AliITSRecoParam
 //______________________________________________________________________
 void AliITSRecPointContainer::Reset(){
   // Resets the status of the object
-  for(Int_t i=0;i<fgkNModules;i++){
-    (fArray[i])->Clear();
-  }
+  ClearClus(0,fgkNModules);
   fDet="";
   for(Int_t i=0;i<6;i++)fNClusters[i]=0;
 }
+//______________________________________________________________________
+void AliITSRecPointContainer::ResetSPD(){
+  // Resets only the entries in fArray concerning SPD
+  // This method should be used with care only when the filling
+  // of the container is not done from the RP TTree. 
+  fCurrentEve = -1000;  // protection: if FetchClusters method will be used
+                          // after this call, an ccess to the RP TTree will
+                          // be forced
+  ClearClus(0,fSPDNModules);
+}
+
+//______________________________________________________________________
+void AliITSRecPointContainer::ResetSDD(){
+  // Resets only the entries in fArray concerning SDD
+  // This method should be used with care only when the filling
+  // of the container is not done from the RP TTree. 
+  fCurrentEve = -1000;  // protection: if FetchClusters method will be used
+                          // after this call, an ccess to the RP TTree will
+                          // be forced
+  Int_t first = fSPDNModules;
+  Int_t last = first + fSDDNModules; 
+  ClearClus(first,last);
+}
+
+//______________________________________________________________________
+void AliITSRecPointContainer::ResetSSD(){
+  // Resets only the entries in fArray concerning SSD
+  // This method should be used with care only when the filling
+  // of the container is not done from the RP TTree. 
+  fCurrentEve = -1000;  // protection: if FetchClusters method will be used
+                          // after this call, an ccess to the RP TTree will
+                          // be forced
+  Int_t first = fSPDNModules + fSDDNModules;
+  Int_t last = first + fSSDNModules; 
+  ClearClus(first,last);
+}
+
