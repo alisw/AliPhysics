@@ -1833,7 +1833,7 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
     //    Int_t iresultReadout = ProcessReadout();
     Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
     Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
-    return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps+iresultReadout;
+    return iresultDAQ+iresultNoiseCalib+iresultDCS+iResultHVandLVdps;
   }
 
   // storing
