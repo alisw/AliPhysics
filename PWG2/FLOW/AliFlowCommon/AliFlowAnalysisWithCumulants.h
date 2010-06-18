@@ -256,6 +256,7 @@ class AliFlowAnalysisWithCumulants{
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
   //  3c.) event-by-event quantities:
   TMatrixD *fGEBE; // reference flow generating function only for current event   
+  Double_t fReferenceMultiplicityEBE; // reference multiplicity    
   //  3d.) profiles:
   TProfile2D *fReferenceFlowGenFun; // all-event average of the generating function used to calculate reference flow 
   TProfile *fQvectorComponents; // averages of Q-vector components (1st bin: <Q_x>, 2nd bin: <Q_y>, 3rd bin: <(Q_x)^2>, 4th bin: <(Q_y)^2>)

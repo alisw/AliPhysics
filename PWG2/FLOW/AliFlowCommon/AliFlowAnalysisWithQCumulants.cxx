@@ -122,6 +122,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fIntFlowCorrelationsEBE(NULL),
  fIntFlowEventWeightsForCorrelationsEBE(NULL),
  fIntFlowCorrelationsAllEBE(NULL),
+ fReferenceMultiplicityEBE(0.),
  fAvMultiplicity(NULL),
  fIntFlowCorrelationsPro(NULL),
  fIntFlowCorrelationsAllPro(NULL),
@@ -258,17 +259,17 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
  
+ fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
- 
+  
  // a) Fill the common control histograms and call the method to fill fAvMultiplicity:
  this->FillCommonControlHistograms(anEvent);                                                               
  this->FillAverageMultiplicities(nRP);                                                                  
                                                                                                                                                                                                                                                                                         
  // b) Loop over data and calculate e-b-e quantities:
- Int_t nPrim = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI + rest, where:
+ Int_t nPrim = anEvent->NumberOfTracks();  // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI where:
                                            // nRP   = # of particles used to determine the reaction plane;
                                            // nPOI  = # of particles of interest for a detailed flow analysis;
-                                           // rest  = # of particles which are not niether RPs nor POIs.  
  
  AliFlowTrackSimple *aftsTrack = NULL;
  
@@ -2419,7 +2420,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
             
   fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(1,mWeight2p); // eW_<2>
   fIntFlowCorrelationsPro->Fill(0.5,two1n1n,mWeight2p);
-  fIntFlowCorrelationsVsMPro[0]->Fill(dMult+0.5,two1n1n,mWeight2p); 
+  fIntFlowCorrelationsVsMPro[0]->Fill(fReferenceMultiplicityEBE+0.5,two1n1n,mWeight2p); 
     
   // distribution of <cos(n*(phi1-phi2))>:
   //f2pDistribution->Fill(two1n1n,dMult*(dMult-1.)); 
@@ -2545,7 +2546,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
       
   fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(2,mWeight4p); // eW_<4>
   fIntFlowCorrelationsPro->Fill(1.5,four1n1n1n1n,mWeight4p);
-  fIntFlowCorrelationsVsMPro[1]->Fill(dMult+0.5,four1n1n1n1n,mWeight4p); 
+  fIntFlowCorrelationsVsMPro[1]->Fill(fReferenceMultiplicityEBE+0.5,four1n1n1n1n,mWeight4p); 
   
   // distribution of <cos(n*(phi1+phi2-phi3-phi4))>
   //f4pDistribution->Fill(four1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
@@ -2706,7 +2707,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
       
   fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(3,mWeight6p); // eW_<6>
   fIntFlowCorrelationsPro->Fill(2.5,six1n1n1n1n1n1n,mWeight6p);
-  fIntFlowCorrelationsVsMPro[2]->Fill(dMult+0.5,six1n1n1n1n1n1n,mWeight6p);   
+  fIntFlowCorrelationsVsMPro[2]->Fill(fReferenceMultiplicityEBE+0.5,six1n1n1n1n1n1n,mWeight6p);   
  
   // distribution of <cos(n*(phi1+phi2+phi3-phi4-phi5-phi6))>
   //f6pDistribution->Fill(six1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)); 
@@ -2783,7 +2784,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
         
   fIntFlowEventWeightsForCorrelationsEBE->SetBinContent(4,mWeight8p); // eW_<8>
   fIntFlowCorrelationsPro->Fill(3.5,eight1n1n1n1n1n1n1n1n,mWeight8p);  
-  fIntFlowCorrelationsVsMPro[3]->Fill(dMult+0.5,eight1n1n1n1n1n1n1n1n,mWeight8p);    
+  fIntFlowCorrelationsVsMPro[3]->Fill(fReferenceMultiplicityEBE+0.5,eight1n1n1n1n1n1n1n1n,mWeight8p);    
   
   // distribution of <cos(n*(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8))>
   //f8pDistribution->Fill(eight1n1n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.));
@@ -2799,9 +2800,6 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
 {
  // Calculate averages of products of correlations for integrated flow.
  
- // multiplicity:
- Double_t dMult = (*fSMpk)(0,0);
- 
  Int_t counter = 0;
  
  for(Int_t ci1=1;ci1<4;ci1++)
@@ -2814,7 +2812,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowProductOfCorrelations()
                                           fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
                                           fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
    // products versus multiplicity:  // [0=<<2><4>>,1=<<2><6>>,2=<<2><8>>,3=<<4><6>>,4=<<4><8>>,5=<<6><8>>]
-   fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(dMult+0.5,
+   fIntFlowProductOfCorrelationsVsMPro[counter]->Fill(fReferenceMultiplicityEBE+0.5,
                                                       fIntFlowCorrelationsEBE->GetBinContent(ci1)*
                                                       fIntFlowCorrelationsEBE->GetBinContent(ci2),
                                                       fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
@@ -3904,13 +3902,13 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
 
  // store the results and statistical errors for Q-cumulants:
  fIntFlowQcumulants->SetBinContent(1,qc2);
- fIntFlowQcumulants->SetBinError(1,qc2Error);
+ if(TMath::Abs(qc2)>1.e-44){fIntFlowQcumulants->SetBinError(1,qc2Error);}
  fIntFlowQcumulants->SetBinContent(2,qc4);
- fIntFlowQcumulants->SetBinError(2,qc4Error);
+ if(TMath::Abs(qc4)>1.e-44){fIntFlowQcumulants->SetBinError(2,qc4Error);}
  fIntFlowQcumulants->SetBinContent(3,qc6);
- fIntFlowQcumulants->SetBinError(3,qc6Error);
+ if(TMath::Abs(qc6)>1.e-44){fIntFlowQcumulants->SetBinError(3,qc6Error);}
  fIntFlowQcumulants->SetBinContent(4,qc8); 
- fIntFlowQcumulants->SetBinError(4,qc8Error); 
+ if(TMath::Abs(qc8)>1.e-44){fIntFlowQcumulants->SetBinError(4,qc8Error);} 
  
  // versus multiplicity: 
  Int_t nBins = fIntFlowCorrelationsVsMPro[0]->GetNbinsX(); // to be improved (hardwired 0) 
@@ -4009,13 +4007,13 @@ void AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
 
   // store the results and statistical errors for Q-cumulants:
   fIntFlowQcumulantsVsM[0]->SetBinContent(b,qc2);
-  fIntFlowQcumulantsVsM[0]->SetBinError(b,qc2Error);
+  if(TMath::Abs(qc2)>1.e-44){fIntFlowQcumulantsVsM[0]->SetBinError(b,qc2Error);}
   fIntFlowQcumulantsVsM[1]->SetBinContent(b,qc4);
-  fIntFlowQcumulantsVsM[1]->SetBinError(b,qc4Error);
+  if(TMath::Abs(qc4)>1.e-44){fIntFlowQcumulantsVsM[1]->SetBinError(b,qc4Error);}
   fIntFlowQcumulantsVsM[2]->SetBinContent(b,qc6);
-  fIntFlowQcumulantsVsM[2]->SetBinError(b,qc6Error);
+  if(TMath::Abs(qc6)>1.e-44){fIntFlowQcumulantsVsM[2]->SetBinError(b,qc6Error);}
   fIntFlowQcumulantsVsM[3]->SetBinContent(b,qc8); 
-  fIntFlowQcumulantsVsM[3]->SetBinError(b,qc8Error);  
+  if(TMath::Abs(qc8)>1.e-44){fIntFlowQcumulantsVsM[3]->SetBinError(b,qc8Error);}  
  } // end of for(Int_t b=1;b<=nBins;b++)
   
 } // end of AliFlowAnalysisWithQCumulants::CalculateCumulantsIntFlow()
@@ -6060,16 +6058,13 @@ void AliFlowAnalysisWithQCumulants::CrossCheckSettings()
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeights()
 {
  // Calculate sum of linear and quadratic event weights for correlations.
- 
- // multiplicity:
- Double_t dMult = (*fSMpk)(0,0);
-                       
+                        
  for(Int_t p=0;p<2;p++) // power-1
  {
   for(Int_t ci=0;ci<4;ci++) // correlation index
   { 
    fIntFlowSumOfEventWeights[p]->Fill(ci+0.5,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1)); 
-   fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(dMult+0.5,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1));
+   fIntFlowSumOfEventWeightsVsM[ci][p]->Fill(fReferenceMultiplicityEBE+0.5,pow(fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci+1),p+1));
   }
  }
   
@@ -6099,10 +6094,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfEventWeightsNUA()
 void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
 {
  // Calculate sum of product of event weights for correlations.
- 
- // multiplicity:
- Double_t dMult = (*fSMpk)(0,0);
-  
+   
  Int_t counter = 0;
  
  for(Int_t ci1=1;ci1<4;ci1++)
@@ -6112,7 +6104,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowSumOfProductOfEventWeights()
    fIntFlowSumOfProductOfEventWeights->Fill(0.5+counter,
                                             fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
                                             fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));                                           
-   fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(dMult+0.5,
+   fIntFlowSumOfProductOfEventWeightsVsM[counter]->Fill(fReferenceMultiplicityEBE+0.5,
                                                         fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci1)*
                                                         fIntFlowEventWeightsForCorrelationsEBE->GetBinContent(ci2));
    counter++;                                         
