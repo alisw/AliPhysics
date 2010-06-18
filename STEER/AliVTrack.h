@@ -9,8 +9,11 @@
 //     Author: A. Dainese
 //-------------------------------------------------------------------------
 
+#include <TBits.h>
+
 #include "AliVParticle.h"
 
+class AliVVertex;
 
 class AliVTrack: public AliVParticle {
 
@@ -28,6 +31,7 @@ public:
   virtual Double_t GetBz() const;
   virtual void     GetBxByBz(Double_t b[3]) const;
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const = 0;
+  virtual Bool_t   PropagateToDCA(const AliVVertex *vtx,Double_t b,Double_t maxd,Double_t dz[2],Double_t covar[3]) = 0;
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

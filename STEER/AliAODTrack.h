@@ -18,6 +18,8 @@
 #include "AliAODRedCov.h"
 #include "AliAODPid.h"
 
+class AliVVertex;
+
 class AliAODTrack : public AliVTrack {
 
  public:
@@ -119,6 +121,9 @@ class AliAODTrack : public AliVTrack {
 
   virtual Short_t  Charge() const {return fCharge; }
 
+  virtual Bool_t   PropagateToDCA(const AliVVertex *vtx, 
+	  Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]);
+
   // PID
   virtual const Double_t *PID() const { return fPID; }
   AODTrkPID_t GetMostProbablePID() const;
@@ -191,6 +196,8 @@ class AliAODTrack : public AliVTrack {
   Double_t GetRAtAbsorberEnd() const { return fRAtAbsorberEnd; }
   
   UChar_t  GetITSClusterMap() const       { return (UChar_t)(fITSMuonClusterMap&0xff); }
+  Int_t    GetITSNcls() const; 
+  Bool_t   HasPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSClusterMap(),i); }
   UShort_t GetHitsPatternInTrigCh() const { return (UShort_t)((fITSMuonClusterMap&0xff00)>>8); }
   UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; }
   UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
@@ -263,6 +270,8 @@ class AliAODTrack : public AliVTrack {
   void     SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
   void     SetType(AODTrk_t ttype) { fType=ttype; }
 
+
+
   // Dummy
   Int_t    PdgCode() const {return 0;}
   
@@ -312,6 +321,14 @@ inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
     } else {
 	return kFALSE;
     }
+}
+
+inline Int_t AliAODTrack::GetITSNcls() const 
+{
+  // Number of points in ITS
+  Int_t n=0;
+  for(Int_t i=0;i<6;i++) if(HasPointOnITSLayer(i)) n++;
+  return n;
 }
 
 #endif

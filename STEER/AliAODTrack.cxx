@@ -22,6 +22,8 @@
 //-------------------------------------------------------------------------
 
 #include "AliLog.h"
+#include "AliExternalTrackParam.h"
+#include "AliVVertex.h"
 #include "AliAODTrack.h"
 
 ClassImp(AliAODTrack)
@@ -520,5 +522,38 @@ Bool_t AliAODTrack::MatchTriggerDigits() const
   for (Int_t ich=10; ich<14; ich++) if (HitsMuonChamber(ich)) nMatchedChambers++;
   
   return (nMatchedChambers >= 2);
+}
+
+//______________________________________________________________________________
+Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx, 
+    Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3])
+{
+  // compute impact parameters to the vertex vtx and their covariance matrix
+  // b is the Bz, needed to propagate correctly the track to vertex 
+  // only the track parameters are update after the propagation (pos and mom),
+  // not the covariance matrix. This is OK for propagation over short distance
+  // inside the beam pipe.
+  // return kFALSE is something went wrong
+
+  // convert to AliExternalTrackParam
+  AliExternalTrackParam etp(this);  
+
+  Float_t xstart = etp.GetX();
+  if(xstart>3.) {
+    AliError("This method can be used only for propagation inside the beam pipe");
+    return kFALSE; 
+  }
+
+  if(!etp.PropagateToDCA(vtx,b,maxd,dz,covar)) return kFALSE;
+
+  // update track position and momentum
+  Double_t mom[3];
+  etp.GetPxPyPz(mom);
+  SetP(mom,kTRUE);
+  etp.GetXYZ(mom);
+  SetPosition(mom,kFALSE);
+
+
+  return kTRUE;
 }
 

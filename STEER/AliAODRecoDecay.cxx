@@ -25,6 +25,8 @@
 #include <TClonesArray.h>
 #include "AliLog.h"
 #include "AliVTrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliNeutralTrackParam.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecay.h"
 
@@ -419,6 +421,27 @@ ULong_t AliAODRecoDecay::GetStatus() const {
   }
 
   return status;
+}
+//--------------------------------------------------------------------------
+Bool_t AliAODRecoDecay::PropagateToDCA(const AliVVertex* vtx,Double_t b,Double_t maxd,Double_t dz[2],Double_t covar[3]) 
+{
+  // compute impact parameters to the vertex vtx and their covariance matrix
+  // b is the Bz, needed to propagate correctly the track to vertex 
+  // return kFALSE is something went wrong
+
+  AliWarning("The AliAODRecoDecay momentum is not updated to the DCA");
+
+  Bool_t retval=kTRUE;
+  if(Charge()==0) {
+    // convert to AliNeutralTrackParam
+    AliNeutralTrackParam ntp(this);  
+    retval = ntp.PropagateToDCA(vtx,b,maxd,dz,covar);
+  } else {
+    // convert to AliExternalTrackParam
+    AliExternalTrackParam etp(this);  
+    retval = etp.PropagateToDCA(vtx,b,maxd,dz,covar);
+  }
+  return retval;
 }
 //--------------------------------------------------------------------------
 Double_t AliAODRecoDecay::ImpParXY(Double_t point[3]) const 
