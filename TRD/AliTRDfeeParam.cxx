@@ -30,6 +30,9 @@
 //  Author:                                                               //
 //    Ken Oyama (oyama@physi.uni-heidelberg.de)                           //
 //                                                                        //
+//  many things now configured by AliTRDtrapConfig reflecting             //
+//  the real memory structure of the TRAP (Jochen)                        //
+//                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
 //#include <TMath.h>
@@ -85,55 +88,20 @@ void AliTRDfeeParam::Terminate()
 AliTRDfeeParam::AliTRDfeeParam()
   :TObject()
   ,fCP(0)
-  ,fTFnExp(1)
-  ,fTFr1(0)
-  ,fTFr2(0)
-  ,fTFc1(0)
-  ,fTFc2(0)
-  ,fEBsglIndThr(5)
-  ,fEBsumIndThr(5)
-  ,fEBindLUT(0xF0)
-  ,fEBignoreNeighbour(0)
   ,fRAWversion(3)
-  ,fRAWstoreRaw(kTRUE)
 {
   //
   // Default constructor
   //
   
-  // PASA V.4
-  if      (fTFnExp == 1) {
-    fTFr1 = 1.1563;
-    fTFr2 = 0.1299;
-    fTFc1 = 0.0657;
-    fTFc2 = 0.0000;
-  }
-  else if (fTFnExp == 2) {
-    fTFr1 = 1.1563;
-    fTFr2 = 0.1299;
-    fTFc1 = 0.1141;
-    fTFc2 = 0.6241;
-  }
-
   fCP  = AliTRDCommonParam::Instance();
-
 }
 
 //_____________________________________________________________________________
 AliTRDfeeParam::AliTRDfeeParam(TRootIoCtor *)
   :TObject()
   ,fCP(0)
-  ,fTFnExp(1)
-  ,fTFr1(0)
-  ,fTFr2(0)
-  ,fTFc1(0)
-  ,fTFc2(0)
-  ,fEBsglIndThr(0)
-  ,fEBsumIndThr(0)
-  ,fEBindLUT(0)
-  ,fEBignoreNeighbour(0)
   ,fRAWversion(0)
-  ,fRAWstoreRaw(0)
 {
   //
   // IO constructor
@@ -145,17 +113,7 @@ AliTRDfeeParam::AliTRDfeeParam(TRootIoCtor *)
 AliTRDfeeParam::AliTRDfeeParam(const AliTRDfeeParam &p)
   :TObject(p)
   ,fCP(p.fCP)
-  ,fTFnExp(p.fTFnExp)
-  ,fTFr1(p.fTFr1)
-  ,fTFr2(p.fTFr2)
-  ,fTFc1(p.fTFc1)
-  ,fTFc2(p.fTFc2)
-  ,fEBsglIndThr(p.fEBsglIndThr)
-  ,fEBsumIndThr(p.fEBsumIndThr)
-  ,fEBindLUT(p.fEBindLUT)
-  ,fEBignoreNeighbour (p.fEBignoreNeighbour)
   ,fRAWversion(p.fRAWversion)
-  ,fRAWstoreRaw(p.fRAWstoreRaw)
 {
   //
   // AliTRDfeeParam copy constructor
@@ -195,17 +153,7 @@ void AliTRDfeeParam::Copy(TObject &p) const
   //
 
   ((AliTRDfeeParam &) p).fCP          = fCP;
-  ((AliTRDfeeParam &) p).fTFnExp      = fTFnExp;
-  ((AliTRDfeeParam &) p).fTFr1        = fTFr1;
-  ((AliTRDfeeParam &) p).fTFr2        = fTFr2;
-  ((AliTRDfeeParam &) p).fTFc1        = fTFc1;
-  ((AliTRDfeeParam &) p).fTFc2        = fTFc2;
-  ((AliTRDfeeParam &) p).fEBsglIndThr = fEBsglIndThr;
-  ((AliTRDfeeParam &) p).fEBsumIndThr = fEBsumIndThr;
-  ((AliTRDfeeParam &) p).fEBindLUT    = fEBindLUT;
-  ((AliTRDfeeParam &) p).fEBignoreNeighbour = fEBignoreNeighbour;
   ((AliTRDfeeParam &) p).fRAWversion  = fRAWversion;
-  ((AliTRDfeeParam &) p).fRAWstoreRaw = fRAWstoreRaw;
   
   TObject::Copy(p);
 
@@ -469,93 +417,6 @@ Short_t AliTRDfeeParam::ChipmaskToMCMlist( UInt_t cmA, UInt_t cmB, UShort_t link
 }
 
 
-
-
-//_____________________________________________________________________________
-//void AliTRDfeeParam::GetFilterParam( Float_t &r1, Float_t &r2, Float_t &c1
-//                                   , Float_t &c2, Float_t &ped ) const
-//{
-  //
-  // Return current filter parameter
-  //
-
-  //  r1            = fR1;
-  //r2            = fR2;
-  //c1            = fC1;
-  //c2            = fC2;
-  //ped           = fPedestal;
-//};
-
-//_____________________________________________________________________________
-void AliTRDfeeParam::SetEBsglIndThr(Int_t val)
-{
-  //
-  // Set Event Buffer Sngle Indicator Threshold (EBIS in TRAP conf).
-  // Timebin is indicated if ADC value >= val.
-  //
-
-  if( val >= 0 && val <= 1023 ) { 
-    fEBsglIndThr = val;
-  } else {
-    AliError(Form("EBsglIndThr value %d is out of range, keep previously set value (%d).",
-		  val, fEBsglIndThr));
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDfeeParam::SetEBsumIndThr(Int_t val)
-{
-  //
-  // Set Event Buffer Sum Indicator Threshold (EBIT in TRAP conf).
-  // Timebin is indicated if ADC sum value >= val.
-  //
-
-  if( val >= 0 && val <= 4095 ) { 
-    fEBsumIndThr = val;
-  } 
-  else {
-    AliError(Form("EBsumIndThr value %d is out of range, keep previously set value (%d).",
-		  val, fEBsumIndThr));
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDfeeParam::SetEBindLUT(Int_t val)
-{
-  //
-  // Set Event Buffer Indicator Look-Up Table (EBIL in TRAP conf).
-  // 8 bits value forms lookup table for combination of three criterions.
-  //
-
-  if( val >= 0 && val <= 255 ) {
-    fEBindLUT = val;
-  } 
-  else {
-    AliError(Form("EBindLUT value %d is out of range, keep previously set value (%d).",
-		  val, fEBindLUT));
-  }
-
-}
-
-//_____________________________________________________________________________
-void AliTRDfeeParam::SetEBignoreNeighbour(Int_t val)
-{
-  //
-  // Set Event Buffer Indicator Neighbor Sensitivity. (EBIN in TRAP conf).
-  // If 0, take account of neigbor's values.
-  //
-
-  if( val >= 0 && val <= 1 ) {
-    fEBignoreNeighbour = val;
-  } 
-  else {
-    AliError(Form("EBignoreNeighbour value %d is out of range, keep previously set value (%d).",
-		  val, fEBignoreNeighbour));
-  }
-}
-
 //_____________________________________________________________________________
 void AliTRDfeeParam::SetRAWversion( Int_t rawver )
 {
@@ -572,35 +433,3 @@ void AliTRDfeeParam::SetRAWversion( Int_t rawver )
   }
 
 }
-
-//_____________________________________________________________________________
-void AliTRDfeeParam::SetXenon()
-{
-  //
-  // Sets the filter parameters for the Xenon gas mixture
-  //
-
-  fTFnExp = 1;
-  fTFr1   = 1.1563;
-  fTFr2   = 0.1299;
-  fTFc1   = 0.0657;
-  fTFc2   = 0.0000;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDfeeParam::SetArgon()
-{
-  //
-  // Sets the filter parameters for the Argon gas mixture
-  //
-
-  fTFnExp = 2;
-  fTFr1   = 6.0;
-  fTFr2   = 0.62;
-  fTFc1   = 0.0087;
-  fTFc2   = 0.07;
-
-}
-
-
