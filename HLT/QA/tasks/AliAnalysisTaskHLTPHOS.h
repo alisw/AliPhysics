@@ -23,49 +23,44 @@ class AliESDtrack;
 class AliESDRun;
 class TObjArray;
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskHLTCalo.h"
 
-class AliAnalysisTaskHLTPHOS : public AliAnalysisTaskSE {
+class AliAnalysisTaskHLTPHOS : public AliAnalysisTaskHLTCalo {
  
-  public:  
-    AliAnalysisTaskHLTPHOS(const char *name);
-    virtual ~AliAnalysisTaskHLTPHOS() {}
-    virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t *option);
-    virtual void   Terminate(Option_t *);
-    //virtual Bool_t Notify();
-    virtual void NotifyRun();
+public:  
+  AliAnalysisTaskHLTPHOS(const char *name);
+  virtual ~AliAnalysisTaskHLTPHOS() {}
+  
+private:
+  
 
- private:
+  TH2F *fHistOnlTrk2PHOS; //! track to PHOS 2,3,4 modules in (eta, phi)
+  TH2F *fHistOfflTrk2PHOS; //! 
+  TH2F *fHistOfflTrk2PHOSTrig; //!
+  TH2F *fHistOfflTrk2PHOSNoTrig; //!
 
-    AliESDRun *fESDRun;  //!
-    TList *fOutputList;
+  static const Float_t fgkPhiMin[5];
+  static const Float_t fgkPhiMax[5];
+  static const Float_t fgkEtaMin;
+  static const Float_t fgkEtaMax;
+  static const Float_t fgkNormX[5];
+  static const Float_t fgkNormY[5];
+  static const Float_t fgkInitPosX[5];
+  static const Float_t fgkInitPosY[5];
 
-    TH2F *fHistOnlTrk2PHOS; //! track to PHOS 2,3,4 modules in (eta, phi)
-    TH2F *fHistOfflTrk2PHOS; //! 
-    TH2F *fHistOfflTrk2PHOSTrig; //!
-    TH2F *fHistOfflTrk2PHOSNoTrig; //!
+  /** copy constructor */
+  AliAnalysisTaskHLTPHOS(const AliAnalysisTaskHLTPHOS&); 
+  /** assignment operator */
+  AliAnalysisTaskHLTPHOS& operator=(const AliAnalysisTaskHLTPHOS&); 
 
-    Int_t fNevt;
-    TObjArray *fTrgClsArray;
+  Bool_t IsInPHOS(Int_t iMod, AliESDtrack * trk, Float_t b, TVector3& v);
+  void CreateSpecificStuff(TList * fOutputList);
+  void DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD);
 
-    static const Float_t fgkPhiMin[5];
-    static const Float_t fgkPhiMax[5];
-    static const Float_t fgkEtaMin;
-    static const Float_t fgkEtaMax;
-    static const Float_t fgkNormX[5];
-    static const Float_t fgkNormY[5];
-    static const Float_t fgkInitPosX[5];
-    static const Float_t fgkInitPosY[5];
+  Bool_t IsThisDetector(AliESDCaloCluster * cluster);
+  Int_t GetClusters(AliESDEvent * event, TRefArray * clusters);
 
-    /** copy constructor */
-    AliAnalysisTaskHLTPHOS(const AliAnalysisTaskHLTPHOS&); 
-    /** assignment operator */
-    AliAnalysisTaskHLTPHOS& operator=(const AliAnalysisTaskHLTPHOS&); 
-
-    Bool_t IsInPHOS(Int_t iMod, AliESDtrack * trk, Float_t b, TVector3& v);
-
-    ClassDef(AliAnalysisTaskHLTPHOS, 0);
+  ClassDef(AliAnalysisTaskHLTPHOS, 0);
 };
 
 #endif

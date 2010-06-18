@@ -6,6 +6,7 @@
 //*                                                                        *
 //* Primary Authors: Zhongbao Yin <zbyin@mail.ccnu.edu.cn>,                *
 //*                  Kalliopi Kanaki <Kalliopi.Kanaki@ift.uib.no>          *
+//*                  Svein Lindal <svein.lindal@gmail.com>                 *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -18,7 +19,7 @@
 //**************************************************************************
 
 /** @file   AliAnalysisTaskHLTPHOS.cxx
-    @author Zhongbao Yin, Kalliopi Kanaki
+    @author Zhongbao Yin, Kalliopi Kanaki, Svein Lindal
     @date
     @brief
 */
@@ -38,6 +39,7 @@
 #include "AliESDEvent.h"
 #include "AliESDRun.h"
 #include "AliESDInputHandler.h"
+#include "AliESDCaloCluster.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -46,19 +48,14 @@
 
 ClassImp(AliAnalysisTaskHLTPHOS)
 
+
 //===========================================================================================
 
-AliAnalysisTaskHLTPHOS::AliAnalysisTaskHLTPHOS(const char *name)
-    : 
-     AliAnalysisTaskSE(name)
-    ,fESDRun(0)
-    ,fOutputList(0)
-    ,fHistOnlTrk2PHOS(0)
-    ,fHistOfflTrk2PHOS(0)
-    ,fHistOfflTrk2PHOSTrig(0)
-    ,fHistOfflTrk2PHOSNoTrig(0)
-    ,fNevt(0)
-    ,fTrgClsArray(0)
+AliAnalysisTaskHLTPHOS::AliAnalysisTaskHLTPHOS(const char *name) : AliAnalysisTaskHLTCalo(name)
+  ,fHistOnlTrk2PHOS(0)
+  ,fHistOfflTrk2PHOS(0)
+  ,fHistOfflTrk2PHOSTrig(0)
+  ,fHistOfflTrk2PHOSNoTrig(0)
 {
   // Constructor
 
@@ -67,7 +64,7 @@ AliAnalysisTaskHLTPHOS::AliAnalysisTaskHLTPHOS(const char *name)
   // DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
 
-  DefineOutput(1, TList::Class());
+  // DefineOutput(1, TList::Class());
 }
 
 const Float_t AliAnalysisTaskHLTPHOS::fgkEtaMin = -0.12;  
@@ -81,13 +78,8 @@ const Float_t AliAnalysisTaskHLTPHOS::fgkInitPosY[5] = {-352.38, -432.259, -460,
 
 //----------------------------------------------------------------------------------------------------
 
-void AliAnalysisTaskHLTPHOS::UserCreateOutputObjects(){
-// Create histograms
+void AliAnalysisTaskHLTPHOS::CreateSpecificStuff(TList * fOutputList){
 
-  OpenFile(1);
-
-  fOutputList = new TList();
-  fOutputList->SetName(GetName());
 
 // --------------- define histograms ---------------------//
 
@@ -106,48 +98,14 @@ void AliAnalysisTaskHLTPHOS::UserCreateOutputObjects(){
 
 }
 
-void AliAnalysisTaskHLTPHOS::NotifyRun(){
-// This will not work if the active trigger classes change from run to run.
-// Then one has to know all trigger classes before processing the data.
 
-  AliESDEvent* evESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  TString trgClasses = evESD->GetESDRun()->GetActiveTriggerClasses(); 
- 
-  fTrgClsArray = trgClasses.Tokenize(" ");
-  //cout<<fTrgClsArray->GetEntries()<<endl; 
-    
-//   for(Int_t i = 0; i < fTrgClsArray->GetEntries(); i++){ 
-//     TString str = ((TObjString *)fTrgClsArray->At(i))->GetString(); 
-//     (fHistTrigger->GetXaxis())->SetBinLabel(i+1, str.Data()); 
-//     (fHistHLTTrigger->GetXaxis())->SetBinLabel(i+1, str.Data()); 
-//   } 
-  
-  evESD = NULL;
-}
+void AliAnalysisTaskHLTPHOS::DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) {
 
-void AliAnalysisTaskHLTPHOS::UserExec(Option_t *){
-
-  AliESDEvent* evESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  
-  if (!evESD) {
-    Printf("ERROR: fESD not available");
-    return;
-  }
-  
-  AliESDEvent* evHLTESD = 0;
-  AliESDInputHandler* esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler);
-   
-  if(esdH) evHLTESD = esdH->GetHLTEvent();
-    
-  if(!evHLTESD){
-      Printf("ERROR: HLTesd not available");
-      return;
-  }
 
   Double_t b = evESD->GetMagneticField();
   
-  Double_t pos[] = { 0., 0., 0.};
-  AliVertex *vtx = new AliVertex(pos, 0., 0);
+  //Double_t pos[] = { 0., 0., 0.};
+  //AliVertex *vtx = new AliVertex(pos, 0., 0);
     
 //   for(Int_t i = 0; i<fTrgClsArray->GetEntries(); i++){
 //       if((evESD->GetFiredTriggerClasses()).Contains(((TObjString *)fTrgClsArray->At(i))->GetString()))  fHistTrigger->Fill(i);
@@ -160,8 +118,10 @@ void AliAnalysisTaskHLTPHOS::UserExec(Option_t *){
 //      } 
 //   }
 
+
+
   if(evHLTESD->IsHLTTriggerFired()){
-     for(Int_t i = 0; i < evHLTESD->GetNumberOfTracks(); i++){
+    for(Int_t i = 0; i < evHLTESD->GetNumberOfTracks(); i++){
          AliESDtrack * HLTesdTrk = evHLTESD->GetTrack(i);
       
         TVector3 v; 
@@ -184,12 +144,14 @@ void AliAnalysisTaskHLTPHOS::UserExec(Option_t *){
 	 || IsInPHOS(3, HLTesdTrk, b)
 	 || IsInPHOS(4, HLTesdTrk, b) ) cout<<"Good Trigger"<<endl;
 */      
-       
+  
+
+	
      }
   }else{
+
     for(Int_t i = 0; i < evHLTESD->GetNumberOfTracks(); i++){ 
         AliESDtrack * HLTesdTrk = evHLTESD->GetTrack(i); 
-
         TVector3 v;  
         if(IsInPHOS(2, HLTesdTrk, b, v)){  
           Float_t phi = v.Phi();  
@@ -204,11 +166,11 @@ void AliAnalysisTaskHLTPHOS::UserExec(Option_t *){
           if(phi<0) phi += 2.*TMath::Pi();    
           fHistOnlTrk2PHOS->Fill(v.Eta(), phi*TMath::RadToDeg());  
         }  
-    } 
+    }
   }
-  
-  if(evHLTESD->IsHLTTriggerFired()){
 
+  if(evHLTESD->IsHLTTriggerFired()){
+       
     for(Int_t i = 0; i < evESD->GetNumberOfTracks(); i++){ 
       AliESDtrack * esdTrk = evESD->GetTrack(i); 
 
@@ -218,23 +180,20 @@ void AliAnalysisTaskHLTPHOS::UserExec(Option_t *){
 	if(phi<0) phi += 2.*TMath::Pi();
 	fHistOfflTrk2PHOSTrig->Fill(v.Eta(), phi*TMath::RadToDeg());
 	fHistOfflTrk2PHOS->Fill(v.Eta(), phi*TMath::RadToDeg());
-	//cout<<"Event in PHOS 2: "<<fNevt<<endl;
       }else if(IsInPHOS(3, esdTrk, b, v)){
 	Float_t phi = v.Phi(); 
         if(phi<0) phi += 2.*TMath::Pi(); 
         fHistOfflTrk2PHOSTrig->Fill(v.Eta(), phi*TMath::RadToDeg()); 
 	fHistOfflTrk2PHOS->Fill(v.Eta(), phi*TMath::RadToDeg());
-	//cout<<"Event in PHOS 3: "<<fNevt<<endl;
       }else if( IsInPHOS(4, esdTrk, b, v) ){
 	Float_t phi = v.Phi();  
         if(phi<0) phi += 2.*TMath::Pi();  
         fHistOfflTrk2PHOSTrig->Fill(v.Eta(), phi*TMath::RadToDeg());
 	fHistOfflTrk2PHOS->Fill(v.Eta(), phi*TMath::RadToDeg());
-	//cout<<"Event in PHOS 4: "<<fNevt<<endl;
       }
     }
   } else {
-
+   
     for(Int_t i = 0; i < evESD->GetNumberOfTracks(); i++){ 
       AliESDtrack * esdTrk = evESD->GetTrack(i); 
 
@@ -261,30 +220,37 @@ void AliAnalysisTaskHLTPHOS::UserExec(Option_t *){
     }    
   }
 
-  fNevt++;
-  delete vtx;
 
-  // Post output data.
-  PostData(1, fOutputList);
-
- }
-
-void AliAnalysisTaskHLTPHOS::Terminate(Option_t *){
-  /*
-  Printf("Number of tracks thru CE: %d", fNtracksThruZ0);
-  Printf("Number of tracks thru CE from triggered events: %d", 
-	 fNtracksThruZ0Trig);
-  */
-
-  // Draw result to the screen
-  // Called once at the end of the query
-
-  //  TCanvas *c1 = new TCanvas("AliAnalysisTaskHLTPHOS","Trigger",10,10,510,510);
-  //fHistTrigger->DrawCopy("E");
   
+  //cout << "here" << endl;
+
+  //Int_t nc = evHLTESD->GetPHOSClusters(fClustersArray);
+  //Int_t nc = evHLTESD->GetEMCALClusters(fClustersArray);
+  
+  //for(int i = 0; i < 
+  // cout << nc << " ";
+  
+  // for(int i = 0; i < evHLTESD->GetNumberOfCaloClusters(); i++) {
+  //   AliESDCaloCluster * c = evHLTESD->GetCaloCluster(i); 
+  //   cout << c->IsPHOS() << "i ";
+  // }
+  
+
+  
+
 }
 
+Int_t AliAnalysisTaskHLTPHOS::GetClusters(AliESDEvent * event, TRefArray * clusters) {
+  return event->GetPHOSClusters(clusters);
+}
+
+Bool_t AliAnalysisTaskHLTPHOS::IsThisDetector(AliESDCaloCluster * cluster) {
+  return cluster->IsPHOS();
+}
+
+
 Bool_t AliAnalysisTaskHLTPHOS::IsInPHOS(Int_t iMod, AliESDtrack * trk, Float_t b, TVector3& v){
+
 
   Double_t normVector[3] = {fgkNormX[iMod], fgkNormY[iMod], 0};
 

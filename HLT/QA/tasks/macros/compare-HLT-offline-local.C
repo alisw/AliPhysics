@@ -20,6 +20,8 @@
  */
 
 void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
+
+  cout <<"balle"<<endl;
  
   TStopwatch timer;
   timer.Start();
@@ -37,10 +39,11 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libHLTbase.so");
+ 
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bEMCAL = kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -59,19 +62,25 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   	    bPHOS = kTRUE;
 	    continue;
          }         
-	 if(argument.CompareTo("its", TString::kIgnoreCase)==0){
+         else if(argument.CompareTo("emcal", TString::kIgnoreCase)==0){
+	   bEMCAL = kTRUE;
+	   continue;
+         }         
+
+	  if(argument.CompareTo("its", TString::kIgnoreCase)==0){
   	    bITS = kTRUE;
 	    continue;
          }	
-	 if(argument.CompareTo("global", TString::kIgnoreCase)==0){
+	  if(argument.CompareTo("global", TString::kIgnoreCase)==0){
   	    bGLOBAL = kTRUE;
 	    continue;
          }        
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
 	    bTPC    = kTRUE;
 	    bPHOS   = kTRUE;
+	    bEMCAL  = kTRUE;
 	    bITS    = kTRUE;
-	    bGLOBAL = kTRUE;
+	    bGLOBAL = kTRUE;    
 	    continue;
          }
          else break;
@@ -80,8 +89,26 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
     
   
   //-------------- Compile the analysis tasks ---------- //
-  if(bTPC)    gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
-  if(bPHOS)   gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
+  if(bTPC) gROOT->LoadMacro("AliAnalysisTaskHLTTPC.cxx+"); 
+  
+  if(bPHOS) {
+    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
+    pHLT->LoadComponentLibraries("libHLTbase");
+    pHLT->LoadComponentLibraries("libAliHLTUtil");
+    pHLT->LoadComponentLibraries("libAliHLTGlobal");
+    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
+    gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+"); 
+  }
+  
+  if(bEMCAL) {
+    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
+    pHLT->LoadComponentLibraries("libHLTbase");
+    pHLT->LoadComponentLibraries("libAliHLTUtil");
+    pHLT->LoadComponentLibraries("libAliHLTGlobal");
+    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
+    gROOT->LoadMacro("AliAnalysisTaskHLTEMCAL.cxx+"); 
+  }  
+  
   if(bITS)    gROOT->LoadMacro("AliAnalysisTaskHLTITS.cxx+");
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   
@@ -120,6 +147,14 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
      AliAnalysisDataContainer *coutput2 =  mgr->CreateContainer("phos_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-PHOS-comparison.root");  
      mgr->ConnectInput(taskPHOS,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskPHOS,1,coutput2);
+  }
+
+  if(bEMCAL){
+     AliAnalysisTaskHLTEMCAL *taskEMCAL = new AliAnalysisTaskHLTEMCAL("offhlt_comparison_EMCAL");
+     mgr->AddTask(taskEMCAL);
+     AliAnalysisDataContainer *coutput5 =  mgr->CreateContainer("emcal_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-EMCAL-comparison.root");  
+     mgr->ConnectInput(taskEMCAL,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(taskEMCAL,1,coutput5);
   }
   
   if(bITS){
