@@ -98,7 +98,7 @@ void AliZDCRecoParamPbPb::SetGlauberMCDist(Float_t beamEnergy)
   
   TFile *fileGlauberMC =  TFile::Open("$ALICE_ROOT/ZDC/GlauberMCDist.root");
   if(!fileGlauberMC) {
-    AliError((" Opening file $ALICE_ROOT/ZDC/SpectatorSignal.root failed\n"));
+    AliError((" Opening file $ALICE_ROOT/ZDC/GlauberMCDist.root failed\n"));
     return;
   }
   
@@ -107,18 +107,18 @@ void AliZDCRecoParamPbPb::SetGlauberMCDist(Float_t beamEnergy)
   if(TMath::Abs(sqrtS-5500) < 100.){
     AliDebug(2, " ZDC -> Looking for energy5500 in file $ALICE_ROOT/ZDC/GlauberMCDist.root");
     fileGlauberMC->cd("energy5500");
-    fileGlauberMC->GetObject("energy5500/hNpartGlauber;1", fhNpartDist);
-    if(!fhNpartDist) AliError("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
     fileGlauberMC->GetObject("energy5500/hbGlauber;1", fhbDist);
     if(!fhbDist) AliError("  PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
+    fileGlauberMC->GetObject("energy5500/hNpartGlauber;1", fhNpartDist);
+    if(!fhNpartDist) AliError("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
   }
   else if(TMath::Abs(sqrtS-2760) < 100.){
     AliDebug(2, " ZDC -> Looking for energy2760 in file $ALICE_ROOT/ZDC/GlauberMCDist.root");
     fileGlauberMC->cd("energy2760");
-    fileGlauberMC->GetObject("energy2760/hNpartGlauber;1", fhNpartDist);
-    if(!fhNpartDist) AliError("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
     fileGlauberMC->GetObject("energy2760/hbGlauber;1", fhbDist);
     if(!fhbDist) AliError("  PROBLEM!!! Can't get Glauber MC b distribution from file GlauberMCDist.root\n");
+    fileGlauberMC->GetObject("energy2760/hNpartGlauber;1", fhNpartDist);
+    if(!fhNpartDist) AliError("  PROBLEM!!! Can't get Glauber MC Npart distribution from file GlauberMCDist.root\n");
   }
   else AliError(Form(" No AliZDCRecoParam provided for Pb-Pb @ sqrt(s) = %1.0f GeV\n", sqrtS));
   //

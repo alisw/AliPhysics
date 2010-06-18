@@ -54,6 +54,11 @@ public:
   virtual void SetVCollSideACentre(Float_t /*centre*/) {}
   
   virtual void SetLumiLength(Float_t /*length*/) {}
+  
+  virtual void SetYZNC(Float_t /*yZNC*/) {}
+  virtual void SetYZNA(Float_t /*yZNA*/) {}
+  virtual void SetYZPC(Float_t /*yZPC*/) {}
+  virtual void SetYZPA(Float_t /*yZPA*/) {}
 
   //Calibration methods 
   void    SetZDCCalibFName(const char *name);
