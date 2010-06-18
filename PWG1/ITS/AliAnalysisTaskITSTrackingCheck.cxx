@@ -150,6 +150,7 @@ fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
 fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
 fHistPtITSTPCselP(0),
 fHistPtITSTPCselS(0),
@@ -332,6 +333,7 @@ fHistPtITSMI5InAcc(0),
 fHistPtITSMI6InAcc(0),
 fHistPtITSMISPDInAcc(0),
 fHistPtITSMIoneSPDInAcc(0),
+fHistPtITSMIoneSPDthreeSDDSSDInAcc(0),
 fHistPtITSTPCsel(0),
 fHistPtITSTPCselP(0),
 fHistPtITSTPCselS(0),
@@ -831,6 +833,11 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fHistPtITSMIoneSPDInAcc->Sumw2();
   fHistPtITSMIoneSPDInAcc->SetMinimum(0);
   fOutput->Add(fHistPtITSMIoneSPDInAcc);
+
+  fHistPtITSMIoneSPDthreeSDDSSDInAcc = new TH1F("fHistPtITSMIoneSPDthreeSDDSSDInAcc","pt distribution of ITSMI tracks (>0 in SPD, >2 in SDD+SSD); p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
+  fHistPtITSMIoneSPDthreeSDDSSDInAcc->Sumw2();
+  fHistPtITSMIoneSPDthreeSDDSSDInAcc->SetMinimum(0);
+  fOutput->Add(fHistPtITSMIoneSPDthreeSDDSSDInAcc);
 
   fHistPtITSTPCsel = new TH1F("fHistPtITSTPCsel","pt distribution of ITSMISPD tracks; p_{t} [GeV/c]; N tracks",nPtBins,xPtBins);
   fHistPtITSTPCsel->Sumw2();
@@ -1489,11 +1496,13 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
    
 
     Int_t nclsITS = track->GetNcls(0);
+    Int_t nclsSDDSSD = 0;
     Int_t nclsokbadoutinzITS = 0;
     Bool_t outInZ=kFALSE;
     Bool_t skipTrack=kFALSE;
 
     for(Int_t layer=0; layer<6; layer++) {
+      if(layer>=2 && track->HasPointOnITSLayer(layer)) nclsSDDSSD++;
       if(layer==0 && !track->HasPointOnITSLayer(1)) continue;
       if(layer==1 && !track->HasPointOnITSLayer(0)) continue;
       track->GetITSModuleIndexInfo(layer,idet,status,xloc,zloc);
@@ -1751,6 +1760,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	}
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) {
 	  fHistPtITSMIoneSPDInAcc->Fill(track->Pt());
+	  if(nclsSDDSSD>=3) fHistPtITSMIoneSPDthreeSDDSSDInAcc->Fill(track->Pt());
+
 	  if(isPrimary) {fHistPtITSMIoneSPDInAccP->Fill(track->Pt());} else {fHistPtITSMIoneSPDInAccS->Fill(track->Pt());}  
 	}
 	if(nclsokbadoutinzITS==6) fHistPtITSMIokbadoutinz6InAcc->Fill(track->Pt());
