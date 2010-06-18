@@ -134,6 +134,7 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader, Bool_t mode){
   // Run standard vertexer3d
     AliITSVertexer3D *vertexer2 = new AliITSVertexer3D();
     vertexer2->SetDetTypeRec(fDetTypeRec);
+    vertexer2->SetComputeMultiplicity(kTRUE);
     vtx = vertexer2->FindVertexForCurrentEvent(clustersTree);
     AliMultiplicity *mult = vertexer2->GetMultiplicity();
     delete vertexer2;

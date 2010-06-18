@@ -180,8 +180,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(TTree *itsClusterTree){
       fDiffPhiMax=diffPhiMaxOrig;
     }
   }
-  //RS
-  //  FindMultiplicity(itsClusterTree);
+  if(fComputeMultiplicity) FindMultiplicity(itsClusterTree);
   return fCurrentVertex;
 }  
 

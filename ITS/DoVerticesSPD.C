@@ -30,7 +30,7 @@
 
 /*  $Id$    */
 
-Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
+Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
 
   TFile *fint = new TFile("VertexSPD.root","recreate");
   TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp:is3D:isTriggered");
@@ -62,14 +62,17 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
 	  "galice.root");
     return kFALSE;
   }
-  runLoader->LoadgAlice();
-  gAlice = runLoader->GetAliRun();
-  if (!gAlice) {
-    Error("DoVertices", "no galice object found");
-    return kFALSE;
+  
+  if(isMC){
+    runLoader->LoadgAlice();
+    gAlice = runLoader->GetAliRun();
+    if (!gAlice) {
+      Error("DoVertices", "no galice object found");
+      return kFALSE;
+    }
+    runLoader->LoadKinematics();
+    runLoader->LoadHeader();
   }
-  runLoader->LoadKinematics();
-  runLoader->LoadHeader();
   AliITSLoader* ITSloader =  (AliITSLoader*) runLoader->GetLoader("ITSLoader");
   ITSloader->LoadRecPoints("read");
 
@@ -101,14 +104,14 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   Double_t xnom=0.,ynom=0.;
   AliITSVertexerZ *vertz = new AliITSVertexerZ(xnom,ynom);
   vertz->Init("default");
-  AliITSVertexer3D *vert3d = new AliITSVertexer3D();
+  AliITSVertexer3D *vert3d = new AliITSVertexer3D();  
   vert3d->Init("default");
   vert3d->SetWideFiducialRegion(40.,1.);
   vert3d->SetPileupAlgo(pileupalgo);
   vert3d->PrintStatus();
   vertz->SetDetTypeRec(detTypeRec);
   vert3d->SetDetTypeRec(detTypeRec);
-
+  vert3d->SetComputeMultiplicity(kTRUE);
   /* uncomment these lines to use diamond constrain */
 //   Double_t posdiam[3]={0.03,0.1,0.};
 //   Double_t sigdiam[3]={0.01,0.01,10.0};
@@ -126,32 +129,33 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
   for (Int_t iEvent = 0; iEvent < totev; iEvent++) {
     TArrayF mcVertex(3); 
     runLoader->GetEvent(iEvent);
-    runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
-    AliGenPythiaEventHeader *evh=(AliGenPythiaEventHeader*)runLoader->GetHeader()->GenEventHeader();
-    Int_t ptype = evh->ProcessType();
+    Double_t dNchdy = 0.;
+    Int_t ptype = 0;
     if(optdebug){
       printf("==============================================================\n");
-      printf("\nEvent: %d ---- Process Type = %d \n",iEvent,ptype);
+      printf("Event: %d \n",iEvent);
     }
+    if(isMC){
+      runLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
+      AliGenPythiaEventHeader *evh=(AliGenPythiaEventHeader*)runLoader->GetHeader()->GenEventHeader();
+      ptype = evh->ProcessType();
 
-    AliStack* stack = runLoader->Stack();
-    TTree *treek=(TTree*)runLoader->TreeK();
-    Int_t npart = (Int_t)treek->GetEntries();
-    if(optdebug) printf("particles  %d\n",npart);
-
-    Double_t dNchdy = 0.;
-
-   // loop on particles to get generated dN/dy
-    for(Int_t iPart=0; iPart<npart; iPart++) {
-      if(!stack->IsPhysicalPrimary(iPart)) continue;
-      TParticle* part = (TParticle*)stack->Particle(iPart);
-      if(part->GetPDG()->Charge() == 0) continue;
-      Double_t eta=part->Eta();
-
-      if(TMath::Abs(eta)<1.5) dNchdy+=1.; 
+      AliStack* stack = runLoader->Stack();
+      TTree *treek=(TTree*)runLoader->TreeK();
+      Int_t npart = (Int_t)treek->GetEntries();
+      if(optdebug) printf("Process Type = %d --- Particles  %d\n",ptype,npart);
+      
+      // loop on particles to get generated dN/dy
+      for(Int_t iPart=0; iPart<npart; iPart++) {
+	if(!stack->IsPhysicalPrimary(iPart)) continue;
+	TParticle* part = (TParticle*)stack->Particle(iPart);
+	if(part->GetPDG()->Charge() == 0) continue;
+	Double_t eta=part->Eta();
+	
+	if(TMath::Abs(eta)<1.5) dNchdy+=1.; 
+      }
+      if(optdebug) printf(" dNch/dy = %f\n",dNchdy);
     }
-    if(optdebug) printf(" dNch/dy = %f\n",dNchdy);
- 
     tree->GetEvent(iEvent);
 
     TTree* cltree = ITSloader->TreeR();
@@ -167,7 +171,6 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
       ntrklets=alimult->GetNumberOfTracklets() ;
       nrecp1=ntrklets+alimult->GetNumberOfSingleClusters();
     }
-       
 
 
     TDirectory *current = gDirectory;
@@ -251,8 +254,10 @@ Bool_t DoVerticesSPD(Int_t pileupalgo=1, Int_t optdebug=0){
     current->cd();
     
     if(optdebug){
-      printf("\nVertexerZ:  \tz(cm)=%9.5f \tTracklets=%d \tztrue(cm)=%9.5f \tzdiff(um)=%8.2f\n",zz,ntrkz,mcVertex[2],zdiffz);
-      printf("Vertexer3D: \tz(cm)=%9.5f \tTracklets=%d \tztrue(cm)=%9.5f \tzdiff(um)=%8.2f\n",z3d,ntrk3d,mcVertex[2],zdiff3d);
+      printf("Vertexer3D: \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tContributors=%d \n",x3d,y3d,z3d,ntrk3d);
+      printf("VertexerZ:  \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tContributors=%d \n",0.,0.,zz,ntrkz);
+      if(isMC) printf("True Pos.: \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tdN/dy=%.1f\n",mcVertex[0],mcVertex[1],mcVertex[2],dNchdy);
+      printf("Multiplicity: Tracklets=%d  ClustersLay1=%d\n",ntrklets,nrecp1);
     }
     
   }

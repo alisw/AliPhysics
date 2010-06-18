@@ -23,6 +23,7 @@ ClassImp(AliITSVertexer)
 AliITSVertexer::AliITSVertexer():AliVertexer(),
 fLadders(), 
 fLadOnLay2(0),
+fComputeMultiplicity(kFALSE),
 fDetTypeRec(NULL),
 fMinTrackletsForPilup(0),
 fIsPileup(0),

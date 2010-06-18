@@ -309,8 +309,7 @@ AliESDVertex* AliITSVertexerCosmics::FindVertexForCurrentEvent(TTree *itsCluster
   fCurrentVertex->SetTitle("cosmics fake vertex");
   fCurrentVertex->SetNContributors(ncontributors);
   //fCurrentVertex->Print();
-  // RS
-  // FindMultiplicity(itsClusterTree);
+  if(fComputeMultiplicity) FindMultiplicity(itsClusterTree);
 
   delete recpoints;
 

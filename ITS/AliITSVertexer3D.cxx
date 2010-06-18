@@ -150,9 +150,8 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
       delete vtxz;
     }
 
-  }
-  //RS
-  //  FindMultiplicity(itsClusterTree);
+  }  
+  if(fComputeMultiplicity) FindMultiplicity(itsClusterTree);
   return fCurrentVertex;
 }  
 

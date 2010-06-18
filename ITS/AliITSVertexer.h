@@ -29,9 +29,10 @@ class AliITSVertexer : public AliVertexer {
     void SetLastEvent(Int_t ev){fLastEvent = ev;}
     static Float_t GetPipeRadius() {return fgkPipeRadius;}
     void SetLaddersOnLayer2(Int_t ladwid=4);
+    void SetComputeMultiplicity(Bool_t opt=kTRUE){fComputeMultiplicity=opt;}
     virtual void SetUseModule(Int_t imod, Bool_t optUse){
       if(imod>=0 && imod<kNSPDMod) fUseModule[imod]=optUse;
-    }
+    }    
     virtual Bool_t IsModuleUsed(Int_t imod) const {
       if(imod>=0 && imod<kNSPDMod) return fUseModule[imod];
       else return 0;
@@ -64,6 +65,7 @@ class AliITSVertexer : public AliVertexer {
     UShort_t *fLadders; // array with layer1-layer2 ladders correspondances  
     Int_t fLadOnLay2;   // (2*fLadOnLay2+1)=number of layer2 ladders 
                       // associated to a layer1 ladder
+    Bool_t  fComputeMultiplicity;      // flag to switch on/off tracklet calculation
     Bool_t  fUseModule[kNSPDMod]; // flag for enabling/disabling SPD modules
     AliITSDetTypeRec *fDetTypeRec;  //! pointer to DetTypeRec
     Int_t fMinTrackletsForPilup;  // min. n. of tracklets for pilup definition
@@ -83,7 +85,7 @@ class AliITSVertexer : public AliVertexer {
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices
 
-  ClassDef(AliITSVertexer,10);
+  ClassDef(AliITSVertexer,11);
 };
 
 #endif
