@@ -14,6 +14,9 @@
  * </pre>
  * 
  * If alien:// is contained in the name of the file, then the macro connects to the grid to access the file.
+ * 
+ * In case you want to run over many ESD files, then prepare a list of them in a .txt file and they will be chained for the analysis.
+ * The .txt file takes the place of the first argument in that case.
  *
  * @ingroup alihlt_qa
  * @author zbyin@mail.ccnu.edu.cn, Kalliopi.Kanaki@ift.uib.no
@@ -21,8 +24,6 @@
 
 void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
 
-  cout <<"balle"<<endl;
- 
   TStopwatch timer;
   timer.Start();
 
@@ -115,12 +116,25 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   //if(!AliAnalysisGrid::CreateToken()) return NULL;
   
   if(file.Contains("alien")) TGrid::Connect("alien://");
+    
+  if(file.Contains("AliESDs.root")){
+    TChain *chain = new TChain("esdTree"); 
+    chain->Add(file);
+  }
+  
+  //Constructs chain from filenames in *.txt
+  //on the form $DIR/AliESDs.root
+  else if(file.Contains(".txt")){
+    gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+    chain=CreateESDChain(file.Data());
+  }
 
-  TChain *chain = new TChain("esdTree"); 
-  chain->Add(file);
- 
-  //chain->Add("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root");
-  //chain->Add("...");
+  if(!chain){
+    Printf("Chain is empty");
+    return;
+  }
+
+
    
   //-------- Make the analysis manager ---------------//
  
@@ -175,7 +189,7 @@ void compare_HLT_offline_local(TString file, const char* detectorTask="global"){
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("local",chain,500);
 
   timer.Stop();
   timer.Print();
