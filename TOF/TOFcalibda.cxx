@@ -2,9 +2,9 @@
 
 TOF DA for online calibration
 
-Contact: Chiara.Zampolli@bo.infn.it
-         Roberto.Preghenella@bo.infn.it
-
+Version: "1.0"
+Contact: Roberto.Preghenella@bo.infn.it
+Reference Run: 115401
 Run Type: PHYSICS
 DA Type: MON
 Number of events needed:
@@ -15,6 +15,7 @@ Event types used: CALIBRATION_EVENT
 */
 
 #define FILE_CALIB "TOFdaCalib.root"
+#define EVENT_DETECTOR_TOF 5
 
 // DATE
 #include "event.h"
