@@ -45,7 +45,7 @@
  */
 
 
-enum ESDClu_t { 	kUndef,
+enum ESDClu_t { 	kUndef = -2,
 	kPHOSCluster,
 	kEMCALPseudoCluster,
 	kEMCALClusterv1
