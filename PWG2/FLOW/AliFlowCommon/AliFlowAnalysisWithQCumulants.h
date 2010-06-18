@@ -427,6 +427,7 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fIntFlowCorrelationsAllEBE; // to be improved (add comment)
   TH1D *fIntFlowCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
   TH1D *fIntFlowEventWeightForCorrectionTermsForNUAEBE[2]; // [0=sin terms,1=cos terms], NUA = non-uniform acceptance
+  Double_t fReferenceMultiplicityEBE; // reference multiplicity  
   //  3d.) profiles:
   TProfile *fAvMultiplicity; // profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
   TProfile *fIntFlowCorrelationsPro; // average correlations <<2>>, <<4>>, <<6>> and <<8>> (with wrong errors!) 

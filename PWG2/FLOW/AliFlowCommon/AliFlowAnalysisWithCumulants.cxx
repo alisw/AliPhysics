@@ -92,6 +92,7 @@ AliFlowAnalysisWithCumulants::AliFlowAnalysisWithCumulants():
  fMinMult(0.),   
  fMaxMult(10000.),
  fGEBE(NULL), 
+ fReferenceMultiplicityEBE(0.),
  fReferenceFlowGenFun(NULL),
  fQvectorComponents(NULL),
  fAverageOfSquaredWeight(NULL),
@@ -201,6 +202,7 @@ void AliFlowAnalysisWithCumulants::Make(AliFlowEventSimple* anEvent)
  if(fTuneParameters) {this->FillGeneratingFunctionsForDifferentTuningParameters(anEvent);} 
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
  if(nRP<10) {return;} // generating function formalism make sense only for nRPs >= 10 for default settings 
+ fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
  fCommonHists->FillControlHistograms(anEvent);                                                               
  this->FillGeneratingFunctionForReferenceFlow(anEvent);
  this->FillQvectorComponents(anEvent);
@@ -417,10 +419,9 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionsForDifferentTuningPara
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
 
- Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI + rest, where:
+ Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI, where:
                                           // nRP   = # of particles used to determine the reaction plane;
-                                          // nPOI  = # of particles of interest for a detailed flow analysis;
-                                          // rest  = # of particles which are not niether RPs nor POIs.  
+                                          // nPOI  = # of particles of interest for a detailed flow analysis.
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = # of particles used to determine the reaction plane;
  for(Int_t pq=0;pq<5;pq++)
@@ -517,13 +518,12 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
 
- Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI + rest, where:
+ Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI, where:
                                           // nRP   = # of particles used to determine the reaction plane;
-                                          // nPOI  = # of particles of interest for a detailed flow analysis;
-                                          // rest  = # of particles which are not niether RPs nor POIs.  
+                                          // nPOI  = # of particles of interest for a detailed flow analysis.
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = # of particles used to determine the reaction plane;
- if(fCalculateVsMultiplicity){fAvMVsM->Fill(nRP+0.5,nRP,1.);}
+ if(fCalculateVsMultiplicity){fAvMVsM->Fill(fReferenceMultiplicityEBE+0.5,nRP,1.);}
  
  // Initializing the generating function G[p][q] for reference flow for current event: 
  Int_t pMax = fGEBE->GetNrows();
@@ -601,7 +601,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
   for(Int_t q=0;q<qMax;q++)
   {
    fReferenceFlowGenFun->Fill((Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight); 
-   if(fCalculateVsMultiplicity){fReferenceFlowGenFunVsM->Fill(nRP+0.5,(Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight);}
+   if(fCalculateVsMultiplicity){fReferenceFlowGenFunVsM->Fill(fReferenceMultiplicityEBE+0.5,(Double_t)p,(Double_t)q,(*fGEBE)(p,q),eventWeight);}
   }
  } 
  
@@ -661,10 +661,9 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForDiffFlow(AliFlowEven
  Int_t pMax = fGEBE->GetNrows();
  Int_t qMax = fGEBE->GetNcols(); 
 
- Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI + rest, where:
+ Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI, where:
                                           // nRP   = # of particles used to determine the reaction plane;
-                                          // nPOI  = # of particles of interest for a detailed flow analysis;
-                                          // rest  = # of particles which are not niether RPs nor POIs.  
+                                          // nPOI  = # of particles of interest for a detailed flow analysis.
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // nRP = # of particles used to determine the reaction plane
        
