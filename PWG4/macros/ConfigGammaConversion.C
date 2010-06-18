@@ -1041,7 +1041,10 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 		
     AliCFManager *man = new AliCFManager();
     man->SetParticleContainer(container);
-		
+    for(int i = 0;i<nstep;i++){
+      TObjArray *tmp = new TObjArray(0);
+      man->SetParticleCutsList(i,tmp) ;
+    } 
     // end ---------------------------------------------------------------------------
 		
 		
