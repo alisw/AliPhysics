@@ -16,6 +16,7 @@ class AliESDEvent;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
 class AliESDfriend;
+class AliESDVertex;
 
 class AliPerformanceObject : public TNamed {
 public :
@@ -62,16 +63,23 @@ public :
   void SetTriggerClass(const Char_t *triggerClass) { fTriggerClass = triggerClass; }
   const Char_t* GetTriggerClass() const { return fTriggerClass; }
 
+  // use track vertex
+  void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
+  Bool_t IsUseTrackVertex() { return fUseTrackVertex; }
+
 protected: 
 
- // analysis mode
- Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3-TPC inner wall, 4-TPC outer wall
+  // analysis mode
+  Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3-TPC inner wall, 4-TPC outer wall
 
- // hpt generator
- Bool_t fHptGenerator; // hpt event generator
+  // hpt generator
+  Bool_t fHptGenerator; // hpt event generator
 
- // trigger class
- const Char_t * fTriggerClass;
+  // trigger class
+  const Char_t * fTriggerClass;
+
+  // use track vertex
+  Bool_t fUseTrackVertex; // use track vertex
 
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented

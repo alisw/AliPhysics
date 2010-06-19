@@ -47,9 +47,9 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process events
-  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
+  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
+  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
+  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderTPC",TString title = "Analysed TPC performance histograms");
@@ -70,9 +70,6 @@ public :
   THnSparse *GetTPCEventHisto() const  { return fTPCEventHisto; }
   THnSparse *GetTPCTrackHisto() const  { return fTPCTrackHisto; }
 
-  // use track vertex
-  void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
-  Bool_t IsUseTrackVertex() { return fUseTrackVertex; }
 
 private:
 
@@ -88,13 +85,11 @@ private:
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
-  // use track vertex
-  Bool_t fUseTrackVertex; // use track vertex
 
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,2);
+  ClassDef(AliPerformanceTPC,3);
 };
 
 #endif

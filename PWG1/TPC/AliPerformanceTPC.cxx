@@ -75,10 +75,8 @@ AliPerformanceTPC::AliPerformanceTPC():
   fCutsMC(0),  
 
   // histogram folder 
-  fAnalysisFolder(0),
+  fAnalysisFolder(0)
 
-  // select track vertex
-  fUseTrackVertex(kFALSE) 
 {
   Init();
 }
@@ -95,10 +93,8 @@ AliPerformanceTPC::AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* t
   fCutsMC(0),  
 
   // histogram folder 
-  fAnalysisFolder(0),
+  fAnalysisFolder(0)
 
-  // select track vertex
-  fUseTrackVertex(kFALSE) 
 {
   // named constructor	
   // 
@@ -206,9 +202,30 @@ void AliPerformanceTPC::Init(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent)
 {
+//
+// fill TPC QA info
+//
+  if(!esdEvent) return;
   if(!esdTrack) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
 
   // Fill TPC only resolution comparison information 
   const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
@@ -253,14 +270,71 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessTPCITS(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill comparison information (TPC+ITS) 
-  AliDebug(AliLog::kWarning, "Warning: Not implemented");
+  if(!esdTrack) return;
+  if(!esdEvent) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
+
+  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+  esdTrack->GetImpactParameters(dca,cov);
+
+  if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0) return; // ITS refit
+  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
+
+  Float_t q = esdTrack->Charge();
+  Float_t pt = esdTrack->Pt();
+  Float_t eta = esdTrack->Eta();
+  Float_t phi = esdTrack->Phi();
+  Int_t nClust = esdTrack->GetTPCclusters(0);
+  Int_t nFindableClust = esdTrack->GetTPCNclsF();
+
+  Float_t chi2PerCluster = 0.;
+  if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+
+  Float_t clustPerFindClust = 0.;
+  if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
+  
+  //
+  // select primaries
+  //
+  Double_t dcaToVertex = -1;
+  if( fCutsRC->GetDCAToVertex2D() ) 
+  {
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+  }
+  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
+
+  Double_t vTPCTrackHisto[9] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q};
+  fTPCTrackHisto->Fill(vTPCTrackHisto); 
+ 
+  //
+  // Fill rec vs MC information
+  //
+  if(!stack) return;
 }
  
 //_____________________________________________________________________________
-void AliPerformanceTPC::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/)
+void AliPerformanceTPC::ProcessConstrained(AliStack* const /*stack*/, AliESDtrack *const /*esdTrack*/, AliESDEvent* const /*esdEvent*/)
 {
   // Fill comparison information (constarained parameters) 
   AliDebug(AliLog::kWarning, "Warning: Not implemented");
@@ -373,9 +447,9 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
        }
     }
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
+    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track,esdEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;

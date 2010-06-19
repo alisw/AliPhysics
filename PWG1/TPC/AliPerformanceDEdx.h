@@ -54,7 +54,7 @@ public :
 
   // Process events
   void  ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
-  void  ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack);
+  void  ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
   void  ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);      // not implemented
   void  ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack); // not implemented
 
