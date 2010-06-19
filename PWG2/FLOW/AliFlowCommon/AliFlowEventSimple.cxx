@@ -635,7 +635,10 @@ void AliFlowEventSimple::DefineDeadZone( Double_t etaMin,
     Double_t eta = track->Eta();
     Double_t phi = track->Phi();
     if (eta>etaMin && eta<etaMax && phi>phiMin && phi<phiMax)
+    {
+      if (track->InRPSelection()) fNumberOfRPs--;
       track->ResetFlowTags();
+    }
   }
 }
 
