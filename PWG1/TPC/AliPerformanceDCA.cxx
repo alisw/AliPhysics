@@ -157,14 +157,34 @@ void AliPerformanceDCA::Init()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill DCA comparison information
+  if(!esdEvent) return;
   if(!esdTrack) return;
 
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
+
+  // get TPC inner params at DCA to prim. vertex 
   const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
   if(!track) return;
 
+  // read from ESD track
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   esdTrack->GetImpactParametersTPC(dca,cov);
 
@@ -178,13 +198,31 @@ void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   //
   if(!stack) return;
 
- }
+}
 
 //_____________________________________________________________________________
-void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill DCA comparison information
   if(!esdTrack) return;
+  if(!esdEvent) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
 
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   esdTrack->GetImpactParameters(dca,cov);
@@ -295,8 +333,17 @@ void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     if(!isEventTriggered) return; 
   }
 
-  // get TPC event vertex
-  const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  // get event vertex
+  const AliESDVertex *vtxESD = NULL;
+  if( IsUseTrackVertex() ) 
+  { 
+    // track vertex
+    vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    // TPC track vertex
+    vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
   if(vtxESD && (vtxESD->GetStatus()<=0)) return;
 
   //  Process events
@@ -305,8 +352,8 @@ void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
+    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);

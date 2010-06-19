@@ -204,9 +204,29 @@ void AliPerformanceRes::Init(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
+  if(!esdEvent) return;
   if(!esdTrack) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
+
+
 
   // Fill TPC only resolution comparison information 
   const AliExternalTrackParam *track = esdTrack->GetTPCInnerParam();
@@ -279,10 +299,28 @@ void AliPerformanceRes::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill resolution comparison information (TPC+ITS)
+  if(!esdEvent) return;
   if(!esdTrack) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
 
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
   esdTrack->GetImpactParameters(dca,cov);
@@ -383,11 +421,30 @@ void AliPerformanceRes::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   // Fill resolution comparison information (constarained parameters) 
   //
+  if(!esdEvent) return;
   if(!esdTrack) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
+
 
   const AliExternalTrackParam * track = esdTrack->GetConstrainedParam();
   if(!track) return;
@@ -491,12 +548,30 @@ void AliPerformanceRes::ProcessConstrained(AliStack* const stack, AliESDtrack *c
 }
  
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack)
+void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
   //
   // Fill resolution comparison information (inner params at TPC reference point) 
   //
+  if(!esdEvent) return;
   if(!esdTrack) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
 
   const AliExternalTrackParam * innerParam = esdTrack->GetInnerParam();
   if(!innerParam) return;
@@ -592,12 +667,31 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack)
+void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack, AliESDEvent* const esdEvent)
 {
   //
   // Fill resolution comparison information (outer params at TPC reference point) 
   //
   if(!friendTrack) return;
+  if(!esdEvent) return;
+  if(!esdTrack) return;
+
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
 
   const AliExternalTrackParam * outerParam = friendTrack->GetTPCOut();
   if(!outerParam) return;
@@ -795,6 +889,21 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     }
   }
 
+  // get event vertex
+  const AliESDVertex *vtxESD = NULL;
+  if( IsUseTrackVertex() ) 
+  { 
+    // track vertex
+    vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    // TPC track vertex
+    vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
+  if(vtxESD && (vtxESD->GetStatus()<=0)) return;
+
+
+
   //  Process events
   for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
   { 
@@ -807,11 +916,35 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       if(!friendTrack) continue;
     }
 
-    if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
-    else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,track);
-    else if(GetAnalysisMode() == 4) ProcessOuterTPC(mcEvent,track,friendTrack);
+    // check stack
+    if(!stack) continue;
+    Int_t label = TMath::Abs(track->GetLabel()); 
+    if ( label > stack->GetNtrack() ) 
+    {
+      ULong_t status = track->GetStatus();
+      printf ("Error : ESD MCLabel %d - StackSize %d - Status %lu \n",
+	       track->GetLabel(), stack->GetNtrack(), status );
+      printf(" NCluster %d \n", track->GetTPCclusters(0) );
+      /*
+      if ((status&AliESDtrack::kTPCrefit)== 0 ) printf("   kTPCrefit \n");
+      if ((status&AliESDtrack::kTPCin)== 0 )    printf("   kTPCin \n");
+      if ((status&AliESDtrack::kTPCout)== 0 )   printf("   kTPCout \n");
+      if ((status&AliESDtrack::kTRDrefit)== 0 ) printf("   kTRDrefit \n");
+      if ((status&AliESDtrack::kTRDin)== 0 )    printf("   kTRDin \n");
+      if ((status&AliESDtrack::kTRDout)== 0 )   printf("   kTRDout \n");
+      if ((status&AliESDtrack::kITSrefit)== 0 ) printf("   kITSrefit \n");
+      if ((status&AliESDtrack::kITSin)== 0 )    printf("   kITSin \n");
+      if ((status&AliESDtrack::kITSout)== 0 )   printf("   kITSout \n");
+      */
+
+      continue;
+    }
+
+    if(GetAnalysisMode() == 0) ProcessTPC(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track,esdEvent);
+    else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,track,esdEvent);
+    else if(GetAnalysisMode() == 4) ProcessOuterTPC(mcEvent,track,friendTrack,esdEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;

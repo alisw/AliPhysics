@@ -52,11 +52,11 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process events
-  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
-  void ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack);
-  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
+  void ProcessConstrained(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent );
+  void ProcessTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
+  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
+  void ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
+  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack, AliESDEvent* const esdEvent);
 
   AliTrackReference *GetFirstTPCTrackRef(AliMCParticle *mcParticle); 
   AliTrackReference *GetLastTPCTrackRef(AliMCParticle *mcParticle); 

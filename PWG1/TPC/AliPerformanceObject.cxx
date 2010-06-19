@@ -31,6 +31,7 @@
 #include "TMath.h"
 
 #include "AliLog.h" 
+#include "AliESDVertex.h" 
 #include "AliPerformanceObject.h" 
 
 using namespace std;
@@ -42,7 +43,8 @@ AliPerformanceObject::AliPerformanceObject():
   TNamed("AliPerformanceObject","AliPerformanceObject"),
   fAnalysisMode(-1),
   fHptGenerator(kFALSE),
-  fTriggerClass(0)
+  fTriggerClass(0),
+  fUseTrackVertex(kFALSE)
 {
   // constructor
 }
@@ -52,7 +54,8 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title):
   TNamed(name,title),
   fAnalysisMode(-1),
   fHptGenerator(kFALSE),
-  fTriggerClass(0)
+  fTriggerClass(0),
+  fUseTrackVertex(kFALSE)
 {
   // constructor
 }
@@ -145,4 +148,3 @@ Double_t * AliPerformanceObject::CreateLogAxis(Int_t nbins, Double_t xmin, Doubl
 
 return xbins;
 }
-

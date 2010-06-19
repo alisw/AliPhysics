@@ -42,6 +42,7 @@
 
 #include "AliPerformanceDEdx.h" 
 #include "AliESDEvent.h"
+#include "AliTracker.h"
 #include "AliMCEvent.h"
 #include "AliESDtrack.h"
 #include "AliStack.h"
@@ -176,10 +177,32 @@ void AliPerformanceDEdx::ProcessTPC(AliStack* const /*stack*/, AliESDtrack *cons
 }
 
 //_____________________________________________________________________________
-void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack)
+void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
 {
+ //
+ // Fill TPC track information at inner TPC wall
+ // 
+  if(!esdEvent) return;
   if(!esdTrack) return;
 
+  if( IsUseTrackVertex() ) 
+  { 
+    // Relate TPC inner params to prim. vertex
+    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; esdTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    if(!isOK) return;
+
+    /*
+      // JMT -- recaluclate DCA for HLT if not present
+      if ( dca[0] == 0. && dca[1] == 0. ) {
+        track->GetDZ( vtxESD->GetX(), vtxESD->GetY(), vtxESD->GetZ(), esdEvent->GetMagneticField(), dca );
+      }
+    */
+  }
+
+  // get external param. at inner TPC wall
   const AliExternalTrackParam *innerParam =  esdTrack->GetInnerParam();
   if(!innerParam) return;
 
@@ -324,8 +347,17 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
     if(!isEventTriggered) return; 
   }
 
-  // get TPC event vertex
-  const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+  // get event vertex
+  const AliESDVertex *vtxESD = NULL;
+  if( IsUseTrackVertex() ) 
+  { 
+    // track vertex
+    vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    // TPC track vertex
+    vtxESD = esdEvent->GetPrimaryVertexTPC();
+  }
   if(vtxESD && (vtxESD->GetStatus()<=0)) return;
 
   //  Process events
@@ -337,7 +369,7 @@ void AliPerformanceDEdx::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdE
     if(GetAnalysisMode() == 0) ProcessTPC(stack,track);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track);
-    else if(GetAnalysisMode() == 3) ProcessInnerTPC(stack,track);
+    else if(GetAnalysisMode() == 3) ProcessInnerTPC(stack,track,esdEvent);
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
