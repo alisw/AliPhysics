@@ -125,8 +125,18 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(): AliAnalysisTaskSE(),
     fhnJetContainer[i] = 0;
   }
   for(int i = 0;i < kMaxJets;++i){
-    fh2PhiPt[i] = fh2PhiEta[i] = fh2RhoPtRec[i] = fh2PsiPtRec[i] = fh2FragRec[i] = fh2PsiPtGen[i] = fh2FragGen[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
     fh1PtRecIn[i] = fh1PtGenIn[i] = 0;
+    
+    fh2PhiPt[i] = 0;
+    fh2PhiEta[i] = 0; 
+    fh2RhoPtRec[i] = 0; 
+    fh2RhoPtGen[i] = 0; 
+    fh2PsiPtGen[i] = 0; 
+    fh2PsiPtRec[i] = 0;
+    fh2FragRec[i] = 0;
+    fh2FragLnRec[i] = 0;
+    fh2FragGen[i] = 0;
+    fh2FragLnGen[i] = 0;
   }  
 
 }
@@ -196,8 +206,18 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fhnJetContainer[i] = 0;
   }  
   for(int i = 0;i < kMaxJets;++i){
-    fh2PhiPt[i] = fh2PhiEta[i] = fh2RhoPtRec[i] = fh2PsiPtRec[i] = fh2FragRec[i] = fh2PsiPtGen[i] =  fh2RhoPtGen[i] = fh2FragGen[i] = fh2FragLnRec[i] = fh2FragGen[i] = fh2FragLnGen[i] = 0;
     fh1PtRecIn[i] = fh1PtGenIn[i] = 0;
+    
+    fh2PhiPt[i] = 0;
+    fh2PhiEta[i] = 0; 
+    fh2RhoPtRec[i] = 0; 
+    fh2RhoPtGen[i] = 0; 
+    fh2PsiPtGen[i] = 0; 
+    fh2PsiPtRec[i] = 0;
+    fh2FragRec[i] = 0;
+    fh2FragLnRec[i] = 0;
+    fh2FragGen[i] = 0;
+    fh2FragLnGen[i] = 0;
   }
   DefineOutput(1, TList::Class());  
 }
