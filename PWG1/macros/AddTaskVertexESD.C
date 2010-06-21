@@ -1,4 +1,4 @@
-AliAnalysisTaskVertexESD *AddTaskVertexESD() 
+AliAnalysisTaskVertexESD *AddTaskVertexESD(Bool_t readMC=kFALSE) 
 {
   //
   // Task for validation of the primary vertices (SPD,TPC,ITS+TPC)
@@ -17,6 +17,9 @@ AliAnalysisTaskVertexESD *AddTaskVertexESD()
 
   // Create the task
   AliAnalysisTaskVertexESD *taskVtxESD = new AliAnalysisTaskVertexESD("VertexESD");
+  taskVtxESD->SetReadMC(readMC);
+  taskVtxESD->SetFillNtuple(kFALSE);
+  taskVtxESD->SetRerecoVertexITSTPCHalfEvent(kFALSE);
   taskVtxESD->SetFillNtupleBeamSpot(kTRUE);
   taskVtxESD->SetRerecoVertexITSTPC(kTRUE);
   AliLog::SetClassDebugLevel("AliAnalysisTaskVertexESD",10);
