@@ -117,10 +117,10 @@ void AliAnalysisTaskProtons::CreateOutputObjects() {
   fListAnalysis->Add(fProtonAnalysis->GetAntiProtonContainer());
   fListAnalysis->Add(fHistEventStats);
 
-  fListQA = new TList();
-  fListQA->SetName("fListQA");
-  fListQA->Add(fProtonAnalysis->GetQAList());
-  fListQA->Add(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertexQAList());
+  //fListQA = new TList();
+  //fListQA->SetName("fListQA");
+  //fListQA->Add(fProtonAnalysis->GetQAList());
+  //fListQA->Add(dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetVertexQAList());
 
   //fCutCanvas = dynamic_cast<AliProtonAnalysisBase*>(fProtonAnalysis->GetProtonAnalysisBaseObject())->GetListOfCuts();
 }
@@ -237,7 +237,7 @@ void AliAnalysisTaskProtons::Exec(Option_t *) {
 
   // Post output data.
   PostData(0, fListAnalysis);
-  PostData(1, fListQA);
+  //PostData(1, fListQA);
   //PostData(2, fCutCanvas);
 }      
 

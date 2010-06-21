@@ -208,9 +208,11 @@ Bool_t AliProtonAnalysisBase::IsInPhaseSpace(AliESDtrack* const track) {
 //____________________________________________________________________//
 Bool_t AliProtonAnalysisBase::IsAccepted(AliESDtrack* track) {
   // Checks if the track is excluded from the cuts
-  Int_t  fIdxInt[200];
-  Int_t nClustersITS = track->GetITSclusters(fIdxInt);
-  Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
+  //Int_t  fIdxInt[200];
+  //Int_t nClustersITS = track->GetITSclusters(fIdxInt);
+  //Int_t nClustersTPC = track->GetTPCclusters(fIdxInt);
+  Int_t nClustersITS = track->GetITSclusters(0x0);
+  Int_t nClustersTPC = track->GetTPCclusters(0x0);
 
   Float_t chi2PerClusterITS = -1;
   if (nClustersITS!=0)
