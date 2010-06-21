@@ -64,7 +64,7 @@ struct AliHLTCaloDigitDataStruct
   /** The time in sample count */ 
   Float_t fTime;
 
-  /* The energy in GeV */
+  /** The energy in GeV */
   Float_t fEnergy;
 
   /** The gain */
@@ -79,6 +79,9 @@ struct AliHLTCaloDigitDataStruct
   /** Energy from overflow in channel? */
   Bool_t fOverflow;
 
+  /** ID of associated  cluster (-1 for no cluster) */
+  Short_t fAssociatedCluster;
+  
 };
 
 #endif
