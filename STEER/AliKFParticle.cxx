@@ -121,7 +121,7 @@ Bool_t AliKFParticle::GetDistanceFromVertexXY( const Double_t vtx[], const Doubl
     val = 1.e4;
   } else{
     ex = px/pt;
-    ey = ey/pt;
+    ey = py/pt;
     val = dy*ex - dx*ey;
   }
 
