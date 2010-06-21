@@ -9,7 +9,7 @@
  * @author Kalliopi.Kanaki@ift.uib.no
  */
 
-AliAnalysisGrid *CreateAlienHandler(TString runNumber, TString dataDir, TString gridWorkingDir, TString gridOutputDir, const char* mode = "full", const char* detectorTask="global"){
+AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString gridWorkingDir, TString gridOutputDir, const char* mode = "full", const char* detectorTask="global"){
   
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -23,24 +23,19 @@ AliAnalysisGrid *CreateAlienHandler(TString runNumber, TString dataDir, TString 
   
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-26-00b-4");
-  plugin->SetAliROOTVersion("v4-19-11-AN");
+  plugin->SetROOTVersion("v5-26-00b-6");
+  plugin->SetAliROOTVersion("v4-19-15-AN");
 
   // data alien directory
-  //plugin->SetGridDataDir("/alice/data/2010/LHC10b");
   plugin->SetGridDataDir(dataDir.Data());
   
   // Set data search pattern
-  plugin->SetDataPattern("*ESDs.root");
-  //plugin->SetDataPattern("pass1/*tags.root");
-  
-  //plugin->AddRunNumber(115322); 
+  plugin->SetDataPattern("*pass1/*ESDs.root");
+    
   plugin->AddRunNumber(runNumber); 
   //plugin->SetRunRange(xxx,yyy);
  
   // define working and output directories
-  //plugin->SetGridWorkingDir("ESDcomparison"); // relative to $HOME
-  //plugin->SetGridOutputDir("output");         // relative to working dir
   plugin->SetGridWorkingDir(gridWorkingDir); // relative to $HOME
   plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
   
@@ -87,23 +82,27 @@ AliAnalysisGrid *CreateAlienHandler(TString runNumber, TString dataDir, TString 
   if(bTPC){  
     plugin->SetAnalysisSource("AliAnalysisTaskHLTTPC.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskHLTTPC.h AliAnalysisTaskHLTTPC.cxx");
-    plugin->SetOutputFiles("HLT-OFFLINE-TPC-comparison.root");    
+    //plugin->SetOutputFiles("HLT-OFFLINE-TPC-comparison.root");    
   }
   if(bITS){  
     plugin->SetAnalysisSource("AliAnalysisTaskHLTITS.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskHLTITS.h AliAnalysisTaskHLTITS.cxx");
-    plugin->SetOutputFiles("HLT-OFFLINE-ITS-comparison.root");    
+    //plugin->SetOutputFiles("HLT-OFFLINE-ITS-comparison.root");    
   }
   if(bPHOS){  
     plugin->SetAnalysisSource("AliAnalysisTaskHLTPHOS.cxx");  
-    plugin->SetOutputFiles("HLT-OFFLINE-GLOBAL-comparison.root");
-    plugin->SetOutputFiles("HLT-OFFLINE-PHOS-comparison.root");    
+    plugin->SetAnalysisSource("AliAnalysisTaskHLTCalo.cxx"); 
+    plugin->SetAdditionalLibs("AliAnalysisTaskHLTPHOS.h AliAnalysisTaskHLTPHOS.cxx"); 
+    plugin->SetAdditionalLibs("AliAnalysisTaskHLTCalo.h AliAnalysisTaskHLTCalo.cxx"); 
+    //plugin->SetOutputFiles("HLT-OFFLINE-PHOS-comparison.root");    
   }
   if(bGLOBAL){  
     plugin->SetAnalysisSource("AliAnalysisTaskHLT.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskHLT.h AliAnalysisTaskHLT.cxx"); 
-    plugin->SetOutputFiles("HLT-OFFLINE-GLOBAL-comparison.root");
+    //plugin->SetOutputFiles("HLT-OFFLINE-GLOBAL-comparison.root");
   }
+  
+  plugin->SetDefaultOutputs(kTRUE);
 
   // Optionally define the files to be archived.
   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
