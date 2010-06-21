@@ -309,8 +309,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
   Int_t ii;
-  Int_t dig[5]; //cluster detector indeces
-  Int_t  parTOF[7]; //The TOF signal parameters
+  Int_t dig[5]={-1,-1,-1,-1,-1}; //cluster detector indeces
+  Int_t parTOF[7]={0,0,0,0,0,0,0}; //The TOF signal parameters
   Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
     AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
@@ -408,8 +408,8 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
   Int_t ii;
-  Int_t dig[5]; //cluster detector indeces
-  Int_t  parTOF[7]; //The TOF signal parameters
+  Int_t dig[5]={-1,-1,-1,-1,-1}; //cluster detector indeces
+  Int_t parTOF[7]={0,0,0,0,0,0,0}; //The TOF signal parameters
   Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
     AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
@@ -572,7 +572,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       parTOF[0] = tofRawDatum->GetTOF(); //TDC
       parTOF[1] = tofRawDatum->GetTOT(); // TOT
       parTOF[2] = tofRawDatum->GetTOT(); //ADC==TOF
-      parTOF[3] = -1;//raw data: no track of undecalib sim time
+      parTOF[3] = 0;//raw data: no track of undecalib sim time
       parTOF[4] = tofRawDatum->GetTOF(); // RAW time
       parTOF[5] = tofRawDatum->GetDeltaBC(); // deltaBC
       parTOF[6] = tofRawDatum->GetL0L1Latency(); // L0-L1 latency
@@ -734,7 +734,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
       parTOF[0] = tofRawDatum->GetTOF(); // TDC
       parTOF[1] = tofRawDatum->GetTOT(); // TOT
       parTOF[2] = tofRawDatum->GetTOT(); // raw data have ADC=TOT
-      parTOF[3] = -1; //raw data: no track of the undecalib sim time
+      parTOF[3] = 0; //raw data: no track of the undecalib sim time
       parTOF[4] = tofRawDatum->GetTOF(); // Raw time == TDC
       parTOF[5] = tofRawDatum->GetDeltaBC(); // deltaBC
       parTOF[6] = tofRawDatum->GetL0L1Latency(); // L0-L1 latency
@@ -868,7 +868,7 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
       digit[0] = fTOFRawStream.GetTofBin();
       digit[1] = fTOFRawStream.GetToTbin();
       digit[2] = fTOFRawStream.GetToTbin();
-      digit[3] = -1;
+      digit[3] = 0;
 
       Int_t tracknum[3]={-1,-1,-1};
 
@@ -971,7 +971,7 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
       digit[0] = fTOFRawStream.GetTofBin();
       digit[1] = fTOFRawStream.GetToTbin();
       digit[2] = fTOFRawStream.GetToTbin();
-      digit[3] = -1;
+      digit[3] = 0;
 
       Int_t tracknum[3]={-1,-1,-1};
 
@@ -1172,7 +1172,7 @@ void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
      } 
       AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
       AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %d , %d", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
-      tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());    
+      tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());
       tToT*=1.E-3; //ToT in ns
 
       /* check TOT limits and set new TOT in case */
@@ -1264,7 +1264,8 @@ void AliTOFClusterFinder::CalibrateRecPoint(UInt_t timestamp)
     time -= corr;
 
     /* convert in TDC bins and set cluster */
-    tdcBin = (Int_t)(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+    //tdcBin = (Int_t)(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+    tdcBin = TMath::Nint(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
     fTofClusters[ii]->SetTDC(tdcBin);
 
   } // loop on clusters

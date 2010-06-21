@@ -3621,7 +3621,8 @@ Bool_t AliTOFClusterFinderV1::MakeSlewingCorrection(Int_t *detectorIndex,
   timeCorr = (Double_t)(tofDigitTdc)*AliTOFGeometry::TdcBinWidth()*1.E-3-timeCorr;//redefine the time
   timeCorr *= 1.E3;
   AliDebug(2,Form(" The channel time, corr (ps)= %e",timeCorr ));
-  tdcCorr = (Int_t)(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+  //tdcCorr = (Int_t)(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+  tdcCorr = TMath::Nint(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
   
   } // AdC
 

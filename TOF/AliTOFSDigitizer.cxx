@@ -362,14 +362,23 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
   
   fTOFLoader->LoadHits("read");
   fTOFLoader->LoadSDigits("recreate");
+
+  Int_t vol[5]={-1,-1,-1,-1,-1}; // location for a digit
+  Int_t digit[2]={0,0};          // TOF digit variables
   
+  Int_t nselectedHitsinEv=0;
+  Int_t ntotalsdigitsinEv=0;
+  Int_t ntotalupdatesinEv=0;
+  Int_t nnoisesdigitsinEv=0;
+  Int_t nsignalsdigitsinEv=0;
+
   for (Int_t iEvent=fEvent1; iEvent<fEvent2; iEvent++) {
     //AliInfo(Form("------------------- %s -------------", GetName()));
     //AliInfo(Form("Sdigitizing event %i", iEvent));
 
     fRunLoader->GetEvent(iEvent);
 
-    TTree *hitTree = fTOFLoader->TreeH ();
+    TTree *hitTree = fTOFLoader->TreeH();
     if (!hitTree) return;
 
     if (fTOFLoader->TreeS () == 0) fTOFLoader->MakeTree ("S");
@@ -388,18 +397,18 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
     Int_t version=tof->IsVersion();
 
-    Int_t nselectedHitsinEv=0;
-    Int_t ntotalsdigitsinEv=0;
-    Int_t ntotalupdatesinEv=0;
-    Int_t nnoisesdigitsinEv=0;
-    Int_t nsignalsdigitsinEv=0;
+    nselectedHitsinEv=0;
+    ntotalsdigitsinEv=0;
+    ntotalupdatesinEv=0;
+    nnoisesdigitsinEv=0;
+    nsignalsdigitsinEv=0;
 
     TParticle *particle;
     //AliTOFhit *tofHit;
     TClonesArray *tofHitArray = tof->Hits();
 
     // create hit map
-    //    AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits(), fTOFGeometry);
+    //AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits(), fTOFGeometry);
     AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits());
 
     TBranch * tofHitsBranch = hitTree->GetBranch("TOF");
@@ -412,7 +421,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
       AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
 
-      particle = mcApplication->Particle(track);
+      particle = (TParticle*)mcApplication->Particle(track);
       Int_t nhits = tofHitArray->GetEntriesFast();
       // cleaning all hits of the same track in the same pad volume
       // it is a rare event, however it happens
@@ -425,9 +434,9 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
       Int_t previousPadZ  =-1;
 
       for (Int_t hit = 0; hit < nhits; hit++) {
-	Int_t    vol[5];       // location for a digit
-	Int_t  digit[2];     // TOF digit variables
-	Int_t tracknum;
+	for (Int_t aa=0; aa<5;aa++) vol[aa]=-1;  // location for a digit
+	for (Int_t aa=0; aa<2;aa++) digit[aa]=0; // TOF digit variables
+	Int_t   tracknum;
 	Float_t dxPad;
 	Float_t dzPad;
 	Float_t geantTime;

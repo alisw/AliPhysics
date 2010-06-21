@@ -28,6 +28,7 @@
 //#include "Riostream.h"
 
 //#include "TFile.h"
+#include "TMath.h"
 #include "TH1F.h"
 #include "TTree.h"
 #include "TRandom.h"
@@ -40,8 +41,9 @@
 #include "AliRun.h"
 
 #include "AliTOFcalib.h"
-//#include "AliTOFChannelOnline.h"
-#include "AliTOFChannelOffline.h"
+//#include "AliTOFChannelOnlineArray.h"
+//#include "AliTOFChannelOnlineStatusArray.h"
+//#include "AliTOFChannelOffline.h"
 #include "AliTOFDigitizer.h"
 #include "AliTOFdigit.h"
 #include "AliTOFHitMap.h"
@@ -218,9 +220,13 @@ void AliTOFDigitizer::CreateDigits()
   // get the total number of collected sdigits
   Int_t ndig = fSDigitsArray->GetEntriesFast();
 
+  Int_t  vol[5]={-1,-1,-1,-1,-1};  // location for a digit
+  Int_t  digit[4] = {0,0,0,0};     // TOF digit variables
+  Int_t tracknum[AliTOFSDigit::kMAXDIGITS]; // contributing tracks for the current slot
+  for (Int_t aa=0; aa<AliTOFSDigit::kMAXDIGITS; aa++) tracknum[aa] = -1;
+
   for (Int_t k = 0; k < ndig; k++) {
     
-    Int_t  vol[5];  // location for a digit
     for (Int_t i=0; i<5; i++) vol[i] = -1;
     
     // Get the information for this digit
@@ -259,8 +265,8 @@ void AliTOFDigitizer::CreateDigits()
     
     // start loop on number of slots for current sdigit
     for (Int_t islot = 0; islot < nslot; islot++) {
-      Int_t  digit[4] = {-1,-1,-1,-1};     // TOF digit variables
-      Int_t tracknum[AliTOFSDigit::kMAXDIGITS];     // contributing tracks for the current slot
+      for (Int_t aa=0; aa<4; aa++) digit[aa] = 0; // TOF digit variables
+      for (Int_t aa=0; aa<AliTOFSDigit::kMAXDIGITS; aa++) tracknum[aa] = -1;
       
       Int_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
       Int_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;
@@ -347,6 +353,9 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   // Loop through all entries in the tree
   Int_t nbytes = 0;
   
+  Int_t  vol[5]; // location for a sdigit
+  for (Int_t i=0; i<5; i++) vol[i] = -1;
+
   for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) {
     
     // Import the tree
@@ -358,7 +367,6 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
     for (Int_t k=0; k<ndig; k++) {
       AliTOFSDigit *tofSdigit= (AliTOFSDigit*) sdigitsDummyContainer->UncheckedAt(k);
       
-      Int_t  vol[5]; // location for a sdigit
       for (Int_t i=0; i<5; i++) vol[i] = -1;
 
       // check the sdigit volume
@@ -405,12 +413,68 @@ void AliTOFDigitizer::InitDecalibration() const {
   // Initialize TOF digits decalibration
   //
 
+  fCalib->Init();
+  /*
   fCalib->CreateCalArrays();
   fCalib->ReadSimHistoFromCDB("TOF/Calib", -1); // use AliCDBManager's number
   fCalib->ReadParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  */
 }
 //---------------------------------------------------------------------
-void AliTOFDigitizer::DecalibrateTOFSignal(){
+void AliTOFDigitizer::DecalibrateTOFSignal() {
+  //
+  // Decalibrate TOF signals according to OCDB parameters
+  //
+
+  Double_t time=0., tot=0., corr=0.;
+  Int_t deltaBC=0, l0l1=0, tdcBin=0;
+  Int_t index = -1;
+  Int_t detId[5] ={-1,-1,-1,-1,-1};
+  UInt_t timestamp=0;
+
+  Int_t ndigits = fDigits->GetEntriesFast();
+  // Loop on TOF Digits
+  for (Int_t i=0;i<ndigits;i++){
+    AliTOFdigit * dig = (AliTOFdigit*)fDigits->At(i);
+    detId[0] = dig->GetSector();
+    detId[1] = dig->GetPlate();
+    detId[2] = dig->GetStrip();
+    detId[3] = dig->GetPadz();
+    detId[4] = dig->GetPadx();
+    dig->SetTdcND(dig->GetTdc()); // save the non decalibrated time
+
+    index = AliTOFGeometry::GetIndex(detId); // The channel index    
+
+    // Read Calibration parameters from the CDB
+    // get digit info
+    time = dig->GetTdc() * AliTOFGeometry::TdcBinWidth(); /* ps */
+    tot = dig->GetToT() * AliTOFGeometry::ToTBinWidth() * 1.e-3; /* ns */
+    deltaBC = 0;//dig->GetDeltaBC();
+    l0l1 = 0;//dig->GetL0L1Latency();
+
+    // get correction
+    corr = fCalib->GetTimeCorrection(index, tot, deltaBC, l0l1, timestamp); /* ps */
+    AliDebug(2, Form("calibrate index %d: time=%f (ps) tot=%f (ns) deltaBC=%d l0l1=%d timestamp=%d corr=%f (ps)",
+		     index, time, tot, deltaBC, l0l1, timestamp, corr));
+
+    // apply time correction
+    time += corr;
+
+    // convert in TDC bins and set digit
+    //tdcBin = (Int_t)(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+    tdcBin = TMath::Nint(time / AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
+    dig->SetTdc(tdcBin);
+
+  }
+
+  AliDebug(1,"Simulating miscalibrated digits");
+
+  return;
+}
+
+//---------------------------------------------------------------------
+/*
+void AliTOFDigitizer::DecalibrateTOFSignal(){ // Old implementation
 
   // Read Calibration parameters from the CDB
 
@@ -545,4 +609,4 @@ void AliTOFDigitizer::DecalibrateTOFSignal(){
 
   return;
 }
-
+*/
