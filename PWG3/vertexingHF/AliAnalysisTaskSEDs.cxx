@@ -169,177 +169,90 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   Double_t maxMass=massDs+0.5*nInvMassBins*fMassBinSize;
 
   TString hisname;
+  TString htype;
   Int_t index;
-  for(Int_t i=0;i<fNPtBins;i++){
-    index=GetHistoIndex(i);
-    hisname.Form("hMassAllPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
-    fMassHist[index]->Sumw2();
-    hisname.Form("hMassAllPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
-    fMassHistCuts[index]->Sumw2();
-    hisname.Form("hCosPAllPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
-    fCosPHist[index]->Sumw2();
-    hisname.Form("hDLenAllPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
-    fDLenHist[index]->Sumw2();
-    hisname.Form("hSumd02AllPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
-    fSumd02Hist[index]->Sumw2();
-     hisname.Form("hSigVertAllPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fSigVertHist[index]->Sumw2();
-    hisname.Form("hPtMaxAllPt%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,20.);
-    fPtMaxHist[index]->Sumw2();
-    hisname.Form("hPtCandAllPt%d",i);
-    fPtCandHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,20.);
-    fPtCandHist[index]->Sumw2();
-     hisname.Form("hDCAAllPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fDCAHist[index]->Sumw2();
-    hisname.Form("hPtProng0AllPt%d",i);
-    fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng0Hist[index]->Sumw2();
-    hisname.Form("hPtProng1AllPt%d",i);
-    fPtProng1Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng1Hist[index]->Sumw2();
-    hisname.Form("hPtProng2AllPt%d",i);
-    fPtProng2Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng2Hist[index]->Sumw2();
-
-    hisname.Form("hDalitzAllPt%d",i);
-    fDalitz[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-    fDalitz[index]->Sumw2();
-
-    index=GetSignalHistoIndex(i);    
-    hisname.Form("hMassSigPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
-    fMassHist[index]->Sumw2();
-    hisname.Form("hMassSigPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
-    fMassHistCuts[index]->Sumw2();
-    hisname.Form("hCosPSigPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
-    fCosPHist[index]->Sumw2();
-    hisname.Form("hDLenSigPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
-    fDLenHist[index]->Sumw2();
-    hisname.Form("hSumd02SigPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
-    fSumd02Hist[index]->Sumw2();
-    hisname.Form("hSigVertSigPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fSigVertHist[index]->Sumw2();
-    hisname.Form("hPtMaxSigPt%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtMaxHist[index]->Sumw2();
-    hisname.Form("hPtCandSigPt%d",i);
-    fPtCandHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtCandHist[index]->Sumw2();
-    hisname.Form("hDCASigPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fDCAHist[index]->Sumw2();
-    hisname.Form("hPtProng0SigPt%d",i);
-    fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng0Hist[index]->Sumw2();
-    hisname.Form("hPtProng1SigPt%d",i);
-    fPtProng1Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng1Hist[index]->Sumw2();
-    hisname.Form("hPtProng2SigPt%d",i);
-    fPtProng2Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng2Hist[index]->Sumw2();
-    hisname.Form("hDalitzSigPt%d",i);
-    fDalitz[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-    fDalitz[index]->Sumw2();
-
-    index=GetBackgroundHistoIndex(i);    
-    hisname.Form("hMassBkgPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
-    fMassHist[index]->Sumw2();
-    hisname.Form("hMassBkgPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
-    fMassHistCuts[index]->Sumw2();
-    hisname.Form("hCosPBkgPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
-    fCosPHist[index]->Sumw2();
-    hisname.Form("hDLenBkgPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
-    fDLenHist[index]->Sumw2();
-    hisname.Form("hSumd02BkgPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
-    fSumd02Hist[index]->Sumw2();
-    hisname.Form("hSigVertBkgPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fSigVertHist[index]->Sumw2();
-    hisname.Form("hPtMaxSigBkg%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtMaxHist[index]->Sumw2();
-    hisname.Form("hPtCandBkgPt%d",i);
-    fPtCandHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtCandHist[index]->Sumw2();
-    hisname.Form("hDCABkgPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fDCAHist[index]->Sumw2();
-    hisname.Form("hPtProng0BkgPt%d",i);
-    fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng0Hist[index]->Sumw2();
-    hisname.Form("hPtProng1BkgPt%d",i);
-    fPtProng1Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng1Hist[index]->Sumw2();
-    hisname.Form("hPtProng2BkgPt%d",i);
-    fPtProng2Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng2Hist[index]->Sumw2();
-    hisname.Form("hDalitzBkgPt%d",i);
-    fDalitz[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-    fDalitz[index]->Sumw2();
-
-    index=GetReflSignalHistoIndex(i);    
-    hisname.Form("hMassReflSigPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
-    fMassHist[index]->Sumw2();
-    hisname.Form("hMassReflSigPt%dCuts",i);
-    fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
-    fMassHistCuts[index]->Sumw2();
-    hisname.Form("hCosPReflSigPt%d",i);
-    fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
-    fCosPHist[index]->Sumw2();
-    hisname.Form("hDLenReflSigPt%d",i);
-    fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
-    fDLenHist[index]->Sumw2();
-    hisname.Form("hSumd02ReflSigPt%d",i);
-    fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
-    fSumd02Hist[index]->Sumw2();
-    hisname.Form("hSigVertReflSigPt%d",i);
-    fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fSigVertHist[index]->Sumw2();
-    hisname.Form("hPtMaxReflSigPt%d",i);
-    fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtMaxHist[index]->Sumw2();
-    hisname.Form("hPtCandReflSigPt%d",i);
-    fPtCandHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtCandHist[index]->Sumw2();
-    hisname.Form("hDCAReflSigPt%d",i);
-    fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fDCAHist[index]->Sumw2();
-    hisname.Form("hPtProng0ReflSigPt%d",i);
-    fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng0Hist[index]->Sumw2();
-    hisname.Form("hPtProng1ReflSigPt%d",i);
-    fPtProng1Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng1Hist[index]->Sumw2();
-    hisname.Form("hPtProng2ReflSigPt%d",i);
-    fPtProng2Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
-    fPtProng2Hist[index]->Sumw2();
-    hisname.Form("hDalitzReflSigPt%d",i);
-    fDalitz[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
-    fDalitz[index]->Sumw2();
+  for(Int_t iType=0; iType<4; iType++){
+    for(Int_t i=0;i<fNPtBins;i++){
+      if(iType==0){
+	htype="All";
+	index=GetHistoIndex(i);
+      }else if(iType==1){ 
+	htype="Sig";
+	index=GetSignalHistoIndex(i);
+      }else if(iType==2){ 
+	htype="Bkg";
+	index=GetBackgroundHistoIndex(i);
+      }else{ 
+	htype="ReflSig";
+	index=GetReflSignalHistoIndex(i);
+      }
+      hisname.Form("hMass%sPt%d",htype.Data(),i);
+      fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
+      fMassHist[index]->Sumw2();
+      hisname.Form("hMass%sPt%dCuts",htype.Data(),i);
+      fMassHistCuts[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
+      fMassHistCuts[index]->Sumw2();
+      hisname.Form("hMass%sPt%dphi",htype.Data(),i);
+      fMassHistPhi[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+      fMassHistPhi[index]->Sumw2();
+      hisname.Form("hMass%sPt%dphiCuts",htype.Data(),i);
+      fMassHistCutsPhi[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+      fMassHistCutsPhi[index]->Sumw2();
+      hisname.Form("hMass%sPt%dk0st",htype.Data(),i);
+      fMassHistK0st[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+      fMassHistK0st[index]->Sumw2();
+      hisname.Form("hMass%sPt%dk0stCuts",htype.Data(),i);
+      fMassHistCutsK0st[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+      fMassHistCutsK0st[index]->Sumw2();
+      hisname.Form("hCosP%sPt%d",htype.Data(),i);
+      fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
+      fCosPHist[index]->Sumw2();
+      hisname.Form("hDLen%sPt%d",htype.Data(),i);
+      fDLenHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.5);
+      fDLenHist[index]->Sumw2();
+      hisname.Form("hSumd02%sPt%d",htype.Data(),i);
+      fSumd02Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,1.);
+      fSumd02Hist[index]->Sumw2();
+      hisname.Form("hSigVert%sPt%d",htype.Data(),i);
+      fSigVertHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+      fSigVertHist[index]->Sumw2();
+      hisname.Form("hPtMax%sPt%d",htype.Data(),i);
+      fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,20.);
+      fPtMaxHist[index]->Sumw2();
+      hisname.Form("hPtCand%sPt%d",htype.Data(),i);
+      fPtCandHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,20.);
+      fPtCandHist[index]->Sumw2();
+      hisname.Form("hDCA%sPt%d",htype.Data(),i);
+      fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
+      fDCAHist[index]->Sumw2();
+      hisname.Form("hPtProng0%sPt%d",htype.Data(),i);
+      fPtProng0Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
+      fPtProng0Hist[index]->Sumw2();
+      hisname.Form("hPtProng1%sPt%d",htype.Data(),i);
+      fPtProng1Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
+      fPtProng1Hist[index]->Sumw2();
+      hisname.Form("hPtProng2%sPt%d",htype.Data(),i);
+      fPtProng2Hist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.0,20.);
+      fPtProng2Hist[index]->Sumw2();
+      hisname.Form("hDalitz%sPt%d",htype.Data(),i);
+      fDalitz[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
+      fDalitz[index]->Sumw2();
+      hisname.Form("hDalitz%sPt%dphi",htype.Data(),i);
+      fDalitzPhi[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
+      fDalitzPhi[index]->Sumw2();
+      hisname.Form("hDalitz%sPt%dk0st",htype.Data(),i);
+      fDalitzK0st[index]=new TH2F(hisname.Data(),hisname.Data(),100,0.,2.,100,0.,2.);
+      fDalitzK0st[index]->Sumw2();
+    }
   }
 
   for(Int_t i=0; i<4*fNPtBins; i++){
     fOutput->Add(fMassHist[i]);
     fOutput->Add(fMassHistCuts[i]);
+    fOutput->Add(fMassHistPhi[i]);
+    fOutput->Add(fMassHistCutsPhi[i]);
+    fOutput->Add(fMassHistK0st[i]);
+    fOutput->Add(fMassHistCutsK0st[i]);
     fOutput->Add(fCosPHist[i]);
     fOutput->Add(fDLenHist[i]);
     fOutput->Add(fSumd02Hist[i]);
@@ -351,6 +264,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fPtProng1Hist[i]);
     fOutput->Add(fPtProng2Hist[i]);
     fOutput->Add(fDalitz[i]);
+    fOutput->Add(fDalitzPhi[i]);
+    fOutput->Add(fDalitzK0st[i]);
   }
 
   fChanHist[0] = new TH1F("hChanAll", "KKpi and piKK candidates",4,-0.5,3.5);
@@ -458,15 +373,15 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     if(retCodeProductionCuts>0){
       Int_t isKKpi=retCodeProductionCuts&1;
       Int_t ispiKK=retCodeProductionCuts&2;
-//       Int_t isPhi=retCodeProductionCuts&4;
-//       Int_t isK0star=retCodeProductionCuts&8;
+      Int_t isPhi=retCodeProductionCuts&4;
+      Int_t isK0star=retCodeProductionCuts&8;
       Double_t ptCand = d->Pt();
       Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,(Float_t)ptCand);
       Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kCandidate);
       Int_t isKKpiAC=retCodeAnalysisCuts&1;
       Int_t ispiKKAC=retCodeAnalysisCuts&2;
-//       Int_t isPhiAC=retCodeAnalysisCuts&4;
-//       Int_t isK0starAC=retCodeAnalysisCuts&8;
+      Int_t isPhiAC=retCodeAnalysisCuts&4;
+      Int_t isK0starAC=retCodeAnalysisCuts&8;
 
       Int_t labDs=-1;
       if(fReadMC){
@@ -521,10 +436,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	index=GetHistoIndex(iPtBin);
 	Double_t invMass=d->InvMassDsKKpi();
 	fMassHist[index]->Fill(invMass);
-	Double_t mass01=d->InvMass2Prongs(0,1,321,321);
-	Double_t mass12=d->InvMass2Prongs(1,2,321,211);
-	fDalitz[index]->Fill(mass01,mass12);
-	if(retCodeAnalysisCuts>0 && isKKpiAC) fMassHistCuts[index]->Fill(invMass);
+	if(isPhi) fMassHistPhi[index]->Fill(invMass);
+	if(isK0star) fMassHistK0st[index]->Fill(invMass);
+	Double_t massKK=d->InvMass2Prongs(0,1,321,321);
+	Double_t massKp=d->InvMass2Prongs(1,2,321,211);
+	fDalitz[index]->Fill(massKK,massKp);
+	if(isPhi) fDalitzPhi[index]->Fill(massKK,massKp);
+	if(isK0star) fDalitzK0st[index]->Fill(massKK,massKp);
+	if(retCodeAnalysisCuts>0 && isKKpiAC){ 
+	  fMassHistCuts[index]->Fill(invMass);
+	  if(isPhiAC) fMassHistCutsPhi[index]->Fill(invMass);
+	  if(isK0starAC) fMassHistCutsK0st[index]->Fill(invMass);
+	}
 	if(fReadMC){
 	  Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
 	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
@@ -539,6 +462,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    index=GetBackgroundHistoIndex(iPtBin);
 	  }
 	  fMassHist[index]->Fill(invMass);
+	  if(isPhi) fMassHistPhi[index]->Fill(invMass);
+	  if(isK0star) fMassHistK0st[index]->Fill(invMass);
 	  fCosPHist[index]->Fill(cosp);
 	  fDLenHist[index]->Fill(dlen);
 	  fSigVertHist[index]->Fill(sigvert);
@@ -549,15 +474,32 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  fPtProng0Hist[index]->Fill(pt0);
 	  fPtProng1Hist[index]->Fill(pt1);
 	  fPtProng2Hist[index]->Fill(pt2);
-	  fDalitz[index]->Fill(mass01,mass12);
-	  if(retCodeAnalysisCuts>0 && isKKpiAC) fMassHistCuts[index]->Fill(invMass);	  
+	  fDalitz[index]->Fill(massKK,massKp);
+	  if(isPhi) fDalitzPhi[index]->Fill(massKK,massKp);
+	  if(isK0star) fDalitzK0st[index]->Fill(massKK,massKp);
+	  if(retCodeAnalysisCuts>0 && isKKpiAC){
+	    fMassHistCuts[index]->Fill(invMass);	  
+	    if(isPhiAC) fMassHistCutsPhi[index]->Fill(invMass);
+	    if(isK0starAC) fMassHistCutsK0st[index]->Fill(invMass);
+	  }
 	}	
       }
       if(ispiKK){
 	index=GetHistoIndex(iPtBin);
 	Double_t invMass=d->InvMassDspiKK();
 	fMassHist[index]->Fill(invMass);
-	if(retCodeAnalysisCuts>0 && ispiKKAC) fMassHistCuts[index]->Fill(invMass);
+	if(isPhi) fMassHistPhi[index]->Fill(invMass);
+	if(isK0star) fMassHistK0st[index]->Fill(invMass);	
+	Double_t massKK=d->InvMass2Prongs(1,2,321,321);
+	Double_t massKp=d->InvMass2Prongs(0,1,211,321);
+	fDalitz[index]->Fill(massKK,massKp);
+	if(isPhi) fDalitzPhi[index]->Fill(massKK,massKp);
+	if(isK0star) fDalitzK0st[index]->Fill(massKK,massKp);
+	if(retCodeAnalysisCuts>0 && ispiKKAC){
+	  fMassHistCuts[index]->Fill(invMass);
+	  if(isPhiAC) fMassHistCutsPhi[index]->Fill(invMass);
+	  if(isK0starAC) fMassHistCutsK0st[index]->Fill(invMass);
+	}
 	if(fReadMC){
 	  Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
 	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
@@ -572,6 +514,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    index=GetBackgroundHistoIndex(iPtBin);
 	  }
 	  fMassHist[index]->Fill(invMass);
+	  if(isPhi) fMassHistPhi[index]->Fill(invMass);
+	  if(isK0star) fMassHistK0st[index]->Fill(invMass);
 	  fCosPHist[index]->Fill(cosp);
 	  fDLenHist[index]->Fill(dlen);
 	  fSigVertHist[index]->Fill(sigvert);
@@ -582,7 +526,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  fPtProng0Hist[index]->Fill(pt0);
 	  fPtProng1Hist[index]->Fill(pt1);
 	  fPtProng2Hist[index]->Fill(pt2);
-	  if(retCodeAnalysisCuts>0 && ispiKKAC) fMassHistCuts[index]->Fill(invMass);
+	  fDalitz[index]->Fill(massKK,massKp);
+	  if(isPhi) fDalitzPhi[index]->Fill(massKK,massKp);
+	  if(isK0star) fDalitzK0st[index]->Fill(massKK,massKp);
+	  if(retCodeAnalysisCuts>0 && ispiKKAC){ 
+	    fMassHistCuts[index]->Fill(invMass);
+	    if(isPhiAC) fMassHistCutsPhi[index]->Fill(invMass);
+	    if(isK0starAC) fMassHistCutsK0st[index]->Fill(invMass);
+	  }
 	}
       }
     }
@@ -618,121 +569,62 @@ void AliAnalysisTaskSEDs::Terminate(Option_t */*option*/)
 
 
   TString hisname;
+  TString htype;
   Int_t index;
-  for(Int_t i=0;i<fNPtBins;i++){
-
-    index=GetHistoIndex(i);
-    hisname.Form("hMassAllPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hMassAllPt%dCuts",i);
-    fMassHistCuts[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPAllPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenAllPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02AllPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertAllPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxAllPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtCandAllPt%d",i);
-    fPtCandHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCAAllPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng0AllPt%d",i);
-    fPtProng0Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng1AllPt%d",i);
-    fPtProng1Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng2AllPt%d",i);
-    fPtProng2Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDalitzAllPt%d",i);
-    fDalitz[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
-
-    index=GetSignalHistoIndex(i);    
-    hisname.Form("hMassSigPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hMassSigPt%dCuts",i);
-    fMassHistCuts[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPSigPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenSigPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02SigPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertSigPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxSigPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtCandSigPt%d",i);
-    fPtCandHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCASigPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng0SigPt%d",i);
-    fPtProng0Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng1SigPt%d",i);
-    fPtProng1Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng2SigPt%d",i);
-    fPtProng2Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDalitzSigPt%d",i);
-    fDalitz[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
-
-    index=GetBackgroundHistoIndex(i);    
-    hisname.Form("hMassBkgPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hMassBkgPt%dCuts",i);
-    fMassHistCuts[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPBkgPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenBkgPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02BkgPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertBkgPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxBkgPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtCandBkgPt%d",i);
-    fPtCandHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCABkgPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng0BkgPt%d",i);
-    fPtProng0Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng1BkgPt%d",i);
-    fPtProng1Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng2BkgPt%d",i);
-    fPtProng2Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDalitzBkgPt%d",i);
-    fDalitz[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
-
-    index=GetReflSignalHistoIndex(i);    
-    hisname.Form("hMassReflSigPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hMassReflSigPt%dCuts",i);
-    fMassHistCuts[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPReflSigPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenReflSigPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02ReflSigPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertReflSigPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxReflSigPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtCandReflSigPt%d",i);
-    fPtCandHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCAReflSigPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng0ReflSigPt%d",i);
-    fPtProng0Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng1ReflSigPt%d",i);
-    fPtProng1Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtProng2ReflSigPt%d",i);
-    fPtProng2Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDalitzReflSigPt%d",i);
-    fDalitz[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
-
+  for(Int_t iType=0; iType<4; iType++){
+    for(Int_t i=0;i<fNPtBins;i++){
+      if(iType==0){
+	htype="All";
+	index=GetHistoIndex(i);
+      }else if(iType==1){ 
+	htype="Sig";
+	index=GetSignalHistoIndex(i);
+      }else if(iType==2){ 
+	htype="Bkg";
+	index=GetBackgroundHistoIndex(i);
+      }else{ 
+	htype="ReflSig";
+	index=GetReflSignalHistoIndex(i);
+      }
+      hisname.Form("hMass%sPt%d",htype.Data(),i);
+      fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hMass%sPt%dCuts",htype.Data(),i);
+      fMassHistCuts[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hMass%sPt%dphi",htype.Data(),i);
+      fMassHistPhi[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hMass%sPt%dphiCuts",htype.Data(),i);
+      fMassHistCutsPhi[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hMass%sPt%dk0st",htype.Data(),i);
+      fMassHistK0st[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hMass%sPt%dk0stCuts",htype.Data(),i);
+      fMassHistCutsK0st[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hCosP%sPt%d",htype.Data(),i);
+      fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hDLen%sPt%d",htype.Data(),i);
+      fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hSumd02%sPt%d",htype.Data(),i);
+      fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hSigVert%sPt%d",htype.Data(),i);
+      fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hPtMax%sPt%d",htype.Data(),i);
+      fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hPtCand%sPt%d",htype.Data(),i);
+      fPtCandHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hDCA%sPt%d",htype.Data(),i);
+      fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hPtProng0%sPt%d",htype.Data(),i);
+      fPtProng0Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hPtProng1%sPt%d",htype.Data(),i);
+      fPtProng1Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hPtProng2%sPt%d",htype.Data(),i);
+      fPtProng2Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hDalitz%sPt%d",htype.Data(),i);
+      fDalitz[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hDalitz%sPt%dphi",htype.Data(),i);
+      fDalitzPhi[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
+      hisname.Form("hDalitz%sPt%dk0st",htype.Data(),i);
+      fDalitzK0st[index]=dynamic_cast<TH2F*>(fOutput->FindObject(hisname.Data()));
+    }
   }
   return;
 }
