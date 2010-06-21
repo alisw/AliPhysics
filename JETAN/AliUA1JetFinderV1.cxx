@@ -113,26 +113,27 @@ void AliUA1JetFinderV1::FindJets()
   Double_t dEtTotal = (TMath::Sqrt(npart))*TMath::Sqrt(meanpt * meanpt + ptRMS*ptRMS);
 
   // arrays to hold jets
-  Float_t* etaJet = new Float_t[30];
-  Float_t* phiJet = new Float_t[30];
-  Float_t* etJet  = new Float_t[30];
-  Float_t* etsigJet  = new Float_t[30]; //signal et in jet
-  Float_t* etallJet = new Float_t[30];  // total et in jet (tmp variable)
-  Int_t* ncellsJet = new Int_t[30];
-  Int_t* multJet  = new Int_t[30];
+  const int kMaxJets = 30;
+  Float_t etaJet[kMaxJets];
+  Float_t phiJet[kMaxJets];
+  Float_t etJet[kMaxJets];
+  Float_t etsigJet[kMaxJets]; //signal et in jet
+  Float_t etallJet[kMaxJets];  // total et in jet (tmp variable)
+  Int_t ncellsJet[kMaxJets];
+  Int_t multJet[kMaxJets];
   Int_t nJets; // to hold number of jets found by algorithm
   Int_t nj;    // number of jets accepted
   Float_t prec  = header->GetPrecBg();
   Float_t bgprec = 1;
   while(bgprec > prec){
      //reset jet arrays in memory
-     memset(etaJet,0,sizeof(Float_t)*30);
-     memset(phiJet,0,sizeof(Float_t)*30);
-     memset(etJet,0,sizeof(Float_t)*30);
-     memset(etallJet,0,sizeof(Float_t)*30);
-     memset(etsigJet,0,sizeof(Float_t)*30);
-     memset(ncellsJet,0,sizeof(Int_t)*30);
-     memset(multJet,0,sizeof(Int_t)*30);
+     memset(etaJet,0,sizeof(Float_t)*kMaxJets);
+     memset(phiJet,0,sizeof(Float_t)*kMaxJets);
+     memset(etJet,0,sizeof(Float_t)*kMaxJets);
+     memset(etallJet,0,sizeof(Float_t)*kMaxJets);
+     memset(etsigJet,0,sizeof(Float_t)*kMaxJets);
+     memset(ncellsJet,0,sizeof(Int_t)*kMaxJets);
+     memset(multJet,0,sizeof(Int_t)*kMaxJets);
      nJets = 0;
      nj = 0;
      // reset particles-jet array in memory
@@ -243,19 +244,10 @@ void AliUA1JetFinderV1::FindJets()
   delete [] phiT;
   delete [] injet;
   delete hPtTotal;
-  delete [] etaJet;
-  delete [] phiJet;
-  delete [] etJet;
-  delete [] etsigJet;
-  delete [] etallJet;
-  delete [] ncellsJet;
-  delete [] multJet;
   delete [] idxjets;
   delete [] percentage;
   delete [] ncells;
   delete [] mult;
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////
