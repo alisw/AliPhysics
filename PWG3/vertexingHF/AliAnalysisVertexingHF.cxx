@@ -1207,7 +1207,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   }
   // select D*->D0pi
   if(fDstar) {
-    Bool_t testD0=kTRUE;
+    //Bool_t testD0=kTRUE;
     //okDstar = tmpCascade->SelectDstar(fDstarCuts,fD0fromDstarCuts,testD0);
     okDstar = (Bool_t)fCutsDStartoKpipi->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
   }
@@ -1345,7 +1345,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
  
   if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a Dstar 
     // select D0->Kpi
-    Int_t checkD0,checkD0bar;
+    //Int_t checkD0,checkD0bar;
     //if(fD0toKpi)   okD0 = the2Prong->SelectD0(fD0toKpiCuts,checkD0,checkD0bar);
     if(fD0toKpi)   okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
     //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
