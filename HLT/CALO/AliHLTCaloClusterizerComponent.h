@@ -172,6 +172,10 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     /** Number of digits in event */
     Int_t fDigitCount;                                            //COMMENT
     
+    /** Copy digits to output? */
+    Bool_t fCopyDigitsToOuput; //COMMENT
+  
+    
     /** Default constructor, not implemented */
     AliHLTCaloClusterizerComponent();                             //COMMENT
 

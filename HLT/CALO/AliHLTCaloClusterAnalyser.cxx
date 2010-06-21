@@ -85,7 +85,7 @@ AliHLTCaloClusterAnalyser::SetRecPointArray(AliHLTCaloRecPointDataStruct **recPo
 }
 
 void 
-AliHLTCaloClusterAnalyser::SetDigitDataArray(AliHLTCaloDigitDataStruct *digits) 
+AliHLTCaloClusterAnalyser::SetDigitDataArray(AliHLTCaloDigitDataStruct **digits) 
 { 
 //   AliHLTCaloClusterizer cl("PHOS");
   // cl.CheckDigits(fRecPointArray, digits, fNRecPoints);
@@ -123,7 +123,7 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
       for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
 	{
 
-	  digit = &(fDigitDataArray[*digitIndexPtr]);
+	  digit = fDigitDataArray[*digitIndexPtr];
 
 	  xi = digit->fX+0.5;
 	  zi = digit->fZ+0.5;
@@ -249,8 +249,8 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       caloClusterPtr->fGlobalPos[1] =  globalCoord.fY;
       caloClusterPtr->fGlobalPos[2] =  globalCoord.fZ;
 
-      HLTDebug("Cluster local position: x = %f, z = %f, module = %d", recPointPtr->fX, recPointPtr->fZ, recPointPtr->fModule);
-      HLTDebug("Cluster global position: x = %f, y = %f, z = %f", globalCoord.fX, globalCoord.fY, globalCoord.fZ);
+      HLTError("Cluster local position: x = %f, z = %f, module = %d", recPointPtr->fX, recPointPtr->fZ, recPointPtr->fModule);
+      HLTError("Cluster global position: x = %f, y = %f, z = %f", globalCoord.fX, globalCoord.fY, globalCoord.fZ);
       
       //caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
       caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
@@ -277,7 +277,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
        
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
- 	   digitPtr = &(fDigitDataArray[*digitIndexPtr]);
+ 	   digitPtr = fDigitDataArray[*digitIndexPtr];
 	   fGeometry->GetCellAbsId(recPointPtr->fModule, digitPtr->fX, digitPtr->fZ, id);
  	   
 	  cellPtr->fCellsAbsId= id;

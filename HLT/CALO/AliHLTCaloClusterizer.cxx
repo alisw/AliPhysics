@@ -111,12 +111,21 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
     {
         fDigitsInCluster = 0;
 
-        if (fDigitsPointerArray[i]->fEnergy < fEmcClusteringThreshold)
+	 HLTDebug("Digit with energy: %f", fDigitsPointerArray[i]->fEnergy);
+	
+        if (fDigitsPointerArray[i]->fEnergy < fEmcClusteringThreshold && fSortedByEnergy)
         {
-            continue;
-        }
+	   // Since we have sorted by energy the next digit will have even lower energy, so we return 
+	   return fNRecPoints;
+	}
 
-        CheckArray();
+	if(fDigitsPointerArray[i]->fAssociatedCluster != -1)
+	{
+	   // The digit is added to a previous cluster, continue
+	   continue;
+	}
+
+	CheckArray();
         CheckBuffer();
 
         // First digit is placed at the fDigits member variable in the recpoint
@@ -133,8 +142,13 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
         fDigitIndexPtr++;
 
         fRecPointDataPtr->fAmp += fDigitsPointerArray[i]->fEnergy;
-        fDigitsPointerArray[i]->fEnergy = 0;
-        fDigitsInCluster++;
+    
+	
+	//fDigitsPointerArray[i]->fEnergy = 0;
+        fDigitsPointerArray[i]->fAssociatedCluster = fNRecPoints;
+	
+	
+	fDigitsInCluster++;
         nRecPoints++;
 
         // Scanning for the neighbours
@@ -172,7 +186,7 @@ AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDat
 
     for (Int_t j = min; j < max; j++)
     {
-        if (fDigitsPointerArray[j]->fEnergy > fEmcMinEnergyThreshold)
+        if (fDigitsPointerArray[j]->fAssociatedCluster == -1 &&  fDigitsPointerArray[j]->fEnergy > fEmcMinEnergyThreshold)
         {
             if (j != index)
             {
@@ -192,9 +206,14 @@ AliHLTCaloClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTCaloRecPointDat
                     // Adding the digit energy to the rec point
                     fRecPointDataPtr->fAmp += fDigitsPointerArray[j]->fEnergy;
 
-                    // Setting the digit energy to 0 (not included in clusterisation anymore)
-                    fDigitsPointerArray[j]->fEnergy = 0;
-
+                    // Setting energy to 0
+		    //fDigitsPointerArray[j]->fEnergy = 0;
+		    
+		    // Setting the associated cluster 
+		    fDigitsPointerArray[j]->fAssociatedCluster = fNRecPoints;
+		    
+		    HLTDebug("Added digit with index: %d, energy: %f, to associated cluster: %d", fDigitsPointerArray[j]->fID, fDigitsPointerArray[j]->fEnergy, fDigitsPointerArray[j]->fAssociatedCluster);
+		    
                     fDigitsInCluster++;
 
                     // Scan for neighbours of this digit

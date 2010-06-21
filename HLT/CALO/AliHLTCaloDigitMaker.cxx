@@ -244,6 +244,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
   fDigitStructPtr->fZ = coord.fZ;
   fDigitStructPtr->fGain = coord.fGain;
   fDigitStructPtr->fOverflow = false;
+  fDigitStructPtr->fAssociatedCluster = -1;
   
   fDigitStructPtr->fID = fDigitStructPtr->fZ * fCaloConstants->GetNXCOLUMNSMOD() + fDigitStructPtr->fX;
   

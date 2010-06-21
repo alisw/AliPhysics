@@ -167,7 +167,7 @@ public:
   /** 
   * Set pointer to the digits
   */
-  void SetDigitDataArray(AliHLTCaloDigitDataStruct *digits);
+  void SetDigitDataArray(AliHLTCaloDigitDataStruct **digits);
 
   /**
   * Set the cluster type 
@@ -192,7 +192,7 @@ private:
   AliHLTCaloRecPointDataStruct **fRecPointArray;         //! transient
 
   /** Pointer to the digits */
-  AliHLTCaloDigitDataStruct *fDigitDataArray;         //! transient
+  AliHLTCaloDigitDataStruct **fDigitDataArray;         //! transient
 
   /** Number of rec points */
   Int_t fNRecPoints;                                      //COMMENT
