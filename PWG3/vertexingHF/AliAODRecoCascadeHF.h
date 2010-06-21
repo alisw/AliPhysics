@@ -69,6 +69,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   Double_t InvMassDstarKpipi() const;
   Double_t DeltaInvMass() const {return (InvMassDstarKpipi()-InvMassD0());}
   Double_t AngleD0dkpPisoft() const;
+  Bool_t   TrigonometricalCut() const;
 
   // Lc invariant mass
   Double_t InvMassLctoK0sP() const {

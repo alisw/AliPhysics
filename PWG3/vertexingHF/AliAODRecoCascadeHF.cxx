@@ -275,3 +275,25 @@ Double_t AliAODRecoCascadeHF::AngleD0dkpPisoft() const {
 
   return theta;
 }
+//-----------------------------------------------------------------------------
+Bool_t AliAODRecoCascadeHF::TrigonometricalCut() const {
+  //  
+  // Trigonometrical constraint
+  //
+  TVector3 p3Trk0(Get2Prong()->PxProng(0),Get2Prong()->PyProng(0),Get2Prong()->PzProng(0)); // from D0
+  TVector3 p3Trk1(Get2Prong()->PxProng(1),Get2Prong()->PyProng(1),Get2Prong()->PzProng(1)); // from D0
+  TVector3 p3Trk2(PxProng(0),PyProng(0),PzProng(0)); // pi_s
+
+  Double_t alpha = p3Trk0.Angle(p3Trk2);
+  Double_t beta = p3Trk1.Angle(p3Trk2);
+
+  Double_t cosphi01 = TMath::Cos(alpha) / TMath::Cos(AngleD0dkpPisoft());
+  Double_t cosphi02 = TMath::Cos(beta) / TMath::Cos(AngleD0dkpPisoft());
+
+  Double_t phi01 = TMath::ACos(cosphi01);
+  Double_t phi02 = TMath::ACos(cosphi02);
+  Double_t phi00 = p3Trk0.Angle(p3Trk1);
+
+  if((phi01>phi00) || (phi02>phi00)) return kFALSE;
+  return kTRUE;
+}
