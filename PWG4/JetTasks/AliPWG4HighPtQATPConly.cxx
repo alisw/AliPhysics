@@ -74,7 +74,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtAllminPtTPCvsPtAllEtaPos(0),
   fPtAllminPtTPCvsPtAllEtaNeg(0),
   fPtAllminPtTPCvsPtAllNPointTPC(0),
-  fPtAllminPtTPCvsPtAllNPointTPCS(0),
   fPtAllminPtTPCvsPtAllDCAR(0),
   fPtAllminPtTPCvsPtAllDCAZ(0),
   fPtAllminPtTPCvsPtAllPhi(0),
@@ -93,7 +92,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtITSouterminPtTPCvsPtAllEtaPos(0),
   fPtITSouterminPtTPCvsPtAllEtaNeg(0),
   fPtITSouterminPtTPCvsPtAllNPointTPC(0),
-  fPtITSouterminPtTPCvsPtAllNPointTPCS(0),
   fPtITSouterminPtTPCvsPtAllDCAR(0),
   fPtITSouterminPtTPCvsPtAllDCAZ(0),
   fPtITSouterminPtTPCvsPtAllPhi(0),
@@ -131,7 +129,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtITSminPtTPCvsPtITSEtaPos(0),
   fPtITSminPtTPCvsPtITSEtaNeg(0),
   fPtITSminPtTPCvsPtITSNPointTPC(0),
-  fPtITSminPtTPCvsPtITSNPointTPCS(0),
   fPtITSminPtTPCvsPtITSDCAR(0),
   fPtITSminPtTPCvsPtITSDCAZ(0),
   fPtITSminPtTPCvsPtITSPhi(0),
@@ -145,9 +142,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(): AliAnalysisTask("AliPWG4HighPt
   fPtITSminPtTPCvsNPointITSPhi(0),
   fPtITSminPtTPCvsRel1PtUncertaintyPhi(0),
   fPtRel1PtUncertaintyChi2PerClusTPC(0),
-  fPtNPointTPCSChi2PerClusTPC(0),
-  fPtNPointTPCSRel1PtUncertainty(0),
-  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel(0),
   fHistListITS(0),
   fPtSignedCosmicCandidates(0),
   fDeltaPtCosmicCandidates(0),
@@ -183,7 +177,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtAllminPtTPCvsPtAllEtaPos(0),
   fPtAllminPtTPCvsPtAllEtaNeg(0),
   fPtAllminPtTPCvsPtAllNPointTPC(0),
-  fPtAllminPtTPCvsPtAllNPointTPCS(0),
   fPtAllminPtTPCvsPtAllDCAR(0),
   fPtAllminPtTPCvsPtAllDCAZ(0),
   fPtAllminPtTPCvsPtAllPhi(0),
@@ -202,7 +195,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtITSouterminPtTPCvsPtAllEtaPos(0),
   fPtITSouterminPtTPCvsPtAllEtaNeg(0),
   fPtITSouterminPtTPCvsPtAllNPointTPC(0),
-  fPtITSouterminPtTPCvsPtAllNPointTPCS(0),
   fPtITSouterminPtTPCvsPtAllDCAR(0),
   fPtITSouterminPtTPCvsPtAllDCAZ(0),
   fPtITSouterminPtTPCvsPtAllPhi(0),
@@ -240,7 +232,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtITSminPtTPCvsPtITSEtaPos(0),
   fPtITSminPtTPCvsPtITSEtaNeg(0),
   fPtITSminPtTPCvsPtITSNPointTPC(0),
-  fPtITSminPtTPCvsPtITSNPointTPCS(0),
   fPtITSminPtTPCvsPtITSDCAR(0),
   fPtITSminPtTPCvsPtITSDCAZ(0),
   fPtITSminPtTPCvsPtITSPhi(0),
@@ -254,9 +245,6 @@ AliPWG4HighPtQATPConly::AliPWG4HighPtQATPConly(const char *name):
   fPtITSminPtTPCvsNPointITSPhi(0),
   fPtITSminPtTPCvsRel1PtUncertaintyPhi(0),
   fPtRel1PtUncertaintyChi2PerClusTPC(0),
-  fPtNPointTPCSChi2PerClusTPC(0),
-  fPtNPointTPCSRel1PtUncertainty(0),
-  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel(0),
   fHistListITS(0),
   fPtSignedCosmicCandidates(0),
   fDeltaPtCosmicCandidates(0),
@@ -415,12 +403,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   Double_t *binsNPointTPC=new Double_t[fgkNNPointTPCBins+1];
   for(Int_t i=0; i<=fgkNNPointTPCBins; i++) binsNPointTPC[i]=(Double_t)fgkNPointTPCMin + (fgkNPointTPCMax-fgkNPointTPCMin)/fgkNNPointTPCBins*(Double_t)i ;
 
-  Int_t fgkNNPointTPCSBins=50;
-  Float_t fgkNPointTPCSMin = 0.;
-  Float_t fgkNPointTPCSMax = 1.;
-  Double_t *binsNPointTPCS=new Double_t[fgkNNPointTPCSBins+1];
-  for(Int_t i=0; i<=fgkNNPointTPCSBins; i++) binsNPointTPCS[i]=(Double_t)fgkNPointTPCSMin + (fgkNPointTPCSMax-fgkNPointTPCSMin)/fgkNNPointTPCSBins*(Double_t)i ;
-
   Int_t fgkNDCARBins=80;
   Float_t fgkDCARMin = -0.2;
   Float_t fgkDCARMax = 0.2;
@@ -488,12 +470,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtAllminPtTPCvsPtAllNPointTPC->SetYTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
   fPtAllminPtTPCvsPtAllNPointTPC->SetZTitle("N_{point,TPC}");
   fHistList->Add(fPtAllminPtTPCvsPtAllNPointTPC);
-
-  fPtAllminPtTPCvsPtAllNPointTPCS = new TH3F("fPtAllminPtTPCvsPtAllNPointTPCS","PtAllminPtTPCvsPtAllNPointTPCS",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt,fgkNNPointTPCSBins,binsNPointTPCS);
-  fPtAllminPtTPCvsPtAllNPointTPCS->SetXTitle("p_{t}^{Global}");
-  fPtAllminPtTPCvsPtAllNPointTPCS->SetYTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
-  fPtAllminPtTPCvsPtAllNPointTPCS->SetZTitle("N_{point,TPC}^{Shared}/N_{point,TPC}");
-  fHistList->Add(fPtAllminPtTPCvsPtAllNPointTPCS);
 
   fPtAllminPtTPCvsPtAllDCAR = new TH3F("fPtAllminPtTPCvsPtAllDCAR","PtAllminPtTPCvsPtAllDCAR",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt,fgkNDCARBins,binsDCAR);
   fPtAllminPtTPCvsPtAllDCAR->SetXTitle("p_{t}^{Global}");
@@ -596,12 +572,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtITSouterminPtTPCvsPtAllNPointTPC->SetYTitle("(1/p_{t}^{ITSouter}-1/p_{t}^{TPCinner})/(1/p_{t}^{ITSouter})");
   fPtITSouterminPtTPCvsPtAllNPointTPC->SetZTitle("N_{point,TPC}");
   fHistList->Add(fPtITSouterminPtTPCvsPtAllNPointTPC);
-
-  fPtITSouterminPtTPCvsPtAllNPointTPCS = new TH3F("fPtITSouterminPtTPCvsPtAllNPointTPCS","PtITSouterminPtTPCvsPtAllNPointTPCS",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt,fgkNNPointTPCSBins,binsNPointTPCS);
-  fPtITSouterminPtTPCvsPtAllNPointTPCS->SetXTitle("p_{t}^{Global}");
-  fPtITSouterminPtTPCvsPtAllNPointTPCS->SetYTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
-  fPtITSouterminPtTPCvsPtAllNPointTPCS->SetZTitle("N_{point,TPC}^{Shared}/N_{point,TPC}");
-  fHistList->Add(fPtITSouterminPtTPCvsPtAllNPointTPCS);
 
   fPtITSouterminPtTPCvsPtAllDCAR = new TH3F("fPtITSouterminPtTPCvsPtAllDCAR","PtITSouterminPtTPCvsPtAllDCAR",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt,fgkNDCARBins,binsDCAR);
   fPtITSouterminPtTPCvsPtAllDCAR->SetXTitle("p_{t}^{Global}");
@@ -784,12 +754,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtITSminPtTPCvsPtITSNPointTPC->SetZTitle("N_{point,TPC}");
   fHistListITS->Add(fPtITSminPtTPCvsPtITSNPointTPC);
 
-  fPtITSminPtTPCvsPtITSNPointTPCS = new TH3F("fPtITSminPtTPCvsPtITSNPointTPCS","PtITSminPtTPCvsPtITSNPointTPCS",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt,fgkNNPointTPCSBins,binsNPointTPCS);
-  fPtITSminPtTPCvsPtITSNPointTPCS->SetXTitle("p_{t}^{Global}");
-  fPtITSminPtTPCvsPtITSNPointTPCS->SetYTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
-  fPtITSminPtTPCvsPtITSNPointTPCS->SetZTitle("N_{point,TPC}^{Shared}/N_{point,TPC}");
-  fHistListITS->Add(fPtITSminPtTPCvsPtITSNPointTPCS);    
-
   fPtITSminPtTPCvsPtITSDCAR = new TH3F("fPtITSminPtTPCvsPtITSDCAR","PtITSminPtTPCvsPtITSDCAR",fgkNPtBins, binsPt,fgkNResPtBins,binsResPt,fgkNDCARBins,binsDCAR);
   fPtITSminPtTPCvsPtITSDCAR->SetXTitle("p_{t}^{Global}");
   fPtITSminPtTPCvsPtITSDCAR->SetYTitle("(1/p_{t}^{Global}-1/p_{t}^{TPC})/(1/p_{t}^{Global})");
@@ -868,24 +832,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   fPtRel1PtUncertaintyChi2PerClusTPC->SetZTitle("#chi^{2}/(2*N_{clusters}^{TPC}-5)");
   fHistListITS->Add(fPtRel1PtUncertaintyChi2PerClusTPC);
 
-  fPtNPointTPCSChi2PerClusTPC = new TH3F("fPtNPointTPCSChi2PerClusTPC","PtITSminPtTPCvsPtITSNPointTPCS",fgkNPtBins, binsPt,fgkNNPointTPCSBins,binsNPointTPCS,fgkNChi2PerClusBins,binsChi2PerClus);
-  fPtNPointTPCSChi2PerClusTPC->SetXTitle("p_{t}^{global}");
-  fPtNPointTPCSChi2PerClusTPC->SetYTitle("N_{Point,TPC}^{Shared}/N_{Point,TPC}");
-  fPtNPointTPCSChi2PerClusTPC->SetZTitle("#chi^{2}/(2*N_{clusters}^{TPC}-5)");
-  fHistListITS->Add(fPtNPointTPCSChi2PerClusTPC);
-
-  fPtNPointTPCSRel1PtUncertainty = new TH3F("fPtNPointTPCSRel1PtUncertainty","PtITSminPtTPCvsPtITSNPointTPCS",fgkNPtBins, binsPt,fgkNNPointTPCSBins,binsNPointTPCS,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
-  fPtNPointTPCSRel1PtUncertainty->SetXTitle("p_{t}^{global}");
-  fPtNPointTPCSRel1PtUncertainty->SetYTitle("N_{Point,TPC}^{Shared}/N_{Point,TPC}");
-  fPtNPointTPCSRel1PtUncertainty->SetZTitle("Rel1PtUncertainty");
-  fHistListITS->Add(fPtNPointTPCSRel1PtUncertainty);
-
-  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel = new TH3F("fPtRel1PtUncertaintyChi2PerClusTPCSharedSel","PtITSminPtTPCvsPtITSRel1PtUncertainty",fgkNPtBins, binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
-  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetXTitle("p_{t}^{global}");
-  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetYTitle("Rel1PtUncertainty");
-  fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->SetZTitle("#chi^{2}/(2*N_{clusters}^{TPC}-5)");
-  fHistListITS->Add(fPtRel1PtUncertaintyChi2PerClusTPCSharedSel);
-  
   fPtAllTPC = new TH1F("fPtAllTPC","PtAll",fgkNPtBins,binsPt);
   fHistListTPC->Add(fPtAllTPC);
   fPtSelTPC = new TH1F("fPtSelTPC","PtSel",fgkNPtBins,binsPt);
@@ -896,27 +842,31 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   //****************************************************************************************************************//
   //                                              Cosmic Candidates                                                 //
   //****************************************************************************************************************//
+  Int_t fgkNThetaBins=fgkNPhiBins*8;
+  Float_t kMinTheta = -0.5*TMath::Pi();
+  Float_t kMaxTheta = 3./2.*TMath::Pi();
+
   fPtSignedCosmicCandidates = new TH1F("fPtSignedCosmicCandidates","fPtSignedCosmicCandidates",2*(int)(fgkPtMax-fgkPtMin), -1.*fgkPtMax, fgkPtMax);
   fHistListCosmics->Add(fPtSignedCosmicCandidates);  
   fDeltaPtCosmicCandidates = new TH1F("fDeltaPtCosmicCandidates","fDeltaPtCosmicCandidates",fgkNPtBins, -50., 50.);
   fHistListCosmics->Add(fDeltaPtCosmicCandidates);  
-  fDeltaPhiSumEta = new TH2F("fDeltaPhiSumEta","fDeltaPhiSumEta",fgkNPhiBins*4,0.,kMaxPhi,80, -2.,2.);
+  fDeltaPhiSumEta = new TH2F("fDeltaPhiSumEta","fDeltaPhiSumEta",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.);
   fHistListCosmics->Add(fDeltaPhiSumEta);  
   fDCAZCosmicCandidates = new TH2F("fDCAZCosmicCandidates","fDCAZCosmicCandidates",fgkNDCAZBins,binsDCAZ,fgkNDCAZBins,binsDCAZ);
   fHistListCosmics->Add(fDCAZCosmicCandidates);
   fDCARCosmicCandidates = new TH2F("fDCARCosmicCandidates","fDCARCosmicCandidates",fgkNDCARBins,binsDCAR,fgkNDCARBins,binsDCAR);
   fHistListCosmics->Add(fDCARCosmicCandidates);
-  fTheta = new TH1F("fTheta","fTheta",fgkNPhiBins*8,0.,kMaxPhi);
+  fTheta = new TH1F("fTheta","fTheta",fgkNThetaBins,kMinTheta,kMaxTheta);
   fHistListCosmics->Add(fTheta);
   fThetaZoom = new TH1F("fThetaZoom","fThetaZoom",100,TMath::Pi()-1.,TMath::Pi()+1.);
   fHistListCosmics->Add(fThetaZoom);
-  fThetaPt1Pt2 = new TH3F("fThetaPt1Pt2","fThetaPt1Pt2",fgkNPhiBins*8,0.,kMaxPhi,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fThetaPt1Pt2 = new TH3F("fThetaPt1Pt2","fThetaPt1Pt2",fgkNThetaBins,kMinTheta,kMaxTheta,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
   fHistListCosmics->Add(fThetaPt1Pt2);
-  fDeltaPhiSumEtaPt1 = new TH3F("fDeltaPhiSumEtaPt1","fDeltaPhiSumEtaPt1",fgkNPhiBins*4,0.,kMaxPhi,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fDeltaPhiSumEtaPt1 = new TH3F("fDeltaPhiSumEtaPt1","fDeltaPhiSumEtaPt1",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
   fHistListCosmics->Add(fDeltaPhiSumEtaPt1);
-  fDeltaPhiSumEtaPt2 = new TH3F("fDeltaPhiSumEtaPt2","fDeltaPhiSumEtaPt2",fgkNPhiBins*4,0.,kMaxPhi,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
+  fDeltaPhiSumEtaPt2 = new TH3F("fDeltaPhiSumEtaPt2","fDeltaPhiSumEtaPt2",fgkNThetaBins,kMinTheta,kMaxTheta,80, -2.,2.,(int)(fgkPtMax-fgkPtMin),fgkPtMin,fgkPtMax);
   fHistListCosmics->Add(fDeltaPhiSumEtaPt2);
-  fThetaDCAZ1DCAZ2 = new TH3F("fThetaDCAZ1DCAZ2","fThetaDCAZ1DCAZ2",fgkNPhiBins*8,0.,kMaxPhi,fgkNDCAZBins,-2.,2.,fgkNDCAZBins,-2.,2.);
+  fThetaDCAZ1DCAZ2 = new TH3F("fThetaDCAZ1DCAZ2","fThetaDCAZ1DCAZ2",fgkNThetaBins,kMinTheta,kMaxTheta,fgkNDCAZBins,-2.,2.,fgkNDCAZBins,-2.,2.);
   fHistListCosmics->Add(fThetaDCAZ1DCAZ2);
 
   TH1::AddDirectory(oldStatus);   
@@ -926,7 +876,6 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
   if(binsPt) delete [] binsPt;
   if(binsResPt) delete [] binsResPt;
   if(binsNPointTPC) delete [] binsNPointTPC;
-  if(binsNPointTPCS) delete [] binsNPointTPCS;
   if(binsDCAR) delete [] binsDCAR;
   if(binsDCAZ) delete [] binsDCAZ;
   if(binsNPointITS) delete [] binsNPointITS;
@@ -1003,20 +952,13 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
   }
   
 
- const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
- if(vertex->GetNContributors()<1) {
-   // SPD vertex
-   vertex = fESD->GetPrimaryVertexSPD();
-   if(vertex->GetNContributors()<1) vertex = 0x0;
- }
-
   const AliESDVertex *vtx = fESD->GetPrimaryVertexTracks();
   // Need vertex cut
   if (vtx->GetNContributors() < 2) {
     // SPD vertex
     vtx = fESD->GetPrimaryVertexSPD();
     if(vtx->GetNContributors()<2) {
-      vertex = 0x0;
+      vtx = 0x0;
       // Post output data
       PostData(0, fHistList);
       PostData(1, fHistListTPC);
@@ -1116,7 +1058,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       if(track->GetSign()<0.) fPtAllminPtTPCvsPtAllEtaNeg->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->Eta());
 
       fPtAllminPtTPCvsPtAllNPointTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),nClustersTPC);
-      if(nClustersTPC>0.) fPtAllminPtTPCvsPtAllNPointTPCS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->GetTPCnclsS()/nClustersTPC);
       fPtAllminPtTPCvsPtAllDCAR->Fill(pt,(1./pt-1./ptTPC)/(1./pt),dca2D);
       fPtAllminPtTPCvsPtAllDCAZ->Fill(pt,(1./pt-1./ptTPC)/(1./pt),dcaZ);
       fPtAllminPtTPCvsPtAllPhi->Fill(pt,(1./pt-1./ptTPC)/(1./pt),phi);
@@ -1145,7 +1086,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
 	  if(trackITSouter.GetSign()<0.) fPtITSouterminPtTPCvsPtAllEtaNeg->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),trackITSouter.Eta());
 
 	  fPtITSouterminPtTPCvsPtAllNPointTPC->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),nClustersTPC);
-	  if(nClustersTPC>0.) fPtITSouterminPtTPCvsPtAllNPointTPCS->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),track->GetTPCnclsS()/nClustersTPC);
 	  fPtITSouterminPtTPCvsPtAllDCAR->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),dca2D);
 	  fPtITSouterminPtTPCvsPtAllDCAZ->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),dcaZ);
 	  fPtITSouterminPtTPCvsPtAllPhi->Fill(pt,(1./ptITSouter-1./ptTPC)/(1./ptITSouter),phi);
@@ -1206,7 +1146,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       if(track->GetSign()>0.) fPtITSminPtTPCvsPtITSEtaPos->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->Eta());
       if(track->GetSign()<0.) fPtITSminPtTPCvsPtITSEtaNeg->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->Eta());
       fPtITSminPtTPCvsPtITSNPointTPC->Fill(pt,(1./pt-1./ptTPC)/(1./pt),nClustersTPC);
-      if(nClustersTPC>0.) fPtITSminPtTPCvsPtITSNPointTPCS->Fill(pt,(1./pt-1./ptTPC)/(1./pt),track->GetTPCnclsS()/nClustersTPC);
       fPtITSminPtTPCvsPtITSDCAR->Fill(pt,(1./pt-1./ptTPC)/(1./pt),dca2D);
       fPtITSminPtTPCvsPtITSDCAZ->Fill(pt,(1./pt-1./ptTPC)/(1./pt),dcaZ);
       fPtITSminPtTPCvsPtITSPhi->Fill(pt,(1./pt-1./ptTPC)/(1./pt),phi);
@@ -1221,9 +1160,6 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
       fPtITSminPtTPCvsRel1PtUncertaintyPhi->Fill((1./pt-1./ptTPC)/(1./pt),relUncertainty1Pt,phi);
 
       fPtRel1PtUncertaintyChi2PerClusTPC->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
-      fPtNPointTPCSChi2PerClusTPC->Fill(pt,track->GetTPCnclsS()/nClustersTPC,chi2PerClusterTPC);
-      fPtNPointTPCSRel1PtUncertainty->Fill(pt,track->GetTPCnclsS()/nClustersTPC,relUncertainty1Pt);
-      if(track->GetTPCnclsS()/nClustersTPC>0.05) fPtRel1PtUncertaintyChi2PerClusTPCSharedSel->Fill(pt,relUncertainty1Pt,chi2PerClusterTPC);
     }//fTrackCutsITS loop
       
   }//ESD track loop
@@ -1262,18 +1198,20 @@ Bool_t AliPWG4HighPtQATPConly::IsCosmic(const AliESDtrack *track1 , Int_t trackN
     Double_t mom1[3],mom2[3];
     track1->GetPxPyPz(mom1);
     track2->GetPxPyPz(mom2);
-    Double_t cosTheta = (mom1[0]*mom2[0]+mom1[1]*mom2[1]+mom1[2]*mom2[2])/( TMath::Sqrt(mom1[0]*mom1[0]+mom1[1]*mom1[1]+mom1[2]*mom1[2])*TMath::Sqrt(mom2[0]*mom2[0]+mom2[1]*mom2[1]+mom2[2]*mom2[2]) );
-    Double_t theta = TMath::ACos(cosTheta);
-    if(cosTheta<0.) theta+=TMath::Pi();
-   //if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
+    TVector3 momv1(mom1[0],mom1[1],mom1[2]);
+    TVector3 momv2(mom2[0],mom2[1],mom2[2]);
+    Double_t theta = momv1.Phi()-momv2.Phi();
+    if(theta<-0.5*TMath::Pi()) theta+=2.*TMath::Pi();
+
+    //if(TMath::Abs(TMath::Pi()-theta)<fMaxCosmicAngle) { candidate1 = kTRUE; candidate2 = kTRUE;}
     
-//    Double_t cosMaxCosmicAngle[2] = {TMath::Cos(TMath::Pi()-fMaxCosmicAngle),TMath::Cos(TMath::Pi()+fMaxCosmicAngle)};
-//    if(cosTheta >= cosMaxCosmicAngle[0] && cosTheta <= cosMaxCosmicAngle[1]) { 
+    //    Double_t cosMaxCosmicAngle[2] = {TMath::Cos(TMath::Pi()-fMaxCosmicAngle),TMath::Cos(TMath::Pi()+fMaxCosmicAngle)};
+    //    if(cosTheta >= cosMaxCosmicAngle[0] && cosTheta <= cosMaxCosmicAngle[1]) { 
     candidate1 = kTRUE; candidate2 = kTRUE;//}
     if(candidate2) {
       fDeltaPtCosmicCandidates->Fill(track1->Pt()-track2->Pt());
       Float_t deltaPhi = track1->Phi()-track2->Phi();
-      if(deltaPhi<0.) deltaPhi+=2.*TMath::Pi();
+      if(deltaPhi<-0.5*TMath::Pi()) deltaPhi+=2.*TMath::Pi();
       fDeltaPhiSumEta->Fill(deltaPhi,track1->Eta()+track2->Eta());
 
       track1->GetImpactParameters(dcaR[0],dcaZ[0]);

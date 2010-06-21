@@ -1,6 +1,6 @@
 #-*- Mode: Makefile -*-
 
-SRCS = JetTasks/AliAnalysisTaskUE.cxx  JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisTaskJetSpectrum2.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnalysisTaskJetServices.cxx JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx JetTasks/AliJetSpectrumUnfolding.cxx JetTasks/AliAnalysisTaskJFSystematics.cxx JetTasks/AliAnalysisTaskJetCorrections.cxx JetTasks/AliAnalysisTaskThreeJets.cxx JetTasks/AliPWG4HighPtQATPConly.cxx JetTasks/AliPWG4HighPtQAMC.cxx JetTasks/AliPWG4HighPtSpectra.cxx JetTasks/AliAnalysisTaskJetChem.cxx 
+SRCS = JetTasks/AliAnalysisTaskUE.cxx JetTasks/AliHistogramsUE.cxx JetTasks/AliAnalyseUE.cxx JetTasks/AliAnalysisTaskJetSpectrum.cxx JetTasks/AliAnalysisTaskJetSpectrum2.cxx JetTasks/AliAnalysisHelperJetTasks.cxx JetTasks/AliAnalysisTaskJetServices.cxx JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx JetTasks/AliJetSpectrumUnfolding.cxx JetTasks/AliAnalysisTaskJFSystematics.cxx JetTasks/AliAnalysisTaskJetCorrections.cxx JetTasks/AliAnalysisTaskThreeJets.cxx JetTasks/AliPWG4HighPtQATPConly.cxx JetTasks/AliPWG4HighPtQAMC.cxx JetTasks/AliPWG4HighPtSpectra.cxx JetTasks/AliPWG4CosmicCandidates.cxx JetTasks/AliAnalysisTaskJetChem.cxx 
 
 HDRS:= $(SRCS:.cxx=.h) 
 

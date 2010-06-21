@@ -81,7 +81,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtAllminPtTPCvsPtAllEtaPos;            //! Momentum resolution (global vs TPConly) vs Eta for positive particles
   TH3F *fPtAllminPtTPCvsPtAllEtaNeg;            //! Momentum resolution (global vs TPConly) vs Eta for negative particles
   TH3F *fPtAllminPtTPCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
-  TH3F *fPtAllminPtTPCvsPtAllNPointTPCS;        //! Momentum resolution vs NPointTPCShared/NPointTPC
   TH3F *fPtAllminPtTPCvsPtAllDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtAllminPtTPCvsPtAllDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtAllminPtTPCvsPtAllPhi;               //! Momentum resolution vs Phi
@@ -103,7 +102,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtITSouterminPtTPCvsPtAllEtaPos;            //! Momentum resolution (global vs ITSouter-TPCinner) vs Eta for positive particles
   TH3F *fPtITSouterminPtTPCvsPtAllEtaNeg;            //! Momentum resolution (global vs ITSouter-TPCinner) vs Eta for negative particles
   TH3F *fPtITSouterminPtTPCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
-  TH3F *fPtITSouterminPtTPCvsPtAllNPointTPCS;        //! Momentum resolution vs NPointTPCS
   TH3F *fPtITSouterminPtTPCvsPtAllDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtITSouterminPtTPCvsPtAllDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtITSouterminPtTPCvsPtAllPhi;               //! Momentum resolution vs Phi
@@ -148,7 +146,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtITSminPtTPCvsPtITSEtaPos;            //! Momentum resolution (global with ITSrefit vs TPConly) vs Eta for positive particles
   TH3F *fPtITSminPtTPCvsPtITSEtaNeg;            //! Momentum resolution (global with ITSrefit vs TPConly) vs Eta for negative particles
   TH3F *fPtITSminPtTPCvsPtITSNPointTPC;         //! Momentum resolution vs NPointTPC 
-  TH3F *fPtITSminPtTPCvsPtITSNPointTPCS;        //! Momentum resolution vs NPointTPCS 
   TH3F *fPtITSminPtTPCvsPtITSDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtITSminPtTPCvsPtITSDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtITSminPtTPCvsPtITSPhi;               //! Momentum resolution vs Phi
@@ -164,9 +161,6 @@ class AliPWG4HighPtQATPConly: public AliAnalysisTask {
   TH3F *fPtITSminPtTPCvsRel1PtUncertaintyPhi;   //! Momentum resolution vs Rel1PtUncertainty vs Phi
 
   TH3F *fPtRel1PtUncertaintyChi2PerClusTPC;     //! Global Pt vs relUncertainty1Pt vs Chi2PerClusTPC
-  TH3F *fPtNPointTPCSChi2PerClusTPC;            //! Global Pt vs NPointTPCShared/NPointTPC vs Chi2PerClusTPC
-  TH3F *fPtNPointTPCSRel1PtUncertainty;         //! Global Pt vs NPointTPCShared/NPointTPC vs relUncertainty1Pt
-  TH3F *fPtRel1PtUncertaintyChi2PerClusTPCSharedSel;     //! Global Pt vs relUncertainty1Pt vs Chi2PerClusTPC for NPointTPCShared/NPointTPC>0.05
 
   TList *fHistListITS; //! List of Histograms
 

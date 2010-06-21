@@ -64,8 +64,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   
   //AliESDtrackCuts setters
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
-  //Select the trigger
-  void SelectTrigger(Int_t trig) { fTrigger = trig; } 
+  void SetCutsTPConly(AliESDtrackCuts* trackCuts) {fTrackCutsTPConly = trackCuts;}
 
   // Data types
   Bool_t IsReadAODData()   const {return fReadAODData;}
@@ -76,21 +75,20 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   const AliCFManager  *fCFManagerPos    ;  // pointer to the CF manager for positive charged particles
   const AliCFManager  *fCFManagerNeg    ;  // pointer to the CF manager for negative charged particles
  
-  AliESDEvent *fESD;              //! ESD object
-  //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPtQAMC.C. They correspond with different steps in container.
-  AliESDtrackCuts *fTrackCuts;    // trackCuts applied
-  Int_t fTrigger;                 //Trigger flag as defined in AliAnalysisHelperJetTasks.h 
+  AliESDEvent *fESD;                     //! ESD object
+  //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
+  AliESDtrackCuts *fTrackCuts;           // trackCuts applied to global tracks
+  AliESDtrackCuts *fTrackCutsTPConly;    // trackCuts applied to TPConly tracks
 
  private:
- AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra&);
- AliPWG4HighPtSpectra& operator=(const AliPWG4HighPtSpectra&);
-
+  AliPWG4HighPtSpectra(const AliPWG4HighPtSpectra&);
+  AliPWG4HighPtSpectra& operator=(const AliPWG4HighPtSpectra&);
 
   // Histograms
   //Number of events
   TList *fHistList;            //! List of output histograms
-  TH1F *fNEventAll;            //! Event counter
-  TH1F *fNEventSel;            //! Event counter: Selected events for analysis
+  TH1F  *fNEventAll;            //! Event counter
+  TH1F  *fNEventSel;            //! Event counter: Selected events for analysis
 
   ClassDef(AliPWG4HighPtSpectra,1);
 };
