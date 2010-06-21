@@ -32,6 +32,8 @@
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
 
+
+
 ClassImp(AliRDHFCutsDStartoKpipi)
 
 //--------------------------------------------------------------------------
@@ -103,9 +105,9 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &
   //
   // Copy constructor
   //
-
+  
   if(source.GetTrackCutsSoftPi()) AddTrackCutsSoftPi(source.GetTrackCutsSoftPi());
-
+  
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDStartoKpipi &AliRDHFCutsDStartoKpipi::operator=(const AliRDHFCutsDStartoKpipi &source)
@@ -265,7 +267,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     }
   }
   
-  Int_t returnvalue=1;
+  Int_t returnvalue=0;
   
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -276,28 +278,21 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
 
     // select D0 that passes D* cuts
     returnvalue = IsD0FromDStarSelected(pt,dd,selectionLevel);
+    //if(retunvalue==0) return 0;
+
+    if((b->Charge()==+1 && returnvalue==2) || (b->Charge()==-1 && returnvalue==1)) return 0; 
 
     // DStarMass and D0mass
     Double_t mDSPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
     // delta mass PDG
     Double_t deltaPDG = mDSPDG-mD0PDG;
-    
-    Double_t mD0,mD0bar;
-  
-    Int_t okDStarP =0;
-    Int_t okDStarM =0;
    
-    okDStarP=1; okDStarM=1; 
-
-    dd->InvMassD0(mD0,mD0bar);
     // Half width DStar mass
-    if(TMath::Abs((d->InvMassDstarKpipi()-mDSPDG))>fCutsRD[GetGlobalIndex(9,ptbin)]) return 0;
+    if(TMath::Abs(mDSPDG - (d->InvMassDstarKpipi()))>fCutsRD[GetGlobalIndex(9,ptbin)]) return 0;
     // Half width Delta mass
     
-    if(TMath::Abs((d->InvMassDstarKpipi()-mD0)-deltaPDG) > fCutsRD[GetGlobalIndex(10,ptbin)]) okDStarP =0;
-    if(TMath::Abs((d->InvMassDstarKpipi()-mD0bar)-deltaPDG) > fCutsRD[GetGlobalIndex(10,ptbin)]) okDStarM =0;
-    if(!okDStarP && !okDStarM) return 0;
+    if(TMath::Abs(deltaPDG-(d->DeltaInvMass())) > fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
     
     // cut on soft pion pt
     if(b->Pt() < fCutsRD[GetGlobalIndex(11,ptbin)] || b->Pt() > fCutsRD[GetGlobalIndex(12,ptbin)]) return 0;
@@ -378,6 +373,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsD0FromDStarSelected(Double_t pt, TObject* obj,I
     if (okD0 && okD0bar) returnvalue=3; //both
   }
 
+  //if((Charge()==+1 && !okD0) || (Charge()==-1 && !okD0bar)) return kFALSE; 
   return returnvalue;
 }
 
