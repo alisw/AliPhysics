@@ -413,7 +413,7 @@ void AliFlowEventSimple::Print(Option_t *option) const
   //   -*-*-*-*-*Print some global quantities for this histogram collection class *-*-*-*-*-*-*-*
   //             ===============================================
   //   printf( "TH1.Print Name  = %s, Entries= %d, Total sum= %g\n",GetName(),Int_t(fEntries),GetSumOfWeights());
-  printf( "Class.Print Name = %s, Total number of tracks= %d, Number of selected tracks= %d, MC EventPlaneAngle= %f\n",
+  printf( "Class.Print Name = %s, #tracks= %d, Number of RPs= %d, MC EventPlaneAngle= %f\n",
           GetName(),fNumberOfTracks, fNumberOfRPs, fMCReactionPlaneAngle );
 
   if (fTrackCollection)
@@ -604,8 +604,11 @@ void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
     if (!track) continue;
-    if (cuts->PassesCuts(track)) track->SetForRPSelection();
-    fNumberOfRPs++;
+    if (cuts->PassesCuts(track)) 
+    {
+      track->SetForRPSelection();
+      fNumberOfRPs++;
+    }
   }
 }
 
