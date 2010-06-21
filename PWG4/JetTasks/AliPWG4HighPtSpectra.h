@@ -90,7 +90,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TH1F  *fNEventAll;            //! Event counter
   TH1F  *fNEventSel;            //! Event counter: Selected events for analysis
 
-  ClassDef(AliPWG4HighPtSpectra,1);
+  ClassDef(AliPWG4HighPtSpectra,2);
 };
 
 #endif
