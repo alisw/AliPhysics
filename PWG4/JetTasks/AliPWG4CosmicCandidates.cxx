@@ -43,35 +43,38 @@
 
 #include "AliPWG4CosmicCandidates.h"
 
-
-using namespace std;
-ClassImp(AliPWG4CosmicCandidates)
-
 //using namespace std; //required for resolving the 'cout' symbol
+using namespace std;
+
+ClassImp(AliPWG4CosmicCandidates)
 
 //________________________________________________________________________
 AliPWG4CosmicCandidates::AliPWG4CosmicCandidates()
-  : AliAnalysisTaskSE(),
-    fTrackCuts(0), 
-    fPtMin(5.),
-    fMaxCosmicAngle(0.002),
-    fPtSignedCosmicCandidates(0),
-    fDeltaPtCosmicCandidates(0),
-    fDeltaPhiSumEta(0),
-    fDCAZCosmicCandidates(0),
-    fDCARCosmicCandidates(0),
-    fTheta(0),
-    fThetaZoom(0),
-    fThetaPt1Pt2(0),
-    fThetaPt1Pt2Signed(0),
-    fDeltaPhiSumEtaPt1(0),
-    fDeltaPhiSumEtaPt2(0),
-    fThetaDCAZ1DCAZ2(0),
-    fRisol(0),
-    fRisolTheta(0),
-    fHistListCosmics(0)
+: AliAnalysisTaskSE(),
+  fTrackCuts(0), 
+  fPtMin(5.),
+  fMaxCosmicAngle(0.002),
+  fNEventAll(0),
+  fNEventSel(0),
+  fPtSignedCosmicCandidates(0),
+  fDeltaPtCosmicCandidates(0),
+  fDeltaPhiSumEta(0),
+  fDCAZCosmicCandidates(0),
+  fDCARCosmicCandidates(0),
+  fTheta(0),
+  fThetaZoom(0),
+  fThetaPt1Pt2(0),
+  fThetaPt1Pt2Signed(0),
+  fDeltaPhiSumEtaPt1(0),
+  fDeltaPhiSumEtaPt2(0),
+  fThetaDCAZ1DCAZ2(0),
+  fRisol(0),
+  fRisolTheta(0),
+  fHistListCosmics(0)
 {
+  //
   // Default constructor
+  //
 }
 
 //________________________________________________________________________
@@ -80,6 +83,8 @@ AliPWG4CosmicCandidates::AliPWG4CosmicCandidates(const char *name)
     fTrackCuts(0), 
     fPtMin(5.),
     fMaxCosmicAngle(0.002),
+    fNEventAll(0),
+    fNEventSel(0),
     fPtSignedCosmicCandidates(0),
     fDeltaPtCosmicCandidates(0),
     fDeltaPhiSumEta(0),
@@ -113,6 +118,8 @@ AliPWG4CosmicCandidates::AliPWG4CosmicCandidates(const AliPWG4CosmicCandidates &
     fTrackCuts(0), 
     fPtMin(5.),
     fMaxCosmicAngle(0.002),
+    fNEventAll(0),
+    fNEventSel(0),
     fPtSignedCosmicCandidates(0),
     fDeltaPtCosmicCandidates(0),
     fDeltaPhiSumEta(0),
