@@ -14,13 +14,12 @@
 void trd_tracks(TEveElement *cont = 0)
 {
   // Link data containers
-  AliESDfriend *eventESDfriend = 0x0;
-  if(!(eventESDfriend = AliEveEventManager::AssertESDfriend())){
-    Warning("trd_tracks", "AliESDfriend not found");
+  AliESDEvent* esd(AliEveEventManager::AssertESD());
+  AliESDfriend *esdFriend(AliEveEventManager::AssertESDfriend());
+  if(!esd || !esdFriend){
+    Warning("trd_tracks", "Full ESD data missing.");
     return;
   }
-
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
 
   AliEveEventManager::AssertGeometry();
 
@@ -31,12 +30,16 @@ void trd_tracks(TEveElement *cont = 0)
 
   AliEveTRDTrackList *tracks = new AliEveTRDTrackList("TRD Tracks");
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++){
-    AliESDtrack* esdTrack = esd->GetTrack(n);
-    AliESDfriendTrack *friendTrack = eventESDfriend->GetTrack(n);
+    AliESDtrack* esdTrack(esd->GetTrack(n));
+    if(!esdTrack) continue;
+    AliESDfriendTrack *friendTrack(esdTrack->GetFriendTrack());
+    if(!friendTrack) continue;
+    Info("trd_tracks", Form("Track[%3d] esd[%p] friend[%p]", n, (void*)esdTrack, (void*)friendTrack));
 
-    TObject *cal = 0x0;
-    Int_t ical = 0;
+    TObject *cal(NULL);
+    Int_t ical(0);
     while((cal = friendTrack->GetCalibObject(ical++))){
+      //Info("trd_tracks", Form("  Obj[%d] %s", ical-1, cal->IsA()->GetName()));
       if(strcmp(cal->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
       AliTRDtrackV1 *trackObj = dynamic_cast<AliTRDtrackV1 *>(cal);
       trackObj->SetReconstructor(reco);
