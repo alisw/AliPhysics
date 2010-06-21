@@ -79,6 +79,7 @@ Int_t       iPWG4JetChem       = 0;      // Jet chemistry
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
+Int_t       iPWG4PtCosmics     = 0;      // Marta's Cosmics Taks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
 Int_t       iPWG4KMeans        = 0;      // Andreas' KMeans task 
 Int_t       iPWG4Cluster       = 0;      // CKB cluster task 
@@ -210,6 +211,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PWG4 Pt QA MC       %d\n",iPWG4PtQAMC);
    printf(":: use PWG4 Pt Spectra     %d\n",iPWG4PtSpectra);
    printf(":: use PWG4 Pt QA TPC      %d\n",iPWG4PtQATPC);     
+   printf(":: use PWG4 Cosmics        %d\n",iPWG4Cosmics);     
    printf(":: use PWG4 Three Jets     %d\n",iPWG4ThreeJets);
    printf(":: use PWG4 KMeans         %d\n",iPWG4KMeans);
    printf(":: use PWG4 Cluster        %d\n",iPWG4Cluster);
@@ -467,6 +469,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
  if (!taskQATPC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQATPC cannot run for this train conditions - EXCLUDED");
    }
+
+   if(iPWG4Cosmics){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4CosmicCandidates.C");
+
+     AliPWG4CosmicCandidates *taskPWG4CosmicCandidates = AddTaskPWG4CosmicCandidates(0);
+     taskPWG4CosmicCandidates = AddTaskPWG4CosmicCandidates(1);
+
+     if (!taskPWG4CosmicCandidates) ::Warning("AnalysisTrainPWG4Jets", "AddTaskPWG4CosmicCandidates cannot run for this train conditions - EXCLUDED");
+   }
+
 
    if(iPWG4PtSpectra){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
@@ -736,6 +748,9 @@ void CheckModuleFlags(const char *mode) {
       iPWG4PtQAMC        = 0;
       if( iPWG4PtQATPC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtTPC disabled in analysis on AOD's");
       iPWG4PtQATPC        = 0;
+      if( iPWG4Cosmics)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 Comics disabled in analysis on AOD's");
+      iPWG4Cosmics        = 0;
+
       if( iPWG4PtSpectra)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtQAMC disabled in analysis on AOD's");
       iPWG4PtSpectra     = 0;
       if(iPWG4KMeans)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4KMeans disabled on AOD's");
@@ -781,7 +796,7 @@ void CheckModuleFlags(const char *mode) {
 	iPWG4JetSpectrum = iPWG4UE = iPWG4ThreeJets = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4ThreeJets||iPWG4JetChem;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
    if (iESDfilter) {iAODhandler=1;}
