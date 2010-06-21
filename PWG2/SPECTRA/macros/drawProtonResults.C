@@ -64,7 +64,9 @@ void drawResults(const char* analysisOutput) {
   TCanvas *cEventStats = new TCanvas("cEventStats","Event statistics",
 				     0,0,500,500);
   cEventStats->SetFillColor(10); cEventStats->SetHighLightColor(10);
-  gHistEventStats->Draw();
+  cEventStats->SetLeftMargin(0.15);
+  gHistEventStats->GetYaxis()->SetTitleOffset(1.4);
+  gHistEventStats->SetStats(kFALSE); gHistEventStats->Draw();
 
   TCanvas *cEta = new TCanvas("cEta","Eta",100,0,600,400);
   cEta->SetFillColor(10); cEta->SetHighLightColor(10); cEta->Divide(2,1);
@@ -91,6 +93,10 @@ void drawResults(const char* analysisOutput) {
   latex->DrawLatex(0.6,0.45,"ALICE PRELIMINARY");
   latex->DrawLatex(0.6,0.4,"p-p: #sqrt{s} = 900 GeV");
 
+  TFile *fout = TFile::Open("RawRatioPlots.root","recreate");
+  gHistYRatio->Write();
+  gHistPtRatio->Write();
+  fout->Close();
 
   Printf("==========================================");
   for(Int_t iBin = 1; iBin <= gHistYRatio->GetNbinsX(); iBin++)
@@ -312,24 +318,26 @@ void drawQAPlots(const char* analysisOutput,
 
   //__________________________________________________//
   TH2F *hEmptydEdx = new TH2F("hEmptydEdx",
-			      "TPC dE/dx parametrization;P[GeV/c];dE/dx [a.u]",
-			      100,0.01,110.,100,30,1000);
+			      ";p [GeV/c];dE/dx [arb. units]",
+			      100,0.08,20.,100,30,1000);
   hEmptydEdx->SetStats(kFALSE);
 
   TLatex *latex = new TLatex();
   latex->SetTextSize(0.035);
 
   TCanvas *cdEdx = new TCanvas("cdEdx","dE/dx (TPC)",0,0,700,400);
-  cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); cdEdx->Divide(2,1);
+  cdEdx->SetFillColor(10); cdEdx->SetHighLightColor(10); //cdEdx->Divide(2,1);
   cdEdx->cd(1)->SetLogx(); cdEdx->cd(1)->SetLogy(); hEmptydEdx->DrawCopy();
   gHistdEdxP->Draw("colsame");
-  grElectrons->Draw("LSAME"); latex->SetTextColor(6); latex->DrawLatex(0.02,55,"e");
-  grMuons->Draw("LSAME"); latex->SetTextColor(3); latex->DrawLatex(0.02,400,"#mu");
-  grPions->Draw("LSAME"); latex->SetTextColor(1); latex->DrawLatex(0.05,400,"#pi");
+  latex->DrawLatex(7.,400,"ALICE");
+  latex->DrawLatex(6.,400,"p+p @ #sqrt{s} = 900 GeV");
+  grElectrons->Draw("LSAME"); latex->SetTextColor(6); latex->DrawLatex(0.09,55,"e");
+  grMuons->Draw("LSAME"); latex->SetTextColor(3); latex->DrawLatex(0.09,400,"#mu");
+  grPions->Draw("LSAME"); latex->SetTextColor(1); latex->DrawLatex(0.1,200,"#pi");
   grKaons->Draw("LSAME"); latex->SetTextColor(2); latex->DrawLatex(0.17,400,"K");
   grProtons->Draw("LSAME"); latex->SetTextColor(4); latex->DrawLatex(0.35,400,"p");
   
-  cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
+  //cdEdx->cd(2)->SetLogx(); gHistProtonsdEdxP->Draw("col");
 
   TCanvas *cZdEdx = new TCanvas("cZdEdx","Normalized dE/dx (TPC)",500,0,700,400);
   cZdEdx->SetFillColor(10); cZdEdx->SetHighLightColor(10); cZdEdx->Divide(2,1);
@@ -1493,6 +1501,32 @@ void drawDCAPlots(const char* fileName) {
   c2->cd(6)->SetLogy(); gHistProtonsDCAxy[5]->Draw("E");
   gHistAntiProtonsDCAxy[5]->Draw("ESAME");
 
+  TFile *fout = TFile::Open("test.root","recreate");
+  gHistProtonsDCAxy[0]->Write();
+  gHistProtonsDCAxy[1]->Write();
+  gHistProtonsDCAxy[2]->Write();
+  gHistProtonsDCAxy[3]->Write();
+  gHistProtonsDCAxy[4]->Write();
+  gHistProtonsDCAxy[5]->Write();
+  gHistAntiProtonsDCAxy[0]->Write();
+  gHistAntiProtonsDCAxy[1]->Write();
+  gHistAntiProtonsDCAxy[2]->Write();
+  gHistAntiProtonsDCAxy[3]->Write();
+  gHistAntiProtonsDCAxy[4]->Write();
+  gHistAntiProtonsDCAxy[5]->Write();
+  gHistProtonsDCAz[0]->Write();
+  gHistProtonsDCAz[1]->Write();
+  gHistProtonsDCAz[2]->Write();
+  gHistProtonsDCAz[3]->Write();
+  gHistProtonsDCAz[4]->Write();
+  gHistProtonsDCAz[5]->Write();
+  gHistAntiProtonsDCAz[0]->Write();
+  gHistAntiProtonsDCAz[1]->Write();
+  gHistAntiProtonsDCAz[2]->Write();
+  gHistAntiProtonsDCAz[3]->Write();
+  gHistAntiProtonsDCAz[4]->Write();
+  gHistAntiProtonsDCAz[5]->Write();
+  fout->Close();
   //==========================================================//
   TCanvas *c3 = new TCanvas("c3","DCA(z)",200,200,900,600);
   c3->SetFillColor(10); c3->SetHighLightColor(10); c3->Divide(3,2);
