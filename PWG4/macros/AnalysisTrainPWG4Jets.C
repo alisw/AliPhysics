@@ -589,7 +589,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        TFile::Cp(Form("file:%s.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
        
-       dest = Form("%s/rootfiles/STEER/LQ1dRefv1.root",gGrid->GetHomeDirectory());
+       dest = Form("%s/rootfiles/STEER/LQ1dRef_v1.root",gGrid->GetHomeDirectory());
        if(AliAnalysisAlien::FileExists(dest.Data())){
 	 Printf("%s exist on grid removing...",dest.Data());
 	 gGrid->Rm(dest.Data());
@@ -1632,7 +1632,7 @@ Bool_t PatchAnalysisMacro(){
     //    add += Form("AliLog::SetGlobalLogLevel(%d);\n",AliLog::GetGlobalLogLevel());
     add += "gSystem->AddIncludePath(\"./\") \n";
     if(gGrid&&kPluginAliRootVersion.Length()==0){
-      add += "// Dirty hack for TRD reference data";
+      add += "// Dirty hack for TRD reference data \n";
       add += "gSystem->Setenv(\"ALICE_ROOT\",\"";
       add += Form("alien://%s/rootfiles/",gGrid->GetHomeDirectory());
       add += "\"); \n";
