@@ -16,12 +16,12 @@ class AliMultiplicity;
 class AliTrackleter : public TObject {
 public:
  AliTrackleter() :fMult(0) {}
-  virtual ~AliTrackleter() { delete fMult; }
+  virtual ~AliTrackleter();
   virtual void Reconstruct(AliESDEvent* esd, TTree* treeRP) = 0;
   virtual AliMultiplicity* GetMultiplicity() const {return fMult;}
   //
 protected:
- AliTrackleter(const AliTrackleter &src) : TObject(src) {}
+ AliTrackleter(const AliTrackleter &src) : TObject(src), fMult(0) {}
   AliTrackleter & operator=(const AliTrackleter &src) {if (&src!=this) TObject::operator=(src); return *this;}
   
  protected:

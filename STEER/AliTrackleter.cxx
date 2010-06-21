@@ -20,3 +20,8 @@
 
 ClassImp(AliTrackleter)
 
+AliTrackleter::~AliTrackleter() 
+{
+  // destructor
+  delete fMult; 
+}
