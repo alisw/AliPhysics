@@ -201,7 +201,7 @@ void AliHLTEMCALGeometry::ConvertRecPointCoordinates(Double_t &x, Double_t &y, D
 	// this should be read from GEANT box dimensions
 	Double_t DX = 13.869008;
 	Double_t DY = 72.559998;
-	Double_t DZ = 175.00000;
+	Double_t DZ = 153.80000;
 
 	// from our local frame to GEANT local frame
 	x = y - DX;  //FIXME
