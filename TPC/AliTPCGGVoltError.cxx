@@ -47,7 +47,8 @@
 AliTPCGGVoltError::AliTPCGGVoltError()
   : AliTPCCorrection("GGVoltError","GatingGrid (GG) Voltage Error"),
     fC0(0.),fC1(0.),
-    fDeltaVGGA(0.),fDeltaVGGC(0.)
+    fDeltaVGGA(0.),fDeltaVGGC(0.),
+    fInitLookUp(kFALSE)
 {
   //
   // default constructor
@@ -93,7 +94,7 @@ void AliTPCGGVoltError::Update(const TTimeStamp &/*timeStamp*/) {
   Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ; 
 
   SetOmegaTauT1T2(wt,fT1,fT2);
-  InitGGVoltErrorDistortion();
+  //  InitGGVoltErrorDistortion(); // not necessary in here since the Voltage should not change!
 }
 
 
@@ -107,6 +108,8 @@ void AliTPCGGVoltError::GetCorrection(const Float_t x[],const Short_t roc,Float_
   //
   // Electrostatic Equations from StarNote SN0253 by Howard Wieman.
   //
+  
+  if (!fInitLookUp) AliError("Lookup table was not initialized! You should do InitGGVoltErrorDistortion() ...");
   
   Int_t   order     = 1 ;               // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
  
@@ -146,6 +149,8 @@ void AliTPCGGVoltError::GetCorrection(const Float_t x[],const Short_t roc,Float_
   dx[1] = r * TMath::Sin(phi) - x[1]; 
   dx[2] = 0.; // z distortion not implemented (1st order distortions)
 
+
+
 }
 
 
@@ -154,7 +159,9 @@ Float_t AliTPCGGVoltError::GetIntErOverEz(const Float_t x[],const Short_t roc) {
   // This function is purely for calibration purposes
   // Calculates the integral (int Er/Ez dz) for the setted GG voltage offset 
   // 
-  
+
+  if (!fInitLookUp) AliError("Lookup table was not initialized! You should do InitGGVoltErrorDistortion() ...");
+
   Int_t   order     = 1 ;     // FIXME: so far hardcoded? Linear interpolation = 1, Quadratic = 2         
   
   Double_t intEr;
@@ -227,6 +234,8 @@ void AliTPCGGVoltError::InitGGVoltErrorDistortion() {
 
     }
   }
+  
+  fInitLookUp = kTRUE;
 }
 
 
@@ -245,6 +254,7 @@ void AliTPCGGVoltError::Print(const Option_t* option) const {
     printf(" - C1: %1.4f, C0: %1.4f \n",fC1,fC0);
   }    
 
+  if (!fInitLookUp) AliError("Lookup table was not initialized! You should do InitGGVoltErrorDistortion() ...");
 
   
 }

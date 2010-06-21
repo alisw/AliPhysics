@@ -61,6 +61,8 @@ private:
   Double_t fDeltaVGGC;            // Missmatch of gating grid voltage on C-side [V]
   Double_t fGGVoltErrorER[kNZ][kNR]; // Array to store electric field for GGVoltError calculation
 
+  Bool_t fInitLookUp;             // flag to check it the Look Up table was created
+
   ClassDef(AliTPCGGVoltError,1);
 };
 

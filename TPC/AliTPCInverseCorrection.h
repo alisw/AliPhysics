@@ -37,7 +37,11 @@ public:
   virtual void Init();
   virtual void Update(const TTimeStamp &timeStamp);
 
-
+  virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
+ 
+  // convenience functions
+  virtual void Print(Option_t* option="") const;
+ 
 private:
   AliTPCCorrection *fCorrection; // The correction to be inverted.
 

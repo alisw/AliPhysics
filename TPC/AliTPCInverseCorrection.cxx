@@ -80,6 +80,17 @@ void AliTPCInverseCorrection::Update(const TTimeStamp &timeStamp) {
 
 }
 
+void AliTPCInverseCorrection::Print(Option_t* option) const {
+  //
+  // Print function to check which correction classes are used 
+  // option=="d" prints details regarding the setted magnitude 
+  // option=="a" prints the C0 and C1 coefficents for calibration purposes
+  //
+
+  printf("Inverse of ");
+  if (fCorrection) fCorrection->Print(option);
+}
+
 void AliTPCInverseCorrection::GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]) {
   //
   // This is just calling the CalculateInverseCorrection of the wrapped
@@ -89,6 +100,15 @@ void AliTPCInverseCorrection::GetCorrection(const Float_t x[],const Short_t roc,
     fCorrection->GetDistortion(x,roc,dx);
   else
     for (Int_t j=0;j<3;++j) dx[j]=0.;
+}
+
+void AliTPCInverseCorrection:: SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2) {
+  //
+  // Virtual funtion to pass the wt values (might become event dependent) to the inherited classes
+  // t1 and t2 represent the "effective omegaTau" corrections and were measured in a dedicated
+  // calibration run
+  //
+  if (fCorrection) fCorrection->SetOmegaTauT1T2(omegaTau, t1, t2);
 }
 
 void AliTPCInverseCorrection::GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]) {

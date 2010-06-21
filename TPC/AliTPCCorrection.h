@@ -32,6 +32,7 @@
 
 
 #include <TNamed.h>
+#include "TMatrixD.h"
 class TH2F;
 class TTimeStamp;
 class TCollection;
@@ -39,6 +40,8 @@ class TTreeSRedirector;
 class AliExternalTrackParam;
 class TTree;
 class THnSparse;
+
+
 
 class AliTPCCorrection : public TNamed {
 public:
@@ -104,7 +107,12 @@ protected:
   Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
 			const Int_t order, const Double_t x );
   void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
-  
+  virtual const Int_t IsPowerOfTwo ( Int_t i ) ;
+    
+  // Algorithms to solve the laplace or possion equation 
+  void PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &chargeDensity, TMatrixD &arrayErOverEz, const Int_t rows, const Int_t columns, const Int_t iterations );
+
+
 protected:
   Double_t fT1;         // tensor term of wt - T1
   Double_t fT2;         // tensor term of wt - T2

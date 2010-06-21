@@ -52,6 +52,15 @@
 #include <AliCDBMetaData.h>
 #include  "TVectorD.h"
 
+
+#include "TRandom.h"
+#include "AliExternalTrackParam.h"
+#include "AliTrackPointArray.h"
+#include "TDatabasePDG.h"
+#include "AliTrackerBase.h"
+#include "AliTPCROC.h"
+#include "THnSparse.h"
+
 #include "TRandom.h"
 #include "AliTPCTransform.h"
 #include "AliTPCcalibDB.h"
@@ -65,9 +74,11 @@
 #include  "AliTrackerBase.h"
 #include  "AliTPCROC.h"
 #include  "THnSparse.h"
+
 #include  "AliTPCLaserTrack.h"
 
 #include "AliTPCCorrection.h"
+#include "AliLog.h"
 
 ClassImp(AliTPCCorrection)
 
@@ -329,7 +340,6 @@ TH2F* AliTPCCorrection::CreateHistoDRinZR(Float_t phi,Int_t nz,Int_t nr) {
       h->SetBinContent(iz,ir,r1-r0);
     }
   }
-  printf("SDF\n");
   return h;
 
 }
@@ -486,6 +496,216 @@ void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Dou
   
 }
 
+void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, const TMatrixD &chargeDensity, 
+					   TMatrixD &arrayErOverEz, const Int_t rows, 
+					   const Int_t columns, const Int_t iterations ) {
+  //
+  // Solve Poisson's Equation by Relaxation Technique in 2D (assuming cylindrical symmetry)
+  //
+  // Solve Poissons equation in a cylindrical coordinate system. The arrayV matrix must be filled with the 
+  // boundary conditions on the first and last rows, and the first and last columns.  The remainder of the 
+  // array can be blank or contain a preliminary guess at the solution.  The Charge density matrix contains 
+  // the enclosed spacecharge density at each point. The charge density matrix can be full of zero's if 
+  // you wish to solve Laplaces equation however it should not contain random numbers or you will get 
+  // random numbers back as a solution. 
+  // Poisson's equation is solved by iteratively relaxing the matrix to the final solution.  In order to 
+  // speed up the convergence to the best solution, this algorithm does a binary expansion of the solution 
+  // space.  First it solves the problem on a very sparse grid by skipping rows and columns in the original 
+  // matrix.  Then it doubles the number of points and solves the problem again.  Then it doubles the 
+  // number of points and solves the problem again.  This happens several times until the maximum number
+  // of points has been included in the array.  
+  //
+  // NOTE: In order for this algorithmto work, the number of rows and columns must be a power of 2 plus one.
+  // So rows == 2**M + 1 and columns == 2**N + 1.  The number of rows and columns can be different.
+  // 
+  // Original code by Jim Thomas (STAR TPC Collaboration)
+  //
+
+  Double_t ezField = (fgkCathodeV-fgkGG)/fgkTPCZ0; // = ALICE Electric Field (V/cm) Magnitude ~ -400 V/cm; 
+
+  const Float_t  gridSizeR   =  (fgkOFCRadius-fgkIFCRadius) / (rows-1) ;
+  const Float_t  gridSizeZ   =  fgkTPCZ0 / (columns-1) ;
+  const Float_t  ratio       =  gridSizeR*gridSizeR / (gridSizeZ*gridSizeZ) ;
+
+  TMatrixD  arrayEr(rows,columns) ;
+  TMatrixD  arrayEz(rows,columns) ;
+
+  //Check that number of rows and columns is suitable for a binary expansion
+  
+  if ( !IsPowerOfTwo(rows-1) ) {
+    AliError("PoissonRelaxation - Error in the number of rows. Must be 2**M - 1");
+    return;
+  }
+  if ( !IsPowerOfTwo(columns-1) ) {
+    AliError("PoissonRelaxation - Error in the number of columns. Must be 2**N - 1");
+    return;
+  }
+  
+  // Solve Poisson's equation in cylindrical coordinates by relaxation technique
+  // Allow for different size grid spacing in R and Z directions
+  // Use a binary expansion of the size of the matrix to speed up the solution of the problem
+  
+  Int_t iOne = (rows-1)/4 ;
+  Int_t jOne = (columns-1)/4 ;
+  // Solve for N in 2**N, add one.
+  Int_t loops = 1 + (int) ( 0.5 + TMath::Log2( (double) TMath::Max(iOne,jOne) ) ) ;  
+
+  for ( Int_t count = 0 ; count < loops ; count++ ) { 
+    // Loop while the matrix expands & the resolution increases.
+
+    Float_t tempGridSizeR = gridSizeR * iOne ;
+    Float_t tempRatio     = ratio * iOne * iOne / ( jOne * jOne ) ;
+    Float_t tempFourth    = 1.0 / (2.0 + 2.0*tempRatio) ;
+    
+    // Do this the standard C++ way to avoid gcc extensions for Float_t coef1[rows]
+    std::vector<float> coef1(rows) ;  
+    std::vector<float> coef2(rows) ;  
+
+    for ( Int_t i = iOne ; i < rows-1 ; i+=iOne ) {
+       Float_t radius = fgkIFCRadius + i*gridSizeR ;
+      coef1[i] = 1.0 + tempGridSizeR/(2*radius);
+      coef2[i] = 1.0 - tempGridSizeR/(2*radius);
+    }
+    
+    TMatrixD sumChargeDensity(rows,columns) ;
+
+    for ( Int_t i = iOne ; i < rows-1 ; i += iOne ) {
+      Float_t radius = fgkIFCRadius + iOne*gridSizeR ;
+      for ( Int_t j = jOne ; j < columns-1 ; j += jOne ) {
+	if ( iOne == 1 && jOne == 1 ) sumChargeDensity(i,j) = chargeDensity(i,j) ;
+	else {        
+	  // Add up all enclosed charge density contributions within 1/2 unit in all directions
+	  Float_t weight = 0.0 ;
+	  Float_t sum    = 0.0 ;
+	  sumChargeDensity(i,j) = 0.0 ;
+	  for ( Int_t ii = i-iOne/2 ; ii <= i+iOne/2 ; ii++ ) {
+	    for ( Int_t jj = j-jOne/2 ; jj <= j+jOne/2 ; jj++ ) {
+	      if ( ii == i-iOne/2 || ii == i+iOne/2 || jj == j-jOne/2 || jj == j+jOne/2 ) weight = 0.5 ;
+	      else
+		weight = 1.0 ;
+	      // Note that this is cylindrical geometry
+	      sumChargeDensity(i,j) += chargeDensity(ii,jj)*weight*radius ;  
+	      sum += weight*radius ;
+	    }
+	  }
+	  sumChargeDensity(i,j) /= sum ;
+	}
+        sumChargeDensity(i,j) *= tempGridSizeR*tempGridSizeR; // just saving a step later on
+       }
+    }
+
+    for ( Int_t k = 1 ; k <= iterations; k++ ) {               
+      // Solve Poisson's Equation
+      // Over-relaxation index, must be >= 1 but < 2.  Arrange for it to evolve from 2 => 1 
+      // as interations increase.
+      Float_t overRelax   = 1.0 + TMath::Sqrt( TMath::Cos( (k*TMath::PiOver2())/iterations ) ) ; 
+      Float_t overRelaxM1 = overRelax - 1.0 ;
+      Float_t overRelaxtempFourth, overRelaxcoef5 ;
+      overRelaxtempFourth = overRelax * tempFourth ;
+      overRelaxcoef5 = overRelaxM1 / overRelaxtempFourth ; 
+
+      for ( Int_t i = iOne ; i < rows-1 ; i += iOne ) {
+	for ( Int_t j = jOne ; j < columns-1 ; j += jOne ) {
+
+	  arrayV(i,j) = (   coef2[i]       *   arrayV(i-iOne,j)
+			  + tempRatio      * ( arrayV(i,j-jOne) + arrayV(i,j+jOne) )
+			  - overRelaxcoef5 *   arrayV(i,j) 
+			  + coef1[i]       *   arrayV(i+iOne,j) 
+			  + sumChargeDensity(i,j) 
+			) * overRelaxtempFourth;
+	}
+      }
+
+      if ( k == iterations ) {    
+	// After full solution is achieved, copy low resolution solution into higher res array
+	for ( Int_t i = iOne ; i < rows-1 ; i += iOne ) {
+	  for ( Int_t j = jOne ; j < columns-1 ; j += jOne ) {
+
+	    if ( iOne > 1 ) {              
+	      arrayV(i+iOne/2,j)                    =  ( arrayV(i+iOne,j) + arrayV(i,j)     ) / 2 ;
+	      if ( i == iOne )  arrayV(i-iOne/2,j) =  ( arrayV(0,j)       + arrayV(iOne,j) ) / 2 ;
+	    }
+	    if ( jOne > 1 ) {
+	      arrayV(i,j+jOne/2)                    =  ( arrayV(i,j+jOne) + arrayV(i,j) )     / 2 ;
+	      if ( j == jOne )  arrayV(i,j-jOne/2) =  ( arrayV(i,0)       + arrayV(i,jOne) ) / 2 ;
+	    }
+	    if ( iOne > 1 && jOne > 1 ) {
+	      arrayV(i+iOne/2,j+jOne/2) =  ( arrayV(i+iOne,j+jOne) + arrayV(i,j) ) / 2 ;
+	      if ( i == iOne ) arrayV(i-iOne/2,j-jOne/2) =   ( arrayV(0,j-jOne) + arrayV(iOne,j) ) / 2 ;
+	      if ( j == jOne ) arrayV(i-iOne/2,j-jOne/2) =   ( arrayV(i-iOne,0) + arrayV(i,jOne) ) / 2 ;
+	      // Note that this leaves a point at the upper left and lower right corners uninitialized. 
+	      // -> Not a big deal.
+	    }
+
+	  }
+	}
+      }
+
+    }
+
+    iOne = iOne / 2 ; if ( iOne < 1 ) iOne = 1 ;
+    jOne = jOne / 2 ; if ( jOne < 1 ) jOne = 1 ;
+
+  }      
+
+  // Differentiate V(r) and solve for E(r) using special equations for the first and last rows
+  for ( Int_t j = 0 ; j < columns ; j++ ) {	  
+    for ( Int_t i = 1 ; i < rows-1 ; i++ ) arrayEr(i,j) = -1 * ( arrayV(i+1,j) - arrayV(i-1,j) ) / (2*gridSizeR) ;
+    arrayEr(0,j)      =  -1 * ( -0.5*arrayV(2,j) + 2.0*arrayV(1,j) - 1.5*arrayV(0,j) ) / gridSizeR ;  
+    arrayEr(rows-1,j) =  -1 * ( 1.5*arrayV(rows-1,j) - 2.0*arrayV(rows-2,j) + 0.5*arrayV(rows-3,j) ) / gridSizeR ; 
+  }
+
+  // Differentiate V(z) and solve for E(z) using special equations for the first and last columns
+  for ( Int_t i = 0 ; i < rows ; i++) {
+    for ( Int_t j = 1 ; j < columns-1 ; j++ ) arrayEz(i,j) = -1 * ( arrayV(i,j+1) - arrayV(i,j-1) ) / (2*gridSizeZ) ;
+    arrayEz(i,0)         =  -1 * ( -0.5*arrayV(i,2) + 2.0*arrayV(i,1) - 1.5*arrayV(i,0) ) / gridSizeZ ;  
+    arrayEz(i,columns-1) =  -1 * ( 1.5*arrayV(i,columns-1) - 2.0*arrayV(i,columns-2) + 0.5*arrayV(i,columns-3) ) / gridSizeZ ; 
+  }
+  
+  for ( Int_t i = 0 ; i < rows ; i++) {
+    // Note: go back and compare to old version of this code.  See notes below.
+    // JT Test ... attempt to divide by real Ez not Ez to first order
+    for ( Int_t j = 0 ; j < columns ; j++ ) {
+      arrayEz(i,j) += ezField;
+      // This adds back the overall Z gradient of the field (main E field component)
+    } 
+    // Warning: (-=) assumes you are using an error potetial without the overall Field included
+  }                                 
+  
+  // Integrate Er/Ez from Z to zero
+  for ( Int_t j = 0 ; j < columns ; j++ )  {	  
+    for ( Int_t i = 0 ; i < rows ; i++ ) {
+      Int_t index = 1 ;   // Simpsons rule if N=odd.  If N!=odd then add extra point by trapezoidal rule.  
+      arrayErOverEz(i,j) = 0.0 ;
+      for ( Int_t k = j ; k < columns ; k++ ) {
+	arrayErOverEz(i,j)  +=  index*(gridSizeZ/3.0)*arrayEr(i,k)/arrayEz(i,k) ;
+	if ( index != 4 )  index = 4; else index = 2 ;
+      }
+      if ( index == 4 ) arrayErOverEz(i,j)  -=  (gridSizeZ/3.0)*arrayEr(i,columns-1)/arrayEz(i,columns-1) ;
+      if ( index == 2 ) arrayErOverEz(i,j)  +=  
+	(gridSizeZ/3.0) * ( 0.5*arrayEr(i,columns-2)/arrayEz(i,columns-2) 
+			    -2.5*arrayEr(i,columns-1)/arrayEz(i,columns-1) )   ;
+      if ( j == columns-2 ) arrayErOverEz(i,j) =  
+	(gridSizeZ/3.0) * ( 1.5*arrayEr(i,columns-2)/arrayEz(i,columns-2)
+			    +1.5*arrayEr(i,columns-1)/arrayEz(i,columns-1) ) ;
+      if ( j == columns-1 ) arrayErOverEz(i,j) =  0.0 ;
+    }
+  }
+  
+}
+
+
+
+const Int_t AliTPCCorrection::IsPowerOfTwo(Int_t i) {
+  //
+  // Helperfunction: Check if integer is a power of 2
+  //
+  Int_t j = 0;
+  while( i > 0 ) { j += (i&1) ; i = (i>>1) ; }
+  if ( j == 1 ) return(1) ;  // True
+  return(0) ;                // False
+}
+
 
 AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir, TTreeSRedirector * const pcstream){
   //
@@ -506,6 +726,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   // track1.fP[2] - sinus of local inclination angle
   // track1.fP[3] - tangent of deep angle
   // track1.fP[4] - 1/pt
+
   AliTPCROC * roc = AliTPCROC::Instance();
   const Int_t    npoints0=roc->GetNRows(0)+roc->GetNRows(36);
   const Double_t kRTPC0  =roc->GetPadRowRadii(0,0);
@@ -908,7 +1129,7 @@ void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray
 	if (r0>80){
 	  corr->DistortPoint(distPoint, sector);
 	}
-	Double_t value=distPoint[2]-gz;
+	// Double_t value=distPoint[2]-gz;
 	if (itype==0){
 	  Double_t r1   = TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
 	  Double_t phi1 = TMath::ATan2(distPoint[1],distPoint[0]);
