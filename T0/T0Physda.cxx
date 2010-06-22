@@ -211,13 +211,12 @@ int main(int argc, char **argv) {
 	      && (allData[ik+57][0]-allData[ik+45][0]) <530 ){
 	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+npmtA][0]);
 	   }
-	   if(iev == 1000) {	
+	   if(iev == 10000) {	
 	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
-	     cout<<ik<<" "<<meanShift[ik]<<endl;
 	   }
 	 }
       //fill  mean time _ fast reconstruction
-      if (iev > 1000 )
+      if (iev > 10000 )
 	{
 	  for (Int_t in=0; in<12; in++)  
 	    {
