@@ -14,6 +14,8 @@ class TNtuple;
 class AliCorrection;
 class TH1;
 class TH1D;
+class TH2F;
+class TH3F;
 class AliESDEvent;
 
 class AliMultiplicityTask : public AliAnalysisTask {
@@ -70,6 +72,10 @@ class AliMultiplicityTask : public AliAnalysisTask {
     
     TH1* fEta[3];                    //! eta histogram of events in the acceptance region for each of the eta-bins (control histogram)
 
+    // control histograms (ESD)
+    TH3F* fVertex;                //! 3d vertex distribution
+    TH2F* fEtaPhi;                //! raw eta - phi distribution
+    
     TList* fOutput;                  //! list send on output slot 0
     
  private:
