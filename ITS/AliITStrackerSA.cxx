@@ -846,33 +846,8 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
  
   if(otrack==0) return 0;
 
-  Int_t indexc[AliITSgeomTGeo::kNLayers];
-  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) indexc[i]=0;
-  for(Int_t nind=0;nind<otrack->GetNumberOfClusters();nind++){
-    indexc[nind] = otrack->GetClusterIndex(nind);
-  }      
-  Int_t labl[6][3];
-  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {
-    if(i<otrack->GetNumberOfClusters()) {
-      AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(indexc[i]);
-      labl[i][0]=cl->GetLabel(0);
-      labl[i][1]=cl->GetLabel(1);
-      labl[i][2]=cl->GetLabel(2);
-    } else {
-      labl[i][0]=-1;
-      labl[i][1]=-1;
-      labl[i][2]=-1;
-    }
-  }
-
   CookLabel(otrack,0.); //MI change - to see fake ratio
- 
-  Int_t label=FindLabel(labl[0][0],labl[1][0],labl[2][0],labl[3][0],labl[4][0],labl[5][0]);
-  Int_t lflag=0;
-  for(Int_t i=0;i<otrack->GetNumberOfClusters();i++)
-    if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
-  
-  if(lflag<otrack->GetNumberOfClusters()) label = -label;
+  Int_t label=FindLabel(otrack);
   otrack->SetLabel(label);  
 
   //remove clusters of found track
@@ -1088,71 +1063,60 @@ Int_t AliITStrackerSA::FindTrackLowChiSquare() const {
 }
 
 //__________________________________________________________
-Int_t AliITStrackerSA::FindLabel(Int_t l0, Int_t l1, Int_t l2, Int_t l3, Int_t l4, Int_t l5){
+Int_t AliITStrackerSA::FindLabel(AliITStrackV2* track){
+  //
+  
+  Int_t labl[AliITSgeomTGeo::kNLayers][3];
+  Int_t cnts[AliITSgeomTGeo::kNLayers][3];
+  for(Int_t j=0;j<AliITSgeomTGeo::GetNLayers();j++){
+    for(Int_t k=0;k<3;k++){
+      labl[j][k]=-2;
+      cnts[j][k]=1;
+    }
+  }
+  Int_t iNotLabel=0;
+  for(Int_t i=0;i<track->GetNumberOfClusters(); i++) {
+    Int_t indexc = track->GetClusterIndex(i);
+    AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(indexc);
+    Int_t iLayer=cl->GetLayer();
+    for(Int_t k=0;k<3;k++){
+      labl[iLayer][k]=cl->GetLabel(k);
+      if(labl[iLayer][k]<0) iNotLabel++;
+    }
+  }
+  if(iNotLabel==3*track->GetNumberOfClusters()) return -2;
 
-  //function used to determine the track label
-  
-  Int_t lb[6] = {l0,l1,l2,l3,l4,l5};
-  Int_t aa[6]={1,1,1,1,1,1};
-  Int_t ff=0; 
-  Int_t ll=0;
-  Int_t k=0;Int_t w=0;Int_t num=6;
-  for(Int_t i=5;i>=0;i--) if(lb[i]==-1) num=i;
-  
-  while(k<num){
-  
-    for(Int_t i=k+1;i<num;i++){
-    
-      if(lb[k]==lb[i] && aa[k]!=0){
-      
-        aa[k]+=1;
-        aa[i]=0;
+  for(Int_t j1=0;j1<AliITSgeomTGeo::kNLayers; j1++) {
+    for(Int_t j2=0; j2<j1;  j2++){
+      for(Int_t k1=0; k1<3; k1++){
+	for(Int_t k2=0; k2<3; k2++){
+	  if(labl[j1][k1]>=0 && labl[j1][k1]==labl[j2][k2] && cnts[j2][k2]>0){
+	    cnts[j2][k2]++;
+	    cnts[j1][k1]=0;
+	  }
+	}
       }
     }
-    k++;
   }
 
-  while(w<num){
- 
-    for(Int_t j=0;j<6;j++){
-      if(aa[w]<aa[j]){
-      ff=aa[w];
-      aa[w]=aa[j];
-      aa[j]=ff;
-      ll=lb[w];
-      lb[w]=lb[j];
-      lb[j]=ll;
-     }
+
+  Int_t cntMax=0;
+  Int_t label=-1;
+  for(Int_t j=0;j<AliITSgeomTGeo::kNLayers;j++){
+    for(Int_t k=0;k<3;k++){
+      if(cnts[j][k]>cntMax && labl[j][k]>=0){
+	cntMax=cnts[j][k];
+	label=labl[j][k];
+      }
     }
-    w++;
-  }
-  
-  if(num<1) return -1; 
-  return lb[num-1];
-}
-
-//_____________________________________________________________________________
-Int_t AliITStrackerSA::Label(Int_t gl1, Int_t gl2, Int_t gl3, Int_t gl4, Int_t gl5, Int_t gl6,Int_t gl7, Int_t gl8, Int_t gl9, Int_t gl10,Int_t gl11,
-Int_t gl12, Int_t gl13, Int_t gl14,Int_t gl15, Int_t gl16, Int_t gl17, Int_t gl18, Int_t minNPoints){
-
- 
-  //function used to assign label to the found track. If track is fake, the label is negative
-
-  Int_t lb0[6] = {gl1,gl2,gl3,gl4,gl5,gl6};
-  Int_t lb1[6] = {gl7,gl8,gl9,gl10,gl11,gl12};
-  Int_t lb2[6] = {gl13,gl14,gl15,gl16,gl17,gl18};
-  Int_t ll=FindLabel(lb0[0],lb0[1],lb0[2],lb0[3],lb0[4],lb0[5]);
-  Int_t lflag=0;Int_t num=6;
-  if(lb0[5]==-1 && lb1[5]==-1 && lb2[5]==-1) num=5;
-
-  for(Int_t i=0;i<num;i++){
-    if(lb0[i]==ll || lb1[i]==ll || lb2[i]==ll) lflag+=1;
   }
 
-  if(lflag>=minNPoints) return ll;
-  else return -ll;
-
+  Int_t lflag=0;
+  for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++)
+    if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
   
+  if(lflag<track->GetNumberOfClusters()) label = -label;
+  return label;
 }
 //_____________________________________________________________________________
 void AliITStrackerSA::SetCalculatedWindowSizes(Int_t n, Float_t phimin, Float_t phimax, Float_t lambdamin, Float_t lambdamax){

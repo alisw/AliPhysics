@@ -89,12 +89,7 @@ class AliITStrackerSA : public AliITStrackerMI {
                        Float_t x3, Float_t y3,Float_t& a, Float_t& b, 
                        Float_t& c);
  
-  static Int_t FindLabel(Int_t l1, Int_t l2, Int_t l3, Int_t l4, Int_t l5, Int_t l6);
-  static Int_t Label(Int_t gl1, Int_t gl2, Int_t gl3, Int_t gl4, Int_t gl5, 
-              Int_t gl6,Int_t gl7, Int_t gl8, Int_t gl9, Int_t gl10,Int_t gl11,
-              Int_t gl12, Int_t gl13, Int_t gl14,Int_t gl15, Int_t gl16, 
-              Int_t gl17, Int_t gl18, Int_t numberofpoints=6);
- 
+  Int_t FindLabel(AliITStrackV2* track);
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
 
