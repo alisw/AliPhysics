@@ -13,7 +13,7 @@
 #include <TRandom3.h>
 #endif
 
-void StoreDriftSpeedSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
+void StoreDriftSpeedSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the drift speed files for SDD         //
   // Generates:                                                        //

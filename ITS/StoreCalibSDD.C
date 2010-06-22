@@ -11,7 +11,7 @@
 #include <TRandom3.h>
 #endif
 
-void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999){
+void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the calibration files for SDD         //
   // Generates:                                                        //

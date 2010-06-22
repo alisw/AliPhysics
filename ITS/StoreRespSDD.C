@@ -8,7 +8,7 @@
 #include "AliCDBEntry.h"
 #endif
 
-void StoreRespSDD(Int_t firstRun=0, Int_t lastRun=999999999 ){
+void StoreRespSDD(Int_t firstRun=0, Int_t lastRun=AliCDBRunRange::Infinity()){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the calibration files for SDD         //
   // Generates:                                                        //

@@ -10,7 +10,7 @@
 #include <TRandom3.h>
 #endif
 
-void StoreDDLMapSDD(Int_t firstRun=0, Int_t lastRun=9999999){
+void StoreDDLMapSDD(Int_t firstRun=0, Int_t lastRun=AliCDBRunRange::Infinity()){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the DDL map for SDD                   //
   // Generates:                                                        //
