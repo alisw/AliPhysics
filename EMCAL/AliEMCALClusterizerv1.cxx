@@ -122,9 +122,6 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
       AliFatal("Geometry not initialized.");
     }
 
-  if(!gMinuit)
-    gMinuit = new TMinuit(100) ;
-
 }
 
 //____________________________________________________________________________
@@ -275,6 +272,9 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * recPoint, AliEMCALDigit
   // electromagnetic showers
 
   if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
+	
+  if(!gMinuit)
+     gMinuit = new TMinuit(100) ;
 
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
@@ -599,7 +599,7 @@ void AliEMCALClusterizerv1::MakeUnfolding()
 {
   // Unfolds clusters using the shape of an ElectroMagnetic shower
   // Performs unfolding of all clusters
-
+		
   if(fNumberOfECAClusters > 0){
     if (fGeom==0)
       AliFatal("Did not get geometry from EMCALLoader") ;
