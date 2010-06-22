@@ -522,6 +522,16 @@ Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
 
 }
 //_____________________________________________________________________
+TH2F* AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin, Char_t ring) {
+  //Get event selection efficiency object
+  if(!fIsInit) {
+    AliWarning("Not initialized yet. Call Init() to remedy");
+    return 0;
+  }
+  return fEventSelectionEfficiency->GetCorrection(vtxbin,ring);
+
+}
+//_____________________________________________________________________
 TH1F* AliFMDAnaParameters::GetSharingEfficiency(Int_t det, Char_t ring, Int_t vtxbin) {
   //Get sharing efficiency object
   if(!fIsInit) {

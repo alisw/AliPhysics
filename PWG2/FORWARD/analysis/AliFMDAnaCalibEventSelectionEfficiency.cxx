@@ -1,6 +1,6 @@
 
 #include "AliFMDAnaCalibEventSelectionEfficiency.h"
-#include <TH2F.h>
+
 #include <TH1F.h>
 #include <TBrowser.h>
 
@@ -54,6 +54,23 @@ void AliFMDAnaCalibEventSelectionEfficiency::SetCorrection(TH1F* hCorrection) {
   
 
 }
+//____________________________________________________________________
+void AliFMDAnaCalibEventSelectionEfficiency::SetCorrection(Int_t vtxbin, 
+							   Char_t ring,
+							   TH2F* hCorrection) {
+  hCorrection->SetName(Form("correction_%c_%d",ring,vtxbin));
+  fCorrectionList.Add(hCorrection);
+  
+}
+//____________________________________________________________________
+TH2F* AliFMDAnaCalibEventSelectionEfficiency::GetCorrection(Int_t vtxbin, 
+							    Char_t ring) {
+  
+  TH2F* hCorrection = (TH2F*)fCorrectionList.FindObject(Form("correction_%c_%d",ring,vtxbin));
+  return hCorrection;
+
+}
+
 //____________________________________________________________________
 Float_t AliFMDAnaCalibEventSelectionEfficiency::GetCorrection(Int_t vtxbin) {
 

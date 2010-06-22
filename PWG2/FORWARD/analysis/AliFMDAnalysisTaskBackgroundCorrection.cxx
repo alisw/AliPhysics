@@ -222,12 +222,13 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 
       //sharing efficiency correction ?
       if(pars->SharingEffPresent()) {
-	TH1F* hSharingEff = pars->GetSharingEfficiency(det,ringChar,vtxbin);
+	TH1F* hSharingEff = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin); 
 	TH1F* hSharingEffTrVtx = pars->GetSharingEfficiencyTrVtx(det,ringChar,vtxbin);	
       
 	for(Int_t nx=1; nx<hMult->GetNbinsX(); nx++) {
 	  Float_t correction = hSharingEff->GetBinContent(nx);
 	  Float_t correctionTrVtx = hSharingEffTrVtx->GetBinContent(nx);
+	  
 	  for(Int_t ny=1; ny<hMult->GetNbinsY(); ny++) {
 	    
 	    if(correction != 0){
@@ -244,10 +245,13 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
 	  
 	}
       }
-      if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
-	hMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
-      else
-	hMult->Scale(0);
+      
+      //if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
+      //	hMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
+	//else
+	//hMult->Scale(0);
+      hMult->Divide(pars->GetEventSelectionEfficiency(vtxbin,ringChar));
+      
       
       }
   }
@@ -296,11 +300,12 @@ void AliFMDAnalysisTaskBackgroundCorrection::Exec(Option_t */*option*/)
       }
     }
   }
+  hSPDMult->Divide(pars->GetEventSelectionEfficiency(vtxbin,'I'));
   
-  if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
-    hSPDMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
-  else
-    hSPDMult->Scale(0);
+  //if(pars->GetEventSelectionEfficiency(vtxbin) > 0)
+  // hSPDMult->Scale(1/pars->GetEventSelectionEfficiency(vtxbin));
+    //else
+  //  hSPDMult->Scale(0);
   
   }
   else
