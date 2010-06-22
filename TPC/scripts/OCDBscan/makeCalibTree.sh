@@ -20,7 +20,7 @@ cd $workdir
 source guiEnv.sh
 source $ALICE_ROOT/TPC/scripts/halloWorld.sh
 #
-aliroot -q -b $SCRIPTDIR/ConfigOCDB.C  $SCRIPTDIR/CalibEnv.C+\(\"$runList\",$startRun,$endRun\)
+aliroot -q -b $SCRIPTDIR/ConfigOCDB.C\($2\)  $SCRIPTDIR/CalibEnv.C+\(\"$runList\",$startRun,$endRun\)
 echo End of job:
 echo pwd=`pwd`
 echo ls=

@@ -1,28 +1,24 @@
-#!/bin/bash
+#
+# Make a run list using
+# GRP and TPC HV and Altro requested
+# Output run list stored  in run list
 
-# Create the file  run.list to be processed
-# Aruments
-# 1   -  prefix
-# Example usage
-# $ALICE_ROOT/TPC/scripts/OCDBscan/makeRunList.sh /alice/data/2010
+prefix=/alice/data/2010/OCDB/
 
+alien_find $prefix/GRP/GRP/Data Run > grpAlien.txt
+alien_find $prefix/TPC/Calib/HighVoltage Run > hvAlien.txt
+alien_find $prefix/TPC/Calib/AltroConfig Run > altroAlien.txt
 
-prefix=$1
-alien_find $prefix/OCDB/GRP/GRP/Data Run            > grp.list
-alien_find $prefix/OCDB/TPC/Calib/HighVoltage  Run  > hv.list 
+cat grpAlien.txt | sed s/_/\ /g | gawk '{ print $2}' | sort > grp.txt
+cat hvAlien.txt | sed s/_/\ /g | gawk '{ print $2}'  | sort > hv.txt
+cat altroAlien.txt | sed s/_/\ /g | gawk '{ print $2}'  | sort > altro.txt
 
-for afile in `cat hv.list | grep root`; do 
-    bfile=`basename $afile`; 
-    echo $bfile  | sed s/_/\ / | sed s_Run__ | gawk '{print $1 }' 
-done &> hvRun.list
-sort  hvRun.list > hv.list
+for run in `cat hv.txt | sort`; do
+   grun=`cat grp.txt | grep -c $run`
+   arun=`cat altro.txt | grep -c $run`   
+   if [ $grun -gt 0 ] && [ $arun -gt 0 ]; then
+      echo $run
+   fi 
+done > run.list
 
-for arun  in `cat hv.list`; do 
-    grpstatus=`cat grp.list | grep $arun`
-    if [ -n $grpstatus ] ; then
-      echo $arun
-    fi;
-done > hvRun.list
-
-sort  hvRun.list > run.list
 

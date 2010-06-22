@@ -30,7 +30,7 @@ Do the following:
         export SCRIPTDIR=$ALICE_ROOT/TPC/scripts/OCDBscan
             or your local scriptdir if you want to modify it
         e.g:
-        export SCRIPTDIR=/lustre/alice/miranov/calibPass0/OCDBscan/scripts
+        export SCRIPTDIR=/lustre/alice/miranov/OCDBscan/scripts
         
         export PATH=$SCRIPTDIR:$PATH
 	source $SCRIPTDIR/guiEnv.sh
@@ -49,12 +49,12 @@ Do the following:
         !!!WARNING!!! this will take quite some time
         makeCalibTree -a
 
-3. Run tree creation for extended statistic. This part can be run only if batchcommand specified.  (Marian Ivanov part of scripts)
+3. OBSOLETE PART - Run tree creation for extended statistic. This part can be run only if batchcommand specified.  (Marian Ivanov part of scripts)
    WARNING  this is just example usage of expert mode:
    bgroup=/bgui
-   ifirst=100000	
-   ilast=103000
-   step=250
+   ifirst=110000	
+   ilast=115000
+   step=200
    runList=`pwd`/run.list
    bgadd $bgroup
    for ((  startRun=$ifirst; startRun<$ilast; startRun=startRun+$step )) ; do 
@@ -64,39 +64,21 @@ Do the following:
     $BATCHCOMMAND -g $bgroup -oo $GUI_OUTDIR/logs/out$startRun.log -eo $GUI_OUTDIR/logs/err$startRun.log  makeCalibTree.sh $runList $startRun $endRun;    
    done;
 
+4. New approach -  run the jobs for each run separatelly - more robust - but more jobs
+   //
+   bgroup=/bguiRUN
+   for arun in `cat run.list`; do
+	echo submitting jobs for run $arun
+        echo  $BATCHCOMMAND -g $bgroup -oo $GUI_OUTDIR/logs/out$arun.log -eo $GUI_OUTDIR/logs/err$arun.log  makeCalibTreeRun.sh $arun alien://///alice/cern.ch/user/m/miranov/OCDBscan/
+        $BATCHCOMMAND -g $bgroup -oo $GUI_OUTDIR/logs/out$arun.log -eo $GUI_OUTDIR/logs/err$arun.log  $SCRIPTDIR/makeCalibTreeRun.sh $arun alien://///alice/cern.ch/user/m/miranov/OCDBscan/
+   done;
+   
+
+
+   
+
 4. Start the GUI browser. This should work always (even on your laptop). 
 guiTime
-
-
-
--------------------
-General information
--------------------
-The macros and shell scripts used are stored in $ALICE_ROOT/TPC/CalibMacros/guiTime
-If you would like to modify some setting (see below), but do not have write access to this
-directory, you can copy the complete directory somewhere else and setup the environment
-variables accordingly:
-
-export SCRIPTDIR=path_to_my_directory
-export PATH=$SCRIPTDIR:$PATH
-
-- setup scripts
-All user relevant setup is done the shell script 'guiEnv' and the root macro 'ConfigOCDB.C'
-All other files don't need to be modified by the user.
-
-- scripts for the tree creation:
-makeCalibTree:        Steering script to launch the tree creation
-makeCalibTreeList:    script running the actual root process to create the tree
-
-- scripts to start the gui:
-gui 'filename':       Start the CalibViewerGUI using the tree in file 'filename'. Invokes the script
-                      startGUI.C
-guiTime ['filename']: Start the CalibViewerGUItime. Optionally a filename containing the calibration
-                      calibration tree can be specified. Otherwise the trees from the directory setup
-                      in guiEnv will be used (see below). Invokes the script startGUItime.C
-
--oter scripts:
-loadlibsREC.C:        Root macro to load only libraries needed to start the gui and tree creation.
 
 
 ----------------
