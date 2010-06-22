@@ -932,15 +932,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
                         strstr(opt,"SSD")};
   
   Int_t id=0;
-  /*
-  TClonesArray *array=new TClonesArray("AliITSRecPoint",1000);
-  TBranch *branch = treeR->Branch("ITSRecPoints",&array);
-  delete array;
-  TClonesArray** clusters = new TClonesArray*[GetITSgeom()->GetIndexMax()]; 
-  for (Int_t iModule = 0; iModule < GetITSgeom()->GetIndexMax(); iModule++) {
-    clusters[iModule] = NULL;
-  }
-  */
   AliITSRecPointContainer* rpc = AliITSRecPointContainer::Instance();
   rpc->FullReset();
   TClonesArray* array = rpc->UncheckedGetClusters(0);
@@ -948,32 +939,18 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   DigitsToRecPoints(rawReader,opt); 
 
   Int_t nClusters =0;
-  //  TClonesArray *emptyArray=new TClonesArray("AliITSRecPoint");
   for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
     id = GetITSgeom()->GetModuleType(iModule);
     if (!all && !det[id]) continue;
     array = rpc->UncheckedGetClusters(iModule);
     if(!array){
       AliDebug(1,Form("data for module %d missing!",iModule));
-      //     array = emptyArray;
     }
     branch->SetAddress(&array);
     treeR->Fill();
     nClusters+=array->GetEntriesFast();
-    /*
-    if (array != emptyArray) {
-      array->Delete();
-      delete array;
-    }
-    */
   }
-  //  delete emptyArray;
-  printf("===============   +++++++++++++++++ ===================\n");
-  for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
-    array = rpc->UncheckedGetClusters(iModule);
-    Int_t number = array->GetEntries();
-    if(number>0)printf("Module %d has %d clusters\n",iModule,number);
-  }
+
   rpc->FullReset();
 
   AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
@@ -982,15 +959,6 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,TTree *treeR,Op
   for(Int_t iLay=2; iLay<=6; iLay++) nClu[iLay-1]=rpcont->GetNClustersInLayerFast(iLay);
   AliInfo(Form("Number of RecPoints in ITS Layers = %d %d %d %d %d %d, Total = %d",
 	       nClu[0],nClu[1],nClu[2],nClu[3],nClu[4],nClu[5],nClusters));
-
-  printf("===============  SECOND   +++++++++++++++++ ===================\n");
-  for(Int_t iModule=0;iModule<GetITSgeom()->GetIndexMax();iModule++){
-    array = rpc->UncheckedGetClusters(iModule);
-    Int_t number = array->GetEntries();
-    if(number>0)printf("Module %d has %d clusters\n",iModule,number);
-  }
-
-  //  delete[] clusters;
 }
 //______________________________________________________________________
 void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
