@@ -137,8 +137,8 @@ private:
 
   AliJRunHeader*     fAliRunHeader; // run details
  
-  AliPHOSGeoUtils  * fPHOSGeom;  //phos geometry matrix 
-  AliEMCALGeoUtils * fEMCALGeom; //emcal geometry matrix
+  AliPHOSGeoUtils  * fPHOSGeom;  //! phos geometry matrix 
+  AliEMCALGeoUtils * fEMCALGeom; //! emcal geometry matrix
    
   ClassDef(AliJCORRANTask, 2) // JCORRAN analysis task 
 };
