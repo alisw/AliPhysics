@@ -36,18 +36,13 @@ SOULD BE CHANGED BACK BEFORE BEAM
 #include "TPluginManager.h"
 #include "TFile.h"
 #include "TKey.h"
-#include "TH2S.h"
 #include "TObject.h"
 #include "TBenchmark.h"
-#include "TRandom.h"
-#include "TCanvas.h"
 #include "TString.h"
 #include "TH1.h"
-#include "TF1.h"
-#include "TSpectrum.h"
-#include "TVirtualFitter.h"
-int cbx, ccbx, npmtA, npmtC;
-float clx,cmx,cclx,ccmx;
+
+int cbx, ccbx, t0bx, npmtA, npmtC;
+float clx,cmx,cclx,ccmx, t0lx, t0hx;
 
 /* Main routine
       Arguments: 
@@ -85,6 +80,9 @@ int main(int argc, char **argv) {
     case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CF
     case 'd': {fscanf(inp, "%d", &npmtC ); break;} //number of reference PMTC
     case 'e': {fscanf(inp, "%d", &npmtA ); break;} //number of reference PMTA
+    case 'f': {fscanf(inp, "%d", &t0bx ); break;} //N of X bins hT0
+    case 'g': {fscanf(inp, "%f", &t0lx ); break;} //Low x hT0
+    case 'k': {fscanf(inp, "%f", &t0hx ); break;} //High x hT0
     }
   }
   fclose(inp);
@@ -126,7 +124,7 @@ int main(int argc, char **argv) {
   for(Int_t ic=0; ic<24; ic++) {
     hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
   }
-  TH1F *hVertex = new TH1F("hVertex","Z vertex",ccbx,cclx,ccmx);
+  TH1F *hVertex = new TH1F("hVertex","T0 time",t0bx,t0lx,t0hx);
   
  
   // Allocation of histograms - end
@@ -168,8 +166,8 @@ int main(int argc, char **argv) {
     case END_OF_RUN:
       break;
       
-      //  case PHYSICS_EVENT:
-          case CALIBRATION_EVENT:
+        case PHYSICS_EVENT:
+	  //    case CALIBRATION_EVENT:
       iev++;
       
       if(iev==1){
@@ -201,20 +199,51 @@ int main(int argc, char **argv) {
       Float_t besttimeA=9999999;
       Float_t besttimeC=9999999;
       Float_t time[24]; 
-      Int_t acshift=56;
-      for (Int_t ik = 0; ik<24; ik++)
-	if(allData[ik+1][0]>0 ){
-	  if(ik<12 
-	     && (allData[ik+13][0]-allData[ik+1][0]) < 530 ){
-	    hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[npmtC][0]);
+       Float_t meanShift[24];
+       for (Int_t ik = 0; ik<24; ik++)
+	 { 
+	   if(ik<12 && allData[ik+1][0]>0 
+	      && (allData[ik+13][0]-allData[ik+1][0]) < 530 ){
+	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[npmtC][0]);
+	   }
+	   
+	   if(ik>11 && allData[ik+45][0]>0 
+	      && (allData[ik+57][0]-allData[ik+45][0]) <530 ){
+	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+npmtA][0]);
+	   }
+	   if(iev == 1000) {	
+	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
+	     cout<<ik<<" "<<meanShift[ik]<<endl;
+	   }
+	 }
+      //fill  mean time _ fast reconstruction
+      if (iev > 1000 )
+	{
+	  for (Int_t in=0; in<12; in++)  
+	    {
+	      time[in] = allData[in+1][0] - meanShift[in]  ;
+	      time[in+12] = allData[in+56+1][0] ;
+	    }
+	  for (Int_t ipmt=0; ipmt<12; ipmt++){
+	    if(time[ipmt] > 1 ) {
+	      if(time[ipmt]<besttimeC)
+		besttimeC=time[ipmt]; //timeC
+	    }
 	  }
-	  if(ik>11
-	     && (allData[ik+57][0]-allData[ik+45][0]) <530 ){
-	    hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+npmtA][0]);
-	  }
-
+	   for ( Int_t ipmt=12; ipmt<24; ipmt++){
+	     if(time[ipmt] > 1) {
+	       if(time[ipmt]<besttimeA) 
+		 besttimeA=time[ipmt]; //timeA
+	     }
+	   }
+	   if(besttimeA<9999999 &&besttimeC< 9999999) {
+	     Float_t t0 =0.001* 24.4 * Float_t( besttimeA+besttimeC)/2.;
+	     cout<<" t0 "<<t0<<endl;
+	     hVertex->Fill(t0);
+	   }
 	}
-      delete start;
+	   
+     delete start;
       start = 0x0;
       reader->Reset();
       // End of fill histograms

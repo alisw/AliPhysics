@@ -114,7 +114,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   Int_t nent=0;
   Bool_t ok=false;
   Int_t npeaks = 20;
-  Int_t sigma=3.;
+  Int_t sigma=3;
   Bool_t down=false;
   Int_t index[20];
   Int_t nfound=0;
@@ -124,7 +124,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   }
   else
     {
-      gFile->ls();
+      //    gFile->ls();
       ok=true;
       Char_t buf1[30];
       for (Int_t i=0; i<24; i++)
@@ -142,14 +142,21 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      Float_t xp = xpeak[index[0]];
 	      Double_t hmax = xp+3*sigma;
 	      Double_t hmin = xp-3*sigma;
-	      cfd->GetXaxis()->SetRangeUser(hmin-3,hmax+3);
+	      cfd->GetXaxis()->SetRangeUser(hmin-1,hmax+1);
 	      mean=cfd->GetMean();
 	      rms=cfd->GetRMS();
 	      nent=cfd->GetEntries();
-	      if(nent<500 || rms>5 ) ok=false;
+	      if(nent<500 || rms>10. ) {
+		ok=false;
+		AliWarning(Form("Data is not good enouph in PMT %i - mean %f rsm %f nentries %i", i,mean, rms, nent));
+		
+	      }
 	    }
 	    else 
-	      ok=false;
+	      {
+		ok=false;
+		AliWarning(Form("Data is not good enouph in PMT %i , no clean peak", i));
+	      }
 	  }
 	  
 	
@@ -158,7 +165,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  if (cfd) delete cfd;
 	}
       TH1F *ver = (TH1F*) gFile->Get("hVertex");
-      if(!ver) AliWarning("no Vertex histograms collected by PHYS DA for Zvertex");
+      if(!ver) AliWarning("no T0 histogram collected by PHYS DA ");
       if(ver) {
 	meanver = ver->GetMean();
 	rmsver = ver->GetRMS();
