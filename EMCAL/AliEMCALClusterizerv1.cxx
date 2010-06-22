@@ -138,10 +138,7 @@ fECAW0(0.),fTimeCut(1.),fTimeMin(-1.),fTimeMax(1.),fMinECut(0.)
 	
 	if (!fGeom)
 		AliFatal("Geometry not initialized.");
-		
-	if(!gMinuit)
-		gMinuit = new TMinuit(100) ;
-	
+			
 }
 
 
