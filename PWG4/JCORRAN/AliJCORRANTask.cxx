@@ -131,16 +131,7 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat) :
   
   DefineInput (0, TChain::Class());
 
-  fTrackList    = new AliPhJTrackList(kALICE);
-  fMCTrackList  = new AliPhJMCTrackList(kALICE);
-  fPhotonList   = new AliPhJPhotonList(kALICE);
-  fHeaderList   = new AliPhJHeaderList(kALICE);
-  
-  fAliRunHeader = new AliJRunHeader();
-
-  fPHOSGeom  = new AliPHOSGeoUtils("PHOSgeo") ;
-  fEMCALGeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
-  
+ 
 
 }
 
@@ -194,6 +185,17 @@ AliJCORRANTask::~AliJCORRANTask()
 //________________________________________________________________________
 void AliJCORRANTask::UserCreateOutputObjects()
 {  
+
+  fTrackList    = new AliPhJTrackList(kALICE);
+  fMCTrackList  = new AliPhJMCTrackList(kALICE);
+  fPhotonList   = new AliPhJPhotonList(kALICE);
+  fHeaderList   = new AliPhJHeaderList(kALICE);
+  
+  fAliRunHeader = new AliJRunHeader();
+
+  fPHOSGeom  = new AliPHOSGeoUtils("PHOSgeo") ;
+  fEMCALGeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
+ 
   // create the jcorran output deltaAOD
   //if(fDebug > 5) cout << "AliJCORRANTask UserCreateOutputObjects----------------------"<<endl;
   
