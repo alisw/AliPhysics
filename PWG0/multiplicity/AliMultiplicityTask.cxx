@@ -58,6 +58,8 @@ AliMultiplicityTask::AliMultiplicityTask(const char* opt) :
   fPtSpectrum(0),
   fTemp1(0),
   fTemp2(0),
+  fVertex(0),
+  fEtaPhi(0),
   fOutput(0)
 {
   //
@@ -211,6 +213,12 @@ void AliMultiplicityTask::CreateOutputObjects()
     fOutput->Add(fEta[i]);
   }
   
+  fVertex = new TH3F("vertex_check", "vertex_check;x;y;z", 100, -1, 1, 100, -1, 1, 100, -30, 30);
+  fOutput->Add(fVertex);
+  
+  fEtaPhi = new TH2F("fEtaPhi", "fEtaPhi;#eta;#phi in rad.;count", 80, -4, 4, 18*20, 0, 2 * TMath::Pi());
+  fOutput->Add(fEtaPhi);
+  
   // TODO set seed for random generator
 }
 
@@ -255,8 +263,11 @@ void AliMultiplicityTask::Exec(Option_t*)
 
   Double_t vtx[3];
   if (vtxESD)
+  {
     vtxESD->GetXYZ(vtx);
-
+    fVertex->Fill(vtxESD->GetXv(), vtxESD->GetYv(), vtxESD->GetZv());
+  }
+  
   // post the data already here
   PostData(0, fOutput);
   
@@ -313,7 +324,10 @@ void AliMultiplicityTask::Exec(Option_t*)
             fEta[j]->Fill(etaArr[inputCount]);
         }
         
-        // we have to repeat the trigger here, because the tracklet might have been kicked out fSystSkipParticles
+        if (vtxESD && TMath::Abs(vtx[2]) < 10)
+          fEtaPhi->Fill(etaArr[inputCount], mult->GetPhi(i));
+        
+          // we have to repeat the trigger here, because the tracklet might have been kicked out fSystSkipParticles
         if (TMath::Abs(etaArr[inputCount]) < 1)
           foundInEta10 = kTRUE;
           
@@ -361,6 +375,9 @@ void AliMultiplicityTask::Exec(Option_t*)
         if (TMath::Abs(d0z0[0]) > d0max) 
           continue;
   
+        if (vtxESD && TMath::Abs(vtx[2]) < 10)
+          fEtaPhi->Fill(esdTrack->Eta(), esdTrack->Phi());
+        
         etaArr[inputCount] = esdTrack->Eta();
         labelArr[inputCount] = TMath::Abs(esdTrack->GetLabel());
         ++inputCount;
@@ -401,18 +418,6 @@ void AliMultiplicityTask::Exec(Option_t*)
         nESDTracks14++;
     }
     
-    // kick out randomly for combinatorics
-    /*
-    if (gRandom->Uniform() < 1.3e-4 * nESDTracks05 * nESDTracks05)
-      nESDTracks05--;
-
-    if (gRandom->Uniform() < 8.7e-5 * nESDTracks10 * nESDTracks10)
-      nESDTracks10--;
-
-    if (gRandom->Uniform() < 9.6e-5 * nESDTracks14 * nESDTracks14)
-      nESDTracks14--;
-    */
-
     //if (nESDTracks05 >= 20 || nESDTracks10 >= 30 || nESDTracks14 >= 32)
     //  Printf("File: %s, IEV: %d, TRG: ---, Orbit: 0x%x, Period: %d, BC: %d; Tracks: %d %d %d", ((TTree*) GetInputData(0))->GetCurrentFile()->GetName(), fESD->GetEventNumberInFile(), fESD->GetOrbitNumber(),fESD->GetPeriodNumber(),fESD->GetBunchCrossNumber(), nESDTracks05, nESDTracks10, nESDTracks14);
 
@@ -939,6 +944,14 @@ void AliMultiplicityTask::Terminate(Option_t *)
   if (fTemp1)
     fTemp1->Write();
     
+  fEtaPhi = dynamic_cast<TH2F*> (fOutput->FindObject("fEtaPhi"));
+  if (fEtaPhi)
+    fEtaPhi->Write();
+  
+  fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("vertex_check"));
+  if (fVertex)
+    fVertex->Write();
+  
   for (Int_t i=0; i<3; i++)
   {
     fEta[i] = dynamic_cast<TH1*> (fOutput->FindObject(Form("fEta_%d", i)));
