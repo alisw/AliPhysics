@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
 // Analysis task for high pt particle correlations 
-// author: R.Diaz, J. Rak,  D.J. Kim
+// author: R.Diaz, J. Rak,  D.J. Kim, F.Krizek
 // ALICE Group University of Jyvaskyla 
 // Finland 
 //
@@ -24,6 +24,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisFilter.h"
 #include "AliMCEvent.h"
+#include "AliAODTrack.h"
 
 #include "AliPhJTrackList.h"
 #include "AliPhJMCTrackList.h"
@@ -37,8 +38,6 @@
 //==============================================================
 
 using namespace std;
-
-const int kMaxDimBuffer = 300;//max length of a line read to a buffe
 
 class TH1D;
 class TH2D;
@@ -67,8 +66,8 @@ class AliPhJTrackList;
 class AliJCORRANTask : public AliAnalysisTaskSE {
 
 public:
-  AliJCORRANTask() ;
-  AliJCORRANTask(const char *name, TString inputformat, AliESDtrackCuts* esdTrackCuts, Int_t downSc, Double_t lowLPmom, Double_t lowCaloE); //FK//
+  AliJCORRANTask();
+  AliJCORRANTask(const char *name, TString inputformat);
   AliJCORRANTask(const AliJCORRANTask& ap);   
   AliJCORRANTask& operator = (const AliJCORRANTask& ap);
   virtual ~AliJCORRANTask();
@@ -89,50 +88,58 @@ public:
   void ReadAODCaloClusters(const AliAODEvent* aod);
   void ReadAODHeader(const AliAODEvent* aod);
   void ReadFilter();
-  //void ReadMCTracks(AliMCEvent* fMC);
+  void ReadMCTracks(AliMCEvent* fMC);
   Int_t GetSuperModuleNumber(bool isemcal, Int_t absId);
 
- 
+
+  //Setters to be used in AddAliJCORRANTask
+  void SetAliESDtrackCuts(AliESDtrackCuts* cuts){ fEsdTrackCuts=cuts;} 
+  void SetDownscaling(Int_t ds){ fDownscaling=ds;} 
+  void SetLowerCutOnLPMom(Double_t lcut){ fLowerCutOnLPMom=lcut;} 
+  void SetLowerCutOnLeadingCaloClusterE(Double_t lowE){ fLowerCutOnLeadingCaloClusterE=lowE;} //
+  void SetLowerCutOnCaloClusterE(Double_t lowE){ fLowerCutOnCaloClusterE=lowE;} //
+  void SetRealOrMC(Bool_t realormc){fIsRealOrMC=realormc;} //flags whether the input 
+                                                         //are ESDs from real  exp or MonteCarlo 
+  void SetOutputAODName(const char* aodname){ fAODName=aodname;}
+
 private:
 
   UInt_t ConvertTriggerMask(/*Long64_t alicetriggermask*/);//Converts alice trigger mask to JCorran trigger mask
 
-  bool StoreDownscaledMinBiasEvent();
-  bool ContainsESDHighPtTrack(const AliESDEvent* esd);
-  bool ContainsESDHighECaloClusters(const AliESDEvent* esd);
+
+  bool IsSelectedAODTrack(AliAODTrack   *track); //check if the track fulfils quality cuts on AOD tracks
+
+  bool StoreDownscaledMinBiasEvent(); //functions for offline event selection 
+  bool ContainsESDHighPtTrack();
+  bool ContainsESDHighECaloClusters();
+
 
   TString fInputFormat; // specify the input data format (ESD or AOD)
 
-  AliESDtrackCuts* fEsdTrackCuts; //FK//
-
-  Int_t fDownscaling; //FK//
-
-  Double_t fLowerCutOnLPMom; //FK//
-
-  Double_t fLowerCutOnLeadingCaloClusterE;//FK//
-
-  TString fActiveTriggers[kRangeTriggerTableAlice];//alice table mapping trigger bit to trigger name
-
-  TString fTriggerTableJCorran[kRangeTriggerTableJCorran];//JCorran trigger table TBit 0 =MinBias
+  //To be set in from AddAliJCORRANTask macro  
+  AliESDtrackCuts* fEsdTrackCuts;     //standard track quality cuts
+  Int_t    fDownscaling;              // downscaling
+  Double_t fLowerCutOnLPMom;          // lower cut on leading particle momentum
+  Double_t fLowerCutOnLeadingCaloClusterE; // lower cut on leading calo cluster energy
+  Double_t fLowerCutOnCaloClusterE;   //minimal E of cluster to be stored
+  Bool_t   fIsRealOrMC;               //flags if the input are real (0) ESDs or MonteCarlo ESDs (1)
+  TString fAODName; //output name
   
-  // jcorran output objects
-  TTree*         fTree;        // output tree
-  AliPhJTrackList*    fTrackList;  // list of charged track objects
-  //AliPhJMCTrackList*    fMCTrackList;  // list of charged track objects
-  AliPhJPhotonList*   fPhotonList; // list of photons objects
-  AliPhJHeaderList*   fHeaderList; // run, event details
-
-  AliJRunHeader* fAliRunHeader; // run, event details
-
+  TString fActiveTriggers[kRangeTriggerTableAlice];//alice table mapping trigg. bit to trigg. name
+  TString fTriggerTableJCorran[kRangeTriggerTableJCorran];//JCorran trigger table TBit 0 =MinBias
  
-  // QA output 
-  TList*    fQAList;        // list to hold all the qa objects
-  TNtuple*  fTrackQACuts ;  // tree of track quality cuts applied on ESD 
-  TNtuple*  fTrackKineCuts; // tree of track kinematic cuts applied on ESD
+ 
+  //output objects
+  AliPhJTrackList*   fTrackList;    //list of charged track objects
+  AliPhJMCTrackList* fMCTrackList;  //list of charged track objects
+  AliPhJPhotonList*  fPhotonList;   //list of photons objects
+  AliPhJHeaderList*  fHeaderList;   //event details
 
-  AliPHOSGeoUtils  * fPHOSGeom; //phos geometry matrix 
+  AliJRunHeader*     fAliRunHeader; // run details
+ 
+  AliPHOSGeoUtils  * fPHOSGeom;  //phos geometry matrix 
   AliEMCALGeoUtils * fEMCALGeom; //emcal geometry matrix
    
-  ClassDef(AliJCORRANTask, 1); // JCORRAN analysis task 
+  ClassDef(AliJCORRANTask, 2) // JCORRAN analysis task 
 };
 #endif // AliJCORRANTask_H

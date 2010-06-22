@@ -5,14 +5,15 @@
 //
 // ALICE Jyvaskyla group 
 //
+// last change 20th Jun 2010 FK
 //-------------------------------------------------
 
 
 const TString kInputData = "ESD";
 const TString kJCORRANInputFormat = "ESD"; // ESD, AODout, AODin
+const Bool_t  kMC = kFALSE; //With real data kMC = kFALSE, MC data kMC =kTRUE
 
-
-AliJCORRANTask* AddTaskJCORRAN()
+AliJCORRANTask* AddTaskJCORRAN(const char* aodName="jcorran.root", const char* addPhysSelection="$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C")
 {
     //--------------------------------------
     // Make the analysis manager
@@ -23,22 +24,21 @@ AliJCORRANTask* AddTaskJCORRAN()
       return NULL;
     }
 
-    if (!mgr->GetInputEventHandler()) {
+    if(!mgr->GetInputEventHandler()){
        ::Error("AddTaskJets", "This task requires an input event handler");
        return NULL;
     }
 
+ 
+    //AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+    //aodH->SetCreateNonStandardAOD();
 
     //-------------------------------------------------------------------------
-    //Define task, put here any other task that you want to use.
-    //-------------------------------------------------------------------------
-    Int_t     downscaling     = 20;  //downscaling of normal events
-    Double_t  lowerCutOnLPmom =  2;  // 3 GeV
-    Double_t  lowerCutOnLeadingCaloClusterE = 1.; //GeV
-
     //           T R A C K     S E L E C T I O N
 
-    // Apply loose track cuts   //FK// 
+    AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts2009","Standard");
+  
+    /* // Apply loose track cuts   
     AliESDtrackCuts* esdTrackCutsLoose = new AliESDtrackCuts("AliESDtrackCuts", "Loose");
     esdTrackCutsLoose->SetMinNClustersTPC(60);
     esdTrackCutsLoose->SetMaxChi2PerClusterTPC(4.0);
@@ -48,54 +48,50 @@ AliJCORRANTask* AddTaskJCORRAN()
     esdTrackCutsLoose->SetAcceptKinkDaughters(kFALSE);
     esdTrackCutsLoose->SetMaxDCAToVertexXY(3.5);
     esdTrackCutsLoose->SetMaxDCAToVertexZ(3.5);
-    // hard
-    //AliESDtrackCuts* esdTrackCutsHard = new AliESDtrackCuts("AliESDtrackCuts", "Hard");
-    //esdTrackCutsHard->SetMinNClustersTPC(100);
-    //esdTrackCutsHard->SetMaxChi2PerClusterTPC(2.0);
-    //esdTrackCutsHard->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
-    //esdTrackCutsHard->SetRequireTPCRefit(kTRUE);
-    //esdTrackCutsHard->SetMaxNsigmaToVertex(2);
-    //esdTrackCutsHard->SetRequireSigmaToVertex(kTRUE);
-    //esdTrackCutsHard->SetAcceptKinkDaughters(kFALSE);
+    */
 
     //---------------------------------------------------------------------------
-   
     //       E V E N T     S E L E C T I O N
 
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-    AliPhysicsSelection* physSele = physSelTask->GetPhysicsSelection();
+    Int_t     downscaling     = 20;  //downscaling of normal events
+    Double_t  lowerCutOnLPmom =  3;  //select all events with a particle above momentum  
+    Double_t  lowerCutOnLeadingCaloClusterE = 1.; //GeV   select all events with a calo cluster above the energy   
+    Double_t  lowerCutOnCaloClusterE = 0.2; // GeV  store only calo clusters above this energy   
 
+    if(addPhysSelection){ 
+      gROOT->LoadMacro(addPhysSelection);
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      AliPhysicsSelection* physSele = physSelTask->GetPhysicsSelection();
+    
     //tag as MB different trigger than CINT1B
     //physSele->AddCollisionTriggerClass("+CSMBB-ABCE-NOPF-ALL"); // Put here trigger to be selected, default is CINT1B 
+    }
+    //---------------------------------------------------------------------------
+    //            J C O R R A N    T A S K 
 
-    AliJCORRANTask *jctask = new AliJCORRANTask("PWG4JCORRANTask",kJCORRANInputFormat, esdTrackCutsLoose, downscaling, lowerCutOnLPmom, lowerCutOnLeadingCaloClusterE); //FK//
+    AliJCORRANTask *jctask = new AliJCORRANTask("PWG4JCORRANTask",kJCORRANInputFormat); 
     jctask->SetDebugLevel(1);
+    /*jctask->SetAliESDtrackCuts(esdTrackCutsLoose); */
+    jctask->SetAliESDtrackCuts(esdTrackCuts->GetStandardITSTPCTrackCuts2009());
+    jctask->SetDownscaling(downscaling);
+    jctask->SetLowerCutOnLPMom(lowerCutOnLPmom);
+    jctask->SetLowerCutOnLeadingCaloClusterE(lowerCutOnLeadingCaloClusterE);
+    jctask->SetLowerCutOnCaloClusterE(lowerCutOnCaloClusterE);
+    jctask->SetRealOrMC(kMC); //flags whether the input are ESDs from real  exp or MonteCarlo 
+    jctask->SetOutputAODName(aodName); 
     mgr->AddTask(jctask);
 
     jctask->SelectCollisionCandidates();  //Apply offline trigger selection by AliPhysicsSelectionTask
 
     
     // Create containers for input:
-    AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer(); 
+    AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer(); 
 
-    // JCORRAN output containers:
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("jcorrantree", TTree::Class(),
-							      AliAnalysisManager::kOutputContainer, "jcorran.root");
-							      
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("jcorranQAlist", TList::Class(),
-							      AliAnalysisManager::kOutputContainer, "jcorranQA.root");
-
-
-							      
-    // JCORRAN task
-    mgr->ConnectInput  (jctask,     0, cinput0  );
-    mgr->ConnectOutput (jctask,     1, coutput1 );
-    mgr->ConnectOutput (jctask,     2, coutput2 );
+    //connect input to JCORRAN task
+    mgr->ConnectInput(jctask, 0, cinput0);
 
     
-    
- return jctask;
+    return jctask;
 }
 
 

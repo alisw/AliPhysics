@@ -37,6 +37,7 @@
 #include <TNtuple.h>
 
 #include "AliAnalysisTaskSE.h"
+#include "AliAODHandler.h"
 
 #include "AliJCORRANTask.h" 
 #include "AliAnalysisManager.h"
@@ -78,19 +79,18 @@
 AliJCORRANTask::AliJCORRANTask() :   
   AliAnalysisTaskSE("PWG4JCORRAN"),
   fInputFormat(0),
-  fEsdTrackCuts(0), //FK//
-  fDownscaling(0),//FK//
-  fLowerCutOnLPMom(0),//FK//
-  fLowerCutOnLeadingCaloClusterE(0),//FK//
-  fTree(0x0),
+  fEsdTrackCuts(0), 
+  fDownscaling(1),
+  fLowerCutOnLPMom(0),
+  fLowerCutOnLeadingCaloClusterE(0), 
+  fLowerCutOnCaloClusterE(0.2),
+  fIsRealOrMC(0),
+  fAODName("jcorran.root"),
   fTrackList(0x0),
-  //fMCTrackList(0),
+  fMCTrackList(0x0),
   fPhotonList(0x0),
   fHeaderList(0x0),
   fAliRunHeader(0x0),
-  fQAList(0x0),
-  fTrackQACuts(0x0),
-  fTrackKineCuts(0x0),
   fPHOSGeom(0x0),
   fEMCALGeom(0x0)
 {
@@ -105,22 +105,21 @@ AliJCORRANTask::AliJCORRANTask() :
 }
 
 //______________________________________________________________________________
-AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat, AliESDtrackCuts* esdTrackCuts, Int_t downSc, Double_t lowLPmom, Double_t lowCaloE) : 
+AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat) : 
   AliAnalysisTaskSE(name), 
   fInputFormat(inputformat),  
-  fEsdTrackCuts(esdTrackCuts), //FK//
-  fDownscaling(downSc),//FK//
-  fLowerCutOnLPMom(lowLPmom),//FK//
-  fLowerCutOnLeadingCaloClusterE(lowCaloE),//FK//
-  fTree(0x0),
+  fEsdTrackCuts(0),    // to be set by setters in AddAliJCORRANTask macro
+  fDownscaling(1),
+  fLowerCutOnLPMom(0),
+  fLowerCutOnLeadingCaloClusterE(0),
+  fLowerCutOnCaloClusterE(0.2),
+  fIsRealOrMC(0),
+  fAODName("jcorran.root"),
   fTrackList(0x0),
-  //fMCTrackList(0),
+  fMCTrackList(0x0),
   fPhotonList(0x0),
   fHeaderList(0x0),
   fAliRunHeader(0x0),
-  fQAList(0x0),
-  fTrackQACuts(0x0),
-  fTrackKineCuts(0x0),
   fPHOSGeom(0x0),
   fEMCALGeom(0x0)
 {
@@ -133,7 +132,7 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat, AliESDtrac
   DefineInput (0, TChain::Class());
 
   fTrackList    = new AliPhJTrackList(kALICE);
-  //fMCTrackList  = new AliPhJMCTrackList(kALICE);
+  fMCTrackList  = new AliPhJMCTrackList(kALICE);
   fPhotonList   = new AliPhJPhotonList(kALICE);
   fHeaderList   = new AliPhJHeaderList(kALICE);
   
@@ -143,28 +142,24 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat, AliESDtrac
   fEMCALGeom = new AliEMCALGeoUtils("EMCAL_COMPLETE");
   
 
-  DefineOutput(1, TTree::Class()); 
-  DefineOutput(2, TList::Class());
-
 }
 
 //____________________________________________________________________________
 AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
   AliAnalysisTaskSE(ap.GetName()), 
   fInputFormat(ap.fInputFormat),
-  fEsdTrackCuts(ap.fEsdTrackCuts), //FK// 
-  fDownscaling(ap.fDownscaling),  //FK// 
-  fLowerCutOnLPMom(ap.fLowerCutOnLPMom), //FK// 
-  fLowerCutOnLeadingCaloClusterE(ap.fLowerCutOnLeadingCaloClusterE),  //FK// 
-  fTree(ap.fTree),
+  fEsdTrackCuts(ap.fEsdTrackCuts), 
+  fDownscaling(ap.fDownscaling),   
+  fLowerCutOnLPMom(ap.fLowerCutOnLPMom),  
+  fLowerCutOnLeadingCaloClusterE(ap.fLowerCutOnLeadingCaloClusterE),  
+  fLowerCutOnCaloClusterE(ap.fLowerCutOnCaloClusterE),
+  fIsRealOrMC(ap.fIsRealOrMC),
+  fAODName(ap.fAODName),
   fTrackList(ap.fTrackList),
-  //fMCTrackList(ap.fMCTrackList),
+  fMCTrackList(ap.fMCTrackList),
   fPhotonList(ap.fPhotonList),
   fHeaderList(ap.fHeaderList),
   fAliRunHeader(ap.fAliRunHeader),
-  fQAList(ap.fQAList),
-  fTrackQACuts(ap.fTrackQACuts),
-  fTrackKineCuts(ap.fTrackKineCuts),
   fPHOSGeom(ap.fPHOSGeom),
   fEMCALGeom(ap.fEMCALGeom)
 { 
@@ -172,7 +167,7 @@ AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
 }
 
 //_____________________________________________________________________________
-AliJCORRANTask& AliJCORRANTask::operator = (const AliJCORRANTask& ap)
+AliJCORRANTask& AliJCORRANTask::operator= (const AliJCORRANTask& ap)
 {
 // assignment operator
 
@@ -187,65 +182,35 @@ AliJCORRANTask::~AliJCORRANTask()
   // destructor 
   
   delete fTrackList;
-  //delete fMCTrackList;
+  if(fMCTrackList) delete fMCTrackList;
   delete fPhotonList;
   delete fHeaderList;
   delete fAliRunHeader;
-  delete fTree;
-  
-  delete fQAList;
-  delete fTrackQACuts;
-  delete fTrackKineCuts;
-  if(fPHOSGeom)  delete fPHOSGeom  ;
-  if(fEMCALGeom) delete fEMCALGeom ;
+  if(fPHOSGeom)  delete fPHOSGeom;
+  if(fEMCALGeom) delete fEMCALGeom;
 
 }
 
 //________________________________________________________________________
 void AliJCORRANTask::UserCreateOutputObjects()
 {  
-  // create the jcorran outputs objects
-  if(fDebug > 5) cout << "AliJCORRANTask UserCreateOutputObjects----------------------"<<endl;
-  OpenFile(1) ;   // Will open the file for the object to be written at output #1
+  // create the jcorran output deltaAOD
+  //if(fDebug > 5) cout << "AliJCORRANTask UserCreateOutputObjects----------------------"<<endl;
   
-  fTree = new TTree("T","ALICE JYU CORRAN");
-  fTree->Branch("JTKT/JTrackList","AliPhJTrackList",&fTrackList,500000);
-  //fTree->Branch("JTKT/JMCTrackList","AliPhJMCTrackList",&fMCTrackList,500000);
-  fTree->Branch("JTKT/JPhotonList","AliPhJPhotonList",&fPhotonList,500000);
-  fTree->Branch("JTKT/JHeaderList","AliPhJHeaderList",&fHeaderList,500000);
+  if(fDebug > 1) printf("AliJCORRANTask::UserCreateOutPutData() \n");
+  if(!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) {
+    Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
+    return;
+  }   
 
-  //QA histgrams
-  // Offline Trigger QA
-  OpenFile(2) ; // Will open the file for the object to be written at output #2
-  TString trackQAlist = "MinNClusterTPC:";
-          trackQAlist+= "MinNClustersITS:";
-          trackQAlist+= "MaxChi2PerClusterTPC:";
-          trackQAlist+= "MaxChi2PerClusterITS:";
-          trackQAlist+= "RequireTPCRefit:";
-          trackQAlist+= "RequireITSRefit:";
-          trackQAlist+= "AcceptKinkDaughters:";
-          trackQAlist+= "MaxCovMatrixDiag11:";
-          trackQAlist+= "MaxCovMatrixDiag22:";
-          trackQAlist+= "MaxCovMatrixDiag33:";
-          trackQAlist+= "MaxCovMatrixDiag44:";
-          trackQAlist+= "MaxCovMatrixDiag55:";
-          trackQAlist+= "MaxNsigmaToVertex:";
-          trackQAlist+= "RequireSigmaToVertex";
-          
-  TString trackKinelist = "PMin:PMax:";
-          trackKinelist+= "PtMin:PtMax:";
-          trackKinelist+= "PxMin:PxMax:";
-          trackKinelist+= "PyMin:PyMax:";
-          trackKinelist+= "PzMin:PzMax:";
-          trackKinelist+= "EtaMin:EtaMax:";
-          trackKinelist+= "RapMin:RapMax";
-                        
-  fTrackQACuts    = new TNtuple("TrackQACuts", "track quality cuts applied on ESD",trackQAlist.Data());
-  fTrackKineCuts  = new TNtuple("TrackKineCuts", "kinematic cuts applied on ESD", trackKinelist.Data());
-  fQAList = new TList(); 
-  fQAList->SetName("ESD QA List") ; 
-  fQAList->AddAt(fTrackQACuts,   0) ; 
-  fQAList->AddAt(fTrackKineCuts, 1) ; 
+
+  AddAODBranch("AliPhJTrackList", &fTrackList,fAODName.Data());
+  AddAODBranch("AliPhJPhotonList", &fPhotonList,fAODName.Data());
+  AddAODBranch("AliPhJHeaderList", &fHeaderList,fAODName.Data()); 
+
+  if(fIsRealOrMC){ 
+    AddAODBranch("AliPhJMCTrackList", &fMCTrackList);
+  }
   
 }
 
@@ -256,17 +221,31 @@ void AliJCORRANTask::UserExec(Option_t */*option*/)
   //if(fDebug > 5) cout << "------- AliJCORRANTask Exec-------"<<endl;
   if(!((Entry()-1)%100)) 
       AliInfo(Form(" Processing event # %lld",  Entry())); 
+  Bool_t storeEvent = kFALSE;//based on offline trigger decide whetehr to store the event or not 
+  if(fIsRealOrMC){
+    storeEvent = kTRUE; //store all MC events
+  }else{ //when we are processing real events store only selected events
+    if(StoreDownscaledMinBiasEvent() || 
+      ContainsESDHighPtTrack()   || 
+      ContainsESDHighECaloClusters()){
+        storeEvent = kTRUE; 
+    }
+  }
 
-   
+  fTrackList->Reset();
+  fMCTrackList->Reset();
+  fPhotonList->Reset();
+  fHeaderList->Reset();
  
+
   static int runId=-1;
  
   if(fInputFormat=="ESD"){
    //  if(fDebug > 5) cout <<"--------- Reading ESD --------"<< endl; 
      AliESDEvent* esd = (AliESDEvent*)InputEvent();
 
-     //AliMCEvent* fmcEvent = MCEvent();
-     //ReadMCTracks(fmcEvent);
+     AliMCEvent* mcEvent = NULL; 
+     if(fIsRealOrMC)  mcEvent = MCEvent();
 
 
      //=========== FILL AND STORE RUN HEADER   (ONLY ONCE PER RUN) =============
@@ -293,53 +272,41 @@ void AliJCORRANTask::UserExec(Option_t */*option*/)
        fAliRunHeader->SetL3Field(l3MgFieldPolarity, esd->GetMagneticField());
        fAliRunHeader->SetActiveTriggersJCorran(fTriggerTableJCorran,kRangeTriggerTableJCorran);
 
-      //Store Run header
-      (fTree->GetUserInfo())->Add(fAliRunHeader);   
+       //Store Run header
+       (OutputTree()->GetUserInfo())->Add(fAliRunHeader);  //FK// 
     }
 
-
-    if( StoreDownscaledMinBiasEvent() || ContainsESDHighPtTrack(esd) || ContainsESDHighECaloClusters(esd) ){ //FK//
+    if(storeEvent){ 
       //-------------- reset all the arrays -------------
-      fTrackList->Reset();
-      //fMCTrackList->Reset();
-      fPhotonList->Reset();
-      fHeaderList->Reset();
- 
-      //store event only when it is downscaled min bias
+         //store event only when it is downscaled min bias
       // or contais high pt hadron
       // or contains high energy cluster in EMCAL or PHOS
-        ReadESDTracks(esd);
-        ReadESDCaloClusters(esd);
-        ReadESDHeader(esd);
-
-        fTree->Fill(); // fill the TTree
- 
-        PostData(1, fTree);
+      ReadESDTracks(esd);
+      ReadESDCaloClusters(esd);
+      ReadESDHeader(esd);
+      if(fIsRealOrMC) ReadMCTracks(mcEvent);
     }
-  }else{
+  }else if( fInputFormat == "AODout" || fInputFormat == "AODin") {
   
-       AliAODEvent* aod;
-       if(fInputFormat == "AODout") // reading from AOD output handler
-         aod = AODEvent();
-       else 
-         if(fInputFormat == "AODin") // reading from AOD input handler
-            aod = (AliAODEvent*)InputEvent();
-         else{
-            cout << "Error: Not correct InputDataFormat especified " << endl;
-            return;
-         }
-         
-     ReadAODTracks(aod);
-     ReadAODCaloClusters(aod);
-     ReadAODHeader(aod);
- 
-     fTree->Fill(); // fill the TTree
- 
-     PostData(1, fTree);
-    
-  }
+    AliAODEvent* aod = NULL;
+    if(fInputFormat == "AODout"){ // reading from AOD output handler
+      aod = AODEvent();
+    }else if(fInputFormat == "AODin"){ // reading from AOD input handler
+      aod = (AliAODEvent*)InputEvent();
+    }
 
-  
+    if(storeEvent){ 
+      //-------------- reset all the arrays -------------
+         
+      ReadAODTracks(aod);
+      ReadAODCaloClusters(aod);
+      ReadAODHeader(aod);
+    }
+    
+  }else{
+    cout << "Error: Not correct InputDataFormat especified " << endl;
+    return;
+  }
 }
 
 //______________________________________________________________________________
@@ -354,12 +321,14 @@ void AliJCORRANTask::Init()
 void AliJCORRANTask::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
-  fTree->Print();
+  OutputTree()->Print(); 
   if(fInputFormat == "AODout") ReadFilter(); // change it to save this info also from AODin !!!! 
 
-  ((AliJRunHeader *) (fTree->GetUserInfo())->First())->PrintOut();  
+  ((AliJRunHeader *) (OutputTree()->GetUserInfo())->First())->PrintOut();  
 
   cout<<"PWG4JCORRAN Analysis DONE !!"<<endl; 
+
+
 }
 
 //______________________________________________________________________________
@@ -378,7 +347,7 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
     for(Int_t it = 0; it < nt; it++) { 
 
         AliESDtrack *track = esd->GetTrack(it);
-        if(! fEsdTrackCuts->IsSelected(track)) continue; //FK// apply loose selection criteria
+        if(! fEsdTrackCuts->IsSelected(track)) continue; //apply quality selection criteria
 
         UInt_t status = track->GetStatus();
 	    
@@ -395,7 +364,6 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
 	Int_t nFindableClust = track->GetTPCNclsF();
 	Float_t tpcChi2PerCluster = 0.;
 	if(nClust>0.) tpcChi2PerCluster = track->GetTPCchi2()/Float_t(nClust);
-
 	Float_t tpcClustPerFindClust = 0.;
 	if(nFindableClust>0.) tpcClustPerFindClust = Float_t(nClust)/nFindableClust;
         //--------------------------------
@@ -418,6 +386,9 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
         extDiaCov[3]=extCov[9];
         extDiaCov[4]=extCov[14];
 
+      //  Int_t itsLabel = track->GetITSLabel(); //FK//
+      //  Int_t tpcLabel = track->GetTPCLabel(); //FK//   
+
         //create a new AliJTrack and fill the track info
 	fTrackList->AddAliJTrack(ntrk);
 	AliJTrack *ctrack = fTrackList->GetAliJTrack(ntrk);
@@ -427,7 +398,7 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
         ctrack->SetTheta(p3.Theta());
         ctrack->SetPhi(p3.Phi());
         ctrack->SetPID(pid);
-        ctrack->SetFlavor(kHadron);
+        ctrack->SetFlavor(kNone);//kHadron);
 	ctrack->SetCharge(track->Charge());
         ctrack->ConvertAliPID();
         ctrack->SetEta(eta);
@@ -447,6 +418,10 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
         ctrack->SetKinkIndex(track->GetKinkIndex(0));
         ctrack->SetStatus(status);
         ctrack->SetExternalDiaCovariance(extDiaCov);
+
+      //  ctrack->SetITSLabel(itsLabel);//FK//
+      //  ctrack->SetTPCLabel(tpcLabel);//FK//
+
 
 	fTrackList->SetNTracks(++ntrk);
 
@@ -470,16 +445,21 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
 	fTrackList->AddAliJTrack(ntrk);
         AliJTrack *ctrack = fTrackList->GetAliJTrack(ntrk);
 
+        ctrack->SetPtot(track->P());
         ctrack->SetPt(track->Pt());
         ctrack->SetTheta(track->Theta());
         ctrack->SetPhi(track->Phi());
+        ctrack->SetEta(track->Eta());
         ctrack->SetPID((Double_t*)track->PID());
-        ctrack->SetFlavor(kHadron);
+        ctrack->SetFlavor(kNone); //kHadron);
         ctrack->SetCharge(track->Charge());
         ctrack->SetChi2perNDF(track->Chi2perNDF());
         ctrack->SetChi2Trig(track->GetChi2MatchTrigger());
         ctrack->SetRecFlags(track->GetFlags());
-        
+      
+       
+       // ctrack->SetITSLabel(track->GetLabel());//FK//?
+      //  ctrack->SetTPCLabel(track->GetLabel());//FK//?
 	fTrackList->SetNTracks(++ntrk);
 
      } // end tracks loop
@@ -497,7 +477,7 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
     AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
     if(!caloCluster) continue;
     if(caloCluster->GetTrackMatched()==-1){
-      if(caloCluster->E()<0.2) continue;                  //FK//
+      if(caloCluster->E()<fLowerCutOnCaloClusterE) continue;                  //FK//
       // we will not implement any PID cut here      
       fPhotonList->AddAliJPhoton(nPhotons);
       AliJPhoton *pht = fPhotonList->GetAliJPhoton(nPhotons);
@@ -524,8 +504,6 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
       pht->SetCellsAbsId(caloCluster->GetCellsAbsId());
       Int_t imoduleID = GetSuperModuleNumber(caloCluster->IsEMCAL(), caloCluster->GetCellAbsId(0));
       pht->SetSuperModuleID(imoduleID);
-  //    char buffer[20] = "photon";  
- //     pht->PrintOut(buffer);
       
       fPhotonList->SetNPhotons(++nPhotons);
     } // end if 
@@ -585,8 +563,6 @@ void AliJCORRANTask::ReadESDHeader(const AliESDEvent *esd)
     //create a header and fill it
     fHeaderList->AddAliJHeader(nHeaders);
     AliJHeader *hdr = fHeaderList->GetAliJHeader(nHeaders);
-
-    //cout << esd->GetRunNumber() <<"\t"<< esd->GetEventNumberInFile() << endl;
 	
     AliMultiplicity *fSPDMult =(AliMultiplicity *) esd->GetMultiplicity();
     hdr->SetSPDTrackletMult(fSPDMult->GetNumberOfTracklets());
@@ -607,69 +583,23 @@ void AliJCORRANTask::ReadESDHeader(const AliESDEvent *esd)
 void AliJCORRANTask::ReadAODHeader(const AliAODEvent *aod)
 {
   //read AOD event header
-    Short_t nHeaders = 0;
-       //create a header and fill it
-	fHeaderList->AddAliJHeader(nHeaders);
-	AliJHeader *hdr = fHeaderList->GetAliJHeader(nHeaders);
-	
-	//load aod event header
-	AliAODHeader * aodh = aod->GetHeader();
+  Short_t nHeaders = 0;
+  //create a header and fill it
+  fHeaderList->AddAliJHeader(nHeaders);
+  AliJHeader *hdr = fHeaderList->GetAliJHeader(nHeaders);
+	 
+  //load aod event header
+  AliAODHeader * aodh = aod->GetHeader();
 
-	hdr->SetCentrality(int(aodh->GetCentrality())); 
-	
-	hdr->SetTriggerMaskAlice(aodh->GetTriggerMask()); //ULong64_t
-	hdr->SetEventType(aodh->GetEventType());
-	
-	fHeaderList->SetNHeaders(++nHeaders);
-}
-
-//______________________________________________________________________________
-void AliJCORRANTask::ReadFilter()
-{
-   //read filter 
-   TList* olist = OutputTree()->GetUserInfo();
-   AliAnalysisFilter* trackFilter = (AliAnalysisFilter*)olist->At(0);
-   
-   if(!trackFilter) return;
-   
-   TList* cutslist = trackFilter->GetCuts();
-   //cout << "number of cuts " << cutslist->GetSize();
- 
-   for(int ic = 0; ic< cutslist->GetSize(); ic++){
-       AliESDtrackCuts* icuts = (AliESDtrackCuts*)cutslist->At(ic);
-     
-       // read ESD track quality cuts
-       Float_t trkcut[14];
-       trkcut[0] = (Float_t)icuts->GetMinNClusterTPC();
-       trkcut[1] = (Float_t)icuts->GetMinNClustersITS();
-       trkcut[2] = (Float_t)icuts->GetMaxChi2PerClusterTPC();
-       trkcut[3] = (Float_t)icuts->GetMaxChi2PerClusterITS();
-       trkcut[4] = (Float_t)icuts->GetRequireTPCRefit();
-       trkcut[5] = (Float_t)icuts->GetRequireITSRefit();
-       trkcut[6] = (Float_t)icuts->GetAcceptKinkDaughters();
-       icuts->GetMaxCovDiagonalElements(trkcut[7],trkcut[8],trkcut[9],trkcut[10],trkcut[11]);
-       trkcut[12] = (Float_t)icuts->GetMaxNsigmaToVertex();
-       trkcut[13] = (Float_t)icuts->GetRequireSigmaToVertex();
-     
-       fTrackQACuts->Fill(trkcut);
-       
-       // read track kinmatic cuts
-       Float_t kinecut[14];
-       icuts->GetPRange(kinecut[0], kinecut[1]);
-       icuts->GetPtRange(kinecut[2], kinecut[3]);
-       icuts->GetPxRange(kinecut[4], kinecut[5]);
-       icuts->GetPyRange(kinecut[6], kinecut[7]);
-       icuts->GetPzRange(kinecut[8], kinecut[9]);
-       icuts->GetEtaRange(kinecut[10], kinecut[11]);
-       icuts->GetRapRange(kinecut[12], kinecut[13]);
-       
-       fTrackKineCuts->Fill(kinecut);
-       
+  hdr->SetCentrality(int(aodh->GetCentrality())); 
   
-   } // end cuts loop
-   
-   PostData(2,fQAList);
+  hdr->SetTriggerMaskAlice(aodh->GetTriggerMask()); //ULong64_t
+  hdr->SetTriggerMaskJCorran(ConvertTriggerMask(/*esd->GetTriggerMask()*/)); //UInt_t
+  hdr->SetEventType(aodh->GetEventType());
+	
+  fHeaderList->SetNHeaders(++nHeaders);
 }
+
 //______________________________________________________________________________
 Int_t AliJCORRANTask::GetSuperModuleNumber(bool isemcal, Int_t absId)
 {
@@ -718,19 +648,45 @@ bool AliJCORRANTask::StoreDownscaledMinBiasEvent(){
   }
   return isThisEventToBeStored;
 }
+
 //______________________________________________________________________________
-bool AliJCORRANTask::ContainsESDHighPtTrack(const AliESDEvent* esd){
-  bool isThisEventToBeStored = kFALSE;
+bool AliJCORRANTask::ContainsESDHighPtTrack(){
 
-  Int_t nt = esd->GetNumberOfTracks();
+  bool isThisEventToBeStored = kFALSE; //initialize return value
 
-  for(Int_t it = 0; it < nt; it++) {
-    AliESDtrack *track = esd->GetTrack(it);
-    //Does event contain high pt particle above 2 GeV 
-    //which fulfills loose track selection criteria 
-    if(track->Pt() > fLowerCutOnLPMom && fEsdTrackCuts->IsSelected(track)){
-      isThisEventToBeStored = kTRUE;
-      break; 
+  if(fInputFormat=="ESD"){
+
+    AliESDEvent* esd = NULL; 
+    esd = (AliESDEvent*)InputEvent();
+
+    Int_t nt = esd->GetNumberOfTracks();
+
+    for(Int_t it = 0; it < nt; it++) {
+      AliESDtrack *track = esd->GetTrack(it);
+      //Does event contain high pt particle above thereshold in GeV 
+      if(track->Pt() > fLowerCutOnLPMom && fEsdTrackCuts->IsSelected(track)){
+        isThisEventToBeStored = kTRUE;
+        break; 
+      }
+    }
+  }else{
+
+    AliAODEvent* aod=NULL;
+    if(fInputFormat == "AODout"){ // reading from AOD output handler
+      aod = AODEvent();
+    }else if(fInputFormat == "AODin"){ // reading from AOD input handler
+      aod = (AliAODEvent*)InputEvent();
+    }
+
+    Int_t nt = aod->GetNumberOfTracks();
+
+    for(Int_t it = 0; it < nt; it++) {
+      AliAODTrack *track = aod->GetTrack(it);
+      //Does event contain high pt particle above threshold in GeV 
+      if(track->Pt() > fLowerCutOnLPMom && IsSelectedAODTrack(track)){
+        isThisEventToBeStored = kTRUE;
+        break; 
+      }
     }
   }
 
@@ -738,88 +694,149 @@ bool AliJCORRANTask::ContainsESDHighPtTrack(const AliESDEvent* esd){
 }
 
 //______________________________________________________________________________
-bool AliJCORRANTask::ContainsESDHighECaloClusters(const AliESDEvent* esd){
-  bool isThisEventToBeStored = kFALSE;
+bool AliJCORRANTask::ContainsESDHighECaloClusters(){
+  bool isThisEventToBeStored = kFALSE; //initialize return value
 
-  Int_t numberOfCaloClusters = esd->GetNumberOfCaloClusters() ;
-  // loop over all the Calo Clusters
-  for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
-    AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
-    if(!caloCluster) continue;
-    if(caloCluster->GetTrackMatched()==-1){
-      //sotre calo clusters above 2 GeV
+  if(fInputFormat=="ESD"){
+
+    AliESDEvent* esd = NULL; 
+    esd = (AliESDEvent*)InputEvent();
+
+    Int_t numberOfCaloClusters = esd->GetNumberOfCaloClusters() ;
+    // loop over all the Calo Clusters
+    for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
+      AliESDCaloCluster *caloCluster = esd->GetCaloCluster(icluster) ;
+      if(!caloCluster) continue;
+      if(caloCluster->GetTrackMatched()==-1){
+        //sotre calo clusters above 1 GeV
+        if( caloCluster->E() > fLowerCutOnLeadingCaloClusterE){
+          isThisEventToBeStored = kTRUE;
+          break; 
+        }
+      }
+    }
+  }else{
+
+    AliAODEvent* aod=NULL;
+    if(fInputFormat == "AODout"){ // reading from AOD output handler
+      aod = AODEvent();
+    }else if(fInputFormat == "AODin"){ // reading from AOD input handler
+      aod = (AliAODEvent*)InputEvent();
+    }
+
+    Int_t numberOfCaloClusters = aod->GetNCaloClusters() ;
+    // loop over all the Calo Clusters
+    for(Int_t icluster = 0 ; icluster < numberOfCaloClusters ; icluster++) {
+      AliAODCaloCluster *caloCluster = aod->GetCaloCluster(icluster) ;
+      if(!caloCluster) continue;
+      if(caloCluster->GetNTracksMatched() > 0) continue;
+      //sotre calo clusters above 1 GeV
       if( caloCluster->E() > fLowerCutOnLeadingCaloClusterE){
         isThisEventToBeStored = kTRUE;
         break; 
       }
     }
   }
+
   return isThisEventToBeStored;
 }
 
 
-
-
-
-
-/*
-
+//______________________________________________________________________________
 
 void AliJCORRANTask::ReadMCTracks(AliMCEvent *fMC)
 {
-  AliGenEventHeader* genHeader = fMC->GenEventHeader();
-  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  //AliGenEventHeader* genHeader = fMC->GenEventHeader();
+  //AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
          
-  Double_t ptHard = 0;
-  Double_t nTrials = 1; // Trials for MC trigger weigth for real data
+  //Double_t ptHard = 0;
+  //Double_t nTrials = 1; // Trials for MC trigger weigth for real data
 
-    nTrials = pythiaGenHeader->Trials();
-    ptHard  = pythiaGenHeader->GetPtHard();
-    //cout << nTrials <<"\t"<< ptHard << endl;
+  //nTrials = pythiaGenHeader->Trials();
+  //ptHard  = pythiaGenHeader->GetPtHard();
 
-    AliStack *stack = fMC->Stack();
-    Int_t np    = fMC->GetNumberOfTracks();
-    Int_t nprim = stack->GetNtrack();
-    if(np!=nprim) cout << "GetNumberOfTracks = "<< np <<"\t, stack = "<< nprim << endl;
-    Short_t ntrack = 0;
-    for(Int_t itrack = 0; itrack < nprim; itrack++){
-      //create a new JMCTrack and fill the track info
-      fMCTrackList->AddJMCTrack(ntrack);
-      JMCTrack *ctrack = fMCTrackList->GetTrack(ntrack);
-      TParticle *ipart = stack->Particle(itrack);
-      Int_t icode= ipart->GetPdgCode();
-      Float_t pt = ipart->Pt();
-      Float_t eta = ipart->Eta();
-      Float_t phi = ipart->Phi();
-      Int_t   status  = ipart->GetStatusCode();
-      Bool_t  isprim =  ipart->IsPrimary();
-      // fill base class
-      ctrack->SetE(ipart->Energy());
-      ctrack->SetTheta(ipart->Theta());
-      ctrack->SetPhi(phi);
-      ctrack->SetPt(pt);
-      // MC
-      ctrack->SetPtHard(ptHard);
-      ctrack->SetPdgCode(icode);
-      ctrack->SetStatusCode(status);
-      ctrack->SetIsPrimary(isprim);
-      ctrack->SetProductionVertex(ipart->Vx(),ipart->Vx(),ipart->Vz());
+  AliStack *stack = fMC->Stack();
+  Int_t np        = fMC->GetNumberOfTracks();
+  //Int_t nprim = stack->GetNtrack();
+  //  if(np!=nprim) cout << "GetNumberOfTracks = "<< np <<"\t, stack = "<< nprim << endl;
+ 
+  Short_t ntrack = 0;
+
+  for(Int_t itrack = 0; itrack < np; itrack++){
+    AliMCParticle *track = (AliMCParticle*) fMC->GetTrack(itrack);
+    if(!track){
+      Printf("ERROR: Could not receive track %d", itrack);
+      continue;
+    }
+
+    Bool_t isPrimary = stack->IsPhysicalPrimary(itrack);
+
+    //create a new JMCTrack and fill the track info
+    fMCTrackList->AddJMCTrack(ntrack);
+    AliJMCTrack *ctrack = fMCTrackList->GetTrack(ntrack);
+
+    TParticle *partStack = stack->Particle(itrack);
+    Int_t   pdg  = partStack->GetPdgCode();
+    Float_t engy = partStack->Energy();
+    Float_t pt   = partStack->Pt();
+    Float_t ptot = partStack->P();
+    Float_t eta  = partStack->Eta();
+    Float_t theta  = partStack->Theta();
+    Float_t phi    = atan2(sin( partStack->Phi()), cos(partStack->Phi()));
+    Short_t ch     = (Short_t) partStack->GetPDG()->Charge();
+    Int_t label    = track->GetLabel();
+    Int_t   status = partStack->GetStatusCode();
+
+    ctrack->SetLabel(label);
+    ctrack->SetPdgCode(pdg);
+    ctrack->SetPt(pt);
+    ctrack->SetTheta(theta);
+    ctrack->SetEta(eta);
+    ctrack->SetPhi(phi);
+    ctrack->SetE(engy);
+    ctrack->SetCharge(ch);
+    ctrack->SetPtot(ptot);
+    ctrack->SetStatusCode(status);
+    ctrack->SetIsPrimary(isPrimary);
+
+    ctrack->SetProductionVertex(partStack->Vx(),partStack->Vy(),partStack->Vz());
+
+    //ctrack->SetPtHard(ptHard);
       
-      //bool isInc = (status ==  1 && icode ==  22); //Inclusive
-      bool ispi0 = (status == 11 && icode == 111); //kPizero
-      bool isDgamma = (status == 6 || status == 7) && icode == 22; // Direct photon
-      bool inPHOS  = (ispi0||isDgamma)&&fabs(eta)<0.12; 
-      bool inEMCAL = (ispi0||isDgamma)&&fabs(eta)<0.7; 
-      bool inTPC   = fabs(eta)<0.9; 
-      ctrack->SetMother(0,ipart->GetFirstMother());
-      ctrack->SetMother(1,ipart->GetSecondMother());
-      ctrack->SetDaughter(0,ipart->GetFirstDaughter());
-      ctrack->SetDaughter(1,ipart->GetLastDaughter());
-      ctrack->SetIsInPHOS(inPHOS);
-      ctrack->SetIsInEMCAL(inEMCAL);
-      ctrack->SetIsInTPC(inTPC);
+    //bool isInc = (status ==  1 && icode ==  22); //Inclusive
+    bool ispi0 = (status == 11 && pdg == 111); //kPizero
+    bool isDgamma = (status == 6 || status == 7) && pdg == 22; // Direct photon
+    bool inPHOS  = (ispi0||isDgamma)&&fabs(eta)<0.12; 
+    bool inEMCAL = (ispi0||isDgamma)&&fabs(eta)<0.7; 
+    bool inTPC   = fabs(eta)<0.9; 
+    ctrack->SetMother(0,partStack->GetFirstMother());
+    ctrack->SetMother(1,partStack->GetSecondMother());
+    ctrack->SetDaughter(0,partStack->GetFirstDaughter());
+    ctrack->SetDaughter(1,partStack->GetLastDaughter());
+    ctrack->SetIsInPHOS(inPHOS);
+    ctrack->SetIsInEMCAL(inEMCAL);
+    ctrack->SetIsInTPC(inTPC);
 
-      fMCTrackList->SetNTracks(++ntrack);
-    }// loop for al primary tracks
+    fMCTrackList->SetNTracks(++ntrack);
+  }// loop for al primary tracks
 }
-*/
+
+//______________________________________________________________________________
+
+bool AliJCORRANTask::IsSelectedAODTrack(AliAODTrack   *track){
+
+  if(fIsRealOrMC &&  track->GetType() != AliAODTrack::kPrimary) return kFALSE; // only primaries 
+  if(fEsdTrackCuts->GetMinNClusterTPC() > track->GetTPCNcls()) return kFALSE;
+  if(fEsdTrackCuts->GetRequireTPCRefit()  && ((track->GetStatus() & AliJTrack::kTPCrefit) == 0)) return kFALSE;
+  if(fEsdTrackCuts->GetRequireITSRefit()  && ((track->GetStatus() & AliJTrack::kITSrefit) == 0)) return kFALSE;
+
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+
+
+
+
+
+
