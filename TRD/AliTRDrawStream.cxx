@@ -879,9 +879,9 @@ Int_t AliTRDrawStream::ReadZSData()
     
     // ----- reading marked ADC channels -----
     while (channelcount < channelcountExp && *(fPayloadCurr) != fgkDataEndmarker) {
-      if (channelno < 21)
+      if (channelno < 20)
 	channelno++;
-      while (channelno < 21 && (channelmask & 1 << channelno) == 0)
+      while (channelno < 20 && (channelmask & 1 << channelno) == 0)
 	channelno++;
       
       if (fCurrNtimebins > 30) {
@@ -1043,7 +1043,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
     // ----- reading marked ADC channels -----
     while (channelcount < channelcountExp && 
 	   *(fPayloadCurr) != fgkDataEndmarker) {
-      if (channelno < 21)
+      if (channelno < 20)
 	channelno++;
       
       currentTimebin = 0;
@@ -1191,7 +1191,7 @@ TString AliTRDrawStream::StackError(ErrorCode_t err, TString msg, ...)
   fErrors->Fill();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 10) 
+  if (fgErrorDebugLevel[err] > 0) 
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fgErrorMessages[err],
@@ -1219,7 +1219,7 @@ TString AliTRDrawStream::LinkError(ErrorCode_t err, TString msg, ...)
   fErrors->Fill();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 10)
+  if (fgErrorDebugLevel[err] > 0)
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fgErrorMessages[err],
@@ -1247,7 +1247,7 @@ TString AliTRDrawStream::ROBError(ErrorCode_t err, TString msg, ...)
   fErrors->Fill();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 10) 
+  if (fgErrorDebugLevel[err] > 0) 
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i - %s : %s", 
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fgErrorMessages[err],
@@ -1275,7 +1275,7 @@ TString AliTRDrawStream::MCMError(ErrorCode_t err, TString msg, ...)
   fErrors->Fill();
 
   va_list ap;
-  if (fgErrorDebugLevel[err] > 10) 
+  if (fgErrorDebugLevel[err] > 0) 
     AliDebug(fgErrorDebugLevel[err], 
 	     Form("Event %6i: Eq. %2d S %i l %2i ROB %i MCM %2i - %s : %s",
 		  fRawReader->GetEventIndex(), fCurrEquipmentId, fCurrSlot, fCurrLink, fCurrRobPos, fCurrMcmPos, fgErrorMessages[err], 
