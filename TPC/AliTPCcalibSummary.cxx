@@ -3,12 +3,18 @@
 // Store results in the summary trees
 // OCDB configuration
 
-gSystem->AddIncludePath("-I$ALICE_ROOT/TPC");
-.L $ALICE_ROOT/TPC/AliTPCcalibSummary.cxx+
+Example usage:
 
-AliTPCcalibSummary calib;
-calib.Procces("run.list",run0,run1);
+gSystem->Load("libANALYSIS");
+gSystem->Load("libTPCcalib");
 
+Int_t irun=119037;
+gROOT->LoadMacro("$ALICE_ROOT/TPC/scripts/OCDBscan/ConfigOCDB.C");
+ConfigOCDB(irun)
+
+AliTPCcalibSummary *calibSummary = new AliTPCcalibSummary;
+calibSummary->ProcessRun(irun);
+delete calibSummary;
 
 */
 
@@ -359,7 +365,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     ProcessDrift(irun, itime);
     ProcessDriftCE(irun,itime);
     ProcessDriftAll(irun,itime);
-    ProcessKryptonTime(irun,itime);
+    //    ProcessKryptonTime(irun,itime);
     ProcessCTP(irun,itime);
     ProcessAlign(irun,itime);
     ProcessGain(irun,itime);
