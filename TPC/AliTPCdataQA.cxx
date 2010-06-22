@@ -17,6 +17,34 @@
 /* $Id$ */
 
 /*
+  June 2010
+
+  This update should solve two problems mainly:
+  * The vs event histograms have been limited to a fixed size for the
+  DQM. The 500k seemed to be a big size but is no longer so, so we
+  need to dynamically expand the range. The non-trivial point is that
+  we also have to do it for the copy owned by AliTPCQADataMakerRec.
+  * The amoreGui now remembers the x-range of the first visualization so
+  the trick of setting the relevant event range as the histogram is
+  filled no longer works.
+
+  The fix is a bit crude but avoids creating a new histogram. Instead
+  the range is expanded (max events and events per bin is doubled) but
+  the number of bins is kept constant! In this way we can change just
+  double the max of the X-axis of the hist and rebin the data. The
+  same can easily be done for the copy owned by AliTPCQADataMakerRec.
+
+  CAUTION:
+  If we change the number of bins we could crash the whole system
+  because ROOT does not create space for extra bins! (but we do not do
+  this). In that way it is a crude solution.
+  The rebinning in the code only works for an even number of bins.
+
+  In addition to the above a bug in the reading of the config file was
+  also found and corrected. fAdcMax was set instead of fEventsPerBin.
+
+  Finally cout was changes to AliInfo.
+
   February 2008
 
   The code has been heavily modified so that now the RAW data is
@@ -55,11 +83,6 @@
   the normalization is reversed and Analyse has to be called again.
 */
 
-
-// stl includes
-#include <iostream>
-
-using namespace std;
 
 //Root includes
 #include <TH1F.h>
@@ -314,7 +337,7 @@ AliTPCdataQA::AliTPCdataQA(const TMap *config) : /*FOLD00*/
   if (config->GetValue("AdcMin"))       fAdcMin = ((TObjString*)config->GetValue("AdcMin"))->GetString().Atoi();
   if (config->GetValue("AdcMax"))       fAdcMax = ((TObjString*)config->GetValue("AdcMax"))->GetString().Atoi();
   if (config->GetValue("MaxEvents"))    fMaxEvents = ((TObjString*)config->GetValue("MaxEvents"))->GetString().Atoi();
-  if (config->GetValue("EventsPerBin")) fAdcMax = ((TObjString*)config->GetValue("EventsPerBin"))->GetString().Atoi();
+  if (config->GetValue("EventsPerBin")) fEventsPerBin = ((TObjString*)config->GetValue("EventsPerBin"))->GetString().Atoi();
 }
 
 //_____________________________________________________________________
@@ -381,7 +404,6 @@ TH1F* AliTPCdataQA::GetHistOccupancyVsEvent()
     Int_t nBins = fMaxEvents/fEventsPerBin;
     fHistOccupancyVsEvent = new TH1F("hOccupancyVsEvent", "Occupancy vs event number (~time); Event number; Occupancy", nBins, 0, nBins*fEventsPerBin);
     fHistOccupancyVsEvent->SetDirectory(0);
-    fHistOccupancyVsEvent->GetXaxis()->SetRange(0, 10);
   }
   
   return fHistOccupancyVsEvent;
@@ -401,7 +423,6 @@ TH1F* AliTPCdataQA::GetHistNclustersVsEvent()
     Int_t nBins = fMaxEvents/fEventsPerBin;
     fHistNclustersVsEvent = new TH1F("hNclustersVsEvent", "Nclusters vs event number (~time); Event number; Nclusters per event", nBins, 0, nBins*fEventsPerBin);
     fHistNclustersVsEvent->SetDirectory(0);
-    fHistNclustersVsEvent->GetXaxis()->SetRange(0, 10);
   }
   
   return fHistNclustersVsEvent;
@@ -418,41 +439,58 @@ void AliTPCdataQA::UpdateEventHistograms()
   if (!fHistNclustersVsEvent)
     GetHistNclustersVsEvent();
   
+  if(fEventCounter > fMaxEvents) {
+    
+    // we have to expand the histogram to handle the larger number of
+    // events. The way it is done now is to double the range and the
+    // number of events per bin (so the number of histogram bins stays
+    // constant)
+    fEventsPerBin *= 2;
+    fMaxEvents *= 2;
+
+    // Change histogram limits
+    const Int_t nBins = fHistOccupancyVsEvent->GetXaxis()->GetNbins();
+    fHistOccupancyVsEvent->GetXaxis()->Set(nBins, fHistOccupancyVsEvent->GetXaxis()->GetNbins(), fMaxEvents);
+    fHistNclustersVsEvent->GetXaxis()->Set(nBins, fHistNclustersVsEvent->GetXaxis()->GetNbins(), fMaxEvents);
+
+    // Rebin the histogram
+    for(Int_t bin = 1; bin <= nBins; bin+=2) {
+
+      Int_t newBin = TMath::Nint(Float_t(bin+1)/2.0);
+      Float_t newContent = (fHistOccupancyVsEvent->GetBinContent(bin)+
+			    fHistOccupancyVsEvent->GetBinContent(bin+1))/2.0;
+      fHistOccupancyVsEvent->SetBinContent(newBin, newContent); 
+
+      newContent = (fHistNclustersVsEvent->GetBinContent(bin)+
+		    fHistNclustersVsEvent->GetBinContent(bin+1))/2.0;
+      fHistNclustersVsEvent->SetBinContent(newBin, newContent); 
+    }
+
+    // Set the remaining bins to 0
+    Int_t lastHalf = nBins/2 +1;
+    for(Int_t bin = lastHalf; bin <= nBins; bin++) {
+
+      fHistOccupancyVsEvent->SetBinContent(bin, 0); 
+      fHistNclustersVsEvent->SetBinContent(bin, 0); 
+    }
+
+    // In this case we should nut update but wait untill the new
+    // number of events per bin is reached!
+    return;
+  }
+
+  const Int_t bin = TMath::Nint(Float_t(fEventCounter)/fEventsPerBin);
+
   Float_t averageOccupancy =
     Float_t(fSignalCounter)/fEventsPerBin/(fLastTimeBin - fFirstTimeBin +1.0)
-    / 570132; // 570,132 is number of pads
-  if(fEventCounter<=fMaxEvents) 
-    UpdateEventHisto(fHistOccupancyVsEvent, averageOccupancy);
+    / 570132.0; // 570,132 is number of pads
+  fHistOccupancyVsEvent->SetBinContent(bin, averageOccupancy);
   fSignalCounter = 0;
   
   Float_t averageNclusters =
     Float_t(fClusterCounter)/fEventsPerBin;
-  if(fEventCounter<=fMaxEvents) 
-    UpdateEventHisto(fHistNclustersVsEvent, averageNclusters);
+  fHistNclustersVsEvent->SetBinContent(bin, averageNclusters);
   fClusterCounter = 0;
-}
-
-//_____________________________________________________________________
-void AliTPCdataQA::UpdateEventHisto(TH1F* hist, Float_t average)
-{
-  // Do the actually updating of each histogram and 
-  // change the visible range if needed
-  
-  // in case someone would have overwritten the value here
-  // (not so pretty  but OK for this I think)
-  fEventsPerBin = hist->GetXaxis()->GetBinWidth(1);
-  Int_t bin = TMath::Nint(Float_t(fEventCounter)/fEventsPerBin);
-  
-  if (hist->GetBinContent(bin)>0) { 
-    AliError("Bin already filled. This should not happen.");
-  } else {
-    hist->SetBinContent(bin, average);
-  }
-  
-  // expand the visible range of the histogram if needed
-  if(hist->GetXaxis()->GetLast()<= bin) {
-    hist->GetXaxis()->SetRange(0, Int_t(1.3*bin));
-  }
 }
 
 //_____________________________________________________________________
@@ -466,7 +504,9 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
   Int_t lastSector = -1;
   
   while ( rawStreamV3->NextDDL() ){
+
     while ( rawStreamV3->NextChannel() ){
+    
       Int_t iSector = rawStreamV3->GetSector(); //  current sector
       Int_t iRow    = rawStreamV3->GetRow();    //  current row
       Int_t iPad    = rawStreamV3->GetPad();    //  current pad
@@ -483,6 +523,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
       }
       
       while ( rawStreamV3->NextBunch() ){
+
         Int_t  startTbin    = (Int_t)rawStreamV3->GetStartTimeBin();
         Int_t  bunchlength  = (Int_t)rawStreamV3->GetBunchLength();
         const UShort_t *sig = rawStreamV3->GetSignals();
@@ -495,8 +536,8 @@ Bool_t AliTPCdataQA::ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3)
       }
     }
   }
-  
-  if (lastSector>=0&&nSignals>0)
+    
+  if (lastSector>=0&&nSignals>0)  
     FindLocalMaxima(lastSector);
   
   return withInput;
@@ -513,7 +554,7 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *const rawReader)
   if(res) {
     fEventCounter++; // only increment event counter if there is TPC data
 
-    if(fEventCounter%fEventsPerBin==0)
+    if(fEventCounter%fEventsPerBin==0) 
       UpdateEventHistograms();
   }
   return res;
@@ -936,7 +977,6 @@ void AliTPCdataQA::FindLocalMaxima(const Int_t iSector)
     } // end loop over signals
   } // end loop over rows
   
-  //  cout << "Number of local maximas found: " << nLocalMaxima << endl;
   fClusterCounter += nLocalMaxima;
 }
 
@@ -947,23 +987,22 @@ void AliTPCdataQA::Analyse()
   //  Calculate calibration constants
   //
   
-  cout << "Analyse called" << endl;
+  AliInfo("Analyse called");
 
   if(fIsAnalysed == kTRUE) {
     
-    cout << "No new data since Analyse was called last time" << endl;
+    AliInfo("No new data since Analyse was called last time");
     return;
   }
 
   if(fEventCounter==0) {
     
-    cout << "EventCounter == 0, Cannot analyse" << endl;
+      AliInfo("EventCounter == 0, Cannot analyse");
     return;
   }
   
   Int_t nTimeBins = fLastTimeBin - fFirstTimeBin +1;
-  cout << "EventCounter: " << fEventCounter << endl
-       << "TimeBins: " << nTimeBins << endl;
+  AliInfo(Form("EventCounter: %d , TimeBins: %d", fEventCounter, nTimeBins));
 
   Float_t normalization = 1.0 / Float_t(fEventCounter * nTimeBins);
   fNoThreshold->Multiply(normalization);  

@@ -39,17 +39,16 @@ public:
   AliTPCQADataMakerRec& operator = (const AliTPCQADataMakerRec& qadm) ;
   virtual ~AliTPCQADataMakerRec(); 
   
-  void SetBeautifyOption(Int_t value)  {fBeautifyOption= value;}
-  void SetOccHighLimit(Float_t value)  {fOccHighLimit  = value;}
-  void SetQmaxLowLimit(Float_t value)  {fQmaxLowLimit  = value;}
-  void SetQmaxHighLimit(Float_t value) {fQmaxHighLimit = value;}
-
-  Int_t   GetBeautifyOption() const {return fBeautifyOption;}
-  Float_t GetOccHighLimit() const {return fOccHighLimit; }
-  Float_t GetQmaxLowLimit() const {return fQmaxLowLimit; }
-  Float_t GetQmaxHighLimit() const {return fQmaxHighLimit;}
-
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
+
+  Int_t  GetRawMaxEvents()      const { return fRawMaxEvents;     }
+  Int_t  GetRawEventsPerBin()   const { return fRawEventsPerBin;  }
+  Int_t  GetRawFirstTimeBin() const { return fRawFirstTimeBin; }
+  Int_t  GetRawLastTimeBin()  const { return fRawLastTimeBin;  }
+
+  void  SetRawMaxEvents   (Int_t value) { fRawMaxEvents = value; }
+  void  SetRawEventsPerBin(Int_t value) { fRawEventsPerBin = value; }
+  void  SetRawRangeTime(Int_t tMin, Int_t tMax){ fRawFirstTimeBin=tMin; fRawLastTimeBin=tMax;}
 
 private:
   virtual void   StartOfDetectorCycle() {}; // empty 
@@ -74,14 +73,16 @@ private:
   
   virtual void LoadMaps();
 
+  TH1F* CreateEventsHistCopy(const TH1F* hist, const Char_t* copyName);
+
   AliTPCAltroMapping *fMapping[6]; //! Pointers to ALTRO mapping
   AliTPCdataQA** fTPCdataQA;//! TPC calibration object for making raw data QA
 
-  Int_t   fBeautifyOption;//! 0:no beautify, !=0:beautify RAW 
-  Float_t fOccHighLimit;  //! high limit for accepting occupancy values
-  Float_t fQmaxLowLimit;  //! low limit for accepting Qmax values
-  Float_t fQmaxHighLimit; //! high limit for accepting Qmax values
-  
+  Int_t fRawMaxEvents;      //! Max events for RAW QA event histograms
+  Int_t fRawEventsPerBin;   //! Events per bin for RAW QA event histograms
+  Int_t fRawFirstTimeBin;   //! First Time bin needed for RAW QA
+  Int_t fRawLastTimeBin;    //! Last Time bin needed for RAW QA
+
   ClassDef(AliTPCQADataMakerRec,1)  // TPC Rec Quality Assurance Data Maker 
 };
 
