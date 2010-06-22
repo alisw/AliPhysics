@@ -49,7 +49,8 @@ fDebugStreamer(0)
  {
   //Default constructor
 
-   fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
+   if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0)
+     fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
 } 
 
 //------------------------------------------------------------------------

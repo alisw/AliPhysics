@@ -237,7 +237,8 @@ fPlaneEff(0) {
   for(Int_t i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
   for(Int_t i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
   
-  fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
+  if (AliITSReconstructor::GetRecoParam()->GetESDV0Params()->StreamLevel()>0)
+    fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
 
   // only for plane efficiency evaluation
   if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
