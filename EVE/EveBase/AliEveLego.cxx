@@ -31,6 +31,7 @@
 #include "TEveProjectionAxes.h"
 #include "TGLWidget.h"
 #include "TGLOverlayButton.h"
+#include "TStopwatch.h"
 
 //______________________________________________________________________________
 // Allow histograms visualization in 2D and 3D.
@@ -48,7 +49,7 @@ AliEveLego::AliEveLego(const char* name) :
   fMaxPt(10000),
   fChargeIdAE(0),
   fTracksIdAE(0),
-  fMaxPtAE(0),
+  fMaxPtAE(10000),
   fEsd(0),
   fPhysicsSelection(0),
   fHistopos(0),
@@ -98,8 +99,9 @@ AliEveLego::AliEveLego(const char* name) :
 
   fHistopos = new TH2F("histopos","Histo 2d positive", 100, -1.5, 1.5, 80, -pi, pi);
   fHistoneg = new TH2F("histoneg","Histo 2d negative", 100, -1.5, 1.5, 80, -pi, pi);
-//  fHistoposclone = new TH2F("histoposclone","Histo 2d positive", 100, -1.5, 1.5, 80, -pi, pi);
-//  fHistonegclone = new TH2F("histonegclone","Histo 2d positive", 100, -1.5, 1.5, 80, -pi, pi);
+
+  fHistopos->SetDirectory(0);
+  fHistoneg->SetDirectory(0);
 
   fData = new TEveCaloDataHist();
   fData->AddHistogram(fHistoneg);
@@ -320,6 +322,7 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
 
       // Getting current tracks for each event, filling histograms
       for (int event = 0; event < t->GetEntries(); event++) {
+
          t->GetEntry(event);
 
       const AliESDVertex *pv  = fEsd->GetPrimaryVertex();
@@ -327,6 +330,7 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
       for (Int_t n = 0; n < pv->GetNIndices(); n++ )
       {
          AliESDtrack *at = fEsd->GetTrack(pv->GetIndices()[n]);
+
          if (at->GetSign() > 0) {
             fHistopos_all_events->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
          }
@@ -334,13 +338,13 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
             fHistoneg_all_events->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
          }
       }
-   }
+      }
    } else {
       LoadAllData();
    }
    
    fData_all_events->DataChanged();
-   
+
    // Max Pt threshold
    if (GetPtMaxAE() >= fMaxPtAE){
       for (Int_t binx = 1; binx <= 100; binx++) {
@@ -550,12 +554,17 @@ TEveCaloDataHist* AliEveLego::LoadAllEvents()
    if ( fHisto2d_all_events_slot == 0 ) {
 
       printf("Filling histogram...\n");
+      TStopwatch timer;
+      timer.Start();
 
       // Creating 2D histograms
       fHistopos_all_events = new TH2F("fHistopos_all_events","Histo 2d positive",
                                  100,-1.5,1.5,80,-pi,pi);
       fHistoneg_all_events = new TH2F("fHistoneg_all_events","Histo 2d negative",
                                  100,-1.5,1.5,80,-pi,pi);
+
+      fHistopos_all_events->SetDirectory(0);
+      fHistoneg_all_events->SetDirectory(0);
 
       fData_all_events = new TEveCaloDataHist();
       fData_all_events->AddHistogram(fHistoneg_all_events);
@@ -597,6 +606,9 @@ TEveCaloDataHist* AliEveLego::LoadAllEvents()
       gEve->Redraw3D(kTRUE);
 
       printf("Filling histogram... Finished\n");
+      timer.Stop();
+      timer.Print();
+
    }
 
    return fData_all_events;
