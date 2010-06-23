@@ -159,6 +159,7 @@ Int_t AliTRDptrgFEB::LoadDigits()
 
       if (position == -1)   {
         AliError("Wrong VZERO pmt position found");
+	loader->UnloadDigits();
         return -1;
       }
 
@@ -180,7 +181,7 @@ Int_t AliTRDptrgFEB::LoadDigits()
     }
 
     AliDebug(5, Form("inputVector: 0x%x", inputVector));
-    
+    loader->UnloadDigits();
     return inputVector;
   }
   else if (this->fType == kTZERO) {
