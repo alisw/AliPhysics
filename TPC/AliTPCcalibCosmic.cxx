@@ -38,22 +38,16 @@
     gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
     gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
     AliXRDPROOFtoolkit tool;
-    TChain * chainCosmic = tool.MakeChainRandom("cosmic.txt","Track0",0,10000);
-    TChain * chainBudget = tool.MakeChainRandom("cosmic.txt","material",0,1000); 
-    TCut cutptV="abs(1/pt0V-1/pt1V)<0.1";
-    TCut cutptI="abs(1/pt0In-1/pt1In)<0.5";
-    TCut cutncl="nclmin>120";
-    TCut cutDz="abs(p0.fP[1])<50";
-    TCut cutDr="abs(p0.fP[0])<50";
+    TChain * chainCosmic = tool.MakeChainRandom("cosmicF.txt","Track0",0,10000);
     //
-    chainBudget->Draw(">>listB",cutptV+cutptI+cutncl+cutDr+cutDz,"entryList");
-    TEntryList *elistB = (TEntryList*)gDirectory->Get("listB");
-    chainBudget->SetEntryList(elistB);
+    TCut cutITSN="min(Orig0.fITSncls,Orig1.fITSncls)>2";
+    TCut cutTPCN="min(Orig0.fTPCncls,Orig1.fTPCncls)>120";
+
+    chainCosmic->Draw(">>listITS",cutITSN+cutTPCN,"entryList");
+    TEntryList *elistITS = (TEntryList*)gDirectory->Get("listITS");
+    chainCosmic->SetEntryList(elistITS);
     
-    chainBudget->SetAlias("dptrel","(pt0V-pt1V)/((pt0V+pt1V)*0.5)");
-    chainBudget->SetAlias("dptInrel","(pt0In-pt1In)/((pt0In+pt1In)*0.5)");
-    chainBudget->SetAlias("ptcorr","(pt0In-pt0V)/(pt0V)+(pt1V-pt1In)/(pt1In)");
-*/
+  */
 
 
 
@@ -551,8 +545,9 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 
 
    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+   if (!friendTrack) continue;
    TObject *calibObject;
-   AliTPCseed *seed = 0;
+   AliTPCseed *seed = 0;   
    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
    }

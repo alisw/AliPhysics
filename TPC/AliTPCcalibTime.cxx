@@ -139,6 +139,7 @@ AliTPCcalibTime::AliTPCcalibTime()
   }
   //
   for (Int_t i=0;i<5;i++) {
+    fResHistoTPCCE[i]=0;
     fResHistoTPCITS[i]=0;
     fResHistoTPCTRD[i]=0;
     fResHistoTPCTOF[i]=0;
@@ -185,6 +186,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
   }
 
   for (Int_t i=0;i<5;i++) {
+    fResHistoTPCCE[i]=0;
     fResHistoTPCITS[i]=0;
     fResHistoTPCTRD[i]=0;
     fResHistoTPCTOF[i]=0;
@@ -295,10 +297,12 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   }
 
   for (Int_t i=0;i<5;i++) {
+    delete fResHistoTPCCE[i];
     delete fResHistoTPCITS[i];
     delete fResHistoTPCTRD[i];
     delete fResHistoTPCTOF[i];
     delete fResHistoTPCvertex[i];
+    fResHistoTPCCE[i]=0;
     fResHistoTPCITS[i]=0;
     fResHistoTPCTRD[i]=0;
     fResHistoTPCTOF[i]=0;
@@ -860,6 +864,11 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     }
     //
     for (Int_t imeas=0; imeas<5; imeas++){
+      if (cal->GetResHistoTPCCE(imeas) && cal->GetResHistoTPCCE(imeas)){
+	fResHistoTPCCE[imeas]->Add(cal->fResHistoTPCCE[imeas]);
+      }else{
+	 fResHistoTPCCE[imeas]=(THnSparse*)cal->fResHistoTPCCE[imeas]->Clone();
+      }
       if (cal->GetResHistoTPCITS(imeas) && cal->GetResHistoTPCITS(imeas)){
 	fResHistoTPCITS[imeas]->Add(cal->fResHistoTPCITS[imeas]);
 	fResHistoTPCvertex[imeas]->Add(cal->fResHistoTPCvertex[imeas]);
@@ -1030,10 +1039,15 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
   //
   // 0. Select only track crossing the CE
   // 1. Cut on the track length
-  // 2. Refit the terack on A and C side separatelly
+  // 2. Refit the the track on A and C side separatelly
   // 3. Fill time histograms
   const Int_t kMinNcl=100;
   const Int_t kMinNclS=25;  // minimul number of clusters on the sides
+  const Double_t pimass=TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  const Double_t kMaxDy=1;  // maximal distance in y
+  const Double_t kMaxDsnp=0.05;  // maximal distance in snp
+  const Double_t kMaxDtheta=0.05;  // maximal distance in theta
+  
   if (!friendTrack->GetTPCOut()) return;
   //
   // 0. Select only track crossing the CE
@@ -1059,17 +1073,22 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
   Double_t xyz[3]={0,0.,0.0};  
   Double_t bz   =0;
   Int_t nclIn=0,nclOut=0;
-  trackIn.ResetCovariance(30.);
-  trackOut.ResetCovariance(30.);
+  trackIn.ResetCovariance(10.);
+  trackOut.ResetCovariance(10.);
   //
   //2.a Refit inner
   // 
+  Int_t sideIn=0;
   for (Int_t irow=0;irow<159;irow++) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
-    if (track->GetInnerParam()->GetZ()<0 &&(cl->GetDetector()%36)<18) break;
-    if (track->GetInnerParam()->GetZ()>0 &&(cl->GetDetector()%36)>=18) break;
+    if (sideIn==0){
+      if (cl->GetDetector()%36<18) sideIn=1;
+      if (cl->GetDetector()%36>=18) sideIn=-1;
+    }
+    if (sideIn== -1 && (cl->GetDetector()%36)<18) break;
+    if (sideIn==  1 &&(cl->GetDetector()%36)>=18) break;
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();
     if (TMath::Abs(dalpha)>0.01){
@@ -1078,20 +1097,27 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     trackIn.GetXYZ(xyz);
     bz = AliTracker::GetBz(xyz);
+    AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],1.,pimass,kFALSE);
     if (!trackIn.PropagateTo(r[0],bz)) break;
     nclIn++;
     trackIn.Update(&r[1],cov);    
   }
   //
   //2.b Refit outer
-  // 
+  //
+  Int_t sideOut=0;
   for (Int_t irow=159;irow>0;irow--) {
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()<80) continue;
-    if (cl->GetZ()*track->GetOuterParam()->GetZ()<0) break;
-    if (friendTrack->GetTPCOut()->GetZ()<0 &&(cl->GetDetector()%36)<18) break;
-    if (friendTrack->GetTPCOut()->GetZ()>0 &&(cl->GetDetector()%36)>=18) break;
+    if (sideOut==0){
+      if (cl->GetDetector()%36<18) sideOut=1;
+      if (cl->GetDetector()%36>=18) sideOut=-1;
+      if (sideIn==sideOut) break;
+    }
+    if (sideOut== -1 && (cl->GetDetector()%36)<18) break;
+    if (sideOut==  1 &&(cl->GetDetector()%36)>=18) break;
+    //
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();
     if (TMath::Abs(dalpha)>0.01){
@@ -1100,6 +1126,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     trackOut.GetXYZ(xyz);
     bz = AliTracker::GetBz(xyz);
+    AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],1.,pimass,kFALSE);
     if (!trackOut.PropagateTo(r[0],bz)) break;
     nclOut++;
     trackOut.Update(&r[1],cov);    
@@ -1108,6 +1135,12 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
   Double_t meanX = (trackIn.GetX()+trackOut.GetX())*0.5;
   trackIn.PropagateTo(meanX,bz); 
   trackOut.PropagateTo(meanX,bz); 
+  if (TMath::Abs(trackIn.GetY()-trackOut.GetY())>kMaxDy) return;
+  if (TMath::Abs(trackIn.GetSnp()-trackOut.GetSnp())>kMaxDsnp) return;
+  if (TMath::Abs(trackIn.GetTgl()-trackOut.GetTgl())>kMaxDtheta) return;
+  if (TMath::Min(nclIn,nclOut)>kMinNclS){
+    FillResHistoTPCCE(&trackIn,&trackOut);
+  }
   TTreeSRedirector *cstream = GetDebugStreamer();
   if (cstream){
     TVectorD gxyz(3);
@@ -1120,6 +1153,8 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
       "trigger="<<fTrigger<<      //  trigger
       "mag="<<fMagF<<             //  magnetic field
       //
+      "sideIn="<<sideIn<<         // side at inner part
+      "sideOut="<<sideOut<<         // side at puter part
       "xyz.="<<&gxyz<<             // global position
       "tIn.="<<&trackIn<<         // refitterd track in 
       "tOut.="<<&trackOut<<       // refitter track out
@@ -1649,10 +1684,10 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   //   Only primary tracks are selected for analysis
   //
  
-  Double_t xminTrack[4], xmaxTrack[4];
-  Int_t binsTrack[4];
-  TString axisName[4];
-  TString axisTitle[4];
+  Double_t xminTrack[5], xmaxTrack[5];
+  Int_t binsTrack[5];
+  TString axisName[5];
+  TString axisTitle[5];
   //
   binsTrack[0]  =50;
   axisName[0]   ="#Delta";
@@ -1671,9 +1706,16 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   binsTrack[3] =20;
   xminTrack[3] =-1.; xmaxTrack[3]=1.;   // 0.33 GeV cut 
   axisName[3]  ="snp";
+  axisTitle[3]  ="snp";
+  //
+  binsTrack[4] =10;
+  xminTrack[4] =120.; xmaxTrack[4]=215.;   // crossing radius for CE only 
+  axisName[4]  ="r";
+  axisTitle[4] ="r(cm)";
   //
   // delta y
   xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
+  fResHistoTPCCE[0] = new THnSparseS("TPCCE#Delta_{Y} (cm)","#Delta_{Y} (cm)",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[0] = new THnSparseS("TPCITS#Delta_{Y} (cm)","#Delta_{Y} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[0]    = new THnSparseS("TPCVertex#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-1.5; xmaxTrack[0]=1.5;  // 
@@ -1683,6 +1725,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   //
   // delta z
   xminTrack[0] =-3.; xmaxTrack[0]=3.;  // 
+  fResHistoTPCCE[1] = new THnSparseS("TPCCE#Delta_{Z} (cm)","#Delta_{Z} (cm)",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[1] = new THnSparseS("TPCITS#Delta_{Z} (cm)","#Delta_{Z} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[1]    = new THnSparseS("TPCVertex#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[1] = new THnSparseS("TPCTRD#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
@@ -1691,6 +1734,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   //
   // delta snp-P2
   xminTrack[0] =-0.015; xmaxTrack[0]=0.015;  // 
+  fResHistoTPCCE[2] = new THnSparseS("TPCCE#Delta_{#phi}","#Delta_{#phi}",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[2] = new THnSparseS("TPCITS#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[2] = new THnSparseS("TPCITSv#Delta_{#phi}","#Delta_{#phi}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[2] = new THnSparseS("TPCTRD#Delta_{#phi}","#Delta_{#phi}", 4, binsTrack,xminTrack, xmaxTrack);
@@ -1698,6 +1742,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   //
   // delta theta-P3
   xminTrack[0] =-0.025; xmaxTrack[0]=0.025;  // 
+  fResHistoTPCCE[3] = new THnSparseS("TPCCE#Delta_{#theta}","#Delta_{#theta}",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[3] = new THnSparseS("TPCITS#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[3] = new THnSparseS("TPCITSv#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[3] = new THnSparseS("TPCTRD#Delta_{#theta}","#Delta_{#theta}", 4, binsTrack,xminTrack, xmaxTrack);
@@ -1705,24 +1750,51 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   //
   // delta theta-P4
   xminTrack[0] =-0.2; xmaxTrack[0]=0.2;  // 
+  fResHistoTPCCE[4] = new THnSparseS("TPCCE#Delta_{1/pt}","#Delta_{1/pt}",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[4] = new THnSparseS("TPCITS#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[4] = new THnSparseS("TPCITSv#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTRD[4] = new THnSparseS("TPCTRD#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCTOF[4] = new THnSparseS("TPCTOF#Delta_{1/pt}","#Delta_{1/pt}",    4, binsTrack,xminTrack, xmaxTrack);
   //
   for (Int_t ivar=0;ivar<4;ivar++){
-    for (Int_t ivar2=0;ivar2<4;ivar2++){      
-      fResHistoTPCITS[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-      fResHistoTPCITS[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
-      fResHistoTPCTRD[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-      fResHistoTPCTRD[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
-      fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
-      fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+    for (Int_t ivar2=0;ivar2<5;ivar2++){      
+      fResHistoTPCCE[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+      fResHistoTPCCE[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+      if (ivar2<4){
+	fResHistoTPCITS[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+	fResHistoTPCITS[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+	fResHistoTPCTRD[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+	fResHistoTPCTRD[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+	fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
+	fResHistoTPCvertex[ivar]->GetAxis(ivar2)->SetTitle(axisTitle[ivar2].Data());
+      }
     }
   }
 }
 
 
+void        AliTPCcalibTime::FillResHistoTPCCE(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pTPCOut ){
+  //
+  // fill residual histograms pTPCOut-pTPCin - trac crossing CE
+  // Histogram 
+  //
+  Double_t histoX[5];
+  Double_t xyz[3];
+  pTPCIn->GetXYZ(xyz);
+  Double_t phi= TMath::ATan2(xyz[1],xyz[0]);
+  histoX[1]= pTPCIn->GetTgl();
+  histoX[2]= phi;
+  histoX[3]= pTPCIn->GetSnp();
+  histoX[4]= pTPCIn->GetX();
+  AliExternalTrackParam lout(*pTPCOut);
+  lout.Rotate(pTPCIn->GetAlpha());
+  lout.PropagateTo(pTPCIn->GetX(),fMagF);
+  //
+  for (Int_t ihisto=0; ihisto<5; ihisto++){
+    histoX[0]=lout.GetParameter()[ihisto]-pTPCIn->GetParameter()[ihisto];
+    fResHistoTPCCE[ihisto]->Fill(histoX);
+  }
+}  
 void        AliTPCcalibTime::FillResHistoTPCITS(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pITSOut ){
   //
   // fill residual histograms pTPCIn-pITSOut

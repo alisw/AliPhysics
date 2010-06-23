@@ -61,12 +61,14 @@ public:
   TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
   TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
 
+  THnSparse*  GetResHistoTPCCE(Int_t index) const { return (index<5) ? fResHistoTPCCE[index]:0;}        //TPC-CE    matching map
   THnSparse*  GetResHistoTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map
   THnSparse*  GetResHistoTPCvertex(Int_t index)      const { return (index<5) ? fResHistoTPCvertex[index]   :0;}        //TPC vertex matching map
   THnSparse*  GetResHistoTPCTRD(Int_t index)   const { return (index<5) ? fResHistoTPCTRD[index]:0;}        //TPC-TRD    matching map
   THnSparse*  GetResHistoTPCTOF(Int_t index)   const { return (index<5) ? fResHistoTPCTOF[index]:0;}        //TPC-TOF    matching map
 
   void        BookDistortionMaps();      // book histograms
+  void        FillResHistoTPCCE(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pTPCOut );       // fill residual histo
   void        FillResHistoTPCITS(const AliExternalTrackParam * pTPCIn, const AliExternalTrackParam * pITSOut );       // fill residual histo
   void        FillResHistoTPC(const AliESDtrack * pTrack);
   void        FillResHistoTPCTRD(const AliExternalTrackParam * pTPCOut, const AliExternalTrackParam * pTRDIn );
@@ -96,6 +98,7 @@ private:
   //
   // distortion maps
   //
+  THnSparse*  fResHistoTPCCE[5];        //TPC-TPCE matching map
   THnSparse*  fResHistoTPCITS[5];        //TPC-ITS    matching map
   THnSparse*  fResHistoTPCvertex[5];           //TPC-ITS    vertex matching map
   THnSparse*  fResHistoTPCTRD[5];        //TPC-TRD    matching map
