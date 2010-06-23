@@ -446,18 +446,17 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     for(int ij = 0;ij<kMaxJets;++ij){
       fHistList->Add( fh1PtRecIn[ij]);
 
-      if(fBranchGen.Length()>0){
-	fHistList->Add( fh1PtGenIn[ij]);
-	fHistList->Add( fh2FragGen[ij]);
-	fHistList->Add( fh2FragLnGen[ij]);
+      if(fBranchGen.Length()>0){	
+	fHistList->Add(fh1PtGenIn[ij]);
+	fHistList->Add(fh2FragGen[ij]);
+	fHistList->Add(fh2FragLnGen[ij]);
 	fHistList->Add(fh2RhoPtGen[ij]);
 	fHistList->Add(fh2PsiPtGen[ij]);
-	fHistList->Add( fh2FragGen[ij]);
       }
       fHistList->Add( fh2PhiPt[ij]);
       fHistList->Add( fh2PhiEta[ij]);
-      fHistList->Add(fh2RhoPtRec[ij]);
-      fHistList->Add(fh2PsiPtRec[ij]);
+      fHistList->Add( fh2RhoPtRec[ij]);
+      fHistList->Add( fh2PsiPtRec[ij]);
       fHistList->Add( fh2FragRec[ij]);
       fHistList->Add( fh2FragLnRec[ij]);
     }
