@@ -635,7 +635,6 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   for(Int_t ncl=0;ncl<nclusters;ncl++){
     Int_t index = tr->GetClusterIndexSA(ncl); 
     AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(index);
-    if(cl->TestBit(kSAflag)==kTRUE) cl->ResetBit(kSAflag);
     Int_t lay = (index & 0xf0000000) >> 28;
     Int_t nInLay=end[lay];
     listlayer[lay][nInLay]=cl;
@@ -849,6 +848,9 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   CookLabel(otrack,0.); //MI change - to see fake ratio
   Int_t label=FindLabel(otrack);
   otrack->SetLabel(label);  
+  Double_t low=0.;
+  Double_t up=0.51;    
+  otrack->CookdEdx(low,up);
 
   //remove clusters of found track
   for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
