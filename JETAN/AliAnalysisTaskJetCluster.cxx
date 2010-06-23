@@ -838,7 +838,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
   }
   else if (type == kTrackAODMCCharged || type == kTrackAODMCAll || type == kTrackAODMCChargedAcceptance) {
     AliAODEvent *aod = 0;
-    if(fUseAODMCInput)dynamic_cast<AliAODEvent*>(InputEvent());
+    if(fUseAODMCInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
     else aod = AODEvent();
     if(!aod)return iCount;
     TClonesArray *tca = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
