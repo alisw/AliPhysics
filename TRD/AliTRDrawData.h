@@ -25,11 +25,6 @@ class AliTRDfeeParam;
 class AliTRDarrayADC;
 class AliTRDdigitsParam;
 
-// Some constants:
-const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
-const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
-const UInt_t kSizeWord            = sizeof(UInt_t);
-
 class AliTRDrawData : public TObject {
 
  public:
@@ -43,29 +38,15 @@ class AliTRDrawData : public TObject {
   virtual Bool_t       Digits2Raw(TTree *digits, const TTree *tracks = NULL);
 
   virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
-  //virtual AliTRDdigitsManager *Raw2DigitsOLD(AliRawReader *rawReader);
-  static void SetRawFormatVersion(Int_t iver){ fgRawFormatVersion=iver; };
-  static void SetSuppressionLevel(Int_t ilevel){ fgDataSuppressionLevel=ilevel; };
   Bool_t WriteTracklets(Int_t det);
-
-  enum FORMATTYPE
-    {
-      kRawOldFormat  =  0,
-      kRawNewFormat  =  1
-    };
 
  protected:
 
   virtual Bool_t       Digits2Raw(AliTRDdigitsManager* digitsManager); // for fRawVersion > 0
   virtual Int_t        ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent, Bool_t newSM);
-  virtual Int_t        ProduceHcDataNoSuppression(Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  virtual Int_t        ProduceHcDataV1andV2(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  virtual Int_t        ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize, Bool_t newEvent);
-  //virtual Int_t      ProduceHcDataV3(AliTRDarrayADC *digits, Int_t side, Int_t det, UInt_t *buf, Int_t maxSize);
-  		  void 	       ProduceSMIndexData(UInt_t *buf, Int_t& nw);				// SM index words and header - real data format
-          void         WriteIntermediateWords(UInt_t *buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side); // writes tracklet-endmarker and additional words between tracklet and raw-data
-          void   	   WriteIntermediateWordsV2(UInt_t *buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side); // real data format
-		  void         AssignStackMask(UInt_t *buf, Int_t nStack);  // re-assignment of stack mask in the SM index word
+  	  void 	       ProduceSMIndexData(UInt_t *buf, Int_t& nw);				// SM index words and header - real data format
+          void         WriteIntermediateWords(UInt_t *buf, Int_t& nw, Int_t& of, const Int_t& maxSize, const Int_t& det, const Int_t& side); // real data format
+       	  void         AssignStackMask(UInt_t *buf, Int_t nStack);  // re-assignment of stack mask in the SM index word
           void         AssignLinkMask(UInt_t *buf, Int_t nLayer);   // re-assignment of link mask in the stack index word
           Int_t        AddStackIndexWords(UInt_t *buf, Int_t nStack, Int_t nMax);   // add stack index words and stack header when there is no data for the stack 
           Bool_t       ShiftWords(UInt_t *buf, Int_t nStart, Int_t nWords, Int_t nMax); // shifts n words
@@ -79,23 +60,16 @@ class AliTRDrawData : public TObject {
 
  private:
 
-	static       Int_t  fgRawFormatVersion;           	  // simulation raw data version - 0:old , 1:new(real data format)
-	static       Int_t  fgDataSuppressionLevel;                 // Data suppression level - 0:no su, 1: su, 2: deep suppression 
- 	static const UInt_t fgkEndOfTrackletMarker  = 0x10001000; // This marks the end of tracklet data words
- 	static const UInt_t fgkEndOfDataMarker      = 0x00000000; // This marks the end of HC data words
+  static       Int_t  fgDataSuppressionLevel;               // Data suppression level - 0:no su, 1: su, 2: deep suppression 
+  static const UInt_t fgkEndOfTrackletMarker  = 0x10001000; // This marks the end of tracklet data words
+  static const UInt_t fgkEndOfDataMarker      = 0x00000000; // This marks the end of HC data words
 
-    Int_t   fSMindexPos;                // Position of SM index word
-    Int_t   fStackindexPos;             // Position of SM index word
-    UInt_t  fEventCounter;              // Event counter(starting from 1)
-    AliTRDdigitsParam *fDigitsParam;    // Digits parameter
+  Int_t   fSMindexPos;                // Position of SM index word
+  Int_t   fStackindexPos;             // Position of SM index word
+  UInt_t  fEventCounter;              // Event counter(starting from 1)
+  AliTRDdigitsParam *fDigitsParam;    // Digits parameter
 
-  ClassDef(AliTRDrawData,6)             //  TRD raw data class
+  ClassDef(AliTRDrawData,7)             //  TRD raw data class
 
 };
 #endif
-
-
-
-
-
-
