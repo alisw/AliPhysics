@@ -142,6 +142,10 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fNormalizeNbOfCluster(kFALSE)
   ,fMaxCluster(0)
   ,fNbMaxCluster(0)
+  ,fVersionGainUsed(0)
+  ,fSubVersionGainUsed(0)
+  ,fVersionVdriftUsed(0) 
+  ,fSubVersionVdriftUsed(0)
   ,fCalibraMode(new AliTRDCalibraMode())
   ,fDebugStreamer(0)
   ,fDebugLevel(0)
@@ -215,6 +219,10 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fNormalizeNbOfCluster(c.fNormalizeNbOfCluster)
   ,fMaxCluster(c.fMaxCluster)
   ,fNbMaxCluster(c.fNbMaxCluster)
+  ,fVersionGainUsed(c.fVersionGainUsed)
+  ,fSubVersionGainUsed(c.fSubVersionGainUsed)
+  ,fVersionVdriftUsed(c.fVersionVdriftUsed) 
+  ,fSubVersionVdriftUsed(c.fSubVersionVdriftUsed)
   ,fCalibraMode(0x0)
   ,fDebugStreamer(0)
   ,fDebugLevel(c.fDebugLevel)
@@ -3201,7 +3209,11 @@ void AliTRDCalibraFillHisto::CreatePH2d(Int_t nn)
   // Create the 2D histos
   //
 
-  TString name("Nz");
+  TString name("Ver");
+  name += fVersionVdriftUsed;
+  name += "Subver";
+  name += fSubVersionVdriftUsed;
+  name += "Nz";
   name += fCalibraMode->GetNz(1);
   name += "Nrphi";
   name += fCalibraMode->GetNrphi(1);
@@ -3222,11 +3234,15 @@ void AliTRDCalibraFillHisto::CreateCH2d(Int_t nn)
   // Create the 2D histos
   //
 
-  TString name("Nz");
+  TString name("Ver");
+  name += fVersionGainUsed;
+  name += "Subver";
+  name += fSubVersionGainUsed;
+  name += "Nz";
   name += fCalibraMode->GetNz(0);
   name += "Nrphi";
   name += fCalibraMode->GetNrphi(0);
-
+  
   fCH2d = new TH2I("CH2d",(const Char_t *) name
 		   ,fNumberBinCharge,0,300,nn,0,nn);
   fCH2d->SetYTitle("Det/pad groups");

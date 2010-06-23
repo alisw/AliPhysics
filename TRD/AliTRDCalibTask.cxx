@@ -126,6 +126,10 @@ ClassImp(AliTRDCalibTask)
       fNbMaxCluster(2),
       fOfflineTracks(kFALSE),
       fStandaloneTracks(kFALSE),
+      fVersionGainUsed(0),
+      fSubVersionGainUsed(0),
+      fVersionVdriftUsed(0), 
+      fSubVersionVdriftUsed(0),
       fCalDetGain(0x0),
       fMaxEvent(0),
       fCounter(0),
@@ -252,6 +256,10 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
   fTRDCalibraFillHisto->SetLinearFitterOn(fVdriftLinear); // Other possibility vdrift VDRIFT
   fTRDCalibraFillHisto->SetLinearFitterDebugOn(fVdriftLinear); // Other possibility vdrift
+  fTRDCalibraFillHisto->SetVersionGainUsed(fVersionGainUsed); // Gain Used
+  fTRDCalibraFillHisto->SetSubVersionGainUsed(fSubVersionGainUsed); // Gain Used
+  fTRDCalibraFillHisto->SetVersionVdriftUsed(fVersionVdriftUsed); // Vdrift Used
+  fTRDCalibraFillHisto->SetSubVersionVdriftUsed(fSubVersionVdriftUsed); // Vdrift Used
   for(Int_t k = 0; k < 3; k++){
     if(((fNz[k] != 10) && (fNrphi[k] != 10)) && ((fNz[k] != 100) && (fNrphi[k] != 100))) {
       fTRDCalibraFillHisto->SetNz(k,fNz[k]);                                    // Mode calibration
@@ -526,6 +534,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
     return;
   }
   
+  
   fESDfriend = dynamic_cast<AliESDfriend*> (fESD->FindListObject("AliESDfriend"));
   if(!fESDfriend){
     AliError("fESDfriend not available");
@@ -612,13 +621,17 @@ void AliTRDCalibTask::UserExec(Option_t *)
     //ULong_t status = fkEsdTrack->GetStatus();
     
     fFriendTrack = fESDfriend->GetTrack(itrk);
-    if(!fFriendTrack)  continue;
+    if(!fFriendTrack)  {
+      //printf("No friend track %d\n",itrk);
+      continue;
+    }
     //////////////////////////////////////
     // Loop on calibration objects
     //////////////////////////////////////
     Int_t icalib=0;
     Int_t nTRDtrackV1=0;
     while((fCalibObject = (TObject *)(fFriendTrack->GetCalibObject(icalib++)))){
+      //printf("Name %s\n",fCalibObject->IsA()->GetName());
       if(strcmp(fCalibObject->IsA()->GetName(), "AliTRDtrackV1") != 0) continue;
       //printf("Find the calibration object\n");
       ++nTRDtrackV1;

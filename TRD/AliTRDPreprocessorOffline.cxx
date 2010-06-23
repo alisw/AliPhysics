@@ -16,13 +16,13 @@
 
 
 /*
-  Responsible: marian.ivanov@cern.ch 
-  Code to analyze the TPC calibration and to produce OCDB entries  
+  Responsible: Raphaelle Bailhache (rbailhache@ikf.uni-frankfurt.de) 
+  Code to analyze the TRD calibration and to produce OCDB entries  
 
 
    .x ~/rootlogon.C
    gSystem->Load("libANALYSIS");
-   gSystem->Load("libTPCcalib");
+   gSystem->Load("libTRDcalib");
 
    AliTRDPreprocessorOffline proces;
    TString ocdbPath="local:////"
@@ -65,6 +65,7 @@ AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
   fMethodSecond(kTRUE),
   fNameList("TRDCalib"),
   fCalDetGainUsed(0x0),
+  fCalDetVdriftUsed(0x0),
   fCH2d(0x0),
   fPH2d(0x0),
   fPRF2d(0x0),
@@ -72,7 +73,11 @@ AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
   fNEvents(0x0),
   fAbsoluteGain(0x0),
   fPlots(new TObjArray(8)),
-  fCalibObjects(new TObjArray(8))
+  fCalibObjects(new TObjArray(8)),
+  fVersionGainUsed(0),
+  fSubVersionGainUsed(0),
+  fVersionVdriftUsed(0), 
+  fSubVersionVdriftUsed(0)
 {
   //
   // default constructor
@@ -85,6 +90,7 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   //
 
   if(fCalDetGainUsed) delete fCalDetGainUsed;
+  if(fCalDetVdriftUsed) delete fCalDetVdriftUsed;
   if(fCH2d) delete fCH2d;
   if(fPH2d) delete fPH2d;
   if(fPRF2d) delete fPRF2d;
@@ -146,6 +152,7 @@ void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumb
   //
   AnalyzeGain();
   if(fCalDetGainUsed) CorrectFromDetGainUsed();
+  if(fCalDetVdriftUsed) CorrectFromDetVdriftUsed();
   //
   // 3. Append QA plots
   //
@@ -190,11 +197,41 @@ void AliTRDPreprocessorOffline::CalibPRF(const Char_t* file, Int_t startRunNumbe
   
 }
 
+Bool_t AliTRDPreprocessorOffline::Init(const Char_t* fileName){
+  //
+  // read the calibration used during the reconstruction
+  // 
+
+  if(ReadVdriftT0Global(fileName)) {
+    
+    TString nameph = fPH2d->GetTitle();
+    fVersionVdriftUsed = GetVersion(nameph);  
+    fSubVersionVdriftUsed = GetSubVersion(nameph);    
+
+    //printf("Found Version %d, Subversion %d for vdrift\n",fVersionVdriftUsed,fSubVersionVdriftUsed);
+  
+  }
+
+  if(ReadGainGlobal(fileName)) {
+
+    TString namech = fCH2d->GetTitle();
+    fVersionGainUsed = GetVersion(namech);  
+    fSubVersionGainUsed = GetSubVersion(namech);    
+
+    //printf("Found Version %d, Subversion %d for gain\n",fVersionGainUsed,fSubVersionGainUsed);
+
+  }
+   
+  return kTRUE;
+  
+}
+
 
 Bool_t AliTRDPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   //
   // read calibration entries from file
   // 
+  if(fCH2d) return kTRUE;
   TFile fcalib(fileName);
   TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
@@ -221,6 +258,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftT0Global(const Char_t* fileName){
   //
   // read calibration entries from file
   // 
+  if(fPH2d) return kTRUE;
   TFile fcalib(fileName);
   TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
@@ -245,6 +283,7 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   //
   // read calibration entries from file
   // 
+  if(fAliTRDCalibraVdriftLinearFit) return kTRUE;
   TFile fcalib(fileName);
   TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
@@ -266,6 +305,7 @@ Bool_t AliTRDPreprocessorOffline::ReadPRFGlobal(const Char_t* fileName){
   //
   // read calibration entries from file
   // 
+  if(fPRF2d) return kTRUE;
   TFile fcalib(fileName);
   TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
   if (array){
@@ -304,13 +344,17 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
 
 
   Bool_t ok = kFALSE;
+  Bool_t meanother = kFALSE;
   // enough statistics
   if ((nbtg >                  0) && 
       (nbfit        >= 0.5*nbE) && (nbE > 30)) {
     // create the cal objects
-    calibra->PutMeanValueOtherVectorFit(1,kTRUE);
+    if(!fCalDetGainUsed) {
+      calibra->PutMeanValueOtherVectorFit(1,kTRUE);
+      meanother = kTRUE;
+    }
     TObjArray object           = calibra->GetVectorFit();
-    AliTRDCalDet *calDetGain   = calibra->CreateDetObjectGain(&object);
+    AliTRDCalDet *calDetGain   = calibra->CreateDetObjectGain(&object,meanother);
     TH1F *coefGain  = calDetGain->MakeHisto1DAsFunctionOfDet();
     // Put them in the array
     fCalibObjects->AddAt(calDetGain,kGain);
@@ -463,20 +507,70 @@ Bool_t AliTRDPreprocessorOffline::AnalyzePRF(){
 }
 
 void AliTRDPreprocessorOffline::CorrectFromDetGainUsed() {
-
+  //
+  // Correct from the gas gain used afterwards
+  //
   AliTRDCalDet *calDetGain = (AliTRDCalDet *) fCalibObjects->At(kGain);
   if(!calDetGain) return;
 
+  // Calculate mean
+  Double_t mean = 0.0;
+  Int_t nbdet = 0;
+  
   for(Int_t det = 0; det < 540; det++) {
     
     Float_t gaininit = fCalDetGainUsed->GetValue(det);
     Float_t gainout = calDetGain->GetValue(det);
-    
-    calDetGain->SetValue(det,gaininit*gainout);
 
+   
+    if(TMath::Abs(gainout-1.0) > 0.000001) {
+      mean += (gaininit*gainout);
+      nbdet++;
+    }  
+  }
+  if(nbdet > 0) mean = mean/nbdet;
+   
+  for(Int_t det = 0; det < 540; det++) {
+    
+    Float_t gaininit = fCalDetGainUsed->GetValue(det);
+    Float_t gainout = calDetGain->GetValue(det);
+  
+    if(TMath::Abs(gainout-1.0) > 0.000001) calDetGain->SetValue(det,gaininit*gainout);
+    else calDetGain->SetValue(det,mean);
   }
 
 
+}
+
+void AliTRDPreprocessorOffline::CorrectFromDetVdriftUsed() {
+  //
+  // Correct from the drift velocity
+  //
+
+  //printf("Correct for vdrift\n");
+
+  AliTRDCalDet *calDetGain = (AliTRDCalDet *) fCalibObjects->At(kGain);
+  if(!calDetGain) return;
+
+  Int_t detVdrift = kVdriftPHDet;
+  if(fMethodSecond) detVdrift = kVdriftLinear;
+  AliTRDCalDet *calDetVdrift = (AliTRDCalDet *) fCalibObjects->At(detVdrift);
+  if(!calDetVdrift) return;
+
+  // Calculate mean
+  
+  for(Int_t det = 0; det < 540; det++) {
+    
+    Float_t vdriftinit = fCalDetVdriftUsed->GetValue(det);
+    Float_t vdriftout = calDetVdrift->GetValue(det);
+
+    Float_t gain = calDetGain->GetValue(det);
+    if(vdriftout > 0.0) gain = gain*vdriftinit/vdriftout;
+    calDetGain->SetValue(det,gain);
+
+    
+  }
+ 
 }
 
 void AliTRDPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
@@ -493,10 +587,6 @@ void AliTRDPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRu
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
   AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kGain);
   if(calDet) gStorage->Put(calDet, id1, metaData);
-  //else {
-  //  printf("No calDet object for Gain\n");
-  //}
-
     
 
 }
@@ -519,10 +609,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBVdrift(Int_t startRunNumber, Int_t end
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
   AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detVdrift);
   if(calDet) gStorage->Put(calDet, id1, metaData);
-  //else {
-  //  printf("No calDet object for Vdrift\n");
-  //}
-
+  
   //
 
   if(!fMethodSecond) {
@@ -535,11 +622,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBVdrift(Int_t startRunNumber, Int_t end
     AliCDBId id1Pad("TRD/Calib/LocalVdrift", startRunNumber, endRunNumber);
     AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kVdriftPHPad);
     if(calPad) gStorage->Put(calPad, id1Pad, metaDataPad);
-    //else {
-    //  printf("No calPad object for Vdrift\n");
-    //}
-
-  
+     
   }
 
 }
@@ -558,11 +641,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBT0(Int_t startRunNumber, Int_t endRunN
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
   AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kT0PHDet);
   if(calDet) gStorage->Put(calDet, id1, metaData);
-  //else {
-  //  printf("No calDet object for T0\n");
-  //}
  
-
   //
 
   AliCDBMetaData *metaDataPad= new AliCDBMetaData();
@@ -573,9 +652,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBT0(Int_t startRunNumber, Int_t endRunN
   AliCDBId id1Pad("TRD/Calib/LocalT0", startRunNumber, endRunNumber);
   AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kT0PHPad);
   if(calPad) gStorage->Put(calPad, id1Pad, metaDataPad);
-  //else {
-  //  printf("No calPad object for T0\n");
-  //}
+ 
 
 
 }
@@ -594,10 +671,60 @@ void AliTRDPreprocessorOffline::UpdateOCDBPRF(Int_t startRunNumber, Int_t endRun
   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
   AliTRDCalPad *calPad = (AliTRDCalPad *) fCalibObjects->At(kPRF);
   if(calPad) gStorage->Put(calPad, id1, metaData);
-  //else {
-  //  printf("No calPad object for PRF\n");
-  //}
  
+
+}
+//_____________________________________________________________________________
+Int_t AliTRDPreprocessorOffline::GetVersion(TString name) const
+{
+  //
+  // Get version from the title
+  //
+  
+  // Some patterns
+  const Char_t *version = "Ver";
+  if(!strstr(name.Data(),version)) return -1;
+  
+  for(Int_t ver = 0; ver < 999999999; ver++) {
+
+    TString vertry(version);
+    vertry += ver;
+    vertry += "Subver";
+
+    //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
+
+    if(strstr(name.Data(),vertry.Data())) return ver;
+    
+  }
+  
+  return -1;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
+{
+  //
+  // Get subversion from the title
+  //
+  
+  // Some patterns
+  const Char_t *subversion = "Subver";
+  if(!strstr(name.Data(),subversion)) return -1;
+  
+  for(Int_t ver = 0; ver < 999999999; ver++) {
+    
+    TString vertry(subversion);
+    vertry += ver;
+    vertry += "Nz";
+
+    //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
+
+    if(strstr(name.Data(),vertry.Data())) return ver;
+    
+  }
+  
+  return -1;
 
 }
 

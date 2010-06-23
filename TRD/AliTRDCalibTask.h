@@ -64,6 +64,10 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetUseSPDVertex()                                               {fVtxTPC=kFALSE; fVtxSPD=kTRUE ;} 
   void SetMinNbOfContributors(Int_t minNbOfContributors)               {fMinNbContributors = minNbOfContributors;};  
   void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);};  
+  void SetVersionGainUsed(Int_t versionGainUsed)                       { fVersionGainUsed = versionGainUsed;   }
+  void SetSubVersionGainUsed(Int_t subVersionGainUsed)                 { fSubVersionGainUsed = subVersionGainUsed;   }
+  void SetVersionVdriftUsed(Int_t versionVdriftUsed)                   { fVersionVdriftUsed = versionVdriftUsed;   }
+  void SetSubVersionVdriftUsed(Int_t subVersionVdriftUsed)             { fSubVersionVdriftUsed = subVersionVdriftUsed;   }
   
   void SetLow(Int_t low)                                               {fLow=low;};
   void SetHigh(Int_t high)                                             {fHigh=high;};
@@ -73,8 +77,8 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetNbMaxCluster(Short_t nbMaxCluster)                           {fNbMaxCluster =  nbMaxCluster; }; 
   void SetOfflineTracks()                                              {fOfflineTracks=kTRUE; fStandaloneTracks=kFALSE; };
   void SetStandaloneTracks()                                           {fStandaloneTracks=kTRUE; fOfflineTracks=kFALSE; };
-
-  void SetCalDetGain(AliTRDCalDet * const calDetGain)                         {fCalDetGain = calDetGain;};  
+  
+  void SetCalDetGain(AliTRDCalDet * const calDetGain)                  {fCalDetGain = calDetGain;};  
 
   void SetMaxEvent(Int_t nbevents)                                     { fMaxEvent = nbevents; };
   void SetDebug(Int_t debug)                                           { fDebug = debug; };
@@ -143,6 +147,11 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Short_t     fNbMaxCluster;                     // Number of tb at the end
   Bool_t      fOfflineTracks;                    // Only Offline refitted tracks
   Bool_t      fStandaloneTracks;                 // Take only standalone tracks
+
+  Int_t       fVersionGainUsed;                  // VersionGainUsed 
+  Int_t       fSubVersionGainUsed;               // SubVersionGainUsed
+  Int_t       fVersionVdriftUsed;                // VersionVdriftUsed 
+  Int_t       fSubVersionVdriftUsed;             // SubVersionVdriftUsed
 
   AliTRDCalDet *fCalDetGain;                     // Calib object gain
 
