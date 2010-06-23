@@ -1006,6 +1006,9 @@ Bool_t AliTRDtrapConfig::LoadConfig()
   // here a default set is implemented for testing
   // for a detailed description of the registers see the TRAP manual
 
+  // HC header configuration bits
+  SetTrapReg(kC15CPUA, 0x2102); // zs, deh
+
   // no. of timebins
   SetTrapReg(kC13CPUA, 24); 
 

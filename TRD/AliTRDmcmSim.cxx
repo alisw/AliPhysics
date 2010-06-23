@@ -701,6 +701,8 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
     return 0;
 
   UInt_t  x;
+  UInt_t  mcmHeader = 0;
+  UInt_t  adcMask = 0;
   Int_t   nw  = 0;  // Number of written words
   Int_t   of  = 0;  // Number of overflowed words
   Int_t   rawVer   = fFeeParam->GetRAWversion();
@@ -715,34 +717,38 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
   else 
     adc = fADCF;
   
-  // Produce MCM header
-  x = (1<<31) | (fRobPos << 28) | (fMcmPos << 24) | ((iEv % 0x100000) << 4) | 0xC;
-
-  if (nw < bufSize) {
-    buf[nw++] = x;
-  }
-  else {
-    of++;
-  }
-
   // Produce ADC mask : nncc cccm mmmm mmmm mmmm mmmm mmmm 1100
   // 				n : unused , c : ADC count, m : selected ADCs
-  if( rawVer >= 3 ) {
-    x = 0;
+  if( rawVer >= 3 &&
+      (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC15CPUA) & (1 << 13))) { // check for zs flag in TRAP configuration
     for( Int_t iAdc = 0 ; iAdc < fgkNADC ; iAdc++ ) {
       if( ~fZSMap[iAdc] != 0 ) { //  0 means not suppressed
-		x = x | (1 << (iAdc+4) );	// last 4 digit reserved for 1100=0xc
-		nActiveADC++;		// number of 1 in mmm....m
+	adcMask |= (1 << (iAdc+4) );	// last 4 digit reserved for 1100=0xc
+	nActiveADC++;		// number of 1 in mmm....m
       }
     }
-	x = x | (1 << 30) | ( ( 0x3FFFFFFC ) & (~(nActiveADC) << 25) ) | 0xC;	// nn = 01, ccccc are inverted, 0xc=1100
 
-    if (nw < bufSize) {
-      buf[nw++] = x;
-    }
-    else {
+    if ((nActiveADC == 0) &&
+	(fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC15CPUA) & (1 << 8))) // check for DEH flag in TRAP configuration
+      return 0;
+
+    // assemble adc mask word
+    adcMask |= (1 << 30) | ( ( 0x3FFFFFFC ) & (~(nActiveADC) << 25) ) | 0xC;	// nn = 01, ccccc are inverted, 0xc=1100
+  }
+
+  // MCM header
+  mcmHeader = (1<<31) | (fRobPos << 28) | (fMcmPos << 24) | ((iEv % 0x100000) << 4) | 0xC;
+  if (nw < bufSize)
+    buf[nw++] = mcmHeader;
+  else
+    of++;
+
+  // ADC mask
+  if( adcMask != 0 ) {
+    if (nw < bufSize)
+      buf[nw++] = adcMask;
+    else
       of++;
-    }
   }
 
   // Produce ADC data. 3 timebins are packed into one 32 bits word
