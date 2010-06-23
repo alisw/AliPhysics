@@ -62,7 +62,7 @@
 #pragma link C++ struct AliHLTComponentEventData+;
 #pragma link C++ struct AliHLTComponentBlockData+;
 #pragma link C++ struct AliHLTComponentDataType+;
-#pragma link C++ struct AliHLTEventDDL+;
+#pragma link C++ struct AliHLTEventDDLV1+; // Only added to have proper dictionary generation and ROOT I/O for AliHLTReadoutList class.
 #pragma link C++ struct AliHLTRunDesc+;
 #pragma link C++ struct AliHLTComponentStatistics+;
 #pragma link C++ struct AliHLTComponentTableEntry;

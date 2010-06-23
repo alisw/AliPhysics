@@ -353,7 +353,7 @@ class AliHLTReadoutList : public TNamed
   
   AliHLTEventDDL fReadoutList; /// The DDL readout list structure.
   
-  ClassDef(AliHLTReadoutList, 2) // Readout list object used for manipulating and storing an AliHLTEventDDL structure.
+  ClassDef(AliHLTReadoutList, 3) // Readout list object used for manipulating and storing an AliHLTEventDDL structure.
 
 };
 

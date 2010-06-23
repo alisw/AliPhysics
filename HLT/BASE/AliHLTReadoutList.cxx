@@ -205,21 +205,31 @@ bool AliHLTReadoutList::DecodeDDLID(Int_t ddlId, Int_t& wordIndex, Int_t& bitInd
   case 15: // ZDC
   case 16: // ACORDE
   case 17: // TRG
-  case 18: // EMCAL
-  case 19: // DAQTEST
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
-    // all other detectors fit into one word, the offset is due to
+    // all these detectors fit into one word, the offset is due to
     // TPC and TOF
     wordIndex = detNum + 9;
+    break;
+  case 18: // EMCAL
+    if (ddlNum >= 2*32) return false; // only have 2 32-bit words.
+    // 2 words for EMCAL + DCAL
+    wordIndex = detNum + 7;
+    wordIndex = 27 + (ddlNum >> 5);
+    break;
+  case 19: // DAQTEST
+    if (ddlNum >= 32) return false; // only have 1 32-bit word.
+    wordIndex = 29;
     break;
   case 30: // HLT
     if (ddlNum >= 32) return false; // only have 1 32-bit word.
     // the HLT bitfield is in the last word
-    wordIndex = 29;
+    wordIndex = 30;
     break;
   default:
     return false;
   }
+  
+  if (ddlNum >= AliHLTDAQ::NumberOfDdls(detNum == 30 ? 20 : detNum)) return false;
   
   // The bit index within the word indicated by wordIndex.
   bitIndex = ddlNum % 32;
@@ -293,9 +303,13 @@ void AliHLTReadoutList::Enable(Int_t detector)
   if ((detector & kZDC) != 0) fReadoutList.fList[24] = 0x00000001;
   if ((detector & kACORDE) != 0) fReadoutList.fList[25] = 0x00000001;
   if ((detector & kTRG) != 0) fReadoutList.fList[26] = 0x00000001;
-  if ((detector & kEMCAL) != 0) fReadoutList.fList[27] = 0x00FFFFFF;
-  if ((detector & kDAQTEST) != 0) fReadoutList.fList[28] = 0x00000001;
-  if ((detector & kHLT) != 0) fReadoutList.fList[29] = 0x000003FF;
+  if ((detector & kEMCAL) != 0)
+  {
+    fReadoutList.fList[27] = 0xFFFFFFFF;
+    fReadoutList.fList[28] = 0x00003FFF;
+  }
+  if ((detector & kDAQTEST) != 0) fReadoutList.fList[29] = 0x00000001;
+  if ((detector & kHLT) != 0) fReadoutList.fList[30] = 0x000003FF;
 }
 
 
@@ -337,9 +351,13 @@ void AliHLTReadoutList::Disable(Int_t detector)
   if ((detector & kZDC) != 0) fReadoutList.fList[24] = 0x00000000;
   if ((detector & kACORDE) != 0) fReadoutList.fList[25] = 0x00000000;
   if ((detector & kTRG) != 0) fReadoutList.fList[26] = 0x00000000;
-  if ((detector & kEMCAL) != 0) fReadoutList.fList[27] = 0x00000000;
-  if ((detector & kDAQTEST) != 0) fReadoutList.fList[28] = 0x00000000;
-  if ((detector & kHLT) != 0) fReadoutList.fList[29] = 0x00000000;
+  if ((detector & kEMCAL) != 0)
+  {
+    fReadoutList.fList[27] = 0x00000000;
+    fReadoutList.fList[28] = 0x00000000;
+  }
+  if ((detector & kDAQTEST) != 0) fReadoutList.fList[29] = 0x00000000;
+  if ((detector & kHLT) != 0) fReadoutList.fList[30] = 0x00000000;
 }
 
 
@@ -381,9 +399,13 @@ bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
   if ((detector & kZDC) != 0) result &= fReadoutList.fList[24] == 0x00000001;
   if ((detector & kACORDE) != 0) result &= fReadoutList.fList[25] == 0x00000001;
   if ((detector & kTRG) != 0) result &= fReadoutList.fList[26] == 0x00000001;
-  if ((detector & kEMCAL) != 0) result &= fReadoutList.fList[27] == 0x00FFFFFF;
-  if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[28] == 0x00000001;
-  if ((detector & kHLT) != 0) result &= fReadoutList.fList[29] == 0x000003FF;
+  if ((detector & kEMCAL) != 0)
+  {
+    result &= fReadoutList.fList[27] == 0xFFFFFFFF;
+    result &= fReadoutList.fList[28] == 0x00003FFF;
+  }
+  if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000001;
+  if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x000003FF;
   
   return result;
 }
@@ -544,9 +566,10 @@ AliHLTReadoutList AliHLTReadoutList::operator ~ () const
   readoutlist.fReadoutList.fList[24] = 0x00000001 & (~fReadoutList.fList[24]);
   readoutlist.fReadoutList.fList[25] = 0x00000001 & (~fReadoutList.fList[25]);
   readoutlist.fReadoutList.fList[26] = 0x00000001 & (~fReadoutList.fList[26]);
-  readoutlist.fReadoutList.fList[27] = 0x00FFFFFF & (~fReadoutList.fList[27]);
-  readoutlist.fReadoutList.fList[28] = 0x00000001 & (~fReadoutList.fList[28]);
-  readoutlist.fReadoutList.fList[29] = 0x000003FF & (~fReadoutList.fList[29]);
+  readoutlist.fReadoutList.fList[27] = 0xFFFFFFFF & (~fReadoutList.fList[27]);
+  readoutlist.fReadoutList.fList[28] = 0x00003FFF & (~fReadoutList.fList[28]);
+  readoutlist.fReadoutList.fList[29] = 0x00000001 & (~fReadoutList.fList[29]);
+  readoutlist.fReadoutList.fList[30] = 0x000003FF & (~fReadoutList.fList[30]);
   return readoutlist;
 }
 

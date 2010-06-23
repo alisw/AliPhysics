@@ -302,6 +302,59 @@ bool CheckEnablingDisablingDDLs()
 }
 
 /**
+ * Tests if using incorrect DDL IDs returns zero or is ignored as expected.
+ */
+bool CheckIncorrectIDs()
+{
+	for (int i = 0; i < 1000000; ++i)
+	{
+		// Get random DDL ID outside the valid range.
+		int ddlid = -1;
+		int det = gRandom->Integer(AliHLTDAQ::NumberOfDetectors()+1);
+		if (det != AliHLTDAQ::NumberOfDetectors())
+		{
+			int maxddls = AliHLTDAQ::NumberOfDdls(det);
+			int ddlindex = gRandom->Integer(0xFF - maxddls) + maxddls;
+			ddlid = AliHLTDAQ::DdlIDOffset(det) | (ddlindex & 0xFF);
+		}
+		else
+		{
+			det = gRandom->Integer(11) + 20;
+			if (det == 30) det = 31;
+			int ddlindex = gRandom->Integer(0xFF);
+			ddlid = (det << 8) | (ddlindex & 0xFF);
+		}
+		
+		AliHLTReadoutList rl;
+		if (rl.GetDDLBit(ddlid) != kFALSE)
+		{
+			cerr << "ERROR: Received a non zero result for invalid DDL " << ddlid << "." << endl;
+			return false;
+		}
+		AliHLTEventDDL before = rl;
+		rl.EnableDDLBit(ddlid);
+		AliHLTEventDDL after = rl;
+		if (memcmp(&before, &after, sizeof(AliHLTEventDDL)) != 0)
+		{
+			cerr << "ERROR: Modified AliHLTReadoutList structure using an invalid DDL "
+				<< ddlid << "." << endl;
+			cerr << "========== Dump of bits before modification ==========" << endl;
+			for (unsigned int j = 0; j < before.fCount; ++j)
+			{
+				cerr << "[word " << dec << j << "] = " << hex << before.fList[j] << dec << endl;
+			}
+			cerr << "========== Dump of bits after modification ==========" << endl;
+			for (unsigned int j = 0; j < after.fCount; ++j)
+			{
+				cerr << "[word " << dec << j << "] = " << hex << after.fList[j] << dec << endl;
+			}
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
  * Runs the unit test for the AliHLTReadoutList class.
  * \returns true if the class passed the test and false otherwise.
  */
@@ -322,6 +375,7 @@ bool testAliHLTReadoutList()
 	if (not CheckEmptyAndClear()) return false;
 	if (not CheckEnablingDisabling()) return false;
 	if (not CheckEnablingDisablingDDLs()) return false;
+	if (not CheckIncorrectIDs()) return false;
 	
 	return true;
 }

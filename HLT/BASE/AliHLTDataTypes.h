@@ -707,25 +707,47 @@ extern "C" {
   /** field size of fCommonHeader */
   const int gkAliHLTCommonHeaderCount = 8;
 
+  /** size of the DDL list first version */
+  const int gkAliHLTDDLListSizeV0 = 30;
+
+  /** size of the DDL list after DCAL added to EMCAL */
+  const int gkAliHLTDDLListSizeV1 = 31;
+
   /** size of the DDL list */
-  const int gkAliHLTDDLListSize = 30;
+  const int gkAliHLTDDLListSize = gkAliHLTDDLListSizeV1;
 
   /** Number of Trigger Classes of CTP in CDH */
   const int gkNCTPTriggerClasses = 50;
 
   /**
-   * @struct AliHLTEventDDL
-   * DDL list event.
+   * @struct AliHLTEventDDLV0
+   * First version of the DDL list event.
    * The struct is send with the DDLLIST event.
    * Used in the trigger structure for internal apperance of 
    * the DLLs as well as for the HLT readout list send to DAQ 
    * ( as DataType : kAliHLTDataTypeDDL )
    */
-  struct AliHLTEventDDL
+  struct AliHLTEventDDLV0
   {
     AliHLTUInt32_t fCount;                       /// Indicates the number of words in fList.
-    AliHLTUInt32_t fList[gkAliHLTDDLListSize];   /// The list of DDL enable/disable bits.
+    AliHLTUInt32_t fList[gkAliHLTDDLListSizeV0];   /// The list of DDL enable/disable bits.
   };
+
+  /**
+   * @struct AliHLTEventDDLV1
+   * DDL list event structure with extra word for DCAL bits.
+   */
+  struct AliHLTEventDDLV1
+  {
+    AliHLTUInt32_t fCount;                       /// Indicates the number of words in fList.
+    AliHLTUInt32_t fList[gkAliHLTDDLListSizeV1];   /// The list of DDL enable/disable bits.
+  };
+  
+  /**
+   * @typedef AliHLTEventDDL
+   * Current used default version of the AliHLTEventDDL structure.
+   */
+  typedef AliHLTEventDDLV1 AliHLTEventDDL;
 
   /**
    * @struct AliHLTEventTriggerData
@@ -736,7 +758,12 @@ extern "C" {
     AliHLTUInt64_t fHLTStatus; /// Bit field 
     AliHLTUInt32_t fCommonHeaderWordCnt;  /// Number of words in fCommonHeader.
     AliHLTUInt32_t fCommonHeader[gkAliHLTCommonHeaderCount];  /// The common header words.
-    AliHLTEventDDL fReadoutList;   /// The readout list structure.
+    union
+    {
+      AliHLTEventDDL fReadoutList;   /// The default readout list structure.
+      AliHLTEventDDLV0 fReadoutListV0;   /// Access to the old version of the readout list structure.
+      AliHLTEventDDLV1 fReadoutListV1;   /// Access to the readout list structure with DCAL included.
+    };
   };
 
   /**
