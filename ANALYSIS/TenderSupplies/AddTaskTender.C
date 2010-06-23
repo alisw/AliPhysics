@@ -6,7 +6,7 @@ AliAnalysisTask *AddTaskTender(){
     return 0;
   }
   // currently don't accept AOD input
-  if (mgr->GetInputEventHandler()->IsA()!=AliESDInputHandler::Class()) {
+  if (!mgr->GetInputEventHandler()->InheritsFrom(AliESDInputHandler::Class())) {
     Error("AddTask_tender_Tender","The analysis tender only works with ESD input!");
     return 0;
   }

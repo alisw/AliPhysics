@@ -3026,11 +3026,6 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       out << "ls -la ./"  << out_stream << endl;
       out << "echo \"* ----------------------------------------------------*\""  << out_stream << endl << endl;
       out << "##################################################" << endl;
-
-      out << "" << endl;
-      out << "parArch=`grep -Ei \"Cannot Build the PAR Archive\" stderr`" << endl;
-      out << "segViol=`grep -Ei \"Segmentation violation\" stderr`" << endl;
-      out << "segFault=`grep -Ei \"Segmentation fault\" stderr`" << endl;
       out << "" << endl;
 
       out << "if [ ! -f stderr ] ; then" << endl;
@@ -3038,6 +3033,12 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       out << "   echo \"* ########## Job not validated - no stderr  ###\" " << out_stream << endl;
       out << "   echo \"Error = $error\" " << out_stream << endl;
       out << "fi" << endl;
+
+      out << "parArch=`grep -Ei \"Cannot Build the PAR Archive\" stderr`" << endl;
+      out << "segViol=`grep -Ei \"Segmentation violation\" stderr`" << endl;
+      out << "segFault=`grep -Ei \"Segmentation fault\" stderr`" << endl;
+      out << "glibcErr=`grep -Ei \"*** glibc detected ***\" stderr`" << endl;
+      out << "" << endl;
 
       out << "if [ \"$parArch\" != \"\" ] ; then" << endl;
       out << "   error=1" << endl;
@@ -3060,6 +3061,13 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       out << "   echo \"Error = $error\" " << out_stream << endl;
       out << "fi" << endl;
 
+      out << "if [ \"$glibcErr\" != \"\" ] ; then" << endl;
+      out << "   error=1" << endl;
+      out << "   echo \"* ########## Job not validated - *** glibc detected ***  ###\" " << out_stream << endl;
+      out << "   echo \"$glibcErr\" " << out_stream << endl;
+      out << "   echo \"Error = $error\" " << out_stream << endl;
+      out << "fi" << endl;
+
       // Part dedicated to the specific analyses running into the train
 
       TObjArray *arr = fOutputFiles.Tokenize(",");
@@ -3073,6 +3081,7 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
          if (index > 0) output_file.Remove(index);
          if (merge && fMergeExcludes.Contains(output_file)) continue;
          if (extra.Contains(output_file)) continue;
+         if (output_file.Contains("*")) continue;
          out << "if ! [ -f " << output_file.Data() << " ] ; then" << endl;
          out << "   error=1" << endl;
          out << "   echo \"Output file(s) not found. Job FAILED !\""  << out_stream << endl;
