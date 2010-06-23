@@ -227,23 +227,29 @@ AliDigitizer* AliVZERO::CreateDigitizer(AliRunDigitizer* manager) const
 //_____________________________________________________________________________
 void AliVZERO::Hits2Digits(){
   //
-  // Converts hits to digits of the current event
+  // Converts hits to digits
   //
-  // Inputs file name
-  const char *alifile = "galice.root";   
-
-  // Create the run digitizer 
-  AliRunDigitizer* manager = new AliRunDigitizer(1, 1);
-  manager->SetInputStream(0, alifile);
-  manager->SetOutputFile("H2Dfile");
-
   // Creates the VZERO digitizer 
-  AliVZERODigitizer* dig = new AliVZERODigitizer(manager);
+  AliVZERODigitizer* dig = new AliVZERODigitizer(this,AliVZERODigitizer::kHits2Digits);
 
   // Creates the digits
   dig->Exec("");
 
 }
+
+//_____________________________________________________________________________
+void AliVZERO::Hits2SDigits(){
+  //
+  // Converts hits to summable digits
+  //
+  // Creates the VZERO digitizer 
+  AliVZERODigitizer* dig = new AliVZERODigitizer(this,AliVZERODigitizer::kHits2SDigits);
+
+  // Creates the sdigits
+  dig->Exec("");
+
+}
+
 //_____________________________________________________________________________
 void AliVZERO::Digits2Raw()
 {

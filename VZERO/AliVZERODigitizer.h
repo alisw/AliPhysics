@@ -23,20 +23,36 @@ class AliRunDigitizer;
 class AliCDBManager;
 class AliCDBStorage;
 class AliVZEROCalibData;
+class AliVZERO;
 
 class AliVZERODigitizer: public AliDigitizer {
 
  public:
 
-   AliVZERODigitizer() ;                       // constructor
-   AliVZERODigitizer(AliRunDigitizer *manager);// constructor
-   virtual ~AliVZERODigitizer() ;              // destructor
+   enum DigiTask_t { 
+     kHits2Digits, 
+     kHits2SDigits
+   };
   
+   AliVZERODigitizer() ;                       // default constructor
+   AliVZERODigitizer(AliVZERO *vzero, DigiTask_t task);         // constructor
+   AliVZERODigitizer(AliRunDigitizer *manager); // constructor
+   virtual ~AliVZERODigitizer() ;              // destructor
+
    virtual Bool_t Init();
    virtual void   Exec(Option_t* option=0);
 
-   void AddDigit(Int_t PMnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels);
-   void ResetDigit();
+   void DigitizeHits();
+   void DigitizeSDigits();
+   void WriteDigits(AliLoader *loader);
+   void WriteSDigits(AliLoader *loader);
+   void ReadSDigits();
+
+   void AddDigit(Int_t pmnumber, Float_t time, Float_t width, Bool_t integrator, Short_t *chargeADC, Int_t *labels);
+   void AddSDigit(Int_t pmnumber, Int_t nbins, Float_t *charges, Int_t *labels);
+   TClonesArray* DigitsArray(); 
+   TClonesArray* SDigitsArray(); 
+   void ResetDigits();
 						
    AliVZEROCalibData *GetCalibData() const;
 
@@ -80,8 +96,13 @@ class AliVZERODigitizer: public AliDigitizer {
    Float_t  fHptdcOffset[64];        //! HPTDC time offsets channel by channel
 
    Float_t *fTime[64];               //! Main container used in digitization
-   
-   ClassDef(AliVZERODigitizer,5)     // digitizer for VZERO
+   Int_t    fLabels[64][3];          //! Container for MC labels
+   Bool_t   fEvenOrOdd;              //! Choise of integrator in central ADC sample
+
+   DigiTask_t fTask;                 //! The task (to be) executed by the digitizer
+   AliVZERO  *fVZERO;                //! Pointer to AliDetector object
+
+   ClassDef(AliVZERODigitizer,6)     // digitizer for VZERO
 
 };
 

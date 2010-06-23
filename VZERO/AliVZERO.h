@@ -42,6 +42,7 @@ public:
   virtual void   Init();
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual void   Hits2Digits();
+  virtual void   Hits2SDigits();
   virtual void   Digits2Raw();
   virtual Bool_t Raw2SDigits(AliRawReader*);
   virtual void   SetTreeAddress();  

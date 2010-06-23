@@ -14,12 +14,17 @@ class AliVZEROSDigit: public AliDigit  {
 		   Int_t nbins, 
 		   Float_t *charges,
 		   Int_t *labels = 0);
-    virtual ~AliVZEROSDigit() {};
+    virtual ~AliVZEROSDigit();
     virtual void Print(const Option_t* option="") const;
 
     Int_t   PMNumber()   const {return fPMNumber;}
+    Int_t   GetNBins()   const {return fNBins;}
+    Float_t*GetCharges() const {return fCharges;}
 
   private:
+    AliVZEROSDigit(const AliVZEROSDigit& /*sdigit*/); 
+    AliVZEROSDigit& operator = (const AliVZEROSDigit& /*sdigit*/); 
+
     Int_t   fPMNumber;      // PhotoMultiplier number (0 to 63)
     Int_t   fNBins;         // Number of charge bins
     Float_t*fCharges;       //[fNBins] Array with charges

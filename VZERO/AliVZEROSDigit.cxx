@@ -40,6 +40,7 @@ fCharges(NULL)
 {  
   // Constructor
   // Used in the digitizer
+  fCharges = new Float_t[fNBins];
   if (charges) {
     for(Int_t i = 0; i < fNBins; ++i)
       fCharges[i] = charges[i];
@@ -51,6 +52,17 @@ fCharges(NULL)
 
   if (labels)
     for(Int_t iTrack = 0; iTrack < 3; ++iTrack) fTracks[iTrack] = labels[iTrack];
+}
+
+//__________________________________________________________________________
+AliVZEROSDigit::~AliVZEROSDigit()
+{
+  // Destructor
+  // Delete the charges array if it was allocated
+  if (fCharges) {
+    delete [] fCharges;
+    fCharges = NULL;
+  }
 }
 
 //__________________________________________________________________________
