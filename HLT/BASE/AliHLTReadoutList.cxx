@@ -291,7 +291,7 @@ void AliHLTReadoutList::Enable(Int_t detector)
     fReadoutList.fList[13] = 0xFFFFFFFF;
     fReadoutList.fList[14] = 0x000000FF;
   }
-  if ((detector & kHMPID) != 0) fReadoutList.fList[15] = 0x00003FFF;
+  if ((detector & kHMPID) != 0) fReadoutList.fList[15] = 0x000FFFFF;
   if ((detector & kPHOS) != 0) fReadoutList.fList[16] = 0x000FFFFF;
   if ((detector & kCPV) != 0) fReadoutList.fList[17] = 0x000003FF;
   if ((detector & kPMD) != 0) fReadoutList.fList[18] = 0x0000003F;
@@ -387,7 +387,7 @@ bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
     result &= fReadoutList.fList[13] == 0xFFFFFFFF;
     result &= fReadoutList.fList[14] == 0x000000FF;
   }
-  if ((detector & kHMPID) != 0) result &= fReadoutList.fList[15] == 0x00003FFF;
+  if ((detector & kHMPID) != 0) result &= fReadoutList.fList[15] == 0x000FFFFF;
   if ((detector & kPHOS) != 0) result &= fReadoutList.fList[16] == 0x000FFFFF;
   if ((detector & kCPV) != 0) result &= fReadoutList.fList[17] == 0x000003FF;
   if ((detector & kPMD) != 0) result &= fReadoutList.fList[18] == 0x0000003F;
@@ -554,7 +554,7 @@ AliHLTReadoutList AliHLTReadoutList::operator ~ () const
   readoutlist.fReadoutList.fList[12] = 0xFFFFFFFF & (~fReadoutList.fList[12]);
   readoutlist.fReadoutList.fList[13] = 0xFFFFFFFF & (~fReadoutList.fList[13]);
   readoutlist.fReadoutList.fList[14] = 0x000000FF & (~fReadoutList.fList[14]);
-  readoutlist.fReadoutList.fList[15] = 0x00003FFF & (~fReadoutList.fList[15]);
+  readoutlist.fReadoutList.fList[15] = 0x000FFFFF & (~fReadoutList.fList[15]);
   readoutlist.fReadoutList.fList[16] = 0x000FFFFF & (~fReadoutList.fList[16]);
   readoutlist.fReadoutList.fList[17] = 0x000003FF & (~fReadoutList.fList[17]);
   readoutlist.fReadoutList.fList[18] = 0x0000003F & (~fReadoutList.fList[18]);

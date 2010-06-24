@@ -163,14 +163,27 @@ bool CheckEnablingDisabling()
 	for (int i = 0; i < 10000; ++i)
 	{
 		// Get 3 random detector codes.
+		int detNum[3] = {
+			gRandom->Integer(kgNumberOfCodes),
+			gRandom->Integer(kgNumberOfCodes),
+			gRandom->Integer(kgNumberOfCodes)
+		};
 		int code[3] = {
-			kgDetCodes[gRandom->Integer(kgNumberOfCodes)],
-			kgDetCodes[gRandom->Integer(kgNumberOfCodes)],
-			kgDetCodes[gRandom->Integer(kgNumberOfCodes)]
+			kgDetCodes[detNum[0]],
+			kgDetCodes[detNum[1]],
+			kgDetCodes[detNum[2]]
 		};
 		// make sure the codes are not duplicated.
-		while (code[1] == code[0]) code[1] = kgDetCodes[gRandom->Integer(kgNumberOfCodes)];
-		while (code[2] == code[1] or code[2] == code[0]) code[2] = kgDetCodes[gRandom->Integer(kgNumberOfCodes)];
+		while (code[1] == code[0])
+		{
+			detNum[1] = gRandom->Integer(kgNumberOfCodes);
+			code[1] = kgDetCodes[detNum[1]];
+		}
+		while (code[2] == code[1] or code[2] == code[0])
+		{
+			detNum[2] = gRandom->Integer(kgNumberOfCodes);
+			code[2] = kgDetCodes[detNum[2]];
+		}
 		
 		// Choose the number of codes to use, from 1 to max 3.
 		int codeCount = gRandom->Integer(3) + 1;
@@ -196,6 +209,23 @@ bool CheckEnablingDisabling()
 					<< CodeToString(code[j]) << " by constructor." << endl;
 				return false;
 			}
+			
+			// Also check each bit individualy according to AliHLTDAQ values.
+			int det = detNum[j];
+			int maxddls = AliHLTDAQ::NumberOfDdls(det);
+			for (int ddlindex = 0; ddlindex < maxddls; ++ddlindex)
+			{
+				int ddlid = AliHLTDAQ::DdlIDOffset(det) | (ddlindex & 0xFF);
+				if (rl.IsDDLDisabled(ddlid))
+				{
+					cerr << "ERROR: Bit not set for DDL " << ddlid
+						<< ", even though detector "
+						<< AliHLTDAQ::OnlineName(det)
+						<< " was enabled." << endl;
+					return false;
+				}
+			}
+			
 			rl.Disable(code[j]);
 			if (rl.DetectorEnabled(code[j]) == true)
 			{
