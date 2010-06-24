@@ -382,9 +382,51 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t GetAlignFilterMaxPt() const {return fAlignFilterMaxPt;}          
   Bool_t  GetAlignFilterFillQANtuples() const {return fAlignFilterFillQANtuples;}     
 
+  // Multiplicity Reconstructor
+  Float_t GetMultCutPxDrSPDin()                 const {return fMultCutPxDrSPDin;}
+  Float_t GetMultCutPxDrSPDout()                const {return fMultCutPxDrSPDout;}
+  Float_t GetMultCutPxDz()                      const {return fMultCutPxDz;}
+  Float_t GetMultCutDCArz()                     const {return fMultCutDCArz;}
+  Float_t GetMultCutMinElectronProbTPC()        const {return fMultCutMinElectronProbTPC;}
+  Float_t GetMultCutMinElectronProbESD()        const {return fMultCutMinElectronProbESD;}
+  Float_t GetMultCutMinP()                      const {return fMultCutMinP;}
+  Float_t GetMultCutMinRGamma()                 const {return fMultCutMinRGamma;}
+  Float_t GetMultCutMinRK0()                    const {return fMultCutMinRK0;}
+  Float_t GetMultCutMinPointAngle()             const {return fMultCutMinPointAngle;}
+  Float_t GetMultCutMaxDCADauther()             const {return fMultCutMaxDCADauther;}
+  Float_t GetMultCutMassGamma()                 const {return fMultCutMassGamma;}
+  Float_t GetMultCutMassGammaNSigma()           const {return fMultCutMassGammaNSigma;}
+  Float_t GetMultCutMassK0()                    const {return fMultCutMassK0;}
+  Float_t GetMultCutMassK0NSigma()              const {return fMultCutMassK0NSigma;}
+  Float_t GetMultCutChi2cGamma()                const {return fMultCutChi2cGamma;}
+  Float_t GetMultCutChi2cK0()                   const {return fMultCutChi2cK0;}
+  Float_t GetMultCutGammaSFromDecay()           const {return fMultCutGammaSFromDecay;}
+  Float_t GetMultCutK0SFromDecay()              const {return fMultCutK0SFromDecay;}
+  Float_t GetMultCutMaxDCA()                    const {return fMultCutMaxDCA;}
+  //
+  void    SetMultCutPxDrSPDin(Float_t v=0.1)             { fMultCutPxDrSPDin = v;}
+  void    SetMultCutPxDrSPDout(Float_t v=0.15)           { fMultCutPxDrSPDout = v;}
+  void    SetMultCutPxDz(Float_t v=0.2)                  { fMultCutPxDz = v;}
+  void    SetMultCutDCArz(Float_t v=0.5)                 { fMultCutDCArz = v;}
+  void    SetMultCutMinElectronProbTPC(Float_t v=0.5)    { fMultCutMinElectronProbTPC = v;}
+  void    SetMultCutMinElectronProbESD(Float_t v=0.1)    { fMultCutMinElectronProbESD = v;}
+  void    SetMultCutMinP(Float_t v=0.05)                 { fMultCutMinP = v;}
+  void    SetMultCutMinRGamma(Float_t v=2.)              { fMultCutMinRGamma = v;}
+  void    SetMultCutMinRK0(Float_t v=1.)                 { fMultCutMinRK0 = v;}
+  void    SetMultCutMinPointAngle(Float_t v=0.98)        { fMultCutMinPointAngle = v;}
+  void    SetMultCutMaxDCADauther(Float_t v=0.5)         { fMultCutMaxDCADauther = v;}
+  void    SetMultCutMassGamma(Float_t v=0.03)            { fMultCutMassGamma = v;}
+  void    SetMultCutMassGammaNSigma(Float_t v=5.)        { fMultCutMassGammaNSigma = v;}
+  void    SetMultCutMassK0(Float_t v=0.03)               { fMultCutMassK0 = v;}
+  void    SetMultCutMassK0NSigma(Float_t v=5.)           { fMultCutMassK0NSigma = v;}
+  void    SetMultCutChi2cGamma(Float_t v=2.)             { fMultCutChi2cGamma = v;}
+  void    SetMultCutChi2cK0(Float_t v=2.)                { fMultCutChi2cK0 = v;}
+  void    SetMultCutGammaSFromDecay(Float_t v=-10.)      { fMultCutGammaSFromDecay = v;}
+  void    SetMultCutK0SFromDecay(Float_t v=-10.)         { fMultCutK0SFromDecay = v;}
+  void    SetMultCutMaxDCA(Float_t v=1.)                 { fMultCutMaxDCA = v;}
+  //
   AliESDV0Params *GetESDV0Params() const {return fESDV0Params;}
-
-
+  //
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
   enum {fgkMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
   enum {fgkMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
@@ -610,13 +652,39 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fAlignFilterMaxPt;              // max pt
   Bool_t  fAlignFilterFillQANtuples;      // fill QA ntuples  
 
+  // Multiplicity reconstructor settings
+  // cuts for flagging secondaries
+  Float_t fMultCutPxDrSPDin;              // max P*DR for primaries involving at least 1 SPD
+  Float_t fMultCutPxDrSPDout;             // max P*DR for primaries not involving any SPD
+  Float_t fMultCutPxDz;                   // max P*DZ for primaries
+  Float_t fMultCutDCArz;                  // max DR or DZ for primares
+  //
+  // cuts for flagging tracks in V0s
+  Float_t fMultCutMinElectronProbTPC;     // min probability for e+/e- PID involving TPC
+  Float_t fMultCutMinElectronProbESD;     // min probability for e+/e- PID not involving TPC
+  //
+  Float_t fMultCutMinP;                   // min P of V0
+  Float_t fMultCutMinRGamma;              // min transv. distance from ESDVertex to V0 for gammas
+  Float_t fMultCutMinRK0;                 // min transv. distance from ESDVertex to V0 for K0s
+  Float_t fMultCutMinPointAngle;          // min pointing angle cosine
+  Float_t fMultCutMaxDCADauther;          // max DCA of daughters at V0
+  Float_t fMultCutMassGamma;              // max gamma mass
+  Float_t fMultCutMassGammaNSigma;        // max standard deviations from 0 for gamma
+  Float_t fMultCutMassK0;                 // max K0 mass difference from PGD value
+  Float_t fMultCutMassK0NSigma;           // max standard deviations for K0 mass from PDG value
+  Float_t fMultCutChi2cGamma;             // max constrained chi2 cut for gammas
+  Float_t fMultCutChi2cK0;                // max constrained chi2 cut for K0s
+  Float_t fMultCutGammaSFromDecay;        // min path*P for gammas
+  Float_t fMultCutK0SFromDecay;           // min path*P for K0s
+  Float_t fMultCutMaxDCA;                 // max DCA for V0 at ESD vertex
+  //
  private:
   AliESDV0Params * fESDV0Params;  // declare the AliESDV0Params to be able to used in AliITSV0Finder
 
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,28) // ITS reco parameters
+  ClassDef(AliITSRecoParam,29) // ITS reco parameters
 };
 
 #endif

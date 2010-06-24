@@ -82,6 +82,10 @@
 #include "AliLog.h"
 #include "TGeoGlobalMagField.h"
 #include "AliMagF.h"
+#include "AliESDv0.h"
+#include "AliV0.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 //____________________________________________________________________
 ClassImp(AliITSMultReconstructor)
@@ -108,6 +112,28 @@ fPhiShift(0),
 fRemoveClustersFromOverlaps(0),
 fPhiOverlapCut(0),
 fZetaOverlapCut(0),
+//
+fCutPxDrSPDin(0.1),
+fCutPxDrSPDout(0.15),
+fCutPxDz(0.2),
+fCutDCArz(0.5),
+fCutMinElectronProbTPC(0.5),
+fCutMinElectronProbESD(0.1),
+fCutMinP(0.05),
+fCutMinRGamma(2.),
+fCutMinRK0(1.),
+fCutMinPointAngle(0.98),
+fCutMaxDCADauther(0.5),
+fCutMassGamma(0.03),
+fCutMassGammaNSigma(5.),
+fCutMassK0(0.03),
+fCutMassK0NSigma(5.),
+fCutChi2cGamma(2.),
+fCutChi2cK0(2.),
+fCutGammaSFromDecay(-10.),
+fCutK0SFromDecay(-10.),
+fCutMaxDCA(1.),
+//
 fHistOn(0),
 fhClustersDPhiAcc(0),
 fhClustersDThetaAcc(0),
@@ -134,6 +160,28 @@ fhphiClustersLay1(0){
     SetRemoveClustersFromOverlaps(AliITSReconstructor::GetRecoParam()->GetTrackleterRemoveClustersFromOverlaps());
     SetPhiOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiOverlapCut());
     SetZetaOverlapCut(AliITSReconstructor::GetRecoParam()->GetTrackleterZetaOverlapCut());
+    //
+    SetCutPxDrSPDin(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDin());
+    SetCutPxDrSPDout(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDout());
+    SetCutPxDz(AliITSReconstructor::GetRecoParam()->GetMultCutPxDz());
+    SetCutDCArz(AliITSReconstructor::GetRecoParam()->GetMultCutDCArz());
+    SetCutMinElectronProbTPC(AliITSReconstructor::GetRecoParam()->GetMultCutMinElectronProbTPC());
+    SetCutMinElectronProbESD(AliITSReconstructor::GetRecoParam()->GetMultCutMinElectronProbESD());
+    SetCutMinP(AliITSReconstructor::GetRecoParam()->GetMultCutMinP());
+    SetCutMinRGamma(AliITSReconstructor::GetRecoParam()->GetMultCutMinRGamma());
+    SetCutMinRK0(AliITSReconstructor::GetRecoParam()->GetMultCutMinRK0());
+    SetCutMinPointAngle(AliITSReconstructor::GetRecoParam()->GetMultCutMinPointAngle());
+    SetCutMaxDCADauther(AliITSReconstructor::GetRecoParam()->GetMultCutMaxDCADauther());
+    SetCutMassGamma(AliITSReconstructor::GetRecoParam()->GetMultCutMassGamma());
+    SetCutMassGammaNSigma(AliITSReconstructor::GetRecoParam()->GetMultCutMassGammaNSigma());
+    SetCutMassK0(AliITSReconstructor::GetRecoParam()->GetMultCutMassK0());
+    SetCutMassK0NSigma(AliITSReconstructor::GetRecoParam()->GetMultCutMassK0NSigma());
+    SetCutChi2cGamma(AliITSReconstructor::GetRecoParam()->GetMultCutChi2cGamma());
+    SetCutChi2cK0(AliITSReconstructor::GetRecoParam()->GetMultCutChi2cK0());
+    SetCutGammaSFromDecay(AliITSReconstructor::GetRecoParam()->GetMultCutGammaSFromDecay());
+    SetCutK0SFromDecay(AliITSReconstructor::GetRecoParam()->GetMultCutK0SFromDecay());
+    SetCutMaxDCA(AliITSReconstructor::GetRecoParam()->GetMultCutMaxDCA());
+    //
   } else {
     SetPhiWindow();
     SetThetaWindow();
@@ -141,6 +189,27 @@ fhphiClustersLay1(0){
     SetRemoveClustersFromOverlaps();
     SetPhiOverlapCut();
     SetZetaOverlapCut();
+    //
+    SetCutPxDrSPDin();
+    SetCutPxDrSPDout();
+    SetCutPxDz();
+    SetCutDCArz();
+    SetCutMinElectronProbTPC();
+    SetCutMinElectronProbESD();
+    SetCutMinP();
+    SetCutMinRGamma();
+    SetCutMinRK0();
+    SetCutMinPointAngle();
+    SetCutMaxDCADauther();
+    SetCutMassGamma();
+    SetCutMassGammaNSigma();
+    SetCutMassK0();
+    SetCutMassK0NSigma();
+    SetCutChi2cGamma();
+    SetCutChi2cK0();
+    SetCutGammaSFromDecay();
+    SetCutK0SFromDecay();
+    SetCutMaxDCA();
   } 
   
   fClustersLay1              = 0;
@@ -196,6 +265,28 @@ fPhiShift(0),
 fRemoveClustersFromOverlaps(0),
 fPhiOverlapCut(0),
 fZetaOverlapCut(0),
+//
+fCutPxDrSPDin(0.1),
+fCutPxDrSPDout(0.15),
+fCutPxDz(0.2),
+fCutDCArz(0.5),
+fCutMinElectronProbTPC(0.5),
+fCutMinElectronProbESD(0.1),
+fCutMinP(0.05),
+fCutMinRGamma(2.),
+fCutMinRK0(1.),
+fCutMinPointAngle(0.98),
+fCutMaxDCADauther(0.5),
+fCutMassGamma(0.03),
+fCutMassGammaNSigma(5.),
+fCutMassK0(0.03),
+fCutMassK0NSigma(5.),
+fCutChi2cGamma(2.),
+fCutChi2cK0(2.),
+fCutGammaSFromDecay(-10.),
+fCutK0SFromDecay(-10.),
+fCutMaxDCA(1.),
+//
 fHistOn(0),
 fhClustersDPhiAcc(0),
 fhClustersDThetaAcc(0),
@@ -925,8 +1016,9 @@ void AliITSMultReconstructor::ProcessESDTracks()
     AliESDtrack* track = fESDEvent->GetTrack(itr);
     if (!track->IsOn(AliESDtrack::kITSin)) continue; // use only tracks propagated in ITS to vtx
     FlagTrackClusters(track);
-    FlagIfPrimary(track,vtx);
+    FlagIfSecondary(track,vtx);
   }
+  FlagV0s(vtx);
   //
 }
 
@@ -952,18 +1044,149 @@ void AliITSMultReconstructor::FlagTrackClusters(const AliESDtrack* track)
 }
 
 //____________________________________________________________________
-void AliITSMultReconstructor::FlagIfPrimary(AliESDtrack* track, const AliVertex* vtx)
+void AliITSMultReconstructor::FlagIfSecondary(AliESDtrack* track, const AliVertex* vtx)
 {
   // RS: check if the track is primary and set the flag
-  const double kPDCASPD1 = 0.1;
-  const double kPDCASPD0 = 0.3;
-  //
-  double cut = (track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)) ? kPDCASPD1 : kPDCASPD0;
-  // in principle, the track must already have been propagated to vertex
-  /*
-  Double_t dzRec[2]={0,0}, covdzRec[3];
-  track->PropagateToDCA(vtx, fESDEvent->GetMagneticField(), 3.0, dzRec, covdzRec);
-  */
-  double dist = track->GetD(vtx->GetX(),vtx->GetY(),fESDEvent->GetMagneticField());
-  if (TMath::Abs(dist*track->P())<cut) track->SetStatus(AliESDtrack::kMultPrimary);
+  double cut = (track->HasPointOnITSLayer(0)||track->HasPointOnITSLayer(1)) ? fCutPxDrSPDin:fCutPxDrSPDout;
+  float xz[2];
+  track->GetDZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), fESDEvent->GetMagneticField(), xz);
+  if (TMath::Abs(xz[0]*track->P())>cut || TMath::Abs(xz[1]*track->P())>fCutPxDz ||
+      TMath::Abs(xz[0])>fCutDCArz   || TMath::Abs(xz[1])>fCutDCArz) 
+    track->SetStatus(AliESDtrack::kMultSec);
+  else track->ResetStatus(AliESDtrack::kMultSec);
 }
+
+//____________________________________________________________________
+void AliITSMultReconstructor::FlagV0s(const AliESDVertex *vtx)
+{
+  // flag tracks belonging to v0s
+  //
+  const double kK0Mass = 0.4976;
+  //
+  AliV0 pvertex;
+  AliKFVertex vertexKF;
+  AliKFParticle epKF0,epKF1,pipmKF0,piKF0,piKF1,gammaKF,k0KF;
+  Double_t mass,massErr,chi2c;
+  enum {kKFIni=BIT(14)};
+  //
+  double recVtx[3];
+  float recVtxF[3];
+  vtx->GetXYZ(recVtx);
+  for (int i=3;i--;) recVtxF[i] = recVtx[i];
+  //
+  int ntracks = fESDEvent->GetNumberOfTracks();
+  if (ntracks<2) return;
+  //
+  vertexKF.X() = recVtx[0];
+  vertexKF.Y() = recVtx[1];
+  vertexKF.Z() = recVtx[2];
+  vertexKF.Covariance(0,0) = vtx->GetXRes()*vtx->GetXRes();
+  vertexKF.Covariance(1,2) = vtx->GetYRes()*vtx->GetYRes();
+  vertexKF.Covariance(2,2) = vtx->GetZRes()*vtx->GetZRes();
+  //
+  AliESDtrack *trc0,*trc1;
+  for (int it0=0;it0<ntracks;it0++) {
+    trc0 = fESDEvent->GetTrack(it0);
+    if (trc0->IsOn(AliESDtrack::kMultInV0)) continue;
+    if (!trc0->IsOn(AliESDtrack::kITSin)) continue;
+    Bool_t isSAP = trc0->IsPureITSStandalone();
+    Int_t  q0 = trc0->Charge();
+    Bool_t testGamma = CanBeElectron(trc0);
+    epKF0.ResetBit(kKFIni);
+    piKF0.ResetBit(kKFIni);
+    double bestChi2=1e16;
+    int bestID = -1;
+    //    
+    for (int it1=it0+1;it1<ntracks;it1++) {
+      trc1 = fESDEvent->GetTrack(it1);
+      if (trc1->IsOn(AliESDtrack::kMultInV0)) continue;
+      if (!trc1->IsOn(AliESDtrack::kITSin)) continue;
+      if (trc1->IsPureITSStandalone() != isSAP) continue; // pair separately ITS_SA_Pure tracks and TPC/ITS+ITS_SA
+      if ( (q0+trc1->Charge())!=0 ) continue;             // don't pair like signs
+      //
+      pvertex.SetParamN(q0<0 ? *trc0:*trc1);
+      pvertex.SetParamP(q0>0 ? *trc0:*trc1);
+      pvertex.Update(recVtxF);
+      if (pvertex.P()<fCutMinP) continue;
+      if (pvertex.GetV0CosineOfPointingAngle()<fCutMinPointAngle) continue;
+      if (pvertex.GetDcaV0Daughters()>fCutMaxDCADauther) continue;
+      double d = pvertex.GetD(recVtx[0],recVtx[1],recVtx[2]);
+      if (d>fCutMaxDCA) continue;
+      double dx=recVtx[0]-pvertex.Xv(), dy=recVtx[1]-pvertex.Yv();
+      double rv = TMath::Sqrt(dx*dx+dy*dy);
+      //
+      // check gamma conversion hypothesis ----------------------------------------------------------->>>
+      Bool_t gammaOK = kFALSE;
+      while (testGamma && CanBeElectron(trc1)) {
+	if (rv<fCutMinRGamma) break;
+	if (!epKF0.TestBit(kKFIni)) {
+	  new(&epKF0) AliKFParticle(*trc0,q0>0 ? kPositron:kElectron);
+	  epKF0.SetBit(kKFIni);
+	}
+	new(&epKF1) AliKFParticle(*trc1,q0<0 ? kPositron:kElectron);
+	gammaKF.Initialize();
+	gammaKF += epKF0;
+	gammaKF += epKF1;      
+	gammaKF.SetProductionVertex(vertexKF);
+	gammaKF.GetMass(mass,massErr);
+	if (mass>fCutMassGamma || (massErr>0&&(mass>massErr*fCutMassGammaNSigma))) break;
+	if (gammaKF.GetS()<fCutGammaSFromDecay) break;
+	gammaKF.SetMassConstraint(0.,0.001);
+	chi2c = (gammaKF.GetNDF()!=0) ? gammaKF.GetChi2()/gammaKF.GetNDF() : 1000;
+	if (chi2c>fCutChi2cGamma) break;
+	gammaOK = kTRUE;
+	if (chi2c>bestChi2) break;
+	bestChi2 = chi2c;
+	bestID = it1;
+	break;
+      }
+      if (gammaOK) continue;
+      // check gamma conversion hypothesis -----------------------------------------------------------<<<
+      // check K0 conversion hypothesis    ----------------------------------------------------------->>>
+      while (1) {
+	if (rv<fCutMinRK0) break;
+	if (!piKF0.TestBit(kKFIni)) {
+	  new(&piKF0) AliKFParticle(*trc0,q0>0 ? kPiPlus:kPiMinus);
+	  piKF0.SetBit(kKFIni);
+	}
+	new(&piKF1) AliKFParticle(*trc1,q0<0 ? kPiPlus:kPiMinus);
+	k0KF.Initialize();
+	k0KF += piKF0;
+	k0KF += piKF1;      
+	k0KF.SetProductionVertex(vertexKF);
+	k0KF.GetMass(mass,massErr);
+	mass -= kK0Mass;
+	if (TMath::Abs(mass)>fCutMassK0 || (massErr>0&&(abs(mass)>massErr*fCutMassK0NSigma))) break;
+	if (k0KF.GetS()<fCutK0SFromDecay) break;
+	k0KF.SetMassConstraint(kK0Mass,0.001);
+	chi2c = (k0KF.GetNDF()!=0) ? k0KF.GetChi2()/k0KF.GetNDF() : 1000;
+	if (chi2c>fCutChi2cK0) break;
+	if (chi2c>bestChi2) break;
+	bestChi2 = chi2c;
+	bestID = it1;
+	break;
+      }
+      // check K0 conversion hypothesis    -----------------------------------------------------------<<<
+    }
+    //
+    if (bestID>=0) {
+      trc0->SetStatus(AliESDtrack::kMultInV0);
+      fESDEvent->GetTrack(bestID)->SetStatus(AliESDtrack::kMultInV0);
+    }
+  }
+  //
+}
+
+//____________________________________________________________________
+Bool_t AliITSMultReconstructor::CanBeElectron(const AliESDtrack* trc) const
+{
+  // check if the track can be electron
+  Double_t pid[AliPID::kSPECIES];
+  if (!trc->IsOn(AliESDtrack::kESDpid)) return kTRUE;
+  trc->GetESDpid(pid);
+  return (trc->IsOn(AliESDtrack::kTPCpid)) ? 
+    pid[AliPID::kElectron]>fCutMinElectronProbTPC : 
+    pid[AliPID::kElectron]>fCutMinElectronProbESD;
+  //
+}
+

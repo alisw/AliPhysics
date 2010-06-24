@@ -187,6 +187,28 @@ fAlignFilterMinAngleWrtModulePlanes(0.52),
 fAlignFilterMinPt(0.),
 fAlignFilterMaxPt(1.e10),
 fAlignFilterFillQANtuples(kTRUE),
+//
+fMultCutPxDrSPDin(0.1),
+fMultCutPxDrSPDout(0.15),
+fMultCutPxDz(0.2),
+fMultCutDCArz(0.5),
+fMultCutMinElectronProbTPC(0.5),
+fMultCutMinElectronProbESD(0.1),
+fMultCutMinP(0.05),
+fMultCutMinRGamma(2.),
+fMultCutMinRK0(1.),
+fMultCutMinPointAngle(0.98),
+fMultCutMaxDCADauther(0.5),
+fMultCutMassGamma(0.03),
+fMultCutMassGammaNSigma(5.),
+fMultCutMassK0(0.03),
+fMultCutMassK0NSigma(5.),
+fMultCutChi2cGamma(2.),
+fMultCutChi2cK0(2.),
+fMultCutGammaSFromDecay(-10.),
+fMultCutK0SFromDecay(-10.),
+fMultCutMaxDCA(1.),
+//
 fESDV0Params(NULL)
 {
   //
@@ -375,9 +397,29 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fSigmaXDeadZoneHit2 = 0.004/12.;
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
-
-
-  
+  //
+  // mult reco
+  param->fMultCutPxDrSPDin = 0.1;
+  param->fMultCutPxDrSPDout = 0.15;
+  param->fMultCutPxDz = 0.2;
+  param->fMultCutDCArz = 0.5;
+  param->fMultCutMinElectronProbTPC = 0.5;
+  param->fMultCutMinElectronProbESD = 0.1;
+  param->fMultCutMinP = 0.05;
+  param->fMultCutMinRGamma = 2.;
+  param->fMultCutMinRK0 = 1.;
+  param->fMultCutMinPointAngle = 0.98;
+  param->fMultCutMaxDCADauther = 0.5;
+  param->fMultCutMassGamma = 0.03;
+  param->fMultCutMassGammaNSigma = 5.;
+  param->fMultCutMassK0 = 0.03;
+  param->fMultCutMassK0NSigma = 5.;
+  param->fMultCutChi2cGamma = 2.;
+  param->fMultCutChi2cK0 = 2.;
+  param->fMultCutGammaSFromDecay = -10.;
+  param->fMultCutK0SFromDecay = -10.;
+  param->fMultCutMaxDCA = 1.;  
+  //
   return param;
 }
 //_____________________________________________________________________________
@@ -496,7 +538,28 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->GetESDV0Params()->SetLikelihood1Cut(0.35);
   param->GetESDV0Params()->SetCombinedCut(0.4);
 
-
+  // mult reco
+  param->fMultCutPxDrSPDin = 0.1;
+  param->fMultCutPxDrSPDout = 0.15;
+  param->fMultCutPxDz = 0.2;
+  param->fMultCutDCArz = 0.5;
+  param->fMultCutMinElectronProbTPC = 0.5;
+  param->fMultCutMinElectronProbESD = 0.1;
+  param->fMultCutMinP = 0.05;
+  param->fMultCutMinRGamma = 2.;
+  param->fMultCutMinRK0 = 1.;
+  param->fMultCutMinPointAngle = 0.98;
+  param->fMultCutMaxDCADauther = 0.5;
+  param->fMultCutMassGamma = 0.03;
+  param->fMultCutMassGammaNSigma = 5.;
+  param->fMultCutMassK0 = 0.03;
+  param->fMultCutMassK0NSigma = 5.;
+  param->fMultCutChi2cGamma = 2.;
+  param->fMultCutChi2cK0 = 2.;
+  param->fMultCutGammaSFromDecay = -10.;
+  param->fMultCutK0SFromDecay = -10.;
+  param->fMultCutMaxDCA = 1.;  
+  //
 
   return param;
 }
