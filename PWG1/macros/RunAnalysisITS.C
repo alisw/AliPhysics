@@ -72,6 +72,7 @@ void RunAnalysisITS(TString pluginmode,Int_t firstrun,Int_t lastrun,
     esdH = new AliESDInputHandler();
   }
   esdH->SetActiveBranches("ESDfriend");
+  esdH->SetReadFriends(1);
   if(readHLT) esdH->SetReadHLT();
   mgr->SetInputEventHandler(esdH);
   if(readMC) {
