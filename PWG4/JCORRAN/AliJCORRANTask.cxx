@@ -339,7 +339,7 @@ void AliJCORRANTask::ReadESDTracks(const AliESDEvent * esd)
 
     // Read the AliESDtrack and fill the list of AliJTrack containers
     Int_t nt = esd->GetNumberOfTracks();
-   // if(fDebug < 5) cout << "ESD::NumberOfTracks = " << nt << endl;
+   // if(fDebug > 5) cout << "ESD::NumberOfTracks = " << nt << endl;
     Float_t ptot, pt, eta;
     TVector3 p3(0,0,0);
     Short_t ntrk = 0;
