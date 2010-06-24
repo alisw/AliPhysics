@@ -188,14 +188,14 @@ void AliPWG4CosmicCandidates::UserCreateOutputObjects()
   Int_t fgkNDCARBins=80;
   Float_t fgkDCARMin = -0.2;
   Float_t fgkDCARMax = 0.2;
-  Double_t *binsDCAR=new Double_t[fgkNDCARBins+1];
-  for(Int_t i=0; i<=fgkNDCARBins; i++) binsDCAR[i]=(Double_t)fgkDCARMin + (fgkDCARMax-fgkDCARMin)/fgkNDCARBins*(Double_t)i ;
+  Float_t *binsDCAR=new Float_t[fgkNDCARBins+1];
+  for(Int_t i=0; i<=fgkNDCARBins; i++) binsDCAR[i]=(Float_t)fgkDCARMin + (fgkDCARMax-fgkDCARMin)/fgkNDCARBins*(Float_t)i ;
 
   Int_t fgkNDCAZBins=80;
   Float_t fgkDCAZMin = -2.;
   Float_t fgkDCAZMax = 2.;
-  Double_t *binsDCAZ=new Double_t[fgkNDCAZBins+1];
-  for(Int_t i=0; i<=fgkNDCAZBins; i++) binsDCAZ[i]=(Double_t)fgkDCAZMin + (fgkDCAZMax-fgkDCAZMin)/fgkNDCAZBins*(Double_t)i ;
+  Float_t *binsDCAZ=new Float_t[fgkNDCAZBins+1];
+  for(Int_t i=0; i<=fgkNDCAZBins; i++) binsDCAZ[i]=(Float_t)fgkDCAZMin + (fgkDCAZMax-fgkDCAZMin)/fgkNDCAZBins*(Float_t)i ;
 
   fPtSignedCosmicCandidates = new TH1F("fPtSignedCosmicCandidates","fPtSignedCosmicCandidates",2*(int)(fgkPtMax-fgkPtMin), -1.*fgkPtMax, fgkPtMax);
   fHistListCosmics->Add(fPtSignedCosmicCandidates);  
