@@ -397,28 +397,6 @@ Bool_t AliAnalyseUE::AnaTypeSelection(TVector3 *jetVect ){
 
 
 //-------------------------------------------------------------------
-TList* AliAnalyseUE::CreateHistograms(Int_t bins, Double_t min, Double_t max){
-  
-  //Initialize histograms from class AliHistogramsUE
-  fHistos = new AliHistogramsUE();
-  TList* list = new TList();
-  list = fHistos->CreateHistos(bins, min, max, fTrackEtaCut);
-
-
-  return list;
-}
-
-
-
-//-------------------------------------------------------------------
-void AliAnalyseUE::FillLeadingJet( Double_t  w){
-
- fHistos->FillHistogram("hEleadingPt",w);
-
-}
-
-
-//-------------------------------------------------------------------
 void AliAnalyseUE::FillRegions(Bool_t isNorm2Area,  TVector3 *jetVect){
   
   // Fill the different topological regions
@@ -500,27 +478,6 @@ void AliAnalyseUE::FillRegions(Bool_t isNorm2Area,  TVector3 *jetVect){
   fHistos->FillHistogram("hRegBackwardSumPtvsMult", maxPtJet1, fNTrackRegionBackward,fSumPtRegionBackward/normArea);
 }
 
-//-------------------------------------------------------------------
-void AliAnalyseUE::FillTrials(const char *namex, Double_t  w){
-
- fHistos->GetTrials()->Fill(namex,w);
-
-}
-
-//-------------------------------------------------------------------
-void AliAnalyseUE::FillVertex(Double_t  w){
-
- fHistos->FillHistogram("hVertexMult",w);
-
-}
-
-//-------------------------------------------------------------------
-void AliAnalyseUE::FillXsec(const char *namex, Double_t  w){
-
- fHistos->GetXsec()->Fill(namex,w);
-
-}
-
 
 //-------------------------------------------------------------------
 void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition){
@@ -590,17 +547,6 @@ void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition){
 
 }
 
-
-//-------------------------------------------------------------------
-TList* AliAnalyseUE::GetHistograms(){
-
-  TList *list = fHistos->GetListOfHistos();
-
-  return list;
-
-}
-
-
 //-------------------------------------------------------------------
 TVector3 AliAnalyseUE::GetOrderedClusters(TString aodBranch, Bool_t chargedJets, Double_t chJetPtMin){ 
 
@@ -667,7 +613,6 @@ TVector3 AliAnalyseUE::GetOrderedClusters(TString aodBranch, Bool_t chargedJets,
 
   // 2) ON-THE-FLY CDF ALGORITHM
   if (chargedJets){ 
-    // Printf(" ==== Run CDF algorithm on the fly  !");
   	arrayJets = FindChargedParticleJets(chJetPtMin);
         if( arrayJets ) {
         	nJets = arrayJets->GetEntriesFast();
@@ -712,8 +657,7 @@ TVector3 AliAnalyseUE::GetOrderedClusters(TString aodBranch, Bool_t chargedJets,
     		}
 
   	}
-  //fHistos->FillHistoNJets(nJets);
-  if (fHistos ) fHistos->FillHistogram("hNJets",nJets);
+  fHistos->FillHistogram("hNJets",nJets);
    
   return *jetVect;
 
@@ -738,78 +682,15 @@ void AliAnalyseUE::Initialize(AliAnalysisTaskUE& taskUE){
   fSimulateChJetPt = taskUE.GetSimulateChJetPt();
   fTrackEtaCut = taskUE.GetTrackEtaCut(); 
   fTrackPtCut = taskUE.GetTrackPtCut();
+  fHistos = taskUE.fHistosUE;
   fUseChargeHadrons = taskUE.GetUseChargeHadrons();
   fUseChPartJet = taskUE.GetUseChPartJet();
   fUsePositiveCharge = taskUE.GetUseNegativeChargeType();
   fUseSingleCharge = taskUE.GetUseSingleCharge();
   
-  //Write settings to output list
-  fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
-  fSettingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
-  fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
-  fSettingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
-  fSettingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
-  fSettingsTree->Branch("fJet2RatioPtCut", &fJet2RatioPtCut, "Jet2Ratio/D");
-  fSettingsTree->Branch("fJet3PtCut", &fJet3PtCut, "Jet3PtCut/D");
-  fSettingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
-  fSettingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
-  fSettingsTree->Branch("fAnaType", &fAnaType, "Ana/I");        
-  fSettingsTree->Branch("fRegionType", &fRegionType,"Reg/I");
-  fSettingsTree->Branch("fOrdering", &fOrdering,"OrderMeth/I");
-  fSettingsTree->Branch("fUseChPartJet", &fUseChPartJet,"UseChPart/O");
-  fSettingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
-  fSettingsTree->Branch("fUseSingleCharge", &fUseSingleCharge,"UseSingleCh/O");
-  fSettingsTree->Branch("fUsePositiveCharge", &fUsePositiveCharge,"UsePositiveCh/O");
-  fSettingsTree->Fill();
-  (fHistos->GetListOfHistos())->Add(fSettingsTree);
- 
 }
 
 //-------------------------------------------------------------------
-void AliAnalyseUE::Initialize(Int_t anaType,AliAODEvent* aod,Double_t coneRadius, Int_t debug, Int_t filterBit, Double_t jet1EtaCut, Double_t jet2DeltaPhiCut, Double_t jet2RatioPtCut, Double_t jet3PtCut, Int_t ordering, Int_t regionType,Bool_t simulateChJetPt, Double_t trackEtaCut, Double_t trackPtCut, Bool_t useChargeHadrons, Bool_t useChPartJet, Bool_t useNegativeChargeType, Bool_t useSingleCharge ){
-   
-  //Get principal settings from generic analysis-task
-  fAnaType = anaType;         
-  fkAOD = aod;           
-  fConeRadius = coneRadius;
-  fDebug = debug;
-  fFilterBit = filterBit;
-  fJet1EtaCut = jet1EtaCut;
-  fJet2DeltaPhiCut = jet2DeltaPhiCut;
-  fJet2RatioPtCut = jet2RatioPtCut;
-  fJet3PtCut = jet3PtCut;
-  fOrdering = ordering ;
-  fRegionType = regionType;
-  fSimulateChJetPt = simulateChJetPt;
-  fTrackEtaCut = trackEtaCut; 
-  fTrackPtCut = trackPtCut;
-  fUseChargeHadrons = useChargeHadrons;
-  fUseChPartJet = useChPartJet;
-  fUsePositiveCharge = useNegativeChargeType;
-  fUseSingleCharge = useSingleCharge;
-  
-  //Write settings to output list
-  fSettingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
-  fSettingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
-  fSettingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
-  fSettingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
-  fSettingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
-  fSettingsTree->Branch("fJet2RatioPtCut", &fJet2RatioPtCut, "Jet2Ratio/D");
-  fSettingsTree->Branch("fJet3PtCut", &fJet3PtCut, "Jet3PtCut/D");
-  fSettingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
-  fSettingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
-  fSettingsTree->Branch("fAnaType", &fAnaType, "Ana/I");        
-  fSettingsTree->Branch("fRegionType", &fRegionType,"Reg/I");
-  fSettingsTree->Branch("fOrdering", &fOrdering,"OrderMeth/I");
-  fSettingsTree->Branch("fUseChPartJet", &fUseChPartJet,"UseChPart/O");
-  fSettingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
-  fSettingsTree->Branch("fUseSingleCharge", &fUseSingleCharge,"UseSingleCh/O");
-  fSettingsTree->Branch("fUsePositiveCharge", &fUsePositiveCharge,"UsePositiveCh/O");
-  fSettingsTree->Fill();
-  (fHistos->GetListOfHistos())->Add(fSettingsTree);
- 
-}
-
 Bool_t  AliAnalyseUE::VertexSelection(AliAODEvent *aod, Int_t tracks, Double_t zed ){
 
   //Require 1 vertex (no TPC stand-alone) with a minimum number of tracks and z-coordinate in a limited range
@@ -829,6 +710,21 @@ Bool_t  AliAnalyseUE::VertexSelection(AliAODEvent *aod, Int_t tracks, Double_t z
   		if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
   		return kFALSE;
   		}
+
+  return kTRUE;
+}
+
+//-------------------------------------------------------------------
+Bool_t  AliAnalyseUE::VertexSelectionOld(AliAODEvent *aod ){
+
+  AliKFVertex primVtx(*(aod->GetPrimaryVertex()));
+  Int_t nTracksPrim=primVtx.GetNContributors();
+    if (fDebug > 1) AliInfo(Form(" Primary-vertex Selection: %d",nTracksPrim));
+    if(!nTracksPrim){
+    	if (fDebug > 1) AliInfo(" Primary-vertex Selection: event REJECTED ...");
+	return kFALSE;
+	}
+    if (fDebug > 1) AliInfo(" Primary-vertex Selection: event ACCEPTED ...");
 
   return kTRUE;
 }
@@ -1193,13 +1089,3 @@ const Bool_t AliAnalyseUE::TrackSelected(AliAODTrack* part){
 }
 
 
-//____________________________________________________________________
-void AliAnalyseUE::WriteSettings(){
-
-  // Print analysis settings
-  if (fDebug>5){
-	AliInfo("All Analysis Settings in Saved Tree");
-	fSettingsTree->Scan();
-  	}
-
-}

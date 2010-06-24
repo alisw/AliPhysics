@@ -39,6 +39,7 @@
 #include <TVector3.h>
 
 #include "AliHistogramsUE.h"
+#include "AliAnalysisTaskUE.h"
 #include "AliAnalyseUE.h"
 #include "AliLog.h"
 
@@ -248,7 +249,7 @@ return arr;
 }
 
 //____________________________________________________________________
-TList*  AliHistogramsUE::CreateHistos(Int_t bins, Double_t min, Double_t max, Double_t etacut)
+void  AliHistogramsUE::CreateHistograms(TList *list,Int_t bins, Double_t min, Double_t max, Double_t etacut)
 {
 
   // Create all histograms necessary for UE analysis 
@@ -257,226 +258,225 @@ TList*  AliHistogramsUE::CreateHistos(Int_t bins, Double_t min, Double_t max, Do
   fMaxJetPtInHist = max;
   fTrackEtaCut= etacut;
 
-  fListOfHistos = new TList();
-
   //Number of reconstructed clusters  
   fhNJets = new TH1F("hNJets", "Number of clusters",  20, 0, 20);
   fhNJets->SetXTitle("Number of reconstructed clusters");
   fhNJets->SetYTitle("#");
   fhNJets->Sumw2();
-  fListOfHistos->Add( fhNJets );                 // At(0) 
+  list->Add( fhNJets );                 // At(0) 
   
   //pT distribution of leading clusters
   fhEleadingPt  = new TH1F("hEleadingPt",   "Leading cluster p_{T}",  bins, min,   max);
   fhEleadingPt->SetXTitle("p_{T} of  cluster (GeV/c)");
   fhEleadingPt->SetYTitle("1/N_{ev} dN/dp_{T} (|#eta|<0.5)");
   fhEleadingPt->Sumw2();
-  fListOfHistos->Add( fhEleadingPt );            // At(1)
+  list->Add( fhEleadingPt );            // At(1)
   
   //Track pT distribution in MIN zone
   fhMinRegPtDist = new TH1F("hMinRegPtDist",   "p_{T} distribution in MIN zone",  50,0.,20.);
   fhMinRegPtDist->SetXTitle("Track p_{T} (GeV/c)");
   fhMinRegPtDist->SetYTitle("dN/dp_{T}");
   fhMinRegPtDist->Sumw2();
-  fListOfHistos->Add( fhMinRegPtDist );          // At(2)
+  list->Add( fhMinRegPtDist );          // At(2)
   
   //Multiplicity in MIN zone
   fhRegionMultMin = new TH1F("hRegionMultMin",      "N_{ch}^{90, min}",  21, -0.5,   20.5);
   fhRegionMultMin->SetXTitle("N_{ch tracks}");
   fhRegionMultMin->Sumw2();
-  fListOfHistos->Add( fhRegionMultMin );         // At(3)            
+  list->Add( fhRegionMultMin );         // At(3)            
   
   //Average pT in MIN region
   fhMinRegAvePt = new TH1F("hMinRegAvePt", "#LTp_{T}#GT",  50, 0.,   20.);
   fhMinRegAvePt->SetXTitle("p_{T} (GeV/c)");
   fhMinRegAvePt->Sumw2();
-  fListOfHistos->Add( fhMinRegAvePt );           // At(4)
+  list->Add( fhMinRegAvePt );           // At(4)
   
   //Sum pT in MIN region
   fhMinRegSumPt = new TH1F("hMinRegSumPt", "#Sigma p_{T} ",  50, 0.,   20.);
   fhMinRegSumPt->SetYTitle("Ed^{3}N_{tracks}/dp^{3} (c^{3}/GeV^{2})");  
   fhMinRegSumPt->SetXTitle("#Sigma p_{T} (GeV/c)");
   fhMinRegSumPt->Sumw2();
-  fListOfHistos->Add( fhMinRegSumPt );           // At(5)
+  list->Add( fhMinRegSumPt );           // At(5)
   
   //Track with maximum pT in MIN region
   fhMinRegMaxPtPart = new TH1F("hMinRegMaxPtPart", "max(p_{T})|_{event} ",  50, 0.,   20.);
   fhMinRegMaxPtPart->SetYTitle("Ed^{3}N_{tracks}/dp^{3} (c^{3}/GeV^{2})");  
   fhMinRegMaxPtPart->SetXTitle("p_{T} (GeV/c)");
   fhMinRegMaxPtPart->Sumw2();
-  fListOfHistos->Add( fhMinRegMaxPtPart );       // At(6)
+  list->Add( fhMinRegMaxPtPart );       // At(6)
   
   //Sum pT vs. multiplicity in MIN region
   fhMinRegSumPtvsMult = new TH1F("hMinRegSumPtvsMult", "#Sigma p_{T} vs. Multiplicity ",  21, -0.5,   20.5);
   fhMinRegSumPtvsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
   fhMinRegSumPtvsMult->SetXTitle("N_{charge}");
   fhMinRegSumPtvsMult->Sumw2();
-  fListOfHistos->Add( fhMinRegSumPtvsMult );     // At(7);
+  list->Add( fhMinRegSumPtvsMult );     // At(7);
   
   //Phi correlation track-cluster vs. leading cluster pT 
   fhdNdEtaPhiDist  = new TH2F("hdNdEtaPhiDist", Form("Charge particle density |#eta|<%3.1f vs #Delta#phi", fTrackEtaCut),62, 0.,   2.*TMath::Pi(), bins, min, max);
   fhdNdEtaPhiDist->SetXTitle("#Delta#phi");
   fhdNdEtaPhiDist->SetYTitle("Leading cluster p_{T}");
   fhdNdEtaPhiDist->Sumw2();
-  fListOfHistos->Add( fhdNdEtaPhiDist );        // At(8)
+  list->Add( fhdNdEtaPhiDist );        // At(8)
   
   //Can be used to get track pT distribution for different cluster pT bins (full region)
   fhFullRegPartPtDistVsEt = new TH2F("hFullRegPartPtDistVsEt", Form( "dN/dp_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut),100,0.,50., bins, min, max);
   fhFullRegPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
   fhFullRegPartPtDistVsEt->SetXTitle("p_{T}");
   fhFullRegPartPtDistVsEt->Sumw2();
-  fListOfHistos->Add( fhFullRegPartPtDistVsEt );  // At(9) 
+  list->Add( fhFullRegPartPtDistVsEt );  // At(9) 
   
   //Can be used to get part pT distribution for different cluster pT bins (transverse region)
   fhTransRegPartPtDistVsEt = new TH2F("hTransRegPartPtDistVsEt", Form( "dN/dp_{T} in tranvese regions |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut),100,0.,50., bins, min,   max);
   fhTransRegPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
   fhTransRegPartPtDistVsEt->SetXTitle("p_{T}");
   fhTransRegPartPtDistVsEt->Sumw2();
-  fListOfHistos->Add( fhTransRegPartPtDistVsEt );  // At(10)
+  list->Add( fhTransRegPartPtDistVsEt );  // At(10)
   
   //Sum pT in MAX region vs. leading-cluster pT
   fhRegionSumPtMaxVsEt = new TH1F("hRegionSumPtMaxVsEt",  "P_{T}^{90, max} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionSumPtMaxVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionSumPtMaxVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionSumPtMaxVsEt );      // At(11)
+  list->Add( fhRegionSumPtMaxVsEt );      // At(11)
   
 
   //Sum pT in MIN region vs. leading-cluster pT
   fhRegionSumPtMinVsEt = new TH1F("hRegionSumPtMinVsEt",   "P_{T}^{90, min} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionSumPtMinVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionSumPtMinVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionSumPtMinVsEt );      // At(12)
+  list->Add( fhRegionSumPtMinVsEt );      // At(12)
  
   //Multiplicity in MAX region
   fhRegionMultMax = new TH1I("hRegionMultMax",      "N_{ch}^{90, max}",  21, -0.5,   20.5);
   fhRegionMultMax->SetXTitle("N_{ch tracks}");
   fhRegionMultMax->Sumw2();
-  fListOfHistos->Add( fhRegionMultMax );           // At(13)
+  list->Add( fhRegionMultMax );           // At(13)
   
   //Multiplicity in MAX region vs. leading-cluster pT
   fhRegionMultMaxVsEt = new TH1F("hRegionMultMaxVsEt",  "N_{ch}^{90, max} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionMultMaxVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionMultMaxVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionMultMaxVsEt );       // At(14)
+  list->Add( fhRegionMultMaxVsEt );       // At(14)
   
   //Multiplicity in MIN region vs. leading-cluster pT
   fhRegionMultMinVsEt = new TH1F("hRegionMultMinVsEt",  "N_{ch}^{90, min} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionMultMinVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionMultMinVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionMultMinVsEt );      // At(15)
+  list->Add( fhRegionMultMinVsEt );      // At(15)
  
   //Average sum pT in TRANSVERSE(MIN+MAX) region vs. leading-cluster pT 
   fhRegionAveSumPtVsEt = new TH1F("hRegionAveSumPtVsEt", "(P_{T}^{90, max} + P_{T}^{90, min})/2 vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionAveSumPtVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionAveSumPtVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionAveSumPtVsEt );     // At(16)
+  list->Add( fhRegionAveSumPtVsEt );     // At(16)
   
   //Difference sum pT (MAX-MIN) vs.  leading-cluster pT
   fhRegionDiffSumPtVsEt= new TH1F("hRegionDiffSumPtVsEt", "(P_{T}^{90, max} - P_{T}^{90, min}) vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionDiffSumPtVsEt->SetXTitle("P_{T} (GeV/c)");
   fhRegionDiffSumPtVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionDiffSumPtVsEt );    // At(17)
+  list->Add( fhRegionDiffSumPtVsEt );    // At(17)
   
   //Average track pT in MAX region vs. leading-cluster pT
   fhRegionAvePartPtMaxVsEt = new TH1F("hRegionAvePartPtMaxVsEt", "#LTp_{T}#GT^{90, max} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionAvePartPtMaxVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionAvePartPtMaxVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionAvePartPtMaxVsEt );  // At(18)
+  list->Add( fhRegionAvePartPtMaxVsEt );  // At(18)
   
   //Average track pT in MIN region vs. leading-cluster pT
   fhRegionAvePartPtMinVsEt = new TH1F("hRegionAvePartPtMinVsEt", "#LTp_{T}#GT^{90, min} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionAvePartPtMinVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionAvePartPtMinVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionAvePartPtMinVsEt );   // At(19)
+  list->Add( fhRegionAvePartPtMinVsEt );   // At(19)
   
   //Maximum track pT in MAX region vs. leading-cluster pT
   fhRegionMaxPartPtMaxVsEt = new TH1F("hRegionMaxPartPtMaxVsEt", "max(p_{T})^{90} vs Leading cluster p_{T}",  bins, min,   max);
   fhRegionMaxPartPtMaxVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegionMaxPartPtMaxVsEt->Sumw2();
-  fListOfHistos->Add( fhRegionMaxPartPtMaxVsEt );    // At(20)
+  list->Add( fhRegionMaxPartPtMaxVsEt );    // At(20)
   
   //Multiplicity in FORWARD region
   fhRegForwardMult = new TH2F("hRegForwardMult", "N_{ch}^{forward}", bins, min, max, 21, -0.5,   20.5);
   fhRegForwardMult->SetXTitle("N_{ch tracks}");
   fhRegForwardMult->Sumw2();
-  fListOfHistos->Add( fhRegForwardMult );           // At(25)
+  list->Add( fhRegForwardMult );           // At(25)
   
   //Sum pT in FORWARD region vs. multiplicity
   fhRegForwardSumPtvsMult = new TH2F("hRegForwardSumPtvsMult", "Forward #Sigma p_{T} vs. Multiplicity ", bins, min, max, 21, -0.5,   20.5);
   fhRegForwardSumPtvsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
   fhRegForwardSumPtvsMult->SetXTitle("N_{charge}");
   fhRegForwardSumPtvsMult->Sumw2();
-  fListOfHistos->Add( fhRegForwardSumPtvsMult );     // At(26);
+  list->Add( fhRegForwardSumPtvsMult );     // At(26);
   
   //Multiplicity in BACKWARD region
   fhRegBackwardMult = new TH2F("hRegBackwardMult", "N_{ch}^{backward}", bins, min, max, 21, -0.5,   20.5);
   fhRegBackwardMult->SetXTitle("N_{ch tracks}");
   fhRegBackwardMult->Sumw2();
-  fListOfHistos->Add( fhRegBackwardMult );           // At(27)
+  list->Add( fhRegBackwardMult );           // At(27)
  
   //Sum pT in BACKWARD region vs. multiplicity
   fhRegBackwardSumPtvsMult = new TH2F("hRegBackwardSumPtvsMult", "Backward #Sigma p_{T} vs. Multiplicity ", bins, min, max, 21, -0.5,   20.5);
   fhRegBackwardSumPtvsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
   fhRegBackwardSumPtvsMult->SetXTitle("N_{charge}");
   fhRegBackwardSumPtvsMult->Sumw2();
-  fListOfHistos->Add( fhRegBackwardSumPtvsMult );     // At(28);
+  list->Add( fhRegBackwardSumPtvsMult );     // At(28);
   
   //Track pT distribution in FORWARD region vs. leading-cluster pT 
   fhRegForwardPartPtDistVsEt = new TH2F("hRegForwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut), 100,0.,50., bins, min, max);
   fhRegForwardPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
   fhRegForwardPartPtDistVsEt->SetXTitle("p_{T} (GeV/c)");
   fhRegForwardPartPtDistVsEt->Sumw2();
-  fListOfHistos->Add( fhRegForwardPartPtDistVsEt );  // At(29) 
+  list->Add( fhRegForwardPartPtDistVsEt );  // At(29) 
   
   //Track pT distribution in BACKWARD region vs. leading-cluster pT 
   fhRegBackwardPartPtDistVsEt = new TH2F("hRegBackwardPartPtDistVsEt", Form( "dN/dP_{T} |#eta|<%3.1f vs Leading cluster p_{T}", fTrackEtaCut), 100,0.,50., bins, min, max);
   fhRegBackwardPartPtDistVsEt->SetYTitle("Leading cluster p_{T}");
   fhRegBackwardPartPtDistVsEt->SetXTitle("p_{T}");
   fhRegBackwardPartPtDistVsEt->Sumw2();
-  fListOfHistos->Add( fhRegBackwardPartPtDistVsEt );  // At(30) 
+  list->Add( fhRegBackwardPartPtDistVsEt );  // At(30) 
   
   //Multiplicity in TRANSVERSE (MIN+MAX) region
   fhRegTransMult  = new TH2F("hRegTransMult", "N_{ch}^{transv}", bins, min, max, 21, -0.5,   20.5);
   fhRegTransMult->SetXTitle("N_{ch tracks}");
   fhRegTransMult->Sumw2();
-  fListOfHistos->Add( fhRegTransMult );           // At(31)
+  list->Add( fhRegTransMult );           // At(31)
   
   //Sum pT in TRANSVERSE (MIN+MAX) region vs. multiplicity
   fhRegTransSumPtVsMult = new TH2F("hRegTransSumPtVsMult", "Transverse #Sigma p_{T} vs. Multiplicity ",bins, min, max, 21, -0.5,   20.5);
   fhRegTransSumPtVsMult->SetYTitle("#Sigma p_{T} (GeV/c)");  
   fhRegTransSumPtVsMult->SetXTitle("N_{charge}");
   fhRegTransSumPtVsMult->Sumw2();
-  fListOfHistos->Add( fhRegTransSumPtVsMult );     // At(32);
+  list->Add( fhRegTransSumPtVsMult );     // At(32);
   
   //Sum pT in MIN region per cluster pT bin
   fhMinRegSumPtJetPtBin = new TH2F("hMinRegSumPtJetPtBin", "Transverse Min Reg #Sigma p_{T} per cluster pT bin",bins, min, max, 50, 0.,   20.);
   fhMinRegSumPtJetPtBin->SetXTitle("Leading cluster p_{T}");
   fhMinRegSumPtJetPtBin->Sumw2();
-  fListOfHistos->Add( fhMinRegSumPtJetPtBin );           // At(33)
+  list->Add( fhMinRegSumPtJetPtBin );           // At(33)
   
   //Sum pT in MAX region per cluster pT bin
   fhMaxRegSumPtJetPtBin = new TH2F("hMaxRegSumPtJetPtBin",      "Transverse Max Reg #Sigma p_{T} per cluster pT bin", bins, min, max, 50, 0.,   20.);
   fhMaxRegSumPtJetPtBin->SetXTitle("Leading cluster p_{T}");
   fhMaxRegSumPtJetPtBin->Sumw2();
-  fListOfHistos->Add( fhMaxRegSumPtJetPtBin );           // At(34)
+  list->Add( fhMaxRegSumPtJetPtBin );           // At(34)
   
   //Multiplicity in main vertex
   fhVertexMult = new TH1F("hVertexMult",      "Multiplicity in Main Vertex", 81, -0.5 , 80.5);
   fhVertexMult->SetXTitle("Main Vertex Multiplicity");
   fhVertexMult->Sumw2();
-  fListOfHistos->Add( fhVertexMult ); //At(35)
+  list->Add( fhVertexMult ); //At(35)
   
   fh1Xsec = new TProfile("h1Xsec","xsec from pyxsec.root",1,0,1); 
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
   fh1Xsec->Sumw2();
-  fListOfHistos->Add( fh1Xsec );            //At(36)
+  list->Add( fh1Xsec );            //At(36)
   
   fh1Trials = new TH1F("h1Trials","trials from pyxsec.root",1,0,1);
   fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fh1Trials->Sumw2();
-  fListOfHistos->Add( fh1Trials ); //At(37)
-
-  return fListOfHistos;
+  list->Add( fh1Trials ); //At(37)
+  
+  
+  fListOfHistos=list; 
 }
 
 
@@ -829,7 +829,7 @@ void AliHistogramsUE::SetStyle(){
 
 
 //____________________________________________________________________
-TList* AliHistogramsUE::GetListOfHistos(){
+TList* AliHistogramsUE::GetHistograms(){
 
   // Return list of relevant histograms 
   return fListOfHistos;

@@ -25,11 +25,13 @@
 #include <TFile.h>
 #include <TList.h>
 #include <TMath.h>
+#include <TProfile.h>
 #include <TTree.h>
 #include <TVector3.h>
 #include <TH1F.h>
 
 #include "AliAnalyseUE.h"
+#include "AliHistogramsUE.h"
 #include "AliAnalysisTaskUE.h"
 #include "AliHistogramsUE.h"
 
@@ -42,6 +44,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 #include "AliInputEventHandler.h"
+
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -62,9 +65,9 @@
 //
 //    Arian.Abrahantes.Quintana@cern.ch 
 //    Ernesto.Lopez.Torres@cern.ch
+//    vallero@physi.uni-heidelberg.de
 // 
 ////////////////////////////////////////////////////////////////////////
-
 
 ClassImp( AliAnalysisTaskUE)
 
@@ -74,11 +77,13 @@ AliAnalysisTaskUE* AliAnalysisTaskUE::fgTaskUE=NULL;
 //____________________________________________________________________
 AliAnalysisTaskUE:: AliAnalysisTaskUE(const char* name):
 AliAnalysisTask(name,""),
+fHistosUE(0x0),
 fAnaUE(0x0),
 fAOD(0x0),            
 fAODBranch("jets"),
 fDebug(0),
-fListOfHistos(0x0),  
+fListOfHistos(0x0), 
+//Configuration
 fBinsPtInHist(30),     
 fIsNorm2Area(kTRUE),
 fMaxJetPtInHist(300.), 
@@ -108,7 +113,44 @@ fJet2RatioPtCut(0.8),
 fJet3PtCut(15.),
 fTrackEtaCut(0.9),
 fTrackPtCut(0.),
+//For MC
 fAvgTrials(1)
+/*//Histograms
+fhNJets(0x0),
+fhEleadingPt(0x0),
+fhMinRegPtDist(0x0),
+fhRegionMultMin(0x0),
+fhMinRegAvePt(0x0),
+fhMinRegSumPt(0x0),
+fhMinRegMaxPtPart(0x0),
+fhMinRegSumPtvsMult(0x0),
+fhdNdEtaPhiDist(0x0),
+fhFullRegPartPtDistVsEt(0x0),
+fhTransRegPartPtDistVsEt(0x0),
+fhRegionSumPtMaxVsEt(0x0),
+fhRegionMultMax(0x0),
+fhRegionMultMaxVsEt(0x0),
+fhRegionSumPtMinVsEt(0x0),
+fhRegionMultMinVsEt(0x0),
+fhRegionAveSumPtVsEt(0x0),
+fhRegionDiffSumPtVsEt(0x0),
+fhRegionAvePartPtMaxVsEt(0x0),
+fhRegionAvePartPtMinVsEt(0x0),
+fhRegionMaxPartPtMaxVsEt(0x0),    
+fhRegForwardMult(0x0),
+fhRegForwardSumPtvsMult(0x0),
+fhRegBackwardMult(0x0),
+fhRegBackwardSumPtvsMult(0x0),
+fhRegForwardPartPtDistVsEt(0x0),
+fhRegBackwardPartPtDistVsEt(0x0),
+fhRegTransMult(0x0),
+fhRegTransSumPtVsMult(0x0),
+fhMinRegSumPtJetPtBin(0x0),
+fhMaxRegSumPtJetPtBin(0x0),
+fhVertexMult(0x0),
+fh1Xsec(0x0), 	
+fh1Trials(0x0)
+*/
 {
   // Default constructor
   // Define input and output slots here
@@ -122,11 +164,13 @@ fAvgTrials(1)
 //____________________________________________________________________
 AliAnalysisTaskUE:: AliAnalysisTaskUE(const AliAnalysisTaskUE & original):
 AliAnalysisTask(),
+fHistosUE(original.fHistosUE),
 fAnaUE(original.fAnaUE),
 fAOD(original.fAOD),            
 fAODBranch(original.fAODBranch),
 fDebug(original.fDebug),
 fListOfHistos(original.fListOfHistos),  
+//Configuration
 fBinsPtInHist(original.fBinsPtInHist),     
 fIsNorm2Area(original.fIsNorm2Area),
 fMaxJetPtInHist(original.fMaxJetPtInHist), 
@@ -156,7 +200,44 @@ fJet2RatioPtCut(original.fJet2RatioPtCut),
 fJet3PtCut(original.fJet3PtCut),
 fTrackEtaCut(original.fTrackEtaCut),
 fTrackPtCut(original.fTrackPtCut),
+//For MC
 fAvgTrials(original.fAvgTrials)
+/*//Histograms
+fhNJets(original.fhNJets),
+fhEleadingPt(original.fhEleadingPt),
+fhMinRegPtDist(original.fhMinRegPtDist),
+fhRegionMultMin(original.fhRegionMultMin),
+fhMinRegAvePt(original.fhMinRegAvePt),
+fhMinRegSumPt(original.fhMinRegSumPt),
+fhMinRegMaxPtPart(original.fhMinRegMaxPtPart),
+fhMinRegSumPtvsMult(original.fhMinRegSumPtvsMult),
+fhdNdEtaPhiDist(original.fhdNdEtaPhiDist),
+fhFullRegPartPtDistVsEt(original.fhFullRegPartPtDistVsEt),
+fhTransRegPartPtDistVsEt(original.fhTransRegPartPtDistVsEt),
+fhRegionSumPtMaxVsEt(original.fhRegionSumPtMaxVsEt),
+fhRegionMultMax(original.fhRegionMultMax),
+fhRegionMultMaxVsEt(original.fhRegionMultMaxVsEt),
+fhRegionSumPtMinVsEt(original.fhRegionSumPtMinVsEt),
+fhRegionMultMinVsEt(original.fhRegionMultMinVsEt),
+fhRegionAveSumPtVsEt(original.fhRegionAveSumPtVsEt),
+fhRegionDiffSumPtVsEt(original.fhRegionDiffSumPtVsEt),
+fhRegionAvePartPtMaxVsEt(original.fhRegionAvePartPtMaxVsEt),
+fhRegionAvePartPtMinVsEt(original.fhRegionAvePartPtMinVsEt),
+fhRegionMaxPartPtMaxVsEt(original.fhRegionMaxPartPtMaxVsEt),
+fhRegForwardMult(original.fhRegForwardMult),
+fhRegForwardSumPtvsMult(original.fhRegForwardSumPtvsMult),
+fhRegBackwardMult(original.fhRegBackwardMult),
+fhRegBackwardSumPtvsMult(original.fhRegBackwardSumPtvsMult),
+fhRegForwardPartPtDistVsEt(original.fhRegForwardPartPtDistVsEt),
+fhRegBackwardPartPtDistVsEt(original.fhRegBackwardPartPtDistVsEt),
+fhRegTransMult(original.fhRegTransMult),
+fhRegTransSumPtVsMult(original.fhRegTransSumPtVsMult),
+fhMinRegSumPtJetPtBin(original.fhMinRegSumPtJetPtBin),
+fhMaxRegSumPtJetPtBin(original.fhMaxRegSumPtJetPtBin),
+fhVertexMult(original.fhVertexMult),
+fh1Xsec(original.fh1Xsec), 	
+fh1Trials(original.fh1Trials)
+*/
 {
   // Copy constructor
 }
@@ -189,7 +270,7 @@ Bool_t AliAnalysisTaskUE::Notify()
   	
 	AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,trials); 
         
-	fAnaUE->FillXsec("<#sigma>",xsection);
+        fHistosUE->GetXsec()->Fill("<#sigma>",xsection);
 
   	// construct average trials
   	Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
@@ -221,7 +302,7 @@ void AliAnalysisTaskUE::ConnectInputData(Option_t* /*option*/)
   	if(!fJetsOnFly){
 		if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODInputHandler");
 		}else{
-		AliInfo(" ==== Tracks from AliAODInputHandler / Jets on-the-fly");
+		if (fDebug > 1) AliInfo(" ==== Tracks from AliAODInputHandler / Jets on-the-fly");
 		}
   	} else {  //output AOD
   	handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
@@ -239,6 +320,7 @@ void AliAnalysisTaskUE::ConnectInputData(Option_t* /*option*/)
   	}	
 
    fAnaUE->Initialize( *this );
+   
 }
 
 //____________________________________________________________________
@@ -250,13 +332,22 @@ void  AliAnalysisTaskUE::CreateOutputObjects()
    
   //Initialize AliAnalysisUE, a class implementing the main analysis algorithms
   fAnaUE = new AliAnalyseUE();
+  fHistosUE = new AliHistogramsUE();
+ 
+  if (fListOfHistos != NULL){
+	delete fListOfHistos;
+        fListOfHistos = NULL;
+  	}
+  if (!fListOfHistos){
+  	fListOfHistos = new TList();
+  	fListOfHistos->SetOwner(kTRUE); 
+  	}
   
   //Initialize output histograms
-  fAnaUE->CreateHistograms(fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist);
-  fListOfHistos = (TList*)fAnaUE->GetHistograms()->Clone();
-  fListOfHistos->SetOwner(kTRUE); 
-  PostData(0,fListOfHistos);
+  fHistosUE->CreateHistograms(fListOfHistos,fBinsPtInHist, fMinJetPtInHist, fMaxJetPtInHist, fTrackEtaCut);
+  AddSettingsTree();
 
+  PostData(0,fListOfHistos);
 }
 
 //____________________________________________________________________
@@ -275,7 +366,8 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
         }                                
   // Event selection (vertex) *****************************************
    
-  if(!fAnaUE->VertexSelection(fAOD,fnTracksVertex,fZVertex)) return;
+  //if(!fAnaUE->VertexSelection(fAOD,fnTracksVertex,fZVertex)) return;
+  if(!fAnaUE->VertexSelectionOld(fAOD)) return; // temporary to compare with old task and to have same cuts for MC !!!
   
   // Execute analysis for current event ******************************
   
@@ -293,13 +385,37 @@ void  AliAnalysisTaskUE::Exec(Option_t */*option*/)
   			}
   		}
   	}
-  fAnaUE->FillTrials("#sum{ntrials}",fAvgTrials);
+  fHistosUE->GetTrials()->Fill("#sum{ntrials}",fAvgTrials);
   
   //analyse the event
   AnalyseUE();
-  fListOfHistos = (TList*)fAnaUE->GetHistograms()->Clone();
-  PostData(0,fListOfHistos);
+ 
+ PostData(0,fListOfHistos);
 }
+
+//____________________________________________________________________
+void  AliAnalysisTaskUE::AddSettingsTree()
+{
+  //Write settings to output list
+  TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
+  settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
+  settingsTree->Branch("fConeRadius", &fConeRadius,"Rad/D");
+  settingsTree->Branch("fJet1EtaCut", &fJet1EtaCut, "LeadJetEtaCut/D");
+  settingsTree->Branch("fJet2DeltaPhiCut", &fJet2DeltaPhiCut, "DeltaPhi/D");
+  settingsTree->Branch("fJet2RatioPtCut", &fJet2RatioPtCut, "Jet2Ratio/D");
+  settingsTree->Branch("fJet3PtCut", &fJet3PtCut, "Jet3PtCut/D");
+  settingsTree->Branch("fTrackPtCut", &fTrackPtCut, "TrackPtCut/D");
+  settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
+  settingsTree->Branch("fAnaType", &fAnaType, "Ana/I");        
+  settingsTree->Branch("fRegionType", &fRegionType,"Reg/I");
+  settingsTree->Branch("fOrdering", &fOrdering,"OrderMeth/I");
+  settingsTree->Branch("fUseChPartJet", &fUseChPartJet,"UseChPart/O");
+  settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
+  settingsTree->Branch("fUseSingleCharge", &fUseSingleCharge,"UseSingleCh/O");
+  settingsTree->Branch("fUsePositiveCharge", &fUsePositiveCharge,"UsePositiveCh/O");
+  settingsTree->Fill();
+  fListOfHistos->Add(settingsTree);
+}  
 
 //____________________________________________________________________
 void  AliAnalysisTaskUE::AnalyseUE()
@@ -308,7 +424,7 @@ void  AliAnalysisTaskUE::AnalyseUE()
   
    // Get jets and order by pT
    TVector3 jetVect[3];
-   *jetVect = fAnaUE->GetOrderedClusters(fAODBranch, fUseChPartJet, fChJetPtMin);
+   *jetVect = fAnaUE->GetOrderedClusters(fAODBranch, fUseChPartJet, fChJetPtMin );
   
    if( jetVect[0].Pt() < 0. ) {
    	if( fDebug > 1 ) AliInfo("\n   Skipping Event, not jet found...");
@@ -324,10 +440,10 @@ void  AliAnalysisTaskUE::AnalyseUE()
   if (!fUseMCParticleBranch){
   	// Primary vertex distribution
     	AliAODVertex* vertex = (AliAODVertex*)fAOD->GetPrimaryVertex();
-	fAnaUE->FillVertex(vertex->GetNContributors());
+ 	fHistosUE->FillHistogram("hVertexMult",vertex->GetNContributors());
 	
 	// Fill leading "jet" histogram
-  	fAnaUE->FillLeadingJet(jetVect[0].Pt());
+ 	fHistosUE->FillHistogram("hEleadingPt",jetVect[0].Pt());
 
   	fAnaUE->FindMaxMinRegions( jetVect,  fConePosition );
 
@@ -376,6 +492,7 @@ AliAnalysisTaskUE* AliAnalysisTaskUE::Instance()
   	}
 }
 
+
 //____________________________________________________________________
 void  AliAnalysisTaskUE::Terminate(Option_t */*option*/)
 {
@@ -406,6 +523,12 @@ void  AliAnalysisTaskUE::WriteSettings()
   //Print analysis settings on screen
   if (fDebug > 5){
     AliInfo(" All Analysis Settings in Saved Tree");
-    fAnaUE->WriteSettings();
-  }
+    fListOfHistos = dynamic_cast<TList*> (GetOutputData(0));
+    if (!fListOfHistos){
+	AliError("Histogram List is not available");
+	return;
+        }
+     TTree *tree = (TTree*)(fListOfHistos->FindObject("UEAnalysisSettings"));
+     tree->Scan();
+     }
 }
