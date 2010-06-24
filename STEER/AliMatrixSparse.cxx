@@ -25,20 +25,21 @@ AliMatrixSparse::AliMatrixSparse(Int_t sz)
 AliMatrixSparse::AliMatrixSparse(const AliMatrixSparse& src)
   : AliMatrixSq(src),fVecs(0)
 {
-  fVecs = new AliVectorSparse*[fNcols];
+  fVecs = new AliVectorSparse*[src.GetSize()];
   for (int i=GetSize();i--;) fVecs[i] = new AliVectorSparse( *src.GetRow(i));
 }
 
 //___________________________________________________________
 AliVectorSparse* AliMatrixSparse::GetRowAdd(Int_t ir)
 {
-  if (ir>=fNcols) {
+  if (ir>=fNrows) {
     AliVectorSparse** arrv = new AliVectorSparse*[ir+1];
     for (int i=GetSize();i--;) arrv[i] = fVecs[i];
     delete fVecs;
     fVecs = arrv;    
     for (int i=GetSize();i<=ir;i++) fVecs[i] = new AliVectorSparse();
-    fNcols = fNrows = ir+1;
+    fNrows = ir+1;
+    if (IsSymmetric() && fNcols<fNrows) fNcols = fNrows;
   }
   return fVecs[ir];
 }
@@ -48,30 +49,31 @@ AliMatrixSparse& AliMatrixSparse::operator=(const AliMatrixSparse& src)
 {
   if (*this == src) return *this;
   Clear();
-  fNcols = fNrows = src.GetSize();
+  fNcols = src.GetNCols();
+  fNrows = src.GetNRows();
   SetSymmetric(src.IsSymmetric());
-  fVecs = new AliVectorSparse*[fNcols];
-  for (int i=fNcols;i--;) fVecs[i] = new AliVectorSparse( *src.GetRow(i));
+  fVecs = new AliVectorSparse*[fNrows];
+  for (int i=fNrows;i--;) fVecs[i] = new AliVectorSparse( *src.GetRow(i));
   return *this;
 }
 
 //___________________________________________________________
 void AliMatrixSparse::Clear(Option_t*) 
 {
-  for (int i=fNcols;i--;) delete GetRow(i);
+  for (int i=fNrows;i--;) delete GetRow(i);
   delete[] fVecs;
   fNcols = fNrows = 0;
 }
 
 //___________________________________________________________
-void AliMatrixSparse::Print(Option_t*)  const
+void AliMatrixSparse::Print(Option_t* opt)  const
 {
-  printf("Sparse Matrix of size %d %s\n",fNcols,IsSymmetric() ? " (Symmetric)":"");
-  for (int i=0;i<fNcols;i++) {
+  printf("Sparse Matrix of size %d x %d %s\n",fNrows,fNcols,IsSymmetric() ? " (Symmetric)":"");
+  for (int i=0;i<fNrows;i++) {
     AliVectorSparse* row = GetRow(i);
     if (!row->GetNElems()) continue;
     printf("%3d: ",i); 
-    row->Print();
+    row->Print(opt);
   }
 }
 

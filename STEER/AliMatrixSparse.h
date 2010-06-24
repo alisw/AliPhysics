@@ -24,7 +24,11 @@ class AliMatrixSparse : public AliMatrixSq
   //
   AliVectorSparse* GetRow(Int_t ir)        const {return (ir<fNcols) ? fVecs[ir] : 0;}
   AliVectorSparse* GetRowAdd(Int_t ir);
-
+  //
+  virtual Int_t   GetSize()                            const {return fNrows;}
+  virtual Int_t   GetNRows()                           const {return fNrows;}
+  virtual Int_t   GetNCols()                           const {return fNcols;}
+  //
   void Clear(Option_t* option="");
   void Reset()                            {for (int i=fNcols;i--;) GetRow(i)->Reset();}
   void Print(Option_t* option="")                      const;
@@ -81,6 +85,7 @@ inline Double_t& AliMatrixSparse::operator()(Int_t row,Int_t col)
   //  printf("M: findindexAdd\n");
   if (IsSymmetric() && col>row) Swap(row,col); 
   AliVectorSparse* rowv = GetRowAdd(row);
+  if (col>=fNcols) fNcols = col+1;
   return rowv->FindIndexAdd(col);
 }
 
@@ -98,8 +103,11 @@ inline Double_t AliMatrixSparse::DiagElem(Int_t row) const
 inline Double_t &AliMatrixSparse::DiagElem(Int_t row)
 {
   AliVectorSparse* rowv = GetRowAdd(row);
-  if (IsSymmetric()) return (rowv->GetNElems()>0 && rowv->GetLastIndex()==row) ? 
+  if (row>=fNcols) fNcols = row+1;
+  if (IsSymmetric()) {
+    return (rowv->GetNElems()>0 && rowv->GetLastIndex()==row) ? 
 		       rowv->GetLastElem() : rowv->FindIndexAdd(row);
+  }
   else return rowv->FindIndexAdd(row);
   //
 }

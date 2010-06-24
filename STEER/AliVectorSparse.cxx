@@ -17,6 +17,7 @@
 
 #include <string.h>
 #include "AliVectorSparse.h"
+#include <TString.h>
 
 /**********************************************************************************************/
 /* Sparse vector class, used as row of the AliMatrixSparse class                              */
@@ -161,11 +162,17 @@ void AliVectorSparse::SortIndices(Bool_t valuesToo)
 }
 
 //__________________________________________________________
-void AliVectorSparse::Print(Option_t* )  const
+void AliVectorSparse::Print(Option_t* opt)  const
 {
+  TString sopt = opt; sopt.ToLower();
+  int ndig = sopt.Atoi();
+  if (ndig<=1) ndig = 2;
+  sopt = "%2d:%+.";
+  sopt += ndig;
+  sopt += "e |";
   printf("|");
-  for (int i=0;i<fNElems;i++) printf("%2d:%+.2e|",fIndex[i],fElems[i]);
-  printf("|\n");
+  for (int i=0;i<fNElems;i++) printf(sopt.Data(),fIndex[i],fElems[i]);
+  printf("\n");
 }
 
 //___________________________________________________________
