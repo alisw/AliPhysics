@@ -1,14 +1,31 @@
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 //------------------------------------------------------------------------------
 // Implementation of AliPerformancePtCalib class. It fills histograms with ESD or
-// TPC track information to study 1.pt spectra.
+// TPC track information to study charge/pt spectra.
 // To analyse the output of AliPerformancePtCalib use AliPerfAnalyzeInvPt class:
-// Projection of 1/pt vs theta and vs phi resp. histoprams will be fitted with either
-// polynomial or gaussian fit function to extract minimum position of 1/pt.
+// Projection of charge/pt vs theta and vs phi resp. histoprams will be fitted
+// with either polynomial or gaussian fit function to extract minimum position of
+// charge/pt.
 // Fit options and theta, phi bins can be set by user.
-// Attention: use the Set* functions of AliPerformancePtCalib.h  when running
+// Attention: use the Set functions of AliPerformancePtCalib  when running
 // AliPerformancePtCalib::Analyse()
 // The result of the analysis (histograms/graphs) are stored in the folder which is
-// a data member of AliPerformancePtCalib*.
+// a data member of AliPerformancePtCalib.
 //
 // Author: S.Schuchmann 11/13/2009 
 //         sschuchm@ikf.uni-frankfurt.de
@@ -16,15 +33,18 @@
 
 /*
  
-// after running comparison task, read the file, and get component
-gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
-LoadMyLibs();
+// after running the performance task, read the file, and get component
 
 TFile f("Output.root");
 AliPerformancePtCalib * compObj = (AliPerformancePtCalib*)coutput->FindObject("AliPerformancePtCalib");
  
-// analyse comparison data
+// set phi and theta bins for fitting and analyse comparison data
+compObj->SetProjBinsTheta(thetaBins,nThetaBins,minPhi, maxPhi);
+compObj->SetProjBinsPhi(phiBins,nPhiBins,minTheta,maxTheta);
+compObj->SetMakeFitOption(kFALSE,exclRange,fitRange);
+compObj->SetDoRebin(rebin);
 compObj->Analyse();
+//details see functions of this class
 
 // the output histograms/graphs will be stored in the folder "folderRes" 
 compObj->GetAnalysisFolder()->ls("*");
@@ -38,14 +58,20 @@ fout.Close();
 */
 #include "TH1F.h"
 #include "TH2F.h"
+#include "THnSparse.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TFolder.h"
+
 #include "AliESDEvent.h" 
 #include "AliESDtrack.h"
 #include "AliESDfriendTrack.h"
 #include "AliESDfriend.h"
 #include "AliESDtrackCuts.h"
+
+
+#include "AliPhysicsSelection.h"
+#include "AliTriggerAnalysis.h"
 
 #include "AliPerfAnalyzeInvPt.h"
 #include "AliPerformancePtCalib.h"
@@ -61,6 +87,10 @@ ClassImp(AliPerformancePtCalib)
       // option parameter for AliPerformancePtCalib::Analyse()
       fNThetaBins(0), 
       fNPhiBins(0),
+      fMaxPhi(0),
+      fMinPhi(0),
+      fMaxTheta(0),
+      fMinTheta(0),
       fRange(0),
       fExclRange(0),
       fFitGaus(0) ,
@@ -73,30 +103,16 @@ ClassImp(AliPerformancePtCalib)
       //options for cuts
       fOptTPC(0),
       fESDcuts(0),
-      fRefitTPC(0),
-      fRefitITS(0),
-      fDCAcut(0),
+      fPhysSel(0),
       fEtaAcceptance(0),
-      fMinPt(0),
-      fMaxPt(0),
-      fMinNClustersTPC(0),
-      fMaxChi2PerClusterTPC(0),
-      fMaxDCAtoVertexXY(0),
-      fMaxDCAtoVertexZ(0),
-      fAcceptKinkDaughters(0),
-      fRequireSigmaToVertex(0),
-      fDCAToVertex2D(0),
-		     
+      fTrigger(AliTriggerAnalysis::kMB1),
+      fPhysicsSelection(0),
       fCutsRC(0),
       fCutsMC(0),
-
       fList(0),
       // histograms
-      fHistInvPtTheta(0),
-      fHistInvPtPhi(0),
-      fHistPtTheta(0),
-      fHistPtPhi(0),
-
+      fHistInvPtPtThetaPhi(0),
+      
       fHistPtShift0(0),
       fHistPrimaryVertexPosX(0),
       fHistPrimaryVertexPosY(0),
@@ -112,7 +128,6 @@ ClassImp(AliPerformancePtCalib)
 
       //esd track cuts
       fESDTrackCuts(0),
-  
       // analysis folder 
       fAnalysisFolder(0)
 {
@@ -123,79 +138,61 @@ ClassImp(AliPerformancePtCalib)
    fDeltaInvP = 0.00;                     // shift value
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
-   fESDcuts = kTRUE;                      // read ESD track cuts
-   fRefitTPC = kFALSE;                    // require TPC refit
-   fRefitITS = kFALSE;                    // require ITS refit
-   fDCAcut = kTRUE;                       // apply DCA cuts
-
+   fESDcuts = kFALSE;
+   fPhysSel = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
    
    //set options for esd track cuts
    fEtaAcceptance = 0.8;
-   fMinPt=0.15;  // GeV/c
-   fMaxPt=1.e10; // GeV/c 
-   fMinNClustersTPC = 50;
-   fMaxChi2PerClusterTPC = 4.0;
-   fMaxDCAtoVertexXY = 2.4; // cm
-   fMaxDCAtoVertexZ  = 3.2; // cm
-   fAcceptKinkDaughters = kFALSE;
-   fRequireSigmaToVertex = kFALSE;
-   fDCAToVertex2D = kTRUE;
-    
-   // options for function AliPerformancePtCalibMC::Analyse()
+   
+   // options for function AliPerformancePtCalib::Analyse()
    fFitGaus = kFALSE;// use gaussian function for fitting charge/pt yes/no
    fNThetaBins = 0; //number of theta bins
    fNPhiBins = 0; //number of phi bins
    fRange = 0; //fit range around 0
+   fMaxPhi = 6.5;// max phi for 2D projection on theta and charge/pt axis
+   fMinPhi = 0.0;// min phi for 2D projection on theta and charge/pt axis
+   fMaxTheta = 3.0;// max theta for 2D projection on phi and charge/pt axis
+   fMinTheta = 0.0;// min theta for 2D projection on phi and charge/pt axis
    fExclRange =0; //range of rejection of points around 0
    fDoRebin = kFALSE;
    fRebin = 0;
-   
+
    Init();
 }
 
 //________________________________________________________________________
-AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCalib",Char_t* title ="AliPerformancePtCalib")://,Int_t analysisMode=0,Bool_t hptGenerator=kFALSE) :
+AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCalib",Char_t* title ="AliPerformancePtCalib"):
    AliPerformanceObject(name,title),
    
    // option parameter for AliPerformancePtCalib::Analyse()
    fNThetaBins(0), 
    fNPhiBins(0),
+   fMaxPhi(0),
+   fMinPhi(0),
+   fMaxTheta(0),
+   fMinTheta(0),
    fRange(0),
    fExclRange(0),
    fFitGaus(0) ,
    fDoRebin(0),
    fRebin(0),
+   // option parameter for user defined charge/pt shift
    fShift(0),
    fDeltaInvP(0),
-     //options for cuts
+   //options for cuts
    fOptTPC(0),
    fESDcuts(0),
-   fRefitTPC(0),
-   fRefitITS(0),
-   fDCAcut(0),
+   fPhysSel(0),
    fEtaAcceptance(0),
-   fMinPt(0),
-   fMaxPt(0),
-   fMinNClustersTPC(0),
-   fMaxChi2PerClusterTPC(0),
-   fMaxDCAtoVertexXY(0),
-   fMaxDCAtoVertexZ(0),
-   fAcceptKinkDaughters(0),
-   fRequireSigmaToVertex(0),
-   fDCAToVertex2D(0),
-   
+   fTrigger(AliTriggerAnalysis::kMB1),
+   fPhysicsSelection(0),
    fCutsRC(0),
    fCutsMC(0),
    fList(0),
-   
    // histograms
-   fHistInvPtTheta(0),
-   fHistInvPtPhi(0),
-   fHistPtTheta(0),
-   fHistPtPhi(0),
-
+   fHistInvPtPtThetaPhi(0),
    fHistPtShift0(0),
    fHistPrimaryVertexPosX(0),
    fHistPrimaryVertexPosY(0),
@@ -210,10 +207,9 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    fHistUserPtShift(0),	
    //esd track cuts														     
    fESDTrackCuts(0),
-  
    // analysis folder 
    fAnalysisFolder(0)
-
+   
   
 {
    // Constructor
@@ -221,30 +217,22 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    fDeltaInvP = 0.00;
    //options for cuts
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
-   fESDcuts = kTRUE;                      // read ESD track cuts
-   fRefitTPC = kFALSE;                    // require TPC refit
-   fRefitITS = kFALSE;                    // require ITS refit
-   fDCAcut = kTRUE;                       // apply DCA cuts
- 
+   fESDcuts = kFALSE;
+   fPhysSel = kFALSE;
    fCutsRC = NULL;
    fCutsMC = NULL;
    
    //esd track cut options
    fEtaAcceptance = 0.8;
-   fMinPt=0.15;  // GeV/c
-   fMaxPt=1.e10; // GeV/c 
-   fMinNClustersTPC = 50;
-   fMaxChi2PerClusterTPC = 4.0;
-   fMaxDCAtoVertexXY = 2.4; // cm
-   fMaxDCAtoVertexZ  = 3.2; // cm
-   fAcceptKinkDaughters = kFALSE;
-   fRequireSigmaToVertex = kFALSE;
-   fDCAToVertex2D = kTRUE;
    
    // options for function AliPerformancePtCalibMC::Analyse()
    fFitGaus = kFALSE;// use gaussian function for fitting charge/pt yes/no
    fNThetaBins = 0; //number of theta bins
    fNPhiBins = 0; //number of phi bins
+   fMaxPhi = 6.5;// max phi for 2D projection on theta and charge/pt axis
+   fMinPhi = 0.0;// min phi for 2D projection on theta and charge/pt axis
+   fMaxTheta = 3.0;// max theta for 2D projection on phi and charge/pt axis
+   fMinTheta = 0.0;// min theta for 2D projection on phi and charge/pt axis
    fRange = 0; //fit range around 0
    fExclRange =0; //range of rejection of points around 0
    fDoRebin = kFALSE;
@@ -252,11 +240,30 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
   
    Init();
 }
-
+//________________________________________________________________________
 AliPerformancePtCalib::~AliPerformancePtCalib() { 
    //
    // destructor
    //
+
+   if(fList) delete fList;
+   // histograms
+   if( fHistInvPtPtThetaPhi)  delete fHistInvPtPtThetaPhi;fHistInvPtPtThetaPhi=0;
+   if(fHistPtShift0)          delete fHistPtShift0;fHistPtShift0=0; 
+   if(fHistPrimaryVertexPosX) delete fHistPrimaryVertexPosX;fHistPrimaryVertexPosX=0; 
+   if(fHistPrimaryVertexPosY) delete fHistPrimaryVertexPosY;fHistPrimaryVertexPosY=0; 
+   if(fHistPrimaryVertexPosZ) delete fHistPrimaryVertexPosZ;fHistPrimaryVertexPosZ=0; 
+   if(fHistTrackMultiplicity) delete fHistTrackMultiplicity;fHistTrackMultiplicity=0; 
+   if(fHistTrackMultiplicityCuts) delete fHistTrackMultiplicityCuts;fHistTrackMultiplicityCuts=0; 
+
+   if(fHistTPCMomentaPosP)  delete fHistTPCMomentaPosP;fHistTPCMomentaPosP=0; 
+   if(fHistTPCMomentaNegP)  delete fHistTPCMomentaNegP;fHistTPCMomentaNegP=0; 
+   if(fHistTPCMomentaPosPt) delete fHistTPCMomentaPosPt;fHistTPCMomentaPosPt=0; 
+   if(fHistTPCMomentaNegPt) delete fHistTPCMomentaNegPt ;fHistTPCMomentaNegPt=0; 
+   if(fHistUserPtShift)     delete fHistUserPtShift;fHistUserPtShift=0; 
+   //esd track cuts														     
+   if(fESDTrackCuts) delete fESDTrackCuts;
+   //analysis folder 
    if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0; 
 }
 
@@ -285,18 +292,25 @@ void AliPerformancePtCalib::Init()
  
    // momentum histos
    //pt shift 0 only needed if shift in 1/pt is applied
-   fHistPtShift0 = new TH1F("fHistPtShift0","1/pt dN/pt vs. pt of ESD track  ",600,0.0,6.0);
+   fHistPtShift0 = new TH1F("fHistPtShift0","1/pt dN/pt vs. pt of ESD track  ",800,-20.0,20.0);
    fList->Add(fHistPtShift0);
-   fHistInvPtTheta = new TH2F("fHistInvPtTheta","#theta vs 1/pt ",900, -4.5, 4.5,300,0.0,3.0);
-   fList->Add(fHistInvPtTheta);
-   fHistInvPtPhi   = new TH2F("fHistInvPtPhi","#phi vs 1/pt",900, -4.5, 4.5,325,0.0,6.5);
-   fList->Add(fHistInvPtPhi);
-   fHistPtTheta    = new TH2F("fHistPtTheta"," #theta vs pt ",300, 0.0, 15.0,300,0.0,3.0);
-   fList->Add(fHistPtTheta);
-   fHistPtPhi      = new TH2F("fHistPtPhi"," #phi vs  pt ",300, 0.0,15.0,325,0.0,6.5);
-   fList->Add(fHistPtPhi);
-	     
-   // mom test histos
+ 
+   // THnSparse for 1/pt and pt spectra vs angles
+   const   Int_t invPtDims = 4;
+   fMaxPhi = 6.5;
+   fMinPhi = 0.0;
+   fMaxTheta = 3.0;
+   fMinTheta = 0.0;
+   
+   Double_t xminInvPt[invPtDims] = {-4.5,-20.0,fMinTheta,fMinPhi};
+   Double_t xmaxInvPt[invPtDims] = {4.5,20.0,fMaxTheta,fMaxPhi};
+   Int_t  binsInvPt[invPtDims] = {900,800,300,325};
+
+  
+   fHistInvPtPtThetaPhi = new THnSparseF("fHistInvPtPtThetaPhi","1/pt vs pt vs #theta vs #phi ",invPtDims,binsInvPt,xminInvPt,xmaxInvPt);
+   fList->Add(fHistInvPtPtThetaPhi);
+   
+   // momentum test histos
    fHistTPCMomentaPosP  =  new TH2F("fHistTPCMomentaPosP","TPC p vs global esd track p pos",300,0.0,15.0,300,0.0,15.0);
    fList->Add(fHistTPCMomentaPosP);
    fHistTPCMomentaNegP  =  new TH2F("fHistTPCMomentaNegP","TPC p vs global esd track p neg",300,0.0,15.0,300,0.0,15.0);
@@ -312,18 +326,7 @@ void AliPerformancePtCalib::Init()
 
   
    // esd track cuts  
-   fESDTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
-  
-   //fESDTrackCuts->DefineHistoqgrams(1);
-   fESDTrackCuts->SetRequireSigmaToVertex(fRequireSigmaToVertex);
-   fESDTrackCuts->SetRequireTPCRefit(fRefitTPC);
-   fESDTrackCuts->SetAcceptKinkDaughters(fAcceptKinkDaughters);
-   fESDTrackCuts->SetMinNClustersTPC((Int_t)fMinNClustersTPC);
-   fESDTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerClusterTPC);
-   fESDTrackCuts->SetMaxDCAToVertexXY(fMaxDCAtoVertexXY);
-   fESDTrackCuts->SetMaxDCAToVertexZ(fMaxDCAtoVertexZ);
-   fESDTrackCuts->SetDCAToVertex2D(fDCAToVertex2D);
-   fESDTrackCuts->SetPtRange(fMinPt,fMaxPt); 
+   fESDTrackCuts =NULL;//neu
 }
 
 //________________________________________________________________________
@@ -334,34 +337,62 @@ void AliPerformancePtCalib::SetPtShift(const Double_t shiftVal ) {
 }
 
 //________________________________________________________________________
-void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliESDfriend*, Bool_t, Bool_t) 
+void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *const esdEvent, AliESDfriend * const /*esdFriend*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseESDfriend*/)
 {
+   //exec: read esd or tpc tracksGetRunNumber
 
-   //exec: read esd or tpc tracks
+   if(!fESDTrackCuts) Printf("no esd track cut");
    
    if (!esdEvent) {
       Printf("ERROR: Event not available");
       return;
    }
 
-   if (!(esdEvent->GetNumberOfTracks())) {
-      Printf(" PtCalib task: There is no track in this event");
-      return;
-   }
+   if (!(esdEvent->GetNumberOfTracks()))  return;
 
    if (GetTriggerClass()){
-     Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
-     if(!isEventTriggered) return;
+      Bool_t isEventTriggered = esdEvent->IsTriggerClassFired(GetTriggerClass());
+      if(!isEventTriggered) return;
    }
    
+   
+   // trigger selection
+   Bool_t isEventTriggered = kTRUE;
+   AliPhysicsSelection *trigSel = NULL;
+   AliTriggerAnalysis *trigAna = NULL;
+   
+   if(fPhysSel){ trigSel = GetPhysicsTriggerSelection();
+      if(!trigSel) {
+	 Printf("cannot get trigSel \n");
+	 return;
+      }
+   }
+   
+   //if(esdEvent) isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);//does not work, crashes
+     if(fTrigger == AliTriggerAnalysis::kV0AND) 
+	{
+	   trigAna = trigSel->GetTriggerAnalysis();
+	   if(!trigAna) 
+	      return;
+	   isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent,GetTrigger());
+	}
+     
+     if(fPhysSel && !isEventTriggered) return;
+     
+     
+     //vertex info for cut
+     const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
+     if (!vtx->GetStatus()) return ;
+     
+   //histo fo user defined shift in charge/pt 
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
-  
+   
+   //trakc multiplicity
    fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
 
 
    // read primary vertex info
    Double_t tPrimaryVtxPosition[3];
-   //  Double_t tPrimaryVtxCov[3];
    const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexTPC();
  
    tPrimaryVtxPosition[0] = primaryVtx->GetXv();
@@ -385,10 +416,6 @@ void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliES
 	 if(!fESDTrackCuts->AcceptTrack(esdTrack))continue;
       }
        
-      //track cuts
-      if(fRefitTPC) if(AddTPCcuts(esdTrack)) continue;
-      if(fRefitITS) if(AddITScuts(esdTrack)) continue;
-      if(fDCAcut)   if(AddDCAcuts(esdTrack)) continue ;
       
       // fill histos
       if(fOptTPC){ //TPC tracks
@@ -401,19 +428,18 @@ void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliES
 	 if(signedPt) {
 	    invPt = 1.0/signedPt;
 
-	    fHistPtShift0->Fill(fabs(signedPt));
+	    fHistPtShift0->Fill(signedPt);
 	
-	    if(fShift){
+	    if(fShift){Printf("user shift of momentum SET to non zero value!");
 	       invPt += fDeltaInvP; //shift momentum for tests
 	       if(invPt) signedPt = 1.0/invPt;
 	       else continue;
 	    }
-
-	    fHistInvPtTheta->Fill(invPt,tpcTrack->Theta());
-	    fHistInvPtPhi->Fill(invPt,tpcTrack->Phi());
-	    fHistPtTheta->Fill(fabs(signedPt),tpcTrack->Theta());
-	    fHistPtPhi->Fill(fabs(signedPt),tpcTrack->Phi());
-
+	    Double_t theta = tpcTrack->Theta();
+	    Double_t phi = tpcTrack->Phi();
+	    
+	    Double_t momAng[4] = {invPt,signedPt,theta,phi};
+	    fHistInvPtPtThetaPhi->Fill(momAng);
 
 	    Double_t pTPC = tpcTrack->GetP();
 	    Double_t pESD = esdTrack->GetP();
@@ -434,78 +460,44 @@ void AliPerformancePtCalib::Exec(AliMCEvent*, AliESDEvent* const esdEvent, AliES
       }
    
       else{// ESD tracks
+	 if(fabs(esdTrack->Eta())> fEtaAcceptance) continue;
 	 Double_t invPt = 0.0;
 	 Double_t signedPt = esdTrack->GetSignedPt();
 	 if(signedPt){
 	    invPt = 1.0/signedPt; 
 
-	    fHistPtShift0->Fill(fabs(signedPt));
+	    fHistPtShift0->Fill(signedPt);
 	  
-	    if(fShift){
+	    if(fShift){Printf("user shift of momentum SET to non zero value!");
 	       invPt += fDeltaInvP;//shift momentum for tests
 	       if(invPt) signedPt = 1.0/invPt;
 	       else continue;
 	    }
-	    fHistInvPtTheta->Fill(invPt,esdTrack->Theta());
-	    fHistInvPtPhi->Fill(invPt,esdTrack->Phi());
-	    fHistPtTheta->Fill(signedPt,esdTrack->Theta());
-	    fHistPtPhi->Fill(signedPt,esdTrack->Phi());
-	
+	    Double_t theta = esdTrack->Theta();
+	    Double_t phi = esdTrack->Phi();
+	    Double_t momAng[4] = {invPt,signedPt,theta,phi};
+	    fHistInvPtPtThetaPhi->Fill(momAng);
 	    count++;
 	 }
       }
    }
     
    fHistTrackMultiplicityCuts->Fill(count);
-    
 }    
-
-
-
-//______________________________________________________________________________________________________________________
-Bool_t AliPerformancePtCalib::AddTPCcuts(const AliESDtrack *esdTrack){
-   // apply TPC cuts
-   
-   Bool_t cut = kFALSE;
-  
-   if (!(esdTrack->GetStatus()&AliESDtrack::kTPCrefit)) cut=kTRUE; // TPC refit
-   if (esdTrack->GetTPCNcls()<fMinNClustersTPC) cut=kTRUE; // min. nb. TPC clusters
-   if(cut) return kTRUE;
-   return kFALSE;
-}
-//______________________________________________________________________________________________________________________
-Bool_t AliPerformancePtCalib::AddDCAcuts(const AliESDtrack *esdTrack){
-   //apply DCA cuts
-   Bool_t cut = kFALSE;
-  
-   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z and impact parameters:
-   esdTrack->GetImpactParameters(dca,cov);
-   if(TMath::Abs(dca[0])>fMaxDCAtoVertexXY || TMath::Abs(dca[1])>fMaxDCAtoVertexZ) cut=kTRUE;
-   if(esdTrack->GetKinkIndex(0)>0) cut=kTRUE;
-   if(cut) return kTRUE;
-   return kFALSE;
-}
-
-//______________________________________________________________________________________________________________________
-Bool_t AliPerformancePtCalib::AddITScuts(const AliESDtrack *esdTrack){
-   //apply ITS cuts
-   Bool_t cut = kFALSE;
-  
-   if (!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) cut=kTRUE; // ITS refit
-   Int_t clusterITS[200]; 
-   if(esdTrack->GetITSclusters(clusterITS)<2) cut=kTRUE;  // min. nb. ITS clusters //3
-  
-   if(cut) return kTRUE;
-   return kFALSE;
-}
-
 //______________________________________________________________________________________________________________________
 
 void AliPerformancePtCalib::Analyse()
 {
    // analyse charge/pt spectra in bins of theta and phi. Bins can be set by user
    
-  
+   THnSparseF *copyTHnSparseTheta = (THnSparseF*)fHistInvPtPtThetaPhi->Clone("copyTHnSparseTheta");
+   copyTHnSparseTheta->GetAxis(3)->SetRangeUser(fMinPhi,fMaxPhi);
+   TH2F *histInvPtTheta = (TH2F*)copyTHnSparseTheta->Projection(2,0);
+      
+   THnSparseF *copyTHnSparsePhi = (THnSparseF*)fHistInvPtPtThetaPhi->Clone("copyTHnSparsePhi");
+   copyTHnSparsePhi->GetAxis(2)->SetRangeUser(fMinTheta,fMaxTheta);
+   TH2F *histInvPtPhi   = (TH2F*)copyTHnSparsePhi->Projection(3,0);
+   
    AliPerfAnalyzeInvPt *ana = new  AliPerfAnalyzeInvPt("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt");
   
      
@@ -514,9 +506,10 @@ void AliPerformancePtCalib::Analyse()
    ana->SetProjBinsTheta(fThetaBins,fNThetaBins);
    ana->SetProjBinsPhi(fPhiBins,fNPhiBins);
    ana->SetMakeFitOption(fFitGaus,fExclRange,fRange);
-   ana->SetDoRebin(fRebin);		   
+   if(fDoRebin) ana->SetDoRebin(fRebin);		   
    TObjArray *aFolderObj = new TObjArray;
-   ana->StartAnalysis(fHistInvPtTheta,fHistInvPtPhi, aFolderObj);
+   
+   ana->StartAnalysis(histInvPtTheta,histInvPtPhi,aFolderObj);
   
    // export objects to analysis folder
    fAnalysisFolder = ExportToFolder(aFolderObj);
@@ -524,7 +517,7 @@ void AliPerformancePtCalib::Analyse()
    // delete only TObjArray
    if(aFolderObj) delete aFolderObj;
    if(ana) delete ana;
-  
+   
 }
 
 //______________________________________________________________________________________________________________________
@@ -582,11 +575,7 @@ Long64_t AliPerformancePtCalib::Merge(TCollection* const list)
       {
 	 AliPerformancePtCalib* entry = dynamic_cast<AliPerformancePtCalib*>(obj);
 	 if (entry == 0) continue; 
-  
-	 fHistInvPtTheta->Add(entry->fHistInvPtTheta);
-	 fHistInvPtPhi->Add(entry-> fHistInvPtPhi);
-	 fHistPtTheta->Add(entry->fHistPtTheta);
-	 fHistPtPhi->Add(entry->fHistPtPhi);
+	 fHistInvPtPtThetaPhi->Add(entry->fHistInvPtPtThetaPhi);
   
 	 fHistPtShift0->Add(entry->fHistPtShift0);
 	 fHistPrimaryVertexPosX->Add(entry->fHistPrimaryVertexPosX);
@@ -616,7 +605,7 @@ TFolder* AliPerformancePtCalib::CreateFolder(TString name,TString title) {
    return folder;
 }
 //______________________________________________________________________________________________________________________
-void AliPerformancePtCalib::SetProjBinsPhi(const Double_t *phiBinArray,const Int_t nphBins){
+void AliPerformancePtCalib::SetProjBinsPhi(const Double_t *phiBinArray,const Int_t nphBins, const  Double_t minTheta, const  Double_t maxTheta){
    // set phi bins for Analyse()
    //set phi bins as array and set number of this array which is equal to number of bins analysed
    //the last analysed bin will always be the projection from first to last bin in the array
@@ -628,10 +617,20 @@ void AliPerformancePtCalib::SetProjBinsPhi(const Double_t *phiBinArray,const Int
       }
       Printf("AliPerformancePtCalib::SetProjBinsPhi: number of bins in phi set to %i",fNPhiBins);
    }
-   else  Printf("Warning AliPerformancePtCalib::SetProjBinsPhi:  number of bins in phi NOT set!!! Default values are taken.");
+   else  Printf("Warning AliPerformancePtCalib::SetProjBinsPhi: number of bins in phi NOT set!!! Default values are taken.");
+
+   if(fabs(minTheta-maxTheta)<0.001){
+      Printf("AliPerformancePtCalib::SetProjBinsPhi: theta range for projection on phi and charge/pt is too small. whole range of theta selected.");
+   }
+   else{
+      Printf("AliPerformancePtCalib::SetProjBinsPhi: theta range for projection on phi and charge/pt is selected by user: %1.3f - %1.3f rad",minTheta,maxTheta);
+      fMinTheta = minTheta;
+      fMaxTheta = maxTheta;
+   }
 }
+
 //____________________________________________________________________________________________________________________________________________
-void AliPerformancePtCalib::SetProjBinsTheta(const Double_t *thetaBinArray, const Int_t nthBins){
+void AliPerformancePtCalib::SetProjBinsTheta(const Double_t *thetaBinArray, const Int_t nthBins, const Double_t minPhi, const Double_t maxPhi){
    // set theta bins for Analyse()
    //set theta bins as array and set number of this array which is equal to number of bins analysed
    //the last analysed bin will always be the projection from first to last bin in the array
@@ -640,9 +639,18 @@ void AliPerformancePtCalib::SetProjBinsTheta(const Double_t *thetaBinArray, cons
       for(Int_t k = 0;k<fNThetaBins;k++){
 	 fThetaBins[k] = thetaBinArray[k];
       }
-      Printf("AliPerformancePtCalib: number of bins in theta set to %i",fNThetaBins);
+      Printf("AliPerformancePtCalib::SetProjBinsTheta: number of bins in theta set to %i",fNThetaBins);
    }
-   else  Printf("Warning AliPerformancePtCalib::SetProjBinsTheta:  number of bins in theta NOT set!!! Default values are taken.");
+   else  Printf("Warning AliPerformancePtCalib::SetProjBinsTheta: number of bins in theta NOT set!!! Default values are taken.");
+   
+   if(fabs(minPhi-maxPhi)<0.001){
+      Printf("AliPerformancePtCalib::SetProjBinsTheta: phi range for projection on theta and charge/pt is too small. whole range of phi selected.");
+   }
+   else{
+      Printf("AliPerformancePtCalib::SetProjBinsTheta: phi range for projection on theta and charge/pt is selected by user: %1.3f - %1.3f rad",minPhi,maxPhi);
+      fMinPhi = minPhi;
+      fMaxPhi = maxPhi;
+   }
 }
 //____________________________________________________________________________________________________________________________________________
 void AliPerformancePtCalib::SetMakeFitOption(const Bool_t setGausFit, const Double_t exclusionR,const Double_t fitR ){
@@ -655,18 +663,7 @@ void AliPerformancePtCalib::SetMakeFitOption(const Bool_t setGausFit, const Doub
    fFitGaus = setGausFit;
    fExclRange  = exclusionR;
   
-   if(fFitGaus) Printf("AliPerformancePtCalib: set MakeGausFit with fit range %2.3f and exclusion range in 1/pt: %2.3f",fRange,fExclRange);
-   else  Printf("AliPerformancePtCalib: set standard polynomial fit with fit range %2.3f and exclusion range in 1/pt: %2.3f",fRange,fExclRange);
+   if(fFitGaus) Printf("AliPerformancePtCalib::SetMakeFitOption: set MakeGausFit with fit range %2.3f and exclusion range in fabs(1/pt): %2.3f",fRange,fExclRange);
+   else  Printf("AliPerformancePtCalib::SetMakeFitOption: set standard polynomial fit with fit range %2.3f and exclusion range in fabs(1/pt): %2.3f",fRange,fExclRange);
  
-}
-//____________________________________________________________________________________________________________________________________________
-void AliPerformancePtCalib::SetESDcutValues(const Double_t * esdCutValues){
-   //  set ESD cut values as an array of size 6
-   
-   fMinPt                = esdCutValues[0]; 
-   fMaxPt                = esdCutValues[1];
-   fMinNClustersTPC      = esdCutValues[2];
-   fMaxChi2PerClusterTPC = esdCutValues[3];
-   fMaxDCAtoVertexXY     = esdCutValues[4];
-   fMaxDCAtoVertexZ      = esdCutValues[5];
 }
