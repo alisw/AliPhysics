@@ -32,7 +32,7 @@ TString     kJobTag            = "PWG4 Jet Tasks analysis train configured"; // 
 Bool_t      kUsePAR             = kFALSE;  // use par files for extra libs
 Bool_t      kUseCPAR            = kFALSE;  // use par files for common libs
 Bool_t      kFillAOD = kFALSE;  // switch of AOD filling for on the fly analysis
-
+Int_t       kSaveAOD = 8;        // Bit switch 1 = Full AOD 2 = Jet AOD , 4 = PartCorr, 8 = JCORRAN 
 //== general input and output variables
 
 Int_t       iAODanalysis       = 1;      // Analysis on input AOD's
@@ -79,10 +79,11 @@ Int_t       iPWG4JetChem       = 0;      // Jet chemistry
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
-Int_t       iPWG4PtCosmics     = 0;      // Marta's Cosmics Taks 
+Int_t       iPWG4Cosmics     = 0;      // Marta's Cosmics Taks 
 Int_t       iPWG4ThreeJets     = 0;      // Sona's thrust task
 Int_t       iPWG4KMeans        = 0;      // Andreas' KMeans task 
 Int_t       iPWG4Cluster       = 0;      // CKB cluster task 
+Int_t       iEMCUtilLibs       = 0;      // Flag to satisfy dependence on EMC utils
 Int_t       iPWG4PartCorrLibs  = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4PartCorr      = 0;      // Gustavo's part corr analysis
 Int_t       iPWG4CaloQA        = 0;      // Gustavo's part corr analysis
@@ -92,6 +93,7 @@ Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
 TString     kDeltaAODJetName   = "AliAOD.Jets.root";     
+TString     kDeltaAODJCORRANName   = "AliAOD.JCORRAN.root";     
 TString     kDeltaAODPartCorrName   = "deltaAODPartCorr.root";     
 
 
@@ -136,7 +138,7 @@ Int_t       kGridRunRange[2]       =  {0, -1}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
-Int_t       kGridMaxMergeFiles      = 50; // Number of files merged in a chunkgridrunragn
+Int_t       kGridMaxMergeFiles      = 12; // Number of files merged in a chunk grid run range
 TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
 TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
 // == grid process variables
@@ -191,6 +193,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
    printf("==================================================================\n");
    printf(":: use Fill AOD      %d\n", (UInt_t)kFillAOD);
+   printf(":: use Save AOD      %d\n", (UInt_t)kSaveAOD);
    printf(":: use MC truth      %d\n", (UInt_t)kUseMC);
    printf(":: use KINE filter   %d\n", (UInt_t)kUseKinefilter);
    printf(":: use track refs    %d\n", (UInt_t)kUseTR);
@@ -218,6 +221,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(":: use PWG4 Part Corr      %d\n",iPWG4PartCorr);
    printf(":: use PWG4 Calo QA        %d\n",iPWG4CaloQA);
    printf(":: use PWG4 Jet Corr       %d\n",iPWG4JetCorr);
+   printf(":: use PWG4 JCORRAN        %d\n",iPWG4JCORRAN);
    printf(":: use PWG4 Tagged         %d\n",iPWG4Tagged);
    printf(":: use PWG4 omega to 3 pi  %d\n",iPWG4omega3pi);
    printf(":: use PWG4 Gamma Conv     %d\n",iPWG4GammaConv);
@@ -298,6 +302,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if (kUseDebug){
      mgr->SetDebugLevel(3);
    }
+   if(kUseSysInfo>0){
+     mgr->RegisterExtraFile("syswatch.root");
+     if(kGridMergeExclude.Length())kGridMergeExclude += " ";
+     kGridMergeExclude += "syswatch.root";
+   }
+
    else{
      AliLog::SetGlobalLogLevel(AliLog::kError);
    }
@@ -323,6 +333,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
+      if(kIsMC){
+	mgr->RegisterExtraFile("pyxsec_hists.root");
+	if(kGridMergeExclude.Length())kGridMergeExclude += " ";
+	kGridMergeExclude += "pyxsec_hists.root";
+
+      }
    }   
 
    // AOD tags
@@ -427,8 +443,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
    if(iPWG4JCORRAN){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJCORRANTask.C");
-     AliJCORRANTask* corran = AddTaskJCORRAN(kTRUE);
+     AliJCORRANTask* corran = AddTaskJCORRAN(kDeltaAODJCORRANName.Data(),0);
      if(!corran)::Warning("AnalysisTrainPWG4Jets", "AliJCORRANTask cannot run for this train conditions - EXCLUDED");
+     else{
+       if(kDeltaAODJCORRANName.Length()>0)mgr->RegisterExtraFile(kDeltaAODJCORRANName.Data()); 
+     }
    }
 
    if(iPWG4UE){
@@ -521,7 +540,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL",kFALSE,kIsMC);
      if (!taskpartcorrEMCAL) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation EMCAL cannot run for this train conditions - EXCLUDED");
-     if(kDeltaAODPartCorrName.Length()>0)mgr->RegisterExtraFile(kDeltaAODPartCorrName.Data()); // hmm this is written anyway.... but at least we do not register it...
+     if(kDeltaAODPartCorrName.Length()>0)mgr->RegisterExtraFile(kDeltaAODPartCorrName.Data());
    } 
 
    if(iPWG4CaloQA){
@@ -600,6 +619,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 //	 gGrid->Rm(dest.Data());
        }
        TFile::Cp(Form("file:%s.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
+
+
+       TString dest;
+       dest = Form("%s/%s/%s_merge.jdl",alien_workdir.Data(),gridhandler->GetGridOutputDir(),kTrainName.Data());
+       if(AliAnalysisAlien::FileExists(dest.Data())){
+	 //	 Printf("%s exist on grid removing...",dest.Data());
+	 //	 gGrid->Rm(dest.Data());
+       }
+       TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
+
        
        dest = Form("%s/rootfiles/STEER/LQ1dRef_v1.root",gGrid->GetHomeDirectory());
        if(AliAnalysisAlien::FileExists(dest.Data())){
@@ -798,6 +827,7 @@ void CheckModuleFlags(const char *mode) {
    }
    iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4JetChem;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
+   iEMCUtilLibs = iPWG4PartCorrLibs||iPWG4JCORRAN;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
    if (iESDfilter) {iAODhandler=1;}
    if (kUseKinefilter && !kUseMC) kUseKinefilter = kFALSE;
@@ -991,10 +1021,6 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if(iPWG4JetTasks){
      if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
    }
-   if(iPWG4JCORRAN){
-     // PWG4 particle correlations
-     if(!LoadLibrary("PWG4JCORRAN",mode,kTRUE))return kFALSE;
-   }
 
    if(iPWG1QASym){
      if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
@@ -1016,11 +1042,18 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }
    */
 
+   if(iEMCUtilLibs){
+     if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
+	 !LoadLibrary("PHOSUtils", mode, kTRUE)) return kFALSE;
+   }
+
    if (iPWG4PartCorrLibs) {   
-      if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
-          !LoadLibrary("PHOSUtils", mode, kTRUE) ||
-          !LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
+      if (!LoadLibrary("PWG4PartCorrBase", mode, kTRUE) ||
           !LoadLibrary("PWG4PartCorrDep", mode, kTRUE)) return kFALSE;
+   }
+   if(iPWG4JCORRAN){
+     // PWG4 particle correlations
+     if(!LoadLibrary("PWG4JCORRAN",mode,kTRUE))return kFALSE;
    }
    if (iPWG4JetCorr) { 
      if (!LoadLibrary("PWG4JetCorrel", mode, kTRUE)) return kFALSE;
@@ -1418,19 +1451,18 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 
    if (ana_sources.Length()) plugin->SetAnalysisSource(ana_sources);
    plugin->SetExecutableCommand(kPluginExecutableCommand.Data());  
-// Declare the output file names separated by blancs.
-// (can be like: file.root or file.root@ALICE::Niham::File)
-   plugin->SetDefaultOutputs();
+   // Declare the output file names separated by blancs.
+   // (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetMergeExcludes(kGridMergeExclude);
    plugin->SetMaxMergeFiles(kGridMaxMergeFiles);
    plugin->SetNrunsPerMaster(kGridRunsPerMaster);
    plugin->SetMergeViaJDL(kPluginMergeViaJDL);
-// Use fastread option
+   // Use fastread option
    plugin->SetFastReadOption(kPluginFastReadOption);
-// UseOverwrite mode
+   // UseOverwrite mode
    plugin->SetOverwriteMode(kPluginOverwriteMode); 
-// Optionally define the files to be archived.
-//   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
+   // Optionally define the files to be archived.
+   //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@ALICE::NIHAM::File root_archive.zip:AliAOD.root,AOD.tag.root@ALICE::NIHAM::File");
    plugin->SetOutputToRunNo(kPluginOutputToRunNumber);     // write the output to subdirs named after run number
    
    // Put default output files to archive
@@ -1454,45 +1486,57 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       }
    }
 
-   if(kUseSysInfo>0){
-     if (listhists.Length()) listhists += " ";
-     listhists += "syswatch.root";
-   }
-
-   if(kIsMC){
-     if (listaods.Length()) listaods += " ";
-     listaods += "pyxsec_hists.root";
-   }
-
-
    if (mgr->GetExtraFiles().Length()) {
      if (listaods.Length()) listaods += " ";
      listaods += mgr->GetExtraFiles();
    }
 
    // if we do not fill the aod we do not need to store it
-   kGridMergeExclude = listaods;
+   //   kGridMergeExclude = listaods;
    
-   if(!kFillAOD){
-     listaods="";
+   if(kSaveAOD!=0){
+     TString outputFiles =  "";
+     outputFiles += mgr->GetExtraFiles();
+     if (listhists.Length()) outputFiles += " ";
+     outputFiles += listhists;
      plugin->SetDefaultOutputs(kFALSE);
-     plugin->SetOutputFiles(listhists.Data());
+     Printf("%s:%d Starting with the files %s",(char*)__FILE__,__LINE__,outputFiles.Data());
+     // remove
+     // no harm done when we try to remove something that is not there :)
+     if(!(kSaveAOD&(1<<0))){
+       outputFiles.ReplaceAll("AliAOD.root ","");
+       listaods.ReplaceAll("AliAOD.root ","");
+     }
+     if(!(kSaveAOD&(1<<1))){
+       if(kDeltaAODJetName.Length())outputFiles.ReplaceAll(kDeltaAODJetName.Data(),"");
+       if(kDeltaAODJetName.Length())listaods.ReplaceAll(kDeltaAODJetName.Data(),"");
+       
+     }
+     if(!(kSaveAOD&(1<<2))){
+       if(kDeltaAODPartCorrName.Length())outputFiles.ReplaceAll(kDeltaAODPartCorrName.Data(),"");
+       if(kDeltaAODPartCorrName.Length())listaods.ReplaceAll(kDeltaAODPartCorrName.Data(),"");
+     }
+     if(!(kSaveAOD&(1<<3))){
+       if(kDeltaAODJCORRANName.Length())outputFiles.ReplaceAll(kDeltaAODJCORRANName.Data(),"");
+       if(kDeltaAODJCORRANName.Length())listaods.ReplaceAll(kDeltaAODJCORRANName.Data(),"");
+     }
+     
+     // 
+     Printf("%s:%d Saving the files %s",(char*)__FILE__,__LINE__,outputFiles.Data());
+     plugin->SetOutputFiles(outputFiles.Data());
    }
 
-
+   TString outputArchive;
+   outputArchive = Form("log_archive.zip:stdout,stderr@%s",kGridOutputStorages.Data());
    listaods.ReplaceAll(" ", ",");
    listhists.ReplaceAll(" ", ",");
-   if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());;
-   if (listaods.Length())  listaods  = Form("aod_archive.zip:%s@%s", listaods.Data(), kGridOutputStorages.Data());;
+   if (listhists.Length()) listhists = Form("hist_archive.zip:%s@%s", listhists.Data(), kGridOutputStorages.Data());
+   if (listaods.Length())  listaods  = Form("aod_archive.zip:%s@%s", listaods.Data(), kGridOutputStorages.Data());
 
    if (!listhists.Length() && !listaods.Length()) {
       ::Fatal("AnalysisTrainPWG4Jets", "No task output !");
    }
-
-
-
-   TString outputArchive = "log_archive.zip:stdout,stderr@disk=2";
-   if(kUseSysInfo>0)outputArchive = "log_archive.zip:stdout,stderr,syswatch.log@disk=2";
+   
    if (listaods.Length()) {
       outputArchive += " ";
       outputArchive += listaods;
@@ -1502,6 +1546,8 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       outputArchive += listhists;
    }   
    plugin->SetOutputArchive(outputArchive);
+   
+
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro(Form("%s.C", kTrainName.Data()));
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
@@ -1618,8 +1664,8 @@ Bool_t PatchJDL(){
 }
 
 Bool_t PatchAnalysisMacro(){
-    Printf(">>> Patching AnalysisMacro");
-    gSystem->Exec(Form("mv %s.C %s.C_tmp",kTrainName.Data(),kTrainName.Data()));
+  Printf(">>> Patching AnalysisMacro");
+  gSystem->Exec(Form("mv %s.C %s.C_tmp",kTrainName.Data(),kTrainName.Data()));
 
   ifstream in1; 
   in1.open(Form("%s.C_tmp", kTrainName.Data()));
@@ -1629,39 +1675,46 @@ Bool_t PatchAnalysisMacro(){
     st += cLine;
     st += "\n";
   }
-  Int_t index;
+  Int_t index= -1;
   index = st.Index("gSystem->Load(\"libPhysics\");");
   index += strlen("gSystem->Load(\"libPhysics\");");
-  if(iJETAN&&kUsePAR){
+  /*
     TObjArray *arr;
     TObjString *objstr;
     arr = anaLibs.Tokenize(" ");
     TIter next(arr);
-    TString add = "";
+
     add += "\n\n // added by CKB \n";
     while ((objstr=(TObjString*)next())){
       if(objstr->GetString().Contains("PWG3"))continue;
       if(objstr->GetString().EndsWith(".so"))add += Form("gSystem->Load(\"%s\");\n",objstr->GetString().Data());
     }
     delete arr; 
+    */
     //    add += Form("AliLog::SetGlobalLogLevel(%d);\n",AliLog::GetGlobalLogLevel());
-    add += "gSystem->AddIncludePath(\"./\") \n";
-    if(gGrid&&kPluginAliRootVersion.Length()==0){
-      add += "// Dirty hack for TRD reference data \n";
-      add += "gSystem->Setenv(\"ALICE_ROOT\",\"";
-      add += Form("alien://%s/rootfiles/",gGrid->GetHomeDirectory());
-      add += "\"); \n";
-    }
-    add += "// BKC \n\n";
-    st.Insert(index,add.Data());
+  TString add = "";
+
+  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+  add += "\n\n // added by CKB \n";
+  add += "\n gSystem->AddIncludePath(\"./\") \n";
+  if(gGrid&&kPluginAliRootVersion.Length()==0){
+    add += "\n // Dirty hack for TRD reference data \n";
+    add += "\n gSystem->Setenv(\"ALICE_ROOT\",\"";
+    add += Form("alien://%s/rootfiles/",gGrid->GetHomeDirectory());
+    add += "\"); \n";
   }
+  add += "// BKC \n\n";
+  st.Insert(index,add.Data());
 
   if(kUseDebug){
     st.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
   }
 
-  index = st.Index("gSystem->AddIncludePath");
-  st.Insert(index,"// CKB ");
+  if(kUseCPAR&&kPluginAliRootVersion.Length()==0){
+    index = st.Index("gSystem->AddIncludePath(\"-I$"); // uncommen $ALICE_ROOT include for par files
+    if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+    st.Insert(index,"// CKB comment out whehn no aliroot is provided \n //");
+  }
 
   ofstream out;
   out.open(Form("%s.C", kTrainName.Data()));
@@ -1670,6 +1723,62 @@ Bool_t PatchAnalysisMacro(){
   }
   out << st << endl;
   Printf("<<< Patching AnalysisMacro");
+
+
+
+
+
+  Printf(">>> Patching Merge Macro");
+  gSystem->Exec(Form("mv %s_merge.C %s_merge.C_tmp",kTrainName.Data(),kTrainName.Data()));
+
+  ifstream in2; 
+  in2.open(Form("%s_merge.C_tmp", kTrainName.Data()));
+  TString st2;
+  while(in2.getline(cLine,250)){
+    st2 += cLine;
+    st2 += "\n";
+  }
+  index = st2.Index("gSystem->Load(\"libPhysics\");");
+  index += strlen("gSystem->Load(\"libPhysics\");");
+  TString add2 = "";
+  add2 += "\n gSystem->AddIncludePath(\"./\") \n";
+  if(gGrid&&kPluginAliRootVersion.Length()==0){
+    add2 += "\n // Dirty hack for TRD reference data \n";
+    add2 += "\n gSystem->Setenv(\"ALICE_ROOT\",\"";
+    add2 += Form("alien://%s/rootfiles/",gGrid->GetHomeDirectory());
+    add2 += "\"); \n";
+  }
+  add2 += "// BKC \n\n";
+  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+  st2.Insert(index,add.Data());
+
+
+  if(kUseDebug){
+    st2.Insert(index,"\n gROOT->ProcessLine(\".trace\"); // CKB \n");
+  }
+
+  if(kUseCPAR&&kPluginAliRootVersion.Length()==0){
+    index = st2.Index("gSystem->AddIncludePath(\"-I$"); // uncommen $ALICE_ROOT include for par files
+    if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+    st2.Insert(index,"// CKB comment out whehn no aliroot is provided \n //");
+  }
+
+  // do not exclude the extra files from merign, this is done explicitly in this train script
+  index = st2.Index("mergeExcludes +="); // uncommen $ALICE_ROOT include for par files
+  if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
+  st2.Insert(index,"// CKB comment out, handled explicitly by the train macro \n //");
+
+
+  ofstream out2;
+  out2.open(Form("%s_merge.C", kTrainName.Data()));
+  if (out2.bad()) {
+    return kFALSE;
+  }
+  out2 << st2 << endl;
+  Printf("<<< Patching Merging Macro");
+
+
+
   return kTRUE;
 
 }
