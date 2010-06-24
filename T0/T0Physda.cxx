@@ -237,7 +237,6 @@ int main(int argc, char **argv) {
 	   }
 	   if(besttimeA<9999999 &&besttimeC< 9999999) {
 	     Float_t t0 =0.001* 24.4 * Float_t( besttimeA+besttimeC)/2.;
-	     cout<<" t0 "<<t0<<endl;
 	     hVertex->Fill(t0);
 	   }
 	}
