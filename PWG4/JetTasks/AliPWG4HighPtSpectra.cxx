@@ -316,7 +316,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	}
 	
       }//trackCuts
-      
+
+      delete trackTPCESD;
     }//track loop
   
 
