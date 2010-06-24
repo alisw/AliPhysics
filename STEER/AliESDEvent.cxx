@@ -1662,5 +1662,37 @@ Bool_t  AliESDEvent::IsPileupFromSPD(Int_t ncont, Double_t distz, Double_t nSigm
   }
 
 
-
-
+//______________________________________________________________________________
+void AliESDEvent::EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t &trITSSApure, Double_t eta, Bool_t useDCAFlag,Bool_t useV0Flag) const
+{
+  //
+  // calculates 3 estimators for the multiplicity in the -eta:eta range
+  // tracklets   : using SPD tracklets only
+  // trITSTPC    : using TPC/ITS + complementary ITS SA tracks + tracklets from clusters not used by tracks
+  // trITSSApure : using ITS standalone tracks + tracklets from clusters not used by tracks
+  // if useDCAFlag is true: account for the ESDtrack flag marking the tracks with large DCA
+  // if useV0Flag  is true: account for the ESDtrack flag marking conversion and K0's V0s
+  tracklets = trITSSApure = trITSTPC = 0;
+  int ntr = fSPDMult ? fSPDMult->GetNumberOfTracklets() : 0;
+  //
+  // count tracklets
+  for (int itr=ntr;itr--;) { 
+    if (TMath::Abs(fSPDMult->GetEta(itr))>eta) continue;
+    tracklets++;
+    if (fSPDMult->FreeClustersTracklet(itr,0)) trITSTPC++;    // not used in ITS/TPC or ITS_SA track
+    if (fSPDMult->FreeClustersTracklet(itr,1)) trITSSApure++; // not used in ITS_SA_Pure track
+  }
+  //
+  // count real tracks
+  ntr = GetNumberOfTracks();
+  for (int itr=ntr;itr--;) {
+    AliESDtrack *t = GetTrack(itr);
+    if (TMath::Abs(t->Eta())>eta) continue;
+    if (!t->IsOn(AliESDtrack::kITSin)) continue;
+    if (useDCAFlag && t->IsOn(AliESDtrack::kMultSec))  continue;
+    if (useV0Flag  && t->IsOn(AliESDtrack::kMultInV0)) continue;    
+    if (t->IsOn(AliESDtrack::kITSpureSA)) trITSSApure++;
+    else                                  trITSTPC++;
+  }
+  //
+}

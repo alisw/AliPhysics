@@ -242,7 +242,8 @@ public:
   void SetMultiplicity(const AliMultiplicity *mul);
 
   const AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
-
+  void   EstimateMultiplicity(Int_t &tracklets,Int_t &trITSTPC,Int_t &trITSSApure,
+			      Double_t eta=1.,Bool_t useDCAFlag=kTRUE,Bool_t useV0Flag=kTRUE) const;
 
   Bool_t Clean(Float_t *cleanPars);
   Bool_t RemoveKink(Int_t i)   const;
