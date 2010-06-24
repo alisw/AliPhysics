@@ -4,8 +4,8 @@
 
 //----------------------------------------------------------------------------------------------------
 // Class to analyse output of AliPerformancePtCalib.cxx and AliPerformancePtCalibMC.cxx:
-// Projection of 1/pt vs theta and vs phi resp. histoprams will be fitted with either
-// polynomial or gaussian fit function to extract minimum position of 1/pt.
+// Projection of charge/pt vs theta and vs phi resp. histoprams will be fitted with either
+// polynomial or gaussian fit function to extract minimum position of charge/pt.
 // Fit options and theta, phi bins can be set by user.
 // Attention: use the Set* functions of AliPerformancePtCalib.h and AliPerformancePtCalibMC.h
 // when running AliPerformancePtCalib*::Analyse().
@@ -17,13 +17,11 @@ class TNamed;
 class TString;
 class TList;
 class TF1;
-class TH1F;
+class TH1F; 
 class TH2F;
-class TH3F;
+class TH1D;
 class TGraphErrors;
 //class TMath;
-class TH1D;
-class TH2D;
 class TCanvas;
 class TObjArray;
 
@@ -54,8 +52,8 @@ protected:
    Bool_t  fDoRebin;
    Int_t  fRebin;
    // projection histos
-   TH1F *fHistFitTheta[100];// projection histos for analysis in theta bins
-   TH1F *fHistFitPhi[100];// projection histos for analysis in phi bins
+   TH1D *fHistFitTheta[100];// projection histos for analysis in theta bins
+   TH1D *fHistFitPhi[100];// projection histos for analysis in phi bins
 
    //histos for copy of input histos
    TH2F *fHistH2InvPtTheta; // for copy of input histos 
@@ -81,10 +79,10 @@ private:
    static Double_t InvGaussRejP(Double_t *x, const Double_t *par);
 
    //functions for fitting procedure
-   void MakeFit(TH1F *dmproy, TF1 * fitpb, Double_t &mean, Double_t &ErrMean,  Double_t &excl,Double_t &range);
-   void MakeFitBetter(TH1F *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f, Double_t &excl, Double_t &range);
-   void MakeFitInvGauss(TH1F *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean,Double_t &excl , Double_t &range);
-   void MakeFitInvGaussBetter(TH1F *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f,Double_t &excl,  Double_t &range);
+   void MakeFit(TH1D *dmproy, TF1 * fitpb, Double_t &mean, Double_t &ErrMean,  Double_t &excl,Double_t &range);
+   void MakeFitBetter(TH1D *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f, Double_t &excl, Double_t &range);
+   void MakeFitInvGauss(TH1D *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean,Double_t &excl , Double_t &range);
+   void MakeFitInvGaussBetter(TH1D *dmproy, TF1 * fitpb2, Double_t &mean, Double_t &ErrMean, Double_t &f,Double_t &excl,  Double_t &range);
  
 
   

@@ -1,8 +1,26 @@
+
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 //------------------------------------------------------------------------------
 // Implementation of AliPerfAnalyzeInvPt class. It analyzes the output of
-// AliPerformancePtCalib.cxx  and AliPerformancePtCalibMC.cxx:
-// Projection of 1/pt vs theta and vs phi resp. histoprams will be fitted with either
-// polynomial or gaussian fit function to extract minimum position of 1/pt.
+// AliPerformancePtCalib.cxx  and AliPerformancePtCalibMC.cxx: via
+// AliPerformancePtCalib::Analyse() or AliPerformancePtCalibMC::Analyse()
+//
+// Projection of charge/pt vs theta and vs phi resp. histoprams will be fitted with either
+// polynomial or gaussian fit function to extract minimum position of charge/pt.
 // Fit options and theta, phi bins can be set by user.
 // Attention: use the Set* functions of AliPerformancePtCalib.h and AliPerformancePtCalibMC.h
 // when running AliPerformancePtCalib*::Analyse()
@@ -14,15 +32,21 @@
 
 /*
  
-// after running comparison task, read the file, and get component
-gROOT->LoadMacro("$ALICE_ROOT/PWG1/Macros/LoadMyLibs.C");
-LoadMyLibs();
+// after running the performance task of AliPerformancePtCalib* or AliPerformancePtCalibMC*
+// read the file, and get component:
 
 TFile f("Output.root");
-AliPerformancePtCalib * compObj = (AliPerformancePtCalib*)coutput->FindObject("AliPerformancePtCalib");
- 
-// analyse comparison data
+AliPerformancePtCalib *compObj = (AliPerformancePtCalib*)coutput->FindObject("AliPerformancePtCalib");
+//or
+AliPerformancePtCalibMC *compObj = (AliPerformancePtCalibMC*)coutput->FindObject("AliPerformancePtCalibMC");
+
+// set phi and theta bins for fitting and analyse comparison data
+compObj->SetProjBinsTheta(thetaBins,nThetaBins,minPhi, maxPhi);
+compObj->SetProjBinsPhi(phiBins,nPhiBins,minTheta,maxTheta);
+compObj->SetMakeFitOption(kFALSE,exclRange,fitRange);
+compObj->SetDoRebin(rebin);
 compObj->Analyse();
+//for details see functions of class AliPerformancePtCalib*
 
 // the output histograms/graphs will be stored in the folder "folderRes" 
 compObj->GetAnalysisFolder()->ls("*");
@@ -39,8 +63,8 @@ fout.Close();
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TMath.h"
 #include "TH1D.h"
+#include "TMath.h"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 #include "TObjArray.h"
@@ -123,6 +147,7 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
    fFitGaus(0) ,
    fDoRebin(0),
    fRebin(0),
+   //histograms,graphs and functions
    fHistH2InvPtTheta(0),
    fHistH2InvPtPhi(0), 
    fGrMinPosTheta(0),
@@ -134,14 +159,13 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt():
 {
    // Default constructor
   
-   fFitGaus = kFALSE;
-   fNThetaBins = 0;
-   fNPhiBins = 0;
-   fRange = 0;
-   fExclRange = 0;
-   fFitGaus = 0;
-   fDoRebin = kFALSE;
-   fRebin = 0;
+   fFitGaus = kFALSE;// flag for gaussian fit
+   fNThetaBins = 0; // theta bins for projections
+   fNPhiBins = 0; //phi bins for projections
+   fRange = 0; //fit range
+   fExclRange = 0; //fit exclusion range
+   fDoRebin = kFALSE; // flag for rebin
+   fRebin = 0; // bins for rebin
    
    for(Int_t i=0;i<100;i++){
       
@@ -161,6 +185,7 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(Char_t* name="AliAnalyzeInvPt",Char_t* 
    fFitGaus(0) ,
    fDoRebin(0),
    fRebin(0),
+   //histograms,graphs and functions
    fHistH2InvPtTheta(0),
    fHistH2InvPtPhi(0), 
    fGrMinPosTheta(0),
@@ -170,16 +195,14 @@ AliPerfAnalyzeInvPt::AliPerfAnalyzeInvPt(Char_t* name="AliAnalyzeInvPt",Char_t* 
    fFitInvGauss(0),
    fFitInvGaussRejP(0)
 {
+   fFitGaus = kFALSE;// flag for gaussian fit
+   fNThetaBins = 0; // theta bins for projections
+   fNPhiBins = 0; //phi bins for projections
+   fRange = 0; //fit range
+   fExclRange = 0; //fit exclusion range
+   fDoRebin = kFALSE; // flag for rebin
+   fRebin = 0; // bins for rebin
    
-   fFitGaus = kFALSE;
-   fNThetaBins = 0;
-   fNPhiBins =0;
-   fRange = 0;
-   fExclRange = 0;
-   fFitGaus = 0;
-   fDoRebin = kFALSE;
-   fRebin = 0;
-    
    for(Int_t i=0;i<100;i++){
     
       fHistFitTheta[i] = NULL;
@@ -198,19 +221,19 @@ void AliPerfAnalyzeInvPt::InitGraphs(Double_t *binsXTheta,Double_t *fitParamThet
    fGrMinPosTheta->SetMarkerStyle(20);
    fGrMinPosTheta->SetMarkerColor(2);
    fGrMinPosTheta->SetLineColor(2);
-   fGrMinPosTheta->GetYaxis()->SetTitle("min pos (Gev/c)^{-1}");
+   fGrMinPosTheta->GetYaxis()->SetTitle("min pos (GeV/c)^{-1}");
    fGrMinPosTheta->GetXaxis()->SetTitle("#theta bin no.");
    fGrMinPosTheta->GetYaxis()->SetTitleOffset(1.2);   
-   fGrMinPosTheta->SetTitle("#theta bins ");
+   fGrMinPosTheta->SetTitle("#theta bins");
 
    fGrMinPosPhi = new TGraphErrors(fNPhiBins,binsXPhi,fitParamPhi,0,errFitParamPhi);  
    fGrMinPosPhi->SetMarkerStyle(20);
    fGrMinPosPhi->SetMarkerColor(4);
    fGrMinPosPhi->SetLineColor(4);
-   fGrMinPosPhi->GetYaxis()->SetTitle("min pos (Gev/c)^{-1}");
+   fGrMinPosPhi->GetYaxis()->SetTitle("min pos (GeV/c)^{-1}");
    fGrMinPosPhi->GetXaxis()->SetTitle("#phi bin no.");
    fGrMinPosPhi->GetYaxis()->SetTitleOffset(1.2);   
-   fGrMinPosPhi->SetTitle("#phi bins ");
+   fGrMinPosPhi->SetTitle("#phi bins");
 }
 
 //______________________________________________________________________________________________________________________________________
@@ -245,7 +268,7 @@ void AliPerfAnalyzeInvPt::InitFitFcn(){
 }
 //______________________________________________________________________________________________________________________________________
 void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *histPhiInvPt, TObjArray* aFolderObj){
-   //start analysis: fitting 1/pt spectra
+   //start analysis: fitting charge/pt spectra
 
   
    
@@ -256,8 +279,8 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       Printf("warning: no 1/pt histogram to analyse in phit bins!");
    }
 
-   Double_t thetaBins[9] = {0.77,0.97,1.17,1.37,1.57,1.77,1.97,2.17,2.37};                 // theta bins
-   Double_t phiBins[13] = {0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.5};           // phi bins
+   Double_t thetaBins[9] = {0.77,0.97,1.17,1.37,1.57,1.77,1.97,2.17,2.37};                 // default theta bins
+   Double_t phiBins[13] = {0.0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.5};           // default phi bins
   
    Int_t nThetaBins = 9;
    Int_t nPhiBins = 13;
@@ -291,26 +314,50 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
    }
 
       
-   //param arrays
+   //fit parameter arrays
    Double_t fitParamTheta[100],fitParamPhi[100];
    Double_t errFitParamTheta[100], errFitParamPhi[100];
    Double_t binsXTheta[100],binsXPhi[100];
-
+   
+   //copy histograms
    fHistH2InvPtTheta  = (TH2F*)histThetaInvPt->Clone("invPtVsTheta");
    fHistH2InvPtPhi    = (TH2F*)histPhiInvPt->Clone("invPtVsPhi");
-
+   
+   // initialize fit functions
    InitFitFcn();
-	 
+   
+   // canvas for 2D histograms (input)
+   TCanvas *thephiCan =new TCanvas("thephiCan","theta and phi vs invPt",800,400);
+   thephiCan->Divide(2,1);
+   thephiCan->cd(1);
+   fHistH2InvPtTheta->SetTitle("#theta vs charge/pt for selected #phi range");
+   fHistH2InvPtTheta->GetXaxis()->SetTitle("charge/p_{t} (GeV/c)^{-1}");
+   fHistH2InvPtTheta->GetYaxis()->SetTitle("#theta (rad)");
+   fHistH2InvPtTheta->DrawCopy("col1z");
+   
+   thephiCan->cd(2);
+   fHistH2InvPtPhi->SetTitle("#phi vs charge/pt for selected #theta range");
+   fHistH2InvPtPhi->GetXaxis()->SetTitle("charge/p_{t} (GeV/c)^{-1}");
+   fHistH2InvPtPhi->GetYaxis()->SetTitle("#phi (rad)");
+   fHistH2InvPtPhi->DrawCopy("col1z");
+   
+   // canvas for 1D histograms (projections)
    TCanvas *theCan =new TCanvas("theCan","invPt theta bins",1200,900);
    theCan->Divide((fNThetaBins+2)/2,2);
    TCanvas *phiCan =new TCanvas("phiCan","invPt phi bins",1200,900);
    phiCan->Divide((fNPhiBins+2)/2,2);
+
    Int_t countPad = 1;
 	 
-   // analyse 1/pt in bins of theta 
+   // analyse charge/pt in bins of theta 
    for(Int_t i=0;i<fNThetaBins;i++){
+
+      //set name for each projection
       TString name = "fit_theta_";
       name +=i;
+      fHistH2InvPtTheta->SetName(name.Data());
+      
+      //find bins for projection
       Int_t firstBin= fHistH2InvPtTheta->GetYaxis()->FindBin(fThetaBins[i]);
       if(i>0) firstBin +=1;
       Int_t lastBin = fHistH2InvPtTheta->GetYaxis()->FindBin(fThetaBins[i+1]);
@@ -318,13 +365,13 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
 	 firstBin= fHistH2InvPtTheta->GetYaxis()->FindBin(fThetaBins[0]);
 	 lastBin = fHistH2InvPtTheta->GetYaxis()->FindBin(fThetaBins[i]);
       }
-    
-      fHistH2InvPtTheta->SetName(name.Data());
-      fHistFitTheta[i] =  (TH1F*)fHistH2InvPtTheta->ProjectionX("_px",firstBin,lastBin,"e");
+      
+      //make projection
+      fHistFitTheta[i] =  (TH1D*)fHistH2InvPtTheta->ProjectionX("_px",firstBin,lastBin,"e");
       
       Char_t titleTheta[50];
-      if(TMath::Abs(i-(fNThetaBins-1))<0.5) sprintf(titleTheta,"1/pt (GeV/c) integrated over #theta");
-      else  sprintf(titleTheta,"1/pt (GeV/c) for #theta range: %1.3f - %1.3f",fThetaBins[i],fThetaBins[i+1]);
+      if(TMath::Abs(i-(fNThetaBins-1))<0.5) sprintf(titleTheta,"charge/pt (GeV/c) integrated over #theta");
+      else  sprintf(titleTheta,"charge/pt (GeV/c) for #theta range: %1.3f - %1.3f",fThetaBins[i],fThetaBins[i+1]);
       
       fHistFitTheta[i]->SetTitle(titleTheta);
    
@@ -334,34 +381,38 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       Double_t invPtMinPosErrImpr = 0;
    
       if(fDoRebin) fHistFitTheta[i]->Rebin(fRebin);
+
       //start fitting
       if(!fFitGaus){
-	 Printf("making polynomial fit in 1/pt in theta bins");
+	 Printf("making polynomial fit in charge/pt in theta bins");
 	 theCan->cd(countPad);
 	 MakeFit(fHistFitTheta[i],fFitMinPos, invPtMinPos,invPtMinPosErr, fExclRange,fRange);
 	 MakeFitBetter(fHistFitTheta[i],fFitMinPosRejP, invPtMinPosImpr, invPtMinPosErrImpr, invPtMinPos,fExclRange,fRange);
 
-	
+	 //plot projection and fit
 	 fHistFitTheta[i]->DrawCopy();
 	 fFitMinPos->DrawCopy("L,same");
 	 fFitMinPosRejP->DrawCopy("L,same");
       }
       else{
-	 Printf("making gauss fit in 1/pt in theta bins");
+	 Printf("making gauss fit in charge/pt in theta bins");
 	 theCan->cd(countPad);
 	 MakeFitInvGauss(fHistFitTheta[i],fFitInvGauss, invPtMinPos, invPtMinPosErr,fExclRange,fRange);
 	 MakeFitInvGaussBetter(fHistFitTheta[i],fFitInvGaussRejP, invPtMinPosImpr, invPtMinPosErrImpr,invPtMinPos,fExclRange,fRange);
-      
+
+	 //plot projection and fit
 	 fHistFitTheta[i]->DrawCopy();
 	 fFitInvGauss->DrawCopy("L,same");
 	 fFitInvGaussRejP->DrawCopy("L,same");
       }
-    
+      //add objects for analysis folder
       aFolderObj->Add(fHistFitTheta[i]);
-    
+      
+      //store fit parameter
       fitParamTheta[i] = invPtMinPosImpr;
       errFitParamTheta[i] = invPtMinPosErrImpr;
-    
+      
+      //count bins and pad number for displaying
       binsXTheta[i] = i+1.0;
       countPad++;
    }
@@ -370,13 +421,16 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
    countPad = 1;
 
    
-   // analyse 1/pt in bins of phi 
+   // analyse charge/pt in bins of phi 
   
    for(Int_t i=0;i<fNPhiBins;i++){
+
+      //set name for each projection
       TString name = "fit_phi_";
       name +=i;
-    
       fHistH2InvPtPhi->SetName(name.Data());
+      
+      //find bins for projection
       Int_t  firstBin = fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[i]);
       if(i>0) firstBin +=1;
       Int_t   lastBin =  fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[i+1]);
@@ -384,11 +438,13 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
 	 firstBin = fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[0]);
 	 lastBin =  fHistH2InvPtPhi->GetYaxis()->FindBin(fPhiBins[i]);
       }
-      fHistFitPhi[i] =  (TH1F*) fHistH2InvPtPhi->ProjectionX("_px",firstBin,lastBin,"e");
+      
+      //make projection
+      fHistFitPhi[i] =  (TH1D*) fHistH2InvPtPhi->ProjectionX("_px",firstBin,lastBin,"e");
       
       Char_t titlePhi[50];
-      if(TMath::Abs(i-(fNPhiBins-1))<0.5) sprintf(titlePhi,"1/pt (GeV/c) integrated over #phi");
-      else  sprintf(titlePhi,"1/pt (GeV/c) for #phi range: %1.3f - %1.3f",fPhiBins[i],fPhiBins[i+1]);
+      if(TMath::Abs(i-(fNPhiBins-1))<0.5) sprintf(titlePhi,"charge/pt (GeV/c) integrated over #phi");
+      else  sprintf(titlePhi,"charge/pt (GeV/c) for #phi range: %1.3f - %1.3f",fPhiBins[i],fPhiBins[i+1]);
      
       fHistFitPhi[i]->SetTitle(titlePhi);
   
@@ -396,38 +452,45 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       Double_t invPtMinPosErr = 0;
       Double_t invPtMinPosImpr  = 0;
       Double_t invPtMinPosErrImpr = 0;
-     if(fDoRebin) fHistFitPhi[i]->Rebin(fRebin);
+      if(fDoRebin) fHistFitPhi[i]->Rebin(fRebin);
+
+      //start fitting
       if(!fFitGaus){
-	 Printf("making polynomial fit in 1/pt in phi bins");
+	 Printf("making polynomial fit in charge/pt in phi bins");
 	 phiCan->cd(countPad);
 	 MakeFit(fHistFitPhi[i],fFitMinPos, invPtMinPos, invPtMinPosErr,fExclRange,fRange);
 	 MakeFitBetter(fHistFitPhi[i],fFitMinPosRejP, invPtMinPosImpr, invPtMinPosErrImpr,invPtMinPos,fExclRange,fRange);
-	 
+
+	 //plot projection and fit
 	 fHistFitPhi[i]->DrawCopy();
 	 fFitMinPos->DrawCopy("L,same");
 	 fFitMinPosRejP->DrawCopy("L,same");
 
       }
       else {
-	 Printf("making gauss fit in 1/pt in phi bins");
+	 Printf("making gauss fit in charge/pt in phi bins");
 	 phiCan->cd(countPad);
 	 MakeFitInvGauss(fHistFitPhi[i],fFitInvGauss, invPtMinPos, invPtMinPosErr, exclRange,fRange);
 	 MakeFitInvGaussBetter(fHistFitPhi[i],fFitInvGaussRejP, invPtMinPosImpr, invPtMinPosErrImpr, invPtMinPos, fExclRange,fRange);
-	 
+
+	 //plot projection and fit
 	 fHistFitPhi[i]->DrawCopy();
 	 fFitInvGauss->DrawCopy("L,same");
 	 fFitInvGaussRejP->DrawCopy("L,same");
       }
-    
+      //add objects for analysis folder
       aFolderObj->Add(fHistFitPhi[i]);
-    
+      
+      //store fit parameter
       fitParamPhi[i] = invPtMinPosImpr;
       errFitParamPhi[i] = invPtMinPosErrImpr;
-    
+
+      //count bins and pad number for displaying
       binsXPhi[i] = i+1.0;
       countPad++;
    }
-      
+
+   //initialize graphs for displaying the fit parameter
    InitGraphs(binsXTheta,fitParamTheta,errFitParamTheta,binsXPhi,fitParamPhi,errFitParamPhi);
 
    //plot fit values = minimum positions of charge/pt
@@ -439,7 +502,7 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
    canFitVal->cd(2);
    fGrMinPosPhi->Draw("AP");
 
-   Printf("AliPerfAnalyzeInvPt: NOTE: last bin is always fit result  of integral over all angle ranges which have been set by user!");
+   Printf("AliPerfAnalyzeInvPt::StartAnalysis: ***** NOTE: last bin is always fit result of integral over all angle BINS which have been set by user! angle ranges of 2D projections are kept.*****");
 
    //add objects to folder
    aFolderObj->Add(fGrMinPosTheta);
@@ -453,9 +516,9 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
 
 //____________________________________________________________________________________________________________________________________________
 
-void AliPerfAnalyzeInvPt::MakeFit(TH1F *hproy, TF1 * fitpb, Double_t &mean, Double_t &errMean, Double_t &excl,Double_t &range)
+void AliPerfAnalyzeInvPt::MakeFit(TH1D *hproy, TF1 * fitpb, Double_t &mean, Double_t &errMean, Double_t &excl,Double_t &range)
 {
-   // fit 1/pt and extract minimum position
+   // fit charge/pt and extract minimum position
    
    fitpb->SetRange(-range,range);
    fitpb->SetParLimits(1,-0.05,0.05);
@@ -469,7 +532,7 @@ void AliPerfAnalyzeInvPt::MakeFit(TH1F *hproy, TF1 * fitpb, Double_t &mean, Doub
    if(!mean)  errMean = 0.0;
 }
 //____________________________________________________________________________________________________________________________________________
-void AliPerfAnalyzeInvPt::MakeFitBetter(TH1F *hproy, TF1 * fitpb2, Double_t &mean, Double_t &errMean, Double_t &f, Double_t &excl, Double_t &range)
+void AliPerfAnalyzeInvPt::MakeFitBetter(TH1D *hproy, TF1 * fitpb2, Double_t &mean, Double_t &errMean, Double_t &f, Double_t &excl, Double_t &range)
 {
    // adjust fit range to minimum position of AliPerfAnalyzeInvPt::MakeFit and fit 1/pt and extract new minimum position
    
@@ -486,9 +549,9 @@ void AliPerfAnalyzeInvPt::MakeFitBetter(TH1F *hproy, TF1 * fitpb2, Double_t &mea
 
 }
 //____________________________________________________________________________________________________________________________________________
-void AliPerfAnalyzeInvPt::MakeFitInvGauss(TH1F *hproy, TF1 * fitpb, Double_t &mean, Double_t &errMean, Double_t &excl,Double_t &range)
+void AliPerfAnalyzeInvPt::MakeFitInvGauss(TH1D *hproy, TF1 * fitpb, Double_t &mean, Double_t &errMean, Double_t &excl,Double_t &range)
 {
-   // fit 1/pt and extract minimum position
+   // fit charge/pt and extract minimum position
    
    fitpb->FixParameter(6,excl);
    fitpb->SetRange(-range,range);
@@ -504,7 +567,7 @@ void AliPerfAnalyzeInvPt::MakeFitInvGauss(TH1F *hproy, TF1 * fitpb, Double_t &me
   
 }
 //____________________________________________________________________________________________________________________________________________
-void AliPerfAnalyzeInvPt::MakeFitInvGaussBetter(TH1F *hproy, TF1 * fitpb2, Double_t &mean, Double_t &errMean, Double_t &f, Double_t &excl, Double_t &range)
+void AliPerfAnalyzeInvPt::MakeFitInvGaussBetter(TH1D *hproy, TF1 * fitpb2, Double_t &mean, Double_t &errMean, Double_t &f, Double_t &excl, Double_t &range)
 {
    // adjust fit range to minimum position of AliPerfAnalyzeInvPt::MakeFitInvGauss and fit 1/pt and extract new minimum position
    
@@ -568,8 +631,8 @@ void AliPerfAnalyzeInvPt::SetMakeFitOption(const Bool_t setGausFit, const Double
       fExclRange  = exclusionR;
       fRange = fitR;
   
-      if(fFitGaus) Printf("set MakeGausFit with fit range %2.3f and exclusion range in 1/pt: %2.3f",fRange,fExclRange);
-      else  Printf("set standard polynomial fit with fit range %2.3f and exclusion range in 1/pt: %2.3f",fRange,fExclRange);
+      if(fFitGaus) Printf("AliPerfAnalyzeInvPt::SetMakeFitOption: set MakeGausFit with fit range %2.3f and exclusion range in fabs(1/pt): %2.3f",fRange,fExclRange);
+      else  Printf("AliPerfAnalyzeInvPt::SetMakeFitOption: set standard polynomial fit with fit range %2.3f and exclusion range in fabs(1/pt): %2.3f",fRange,fExclRange);
    }
    else Printf(" AliPerfAnalyzeInvPt::SetMakeFitOption: no user input. Set standard polynomial fit with fit range 1.0 and exclusion range 0.13.");
 }
