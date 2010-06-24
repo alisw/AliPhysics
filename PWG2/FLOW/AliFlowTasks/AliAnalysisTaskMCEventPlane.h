@@ -38,7 +38,7 @@ class AliAnalysisTaskMCEventPlane : public AliAnalysisTaskSE {
   AliFlowAnalysisWithMCEventPlane*  fMc;           // MC EP analysis object
   TList*                            fListHistos;   // collection of output
 
-  ClassDef(AliAnalysisTaskMCEventPlane, 0); // AliAnalysisTaskMCEventPlane class object
+  ClassDef(AliAnalysisTaskMCEventPlane, 1); // AliAnalysisTaskMCEventPlane class object
 };
 
 #endif
