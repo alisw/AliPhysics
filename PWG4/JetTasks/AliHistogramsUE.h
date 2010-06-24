@@ -17,6 +17,7 @@ class TObjArray;
 class TProfile;
 class TTree;
 class TVector3;
+class AliAnalysisTaskUE;
 
 class  AliHistogramsUE : public TObject
   {
@@ -29,16 +30,16 @@ class  AliHistogramsUE : public TObject
     
     TObjArray*     CreateCanvas(const Int_t ncanv);
     TObjArray*     GetHistosForPlotting(TString file, TString branches);
-    TList*	   CreateHistos(Int_t bins, Double_t min, Double_t max, Double_t etacut);
+    void	   CreateHistograms(TList* list,Int_t bins, Double_t min, Double_t max, Double_t etacut);
     void           DrawUE(Int_t debug);  //to draw final plots (normalized)
     void           FillHistogram(const char* name,Double_t fillX); //One dimensional
     void           FillHistogram(const char* name,Int_t fillX); //One dimensional
     void           FillHistogram(const char* name,Double_t fillX, Double_t fillY); //Two dimensional
     void           FillHistogram(const char* name,Double_t fillX, Double_t fillY, Double_t weight); //Two dimensional
     void           FillHistogram(const char* name,Double_t fillX, Int_t fillY, Double_t weight); //Two dimensional
-    TList*	   GetListOfHistos();
-    TH1F*            GetTrials()       {return fh1Trials;}
-    TProfile*        GetXsec()         {return fh1Xsec;}
+    TList*	   GetHistograms();
+    TH1F*          GetTrials()       {return fh1Trials;}
+    TProfile*      GetXsec()         {return fh1Xsec;}
     void           PlotBranchesUE(TString file, TString branches, Double_t minJetProjection);  //TO BE CALLED BY EXTERNAL MACRO !!!		 
     void           SetStyle(); 
   protected:
@@ -94,7 +95,7 @@ class  AliHistogramsUE : public TObject
     TProfile*  fh1Xsec;		    //! 	
     TH1F*  fh1Trials;               //!
 
-    ClassDef( AliHistogramsUE, 1 ); // Class to manage histograms in UE analysis
+    ClassDef( AliHistogramsUE, 0 ); // Class to manage histograms in UE analysis
   };
 
 #endif

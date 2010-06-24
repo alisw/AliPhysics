@@ -13,10 +13,6 @@
 // --- ROOT system ---
 #include <TObject.h> 
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
 class AliAnalysisTaskUE;
 class AliAODEvent;
 class AliAODTrack;
@@ -36,30 +32,19 @@ class AliAnalyseUE : public TObject {
 
   void 		AnalyseMC(TVector3 *jetVect, AliMCEvent *mcEvent, AliGenPythiaEventHeader  *pythiaGenHeader, Int_t conePosition, Bool_t useAliStack, Bool_t constrainDistance, Double_t minDistance);
   Bool_t   	AnaTypeSelection(TVector3 *jetVect);
-
-  TList*	CreateHistograms(Int_t bins, Double_t min, Double_t max);
-
-  void          FillLeadingJet( Double_t  w);
  
   void          FillRegions(Bool_t isNorm2Area, TVector3 *jetVect);
 
-  void          FillTrials(const char *namex, Double_t  w);
-  
-  void          FillVertex(Double_t  w);
-  
-  void          FillXsec(const char *namex, Double_t  w);
-
   void 		FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition);
-  
-  TList*        GetHistograms();
   
   TVector3	GetOrderedClusters(TString aodBranch, Bool_t chargedJets, Double_t chJetPtMin);
 
   void          Initialize(AliAnalysisTaskUE& tmp);
-  void          Initialize(Int_t anaType, AliAODEvent* aod,Double_t coneRadius, Int_t debug, Int_t filterBit, Double_t 
-  jet1EtaCut, Double_t jet2DeltaPhiCut, Double_t jet2RatioPtCut, Double_t jet3PtCut, Int_t ordering, Int_t regionType,Bool_t simulateChJetPt, Double_t trackEtaCut, Double_t trackPtCut, Bool_t useChargeHadrons, Bool_t useChPartJet, Bool_t usePositiveCharge, Bool_t useSingleCharge);
 
   Bool_t        VertexSelection(AliAODEvent *value, Int_t tracks, Double_t zed);
+
+  Bool_t        VertexSelectionOld(AliAODEvent *value);
+
   void		WriteSettings();
 
   // Various setters when you do not want to initialize members from AliAnalysisTaskUE
@@ -145,6 +130,6 @@ class AliAnalyseUE : public TObject {
     //Store analysis settings
     TTree* 	  fSettingsTree;	// To store analysis settings
     
-    ClassDef(AliAnalyseUE,1)
+    ClassDef(AliAnalyseUE,0)
 };
 #endif
