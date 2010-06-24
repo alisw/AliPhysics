@@ -141,9 +141,9 @@ AliGenHijing::~AliGenHijing()
 void AliGenHijing::Init()
 {
 // Initialisation
-    fFrame.Resize(8);
-    fTarget.Resize(8);
-    fProjectile.Resize(8);
+    fFrame.Resize(4);
+    fTarget.Resize(4);
+    fProjectile.Resize(4);
     
     SetMC(new THijing(fEnergyCMS, fFrame, fProjectile, fTarget, 
 		      fAProjectile, fZProjectile, fATarget, fZTarget, 
