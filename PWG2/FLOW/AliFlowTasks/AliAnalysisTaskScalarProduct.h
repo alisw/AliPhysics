@@ -51,7 +51,7 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
 
   Double_t  fRelDiffMsub;   // the relative difference the two subevent multiplicities can have
   
-  ClassDef(AliAnalysisTaskScalarProduct, 0); // example of analysis
+  ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
 };
 
 //==================================================================

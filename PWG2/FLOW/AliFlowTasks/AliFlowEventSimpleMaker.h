@@ -80,7 +80,7 @@ class AliFlowEventSimpleMaker {
   Double_t  fEtaMinB;              // minimum eta of subevent B eta range
   Double_t  fEtaMaxB;              // maximum eta of subevent B eta range
 
-  ClassDef(AliFlowEventSimpleMaker,0)    // macro for rootcint
+  ClassDef(AliFlowEventSimpleMaker,1)    // macro for rootcint
 };
  
      
