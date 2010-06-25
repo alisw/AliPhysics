@@ -62,6 +62,11 @@ class AliRawReader: public TObject {
       const UInt_t *id = GetEventId();
       return id ? ((id)[1]&0x00000fff) : 0;
     }
+    ULong64_t             GetEventIdAsLong() const {
+      return ((ULong64_t)GetBCID()+
+	      (ULong64_t)GetOrbitID()*3564+
+	      (ULong64_t)GetPeriod()*16777215*3564);
+    }
     virtual const UInt_t* GetTriggerPattern() const = 0;
     ULong64_t             GetClassMask() const {
       const UInt_t *pattern = GetTriggerPattern();
