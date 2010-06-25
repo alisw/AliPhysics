@@ -570,6 +570,47 @@ Int_t AliHLTReadoutList::GetWordCount(EDetectorId detector)
 }
 
 
+AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetDetectorFromWord(Int_t wordindex)
+{
+  // See header file for more details.
+  switch (wordindex)
+  {
+  case 0: return kITSSPD;
+  case 1: return kITSSDD;
+  case 2: return kITSSSD;
+  case 3: return kTPC;
+  case 4: return kTPC;
+  case 5: return kTPC;
+  case 6: return kTPC;
+  case 7: return kTPC;
+  case 8: return kTPC;
+  case 9: return kTPC;
+  case 10: return kTPC;
+  case 11: return kTRD;
+  case 12: return kTOF;
+  case 13: return kTOF;
+  case 14: return kTOF;
+  case 15: return kHMPID;
+  case 16: return kPHOS;
+  case 17: return kCPV;
+  case 18: return kPMD;
+  case 19: return kMUONTRK;
+  case 20: return kMUONTRG;
+  case 21: return kFMD;
+  case 22: return kT0;
+  case 23: return kV0;
+  case 24: return kZDC;
+  case 25: return kACORDE;
+  case 26: return kTRG;
+  case 27: return kEMCAL;
+  case 28: return kEMCAL;
+  case 29: return kDAQTEST;
+  case 30: return kHLT;
+  default: return kNoDetector;
+  }
+}
+
+
 AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetFirstUsedDetector(EDetectorId startAfter) const
 {
   // See header file for more details.

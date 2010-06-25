@@ -399,7 +399,8 @@ bool CheckIncorrectIDs()
 }
 
 /**
- * Tests if using incorrect DDL IDs returns zero or is ignored as expected.
+ * Tests the mapping of the AliHLTReadoutList::GetFirstWord, AliHLTReadoutList::GetWordCount
+ * and AliHLTReadoutList::GetDetectorFromWord methods.
  */
 bool CheckWordIndexAndCount()
 {
@@ -470,6 +471,23 @@ bool CheckWordIndexAndCount()
 			cerr << "ERROR: The functions AliHLTReadoutList::GetWordCount"
 				" and AliHLTReadoutList::GetWordCount do not fully cover"
 				" all DDL readout list words." << endl;
+			return false;
+		}
+	}
+	
+	// Check the mapping of GetDetectorFromWord
+	for (int j = 0; j < gkAliHLTDDLListSize; ++j)
+	{
+		AliHLTReadoutList::EDetectorId det = AliHLTReadoutList::GetDetectorFromWord(j);
+		Int_t firstword = AliHLTReadoutList::GetFirstWord(det);
+		Int_t lastword = firstword + AliHLTReadoutList::GetWordCount(det);
+		if (not (firstword <= j and j < lastword))
+		{
+			cerr << "ERROR: The function AliHLTReadoutList::GetDetectorFromWord returns "
+				<< AliHLTReadoutList::DetectorIdToString(det)
+				<< " for word " << j
+				<< " but the GetFirstWord and GetWordCount methods indicate a different range."
+				<< " The mapping is probably incorrect." << endl;
 			return false;
 		}
 	}

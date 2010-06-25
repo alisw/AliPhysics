@@ -222,6 +222,14 @@ class AliHLTReadoutList : public TNamed
   static Int_t GetWordCount(EDetectorId detector);
   
   /**
+   * Returns the corresponding detector ID code for the given word index into the
+   * internal data structure.
+   * \param  wordindex   The position of the word from the start of the DDL readout bit list.
+   * \returns the code of the corresponding detector or kNoDetector if invalid.
+   */
+  static EDetectorId GetDetectorFromWord(Int_t wordindex);
+  
+  /**
    * Returns the first detector with non-zero DDL bits.
    * \param  startAfter  The detector code after which to start looking from.
    *     If kTOF is used for example then only detectors after kTOF will be checked,
