@@ -33,6 +33,7 @@ using namespace std;
 
 #include "AliHLTCalibrationProcessor.h"
 #include "AliHLTMemoryFile.h"
+#include "AliHLTReadoutList.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -210,39 +211,6 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
 
   // ** if event Type is not SOR or EOR -> fill DDLNumber list and process data
   if ( ! blkEOR  && !blkSOR ) {
-
-#if 0    
-    // ** Set DDLNumber List
-    if ( trigData.fData != NULL) {
-      AliHLTEventTriggerData* trg = ( AliHLTEventTriggerData* ) trigData.fData;
-      if ( trg != NULL) {
-	AliHLTEventDDL list = (AliHLTEventDDL) trg->fReadoutList;        
-	  
-	Int_t wordNdx = GetFirstUsedDDLWord(list);
-	if ( wordNdx >=0 ) {
-	  
-	  Int_t wordCount = 1;
-	  // Handle special TPC and TOF case
-	  if ( wordNdx == 3 )
-	    wordCount = 8;
-	  else if ( wordNdx == 12 )
-	    wordCount = 3;
-	  
-	  // check word for word and binary OR it with existing DDLNumberList
-	  for ( Int_t ndx = 0; ndx < wordCount; ndx++ ) {
-	    AliHLTUInt32_t word = list.fList[wordNdx+ndx];
-	
-	    // set only 4 bit into one Char_t
-	    for ( Int_t charNdx = 0; charNdx < 8; charNdx++) {
-	      fDDLNumber[(8*ndx)+charNdx] |= (Char_t) word & 0x0000000F;
-	      word = word >> 4;
-	    }
-	  }
-	} // if ( wordNdx > 0 ) {
-      } // if ( trg != NULL) {
-    } // if ( trigData.fData != NULL) {
-#endif
-    
     // ** ProcessData
     iResult = ProcessCalibration( evtData, blocks, trigData, outputPtr, size, outputBlocks );
     fEventCounter++; 
@@ -314,7 +282,7 @@ Int_t AliHLTCalibrationProcessor::ShipDataToFXS( const AliHLTComponentEventData&
  * ######################## CreateFXSHeader #####################
  */
 
-Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
+Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -345,19 +313,23 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
   if ( pDDLList ) {
     // use user list
     
-    Int_t wordNdx = GetFirstUsedDDLWord( *(pDDLList) );
-    if ( wordNdx >=0 ) {
-	  
-      Int_t wordCount = 1;
-      // Handle special TPC and TOF case
-      if ( wordNdx == 3 )
-	wordCount = 8;
-      else if ( wordNdx == 12 )
-	wordCount = 3;
-	  
+    AliHLTReadoutList::EDetectorId detid = pDDLList->GetFirstUsedDetector();
+    Int_t wordNdx = AliHLTReadoutList::GetFirstWord(detid);
+    Int_t wordCount = AliHLTReadoutList::GetWordCount(detid);
+    
+    if (pDDLList->GetFirstUsedDetector(detid) != AliHLTReadoutList::kNoDetector or wordNdx < 0)
+    {
+      HLTError("DDLIDs for minimum of TWO detectors ( %s, %s ) set, this function works only for ONE detector.",
+          AliHLTReadoutList::DetectorIdToString(detid),
+          AliHLTReadoutList::DetectorIdToString(pDDLList->GetFirstUsedDetector(detid))
+        );
+      iResult = -1;
+    }
+    else
+    {
       // check word for word 
       for ( Int_t ndx = 0; ndx < wordCount; ndx++ ) {
-	AliHLTUInt32_t word = pDDLList->fList[wordNdx+ndx];
+	AliHLTUInt32_t word = pDDLList->Buffer()->fList[wordNdx+ndx];
 	
 	// set only 4 bit into one Char_t
 	for ( Int_t charNdx = 0; charNdx < 8; charNdx++) {
@@ -365,9 +337,7 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
 	  word = word >> 4;
 	}
       }
-    } // if ( wordNdx > 0 ) {
-    else
-      iResult = wordNdx;
+    }
   } //   if ( pDDLList ) {
 
   // -- fill header with ascii chars
@@ -381,13 +351,13 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
   }
   
   return iResult;
-}  // Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTXSHeader &pHeader, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
+}  // Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTXSHeader &pHeader, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
 
 /*
  * ######################## PushToFXS #####################
  */
 
-Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
+Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -426,9 +396,9 @@ Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetec
 
   return iResult;
 
-} // Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* detector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
+} // Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* detector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
 
-Int_t AliHLTCalibrationProcessor::PushToFXS( void* pBuffer, int iSize, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
+Int_t AliHLTCalibrationProcessor::PushToFXS( void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
@@ -441,5 +411,5 @@ Int_t AliHLTCalibrationProcessor::PushToFXS( void* pBuffer, int iSize, const cha
 
   return iResult;
 
-} // Int_t AliHLTCalibrationProcessor::PushToFXS(void* pBuffer, int iSize, const char* pDdetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
+} // Int_t AliHLTCalibrationProcessor::PushToFXS(void* pBuffer, int iSize, const char* pDdetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
 

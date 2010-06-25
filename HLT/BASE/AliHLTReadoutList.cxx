@@ -40,6 +40,39 @@
 ClassImp(AliHLTReadoutList)
 
 
+const char* AliHLTReadoutList::DetectorIdToString(EDetectorId id)
+{
+  // Converts a detector ID to a user readable string.
+  switch (id)
+  {
+  case kNoDetector: return "kNoDetector";
+  case kITSSPD:  return "kITSSPD";
+  case kITSSDD:  return "kITSSDD";
+  case kITSSSD:  return "kITSSSD";
+  case kTPC:     return "kTPC";
+  case kTRD:     return "kTRD";
+  case kTOF:     return "kTOF";
+  case kHMPID:   return "kHMPID";
+  case kPHOS:    return "kPHOS";
+  case kCPV:     return "kCPV";
+  case kPMD:     return "kPMD";
+  case kMUONTRK: return "kMUONTRK";
+  case kMUONTRG: return "kMUONTRG";
+  case kFMD:     return "kFMD";
+  case kT0:      return "kT0";
+  case kV0:      return "kV0";
+  case kZDC:     return "kZDC";
+  case kACORDE:  return "kACORDE";
+  case kTRG:     return "kTRG";
+  case kEMCAL:   return "kEMCAL";
+  case kDAQTEST: return "kDAQTEST";
+  case kHLT:     return "kHLT";
+  case kALLDET:  return "kALLDET";
+  default:       return "UNKNOWN!";
+  }
+}
+
+
 AliHLTReadoutList::AliHLTReadoutList() :
         TNamed("AliHLTReadoutList", "Readout list object used for manipulating and storing an AliHLTEventDDL structure."),
 	fReadoutList()
@@ -119,10 +152,24 @@ AliHLTReadoutList::AliHLTReadoutList(const AliHLTEventDDL& list) :
 {
   // Constructor to create readout list from AliHLTEventDDL structure.
   // See header file for more details.
-  memset(&fReadoutList, 0, sizeof(fReadoutList));
-  // handle lists of different sizes, copy only the overlapping part of the list
-  fReadoutList.fCount=sizeof(fReadoutList.fList)/sizeof(AliHLTUInt32_t);
-  memcpy(&fReadoutList.fList, &list.fList, (fReadoutList.fCount<list.fCount?fReadoutList.fCount:list.fCount)*sizeof(AliHLTUInt32_t));
+  fReadoutList.fCount = gkAliHLTDDLListSize;  // Required by ALICE-INT-2007-015
+  memset(fReadoutList.fList, 0x0, sizeof(fReadoutList.fList));
+  // Handle lists of different sizes. If the size is for a known version
+  // of AliHLTEventDDL then handle appropriately, otherwise just copy only
+  // the overlapping part of the list.
+  if (list.fCount == gkAliHLTDDLListSizeV0)
+  {
+    memcpy(&fReadoutList.fList[0], &list.fList[0], sizeof(AliHLTUInt32_t)*28);
+    memcpy(&fReadoutList.fList[29], &list.fList[28], sizeof(AliHLTUInt32_t)*2);
+  }
+  else if (list.fCount == gkAliHLTDDLListSizeV1)
+  {
+    memcpy(&fReadoutList.fList, &list.fList, sizeof(AliHLTEventDDL));
+  }
+  else
+  {
+    memcpy(&fReadoutList.fList, &list.fList, (fReadoutList.fCount<list.fCount?fReadoutList.fCount:list.fCount)*sizeof(AliHLTUInt32_t));
+  }
 }
 
 
@@ -408,6 +455,156 @@ bool AliHLTReadoutList::DetectorEnabled(Int_t detector) const
   if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x000003FF;
   
   return result;
+}
+
+
+bool AliHLTReadoutList::DetectorDisabled(Int_t detector) const
+{
+  // Checks if a particular detector's DDLs are disabled.
+  // See header file for more details.
+  
+  bool result = true;
+  if ((detector & kITSSPD) != 0) result &= fReadoutList.fList[0] == 0x00000000;
+  if ((detector & kITSSDD) != 0) result &= fReadoutList.fList[1] == 0x00000000;
+  if ((detector & kITSSSD) != 0) result &= fReadoutList.fList[2] == 0x00000000;
+  if ((detector & kTPC) != 0)
+  {
+    result &= fReadoutList.fList[3] == 0x00000000;
+    result &= fReadoutList.fList[4] == 0x00000000;
+    result &= fReadoutList.fList[5] == 0x00000000;
+    result &= fReadoutList.fList[6] == 0x00000000;
+    result &= fReadoutList.fList[7] == 0x00000000;
+    result &= fReadoutList.fList[8] == 0x00000000;
+    result &= fReadoutList.fList[9] == 0x00000000;
+  }
+  if ((detector & kTRD) != 0) result &= fReadoutList.fList[11] == 0x00000000;
+  if ((detector & kTOF) != 0)
+  {
+    result &= fReadoutList.fList[12] == 0x00000000;
+    result &= fReadoutList.fList[13] == 0x00000000;
+    result &= fReadoutList.fList[14] == 0x00000000;
+  }
+  if ((detector & kHMPID) != 0) result &= fReadoutList.fList[15] == 0x00000000;
+  if ((detector & kPHOS) != 0) result &= fReadoutList.fList[16] == 0x00000000;
+  if ((detector & kCPV) != 0) result &= fReadoutList.fList[17] == 0x00000000;
+  if ((detector & kPMD) != 0) result &= fReadoutList.fList[18] == 0x00000000;
+  if ((detector & kMUONTRK) != 0) result &= fReadoutList.fList[19] == 0x00000000;
+  if ((detector & kMUONTRG) != 0) result &= fReadoutList.fList[20] == 0x00000000;
+  if ((detector & kFMD) != 0) result &= fReadoutList.fList[21] == 0x00000000;
+  if ((detector & kT0) != 0) result &= fReadoutList.fList[22] == 0x00000000;
+  if ((detector & kV0) != 0) result &= fReadoutList.fList[23] == 0x00000000;
+  if ((detector & kZDC) != 0) result &= fReadoutList.fList[24] == 0x00000000;
+  if ((detector & kACORDE) != 0) result &= fReadoutList.fList[25] == 0x00000000;
+  if ((detector & kTRG) != 0) result &= fReadoutList.fList[26] == 0x00000000;
+  if ((detector & kEMCAL) != 0)
+  {
+    result &= fReadoutList.fList[27] == 0x00000000;
+    result &= fReadoutList.fList[28] == 0x00000000;
+  }
+  if ((detector & kDAQTEST) != 0) result &= fReadoutList.fList[29] == 0x00000000;
+  if ((detector & kHLT) != 0) result &= fReadoutList.fList[30] == 0x00000000;
+  
+  return result;
+}
+
+
+Int_t AliHLTReadoutList::GetFirstWord(EDetectorId detector)
+{
+  // See header file for more details.
+  switch (detector)
+  {
+  case kITSSPD:  return 0;
+  case kITSSDD:  return 1;
+  case kITSSSD:  return 2;
+  case kTPC:     return 3;
+  case kTRD:     return 11;
+  case kTOF:     return 12;
+  case kHMPID:   return 15;
+  case kPHOS:    return 16;
+  case kCPV:     return 17;
+  case kPMD:     return 18;
+  case kMUONTRK: return 19;
+  case kMUONTRG: return 20;
+  case kFMD:     return 21;
+  case kT0:      return 22;
+  case kV0:      return 23;
+  case kZDC:     return 24;
+  case kACORDE:  return 25;
+  case kTRG:     return 26;
+  case kEMCAL:   return 27;
+  case kDAQTEST: return 29;
+  case kHLT:     return 30;
+  default:       return -1;
+  }
+}
+
+
+Int_t AliHLTReadoutList::GetWordCount(EDetectorId detector)
+{
+  // See header file for more details.
+  switch (detector)
+  {
+  case kITSSPD:  return 1;
+  case kITSSDD:  return 1;
+  case kITSSSD:  return 1;
+  case kTPC:     return 8;
+  case kTRD:     return 1;
+  case kTOF:     return 3;
+  case kHMPID:   return 1;
+  case kPHOS:    return 1;
+  case kCPV:     return 1;
+  case kPMD:     return 1;
+  case kMUONTRK: return 1;
+  case kMUONTRG: return 1;
+  case kFMD:     return 1;
+  case kT0:      return 1;
+  case kV0:      return 1;
+  case kZDC:     return 1;
+  case kACORDE:  return 1;
+  case kTRG:     return 1;
+  case kEMCAL:   return 2;
+  case kDAQTEST: return 1;
+  case kHLT:     return 1;
+  default:       return 0;
+  }
+}
+
+
+AliHLTReadoutList::EDetectorId AliHLTReadoutList::GetFirstUsedDetector(EDetectorId startAfter) const
+{
+  // See header file for more details.
+  if (startAfter < kITSSPD and fReadoutList.fList[0] != 0x00000000) return kITSSPD;
+  if (startAfter < kITSSDD and fReadoutList.fList[1] != 0x00000000) return kITSSDD;
+  if (startAfter < kITSSSD and fReadoutList.fList[2] != 0x00000000) return kITSSSD;
+  if (startAfter < kTPC and fReadoutList.fList[3] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[4] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[5] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[6] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[7] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[8] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[9] != 0x00000000) return kTPC;
+  if (startAfter < kTPC and fReadoutList.fList[10] != 0x00000000) return kTPC;
+  if (startAfter < kTRD and fReadoutList.fList[11] != 0x00000000) return kTRD;
+  if (startAfter < kTOF and fReadoutList.fList[12] != 0x00000000) return kTOF;
+  if (startAfter < kTOF and fReadoutList.fList[13] != 0x00000000) return kTOF;
+  if (startAfter < kTOF and fReadoutList.fList[14] != 0x00000000) return kTOF;
+  if (startAfter < kHMPID and fReadoutList.fList[15] != 0x00000000) return kHMPID;
+  if (startAfter < kPHOS and fReadoutList.fList[16] != 0x00000000) return kPHOS;
+  if (startAfter < kCPV and fReadoutList.fList[17] != 0x00000000) return kCPV;
+  if (startAfter < kPMD and fReadoutList.fList[18] != 0x00000000) return kPMD;
+  if (startAfter < kMUONTRK and fReadoutList.fList[19] != 0x00000000) return kMUONTRK;
+  if (startAfter < kMUONTRG and fReadoutList.fList[20] != 0x00000000) return kMUONTRG;
+  if (startAfter < kFMD and fReadoutList.fList[21] != 0x00000000) return kFMD;
+  if (startAfter < kT0 and fReadoutList.fList[22] != 0x00000000) return kT0;
+  if (startAfter < kV0 and fReadoutList.fList[23] != 0x00000000) return kV0;
+  if (startAfter < kZDC and fReadoutList.fList[24] != 0x00000000) return kZDC;
+  if (startAfter < kACORDE and fReadoutList.fList[25] != 0x00000000) return kACORDE;
+  if (startAfter < kTRG and fReadoutList.fList[26] != 0x00000000) return kTRG;
+  if (startAfter < kEMCAL and fReadoutList.fList[27] != 0x00000000) return kEMCAL;
+  if (startAfter < kEMCAL and fReadoutList.fList[28] != 0x00000000) return kEMCAL;
+  if (startAfter < kDAQTEST and fReadoutList.fList[29] != 0x00000000) return kDAQTEST;
+  if (startAfter < kHLT and fReadoutList.fList[30] != 0x00000000) return kHLT;
+  return kNoDetector;
 }
 
 

@@ -197,7 +197,7 @@ class AliHLTTrigger : public AliHLTProcessor
    */
   void EnableDDLBit(Int_t ddlId)
   {
-    AliHLTComponent::SetDDLBit(fReadoutList, ddlId, kTRUE);
+    fReadoutList.EnableDDLBit(ddlId);
   }
 
   /**
@@ -206,7 +206,7 @@ class AliHLTTrigger : public AliHLTProcessor
    */
   void DisableDDLBit(Int_t ddlId)
   {
-    AliHLTComponent::SetDDLBit(fReadoutList, ddlId, kFALSE);
+    fReadoutList.DisableDDLBit(ddlId);
   }
   
   /**
@@ -216,7 +216,7 @@ class AliHLTTrigger : public AliHLTProcessor
    */
   void SetDDLBit(Int_t ddlId, Bool_t state)
   {
-    AliHLTComponent::SetDDLBit(fReadoutList, ddlId, state);
+    fReadoutList.SetDDLBit(ddlId, state);
   }
   
   /**

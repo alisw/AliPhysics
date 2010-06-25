@@ -35,6 +35,7 @@ using namespace std;
 #include "AliHLTRunSummaryProducerComponent.h"
 #include "AliHLTEventSummary.h"
 #include "AliHLTDataTypes.h"
+#include "AliRawDataHeader.h"
 
 #include <cerrno>
 
@@ -166,17 +167,9 @@ void AliHLTRunSummaryProducerComponent::ProcessEventSummary( AliHLTEventSummary*
 void AliHLTRunSummaryProducerComponent::ProcessTriggerData( AliHLTComponentTriggerData& trigData ) {
   // see header file for class documentation
   
-  AliHLTEventTriggerData* trg = ( AliHLTEventTriggerData* ) trigData.fData;
-
-  AliHLTUInt64_t triggerClasses = 0;
-
-  // ** Higher bits
-  triggerClasses |= ( trg->fCommonHeader[6] & 0x3FFFF );
-  
-  triggerClasses =  triggerClasses << 32;
-
-  // ** Lower bits
-  triggerClasses |= trg->fCommonHeader[5] ;
+  const AliRawDataHeader* cdh = NULL;
+  if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true) != 0) return;
+  AliHLTUInt64_t triggerClasses = cdh->GetTriggerClasses();
 
   for ( Int_t ndx = 0; ndx < gkNCTPTriggerClasses; ndx ++ ) {
     

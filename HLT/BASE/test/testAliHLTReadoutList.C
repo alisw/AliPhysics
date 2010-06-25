@@ -209,6 +209,13 @@ bool CheckEnablingDisabling()
 					<< CodeToString(code[j]) << " by constructor." << endl;
 				return false;
 			}
+			if (rl.DetectorDisabled(code[j]) == true)
+			{
+				cerr << "ERROR: DetectorDisabled returned and incorrect result"
+					" when detectors enabled for "
+					<< CodeToString(code[j]) << " by constructor." << endl;
+				return false;
+			}
 			
 			// Also check each bit individualy according to AliHLTDAQ values.
 			int det = detNum[j];
@@ -230,6 +237,13 @@ bool CheckEnablingDisabling()
 			if (rl.DetectorEnabled(code[j]) == true)
 			{
 				cerr << "ERROR: AliHLTReadoutList::Disable(x) is not working for x = "
+					<< CodeToString(code[j]) << "." << endl;
+				return false;
+			}
+			if (rl.DetectorDisabled(code[j]) == false)
+			{
+				cerr << "ERROR: DetectorDisabled returned and incorrect result"
+					" when calling AliHLTReadoutList::Disable(x) for "
 					<< CodeToString(code[j]) << "." << endl;
 				return false;
 			}
@@ -385,6 +399,85 @@ bool CheckIncorrectIDs()
 }
 
 /**
+ * Tests if using incorrect DDL IDs returns zero or is ignored as expected.
+ */
+bool CheckWordIndexAndCount()
+{
+	int wordCovered[gkAliHLTDDLListSize];
+	for (int j = 0; j < gkAliHLTDDLListSize; ++j) wordCovered[j] = 0;
+	
+	for (int i = 0; i < kgNumberOfCodes; ++i)
+	{
+		AliHLTReadoutList rl;
+		Int_t firstword = rl.GetFirstWord((AliHLTReadoutList::EDetectorId)kgDetCodes[i]);
+		if (firstword < 0 or gkAliHLTDDLListSize-1 < firstword)
+		{
+			cerr << "ERROR: AliHLTReadoutList::GetFirstWord(" << kgDetCodeName[i]
+				<< ") returns " << firstword
+				<< ", which is outside the valid range of [0.." << gkAliHLTDDLListSize-1
+				<< "]." << endl;
+			return false;
+		}
+		
+		Int_t lastword = firstword + rl.GetWordCount((AliHLTReadoutList::EDetectorId)kgDetCodes[i]);
+		if (lastword < 1 or gkAliHLTDDLListSize < lastword)
+		{
+			cerr << "ERROR: The sum AliHLTReadoutList::GetFirstWord(" << kgDetCodeName[i]
+				<< ") + AliHLTReadoutList::GetWordCount(" << kgDetCodeName[i]
+				<< ") gives " << lastword
+				<< ", which is outside the valid range of [1.." << gkAliHLTDDLListSize
+				<< "]." << endl;
+			return false;
+		}
+		
+		for (int j = firstword; j < lastword; ++j)
+		{
+			if (wordCovered[j] == 1)
+			{
+				cerr << "ERROR: The combination of AliHLTReadoutList::GetWordCount(" << kgDetCodeName[i]
+					<< ") and AliHLTReadoutList::GetWordCount(" << kgDetCodeName[i]
+					<< ") overlaps with previous detectors. Check the mapping in these functions."
+					<< endl;
+				return false;
+			}
+			wordCovered[j] = 1;
+		}
+		
+		Int_t maxddls = AliHLTDAQ::NumberOfDdls(i);
+		Int_t ddlid = AliHLTDAQ::DdlIDOffset(i) | (gRandom->Integer(maxddls) & 0xFF);
+		rl.EnableDDLBit(ddlid);
+		if (rl.GetFirstUsedDetector() != kgDetCodes[i])
+		{
+			cerr << "ERROR: AliHLTReadoutList::GetFirstUsedDetector() did not return the correct value of"
+				<< kgDetCodeName[i] << " after calling AliHLTReadoutList::EnableDDLBit("
+				<< ddlid << ")." << endl;
+			return false;
+		}
+		if (rl.GetFirstUsedDetector((AliHLTReadoutList::EDetectorId)kgDetCodes[i]) != AliHLTReadoutList::kNoDetector)
+		{
+			cerr << "ERROR: AliHLTReadoutList::GetFirstUsedDetector(" << kgDetCodeName[i]
+				<< "+1) did not return the correct value of AliHLTReadoutList::kNoDetector"
+				   " after calling AliHLTReadoutList::EnableDDLBit("
+				<< ddlid << ")." << endl;
+			return false;
+		}
+	}
+	
+	for (int j = 0; j < gkAliHLTDDLListSize; ++j)
+	{
+		if (wordCovered[j] == 0)
+		{
+			cerr << "ERROR: The functions AliHLTReadoutList::GetWordCount"
+				" and AliHLTReadoutList::GetWordCount do not fully cover"
+				" all DDL readout list words." << endl;
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+/**
  * Runs the unit test for the AliHLTReadoutList class.
  * \returns true if the class passed the test and false otherwise.
  */
@@ -406,6 +499,7 @@ bool testAliHLTReadoutList()
 	if (not CheckEnablingDisabling()) return false;
 	if (not CheckEnablingDisablingDDLs()) return false;
 	if (not CheckIncorrectIDs()) return false;
+	if (not CheckWordIndexAndCount()) return false;
 	
 	return true;
 }

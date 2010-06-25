@@ -18,6 +18,8 @@
 #include "TArrayL64.h"
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTReadoutList.h"
+
 
 /**
  * @class AliHLTCTPData
@@ -139,19 +141,19 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    * Return a readout list for the active trigger classes.
    * The list is an 'OR' of the active trugger classes.
    */
-  AliHLTEventDDL ReadoutList(const AliHLTComponentTriggerData& trigData) const;
+  AliHLTReadoutList ReadoutList(const AliHLTComponentTriggerData& trigData) const;
 
   /**
    * Return a readout list for the active trigger classes.
    * The list is an 'OR' of the active trugger classes.
    */
-  AliHLTEventDDL ReadoutList(AliHLTUInt64_t  triggerMask) const;
+  AliHLTReadoutList ReadoutList(AliHLTUInt64_t  triggerMask) const;
 
   /**
    * Return a readout list for the active trigger classes.
    * The list is an 'OR' of the active trugger classes.
    */
-  AliHLTEventDDL ReadoutList() const {
+  AliHLTReadoutList ReadoutList() const {
     return ReadoutList(fTriggers);
   }
 

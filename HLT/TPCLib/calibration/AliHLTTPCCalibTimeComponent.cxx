@@ -616,7 +616,7 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
   delete file;
  
   // the vdriftArray is pushed to the HLT-FXSsubscriber 
-  PushToFXS( (TObject*)vdriftArray, "TPC", "TIMEDRIFT", rdList.Buffer() );
+  PushToFXS( (TObject*)vdriftArray, "TPC", "TIMEDRIFT", &rdList );
  
   //Should array be deleted now?
   //  if(vdriftArray){

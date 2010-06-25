@@ -82,9 +82,11 @@ class AliHLTComponentHandler;
 class TObjArray;
 class TMap;
 class TStopwatch;
+class AliRawDataHeader;
 class AliHLTComponent;
 class AliHLTMemoryFile;
 class AliHLTCTPData;
+class AliHLTReadoutList;
 
 /** list of component data type structures */
 typedef vector<AliHLTComponentDataType>   AliHLTComponentDataTypeList;
@@ -720,6 +722,58 @@ class AliHLTComponent : public AliHLTLogging {
   static int ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size,
 					string& chainId, string& compId, string& compParam,
 					vector<AliHLTUInt32_t>& parents);
+
+  /**
+   * Extracts the different data parts from the trigger data structure.
+   * [in] @param trigData  The trigger data as passed to the DoProcessing method.
+   * [out] @param attributes  The data block attributes given by the HLT framework.
+   * [out] @param status  The HLT status bits given by the HLT framework.
+   * [out] @param cdh  The common data header received from DDL links.
+   * [out] @param readoutlist  The readout list to fill with readout list bits
+   *                           passed on by the HLT framework.
+   * [in] @param printErrors  If true then error messages are generated as necessary
+   *                          and suppressed otherwise.
+   * @note If any of the output parameters are set to NULL then the field is not set.
+   *   For example, the following line will only fill the CDH pointer.
+   *   \code
+   *     AliRawDataHeader* cdh;
+   *     ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL);
+   *   \endcode
+   * @return the zero on success and one of the following error codes on failure.
+   *   if a non-zero error code is returned then none of the output parameters are
+   *   modified.
+   *    \li -ENOENT  The <i>trigData</i> structure size is wrong.
+   *    \li -EBADF   The <i>trigData</i> data size is wrong.
+   *    \li -EBADMSG The common data header (CDH) in the trigger data has the wrong
+   *                 number of words indicated.
+   *    \li -EPROTO  The readout list structure in the trigger data has the wrong
+   *                 number of words indicated.
+   */
+  static int ExtractTriggerData(
+      const AliHLTComponentTriggerData& trigData,
+      const AliHLTUInt8_t (**attributes)[gkAliHLTBlockDAttributeCount],
+      AliHLTUInt64_t* status,
+      const AliRawDataHeader** cdh,
+      AliHLTReadoutList* readoutlist,
+      bool printErrors = false
+    );
+
+  /**
+   * Extracts the readout list from a trigger data structure.
+   * [in] @param trigData  The trigger data as passed to the DoProcessing method.
+   * [out] @param list  The output readout list to fill.
+   * [in] @param printErrors  If true then error messages are generated as necessary
+   *                          and suppressed otherwise.
+   * @return the zero on success or one of the error codes returned by ExtractTriggerData.
+   */
+  static int GetReadoutList(
+      const AliHLTComponentTriggerData& trigData, AliHLTReadoutList& list,
+      bool printErrors = false
+    )
+  {
+    return ExtractTriggerData(trigData, NULL, NULL, NULL, &list, printErrors);
+  }
+  
   /**
    * Stopwatch type for benchmarking.
    */
@@ -1474,46 +1528,6 @@ class AliHLTComponent : public AliHLTLogging {
   bool IsDataEvent(AliHLTUInt32_t* pTgt=NULL) const;
 
   /**
-   * Set a bit to 1 in a readout list ( = AliHLTEventDDL )
-   * -> enable DDL for readout
-   * @param list        readout list
-   * @param ddlId       DDL Id to be turned on ( Decimal )
-   */
-  void EnableDDLBit(AliHLTEventDDL &list, Int_t ddlId ) const {
-    SetDDLBit( list, ddlId, kTRUE ); 
-  }
-
-  /**
-   * Set a bit to 0 in a readout list ( = AliHLTEventDDL )
-   * -> disable DDL for readout
-   * @param list        readout list
-   * @param ddlId       DDL Id to be turned on ( Decimal )
-   */
-  void DisableDDLBit(AliHLTEventDDL &list, Int_t ddlId ) const { 
-    SetDDLBit( list, ddlId, kFALSE );  
-  }
-  
-  /**
-   * Set or unset  bit a readout list ( = AliHLTEventDDL )
-   * -> enable or disable DDL for readout
-   * @param list        readout list
-   * @param ddlId       DDL Id to be turned on ( Decimal )
-   * @param state       kTRUE sets it, kFALSE unsets it
-   */
-  void SetDDLBit(AliHLTEventDDL &list, Int_t ddlId, Bool_t state ) const;
-  
-  /**
-   * Get the first word of a detector, which has a set DDL bit. 
-   * Beware, this only works if DDLs of 1 detector are set. In the 
-   * case of the TPC and TOF, which use 8 and 3 words, the first 
-   * word is returned.
-   * @param list        readout list
-   * @return            returns the detector index, -1 if no bit is set
-   *                    at all or several detectors (=error)
-   */
-  Int_t GetFirstUsedDDLWord(AliHLTEventDDL &list) const;
-
-  /**
    * Copy a struct from block data.
    * The function checks for block size and struct size. The least common
    * size will be copied to the target struct, remaining fields are initialized
@@ -1726,9 +1740,6 @@ class AliHLTComponent : public AliHLTLogging {
 
   /** descriptor of the current run */
   AliHLTRunDesc* fpRunDesc;                                        //! transient
-
-  /** the current DDL list */
-  AliHLTEventDDL* fpDDLList;                                       //! transient
 
   /** external fct to set CDB run no, indicates external CDB initialization */
   void (*fCDBSetRunNoFunc)();                                      //! transient

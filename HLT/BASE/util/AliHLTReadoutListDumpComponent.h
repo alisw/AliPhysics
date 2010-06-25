@@ -124,18 +124,11 @@ class AliHLTReadoutListDumpComponent : public AliHLTFileWriter
    * Fill histogram from the readout list.
    */
   static int FillReadoutListHistogram(TH1I* histo, const AliHLTReadoutList* list);
-  /**
-   * Fill histogram from the readout list.
-   */
-  static int FillReadoutListHistogram(TH1I* histo, const AliHLTEventDDL* field);
+
   /**
    * Fill histogram from the readout list.
    */
   static int FillReadoutListVsCTP(TH2I* histo, const AliHLTReadoutList* list, const AliHLTComponentTriggerData* trigData);
-  /**
-   * Fill histogram from the readout list.
-   */
-  static int FillReadoutListVsCTP(TH2I* histo, const AliHLTEventDDL* field, const AliHLTComponentTriggerData* trigData);
 
 private:
   /** copy constructor prohibited */

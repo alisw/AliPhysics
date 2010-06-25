@@ -205,7 +205,7 @@ Int_t AliHLTTPCCalibTimeGainComponent::ShipDataToFXS( const AliHLTComponentEvent
     
   if(fEnableAnalysis) fCalibTimeGain->Analyze();  
   static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
-  PushToFXS( (TObject*) fCalibTimeGain, "TPC", "TimeGain", rdList.Buffer() ) ;
+  PushToFXS( (TObject*) fCalibTimeGain, "TPC", "TimeGain", &rdList ) ;
   
   return 0;
 } 

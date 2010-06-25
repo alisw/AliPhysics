@@ -100,12 +100,13 @@ int AliHLTReadoutListDumpComponent::DumpEvent( const AliHLTComponentEventData& /
 	 pBlock && iResult>=0;
 	 pBlock=GetNextInputBlock()) {
       if (pBlock->fDataType!=hltrdlstdt) continue;
-      if (pBlock->fSize==sizeof(AliHLTEventDDL)) {
+      if (pBlock->fSize==sizeof(AliHLTEventDDL) or pBlock->fSize==sizeof(AliHLTEventDDLV0)) {
 	HLTDebug("Filling histograms from binary buffer");
-	FillReadoutListHistogram(fBitsHisto, reinterpret_cast<AliHLTEventDDL*>(pBlock->fPtr));
-	FillReadoutListVsCTP(fBitsVsCTP, reinterpret_cast<AliHLTEventDDL*>(pBlock->fPtr), &trigData);
+	AliHLTReadoutList readoutlist(*reinterpret_cast<AliHLTEventDDL*>(pBlock->fPtr));
+	FillReadoutListHistogram(fBitsHisto, &readoutlist);
+	FillReadoutListVsCTP(fBitsVsCTP, &readoutlist, &trigData);
       } else {
-	HLTError("HLTRDLST size missmatch: %d, expected %d", pBlock->fSize, sizeof(AliHLTEventDDL));
+	HLTError("HLTRDLST size missmatch: %d, expected %d or %d", pBlock->fSize, sizeof(AliHLTEventDDL), sizeof(AliHLTEventDDLV0));
       }
     }
   } else if (fMode==AliHLTReadoutListDumpComponent::kModeHLTDecision) {
@@ -171,23 +172,14 @@ int AliHLTReadoutListDumpComponent::FillReadoutListHistogram(TH1I* histo, const 
   // see header file for class documentation
   if (!histo || !list) return -EINVAL;
   if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADF;
-
-  return FillReadoutListHistogram(histo, list->Buffer());
-}
-
-int AliHLTReadoutListDumpComponent::FillReadoutListHistogram(TH1I* histo, const AliHLTEventDDL* field)
-{
-  // see header file for class documentation
-  if (!histo || !field) return -EINVAL;
-
-  if (field->fCount!=(unsigned)gkAliHLTDDLListSize) return -EBADF;
+  if (list->Buffer()->fCount!=(unsigned)gkAliHLTDDLListSize) return -EBADF;
 
   for (int word=0; word<gkAliHLTDDLListSize; word++) {
     for (unsigned bit=0; bit<sizeof(AliHLTUInt32_t)*8; bit++) {
-      if (field->fList[word]&0x1<<bit) histo->Fill(word*sizeof(AliHLTUInt32_t)*8+bit);
+      if (list->Buffer()->fList[word]&0x1<<bit) histo->Fill(word*sizeof(AliHLTUInt32_t)*8+bit);
     }
   }
-
+  
   return 0;
 }
 
@@ -196,22 +188,13 @@ int AliHLTReadoutListDumpComponent::FillReadoutListVsCTP(TH2I* histo, const AliH
   // see header file for class documentation
   if (!histo || !list || !trigData) return -EINVAL;
   if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADF;
-
-  return FillReadoutListVsCTP(histo, list->Buffer(), trigData);
-}
-
-int AliHLTReadoutListDumpComponent::FillReadoutListVsCTP(TH2I* histo, const AliHLTEventDDL* field, const AliHLTComponentTriggerData* trigData)
-{
-  // see header file for class documentation
-  if (!histo || !field || !trigData) return -EINVAL;
-
-  if (field->fCount!=(unsigned)gkAliHLTDDLListSize) return -EBADF;
+  if (list->Buffer()->fCount!=(unsigned)gkAliHLTDDLListSize) return -EBADF;
 
   AliHLTUInt64_t triggerMask=AliHLTCTPData::ActiveTriggers(*trigData);
   AliHLTUInt64_t bit0=0x1;
   for (int word=0; word<gkAliHLTDDLListSize; word++) {
     for (unsigned bit=0; bit<sizeof(AliHLTUInt32_t)*8; bit++) {
-      if (field->fList[word]&0x1<<bit) {
+      if (list->Buffer()->fList[word]&0x1<<bit) {
 	for (int trigger=0; trigger<gkNCTPTriggerClasses; trigger++) {
 	  if ((triggerMask&(bit0<<trigger))!=0) {
 	    histo->Fill(word*sizeof(AliHLTUInt32_t)*8+bit, trigger);

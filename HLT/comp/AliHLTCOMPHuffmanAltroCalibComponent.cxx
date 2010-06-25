@@ -367,7 +367,7 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponent
 
   fHuffmanData->SetOCDBSpecifications(fOrigin, dataspec);
   static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
-  PushToFXS( (TObject*) fHuffmanData, "TPC", "HuffmanData", rdList.Buffer() ) ;
+  PushToFXS( (TObject*) fHuffmanData, "TPC", "HuffmanData", &rdList ) ;
   
   return 0;
 } // Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {

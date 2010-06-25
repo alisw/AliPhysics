@@ -228,7 +228,7 @@ Int_t AliHLTTPCCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventDa
     
   if(fEnableAnalysis) fCalibTask->Analyze();  
   static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
-  PushToFXS( (TObject*) fCalibTask, "TPC", "CALIB", rdList.Buffer() ) ;
+  PushToFXS( (TObject*) fCalibTask, "TPC", "CALIB", &rdList ) ;
   
   return 0;
 } 

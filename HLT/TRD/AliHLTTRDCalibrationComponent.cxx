@@ -461,7 +461,7 @@ Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS(const AliHLTComponentEventDat
 
   HLTDebug("Size of the fOutArray is %d\n",fOutArray->GetEntriesFast());
 
-  PushToFXS((TObject*)fOutArray, "TRD", "GAINDRIFTPRF", rdList.Buffer() );
+  PushToFXS((TObject*)fOutArray, "TRD", "GAINDRIFTPRF", &rdList );
   //PushToFXS((TObject*)fOutArray->FindObject("CH2d"), "TRD", "GAINDRIFTPRF", rdList.Buffer() );
 
   return 0;

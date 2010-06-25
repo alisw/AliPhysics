@@ -19,6 +19,8 @@
 #include "AliHLTMessage.h"
 #include "AliHLTDataTypes.h"
 
+class AliHLTReadoutList;
+
 /**
  * @class AliHLTCalibrationProcessor
  * Base class of HLT calibration components.
@@ -59,13 +61,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param pObject     pointer to root object
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
-   * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
+   * @param pDDLList    pointer to ReadoutList ( class @ref AliHLTReadoutList) of
    *                    participating DDLs. Have to be set or unset with @ref
    *                    AliHLTComponent::EnableDDLBit() and @ref AliHLTComponent::DisableDDLBit(). 
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList);
+  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList);
 
   /**
    * Insert an object into the output. FXS header will be inserted before the root object.
@@ -73,13 +75,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param iSize       size of the buffer
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
-   * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
+   * @param pDDLList    pointer to ReadoutList ( class @ref AliHLTReadoutList) of
    *                    participating DDLs. Have to be set or unset with @ref
    *                    AliHLTComponent::EnableDDLBit() and @ref AliHLTComponent::DisableDDLBit().
    *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList);
+   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList);
 
   /** Constants  */ 
   static const AliHLTUInt32_t fgkFXSProtocolHeaderSize;
@@ -242,12 +244,12 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param pHeader     pointer to AliHLTFXSHeader
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
-   * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
+   * @param pDDLList    pointer to ReadoutList ( class @ref AliHLTReadoutList) of
    *                    participating DDLs. Will be filled automatically if not 
    *                    supplied by the component.
    * @return neg. error code if failed 
    */
-  Int_t CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList );
+  Int_t CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList );
 
   /*
    * ######################## Members #####################

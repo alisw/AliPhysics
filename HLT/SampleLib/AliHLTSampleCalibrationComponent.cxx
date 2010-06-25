@@ -222,7 +222,7 @@ int AliHLTSampleCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventD
   // prepare final result and ship to FXS
 
   AliHLTReadoutList rdList(AliHLTReadoutList::kHLT);
-  PushToFXS(fHisto, "HLT", "TestHisto", rdList.Buffer());
+  PushToFXS(fHisto, "HLT", "TestHisto", &rdList);
 
   return 0;
 }

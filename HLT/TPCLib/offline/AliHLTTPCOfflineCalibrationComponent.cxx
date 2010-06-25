@@ -256,9 +256,9 @@ Int_t AliHLTTPCOfflineCalibrationComponent::ShipDataToFXS( const AliHLTComponent
       fTPCcalibTracks->Analyze();
    }
    static AliHLTReadoutList rdList(AliHLTReadoutList::kTPC);
-   PushToFXS((TObject*)fTPCcalibAlign, "TPC", "TPCcalibAlign", rdList.Buffer()) ;
-   PushToFXS((TObject*)fTPCcalibTracksGain, "TPC", "TPCcalibTracksGain", rdList.Buffer()) ;
-   PushToFXS((TObject*)fTPCcalibTracks, "TPC", "TPCcalibTracks", rdList.Buffer()) ;
+   PushToFXS((TObject*)fTPCcalibAlign, "TPC", "TPCcalibAlign", &rdList) ;
+   PushToFXS((TObject*)fTPCcalibTracksGain, "TPC", "TPCcalibTracksGain", &rdList) ;
+   PushToFXS((TObject*)fTPCcalibTracks, "TPC", "TPCcalibTracks", &rdList) ;
 
 return 0;
 }

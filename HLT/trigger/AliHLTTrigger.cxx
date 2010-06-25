@@ -142,8 +142,7 @@ int AliHLTTrigger::TriggerEvent(
   // mask the readout list according to the CTP trigger
   // if the classes have been initialized (mask non-zero)
   if (CTPData() != NULL and CTPData()->Mask() != 0x0) {
-    AliHLTEventDDL eventDDL = CTPData()->ReadoutList(*GetTriggerData());
-    AliHLTReadoutList ctpreadout(eventDDL);
+    AliHLTReadoutList ctpreadout = CTPData()->ReadoutList(*GetTriggerData());
     ctpreadout.Enable(AliHLTReadoutList::kHLT);
     readoutlist.AndEq(ctpreadout);
     result->ReadoutList(readoutlist); // override the readout list with the masked one.

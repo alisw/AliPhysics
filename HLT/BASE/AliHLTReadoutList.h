@@ -41,6 +41,7 @@ class AliHLTReadoutList : public TNamed
    */
   enum EDetectorId
   {
+    kNoDetector = 0,       /// No detector value
     kITSSPD = 0x1 << 0,    /// ID for SPD detector
     kITSSDD = 0x1 << 1,    /// ID for SDD detector
     kITSSSD = 0x1 << 2,    /// ID for SSD detector
@@ -67,6 +68,9 @@ class AliHLTReadoutList : public TNamed
                | kCPV | kPMD | kMUONTRK | kMUONTRG | kFMD | kT0 | kV0 | kZDC
                | kACORDE | kTRG | kEMCAL | kHLT)
   };
+  
+  /// Converts a detector ID to a user readable string.
+  static const char* DetectorIdToString(EDetectorId id);
   
   /**
    * Default constructor.
@@ -186,12 +190,45 @@ class AliHLTReadoutList : public TNamed
   void Disable(Int_t detector);
   
   /**
-   * Checks if a particular detector's DDLs are enabled for readout.
+   * Checks if a particular detector's DDLs are all enabled for readout.
    * \param detector  A bitmap of detectors to check. Should be any values from
    *    EDetectorId that can be or'ed together for multiple detector selection.
    * \return true if all DDLs for the specified detectors are enabled for readout.
    */
-  bool DetectorEnabled(Int_t ddlId) const;
+  bool DetectorEnabled(Int_t detector) const;
+  
+  /**
+   * Checks if a particular detector's DDLs are all disabled for readout.
+   * \param detector  A bitmap of detectors to check. Should be any values from
+   *    EDetectorId that can be or'ed together for multiple detector selection.
+   * \return true if all DDLs for the specified detectors are disabled for readout.
+   * \note If both DetectorEnabled(x) and DetectorDisabled(x) return false then
+   *    it means that only part of the detectors DDLs are enabled.
+   */
+  bool DetectorDisabled(Int_t detector) const;
+  
+  /**
+   * Returns the first word of DDL bits for a given detector in the internal structure.
+   * \param detector  The detector code for which to return the starting word.
+   * \returns the first word of DDL bits for the detector or -1 if an invalid code is given.
+   */
+  static Int_t GetFirstWord(EDetectorId detector);
+  
+  /**
+   * Returns the first word of DDL bits for a given detector in the internal structure.
+   * \param detector  The detector code for which to return the starting word.
+   * \returns the first word of DDL bits for the detector or -1 if an invalid code is given.
+   */
+  static Int_t GetWordCount(EDetectorId detector);
+  
+  /**
+   * Returns the first detector with non-zero DDL bits.
+   * \param  startAfter  The detector code after which to start looking from.
+   *     If kTOF is used for example then only detectors after kTOF will be checked,
+   *     not including kTOF, in the order of precedence indicated by EDetectorId.
+   * \returns the code of the first used detector.
+   */
+  EDetectorId GetFirstUsedDetector(EDetectorId startAfter = kNoDetector) const;
   
   /**
    * Inherited from TObject. Prints the DDLs that will be readout according to

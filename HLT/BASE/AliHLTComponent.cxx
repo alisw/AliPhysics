@@ -34,6 +34,7 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include "AliHLTMessage.h"
 #include "AliHLTCTPData.h"
+#include "AliRawDataHeader.h"
 #include "TString.h"
 #include "TMath.h"
 #include "TObjArray.h"
@@ -84,7 +85,6 @@ AliHLTComponent::AliHLTComponent()
   fpStopwatches(new TObjArray(kSWTypeCount)),
   fMemFiles(),
   fpRunDesc(NULL),
-  fpDDLList(NULL),
   fCDBSetRunNoFunc(false),
   fChainId(),
   fChainIdCrc(0),
@@ -2278,73 +2278,6 @@ int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigne
   return iResult;
 }
 
-void AliHLTComponent::SetDDLBit(AliHLTEventDDL &list, Int_t ddlId, Bool_t state ) const
-{
-  // see header file for function documentation
-  
-  // -- Detector offset
-  Int_t ddlIdBase =  TMath::FloorNint( (Double_t) ddlId / 256.0 );
-  
-  // -- Word Base = 1. word of detector ( TPC has 8 words, TOF 3 ) 
-  Int_t wordBase = 0;
-
-  if ( ddlIdBase <= 3 )
-    wordBase = ddlIdBase;
-  else if ( ddlIdBase > 3 && ddlIdBase < 5 )
-    wordBase = ddlIdBase + 7;
-  else 
-    wordBase = ddlIdBase + 9;
-
-  // -- Bit index in Word
-  Int_t bitIdx = ddlId % 32;
-
-  // -- Index of word
-  Int_t wordIdx = wordBase;
-
-  // -- if TPC (3) or TOD (5) add word idx
-  if ( ( ddlIdBase == 3 ) || ( ddlIdBase == 5 ) ) {
-    wordIdx += TMath::FloorNint( (Double_t) ( ddlId - ( ddlIdBase * 256 ) ) / 32.0 );
-  }
-
-  // -- Set -- 'OR' word with bit mask;
-  if ( state )
-    list.fList[wordIdx] |= ( 0x00000001 << bitIdx );
-  // -- Unset -- 'AND' word with bit mask;
-  else
-    list.fList[wordIdx] &= ( 0xFFFFFFFF ^ ( 0x00000001 << bitIdx ) );
-}
-
-Int_t AliHLTComponent::GetFirstUsedDDLWord(AliHLTEventDDL &list) const
-{
-  // see header file for function documentation
-
-  Int_t iResult = -1;
-
-  for ( Int_t wordNdx = 0 ; wordNdx < gkAliHLTDDLListSize ; wordNdx++ ) {
-
-    if ( list.fList[wordNdx] != 0 && iResult == -1 ) {
-      // check for special cases TPC and TOF
-      if ( wordNdx > 3 && wordNdx <= 10 ) {
-	wordNdx = 10;
-	iResult = 3;
-      }
-      else if ( wordNdx > 12 && wordNdx <= 14 ) {
-	wordNdx = 14;
-	iResult = 12;
-      }
-      else
-	iResult = wordNdx;
-    }
-    else if ( list.fList[wordNdx] != 0 && iResult >= 0 ) {
-      HLTError( "DDLIDs for minimum of TWO detectors ( %d, %d ) set, this function works only for ONE detector.", iResult, wordNdx );
-      iResult = -1;
-      break;
-    }
-  }
-
-  return iResult;
-}
-
 AliHLTUInt32_t AliHLTComponent::CalculateChecksum(const AliHLTUInt8_t* buffer, int size)
 {
   // see header file for function documentation
@@ -2453,6 +2386,101 @@ int AliHLTComponent::ExtractComponentTableEntry(const AliHLTUInt8_t* pBuffer, Al
   if (retChainId.size()==0) return -ENODATA;
 
   return 1;
+}
+
+int AliHLTComponent::ExtractTriggerData(
+    const AliHLTComponentTriggerData& trigData,
+    const AliHLTUInt8_t (**attributes)[gkAliHLTBlockDAttributeCount],
+    AliHLTUInt64_t* status,
+    const AliRawDataHeader** cdh,
+    AliHLTReadoutList* readoutlist,
+    bool printErrors
+  )
+{
+  // see header file for function documentation
+  
+  // Check that the trigger data structure is the correct size.
+  if (trigData.fStructSize != sizeof(AliHLTComponentTriggerData))
+  {
+    if (printErrors)
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
+          "Invalid trigger structure size: %d but expected %d.", trigData.fStructSize, sizeof(AliHLTComponentTriggerData)
+        );
+    }
+    return -ENOENT;
+  }
+  
+  // Check that the trigger data pointer points to data of a size we can handle.
+  // Either it is the size of AliHLTEventTriggerData or 32 bits less for the old
+  // version of AliHLTEventDDL, i.e. AliHLTEventDDLV0.
+  if (trigData.fDataSize != sizeof(AliHLTEventTriggerData) and
+      trigData.fDataSize != sizeof(AliHLTEventTriggerData) - sizeof(AliHLTUInt32_t)
+     )
+  {
+    if (printErrors)
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
+          "Invalid trigger data size: %d but expected %d.", trigData.fDataSize, sizeof(AliHLTEventTriggerData)
+        );
+    }
+    return -EBADF;
+  }
+  
+  AliHLTEventTriggerData* evtData = reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
+  assert(evtData != NULL);
+  
+  // Check that the CDH has 8 words.
+  if (cdh != NULL and evtData->fCommonHeaderWordCnt != 8)
+  {
+    if (printErrors)
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
+          "Common Data Header (CDH) has wrong number of data words: %d but expected %d",
+          evtData->fCommonHeaderWordCnt, sizeof(AliRawDataHeader)/sizeof(AliHLTUInt32_t)
+        );
+    }
+    return -EBADMSG;
+  }
+  
+  // Check that the readout list has the correct count of words. i.e. something we can handle,
+  if (readoutlist != NULL and
+      evtData->fReadoutList.fCount != (unsigned)gkAliHLTDDLListSizeV0 and
+      evtData->fReadoutList.fCount != (unsigned)gkAliHLTDDLListSizeV1
+     )
+  {
+    if (printErrors)
+    {
+      AliHLTLogging log;
+      log.LoggingVarargs(kHLTLogError, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
+          "Readout list structure has wrong number of data words: %d but expected %d",
+          evtData->fReadoutList.fCount, gkAliHLTDDLListSize
+        );
+    }
+    return -EPROTO;
+  }
+  
+  if (attributes != NULL)
+  {
+    *attributes = &evtData->fAttributes;
+  }
+  if (status != NULL)
+  {
+    *status = evtData->fHLTStatus;
+  }
+  if (cdh != NULL)
+  {
+    const AliRawDataHeader* cdhptr = reinterpret_cast<const AliRawDataHeader*>(&evtData->fCommonHeader);
+    *cdh = cdhptr;
+  }
+  if (readoutlist != NULL)
+  {
+    *readoutlist = AliHLTReadoutList(evtData->fReadoutList);
+  }
+  return 0;
 }
 
 int AliHLTComponent::LoggingVarargs(AliHLTComponentLogSeverity severity, 
