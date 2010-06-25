@@ -82,16 +82,17 @@ void AliITSTrigger::Trigger() {
   // Get the FO signals for this event
   AliITSFOSignalsSPD* foSignals = NULL;
   AliRunLoader* runLoader = AliRunLoader::Instance();
-  runLoader->LoadDigits();
   AliITSLoader* itsLoader = (AliITSLoader*) runLoader->GetLoader("ITSLoader");
   if (!itsLoader) {
     AliError("ITS loader is NULL.");
   }
 
    else {
+      itsLoader->LoadDigits();
       TTree *tree = itsLoader->TreeD();
       if(!tree) {
         AliError("TreeD not available");
+	itsLoader->UnloadDigits();
         return;
       }
       foSignals = (AliITSFOSignalsSPD*)tree->GetUserInfo()->FindObject("AliITSFOSignalsSPD");
@@ -111,5 +112,5 @@ void AliITSTrigger::Trigger() {
   else {
     AliError("Fast-OR signals not available. No trigger processing done.");
   }
-
+  if (itsLoader) itsLoader->UnloadDigits();
 }
