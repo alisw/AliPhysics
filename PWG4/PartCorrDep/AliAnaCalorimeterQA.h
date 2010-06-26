@@ -261,11 +261,11 @@ public:
   TH1F * fhPhiCharged; //! phi distribution, Reco, matched with track 
   TH1F * fhEtaCharged; //! eta distribution, Reco, matched with track 
   TH3F * fhEtaPhiECharged  ; //! eta vs phi vs E, Reco, matched with track 
-  TH1F * fhEChargedNoOut  ; //! E distribution, Reco, matched with track, no outer param
-  TH1F * fhPtChargedNoOut ; //! pT distribution, Reco, matched with track, no outer param
-  TH1F * fhPhiChargedNoOut; //! phi distribution, Reco, matched with track, no outer param
-  TH1F * fhEtaChargedNoOut; //! eta distribution, Reco, matched with track, no outer param
-  TH2F * fhEtaPhiChargedNoOut  ; //! eta vs phi, Reco, matched with track, no outer param
+//  TH1F * fhEChargedNoOut  ; //! E distribution, Reco, matched with track, no outer param
+//  TH1F * fhPtChargedNoOut ; //! pT distribution, Reco, matched with track, no outer param
+//  TH1F * fhPhiChargedNoOut; //! phi distribution, Reco, matched with track, no outer param
+//  TH1F * fhEtaChargedNoOut; //! eta distribution, Reco, matched with track, no outer param
+//  TH2F * fhEtaPhiChargedNoOut  ; //! eta vs phi, Reco, matched with track, no outer param
   TH1F * fhDeltaE  ; //! MC-Reco E distribution	
   TH1F * fhDeltaPt ; //! MC-Reco pT distribution
   TH1F * fhDeltaPhi; //! MC-Reco phi distribution

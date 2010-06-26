@@ -67,26 +67,26 @@ public:
 	
   // Bad channels
   Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval()    {fRemoveBadChannels = kTRUE ; }
-  void SwitchOffBadChannelsRemoval()   {fRemoveBadChannels = kFALSE ; }
+  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; InitEMCALBadChannelStatusMap(); InitPHOSBadChannelStatusMap();}
+  void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; }
 	
   void InitEMCALBadChannelStatusMap() ;
   void InitPHOSBadChannelStatusMap () ;
 
   Int_t GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALBadChannelMap->GetEntries()>0) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-    else return -1;}
+    if(fEMCALBadChannelMap->GetEntriesFast()>0) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 0;}//Channel is ok by default
 
   Int_t GetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow) const { 
-    if(fPHOSBadChannelMap->GetEntries()>0)return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
-    else return -1;}
+    if(fPHOSBadChannelMap->GetEntriesFast()>0)return (Int_t) ((TH2I*)fPHOSBadChannelMap->At(imod))->GetBinContent(iCol,iRow); 
+    else return 0;}//Channel is ok by default
   
   void SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-    if(!fEMCALBadChannelMap->GetEntries())InitEMCALBadChannelStatusMap() ;
+    if(!fEMCALBadChannelMap->GetEntriesFast())InitEMCALBadChannelStatusMap() ;
     ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c);}
   
   void SetPHOSChannelStatus (Int_t imod, Int_t iCol, Int_t iRow, Double_t c = 1) {
-	if(!fPHOSBadChannelMap->GetEntries()) InitPHOSBadChannelStatusMap() ; 
+	if(!fPHOSBadChannelMap->GetEntriesFast()) InitPHOSBadChannelStatusMap() ; 
 	((TH2I*)fPHOSBadChannelMap->At(imod))->SetBinContent(iCol,iRow,c);}
     
   TH2I * GetEMCALChannelStatusMap(Int_t iSM) const {return (TH2I*)fEMCALBadChannelMap->At(iSM);}
@@ -125,11 +125,11 @@ public:
   void InitPHOSRecalibrationFactors () ;
 	
   Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-	  if(fEMCALRecalibrationFactors->GetEntries()>0) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+	  if(fEMCALRecalibrationFactors->GetEntriesFast()>0) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
 	  else return 1;}
 	
   Float_t GetPHOSChannelRecalibrationFactor (Int_t imod, Int_t iCol, Int_t iRow) const { 
-	  if(fPHOSRecalibrationFactors->GetEntries()>0)return (Float_t) ((TH2F*)fPHOSRecalibrationFactors->At(imod))->GetBinContent(iCol,iRow); 
+	  if(fPHOSRecalibrationFactors->GetEntriesFast()>0)return (Float_t) ((TH2F*)fPHOSRecalibrationFactors->At(imod))->GetBinContent(iCol,iRow); 
 	  else return 1;}
 	
   void SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
