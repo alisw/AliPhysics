@@ -75,7 +75,7 @@ ClassImp(AliAnaCalorimeterQA)
 	fHistoSSBins(40),          fHistoSSMax(10),            fHistoSSMin(0),
     fhE(0),fhPt(0),fhPhi(0),fhEta(0),   fhEtaPhiE(0),
     fhECharged(0),fhPtCharged(0),fhPhiCharged(0),fhEtaCharged(0), fhEtaPhiECharged(0), 
-    fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
+    //fhEChargedNoOut(0),fhPtChargedNoOut(0),fhPhiChargedNoOut(0),fhEtaChargedNoOut(0), fhEtaPhiChargedNoOut(0), 
     fhDeltaE(0), fhDeltaPt(0),fhDeltaPhi(0),fhDeltaEta(0), fhRatioE(0), fhRatioPt(0),fhRatioPhi(0),fhRatioEta(0),
     fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0),
 	fhLambda(0), fhDispersion(0), 
@@ -143,8 +143,8 @@ AliAnaCalorimeterQA::AliAnaCalorimeterQA(const AliAnaCalorimeterQA & qa) :
   fhE(qa.fhE),fhPt(qa.fhPt), fhPhi(qa.fhPhi), fhEta(qa.fhEta), fhEtaPhiE(qa.fhEtaPhiE), 
   fhECharged(qa.fhECharged),fhPtCharged(qa.fhPtCharged),fhPhiCharged(qa.fhPhiCharged),
   fhEtaCharged(qa.fhEtaCharged), fhEtaPhiECharged(qa.fhEtaPhiECharged), 
-  fhEChargedNoOut(qa.fhEChargedNoOut),fhPtChargedNoOut(qa.fhPtChargedNoOut),fhPhiChargedNoOut(qa.fhPhiChargedNoOut),
-  fhEtaChargedNoOut(qa.fhEtaChargedNoOut), fhEtaPhiChargedNoOut(qa.fhEtaPhiChargedNoOut), 
+  //fhEChargedNoOut(qa.fhEChargedNoOut),fhPtChargedNoOut(qa.fhPtChargedNoOut),fhPhiChargedNoOut(qa.fhPhiChargedNoOut),
+  //fhEtaChargedNoOut(qa.fhEtaChargedNoOut), fhEtaPhiChargedNoOut(qa.fhEtaPhiChargedNoOut), 
   fhDeltaE(qa.fhDeltaE), fhDeltaPt(qa.fhDeltaPt), fhDeltaPhi(qa.fhDeltaPhi), fhDeltaEta(qa.fhDeltaEta),
   fhRatioE(qa.fhRatioE), fhRatioPt(qa.fhRatioPt), fhRatioPhi(qa.fhRatioPhi), fhRatioEta(qa.fhRatioEta),
   fh2E(qa.fh2E), fh2Pt(qa.fh2Pt), fh2Phi(qa.fh2Phi),fh2Eta(qa.fh2Eta), 
@@ -320,26 +320,26 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
 	outputContainer->Add(fhEtaPhiECharged);	
 
 
-	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax); 
-	fhEChargedNoOut->SetXTitle("E (GeV)");
-	outputContainer->Add(fhEChargedNoOut);
-	
-	fhPtChargedNoOut  = new TH1F ("hPtChargedNoOut","p_{T} reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax); 
-	fhPtChargedNoOut->SetXTitle("p_{T} (GeV/c)");
-	outputContainer->Add(fhPtChargedNoOut);
-	
-	fhPhiChargedNoOut  = new TH1F ("hPhiChargedNoOut","#phi reconstructed clusters, matched with track, no output track params",nphibins,phimin,phimax); 
-	fhPhiChargedNoOut->SetXTitle("#phi (rad)");
-	outputContainer->Add(fhPhiChargedNoOut);
-	
-	fhEtaChargedNoOut  = new TH1F ("hEtaChargedNoOut","#eta reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax); 
-	fhEtaChargedNoOut->SetXTitle("#eta ");
-	outputContainer->Add(fhEtaChargedNoOut);
-	
-	fhEtaPhiChargedNoOut  = new TH2F ("hEtaPhiChargedNoOut","#eta vs #phi, reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax,nphibins,phimin,phimax); 
-	fhEtaPhiChargedNoOut->SetXTitle("#eta ");
-	fhEtaPhiChargedNoOut->SetYTitle("#phi ");
-	outputContainer->Add(fhEtaPhiChargedNoOut);	
+//	fhEChargedNoOut  = new TH1F ("hEChargedNoOut","E reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                                      \
+//	fhEChargedNoOut->SetXTitle("E (GeV)");                                                                                                                                                           \
+//	outputContainer->Add(fhEChargedNoOut);                                                                                                                                                           \
+//	                                                                                                                                                                                                 \
+//	fhPtChargedNoOut  = new TH1F ("hPtChargedNoOut","p_{T} reconstructed clusters, matched with track, no output track params", nptbins,ptmin,ptmax);                                                \
+//	fhPtChargedNoOut->SetXTitle("p_{T} (GeV/c)");                                                                                                                                                    \
+//	outputContainer->Add(fhPtChargedNoOut);                                                                                                                                                          \
+//	                                                                                                                                                                                                 \
+//	fhPhiChargedNoOut  = new TH1F ("hPhiChargedNoOut","#phi reconstructed clusters, matched with track, no output track params",nphibins,phimin,phimax);                                             \
+//	fhPhiChargedNoOut->SetXTitle("#phi (rad)");                                                                                                                                                      \
+//	outputContainer->Add(fhPhiChargedNoOut);                                                                                                                                                         \
+//	                                                                                                                                                                                                 \
+//	fhEtaChargedNoOut  = new TH1F ("hEtaChargedNoOut","#eta reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax);                                             \
+//	fhEtaChargedNoOut->SetXTitle("#eta ");                                                                                                                                                           \
+//	outputContainer->Add(fhEtaChargedNoOut);                                                                                                                                                         \
+//	                                                                                                                                                                                                 \
+//	fhEtaPhiChargedNoOut  = new TH2F ("hEtaPhiChargedNoOut","#eta vs #phi, reconstructed clusters, matched with track, no output track params",netabins,etamin,etamax,nphibins,phimin,phimax);       \
+//	fhEtaPhiChargedNoOut->SetXTitle("#eta ");                                                                                                                                                        \
+//	fhEtaPhiChargedNoOut->SetYTitle("#phi ");                                                                                                                                                        \
+//	outputContainer->Add(fhEtaPhiChargedNoOut);	
 
 	fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
 	fh1pOverE->SetYTitle("p/E");
@@ -1396,7 +1396,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			//Check if the cluster contains any bad channel or it is close to the calorimeter borders
 			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;	
 			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell)) continue;
-
+			//Recalibrate the cluster energy 
+			if( GetCaloUtils()->IsRecalibrationOn())	{
+				Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, cell);
+				clus->SetE(energy);
+			}
+			
 			//Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
@@ -1545,7 +1550,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 			//Check if the cluster contains any bad channel or it is close to calorimeter borders
 			if( GetCaloUtils()->ClusterContainsBadChannel(fCalorimeter,clus->GetCellsAbsId(), clus->GetNCells())) continue;
 			if(!GetCaloUtils()->CheckCellFiducialRegion(clus, cell)) continue;
-
+			//Recalibrate the cluster energy 
+			if( GetCaloUtils()->IsRecalibrationOn())	{
+				Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, cell);
+				clus->SetE(energy);
+			}
+			
 			//Get cluster kinematics
 			clus->GetPosition(pos);
 			clus->GetMomentum(mom,v);
@@ -1747,18 +1757,20 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 	
 	Int_t *nCellsInModule = new Int_t[fNModules];
 	for(Int_t imod = 0; imod < fNModules; imod++ ) nCellsInModule[imod] = 0;
-	Int_t icol = -1;
-	Int_t irow = -1;
-	Int_t iRCU = -1;
-	Float_t amp  = 0.;
-	Float_t time = 0.;
-	Int_t id     = -1;
+	Int_t icol     = -1;
+	Int_t irow     = -1;
+	Int_t iRCU     = -1;
+	Float_t amp    = 0.;
+	Float_t time   = 0.;
+	Int_t id       = -1;
+	Float_t recalF = 1.;
+	
 	if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
 		AliESDCaloCells * cell = 0x0; 
 		Int_t ncells = 0;
 		if(fCalorimeter == "PHOS") cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetPHOSCells();
 		else		               cell =  ((AliESDEvent*)GetReader()->GetInputEvent())->GetEMCALCells();
-		
+				
 		if(!cell) {
 			printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s ESD CELLS available for analysis\n",fCalorimeter.Data());
 			abort();
@@ -1781,11 +1793,26 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 						if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
 					}
 					else {
-						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
+						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) {
+							printf("PHOS bad channel\n");
+							continue;
+						}
 					}
 				}
-				amp     = cell->GetAmplitude(iCell);
+				
+				//Get Recalibration factor if set
+				if (GetCaloUtils()->IsRecalibrationOn()) {
+					if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
+					else		               recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
+				    if(fCalorimeter == "PHOS")printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
+				}
+				
+				amp     = cell->GetAmplitude(iCell)*recalF;
 				time    = cell->GetTime(iCell)*1e9;//transform time to ns
+
+				//if(amp > 3 && fCalorimeter=="EMCAL") printf("Amp = %f, time = %f, (mod, col, row)= (%d,%d,%d)\n",
+				//										   amp,time,nModule,icol,irow);
+				
 				if(time < fTimeCutMin || time > fTimeCutMax) continue;
 
 				//printf("%s: time %g\n",fCalorimeter.Data(), time);
@@ -1919,7 +1946,15 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 						if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) continue;
 					}	
 				}
-				amp     = cell->GetAmplitude(iCell);
+				
+				//Get Recalibration factor if set
+				if (GetCaloUtils()->IsRecalibrationOn()) {
+					if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
+					else		               recalF = GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
+					//printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
+				}				
+				
+				amp     = cell->GetAmplitude(iCell)*recalF;
 				fhAmplitude->Fill(amp);
 				fhAmpId    ->Fill(amp,id);
 				fhAmplitudeMod[nModule]->Fill(amp);
@@ -2445,15 +2480,17 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 				}
 			}
 			else{//no ESD external param or AODPid
-					ULong_t status=AliESDtrack::kTPCrefit;
-				status|=AliESDtrack::kITSrefit;
+//					ULong_t status=AliESDtrack::kTPCrefit;
+//				status|=AliESDtrack::kITSrefit;
 				//printf("track status %d\n", track->GetStatus() );
-				fhEChargedNoOut      ->Fill(e);		
-				fhPtChargedNoOut     ->Fill(pt);
-				fhPhiChargedNoOut    ->Fill(phi);
-				fhEtaChargedNoOut    ->Fill(eta);
-				fhEtaPhiChargedNoOut ->Fill(eta,phi);	
-				if(GetDebug() >= 0 && ((((AliESDtrack*)track)->GetStatus() & status) == status)) printf("ITS+TPC\n");
+//				fhEChargedNoOut      ->Fill(e);		
+//				fhPtChargedNoOut     ->Fill(pt);
+//				fhPhiChargedNoOut    ->Fill(phi);
+//				fhEtaChargedNoOut    ->Fill(eta);
+//				fhEtaPhiChargedNoOut ->Fill(eta,phi);
+//				if(GetDebug() >= 0 && ((((AliESDtrack*)track)->GetStatus() & status) == status)) printf("ITS+TPC\n");
+				if(GetDebug() >= 0) printf("No ESD external param or AliAODPid \n");
+
 			}//No out params
 	}//matched clusters with tracks
 		
@@ -2647,11 +2684,11 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
 	fhEtaCharged     = (TH1F *) outputList->At(index++);
 	fhEtaPhiECharged = (TH3F *) outputList->At(index++);
 	
-	fhEChargedNoOut      = (TH1F *) outputList->At(index++); 	
-	fhPtChargedNoOut     = (TH1F *) outputList->At(index++); 
-	fhPhiChargedNoOut    = (TH1F *) outputList->At(index++); 
-	fhEtaChargedNoOut    = (TH1F *) outputList->At(index++);
-	fhEtaPhiChargedNoOut = (TH2F *) outputList->At(index++);
+//	fhEChargedNoOut      = (TH1F *) outputList->At(index++); 	
+//	fhPtChargedNoOut     = (TH1F *) outputList->At(index++); 
+//	fhPhiChargedNoOut    = (TH1F *) outputList->At(index++); 
+//	fhEtaChargedNoOut    = (TH1F *) outputList->At(index++);
+//	fhEtaPhiChargedNoOut = (TH2F *) outputList->At(index++);
 
 	fh1pOverE =    (TH2F *) outputList->At(index++);
 	fh1dR =        (TH1F *) outputList->At(index++);

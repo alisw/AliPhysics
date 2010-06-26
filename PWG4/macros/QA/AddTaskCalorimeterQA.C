@@ -55,13 +55,50 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
    reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
    if(kPrintSettings) reader->Print("");
 	
+  // *** Calorimeters Utils	***
+  AliCalorimeterUtils *cu = new AliCalorimeterUtils;
+  // Remove clusters close to borders, at least max energy cell is 1 cell away 
+  cu->SetNumberOfCellsFromEMCALBorder(1);
+  cu->SetNumberOfCellsFromPHOSBorder(1);
+  cu->SwitchOnNoFiducialBorderInEMCALEta0();
+	
+  // Remove EMCAL hottest channels for first LHC10 periods 	
+  cu->SwitchOnBadChannelsRemoval();
+  // SM0
+  // cu->SetEMCALChannelStatus(0,3,13);  cu->SetEMCALChannelStatus(0,44,1); cu->SetEMCALChannelStatus(0,3,13); 
+  cu->SetEMCALChannelStatus(0,20,7);  cu->SetEMCALChannelStatus(0,38,2);   
+  // SM1
+  // cu->SetEMCALChannelStatus(1,4,7);   cu->SetEMCALChannelStatus(1,4,13);  cu->SetEMCALChannelStatus(1,9,20); 
+  // cu->SetEMCALChannelStatus(1,14,15); cu->SetEMCALChannelStatus(1,23,16); cu->SetEMCALChannelStatus(1,32,23); 
+  // cu->SetEMCALChannelStatus(1,37,5);  cu->SetEMCALChannelStatus(1,40,1);  cu->SetEMCALChannelStatus(1,40,2);
+  // cu->SetEMCALChannelStatus(1,40,5);  cu->SetEMCALChannelStatus(1,41,0);  cu->SetEMCALChannelStatus(1,41,1);
+  // cu->SetEMCALChannelStatus(1,41,2);  cu->SetEMCALChannelStatus(1,41,4);
+  // SM2 	
+  cu->SetEMCALChannelStatus(2,14,15); cu->SetEMCALChannelStatus(2,18,16); cu->SetEMCALChannelStatus(2,18,17); 
+  cu->SetEMCALChannelStatus(2,18,18); cu->SetEMCALChannelStatus(2,18,20); cu->SetEMCALChannelStatus(2,18,21); 
+  cu->SetEMCALChannelStatus(2,18,23); cu->SetEMCALChannelStatus(2,19,16); cu->SetEMCALChannelStatus(2,19,17); 
+  cu->SetEMCALChannelStatus(2,19,19); cu->SetEMCALChannelStatus(2,19,20); cu->SetEMCALChannelStatus(2,19,21); 
+  cu->SetEMCALChannelStatus(2,19,22);
+  //SM3
+  cu->SetEMCALChannelStatus(3,4,7);
+	
+  //Recalibration
+  //cu->SwitchOnRecalibration();
+  //TFile * f = new TFile("RecalibrationFactors.root","read");
+  //cu->SetEMCALChannelRecalibrationFactors(0,(TH2F*)f->Get("EMCALRecalFactors_SM0"));
+  //cu->SetEMCALChannelRecalibrationFactors(1,(TH2F*)f->Get("EMCALRecalFactors_SM1"));
+  //cu->SetEMCALChannelRecalibrationFactors(2,(TH2F*)f->Get("EMCALRecalFactors_SM2"));
+  //cu->SetEMCALChannelRecalibrationFactors(3,(TH2F*)f->Get("EMCALRecalFactors_SM3"));
+	
+  cu->SetDebug(-1);
+  if(kPrintSettings) cu->Print("");	
+	
   // ##### Analysis algorithm settings ####
-   //Only needed now for MC data
-   //AliFiducialCut * fidCut = new AliFiducialCut();
-   //fidCut->DoCTSFiducialCut(kFALSE) ;
-   //fidCut->DoEMCALFiducialCut(kTRUE) ;
-   //fidCut->DoPHOSFiducialCut(kTRUE) ;
-		
+  //AliFiducialCut * fidCut = new AliFiducialCut();
+  //fidCut->DoCTSFiducialCut(kFALSE) ;
+  //fidCut->DoEMCALFiducialCut(kTRUE) ;
+  //fidCut->DoPHOSFiducialCut(kTRUE) ;	
+	
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(2); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
@@ -72,7 +109,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOffPlotsMaking();
   emcalQA->SwitchOnCalorimetersCorrelation();
-  emcalQA->SetTimeCut(550,750);
+  emcalQA->SetTimeCut(420,825);//Open for the moment
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 10, 100) ;
   emcalQA->SetHistoPhiRangeAndNBins(75*TMath::DegToRad(), 125*TMath::DegToRad(), 100) ;
@@ -130,9 +167,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
+  maker->SetCaloUtils(cu); //pointer to calorimeter utils
   maker->AddAnalysis(emcalQA,0);
   maker->AddAnalysis(phosQA,1);
-  maker->SetAnaDebug(-1)  ; // 0 to at least print the event number
+  maker->SetAnaDebug(0)  ; // 0 to at least print the event number
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
   if(kPrintSettings) maker->Print("");

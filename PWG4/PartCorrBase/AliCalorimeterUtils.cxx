@@ -534,6 +534,7 @@ void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
+	
   //for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d_%s",i,fTaskName.Data()),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
   for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
 
