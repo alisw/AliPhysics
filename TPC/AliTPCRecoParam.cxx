@@ -74,6 +74,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fDumpAmplitudeMin(100),
   fMaxNoise(2.),
   //
+  fUseOnePadCluster(kTRUE),
   fMinMaxCutAbs(4.),
   fMinLeftRightCutAbs(6.),
   fMinUpDownCutAbs(6.),

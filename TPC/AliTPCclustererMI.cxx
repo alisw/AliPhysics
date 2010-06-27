@@ -1313,6 +1313,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
   Float_t minMaxCutSigma       = fRecoParam->GetMinMaxCutSigma();
   Float_t minLeftRightCutSigma = fRecoParam->GetMinLeftRightCutSigma();
   Float_t minUpDownCutSigma    = fRecoParam->GetMinUpDownCutSigma();
+  Int_t   useOnePadCluster     = fRecoParam->GetUseOnePadCluster();
   for (Int_t iSig = 0; iSig < fNSigBins; iSig++) {
     Int_t i = fSigBins[iSig];
     if (i%fMaxTime<=crtime) continue;
@@ -1320,9 +1321,11 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
     //absolute custs
     if (b[0]<minMaxCutAbs) continue;   //threshold for maxima  
     //
-    if (b[-1]+b[1]+b[-fMaxTime]+b[fMaxTime]<=0) continue;  // cut on isolated clusters 
-    if (b[-1]+b[1]<=0) continue;               // cut on isolated clusters
-    if (b[-fMaxTime]+b[fMaxTime]<=0) continue; // cut on isolated clusters
+    if (useOnePadCluster==0){
+      if (b[-1]+b[1]+b[-fMaxTime]+b[fMaxTime]<=0) continue;  // cut on isolated clusters 
+      if (b[-1]+b[1]<=0) continue;               // cut on isolated clusters
+      if (b[-fMaxTime]+b[fMaxTime]<=0) continue; // cut on isolated clusters
+    }
     //
     if ((b[0]+b[-1]+b[1])<minUpDownCutAbs) continue;   //threshold for up down  (TRF) 
     if ((b[0]+b[-fMaxTime]+b[fMaxTime])<minLeftRightCutAbs) continue;   //threshold for left right (PRF)    

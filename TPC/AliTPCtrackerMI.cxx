@@ -297,7 +297,7 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   Double_t sdistancey2 = sy2+seed->GetSigmaY2();
   Double_t sdistancez2 = sz2+seed->GetSigmaZ2();
   Double_t dy=seed->GetCurrentCluster()->GetY()-yt;
-  Double_t dz=seed->GetCurrentCluster()->GetY()-zt;
+  Double_t dz=seed->GetCurrentCluster()->GetZ()-zt;
   Double_t rdistancey2 = (seed->GetCurrentCluster()->GetY()-yt)*
     (seed->GetCurrentCluster()->GetY()-yt)/sdistancey2;
   Double_t rdistancez2 = (seed->GetCurrentCluster()->GetZ()-zt)*
@@ -339,6 +339,10 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
       "rmsz2p30="<<rmsz2p30<<	
       "rmsy2p30R="<<rmsy2p30R<<
       "rmsz2p30R="<<rmsz2p30R<<	
+      // normalize distance - 
+      "rdisty="<<rdistancey2<<
+      "rdistz="<<rdistancez2<<
+      "rdist="<<rdistance2<< //       
       "\n";
     }
   }
@@ -2310,6 +2314,88 @@ void AliTPCtrackerMI::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t fac
   delete []indexes;
 }
 
+void AliTPCtrackerMI::DumpClusters(Int_t iter, TObjArray *trackArray) 
+{
+  //
+  // Dump clusters after reco
+  // signed and unsigned cluster can be visualized   
+  // 1. Unsign all cluster
+  // 2. Sign all used clusters
+  // 3. Dump clusters
+  UnsignClusters();
+  Int_t nseed = trackArray->GetEntries();
+  for (Int_t i=0; i<nseed; i++){
+    AliTPCseed *pt=(AliTPCseed*)trackArray->UncheckedAt(i);    
+    if (!pt) {
+      continue;
+    }    
+    Bool_t isKink=pt->GetKinkIndex(0)!=0;
+    for (Int_t j=0; j<160; ++j) {
+      Int_t index=pt->GetClusterIndex2(j);
+      if (index<0) continue;
+      AliTPCclusterMI *c= pt->GetClusterPointer(j);
+      if (!c) continue;
+      if (isKink) c->Use(100);   // kink
+      c->Use(10);                // by default usage 10
+    }
+  }
+  //
+
+  for (Int_t sec=0;sec<fkNIS;sec++){
+    for (Int_t row=0;row<fInnerSec->GetNRows();row++){
+      AliTPCclusterMI *cl = fInnerSec[sec][row].GetClusters1();
+      for (Int_t icl =0;icl< fInnerSec[sec][row].GetN1();icl++){    
+	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	(*fDebugStreamer)<<"clDump"<< 
+	  "iter="<<iter<<
+	  "cl.="<<&cl[icl]<<      
+	  "gx0="<<gx[0]<<
+	  "gx1="<<gx[1]<<
+	  "gx2="<<gx[2]<<
+	  "\n";
+      }
+      cl = fInnerSec[sec][row].GetClusters2();
+      for (Int_t icl =0;icl< fInnerSec[sec][row].GetN2();icl++){
+	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	(*fDebugStreamer)<<"clDump"<< 
+	  "iter="<<iter<<
+	  "cl.="<<&cl[icl]<<
+	  "gx0="<<gx[0]<<
+	  "gx1="<<gx[1]<<
+	  "gx2="<<gx[2]<<
+	  "\n";
+      }
+    }
+  }
+  
+  for (Int_t sec=0;sec<fkNOS;sec++){
+    for (Int_t row=0;row<fOuterSec->GetNRows();row++){
+      AliTPCclusterMI *cl = fOuterSec[sec][row].GetClusters1();
+      for (Int_t icl =0;icl< fOuterSec[sec][row].GetN1();icl++){
+	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	(*fDebugStreamer)<<"clDump"<< 
+	  "iter="<<iter<<
+	  "cl.="<<&cl[icl]<<
+	  "gx0="<<gx[0]<<
+	  "gx1="<<gx[1]<<
+	  "gx2="<<gx[2]<<
+	  "\n";      
+      }
+      cl = fOuterSec[sec][row].GetClusters2();
+      for (Int_t icl =0;icl< fOuterSec[sec][row].GetN2();icl++){
+	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	(*fDebugStreamer)<<"clDump"<< 
+	  "iter="<<iter<<
+	  "cl.="<<&cl[icl]<<
+	  "gx0="<<gx[0]<<
+	  "gx1="<<gx[1]<<
+	  "gx2="<<gx[2]<<
+	  "\n";      
+      }
+    }
+  }
+  
+}
 void AliTPCtrackerMI::UnsignClusters() 
 {
   //
@@ -2656,6 +2742,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
     }
   }
   //FindKinks(fSeeds,event);
+  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(2,fSeeds);
   Info("RefitInward","Number of refitted tracks %d",ntracks);
   return 0;
 }
@@ -2726,6 +2813,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
       }
     }
   }
+  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(1,fSeeds);
   //FindKinks(fSeeds,event);
   Info("PropagateBack","Number of back propagated tracks %d",ntracks);
   fEvent =0;
@@ -6094,6 +6182,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *const esd)
   Clusters2Tracks();
   if (!fSeeds) return 1;
   FillESD(fSeeds);
+  if (AliTPCReconstructor::StreamLevel()>3)  DumpClusters(0,fSeeds);
   return 0;
   //
 }
@@ -7049,6 +7138,7 @@ void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
   // !!!! the systematic error for element 4 is in 1/cm not in pt 
 
   const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
+  Double_t *covarIn= (Double_t*)seed->GetCovariance();
   Double_t covar[15];
   for (Int_t i=0;i<15;i++) covar[i]=0;
   // 0
@@ -7062,5 +7152,20 @@ void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
   covar[9] = param[3]*param[3];
   Double_t facC =  AliTracker::GetBz()*kB2C;
   covar[14]= param[4]*param[4]*facC*facC;
+  //
+  covar[1]=TMath::Sqrt((covar[0]*covar[2]))*covarIn[1]/TMath::Sqrt((covarIn[0]*covarIn[2]));
+  //
+  covar[3]=TMath::Sqrt((covar[0]*covar[5]))*covarIn[3]/TMath::Sqrt((covarIn[0]*covarIn[5]));
+  covar[4]=TMath::Sqrt((covar[2]*covar[5]))*covarIn[4]/TMath::Sqrt((covarIn[2]*covarIn[5]));
+  //
+  covar[6]=TMath::Sqrt((covar[0]*covar[9]))*covarIn[6]/TMath::Sqrt((covarIn[0]*covarIn[9]));
+  covar[7]=TMath::Sqrt((covar[2]*covar[9]))*covarIn[7]/TMath::Sqrt((covarIn[2]*covarIn[9]));
+  covar[8]=TMath::Sqrt((covar[5]*covar[9]))*covarIn[8]/TMath::Sqrt((covarIn[5]*covarIn[9]));
+  //
+  covar[10]=TMath::Sqrt((covar[0]*covar[14]))*covarIn[10]/TMath::Sqrt((covarIn[0]*covarIn[14]));
+  covar[11]=TMath::Sqrt((covar[2]*covar[14]))*covarIn[11]/TMath::Sqrt((covarIn[2]*covarIn[14]));
+  covar[12]=TMath::Sqrt((covar[5]*covar[14]))*covarIn[12]/TMath::Sqrt((covarIn[5]*covarIn[14]));
+  covar[13]=TMath::Sqrt((covar[9]*covar[14]))*covarIn[13]/TMath::Sqrt((covarIn[9]*covarIn[14]));
+  //
   seed->AddCovariance(covar);
 }

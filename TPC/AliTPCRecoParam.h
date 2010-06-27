@@ -42,6 +42,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t  GetDumpAmplitudeMin()   const  { return fDumpAmplitudeMin;}
   Float_t  GetMaxNoise()           const  { return fMaxNoise;}  
   //
+  Int_t   GetUseOnePadCluster()   const   { return fUseOnePadCluster;}
   Float_t  GetMinMaxCutAbs()       const  { return fMinMaxCutAbs; }
   Float_t  GetMinLeftRightCutAbs() const  { return fMinLeftRightCutAbs;}  // minimal amplitude left right - PRF
   Float_t  GetMinUpDownCutAbs()    const  { return fMinUpDownCutAbs;}  // minimal amplitude up-down - TRF 
@@ -49,6 +50,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t  GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;}  // minimal amplitude left right - PRF
   Float_t  GetMinUpDownCutSigma()    const  { return fMinUpDownCutSigma;}  // minimal amplitude up-down - TRF 
   //
+  void SetUseOnePadCluster(Int_t use)      {   fUseOnePadCluster = use;}
   void SetMinMaxCutAbs(Float_t th)         {   fMinMaxCutAbs=th; }
   void SetMinLeftRightCutAbs(Float_t th)   {   fMinLeftRightCutAbs=th;}  // minimal amplitude left right - PRF
   void SetMinUpDownCutAbs(Float_t th)      {   fMinUpDownCutAbs=th;}  // minimal amplitude up-down - TRF 
@@ -132,6 +134,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   fBDoUnfold;       // do unfolding of clusters
   Float_t  fDumpAmplitudeMin; // minimal amplitude of signal to be dumped 
   Float_t  fMaxNoise;        // maximal noise sigma on pad to be used in cluster finder
+  Int_t   fUseOnePadCluster; // flag - use one pad cluster -0 not use >0 use
   Float_t  fMinMaxCutAbs;    // minimal amplitude at cluster maxima
   Float_t  fMinLeftRightCutAbs;  // minimal amplitude left right - PRF
   Float_t  fMinUpDownCutAbs;  // minimal amplitude up-down - TRF 
@@ -178,7 +181,7 @@ public:
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 11)
+  ClassDef(AliTPCRecoParam, 12)
 };
 
 

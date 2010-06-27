@@ -151,6 +151,7 @@ private:
    AliTPCseed * ReSeed(AliTPCseed *t);
    //Int_t LoadInnerSectors();
    //Int_t LoadOuterSectors();
+   void DumpClusters(Int_t iter, TObjArray *trackArray);
    void UnsignClusters();
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
 
