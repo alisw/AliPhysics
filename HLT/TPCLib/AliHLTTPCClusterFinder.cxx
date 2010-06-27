@@ -37,6 +37,7 @@
 #include <cmath>
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
+#include "AliTPCParam.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -86,7 +87,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fDoMC(kFALSE),
   fClusterMCVector(),
   fOfflineTransform(NULL),
-  fOfflineTPCRecoParam(),
+  fOfflineTPCRecoParam(*AliTPCRecoParam::GetHLTParam()),
   fTimeMeanDiff(2),
   fReleaseMemory(0)
 {
@@ -1159,9 +1160,18 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	  Double_t x[3]={thisrow,fpad+.5,ftime}; 
 	  Int_t iSector[1]={thissector};
 	  fOfflineTransform->Transform(x,iSector,0,1);
-	  fSpacePointData[counter].fX = x[0];
-	  fSpacePointData[counter].fY = x[1];
-	  fSpacePointData[counter].fZ = x[2];
+	  double y[3] = {x[0], x[1], x[2] };	  
+	  {
+	    const AliTPCParam * tpcPar = AliTPCcalibDB::Instance()->GetParameters();
+	    if( tpcPar ){
+	      TGeoHMatrix  *alignment = tpcPar->GetClusterMatrix( thissector );
+	      if ( alignment ) alignment->LocalToMaster( x, y);
+	    }
+	  }
+
+	  fSpacePointData[counter].fX = y[0];
+	  fSpacePointData[counter].fY = y[1];
+	  fSpacePointData[counter].fZ = y[2];
 	}
 
       } 
