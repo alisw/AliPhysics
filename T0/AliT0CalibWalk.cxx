@@ -180,7 +180,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		      Float_t xp = xpeak[index[0]];
 		      Double_t hmax = xp+3*sigma;
 		      Double_t hmin = xp-3*sigma;
-		      cout<<" CFD "<<xpeak<<" "<<xp<<endl;
 		      hCFD->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
 		    }
 		    else 
@@ -188,7 +187,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		  }
 
 		if (im == 0) cfd0[i] = hCFD->GetMean();
-		cout<<i<<" "<<im<<"CFD ok "<<ok<<endl; 
 		y1[im] =  hCFD->GetMean() - cfd0[i];
 	      }
 	      if( hQTC) x1[im] = hQTC->GetMean();
@@ -209,7 +207,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		  ok=false;
 		x2[im] = hLED->GetMean();
 		xx2[im] = x2[nmips-im-1];
-		cout<<"LED ok "<<ok<<endl; 
 	      }
 	      xx[im]=mips[im];
 	      
