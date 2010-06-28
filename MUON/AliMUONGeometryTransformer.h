@@ -42,8 +42,8 @@ class AliMUONGeometryTransformer : public TObject
     
     // methods
     void  AddModuleTransformer(AliMUONGeometryModuleTransformer* transformer);
-    void  AddMisAlignModule(Int_t moduleId, const TGeoHMatrix& matrix);
-    void  AddMisAlignDetElement(Int_t detElemId, const TGeoHMatrix& matrix);
+    void  AddMisAlignModule(Int_t moduleId, const TGeoHMatrix& matrix, Bool_t bGlobal = kTRUE);
+    void  AddMisAlignDetElement(Int_t detElemId, const TGeoHMatrix& matrix, Bool_t bGlobal = kTRUE);
     void  CreateModules();
 
     void  AddAlignableVolumes() const; 

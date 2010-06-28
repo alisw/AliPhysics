@@ -701,7 +701,7 @@ void AliMUONGeometryTransformer::AddModuleTransformer(
 
 //_____________________________________________________________________________
 void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId, 
-                                              const TGeoHMatrix& matrix)
+						    const TGeoHMatrix& matrix, Bool_t bGlobal)
 {
 /// Build AliAlignObjMatrix with module ID, its volumePath
 /// and the given delta transformation matrix					      
@@ -723,12 +723,12 @@ void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId,
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
   new (refArray[pos]) AliAlignObjMatrix(GetModuleSymName(moduleId), volId, 
-					const_cast<TGeoHMatrix&>(matrix),kTRUE);
+					const_cast<TGeoHMatrix&>(matrix),bGlobal);
 }
 
 //_____________________________________________________________________________
 void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId, 
-                                              const TGeoHMatrix& matrix)
+							const TGeoHMatrix& matrix, Bool_t bGlobal)
 {
 /// Build AliAlignObjMatrix with detection element ID, its volumePath
 /// and the given delta transformation matrix					      
@@ -751,7 +751,7 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
   new(refArray[pos]) AliAlignObjMatrix(GetDESymName(detElemId), volId, 
-				       const_cast<TGeoHMatrix&>(matrix),kTRUE);
+				       const_cast<TGeoHMatrix&>(matrix),bGlobal);
 }
 
 //______________________________________________________________________________
