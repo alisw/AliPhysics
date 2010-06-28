@@ -33,6 +33,8 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "TUUID.h"
+#include "TMD5.h"
+#include "TRandom3.h"
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TRegexp.h"
@@ -665,6 +667,63 @@ int AliHLTGlobalTriggerComponent::LoadTriggerMenu(const char* cdbPath, const Ali
 }
 
 
+void AliHLTGlobalTriggerComponent::GenerateFileName(TString& name, TString& filename) const
+{
+  // Creates a unique file name for the generated code.
+  
+  // Start by creating a new UUID. We cannot use the one automatically generated
+  // by ROOT because the algorithm used will not guarantee unique IDs when generating
+  // these UUIDs at a high rate in parallel.
+  TUUID uuid;
+  // We then use the generated UUID to form part of the random number seeds which
+  // will be used to generate a proper random UUID. For good measure we use a MD5
+  // hash also. Note that we want to use the TUUID class because it will combine the
+  // host address information into the UUID. Using gSystem->GetHostByName() apparently
+  // can cause problems on Windows machines with a firewall, because it always tries
+  // to contact a DNS. The TUUID class handles this case appropriately.
+  union
+  {
+    UChar_t buf[16];
+    UShort_t word[8];
+    UInt_t dword[4];
+  };
+  uuid.GetUUID(buf);
+  TMD5 md5;
+  md5.Update(buf, sizeof(buf));
+  md5.Final(buf);
+  dword[0] += gSystem->GetUid();
+  dword[1] += gSystem->GetGid();
+  dword[2] += gSystem->GetPid();
+  for (int i = 0; i < 4; ++i)
+  {
+    gRandom->SetSeed(dword[i]);
+    dword[i] = gRandom->Integer(0xFFFFFFFF);
+  }
+  md5.Update(buf, sizeof(buf));
+  md5.Final(buf);
+  // To keep to the standard we need to set the version and reserved bits.
+  word[3] = (word[3] & 0x0FFF) | 0x4000;
+  buf[8] = (buf[8] & 0x3F) | 0x80;
+
+  // Create the name of the new class and file.
+  char uuidstr[64];
+  sprintf(uuidstr, "%08x_%04x_%04x_%02x%02x_%02x%02x%02x%02x%02x%02x",
+    dword[0], word[2], word[3], buf[8], buf[9], buf[10], buf[11], buf[12], buf[13], buf[14], buf[15]
+  );
+  name = "AliHLTGlobalTriggerImpl_";
+  name += uuidstr;
+  filename = name + ".cxx";
+
+  // For good measure, check that the file names are not used. If they are then regenerate.
+  fstream file(filename.Data(), ios_base::in);
+  if (file.good())
+  {
+    file.close();
+    GenerateFileName(name, filename);
+  }
+}
+
+
 int AliHLTGlobalTriggerComponent::GenerateTrigger(
     const AliHLTTriggerMenu* menu, TString& name, TString& filename,
     const TClonesArray& includePaths, const TClonesArray& includeFiles
@@ -673,21 +732,10 @@ int AliHLTGlobalTriggerComponent::GenerateTrigger(
   // Generates the global trigger class that will implement the specified trigger menu.
   // See header for more details.
   
-  HLTDebug("Generating custom HLT trigger class named %s using trigger menu %p.", name.Data(), ((void*)menu));
-  
-  // Create a new UUID and replace the '-' characters with '_' to make it a valid
-  // C++ symbol name.
-  TUUID uuid;
-  TString uuidstr = uuid.AsString();
-  for (Int_t i = 0; i < uuidstr.Length(); i++)
-  {
-    if (uuidstr[i] == '-') uuidstr[i] = '_';
-  }
-  
-  // Create the name of the new class.
-  name = "AliHLTGlobalTriggerImpl_";
-  name += uuidstr;
-  filename = name + ".cxx";
+  GenerateFileName(name, filename);
+  HLTDebug("Generating custom HLT trigger class named %s, in file %s, using trigger menu %p.",
+    name.Data(), filename.Data(), ((void*)menu)
+  );
   
   // Open a text file to write the code and generate the new class.
   fstream code(filename.Data(), ios_base::out | ios_base::trunc);

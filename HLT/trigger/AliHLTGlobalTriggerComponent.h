@@ -199,6 +199,13 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   int LoadTriggerMenu(const char* cdbPath, const AliHLTTriggerMenu*& menu);
   
   /**
+   * Generates a file name for the generated on the fly code using a UUID.
+   * \param name <i>out</i> The name of the class to use.
+   * \param filename <i>out</i> The name of the file containing the code.
+   */
+  void GenerateFileName(TString& name, TString& filename) const;
+  
+  /**
    * Generates the code for the global trigger to apply the given trigger menu.
    * The code will then be compiled on the fly and loaded. The name of the new
    * class is returned so that a new instance of the class can be created via:
