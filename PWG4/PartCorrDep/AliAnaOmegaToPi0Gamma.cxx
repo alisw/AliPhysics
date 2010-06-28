@@ -43,7 +43,7 @@ ClassImp(AliAnaOmegaToPi0Gamma)
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaPartCorrBaseClass(),
 fInputAODPi0(0), fInputAODGammaName(""),
-fEventsList(0),fNVtxZBin(0), fNCentBin(0), fNRpBin(0), fNBadChDistBin(0), fNpid(0),
+fEventsList(0x0),fNVtxZBin(0), fNCentBin(0), fNRpBin(0), fNBadChDistBin(0), fNpid(0),
 fNmaxMixEv(0), fVtxZCut(0), fCent(0), fRp(0), 
 fPi0Mass(0),fPi0MassWindow(0),fPi0OverOmegaPtCut(0),
 fGammaOverOmegaPtCut(0),
@@ -64,7 +64,7 @@ fhOmegaPriPt(0)
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) : AliAnaPartCorrBaseClass(ex),
 fInputAODPi0(new TClonesArray (*ex.fInputAODPi0)),
 fInputAODGammaName(ex.fInputAODGammaName),
-fEventsList(ex.fEventsList), 
+fEventsList(0x0), 
 fNVtxZBin(ex.fNVtxZBin), fNCentBin(ex.fNCentBin), fNRpBin(ex.fNRpBin),
 fNBadChDistBin(ex.fNBadChDistBin),fNpid(ex.fNpid),
 fNmaxMixEv(ex.fNmaxMixEv),
@@ -85,7 +85,7 @@ fhOmegaPriPt(ex.fhOmegaPriPt)
  // cpy ctor
  //Do not need it
 }
-
+/*
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi0Gamma & ex)
 {
@@ -130,7 +130,7 @@ AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi
   return *this;
 	
 }
-
+*/
 
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma() {
@@ -713,7 +713,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
        delete currentEvent ;
        currentEvent=0 ;
  }
- aodGamma->Clear();
+ 
 }
 
 //______________________________________________________________________________
