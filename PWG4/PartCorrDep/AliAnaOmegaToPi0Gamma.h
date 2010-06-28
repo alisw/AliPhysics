@@ -23,10 +23,10 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   
   AliAnaOmegaToPi0Gamma() ; // default ctor
   AliAnaOmegaToPi0Gamma(const char *name) ; // default ctor
-  AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) ; // cpy ctor
   virtual ~AliAnaOmegaToPi0Gamma() ;//virtual dtor
 
   private:
+  AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) ; // cpy ctor
   AliAnaOmegaToPi0Gamma & operator = (const AliAnaOmegaToPi0Gamma & ex) ;//cpy assignment
 
   public: 
