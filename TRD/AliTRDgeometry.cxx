@@ -328,150 +328,125 @@ AliTRDpadPlane *AliTRDgeometry::CreatePadPlane(Int_t ilayer, Int_t istack)
   //
   // The pad plane parameter
   //
+  const Float_t kTiltAngle = 2.0;
   switch (ilayer) {
   case 0:
     if (istack == 2) {
       // L0C0 type
       padPlane->SetNrows(12);
       padPlane->SetLength(108.0);
-      padPlane->SetWidth(92.2);
       padPlane->SetLengthOPad(8.0);
-      padPlane->SetWidthOPad(0.515);
       padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.635);
-      padPlane->SetTiltingAngle(-2.0);
     }
     else {
       // L0C1 type
       padPlane->SetNrows(16);
       padPlane->SetLength(122.0);
-      padPlane->SetWidth(92.2);
       padPlane->SetLengthOPad(7.5);
-      padPlane->SetWidthOPad(0.515);
       padPlane->SetLengthIPad(7.5);
-      padPlane->SetWidthIPad(0.635);
-      padPlane->SetTiltingAngle(-2.0);
     }
+    padPlane->SetWidth(92.2);
+    padPlane->SetWidthOPad(0.515);
+    padPlane->SetWidthIPad(0.635);
+    padPlane->SetTiltingAngle(-kTiltAngle);
     break;
   case 1:
     if (istack == 2) {
       // L1C0 type
       padPlane->SetNrows(12);
       padPlane->SetLength(108.0);
-      padPlane->SetWidth(96.6);
       padPlane->SetLengthOPad(8.0);
-      padPlane->SetWidthOPad(0.585);
       padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.665);
-      padPlane->SetTiltingAngle(2.0);
     }
     else {
       // L1C1 type
       padPlane->SetNrows(16);
       padPlane->SetLength(122.0);
-      padPlane->SetWidth(96.6);
       padPlane->SetLengthOPad(7.5);
-      padPlane->SetWidthOPad(0.585);
       padPlane->SetLengthIPad(7.5);
-      padPlane->SetWidthIPad(0.665);
-      padPlane->SetTiltingAngle(2.0);
     }
+    padPlane->SetWidth(96.6);
+    padPlane->SetWidthOPad(0.585);
+    padPlane->SetWidthIPad(0.665);
+    padPlane->SetTiltingAngle(kTiltAngle);
     break;
   case 2:
     if (istack == 2) {
       // L2C0 type
       padPlane->SetNrows(12);
       padPlane->SetLength(108.0);
-      padPlane->SetWidth(101.1);
       padPlane->SetLengthOPad(8.0);
-      padPlane->SetWidthOPad(0.705);
       padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.695);
-      padPlane->SetTiltingAngle(-2.0);
     }
     else {
       // L2C1 type
       padPlane->SetNrows(16);
       padPlane->SetLength(129.0);
-      padPlane->SetWidth(101.1);
       padPlane->SetLengthOPad(7.5);
-      padPlane->SetWidthOPad(0.705);
       padPlane->SetLengthIPad(8.0);
-      padPlane->SetWidthIPad(0.695);
-      padPlane->SetTiltingAngle(-2.0);
     }
+    padPlane->SetWidth(101.1);
+    padPlane->SetWidthOPad(0.705);
+    padPlane->SetWidthIPad(0.695);
+    padPlane->SetTiltingAngle(-kTiltAngle);
     break;
   case 3:
     if (istack == 2) {
       // L3C0 type
       padPlane->SetNrows(12);
       padPlane->SetLength(108.0);
-      padPlane->SetWidth(105.5);
       padPlane->SetLengthOPad(8.0);
-      padPlane->SetWidthOPad(0.775);
       padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.725);
-      padPlane->SetTiltingAngle(2.0);
     }
     else {
       // L3C1 type
       padPlane->SetNrows(16);
       padPlane->SetLength(136.0);
-      padPlane->SetWidth(105.5);
       padPlane->SetLengthOPad(7.5);
-      padPlane->SetWidthOPad(0.775);
       padPlane->SetLengthIPad(8.5);
-      padPlane->SetWidthIPad(0.725);
-      padPlane->SetTiltingAngle(2.0);
     }
+    padPlane->SetWidth(105.5);
+    padPlane->SetWidthOPad(0.775);
+    padPlane->SetWidthIPad(0.725);
+    padPlane->SetTiltingAngle(kTiltAngle);
     break;
   case 4:
     if (istack == 2) {
       // L4C0 type
       padPlane->SetNrows(12);
       padPlane->SetLength(108.0);
-      padPlane->SetWidth(109.9);
       padPlane->SetLengthOPad(8.0);
-      padPlane->SetWidthOPad(0.845);
-      padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.755);
-      padPlane->SetTiltingAngle(-2.0);
     }
     else {
       // L4C1 type
       padPlane->SetNrows(16);
       padPlane->SetLength(143.0);
-      padPlane->SetWidth(109.9);
       padPlane->SetLengthOPad(7.5);
-      padPlane->SetWidthOPad(0.845);
-      padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.755);
-      padPlane->SetTiltingAngle(-2.0);
     }
+    padPlane->SetWidth(109.9);
+    padPlane->SetWidthOPad(0.845);
+    padPlane->SetLengthIPad(9.0);
+    padPlane->SetWidthIPad(0.755);
+    padPlane->SetTiltingAngle(-kTiltAngle);
     break;
   case 5:
     if (istack == 2) {
       // L5C0 type
       padPlane->SetNrows(12);
       padPlane->SetLength(108.0);
-      padPlane->SetWidth(114.4);
       padPlane->SetLengthOPad(8.0);
-      padPlane->SetWidthOPad(0.965);
-      padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.785);
-      padPlane->SetTiltingAngle(2.0);
     }
     else {
       // L5C1 type
       padPlane->SetNrows(16);
       padPlane->SetLength(145.0);
-      padPlane->SetWidth(114.4);
       padPlane->SetLengthOPad(8.5);
-      padPlane->SetWidthOPad(0.965);
-      padPlane->SetLengthIPad(9.0);
-      padPlane->SetWidthIPad(0.785);
-      padPlane->SetTiltingAngle(2.0);
     }
+    padPlane->SetWidth(114.4);
+    padPlane->SetWidthOPad(0.965);
+    padPlane->SetLengthIPad(9.0);
+    padPlane->SetWidthIPad(0.785);
+    padPlane->SetTiltingAngle(kTiltAngle);
     break;
   };
 
