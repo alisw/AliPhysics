@@ -5404,6 +5404,20 @@ void AliITSv11Hybrid::CreateMaterials(){
     Float_t zKapton[4]={1.,6.,7.,8.};
     Float_t wKapton[4]={0.026362,0.69113,0.07327,0.209235};
     Float_t dKapton   = 1.42;
+    
+    // Kapton + Cu (for Pixel Bus)
+
+    Float_t aKaptonCu[5]={1.00794, 12.0107, 14.010, 15.9994, 63.5460};
+    Float_t zKaptonCu[5]={1., 6., 7., 8., 29.};
+    Float_t wKaptonCuBus[5];
+    
+    // Kapton + Cu (for Pixel MCM)
+
+    Float_t wKaptonCuMCM[5];
+    
+    // Kapton + Cu (mix of two above)
+
+    Float_t wKaptonCuMix[5];
 
     //SDD ruby sph.
     Float_t aAlOxide[2]  = { 26.981539,15.9994};
@@ -5484,6 +5498,34 @@ void AliITSv11Hybrid::CreateMaterials(){
 
     AliMixture(27,"GEN Air$",aAir,zAir,dAir,4,wAir);
     AliMedium(27,"GEN Air$",27,0,ifield,fieldm,tmaxfdAir,stemaxAir,deemaxAir,epsilAir,stminAir);
+
+    Double_t cuFrac = 0.56;
+    Double_t kFrac  = 1.0 - cuFrac;
+    Double_t cuDens = 8.96;
+    Float_t dKaptonCuBus   = cuFrac * cuDens + kFrac * dKapton;
+    for (Int_t j=0; j<4; j++)
+      wKaptonCuBus[j] = wKapton[j]*kFrac;
+    wKaptonCuBus[4] = cuFrac;
+    AliMixture(48, "SPD-BUS CU KAPTON", aKaptonCu, zKaptonCu, dKaptonCuBus, 5, wKaptonCuBus);
+    AliMedium(48,"SPD-BUS CU KAPTON$",48,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+    
+    cuFrac = 0.5;
+    kFrac  = 1.0 - cuFrac;
+    Float_t dKaptonCuMCM   = cuFrac * cuDens + kFrac * dKapton;
+    for (Int_t j=0; j<4; j++)
+      wKaptonCuMCM[j] = wKapton[j]*kFrac;
+    wKaptonCuMCM[4] = cuFrac;
+    AliMixture(49, "SPD-MCM CU KAPTON", aKaptonCu, zKaptonCu, dKaptonCuMCM, 5, wKaptonCuMCM);
+    AliMedium(49,"SPD-MCM CU KAPTON$",49,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+    
+    cuFrac = (0.56 + 0.5) / 2.0;
+    kFrac  = 1.0 - cuFrac;
+    Float_t dKaptonCuMix   = cuFrac * cuDens + kFrac * dKapton;
+    for (Int_t j=0; j<4; j++)
+      wKaptonCuMix[j] = wKapton[j]*kFrac;
+    wKaptonCuMix[4] = cuFrac;
+    AliMixture(50, "SPD-MIX CU KAPTON", aKaptonCu, zKaptonCu, dKaptonCuMix, 5, wKaptonCuMix);
+    AliMedium(50,"SPD-MIX CU KAPTON$",50,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(51,"SPD SI$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(51,"SPD SI$",51,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);

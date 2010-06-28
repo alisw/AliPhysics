@@ -109,6 +109,9 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
     // the Pixel Bus & extenders (old method which will be removed)
     virtual TGeoVolumeAssembly* CreatePixelBusAndExtensions(Bool_t zpos=kTRUE,
                                         TGeoManager *mgr = gGeoManager) const;
+                                        
+    virtual TGeoVolume* CreatePatchPanel(TArrayD &sizes,
+                                        TGeoManager *mgr = gGeoManager) const;
 
     virtual TList* CreateConeModule(const Double_t angle,
 				    TGeoManager *mgr = gGeoManager) const;

@@ -1779,7 +1779,76 @@ TGeoVolume* AliITSv11GeometrySPD::CreateClip(TArrayD &sizes,Bool_t isDummy,
     TGeoVolume *vClip = new TGeoVolume("ITSSPDclip", shClipHole, mat);
     vClip->SetLineColor(kGray + 2);
     return vClip;
-}//______________________________________________________________________
+}
+
+//______________________________________________________________________
+TGeoVolume* AliITSv11GeometrySPD::CreatePatchPanel(TArrayD &sizes,
+						   TGeoManager *mgr) const
+{
+    //
+    // Creates the patch panel approximated with a "L"-shaped TGeoXtru
+    // with a finite thickness for all the shape
+    // Its local reference frame is such that point A corresponds to origin.
+    //
+    Double_t hLength         = fgkmm *  50.0;    // horizontal length
+    Double_t vLength         = fgkmm *  50.0;    // vertical length
+    Double_t angle           = 87.5;             // angle between hor and vert
+    Double_t thickness       = fgkmm *   4.0;    // thickness
+    Double_t width           = fgkmm * 100.0;    // width looking from cone
+
+    Double_t x[7], y[7];
+
+    y[0] =  0.0;
+    y[1] = y[0] + hLength;
+    y[2] = y[1];
+    y[3] = y[0] + thickness;
+    y[4] = y[3] + vLength * TMath::Cos(angle*TMath::DegToRad());
+    y[5] = y[4] - thickness / TMath::Sin(angle*TMath::DegToRad());
+    y[6] = y[0];
+
+    x[0] = 0.0;
+    x[1] = x[0];
+    x[2] = x[1] + thickness;
+    x[3] = x[2];
+    x[4] = x[3] + vLength * TMath::Sin(angle*TMath::DegToRad());
+    x[5] = x[4];
+    x[6] = x[0] + thickness;
+
+    sizes.Set(3);
+    sizes[0] = hLength;
+    sizes[1] = vLength;
+    sizes[2] = thickness;
+
+    TGeoXtru *shPatch = new TGeoXtru(2);
+    shPatch->SetName("ITSSPDpatchShape1");
+    shPatch->DefinePolygon(7, x, y);
+    shPatch->DefineSection(0, -0.5*width, 0., 0., 1.0);
+    shPatch->DefineSection(1,  0.5*width, 0., 0., 1.0);
+    
+    /*
+    Double_t subThickness = 10.0 * fgkmm;
+    Double_t subWidth     = 55.0 * fgkmm;
+    new TGeoBBox("ITSSPDpatchShape2", 0.5*subThickness, 60.0 * fgkmm, 0.5*subWidth);
+    TGeoRotation *rotSub = new TGeoRotation(*gGeoIdentity);
+    rotSub->SetName("shPatchSubRot");
+    rotSub->RotateZ(50.0);
+    rotSub->RegisterYourself();
+    TGeoCombiTrans *trSub = new TGeoCombiTrans(0.26*hLength, 0.26*vLength, 0.0, rotSub);
+    trSub->SetName("shPatchSubTr");
+    trSub->RegisterYourself();
+    
+    TGeoCompositeShape *shPatchFinal = new TGeoCompositeShape("ITSSPDpatchShape1-(ITSSPDpatchShape2:shPatchSubTr)");
+    */
+
+    TGeoMedium *mat = GetMedium("AL$", mgr);
+    //TGeoVolume *vPatch = new TGeoVolume("ITSSPDpatchPanel", shPatchFinal, mat);
+    TGeoVolume *vPatch = new TGeoVolume("ITSSPDpatchPanel", shPatch, mat);
+    vPatch->SetLineColor(kAzure);
+    
+    return vPatch;
+}
+
+//______________________________________________________________________
 TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
                        (Int_t itype,Double_t &length,Double_t &width,
                         Double_t thickness,TArrayD &sizes)
@@ -2708,7 +2777,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySPD::CreatePixelBus
     // ??? Resistance
     //TGeoMedium *medRes     = GetMedium("SDD X7R capacitors$",mgr);
     TGeoMedium *medRes     = GetMedium("ALUMINUM$",mgr);
-    TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    //TGeoMedium *medExt     = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    TGeoMedium *medExt     = GetMedium("SPD-MIX CU KAPTON$", mgr);
     // ** SIZES & POSITIONS **
     Double_t busLength          = 170.501 * fgkmm; // length of plane part
     Double_t busWidth           =  13.800 * fgkmm; // width
@@ -2916,15 +2986,20 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     // angrot is the rotation angle (passed as an argument to avoid
     // defining the same quantity in two different places)
     //
-    // Created:      ?? ??? 2008  Alberto Pulvirenti
-    // Updated:      03 May 2010  Mario Sitta
+    // Created:      ?? ??? 2008  A. Pulvirenti
+    // Updated:      03 May 2010  M. Sitta
+    // Updated:      20 Jun 2010  A. Pulvirenti  Optical patch panels
+    // Updated:      22 Jun 2010  M. Sitta  Fiber cables
     //
 
     TGeoMedium *medInox  = GetMedium("INOX$",mgr);
-    TGeoMedium *medExt   = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    //TGeoMedium *medExt   = GetMedium("SDDKAPTON (POLYCH2)$", mgr);
+    TGeoMedium *medExtB  = GetMedium("SPD-BUS CU KAPTON$", mgr);
+    TGeoMedium *medExtM  = GetMedium("SPD-MCM CU KAPTON$", mgr);
     TGeoMedium *medPlate = GetMedium("SPD C (M55J)$", mgr);
     TGeoMedium *medFreon = GetMedium("Freon$", mgr);
     TGeoMedium *medGas   = GetMedium("GASEOUS FREON$", mgr);
+    TGeoMedium *medFibs  = GetMedium("SDD OPTICFIB$",mgr);
 
     Double_t extThickness = fgkmm * 0.25;
     Double_t ext1Length   = fgkmm * (26.7 - 10.0);
@@ -2948,11 +3023,13 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     const Double_t kPlateWidth      =  50.0  *fgkmm;
     const Double_t kPlateThickness  =   5.0  *fgkmm;
 
-    const Double_t kConeTubeRmin    =   5.0  *fgkmm;
-    const Double_t kConeTubeRmax    =   6.0  *fgkmm;
+    const Double_t kConeTubeRmin    =   2.0  *fgkmm;
+    const Double_t kConeTubeRmax    =   3.0  *fgkmm;
 
-    const Double_t kHorizTubeLen    = 150.0  *fgkmm; //!!!TO BE CHECKED!!!
-    const Double_t kYtoHalfStave    =   6.8  *fgkmm; //!!!TO BE CHECKED!!!
+    const Double_t kHorizTubeLen    = 150.0  *fgkmm;
+    const Double_t kYtoHalfStave    =   6.8  *fgkmm;
+
+    const Double_t kOptFibDiamet    =   4.5  *fgkmm;
 
     Double_t x[12], y[12];
     Double_t xloc, yloc, zloc;
@@ -2963,6 +3040,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     container[0] = new TGeoVolumeAssembly("ITSSPDConeModule");
     container[1] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideA");
     container[2] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideC");
+    container[3] = new TGeoVolumeAssembly("ITSSPDPatchPanelModule");
 
     // The extender on the cone as a Xtru
     x[0] = 0.0;
@@ -2993,7 +3071,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     shCable->DefineSection(0, 0.0);
     shCable->DefineSection(1, kCableThickness);
 
-    TGeoVolume *volCable = new TGeoVolume("ITSSPDExtender", shCable, medExt);
+    TGeoVolume *volCable = new TGeoVolume("ITSSPDExtender", shCable, medExtB);
     volCable->SetLineColor(kGreen);
 
     // The MCM extender on the cone as a Xtru
@@ -3002,7 +3080,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
 				      0.5*kMCMThickness);
 
     TGeoVolume *volMCMExt = new TGeoVolume("ITSSPDExtenderMCM",
-					   shMCMExt, medExt);
+					   shMCMExt, medExtM);
     volMCMExt->SetLineColor(kGreen+3);
 
     // The support plate on the cone as a composite shape
@@ -3079,6 +3157,18 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
 					     shCylFr, medGas);
     volCylGasFr->SetLineColor(kPurple);
 
+    // The optical fibers bundle on the cone as a Tube
+    Double_t optLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave;
+    TGeoTube *shOptFibs = new TGeoTube(0., 0.5*kOptFibDiamet, 0.5*optLength);
+
+    TGeoVolume *volOptFibs = new TGeoVolume("ITSSPDOpticalFibersOnCone",
+					    shOptFibs, medFibs);
+    volOptFibs->SetLineColor(kOrange);
+
+    // The optical patch panels
+    TArrayD psizes;
+    TGeoVolume *volPatch = CreatePatchPanel(psizes, mgr);
+
     // Now place everything in the containers
     volTubeA->AddNode(volGasFr, 1, 0);
     volTubeC->AddNode(volFreon, 1, 0);
@@ -3098,6 +3188,17 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
     container[0]->AddNode(volPlate, 1,
 			  new TGeoTranslation( xloc, 0., zloc));
 
+    TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
+    rot2->SetName("rotPatch");
+    rot2->RotateX(90.0);
+    rot2->RotateY(163.0);
+    //rot2->RotateZ(132.5);
+    
+    Double_t dxPatch = 2.9;
+    Double_t dzPatch = 2.8;
+    TGeoCombiTrans *tr2 = new TGeoCombiTrans(1.7*ext2Length - dxPatch, 0.0, dzPatch, rot2);
+    container[3]->AddNode(volPatch, 0, tr2);
+
     xloc = shTube->GetRmax();
     yloc = shTube->GetRmax();
     zloc = shTube->GetDz() - shTube->GetRmax() - kYtoHalfStave;
@@ -3116,11 +3217,20 @@ TList* AliITSv11GeometrySPD::CreateConeModule(const Double_t angrot,
 			  new TGeoCombiTrans(-xloc, yloc,-zloc,
 				     new TGeoRotation("",0.,angrot,0.)));
 
+    xloc = shOptFibs->GetRmax() + 2*shTube->GetRmax();
+    yloc = shOptFibs->GetRmax();
+    zloc = shOptFibs->GetDZ() - shTube->GetRmax() - kYtoHalfStave;
+    container[1]->AddNode(volOptFibs, 1,
+			  new TGeoTranslation(-xloc, -yloc, zloc));
+    container[2]->AddNode(volOptFibs, 1,
+			  new TGeoTranslation(-xloc, -yloc, zloc));
+
     // Finally create the list of assemblies and return it to the caller
     TList* conemodulelist = new TList();
     conemodulelist->Add(container[0]);
     conemodulelist->Add(container[1]);
     conemodulelist->Add(container[2]);
+    conemodulelist->Add(container[3]);
 
     return conemodulelist;
 }
@@ -3140,7 +3250,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     const Double_t kInnerRadius     =  80.775*fgkmm;
     const Double_t kZTrans          = 452.000*fgkmm;
     const Double_t kAlphaRot        =  46.500*fgkDegree;
-    const Double_t kAlphaSpaceCool  =   8.500*fgkDegree;
+    const Double_t kAlphaSpaceCool  =   9.500*fgkDegree;
 
     TList* modulelist = CreateConeModule(90-kAlphaRot);
     TGeoVolumeAssembly* module;
@@ -3148,8 +3258,10 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     Double_t xloc, yloc, zloc;
 
     //Double_t angle[10] = {18., 54., 90., 126., 162., -18., -54., -90., -126., -162.};
-    // angleNm for cone modules (cables), angleNc for cooling tubes
+    // anglem for cone modules (cables and cooling tubes)
+    // anglep for pathc panels
     Double_t anglem[10] = {18., 54., 90., 126., 162., 198., 234., 270., 306., 342.};
+    Double_t anglep[10] = {18., 62., 90., 115., 162., 198., 242., 270., 295., 342.};
 //    Double_t angle1m[10] = {23., 53., 90., 127., 157., 203.0, 233.0, 270.0, 307.0, 337.0};
 //    Double_t angle2m[10] = {18., 53., 90., 126., 162., 198.0, 233.0, 270.0, 309.0, 342.0};
 //    Double_t angle1c[10] = {23., 53., 90., 124., 157., 203.0, 233.0, 270.0, 304.0, 337.0};
@@ -3192,7 +3304,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
     }
 
-    // Finally the cooling tubes on Side C
+    // And the cooling tubes on Side C
     module = (TGeoVolumeAssembly*)modulelist->At(2);
     for (Int_t i = 0; i < kNumberOfModules; i++) {
         anglec = anglem[i] - kAlphaSpaceCool;
@@ -3202,6 +3314,28 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
 	rot2->RotateZ(90.+anglec);
         xloc = kInnerRadius*CosD(anglec);
         yloc = kInnerRadius*SinD(anglec);
+	zloc = kZTrans;
+        moth->AddNode(module, 2*i+1,
+		      new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
+    }
+
+    // Finally the optical patch panels
+    module = (TGeoVolumeAssembly*)modulelist->At(3);
+    for (Int_t i = 0; i < kNumberOfModules; i++) {
+        TGeoRotation *rot1 = new TGeoRotation(*gGeoIdentity);
+	rot1->RotateY(-kAlphaRot);
+	rot1->RotateZ(anglep[i]);
+        xloc = kInnerRadius*CosD(anglep[i]);
+        yloc = kInnerRadius*SinD(anglep[i]);
+	zloc = kZTrans;
+        moth->AddNode(module, 2*i,
+		      new TGeoCombiTrans( xloc, yloc, zloc, rot1));
+
+        TGeoRotation *rot2 = new TGeoRotation(*gGeoIdentity);
+	rot2->RotateY(180.-kAlphaRot);
+	rot2->RotateZ(anglep[i]);
+        xloc = kInnerRadius*CosD(anglep[i]);
+        yloc = kInnerRadius*SinD(anglep[i]);
 	zloc = kZTrans;
         moth->AddNode(module, 2*i+1,
 		      new TGeoCombiTrans(-xloc,-yloc,-zloc, rot2));
