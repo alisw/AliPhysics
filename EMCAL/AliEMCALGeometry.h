@@ -24,8 +24,8 @@ class TVector3;
 // --- AliRoot header files ---
 #include "AliEMCALGeoUtils.h"
 #include "AliEMCALEMCGeometry.h"
-class AliRecPoint;
-class AliEMCALRecPoint;
+//class AliRecPoint;
+//class AliEMCALRecPoint;
 
 class AliEMCALGeometry : public AliEMCALGeoUtils {
 
@@ -56,12 +56,11 @@ public:
   //
   using AliEMCALGeoUtils::GetGlobal;
 
-  virtual void GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const;
-  virtual void GetGlobal(const AliRecPoint *rp, TVector3 & gpos, TMatrixF & /* gmat */) 
-    const {GetGlobal(rp,gpos); }
-  virtual void GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 &vglob) const;
-  virtual void GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 & gpos, TMatrixF & /* gmat */) 
-    const {GetGlobalEMCAL(rp,gpos); }
+//  virtual void GetGlobal(const AliRecPoint *rp, TVector3 & gpos, TMatrixF & /* gmat */) 
+//    const {GetGlobal(rp,gpos); }
+//  virtual void GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 &vglob) const;
+//  virtual void GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 & gpos, TMatrixF & /* gmat */) 
+//    const {GetGlobalEMCAL(rp,gpos); }
 
   // Return EMC geometry parameters
   AliEMCALEMCGeometry * GetEMCGeometry()      const {return fEMCGeometry ;}
@@ -131,9 +130,11 @@ public:
   //  Methods for AliEMCALRecPoint with taking into account energy of rec.point - Jul 30. 2007
   using AliEMCALGeoUtils::RelPosCellInSModule;
   Bool_t   RelPosCellInSModule(Int_t absId,Double_t distEff,Double_t &xr,Double_t &yr,
-			       Double_t & zr) const;
-  Bool_t   RelPosCellInSModule(Int_t absId,Int_t maxAbsId,Double_t distEff,Double_t &xr,
-			       Double_t &yr,Double_t &zr) const;
+							   Double_t & zr) const;
+	
+  //Not in use, comment for the moment
+  //Bool_t   RelPosCellInSModule(Int_t absId,Int_t maxAbsId,Double_t distEff,Double_t &xr,
+  //		       Double_t &yr,Double_t &zr) const;
 
   ///////////////////////////////
   //Geometry data member setters

@@ -75,7 +75,7 @@ class AliEMCALRecPoint : public AliCluster {
   Bool_t EvalLocalPositionFromDigits(TClonesArray *digits, TArrayD &ed, TVector3 &locPos);
   static  void    GetDeffW0(const Double_t esum, Double_t &deff,  Double_t &w0);
 
-  virtual void    GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const; // return global position (x, y, z) in ALICE
+  //virtual void    GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const; // return global position (x, y, z) in ALICE
   virtual void    GetGlobalPosition(TVector3 & gpos) const; // return global position (x, y, z) in ALICE
   virtual void    GetLocalPosition(TVector3 & lpos)  const;  // return local position  (x, y, z) in EMCAL SM
   virtual Int_t * GetPrimaries(Int_t & number) const {number = fMulTrack ; 

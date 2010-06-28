@@ -809,7 +809,7 @@ Bool_t  AliEMCALGeoUtils::Impact(const TParticle * particle) const
   TVector3 vtx(particle->Vx(),particle->Vy(),particle->Vz());
   TVector3 vimpact(0,0,0);
   ImpactOnEmcal(vtx,particle->Theta(),particle->Phi(),absID,vimpact);
-  if(absID!=0) 
+  if(absID >=0) 
     in=kTRUE;
   return in;
 }

@@ -156,7 +156,6 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
   Int_t nstat  = 0;
   Float_t wtot = 0. ;
 
-  Int_t idMax   = -1;	
   Int_t iSupMod = -1;
   Int_t iTower  = -1;
   Int_t iIphi   = -1;
@@ -180,17 +179,12 @@ void AliEMCALAodCluster::EvalPositionAndShowerShape(Float_t logWeight, TString e
   if(!emcalgeo)
     AliFatal("AliEMCALGeometry was not constructed\n") ;
 	
-  Double_t dist = 0;
+  Double_t dist  = TmaxInCm(Double_t(GetCellAmplitudeFraction(0)),0);
   for(Int_t iDigit=0; iDigit < GetNCells(); iDigit++) {
-	if(iDigit==0) {
-		//Check if this maximum  at 0 is true!!
-		idMax = GetCellAbsId(iDigit);
-		dist  = TmaxInCm(Double_t(GetCellAmplitudeFraction(iDigit)),0);
-	}    
-
+	
 	//Get from the absid the supermodule, tower and eta/phi numbers
 	emcalgeo->GetCellIndex(GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta); 
-	emcalgeo->RelPosCellInSModule(GetCellAbsId(iDigit),idMax, dist, xyzi[0], xyzi[1], xyzi[2]);
+	emcalgeo->RelPosCellInSModule(GetCellAbsId(iDigit), dist, xyzi[0], xyzi[1], xyzi[2]);
 	emcalgeo->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
 
     Double_t ei = GetCellAmplitudeFraction(iDigit) ;

@@ -32,7 +32,7 @@
 
 ClassImp(AliEMCALShishKebabTrd1Module)
 
-  AliEMCALEMCGeometry *AliEMCALShishKebabTrd1Module::fgGeometry=0; 
+  //AliEMCALEMCGeometry *AliEMCALShishKebabTrd1Module::fgGeometry=0; 
   Double_t AliEMCALShishKebabTrd1Module::fga=0.; 
   Double_t AliEMCALShishKebabTrd1Module::fga2=0.; 
   Double_t AliEMCALShishKebabTrd1Module::fgb=0.; 
@@ -43,6 +43,7 @@ ClassImp(AliEMCALShishKebabTrd1Module)
 //_____________________________________________________________________________
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALEMCGeometry *g) 
   : TNamed(),
+    fGeometry(g),
     fOK(),
     fA(0.),
     fB(0.),
@@ -60,13 +61,10 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     fORT()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
-  if(fgGeometry==0) {
-    fTheta = TMath::PiOver2();
-    fgGeometry = g;
-    if(GetParameters()) {
-      DefineFirstModule();
-    }
-  } else Warning("AliEMCALShishKebabTrd1Module(theta)","You should call this constractor just once !!");
+  fTheta = TMath::PiOver2();
+  if(GetParameters()) {
+    DefineFirstModule();
+  }
   DefineName(fTheta);
   AliDebug(1,Form("AliEMCALShishKebabTrd1Module - first module:  theta %1.4f geometry %s",fTheta,g->GetName()));  
 }
@@ -74,6 +72,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
 //_____________________________________________________________________________
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor) 
   : TNamed(),
+    fGeometry(leftNeighbor.fGeometry),
     fOK(),
     fA(0.),
     fB(0.),
@@ -101,6 +100,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
 //________________________________________________________________
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod) 
   : TNamed(mod.GetName(),mod.GetTitle()),
+    fGeometry(mod.fGeometry),
     fOK(mod.fOK),
     fA(mod.fA),
     fB(mod.fB),
@@ -226,23 +226,23 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 {
   
   // Get needing module parameters from EMCAL geometry
-  TString sn(fgGeometry->GetName()); // 2-Feb-05
+  TString sn(fGeometry->GetName()); // 2-Feb-05
   sn.ToUpper();
-  if(!fgGeometry) {
+  if(!fGeometry) {
     Warning("GetParameters()"," No geometry ");
     return kFALSE; 
   }
   
 
-  fga        = (Double_t)fgGeometry->GetEtaModuleSize();
-  fgb        = (Double_t)fgGeometry->GetLongModuleSize();
-  fgangle    = Double_t(fgGeometry->GetTrd1Angle())*TMath::DegToRad();
+  fga        = (Double_t)fGeometry->GetEtaModuleSize();
+  fgb        = (Double_t)fGeometry->GetLongModuleSize();
+  fgangle    = Double_t(fGeometry->GetTrd1Angle())*TMath::DegToRad();
   fgtanBetta = TMath::Tan(fgangle/2.);
-  fgr        = (Double_t)fgGeometry->GetIPDistance();
+  fgr        = (Double_t)fGeometry->GetIPDistance();
 
-  fgr += fgGeometry->GetSteelFrontThickness();
+  fgr += fGeometry->GetSteelFrontThickness();
 
-  fga2       = Double_t(fgGeometry->Get2Trd1Dx2());
+  fga2       = Double_t(fGeometry->Get2Trd1Dx2());
   //PH  PrintShish(0);
   return kTRUE;
 }

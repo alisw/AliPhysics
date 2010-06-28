@@ -88,7 +88,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
 
  protected:
   // geometry info
-  static AliEMCALEMCGeometry *fgGeometry; //!
+  AliEMCALEMCGeometry *fGeometry; //!
   static Double_t fga;        // 2*dx1=2*dy1
   static Double_t fga2;       // 2*dx2
   static Double_t fgb;        // 2*dz1
@@ -118,7 +118,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   TVector2 fORB; // position of right/bottom point of module
   TVector2 fORT; // position of right/top    point of module
   // public:
-  ClassDef(AliEMCALShishKebabTrd1Module, 4) // TRD1 Shish-Kebab module 
+  ClassDef(AliEMCALShishKebabTrd1Module, 5) // TRD1 Shish-Kebab module 
 };
 
 #endif

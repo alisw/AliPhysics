@@ -1197,16 +1197,16 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
 }
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
-{
-  // returns the position of the cluster in the global reference system of ALICE
-  // These are now the Cartesian X, Y and Z
-  //  cout<<" geom "<<geom<<endl;
-
-  //To be implemented
-  fGeomPtr->GetGlobalEMCAL(this, gpos, gmat);
-
-}
+//void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
+//{
+//  // returns the position of the cluster in the global reference system of ALICE
+//  // These are now the Cartesian X, Y and Z
+//  //  cout<<" geom "<<geom<<endl;
+//
+//  //To be implemented
+//  fGeomPtr->GetGlobalEMCAL(this, gpos, gmat);
+//
+//}
 
 //_____________________________________________________________________________
 void AliEMCALRecPoint::EvalLocal2TrackingCSTransform()
@@ -1229,8 +1229,10 @@ void AliEMCALRecPoint::EvalLocal2TrackingCSTransform()
   SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);
 
   if(AliLog::GetGlobalDebugLevel()>0) {
-    TVector3 gpos; TMatrixF gmat;
-    GetGlobalPosition(gpos,gmat);
+	TVector3 gpos; //TMatrixF gmat;
+    //GetGlobalPosition(gpos,gmat); //Not doing anythin special, replace by next line.	
+	fGeomPtr->GetGlobal(fLocPos, gpos, GetSuperModuleNumber());
+	  
     Float_t gxyz[3];
     GetGlobalXYZ(gxyz);
     AliInfo(Form("lCS-->(%.3f,%.3f,%.3f), tCS-->(%.3f,%.3f,%.3f), gCS-->(%.3f,%.3f,%.3f),  gCScalc-\
