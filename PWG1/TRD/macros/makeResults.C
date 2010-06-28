@@ -60,7 +60,10 @@
 #include <TGridResult.h>
 #include <TGridCollection.h>
 
-#include "qaRec/AliTRDrecoTask.h"
+#include "AliLog.h"
+
+#include "PWG1/TRD/AliTRDrecoTask.h"
+#include "PWG1/TRD/AliTRDcheckESD.h"
 
 #endif
 
@@ -73,9 +76,9 @@ Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", 
 TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
 
-void processTRD(TNamed* task);
-void processESD(TNamed* task);
-void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "", Bool_t kGRID=kFALSE)
+void processTRD(TNamed* task, const Char_t *filename);
+void processESD(TNamed* task, const Char_t *filename);
+void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char_t *cid = "", Bool_t kGRID=kFALSE)
 {
   if(kGRID){
     if(!gSystem->Getenv("GSHELL_ROOT")){
@@ -98,7 +101,13 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "",
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  if(files) mergeProd("AnalysisResults.root", files);
+  TString outputFile;
+  if(!TString(files).EndsWith(".root")){ 
+    outputFile = Form("%s/QAResults.root", gSystem->ExpandPathName("$PWD"));
+    mergeProd("QAResults.root", files);
+  } else {
+    outputFile = files;
+  }
   Int_t fSteerTask = ParseOptions(opt);
 
   if(!c) c=new TCanvas("c", "Performance", 10, 10, 800, 500);
@@ -110,8 +119,9 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "",
     new(ctask) TClass(fgkTRDtaskClassName[itask]);
     task = (AliAnalysisTask*)ctask->New();
     task->SetName(Form("%s%s", task->GetName(), cid));
-    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task);
-    else processESD(task);
+    printf("task %s, output file %s\n", task->GetName(), outputFile.Data());
+    if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task, outputFile.Data());
+    else processESD(task, outputFile.Data());
   }
   delete ctask;
   delete c;
@@ -119,7 +129,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files=0x0, Char_t *cid = "",
 
 
 //______________________________________________________
-void processTRD(TNamed *otask)
+void processTRD(TNamed *otask, const Char_t *filename)
 {
   printf("process[%s] : %s\n", otask->GetName(), otask->GetTitle());
   Int_t debug(0);
@@ -129,7 +139,8 @@ void processTRD(TNamed *otask)
   task->SetMCdata(mc);
   task->SetFriends(friends);
 
-  if(!task->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")))){
+  //if(!task->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")))){
+  if(!task->Load(filename)){
     Error("makeResults.C", Form("Load data container for task %s failed.", task->GetName()));
     delete task;
     return;
@@ -149,7 +160,7 @@ void processTRD(TNamed *otask)
 }
 
 //______________________________________________________
-void processESD(TNamed *otask)
+void processESD(TNamed *otask, const Char_t *filename)
 {
   printf("process[%s] : %s\n", otask->GetName(), otask->GetTitle());
 
@@ -159,12 +170,13 @@ void processESD(TNamed *otask)
     delete otask;
     return;
   }
-  if(!esd->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")), "TRD_Performance")){
+  //if(!esd->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")), "TRD_Performance")){
+  if(!esd->Load(filename, "TRD_Performance")){
     Error("makeResults.C", Form("Load data container for task %s failed.", esd->GetName()));
     delete esd;
     return;
   }
-  esd->Terminate();
+  esd->Terminate(NULL);
 
   for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
     c->Clear(); 
