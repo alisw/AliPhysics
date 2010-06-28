@@ -279,10 +279,12 @@ Bool_t AliITSRawStreamSPD::Next() {
       if (fAdvancedErrorLog) fAdvLogger->AddMessage(errMess.Data());
       fDDLID=19;
     }
-
+    
+    Short_t hs = ((fData & 0x3800)>>11) ; Short_t chip=(fData & 0x000F); // -> for printouts
+    
     if ((fData & 0xC000) == 0x4000) {         // header
       if (fHeaderOrTrailerReadLast) {
-	TString errMess = "Chip trailer missing";
+	TString errMess = Form("Chip trailer missing - (eq,hs,chip) = (%d,%d,%d)",fDDLID,hs,chip);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kTrailerMissingErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerMissingErr,fLastDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -297,12 +299,12 @@ Bool_t AliITSRawStreamSPD::Next() {
       else if (eventCounter != fEventCounter) {
 	TString errMess;
 	if (fEqPLChipHeadersRead==1) {
-	  errMess = Form("Mismatching event counters between this equipment and the previous: %d != %d",
-			 eventCounter,fEventCounter);
+	  errMess = Form("Mismatching event counters between this equipment and the previous: %d != %d - (eq,hs,chip) = (%d,%d,%d)",
+			 eventCounter,fEventCounter,fDDLID,hs,chip);
 	}
 	else {
-	  errMess = Form("Mismatching event counters between this chip header and the previous: %d != %d",
-			 eventCounter,fEventCounter);
+	  errMess = Form("Mismatching event counters between this chip header and the previous: %d != %d - (eq,hs,chip) = (%d,%d,%d)",
+			 eventCounter,fEventCounter,fDDLID,hs,chip);
 	}
 	fEventCounter = eventCounter;
 	AliError(errMess.Data());
@@ -311,7 +313,7 @@ Bool_t AliITSRawStreamSPD::Next() {
       }
       fChipAddr = fData & 0x000F;
       if (fChipAddr>9) {
-	TString errMess = Form("Overflow chip address %d - set to 0",fChipAddr);
+	TString errMess = Form("Overflow chip address %d - set to 0 (eq,hs) = (%d,%d)",fChipAddr,fDDLID,hs);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kChipAddrErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kChipAddrErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -319,7 +321,7 @@ Bool_t AliITSRawStreamSPD::Next() {
       }
       fHalfStaveNr = (fData & 0x3800)>>11;
       if (fHalfStaveNr>5 || fRawReader->TestBlockAttribute(fHalfStaveNr)) {
-	TString errMess = Form("Half stave number error: %d - set to 0",fHalfStaveNr);
+	TString errMess = Form("Half stave number error: %d - set to 0 - eq %d",fHalfStaveNr,fDDLID);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kHSNumberErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHSNumberErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -333,7 +335,7 @@ Bool_t AliITSRawStreamSPD::Next() {
 
     else if ((fData & 0xC000) == 0x0000) {    // trailer
       if ( (fEqPLBytesRead+fFillOutOfSynch*2)%4 != 0 ) {
-	TString errMess = "Fill word is missing";
+	TString errMess = Form("Fill word is missing - (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kFillMissingErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kFillMissingErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -341,7 +343,7 @@ Bool_t AliITSRawStreamSPD::Next() {
 	else fFillOutOfSynch = kTRUE;
       }
       if (!fHeaderOrTrailerReadLast) {
-	TString errMess = "Trailer without previous header";
+	TString errMess = Form("Trailer without previous header - (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kTrailerWithoutHeaderErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerWithoutHeaderErr,fLastDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -350,14 +352,14 @@ Bool_t AliITSRawStreamSPD::Next() {
       fEqPLChipTrailersRead++;
       UShort_t hitCount = fData & 0x0FFF;
       if (hitCount != fHitCount){
-	TString errMess = Form("Number of hits %d, while %d expected",fHitCount,hitCount);
+	TString errMess = Form("Number of hits %d, while %d expected - (eq,hs,chip) = (%d,%d,%d)",fHitCount,hitCount,fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kNumberHitsErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kNumberHitsErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
       }
       Bool_t errorBit = fData & 0x1000;
       if (errorBit) {
-	TString errMess = Form("Trailer error bit set for chip %d,%d,%d",fDDLID,fHalfStaveNr,fChipAddr);
+	TString errMess = Form("Trailer error bit set for chip (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kTrailerErrorBitErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kTrailerErrorBitErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -368,7 +370,7 @@ Bool_t AliITSRawStreamSPD::Next() {
 
     else if ((fData & 0xC000) == 0x8000) {    // pixel hit
       if (!fHeaderOrTrailerReadLast) {
-	TString errMess = "Chip header missing";
+	TString errMess = Form("Chip header missing - (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kHeaderMissingErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kHeaderMissingErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
@@ -386,13 +388,13 @@ Bool_t AliITSRawStreamSPD::Next() {
 
     else {                                    // fill word
       if ((fData & 0xC000) != 0xC000) {
-	TString errMess = "Wrong fill word!";
+	TString errMess = Form("Wrong fill word! - (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kWrongFillWordErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kWrongFillWordErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
       }
       if ( (fEqPLBytesRead+fFillOutOfSynch*2)%4 != 2 ) {
-	TString errMess = "Fill word is unexpected";
+	TString errMess = Form("Fill word is unexpected - (eq,hs,chip) = (%d,%d,%d)",fDDLID,fHalfStaveNr,fChipAddr);
 	AliError(errMess.Data());
 	fRawReader->AddMajorErrorLog(kFillUnexpectErr,errMess.Data());
 	if (fAdvancedErrorLog) fAdvLogger->ProcessError(kFillUnexpectErr,fDDLID,fEqPLBytesRead,fEqPLChipHeadersRead,errMess.Data());
