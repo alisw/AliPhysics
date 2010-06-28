@@ -432,11 +432,28 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
   Int_t TPCinfo=0;
   if(CheckStatus(track,"TPC")) {
    if(fAsym) {
-    if(TPCRawAsym(track,specie)) TPCinfo=1;
+    if(TPCRawAsym(track,specie)) {
+      TPCinfo=1;
+     }else{
+      TPCinfo=-1;
+     }
    }else{
-    if(specie==2 && IsPionRaw(track,"TPC")) TPCinfo=1;
-    if(specie==3 && IsKaonRaw(track,"TPC")) TPCinfo=1;
-    if(specie==4 && IsProtonRaw(track,"TPC")) TPCinfo=1;
+    if(specie==2 && IsPionRaw(track,"TPC")) {
+     TPCinfo=1;
+    }else{
+     TPCinfo=-1;
+    }
+    if(specie==3 && IsKaonRaw(track,"TPC")) {
+     TPCinfo=1;
+    }else{
+     TPCinfo=-1;
+    }
+    if(specie==4 && IsProtonRaw(track,"TPC")) {
+     TPCinfo=1;
+    }else{
+     TPCinfo=-1;
+    }
+
    }
 
 
