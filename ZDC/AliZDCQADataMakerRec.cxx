@@ -188,8 +188,8 @@ void AliZDCQADataMakerRec::InitRaws()
   TH2F * hZNApmCvsPMq = new TH2F("hZNApmCvsPMq", "ZNA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
   TH2F * hZPApmCvsPMq = new TH2F("hZPApmCvsPMq", "ZPA;PMC [ADC counts];Sum(PMQ) [ADC counts]",50,7.,1407.,50,7., 1407.);
   Add2RawsList(hZNCpmCvsPMq, 6, !expert, image);
-  Add2RawsList(hZPCpmCvsPMq, 7, !expert, image);
-  Add2RawsList(hZNApmCvsPMq, 8, !expert, image);
+  Add2RawsList(hZNApmCvsPMq, 7, !expert, image);
+  Add2RawsList(hZPCpmCvsPMq, 8, !expert, image);
   Add2RawsList(hZPApmCvsPMq, 9, !expert, image);
     
   TH1F * hRawPMCZNC = new TH1F("hRawPMCZNC", "Raw ZNC PMC;Amplitude [ADC counts];Counts",100, 0., 1200.);
@@ -427,127 +427,132 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 {
   // Filling Raws QA histos
   //
-  // Check if histograms already created for this Event Specie
-  if(!GetRawsData(0)) InitRaws();
+  // Checking the event type 
+//  if (rawReader->GetType()!=7){
   
-  // Parameters for mean value pedestal subtraction
-  int const kNch = 24;
-  Float_t meanPed[2*kNch];    
-  for(Int_t jj=0; jj<2*kNch; jj++) meanPed[jj] = fPedCalibData->GetMeanPed(jj);
+    // Check if histograms already created for this Event Specie
+    if(!GetRawsData(0)) InitRaws();
   
-  AliZDCRawStream stream(rawReader);
-  while(stream.Next()){
+    // Parameters for mean value pedestal subtraction
+    int const kNch = 24;
+    Float_t meanPed[2*kNch];    
+    for(Int_t jj=0; jj<2*kNch; jj++) meanPed[jj] = fPedCalibData->GetMeanPed(jj);
   
-    Float_t zncSignal=0., znaSignal=0., zpcSignal=0., zpaSignal=0.;
-    Float_t zncSumQ=0., znaSumQ=0., zpcSumQ=0., zpaSumQ=0.;
-    Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
-    Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
+    AliZDCRawStream stream(rawReader);
+    while(stream.Next()){
+  
+      Float_t zncSignal=0., znaSignal=0., zpcSignal=0., zpaSignal=0.;
+      Float_t zncSumQ=0., znaSumQ=0., zpcSumQ=0., zpaSumQ=0.;
+      Float_t zncpmC=0., znapmC=0., zpcpmC=0., zpapmC=0.;
+      Bool_t isZNCFired=kFALSE, isZPCFired=kFALSE, isZNAFired=kFALSE, isZPAFired=kFALSE;
     
-    if(stream.IsADCDataWord() && 
-     (stream.GetADCModule()==0 || stream.GetADCModule()==1)){
-     
-       Int_t det = stream.GetSector(0);
-       Int_t quad = stream.GetSector(1);
-       Int_t gain = stream.GetADCGain();
-       Int_t pedindex=0;
+      if(stream.IsADCDataWord() && 
+    	 (stream.GetADCModule()==0 || stream.GetADCModule()==1)){
        
-       // Stuff for pedestal subtraction
-       if(quad != 5){ // ZDCs (not reference PTMs)
-        if(det == 1){    
-          pedindex = quad;
-          if(gain == 0){
-	    Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	    zncSignal  += pedSubVal; 
-	    isZNCFired = kTRUE;
-	    if(quad!=0) zncSumQ += pedSubVal;
-	    else{
-	      zncpmC = pedSubVal;
-	      GetRawsData(10)->Fill(zncpmC);
-	    }
-	  }
-        }
-        else if(det == 2){ 
-          pedindex = quad+5;
-          if(gain == 0){
-	    Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	    zpcSignal += pedSubVal; 
-	    isZPCFired = kTRUE;
-	    if(quad!=0) zpcSumQ += pedSubVal;
-	    else{
-	      zpcpmC = pedSubVal;
-	      GetRawsData(12)->Fill(zpcpmC);
-	    }
-	  }
-        }
-        else if(det == 3){ 
-          pedindex = quad+9;
-          if(quad==1){     
-            if(gain == 0){
-	      Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	      GetRawsData(4)->Fill(pedSubVal);
-	    }
-          }
-          else if(quad==2){ 
-            if(gain == 0){
-	      Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	      GetRawsData(5)->Fill(pedSubVal); 
-	    }
-          }
-        }
-        else if(det == 4){	 
-          pedindex = quad+12;
-          if(gain == 0){
-	    Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	    znaSignal  += pedSubVal; 
-	    isZNAFired = kTRUE;
-	    if(quad!=0) znaSumQ += pedSubVal;
-	    else{
-	      znapmC = pedSubVal;
-	      GetRawsData(11)->Fill(znapmC);
-	    }
-	  }
-        }
-        else if(det == 5){
-          pedindex = quad+17;
-          if(gain == 0){
-	    Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
-	    zpaSignal  += pedSubVal; 
-	    isZPAFired = kTRUE;
-	    if(quad!=0) zpaSumQ += pedSubVal;
-	    else{
-	      zpapmC = pedSubVal;
-	      GetRawsData(13)->Fill(zpapmC);
-	    }
-	  }
-        }
-       }
-       //
-      if(isZNCFired){
-        GetRawsData(0)->Fill(zncSignal);
-        GetRawsData(6)->Fill(zncSumQ, zncpmC);
-        GetRawsData(14)->Fill(zncSumQ); 
-      }
-      if(isZPCFired){
-        GetRawsData(2)->Fill(zpcSignal);
-        GetRawsData(8)->Fill(zpcSumQ, zpcpmC);
-        GetRawsData(15)->Fill(zpcSumQ); 
-      }
-      if(isZNAFired){ 
-        GetRawsData(1)->Fill(znaSignal);
-        GetRawsData(7)->Fill(znaSumQ, znapmC);
-        GetRawsData(16)->Fill(znaSumQ); 
-      }
-      if(isZPAFired){ 
-        GetRawsData(3)->Fill(zpaSignal);
-        GetRawsData(9)->Fill(znaSumQ, zpapmC);
-        GetRawsData(17)->Fill(znaSumQ); 
-      }
+    	 Int_t det = stream.GetSector(0);
+    	 Int_t quad = stream.GetSector(1);
+    	 Int_t gain = stream.GetADCGain();
+    	 Int_t pedindex=0;
+    	 
+    	 // Stuff for pedestal subtraction
+    	 if(quad != 5){ // ZDCs (not reference PTMs)
+    	  if(det == 1){    
+    	    pedindex = quad;
+    	    if(gain == 0){
+    	      Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+    	      zncSignal  += pedSubVal; 
+    	      isZNCFired = kTRUE;
+    	      if(quad!=0) zncSumQ += pedSubVal;
+    	      else{
+  		zncpmC = pedSubVal;
+  		GetRawsData(10)->Fill(zncpmC);
+  	      }
+  	    }
+  	  }
+  	  else if(det == 2){ 
+  	    pedindex = quad+5;
+  	    if(gain == 0){
+  	      Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+  	      zpcSignal += pedSubVal; 
+  	      isZPCFired = kTRUE;
+  	      if(quad!=0) zpcSumQ += pedSubVal;
+  	      else{
+  		zpcpmC = pedSubVal;
+  		GetRawsData(12)->Fill(zpcpmC);
+  	      }
+  	    }
+  	  }
+  	  else if(det == 3){ 
+  	    pedindex = quad+9;
+  	    if(quad==1){     
+  	      if(gain == 0){
+  		Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+  		GetRawsData(4)->Fill(pedSubVal);
+  	      }
+  	    }
+  	    else if(quad==2){ 
+  	      if(gain == 0){
+  		Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+  		GetRawsData(5)->Fill(pedSubVal); 
+  	      }
+  	    }
+  	  }
+  	  else if(det == 4){	   
+  	    pedindex = quad+12;
+  	    if(gain == 0){
+  	      Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+  	      znaSignal  += pedSubVal; 
+  	      isZNAFired = kTRUE;
+  	      if(quad!=0) znaSumQ += pedSubVal;
+  	      else{
+  		znapmC = pedSubVal;
+  		GetRawsData(11)->Fill(znapmC);
+  	      }
+  	    }
+  	  }
+  	  else if(det == 5){
+  	    pedindex = quad+17;
+  	    if(gain == 0){
+  	      Float_t pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+  	      zpaSignal  += pedSubVal; 
+  	      isZPAFired = kTRUE;
+  	      if(quad!=0) zpaSumQ += pedSubVal;
+  	      else{
+  		zpapmC = pedSubVal;
+  		GetRawsData(13)->Fill(zpapmC);
+  	      }
+  	    }
+  	  }
+  	 }
+  	 //
+  	 if(isZNCFired){
+  	   GetRawsData(0)->Fill(zncSignal);
+  	   GetRawsData(6)->Fill(zncSumQ, zncpmC);
+  	   GetRawsData(14)->Fill(zncSumQ); 
+  	 }
+  	 if(isZPCFired){
+  	   GetRawsData(2)->Fill(zpcSignal);
+           GetRawsData(8)->Fill(zpcSumQ, zpcpmC);
+           GetRawsData(16)->Fill(zpcSumQ); 
+         }
+         if(isZNAFired){ 
+          GetRawsData(1)->Fill(znaSignal);
+          GetRawsData(7)->Fill(znaSumQ, znapmC);
+          GetRawsData(15)->Fill(znaSumQ); 
+         }
+         if(isZPAFired){ 
+          GetRawsData(3)->Fill(zpaSignal);
+          GetRawsData(9)->Fill(zpaSumQ, zpapmC);
+          GetRawsData(17)->Fill(zpaSumQ); 
+         }
        
-    } //IsADCDataWord && signal ADCs
+      } //IsADCDataWord && signal ADCs
     
-  } //stream.Next()
-
-//   stream.Delete();
+    } //stream.Next()
+//  } // check on event type
+//  else{
+//    AliDebug(1,Form("Skipping non-physics event for QA -> event type %d \n", rawReader->GetType())); 
+//  }
 }
 
 //____________________________________________________________________________
@@ -700,14 +705,13 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  for(Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-     if( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue; 
+  if( task == AliQAv1::kRAWS){
      
     if (!GetRawsData(4) || !GetRawsData(5) || !GetRawsData(6) || !GetRawsData(7) || 
         !GetRawsData(8) || !GetRawsData(9) || !GetRawsData(10) || !GetRawsData(11) || 
 	!GetRawsData(12) || !GetRawsData(13)) {
-	 printf("  WARNING!!! AliZDCQADataMaker Rec -> No histogram for DQM found!\n") ; 
-	 continue;
+	 printf("  WARNING!!! AliZDCQADataMaker Rec -> No histogram for DQM found!\n"); 
+	 return;
      }
      
      TLine* diag = new TLine(7., 7., 1407., 1407.);
@@ -731,15 +735,14 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
      GetRawsData(12)->SetLineColor(kBlue+5); GetRawsData(12)->SetLineWidth(2);
      GetRawsData(13)->SetLineColor(kBlue+6); GetRawsData(13)->SetLineWidth(2);
      
-     GetRawsData(4)->SetDrawOption("LOGY");
+     /*GetRawsData(4)->SetDrawOption("LOGY");
      GetRawsData(5)->SetDrawOption("LOGY");
      GetRawsData(10)->SetDrawOption("LOGY");
      GetRawsData(11)->SetDrawOption("LOGY");
      GetRawsData(12)->SetDrawOption("LOGY");
-     GetRawsData(13)->SetDrawOption("LOGY");
+     GetRawsData(13)->SetDrawOption("LOGY");*/
 
   }
-	
+  	
   AliQAChecker::Instance()->Run(AliQAv1::kZDC, task, list) ;  
 }
-
