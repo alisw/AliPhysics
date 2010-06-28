@@ -15,7 +15,7 @@
 //==============================================================================
 
 #ifndef ROOT_TObject
-#include "TObject.h"
+#include "TNamed.h"
 #endif
 
 #ifndef ROOT_TString
@@ -23,16 +23,19 @@
 #endif
 
 class TClass;
-class AliTrigEvent : public TObject {
+class AliTrigEvent : public TNamed {
 
 public:
 enum ETrigSignalFlags {
   kActive = BIT(14)
 };
   
-  AliTrigEvent() : TObject() {}
+  AliTrigEvent() : TNamed() {}
+  AliTrigEvent(const char *name) : TNamed(name,"") {}
+  AliTrigEvent(const AliTrigEvent &other) : TNamed(other) {}
   virtual ~AliTrigEvent() {}
 
+  AliTrigEvent             &operator=(const AliTrigEvent &other);
   void                      Activate(Bool_t flag);
   Bool_t                    IsActive() const {return TObject::TestBit(kActive);}
   
@@ -54,6 +57,7 @@ class AliTrigEventWithMask : public AliTrigEvent {
 
 public:
   AliTrigEventWithMask() : AliTrigEvent(), fValue() {}
+  AliTrigEventWithMask(const char *name) : AliTrigEvent(name), fValue() {}
   AliTrigEventWithMask(const AliTrigEventWithMask &other);
   virtual ~AliTrigEventWithMask() {}
   
@@ -78,7 +82,7 @@ class AliTrigEventWithObject : public AliTrigEvent {
 
 public:
   AliTrigEventWithObject() : AliTrigEvent(), fValue(0), fType() {}
-  AliTrigEventWithObject(const char *classname);
+  AliTrigEventWithObject(const char *name, const char *classname);
   AliTrigEventWithObject(const AliTrigEventWithObject &other);
   virtual ~AliTrigEventWithObject() {}
   

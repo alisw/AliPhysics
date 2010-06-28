@@ -69,12 +69,14 @@ public:
   // Device-dependent inputs reset method
   virtual void              ResetInputs() = 0;
 
-  Int_t                    GetNinputs() const {return fNinputs;}
-  Int_t                    GetNoutputs() const {return fNoutputs;}
+  void                      SetNinputs(Int_t ninputs)   {fNinputs = ninputs;}
+  void                      SetNoutputs(Int_t noutputs) {fNoutputs = noutputs;}
+  Int_t                     GetNinputs() const {return fNinputs;}
+  Int_t                     GetNoutputs() const {return fNoutputs;}
    
 protected:
-  Int_t                    fNinputs;            // Number of inputs
-  Int_t                    fNoutputs;           // Number of outputs
+  Int_t                     fNinputs;            // Number of inputs
+  Int_t                     fNoutputs;           // Number of outputs
   AliTrigScheduler         *fScheduler;         // Device scheduler
   TObjArray                *fComponents;        // Component devices
   TObjArray                *fResponseFunctions; // List of response functions

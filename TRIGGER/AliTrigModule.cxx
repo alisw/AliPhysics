@@ -31,7 +31,7 @@ ClassImp(AliTrigModule)
 
 //______________________________________________________________________________
 AliTrigModule::~AliTrigModule()
-{;
+{
 // Destructor
   if (fInputs) {fInputs->Delete(); delete fInputs;}
   if (fOutputs) {fOutputs->Delete(); delete fOutputs;}

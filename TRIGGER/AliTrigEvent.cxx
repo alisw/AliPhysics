@@ -33,6 +33,14 @@ ClassImp(AliTrigEvent)
 //==============================================================================
 
 //______________________________________________________________________________
+AliTrigEvent &AliTrigEvent::operator=(const AliTrigEvent &other)
+{
+// Assignment operator.
+   if (&other == this) return *this;
+   TNamed::operator=(other);
+   return *this;
+}
+//______________________________________________________________________________
 void AliTrigEvent::Activate(Bool_t flag)
 {
 // Activate/deactivate this signal.
@@ -79,8 +87,8 @@ AliTrigEventWithMask &AliTrigEventWithMask::operator=(const AliTrigEventWithMask
 ClassImp(AliTrigEventWithObject)
 
 //______________________________________________________________________________
-AliTrigEventWithObject::AliTrigEventWithObject(const char *classname)
-                       :AliTrigEvent(),
+AliTrigEventWithObject::AliTrigEventWithObject(const char *name,const char *classname)
+                       :AliTrigEvent(name),
                         fValue(0),
                         fType("")
 {
