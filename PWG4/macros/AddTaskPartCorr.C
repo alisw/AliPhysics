@@ -453,7 +453,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString data, TString calori
   maker->AddAnalysis(anacorrhadron,n++);
   maker->AddAnalysis(anacorrhadronpi0,n++);
   maker->AddAnalysis(anacorrhadronisopi0,n);
-  maker->SetAnaDebug(0)  ;
+  maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;
   else                       maker->SwitchOnAODsMaker()  ;
