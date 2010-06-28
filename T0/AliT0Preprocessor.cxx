@@ -91,14 +91,11 @@ Bool_t AliT0Preprocessor::ProcessDCS(){
 	TString runType = GetRunType();
 	Log(Form("ProcessDCS - RunType: %s",runType.Data()));
 
-	if((runType == "STANDALONE")||
-	   (runType == "PHYSICS") ){
-
-	  //	  return kFALSE;
-	  	return kTRUE;
-	}else{
-	return kFALSE;
-	}
+	if(runType == "PHYSICS" )
+	  return kTRUE;
+	else
+	  return kFALSE;
+	
 }
 //____________________________________________________
 
