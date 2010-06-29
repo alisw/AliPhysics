@@ -60,8 +60,10 @@
  *                 kAliHLTDataTypeTriggerDecision (TRIG_DEC)
  *                 kAliHLTDataTypeGlobalTrigger (GLOBTRIG)
  *                 kAliHLTDataTypeStreamerInfo (ROOTSTRI)
+ *  13       Changed AliHLTEventDDL to now contain 31 words. The extra word is
+ *           for the EMCAL detector, which needs 46 DDLs after DCAL was added.
  */
-#define ALIHLT_DATA_TYPES_VERSION 12
+#define ALIHLT_DATA_TYPES_VERSION 13
 
 //////////////////////////////////////////////////////////////////////////
 //
