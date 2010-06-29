@@ -794,9 +794,11 @@ void AliAnalysisManager::Terminate()
    if (fOutputEventHandler) {
       handlerFile = fOutputEventHandler->GetOutputFileName();
    }
+   icont = 0;
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Special outputs or grid files have the files already closed and written.
-      if (fMode == kGridAnalysis) continue;
+      icont++;
+      if (fMode == kGridAnalysis && icont<=fOutputs->GetEntriesFast()) continue;
       if (fMode == kProofAnalysis) {
         if (output->IsSpecialOutput() || output->IsRegisterDataset()) continue;
       }  

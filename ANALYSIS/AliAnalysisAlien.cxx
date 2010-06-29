@@ -2182,8 +2182,8 @@ void AliAnalysisAlien::WriteAnalysisFile()
       TDirectory *cdir = gDirectory;
       TFile *file = TFile::Open(analysisFile, "RECREATE");
       if (file) {
-         // Skip task Terminate calls for the grid job
-         mgr->SetSkipTerminate(kTRUE);
+         // Skip task Terminate calls for the grid job (but not in test mode, where we want to check also the terminate mode
+         if (!TestBit(AliAnalysisGrid::kTest)) mgr->SetSkipTerminate(kTRUE);
          // Unless merging makes no sense
          if (IsSingleOutput()) mgr->SetSkipTerminate(kFALSE);
          mgr->Write();
