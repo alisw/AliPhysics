@@ -628,7 +628,7 @@ void AliZDCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Float_t beamEne = esd->GetBeamEnergy();
     zdcESD->GetZNCentroidInPbPb(beamEne, centr_ZNC, centr_ZNA);
   }
-  else printf(" AliZDCQADataMakerRec::MakeESDs: can't calculate centroids for beam type: %s\n\n",beamType.Data());
+  else printf("\n WARNING!!! AliZDCQADataMakerRec::MakeESDs: can't calculate centroids for beam type: %s\n\n",beamType.Data());
   GetESDsData(0)->Fill(centr_ZNC[0], centr_ZNC[1]);
   GetESDsData(1)->Fill(centr_ZNA[0], centr_ZNA[1]);
 
@@ -705,43 +705,42 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  printf("  AliZDCQADataMakerRec::EndOfDetectorCycle for task %d \n", task);
   if( task == AliQAv1::kRAWS){
-     
-    if (!GetRawsData(4) || !GetRawsData(5) || !GetRawsData(6) || !GetRawsData(7) || 
+     if (!GetRawsData(4) || !GetRawsData(5) || !GetRawsData(6) || !GetRawsData(7) || 
         !GetRawsData(8) || !GetRawsData(9) || !GetRawsData(10) || !GetRawsData(11) || 
 	!GetRawsData(12) || !GetRawsData(13)) {
 	 printf("  WARNING!!! AliZDCQADataMaker Rec -> No histogram for DQM found!\n"); 
-	 return;
      }
+     else{
+       TLine* diag = new TLine(7., 7., 1407., 1407.);
+       diag->SetLineColor(kRed);
+       diag->SetLineWidth(2);
      
-     TLine* diag = new TLine(7., 7., 1407., 1407.);
-     diag->SetLineColor(kRed);
-     diag->SetLineWidth(2);
+       ((TH2F*)GetRawsData(6))->GetListOfFunctions()->Add(diag);
+       ((TH2F*)GetRawsData(7))->GetListOfFunctions()->Add(diag);
+       ((TH2F*)GetRawsData(8))->GetListOfFunctions()->Add(diag);
+       ((TH2F*)GetRawsData(9))->GetListOfFunctions()->Add(diag);
+      
+       GetRawsData(6)->SetOption("colz");
+       GetRawsData(7)->SetOption("colz");
+       GetRawsData(8)->SetOption("colz");
+       GetRawsData(9)->SetOption("colz");  
      
-     ((TH2F*)GetRawsData(6))->GetListOfFunctions()->Add(diag);
-     ((TH2F*)GetRawsData(7))->GetListOfFunctions()->Add(diag);
-     ((TH2F*)GetRawsData(8))->GetListOfFunctions()->Add(diag);
-     ((TH2F*)GetRawsData(9))->GetListOfFunctions()->Add(diag);
-
-     GetRawsData(6)->SetOption("colz");
-     GetRawsData(7)->SetOption("colz");
-     GetRawsData(8)->SetOption("colz");
-     GetRawsData(9)->SetOption("colz");  
+       GetRawsData(4)->SetLineColor(kBlue+1);  GetRawsData(4)->SetLineWidth(2);
+       GetRawsData(5)->SetLineColor(kBlue+2);  GetRawsData(5)->SetLineWidth(2);
+       GetRawsData(10)->SetLineColor(kBlue+3); GetRawsData(10)->SetLineWidth(2);
+       GetRawsData(11)->SetLineColor(kBlue+4); GetRawsData(11)->SetLineWidth(2);
+       GetRawsData(12)->SetLineColor(kBlue+5); GetRawsData(12)->SetLineWidth(2);
+       GetRawsData(13)->SetLineColor(kBlue+6); GetRawsData(13)->SetLineWidth(2);
      
-     GetRawsData(4)->SetLineColor(kBlue+1);  GetRawsData(4)->SetLineWidth(2);
-     GetRawsData(5)->SetLineColor(kBlue+2);  GetRawsData(5)->SetLineWidth(2);
-     GetRawsData(10)->SetLineColor(kBlue+3); GetRawsData(10)->SetLineWidth(2);
-     GetRawsData(11)->SetLineColor(kBlue+4); GetRawsData(11)->SetLineWidth(2);
-     GetRawsData(12)->SetLineColor(kBlue+5); GetRawsData(12)->SetLineWidth(2);
-     GetRawsData(13)->SetLineColor(kBlue+6); GetRawsData(13)->SetLineWidth(2);
-     
-     /*GetRawsData(4)->SetDrawOption("LOGY");
-     GetRawsData(5)->SetDrawOption("LOGY");
-     GetRawsData(10)->SetDrawOption("LOGY");
-     GetRawsData(11)->SetDrawOption("LOGY");
-     GetRawsData(12)->SetDrawOption("LOGY");
-     GetRawsData(13)->SetDrawOption("LOGY");*/
-
+       /*GetRawsData(4)->SetDrawOption("LOGY");
+       GetRawsData(5)->SetDrawOption("LOGY");
+       GetRawsData(10)->SetDrawOption("LOGY");
+       GetRawsData(11)->SetDrawOption("LOGY");
+       GetRawsData(12)->SetDrawOption("LOGY");
+       GetRawsData(13)->SetDrawOption("LOGY");*/
+     }
   }
   	
   AliQAChecker::Instance()->Run(AliQAv1::kZDC, task, list) ;  
