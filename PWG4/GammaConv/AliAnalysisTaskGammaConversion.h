@@ -20,7 +20,9 @@ class AliGammaConversionAODObject;
 class TNtuple;
 class AliGammaConversionHistograms;
 class AliESDv0;
+class AliV0;
 class AliKFParticle;
+class AliKFVertex;
 class AliESDInputHandler;
 class AliESDEvent;
 class AliAODEvent;
@@ -53,7 +55,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessGammasForNeutralMesonAnalysis();
   void ProcessGammasForOmegaMesonAnalysis();
   void ProcessConvPHOSGammasForNeutralMesonAnalysis();
-		
+  void RecalculateV0ForGamma();
   // for CF
   void SetCFManager(AliCFManager * const io) {fCFManager = io;};
   AliCFManager *GetCFManager() const {return fCFManager;}
@@ -94,7 +96,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetDoNeutralMesonV0MCCheck(Bool_t flag){fDoNeutralMesonV0MCCheck=flag;}
   void SetDoJet(Bool_t flag){fDoJet=flag;}
   void SetDoChic(Bool_t flag){fDoChic=flag;}
-		
+  void SetRecalculateV0ForGamma(Bool_t flag){fRecalculateV0ForGamma=flag;}		
+
   void SetElectronMass(Double_t electronMass){fElectronMass = electronMass;}
   void SetGammaMass(Double_t gammaMass){fGammaMass = gammaMass;}
   void SetGammaWidth(Double_t gammaWidth){fGammaWidth = gammaWidth;}
@@ -173,9 +176,11 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fDoOmegaMeson; // flag
   Bool_t fDoJet; // flag
   Bool_t fDoChic; // flag
+  Bool_t fRecalculateV0ForGamma;//flag
 		
   TClonesArray * fKFReconstructedGammasTClone; //! transient
   TClonesArray * fKFReconstructedPi0sTClone; //! transient
+  TClonesArray * fKFRecalculatedGammasTClone; //! transient
   TClonesArray * fCurrentEventPosElectronTClone; //! transient
   TClonesArray * fCurrentEventNegElectronTClone; //! transient
   TClonesArray * fKFReconstructedGammasCutTClone; //! transient
@@ -188,7 +193,11 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 		
   vector<Int_t> fGammav1; // vector containing index of gamma 1
   vector<Int_t> fGammav2; // vector containing index of gamma 2
+
+  vector<Int_t> fElectronRecalculatedv1; // vector containing index of electron 1
+  vector<Int_t> fElectronRecalculatedv2; // vector containing index of electron 2
 		
+  //  AliESDpid * fESDpid; // esd pid
 
 
   ///////Chi_c Analysis///////////////////////////

@@ -47,7 +47,13 @@ class AliGammaConversionHistograms{
   /*
    * Adds a TH2F histogram to the histogram map and create a key for it 
    */
-  void AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle="", TString yAxisTitle="");
+  void AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle="", TString yAxisTitle="", Int_t logAxis =-1);
+
+  /*
+   * Create a logx binning suitable for dEdx plots
+   */
+  Bool_t BinLogAxis(const char* name, Int_t dim);
+
 
   /*
    *  Adds a TH1F Table to the table map and create a key for it
