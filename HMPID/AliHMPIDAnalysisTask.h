@@ -23,11 +23,11 @@
 #define ALIHMPIDANALYSISTASK_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliStack.h"
 
 class TH1;
-class TH2;
-class TParticle ;
-class AliStack ;
+class TParticle;
+class TFile;
 class AliESDtrack;
 class AliESDEvent;
 
@@ -46,6 +46,7 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+
           Bool_t Equal(Double_t x, Double_t y, Double_t tolerance);
   
  protected:
@@ -53,23 +54,47 @@ class AliHMPIDAnalysisTask : public AliAnalysisTaskSE {
  private:     
  
   void   SetTrigger(Int_t trigger) {fTrigger = trigger;}
-  AliESDEvent   *fESD;             //! ESD object
-  TList         *fHmpHistList ;    // list of histograms 
+  AliESDEvent *fESD;               //! ESD object
+  AliMCEvent  *fMC;                //! MC event
+
+  TList         *fHmpHistList ;    // list of histograms
   Int_t          fNevts       ;    //event numbering
   Int_t          fTrigNevts   ;    //event numbering with the requested trigger
   Int_t          fTrigger     ;    //requested trigger
+
   TH2F          *fHmpPesdPhmp;     // HMP momentum vs ESD momentum
   TH2F          *fHmpCkovPesd;     // Ckov angle vs ESD momentum
   TH2F          *fHmpCkovPhmp;     // Ckov angle vs HMP momenutm
+
   TH1F          *fHmpMipTrkDist;   // Track-Mip distance distribution
   TH1F          *fHmpMipTrkDistX;  // Xtrk - Xmip
   TH1F          *fHmpMipTrkDistY;  // Ytrk - Ymip
-  TH1F          *fHmpMipCharge3cm; // Mip charge with 3 cm distance cut 
+  TH1F          *fHmpMipCharge3cm; // Mip charge with 3 cm distance cut
   TH1F          *fHmpMipCharge1cm; // Mip charge with 1 cm distance cut
   TH1F          *fHmpNumPhots;     // Number of reconstructed photo-electrons
   TH1F          *fHmpTrkFlags;     // track flags
-  
-  ClassDef(AliHMPIDAnalysisTask,2);
+
+  Int_t          fN1;              // number of points for pi and K
+  Int_t          fN2;              // number of point for p
+  TH1F          *fPionEff;         // identified pions
+  TH1F          *fKaonEff;         // identified kaons
+  TH1F          *fProtEff;         // identified protons
+  TH1I          *fPionTot;         // total pions
+  TH1I          *fKaonTot;         // total kaons
+  TH1I          *fProtTot;         // total protons
+  TH1F          *fPionNot;         // non-pion tracks
+  TH1F          *fKaonNot;         // non-kaon tracks
+  TH1F          *fProtNot;         // non-proton tracks
+  TH1I          *fPionCon;         // tracks identified as pions
+  TH1I          *fKaonCon;         // tracks identified as kaons
+  TH1I          *fProtCon;         // tracks identified as protons
+  TH2F          *fThetavsPiFromK;  // theta chkov of pis from Ks
+  TH2F          *fThetapivsPesd;   // theta chkov of pions vs Pesd
+  TH2F          *fThetaKvsPesd;    // theta chkov of kaons vs Pesd
+  TH2F          *fThetaPvsPesd;    // theta chkov of protons vs Pesd
+
+
+  ClassDef(AliHMPIDAnalysisTask,3);
 };
 
 #endif
