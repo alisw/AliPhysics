@@ -13,7 +13,7 @@
 #include <TObjArray.h>
 #include <TGraphErrors.h>
 #include <AliMagF.h>
-#include <AliAnalysisTask.h>
+#include <AliAnalysisTaskSE.h>
 #include <AliMCEventHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliESDEvent.h>
@@ -33,10 +33,7 @@ ClassImp(AliAnalysisTaskITSTPCalignment)
 
 //________________________________________________________________________
 AliAnalysisTaskITSTPCalignment::AliAnalysisTaskITSTPCalignment():
-    AliAnalysisTask(),
-    fESD(0),
-    fESDfriend(0),
-    fMC(0),
+    AliAnalysisTaskSE(),
     fArrayITSglobal(0),
     fArrayITSsa(0),
     fDebugTree(0),
@@ -69,10 +66,7 @@ AliAnalysisTaskITSTPCalignment::AliAnalysisTaskITSTPCalignment():
 
 //________________________________________________________________________
 AliAnalysisTaskITSTPCalignment::AliAnalysisTaskITSTPCalignment(const char *name):
-    AliAnalysisTask(name,name),
-    fESD(0),
-    fESDfriend(0),
-    fMC(0),
+    AliAnalysisTaskSE(name),
     fArrayITSglobal(0),
     fArrayITSsa(0),
     fDebugTree(0),
@@ -97,58 +91,15 @@ AliAnalysisTaskITSTPCalignment::AliAnalysisTaskITSTPCalignment(const char *name)
   // Constructor
 
   // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  DefineOutput(0, TTree::Class());
+  // Input slot #0 is a TChain
+  // Output slot #0 is a TTree
   DefineOutput(1, TList::Class());
   DefineOutput(2, AliRelAlignerKalmanArray::Class());
   DefineOutput(3, AliRelAlignerKalmanArray::Class());
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskITSTPCalignment::ConnectInputData(Option_t *)
-{
-  // Called once
-  TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
-  if (!tree)
-  {
-    AliError("Could not read chain from input slot 0");
-    return;
-  }
-
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>
-                             (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if (!esdH)
-  {
-    AliError("Could not get ESDInputHandler");
-    return;
-  }
-  else
-    fESD = esdH->GetEvent();
-
-  AliMCEventHandler* mcH = dynamic_cast<AliMCEventHandler*>
-                           (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!mcH) {
-    AliWarning("Could not retrieve MC event handler");
-  }
-  else
-    fMC = mcH->MCEvent();
-
-  //esdH->SetFriendFileName("AliESDfriends.root");
-  //fESDfriend = esdH->GetESDfriend();
-  //attach the ESD friend
-  tree->SetBranchStatus("ESDfriend*", 1);
-  fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
-  if (!fESDfriend)
-  {
-    // works for both, we just want to avoid setting the branch adress twice
-    // in case of the new ESD
-    tree->SetBranchAddress("ESDfriend.",&fESDfriend);
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskITSTPCalignment::Notify()
+Bool_t AliAnalysisTaskITSTPCalignment::UserNotify()
 {
   //ON INPUT FILE/TREE CHANGE
 
@@ -162,7 +113,7 @@ Bool_t AliAnalysisTaskITSTPCalignment::Notify()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskITSTPCalignment::CreateOutputObjects()
+void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
 {
   // Create output objects
   // Called once
@@ -189,56 +140,56 @@ void AliAnalysisTaskITSTPCalignment::CreateOutputObjects()
 
   fList = new TList();
 
-  TH2F* pZYAResidualsHistBpos = new TH2F("fZYAResidualsHistBpos","z-r\\phi residuals side A (z>0), Bpos", 100, -4., 4., 100, -2.0, 2.0 );
+  TH2F* pZYAResidualsHistBpos = new TH2F("fZYAResidualsHistBpos","z-r\\phi residuals side A (z>0), Bpos", 100, -4., 4., 100, -1.5, 1.5 );
   pZYAResidualsHistBpos->SetXTitle("\\deltaz [cm]");
   pZYAResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pZYCResidualsHistBpos = new TH2F("fZYCResidualsHistBpos","z-r\\phi residuals side C (z<0), Bpos", 100, -4., 4., 100, -2.0, 2.0 );
+  TH2F* pZYCResidualsHistBpos = new TH2F("fZYCResidualsHistBpos","z-r\\phi residuals side C (z<0), Bpos", 100, -4., 4., 100, -1.5, 1.5 );
   pZYCResidualsHistBpos->SetXTitle("\\deltaz [cm]");
   pZYCResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLPAResidualsHistBpos = new TH2F("fLPAResidualsHistBpos", "sin(\\phi) tan(\\lambda) residuals side A (z>0), Bpos", 100, -.07, 0.07, 100, -0.07, 0.07 );
+  TH2F* pLPAResidualsHistBpos = new TH2F("fLPAResidualsHistBpos", "sin(\\phi) tan(\\lambda) residuals side A (z>0), Bpos", 100, -.05, 0.05, 100, -0.05, 0.05 );
   pLPAResidualsHistBpos->SetXTitle("\\deltasin(\\phi)");
   pLPAResidualsHistBpos->SetYTitle("\\deltatan(\\lambda)");
-  TH2F* pLPCResidualsHistBpos = new TH2F("fLPCResidualsHistBpos", "sin(\\phi) tan(\\lambda) residuals side C (z<0), Bpos", 100, -.07, 0.07, 100, -0.07, 0.07 );
+  TH2F* pLPCResidualsHistBpos = new TH2F("fLPCResidualsHistBpos", "sin(\\phi) tan(\\lambda) residuals side C (z<0), Bpos", 100, -.05, 0.05, 100, -0.05, 0.05 );
   pLPCResidualsHistBpos->SetXTitle("\\deltasin(\\phi)");
   pLPCResidualsHistBpos->SetYTitle("\\deltatan(\\lambda)");
-  TH2F* pPhiYAResidualsHistBpos = new TH2F("fPhiYAResidualsHistBpos","\\phi-\\deltar\\phi side A (z>0), Bpos",36,0.0,6.3,100,-2.0,2.0);
+  TH2F* pPhiYAResidualsHistBpos = new TH2F("fPhiYAResidualsHistBpos","\\phi-\\deltar\\phi side A (z>0), Bpos",36,0.0,6.3,100,-1.5,1.5);
   pPhiYAResidualsHistBpos->SetXTitle("\\phi [rad]");
   pPhiYAResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPhiYCResidualsHistBpos = new TH2F("fPhiYCResidualsHistBpos","\\phi-\\deltar\\phi side C (z<0), Bpos",36,0.0,6.3,100,-2.0,2.0);
+  TH2F* pPhiYCResidualsHistBpos = new TH2F("fPhiYCResidualsHistBpos","\\phi-\\deltar\\phi side C (z<0), Bpos",36,0.0,6.3,100,-1.5,1.5);
   pPhiYCResidualsHistBpos->SetXTitle("\\phi [rad]");
   pPhiYCResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPhiZAResidualsHistBpos = new TH2F("fPhiZAResidualsHistBpos","\\phi-\\deltaz side A (z>0), Bpos",36,0.0,6.3,100,-4.0,4.0);
+  TH2F* pPhiZAResidualsHistBpos = new TH2F("fPhiZAResidualsHistBpos","\\phi-\\deltaz side A (z>0), Bpos",36,0.0,6.3,100,-3.0,3.0);
   pPhiZAResidualsHistBpos->SetXTitle("\\phi [rad]");
   pPhiZAResidualsHistBpos->SetYTitle("\\deltaz [cm]");
-  TH2F* pPhiZCResidualsHistBpos = new TH2F("fPhiZCResidualsHistBpos","\\phi-\\deltaz side C (z<0), Bpos",36,0.0,6.3,100,-4.0,4.0);
+  TH2F* pPhiZCResidualsHistBpos = new TH2F("fPhiZCResidualsHistBpos","\\phi-\\deltaz side C (z<0), Bpos",36,0.0,6.3,100,-3.0,3.0);
   pPhiZCResidualsHistBpos->SetXTitle("\\phi [rad]");
   pPhiZCResidualsHistBpos->SetYTitle("\\deltaz [cm]");
-  TH2F* pPtYAResidualsHistBpos = new TH2F("fPtYAResidualsHistBpos","Pt-\\deltar\\phi side A (z>0), Bpos",20,.3,8.,80,-2.0,2.0);
+  TH2F* pPtYAResidualsHistBpos = new TH2F("fPtYAResidualsHistBpos","Pt-\\deltar\\phi side A (z>0), Bpos",20,.3,8.,80,-1.5,1.5);
   pPtYAResidualsHistBpos->SetXTitle("Pt [rad]");
   pPtYAResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPtYCResidualsHistBpos = new TH2F("fPtYCResidualsHistBpos","Pt-\\deltar\\phi side C (z<0), Bpos",20,.3,8.,80,-2.0,2.0);
+  TH2F* pPtYCResidualsHistBpos = new TH2F("fPtYCResidualsHistBpos","Pt-\\deltar\\phi side C (z<0), Bpos",20,.3,8.,80,-1.5,1.5);
   pPtYCResidualsHistBpos->SetXTitle("Pt [rad]");
   pPtYCResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPtZAResidualsHistBpos = new TH2F("fPtZAResidualsHistBpos","Pt-\\deltaz side A (z>0), Bpos",20,.3,8.,80,-4.0,4.0);
+  TH2F* pPtZAResidualsHistBpos = new TH2F("fPtZAResidualsHistBpos","Pt-\\deltaz side A (z>0), Bpos",20,.3,8.,80,-3.0,3.0);
   pPtZAResidualsHistBpos->SetXTitle("Pt");
   pPtZAResidualsHistBpos->SetYTitle("\\deltaz [cm]");
-  TH2F* pPtZCResidualsHistBpos = new TH2F("fPtZCResidualsHistBpos","Pt-\\deltaz side C (z<0), Bpos",20,.3,8.,80,-4.0,4.0);
+  TH2F* pPtZCResidualsHistBpos = new TH2F("fPtZCResidualsHistBpos","Pt-\\deltaz side C (z<0), Bpos",20,.3,8.,80,-3.0,3.0);
   pPtZCResidualsHistBpos->SetXTitle("Pt");
   pPtZCResidualsHistBpos->SetYTitle("\\deltaz [cm]");
-  TH2F* pLowPtYAResidualsHistBpos = new TH2F("fLowPtYAResidualsHistBpos","Pt-\\deltar\\phi side A (z>0), Bpos",100,0.0,1.5,80,-2.0,2.0);
+  TH2F* pLowPtYAResidualsHistBpos = new TH2F("fLowPtYAResidualsHistBpos","Pt-\\deltar\\phi side A (z>0), Bpos",100,0.0,1.5,80,-1.5,1.5);
   pLowPtYAResidualsHistBpos->SetXTitle("Pt [rad]");
   pLowPtYAResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLowPtYCResidualsHistBpos = new TH2F("fLowPtYCResidualsHistBpos","Pt-\\deltar\\phi side C (z<0), Bpos",100,0.0,1.5,80,-2.0,2.0);
+  TH2F* pLowPtYCResidualsHistBpos = new TH2F("fLowPtYCResidualsHistBpos","Pt-\\deltar\\phi side C (z<0), Bpos",100,0.0,1.5,80,-1.5,1.5);
   pLowPtYCResidualsHistBpos->SetXTitle("Pt [rad]");
   pLowPtYCResidualsHistBpos->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLowPtZAResidualsHistBpos = new TH2F("fLowPtZAResidualsHistBpos","Pt-\\deltaz side A (z>0), Bpos",100,0.0,1.5,80,-4.0,4.0);
+  TH2F* pLowPtZAResidualsHistBpos = new TH2F("fLowPtZAResidualsHistBpos","Pt-\\deltaz side A (z>0), Bpos",100,0.0,1.5,80,-3.0,3.0);
   pLowPtZAResidualsHistBpos->SetXTitle("Pt");
   pLowPtZAResidualsHistBpos->SetYTitle("\\deltaz [cm]");
-  TH2F* pLowPtZCResidualsHistBpos = new TH2F("fLowPtZCResidualsHistBpos","Pt-\\deltaz side C (z<0), Bpos",100,0.0,1.5,80,-4.0,4.0);
+  TH2F* pLowPtZCResidualsHistBpos = new TH2F("fLowPtZCResidualsHistBpos","Pt-\\deltaz side C (z<0), Bpos",100,0.0,1.5,80,-3.0,3.0);
   pLowPtZCResidualsHistBpos->SetXTitle("Pt");
   pLowPtZCResidualsHistBpos->SetYTitle("\\deltaz [cm]");
   TList* listBpos = new TList();
-  fList->Add(listBpos);
+  fList->Add(listBpos); //0
   listBpos->Add(pZYAResidualsHistBpos);
   listBpos->Add(pZYCResidualsHistBpos);
   listBpos->Add(pLPAResidualsHistBpos);
@@ -256,56 +207,56 @@ void AliAnalysisTaskITSTPCalignment::CreateOutputObjects()
   listBpos->Add(pLowPtZAResidualsHistBpos);
   listBpos->Add(pLowPtZCResidualsHistBpos);
 
-  TH2F* pZYAResidualsHistBneg = new TH2F("fZYAResidualsHistBneg","z-r\\phi residuals side A (z>0), Bneg", 100, -4., 4., 100, -2.0, 2.0 );
+  TH2F* pZYAResidualsHistBneg = new TH2F("fZYAResidualsHistBneg","z-r\\phi residuals side A (z>0), Bneg", 100, -4., 4., 100, -1.5, 1.5 );
   pZYAResidualsHistBneg->SetXTitle("\\deltaz [cm]");
   pZYAResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pZYCResidualsHistBneg = new TH2F("fZYCResidualsHistBneg","z-r\\phi residuals side C (z<0), Bneg", 100, -4., 4., 100, -2.0, 2.0 );
+  TH2F* pZYCResidualsHistBneg = new TH2F("fZYCResidualsHistBneg","z-r\\phi residuals side C (z<0), Bneg", 100, -4., 4., 100, -1.5, 1.5 );
   pZYCResidualsHistBneg->SetXTitle("\\deltaz [cm]");
   pZYCResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLPAResidualsHistBneg = new TH2F("fLPAResidualsHistBneg", "sin(\\phi) tan(\\lambda) residuals side A (z>0), Bneg", 100, -.07, 0.07, 100, -0.07, 0.07 );
+  TH2F* pLPAResidualsHistBneg = new TH2F("fLPAResidualsHistBneg", "sin(\\phi) tan(\\lambda) residuals side A (z>0), Bneg", 100, -.05, 0.05, 100, -0.05, 0.05 );
   pLPAResidualsHistBneg->SetXTitle("\\deltasin(\\phi)");
   pLPAResidualsHistBneg->SetYTitle("\\deltatan(\\lambda)");
-  TH2F* pLPCResidualsHistBneg = new TH2F("fLPCResidualsHistBneg", "sin(\\phi) tan(\\lambda) residuals side C (z<0), Bneg", 100, -.07, 0.07, 100, -0.07, 0.07 );
+  TH2F* pLPCResidualsHistBneg = new TH2F("fLPCResidualsHistBneg", "sin(\\phi) tan(\\lambda) residuals side C (z<0), Bneg", 100, -.05, 0.05, 100, -0.05, 0.05 );
   pLPCResidualsHistBneg->SetXTitle("\\deltasin(\\phi)");
   pLPCResidualsHistBneg->SetYTitle("\\deltatan(\\lambda)");
-  TH2F* pPhiYAResidualsHistBneg = new TH2F("fPhiYAResidualsHistBneg","\\phi-\\deltar\\phi side A (z>0), Bneg",36,0.0,6.3,100,-2.0,2.0);
+  TH2F* pPhiYAResidualsHistBneg = new TH2F("fPhiYAResidualsHistBneg","\\phi-\\deltar\\phi side A (z>0), Bneg",36,0.0,6.3,100,-1.5,1.5);
   pPhiYAResidualsHistBneg->SetXTitle("\\phi [rad]");
   pPhiYAResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPhiYCResidualsHistBneg = new TH2F("fPhiYCResidualsHistBneg","\\phi-\\deltar\\phi side C (z<0), Bneg",36,0.0,6.3,100,-2.0,2.0);
+  TH2F* pPhiYCResidualsHistBneg = new TH2F("fPhiYCResidualsHistBneg","\\phi-\\deltar\\phi side C (z<0), Bneg",36,0.0,6.3,100,-1.5,1.5);
   pPhiYCResidualsHistBneg->SetXTitle("\\phi [rad]");
   pPhiYCResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPhiZAResidualsHistBneg = new TH2F("fPhiZAResidualsHistBneg","\\phi-\\deltaz side A (z>0), Bneg",36,0.0,6.3,100,-4.0,4.0);
+  TH2F* pPhiZAResidualsHistBneg = new TH2F("fPhiZAResidualsHistBneg","\\phi-\\deltaz side A (z>0), Bneg",36,0.0,6.3,100,-3.0,3.0);
   pPhiZAResidualsHistBneg->SetXTitle("\\phi [rad]");
   pPhiZAResidualsHistBneg->SetYTitle("\\deltaz [cm]");
-  TH2F* pPhiZCResidualsHistBneg = new TH2F("fPhiZCResidualsHistBneg","\\Pt-\\deltaz side C (z<0), Bneg",36,0.0,6.3,100,-4.0,4.0);
+  TH2F* pPhiZCResidualsHistBneg = new TH2F("fPhiZCResidualsHistBneg","\\Pt-\\deltaz side C (z<0), Bneg",36,0.0,6.3,100,-3.0,3.0);
   pPhiZCResidualsHistBneg->SetXTitle("\\phi [rad]");
   pPhiZCResidualsHistBneg->SetYTitle("\\deltaz [cm]");
-  TH2F* pPtYAResidualsHistBneg = new TH2F("fPtYAResidualsHistBneg","Pt-\\deltar\\phi side A (z>0), Bneg",20,.3,8.,80,-2.0,2.0);
+  TH2F* pPtYAResidualsHistBneg = new TH2F("fPtYAResidualsHistBneg","Pt-\\deltar\\phi side A (z>0), Bneg",20,.3,8.,80,-1.5,1.5);
   pPtYAResidualsHistBneg->SetXTitle("Pt [rad]");
   pPtYAResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPtYCResidualsHistBneg = new TH2F("fPtYCResidualsHistBneg","Pt-\\deltar\\phi side C (z<0), Bneg",20,.3,8.,80,-2.0,2.0);
+  TH2F* pPtYCResidualsHistBneg = new TH2F("fPtYCResidualsHistBneg","Pt-\\deltar\\phi side C (z<0), Bneg",20,.3,8.,80,-1.5,1.5);
   pPtYCResidualsHistBneg->SetXTitle("Pt [rad]");
   pPtYCResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPtZAResidualsHistBneg = new TH2F("fPtZAResidualsHistBneg","Pt-\\deltaz side A (z>0), Bneg",20,.3,8.,80,-4.0,4.0);
+  TH2F* pPtZAResidualsHistBneg = new TH2F("fPtZAResidualsHistBneg","Pt-\\deltaz side A (z>0), Bneg",20,.3,8.,80,-3.0,3.0);
   pPtZAResidualsHistBneg->SetXTitle("Pt");
   pPtZAResidualsHistBneg->SetYTitle("\\deltaz [cm]");
-  TH2F* pPtZCResidualsHistBneg = new TH2F("fPtZCResidualsHistBneg","Pt-\\deltaz side C (z<0), Bneg",20,.3,8.,80,-4.0,4.0);
+  TH2F* pPtZCResidualsHistBneg = new TH2F("fPtZCResidualsHistBneg","Pt-\\deltaz side C (z<0), Bneg",20,.3,8.,80,-3.0,3.0);
   pPtZCResidualsHistBneg->SetXTitle("Pt");
   pPtZCResidualsHistBneg->SetYTitle("\\deltaz [cm]");
-  TH2F* pLowPtYAResidualsHistBneg = new TH2F("fLowPtYAResidualsHistBneg","Pt-\\deltar\\phi side A (z>0), Bneg",100,0.0,1.5,80,-2.0,2.0);
+  TH2F* pLowPtYAResidualsHistBneg = new TH2F("fLowPtYAResidualsHistBneg","Pt-\\deltar\\phi side A (z>0), Bneg",100,0.0,1.5,80,-1.5,1.5);
   pLowPtYAResidualsHistBneg->SetXTitle("Pt [rad]");
   pLowPtYAResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLowPtYCResidualsHistBneg = new TH2F("fLowPtYCResidualsHistBneg","Pt-\\deltar\\phi side C (z<0), Bneg",100,0.0,1.5,80,-2.0,2.0);
+  TH2F* pLowPtYCResidualsHistBneg = new TH2F("fLowPtYCResidualsHistBneg","Pt-\\deltar\\phi side C (z<0), Bneg",100,0.0,1.5,80,-1.5,1.5);
   pLowPtYCResidualsHistBneg->SetXTitle("Pt [rad]");
   pLowPtYCResidualsHistBneg->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLowPtZAResidualsHistBneg = new TH2F("fLowPtZAResidualsHistBneg","Pt-\\deltaz side A (z>0), Bneg",100,0.0,1.5,80,-4.0,4.0);
+  TH2F* pLowPtZAResidualsHistBneg = new TH2F("fLowPtZAResidualsHistBneg","Pt-\\deltaz side A (z>0), Bneg",100,0.0,1.5,80,-3.0,3.0);
   pLowPtZAResidualsHistBneg->SetXTitle("Pt");
   pLowPtZAResidualsHistBneg->SetYTitle("\\deltaz [cm]");
-  TH2F* pLowPtZCResidualsHistBneg = new TH2F("fLowPtZCResidualsHistBneg","Pt-\\deltaz side C (z<0), Bneg",100,0.0,1.5,80,-4.0,4.0);
+  TH2F* pLowPtZCResidualsHistBneg = new TH2F("fLowPtZCResidualsHistBneg","Pt-\\deltaz side C (z<0), Bneg",100,0.0,1.5,80,-3.0,3.0);
   pLowPtZCResidualsHistBneg->SetXTitle("Pt");
   pLowPtZCResidualsHistBneg->SetYTitle("\\deltaz [cm]");
   TList* listBneg = new TList();
-  fList->Add(listBneg);
+  fList->Add(listBneg); //1
   listBneg->Add(pZYAResidualsHistBneg);
   listBneg->Add(pZYCResidualsHistBneg);
   listBneg->Add(pLPAResidualsHistBneg);
@@ -323,56 +274,56 @@ void AliAnalysisTaskITSTPCalignment::CreateOutputObjects()
   listBneg->Add(pLowPtZAResidualsHistBneg);
   listBneg->Add(pLowPtZCResidualsHistBneg);
 
-  TH2F* pZYAResidualsHistBnil = new TH2F("fZYAResidualsHistBnil","z-r\\phi residuals side A (z>0), Bnil", 100, -4., 4., 100, -2.0, 2.0 );
+  TH2F* pZYAResidualsHistBnil = new TH2F("fZYAResidualsHistBnil","z-r\\phi residuals side A (z>0), Bnil", 100, -3., 3., 100, -1.5, 1.5 );
   pZYAResidualsHistBnil->SetXTitle("\\deltaz [cm]");
   pZYAResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pZYCResidualsHistBnil = new TH2F("fZYCResidualsHistBnil","z-r\\phi residuals side C (z<0), Bnil", 100, -4., 4., 100, -2.0, 2.0 );
+  TH2F* pZYCResidualsHistBnil = new TH2F("fZYCResidualsHistBnil","z-r\\phi residuals side C (z<0), Bnil", 100, -3., 3., 100, -1.5, 1.5 );
   pZYCResidualsHistBnil->SetXTitle("\\deltaz [cm]");
   pZYCResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLPAResidualsHistBnil = new TH2F("fLPAResidualsHistBnil", "sin(\\phi) tan(\\lambda) residuals side A (z>0), Bnil", 100, -.07, 0.07, 100, -0.07, 0.07 );
+  TH2F* pLPAResidualsHistBnil = new TH2F("fLPAResidualsHistBnil", "sin(\\phi) tan(\\lambda) residuals side A (z>0), Bnil", 100, -.05, 0.05, 100, -0.05, 0.05 );
   pLPAResidualsHistBnil->SetXTitle("\\deltasin(\\phi)");
   pLPAResidualsHistBnil->SetYTitle("\\deltatan(\\lambda)");
-  TH2F* pLPCResidualsHistBnil = new TH2F("fLPCResidualsHistBnil", "sin(\\phi) tan(\\lambda) residuals side C (z<0), Bnil", 100, -.07, 0.07, 100, -0.07, 0.07 );
+  TH2F* pLPCResidualsHistBnil = new TH2F("fLPCResidualsHistBnil", "sin(\\phi) tan(\\lambda) residuals side C (z<0), Bnil", 100, -.05, 0.05, 100, -0.05, 0.05 );
   pLPCResidualsHistBnil->SetXTitle("\\deltasin(\\phi)");
   pLPCResidualsHistBnil->SetYTitle("\\deltatan(\\lambda)");
-  TH2F* pPhiYAResidualsHistBnil = new TH2F("fPhiYAResidualsHistBnil","\\phi-\\deltar\\phi side A (z>0), Bnil",36,0.0,6.3,100,-2.0,2.0);
+  TH2F* pPhiYAResidualsHistBnil = new TH2F("fPhiYAResidualsHistBnil","\\phi-\\deltar\\phi side A (z>0), Bnil",36,0.0,6.3,100,-1.5,1.5);
   pPhiYAResidualsHistBnil->SetXTitle("\\phi [rad]");
   pPhiYAResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPhiYCResidualsHistBnil = new TH2F("fPhiYCResidualsHistBnil","\\phi-\\deltar\\phi side C (z<0), Bnil",36,0.0,6.3,100,-2.0,2.0);
+  TH2F* pPhiYCResidualsHistBnil = new TH2F("fPhiYCResidualsHistBnil","\\phi-\\deltar\\phi side C (z<0), Bnil",36,0.0,6.3,100,-1.5,1.5);
   pPhiYCResidualsHistBnil->SetXTitle("\\phi [rad]");
   pPhiYCResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPhiZAResidualsHistBnil = new TH2F("fPhiZAResidualsHistBnil","\\phi-\\deltaz side A (z>0), Bnil",36,0.0,6.3,100,-4.0,4.0);
+  TH2F* pPhiZAResidualsHistBnil = new TH2F("fPhiZAResidualsHistBnil","\\phi-\\deltaz side A (z>0), Bnil",36,0.0,6.3,100,-3.0,3.0);
   pPhiZAResidualsHistBnil->SetXTitle("\\phi [rad]");
   pPhiZAResidualsHistBnil->SetYTitle("\\deltaz [cm]");
-  TH2F* pPhiZCResidualsHistBnil = new TH2F("fPhiZCResidualsHistBnil","\\Pt-\\deltaz side C (z<0), Bnil",36,0.0,6.3,100,-4.0,4.0);
+  TH2F* pPhiZCResidualsHistBnil = new TH2F("fPhiZCResidualsHistBnil","\\Pt-\\deltaz side C (z<0), Bnil",36,0.0,6.3,100,-3.0,3.0);
   pPhiZCResidualsHistBnil->SetXTitle("\\phi [rad]");
   pPhiZCResidualsHistBnil->SetYTitle("\\deltaz [cm]");
-  TH2F* pPtYAResidualsHistBnil = new TH2F("fPtYAResidualsHistBnil","Pt-\\deltar\\phi side A (z>0), Bnil",20,.3,8.,80,-2.0,2.0);
+  TH2F* pPtYAResidualsHistBnil = new TH2F("fPtYAResidualsHistBnil","Pt-\\deltar\\phi side A (z>0), Bnil",20,.3,8.,80,-1.5,1.5);
   pPtYAResidualsHistBnil->SetXTitle("Pt [rad]");
   pPtYAResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPtYCResidualsHistBnil = new TH2F("fPtYCResidualsHistBnil","Pt-\\deltar\\phi side C (z<0), Bnil",20,.3,8.,80,-2.0,2.0);
+  TH2F* pPtYCResidualsHistBnil = new TH2F("fPtYCResidualsHistBnil","Pt-\\deltar\\phi side C (z<0), Bnil",20,.3,8.,80,-1.5,1.5);
   pPtYCResidualsHistBnil->SetXTitle("Pt [rad]");
   pPtYCResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pPtZAResidualsHistBnil = new TH2F("fPtZAResidualsHistBnil","Pt-\\deltaz side A (z>0), Bnil",20,.3,8.,80,-4.0,4.0);
+  TH2F* pPtZAResidualsHistBnil = new TH2F("fPtZAResidualsHistBnil","Pt-\\deltaz side A (z>0), Bnil",20,.3,8.,80,-3.0,3.0);
   pPtZAResidualsHistBnil->SetXTitle("Pt");
   pPtZAResidualsHistBnil->SetYTitle("\\deltaz [cm]");
-  TH2F* pPtZCResidualsHistBnil = new TH2F("fPtZCResidualsHistBnil","Pt-\\deltaz side C (z<0), Bnil",20,.3,8.,80,-4.0,4.0);
+  TH2F* pPtZCResidualsHistBnil = new TH2F("fPtZCResidualsHistBnil","Pt-\\deltaz side C (z<0), Bnil",20,.3,8.,80,-3.0,3.0);
   pPtZCResidualsHistBnil->SetXTitle("Pt");
   pPtZCResidualsHistBnil->SetYTitle("\\deltaz [cm]");
-  TH2F* pLowPtYAResidualsHistBnil = new TH2F("fLowPtYAResidualsHistBnil","Pt-\\deltar\\phi side A (z>0), Bnil",100,0.0,1.5,80,-2.0,2.0);
+  TH2F* pLowPtYAResidualsHistBnil = new TH2F("fLowPtYAResidualsHistBnil","Pt-\\deltar\\phi side A (z>0), Bnil",100,0.0,1.5,80,-1.5,1.5);
   pLowPtYAResidualsHistBnil->SetXTitle("Pt [rad]");
   pLowPtYAResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLowPtYCResidualsHistBnil = new TH2F("fLowPtYCResidualsHistBnil","Pt-\\deltar\\phi side C (z<0), Bnil",100,0.0,1.5,80,-2.0,2.0);
+  TH2F* pLowPtYCResidualsHistBnil = new TH2F("fLowPtYCResidualsHistBnil","Pt-\\deltar\\phi side C (z<0), Bnil",100,0.0,1.5,80,-1.5,1.5);
   pLowPtYCResidualsHistBnil->SetXTitle("Pt [rad]");
   pLowPtYCResidualsHistBnil->SetYTitle("\\deltar\\phi [cm]");
-  TH2F* pLowPtZAResidualsHistBnil = new TH2F("fLowPtZAResidualsHistBnil","Pt-\\deltaz side A (z>0), Bnil",100,0.0,1.5,80,-4.0,4.0);
+  TH2F* pLowPtZAResidualsHistBnil = new TH2F("fLowPtZAResidualsHistBnil","Pt-\\deltaz side A (z>0), Bnil",100,0.0,1.5,80,-3.0,3.0);
   pLowPtZAResidualsHistBnil->SetXTitle("Pt");
   pLowPtZAResidualsHistBnil->SetYTitle("\\deltaz [cm]");
-  TH2F* pLowPtZCResidualsHistBnil = new TH2F("fLowPtZCResidualsHistBnil","Pt-\\deltaz side C (z<0), Bnil",100,0.0,1.5,80,-4.0,4.0);
+  TH2F* pLowPtZCResidualsHistBnil = new TH2F("fLowPtZCResidualsHistBnil","Pt-\\deltaz side C (z<0), Bnil",100,0.0,1.5,80,-3.0,3.0);
   pLowPtZCResidualsHistBnil->SetXTitle("Pt");
   pLowPtZCResidualsHistBnil->SetYTitle("\\deltaz [cm]");
   TList* listBnil = new TList();
-  fList->Add(listBnil);
+  fList->Add(listBnil); //2
   listBnil->Add(pZYAResidualsHistBnil);
   listBnil->Add(pZYCResidualsHistBnil);
   listBnil->Add(pLPAResidualsHistBnil);
@@ -390,7 +341,18 @@ void AliAnalysisTaskITSTPCalignment::CreateOutputObjects()
   listBnil->Add(pLowPtZAResidualsHistBnil);
   listBnil->Add(pLowPtZCResidualsHistBnil);
   TH1F* pNmatchingEff=new TH1F("pNmatchingEff","matching efficiency",50,0.,1.);
-  fList->Add(pNmatchingEff);
+  fList->Add(pNmatchingEff); //3
+
+  TH1I* pChecks = new TH1I("pChecks","various checks",10,0,10);
+  pChecks->GetXaxis()->SetBinLabel(1+kNoESD,"no ESD");
+  pChecks->GetXaxis()->SetBinLabel(1+kNoESDfriend,"no ESDfriend");
+  pChecks->GetXaxis()->SetBinLabel(1+kNoFriendTrack,"no friendtrack");
+  pChecks->GetXaxis()->SetBinLabel(1+kNoITSoutParams,"no params");
+  pChecks->GetXaxis()->SetBinLabel(1+kESDfriend,"ESD friends");
+  pChecks->GetXaxis()->SetBinLabel(1+kFriendsSkipBit,"friends+skipbit");
+  pChecks->GetXaxis()->SetBinLabel(1+kFriendTrack,"friendtrack");
+  pChecks->GetXaxis()->SetBinLabel(1+kITSoutParams,"params");
+  fList->Add(pChecks); //4
 
   fAligner = new AliRelAlignerKalman();
   fAligner->SetRejectOutliers(fRejectOutliers);
@@ -404,28 +366,37 @@ void AliAnalysisTaskITSTPCalignment::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskITSTPCalignment::Exec(Option_t *)
+void AliAnalysisTaskITSTPCalignment::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
 
+  TH1I* pChecks = static_cast<TH1I*>(fList->At(4));
   //check for ESD and friends
-  if (!fESD)
+  AliESDEvent* event = dynamic_cast<AliESDEvent*>(InputEvent());
+  AliESDfriend* eventFriend = dynamic_cast<AliESDfriend*>(ESDfriend());
+  if (!event)
   {
     AliError("no ESD");
+    pChecks->Fill(kNoESD);
     return;
   }
 
-  if (!fESDfriend)
+  if (!eventFriend)
   {
     AliError("no ESD friend");
+    pChecks->Fill(kNoESDfriend);
     return;
   }
+  else
+  {
+    pChecks->Fill(kESDfriend);
+  }
 
-  fESD->SetESDfriend(fESDfriend); //Attach the friend to the ESD
+  if (eventFriend->TestSkipBit()) pChecks->Fill(kFriendsSkipBit);
 
   //Update the parmeters
-  AnalyzeESDevent();
+  AnalyzeESDevent(event);
 
   // Post output data.
   PostData(0, fDebugTree);
@@ -435,17 +406,17 @@ void AliAnalysisTaskITSTPCalignment::Exec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent()
+void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent(AliESDEvent* event)
 {
   //analyze an ESD event with track matching
-  Int_t ntracks = fESD->GetNumberOfTracks();
+  Int_t ntracks = event->GetNumberOfTracks();
   if (ntracks==0) return;
 
   if (fUseITSoutGlobalTrack)
   {
-    AliRelAlignerKalman* alignerGlobal = fArrayITSglobal->GetAligner(fESD);
+    AliRelAlignerKalman* alignerGlobal = fArrayITSglobal->GetAligner(event);
     if (alignerGlobal)
-      alignerGlobal->AddESDevent(fESD);
+      alignerGlobal->AddESDevent(event);
   }
 
   if (fUseITSoutITSSAtrack)
@@ -455,7 +426,7 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent()
     TObjArray arrayParamITS(ntracks);
     TObjArray arrayParamTPC(ntracks);
 
-    Int_t n = FindMatchingTracks(arrayParamITS, arrayParamTPC, fESD);
+    Int_t n = FindMatchingTracks(arrayParamITS, arrayParamTPC, event);
     AliInfo(Form("n matched: %i\n",n));
 
     TH1F* nMatchingEff=dynamic_cast<TH1F*>(fList->At(3));
@@ -463,7 +434,7 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent()
     nMatchingEff->Fill(ratio);
 
     AliRelAlignerKalman* alignerSA = NULL;
-    if (n>0) alignerSA = fArrayITSsa->GetAligner(fESD);
+    if (n>0) alignerSA = fArrayITSsa->GetAligner(event);
 
     for (Int_t i=0;i<n;i++)
     {
@@ -476,9 +447,9 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent()
       //debug
       if (fAligner->AddTrackParams(paramsITS, paramsTPC))
       {
-        fAligner->SetRunNumber(fESD->GetRunNumber());
-        fAligner->SetMagField(fESD->GetMagneticField());
-        fAligner->SetTimeStamp(fESD->GetTimeStamp());
+        fAligner->SetRunNumber(event->GetRunNumber());
+        fAligner->SetMagField(event->GetMagneticField());
+        fAligner->SetTimeStamp(event->GetTimeStamp());
       }
 
       //alignment check
@@ -501,6 +472,7 @@ Int_t AliAnalysisTaskITSTPCalignment::FindMatchingTracks(TObjArray& arrITS, TObj
   //find matching tracks and return tobjarrays with the params
   //fUniqueID of param object contains tracknumber in event.
 
+  TH1I* pChecks = static_cast<TH1I*>(fList->At(4));
   Int_t ntracks = pESD->GetNumberOfTracks();
   Double_t magfield = pESD->GetMagneticField();
 
@@ -523,10 +495,12 @@ Int_t AliAnalysisTaskITSTPCalignment::FindMatchingTracks(TObjArray& arrITS, TObj
            (!track1->IsOn(AliESDtrack::kTPCin)) )) continue;
 
     const AliESDfriendTrack* constfriendtrack1 = track1->GetFriendTrack();
-    if (!constfriendtrack1) {AliInfo(Form("no friendTrack1\n"));continue;}
+    if (!constfriendtrack1) {AliInfo(Form("no friendTrack1\n"));pChecks->Fill(kNoFriendTrack);continue;}
+    pChecks->Fill(kFriendTrack);
     AliESDfriendTrack friendtrack1(*constfriendtrack1);
 
-    if (!friendtrack1.GetITSOut()) continue;
+    if (!friendtrack1.GetITSOut()) {pChecks->Fill(kNoITSoutParams);continue;}
+    pChecks->Fill(kITSoutParams);
     AliExternalTrackParam params1(*(friendtrack1.GetITSOut()));
 
     Double_t bestd = 1000.; //best distance
@@ -617,7 +591,7 @@ void AliAnalysisTaskITSTPCalignment::DoQA(AliExternalTrackParam* paramsITS,
   Float_t restgl = paramsTPC->GetTgl() - paramsITS->GetTgl();
 
   TList* pList=NULL;
-  Double_t field = fESD->GetMagneticField();
+  Double_t field = fInputEvent->GetMagneticField();
   if (field >= 1.)  pList = dynamic_cast<TList*>(fList->At(0));
   if (field <= -1.) pList = dynamic_cast<TList*>(fList->At(1));
   if (field < 1. && field > -1.) pList = dynamic_cast<TList*>(fList->At(2));
@@ -663,4 +637,3 @@ void AliAnalysisTaskITSTPCalignment::DoQA(AliExternalTrackParam* paramsITS,
     pLowPtZCResidualsHist->Fill(paramsTPC->Pt(),resz);
   }
 }
-
