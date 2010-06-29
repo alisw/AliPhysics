@@ -8,20 +8,31 @@
 //    Origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 ///////////////////////////////////////////////////////////////////////////
 
-#include <AliAnalysisTask.h>
+#include <AliAnalysisTaskSE.h>
 class TList;
 class TTree;
-class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDfriend;
 class AliMCEvent;
 class AliRelAlignerKalman;
 class AliRelAlignerKalmanArray;
+class AliExternalTrackParam;
 class TH2F;
 
-class AliAnalysisTaskITSTPCalignment : public AliAnalysisTask
+class AliAnalysisTaskITSTPCalignment : public AliAnalysisTaskSE
 {
 public:
+
+  enum { kNoESD=0,
+         kNoESDfriend=1,
+         kNoFriendTrack=2,
+         kNoITSoutParams=3,
+         kESDfriend=4,
+         kFriendsSkipBit=5,
+         kFriendTrack=6,
+         kITSoutParams=7
+       };
+
   AliAnalysisTaskITSTPCalignment();
   AliAnalysisTaskITSTPCalignment(const char *name);
   virtual ~AliAnalysisTaskITSTPCalignment() {}
@@ -33,7 +44,8 @@ public:
   void SetMinPt(Double_t m) {fMinPt=m;}
   void SetMinNclsITS(Int_t m) {fMinPointsVol1=m;}
   void SetMinNclsTPC(Int_t m) {fMinPointsVol2=m;}
-  void DoQA(AliExternalTrackParam* paramsITS,AliExternalTrackParam* paramsTPC);
+  void DoQA(AliExternalTrackParam* paramsITS,
+            AliExternalTrackParam* paramsTPC);
   void SetRejectOutliers(Bool_t set=kTRUE){fRejectOutliers=set;}
   void SetRejectOutliersSigma2Median(Bool_t set=kTRUE){fRejectOutliersSigma2Median=set;}
   void SetOutRejSigma(Double_t d){fOutRejSigma=d;}
@@ -43,18 +55,15 @@ public:
   void SetUseITSoutITSSAtrack(Bool_t b){fUseITSoutITSSAtrack=b;}
 
   Int_t FindMatchingTracks(TObjArray& arrITS, TObjArray& arrTPC, AliESDEvent* pESD);
-  void AnalyzeESDevent();
+  void AnalyzeESDevent(AliESDEvent* event);
   
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
-  virtual void   Terminate(Option_t *);
-  virtual Bool_t Notify();
+  //AnalysisTaskSE interface methods
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+  virtual Bool_t UserNotify();
+  void Terminate(Option_t *);
 
 private:
-  AliESDEvent* fESD;                  //! ESD object
-  AliESDfriend* fESDfriend;           //! ESD friend
-  AliMCEvent* fMC;                    //! mc event
   AliRelAlignerKalmanArray* fArrayITSglobal;   //! array of aligners with ITS global
   AliRelAlignerKalmanArray* fArrayITSsa;   //! array of aligners ITS standalone
   TTree* fDebugTree;                  //! tree
@@ -80,8 +89,7 @@ private:
   AliAnalysisTaskITSTPCalignment(const AliAnalysisTaskITSTPCalignment&); // not implemented
   AliAnalysisTaskITSTPCalignment& operator=(const AliAnalysisTaskITSTPCalignment&); // not implemented
 
-  ClassDef(AliAnalysisTaskITSTPCalignment, 2);
+  ClassDef(AliAnalysisTaskITSTPCalignment, 3);
 };
 
 #endif
-
