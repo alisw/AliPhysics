@@ -2412,11 +2412,16 @@ int AliHLTComponent::ExtractTriggerData(
     return -ENOENT;
   }
   
+  // Get the size of the AliHLTEventTriggerData structure without the readout list part.
+  // The way we do this here should also handle memory alignment correctly.
+  AliHLTEventTriggerData* dummy = NULL;
+  size_t sizeWithoutReadout = (char*)(&dummy->fReadoutList) - (char*)(dummy);
+  
   // Check that the trigger data pointer points to data of a size we can handle.
-  // Either it is the size of AliHLTEventTriggerData or 32 bits less for the old
-  // version of AliHLTEventDDL, i.e. AliHLTEventDDLV0.
+  // Either it is the size of AliHLTEventTriggerData or the size of the old
+  // version of AliHLTEventTriggerData using AliHLTEventDDLV0.
   if (trigData.fDataSize != sizeof(AliHLTEventTriggerData) and
-      trigData.fDataSize != sizeof(AliHLTEventTriggerData) - sizeof(AliHLTUInt32_t)
+      trigData.fDataSize != sizeWithoutReadout + sizeof(AliHLTEventDDLV0)
      )
   {
     if (printErrors)
