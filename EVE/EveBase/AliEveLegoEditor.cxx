@@ -258,6 +258,7 @@ void AliEveLegoEditor::SelectEventSelection(Int_t id)
 //______________________________________________________________________________
 void AliEveLegoEditor::CreateAllEventsEditor()
 {
+   // create the GUI of all events
    TGVerticalFrame *this2 = this->CreateEditorTabSubFrame("All events style");
 
    TGLabel *ftitle = new TGLabel(this2, "AliLego all events ------");

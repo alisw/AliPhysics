@@ -7,8 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef AliEveLego_H
-#define AliEveLego_H
+#ifndef ALIEVELEGO_H
+#define ALIEVELEGO_H
 
 #include "TEveElement.h"
 
@@ -41,12 +41,12 @@ public:
 
   // Get Methods
   TEveCaloDataHist* GetData()           {   return fData;             }
-  TEveCaloDataHist* GetDataAllEvents()  {   return fData_all_events;  }
+  TEveCaloDataHist* GetDataAllEvents()  {   return fDataAllEvents;  }
   AliESDEvent*      GetESD()            {   return fEsd;              }
   TEveCaloLego*     GetLego()           {   return fLego;             }
-  TEveCaloLego*     GetLegoAllEvents()  {   return fLego_all_events;  }
+  TEveCaloLego*     GetLegoAllEvents()  {   return fLegoAllEvents;  }
   TEveCalo3D*       GetCalo3D()         {   return fCalo3d;           }
-  TEveCalo3D*       GetCalo3DAllEvents(){   return fCalo3d_all_events;}
+  TEveCalo3D*       GetCalo3DAllEvents(){   return fCalo3dAllEvents;}
   AliEveMultiView*  GetMultiView()      {   return fAl;               }
   Float_t           GetPtMax();
   Float_t           GetPtMaxAE();
@@ -82,54 +82,52 @@ public:
   void              SelectEventSelection(Int_t id);
 
 private:
-  Int_t fChargeId;
-  Int_t fTracksId;
-  Int_t fEventsId;
-  Float_t fMaxPt;
+  Int_t fChargeId;  // determine if the charge is +/-
+  Int_t fTracksId;  // determine tracks selection
+  Int_t fEventsId;  // determine events selection
+  Float_t fMaxPt;   // set maximum pT
 
-  Int_t fChargeIdAE;
-  Int_t fTracksIdAE;
-  Float_t fMaxPtAE;
+  Int_t fChargeIdAE;  // determine if the charge is +/- for all events
+  Int_t fTracksIdAE;  // determine tracks selection for all events
+  Float_t fMaxPtAE;   // determine maximum pT for all events
 
-  AliESDEvent *fEsd;
-  AliPhysicsSelection *fPhysicsSelection;
-  TH2F *fHistopos;
-  TH2F *fHistoposclone;
-  TH2F *fHistopos_all_events;
-  TH2F *fHistoneg;
-  TH2F *fHistonegclone;
-  TH2F *fHistoneg_all_events;
+  AliESDEvent *fEsd;                      // ESD tree
+  AliPhysicsSelection *fPhysicsSelection; // physics selection object
+  TH2F *fHistopos;                        // positive charge histogram
+  TH2F *fHistoposAllEvents;               // positive charge histogram for all events
+  TH2F *fHistoneg;                        // negative charge histogram
+  TH2F *fHistonegAllEvents;               // negative charge histogram for all events
 
-  TEveCaloDataHist *fData;
-  TEveCaloDataHist *fData_all_events;
-  TEveCaloLego *fLego;
-  TEveCaloLego *fLego_all_events;
-  TEveCalo3D *fCalo3d;
-  TEveCalo3D *fCalo3d_all_events;
-  TGLViewer  *fGlv;
+  TEveCaloDataHist *fData;          // calo data for 2D, 3D histograms
+  TEveCaloDataHist *fDataAllEvents; // calo data for all events
+  TEveCaloLego *fLego;              // calo lego for histograms
+  TEveCaloLego *fLegoAllEvents;     // calo lego for all events histograms
+  TEveCalo3D *fCalo3d;              // 3D histogram for single event
+  TEveCalo3D *fCalo3dAllEvents;     // 3D histogram for all events
+  TGLViewer  *fGlv;                 // viewer object
 
-  TEveViewer *fHisto2d_v;
-  TEveScene  *fHisto2d_s;
-  TEveScene  *fHisto2d_s2;
-  TEveViewer *fHisto2d_all_events_v0;
-  TEveViewer *fHisto2d_all_events_v1;
-  TEveViewer *fHisto2d_all_events_v2;
-  TEveViewer *fHisto2d_all_events_v3;
-  TEveScene  *fHisto2d_all_events_s0;
-  TEveScene  *fHisto2d_all_events_s1;
-  TEveScene  *fHisto2d_all_events_s2;
-  TEveScene  *fHisto2d_all_events_s3;
+  TEveViewer *fHisto2dv;           // viewer for histograms
+  TEveScene  *fHisto2ds;           // scene for 3d histogram
+  TEveScene  *fHisto2ds2;          // scene for 3d histogram new tab
+  TEveViewer *fHisto2dAllEventsv0; // viewer 1 for all events tab
+  TEveViewer *fHisto2dAllEventsv1; // viewer 2 for all events tab
+  TEveViewer *fHisto2dAllEventsv2; // viewer 3 for all events tab
+  TEveViewer *fHisto2dAllEventsv3; // viewer 4 for all events tab
+  TEveScene  *fHisto2dAllEventss0; // scene for all events tab
+  TEveScene  *fHisto2dAllEventss1; // scene for all events tab
+  TEveScene  *fHisto2dAllEventss2; // scene for all events tab
+  TEveScene  *fHisto2dAllEventss3; // scene for all events tab
 
-  AliEveMultiView *fAl;
-  TEveCaloLegoOverlay *fHisto2d_lego_overlay;
-  TEveCaloLegoOverlay* fHisto2d_all_events_lego_overlay;
-  TEveWindowSlot* fHisto2d_all_events_slot;
+  AliEveMultiView *fAl;            // AliEveMultiView object to create 2D projections
+  TEveCaloLegoOverlay *fHisto2dLegoOverlay; // Overlay for calo lego
+  TEveCaloLegoOverlay* fHisto2dAllEventsLegoOverlay; // Overlay for calo lego all events
+  TEveWindowSlot* fHisto2dAllEventsSlot;  // window slot for 2d all events histogram
 
-  AliEveEventSelector *fEventSelector;
-  Bool_t fShowEventsInfo;
-  TGLOverlayButton *fGButton;
-  TGLOverlayButton *fB1;
-  TGLOverlayButton *fB2;
+  AliEveEventSelector *fEventSelector;  // event selector
+  Bool_t fShowEventsInfo;               // determine if show events info
+  TGLOverlayButton *fGButton;           // button box with collision candidate information
+  TGLOverlayButton *fB1;                // button box with beam 1 information
+  TGLOverlayButton *fB2;                // button box with beam 2 information
 
   AliEveLego(const AliEveLego&);            // Not implemented
   AliEveLego& operator=(const AliEveLego&); // Not implemented

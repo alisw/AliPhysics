@@ -38,7 +38,7 @@
 //
 
 ClassImp(AliEveLego)
-Double_t pi = TMath::Pi();
+Double_t kPi = TMath::Pi();
 
 //______________________________________________________________________________
 AliEveLego::AliEveLego(const char* name) :
@@ -53,33 +53,31 @@ AliEveLego::AliEveLego(const char* name) :
   fEsd(0),
   fPhysicsSelection(0),
   fHistopos(0),
-  fHistoposclone(0),
-  fHistopos_all_events(0),
+  fHistoposAllEvents(0),
   fHistoneg(0),
-  fHistonegclone(0),
-  fHistoneg_all_events(0),
+  fHistonegAllEvents(0),
   fData(0),
-  fData_all_events(0),
+  fDataAllEvents(0),
   fLego(0),
-  fLego_all_events(0),
+  fLegoAllEvents(0),
   fCalo3d(0),
-  fCalo3d_all_events(0),
+  fCalo3dAllEvents(0),
   fGlv(0),
-  fHisto2d_v(0),
-  fHisto2d_s(0),
-  fHisto2d_s2(0),
-  fHisto2d_all_events_v0(0),
-  fHisto2d_all_events_v1(0),
-  fHisto2d_all_events_v2(0),
-  fHisto2d_all_events_v3(0),
-  fHisto2d_all_events_s0(0),
-  fHisto2d_all_events_s1(0),
-  fHisto2d_all_events_s2(0),
-  fHisto2d_all_events_s3(0),
+  fHisto2dv(0),
+  fHisto2ds(0),
+  fHisto2ds2(0),
+  fHisto2dAllEventsv0(0),
+  fHisto2dAllEventsv1(0),
+  fHisto2dAllEventsv2(0),
+  fHisto2dAllEventsv3(0),
+  fHisto2dAllEventss0(0),
+  fHisto2dAllEventss1(0),
+  fHisto2dAllEventss2(0),
+  fHisto2dAllEventss3(0),
   fAl(0),
-  fHisto2d_lego_overlay(0),
-  fHisto2d_all_events_lego_overlay(0),
-  fHisto2d_all_events_slot(0),
+  fHisto2dLegoOverlay(0),
+  fHisto2dAllEventsLegoOverlay(0),
+  fHisto2dAllEventsSlot(0),
   fEventSelector(0),
   fShowEventsInfo(0),
   fGButton(0),
@@ -97,8 +95,8 @@ AliEveLego::AliEveLego(const char* name) :
 
   fEventSelector = AliEveEventManager::GetMaster()->GetEventSelector();
 
-  fHistopos = new TH2F("histopos","Histo 2d positive", 100, -1.5, 1.5, 80, -pi, pi);
-  fHistoneg = new TH2F("histoneg","Histo 2d negative", 100, -1.5, 1.5, 80, -pi, pi);
+  fHistopos = new TH2F("histopos","Histo 2d positive", 100, -1.5, 1.5, 80, -kPi, kPi);
+  fHistoneg = new TH2F("histoneg","Histo 2d negative", 100, -1.5, 1.5, 80, -kPi, kPi);
 
   fHistopos->SetDirectory(0);
   fHistoneg->SetDirectory(0);
@@ -141,37 +139,38 @@ AliEveLego::AliEveLego(const char* name) :
 //______________________________________________________________________________
 AliEveLego::~AliEveLego()
 {
+   // deleting variables
    delete fEsd;
    delete fPhysicsSelection;
    delete fHistopos;
-   delete fHistopos_all_events;
+   delete fHistoposAllEvents;
    delete fHistoneg;
-   delete fHistoneg_all_events;
+   delete fHistonegAllEvents;
 
    delete fData;
-   delete fData_all_events;
+   delete fDataAllEvents;
    delete fLego;
-   delete fLego_all_events;
+   delete fLegoAllEvents;
    delete fCalo3d;
-   delete fCalo3d_all_events;
+   delete fCalo3dAllEvents;
    delete fGlv;
 
-   delete fHisto2d_v;
-   delete fHisto2d_s;
-   delete fHisto2d_s2;
-   delete fHisto2d_all_events_v0;
-   delete fHisto2d_all_events_v1;
-   delete fHisto2d_all_events_v2;
-   delete fHisto2d_all_events_v3;
-   delete fHisto2d_all_events_s0;
-   delete fHisto2d_all_events_s1;
-   delete fHisto2d_all_events_s2;
-   delete fHisto2d_all_events_s3;
+   delete fHisto2dv;
+   delete fHisto2ds;
+   delete fHisto2ds2;
+   delete fHisto2dAllEventsv0;
+   delete fHisto2dAllEventsv1;
+   delete fHisto2dAllEventsv2;
+   delete fHisto2dAllEventsv3;
+   delete fHisto2dAllEventss0;
+   delete fHisto2dAllEventss1;
+   delete fHisto2dAllEventss2;
+   delete fHisto2dAllEventss3;
 
    delete fAl;
-   delete fHisto2d_lego_overlay;
-   delete fHisto2d_all_events_lego_overlay;
-   delete fHisto2d_all_events_slot;
+   delete fHisto2dLegoOverlay;
+   delete fHisto2dAllEventsLegoOverlay;
+   delete fHisto2dAllEventsSlot;
 
    delete fEventSelector;
    delete fGButton;
@@ -179,21 +178,24 @@ AliEveLego::~AliEveLego()
    delete fB2;
 }
 
-//______________________________________________________________________________
-Double_t getphi(Double_t phi)
+namespace
 {
-   Double_t pi = TMath::Pi();
+  //____________________________________________________________________________
+  Double_t getphi(Double_t phi)
+  {
+    // phi correction for alice
 
-   if (phi > pi) {
-      phi -= 2*pi;
-   }
-   return phi;
+    if (phi > TMath::Pi()) {
+      phi -= TMath::TwoPi();
+    }
+    return phi;
+  }
 }
 
 //______________________________________________________________________________
 TEveCaloDataHist* AliEveLego::LoadData()
 {
-
+   // Load data from ESD tree
    fHistopos->Reset();
    fHistoneg->Reset();
 
@@ -213,11 +215,6 @@ TEveCaloDataHist* AliEveLego::LoadData()
       }
    }
 
-//   fHistoposclone = (TH2F*)fHistopos->Clone("histoposclone");
-//   fHistonegclone = (TH2F*)fHistoneg->Clone("histonegclone");
-//   fHistoposclone->SetName("histoposclone");
-//   fHistonegclone->SetName("histonegclone");
-
    fData->DataChanged();
 
    FilterData();
@@ -228,9 +225,9 @@ TEveCaloDataHist* AliEveLego::LoadData()
 //______________________________________________________________________________
 TEveCaloDataHist* AliEveLego::LoadAllData()
 {
-
-   fHistopos_all_events->Reset();
-   fHistoneg_all_events->Reset();
+   // load data from all events ESD
+   fHistoposAllEvents->Reset();
+   fHistonegAllEvents->Reset();
 
    TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
 
@@ -240,20 +237,20 @@ TEveCaloDataHist* AliEveLego::LoadAllData()
          for (int n = 0; n < fEsd->GetNumberOfTracks(); ++n) {
 
             if (fEsd->GetTrack(n)->GetSign() > 0) {
-               fHistopos_all_events->Fill(fEsd->GetTrack(n)->Eta(),
+               fHistoposAllEvents->Fill(fEsd->GetTrack(n)->Eta(),
                                           getphi(fEsd->GetTrack(n)->Phi()),
                                           fabs(fEsd->GetTrack(n)->Pt()));
             } else {
-               fHistoneg_all_events->Fill(fEsd->GetTrack(n)->Eta(),
+               fHistonegAllEvents->Fill(fEsd->GetTrack(n)->Eta(),
                                           getphi(fEsd->GetTrack(n)->Phi()),
                                           fabs(fEsd->GetTrack(n)->Pt()));
             }
          }
    }
 
-   fData_all_events->DataChanged();
+   fDataAllEvents->DataChanged();
 
-   return fData_all_events;
+   return fDataAllEvents;
 }
 
 //______________________________________________________________________________
@@ -315,8 +312,8 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
    // Tracks selection
    if ( fTracksIdAE == 2 )
    {
-      fHistopos_all_events->Reset();
-      fHistoneg_all_events->Reset();
+      fHistoposAllEvents->Reset();
+      fHistonegAllEvents->Reset();
 
       TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
 
@@ -332,10 +329,10 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
          AliESDtrack *at = fEsd->GetTrack(pv->GetIndices()[n]);
 
          if (at->GetSign() > 0) {
-            fHistopos_all_events->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+            fHistoposAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
          }
          if (at->GetSign() < 0) {
-            fHistoneg_all_events->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
+            fHistonegAllEvents->Fill(at->Eta(), getphi(at->Phi()), fabs(at->Pt()));
          }
       }
       }
@@ -343,35 +340,35 @@ TEveCaloDataHist* AliEveLego::FilterAllData()
       LoadAllData();
    }
    
-   fData_all_events->DataChanged();
+   fDataAllEvents->DataChanged();
 
    // Max Pt threshold
    if (GetPtMaxAE() >= fMaxPtAE){
       for (Int_t binx = 1; binx <= 100; binx++) {
          for (Int_t biny = 1; biny <= 80; biny++) {
-            if (fHistopos_all_events->GetBinContent(binx, biny) >= fMaxPtAE)
+            if (fHistoposAllEvents->GetBinContent(binx, biny) >= fMaxPtAE)
             {
-               fHistopos_all_events->SetBinContent(binx, biny, fMaxPtAE);
+               fHistoposAllEvents->SetBinContent(binx, biny, fMaxPtAE);
             }
-            if (fHistoneg_all_events->GetBinContent(binx, biny) >= fMaxPtAE)
+            if (fHistonegAllEvents->GetBinContent(binx, biny) >= fMaxPtAE)
             {
-               fHistoneg_all_events->SetBinContent(binx, biny, fMaxPtAE);
+               fHistonegAllEvents->SetBinContent(binx, biny, fMaxPtAE);
             }           
          }
       }
    }
 
    // Positive only
-   if ( fChargeIdAE == 2 ) fHistoneg_all_events->Reset();
+   if ( fChargeIdAE == 2 ) fHistonegAllEvents->Reset();
 
    // Negative only
-   if ( fChargeIdAE == 3 ) fHistopos_all_events->Reset();
+   if ( fChargeIdAE == 3 ) fHistoposAllEvents->Reset();
 
-   fData_all_events->DataChanged();
+   fDataAllEvents->DataChanged();
 
    gEve->Redraw3D(kTRUE);
 
-   return fData_all_events;
+   return fDataAllEvents;
 }
 
 //______________________________________________________________________________
@@ -397,24 +394,24 @@ void AliEveLego::Update()
 TEveCaloLego* AliEveLego::CreateHistoLego()
 {
    // Viewer initialization, tab creation
-   if (fHisto2d_v == 0) {
+   if (fHisto2dv == 0) {
       TEveWindowSlot *fslot    = 0;
       TEveBrowser    *fbrowser = gEve->GetBrowser();
 
       fslot = TEveWindow::CreateWindowInTab(fbrowser->GetTabRight());
       fslot->MakeCurrent();
-      fHisto2d_v = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
-      fHisto2d_s = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
-      fHisto2d_v->AddScene(fHisto2d_s);
-      fHisto2d_v->SetElementName("2D Lego Viewer");
-      fHisto2d_s->SetElementName("2D Lego Scene");
+      fHisto2dv = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
+      fHisto2ds = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
+      fHisto2dv->AddScene(fHisto2ds);
+      fHisto2dv->SetElementName("2D Lego Viewer");
+      fHisto2ds->SetElementName("2D Lego Scene");
 
-      fGlv = fHisto2d_v->GetGLViewer();
-      fHisto2d_lego_overlay = new TEveCaloLegoOverlay();
-      fGlv->AddOverlayElement(fHisto2d_lego_overlay);
+      fGlv = fHisto2dv->GetGLViewer();
+      fHisto2dLegoOverlay = new TEveCaloLegoOverlay();
+      fGlv->AddOverlayElement(fHisto2dLegoOverlay);
       fGlv->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
 
-      fHisto2d_s->AddElement(fLego);
+      fHisto2ds->AddElement(fLego);
 
       // move to real world coordinates
       fLego->InitMainTrans();
@@ -424,7 +421,7 @@ TEveCaloLego* AliEveLego::CreateHistoLego()
       // set event handler to move from perspective to orthographic view.
       fGlv->SetEventHandler(new TEveLegoEventHandler(fGlv->GetGLWidget(), fGlv, fLego));
 
-      fHisto2d_lego_overlay->SetCaloLego(fLego);
+      fHisto2dLegoOverlay->SetCaloLego(fLego);
    }
 
    return fLego;
@@ -434,47 +431,47 @@ TEveCaloLego* AliEveLego::CreateHistoLego()
 TEveCaloLego* AliEveLego::CreateHistoLego(TEveWindowSlot *slot)
 {
    // Viewer initialization, tab creation
-   if (fHisto2d_all_events_v0 == 0) {
+   if (fHisto2dAllEventsv0 == 0) {
 
       slot->MakeCurrent();
-      fHisto2d_all_events_v0 = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
-      fHisto2d_all_events_s0 = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
-      fHisto2d_all_events_v0->AddScene(fHisto2d_all_events_s0);
-      fHisto2d_all_events_v0->SetElementName("2D Lego Viewer");
-      fHisto2d_all_events_s0->SetElementName("2D Lego Scene");
+      fHisto2dAllEventsv0 = gEve->SpawnNewViewer("2D Lego Histogram", "2D Lego Histogram");
+      fHisto2dAllEventss0 = gEve->SpawnNewScene("2D Lego Histogram", "2D Lego Histogram");
+      fHisto2dAllEventsv0->AddScene(fHisto2dAllEventss0);
+      fHisto2dAllEventsv0->SetElementName("2D Lego Viewer");
+      fHisto2dAllEventss0->SetElementName("2D Lego Scene");
 
-      TGLViewer* glv = fHisto2d_all_events_v0->GetGLViewer();
-      fHisto2d_all_events_lego_overlay = new TEveCaloLegoOverlay();
-      glv->AddOverlayElement(fHisto2d_all_events_lego_overlay);
+      TGLViewer* glv = fHisto2dAllEventsv0->GetGLViewer();
+      fHisto2dAllEventsLegoOverlay = new TEveCaloLegoOverlay();
+      glv->AddOverlayElement(fHisto2dAllEventsLegoOverlay);
       glv->SetCurrentCamera(TGLViewer::kCameraPerspXOY);
 
       // Plotting histogram lego
-      fLego_all_events = new TEveCaloLego(fData_all_events);
-      fHisto2d_all_events_s0->AddElement(fLego_all_events);
+      fLegoAllEvents = new TEveCaloLego(fDataAllEvents);
+      fHisto2dAllEventss0->AddElement(fLegoAllEvents);
 
       // Move to real world coordinates
-      fLego_all_events->InitMainTrans();
-      Float_t sc = TMath::Min(fLego_all_events->GetEtaRng(), fLego_all_events->GetPhiRng());
-      fLego_all_events->RefMainTrans().SetScale(sc, sc, sc);
+      fLegoAllEvents->InitMainTrans();
+      Float_t sc = TMath::Min(fLegoAllEvents->GetEtaRng(), fLegoAllEvents->GetPhiRng());
+      fLegoAllEvents->RefMainTrans().SetScale(sc, sc, sc);
 
       // Set event handler to move from perspective to orthographic view.
-      glv->SetEventHandler(new TEveLegoEventHandler(glv->GetGLWidget(), glv, fLego_all_events));
+      glv->SetEventHandler(new TEveLegoEventHandler(glv->GetGLWidget(), glv, fLegoAllEvents));
 
-      fHisto2d_all_events_lego_overlay->SetCaloLego(fLego_all_events);
+      fHisto2dAllEventsLegoOverlay->SetCaloLego(fLegoAllEvents);
    }
 
-   return fLego_all_events;
+   return fLegoAllEvents;
 }
 
 //______________________________________________________________________________
 TEveCalo3D* AliEveLego::Create3DView()
 {
    //initialization
-   if (fHisto2d_s2 == 0) {
-      fHisto2d_s2 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
-      gEve->GetDefaultViewer()->AddScene(fHisto2d_s2);
-      fHisto2d_s2->SetElementName("3D Histogram Scene");
-      fHisto2d_s2->AddElement(fCalo3d);
+   if (fHisto2ds2 == 0) {
+      fHisto2ds2 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
+      gEve->GetDefaultViewer()->AddScene(fHisto2ds2);
+      fHisto2ds2->SetElementName("3D Histogram Scene");
+      fHisto2ds2->AddElement(fCalo3d);
    }
 
    return fCalo3d;
@@ -483,66 +480,68 @@ TEveCalo3D* AliEveLego::Create3DView()
 //______________________________________________________________________________
 TEveCalo3D* AliEveLego::Create3DView(TEveWindowSlot *slot)
 {
-   if ( fHisto2d_all_events_v1 == 0 ) {
+   // creates a 3d view for the 3d histogram
+   if ( fHisto2dAllEventsv1 == 0 ) {
 
       slot->MakeCurrent();
-      fHisto2d_all_events_v1 = gEve->SpawnNewViewer("3D Histogram", "3D Histogram");
-      fHisto2d_all_events_s1 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
-      fHisto2d_all_events_v1->AddScene(fHisto2d_all_events_s1);
-      fHisto2d_all_events_v1->SetElementName("3D Histogram Viewer");
-      fHisto2d_all_events_s1->SetElementName("3D Histogram Scene");
+      fHisto2dAllEventsv1 = gEve->SpawnNewViewer("3D Histogram", "3D Histogram");
+      fHisto2dAllEventss1 = gEve->SpawnNewScene("3D Histogram", "3D Histogram");
+      fHisto2dAllEventsv1->AddScene(fHisto2dAllEventss1);
+      fHisto2dAllEventsv1->SetElementName("3D Histogram Viewer");
+      fHisto2dAllEventss1->SetElementName("3D Histogram Scene");
 
-      fCalo3d_all_events = new TEveCalo3D(fData_all_events);
+      fCalo3dAllEvents = new TEveCalo3D(fDataAllEvents);
 
-      fCalo3d_all_events->SetBarrelRadius(550);
-      fCalo3d_all_events->SetEndCapPos(550);
-      fHisto2d_all_events_s1->AddElement(fCalo3d_all_events);
+      fCalo3dAllEvents->SetBarrelRadius(550);
+      fCalo3dAllEvents->SetEndCapPos(550);
+      fHisto2dAllEventss1->AddElement(fCalo3dAllEvents);
    }
 
-   return fCalo3d_all_events;
+   return fCalo3dAllEvents;
 }
 
 //______________________________________________________________________________
-void AliEveLego::CreateProjections(TEveWindowSlot* slot1, TEveWindowSlot* slot2){
-
-   if (fHisto2d_all_events_v2 == 0) {
+void AliEveLego::CreateProjections(TEveWindowSlot* slot1, TEveWindowSlot* slot2)
+{
+   // create projections
+   if (fHisto2dAllEventsv2 == 0) {
 
       slot1->MakeCurrent();
-      fHisto2d_all_events_v2 = gEve->SpawnNewViewer("RPhi projection", "RPhi projection");
-      fHisto2d_all_events_s2 = gEve->SpawnNewScene("RPhi projection", "RPhi projection");
-      fHisto2d_all_events_v2->AddScene(fHisto2d_all_events_s2);
-      fHisto2d_all_events_v2->SetElementName("RPhi Projection Viewer");
-      fHisto2d_all_events_s2->SetElementName("RPhi Projection Scene");
+      fHisto2dAllEventsv2 = gEve->SpawnNewViewer("RPhi projection", "RPhi projection");
+      fHisto2dAllEventss2 = gEve->SpawnNewScene("RPhi projection", "RPhi projection");
+      fHisto2dAllEventsv2->AddScene(fHisto2dAllEventss2);
+      fHisto2dAllEventsv2->SetElementName("RPhi Projection Viewer");
+      fHisto2dAllEventss2->SetElementName("RPhi Projection Scene");
 
       TEveProjectionManager* mng1 = new TEveProjectionManager();
       mng1->SetProjection(TEveProjection::kPT_RPhi);
 
-      TEveProjectionAxes* axeg_histo2d_all_events_s1 = new TEveProjectionAxes(mng1);
-      fHisto2d_all_events_s2->AddElement(axeg_histo2d_all_events_s1);
-      TEveCalo2D* fcalo2d1 = (TEveCalo2D*) mng1->ImportElements(fCalo3d_all_events);
-      fHisto2d_all_events_s2->AddElement(fcalo2d1);
+      TEveProjectionAxes* axeghisto2dAllEventss1 = new TEveProjectionAxes(mng1);
+      fHisto2dAllEventss2->AddElement(axeghisto2dAllEventss1);
+      TEveCalo2D* fcalo2d1 = (TEveCalo2D*) mng1->ImportElements(fCalo3dAllEvents);
+      fHisto2dAllEventss2->AddElement(fcalo2d1);
 
-      fHisto2d_all_events_v2->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+      fHisto2dAllEventsv2->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    }
 
-   if (fHisto2d_all_events_v3 == 0) {
+   if (fHisto2dAllEventsv3 == 0) {
 
       slot2->MakeCurrent();
-      fHisto2d_all_events_v3 = gEve->SpawnNewViewer("RhoZ projection", "RhoZ projection");
-      fHisto2d_all_events_s3 = gEve->SpawnNewScene("RhoZ projection", "RhoZ projection");
-      fHisto2d_all_events_v3->AddScene(fHisto2d_all_events_s3);
-      fHisto2d_all_events_v3->SetElementName("RhoZ Projection Viewer");
-      fHisto2d_all_events_s3->SetElementName("RhoZ Projection Viewer");
+      fHisto2dAllEventsv3 = gEve->SpawnNewViewer("RhoZ projection", "RhoZ projection");
+      fHisto2dAllEventss3 = gEve->SpawnNewScene("RhoZ projection", "RhoZ projection");
+      fHisto2dAllEventsv3->AddScene(fHisto2dAllEventss3);
+      fHisto2dAllEventsv3->SetElementName("RhoZ Projection Viewer");
+      fHisto2dAllEventss3->SetElementName("RhoZ Projection Viewer");
 
       TEveProjectionManager* mng2 = new TEveProjectionManager();
       mng2->SetProjection(TEveProjection::kPT_RhoZ);
 
-      TEveProjectionAxes* axeg_histo2d_all_events_s2 = new TEveProjectionAxes(mng2);
-      fHisto2d_all_events_s3->AddElement(axeg_histo2d_all_events_s2);
-      TEveCalo2D* fcalo2d2 = (TEveCalo2D*) mng2->ImportElements(fCalo3d_all_events);
-      fHisto2d_all_events_s3->AddElement(fcalo2d2);
+      TEveProjectionAxes* axeghisto2dAllEventss2 = new TEveProjectionAxes(mng2);
+      fHisto2dAllEventss3->AddElement(axeghisto2dAllEventss2);
+      TEveCalo2D* fcalo2d2 = (TEveCalo2D*) mng2->ImportElements(fCalo3dAllEvents);
+      fHisto2dAllEventss3->AddElement(fcalo2d2);
 
-      fHisto2d_all_events_v3->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+      fHisto2dAllEventsv3->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    }
 
    return;
@@ -551,47 +550,48 @@ void AliEveLego::CreateProjections(TEveWindowSlot* slot1, TEveWindowSlot* slot2)
 //______________________________________________________________________________
 TEveCaloDataHist* AliEveLego::LoadAllEvents()
 {
-   if ( fHisto2d_all_events_slot == 0 ) {
+   // load all events data from ESD
+   if ( fHisto2dAllEventsSlot == 0 ) {
 
       printf("Filling histogram...\n");
       TStopwatch timer;
       timer.Start();
 
       // Creating 2D histograms
-      fHistopos_all_events = new TH2F("fHistopos_all_events","Histo 2d positive",
-                                 100,-1.5,1.5,80,-pi,pi);
-      fHistoneg_all_events = new TH2F("fHistoneg_all_events","Histo 2d negative",
-                                 100,-1.5,1.5,80,-pi,pi);
+      fHistoposAllEvents = new TH2F("fHistoposAllEvents","Histo 2d positive",
+                                 100,-1.5,1.5,80,-kPi,kPi);
+      fHistonegAllEvents = new TH2F("fHistonegAllEvents","Histo 2d negative",
+                                 100,-1.5,1.5,80,-kPi,kPi);
 
-      fHistopos_all_events->SetDirectory(0);
-      fHistoneg_all_events->SetDirectory(0);
+      fHistoposAllEvents->SetDirectory(0);
+      fHistonegAllEvents->SetDirectory(0);
 
-      fData_all_events = new TEveCaloDataHist();
-      fData_all_events->AddHistogram(fHistoneg_all_events);
-      fData_all_events->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
-      fData_all_events->AddHistogram(fHistopos_all_events);
-      fData_all_events->RefSliceInfo(1).Setup("PosCg:", 0, kRed);
-      fData_all_events->GetEtaBins()->SetTitleFont(120);
-      fData_all_events->GetEtaBins()->SetTitle("h");
-      fData_all_events->GetPhiBins()->SetTitleFont(120);
-      fData_all_events->GetPhiBins()->SetTitle("f");
-      fData_all_events->IncDenyDestroy();
+      fDataAllEvents = new TEveCaloDataHist();
+      fDataAllEvents->AddHistogram(fHistonegAllEvents);
+      fDataAllEvents->RefSliceInfo(0).Setup("NegCg:", 0, kBlue);
+      fDataAllEvents->AddHistogram(fHistoposAllEvents);
+      fDataAllEvents->RefSliceInfo(1).Setup("PosCg:", 0, kRed);
+      fDataAllEvents->GetEtaBins()->SetTitleFont(120);
+      fDataAllEvents->GetEtaBins()->SetTitle("h");
+      fDataAllEvents->GetPhiBins()->SetTitleFont(120);
+      fDataAllEvents->GetPhiBins()->SetTitle("f");
+      fDataAllEvents->IncDenyDestroy();
 
       // Creating frames
-      fHisto2d_all_events_slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-      TEveWindowPack* packH = fHisto2d_all_events_slot->MakePack();
+      fHisto2dAllEventsSlot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+      TEveWindowPack* packH = fHisto2dAllEventsSlot->MakePack();
       packH->SetElementName("Projections");
       packH->SetHorizontal();
       packH->SetShowTitleBar(kFALSE);
 
-      fHisto2d_all_events_slot = packH->NewSlot();
-      TEveWindowPack* pack0 = fHisto2d_all_events_slot->MakePack();
+      fHisto2dAllEventsSlot = packH->NewSlot();
+      TEveWindowPack* pack0 = fHisto2dAllEventsSlot->MakePack();
       pack0->SetShowTitleBar(kFALSE);
       TEveWindowSlot*  slotLeftTop   = pack0->NewSlot();
       TEveWindowSlot* slotLeftBottom = pack0->NewSlot();
 
-      fHisto2d_all_events_slot = packH->NewSlot();
-      TEveWindowPack* pack1 = fHisto2d_all_events_slot->MakePack();
+      fHisto2dAllEventsSlot = packH->NewSlot();
+      TEveWindowPack* pack1 = fHisto2dAllEventsSlot->MakePack();
       pack1->SetShowTitleBar(kFALSE);
       TEveWindowSlot* slotRightTop    = pack1->NewSlot();
       TEveWindowSlot* slotRightBottom = pack1->NewSlot();
@@ -611,7 +611,7 @@ TEveCaloDataHist* AliEveLego::LoadAllEvents()
 
    }
 
-   return fData_all_events;
+   return fDataAllEvents;
 }
 
 //______________________________________________________________________________
@@ -623,7 +623,7 @@ Float_t AliEveLego::GetPtMax()
 //______________________________________________________________________________
 Float_t AliEveLego::GetPtMaxAE()
 {
-   return fData_all_events->GetMaxVal(fLego_all_events->GetPlotEt());
+   return fDataAllEvents->GetMaxVal(fLegoAllEvents->GetPlotEt());
 }
 
 //______________________________________________________________________________
@@ -657,9 +657,9 @@ void AliEveLego::SetThreshold(Double_t val)
 void AliEveLego::SetThresholdAE(Double_t val)
 {
    // Setting up the new threshold for all histograms
-   fData_all_events->SetSliceThreshold(0,val);
-   fData_all_events->SetSliceThreshold(1,val);
-   fData_all_events->DataChanged();
+   fDataAllEvents->SetSliceThreshold(0,val);
+   fDataAllEvents->SetSliceThreshold(1,val);
+   fDataAllEvents->DataChanged();
 
    gEve->Redraw3D(kTRUE);
 }
@@ -667,6 +667,7 @@ void AliEveLego::SetThresholdAE(Double_t val)
 //______________________________________________________________________________
 void AliEveLego::SetEventSelection()
 {
+   // activate/deactivate info box
    if (fShowEventsInfo == 0)
    {
       fShowEventsInfo = 1;
@@ -680,19 +681,20 @@ void AliEveLego::SetEventSelection()
 //______________________________________________________________________________
 void AliEveLego::ShowEventSeletion(Bool_t show, Bool_t updateonly)
 {
+   // activate/deactivate info box
    if (show == 0)
    {
       gEve->GetDefaultGLViewer()->RemoveOverlayElement(fGButton);
       fAl->Get3DView()->GetGLViewer()->RemoveOverlayElement(fGButton);
-      fHisto2d_v->GetGLViewer()->RemoveOverlayElement(fGButton);
+      fHisto2dv->GetGLViewer()->RemoveOverlayElement(fGButton);
 
       gEve->GetDefaultGLViewer()->RemoveOverlayElement(fB1);
       fAl->Get3DView()->GetGLViewer()->RemoveOverlayElement(fB1);
-      fHisto2d_v->GetGLViewer()->RemoveOverlayElement(fB1);
+      fHisto2dv->GetGLViewer()->RemoveOverlayElement(fB1);
 
       gEve->GetDefaultGLViewer()->RemoveOverlayElement(fB2);
       fAl->Get3DView()->GetGLViewer()->RemoveOverlayElement(fB2);
-      fHisto2d_v->GetGLViewer()->RemoveOverlayElement(fB2);
+      fHisto2dv->GetGLViewer()->RemoveOverlayElement(fB2);
 
    } else {
 
@@ -700,7 +702,7 @@ void AliEveLego::ShowEventSeletion(Bool_t show, Bool_t updateonly)
       if (updateonly == kFALSE) {
          gEve->GetDefaultGLViewer()->AddOverlayElement(fGButton);
          fAl->Get3DView()->GetGLViewer()->AddOverlayElement(fGButton);
-         fHisto2d_v->GetGLViewer()->AddOverlayElement(fGButton);
+         fHisto2dv->GetGLViewer()->AddOverlayElement(fGButton);
       }
 
       Bool_t ev = fPhysicsSelection->IsCollisionCandidate(fEsd);
@@ -716,11 +718,11 @@ void AliEveLego::ShowEventSeletion(Bool_t show, Bool_t updateonly)
       if (updateonly == kFALSE) {
          gEve->GetDefaultGLViewer()->AddOverlayElement(fB1);
          fAl->Get3DView()->GetGLViewer()->AddOverlayElement(fB1);
-         fHisto2d_v->GetGLViewer()->AddOverlayElement(fB1);
+         fHisto2dv->GetGLViewer()->AddOverlayElement(fB1);
 
          gEve->GetDefaultGLViewer()->AddOverlayElement(fB2);
          fAl->Get3DView()->GetGLViewer()->AddOverlayElement(fB2);
-         fHisto2d_v->GetGLViewer()->AddOverlayElement(fB2);
+         fHisto2dv->GetGLViewer()->AddOverlayElement(fB2);
       }
 
       Bool_t b1  = fEsd->IsTriggerClassFired("CINT1A-ABCE-NOPF-ALL");
@@ -753,6 +755,7 @@ void AliEveLego::ShowEventSeletion(Bool_t show, Bool_t updateonly)
 //______________________________________________________________________________
 void AliEveLego::SelectEventSelection(Int_t id)
 {
+   // show trigger information
    if (id == 0)
    {
       fEventSelector->SetSelectOnTriggerType(kFALSE);
