@@ -61,7 +61,7 @@ AliCaloTrackMCReader::AliCaloTrackMCReader() :
   fReadAODMCParticles = kFALSE;
   
 }
-
+/*
 //____________________________________________________________________________
 AliCaloTrackMCReader::AliCaloTrackMCReader(const AliCaloTrackMCReader & g) :   
   AliCaloTrackReader(g), fDecayPi0(g.fDecayPi0), 
@@ -74,7 +74,7 @@ AliCaloTrackMCReader::AliCaloTrackMCReader(const AliCaloTrackMCReader & g) :
 {
   // cpy ctor
 }
-
+*/
 //_________________________________________________________________________
 //AliCaloTrackMCReader & AliCaloTrackMCReader::operator = (const AliCaloTrackMCReader & source)
 //{

@@ -29,13 +29,15 @@ class TList ;
 
 class AliAnaPhoton : public AliAnaPartCorrBaseClass {
 
-public: 
-
+ public: 
   AliAnaPhoton() ; // default ctor
+  virtual ~AliAnaPhoton() ; //virtual dtor
+ private:
   AliAnaPhoton(const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;//cpy assignment
-  virtual ~AliAnaPhoton() ; //virtual dtor
-  
+
+ public:
+
   TList *  GetCreateOutputObjects();
 
   void Init();

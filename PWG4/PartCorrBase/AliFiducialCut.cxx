@@ -51,7 +51,7 @@ AliFiducialCut::AliFiducialCut() :
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliFiducialCut::AliFiducialCut(const AliFiducialCut & g) :   
   TObject(g), 
@@ -101,7 +101,7 @@ AliFiducialCut & AliFiducialCut::operator = (const AliFiducialCut & source)
   return *this;
 
 }
-
+*/
 //_________________________________
 AliFiducialCut::~AliFiducialCut() {
   //Dtor

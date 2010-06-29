@@ -29,12 +29,14 @@ class TList ;
 
 class AliAnaElectron : public AliAnaPartCorrBaseClass {
 
-public: 
-
+ public: 
   AliAnaElectron() ; // default ctor
+  virtual ~AliAnaElectron() ; //virtual dtor
+ private:
   AliAnaElectron(const AliAnaElectron & g) ; // cpy ctor
   AliAnaElectron & operator = (const AliAnaElectron & g) ;//cpy assignment
-  virtual ~AliAnaElectron() ; //virtual dtor
+  
+ public:
 
   TList *  GetCreateOutputObjects();
 

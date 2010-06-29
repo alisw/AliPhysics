@@ -25,12 +25,14 @@ class AliCaloTrackReader ;
 class AliIsolationCut : public TObject {
   
  public: 
-  
   AliIsolationCut() ; // default ctor
+  virtual ~AliIsolationCut() {;} //virtual dtalr
+ private:
   AliIsolationCut(const AliIsolationCut & g) ; // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ;//cpy assignment
-  virtual ~AliIsolationCut() {;} //virtual dtalr
-  
+
+ public: 
+ 
   enum type {kPtThresIC, kSumPtIC, kPtFracIC, kSumPtFracIC};
   
   Float_t    GetConeSize()        const {return fConeSize ; }

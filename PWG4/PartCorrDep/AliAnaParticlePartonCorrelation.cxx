@@ -47,7 +47,7 @@
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) :   
   AliAnaPartCorrBaseClass(g),   
@@ -80,7 +80,7 @@ AliAnaParticlePartonCorrelation & AliAnaParticlePartonCorrelation::operator = (c
   return *this;
 
 }
-
+*/
 
 //________________________________________________________________________
 TList *  AliAnaParticlePartonCorrelation::GetCreateOutputObjects()

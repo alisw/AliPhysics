@@ -56,7 +56,7 @@ ClassImp(AliNeutralMesonSelection)
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliNeutralMesonSelection::AliNeutralMesonSelection(const AliNeutralMesonSelection & g) :   
   TObject(), fM(g.fM),
@@ -106,7 +106,7 @@ AliNeutralMesonSelection & AliNeutralMesonSelection::operator = (const AliNeutra
   return *this;
   
 }
-
+*/
 //____________________________________________________________________________
 AliNeutralMesonSelection::~AliNeutralMesonSelection() 
 {

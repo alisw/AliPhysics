@@ -34,12 +34,10 @@ class AliAODMCHeader;
 class AliCaloTrackReader : public TObject {
 
 public: 
-  
   AliCaloTrackReader() ; // ctor
-  AliCaloTrackReader(const AliCaloTrackReader & g) ; // cpy ctor
   virtual ~AliCaloTrackReader() ;//virtual dtor
-
 private:
+  AliCaloTrackReader(const AliCaloTrackReader & g) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ;//cpy assignment
 
 public:

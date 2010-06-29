@@ -48,25 +48,28 @@ ClassImp(AliCaloTrackESDReader)
 AliCaloTrackESDReader::AliCaloTrackESDReader() : 
 AliCaloTrackReader()
 {
-	//Default Ctor
-	
-	//Initialize parameters
-	fDataType=kESD;
-	fReadStack          = kTRUE;
-	fReadAODMCParticles = kFALSE;
-	//We want tracks fitted in the detectors:
-	fTrackStatus=AliESDtrack::kTPCrefit;
-    fTrackStatus|=AliESDtrack::kITSrefit;
-
+  //Default Ctor
+  
+  //Initialize parameters
+  fDataType=kESD;
+  fReadStack          = kTRUE;
+  fReadAODMCParticles = kFALSE;
+  //We want tracks fitted in the detectors:
+  fTrackStatus=AliESDtrack::kTPCrefit;
+  fTrackStatus|=AliESDtrack::kITSrefit;
+  //This reader creates the AOD objects (Tracks-clusters), so it owns them 
+  //fAODCTS  ->SetOwner(kTRUE);
+  //fAODEMCAL->SetOwner(kTRUE);
+  //fAODPHOS ->SetOwner(kTRUE);
 }
-
+/*
 //____________________________________________________________________________
 AliCaloTrackESDReader::AliCaloTrackESDReader(const AliCaloTrackESDReader & g) :   
   AliCaloTrackReader(g)
 {
   // cpy ctor
 }
-
+*/
 //_________________________________________________________________________
 //AliCaloTrackESDReader & AliCaloTrackESDReader::operator = (const AliCaloTrackESDReader & source)
 //{
@@ -93,9 +96,13 @@ void AliCaloTrackESDReader::FillInputCTS() {
   Double_t bfield = ((AliESDEvent*)fInputEvent)->GetMagneticField();
 
   Double_t      timezero        = 0;   //TO BE FIXED
+ 
+  //List of output tracks 
+  TClonesArray &tracks = *(fOutputEvent->GetTracks());
 
   //To be replaced by call to AliEMCALGeoUtils when the class becomes available
   Double_t radius = 441.0; //[cm] EMCAL radius +13cm
+
   if(fDebug > 1) printf("AliCaloTrackESDReader::FillInputCTS() - org entries %d\n", nTracks);
   for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
     AliESDtrack * track = (AliESDtrack*) ((AliESDEvent*)fInputEvent)->GetTrack(itrack) ; // retrieve track from esd
@@ -122,7 +129,8 @@ void AliCaloTrackESDReader::FillInputCTS() {
 		if (impactXY<3) {
 		  // track inside the beam pipe
 		  //Put new aod object in file in AOD tracks array
-		  AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[naod++]) 
+		  AliAODTrack *aodTrack = new(tracks[naod++]) 
+		    //AliAODTrack *aodTrack = new((*(fOutputEvent->GetTracks()))[naod++]) 
 		    AliAODTrack(track->GetID(), track->GetLabel(), p, kTRUE, pos, kFALSE,covTr, (Short_t)track->GetSign(), track->GetITSClusterMap(), 
 				pid,
 				0x0,//primary,

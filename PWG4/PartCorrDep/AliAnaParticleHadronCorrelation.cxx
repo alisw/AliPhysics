@@ -74,7 +74,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & g):   
   AliAnaPartCorrBaseClass(g),
@@ -165,7 +165,7 @@ AliAnaParticleHadronCorrelation & AliAnaParticleHadronCorrelation::operator = (c
   return *this;
 
 }
-
+*/
 //________________________________________________________________________
 TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 {  

@@ -21,13 +21,15 @@ class TH2F;
 
 class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
        
- public: 
-  
+ public:   
   AliAnaParticleJetFinderCorrelation() ; // default ctor
+  virtual ~AliAnaParticleJetFinderCorrelation() {;} //virtual dtor
+ private:
   AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & g) ; // cpy ctor
   AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ;//cpy assignment
-  virtual ~AliAnaParticleJetFinderCorrelation() {;} //virtual dtor
-  
+
+ public:
+
   TList * GetCreateOutputObjects();
   
   Bool_t OnlyIsolated() const {return fSelectIsolated ; }

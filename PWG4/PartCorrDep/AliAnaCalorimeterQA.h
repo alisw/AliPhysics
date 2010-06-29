@@ -24,15 +24,13 @@ class AliAODCaloCluster;
 class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
   
  public: 
-  
-  AliAnaCalorimeterQA() ; // default ctor
-  AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
-	
-private:
-  AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
-	
-public:
+  AliAnaCalorimeterQA() ; // default ctor	
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
+ private:
+  AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
+  AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
+  
+public:
   
   void ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, Float_t * showerShape, 
 						 const Int_t nCaloCellsPerCluster, const Int_t nModule,

@@ -7,7 +7,7 @@
 //_________________________________________________________________________
 // Class that contains the algorithm for the reconstruction of jet, cone around leading particle
 // The seed is a backward particle (direct photon)
-// 1)Take the a trigger particle found stored in AliAODPWG4ParticleCorrelation,
+// 1) Take the a trigger particle found stored in AliAODPWG4ParticleCorrelation,
 // 2) Search for the highest pt leading particle opposite to the trigger within a phi, pt window
 // 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
 //
@@ -30,12 +30,14 @@ class AliNeutralMesonSelection;
 class AliAnaParticleJetLeadingConeCorrelation : public AliAnaPartCorrBaseClass {
 
 public: 
-  
   AliAnaParticleJetLeadingConeCorrelation() ; // default ctor
+  virtual ~AliAnaParticleJetLeadingConeCorrelation() ; //virtual dtor
+ private:
   AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & g) ; // cpy ctor
   AliAnaParticleJetLeadingConeCorrelation & operator = (const AliAnaParticleJetLeadingConeCorrelation & g) ;//cpy assignment
-  virtual ~AliAnaParticleJetLeadingConeCorrelation() ; //virtual dtor
-  
+
+ public:
+
   TList * GetCreateOutputObjects();
 
   void InitParameters();

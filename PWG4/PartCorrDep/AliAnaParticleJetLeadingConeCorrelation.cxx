@@ -17,7 +17,7 @@
 //_________________________________________________________________________
 // Class that contains the algorithm for the reconstruction of jet, cone around leading particle
 // The seed is a backward particle (direct photon)
-// 1)Take the trigger particle stored in AliAODPWG4ParticleCorrelation,
+// 1) Take the trigger particle stored in AliAODPWG4ParticleCorrelation,
 // 2) Search for the highest pt leading particle opposite to the photon within a phi, pt window
 // 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
 //
@@ -70,8 +70,8 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
     fhNeutralLeadingPt(0),fhNeutralLeadingPhi(0),fhNeutralLeadingEta(0),
     fhNeutralLeadingDeltaPt(0),fhNeutralLeadingDeltaPhi(0),fhNeutralLeadingDeltaEta(0),
     fhNeutralLeadingRatioPt(0),fhChargedLeadingXi(0), fhNeutralLeadingXi(0),
-	fhChargedLeadingDeltaPhiRatioPt30(0), fhNeutralLeadingDeltaPhiRatioPt30(0),
-	fhChargedLeadingDeltaPhiRatioPt50(0), fhNeutralLeadingDeltaPhiRatioPt50(0),
+    fhChargedLeadingDeltaPhiRatioPt30(0), fhNeutralLeadingDeltaPhiRatioPt30(0),
+    fhChargedLeadingDeltaPhiRatioPt50(0), fhNeutralLeadingDeltaPhiRatioPt50(0),
     //Jet
     fhJetPt(0),fhJetRatioPt(0),fhJetDeltaPhi(0), fhJetDeltaEta(0),
     fhJetLeadingRatioPt(0),fhJetLeadingDeltaPhi(0),fhJetLeadingDeltaEta(0),
@@ -141,7 +141,7 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
   InitParameters();
 
 }
-
+/*
 //____________________________________________________________________________
 AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & jetlc) :   
   AliAnaPartCorrBaseClass(jetlc), fJetsOnlyInCTS(jetlc.fJetsOnlyInCTS), fPbPb(jetlc.fPbPb), 
@@ -350,7 +350,7 @@ AliAnaParticleJetLeadingConeCorrelation & AliAnaParticleJetLeadingConeCorrelatio
   return *this;
 
 }
-
+*/
 //____________________________________________________________________________
 AliAnaParticleJetLeadingConeCorrelation::~AliAnaParticleJetLeadingConeCorrelation() 
 {

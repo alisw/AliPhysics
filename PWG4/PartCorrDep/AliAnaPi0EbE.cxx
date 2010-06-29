@@ -63,7 +63,7 @@ fhPtMCPi0(0),fhPhiMCPi0(0),fhEtaMCPi0(0)
   InitParameters();
   
 }
-
+/*
 //____________________________________________________________________________
 AliAnaPi0EbE::AliAnaPi0EbE(const AliAnaPi0EbE & p) : 
 AliAnaPartCorrBaseClass(p),  fAnaType(p.fAnaType), fCalorimeter(p.fCalorimeter),
@@ -100,7 +100,7 @@ AliAnaPi0EbE & AliAnaPi0EbE::operator = (const AliAnaPi0EbE & p)
   return *this;
   
 }
-
+*/
 //____________________________________________________________________________
 AliAnaPi0EbE::~AliAnaPi0EbE() 
 {

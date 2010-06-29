@@ -27,10 +27,9 @@ class AliCalorimeterUtils ;
 class AliAnaPartCorrMaker : public TObject {
 
  public: 
-  
   AliAnaPartCorrMaker() ; // default ctor
-  AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) ; // cpy ctor
   virtual ~AliAnaPartCorrMaker() ; //virtual dtor
+  AliAnaPartCorrMaker(const AliAnaPartCorrMaker & maker) ; // cpy ctor
 
  private:
   AliAnaPartCorrMaker & operator = (const AliAnaPartCorrMaker & ) ;//cpy assignment

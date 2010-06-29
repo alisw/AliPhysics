@@ -64,7 +64,7 @@ fhPrimOpeningAngle(0x0),fhPrimCosOpeningAngle(0x0)
  InitParameters();
  
 }
-
+/*
 //________________________________________________________________________________________________________________________________________________
 AliAnaPi0::AliAnaPi0(const AliAnaPi0 & ex) : AliAnaPartCorrBaseClass(ex),  
 fNCentrBin(ex.fNCentrBin),fNZvertBin(ex.fNZvertBin),fNrpBin(ex.fNrpBin),
@@ -80,6 +80,7 @@ fhPrimOpeningAngle(ex.fhPrimOpeningAngle),fhPrimCosOpeningAngle(ex.fhPrimCosOpen
   // cpy ctor
   //Do not need it
 }
+*/
 //
 ////________________________________________________________________________________________________________________________________________________
 //AliAnaPi0 & AliAnaPi0::operator = (const AliAnaPi0 & ex)

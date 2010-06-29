@@ -51,7 +51,7 @@ ClassImp(AliAnaParticleJetFinderCorrelation)
   //Initialize parameters
   InitParameters();
 }
-
+/*
 //____________________________________________________________________________
 AliAnaParticleJetFinderCorrelation::AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & pjf) :   
   AliAnaPartCorrBaseClass(pjf),  
@@ -102,7 +102,7 @@ AliAnaParticleJetFinderCorrelation & AliAnaParticleJetFinderCorrelation::operato
   return *this;
   
 }
-
+*/
 //____________________________________________________________________________
 //AliAnaParticleJetFinderCorrelation::~AliAnaParticleJetFinderCorrelation() 
 //{

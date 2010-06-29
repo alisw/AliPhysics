@@ -67,7 +67,7 @@ ClassImp(AliAnaPhoton)
   InitParameters();
 
 }
-
+/*
 //____________________________________________________________________________
 AliAnaPhoton::AliAnaPhoton(const AliAnaPhoton & g) : 
   AliAnaPartCorrBaseClass(g), fCalorimeter(g.fCalorimeter),
@@ -154,7 +154,7 @@ AliAnaPhoton & AliAnaPhoton::operator = (const AliAnaPhoton & g)
   return *this;
   
 }
-
+*/
 //____________________________________________________________________________
 AliAnaPhoton::~AliAnaPhoton() 
 {
@@ -563,7 +563,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //Check origin of the candidates
     if(IsDataMC()){
 		
-      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabel(0),GetReader(), aodph.GetInputFileIndex()));
+      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabel(),GetReader(), aodph.GetInputFileIndex()));
       if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
     }//Work with stack also   
     

@@ -59,7 +59,7 @@ fhOmegaPriPt(0)
  //Default Ctor
  InitParameters();
 }
-
+/*
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) : AliAnaPartCorrBaseClass(ex),
 fInputAODPi0(new TClonesArray (*ex.fInputAODPi0)),
@@ -85,6 +85,7 @@ fhOmegaPriPt(ex.fhOmegaPriPt)
  // cpy ctor
  //Do not need it
 }
+*/
 /*
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi0Gamma & ex)
