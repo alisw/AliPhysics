@@ -40,9 +40,11 @@ SOULD BE CHANGED BACK BEFORE BEAM
 #include "TBenchmark.h"
 #include "TString.h"
 #include "TH1.h"
+#include "TSpectrum.h"
+#include "TMath.h"
 
-int cbx, ccbx, t0bx, npmtA, npmtC;
-float clx,cmx,cclx,ccmx, t0lx, t0hx;
+int kbx, kcbx, kt0bx, knpmtA, knpmtC;
+float klx,kmx,kclx,kcmx, kt0lx, kt0hx;
 
 /* Main routine
       Arguments: 
@@ -75,14 +77,14 @@ int main(int argc, char **argv) {
   
   while((c=getc(inp))!=EOF) {
     switch(c) {
-    case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
-    case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
-    case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CF
-    case 'd': {fscanf(inp, "%d", &npmtC ); break;} //number of reference PMTC
-    case 'e': {fscanf(inp, "%d", &npmtA ); break;} //number of reference PMTA
-    case 'f': {fscanf(inp, "%d", &t0bx ); break;} //N of X bins hT0
-    case 'g': {fscanf(inp, "%f", &t0lx ); break;} //Low x hT0
-    case 'k': {fscanf(inp, "%f", &t0hx ); break;} //High x hT0
+    case 'a': {fscanf(inp, "%d", &kcbx ); break;} //N of X bins hCFD1_CFD
+    case 'b': {fscanf(inp, "%f", &kclx ); break;} //Low x hCFD1_CFD
+    case 'c': {fscanf(inp, "%f", &kcmx ); break;} //High x hCFD1_CF
+    case 'd': {fscanf(inp, "%d", &knpmtC ); break;} //number of reference PMTC
+    case 'e': {fscanf(inp, "%d", &knpmtA ); break;} //number of reference PMTA
+    case 'f': {fscanf(inp, "%d", &kt0bx ); break;} //N of X bins hT0
+    case 'g': {fscanf(inp, "%f", &kt0lx ); break;} //Low x hT0
+    case 'k': {fscanf(inp, "%f", &kt0hx ); break;} //High x hT0
     }
   }
   fclose(inp);
@@ -122,12 +124,11 @@ int main(int argc, char **argv) {
   TH1F *hCFD1minCFD[24];  
    
   for(Int_t ic=0; ic<24; ic++) {
-    hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+    hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",kcbx,kclx,kcmx);
   }
-  TH1F *hVertex = new TH1F("hVertex","T0 time",t0bx,t0lx,t0hx);
+  TH1F *hVertex = new TH1F("hVertex","T0 time",kt0bx,kt0lx,kt0hx);
   
- 
-  // Allocation of histograms - end
+   // Allocation of histograms - end
 
   Int_t iev=0;
   /* main loop (infinite) */
@@ -202,17 +203,17 @@ int main(int argc, char **argv) {
        Float_t meanShift[24];
        for (Int_t ik = 0; ik<24; ik++)
 	 { 
-	   if(ik<12 && allData[ik+1][0]>0 
-	      && (allData[ik+13][0]-allData[ik+1][0]) < 530 ){
-	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[npmtC][0]);
+	   if(ik<12 && allData[ik+1][0]>0 && allData[knpmtC][0]>0 ){
+	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
 	   }
 	   
-	   if(ik>11 && allData[ik+45][0]>0 
-	      && (allData[ik+57][0]-allData[ik+45][0]) <530 ){
-	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+npmtA][0]);
-	   }
+	   if(ik>11 && allData[ik+45][0]>0 && allData[56+knpmtA][0]>0 )
+	     {
+	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
+	     }
 	   if(iev == 10000) {	
-	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean();  
+	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean(); 
+	     if(ik==knpmtC || ik==(56+knpmtA)) meanShift[ik]=0;
 	   }
 	 }
       //fill  mean time _ fast reconstruction
