@@ -124,6 +124,7 @@ void run(Char_t *optList="ALL", const Char_t *files=0x0, Long64_t nev=1234567890
   cdbManager->SetRun(runNo);
   cdbManager->SetSpecificStorage("GRP/GRP/Data", grp_uri);
   cdbManager->SetCacheFlag(kFALSE);
+  cdbManager->Print();
   // initialize magnetic field from the GRP manager.
   AliGRPManager grpMan;
   if(!grpMan.ReadGRPEntry()) return;
