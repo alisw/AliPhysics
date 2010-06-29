@@ -249,8 +249,8 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       caloClusterPtr->fGlobalPos[1] =  globalCoord.fY;
       caloClusterPtr->fGlobalPos[2] =  globalCoord.fZ;
 
-      HLTError("Cluster local position: x = %f, z = %f, module = %d", recPointPtr->fX, recPointPtr->fZ, recPointPtr->fModule);
-      HLTError("Cluster global position: x = %f, y = %f, z = %f", globalCoord.fX, globalCoord.fY, globalCoord.fZ);
+      HLTDebug("Cluster local position: x = %f, z = %f, module = %d", recPointPtr->fX, recPointPtr->fZ, recPointPtr->fModule);
+      HLTDebug("Cluster global position: x = %f, y = %f, z = %f", globalCoord.fX, globalCoord.fY, globalCoord.fZ);
       
       //caloClusterPtr->fNCells = 0;//recPointPtr->fMultiplicity;
       caloClusterPtr->fNCells = recPointPtr->fMultiplicity;
