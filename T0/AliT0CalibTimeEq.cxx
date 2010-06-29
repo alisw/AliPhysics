@@ -142,7 +142,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      Float_t xp = xpeak[index[0]];
 	      Double_t hmax = xp+3*sigma;
 	      Double_t hmin = xp-3*sigma;
-	      cfd->GetXaxis()->SetRangeUser(hmin-1,hmax+1);
+	      cfd->GetXaxis()->SetRangeUser(hmin-20,hmax+20);
 	      mean=cfd->GetMean();
 	      rms=cfd->GetRMS();
 	      nent=cfd->GetEntries();

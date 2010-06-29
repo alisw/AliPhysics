@@ -137,7 +137,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       
       for (Int_t i=0; i<24; i++)
 	{
-	  for (Int_t im=startim; im<nmips-2; im++)
+	  for (Int_t im=startim; im<nmips; im++)
 	    {	      
 	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
 	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
@@ -146,7 +146,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	      TH1F *hCFD = (TH1F*) gFile->Get(cfd.Data()) ;
 	      TH1F *hLED = (TH1F*) gFile->Get(led.Data());
 	      TH1F *hQTC = (TH1F*) gFile->Get(qtc.Data()) ;
-	      printf(" hist get %d %d\n", i,im); 
 	      hCFD->SetDirectory(0);
 	      hQTC->SetDirectory(0);
 	      hLED->SetDirectory(0);
@@ -166,7 +165,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		  Float_t xp = xpeak[index[0]];
 		  Double_t hmax = xp+3*sigma;
 		  Double_t hmin = xp-3*sigma;
-		  cout<<i<<" "<<im<<" CFD  "<<xp<<endl;
 		  hCFD->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
 		}
 		else
@@ -198,7 +196,6 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		  Float_t *xpeak = s->GetPositionX();
 		  TMath::Sort(nfound, xpeak, index,down);
 		  Float_t xp = xpeak[index[0]];
-		  cout<<i<<" "<<im<<" LED "<<xp<<endl;
 		  Double_t hmax = xp+10*sigma;
 		  Double_t hmin = xp-10*sigma;
 		  hLED->GetXaxis()->SetRangeUser(hmin-10,hmax+10);
@@ -244,17 +241,17 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  } 
 	  */	  
       Bool_t ok=true;
-      TGraph *grwalkqtc = new TGraph (nmips-2,x1,y1);
+      TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
       grwalkqtc->SetTitle(Form("PMT%i",i));
-      TGraph *grwalkled = new TGraph (nmips-2,x2,y1);
+      TGraph *grwalkled = new TGraph (nmips,x2,y1);
       grwalkled->SetTitle(Form("PMT%i",i));
       fWalk.AddAtAndExpand(grwalkqtc,i);
       fAmpLEDRec.AddAtAndExpand(grwalkled,i);
       //	  cout<<" add walk "<<i<<endl;
       
       //fit amplitude graphs to make comparison wth new one	  
-      TGraph *grampled = new TGraph (nmips-2,xx1,yy1);
-      TGraph *grqtc = new TGraph (nmips-2,x1,xx);
+      TGraph *grampled = new TGraph (nmips,xx1,yy1);
+      TGraph *grqtc = new TGraph (nmips,x1,xx);
       fQTC.AddAtAndExpand(grqtc,i);	 
       fAmpLED.AddAtAndExpand(grampled,i);
       //	  cout<<" add amp "<<i<<endl;
