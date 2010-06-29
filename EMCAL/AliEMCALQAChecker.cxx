@@ -57,7 +57,7 @@ AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
 fTextSM(new TText*[fknSM]),
 fLineCol(new TLine(48.0,0.,48.0,47.0)),
 fLineRow(new TLine(0.,24.,96.,24.)),
-fText(new TPaveText(0.2,40.,1.6,90.,"br"))
+fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
   // ctor
   fLineCol->SetLineColor(1);
@@ -87,7 +87,7 @@ AliQACheckerBase(qac.GetName(), qac.GetTitle()),
 fTextSM(new TText*[fknSM]) ,
 fLineCol(static_cast<TLine*>(qac.fLineCol->Clone())) , 
 fLineRow(static_cast<TLine*>(qac.fLineRow->Clone())) , 
-fText(new TPaveText(0.2,40.,1.6,90.,"br"))
+fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
    // copy ctor 
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
@@ -101,7 +101,7 @@ AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac)
   fTextSM  = new TText*[fknSM] ;
   fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
   fLineRow = static_cast<TLine*>(qac.fLineRow->Clone()) ; 
-  fText    = new TPaveText(0.2,40.,1.6,90.,"br") ;
+  fText    = new TPaveText(0.2,0.7,0.8,0.9,"NDC") ;
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
@@ -192,7 +192,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
           hdata->GetListOfFunctions()->Add(fTextSM[iSM]); 
 	}
       }   
-      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){
+      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){ //adding the object at the beginning
         ratio->GetListOfFunctions()->Add(fText) ;
       }
 
@@ -224,6 +224,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
         fText->SetFillColor(3) ;
         fText->AddText(Form("EMCAL = OK, ENJOY...")); 
       }
+      //hdata->Reset("ICE");
+     //ratio->Reset("ICE");
      } 
     } //finish the checking
 }
