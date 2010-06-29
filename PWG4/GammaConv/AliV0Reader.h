@@ -20,6 +20,7 @@
 #include <vector>
 #include "AliCFManager.h"
 #include "AliGammaConversionBGHandler.h"
+#include "AliESDpid.h"
 
 class TClonesArray; 
 class TFormula;
@@ -39,7 +40,7 @@ class TChain;
 class TChain;
 class AliCFManager;   // for CF
 class AliCFContainer;  // for CF
-class AliESDpid; // for dEdx cut based on nSigma to particle lines 
+//class AliESDpid; // for dEdx cut based on nSigma to particle lines 
 class AliESDtrackCuts; 
 
 class AliV0Reader : public TObject {
@@ -130,12 +131,14 @@ class AliV0Reader : public TObject {
   /*
    * Returns the negative ESD track which belongs to fCurrentV0
    */
-  AliESDtrack* GetNegativeESDTrack(){return fESDEvent->GetTrack(fCurrentV0->GetNindex());}
+  //  AliESDtrack* GetNegativeESDTrack(){return fESDEvent->GetTrack(fCurrentV0->GetNindex());}
+  AliESDtrack* GetNegativeESDTrack(){return fCurrentNegativeESDTrack;}
 	
   /*
    * Returns the positive ESD track which belongs to fCurrentV0
    */
-  AliESDtrack* GetPositiveESDTrack(){return fESDEvent->GetTrack(fCurrentV0->GetPindex());}
+  //  AliESDtrack* GetPositiveESDTrack(){return fESDEvent->GetTrack(fCurrentV0->GetPindex());}
+  AliESDtrack* GetPositiveESDTrack(){return fCurrentPositiveESDTrack;}
 	
   /*
    * Returns the negative KF particle which belongs to fCurrentV0
@@ -161,6 +164,11 @@ class AliV0Reader : public TObject {
    * Checks if the PID of the two particles are within our cuts.
    */
   void GetPIDProbability(Double_t &negPIDProb, Double_t &posPIDProb);
+
+  /*
+   * Checks if the PID of the two particles are within our cuts.
+   */
+  void GetPIDProbabilityMuonPion(Double_t &negPIDProb, Double_t &posPIDProb);
 	
   /*
    *Get the negative MC TParticle from the stack 
@@ -472,6 +480,12 @@ class AliV0Reader : public TObject {
    */
   Double_t GetChi2CutMeson() const{return fChi2CutMeson;}
 	
+  /*
+   * Gets the alpha cut value for the mesons.
+   */
+  Double_t GetAlphaCutMeson() const{return fAlphaCutMeson;}
+
+
   Double_t GetPositiveTrackLength() const{return fCurrentPositiveESDTrack->GetIntegratedLength();}
   Double_t GetNegativeTrackLength() const{return fCurrentNegativeESDTrack->GetIntegratedLength();}
 	
@@ -525,6 +539,12 @@ class AliV0Reader : public TObject {
    */
   void SetChi2CutMeson(Double_t chi2){fChi2CutMeson=chi2;}
 	
+  /*
+   * Sets the AlphaCut for the mesons.
+   */
+  void SetAlphaCutMeson(Double_t alpha){fAlphaCutMeson=alpha;}
+	
+
   /*
    * Sets the XVertexCut value.
    */
@@ -596,6 +616,48 @@ class AliV0Reader : public TObject {
 
   void SetDodEdxSigmaCut( Bool_t dodEdxSigmaCut){fDodEdxSigmaCut=dodEdxSigmaCut;}
 
+  /*
+   * Sets the flag to enable/disable the cut dedx N sigma for Kaon Rejection at low p 
+   */
+  void SetDoKaonRejectionLowP( Bool_t doKaonRejectionLowP){fDoKaonRejectionLowP=doKaonRejectionLowP;}
+  /*
+   * Sets the flag to enable/disable the cut dedx N sigma for Proton Rejection at low p 
+   */
+  void SetDoProtonRejectionLowP( Bool_t doProtonRejectionLowP){fDoProtonRejectionLowP=doProtonRejectionLowP;}
+
+  /*
+   * Sets the flag to enable/disable the cut dedx N sigma for Pion Rejection at low p 
+   */
+  void SetDoPionRejectionLowP( Bool_t doPionRejectionLowP){fDoPionRejectionLowP=doPionRejectionLowP;}
+
+  /*
+   * Sets the PIDMinPnSigmaAroundKaon cut value for the tracks.
+   */
+  void SetPIDnSigmaAtLowPAroundKaonLine(Double_t nSigmaAtLowPAroundKaon){fPIDnSigmaAtLowPAroundKaonLine =nSigmaAtLowPAroundKaon;}
+
+  /*
+   * Sets the PIDMinPnSigmaAroundProton cut value for the tracks.
+   */
+  void SetPIDnSigmaAtLowPAroundProtonLine(Double_t nSigmaAtLowPAroundProton){fPIDnSigmaAtLowPAroundProtonLine =nSigmaAtLowPAroundProton;}
+
+  /*
+   * Sets the PIDMinPnSigmaAroundPion cut value for the tracks.
+   */
+  void SetPIDnSigmaAtLowPAroundPionLine(Double_t nSigmaAtLowPAroundPion){fPIDnSigmaAtLowPAroundPionLine =nSigmaAtLowPAroundPion;}
+
+  /*
+   * Sets the PIDMinPnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDMinPKaonRejectionLowP(Double_t PIDMinPKaonRejectionLowP ){fPIDMinPKaonRejectionLowP=PIDMinPKaonRejectionLowP;}
+
+  /*
+   * Sets the PIDMinPnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDMinPProtonRejectionLowP(Double_t PIDMinPProtonRejectionLowP ){fPIDMinPProtonRejectionLowP=PIDMinPProtonRejectionLowP;}
+  /*
+   * Sets the PIDMinPnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDMinPPionRejectionLowP(Double_t PIDMinPPionRejectionLowP ){fPIDMinPPionRejectionLowP=PIDMinPPionRejectionLowP;}
 
   /*
    * Updates the V0 information of the current V0.
@@ -662,6 +724,12 @@ class AliV0Reader : public TObject {
 
   Bool_t CheckIfPi0IsMother(Int_t label);
 
+  static void InitESDpid(Int_t type=0);
+  static void SetESDpid(AliESDpid * const pid) {fgESDpid=pid;}
+  static AliESDpid* GetESDpid() {return fgESDpid;}
+ 
+
+
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
   //  AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
@@ -677,7 +745,7 @@ class AliV0Reader : public TObject {
   //  AliCFContainer *container;
 	
   // for dEdx cut based on nSigma to a particle line
-  AliESDpid * fESDpid; // esd pid
+  //AliESDpid * fESDpid; // esd pid
 	
   AliGammaConversionHistograms *fHistograms; // pointer to histogram handling class
 	
@@ -723,6 +791,7 @@ class AliV0Reader : public TObject {
   Double_t fLineCutZValue; //linecut
   Double_t fChi2CutConversion; //chi2cut
   Double_t fChi2CutMeson;  //chi2cut
+  Double_t fAlphaCutMeson;  //alphacut
   Double_t fPIDProbabilityCutNegativeParticle; //pid cut
   Double_t fPIDProbabilityCutPositiveParticle; //pid cut
   Bool_t   fDodEdxSigmaCut; // flag to use the dEdxCut based on sigmas
@@ -730,6 +799,16 @@ class AliV0Reader : public TObject {
   Double_t fPIDnSigmaBelowElectronLine; // sigma cut
   Double_t fPIDnSigmaAbovePionLine;     // sigma cut
   Double_t fPIDMinPnSigmaAbovePionLine; // sigma cut
+  Double_t fDoKaonRejectionLowP;   // Kaon rejection at low p
+  Double_t fDoProtonRejectionLowP; // Proton rejection at low p
+  Double_t fDoPionRejectionLowP;   // Pion rejection at low p
+  Double_t fPIDnSigmaAtLowPAroundKaonLine; // sigma cut
+  Double_t fPIDnSigmaAtLowPAroundProtonLine; // sigma cut
+  Double_t fPIDnSigmaAtLowPAroundPionLine; // sigma cut
+  Double_t fPIDMinPKaonRejectionLowP; // Momentum limit to apply kaon rejection
+  Double_t fPIDMinPProtonRejectionLowP; // Momentum limit to apply proton rejection
+  Double_t fPIDMinPPionRejectionLowP; // Momentum limit to apply proton rejection
+
   Double_t fXVertexCut; //vertex cut
   Double_t fYVertexCut; //vertex cut
   Double_t fZVertexCut; // vertexcut
@@ -756,9 +835,50 @@ class AliV0Reader : public TObject {
   AliESDtrackCuts *fEsdTrackCuts; // track cuts
   Int_t fNumberOfESDTracks; //track counter
 
+  static AliESDpid* fgESDpid;                 // ESD pid object
+
   ClassDef(AliV0Reader,10)
 };
+
+inline void AliV0Reader::InitESDpid(Int_t type)
+{
+  //
+  // initialize PID parameters
+  // type=0 is simulation
+  // type=1 is data
+
+  if (!fgESDpid) fgESDpid=new AliESDpid;
+  Double_t alephParameters[5];
+  // simulation
+  alephParameters[0] = 2.15898e+00/50.;
+  alephParameters[1] = 1.75295e+01;
+  alephParameters[2] = 3.40030e-09;
+  alephParameters[3] = 1.96178e+00;
+  alephParameters[4] = 3.91720e+00;
+  fgESDpid->GetTOFResponse().SetTimeResolution(80.);
+
+  // data
+  if (type==1){
+    alephParameters[0] = 0.0283086;
+    alephParameters[1] = 2.63394e+01;
+    alephParameters[2] = 5.04114e-11;
+    alephParameters[3] = 2.12543e+00;
+    alephParameters[4] = 4.88663e+00;
+    fgESDpid->GetTOFResponse().SetTimeResolution(130.);
+    fgESDpid->GetTPCResponse().SetMip(47.9);
+  }
+
+  fgESDpid->GetTPCResponse().SetBetheBlochParameters(
+    alephParameters[0],alephParameters[1],alephParameters[2],
+    alephParameters[3],alephParameters[4]);
+
+  fgESDpid->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
+
+}
+
 #endif
+
+
 
 
 

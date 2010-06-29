@@ -26,7 +26,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
-
+#include "AliLog.h"
 
 using namespace std;
 
@@ -126,7 +126,7 @@ void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString h
   }
 }
 
-void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle){
+void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle, TString yAxisTitle, Int_t logAxis){
   // see header file for documentation
   if( fHistogramMap->Contains(histogramName.Data()) ==  kFALSE ){
     TH2F *tmp = new TH2F(histogramName, histogramTitle,nXBins,firstX,lastX,nYBins,firstY,lastY);
@@ -134,10 +134,68 @@ void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString h
     tmp->GetYaxis()->SetTitle(yAxisTitle);
     TObjString *tobjstring = new TObjString(histogramName.Data());
     fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+
+    if(logAxis >= 0){
+      BinLogAxis(histogramName.Data(), logAxis);
+    }
   }
   else{
     cout << "Warning: Histogram ( "<<histogramName.Data()<<" ) already exists " << endl;
   }
+}
+
+Bool_t AliGammaConversionHistograms::BinLogAxis(const char* name, Int_t dim){
+
+  //
+  // converts the axis (defined by the dimension) of THx or THnSparse
+  // object to Log scale. Number of bins and bin min and bin max are preserved
+  
+ 
+  TObject *o =  fHistogramMap->GetValue(name);
+  TAxis *axis = 0x0;
+  if(o->InheritsFrom("TH1")){
+    axis = (dynamic_cast<TH1F*>(o))->GetXaxis();
+  }
+  if(o->InheritsFrom("TH2")){
+    if(0 == dim){
+      axis = (dynamic_cast<TH2F*>(o))->GetXaxis();
+    }
+    else if(1 == dim){
+      axis = (dynamic_cast<TH2F*>(o))->GetYaxis();
+    }
+     else{
+       //  AliError("Only dim = 0 or 1 possible for TH2F");
+     }
+  }
+  //  if(o->InheritsFrom("THnSparse")){
+  //  axis = (dynamic_cast<THnSparse*>(o))->GetAxis(dim);
+  //}
+
+  if(!axis){
+    //AliError(Form("Axis '%d' could not be identified in the object '%s'\n", dim, name));
+    return kFALSE;
+  }
+
+  Int_t bins = axis->GetNbins();
+
+  Double_t from = axis->GetXmin();
+  if(from <= 0){
+    // AliError(Form(" Log binning not possible for object '%s'because the '%d' axis starts from '%f\n'", name, dim, from));
+    return kFALSE;
+  }
+  Double_t to = axis->GetXmax();
+  Double_t *newBins = new Double_t[bins+1];
+  newBins[0] = from;
+  Double_t factor = TMath::Power(to/from, 1./bins);
+  for(Int_t i=1; i<=bins; ++i){
+    newBins[i] = factor * newBins[i-1];
+  }
+  axis->Set(bins, newBins);
+  delete newBins;
+
+  return kTRUE;
+
+
 }
 
 void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle,Int_t nXBins,const char * axesLabel[]){
@@ -396,7 +454,7 @@ void AliGammaConversionHistograms::InitializeMappingValues(Int_t nPhiIndex, Int_
   fRBinLimits[8]=42.;
   fRBinLimits[9]=55.;
   fRBinLimits[10]=72.;
-  fRBinLimits[11]=81.5;
+  fRBinLimits[11]=79.5; // change from 81.5 to 79.5 to have CE in 1 r bin 81.05
   fRBinLimits[12]=90.;
   fRBinLimits[13]=500.;
 
@@ -620,6 +678,14 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     titleMCPhiInZ.Form("MC Mapping of Phi in Z%02d",z);
     //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
     AddHistogram(nameMCPhiInZ, titleMCPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
+ 
+    //Mapping Phi in Z for FMD
+    TString nameMCFMDPhiInZ="";
+    nameMCFMDPhiInZ.Form("MC_Conversion_Mapping_FMD_Phi_in_Z_%02d",z);
+    TString titleMCFMDPhiInZ="";
+    titleMCFMDPhiInZ.Form("MC Mapping FMD of Phi in Z%02d",z);
+    //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+    AddHistogram(nameMCFMDPhiInZ, titleMCFMDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
 		
 
     //Mapping R in Z
@@ -638,6 +704,15 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
     AddHistogram(nameMCMidPtPhiInZ, titleMCMidPtPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
 		
+   //Mapping Phi in Z Middle Pt for FMD
+    TString nameMCMidPtFMDPhiInZ="";
+    nameMCMidPtFMDPhiInZ.Form("MC_Conversion_Mapping_MidPt_FMD_Phi_in_Z_%02d",z);
+    TString titleMCMidPtFMDPhiInZ="";
+    titleMCMidPtFMDPhiInZ.Form("MC Mapping Middle Pt of Phi in Z%02d",z);
+    //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+    AddHistogram(nameMCMidPtFMDPhiInZ, titleMCMidPtFMDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
+		
+
 
     //Mapping R in Z Middle Pt
     TString nameMCMidPtRInZ="";
@@ -654,9 +729,19 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     TString nameESDPhiInZ="";
     nameESDPhiInZ.Form("ESD_Conversion_Mapping_Phi_in_Z_%02d",z);
     TString titleESDPhiInZ="";
-    titleESDPhiInZ.Form("ESD Mapping of Phi in R%02d",z);
+    titleESDPhiInZ.Form("ESD Mapping of Phi in Z%02d",z);
     //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
     AddHistogram(nameESDPhiInZ, titleESDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
+
+
+    //Mapping Phi in Z for FMD
+    TString nameESDFMDPhiInZ="";
+    nameESDFMDPhiInZ.Form("ESD_Conversion_Mapping_FMD_Phi_in_Z_%02d",z);
+    TString titleESDFMDPhiInZ="";
+    titleESDFMDPhiInZ.Form("ESD Mapping FMD of Phi in Z%02d",z);
+    //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
+    AddHistogram(nameESDFMDPhiInZ, titleESDFMDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
+
 
    //Mapping R in Z
     TString nameESDRInZ="";
@@ -674,6 +759,15 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     titleESDMidPtPhiInZ.Form("ESD Mapping Middle Ptof Phi in R%02d",z);
     //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
     AddHistogram(nameESDMidPtPhiInZ, titleESDMidPtPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
+
+   //Mapping Phi in Z Middle Pt for FMD
+    TString nameESDMidPtFMDPhiInZ="";
+    nameESDMidPtFMDPhiInZ.Form("ESD_Conversion_Mapping_MidPt_FMD_Phi_in_Z_%02d",z);
+    TString titleESDMidPtFMDPhiInZ="";
+    titleESDMidPtFMDPhiInZ.Form("ESD Mapping Middle Pt FMD of Phi in Z%02d",z);
+    //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
+    AddHistogram(nameESDMidPtFMDPhiInZ, titleESDMidPtFMDPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
+
 
    //Mapping R in Z Middle Pt
     TString nameESDMidPtRInZ="";

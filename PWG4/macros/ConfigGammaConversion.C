@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 10;
+const int c_array_size = 12;
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -33,10 +33,10 @@ Bool_t kGCcalculateBackground = kTRUE;
 Bool_t kGCdoNeutralMesonV0MCCheck =kFALSE;
 Bool_t kGCrunOmegaMeson = kFALSE;
 Bool_t kGCrunRES = kFALSE;
-
+Bool_t kGCRecalculateV0ForGamma = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
 
-TString kGCAnalysisCutSelectionId="9010111000"; // do not cheange here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="900011100010"; // do not cheange here, use -set-cut-selection in argument instead
 
 Int_t kGCpidOfNegativeTrack=11;
 Int_t kGCpidOfPositiveTrack=-11;
@@ -49,6 +49,7 @@ Double_t kGCmaxZCut     = 240.;
 Double_t kGCminClsTPCCut= 0.;
 Double_t kGCchi2CutConversion   = 30.;
 Double_t kGCchi2CutMeson   = 50.;
+Double_t kGCalphaCutMeson   = 0.7;
 
 Double_t kGCLineCutZRSlope = tan(2*atan(exp(-kGCetaCut)));
 Double_t kGCLineCutZValue = 7.;
@@ -229,6 +230,11 @@ Bool_t kGCplotESDConvGammaEAsymmetryP         = kTRUE;
 Bool_t kGCplotESDConvGammaPAsymmetryP         = kTRUE;
 Bool_t kGCplotESDConvGammaEdEdxP         = kTRUE;
 Bool_t kGCplotESDConvGammaPdEdxP         = kTRUE;
+Bool_t kGCplotESDConvGammaEeProbP         = kTRUE;
+Bool_t kGCplotESDConvGammaPeProbP         = kTRUE;
+Bool_t kGCplotESDConvGammaEmupiProbP         = kTRUE;
+Bool_t kGCplotESDConvGammaPmupiProbP         = kTRUE;
+
 Bool_t kGCplotESDConvGammaQtAlfa         = kTRUE;
 
 
@@ -378,6 +384,9 @@ Bool_t kGCplotESDCutKink          = kTRUE;
 Bool_t kGCplotESDCutPIDProb       = kTRUE;
 Bool_t kGCplotESDCutdedxSigmaElectronLine=kTRUE;
 Bool_t kGCplotESDCutdedxSigmaPionLine=kTRUE;
+Bool_t kGCplotESDCutPionRejectionLowP  =kTRUE;
+Bool_t kGCplotESDCutProtonRejectionLowP=kTRUE;
+Bool_t kGCplotESDCutKaonRejectionLowP  =kTRUE;
 Bool_t kGCplotESDCutR             = kTRUE;
 Bool_t kGCplotESDCutLine          = kTRUE;
 Bool_t kGCplotESDCutZ             = kTRUE;
@@ -391,6 +400,7 @@ Bool_t kGCplotESDCutNDF           = kTRUE;
 Bool_t kGCplotESDCutChi2          = kTRUE;
 Bool_t kGCplotESDCutEta           = kTRUE;
 Bool_t kGCplotESDCutPt            = kTRUE;
+Bool_t kGCplotESDCutSinglePt      = kTRUE;
 Bool_t kGCplotESDTrueConvGammaTrackLength =kFALSE;
 Bool_t kGCplotESDTrueConvGammaTrackLengthVSInvMass =kFALSE;
 
@@ -493,13 +503,18 @@ Double_t kGClastXBinEnergy = 50.;
 
 //P-plots
 Int_t kGCnXBinsP = 200;
-Double_t kGCfirstXBinP = 0.;
+Double_t kGCfirstXBinP = 0.05;
 Double_t kGClastXBinP = 50.;
 
 //dEdx-plots
 Int_t kGCnYBinsdEdx = 200;
 Double_t kGCfirstYBindEdx = 0.;
 Double_t kGClastYBindEdx = 200.;
+
+//EProb-plots
+Int_t kGCnYBinsEProb = 200;
+Double_t kGCfirstYBinEProb = 0.;
+Double_t kGClastYBinEProb = 1.;
 
 //Qt-plots
 Int_t kGCnYBinsQt = 250;
@@ -556,17 +571,17 @@ Double_t kGClastYBinMapping = 2;
 
 //ResolutionPlots
 //RESdPt
-Int_t kGCnXBinsResdPt=1000;
+Int_t kGCnXBinsResdPt=500;
 Int_t kGCfirstXBinResdPt= 0;
 Int_t kGClastXBinResdPt=100;
-Int_t kGCnYBinsResdPt=500;
+Int_t kGCnYBinsResdPt=200;
 Int_t kGCfirstYBinResdPt= -10;
 Int_t kGClastYBinResdPt=10;
 
 //RESdR
-Int_t kGCnXBinsResdR=500;
+Int_t kGCnXBinsResdR=400;
 Int_t kGCfirstXBinResdR= 0;
-Int_t kGClastXBinResdR=250;
+Int_t kGClastXBinResdR=200;
 Int_t kGCnYBinsResdR=100;
 Int_t kGCfirstYBinResdR= -25;
 Int_t kGClastYBinResdR=25;
@@ -608,7 +623,7 @@ Double_t kGClastXBinGammaMass = 1.;
 Int_t kGCnXBinsPi0Mass = 1000;
 Double_t kGCfirstXBinPi0Mass = 0.;
 Double_t kGClastXBinPi0Mass = 1.;
-Double_t kGCfirstXBinPi0Alpha = -1.;
+Double_t kGCfirstXBinPi0Alpha = 0.;
 Double_t kGClastXBinPi0Alpha = 1.;
 
 
@@ -640,7 +655,8 @@ Int_t kGCnYBinsSpectra = 250;
 Double_t kGCfirstYBinSpectra = 0.;
 Double_t kGClastYBinSpectra = 25.;
 
-Double_t kGCfirstXBinAlpha = -1.;
+Double_t kGCfirstXBinAlphaG = -1.;
+Double_t kGCfirstXBinAlpha = 0.;
 Double_t kGClastXBinAlpha = 1.;
 
 //track length plots
@@ -756,12 +772,25 @@ Bool_t kGCuseESDTrack   = kFALSE;
 /**------------------------------Flag to apply dEdx cut base on sigmas to electron line----------*/
 Bool_t kGCdodEdxSigmaCut= kTRUE;
 /**------------------------------end Flag to apply NsigmadEdx cut ----------*/
+
 Double_t kGCPIDnSigmaAboveElectronLine=5;
 Double_t kGCPIDnSigmaBelowElectronLine=-3;
 Double_t kGCPIDnSigmaAbovePionLine=0;
 Double_t kGCPIDMinPnSigmaAbovePionLine=1;
- 
 
+/**------- Flag to apply rejection at LowP of Kaons, protons , pions------------*/
+Bool_t kGCdoPionRejectionLowP=kTRUE;
+Bool_t kGCdoKaonRejectionLowP=kTRUE;
+Bool_t kGCdoProtonRejectionLowP=kTRUE;
+/**---------------------------------------*/
+
+Double_t kGCPIDnSigmaAtLowPAroundKaonLine=0;
+Double_t kGCPIDnSigmaAtLowPAroundProtonLine=0;
+Double_t kGCPIDnSigmaAtLowPAroundPionLine=0;
+
+Double_t kGCPIDMinPKaonRejectionLowP=1.5;
+Double_t kGCPIDMinPProtonRejectionLowP=2.;
+Double_t kGCPIDMinPPionRejectionLowP=0.5;
 
 
 Bool_t scanArguments(TString arguments){
@@ -854,6 +883,10 @@ Bool_t scanArguments(TString arguments){
       else if (argument.CompareTo("-run-resolution") == 0){
 	cout<<"Running Resolution"<<endl;
 	kGCrunRES = kTRUE;
+      }
+      else if (argument.CompareTo("-run-recalculateV0") == 0){
+	cout<<"Running RecalculateV0ForGamma"<<endl;
+	kGCRecalculateV0ForGamma=kTRUE;
       }
       else if (argument.CompareTo("-jet-off") == 0){
 	cout<<"Skipping jet analysis"<<endl;
@@ -1041,10 +1074,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
 		
     AliCFManager *man = new AliCFManager();
     man->SetParticleContainer(container);
-    for(int i = 0;i<nstep;i++){
-      TObjArray *tmp = new TObjArray(0);
-      man->SetParticleCutsList(i,tmp) ;
-    } 
+		
     // end ---------------------------------------------------------------------------
 		
 		
@@ -1151,24 +1181,23 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   cout<<"Analyis cut selection ID is: "<<kGCAnalysisCutSelectionId.Data()<<endl;
   //  outputfile += Form(":PWG4_GammaConversion_%s",kGCAnalysisCutSelectionId.Data());
   outputfile += Form(":PWG4_GammaConversion");
-  /*  
-  // this is not really needed
-  if(kGCrunNeutralMeson==kTRUE) outputfile +="1";  else outputfile +="0";
 
-  if(kGCrunJet==kTRUE) outputfile +="1"; else outputfile +="0";
+//   if(kGCrunNeutralMeson==kTRUE) outputfile +="1";  else outputfile +="0";
 
-  if(kGCrunChic==kTRUE) outputfile +="1"; else outputfile +="0";
+//   if(kGCrunJet==kTRUE) outputfile +="1"; else outputfile +="0";
 
-  if(kGCrunCF==kTRUE) outputfile +="1"; else outputfile +="0";
+//   if(kGCrunChic==kTRUE) outputfile +="1"; else outputfile +="0";
 
-  if(kGCcalculateBackground==kTRUE) outputfile +="1"; else outputfile +="0";
+//   if(kGCrunCF==kTRUE) outputfile +="1"; else outputfile +="0";
 
-  if(kGCdoNeutralMesonV0MCCheck==kTRUE) outputfile +="1"; else outputfile +="0";
+//   if(kGCcalculateBackground==kTRUE) outputfile +="1"; else outputfile +="0";
 
-  if(kGCrunOmegaMeson==kTRUE) outputfile +="1"; else outputfile +="0";
+//   if(kGCdoNeutralMesonV0MCCheck==kTRUE) outputfile +="1"; else outputfile +="0";
 
-  if(kGCrunRES==kTRUE) outputfile +="1"; else outputfile +="0";
-  */
+//   if(kGCrunOmegaMeson==kTRUE) outputfile +="1"; else outputfile +="0";
+
+//   if(kGCrunRES==kTRUE) outputfile +="1"; else outputfile +="0";
+
   outputfile += Form("_%s",kGCAnalysisCutSelectionId.Data());
 
   cout<<"Ouput file::"<<  outputfile <<endl;
@@ -1213,6 +1242,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetMinClsTPCCut(kGCminClsTPCCut);	
   v0Reader->SetChi2CutConversion(kGCchi2CutConversion);
   v0Reader->SetChi2CutMeson(kGCchi2CutMeson);
+  v0Reader->SetAlphaCutMeson(kGCalphaCutMeson);
   v0Reader->SetPIDProbability(kGCprobElectron);
   v0Reader->SetXVertexCut(kGCxVertexCut);
   v0Reader->SetYVertexCut(kGCyVertexCut);
@@ -1233,6 +1263,18 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetPIDMinPnSigmaAbovePionLine(kGCPIDMinPnSigmaAbovePionLine);
   v0Reader->SetOnFlyFlag(kGCUseOnFlyV0Finder);
   v0Reader->SetCalculateBackground(kGCcalculateBackground);
+
+  // for the rejection at LowP based on Dedx signal
+
+  v0Reader->SetDoKaonRejectionLowP(kGCdoKaonRejectionLowP);
+  v0Reader->SetDoProtonRejectionLowP(kGCdoProtonRejectionLowP);
+  v0Reader->SetDoPionRejectionLowP(kGCdoPionRejectionLowP);
+  v0Reader->SetPIDnSigmaAtLowPAroundKaonLine(kGCPIDnSigmaAtLowPAroundKaonLine);
+  v0Reader->SetPIDnSigmaAtLowPAroundProtonLine(kGCPIDnSigmaAtLowPAroundProtonLine);
+  v0Reader->SetPIDnSigmaAtLowPAroundPionLine(kGCPIDnSigmaAtLowPAroundPionLine);
+  v0Reader->SetPIDMinPKaonRejectionLowP(kGCPIDMinPKaonRejectionLowP);
+  v0Reader->SetPIDMinPProtonRejectionLowP(kGCPIDMinPProtonRejectionLowP);
+  v0Reader->SetPIDMinPPionRejectionLowP(kGCPIDMinPPionRejectionLowP);
 
 
   // Create the GammaConversionTask
@@ -1282,7 +1324,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetDoJet(kGCrunJet);
   gammaconversion->SetDoChic(kGCrunChic);
   gammaconversion->SetDoOmegaMeson(kGCrunOmegaMeson);
-
+  gammaconversion->SetRecalculateV0ForGamma(kGCRecalculateV0ForGamma);
   // for CF
   gammaconversion->SetCFManager(man);
   gammaconversion->SetDoCF(kGCrunCF);
@@ -1337,7 +1379,11 @@ void build() {
   TStopwatch timer;
   timer.Start();
   gSystem->Load("libTree.so");
+  gSystem->Load("libGui.so");
+  gSystem->Load("libMinuit.so");
   gSystem->Load("libGeom");
+  gSystem->Load("libProof");
+  gSystem->Load("libRAWDatabase");
 	
   ////
   //Setting up ESD.par//
@@ -1346,6 +1392,10 @@ void build() {
   setupPar("ESD");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
+
+
+  gSystem->Load("libCDB.so");
+  gSystem->Load("libSTEER.so");
 	
   ////
   ////
@@ -1381,7 +1431,7 @@ void build() {
   ////
   cout<<"compiling CORRFW"<<endl;
   setupPar("CORRFW");
-  gSystem->Load("CORRFW.so");
+  gSystem->Load("libCORRFW.so");
 	
   ////
   //Setting up PWG4GammaConv.par//
@@ -1544,10 +1594,15 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDConvGammaLikelihoodAP == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_LikelihoodAP" ,"" , kGCnXBinsLikelihoodAP, kGCfirstXBinLikelihoodAP, kGClastXBinLikelihoodAP, "", "");}
     if(kGCplotESDConvGammaEAsymmetryP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_E_AsymmetryP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsAsymmetry, kGCfirstYBinAsymmetry, kGClastYBinAsymmetry,"", "");}
     if(kGCplotESDConvGammaPAsymmetryP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_P_AsymmetryP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsAsymmetry, kGCfirstYBinAsymmetry, kGClastYBinAsymmetry,"", "");}
-    if(kGCplotESDConvGammaEdEdxP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_E_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "");}
-    if(kGCplotESDConvGammaPdEdxP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_P_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "");}
+    if(kGCplotESDConvGammaEdEdxP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_E_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);}
+    if(kGCplotESDConvGammaPdEdxP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_P_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);}
 
-    if(kGCplotESDConvGammaQtAlfa== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_alfa_qt" ,"" ,kGCnXBinsP, kGCfirstXBinAlpha, kGClastXBinAlpha,kGCnYBinsQt, kGCfirstYBinQt, kGClastYBinQt,"", "");}
+    if(kGCplotESDConvGammaEeProbP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_E_EProbP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsEProb, kGCfirstYBinEProb, kGClastYBinEProb,"", "",0);}
+    if(kGCplotESDConvGammaPeProbP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_P_EProbP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsEProb, kGCfirstYBinEProb, kGClastYBinEProb,"", "",0);}
+    if(kGCplotESDConvGammaEmupiProbP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_E_mupiProbP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsEProb, kGCfirstYBinEProb, kGClastYBinEProb,"", "",0);}
+    if(kGCplotESDConvGammaPmupiProbP== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_P_mupiProbP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsEProb, kGCfirstYBinEProb, kGClastYBinEProb,"", "",0);}
+
+    if(kGCplotESDConvGammaQtAlfa== kTRUE){ histograms->AddHistogram("ESD_ConvGamma_alfa_qt" ,"" ,kGCnXBinsP, kGCfirstXBinAlphaG, kGClastXBinAlpha,kGCnYBinsQt, kGCfirstYBinQt, kGClastYBinQt,"", "");}
 
 
 		
@@ -1577,8 +1632,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDTrueConvGammaLikelihoodAP == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_LikelihoodAP" ,"" , kGCnXBinsLikelihoodAP, kGCfirstXBinLikelihoodAP, kGClastXBinLikelihoodAP, "", "");}
     if(kGCplotESDTrueConvGammaEAsymmetryP== kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_E_AsymmetryP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsAsymmetry, kGCfirstYBinAsymmetry, kGClastYBinAsymmetry,"", "");}
     if(kGCplotESDTrueConvGammaPAsymmetryP== kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_P_AsymmetryP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsAsymmetry, kGCfirstYBinAsymmetry, kGClastYBinAsymmetry,"", "");}
-    if(kGCplotESDTrueConvGammaEdEdxP== kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_E_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "");}
-    if(kGCplotESDTrueConvGammaPdEdxP== kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_P_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "");}
+    if(kGCplotESDTrueConvGammaEdEdxP== kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_E_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);}
+    if(kGCplotESDTrueConvGammaPdEdxP== kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_P_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);}
 
 		
     if(kGCplotESDTrueConvGammaMCPtEta == kTRUE){ histograms->AddHistogram("ESD_TrueConvGamma_MC_Pt_Eta" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
@@ -1613,8 +1668,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDNoCutConvGammaPAsymmetryP== kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_P_AsymmetryP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsAsymmetry, kGCfirstYBinAsymmetry, kGClastYBinAsymmetry,"", "");}
 
 
-    if(kGCplotESDNoCutConvGammaEdEdxP== kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_E_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "");}
-    if(kGCplotESDNoCutConvGammaPdEdxP== kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_P_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "");}
+    if(kGCplotESDNoCutConvGammaEdEdxP== kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_E_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);}
+    if(kGCplotESDNoCutConvGammaPdEdxP== kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_P_dEdxP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);}
 
     if(kGCplotESDNoCutConvGammaMCPtEta == kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_MC_Pt_Eta" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}
     if(kGCplotESDNoCutConversionMCZR == kTRUE){ histograms->AddHistogram("ESD_NoCutConversion_MC_ZR" ,"" , kGCnXBinsZR, kGCfirstXBinZR, kGClastXBinZR, kGCnYBinsZR, kGCfirstYBinZR, kGClastYBinZR, "", "");}
@@ -1724,10 +1779,10 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS5" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
 		histograms->AddHistogram("Resolution_E_dPt_Pt_ITS6" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
 		histograms->AddHistogram("Resolution_E_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-		histograms->AddHistogram("Resolution_E_nTRDtracklets_ESDPt" ,"" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");
-		histograms->AddHistogram("Resolution_E_nTRDtracklets_MCPt","" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");	
-		histograms->AddHistogram("Resolution_E_nTRDclusters_ESDPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5, -0.5, 201,"", "");
-		histograms->AddHistogram("Resolution_E_nTRDclusters_MCPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5, -0.5, 201.,"", "");
+		histograms->AddHistogram("Resolution_E_nTRDtracklets_ESDPt" ,"" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 8, -0.5, 7.5,"", "");
+		histograms->AddHistogram("Resolution_E_nTRDtracklets_MCPt","" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 8, -0.5, 7.5,"", "");	
+		histograms->AddHistogram("Resolution_E_nTRDclusters_ESDPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 201, -0.5, 200.5,"", "");
+		histograms->AddHistogram("Resolution_E_nTRDclusters_MCPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 201, -0.5, 200.5,"", "");
 		//		histograms->AddHistogram("Resolution_E_TRDsignal_ESDPt","", fV0Reader->GetNegativeTrackPt(), fV0Reader->GetNegativeESDTrack()->GetTRDsignal());
 		
 		// :::::::::::::::::::::::::::::::::::::::: histograms for positrons :::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1740,10 +1795,10 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS5" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
 		histograms->AddHistogram("Resolution_P_dPt_Pt_ITS6" ,"" ,kGCnYBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
 		histograms->AddHistogram("Resolution_P_dPt_Phi" ,"" , kGCnYBinsResdR, -TMath::Pi(), TMath::Pi(), kGCnYBinsResdPt, kGCfirstYBinResdPt, kGClastYBinResdPt, "", "");
-		histograms->AddHistogram("Resolution_P_nTRDtracklets_ESDPt" ,"" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");   
-		histograms->AddHistogram("Resolution_P_nTRDtracklets_MCPt","", kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 7.5, -0.5, 8.,"", "");
-		histograms->AddHistogram("Resolution_P_nTRDclusters_ESDPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5, -0.5, 201.,"", "");
-		histograms->AddHistogram("Resolution_P_nTRDclusters_MCPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 200.5,-0.5, 201.0,"", "");
+		histograms->AddHistogram("Resolution_P_nTRDtracklets_ESDPt" ,"" ,kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 8, -0.5, 7.5,"", "");   
+		histograms->AddHistogram("Resolution_P_nTRDtracklets_MCPt","", kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 8, -0.5, 7.5,"", "");
+		histograms->AddHistogram("Resolution_P_nTRDclusters_ESDPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 201, -0.5, 200.5,"", "");
+		histograms->AddHistogram("Resolution_P_nTRDclusters_MCPt","",kGCnXBinsResdPt, kGCfirstXBinResdPt, kGClastXBinResdPt, 201,-0.5, 200.5,"", "");
 		//		histograms->AddHistogram("Resolution_P_TRDsignal_ESDPt", "",fV0Reader->GetPositiveTrackPt(), fV0Reader->GetPositiveESDTrack()->GetTRDsignal());
     } //end of specific trigger study resolution plots
     } //end if(kGCrunRES=true)
@@ -1766,11 +1821,14 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
 
     if(kGCplotESDCutdedxSigmaElectronLine == kTRUE){histograms->AddHistogram("ESD_CutdEdxSigmaElectronLine_InvMass" ,"dedx ElectronLine" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutdedxSigmaPionLine == kTRUE){histograms->AddHistogram("ESD_CutdEdxSigmaPionLine_InvMass" ,"dedx PionLine" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
-
+    if(kGCplotESDCutPionRejectionLowP==kTRUE){histograms->AddHistogram("ESD_CutPionRejectionLowP_InvMass" ,"dedx PionRejection LowP" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutKaonRejectionLowP==kTRUE){histograms->AddHistogram("ESD_CutKaonRejectionLowP_InvMass" ,"dedx KaonRejection LowP" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutProtonRejectionLowP==kTRUE){histograms->AddHistogram("ESD_CutProtonRejectionLowP_InvMass" ,"dedx ProtonRejection LowP" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutR == kTRUE){histograms->AddHistogram("ESD_CutR_InvMass" ,"Above RMax" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutNDF == kTRUE){histograms->AddHistogram("ESD_CutNDF_InvMass" ,"NDF <= 0" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutChi2 == kTRUE){histograms->AddHistogram("ESD_CutChi2_InvMass" ,"#chi^{2} > Max" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutEta == kTRUE){histograms->AddHistogram("ESD_CutEta_InvMass" ,"Above #eta max" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutSinglePt == kTRUE){histograms->AddHistogram("ESD_CutSinglePt_InvMass" ,"Below p_{t} min" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutPt == kTRUE){histograms->AddHistogram("ESD_CutPt_InvMass" ,"Below p_{t} min" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutLine == kTRUE){histograms->AddHistogram("ESD_CutLine_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutZ == kTRUE){histograms->AddHistogram("ESD_CutZ_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
@@ -1780,7 +1838,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDAllV0s == kTRUE){histograms->AddHistogram("ESD_AllV0s_InvMass" ,"All V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDAllV0sCurrentFinder == kTRUE){histograms->AddHistogram("ESD_AllV0sCurrentFinder_InvMass" ,"All V0s Current Finder" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
 
-    if(kGCplotESDAllV0sCurrentFinderQtAlfa== kTRUE){ histograms->AddHistogram("ESD_AllV0sCurrentFinder_alfa_qt" ,"" ,kGCnXBinsP, kGCfirstXBinAlpha, kGClastXBinAlpha,kGCnYBinsQt, kGCfirstYBinQt, kGClastYBinQt,"", "");}
+    if(kGCplotESDAllV0sCurrentFinderQtAlfa== kTRUE){ histograms->AddHistogram("ESD_AllV0sCurrentFinder_alfa_qt" ,"" ,kGCnXBinsP, kGCfirstXBinAlphaG, kGClastXBinAlpha,kGCnYBinsQt, kGCfirstYBinQt, kGClastYBinQt,"", "");}
 
     if(kGCplotESDTrueConvGammaTrackLength == kTRUE){histograms->AddHistogram("ESD_TrueConvGamma_TrackLength","Track length of TrueConvGamma",kGCnXBinsTrackLength,kGCfirstXBinTrackLength,kGClastXBinTrackLength,"","");}
     if(kGCplotESDTrueConvGammaTrackLengthVSInvMass == kTRUE){histograms->AddHistogram("ESD_TrueConvGamma_TrackLengthVSInvMass","Track length of TrueConvGamma vs Inv mass",kGCnXBinsTrackLength,kGCfirstXBinTrackLength,kGClastXBinTrackLength,kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,"","");}
@@ -1797,9 +1855,10 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     }
 
     if(kGCplotPi0Spectra == kTRUE){
-      histograms->AddHistogram("ESD_Mother_alfa","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinAlpha, kGClastXBinAlpha,"#alfa","Counts");
+      histograms->AddHistogram("ESD_Mother_alfa","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinAlpha, kGClastXBinAlpha,"#alpha","Counts");
 
       histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+histograms->AddHistogram("ESD_Mother_InvMass_vs_Pt_alpha" ,"Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Mother_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
       histograms->AddHistogram("ESD_Mother_InvMass_1212","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
       histograms->AddHistogram("ESD_Mother_InvMass_0912","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
@@ -1846,6 +1905,9 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     }
 
     if(kGCplotPi0Spectra == kTRUE && kGCcalculateBackground == kTRUE){
+      for(Int_t m=0;m<4;m++){
+	histograms->AddHistogram(Form("%dESD_Mother_InvMass_vs_Pt",m) ,"Background Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+      }
       for(Int_t z=0;z<8;z++){
 	for(Int_t m=0;m<4;m++){
 	  histograms->AddHistogram(Form("%d%dESD_Background_InvMass_vs_Pt",z,m) ,"Background Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
@@ -1862,7 +1924,10 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
       }
     
       histograms->AddHistogram("ESD_Background_InvMass_vs_Pt" ,"Background Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
-      histograms->AddHistogram("ESD_Background_InvMass","Invariant mass background",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass BG [GeV]","Counts");
+      histograms->AddHistogram("ESD_Background_InvMass_vs_Pt_alpha" ,"Background Invariant Mass vs Pt" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
+
+    
+  histograms->AddHistogram("ESD_Background_InvMass","Invariant mass background",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass BG [GeV]","Counts");
 
       histograms->AddHistogram("ESD_Background_InvMass_vs_Pt_Fiducial" ,"Background Invariant Mass vs Pt |eta|<0.9" , kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");
       histograms->AddHistogram("ESD_Background_InvMass_Fiducial","Invariant mass background |eta|<0.9",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass BG [GeV]","Counts");
@@ -2006,6 +2071,24 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     histograms->AddHistogram("ESD_multiplicity_distribution" ,"multiplicity distribution" , 200, 0, 200,"counts","Multiplicity");
     histograms->AddHistogram("ESD_ZvsMultiplicity" ,"Z vs Multiplicity" , 1000, -10, 10,200,0,200,"Z[cm]","Multiplicity");
   }
+  
+  if(kGCRecalculateV0ForGamma==kTRUE){
+    histograms->AddHistogram("ESD_RecalculateV0_InvMass","", kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");
+    histograms->AddHistogram("ESD_RecalculateV0_Pt","",kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+    histograms->AddHistogram("ESD_RecalculateV0_E_dEdxP","",kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);
+    histograms->AddHistogram("ESD_RecalculateV0_P_dEdxP","",kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsdEdx, kGCfirstYBindEdx, kGClastYBindEdx,"", "",0);
+    histograms->AddHistogram("ESD_RecalculateV0_cpa","",1000,-1.,1.,"","");
+    histograms->AddHistogram("ESD_RecalculateV0_dca","",100,0.,10.,"","");
+    histograms->AddHistogram("ESD_RecalculateV0_Rr","",250,0.,250.,"","");
+    histograms->AddHistogram("ESD_RecalculateV0_normdistP","",250,0.,250.,"","");
+    histograms->AddHistogram("ESD_RecalculateV0_normdistN","",250,0.,250.,"","");
+
+    histograms->AddHistogram("ESD_RecalculateGG_InvMass","",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+    histograms->AddHistogram("ESD_RecalculateGG_InvMass_vs_Pt","", kGCnXBinsSpectra, kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Pt [GeV]");		
+
+  }
+  
+
 }
 
 
@@ -2016,7 +2099,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   // set the cuts depending on the Cut Selection Id
   // first number is dummy always set to 9 
   //  const char* cutSelection = analysisCutSelection.Data(); 
-  if(analysisCutSelection.Length()!=10){
+  if(analysisCutSelection.Length()!=12){
     cout<<"Cut selection has the wrong length!"<<endl;
     return 0;
   }
@@ -2038,9 +2121,11 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t singlePtCut=array[7];
   Int_t clsTPCCut=array[8];
   Int_t etaCut=array[9];
+  Int_t chi2MesonCut=array[10];
+  Int_t LowPRejectionSigmaCut=array[11];
 
-
-
+  cout<<"LowPRejectionSigmaCut"<<LowPRejectionSigmaCut<<endl;
+  cout<<"chi2MesonCut: "<< chi2MesonCut<<endl;
   cout<<"etaCut: "<<etaCut<<endl;
   cout<<"clsTPCCut: "<<clsTPCCut<<endl;
   cout<<"singlePtCut: "<<singlePtCut<<endl;
@@ -2067,15 +2152,19 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   default:
     return iResult;
   }
+
   switch(eProbCut){
-  case 0:  // 0.
-    kGCprobElectron = 0.000;
+  case 0:
+    kGCprobElectron=0;
     break;
-  case 1:  // 0.001
-    kGCprobElectron = 0.001;
+  case 1:
+    kGCprobElectron=0.1;
     break;
-  case 2:  // 0.01
-    kGCprobElectron = 0.01;
+  case 2:
+    kGCprobElectron=0.5;
+    break;
+  case 3:
+    kGCprobElectron=0.7;
     break;
   default:
     return iResult;
@@ -2094,6 +2183,10 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     kGCPIDnSigmaBelowElectronLine=-3;
     kGCPIDnSigmaAboveElectronLine=5;
     break;
+  case 3: // -4,5
+    kGCPIDnSigmaBelowElectronLine=-4;
+    kGCPIDnSigmaAboveElectronLine=5;
+    break;
   default:
     return iResult;
   }
@@ -2107,6 +2200,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 2:  // 1
     kGCPIDnSigmaAbovePionLine=1;
+    break;
+  case 3:  // 1
+    kGCPIDnSigmaAbovePionLine=-1;
+    break;
+  case 4:  // 1
+    kGCPIDnSigmaAbovePionLine=-1.5;
     break;
   default:
     return iResult;
@@ -2135,6 +2234,15 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 2:  // 30
     kGCchi2CutConversion = 30.;
+    break;
+  case 3:
+    kGCchi2CutConversion = 200.;
+    break;
+  case 4:
+    kGCchi2CutConversion = 500.;
+    break;
+  case 5:
+    kGCchi2CutConversion = 1000.;
     break;
   default:
     return iResult;
@@ -2191,6 +2299,55 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     return iResult;
   }
 
+  switch(chi2MesonCut){
+  case 0:  // 100.
+    kGCchi2CutMeson = 100.;
+    break;
+  case 1:  // 50.
+    kGCchi2CutMeson = 50.;
+    break;
+  case 2:  // 30.
+    kGCchi2CutMeson = 30.;
+    break;
+  case 3:
+    kGCchi2CutMeson = 200.;
+    break;
+  case 4:
+    kGCchi2CutMeson = 500.;
+    break;
+  case 5:
+    kGCchi2CutMeson = 1000.;
+    break;
+  default:
+    return iResult;
+  }
+
+
+  switch(LowPRejectionSigmaCut){
+  case 0:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=0;
+    kGCPIDnSigmaAtLowPAroundProtonLine=0;
+    kGCPIDnSigmaAtLowPAroundPionLine=0;
+    break;
+  case 1:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=0.5;
+    kGCPIDnSigmaAtLowPAroundProtonLine=0.5;
+    kGCPIDnSigmaAtLowPAroundPionLine=0.5;
+    break;
+  case 2:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=1;
+    kGCPIDnSigmaAtLowPAroundProtonLine=1;
+    kGCPIDnSigmaAtLowPAroundPionLine=1;
+    break;
+  case 3:  // 
+    kGCPIDnSigmaAtLowPAroundKaonLine=2.;
+    kGCPIDnSigmaAtLowPAroundProtonLine=2.;
+    kGCPIDnSigmaAtLowPAroundPionLine=2.;
+    break;
+  default:
+    return iResult;
+  }
+
   iResult=1;
   return iResult;
 }
@@ -2210,6 +2367,8 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(7);
         ASSIGNARRAY(8);
         ASSIGNARRAY(9);
+        ASSIGNARRAY(10);
+        ASSIGNARRAY(11);
   }
 }
 

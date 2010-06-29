@@ -46,6 +46,7 @@ using namespace std;
 ClassImp(AliV0Reader)
 
 
+AliESDpid* AliV0Reader::fgESDpid = 0x0;
 
 AliV0Reader::AliV0Reader() :
   TObject(),
@@ -56,7 +57,7 @@ AliV0Reader::AliV0Reader() :
   // fESDHandler(NULL),
   fESDEvent(NULL),
   fCFManager(NULL),
-  fESDpid(NULL),
+  //fESDpid(NULL),
   fHistograms(NULL),
   fCurrentV0IndexNumber(0),
   fCurrentV0(NULL),
@@ -91,6 +92,7 @@ AliV0Reader::AliV0Reader() :
   fLineCutZValue(0.),
   fChi2CutConversion(0.),
   fChi2CutMeson(0.),
+  fAlphaCutMeson(1.),
   fPIDProbabilityCutNegativeParticle(0),
   fPIDProbabilityCutPositiveParticle(0),
   fDodEdxSigmaCut(kFALSE),
@@ -98,6 +100,15 @@ AliV0Reader::AliV0Reader() :
   fPIDnSigmaBelowElectronLine(-100),
   fPIDnSigmaAbovePionLine(-100), 
   fPIDMinPnSigmaAbovePionLine(100), 
+  fDoKaonRejectionLowP(kFALSE),
+  fDoProtonRejectionLowP(kFALSE),
+  fDoPionRejectionLowP(kFALSE),
+  fPIDnSigmaAtLowPAroundKaonLine(0),
+  fPIDnSigmaAtLowPAroundProtonLine(0),
+  fPIDnSigmaAtLowPAroundPionLine(0),
+  fPIDMinPKaonRejectionLowP(0),
+  fPIDMinPProtonRejectionLowP(0),
+  fPIDMinPPionRejectionLowP(0),
   fXVertexCut(0.),
   fYVertexCut(0.),
   fZVertexCut(0.),
@@ -115,7 +126,7 @@ AliV0Reader::AliV0Reader() :
   fEsdTrackCuts(NULL),
   fNumberOfESDTracks(0)
 {
-  fESDpid = new AliESDpid;	
+  //fESDpid = new AliESDpid;	
 }
 
 
@@ -128,7 +139,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   //  fESDHandler(original.fESDHandler),
   fESDEvent(original.fESDEvent),
   fCFManager(original.fCFManager),
-  fESDpid(original.fESDpid),
+  // fESDpid(original.fESDpid),
   fHistograms(original.fHistograms),
   fCurrentV0IndexNumber(original.fCurrentV0IndexNumber),
   fCurrentV0(original.fCurrentV0),
@@ -163,6 +174,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fLineCutZValue(original.fLineCutZValue),
   fChi2CutConversion(original.fChi2CutConversion),
   fChi2CutMeson(original.fChi2CutMeson),
+  fAlphaCutMeson(original.fAlphaCutMeson),
   fPIDProbabilityCutNegativeParticle(original.fPIDProbabilityCutNegativeParticle),
   fPIDProbabilityCutPositiveParticle(original.fPIDProbabilityCutPositiveParticle),
   fDodEdxSigmaCut(original.fDodEdxSigmaCut),
@@ -170,6 +182,15 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fPIDnSigmaBelowElectronLine(original.fPIDnSigmaBelowElectronLine),
   fPIDnSigmaAbovePionLine(original.fPIDnSigmaAbovePionLine), 
   fPIDMinPnSigmaAbovePionLine(original.fPIDMinPnSigmaAbovePionLine), 
+  fDoKaonRejectionLowP(original.fDoKaonRejectionLowP),
+  fDoProtonRejectionLowP(original.fDoProtonRejectionLowP),
+  fDoPionRejectionLowP(original.fDoPionRejectionLowP),
+  fPIDnSigmaAtLowPAroundKaonLine(original.fPIDnSigmaAtLowPAroundKaonLine),
+  fPIDnSigmaAtLowPAroundProtonLine(original.fPIDnSigmaAtLowPAroundProtonLine),
+  fPIDnSigmaAtLowPAroundPionLine(original.fPIDnSigmaAtLowPAroundPionLine),
+  fPIDMinPKaonRejectionLowP(original.fPIDMinPKaonRejectionLowP),
+  fPIDMinPProtonRejectionLowP(original.fPIDMinPProtonRejectionLowP),
+  fPIDMinPPionRejectionLowP(original.fPIDMinPPionRejectionLowP),
   fXVertexCut(original.fXVertexCut),
   fYVertexCut(original.fYVertexCut),
   fZVertexCut(original.fZVertexCut),
@@ -198,9 +219,9 @@ AliV0Reader & AliV0Reader::operator = (const AliV0Reader & /*source*/)
 }
 AliV0Reader::~AliV0Reader()
 {
-  if(fESDpid){
-    delete fESDpid;
-  }
+  //  if(fESDpid){
+  // delete fESDpid;
+  //}
 }
 
 //____________________________________________________________________________
@@ -259,19 +280,19 @@ void AliV0Reader::Initialize(){
       //print warning here
     }
     // Better parameters for MonteCarlo from A. Kalweit 2010/01/8
-    fESDpid->GetTPCResponse().SetBetheBlochParameters( 2.15898e+00/50.,
-				      1.75295e+01,
-				      3.40030e-09,
-				      1.96178e+00,
-				      3.91720e+00);
+//     fESDpid->GetTPCResponse().SetBetheBlochParameters( 2.15898e+00/50.,
+// 				      1.75295e+01,
+// 				      3.40030e-09,
+// 				      1.96178e+00,
+// 				      3.91720e+00);
   }
   else{
     // Better parameters for data from A. Kalweit 2010/01/8
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,
-				     2.63394e+01,
-				     5.04114e-11,
-				     2.12543e+00,
-				     4.88663e+00);
+ //    fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,
+// 				     2.63394e+01,
+// 				     5.04114e-11,
+// 				     2.12543e+00,
+// 				     4.88663e+00);
   }
 	
   // for CF
@@ -477,10 +498,10 @@ Bool_t AliV0Reader::NextV0(){
  	
 
     if(fDodEdxSigmaCut == kTRUE){
-      if( fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	  fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
-	  fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	  fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
+      if( fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	  fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
+	  fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	  fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
 	//iResult=kFALSE;
 	if(fHistograms != NULL ){
 	  fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
@@ -496,9 +517,9 @@ Bool_t AliV0Reader::NextV0(){
       }
 
       if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
-	if(fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	   fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-	   fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	if(fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	  //	  iResult=kFALSE;
 	  if(fHistograms != NULL){
 	    fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
@@ -512,9 +533,9 @@ Bool_t AliV0Reader::NextV0(){
       }
       
       if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
-	if(fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	   fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-	   fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	if(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	  //	  iResult=kFALSE;
 	  if(fHistograms != NULL){
 	    fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
@@ -531,6 +552,89 @@ Bool_t AliV0Reader::NextV0(){
       }
 
     }
+    //    Float_t fPIDMinPKaonRejectionLowP=1.5;
+    if(fDoKaonRejectionLowP == kTRUE){
+      if( fCurrentNegativeESDTrack->P()<fPIDMinPKaonRejectionLowP ){
+	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutKaonRejectionLowP_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+      if( fCurrentPositiveESDTrack->P()<fPIDMinPKaonRejectionLowP ){
+	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutKaonRejectionLowP_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+    }
+    //    Float_t fPIDMinPProtonRejection=2;
+    if(fDoProtonRejectionLowP == kTRUE){
+      if( fCurrentNegativeESDTrack->P()<fPIDMinPProtonRejectionLowP){
+	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutProtonRejectionLowP_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+      if( fCurrentPositiveESDTrack->P()<fPIDMinPProtonRejectionLowP ){
+	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutProtonRejectionLowP_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+
+    }
+    //    Float_t fPIDMinPPionRejection=0.3;
+    if(fDoPionRejectionLowP == kTRUE){
+      if( fCurrentNegativeESDTrack->P()<fPIDMinPPionRejectionLowP ){
+	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutPionRejectionLowP_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+      if( fCurrentPositiveESDTrack->P()<fPIDMinPPionRejectionLowP ){
+	if( TMath::Abs(fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutPionRejectionLowP_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+    }
+
     
     //checks if we have a prim vertex
     if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
@@ -809,6 +913,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
     Double_t convpos[2];
     convpos[0]=0;
     convpos[1]=0;
+
     GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
     fCurrentXValue = convpos[0];
     fCurrentYValue = convpos[1];
@@ -920,11 +1025,19 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
 	
   Bool_t iResult=kFALSE;
 	
-  Double_t *posProbArray = new Double_t[10];
-  Double_t *negProbArray = new Double_t[10];
-  AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
-  AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
-	
+  //  Double_t *posProbArray = new Double_t[10];
+  //  Double_t *negProbArray = new Double_t[10];
+  //-AM The TPCpid method expects an array of length kSPECIES that is 5 not 10 
+
+  Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
+  Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
+
+  AliESDtrack* negTrack  = GetNegativeESDTrack();
+  AliESDtrack* posTrack  = GetPositiveESDTrack();
+  //fESDEvent->GetTrack(fCurrentV0->GetNindex());
+    //fESDEvent->GetTrack(fCurrentV0->GetPindex());
+  //-AM for switchtracks==true the above is a bug
+
   negTrack->GetTPCpid(negProbArray);
   posTrack->GetTPCpid(posProbArray);
 	
@@ -942,11 +1055,19 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
 void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
   // see header file for documentation
 
-  Double_t *posProbArray = new Double_t[10];
-  Double_t *negProbArray = new Double_t[10];
-  AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
-  AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
-	
+  //Double_t *posProbArray = new Double_t[10];
+  // Double_t *negProbArray = new Double_t[10];
+  //-AM The TPCpid method expects an array of length kSPECIES that is 5 not 10 
+  Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
+  Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
+
+//   AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
+//   AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+  //-AM for switchtracks the above is a bug
+  AliESDtrack* negTrack  = GetNegativeESDTrack();
+  AliESDtrack* posTrack  = GetPositiveESDTrack();
+
+
   negTrack->GetTPCpid(negProbArray);
   posTrack->GetTPCpid(posProbArray);
 	
@@ -954,6 +1075,31 @@ void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
   if(negProbArray && posProbArray){
     negPIDProb = negProbArray[GetSpeciesIndex(-1)];
     posPIDProb = posProbArray[GetSpeciesIndex(1)];
+  }
+  delete [] posProbArray;
+  delete [] negProbArray;
+}
+void AliV0Reader::GetPIDProbabilityMuonPion(Double_t &negPIDProb,Double_t & posPIDProb){
+  // see header file for documentation
+
+
+  Double_t *posProbArray = new Double_t[AliPID::kSPECIES];
+  Double_t *negProbArray = new Double_t[AliPID::kSPECIES];
+
+  // AliESDtrack* negTrack  = fESDEvent->GetTrack(fCurrentV0->GetNindex());
+  // AliESDtrack* posTrack  = fESDEvent->GetTrack(fCurrentV0->GetPindex());
+  //-AM for switchtracks the above is a bug
+
+  AliESDtrack* negTrack  = GetNegativeESDTrack();
+  AliESDtrack* posTrack  = GetPositiveESDTrack();
+
+  negTrack->GetTPCpid(negProbArray);
+  posTrack->GetTPCpid(posProbArray);
+	
+  //  if(negProbArray!=NULL && posProbArray!=NULL){ // this is not allowed anymore for some reason(RC19)
+  if(negProbArray && posProbArray){
+    negPIDProb = negProbArray[1]+negProbArray[2];
+    posPIDProb = posProbArray[1]+posProbArray[2];
   }
   delete [] posProbArray;
   delete [] negProbArray;
